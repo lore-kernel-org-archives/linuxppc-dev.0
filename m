@@ -1,55 +1,38 @@
-To: "XOL" <xol@mail.ru>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Re[2]: initrd for MPC860/862 with eldk2.1.10 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sun, 08 Jun 2003 18:00:38 +0400."
-             <E19P0is-000HpJ-00.xol-mail-ru@f15.mail.ru>
-Date: Sun, 08 Jun 2003 22:00:54 +0200
-Message-Id: <20030608200059.00D08C5FD7@atlas.denx.de>
+Message-Id: <5.1.1.6.0.20030609103205.02541bc0@dns.struinfo.it>
+Date: Mon, 09 Jun 2003 11:20:19 +0200
+To: linuxppc-embedded@lists.linuxppc.org
+From: llandre <r&d@wawnet.biz>
+Subject: Initial ramdisk, linuxrc script and handle_initrd function
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <E19P0is-000HpJ-00.xol-mail-ru@f15.mail.ru> you wrote:
-> Thanks for your help.
-> I still can't go on.
-> This is my problem in details. Am I doing something wrong?
-> My board is EP PPC862 64M Ram 64M Flash.
->
-> I made following:
-> cp /usr/local/eldk/ppc_8xx/images/ramdisk_image.gz arch/ppc/boot/images/ramdisk.image.gz
->
-> make menuconfig , Eanbled ramdisk 4M
->  <*> RAM disk support
-> (4096)   Default RAM disk size
->    [*]   Initial RAM disk (initrd) support
->
-> make zImage.initrd
+I'm using the kernel 2.4.21-pre5 with the ELDK on a PPC405EP. I use an
+initial ramdisk stored in Flash (simple-ramdisk downloaded from Denx's FTP
+site). U-Boot loader loads correctly both the kernel image and the ramdisk
+image. Everything works fine until the following code in prepare_namespace
+(init/do_mounts.c):
 
-So far, this looks good to me.
+         if (mount_initrd) {
+                 if (initrd_load() && ROOT_DEV != MKDEV(RAMDISK_MAJOR, 0)) {
+                         handle_initrd();
+                         goto out;
+                 }
 
-> zsrec arch/ppc/boot/images/zImage.initrd.embedded > /tftpboot/zImage.xxx1 ### This will create S-Record image
->
-> After it on PPC it looks like
->
-> >t
-> Load using tftp via Ethernet
-> Enter server IP address <10.4.8.25> :
+ROOT_DEV has been set to 0x100 because the command line includes
+root=/dev/ram and so the handle_initrd function is not invoked. Thus the
+/linuxrc script is not executed.
+Why do ROOT_DEV and MKDEV(RAMDISK_MAJOR, 0) need to be different in order
+to execute /linuxrc?
+Am I missing some parameters?
+Any help is appreciated.
 
-I cannot help with this part, though. We don't use the EP bootloader.
-We use U-Boot on our boards, where things are different (simpler).
+Thanks in advance.
 
-Best regards,
 
-Wolfgang Denk
+llandre
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-If the car industry behaved like the computer industry over the  last
-30  years, a Rolls-Royce would cost $5, get 300 miles per gallon, and
-blow up once a year killing all passengers inside.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
