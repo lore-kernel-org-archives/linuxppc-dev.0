@@ -1,52 +1,34 @@
-Message-ID: <3CF1CEC4.1020205@mvista.com>
-Date: Sun, 26 May 2002 23:14:28 -0700
-From: Armin Kuster <akuster@mvista.com>
-MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	Paul Mackerras <paulus@samba.org>
-Subject: Re: Another OCP enet patch
-References: <20020527040330.GH16537@zax>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Mon, 27 May 2002 16:34:51 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: map iomem in linux_2_4_dev
+Message-ID: <20020527063451.GL16537@zax>
+References: <003801c20543$b90a4180$e1a8459b@ntu.edu.sg>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <003801c20543$b90a4180$e1a8459b@ntu.edu.sg>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Gibson wrote:
-> Armin, please consider the patch below.  It removes your recently
-> added ocp-dma.h and instead makes the ocp enet driver uses the DMA
-> direction constants from pci.h.
-
-Go ahead and push it.  FYI - I will update the ocp ide driver since I am
-making changes in it any ways.
-
+On Mon, May 27, 2002 at 01:59:54PM +0800, shaowei dai wrote:
 >
-> I realise that logically the OCP enet driver, and the
-> consistent_sync() has nothing to do with PCI.  However using the pci.h
-> constants seems a better approach than defining new constants with the
-> same values, when the switch in consistent_sync() explicitly checks
-> against the PCI constants.
+> Hello, every one:
 >
-> In the longer term consistent_sync() itself should be changed not to
-> reference the PCI constants - in fact the PCI constants should
-> probably be moved and renamed since they have no inherent connection
-> with PCI at all.
+> I've searched through the achieve, but failed to find stuff about mapping
+> io-memmory in this linux_2_4_dev version.
+> After check the source code, it seems from 2_4_dev onwards, no need to use
+> ioremap to map io memory. We
+> should use io_block_mapping() instead.
 
-I have already had to make that break with the ocp usb driver.  If a 4xx
-core shows up with PCI and ocp ide or ocp USB then we will need to
-address this issue.  thus those dma APIs I sent you are a result of my
-concern.
->
-> Oh, I also change the consistent_sync() in the Tx routine to be
-> PCI_DMA_TODEVICE rather than BIDIRECTIONAL, since there is no need to
-> invalidate the cache here, a writeback is all that's necessary.
->
->
+No, you should use ioremap() wherever possible.  Only use
+io_block_mapping() if for some strange reason you need to specify the
+virtual address.
 
-
-Thanks
-
-armin
-
+--
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.  -- H.L. Mencken
+http://www.ozlabs.org/people/dgibson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
