@@ -1,24 +1,28 @@
-From: jonb@marel.is
-Subject: CPM ENET: BSY can't happen.
-To: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OF7068BD4D.5C252C5F-ON00256975.005D8208@marel.is>
-Date: Wed, 11 Oct 2000 17:04:27 +0000
+Message-ID: <39E4A09A.619E635D@mvista.com>
+Date: Wed, 11 Oct 2000 13:17:14 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+To: jonb@marel.is
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: CPM ENET: BSY can't happen.
+References: <OF7068BD4D.5C252C5F-ON00256975.005D8208@marel.is>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
+jonb@marel.is wrote:
 
-I am occasionally seeing this message "CPM ENET: BSY can't happen."  on the
-console
-of my custom MPC823 board.  It comes from arch/ppc/8xx_io/enet.c.
+> Has anyone else seen this ?
 
-Has anyone else seen this ?
+Just delete the code.  It can happen for resource conflict reasons.
+Just move along...nothing to see here.....
 
-Jon Benediktsson
-Marel hf.
 
+	-- Dan
+
+--
+
+	I like MMUs because I don't have a real life.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
