@@ -1,105 +1,100 @@
-Message-ID: <3BB25339.41537A8B@opensource.se>
-Date: Thu, 27 Sep 2001 00:14:17 +0200
-From: Magnus Damm <damm@opensource.se>
+Date: Wed, 26 Sep 2001 16:24:58 -0600 (MDT)
+From: Jeff Studer <jstuder@aquilagroup.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: undefined symbols configuring PCI for 8xx
+Message-ID: <Pine.LNX.4.10.10109261555010.5312-100000@jeffs.aquilagroup.com>
 MIME-Version: 1.0
-To: Cindy Peters <cinpet@adaptivemicro.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Cross-compiling standard utilities for MPC823
-References: <41EDEC3C1B88D51186EB00A0C9CFADF702FA88@AMWMAIL>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-If you're cross-compiling applications that use autoconf "configure"
-scripts, you will need to set some variables to override tests that
-configure is unable to perform when you're cross-compiling.
+Hello All,
 
-Here are some mpc8xx-specific variables:
+I'm using linux-2.4.2 from kernel.org for a custom 8xx board.
+A grep of autoconf.h returns:
 
-ac_cv_c_cross=yes
-ac_cv_c_bigendian=yes
-ac_cv_c_char_unsigned=no
-ac_cv_sizeof_long_long=8
-ac_cv_sizeof_long=4
-ac_cv_sizeof_int=4
-ac_cv_sizeof_short=2
-ac_cv_sizeof_unsigned_long=4
-ac_cv_sizeof_unsigned_int=4
+grep define include/linux/autoconf.h
+#define AUTOCONF_INCLUDED
+#define CONFIG_EXPERIMENTAL 1
+#define CONFIG_PPC 1
+#define CONFIG_8xx 1
+#define CONFIG_SERIAL_CONSOLE 1
+#define CONFIG_MACH_SPECIFIC 1
+#define CONFIG_PCI_QSPAN 1
+#define CONFIG_PCI 1
+#define CONFIG_BINFMT_ELF 1
+#define CONFIG_KERNEL_ELF 1
+#define CONFIG_PCI_NAMES 1
+#define CONFIG_EXT2_FS 1
+#define CONFIG_PARTITION_ADVANCED 1
 
-..and some other ones if you use glibc-2.1.3:
+After updating the qspan_pci.c file based on the prep_pci.c, I got
+undefined symbols related to the CONFIG_PCI code:
 
-ac_cv_header_stdc=yes
-ac_cv_func_closedir_void=no
-ac_cv_func_setvbuf_reversed=no
-ac_cv_func_getpgrp_void=yes
-ac_cv_func_setpgrp_void=yes
-ac_cv_func_mmap=yes
-ac_cv_func_setpgrp_void=yes
-ac_cv_func_strcoll_works=yes
-ac_cv_func_vfork=yes
-ac_cv_func_wait3_rusage=yes
-ac_cv_sys_restartable_syscalls=yes
+powerpc-linux-ld -T arch/ppc/vmlinux.lds -Ttext 0xc0000000 -Bstatic
+arch/ppc/kernel/head_8xx.o init/main.o init/version.o \
+        --start-group \
+        arch/ppc/kernel/kernel.o arch/ppc/mm/mm.o arch/ppc/lib/lib.o
+kernel/kernel.o mm/mm.o fs/fs.o ipc/ipc.o \
+        drivers/block/block.o drivers/char/char.o drivers/misc/misc.o
+drivers/net/net.o drivers/media/media.o  drivers/pci/driver.o
+arch/ppc/8xx_io/8xx_io.o \
+        net/network.o \
+        /mnt/euripedes/powerpc/src/linux/lib/lib.a \
+        --end-group \
+        -o vmlinux
+arch/ppc/kernel/kernel.o: In function `make_one_node_map':
+arch/ppc/kernel/kernel.o(.text+0x7bfc): undefined reference to
+`get_property'
+arch/ppc/kernel/kernel.o(.text+0x7bfc): relocation truncated to fit:
+R_PPC_REL24 get_property
+arch/ppc/kernel/kernel.o(.text+0x7c54): undefined reference to
+`get_property'
+arch/ppc/kernel/kernel.o(.text+0x7c54): relocation truncated to fit:
+R_PPC_REL24 get_property
+arch/ppc/kernel/kernel.o(.text+0x7c98): undefined reference to
+`get_property'
+arch/ppc/kernel/kernel.o(.text+0x7c98): relocation truncated to fit:
+R_PPC_REL24 get_property
+arch/ppc/kernel/kernel.o: In function `pcibios_make_OF_bus_map':
+arch/ppc/kernel/kernel.o(.text+0x7da4): undefined reference to
+`find_path_device'
+arch/ppc/kernel/kernel.o(.text+0x7da4): relocation truncated to fit:
+R_PPC_REL24 find_path_device
+arch/ppc/kernel/kernel.o(.text+0x7db4): undefined reference to
+`get_property'
+arch/ppc/kernel/kernel.o(.text+0x7db4): relocation truncated to fit:
+R_PPC_REL24 get_property
+arch/ppc/kernel/kernel.o: In function `scan_OF_childs_for_device':
+arch/ppc/kernel/kernel.o(.text+0x7e68): undefined reference to
+`get_property'
+arch/ppc/kernel/kernel.o(.text+0x7e68): relocation truncated to fit:
+R_PPC_REL24 get_property
+arch/ppc/kernel/kernel.o(.text+0x7ea4): undefined reference to
+`get_property'
+arch/ppc/kernel/kernel.o(.text+0x7ea4): relocation truncated to fit:
+R_PPC_REL24 get_property
+make: *** [vmlinux] Error 1
 
-The variables above will make it possible to cross-compile
-fileutils-4.1. Other packages (bash, readline) might need
-more variables, but if you read the configure-file, you
-will figure out what is missing.
+The above mentioned functions are all in arch/ppc/kernel/pci.c
 
-Or, you can take the blue pill and go the RPM-way ... ;)
+Is there a proper resolution to these undefineds?  I found the definitions
+in prom.c, but after seeing some static globals in find_path_device, I'm
+not sure I just want to include that file in the make.  Of course, I
+tried, and ended up with a:
 
-Cheers  /
+Kernel panic: Attempted to kill init!
 
-magnus
+The only idea I have know is to #ifdef out the call to find_path_device in
+arch/ppc/kernel/pci.c and to not compile in prom.c, but to copy
+get_property() to my xxx_setup.c with an "#include <asm/prom.h>" there.
 
+Thanks for your help, in advance.
 
-opensource.se - custom linux distributions
+Jeff Studer
+Software Engineer
+Aquila Technologies Groups, Inc.
 
-Cindy Peters wrote:
->
-> I am attempting to cross-compile the file utilities that I downloaded from
-> the linuxppc ftp site for the MPC823 on an x86 PC running Redhat 6.2. I am
-> getting an error when configure is trying to determine the byte ordering.
-> Following is a clip from the config.log file.
->
-> configure:2220: checking whether byte ordering is bigendian
-> configure:2242: powerpc-linux-gcc -c -g -O2  conftest.c >&5
-> configure: In function `main':
-> configure:2236: `bogus' undeclared (first use in this function)
-> configure:2236: (Each undeclared identifier is reported only once
-> configure:2236: for each function it appears in.)
-> configure:2236: parse error before `endian'
-> configure: failed program was:
-> #line 2228 "configure"
-> #include "confdefs.h"
-> #include <sys/types.h>
-> #include <sys/param.h>
->
-> int
-> main ()
-> {
-> #if !BYTE_ORDER || !BIG_ENDIAN || !LITTLE_ENDIAN
->  bogus endian macros
-> #endif
->
->   ;
->   return 0;
-> }
->
-> I have tried defining BIG_ENDIAN and BYTE_ORDERING but that is not helping.
-> Can someone tell me what I need to do to successfully cross-compile this?
-> Here is the command line I am using.
->
-> AR=powerpc-linux-ar AS=powerpc-linux-as LD=powerpc-linux-ld \
->   RANLIB=powerpc-linux-ranlib CC=powerpc-linux-gcc NM=powerpc-linux-nm \
->   ./configure --build=i686-pc-linux-gnu --host=powerpc-unknown-linux-gnu \
->   --target=powerpc-unknown-linux-gnu \
->         --prefix=/opt/usr/local/powerpc-linux
->
-> Thanks,
->
-> Cindy Peters
-> Adaptive Micro-Ware, Inc.
->
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
