@@ -1,61 +1,35 @@
-Message-ID: <3D89E18B.8020708@tiscali.cz>
-Date: Thu, 19 Sep 2002 16:39:07 +0200
-From: Pavel Bartusek <pavel.bartusek@tiscali.cz>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org, damm@opensource.se
-Subject: Re: PCMCIA cards for MPC8xx?
-Content-Type: multipart/mixed;
- boundary="------------000401060204090003070004"
+To: nbasker@india.tejasnetworks.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: data address causing machine check exception 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 19 Sep 2002 20:00:42 +0600."
+             <1032445842.3d89df925ac65@pop-mail.india.tejasnetworks.com>
+Date: Thu, 19 Sep 2002 19:08:09 +0200
+Message-Id: <20020919170814.E25F9FA8E@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------000401060204090003070004
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+In message <1032445842.3d89df925ac65@pop-mail.india.tejasnetworks.com> you wrote:
+>
+> In my driver module, there is an invalid memory access
+> that causes a machine check exception.
+...
+> Since the exception is caused due to load/store related
+> error, I was expecting the dar register to hold the Effective
+> Address of the data, but I find zero.
 
-There is a patch, which allows concurent use of arch/ppc/8xx_io/uart.c
-and drivers/char/serial.c
-
---------------000401060204090003070004
-Content-Type: text/plain;
- name="fixup.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="fixup.patch"
-
-diff -Nurb linux__/arch/ppc/8xx_io/uart.c /opt/elinos/linux-2.4.18/arch/ppc/8xx_io/uart.c
---- linux__/arch/ppc/8xx_io/uart.c	Thu Jan 24 05:23:57 2002
-+++ /opt/elinos/linux-2.4.18/arch/ppc/8xx_io/uart.c	Mon Jul  1 13:16:40 2002
-@@ -357,8 +357,14 @@
- 				  int event)
- {
- 	info->event |= 1 << event;
-+#ifdef CONFIG_SERIAL
-+	/* if the serial driver is also selected, we have to use another tq */
-+	queue_task(&info->tqueue, &tq_immediate);
-+	mark_bh(IMMEDIATE_BH);
-+#else
- 	queue_task(&info->tqueue, &tq_serial);
- 	mark_bh(SERIAL_BH);
-+#endif
- }
-
- static _INLINE_ void receive_chars(ser_info_t *info, struct pt_regs *regs)
-@@ -2566,7 +2572,10 @@
- 	volatile	scc_uart_t	*sup;
- 	volatile	immap_t		*immap;
-
-+#ifndef CONFIG_SERIAL
-+	/* if the serial driver is also selected, SERIAL_BH can't be used */
- 	init_bh(SERIAL_BH, do_serial_bh);
-+#endif
-
- 	show_serial_version();
+Why don't you belive that, then? Maybe this _is_ the probem?
+Somebody trying to dereferece NULL?
 
 
---------------000401060204090003070004--
+Wolfgang Denk
 
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+It's a small world, but I wouldn't want to paint it.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
