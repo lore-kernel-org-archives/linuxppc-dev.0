@@ -1,51 +1,66 @@
-Date: Wed, 17 Apr 2002 00:03:15 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: ATI 7000 and dual-monitor X? (was Re: 9600 maturity?)
-To: olh@suse.de
-Cc: ajoshi@shell.unixbox.com, jeglin@4pi.com,
-	linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20020416100152.A4692@suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
-Message-Id: <E16xb2p-0000Bv-00@piglet.grunz.lu>
+Date: Tue, 16 Apr 2002 18:16:52 -0500
+From: Troy Benjegerdes <hozer@drgw.net>
+To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: 2.5 (or beyond) arch-specific boot modules
+Message-ID: <20020416181652.X6003@altus.drgw.net>
+References: <0204151811.AA07988@ivan.Harhan.ORG>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <0204151811.AA07988@ivan.Harhan.ORG>; from msokolov@ivan.Harhan.ORG on Mon, Apr 15, 2002 at 11:11:48AM -0700
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  16 Apr, this message from Olaf Hering echoed through cyberspace:
->> > 1. Is the Radeon 7000 supported in XFree86? Rather, the real question
->> > is, does anyone know of any gotchas trying to run it in accelerated
->> > mode?
->>
->> ATI tends to make new cards which are really just newer revisions of older
->> ASICs.  For example, the Radeon 7200 is realy just a regular radeon with
->> 64meg DDR (and perhaps higher clocks).  So its highly possible that the
->> 7000 is a radeon VE (considering its dualhead).  If so, then it is
->> supported.  Even if it isn't, adding support should be very trivial as it
->> contains the same 1st generation Radeon ASIC.
+On Mon, Apr 15, 2002 at 11:11:48AM -0700, Michael Sokolov wrote:
 >
-> It is a VE, but I have one report where it fails on a 9600, after
-> loading vgahw.a or something like that. Maybe it must go into another
-> slot or the guy has to boot without video=ofonly.
+> Troy Benjegerdes <hozer@drgw.net> wrote:
+>
+> > Above all, *readable* code, because otherwise someone changes something,
+> > and inadvertently breaks machines that they don't have to test on.
+>
+> We've got this one settled in favor of ELF section magic to add machines, which
+> works for both of us.
 
-Loading vgahw.a? Hmmm, that looks suspiciously like problem accessing
-legacy hardcoded VGA ports on the second bus (which as Ben explains
-doesn't support that).
+Good.
 
-Can somebody please teach XFree to leave those VGA ports alone on PPC?
-Are they of _any_ use on any PPC machine?
+Something along these lines we might want to think about eventually is if
+the 2.5 changes for initramfs and making everything a module actually go
+through is to make all the board-specific init a module.
 
-Cheers
+Granted, this brings up all kinds of other issues, but I do think they can
+be dealt with.
 
-Michel
+boot would probably go something like this:
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+Init MMU
+find initramfs filesystem image
+unpack it
+load init module to figure out what machine we are
+load board-specific init modules
+init pci & other IO
+etc..
 
+
+>
+> > If better functionality for the user is your goal, you can't achieve it by
+> > designing code around that goal. (Unless, of course, you're Apple computer
+> > and have large resources for QA and testing, and design the hardware
+> > yourself)
+>
+> I do design the hardware myself now. But the company I take example from is
+> DEC, not Apple.
+
+Heh ;)
+
+Well, for technical users, that's great.. DEC never did much for the
+'average' computer user. ;)
+
+--
+Troy Benjegerdes | master of mispeeling | 'da hozer' |  hozer@drgw.net
+-----"If this message isn't misspelled, I didn't write it" -- Me -----
+"Why do musicians compose symphonies and poets write poems? They do it
+because life wouldn't have any meaning for them if they didn't. That's
+why I draw cartoons. It's my life." -- Charles Schulz
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
