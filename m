@@ -1,74 +1,77 @@
-Date: Mon, 2 Jun 2003 10:40:32 -0700
-From: Tom Rini <trini@kernel.crashing.org>
+Subject: [Fwd: [PATCH] radeonfb doesn't compile in 2.4.21-rc6]
+From: Jocelyn Mayer <jma@netgem.com>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [RFC] A stand-alone boot loader for PReP
-Message-ID: <20030602174032.GC787@ip68-0-152-218.tc.ph.cox.net>
-References: <62639.213.107.143.228.1054413401.squirrel@www.solinno.co.uk> <20030531214950.GP32642@plato.local.lan> <63891.213.107.143.228.1054475827.squirrel@www.solinno.co.uk> <20030601221249.GQ32642@plato.local.lan>
+Content-Type: text/plain
+Message-Id: <1054589548.4951.81.camel@jma1.dev.netgem.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030601221249.GQ32642@plato.local.lan>
+Date: 02 Jun 2003 23:32:28 +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Jun 01, 2003 at 02:12:49PM -0800, Ethan Benson wrote:
->
-> On Sun, Jun 01, 2003 at 02:57:07PM +0100, Leigh Brown wrote:
-> >
-> > Ethan Benson said:
-> > >
-> > > On Sat, May 31, 2003 at 09:36:41PM +0100, Leigh Brown wrote:
-> > >>
-> > >> [If you bore easily:
-> > >> http://www.solinno.co.uk/leigh/pablo/pablo-0.2.tar.gz ]
-> > >>
-> > >> Ever since I got Linux going on my PReP box I've been unhappy about
-> > >> the boot loader. There is no lilo or yaboot equivalent for PReP and
-> > >> it's a pain. For the past several months I've been trying to devise
-> > >> a way of making a bootloader similar to lilo or yaboot, and this is
-> > >> the best I've been able to come up with.
-> > >
-> > > I have been working (slowly due to lack of time) on a complete
-> > > rewrite of yaboot, the plan is for it to support any OF based
-> > > hardware (not limited to powerpc), and to design it in a general way
-> > > so it can accomidate the various ways different architectures boot.
-> > >
-> > > to start with im writing a prom-libc library so all the usual stdc
-> > > stuff doesn't have to be reinvented crappilly like every other
-> > > loader seems to do, as well as get the prom specific stuff out of
-> > > bootloaders and into a common place (it also should allow for a
-> > > bootloader which is designed well enough to be more easily portable
-> > > to different prom types so long as prom-libc has support). it will
-> > > also allow the bootloader to be written much more like ordinary unix
-> > > C programs, making them more portable (don't port the loader, port
-> > > prom-libc).
-> > >
-> > > my goal is to eliminate the need for a different bootloader for
-> > > every variation of hardware, i particularly hate how there is a
-> > > dozen different loaders all with different user interfaces just for
-> > > powerpc, much less other architectures.
-> >
-> > Unfortunately I think a PReP boot loader is largely orthogonal to an
-> > OF based loader. Even PReP boxes that have OF don't support enough
-> > services for yaboot (in any form) to work. Most PReP boxes don't have
-> > OF or even allow any firmware calls from within the boot loader. With
-> > PReP everything you need to bring up the O/S has to be held on the
-> > boot partition and loaded into memory at boot time.
->
-> then why do you have a of1275 interface in your loader?
->
-> basically prep OF is more broken then apple's oldworld? now thats
-> impressive...
+Hi all,
 
-I suspect it's because some PReP boxes (IBM ones, _mostly_) have
-OpenFirmware.  And yes, there's a few versions of OF that are as funky,
-if not funkier, than the one Apple uses.  But, as the 2.5 kernel shows,
-the OF code can be shared.  The problem is that not all PReP boxes
-support OF, so yaboot2 won't work on them.  Unless you're up for
-allowing non-OF machines. :)
+-----Forwarded Message-----
+
+> From: Jocelyn Mayer <jma@netgem.com>
+> To: linux-kernel@vger.kernel.org
+> Subject: [PATCH] radeonfb doesn't compile in 2.4.21-rc6
+> Date: 02 Jun 2003 20:24:56 +0200
+>
+> It seems to me that this was already reported for previous
+> 2.4.21-rc's, but never applied.
+> Here's the patch that make radeonfb compile (and work)
+> on my Ibook:
+>
+
+--- linux-2.4.21-rc6/drivers/video/radeonfb.c     2003-04-11 19:06:04.0000 00000 +0200
++++ linux-2.4.21-rc6-fixed/drivers/video/radeonfb.c    2003-06-01 20:58:42.0000 00000 +0200
+@@ -1001,8 +1001,8 @@
+        /* According to XFree86 4.2.0, some production M6's return 0
+           for 8MB. */
+        if (rinfo->video_ram == 0 &&
+-           (pdev->device == PCI_DEVICE_ID_RADEON_LY ||
+-            pdev->device == PCI_DEVICE_ID_RADEON_LZ)) {
++           (pdev->device == PCI_DEVICE_ID_ATI_RADEON_LY ||
++            pdev->device == PCI_DEVICE_ID_ATI_RADEON_LZ)) {
+            rinfo->video_ram = 8192 * 1024;
+          }
+
+>
+> Linux version 2.4.21-rc6-fixed (jocelyn@(none)) (gcc version 3.2) #3 Sun
+> Jun 1 21:02:23 CEST 2003
+>
+> cpu             : 750FX
+> clock           : 700MHz
+> revision        : 1.18 (pvr 7000 0112)
+> bogomips        : 1389.36
+> machine         : PowerBook4,3
+> motherboard     : PowerBook4,3 MacRISC2 MacRISC Power Macintosh
+> detected as     : 257 (iBook 2 rev. 2)
+> pmac flags      : 0000000b
+> L2 cache        : 512K unified
+> memory          : 384MB
+> pmac-generation : NewWorld
+>
+> PCI devices found:
+>   Bus  0, device  11, function  0:
+>     Host bridge: Apple Computer Inc. UniNorth/Pangea AGP (rev 0).
+>       Master Capable.  Latency=16.
+>   Bus  0, device  16, function  0:
+>     VGA compatible controller: ATI Technologies Inc Radeon Mobility M6
+> LY (rev 0).
+>       IRQ 48.
+>       Master Capable.  Latency=255.  Min Gnt=8.
+>       Prefetchable 32 bit memory at 0x98000000 [0x9fffffff].
+>       I/O at 0x802400 [0x8024ff].
+>       Non-prefetchable 32 bit memory at 0x90000000 [0x9000ffff].
+> ...
+>
+
+Regards.
 
 --
-Tom Rini
-http://gate.crashing.org/~trini/
+Jocelyn Mayer <jma@netgem.com>
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
