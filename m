@@ -1,35 +1,53 @@
-Message-ID: <XFMail.990210203209.jeremy@goop.org>
-Content-Type: text/plain; charset=us-ascii
-MIME-Version: 1.0
-Date: Wed, 10 Feb 1999 20:32:09 -0800 (PST)
-From: Jeremy Fitzhardinge <jeremy@goop.org>
+From: baccala@freesoft.org
+Message-Id: <199902110602.AAA23709@lists.linuxppc.org>
+Date: Thu, 11 Feb 1999 01:03:01 -0500 (EST)
+Subject: zimage relocation
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Interrupt routing in prep_pci.c
-Cc: cort@cs.nmt.edu
+MIME-Version: 1.0
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Cort/all,
+Hi -
 
-I'm trying to work out what kernel/prep_pci.c is doing with interrupt routing. 
-I'm looking at the stuff in the standard 2.2 kernel, so perhaps there's a better
-place for me to look.
+I'm having trouble with the recent (~ 1.5 weeks ago) changes to
+arch/ppc/boot/misc.c, relating to MBX image relocation.  On my IBM 860
+laptop, the relocation never used to run ('cause I wasn't using
+ramdisks), but now it does, and the image doesn't decompress properly.
 
-Firstly, in route_pci_interrupts it does an inb(0x800) to get something to
-determine the interrupt architecture of the board.  What is this value, and
-where does it come from?
+If I comment out this section of code in misc.c, everything works fine:
 
-Rather than having hard-coded tables, can't the interrupt routing be determined
-from either firmware or the interrupt controller itself?  The comment at the
-top of the file is that this will go away soon.  What are you planning to
-replace it?
+if ( (( (unsigned long)zimage_start <= 0x01000000 ) && initrd_start)
+         || needs_reloc)
+{
+        memcpy ((void *)PAGE_ALIGN(-PAGE_SIZE+(unsigned long)end_avail-zimage_size),
+                 (void *)zimage_start, zimage_size );
+        zimage_start = (char *)PAGE_ALIGN(-PAGE_SIZE+(unsigned long)end_avail-zimage_size);
+        end_avail = (char *)zimage_start;
+        puts("relocated to:  "); puthex((unsigned long)zimage_start);
+        puts(" ");
+        puthex((unsigned long)zimage_size+(unsigned long)zimage_start);
+        puts("\n");
+}
 
-Background: I'm porting LinuxPPC to a Yellowknife-like board running Open
-Firmware.  It works well except that the drivers can't find their interrupts.
+Clearly, the machine is responding to
+needs_reloc, since my initrd_start is 0, no ramdisk.  needs_reloc was
+set by the Motorola detect code.  So what does the Motorola detect
+actually do, why would it be triggered on my IBM 860, and what should
+be done about it?
+-- 
+					-bwb
 
-Thanks,
-        J
+					Brent Baccala
+					baccala@freesoft.org
+
+-------------------------------------------------------------------------
+To receive periodic news about what's happening at freesoft.org, send
+email to "announce@freesoft.org", with "SUBSCRIBE" as the message, i.e:
+		echo SUBSCRIBE | mail announce@freesoft.org
+-------------------------------------------------------------------------
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
