@@ -1,48 +1,73 @@
-Message-Id: <v04003a17b703451420e2@[24.70.162.12]>
-In-Reply-To: <20010418131708.CDFE02EFC5@apollo.valhalla.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Wed, 18 Apr 2001 08:23:17 -0500
-To: "Iain Sandoe" <iain@sandoe.co.uk>,
-	martin costabel <costabel@wanadoo.fr>
-From: Tony Mantler <nicoya@apia.dhs.org>
-Subject: Re: XF4, SysRq, VT, mouse buttons, Keymaps and all that
-Cc: =?iso-8859-1?Q?=22michel___d=E4nzer=22?= <michdaen@iiic.ethz.ch>,
-	linuxppc-dev@lists.linuxppc.org
+Message-Id: <a05010406b7033c861041@[192.168.240.10]>
+In-Reply-To: <20010418115224.25139@mailhost.mipsys.com>
+References: <a05010404b703232d1b66@[192.168.240.10]>
+ <20010418115224.25139@mailhost.mipsys.com>
+Date: Wed, 18 Apr 2001 15:25:33 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Alain RICHARD <alain.richard@equation.fr>
+Subject: Re: benh 2.4.4-pre3, Titanium and AirPort
+Cc: linuxppc-dev@lists.linuxppc.org
+Content-Type: text/plain; charset="iso-8859-1" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 8:16 AM -0500 4/18/2001, Iain Sandoe wrote:
-[...]
->>>"Pass the SysRq combination in as a kernel argument".
->>>
->>>This would allow those with SysRQ keys (e.g. ISO/ANSI kbds) to use it, power
->>>books could have something that actually exists etc. etc.
->> [...]
->>
->> Very nice idea.
->>
->> ...hopefully defaulted to the standard Alt-f13/printscreen/sysrq-key in the
->> absense of the kernel commandline.
+>  >I am currently using Benjamin Herrenschmidt 2.4.4-pre3 kernel on my
+>>Titanium. The only problem I am currently experiencing is that the
+>  >kernel PCMCIA i82365.c driver do not recognized the PCI cardbus
+>>adaptator.
 >
->what about defaulting to <cntl>-<power> if CONFIG_POWERBOOK is set on the
->kernel build?
->- the power key is not too far from cntl on newer PowerBook keyboards -
->anyone know about older ones?
+>Looks like I'll really have to find a PCMCIA card...
 
-Maybe just make the default a seperate compile-time option, rather than
-CONFIG_POWERBOOK. It wouldn't be very clear to someone why sysrq stopped
-working on their desktop when they purposely or accidentally compiled a new
-kernel with pbook support turned on. :)
+not needed for the test, what seems to be not functionning is the
+loading of i82365 module (in the errorlog, it indicates he found no
+adaptator). Under a pismo there is no such problem.
 
+>
+>>Is there any solution (patch) to get it recognized ?
+>>
+>>Also as the current airport driver is now based on the orinoco_cs
+>>(and hermes) driver that depends on PCMCIA support, I am unable to
+>>get airport working. Is there any solution to get it working without
+>>PCMCIA ?
+>
+>The airport driver should work if you built PCMCIA in the kernel
+>(no need to actually have a working PCMCIA).
 
-Cheers - Tony 'Nicoya' Mantler :)
+I have built PCMCIA in the kernel, but the problem is that to load
+orinico_cs, we must first load the PCMCIA support because it depends
+on ds that depends on a working pcmcia adaptor driver (i82365 in
+previous powerbooks).
 
+The problem seems that i82365 seems not recognizing the cardbus on
+titanium. lspci output is :
 
+01:1a.0 CardBus bridge: Texas Instruments PCI1211
+         Flags: bus master, medium devsel, latency 16, IRQ 58
+         Memory at 80080000 (32-bit, non-prefetchable) [size=4K]
+         Bus: primary=01, secondary=02, subordinate=05, sec-latency=32
+         I/O window 1: 00000000-00000003
+         16-bit legacy interface ports at 1011
+
+>
+>I'm working on a separation of the airport and pcmcia stuffs so
+>that the airport driver can be used without pcmcia, but it's not
+>done yet.
+
+Yes, probably we need a separate orinoco_cs and airport driver,
+perhaps depending both on the same implementation module (hermes
+driver ?).
+
+>
+>Ben.
+
+Regards,
 --
-Tony "Nicoya" Mantler - Renaissance Nerd Extraordinaire - nicoya@apia.dhs.org
-Winnipeg, Manitoba, Canada           --           http://nicoya.feline.pp.se/
-
+-------------------------------------------------------
+Alain RICHARD <mailto:alain.richard@equation.fr>
+EQUATION SA <http://www.equation.fr/>
+Tel : +33 477 79 48 00	 Fax : +33 477 79 48 01
+Applications client/serveur, ingénierie réseau et Linux
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
