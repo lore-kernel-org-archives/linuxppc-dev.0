@@ -1,41 +1,35 @@
-Message-ID: <3B72C2C8.F8685834@mvista.com>
-Date: Thu, 09 Aug 2001 10:05:12 -0700
-From: Scott Anderson <scott_anderson@mvista.com>
+Message-ID: <3B72D188.4080902@humboldt.co.uk>
+Date: Thu, 09 Aug 2001 19:08:08 +0100
+From: Adrian Cox <adrian@humboldt.co.uk>
 MIME-Version: 1.0
-To: Joe Green <jgreen@mvista.com>
-Cc: Michael Fischer <fischi@epygi.de>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Memory optimization of diskless system
-References: <OEEHJMIIDJHHMFGGDNGDCEPACEAA.fischi@epygi.de> <01080909352601.18546@minotaur.mvista.com>
-Content-Type: text/plain; charset=us-ascii
+To: "Justin (Gus) Hurwitz" <ghurwitz@dyndns.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: I want to break softirq.c to fix broken hardware
+References: <Pine.LNX.4.33.0108091722020.11077-100000@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Joe Green wrote:
-> How big is you ramdisk?  That's included in the buffers.
+Justin (Gus) Hurwitz wrote:
 
-and unfortunately, the kernel thinks the ramdisk buffers can be freed
-up to make more room, but of course, they can't be freed (the data in
-them has no place to go).  I've seen this cause the system to deadlock
-under 2.2.  Under 2.4 I would assume the out of memory killer would
-get invoked.
+ > #else
+ >         __asm__ __volatile__("\n\
+ > 1:      lwzx    %0,0,%3\n\
+ >         add     %0,%2,%0\n\
+ >         stwx    %0,0,%3"
+ >         : "=&r" (t), "=m" (v->counter)
+ >         : "r" (a), "r" (v), "m" (v->counter)
+ >         : "cc");
+ > #endif /* CONFIG_NO_ATOMICS */
 
-Gory details:
-mm/mmap.c:vm_enough_memory() assumes that all buffermem_pages can be
-freed up to make more space, drivers/block/rd.c:rd_make_request() marks
-buffers as protected, and kswapd calls do_try_to_free_pages which calls
-page_launder which calls fs/buffer.c:try_to_free_buffers() to try to get
-more space, but try_to_free_buffers refuses to free busy (dirty, locked
-or protected) buffers.
+Last time this came up I pointed out that lwarx/stwcx are for locking
+against interrupts as well as against other CPUs. You don't seem to have
+anything in your atomic routine to prevent interrupts occurring between
+the load and the store.
 
-In my opinion, the fix is to teach vm_enough_memory() that protected
-buffers can't be freed up.  Fixing this is one of those things I hope
-to get around to; unless of course, someone else fixes it first.
+--
+Adrian Cox   http://www.humboldt.co.uk/
 
-    Scott Anderson
-    scott_anderson@mvista.com   MontaVista Software Inc.
-    (408)328-9214               1237 East Arques Ave.
-    http://www.mvista.com       Sunnyvale, CA  94085
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
