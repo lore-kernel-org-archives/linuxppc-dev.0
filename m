@@ -1,70 +1,79 @@
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <39340E4A.2E0893C9@lucent.com>
-Date: Tue, 30 May 2000 13:54:02 -0500
-From: Tom Roberts <tjroberts@lucent.com>
+Date: Wed, 31 May 2000 10:21:19 +0200 (CEST)
+From: Geir Frode Raanes <geirfrs@invalid.ed.ntnu.no>
+To: Mark Morrill <mmorrill@powersurfr.com>
+cc: LinuxPPC Embedded List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: IBM PowerPC - Linux Connections?
+In-Reply-To: <B55960B7.706C%mmorrill@powersurfr.com>
+Message-ID: <Pine.BSF.4.21.0005310930470.52906-100000@invalid.ed.ntnu.no>
 MIME-Version: 1.0
-To: Daniel Wu <Daniel.Wu@alcatel.com.au>
-Subject: Re: Porting LinuxPPC
-References: <20000519051051.236093C972@elph.research.canon.com.au>
-	 <39253A48.24B90117@snmc.com> <39253D0B.F9AF86EE@raleigh.ibm.com>
-	 <392562CE.A71A4F49@embeddededge.com> <392A3147.3A9AC5C2@alcatel.com.au> <00May30.174931est.115248@border.alcanet.com.au>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Daniel Wu wrote:
-> I'm still having problems with booting the kernel - I've got to the point where the
-> compressed image has been successfully decompressed and starts to execute code in
-> kernel/head.S, which sets up the TLBs. However, as soon as the code turns on the
-> mmu, the code crashes!
+On Tue, 30 May 2000, Mark Morrill wrote:
+
 >
-> I'm running this under a BDM monitor, could this be the source of the problem?
+> on 5/30/00 01:51, Geir Frode Raanes at geirfrs@invalid.ed.ntnu.no wrote:
+> > On Mon, 29 May 2000, Mark Morrill wrote:
+> >> http://www.chips.ibm.com/products/powerpc/linux/
+> >> [snip]
+> >
+> > Which one - the IBM 405GP Evaluation Kit [hint] or the
+> > PC-in-disguise; PowerPC Open Platform reference design?
+>
+> Ok, do I call IBM to get my hands on the IBM 405GP Evaluation Kit?
 
-I know nothing about BDM, but I did just last week get the linux kernel
-up on our board (this one is a single-CPU PPC604 with 48 MB DRAM).
+Yes.
+And IBM will probabely point you to their local electronic
+components distributor, which in turn will sell it to you.
 
-The linux kernel expects to be loaded at physical address 0 and for
-execution to start at address 0, in real mode (i.e. MMU disabled).
-Depending upon configuration, the kernel may expect registers
-r3-r7 to contain valid memory pointers, or it may expect there
-to be a Mackintosh boot ROM available, or it may actually expect to
-have been loaded at 0x00100000 and will relocate itself to physical
-address 0, etc. -- you probably need to go through head.S with a
-fine-toothed comb, and make sure you have configured the kernel
-correctly for your hardware. In my case I basically copied the
-CONFIG_PREP code, adding appropriate CONFIG_LSPS code in most places
-("LSPS" is the name of our board). I also added "LSPS" to config.in
-so I could configure it. So far I have touched 10 kernel source
-files, and have added 2 files for my lsps_setup and lsps_driver.
+> If so where do I start?
 
+Whith what? The Kit or with Embedded-Linux?
+The Kit is selfcontained and works out of the box.
+It will come with some sort of ROM monitor SW which will set
+up most SW configurable options on the board - something like
+the PC BIOS, only this thing is actually useful for something.
 
->  One
-> thing I noticed is that the kernel uses virtual addresses starting at c0000000 and
-> the BDM monitor fails to do the translation. Is there any way to get around this?
+> I was thinking that the PC-in-disguise was a good option for me...
+> But you don't seem to hold it in great favor...
 
-I don't think so -- that looks pretty basic to me, throughout the PPC
-port. But your boot monitor should not need to do the translation --
-load the kernel image at 0 and jump to addr 0, all in real mode of your
-boot monitor. But you do need to configure the Linux kernel with device
-drivers which can talk to your hardware....
+I am a HW engineer. I did not join up on this list to bash the
+PC architecture, though that is all I have been able to do so far.
+(Just when I thought I was out, they drag me back in...)
 
-	And you may need to configure that option to load at 0x00100000
-	if your boot monitor uses the memory at addr 0....
+I could give you a register-by-register declaration as to why
+the (legacy) PC is no good. But that would take quite awhile.
 
+> What I want is a very basic PowerPC computer (ethernet, harddrive, power,
+> ram, etc) that'll run Linux that I can prototype a system on and attach a
+> couple of PCI cards to.  And when I get my system running, I can take the
+> box to a manufacturer for production :)
 
-Note if you load a compressed kernel you need to load it higher than
-0x00100000 or so and jump to its first instruction -- it will
-decompress the kernel to addr 0 and jump to it there. I have not
-gotten a compressed image to work, and I am booting vmlinux directly
-(but for me it's not an issue -- it takes just 3.1 seconds from the
-<CR> of my boot command to a bash prompt from the board).
+There are many defenitions of "embedded." One of my favorites is
+the negation form "not a workstation." You do not speak of an
+embedded system. Most embedded systems do not have expansion
+slots even if they do use the PCI bus. Some systems, like those
+targeted for telecom do have slots, but these slots are of
+industrial quality like VME or CompactPCI.
 
-	HEY -- IS THAT A RECORD??? has anyone ever booted Linux faster
-	than 3.1 seconds? Of course this is a _VERY_ bare-bones system
-	with just a console and a 4 MB initrd-ramdisk.
+When we say embedded we mean the kind of things that control your
+toaster - and thus can fit into a toaster. We are not speaking of
+full desktop systems squeezed into a mini-ATX box. Please adjust
+your consept of scale. Harddrives have movable parts inside and
+are as such not popular in the embedded world.
 
+As to your idea of what it takes to to ready a system for
+production... Could we take that in private mail exchange?
 
-Tom Roberts	tjroberts@lucent.com
+--
+  ******************************************************
+  Never ever underestimate the power of human stupidity.
+  -Robert Anson Heinlein
+
+		GeirFRS@invalid.and.so.forth
+  ******************************************************
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
