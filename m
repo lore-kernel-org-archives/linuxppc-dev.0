@@ -1,30 +1,60 @@
-Date: Sun, 21 Jul 2002 23:23:40 +1000
+Date: Sun, 21 Jul 2002 23:26:40 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-embedded@lists.linuxppc.org
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	"David S. Miller" <davem@redhat.com>
 Subject: Re: consistent_alloc() revisited
-Message-ID: <20020721132340.GE22786@zax>
-References: <20020716021313.GQ22786@zax> <20020720152213.10662@192.168.4.1>
+Message-ID: <20020721132640.GF22786@zax>
+References: <20020717012442.GA22786@zax> <20020720152830.1555@192.168.4.1>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020720152213.10662@192.168.4.1>
+In-Reply-To: <20020720152830.1555@192.168.4.1>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Sat, Jul 20, 2002 at 05:22:13PM +0200, Benjamin Herrenschmidt wrote:
+On Sat, Jul 20, 2002 at 05:28:30PM +0200, Benjamin Herrenschmidt wrote:
 >
+> >As far as I can tell there's no problem with get_free_pages() (or
+> >rather, alloc_pages()), except that we need to add GFP_ATOMIC to the
+> >flags if we're in interrupt context.
 > >
-> >Arguably setting PageReserved is the Right Thing, since
-> >consistent_alloc() memory obviously shouldn't be swapped or paged.
-> >However, it's only relevant if the memory is mapped into userspace,
-> >and then a driver can set VM_IO on the vma to prevent this.
+> >The problems are in get_vm_area() which does a kmalloc() without
+> >GFP_ATOMIC and in map_page() which can sleep.
 >
-> An other issue I had with AGP is, I think, killing the userspace
-> process mmap'ing some of this memory will cause the kernel to try
-> to free the pages if not PageReserved
+> (Note do DaveM: this thread from linuxppc-embedded talks about
+> out consistent_alloc() functions used to get non-cacheable
+> DMA consistent memory for peripherials on the various non-PCI
+> type busses you can find on such embedded CPUs)
 
-Surely it shouldn't if VM_IO is set.
+And which is also used to implement pci_alloc_consistent().
+
+> We can't rely on in_interrupt(). We can be called with a spinlock
+> held or on the VM path. In those cases, we need GFP_ATOMIC but
+> in_interrupt() won't be set.
+
+That's true.
+
+> I would rather pass a gfp_mask argument to consistent_alloc. I know
+> the pci_xxx version lacks that argument, I yet have to talk to DaveM
+> about it, in the meantime, it should be implemented as calling
+> consistent_alloc(..., GFP_ATOMIC).
+
+That makes sense.  But we would also need a GFP argument to
+get_vm_area() and to pte_alloc_kernel()
+
+> I want the gfp argument to be passed since some drivers will want
+> a quite large pool to be allocated at insmod/kernel init time,
+> and I want to let those drivers to be able to sleep while VM
+> gets the pages back in this case instead of failing as they would
+> probably do with a GFP_ATOMIC on a machine that have been running
+> for some time.
+>
+> Ben.
+>
+>
+>
+>
 
 --
 David Gibson			| For every complex problem there is a
