@@ -1,63 +1,107 @@
-Subject: Re: Caching in the MPC107, linux 2.6
-From: Adrian Cox <adrian@humboldt.co.uk>
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20040312223250.GE14472@smtp.west.cox.net>
-References: <1079088369.691.43.camel@newt>
-	 <20040312223250.GE14472@smtp.west.cox.net>
-Content-Type: text/plain
-Message-Id: <1079177557.691.188.camel@newt>
-Mime-Version: 1.0
-Date: Sat, 13 Mar 2004 11:32:38 +0000
+Message-ID: <40530EA4.1070305@iti.fi>
+Date: Sat, 13 Mar 2004 15:37:40 +0200
+From: Kate Alhola <kate@iti.fi>
+MIME-Version: 1.0
+To: Wolfgang Denk <wd@denx.de>
+Cc: David Jander <david.jander@protonic.nl>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MPX8xx: MMC over SPI....
+References: <20040309235955.BC6B7C0655@atlas.denx.de>
+In-Reply-To: <20040309235955.BC6B7C0655@atlas.denx.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 2004-03-12 at 22:32, Tom Rini wrote:
-> On Fri, Mar 12, 2004 at 10:46:09AM +0000, Adrian Cox wrote:
+Wolfgang Denk wrote:
 
-> > Without this fix or something like it my boards cannot use pcnet32
-> > ethernet.
+>In message <404E51E7.4070909@iti.fi> you wrote:
 >
-> And this is a rev of the mpc107 which is supposed to work with the 745x
-> line ?
+>
+>>There is simple spi driver arch/ppc/8260_io/cpm_spi.c but i think that
+>>one like
+>>i2c subsystem will be much more usefull. I have been planning make one based
+>>on i2c driver.
+>>
+>>
+>
+>Arghh.... Why do you think you need all this overhead?
+>
+>
+Base idea is just make abstraction layer that allows to use diferent devices
+via same SPI with unified programmin interface.
 
-Yes. It's happened from the first rev supported on the 745x through to
-currently shipping silicon. It's not a chip bug, it's the documented
-behaviour of the bridge. Here's a summary of what happens:
+>>I am plannigg 3-layer model like in i2c or USB. interface-HW-driver in
+>>lowest level,
+>>then subsystem driver and then target HW driver. Like in this case
+>>PSC_SPI-> SPI_subsystem->MMC  ---->FS
+>>
+>>
+>
+>Remember that SPI is always very board-specific. I'm not sure that it
+>really makes sense to create a special "SPI subsystem"  -  especially
+>when you use I2C as a model (which IMHO is just a lot of overkill).
+>
+>
+>
+Just for that reason i like to create abstraction layed that hides board
+specific
+things inside. Even the SPI interfaces are board specific, still the SPI
+works
+basically same way.
 
-1) Ethernet driver allocates buffer descriptors, sends address to
-pcnet32.
-2) pcnet32 reads a BD, which is currently empty. The MPC107 caches the
-BD in the PCI-to-Local-Memory-Read-Buffer (PCMRB).
-2a) If the PowerPC supports the shared state, the BD is now marked
-shared in the PowerPC cache.
-3) Ethernet driver writes to BD.
-3a) If memory is marked _PAGE_COHERENT, the PowerPC performs an
-address-only transaction, and changes the cache line from shared to
-exclusive. The MPC107 sees the address-only transaction, and invalidates
-the PCMRB.
-3b) If the memory is not _PAGE_COHERENT, and the cache line is shared,
-the MPC107 maintains a stale copy in the PCMRB.
-4) Ethernet driver notifies pcnet32. pcnet32 reads the BD.
-4a) MPC107 fetches the BD again. Success.
-4b) MPC107 gives stale copy to pcnet32. Failure.
+I even donn't think that i2c model is overkill. Like in this my
+itipower5200 board
+there is in base configuration MMC card and then TSC2301 audio codec/
+touchscreen ADC / generic ADC chip. To addition there may be other
+SPI-interfaced stuff depending of applitation where the board is used.
 
-The crucial difference between the 745x and previous chips is that the
-shared state is now compulsory. On the 7400 the shared state had to be
-explicitly enabled by firmware, and I have not encountered a single
-processor board which does that.
+To application layer there should be MMC visible as disc, touch screen
+visible as pointer device, Audio codec as audio device and then
+the ADC visible as own device driver. In this audio part. The control
+port of this codec is SPI but the actual audio data goes via I2S
 
-The pcnet32 is particularly vulnerable because its access pattern allows
-the PCMRB to remain valid for a long period. This problem is most
-visible when performing BOOTP and running with NFS root, as all other
-PCI masters in the system are likely to be idle.
+So, when there may be even multiple diferent SPI interfaces and many
+high level devices that have multiple stantard interfaces and all used
+by separate tasks i think that the same type than used in I2S is not
+overkill at all.
 
-My patch is not the only way of dealing with this, but it is a lot
-simpler than writing DMA mapping logic for this case.
+>>Of cource it does not give best performance but it is also wery simple
+>>glueless
+>>interface to cheap small low cost mass media. If we like to have full fast
+>>MMC/SD interface then we should consider some FPGA implementation
+>>but in most cases simpler will give enough proformace.
+>>
+>>
+>
+>I don't know your exact application,  but  it  always  gives  me  the
+>creeps when I read the phrases "mass storage device" and "SPI bus" in
+>the same sentence. I tend to summarize this as follows:
+>"mass storage device"  + "SPI bus" = need for redesign :-)
+>
+>
+>
+SPI is still stantard mode in MMC cards. The other "native" mode
+is also single bit serial mode but it does need extra glue logic.
+Also speed is still wery equivalent than USB memories.
 
-- Adrian Cox
-http://www.humboldt.co.uk/
+The higest performance is
+not allways goal. In my board i have two mass device options. CF card
+connected to 5200 IDE port CF used in IDE emulation mode and then
+MMC connected to SPI and Nand flas as "fixed disc".
 
+MMC is smaal cheap and common. It can be interfaced to about
+any processor about null or minimum interface logic.
+It is easiest implement as hot-swap removable device becuase
+there is just so few signals. I
+
+I still think that MMC has lot of advantages in many applications
+but at finally i let user to make choice between them. CF is
+choice if non hot swap faster mass memory is needed. MMC or USB
+memory is choice if cheap small hot swap memory is needed.
+
+
+
+Kate
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
