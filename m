@@ -1,57 +1,24 @@
-Message-ID: <3CE37B49.6000508@elsoft.ch>
-Date: Thu, 16 May 2002 11:26:33 +0200
-From: =?ISO-8859-1?Q?=22David_M=FCller_=28ELSOFT_AG=29=22?= <d.mueller@elsoft.ch>
+Date: 16 May 2002 13:55:34 -0000
+Message-ID: <20020516135534.23047.qmail@webmail27.rediffmail.com>
 MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] Several patches agains linuxppc_devel-2.4.19-pre8
-References: <3CE2481B.5070108@elsoft.ch> <20020515155200.GN721@opus.bloom.county>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+From: "navinb" <ppc4@rediffmail.com>
+Reply-To: "navinb" <ppc4@rediffmail.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: USB working on 823..?
+Content-type: text/plain;
+	format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom Rini schrieb:
-> On Wed, May 15, 2002 at 01:35:55PM +0200, "David M?ller (ELSOFT AG)" wrote:
->
->
->>The attached patch fixes the following issues:
->
->
-> Looks good, except:
-> Don't #ifdef externs, if they aren't used it's OK.
-> Since this code only has to work in recent'ish kernels (in reality only
-> 'current' kernels) don't bother with the
-> #ifdef MODULE_LICENSE
-> ...
-> #endif
->
-> Just use it.
->
+Hello ,
 
-I have copied the MODULE_LICENSE stuff from another driver.
-Does anybody knows if this feature is tagged to be a remove candiate in
-future kernels and/or in the modutils?
+Has anybody got usb working successfully on mpc823.
+I am trying hard to get the usb host controller properly
+working on 823..
+are there any know issue or patches available..?
 
-
-Another question:
-
-I've noticed that (at least) the following files have their executable
-bit set, although they are simple C source files.
-./include/asm-ppc/ppc405_dma.h
-./arch/ppc/kernel/ppc405_dma.c
-./arch/ppc/kernel/ppc405_pci.c
-./arch/ppc/kernel/ppc4xx_setup.c
-./arch/ppc/platforms/walnut.c
-./arch/ppc/platforms/cpc700_pic.c
-
-On the other hand, the PPCBoot kernel packer script in
-./arch/ppc/boot/utils/mkimage.wrapper have the exec bit cleared.
-
-Is it a bit task to fix this?
-
-
-Dave
+Best Regards,
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
