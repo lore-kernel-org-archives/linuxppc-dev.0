@@ -1,27 +1,42 @@
-Message-ID: <3F5CBEB8.8020203@mvista.com>
-Date: Mon, 08 Sep 2003 10:39:04 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
+Message-ID: <20030908213638.4000.qmail@web40910.mail.yahoo.com>
+Date: Mon, 8 Sep 2003 14:36:38 -0700 (PDT)
+From: Brian Kuschak <bkuschak@yahoo.com>
+Subject: virt_to_phys() on 440
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-To: Hubert Figuiere <hub-linux-ppc@trantor.staff.proxad.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: support for PrPMC600 / MPC8240
-References: <1063026299.10791.76.camel@trantor.staff.proxad.net>
-In-Reply-To: <1063026299.10791.76.camel@trantor.staff.proxad.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hubert Figuiere wrote:
+I think the virt_to_phys() function is incorrect for
+PPC440.  It should call iopa for all 4xx, not only the
+405.  By chance, it happens to work currently if the
+address is in SDRAM, but is always incorrect for
+ioremapped addresses.  virt_to_bus() does the right
+thing.
 
->Hi,
->
->I was wondering if there was any support for the Motorola PrPMC600 CPU
->board, based on a MPC8240.
->
-No support for the PrPMC600 that I am aware of.
+Also, to be correct, shouldn't this function return a
+phys_addr_t rather than an unsigned long, as the
+physical address is >32 bits on 44x?
 
-Mark
+Regards,
+Brian
+
+--- include/asm/io.h.new   Thu Aug 28 14:30:33 2003
++++ include/asm/io.h    Mon Sep  8 14:21:08 2003
+@@ -309,7 +309,7 @@
+  */
+ extern inline unsigned long virt_to_phys(volatile
+void * address)
+ {
+-#if defined(CONFIG_APUS) || defined(CONFIG_8xx) ||
+defined(CONFIG_40x)
++#if defined(CONFIG_APUS) || defined(CONFIG_8xx) ||
+defined(CONFIG_4xx)
+        return iopa ((unsigned long) address);
+ #else
+        return (unsigned long) address - KERNELBASE;
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
