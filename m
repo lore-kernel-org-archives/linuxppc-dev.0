@@ -1,41 +1,46 @@
-Date: Tue, 17 Aug 1999 21:29:06 +0300 (EEST)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
-        Debian GNU/Linux PPC <debian-powerpc@lists.debian.org>,
-        recipient list not shown: ;
-Subject: Re: Bugs in xfree68 that made it fail with jdk 1.2.1 found and fixed
- (fwd)
-In-Reply-To: <Pine.LNX.4.10.9908171952200.30397-100000@mercator.cs.kuleuven.ac.be>
-Message-ID: <Pine.LNX.4.10.9908172112330.17823-100000@idd-01.imbc.gr>
+Message-Id: <199908180549.HAA00305@piglet.cpu.lu>
+Date: Wed, 18 Aug 1999 07:49:19 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: gnome-ppp and the mac serial ports
+To: Anthony.Lester@lip6.fr
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <37B92306.A8377B94@lip6.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-
-
-On Tue, 17 Aug 1999, Geert Uytterhoeven wrote:
-
+On  17 Aug, this message from Anthony Lester echoed through cyberspace:
 > 
-> Anybody who'd care to try? I just erased my XFree86 3.3.x tree.
+> I've finally got gnome-ppp working after commenting out a section of the source code which
+> checks the DCD (Data Carrier Detect) line of the serial port. The kernel code
+> corresponding to this check is in the file "macserial.c" and sets various bits of a status
+> byte according to the value of a register in the zilog uart which handles the standard mac
+> serial ports.
 > 
-> BTW, I'm always willing to test a glibc-2.1 binary :-)
->
+> However the standard RS422 mac ports only have handsake-in and handshake-out lines
+> (corresponding to RTS and DTR for the RS232 I think) so there is no line corresponding to
+> DCD. So how would it get DCD?
 
- I had to erase my build of 3.9.15x to make space for the 3.3.x build *sigh* :(
+IIRC, DCD is wired to the GPi pin (is that the right name?). That's
+some kind of multipurpose pin, that can be used for various things like
+sync clocking, remote power-on, etc.... Have a look at your hardware
+with a tool like TattleTech; the section about serial ports should show
+if/whether DCD of the SCC is wired to the GPi pin.
 
-I'll have a binary in a few hours if you are intrested (Builds take a looong
-time in my 604@132). I have to see if i can fix the no video drivers and the
-Modes "default" case first (and write a cleaner patch ;).
+You might want to search the TIL (http://www.apple.com/til) about
+articles about the subject.
 
+Michel
 
-  Kostas Gewrgiou.
-
-PS> if i could fix the acceleration problems in my aty mach64gx also i'll be a
-happy man, too slow without accel too much noise with accel :(
- 
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
