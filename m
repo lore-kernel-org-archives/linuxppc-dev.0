@@ -1,44 +1,49 @@
-Date: Thu, 24 Jan 2002 09:52:02 +0100 (MET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: hollis@austin.ibm.com
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
-	sdi@remote.org,
-	Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-Subject: Re: RFC: vesafb
-In-Reply-To: <20020123192010.GP510@austin.ibm.com>
-Message-ID: <Pine.GSO.4.21.0201240948070.19665-100000@vervain.sonytel.be>
+From: Paul Mackerras <paulus@samba.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15439.64102.68217.293733@argo.ozlabs.ibm.com>
+Date: Thu, 24 Jan 2002 23:13:26 +1100 (EST)
+To: linuxppc-dev@lists.linuxppc.org
+Subject: OpenPIC_NumInitSenses
+Reply-To: paulus@samba.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 23 Jan 2002 hollis@austin.ibm.com wrote:
-> The attached patch allows vesafb to work on PPC. vesafb does surprisingly
+Who was it that wanted this horrible hack in open_pic.c?
 
-Nice!
+	/* Needed because of the way we overload EPIC on a standard
+	 * Open PIC structure.
+	 */
+	if (OpenPIC_NumInitSenses > NumSources)
+		NumSources = OpenPIC_NumInitSenses;
 
-> little with the BIOS (which I thought was the whole point of VESA). With some
-> ifdef's I'm able to use it as sort of a VGA offb -- the firmware initializes
-> the card, and the driver just uses it and never mucks with it.
+I am about to add an openpic_set_sources function which will let us
+handle the distributed openpic in IBM pSeries machines more cleanly
+and also allow us to remove this hack.
 
-Well, vesafb assumes the VESA BIOS initialized the card to some linear graphics
-mode _before_ the real kernel code was started. Once the kernel is started, no
-VESA calls are made, and the video mode is fixed.
+openpic_set_sources takes three arguments: a range of openpic IRQ
+numbers (first irq and number of irqs) and a pointer to the ioremapped
+interrupt source registers.  If the pointer is NULL it is taken to
+mean that the irqs use the standard openpic interrupt source
+registers.  openpic_set_sources also sets NumSources to first_irq +
+num_irqs if that value is larger than NumSources, and if NumSources is
+set by openpic_set_sources, then openpic_init doesn't use the value
+from the openpic registers.  (Thus openpic_set_sources must be called
+*before* openpic_init, but after you have set OpenPIC_Addr.)
 
-So in theory (and you proved the practical side on PReP) it can be used on any
-platform that initializes a more-or-less VGA card to a linear graphics mode.
+Thus if you want to say how many interrupt sources there are, you will
+be able to do that with openpic_set_sources(0, num_sources, NULL).
+If you want to say that there are 16 sources in the standard locations
+plus another 16 at some other location, you could do
 
-Gr{oetje,eeting}s,
+	openpic_set_sources(0, 16, NULL);
+	openpic_set_sources(16, 16, ioremap(isr_base, 16 * 32));
 
-						Geert
+(Actually maybe I should let openpic_set_sources do the ioremap.)
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Comments?
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
