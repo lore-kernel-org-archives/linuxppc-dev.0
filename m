@@ -1,50 +1,19 @@
-Date: Fri, 31 Aug 2001 07:50:46 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Xavier Grave <grave@ipno.in2p3.fr>
-Cc: embarque ppc <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: mvme5100 one more time...
-Message-ID: <20010831075046.E27811@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20010830170043.A8047@ipnpcu5.in2p3.fr> <20010830091936.N18618@cpe-24-221-152-185.az.sprintbbd.net> <20010831111629.A29808@ipnpcu5.in2p3.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010831111629.A29808@ipnpcu5.in2p3.fr>
+Message-ID: <D73A25AA6E54D511AD74009027B1110F04F038@ORION>
+From: Ken Applebaum <applebaumk@embeddedplanet.com>
+To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: TL1
+Date: Fri, 31 Aug 2001 10:52:53 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Aug 31, 2001 at 11:16:29AM +0200, Xavier Grave wrote:
->
-> Le jeu, 30 ao? 2001 18:19:36, Tom Rini a ?crit :
-> >
-> > On Thu, Aug 30, 2001 at 05:00:43PM +0200, Xavier Grave wrote:
-> >
-> > > I have compiled the last 2.4.10-pre1 kernel from linuxppc_2_4_devel
-> > > and I try to do a :
-> > > ppc6bug> nbo 0 0 ,,, zImage.pplus
-> > >
-> > > The only thing I have is the following :
-> > > Exception : Program (Illegal instruction)
->
-> > What CPU is this?  I'm assuming you get a register dump, can you post
-> > that
-> > too?
->
-> I recompiled a kernel with the mvme5100_defconfig, the only difference is
-> that  CONFIG_PPC_STD_MMU=y is set
+does anyone have any experience with TL1 on embedded linux?
 
-That's fine..  Can you change arch/ppc/boot/simple/head.S to something like:
-#if 0
-/*
- * Determine CPU type
-...
-	bge	_setup_L2CR
-#endif
-	b	_setup_6xx
+thx,
 
-If this works, cat /proc/cpuinfo and tell me the PVR of your G4.
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Ken
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
