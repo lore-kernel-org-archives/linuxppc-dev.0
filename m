@@ -1,40 +1,41 @@
-Message-ID: <19990708080415.A822@radicalmedia.com>
-Date: Thu, 8 Jul 1999 08:04:15 -0400
-From: Mark Abene <phiber@radicalmedia.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: platinum video makes me cry...
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Thu, 8 Jul 1999 08:49:30 -0500 (CDT)
+From: Dave Weis <djweis@plconline.com>
+To: Albrecht Dreﬂ <ad@MPIfR-Bonn.MPG.de>
+cc: Benjamin Herrenschmidt <bh40@calva.net>,
+        LinuxPPC Users <linuxppc-user@lists.linuxppc.org>,
+        LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>,
+        Linux/Powermac <linux-pmac@samba.anu.edu.au>
+Subject: Re: linux-pmac 2.2.10: media bay panics on PBG3
+In-Reply-To: <37848F6D.5E2437EE@mpifr-bonn.mpg.de>
+Message-ID: <Pine.LNX.4.10.9907080848150.25987-100000@catbert.desm.plconline.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The good news is that I finally got around to installing linuxppc-1999 (R5)
-on my 7200.  The BAD news is that much to my chagrin, the changes I made to
-fix the platinum video driver in the newer kernels (which I submitted to the
-code maintainer nearly a month ago, if not more) are NOT present in R5!
-I was greeted by the sickly-looking psychedelic arch-nemesis of Tux the penguin.
-Suffice to say, gnome came up looking like a bad acid trip.
-Sooooo, I'm rebuilding my kernel to make things right, but I'm irritated that
-all you proud 7200/8200/PT120 users out there were let down.
-If anyone out there is using one of these wonderful machines and is still
-plagued by the psychedic penguin syndrome in 16 or 32 bpp, let me know, and
-I'll stick the repaired platinumfb.c file somewhere for ya, or just e-mail it.
 
-Credit where credit is due:  even though our good Mr. Herrenschmidt is busy 
-making life easier for so many with BootX, he still came through and obviously
-made sure my fixes for the TurboMouse 5 trackball were committed.  My mouse is
-doing The Right Thing.  (Thanks Ben! :)
+> I added lots of printk's to mediabay.c, and apparently the panic occurs at (or
+> near) line 276 in media_bay_task:
+> 
+> if (bay->cd_timer && (--bay->cd_timer == 0 || MB_IDE_READY(i))
+                        ^^
+>     && bay->cd_index < 0) {
 
-I'll be the first one to admit that we all get busy with Real Life stuff, it
-just made me sad to see the console colors still all mucked-up.
-Anyway, it's 8am here in NYC, and I've been up all night.
-If I've offended anyone with my rant, I apologize in advance.
+i'm probably way off, but should the decrement be after the cd timer? i
+wouldn't think you would want to do math on that pointer in that way.
 
-Feel free to mentally replace this message with "mouse good, console bad".
-Good night, all.
+dave
 
--Mark
+
+-- 
+David Weis                | 10520 New York Ave, Des Moines, IA 50322
+djweis@plconline.com      | Voice 515-278-0133 Ext 231
+
+When they took the Fourth Amendment, I was quiet because I didn't deal drugs.
+When they took the Sixth Amendment, I was quiet because I was innocent.
+When they took the Second Amendment, I was quiet because I didn't own a gun.
+Now they've taken the First Amendment and I can't say anything.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
