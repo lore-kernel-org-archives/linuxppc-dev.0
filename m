@@ -1,53 +1,62 @@
-Message-ID: <19990510213309.43528@ibrium.se>
-Date: Mon, 10 May 1999 21:33:09 +0200
-From: Samuel Rydh <samuel@ibrium.se>
-To: linuxppc-dev@lists.linuxppc.org
-Cc: linuxppc-user@lists.linuxppc.org
-Subject: Mac-on-linux is now working...
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <199905101943.VAA00322@piglet.cpu.lu>
+Date: Mon, 10 May 1999 21:43:21 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: Support for Hydra i2c
+To: Geert.Uytterhoeven@cs.kuleuven.ac.be
+cc: bh40@calva.net, frodol@dds.nl, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.10.9905101046110.10789-100000@mercator.cs.kuleuven.ac.be>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi all,
 
-Mac-on-linux is an open source emulator which 
-runs Mac OS on linuxPPC machines. Since the
-processor is running unemulated it is very fast
-(about 95% according to speedometer specmarks
-on a 8500).
+On  10 May, this message from Geert Uytterhoeven echoed through cyberspace:
+[snip]
+>> > and maybe some more stuffs.
+>> 
+>> The only device on this I2C bus in the PCI Macs that I know off is the
+>> RADACAL RAMDAC/CLUT (used at least with the control chip), which gets
+>> its timebase factors via I2C.
+>> 
+>> > Unfortunately, I think we only know how to write to the i2c bus.
+>> 
+>> Yes.
 
-Currently Mac OS boots on the 7200 and 8500
-without a ROM-image. Other machines should be 
-able to run the software using a ROM-image 
-from one of those two computers (G3 machines may
-or may not boot Mac OS).
+On the other hand, you I2C gurus mihgt know that, but the R/W bit on the
+I2C bus is actually the lsb of the address; i.e address a device with
+an even address, and it expects to recive some data; address it with an
+odd address, and the device will write data to the bus.
 
-Brief status summary:
+>> > More hacking needed before we can implement this one too.
+>> 
+>> One problem might be that there is as yet no readable device on the bus
+>> ;-).
+>
+> Really? Since i2c devices need to identify on the bus, you must be able to read
+> something from them.
 
-video:		full-screen video working
-mouse/keyboard:	working
-scsi:		working
-floppy:		working
-sound:		not implemented
-ethernet:	not implemented (yet)
-serial:		hack allowing OF interaction
+I did some experimentation on the cuda I2C bus while searching for the
+PlanB I2C device. I scanned a whole range of I2C addresses, both read
+and write, but didn't find anything apart from RADACAL.
 
-More information (and the source code) can be found 
-at <http://www.ibrium.se/linux/mac_on_linux.html>.
+> Are there OF methods for the i2c bus on those Macs? My CHRP box has them under
+> /pci/mac-io@2/misc@0/iic/.
 
-The project could have use a few more developers, so
-please join the mac-on-linux team!
+I'll check in OF on the next reboot ;-)
 
+Michel
 
-/Samuel Rydh
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
--- 
-
-----------------------------------------------------------
-  E-mail <samuel@ibrium.se>  WWW: <http://www.ibrium.se>
-    Phone/fax: (home) +46 4418431, (work) +46 7908470   
-----------------------------------------------------------
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
