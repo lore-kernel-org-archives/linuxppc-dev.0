@@ -1,36 +1,29 @@
-Date: Sun, 21 Oct 2001 19:56:58 -0700
+Date: Sun, 21 Oct 2001 19:57:58 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Dave Ray <g4tinker@yahoo.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: idebus=133 ?
-Message-ID: <20011021195658.D1419@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20011021224211.561.qmail@web13105.mail.yahoo.com>
+To: Michael Clark <michael@metaparadigm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Late Broadcom link detection makes IP config (bootp) fail
+Message-ID: <20011021195758.E1419@cpe-24-221-152-185.az.sprintbbd.net>
+References: <3BD38515.40808@metaparadigm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011021224211.561.qmail@web13105.mail.yahoo.com>
+In-Reply-To: <3BD38515.40808@metaparadigm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Oct 21, 2001 at 03:42:11PM -0700, Dave Ray wrote:
+On Mon, Oct 22, 2001 at 10:31:49AM +0800, Michael Clark wrote:
 
-> It's my understanding the Mac G4 towers run at a bus
-> speed of 133 MHz. However the kernel argument for
-> idebus=xx apparently only allows values up to 66. Is
-> this intentional?
+> I just compiled up 2.4.13-pres-benh0 and am trying to netboot my iMac.
+> I am using the following commandline:
+[snip]
+> The boot messages show that the broadcom is found:
+[snip]
+> Why does the eth0 link come up so late? Is it possible to make the
+> broadcom driver wait for link before returning from the initialisation
+> function?
 
-idebus != 'bus'.  The 133 referrs to the speed the memory and cpu can
-talk at.  Your idebus setting shouldn't change from the default.
->From Documentation/ide.txt:
-"idebus=xx"            : inform IDE driver of VESA/PCI bus speed in MHz,
-                                where "xx" is between 20 and 66 inclusive,
-                                used when tuning chipset PIO modes.
-                                For PCI bus, 25 is correct for a P75 system,
-                                30 is correct for P90,P120,P180 systems,
-                                and 33 is used for P100,P133,P166 systems.
-                                If in doubt, use idebus=33 for PCI.
-                                As for VLB, it is safest to not specify it.
-                                Bigger values are safer than smaller ones.
+What driver did you use?
 
 --
 Tom Rini (TR1265)
