@@ -1,57 +1,75 @@
-From: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>
-To: linuxppc-dev@lists.linuxppc.org
-Message-Id: <v0311071db5e2dce88539@[129.100.29.243]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 11 Sep 2000 15:04:05 -0400
+Message-ID: <XFMail.20000911131642.gdt@linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
+In-Reply-To: <v03110715b5e2cd19ce42@[129.100.29.243]>
+Date: Mon, 11 Sep 2000 13:16:42 -0600 (MDT)
+From: Gary Thomas <gdt@linuxppc.org>
+To: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>
 Subject: Re: Roles for distributions
+Cc: linuxppc-dev@lists.linuxppc.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
-
->> There has to be someone there who can at least make builds, file bug
->> reports, and point out when things are broken.  Even that would be a big
->> help.  I filed a make check report with the glibc maintainers and basicaly
->> got back a "we are not interested, fix it yourself if you want it fixed".
->> That generally doesn't happen if someone from ppc is contributing in some
->> way to the project.  Luckily, some of the other glibc developers chimed in
->> to rephrase the reply.
+On 11-Sep-2000 Hendricks, Kevin wrote:
 >
->Well, first of all, that's not a general project thing - that's Ulrich
->Drepper's attitude problem.
+> Hi David,
 >
->Secondly, bug reports filed by someone who can just make and make check
->are not terribly useful - no one really has time to dig.  We need
->people who can file bug reports with analysis, and not many people can.
+>>      Kevin, I think that your initial message was much more hostile
+>>than necessary.  It did not come across as PowerPC Linux volunteers need
+>>more help.  Instead of attacking everyone who had a negative reaction to
+>>your original note, maybe you should consider that it was phrased poorly.
+>>You have jumped down my throat enough times when I came across differently
+>>than I had intended.
+>>
+>>David
+>
+> Yes, you are absolutely correct.  Hindsight is 20/20.
+>
+> I still don't read my note as "hostile" to distribution individuals or
+> developers but enough people have and continue to do so.  That means what I
+> meant to say and what they read are not the same thing.
+>
+> Unfortunately, empiricial evidence is nice but after the fact! ;-)  I just
+> don't like things becoming personal and still don't.  It just isn't needed.
+>
+> I tried to correct my "error" by saying that it was never my intent to
+> imply or state that individuals do not contribute enough.  It was to say
+> the toolchain is important and we are basically down to Franz and he
+> doesn't even have glibc checkin privleges.
+>
+> I still think the distributions could free up someone even part time now
+> that Gary Thomas has gone away and should. They are the only ones making
+> any money and the only ones that have the financial resources.  The rest of
+> us just volunteer our time.
+>
 
-Here is the only point I disagree with.  As a volunteer, I don't even know
-if a project needs my help.  The only reason I started testing glibc 2.2
-was that there was some noises that it was nearing release and almost every
-time glibc comes out it breaks something for native threads which are
-really needed by the jdk.
+To [mis]quote Mark Twain, "the tale of my departure is greatly exagerated".
 
-If people regularly do builds, and do "make check" then errors will appear
-near in time to recent patches and things (sort of like Linus's only give
-me small patches approach) that can tell the maintainers that something is
-amiss.  That makes any bugs much easier to find.  My last glibc 2.1.3 patch
-was found by doing regular builds to compare different glibc releases and
-it was easy to see that Ulrich's post 2.1.3 release breakage was the
-culprit.
+Yes, I have been silent, but not ignorant.  I read these lists constantly,
+and try and keep up.  Although I do not currently have the capacity [mostly
+time] to contribute much, I am ever watching and kibitzing.
 
-I can't help fix things if I don't know its broken.  That is why people
-doing regular builds, even if that aren't as skilled as Dan, or David, or
-Gary or Franz would surely help.
+I fully understand the plight all of us face.  Linux on the PowerPC is a
+force.  It should be a larger force.  But for the lack of corporate resources
+and commitments, it will remain only a force.  This will change, I fervently
+hope.  IBM has recently made some good movement in this direction.  Red Hat
+also has a number of projects which involve Linux on PowerPC.  I do what
+I can constantly to push this.  I know that real work is also taking place
+at a number of other sites.
 
-Kevin
+Today, there is no single entity out there that can support everything that's
+required for Linux on PowerPC.  Many companies and certainly individuals work
+at it.  None should be faulted for their efforts, nor for their inability to
+apply more resources to efforts we probably all agree are worthwhile.
+
+Bickering and back-stabbing [no stone throwing by me] are bad for all.
+
+Remember, we are in this together, competitors and friends alike.  Let's
+act that way and make Linux on PowerPC a huge force in the world :-)
 
 --
-Kevin B. Hendricks, Associate Professor of Operations and Information
-Technology
-Richard Ivey School of Business, University of Western Ontario
-London, Ontario  N6A-3K7  CANADA
-khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
+Gary Thomas - gdt@linuxppc.org - gthomas@redhat.com
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
