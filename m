@@ -1,53 +1,38 @@
-Mime-Version: 1.0
-Message-Id: <p04330107b84297e5c096@[24.163.44.170]>
-In-Reply-To: <3C1CE44A.CD9BF682@mandrakesoft.com>
-References: <p04330105b8428baee0fe@[24.163.44.170]>
- <3C1CE44A.CD9BF682@mandrakesoft.com>
-Date: Sun, 16 Dec 2001 13:37:21 -0500
-To: linuxppc-dev@lists.linuxppc.org
-From: Stefan Jeglinski <jeglin@4pi.com>
-Subject: Re: ethtool failure with tulip 21143
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+From: Paul Mackerras <paulus@samba.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15389.3566.531070.447917@argo.ozlabs.ibm.com>
+Date: Mon, 17 Dec 2001 08:11:10 +1100 (EST)
+To: Andrew Cagney <ac131313@cygnus.com>
+Cc: Kumar Gala <kumar.gala@motorola.com>,
+	linuxppc-dev@lists.linuxppc.org, Daniel Jacobowitz <drow@mvista.com>,
+	Kevin Buettner <kevinb@redhat.com>, gdb@sources.redhat.com,
+	ezannoni@cygnus.com, fsirl@kernel.crashing.org
+Subject: Re: AltiVec register ptrace support
+In-Reply-To: <3C1AB0A5.7040102@cygnus.com>
+References: <Pine.GSO.4.40.0112141249070.21737-100000@softail.somerset.sps.mot.com>
+	<3C1AB0A5.7040102@cygnus.com>
+Reply-To: paulus@samba.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Jeff Garzik wrote:
+Andrew Cagney writes:
 
->correct, it does not support anything but basic driver info yet
+> The Linux/PPC kernel supports PEEK/POKE for fetching registers.  The
+> proposed Kernel interface _consistently_ extends that interface using
+> the exact same mechanims to obtain the altivec regiters.  All the
+> required changes for this have been posted and have been demonstrated to
+> work.
+>
+> Separate to that, it has been _proposed_ that the PPC ptrace() interface
+> be changed so that get/set reg for all register classes be added
+> (incomplete patch posted).  Isn't this separate to the problem at hand?
 
-oops. Sorry, I didn't know the tool only did this so far. I read all
-the dox I could find, but somehow I missed this point?
+If we are going to add a get/set reg interface for the altivec vector
+registers, I would rather not extend the peek/poke interface to do
+that as well.
 
-Benjamin Herrenschmidt wrote:
-
->Jeff, afaik, this one has the broken bridge I told you about.
-
-How "broken" is it? With the card in the 6500, the tulip driver sort
-of works, sometimes. The only error message I get out of it ever is
-
-Internal fault: The skbuff addresses do not match in tulip_rx [plus hex output]
-
-but this message doesn't always seem to correspond with the
-driver/interface/NIC failing. And on the 9500, the card seems to work
-significantly better than on the 6500 (but we already know the 6500
-seems to be a pathological beast in places). For example, I have
-never seen the skbuff message on the 9500, and AFAICT, the card just
-works.
-
-Actually your comment is an interesting one. When you are saying
-"bridge" are you talking about something related to the ethernet
-function or the PCI function? Over time on the 6500, I have been
-wondering if this card's problems are related to PCI rather than
-ethernet.
-
-
->Stephan, I'll send you a hack to try out with de4x5 later today.
-
-woohoo! I wait with excitement :-) But I have a Christmas party to go
-to so I might not get back to you for a day :-(
-
-
-Stefan Jeglinski
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
