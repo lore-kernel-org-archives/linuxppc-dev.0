@@ -1,34 +1,27 @@
-Date: Tue, 23 Mar 1999 15:06:11 -1000 (HST)
-From: Dean Takemori <dean@uhheph.phys.hawaii.edu>
-Message-Id: <199903240106.PAA30761@uhhepm.phys.hawaii.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: PB G3 Video (for the developers)
+Date: Tue, 23 Mar 1999 20:57:15 -0700
+From: Cort Dougan <cort@ppc.kernel.org>
+To: Darron Froese <darron@calgary.westworld.ca>
+Cc: linuxppc-dev@lists.linuxppc.org,
+        linuxppc-ans-support@hellfire.dusers.drexel.edu
+Subject: Re: ANS Patches en route to the 2.2.x kernel?
+Message-ID: <19990323205715.A15285@persephone.ppc.kernel.org>
+References: <199903230217.TAA11981@moses.odi.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <199903230217.TAA11981@moses.odi.ca>; from Darron Froese on Mon, Mar 22, 1999 at 07:17:47PM -0700
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Watch vger.  That's where all the patches go through for PPC.
 
-On 16 Mar 1999, abew wrote:
+I don't have an up-to-date copy of the ANS patches but should be getting
+them soon.  ANS is on its way into the main kerenl but has taken quite a
+while, yes.
 
->OK, sorry... I haven't dealt much with diffs.  Here is a
->'diff -u ORIG NEW' from the top of the linux source tree:
->     
->Oh, and I totally understand that time is short for many of us right now;
->obviously this isn't too urgent.  It really would be nice if eventually
->all PB G3 users could take advantage of their video hardware in Linux,
->though.  Anyways, here ya go:
-
-[snip]
-
-The rest of the post can be found at:
-http://lists.linuxppc.org/listarcs/linuxppc-dev/199903/msg00209.html
-
-For what it's worth, I hand patched a 2.2.4 kernel with the 
-included patch, and got atyfb to work on my PB G3 series.
-Finally.  I can actually scroll in nedit in real time now.
-
-
-
+} Is there a way to look and see if various patches have been
+} sent/accepted/waiting in queue? I've grepped through some of the latest
+} patches without finding it....anyone know where it is and it's status?
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
