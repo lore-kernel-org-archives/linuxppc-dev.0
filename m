@@ -1,34 +1,31 @@
-Message-ID: <3A8AF5DC.BD4CCB70@mvista.com>
-Date: Wed, 14 Feb 2001 16:17:16 -0500
-From: Dan Malek <dan@mvista.com>
+Message-ID: <003501c096ce$29526930$2501000a@sid>
+From: "Sid" <sid@siddhartha.8m.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Linux on XPC860
+Date: Thu, 15 Feb 2001 05:36:11 +0800
 MIME-Version: 1.0
-To: "Zheng, Haifei" <haifei.zheng@intel.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>,
-	"'greyham@research.canon.com.au'" <greyham@research.canon.com.au>
-Subject: Re: initrd problems on CLLF860T, please help.
-References: <5D2136DF3DD5D311AE89009027C67FB003138BA8@fmsmsx96.fm.intel.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Zheng, Haifei" wrote:
+Hope this is the right list to mail to.
 
-> Kernel panic: No init found.  Try passing init= option to kernel.
+I have a motorola board with XPC860 processor.
 
-Well, this kind of tells you something, doesn't it?  Either you
-don't have an init program of some type (even /bin/sh), or you don't
-have enough shared libraries on the ram disk and the program can't
-be loaded properly (although you often get messages about not able
-to load some .so).
+I apologise if this is already present in the archives/FAQ but I couldn't
+find any reference to this particular processor.
 
-To start up /bin/sh, which is a good thing to try initially, you
-need the entire glibc RPM from the CDK and libtermcap.so.  You also
-need that funky sym link:
-	/opt/hardhat/devkit/ppc/8xx/powerpc-hardhat-linux -> /
-in the target filesystem.
+Could anyone point me to an appropriate resource where I can find details on
+getting Linux running on this board.
 
+On a slightly different note, is this processor the same as the MPC860?
 
-	-- Dan
+I thank you for your time.
+
+regards,
+Sid
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
