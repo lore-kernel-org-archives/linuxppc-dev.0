@@ -1,31 +1,25 @@
-Date: Thu, 6 Nov 2003 23:31:16 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Olaf Hering <olh@suse.de>
+From: linas@austin.ibm.com
+Date: Fri, 7 Nov 2003 10:56:48 -0600
+To: Thomas Sch?fer <tschaefer@giga-stream.de>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] incorrect function declaration for claim()
-Message-ID: <20031106223116.GA1790@mars.ravnborg.org>
-References: <20031106202445.GA6293@suse.de>
+Subject: Re: Boot problems with MPC8280 PowerQUICC
+Message-ID: <20031107105648.A34844@forte.austin.ibm.com>
+References: <FIEJJAKAABLMHFKFECNJOEKIGPAA.tschaefer@giga-stream.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20031106202445.GA6293@suse.de>
+In-Reply-To: <FIEJJAKAABLMHFKFECNJOEKIGPAA.tschaefer@giga-stream.de>; from tschaefer@giga-stream.de on Mon, Oct 13, 2003 at 07:35:47PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Nov 06, 2003 at 09:24:45PM +0100, Olaf Hering wrote:
-> +++ linux-2.4/arch/ppc/boot/chrp/main.c	2003-11-06 21:21:26.000000000 +0100
-> @@ -17,7 +17,7 @@ extern char _start, _end;
->
->  extern int getprop(void *, const char *, void *, int);
->  extern unsigned int heap_max;
-> -extern void claim(unsigned int virt, unsigned int size, unsigned int align);
-> +extern void *claim(unsigned int virt, unsigned int size, unsigned int align);
->  extern void *finddevice(const char *);
->  extern void flush_cache(void *, unsigned long);
->  extern void gunzip(void *, int, unsigned char *, int *);
+On Mon, Oct 13, 2003 at 07:35:47PM +0200, Thomas Sch?fer wrote:
+> INIT: Id "con" respawning too fast: disabled for 5 minutes
 
-In general I consider it a bug to have prototypes in a .c file....
+FYI, this has been seen on and off on ppc64 too ... I don't know
+if it was ever fixed, or just worked around.  I vaguely remember
+it had to do with a misconfigured/non-existant serial port.
 
-	Sam
+--linas
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
