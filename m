@@ -1,38 +1,24 @@
-Message-ID: <3F0C454C.6080106@earthlink.net>
-Date: Wed, 09 Jul 2003 09:39:40 -0700
-From: Dean Matsen <deanmatsen@earthlink.net>
-To: Dan Malek <dan@embeddededge.com>
-Cc: Eugene Surovegin <ebs@ebshome.net>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Ethernet PHY chip discovery not working on 855T with  971/972
- chips
-References: <3F0B7B28.7040902@earthlink.net> <5.1.0.14.2.20030708195315.038110e8@mail.ebshome.net> <3F0BA671.1050900@embeddededge.com> <3F0BAD39.9060708@earthlink.net> <3F0C2898.90508@embeddededge.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
+From: greggiraud@netcourrier.com
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: use bdi2000
+Date: Wed,  9 Jul 2003 11:55:15 CEST
+Mime-Version: 1.0
+Message-Id: <mnet1.1057744515.25733.greggiraud@netcourrier.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek wrote:
+Hi,
+I have some problem with the use of the bdi 2000 to debug linux kernel with DDD. In fact, I am connecting to the bdi2000 (target remote ....). And then, if I do step by step. But When I click  on "step", DDD print: " error accessing memory access". And then, when I click again on "step" it steps. Is it normal???
 
->
-> Dean Matsen wrote:
->
->> Yes, I see we have no pullup on that line. We do dedicated HVAC
->> applications, so we
->> don't need to do this search.
->
->
-> But.......the hardware is broken. The MDIO is supposed to be
-> an open-drain with a pullup. I guess you may be lucky the
-> ends of the connection are driving the line proplerly, but it
-> could be luck that will run out someday.
->
->
-> -- Dan
->
-Well, I don't disagree there. We're going to investigate updating the
-schematics for future products. Thanks for the input.
+Moreover I want to see the values in  the structure skbuff in netif_rx. So I make a break point here, and then click on "continue". (As before I have to click twice because of the DDD message " error accessing memory access".)
+It stops well on the begining of the function netif_rx, but I can't what there are in the values of the skbuff, I only see MAC=0,..., everything is NULL or 0!
+
+Can someone has ever use the bdiGdb well?
+
+gregory
+greggiraud@netcourrier.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
