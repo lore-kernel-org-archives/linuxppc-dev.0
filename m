@@ -1,43 +1,31 @@
-Message-ID: <39092CEA.1321BC79@student.ethz.ch>
-Date: Fri, 28 Apr 2000 08:17:14 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
+Date: Fri, 28 Apr 2000 09:47:20 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Michel Dänzer <daenzerm@student.ethz.ch>
+cc: "W. Taylor Holliday" <wtholliday@ucdavis.edu>,
+        Kostas Gewrgiou <gewrgiou@imbc.gr>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: XFree 4.0 dual monitor on AGP G4
+In-Reply-To: <39092B2B.249FFC07@student.ethz.ch>
+Message-ID: <Pine.LNX.4.10.10004280915030.10268-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-To: root <whschult@uncc.edu>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Latest XFree86 v4.0 crashing (possible culprit sawmill)
-References: <200004270502.AAA08920@lists.linuxppc.org> <39090775.BFEECFA1@uncc.edu>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-root wrote:
-
-> While switching desktops, X completely dies on me.  It's not
-> consistently repeatable, but I've had to kill the programs it didn't
-> pull with it enough times to know that something's wrong.
+> > If I apply your patch and recompile, how should I modify the config file?
+> > Get rid of all BusID's? Just for the second monitor?
 >
-> That's all it's doing.  X dies when I'm switching desktops, either by
-> dragging the mouse, or by clicking the desktop in the deskguide.
+> I suggest always giving all BusIDs, it doesn't hurt as long as BusID and fbdev
+> match.
 
-Just to be sure: Is this about "real" desktops or virtual desktops? AFAIK
-mouse dragging only works to switch between virtual ones?
+Meaning fb0 usually is the one with your consoles on it (unless you mapped
+them to another one), the rest follows in order of the devices being
+probed by the kernel. The ordering of devices is defined by the order the
+*fb_init calls appear in the source, and the exact order is still being
+worked on as far as I understood Geert.
+I think there's no way to change the device ordering at boot time ...
 
-
-> Please tell me I'm crazy and that it isn't really happenning...
-
-You're crazy and it isn't really happening. *grin*
-
-Seriously, Sawmill isn't the culprit (Listen people: server crashes are
-_never_ application bugs :) but it seems to point out this server bug better
-than anything else.
-
-If you could provide a gdb backtrace from a static server, that would be
-great, otherwise you could send the log and other useful information either
-here or maybe better to XFree86.
-
-
-Michel
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
