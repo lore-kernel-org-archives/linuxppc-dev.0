@@ -1,45 +1,24 @@
-Message-ID: <19991215055541.23843.qmail@web301.mail.yahoo.com>
-Date: Tue, 14 Dec 1999 21:55:41 -0800 (PST)
-From: Brian Kuschak <bkuschak@yahoo.com>
-Subject: Re: linuxppc embedded boot problems.
-To: bsimon@ctam.com.au, Dan Malek <dan@netx4.com>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3857360B.6109DE20@ctam.com.au>
+Date: Wed, 15 Dec 1999 17:32:45 +1100
+From: Brendan Simon <bsimon@ctam.com.au>
+Reply-To: bsimon@ctam.com.au
 MIME-Version: 1.0
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: MPC860/8260 linux job
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 
---- Brendan Simon <bsimon@ctam.com.au> wrote:
-<snip>
-> > Considering you are doing your own UPM, the Linux
-> kernel will
-> > find lots of timing errors with it. 
-<snip>
-> 1) there is something I'm doing wrong which affects
-> the cache setup.
+Is there any out there in LinuxPPC land who is interested in writing
+kernel, drivers and application code for MPC860/8260 networking products
+for a Australian(Melbourne) based company.
 
+This is just a feeler at this stage but we may need an embedded PowerPC
+linux guru in the new year.
 
-When UPM tables are involved, and enabling the cache
-causes problems, here is a likely issue that's caught
-me the past.  The 8xx doesn't do burst-accesses until
-the cache is enabled.  If you're runnning synchronous
-DRAM, all of your accesses will be single-beat until
-you turn on that cache.  If any of your burst-cycle
-timing in the UPM is wrong, that's when you will see
-problems. 
-
-Other potential problem, which has bitten me, is to
-make sure you don't have any lines locked in cache
-before you jump to the kernel loader.  Last time I
-checked the loader did an INVALIDATE ALL and ENABLE on
-the I-Cache.  Ideally it should also do an UNLOCK ALL.
- If, for any reason, your bootloader locks lines in
-cache, you can execute those stale cache lines after
-jumping to the kernel.
-
--Brian
+Brendan Simon.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
