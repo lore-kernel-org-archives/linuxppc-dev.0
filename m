@@ -1,33 +1,42 @@
-In-Reply-To: <20040810073502.A32095@home.com>
-References: <20040804093937.B12758@home.com> <285BFD4E-E638-11D8-852B-003065F9B7DC@embeddededge.com> <1092104488.2974.2.camel@c68.115.86.108.roc.mn.charter.com> <2D5216A6-EA93-11D8-899E-003065F9B7DC@embeddededge.com> <20040810073502.A32095@home.com>
-Mime-Version: 1.0 (Apple Message framework v618)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <A0FA8EFF-EADD-11D8-899E-003065F9B7DC@embeddededge.com>
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	Josh Boyer <jwboyer@charter.net>
-From: Dan Malek <dan@embeddededge.com>
-Subject: Re: Large TLBs on 40x
-Date: Tue, 10 Aug 2004 10:57:41 -0400
-To: Matt Porter <mporter@kernel.crashing.org>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Tue, 10 Aug 2004 14:47:57 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Song Sam <samlinuxppc@yahoo.com.cn>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Boot time with several filesystems on RPXlite DW
+Message-ID: <20040810214757.GL22109@smtp.west.cox.net>
+References: <20040807062126.8EF1BC109F@atlas.denx.de> <20040809145454.46774.qmail@web15609.mail.cnb.yahoo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20040809145454.46774.qmail@web15609.mail.cnb.yahoo.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Aug 10, 2004, at 10:35 AM, Matt Porter wrote:
+On Mon, Aug 09, 2004 at 10:54:54PM +0800, Song Sam wrote:
 
-> PPC40x no longer has this in 2.6.
+> I used several filesystems based on MTD vs ramdisk to
+> test boot time on RPXlite DW and got the following
+> result:
+[snip]
+> IP-Config: Complete:
+>       device=eth0, addr=172.16.115.7,
+> mask=255.255.255.0, gw=172.16.115.254,
+>      host=172.16.115.7, domain=, nis-domain=(none),
+>      bootserver=172.16.115.6, rootserver=172.16.115.6,
+> rootpath=
+> NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+> VFS: Mounted root (jffs2 filesystem).
+[snip]
+> I would be satisfied with less than 8 seconds in my
+> case.Any ideas?
 
-Oh, I see now.
+Try trimming down the .config.  For example, it doesn't look like you
+need IP_PNP enabled as you aren't NFSrooting and can just bring the
+interface up later.
 
-> So, to answer the original question, I would suggest a patch
-> that that uses a 'noltlb' cmdline option,
-
-Yes, that would work.
-
-Thanks for the info.
-
-
-	-- Dan
-
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
