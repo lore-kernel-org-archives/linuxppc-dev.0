@@ -1,38 +1,29 @@
-Date: Sun, 23 May 1999 16:27:48 -0400 (EDT)
-From: Tom Rini <tmrini@ntplx.net>
-To: laures@esiea.fr
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Good news for the Initio Miles owners
-In-Reply-To: <199905232019.PAA10710@lists.linuxppc.org>
-Message-ID: <Pine.LNX.4.05.9905231625280.650-100000@pc.wackyland.com>
+Date: Mon, 24 May 1999 01:11:03 -0600 (MDT)
+From: Brad Midgley <brad@turbolinux.com>
+Reply-To: Brad Midgley <brad@turbolinux.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: CDROM driver flakiness
+Message-ID: <Pine.LNX.3.95.990519114826.18017A-100000@pacific.pht.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 23 May 1999 laures@esiea.fr wrote:
+hi-
 
-> I can partition, format, copy/erase stuff -> no problem so far, although
-> I'll do some deeper tests (any advice on extensive tests, benchmarking
-> etc ?)
+i have seen a problem with the cdrom driver in linux. under linux, reading
+a file from a cd dies with an i/o error but under macos the file can be
+retrieved. why? what is linux doing differently? does macos retry the read
+more times? 
 
-10 large copy/erase/repeats at a time for an hour or so,  then force an
-fsck?
+i've seen this with a 7500's 4x apple cdrom drive and both regular and
+cd-r disks.
 
-> My advice is to keep it as a module, and then do as root "insmod
-> /lib/module/2.2.6/scsi/initio.o".
-> If not, the order of the HDs will change (sda, sdb etc...) and the
-> system may not boot at all
+Brad
+brad@pht.com | http://www.pht.com/~brad/
 
-That's just due to the search order.  For some odd reason, we go by
-what's attached to what (inito before, mesh, before nc53c94(?)).  But if
-the driver becomes useable and stable, just change your /etc/fstab to
-reflect the new order. :)
- 
----
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
