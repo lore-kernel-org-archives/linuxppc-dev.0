@@ -1,36 +1,55 @@
-Message-ID: <3BD0EE54.80DC772A@mvista.com>
-Date: Fri, 19 Oct 2001 23:24:04 -0400
-From: Dan Malek <dan@mvista.com>
+Message-ID: <002801c15928$1782da60$df80a984@serial>
+Reply-To: "Nguyen Trung Thanh" <jari.nguyen@serialsystem.com.sg>
+From: "Nguyen Trung Thanh" <jari.nguyen@serialsystem.com.sg>
+To: "Kil-Joon Park" <beast@rtp.gsnu.ac.kr>,
+	<linuxppc-embedded@lists.linuxppc.org>
+References: <200110191451.XAA15898@rtp.gsnu.ac.kr>
+Subject: Re: PCMCIA on MPC823e
+Date: Sat, 20 Oct 2001 13:28:46 +0800
 MIME-Version: 1.0
-To: Mark Pilon <mpilon@midrivers.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: debugging ppc4xx VM w/ abatron
-References: <3BD05C20.20E3396B@midrivers.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Mark Pilon wrote:
+Hi,
 
-> I'm trying to debug mvista's 2.4.2 kernel w/ the bdi2000 (v.1.05) and
-> am having trouble once the mmu is turned on
+Let me talk about my own experimence, that the same as my lastest mail about
+this RPX-Lite and PCMCIA problem.
 
-We have unfortunately really screwed up the Abatron folks lately by
-moving around bits in the Linux PTEs.  I've tried to coordinate this
-the best I can, to ensure we understand what kernel version matches
-the BDI2000 firmware version.  Unfortunately, I'm not the only one
-making changes, so sometimes I miss things.  I apologize and continue
-to work with Abatron to sort this out.  It's the fault of us that are
-making kernel modifications....
+Last time, I'm stuck with RPX-Lite and PCMCIA Nokia Cardphone2.0.
+The result is the design of this board is not compatible with this card.
+This card and several PCMCIA cards (pls check yours) are affected by for
+signals: IORD, IORW, OE and WE when ChipSelect is inactive. And the RPX-Lite
+board do not isolate those four signals when ChipSelect is inactive.
 
-Oh sorry, the short answer is you need to patiently ask Abatron to
-get the version of firmware that matches the kernel you are debugging.
-By the way, this is only a 4xx problem.
+Of course, that is the worst case, pls check yours code first to make sure
+that code could work with other PCMCIA cards.
 
-Thanks.
+Furthermore, last time I used a bus anlyzer to detect that problem.
+Best regards,
+Jari Nguyen Trung Thanh
+
+----- Original Message -----
+From: "Kil-Joon Park" <beast@rtp.gsnu.ac.kr>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Sent: Friday, October 19, 2001 10:51 PM
+Subject: PCMCIA on MPC823e
 
 
-	-- Dan
+>
+> Target System : Embedded Planet Linux Planet (MPC823e, RPX LITE), kernel
+2.4.4
+>
+> I would like to use a PCMCIA ethernet card on the target system.
+>
+> I tried to install pcmcia-cs-3.1.28 package, but failed...
+>
+> Is the patch needed? Where do I get the patch?
+>
+> Please help me.... ^^;
+>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
