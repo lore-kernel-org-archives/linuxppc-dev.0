@@ -1,12 +1,36 @@
-Message-ID: <20021105135907.26962.qmail@web14508.mail.yahoo.com>
-Date: Tue, 5 Nov 2002 05:59:07 -0800 (PST)
-From: Robert Douglas <rdouglas15@yahoo.com>
+From: Philip.Lougher@zarlink.com
 Subject: TDM (E1) transport over ATM AAL1
 To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <OF6D4A5F50.C8C31CB5-ON80256C68.00531151@zarlink.com>
+Date: Tue, 5 Nov 2002 15:10:05 +0000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Um, it's rather difficult to say without knowing *anything* about your
+hardware.  Embedded PowerPC cores vary considerably in performance between
+models/make.  You also don't mention how many interrupts you expect per
+second - is there going to be an interrupt per ATM cell?
+
+Phillip
+
+----- Forwarded by Philip Lougher/Zarlink on 05/11/2002 15:17 -----
+
+                      Robert Douglas
+                      <rdouglas15@yahoo.com>                 To:       linuxppc-embedded@lists.linuxppc.org
+                      Sent by:                               cc:
+                      owner-linuxppc-embedded@lists.l        Subject:  TDM (E1) transport over ATM AAL1
+                      inuxppc.org
+
+
+                      05-Nov-2002 01:59 PM
+
+
+
+
+
 
 
 Hi, I am starting to develop a project for TDM
