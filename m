@@ -1,48 +1,51 @@
-Date: Tue, 15 Dec 1998 11:00:50 -0100
-From: Owen Waller <O.Waller@ee.qub.ac.uk>
-To: Michel Lanners <mlan@cpu.lu>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: matroxfb, anybody?
-In-Reply-To: <199812131040.LAA03780@piglet.cpu.lu>
-Message-Id: <Pine.SGI.4.02A.9812151054230.11112-100000@myst.ee.qub.ac.uk>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 15 Dec 1998 14:20:41 +0100 (MET)
+From: Niels Roest <N.P.Roest@ITS.TUDelft.nl>
+Subject: Re: AUDIO ON LINUX_PPC
+In-reply-to: <366E598E.CCF78F93@zg.tel.hr>
+To: Stanko Juzbasic <stanko.juzbasic@zg.tel.hr>
+Cc: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>,
+        linuxppc-user@lists.linuxppc.org
+Message-id: <Pine.HPP.3.95.981215140340.3613B-100000@elektron.et.tudelft.nl>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 13 Dec 1998, Michel Lanners wrote:
+On Wed, 9 Dec 1998, Stanko Juzbasic wrote:
 
-> Anybody successfull in running matroxfb with recent vger kernels?
+> 
+> Is there anybody who encounterde the following problem?
+> I'm  constantly running into something that seems like a problem with
+> sound:
+> 1. SOX plays .wav, .au .snd & .aiff files with gaps, whoch looks to me
+>  like a disagreement on timing issues between the kernel buffer
+>  &application buffer. (I've recompiled the kernel a few times).
 
-I've got it running on version 2.1.127 - I haven't tried on anything more
-recent. What kernel version are you running.
+That's odd. I have the same soundchip (AWACS) and I do not encounter
+these problems. I had my odd problems with soundsoftware, mainly
+because of the different endianess of software.
+btw, 'sox' (or play) does not work on my machine? endianess I suppose.
+I use other software (like wavplay).
 
-> I've tried using it alongside controlfb as a second framebuffer, but it
-> doesn't initialize. Compiled-in, it only goes through the very first
-> debugging message, and then nothing more;  while as a module insmod
-> aborts (slightly older matroxfb.c (1.6c)) or hangs the system (most
-> recent matroxfb.c (1.8)).
+> 2. CDs from the internal scd drive play flawlessly.
 
-Pass, have you asked Petr (Petr Vandrovec <VANDROVE@vc.cvut.cz>) about
-this. I've been testing Petr's driver on a Mystique and haven't seen
-anything like this.
+Same here.
 
-> I've also tried to compile-in matroxfb without controlfb, but that
-> failed because offb.c wasn't in (undefined ref to console_getmode et
+> My platform:  PCI-PowerMac 7200, PowerPC 601 processor.
+> System:   LINUX_PPC R4, kernel 2.1.24 (configured as standalone
+>    workstation)
+> All drives: SCSI
 
-Generally I've compiled in matroxfb, controlfb and offb into the kernel
-which compile and run without any problems. I haven't tried leaving
-controlfb out.
+Maybe you should upgrade your kernel? I don't know about 2.1.24,
+but 2.1.125 I use on my 7600 works okay.
+I'd still say, try wavplay. It shouldn't need motif or lesstiff
+(comment it out).
 
-Cheers
+Comments anyone?
 
--------------------------------------------------------------------------
-Owen Waller                     |   "...sometimes I think I'm a little
-PhD. Student in Control Eng.    |    more English than I am French..."
-Queens University               |              - Alain Prost 
-Belfast                         |
-Tele: +44 (0)1232 274085        |    Fax: +44 (0)1232 667023
+Niels
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
