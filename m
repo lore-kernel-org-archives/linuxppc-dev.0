@@ -1,16 +1,21 @@
-Return-Path: <jpl@xiphos.ca>
-Received: from mail.net (custpop.ca.mci.com [142.77.1.111])
-	by ozlabs.org (Postfix) with ESMTP id E6B0967B16
+Return-Path: <Joakim.Tjernlund@lumentis.se>
+Received: from dmz.lumentis.net (unknown [212.105.56.244])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9DE3A67B17
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Apr 2005 07:18:49 +1000 (EST)
-Message-ID: <42545228.9060003@xiphos.ca>
-Date: Wed, 06 Apr 2005 17:18:32 -0400
-From: Joshua Lamorie <jpl@xiphos.ca>
+	Thu,  7 Apr 2005 07:24:54 +1000 (EST)
+From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
+To: "Marcelo Tosatti" <marcelo.tosatti@cyclades.com>
+Date: Wed, 6 Apr 2005 23:24:46 +0200
+Message-ID: <BCEFJBPJCGFCNMMMIDBHKEGBCLAA.Joakim.Tjernlund@lumentis.se>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: rtai@rtai.org
-Subject: Unhandled relocation of type 11
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <20050406121649.GC11066@logos.cnet>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: 8xx v2.6 TLB problems and suggested workaround
+Reply-To: Joakim.Tjernlund@lumentis.se
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,55 +26,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Please excuse this cross-post, but I think it is of interest to both 
-RTAI and Linux PPC folks.
+> On Tue, Apr 05, 2005 at 11:51:42PM +0200, Joakim Tjernlund wrote:
+> > Hi Marcelo
+> > 
+> > Reading your report it doesn't sound likely but I will ask anyway:
+> > Is it possible that the problem you are seeing isn't caused by the
+> > "famous" CPU bug mentioned here: 
+> > http://ozlabs.org/pipermail/linuxppc-embedded/2005-January/016351.html
+> > 
+> > The DTLB error handler needs DAR to be set correctly and since the
+> > dcbX instructions doesn't set DAR in either DTLB Miss nor DTLB Error you
+> > may end up trying to fix the wrong address.
+> 
+> Hi Joakim,
+> 
+> First of all, thanks your care!
 
-I am making a kernel module (an RTAI task) that needs floating point 
-support so I'm using IBMs perflib floating-point libraries (on a 
-Virtex-II Pro, aka ppc405).
+NP, I want to be able to run 8xx on 2.6 in the future.
+ 
+> 
+> Well, I dont think the above issue is exactly what we're hitting because
+> DAR is correctly updated on our case with "dcbst".
 
-This is actually built from Matlab/simulink real-time workshop output (I 
-can't use rtai-lab because I don't think lxrt is available for ppc)... 
-so there end up being many object files to link.
+Are you sure? Cant remeber all details but this looks a bit strange to me
+SPR  826 : 0x00001f00         7936
+is not 0x00001 supposed to be the physical page?
 
-So, in the end I have a linker command as follows.
+Also DSISR: C2000000 looks strange and "impossible". Are you sure this value
+is correct?
 
-powerpc-405-linux-gnu-ld -r -m elf32ppclinux -L/some/directories
-matlab_root/rtw/c/libsrc/rt_zcfcn.o other.o inputs.o -o module_output.o
-perflibs/fpopt/libppcfp.a
+Don't understand why the "tlbie()" call  works around the problem. Can you
+explain that a bit more?
 
-Then I go to insert the module and....
-/var/shm # insmod test001_build_rtmodule.o
-Warning: loading test001_build_rtmodule.o will taint the kernel: non-GPL 
-license - Proprietary
-  See http://www.tux.org/lkml/#export-tainted for information about 
-tainted modules
-test001_build_rtmodule.o: Unhandled relocation of type 11 for __fixdfsi
-test001_build_rtmodule.o: Unhandled relocation of type 11 for __fixdfsi
+> 
+> The problem is that it is treated as a write operation, but shouldnt.
+> 
+> Maybe it is related to dcbst's inability to set DAR?
 
-Hrmm... so any ideas on what type 11 is?  I can see from the code in 
-modutils that this value is inside rel->r_info, such as R_PPC_ADDR32 or 
-R_PPC_ADDR16_HA.
+Could be, but even if it isn't you are in trouble when dcbX instr.
+generates DTLB Misses/Errors Sooner or later you will end up with
+strange SEGV or hangs.
 
-But where do I get more info about where r_info gets assigned?  Do I 
-need to link libppcfp.a in a particular way?
+> 
+> BTW, about the CPU15 bug fix, has there been any effort to port/merge 
+> it in v2.6 ?
 
-Any hints would be appreciated.
-
-Thanks in advance.
-
-Joshua
-
--- 
-
-Xiphos Technologies
-(514) 848-9640 x227
-(514) 848-9644 fax
-
-www.xiplink.com
-_______________________________________________
-The information transmitted is intended only for the
-person or entity to which it is addressed and may contain
-confidential and/or privileged material.  If you have
-received this in error, please contact the sender and delete
-this communication and any copy immediately. Thank you.
+None that I know.
