@@ -1,28 +1,45 @@
-Message-ID: <299848370240D611A24400B0D079FBEB91CFE0@smtcn3>
-From: Zhang Qiang MT-CN <Qiang.Zhang@mt.com>
-To: "'linuxppc-embedded'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: ping.c
-Date: Mon, 16 Jun 2003 14:44:37 +0800
+Message-ID: <000e01c333e0$d7049b00$0700a8c0@eurostudio.local>
+Reply-To: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
+From: "Ing.Gianfranco Morandi" <gianfranco.morandi@euro-studio.it>
+To: <deepesh@india.tejasnetworks.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
+References: <Pine.LNX.4.21.0306151002370.11726-100000@deepesh.india.tejasnetworks.com>
+Subject: Re: EP8260. EST8260, SBC8260
+Date: Mon, 16 Jun 2003 09:54:38 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Could someone send me an embedded source file of ping (reduced ping.c)?
+For what is my knowledge,
+EST8260 and SBC8260 refer to the same board made from EsT (now Wind River).
+I have never used EP8260.
 
-Thanks very much!
+I hope this help
 
-				Frank Zhang(уег©)
-				----------------------------------
-				Retail Business
-				Mettler-Toledo (Changzhou) Scale&System Ltd.
-				111 Changxi Road,Changzhou,Jiangsu,P.R.C.
-				PC:213001
-				Email:qiang.zhang@mt.com
-				TEL:0086-519-6642040-3217
-				FAX: 0086-519-6641991
+Gianfranco
 
--------------------------------------------------------------
+----- Original Message -----
+From: <deepesh@india.tejasnetworks.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Sent: Sunday, June 15, 2003 6:34 AM
+Subject: EP8260. EST8260, SBC8260
+
+
+>
+> Please let me know the basic differences in the three boards:
+>
+> 1) EP8260
+> 2) EST8260
+> 3) SBC8260
+>
+> --
+>
+> D.Deepesh
+>
+>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
