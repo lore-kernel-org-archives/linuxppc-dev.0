@@ -1,72 +1,54 @@
-Date: Wed, 4 Apr 2001 11:00:28 -0400 (EDT)
-From: Bill Fink <billfink@capu.net>
-To: "Halfmann, Klaus" <klaus.halfmann@feri.de>
-Cc: linuxppc-dev@lists.linuxppc.org, billfink@capu.net
-Subject: RE: Hang Mounting HFS CDROM with 2.4.3 final kernel
-In-Reply-To: <B171A2EF290DD4118E510010B502900680221C@feriex.feri.de>
-Message-ID: <Pine.LNX.4.21.0104041045320.934-100000@gwiz.nasa.atd.net>
+Message-ID: <3ACB537B.99B851B9@netfall.com>
+Date: Wed, 04 Apr 2001 10:01:47 -0700
+From: Andrew Sharp <andy@netfall.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Iain Sandoe <iain@sandoe.co.uk>
+Cc: Tuomas Kuosmanen <tigert@ximian.com>,
+	"E. Jason Stewart" <jason@openinformatics.com>,
+	debian-powerpc@lists.debian.org, stewart.sadler@roke.co.uk,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: External Monitor under Pismo
+References: <20010404092143.EFE4C2F01B@apollo.valhalla.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> On Wed, 4 Apr 2001, Halfmann, Klaus wrote:
+One has to question whether anyone would be interested in adding
+this to a frame buffer driver, assuming that it isn't already
+there.  Perhaps you would be able to get a lot more direct info from
+another list, like one dedicated more to laptops or X.
+
+I've actually seen an XF86Config for driving the external monitor at
+different resolution(s) from the LCD, but I can't find that info at
+the moment.  I don't know if it works with the frame buffer
+server/driver, but I know that it works with the mach64 server for
+3.3.6.  If I could find it, it would be worth trying....
+
+a
+
+Iain Sandoe wrote:
 >
-> Hello Bill,
->
-> You wrote
-> > With a BenH 2.4.3 final kernel, if I do:
+> >> Since I'm mirroring the LCD I only get 1024x768, and the pismo can
+> >> drive a 1600x1200@16 bit depth. So what needs to happen to aty128fb.c
+> >> to support the external monitor, and what can I do to make it happen??
+> >>
 > >
-> > 	mount -t hfs /dev/cdrom /mnt
+> > That is beyond *me* but maybe someone else knows. I am just the artist
+> > dude 'round the corner who likes to hack with perl and stuff.. :-)
 > >
-> > the system locks up solid (mouse stops moving and can't switch to
-> > a virtual console) with no error messages (I also tried it from a
-> > virtual console but no error messages there either).  The only
-> > recourse is to hit the reset button to power cycle the machine.
-> > This is using the built-in DVD ROM drive on a dual G4 (but only
-> > running a UP kernel).  I can mount an HFS disk without any problem.
-> >
-> > This isn't actually a major issue to me personally (at least at
-> > the moment), but I thought I should go ahead and report it.  I
-> > discovered it because I was trying to get the MacOS ROM file from
-> > my MacOS 9.0.4 CDROM for use with MOL.
+> > I think there is no support for the external monitor in that sense in
+> > the driver. In macos it can do real dualhead, so that would be possible
+> > at least in theory, and it would be pretty nice. But currently I think
+> > the mirrored display is all we have for Pismo. Which works nice for
+> > projectors though.
 >
-> As far as I know nobody really cares about HFS and Linux
-> (well you should crosspost this to linux-fs-devl, but I dont have
->  a correct address at hand) So I try to care a bit ...
+> My understanding is that it still needs adding - as a first step you need
+> someone who has signed the NDA to get the specs for the ATI chips... and
+> understands how to write X servers... ;-)
 >
-> What sort of disk is it ? HFS / HFS+ / Hybrid / MultiSession / DVD ?
-
-It's HFS.  I tried a MacOS 8 and a MacOS 9.0.4 install CD, but I
-imagine any MacOS install CD would exhibit the same behavior.
-
-> In case it is HFS+, Linux will only be able to mount the HFS-Wrapper.
-> You should try my HFS+-utils to acces that CD, then.
-
-gwiz% hpmount /dev/cdrom
-(null): /dev/cdrom: Neither Wrapper nor native HFS+ volume header found (Unknown error 4294967295)
-
-> Can you create an image from the disk (with dd) and does it show the
-> same problems ? (Id like to get that image, but I fear it may be to
-> large for a reasonable download/test. I only have an iBook :/ )
-
-Thanks for the tip.  Mounting the disk image works fine.  For the
-benefit of others that might encounter this problem and search the
-archives, the necessary commands are:
-
-	dd if=/dev/cdrom of=cdrom.image
-	mount -t hfs cdrom.image /mnt -o loop
-
-Another workaround is to back down to kernel 2.2.18.
-
-> Greetings,
-> 	Klaus Halfmann
-> 	http://www.penguinppc.org/~hasi
-
-						-Thanks again
-
-						-Bill
-
+> you could try asking Ani Joshi?
+> ciao,
+> Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
