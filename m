@@ -1,50 +1,69 @@
-Message-ID: <3992E5BC.82F83D4A@snmc.com>
-Date: Thu, 10 Aug 2000 12:26:20 -0500
-From: Daris A Nevil <dnevil@snmc.com>
+From: "Manie Steyn" <msteyn@wmux.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: All-subnets-directed Broadcast
+Date: Thu, 10 Aug 2000 15:55:02 -0700
+Message-ID: <NEBBIKAICMIJKJMMELBFIEFJCBAA.msteyn@wmux.com>
 MIME-Version: 1.0
-To: linuxppc <linuxppc-embedded@lists.linuxppc.org>
-Subject: QSLinux is Released
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am happy to announce the release of QuickStack Linux.  This version
-of Linux is based on the PPC 2.2.5 kernel.  It has been heavily modified
-over the past year, and has been targeted specifically to our
-MPC850-based product (see QS850 at http://www.snmc.com/products.html).
+Hi,
 
-QSLinux includes many enhanced features for embedded systems:
+This is not necessarily an embedded question, so please direct me to a
+different forum dealing with  Linux Network programming if none here can
+help me.
 
- * Subsystem for configuring and controlling I/O pins (qspin)
- * Hardware Watchdog support
- * Flash Filesystem (layered under Ext2FS)
- * Compressed Ext2FS (e2compr)
- * HDLC/PPP Driver
- * ATM Utopia Network Driver (AAL5/IP)
- * Multiple serial consoles
- * Much, much more
+I have 4 100baseT interfaces on my MCP750, each configured for a different
+192.168.x subnet.
 
-The source code and nfs root directories are located at:
+sh-2.03# route
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use
+Iface
+192.168.3.0     *               255.255.255.0   U     0      0        0 eth3
+192.168.2.0     *               255.255.255.0   U     0      0        0 eth2
+192.168.1.0     *               255.255.255.0   U     0      0        0 eth1
+192.168.0.0     *               255.255.255.0   U     0      0        0 eth0
+sh-2.03#
 
-	ftp://qslinux.com/pub/qslinux
+I am trying to send a broadcast message (as rudimentary synchronization) to
+all subnets at the same time. I believe this is called "All-subnets-directed
+Broadcast" [from Stevens], and should be possible if the application and
+router supports this.
 
-On-line documentation for QSLinux can be accessed at:
+To test this I use ping 192.168.255.255 but receives "Network is
+unreachable" error:
 
-	http://qslinux.com
+sh-2.03# ping -c 1 192.168.255.255
+PING 192.168.255.255 (192.168.255.255): 56 data bytes
+ping: sendto: Network is unreachable
+ping: wrote 192.168.255.255 64 chars, ret=-1
 
-Regards,
-Daris A Nevil
+--- 192.168.255.255 ping statistics ---
+1 packets transmitted, 0 packets received, 100% packet loss
+sh-2.03#
 
---
+I have also tried ping 192.169.255.0 and ping 255.255.255.255 with same
+results.
+Ping 192.168.x.255 works for broadcasting on each of the subnets, is called
+"Subnet-directed Broadcast" [from Stevens].
 
-Daris A Nevil
-Simple Network Magic Corporation
-401 Kentucky Lane
-McKinney, TX 75069
-214-793-7757
-dnevil@snmc.com
-www.snmc.com
-quickstack.com
+I'm sure it must be possible to broadcast to all configured subnets somehow.
+Does the problem lie with the router or ping. (Maybe I should stop being
+lazy and go write a small tester to check it out :-)
+
+Any suggestions in the mean time?
+
+
+
+
+_______________________________________________________________________
+
+Manie Steyn     Embedded Software Engineer       mailto:msteyn@wmux.com
+Western Multiplex, 1367 Redwood Way, Petaluma, CA  Ph:707 792 5390 x 12
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
