@@ -1,34 +1,35 @@
-In-Reply-To: <6505FDD3-DC31-11D8-A541-000393DBC2E8@freescale.com>
-References: <40F57D15.8030700@pi.be> <69A5B0EA-D669-11D8-A9B5-000393DBC2E8@freescale.com> <40F8138F.8090004@pi.be> <6505FDD3-DC31-11D8-A541-000393DBC2E8@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v618)
-Message-Id: <A6FC1F7E-DCA9-11D8-9237-000A95A4DC02@kernel.crashing.org>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
-	Paul Mackerras <paulus@samba.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] align.c
-Date: Fri, 23 Jul 2004 15:10:21 +0200
-To: Kumar Gala <kumar.gala@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
+Cc: "'crossgcc@sources.redhat.com'" <crossgcc@sources.redhat.com>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: FYI: building u-boot image in cygwin environment fails 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 23 Jul 2004 08:29:31 EDT."
+             <313680C9A886D511A06000204840E1CF08F43063@whq-msgusr-02.pit.comms.marconi.com>
+Date: Fri, 23 Jul 2004 15:26:40 +0200
+Message-Id: <20040723132646.05F7BC109F@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Can you explain to me why/when stswi/lswi would get alignment
-> exceptions.  I think I'm missing something :)  The reason I ask is we
-> are working on some emulation handlers but are not doing anything with
-> regards to alignment for e500.
+In message <313680C9A886D511A06000204840E1CF08F43063@whq-msgusr-02.pit.comms.marconi.com> you wrote:
+>
+> apovolot@USPITLAD104868 ~/U-boot/u-boot-1.1.1
+> $ make  MPC8260ADS_config
 
-CPU dependent; one example is stswi to cache-inhibited memory, on
-some CPUs; another is trying to execute any string insn while in
-little-endian mode, on some other CPUs.
+I think this is off topic on all lists you sent it to.
 
-On the 601, which is what Stef is using, a word-aligned string insn
-that crosses a 256MB boundary causes an alignement exception (as
-does *any* insn that does this); and a not-word-aligned string insn
-that crosses a 4kB boundary, does, too.
+If you have questions about U-Boot, then please post to the
+U-Boot-Users mailing list.
 
+Best regards,
 
-Segher
+Wolfgang Denk
 
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"A witty saying proves nothing."                           - Voltaire
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
