@@ -1,18 +1,15 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao02.cox.net (fed1rmmtao02.cox.net [68.230.241.37])
-	by ozlabs.org (Postfix) with ESMTP id 1895667A70
+Return-Path: <takeharu1219@ybb.ne.jp>
+Received: from ybbsmtp13.mail.mci.yahoo.co.jp (ybbsmtp13.mail.mci.yahoo.co.jp
+	[210.80.241.187]) by ozlabs.org (Postfix) with SMTP id 1DF1867A79
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Feb 2005 06:01:34 +1100 (EST)
-Date: Wed, 23 Feb 2005 12:01:23 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Shawn Jin <shawnxjin@gmail.com>
-Message-ID: <20050223190123.GI345@smtp.west.cox.net>
-References: <c3d0340b05022310396240c8ac@mail.gmail.com>
-Mime-Version: 1.0
+	Thu, 24 Feb 2005 06:06:45 +1100 (EST)
+Message-ID: <421CD2B3.4020805@ybb.ne.jp>
+Date: Thu, 24 Feb 2005 04:00:03 +0900
+From: Takeharu KATO <takeharu1219@ybb.ne.jp>
+MIME-Version: 1.0
+To: ppcembed <linuxppc-embedded@ozlabs.org>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <c3d0340b05022310396240c8ac@mail.gmail.com>
-Cc: ppcembed <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] Ebony's UBoot awareness
+Subject: PowerPC4xx Watchdog
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,16 +20,10 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 23, 2005 at 10:39:34AM -0800, Shawn Jin wrote:
+Hi
 
-> This adds UBoot support on Ebony board and also sets emac's PHY mode
-> explicitly during initialization as Eugene Surovegin provided.
-[snip]
-> +#include "../../../../drivers/net/ibm_emac/ibm_emac_phy.h"
-
-This will not work with O= for example.  The correct method is to modify
-the Makefile with a CFLAGS_foo.o += -Idrivers/net/ibm_emac
+I am trying to  WatchDog Driver for PowerPC4xx on Linux-2.6.
+Does anyone have a plan to WatchDog Driver on this architecture?
 
 -- 
-Tom Rini
-http://gate.crashing.org/~trini/
+Takeharu KATO
