@@ -1,80 +1,47 @@
-Message-ID: <002d01bfc20b$01b79320$d2d3470a@mike>
-From: "Mike Hudson" <Exoray@isys.ca>
-To: "Takashi Oe" <toe@unlserve.unl.edu>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-References: <Pine.A41.3.96LJ1.1b7.1000518175956.15274G-101000@unlserve.unl.edu>
-Subject: Re: BMAC+ & Full Duplex
-Date: Fri, 19 May 2000 23:25:10 -0400
+From: flar@marcus.pants.nu
+Message-Id: <200005200554.WAA26536@marcus.pants.nu>
+Subject: Re: hfs
+To: dan_bethe@yahoo.com (Dan Bethe)
+Date: Fri, 19 May 2000 22:54:55 -0700 (PDT)
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20000503221141.6962.qmail@web1003.mail.yahoo.com> from "Dan Bethe" at May 03, 2000 03:11:41 PM
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Strange... the util doesn't seem to work at all. The behaviour specified in
-MacOS doesn't change. I've verfied all the code line-by-line and (IMHO) the
-correct parameters are passed (from the apple technote). The Cuda interface
-works, as I've been able to successfully use Paul Mackerras' clock.c to
-read/set the clock using the same /dev/adb interface.
+Dan Bethe wrote:
+> > I'm under the impression that HFS is basically a subset of HFS+, i.e.
+> > HFS+
+> > working should fix HFS.  I could easily be wrong, though.
+> 	Well I would guess that it would, but not automatically.  If you go to
+> an OS that only supports HFS, and you mount an HFS+ filesystem, it will
+> work but only one file will be available.  It's the magic file entitled
+> "Where have all my files gone?" or something like that.  So technically
+> HFS+ is a superset of HFS.  :)
 
-For your reference, here's the complete set of ADB pseudo-commands from the
-Darwin Source. Some of these are already in the Linux source, some aren't.
-Someone should slap this in cuda.h for posterity.
+No, HFS+ is similar to HFS, and an HFS+ filesystem can be (and usually is)
+wrapped in an HFS filesystem.  All that needs to be read out of the HFS
+filesystem to get to the HFS+ filesystem is about a dozen bytes of the MDB.
 
-/*
- * ADB Pseudo Commands
- */
+> 	I guess there are a bunch of people speculating all day rather than
+> coding it, which is understandable.  Perhaps the primary maintainers of
+> the most prominent HFS+ and HFS code can surface and let people know
+> what they're doing, and what they need help on.  Or maybe they'll just
+> pop up one day and say "Hey we're all done!  Here ya go!"  :^)
 
-#define ADB_PSEUDOCMD_WARM_START         0x00
-...START_STOP_AUTO_POLL   0x01
-...GET_6805_ADDRESS       0x02
-...GET_REAL_TIME      0x03
-GET_PRAM           0x07
-SET_6805_ADDRESS       0x08
-SET_REAL_TIME      0x09
-POWER_DOWN         0x0a
-SET_POWER_UPTIME      0x0b
-SET_PRAM           0x0c
-MONO_STABLE_RESET      0x0d
-SEND_DFAC          0x0e
-BATTERY_SWAP_SENSE     0x10
-RESTART_SYSTEM         0x11
-SET_IPL_LEVEL      0x12
-FILE_SERVER_FLAG       0x13 ***
-SET_AUTO_RATE      0x14
-GET_AUTO_RATE      0x16
-SET_DEVICE_LIST        0x19
-GET_DEVICE_LIST        0x1a
-SET_ONE_SECOND_MODE    0x1b
-SET_POWER_MESSAGES     0x21
-GET_SET_IIC        0x22
-ENABLE_DISABLE_WAKEUP  0x23
-TIMER_TICKLE       0x24
-COMBINED_FORMAT_IIC    0x25
+No, there's a bunch of people that have things they are being paid to do
+that take up most of their time.  I am the lead of the HFS+ code, and I
+know I haven't had time to touch it in about 5 or 6 months.  The other
+people who are helping me aren't much better off.  If other people want
+to help, they're welcome...
 
+	Brad Boyer
+	flar@pants.nu
 
-A possible explanation for the failure lies in the fact that the Darwin
-source calls File Server mode a flag. From my experience a flag is used to
-set a minor parameter on another command, not provide any individual
-functionality. Possibly the documented "Server Mode" functionality depends
-on another value/command? (I'm guessing)
-
-I have three questions:
-
-1) Has anyone independently verified if this utility works?
-
-2) If the powerup time is already passed, will the Mac boot on restoration
-of AC power? This could be used to provide similar functionality to the
-server mode flag. I.e. set the wakeup time to the current time on boot.
-
-3) Does anyone have any decent documentation on the Cuda and it's commands,
-aside from the Darwin snippet, the technote and the linux/darwin sources
-(which seem to focus on the clock and power on/off/restart)?
-
-Thanks,
-
-Mike Hudson
+P.S.: I've been exceptionally busy the last few weeks, and I'm way behind
+in my list mail...  Now that E3 is over, I should have a little more time.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
