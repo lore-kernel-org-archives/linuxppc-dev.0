@@ -1,44 +1,38 @@
-Date: Wed, 5 Jul 2000 13:01:58 -0700
-From: Daniel Jacobowitz <drow@false.org>
-To: Andrew Clausen <clausen@gnu.org>
-Cc: Hollis Blanchard <hollis@amulet.co.jp>, linuxppc-dev@lists.linuxppc.org,
-        GNU Parted list <parted@gnu.org>
-Subject: Re: GNU Parted, linuxppc support coming :-)
-Message-ID: <20000705130158.A18557@drow.them.org>
-References: <39625AB3.6A5447CE@gnu.org> <39632512.1953DBAA@amulet.co.jp> <39626E45.E0496869@gnu.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <39626E45.E0496869@gnu.org>; from clausen@gnu.org on Wed, Jul 05, 2000 at 09:07:49AM +1000
+From: phandel@cise.ufl.edu
+Date: Wed, 5 Jul 2000 13:13:43 -0700 (PDT)
+To: Gwyn Judd <b.judd@xtra.co.nz>
+Cc: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
+Subject: Magic SysRq key [was Re: seemingly random lock-up with kernel
+ 2.2.17p7]
+In-Reply-To: <20000706015738.A986@thislove.dyndns.org>
+Message-Id: <Pine.LNX.4.21.0007051301190.3529-100000@handel3.apple.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Jul 05, 2000 at 09:07:49AM +1000, Andrew Clausen wrote:
-> Each partition gets one block (yes?).  So thats 20 * 512?
-> (From comments in various programs, most disks have 512 byte blocks...)
+On Thu, 6 Jul 2000, Gwyn Judd wrote:
 
-CDROMs, for example, often have 2048-byte blocks.  You can get the
-block size out of the disk header somewhere, IIRC.
+> I (alas) have no remote machine. WHat are the magic sysrq keys on a Mac?
 
-> > There seems to be a shortage of HFS folks these days. :) But ext2
-> > resizing sounds very cool.
->
-> Excuse my ignorance... what FS's do people usually use with MacOS?
-> HFS/HFS+?
+The default is 0x69 (F13).  Read more about the Magic Sysrq here:
 
-Yes, that's right.
+/usr/src/linux/Documentation/sysrq.txt
 
-> (Is the point "no-one uses MacOS", or "no-one's hacking on HFS
-> in Linux"?)
+You can change the key used.  Use "showkey" to find out the keycode of the
+key you'd like to use, and then change the following line:
 
-The latter.
+         ppc_md.SYSRQ_KEY         = 0x69;
 
-Dan
+...which should be around line 667 of the file
+/usr/src/linux-2.2-stable/arch/ppc/kernel/pmac_setup.c
 
-/--------------------------------\  /--------------------------------\
-|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
-|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
-|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
-\--------------------------------/  \--------------------------------/
+Note, you must enable "Magic SysRq key" under "Kernel hacking" when
+compiling your kernel.
+
+
+Thanks,
+Peter
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
