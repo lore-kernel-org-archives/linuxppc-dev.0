@@ -1,56 +1,33 @@
-Message-ID: <20020927140356.27426.qmail@web13107.mail.yahoo.com>
-Date: Fri, 27 Sep 2002 15:03:56 +0100 (BST)
-From: =?iso-8859-7?q?John=20Nikiforos?= <ppclinuxuser@yahoo.gr>
-Subject: Re: higher uart baud rate corrupts image..
-To: atul srivastava <atulsrivastava9@rediffmail.com>,
-	linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20020925142311.18806.qmail@mailFA12.rediffmail.com>
+Message-ID: <3D947EF3.7010800@embeddededge.com>
+Date: Fri, 27 Sep 2002 11:53:23 -0400
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-7
+To: acurtis@onz.com
+Cc: Sylvain Latulippe <slatulippe@mediatrix.com>,
+	"'Michael Thompson'" <mickey@berkeley.innomedia.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Are 8260 and 8250 CPM interface compatible?
+References: <NCBBIINEHIPFGJPLBEIFGEJJDMAA.acurtis@onz.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
- What serial terminal do you use?
-I had the same problem when I was using hyperterminal.
-When I changed to SecureCRT, everything workds fine!
+Allen Curtis wrote:
 
-                                 John.
+> Considering that Motorola is now using the CPM in multiple processors, including DSPs, would it make sense to breakout the support from the 8260 implementation and make it an independent option like PCI?
 
- --- atul srivastava <atulsrivastava9@rediffmail.com>
-έγραψε: >
-> A quick question..
->
-> i have been to use succesfully bootloader kernel and
-> ramdisk , but
-> only on certain serial port speed .
->
-> I am facing a data corruption in dowloading
-> kernel+ramdisk image
-> at higher serial port speed.
->
-> if i set my baud speed to 19200 it WORKS FINE.
->
-> otherwise at higher serial port speed  the execve of
-> /bin/sh just
-> hangs and .
->
-> also this problem is related to cpu frequency when i
-> make that
-> lower or higher the behaviour changed
-> unpredicatabley.
->
-> somebody pointed for skew problem woth sdram at
-> higher cpu
-> frequency.
->
-> any body has more here to add...
->
->
-__________________________________________________________
->
->
->
+It would be reasonable, but I don't want to start that until we have another
+processor port in the works that also requires it.  Simply changing all of
+this for the sake of doing so with grand plans how it can be used anywhere
+isn't a useful way to use our resources.  I particularly don't like change
+for the sake of change, because it makes it difficult for us that rely
+on things to work, and I really want to avoid a mess like 4xx OCP :-).
+
+Thanks.
+
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
