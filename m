@@ -1,36 +1,43 @@
-Date: Mon, 19 Jan 2004 13:06:21 +0100
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 19 Jan 2004 14:48:31 +0100
+To: Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
 Cc: Sven Luther <sven.luther@wanadoo.fr>,
 	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: OF properties access ?
-Message-ID: <20040119120621.GD18112@iliana>
-References: <20040113114625.GA9294@iliana> <1074131387.818.43.camel@gaston> <20040115074439.GB14039@iliana> <1074310140.8360.27.camel@gaston> <20040118120722.GA4603@iliana> <1074468096.795.27.camel@gaston> <20040118143225.GA6717@iliana> <1074502892.813.41.camel@gaston> <20040119101728.GB18112@iliana> <1074512524.10581.20.camel@gaston>
+Subject: Re: multiple separate pci bridges ...
+Message-ID: <20040119134831.GA21093@iliana>
+References: <20040118144412.GA6897@iliana> <1074443601.9704.164.camel@thor.asgaard.local>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1074512524.10581.20.camel@gaston>
+In-Reply-To: <1074443601.9704.164.camel@thor.asgaard.local>
 From: Sven Luther <sven.luther@wanadoo.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jan 19, 2004 at 10:42:05PM +1100, Benjamin Herrenschmidt wrote:
+On Sun, Jan 18, 2004 at 05:33:21PM +0100, Michel Dänzer wrote:
+> On Sun, 2004-01-18 at 15:44, Sven Luther wrote:
+> > >
+> > > > Finally, X works, altough DRI freezes after a second or two with my
+> > > > radeon 9200SE, while it works for a Radeon 7500, but this is probably a
+> > > > DRI issue.
 >
-> > And indeed, the problem seems to be that i get /cpus, and not
-> > /cpus/PowerPC,74x7. I thought that the /cpus should give the cpu per
-> > default or something such. What should i do here, i can go look for a
-> > PowerPC,74x7, but the board can also come with other CPUs (the 750Cxe
-> > for now). Maybe i could remove the cpus checking code completely, and go
-> > looking for the cpu type directly.
+> [...]
 >
-> For the "cpus" case, just get to the first child
+> > As for the DRI version, i use the drm module from the linuxppc-2.4 tree,
+> > using the v2.4.24 TAG to checkout, and the rest of the XFree86 stuff,
+> > including the mesa libraries, from the 4.3.0-0pre1v5 experimental
+> > package, rebuild with the Radeon 9200SE patch from Michel Daenzer.
+>
+> You may want to try my dri-trunk-sid packages.
 
-Doing only : np = find_type_devices("cpu"); worked fine. I guess this
-will catch any cpus in the system, and be ok. There are not yet
-multi-cpu pegasos boxes, so i think it is ok to just check the first CPU
-and enable the L2 cache there, i will make sure the OF of future
-multi-cpu systems will set the L2 cache properly.
+Just tried (all three packages) and my Radeon 9200 SE is not recognized :
 
-Or is it better to go for the first child of cpus ?
+(II) PCI: 10:08:0: chip 1002,5964 card 148c,2073 rev 01 class 03,00,00 hdr 00
+...
+(WW) ATI:  PCI/AGP Mach64 in slot 16:8:0 could not be detected!
+(EE) No devices detected.
+
+Time for you to make another snapshot ? These where with the 2003.10.05
+snapshot.
 
 Friendly,
 
