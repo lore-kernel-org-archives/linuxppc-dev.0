@@ -1,49 +1,39 @@
-Date: Mon, 17 Sep 2001 19:08:22 -0700
-From: Tom Rini <trini@kernel.crashing.org>
+Date: Tue, 18 Sep 2001 14:33:59 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Board names for 4xx
-Message-ID: <20010917190822.K14279@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20010914144403.G3851@zax> <20010914072847.R21906@cpe-24-221-152-185.az.sprintbbd.net> <20010917122828.J3851@zax> <20010916211605.D14279@cpe-24-221-152-185.az.sprintbbd.net> <3BA61D1A.3A79E5B9@mvista.com> <3BA620CC.3ACD0547@inn.ericsson.se> <20010917113345.A23163@cpe-24-221-152-185.az.sprintbbd.net> <20010918103530.B1183@zax>
+Subject: 4xx icache and tlb flushing
+Message-ID: <20010918143359.B817@zax>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010918103530.B1183@zax>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, Sep 18, 2001 at 10:35:30AM +1000, David Gibson wrote:
->
-> On Mon, Sep 17, 2001 at 11:33:45AM -0700, Tom Rini wrote:
-> >
-> > On Mon, Sep 17, 2001 at 06:11:56PM +0200, Kenneth Johansson wrote:
-> > > Dan Malek wrote:
-> > > >
-> > > > Tom Rini wrote:
-> > > >
-> > > > > I do wish someone else would speak up tho.  Does anyone out there have an
-> > > > > opinion?
-> > > >
-> > > > If the information from /proc is just used for pretty print out of
-> > > > information, I really don't care.  If there are applications that read
-> > > > this for some internal configuration and flexibility, we better have a
-> > > > standard format.
-> > > Debian uses /proc/cpuinfo to find out what utility to use for the RTC
-> > > (clock,hwclock). This could be fixed if the code from clock was integrated in
-> > > hwclock. hwclock tries every method it knows until one works.
-> >
-> > This is no longer true.  Woody anyways assumes that /dev/rtc will work in
-> > the 'standard' way.  But,, debian does parse for machien type for doing
-> > board/platform specific modules.
->
-> Yes, but last I checked the util-linux install script would still die
-> if the machine: field wasn't present at all.  IIRC it was checking for
-> PReP machines for some reason.
+Several questions here.
 
-util-linux is broken then.  All PPC (save APUS) can have a working
-/dev/rtc, via CONFIG_PPC_RTC.
+First on icache flushing.  I noticed that flush_icache_page() has been
+changed to a no-op, wheras it used to flush the whole icache on 4xx.
+It appears this doesn't break things, but I'm not clear on why some
+sort of special icache flush isn't necessary here, given the 4xx's
+icache aliasing problem.  Also, although flush_instruction_cache()
+uses an iccci on 4xx, flush_icache_range(), flush_dcache_icache()
+etc. just use icbi and therefore could miss flushing a virtual alias.
+In my tree I've tried using iccci here (overkill, I know) and this
+seems to reduce the frequency of process lockups, but I don't have any
+hard data on that.
+
+Now two questions on tlb flushing.  First, 4xx uses a __tlbia() macro
+in local_flush_tlb_*().  Is there a reason we don't use the _tlbia()
+function already included in misc.S?  Second, according to the 405gp
+manual, tlb manipulation instructions such as tlbia should be followed
+by a context synchronisation instruction (i.e. isync) but we don't
+seem to do this.  Is this a bug, or am I missing something?
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.  -- H.L. Mencken
+http://www.ozlabs.org/people/dgibson
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
