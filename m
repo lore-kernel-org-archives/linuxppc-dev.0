@@ -1,31 +1,33 @@
-Date: Thu, 27 May 2004 07:40:10 -0700
-From: Larry McVoy <lm@bitmover.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Pantelis Antoniou <panto@intracom.gr>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Problem with bitkeeper?
-Message-ID: <20040527144010.GA3375@work.bitmover.com>
-References: <40B5B3EC.3000709@intracom.gr> <Pine.GSO.4.58.0405271206490.17038@waterleaf.sonytel.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.GSO.4.58.0405271206490.17038@waterleaf.sonytel.be>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: ATI Rage 128 Mobility very slow with 2.6.6 Debian kernel
+Reply-To: Jens Schmalzing <j.s@lmu.de>
+From: Jens Schmalzing <j.s@lmu.de>
+Date: 27 May 2004 23:53:01 +0200
+Message-ID: <hhekp5ilky.fsf@theorie.physik.uni-muenchen.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, May 27, 2004 at 12:07:18PM +0200, Geert Uytterhoeven wrote:
->
-> On Thu, 27 May 2004, Pantelis Antoniou wrote:
-> > Is anyone else having problems pulling today from
-> > from ppc.bkbits.net (using http)?
->
-> bkbits.net is down, cfr. a posting from Larry on lkml.
+Hi,
 
-It's fixed.  It was fixed last night and a trigger we had put in earlier
-to log BK versions (so we know if we need to nag people to upgrade)
-was broken.
+a user of my Debian kernel packages reported today that his Xserver
+was really slow when using the drm interface.  After a number of
+tries, I have been able to reproduce the problem - the XFree86.0.log
+seems to go in an endless loop logging the line
+
+ (EE) R128(0): Idle timed out, resetting engine...
+
+over and over again.  This does not occur with the module from the
+dri-trunk, btw.
+
+Any hints?
+
+Regards, Jens.
+
 --
----
-Larry McVoy                lm at bitmover.com           http://www.bitkeeper.com
+J'qbpbe, le m'en fquz pe j'qbpbe!
+Le veux aimeb et mqubib panz je pézqbpbe je djuz tqtaj!
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
