@@ -1,30 +1,64 @@
-Date: Wed, 2 Oct 2002 16:02:58 +1000
-From: Erik Christiansen <erik@dd.nec.com.au>
+Message-ID: <3D9A998F.9010606@ellemedia.com>
+Date: Wed, 02 Oct 2002 10:00:31 +0300
+From: Apostolos Meliones <meliones@ellemedia.com>
+MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Is it binutils-2.13.90.0.4 or is it me?
-Message-ID: <20021002060258.GD601@dd.nec.com.au>
-References: <20021002010320.GA601@dd.nec.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20021002010320.GA601@dd.nec.com.au>
+Subject: Patch to recover from segmentation fault on HiP4 MPC8260 versions (for kernels 2.4.x, x<10)
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-binutils from: ftp://ftp.kernel.org/pub/linux/devel/binutils/.
-compiling with gcc 2.95.4 on debian woody.
+Here you may find a simple patch for 2.4 kernels up to version 2.4.10 to
+support the HiP4 versions of MPC82xx:
 
-   Oh - Oh, looks like ./config/acinclude.m4 is generating dud makefiles
-in the versions: binutils-2.11.93.0.2, binutils-2.12.90.0.9, and
-binutils-2.13.90.0.4. (The m4 macro substitution is broken in the same
-way in each version.)
+In arch/ppc/kernel/misc.S replace _GLOBAL(_get_PVR) with the following:
 
-   I'll send off a bug report, but would meanwhile be grateful if some
-wise soul has any hints on sourcing working ingredients for an intel/ppc
-cross compiler.
+_GLOBAL(_get_PVR)
+mfspr r3,PVR
+xor r17,r17,r17
+xor r16,r16,r16
+addi r17,r17,0x7FFF@l
+addi r16,r16,0x10@l
+slw r17,r17,r16
+ori r17,r17,0xFFFF@l
+and r3,r3,r17
+blr
 
-Regards,
-Erik
+
+Best Regards
+
+Apostol
+
+
+----------------------------------------
+Dr. Apostol Meliones
+Ellemedia Technologies
+223 Syngrou Ave., 17121, Athens, Greece
+Tel: +30-10-9373095, Fax: +30-10-9370386
+
+
+Allen Curtis wrote:
+
+>>We moved to a new kernel (we were using 2.4.7) to support the PVR of the
+>>HiP4 versions of MPC826x, so we tested 2.4.12, 2.4.18 and 2.4.20. We did
+>>our porting mostly on 2.4.20. We had almost everything there. However,
+>>we encountered a serious error related to memory management regarding
+>>one of our drivers that was based on a port from MPC860 coded for kernel
+>>2.4.4. Alternatively, we kept on working in parallel on 2.4.7 to find
+>>out and cancel the PVR checks that were instructing the kernel to use an
+>>incorrect cpu among the several available processor versions. This was
+>>responsible for the segmentation fault. We deceived the kernel to take
+>>8264 for 8260 and this way the problem was solved !!
+>>
+>
+>Could you provide a patch for you modifications. If they are too ugly, just
+>send them to me. I am interested in maintaining an updated kernel for the
+>MPC processors.
+>
+>Thanks
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
