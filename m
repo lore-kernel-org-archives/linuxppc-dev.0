@@ -1,36 +1,35 @@
-Message-ID: <3FB391BA.3020600@primagraphics.co.uk>
-Date: Thu, 13 Nov 2003 14:14:18 +0000
-From: Mark Powell <medp@primagraphics.co.uk>
-MIME-Version: 1.0
-To: Laurent Mohin <laurent.mohin@acterna.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
+Message-Id: <6.0.0.22.0.20031113151602.01e81908@192.168.2.1>
+Date: Thu, 13 Nov 2003 15:25:35 +0100
+To: Geir Frode Raanes <geirfrs@invalid.ed.ntnu.no>
+From: llandre <r&d@wawnet.biz>
 Subject: Re: Silicon Motion VGA controllers and PPC architecture
-References: <OFD7959B2B.BABE0C63-ONC1256DDD.002D77C3-C1256DDD.002D7E99@se.wavetek.com>
-In-Reply-To: <OFD7959B2B.BABE0C63-ONC1256DDD.002D77C3-C1256DDD.002D7E99@se.wavetek.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20031113085435.N79832@invalid.ed.ntnu.no>
+References: <5.1.1.6.0.20031112173538.01bd2e78@dns.struinfo.it>
+ <20031113085435.N79832@invalid.ed.ntnu.no>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Laurent Mohin wrote:
-
->You will find a driver for it on u-boot and also a framebuffer driver in
->Linux (at least in 2.4.20 if I remember well). You will also find an
->accelerated driver for Xfree (I haven't tested it yet).
+> > I'm looking for a VGA controller to use with an embedded PPC405-based
+> system.
+> > I had a look at the Silicon Motion chips (712/722) and they seem very
+> > suited for embedded applications.
 >
->
-Xfree driver doesn't work without BIOS, it uses BIOS calls to program
-video mode etc.
-There is code in the driver to do the same jobs but it doesn't work.
+>Errr - may I ask what is special about this brand?
 
-I didn't know there was a driver in U-boot - that is interesting,
-thanks. I have been using an earlier version of PPCBoot.
-Mark
+It seems these chips are the easiest to integrate in a PowerPC embedded
+systems.
+Laurent Mohin from Acterna confirmed it is possible to use them without
+executing their x86 BIOS with a software emulator (U-Boot already includes
+a driver that initializes the chip). See also his message in this thread.
 
---
-Mark Powell, Senior Software Engineer, Primagraphics Limited
-New Cambridge House, Litlington, nr.Royston, Herts, SG8 0SS, UK
-Tel. +44 1763 852222, Fax. 853324, http://www.primagraphics.co.uk
+
+Best regards,
+
+llandre
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
