@@ -1,35 +1,63 @@
-Date: Fri, 6 Apr 2001 02:05:59 -0700
-From: Matt Porter <mporter@mvista.com>
-To: Cort Dougan <cort@fsmlabs.com>
-Cc: Torben Mathiasen <torben@kernel.dk>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: eepro100 on IBM Walnut board,
-Message-ID: <20010406020559.A27054@cx258813-a.chnd1.az.home.com>
-References: <20010405212019.H1475@fry> <20010405143318.E1889@ftsoj.fsmlabs.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010405143318.E1889@ftsoj.fsmlabs.com>; from cort@fsmlabs.com on Thu, Apr 05, 2001 at 02:33:18PM -0600
+Message-ID: <22F662CDC53ED411B65700805F31DE1C1359D5@exccop-01.dmo.cpqcorp.net>
+From: "Mathiasen, Torben" <Torben.Mathiasen@compaq.com>
+To: "'Ron Bianco'" <ronb@junction.net>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: eepro100 on IBM Walnut board,
+Date: Fri, 6 Apr 2001 11:16:04 +0100 
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Apr 05, 2001 at 02:33:18PM -0600, Cort Dougan wrote:
+Thanks a lot. I'll take a look at some of the older versions.
+
+Regards,
+Torben
+
+-----Original Message-----
+From: Ron Bianco [mailto:ronb@junction.net]
+Sent: 6. april 2001 00:48
+To: Torben Mathiasen
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: eepro100 on IBM Walnut board,
+
+
+
+Didn't have endian problems in the version we're using on our PPC 8240
+board.
+The version string says:  eepro100.c:v1.09j 7/27/99 Donald Becker.......etc.
+I had problems with newer versions, I think endian issues were one of the
+them.
+
+Ron
+
+> -----Original Message-----
+> From: owner-linuxppc-embedded@lists.linuxppc.org
+> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Cort
+> Dougan
+> Sent: Thursday, April 05, 2001 1:33 PM
+> To: Torben Mathiasen
+> Cc: linuxppc-embedded@lists.linuxppc.org
+> Subject: Re: eepro100 on IBM Walnut board,
+>
+>
 >
 > The latest eepro has serious endian-ness problems.  PPC and MIPS suffer
 > this problem.
+>
+> } Has anyone tried using an Intel i82559 NIC as a second adapter with an
+IBM Walnut board? I'm using the
+> eepro100 driver
+> } with the montavista distribution (tried 2.4.0-test2 and 2.4.2) and the
+driver just keeps printing:
+> wait_for_cmd_timeout.
+> } The NIC won't send any frames, and no interrupts are generated.
+> }
+> } The docs claim that the eepro100 driver should work.
+>
+>
 
-I'm using the following version (stock 2.4.2) on ten different PPC
-platforms (603e, 750's, 8240's):
-
-static const char *version =
-"eepro100.c:v1.09j-t 9/29/99 Donald Becker http://cesdis.gsfc.nasa.gov/linux/dri
-vers/eepro100.html\n"
-"eepro100.c: $Revision: 1.36 $ 2000/11/17 Modified by Andrey V. Savochkin <saw@s
-aw.sw.com.sg> and others\n";
-
---
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
