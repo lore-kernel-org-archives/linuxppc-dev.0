@@ -1,28 +1,37 @@
-Date: Wed, 17 Apr 2002 00:04:19 -0700 (PDT)
-From: Ani Joshi <ajoshi@shell.unixbox.com>
-To: Michel Lanners <mlan@cpu.lu>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: ATI 7000 and dual-monitor X? (was Re: 9600 maturity?)
-In-Reply-To: <E16xb2p-0000Bv-00@piglet.grunz.lu>
-Message-ID: <Pine.BSF.4.44.0204170001540.61655-100000@shell.unixbox.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Re: R128 Scaling.
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+To: Ani Joshi <ajoshi@shell.unixbox.com>
+Cc: Stefan Berndtsson <stefan@nocrew.org>,
+	linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.BSF.4.44.0204162241110.49666-100000@shell.unixbox.com>
+References: <Pine.BSF.4.44.0204162241110.49666-100000@shell.unixbox.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: 17 Apr 2002 13:54:56 +0200
+Message-Id: <1019044496.1617.448.camel@tibook>
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 17 Apr 2002, Michel Lanners wrote:
+On Wed, 2002-04-17 at 07:44, Ani Joshi wrote:
+>
+> On 16 Apr 2002, Michel [ISO-8859-1] Dänzer wrote:
+>
+> > Is that with a driver with optimized ImageWrite acceleration? I don't
+> > think any stock XFree86 driver is really optimized there yet, I'm
+> > working on radeon now and the results should be easily applicable to
+> > r128.
+>
+> There are several that do ImageWrie acceleration.  The radeon driver already
+> does indirect ImageWrite acceleration (its the same as CPUToScreen color
+> expansion).
 
-> Can somebody please teach XFree to leave those VGA ports alone on PPC?
-> Are they of _any_ use on any PPC machine?
-
-Yes, they are of use on Macs (I assume you meant pmacs instead of PPC,
-cause LOTS of ppc's use vga).  How else would u program a VGA card on a
-mac without use of the VGA ports?  The solution is for XFree86 to bang the
-proper IO space when there are multiple busses, this is being worked on.
+Which is slower than memcpy for a simple upload. I'm finishing a CP based
+implementation which is significantly faster, at least in 16 bit.
 
 
-ani
-
+--
+Earthling Michel Dänzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
+XFree86 and DRI project member   /  CS student, Free Software enthusiast
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
