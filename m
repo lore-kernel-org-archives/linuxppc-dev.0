@@ -1,43 +1,51 @@
-Date: Thu, 22 Apr 1999 19:14:34 +0200 (CEST)
-From: Alexander Larsson <alex@signum.se>
-To: Dan Malek <dmalek@jlc.net>
-cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Embedded 8xx 2.2.5 kernel tarball
-In-Reply-To: <371E0DB4.4D0EB787@jlc.net>
-Message-ID: <Pine.LNX.4.04.9904221912190.663-100000@tammy.signum.se>
+Date: Thu, 22 Apr 1999 19:21:35 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Simone Piccardi <Simone.Piccardi@fi.infn.it>
+cc: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: MVME2306 : kernel 2.2.6 SUCCESS !
+In-Reply-To: <371F76F4.27B2850D@fi.infn.it>
+Message-ID: <Pine.HPP.3.96.990422191551.20020q-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 21 Apr 1999, Dan Malek wrote:
 
-> Alexander Larsson wrote:
+
+
+	Hi,
+
+On Thu, 22 Apr 1999, Simone Piccardi wrote:
+
+> I made the correction you suggested, and that time make zImage compiled
+> well the routine, but then it stopped a bit further when doing vmlinuz
+> and zImage.
+> This was due to these two lines:
 > 
-> > I just merged my local changes with the 2.2.5-embedded sources.
-> > I get an error when starting init. (Booting from nfs.)
-> >
-> > It just says:
-> > Freeing unused kernel memory: 32k init
-> > put_dirty_page: page already exists
+> ld -o zImage $(OBJECTS) --just-symbols=$(TOPDIR)/vmlinux
 > 
-> Ummm.....it would help if I knew a little more about what you are using.
-> Like, what kind of board and the kernel configuration?
+> objcopy $(TOPDIR)/vmlinux vmlinux -O binary -R .comment -S
 > 
-> I would see a similar problem when I would configure IDE and not
-> configure PCI.  This is because the IDE probes (and other I/O in/out
-> operations) map to real memory locations and tend to write on top of
-> kernel data structures.  This is my only guess without more information.
+> in /home/ppc/linux/arch/ppc/prepboot/Makefile
+> 
+> That just don't work on my PC, because in this way the makefile is using
+> the intel tools, I modified in: 
+> 
+> $(CROSS_COMPILE)ld -o zImage $(OBJECTS) --just-symbols=$(TOPDIR)/vmlinux
+> 
+> $(CROSS_COMPILE)objcopy $(TOPDIR)/vmlinux vmlinux -O binary -R .comment
+> -S
+> 
+> and everything went fine. So now I can start to do check with your
+> images.
 
-I found it. The new version had a nifty clear_page that did datacache
-tricks to clear memory. This fails splendidly when the datacache is
-disabled, which i had due to some hw problems.
+Symbols $(LD) and $(OBJCOPY) are already defined, it's better to use them. 
+I've fixed it in my tree. 
 
-It works great now!
-
-/ Alex
-
+Thanks for the report. 
+	
+	Gabriel.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
