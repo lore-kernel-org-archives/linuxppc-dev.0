@@ -1,40 +1,40 @@
-Date: Sun, 19 Dec 1999 20:10:01 -0700 (MST)
-From: Jeff Rugen <jrugen@primenet.com>
-To: Cort Dougan <cort@fsmlabs.com>
-cc: linuxppc-workstation@lists.linuxppc.org,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Booting 2.2.x from VGER on PReP
-In-Reply-To: <19991219174953.A20409@hq.fsmlabs.com>
-Message-ID: <Pine.BSI.3.96.991219200617.27759A-100000@usr06.primenet.com>
+Date: Mon, 20 Dec 1999 14:29:59 -0500 (EST)
+From: James Simmons <jsimmons@edgeglobal.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: PowerPC kernel bug. (fwd)
+Message-ID: <Pine.LNX.4.20.9912201428210.7400-100000@imperial.edgeglobal.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 19 Dec 1999, Cort Dougan wrote:
 
-> 
-> Please grab the latest pre-patch for v2.2.14 (last one was pre15).  Let me
-> know if you have the same trouble there.
-> 
+Geert I know you work with the PowerPC people. I don't belong to the list
+so it might not go threw. So could you post it as well.
 
-The Makefile from vger today has
-VERSION = 2
-PATCHLEVEL = 2
-SUBLEVEL = 14
-EXTRAVERSION = pre15
+Subject: PowerPC kernel bug.
+Date:    Mon, 13 Dec 1999 22:03:26 -0500 (EST)
+From:    James Simmons <jsimmons@edgeglobal.com>
+To:      GLX mailing list <glx-dev@lists.openprojects.net>, FrameBuffer List
+<linux-fbdev@vuser.vu.union.edu>, Linux Kernel Mailing List
+<linux-kernel@vger.rutgers.edu>
 
-This version is what gave me the error I posted about (sorry, I should have
-said that initially). Are there additional patches I need beyond that, or is
-that what you meant?  If there are additional patches, where do I find them?
-Thanks.
 
-----------------------------------------------------------------------------
-Jeff Rugen                      jrugen@primenet.com
+This message is toward the Fbdev/kernel group to fix this bug but I wanted
+to let the GLX group what caused the memset problem on PowerPC. On a
+PowerPC when you mmap the framebuffer and use memset on the mmapped
+image you get a SIGBUS. Thanks Marcus for finding out what was causing the
+problem.
 
-...Had this been an actual emergency, we would have fled in terror, and you 
-would not have been informed.
+>I noticed today that it's actually a bug in the PPC-kernel. The
+>specification for the dcbz (data cache block zero) instruction
+>states that for uncached memory the exception handler should clear
+>the memory, but on Linux it just causes a SIGBUS to be sent to the
+>app...
+-----------
+==============
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
