@@ -1,39 +1,32 @@
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Message-ID: <14804.42077.837821.274373@esb.bbn.com>
-Date: Fri, 29 Sep 2000 10:17:01 -0400
-From: R Shapiro <rshapiro@bbn.com>
-To: Michel Dänzer <daenzerm@student.ethz.ch>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-        Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
+Date: Fri, 29 Sep 2000 16:34:44 +0200 (CEST)
+From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+To: R Shapiro <rshapiro@bbn.com>
+cc: Michel Dänzer <daenzerm@student.ethz.ch>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
         linuxppc-dev@lists.linuxppc.org
 Subject: Re: xf 4.0.1 + ati driver with rage II/rage pro
-In-Reply-To: <39D484DD.30E5B75D@student.ethz.ch>
-References: <Pine.LNX.4.10.10009281310500.3468-100000@cassiopeia.home>
-	<39D484DD.30E5B75D@student.ethz.ch>
-Reply-To: rshapiro@bbn.com
+In-Reply-To: <14804.42077.837821.274373@esb.bbn.com>
+Message-ID: <Pine.LNX.4.10.10009291631490.15714-100000@zirkon.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Dänzer writes:
- > Mr Shapiro, please test if this makes the ati driver work in your
- > triple-head box.
+>  > Mr Shapiro, please test if this makes the ati driver work in your
+>  > triple-head box.
+>
+> No luck.
+>
+> Booting with BootX, the ati driver still hoses linux when X starts.  I
 
-No luck.
+That's not fixable at the X level (well, technically it is but I can't
+figure out how and the X people refuse to consider that method). You will
+need to boot via OF and yaboot (or equivalent oldworld) directly, not via
+BootX to avoid the PCI resource conflict. Alternative: fix the resource
+conflict at the kernel level, new patch by me in the works.
 
-Booting with BootX, the ati driver still hoses linux when X starts.  I
-can send you (or post) the log.  Worse, using the new fbdev driver
-itself produces a confused display on the 2nd and 3rd monitor, with
-images appearing multiple times.
-
-Booting with miBoot, any attempt to run X with either driver still
-hoses linux.
-
-I don't have quik booting working yet, so I couldn't test that.
-
---
-rshapiro@bbn.com
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
