@@ -1,40 +1,32 @@
-To: "Flavio Pereira" <fpereira@azisa.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux on 8260 using ELDK..Help?!? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 04 Sep 2002 15:59:24 +0200."
-             <1E354700654661418593A0D6B5A9D410A3618E@mail.azisa.co.za>
-Date: Wed, 04 Sep 2002 18:10:46 +0200
-Message-Id: <20020904161051.6B9E011835@denx.denx.de>
+Message-ID: <FA06AA2C99BCD511951200005A99441001E3ED60@irvexch1.sextantifs.com>
+From: "Curtis, Allen" <Allen.Curtis@Thales-IFS.com>
+To: "'support@bitmover.com'" <support@bitmover.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Date: Wed, 4 Sep 2002 09:55:44 -0700
+Subject: RE: bitkeeper changesets
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Flavio,
-
-in message <1E354700654661418593A0D6B5A9D410A3618E@mail.azisa.co.za> you wrote:
+>> I see the same thing. It looks like the tag changed to just
+>v2.4.19. The
+>BK
+>> revisions totally changed!
 >
-> > Are you sure this was done well?
->
-> Well _no_ I'm not sure this was done well but I can tell you exactly
-> what I have done. For uart.c I've completely removed SMC1 and SMC2 from
-> serial_state rs_table and rs_brg_map[]. If I don't remove this my serial
-> port does not come up at all initially. For tty_io.c I simply to do not
-> call rs_8xx_init because it kills my serial port, i.e. if I let it this
-> code execute there is no more output on my serial terminal.
+>Revision numbers are not constant.  BK keys are.  'bk help key2rev'.
 
-I recommend to return to the original code, and get this working. You
-can probably use the driver in our  CVS  as  reference;  we  fixed  a
-couple of issues for example in the area of BRG assignment.
+Re: linuxppc-2_4_devel
 
-Wolfgang Denk
+According to my notes, the BK repository was:
+rev:	1.1114
+tag:	2.4.19final
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-No journaling file system can recover your data if the disk dies.
-                                 - Steve Rago in <D4Cw1p.L9E@plc.com>
+Now the tag is v2.4.19 with a comment saying automerge to 2.4.19final.
+
+What happened?
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
