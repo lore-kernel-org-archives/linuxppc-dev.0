@@ -1,32 +1,26 @@
-Date: Sun, 25 Jun 2000 17:33:01 -0400 (EDT)
-From: "Mark S. Mathews" <mark@absoval.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: PLPRCR & Checkstop reset
-Message-ID: <Pine.LNX.3.96.1000625172850.17884A-100000@tristar.cc.absoval.com>
+From: jinoung@mail.com
+Message-ID: <008701bfdf07$364945c0$98e4d5a5@telecom.samsung.co.kr>
+Reply-To: <jinoung@mail.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: I am looking for 8xxrom with ethernet.
+Date: Mon, 26 Jun 2000 09:41:04 +0900
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Folks,
-
-We're using the mvista 2.2.13-3 kernel sources and I'd like to add a
-software reboot capability.  I've figured out that I need to add an enable
-of CheckstopReset and generate a MachineCheck in head.S.  Before I go
-muddling through the assembly (I'm pretty clueless there), I was wondering if
-someone had a snippet to share that would force the hard reset I'm looking
-for.
-
-Thanks,
--Mark
-
-Mark S. Mathews
-
-AbsoluteValue Systems      Web:    http://www.linux-wlan.com
-P.O. Box 941149            e-mail: mark@linux-wlan.com
-Maitland, FL 32794-1149    Phone:  407.644.8582
-USA                        Fax:    407.539.1294
-
+Hi,linuxers
+I am total newbie to embedded linux systems.
+I trying to connect the 8xxrom to my MPC860ADS board.
+Can someone tell me how do I load the kernel onto the board.
+I have 2M flash(29f040) and 4M dram(mcm51816) only.
+I understood the 8xxrom need additional memory for linux kernel.Is that right ?
+I saw MPC8XX_XIN is 4MHz in config.h(No ifdef) but my ADS860 B'd has 5MHz. I want to know this code is tested to ADS860 B'd.
+Because this is first time to make a kind of bootrom, my question has something wrong maybe.
+I will looking forward to your help.
+Regards,
+Jinoung
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
