@@ -1,65 +1,43 @@
-Message-ID: <392540BE.B5365308@embeddededge.com>
-Date: Fri, 19 May 2000 09:25:18 -0400
-From: Dan Malek <dan@netx4.com>
+Message-ID: <39255738.272281F4@motorola.com>
+Date: Fri, 19 May 2000 10:01:12 -0500
+From: "Richard Hendricks" <richard.hendricks@motorola.com>
 MIME-Version: 1.0
-To: zzh <david-1z@263.net>
-CC: Dan Malek <dan@netx4.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: my port problem
-References: <3924D822.22874@mta2>
+To: "linuxppc-embedded@lists.linuxppc.org"  <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: How to get rom code to go on FADS?
+References: <391B220F.9838E70F@charter.net> <391C3273.4BBF0884@motorola.com> <391C3945.9E0A439F@charter.net> <391C5416.15ADA181@motorola.com> <391D5E99.D14A02F2@charter.net> <39201DD2.2135361E@motorola.com> <39202D2C.385DD3B@charter.net> <3920AA9F.2DCA0B2E@charter.net> <3920ED16.A2D26629@snom.de> <3921B844.572E3C63@charter.net> <3922046E.D77E156@charter.net> <3922EE48.1E41DA1B@motorola.com> <3923618A.F4D70742@charter.net> <39241726.1CC6B342@motorola.com> <392521B2.5ACFBD8F@charter.net>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-zzh wrote:
-
-> 0x00200000 0x002e0f77 'vmlinux'
-> 0x002e0f78 0x002e0f94 board information
-> 0x00000000 0x000d0f94 relocated vmlinux and board info
-> 0x00c00000 0x01000000 relocated initrd
-> (0x0000000c)(0x000d0f78, 0x00c00000, 0x00400000, 0x00000000, 0x00000000)
-
-I don't know where these came from.  I guess someone modified misc.c?
-I don't know what they indicate, either.
-
-> Total Memoty = 16MB;unsing 64kb for hash table (at c00d0000).
-> Linux version 2.2.11.......
-> Boot arguments:
-> Calibrating delay loop...14.44 BogoMIPS
-> remove_mem_piece: bad overlap [c8000,f4000) with [c8000, d0000) [e0000, 1000000)
-
-Don't messages like this get your attention?  Something is wrong with
-the memory map, board information structure, or where you loaded the
-software kernel and ram disk.
-
+"Dan A. Dickey" wrote:
 >
-> Memory: 15408k available (552k kernel code, 396k data, 28k init) [c0000000,c1000
-> 000]
-> DENTRY hash table entries: 262144 (order: 9, 2097152 bytes)
-> Buffer-cache hash table entries: 32768 (order: 5, 131072 bytes)
-> Page-cache hash table entries: 4096 (order: 2, 16384 bytes)
-> POSIX conformance testing by UNIFIX
-> Linux NET4.0 for Linux 2.2
-> Based upon Sw<6>NET4: Unix domain sockets 1.0 for Linux NET4.0.
-> NET4: Linux TCP/IP 1.0 for NET4.0
-> IP Protocols: ICMP, UDP, TCP
-> TCP: Hash tables configured (ehash 16384 bhash 16384)
-> Starting kswapd v 1.5
-> CPM UART driver version 0.02
-> ttyS00 at 0x0100 is a SCC        //i use scc2 as ttyS0
+> > Um, that's documented so I take no blame for it. :)
+> > See page 20-41.  If you have debug mode enabled, and
+> > are not currently IN debug mode (ie, MPC8bug is connected,
+> > but you are running your code), then a write to the
+> > DP registers is ignored.
+>
+> Page 20-41 of what?  There's nothing like that in my
+> 850 users manual, and the mpc8bug users manual doesn't
+> come close to having 20 chapters.
+>
+Oooooh, you're one of those Netcomm customers. :)  I currently
+support the MPC823/MPC823e.  They're very similar chips. Our
+manual is slightly different from the Netcomm manual.  The
+chapter in question is the Development Capabilities chapter.
+I don't have an MPC850 manual handy.  Besides, ours is much
+better. :)
 
-Really?  So, you modified arch/ppc/mbxboot/m8260_tty.c to use an SCC?
-You have to make lots of changes to use SCC as a console.  I don't have
-any board that uses the SCC for a serial port (easily, without some
-hardware hacking), so I haven't tried this.
+BTW, the final version of the MPC823/MPC823e manual is now
+availible on our website.  A printed version should be availible
+at the LDC in a few weeks.  The Powers That Be are making us change
+the cover from the spiffy one we have to a black Digital DNA one.
+Feh.
 
-
-> Warning: unable to open an initial console.
-> /*open("/dev/console",...);*/
-
-Not surprised if this is an SCC.  You have some work to contribute :-).
-
-
-	-- Dan
+--
+MPC823 Applications Engineering Development
+Get help from other MPC823 customers on the
+comp.sys.powerpc.tech newsgroup!
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
