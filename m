@@ -1,68 +1,38 @@
-Message-ID: <3DDC81F0.50200@tataelxsi.co.in>
-Date: Thu, 21 Nov 2002 12:19:20 +0530
-From: "Omanakuttan" <omanakuttan@tataelxsi.co.in>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: cannot compile 2.4.19 with kgdb/xmon
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: Cramfs root file system
+Date: Thu, 21 Nov 2002 13:09:35 +0200
+Message-ID: <7899847F7C05BE43A0687AD18D97DA2207F285@srv_mail.azisa.co.za>
+From: "Flavio Pereira" <flavio.pereira@za.flextronics.com>
+To: "LinuxPPC" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-I am a new member in this list.
-I am trying to build kernel 2.4.19 for ppc (mpc 8260) on i386 using
-ppc_82xx-gcc cross compiler.
+Hi All
 
-The configuration compiles fine when I exclude kernel hacking options.
-Once kgdb or xmon options (any of them)  of the kernel hacking options
-is included, kernel compilation fails with the following
+Im trying to use a cramfs image as a root-file system at kernel boot
+time.
 
-[root@cosine-ipnos /opt/hardhat/previewkit/ppc/82xx/bin]$ ./ppc_82xx-gcc -v
-./ppc_82xx-gcc: Actual path = '/opt/hardhat/previewkit/ppc/82xx/bin/'
-         Actual name = 'ppc_82xx-gcc'
-         Invoking
-/opt/hardhat/previewkit/ppc/82xx/bin/../lib/gcc-lib/powerpc-hardhat-linux/2.95.3/ppc_82xx-gcc
-Reading specs from
-/opt/hardhat/previewkit/ppc/82xx/bin/../lib/gcc-lib/powerpc-hardhat-linux/2.95.3/specs
-gcc version 2.95.3 20010315 (release/MontaVista)
+I've built a cramfs image, copied it into my flash device (mtd3), and
+can successfully mount it at runtime.
 
+However at boot time I use root=dev/mtdblock3 (or dev/mtd3 im not sure
+which one to use) and I get the following errors...
 
-[root@cosine-ipnos /usr/src/linux-2.4.19]# make menuconfig dep bzImage
-<snip>
-arch/ppc/kernel/kernel.o: In function `getpacket':
-arch/ppc/kernel/kernel.o(.text+0x8f58): undefined reference to
-`getDebugChar'
-arch/ppc/kernel/kernel.o(.text+0x8f58): relocation truncated to fit:
-R_PPC_REL24 getDebugChar
-<snip>
-arch/ppc/kernel/kernel.o: In function `putpacket':
-arch/ppc/kernel/kernel.o(.text+0x9078): undefined reference to
-`putDebugChar'
-arch/ppc/kernel/kernel.o(.text+0x9078): relocation truncated to fit:
-R_PPC_REL24 putDebugChar
-<snip>
-arch/ppc/kernel/kernel.o: In function `handle_exception':
-arch/ppc/kernel/kernel.o(.text+0x9340): undefined reference to
-`kgdb_interruptible'
-arch/ppc/kernel/kernel.o(.text+0x9340): relocation truncated to fit:
-R_PPC_REL24 kgdb_interruptible
-<snip>
-arch/ppc/kernel/kernel.o: In function `pmac_setup_arch':
-arch/ppc/kernel/kernel.o(.text.init+0x1e50): undefined reference to
-`zs_kgdb_hook'
-arch/ppc/kernel/kernel.o(.text.init+0x1e50): relocation truncated to fit:
-R_PPC_REL24 zs_kgdb_hookmake: *** [vmlinux] Error 1
-[root@cosine-ipnos /usr/src/linux-2.4.19]#
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+Root-NFS: No NFS server available, giving up.
+VFS: Unable to mount root fs via NFS, trying floppy.
+request_module[block-major-2]: Root fs not mounted
+VFS: Cannot open root device "mtdblock3" or 02:00
+Please append a correct "root=" boot option
+Kernel panic: VFS: Unable to mount root fs on 02:00
 
-I examined the source code and found out the function is in
-/usr/src/linux-2.4.19/arch/ppc/8xx_io/uart.c but not getting compiled.
-(no .o files in that dir)
+Now, is it possible to do what Im trying to do, if so are there any
+suggestions as to what I'm doing wrong?
 
-Any suggestions?
-
-Thanks and regards,
-Om.
-
+Thanks
+Flavio Pereira
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
