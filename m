@@ -1,51 +1,54 @@
-Message-ID: <3ACD0B76.982B66F2@ncal.verio.com>
-Date: Thu, 05 Apr 2001 17:19:02 -0700
-From: Henry Worth <haworth@ncal.verio.com>
-MIME-Version: 1.0
-To: iain@sandoe.co.uk, linuxppc-dev@lists.linuxppc.org
-Subject: Re: DMASOUND->rev6 (2.4.3)(attn: Xine, MOL, PowerComputing, ibook,
- Tumbler)
-Content-Type: text/plain; charset=us-ascii
+Date: Fri, 6 Apr 2001 13:04:52 +1000
+From: Steven Hanley <sjh@svana.org>
+To: debian-powerpc@lists.debian.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: External Monitor under Pismo
+Message-ID: <20010406130452.B515@wibble.net>
+Reply-To: Steven Hanley <sjh@wibble.net>
+References: <20010404092143.EFE4C2F01B@apollo.valhalla.net> <3ACB537B.99B851B9@netfall.com> <87hf0433qs.fsf@amadeus.openinformatics.com> <3ACB6167.3B2E0242@iiic.ethz.ch> <878zlg31mw.fsf@amadeus.openinformatics.com> <3ACB9611.C95D16A2@iiic.ethz.ch> <87ae5w1ce3.fsf@amadeus.openinformatics.com> <3ACB9EB3.2661FFCE@iiic.ethz.ch> <87u242zz7y.fsf@amadeus.openinformatics.com> <3ACCFFBB.58CC75D2@iiic.ethz.ch>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <3ACCFFBB.58CC75D2@iiic.ethz.ch>; from michdaen@iiic.ethz.ch on Fri, Apr 06, 2001 at 01:28:59AM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Applied to 2.4.3-benh, it is still reporting back 48K.
->From the new /dev/sndstat it looks like it is trying to
-resample, but if it is, it is doing a terrible job. But,
-it falls so far behind and drops pitch enough, that
-it still must not be resampling above 44.1K. I don't
-see anything in the patches that would change the
-old behavior, did Paulus' fix get lost?
+On Fri, Apr 06, 2001 at 01:28:59AM +0200, Michel Dänzer wrote:
+> You'd have to set ProjectRoot in host.def before the build.
 
-Xine will resample just fine if the device would
-simply respond back to the SNDCTL_DSP_SPEED that 44.1K
-was set instead of 48K. There is no need to extend kernel
-resampling to 48K, any apps broken in this regard are
-going to be broke on many x86 platforms.
+it is detailed nicely on http://dri.sourceforge.net/doc/DRIcompile.html
 
-In case I've got the wrong level:
+which also mentions
 
-PowerMac (AWACS rev 3 [screamer])  DMA sound driver rev 016 installed
-Core driver edition 01.05 : PowerMac Built-in Sound driver edition 00.05
-Write will use    4 fragments of   32768 bytes as default
-Read  will use    4 fragments of   32768 bytes as default
+9.3 Update Locale Information
 
-/dev/sndstat :
+To update your X locale information do the following:
 
-PowerMac (AWACS rev 3 [screamer]) DMA sound driver rev 016 :
-Core driver edition 01.05 : PowerMac Built-in Sound driver edition 00.05
-		 === Formats & settings ===
-Parameter                 soft                hard
-Format   :    signed 16 bit BE    signed 16 bit BE
-Samp Rate:         48000 s/sec         44100 s/sec
-Channels :              stereo              stereo
-		 === Sound Queue status ===
-Allocated: Buffers  Size
-    write:       4 32768
-     read:       0     0
-Current  : MaxFrg FragSiz MaxAct Frnt Rear Cnt RrSize A B S L  xruns
-    write:      4    7528      4    0   -1   0      0 0 0 0 0      0
-     read:      0       0      0    0    0   0      0 0 0 0 0      0
+             cd ~/DRI-CVS/build/xc/nls
+             ../config/util/xmkmf -a
+             make
+             make install
+
+
+This will prevent a locale error message from being printed when you run
+Xlib programs.
+
+
+which I defintely reccomend doing, and I wonder why the how to compile X
+guuides never seem to mention this that I have seen, the first time I
+compiled X 4 for my pismo  I was wondering for about a month why I was
+getting the locale error, until I compiled dri server and followed those
+directions I still didnt know. From what I can tell when you build all of X
+this is done anyway, but not when you build server only.
+
+	See You
+	    Steve
+
+--
+sjh@wibble.net http://wibble.net/~sjh/
+Look Up In The Sky
+   Is it a bird?  No
+      Is it a plane?  No
+         Is it a small blue banana?
+YES
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
