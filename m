@@ -1,32 +1,23 @@
-From: "Stefano Coluccini" <s.coluccini@caen.it>
-To: "Matt Porter" <mporter@mvista.com>
-Cc: "Linuxppc-Dev" <linuxppc-dev@lists.linuxppc.org>
-Subject: RE: Bogus interrupt + little Makefile bug
-Date: Thu, 1 Mar 2001 10:55:33 +0100
-Message-ID: <NDBBIFIMCKPOADMAJOKMKEJBCPAA.s.coluccini@caen.it>
+Date: Thu, 1 Mar 2001 13:06:30 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Daniel Berlin <dberlin@redhat.com>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: u64 fun and PCI DMA not working for things behind bridges?
+In-Reply-To: <m2k86a2gw5.fsf@dynamic-addr-83-177.resnet.rochester.edu>
+Message-ID: <Pine.LNX.4.30.0103011305510.28644-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <20010228171203.A29030@beef.az.mvista.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Ok, I finally got time today to powerup the 5100 that's been laying
-> around here.  I just pushed the port to the linuxppc_2_5 tree.
-> Hopefully this saves some effort for others.
+> I can't compile the drivers without optimization, or else i get
+> references to functions that don't exist in the kernel, for some
+> reason.
 
-Very great work !!!
+What exact functions don't exist?
 
-I have found a little bug in arch/ppc/boot/pp3/Makefile:
-the rule to make zImage.initrd miss the -pbp option in the mkprep
-invocation.
+	Michael
 
-I've seen that in the make menuconfig, selecting the MVME5100, does not
-display the possibility to specify the default kernel command line. Don't
-you think this is an useful option ?
-
-Bye.
-Stefano.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
