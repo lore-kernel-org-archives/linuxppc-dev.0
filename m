@@ -1,31 +1,45 @@
-Date: Tue, 19 Jan 1999 11:47:38 +1100
-Message-Id: <199901190047.LAA01101@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: Geert.Uytterhoeven@cs.kuleuven.ac.be
-CC: linuxppc-dev@lists.linuxppc.org
-In-reply-to: 
-	<Pine.LNX.4.03.9901181803180.339-100000@mercator.cs.kuleuven.ac.be>
-	(message from Geert Uytterhoeven on Mon, 18 Jan 1999 18:04:39 +0100
-	(CET))
-Subject: Re: MCLK=100 breaks PowerBook
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <Pine.LNX.4.03.9901181803180.339-100000@mercator.cs.kuleuven.ac.be>
+Message-ID: <003801be435b$600ad480$1b415c9b@s307-17.msoe.edu>
+From: "ian reinhart geiser" <geiseri@msoe.edu>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: scsi hangs [drow@cs.cmu.edu: Re: CD-writers] (fwd)
+Date: Mon, 18 Jan 1999 21:25:34 -0600
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be> wrote:
 
-> On Mon, 18 Jan 1999, Cort Dougan wrote:
-> > 0x0000 0x1fe2 0x0000 0x3fc3
-> 
-> Hmm, this would indicate mclk (GUI engine clock) runs at 8 MHz, and xclk
-> (memory clock) runs at 16 MHz... very slow machine :-)
+-----Original Message-----
+From: Brad Midgley <brad@pht.com>
+To: Daniel Jacobowitz <drow@false.org>
+Cc: Paul.Mackerras@cs.anu.edu.au <Paul.Mackerras@cs.anu.edu.au>;
+linuxppc-dev@lists.linuxppc.org <linuxppc-dev@lists.linuxppc.org>
+Date: Monday, January 18, 1999 5:40 PM
+Subject: Re: scsi hangs [drow@cs.cmu.edu: Re: CD-writers] (fwd)
 
-0x1fe2 == 8162, 0x3fc3 == 16323, so mclk = 81.62 MHz surely, not
-8MHz??
 
-Paul.
+    ---SNIP---
+>Now lets discussw why a buffer underrun may occur:
+>
+>1) Disabled disconnect/reconnect on the SCSI bus
+>
+    okay...
+    how do we deal with this?
+    i can burn under MacOS but as i played with it more
+    and more i found that under Linux that the SCSI bus
+    was timeing out.
+
+    i am running 2.1.35 with the memory patched....
+
+    is there a patch rev that fixes the disconnect/reconnect?
+
+    thanks for the help, i can feel that we are getting closer.
+    at least people have confirmed what i have found.
+
+    -ian reinhart geiser
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
