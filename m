@@ -1,50 +1,38 @@
-To: "somshekar chandrashekar kadam" <som_kadam1@rediffmail.com>
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	"Joao Vicente" <joao.vicente@spectel.com>
-Subject: Re: relocate code 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "11 Oct 2003 07:13:22 -0000."
-             <20031011071322.23815.qmail@webmail28.rediffmail.com>
-Date: Sat, 11 Oct 2003 16:32:28 +0200
-Message-Id: <20031011143233.925CBC59E4@atlas.denx.de>
+Message-ID: <002501c3906c$91a87570$4a44900a@hydingnb>
+From: "hyding" <nari_dhy@nari-china.com>
+To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
+Cc: "Kerl, John" <John.Kerl@Avnet.com>
+Subject: debug Montavista on ML300
+Date: Sun, 12 Oct 2003 10:57:22 +0800
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20031011071322.23815.qmail@webmail28.rediffmail.com> you wrote:
->
->
-> --Next_1065856402---0-203.199.83.38-23744
-> Content-type: text/html;
-> 	charset=iso-8859-1
-> Content-Transfer-Encoding: quoted-printable
-> Content-Disposition: inline
+hi,
+    Maybe this is not the right place to ask questions. But i wish
+someone in this list will give me some help. Any hint will be
+appreciable.
 
-Arghhh.... Please don't post HTML to the  mailing  list.  Send  plain
-text only.
+    I am doing some work on ML300. After i generate the configuration
+file(top.bit), i don't know how to download the OS image to DDR SDRAM.
+Can i use the Parallel Cabel IV to download the OS image to DDR SDRAM?
+>From some docs, i see the method to combine the configuration .bit file
+and OS image into a .ace file. Put the .ace into the CF card, the FPGA
+will be configured with this .ace after power. But how to make the .ace
+file including the .bit file and OS?
 
->  I have ppcboot-2.0.0 working on 8mb SDRAM ,
-> now i have moved to same type of board with 32mb SDRAM , with U-boot,
+    Thanks!
 
-You are off topic here. You should rather ask questions like this  on
-the U-Boot-users mailing list.
-
-> my code gets hanged in relocate code , sdram pattern i swritten properly, and intilaized ,
-
-> ANY ideas please suggest , i dont get whats going wrong
-
-Your SDRAM initialization is broken.
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-If in any problem you find yourself doing an immense amount of  work,
-the answer can be obtained by simple inspection.
+---
+ding hou yong
+Nanjing Electrical Automation Institute
+Tel: 86-25-3429900-2425
+GSM: 86-(0)13814021009
+FAX: 86-25-3429900-2425
+Email: nari_dhy@nari-china.com
+Http: www.nari-china.com
+---
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
