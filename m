@@ -1,26 +1,30 @@
-Date: Wed, 4 Feb 2004 11:12:49 +0100
-From: Olaf Hering <olh@suse.de>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Video For Linux on ppc32 in kernel 2.6
-Message-ID: <20040204101249.GA25776@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Message-ID: <0d5001c3eb09$0d02dbb0$3cc8a8c0@epro.dom>
+From: "Colin Leroy" <colin@colino.net>
+To: "Olaf Hering" <olh@suse.de>, <linuxppc-dev@lists.linuxppc.org>
+References: <20040204101249.GA25776@suse.de>
+Subject: Re: Video For Linux on ppc32 in kernel 2.6
+Date: Wed, 4 Feb 2004 11:24:19 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="UTF-8"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-CONFIG_VIDEO_DEV triggers CONFIG_VIDEO_BUF. If compiled as module,
-video-buf.c wants clear_user_page(). This is a define on most archs
-(maps to clear_page()), on ppc32 it is an unexported function. This
-leads to unresolved symbols.
+Hi,
 
-Should clear_user_page() be exported or should
-drivers/media/video/video-buf.c:videobuf_vm_nopage() do something else
-to achive similar results?
+> CONFIG_VIDEO_DEV triggers CONFIG_VIDEO_BUF. If compiled as module,
+> video-buf.c wants clear_user_page(). This is a define on most archs
+> (maps to clear_page()), on ppc32 it is an unexported function. This
+> leads to unresolved symbols.
 
+
+It's been fixed in BenH's tree since a few weeks.
+(
+http://ppc.bkbits.net:8080/linuxppc-2.5-benh/diffs/arch/ppc/kernel/ppc_ksyms.c@1.72 )
 --
-USB is for mice, FireWire is for men!
+Colin
+Ne disez pas disez, mais disez dites
 
-sUse lINUX ag, nÜRNBERG
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
