@@ -3,11 +3,11 @@ Content-Type: text/plain;
 From: Rakesh jagota <j.rakesh@gdatech.co.in>
 Reply-To: j.rakesh@gdatech.co.in
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Problem in booting kernel
-Date: Sat, 14 Jun 2003 10:13:12 +0530
-Cc: j.rakesh@gdatech.co.in
+Subject: Problem in booting the linux
+Date: Sat, 14 Jun 2003 17:50:45 +0530
+Cc: j.murali@gdatech.co.in
 MIME-Version: 1.0
-Message-ID: <1iiwzz6cccr670f.140620031003@gda-server>
+Message-ID: <m0dyxsp45bf38fp.140620031740@gda-server>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
@@ -18,39 +18,9 @@ code and Linux -2.4.17 version from montavista. I am downloading the os image
 using serial port. After downoading the image, I am getting the follwoinbg
 messeges:
 
+============================================
 
-=========================================================================
-
-
-Loaded successfully ...
-Entry point at 0x500000 ...
-
-loaded at:     00500000 005AD1F8
-relocated to:  00400000 004AD1F8
-board data at: 004AA128 004AA168
-relocated to:  00405544 00405584
-zimage at:     00405BA0 004A9671
-avail ram:     004AE000 04000000
-
-Linux/PPC load: console=ttyS0,9600
-Uncompressing Linux...
-
-opps... out of memory
-pause
-opps... out of memory
-pause
-opps... out of memory
-pause
-opps... out of memory
-pause
-opps... out of memory
-pause
-opps... out of memory
-pause
-opps... out of memory
-pause
-opps... out of memory
-pause
+.............
 opps... out of memory
 pause
 opps... out of memory
@@ -61,9 +31,24 @@ Now booting the kernel
 
 And after this it stops.
 
-Can anyone suggest me how to resolve this problem. I am using 4MB flash. And
-Single SDRAM with single bank  of size 32MB. Can anyone helpme out to sort
-out this issue.
+In the openbios bootcode we r initializing the
+
+RAM_BANK_0		0x02000000   (address)
+RAM_BANK_0_SIZE       0x00000000
+
+RAM_BANK_1		0x00000000   (address)
+RAM_BANK_1_SIZE       0x02000000
+
+We r not using the RAM_BANK_0 in the bootcode.
+
+we think when loading the kernel it is taking the size of RAM_BANK_0
+
+
+Can anyone suggest me how to resolve this problem. I am using 4MB flash.
+We have connected 32 MB of sdram in sdram_controller_0 and we have
+disable sdram_controller_1.
+
+Can anyone helpme out to sort  out this issue.
 
 Thanks & Regards,
 
