@@ -1,62 +1,47 @@
-Message-ID: <39A0EF0C.EDC3D3A1@student.ethz.ch>
-Date: Mon, 21 Aug 2000 10:57:48 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
-MIME-Version: 1.0
-To: mlan@cpu.lu, linuxppc-dev@lists.linuxppc.org
-CC: dmj+@andrew.cmu.edu
+Date: Mon, 21 Aug 2000 12:46:18 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Michel Dänzer <daenzerm@student.ethz.ch>
+cc: mlan@cpu.lu, linuxppc-dev@lists.linuxppc.org, dmj+@andrew.cmu.edu
 Subject: Re: Control fb problem on 8500
-References: <200008190718.JAA00823@piglet.grunz.lu> <399E898A.1564594C@student.ethz.ch>
-Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <39A0EF0C.EDC3D3A1@student.ethz.ch>
+Message-ID: <Pine.LNX.4.10.10008211241460.371-100000@cassiopeia.home>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel Dänzer wrote:
+On Mon, 21 Aug 2000, Michel [iso-8859-1] Dänzer wrote:
+> That's not even needed, the fbdev driver is just broken. Line 430:
 >
-> Michel Lanners wrote:
+> 	pScrn->displayWidth = pScrn->virtualX; /* FIXME: might be wrong */
 >
-> > On  18 Aug, this message from Daniel Jacobowitz echoed through cyberspace:
-> > >> In fact, before, the line length was exactly hpixels * bytes/pixel,
-> > >> whereas now there's an additional 0x20 bytes in each line. I have not
-> > >> been able to boot a 2.4.0 kernel with any fix applied, but you could try
-> > >> and build a version without those 0x20 bytes added (they are found in a
-> > >> few spots inside controlfb.c).
-> > >>
-> > >> As to why these 0x20 bytes were added, anybody know an explanation? And,
-> > >> if they do serve a purpose (I suppose so ;-), it would be better to add
-> > >> the exact number of bytes as a #define somewhere...
-> > >
-> > > *sigh*
-> > >
-> > > I have no idea where this came from, but 0x20 means it has something to
-> > > do with cursor support, I'd bet.  I seem to recall someone talking
-> > > about that a few months ago... that is how hardware cursor is generally
-> > > implemented, by a 32 pixel block at the end of the scanline.
-> >
-> > That's what I was thinking about. However, I'm not sure that XFree
-> > supports a display with discontiguous lines in video memory. I think I
-> > read that somewhere in some mailing list or X doc... Can any of the
-> > XFree specialists confirm?
+> is indeed wrong. virtualX is obvious, but displayWidth should be the memory
+> pitch of a scanline.
 >
-> It does support that, if not directly then certainly via shadowfb. Maybe the
-> shadowfb RefreshArea function would have to be modified to take account of
-> this.
+> Now you just have to find out where to get the correct value for displayWidth.
 
-That's not even needed, the fbdev driver is just broken. Line 430:
+I suppose
 
-	pScrn->displayWidth = pScrn->virtualX; /* FIXME: might be wrong */
+    if (fix.line_length)
+	pScrn->displayWidth = fix.line_length*8/var.bits_per_pixel;
+    else
+	pScrn->displayWidth = var.xres_virtual;
 
-is indeed wrong. virtualX is obvious, but displayWidth should be the memory
-pitch of a scanline.
+should work fine, except on hardware were fix.line_length*8/var.bits_per_pixel
+might not be integer (e.g. if 1280x1024x24 mode requires a line_length of
+4096).
 
-Now you just have to find out where to get the correct value for displayWidth.
+Gr{oetje,eeting}s,
 
-
-Michel
-
+						Geert
 
 --
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
