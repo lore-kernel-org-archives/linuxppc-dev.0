@@ -1,36 +1,57 @@
-Date: Tue, 20 Jul 1999 10:13:16 -0400 (EDT)
-From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-To: Yann Bizeul <yann@tynsoe.com>
-cc: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
-Subject: Re: X : caught signal 11 ?
-In-Reply-To: <199907200828.DAA31764@lists.linuxppc.org>
-Message-ID: <Pine.LNX.3.96L.990720100907.1737B-100000@unix47.andrew.cmu.edu>
+From: "Jerry Quinn" <jquinn@nortelnetworks.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <14228.34383.572486.889752@gargle.gargle.HOWL>
+Date: Tue, 20 Jul 1999 10:23:11 -0400 (EDT)
+To: Paul.Mackerras@cs.anu.edu.au
+Cc: "Jerry Quinn" <jquinn@nortelnetworks.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Broken sound?
+In-Reply-To: <199907200610.QAA09787@tango.anu.edu.au>
+References: <14222.9603.505701.976724@gargle.gargle.HOWL> <14227.17537.383252.433328@gargle.gargle.HOWL> <199907200610.QAA09787@tango.anu.edu.au>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 20 Jul 1999, Yann Bizeul wrote:
-> 
-> I've a little bit more informations.
-> 1) X caught signal 11 and quits each time I go back to a console.
-> 2) X quits each time XScreensaver is launching
-> 
-> Iuse the XFree server provided by Release 5
+>> "Paul" == Paul Mackerras <paulus@cs.anu.edu.au> writes:
 
-I also have problem 1), though I guess I've managed to disable xscreensaver so
-X does its built-in blanking thing (with no power saving =( ).
+ Paul> Jerry Quinn <jquinn@nortelnetworks.com> wrote:
+ >> Hmm, junk.au started out as a wav file from Gnome.  I originally was
+ >> trying to get the wav files working and then figured I'd try converting
+ >> with sox to au.
 
-To crash X:
-startx
-ctrl-cmd-F1
+ Paul> The .wav reader in KDE had an endianness problem in how it read the
+ Paul> header.  That problem is fixed in the rpms that Franz Sirl put up.
+ Paul> Maybe the .wav reader in gnome has the same problem.
 
-Poof. All gone. If you have xdm set up, xdm reloads (and takes you to vc 7
-from wherever you wanted to go in the first place). I'm using platinumfb. Is
-anyone else out there able to use virtual consoles without X crashing?
+Apparently.  So I now know that I've got an application problem on my hands to 
+track down.  Of course, I should have assumed that
 
--Hollis
+ >> How is playing of other sound formats handled?  How is the sample rate and
+ >> stereo set?
+
+ Paul> Ioctls on /dev/dsp or /dev/audio.  The only difference between them is
+ Paul> that with /dev/dsp you get whatever was last set (or 8kHz linear 8-bit
+ Paul> mono at startup), whereas with /dev/audio it gets set to 8kHz mu-law
+ Paul> 8-bit mono on the open.  There is documentation at www.opensound.com.
+
+Thanks for the pointer.  That helps a lot.  I think that some basic
+documentation on the devices will be helpful.  I guess they would need to be
+part of the man-pages package.  Projects, projects ...
+
+ Paul> You should have a /dev/dsp (char device 14,3).  /dev/audio1 and
+ Paul> /dev/dsp1 would correspond to a second sound card, which you don't
+ Paul> have.  Powermacs have one (stereo) sound output channel which can be
+ Paul> routed to the speaker and/or the headphone.
+
+After some kernel browsing and guessing, I came to the same conclusion.  I
+used MAKEDEV to recreate the missing /dev/dsp.
+
+ Paul> Paul.
+
+Thanks for all the info.
+
+Jerry
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
