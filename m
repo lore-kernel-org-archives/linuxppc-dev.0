@@ -1,54 +1,40 @@
-Message-ID: <3AFAE055.3396344C@mvista.com>
-Date: Thu, 10 May 2001 11:39:17 -0700
-From: Frank Rowand <frank_rowand@mvista.com>
-Reply-To: frowand@mvista.com
-MIME-Version: 1.0
-To: Gabriel Paubert <paubert@iram.es>
-Cc: Brian Kuschak <brian.kuschak@skystream.com>,
-	"'Dan Malek'" <dan@mvista.com>, Eli Chen <eli@routefree.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: dcache BUG()
-References: <Pine.HPX.4.10.10105092010530.29518-100000@gra-ux1.iram.es>
-Content-Type: text/plain; charset=us-ascii
+Date: Thu, 10 May 2001 14:40:05 -0400 (EDT)
+Message-Id: <200105101840.f4AIe5d413262@saturn.cs.uml.edu>
+From: "Albert D. Cahalan" <acahalan@cs.uml.edu>
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: Murray.Jensen@cmst.csiro.au, trini@kernel.crashing.org
+Subject: Re: linuxppc_2_5 source tree (and others)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Gabriel Paubert wrote:
+Tom Rini writes:
+> On Thu, May 10, 2001 at 06:38:02PM +1000, Murray Jensen wrote:
+
+>> Hi, I see that the linuxppc_2_5 bk tree has disappeared from fsmlabs, and
+>> has been replaced with a linuxppc_2_4_devel tree. Could someone in the
+>> know please post a quick update what this means, and perhaps what the
+>> future holds wrt 2.4/2.5 linuxppc (embedded)?
 >
-> On Wed, 9 May 2001, Brian Kuschak wrote:
+> I was hoping Cort would mention this here, but 2_5 has been 'dead' for a
+> while and is finally gone too.  There's still mirrors of it however.
+> It will exist again, but when 2.5.0 appears and will be based off the
+> linux_2_4 tree or so.  Right now 2_4_devel isn't up to date wrt 8xx/4xx, and
+> some new boards 2_5 had.  I'm working on it. :)
 
+Oh, lovely.
 
-> >
-> > static __inline__ void atomic_set(atomic_t *v, int a)
-> > {
-> > c004f9e8:       38 00 00 01     li      r0,1
-> >         int t;
-> >
-> >         __asm__ __volatile__("\n\
-> > c004f9ec:       7d 60 f8 28     lwarx   r11,r0,r31
-> > c004f9f0:       60 0b 00 00     ori     r11,r0,0
-> > c004f9f4:       7d 60 f9 2d     stwcx.  r11,r0,r31
-> > c004f9f8:       40 a2 ff f4     bne-    c004f9ec <d_alloc+0x90>
-> >
-> >         atomic_set(&dentry->d_count, 1);
->
-> Is there any reason for atomic_set to use this sequence. I believe that a
-> simple store (stw in this case) would be ok. This looks like a very
-> convoluted and bloated way to set a variable. An aligned stw is guaranteed
-> to set the variable atomically wrt all other processors.
+I'm very glad to have ignored this BitKeeper nonsense for
+the most part then. I knew there was a good reason to rely
+on the one true source tree from Linus. I'm not screwed like
+all the people working from linuxppc_2_5 are.
 
-Sorry I wasn't around for the beginning of this discussion (I was off with
-visiting family...), but I'll jump in now.
+On the other hand, I had to do my own PowerCore 6750 VME port
+for the 2.4 kernel. That sucked. It would be nice if everyone
+had the decency to submit stuff to Linus in a way that he finds
+acceptable, rather than hoarding source code in obscure places
+that are only accessible via non-standard non-free software.
 
-I put this version of atomic_set() into Brian's source.  It is one of the
-things that helped reduce the severity of the dcache symptoms.  You can't
-just use a stw in atomic_set(), because the other atomic operations depend
-upon the stwcx.
-
--Frank
---
-Frank Rowand <frank_rowand@mvista.com>
-MontaVista Software, Inc
+So, how did _you_ know that 2_5 has been 'dead' for a while?
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
