@@ -1,56 +1,139 @@
-Date: Thu, 20 Mar 2003 23:52:50 -0800
-From: Ira Weiny <iweiny@acm.org>
-Subject: Re: Upgrade Blues 2.4.20 Ben H kernel
-In-reply-to: <1047135968.12345.81.camel@zion.wanadoo.fr>
+From: Richard Drummond <lists@rcdrummond.net>
 To: linuxppc <linuxppc-dev@lists.linuxppc.org>
-Message-id: <20030320235251.2f70362e.iweiny@acm.org>
-MIME-version: 1.0
-Content-type: text/plain; charset=US-ASCII
-References: <20030307095717.1b1bece1.iweiny@acm.org>
- <1047135968.12345.81.camel@zion.wanadoo.fr>
+Subject: Voodoo card and PCI I/O ports?
+Date: Sat, 22 Mar 2003 03:15:59 -0500
+MIME-Version: 1.0
+Message-Id: <200303220311.29361.evilrich@rcdrummond.net>
+Reply-To: lists@rcdrummond.net
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_/uBf+flMHj3Pk68"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 08 Mar 2003 16:06:08 +0100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+--Boundary-00=_/uBf+flMHj3Pk68
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> On Fri, 2003-03-07 at 18:57, Ira Weiny wrote:
-> > Well I decided it was time to get up to date on my TiBook.
-> >
-> >
-> > 1) My Microdrive which I had hacked in does not work any more.  What is the
-> >    status of the ide-cs driver?  Anyone know?  It is different than when I got
-> >    it to work before and I am not sure where to begin again.
->
-> There are some problems with ide-cs currently. I'll try to work on it
-> this week-end.
->
+Hi
 
-At the risk of sounding ignorant I have some more information about ide-cs.
+I'm trying to use a Voodoo3 card under Linux on a Mac 9500. The problem that I
+have with this card is that when I boot from Open Firmware with Quik, the PCI
+I/O space of the card is not enabled (and hence X and the tdfxfb driver won't
+work). If, however, I boot via miBoot the I/O space is enabled and all is
+fine. My guess is that the MacOS driver in the Voodoo's ROM is enabling the
+I/O ports, but that the OF driver doesn't.
 
-I rebooted into 2.4.15 and noted the addresses which the driver uses to talk to
-the card.  I have also been able to print the address used in the new kernel
-and they are the same address range.  So I must assume that the machine check
-is due to something not being set up in the PPC architecture?
+When booting from OF, I can enable the card's I/O ports with the command:
 
-What I don't understand is that there does not seem to be anything in
-request_region which is PPC specific.  I am sure I am missing something.  I
-don't know exactly what a machine check is but, I got this from a book I found:
+setpci -s 0:0e.0 COMMAND=3
+
+However, this is not enough to get the card working. The card claims the range
+0x0400-0x04ff (PCI addressing) for its I/O space, but this conflicts with my
+ATA controller which also wants this space and is enabled by OF. If I then
+manually set the Voodoo's I/O port address with, for example,
+
+setpci -s 0.0e.0 BASE_ADDRESS_2=0500
+
+then the conflict disappears and X will now start up fine.
+
+What I want to know is is this behaviour what one would expect? I am just
+beginning to get grips with how PCI configuration works with OF and the Mac.
+But I doesn't see why the kernel can't enable the I/O ports on the Voodoo
+card and sort out the address conflict itself.
+
+Can anybody here comment on this and enlighten me?
+
+BTW, this behaviour is the same on all the kernels I've tried on this machine
+- 2.4.18 to 2.4.20 from kernel.org.
+
+I've attached the outputs of lspci -v and lspci -vb after booting from OF and
+before my twiddling of the PCI config.
+
+Cheers,
+Rich
 
 
-The causes for machine check exceptions are implementation-dependent, but
-typically these causes are related to conditions such as bus parity
-errors or attempting to access an invalid physical address.
 
 
-Why on the first kernel would this address be ok and on the newer version not?
-I assumed there would be something in request_region, but I do not see anything
-in there PPC specific or architecture specific for that matter.
+--Boundary-00=_/uBf+flMHj3Pk68
+Content-Type: text/plain;
+  charset="us-ascii";
+  name="pci.lst"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline; filename="pci.lst"
 
-I don't know if this helps but I am learning...  ;-)
+00:0b.0 Host bridge: Apple Computer Inc. Bandit PowerPC host bridge (rev 03)
+	Flags: bus master, medium devsel, latency 32, IRQ 22
 
-Ira
+00:0e.0 VGA compatible controller: 3Dfx Interactive, Inc. Voodoo 3 (rev 01) (prog-if 00 [VGA])
+	Subsystem: 3Dfx Interactive, Inc. Voodoo 3
+	Flags: fast devsel, IRQ 24
+	Memory at 82000000 (32-bit, non-prefetchable) [size=32M]
+	Memory at 90000000 (32-bit, prefetchable) [size=32M]
+	I/O ports at 0400 [disabled] [size=256]
+	Expansion ROM at 84000000 [disabled] [size=64K]
+	Capabilities: [60] Power Management version 1
+
+00:10.0 Class ff00: Apple Computer Inc. Grand Central I/O (rev 02)
+	Flags: bus master, medium devsel, latency 32, IRQ 22
+	Memory at f3000000 (32-bit, non-prefetchable) [size=128K]
+
+01:0b.0 Host bridge: Apple Computer Inc. Bandit PowerPC host bridge (rev 03)
+	Flags: bus master, medium devsel, latency 32, IRQ 26
+
+01:0d.0 SCSI storage controller: Artop Electronic Corp ATP860 (rev 01)
+	Subsystem: Artop Electronic Corp ATP860
+	Flags: bus master, medium devsel, latency 32, IRQ 27
+	I/O ports at ff7fe440 [size=8]
+	I/O ports at ff7fe430 [size=4]
+	I/O ports at ff7fe420 [size=8]
+	I/O ports at ff7fe410 [size=4]
+	I/O ports at ff7fe400 [size=16]
+	Expansion ROM at a0000000 [disabled] [size=64K]
+	Capabilities: [58] Power Management version 1
+
+
+--Boundary-00=_/uBf+flMHj3Pk68
+Content-Type: text/plain;
+  charset="us-ascii";
+  name="pcib.lst"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline; filename="pcib.lst"
+
+00:0b.0 Host bridge: Apple Computer Inc. Bandit PowerPC host bridge (rev 03)
+	Flags: bus master, medium devsel, latency 32
+
+00:0e.0 VGA compatible controller: 3Dfx Interactive, Inc. Voodoo 3 (rev 01) (prog-if 00 [VGA])
+	Subsystem: 3Dfx Interactive, Inc. Voodoo 3
+	Flags: fast devsel, IRQ 24
+	Memory at 82000000 (32-bit, non-prefetchable)
+	Memory at 90000000 (32-bit, prefetchable)
+	I/O ports at 0400 [disabled]
+	Capabilities: [60] Power Management version 1
+
+00:10.0 Class ff00: Apple Computer Inc. Grand Central I/O (rev 02)
+	Flags: bus master, medium devsel, latency 32
+	Memory at f3000000 (32-bit, non-prefetchable)
+
+01:0b.0 Host bridge: Apple Computer Inc. Bandit PowerPC host bridge (rev 03)
+	Flags: bus master, medium devsel, latency 32
+
+01:0d.0 SCSI storage controller: Artop Electronic Corp ATP860 (rev 01)
+	Subsystem: Artop Electronic Corp ATP860
+	Flags: bus master, medium devsel, latency 32, IRQ 27
+	I/O ports at 0440
+	I/O ports at 0430
+	I/O ports at 0420
+	I/O ports at 0410
+	I/O ports at 0400
+	Expansion ROM at a0000000
+	Capabilities: [58] Power Management version 1
+
+
+--Boundary-00=_/uBf+flMHj3Pk68--
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
