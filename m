@@ -1,13 +1,17 @@
-Return-Path: <domen@coderock.org>
-Received: from trashy.coderock.org (coderock.org [193.77.147.115])
-	by ozlabs.org (Postfix) with ESMTP id B29E32BDB5
-	for <linuxppc-dev@ozlabs.org>; Sun, 26 Dec 2004 04:53:22 +1100 (EST)
-To: paulus@samba.org
-From: domen@coderock.org
-Date: Sat, 25 Dec 2004 18:46:49 +0100
-Message-Id: <20041225174639.5D1141EA0F@trashy.coderock.org>
-Cc: linuxppc-dev@ozlabs.org, domen@coderock.org
-Subject: [patch 1/3] delete unused file
+Return-Path: <j.glisse@free.fr>
+Received: from postfix2-c.free.fr (postfix2-c.free.fr [213.228.0.80])
+	by ozlabs.org (Postfix) with ESMTP id B2ED12BDB5
+	for <linuxppc-dev@ozlabs.org>; Sun, 26 Dec 2004 08:56:36 +1100 (EST)
+Received: from postfix3-2.free.fr (postfix3-2.free.fr [213.228.0.169])
+	by postfix2-c.free.fr (Postfix) with ESMTP id E26859ACC3A
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Dec 2004 22:20:31 +0100 (CET)
+Message-ID: <41CDD97A.10702@free.fr>
+Date: Sat, 25 Dec 2004 22:19:54 +0100
+From: Jerome Glisse <j.glisse@free.fr>
+MIME-Version: 1.0
+To: linuxppc64-dev@ozlabs.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: G5 AGP
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,66 +21,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-Remove nowhere referenced file. (egrep "filename\." didn't find anything)
+I am working on G5 agp uninorth and i am facing a strange problem.
+I have my agpworking but the change i made seems to broke the fan
+control, thus the fan start to go to their full speed shortly after i load
+my uninorth driver.
 
-Signed-off-by: Domen Puncer <domen@coderock.org>
----
+Is fan control related in anyway to PCI or AGP ? :)
 
+By the way i could not unload my module, kernel claim that is used
+by someone even if no one (no graphics card module loaded) any clue ?
 
- kj/arch/ppc/kernel/find_name.c |   48 -----------------------------------------
- 1 files changed, 48 deletions(-)
-
-diff -L arch/ppc/kernel/find_name.c -puN arch/ppc/kernel/find_name.c~remove_file-arch_ppc_kernel_find_name.c /dev/null
---- kj/arch/ppc/kernel/find_name.c
-+++ /dev/null	2004-12-24 01:21:08.000000000 +0100
-@@ -1,48 +0,0 @@
--#include <stdio.h>
--#include <asm/page.h>
--#include <sys/mman.h>
--#include <strings.h>
--/*
-- * Finds a given address in the System.map and prints it out
-- * with its neighbors.  -- Cort
-- */
--
--int main(int argc, char **argv)
--{
--	unsigned long addr, cmp, i;
--	FILE *f;
--	char s[256], last[256];
--	
--	if ( argc < 2 )
--	{
--		fprintf(stderr, "Usage: %s <address>\n", argv[0]);
--		return -1;
--	}
--
--	for ( i = 1 ; argv[i] ; i++ )
--	{
--		sscanf( argv[i], "%0lx", &addr );
--		/* adjust if addr is relative to kernelbase */
--		if ( addr < PAGE_OFFSET )
--			addr += PAGE_OFFSET;
--		
--		if ( (f = fopen( "System.map", "r" )) == NULL )
--		{
--			perror("fopen()\n");
--			exit(-1);
--		}
--		
--		while ( !feof(f) )
--		{
--			fgets(s, 255 , f);
--			sscanf( s, "%0lx", &cmp );
--			if ( addr < cmp )
--				break;
--			strcpy( last, s);
--		}
--		
--		printf( "%s%s", last, s );
--	}		
--	fclose(f);
--	return 0;
--}
-_
+best,
+Jerome Glisse
