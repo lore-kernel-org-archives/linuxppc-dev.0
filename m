@@ -1,36 +1,51 @@
-From: jlhagen@collins.rockwell.com
-Subject: trouble creating ramdisk over 8MB - could someone explain this to me
-To: linuxppc-embedded@lists.linuxppc.org
-Date: Thu, 1 Feb 2001 16:13:15 -0600
-Message-ID: <OFCB2243A7.F8689577-ON862569E6.00792F78@collins.rockwell.com>
+Message-ID: <3A79E135.6B45A9C8@matrox.com>
+Date: Thu, 01 Feb 2001 17:20:37 -0500
+From: Sébastien Côté <scote1@matrox.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+To: linuxppc-embedded@lists.linuxppc.org, Jim Potter <jrp@wvi.com>
+Subject: Re: mm in user space
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Hi!
 
-I'm trying to set up a 10MB ramdisk for our VME boards. I'm running in to
-this
+I got exactly the same problem, did you manage to fix it?  If so, could
+you tell me how ?  I really don't see it right now.  Maybe it's time to
+go home...
 
-dd if=/dev/zero of=/dev/ram bs=1k count=10240
-dd: /dev/ram: No space left on device
-8193+0 records in
-8192+0 records out
+Thanks!
 
-and
+Sébastien Côté
 
-mke2fs -vm0 /dev/ramdisk 10240
-mke2fs 1.18, 11-Nov-1999 for EXXT2 FS 0.5b, 95/08/09
-mke2fs: Filesystem larget than apparent filesystem size.
-Proceed anyway? (y,n)
 
-For 8MB dd and mke2fs don't give me problems and changing
-drivers/block/rd.c rd_size to 8192 works as expected but I can't
-figure out why larger than 8 gives me problems.
 
-I would appreciate the help.
-John
+Jim Potter wrote :
+
+DOH!  It's *supposed* to be taking a DSI trap (slapping forehead).
+
+> I think I'm missing something here...
+> I'm porting Linux over to an embedded PPC project and I'm getting a DSI
+> crash when the kernel starts executing elf programs (specifically at
+> NEW_AUX_ENT in create_elf_tables() in fs/binfmt_elf.c; the stack
+> accesses are at 0x80000000, and the BATs are only expecting references
+> at 0xC0000000).
+> It's been a long day -- what am I missing?
+>
+> --
+> Sincerely,
+>
+> Jim Potter
+> 45th Parallel Processing
+> jrp@wvi.com
+>
+
+--
+Sincerely,
+
+Jim Potter
+45th Parallel Processing
+jrp@wvi.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
