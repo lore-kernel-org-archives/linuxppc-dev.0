@@ -1,57 +1,52 @@
-Message-Id: <199908271827.UAA00377@piglet.cpu.lu>
-Date: Fri, 27 Aug 1999 20:27:25 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: IBM 850 LinuxPPC installation?
-To: hollis+@andrew.cmu.edu
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.3.96L.990824214016.3087N-100000@unix47.andrew.cmu.edu>
+Date: Fri, 27 Aug 1999 15:02:22 -0400 (EDT)
+From: Hank De Gregorio <hcd1@acpub.duke.edu>
+To: linuxppc-dev@lists.linuxppc.org
+cc: linuxppc-user@lists.linuxppc.org
+Subject: SCSI host detected, but not the drive
+Message-ID: <Pine.SOL.3.91.990827144757.13651A@godzilla6.acpub.duke.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  24 Aug, this message from Hollis R Blanchard echoed through cyberspace:
-> I've gotten a kernel compiled (and it boots!) with ethernet ("Lance") support.
-> It also has IDE disk and cdrom support (which makes installing to a hard disk
-> much easier). Unfortunately, I've run into a problem - the kernel hangs on
-> Partition check:
->   hda:
+when i boot my initrd kernel, the scsi host is detected, but the actual 
+drive is not identified (see first set of errors below).  consequently, in 
+the redhat installer, i get the second set of errors below.
 
-I have this exact same problem with _some_ disks on my Promise PCI
-adapter. My Maxtor drive works, a 32x CDRom worked as well, but a
-Seagate and a Quantum both hung the box. I haven't found the problem;
-but it might be related to timings on the interface, so that some disks
-might work, and others not.
+can anyone help me?  my system is an mvme2604 333MHz, with a red rock 
+card with seagate scsi disk and a 761 IO transition module.
 
-> Here's the IDE info I get before it hangs:
-> hda: DPEA-31080, ATA DISK drive
-> hda: IRQ probe failed (0)
-> hdb: DSAA-3720, ATA DISK drive
-> hdb: IRQ probe failed (0)
-> hdc: IRQ probe failed (0)
-> hdc: IRQ probe failed (0)
-> hdc: no response (status = 0xd1), resetting drive
-> hdc: no response (status =0x80)
+hank
 
-This means the driver is not able to acces the controller for ide1.
-That might be a problem with the IO-port addresses.
+ncr53c8xx: at PCI bus 0, device 12, function 0
+ncr53c8xx: 53c825a detected
+ncr53c825a-0: rev=0x13, base=0x1042000, io_port=0x11000, irq=19
+ncr53c825a-0: ID 7, Fast-10, Parity Checking
+ncr53c825a-0: on-chip RAM at 0x1040000
+ncr53c825a-0: restart (scsi reset).
+ncr53c825a-0: Downloading SCSI SCRIPTS.
+scsi0 : ncr53c8xx - revision 3.1h
+scsi : 1 host.
+scsi : detected total.
+eth0: DC21140 at 0x11100 (PCI bus 0, device 14), h/w address 
+08:00:3e:28:53:a2,
+      and requires IRQ18 (provided by PCI BIOS).
 
-Also, you might want to try patching your kernel with Andre Hedrick's
-multi-platform uniform IDE driver (look at
-ftp://ftp.kernel.org/pub/linux/kernel/people/hedrick/). You _might_
-need additional patches to get it to boot; if so, get back to me, and
-I'll produce a diff against my working kernel.
 
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+		 ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´ Setup Swap ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                 ³                                            ³
+                 ³ You don't have any hard drives available!  ³
+                 ³ You probably forgot to configure a SCSI    ³
+                 ³ controller.                                ³
+                 ³                                            ³
+                 ³                                            ³
+                 ³                                            ³
+                 ³                 ÚÄÄÄÄ¿                     ³
+                 ³                 ³ Ok ³                     ³
+                 ³                 ÀÄÄÄÄÙ                     ³
+                 ³                                            ³
+                 ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ  
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
