@@ -1,32 +1,37 @@
-Date: Thu, 15 Jun 2000 23:19:07 -0700 (PDT)
-From: Brad Midgley <brad@turbolinux.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: paul-rsync: make zImage fails
-In-Reply-To: <394988C9.92470C6F@denise.shiny.it>
-Message-ID: <Pine.LNX.4.20.0006152313080.15387-100000@mail.turbolinux.com>
+Message-ID: <3949DDBD.331E255F@wanadoo.fr>
+Date: Fri, 16 Jun 2000 09:56:45 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Interrupt hick ups
+References: <Pine.LNX.4.05.10006142236120.5007-100000@callisto.of.borg>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-it's been a long time since i've gotten a chrp image to work, but the
-current sources can't do it:
+Geert Uytterhoeven wrote:
+>
+> On Tue, 13 Jun 2000, Geert Uytterhoeven wrote:
+> > Since a few kernel versions (late 2.3.x), I see interrupt hick ups when doing
+> > disk access on my Sym53c875. I.e. when I'm typing something and the disk
+> > shows a lot of activity, keystrokes and mouse moves happen in burst with some
+> > delay (ca. 2 seconds).
+> >
+> > Anyone seeing a similar thing? This is on a CHRP LongTrail.
 
-main.c: In function `chrpboot':
-main.c:43: conflicting types for `_start'
-main.c:29: previous declaration of `_start'
+Do you still see this in -ac16 or later? I had this, too, and from
+linux-kernel I understand that everyody had it, but it's gone now.
 
-is it an unfortunate name collision, or is one of these right and one
-wrong?
+What is gone too, unfortunately, is the phenomenal IDE speed
+improvement. In late 2.3.99/early 2.4.0-test1, I had a "hdparm
+-t"-measured throughput more than 3 times as high (almost 6MB/sec,
+sometimes more) as with 2.2.x (1.90MB/sec). It diminished in -ac15
+(3.25MB/sec), and in -ac16 it is almost back down (2.30MB/sec) to the
+2.2.x values.
 
- extern char _start[], _end[];
-   ...
- extern char _start;
-
-Brad
-Turbolinux Frontier Group
-brad@turbolinux.com | http://www.turbolinux.com/~brad/
-
+--
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
