@@ -1,28 +1,36 @@
-From: benh@kernel.crashing.org
-To: Matthias Grimm <joker@cymes.de>
-Cc: LinuxPPC-Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: muteing speakers if headphones were plugged in?
-Date: Wed, 17 Apr 2002 19:56:26 +0100
-Message-Id: <20020417185626.18987@mailhost.mipsys.com>
-In-Reply-To: <3CBD9361.4060203@cymes.de>
-References: <3CBD9361.4060203@cymes.de>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Matthias Grimm <joker@cymes.de>,
+	LinuxPPC-Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Design weakness in /proc/pmu ?!
+Date: Thu, 18 Apr 2002 20:31:47 +0200
+Message-Id: <20020418183148.25976@smtp.wanadoo.fr>
+In-Reply-To: <3CBF14C1.6080802@cymes.de>
+References: <3CBF14C1.6080802@cymes.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+>As you could see battery 0 is fully charged but the time remaining value
+>is calculated as zero. If you now calculate the overall time remaining
+>simply as sum of the time rem. of each battery you will get a wrong time
+>and possibly bother the user with unnessecary warnings.
 >
->Is someone working on that issue to implement it for the other chipsets?
+>I suggest to move the time rem. value out of the /proc/battery_* files
+>into the /proc/info file and store an overall time-remaining value
+>there. Because the time until power off is a quality of the whole system
+>mainly defined through the overall power consumption. It isn't a feature
+>of a single battery.
+>
+>What do you think?
 
-I think the Alsa driver can work on other chipsets. I don't know if
-someone is working on it for dmasound, I don't think so.
-
-On these (awacs, burgundy), I think you don't have to register a second
-interrupt, the main chip interrupt will be called when the jack state
-changes, you can probably act from there. A good source of info is the
-darwin source code which contains source code for all of Apple sound
-drivers.
+It's difficult to find a suitable answer. The time remaining is
+obtained directly from the PMU  on newer machines, we don't really
+have the proper algorithm to calculate it on these, what
+machine did you get those dumps from ? We may simply have a bug
+on older machine calculation causing that 0, in which case it
+has to be fixed.
 
 Ben.
 
