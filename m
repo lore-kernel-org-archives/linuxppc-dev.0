@@ -1,37 +1,27 @@
-Message-ID: <3C70F4F9.7010503@elsoft.ch>
-Date: Mon, 18 Feb 2002 13:35:05 +0100
-From: "David =?ISO-8859-15?Q?M=FCller?= (ELSOFT AG)" <d.mueller@elsoft.ch>
+Message-ID: <3C711A52.8B063685@ardistech.com>
+Date: Mon, 18 Feb 2002 16:14:26 +0100
+From: "bart@ardistech.com" <bart@ardistech.com>
+Reply-To: bart@ardistech.com
 MIME-Version: 1.0
-To: Armin <akuster@pacbell.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] Several patches against linuxppc_devel-2.4.18-rc1
-References: <3C6E5603.5010801@elsoft.ch> <3C6FCBFD.80504@pacbell.net>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: David Dart <DavidD@nulec.com.au>,
+	Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: HZ=1000 network problem?
+References: <1072F1A27E99D3119747005004B9A380C6DCEA@MAIL>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
+Hi David,
 
-Armin wrote:
-> David Müller (ELSOFT AG) wrote:
->
->> Hello
->>
->>    - arch/ppc/kernel/ppc4xx_pic.c
->>       fixed constant in ppc405_pic_get_irq()
->>       (NR_IRQS is not necessarily the total number of UIC irqs)a
->
->
-> hmmmmm... we should get ride of "NR_BOARD_IRQS" instead?
+>         we have, just the other day, had the same problem  on linux-2.4.17.
+> If you find out what is causing it would you please let me know.
 >
 
-What do you mean by "get ride of "NR_BOARD_IRQS"".
-Remove "NR_BOARD_IRQS" and the whole functionality behind of it
-completely or just replace "NR_BOARD_IRQS" by a more meaningful name?
+The problem is also there with HZ=500. It looks HZ=250 works, I'm testing it
+right now.
 
-
-Dave
-
+Regards,
+		Bart
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
