@@ -1,62 +1,58 @@
-Date: Wed, 30 Aug 2000 10:35:41 +0200
-From: "Andi Kleen" <ak@suse.de>
-To: flar@allandria.com
-Cc: matthew@wil.cx (Matthew Wilcox), khalfmann@libra.de (Halfmann Klaus),
-        roman@augan.com (Roman Zippel), linuxppc-dev@lists.linuxppc.org,
-        linux-fsdevel@vger.kernel.org
-Subject: Re: Btree directories (Re: Status of HFS+ support)
-Message-ID: <20000830103541.A10787@gruyere.muc.suse.de>
-References: <20000829181851.D6395@parcelfarce.linux.theplanet.co.uk> <200008300222.TAA13173@marcus.allandria.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200008300222.TAA13173@marcus.allandria.com>; from flar@allandria.com on Tue, Aug 29, 2000 at 07:22:05PM -0700
+Message-Id: <200008300837.JAA16257@hyperion.valhalla.net>
+Date: Wed, 30 Aug 2000 09:37:37 +0100
+Subject: Re: [PATCH] via-cuda (CUDA_COMBINED_FORMAT_IIC)
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: mlan@cpu.lu
+CC: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Aug 29, 2000 at 07:22:05PM -0700, flar@allandria.com wrote:
-> Matthew Wilcox wrote:
-> > You can lock while you're in a call, but eventually, you fill up the
-> > user's buffer and return.  At that point, you have to drop the lock
-> > because they might never call you again.  So you have to consider
-> > the case of a file being added or removed between calls to getdents.
-> > Current HFS doesn't even pretend to try.  It just stores an index (0
-> > .. n-1) and you pick up from there.  So sometimes you get files twice,
-> > sometimes files don't show up at all.
-> >
-> > I suspect you need to store the key of the item you just found, and
-> > then continue filling in the buffer from there on subsequent calls.
-> > The trouble is that there frequently isn't enough space available to
-> > do that.  The proposed ext2 btree extensins needed 64 bits of space and
-> > there was only 32 bits available.  What size keys does HFS+ have?
+Hi Michel,
+On Wed, Aug 30, 2000, Michel Lanners wrote:
+> On  30 Aug, this message from Iain Sandoe echoed through cyberspace:
+>> Unfortunately, the one chip I *really* want to probe (the TDA7433 on the
+>> audio card -  i2c address 0x8a) doesn't seem to give a proper response... so
+>> if anyone knows more about this - I'd be interested.
 >
-> Catalog keys in HFS+ can be anywhere from 8 bytes all the way up to
-> 518 bytes. I actually do save the key and do a search in the btree
-> in my HFS+ module. (It doesn't seem to work however. And yes, I'm
-> helping out Klaus with his code as well as working on a kernel
-> module with completely separate code.)
+> Hmm, are you sure it is actually attached to the CUDA's I2C bus? The
+> 7x00/8x00 series have a video input chip on an I2C bus as well, but not
+> on CUDA... it's on PlanB, which includes its own I2C implementation. I
+> don't know about the sound chips in those boxes, however. My first bet
+> would be looking around AWACS if there is no I2C bus hidden there
+> somewhere.
 
-You're sharing a problem with JFS then (and reiserfs to a certain
-extent).
+Well, you could be right... I'm only going on Apple's h'ware docs (& the
+existing Linux & Darwin drivers ;-).
 
-In theory you could put as much state as you want into a private field
-of the file structure of the directory. This just ignores two ugly things:
-NFS and telldir. Both basically require you to generate stateless 32bit
-cookies that safely walk your directory.
+The G3-beige has a perch slot and in the perch slot is one of three types of
+card... all of these have either AWACS or Burgundy - but also a "tone
+control" chip controlled by i2c.  The so called "tone control" chip does a
+fair bit of the level & routing control (which is why I want to access it's
+settings)
 
-The only good solution I know is a stable namespace that never shrinks unless
-the last entry is removed (basically what ext2 directories do). Then you can
-just have an offset into that namespace. Namespace could be hash + collision
-counter.
+Apple's stuff from Darwin refers to this as an SGS7433 (and, after looking
+at SGS/Thompson's web site) I came up with the TDA7433 which does the right
+things.  It has i2c address 0x8a - which is the address that the dmasound
+driver writes to to set the volume on g3-beige (using the GET_SET_IIC
+command).
 
-[XFS uses some trick of assuming that buffer sizes are big enough for one
-of their hash buckets, but it'll surely break in a lot of cases]
+With the modified driver posted, the CUDA_COMBINED_FORMAT_IIC command
+recognises that there is a device at address 0x8a - but returns all 0xff
+bytes instead of the hoped for register contents :-(
 
-Without stable name space probably your only option is to add dummy entries
-into the btree holes instead of rebalancing the tree, and removing all holes
-when the last entry goes away.
+I checked the TDA7433 data sheet and it should be able to do
+COMBINED_FORMAT...
 
--Andi
+ah well...
 
+Yes, there are different implementations for i2c on different models...
+CUDA, PMU (PlanB and other mac-IO implementations).... and on the newer
+machines "cereal" (and multiple i2c busses)...  if the ability to probe the
+i2c bus is useful, I guess we'll have a few more drivers to update... :-)
+
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
