@@ -1,48 +1,35 @@
+Date: Fri, 22 Mar 2002 20:49:06 -0700
+From: Val Henson <val@nmt.edu>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Cc: Wolfgang Denk <wd@denx.de>, Tom Rini <trini@kernel.crashing.org>,
+	Michael Sokolov <msokolov@ivan.Harhan.ORG>,
+	linux-galileo@source.mvista.com, linuxppc-dev@lists.linuxppc.org
+Subject: Re: EV-64260-BP & GT64260 bi_recs
+Message-ID: <20020322204906.B3363@boardwalk>
+References: <20020320181251.C61EF109F3@denx.denx.de> <3C98DB49.2C3A2F79@mvista.com>
 Mime-Version: 1.0
-Message-Id: <p05100300b8c18bf409e9@[66.26.75.241]>
-Date: Fri, 22 Mar 2002 20:43:32 -0500
-To: linuxppc-dev@lists.linuxppc.org
-From: Stefan Jeglinski <jeglin@4pi.com>
-Subject: 2.4.19pre4 boot crash
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3C98DB49.2C3A2F79@mvista.com>; from mgreer@mvista.com on Wed, Mar 20, 2002 at 01:56:09PM -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-6500 again, only change on default config is to make tulip a module.
+On Wed, Mar 20, 2002 at 01:56:09PM -0500, Mark A. Greer wrote:
+>
+> Wolfgang Denk wrote:
+>
+> > So how do we come to the agreement? By voting? My vote is b),  hoping
+> > that the result will be good enough to be accepted for 2.5, too.
+>
+> Okay, 1 for b).
 
-During boot, I get a crash during the setting of the Linux keycodes.
-The only mon trace I can get is:
+Somebody notify Eric Raymond!  New method of Linux development:
+maintenance by committee!  I bet Paul is happy to have the
+responsibility lifted from him.
 
-pc=c01b39f0, lr = c01b4690
-msr = 9032, sp = c5de5da0 [c5de5cf0]
-dsr = ffffffed. Dsisr =  20000000
-current = c5de4000, pid = 34, comm = grep
+I think that this is only slightly crazier than giving more than one
+person read/write access to the linuxppc trees.
 
-I note that there is a line in setting the keycodes:
-
-	if grep -i "MacRISC" /proc/cpuinfo >/dev/null; then
-
-which is where it must be crashing, but I can't think of why...
-
-System.map-2.4.19pre4 snippets:
-
-c011aefc t vgacon_font_op
-c011b018 t vgacon_scrolldelta
-c011b1b0 t vgacon_set_origin
-c011b278 t vgacon_save_screen
-c011b2e8 t vgacon_scroll
-c011b5b0 t vgacon_dummy
-c011b5b8 t fbmem_read_proc
-c011b6b4 t fb_read
-c011b830 t fb_write
-c011b9b8 t try_to_load
-
-
-System.map has nothing near as high as the c5dexxxx addresses.
-
-
-
-Stefan Jeglinski
+-VAL
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
