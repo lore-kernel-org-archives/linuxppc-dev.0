@@ -1,35 +1,33 @@
-Message-ID: <3D641186.2020800@mvista.com>
-Date: Wed, 21 Aug 2002 15:17:42 -0700
-From: Todd Poynor <tpoynor@mvista.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Reply-To: <John.Fisher@nec.com.au>
+From: "John Fisher" <John.Fisher@nec.com.au>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: cygwin and embedded linux
+Date: Thu, 22 Aug 2002 11:15:20 +1000
+Message-ID: <000501c24979$6348a190$37d34c93@neca.nec.com.au>
 MIME-Version: 1.0
-To: akuster@dslextreme.com
-Cc: jim <jduey@ccc-dcs.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Question about ppc4xx_dma.h
-References: <20020820203619.A456239211@server.weathercom.com> <3D62CE63.1030606@dslextreme.com> <3D63EC67.4000302@dslextreme.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <Pine.LNX.4.40.0208211747420.7745-100000@mag.devdep.sysgo.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Noticed that the order of clearing the old transfer mode bits and
-setting the p_dma_ch->mode bits is reversed in the new patch, not sure
-if this causes problems:
+> Actually, my personal opinion on that matter is that I'm not very fond
+> of using Windows for a Linux kernel development platform. Doing --
 
-+       tmp_cntl |= (p_dma_ch->mode | DMA_CH_ENABLE);
-+
-+       switch (dmanr) {
-+       case 0:
-+               control = mfdcr(DCRN_DMACR0);
-+               control |= tmp_cntl;
-+               control &= ~(DMA_TM_MASK | DMA_TD);     /* clear all
-mode bits */
+So what are the issues: How is cygwin significantly different from Linux
+that you would not want to use it?
+Are there useful tools that run under Linux but not under cygwin?
 
-This seems to set and then clear the p_dma_ch->mode bits in control
-prior to writing to the DMACR, a problem?
+The reason I ask is that my organization currently does its software
+development under windows using proprietary tools. We have to maintain our
+existing products using these tools. We are however contemplating new
+development using linux. If we have to dual boot our PCs or have an extra PC
+running Linux for each developer, that is going to bring its own set of
+nuisances and problems.
 
-
---
-Todd
+Are there others in this situation and how have they chosen to solve it?
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
