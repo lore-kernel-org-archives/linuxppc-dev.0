@@ -1,21 +1,32 @@
-Message-ID: <3B69E550.6483CCDF@mikeandpam.com>
-Date: Thu, 02 Aug 2001 16:42:08 -0700
-From: Mike Carlton <mike@mikeandpam.com>
+From: "Elan Feingold" <elan@nxnetworks.com>
+To: "Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: strace crashes kernel
+Date: Fri, 3 Aug 2001 12:37:27 -0500
+Message-ID: <NDBBLJKOJGKDOFBHNPGEAEGACEAA.elan@nxnetworks.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: any kernel for IBM Netstation 1000?
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Does anyone know of a kernel available for the IBM Netstation 1000
-(model 8362 A52)?  This is a 603-based thin client.
+EST 8260 board, Kernel version 2.4.5 + PPC patches, strace from Hardhat
+Linux 1.2 release.
 
-I'd like to tftp boot a kernel and nfs mount a filesystem on it from
-another linux server.
+1. We found that with the 2.4.5 kernel + patches, some important
+configuration numbers (BRG, CPM clocks) were mismatches, in that
+embed_config put them in Hz and other parts of the Linux kernel wanted them
+in Mhz.  Once we fixed these issues, the kernel actually booted!!
 
-Thanks,
---Mike Carlton <mike@mikeandpam.com>
+2. Once booted and NFS mounting a root partition, we ran strace on ls, which
+worked.  We then ran strace on inetd, which spewed out a few lines and then
+hung the kernel hard.  No oops on console, just hung.
+
+Any ideas on the hang?  Could it be an strace/linux mismatch or something?
+
+Best regards,
+
+-elan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
