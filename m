@@ -1,40 +1,24 @@
-Message-ID: <36DC0067.C2274CBC@cecom.com>
-Date: Tue, 02 Mar 1999 10:14:49 -0500
+Message-ID: <36DC026F.52352A33@cecom.com>
+Date: Tue, 02 Mar 1999 10:23:29 -0500
 From: "Rodney J. Woodruff" <rwoodruf@cecom.com>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Setup Swap Screen
-Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
+To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Setup Swap Screen-- I forgot something
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello Everyone (Please reply to me and the list),
+Hello Again,
 
-I need your assistance.  When trying to install LinuxPPC on my minitower
-(details below) I get the following message at the setup Swap screen:
+I forgot to tell you how I was installing LinuxPPC
 
-"You don't have any hard drives available.  You probably forgot to configure the
-SCSI controller."
+I am installing LinuxPPC from a HFS hard drive as describe on the LinuxPPC
+website.  I am going to purchase the 5.0 CD once it is available.
 
-Can anyone tell me how to resolve this problem?
-
-Machine Specs:
-G3/333 MT
-192 MB Ram
-5 partitions (All HFS)
-9 GB UW SCSI Hard Drive
-UW SCSI Controller
-miroMotion Video Capture Card
-FireWire Card
-External 18 GB UW SCSI HD
-External CD Burner
-
-Your help is truly appreciated!
+Once again, Your help is truly appreciated!
 
 -- Rodney
-
-
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
