@@ -1,69 +1,47 @@
-Message-ID: <3736E2EE.4C26B58B@fi.infn.it>
-Date: Mon, 10 May 1999 15:45:18 +0200
-From: Simone Piccardi <Simone.Piccardi@fi.infn.it>
-MIME-Version: 1.0
+Date: Mon, 10 May 1999 21:08:29 +0200 (CEST)
+From: Gerd Knorr <kraxel@goldbach.in-berlin.de>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: MVME2431: how to use vme?
-Content-Type: text/plain; charset=us-ascii
+Subject: iMac + IrDA
+Message-ID: <Pine.LNX.4.05.9905102101220.9969-100000@macintoy.masq.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
-after many problems (thanks to G.Paubert that gave the right patch for
-the kernel and D. De Ridder for the many halps on setup) I have a
-running system on a MVME2431.
 
-I can also load the universe module without problems (at least it gave
-me the message: Universe VME bridge #1 found at bus=0, dev=13 that seems
-OK).
+  Hi !
 
-Now the problem is to test VME (to be precise the real problem is that
-this is my first experience with VME, so have no idea from where to
-start).
-I read the README.universe in the kernel source, and I tried also to use
-the program vmetest.c that I found in the same directory of the kernel
-patches.
+Anyone tried to use the IrDA port of the Rev. A+B iMacs?  According to the
+IrDA people I should see some packages coming in if I look at the port
+while some other IrDA device tries to connect.  But I see nothing with
+minicom.
 
-The problem is that that program cannot compile, it start with an error:
-testvme.c:43:  'VME_attr' undeclared ....
-and then gave a lot of other errors. I suppose that this depends on some
-version mismatch (I'm using kernel 2.2.6, with related patch). 
+The IrDA port is /dev/ttyS1, the device-tree entry looks like this:
 
-Because this is not clear to me what I have to do to access another
-board (the only one that I have use some fixed address memory location
-in the VME bus, and no dma). I tried to look the testvme.c code but it
-use some device (like /dev/cm_mem20) that I don't have on the system and
-I cannot uned
+macintoy kraxel /proc/device-tree/pci/mac-io/escc/ch-b# proc
+name                      : ch-b\0
+device_type               : serial\0
+compatible                : chrp,es3\0
+built-in                  : 
+reg                       : \0\x010\0\0\0\0\x01\0\x010\x10\0\0\0\x01\0\x010@\0\0\0\x01\0\0\x86\0\0\0\x01\0\0\0\x87\0\0\0\x01\0
+interrupts                : \0\0\0\x10\0\0\0\x06\0\0\0\x07
+AAPL,interrupt-vectors    : \0\0\0\x17\0\0\0\x01\0\0\0\0
+AAPL,interrupt-priorities : \0\0\0\x04\0\0\0\x04\0\0\0\x04
+AAPL,interrupts           : \0\0\0\x15\0\0\0\x16\0\0\0\x17
+interrupt-parent          : \xff\x86G\x10
+slot-names                : \0\0\0\x01IrDA\0
+AAPL,address              : \x80\x810\0\x80\x810\x10\x80\x810@\x80\x80\x86\0\x80\x80\x87\0
+driver-ist                : \0\x05\x91\xa0\0\0\0\x0b\0\x05\x91\xa0\0\0\0\x0c\0\x05\x91\xa0\0\0\0\x0d
 
-Could someone send me some other test programs, just to try to
-understand the right procedure, or also give me some directions for a
-good starting point?
+/dev/ttyS0 (the buildin modem) works fine with minicom.  Any hints where
+to look / what to check?
 
-Thank you in advance for the further help, and thanks again for the
-previous one.
+  Gerd
 
-Bye
-
-PS. Just  another little question, but about the system setup. I used
-linuxPPC pre5 rpms, installing them by hand with rpm, up to now (after
-some modification to inittab, fstab and rc.sysinit) I have a working
-system; my only concern is that I can telnet to other machines (also DNS
-works), but when I try to telnet to the board I get:
-Trying 192.84.146.131...
-Connected to vmesez1.fi.infn.it.
-Escape character is '^]'.
-telnetd: All network ports in use.
-Connection closed by foreign host.
-and the same when I do the tlent from the board itself to localhost.
-It's seems that it cannot allocate new port. Up to now I do not
-understand from where came the problem (inetd.conf and all the tcp
-wrapper files seems OK).
-Thanks again
 -- 
-Simone Piccardi
-Microsoft is NOT the answer. Microsoft is the Question.
-The answer is: "NO!"
+system("logout");
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
