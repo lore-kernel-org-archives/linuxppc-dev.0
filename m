@@ -1,40 +1,36 @@
-Date: Sun, 30 Sep 2001 13:23:46 +0200 (MET DST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: =?ISO-8859-15?Q?PowerStack_interrupt=A0problem?=
-Message-ID: <Pine.GSO.4.10.10109301319240.29063-100000@rose.sonytel.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sun, 30 Sep 2001 12:22:11 -0500
+From: "Joseph P. Garcia" <jpgarcia@execpc.com>
+To: Jan Nieuwenhuizen <janneke@gnu.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.4.10-ben0 doesn't see ide1
+Message-Id: <20010930122211.2cf9b2f7.jpgarcia@execpc.com>
+In-Reply-To: <m3adzddmfh.fsf@appel.lilypond.org>
+References: <m3adzddmfh.fsf@appel.lilypond.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-	Hi,
+On 30 Sep 2001 12:04:34 +0200
+Jan Nieuwenhuizen <janneke@gnu.org> wrote:
 
-We're having interrupt problems with a Motorola PowerStack running 2.4.9 (from
-MontaVista rsync).
+>
+> Hi,
+>
+> Yesterday's 2.4.10-ben0 (Sat Sep 29 23:32:51 CEST 2001) kernel doesn't
+> see my ide1 device.  Previous kernels had no problems.  There's an
+>
+>     ide-pmac(ide): can't request IO resource
 
-Symptoms are:
-  - We receive lots of PS/2 mouse interrupts (irq 12), a few hundreds or
-    thousands for each mouse move
-  - The number of BAD interrupts increases when moving the mouse, a few tens
-    for each mouse move
-  - Sometimes the machine locks up (no ping response) after heavy mouse
-    movement
-  - The PS/2 keyboard is fine
+Rack this up as an OF bug on some systems I think.  I got it too (Wallstreet2/300).  The OF IDE nodes request what look like twice memory as much as they need.  Linux doesn't even use most of it anyway.
 
-Anyone with a suggestion? Any other PowerStack users with similar problems?
+The two ide busses in my system have resources 0x10000 apart, while they both reserve a size of 0x20000 (IIRC).  Since BenH's recent kernels reserve space based on OF, and then request it realistically, in this situation, it will fail on half of the resource allocation.  Even though we don't use the overlapping area...
 
-Gr{oetje,eeting}s,
-
-						Geert
+Quick fix? halve all the resource sizes of the ide nodes. (DMA's space also does this).  I don't know what the long term fix would be.
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+Joseph P. Garcia
+http://www.lycestra.com/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
