@@ -1,41 +1,41 @@
-Message-ID: <3749CC04.146B318D@eos.ncsu.edu>
-Date: Mon, 24 May 1999 18:00:36 -0400
-From: Scott Sams <sbsams@eos.ncsu.edu>
+Message-Id: <199905242203.RAA30209@lists.linuxppc.org>
+Date: Tue, 25 May 1999 00:02:46 +0200 (CEST)
+From: laures@esiea.fr
+Subject: Re: Initio miles tests :-(
+To: tmrini@ntplx.net
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.05.9905241526320.650-100000@pc.wackyland.com>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: AWACS Bug
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul Mackerras <paulus@cs.anu.edu.au> wrote:
+On 24 Mai, Tom Rini wrote:
+> 
+> 
+> Can you do all the stress testing if you don't pdisk the drive?  Also can
+What I did: partitionned the disk under MacOs, two hfs, the second
+mke2fsck'ed in linux after insertion of the module.
+That's basically what I'm always doing, see below why.
 
-> What's happening is I think the same as what happens on the iMac: when
-> you run the BootX app to boot linux, and it asks macos to shut down,
-> macos shuts down the awacs, in such a fashion that the only thing that
-> will start it up again is a hard reset. :-( 
+> you go:
+> pdisk /dev/blank-inito-disk
+> ... create partitions ...
+This is not possible since pdisk reports a incredible number of 512
+bytes block for a 256M disk (the test drive), with a total free space
+of 126G!!!
+Here pdisk fail at creating the partition map, and at modifying it
+sjightly.
+I wish I could show you the output of pdisk, is it possible to redirect
+output on a file, still setting the keyborad as input ?
 
-I believe the same thing has happened on my box, although a hardware
-reset has yet to fix the problem! :-<
+Thx for your help :-)
 
-Sound does not come out of either the internal speaker, or the line out
-jack. Playing a .wav or a CD produces no sound. MacOS will not play any
-sounds too. I have tried everything from hard resets to power cycling to
-zapping the PRAM 3 times, and nothing has brought my sound back. Do any
-of you hardware gurus out there know if it is possible to manually reset
-the AWACS chip? Does this mean I fried my AWACS chip? How could I
-replace it if necessary? Please help.
-
-Thanks,
-
-Scott Sams
 
 -- 
- ____ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~      Scott Sams         
-(____  _  _-|-|-                    sbsams@eos.ncsu.edu      
-_____)(__(_)| |        http://www.catt.ncsu.edu/~sbsams
-~~~~~~~~~~~~~~~~
+Guillaume Laurès - student @ ESIEA (www.esiea.fr)
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
