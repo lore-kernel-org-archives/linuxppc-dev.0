@@ -1,17 +1,16 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from witte.sonytel.be (witte.sonytel.be [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 71CE767A66
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jan 2005 23:34:40 +1100 (EST)
-Date: Tue, 18 Jan 2005 10:20:34 +0100 (MET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@sonycom.com
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao01.cox.net (fed1rmmtao01.cox.net [68.230.241.38])
+	by ozlabs.org (Postfix) with ESMTP id D23EC67A64
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jan 2005 03:15:18 +1100 (EST)
+Date: Tue, 18 Jan 2005 09:15:15 -0700
+From: Tom Rini <trini@kernel.crashing.org>
 To: "Mark A. Greer" <mgreer@mvista.com>
-In-Reply-To: <41EC29A8.1040703@mvista.com>
-Message-ID: <Pine.GSO.4.61.0501181017110.20681@waterleaf.sonytel.be>
+Message-ID: <20050118161515.GI28724@smtp.west.cox.net>
 References: <41EC29A8.1040703@mvista.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <41EC29A8.1040703@mvista.com>
+Cc: linuxppc-dev@ozlabs.org
 Subject: Re: [RFC] Option to disable mapping genrtc calls to ppc_md calls
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,34 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 17 Jan 2005, Mark A. Greer wrote:
-> I have a platform with an i2c rtc chip.  Since much of the code for an rtc
-> driver is already in drivers/char/genrtc.c, I would like to reuse that code
-> and directly implement get_rtc_time(), et. al. in the rtc driver.  The problem
-> is that include/asm-ppc/rtc.h assumes that get_rtc_time(), et. al. should be
-> mapped to ppc_md.get_rtc_time() et. al.  To work around this, I made an option
-> to turn off that assumption.  The patch is included.
+On Mon, Jan 17, 2005 at 02:10:00PM -0700, Mark A. Greer wrote:
+
+> All,
+> 
+> I have a platform with an i2c rtc chip.  Since much of the code for an 
+> rtc driver is already in drivers/char/genrtc.c, I would like to reuse 
+> that code and directly implement get_rtc_time(), et. al. in the rtc 
+> driver.  The problem is that include/asm-ppc/rtc.h assumes that 
+> get_rtc_time(), et. al. should be mapped to ppc_md.get_rtc_time() et. 
+> al.  To work around this, I made an option to turn off that assumption.  
+> The patch is included.
 > 
 > There are 2 reasons to not use the ppc_md.get_rtc_time() et. al. interfaces:
-> 1) They are called before the i2c driver is initialized and even loaded if its
-> a module.
+> 1) They are called before the i2c driver is initialized and even loaded 
+> if its a module.
 
-How is this solved by your patch if genrtc is builtin? How is your solution
-different from setting ppc_md.get_rtc_time to your get_rtc_time routine?
+But they check if it's set, so they can be assigned later and this is
+OK.
 
-> 2) Its ppc-specific.  Implementing get_rtc_time() et. al. directly makes it
-> generic across all architectures.
+> 2) Its ppc-specific.  Implementing get_rtc_time() et. al. directly makes 
+> it generic across all architectures.
 
-... but prevents you from building a kernel that supports both normal RTCs and
-your i2c RTC.
+Guessing, this is for a marvell chipset that's found on MIPS too.
 
-Gr{oetje,eeting}s,
+> Is there a better way to do this?
 
-						Geert
+How about we try borrowing the MIPS abstraction and force todc_time,
+pmac_time (any others?) to directly define (and EXPORT_SYMBOL)
+get_rtc_time / set_rtc_time / etc.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
