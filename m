@@ -1,40 +1,33 @@
-Message-ID: <F1BD619B2A58D41197990050DA2C08E41A5E2C@SLINK12>
-From: Steve Ferri <sferri@ss7-link.com>
-To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Cache Inhibit on 860?
-Date: Mon, 26 Feb 2001 11:12:32 -0500
+From: "Stefano Coluccini" <s.coluccini@caen.it>
+To: "=?iso-8859-1?B?U+liYXN0aWVuIEP0dOk=?=" <scote1@matrox.com>
+Cc: "Dan Malek" <dan@mvista.com>,
+	"Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: KERNELBASE at 0xa0000000
+Date: Mon, 26 Feb 2001 17:48:04 +0100
+Message-ID: <NDBBIFIMCKPOADMAJOKMEEGNCPAA.s.coluccini@caen.it>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
+In-Reply-To: <20010226110745.A1229@dyn-52-73.matrox.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-All:
+> On 2001.02.26 10:51:57 -0500 Stefano Coluccini wrote:
+> > I have hoped it was more platform-dependent because I have a MVME5100
+> > (that
+> > is, I think, a MCPN765 with a PCI-VME bridge) and with KERNELBASE at
+> > 0xa0000000 doesn't work (in head.S the kernel doesn't recognize that it
+> > is
+> > running at 0 and it try to relocate itself).
+> > Do you think that this is a warning of a more complicated problem ?
+>
+> I think that's what happened when I changed KERNELBASE but not
+> KERNELLOAD.
+> Try changing both (if it's not already done).
 
-I am having problems running on an 860 based card when reading and writing
-buffers
-for drivers and for user space applications.  Currently I am using the
-invalidate
-and flush cache calls when READING and WRITING from/to the alloc'd memory
-during
-these situations.
-
-Is there a way to alloc memory and mark it as cache inhibited ?
-
-This would eliminating the need for the invalidate and flush calls.  I am
-currently
-running a 2.2.14 version of the kernel on an 860 processor.
-
-I've already tried using the m8xx_cpm_hostalloc() function in the
-arch/ppc/8xx_io/commproc.c file.  This does not seem to work, as the memory
-returned does not seem to be cache inhibited.  I still need to flush
-and invalidate these regions.
-
-Any ideas ?
-
-Regards,
-Steve
+I have leaved both untouched the first time, then I have changed both to
+0xc0000000 to get working.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
