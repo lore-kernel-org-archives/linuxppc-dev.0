@@ -1,53 +1,50 @@
-Message-ID: <20000430025608.3878.qmail@www0w.netaddress.usa.net>
-Date: 29 Apr 00 21:56:08 CDT
-From: jeramy b smith <ultrapenguin@netscape.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: IDE Dependancy Fix in 2.3.99pre6
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <000c01bfb251$0591a770$e50102c8@d-pengl-229.sc.mcel.mot.com>
+From: "Rolf Liu" <rolfl@sc.mcel.mot.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: problems with compiling glibc-2.1.3
+Date: Sat, 29 Apr 2000 22:06:04 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-2"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Here is the diff -u, sorry. I'm not used to using diff so please don't flame
-me elitist, condescending corrections if I knackered it up.
+Hi, all,
+I am compiling glibc-2.1.3 with my own
+cross-compiler(powerpc-linux-gcc-2.95.2.
+I have configured the glibc.
+During the compiling , there comes such error message,
+powerpc-linux-gcc
+../sysdeps/powerpc/dl-machine.c -c -O -Wall -Winline -Wstrict-
+prototypes -Wwrite-strings -g      -I../include -I.  -I.. -I../libio  -I../s
+ysde
+ps/powerpc/elf -I../crypt/sysdeps/unix -I../linuxthreads/sysdeps/unix/sysv/l
+inux
+ -I../linuxthreads/sysdeps/pthread -I../linuxthreads/sysdeps/unix/sysv -I../
+linu
+xthreads/sysdeps/unix -I../linuxthreads/sysdeps/powerpc -I../sysdeps/unix/sy
+sv/l
+inux/powerpc -I../sysdeps/unix/sysv/linux -I../sysdeps/gnu -I../sysdeps/unix
+/com
+mon -I../sysdeps/unix/mman -I../sysdeps/unix/inet -I../sysdeps/unix/sysv -I.
+./sy
+sdeps/unix -I../sysdeps/posix -I../sysdeps/powerpc -I../sysdeps/wordsize-32
+-I..
+/sysdeps/ieee754 -I../sysdeps/libm-ieee754 -I../sysdeps/generic/elf -I../sys
+deps
+/generic  -nostdinc -isystem
+/home/lhx/lib/gcc-lib/powerpc-linux/2.95.2/include
+-isystem /home/lhx/include -D_LIBC_REENTRANT -include
+../include/libc-symbols.h
+    -o dl-machine.o
+../sysdeps/powerpc/dl-machine.c:32: #error This will not work with
+versioning tu
+rned off, sorry.
+make[1]: *** [dl-machine.o] Error 1
 
---- drivers/ide/Config.in       Wed Apr 26 01:07:40 2000
-+++ drivers/ide/Config.jdawg        Sat Apr 29 20:45:07 2000
-@@ -63,16 +63,16 @@
-            dep_bool '    Tekram TRM290 chipset support (EXPERIMENTAL)'
-CONFIG_BLK_DEV_TRM290 $CONFIG_BLK_DEV_IDEDMA_PCI
-            dep_bool '    VIA82CXXX chipset support (EXPERIMENTAL)'
-CONFIG_BLK_DEV_VIA82CXXX $CONFIG_BLK_DEV_IDEDMA_PCI
-            dep_mbool '      VIA82CXXX Tuning support (WIP)'
-CONFIG_VIA82CXXX_TUNING $CONFIG_BLK_DEV_VIA82CXXX $CONFIG_IDEDMA_PCI_WIP
-+            if [ "$CONFIG_PPC" = "y" -o "$CONFIG_ARM" = "y" ]; then
-+               bool '    Winbond SL82c105 support' CONFIG_BLK_DEV_SL82C105
-+            fi
-+            if [ "$CONFIG_PMAC" = "y" -o "$CONFIG_ALL_PPC" = "y" ]; then
-+               bool '    Builtin PowerMac IDE support'
-CONFIG_BLK_DEV_IDE_PMAC
-+               dep_bool '      PowerMac IDE DMA support'
-CONFIG_BLK_DEV_IDEDMA_PMAC $CONFIG_BLK_DEV_IDE_PMAC
-+               dep_bool '        Use DMA by default' CONFIG_IDEDMA_PMAC_AUTO
-$CONFIG_BLK_DEV_IDEDMA_PMAC
-+               define_bool CONFIG_BLK_DEV_IDEDMA $CONFIG_BLK_DEV_IDEDMA_PMAC
-+            fi
-          fi
--        if [ "$CONFIG_PPC" = "y" -o "$CONFIG_ARM" = "y" ]; then
--           bool '    Winbond SL82c105 support' CONFIG_BLK_DEV_SL82C105
--        fi
--      fi
--      if [ "$CONFIG_PMAC" = "y" -o "$CONFIG_ALL_PPC" = "y" ]; then
--        bool '    Builtin PowerMac IDE support' CONFIG_BLK_DEV_IDE_PMAC
--        dep_bool '      PowerMac IDE DMA support' CONFIG_BLK_DEV_IDEDMA_PMAC
-$CONFIG_BLK_DEV_IDE_PMAC
--        dep_bool '        Use DMA by default' CONFIG_IDEDMA_PMAC_AUTO
-$CONFIG_BLK_DEV_IDEDMA_PMAC
--        define_bool CONFIG_BLK_DEV_IDEDMA $CONFIG_BLK_DEV_IDEDMA_PMAC
-       fi
-       if [ "$CONFIG_ARCH_ACORN" = "y" ]; then
-         dep_bool '    ICS IDE interface support' CONFIG_BLK_DEV_IDE_ICSIDE
-$CONFIG_ARCH_ACORN
+
+thanks a lot.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
