@@ -1,78 +1,98 @@
-Date: Fri, 24 Mar 2000 19:09:21 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>
-cc: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
-        Ani Joshi <ajoshi@shell.unixbox.com>, linuxppc-dev@lists.linuxppc.org,
-        bh40@calva.net
-Subject: Re: proper regw and regrw16?
-In-Reply-To: <Pine.LNX.4.21.0003241711210.1634-100000@idd-01.imbc.gr>
-Message-ID: <Pine.HPX.4.10.10003241852180.14656-100000@gra-ux1.iram.es>
+Date: Fri, 24 Mar 2000 19:27:40 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: LongTrail PCI resource assignment
+In-Reply-To: <20000324181746.026025@mailhost.mipsys.com>
+Message-ID: <Pine.LNX.4.10.10003241842211.22814-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 24 Mar 2000, Kostas Gewrgiou wrote:
-
-> > --- r128_reg.h.orig	Thu Mar 23 18:10:17 2000
-> > +++ r128_reg.h	Thu Mar 23 18:15:43 2000
-> > @@ -50,9 +50,7 @@
+> >I'd like to reach a point where I understand what's happening in the
+> >XFree PCI code before getting into that sort of discussion. And the X
+> >source is way too convoluted for me to achieve that right now.
 > >
-> >  static inline void regw(volatile unsigned long base_addr, unsigned long
-> > regindex, unsigned long regdata)
-> >  {
-> > - asm volatile ("stwbrx %1,%2,%3; eieio"
-> > -          : "=m" (*(volatile unsigned *)(base_addr+regindex))
-> > -          : "r" (regdata), "b" (regindex), "r" (base_addr));
-> > +	asm volatile ("stwbrx %0,%1,%2; eieio" : : "r"(regdata), "b"
-> > (regindex), "r"(base_addr) : "memory");
-> >  }
-> >
-> > Could you post the assembler (.S) file that each of these makes?
-> >
-
-Hmmm, I had a look at the regr/regw macros, why do they pass a parameter
-as volatile. This unsigned long is not itslef volatile, it is used as a
-parameter to compute an address to volatile data and as such the accesses
-should not be optimized by the compiler. See what happens if you suppress
-volatile from the parameters to regr/regw/regr16/regw16.
-
-I don't understand why the compiler does this exatcly but the volatile in
-the baase_addr parameter definitely is not required and won't help the
-optimizer.
-
+> >I'll stick to pre-4.0 XFree rather.
 >
-> static void R128Blank(ScrnInfoPtr pScrn) {
->   R128MMIO_VARS();
->   OUTREGP(R128_CRTC_EXT_CNTL, R128_CRTC_DISPLAY_DIS,~R128_CRTC_DISPLAY_DIS);
-> }
->
-> OUTREGP is defined as
-[snipped...]
-> before:
-[snipped]
->      434:       7d 6a 05 2c     stwbrx  r11,r10,r0
->      438:       7c 00 06 ac     eieio
->      43c:       38 21 00 20     addi    r1,r1,32
->      440:       4e 80 00 20     blr
-> after:
-> 000003cc <R128Blank>:
->      3cc:       81 23 00 f8     lwz     r9,248(r3)
->      3d0:       81 69 00 24     lwz     r11,36(r9)
->      3d4:       38 00 00 54     li      r0,84
->      3d8:       7c 0b 04 2c     lwbrx   r0,r11,r0
->      3dc:       7c 00 06 ac     eieio
->      3e0:       60 00 04 00     ori     r0,r0,1024
->      3e4:       39 20 00 54     li      r9,84
->      3e8:       7c 0b 4f 2c     sthbrx  r0,r11,r9
-				  ^^^^^^
-If it's stHbrx and not stWbrx then you'll probably be in trouble later.
-and it looks it is sthbrx from the HEX value, otherwise it would be
-7c0b4d2c.
+> I spent some time discussion with Egbert. The result is basically that in
+> order to support all archs, bogus BIOS, legacy cards, softbooting, etc...
+> XF must take over the PCI the way it does it. There are lots of reasons
+> for that, I could try to summarize them if you really want the gory
+> details, I beleive Egbert is bored of repeating himself all the time ;)
 
+Nah, I take this to mean we better fix our PCI resource conflicts in the
+kernel if at all possible. But as I see everybody juggle with PCI resource
+and hot swap options only available in 2.3 the XFree people should plaster
+a big fat warning 'will not work with 2.2 kernels on some PPC hardware' on
+their release notes.
+'Resource conflict' isn't even strictly true, the PIO resource on the Rage
+Pro is disabled (so we'd probably better use the MMIO range), and MMIO is
+a subrange of the full aperture. It's not violating anything as far as I
+can see.
 
-	Gabriel.
+> I suggested making that optional (and relying, for example, only on fbdev
+> or disabling the re-assignement when the appropriate option is set in
+> XF86Config), but Egbert thinks that would be a support nightmare with
+> users playing with the config options.
+
+I sometimes wonder - the FBDev X server used to be a painless thing: the
+kernel frame buffer driver would handle the gory details and X would use a
+simplified, maybe slow but stable interface. X used to deal with that
+fine. Suddenly the kernel isn't to be trusted to correctly set up things
+anymore, and we're back to square one in terms of X stability. How did
+that happen?
+
+> He agrees that things are not perfect, especially since the way we handle
+> PIO and iobase is bogus (see other discussions about this). Also, the
+> current remapping scheme can make the kernel (and fbdev) quite confused
+> with new hot-swap PCI, Cardbus, etc... He plans to rework the PCI
+> interface of XFree so that better cooperation with the kernel can be
+
+I'd be glad if the X PCI code would recognize the same facts as reported
+via the kernel /proc/bus/pci interface, and 1) leave disabled regions
+alone and not bitch about them, 2) tolerate one region being fully
+contained inside another if it's on the same card. But it sure is easier
+to work around X.
+
+> implemented. On another hand, I think _we_ should find a definitive
+> solution for the PIO problem before he can begin adapting XFree. There
+> are lots of changes to be done to legacy drivers (VGA) to make them grok
+> a notion of iobase (since iobase can be different per-device, it can't be
+> handled inside inb/outb and friends).
+
+Can't the PIO registers be accessed via the MMIO aperture? Either way,
+with non accelerated framebuffer drivers there's no need to ever use VGA
+registers. And there's no fbdev driver for stupid VGA cards (yuck). It's a
+non issue from my point of view.
+
+> Note that XF will always have to disable IO response on VGA cards when
+> more than one card is present in the machine since that's the only way to
+> prevent 2 VGA cards from trying to hard-decode legacy VGA addresses at
+> the same time. We need to find a way to make the kernel (and the fbdev)
+> aware of what's going on.
+
+X is free to disable whatever it likes on cards that aren't handled by
+framebuffer drivers. It should not disable anything otherwise and leave it
+to the kernel framebuffer drivers to sort things out. More communication
+between X and kernel is fine, but why not leave things as they were for
+framebuffer drivers? This is all that the framebuffer concept was about,
+why throw it out?
+You probably have had all these discussions with the X team already and
+there's nothing of substance I could add, presumably. It does sound like
+the old framebuffer driver concept is dead for good so we need to find
+other ways.
+
+> No time do give more details now, tell me if you need more precisions on
+> one of these specific points.
+
+I'd just need specifics on how to fudge the ATI PCI resources from kernel
+space. I'll take cues from the 2.3 resource handling code and hope to not
+blow up my system too badly.
+
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
