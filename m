@@ -1,39 +1,47 @@
-Date: Thu, 6 Dec 2001 18:42:31 -0600
-From: Troy Benjegerdes <hozer@drgw.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: HIGHMEM + serial console + SMP + 2GB freeze on pmac
-Message-ID: <20011206184231.C23942@altus.drgw.net>
-References: <20011206180754.A23942@altus.drgw.net> <20011206182524.B23942@altus.drgw.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011206182524.B23942@altus.drgw.net>; from hozer@drgw.net on Thu, Dec 06, 2001 at 06:25:24PM -0600
+Message-ID: <3C105230.2060809@acm.org>
+Date: Thu, 06 Dec 2001 23:22:56 -0600
+From: Corey Minyard <minyard@acm.org>
+MIME-Version: 1.0
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Franz Sirl <Franz.Sirl-ppc@lauterbach.com>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: Changes to PPC Linux required for GCC 3.1
+References: <5.1.0.14.2.20011205134825.024d8ed8@mail.lauterbach.com> <3C0E48D2.6000409@acm.org> <20011205173728.GB27936@cpe-24-221-152-185.az.sprintbbd.net> <3C0EC2E2.4020208@acm.org> <20011206033823.GE17651@cpe-24-221-152-185.az.sprintbbd.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Dec 06, 2001 at 06:25:24PM -0600, Troy Benjegerdes wrote:
->
-> > I'm going to try several other combinations of things, including taking
-> > one memory stick out since this could actually be that the hardware
-> > doesn't like that much memory.
->
-> There is at least one problem with serial console on pmac.. I removed the
-> memory (except for 1 512mb dimm)
->
->
-> If I turn serial console on, I get a machine check in
-> serial_console_write during the PCI probing.
->
-> This only shows up if Xmon is NOT compiled in.. since xmon tries to use
-> the port (and presumably dies also)
+Tom Rini wrote:
 
-Another note: The serial works fine after the machine is booted up.
+>On Wed, Dec 05, 2001 at 06:59:14PM -0600, Corey Minyard wrote:
+>
+>>Tom Rini wrote:
+>>
+>>>I think the reason this wasn't applied is that Paul said something about
+>>>thiws being horriyingly ugly.  Corey, can you post a patch that changes
+>>>RELOC(x) into a function and nothing else? :)
+>>>
+>>My original patch has the function.
+>>
+>
+>Your patch had other fixes too tho.
+>
+I can take the patch and delete the files that don't pertain.  I'll wait
+until we are sure this is the way the maintianers want to do it, though.
 
---
-Troy Benjegerdes | master of mispeeling | 'da hozer' |  hozer@drgw.net
------"If this message isn't misspelled, I didn't write it" -- Me -----
-"Why do musicians compose symphonies and poets write poems? They do it
-because life wouldn't have any meaning for them if they didn't. That's
-why I draw cartoons. It's my life." -- Charles Schulz
+>
+>
+>>I prefer the macro, it may be a
+>>little uglier but it removes a dependency between the include file and
+>>the source.
+>>
+>
+>Er, say what?  The macro is in the include file now...
+>
+I meant the include file and the C file.
+
+-Corey
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
