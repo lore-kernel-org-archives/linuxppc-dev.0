@@ -1,20 +1,21 @@
-Date: Tue, 26 Feb 2002 17:06:16 +0100
-From: "marc. h." <heckmann@hbe.ca>
-To: Derrik Pates <dpates@dsdk12.net>
-Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: jdk 1.4?
-Message-ID: <20020226160614.GA8235@hbe.ca>
-References: <15482.32063.537466.19280@esb.bbn.com> <20020225182235.D713@ukans.edu> <20020226021641.GC10864@shiva.marian> <20020226040351.GA26767@dsdk12.net> <20020226104929.GA7754@hbe.ca> <20020226160039.GA18735@dsdk12.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Ryan Boder <boder@cmu.edu>
+To: linuxppc-dev@lists.linuxppc.org
 In-Reply-To: <20020226160039.GA18735@dsdk12.net>
+References: <15482.32063.537466.19280@esb.bbn.com>
+	<20020225182235.D713@ukans.edu> <20020226021641.GC10864@shiva.marian>
+	<20020226040351.GA26767@dsdk12.net> <20020226104929.GA7754@hbe.ca>
+	<20020226160039.GA18735@dsdk12.net>
+Content-Type: text/plain
+Date: 26 Feb 2002 11:12:15 -0500
+Message-Id: <1014739935.4995.19.camel@TOBY>
+Mime-Version: 1.0
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
-
-On Tue, Feb 26, 2002 at 09:00:39AM -0700, Derrik Pates wrote:
+On Tue, 2002-02-26 at 11:00, Derrik Pates wrote:
+>
 > On Tue, Feb 26, 2002 at 11:49:30AM +0100, marc. h. wrote:
 > > lack of JIT hurts though. Have you ever tried the IBM j2SDK for PPC?. It's
 > > noticeably faster on my Powerbook G3. (you can download it from IBM, just
@@ -24,25 +25,15 @@ On Tue, Feb 26, 2002 at 09:00:39AM -0700, Derrik Pates wrote:
 > > to fire off an email to IBM about the problem, but don't know exactly where to
 > > fire the email off to. I use the blackdown (whose excellent work I appreciate)
 > > release now as well.
->
-> I hadn't actually tried the IBM JVM for PPC - the only link I'd seen for
-> it pointed to some SuSE site. I am, however, running 2.4.17-benh0 on
-> this iBook, so I guess if you experience is correct, it wouldn't work on
-> here anyhow. Also, did it come with an OJI Java plugin for use with
-> Mozilla? (I'd bet not.)
 
-Would you mind giving it a shot? (or someone else?) I want to be sure that it's
-not a local Glibc issue or such thing. I also haven't tried a recent benh
-kernel..
+I had problems with the IBM java also. It worked great the first time
+through (running Limewire) but, after that it would always tell me that
+it couldn't allocate the needed memory are exit right away.
 
-you can download from: http://www6.software.ibm.com/dl/dklx130/dklx130-p
+So I had to switch back to blackdown. I haven't run any actual tests or
+anything, but the IBM one seemed faster (probably because it is JIT
+enabled), but atleast the blackdown java works.
 
-only annoying thing is that you have to register for a password.
-
--m
-
---
-	C3C5 9226 3C03 CDF7 2EF1  029F 4CAD FBA4 F5ED 68EB
-	key: http://people.hbesoftware.com/~heckmann/
+Ryan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
