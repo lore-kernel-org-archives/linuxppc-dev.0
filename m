@@ -1,27 +1,29 @@
-Date: Tue, 5 Sep 2000 13:06:32 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: PATCH: improved processor config for G3s
-In-Reply-To: <20000905105025.300@mailhost.mipsys.com>
-Message-ID: <Pine.HPX.4.10.10009051255340.15438-100000@gra-ux1.iram.es>
+Message-ID: <39B4D9CF.FEED2CB8@agelectronics.co.uk>
+Date: Tue, 05 Sep 2000 12:32:31 +0100
+From: Adrian Cox <apc@agelectronics.co.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Gabriel Paubert <paubert@iram.es>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: PATCH: improved processor config for G3s
+References: <Pine.HPX.4.10.10009041309060.15438-100000@gra-ux1.iram.es>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 5 Sep 2000, Benjamin Herrenschmidt wrote:
+Gabriel Paubert wrote:
+> So you need at least 3 writes, or to have one store buffer busy with a
+> previous write, to trigger the store gathering mechanism. This makes it
+> impossible to predict whether it will be used or not, and IMO not worth
+> the potential trouble since it will actually happen quite infrequently.
 
-> Well, that would help unaccelerated frame buffers (but are there any on
-> Grackle-based machines ?)
+This condition should be satisfied by memcpy_toio(). It won't be
+satisfied by fb_memmove(), which is the function that makes large
+virtual consoles on PowerPC so slow.
 
-Don't ask me this. I live in a basically Apple-free country (TM), and I
-don't even use X or frame buffers on the couple of PPC machines that have
-some graphics adapter (VGA text mode on these). All the other have a
-serial console, the only true interface as everybody knows...
+It might be more interesting to try an implementation of memcpy_toio()
+using the DMA engines of the 106/7.
 
-	Gabriel.
-
+- Adrian Cox, AG Electronics
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
