@@ -1,86 +1,96 @@
-Date: Sat, 1 May 2004 20:26:59 +0200
-From: Olaf Hering <olh@suse.de>
-To: linuxppc-dev@lists.linuxppc.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+Subject: Re: [PATCH] simple class for adb
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Olaf Hering <olh@suse.de>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
 	Greg KH <greg@kroah.com>
-Subject: [PATCH] simple class for adb
-Message-ID: <20040501182659.GB18859@suse.de>
+In-Reply-To: <20040501182659.GB18859@suse.de>
+References: <20040501182659.GB18859@suse.de>
+Content-Type: text/plain
+Message-Id: <1083450972.29595.203.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Date: Sun, 02 May 2004 08:36:12 +1000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This adds /sys/class/adb/, removes unused devfs lines and updates a
-comment to match reality.
+On Sun, 2004-05-02 at 04:26, Olaf Hering wrote:
+> This adds /sys/class/adb/, removes unused devfs lines and updates a
+> comment to match reality.
 
+I'm not sure I want to keep /dev/adb forever.... This is at best a
+workaround so that udev creates it. Ultimately, we want a real adb
+bus in the device-model and a different mecanism to send special
+commands to the system controller. I think somebody from the m68k
+folks is already working on the ADB bus stuff though.
 
-diff -p -purN linux-2.6.6-rc3/drivers/macintosh/adb.c linux-2.6.6-rc3.adb/drivers/macintosh/adb.c
---- linux-2.6.6-rc3/drivers/macintosh/adb.c	2004-04-04 05:38:26.000000000 +0200
-+++ linux-2.6.6-rc3.adb/drivers/macintosh/adb.c	2004-05-01 19:58:08.000000000 +0200
-@@ -10,7 +10,7 @@
-  *
-  * To do:
-  *
-- * - /proc/adb to list the devices and infos
-+ * - /sys/bus/adb to list the devices and infos
-  * - more /dev/adb to allow userland to receive the
-  *   flow of auto-polling datas from a given device.
-  * - move bus probe to a kernel thread
-@@ -23,7 +23,6 @@
- #include <linux/slab.h>
- #include <linux/module.h>
- #include <linux/fs.h>
--#include <linux/devfs_fs_kernel.h>
- #include <linux/mm.h>
- #include <linux/sched.h>
- #include <linux/smp_lock.h>
-@@ -36,6 +35,7 @@
- #include <linux/delay.h>
- #include <linux/spinlock.h>
- #include <linux/completion.h>
-+#include <linux/device.h>
- #include <asm/uaccess.h>
- #include <asm/semaphore.h>
- #ifdef CONFIG_PPC
-@@ -75,6 +75,8 @@ static struct adb_driver *adb_driver_lis
- 	NULL
- };
+Ben.
 
-+static struct class_simple *adb_dev_class;
-+
- struct adb_driver *adb_controller;
- struct notifier_block *adb_client_list = NULL;
- static int adb_got_sleep;
-@@ -883,6 +889,7 @@ out:
- }
-
- static struct file_operations adb_fops = {
-+	.owner		= THIS_MODULE,
- 	.llseek		= no_llseek,
- 	.read		= adb_read,
- 	.write		= adb_write,
-@@ -893,9 +900,13 @@ static struct file_operations adb_fops =
- static void
- adbdev_init(void)
- {
--	if (register_chrdev(ADB_MAJOR, "adb", &adb_fops))
-+	if (register_chrdev(ADB_MAJOR, "adb", &adb_fops)) {
- 		printk(KERN_ERR "adb: unable to get major %d\n", ADB_MAJOR);
--	else
--		devfs_mk_cdev(MKDEV(ADB_MAJOR, 0),
--				S_IFCHR | S_IRUSR | S_IWUSR, "adb");
-+		return;
-+	}
-+	adb_dev_class = class_simple_create(THIS_MODULE, "adb");
-+	if (IS_ERR(adb_dev_class)) {
-+		return;
-+	}
-+	class_simple_device_add(adb_dev_class, MKDEV(ADB_MAJOR, 0), NULL, "adb");
- }
+>
+> diff -p -purN linux-2.6.6-rc3/drivers/macintosh/adb.c linux-2.6.6-rc3.adb/drivers/macintosh/adb.c
+> --- linux-2.6.6-rc3/drivers/macintosh/adb.c	2004-04-04 05:38:26.000000000 +0200
+> +++ linux-2.6.6-rc3.adb/drivers/macintosh/adb.c	2004-05-01 19:58:08.000000000 +0200
+> @@ -10,7 +10,7 @@
+>   *
+>   * To do:
+>   *
+> - * - /proc/adb to list the devices and infos
+> + * - /sys/bus/adb to list the devices and infos
+>   * - more /dev/adb to allow userland to receive the
+>   *   flow of auto-polling datas from a given device.
+>   * - move bus probe to a kernel thread
+> @@ -23,7 +23,6 @@
+>  #include <linux/slab.h>
+>  #include <linux/module.h>
+>  #include <linux/fs.h>
+> -#include <linux/devfs_fs_kernel.h>
+>  #include <linux/mm.h>
+>  #include <linux/sched.h>
+>  #include <linux/smp_lock.h>
+> @@ -36,6 +35,7 @@
+>  #include <linux/delay.h>
+>  #include <linux/spinlock.h>
+>  #include <linux/completion.h>
+> +#include <linux/device.h>
+>  #include <asm/uaccess.h>
+>  #include <asm/semaphore.h>
+>  #ifdef CONFIG_PPC
+> @@ -75,6 +75,8 @@ static struct adb_driver *adb_driver_lis
+>  	NULL
+>  };
+>
+> +static struct class_simple *adb_dev_class;
+> +
+>  struct adb_driver *adb_controller;
+>  struct notifier_block *adb_client_list = NULL;
+>  static int adb_got_sleep;
+> @@ -883,6 +889,7 @@ out:
+>  }
+>
+>  static struct file_operations adb_fops = {
+> +	.owner		= THIS_MODULE,
+>  	.llseek		= no_llseek,
+>  	.read		= adb_read,
+>  	.write		= adb_write,
+> @@ -893,9 +900,13 @@ static struct file_operations adb_fops =
+>  static void
+>  adbdev_init(void)
+>  {
+> -	if (register_chrdev(ADB_MAJOR, "adb", &adb_fops))
+> +	if (register_chrdev(ADB_MAJOR, "adb", &adb_fops)) {
+>  		printk(KERN_ERR "adb: unable to get major %d\n", ADB_MAJOR);
+> -	else
+> -		devfs_mk_cdev(MKDEV(ADB_MAJOR, 0),
+> -				S_IFCHR | S_IRUSR | S_IWUSR, "adb");
+> +		return;
+> +	}
+> +	adb_dev_class = class_simple_create(THIS_MODULE, "adb");
+> +	if (IS_ERR(adb_dev_class)) {
+> +		return;
+> +	}
+> +	class_simple_device_add(adb_dev_class, MKDEV(ADB_MAJOR, 0), NULL, "adb");
+>  }
 --
-USB is for mice, FireWire is for men!
+Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-sUse lINUX ag, nÜRNBERG
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
