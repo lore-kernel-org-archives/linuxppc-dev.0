@@ -1,51 +1,30 @@
-From: kd@flaga.is
-To: Dan Malek <dmalek@jlc.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Message-ID: <002566DF.004E489D.00@notes.flaga.is>
-Date: Sat, 19 Dec 1998 14:15:03 +0000
-Subject: Re: MPX860 : MBX_IMAP_ADDR undefined
+Date: Sat, 19 Dec 1998 11:13:17 -0700 (MST)
+From: Jeff Rugen <jrugen@primenet.com>
+To: Cort Dougan <cort@cs.nmt.edu>
+cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: ns16550.[hc]
+In-Reply-To: <Pine.BSI.3.96.981218070058.2404A-100000@usr07.primenet.com>
+Message-ID: <Pine.BSI.3.96.981219111012.1556A-100000@usr01.primenet.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Well, the file is named linux-2.1.131.tar.bz2 and it was downloaded from
-ftp.kernel.org.
-So I assume it is the real thing 8-).
-
-Magnus Damm also pointed this out that MBX_IMAP_ADDR should be IMAP_ADDR.
-
-Thank you,
-
-K.D.
+I'm building on a Motorola PowerStack from the vger tree.  The Makefile and
+misc.c in arch/ppc/boot are looking for the files ns16550.h and ns16550.c,
+but they don't seem to be in vger.  (I'm compiling with serial console on
+and a non-MTX board -- I think those are the conditional flags that
+select/deselect it).  Should those files be in vger or do I have to get them
+elsewhere, or do I have a problem with my cvs setup or something?  I've did
+a cvs update -A -d yesterday.
 
 
+----------------------------------------------------------------------------
+Jeff Rugen                      jrugen@primenet.com
 
-
-Dan Malek <dmalek@jlc.net> on 12/18/98 06:15:02 PM
-
-To:   Kári Davíðsson/Flaga hf/IS
-cc:   linuxppc-dev@lists.linuxppc.org
-Subject:  Re: MPX860 : MBX_IMAP_ADDR undefined
-
-
-
-
-kd@flaga.is wrote:
-
-> ...... Unfortunately this fails on arch/ppc/kernel/irq.c
-> because of  MBX_IMAP_ADDR undefined
-
-Really?  It should simply be IMAP_ADDR now.  The sources
-I downloaded a few days ago were correct.  Are you sure
-you downloaded the right stuff from the right place?
-
-
-    -- Dan
-
-
-
-
-
+..Had this been an actual emergency, we would have fled in terror, and you 
+would not have been informed.
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
