@@ -1,55 +1,50 @@
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Pantelis Antoniou <panto@intracom.gr>,
+Date: Mon, 14 Jul 2003 13:49:27 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Roland Dreier <roland@topspin.com>
+Cc: Paul Mackerras <paulus@samba.org>,
+	Tom Rini <trini@kernel.crashing.org>,
 	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Ethernet PHY chip discovery not working on 855T with 971/972 chips 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 14 Jul 2003 07:31:10 PDT."
-             <20030714143110.GA1211@ip68-0-152-218.tc.ph.cox.net>
-Date: Mon, 14 Jul 2003 21:26:13 +0200
-Message-Id: <20030714192618.BF277C6D82@atlas.denx.de>
+Subject: Re: Ethernet PHY chip discovery not working on 855T with 971/972 chips
+Message-ID: <20030714134927.A2543@home.com>
+References: <3F0C8112.5060001@earthlink.net> <20030709212145.49E24C6D82@atlas.denx.de> <20030711151834.GU17433@ip68-0-152-218.tc.ph.cox.net> <3F0F468F.1050909@earthlink.net> <16143.24034.31805.589402@cargo.ozlabs.ibm.com> <3F117F3C.7090008@embeddededge.com> <52ptkewfu2.fsf@topspin.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <52ptkewfu2.fsf@topspin.com>; from roland@topspin.com on Sun, Jul 13, 2003 at 09:29:09AM -0700
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Tom,
-
-in message <20030714143110.GA1211@ip68-0-152-218.tc.ph.cox.net> you wrote:
+On Sun, Jul 13, 2003 at 09:29:09AM -0700, Roland Dreier wrote:
 >
-> > I was referring to a much older implementation  of  this  feature.  I
-> > sent it to Tom nearly two years ago:
-...
-> I really wish I had looked into making mutt keep a copy of sent mail a
-> lot sooner.  I don't suppose you have a copy of my reply to that as
-> well?  I suspect it was either "Can you break the uart stuff out from
-> the dpfree stuff" and you didn't, or "This is large and intrusive and
-> I'd feel better if I could make Dan Malek look at it".
+>     Paul> .... It's a bit disappointing that 8xx still doesn't compile
+>     Paul> in 2.5.  I don't have any 8xx hardware to test on so I have
+>     Paul> been relying on others to update it.
+>
+> Speaking of 2.5, since our custom boards are in production now, I have
+> an Ebony (440GP eval board) that is completely idle, and some free
+> hacking time.  Is there any 4xx work that I could help with?  Is
 
-I found two related replies in my archive:
+A 44x thing that would be nice is to abstract the PCI-X bridge support
+into a common call (or calls) so it can be configured into a variety
+of windowing modes...like alternative monarch memory maps or any
+non-monarch configurations.  Part of this would work would require that
+fixup_bigphys_addr() be made aware of these window changes.  In addition
+it would be nice to have a helper function that sets the same values as
+the current hardcoded monarch configuration via the new abstracted
+interface since that is a common configuration.
 
-28 Aug 2001:
-...
-PATCH-006 - Looks good.  I'll play w/ it a bit more tomorrow and let you
-  know.
-...
+Sorry, but you asked. :)
 
-15 Oct 2001:
-...
-PATCH-006 Paul Mundt has been a bit busy of late (and had his disks die
-a week or so ago), but he should have something soon I hope.  Sorry.
-...
+> linuxppc-2.5 the right tree to use?
 
+Yes, nothing 44x-related should be going in without a 2.5 patch.
+I've invested considerable time making sure that it was usable
+by other developers on 44x...hopefully that still the case after
+two weeks of vacation.
 
-
-Best regards,
-
-Wolfgang Denk
-
+Regards,
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Der Irrtum wiederholt sich immerfort in der Tat.  Deshalb muß man das
-Wahre unermüdlich in Worten wiederholen.                     - Goethe
+Matt Porter
+mporter@kernel.crashing.org
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
