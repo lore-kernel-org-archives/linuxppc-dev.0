@@ -1,14 +1,18 @@
 Return-Path: <trini@kernel.crashing.org>
-Date: Thu, 4 Nov 2004 11:56:30 -0700
+Received: from fed1rmmtao04.cox.net (fed1rmmtao04.cox.net [68.230.241.35])
+	by ozlabs.org (Postfix) with ESMTP id 9C7922BF0C
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  5 Nov 2004 06:43:01 +1100 (EST)
+Date: Thu, 4 Nov 2004 12:42:59 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Rune Torgersen <runet@innovsys.com>
-Message-ID: <20041104185629.GD13456@smtp.west.cox.net>
-References: <DCEAAC0833DD314AB0B58112AD99B93B06DBA1@ismail.innsys.innovsys.com>
+To: Adrian Cox <adrian@humboldt.co.uk>
+Message-ID: <20041104194259.GI13456@smtp.west.cox.net>
+References: <1092926140.10314.101.camel@localhost>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B06DBA1@ismail.innsys.innovsys.com>
-Cc: dwmw2@shinybook.infradead.org, Linuxppc-embedded@ozlabs.org
-Subject: Re: Possible CPM2 SMC bug
+In-Reply-To: <1092926140.10314.101.camel@localhost>
+Cc: mcclintock@freescale.com, linuxppc-embedded@ozlabs.org
+Subject: Re: [RFC] Test patch for Sandpoint X2
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,16 +23,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 25, 2004 at 06:25:20PM -0500, Rune Torgersen wrote:
+On Thu, Aug 19, 2004 at 03:35:40PM +0100, Adrian Cox wrote:
 
-> The output from INIT (sysvinit 2.85) is garbled when runninn on kernel 2.6.9 and using SMC1 as the console port
-> When runnign SCC1 as console port, no garbling occurs.
-> Only the output from INIT seems to be garbled. And only output that does not show up on netconsole.
+> The attached patch puts support for Sandpoint X2 back into Linux 2.6.
+> Unlike my previous attempts, this patch detects the Sandpoint model at
+> runtime. I only have an X2 here, so I would appreciate reports of the
+> code being unbroken on the X3.
 > 
-> The problem was not present in 2.6.7, which used the old smc/scc uart drivers.
+> The patch causes EPIC_SERIAL_MODE to be a runtime rather than compile
+> time decision. It also changes the UART interrupts from level to edge,
+> which on my X2 is required in order to work with the serial driver in
+> 2.6. I'd also like to know if this breaks the X3.
 
-It sounds like the clock rate isn't quite right on SMC1.  Any chance
-you've worked this problem out more?  Thanks.
+Sorry for the horrific delay.  I've tested this on my X3, and it works.
+Can you read the Developers Certificate of Origin and follow up with a
+Signed-off-by if agreeable?  Thanks.
 
 -- 
 Tom Rini
