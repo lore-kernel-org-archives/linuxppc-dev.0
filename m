@@ -1,58 +1,28 @@
-From: Gerd Knorr <kraxel@goldbach.in-berlin.de>
-Date: Sat, 8 Jan 2000 22:39:41 +0100
-Message-Id: <200001082139.WAA00528@macintoy.masq.in-berlin.de>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: iMac DV and aty128fb
-In-Reply-To: <Pine.LNX.3.96.1000108185120.23736D-100000@shell>
+Mime-Version: 1.0
+Message-Id: <v0422080eb49dc8d7fe01@[206.163.71.146]>
+In-Reply-To: <20000108102900.C18715@linuxcare.com>
+References: <v03130302b49d06179767@[209.123.117.14]>
+ <20000108102900.C18715@linuxcare.com>
+Date: Sat, 8 Jan 2000 21:25:28 -0800
+To: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
+From: Joel Klecker <jk@espy.org>
+Subject: Re: PPC Boards?
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In lists.linuxppc.dev, you wrote:
-> 
-> On Sat, 8 Jan 2000, BenH wrote:
-> 
-> > /proc/device-tree/compatible
-> 
-> PowerMac2,1MacRISCPower Macintosh
-> 
-> could someone with a non-DV iMac (eg. Rev.A - D) do a fbset and let me
-> know the output?
+At 10:29 -0800 2000-01-08, David N. Welton wrote:
+>It sounds like you really want one of those POP boxes that have yet to
+>actually be produced:-(
+>
+>For a bit of info: http://www.popcomputers.com/
 
-Below is my /etc/fb.modes.  I've figured them out by trial and error.
-RevB iMac.  The important thing is that the iMac syncs only on 60 kHz
-horizontal.
-
-  Gerd
-
----------------------------------------------------------------
-
-mode "640x480"
-    # D: 50.808 MHz, H: 60.486 kHz, V: 118.136 Hz
-    geometry 640 480 640 9798 8
-    timings 19682 80 24 28 1 96 3
-    hsync high
-    vsync high
-    accel true
-endmode
-
-mode "800x600"
-    # D: 63.279 MHz, H: 60.381 kHz, V: 94.345 Hz
-    geometry 800 608 1024 6124 8
-    timings 15803 120 32 28 1 96 3
-    hsync high
-    vsync high
-    accel true
-endmode
-
-mode "console"
-    # D: 78.524 MHz, H: 59.850 kHz, V: 74.813 Hz
-    geometry 1024 768 1024 6128 8
-    timings 12735 160 32 28 1 96 3
-    hsync high
-    vsync high
-    accel true
-endmode
-
+Also see: http://www.siliconfruit.com/ (dual G4, 6 PCI slots, AGP;
+hopefully shipping Q2 2000)
+-- 
+Joel Klecker (aka Espy)                    Debian GNU/Linux Developer
+<URL:mailto:jk@espy.org>                 <URL:mailto:espy@debian.org>
+<URL:http://web.espy.org/>               <URL:http://www.debian.org/>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
