@@ -1,53 +1,55 @@
-Message-Id: <200012031440.eB3Eedm28381@denx.local.net>
-To: Dan Hopper <eusdbho@rtp.ericsson.se>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: trouble with FEC on MPC860T - FEC_INTERRUPT not going off? 
+Message-Id: <200012040029.eB40TKB27990@denx.local.net>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: 2.4.0-test11 Patches for TQM8xxL etc.
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sat, 02 Dec 2000 19:44:40 EST."
-             <20001202194440.A9761@slug.rtp.ericsson.se>
-Date: Sun, 03 Dec 2000 15:40:39 +0100
+In-reply-to: Your message of "Sun, 03 Dec 2000 21:11:23 +0100."
+Date: Mon, 04 Dec 2000 01:29:14 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20001202194440.A9761@slug.rtp.ericsson.se> Dan Hopper wrote:
->
-> > > FEC, and am now working on the kernel.  At the moment, I'm using the
-> > > 2.4-2000-11-11 kernel from ftp.denx.de as a baseline, since it
-> > This version of the kernel is derived from 2.4.0-test5 from July, 26.
->
-> OK.  Is there a newer one that's also friendly to 860Ts?  Some
-> others appeared somewhat different configuration-wise.  What base do
-> you use?
+For all users of TQM8xxL / ETX_0xx / SM850 / SPD8xxTS / IVM systems:
 
-We are using 2.4-2000-11-11 for customer  projects,  too  (there  are
-some new extensions, but nothing "interesting").
+I've re-synced our development  tree  from  bk://hq.fsmlabs.com:5005.
+You can find the necessary patch at
 
-I've started testing 2.4.0-test11 in-house.
+ftp://ftp.denx.de/pub/LinuxPPC/usr/src/patches/linux-2.4.0-test11-2000-12-03.bz2
 
-> I did, and it seems to work great.  It negotiated a 100Mbps
-> half-duplex after detecting the PHYs, and took off from there with
-> NFS.  I did need to hook up the interrupt line from the 972, as you
-> indicated.
+Please note that the following files  should  be  removed;  they  are
+obsolete:
 
-Fine. Thank you very much for the confirmation.
+	include/asm-ppc/tqm860.h
+	include/asm-ppc/tqm8xxL.h
 
-> Next week, I guess I'll be doing a CVS merge from your latest
-> ppcboot tree and see if I can get that FEC code to play.
->
-> Thanks for your help!
-> Dan
+I have also sent the patch to Dan Malek, hoping it will make it  into
+the official source tree.
 
-You are welcome.
+
+You can also find a tarball with the new sources at
+
+ftp://ftp.denx.de/pub/LinuxPPC/usr/src/linux-2.4.0-test11-2000-12-03.tar.bz2
+
+Also, I've modified scripts/mkdep.c so that you can create a copy  of
+the  kernel  source  tree  using  symlinks.  Usually we keep a (write
+protected) copy of the original sources in a  central  location,  and
+use  a  script  "clone_tree"  to create project-specific copies using
+symlinks. This saves a lot  of  disk  space  when  you  have  several
+projects / users working in parallel. "clone_tree" can be found at
+
+ftp://ftp.denx.de/pub/LinuxPPC/usr/src/clone_tree
+
+
+Best regards,
 
 Wolfgang Denk
 
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Our management frequently gets lost in thought.   That's because it's
-unfamiliar territory.
+Shakespeare's Law of Prototyping: (Hamlet III, iv, 156-160)
+        O, throw away the worser part of it,
+        And live the purer with the other half.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
