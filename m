@@ -1,34 +1,29 @@
-Message-ID: <391B209B.FBCB56EB@mvista.com>
-Date: Thu, 11 May 2000 14:05:31 -0700
-From: Scott Anderson <sanders@mvista.com>
+Message-ID: <391B220F.9838E70F@charter.net>
+Date: Thu, 11 May 2000 16:11:43 -0500
+From: "Dan A. Dickey" <ddickey@charter.net>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: flash drivers
-References: <BE1C564723B3D21191FD0000F840E39801D81514@rfcmx2.rfc.comm.harris.com>
+To: "linuxppc-embedded@lists.linuxppc.org"
+ <linuxppc-embedded@lists.linuxppc.org>
+Subject: How to get rom code to go on FADS?
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Brown, David (dbrown03)" wrote:
-> It would be nice if we could have something like drivers/block/ftl.c without
-> using patented methods.  If that's not possible, the next best thing would
-> be a specific exemption for use on the linuxppc kernels, even if flash is
-> on-board instead of PCMCIA.
+Ok, so I have the 8xxrom code running on my fads board;
+and so far I've only been able to run it by using the
+ADI connected to the debug port.  I noticed the other
+day that it was actually running without the ADI connected.
+(Lights blinking, RS232 status LED coming on, etc...)
 
-Right now, it looks like the best course is the Journaling Flash File System
-(JFFS) developed by Axis Communications.  There is an effort underway to
-incorporate this with the Memory Technology Device (MTD) subsystem.  AFAIK, the
-JFFS works with 2.0 kernels and there is a porting effort to get it up on 2.3
-as well.  For more info on JFFS:
-	http://www.developer.axis.com/software/jffs/
-and of course, the MTD site already mentioned:
-	http://www.linux-mtd.infradead.org/
-There are also mailing lists for both of these activities.
+However, I cannot seem to figure out how to cause this to
+happen at will.  Is there some configuration thing I need
+to set via the debug port?  (Using mpc8bug95 on a windows
+machine talking to the ADI board connected to the debug
+port).
 
-    Scott Anderson
-    scott_anderson@mvista.com	MontaVista Software Inc.
-    (408)328-9214		490 Potrero Ave.
-    http://www.mvista.com	Sunnyvale, CA  94086
+If anyone is familar with how this is done, I'd appreciate
+a reply.   Thanks again.
+	-Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
