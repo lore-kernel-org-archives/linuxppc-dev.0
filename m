@@ -1,28 +1,56 @@
-Message-ID: <3B3A576B.6D2968A8@linux-m68k.org>
-Date: Thu, 28 Jun 2001 00:00:11 +0200
-From: Roman Zippel <zippel@linux-m68k.org>
-MIME-Version: 1.0
-To: Adrian Cox <adrian@humboldt.co.uk>
-Cc: paulus@samba.org, linuxppc-commit@ppcbk.mvista.com,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: rearrangements in linuxppc_2_4_devel
-References: <15161.33091.788459.48900@cargo.ozlabs.ibm.com>	<3B39C8AA.5000605@humboldt.co.uk> <15161.54515.559935.629883@cargo.ozlabs.ibm.com> <3B39E532.7040202@humboldt.co.uk>
+Date: Thu, 28 Jun 2001 12:03:46 +1000
+From: Steven Hanley <sjh@svana.org>
+To: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: addresses in xmon trace output?
+Message-ID: <20010628120346.A627@wibble.net>
+Reply-To: Steven Hanley <sjh@wibble.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+All
 
-Adrian Cox wrote:
+what are the addresses you see in an xmon trace output? I had a crash
+yesterday with benh 2.4.6-pre3 (rsynced two days ago) where typing x in xmon
+didnt recover normal operation of the machine.
 
-> Looking at the makefile, APUS links with setup.c. So it's going to link
-> with our standard parse_bootinfo, which doesn't take any arguments. I
-> suspect APUS needs a bit more work to integrate it into the 2_4_devel tree.
+So the T command seemed to give some interesting numbers I assumed were
+addresses in the system map I could look up once I rebooted.
 
-Yes, APUS currently calls its own parse_bootinfo() (amiga/bootinfo.c) in
-apus_init().
+[11:35:34] 22 shiva sjh ~>cat mon_crash
+c67b2098 c00e1bd8 c00e1080 c011f9df c00de590 c00de7ec c003b6a4 c0003b3c
+exception:c00 [c67a1e90] fe0f640 feeff40 feeff44 fecef4f4 fecfd4c feca62c feaaab8 10001808 fd9675c 0
+[11:35:47] 23 shiva sjh ~>for i in c67b2098 c00e1bd8 c00e1080 c011f9df c00de590 c00de7ec c003b6a4 c0003b3c ; do grep -i $i /boot/System.map-2.4.6-pre3 ; done
+c0003b3c T ret_from_syscall_1
+[11:36:25] 24 shiva sjh ~>for i in fe0f640 feeff40 feeff44 fecef4f4 fecfd4c feca62c feaaab8 10001808 fd9675c ; do grep -i $i /boot/System.map-2.4.6-pre3 ; done
+[11:37:18] 25 shiva sjh ~>grep c67a1e90 /boot/System.map-2.4.6-pre3
+[11:37:34] 26 shiva sjh ~>
 
-bye, Roman
+so they are not addresses in there (well except possibly for the
+ret_from_syscall_1
+
+This is on a pismo, the crash happened when I opened the lid (woke up form
+sleep) in X (4.1.0), the mosue wasnt appearing and I couldnt change desktops
+with the control arrow combo (sawfish) so I switched to console, then back to
+X, as I came back to X the xmon console appeared overwriting my X display.
+
+I will see if this is reporducable tonight (currently I am running 2.4.4 benh
+as it doesnt exhibit this crash) as I expect to see paulus tonight so can
+maybe show him the xmon console after the crash and get hi mto look at it.
+
+Anyway what are the addresses in the xmon trace?
+
+        See You
+            Steve
+
+--
+sjh@wibble.net http://wibble.net/~sjh/
+Look Up In The Sky
+   Is it a bird?  No
+      Is it a plane?  No
+         Is it a small blue banana?
+YES
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
