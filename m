@@ -1,26 +1,30 @@
-Message-Id: <200008161901.e7GJ1Qg28132@smtp.wanadoo.es>
-From: Pablo Le?n <control@horushardware.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: rpx-lite led question
-Date: Wed, 16 Aug 2000 19:13:04 +0100
-Mime-Version: 1.0
+Message-ID: <399ADF39.3344F0AB@ccrl.mot.com>
+Date: Wed, 16 Aug 2000 13:36:41 -0500
+From: Steve Rossi <srossi@ccrl.mot.com>
+MIME-Version: 1.0
+To: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
+Subject: knfsd?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Has anyone compiled the nfs-utils package for 8xx - i.e. knfd, mountd,
+etc? I didn't see it in MontaVista's CDK 1.2. Has anyone run an
+NFS server on 8xx? What is the bare minimum that I need to be able to
+export nfs filesystems?
 
-We're new to linuxppc boards and have basic questions:
+Thanks!
+Steve
 
-We're trying to develop a tiny driver for accesing the user leds of our R=
-PX-Lite.
 
-Any Sample code on writing linux device drivers?
+--
+-------------------------------------------------------
+Steven K. Rossi                     srossi@ccrl.mot.com
+Staff Engineer
+Multimedia Communications Research Laboratory
+Motorola Labs
+-------------------------------------------------------
 
-Where can we find the address map of the board's leds?
-
-Thanyou very much,
-
-Pablo Le=F3n
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
