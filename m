@@ -1,42 +1,37 @@
-Subject: Re: i2c linux drivers
-From: Craig Hollabaugh <craig@hollabaugh.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Mon, 7 Jul 2003 12:05:23 -0400
+From: Kent Borg <kentborg@borg.org>
 To: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <3F094650.9070204@peak.uklinux.net>
-References: <3F093B09.8040605@peak.uklinux.net>
-	<3F094650.9070204@peak.uklinux.net>
-Content-Type: text/plain
-Date: 07 Jul 2003 09:49:26 -0600
-Message-Id: <1057592966.979.2.camel@gibson>
+Subject: gdbserver, find_extend_vma(), and VM_GROWSDOWN
+Message-ID: <20030707120523.B4527@borg.org>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 2003-07-07 at 04:07, Seb James wrote:
->
-> Seb James wrote:
->
-> > Hello all,
-> >
-> > I'm trying to write an i2c driver to interface a ds1307 realtime clock
-> > to linux. I'm having no luck getting linux to do anything at all on the
-> > i2c bus.
+I am having gdbserver problems.  I can run gdbserver and attach to it
+with gdb, but the peeks into the application space are failing.
+
+For example, in debugging the peek for the first instruction of my
+application, there is a call to find_extend_vma() (in mm/mmap.c).  The
+test for:
+
+  vma->vm_start <= addr
+
+fails, and as this vms is VM_GROWSUP (and not VM_GROWSDOWN), the next
+if-statement returns a NULL.  That percolates up until ptrace returns
+zero.
+
+This application code runs pretty well without gdbserver, what should
+I look for next?  Is it indeed perverse for the addr to be below the
+start?  Who is likely to blame for that?  Where should I look next?
+Do I start grepping for every instance of PT_PTRACED in arch/ppc?
 
 
-Seb,
+Thanks,
 
-If you give up, you can just use the PPC I2C routines I wrote for my
-book.
-
-http://www.embeddedlinuxinterfacing.com/chapters/10/SAA1064_rpxcllf.c
-
-I think you can just change the I2C signaling macros for your hardware
-and get things running.
-
-I used this code just yesterday for an x86 SBC talking to a DalSemi
-digipot.
-
-Craig
-
+-kb, the Kent whose gdbserver Makefile says it is 4.12.3, and whose
+kernel is quite close to 2.4.21.rc1.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
