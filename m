@@ -1,92 +1,47 @@
-Message-ID: <3A2540C6.9CC58476@mvista.com>
-Date: Wed, 29 Nov 2000 10:45:42 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-Reply-To: mgreer@mvista.com
+Date: Wed, 29 Nov 2000 19:50:14 +0200 (EET)
+From: Topi Kanerva <tkanerva@ees2.oulu.fi>
+To: Rainer Kloud <rainer.kloud@siemens.at>
+cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: loading a elf binary
+In-Reply-To: <3A1BECC8.DB736163@siemens.at>
+Message-ID: <Pine.GSO.4.30.0011291946240.29386-100000@stekt6>
 MIME-Version: 1.0
-To: Rolf.Fiedler@Ferrari.DE
-CC: linuxppc-embedded@lists.linuxppc.org, Ruedi Dummermuth <ruedi@abatron.ch>
-Subject: Re: target entered debug mode
-References: <3A251EA8.74A26893@Ferrari.DE>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Rolf Fiedler wrote:
+On Wed, 22 Nov 2000, Rainer Kloud wrote:
 
-> hi there,
+>(mapped) correctly into the RAM. But in the further process of loading
+>the
+>binary (search_binary_handler and load_elf_binary) I can't find the
+>place
+>where the rest of the binary is loaded?!
+>(the correct loaded part of the executable resides from 0xc0252000 to
+>0xc0252fff in the kernel and from 0x10000000 to 0x10000fff in user
+>space)
 >
-> I have a monta vista 2.4.0-test1 kernel running on a IBM PPC405GP
-> selfmade board. Connected to the board is an Abatron BDI2000, which
-> I use for TFTP booting. The board mounts the root nfs via PMC ethernet
-> (intel i82559ER). The internal ethernet controller isn't working,
-> I have no idea why - can't talk to the LXT972 via MII management
-> interface. That is my next task...
+>When then the kernel executes the binary, everything works correct
+>until the first executed instruction is outside of the first page (4k)
+>of the executable.
+>Then the processor will load a wrong instruction which results at the
+>end in a page fault.
 
-Doesn't the 82559 have an integrated PHY?
+Rainer,
+I think the thing here you described, could be the ultimate symptom for us
+Sandpoint owners. The problem was and is, more or less, that when the
+kernel tries to run /sbin/init at the startup time, it always results in a
+kernel oops with illegal instructions. Then, if it is so, why the heck
+doesn't the CPU execute the right instructions when running out from the 4K
+boundary??? There's something in the sandpoints that sucks big time.
 
-I've seen a problem with the eepro100 driver on big-endian machines where a
-value written to a register is byte-swapped twice (making it unswapped).
+OK, so I don't have a JTAG debugger, so I can't tell you exact details, but
+I'll try to do some hacking with a KGDB in the meantime...
 
-Look in eepro100.c near the bottom of speedo_resume().  If you have a line
-like:
-outl(cpu_to_le32(TX_RING_ELEM_DMA(sp, sp->dirty_tx % TX_RING_SIZE)),
-then the outl is byte-swapping and so is the cpu_to_le32.  That's wrong.  You
-need to get rid of the cpu_to_le32.  Look for other combinations of outl and
-cpu_to_le32 together and remove the cpu_to_le32--on my version, there is only
-one occurance of this.
+BTW, I have a PPC7400 (it's a sandpoint with the Altimus board)
 
-I've seen others report this problem too.  My understanding is that the author
-is going to fix this and probably has but the 2.4.0-test1 version probably has
-this problem.
-
-> My question is:
-> How come the board enters debug mode on the Abatron BDI2000 once
-> in a while? I had it running processing data all over the weekend,
-> and on monday it locked. I had a number of lock-ups since.
->
-> what I get from the debugger is:
-> - TARGET: target has entered debug mode
->
-> and if I do info:
-> Target state      : debug mode
-> Debug entry cause : JTAG stop request
-> Current PC        : 0xc0012b90
-> Current CR        : 0x24000028
-> Current MSR       : 0x00009230
-> Current LR        : 0xc00048c4
->
-> Is it a problem with the Abatron debugger or is my board instable?
->
-> I did a objdump -d of the kernel running and the debug mode entry
-> happend in the scheduler, in schedule:
->         /*
->          * 'sched_data' is protected by the fact that we can run
->          * only one process per CPU.
->          */
->         sched_data = & aligned_data[this_cpu].schedule_data;
-> c0012b84:       3d 20 c0 14     lis     r9,-16364
-> c0012b88:       39 29 b0 c0     addi    r9,r9,-20288
-> c0012b8c:       7f de 4a 14     add     r30,r30,r9
->
->         spin_lock_irq(&runqueue_lock);
-> c0012b90:       3d 60 c0 13     lis     r11,-16365     <--------
-> c0012b94:       80 0b 83 e0     lwz     r0,-31776(r11)
-> c0012b98:       7c 08 03 a6     mtlr    r0
-> c0012b9c:       4e 80 00 21     blrl
-
-I see this when cache is stale.  This is very easy to do when you download via
-the bdi (or other probes).  A good general practice when downloading code with
-a jtag probe is to invalidate all of L1 and L2 caches because they may/will be
-stale.
-
-I don't know what the cacheline size is on a 405GP so I don't know if 0x90 is
-the first word on a new cacheline (usually ppc processor have 32 byte
-cachelines which means it wouldn't be).  Either way, try invalidating all your
-caches (do NOT flush them) as soon as the code you downloaded starts to run
-and see if that helps.
-
-Mark
+ -topi
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
