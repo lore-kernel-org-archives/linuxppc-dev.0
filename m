@@ -1,28 +1,37 @@
-From: Joe Green <jgreen@mvista.com>
-To: David Updegraff <dave@cray.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: applications in HHL 2.0, 405GP
-Date: Tue, 18 Sep 2001 12:05:09 -0700
-Content-Type: text/plain
-References: <200109071118.EAA14228@krakatoa.gigabitnetworks.com> <3BA77B15.2090707@cray.com>
-In-Reply-To: <3BA77B15.2090707@cray.com>
+Message-ID: <3BA79D3E.E5BA495A@mvista.com>
+Date: Tue, 18 Sep 2001 15:15:10 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Message-Id: <01091812073101.04299@minotaur.mvista.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 4xx icache and tlb flushing
+References: <20010918143359.B817@zax>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Updegraff wrote:
-> Anyway, I thought it was the "theory" that the kernel was trapping the
-> float instructions and emulating them...???
+David Gibson wrote:
 
-Remember that it's not just a matter of configuring math emulation into
-the kernel.  The function call ABI is different for soft vs. hard
-float, so library calls will go kerflooey if you mix the two.  If you
-stick to all hard float user space, you can use kernel math emulation.
+> First on icache flushing.  I noticed that flush_icache_page() has been
+> changed to a no-op, wheras it used to flush the whole icache on 4xx.
 
---
-Joe Green <jgreen@mvista.com>
-MontaVista Software, Inc.
+It is now done when we detect a PTE change that affects an executable
+region.
+
+> Now two questions on tlb flushing.  First, 4xx uses a __tlbia() macro
+> in local_flush_tlb_*().  Is there a reason we don't use the _tlbia()
+> function already included in misc.S?
+
+I dunno, avoids the function call?  We keep swapping between macros
+and functions.  Whatever.
+
+> ... Is this a bug, or am I missing something?
+
+I thought I checked that in....maybe it's still hanging out in my
+with a bunch of other random 4xx patches.  I'll look again.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
