@@ -1,51 +1,67 @@
-Message-Id: <200007261841.TAA22154@hyperion.valhalla.net>
-Date: Wed, 26 Jul 2000 19:42:03 +0100
-Subject: Re: [ANN] IRQ Latency tool 0.1.3 release.
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Geert Uytterhoeven <geert@linux-m68k.org>,
-        Benjamin Herrenschmidt <bh40@calva.net>
-CC: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Message-ID: <397F3271.FE3C0310@student.ethz.ch>
+Date: Wed, 26 Jul 2000 20:48:17 +0200
+From: Michel Dänzer <daenzerm@student.ethz.ch>
+MIME-Version: 1.0
+To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+CC: Steffen Haeuser <SteffenH@hyperion-software.de>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: sound again [was: Re: xf4 bug report]
+References: <Pine.LNX.4.10.10007261949010.28745-100000@zirkon.biophys.uni-duesseldorf.de>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  Wed, Jul 26, 2000, Geert Uytterhoeven wrote:
-> On Tue, 25 Jul 2000, Benjamin Herrenschmidt wrote:
->> >> I still haven't found the "hard-block" that is effecting the overall audio
->> >> latency performance... ah well, back to the drawing board...
->> >
->> >Do you have IDE? The IDE driver turned out to be the major interrupt messing
->> >problem on m68k, since it can disable interrupts for quite a while.
->>
->> We have some great IRQ blockers in Linux currently. IDE is one,
->> especially in PIO mode where it disables IRQs by default during
->> transferts (AFAIK), but I think also in the fbdevs where, I think, a
->> bunch of lenghtly things like scrolling are done with IRQs disabled.
+Michael Schmitz wrote:
 >
->> I don't know how the fbdev case can be improved, I beleive James has some
->> plans about that for 2.5...
+> > >Right. The very people that first brought Linux to the m68k Mac might
+> > >feel upset. One was a well known ix86 kernel hacker, the other a m68k
+> > >hacker from the Atari/Amiga camp.
+> >
+> > There is no Atari/Amiga camp... actually Amiga and Atari people cannot
+> > stand each other... :) Mac... yes... but Atari... no... :)
 >
-> There's indeed a global lock on the console, to prevent multiple accesses to
-> the console at once. This solves some problems, one being that some graphics
-> hardware crashes when both the CPU and the graphics accelerator touch the
-video
-> RAM at the same time.
+> BS. Geert, Roman Z., Jes Sorensen are Amiga users. /me, Roman H., Andreas
+> Schwab are Atari users. We get along fine. I'm talking Linux/m68k here, in
+> case it wasn't obvious.
+
+Right.
+
+I personally don't like Ataris too much either (though there were times I
+almost bought one before I was enlightened by the Amiga ;), but those wars
+should really be over now - have they done any good for the Amiga?
+
+In any case, they're highly inappropriate as far as Linux is concerned IMHO.
+
+
+> > >Right, but can you compile a kernel that will run on PowerMac/CHRP/PReP
+> > >and APUS? Which one's serial will work?
+> >
+> > The Linux for Amiga PowerPC Boards uses the APUS stuff. Only difference is
+> > a special bootloader.
 >
-> Interrupts in fbdev would be nice for some high-end hardware, which can
-> trigger an interrupt when a bunch of graphics processing was done.
+> I'm aware of the connection between APUS and LinuxPPC for Amiga. My
+> question was: can you compile a kernel that will load and run on all of
+> the major PPC machines, namely CHRP/PREP, PowerMac, VME boards (sorry I
+> forgot you guys), and Amiga with PPC boards? Not configure and build a
+> single kernel for each of these, but configure and build one kernel for
+> all of them?
+>
+> All I've got configured so far is a (PowerMac/PReP/CHRP) Machine Type
+> combination. Not what I asked for, as you will no doubt notice.
 
-but, unless the test code is c**p, that is not what's causing my problem...
+When Jesper Skov was the strong leader of APUS development, he worked on
+making that possible, but he hasn't succeeded. Not that I think it's really
+needed...
 
-on the x86 (over on the linux-audio-dev list) they've come to the conclusion
-that the spikes are caused by APM introduced at 2.2.16.
 
-I'm not very aware of whether this is an issue on ppc (I though APM was an
-x86-specific feature).
+Michel
 
-please correct me if I'm wrong..
 
-Iain.
+--
+I'm so hungry, I could almost eat health food.
+______________________________________________________________________________
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
