@@ -1,43 +1,37 @@
-Message-ID: <386B6101.BDCEC7B3@pop.agri.ch>
-Date: Thu, 30 Dec 1999 14:41:32 +0100
-From: Andreas Tobler <toa@pop.agri.ch>
-Reply-To: toa@pop.agri.ch
+Message-ID: <386B8983.AE2F1A5A@wanadoo.fr>
+Date: Thu, 30 Dec 1999 17:34:11 +0100
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-To: Linux-Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: asm-m68k/setup.h in setup.h
+To: bob@kunk.jriver.com
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.2.14pre16 & usb kbd
+References: <19991230080950.11540.qmail@kunk.jriver.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
-I'm playing with buildkernel from http://www.pobox.com/~wstearns/buildkernel/
-That is a 'program' which should make it easy to build a kernel. I have
-to find out......
+bob@kunk.jriver.com wrote:
+> 
+> The USB keyboard mapping appears to have changed (or been broken) between
+> 2.2.14.pre9 and 2.2.14pre16 from Paul's rsync. (running on an iMac rev C)
+> 
+> Did I miss something that someone can fill me in on?
 
-Now this script removes all other archs from the kernel tree. Especially
-the asm-m68k in the include directory.
-When building the kernel it fails because asm-m68k/setup.h is not available.
-I saw that asm-ppc/setup.h includes this file. 
-In asm-ppc/setup.h m68k_num_memory and m68k_memory are defined. These
-two are declared extern in asm-m68k. 
-Are there other things needed from asm-m68k/setup.h?
+On French USB keyboards, these kernels are as broken as they always
+were. Could you elaborate what has changed for your keyboard? 
 
-I could build a kernel with the buildkernel script. I had to copy the
-asm-m68k into the include directory.
+There are some more or less half-baked patches for the USB->ADB
+translation in the kernel floating around, but none of them works
+correctly on European Apple USB keyboards. I wonder whether the idea
+behind this funny translation scheme in the kernel ("translate USB
+keycodes to ADB or PC keycodes, so that you can use the same user space
+keymaps for USB and ADB or PC keyboards") can work at all.
 
-Does it make lot of work to isolate the ppc tree? Or is there no need/
-no wish to do that?
-BTW, this is done on a 2214pre17 kernel. So if there are further changes
-in 2.3???
+Right now, it doesn't. There are either unmapped keys or different keys
+mapped to the same keycode or, in the best of all cases, exchanged keys.
 
-Thanks
-Andreas
--- 
-| Andreas Tobler				
-| CH-8004 Zuerich 							
-| E-Mail:   a.tobler@schweiz.ch
------------------------------------------------
-
+--
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
