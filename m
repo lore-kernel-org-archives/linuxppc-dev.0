@@ -1,15 +1,17 @@
-Return-Path: <galak@somerset.sps.mot.com>
-Received: from motgate2.mot.com (motgate2.mot.com [144.189.100.101])
-	by ozlabs.org (Postfix) with ESMTP id C825C2BDEB
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Nov 2004 15:18:29 +1100 (EST)
-Date: Wed, 10 Nov 2004 22:18:24 -0600 (CST)
-From: Kumar Gala <galak@somerset.sps.mot.com>
-To: akpm@osdl.org
-Message-ID: <Pine.LNX.4.61.0411102215510.19875@blarg.somerset.sps.mot.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
-Subject: [PATCH][PPC32] Remove zero initializations in cpu_specs
+Return-Path: <marc.leeman@gmail.com>
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.194])
+	by ozlabs.org (Postfix) with ESMTP id 14EAC2BF45
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Nov 2004 19:36:32 +1100 (EST)
+Received: by rproxy.gmail.com with SMTP id j1so41477rnf
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Nov 2004 00:36:28 -0800 (PST)
+Message-ID: <1f729c480411110036445cd8aa@mail.gmail.com>
+Date: Thu, 11 Nov 2004 09:36:28 +0100
+From: Marc Leeman <marc.leeman@gmail.com>
+To: Linux PPC Mailing List <linuxppc-dev@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: 2.4 -> 2.6: problem probing PCI
+Reply-To: Marc Leeman <marc.leeman@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,258 +21,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andrew,
+Hi,
 
-Remove initializations to zero in cpu_specs table at Tom Rini's 
-suggestion.
+before digging into the lower ppc specific code myself, I thought to
+ask and describe my problem here first. I am currently porting a 2.4
+based embedded solution to a 2.6 kernel (basically for the fun of it)
+and have come accross the following:
 
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+When probing the PCI bus (of an embedded solution DBG enabled; 2.6.9):
 
---
+PCI: Probing PCI hardware
+PCI: bridge rsrc 0..bfffff (100), parent c0172188
+PCI: reparented dma1 [0..1f] under PCI host bridge
+PCI: reparented pic1 [20..3f] under PCI host bridge
+PCI: reparented timer [40..5f] under PCI host bridge
+PCI: reparented dma page reg [80..8f] under PCI host bridge
+PCI: reparented pic2 [a0..bf] under PCI host bridge
+PCI: reparented dma2 [c0..df] under PCI host bridge
+PCI: bridge rsrc 80000000..fcffffff (200), parent c017216c
+PCI:0000:00:00.0: Resource 1: 00000000-00000fff (f=3D200)
+PCI: Cannot allocate resource region 1 of device 0000:00:00.0
+PCI:  parent is c01b6054: 80000000-fcffffff (f=3D200)
+PCI:0000:00:10.0: Resource 0: bffff000-bfffffff (f=3D200)
+PCI:0000:00:10.0: Resource 1: 00bfffc0-00bfffff (f=3D101)
+PCI:0000:00:10.0: Resource 2: bffc0000-bffdffff (f=3D200)
+PCI:0000:00:11.0: Resource 0: bffbf000-bffbffff (f=3D200)
+PCI:0000:00:11.0: Resource 1: 00bfff80-00bfffbf (f=3D101)
+PCI:0000:00:11.0: Resource 2: bff80000-bff9ffff (f=3D200)
+PCI:0000:00:12.0: Resource 0: bf800000-bfbfffff (f=3D1208)
+PCI:0000:00:12.0: Resource 1: bf000000-bf7fffff (f=3D200)
+PCI:0000:00:12.0: Resource 2: 00bfff70-00bfff7f (f=3D101)
+PCI:0000:00:13.0: Resource 0: 00bfff60-00bfff6f (f=3D101)
+PCI:0000:00:13.0: Resource 1: befffff0-beffffff (f=3D200)
 
-diff -Nru a/arch/ppc/kernel/cputable.c b/arch/ppc/kernel/cputable.c
---- a/arch/ppc/kernel/cputable.c	2004-11-10 22:11:13 -06:00
-+++ b/arch/ppc/kernel/cputable.c	2004-11-10 22:11:13 -06:00
-@@ -94,7 +94,6 @@
- 			PPC_FEATURE_UNIFIED_CACHE,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
--		.num_pmcs		= 0,
- 		.cpu_setup		= __setup_cpu_601
- 	},
- 	{	/* 603 */
-@@ -107,7 +106,6 @@
- 		.cpu_user_features	= COMMON_PPC,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
--		.num_pmcs		= 0,
- 		.cpu_setup		= __setup_cpu_603
- 	},
- 	{	/* 603e */
-@@ -120,7 +118,6 @@
- 		.cpu_user_features	= COMMON_PPC,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
--		.num_pmcs		= 0,
- 		.cpu_setup		= __setup_cpu_603
- 	},
- 	{	/* 603ev */
-@@ -133,7 +130,6 @@
- 		.cpu_user_features	= COMMON_PPC,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
--		.num_pmcs		= 0,
- 		.cpu_setup		= __setup_cpu_603
- 	},
- 	{	/* 604 */
-@@ -550,7 +546,6 @@
- 		.cpu_user_features	= COMMON_PPC,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
--		.num_pmcs		= 0,
- 		.cpu_setup		= __setup_cpu_603
- 	},
- 	{	/* All G2_LE (603e core, plus some) have the same pvr */
-@@ -563,7 +558,6 @@
- 		.cpu_user_features	= COMMON_PPC,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
--		.num_pmcs		= 0,
- 		.cpu_setup		= __setup_cpu_603
- 	},
- 	{	/* default match, we assume split I/D cache & TB (non-601)... */
-@@ -576,7 +570,6 @@
- 		.cpu_user_features	= COMMON_PPC,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
--		.num_pmcs		= 0,
- 		.cpu_setup		= __setup_cpu_generic
- 	},
- #endif /* CLASSIC_PPC */
-@@ -691,7 +684,6 @@
- 		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
- 		.icache_bsize		= 16,
- 		.dcache_bsize		= 16,
--		.num_pmcs		= 0,
- 	},
- #endif /* CONFIG_8xx */
- #ifdef CONFIG_40x
-@@ -704,8 +696,6 @@
- 		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
- 		.icache_bsize		= 16,
- 		.dcache_bsize		= 16,
--		.num_pmcs		= 0,
--		.cpu_setup		= 0, /*__setup_cpu_403 */
- 	},
- 	{	/* 403GCX */
- 		.pvr_mask		= 0xffffff00,
-@@ -716,8 +706,6 @@
- 		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
- 		.icache_bsize		= 16,
- 		.dcache_bsize		= 16,
--		.num_pmcs		= 0,
--		.cpu_setup		= 0, /*__setup_cpu_403 */
- 	},
- 	{	/* 403G ?? */
- 		.pvr_mask		= 0xffff0000,
-@@ -728,8 +716,6 @@
- 		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
- 		.icache_bsize		= 16,
- 		.dcache_bsize		= 16,
--		.num_pmcs		= 0,
--		.cpu_setup		= 0, /*__setup_cpu_403 */
- 	},
- 	{	/* 405GP */
- 		.pvr_mask		= 0xffff0000,
-@@ -741,8 +727,6 @@
- 			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
--		.num_pmcs		= 0,
--		.cpu_setup		= 0, /*__setup_cpu_405 */
- 	},
- 	{	/* STB 03xxx */
- 		.pvr_mask		= 0xffff0000,
-@@ -754,8 +738,6 @@
- 			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
--		.num_pmcs		= 0,
--		.cpu_setup		= 0, /*__setup_cpu_405 */
- 	},
- 	{	/* STB 04xxx */
- 		.pvr_mask		= 0xffff0000,
-@@ -767,8 +749,6 @@
- 			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
--		.num_pmcs		= 0,
--		.cpu_setup		= 0, /*__setup_cpu_405 */
- 	},
- 	{	/* NP405L */
- 		.pvr_mask		= 0xffff0000,
-@@ -780,8 +760,6 @@
- 			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
--		.num_pmcs		= 0,
--		.cpu_setup		= 0, /*__setup_cpu_405 */
- 	},
- 	{	/* NP4GS3 */
- 		.pvr_mask		= 0xffff0000,
-@@ -793,8 +771,6 @@
- 			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
--		.num_pmcs		= 0,
--		.cpu_setup		= 0, /*__setup_cpu_405 */
- 	},
- 	{   /* NP405H */
- 		.pvr_mask		= 0xffff0000,
-@@ -806,8 +782,6 @@
- 			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
--		.num_pmcs		= 0,
--		.cpu_setup		= 0, /*__setup_cpu_405 */
- 	},
- 	{	/* 405GPr */
- 		.pvr_mask		= 0xffff0000,
-@@ -819,8 +793,6 @@
- 			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
--		.num_pmcs		= 0,
--		.cpu_setup		= 0, /*__setup_cpu_405 */
- 	},
- 	{   /* STBx25xx */
- 		.pvr_mask		= 0xffff0000,
-@@ -832,8 +804,6 @@
- 			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
--		.num_pmcs		= 0,
--		.cpu_setup		= 0, /*__setup_cpu_405 */
- 	},
- 	{	/* 405LP */
- 		.pvr_mask		= 0xffff0000,
-@@ -844,8 +814,6 @@
- 		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
--		.num_pmcs		= 0,
--		.cpu_setup		= 0, /*__setup_cpu_405 */
- 	},
- 	{	/* Xilinx Virtex-II Pro  */
- 		.pvr_mask		= 0xffff0000,
-@@ -857,8 +825,6 @@
- 			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
--		.num_pmcs		= 0,
--		.cpu_setup		= 0, /*__setup_cpu_405 */
- 	},
- 
- #endif /* CONFIG_40x */
-@@ -872,8 +838,6 @@
- 		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
--		.num_pmcs		= 0,
--		.cpu_setup		= 0, /*__setup_cpu_440 */
- 	},
- 	{ 	/* 440GP Rev. C */
- 		.pvr_mask		= 0xf0000fff,
-@@ -884,8 +848,6 @@
- 		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
--		.num_pmcs		= 0,
--		.cpu_setup		= 0, /*__setup_cpu_440 */
- 	},
- 	{ /* 440GX Rev. A */
- 		.pvr_mask		= 0xf0000fff,
-@@ -896,8 +858,6 @@
- 		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
--		.num_pmcs		= 0,
--		.cpu_setup		= 0, /*__setup_cpu_440 */
- 	},
- 	{ /* 440GX Rev. B */
- 		.pvr_mask		= 0xf0000fff,
-@@ -908,8 +868,6 @@
- 		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
--		.num_pmcs		= 0,
--		.cpu_setup		= 0, /*__setup_cpu_440 */
- 	},
- 	{ /* 440GX Rev. C */
- 		.pvr_mask		= 0xf0000fff,
-@@ -920,8 +878,6 @@
- 		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
--		.num_pmcs		= 0,
--		.cpu_setup		= 0, /*__setup_cpu_440 */
- 	},
- #endif /* CONFIG_44x */
- #ifdef CONFIG_E500
-@@ -938,7 +894,6 @@
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 		.num_pmcs		= 4,
--		.cpu_setup		= 0, /*__setup_cpu_e500 */
- 	},
- #endif
- #if !CLASSIC_PPC
-@@ -950,8 +905,6 @@
- 		.cpu_user_features	= PPC_FEATURE_32,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
--		.num_pmcs		= 0,
--		.cpu_setup		= 0,
- 	}
- #endif /* !CLASSIC_PPC */
- };
+There is a problem with an FPGA register map (I assume) since:
+ppc2fpga: BAR 0 (0xbfff60-0xbfff6f), len=3D16, flags=3D0x000101
+ppc2fpga: BAR 1 (0xbefffff0-0xbeffffff), len=3D16, flags=3D0x000200
+ppc2fpga: remapped 0xbfff60 with size 16 to 0xc3004f60
+
+
+On a 2.4.28-rc1, this reads (same hardware):
+ppc2fpga: BAR 0 (0xfebfff40-0xfebfff5f), len=3D32, flags=3D0x000101
+ppc2fpga: BAR 1 (0xbefffff0-0xbeffffff), len=3D16, flags=3D0x000200
+ppc2fpga: remapped 0xfebfff40 with size 32 to 0xfebfff40
+
+This last one has the correct behaviour and is the one currently being
+installed. Both the size and the address is wrong. When I read data
+from the FPGA, I get 0xFF while it should be ASCII information (the
+FPGA is the PPC watchdog).
+
+My obvious question is now: any pointers in how to proceed in
+debugging this or possible reasons for this change in behaviour?
+
+--=20
+ash nazg durbatul=FBk, ash nazg gimbatul,
+ash nazg thrakatul=FBk agh burzum-ishi krimpatul
