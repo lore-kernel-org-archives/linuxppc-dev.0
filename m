@@ -1,52 +1,58 @@
-Message-ID: <3CBD321A.60CE328@imc-berlin.de>
-Date: Wed, 17 Apr 2002 10:28:10 +0200
-From: Steven Scholz <steven.scholz@imc-berlin.de>
+Message-ID: <3CBD342C.4090309@bluewin.ch>
+Date: Wed, 17 Apr 2002 10:37:00 +0200
+From: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
 MIME-Version: 1.0
-To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>,
-	Dan Malek <dan@embeddededge.com>
-Subject: MPC8xx and IDMA !?!?
-Content-Type: text/plain; charset=iso-8859-1
+To: srinivas pulipati <srinivasp@multitech.co.in>
+Cc: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: rtlinux interrupt response
+References: <3CBD2584.B1504DA5@multitech.co.in>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi there,,
+On 04/17/2002 09:34 AM, srinivas pulipati wrote:
 
-a while ago (aprox. kernel 2.4.11) I succesfully played around with IDMA
-on MPC855/860.
+>hi all,
+>
+>i have downloaded denx rtlinux and ported it to my custom board for
+>study purpose.
+>my board is based on MPC860. rtlinux is working fine.
+>
 
-This old kernel is still working on my hardware.
+This is off topic here. Very likely you get better help from the
+rtlinux.org or rtai.org mailing lists.
 
-BUT:
+>
+>
+>i tried to measure the interrupt response time.
+>i am getting best case is 30microseconds and worst case is
+>150microsenconds.
+>couldn't understand why this much difference.
+>can anybody explain? or is there any thing wrong in my port?
+>
 
-The code is NOT working on recent kernels (I pulled it yesterday).
+With RTAI I measured sometime ago on a TQM860L, 50MHz,
+8KB data cache:
 
-I set up the IDMA. Trigger DREQ0 using a GPIO pin. SDMACK1 is going LOW
-but then instead of toggeling it just stays LOW. And instead of
-transfering data the MPC8xx just hangs.
+                             Min     Max     Average:
 
-Have there been changes to the DMA stuff in the MPC8xx?
-Or in the DPRAM layout or maybe in the CPM interrupt stuff (although I
-disabled the IDMA int.) ???
+  No load                :   13us    46us    14us
 
-Any idea and/or help is very much appreciated!
+  while : ; do a=a ; done:   13us    46us    18us
 
-Thanks,
-
-Steven
+  ping -f to target      :   13us    46us    19us
 
 
+If I remember correctly, rtlinux has bigger overhead (more code).
 
+BTW: Denx has dropped support for rtlinux quite a while ago
+because of fsmlabs license policy (AFAIK, there is no open rtlinux
+for the MPC 8xx).
 
+Hope it helps,
 
---
-mfg Steven Scholz
+Wolfgang.
 
-imc Meﬂsysteme GmbH
-Voltastr. 5
-13355 Berlin
-Germany
-fon: +49 30 467090-0
-fax: +49 30 4631576
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
