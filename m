@@ -1,70 +1,140 @@
-Date: Wed, 2 Oct 2002 10:03:12 -0700
-From: Matt Porter <porter@cox.net>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: very minor 405GP and 405GPr PCI difference
-Message-ID: <20021002100312.A2240@home.com>
-References: <20021002014219.GF1848@zax> <NCBBIINEHIPFGJPLBEIFEEMFDMAA.acurtis@onz.com> <20021002053422.GL1848@zax>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20021002053422.GL1848@zax>; from david@gibson.dropbear.id.au on Wed, Oct 02, 2002 at 03:34:22PM +1000
+Message-ID: <0B0A39652BB0D411BCCF00508B9512EC08AEB3FF@tx14exm05.ftw.mot.com>
+From: Yu Bo-BOYU1 <Bo.Yu@motorola.com>
+To: "'Flavio Pereira'" <fpereira@azisa.com>
+Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: 8260 configuration
+Date: Wed, 2 Oct 2002 13:10:21 -0500 
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Oct 02, 2002 at 03:34:22PM +1000, David Gibson wrote:
->
-> On Tue, Oct 01, 2002 at 09:26:18PM -0700, Allen Curtis wrote:
-> >
-> > > That's right.  Is there a reason for boards to have different
-> > > mappings?  I can well believe that there is, but the current tree
-> > > doesn't show it - all the boards (in the tree) that have PCI appear to
-> > > do the same initialisation of the windows.  It doesn't seem worthwhile
-> > > to create board specific PCI initialisation hooks until we have a
-> > > board that needs it.
-> >
-> > If all boards are suppose to have the same mapping, why doesn't someone
-> > document it as such? It would have saved me a lot of time. If it isn't a
-> > good enough rule to be documented then make the system flexible enough to
-> > take a different path if required. (proactive)
->
-> Um, well... I can't immediately think of a logical place to document
-> this.  It seems logical to me that the PCI setup should be handled by
-> the driver for the PCI bridge - which is common between the boards.
-> This could be seen as a first step of changing PCI from a special
-> system handled platform wide, to making the PCI bridge just another
-> gadget in the device tree.
->
-> There's no particular reason the mapping has to be the same between
-> boards, but I can't think of any particular reason you'd want it to be
-> different (maybe I just haven't seen a wacky enough board).
+Thanks for your info.
 
-That's exactly the problem.  If your world is filled with the
-standard IBM reference platforms then a simple single host PCI
-bridge in "CHRP-style" mapping probably seems reasonable.
+I modified est8260.h to map immr to 0xf800_0000. And the serial
+port did print out some unreadable stuff and I am very encouraged
+by this. My serial port setup is the minimal: 9600/8+1/no parity/no flow.
+Is this correct ? After I halt the processor, I read SRR0 register
+showing 0xc0153C90. Apparently this is above the 0xc000_0000 that you
+indicated. Is that true 0xc000_0000 is the virtual address as we
+only have 64M sdram on the board starting 0.
 
-In reality, it's necessary to design PCI host bridge library
-code such that it can be called in a board-specific way to allow
-for window mappings in "wacky" systems with 2 or more PCI connected
-processors.  This is very common.
+[DOC3 Boot]: @
 
-This is where the current flow of having a common thread of excecution
-falls apart (ppc4xx_setup).  40x really should be following the model
-of the embedded 7xx/74xx system where each <board>.c would call to a
-PCI library with some parameters to set up a desired set of window
-mappings.  It's possible to have a default common case to set up
-a CHRP-like mapping.
+boot device          : dbg
+unit number          : 0
+processor number     : 0
+host name            : host
+file name            : zImage
+inet on ethernet (e) : 10.0.0.25:0xffffff00
+host inet (h)        : 10.0.0.1
+user (u)             : vx
+ftp password (pw)    : vx
+flags (f)            : 0x0
+target name (tn)     : doc3
 
-We've had some threads in the past about the limitations of using
-this "common flow" design in 4xx.  I believe there was some agreement
-that it is a limiting way to do things.  I do recall that Dan said
-it was only this way because he copied the 826x flow and it probably
-didn't make sense anymore for 4xx.  If there's no serious objections
-I'm suggesting that this is where we go in the 2.5 4xx reorg.
+Attached TCP/IP interface to dbg0.
+Attaching network interface lo0... done.
+Loading... 619152
+Starting at 0x400000...
 
-Regards,
---
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+óÈçô÷÷÷÷÷÷÷÷÷÷÷÷÷÷÷÷÷÷÷÷÷÷÷÷
+
+
+
+
+>BKM>GO
+>RUN>
+>RUN>halt
+>BKM>dr srr0
+ SRR0    = C0153C90
+>BKM>GO
+>RUN>
+>RUN>halt
+>BKM>dr srr0
+ SRR0    = C0153C7C
+>BKM>GO
+>RUN>
+>RUN>
+
+
+Thanks.
+Bo
+
+-----Original Message-----
+From: Flavio Pereira [mailto:fpereira@azisa.com]
+Sent: Wednesday, October 02, 2002 2:23 AM
+To: Yu Bo-BOYU1
+Cc: linuxppc embedded
+Subject: RE: 8260 configuration
+
+
+Hi Bo
+
+1. Yes the IMMR needs to be configured at least above 0xC0000000. The
+kernel executes code at 0xC0000000, and an IMMR lower that this will
+cause the kernel to crash as soon as it starts executing code. I
+recommend that you stay with the default value 0xF0000000.
+
+2. The start address is fixed to 0x0
+
+3. ?
+
+4. No, not that I know of.
+
+5. Try getting ELDK from the Denx site. (www.denx.de)
+
+
+
+-----Original Message-----
+From: Yu Bo-BOYU1 [mailto:Bo.Yu@motorola.com]
+Sent: Wednesday, October 02, 2002 3:08 AM
+To: linuxppc embedded
+Subject: 8260 configuration
+
+
+I am new to embedded linux but I had good experience in vxWorks.
+Right now I had a custom 8260 board with SMC1 connected to serial
+port and FCC3 for fast ethernet. I would like to try running linux on
+this
+custom board. I downloaded the latest monta vista preview kit 2.1
+as my base release.
+
+I had boot code ( with vxWorks and it is based on EST8260 bsp) in my
+custom
+board
+already. I decide to download the linux object via tftp. But I have the
+following
+questions:
+
+1. Do I have to configure IMMR as 0xF0000_0000 or higher. The default
+configuration
+    in our boot is 0x0F00_0000 ? Is this a hard requirement or not ? If
+so,
+why can't linux
+    init code do so by writing to IMMR+0x101a8 ?
+
+2. How to specify the start address where linux runs when I build the
+zImage
+?
+
+3. When I make xconfig, what configuration I must have in order to run ?
+I
+certainly
+   do not need VGA/HARD DISK/PCI (this board does not have pci devices).
+
+4. Is there any good website/paper/documentation about linux for 8260
+platform.
+
+5. Can anyone access ftp.leo.org to get ELDK ? I can ping it but I
+cannot
+ftp it today.
+
+Thanks.
+
+Bo
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
