@@ -1,31 +1,25 @@
-Date: Mon, 2 Feb 2004 17:08:36 +0100 (MET)
-From: Jean-Jacques Levy <jean-jacques.levy@inria.fr>
-Message-Id: <200402021608.RAA0000011663@beaune.inria.fr>
+Date: Mon, 2 Feb 2004 17:21:56 +0100
+From: Jean-Jacques Levy <Jean-Jacques.Levy@inria.fr>
+Message-Id: <200402021621.RAA01281@macaron.inria.fr>
 To: linuxppc-dev@lists.linuxppc.org
-Cc: schmitz@opal.biophys.uni-duesseldorf.de
-Subject: Re: m3mirror + 2.4.24
+Subject: m3mirror + 2.4.24
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> >    m3mirror crt:1 lcd:1
-> >
-> > which no longer works properly. The command runs silently with no
->
-> The kernel ioctls for m3mirror might have changed; recompile m3mirror
-> against new kernel headers?
+I just upgraded from 2.4.20-pre7-ben0 to 2.4.24-ben1 on my Titanium
+7410, 500MHz. Everything goes smoothly, except following:
 
-That's what I did. For instance,
+   m3mirror crt:1 lcd:1
 
-  strace m3mirror crt:1 lcd:1
+which no longer works properly. The command runs silently with no
+error messages and no effect. However m3mirror crt:0 clear the
+external video. In /usr/src/linux/.config, I do have
 
-shows
+   CONFIG_PMAC_PBOOK=y
 
-  ioctl(3, 0x40044001, 0x7ffff98c)
+What's was wrong in my installation?
 
-I don't know it that's fine.
-
--JJ-
-
+Best to all, -JJ-
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
