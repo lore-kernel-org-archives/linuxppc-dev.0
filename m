@@ -1,50 +1,32 @@
-Message-ID: <3F5F69F3.4020706@mvista.com>
-Date: Wed, 10 Sep 2003 11:14:11 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
+Message-ID: <002401c377cf$bcff2800$6401a8c0@sazabimobile>
+From: "Shih-Ying Chou" <sschou@mtu.edu>
+To: =?iso-8859-1?Q?Andr=E9_L=E4mmer?= <alaemmer@fh-konstanz.de>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <000001c377b5$d341b2f0$0f21258d@fhkonstanz.de>
+Subject: Re: Compiling Kernel 2.6 for ppc32 
+Date: Wed, 10 Sep 2003 15:14:20 -0400
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Cc: Kate Alhola <kate@iti.fi>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MPC8245 supported in Linux kernel (devel tree from DENX)?
-References: <20030910090048.453D9C59E4@atlas.denx.de>
-In-Reply-To: <20030910090048.453D9C59E4@atlas.denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
+> *** 2.6 kernels no longer buildcorrectly with old versions of binutils.
+> *** Please upgrade your binutils to 2.12.1 or newer
+>
+> Will be there a new release in the next time?
+>
 
->Dear Kate,
->
->in message <3F5EE616.2070305@iti.fi> you wrote:
->
->
->>How about internal PCI bridge support for 8xxx series ? I have tried
->>
->>
->
->Supported and working on several boards.
->
-Careful, 824x PCI != 826x/etc. PCI.
+You can go to http://kegel.com/crosstool/ to download the scripts that can
+help you to get the newer version of gcc, glibc and binutils.  I have used
+it to create a cross-compile tool chain and the tool chain can compile the
+2.6.0-test5 successfully.   The scripts do support several processor
+architecture including ppc and others.
 
->>found it for
->>826x/825x/8270 QUCC-II but it seems that there is just promises around
->>but i have not
->>even found souce of development/alpha version.
->>
->>
->
->You must have missed it. See for example the configurations  for  the
->"ATC" or "PM825" boards (both with MPC8250) in our kernel tree.
->
-The 824x uses mpc10x_common code.  The 824x series are NOT PowerQUICC,
-they are basically 603e core + MPC107 hostbridge.  For PowerQUICC
-embedded processors with a PCI bridge (e.g., 8266), you can look at the
-mpc8266ads stuff by Andy Lowe.
+Hope this can help you.
 
-This code is in the public linuxppc_2_4_devel tree.
-
-Mark
+Shih-Ying Chou
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
