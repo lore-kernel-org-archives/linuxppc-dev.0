@@ -1,28 +1,31 @@
-Message-ID: <37C651C8.3B7236B6@wanadoo.fr>
-Date: Fri, 27 Aug 1999 10:52:24 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
-MIME-Version: 1.0
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
-        Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org
-Subject: Re: vger-2.3.15 on pmac
-References: <4.2.0.58.19990826171730.00981650@mail.lauterbach.com> <37C57094.D6415E54@wanadoo.fr> <99082700153800.01224@ns1102.munich.netsurf.de> <99082703052100.00447@ns1102.munich.netsurf.de> <37C64B37.49029CC6@wanadoo.fr>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.05.9908262332140.1005-100000@opus.bloom.county>
+Date: Fri, 27 Aug 1999 11:20:42 +0200
+To: Tom Rini <trini@kernel.crashing.org>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: BootX enhancement request
+Message-Id: <19990827112042.001235@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Martin Costabel wrote:
+On Thu, Aug 26, 1999, Tom Rini <trini@kernel.crashing.org> wrote:
 
-> Everything is working. I am writing this now from 2.3.15 on my Performa
-> 6400.
+>> Thus I can remove the nvram code from atyfb?
+>
+>Why?  It works fine on lots of older machines w/ ati cards and older MacOS
+>versions.  If you remove it I can garrenty people will notice and
+>complain.
 
-Little postscriptum: When I hit the "Send" button for my previous
-message, everything froze. Couldn't kill X, nothing. After a while, the
-system rebooted on its own. And the message got sent, it seems. Now I'll
-press this "Send" button again...
+We should get rid of it for atyfb once we have DDC working. According to
+Apple, all machines with ATI controllers are using DDC now. The nvram
+setting would still be useful for the older video controllers.
 
---
-Martin
+-- 
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@mipsys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
