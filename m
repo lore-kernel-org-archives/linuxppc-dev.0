@@ -1,40 +1,67 @@
-Message-Id: <200001281853.NAA18227@hoover.gilbarco.com>
-From: "Wohlgemuth, Jason" <jason_wohlgemuth@gilbarco.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'"
-	 <linuxppc-embedded@lists.linuxppc.org>
-Subject: Questions about using shell and tools linked with glibc2.1
-Date: Fri, 28 Jan 2000 13:53:24 -0500
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-ID: <3891E609.298E1F8A@sgi.com>
+Date: Fri, 28 Jan 2000 12:55:05 -0600
+From: Mike Wolf <mwolf@sgi.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: booting sequence for embedded kernels
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am trying to get my MPC860 board to work with binaries linked against
-glibc2.1.  The kernel has math emulation support and when I pull down a
-prebuilt bash & glibc & libtermcap packages from ftp.linuxppc.org and I try
-to use them I end up hanging.  I went into fs/namei.c and put a printk at
-the top of open_namei to see if I could track down which library was causing
-the problem and I ended up with this output.
+Hi,
+  I'm new to kernel development and I have some questions regarding
+running linux on the IBM-403.  I have gotten the 2.3.39 kernel and
+Grant Erickson's patches.  When I attempt to boot the board just hangs.
+I'm using bootp and tftp to load.  I see the following and have some
+questions
 
-open_namei(): attempting to open "/dev/console".
-open_namei(): attempting to open "/sbin/init".
-open_namei(): attempting to open "/etc/init".
-open_namei(): attempting to open "/bin/init".
-open_namei(): attempting to open "/bin/sh".
-open_namei(): attempting to open "/lib/ld.so.1".
-open_namei(): attempting to open "/etc/ld.so.preload".
-open_namei(): attempting to open "/etc/ld.so.cache".
-open_namei(): attempting to open "/lib/libtermcap.so.2".
+I see an ARP/RARP exchange followed by a bootp request reply.  Then tftp
+kicks in and downloads the file.  The board reports that the entry point
+is 0x200000.
 
-so it finds /bin/sh and starts to load it but it looks like it is blowing up
-with libtermcap.so.2 which is a link to libtermcap.so.2.0.8
+>From now on I see nothing coming over the serial line and on the
+workstation
+the snoop is showing the workstation sending an RARP that should be
+picked
+up by the board.
 
-Does anyone have any suggestions, or is does anyone have tools linked
-against glibc working on their boards?
+My questions.
 
-Thanks in advance,
-Jason
+1)  How is the serial console specified?  When configuring the kernel
+for
+    compilation I answered y to CONFIG_SERIAL_CONSOLE.  In
+arch/ppc/treeboot/
+    main.c, I set the boot command line [static char *cmdline =
+"console=ttyS0,
+    9600].  I noticed that in init/main.c in the start_kernel routine
+that
+    a printk of the banner is done.  I'm not seeing this banner, so
+where
+    do I start debugging?
+
+2)  Where does the kernel start setting up the network interface?  I
+assume
+    this is why I'm seeing an arp/rarp exhange after the tftp completes.
+
+3)  What is the general sequence of a typical bootp?
+    a) run bootp to find out image to load
+    b) run tftp to download and load into memory
+    c) jump to start location and start executing?
+
+    Is a,b,c the general step or is there more.
+
+Sorry if these are obvious questions, I've looked on the net and in some
+linux kernel books and have not found the answers.
+
+The board is an IBM 403 and I'm using IBM's rom monitor to load the
+image.
+The workstation is a Sun sparc station 5 running solaris 2.7.
+
+--
+Mike Wolf
+Cray Research
+655-F Lone Oak Drive, Eagan, MN 55121
+mwolf@cray.com          (651)683-5313
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
