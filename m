@@ -1,77 +1,22 @@
-Reply-To: <tcurran@ultsol.com>
-From: "Tom Curran" <tcurran@ultsol.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: JTAG debuggers for Motorola 8xx/82xx/85xx
-Date: Wed, 9 Jun 2004 17:08:30 -0700
-Message-ID: <008201c44e7f$10a309f0$6601a8c0@curranusi>
+Message-ID: <20040610011948.27274.qmail@web15214.mail.bjs.yahoo.com>
+Date: Thu, 10 Jun 2004 09:19:48 +0800 (CST)
+From: Song Sam <samlinuxppc@yahoo.com.cn>
+Subject: Re: How to set current time to 8xx RTC through Linux application?
+To: David Ho <DavidHo@nanometrics.ca>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <OFAAD6E391.94B93EC5-ON85256EAE.005413DF-85256EAE.00543302@nanometrics.ca>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-In-Reply-To: <5CB4164A-BA5A-11D8-92CC-000393DBC2E8@freescale.com>
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Yes, that is indeed correct.  The firmware licensing for the Abatron
-emulators is done by processor family, not individual processor.  So in the
-case of the PPC82xx, the same firmware for debugging with GDB will cover the
-entire range of PPC6xx/7xx/7400,7410,5200, and 82xx processors.
+David Ho <DavidHo@nanometrics.ca> wrote£º
+> If you are using ELDK-3.0 and it's development root filesystem,
+> hwclock does the trick.
 
-Best Regards,
-Tom
+Thank you,David.I get it!
 
-Tom Curran
-Technical Sales Representative
-Ultimate Solutions, Inc.
-=====================================================
-Providing Professional Development Tools For Embedded Systems
-Toll Free: 866.455.3383 x257
-Direct: 916.789.9358
-Fax: 978.926.3091
-Email:  tcurran@ultsol.com <mailto:tcurran@ultsol.com>
-Web:  www.ultsol.com <http://www.ultsol.com>
-FAQ: www.ultsol.com/faqs.htm <http://www.ultsol.com/faqs.htm>
-
-
------Original Message-----
-From: owner-linuxppc-embedded@lists.linuxppc.org
-[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Kumar
-Gala
-Sent: Wednesday, June 09, 2004 2:17 PM
-To: Matevz Langus
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: JTAG debuggers for Motorola 8xx/82xx/85xx
-
-
-
-I'm guessing most people would recommend the BDI2000.  If I remember
-correctly they end up doing support based on 'Family'.  So support for
-85xx is one family, 82xx is another, 8xx a third.
-
-
-- kumar
-
-On Jun 9, 2004, at 4:12 PM, Matevz Langus wrote:
-
->
-> Hi folks,
->
-> I see you are discussing about BDI2000 here. Our company used EST Tools
-> for many years and they were really good but since Windriver bought EST
-> they suck.
->
-> Which JTAG debugger do you suggest for Mot 8xx/82xx/85xx processors?
-> If possible without stupid licensing model, where every time Motorola
-> changes partnumber for the same chip new license and a couple k$ are
-> needed.
->
-> I hope to get honest answers as all producers promise amazing things
-> which aren't really to believe.
->
-> thanks,
->   Matevz
->
->
-
+Sam
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
