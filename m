@@ -1,24 +1,24 @@
-Return-Path: <jonmasters@gmail.com>
-Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.201])
-	by ozlabs.org (Postfix) with ESMTP id 6553B2BDB5
+Return-Path: <Renaud.Barbier@ge.com>
+Received: from ext-ch1gw-1.online-age.net (ext-ch1gw-1.online-age.net
+	[216.34.191.35]) by ozlabs.org (Postfix) with ESMTP id A21122BDA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  5 Dec 2004 03:42:41 +1100 (EST)
-Received: by rproxy.gmail.com with SMTP id g11so27473rne
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 04 Dec 2004 08:42:38 -0800 (PST)
-Message-ID: <35fb2e59041204084216f38e80@mail.gmail.com>
-Date: Sat, 4 Dec 2004 16:42:38 +0000
-From: Jon Masters <jonmasters@gmail.com>
-To: Mark Chambers <markc@mail.com>
-In-Reply-To: <005201c4da13$2807f360$0301a8c0@chuck2>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-References: <065ACD8E84315E4394C835E398C8D5EBBBED0A@COSSMGMBX02.email.corp.tld>
-	<8316506505.20041204160411@ttnet.net.tr>
-	<005201c4da13$2807f360$0301a8c0@chuck2>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: (Very) Simple question(s) compared to group topics
-Reply-To: jonathan@jonmasters.org
+	Tue,  7 Dec 2004 05:34:02 +1100 (EST)
+Received: from int-ch1gw-3.online-age.net (int-ch1gw-3 [3.159.232.67])
+	by ext-ch1gw-1.online-age.net (8.12.9/8.12.9/990426-RLH) with ESMTP id
+	iB6IMEZl010872
+	for <linuxppc-embedded@ozlabs.org>; Mon, 6 Dec 2004 13:22:15 -0500 (EST)
+Received: from cinmlef04.e2k.ad.ge.com (localhost [127.0.0.1])
+	by int-ch1gw-3.online-age.net (8.12.9/8.12.3/990426-RLH) with ESMTP id
+	iB6IMDV8026424
+	for <linuxppc-embedded@ozlabs.org>; Mon, 6 Dec 2004 13:22:13 -0500 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Mon, 6 Dec 2004 12:23:09 -0600
+Message-ID: <45ABD2373C33C4459D42B40EC4F346F204912B38@FTWMLVEM03.e2k.ad.ge.com>
+From: "Barbier, Renaud (GE Infrastructure)" <Renaud.Barbier@ge.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: 440GX MMU
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,13 +29,9 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sat, 4 Dec 2004 10:08:42 -0500, Mark Chambers <markc@mail.com> wrote:
 
-> All settop box designs that
-> I'm aware of have some kind of MPEG decode coprocessor
+can someone explain to me the purpose of the TS bit in the 440GX TLBs?
 
-IBM have a reference board based on 4xx which does just this -
-although the drivers are disputedly non-GPL (there's a campaign
-website about that at this point).
-
-Jon.
+In the 440GX BSP, what is the point to map twice memory offset 0 (once =
+with TS=3D0 and once with TS=3D1).
+Is that for context switch?
