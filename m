@@ -1,48 +1,49 @@
-Message-ID: <36764C54.D14B5FC2@alien.bt.co.uk>
-Date: Tue, 15 Dec 1998 11:47:32 +0000
-From: Mad Cow <0xdeadbeef@alien.bt.co.uk>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
-Subject: Installing pre-R5
-Content-Type: text/plain; charset=us-ascii
+Date: Tue, 15 Dec 1998 11:00:50 -0100
+From: Owen Waller <O.Waller@ee.qub.ac.uk>
+To: Michel Lanners <mlan@cpu.lu>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: matroxfb, anybody?
+In-Reply-To: <199812131040.LAA03780@piglet.cpu.lu>
+Message-Id: <Pine.SGI.4.02A.9812151054230.11112-100000@myst.ee.qub.ac.uk>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
------BEGIN PGP SIGNED MESSAGE-----
+On Sun, 13 Dec 1998, Michel Lanners wrote:
 
-Pre-R5 will not install, at least not on my 7600. Here are my
-observations;
+> Anybody successfull in running matroxfb with recent vger kernels?
 
-* You need to use a recent (ie >2.1.130) kernel with BootX to let the
-keyboard work properly.
+I've got it running on version 2.1.127 - I haven't tried on anything more
+recent. What kernel version are you running.
 
-* The NFS install hangs after you give it the NFS server details. I
-get a flashing white cursor on a black line at the bottom of the
-screen. Unfortunately, my keyboard is without F-keys, so I can't get a
-shell up to see what is going on here.
+> I've tried using it alongside controlfb as a second framebuffer, but it
+> doesn't initialize. Compiled-in, it only goes through the very first
+> debugging message, and then nothing more;  while as a module insmod
+> aborts (slightly older matroxfb.c (1.6c)) or hangs the system (most
+> recent matroxfb.c (1.8)).
 
-* The FTP install gets a little further. After reading the
-supplimentary disk, it complains about some errors in base/comps
-(packages not found). I continue regardless, selecting ``Install
-Everything'', but it barfs reading the first rpm.
+Pass, have you asked Petr (Petr Vandrovec <VANDROVE@vc.cvut.cz>) about
+this. I've been testing Petr's driver on a Mystique and haven't seen
+anything like this.
 
-I take it only a local install works? I can't easily try this.
+> I've also tried to compile-in matroxfb without controlfb, but that
+> failed because offb.c wasn't in (undefined ref to console_getmode et
 
-Cheers,
+Generally I've compiled in matroxfb, controlfb and offb into the kernel
+which compile and run without any problems. I haven't tried leaving
+controlfb out.
 
-/.J
+Cheers
 
------BEGIN PGP SIGNATURE-----
-Version: 2.6.3ia
-Charset: noconv
+-------------------------------------------------------------------------
+Owen Waller                     |   "...sometimes I think I'm a little
+PhD. Student in Control Eng.    |    more English than I am French..."
+Queens University               |              - Alain Prost 
+Belfast                         |
+Tele: +44 (0)1232 274085        |    Fax: +44 (0)1232 667023
 
-iQCUAwUBNnZLiBmu4UPZlmdBAQFqeQP0CawGgAlNjXEmrVEkLUn01Mwr2uV+YNmS
-7AsB+B1EICYs7ZHGKkSjk3qv5hAhFMhY51AKPoD6kbiejj4BgkhfZNalb6sJlDuv
-fq8SKzvt0EX98eqCLgi1QMyW/OcqHiiSsrCReCw2BKgRwm2ISUAoRYH4H5IOVDOM
-F2f1XLkKQA==
-=NZvQ
------END PGP SIGNATURE-----
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
