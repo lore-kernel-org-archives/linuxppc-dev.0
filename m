@@ -1,57 +1,40 @@
-Date: Wed, 24 Oct 2001 15:46:33 -0700
-From: Okehee Goh <ogoh@asu.edu>
-Subject: MMU in MBX860
-To: linuxppc-embedded@lists.linuxppc.org
-Message-id: <CPEELCODKANPCLBCAGOFKEBKCAAA.ogoh@asu.edu>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
+Date: Wed, 24 Oct 2001 15:48:49 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: "David M?ller (ELSOFT AG)" <d.mueller@elsoft.ch>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH] Various patches against linuxppc_dev-2.4.13-pre6
+Message-ID: <20011024154849.A27625@cpe-24-221-152-185.az.sprintbbd.net>
+References: <3BD50D4E.6060401@elsoft.ch> <20011023073258.B30012@cpe-24-221-152-185.az.sprintbbd.net> <3BD6AB69.5010704@elsoft.ch>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3BD6AB69.5010704@elsoft.ch>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
- Hi,
- This question is about MMU of MBX860 using MPC860 rather than LinuxPPC.
- I'm sorry to send not proper question to this board. Thank you so much if
-you let me know proper and also active group.
+On Wed, Oct 24, 2001 at 01:52:09PM +0200, David M?ller (ELSOFT AG) wrote:
+> Tom Rini wrote:
+>
+> >On Tue, Oct 23, 2001 at 08:25:18AM +0200, David M?ller (ELSOFT AG) wrote:
+[snip]
+> >> - arch/ppc/kernel/i8259.c
+> >>    consistent nameing (rather cosmetic change)
+> >
+> >Not sure about.  Why either of those changes?
+>
+>
+> The first patch is just a prettyprint fix. At least on my system
+> it looks better this way ;-)
+>
+> Everywhere in the i8259.[ch] files the chip is called "i8259" with the
+> exception of one place which is fixed by the second patch. But as
+> i said, it's more of a cosmetic change.
 
- My question:
- In MPC860, is there any way for supervisor mode's kernel to access all
-memory space
-  whether its ASID matches with M_CASID even though some of memory space is
-  configured to check ASID?
+Okay, I wasn't totally sure about it and didn't have time to dig into
+it.  I'll throw those in sometime soonish.
 
- I appreciate any help.
-
- My situation:
-  I'm porting a microkernel into MBX860 using MPC860.
- For memory protection, this uses MMU even though address translation is not
-necessary.
- Only one global memory address page table managed by kernel includes all
-page table information for
-  all application tasks for performance.
- It is possible by allocating memory space into each of application tasks.
- The requirements is that kernel in Privilege state can access all the
-memory space
-  but application task's access is restricted to the a memory space
-allocated to itself.
- I think that the access violation between applications can be checked by
-using ASID.
- So, I assign each ASID for memory space for applications and kernel.
- But I guess when ASID checking is enabled, kernel also can't access other
-application's
-  memory space because its ASID is different with others' ASID.
-
- Thank you so much.
-
- Okehee Goh
-
-
-
-
-
- ---------------------------------------
-Real-Time System lab of CSE of ASU
-Tel: 480-219-1346
-
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
