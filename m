@@ -1,100 +1,76 @@
-Message-ID: <3BD087D8.B9672791@midrivers.com>
-Date: Fri, 19 Oct 2001 14:06:48 -0600
-From: Mark Pilon <mpilon@midrivers.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <607BF0A2B4F3D411A09500508BC225427E8329@mailctx.datum.com>
+From: Geoff Wyche <GWyche@DATUM.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: MPC8xx + serial console on SCC 
+Date: Fri, 19 Oct 2001 13:08:34 -0700
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: debugging ppc4xx VM, part 2
-References: <20011019192616.EC18510CD6@denx.denx.de>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
->
-> In message <3BD0616A.B5FE43C0@midrivers.com> you wrote:
-> >
-> > however, if I step or next, gdb never comes back; if I break out
-> > and 'where' it looks like I've taken a fault ...
-> >
-> > I think I've set everything up for mmu support in the bdi --
-> > there was 1 statement in the user's manual to:
-> > 'If not automatically done by the kernel, setup the page table pointers
-> > for the BDI.' -- I don't know from this what to check or what to do.
->
-> Well, did you (a) follow the description in the  BDI2000  manual  and
-> initialize  the  page  table  pointer  manually, or (b) did you use a
-> kernel which has the necessary extension to do it automagically?
->
-> Wolfgang Denk
->
-> --
-> Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-> Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-> ######## This message was made from 100% recycled electrons. ########
->
+Hello all,
 
-yes.
+> Yes, we've tested this configuration once when we were re-working the
+> UART driver for hardware-handshake support, configurable buffer sizes
+> etc.
+> We tested all 6 channels ( 2 x SMC, 4 x SCC) on a IP860 board.
 
-it looks like I've either got a gdb/bdi problem or a kernel build
-problem:
+I think I've found a bug related to SCCs and serial console IO.
+Looks like this might have crept in as a result of two transposed lines.
+A patch showing the difference is included at the end of this post.
 
-in start_kernel() I've added a call gdb_spin() which simply spins,
-waiting for a var to be set != 0 by gdb -- it gives me time to start
-gdb and break in.  I can step / next in this function, returning to
-start_kernel().
+> See the version of the UART driver in the kernel source tree  on  our
+> FTP  server; I've sent patches against 2_4_devel to Tom Rini, waiting
+> for a decision if these patches will make it into the official source
+> tree...
 
-the next call is:
-printk(linux_banner);
+Are you referring to ftp.denx.de or ftp.linuxppc.org?  I went to both and
+couldn't find a kernel source tree in either of them.  Can you give me a
+specific URL?
 
--- if I si twice, rc becomes set w/ a pointer to the format string
-which looks reasonable.
-
-the 3'rd si is the bl      0xc0012da4 <printk>
--- when I si to enter this func, and 'where' I get:
-(gdb) where
-#0  printk (fmt=0x32f050 <Address 0x32f050 out of bounds>) at printk.c:255
-#1  0xc0002330 in start_here ()
-
--- no mention of the call from start_here() to start_kernel() -- and
-printk's format ptr has become unreasonable.
-
-tools & environment:
-hhl-20 gdb for ppc405, ppc compiler which I've built; the target is
-a custom mercury-based controller (405+FPU) and the abatron software
-has been changed to work w/ this processor, but not heavily tested.
-the rev of the 405-core used in the mercury is akin to a 405GP rev. C
-which has some issues of its own.
-
-the kernel is hhl-2.0 [2.4.2] for ppc405 which I'm attempting to get
-running on this target.
-
-["other than that, Mrs. Lincoln, how did you like the play?"]
-
-has anyone seen anything like this kind of stack foulup w/
-a simple bl?
-
-I've used this debugger quite a bit w/o trouble debugging the boot/diags
-package in real mode -- mmu off, no addr translation.
-
-Mark
+--Geoff
+gwyche@datum.com
 
 
-has anyone seen a probl
-Mark
+Here's the patch I mentioned (NOTE that it really only transposes two
+lines):
 
+*** arch/ppc/8xx_io/uart.c.ORIG Fri Oct 19 14:34:11 2001
+--- arch/ppc/8xx_io/uart.c      Fri Oct 19 14:35:53 2001
+***************
+*** 1129,1142 ****
+        idx = PORT_NUM(state->smc_scc_num);
+        if (state->smc_scc_num & NUM_IS_SCC) {
+                sccp = &cpmp->cp_scc[idx];
+!               sccp->scc_gsmrl &= ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
+  #ifdef CONFIG_SERIAL_CONSOLE
+                /* We can't disable the transmitter if this is the
+                 * system console.
+                 */
+                if ((state - rs_table) != CONFIG_SERIAL_CONSOLE_PORT)
+  #endif
+!                       sccp->scc_sccm &= ~(UART_SCCM_TX | UART_SCCM_RX);
+        }
+        else {
+                smcp = &cpmp->cp_smc[idx];
+--- 1129,1142 ----
+        idx = PORT_NUM(state->smc_scc_num);
+        if (state->smc_scc_num & NUM_IS_SCC) {
+                sccp = &cpmp->cp_scc[idx];
+!               sccp->scc_sccm &= ~(UART_SCCM_TX | UART_SCCM_RX);
+  #ifdef CONFIG_SERIAL_CONSOLE
+                /* We can't disable the transmitter if this is the
+                 * system console.
+                 */
+                if ((state - rs_table) != CONFIG_SERIAL_CONSOLE_PORT)
+  #endif
+!                   sccp->scc_gsmrl &= ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
+        }
+        else {
+                smcp = &cpmp->cp_smc[idx];
 
-
-
-
---
-Mark Pilon
-
-Minolta-QMS
-P.O. Box 37
-Fallon, MT.  59326-0037
-
-1-406-853-0433
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
