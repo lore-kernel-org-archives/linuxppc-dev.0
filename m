@@ -1,34 +1,47 @@
-From: Paul Mackerras <paulus@linuxcare.com.au>
+Date: Thu, 26 Oct 2000 13:34:47 +0300 (EET DST)
+From: Topi Kanerva <tkanerva@ees2.oulu.fi>
+To: Chris Leishman <masklin@debian.org>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: airport woes?
+In-Reply-To: <20001024151644.A660@nina.dev.fol>
+Message-ID: <Pine.GSO.4.21.0010261319290.16028-100000@stekt6>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <14839.53124.753011.489351@argo.linuxcare.com.au>
-Date: Thu, 26 Oct 2000 17:30:28 +1100 (EST)
-To: linuxppc-dev@lists.linuxppc.org
-Subject: 2.2.18pre17 again
-Reply-To: paulus@linuxcare.com.au
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have updated my rsync trees with some more changes to my current
-2.2.18pre17 source, mostly to allow a range of configs to compile
-successfully.  I have also checked in the changes to the linuxppc_2_2
-bk tree.  Prep-only configs should compile ok now and as a bonus they
-no longer include all the pmac and chrp code that they used to.
+On Tue, 24 Oct 2000, Chris Leishman wrote:
 
-If anyone gets compile errors with my 2.2.18pre17 tree, or the current
-bk tree, please send me your .config.  I'm making a collection. :)
+>I've been using ssh to connect to remote hosts, and needless to say the
+>response time is shocking.
+>
+>However, I've also had problems where the session totally locks up - I type at
+>the terminal as much as I like, but nothing reaches the other end.  At first I
+>put this down to the crappy network link.  However I've also noticed more
+>recently that only _half_ the connection craps out - I can still receive data
+>from the remote server.  Weird.
+>
+>Then today I switched to use ethernet instead of the airport (I was
+>transfering some large files and wanted to use 100Mb), and I noticed that I
+>wasn't getting the lockup problems with the remote hosts.
+>
+>I'm using benh's latest kernel and airport driver.  Now I can't think what
+>would be causing this, but I thought you'd like to know.  Anyone else seen
+>this problem?
 
-My primary rsync tree for the 2.2 kernel source is now at
-ppc.linuxcare.com::linux-pmac-stable.  There is also a copy at
-penguinppc.org::linux-pmac-stable.
+Me. I went nuts one day when my ssh connections got constantly stuck and
+the only thing I could do was to killall ssh and restart the
+connection... I blamed about every part of the network, and finally
+realized that I wasn't getting this symptom as long as I was using the GMAC
+interface instead of airport... I'm using kernel 2.2.17pre20-ben3 and
+aswell Ben's newest airport driver... And yes, if you e.g. run irc on one
+session, you can easily see that even though you cannot transmit any
+characters on the remote host, it seems that the other people are writing
+to you nonetheless. So, it's a pretty weird and unexplainable problem. Ben?
 
-Paul.
 
---
-Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
-+61 2 6262 8990 tel, +61 2 6262 8991 fax
-paulus@linuxcare.com.au, http://www.linuxcare.com.au/
-Linuxcare.  Support for the revolution.
+-topi
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
