@@ -1,79 +1,44 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>,
-	Anton Blanchard <anton@samba.org>
-Cc: <yellowdog-devel@lists.terrasoftsolutions.com>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re:[PATCH]: Bug in ppc32 ld.so
-Date: Fri, 10 May 2002 23:13:53 +0200
-Message-Id: <20020510211353.14342@smtp.wanadoo.fr>
-In-Reply-To: <200205101438.33701.kevin.hendricks@sympatico.ca>
-References: <200205101438.33701.kevin.hendricks@sympatico.ca>
+Message-ID: <3CDF867F.44DA2DAD@folkwang-hochschule.de>
+Date: Mon, 13 May 2002 11:25:19 +0200
+From: =?iso-8859-1?Q?J=F6rn?= Nettingsmeier <nettings@folkwang-hochschule.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: alsa-devel@lists.sourceforge.net,
+	"linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: unresolved symbol udelay with ALSA on PPC
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Hi Ben,
->
->Its seems Geoff Keating and Anton are debating whether this patch should
->not be included in glibc and instead the new kernel behavior be reverted
->to icache synchronizing zero'd pages handed out by the kernel.
->
->It seems Geoff thinks there may be a security risk in allowing the stale
->code in the instruction cache code to be run and some benefit result by a
->malicious process (not just library loading obviously).
->
->So people might want to wait on this patch until things get flushed out
->(puin intended!).
->
->Either way, I would rather have a ld.so doing the complete icbi cache flush
->anyway since it makes me feel safer inside!  I have been bitten by too
->many cache flush related errors and I favor great overkill!
+hi !
 
-I fully agree with you ! Whatever we decide to do with the kernel
-cache flush code, let's do the proper icbi in ld.so.
+sorry for crossposting, this one is probably inappropriate for either
+the alsa or the ppc list. the problem is, i don't know which ;)
 
->The discussion is on the libc-alpha mailing list (just follow the link I
->sent and go to followups at the bottom).
->
->Do you know where in the kernel this change was made by Paul  (head.S with
->the zero page code? idle.c - with its zero page code during idle, or
->misc.S where the cache flush routines are now or ...).  I am trying to
->figure out when (what specific 2.4 kernel revision)  this came into.
+this is after successfully compiling 2.4.19-pre8-ben0 for PPC on a
+powerbook g3 (pismo) and installing the alsa drivers from
+alsa-driver-0.9.0rc1.tar.bz2:
 
-clear_user_page, somewhere in arch/ppc/mm
+ephraim:/usr/src/alsa-driver-0.9.0rc1 # depmod -ae -F
+/boot/System.map-2.4.19-pre8-ben0
+depmod: *** Unresolved symbols in
+/lib/modules/2.4.19-pre8-ben0/kernel/sound/ppc/snd-powermac.o
+depmod:         udelay
 
->Thought you might like to know.
->
->Thanks,
->
->Kevin
->
->On May 10, 2002 02:06, Benjamin Herrenschmidt wrote:
->> >Hi Anton,
->> >
->> >I saw:
->> >
->> >http://sources.redhat.com/ml/libc-alpha/2002-05/msg00052.html
->> >
->> >Thanks for posting that patch.  Have you by any chance alerted or sent
->> >similar mail to YDL dev lists, Debian dev lists, SuSE dev lists, and
->> >dev@linuxppc.
->> >
->> >This would be a nasty bug to track down and those distributions may
->> > want to know about this and get an udpated glibc-2.2.5 packages posted
->> > on their sites for those brave users who are using later 2.4 kernels?
->> >
->> >BTW, any idea when this change by Paul was introduced into the 2.4
->> > kernel series (specifically which 2.4.XX kernel?).
->>
->> I submited a debian bug report with Anton message, Olaf (suse) is on
->> the linuxppc64 list and had the patch, YDL folks have or will have it
->> rsn (thanks to IRC magic ;)
->>
->> Ben.
->
+can anyone clue me in on this ? i grepped for udelay, but it seems it's
+a very popular string in the source tree, so i gave up :( it seems to be
+defined alright for other kernel modules. afaics, snd-powermac is the
+only one that has problems.
 
+thanks in advance,
+
+jörn
+
+
+
+--
+Watch out where the huskies go and don't you eat
+the yellow snow !
+	- Frank Zappa
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
