@@ -1,38 +1,38 @@
-Subject: Re: slim kernel source
-From: Hollis Blanchard <hollis@austin.ibm.com>
-To: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <20020328001611.S26309@plato.local.lan>
-References: <20020327183028.71552.qmail@web11002.mail.yahoo.com>
-	<20020328001611.S26309@plato.local.lan>
-Content-Type: text/plain
-Date: 28 Mar 2002 10:20:53 -0600
-Message-Id: <1017332453.24968.404.camel@granite>
 Mime-Version: 1.0
+Message-Id: <p0510030ab8c8fb48c50c@[63.220.231.138]>
+In-Reply-To: <20020328141439.20362@mailhost.mipsys.com>
+References: <E16qa5v-0000NT-00@piglet.grunz.lu>
+ <20020328141439.20362@mailhost.mipsys.com>
+Date: Thu, 28 Mar 2002 12:02:53 -0500
+To: benh@kernel.crashing.org
+From: Stefan Jeglinski <jeglin@4pi.com>
+Subject: xmon feature? (was Re: crash on sleep with 2.4.19-pre4-ben0)
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 2002-03-28 at 03:16, Ethan Benson wrote:
+>  >How? The keyboard doesn't work under xmon.... I need to power-cycle.
 >
-> On Wed, Mar 27, 2002 at 10:30:28AM -0800, Dan Bethe wrote:
-> >
-> > Hi all.  Is there a utility or procedure which can remove a bunch of the code
-> > from extraneous architectures from my kernel source tree?  I only want to build
-> > kernels for my beloved Powermac 8500 and so I can do without code specific to
-> > ia32, S390, Alpha, MIPS, and friends.
-> >
-> > Even if you just know of a few directories I can remove and save a couple dozen
-> > megs of space, that'd be good.
->
-> you can probably safly rm -rf everything under arch/* except arch/ppc
-> and include/asm-* except include/asm-ppc.  i haven't tried this but i
-> would expect this not to break anything (and if it does thats probably
-> a bug).
+>You can try manually adding a call to backtrace() in xmon entry point
 
-As I recall, LinuxPPC 2000 shipped kernel source like this (without
-testing ;), and a few PPC headers include m68k headers.
+I tried this once but never got it to work. No doubt because I don't
+know much about what I'm doing in kernel programming yet.
 
--Hollis
+I'd like to suggest this feature: that by default xmon prints a
+backtrace when it is invoked. A user can then ask it for any more
+info they want (including the backtrace again).
 
+This would largely alleviate the general problem of losing keyboard
+control and having to powercycle without getting much info out.
+
+Is there a reason to object to this idea? xmon maintainers won't go
+for it? Automatic backtraces might be too large? Other reasons I
+might never imagine on my own? The kernel automatically does it on a
+boot panic, I know that much.
+
+
+Stefan Jeglinski
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
