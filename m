@@ -1,31 +1,29 @@
-Message-ID: <3B7D5213.3020602@mvista.com>
-Date: Fri, 17 Aug 2001 10:19:15 -0700
-From: Matthew Locke <mlocke@mvista.com>
-MIME-Version: 1.0
-To: Dan Malek <dan@mvista.com>
-Cc: Jure Menart <jure@kom.org>,
-	linuxppc dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: linux-2.4 & 405gp & other stuff
-References: <20010816175511.A1012@hannanges.teden-mladih.com> <3B7C3E51.52B43280@mvista.com> <3B7C545C.9040600@mvista.com> <3B7C6586.120CF7D4@mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-Id: <200108171724.NAA23832@makai.watson.ibm.com>
+To: Raghava Raju <vraghava_raju@yahoo.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: program counter.. 
+In-Reply-To: Message from Raghava Raju <vraghava_raju@yahoo.com>
+   of "Fri, 17 Aug 2001 10:13:44 PDT." <20010817171344.83793.qmail@web20004.mail.yahoo.com>
+Date: Fri, 17 Aug 2001 13:24:29 -0400
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dan Malek wrote:
+>>>>> Raghava Raju writes:
 
- > Matthew Locke wrote:
- >
- >
- >> Oak doesn't compile anymore.
- >
- >
- > It did not long ago.......don't you have a board for testing so you
- > can make the changes we need :-)?
- >
+Raghava> I was unable to find the registers for
+Raghava> program counter,stack pointer. Which registers
+Raghava> I should use to access these values in powerpc.
 
-Well, not in my office.  If we ever find a working 10base2<->10baseT
-converter, maybe we have a chance to keep the Oak code up to date:)
+	The PowerPC ABI's specify that the stack pointer is in r1.  The
+PowerPC architecture does not have a program counter in user-accessible
+register.  One can obtain the PC of the last call (branch and link) from
+the link register.  One can branch and link to the next instruction to
+obtain the current PC, but make sure that the old value in the LR is saved
+and restored as required by the ABI.
+
+David
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
