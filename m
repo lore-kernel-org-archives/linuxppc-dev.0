@@ -1,55 +1,33 @@
-Message-ID: <3A9CF2B3.9FACDA6A@ipno.in2p3.fr>
-Date: Wed, 28 Feb 2001 13:44:35 +0100
-From: xav <grave@ipno.in2p3.fr>
+Date: Wed, 28 Feb 2001 15:41:41 -0500 (EST)
+From: Rod Stewart <stewart@dystopia.lab43.org>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: glibc mainline, which compiler?
+Message-ID: <Pine.LNX.4.33.0102281519410.7051-100000@dystopia.lab43.org>
 MIME-Version: 1.0
-To: Matt Porter <mporter@mvista.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>, paubert@iram.es
-Subject: Re: Problem requesting IRQ with 2.4.2 kernel
-References: <3A9BDC55.FCD90F9A@ipno.in2p3.fr> <20010227081059.B32137@cx258813-a.chnd1.az.home.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Matt Porter wrote:
+Hello,
 
-> On Tue, Feb 27, 2001 at 05:56:53PM +0100, xav wrote:
-> >
-> > Hi !
-> >
-> > I'm using a clone of the bk tree to compile a 2.4.2 kernel.
-> > I have also downloaded the code from Gabriel Paubert for the
-> > pci2vme chip from TUNDRA.
->
-> Which bk tree? linuxppc_2_4 or linuxppc_2_5?
+I was wondering if a anyone knows what the minimum version of GCC is
+needed to build the latest glibc mainline.
 
-linuxppc_2_4
+Currently I have:
+	Running: 'Linux/PPC 2000 Q4', which has
+	[stewart@smac stewart]$ rpm -q binutils glibc gcc
+	binutils-2.10.1.0.2-0a
+	glibc-2.1.3-15f
+	gcc-2.95.3-2n
 
-> Interrupt routing problem.  IIRC, put a 5 for the interrupt line in
-> the entry for Slot 13, Universe II LINT#0.  That should get you
-> going.  Check the 2300 programmer's reference if that interrupt
->  doesn't work for you.  If the driver is using more LINT inputs than
-> that then you'll have to fix the routing as appropriate.  It can all
-> be rerouted via the Universe II but that's another game.
+Do I need to use the mainline GCC to build glibc 2.2.x?
 
-After I did it, I have the following :
+I can build gcc, binutils, and gdb fine.  I just need to get glibc going
+for http://www.netwinder.org/build stuff and I can add in PPC fully.
 
-00:0d.0 Bridge: Tundra Semiconductor Corp. CA91C042 [Universe] (rev 01)
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
-ParErr- Stepping- SERR- FastB2B-
-        Status: Cap- 66Mhz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR-
-        Latency: 0 (750ns min)
-        Interrupt: pin A routed to IRQ 21
-        Region 0: Memory at effef000 (32-bit, non-prefetchable)
-[size=4K]
-        Region 1: I/O ports at fffe000 [size=4K]
-
-No more module problem ! Thanks a lot...
-
---
-33 (0) 1 69 15 79 59
-De chacun selon ses forces, a chacun selon ses besoins
+Thanks for any tips,
+-Rms
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
