@@ -1,21 +1,25 @@
-Return-Path: <stefan.nickl@kontron.com>
-Received: from kom-mail1.kontron-modular.com (unknown [62.159.155.196])
-	by ozlabs.org (Postfix) with ESMTP id 679842BDB5
+Return-Path: <vitorio@digitel.com.br>
+Received: from hermes.digitel.com.br (hermes.digitel.com.br [200.198.105.36])
+	by ozlabs.org (Postfix) with ESMTP id CA8F12BF23
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Jan 2005 20:50:13 +1100 (EST)
-From: Stefan Nickl <Stefan.Nickl@kontron.com>
-To: Sylvain Munaut <tnt@246tNt.com>
-In-Reply-To: <41D97734.3070800@246tNt.com>
-References: <200412301246.48870.david.jander@protonic.nl>
-	<C6D7331E-5A77-11D9-AECD-003065F9B7DC@embeddededge.com>
-	<061001c4eeaf$0b5e1860$0301a8c0@chuck2> <41D7269E.1070906@246tNt.com>
-	<003c01c4f19d$98a16510$0301a8c0@chuck2> <41D97734.3070800@246tNt.com>
-Content-Type: text/plain
-Date: Tue, 04 Jan 2005 10:37:39 +0100
-Message-Id: <1104831459.11260.4.camel@lucy.pep-kaufbeuren.de>
+	Wed,  5 Jan 2005 00:05:13 +1100 (EST)
+Received: from [10.10.10.160] by hermes.digitel.com.br (GMS
+	9.01.3158/NU1492.00.9f6ce814) with ESMTP id althibaa for
+	linuxppc-embedded@ozlabs.org; Tue, 4 Jan 2005 11:11:42 -0200
+From: =?ISO-8859-1?Q?Lu=EDs_Vit=F3rio?= Cargnini <vitorio@digitel.com.br>
+To: Geert Uytterhoeven <geert@linux-m68k.org>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+In-Reply-To: <Pine.GSO.4.61.0501031717080.27452@waterleaf.sonytel.be>
+References: <1104758458.14925.5.camel@vitorio>
+	<Pine.GSO.4.61.0501031717080.27452@waterleaf.sonytel.be>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-eHKAYVpr0ErujqILPm2/"
+Date: Tue, 04 Jan 2005 11:07:28 +0000
+Message-Id: <1104836848.5622.8.camel@vitorio>
 Mime-Version: 1.0
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: MPC5200 PCI byte-swapping
+Subject: Re: Making a serial multiplexer (new driver)
+Reply-To: vitorio@digitel.com.br
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,30 +30,61 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2005-01-03 at 17:47 +0100, Sylvain Munaut wrote:
-> >Thanks.  I had an older manual that didn't spell it out so
-> >clearly.
-> >
-> >I've been trying to interpret the PCI sections for some other
-> >82xx family parts, and it appears that they do NOT do this
-> >byte lane swapping, so this make the 5200 non-standard in
-> >this regard, which is unfortunate.  If I'm understanding this
-> >right, one would have to have different drivers for a PCI
-> >device on a 5200 and an 8270, for instance.
-> >  
-> >
-> Mmmm ...
-> Still I use the intel eepro driver without problems or modifications.
-> As long as the driver uses the proper readl/writel that should do
-> it or am I mistaken ?
 
-This reminds me of an issue with the Coral P PCI graphics chip I
-encountered a while ago. The driver is from the Denx CVS and was
-apparently developed on a 5200.
+--=-eHKAYVpr0ErujqILPm2/
+Content-Type: text/plain; charset=iso-8859-2
+Content-Transfer-Encoding: quoted-printable
 
-When I tried it on a mpc8540, the console text looked blueish, but I
-could not investigate further. But I know where I'd look at now ...
+it can't be done in user space=20
+why?
+Because the multiplexer has an proprietary p=E0otocol 8-(
+so i'll encapsulate the communication of 3 channels to communicate with
+physical device and my user-level applications like pppd don't need to
+know the mux protocol, this will be transparent for the user
+applications.
 
--- 
-Stefan Nickl
-Kontron Modular Computers
+On Mon, 2005-01-03 at 17:17 +0100, Geert Uytterhoeven wrote:
+> On Mon, 3 Jan 2005, [ISO-8859-1] Lu=EDs Vit=F3rio Cargnini wrote:
+> > Hi i need to write a driver that must multiplex an serial channel my
+> > driver will have  3 interfaces and i must communicate with another
+> > interface  (midleware) like /dev/ttyS2 for example, how could i write a
+> > driver that will communicate with my existing uart ???
+> >=20
+> > i have a component that could be multiplexed in 3 logical channels thro=
+w
+> > my single physical channel that are accessed with a normal serial
+> > interface using uart, how could this be possible ?
+> > this is necessary to be transparent to software user level.
+>=20
+> Do it in userspace using fifos?
+>=20
+> Gr{oetje,eeting}s,
+>=20
+> 						Geert
+>=20
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m6=
+8k.org
+>=20
+> In personal conversations with technical people, I call myself a hacker. =
+But
+> when I'm talking to journalists I just say "programmer" or something like=
+ that.
+> 							    -- Linus Torvalds
+--=20
+Lu=EDs Vit=F3rio Cargnini <vitorio@digitel.com.br>
+Digitel S/A
+
+--=-eHKAYVpr0ErujqILPm2/
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.6 (GNU/Linux)
+
+iD8DBQBB2njwyHSZZ0hdDzQRAhzVAJ450scCBfihNBEFjapeQM40Xyds2gCdF8/B
+Khi+8ZrlOG0QqKEEnEXn7E8=
+=2DPT
+-----END PGP SIGNATURE-----
+
+--=-eHKAYVpr0ErujqILPm2/--
