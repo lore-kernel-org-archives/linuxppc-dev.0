@@ -1,22 +1,34 @@
-Return-Path: <joern@wohnheim.fh-wedel.de>
-Received: from moskovskaya.fh-wedel.de (mail.fh-wedel.de [213.39.232.198])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0B85167A78
+Return-Path: <segher@kernel.crashing.org>
+Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.29.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de.ibm.com", Issuer "Equifax" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 617D567A46
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 21 Mar 2005 23:38:57 +1100 (EST)
-Date: Mon, 21 Mar 2005 13:38:33 +0100
-From: =?iso-8859-1?Q?J=F6rn?= Engel <joern@wohnheim.fh-wedel.de>
-To: Josh Boyer <jwboyer@jdub.homelinux.org>
-Message-ID: <20050321123832.GB10871@wohnheim.fh-wedel.de>
-References: <4236D36D.3090809@timesys.com> <42372CF0.6040901@mvista.com>
-	<20050315133231.A5861@cox.net>
-	<1110936813.28218.21.camel@jdub.homelinux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1110936813.28218.21.camel@jdub.homelinux.org>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: mtd maps
+	Tue, 22 Mar 2005 01:07:01 +1100 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate1.de.ibm.com (8.12.10/8.12.10) with ESMTP id j2LDt30Q171330
+	for <linuxppc-embedded@ozlabs.org>; Mon, 21 Mar 2005 13:55:03 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
+	by d12nrmr1607.megacenter.de.ibm.com (8.12.10/NCO/VER6.6) with ESMTP id
+	j2LDt3Qv216128
+	for <linuxppc-embedded@ozlabs.org>; Mon, 21 Mar 2005 14:55:03 +0100
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11/8.12.11) with ESMTP id
+	j2LDt3C3002285
+	for <linuxppc-embedded@ozlabs.org>; Mon, 21 Mar 2005 14:55:03 +0100
+In-Reply-To: <Pine.LNX.4.61.0503111609001.9384@blarg.somerset.sps.mot.com>
+References: <Pine.LNX.4.61.0503111609001.9384@blarg.somerset.sps.mot.com>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Message-Id: <43b769d454b49bc3f33414912c7fa3ab@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Date: Sat, 19 Mar 2005 15:36:00 +0100
+To: Kumar Gala <galak@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] ppc32: emulate load/store string instructions
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,17 +39,10 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 15 March 2005 19:33:33 -0600, Josh Boyer wrote:
-> 
-> There is a driver in MTD CVS now called mphysmap (untested I believe),
-> that might be able to deal with that.  Eventually.
+> +	/* Early out if we are an invalid form of lswi */
+> +	if ((instword & INST_STRING_MASK) == INST_LSWX)
 
-If someone has the need and a test machine with remote access, it
-could get done rather soon.
+Typo --------------------------------------------^
 
-Jörn
 
--- 
-Beware of bugs in the above code; I have only proved it correct, but
-not tried it.
--- Donald Knuth
+Segher
