@@ -1,23 +1,42 @@
-Date: Tue, 6 Jul 2004 16:16:52 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: make menuconfig error in latest "bk pull"
-Message-ID: <Pine.LNX.4.60.0407061615230.21433@localhost.localdomain>
+Message-ID: <40EB1C28.3000402@246tNt.com>
+Date: Tue, 06 Jul 2004 23:39:52 +0200
+From: Sylvain Munaut <tnt@246tnt.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: ppc linux embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Getting rid of static IO mapping
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-   i'm probably way behind the curve here, but:
+Hi,
 
-$ make ARCH=ppc menuconfig
-scripts/kconfig/mconf arch/ppc/Kconfig
-drivers/net/Kconfig:201: can't open file "drivers/net/ibm_ocp/Kconfig"
-make[1]: *** [menuconfig] Error 1
-make: *** [menuconfig] Error 2
-$
+In the mpc5200 2.6 support, I'm trying to get rid of all static io
+mapping.
+So every address I use must be ioremaped. For the device drivers, no
+problem they are remaped during probe and released if modules get
+unloaded. For some routines used at boot & setup, I just ioremap at
+the function begining and ioumap at the end. For interrupt handling,
+since ioremap at each interrupt is not really nice, I just do it
+durint irq_init and then keep the vaddr in a global var to the file
+(static).
 
-rday
+Until there, it works fine. My only problem left is with the
+ppc_md.progress. I'm not sure what is the memory environment at each
+time it might be called. Can I use ioremap/iounmap at each call ? (I
+know I could just try but that might work even if it's wrong(tm) ).
+
+In the current situation, I use the physical address and there is a
+1:1 mapping. The mapping is first done by directly manipulating
+{D,I}BAT2, then by setup_io_mappings.
+If I understood correctly, I should use the physical address while the
+BAT2 mapping is still active, then when the memory managment is ok,
+ioremap it. Is it correct ? How can I know when BAT2 has been
+overwritten and ioremap ready to go ? Is this the purpose of
+mem_init_done ?
+
+
+Sylvain Munaut
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
