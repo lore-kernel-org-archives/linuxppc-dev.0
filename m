@@ -1,42 +1,33 @@
-Reply-To: <acurtis@onz.com>
-From: "Allen Curtis" <acurtis@onz.com>
-To: <linuxppc-dev@lists.linuxppc.org>
-Subject: Debugging Network Performance
-Date: Mon, 3 Jun 2002 20:27:33 -0700
-Message-ID: <NCBBIINEHIPFGJPLBEIFMEBCDIAA.acurtis@onz.com>
+Subject: Re: Debugging Network Performance
+To: <acurtis@onz.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Message-ID: <OFA5A51CBB.95D864D5-ON85256BCE.003C5665@raleigh.ibm.com>
+From: "Mark Wisner" <markwiz@us.ibm.com>
+Date: Tue, 4 Jun 2002 07:12:40 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I was wondering if anyone could provide some pointers on monitoring and
-debugging network communications. The performance of Ethernet communications
-seems to vary with kernel revisions. I would like to analyze this problem
-but I need a little guidance on the issue.
+Allen,
+Netperf can give you a vary detailed report about network performance. If
+you think your problem is related to network hardware problems, look at the
+errors listed in "ifconfig". This should tell you if you are getting bad
+packets or dropping packets.
+If you think it is a kernel problem some benchmarks may help you narrow
+down the problem. Networks are pretty fluid and sometimes hard to get
+reproducible results. When I try to determine driver/kernel network
+perfomance I try to use an isolated network where I have control over all
+traffic or I use test hardware such as IXIA or Smartbits.
 
-TIA!
+Mark K. Wisner
+Advisory Software Engineer
+IBM Microelectronics
+3039 Cornwallis Rd
+RTP, NC 27709
+Tel. 919-254-7191
+Fax 919-543-7575
 
-=========== Previous 8260 Ethernet email ==================
-
-2. Some relative performance measurements (HHL 2.4.2 vs. 2.4.19pre9)
-			10T Hub	|	100BT switch
-		 -------------------------------------|
-	2.4.2	 |	410KBps	|	750KBps	  |
-		 -------------------------------------|
-	2.4.19 |	440KBps	|	190KBps	  |
-		 --------------------------------------
-
-	RedHat 2.4.18-3 (x86)	3900KBps
-
-3. TOP shows as much as 48% system utilization during a single FTP transfer.
-With the fix mentioned in #1, there are 0 errors reported by ifconfig.
-
-I may be missing something but I believe that these numbers are going the
-wrong way. There is still the question of performance decrease when using a
-100BT switch. Signal intregety can not be the only suspect considering the
-performance did increase using an older version of the kernel. (although
-nothing like the Workstation performance)
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
