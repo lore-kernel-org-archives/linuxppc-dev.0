@@ -1,24 +1,51 @@
-Message-ID: <6D4DC8B4AD16D6118E8200D0B76FE262022CD4EA@ONT06EXM01>
-From: Barker Michael-r43496 <Michael.D.Barker@motorola.com>
+Date: Thu, 10 Oct 2002 14:35:02 -0400
+From: Patrick Mahoney <pmahoney@8d.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: 8xx i2c refers to unspecified chip errata
-Date: Thu, 10 Oct 2002 13:01:40 -0400
-MIME-Version: 1.0
-Content-Type: text/plain
+Subject: mpc8xx - power save modes - PIT
+Message-ID: <20021010183502.GA843@segfault.usine.8d.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-That's good to know - however, I'm just interested in using the CPM.  So I will leave my original questions out there, and I may have more in the future.  Thanks.
+Hello pple,
+
+My setup: MPC850 on a RPXlite_dw board.
+
+My problem:
+
+I am trying toggle between power saving modes and evaluate the current
+drops with an ampermeter.
+
+I succeeded in switching to several power modes, but each time i
+switch, my serial connection dies, even if i switch to the  'normal
+low mode', which is supposed to keep all functionnalities  present.
+
+I am looking to use the PIT to automatically bring back the chip to
+normal full power mode.
+
+I tried the following:
+
+      init_timer(&timer);
+      timer.expires=1000;
+      timer.function=timer_handler;
+      add_timer(&timer);
+
+without success. The kernel oops'es everytime. Ive been browsing the
+kernel sources, but have yet to see where the PIT was
+initialized/used.
+
+Would anyone have successfully used the several power modes of the
+mpc850 (or equivalent) through linux 2.4? If so, is there any code
+snippet available?
+
+Also, do you have any idea as to why the serial connection dies? Is it
+a uart syncing -type problem?
+
+Best regards,
 
 
-> Dan Wrote
-> > Just toggle the bits in software.  I never saw an
-> application where the I2C
-> > controller provided a performance advantage.  It's lots of
-> software to execute,
-> > along with all of the interrupt handling and stuff, so you
-> just spend lots of
-> > overhead not making any other progress.
+Pat Mahoney
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
