@@ -1,60 +1,55 @@
-Date: Tue, 8 Dec 1998 00:46:23 -0600
-From: Ted Whalen <tew@nwu.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: misdetected vram on pb2400
-Message-ID: <19981208004623.A737@wish.acns.nwu.edu>
-Reply-To: tew@nwu.edu
+Date: Tue, 8 Dec 1998 01:59:10 -0500
+From: Daniel Jacobowitz <drow@cs.cmu.edu>
+To: LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: EGCS 1.1.1 FYI
+Message-ID: <19981208015910.A18662@drow.res.cmu.edu>
+References: <schinder@pobox.com> <199812071128.GAA01786@smtp2.mindspring.com> <9812071511.AA34514@marc.watson.ibm.com> <13932.21810.162591.80793@onyx.nowhere.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <13932.21810.162591.80793@onyx.nowhere.net>; from Ralf Weidemann on Mon, Dec 07, 1998 at 11:22:42PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-XFree86 Version 3.3.2.3 / X Window System
-(protocol Version 11, revision 0, vendor release 6300)
-Release Date: July 15 1998
-	If the server is older than 6-12 months, or if your card is newer
-	than the above date, look for a newer version before reporting
-	problems.  (see http://www.XFree86.Org/FAQ)
-Operating System: Linux 2.1.126 ppc [ELF] 
-Configured drivers:
-   FBDev: Server for frame buffer device
-   (Patchlevel 10): mfb, afb, cfb8, cfb16, cfb32
-(using VT number 7)
+On Mon, Dec 07, 1998 at 11:22:42PM +0100, Ralf Weidemann wrote:
+> 
+> >>>>> "David" == David Edelsohn <dje@watson.ibm.com> writes:
+> >>>>> "Paul J Schinder" writes:
+>     Paul> So are Gary Thomas' patches still necessary?
+> 
+>     David> 	The trampoline patch now has become a shared library
+>     David> compatibility issue for glibc-1.99 support.  It only is
+>     David> necessary until LinuxPPC cuts over to glibc-2.1 which will
+>     David> require other binary incompatible changes at the same time.
+> 
+> Can someone clarify where the problem is exact with native
+> egcs and libc-1.99 ? I use egcs-1.1.1 since the weekend and
+> it seems to work fine. I had no trouble to build some shared
+> lib stuff like in the latest jade or sgml-tools. This packages
+> didn't compile with older version I tried (also Gary's egcs-1.1b),
+> but that were generell compiler issues, I think.
+> 
+> But on the other side I also tried to run the SeaMonkeyBrowser
+> (Mozilla) from recent cvs-sources. Building went fine, but the
+> beast didn't run. I get only a simple "Aborted" message on the
+> console and it seems to crash somewhere in the startup code.
+> So maybe this is somehow related ?
+> 
+> Had someone luck to run a recent version of Mozilla at all on
+> LinuxPPC ?
 
-XF86Config: /etc/X11/XF86Config
-(**) stands for supplied, (--) stands for probed/default values
-(**) XKB: disabled
-(**) Mouse: type: BusMouse, device: /dev/mouse, buttons: 3
-(**) FBDev: Graphics device ID: "Linux/m68k Frame Buffer Device"
-(**) FBDev: Monitor ID: "Generic Monitor"
-(**) FontPath set to "/usr/X11R6/lib/X11/fonts/misc/,/usr/X11R6/lib/X11/fonts/freefont/"
-(**) FBDev: Using default frame buffer video mode
-(--) FBDev: Frame buffer device: C&T 65550
-(--) FBDev: Video memory: 468K @ 0x81000000
-(--) FBDev: MMIO regs: 0K @ 0xf2000000
-(--) FBDev: Type 0 type_aux 0 bits_per_pixel 16
-(--) FBDev: Hardware accelerator: None
-(--) FBDev: No driver support for hardware acceleration
-(--) FBDev: Using cfb16 driver
+No.  There's a bug that at least one person (Anthony Tong) is working
+on finding, something with the shared libraries, I think.  SeaMonkey
+has its own set of problems, in addition - I recommend playing with
+classic mozilla instead.
 
-Fatal server error:
-Caught signal 11.  Server aborting
+Dan
 
-
-When reporting a problem related to a server crash, please send
-the full server output, not just the last messages
-
-X connection to :0.0 broken (explicit kill or server shutdown).
-
-*** snip ***
-
-I'm running the latest vger kernel with the 2400 patch promulgated on
-this list.  I'm running the debian package of XFree86.  
-
--- 
-             Is "Princess" your real name?
-                Ted Whalen - tew@nwu.edu
+/--------------------------------\  /--------------------------------\
+|       Daniel Jacobowitz        |__|     CMU, CS class of 2002      |
+|   Debian GNU/Linux Developer    __   Part-Time Systems Programmer  |
+|         dan@debian.org         |  |        drow@cs.cmu.edu         |
+\--------------------------------/  \--------------------------------/
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
