@@ -1,18 +1,17 @@
-Return-Path: <markc@mail.com>
-Received: from relay01.roc.ny.frontiernet.net (relay01.roc.ny.frontiernet.net
-	[66.133.182.164]) by ozlabs.org (Postfix) with ESMTP id AEED667A7D
+Return-Path: <SWarren@nvidia.com>
+Received: from HQEMGATE01.nvidia.com (hqemgate01.nvidia.com [216.228.112.170])
+	by ozlabs.org (Postfix) with ESMTP id 837AE67A78
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  9 Mar 2005 05:50:11 +1100 (EST)
-Message-ID: <004801c52410$4247b700$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-To: "Rune Torgersen" <runet@innovsys.com>
-References: <DCEAAC0833DD314AB0B58112AD99B93B8592E9@ismail.innsys.innovsys.com>
-Date: Tue, 8 Mar 2005 13:54:24 -0500
+	Wed,  9 Mar 2005 06:09:43 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Lots of memory on 826x
+	charset="US-ASCII"
+Date: Tue, 8 Mar 2005 11:09:40 -0800
+Message-ID: <DBFABB80F7FD3143A911F9E6CFD477B0056A92CC@hqemmail02.nvidia.com>
+From: "Stephen Warren" <SWarren@nvidia.com>
+To: "Dale Farnsworth" <dale@farnsworth.org>,
+	<linuxppc-embedded@ozlabs.org>
+Subject: RE: MPC5200 kernel with IDE *and* FEC?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,29 +22,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+From: Dale Farnsworth [mailto:dale@farnsworth.org]=20
+> On Tue, Mar 08, 2005 at 05:34:20PM +0000, Stephen Warren wrote:
+> > I looked at the 2.6.11 kernel.org kernel, and it has MPC5200 IDE
+> > support, but apparently no FEC driver support.
+>=20
+> Are you sure it has MPC5200 IDE support?  I have yet to see reliable
+> 5200 IDE support and haven't seen a 5200 IDE driver for 2.6 at all.
 
->Now I can almost boot....:
->It craches when trying to read from harddisk
->(only happens with more than 512MB)
+Not sure, no. Looking at "xconfig", I don't see an option for it. A
+colleague said it did.
 
+We've used IDE (for a DVD-ROM) using the Denx kernel. This didn't have
+DMA suppport, but Freescale gave us a derivate kernel that it, which
+seemed to work well. They said they were going to push this up through
+Denx into the main kernel. Didn't they bother to do this?
 
-Don't rule out a hardware problem, namely addressing to SDRAM.  It could be
-consistent with what you're seeing - when you start to load a lot of data
-and
-cross some address you step on older data (or code).
+> I did the FEC driver in Sylvain's tree.  He has promised to push
+> it to kernel.org RSN.
 
---Mark C.
+That'd be great.
 
-> > Anybody know how to get more than 512MB (1-2GB) of RAM to work with
-> >  2.6.11 on a 8265?
-> >
-> > Weird stuff and crashes keep happening on kernel start
-> (vmalloc out of
-> > memory, and a pci driver ups) when I tell the kernel I have
-> more than
-> >  512MB of ram.
-> > The pci craches happens when I tell the kernel I have 740-760MB or
-> > more.
-> >
-> > Any idea of where to start to look for this?
-> >
+--=20
+Stephen Warren, Software Engineer, NVIDIA, Fort Collins, CO
+swarren@nvidia.com        http://www.nvidia.com/
+swarren@wwwdotorg.org     http://www.wwwdotorg.org/pgp.html
