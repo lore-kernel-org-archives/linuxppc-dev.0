@@ -1,57 +1,69 @@
-To: Steven Scholz <steven.scholz@imc-berlin.de>
-Cc: "'LinuxPPC '" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: PCMCIA Modem/Serial Cards and MPC8xx? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 27 Aug 2003 13:12:09 +0200."
-             <3F4C9209.8050301@imc-berlin.de>
-Date: Wed, 27 Aug 2003 13:50:47 +0200
-Message-Id: <20030827115052.5D4BEC59E4@atlas.denx.de>
+From: ghannon@cspi.com
+To: "???" <ksshin@essetel.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <85256D8F.004ABAE9.00@pine.cspi.com>
+Date: Wed, 27 Aug 2003 09:38:13 -0400
+Subject: Re: interrupt handling in 7410+64260
+Mime-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Steven,
+> 2. request_irq(77, ...)
+>    77 means bit 15 of GPP_INTERRUPT_CAUSE register.
 
-in message <3F4C9209.8050301@imc-berlin.de> you wrote:
+There is an offset of 64, try 79 vs 77 to get bit 15.
+
+"???" <ksshin@essetel.com> on 08/27/2003 12:23:55 AM
+
+I use 2.4.18 kernel from montavista.
+I set MPP_CNTL_x reigster as gpp,
+ GPP_IO_CNTL as input, GPP_LEVEL_CNTL as active low
+after that, I call request_irq(irq_num, ...); function.
+
+when I call request_irq(), I try two type.
+1. request_irq(57, ...)
+   57 means bit 25 of MAIN_INTERRUPT_CAUSE register.
+2. request_irq(77, ...)
+   77 means bit 15 of GPP_INTERRUPT_CAUSE register.
+
+in case of 1.
+when interrupt is occurred, then kernel is dead. and no message
+is printed.
+
+in case of 2.
+when interrupt is occurred, but nothing is happened and also
+bit 25 of MAIN_INTERRUPT_MASK_HI is not set.
+also try to set that bit, but not setted...
+
+In Linux kernel, there is a example about handling internal
+interrupt(mpsc as serial, ethernet), but I can't find the example for
+about handling external interrupt with GPP.
+
+Is there anyone who know that how to handle the external interrupt
+with GPP in 7410/64260?
+
+----- Original Message -----
+From: "Paul White" <pwhite@bivio.net>
+Sent: Wednesday, August 27, 2003 12:18 PM
+Subject: Re: interrupt handling in 7410+64260
+
+> Its been a little while since I've looked at the GT64260 manual, but I
+> believe you configure the MPP pins as interrupt pins. These then are
+> masked/seen via the GPP_INTR_CAUSE (0xf108) and GPP_INTR_MASK (0xf10c)
+> registers. Then, I believe that somewhere in the CPU's mask, you can
+> enable/disable the GPP/MPP interrupts.
 >
-> Now I do get
-...
-> Serial driver version 5.05c (2001-07-08) with SHARE_IRQ enabled
-> ttyS00 at 0xc3071000 (irq = 6) is a ST16654
-> ttyS01 at 0xc3071080 (irq = 8) is a ST16654
+> This is what I recall from memory, but hopefully it'll get you
+> started.
 
-ttyS00 and ttyS01 are already in use?
-
-> And PCMCIA CS tells me
-...
-> cardmgr[80]: + Using /lib/modules/2.4.20/pcmcia/serial_cs.o
-> ttyS02 at port 0x03f8 (irq = 9) is a 16550A
-...
-> So why is it ttyS02. Why is it ./serial start ttyS2?
-
-Because ttyS00 and ttyS01 are already in use.
-
-> It's also ttyS2 if I don't enable SCC1 as UART!
-
-ttyS2 or ttyS02?
-
-> I read this. But where does the MAJOR number 240 come from???
-
-See Documentation/devices.txt: LOCAL/EXPERIMENTAL USE
-
-Based on previous experience I saw little chance to get the  resource
-conflict solved by the Powers That Be.
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-We are drowning in information but starved for knowledge.
-                                         -- John Naisbitt, Megatrends
+> On Wed, 27 Aug 2003, [ks_c_5601-1987]
+> >
+> > I have a custom MPC7410 + GT64260 board and I successfully ported
+> > linux to that board. Now, I am trying to handle the mii interrupt.
+> > The MII INT Line is connected to MPP 14, 15. How to handle that
+> > interrupt or where I can find out the example for external interrupt
+> > with MPP
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
