@@ -1,56 +1,31 @@
-Message-ID: <3C17E3B4.9E73B22E@labs.mot.com>
-Date: Wed, 12 Dec 2001 17:09:40 -0600
-From: Steve Rossi <srossi@labs.mot.com>
-MIME-Version: 1.0
-To: Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: high priority interrupts disabled - problem found
-References: <3C112297.6DE37608@labs.mot.com> <3C114C63.3050102@embeddededge.com> <3C14F91F.F382ABE3@labs.mot.com> <3C177748.1A1342C2@labs.mot.com>
+Date: Wed, 12 Dec 2001 16:23:07 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Jim Thompson <jim@smallworks.com>
+Cc: jtm@smoothsmoothie.com, andrew.dixon@seranoa.com,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: r3 and bd_t
+Message-ID: <20011212232307.GB28967@cpe-24-221-152-185.az.sprintbbd.net>
+References: <200112122257.QAA07497@hosaka.smallworks.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200112122257.QAA07497@hosaka.smallworks.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Here's another update for anyone interested:
+On Wed, Dec 12, 2001 at 04:57:11PM -0600, Jim Thompson wrote:
+> >> arch/ppc/kernel/head_8xx.S saves this and passes it onto early_init()
+> >> iirc, which will pass it along to platform_init(), which copies it for
+> >> safe keeping.
+> >
+> > I think the 8260 uses arch/ppc/kernel/head.S instead of head_8xx.S.
+>
+> And the 8245?
 
-Steve Rossi wrote:
-
-> ...Is there a mechanism by which
-> all lower priority interrupts are disabled when a higher priority one is running?
-
-This is exactly the problem. I was able to run with data show-cycles enabled so
-I could trace exactly what was happening with the SIVEC, SIMASK & SIPEND. Here's the
-situation that causes the problem I described in earlier posts:
-The hard disk interrupt (IRQ6) does data transfer in the ISR itself - as a result
-the ISRs are very long, and furthermore, the interrupt signal is asserted again
-before the service routine is exited and IRQ6 is unmasked - so as a result, as soon
-as its unmasked, it causes a new interrupt to the core and IRQ6 is entered again.
-
-Take the situation where IRQ2 becomes active between the time when IRQ6 is unmasked,
-but before the next pending IRQ6 is entered. SIVEC is read, and indicates IRQ2, IRQ2
-is masked & acked, then since IRQ2 is NOT flagged with SA_INTERRUPT, the interrupts
-to the core are enabled. Immediately, the core recognizes that IRQ6 is pending and
-unmasked so it begins to service it. Essentially IRQ6 pre-empted IRQ2, IRQ2 is
-masked out. IRQ6 will run, unmask, interrupt again, mask, run, unmask, interrupt
-again ... etc until the complete transfer to the disk is done. Only when there is no
-longer any other interrupts pending will the IRQ2 which was preempted earlier finish
-running - many milliseconds after IRQ2 was triggered.
-
-So the problem is that mask & ack only masks the pending interrupts when I believe
-it should mask the pending interrupts and all interrupts that are lower priority
-than it. Conversely unmask should unmask the given interrupt and all interrupts of
-lower priority that were previously unmasked when mask&ack was called. Is that right
-or am I missing something here?
-
-
-Steve
+arch/ppc/kernel/head.S as well.
 
 --
--------------------------------------------------------
-Steven K. Rossi                     srossi@labs.mot.com
-Staff Engineer
-Multimedia Communications Research Laboratory
-Motorola Labs
--------------------------------------------------------
-
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
