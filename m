@@ -1,52 +1,31 @@
-Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
-Subject: Re: FW: How reliable Linux 2.6 is on PowerPC platform at this
-	point ?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
-Cc: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <313680C9A886D511A06000204840E1CF08F42FE9@whq-msgusr-02.pit.comms.marconi.com>
-References: 
-	 <313680C9A886D511A06000204840E1CF08F42FE9@whq-msgusr-02.pit.comms.marconi.com>
-Content-Type: text/plain
-Message-Id: <1089385744.1876.0.camel@gaston>
-Mime-Version: 1.0
-Date: Fri, 09 Jul 2004 10:09:04 -0500
+Message-ID: <40EEF998.3090402@rossvideo.com>
+Date: Fri, 09 Jul 2004 16:01:28 -0400
+From: Ralph Siemsen <rsiemsen@rossvideo.com>
+MIME-Version: 1.0
+To: Matt Porter <mporter@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: ibm_ocp ethernet OPB clocks
+References: <40EDC59E.9020403@rossvideo.com> <20040708165933.A11407@home.com>
+In-Reply-To: <20040708165933.A11407@home.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 2004-07-09 at 04:30, Povolotsky, Alexander wrote:
-> Hi,
->
-> Any takers ?
+Matt Porter wrote:
 
-Should be as reliable as x86 by now ;)
+> I doublechecked that these didn't creep back in since I was sure I
+> fixed them.  In 2.6.7 there is no drivers/net/ibm_ocp/ibm_ocp_emac.h
+> That driver has never been in kernel.org 2.6.7.  I've just removed
+> it in linuxppc-2.5, since it's been deprecated by the new EMAC
+> driver.  The corrected values are in there.  Same goes for current
+> 2.4. Try a current kernel.
 
-Ben.
+Thanks for the feedback... You are right, I was looking at linuxppc-2.5
+and not the mainline.  The vanilla 2.6.7 tarball seems to have the right
+thing defined in drivers/net/ibm_emac, I presume this is the new
+driver... I'll give it a whirl, if I can get it to boot :)
 
-> TIA,
-> Best Regards,
-> Alex Povolotsky
->
-> -----Original Message-----
-> From: Andrew Morton [mailto:akpm@osdl.org]
-> Sent: Friday, July 09, 2004 5:27 AM
-> To: Povolotsky, Alexander
-> Subject: Re: How reliable Linux 2.6 is on PowerPC platform at this point?
->
-> "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com> wrote:
-> >
-> > Hi Andrew,
-> >
-> > How reliable Linux 2.6 is on PowerPC platform at this point ?
->
-> I suspect it's good if you pick the right release, but I am very much not
-> the right person to ask, sorry.
->
-> I suggest you ask the folks on linuxppc-dev@lists.linuxppc.org
->
---
-Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
+-R
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
