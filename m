@@ -1,42 +1,41 @@
-Message-Id: <4.2.0.37.19990521183415.04a02b30@mail.lauterbach.com>
-Date: Fri, 21 May 1999 18:36:16 +0200
-To: Jim Chapman <jim.chapman@iname.com>
-From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Subject: Re: Q: Register usage in mpc860 ports
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <37457D27.DA34E026@iname.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <3745949F.34E8B0F8@sei.co.kr>
+Date: Sat, 22 May 1999 02:15:12 +0900
+From: "KiPyo Ryu" <kpryu@sei.co.kr>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: About MBX (MPC860) boot
+Content-Type: text/plain; charset=EUC-KR
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 17:35 21.05.99 , Jim Chapman wrote:
+Hello all,
 
->I am porting LinuxPPC to a custom embedded mpc860 board. I am starting
->with the mbx port and using home-built egcs-1.1.2 tools on  a Linux
->host, using the instructions in
->http://members.home.com/mmporter/cross.html
->
->There seem to be register usage conflicts in the MMU TLB handlers. The
->code tries to use location 0 (according to the comment) to store a
->couple of register values, e.g. in arch/ppc/kernel/head.S
->
->InstructionTLBMiss:
->  mtspr M_TW, r20 /* Save a couple of working registers */
->  mfcr r20
->  stw r20, 0(r0)
->  stw r21, 4(r0)
->
->However, I am finding that r0 isn't zero when the MMU exceptions are
->taken. Instead, it points to somewhere in the text or data segment. I
->hacked the code to save r20 & r21 to a specific memory location and that
->fixed that particular problem.
+I got 'embedded-2.2p7.tar.gz' file from linuxppc/embedded directory.
+I compiled this file for MBX(MPC860) on PowerPC 603e machine.
+When I compiled, I linked 'mbx_defconfig' to 'defconfig'.
+then I did following:
 
-r0 represents 0 in a number of PPC instructions, lookup stw in your PPC 
-assembler book.
+make mrproper <enter>
+make config <enter>
+    -> All configuration set defaults.
+make dep <enter>
+make clean <enter>
+make zImage <enter>
 
-Franz.
+Netboot was successful from this created zImage file.
+Server is PowerPC 603e, client is MBX Board have 32MB RAM, 4GB HDD and
+floppy drive.
+
+Here, first, I'd like to boot from floppy of MBX. How do I do this?
+and then, I'd like to install the linux on MBX HDD. How do I do this?
+
+Any help appreciated...
+
+Thanks,
+
+Kipyo.
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
