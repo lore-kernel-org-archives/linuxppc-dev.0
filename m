@@ -1,12 +1,8 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <07b501c3e9ca$0f1c89e0$f62d7f3e@emil>
-Reply-To: "Tord Andersson" <tordson@algonet.se>
-From: "Tord Andersson" <tordson@algonet.se>
-To: "Wolfgang Denk" <wd@denx.de>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <20040127191442.3B541C108D@atlas.denx.de>
-Subject: MPC5200 LOWBOOT problem 
-Date: Mon, 2 Feb 2004 21:20:52 +0100
+Message-ID: <002101c3e9d3$39f05990$0301a8c0@chuck2>
+From: "Mark Chambers" <markc@mail.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Fw: 2.6.0 Kernel
+Date: Mon, 2 Feb 2004 16:26:28 -0500
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -14,20 +10,17 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang,
+I have been using the 2.4.xx kernels successfully.  I recently downloaded
+2.6.0 to begin playing with it.  All compiles happily until I get to UART.c.
+The compilation fails with many errors, for instance:
 
-I have seen a remark on problems with the MPC5200 LOWBOOT configuaration in the linuxppc-embedded list:
+uart.c:2920 request for member 'tx_bd_base' in something that is not a
+structure or union
 
->DDR: OK (use icecube_5200_DDR configuration in U-Boot); the LOWBOOT
->     option is not working yet (we are working on this)
+I suspect I'm missing something obvious that has changed in the include file
+structure, but I haven't done anything beyond 'make menuconfig'
 
-I have serached the PPC and U-Boot lists but have not been able to find more info.
-What effect does the LOWBOOT problem have? Page allocation error during kernel startup or something else?
-Any additional information would be very helpful.
-
-Kind regards,
-
-Tord Andersson
+Any ideas?
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
