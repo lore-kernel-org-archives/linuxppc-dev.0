@@ -1,34 +1,26 @@
-From: "Petersen, David (MED, GEMS-IT)" <David.Petersen@med.ge.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <B1243F436404D511A5CF009027E705DA148191C2@uswaumsx09medge.med.ge.com>
-Subject: m8260_cpm_hostalloc() data reads incorrect data
-Date: Thu, 6 Nov 2003 08:52:55 -0600 
+Message-ID: <3FAA6106.7020204@embeddededge.com>
+Date: Thu, 06 Nov 2003 09:56:06 -0500
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: =?ISO-8859-1?Q?M=E9sz=E1ros_Lajos?= <ludwigm@siemens.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: SCC as serial console on 8260
+References: <37D0F88E70D96C428C19EEB865701A3801DC62E6@buda902a.siemens.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-	I am working on a platform with an mpc8270 processor running a
-kernel from the latest 2.4 development tree.  I have created a driver based
-on uart.c for one of the SCCs.
-The receive buffers are allocated using the m8260_cpm_hostalloc(). I am
-getting receive interrupts and verfied that the data is written by the cpm
-to the correct physical memory location using a logic analyzer. However the
-data that is read from the buffer is incorrect.  As a sanity check, I
-allocated my buffers using m8260_cpm_dpalloc() and I then read the correct
-data.
+Mészáros Lajos wrote:
 
-	I've looked through the hostalloc function as well as the
-__alloc_bootmem() function that initially allocates two pages of data for
-the CPM in mpc8260_cpm_reset(). It is unclear to me how this memory can be
-in a PAGE_NO_CACHE region as it needs to be for the CPM. I'm not sure if it
-is something in my system initialization that would put the memory that
-alloc_bootmem() uses in a noncacheable area or if the memory initially
-allocated for the CPM in mpc8260_cpm_reset() needs to be done differently.
+> Can we use the SCCs as console on 8260
+> based boards? (2.4.18 and 2.4.22)
 
+Yes, but the driver is in the linuxppc_2_4_devel kernel
+from bitkeeper.  I'm working on moving this and many
+other things from this kernel into the standard baseline.
 
-Tom
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
