@@ -1,60 +1,52 @@
-Message-ID: <20011113071701.21257.qmail@dag.newtech.fi>
-To: James F Dougherty <jfd@krakatoa.gigabitnetworks.com>
-Cc: dan@embeddededge.com, dag@newtech.fi, sparc64@rediffmail.com,
-	ashisha@india.infogain.com, linuxppc-embedded@lists.linuxppc.org,
-	dag@newtech.fi
-Subject: Re: "OpenPIC versus EPIC" in MPC8240 ! 
-In-Reply-To: Message from James F Dougherty <jfd@krakatoa.gigabitnetworks.com>
-   of "Mon, 12 Nov 2001 22:42:04 PST." <200111130642.fAD6g4Zp019615@krakatoa.gigabitnetworks.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Tue, 13 Nov 2001 09:17:01 +0200
-From: Dag Nygren <dag@newtech.fi>
+Date: 13 Nov 2001 08:17:39 -0000
+Message-ID: <20011113081739.29856.qmail@mailweb25.rediffmail.com>
+MIME-Version: 1.0
+From: "Sarnath  Kannan" <sparc64@rediffmail.com>
+Reply-To: "Sarnath  Kannan" <sparc64@rediffmail.com>
+To: "Dan Malek" <dan@embeddededge.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Re: IDE in Mode 1 (Sandpoint) how ?
+Content-type: text/plain;
+	charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+hi Dan,
+
+> Nope.  All of the kernel print out is polled I/O.
 >
-> I've been watching this thread for quite some
-> time now. I spoke with Dan about adding some
-> changes to this code last summer. I ran into
-> some issues with OpenPIC as well on our MPC8240
-> platform.
+  yeah ! Thats right.
+
+>me: .....  But thats
+>me: not the case. Why should it be slow after INIT
+>me:starts
+>me: up ?
 >
+> Because it uses interrupt driven serial I/O.
+
+  I'am currently investigating that code path, Dan.
+  We have also come to the same conclusion as u.
+  But believe me, I had tried with all possible
+  Switch settings, S3,S4,S5,S6. :-( Its tantalising !
+  This means that all ISA interrupts are not
+  being routed properly. One more, I haven't
+  initialized the WinBond, coz reset values seem
+  meaninful. Could that be the reason for
+  this ?
 >
-> If you guys would like to forward me your changes,
-> I can merge your changes into mine (or see if they
-> are relevant) and give you an interim release.
->
-> Might I ask, could you describe the architecture
-> of your MPC8240 IRQ mapping and IO devices?
+> Believe me, all of us using Sandpoints have seen this
+> before.
+> Your interrupt/arbitration routing switches on the
+> board are wrong.
 
-My changes doesn't specifically touch the MPC8240 code
-but are included in my port for ths VG4-board.
-This board uses a MPC107, which also is an EPIC.
-The stuff was posted in this NG (and also linux-developers)
-and I think you can find it there. If not give me another
-mail , and I will send it to you.
+  Any suggestion from experienced people is welcome.
 
-What it does is really only changing the interface to
-openpic_init() to something more versatile/generic/useful(?).
 
-The interface structure could/should probably be further
-abstracted to multilevel cascades (any of those out there ?)
-as Dan sort of pointed out, but this is a start anyway.
+Is there any other switch, other than the S3,S4,S5,S6
+I need to worry about.
 
-The appropriate files for you from the port should be
-the following:
-openpic2.c and openpic2.h.
-
-You could check the vg4_setup.c for an example of
-how to use the interface.
-
-Your mileage may vary, but it works perfectly on my board.
-
-BRGDS
-
-Dag
+sarnath
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
