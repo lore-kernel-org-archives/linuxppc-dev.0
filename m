@@ -1,33 +1,48 @@
-Date: Wed, 12 Jan 2000 18:29:55 +0200 (EET)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: Jeff Garzik <jgarzik@mandrakesoft.com>
-cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Voodoo3 support?
-In-Reply-To: <387BC7FB.47922E7D@mandrakesoft.com>
-Message-ID: <Pine.LNX.4.21.0001121805440.875-100000@idd-01.imbc.gr>
+Date: Wed, 12 Jan 2000 11:37:17 -0800 (PST)
+From: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
+To: iweiny@pacbell.net
+cc: linuxdev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: User level Macros for Endianess
+In-Reply-To: <200001120832.AAA10014@batcave2.localdomain>
+Message-ID: <Pine.LNX.3.96.1000112112213.10716F-100000@deepspace.mklinux.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 11 Jan 2000, Jeff Garzik wrote:
+On Wed, 12 Jan 2000 iweiny@pacbell.net wrote:
 
-> 
-> Kostas Gewrgiou wrote:
-> > 
-> >   I am working on voodoo support, you can get a kernel/X in
-> > ftp://idd-01.imbc.gr/pub/voodoo3/ its not perfect yet but its getting
-> > closer :)
-> 
-> Does this package use tdfxfb, the fbdev driver for Voodoo cards?
-> 
+> Unfortunately I don't have an x86 Linux machine and he has been reluctant to
+> change his code because he feels this is not the "proper" way to detect
+> endianess across Linux's, Solaris, and possibly other UNIX's.
 
-  Yes, its the xfree tdfx driver with support for tdfxfb, unfortunately
-with the tdfx driver being a moving target (because of dri) i haven't
-managed to merge my changes into the xfree tree yet. 
+Well, if you really want it to be completely cross-platform, you could do
+something like:
 
-  Kostas Gewrgiou
+
+int a = 0x33323130;
+char *b, d[5];
+int c;
+
+for (b=(char *)&a, c=0; c<4; c++,b++)
+    {
+	d[c]=*b;
+    }
+d[5]=0;
+
+
+
+I believe that the Linux macros do this same basic thing, if memory
+serves....  BTW, if you printf("%s", d) you'll get 3210 on big endian,
+0123 on little.  You could also do it as short integers instead of
+characters by subtracting 48 in the d[c]=*b line.
+
+Just a sick thought.  :-)
+
+
+Later,
+David
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
