@@ -1,35 +1,50 @@
-Date: Sun, 13 May 2001 13:48:00 -0400
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Kernel bug
-Message-ID: <20010513134800.A7905@kybl>
-References: <20010513124601.A24522@kybl> <20010513191235.B12797@suse.de>
-Mime-Version: 1.0
+Message-ID: <3AFED89B.63B3599E@acm.org>
+Date: Sun, 13 May 2001 11:55:23 -0700
+From: Ira Weiny <iweiny@acm.org>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: pismo sleep behaviour w/ 2.4.4-benh
+References: <3AFE85F7.1F69E056@folkwang-hochschule.de> <20010513131352.30216@smtp.wanadoo.fr>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010513191235.B12797@suse.de>; from olh@suse.de on Sun, May 13, 2001 at 07:12:35PM +0200
-From: Tomas Jura <tjura@binghamton.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, May 13, 2001 at 07:12:35PM +0200, Olaf Hering wrote:
+Benjamin Herrenschmidt wrote:
 >
-> On Sun, May 13, Tomas Jura wrote:
 >
-> > HW: PPC G3 beige, 160 MB of memory, (CONFIG_HIGHMEM off)
-> > SW: Debian 2.2 unstable, kernel 2.2.5-pre1 (gcc 2.95.4)
+> Not exactly. I use pmud 0.7-2 on a Pismo PowerBook (which is approx
+> the same motherboard as the TiBook).
 >
-> > Any ideas where is a mistake or how to solve it?
+> >i will use snooze -f for a while to check if that cures it, and
+> >start nagging stephan if it does :)
 >
-> Get the linux-2.2.19.tar.bz2 from your local kernel.org mirror.
-> 2.2.5 is pretty old or the second two is a typo ;)
->
-I'm sorry typo... correction: 2.4.5-pre1 and 2.4.4-x
 
-One other thing which possibly can be a villain:
-With RAM I added extra video memory so total size is now 6MB. But
-dmesg shows:
-atyfb: 3D RAGE PRO (PQFP, PCI) [0x4750 rev 0x7c] 4M SGRAM,
-                                                 ^^^^^^^^
-Tomas
+Version on my TiBook:
+pmud-0.7-2
+
+I also get this line when starting up:
+pwrctl: no function for PMU 12
+
+Are there specifics for the TiBook or should I alter the script for
+pwrctl_G3?
+
+More information:
+
+I just did a series of sleep/wakeups.  No problem...  pmud is reporting
+the AC connection/disconnection properly as well.  I have noticed that
+snooze in console does not work, even with a USB mouse attached.  I
+don't know if that helps at all.  Oh and the sleep/wakeups where with
+the USB mouse both _detached_ and _atached_ all seems fine.  But, the
+trackpad will not wake the machine only a keypress on the keyboard.
+
+I suppose this does not help much though.  Is there any specific
+information which I could give you to help you out Ben?  The messages
+file seems to be standard stuff.
+
+Sorry,
+Ira
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
