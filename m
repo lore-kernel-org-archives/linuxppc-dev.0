@@ -1,55 +1,69 @@
-Date: Mon, 18 Nov 2002 10:13:58 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Magnus Damm <damm@opensource.se>
-Cc: Cort Dougan <cort@fsmlabs.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: bi_record and initrd
-Message-ID: <20021118171358.GA17957@opus.bloom.county>
-References: <3DD3C747.8B7EE5CD@opensource.se> <20021114174807.GC605@opus.bloom.county> <3DD4E271.16FA374A@opensource.se> <20021115100857.H9673@duath.fsmlabs.com> <3DD8A28C.E8EABFF@opensource.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3DD8A28C.E8EABFF@opensource.se>
+Message-ID: <3DD939B5.3D1F2B6E@paradyne.com>
+Date: Mon, 18 Nov 2002 14:04:21 -0500
+From: "Mark D. Studebaker" <mds@paradyne.com>
+MIME-Version: 1.0
+To: Joakim Tjernlund <Joakim.Tjernlund@lumentis.se>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	linuxppc-embedded@lists.linuxppc.org, sensors@stimpy.netroedge.com
+Subject: Re: 8xx i2c refers to unspecified chip errata
+References: <IGEFJKJNHJDCBKALBJLLMEFNFHAA.joakim.tjernlund@lumentis.se> <3DD8014B.D88A6C34@paradyne.com> <001101c28e82$88d2bc40$0200a8c0@telia.com> <20021118141042.GA15279@opus.bloom.county>
+Content-Type: multipart/mixed;
+ boundary="------------57CCE21CC6A2BFB280B33AF2"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Nov 18, 2002 at 09:19:24AM +0100, Magnus Damm wrote:
-> > This would be a good opportunity to switch-over to allowing the bootloader
-> > stick the initrd where it wants and just pass the physical pointer in via
-> > bi_record in all cases.  It would certainly simplify these cases.
+This is a multi-part message in MIME format.
+--------------57CCE21CC6A2BFB280B33AF2
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+whatever your patch was against didn't match our tree very well. would
+you please
+resolve the differences and generate a new patch against our tree?
+thanks
+mds
+
+Tom Rini wrote:
 >
-> So, the following registers passed to the kernel could change from
+> On Sun, Nov 17, 2002 at 10:44:40PM +0100, Joakim Tjernlund wrote:
 >
->  *   r3: ptr to board info data
->  *   r4: initrd_start or if no initrd then 0
->  *   r5: initrd_end - unused if r4 is 0
->  *   r6: Start of command line string
->  *   r7: End of command line string
-
-In arch/ppc/boot, only r3 is used now, FWIW.
-
-> to
+> > > Tom + Joakim,
+> > > we're doing a release soon over here at sensors/i2c,
+> > > do you want this checked in as-is, with mods, or not at all?
+> >
+> > As-is for me. No problems reported to me.
 >
->  *   r3: ptr to bi_record
+> Works for me then.
+>
+> --
+> Tom Rini (TR1265)
+> http://gate.crashing.org/~trini/
+--------------57CCE21CC6A2BFB280B33AF2
+Content-Type: text/plain; charset=us-ascii;
+ name="fail"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="fail"
 
-Or so, yes.  Look at the archives for discussions / flamewars about
-bi_records.
+patching file i2c-algo-8xx.c
+Hunk #1 FAILED at 7.
+Hunk #2 FAILED at 27.
+Hunk #3 succeeded at 74 with fuzz 2 (offset 14 lines).
+Hunk #5 succeeded at 157 (offset 18 lines).
+Hunk #6 FAILED at 177.
+Hunk #8 succeeded at 220 (offset 18 lines).
+Hunk #9 FAILED at 237.
+Hunk #10 succeeded at 333 (offset 2 lines).
+Hunk #11 FAILED at 343.
+Hunk #12 FAILED at 359.
+Hunk #13 succeeded at 439 (offset 18 lines).
+Hunk #14 FAILED at 464.
+Hunk #15 succeeded at 514 (offset 2 lines).
+7 out of 15 hunks FAILED -- saving rejects to file i2c-algo-8xx.c.rej
 
-> If the initrd is going to be passed with the bi_record, and the command line
-> already is there, then it's just the board info left. (for the 8xx anyhow)
 
-The initrd already is, right now.  And yes, the bd_t would be passed, or
-phased out, see the above mentioned discussions / flamewars.
+--------------57CCE21CC6A2BFB280B33AF2--
 
-> Or maybe there are zillions of applications booting the kernel directly
-> without the bootloader..
-
-Something _always_ loads the kernel someplace.  Call it what you will,
-but the thing moving the kernel to 0 and pressing go is the bootloader.
-Oh, and see the above mentioned discissions / flamewars :)
-
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
