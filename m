@@ -1,65 +1,95 @@
-To: "Muaddi, Cecilia" <cecilia.muaddi@alloptic.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: access memory mapped registers 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 09 Jan 2003 16:46:45 PST."
-             <885489B3B89FB6449F93E525DF78777F064542@srvnt506.ALLOPTIC.COM>
-Date: Fri, 10 Jan 2003 02:20:23 +0100
-Message-Id: <20030110012028.3831EC608E@atlas.denx.de>
+Message-ID: <DB0585C9F6F9D411BE8F00D0B7896A4CC0601D@SNCMAIL>
+From: James Don <JDon@spacebridge.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: SELF: compile of util-linux
+Date: Thu, 9 Jan 2003 20:35:49 -0500 
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <885489B3B89FB6449F93E525DF78777F064542@srvnt506.ALLOPTIC.COM> you wrote:
->
-> I can see if I mmap the internal 860 CPU registers, and screw up that, I
-> will
-> definitely screw up the system, and require it to be reboot.  BUt if the
-> hardware we are mapping is outside the CPU internal memory and outside the
-> RAM,
-> shouldn't the failure be limited to the user application only then?
+Hi,
 
-No. For example, assume there is a port pin  which  is  meant  as  an
-input,  and  the  signal  is  driven from external hardware. Now your
-application program by mistake re-programs this pin  as  output.  You
-may smoke your board this way.
+I am just browsing through the SELF code ... and trying for kicks to make
+"my own version" as an exercise to learn more about packages required for a
+running embedded Linux system ...
 
-> only the memory regions that is mapped to the ethernet switching chip,
-> even if I screw up on the hardware setup, shouldn't my kernel still be
-> protected?  At most, the application faults and I should be able to restart
-> the application without rebooting the system?
+So far I have ...
 
-There is a simple rule: if you open backdoors in a secure system  the
-result  is  an insecure system. Write clean code.
+1.) Built uclibc
+2.) Built busybox with uclibc gcc wrappers
+3.) Built insmod with uclibc gcc wrappers
 
+I am reading the compile of util-linux (see below item 1) ... I am
+relatively new to linux so I have some questions (most of which are probably
+stupid seeing as just started looking at this)...
 
-There is many things you have to keep in mind:
+1.) The "patch" part of the compile ... is it to add kernel support for what
+I am compiling? If I managed to get a pre-built image to run on an unpatched
+kernel what am I missing?
 
-* Functionality: you cannot process interrupts in user space
+2.) When you run the "sed -e 's/XXX-powerpc-linux-/$(CROSS_PREFIX)/" I
+assume this should go into the make sysyem and put the cross compiler in the
+build ? ... sorry never used "sed" just skimmed the man page
 
-* Performance: how do you synchronize your accesses to the  hardware?
+3.) For kicks I have taken the tar ball I downloaded of util-linux (version
+2.11y) and tried to compile it with the uclibc gcc wrappers (see item 2
+below) ... now this does when I get to the "make part" ... it seems to die
+because "configure" was not called ... but its not called from SELF's make
+file either ??? If I call make from the util-linux directory it calls
+configure ... but then uses my local 'cc' ...
 
-* Communication: How do you know when data has been processed, or has
-  become available, or stable, or ...?
+Any tips would be great ;-) In the mean time I will keep digging and
+hopefully see what's wrong with my script ;-)
 
-* Tricky things: What will the caches in  your  system  do  when  the
-  application  accesses  the  hardware?  How will you address memory?
-  Remember that there are systems where  a  32  bit  address  is  not
-  sufficient any more...
-
-etc. etc.
-
-Write clean code.
+Best regards,
+Jim
 
 
 
-Wolfgang Denk
+item 1
+============
+$(LOGIN)/login-utils/login: $(LOGIN)/.patch
+	$(MAKE) -C $(LOGIN)/lib
+	$(MAKE) -C $(LOGIN)/login-utils login
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Life is a game. Money is how we keep score.              - Ted Turner
+$(LOGIN)/.patch: $(CONFIGURATION) \
+		$(TARBALLS)/util-linux-$(LOGIN_VERSION).tar.gz \
+		$(PATCHES)/util-linux-$(LOGIN_VERSION)-cross.$(P_SUFF) \
+
+$(PATCHES)/util-linux-$(LOGIN_VERSION)-nosetproctitle.$(P_SUFF) \
+		$(CONFIG)/config.mk
+	rm -fr $(LOGIN)
+	cd $(BUILD) && \
+	gzip -cd $(TARBALLS)/util-linux-$(LOGIN_VERSION).tar.gz | tar xf -
+	cd $(LOGIN) && \
+	sed -e 's/XXX-powerpc-linux-/$(CROSS_PREFIX)/' \
+
+$(PATCHES)/util-linux-$(LOGIN_VERSION)-cross.$(P_SUFF) | \
+		patch -p1 -b -z.cross && \
+	patch -p1 -b -z.no_sp
+<$(PATCHES)/util-linux-$(LOGIN_VERSION)-nosetproctitle.$(P_SUFF) && \
+	touch .patch
+
+item 2
+==============
+#!/usr/bin/bash
+
+LOGIN_UTIL_VERSION=2.11y
+LOGIN_BUILD_DIR=$HOME/ppcLoginUtil/
+
+CROSS=powerper-uclibc-
+
+echo LOGIN_BUILD_DIR=$LOGIN_BUILD_DIR
+
+rm -fr $LOGIN_BUILD_DIR/util-linux-$LOGIN_UTIL_VERSION
+tar xvfz $LOGIN_BUILD_DIR/util-linux-$LOGIN_UTIL_VERSION.tar.gz
+cd $LOGIN_BUILD_DIR/util-linux-$LOGIN_UTIL_VERSION
+
+sed -e 's/XXX-powerpc-linux-/$CROSS/' *
+
+make -C $LOGIN_BUILD_DIR/util-linux-$LOGIN_UTIL_VERSION/lib
+make -C $LOGIN_BUILD_DIR/util-linux-$LOGIN_UTIL_VERSION/login-utils login
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
