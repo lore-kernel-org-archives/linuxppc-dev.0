@@ -1,30 +1,26 @@
-Date: Thu, 18 Nov 1999 21:19:46 -0800
-From: "David N. Welton" <davidw@linuxcare.com>
-To: Ani Joshi <ajoshi@shell.unixbox.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.3.28 patch...
-Message-ID: <19991118211946.B7562@bassano.linuxcare.com>
-References: <Pine.LNX.4.10.9911182047130.21734-100000@shell.unixbox.com>
-Mime-Version: 1.0
+Message-ID: <38351400.3032B6FB@arcormail.de>
+Date: Fri, 19 Nov 1999 10:10:29 +0100
+From: Michael Fenske <michael.fenske@arcormail.de>
+Reply-To: michael.fenske@arcormail.de
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <bh40@calva.net>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Kernel debugging??
+References: <19991118193016.014231@mailhost.mipsys.com>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.10.9911182047130.21734-100000@shell.unixbox.com>; from Ani Joshi on Thu, Nov 18, 1999 at 08:50:54PM -0800
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Nov 18, 1999 at 08:50:54PM -0800, Ani Joshi wrote:
+Benjamin Herrenschmidt wrote:
 
-> this patch is basically a sync up from Paul's tree for those trying to get
-> 2.3.28 from linus booting.
+> I had the same problem today. Just remove the "z" option, it will eat
+> more bandidth but it works. I beleive it's time to update my rsync or zlib...
 
-My rs6k still doesn't like it.  Hangs somewhere after prom_print, like
-it always does:-/
+Thanks, rsync works without the "z" option. And FYI, I updated rsync to
+version 2.3.2 (from linuxcare.com.au) after the first time the problem
+occurs, but that doesn't help. Maybe an update of zlib could help ?!
 
-Thanks anyway,
--- 
-David N. Welton, Developer, Linuxcare, Inc.
-415.354.4878 x241 tel, 415.701.7457 fax
-davidw@linuxcare.com, http://www.linuxcare.com/
-Linuxcare. At the center of Linux.
+Michael
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
