@@ -1,48 +1,67 @@
-Date: Fri, 22 Oct 1999 18:04:19 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
-cc: luther@dpt-info.u-strasbg.fr, linuxppc-dev@lists.linuxppc.org
-Subject: Re: SuSE Rage 128 Xserver Source and XFree 3.3.6
-In-Reply-To: <199910211134.GAA16627@lists.linuxppc.org>
-Message-ID: <Pine.LNX.4.05.9910221802400.388-100000@callisto.of.borg>
+From: phandel@cise.ufl.edu
+Date: Fri, 22 Oct 1999 12:34:02 -0400 (EDT)
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Questions about rsync "linux-devel" -
+Message-ID: <Pine.LNX.4.10.9910221220520.18946-100000@PetesBox.localdomain>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 21 Oct 1999, Kevin_Hendricks wrote:
-> >So is the Rqge 128 driver stuff already in 3.9.16 ?
-> 
-> According to the list of Xservers given on the XFree86 org page, it is NOT 
-> included.  They have completely restructured Xservers for that release.  Now 
-> they all start with the base Xserver while calls up various shared-libraries to 
-> handle driver specifics / acceleration, etc.
-> 
-> Given XFree86 policy of not releasing source, (according to their website they 
-> specifically request that people *not* join just to get access to pre-release 
-> source).  I hope SuSE simply just posts the source.  
+I'm interested in spending some time with the linux kernel, and I've got
+some questions about samba.anu.edu.au::linux-pmac-devel - 
 
-In this case people don't join `just to get access to pre-release source', but
-`to port it to PPC'. That's real development, so I see no problems with joining
-XFree86.
+1) Is there a web page that indicates changes? (when made, what they were,
+etc.?)
+2) Is there a standard .config that the maintainer (Paul?) uses?  I
+haven't gotten it to compile lately, even using the .config rsync fetches.
+3) What is the best way to contribute to this project?  I often make small
+patches to get it to compile further, but I'd like to help out rather
+than make these one-off changes.
 
-> This whole process simply makes no sense.  Why give development source only to a 
-> body that can not release it for others?  Not exactly using the strength of the 
-> free software movement?
+Here are some issues with the latest version I fetched late last night:
 
-Those can make time-limited beta binaries.
+in /usr/src/linux-2.3.devel/include/asm-ppc/keyboard.h, around line 35:
 
-I don't like it that much neither, and many agree with the not-liking. That's
-why there exist 3.9.x snapshots...
+	if ( ppc_md.kbd_setkeycode )
+		return ppc_md.kbd_setkeycode(scancode, keycode);
+	else
+		retureycode )
+		return ppc_md.kbd_setkeycode(scancode, keycode);
+	else
+		return 0;
+}
 
-Greetings,
---
-Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
+Looks like everything between "retureycode )" and the second "else" should
+be removed?
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+...and further down, line #69 looks mangled:  "ppc_md.kbd_ledt_hw )" so I
+removed it and it compiled fine.
+
+Finally, after everything compiles, the linker chokes on these functions:
+
+[snip]
+        -o vmlinux
+arch/ppc/kernel/kernel.o: In function `nvram_read_byte':
+arch/ppc/kernel/kernel.o(.text+0xa3a0): undefined reference to
+`pmu_request'
+arch/ppc/kernel/kernel.o(.text+0xa3b0): undefined reference to `pmu_poll'
+arch/ppc/kernel/kernel.o: In function `nvram_write_byte':
+arch/ppc/kernel/kernel.o(.text+0xa47c): undefined reference to
+`pmu_request'
+arch/ppc/kernel/kernel.o(.text+0xa494): undefined reference to `pmu_poll'
+make: *** [vmlinux] Error 1
+
+
+Thanks for your time,
+Pete
+
+-- 
+Peter F. Handel          "[The anti-Christ] also forced everyone, small and
+phandel@cise.ufl.edu      great ... to receive a mark [smart card?] on his
+www.cise.ufl.edu/~phandel right hand or on his forehead, so that no one could
+FAX: (561) 619-8051       buy or sell unless he had the mark"-Revelation13:16
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
