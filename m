@@ -1,52 +1,36 @@
-Date: Thu, 13 Dec 2001 09:06:58 -0700
+Date: Thu, 13 Dec 2001 09:13:14 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Nils Krueger <nilz@hoschi.de>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: PowerStack interrupt?problem
-Message-ID: <20011213160658.GE28967@cpe-24-221-152-185.az.sprintbbd.net>
-References: <Pine.GSO.4.21.0110011006580.706-100000@mullein.sonytel.be> <000601c14a6d$d9b4a5b0$020aa8c0@dimbar>
+To: Jeff Rugen <jprugen@earthlink.net>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: RTC and SCSI for PowerStack/2.4.6 Kernel
+Message-ID: <20011213161314.GF28967@cpe-24-221-152-185.az.sprintbbd.net>
+References: <000701c10782$96a31e60$0401a8c0@trex>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <000601c14a6d$d9b4a5b0$020aa8c0@dimbar>
+In-Reply-To: <000701c10782$96a31e60$0401a8c0@trex>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Oct 01, 2001 at 01:40:19PM +0200, Nils Krueger wrote:
-> > > Goody, which? :)  I've got a 604/100 right here.
-> >
-> > The one that looks like a HiFi, with 133 MHz 604.
+On Sun, Jul 08, 2001 at 12:49:58AM -0700, Jeff Rugen wrote:
+
+> Second, I am getting SCSI timeouts when running 2.4.6.  I don't know enough
+> about SCSI, but the log to the console is the following:
 >
-> It's called PowerStack Series E.
 
-Same thing I've got.
+Boy, I hope you're still around to play with things :)
+Can you try the sym-2 driver in recent (2.4.16+ kernels?).  I've been
+doing some quick testing of my machine, and things seem OK so far.
 
-> > > Hmm.  I sort-of wonder if the PS/2 changes a while back goofed something
-> up.
-> > > My kbd is fine too, and I'll try and throw a mouse on later this week.
-> > > Can you grab the bk version and go back to 2.4.8, .7, et al and see if
-> > > it works?  I think some PS/2 stuff was done in maybe .5 or .6..
->
-> I had the same problem with 2.4.5, .7-pre3 and .8-pre3. I haven't watched
-> the interrupts then, but it showed the same symptoms. (keyboard, mouse,
-> network, scsi are stalled but graphic card is still working)
+> Which leads me to believe that I at least have the correct SCSI driver build
+> (NCR53C8XX, as the revision of 0x2 is less than the 16 that Configure.help
+> seems to indicate).  Should I instead be using the 53c7,8xx driver?  Or the
+> sym53c8xx?
 
-Okay, I just tried 2.4.17-pre8 (from _devel) on my PowerStack Series E,
-and the ps2 mouse seems to be working with gpm (gpm -m /dev/psaux -t
-ps2).
-
-Although it is worth noting that if i did:
-while `true`;do cat /proc/interrupts ; sleep 2;done
-Interrupts seemed to stop eventually.  It also takes ~100 interrupts for
-a tiny mouse movement, which I'm not sure if is right or wrong..
-
-> One keypress or release of a mouse button causes about 20 interrupts and
-> sometimes one or two BAD interrupts. (BTW, it's the same on my so far most
-> stable 2.2.17) Should be normally 4 interrupts (and of course no BAD one)?
-
-Odd.  It seems to take 3 interrupts/keypress here (6 for up-arrow,
-enter).
+BTW, the sym53c8xx driver won't do the 810 or 825 chipsets, iirc.  The
+53c7,8xx driver needs a bit of work (it's still got an hold hack for PPC
+that I _think_ can just go, but I'm not sure...).  The sym-2 driver does
+all 8xx chipsets and some of the newer 10xx chipsets.
 
 --
 Tom Rini (TR1265)
