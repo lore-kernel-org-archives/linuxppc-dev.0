@@ -1,55 +1,42 @@
-Message-Id: <v04003a00b332e0c87b47@[38.27.133.161]>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Thu, 8 Apr 1999 18:56:07 -0400
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+Message-Id: <v04204d03b333436e691f@[206.163.71.146]>
+In-Reply-To: <v04204d00b32c2391b876@[206.163.71.146]>
+References: <Pine.HPP.3.96.990330131656.1043J-100000@gra-ux1.iram.es>
+ <19990401012034H.roikawa@rr.iij4u.or.jp>
+ <v04204d00b32c2391b876@[206.163.71.146]>
+Date: Thu, 8 Apr 1999 22:58:36 -0700
 To: linuxppc-dev@lists.linuxppc.org
-From: Ben Martz <benmartz@earthlink.net>
-Subject: RE: Resurrecting mkLinux
+From: Joel Klecker <jk@espy.org>
+Subject: Re: Blue G3 and machine check
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->On 06-Apr-99 Roy Wood wrote:
->>
->> I've got a little time and an old 6100, so I'm giving some thought to
->> raiding the mkLinux sources and getting a monolithic version of the
->> kernel going (i.e. getting rid of the whole Mach layer).
->>
-...
->>
->> Anyway, I was hoping some of you people here might be able to offer
->> advice or have some useful comments about what I'm considering doing.
->>
->> Anybody?  Anyone?
->>
+At 17:17 -0800 1999-04-03, Joel Klecker wrote:
+>At 01:20 +0900 1999-04-01, Ryuichi Oikawa wrote:
+>[snip]
+>>I put precompiled kernel(2.2.1) on
+>> 
+>>ftp://ppc.linux.or.jp/pub/users/oikawa/linux-pmac/bluemacg3/vmlinux-2. 
+>>2.1-challenger2.gz
+>>I was given many useful advice on this by Benjamin Herrenschmidt.
 >
->Your biggest problems will be:
->  * Booting - perhaps BootX can be made to help here
->  * Lack of Open Firmware - used to "size up" the hardware
->  * 601 support - biggest worries are actually the in the hardest
->    to debug - boot time and machine initialization.
->
->Other than that, it should work.  Of course, I'm not saying it is
->easy or else I would have done it myself long ago...
+>Any chance you could put up a proper diff for the sources used to build that
+>kernel? I'd really appreciate it. Thanks.
 
-Roy,
-
-I have some very old booting code from the defunct PowerOS project that
-works just fine on x100 machines. (It was the second public use of the Gary
-mode hack that I am aware of, after MkLinux) I also have some more recent
-work based on BootX that you may find useful.
-
-http://home.earthlink.net/~benmartz/poweros/
-
-Oh, in case anyone is wondering, you won't find any of the kernel code up
-there because I am still working on it =) It's just a little project that I
-am doing for my own enjoyment to stretch my mind a little.
-
-
-----
-Ben Martz - benmartz@earthlink.net
-
-
+Since I received absolutely no response to this, let me elaborate. I 
+have had success in booting and running a system with this kernel, 
+but its config does not suit my needs, therefore I really would like 
+to have the source. The pseudo-diffs in the message I originally 
+replied to do not seem to be enough to produce a working kernel, are 
+they really all of the changes? If they are, then I would like a copy 
+of the .config so I can see what the differences in configuration 
+are. Thanks again.
+-- 
+Joel Klecker (aka Espy)                    Debian GNU/Linux Developer
+<URL:mailto:jk@espy.org>                 <URL:mailto:espy@debian.org>
+<URL:http://web.espy.org/>               <URL:http://www.debian.org/>
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
