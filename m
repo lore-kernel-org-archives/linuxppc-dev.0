@@ -1,58 +1,27 @@
-Message-ID: <39069D63.D3D5E404@rd.francetelecom.fr>
-Date: Wed, 26 Apr 2000 09:40:19 +0200
-From: FASSINO Jean-Philippe <jeanphilippe.fassino@rd.francetelecom.fr>
-MIME-Version: 1.0
-To: Tim Wojtulewicz <Tim.Wojtulewicz@NAU.EDU>
-CC: LinuxPPC <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Dual head on a Powerbook
-References: <3906199F.1D7F995@dana.ucc.nau.edu>
-	 <390690B1.1194EC88@rd.francetelecom.fr> <39069B12.52B2B005@dana.ucc.nau.edu>
+Date: Wed, 26 Apr 2000 13:23:18 +0200
+From: "David N. Welton" <davidw@linuxcare.com>
+To: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Netbooting cross-compiled imac kernel
+Message-ID: <20000426132318.E8268@linuxcare.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tim Wojtulewicz wrote:
+So, I had a spare moment, and managed to get a kernel cross-compiled
+for an imac I have around here.  I netboot it with yaboot 0.6, which
+seems to work ok, but then it dies very early on, after "calling
+RTAS".
 
-> FASSINO Jean-Philippe wrote:
->
-> > Tim Wojtulewicz wrote:
-> >
-> > > I'm trying to connect a projector to the monitor port on the back of my
-> > > powerbook, so I can do a presentation with it.  Anyone have any
-> > > information on dual headed support on powerbooks?  Pismo, LinuxPPC2000,
-> > > 2.2.15pre19
-> >
-> > I'm doing this using Xpmac and booting with BootX.
-> > First configure external display to be primary in MacOS (be
-> > careful with depth color !).
-> > Next, start Linux which display on external monitor.
-> > This method work only with Xpmac and not with FBDev (3.3.x).
->
-> I tried this just now and it didn't work.  In MacOS, I have the monitor set
-> to 1024x768 at thousands of colors.  Both monitors display the same image.
-> When I boot back to Linux, something flashes on the external monitor.  It
-> says something about OF, but it disappears to fast for me to read it fully.
-> Then the image disappears, and nothing else appears on the external monitor.
-> I am using the latest (rev 9) Xpmac.
+I am using the standard pmac_config, gcc and binutils checked out of
+CVS, and cross compiling from i386.
 
-Do not use same display on external and internal monitor. And set external to
-primary.
-Start Xpmac with option "-depth 32" or "-depth 16".
-I think you need Xpmac rev10 at :
-
-http://khendricks.ivey.uwo.ca/Xpmac/
-
-And it must work !
-
-JP
-
+Ideas?
 --
---------------------------------------------------------------------------
- Jean-Philippe FASSINO              France Telecom R&D : DTL/ASR
- Tel : 04 76 76 45 52
- mailto:jeanphilippe.fassino@francetelecom.fr
---------------------------------------------------------------------------
-
+David N. Welton, Responsabile Progetti Open Source, Linuxcare Italia spa
+tel +39.049.8043411 fax +39.049.8043412 cel +39.348.2879508
+davidw@linuxcare.com, http://www.linuxcare.com/
+Linuxcare. Support for the revolution.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
