@@ -1,94 +1,47 @@
-Date: Fri, 11 Oct 2002 11:59:04 -0400
+Date: Fri, 11 Oct 2002 12:08:05 -0400
 From: Patrick Mahoney <pmahoney@8d.com>
-To: Conn Clark <clark@esteem.com>
+To: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: mpc8xx - power save modes - PIT
-Message-ID: <20021011155904.GA9579@segfault.usine.8d.com>
-References: <20021010183502.GA843@segfault.usine.8d.com> <3DA5F5EC.2844DE06@esteem.com> <20021010230042.GA8690@segfault.usine.8d.com> <3DA62C69.A5BD884F@esteem.com>
+Message-ID: <20021011160805.GA14567@segfault.usine.8d.com>
+References: <D73A25AA6E54D511AD74009027B1110F3C035A@ORION>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3DA62C69.A5BD884F@esteem.com>
+In-Reply-To: <D73A25AA6E54D511AD74009027B1110F3C035A@ORION>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Conn,
+Hi Steven,
 
+On Fri, Oct 11, 2002 at 09:15:21AM -0400, Steven Blakeslee wrote:
+>
+> In the 850 user manual I found the following to describe the SCCR[DNFH].
+> "Division factor high frequency. Sets the VCOOUT frequency division factor
+> for general system
+> clocks to be used in normal mode. In normal mode, the MPC850 automatically
+> switches to the
+> DFNH frequency. To select the DFNH frequency, load this ?eld with the divide
+> value and clear
+> CSRC. A loss-of-lock condition does not occur when this ?eld is changed.
+> This ?eld is cleared by a power-on or hard reset."
+>
+> You have the following code.
+> imp->im_clkrst.car_plprcr |= 1<<21;		// plprcr[csrc]=1
 
-> I forgot to mention my kernel source tree was directly from kernel.org
+In fact, that was erronoeus because of the bit ordering stuff
+mentioned in a previous mail within this thread. I meant to write:
 
-Fell free to correct me, but I believe the ppc patched kernel is
-identical to the one at source.mvista.com. Still, I'll try with the
-latest patch (2.4.18) available on kernel.org.
+imp->im_clkrst.car_plprcr |= 0x00000400         // plprcr[csrc]=1
 
-> When using my idle loop, does it crash right away or only when you try to
-> use the PIT?
+Anyway, i was trying to move to 'normal low mode', which is supposed
+to be 100% functionnal, only at a slower pace.
 
-It crashes before I get a chance to load my module. I dont get to the
-shell. It's got nothing to do with the PIT. Here's what my console
-gives me:
+If i either change the dfnh clock divider (ex: sccr[dfnh]=110b) or
+move to the normal low mode (plprcr[csrc]=1), i lose my console. :(
 
-	i2c-algo-8xx.o: i2c mpc8xx algorithm module version 2.6.5 (20020915)
-	i2c-rpx.o: i2c MPC8xx module version 2.6.5 (20020915)
-	i2c-algo-8xx.o: scanning bus m8xx...
-	Machine check in kernel mode.
-	Caused by (from SRR1=1000): Transfer error ack signal
-	Oops: machine check, sig: 7
-	NIP: 00004038 XER: 20000000 LR: 0002B91C SP: C0143F30 REGS: c0143e80 TRAP: 0200	   Not tainted
-	MSR: 00001000 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 00
-	TASK = c0141fa0[0] 'swapper' Last syscall: 120
-	last math 00000000 last altivec 00000000
-	GPR00: 00000000 C0143F30 C0141FA0 00000000 00048000 00000000 00000001 FFFFFC18
-	GPR08: 00000100 C015F00C C014DBFF C014DCEE 0000000D FA202210 00000000 00000000
-	GPR16: 00000000 00000000 00000000 00000000 42004022 00EA5F40 00000000 C0004654
-	GPR24: 00000000 00000000 FA200000 743D2F62 00000000 C0160000 C014DC01 55CCAA32
-	Call backtrace:
-	C0005C94 C0005CA8 C0002268 C0152544 C0002138
-	Kernel panic: Attempted to kill the idle task!
-	In idle task - not syncing
-	<0>Rebooting in 180 seconds..
-
-... and it normally fives me...
-
-
-	i2c-core.o: i2c core module version 2.6.5 (20020915)
-	i2c-dev.o: i2c /dev entries driver module version 2.6.5 (20020915)
-	i2c-algo-8xx.o: i2c mpc8xx algorithm module version 2.6.5 (20020915)
-	i2c-rpx.o: i2c MPC8xx module version 2.6.5 (20020915)
-	 i2c-algo-8xx.o: scanning bus m8xx...
-	(90)(a8)(aa)
-	i2c-proc.o version 2.6.5 (20020915)
-	CPM UART driver version 0.03
-	ttyS00 at 0x0280 is a SMC
-	eth0: CPM ENET Version 0.2 on SCC2, 00:10:ec:00:33:ce
-
-
-Hmmm... It seems to oops in the i2c initialisation...
-
-<recompiling...>
-
-Ok. I took out the i2c stuff. It doesn't oops anymore... In fact, in
-enters the power saving mode (doze?) you put in the idle.c file before
-reaching the console! :))
-
-Could be stuck waiting for a never-coming-interrupt? I gave the
-parameter "init=/bin/sash" to the kernel... Any logical explanation to this?
-
-
-> 	Well if you put the power saving code in the idle loop, when there
-> isn't anything to do the processor sleeps. When an interrupt happens it
-> wakes up to service the interrupt then checks to see if it is needed for
-> other things and if not it goes back to bed (much like me ;-)). If you need
-> to do something 5 seconds later a sleep call should do the trick unless
-> you need more precision.
-
-It's not a precision thing. It's not so important. It would be neat,
-thats all.  :)
-
-
-Thanks again for your help.
+Thanks for your support.
 Best regards,
-
 
 
 Pat Mahoney
