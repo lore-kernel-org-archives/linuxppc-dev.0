@@ -1,12 +1,28 @@
-Message-ID: <20031028163832.17883.qmail@web11603.mail.yahoo.com>
-Date: Tue, 28 Oct 2003 08:38:32 -0800 (PST)
-From: Shamile Khan <shamile@yahoo.com>
-Subject: tlbia instruction crashes for 405
-To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <C7FFFEA58B43D311920D0004ACE5333F10E4F2FB@amer25.avnet.com>
+From: "Kerl, John" <John.Kerl@Avnet.com>
+To: "'Shamile Khan'" <shamile@yahoo.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: tlbia instruction crashes for 405
+Date: Tue, 28 Oct 2003 09:39:29 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+You need
+
+ PORT tiec405mmuen = net_vcc
+
+in your .mhs file.
+
+-----Original Message-----
+From: Shamile Khan [mailto:shamile@yahoo.com]
+Sent: Tuesday, October 28, 2003 9:39 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: tlbia instruction crashes for 405
+
 
 
 Hi,
@@ -39,5 +55,6 @@ Shamile
 
 Exclusive Video Premiere - Britney Spears
 http://launch.yahoo.com/promos/britneyspears/
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
