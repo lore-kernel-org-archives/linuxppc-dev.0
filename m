@@ -1,49 +1,42 @@
-Date: Sat, 24 Apr 1999 14:50:32 -0400 (EDT)
-From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-Reply-To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: platinumfb in 16 bit?
-Message-ID: <Pine.LNX.3.96L.990424140440.3369A-100000@unix48.andrew.cmu.edu>
+Message-ID: <37227A7F.9BD5D1C4@mit.edu>
+Date: Sat, 24 Apr 1999 22:14:23 -0400
+From: Adam Powell <hazelsct@mit.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Dan Burcaw <dburcaw@terraplex.com>
+CC: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
+Subject: Re: Blue & White G3s
+References: <Pine.LNX.3.96.990423165930.19388A-100000@newhope.terraplex.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I don't suppose I could beg/plead someone into fixing platinumfb for 16 bit
-color? The problem has been around for while (I posted about it a while ago,
-possibly on -user). Basically, 8 bit works fine in X (with hardware
-acceleration, such as there is), but 16 bit gives the standard psychedelic
-palette problem. Possibly of interest:
+Dan Burcaw wrote:
 
-(/var/log/dmseg)
-...
-MacOS display is /platinu
-Total VRAM = 2MB 0011
-Monitor sense value = 0x60b, using video mode 17 and color mode 1.
-Console: switching to colour frame buffer device 128x48
-fb0: platinum frame buffer device
-...
+> Folks,
+>
+> Our in-house development team has successfully ported the CMD646
+> driver to the Linux/PPC kernel, offering the much anticipated support
+> for the primary ATA chain. This driver supports the ultra-DMA features
+> of the chipset, allowing data transfer in excess of 30MB per second.
+> The Blue & Whites are now fully functional with ATA, SCSI, and USB.
 
-I do have 2 MB of VRAM (which can do 16 bit color at 1024x768), but the color
-mode should definately not be 1; the Mac OS is set to 16 bit color. But that
-color mode doesn't seem to make a difference, because I have a psych. palette
-while booting as well (not B&W, as color mode 1 would seem to indicate). I
-guess I should mention that I'm using BootX 1.03b2, with a kernel argument of
-"video=platinumfb:vmode:17,cmode:8". My kernel is currently 2.2.0pre7 (but
-that's likely to change soon).
+Er, cool!  But I've been using a CMD646 IDE kernel driver since on my AlphaPC
+LX164 533 MHz since last October (2.1.116, I believe).  Is this your driver,
+or have you since reinvented the wheel, or was it Alpha-specific, or am I
+missing something?
 
-When starting X, I get the message "kernel: platinum_set_var: Not activating"
-in /var/log/messages. From the little bit of poking around I did, I think that
-might be unrelated, but I have no idea how platinumfb.c works... one other
-person with my problem gets the same message, but so does someone else who can
-use 16 bit (if I remember the small conversation correctly).
+Zeen,
 
-If I use "no video driver" (which is offb, yes?), X works fine in 16 bit
-color, but is significantly slower. =( Oh, and this is the standard Xpmac I'm
-talking about, not XF68_dev.
+-Adam      "...the firmament sheweth His handywork" (Ps 19:1)    ///
+............................................................__  ///|
+Adam "Cold Fusion" Powell IV Firmament Science & Engineering\\\///_|
+http://lyre.mit.edu/~powell/ Standing on the Solid State Rock\XX/  |MIGA
 
--Hollis
+
+
+
+
 
 
 
