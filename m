@@ -1,39 +1,44 @@
-Date: Tue, 28 Dec 1999 13:35:57 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: weasel@cs.stanford.edu
-cc: Kostas Gewrgiou <gewrgiou@imbc.gr>,
-        "Jens Ch. Restemeier" <jrestemeier@currantbun.com>,
-        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Update - Re: Open Sourced Glide on Linux PPC
-In-Reply-To: <w9kr9g8mipm.fsf@euclide.irisa.fr>
-Message-ID: <Pine.LNX.4.05.9912281334500.389-100000@callisto.of.borg>
+Message-ID: <3868F4EB.498E3466@netx4.com>
+Date: Tue, 28 Dec 1999 12:35:39 -0500
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Shuangjun Zhu (r44089)" <r44089@email.sps.mot.com>
+CC: linuxppc-dev@lists.linuxppc.org, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Help about device driver in Linux
+References: <004a01bf50df$312fab80$70f102de@sjzhu>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 27 Dec 1999, Peter Chang wrote:
-> Geert Uytterhoeven <geert@linux-m68k.org> writes:
-> > If you use the *mb() macros instead of eieio(), you don't have to use #ifdefs
-> > and it'll work automagically on e.g. Alpha as well.
-> 
-> This I know less about, but these might fence more often than strictly necessary?
+Shuangjun Zhu wrote:
 
-wmb() is a barrier for writing.
-rmb() is a barrier for reading.
-mb() is a barrier for both and thus the `safest'.
+> I want to make two device driver for MPC823,
+> one is for MPC823 Video, one is for MPC IIC.
 
-The main advantage is that these are defined for all architectures, unlike
-eieio().
 
-Gr{oetje,eeting}s,
---
-Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
+Both of these exist in the 2.2.13 kernel on ppc.kernel.org.
+I regularly use the video driver for LCDs.  It is pretty trivial,
+just initializes the 823 and you can mmap() the frame buffer.
+There is an ioctl() to set the color map.  I don't know what
+to do with it from here, it works well enough for demos and
+some custom software I have written.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+There are some (relatively) undocumented features to set
+aggressive mode display updates, don't mess this up or the
+PPC core won't make any progress.  This code works equally
+well on the 823 and 823e.  It will not work on the 821.
 
+
+> Because in the Video driver, it must write configuration
+> parameters to the video controller through the IIC driver.
+
+I normally let the application program do this.  We can argue all
+day about whether the video driver should have this knowledge, but
+it is clearly easier if the application does it.
+
+
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
