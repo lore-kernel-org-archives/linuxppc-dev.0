@@ -1,35 +1,38 @@
-Message-ID: <3BE6E477.1090508@mvista.com>
-Date: Mon, 05 Nov 2001 14:11:51 -0500
-From: Dan Malek <dan@mvista.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Subject: mvista 2.0 cdk and login username and password
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: support@mvista.com
+Message-ID: <OF65A95CC9.1E398D60-ON85256AFB.006B09BF@raleigh.ibm.com>
+From: "John F Davis" <johndavi@us.ibm.com>
+Date: Mon, 5 Nov 2001 14:42:28 -0500
 MIME-Version: 1.0
-To: Ofer Rashuk <OferR@Radlan.co.il>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: virtual memory issue
-References: <42AB6BE23C29D511831E0002B32024881999FF@messenger.radlan.co.il>
-Content-Type: text/plain; charset=windows-1255; format=flowed
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ofer Rashuk wrote:
+Hello
 
+What's the root login password for a newly installed sbs-k2, cdk 2.0,
+target login?  The final paragraph of the sbs-k2
+installation section (in the pdf) says to login, but doesn't specify a
+password for root.
 
-> my question is who can i translate the virtual address to a physical one.
+I installed the cd and when I try to login to a nfs root mounted partition,
+I get a login prompt, but I can't login.
+My installation doesn't   have a /..../target/etc/passwd file, which leads
+me to believe I missed something during
+the install.  However, I searched the CD for rpm's and none of them
+owns/supplies  the /.../target/etc/passwd file.
+Am I supposed to modify the inittab on the host machine so it boots single
+user mode and create the /etc/password
+file by hand, modify the inittab for multiuser mode and then reboot?
 
-You can't from a user program, nor do you want to do this.  Using
-mmap() to physical devices from a user application must be done
-with great care, and is often used just for debugging purposes.  There
-are resources used by the kernel and other applications that cause
-race conditions you can't control.
+Also, when am I going to get a hardhat zone login id?  I am sure MVista has
+a FAQ which addresses this issue.
 
-If you need access to physical memory for any reason, you must
-write a kernel device driver for this device so you can properly
-manage the resources necessary to ensure proper system operation.
-
-Thanks.
-
-
-	-- Dan
+John F. Davis
+IBM
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
