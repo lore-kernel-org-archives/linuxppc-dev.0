@@ -1,15 +1,19 @@
-Return-Path: <alebas@televes.com>
-Received: from tvesnat.televes.com (unknown [212.163.42.137])
-	by ozlabs.org (Postfix) with ESMTP id 2D6702BE83
+Return-Path: <wd@denx.de>
+Received: from mailout04.sul.t-online.com (mailout04.sul.t-online.com
+	[194.25.134.18]) by ozlabs.org (Postfix) with ESMTP id 7A4932BEA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 Nov 2004 05:57:53 +1100 (EST)
-Message-ID: <1101236780.41a38a2c7f44f@webmail.televes.com:443>
-Date: Tue, 23 Nov 2004 20:06:20 +0100
-From: alebas@televes.com
-To: linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Kernel 2.6 hangs at m82xx_board_init
+	Wed, 24 Nov 2004 06:04:37 +1100 (EST)
+To: Jeff Stevens <jsteve17@yahoo.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 23 Nov 2004 08:11:39 PST."
+	<20041123161139.2563.qmail@web41415.mail.yahoo.com>
+Date: Tue, 23 Nov 2004 20:04:14 +0100
+Sender: wd@denx.de
+Message-Id: <20041123190419.6F0ACC1430@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: U-Boot with DDR ECC Compilation Error 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,41 +24,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+In message <20041123161139.2563.qmail@web41415.mail.yahoo.com> you wrote:
+> I am porting U-Boot for a custom board that is very
 
-I was trying to get kernel 2.6.10-rc1 running in mpc8272ads board,
-but i have some problems.
+You should post U-Boot related questions to the u-boot-users  mailing
+list instead. Here on this list you re off topic.
 
-Debugging with BDI2000 + gdb i have arrived to m82xx_board_init call,
-which is coded in arch/ppc/platforms/pq2ads.c as:
+> similar to the MPC8540ADS.  Everything compiles fine,
+> until I try to compile in DDR SDRAM ECC support.  I
+> tried compiling U-Boot for the MPC8540ADS and I get
+> the same error once I define 'CONFIG_DDR_ECC'.  Here
+> is the output:
 
-void __init
-m82xx_board_init(void)
-{
-        /* Enable the 2nd UART port */
-        *(volatile uint *)(BCSR_ADDR + 4) &= ~BCSR1_RS232_EN2;
-}
+CONFIG_DDR_ECC is set by default for the MPC8540ADS board; this configuration builds fine here. I guess you must be doing something wrong.
 
-When this code is executed, the kernel jumps directly to another
-address, 0xc000984c, which is inside the __delay function, and
-execution stays here in an infinite loop.
+Is there any chance that your files got corrupted  by  storing  in  a
+Windoze filesystem?
 
-I get the following disassemble from objdump:
+...
+> ppc_8xx-gcc -Wa,-gstabs -D__ASSEMBLY__ -g  -Os   -fPIC
 
-c01bf908 <m82xx_board_init>:
-c01bf908:       3d 20 f4 50     lis     r9,-2992
-c01bf90c:       61 29 00 04     ori     r9,r9,4
-c01bf910:       80 09 00 00     lwz     r0,0(r9)      <=======
-c01bf914:       54 00 02 0c     rlwinm  r0,r0,0,8,6
-c01bf918:       90 09 00 00     stw     r0,0(r9)
-c01bf91c:       4e 80 00 20     blr
+Why do you chose the ppc_8xx compiler here? This is not  the  optimal
+choice  for  a  85xx processor (allthough this does not really matter
+here).
 
-and the marked instruction is the last one executed before the jump.
+...
+> /orss/gtvme/uboot/u-boot-1.1.1/cpu/mpc85xx/start.S
 
-Any idea? Why this instruction is braching without control?
+Seems you are using U-Boot 1.1.1; why are you using  an  old  version
+for a new port? Please use current code (top of CVS) instead.
 
-As bootloader i am using uboot-1.1.2.
+> I am using the ppc_8xx- tools from ELDK 3.1. I would
 
-Thanks.
+Try using current code,  and  make  sure  that  your  files  are  not
+corrupted.
 
-Alex
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Every living thing wants to survive.
+	-- Spock, "The Ultimate Computer", stardate 4731.3
