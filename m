@@ -1,24 +1,26 @@
-Message-ID: <3DD114B7.EFA6E6CE@imc-berlin.de>
-Date: Tue, 12 Nov 2002 15:48:23 +0100
-From: Steven Scholz <steven.scholz@imc-berlin.de>
+Message-ID: <CA78D1B723D8D411AF0300508BDCF74FF0C566@NTCORREO>
+From: GOTZON ASTONDOA <gastondoa@fagorautomation.es>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Fast shutdown
+Date: Tue, 12 Nov 2002 16:04:39 +0100
 MIME-Version: 1.0
-To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Using ioctl from with the kernel ???
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi there,
+Hi all:
 
-I use a device driver (/dev/status_led from DENX) to manipulate some frontpanel
-LEDs from user space via some ioctls.
+	Our custom board has to microprocessors: 68K and PowerPC. We have
+instaled Linux in the PowerPc side.
+	When the user suddenly shutdowns the board, the 68K sends an
+interrupt to the PowerPC.We have more or less 8 mSeg to close all the Linux
+system (it has hard disk, ethernet, ftp and our own application).
 
-Now I'd like to access them from the kernel space. How can I do that? AFAIK I
-can't use fopen and ioctl...
+	Can somebody tell me any idea to close the Linux system in the
+fastest way? We are thinking in capture the interrupt signal, but, is it
+enough fast?
 
-Thanks,
-
-Steven
+Thanks for your help in advance.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
