@@ -1,80 +1,72 @@
 From: Paul Mackerras <paulus@linuxcare.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <14793.17269.279179.950369@argo.linuxcare.com.au>
-Date: Thu, 21 Sep 2000 10:08:37 +1100 (EST)
-To: Matt Porter <mporter@mvista.com>
+Message-ID: <14793.18115.38314.912204@argo.linuxcare.com.au>
+Date: Thu, 21 Sep 2000 10:22:42 +1100 (EST)
+To: Dan Malek <dan@mvista.com>
 Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: __ioremap_at() in 2.4.0-test9-pre2
-In-Reply-To: <20000919231220.A10511@cx258813-a.chnd1.az.home.com>
+In-Reply-To: <39C8DE1A.BC8EF0B6@mvista.com>
 References: <Pine.LNX.4.10.10009172058340.715-100000@cassiopeia.home>
 	<14790.58502.25252.825448@argo.linuxcare.com.au>
 	<20000919150621.A9826@cx258813-a.chnd1.az.home.com>
 	<14791.61311.118516.747495@argo.linuxcare.com.au>
-	<20000919231220.A10511@cx258813-a.chnd1.az.home.com>
+	<39C8DE1A.BC8EF0B6@mvista.com>
 Reply-To: paulus@linuxcare.com.au
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Matt Porter writes:
+Dan Malek writes:
 
-> Ick...agree here.  Of course, the serial driver could be changed to
-> do other than inb/outb's for other archs and be passed the memory
-> mapped address of the ports.
+> You still have to be careful here.  Drivers that are written to
+> do this may also make the assumption they can store that "address"
+> in a 16-bit (signed, even worse) variable.  You will have to change
+> drivers (or structures) in this case.
 
-And the parallel port driver, and the floppy driver, and the
-keyboard/mouse drivers, and the ...
+Sure.  Fortunately PPC isn't the only architecture where I/O ports can
+be > 16 bits, I believe sparc64 runs into this too.  In fact sparc64
+needs 32-bit interrupt numbers rather than 8-bit, as well.
 
-> This looks to be a good solution if we can't resolve to make the kernel
-> less legacy-oriented.  I changed the default K2 board memory map to
+> I don't so much care if in/out is used/abused, but I think device
+> drivers should be written such that they ask for addresses through
+> the PCI (or other I/O) subsystem, rather than just grab BARs and
 
-If we only supported powermacs, and not preps or chrps, then we
-probably could make the kernel less "legacy-oriented". :-) :-)
+Definitely, for drivers for PCI devices.
 
-> do a similar thing by orienting the 2nd host bridge right after the
-> 1st in the physical map.  The virt->phys mapping was then 1:1 and things
-> work as you describe above.  Obviously, this approach won't work when
-> you have separate bridge ASICs since you can't get the memory map
-> granularity that I had in the dual host bridge package.
+> expect to use them.  The x86 in/out was stupid back in 1983, and is
+> even less useful today.  It is lots easier to adopt a memory mapped
+> model and adapt it to x86, than for the rest of us to keep trying to
+> create contortions of an address map just so we can use poorly written
 
-So we set up the virtual -> physical mapping to suit ourselves.  Not a
-problem.
+"Virtual != physical" is "contortions" ???
 
-> Well, on drivers like the de4x5 you switch to use the mem bar instead
-> of the I/O bar and then it's generic.  There are lots of drivers that
-> given the choice, chose to use I/O calls.  These can easily be fixed.
+> x86 device drivers.  I think it is easier to update a driver, which
+> I have done on a couple of occasions, to be more portable than to
+> try and find ways to use it without making any changes.  The authors
+> of the drivers have even accepted this in some cases :-).
 
-But what is wrong with using registers in I/O space and accessing them
-with in*/out*?  I don't understand the aversion some people have shown
-to using in*/out*.  They are the accessor functions for PCI I/O space,
-that's all.  Whatever happens, we need accessor functions for PCI I/O
-space.  We can call them something different or make them more
-complicated but that would just create extra work for ourselves and
-make it harder to port drivers between architectures.
+I suggest you post a patch on linux-kernel to change all the device
+drivers to use memory-mapped I/O.  I wish you luck.  :-) :-)
 
-> PCI I/O is memory mapped on everything but x86.  In most cases PCI
+> These address mapping hacks were fine years ago when there was
+> only one PCI bus at a fixed address in the system.  Today, there
+> are lots of busses, with transparent (or not) bridges, and we have
+> a PCI subsystem in Linux that is maturing into a really useful set of
+> functions.  The embedded CompactPCI systems are way ahead of workstations
+> in terms of complexity of PCI (and other) bus structures.  In these
+> environments we rely heavily on the virtual mapping of I/O, and if
+> you have a BAR it doesn't mean much to your driver.  I would like to
+> see us look toward the future, to a model where we map I/O through
+> the VM subsystem, instead of trying to find hacks to support addressing
+> assumptions that just aren't valid any longer.
 
-So???  What we have is a level of abstraction that hides (from driver
-authors) exactly how PCI memory and I/O space are accessed.  We have
-readb/writeb etc. for PCI memory space and inb/outb etc. for PCI I/O
-space.  The fact that on PPC both are mapped into the processor's
-address space and accessed using loads and stores is something that
-drivers should not care in the slightest about.  And in fact these
-spaces are not accessed this way on some other non-intel platforms;
-e.g. sparc64 uses special ldasi/stasi instructions.
-
-> devices provide bars that map the same set of registers into both
-> I/O space and mem space.  That leaves only the true legacy devices
-> which have no memory bars to be concerned with.  It's a smaller
-> set of drivers that need different low level access methods than
-> you're making it out to be.
-
-The fact remains that a lot of drivers will continue to use inb/outb
-etc., since they are developed primarily on the intel platform.  It
-makes sense for us to have an inb/outb that works similarly to intel,
-so that we can use as many drivers as possible with as little pain as
-possible.
+You'll have to explain this a little more.  When you say "virtual
+mapping of I/O", do you mean I/O devices in PCI memory space or in PCI
+I/O space?  We (of course) already map I/O registers in PCI memory
+space through the VM subsystem.  Are you talking about PCI I/O space?
+What sorts of VM mapping tricks do you want to do for PCI I/O space,
+and why?
 
 Paul.
 
