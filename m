@@ -1,37 +1,31 @@
-Message-ID: <3D1AC719.BB9FF019@imc-berlin.de>
-Date: Thu, 27 Jun 2002 10:04:41 +0200
-From: Steven Scholz <steven.scholz@imc-berlin.de>
-MIME-Version: 1.0
-To: Marius Groeger <mag@sysgo.de>
+Date: Thu, 27 Jun 2002 10:22:11 +0200 (CEST)
+From: Marius Groeger <mag@sysgo.de>
+To: Steven Scholz <steven.scholz@imc-berlin.de>
 Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: SELF and JFFS2????
-References: <Pine.LNX.4.40.0206270929001.565-100000@mag.devdep.sysgo.de>
-Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <3D1AC719.BB9FF019@imc-berlin.de>
+Message-ID: <Pine.LNX.4.40.0206271020330.973-100000@mag.devdep.sysgo.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Marius Groeger wrote:
->
-> On 26 Jun 2002 16:04:59 +0200, Mészáros Lajos <ludwigm@siemens.hu> wrote:
-> >
-> > Marius Groeger wrote:
-> >
-> > >> FWIW, the Elinos DevKit contains an example project ...
-> >
-> > Is the Elinos DevKit as free as Linux kernel (or for example ELDK) ?
->
-> No, it's not. For some strange reason, grocery-stores here in Germany want
-> money for their stuff, so we need money to pay them. Otherwise I'd love to
-> send you a free copy. ;-) But seriously: of course, all the free software is
-> provided with full source code, including the the Elinos Linux kernel. No
-> licensing or royalty strings attached either.
+On Thu, 27 Jun 2002, Steven Scholz wrote:
 
-Marius,
+> So you're going to delight us with a copy (just to present the idea) of the
+> build scripts...!? ;-)
 
-So you're going to delight us with a copy (just to present the idea) of the
-build scripts...!? ;-)
+Build scripts what for - the CDK?
 
-Steven
+Regards,
+Marius
+
+-----------------------------------------------------------------------------
+Marius Groeger           SYSGO Real-Time Solutions GmbH     mgroeger@sysgo.de
+Software Engineering     Embedded and Real-Time Software    www.sysgo.de
+Voice: +49-6136-9948-0   Am Pfaffenstein 14                 www.osek.de
+FAX:   +49-6136-9948-10  55270 Klein-Winternheim, Germany   www.elinos.com
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
