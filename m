@@ -1,43 +1,41 @@
-Message-ID: <3BB0AF37.A2041B64@chinook.com>
-Date: Tue, 25 Sep 2001 12:22:15 -0400
-From: Peter Desnoyers <pdesnoyers@chinook.com>
+Message-ID: <3BB0C1B8.1D59FDCD@aps.anl.gov>
+Date: Tue, 25 Sep 2001 12:41:12 -0500
+From: Andrew Johnson <anj@aps.anl.gov>
 MIME-Version: 1.0
-To: Grant Erickson <erick205@umn.edu>
+To: flynn@lure.u-psud.fr
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Solutions for Fast Software Upgrade in Linux/PPC
-References: <Pine.SOL.4.20.0109251001370.4999-100000@garnet.tc.umn.edu>
+Subject: Re: Motorola VME boards
+References: <20010925093710.A12663@jupiter.lure.net>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I would give some serious thought to the fast reboot idea.
+Hi Gerard,
 
-[a related anecdote - a former colleague who worked for Caymam back in
-the days when people bought Appletalk routers complained how they were
-perceived as much less reliable than the Shiva product, even though the
-Shiva crashed much more frequently.  It turns out that the Shiva
-rebooted faster than the AppleTalk timeout, while the Cayman box
-didn't...]
+flynn@lure.u-psud.fr wrote:
+>
+>    I would like to run Linux on an MVME 2100 board (8240 based).
+>    Has anyone tried this ?  I would think that the Sandpoint port
+>    shouldn't be hard to adapt to this board or might just work
+>    on it.  Is there something I'm overlooking ?
 
-You can probably separate it into two halves, kernel and application.  I
-can boot a 50MHz MBX860 up to /sbin/init in 6 seconds with an NFS root,
-so I think 1 or 2 second kernel boot is quite feasible on a faster
-machine with data in flash or (already spun up) local disk.  (PCI
-scanning will take time, but you should be able to trim it significantly
-with knowledge of your hardware)
+I can let you have patches to MontaVista's Hard Hat 2.0 Linux 2.0
+Journeyman release for the MVME2100 - I have it running, using PPCBug for
+network (tftp) booting.  The configuration also allows for blowing a boot
+image into flash, but I've not actually tested that.  I haven't tested the
+PMC or PC-MIP slots either, so there may still be some hardware
+configuration issues.
 
-Application startup depends.  You might investigate having all your
-applications use a "checkpoint" or "pre-digested" format for their
-configuration files, so that they can load config quickly at boot, and
-save configuration before reboot.  This includes whatever application is
-going to configure the kernel after boot, which I assume won't be
-init+init.d/network+ifconfig etc.
+I haven't looked at VME bridge software properly yet (this port is only a
+background project for me), but would be interested in other people's
+thoughts about this - there appear to be several possibilities, but I
+haven't looked at them in detail.
 
+- Andrew
 --
-.....................................................................
- Peter Desnoyers            (781) 457-1165   pdesnoyers@chinook.com
- Chinook Communications     (617) 661-1979   pjd@fred.cambridge.ma.us
- 100 Hayden Ave, Lexington MA 02421
+Perfection is reached, not when there is no longer anything to add,
+but when there is no longer anything to take away.
+- Antoine de Saint-Exupery
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
