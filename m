@@ -1,48 +1,43 @@
-Date: Wed, 29 Aug 2001 14:08:50 -0700
-From: Daniel Jacobowitz <dmj+@andrew.cmu.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: glibc 2.1 -> 2.2 gotchas?
-Message-ID: <20010829140850.A1211@false.org>
-References: <998751333.12597.3.camel@yoda> <01082511424509.15847@localhost.localdomain> <20010826005515.Postino-022357@smtp01.highway.ne.jp> <01082513443402.16172@localhost.localdomain> <3B882749.346A0B39@iiic.ethz.ch> <20010825154233.S14302@cpe-24-221-152-185.az.sprintbbd.net> <20010825155417.A8892@nevyn.them.org> <20010825213629.U14302@cpe-24-221-152-185.az.sprintbbd.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010825213629.U14302@cpe-24-221-152-185.az.sprintbbd.net>; from trini@kernel.crashing.org on Sat, Aug 25, 2001 at 09:36:29PM -0700
+Date: Wed, 29 Aug 2001 22:29:01 +0100
+Subject: Ethertalk routing problem
+From: Iain Stevenson <iain@iainstevenson.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Message-ID: <B7B31D2D.6BE%iain@iainstevenson.com>
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Aug 25, 2001 at 09:36:29PM -0700, Tom Rini wrote:
->
-> On Sat, Aug 25, 2001 at 03:54:17PM -0700, Daniel Jacobowitz wrote:
-> >
-> > On Sat, Aug 25, 2001 at 03:42:33PM -0700, Tom Rini wrote:
-> > >
-> > > On Sun, Aug 26, 2001 at 12:31:37AM +0200, Michel D?nzer wrote:
-> > >
-> > > > > What I recommend won't hurt and can certainly help flush older shared
-> > > > > libraries out of memory.
-> > > >
-> > > > The point is probably that in the Debian packages, the maintainer scripts take
-> > > > care of the necessary steps, so the user doesn't have to.
-> > >
-> > > This always got me tho...  If a program is already running, how do you
-> > > make it stop using the old libraries?  If 'restarting' /sbin/init makes it
-> > > reload, I'll take your word at it.  But what about all of the other apps that
-> > > happen to be running?  The bash session I happen to be doing this upgrade
-> > > from.  Or X (yes, in an ideal world, you goto single user to do this
-> > > anyhow.. :))
-> >
-> > They keep running with the old libc.  No big deal, really :)  The RAM
-> > will basically not be reclaimed until after you reboot.
->
-> That's sorta what I figured.  So on debian certain services get restarted
-> so that new children are sane, yes?
+I've been trying to get MacGate to work in order to enable a
+LocalTalk/EtherTalk client to access my linux server.  I've most likely
+overlooked something but maybe there's a more serious problem.
 
-Yes, precisely.  Most of the network daemons that use NSS need to be
-restarted, because of how NSS is loaded.
+I've been using MacGate.  Within MacGate, a packet socket call is made:
 
---
-Daniel Jacobowitz                           Carnegie Mellon University
-MontaVista Software                         Debian GNU/Linux Developer
+SockLT = socket(AF_PACKET, SOCK_PACKET, htons(ETH_P_LOCALTALK));
+
+followed by a call to receive traffic:
+
+recvfrom(SockLT, buf, sizeof(buf)
+
+However, no traffic is ever received.  Substituting the ETH_P_LOCALTALK with
+ETH_P_ALL allows traffic through but none that subsequent code within
+MacGate recognises as nbp.
+
+Using tcpdump, I've found that traffic can be sent out of the linux server
+through ipddp onto the Ethernet segment to which my Ethertalk client is
+attached.
+
+Using tcpdump I can also see MacIP traffic coming from the Ethertalk client.
+However, none of this EtherTalk traffic gets through to the web server.
+Maybe something isn't configured properly or I'm not understanding how
+LocalTalk routing works.
+
+I've searched many lists and tried many things ... but remain truly baffled.
+Any suggestions?
+
+  Iain Stevenson
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
