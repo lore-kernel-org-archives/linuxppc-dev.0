@@ -1,67 +1,56 @@
-Date: Thu, 27 May 1999 23:13:24 -0500 (CDT)
-From: Troy Benjegerdes <hozer@drgw.net>
-To: Tom Rini <tmrini@ntplx.net>
-cc: Joel Klecker <jk@espy.org>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: new OF: how can we use it?
-In-Reply-To: <Pine.LNX.4.05.9905271933270.31856-100000@pc.wackyland.com>
-Message-ID: <Pine.LNX.4.04.9905272309360.28681-100000@narn.local.drgw.net>
+Message-ID: <374E372F.25549C60@jlc.net>
+Date: Fri, 28 May 1999 02:26:55 -0400
+From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: G3 sound recording
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 27 May 1999, Tom Rini wrote:
+I just updated the PowerPC Mac dmasound driver so it will also
+record.  It still needs some work, but the framework is there
+for anyone to update and it is useful.
 
-> 
-> On Thu, 27 May 1999, Joel Klecker wrote:
-> 
-> > At 15:39 -0400 1999-05-27, Tom Rini wrote:
-> > >On Thu, 27 May 1999, Brad Midgley wrote:
-> > >> don't you think it would be a great help to the success of linux on
-> > >> powermac if we could make the kind of elf binary that the new open
-> > >> firmware loads?
-> > >[neat ideas nusked]
-> > >> what remains to be done? is the problem well understood/documented?
-> > >
-> > >It might be the text segments at the start.  Basically we need to see how
-> > >darwin and netbsd/macppc are linked and what they do that we don't (or
-> > >that we do and don't need to).  This is of coruse only my understanding,
-> > >from a dozen emails w/ adrian sun (I have access to an iMac, he
-> > >wants/wanted to fix it).
-> > 
-> > NetBSD/macppc kernels have the .note section that OF wants, 
-> > Linux/powerpc kernels do not.
-> > 
-> > <ftp://ftp.netbsd.org/pub/NetBSD/NetBSD-current/src/sys/arch
-> > /powerpc/powerpc/ofwmagic.S>
-> > 
-> > See also vger: linux/arch/ppc/chrpboot/{mknote.c,Makefile}.
-> 
-> Hmm.  So has anybody tried booting a CHRP-specific 2.3.x kernel on a B&W
-> or iMac? :)
+I did the development on my PowerBook G3, and will soon test it
+on my iMac.
 
-Just tried using the latest vger 'chrpboot', which makes a zImage, from a
-Pmac kernel, and got 'gunzipping...'
-'Default Catch 0900'  (which is the decrementer exception)
+The driver supports the standard sample rates and the signed/unsigned
+8- and 16-bit PCM data format.  It does not support A-law or u-law
+because I have not yet taken the time to integrate the conversion
+algorithm.
 
-FYI, netbooting uses standard bootp and tftp 8->
+To the mixer read/write recording source I added the SOUND_MASK_MONITOR
+because the AWACS has the "loop through" capability.  When this is
+set, along with your recording input selection, the audio input
+will be sent to your selected audio output (along with giving you
+the data).  This is the way the audio CD players work, so if you
+turn this off don't be surprised when an audio CD program may not
+play.  If this was not the right mask to use for this purpose, will
+someone with more knowledge please tell me what is correct.
+
+The driver runs full duplex, you can play and record at the same
+time.  In fact, I tested it this way with a loop back program.
+Multiple threads and an extra slop buffer help out here.
+
+I left plenty of things for others to do :-).  Also, be careful
+when requesting data formats.  The driver will report more than
+are supported by the recording side, since it can also play A-law
+and u-law.  I don't know the "right" thing to do here, since there
+is only one method to get formats (I know, fix the record side :-).
 
 
-> 
-> ---
-> Tom Rini (TR1265)
-> http://gate.crashing.org/~trini/
-> 
+Thanks to everyone that helped out, including the folks that started
+the work and to Paul for the documentation.
 
-> 
+Now, back to the 8xx and 82xx updates.......
 
---------------------------------------------------------------------------
-| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
-|    Unix is user friendly... You just have to be friendly to it first.  |
-| This message composed with 100% free software.    http://www.gnu.org   |
---------------------------------------------------------------------------
 
+Have fun.
+
+
+	-- Dan
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
