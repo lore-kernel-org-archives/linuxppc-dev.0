@@ -1,65 +1,49 @@
-To: Jan Damborsky <jan.damborsky@devcom.cz>
+Date: Sat, 22 Feb 2003 17:23:28 +0000
+From: Magnus Damm <damm@opensource.se>
+To: Kain <kain@kain.org>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: connecting IDE directly to MPC8xx 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 21 Feb 2003 15:58:44 +0100."
-             <3E563EA4.7070207@devcom.cz>
-Date: Fri, 21 Feb 2003 16:09:21 +0100
-Message-Id: <20030221150926.38C1AC6E0D@atlas.denx.de>
+Subject: Re: CONFIG_HIGHMEM
+Message-Id: <20030222172328.56395755.damm@opensource.se>
+In-Reply-To: <20030220235401.GA5463@noir.is.pn>
+References: <20030220173252.43c77198.damm@opensource.se>
+	<20030220235401.GA5463@noir.is.pn>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dear Jan,
+I tried ppc-sources-2.4.20-r3 with CONFIG_HIGHMEM and now
+the oopses are gone.
 
-in message <3E563EA4.7070207@devcom.cz> you wrote:
+Thanks!
+
+/ magnus
+
+On Thu, 20 Feb 2003 17:54:01 -0600
+Kain <kain@kain.org> wrote:
+
 >
-> I am using PPCBoot on my board with MPC823E.
-> I am lucky and I ported Linux on this board. All
-
-Congrats!
-
-> works well but I don't know, how to configure
-> kernel 2_4_3 form ElinOS v2.0 to work with IDE hard disk connected
-> directly to MPC823 bus (utilizing PCMCIA bus signals
-> in way PPCBoot does it - in PPCBoot my IDE disk works well).
+> On Thu, Feb 20, 2003 at 05:32:52PM +0000, Magnus Damm wrote:
+> > I recently bought more memory to my G4 Cube.
+> > The gentoo kernel ppc-sources-2.4.20-r2 gives
+> > me various oopses when I enable CONFIG_HIGHMEM.
 >
-> In kernel 2_4_3 from ElinOS v2.0 I use this options:
-> CONFIG_BLK_DEV_MPC8xx_IDE=y
-> CONFIG_IDE=y
-> CONFIG_BLK_DEV_IDE=y
-> CONFIG_BLK_DEV_IDEDISK=y
-> CONFIG_IDEDISK_MULTIMODE=y
-> CONFIG_PARTITION_ADVANCED=y
-> CONFIG_MSDOS_PARTITION=y
-> CONFIG_BLK_DEV_IDE_MODES=y
-
-These options look OK to me; for another example please see
-http://www.denx.de/doc/TQM8xxL/advanced-topics.html#FLASH-DISKS
-
-> But It doesn't work at all. It crashes in do_probe() function,
-> when accessing bad memory region. I have mapped all
-> PCMCIA regions correctly.
-> Is any straightforward way to configure kernel to work with
-> this IDE connection ?
-
-Probably the ElinOS kernel does not support this properly.
-
-Feel free to try the kernel from our CVS server which has  been  used
-with     such     configurations    in    several    projects.    See
-http://www.denx.de/re/linux.html
-
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-There is a biblical analogy I'd like to draw here.   Casts are to C++
-Programmers what the apple was to Eve.         - Scott Douglas Meyers
+> Ok.  I admit it.. I'm the wacko packaging ppc-sources on gentoo.
+>
+> Could you send send me a ksymoops and maybe try 2.4.20-r3 (it's pretty
+> much just korg .20-benh5 + ext2/3 ACLs + IPSEC(optional))
+>
+> P.S. If people have bugs with the gentoo-ppc kernel, please forward them
+> to me first.
+>
+> --
+> Bryon Roche
+> Professional {Developer,Guru,Mad Scientist}
+> <kain@kain.org>
+> PGP Key Fingerprint: FE0D EC23 6464 726A CD54  48D3 04AD 86FE 6878 ABD5
+> Fortuna est caeca
+>
+>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
