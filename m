@@ -1,5 +1,5 @@
-Message-Id: <4.2.2.20040519142646.04c22c40@bhawley.mailhost.luminex.com>
-Date: Wed, 19 May 2004 14:27:49 -0700
+Message-Id: <4.2.2.20040519143346.04c41220@bhawley.mailhost.luminex.com>
+Date: Wed, 19 May 2004 14:34:29 -0700
 To: Eugene Surovegin <ebs@ebshome.net>
 From: Brian Hawley <bhawley@luminex.com>
 Subject: Re: Ebony Board, PPC440GP and NFS panics
@@ -23,25 +23,12 @@ At 03:11 PM 5/19/04 -0700, Eugene Surovegin wrote:
 >inird option has nothing to do with MAC address. MAC address is read by
 >ebony.c directly from OpenBIOS VPD area (see ebony.c::ebony_setup_arch())
 >regardless whether initrd is enabled or not.
-
-I understand that.  The point I was trying to make is that with the MAC
-address invalid,
-we can not use the ebony_defconfig, because it wants to boot and use an NFS
-root.
-
+>
 >Probably, you have erased this area on your box.
->
->You can hard code MAC address into ebony.c to see whether this helps you
->do go
->further in boot process.
 
-I'll check ebony.c...the other place I noticed I could do that was in the
-ethernet driver itself...
-
-Thanks for the tip.
-
->Eugene.
->
+I don't think so, it always appears correct when I print the
+environment variables in uboot. It also appears to be correct when the
+IBM boot prom displays the emac parameters.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
