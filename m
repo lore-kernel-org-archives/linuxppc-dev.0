@@ -1,43 +1,30 @@
-Date: Tue, 26 Sep 2000 21:51:50 +0200 (CEST)
-From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-To: Olaf Hering <olh@suse.de>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: xf 4.0.1 with rage II/rage pro -- multi-headed display!
-In-Reply-To: <20000926213226.B9861@suse.de>
-Message-ID: <Pine.LNX.4.10.10009262147250.21736-100000@zirkon.biophys.uni-duesseldorf.de>
+From: Brad Boyer <flar@allandria.com>
+Message-Id: <200009262009.NAA14039@marcus.allandria.com>
+Subject: Re: hfsplus 1.0.0 source -- anyone able to compile this?
+To: rshapiro@bbn.com, khalfmann@libra.de
+Date: Tue, 26 Sep 2000 13:09:31 -0700 (PDT)
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <14800.60766.981624.170736@esb.bbn.com> from "R Shapiro" at Sep 26, 2000 02:39:26 PM
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > > I have a precompiled benh Kernel at penguinppc.org/~olaf with Benhs current
-> > > kerneltree, your patch is still needed - otherwise *kaboom*
-> >
-> > No surprise there. But I don't consider the patch clean enough for
-> > inclusion with the 2.2 kernels, at least not without safeguarding that the
-> > guessed PCI region isn't occupied.
->
-> Yes, it might not be a candidate for kernel.org, but for the local
-> kernel tree to allow XF4 on the PowerBooks. However, Anis driver works
+R Shapiro wrote:
+> I wanted to make an rpm of the brand new hfsplus utils, but I can't
+> compile the sources at ftp://penguinppc.org/pub/hfsplus/.  The src tar
+> seems to be missing a number of header files.  Or is it my environment
+> that's missing headers?  I sent a note to the author several days ago
+> but never heard back.
 
-I've only tested it on one machine, I have no idea what it does on some of
-the less common ones. I'll try to implement the safeguard and send it to
-Paul and BenH after that.
-I'm out of the office until next week so it won't happen fast.
+You're right, the source available there seems to be missing quite a few
+files, including at least 10 header files. I have a local copy of the
+original source that is in the CVS repository, but I'm not sure if I have
+permission to put out a new tar file. Sorry I can't really help more.
 
-> so far. But if you do a cold boot on the iBook as example some KDE
-> windows are screwed up, like the "could not open mixer" after a login.
-> If you boot in MacOs once and reboot into Linux it works again, looks
-> like an setup problem. I have that on all ati based machines here,
-> iBook, a beige G3 and the Wallstreet. I boot with miboot most of the
-> time.
-
-Looks like we should compare the state the card is left in by MacOS and
-what we get from a cold boot (I know this is non-trivial) instead of using
-the 'boot MacOS first' workaround.
-
-	Michael
+	Brad Boyer
+	flar@pants.nu
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
