@@ -1,15 +1,25 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao11.cox.net (fed1rmmtao11.cox.net [68.230.241.28])
-	by ozlabs.org (Postfix) with ESMTP id 20A1F2BDB4
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Oct 2004 09:55:10 +1000 (EST)
-Date: Mon, 4 Oct 2004 16:55:08 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: akpm@osdl.org
-Message-ID: <20041004165508.E13777@home.com>
+Return-Path: <agx@sigxcpu.org>
+Received: from honk1.physik.uni-konstanz.de (honk1.physik.uni-konstanz.de
+	[134.34.140.224])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C1C492BDB8
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Oct 2004 17:08:05 +1000 (EST)
+Date: Tue, 5 Oct 2004 08:57:44 +0200
+From: Guido Guenther <agx@sigxcpu.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Message-ID: <20041005065744.GA8169@bogon.ms20.nix>
+References: <20041004112105.GA5637@bogon.ms20.nix>
+	<1096897172.23141.87.camel@gaston>
+	<20041004135108.GB5637@bogon.ms20.nix>
+	<1096899251.15766.101.camel@gaston>
+	<20041004151259.GC5637@bogon.ms20.nix>
+	<A5A9FF28-163F-11D9-B39F-000A95A4DC02@kernel.crashing.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH][PPC32] Fix several warnings
+In-Reply-To: <A5A9FF28-163F-11D9-B39F-000A95A4DC02@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [agx@sigxcpu.org: [PATCH]: swsusp on linux-2.6.9-rc3]
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,77 +29,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fixes some annoying warnings due to unitialized variables.
-Please apply.
-
-Signed-off-by: Matt Porter <mporter@kernel.crashing.org>
-
-===== arch/ppc/kernel/signal.c 1.37 vs edited =====
---- 1.37/arch/ppc/kernel/signal.c	2004-08-25 10:13:41 -07:00
-+++ edited/arch/ppc/kernel/signal.c	2004-10-04 16:38:12 -07:00
-@@ -270,7 +270,7 @@
- static int
- restore_user_regs(struct pt_regs *regs, struct mcontext __user *sr, int sig)
- {
--	unsigned long save_r2;
-+	unsigned long save_r2 = 0;
- #if defined(CONFIG_ALTIVEC) || defined(CONFIG_SPE)
- 	unsigned long msr;
- #endif
-===== arch/ppc/mm/44x_mmu.c 1.4 vs edited =====
---- 1.4/arch/ppc/mm/44x_mmu.c	2004-08-07 11:05:38 -07:00
-+++ edited/arch/ppc/mm/44x_mmu.c	2004-10-04 16:38:13 -07:00
-@@ -72,7 +72,7 @@
- static void __init
- ppc44x_pin_tlb(int slot, unsigned int virt, unsigned int phys)
- {
--	unsigned long attrib;
-+	unsigned long attrib = 0;
- 
- 	__asm__ __volatile__("\
- 	clrrwi	%2,%2,10\n\
-===== arch/ppc/syslib/ppc4xx_pic.c 1.11 vs edited =====
---- 1.11/arch/ppc/syslib/ppc4xx_pic.c	2004-07-01 22:23:47 -07:00
-+++ edited/arch/ppc/syslib/ppc4xx_pic.c	2004-10-04 07:14:09 -07:00
-@@ -256,7 +256,7 @@
- ppc4xx_uic_end(unsigned int irq)
- {
- 	int bit, word;
--	unsigned int tr_bits;
-+	unsigned int tr_bits = 0;
- 
- 	bit = irq & 0x1f;
- 	word = irq >> 5;
-===== arch/ppc/syslib/todc_time.c 1.9 vs edited =====
---- 1.9/arch/ppc/syslib/todc_time.c	2004-03-02 11:54:26 -07:00
-+++ edited/arch/ppc/syslib/todc_time.c	2004-10-04 16:38:14 -07:00
-@@ -277,9 +277,9 @@
- ulong
- todc_get_rtc_time(void)
- {
--	uint	year, mon, day, hour, min, sec;
-+	uint	year = 0, mon = 0, day = 0, hour = 0, min = 0, sec = 0;
- 	uint	limit, i;
--	u_char	save_control, uip;
-+	u_char	save_control, uip = 0;
- 
- 	spin_lock(&rtc_lock);
- 	save_control = todc_read_val(todc_info->control_a);
-@@ -361,7 +361,7 @@
- todc_set_rtc_time(unsigned long nowtime)
- {
- 	struct rtc_time	tm;
--	u_char		save_control, save_freq_select;
-+	u_char		save_control, save_freq_select = 0;
- 
- 	spin_lock(&rtc_lock);
- 	to_tm(nowtime, &tm);
-@@ -416,7 +416,7 @@
-  */
- static unsigned char __init todc_read_timereg(int addr)
- {
--	unsigned char save_control, val;
-+	unsigned char save_control = 0, val;
- 
- 	switch (todc_info->rtc_type) {
- 		case TODC_TYPE_DS1557:
+On Mon, Oct 04, 2004 at 02:57:40PM -0500, Segher Boessenkool wrote:
+> >Nice. Can you think of a way to monitor calls of MacOS X into the OF?
+> 
+> The video driver is not calling into OF -- OF is long
+> dead and gone by the time the video driver runs.
+I was told that MacOS X reexecutes the cards OF code to reinitialize it
+after resume. I'd be nice for linux to do the same.
+Cheers,
+ -- Guido
