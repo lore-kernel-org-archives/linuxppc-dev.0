@@ -1,24 +1,17 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.189]) by ozlabs.org (Postfix) with ESMTP id 4BEEB2BDF2
+Return-Path: <kumar.gala@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 26A0D2BDF2
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 15 Jan 2005 01:34:19 +1100 (EST)
-Received: from [212.227.126.162] (helo=mrelayng.kundenserver.de)
-	by moutng.kundenserver.de with esmtp (Exim 3.35 #1)
-	id 1CpSWn-00054n-00
-	for linuxppc-embedded@ozlabs.org; Fri, 14 Jan 2005 15:34:17 +0100
-Received: from [217.80.228.140] (helo=[192.168.1.10])
-	by mrelayng.kundenserver.de with asmtp (Exim 3.35 #1)
-	id 1CpSWn-0007KO-00
-	for linuxppc-embedded@ozlabs.org; Fri, 14 Jan 2005 15:34:17 +0100
-Message-ID: <41E7D8F7.4060901@anagramm.de>
-Date: Fri, 14 Jan 2005 15:36:39 +0100
-From: Clemens Koller <clemens.koller@anagramm.de>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-References: <20050114113126.434C4C108D@atlas.denx.de>
-In-Reply-To: <20050114113126.434C4C108D@atlas.denx.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Sat, 15 Jan 2005 01:43:52 +1100 (EST)
+In-Reply-To: <41E7A410.6060008@anagramm.de>
+References: <41E7A410.6060008@anagramm.de>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <B29E7784-663A-11D9-A3DB-000393DBC2E8@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Fri, 14 Jan 2005 08:43:47 -0600
+To: "Clemens Koller" <clemens.koller@anagramm.de>
+Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: Kernel 2.6.x to MPC8540/Microsys Board
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -30,38 +23,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Wolfgang Denk wrote:
+[snip]
+> My questions are now:
+>  Which is the best Kernel source tree to start porting 2.6.x to the=20
+> pm854
+> platform? I would prefer to stuck with the official sources. Is that a
+> good idea?
 
->>Which is the best Kernel source tree to start porting 2.6.x to the pm854 
->>platform? I would prefer to stuck with the official sources. Is that a 
->>good idea?
- >
-> Yes.
+I would suggest 2.6.10 if you want an official kernel release.  Is this=20=
 
-Thank you, that's what I wanted to hear :-)
+board generally available to people?  If so, and you want support for=20
+this board in the official kernel, send me your patches for review. =20
+I'll then push them up stream.
 
->>Is it a good idea to just 'copy' the pm854 platform specific files (PCI 
->>  initialization and some MTD driver options) to the 2.6.10 tree and see
->>how it works?
-> 
-> Copy from where? from 2.4? No.
+Be aware there are some infrastrucal changes I'm working on that moves=20=
 
-Well, I don't know how the platform specific things got moved from 2.4 
-to 2.6 in the past (yes I am a newbie). I have a working 
-2.4.26-pm854-something with a platform/pm854_defconfig (and some changed 
-non-official(?) files for the PCI and MTDs) and I want to get the same 
-for 2.6.10+ without changing things at the wrong place.
+the 85xx sub-arch support from using OCP to platform_device.  However,=20=
 
-Best greets,
+these have minor changes on the board files.
 
-Clemens Koller
-_______________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Str. 45/1
-81379 Muenchen
-Germany
+> Is it a good idea to just 'copy' the pm854 platform specific files =
+(PCI
+> =A0 initialization and some MTD driver options) to the 2.6.10 tree and=20=
 
-http://www.anagramm.de
-Phone: +49-89-741518-50
-Fax: +49-89-741518-19
+> see
+>  how it works?
+
+I would take a look at how 2.6 is structured for 85xx.  I tried to do a=20=
+
+better job and provide more common code for a board port to leverage. =20=
+
+So for something like PCI, you should hopefully just have to setup your=20=
+
+memory map and IRQ routing.
+
+> As there anybody who has already a working 2.6.10-something for =
+MPC8540
+> (well, non mpc8540ads).
+
+I'm not aware of anyone else with another MPC8540 port, I know of other=20=
+
+MPC8560's, and MPC8555/41 ports.
+
+- kumar
