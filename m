@@ -1,44 +1,31 @@
-Date: Wed, 3 Mar 1999 17:10:24 -0500 (EST)
-From: "P. Barrette" <barretp@mcmail.cis.mcmaster.ca>
-To: Michel Lanners <mlan@cpu.lu>
-cc: linuxppc-user-digest@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.2.x kernels and u grading software to minimum req.
-In-Reply-To: <199903030711.IAA28369@piglet.cpu.lu>
-Message-ID: <Pine.SOL.3.96.990303170544.25495B-100000@mcmail.cis.McMaster.CA>
+Message-ID: <36DE4D9D.4699A6F6@wanadoo.fr>
+Date: Thu, 04 Mar 1999 10:08:45 +0100
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: More problem in pre-R5
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-that would be nice, I just spend the last hour upgrading my i386 RH5.1
-machine from rh's errata page (actually a mirror to it), and that was
-relatively painless. 
-> .... which brings up a big question: Shouldn't there be upgrade areas
-> for LinuxPPC's releases, like there are for normal RedHat releases? It
-> seems to me that R4 still contains all the way old ackages, and that
-> the only updates available are from september last year or so...
-> 
+Hi,
 
-I guess that would be nice too, but  I'm under the
-impression that the linuxppc staff is substantially smaller than RH,
-correct me if I am wrong, so this strikes me as unlikely.
+I observed the following bug in the "more" program in pre-R5:
+If I type "/" to do an expression search, then what I type after the "/"
+is invisible, like when you type passwords. I can type blindly, and the
+search works, but this is kind of annoying.
 
-> Then, this sparks a second question: how about actuallay changing the
-> packages list in the distribution, so that if I net-install LinuxPPC, I
-> will always have the latest&greatest, but also bug- and
-> security-problem-free instal _without_ doing manual upgrades later on?
-> 
+Does anyone else see this?
 
-I grabbed all the sources and they compiled ok once I applied Gary's
-glibc1_99 patch.
- 
-> I had no problem upgrading most (and all the critical ones) from the
-> mentioned packages, though by getting the maintainer's official and
-> latest release (not .src.rpm's).
-> 
-> Michel
+I might add that this problem does not appear if I use "less" instead of
+"more". I tried several versions of util-linux, the latest being
+util-linux-2.9h-9a. The problem stays the same. I haven't seen it in R4.
 
+Any ideas?
+
+--
+Martin
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
