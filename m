@@ -1,39 +1,32 @@
-Date: Fri, 12 Mar 2004 00:44:39 -0800
-From: David Bryson <david@tsumego.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Oops on sleep w/2.6.4 tipb 1ghz
-Message-ID: <20040312084439.GA6929@heliosphan.futuretel.com>
-Reply-To: David Bryson <david@tsumego.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <022b01c40811$0b6ee620$3cc8a8c0@epro.dom>
+From: "Colin Leroy" <colin@colino.net>
+To: "challaharikumar" <challaharikumar@tataelxsi.co.in>,
+	<linuxppc-dev@lists.linuxppc.org>
+References: <001b01c40802$ea7e2970$3401080a@telxsi.com>
+Subject: Re: How to get the exact source code from this clone of linux tree:bitkeeper
+Date: Fri, 12 Mar 2004 10:04:37 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Got an oops on sleep, this is entirely repeatable.  This is me writing
-down the oops then typing it in, so there might be some discrepancies ;-)
+> How to get the exact source code from this clone of linux tree..
 
-hdc: start_power_step (step:0)
-hdc: completing PM request, suspend
-hda: start_power_step (step:0)
-hda: start_power_step (step:1)
-hda: complete_power_step (step:1, stat:50, err:0)
-hda: completing PM request, suspend
-Oops: kernel access of bad area, sig 11 [#1]
-NIP: C00B8388 LR: C00b83A4 SP: EF433DA0 REGS: ef433cf0 TRAP: 0301 Nottainted
-MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-DAR: 00000049, DSISR: 40000000
-TASK: ef4fc000[125] 'devfsd' Last syscall: 83
-GPR00: 00000002 EF433DA0 EF4FC000 C11B9A0D EDBF8F7C 00000005 C1029A0D
-EDBF8F24
-GPR08: EDBF4F1C C1144A0D EDBF8F0C C0270000 24002422
-Call trace:
-[c00b925c] devfs_lookup +0x58/0x2de
-[c0068fa8] __lookup_has +0xe4/0x17e
-[c00690ac] lookup_create +0xa4/0x120
-[c000560c] ret_from_syscall +0x0/0x04c
+A good read about bk is here: http://old.lwn.net/2002/0228/a/bk-thing.php3
 
-looks like the oops is somewhere in the bowels of devfs... any hints
-on what might have bothered the kernel ?
+Basically the two instructions to get a bk tree are:
+bk clone -q http://linux.bkbits.net/linux-2.5 linus-2.5
+bk -r co -q
+
+later, to update your tree, you have to issue:
+bk pull http://linux.bkbits.net/linux-2.5
+
+(if I understood everything correctly, that is)
+
+HTH,
+--
+Colin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
