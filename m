@@ -1,63 +1,33 @@
-In-Reply-To: <20040205091232.A15092@home.com>
-References: <4021F487.660E680B@alcatel.it> <40220DC0.2050105@Jaluna.COM> <20040205091232.A15092@home.com>
-Mime-Version: 1.0 (Apple Message framework v609)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <D4CB3E11-5869-11D8-BF45-000393DBC2E8@motorola.com>
-Cc: <Michele.Pallaro@alcatel.it>,
-	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>,
-	eric lescouet <eric.lescouet@Jaluna.COM>
-From: Kumar Gala <kumar.gala@motorola.com>
-Subject: Re: Linux kernel and u-boot for mpc8540
-Date: Fri, 6 Feb 2004 00:00:57 -0600
-To: Matt Porter <mporter@kernel.crashing.org>
+Date: Thu, 5 Feb 2004 22:43:49 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: MERRITT Nigel <Nigel.Merritt@tenix.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Interrupts on PPC 405Gr
+Message-ID: <20040206064349.GA7205@gate.ebshome.net>
+References: <200402060645.RAA20828@sprint.tenix.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200402060645.RAA20828@sprint.tenix.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Matt's fix is now part of the linuxppc-2.4 tree.  Thanks matt.
+On Fri, Feb 06, 2004 at 05:45:17PM +1100, MERRITT Nigel wrote:
+> When calling request_irq, the irq number had to be 30, which is the bit
+> in the UIC0_ER register that needs setting.  I was passing it 5, which
+> is the IRQ I wanted setting.  When I changed the IRQ number to 30 it
+> worked!  I'm not sure if this is a screw up on my part for not passing
+> the correct value in the first place, or an error in the Timesys kernel
+> (surely the number passed in should be the IRQ required, not the bit
+> position in the UIC registers).
 
-- kumar
+It's your error, just think what you have to pass to request_irq if
+you want to hook UART0 interrupt...
 
-On Feb 5, 2004, at 10:12 AM, Matt Porter wrote:
+IRQ5 - is _external_ (to the chip) interrupt line and NOT an interrupt
+number. _All_ UIC interrupts are external to the core (but not
+all of them are IRQx lines).
 
->
-> On Thu, Feb 05, 2004 at 10:32:48AM +0100, eric lescouet wrote:
->>
->> Michele,
->>
->> Support for mpc8540 is already in linuxppc-2.4 tree.
->> see ppc.bkbits.net
->
-> Actually, the linuxppc-2.4 support is incomplete, there's no TSEC/FEC
-> driver or other on-chip peripheral drivers in that tree to make it
-> really useful. You could just use a PCI network card to nfsroot a
-> filesystem and get started, though.
->
-> http://www.metrowerks.com/MW/Develop/Embedded/Linux/BSP.htm has
-> an 8560ADS BSP for download...it probably has some drivers for
-> on-chip peripherals included.
->
-> BTW, you'll need the following patch to linuxppc-2.4 to fix outbound
-> PCI mem cycles:
->
-> ===== arch/ppc/platforms/mpc85xx_ads_common.c 1.3 vs edited =====
-> --- 1.3/arch/ppc/platforms/mpc85xx_ads_common.c Thu Jan 22 12:58:25
-> 2004
-> +++ edited/arch/ppc/platforms/mpc85xx_ads_common.c      Thu Feb  5
-> 09:10:34 2004@@ -316,8 +316,8 @@
->         pci->piwar2 = 0;
->         pci->piwar3 = 0;
->
-> -       /* Setup 128M outbound mem window @ 0xe0000000 */
-> -       pci->potar1 = 0x00000000;
-> +       /* Setup 128M Phys:PCI 1:1 outbound mem window @ 0xe0000000 */
-> +       pci->potar1 = (MPC85XX_ADS_PCI_LOWER_MEM >> 12) & 0x000fffff;
->         pci->potear1 = 0x00000000;
->         pci->powbar1 = (MPC85XX_ADS_PCI_LOWER_MEM >> 12) & 0x000fffff;
->         pci->powar1 = 0x8004401a;       /* Enable, Mem R/W, 128M */
->
-> -Matt
->
-
+Eugene.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
