@@ -1,30 +1,30 @@
-Subject: MPC107 I2C driver, interrupt driven
-From: Adrian Cox <adrian@humboldt.co.uk>
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: sensors@stimpy.netroedge.com
-Content-Type: text/plain
-Date: 25 Mar 2003 17:54:04 +0000
-Message-Id: <1048614855.20101.405.camel@newt>
-Mime-Version: 1.0
+Message-ID: <000d01c2f32c$940aedd0$256eb796@corebellhychon>
+From: =?ks_c_5601-1987?B?wPzH/b+1?= <hychon@corebell.co.kr>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Microcode patch for using SMC1 and SCC3
+Date: Wed, 26 Mar 2003 09:13:45 +0900
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-The second version of my driver for the I2C unit in Motorola's MPC107
-bridge chip, plus the 824x integrated processors, is now available:
+hello!
 
-http://www.humboldt.co.uk/mpc10xi2c.html
+My name is hye-yong Chon!
 
-The changes in this release are:
-*) Now interrupt driven.
-*) Faster startup.
-*) Fixed bug in the stop condition (thanks to Timo Rossi).
-*) Uses official adapter and algorithm numbers.
+I have some Questions on 850 Processor.
 
-Once more, I welcome feedback on how it works for other people.
+my custom board(850) uses smc1 for console and scc2, scc3 for ethernet.
+I know that smc1 does not work because of conflicting dpram area. Then I
+download the microcode patch files from motorola.com, but I don't know
+how to apply to the kernel?
 
-- Adrian Cox
-http://www.humboldt.co.uk/
+Where areas are avaliable relocation areas(RPBASE)?
 
+Can you give me some advices and sample?
+
+thank you!
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
