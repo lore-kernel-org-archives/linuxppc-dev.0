@@ -1,27 +1,34 @@
-Date: Fri, 23 Jul 1999 20:09:22 -0400 (EDT)
-From: Tom Rini <trini@disparity.net>
-To: linuxppc-dev@lists.linuxppc.org, linuxppc-user@lists.linuxppc.org
-Subject: [WANTED] Grappler users
-Message-ID: <Pine.BSF.3.96.990723200443.83280d-100000@silver.teardrop.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sat, 24 Jul 1999 11:14:01 +1000
+Message-Id: <199907240114.LAA01151@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: bh40@calva.net
+CC: linuxppc-dev@lists.linuxppc.org
+In-reply-to: <19990723144647.023789@mail.mipsys.com> (message from Benjamin
+	Herrenschmidt on Fri, 23 Jul 1999 14:46:47 +0200)
+Subject: Re: vger 2.2.10 compile failures
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <19990723144647.023789@mail.mipsys.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Okay.  Thanks to the nice folks at orange micro, I have a Grappler 906f.
-And after a bit of plyaing around, I've gotten aruond the initial OOps at
-least.  I'm currenty looking for users with a 930U (Ultra) or 940UW to
-check out a few other things.  Note, currently at least on the 906f the
-driver doesn't fully recognize the card but won't oops.  I'm about to head
-out for college orientation, but should be able to play around a bit more
-once I get back  (Wed.).  Would people with iether of the above cards
-contact me privatly?
+Benjamin Herrenschmidt <bh40@calva.net> wrote:
 
----
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+> I'm getting link errors when compiling today's vger 2.2.10 with xmon
+> support enabled:
+> 
+> arch/ppc/xmon/x.o: In function `backtrace':
+> arch/ppc/xmon/x.o(.text+0x129e): undefined reference to `ret_from_int'
 
+I got tricked by cvs about this, maybe you have too.  I had a stable
+(linux_2_2) cvs tree, and when I did `cvs update -dP', I got an xmon
+directory, but it was the xmon from the head of the tree, i.e. the
+devel branch.  I should have been doing `cvs update -dP -rlinux_2_2',
+of course.  If you do that it should give you the xmon from the stable
+branch (which didn't actually exist until yesterday, but now has the
+xmon.c with the correct contents).
+
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
