@@ -1,54 +1,87 @@
-To: Erik Christiansen <erik@dd.nec.com.au>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Assembler "Error: unsupported relocation against r0" 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 31 Oct 2002 14:39:59 +1100."
-             <20021031033959.GA1806@dd.nec.com.au>
-Date: Thu, 31 Oct 2002 09:19:24 +0100
-Message-Id: <20021031081929.86C1410158@denx.denx.de>
+Message-Id: <3.0.3.32.20021031052948.0068a870@hollabaugh.com>
+Date: Thu, 31 Oct 2002 05:29:48 -0700
+To: linuxppc-embedded@lists.linuxppc.org
+From: "Dr. Craig Hollabaugh" <craig@hollabaugh.com>
+Subject: Real time clock seems stuck
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20021031033959.GA1806@dd.nec.com.au> you wrote:
->
->    powerpc-linux-as, built according to Penguinppc.org's "Cross
-> Development mini-howto for PPC Linux", is giving me stick about the
-> simplest assembler statements:
->
-> fred.s >>>
->    .text
->    .align 2
->    li          r0,0
->    addi        r0,0,0
-> <<<
->
-> $ powerpc-linux-as fred.s
-> fred.s: Assembler messages:
-> fred.s:3: Error: unsupported relocation against r0
-> fred.s:4: Error: unsupported relocation against r0
+Folks,
 
-Try this instead:
+I'm trying to get a walnut board booted. I'm using linuxppc_2_4_devel pulled from denx yesterday. I'm getting the "Real time clock seems stuck" message then nothing, no messages after that. I found a brief thread about this.
 
-fred.s >>>
-	.text
-	.align 2
-	li	0,0
-	addi	0,0,0
-<<<
+http://lists.linuxppc.org/linuxppc-embedded/200106/msg00113.html
 
-or #include something like "ppc_asm.tmpl" (in the Linux  kernel  tree
-as arch/ppc/kernel/ppc_asm.tmpl)
+Have the changes suggested been put in the devel tree? If so, can someone offer some advice on how to proceed?
 
-Best regards,
+Here's some console output.
 
-Wolfgang Denk
+PPCBoot 1.2.0 (Oct 20 2002 - 19:03:26)
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-I paid too much for it, but its worth it.
+CPU:   IBM PowerPC 405GP Rev. D at 200 MHz (PLB=100, OPB=50, EBC=50 MHz)
+           PCI sync clock at 33 MHz, internal PCI arbiter enabled
+           16 kB I-Cache 8 kB D-Cache
+Board: ### No HW ID - assuming WALNUT405
+I2C:   ready
+DRAM:  32 MB
+FLASH: 512 kB
+In:    serial
+Out:   serial
+Err:   serial
+KGDB:  kgdb ready
+ready
+BEDBUG:ready
+
+=> tftpboot 400000 p1
+ENET Speed is 100 Mbps - FULL duplex connection
+ARP broadcast 1
+TFTP from server 192.168.1.11; our IP address is 192.168.1.111
+Filename 'p1'.
+Load address: 0x400000
+Loading: #################################################################
+         ############################################
+done
+Bytes transferred = 557872 (88330 hex)
+=> imi 400000
+
+## Checking Image at 00400000 ...
+   Image Name:   Linux-2.4.20-pre11
+   Created:      2002-10-31  12:17:56 UTC
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    557808 Bytes = 544.7 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+=> bootm 400000
+## Booting image at 00400000 ...
+   Image Name:   Linux-2.4.20-pre11
+   Created:      2002-10-31  12:17:56 UTC
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    557808 Bytes = 544.7 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+Linux version 2.4.20-pre11 (root@tbdev1) (gcc version 2.95.4 20010319 (prerelease/franzo/20011204)) #12 Thu Oct 31 05:13:53 MST 2002
+IBM Walnut port (C) 2000-2002 MontaVista Software, Inc. (source@mvista.com)
+On node 0 totalpages: 1295
+zone(0): 1295 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line: console=ttyS0,9600 root=/dev/ram
+Warning: real time clock seems stuck!
+
+
+
+then nothing after that.
+
+Any ideas? I've searched the archives for walnut boot problems. It seems like most people just get it running and that's that.
+
+Thanks
+Craig
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
