@@ -1,36 +1,41 @@
+Date: Fri, 18 Oct 2002 17:47:32 +0200
 Subject: Re: Problems with 2_4_devel & MVME2600 serial interrupts
-From: Hollis Blanchard <hollis@austin.ibm.com>
-To: Anders Blomdell <anders.blomdell@control.lth.se>
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <432E39D0-E2AA-11D6-8132-0003931C2BFA@control.lth.se>
-References: <432E39D0-E2AA-11D6-8132-0003931C2BFA@control.lth.se>
-Date: 18 Oct 2002 10:15:35 -0500
-Message-Id: <1034954142.8169.91.camel@granite.austin.ibm.com>
-Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v482)
+Cc: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+To: Hollis Blanchard <hollis@austin.ibm.com>
+From: Anders Blomdell <anders.blomdell@control.lth.se>
+In-Reply-To: <1034954142.8169.91.camel@granite.austin.ibm.com>
+Message-Id: <E9EEC3C2-E2B0-11D6-8132-0003931C2BFA@control.lth.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 2002-10-18 at 09:59, Anders Blomdell wrote:
->
-> > 2. When the interrupts gets enabled, the system gets an interrupt and
-> > eventually
-> >    calls i8259_irq, which reads 0xff from pci_intack, which it will
-> > continue to
-> >    do	forever in this loop (do_IRQ, arch/kernel/irq.c):
->
-> A quick (and working, but probably unclean) solution is call
-> 'i8259_init(intack_addr)' with intack_addr set to zero (instead of the
-> 0xbffffff0 from prep_setup.c), thus forcing the interrupt to be polled from
-> the 8259 controller. Could somebody who understands open_pic (is this a
-> relative to MPIC?), give me a hint of suitable further reading before I to
-> try to clean this up?
+> Seems to me that either:
+> a) the pci_intack value is incorrect for your board, in which case you
+> should correct it
+Shure is, question is if it really should be caught from the pci_intack
+register, as far as I can understand from the MVME2600 doc's, the 8259
+interrupt generates a MPIC-IRQ0, but one has to poll the 8259 to find out
+what device it was that generated the interrupt.
 
-Seems to me that either:
-a) the pci_intack value is incorrect for your board, in which case you
-should correct it
-b) your board's int-ack feature is broken and you'll need to poll
 
--Hollis
+> b) your board's int-ack feature is broken and you'll need to poll
+
+Perhaps an extra field in the 'mot_info' (arch/ppc/platforms/prep_pci.c) is
+called for? This line in prep_init_IRQ (arch/ppc/platforms/prep_setup.c):
+
+   i8259_init(0xbffffff0); /* PCI interrupt ack address for MPC105 and 106
+*/
+
+does not look like a general solution.
+
+I'll take a further look in next week. Any comments/suggestions are welcome.
+..
+
+Regards
+
+Anders Blomdell
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
