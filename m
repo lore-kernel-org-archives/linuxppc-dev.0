@@ -1,17 +1,18 @@
-Return-Path: <Marc.Howard@KLA-Tencor.com>
-Received: from ca1xpr03.adcorp.kla-tencor.com (mailout02.kla-tencor.com
-	[192.146.1.172]) by ozlabs.org (Postfix) with SMTP id D433E2BDF2
+Return-Path: <jdomogala@acmepacket.com>
+Received: from acmepacket.com (host10.216.41.24.conversent.net [216.41.24.10])
+	by ozlabs.org (Postfix) with ESMTP id 520172BE83
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 Nov 2004 13:33:59 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPartTM-000-6c4946bd-e9c6-430e-891a-d3ea73920fc1"
-Date: Thu, 11 Nov 2004 18:19:02 -0800
-Message-ID: <91B22F93A880FA48879475E134D6F0BE283EBD@CA1EXCLV02.adcorp.kla-tencor.com>
-From: "Howard, Marc" <Marc.Howard@KLA-Tencor.com>
+	Fri, 12 Nov 2004 15:04:38 +1100 (EST)
+From: "Jeff Domogala" <jdomogala@acmepacket.com>
 To: <linuxppc-embedded@ozlabs.org>
-Subject: Trouble booting uboot on 440GX (ocotea) eval board after initial
-	power-up boot
+Date: Thu, 11 Nov 2004 22:36:23 -0500
+Message-ID: <NFBBJCNFKLFMBACPKDKCCEANELAA.jdomogala@acmepacket.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <20041111211549.3B221C14B3@atlas.denx.de>
+Subject: PowerPC MMU questions
+Reply-To: jdomogala@acmepacket.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,76 +23,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Folks,
 
-------=_NextPartTM-000-6c4946bd-e9c6-430e-891a-d3ea73920fc1
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C4C85D.F6D1935D"
+I am dealing with a PowerPC 7455.  Here is my understanding regarding the
+MMU translation order:  If the address is covered in a BAT, that BAT
+translation is in effect.  If there is no BAT entry, then the page tables
+are used to translate the address.  If there is no page table entry, an
+exception is thrown and the exception handler for the miss needs to add a
+new PTE.  So, correct me if I'm wrong in my translation.
 
-------_=_NextPart_001_01C4C85D.F6D1935D
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Now, The system starts up with BAT entries to get the system off the ground.
+I have equivalent BAT entries for the instruction and data sides.  I also
+have the L1 I and D caches on as well as the L2 cache (I and D mode).  The
+reason for using the BATs is to create non-cached I/O regions until the MMU
+PTEs are populated.  Once the MMU PTEs are setup, the caches are flsuhed and
+disabled, the MMU is disabled, the BATS disabled, the MMU re-enabled and the
+caches re-enabled.  So here are my questions:
 
-Hi,
-
-I've built and installed U-Boot 1.1.2 on an IBM 440GX eval board
-(ocotea).  After powering the board I can get the uboot interactive
-prompt.  If I type 'reset' or hit the reset button it hangs.  I get the
-same results whether or not I use the BDI2000.  Doing a power cycle of
-the board is the only way to get back to the prompt.
-
-Is there some reconfiguation U-Boot does that causes the processor boot
-address to change after the initial power-up?  Am I missing something
-here?
+1. Is it ok to have the same I and D BAT entries?
+2. Is it ok to setup the initial MMU PTEs with the BATs enabled or should
+the caches be disabled and MMU disabled during the PTE setup?
+3. Is there some other esource out there (mailing list or otherwise) that I
+should be addressing these questions to?
 
 Thanks,
 
-Marc W. Howard
-
-
-
-------_=_NextPart_001_01C4C85D.F6D1935D
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7226.0">
-<TITLE>Trouble booting uboot on 440GX (ocotea) eval board after initial =
-power-up boot</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Hi,</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">I've built and installed U-Boot 1.1.2 =
-on an IBM 440GX eval board (ocotea).&nbsp; After powering the board I =
-can get the uboot interactive prompt.&nbsp; If I type 'reset' or hit the =
-reset button it hangs.&nbsp; I get the same results whether or not I use =
-the BDI2000.&nbsp; Doing a power cycle of the board is the only way to =
-get back to the prompt.</FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Is there some reconfiguation U-Boot =
-does that causes the processor boot address to change after the initial =
-power-up?&nbsp; Am I missing something here?</FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Thanks,</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Marc W. Howard</FONT>
-</P>
-<BR>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C4C85D.F6D1935D--
-
-------=_NextPartTM-000-6c4946bd-e9c6-430e-891a-d3ea73920fc1--
+Jeff Domogala
