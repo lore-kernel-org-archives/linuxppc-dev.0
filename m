@@ -1,45 +1,40 @@
-From: jcarr@mail.linuxppc.org
-Date: Mon, 9 Oct 2000 23:17:10 -0400 (EDT)
-To: Gabriel Paubert <paubert@iram.es>
-cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: call_prom & call_method_1
-In-Reply-To: <Pine.HPX.4.10.10010100221110.16113-100000@gra-ux1.iram.es>
-Message-ID: <Pine.LNX.4.21.0010092310290.1339-100000@localhost.localdomain>
+Date: Tue, 10 Oct 2000 10:04:47 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: James Simmons <jsimmons@suse.com>
+cc: Samuel Rydh <samuel@ibrium.se>,
+        Linux Frame Buffer Device Development <linux-fbdev@vuser.vu.union.edu>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>, olh@suse.de
+Subject: Re: [linux-fbdev] Re: Video driver bug
+In-Reply-To: <Pine.LNX.4.21.0010091818340.6974-100000@euclid.oak.suse.com>
+Message-ID: <Pine.LNX.4.05.10010101003550.32152-100000@callisto.of.borg>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Thanks. that's quite a doc. It'll take a while to grok.
-Jeff
-jcarr@linuxppc.org
+On Mon, 9 Oct 2000, James Simmons wrote:
+> > Well, for aty128fb (which doesn't support a hardware cursor yet), the fix is
+> > what you propose. However, for atyfb I see no simple solution, apart from
+> > disabling the hardware cursor :-(
+>
+> I have some ideas but it would requires some changes to the fbcon layer.
+> Also it would move palette handling from fbdev to the console layer.
+> Would these changes be included with the 2.4.0-testX kernels?
 
-On Tue, 10 Oct 2000, Gabriel Paubert wrote:
+I think we must do something in 2.4.0-testX, since you can abuse the bug to
+panic the box.
 
->
-> On Mon, 9 Oct 2000 jcarr@mail.linuxppc.org wrote:
->
-> >
-> > > >1) Does anyone know what other strings can be sent to call_prom besides
-> > > >"getprop", "findpackage", "interpret"?
-> > >
-> > > claim, release, ... well, those are defined in the OF client interface
-> > > spec of the OF standard. Firmorks has, I think, a separate book for them
-> >
-> > Ah ha! That explains it - that's the one firmworks manual I don't have.
->
-> Hmm, I found a description in a ps file I downloaded a few days ago when
-> surfing somewhere between Apple, Firmworks and Sun. Look for 1275.ps or
-> 12750d12.ps in an FTP directory, quite a lot of functons of the client
-> interface are defined.
->
-> BTW: the name of the package is /openprom/client-services.
->
-> 	Gabriel
->
->
->
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
