@@ -1,45 +1,41 @@
-Message-ID: <3ADB6887.F67E9DDE@iiic.ethz.ch>
-Date: Mon, 16 Apr 2001 23:47:51 +0200
-From: Michel =?iso-8859-1?Q?D=E4nzer?= <michdaen@iiic.ethz.ch>
-MIME-Version: 1.0
-To: Iain Sandoe <iain@sandoe.co.uk>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: XF4 (mach64) help please
-References: <20010416151514.E88D02F0B6@apollo.valhalla.net>
-Content-Type: text/plain; charset=iso-8859-1
+Date: Mon, 16 Apr 2001 13:54:58 -0800
+From: Ethan Benson <erbenson@alaska.net>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: boot params
+Message-ID: <20010416135458.L2127@plato.local.lan>
+References: <20010416115854.9A1722F09A@apollo.valhalla.net> <20010416040553.J2127@plato.local.lan> <3ADB35C9.9113AC3A@denise.shiny.it>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="nwdm+gty0IHWQzA9"
+In-Reply-To: <3ADB35C9.9113AC3A@denise.shiny.it>; from pochini@denise.shiny.it on Mon, Apr 16, 2001 at 08:11:21PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Iain Sandoe wrote:
+--nwdm+gty0IHWQzA9
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 1/  Key-mappings are screwed (big time) with any combination of "Option
-> XkbModel" I've tried - this is very unfortunate because I can't do SysRq or
-> VT switches - too much time spent watching fsck...
+On Mon, Apr 16, 2001 at 08:11:21PM +0200, Giuliano Pochini wrote:
+>=20
+> Not a good choice. Often it happens you can't type anything in the
+> OF boot menu script, so you can't choose what OS start up (or at
+> least my 7300 with OF v1.0.5 had this problem). It also happens on
+> a 2nd-half-2000-series G4 where the ofboot script refuse to accept
+> keyboard input 80% of the times.
 
-You could try Option "XkbDisable" until you know how to configure XKB (I still
-use it ;).
+everyone i know running quik doesn't have any problems. =20
 
+--=20
+Ethan Benson
+http://www.alaska.net/~erbenson/
 
-> 2/  The Mach64 driver is not loading.
->
-> 3/  The fbdev driver loads & runs but usually crashes on X restart (which
-> occurs on log-out) - leaving me with a locked machine and another fsck...
-
-I beg your pardon? :) I'd be interested to see a log of that, preferrably with
-debugging output enabled, but this smells like a framebuffer device bug.
-
-
-> fbdevHWInit failed
-> crapping out here
-
-Do you use atyfb in console? The ati driver only works with that with option
-"UseFBDev". No idea what it will do without that option, you'd have to find
-out.
+--nwdm+gty0IHWQzA9
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
 
---
-Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
-CS student, Free Software enthusiast   \        XFree86 and DRI project member
+--nwdm+gty0IHWQzA9--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
