@@ -1,37 +1,36 @@
-Date: Thu, 10 Dec 1998 11:15:24 -0600 (CST)
-From: nathan ingersoll <ningerso@d.umn.edu>
-To: john s anderson <jacobs@azstarnet.com>
-cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Kernel 2.1.131
-In-Reply-To: <Pine.GSO.3.96.981210100912.21507C-100000@andromeda.azstarnet.com>
-Message-ID: <Pine.SO4.4.02.9812101110550.15356-100000@ub.d.umn.edu>
+Message-ID: <36700A9F.C1C99794@jlc.net>
+Date: Thu, 10 Dec 1998 12:53:36 -0500
+From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Guy G. Sotomayor, Jr." <ggs@shiresoft.com>
+CC: Cort Dougan <cort@persephone.cs.nmt.edu>,
+        Troy Benjegerdes <hozer@drgw.net>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: PReP RTC vs Decrementer accuracy...
+References: <Pine.LNX.3.96.981208165142.11398A-100000@persephone.cs.nmt.edu> <366EDF74.6EE17E0D@jlc.net> <366F62CC.1C4B225E@shiresoft.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have a forgotten to install the modules on an older kernel, and that
-worked fine. The kernel doesn't even seem to load far enough to need the
-modules. I am not sure where to start to try figuring out the problem. It
-just dies so early that I don't have any error messages or anything to
-work with.
+Guy G. Sotomayor, Jr. wrote:
 
-On Thu, 10 Dec 1998, john s anderson wrote:
+> Umm, but why are you keeping track of time with the decrementer?
 
-> I have no ideas on the problem, but I can confirm that a 2.1.131 kernal,
-> without modules properly installed, will boot my 7500.
-> 
-> In fact, it's fairly functional (I used it for ~1 day, before I got a
-> chance to reboot and move files on the MacOS side.), so that's not your
-> problem.
-> 
-> HTH,
-> john.
-> jacobs@azstarnet.com
-> www.treefort.org/~jacobs
-> 
-> 
+Because that is the way it was done when I first looked at the kernel
+a long time ago :-).
+
+
+> .....use the timebase to keep track of time and the decrementer
+> to deliver periodic interrupts?
+
+Excellent idea.  I have started to implement this on an MPC8xx board,
+so I will let everyone know the results pretty quickly.
+
+It appears the TB is part of every PPC core.  If anyone knows different
+please let me know.
+
+    -- Dan
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
