@@ -1,43 +1,42 @@
-Date: Mon, 22 Nov 1999 20:40:01 -0700
-From: Cort Dougan <cort@fsmlabs.com>
-To: Christian Zankel <chris@mvista.com>
-Cc: linuxppc-devel@lists.linuxppc.org, linuxppc-embedded@lists.linuxppc.org
+Message-ID: <383A3610.BF976EDF@netx4.com>
+Date: Tue, 23 Nov 1999 01:37:04 -0500
+From: Dan Malek <dan@netx4.com>
+MIME-Version: 1.0
+To: Cort Dougan <cort@fsmlabs.com>
+CC: Christian Zankel <chris@mvista.com>, linuxppc-devel@lists.linuxppc.org,
+        linuxppc-embedded@lists.linuxppc.org
 Subject: Re: bootloader & head.S weirdness & restructuring
-Message-ID: <19991122204001.A14117@hq.fsmlabs.com>
-References: <19991122120429.031138@mailhost.mipsys.com> <19991122143732.B12973@hq.fsmlabs.com> <3839CF18.5D600DE@mvista.com> <19991122165535.A13360@hq.fsmlabs.com> <383A0AA4.1E4227DC@mvista.com>
-Mime-Version: 1.0
+References: <19991122120429.031138@mailhost.mipsys.com> <19991122143732.B12973@hq.fsmlabs.com> <3839CF18.5D600DE@mvista.com> <19991122165535.A13360@hq.fsmlabs.com> <383A0AA4.1E4227DC@mvista.com> <19991122204001.A14117@hq.fsmlabs.com>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <383A0AA4.1E4227DC@mvista.com>; from Christian Zankel on Mon, Nov 22, 1999 at 07:31:48PM -0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-If bootx/quik could gather the necessary info from the OF tree then stick
-it in physical ram somewhere we could pass a pointer to anything with
-something like the common bootinfo struct I've been playing with.
+Cort Dougan wrote:
 
-Ben, how much work would it take to get bootx to do that?  I know quik
-isn't quite there but we could add some code to do something along those
-lines.
+> Yes, I do walk along that path quite often :)
 
-} That was exactly what I meant.
+> } head.S. (Try to walk along the 'path' of the 8xx implementation).
 
-Yes, I do walk along that path quite often :)  I'm happy to merge in
-patches to do that job or talk about ideas.  Do you have anything specific
-in mind?
 
-} And of course you need to edit mm/init.c. But if you try to exclude any
-} code related to OF and/or residual data there are many more than just
-} head.S. (Try to walk along the 'path' of the 8xx implementation). I
-} would like to see some kind of an implementation like the m68k tree. 
+OK, I am a little clueless at this hour.  As it appears you are
+making fun of the way I wrote that code, perhaps you should
+provide a suggestion.  I have more, the 82xx looks just like
+that :-)......I am off to look at the m68k tree......
 
-OF is pretty firmly entrenched in the kernel, that's true.  It could be
-pulled out so it's more modular.
 
-} I thought that Dan Mallek is working on the 82xx port. Actually, I'm
-} working on a custom designed board based on a 750, and it looks like
-} that there are two or more to come in the forseeable future. (I guess
-} the ports will be much like the port for the gemini board, i.e. without
-} OpenFirmware, and maybe other 'pecularities').
+> } I thought that Dan Mallek is working on the 82xx port.
+
+
+Yes, I am.  Although it is not really 82xx.  The 8240 is a 603
+with a diluted MPC106 without OF.  When attached to the Sandpoint,
+it looks somewhat like the Gemini port.  The 8260 is a 603 with
+a hot rod CPM, so it looks more like the current 8xx port.
+Both of these use the "board information" structure in place of
+the OF residual like I did on the 8xx.
+
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
