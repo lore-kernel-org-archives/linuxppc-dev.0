@@ -1,47 +1,37 @@
-From: Paul Mackerras <paulus@linuxcare.com.au>
+Date: Sat, 9 Sep 2000 12:16:43 +0200 (MET DST)
+From: Roman Zippel <zippel@fh-brandenburg.de>
+To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+cc: Michel D?nzer <daenzerm@student.ethz.ch>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        linuxppc-dev@lists.linuxppc.org,
+        linux-apus-devel@lists.sourceforge.net
+Subject: Re: newer xfree86 4.0.1 patches
+In-Reply-To: <00090723415902.31531@enzo.bigblue.local>
+Message-ID: <Pine.GSO.4.10.10009091208470.13087-100000@zeus.fh-brandenburg.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <14777.65296.649836.830091@argo.linuxcare.com.au>
-Date: Sat, 9 Sep 2000 20:12:48 +1100 (EST)
-To: Tilmann Bitterberg <tibit-ibm@bitterberg.de>
-Cc: Linuxppc Development Mailing List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: CONFIG_HIGHMEM problems
-In-Reply-To: <Pine.LNX.4.21.0009081006530.1436-200000@ford>
-References: <Pine.LNX.4.21.0009081006530.1436-200000@ford>
-Reply-To: paulus@linuxcare.com.au
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tilmann Bitterberg writes:
+Hi,
 
-> After looking at arch/ppc/mm/init.c:pmac_find_end_of_memory, I
-> realized that there is no chance to return a total of more than
-> ram_limit (which is in 512MB in my case).
+> > We have a CVS repository at SourceForge. Roman Zippel integrates bitkeeper
+> > into it, but unfortunately we don't have anyone for the reverse direction.
+> > How could that be done?
+>
+> Via Linus probably, but in this special case we could arrange something.
 
-Hmmm, you're right, the ram_limit limit shouldn't be applied if
-CONFIG_HIGHMEM is defined.  Your patch looks a bit wrong though, we
-need phys_mem.regions[0].size to reflect the total amount of ram we
-are going to be using (including high memory).  I haven't had a chance
-to test the highmem stuff on a machine that has a lot of memory myself
-yet.
+Most of the changes are in the ppc subtree, so I would rather like to see
+if they would go through one of the ppc trees, so they don't break
+anything. On the other hand they also need a small cleanup especially some
+mm part, as APUS is the only ppc machine where the memory doesn't start at
+zero, but here I'm currently still looking for some strange bug - all
+kernel virtual doesn't work (ioremap, vmalloc), but at least vmalloc did
+work and I see nothing in the changes, what could have broken it, so I'm
+still hunting...
 
-> Problem: After freeing all init stuff I get a
-> Machine check in kernel mode
-> Caused by (from: SRR1=81032) Machine check.
-> TRAP 0200
-> TASK = co1a5ff0[0] 'swapper'
-> Last syscall: 120
+bye, Roman
 
-Well, we would need to know where the machine check happened,
-preferably with a stack trace.
-
-Paul.
-
---
-Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
-+61 2 6262 8990 tel, +61 2 6262 8991 fax
-paulus@linuxcare.com.au, http://www.linuxcare.com.au/
-Linuxcare.  Support for the revolution.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
