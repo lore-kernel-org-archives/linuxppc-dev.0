@@ -1,48 +1,42 @@
-Message-ID: <3965E562.2322340E@crf.canon.fr>
-Date: Fri, 07 Jul 2000 16:12:50 +0200
-From: Eric Valette <valette@crf.canon.fr>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <bh40@calva.net>
-CC: linuxppc-dev@lists.linuxppc.org, yellowdog-devel@lists.yellowdoglinux.com
+Date: Fri, 7 Jul 2000 16:13:12 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Hollis Blanchard <hollis@amulet.co.jp>
+cc: Iain Sandoe <iain@sandoe.co.uk>, linuxppc-dev@lists.linuxppc.org,
+        Benjamin Herrenschmidt <bh40@calva.net>
 Subject: Re: RFC: Changing default partition type for linux/ppc
-References: <20000707105915.30418@mailhost.mipsys.com>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3965D1D8.C7B9F28E@amulet.co.jp>
+Message-ID: <Pine.LNX.4.10.10007071611120.505-100000@cassiopeia.home>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt wrote:
+On Fri, 7 Jul 2000, Hollis Blanchard wrote:
+> > What prospect of sharing swap space between MacOS X and linux in dual/multi
+> > boot machines?
 >
-> Hi all !
->
-> Currently, the default partition type used by Linux/PPC on mac partition
-> maps is Apple_UNIX_SVR2. This is historically the type used by Apple's A/
-> UX for its own partitions. However, I don't like it since it gives no
-> indication on the type of filesystem on the partition, and I see no
-> reason to keep it.
->
-> So I suggest moving to Linux_ext2, Linux_swap, or maybe simply Linux and
-> Linux_swap (since ext2 is not the only filesystem Linux may put on
-> these). Using a different type for swap would help avoiding confusion.
->
-> If everyone is ok, we can then update pdisk, and on my side, I'll update
-> the kernel's root-auto-detect mecanism to take this into account. (The
-> kernel will currently find by itself a root partition if it has the above
-> type and the name "root" and no root= option was specified by the bootloader).
->
-> Any comments ?
+> I don't know the details, but I know that you must run mkswap on a new
+> swap partition. Since I don't imagine any particular effort has been put
+> in to keeping Linux and BSD mkswap's compatible, I doubt it would be
+> possible.
 
-Do not forget Prep Machines that have already a specific type of
-partition that is already recognised by cfdisk...
+Then run `mkswap' (or whatever it's called in your-other-OS) in one of the
+boot scripts.
+
+I've been using a similar scheme to share the swap partition for Linux/m68k
+and AmigaOS VMM040, many years ago.
+
+Gr{oetje,eeting}s,
+
+						Geert
 
 --
-   __
-  /  `                   	Eric Valette - Canon CRF
- /--   __  o _.          	Canon Development Europe Team Leader
-(___, / (_(_(__         	Rue de la touche lambert
-				35517 Cesson-Sevigne  Cedex
-				FRANCE
-Tel: +33 (0)2 99 87 68 91	Fax: +33 (0)2 99 84 11 30
-E-mail: valette@crf.canon.fr	http://www.crf.canon.fr
+Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
