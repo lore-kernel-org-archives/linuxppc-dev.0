@@ -1,15 +1,32 @@
 Reply-To: <zjzhou@newrocktech.com>
 From: "John Zhou" <zjzhou@newrocktech.com>
 To: "'linuxppc-embedded'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: question on PPC performance
-Date: Fri, 30 Jan 2004 18:22:24 +0800
-Message-ID: <000001c3e71a$f4d68010$b702a8c0@newrock2>
+Subject: RE: question on PPC performance
+Date: Fri, 30 Jan 2004 19:32:26 +0800
+Message-ID: <000001c3e724$bd3ac490$b702a8c0@newrock2>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-In-Reply-To: <001b01c3e70d$3654e3f0$0100a8c0@pc002>
+In-Reply-To: <000001c3e71a$f4d68010$b702a8c0@newrock2>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+my questions is:
+
+why is it 15 ns when accessing other devices such as port A/B/C/D, immr, etc, except accessing SDRAM, but about 5 ns when accessing SDRAM?
+
+Thanks in advance!
+John
+
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of John
+Zhou
+Sent: Friday, January 30, 2004 6:22 PM
+To: 'linuxppc-embedded'
+Subject: question on PPC performance
+
 
 
 Dear all,
@@ -61,5 +78,6 @@ void performance_test(void)
 					time = *(volatile unsigned short*)0xF0010D9E;
 					printk ("#test3: 2 access loop 1000 times use %dns\r\n", time*15);
 }
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
