@@ -1,70 +1,39 @@
-Date: Mon, 21 Jun 1999 20:57:34 -0500 (CDT)
-From: Troy Benjegerdes <hozer@drgw.net>
-To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: dl-load.c (ld.so) bug??
-In-Reply-To: <Pine.LNX.3.96L.990621200130.5237B-100000@unix47.andrew.cmu.edu>
-Message-ID: <Pine.LNX.4.04.9906212045480.27642-100000@narn.local.drgw.net>
+Date: Mon, 21 Jun 1999 20:37:08 -0600 (MDT)
+From: Brad Midgley <brad@pht.com>
+Reply-To: Brad Midgley <brad@pht.com>
+To: Paul.Mackerras@cs.anu.edu.au
+cc: linuxppc-users@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: precompiled 2.2.10 kernel available
+In-Reply-To: <199906180718.RAA11040@tango.anu.edu.au>
+Message-ID: <Pine.LNX.3.95.990621201542.23566A-100000@pacific.pht.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 21 Jun 1999, Hollis R Blanchard wrote:
+did the protocol of /dev/usbmouse have to change? :( now it appears as a
+ps2 mouse not a busmouse. x can't understand it either way but i'm able to
+use my usb mouse in x by having gpm use it as a ps2 mouse and export it,
+as in
 
-> On Mon, 21 Jun 1999, Troy Benjegerdes wrote:
-> > 
-> > testcase:
-> > 
-> > #include <stdio.h>
-> > int main(void){
-> >         char * ptr;
-> >         printf("hello world\n");
-> >         fflush(stdout);
-> >         ptr = (char *)malloc(100);
-> >         free(ptr);
-> > }   
-> > 
-> > 
-> > compile this with:
-> > gcc test.c -lefence -g -static
-> > 
-> > On a PPC glibc-2.1 box, this segfaults in dl-load.c:564
-> > 
-> > On a x86 Red Hat 6.0 system, it works fine (
-> > [troybenj@mos6 troybenj]$ ./a.out
-> > 
-> >   Electric Fence 2.0.5 Copyright (C) 1987-1998 Bruce Perens.
-> > hello world
-> > [troybenj@mos6 troybenj]$ 
-> > 
-> > 
-> > Either dl-load.c has a serious bug, or ElectricFence is broken on PPC.
-> > I suspect it's the former, and if so, this would explain the weird
-> > segfaults I've been seeing.
-> > 
-> > Can someone that knows glibc better please confirm or deny this for me?
-> 
-> Ok, I don't know squat about glibc, but doesn't the fact that it runs fine
-> *without* Electric Fence indicate it's a problem with that?
-> 
-> -Hollis
-> 
+gpm -t ps2 -R
 
-No. Electric Fence is designed to catch programming errors, such as
-attempting to access memory which was not 'malloc'ed. I have traced this
-down extensively a couple of months ago, and found that it does indeed
-appear to overrun what it malloced.
+and then have X use gpm
 
-In normal operation, if I am correct, the ld.so code is just silently
-overwriting some other data. 
+Section "Pointer"
+ Protocol "mousesystems"
+ Device "/dev/gpmdata"
+EndSection
 
---------------------------------------------------------------------------
-| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
-|    Unix is user friendly... You just have to be friendly to it first.  |
-| This message composed with 100% free software.    http://www.gnu.org   |
---------------------------------------------------------------------------
+is there an easier way?
+
+> *NOTE:* This kernel includes Linus' USB stack, which (in my version)
+
+Brad
+brad@pht.com | http://www.pht.com/~brad/
+
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
