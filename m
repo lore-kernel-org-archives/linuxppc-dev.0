@@ -1,30 +1,32 @@
-Content-Type: text/plain;
-  charset="us-ascii"
-From: John Schmidt <jas@netbrick.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Ultra SCSI hard drive question
-Date: Fri, 15 Nov 2002 08:41:06 -0700
-MIME-Version: 1.0
-Message-Id: <200211150841.06311.jas@netbrick.com>
+Date: Fri, 15 Nov 2002 09:17:24 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Atm account <linux2@cdotd.ernet.in>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Problem in booting PPC with kernel 2.5.44
+Message-ID: <20021115161724.GA13063@opus.bloom.county>
+References: <20021114151136.GB14431@opus.bloom.county> <Pine.OSF.4.10.10211151612210.11070-100000@moon.cdotd.ernet.in>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.OSF.4.10.10211151612210.11070-100000@moon.cdotd.ernet.in>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Fri, Nov 15, 2002 at 04:24:36PM +0500, Atm account wrote:
+>
+> On Thu, 14 Nov 2002, Tom Rini wrote:
+> > >     Now the problem is ... the kernel has been linked at 3GB and a call in
+> > > kernel/head.S which says ---
+> > How did you change things to have it link at 3GB?
+> 	What else is it linked at?? Is it not what KERNELBASE is assigned
+> to?? AFAIK kernel links at 0xc0000000 and the bootloader at
+> 8Mb (PPC based boards).
 
-I have on old Power Tower Pro (Mac 9500 clone) that uses scsi drives.
-My current /home drive located on the internal bus is going sour on me
-and I need to get it replaced.  I am looking at a replacement described
-as:
-	IBM UltraSCSI Narrow 50 Pin (68 to 50 adapted)
+Did you change the file itself, or did you make use of
+CONFIG_ADVANCED_OPTIONS, is what I'm asking.
 
-Would the linux scsi drivers have any problems with an ultrascsi narrow
-drive?  The current drive is some old slow 5400 drive that isn't ultra
-scsi.
-
-Thanks,
-
-John Schmidt
-jas@netbrick.com
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
