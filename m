@@ -1,53 +1,36 @@
-Message-Id: <200009031303.PAA00901@piglet.grunz.lu>
-Date: Sun, 3 Sep 2000 15:03:40 +0200 (CEST)
+Message-Id: <200009031315.PAA00925@piglet.grunz.lu>
+Date: Sun, 3 Sep 2000 15:15:45 +0200 (CEST)
 From: Michel Lanners <mlan@cpu.lu>
 Reply-To: mlan@cpu.lu
-Subject: PATCH: improved processor config for G3s
+Subject: PATCH: final version of l2cr cmd line
 To: paulus@linuxcare.com.au
 cc: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: MULTIPART/mixed; BOUNDARY="134458388-846930886-967986227=:867"
+Content-Type: MULTIPART/mixed; BOUNDARY="134458388-1681692777-967986952=:867"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---134458388-846930886-967986227=:867
+--134458388-1681692777-967986952=:867
 Content-Type: TEXT/plain; charset=us-ascii
 
 Hi Paul,
 
-It's patch day today ;-)
+Since BenH fixed the _set_L2CR() function, I have been able to shorten
+the l2cr command line code. Attached is the patch vs. your current 2.4
+rsync tree. I've not been able for a long time to boot a 2.4 kernel, but
+it never crashed in this part ;-)
 
-Attached is my try at improving the processor configuration for G3/G4
-processors in head.S. Instead of leaving some config bits at what they
-were set by the formware, I've tried to set all availbale faetures to
-their 'optimum' value. Patch is against your 2.4 rsync tree as of today.
-This patch, as well as the same thing against a 2.2 source, are also
-posted on sourceforge.
+Anyway, all the patch does is to actually enable the processing of l2cr=
+command lines.
 
-Those where I see no problem are:
-
- * Branch History Table (BHTE), Branch Target ICache (BTIC), Dynamic
-   Power Management (DPM) and Store Gathering (SGE) all on,
- * Instruction Cache Throttling Control (ICTC) off.
-
-These were not touched before, but might be worth a discussion:
-
- * Speculative Cache Access Disable (SPD) cleared, Address Brodcast
-   (ABE) enabled
-
-Clearing SPD makes sense since some processor upgrade cards come with an
-OF patch that sets this bit (due to ROM problems... we don't care once
-Linux is up).
-
-I'm running these processor settings without a problem for some time
-now. If all the processor config in head.S doesn't look clean to some, I
-agree, and I propose we change that setup a bit for 2.5, separating the
-cache enable stuff from the processor configuration.
+Thanks for including this if you have no objection.
 
 Cheers
 
 Michel
+
+PS Patch also posted to sourceforge.
 
 -------------------------------------------------------------------------
 Michel Lanners                 |  " Read Philosophy.  Study Art.
@@ -56,38 +39,30 @@ L-1710 Luxembourg              |
 email   mlan@cpu.lu            |
 http://www.cpu.lu/~mlan        |                     Learn Always. "
 
-
---134458388-846930886-967986227=:867
+--134458388-1681692777-967986952=:867
 Content-Type: TEXT/plain; CHARSET=US-ASCII
-Content-Disposition: attachment; filename="processor.diff"
+Content-Disposition: attachment; filename="l2cr.diff"
 
-diff -uNr linux-2.4.paul/arch/ppc/kernel/head.S linux/arch/ppc/kernel/head.S
---- linux-2.4.paul/arch/ppc/kernel/head.S	Sun Aug 27 12:33:12 2000
-+++ linux/arch/ppc/kernel/head.S	Sat Sep  2 11:26:12 2000
-@@ -1347,13 +1347,17 @@
- 4:
- 	cror	14,14,18
- 	bne	3,6f
--	/* We should add ABE here if we want to use Store Gathering
--	 * and other nifty bridge features
-+	/* for G3/G4:
-+	 * enable Store Gathering (SGE), Address Brodcast (ABE),
-+	 * Branch History Table (BHTE), Branch Target ICache (BTIC)
- 	 */
--	ori	r11,r11,HID0_SGE|HID0_BHTE|HID0_BTIC /* for g3/g4, enable */
-+	ori	r11,r11,HID0_SGE | HID0_ABE | HID0_BHTE | HID0_BTIC
-+	oris	r11,r11,HID0_DPM>>16	/* enable dynamic power mgmt */
-+	li	r3,HID0_SPD
-+	andc	r11,r11,r3		/* clear SPD: enable speculative */
-  	li	r3,0
-- 	mtspr	ICTC,r3
--5:	mtspr	HID0,r11		/* superscalar exec & br history tbl */
-+ 	mtspr	ICTC,r3			/* Instruction Cache Throttling off */
-+5:	mtspr	HID0,r11
- 6:	blr
+diff -uNr linux-2.4.paul/arch/ppc/kernel/setup.c linux/arch/ppc/kernel/setup.c
+--- linux-2.4.paul/arch/ppc/kernel/setup.c	Tue Aug  8 07:46:33 2000
++++ linux/arch/ppc/kernel/setup.c	Sat Sep  2 11:26:13 2000
+@@ -661,11 +661,13 @@
+ 	{
+ 		unsigned long val = simple_strtoul(str, NULL, 0);
+ 		printk(KERN_INFO "l2cr set to %lx\n", val);
+-		_set_L2CR(0);
+-		_set_L2CR(val);
++		_set_L2CR(0); 		/* force invalidate by disable cache */
++		_set_L2CR(val);		/* and enable it */
+ 	}
+ }
 
- /*
++__setup("l2cr=", ppc_setup_l2cr);
++
+ void __init ppc_init(void)
+ {
+ 	/* clear the progress line */
 
---134458388-846930886-967986227=:867--
+--134458388-1681692777-967986952=:867--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
