@@ -1,44 +1,35 @@
-Date: Thu, 28 Oct 1999 12:31:02 -0500
-From: Grant Erickson <grant@lcse.umn.edu>
-To: linuxppc-embedded@lists.linuxppc.org
-cc: Daniel Nilsson <daniel.n.nilsson@home.se>,
-        Adrian Cox <apc@agelectronics.co.uk>, Wolfgang Denk <wd@denx.de>
-Subject: Bug Discovered in Binutils/GCC for PPC403
-In-Reply-To: <Pine.SGI.4.10.9910281200550.695157-100000@sapphire.lcse.umn.edu>
-Message-ID: <Pine.SGI.4.10.9910281224020.695157-100000@sapphire.lcse.umn.edu>
+Message-ID: <38188A5A.4E3FC253@netx4.com>
+Date: Thu, 28 Oct 1999 13:39:38 -0400
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Nicolas Pohland <pohland@snom.de>
+CC: Dan Malek <dan@penguin.netx4.com>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MPC8BUG crashes on Windows 95/98/NT
+References: <381706D7.FF1D8477@snom.de> <38171E45.DC552AAF@netx4.com> <38188496.DF592083@snom.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-For those of you working with the TiVo Linux sources, I discovered bug in
-binutils-2.9.1.0.25 and binutils-2.9.5.0.14 that results in the following
-sorts of error:
+Nicolas Pohland wrote:
 
-foobar.c: Assembler messages:
-foobar.c:7868: Error: junk at end of line: `28'
 
-It appears that the assembler has the incorrect definition for the
-'dcread' instruction:
+> Essentially the email lists imply to chuck the FADS. Is this a correct
+> summary ?
 
-In the file binutils-2.9.5.0.14/opcodes/ppc-opc.c, the definition is as
-follows:
+Well, I prefer not to use it because in the past it has not
+been a pleasant experience for me :-).  Just consider how much
+time you have already spent.....There are other options where
+you could have been writing your application software within
+minutes of opening the box.
 
-{ "dcread",  X(31,486), XRT_MASK,       PPC403,         { RA, RB } },
+For some people in big companies with nice salaries, this may
+not be a problem.  For a product and software development
+consultant like me, assisting start up companies to bring
+products to market in record time and lowest cost, tools like
+these are horribly inefficient.
 
-However, according to the IBM PowerPC 403GCX manual the definition is:
 
-	dcread RT,RA,RB
-
-The patch to fix this is:
-
-{ "dcread",  X(31,486), X_MASK, 	PPC403,         { RT, RA, RB } },
-
-Patch the ppc-opc.c file and rebuild binutils and you're back on your way.
-Otherwise, just comment out the offending line of code, such as:
-
-	asm("dcread %0,0,%1" : "=r" (tag) : "r" (p));
-
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
