@@ -1,28 +1,34 @@
-Message-Id: <200007301216.NAA05113@hyperion.valhalla.net>
-Date: Sun, 30 Jul 2000 13:17:29 +0100
-Subject: Re: CONFIG_PPC != Mac
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Geert Uytterhoeven <geert@linux-m68k.org>,
-        Tony Mantler <nicoya@apia.dhs.org>
-CC: Tom Rini <trini@kernel.crashing.org>, Dan Malek <dan@netx4.com>,
-        "linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Sun, 30 Jul 2000 14:27:38 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: bob@kunk.jriver.com
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: RS/6000 Model 170 Boots Linux
+In-Reply-To: <20000729203215.23597.qmail@kunk.jriver.com>
+Message-ID: <Pine.LNX.4.10.10007301425200.810-100000@cassiopeia.home>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  Sat, Jul 29, 2000,  Geert Uytterhoeven wrote:
+On Sat, 29 Jul 2000 bob@kunk.jriver.com wrote:
+> >From what I have heard, NT running on the Alpha is in 32 bit mode. Is
+> Linux running on the Alpha also 32 bit? I would assume Tru64 Unix is
+> running in 64 bit mode on the Alpha....
 
-[...]
->
-> The Master PPC Penguin decided to no longer allow to build machine specific
-> kernels, but treat PowerMac/PReP/MTX/CHRP as one big machine type
-> (`CONFIG_ALL_PPC').
+Linux runs in 64 bit mode on the Alpha and the SPARC64 (UltraSPARC).
+Linux runs in 32 bit or 64 bit mode on the MIPS64.
 
-Ah! so that's why it changed... it's not very helpful for the dmasound stuff
-(as I'm sure you already know :-)
+Gr{oetje,eeting}s,
 
-Iain.
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
