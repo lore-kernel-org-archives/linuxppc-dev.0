@@ -1,21 +1,18 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao03.cox.net (fed1rmmtao03.cox.net [68.230.241.36])
-	by ozlabs.org (Postfix) with ESMTP id 0119967A7A
+Return-Path: <vijay_padiyar@hotmail.com>
+Received: from hotmail.com (bay1-dav16.bay1.hotmail.com [65.54.244.120])
+	by ozlabs.org (Postfix) with ESMTP id 68C1467A6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  7 Mar 2005 23:27:43 +1100 (EST)
-Date: Mon, 7 Mar 2005 05:27:32 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Jakob Viketoft <jakob.viketoft@bitsim.se>
-Message-ID: <20050307052732.A26339@cox.net>
-References: <4226F904.5010104@bitsim.se> <1109875809.25252.24.camel@mud>
-	<422C27FE.6000709@bitsim.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <422C27FE.6000709@bitsim.se>;
-	from jakob.viketoft@bitsim.se on Mon, Mar 07, 2005 at 11:07:58AM
-	+0100
-Cc: Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: Adding machine types to the kernel tree...
+	Tue,  8 Mar 2005 01:48:35 +1100 (EST)
+Message-ID: <BAY1-DAV1661FC7797CF282A10A46F8B5F0@phx.gbl>
+From: "Vijay Padiyar" <vijay_padiyar@hotmail.com>
+To: "Ramsay, Jim" <jimr@artesyncp.com>,
+	"LinuxPPC Support" <linuxppc-embedded@ozlabs.org>
+References: <797470E884C6D611B7A500B0D0AA56D0025960D9@batistuta.spider.com>
+Date: Mon, 7 Mar 2005 20:19:09 +0530
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Re: Linux 2.6 port for M8260 PPC
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,69 +23,91 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 07, 2005 at 11:07:58AM +0100, Jakob Viketoft wrote:
-> Thanks for the comments!
-> 
-> Andrew May wrote:
-> > I think a huge first step would be to banish xparameters.h from all the
-> > kernel code.
-> > Our HW guys just seem to do the strangest things without checking.
-> > So I have 2 spins of a board with 2 Virtex-II pro's each.
-> > The 2 spins have a small refrence clock change and the 2 CPU's have
-> > different IRQ mappings.
-> 
-> I understand that there is numerous resentment against having this file 
-> in the kernel and I've been thinking of a solution without it. One such 
-> path would be serving the kernel with a OCP list of the devices used, 
-> but I'm unsure about the current status of OCP. Is this The Right Way to 
-> do it, or are OCP likely to be abandoned further along the 2.6 road?
-> 
-> Matt (Porter), I've seen that you've "ported" this to the 2.6 kernel, 
-> what do you say?
+Hi there
 
-Don't tie anything permanently to OCP. :) Eventually, 4xx will convert
-to platform devices like other similar SoC type subarches in ppc32 have
-already done.  The only reason it hasn't been done yet is that there
-are some other higher priority things on my plate at the moment.
+Ya I found that the code related to the MDIO implementation (CONFIG_MDIO)
+hasn't been completely ported yet for the 2.6 kernel. Therefore, disabling
+the option CONFIG_MDIO in menuconfig should solve the problem.
 
-That said, anything you do with OCP additions maps right into
-platform_data in the platform device world.
+In case you wish to retain the option, you can copy the appropriate header
+files from the 2.4 kernel source into the 2.6 tree. I think the relevant
+file is kernel/context.c. Also, in another file, they're referring to a
+structure tq_struct, which is defined in linux/tqueue.h. You can copy this
+file to your 2.6 source tree as well.
 
-However, it seems you are talking about passing information to
-the kernel from some bootrom or full featured firmware. That is
-a separate issue from how information is passed from the arch-code
-into drivers (this is what OCP and platform devices accomplish).
-For now, you could define a birec type for xparameters and
-standardize around passing the info in that.  In the future,
-birecs should be replaced by the "flattened OF device tree" method
-that has been discussed here a bit (I know Jon Masters is lurking
-around here, maybe with some code).
+However, this is not recommended, since we're mixing code from two separate
+kernels. The tqueue.h header file is related to task queues, which have been
+replaced in 2.6 with work queues. It's just that the file calling tq_struct
+hasn't been ported yet, apparently. Therefore, it's best to omit the
+erroneous code by not selecting the appropriate option in menuconfig. In
+this case, all you need to do is disable CONFIG_MDIO.
 
-> > There is no way I wanted to build 4 kernels to handle these.
-> > I don't have the code with me, but the basic thing I did was fixup
-> > the compiled in arrays like rs_table in the board_io_mapping.
-> > 
-> > So the quick way to start tracking things down may be to just
-> > replace all the constants in xparmaters.h with function calls
-> > that got the info from the boot loader if possible.
-> > You will get plenty of compile errors for the arrays, but then
-> > just this type of code needs to be fixed up to setup the arrary
-> > at run time rather than just get the pointer to it at run time.
-> 
-> The question is, do you want to have a bootloader (as U-boot) on a small 
-> embedded system? In the FPGA case, you might need something that puts 
-> the bitstream in the right place, but I'm not quite sure it would 
-> constitute a bootloader. Maybe just having a static OCP list at a 
-> certain location in flash and let the little bitstream prog send the 
-> pointer to it as a kernel parameter at startup?
+Regards
 
-Even the smallest bootloader rom could put the xparameters.h info in
-a location and point to it using the standard birec method when
-transferring control to the kernel. 
+Vijay Padiyar
 
-I belive this would give Andrew the kind of flexibility he would like.
-We've even talked about moving (in many cases at least) the SoC device
-descriptions for other PPC SoCs out of the kernel so they are passed in
-via birecs or the future flattened OF device tree.
+http://www.vijaypadiyar.eu.tf
+----- Original Message ----- 
+From: "Ramsay, Jim" <jimr@artesyncp.com>
+To: <vijay_padiyar@hotmail.com>
+Sent: Monday, March 07, 2005 7:56 PM
+Subject: Linux 2.6 port for M8260 PPC
 
--Matt
+
+> Hi,
+>
+> I found this using google, going through EXACTLY the same problems trying
+to
+> port some 2.4 code we have to 2.6.
+>
+> Did you find out how to get around these problems?
+>
+> Thanks,
+>
+> Jim
+>
+>
+>
+> Hi all I wish to discuss some strange issues that I faced with respect to
+> the Linux 2.6.8 kernel (downloaded from kernel.org). Firstly, I wish to
+know
+> whether this has been known to work on an MPC8260 PowerPC target.
+Secondly,
+> when I tried to compile the Linux kernel with my toolchain (built with Dan
+> Kegel's crosstool for the PowerPC 603e core, which is what my processor
+> has), I got some errors which I found to rather queer after investigation.
+> Firstly, let me state the errors that I got:
+> ------------------------------------------------------ LD init/built-in.o
+LD
+> .tmp_vmlinux1 arch/ppc/8260_io/built-in.o(.text+0x103c): In function
+> `mii_queue_relink': arch/ppc/8260_io/fcc_enet.c:1254: undefined reference
+to
+> `schedule_task' arch/ppc/8260_io/built-in.o(.text+0x1074): In function
+> `mii_queue_config': arch/ppc/8260_io/fcc_enet.c:1263: undefined reference
+to
+> `schedule_task' ------------------------------------------------------ On
+> further investigation, I find that 'schedule_task()' is simply not defined
+> anywhere in the 2.6.8 kernel sources. This is quite wierd! However, it is
+> defined in a file 'context.c' (linux-src/kernel) in the 2.4.27 kernel
+> sources, which we were using earlier. How is it that a function is being
+> called but its definition has been removed from the sources? Another such
+> example is with the structure 'tq_struct'. It is referred to in the file
+> 'fcc_enet.c' (linux-src/arch/ppc/8260_io) but it's not defined anywhere!
+> Again, after checking in the 2.4.27 sources, I find that it's defined in
+the
+> file 'tqueue.h' (linux-src/include/linux)! A third thing is that the
+2.4.27
+> kernel source file 'uart.c' (linux-src/arch/ppc/cpm2_io) is not present in
+> the corresponding folder in the 2.6.8 source (linux-src/arch/ppc/8260_io).
+> There is one 'uart.c' in the folder '8xx_io', but it doesn't get compiled
+> during the kernel build process. Will my UART work correctly with this
+> build? Can someone please tell me if there's some explanation for this
+that
+> I'm unaware of? Which would be the proper forum to report this? Again I
+> would like to ask: Has the 2.6.8 kernel been tested successfully on the
+> MPC8260 PowerPC platform? Regards Vijay Padiyar
+>
+>
+>
+>
+>
