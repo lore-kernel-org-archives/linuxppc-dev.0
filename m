@@ -1,42 +1,25 @@
-Message-ID: <3988A242.90228AB0@wanadoo.fr>
-Date: Thu, 03 Aug 2000 00:35:46 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
-MIME-Version: 1.0
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-CC: Geert Uytterhoeven <geert@linux-m68k.org>,
-        Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: New input layer and ADB (Was Re: CONFIG_PPC != Mac)
-References: <Pine.LNX.4.10.10008030011181.14639-100000@opal.biophys.uni-duesseldorf.de>
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200008022249.XAA32651@hyperion.valhalla.net>
+Date: Wed, 02 Aug 2000 23:48:56 +0100
+Subject: rtc again...
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Schmitz wrote:
->
-> > > Sometimes after a console switch, I end up in capslock mode. Switching
-> > > capslock on then gives lowercase letters (except the letter "L"). After
-> > > a further console switch, things return to normal.
-> >
-> > That's normal. With PC keyboards, the LED state of the Caps Lock key is
-> > controlled by Linux, while Mac (and Amiga) keyboards remember the Caps Lock
-> > state in the keyboard. Hence if you do a VC switch to a VC where Caps Lock is
->
-> Wrong for Mac. We explicitly set LED state from the keyboard bottom half
-> if necessary (though it stopped working consistently sometime in 2.1
-> IIRC).
->
-> The CapsLock on ADB keyboards is worth a million laughs actually. It
-> is sticky by hardware, and never sends a key up event, only key down. See
-> mac_keyb.c.
+Hi,
 
-In any case, Franz's typo fix (lost "!") makes the problem disappearand
-everything works as it should: VCs remember their capslock state
-independently of what the capslock key itself remembers.
+under 2.2.17pre15ben1
 
---
-Martin
- 
+rtc does not give me the right answer when built in - what am I doing wrong?
+
+It won't build load as a module right now 'cos I forgot to check ppc_ksyms
+before doing the build :-( .... (I remembered for 2.4.0).
+
+under 2.4.0-test5 it seems to be fine as a module (haven't tried built in).
+
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
