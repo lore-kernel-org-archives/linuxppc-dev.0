@@ -1,48 +1,33 @@
-Date: Tue, 20 Nov 2001 11:18:26 +0100 (CET)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Ivo Kwee <ivo@idsia.ch>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: dmasound
-In-Reply-To: <Pine.GSO.4.21.0111201015370.18779-100000@mullein.sonytel.be>
-Message-ID: <Pine.LNX.4.33.0111201110110.4207-100000@opal.biophys.uni-duesseldorf.de>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: sleep: trackpad settings, screen blanking
+From: davidw@dedasys.com (David N. Welton)
+Date: 20 Nov 2001 11:34:27 +0100
+Message-ID: <873d39n32k.fsf@dedasys.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Translating as best I can (which isn't much):
+[ please CC replies to me ]
 
-> > Ik weet niet of je nog aan de dma_sound driver werkt, maar ik zag je
-> > naam als laatste. Ik ben een beetje aan het prutsen met /dev/dsp op een
->
-> Dat is lang geleden...
->
-> Iain Sandoe werkt er momenteel het hardste aan, geloof ik. Maar zijn adres heb
-> ik hier niet.
+I have a first generation tibook, running Linux 2.4.14, and I have a
+few itches that need scratching:
 
-Who's working on the dmasound driver? Apparently Geert isn't anymore, he
-thinks Iain Sandoe is doing most of the work, e-mail address for Iain,
-anyone?
+1) The screen doesn't always get blanked when it gets put to sleep.
+   Known problem?  Fix being worked on?  If yes, I'd still be curious
+   to hear what the problem was, as I had a cursory look at the code,
+   but didn't have time to do any rebooting/hacking.
 
-> > De lockup gebeurt als ik SND_DSP_SETFRAGMENT roep na een open-device
-> > O_RDWR of O_RDONLY. Ik heb gekeken naar ander code voor andere
-> > geluidskaarten en die checken of the device in read of write mode staat;
-> > de dmasound doet dat niet. Kennelijk wordt alleen write_sq
-> > veronderstelt. Moet er ook een if-read stuk in? Of worden buffers niet
-> > gebruikt in Recording(IN) mode?
->
-> Geen idee. Je vraagt dat best op de mailing list hieronder.
+2) Trackpad settings aren't restored (or saved beforehand?) after
+   sleep.  Same questions apply.
 
-Kernel locks up after calling ioctl(SND_DSP_SETFRAGMENT,...) with device
-(/dev/dsp??) opened read/write or readonly. dmasound doesn't check read or
-write mode of the device, other drivers do. What's used for recording
-(lacking read_sq)?
-
-Does the fish work for Dutch?
-
-	Michael
-
+Thankyou for your time and work - my tibook runs great with Linux:-)
+--
+David N. Welton
+   Consulting: http://www.dedasys.com/
+Free Software: http://people.debian.org/~davidw/
+   Apache Tcl: http://tcl.apache.org/
+     Personal: http://www.efn.org/~davidw/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
