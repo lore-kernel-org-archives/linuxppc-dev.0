@@ -1,22 +1,31 @@
-Message-ID: <3842C0D1.38C1D2FD@drea.dnd.ca>
-Date: Mon, 29 Nov 1999 13:07:13 -0500
-From: Gavin L Hemphill <hemphill@drea.dnd.ca>
+Date: Mon, 29 Nov 1999 20:54:36 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: note_scsi_host
+Message-ID: <Pine.LNX.4.05.9911292053160.361-100000@callisto.of.borg>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: problem with the latest linux-pmac-stable from linuxcare.com.au
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I just rsync'd the linux-pmac-stable tree this morning, and found that
-it no longer builds.  There is a undefined reference to
-"buffer_lowprio".  Now this function used to be defined in
-"include/linux/fs.h"  but it appears to have been cleared out of there
-(along with a bunch of other stuff refering to buffer). It appears to
-still be used by "drivers/block/ll_rw_blk.c" and md.c and raid*.c.  Is
-there any problem adding the functions back into fs.h, or is there a
-better way to resolve the undefined references?
-        G++
+
+arch/ppc/kernel/ppc_ksyms.c exports note_scsi_host, but drivers/scsi/mac53c94.c
+and drivers/scsi/mesh.c refer to it like
+
+    #ifndef MODULE
+	note_scsi_host(node, host);
+    #endif
+
+Which one is correct?
+
+Gr{oetje,eeting}s,
+--
+Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
