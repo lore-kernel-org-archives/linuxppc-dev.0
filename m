@@ -1,131 +1,61 @@
-Date: Mon, 29 Apr 2002 12:42:40 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: [PATCH] Allow openpic_init to set all combos of polarity and sense
-Message-ID: <20020429194240.GB20973@opus.bloom.county>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Mon, 29 Apr 2002 18:02:02 -0400 (EDT)
+From: brad allison <jackal@aol.net>
+To: Multiple recipients of list <linuxppc-dev@lists.linuxppc.org>,
+	<yellowdog-general@lists.terrasoftsolutions.com>
+Subject: What video driver should I use?
+Message-ID: <Pine.LNX.4.30.0204291754430.2830-100000@horus.office.aol.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The following patch adds support for telling open_pic.c not just the
-sense (edge or level) of an IRQ but the polarity as well.  After
-Paul's cleanup of the code (which killed the overloading of
-OpenPIC_InitSenses and added openpic_set_sources()) this problem finally
-showed up on hardhware which previously worked (by luck?).  What we do
-now is to define that bit 0x1 of the table is for sense (0 for edge, 1
-for level) and bit 0x2 of the table is for polarity (0 for negative, 1
-for positive).  This does mean that all tables currently in _devel will
-be broken, but I suspect that many, and possibly all of them are
-broken right now and need to be updated to use openpic_set_sources().
+I'm trying to get my r128 to go to 1600x1024 for my monitor.  I have a
+blue/white G3.
 
-An offshoot of this patch is that in openpic_init we no long have to
-have the SIOint special case, since OpenPIC_InitSources[0] can define
-the correct sense/polarity.  Additionally this allows for cascades to be
-on other IRQs (and will cleanup Sandpoint abit).
+When I look in /proc/pci I see I have a "Rage 128" card.
 
-Also, it's possible to define the table in terms of 0-3 still, but I've
-added defines for IRQ_SENSE_xxx and IRQ_POLARITY_xxx so people can make
-things clear.
+[root@isis drivers]# grep -i vga /proc/pci
+    VGA compatible controller: ATI Technologies Inc Rage 128 RE (rev 0).
 
-Comments?
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+So I changed the Driver line in /etc/X11/XF86Config-4 to use "r128" yet
+when I tried start X I got "No devices detected":
 
-===== arch/ppc/kernel/open_pic.c 1.50 vs edited =====
---- 1.50/arch/ppc/kernel/open_pic.c	Wed Apr 24 10:15:11 2002
-+++ edited/arch/ppc/kernel/open_pic.c	Sun Apr 28 09:10:36 2002
-@@ -34,6 +34,11 @@
 
- void* OpenPIC_Addr;
- static volatile struct OpenPIC *OpenPIC = NULL;
-+/*
-+ * We define OpenPIC_InitSenses table thusly:
-+ * bit 0x1: sense, 0 for edge and 1 for level.
-+ * bit 0x2: polarity, 0 for negative, 1 for positive.
-+ */
- u_int OpenPIC_NumInitSenses __initdata = 0;
- u_char *OpenPIC_InitSenses __initdata = NULL;
- extern int use_of_interrupt_tree;
-@@ -370,15 +385,8 @@
+	(II) ATI: ATI driver (version 6.4.8) for chipsets: ati
+	(II) R128: Driver for ATI Rage 128 chipsets: ATI Rage 128 RE (PCI),
+	        ATI Rage 128 RF (AGP), ATI Rage 128 RG (AGP), ATI Rage 128 RK
+	(PCI),
+	        ATI Rage 128 RL (AGP), ATI Rage 128 SM (AGP),
+	        ATI Rage 128 Pro PD (PCI), ATI Rage 128 Pro PF (AGP),
+	        ATI Rage 128 Pro PP (PCI), ATI Rage 128 Pro PR (PCI),
+	        ATI Rage 128 Pro ULTRA TF (AGP), ATI Rage 128 Pro ULTRA TL (AGP),
+	        ATI Rage 128 Pro ULTRA TR (AGP), ATI Rage 128 Mobility LE (PCI),
+	        ATI Rage 128 Mobility LF (AGP), ATI Rage 128 Mobility MF (AGP),
+	        ATI Rage 128 Mobility ML (AGP)
+	(II) RADEON: Driver for ATI Radeon chipsets: ATI Radeon QD (AGP),
+	        ATI Radeon QE (AGP), ATI Radeon QF (AGP), ATI Radeon QG (AGP),
+	        ATI Radeon VE QY (AGP), ATI Radeon VE QZ (AGP),
+		        ATI Radeon Mobility LW (AGP), ATI Radeon Mobility LY (AGP),
+	        ATI Radeon Mobility LZ (AGP), ATI Radeon 8500 QL (AGP),
+	        ATI Radeon 8500 QN (AGP), ATI Radeon 8500 QO (AGP),
+	        ATI Radeon 8500 Ql (AGP), ATI Radeon 8500 BB (AGP),
+	        ATI Radeon 7500 QW (AGP)
+	(WW) R128: No matching Device section for instance (BusID PCI:0:16:0) found
+	(EE) No devices detected.
 
- 	openpic_set_priority(0xf);
 
--	/* SIOint (8259 cascade) is special */
--	if (offset) {
--		if (ppc_md.progress) ppc_md.progress("openpic: SIOint",0x3bc);
--		openpic_initirq(0, 8, offset, 1, 1);
--		openpic_mapirq(0, 1<<0, 0);
--	}
--
--	/* Init all external sources */
--	for (i = (offset ? 1 : 0); i < NumSources; i++) {
-+	/* Init all external sources, including possibly the cascade. */
-+	for (i = 0; i < NumSources; i++) {
- 		int pri, sense;
+Yet in /proc/pci I see:
 
- 		if (ISR[i] == 0)
-@@ -388,12 +396,18 @@
- 		openpic_disable_irq(i+offset);
+  Bus  0, device  16, function  0:
+    VGA compatible controller: ATI Technologies Inc Rage 128 RE (rev 0).
+      IRQ 22.
+      Master Capable.  Latency=16.  Min Gnt=8.
+      Prefetchable 32 bit memory at 0x84000000 [0x87ffffff].
+      I/O at 0x2000 [0x20ff].
+      Non-prefetchable 32 bit memory at 0x82000000 [0x82003fff].
 
- 		pri = (i == programmer_switch_irq)? 9: 8;
-+		/*
-+		 * We find the vale from either the InitSenses table
-+		 * or assume a negative polarity level interrupt.
-+		 */
- 		sense = (i < OpenPIC_NumInitSenses)? OpenPIC_InitSenses[i]: 1;
--		if (sense)
-+
-+		if ((sense & IRQ_SENSE_MASK) == 1)
- 			irq_desc[i+offset].status = IRQ_LEVEL;
-
- 		/* Enabled, Priority 8 or 9 */
--		openpic_initirq(i, pri, i+offset, !sense, sense);
-+		openpic_initirq(i, pri, i+offset, (sense & IRQ_POLARITY_MASK),
-+				(sense & IRQ_SENSE_MASK));
- 		/* Processor 0 */
- 		openpic_mapirq(i, 1<<0, 0);
- 	}
-===== arch/ppc/kernel/prom.c 1.67 vs edited =====
---- 1.67/arch/ppc/kernel/prom.c	Tue Apr 16 04:42:08 2002
-+++ edited/arch/ppc/kernel/prom.c	Sun Apr 28 09:49:50 2002
-@@ -758,8 +758,10 @@
- 	for (np = allnodes; np != 0; np = np->allnext) {
- 		for (j = 0; j < np->n_intrs; j++) {
- 			i = np->intrs[j].line;
--			if (i >= off && i < max)
--				senses[i-off] = np->intrs[j].sense;
-+			if (i >= off && i < max && (i == 1))
-+				senses[i-off] = IRQ_SENSE_LEVEL;
-+			else if (i >= off && i < max && (i == 0))
-+				senses[i-off] = IRQ_SENSE_EDGE;
- 		}
- 	}
- }
-===== include/asm-ppc/open_pic.h 1.26 vs edited =====
---- 1.26/include/asm-ppc/open_pic.h	Thu Jan 24 17:48:13 2002
-+++ edited/include/asm-ppc/open_pic.h	Sun Apr 28 09:35:04 2002
-@@ -28,6 +28,19 @@
- #define OPENPIC_VEC_IPI		72	/* and up */
- #define OPENPIC_VEC_SPURIOUS	127
-
-+/*
-+ * For the OpenPIC_InitSenses table, we include both the sense
-+ * and polarity in one number and mask out the value we want
-+ * later on. -- Tom
-+ */
-+#define IRQ_SENSE_MASK		0x1
-+#define IRQ_SENSE_LEVEL		0x1
-+#define IRQ_SENSE_EDGE		0x0
-+
-+#define IRQ_POLARITY_MASK	0x2
-+#define IRQ_POLARITY_POSITIVE	0x2
-+#define IRQ_POLARITY_NEGATIVE	0x0
-+
- /* OpenPIC IRQ controller structure */
- extern struct hw_interrupt_type open_pic;
+-b
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
