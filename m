@@ -1,33 +1,41 @@
-Date: Wed, 18 Apr 2001 09:39:41 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Benjamin Herrenschmidt <benjamin.herrenschmidt@wanadoo.fr>,
-	Cort Dougan <cort@fsmlabs.com>, linuxppc-commit@fsmlabs.com,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: CPU features again
-Message-ID: <20010418093941.C13403@opus.bloom.county>
-References: <20010418160328.15973@mailhost.mipsys.com> <Pine.LNX.4.05.10104181835150.5185-100000@callisto.of.borg>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.05.10104181835150.5185-100000@callisto.of.borg>; from geert@linux-m68k.org on Wed, Apr 18, 2001 at 06:36:05PM +0200
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alain RICHARD <alain.richard@equation.fr>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: benh 2.4.4-pre3, Titanium and AirPort
+Date: Wed, 18 Apr 2001 18:46:00 +0200
+Message-Id: <20010418164600.23936@mailhost.mipsys.com>
+In-Reply-To: <a05010409b70362ba0a13@[192.168.240.10]>
+References: <a05010409b70362ba0a13@[192.168.240.10]>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Apr 18, 2001 at 06:36:05PM +0200, Geert Uytterhoeven wrote:
-> On Wed, 18 Apr 2001, Benjamin Herrenschmidt wrote:
-> > Those feature bits have to be common accross the entire PPC range (and
-> > possibly common with ppc64 too since ppc64 is supposed to run ppc32
-> > binaries, except that ppc64 has 32 more bits to stuff it's own features
-> > for 64 bits binaries).
 >
-> BTW, we don't take the sparc64/mips64 approach and create arch/ppc64/?
-> Sparc64/mips64 run 32-bit binaries as well.
+>- at module loading and without options, the driver recognize the
+>card as "firmware ID 1F vendor 1 (lucent) version 7.25" and "WEP
+>supported, "128"-bit key and then complains about enable to load
+>module airport0 and airport1. I was thinking that airport cards where
+>binded to airport0 and not eth0 by default and support only 40 bit
+>mode ?
 
-That's a 2.5 planned thing, I believe.
+I noticed that 128 bit thing too after I did the 1.3 aiport update
+from MacOS (it updated the card's firmware). No clue if the driver
+is right about it or not.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+The ethX by default can be changed with the eth=0 module option. It's
+done that way in the original driver, I didn't change it.
+
+>- the driver no longer seams to support the various setting as
+>options for the module; what is now the recommended way of doing it ?
+
+I removed the "enc" one that I added previously to avoid diff'ing
+too much from the original source. You pass most options via
+iwconfig. Just make sure to have the interface up as I keep the
+card powered down when the interface is down to save power.
+
+Ben..
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
