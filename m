@@ -1,37 +1,64 @@
-Message-ID: <39C25A1D.58CA03F3@mvista.com>
-Date: Fri, 15 Sep 2000 13:19:25 -0400
-From: Dan Malek <dan@mvista.com>
+Message-ID: <39C26A51.CA521100@mvista.com>
+Date: Fri, 15 Sep 2000 11:28:33 -0700
+From: Matthew Locke <mlocke@mvista.com>
 MIME-Version: 1.0
-To: "G. Guével" <gguevel@interfaceconcept.com>
+To: rshaw@graftononline.net
 CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MMU problems on MPC860P
-References: <000101c01f33$a5f58ca0$2901a8c0@none>
-Content-Type: text/plain; charset=iso-8859-1
+Subject: Re: CLLF with Hard Hat Lunix "Sending BOOTP requests" problem
+References: <001401c01eb2$48a92330$0100a8c0@nonewr2gx24hxi>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-G. Guével wrote:
+rshaw@graftononline.net wrote:
+>
+> I'm trying to get a CLLF 860T to load a kernel normally.  I'm using Embedded
+> PowerPC Cross Development Kit Rev. 1.0 Hard Hat Linux.
 
-> I want to port this kernel on a MPC860P proprietary board called pLines.
+you might want to upgrade to 1.2. it is on our ftp site.  It is not
+nescessary, but it is always good to use the latest stable stuff.
 
-There aren't any software changes to required to support the 860P.  I
-have a couple for testing that I use regularly.
+> While loading the kernel via tftp I found that in order for the boot process
+> to work I have to use both the 10 Mbps and 100 Mbps ports.
 
-What is the silicon revision of the part?  I think they are all fairly
-new, but this sounds like a CPU6 errata, which I didn't think affected
-the 860P.
+the EP boot loader uses the 10Mbps port for tftp loading.  You don't use
+the 10/100 for tftp.
 
-For all 860 processors that use FEC (855/860 T and P), make sure you
-have the FEC driver that looks at the IMMR for the silicon revision and
-sets the Port D bits correctly.  These changed at some point (I don't
-remember exactly, either B to C or C to D).  This doesn't cause the
-problem you see here, but it will keep the FEC from working properly.
+>If I do not do
+> this it times out at "Sending BOOTP requests". I have had to execute the
+> following script before loading via tftp during which time the 10 Mbps port
+> is being used.
 
-You may just want to hop over to the MontaVista web site and use the
-2.2.14 kernel from CDK 1.2.
+you only need to use the 10Mbps port, you don't need the 100Mbps port
+connected  to the network.
+
+>
+> #!/bin/bash
+> arp -s 192.168.0.3 00:10:ec:00:00:00
+
+that ethernet address is wrong.  This may be causing some of your
+problems.  Contact Embedded Planet support for help to reprogram the
+correct enet address for your board
 
 
-	-- Dan
+> OK, This gets us to a Linux shell prompt even though I had to execute the
+> script files using both the 10 Mbps and 100 Mbps ports, which I shouldn't
+> have to do. I'm hoping someone might be able to help me with why I need to
+> use both ports and execute these arp commands.  Is something wrong with my
+> DHCP configuration?
+
+look into changing the enet address to the right one.   the
+configuration looks fine.  I hope the w2k host is not really running
+win2k.  If it is, all bets are off.
+
+
+> Here is the /etc/hosts file contents
+>
+> 127.0.0.1 localhost.localdomain localhost
+> 192.168.0.1 win2000 w2k
+> 192.168.0.2     RANDYLINUX rlx
+> 192.168.0.3     CLLFBOARD cllf
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
