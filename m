@@ -1,51 +1,41 @@
-Date: Thu, 25 Jul 2002 11:21:01 -0700
-From: Matt Porter <porter@cox.net>
-To: Khai Trinh <kqtrinh@yahoo.com>
+Message-ID: <3D40556C.4040108@embeddededge.com>
+Date: Thu, 25 Jul 2002 15:45:48 -0400
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: David Updegraff <dave@cray.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: driver for 440GP
-Message-ID: <20020725112101.B24858@home.com>
-References: <20020724220610.37041.qmail@web11503.mail.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020724220610.37041.qmail@web11503.mail.yahoo.com>; from kqtrinh@yahoo.com on Wed, Jul 24, 2002 at 03:06:10PM -0700
+Subject: Re: abatron and kernel modules.
+References: <200207251713.MAA00232@mint.mw.cray.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Jul 24, 2002 at 03:06:10PM -0700, Khai Trinh wrote:
->
-> Hi folks,
->
-> I am trying to write a driver for the 440GP peripheral
-> device with physical memory map of 0x1xxxxxxxx (total
-> of 36 bits) on the PLB address space.
->
-> When I get to do:
->
-> request_mem_region() and then
-> ioremap64()
->
-> Don't I need a 64 bit request_mem_region() call? Is
-> there such a kernel call before I call ioremap64()?
+David Updegraff wrote:
 
-Two options for now:
+> We've been very happily using BDI2000 for kernel debugging on our 405GP
+> on a 2.4.2 kernel with builtin abatron MMU support (via PTBASE at 0xf0).
 
-1) Use the least significant 32-bits of the physical address to
-   do the region manipulation.
+Hmmmm.....there was a time when we screwed up the kernel PTE by moving
+around some bits and not telling the folks at Abatron we did that.....
+I unfortunately don't remember the kernel versions nor the BDI2000
+firmware versions that match.  All I know is the latest versions of
+both work together :-)
 
-2) Don't register the region.  We don't really do a good job
-   of this in most PPC code anyway.
+There was also a version of the 2.4.2 kernel, perhaps even a MontaVista
+snapshot, where I screwed up loading the address of the pte pointer
+label during initialization.  This caused the BDI2000 to go looking into
+the weeds for random bits that it tried to interpret as page tables.
 
-In 2.5, we can make resource start/end u64's, but it's intrusive
-enough that I can't imagine it going into 2.4 (I certainly
-wouldn't ask for it).  The region manipulation API would now use
-u64's and printk formatting has to be handled since a u64 is
-a different type on 32/64 platforms.
+I know that what you are trying to do will work when all of the bits
+are lined up correctly.
 
-Regards,
---
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+If you could upgrade to a newer kernel, it would really help.
+
+Thanks.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
