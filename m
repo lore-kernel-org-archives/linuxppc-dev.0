@@ -1,50 +1,58 @@
-Message-ID: <003001c14762$ac453b70$7e7e7e7e@server>
-From: "RSR - Piero Dominioni" <pdominioni@rsr.it>
-To: "Jean-Denis Boyer" <jdboyer@mediatrix.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <F1BED55F35F4D3118C0F00E0295CFF4D414C18@mail.mediatrix.com>
-Subject: R: NFS mount for TQM823L
-Date: Thu, 27 Sep 2001 16:42:40 +0200
+Message-ID: <3BB33EBA.DF2DCA44@imc-berlin.de>
+Date: Thu, 27 Sep 2001 16:59:06 +0200
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>,
+	Dan Malek <dan@mvista.com>, John Francis <johnfrancsis@yahoo.com>,
+	Greg Johnsong <johnson@research.canon.com.au>
+Subject: structs and defs for IDMA on MPC8xx???
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-< The portmapper (portmap) and the lock daemon (rpc.lockd) are not running
-on
-< your target.
-< Either you start them, or just add option "-o nolock" when calling mount.
-<  # mount -o nolock -t nfs 126.126.126.106:/home /tmp
+Hi there,
 
-Thank you, Jean-Denis,
-but your hint is correct only in one direction:
-giving your command
+are threre any structs for IDMA in the recent kernel sources?
 
-  # mount -o nolock -t nfs 126.126.126.106:/home /tmp
+I think of something similar to
 
-from the target's command line prompt to mount the remote host's
-"/home" directory under the local filesystem the error messages
-don't appear anymore.
-But it seems not to be enough in the opposite direction:
-the command
+I am looking for a "IDMA Buffer Descriptor" similar to
 
-  # mount -o nolock -t nfs 126.126.126.107:/  /tmp
+/* Buffer descriptors used by many of the CPM protocols.
+*/
+typedef struct cpm_buf_desc {
+	ushort	cbd_sc;		/* Status and Control */
+	ushort	cbd_datlen;	/* Data length in buffer */
+	uint	cbd_bufaddr;	/* Buffer address in host memory */
+} cbd_t;
 
-given from host's command line prompt to mount the remote
-target's "/" directory (that is the whole filesystem) under the local
-filesystem obtains the same error message I got without the
-"nolock" option.
-[Note: 126.126.126.107 is the target's IP address,
-while 126.126.126.106 is host's one!]
-What else is wrong or still missing now?
-However thank you for your help.
+I need a way to access the IDMA's parameter RAM, which should be located
+at IDMA1 base = IMMR+0x3cc0.
+Is there a struct to access the "DMA Channel Mode Register (DCMR)" at
+IDMA1 + 0x02?
 
-Best regards
+I know Greg Johnson <gjohnson@research.canon.com.au> proposed some stuff
+last year. But they never made it into the linuxppc_2_4_devel, did they?
 
-Piero Dominioni
-R.S.R.srl
+I could think of something like
 
+/* Buffer descriptors used by IDMA
+*/
+typedef struct idma_buf_desc {
+	ushort	ibd_sc;		/* Status and Control */
+	unchar	ibd_dfcr;	/* destination function code register, s.20.3.4.1*/
+	unchar	ibd_sfcr;	/* source function code register */
+	uint	ibd_buflen;	/* "number of bytes to transfer" */
+	uint	ibd_srcbuf;	/* "points to the beginning of the source buffer" */
+	uint	ibd_destbuf;	/* "points to the beginning of the destination
+buffer" */
+} ibd_t;
+
+TIA.
+
+Cheers,
+
+Steven
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
