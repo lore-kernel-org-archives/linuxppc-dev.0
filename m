@@ -1,41 +1,55 @@
-To: Linux Kernel <pakernel@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Setting Up cross compile Environment 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 06 Aug 2001 16:05:53 PDT."
-             <20010806230553.27696.qmail@web20206.mail.yahoo.com>
-Date: Tue, 07 Aug 2001 01:15:32 +0200
-Message-Id: <20010806231537.B7BD310CB4@denx.denx.de>
+Message-ID: <3B6FA2F7.1C1A2BA2@genetel.co.kr>
+Date: Tue, 07 Aug 2001 17:12:39 +0900
+From: hychon <hychon@genetel.co.kr>
+Reply-To: hychon@genetel.co.kr
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: (enet) - hardware address??
+Content-Type: multipart/mixed;
+ boundary="------------8FBF574DFD6F5F31190F5701"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20010806230553.27696.qmail@web20206.mail.yahoo.com> you wrote:
->
-> Did anyone setup X-compile env for PPC by downloading
-> the tools+images from wolfgang's ftp site?
-
-Obviously we did this, well over one and a half year ago.
-
-> What versions of GCC and bintools were used?
-> Can someone throw more light.
-
-What exactly do you think is missing in the documentation in
-http://www.denx.de/cdk-en.html ?
-
-Some of the quoted URL's aren't valid any more,  but  you  can  still
-find  the  original  files  on some mirrors. Ask your favorite search
-engine.
+MIME 형식의 멀티-파트 메시지입니다.
+--------------8FBF574DFD6F5F31190F5701
+Content-Type: text/plain; charset=EUC-KR
+Content-Transfer-Encoding: 7bit
 
 
-Wolfgang Denk
+I want to use to two ethernet device (fec and SCC1) base on MPC860T and
+I use kernel-2.2.13.
+when I am boot that , it come in to collision between devices.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Where people stand is not as important as which way they face.
-        - Terry Pratchett & Stephen Briggs, _The Discworld Companion_
+boot message ================================
+eth0: CPM ENET Version 0.2 on SCC1, 00:06:42:00:00:01
+eth1: FEC ENET Version 0.1, fec: Phy @ 0x0, type 0x001378e1
+00:fec: link up,auto complete
+06:fec: 10 Mbps, Half-Duplex
+42:00:00:01
+IP-Config: Incomplete network configuration information.
+dev_close: bug eth0 still running
+===============================================================
+
+how to allocate a hardware address (mac address) to each device in
+kernel ?
+--------------8FBF574DFD6F5F31190F5701
+Content-Type: text/x-vcard; charset=EUC-KR;
+ name="hychon.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Description: Card for hychon
+Content-Disposition: attachment;
+ filename="hychon.vcf"
+
+begin:vcard
+n:;
+x-mozilla-html:FALSE
+adr:;;;;;;
+version:2.1
+x-mozilla-cpt:;0
+end:vcard
+
+--------------8FBF574DFD6F5F31190F5701--
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
