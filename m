@@ -1,47 +1,48 @@
-Message-ID: <20083A3BAEF9D211BDB600805F8B14F3010A15AE@NTSERVER>
-From: Tzahi Oved <tzahio@voltaire.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: FW: ppcboot 1.1.4 & MPSC
-Date: Tue, 26 Feb 2002 23:03:53 +0200
+From: "T.Michael Turney" <tmike@mvista.com>
+To: "Mark Pilon" <mpilon@midrivers.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: how to enable core files ?
+Date: Tue, 26 Feb 2002 13:06:03 -0800
+Message-ID: <NEBBKCGFALCNLJBOFHKIIEHMCPAA.tmike@mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
+In-Reply-To: <3C7BF0F5.A830D984@midrivers.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Well, to cancel any baud rate problems I zeroed the CDV field in the BRG
-register so it defaults to 115000. So when I use the ppc boot as is with
-MPSC uart and baud rate of 115000, I listen to the Tx line with a scope and
-see nothing !, what am I doing wrong ??
+In your .bashrc file
 
------Original Message-----
-From: Wolfgang Denk [mailto:wd@denx.de]
-Sent: Tuesday, February 26, 2002 3:18 PM
-To: Tzahi Oved
-Cc: 'linuxppc-embedded@lists.linuxppc.org'
-Subject: Re: ppcboot 1.1.4 & MPSC
+	ulimit -c unlimited
 
+allows a core file of unlimited size to be created.
 
-In message <20083A3BAEF9D211BDB600805F8B14F3010A15AB@NTSERVER> you wrote:
+ulimit is a bash built-in, so if you want additional
+info do a man bash and search for ulimit.
+Cheers,
+T.mike
+
+> -----Original Message-----
+> From: owner-linuxppc-embedded@lists.linuxppc.org
+> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Mark
+> Pilon
+> Sent: Tuesday, February 26, 2002 12:33 PM
+> To: linuxppc-embedded@lists.linuxppc.org
+> Subject: how to enable core files ?
 >
-> I'm trying to work with the internal uart (MPSC) on the Galileo EVB64260
-> board. When I set the definition CONFIG_MPSC in the EVB64260 config file
-> (which supposed to set the terminal to work on the MPSC) I'm not getting
-any
-> response on my console, do I need to configure anything else ?? any
-
-This can be anything, like just bad baudrate settings. You need to be
-more specific about your setup.
-
-And you have better chances for a useful reply on  the  ppcboot-users
-mailing list.
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Cole's Law: Thinly sliced cabbage.
+>
+>
+> That is, what do I have to set / enable / include on my target
+> so that a core file will be created when an application SEGVs ?
+>
+> I'm running Wolfgang's SELF -- and really need to be able to poke
+> at a core file when my app dies.
+>
+> thanks,
+>
+> Mark
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
