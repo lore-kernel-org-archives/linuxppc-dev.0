@@ -1,76 +1,48 @@
-Message-ID: <40E3D44A.4070009@fh-landshut.de>
-Date: Thu, 01 Jul 2004 11:07:22 +0200
-From: Oliver Korpilla <okorpil@fh-landshut.de>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Two PowerPC platforms: Addressing strangeness
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Stefan Nickl <Stefan.Nickl@kontron.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Lite5200 PCI not working 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 01 Jul 2004 10:52:56 +0200."
+Date: Thu, 01 Jul 2004 11:18:53 +0200
+Message-Id: <20040701091858.A3564C109F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello!
+In message <1088671264.6226.59.camel@lucy.pep-kaufbeuren.de> Stefan Nickl wrote:
+> On Mon, 2004-06-21 at 18:20, Kate Alhola wrote:
+> > >Are you really sure? Maybe it was just an issue of finding the  right
+> > >jumper  settings (which is non-trivial). We tested both with Rev. 4.0
+> > >and Rev. 5.0 cards, and didn't need -12V.
+...
+> seems I'm also stuck with this non-trivial problem here.
+> I have a Rev.5 card, and just discovered the three jumpers
+> to override the analog MUX (J250-252).
+>
+> I get a picture now, but it's *very* dim, and the colors
+> seem not quite right when the CRT's brightness is .
+>
+> Are there any more jumpers to set or could this be an
+> issue with the driver (linuxppc_2_4_devel -Dyesterday)?
+> Or maybe is the MUXer also a neccessary booster?
 
-I'm currently porting a VME driver to two PowerPC platforms, and I am getting
-strange results on mmap() on one of them.
+I've updated the table to include  the  settings  for  the  Rev.  4.0
+board, too, and to list ALL jumpers on the board.
 
-The driver (written orginally for the x86) now works fine for the MPC8240 (on a
-MVME2100), but does not work completely on a Motorola 7455 (on a MVME5500).
+> OK. Please see http://www.denx.de/twiki/bin/view/DULG/CoralPInstallation
 
-Steps are (from user space):
-- Creating a DMA buffer via an ioctl()
-- Mapping that buffer to user space via mmap()
-- Accessing that mapped buffer via pointers
-- Triggering a DMA transfer
+Hope this helps.
 
-All these steps work, excepting accessing the buffer from user space. If I'm
-writing into the buffer, the values won't appear in the transfer, as if the
-buffer was empty. Worse, on the first attempt on executing my test suite some
-values will appear, and on repeated attempt they won't.
+Best regards,
 
-The DMA buffers are created with pci_alloc_consistent().
+Wolfgang Denk
 
-The code for the mmap() hook is like this:
-
-/*============================================================================
-  * Hook to the mmap file operation
-  */
-int vme_mmap(struct file *file_ptr, struct vm_area_struct *vma)
-{
-	DPRINTF("Attempting to map %#lx bytes of memory at "
-		"physical address %#lx\n", vma->vm_end - vma->vm_start,
-		vma->vm_pgoff << PAGE_SHIFT);
-
-	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-
-	/* Don't swap these pages out
-	 */
-	vma->vm_flags |= VM_RESERVED;
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,3) || defined RH9BRAINDAMAGE
-	return remap_page_range(vma, vma->vm_start, vma->vm_pgoff << PAGE_SHIFT,
-				vma->vm_end - vma->vm_start, vma->vm_page_prot);
-#else
-	return remap_page_range(vma->vm_start, vma->vm_pgoff << PAGE_SHIFT,
-				vma->vm_end - vma->vm_start, vma->vm_page_prot);
-#endif
-}
-
-
-The pgprot_noncached() call is there to avoid caching issues on the remapped
-pages, the VM_RESERVED flags is set to avoid having the kernel flush the pages
-to disk.
-
-Most of the driver's features work, even reading in data via DMA, only writing
-data with DMA doesn't seem to work, or: It does work, but the buffer used
-doesn't seem to have the data I wrote in it.
-
-I find this especially strange, because it works on the MPC8240.
-
-I'm using a TimeSys 2.4.21 kernel with a uClibc snapshot from April.
-
-Thanks in advance,
-Oliver Korpilla
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+America has been discovered before, but it has always been hushed up.
+- Oscar Wilde
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
