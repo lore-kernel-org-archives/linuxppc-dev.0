@@ -1,31 +1,64 @@
-From: kd@flaga.is
-To: linuxppc-dev@lists.linuxppc.org
-Message-ID: <002566DC.006770DB.00@notes.flaga.is>
-Date: Wed, 16 Dec 1998 18:49:50 +0000
-Subject: MPX860 : MBX_IMAP_ADDR undefined
+Message-ID: <367833C4.60C22371@jlc.net>
+Date: Wed, 16 Dec 1998 17:27:16 -0500
+From: Dan Malek <dmalek@jlc.net>
+MIME-Version: 1.0
+To: Helmut Buchsbaum <helmut.buchsbaum@siemens.at>
+CC: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Problems starting up system on a MPC823FADS
+References: <36750901.A3E0E6D1@siemens.at>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello,
+Helmut Buchsbaum wrote:
 
-I am in the process of getting Linux to boot on Motorolla Evaluation board
-for th 821 processor. But first I need
-to compile the kernel. Unfortunately this fails on arch/ppc/kernel/irq.c
-because of  MBX_IMAP_ADDR undefined
-symbol error. I have done
-find . -name "*.[ch]" -print -exec grep MBX_IMAP_ADDR \{\} \;
-which reveals no definition of MBX_IMAP_ADDR symbol. It is only used in
-several files.
+> I try to get a linux system up and running on a Motorola MPC823FADS
 
-I could not find patch that adds this symbol, so I wanted to ask if sombody
-knows where to find a patch?
+Cool!
 
-The kernel source i am trying to build is vanilla 2.1.131.
 
-Thank you,
+> ...... I only adopted the boot code slightly to feed the
+> correct board info data, set up the correct clocks, etc., since my board
+> has no boot prom.
 
-K.D.
+Points again!
+
+
+> 3) Setting up MMU works fine, the kernel initializes SMC1 (my console)
+> and SMC2 for UART and SCC2 for ethernet (I adopted Dan's drivers for the
+> MPC823, wasn't a big deal ;-)
+
+Sorry about that.  I have recently finished an 821, 823, and 850
+port to several boards.  I am sitting on lots of configuration changes
+like this.  It was easy to just hack the files, but now I have to
+make the config process work.  That is going to take longer
+than the other changes :-(.  I hope to have it done as a new year
+treat for everyone!
+
+
+> Now the kernel tries to load & exec /sbin/init and /lib/ld.so.1. Loading
+> via nfs seems to work fine (haven't had any trouble with this part) but
+> when the kernel sets up the memory for this process I realized a strange
+
+Yes.  I and others have seen this on the FADS boards.  I don't
+yet understand it since the same software will run on other boards.
+
+
+> BTW, why must the M_TWB be set in SET_PAGE_DIR ?
+
+The M_TWB points to the first level page table (Linux pgd_t)
+and is used in the mpc8xx page fault handler.  When Linux
+deletes or otherwise modifies the memory map object such that
+the first level page table is modified (as during exec), it
+uses SET_PAGE_DIR.  Since the first level table has potentially
+moved to a new memory location, we have to set M_TWB at
+this time.  If we don't, a process exec without an intervening
+context switch will cause us to use a bogus M_TWB when
+trying to find page tables.
+
+
+    -- Dan
 
 
 
