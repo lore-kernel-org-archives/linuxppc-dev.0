@@ -1,45 +1,33 @@
-To: Freddy Lugo <wilflugo@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Image download problem with gdb and DBI 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 30 Apr 2001 14:15:16 PDT."
-             <20010430211516.24155.qmail@web9901.mail.yahoo.com>
-Date: Mon, 30 Apr 2001 23:46:22 +0200
-Message-Id: <20010430214627.AF7E02814D@denx.denx.de>
+Message-ID: <3AEDDE2D.849EEFFA@carts.com>
+Date: Mon, 30 Apr 2001 14:50:37 -0700
+From: Kevin Fry <kevin@carts.com>
+MIME-Version: 1.0
+To: Laura Dean <tralad@yahoo.com>
+Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: ramdisk for rpx-lite
+References: <20010430130651.12703.qmail@web12404.mail.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20010430211516.24155.qmail@web9901.mail.yahoo.com> you wrote:
+I too am looking for a pre-setup ramdisk .  But I'm looking for the one
+mentioned that exists for Monta Vista. 2.4.0 kernel. Can anyone help me out
+with a link?
+
+Kevin Fry
+
+Laura Dean wrote:
+
+> Is there a ready-made ramdisk for rpx-lite? I've seen
+> posts that indicate one exists from Monta Vista, but I
+> haven't been able to find it. I'm sure people in this
+> group have made dozens of them; are any available for
+> download?
 >
-> So the image area is not downloaded, I am assuming
-> this is the cause of the error.
-
-At least it's part of the problem. Another problem might  be  missing
-hardware  initialization  and  parameter  passing.  Usually I let the
-firmware initialize the box and load the linux kernel...
-
-> What I am doing wrong??
+> Thanks,
+> Laura
 >
-> Does the image (vmlinux) should be downloaded apart
-> from the bootloader?  How I told gdb or bdi2000 to
 
-No.
-
-> download the image area?  Is there is a common recipe
-
-The BDI2000 understands  the  Linux  image  format.  Use  the  "load"
-command  (with the telnet interface) and the "image" format type (see
-section 3.2.3 Part [HOST] of the BDI2000 manual).
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The only way to get rid of a temptation is to yield to it.
-                                                        - Oscar Wilde
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
