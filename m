@@ -1,17 +1,32 @@
-Message-ID: <6B546A602AD2D211BFF00008C7A4288905843F7B@hrtades2.atea.be>
-From: Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>
-To: "'Gerhard TAEUBL '" <Gerhard.TAEUBL@frequentis.com>,
-	"'linuxppc-embedded@lists.linuxppc.org '" <linuxppc-embedded@lists.linuxppc.org>,
-	Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>
-Subject: RE: RE: Password for embedded Linux
-Date: Thu, 13 Dec 2001 13:57:02 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-Id: <sc18bbdf.069@mail.frequentis.com>
+Date: Thu, 13 Dec 2001 14:31:32 +0100
+From: "Gerhard TAEUBL" <Gerhard.TAEUBL@frequentis.com>
+To: <linuxppc-embedded@lists.linuxppc.org>,
+	<Frederic.Goddeeris@siemens.atea.be>
+Subject: Re: RE: RE: Password for embedded Linux
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+The problem is, that the line
+
+Password:
+
+after login dosen't comes up! Also after calling passwd, only
+
+#passwd
+Changing password for root
+Bad password: too short.
+
+Warning: weak password (continuing).
+Password changed.
+#
+
+appears. I think something necessary isn't on the filesystem, but I don't know what!
+
+>>> Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be> 12/13/01 13:57 PM >>>
 I suppose you now have a /etc/passwd that does not specify any password for
 root. So it is normal it does not ask for one when logging in, telnet to it
 or change the pw.
@@ -57,7 +72,7 @@ Subject: Re: RE: Password for embedded Linux
 
 
 I load the tinylogin and compile it (wow it works without any
-modification expect the path for corss compile), I could still login!
+modification expect the path for corss compile),  could still login!
 But when I try passwd and enter for example root I get the error message
 to short. It didn't ask me for any old or new password, only it is to
 shoort. Also if I do telnet, it won't ask for any password only login I
