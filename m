@@ -1,29 +1,40 @@
-Date: Thu, 3 May 2001 10:22:20 +0200
-From: Jure Menart <jure@activetools.si>
+Date: Thu, 3 May 2001 11:47:15 +0200 (MET DST)
+From: Didier Kryn <kryn@in2p3.fr>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: filesystems...
-Message-ID: <20010503102220.A15003@foo.sys.si.tlan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: endianness
+Message-ID: <Pine.A41.3.96.1010503104551.44660A-100000@ccars04.in2p3.fr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello everyone...
-me and some friends are making some motherboard with ppc4xx and other stuff,
-well, that's not really that important... what matter is, that we have (only?)
-16Mb of RAM. Now I'm trying to find appropriate software and modified it if
-necessary.
-Well, I was looking for some filesystems and found out that xfs and reiserfs
-are pretty suitable, the only thing I'm worry about is our RAM. As I read in
-documents they need more RAM than it is available. So question is... is there
-anyone who successfully used XFS of ReiserFS on that amount of RAM, or is
-there any other appropriate FS which is not so 'hungry' (we would need at
-lease journaling system).
+	Dear friends, I really had a great fun with the exchanges
+about endianness. It changes from the other serious messages :-)
 
-Thanks for all answers.
+	For sure neither big nor little endiannesses was ever
+decided by Nature, but the dispute has to do with human nature.
 
-Best whishes, Jure Menart
+	The reason of attachment of most of us to one of these is
+just habit. I have allways used big-endian processors (years before
+the advent of the PC) and I got acustomed to it. I am sure that
+there also exist some supporters of PDP endianness :-)
+
+	The reason why FORTRAN is still alive is the same: people
+need a very strong reason to change their habits. But in this case,
+obsolescence will solve the problem :-<
+
+	With endianness, we've got a long-lived subject of dispute.
+Therefore we may have centuries of fun reading the controversy and
+looking at people enthusiastically devoting their time to the
+conversion of kernels and applications from one endianness to
+another :->
+
+	Please guys, go on, I'm sure that many readers enjoy it !
+
+
+Didier Kryn
+College de France / LPCC, 11 Place M. Berthelot, 75231 Paris cedex 05
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
