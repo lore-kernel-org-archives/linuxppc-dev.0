@@ -1,24 +1,39 @@
-Date: Tue, 09 Apr 2002 19:07:57 -0600
-From: Jesse McCrosky <mccrosky@ualberta.ca>
-Subject: xfs working in benh kernel
-To: linuxppc-dev@lists.linuxppc.org
-Message-id: <64EAEAA6-4C1F-11D6-841B-003065ABC1E2@ualberta.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=US-ASCII; format=flowed
+Date: Tue, 9 Apr 2002 22:32:39 -0400 (EDT)
+From: Christopher Murtagh <christopher.murtagh@mcgill.ca>
+To: <linuxppc-dev@lists.linuxppc.org>
+Cc: <tech@totalimpact.com>
+Subject: 2.4 kernel on briQ
+Message-ID: <Pine.LNX.4.33.0204092230310.25004-100000@blues.wcg.mcgill.ca>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have managed to get xfs (the filesystem, not the font server) working
-in benh's 2.4.19-pre6 kernel.  I'm new to this list, so I'll just ask:
-is this the sort of thing that is worth putting together a patch for?
-And if so, to whom should I send the patch?
+ Just wondering if anyone has gotten a 2.4 kernel to compile and run on a
+briQ with 1GB of RAM?
 
-Thanks.
+ I have 4 of them that I have been playing with and would like to go into
+production very soon, and I'm just wondering if I should wait a little
+longer or stick with a 2.2 kernel and only 512 MB for now.
 
-	jesse McCrosky
-	mccrosky@ualberta.ca
-	GPG Fingerprint: 0C9F 7680 5CE4 44CD 2010  1003 0CDD 0B4F 24AE 344F
+ Any info would be much appreciated. Thanks.
+
+Cheers,
+
+Chris
+
+--
+
+Christopher Murtagh
+Webmaster / Sysadmin
+Web Communications Group
+McGill University
+Montreal, Quebec
+Canada
+
+Tel.: (514) 398-3122
+Fax:  (514) 398-2017
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
