@@ -1,31 +1,31 @@
-Subject: Re: multiple separate pci bridges ...
+Subject: Re: OF properties access ?
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Sven Luther <sven.luther@wanadoo.fr>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <20040119120347.GC18112@iliana>
-References: <20040118144412.GA6897@iliana> <1074503490.4547.52.camel@gaston>
-	 <Pine.GSO.4.58.0401191108100.6038@waterleaf.sonytel.be>
-	 <1074512479.12326.18.camel@gaston>  <20040119120347.GC18112@iliana>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <20040119120621.GD18112@iliana>
+References: <20040113114625.GA9294@iliana> <1074131387.818.43.camel@gaston>
+	 <20040115074439.GB14039@iliana> <1074310140.8360.27.camel@gaston>
+	 <20040118120722.GA4603@iliana> <1074468096.795.27.camel@gaston>
+	 <20040118143225.GA6717@iliana> <1074502892.813.41.camel@gaston>
+	 <20040119101728.GB18112@iliana> <1074512524.10581.20.camel@gaston>
+	 <20040119120621.GD18112@iliana>
 Content-Type: text/plain
-Message-Id: <1074548106.12326.26.camel@gaston>
+Message-Id: <1074548161.12326.28.camel@gaston>
 Mime-Version: 1.0
-Date: Tue, 20 Jan 2004 08:35:06 +1100
+Date: Tue, 20 Jan 2004 08:36:02 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Mmm, should it also be needed to put 0 in the Memory Space and IO space
-> bits of the Command register ?
+> Doing only : np = find_type_devices("cpu"); worked fine. I guess this
+> will catch any cpus in the system, and be ok. There are not yet
+> multi-cpu pegasos boxes, so i think it is ok to just check the first CPU
+> and enable the L2 cache there, i will make sure the OF of future
+> multi-cpu systems will set the L2 cache properly.
+>
+> Or is it better to go for the first child of cpus ?
 
-Probably a good idea, yes.
-
-> Also, about the Interrupt line, i believe that there is no interrupt
-> used by the northbridge at this time. We were not speaking about the pci
-> config space of the graphic card, but of the bridge, so it should have
-> no influence with DRI or anything else, right ?
-
-Yup.
+What you do should be fine.
 
 Ben.
 
