@@ -1,63 +1,43 @@
-From: "Jim Lewis" <jlewis@mvista.com>
-To: "Billalabeitia, Jose Carlos (IndSys, GEPM)" <jc.billalabeitia@indsys.ge.com>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Formatting JFFS2 Flash
-Date: Thu, 14 Mar 2002 07:30:28 -0600
-Message-ID: <NDBBLNMCOLBBHLKBOLFEKEJADMAA.jlewis@mvista.com>
+Date: Thu, 14 Mar 2002 06:44:28 -0800 (PST)
+From: Adam Wozniak <awozniak@comdev.cc>
+To: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: problems with shared memory
+In-Reply-To: <3C88C54E.7040402@bluewin.ch>
+Message-ID: <Pine.LNX.4.33.0203140639320.21307-100000@rangers.comdev.cc>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <A1C99F4731CAD111BA5400A024FC3B0CBE047C@ESBILMA01EDCGE>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Did you remember to erase the flash first with:
-	erase /dev/mtd0
-Then "xxd /dev/mtd0" should show all FF's. You can't write
-successfully unless it is erased first. Forgive me if I am stating the
-obvious :)
+On Fri, 8 Mar 2002, Wolfgang Grandegger wrote:
+>  Adam Wozniak wrote:
+> >Thanks so much.  I think that fixed it.  10000+ iterations without problem.
+> The real thank goes to David who found it.
+>
+> Well, for me the linuxppc_2_4 tree seems to be less up-to-date. It would
+> be nice if somebody could give a brief status or even recommandation
+> on the various trees (linuxppc_2_4, linuxppc_2_4_devel, linuxppc_2_5)
+> including their future ... or point me to a list where it's already
+> dicussed.
 
--Jim Lewis
+I may have spoken too soon.  That fixed this particular problem, but I've
+got engineers in the field who still see the bad behavior, albeit far less
+frequently.  Are there any other bugfixes for the linuxppc_2_4 kernel mm
+out there?
 
-> -----Original Message-----
-> From: owner-linuxppc-embedded@lists.linuxppc.org
-> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of
-> Billalabeitia, Jose Carlos (IndSys, GEPM)
-> Sent: Thursday, March 14, 2002 2:34 AM
-> To: linuxppc-embedded@lists.linuxppc.org
-> Subject: Re: Formatting JFFS2 Flash
->
->
->
-> Hi Alex:
->
-> First of all, thank you for your answer. You wrote:
->
-> > Did you initialise the FS with
-> > cat jffs2.image > /dev/mtd0
-> > before you tried to mount /mtdblock0 ?
->
-> 	I tried it in two ways, and in both of them
-> I got the same result:
->
-> 	1.- By flashing "jffs2.image" directly to
-> 	    its location address.
->
-> 	2.- cp jffs2.image /dev/mtd0
->
-> and then mounting it into the system.
->
-> > Did you use an empty directory with mkfs.jffs2
-> > to make your jffs2.image?  This doesn't work
-> > - you end up with a 0 length jffs2.image!
->
-> 	No, the directory is not empty.
->
-> 					Thank you
-> 						Billa
->
->
+I've tried looking at the linuxppc_2_4_devel tree for changes, but there
+seem to be a lot for the mm, and these changes ripple out to other parts
+of the code; I can't just grab a file here and there, the changes start
+to be too much.
+
+--Adam
+--
+Adam Wozniak (KG6GZR)   COM DEV Broadband - Digital and Software Systems
+awozniak@comdev.cc      805 Aerovista Place, San Luis Obispo, CA 93401
+                        http://www.comdev.cc
+                        Voice: (805) 544-1089       Fax: (805) 544-2055
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
