@@ -1,21 +1,31 @@
-Message-ID: <3AA5113F.A0B78521@ncal.verio.com>
-Date: Tue, 06 Mar 2001 08:33:03 -0800
-From: Henry Worth <haworth@ncal.verio.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stefan Jeglinski <jeglin@4pi.com>,
+	linux <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 2.4.2 USB and "mon>" (was Re: All 6 cards!!!)
+Date: Tue, 6 Mar 2001 17:55:15 +0100
+Message-Id: <20010306165515.9932@mailhost.mipsys.com>
+In-Reply-To: <p04330103b6caab5dee89@[38.205.4.5]>
+References: <p04330103b6caab5dee89@[38.205.4.5]>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Pismo Aty128fb problem in 2.4.3-pre*?
-References: <3AA41B77.73470672@ncal.verio.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Narrowed down the problem a bit more. Specifying
-"video=aty128fb:mode:17" works; also without the mode.
-But, adding a depth parm (8,16,24, or 32) causes the
-fb init failure. It defaults to 8 and fbset works for
-8,15,16,32 but 24 causes a blurry image.
+>Running 2.4.2 (kfukui) on 9500-class machine with an OrangeMicro USB
+>firewire card [ADB keyboard + USB mouse], have noted 2 things:
+>
 
-Henry
+Can you try a couple of things:
+
+ - First, check if the kernel works without the USB card
+
+ - Then, edit prom.c, and looks for the code that calls OF "quiesce" call.
+   This code might be inside a if () checking OF version. If it is, then
+remove
+   the if () to force a call on all OF versions
+
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
