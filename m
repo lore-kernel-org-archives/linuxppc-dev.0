@@ -1,243 +1,257 @@
-From: Ruedi.Hofer@ascom.ch
-Date: Tue, 18 Jan 2000 14:34:09 +0100 (CET)
-Subject: Antwort: Re: ATA flash disk ok, missing ip config
-To: linuxppc-embedded@lists.linuxppc.org
-Message-id: <0FOJ00CF99QJAJ@pmdf-it.hasler.ascom.ch>
-MIME-version: 1.0
-Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_L8oRVKzJJ4is4p3EWx5VrA)"
+Message-ID: <E16DF5C01B78D311BFA500508B4486470517D3@roksdiamond.transcept.com>
+From: "Jeffrey R. Millar" <jmillar@transcept.com>
+To: "'gcarter@eng.uct.ac.za'" <gcarter@eng.uct.ac.za>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'"
+	 <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Dynamic Linking
+Date: Tue, 18 Jan 2000 10:00:40 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---Boundary_(ID_L8oRVKzJJ4is4p3EWx5VrA)
-Content-type: TEXT/PLAIN; CHARSET=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Here's a script to test the type of library used by a program.  It was
+written by an engineer here at Transcept.  I'll let him take credit
+personally
+if he wants to.
 
-Hi 
+jeff
 
-After I applied your boot params it puts the lines below on the terminal.
+		#!/bin/sh
 
-What means 'Root-NFS: Server returned error -5 while mounting /tftpboot/'  ??
+		if test $# = 0; then
+		  echo Usage: xfile FILE ...
+		  exit
+		fi
 
-Any ideas?
+		for i in "$@"; do
+		 echo -n "$i: "
+		 
+		 if test -f "$i"; then
+		  :
+		 else
+		  echo "doesn't exist"
+		  continue
+		 fi
 
-TIA, Ruedi
+		 if file "$i" 2>&1 | grep -q "dynamically linked"; then
+		  echo -n "Dynamically linked "
+		 elif file "$i" 2>&1 | grep -q "statically linked"; then
+		  echo -n "Statically linked "
+		 else
+		  echo "Not an executable"
+		  continue
+		 fi
 
+		 if readelf -S "$i" 2>&1 | grep -q "\.note\.ABI-tag";
+then
+		  echo "with GNU Libc 2"
+		 else
+		  echo "with old Libc"
+		 fi
+			done
 
-Linux/PPC load: root=/dev/nfs ip=10.1.20.1:10.1.20.2:10.1.20.2:255.255.255.0:ppc::bootp nfsroot=10.1.20.2:/tftpboot/ rw
-Uncompressing Linux...done.
-Now booting the kernel
-Linux version 2.2.13 (nhofru@rac26090) (gcc version egcs-2.91.60 19981201 (egcs-1.1.1 release)) #67 Mon Jan 17 15:49:49 CET 2000
-Boot arguments: root=/dev/nfs ip=10.1.20.1:10.1.20.2:10.1.20.2:255.255.255.0:ppc::bootp nfsroot=10.1.20.2:/tftpboot/ rw
-time_init: decrementer frequency = 93750000/60
-Calibrating delay loop... 24.83 BogoMIPS
-Memory: 7140k available (664k kernel code, 356k data, 32k init) [c0000000,c0800000]
-DENTRY hash table entries: 262144 (order: 9, 2097152 bytes)
-Buffer-cache hash table entries: 32768 (order: 5, 131072 bytes)
-Page-cache hash table entries: 2048 (order: 1, 8192 bytes)
-POSIX conformance testing by UNIFIX
-Linux NET4.0 for Linux 2.2
-Based upon Swansea University Computer Society NET3.039
-NET4: Unix domain sockets 1.0 for Linux NET4.0.
-NET4: Linux TCP/IP 1.0 for NET4.0
-IP Protocols: ICMP, UDP, TCP, IGMP
-TCP: Hash tables configured (ehash 8192 bhash 8192)
-Starting kswapd v 1.5
-CPM UART driver version 0.02
-ttyS00 at 0x0280 is a SMC
-ttyS01 at 0x0100 is a SCC
-ttyS02 at 0x0200 is a SCC
-pty: 256 Unix98 ptys configured
-eth0: CPM ENET Version 0.2, 08:00:3e:26:15:59
-Looking up port of RPC 100003/2 on 10.1.20.2
-neighbour table overflow
-neighbour table overflow
-neighbour table overflow
-neighbour table overflow
-portmap: server 10.1.20.2 not responding, timed out
-Root-NFS: Unable to get nfsd port number from server, using default
-Looking up port of RPC 100005/1 on 10.1.20.2
-neighbour table overflow
-neighbour table overflow
-neighbour table overflow
-neighbour table overflow
-portmap: server 10.1.20.2 not responding, timed out
-Root-NFS: Unable to get mountd port number from server, using default
-neighbour table overflow
-neighbour table overflow
-neighbour table overflow
-neighbour table overflow
-mount: server 10.1.20.2 not responding, timed out
-Root-NFS: Server returned error -5 while mounting /tftpboot/
-VFS: Unable to mount root fs via NFS, trying floppy.
-request_module[block-major-2]: Root fs not mounted
-VFS: Cannot open root device 02:00
-NIP: C00A4298 XER: E0005A7F LR: C001068C REGS: c0109c30 TRAP: 0300
-MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c0108000[1] 'swapper' mm->pgd c00bb000 Last syscall: 120
-last math 00000000
-GPR00: C001068C C0109CE0 C0108000 C00D46BF BE0B6EB4 C0109D90 FFFFFFFF FFFFFFFF
-GPR08: BE0B6EB4 BE0B6EB4 C00A45BC C0109DE8 FFFFFFFF FFFFFFFF FE010000 FE010000
-GPR16: FE010000 FE010000 FE010000 FE010000 FE010000 007F0000 00009032 00002C6F
-GPR24: 00000000 C00D0000 C00A9338 BE0B6EB4 C00D0000 C0109D28 C0160000 FFFFFFED
-Call backtrace:
-C0016ACC C001068C C0010010 C00CEA48 C00CC74C C0002970 C0006D04
-NIP: C00A4298 XER: E0005A7F LR: C001068C REGS: c01099a0 TRAP: 0300
-MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c0108000[1] 'swapper' mm->pgd c00bb000 Last syscall: 120
-last math 00000000
-
-
-
-
-
-amre.el-hoiydi@csem.ch on 19.01.2000 16:38:45
-An: Ruedi.Hofer@ascom.ch @ MailGate
-Kopie:  
-Thema: Re: ATA flash disk ok, missing ip config
-
-Hallo,
-
-I had some "IP-Config: Incomplete network configuration information." when the
-boot line was not correct. This line must be entered after the "Linux/PPC load:"
-prompt. A default line can be programmed in arch/ppc/boot/misc.c.
-
-char *root_string = "root=/dev/nfs nfsaddrs=10.10.10.1:10.10.10.2
-nfsroot=10.10.10.2:/export/nfslinuxroot
-
-where 10.10.10.1 is the IP address of the ethernet interface of the board and
-10.10.10.2 is the IP address of the workstation from which the root directory is
-exported via NFS.
-
-Does that help ?
-
-Regards,
-
-Amre
-
-
-Ruedi.Hofer@ascom.ch wrote:
+> ----- Original Message -----
+> From: "Grant Carter" <gcarter@eng.uct.ac.za>
+> To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
+> Sent: Monday, January 17, 2000 9:23 AM
+> Subject: Dynamic Linking
 > 
-> Hi Magnus
-> 
-> It works now. I had to remove the line '__asm__ volatile("eieio");' (~line 205) in
-> file pcmcia.c.
-> 
-> But unfortunately, it doesn't boot completely because of missing ip config.
-> Where do I have to apply this data?
-> 
-> Cheers, Ruedi
-> 
-> _________________________________________
-> 
-> The printout looks now like this:
-> 
-> 8xxROM 0.3.0
-> 
-> compiletime options:
-> board: ADS DRAM_25MHZ
-> disk: DISK_ATA PCMCIABUG
-> 
-> cpu: XPC860xxZPnnA3 at 25 MHz: 4Kbyte icache 4Kbyte dcache
-> 
-> <warning: cpu core has silicon bugs, check the errata>
-> 
-> board: ADS rev A - warning, read errata
-> flash: 2 Mbytes, delay 90 ns
-> dram: EDO, 4 Mbyte, 70 ns, OK
-> pcmcia: 5V and 3V
-> pcsr = 0x0070fe70
-> 
-> ATA disk: 'SunDisk SDP'.
-> 
-> Boot device list:
->  ata: SunDisk SDP3B-40
->   MSDOS partition table
->   Part    Start     Size Name
->     1:       32    81760 FAT16
-> 
-> Found FAT filesystem
-> 
-> > ó
-> 
->    Huh?  Try "help"
-> 
-> > ident
-> 
-> Boot device list:
->  ata: SunDisk SDP3B-40
->   MSDOS partition table
->   Part    Start     Size Name
->     1:       32    81760 FAT16
-> 
-> Found FAT filesystem
-> 
-> > ls
-> 
->     zimage
-> 
-> 5 file(s), 0 dir(s)
-> 
-> > bootz zimage
-> 
-> entry 0x100000, phoff 0x34, shoff 0x6f470
-> phnum 0x1, shnum 0x9
-> p_offset 0x10000, p_vaddr 0x100000, p_paddr 0x100000
-> p_filesz 0x532c, p_memsz 0xb1bc
-> Loading at 0x10c000
-> Starting 0x11c000
-> loaded at:     0011C000 001271BC
-> relocated to:  00100000 0010B1BC
-> board data at: 003F0000 003F001C
-> relocated to:  00200100 0020011C
-> zimage at:     00122000 0017B434
-> avail ram:     0017C000 00400000
-> 
-> Linux/PPC load:
-> Uncompressing Linux...done.
-> Now booting the kernel
-> Linux version 2.2.13 (root@rac26090) (gcc version egcs-2.91.60 19981201 (egcs-1.
-> 1.1 release)) #59 Wed Jan 5 11:23:37 CET 2000
-> Boot arguments: root=/dev/nfs rw
-> time_init: decrementer frequency = 93750000/60
-> Calibrating delay loop... 24.83 BogoMIPS
-> Memory: 3116k available (652k kernel code, 296k data, 32k init) [c0000000,c04000
-> 00]
-> DENTRY hash table entries: 262144 (order: 9, 2097152 bytes)
-> Buffer-cache hash table entries: 32768 (order: 5, 131072 bytes)
-> Page-cache hash table entries: 1024 (order: 0, 4096 bytes)
-> POSIX conformance testing by UNIFIX
-> Linux NET4.0 for Linux 2.2
-> Based upon Swansea University Computer Society NET3.039
-> NET4: Unix domain sockets 1.0 for Linux NET4.0.
-> NET4: Linux TCP/IP 1.0 for NET4.0
-> IP Protocols: ICMP, UDP, TCP, IGMP
-> TCP: Hash tables configured (ehash 4096 bhash 4096)
-> Starting kswapd v 1.5
-> CPM UART driver version 0.02
-> ttyS00 at 0x0280 is a SMC
-> ttyS01 at 0x0100 is a SCC
-> ttyS02 at 0x0200 is a SCC
-> pty: 256 Unix98 ptys configured
-> CPM interrupt c00a0a44 replacing c009e2d4
-> eth0: CPM ENET Version 0.2, 08:00:3e:26:15:59
-> IP-Config: Incomplete network configuration information.
-> dev_close: bug eth0 still running
-> Root-NFS: No NFS server available, giving up.
-> VFS: Unable to mount root fs via NFS, trying floppy.
-> VFS: Cannot open root device 02:00
-> Kernel panic: VFS: Unable to mount root fs on 02:00
-> Rebooting in 180 seconds..
-
--- 
-Amre El-Hoiydi
-R&D Engineer, Real-Time Software and Networking,
-CSEM, Rue Jaquet-Droz 1, 2007 Neuchatel, Switzerland
-Tel +41 327205188, Fax +41 327205720,
-Email: amre.el-hoiydi@csem.ch
-
-
-
---Boundary_(ID_L8oRVKzJJ4is4p3EWx5VrA)--
+> >
+> > Hi
+> >
+> > I have been following the thread "Cross-compile Applications for 860
+> on
+> > x86" and am running into similar problems. I have tried the
+> solutions
+> > that have been suggested but have had no success. Perhaps those
+> > concerned have had private email conversations in which the solution
+> has
+> > been found, but since I cannot find one in the archives that helps
+> me,
+> > I'll post this question. Apologies for its length.
+> >
+> > I am trying to get a hello world up and running using dynamically
+> linked
+> > libraries. The statically linked version works fine, so I presume
+> that
+> > the libraries are all fine. I am using linux-2.2.13 with no kernel
+> > floating point support, but all the libraries and executables are
+> > compiled with -msoft-float. I am using SASH-2.1 and it works fine.
+> My
+> > problem is that whenever I run something that I have compiled with
+> the
+> > dynamic linker, it exits on Signal 11.
+> >
+> > I have made sure that LD_LIBRARY_PATH is set to /lib (it seems that
+> I
+> > had to do this even though all my libraries are in /lib as without
+> it I
+> > get a
+> >
+> > ./hello: error in loading shared libraries: libc.so.6: cannot open
+> > shared object file: No such file or directory
+> >
+> > Doing a "strings" on the file shows that it is looking in /lib for
+> > ld.so.1.)
+> >
+> > ---------------------------------
+> > >powerpc-linux-strings hello
+> > /lib/ld.so.1
+> > __gmon_start__
+> > libc.so.6
+> > printf
+> > _IO_stdin_used
+> > __libc_start_main
+> > GLIBC_2.0
+> > }a[xN
+> > Grant was here!
+> > -----------------------------------
+> >
+> > Anyhow, once the LD_LIBRARY_PATH has been set, the libraries are
+> loaded
+> > (or so it seems) Now everything that I run exits with Signal 11. I
+> used
+> > objdump -p on the main executable and saw that it required
+> libc.so.6.
+> > This exists in my /lib directory
+> > -----------------------------------
+> > >powerpc-linux-objdump -p hello
+> >
+> > hello:     file format elf32-powerpc
+> >
+> > <snip>
+> >
+> > Dynamic Section:
+> >   NEEDED      libc.so.6
+> >   INIT        0x100003c8
+> >   FINI        0x100003ec
+> >   HASH        0x10000150
+> >   STRTAB      0x100001c8
+> >   SYMTAB      0x10000178
+> >   STRSZ       0x42
+> >   SYMENT      0x10
+> >   DEBUG       0x0
+> >   PLTGOT      0x100104f8
+> >   PLTRELSZ    0x18
+> >   PLTREL      0x7
+> >   JMPREL      0x10000240
+> >   RELA        0x10000240
+> >   RELASZ      0x18
+> >   RELAENT     0xc
+> >   VERNEED     0x10000220
+> >   VERNEEDNUM  0x1
+> >   VERSYM      0x10000214
+> >
+> > Version References:
+> >   required from libc.so.6:
+> >     0x0d696910 0x00 02 GLIBC_2.0
+> > -----------------------------------
+> >
+> > Doing the same thing on libc.so.6, I get the following:
+> >
+> > -----------------------------------
+> > >powerpc-linux-objdump -p libc.so.6
+> >
+> > libc.so.6:     file format elf32-powerpc
+> >
+> > Program Header:
+> > <snip>
+> >
+> > Dynamic Section:
+> >   NEEDED      ld.so.1
+> >   SONAME      libc.so.6
+> >   INIT        0x21cb8
+> >   FINI        0xe0fc8
+> >   HASH        0xf4
+> >   STRTAB      0x9d0c
+> >   SYMTAB      0x2cdc
+> >   STRSZ       0x7ca2
+> >   SYMENT      0x10
+> >   PLTGOT      0x103a9c
+> >   PLTRELSZ    0x150c
+> >   PLTREL      0x7
+> >   JMPREL      0x204d8
+> >   RELA        0x128c4
+> >   RELASZ      0xf2dc
+> >   RELAENT     0xc
+> >   VERDEF      0x127e0
+> >   VERDEFNUM   0x5
+> >   VERNEED     0x12884
+> >   VERNEEDNUM  0x1
+> >   VERSYM      0x119da
+> >
+> > Version definitions:
+> > 1 0x01 0x0865f4e6 libc.so.6
+> > 2 0x00 0x0d696910 GLIBC_2.0
+> > 3 0x00 0x0d696911 GLIBC_2.1
+> >         GLIBC_2.0
+> > 4 0x00 0x09691f71 GLIBC_2.1.1
+> >         GLIBC_2.1
+> > 5 0x00 0x09691f72 GLIBC_2.1.2
+> >         GLIBC_2.1.1
+> >
+> > Version References:
+> >   required from ld.so.1:
+> >     0x09691f71 0x00 08 GLIBC_2.1.1
+> >     0x0d696911 0x00 07 GLIBC_2.1
+> >     0x0d696910 0x00 06 GLIBC_2.0
+> > -----------------------------------
+> >
+> > And now for ld.so.1
+> >
+> > -----------------------------------
+> > >powerpc-linux-objdump -p ld.so.1
+> >
+> > ld.so.1:     file format elf32-powerpc
+> >
+> > Program Header:
+> > <snip>
+> > Dynamic Section:
+> >   SONAME      ld.so.1
+> >   HASH        0x94
+> >   STRTAB      0x838
+> >   SYMTAB      0x2f8
+> >   STRSZ       0xcfc
+> >   SYMENT      0x10
+> >   PLTGOT      0x25fd4
+> >   PLTRELSZ    0x12c
+> >   PLTREL      0x7
+> >   JMPREL      0x2ab0
+> >   RELA        0x167c
+> >   RELASZ      0x1560
+> >   RELAENT     0xc
+> >   VERDEF      0x15fc
+> >   VERDEFNUM   0x4
+> >   VERSYM      0x1554
+> >
+> > Version definitions:
+> > 1 0x01 0x0275a261 ld.so.1
+> > 2 0x00 0x0d696910 GLIBC_2.0
+> > 3 0x00 0x0d696911 GLIBC_2.1
+> >         GLIBC_2.0
+> > 4 0x00 0x09691f71 GLIBC_2.1.1
+> >         GLIBC_2.1
+> > -----------------------------------
+> >
+> > So in summary, it seems that I have all of the required libraries
+> > (ld.so.1 and libc.so.6) in the right place (/lib) as pointed to my
+> > LD_LIBRARY_PATH and still I get a Signal 11 exit when trying to run
+> it.
+> >
+> > Any ideas would be greatly appreciated.
+> >
+> > Regards
+> > Grant
+> >
+> > --
+> > Grant Carter                              gcarter@eng.uct.ac.za
+> > Department of Electrical Engineering      University of Cape Town
+> > Tel: +27 (0)21 650-3467                   Fax: +27 (0)21 650-3465
+> >                      "Coffee not found - operator halted!"
+> >
+> >
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
