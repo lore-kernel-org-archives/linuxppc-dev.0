@@ -1,33 +1,36 @@
-Message-ID: <3E2E30E9.5050305@tataelxsi.co.in>
-Date: Wed, 22 Jan 2003 11:19:29 +0530
-From: "Omanakuttan" <omanakuttan@tataelxsi.co.in>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: ppcboot for mpc8260ads board.
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Prakash kanthi <pkanthi@yahoo.com>
+Cc: "PPC-Linux list (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: busybox source 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 21 Jan 2003 16:05:48 PST."
+             <20030122000548.26943.qmail@web41210.mail.yahoo.com>
+Date: Wed, 22 Jan 2003 06:57:03 +0100
+Message-Id: <20030122055708.ED27DC608E@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-I got my bdi2000, thanks to the cogent arguments supplied by WD.
+In message <20030122000548.26943.qmail@web41210.mail.yahoo.com> you wrote:
+>
+> Does anyone know where i can download the source for
+> busybox used in denx ramdisk-image?
 
-Facing a problem.
-1. Is it required to install ppcboot in an mpc8260ads board? If I make a
-make bzImage , can the resultant image be directly loaded to flash and
-start running it? the bdi2000 guys says that it is not possible. Is it so?
-Does it mean that we have to port ppcboot and put it in out end product
-for loading linux? we have only 8MB of flash.
+The ELDK documentation  at  http://www.denx.de/re/ELDK.html  explains
+where you can download _all_ the ELDK sources from our CVS server.
 
-2. I tried to coross compile ppcboot for mpc8260ads board.
-make mpc8260ads_config does not work. In the readme, no such target is
-supported. but in the  boards directory, there is a file for mpc8260ads
-boards. I am confused and reading the makefile. But seems like a little
-complex. if anybody can throw some light on compiling ppcboot for
-mpc8260ads, it would be a great help.
+And of course you can always get busybox directly at
+ftp://ftp.lineo.com/pub/busybox/
 
-Thanks
-Om.
+Best regards,
 
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Drun'? 'm not drun'! You woudn' dare call m' drun' if I was sober!
+                                     - Terry Pratchett, _Men at Arms_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
