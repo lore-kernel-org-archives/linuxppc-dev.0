@@ -1,55 +1,68 @@
-Date: Wed, 10 May 2000 10:53:52 -0700 (PDT)
-From: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
-To: Bernhard Reiter <bernhard@intevation.de>
-cc: linuxppc-dev@lists.linuxppc.org
+Date: Wed, 10 May 2000 19:55:13 +0200
+From: Bernhard Reiter <bernhard@intevation.de>
+To: linuxppc-dev@lists.linuxppc.org
 Subject: Re: Lombard hard freeze (update: mem>64MB)
-In-Reply-To: <20000510192813.B2162@cheops.usf.Uni-Osnabrueck.DE>
-Message-ID: <Pine.LNX.3.96.1000510104735.21621B-100000@deepspace.mklinux.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <20000510195513.B2892@cheops.usf.Uni-Osnabrueck.DE>
+References: <20000510192813.B2162@cheops.usf.Uni-Osnabrueck.DE> <Pine.LNX.3.96.1000510104735.21621B-100000@deepspace.mklinux.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="7qSK/uQB79J36Y4o"
+In-Reply-To: <Pine.LNX.3.96.1000510104735.21621B-100000@deepspace.mklinux.org>; from dgatwood@deepspace.mklinux.org on Wed, May 10, 2000 at 10:53:52AM -0700
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 10 May 2000, Bernhard Reiter wrote:
+--7qSK/uQB79J36Y4o
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
 
-> When I had only 64MB the system was stable!
-> I managed to compile GRASS (which is among the biggest free software
-> projects) and other things.
->
-> Plugging in a different 128MB and a different 64MB, both in the first
-> slot, made the system unstable each time.
+On Wed, May 10, 2000 at 10:53:52AM -0700, David A. Gatwood wrote:
+> On Wed, 10 May 2000, Bernhard Reiter wrote:
 
-So it worked with your original 64 megs, but it fails with a different 64
-meg part and a 128 meg part?  I don't see how that can be anything but bad
-hardware, either something wrong with the motherboard or a pair of bad
-SIMM/DIMM parts or dirty contacts or incorrectly seated RAM.
+> > When I had only 64MB the system was stable!
+> > I managed to compile GRASS (which is among the biggest free software
+> > projects) and other things.
+> >=20
+> > Plugging in a different 128MB and a different 64MB, both in the first
+> > slot, made the system unstable each time.
+>=20
+> So it worked with your original 64 megs, but it fails with a different 64
+> meg part and a 128 meg part? =20
 
-Had the strangest thing the other day... 8100 clone wouldn't boot up.  I
-figured the PRAM battery was dead, so bought a new one and swapped it, no
-luck.  Started pulling nubus cards, etc.  Had it all down to the mobo and
-nothing.  Yanked the RAM and it came back up.  Reseated the RAM, and it
-has been fine since.  :-/  Weird....
+It was stalbe with my original 64 megs.
+Putting additional RAM in made it unstable.
+The symptom occurred with three differnent addition RAM simms.
+128,128,64 megs.
 
+> I don't see how that can be anything but bad
+> hardware, either something wrong with the motherboard or a pair of bad
+> SIMM/DIMM parts or dirty contacts or incorrectly seated RAM.
 
-> As about the power consumption and the heat: It is my understanding that
-> the fan should start up when there is too much heat controlled by
-> hardware. But the fan does not start. And freezes also occur when the
-> machine itself it cold. I also do not quite understand how the power
-> consumption could be a problem here.
+The problem is that a simple RAM stress test under MacOS would certainly
+reveal that. (If it is a simple hardware problem, like you suggested.)
 
-Me either.  I think the fan is started automagically in hardware anyway.
-At least I'm pretty sure it was on the wallstreet....
+But the RAM tests were passed in MacOS so far.
+(I have another one running right now. It will take a bit.)
 
+	Bernhard
+--=20
+Professional Service around Free Software                (intevation.net) =
+=20
+The FreeGIS Project				            (freegis.org)
+Association for a Free Informational Infrastructure            (ffii.org)
 
-David
+--7qSK/uQB79J36Y4o
+Content-Type: application/pgp-signature
 
----------------------------------------------------------------------
-A brief Haiku:
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.0.1 (SunOS)
+Comment: For info see http://www.gnupg.org
 
-Microsoft is bad.
-It seems secure at first glance.
-Then you read your mail.
+iEYEARECAAYFAjkZon8ACgkQh9ag3dpKERYndQCg2KkaNAvff7dtQevB26WEmTgN
+tuQAnjXB9tuJWEHXqVgwdsQxwnIdFtEJ
+=puol
+-----END PGP SIGNATURE-----
 
+--7qSK/uQB79J36Y4o--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
