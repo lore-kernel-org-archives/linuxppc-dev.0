@@ -1,5 +1,5 @@
-Message-ID: <386C6B4F.FB124BC0@huawei.com.cn>
-Date: Fri, 31 Dec 1999 16:37:35 +0800
+Message-ID: <386C6C0D.4AE93108@huawei.com.cn>
+Date: Fri, 31 Dec 1999 16:40:45 +0800
 From: dony <dony.he@huawei.com.cn>
 MIME-Version: 1.0
 To: Jeff Millar <jeff@wa1hco.mv.com>,
@@ -11,10 +11,10 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> The zImage contains an uncompress program at the start.  This program then
-> copies and uncompresses the kernel to another location in ram.
+Jeff Millar wrote:
 
-> If your
+> The zImage contains an uncompress program at the start.  This program then
+> copies and uncompresses the kernel to another location in ram.  If your
 > using the kernel from Dan at
 >
 >     ftp://linuxppc.cs.nmt.edu/pub/linuxppc/embedded/
@@ -22,13 +22,9 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 > Then use the debugger to start it at 0x00200000.  Refer to the code in
 > arch/ppc/mbxboot/misc.c
 
-Yes, I use the mpc8xx.2.2.13.tgz to compile the kernel "zImage".
-Do you mean that when I download the kernel "zImage" to RAM address 0x100000
-on our own board (but not mbxboard) , and jump to 0x100000, It will
-automatically run the uncompress program to copy and decompress the kernel to
-0x200000, then  jump to 0x200000, the decompressed kernel will boot,  right  ?
-
-
+By the way, what role does the "struct bd_t" play in the function
+"decompress_kernel"?
+Is it contain the private data for various board? Must I need it?
 
 >
 >
