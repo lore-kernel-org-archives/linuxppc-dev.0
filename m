@@ -1,39 +1,51 @@
-Date: Tue, 12 Jan 1999 22:48:18 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Tom Rini <trini@globe.linuxppc.org>
-cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: temporary freeze with Debian init
-In-Reply-To: <Pine.LNX.4.03.9812311928100.21390-100000@mercator.cs.kuleuven.ac.be>
-Message-ID: <Pine.LNX.4.03.9901122245260.28717-100000@mercator.cs.kuleuven.ac.be>
+Message-ID: <369BC9D6.205B4494@jlc.net>
+Date: Tue, 12 Jan 1999 17:16:54 -0500
+From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: RTHEANDE <rtheande@dscc.dk>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: PHY driver for 860T
+References: <9901129161.AA916142427@smtplink.dscc.dk>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 31 Dec 1998, Geert Uytterhoeven wrote:
-> On Thu, 31 Dec 1998, Tom Rini wrote:
-> > On Thu, 31 Dec 1998, Geert Uytterhoeven wrote:
-> > 
-> > >     NET3: Unix domain sockets 0.16 for Linux NET3.038.
-> > 
-> > Unix domain sockets as a module perhaps?
-> 
-> Yes. But it's module on my m68k box too, and there I don't see the problem.
+RTHEANDE wrote:
 
-Compiling Unix domain sockets in the kernel solved it.
+>      Hi there,
+>
+>      I'm building a board with an MPC860T that's supposed to run LinuxPPC.
 
-Sysvinit is 2.76-2 on my PPC box, and 2.75-3 on my m68k box. Is that a
-reasonable explanation?
+No problem.  I do it every day :-).
 
-Greetings,
 
-						Geert
+> ....... This board should have a 100baseTX PHY chip from
+>      Level One. If the above information is correct, could someone please
+>      take a look and tell me which chip they use.
 
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+I did the original development of the FEC driver on the 860T FADS board.
+I uses the Level One LTX970 part.
+
+I have another board in hand right now that uses the Quality Semiconductor
+QS6612 part.  I'll have the driver ready pretty soon.
+
+This increases the complexity of the MII functions in the current FEC
+driver.  I will probably use the de4x5.c as a model.  We now have to
+determine which PHY is used and program accordingly.  The driver
+currently does not support multiply PHYs, and I don't intend to do
+the modification until I have such a configuration.  There is currently
+and assumption the PHY address is known and fixed (by default it
+is device 0).
+
+I have tested this driver with both 10 and 100 Mbit networks, however
+I have not found a full duplex 100 Mbit for testing.  The FEC needs to
+be reprogrammed when this is detected.
+
+
+
+    -- Dan
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
