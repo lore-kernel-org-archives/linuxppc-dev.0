@@ -1,38 +1,46 @@
-Message-ID: <381C4668.56DAA6A0@drgw.net>
-Date: Sun, 31 Oct 1999 07:38:48 -0600
-From: Troy Benjegerdes <hozer@drgw.net>
+Date: Sun, 31 Oct 1999 21:25:33 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: David Riley <happyoscar42@usa.net>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: More framebuffer stuff...
+In-Reply-To: <381BA8A0.8F99D428@usa.net>
+Message-ID: <Pine.LNX.4.05.9910312123140.2480-100000@callisto.of.borg>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@linuxcare.com>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: PMU daemon
-References: <99100919003000.23955@argo.linuxcare.com.au>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Paul Mackerras wrote:
-> 
-> I have extended my pmu daemon and Batmon to work on my new 1999 G3
-> powerbook.  You can get it at ftp://ftp.linuxcare.com.au/pmud-0.2.tar.gz.
-> It works on my old 3400 and I believe it should work on wallstreet
-> powerbooks also.
-> 
+On Sat, 30 Oct 1999, David Riley wrote:
+> Well, I found a good site for framebuffer initing (though I should have
+> thought of mmap() before).  However, now whenever I write to the
+> framebuffer, it seems to be using a color map instead of direct color
+> (unless I run my program under XF86).  I made sure that it is in 32 or
+> 16 bit color, and fb_*_screeninfo even reports a packed pixel display
+> using direct color.  So why the colormap effect?  And why not under XF86?
 
-Arg..
+You are confusing directcolor with truecolor.
 
-ncftpget ftp://ftp.linuxcare.com.au/pmud-0.2.tar.gz
-Remote host has closed the connection.
-ncftpget: cannot open ftp.linuxcare.com.au: remote host closed control
-connection. 
+Directcolor means that the r, g, and b components of a pixel are still passed
+through a color map, like
 
-Anyone got a mirror of this?
+    red = rmap[r];
+    green = gmap[g];
+    blue = bmap[b];
 
--- 
---------------------------------------------------------------------------
-| Troy Benjegerdes    |  troy@blacklablinux.com    |    hozer@drgw.net   |
-|    Unix is user friendly... You just have to be friendly to it first.  |
-| This message composed with 100% free software.    http://www.gnu.org   |
---------------------------------------------------------------------------
+To make text drawing simpler, the [rgb]maps are loaded with the console
+paletter. You should load a linear palette (rmap[i] = gmap[i] = bmap[i] = i)
+to emulate a truecolor display.
+
+XF{68,86}_FBDev loads a linear color palette first, that's why it works there.
+
+Gr{oetje,eeting}s,
+--
+Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
