@@ -1,60 +1,57 @@
-Message-Id: <v03110703b4ec000455f1@[209.183.129.50]>
-In-Reply-To: <B4EB1ADA.BEE%rshaw@linuxppc.org>
+Date: Wed, 8 Mar 2000 07:15:54 -0700
+From: Matt Porter <mmporter@home.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Michel Lanners <mlan@cpu.lu>, grant@borg.umn.edu,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: Grabbing an Interrupt for a Brain-dead PCI Device
+Message-ID: <20000308071553.A5939@home.com>
+References: <200003072200.XAA00434@piglet.grunz.lu> <Pine.GSO.4.10.10003080927450.1992-100000@dandelion.sonytel.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Wed, 8 Mar 2000 08:18:28 -0500
-To: Robert Shaw <rshaw@linuxppc.org>
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Subject: Just a thought!
-Cc: Jason Haas <jhaas@linuxppc.org>, linuxppc-dev@lists.linuxppc.org,
-        Dan Burcaw <dburcaw@terraplex.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.GSO.4.10.10003080927450.1992-100000@dandelion.sonytel.be>; from Geert.Uytterhoeven@sonycom.com on Wed, Mar 08, 2000 at 09:31:42AM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Robert,
-
-At 8:45 PM -0700 3/7/00, Robert Shaw wrote:
->Kevin,
+On Wed, Mar 08, 2000 at 09:31:42AM +0100, Geert Uytterhoeven wrote:
 >
->I saw your post on the mailing list about updating to 2000. Can't you just
->mount the CD image, install the "xinstaller" rpm, then run "xinstaller" ??
->That should let you update packages and such (I thought).
+> On Tue, 7 Mar 2000, Michel Lanners wrote:
+> > If this is in a PowerMac (at least those previous to UMA), then there
+> > is a fixed IRQ per physical slot. All 4 PCI interrupt lines are OR'ed
+> > together per slot.
+> >
+> > However, there are other IRQ routing schemes as well... the above being
+> > the easiest one, because the IRQ value can be hardcoded based on the
+> > slot, which you can determine by software.
+>
+> The most popular routing scheme looks like this:
+>
+>     #INTA(slot_nr) -> pci_int(slot_nr % 4)
+>     #INTB(slot_nr) -> pci_int((slot_nr+1) % 4)
+>     #INTC(slot_nr) -> pci_int((slot_nr+2) % 4)
+>     #INTD(slot_nr) -> pci_int((slot_nr+3) % 4)
+>
+> where
+>
+>     pci_int(0) = #INTW
+>     pci_int(1) = #INTX
+>     pci_int(2) = #INTY
+>     pci_int(3) = #INTZ
+>
+> Hence if all boards use one interrupt (the first interrupt on a board _must_ be
+> #INTA), they're evenly spread across the available interrupt sources.
 
-I think I will simply use Hollis's options to upgrade my rpms (my current
-rpms are a mishmash of older stuff mixed with yellowdog 1.0, yellowdog 1.1
-and at least two earlier releases of linuxppc stuff and even some SuSE Beta
-stuff).
+This is documented in the PCI spec as the suggested method of routing irqs.
+We usually call it the standard PCI swizzle, since the interrupts
+tumble as they pass through each bridge.  I added this algorithm into
+prep_pci.c for MCG boards recently since it is pretty crucial for CPCI
+systems that are loaded up with bridges.  There are also plenty of regular
+PCI boards that have a P2P and multiple single function devices on board
+that also require this routing (old dual Ethernet cards come to mind,
+slapping two 21x4x chips and a transparent bridge onboard).
 
-It is getting very very hard to test you own software releases on a variety
-of platforms.  I don't want to have to choose but with LinuxPPC, Yellowdog,
-SuSE, Debian, MkLinux R1, etc, it looks like I am going to have too.
-
-My plea is as follows:  ;-)
-
-How about LinuxPPC, YellowDog, and MkLinux R1 joining forces to become
-YellowDogLinuxPPC and reorganize to "fend off" bigger distributions such as
-SuSE who have alot more resources that either YellowDog or LinuxPPC as
-individuals.
-
-Then take YellowDogLinuxPPC public (giving all of us developers huge
-amounts of shares in a stock market overripe for IPOs, so that we all get
-rich and retire early to just write software (i.e. quit our dayjobs!)!!!!!!
-
-
-Together, these distributions may have a enough size and revenue to justify
-a serious (hastened) ipo that if delayed would not be as productive as one
-now.
-
-By the way, if either of you (or together) were ever thinking of an ipo,
-this is the year and now is the time.  The market will never be this
-"enthuiastic" about Linux stocks again!
-
-I will be patiently waiting for my IPO invitation in the mail!!!!!!
-
-Just a thought!
-
-Kevin
-
+--
+Matt Porter
+mmporter@home.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
