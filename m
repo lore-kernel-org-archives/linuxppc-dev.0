@@ -1,20 +1,17 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5CB892BDB5
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15608.mail.cnb.yahoo.com (web15608.mail.cnb.yahoo.com
+	[202.165.102.62]) by ozlabs.org (Postfix) with SMTP id D4A292BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 16 Nov 2004 11:16:05 +1100 (EST)
-In-Reply-To: <OFF3BFC73F.53C5A7DE-ONC1256F4D.00564648-C1256F4D.0058DF9F@axxessit.no>
-References: <OFF3BFC73F.53C5A7DE-ONC1256F4D.00564648-C1256F4D.0058DF9F@axxessit.no>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <11C15E9E-3765-11D9-A70B-003065F9B7DC@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Mon, 15 Nov 2004 19:18:41 -0500
-To: morten.banzon@axxessit.no
+	Tue, 16 Nov 2004 12:55:52 +1100 (EST)
+Message-ID: <20041116015539.39185.qmail@web15608.mail.cnb.yahoo.com>
+Date: Tue, 16 Nov 2004 09:55:39 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: Dan Malek <dan@embeddededge.com>
+In-Reply-To: <38FB8908-373F-11D9-A70B-003065F9B7DC@embeddededge.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=gb2312
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC82xx -- DPRAM1
+Subject: Re: Any possibility of common mini test kernel for 8xx/82xx/85xx?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,45 +22,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Dan Malek <dan@embeddededge.com> wrote：
+> On Nov 14, 2004, at 4:28 AM, Sam Song wrote:
+> 
+> > could I deduce a possibility that we can make a
+> > common mini test kerenl which only support
+> > Monitor/RAMDISK/EXT2 for 8xx/82xx/85xx? Or even
+> > better work on all PowerPC boards?
+> 
+> The Linux kernels are very different and would have
+> to be unique. I have small ram disks for demos that
+> I run on all PowerPC platforms.
 
-On Nov 15, 2004, at 11:10 AM, morten.banzon@axxessit.no wrote:
+Oh, I now know what you meant. But the common small
+ram disks could also be very attractive to some folks
+like me. Make one leg stable so that we can move
+another one to march, anyway. :-) 
 
-> I am using 2.6.9 for a mpc8280 project, and am having trouble using 
-> dpram1
-> from offset zero, which I need for a mcc hdlc driver.
+Could you pls offer the cute one to us? Oops, I am too
+greedy to make myself annoyed. Just ignore me if it
+touch sth inappropriate to open.
 
-Why does it have to start at zero?
+Thank you very much.
 
->  In the file include/asm-ppc/cpm2.h there is a constant 
-> CPM_DATAONLY_BASE
-> In the same file the code comment say that the first 128 bytes are used
-> for SMC1 and SMC2.
+=====
+Best regards,
 
-Yes, it is.
+Sam
 
-> When I examine the smc (cpm_uart) driver i do not find any reference to
-> this region of the dpram1.
-
-It's there somewhere, hardcoded with values 0, then sizeof() something 
-is
-probably added to it.
-
-> I have replaced the calls to cpm_dpalloc with cpm_dpalloc_fixed and an
-> adress way up in the dpram1 region.
-
-Very bad idea.
-
-> My question is; do you know which code is using the dpram1 addresses 
-> below
-> CPM_DATAONLY_BASE ?
-
-The SMC1 and SMC2 peripherals, just like the comment says.
-
-> This region must be used by something (smc ?), because when I clear 
-> from
-> offset 0x00 to 0x80 the serial port stop responding.
-
-Yep.
-
-
-	-- Dan
+_________________________________________________________
+Do You Yahoo!?
+150万曲MP3疯狂搜，带您闯入音乐殿堂
+http://music.yisou.com/
+美女明星应有尽有，搜遍美图、艳图和酷图
+http://image.yisou.com
+1G就是1000兆，雅虎电邮自助扩容！
+http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
