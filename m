@@ -1,27 +1,43 @@
-From: Jim Thompson <jim@SmallWorks.COM>
+Message-ID: <3BB0AF37.A2041B64@chinook.com>
+Date: Tue, 25 Sep 2001 12:22:15 -0400
+From: Peter Desnoyers <pdesnoyers@chinook.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <15280.42836.272063.381264@zaphod.smallworks.com>
-Date: Tue, 25 Sep 2001 10:48:36 -0500
-To: fray@mvista.com
-Cc: erick205@umn.edu, linuxppc-embedded@lists.linuxppc.org
+To: Grant Erickson <erick205@umn.edu>
+Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Solutions for Fast Software Upgrade in Linux/PPC
-In-Reply-To: <3BB0A5EA.A8F7392D@mvista.com>
 References: <Pine.SOL.4.20.0109251001370.4999-100000@garnet.tc.umn.edu>
-	<3BB0A5EA.A8F7392D@mvista.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Doesn't the 'linux bios' project claim that they boot linux (as the
-bios) so quickly that the IDE drives haven't come on-line yet, so they
-just *reboot* in order to give enough delay to get the drives online?
+I would give some serious thought to the fast reboot idea.
 
-I'd concentrate on taking the delay() calls to their minimum as a
-first step, then see just how bad a simple 'reboot' could be.
+[a related anecdote - a former colleague who worked for Caymam back in
+the days when people bought Appletalk routers complained how they were
+perceived as much less reliable than the Shiva product, even though the
+Shiva crashed much more frequently.  It turns out that the Shiva
+rebooted faster than the AppleTalk timeout, while the Cayman box
+didn't...]
+
+You can probably separate it into two halves, kernel and application.  I
+can boot a 50MHz MBX860 up to /sbin/init in 6 seconds with an NFS root,
+so I think 1 or 2 second kernel boot is quite feasible on a faster
+machine with data in flash or (already spun up) local disk.  (PCI
+scanning will take time, but you should be able to trim it significantly
+with knowledge of your hardware)
+
+Application startup depends.  You might investigate having all your
+applications use a "checkpoint" or "pre-digested" format for their
+configuration files, so that they can load config quickly at boot, and
+save configuration before reboot.  This includes whatever application is
+going to configure the kernel after boot, which I assume won't be
+init+init.d/network+ifconfig etc.
 
 --
-C++ is like jamming a helicopter inside a Miata and expecting some
-sort of improvement.       -- Drew Olbrich
+.....................................................................
+ Peter Desnoyers            (781) 457-1165   pdesnoyers@chinook.com
+ Chinook Communications     (617) 661-1979   pjd@fred.cambridge.ma.us
+ 100 Hayden Ave, Lexington MA 02421
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
