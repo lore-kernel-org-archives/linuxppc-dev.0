@@ -1,37 +1,29 @@
-Message-ID: <3E95E275.1050002@kegel.com>
-Date: Thu, 10 Apr 2003 14:30:29 -0700
-From: Dan Kegel <dank@kegel.com>
-MIME-Version: 1.0
-To: jack.sun@bmrtech.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: re: Linux crash when big application executing on PPC405GP board
-Content-Type: text/plain; charset=us-ascii; format=flowed
+From: greggiraud@netcourrier.com
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: James.Dang@gdcanada.com
+Subject: MPC8260ADS
+Date: Thu, 10 Apr 2003 17:19:33 CEST
+Mime-Version: 1.0
+Message-Id: <mnet1.1049987973.5266.greggiraud@netcourrier.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-jack.sun@bmrtech.com wrote:
-> Board: CSB272 IBM PPC405GP
-> Linux kernel version: 2.4.17
-> Linux kernel can boot nfs root filesystem on the board. Shell works
-> correctly.
-> However the system will oops when execute big applications, such as
-> copying a file which is larger than 2MBytes.
-> The following is ksymoops:
->
-> The size of vmlinux.srec is 2.076Mbytes.
-> root@192.9.200.145:/# cp vmlinux.srec vmlinux.srec.bak
->
-> Oops: kernel access of bad area, sig: 11
+Hi,
+thanks for help.
+So you said that for my MPC8260ADS (I am using a MPC8266ADS, it is the same...) board, I had to put My IMMR to 0xF0000000 on ppcboot/include/configs/mpc8260ads.h, instead of 0x04700000. Moreover you said that for my kernel IMAP register had to be the same (0xF0000000)
 
-Where did you get your kernel?
-What compiler did you use to build it?
-- Dan
+OK but why?
+Moreover the MPC8260ADS has BCSR registers mapped at 0x04500000...
+So I won't be able to use them?
 
---
-Dan Kegel
-http://www.kegel.com
-http://counter.li.org/cgi-bin/runscript/display-person.cgi?user=78045
+I know that internal registers can be moved with the IMMR register. But what about the BCSR and the others registers?
 
+Thanks for helping me.
+
+greggiraud@netcourrier.com
+
+gregory
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
