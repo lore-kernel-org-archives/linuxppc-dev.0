@@ -1,54 +1,52 @@
-Date: Sun, 1 Oct 2000 13:30:36 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Takashi Oe <toe@unlserve.unl.edu>
-cc: Benjamin Herrenschmidt <bh40@calva.net>,
-        Jon Erick Ween <jween@som.llu.edu>, linuxppc-dev@lists.linuxppc.org,
-        linux-fbdev@vuser.vu.union.edu
-Subject: Re: Xfree86-4.0.1, Lombard, Mach64 driver, X-server Crash
-In-Reply-To: <Pine.A41.3.96LJ1.1b7.1000929112058.7632A-100000@unlserve.unl.edu>
-Message-ID: <Pine.LNX.4.10.10010011330090.377-100000@cassiopeia.home>
+Date: Sun, 1 Oct 2000 19:02:53 +0200 (CEST)
+From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+To: Kostas Gewrgiou <gewrgiou@imbc.gr>
+cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+        R Shapiro <rshapiro@bbn.com>, Michel Dänzer <daenzerm@student.ethz.ch>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: xf 4.0.1 + ati driver with rage II/rage pro
+In-Reply-To: <Pine.LNX.4.21.0009301652040.2538-100000@idd-01.imbc.gr>
+Message-ID: <Pine.LNX.4.10.10010011855010.1560-100000@zirkon.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 29 Sep 2000, Takashi Oe wrote:
-> On Fri, 29 Sep 2000, Geert Uytterhoeven wrote:
-> > > > In 2.5.x, we'll have a user-defined xor mask for the cursor as the 17th entry
-> > > > in the dispsw_data array.
-> > >
-> > > Can we put it for 2.4?  As far as I can see, the actual size of
-> > > dispsw_data matters only between fb driver and fbcon-cfbxx.c, and the
-> > > changes required for each driver seem to be rather small.  Besides,
-> > > controlfb is not the only one which will benefit from this change.
+> > Another idea (strictly in the Unix tradition): X knows how to mess up the
+> > PCI config from user space so why shouldn't we, before X gets a shot at
+> > it? 'Just' write the correct mapping to the offending BAR from a rc
+> > script. Obvious drawback: the kernel OF tree won't be updated, and the
+> > kernel can't safeguard against insane BAR settings (at least I can't tell
+> > how that would work, one of the PCI gurus please enlighten me). Makes a
+> > nice local DOS tool.
 > >
-> > That's true. Personally, I see no problems with it if someone's willing to
-> > write the patch for _all_ drivers at once. The real 2.4.0 is still a long way
-> > to go, I think, and the impact of the required changes is known quite well.
+> > (Don't tell me that's been done already - something like PCI PNP utils
+> > for Linux, anyone?)
 >
-> Good!  I'll work on it.  Only a few allocate memory for dispsw_data
-> dynamically, the changes should be trivial for most.
->
-> > The main thing we need to be careful about is that the xor mask is different
-> > for truecolor and directcolor visuals: truecolor needs an `all ones' mask,
-> > while directcolor needs `15' for each color component (drivers that incorrectly
-> > report a directcolor instead of truecolor visual will easily be identified).
->
-> I don't know how it will work out for atyfb, but we'll see...
+> Hmm fixing the resources from userland wont help you, you have to do it
+> before atyfb starts up. If i remember right from your logs X didn't had
+> any problems doing the relocation.
 
-Atyfb is directcolor. Grep fro VISUAL_ to find out :-)
+Wrong - X didn't relocate anything, X just disabled one of the overlapping
+regions IIRC (vram with the MMIO mirror region atyfb uses, in my case).
+Even assuming X relocates the vram region, atyfb would never know it.
+That's the root cause of our problem: X changing the PCI config while
+kernel drivers rely on the PCI config remaining unchanged once the driver
+inits.
 
-Gr{oetje,eeting}s,
+I know it doesn't sound like it can work, but in this particular case
+(MMIO regs being accessed not via the MMIO PCI mapping but via one of the
+MMIO register mirror areas in video RAM) the user space tool would
+actually work if we relocate the MMIO resource - it's not used by the
+kernel, and the video RAM mapping can remain untouched by X.
 
-						Geert
+Other solution (on part of X): if relocating one of the two conflicting
+resources, pick the one that looks like it isn't video RAM. This only
+works with atyfb I guess.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
