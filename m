@@ -1,34 +1,43 @@
-From: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-To: "Ani Joshi" <ajoshi@unixbox.com>
-Cc: "Stefan Jeglinski" <jeglin@4pi.com>,
-	<linuxppc-dev@lists.linuxppc.org>
+Date: Wed, 16 Oct 2002 21:53:44 +0200
+From: Olaf Hering <olh@suse.de>
+To: Stefan Jeglinski <jeglin@4pi.com>
+Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: part deux Re: Radeon 7000 in 9500 - which slot?
-Date: Wed, 16 Oct 2002 21:53:39 +0200
-Message-Id: <20021016195339.21549@192.168.4.1>
-In-Reply-To: <Pine.BSF.4.44.0210161110480.97189-100000@shell.unixbox.com>
-References: <Pine.BSF.4.44.0210161110480.97189-100000@shell.unixbox.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <20021016215344.C11834@suse.de>
+References: <p05100302b9d2ade72041@[192.168.0.8]> <20021016121613.26836@192.168.4.1> <20021016192712.A971@suse.de> <p05111b14b9d3614c6807@[63.220.231.176]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <p05111b14b9d3614c6807@[63.220.231.176]>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->It is not detecting the heads properly because on many "mac" radeons, the
->firmware doesn't initialize the SCRATCH registers properly which contain
->information about display type.  There is no reliable method of probing
->display type on ppc so I will end up adding a display type option to
->radeonfb next version.
+begin  On Wed, Oct 16, Stefan Jeglinski wrote:
 
-Well... It should be possible to get that info from OF properties
-or is the OF driver broken enough to not export that either ?
+>
+> > > The problem is apparently due to radeon_get_moninfo not finding
+> >> anything, can you eventually force rinfo->crtDisp_type to MT_CRT
+> >> and see if that helps ?
+> >
+> >I see something similar here.
+> >It does work when booting with BootX App, but not with miboot.
+>
+> I'm using BootX, so I would respectfully disagree :-)
 
-How does the MacOS driver to probe displays ? Isn't it possible
-to just try the various i2c channels until an EDID is found to
-figure what's up ? The CRT port can definitely probe for the
-presence of the display by measuring the load on the analog
-outputs.
+I used the novideo driver checkbox once.
+But with this checkbox disabled and 1024x768-75 in MacOS, all I get is a
+stripe on the screen.
+Using 640x480-120 in MacOS and it works also in Linux.
+I must note that the XF 4.2 radeon driver can open the display
+correctly, even with broken kernel framebuffer driver.
 
-Ben.
 
+Gruss Olaf
+
+--
+ $ man Notes
+
+BUGS
+       You need http://www.sauerstoff-laden.de/ soon...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
