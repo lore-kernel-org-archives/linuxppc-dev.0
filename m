@@ -1,239 +1,81 @@
-Subject: RE: How to mount romfs in flash as root filesystem?
+Message-ID: <3CD1382D.8060109@elsoft.ch>
+Date: Thu, 02 May 2002 14:59:25 +0200
+From: =?ISO-8859-1?Q?=22David_M=FCller_=28ELSOFT_AG=29=22?= <d.mueller@elsoft.ch>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Date: Thu, 2 May 2002 12:00:11 -0000
-Message-ID: <EADB10BAC266A14A85ECBF8686A73E31937F17@kolkrabbi.flaga.is>
-From: =?gb2312?B?S6iicmkgRGF2qKplc3Nvbg==?= <kd@flaga.is>
-To: "Dross Zhou" <zjuzhou@yahoo.com.cn>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: [PATCH] Several patches against linuxppc_devel-2.4.19-pre7
+Content-Type: multipart/mixed;
+ boundary="------------000109070206050004060009"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hmm,
+This is a multi-part message in MIME format.
+--------------000109070206050004060009
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-I have mounted my root filesystem as cramfs, jffs2 and even ext2 at one
-point.
-Currently I am using jffs2 and cramfs in some boards.
+Hello
 
-Kernel version 2.4.19-pre6.
+The attached patch fixes the following issues:
 
-K.D.
+    - arch/ppc/kernel/ocp_uart.c
+       fixes problem with "ghost" uart device
 
-> -----Original Message-----
-> From: Dross Zhou [mailto:zjuzhou@yahoo.com.cn]
-> Sent: 2. ma¨ª 2002 11:57
-> To: Kári Davíðsson
-> Cc: linuxppc-embedded@lists.linuxppc.org
-> Subject: RE: How to mount romfs in flash as root filesystem?
->
->
->
-> I have compiled it into kernel,not module,it is romfs.
->
-> > What file system do you have on your flash?
-> > Is it compiled into the kernel?
-> > It does not work to have the fs used on for the root
-> > fs compiled as a
-> > module.
-> >
-> > K.D.
-> >
-> > > -----Original Message-----
-> > > From: Dross Zhou [mailto:zjuzhou@yahoo.com.cn]
-> > > Sent: 1. ma¨ª 2002 04:35
-> > > To: Kári Davíðsson
-> > > Subject: RE: How to mount romfs in flash as root
-> > filesystem?
-> > >
-> > >
-> > >  --- Kári Davíðsson <kd@flaga.is> µÄÕýÎÄ£º> >
-> > > -----Original Message-----
-> > > > > From: Gunnar Larisch [mailto:la@softing.com]
-> > > > > Sent: 30. apríl 2002 08:41
-> > > > > To: Wolfgang Denk
-> > > > > Cc: Dross Zhou;
-> > > > linuxppc-embedded@lists.linuxppc.org
-> > > > > Subject: Re: How to mount romfs in flash as
-> > root
-> > > > filesystem?
-> > > > >
-> > > > >
-> > > > >
-> > > > > On Mon, Apr 29, 2002 at 04:35:24PM +0200,
-> > Wolfgang
-> > > > Denk wrote:
-> > > > > >
-> > > > > > In message
-> > > > >
-> > > >
-> > >
-> >
-> <20020429141408.33240.qmail@web15001.mail.bjs.yahoo.com>
-> > > > you wrote:
-> > > > > > >
-> > > > > > > 	Now my kernel has support ROMFS ,i can
-> > mount
-> > > > > > > /dev/mtdblock0 /mnt -t romfs and use
-> > chroot
-> > > > /mnt as
-> > > > > > > root filesystem.But i want to mount
-> > > > /dev/mtdblock0 as
-> > > > > > > root filesystem when system reboot,how
-> > to?I
-> > > > have try
-> > > > > > > many parameters into kernel such as
-> > > > "root=/dev/mtdblk0
-> > > > > > > romfs ro", but it is no use, it also mount
-> > NFS
-> > > > > >
-> > > > > > Probably because you mistyoed  the  device
-> > > > name?  There
-> > > > > is  an  'o'
-> > > > > > missing, it seems.
-> > > > > >
-> > > > > > > root,how can i mount /dev/mtdblock0
-> > (ROMFS) as
-> > > > root
-> > > > > > > filesystem?I used linux2.4.4 from denx .
-> > > > > >
-> > > > > > Just pass "root=/dev/mtdblock0", that's all.
-> > > > >
-> > > > > This will not work. You must use
-> > > > "root=/dev/mtdblock/0" and
-> > > >
-> > > > wrong! Wolfgang is correct just check how the
-> > root
-> > > > parameter is parsed
-> > > > in
-> > > > init/do_mounts.c function name_to_kdev_t().
-> > > >
-> > > > If you pass root=/dev/mtdblock/0 it will try to
-> > > > convert the third "/" to
-> > > > a number which it can not and the minor number
-> > > > becomes 0 which is
-> > > > accedentally correct but is very wrong if you
-> > plan
-> > > > to mount
-> > > > /dev/mtdblock/1
-> > > > as you root.
-> > > >
-> > > > > Linux must be
-> > > > > configured with devfs, devfs must be mounted
-> > > > before and boot support
-> > > >
-> > > > It can be either way. You can use devfs in which
-> > > > case you must make it
-> > > > mountable at boot. You can also get away without
-> > > > devfs but then you must
-> > > >
-> > > > suppply all the necessary device nodes in your
-> > > > filesystem.
-> > > >
-> > > > > from ramdisk must be disabled.
-> > > >
-> > > > Don't spread wrong information!
-> > > >
-> > > > Regards,
-> > > >
-> > > > K.D.
-> > > >
-> > > > >
-> > > > > Gunnar Larisch
-> > > > > --
-> > > > > Gunnar Larisch
-> > > > > Dipl.-Ing.
-> > > > > Entwicklung
-> > > > > Softing AG - Dep. Industrial Communication
-> > > > > Richard-Reitzner-Allee 6
-> > > > > 85540 Haar (near Munich)
-> > > > > Germany
-> > > > > Tel.: ++49 / (0) 89 / 4 56 56 - 183
-> > > > > Fax.: ++49 / (0) 89 / 4 56 56 - 399
-> > > > >
-> > > >
-> > >
-> > > 	I have try pass root=/dev/mtdblock0 to kernel,
-> > > but it always mount NFS as root filesystem.Here is
-> > my
-> > > output message:
-> > >
-> > > Video Network Server v1.1
-> >
-> > >
-> > > MPC850,32M RAM,4M FLASH,USB
-> >
-> > >
-> >
-> > >
-> > >
-> >
-> > >
-> > >
-> >
-> > >
-> > > loaded at:     00200000 0020B1F8
-> >
-> > >
-> > > relocated to:  00180000 0018B1F8
-> >
-> > >
-> > > board data at: 001801B8 001801D4
-> >
-> > >
-> > > relocated to:  00200100 0020011C
-> >
-> > >
-> > > zimage at:     00206000 00286ADE
-> >
-> > >
-> > > avail ram:     00287000 02000000
-> >
-> > >
-> > >
-> >
-> > >
-> > > Linux/PPC load: root=/dev/mtdblock0
-> >
-> > >
-> > > Uncompressing Linux...done.
-> >
-> > >
-> > > Now booting the kernel
-> > > Linux version 2.4.4 (root@localhost.localdomain)
-> > (gcc
-> > > version 2.95.2 19991030 (
-> > > On node 0 totalpages: 8192
-> >
-> > >
-> > > zone(0): 8192 pages.
-> >
-> > >
-> > > zone(1): 0 pages.
-> >
-> > >
-> > > zone(2): 0 pages.
-> >
-> > >
-> > > Kernel command line: root=/dev/mtdblock0
-> >
-> > >
-> > > Decrementer Frequency: 3000000
-> >
-> > >
-> > > Calibrating delay loop... 47.61 BogoMIPS
-> >
-> > >
-> > > Memory: 30732k available (988k kernel code, 380k
-> > data,
-> > > 52k init, 0k highmem)
-> > > Dentry-cache hash table entries: 4096 (order: 3,
-> > 32768
-> > > bytes)
-> >
-> === message truncated ===
->
->
+       I'm not sure if this is the correct fix or if
+       the semantic of ocp_register() should be changed?
+
+    - drivers/char/ibm_ocp_gpio.c
+       fixes typo ([pv]start instead of [pv]addr)
+
+    - arch/ppc/platforms/Makefile
+       include ibm405gp.o into export-objs list
+
+    - arch/ppc/platforms/ibm405gp.c
+       export base address symbols for use with modularized
+       OCP device drivers
+
+       Shouldn't IIC_ADDR also be "const struct"?
+
+    - include/asm-ppc/floppy.h
+       fixes swapped arguments of {fd_}outb
+
+
+Dave
+
+
+--------------000109070206050004060009
+Content-Type: application/octet-stream;
+ name="linux-2.4.19-pre7.patch.bz2"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="linux-2.4.19-pre7.patch.bz2"
+
+QlpoOTFBWSZTWQFwT9AAAhHfgGYwX3///3/n3/6////qUAUZ7a6Nwm525gdHQhJEQp6KeE2K
+n6amUaPUaPTJqPUYgzUNNBoAG1PSaDKBGpqe0U/JDU9ENAAAAZDQBoAANASJNSnoaCZTTNQ0
+PKaAaeoeoANNPSepp6g0aBo9QcNDJpoaZGhpkZBkZGhkBiaMmgDJkYhhJEBEwQAmmmqflQya
+ABoep6IAAPU0MQbBlEMNk/Bswc6bikaiZbig3JEDMpCgaNWlHGOKIUsbb3LO1abB6/8Usz1H
+3lsibi3wZJo2jz5NcxWvQOkRacLmrGuxGYfGki0M03YN4I62TgWicaKHIeiRBrpRgs3mWYz5
+332sS/li/t5dTJkcPI4f0xmbv4KUtmCqqMT8BQ21f0YBc37qqb5uRcqLtlgV4ZNh3KRrcVEf
+d6ZN3BkyqfJO0s1FE+1kRmRvxR5rc51Ckta51SQ54+GxGvEpGCJVNy5bTCQIRGbQuiUjQpSE
+MnOPrhJsKMWs6OQZxkcEWbyE6Jv9ahLLX9dFUDnd32jSbN4xvA6L1641xfdrjS8u2jGliQwy
+GQ6VI6DTKZeY7uTS1nFxyQjF4F8xHYXeQ3UOh0X0qmeQzp8ojHOGIhuM63c16di3tm7NNcLF
+KMnRuK/m57bvKV3OtPoUq1dUZyTYJnF2oHMLj1hHy/gyBuQHBRn6T9I0ZV/JxDWdo0Fz8Pd7
+UUSKDWXFvlggmYeEHEUa65072F865WGAWlll0t/f5eaOdgUKX3wsZ8Zoi0BY0xm2irY4wmNQ
+D2ZSpIkUncPOk7Rgj1l5CDRi9bXHFlQ8lp1lTr2sphODrs4XwrRE0gW+y0LgEMW0PGmqAhoz
+I3hbmgSlKUuVa0GiN78/ZFVaqgbMl33mORUw/MmpiX5QQcspKg6uBaLdEmvpsSmdtZMWoZfR
+PzxMNAjnSB9BbOQMsfiAGzUk1jJLQLMcrsJNaTrKyILCWwlELZMDgMAAwhoX7onZSQ+wSiYr
+M1ACK9jSAijluiirMlTQ7AaQxGCcktaVyz+x9dhNk5q1LNxc7j2U1AywNGNZ2iVtNHgL+FK1
+Xt8zBeFfUM/E0wj2JmpTxLykFbVbrCmnkHOq7hUBav2/Iq+6Sxsdh7xFFTjSuIsvVjZiD5I+
+CDSgugoWAzO6C5RsQSh8NgiGjbkEDoGKDzsrWF3oyKIO8Ua+uzf3AQ4cSLiyHdVx2qYrqsjq
+z3nWxSig+6rhs8cUf4GZRgimIiB5laJxTUX7Gz+hzItGKsD2J1bGRfkPA7uGnBGOhBrWCUcm
+kcZp3X7okB6fjFRUXNaEDCZW+AM8L1QZNctXZqUU6wv7BVJSEztabBdBBCGJ83n3lPMtpARQ
+R4g1nRONWMZybJzGkKwgwNBjqIGIBnvkyLRY9wAgBJKp6ilaJN/pEzpFrCuU1MIHq3hCC3sJ
+gGErzmN18U2KayNunxNwIPaEF1PtS3gWay8uIZW6ZKGlSbSzcIlEaxg16rwUKiDVEVvH+hl4
+zcpILl3KpgLlV1YQvusY87IKlIJqRkGiOErruup3tkC7mgbsBFEr8yzf9kERRWITAYDgFVD0
+HCbHgR0nxWxMrinLUbFguqROOq6C4m7rs24Fj0g65DgoMi+BsC+QiCqlhYYRCa4BgjAzA5w+
+rANCFqupWpvN42kThMV9q4+oVJ2ahFHRNu3YLGQ2xGbWpgoBlw/8XckU4UJABcE/QA==
+--------------000109070206050004060009--
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
