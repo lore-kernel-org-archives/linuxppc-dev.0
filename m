@@ -1,43 +1,25 @@
-Message-Id: <200007082206.XAA15459@hyperion.valhalla.net>
-Date: Sat, 08 Jul 2000 23:06:40 +0100
-Subject: Re: X still locks up
-From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Gwyn Judd <b.judd@xtra.co.nz>
-CC: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Message-ID: <3967B1E3.80CAC746@embeddededge.com>
+Date: Sat, 08 Jul 2000 18:57:39 -0400
+From: Dan Malek <dan@netx4.com>
+MIME-Version: 1.0
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Help with string.S
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Sat, Jul 8, 2000  Gwyn Judd wrote:
-> On Fri, Jul 07, 2000 at 12:53:32PM +0200, Benjamin Herrenschmidt wrote:
-[...]
->>
->> Can you give a try to my current rsync tree (linuxcare.com.au::linux-
->> pmac-benh) and tell me if it helps ?
->
-> Okay I got that kernel working but it crashed overnight :(. Seems like
-> the problem is still there. It seems to happen most often when I'm
-> listening to streaming mp3's (ie. internet radio stations or the like)
-> if that helps.
+I found the source of the 4xx and 8xx troubles in the 2.4.xx kernel.
+The functions in arch/ppc/lib/string.S are broken for anything other
+than 32-byte cache lines.  I am making the changes, but it would be
+nice to have someone else look at this as well.  There are lots of
+assumptions outside of the apparent parameters that the cache is
+32-bytes.
 
-Three things:
 
-1/ did you try the backported audio stuff I posted yesterday - there were
-some issues that were resolved between 2.2.xx and 2.3/4.xx these should be
-present in the backport.  It does work OK against 2.2.17pre10-ben1.
+Thanks.
 
-2/ You could try separating out audio, X, & network-related fault areas by
-running each area separately for a while?
 
-3/ It tends to look (as Michel said yesterday) potentially like a hardware
-problem.  I assume you have no over-clocking or stuff like that going on?
-(unlikely on PPC I agree but I thought I'd ask).
-
-BTW I've never had a random lock-up on Xpmac...
-
-good luck,
-Iain.
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
