@@ -1,34 +1,38 @@
-Message-ID: <3A553DEB.7E966DE4@mvista.com>
-Date: Thu, 04 Jan 2001 22:22:19 -0500
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: frowand@mvista.com
-CC: "'Matthias Fuchs'" <matthias.fuchs@esd-electronics.com>,
-        linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 4MB initrd crashes linux on 405 hardhat linux
-References: <B25E2E5A003CD311B61E00902778AF2A018279E0@server1.skystream.com> <3A553C09.2AB9F6F@mvista.com>
-Content-Type: text/plain; charset=us-ascii
+From: Christian.Peter@ascom.ch
+Date: Fri, 05 Jan 2001 10:03:57 +0100 (CET)
+Subject: Re: Re: Linux boot fails after MMU (MPC8260)
+To: dan@mvista.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Message-id: <0G6O0012UMJ66P@pmdf-it.hasler.ascom.ch>
+MIME-version: 1.0
+Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_6JmeVfGwmG9s04b/hSKT0A)"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Frank Rowand wrote:
+--Boundary_(ID_6JmeVfGwmG9s04b/hSKT0A)
+Content-type: TEXT/PLAIN
+Content-Transfer-Encoding: 7BIT
 
 
-> This fix is also not in the FSM Labs linux_2_5 tree.  I will eventually
-> submit it into the proper tree if no one beats me to it.
+>> Hi
+>>
+>> I try to boot linux 2.4.0test8 on a custom 8260 board.
 
-The reason it is not in the source tree is because this isn't the
-reason for the failure.  Applying this patch simply causes the
-real bug not to be seen.  The real problem was the way the initrd
-and other kernel resources were initialized, which has been fixed
-long ago.
+>Where did you get the sources?  There have been some problems with
+>the 8260 due to other 60x/7xx generic changes in the sources.
 
-There are lots of PowerPC systems using initrd as large as 24 Mbytes
-without trouble.  I suspect this 405 tree isn't up to date in other
-generic places, which is why you still see this problem.
+Kernel is from ftp.kernel.org and the patches were obtained from Jon Diekma..
 
+>For now, the only working version of Linux on the 8260 is from
+>the MontaVista web site.  It is a -test2 version.  If you have
+>access to the FSM Labs BitKeeper sources, I will be updating these
+>for the 8260 before the end of the week.
 
-	-- Dan
+I have no access to the BitKeeper source through our firewall
+
+Chris
+
+--Boundary_(ID_6JmeVfGwmG9s04b/hSKT0A)--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
