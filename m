@@ -1,53 +1,61 @@
-Message-ID: <390E55F1.CD5D0605@mac.com>
-Date: Tue, 02 May 2000 00:13:37 -0400
-From: Andrew Thompson <lordpixel@mac.com>
-MIME-Version: 1.0
+Date: Tue, 2 May 2000 10:49:01 +0200
+From: Bernhard Reiter <bernhard@intevation.de>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: 5 button mouse and XFree86 vers 4
-Content-Type: text/plain; charset=us-ascii
+Subject: Lombard hard freeze (still there)
+Message-ID: <20000502104901.G14354@cheops.usf.Uni-Osnabrueck.DE>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="M38YqGLZlgb6RLPS"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Posted something similar to this on the users list a few days ago and no
-one seemed to know, so I'm hoping someone here does...
+--M38YqGLZlgb6RLPS
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
 
-Well last night I took the plunge and switched to XFree86 vers 4, using the
-rpms from here:
-http://entropy.crashing.org/~howarth/
+Hi Linux/PPC world,
 
-What I'm trying to do now is get all 5 buttons working on my Kensington
-Mouseworks USB mouse.
+my problems with the hard freezes still continue.
+I have not come to any idea what is causing it.
+Several methods of trying to encircle the problem area failed.
 
-I tried adding this lines to my XF86Config
-        Option      "Buttons" "5"
+Therefore I have to assume it is an hardware error.
+So testing software under MacOS did not reveal any hardware problems to
+far.
 
-But no dice. Has anytone had any luck with > 3 buttons so far?
+The only way to reliably prove this would be to exchange the RAM
+or something and test. This has to wait a couple of days until
+the person in my local apple store is back from vacation again.
 
-A little further info:
+As I understand it, there are a couple of Lombard user who do not
+ave this kind of stability problems. At least three cases seem to
+be similiar to mine, but that does not prove much.
 
-xmodmap -pp reports 5 buttons are defined, but if I redefine the mapping I
-just lose buttons and buttons 2 and 4 don't seen to be generating any
-events in X.
+As you can see this problem is nagging me. :(
+I thought I just let you know, maybe somebody still has some
+advice to offer.
 
-If I use "xev" and click in the window, nothing is reported for buttons 2
-and 4. Button 1 is reported as 1, button 3 as 2 and button 5 as 3.
+Thanks,
+	Bernhard
+--=20
+Professional Service around Free Software                (intevation.net) =
+=20
+The FreeGIS Project				            (freegis.org)
+Association for a Free Informational Infrastructure            (ffii.org)
 
-So I did some reading in the XFree86 docs and discovered that the PS/2
-protocol only supports 3 buttons. PS/2 mice with > 3 buttons need some
-vendor specific initialisation. The protocol for the old Kensington
-Thinking mouse PS/2 version doesn't work with this new Kensignton
-Mouseworks (I tried it).
+--M38YqGLZlgb6RLPS
+Content-Type: application/pgp-signature
 
-This would imply that what I want to do is use the mouse as a generic HID 5
-button USB mouse. But when I try to use the usb (or USB) protocol with the
-above RPM of XFree86 vers 4 it complains that usb is an unkown protocol!
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.0.1 (SunOS)
+Comment: For info see http://www.gnupg.org
 
-Can someone enlighten me as to the story with USB mice on linux ppc? Are we
-somehow shimying them so they appear as PS/2 or ADB?
-Why isn't USB support on in the above RPMs? If I get the source RPM and
-build it myself can I turn in on maybe?
+iEYEARECAAYFAjkOlnwACgkQh9ag3dpKERY+fQCfU17uN8Ig5jRlJG6s9m2DzssU
+lfIAn3taGXh0L/NghOh4fDnX0KZDuNQf
+=xZ42
+-----END PGP SIGNATURE-----
 
-AndyT
+--M38YqGLZlgb6RLPS--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
