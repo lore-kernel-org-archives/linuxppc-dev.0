@@ -1,41 +1,26 @@
-Date: Thu, 10 Apr 2003 23:53:47 +0200
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: patch arch/ppc/mm/pgtable.c
-To: linuxppc-dev@lists.linuxppc.org
-Reply-To: tglx@linutronix.de
-Message-id: <200304102353.47791.tglx@linutronix.de>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
+From: Paul Mackerras <paulus@samba.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <16021.61655.348425.683335@nanango.paulus.ozlabs.org>
+Date: Fri, 11 Apr 2003 08:31:51 +1000 (EST)
+To: Ira Weiny <iweiny@acm.org>
+Cc: linuxppc <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Machine Check question
+In-Reply-To: <20030410013241.3ae349e5.iweiny@acm.org>
+References: <20030410013241.3ae349e5.iweiny@acm.org>
+Reply-To: paulus@samba.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-If HAVE_BATS is not defined, compile stop later as total_lowmem is undefined.
+Ira Weiny writes:
 
---
-Thomas
-________________________________________________________________________
-linutronix - competence in embedded & realtime linux
-http://www.linutronix.de
-mail: tglx@linutronix.de
+> I have put some more effort into my Microdrive (PCMCIA IDE) problem.
 
-diff -urN linux-2.4.20-ppc/arch/ppc/mm/pgtable.c
-linux-2.4.20-ppc-work/arch/ppc/mm/pgtable.c
---- linux-2.4.20-ppc/arch/ppc/mm/pgtable.c	Tue Apr  1 19:39:25 2003
-+++ linux-2.4.20-ppc-work/arch/ppc/mm/pgtable.c	Tue Apr  1 21:02:20 2003
-@@ -199,11 +199,11 @@
- adjust_total_lowmem(void)
- {
- 	unsigned long max_low_mem = MAX_LOW_MEM;
-+	unsigned long ram = total_lowmem;
+What sort of machine do you have?  There is a known problem on tibooks
+where the IDE subsystem ends up trying to use powermac-IDE functions
+on PCMCIA IDE drives.
 
- #ifdef HAVE_BATS
- 	unsigned long bat_max = 0x10000000;
- 	unsigned long align;
--	unsigned long ram = total_lowmem;
- 	int is601 = 0;
-
- 	/* 601s have smaller BATs */
-
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
