@@ -1,54 +1,30 @@
-Date: Thu, 19 Dec 2002 08:46:44 -0700
+Date: Thu, 19 Dec 2002 08:49:11 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Prakash kanthi <pkanthi@yahoo.com>
-Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: After Uncompresseing Linux..., what's next
-Message-ID: <20021219154644.GA852@opus.bloom.county>
-References: <20021219001423.47019.qmail@web41207.mail.yahoo.com>
+To: Stefano Coluccini <s.coluccini@caen.it>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: MVME5100 boot from flash
+Message-ID: <20021219154911.GB852@opus.bloom.county>
+References: <NDBBIFIMCKPOADMAJOKMKEOJEOAA.s.coluccini@caen.it>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20021219001423.47019.qmail@web41207.mail.yahoo.com>
+In-Reply-To: <NDBBIFIMCKPOADMAJOKMKEOJEOAA.s.coluccini@caen.it>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Dec 18, 2002 at 04:14:23PM -0800, Prakash kanthi wrote:
+On Thu, Dec 19, 2002 at 10:03:03AM +0100, Stefano Coluccini wrote:
 
-> I was trying to load linuxppc_2_4_devel onto my board.
-> It goes through the board info read, UART init and
-> Uncompressing the linux kernel. But after that, i do
-> not see any messages and board hangs.
->
-> Here is the UART output:
-> ------------------------------------
-> OS Booting...
->
-> loaded at:     00400000 0060D1CC
-> board data at: 00000030 00000044
-> relocated to:  00405C24 00405C38
-> zimage at:     00406290 004A08FF
-> initrd at:     004A1000 006097CA
-> avail ram:     0060E000 007F8000
->
-> Linux/PPC load: console=ttyS0,9600 console=tty1 ip=on
-> root=/dev/xsysace/disc0/pa
-> rt3 rw
-> Uncompressing Linux...done.
-> Now booting the kernel
-[snip]
-> 2. How big a space this uncompressing process needs?
-> And also how much overall memory is required for
-> running linux. I just have 8MB SDRAM.
+>   I have a MVME5100 and i can use Linux on it booting from the network, now
+> I'm trrying to boot from flash but without success. I have thought to simply
+> put the image that is good for the network boot in the flash bank with
+> pflash, but it doesn't work. Anyone knows what i have to do or where i can
+> found documentation about this topic ?
 
-"Not too much".  And the zlib uncompress code will error out if there
-are any problems (corruption, lack of memory, etc).  So if you got that
-far, uncompression worked.
-
-> 3. What is the next step in the booting process? Which
-> Device (eth, pci, ide, ???) Initialization?
-
-'???'.  Try enabling CONFIG_SERIAL_TEXT_DEBUG, as that will print out
-some information prior to printk being usable.
+What .config are you using to generate a working kernel for this
+machine?  IIRC, CONFIG_ALL_PPC won't generate a flash-bootable image by
+default (look at arch/ppc/boot/simple/Makefile if you need to use this,
+and not CONFIG_MVME5100), but CONFIG_MVME5100 will generate a
+'zImage.bugboot' which can be put into flash and booted.
 
 --
 Tom Rini (TR1265)
