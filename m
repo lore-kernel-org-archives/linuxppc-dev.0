@@ -1,56 +1,36 @@
-In-Reply-To: <Pine.LNX.4.05.10001261719320.12616-100000@callisto.of.borg>
-Date: Wed, 26 Jan 2000 18:23:14 +0100
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: linuxppc-dev@lists.linuxppc.org, linux-fbdev@vuser.vu.union.edu
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: [linux-fbdev] Re: Fwd: Re: still no accelerated X ($#!$*)
-Message-Id: <20000126182314.015542@mailhost.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+From: ramp@oddjob.uchicago.edu
+Date: Wed, 26 Jan 2000 13:02:55 -0600 (CST)
+To: linuxppc-user@lists.linuxppc.org
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: trying cutting edge kernel ..
+Message-ID: <Pine.LNX.4.10.10001261247070.7391-100000@xpol.uchicago.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Jan 26, 2000, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 
->Very simple, cfr. include/asm-ppc/system.h:
->
->/*
-> * Memory barrier.
-> * The sync instruction guarantees that all memory accesses initiated
-> * by this processor have been performed (with respect to all other
-> * mechanisms that access memory).  The eieio instruction is a barrier
-> * providing an ordering (separately) for (a) cacheable stores and (b)
-> * loads and stores to non-cacheable memory (e.g. I/O devices).
-> *
-> * mb() prevents loads and stores being reordered across this point.
-> * rmb() prevents loads being reordered across this point.
-> * wmb() prevents stores being reordered across this point.
-> *
-> * We can use the eieio instruction for wmb, but since it doesn't
-> * give any ordering guarantees about loads, we have to use the
-> * stronger but slower sync instruction for mb and rmb.
-> */
->#define mb()  __asm__ __volatile__ ("sync" : : : "memory")
->#define rmb()  __asm__ __volatile__ ("sync" : : : "memory")
->#define wmb()  __asm__ __volatile__ ("eieio" : : : "memory")
->
->The *mb() macro's are portable across the different architectures
-supported by
->Linux. Yes, *mb are Alpha mnemonics :-)
+Maybe this belongs to the linuxppc-dev group but I will ask it
+here anyway.
 
-The semantics used here are a bit strange. Definitely sync is evil and
-should be avoided except in rare few cases. It's not a memory barrier,
-it's a lot more since it ensure synchronisation on the bus, inter-cpu
-synchro, and interrupt synchro. It eats a lot of cycles on SMP configs
-and with recent G3/G4 CPUs.
+After having my USB printer work I wanted to see if my USB Zip250
+would work. I looked at the linux-usb mailing list archives and
+found that some people were working on it and that some devel
+kernels 2.3.41-? could be made to work. So I went to ftp.kernel.org
+and found the following files -
 
-eieio is used for wmb, but it actually works for both reads and writes
-provided that you actually want a _memory access_ barrier and not an
-interrupt barrier or other means of syncing CPUs on the bus.
+v2.3/linux-2.3.40.tar.bz2
+testing/pre-patch-2.3.41-X.bz2 where X=[1,2,3]
 
-Note that include/asm/io.h contains iobarrer macros which are better
-suited for io operations.
+My question is: Do I need to patch all 3 in order or should I just
+patch with the last file - in this case 3.
+
+Also, does this include all of the latest 2.3.39 linux-pmac-devel
+from linuxcare.com.au?
+
+Thanks very much,
+Ramprasad
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
