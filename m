@@ -1,64 +1,50 @@
-Date: Thu, 13 Jul 2000 13:17:15 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org
+Date: Thu, 13 Jul 2000 13:43:49 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
+To: Matt Porter <mmporter@home.com>
+cc: Adrian Cox <apc@agelectronics.co.uk>, linuxppc-dev@lists.linuxppc.org
 Subject: Re: Going from 2.2.12 to 2.2.17pre10
-In-Reply-To: <20000712133107.23409@mailhost.mipsys.com>
-Message-ID: <Pine.LNX.4.10.10007131307230.434-100000@cassiopeia.home>
+In-Reply-To: <20000712071604.C28921@cx258813-a.chnd1.az.home.com>
+Message-ID: <Pine.HPX.4.10.10007131339330.9548-100000@gra-ux1.iram.es>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 12 Jul 2000, Benjamin Herrenschmidt wrote:
-> >Well, some (control/platinum/valkyrie) will keep on using OF probing since
-> >they're used on PowerMac only. But their initialization routine will no
-> longer
-> >be called by offb.
-> >
-> >Prepare to see an (untested, as usual :-) patch for this RSN...
+On Wed, 12 Jul 2000, Matt Porter wrote:
+
+> > Residual data is useful for things like finding the memory size, and for
+> > chips designed inside Apple. For almost everything else Linux already
+> > contains a device tree, built by PCI probing when the kernel boots^*. I
+> > don't see much need for a parallel, architecture specific, device tree.
 >
-> BTW. I didn't look in details yet what's wrong, but I noticed that with
-> the current bk 2.4test3:
+> Whoa...you mentioned the key phrase here...it's really only useful or
+> required for chips design inside Apple where you can't get documentation.
+> "Residual data" and defined in the PReP spec is only found on PReP systems
+> where all the hardware is fully documented so it's easy to size the
+> memory by other means.  It's not that hard to read board registers or
+> the memory controller setup.
+
+Indeed, but there is one thing which is very hard to guess: interrupt
+routing (due to the utterly stupid original Intel/IBM design which was
+obsolete already before Neanderthal).
+
+Actually very similar boards may have quite different interrupt routing
+and break an unsuspecting kernel. I also hate all these tables with magic
+values in the kernel (beside the fact that they don't work with
+multifunction boards).
+
+> I can see why the Mac folks have to deal with the broken OF device tree.
 >
->  - video=ofonly doesn't work. We need to find some kludge to get this one
-> back, as it's useful on some setup with broken video (and can be the only
-> way to get the machine up)
+> A architecture specific (PPC) device tree (or residual data, if you will)
+> would be part of a "standard" OpenSource firmware project.  It's only
+> use would be to provide information for board bringup, etc.  It has it's
+> advantages and disadvantages...
 
-I don't have the bk tree here at hand. Where is the check for `video=ofonly'?
-In Linus' tree it's in offb. So the kernel argument should be
-`video=offb:ofonly'.
+For ISA devices and interrupt routing, I consider it a big plus... For PCI
+devices just ignore it if present.
 
-It also depends on the frame buffer device you are using. Atyfb, aty128fb and
-matroxfb are initialized before offb (controlfb etc. will be soon), so ofonly
-can't work for these. There's one exception: if you have any `video=offb[:*]'
-before any other video options, offb will be initialized first (through
-pref_init_funcs[] in fbmem.c). Thanks to the resource management system, all
-cards used by offb will be marked busy and e.g. atyfb will no longer try to use
-the card.
-
-Now my question: exactly what does BootX pass to the kernel if you specify `no
-video driver', and where (before or after the other kernel arguments)?
-
-If it passes `video=offb:ofonly' (or plain `video=offb') before any other
-options, it should still work fine.
-If it passes `video=ofonly', you need to add a test to video_setup() in
-fbmem.c to move the initfunc for offb to the top of pref_init_funcs[] if that
-option is specified.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
-P.S. Sorry, my patch is delayed until this evening.
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+	Gabriel.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
