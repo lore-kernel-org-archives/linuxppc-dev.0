@@ -1,27 +1,28 @@
-Message-ID: <3AA6F418.B1CB215C@mvista.com>
-Date: Wed, 07 Mar 2001 21:53:12 -0500
+Message-ID: <3AA6F769.E9EE5931@mvista.com>
+Date: Wed, 07 Mar 2001 22:07:21 -0500
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Cc: Wolfgang Denk <wd@denx.de>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: "unhandled relocation type 18" ???
-References: <Your message of "Tue, 06 Mar 2001 08:25:41 +0100." <Pine.LNX.4.05.10103060824030.29713-100000@callisto.of.borg> <5.0.2.1.2.20010306110653.02979ea8@mail.munich.netsurf.de>
+To: mgreer@mvista.com
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Sandpoint added to 2_5 tree
+References: <3AA4293B.8633F08F@mvista.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Franz Sirl wrote:
+"Mark A. Greer" wrote:
+>
+> For those of you with sandpoints, there has been sandpoint support
+> pushed out into the 2_5 tree.  It requires the patch at:
+> ftp://ftp.mvista.com/pub/Area51/sandpoint/sp_patch_2_5
 
-> 18 is a PLTREL24 relocation, so a b/bl has to be involved, but it should be
-> a REL24 relocation, the PLT usage points to compilation of a module with
-> -fpic/-fPIC?
+This is a "don't touch yourself", right?  Shouldn't this be generally
+useful (or required)?  Why don't other architectures have this
+problem and can we create a generic solution (i.e. we shouldn't have
+to hard-code the device number)?
 
-Heh, heh....it's probably looking for C library or compiler run-time
-support (and virtual addresses to match :-).
-
+Thanks.
 
 	-- Dan
 
