@@ -1,29 +1,39 @@
-Date: Thu, 16 Mar 2000 22:15:58 +0100 (CET)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: michdaen@iiic.ethz.ch
-cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-        Benjamin Herrenschmidt <bh40@calva.net>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to workonppcwithr128
-In-Reply-To: <20000316112537.6597.qmail@web124.yahoomail.com>
-Message-ID: <Pine.LNX.4.10.10003162214240.10090-100000@opal.biophys.uni-duesseldorf.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 16 Mar 2000 23:34:35 +0100
+From: Olaf Hering <olh@suse.de>
+To: Chris Backas <cbackas@bigfoot.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Linnux on iBooks
+Message-ID: <20000316233435.A27256@suse.de>
+Reply-To: linuxppc-dev@lists.linuxppc.org
+References: <E12VfO2-0002sK-00@smtp01.mrf.mail.rcn.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <E12VfO2-0002sK-00@smtp01.mrf.mail.rcn.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > > Weird. Are you sure the `81fff000' is not caused by some fixup routine
-> > > that changed the unassigned `fffff000' into `81fff000'?
-> >
-> > What part of the kernel would do that kind of fixup?
->
-> *_fixup in arch/ppc/kernel/*_pci.c
+On Thu, Mar 16, Chris Backas wrote:
 
-The only function in pmac_pci.c does no such thing. Next question: how
-would I modify the bus mappings from aty_init?
+> I have an original iBook (not the new ones) and I would like to run Linux on it
+> if possible.  I've read that Linux can now be booted on the iBook, but 'booting'
+> and 'usable' are two *very* different things in  my book.  I've heard that
+> Ethernet and the Modem aren't usable etc.. My question is, just how usable is
+> LinuxPPC on an iBook?  What still doesn't work?  Thanks for any info.
 
-	Michael
+The iBook works fine, the sound is currently not supported and you can't
+(?) switch the resolution, use the offb driver.
+Ethernet and modem works very well.
+This thing is unusable with only 32MB, at least with X.
+You can use BootX to use more than 8 bit color depth.
 
+
+Gruss Olaf
+
+--
+ $ man 1 current_release
+
+BUGS
+       Users never read manuals...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
