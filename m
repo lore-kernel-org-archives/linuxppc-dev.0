@@ -1,30 +1,42 @@
-Date: Fri, 6 Aug 1999 15:41:18 +1000
-Message-Id: <199908060541.PAA20067@tango.anu.edu.au>
-From: Paul Mackerras <paulus@cs.anu.edu.au>
-To: bob@kunk.jriver.com
+From: bob@kunk.jriver.com
+Message-ID: <19990806054632.8201.qmail@kunk.jriver.com>
+Subject: Re: Odd ethernet problem
+In-Reply-To: <199908060541.PAA20067@tango.anu.edu.au> from Paul Mackerras at
+ "Aug 6, 1999 03:41:18 pm"
+To: Paul.Mackerras@cs.anu.edu.au
+Date: Fri, 6 Aug 1999 00:46:31 -0500 (CDT)
 CC: linuxppc-dev@lists.linuxppc.org
-In-reply-to: <19990806045342.6946.qmail@kunk.jriver.com> (bob@kunk.jriver.com)
-Subject: Re: Odd ethnetnet problem
-Reply-to: Paul.Mackerras@cs.anu.edu.au
-References: <19990806045342.6946.qmail@kunk.jriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-bob@kunk.jriver.com wrote:
+User Paul Mackerras says:
+> bob@kunk.jriver.com wrote:
+> 
+> > When the iMac talked to either Unix box from linux-ppc (several kernels
+> > tested), I would get nearly 100 percent on receive but REALLY slow
+> > response on transmit (like about 40k/sec). Watching the lights on the hub,
+> > it appears that there is a really big delay restarting transmit after
+> > a collision occurs. Perhaps duplex set wrong?
+> 
+> I have seen this too but I haven't figured out what's going wrong yet.
+> My suspicion is that some packets are getting corrupted somehow on
+> transmission and then we are having to wait for a TCP retransmit.  A
+> tcpdump might yield some interesting information.
+> 
+> Paul.
 
-> When the iMac talked to either Unix box from linux-ppc (several kernels
-> tested), I would get nearly 100 percent on receive but REALLY slow
-> response on transmit (like about 40k/sec). Watching the lights on the hub,
-> it appears that there is a really big delay restarting transmit after
-> a collision occurs. Perhaps duplex set wrong?
+Good suggestion, I'll setup a tcp dump and check it out. I did try hacking
+the transmit timer without success...
 
-I have seen this too but I haven't figured out what's going wrong yet.
-My suspicion is that some packets are getting corrupted somehow on
-transmission and then we are having to wait for a TCP retransmit.  A
-tcpdump might yield some interesting information.
+Bob
 
-Paul.
+-- 
+Robert E. Brose II    N0QBJ
+http://www.jriver.com/~bob/
+bob@kunk.jriver.com
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
