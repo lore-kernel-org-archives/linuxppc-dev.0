@@ -1,33 +1,40 @@
-Date: Wed, 3 Sep 2003 18:54:31 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Yuxiao Xi <xiyuxiao@harbournetworks.com>
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: DINK32 R13.1 on Sandpoint X2
-Message-ID: <20030904015430.GA20060@ip68-0-152-218.tc.ph.cox.net>
-References: <200309040129.UAA29736@gate.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200309040129.UAA29736@gate.crashing.org>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3F56C5D3.9080202@einfochips.com>
+Date: Thu, 04 Sep 2003 10:25:47 +0530
+From: bhavin <bhavinp@einfochips.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Problems with PM826 card
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Sep 04, 2003 at 09:37:40AM +0800, Yuxiao Xi wrote:
+Hello All,
 
-> Hi,Tom,
->      From the mailing lists,I know that someone use DINK32's tftp download function
-> to download his image successfully on a Sandpoint X3 board.Is there any important
-> differences between Sandpoint X3 and X2 board so that I can not use the DINK32's tftp
-> function on X2 board?
+    I am using a PM826 card with our own developed carrier extension
+board. I have build the ppcboot image. I am booting the image from flash
+and through serial communication SCC and I have configured the correct
+serial channel number from our card's schematics. Now, the ppcboot works
+but, when I try to write something in flash through ppcboot (either
+'loadb' command or 'nm' command) the flash contents are not getting
+changed. All other functionality of ppcboot works like erase, read, etc.
+but all the functionality related to 'write to flash' is not working.
+Can any one please suggest me what could be the possible reason??
 
-I do not know, as I don't have the proper ethernet card.  I do know
-however, that I don't really care to find one now as I can upload a
-kernel quick enough via serial that it doesn't really slow me down.
-And, while not related to your problem, tftp isn't supported on 75x
-CPUs, which is what I have at the moment.
+Also, I have one separate program which, I downloaded from somewhere
+which does some read/write operation to the PM826 card's flash. Through
+that program the writing is working perfect.
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+Has it something to do with ppcboot configuration or the addressing mode?
+Your help will be highly appreciated.
+
+
+Thanks & Regards,
+Bhavin Shah
+Embedded Engineer
+eInfochips Ltd.,
+bhavinp@einfochips.com
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
