@@ -1,43 +1,38 @@
-Message-ID: <35C119252057D511BB9F0003476BF8A208E5BB@freexc01.smartm.com>
-From: "Prasad, Siva" <Siva.Prasad@smartm.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: head.S compilation problem
-Date: Mon, 24 Sep 2001 15:54:07 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-Id: <5.1.0.14.0.20010925083406.00a6fec0@pop.gmx.de>
+Date: Tue, 25 Sep 2001 09:01:42 +0800
+To: g.ramakrishna@exgate.tek.com, wd@denx.de
+From: Michael Habermann <MHabermann@gmx.de>
+Subject: RE: Can not boot linux-2.4.4 using ppcboot-1.0.4 
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <301A812E6528D511A8F70008C71E578616C939@AP-BANG-M02>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+At 06:14 AM 9/24/2001 -0700, g.ramakrishna@exgate.tek.com wrote:
 
-I am trying to build the kernel 2.2.14 that came with HHL CDK 1.2. I am
-using the rpm utilities provided with the same CD to build (ppc_7xx-*)
 
-PPC 750.
+>I had already changed the board info in the kernel according to
+>include/ppcboot.h
+>of ppcboot-1.0.4. It still fails to start the kernel. It stops at "rfi"
+>instruction in "turn_on_mmu" in the file "arch/ppc/kernel/head_8xx.S"
+>
+>         turn_on_mmu:
+>           mfmsr   r0
+>                 ori     r0,r0,MSR_DR|MSR_IR
+>           mtspr   SRR1,r0
+>                 lis     r0,start_here@h
+>           ori     r0,r0,start_here@l
+>                 mtspr   SRR0,r0
+>           SYNC
+>                 rfi                             /* enables MMU */
 
-I get the following errors, which I don't understand how to solve.
+After the instruction, the MMU is enabled and the code should continue at
+the function 'start_here'. Probably you are single-stepping using MPC8BUG,
+which cannot handle the MMU. So the next breakpoint, which is set by
+MPC8BUG, will never be reached, because it is set to a physical address.
 
-head.S: Assember messages:
-head.S:534: Error: attempt to .org backwards ignored
-make[1]; *** [head.o] Error 1
-
-When I looked at the line # 534 in head.S, it was...
-STD_EXCEPTION(0x100, Reset, UnknownException)
-which is a macro. I clearly don't understand this.
-
-I thought probably the gnu tools that came with CD are old.. So I used cross
-compiler toosl that I built recently. Same error still.
-Versions of utils that I built are...
-glibc: 2.2.3
-gcc-core: 2.95.3
-binutils: 2.11
-
-Can some please help me out with this compilation problem.
-
-Thansk in advance.
-
--- Siva
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
