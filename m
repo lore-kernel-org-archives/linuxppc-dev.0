@@ -1,28 +1,23 @@
-From: "Tom Shaver" <tom_shaver@psilongbeach.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: IBM Walnut 405GP eval board
-Date: Mon, 27 Nov 2000 13:44:03 -0600
-Message-ID: <NCBBJBFMKKFOJFGDOKNBEEGHEGAA.tom_shaver@psilongbeach.com>
+Message-ID: <3A22BB86.92419741@nexus-tech.net>
+Date: Mon, 27 Nov 2000 14:52:39 -0500
+From: Kyle Harris <kharris@nexus-tech.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <3A22B484.F4551876@mvista.com>
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: fb on mpc823
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Would anyone happen to know where I could pick one of these up? We've
-contacted Avnet and Arrow. Avnet has quoted us 90-120 days lead time, we're
-still waiting on Arrow. It seems to me IBM would be more interested in
-getting eval systems into engineers hands.
+Hi,
 
-Tom Shaver
-Electrical Engineer
-Planning Systems Inc.
-21294 Johnson Rd
-Long Beach, MS 39560
-228-863-0007 x121
-228-863-0281 Fax
+I'm trying to get a framebuffer device running on an mpc823 board
+(tqm823). I'm a little confused (not unusual :). Which device should
+/dev/fb0 be? fbmem.c opens a device using major 29. But lcd823.c also
+opens a device using major 62. Do I even need all of the standard fb
+stuff? Or can I simply insmod lcd823.o (built to run as a module) and
+get things to work?
 
+Thanks for any help, Kyle.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
