@@ -1,39 +1,25 @@
-Date: Fri, 22 Sep 2000 23:10:55 -0400
-Message-Id: <200009230310.XAA08258@asgard.cs.columbia.edu>
-From: "Robert M. Fuhrer" <rmf@asgard.cs.columbia.edu>
+Message-ID: <39CC2C86.40AF66CF@ncal.verio.com>
+Date: Fri, 22 Sep 2000 21:07:34 -0700
+From: Henry Worth <haworth@ncal.verio.com>
+MIME-Version: 1.0
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Compile errors on kernel source from ppc.samba.org::linux-pmac-stable
-Reply-to: rmf@cs.columbia.edu
+Subject: Re: Linux keycodes and left cursor on Pismo
+References: <Pine.SOL.4.10.10009221556010.17778-100000@ncal.verio.com> <39CBD3D0.C7F1964A@wanadoo.fr>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I rsync'ed twice from ppc.samba.org, and although it clearly got many
-files (the first time around), the source wouldn't compile.  The first of
-many batches of errors cropped up in
+Martin Costabel wrote:
+>
+> F13 (keycode 0x69) works for me as MagicSysRq (ADB keyboard, kernels
+> 2.2.x or 2.4.0-x).
+>
 
-  drivers/block/ll_rw_blk.c
-
-which sees no definition of the type 'elevator_t', as well as a few other
-"elevator"-related types.
-
-Granted, I rsync'ed on top of an existing 2.2.15pre9 source tree, but I
-gave rsync the "--delete" and "-u" flags, which I thought should have
-given me a fairly clean and up-to-date tree.  No?
-
-The precise rsync cmd I used was
-
-  rsync -avuz ppc.samba.org::linux-pmac-stable .
-
-If my rsync cmd was ok, am I wrong in expecting the linux-pmac-stable
-tree to compile cleanly?
-
-Or, failing all of the above, what's wrong?
-
- -------------------------------------------------------------------------
- >                   "Smooth Jazz" is no jazz at all...                  <
- > Dr. Robert M. Fuhrer                           rfuhrer@watson.ibm.com <
- > Computer Music Center                 IBM T.J. Watson Research Center <
- -------------------------------------------------------------------------
+Ah, well no F13 or equiv. combo on a Pismo. Grepping through
+the sources it doesn't appear there is any bootparm or /proc
+entry to change it... So changing it to 0x6f in
+/arc/ppc/kernel/pmac_setup.c and rebuilding it should
+give you F12 instead.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
