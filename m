@@ -1,38 +1,40 @@
-Message-Id: <200003072129.WAA00353@piglet.grunz.lu>
-Date: Tue, 7 Mar 2000 22:29:45 +0100 (CET)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: nvram access in 2.3.48?
+Date: Tue, 7 Mar 2000 22:32:38 +0100 (MET)
+From: Derek Homeier <supas100@astrophysik.uni-kiel.de>
 To: linuxppc-dev@lists.linuxppc.org
+Subject: 2.2.15pre11 on PB Lombard
+In-Reply-To: <200003070559.XAA13652@lists.linuxppc.org>
+Message-ID: <Pine.SOL.3.95.1000307220928.20594A-100000@juliet>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi list,
+Hi all,
 
-Another weiredity I've come across in my 2.3 crusade: /dev/nvram
-doesn't seem to work anymore.
+has anyone got the latest kernel from paulus's stable tree running on
+a 1999 powerbook? It panicks invariably after hda and hcd are initialized.
+xmon tells the following:
 
-I've enabled nvram support under the char devices, but the device
-doesn't seem to get included in the kernel image: kmod tries to load a
-module for char-major-10-144 upon access, but it's not built as a
-module...
+Floppy drive(s): fd0 is 2.88M
+Machine check in kernel mode (regsat c03fdd90)
+caused by (from srr1): Unknown udm in srr1
+                               ^^^<- not sure about this bit, my handwriting
+                                     really leaves to be improved...:(
 
-Anybody experienced this, and wants to spare me a few hours chasing
-that problem?
+NIP: C00D0D54 XER:20000000 LR: C00D0D30 REGS: 03fdd90 TRAP: 0200
+MSR: 00009030 [EEIRDRME]
+TASK=c03fc000[1] 'swapper' mm->pdg c0162000 last syscall:120
 
-Thanks
+... some 2^4 adresses or so follow, which I could write down if anyone
+will find them useful. I can't get anything beyond that, because xmon
+prints everything else black on black!
 
-Michel
+This happens both with CONFIG_MAC_FLOPPY set or unset (the above is without
+floppy driver)
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+Grateful for any pointers,
+							Derek
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
