@@ -1,30 +1,56 @@
 From: dank@kegel.com
-Message-ID: <3D3901F5.1FEEBB65@kegel.com>
-Date: Fri, 19 Jul 2002 23:23:49 -0700
+Message-ID: <3D397DEE.61DA4810@kegel.com>
+Date: Sat, 20 Jul 2002 08:12:46 -0700
 Reply-To: dank@kegel.com
 MIME-Version: 1.0
 To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>,
-	Mark Hatle <fray@mvista.com>
-Cc: Jan Olderdissen <jolderdissen@ixiacom.com>,
-	David Gibson <david@gibson.dropbear.id.au>,
-	Dan Kegel <dkegel@ixiacom.com>
-Subject: Re: Errata 67/77 / walnut bugs (was: Re: Erratum 51 bugfix?) 
+	Jan Olderdissen <jolderdissen@ixiacom.com>
+Subject: HZ, ppc405, interrupts and erratum 77
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Mark Hatle <fray@mvista.com> wrote on 18 Sep 2001:
-> David Gibson wrote:
-> > Ah, yes, I discovered ATOMIC_SYNC_FIX after I sent that, and have now
-> > turned it on. That should certainly fix the atomic ops, however there
-> > are quite a number of other places where the kernel uses stwcx., which
-> > ATOMIX_SYNC_FIX doesn't fix - notably arch/ppc/kernel/bitops.c and
-> > include/asm-ppc/bitops.h. As well as activating ATOMIX_SYNC_FIX I
-> > tried inserting a sync before every other stwcx. that I could find,
-> > and I haven't managed to get a process to lock up yet.
->
-> Just as an FYI, we also do this in glibc to be safe. We have never been
+I'm trying to do regression testing for erratum 77, and
+want to increase the number of asynchronous interrupts
+as high as possible.
+
+I'm running 2.4.17 or so from linuxppc_2_4_devel.
+
+HZ in config/ppc/param.h is 100.
+This generates 100 interrupts per second from the PIC on ppc405, right?
+
+Will raising HZ to 1024 do the trick?  How high can I reasonably
+raise that?  Is there a better way to generate scads of interrupts?
+
+Also, how do I confirm the rate of interrupts?  cat /proc/interrupts
+just shows
+           CPU0
+ 25:          0  405GP UIC Edge      405 DPM Rx
+BAD:          0
+
+which makes me think I really don't understand what's going on;
+shouldn't the PIC that's driving the jiffies counter be generating
+interrupts that show up in /proc/interrupts?
+
+Thanks,
+Dan
+
+p.s.
+here's the long story:
+
+IBM documented "ppc405 erratum 77" in
+  http://www-3.ibm.com/chips/techlib/techlib.nsf/techdocs/89DED00DEBFF54BF87256A8000491BA2/$file/405CR_C_errata_1_2.pdf
+
+In Sept 2001, a fix for erratum 77 was committed to the ppc development linux kernel:
+http://ppc.bkbits.net:8080/linuxppc_2_4_devel/cset@1.489
+(This fix has not made it into the mainline 2.4 kernel
+e.g. http://lxr.linux.no/source/arch/ppc/kernel/bitops.c
+but most ppc405 users realize that and act accordingly.)
+
+Mark Hatle <fray@mvista.com> then commented
+(see http://lists.linuxppc.org/linuxppc-embedded/200109/msg00227.html ):
+> Just as an FYI, we also [use SYNC before STWCX] in glibc to be safe. We have never been
 > able to pin down a problem in userspace due to this bug, but we thought
 > it would be better safe then sorry until we can get definative proof
 > that the bug will not happen in userspace.
@@ -33,21 +59,24 @@ Mark Hatle <fray@mvista.com> wrote on 18 Sep 2001:
 > linuxthreads/sysdeps/powerpc/pt-machine.h
 > sysdeps/powerpc/atomicity.h
 
-We may have an example of a problem in userspace caused by erratum 77.
-We've been using a version of gcc3.0.2 running with your patched glibc, and
-had a very mysterious crash that happened roughly once in 1000 minutes,
-but only with a lucky build of our c++ app.  The problem disappeared
-if you looked at it in any way.  Fortunately (?), we had a rack of 100
-CPUs running the app, so the MTBF was 10 minutes.
+I believe this is the patch Mark is referring to (extracted from
+Hard Hat Linux 2.0):  http://www.kegel.com/405-atomicity.patch
 
-It looks like the following file in gcc3 must be patched:
- gcc-3.0.2/libstdc++-v3/config/cpu/powerpc/bits/atomicity.h
-Here's my and Jan's attempt at a patch:
- http://gcc.gnu.org/ml/libstdc++/2002-07/msg00152.html
+It looks like those patches have not yet made it into mainline glibc (
+http://sources.redhat.com/cgi-bin/cvsweb.cgi/libc/linuxthreads/sysdeps/powerpc/pt-machine.h?cvsroot=glibc
+http://sources.redhat.com/cgi-bin/cvsweb.cgi/libc/sysdeps/powerpc/atomicity.h?cvsroot=glibc ).
 
-Have your patches to glibc been contributed back to the mainline yet?
-I'm looking carefully about how best to contribute my change;
-I think it ought to be a multilib that is explicitly enabled.
-- Dan
+And of course my rough patch http://gcc.gnu.org/ml/libstdc++/2002-07/msg00152.html
+has not yet made it into mainline gcc (
+http://gcc.gnu.org/cgi-bin/cvsweb.cgi/gcc/libstdc%2b%2b-v3/config/cpu/powerpc/atomicity.h ).
+
+Maybe I'll respin Mark's patch so that it only takes effect
+ifdef __PPC405__, like mine, and put together a coordinated patch
+for gcc3.1 and glibc2.2.5.  In my copious spare time :-)
+
+I'm still looking for a good regression test for this.
+My current thinking is to raise HZ in our kernel to 1024
+to increase the chance that an STWCX instruction is interrupted
+midthought, then run http://www.kegel.com/atomicity_test.c
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
