@@ -1,38 +1,34 @@
-Message-ID: <39A4B9B5.2D3BFA96@amberdata.demon.co.uk>
-Date: Thu, 24 Aug 2000 06:59:17 +0100
-From: David Monro <davidm@amberdata.demon.co.uk>
+Date: Thu, 24 Aug 2000 09:42:53 +0200 (CEST)
+From: Ronald Wahl <rwa@peppercon.de>
+To: Dan Malek <dan@embeddededge.com>
+cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: allocating uncachable memory
+In-Reply-To: <39A40BE3.11A6D4E1@embeddededge.com>
+Message-ID: <Pine.LNX.4.21.0008240918310.625-100000@goliath.issistance.de>
 MIME-Version: 1.0
-To: Daniel Jacobowitz <drow@false.org>
-CC: Linux/ppc Dev List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: strange PCI resource behaviour in 2.4
-References: <39A47457.EB8AC497@amberdata.demon.co.uk> <20000823212118.A18375@false.org>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Daniel Jacobowitz wrote:
->
-> On Thu, Aug 24, 2000 at 02:03:19AM +0100, David Monro wrote:
-> >
-> > Hi,
-> >
-> > I'm seeing a strange problem with the PCI code on 2.4. What is happening
-> > is that the PCI code seems to be detecting a memory region on my pcnet32
-> > chip, but leaving it at 0x0:
-> >
-[..]
->
-> How recent a 2.4?  There was a bug very like this in 2.4.0test6
-> affecting all architectures as far as i know.  It was resolved in the
-> latest 2.4.0-test7 prepatch.
->
-> Dan
+On Wed, 23 Aug 2000, Dan Malek wrote:
 
-This was test6; I'll give a test7-pre kernel a shot tonnight.
+> Benjamin Herrenschmidt wrote:
+>
+> > ... Most PPC machines out there (all PCI PPC machines) are,
+> > AFAIK, cache coherents. PPC NuBus powermacs are not.
+>
+>
+> The MPC8xx and IBM 4xx systems can have PCI options but are not
+> cache coherent.  PCI masters are still challenging (if you can actually
+> get them to work :-).
 
-Cheers,
+It's an MPC860 together with an PLX 9054 PCI Controller. The effect is
+that most of the data is correct but sometimes the MPC860 seems to get
+wrong data. Looks like more than a race condition than a cache side
+effect, but I'm not sure.
 
-	David
+ron
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
