@@ -1,44 +1,58 @@
-Date: Tue, 22 Jun 1999 15:49:18 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Albrecht =?iso-8859-1?Q?Dre=DF?= <ad@MPIfR-Bonn.MPG.de>
-cc: LinuxPPC Users <linuxppc-user@lists.linuxppc.org>,
-        LinuxPPC-Dev Liste <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Accel. Video on PB G3/300?
-In-Reply-To: <376F9308.EC651910@mpifr-bonn.mpg.de>
-Message-ID: <Pine.LNX.4.10.9906221547350.5853-100000@michelin.cs.kuleuven.ac.be>
+Date: Tue, 22 Jun 1999 09:52:49 -0400 (EDT)
+From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
+Reply-To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
+To: Peter Chang <weasel@cs.stanford.edu>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: dl-load.c (ld.so) bug??
+In-Reply-To: <v04205405b394c1fe1645@[209.239.164.131]>
+Message-ID: <Pine.LNX.3.96L.990622094815.1625A-100000@unix47.andrew.cmu.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 22 Jun 1999, Albrecht Dreß wrote:
-> Geert Uytterhoeven wrote:
-> [snip]
-> > Hence you need the clock crystal frequency estimation patch to be able to use
-> > atyfb and acceleration.
-> > 
-> > Copying drivers/video/atyfb.c from 2.3.6 should do the trick.
-> Installed it, and now...
+On Mon, 21 Jun 1999, Peter Chang wrote:
 > 
-> MacOS display is /pci/ATY,RageLTPro
-> atyfb: 3D RAGE LT PRO [0x4c50 rev 0xdc] 4M SGRAM, 29.498928 MHz XTAL, 230 MHz
-> PLL, 100 Mhz MCLK
+> At 23:09 -0400 06.21.1999, Daniel Jacobowitz wrote:
+> >On Mon, Jun 21, 1999 at 10:48:12PM -0400, Hollis R Blanchard wrote:
+> > >
+> > > I have two even simpler test cases for you:
+> > >
+> > > int main(void){
+> > >     char *ptr=NULL;
+> > >     free(ptr);
+> > > }
+> >
+> >Well, that one would probably segfault anyway (or at least, is not
+> >guaranteed not to).
 > 
-> I could not (yet) get X configured, but the system console comes up with the
-> atyfb video driver.  (BTW, should I add "mclk:100" to its arguments?).
+> Hmm... the docs taht I have say this:
+> 
 
-That's not needed: atyfb uses a 100 MHz memory clock by default for the 3D RAGE
-LT PRO, as it reports.
+[snip]
+>  If ptr is a null pointer, no action occurs.
+[snip]
 
-Greetings,
+Right. In other words, that's legal and should not segfault.
 
-						Geert
+> > > int main(void){
+> > >     char *ptr = (char *)malloc(100);
+> > > }
+> >
+> >That one's a problem, though :)
+> 
+> Why? Its allocating memory, but never freeing it. Its a leak, but not 
+> accessing things out of bounds. I haven't used ElectricFence, but its 
+> not going to catch a bounds error on this.
 
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
+Try it. It segfaults. Add a free afterwords if you like. It still segfaults.
+Add a printf in front of it, and that printf will never happen. The segfault
+starts in __libc_start_main. It makes no sense, but anytime you put a malloc
+or a free in a program, EFence makes it segfault (*before* running that malloc
+or free).
+
+-Hollis
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
