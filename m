@@ -1,93 +1,147 @@
-Message-ID: <37342C2B.E435F291@wanadoo.fr>
-Date: Sat, 08 May 1999 14:20:59 +0200
-From: Martin Costabel <costabel@wanadoo.fr>
-Reply-To: costabel@wanadoo.fr
-MIME-Version: 1.0
+Message-Id: <199905081545.RAA20120@student.physik.uni-mainz.de>
 To: linuxppc-dev@lists.linuxppc.org
-CC: Tom Rini <tmrini@ntplx.net>
-Subject: [BUG] in glibc-2.1.1-6b: gethostbyname broken
-Content-Type: multipart/mixed;
- boundary="------------13EDBE9E5C97C5D9B5061AB1"
+Subject: Patches for endianess problems in atyfb
+Date: Sat, 08 May 1999 17:43:24 CEST
+From: "Christian Bauer" <Christian.Bauer@uni-mainz.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"
+Reply-To: Christian.Bauer@uni-mainz.de
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is a multi-part message in MIME format.
---------------13EDBE9E5C97C5D9B5061AB1
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Hi!
 
+The following patches cure some of the problems I had with the atyfb
+on my PowerMac clone with onboard ATI 264VT2:
 
-Under glibc-2.1.1-6b, I cannot do an NFS-mount using the numeric IP
-address of the server. Without even consulting the net, mount says:
-  mount: can't get address for xx.xx.xx.xx
+ - corrected false colors and unstable picture in X11 15 and 32 bit depths
+ - the display no longer depends on what color depth was selected in MacOS
 
-Under glibc-2.1.1-5b, it works correctly.
+I didn't have any other ATI chips to test it with, so all changes are
+protected by a check of the chip ID.
 
-I tracked this down to gethostbyname, which doesn't work correctly when
-fed a numeric IP address.
+I'm unsure of the "i |= 0x08000000" that is done in the setup of MEM_CNTL.
+Can someone with an ATI data book verify is this bit really has something
+to do with frame buffer endianess?
 
-If I run the the attached program as
- tstgethbn 193.252.19.78 
-I get a correct result when glibc-2.1.1-5b.ppc.rpm is installed, and an
-error when glibc-2.1.1-6b.ppc.rpm is installed. Both rpms are from
-mirror.linuxppc.org.
-
-Could someone who knows what changed between 5b and 6b please look into
-this?
-
-Martin
---------------13EDBE9E5C97C5D9B5061AB1
-Content-Type: text/plain; charset=us-ascii;
- name="tstgethbn.c"
-Content-Disposition: inline;
- filename="tstgethbn.c"
-Content-Transfer-Encoding: 7bit
-
-/* tstgethbn.c
-   Test for gesthostbyname */
-
-#include <stdio.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+--- atyfb.c.orig	Sat May  8 19:32:31 1999
++++ atyfb.c.new	Sat May  8 19:31:47 1999
+@@ -1118,25 +1118,44 @@
+     if (bpp <= 8) {
+ 	bpp = 8;
+ 	pix_width = CRTC_PIX_WIDTH_8BPP;
+-	dp_pix_width = HOST_8BPP | SRC_8BPP | DST_8BPP | BYTE_ORDER_LSB_TO_MSB;
++	dp_pix_width = HOST_8BPP | SRC_8BPP | DST_8BPP;
+ 	dp_chain_mask = 0x8080;
++	if (Gx == VT_CHIP_ID) {
++	    pix_width |= 0x00040000;	// FIFO setup
++	}
++#ifdef __LITTLE_ENDIAN
++	dp_pix_width |= BYTE_ORDER_LSB_TO_MSB;
++#endif
+     } else if (bpp <= 16) {
+ 	bpp = 16;
+ 	pix_width = CRTC_PIX_WIDTH_15BPP;
+-	dp_pix_width = HOST_15BPP | SRC_15BPP | DST_15BPP |
+-		       BYTE_ORDER_LSB_TO_MSB;
++	dp_pix_width = HOST_15BPP | SRC_15BPP | DST_15BPP;
+ 	dp_chain_mask = 0x4210;
++	if (Gx == VT_CHIP_ID) {
++	    pix_width |= 0x00068000;	// FIFO setup
++	}
++#ifdef __LITTLE_ENDIAN
++	dp_pix_width |= BYTE_ORDER_LSB_TO_MSB;
++#endif
+     } else if ((bpp <= 24) && (Gx != GX_CHIP_ID) && (Gx != CX_CHIP_ID)) {
+ 	bpp = 24;
+ 	pix_width = CRTC_PIX_WIDTH_24BPP;
+-	dp_pix_width = HOST_8BPP | SRC_8BPP | DST_8BPP | BYTE_ORDER_LSB_TO_MSB;
++	dp_pix_width = HOST_8BPP | SRC_8BPP | DST_8BPP;
+ 	dp_chain_mask = 0x8080;
++#ifdef __LITTLE_ENDIAN
++	dp_pix_width |= BYTE_ORDER_LSB_TO_MSB;
++#endif
+     } else if (bpp <= 32) {
+ 	bpp = 32;
+ 	pix_width = CRTC_PIX_WIDTH_32BPP;
+-	dp_pix_width = HOST_32BPP | SRC_32BPP | DST_32BPP |
+-		       BYTE_ORDER_LSB_TO_MSB;
++	dp_pix_width = HOST_32BPP | SRC_32BPP | DST_32BPP;
+ 	dp_chain_mask = 0x8080;
++	if (Gx == VT_CHIP_ID) {
++	    pix_width |= 0x000dc000;	// FIFO setup
++	}
++#ifdef __LITTLE_ENDIAN
++	dp_pix_width |= BYTE_ORDER_LSB_TO_MSB;
++#endif
+     } else
+ 	FAIL("invalid bpp");
  
-int main(int argc, char** argv)
-{
-   char hostname[65];
-   struct hostent *he = NULL;
-   struct hostent *he2 = NULL;
-   extern int h_errno;
- 
-   strcpy(hostname, argv[1]);
-   printf( " Looking up %s\n", hostname );
- 
-   he = gethostbyname(hostname);
-   if ( h_errno ) {
-       printf(" error %d\n", h_errno);
-       herror(hostname);
-   } 
+@@ -1161,7 +1180,7 @@
+     crtc->off_pitch = ((yoffset*vxres+xoffset)*bpp/64) | (vxres<<19);
+     crtc->gen_cntl = pix_width | c_sync | CRTC_EXT_DISP_EN | CRTC_ENABLE;
+     if ((Gx == CT_CHIP_ID) || (Gx == ET_CHIP_ID) ||
+-	((Gx == VT_CHIP_ID || Gx == GT_CHIP_ID) && !(Rev & 0x07))) {
++	((Gx == GT_CHIP_ID) && !(Rev & 0x07))) {
+ 	/* Not VTB/GTB */
+ 	/* FIXME: magic FIFO values */
+ 	crtc->gen_cntl |= aty_ld_le32(CRTC_GEN_CNTL, info) & 0x000e0000;
+@@ -1743,17 +1762,36 @@
+ 	i = aty_ld_le32(MEM_CNTL, info) & 0xf30fffff;
+ 	if (!(Gx == VT_CHIP_ID && (Rev == 0x40 || Rev == 0x48)))
+ 	    i |= info->mem_refresh_rate << 20;
+-	switch (par->crtc.bpp) {
+-	    case 8:
+-	    case 24:
+-		i |= 0x00000000;
+-		break;
+-	    case 16:
+-		i |= 0x04000000;
+-		break;
+-	    case 32:
+-		i |= 0x08000000;
+-		break;
++	if (Gx == VT_CHIP_ID) {
++	    i &= 0xf0ffffff;
++	    switch (par->crtc.bpp) {
++		case 8:
++		case 24:
++		    i |= 0x02000000;
++		    break;
++		case 16:
++		    i |= 0x03000000;
++		    break;
++		case 32:
++		    i |= 0x06000000;
++		    break;
++	    }
++#ifdef __BIG_ENDIAN
++	    i |= 0x08000000;
++#endif
++	} else {
++	    switch (par->crtc.bpp) {
++		case 8:
++		case 24:
++		    i |= 0x00000000;
++		    break;
++		case 16:
++		    i |= 0x04000000;
++		    break;
++		case 32:
++		    i |= 0x08000000;
++		    break;
++	    }
+ 	}
+ 	if ((Gx == CT_CHIP_ID) || (Gx == ET_CHIP_ID)) {
+ 	    aty_st_le32(DAC_CNTL, 0x87010184, info);
 
-   if ( he == NULL ){
-       printf("No hostname found\n");
-      exit(1);
-   }
+Bye,
+Christian
 
-    printf( "\t      Hostname: %s\n", he->h_name );
- 
-   if ( he->h_addr_list[0] != NULL )
-     printf("\t       Address: %s \n", 
-	    inet_ntoa(*(struct in_addr *) he->h_addr_list[0]));
-
-   he2 = gethostbyaddr( he->h_addr_list[0], he->h_length, he->h_addrtype );
-   printf( "\t          Name: %s\n", he2->h_name );
-
-   exit(0);
-}
-  
-
---------------13EDBE9E5C97C5D9B5061AB1--
-
+-- 
+  / Coding on PowerPC and proud of it
+\/ http://www.uni-mainz.de/~bauec002/
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
