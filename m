@@ -1,162 +1,439 @@
-Subject: MPC8266 kernel hang
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Tue, 6 Jan 2004 16:20:05 -0600
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B06DA30@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Wed, 07 Jan 2004 11:28:38 +1300
+From: Robin Gilks <robin.gilks@tait.co.nz>
+Subject: PATCH: Another mpc8xx watchdog driver !!
+To: linuxppc mail list <linuxppc-embedded@lists.linuxppc.org>
+Message-id: <3FFB3696.3010506@tait.co.nz>
+MIME-version: 1.0
+Content-type: multipart/mixed; boundary="Boundary_(ID_2vDWXtlhLBIO77TfOO+68g)"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
+This is a multi-part message in MIME format.
 
-I have a problem on a MPC8266 with 512MB or RAM
-If I boot Linux (2.4.21rc1) with the full amount of memory, it hangs
-right after initializing kswapd
-If I reduce the amount of memory (either by using a 256MB stick or
-adding mem=0x1e000000 to the boot args) the kernel boots normally
+--Boundary_(ID_2vDWXtlhLBIO77TfOO+68g)
+Content-type: text/plain; charset=us-ascii; format=flowed
+Content-transfer-encoding: 7BIT
 
-Non working log:
-Memory BAT mapping: BAT2=256Mb, BAT3=128Mb, residual: 368Mb
-Linux version 2.4.21-rc1 (runet@ernie.innovsys.com) (gcc version 2.95.4
-20010319 (prerelease/franzo/20011204)) #10 Tue Jan 6 14:12:1
-7 EST 2004
-On node 0 totalpages: 126976
-zone(0): 126976 pages.
-zone(1): 0 pages.
-zone(2): 0 pages.
-Kernel command line: console=ttyS0,115200 root=/dev/nfs rw
-ip=172.23.11.121:172.23.14.39::255.255.248.0:ngap:eth0:none
-mem=0x1F00000
-0
-Warning: real time clock seems stuck!
-Calibrating delay loop... 160.15 BogoMIPS
-Memory: 500456k available (1016k kernel code, 392k data, 56k init, 0k
-highmem)
-Dentry cache hash table entries: 65536 (order: 7, 524288 bytes)
-Inode cache hash table entries: 32768 (order: 6, 262144 bytes)
-Mount cache hash table entries: 512 (order: 0, 4096 bytes)
-Buffer-cache hash table entries: 32768 (order: 5, 131072 bytes)
-Page-cache hash table entries: 131072 (order: 7, 524288 bytes)
-POSIX conformance testing by UNIFIX
-Linux NET4.0 for Linux 2.4
-Based upon Swansea University Computer Society NET3.039
-Initializing RT netlink socket
-Starting kswapd
+Greetings
 
+After looking at several WDT implementations I found that none of them
+really fitted my requirements - lean, 'prod' frequency greater than
+hardware watchdog period and able to operate on 8xx CPUs with no RTC.
 
-U-Boot 1.0.0 (Jan  6 2004 - 13:50:53)
+This is the result as applied to 2.4.23.
 
-MPC8260 Reset Status: Check Stop, External Soft, External Hard
+It is based on the code of Florian Schirmer but using kernel timers
+rather than the RTC (as used by the DENX driver). The enable/disable
+functions have moved into the ARCH part of the code to hide all the
+timer and counter manipulation that allows the timeout period to be set
+from the kernel command line.
 
-***************************************
-Working log:
-CPU2 => setenv bootargs console=ttyS0,$(baudrate) root=/dev/nfs rw
-ip=$(ipaddr):$(serverip):$(gatewayip):$(netmask):$(hostname):eth0
-:none mem=0x1E000000; tftp 100000 $(linuximage); bootm 100000
-TFTP from server 172.23.14.39; our IP address is 172.23.11.121
-Filename 'uImage'.
-Load address: 0x100000
-Loading:
-#################################################################
-         #############################################
-done
-Bytes transferred = 558602 (8860a hex)
-## Booting image at 00100000 ...
-   Image Name:   Linux Kernel Image
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    558538 Bytes = 545.4 kB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-Memory BAT mapping: BAT2=256Mb, BAT3=128Mb, residual: 352Mb
-Linux version 2.4.21-rc1 (runet@ernie.innovsys.com) (gcc version 2.95.4
-20010319 (prerelease/franzo/20011204)) #10 Tue Jan 6 14:12:1
-7 EST 2004
-On node 0 totalpages: 122880
-zone(0): 122880 pages.
-zone(1): 0 pages.
-zone(2): 0 pages.
-Kernel command line: console=ttyS0,115200 root=/dev/nfs rw
-ip=172.23.11.121:172.23.14.39::255.255.248.0:ngap:eth0:none
-mem=0x1E00000
-0
-Warning: real time clock seems stuck!
-Calibrating delay loop... 160.15 BogoMIPS
-Memory: 484264k available (1016k kernel code, 392k data, 56k init, 0k
-highmem)
-Dentry cache hash table entries: 65536 (order: 7, 524288 bytes)
-Inode cache hash table entries: 32768 (order: 6, 262144 bytes)
-Mount cache hash table entries: 512 (order: 0, 4096 bytes)
-Buffer-cache hash table entries: 32768 (order: 5, 131072 bytes)
-Page-cache hash table entries: 131072 (order: 7, 524288 bytes)
-POSIX conformance testing by UNIFIX
-Linux NET4.0 for Linux 2.4
-Based upon Swansea University Computer Society NET3.039
-Initializing RT netlink socket
-Starting kswapd
-CPM UART driver version 0.01
-ttyS0 on SMC1 at 0x0000, BRG1
-ttyS1 on SCC1 at 0x8000, BRG2
-ttyS2 on SCC2 at 0x8100, BRG3
-pty: 256 Unix98 ptys configured
-eth0: FCC ENET Version 0.3, 00:30:d7:40:01:03
-eth1: FCC ENET Version 0.3, 00:30:d7:20:01:03
-RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
-loop: loaded (max 8 devices)
-NET4: Linux TCP/IP 1.0 for NET4.0
-IP Protocols: ICMP, UDP, TCP, IGMP
-IP: routing cache hash table of 4096 buckets, 32Kbytes
-TCP: Hash tables configured (established 32768 bind 32768)
-IP-Config: Complete:
-      device=eth0, addr=172.23.11.121, mask=255.255.248.0,
-gw=255.255.255.255,
-     host=ngap, domain=, nis-domain=(none),
-     bootserver=172.23.14.39, rootserver=172.23.14.39, rootpath=
-NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-Looking up port of RPC 100003/2 on 172.23.14.39
-Looking up port of RPC 100005/1 on 172.23.14.39
-VFS: Mounted root (nfs filesystem).
-Freeing unused kernel memory: 56k init
-INIT: version 2.78 booting
-                Welcome to DENX Embedded Linux Environment
-                Press 'I' to enter interactive startup.
-Mounting proc filesystem:  [  OK  ]
-Configuring kernel parameters:  [  OK  ]
-Cannot access the Hardware Clock via any known method.
-Use the --debug option to see the details of our search for an access
-method.
-Setting clock : Wed Dec 31 19:00:05 EST 1969 [  OK  ]
-Activating swap partitions:  [  OK  ]
-Setting hostname ngap:  [  OK  ]
-can't link lock file /etc/mtab~: No such file or directory (use -n flag
-to override)
-Finding module dependencies:  /lib/modules/2.4.21-rc1/misc/atm8260: No
-such file or directory
-[  OK  ]
-Checking filesystems
-[  OK  ]
-Mounting local filesystems:  [FAILED]
-Enabling swap space:  [  OK  ]
-INIT: Entering runlevel: 3
-Entering non-interactive startup
-Starting system logger: [  OK  ]
-Starting kernel logger: [  OK  ]
-Starting xinetd: [  OK  ]
+The API is as per the Linux definition (as already implemented by
+Florian Schirmer) so it works with the Busybox watchdog applet for example.
 
-ngap login:
+A potential bug (32 bit overflow) has also been fixed - a bit of a hack
+(I'm sure there are better ways of doing it) but it works for me - YMMV.
 
+--
+Robin Gilks
+Senior Design Engineer          Phone: (+64)(3) 357 1569
+Tait Electronics                Fax  :  (+64)(3) 359 4632
+PO Box 1645 Christchurch        Email : robin.gilks@tait.co.nz
+New Zealand
 
+--Boundary_(ID_2vDWXtlhLBIO77TfOO+68g)
+Content-type: text/plain; name=m8xx_wdt.diff
+Content-transfer-encoding: 7BIT
+Content-disposition: inline; filename=m8xx_wdt.diff
 
-Rune Torgersen
-System Developer
-Innovative Systems LLC
-1000 Innovative Drive
-Mitchell, SD 57301
-Ph: 605-995-6120
-www.innovsys.com
+diff -purN linux-2.4.23/arch/ppc/kernel/m8xx_setup.c ../packages/linux-2.4.23/arch/ppc/kernel/m8xx_setup.c
+--- linux-2.4.23/arch/ppc/kernel/m8xx_setup.c	2003-08-25 23:44:40.000000000 +1200
++++ ../packages/linux-2.4.23/arch/ppc/kernel/m8xx_setup.c	2004-01-07 11:02:49.000000000 +1300
+@@ -58,6 +58,7 @@ extern void m8xx_ide_init(void);
+
+ extern unsigned long find_available_memory(void);
+ extern void m8xx_cpm_reset(uint);
++extern void m8xx_wdt_handler_install(bd_t *bp);
+
+ void __init
+ m8xx_setup_arch(void)
+@@ -184,6 +185,12 @@ void __init m8xx_calibrate_decr(void)
+ 	if (request_irq(DEC_INTERRUPT, timebase_interrupt, 0, "tbint",
+ 				NULL) != 0)
+ 		panic("Could not allocate timer IRQ!");
++#ifdef CONFIG_8xx_WDT
++	/* Install watchdog timer handler early because it might be
++	 * already enabled by the bootloader
++	 */
++	m8xx_wdt_handler_install(binfo);
++#endif
+ }
+
+ /* The RTC on the MPC8xx is an internal register.
+diff -purN linux-2.4.23/arch/ppc/kernel/m8xx_wdt.c ../packages/linux-2.4.23/arch/ppc/kernel/m8xx_wdt.c
+--- linux-2.4.23/arch/ppc/kernel/m8xx_wdt.c	1970-01-01 12:00:00.000000000 +1200
++++ ../packages/linux-2.4.23/arch/ppc/kernel/m8xx_wdt.c	2004-01-06 13:28:41.000000000 +1300
+@@ -0,0 +1,142 @@
++/*
++ * m8xx_wdt.c - MPC8xx watchdog driver
++ *
++ * Copyright (C) 2002 Florian Schirmer <jolt@tuxbox.org>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ *
++ */
++
++#include <linux/init.h>
++#include <linux/irq.h>
++#include <linux/kernel.h>
++#include <linux/sched.h>
++#include <asm/8xx_immap.h>
++
++static long wdt_timeout;
++static int wdt_period = 60;	/* default 1 minute */
++static int wdt_count;
++struct timer_list wd_timer;	/* structure for timer administration		*/
++static unsigned long wdt_mpc8xx_dummy;
++
++
++
++void m8xx_wdt_reset(void)
++{
++	if (wdt_count >= 0) {
++		wdt_count = wdt_period * HZ / wdt_timeout;	/* convert seconds to WD recharge periods */
++	}
++}
++
++void mpc8xx_wdt_handler_disable(void)
++{
++	wdt_count = wdt_period * HZ / wdt_timeout;
++}
++
++void mpc8xx_wdt_handler_enable(void)
++{
++	wdt_count = -1;		/* allow autonomous operation */
++}
++
++static void m8xx_kick_dog(void)
++{
++	((volatile immap_t *)IMAP_ADDR)->im_siu_conf.sc_swsr = 0x556c;	/* write magic1 */
++	((volatile immap_t *)IMAP_ADDR)->im_siu_conf.sc_swsr = 0xaa39;	/* write magic2 */
++}
++
++static void m8xx_wdt_handler(void)
++{
++
++	if (wdt_count > 0 ) {
++		wdt_count--;
++		m8xx_kick_dog();
++	} else if (wdt_count < 0) {
++		m8xx_kick_dog();
++	}
++
++	wd_timer.expires = jiffies + wdt_timeout;
++	add_timer (&wd_timer);	/* ...re-activate timer */
++}
++
++void __init m8xx_wdt_handler_install(bd_t *binfo)
++{
++	volatile immap_t *imap = (volatile immap_t *)IMAP_ADDR;
++	u32 sypcr;
++
++	sypcr = imap->im_siu_conf.sc_sypcr;
++
++	if (!(sypcr & 0x04)) {
++		printk(KERN_NOTICE "m8xx_wdt: wdt disabled (SYPCR: 0x%08X)\n", sypcr);
++		return;
++	}
++
++	mpc8xx_wdt_handler_enable();
++	m8xx_kick_dog();
++
++	printk(KERN_NOTICE "m8xx_wdt: active wdt found (SWTC: 0x%04X, SWP: 0x%01X)\n",
++			(sypcr >> 16), sypcr & 0x01);
++
++	wdt_timeout = (sypcr >> 16) & 0xFFFF;
++
++	if (!wdt_timeout)
++		wdt_timeout = 0xFFFF;
++
++	if (sypcr & 0x01)
++		wdt_timeout *= 2048;
++
++
++	/* dodgy scaling here to prevent 32 bit overflow!!  convert count to HZ */
++	wdt_timeout = (wdt_timeout / 1000) * HZ / (binfo->bi_intfreq / 1000) / 2;
++	/*
++	 * Fire trigger if half of the wdt ticked down
++	 */
++
++	init_timer (&wd_timer);			/* initialize timer-structure... */
++	wd_timer.function = m8xx_wdt_handler;
++	wd_timer.data = (unsigned long) &wdt_mpc8xx_dummy;
++	wd_timer.expires = jiffies + wdt_timeout;
++
++	add_timer (&wd_timer);			/* ...and activate timer */
++
++	printk(KERN_NOTICE "m8xx_wdt: keep-alive trigger installed at %d HZ.\n", wdt_timeout);
++}
++
++int m8xx_wdt_get_timeout(void)
++{
++	return wdt_timeout;
++}
++
++int __init m8xx_wdt_setup (char *options)
++{
++	while (options && *options) {
++		if (strncmp (options, "period:", 7) == 0) {
++			options += 7;
++			if (!*options)
++				return 0;
++
++			wdt_period = simple_strtoul (options, &options, 0);
++			printk(KERN_NOTICE "m8xx_wdt: set period to %d.\n", wdt_period);
++			if (*options != ',')
++				return 0;
++			options++;
++		}
++	}
++
++	return 0;
++}
++
++__setup ("m8xx_wdt=", m8xx_wdt_setup);
++
++
+diff -purN linux-2.4.23/arch/ppc/kernel/Makefile ../packages/linux-2.4.23/arch/ppc/kernel/Makefile
+--- linux-2.4.23/arch/ppc/kernel/Makefile	2003-11-29 07:26:19.000000000 +1300
++++ ../packages/linux-2.4.23/arch/ppc/kernel/Makefile	2004-01-07 11:00:19.000000000 +1300
+@@ -64,6 +64,9 @@ obj-$(CONFIG_440GP)		+= ibm440gp_common.
+ obj-$(CONFIG_PPC4xx_DMA)	+= ppc4xx_dma.o
+ obj-$(CONFIG_PPC4xx_EDMA)	+= ppc4xx_sgdma.o
+ obj-$(CONFIG_8xx)		+= m8xx_setup.o ppc8xx_pic.o
++ifdef CONFIG_8xx_WDT
++obj-y				+= m8xx_wdt.o
++endif
+ ifeq ($(CONFIG_8xx),y)
+ obj-$(CONFIG_PCI)		+= qspan_pci.o
+ ifndef CONFIG_MATH_EMULATION
+diff -purN linux-2.4.23/drivers/char/Config.in ../packages/linux-2.4.23/drivers/char/Config.in
+--- linux-2.4.23/drivers/char/Config.in	2003-11-29 07:26:20.000000000 +1300
++++ ../packages/linux-2.4.23/drivers/char/Config.in	2004-01-07 11:05:38.000000000 +1300
+@@ -257,6 +257,9 @@ if [ "$CONFIG_WATCHDOG" != "n" ]; then
+    fi
+    tristate '  ZF MachZ Watchdog' CONFIG_MACHZ_WDT
+    dep_tristate '  AMD 766/768 TCO Timer/Watchdog' CONFIG_AMD7XX_TCO $CONFIG_EXPERIMENTAL
++   if [ "$CONFIG_8xx" = "y" ]; then
++      tristate '  MPC8xx Watchdog Timer' CONFIG_8xx_WDT
++   fi
+ fi
+ endmenu
+
+diff -purN linux-2.4.23/drivers/char/Makefile ../packages/linux-2.4.23/drivers/char/Makefile
+--- linux-2.4.23/drivers/char/Makefile	2003-11-29 07:26:20.000000000 +1300
++++ ../packages/linux-2.4.23/drivers/char/Makefile	2004-01-07 10:59:14.000000000 +1300
+@@ -305,6 +305,7 @@ obj-$(CONFIG_SCx200_WDT) += scx200_wdt.o
+ obj-$(CONFIG_WAFER_WDT) += wafer5823wdt.o
+ obj-$(CONFIG_SOFT_WATCHDOG) += softdog.o
+ obj-$(CONFIG_AMD7XX_TCO) += amd7xx_tco.o
++obj-$(CONFIG_8xx_WDT) += mpc8xx_wdt.o
+
+ subdir-$(CONFIG_MWAVE) += mwave
+ ifeq ($(CONFIG_MWAVE),y)
+diff -purN linux-2.4.23/drivers/char/mpc8xx_wdt.c ../packages/linux-2.4.23/drivers/char/mpc8xx_wdt.c
+--- linux-2.4.23/drivers/char/mpc8xx_wdt.c	1970-01-01 12:00:00.000000000 +1200
++++ ../packages/linux-2.4.23/drivers/char/mpc8xx_wdt.c	2004-01-05 16:47:22.000000000 +1300
+@@ -0,0 +1,174 @@
++/*
++ * mpc8xx_wdt.c - MPC8xx watchdog userspace interface
++ *
++ * Copyright (C) 2002 Florian Schirmer <jolt@tuxbox.org>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ *
++ * Modified Jan 2004 robin.gilks@tait.co.nz
++ * - to use kernel timer not RTC
++ * - to allow period greater than hadware watchdog period
++ * - to minimise hooks into the rest of the code
++ */
++
++
++
++#include <linux/config.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/miscdevice.h>
++#include <linux/module.h>
++#include <linux/watchdog.h>
++#include <asm/8xx_immap.h>
++#include <asm/uaccess.h>
++
++extern int m8xx_wdt_get_timeout(void);
++extern void m8xx_wdt_reset(void);
++extern void mpc8xx_wdt_handler_disable(void);
++extern void mpc8xx_wdt_handler_enable(void);
++
++static struct semaphore wdt_sem;
++static int wdt_status;
++
++static struct watchdog_info ident = {
++	.identity = "MPC8xx watchdog",
++	.options = WDIOF_KEEPALIVEPING,
++};
++
++
++static int mpc8xx_wdt_open(struct inode *inode, struct file *file)
++{
++	switch (MINOR(inode->i_rdev)) {
++	case WATCHDOG_MINOR:
++		if (down_trylock(&wdt_sem))
++			return -EBUSY;
++
++		m8xx_wdt_reset();
++		mpc8xx_wdt_handler_disable();
++		break;
++
++	default:
++		return -ENODEV;
++	}
++
++	return 0;
++}
++
++static int mpc8xx_wdt_release(struct inode *inode, struct file *file)
++{
++	m8xx_wdt_reset();
++
++#if !defined(CONFIG_WATCHDOG_NOWAYOUT)
++	mpc8xx_wdt_handler_enable();
++#endif
++
++	up(&wdt_sem);
++
++	return 0;
++}
++
++static ssize_t mpc8xx_wdt_write(struct file *file, const char *data,
++				size_t len, loff_t * ppos)
++{
++	/* Can't seek (pwrite) on this device */
++	if (ppos != &file->f_pos)
++		return -ESPIPE;
++
++	if (!len)
++		return 0;
++
++	m8xx_wdt_reset();
++
++	return 1;
++}
++
++static int mpc8xx_wdt_ioctl(struct inode *inode, struct file *file,
++			    unsigned int cmd, unsigned long arg)
++{
++	switch (cmd) {
++	case WDIOC_GETSUPPORT:
++		if (copy_to_user((void *)arg, &ident, sizeof(ident)))
++			return -EFAULT;
++		break;
++
++	case WDIOC_GETSTATUS:
++	case WDIOC_GETBOOTSTATUS:
++		if (put_user(wdt_status, (int *)arg))
++			return -EFAULT;
++		wdt_status &= ~WDIOF_KEEPALIVEPING;
++		break;
++
++	case WDIOC_KEEPALIVE:
++		m8xx_wdt_reset();
++		wdt_status |= WDIOF_KEEPALIVEPING;
++		break;
++
++	case WDIOC_GETTIMEOUT:
++	{
++		int timeout = m8xx_wdt_get_timeout();
++		if (put_user(timeout, (int *)arg))
++			return -EFAULT;
++		break;
++	}
++
++	default:
++		return -ENOTTY;
++	}
++
++	return 0;
++}
++
++static struct file_operations mpc8xx_wdt_fops = {
++	.owner = THIS_MODULE,
++	.write = mpc8xx_wdt_write,
++	.ioctl = mpc8xx_wdt_ioctl,
++	.open = mpc8xx_wdt_open,
++	.release = mpc8xx_wdt_release,
++};
++
++static struct miscdevice mpc8xx_wdt_miscdev = {
++	.minor = WATCHDOG_MINOR,
++	.name = "watchdog",
++	.fops = &mpc8xx_wdt_fops,
++};
++
++static int __init mpc8xx_wdt_init(void)
++{
++	int ret;
++
++	sema_init(&wdt_sem, 1);
++
++	if ((ret = misc_register(&mpc8xx_wdt_miscdev))) {
++		printk(KERN_WARNING "mpc8xx_wdt: could not register userspace interface\n");
++		return ret;
++	}
++
++	return 0;
++}
++
++static void __exit mpc8xx_wdt_exit(void)
++{
++	misc_deregister(&mpc8xx_wdt_miscdev);
++
++	m8xx_wdt_reset();
++	mpc8xx_wdt_handler_enable();
++}
++
++module_init(mpc8xx_wdt_init);
++module_exit(mpc8xx_wdt_exit);
++
++MODULE_AUTHOR("Florian Schirmer <jolt@tuxbox.org>");
++MODULE_DESCRIPTION("MPC8xx watchdog driver");
++MODULE_LICENSE("GPL");
+
+--Boundary_(ID_2vDWXtlhLBIO77TfOO+68g)--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
