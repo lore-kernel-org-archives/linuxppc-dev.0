@@ -1,42 +1,44 @@
-Message-ID: <20000209070157.23913.qmail@wwcst271.netaddress.usa.net>
-Date: 9 Feb 00 01:01:57 CST
-From: jeramy b smith <ultrapenguin@netscape.net>
-To: Dan Bethe <dan_bethe@yahoo.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: the great state of the linuxppc-dev community
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+From: Jesper Skov <jskov@redhat.com>
+Message-ID: <14497.10211.826197.998721@thinktwice.zoftcorp.dk>
+Date: Wed, 9 Feb 2000 09:40:03 +0100 (CET)
+To: Peter Allworth <linsol@zeta.org.au>
+Cc: Jesper Skov <jskov@redhat.com>, linuxppc-embedded@lists.linuxppc.org,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: more Re: Low memory problems in 8xx Linux
+In-Reply-To: <38A0BED6.AD2E336C@zeta.org.au>
+References: <20000201235813.4F5611B51A@elph.research.canon.com.au>
+	<38977960.40E014A1@zeta.org.au>
+	<ot1z6of1ws.fsf@thinktwice.zoftcorp.dk>
+	<38A0BED6.AD2E336C@zeta.org.au>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I agree with some of what Dan says although I would choose different words and
-a different focus.
+>>>>> "Peter" == Peter Allworth <linsol@zeta.org.au> writes:
 
-Development is not so much 'splintered' as it just has no 'center.' If you
-read the history of the ppc sources, you'll see that this is how it has always
-been. BUT, development is become more centralized out of mere evolution. For
-instance, here is a piece of 'voodoo' known only to a handful; the #mklinux
-channel on EFNet usually has 2 or more kernel developers on. Today I
-discovered that a kernel couldn't be built with having an asm-m68k include
-directory in your source tree. Instead of submitting a patch full of ifdefs to
-this mailing list, I just told Ben who was there and he added it to his tree.
-Eventually, this will wind up in Paul's.
+Peter> Jesper Skov wrote: <snip>
 
-Sure, things are not as centralized as they could be. There is no
-linuxppc-kernel mailing list so that all new patches can be easily reviewed by
-peers and announcement for to-do lists can be posted. I'll set one up on my
-dedicated majordomo server but this would depend on whether the maintainers
-would go for it. In my opinion, to-do lists are the most needed thing. Many
-kernel development tasks such as cleaning up messy code and documentation
-could be handled by some of the wanna-be hackers (like me) while people like
-Ani, Ben, Paul, Cort, and Geert are writing drivers and merging new features.
-To-do lists would also give people who want to get in on the deeper
-development process an idea where they can start.
+>> An alternative and slighly faster implementation might be to skip
+>> the _PAGE_PRESENT check. Any reason something like this wouldn't
+>> work?
 
-Linux/PPC just needs a bit of small, easy to implement, non-annoying, project
-management. The maintainers do an awesome job based on the amount of help/time
-available but a little bit of centralization of communication could increase
-the amount of volunteers doing meaningful work.
+Peter> <snip>
 
+Peter> I had another look at the code and I now remember my rationale
+Peter> for the _PAGE_PRESENT test. It wasn't to do with level 1 table
+Peter> entries, Dan's code already takes care of that. It was so that
+Peter> a zeroed pte couldn't get changed to a non-zero value, since
+Peter> that would make the pte_none() function return the wrong
+Peter> result. (Moreover, it just seemed wrong to mess with something
+Peter> that's marked "invalid".)
+
+Peter> Admittedly I'm being a bit paranoid since the next thing the
+Peter> exception handler is likely to do is set the page table entry
+Peter> to something valid.  But, can you be sure? What about a
+Peter> segmentation fault? ;)
+
+No, sounds sensible.
+
+Jesper
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
