@@ -1,39 +1,65 @@
-Date: Thu, 1 Apr 2004 10:03:24 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Dan Malek <dan@embeddededge.com>
-Cc: Wolfgang Denk <wd@denx.de>, Kumar Gala <kumar.gala@motorola.com>,
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Kumar Gala <kumar.gala@motorola.com>,
 	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Proposed Kconfig update patch for help text)
-Message-ID: <20040401170324.GC26876@smtp.west.cox.net>
-References: <67423B18-83E3-11D8-B6FB-000393DBC2E8@motorola.com> <20040401150211.90D85C10A4@atlas.denx.de> <20040401161622.GA26876@smtp.west.cox.net> <406C4A26.3040107@embeddededge.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <406C4A26.3040107@embeddededge.com>
+Subject: Re: mpc5xxx support (Was: Re: Proposed Kconfig update patch for help text) 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 01 Apr 2004 09:16:22 PDT."
+             <20040401161622.GA26876@smtp.west.cox.net>
+Date: Thu, 01 Apr 2004 19:05:10 +0200
+Message-Id: <20040401170515.E5C8EC10A4@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Apr 01, 2004 at 11:58:14AM -0500, Dan Malek wrote:
-> Tom Rini wrote:
+In message <20040401161622.GA26876@smtp.west.cox.net> you wrote:
 >
-> >In all seriousness, when the 52xx code for 2.4 was brought up, there
-> >were a number of objections to the Motorola provided code,
->
-> Does anyone actually use this code?  From the work I've done it appears
-> the FEC implements it's own DMA, other peripherals are used in programmed
-> I/O
-> mode, and stuff I have done I've found it easier to just write my own
-> code manage the DMA.  IMHO we should just punt this stuff for Linux,
-> now that there is more public interest start collaborating on a better
-> solution, and maybe just use what Mot provided as documentation filler.
-> The Motorola solution seems like an attempt to be everything for everyone.
+> In all seriousness, when the 52xx code for 2.4 was brought up, there
+> were a number of objections to the Motorola provided code, from it's
+> buggy to it being unacceptable crap.  Finally, 2.4 is about to enter a
 
-FWIW, I think I lean towards this (which to be clear if I wasn't before,
-is the second option I described) approach as well.  Not that I have hw
-handy. :)
+So far, it's all we have, right? Or do you have anything significant-
+ly better?
+
+> "deep freeze", or so Marcelo intends at least, so I think it's out of
+> the question for the mainline.  I don't mind keeping the
+
+So why made you me submit all the stuff in the first place  when  you
+were going to put it on hold until it was too late for inclusion?
+
+> linux-2.4-mpc5xxx tree up to date so others can pull for what they need,
+> but it's a dead end.
+
+Indeed. Develpment continues in our CVS tree. I will  not  waste  the
+time and effort to produce any new patches if they get dumped anyway.
+
+> For 2.6, I think one of the following options needs to be done.
+> - Motorola code, cleaned up with input from the community (and the bits
+>   Linux just doesn't need, left out).
+
+I think this is the only option there is.
+
+> - Ignore the Motorola code, or since it's GPL (must be to be in the
+>   kernel, so I'm just making the assumption here...) use it as a guide
+>   for how things work to implement a clean Linux implementation of the
+>   code.   I know there's someone working on this (who pops up on
+>   #mklinux on freenode from time to time) but I don't know how far
+>   they've gotten.
+
+Ummm... Why is there no discussion about this on  any  mailing  list?
+And don't you think that that at least Motorola should be included in
+any  such  attempts? [AFAICT they are not, at least not until today.]
+Also, isn't this kind of wasted effort as the target is still moving?
+
+Best regards,
+
+Wolfgang Denk
 
 --
-Tom Rini
-http://gate.crashing.org/~trini/
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+There are no data that cannot be plotted on a straight  line  if  the
+axis are chosen correctly.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
