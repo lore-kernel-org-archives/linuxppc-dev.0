@@ -1,54 +1,47 @@
-Message-ID: <D73A25AA6E54D511AD74009027B1110F3C0928@ORION>
-From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-To: "'Kenneth Johansson'" <kenneth.johansson@etx.ericsson.se>,
-	Kent Borg <kentborg@borg.org>
+To: Dean Matsen <deanmatsen@earthlink.net>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Heretical Question
-Date: Wed, 9 Jul 2003 17:00:00 -0400 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Subject: Re: Ethernet PHY chip discovery not working on 855T with 971/972 chips 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 09 Jul 2003 13:54:42 PDT."
+             <3F0C8112.5060001@earthlink.net>
+Date: Wed, 09 Jul 2003 23:21:40 +0200
+Message-Id: <20030709212145.49E24C6D82@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've used insight on cygwin with an Abatron BDI 2000.  It seemed to work ok.
-
------Original Message-----
-From: Kenneth Johansson [mailto:kenneth.johansson@etx.ericsson.se]
-Sent: Wednesday, July 09, 2003 4:53 PM
-To: Kent Borg
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Heretical Question
-
-
-
-On Wed, 2003-07-09 at 21:57, Kent Borg wrote:
+In message <3F0C8112.5060001@earthlink.net> you wrote:
 >
-> I know it is wrong for me to ask, but is there (possibly already
-> lurking in my Red Hat box?) a graphical front end to GDB that will
-> work with embedded programming?  Emacs already lets me debug with
-> source code pretty well (not assembly, however), and that is nice, but
-> what I really miss is a way to browse through data structures.  Kdbg
-> looks good, but it seems to be for native debugging only (though I
-> might hack at it a little to issue the elusive "target remote ...").
-> It is possible ddd would do, but it also seems to be for native
-> debugging only too.
->
-> Suggestions?
->
+> I think the search should be made smarter (especially, keep going to
+> the next address until it has gone through ALL address w/o finding a
+> valid ID).  The kernel could still panic if it can't find any PHY chip,
+> but not the first time it reads the floating line and can't find the
+> answer in its table.  The odds of reading a valid PHY ID from the
+> floating line is phenominally low.  I'd submit a proposed patch for
+> this, but it doesn't sound like anyone else thinks this is important
+> enough to warrant a change.
 
-http://sourceware.redhat.com/insight/
+I agree that it makes little sense for th kernel to panic if it finds
+an unsupported PHY id.
 
-Never tried but since this is the old cygnus stuff it really should do
-cross debugging well.
+> the automatic PHY search will work.  Unless the pullup is required for
+> non-search applications (which I assert it isn't), then I think the code
+> should be fixed, not the hardware.
 
+We changed this in our kernel tree some time ago. If no valid PHY  is
+found  we simply do not enable the interface, but we do not panic any
+more.
+
+
+Best regards,
+
+Wolfgang Denk
 
 --
-Kenneth Johansson
-Ericsson AB                       Tel: +46 8 719 70 20
-Tellusborgsvägen  90              Fax: +46 8 719 29 45
-126 25 Stockholm                  ken@switchboard.ericsson.se
-
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"A witty saying proves nothing."                           - Voltaire
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
