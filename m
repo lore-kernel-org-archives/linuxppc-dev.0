@@ -1,41 +1,50 @@
-Date: Tue, 8 Jun 1999 12:31:24 -0700 (MST)
-From: Matt Porter <mporter@phx.mcd.mot.com>
-To: paubert@iram.es
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: PReP boot options was Re: How to boot VME from HD?
-In-Reply-To: <Pine.LNX.3.96.990608123717.26558A-100000@liberty.chnd1.az.home.com>
-Message-ID: <Pine.LNX.3.96.990608122023.28505F-100000@fwrsl-11.phx.mcd.mot.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 8 Jun 1999 16:16:49 -0400
+From: Daniel Jacobowitz <drow@false.org>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: ioremap() on ISA memory space
+Message-ID: <19990608161648.A7950@drow.res.cmu.edu>
+References: <Pine.LNX.4.10.9906082022070.25878-100000@mercator.cs.kuleuven.ac.be> <Pine.HPP.3.96.990608205122.27048K-100000@gra-ux1.iram.es>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.HPP.3.96.990608205122.27048K-100000@gra-ux1.iram.es>; from Gabriel Paubert on Tue, Jun 08, 1999 at 09:08:04PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> check twice before typing the return key since the wrong digit in the of0
-> parameter may make one of your partitions unusable (to solve this we would
-> need a MILO like loader, but I had no time to work on this, although
-> prepboot might be a good starting point).
+On Tue, Jun 08, 1999 at 09:08:04PM +0200, Gabriel Paubert wrote:
+> be compulsory in 2.3 even on i386), but this is not necessarily a mm bug
+> IMHO. It would be better to define a macro that conditionally adds a
+> platform dependant offset for addresses < 16 Mb (I've heard that
+> ISA_MEM_BASE has been killed, and I disagree just because of this kind
+> of things).
+> 
+> I would rather use ioremap(dev->base_address[n],...) for standard PCI
+> devices and ioremap(ISA_PHYSICAL_ADDRESS(xxx),...) for devices which might
+> be on ISA with: 
+> 
+> #define ISA_PHYSICAL_ADDRESS(x) \ 
+> (((x)<0x1000000) ? ((x)+ISA_PHYSICAL_BASE) : (x))
+> 
+> where ISA_PHYSICAL_BASE is a boot time constant (0xfd000000 on MPC106,
+> don't know on others). 
 
-This is something I've been looking at off and on.  I think the best route
-is to take quik and combine it with features from the integrated
-bootloader and your preploader.  The current situation makes it tough to
-offer a PReP distribution that smoothly installs since one needs to
-rebuild the bootloader and link with the kernel just to change the default
-root device and kernel parameters. :-/
 
-> I have also considered the
-> possibility of booting from ROM (flash the kernel into the 4 or 8Mb of
-> PROM present on these boards), but not implemented it.
+Incidentally, and somewhat related to this:
 
-I have working code for this that requires an updated PPCBUG revision.
-A PPCBUG release with support for RBing PReP images should be available
-"RSN", but it's hard to say since the firmware group is rather loaded
-these days.
+When I was hacking on tulip.c, I wanted to use tulip-daig to get the
+state of the card.  But it uses inl/outl, and on powerpc these have a
+kernel private variable (isa_io_base) in their macro expansion.  Is
+there any way to make the PCI space available to userland on powerpc,
+as iopl() and inb/outb can on x86?
 
---
-Matt Porter				Motorola Computer Group
-mporter@mcg.mot.com			Real Time Software Support
 
+Dan
+
+/--------------------------------\  /--------------------------------\
+|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
+|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
+|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
+\--------------------------------/  \--------------------------------/
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
