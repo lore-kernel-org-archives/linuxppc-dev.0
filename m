@@ -1,37 +1,32 @@
-Date: Mon, 22 Sep 2003 09:59:52 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Bret Indrelee <Bret.Indrelee@qlogic.com>
-Cc: Linux PPC Embedded mailing list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Any restrictions on DMA address boundry?
-Message-ID: <20030922095952.A31727@home.com>
-References: <Pine.LNX.4.44.0309221006580.30267-100000@spider.ancor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.44.0309221006580.30267-100000@spider.ancor.com>; from Bret.Indrelee@qlogic.com on Mon, Sep 22, 2003 at 10:13:26AM -0500
+Message-ID: <3F6F781F.6060706@ece.msstate.edu>
+Date: Mon, 22 Sep 2003 17:30:55 -0500
+From: Jan Dominik Baranski <jdb2@ece.msstate.edu>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: 2nd serial port on an Embedded Planet EP862-1.1 board
+References: <03Sep3.190623adt.7317@dragon.appliedmicro.ns.ca> <1062628817.28809.12.camel@trouble> <3F56BB60.4010602@ece.msstate.edu> <1062713293.31909.14.camel@trouble>
+In-Reply-To: <1062713293.31909.14.camel@trouble>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Sep 22, 2003 at 10:13:26AM -0500, Bret Indrelee wrote:
->
-> Are there alignment restrictions on the address boundry your can
-> start a DMA with when using the pci_map_single() / pci_unmap_single()
-> calls?
->
-> For some reason, I thought they had to be cache line aligned, but when
-> I went back through the documentation I couldn't find any such
-> restriction.
+Hi all,
+I'm attempting to get the second serial port working on an EP862-1.1
+board. I see that I need to be concerned with BCSR4 and that the port
+can be controlled via SCC1, 2, or 3.
+I assume that 'struct serial_state rs_table[]' in arch/ppc/8xx_io/uart.c
+needs to be set up correctly, although I'm not quite sure how to go
+about doing this.
+I know that this board has more BCSR registers than the CLLF, but
+everything seems to be correct in arch/ppc/platforms/rpxclassic.h. I
+don't have to mess with any memory mappings in arch/ppc/mm/init.c, do I?
 
-cache line alignment is an unwritten requirement that hasn't yet been
-addressed in DMA-mapping.txt.  Unfortunately, kmalloc() doesn't
-guarantee this so it's necessary to overallocate and align.
-You can use L1_CACHE_BYTES for this.
+Any pointers in the right direction?
 
-Roland Dreier had a patch which added a little helper for this
-stuff as well as docs.  Unfortunately, it's been dropped on the
-floor until somebody with interest and time in non-coherent
-platforms picks it up. http://lwn.net/Articles/2482/
+Thanks!
 
--Matt
+-Jan Baranski
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
