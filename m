@@ -1,68 +1,41 @@
-Message-ID: <38DA4031.8C1177E8@telecom.ntua.gr>
-Date: Thu, 23 Mar 2000 18:02:58 +0200
-From: Michael Manousos <manousos@telecom.ntua.gr>
-MIME-Version: 1.0
-To: Young-Han Kim <yhkim@da-san.com>
-CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Date: Thu, 23 Mar 2000 10:29:38 -0600 (CST)
+From: Grant Erickson <erick205@tc.umn.edu>
+To: Michael Manousos <manousos@telecom.ntua.gr>
+cc: Young-Han Kim <yhkim@da-san.com>,
+        linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: www.ppc.kernel.org and gcc for PPC(Cross Compiler) ...
-References: <38D9E551.DC17CDA2@da-san.com>
-Content-Type: text/plain; charset=iso-8859-7
+In-Reply-To: <38DA4031.8C1177E8@telecom.ntua.gr>
+Message-Id: <Pine.SOL.4.20.0003231028490.25183-100000@garnet.tc.umn.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Sources and info about the setup of a cross-compiling environment
-can be found on the site below:
-
-http://members.home.net/mmporter/linux/cross/
-
-
-Michalis.
-
------------------------------------------------------
-    Michael Manousos
-    National Technical University of Athens
-    mailto:manousos@telecom.ntua.gr
------------------------------------------------------
-
-
-Young-Han Kim wrote:
-
-> Dear Reader,
+On Thu, 23 Mar 2000, Michael Manousos wrote:
+> Sources and info about the setup of a cross-compiling environment
+> can be found on the site below:
 >
->   Hi!
->
->   Nowadays, have you been visit the http://www.ppc.kernel.org ?
->   Currently, I can't access the www.ppc.kernel.org...
->   If someone know the reason, please answer to me...
->
->   I want to find the gcc compiler(base on i386) for PPC(Cross Compiler).
->   If someone know the site, please answer to me...
->
->   Thanks for in advance !
->
-> Best Regards
-> Young-Han, Kim
->
-> --
-> -
-> -                              ?
-> -                             '''
-> -                            (o o)
-> - -----------------------oOO--(_)--OOo-----------------------
-> - Young-Han, Kim
-> - Research Engineer
-> -
-> - E-Mail : yhkim@da-san.com
-> - Direct : ++ 82 2 3484 6579
-> - H.P    : ++ 82 19 254 7566
-> -
-> -                        DASAN Co., Ltd.
-> -                        Research Center
-> - 6F KOSMO Tower 1002, Daechi-dong, Kangnam-ku, Seoul, Korea
-> -                         Zip : 135-280
-> - ===========================================================
->
+> http://members.home.net/mmporter/linux/cross/
+
+And also at:
+
+	http://www.lcse.umn.edu/~grant/Linux/cross.html
+
+Regards,
+
+Grant
+
+
+> Young-Han Kim wrote:
+> >   Nowadays, have you been visit the http://www.ppc.kernel.org ?
+> >   Currently, I can't access the www.ppc.kernel.org...
+> >   If someone know the reason, please answer to me...
+> >
+> >   I want to find the gcc compiler(base on i386) for PPC(Cross Compiler).
+> >   If someone know the site, please answer to me...
+> >
+> >   Thanks for in advance !
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
