@@ -1,30 +1,32 @@
-Message-ID: <3D3DD903.3070300@dslextreme.com>
-Date: Tue, 23 Jul 2002 15:30:27 -0700
-From: akuster <akuster@dslextreme.com>
-Reply-To: akuster@dslextreme.com
-MIME-Version: 1.0
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: [RFC/Patch] ppc4xx_pm.c
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Wed, 24 Jul 2002 10:30:40 +1000
+From: Anton Blanchard <anton@samba.org>
+To: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
+Cc: linuxppc-dev@lists.linuxppc.org,
+	yellowdog-devel@lists.terrasoftsolutions.com
+Subject: Re: why isync in atomic icc and return and atomic dec and return for CONFIG_SMP
+Message-ID: <20020724003040.GE6355@krispykreme>
+References: <200207231725.30067.kevin.hendricks@sympatico.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200207231725.30067.kevin.hendricks@sympatico.ca>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I am in the process of fixing the init of the pm for 4xx in ppc4xx_pm.c
-so that it can be used and I and others have discussed having the
-drivers enable/disable their own power managment bits at init & exit times.
+Hi Kevin,
 
-So what I would like to do is have each core header define a default set
-of what is required to be powered on and then have each driver enable
-them selves.  These changes would be done in two stages
+> Can anyone tell me the reason why we need to use an isync in the
+> atomic_add_return and atomic_sub_return (see kernel source in
+> asm/atomic.h) only for SMP machiens and only when a value is returned?
 
-1) fix ppc4xx_pm.c init and have the default pm bitmap set to all ocp
-drivers on.
+We are using isync here as an "import barrier". The stwcx., bne, isync
+sequence ensures that any instructions following the isync are not
+performed until the lock has been taken. Basically it prevents anything
+inside the spinlock protected region from leaking outside.
 
-2) update ocp drivers to enable/disable their pm settings and remove
-their enable bits from the default bitmap in the core headers.
+We dont need this on a UP machine because the local cpu sees everything
+in program order.
 
-armin
-
+Anton
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
