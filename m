@@ -1,39 +1,72 @@
-Message-ID: <3A54BFCF.8EC56F45@mvista.com>
-Date: Thu, 04 Jan 2001 13:24:15 -0500
-From: Dan Malek <dan@mvista.com>
+Message-ID: <3A54C5E5.23A76888@dspace.de>
+Date: Thu, 04 Jan 2001 19:50:13 +0100
+From: Andreas Schreckenberg <ASchreckenberg@dspace.de>
+Reply-To: Andreas Schreckenberg <ASchreckenberg@dspace.de>
 MIME-Version: 1.0
-To: Christian.Peter@ascom.ch
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux boot fails after MMU (MPC8260)
-References: <0G6N00K6Y4ZYFB@pmdf-it.hasler.ascom.ch>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: problem mounting ramdisk
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Christian.Peter@ascom.ch wrote:
->
-> Hi
->
-> I try to boot linux 2.4.0test8 on a custom 8260 board.
+hello,
 
-Where did you get the sources?  There have been some problems with
-the 8260 due to other 60x/7xx generic changes in the sources.
+My linux (modified kernel 2.2.14) starts
+on my custom PPC board (PPC750/128MB)
+but when I mount the ramdisk, the kernel issues:
 
-> My knowledge of the mmu and the 8260 is not very good,
+...
+Serial driver version 4.27 with no serial options enabled
+ttyS00 at 0x12000000 (irq = 16) is a 16550A
+RAM disk driver initialized:  16 RAM disks of 4096K size
+RAMDISK: Compressed image found at block 0
+attempt to access beyond end of device
+01:00: rw=0, want=8196, limit=4096
+dev 01:00 blksize=1024 blocknr=8195 sector=16390 size=1024 count=1
+EXT2-fs error (device ramdisk(1,0)): read_block_bitmap: Cannot read block bitmap - block_group = 1, block_bitmap = 52428800
+attempt to access beyond end of device
+01:00: rw=0, want=16386, limit=4096
+dev 01:00 blksize=1024 blocknr=16385 sector=32770 size=1024 count=1
+EXT2-fs error (device ramdisk(1,0)): read_block_bitmap: Cannot read block bitmap - block_group = 2, block_bitmap = 20971520
+attempt to access beyond end of device
+01:00: rw=0, want=24580, limit=4096
+... (and so on)
 
-Don't worry about it.  There is nothing wrong with the MMU code,
-it is elsewhere.  If you are trying to use VisionICE or anything
-other than the Abatron BDI2000 for JTAG debugging, they become
-useless once the MMU is enabled.  This appears like an MMU bug,
-but it is really a debugger bug.
+... (later)
+VFS: Mounted root (ext2 filesystem).
+Freeing unused kernel memory: 40k init 28k prep 4k pmac 12k open firmware
+...
 
-For now, the only working version of Linux on the 8260 is from
-the MontaVista web site.  It is a -test2 version.  If you have
-access to the FSM Labs BitKeeper sources, I will be updating these
-for the 8260 before the end of the week.
+... (last)
+EXT2-fs error (device ramdisk(1,0)): ext2_read_inode: unable to read inode block - inode=4001, block=16389
+Kernel panic: No init found.  Try passing init= option to kernel.
+Rebooting in 5 seconds..
+...
 
+The fs image contains no shell at the moment, so the last kernel panic is okay.
 
-	-- Dan
+What is the Problem with EXT2-fs error ?
+I used the following script on my x86 host (<- the problem ?)
+to build the compressed image:
+
+#!/bin/sh
+dd if=/dev/zero of=/dev/ram bs=1k count=4096
+mke2fs -m0 /dev/ram
+mkdir -p /mnt/ram
+mount /dev/ram /mnt/ram
+(cd file_system; cp -a * /mnt/ram)
+umount /mnt/ram
+rmdir /mnt/ram
+dd if=/dev/ram of=fs_images/ramdisk.image bs=1k count=4096
+(cd fs_images;gzip -v9f ramdisk.image)
+
+every help would be appreciated...
+
+bye
+Andreas
+--
+          Life's not fair. But the root password helps ! :-)
+                   http://schrecky.home.pages.de
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
