@@ -1,33 +1,33 @@
-Date: Sat, 10 Feb 2001 22:40:43 -0600
-From: Dave Wolfe <dwolfe@lists.linuxppc.org>
-To: Tom Gall <gall@rochcivictheatre.org>
-Cc: linuxppc-dev@lists.linuxppc.org, Rich Lafferty <rich@alcor.concordia.ca>,
-        David Edelsohn <dje@watson.ibm.com>
-Subject: Re: https://sourceforge.net/projects/ppclinux/
-Message-ID: <20010210224043.A10011@lists.linuxppc.org>
-References: <3A8579F6.4C5E97CD@vnet.ibm.com> <20010210185305.C7667@alcor.concordia.ca> <3A85D80E.93FD01C9@rochcivictheatre.org>
+Date: Sun, 11 Feb 2001 00:13:34 -0600
+From: "Joseph P. Garcia" <jpgarcia@execpc.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: BMAC stuff - what I have
+Message-Id: <20010211001334.54abdf4f.jpgarcia@execpc.com>
+In-Reply-To: <20010211043822.8854.qmail@kunk.jriver.com>
+References: <20010211043822.8854.qmail@kunk.jriver.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3A85D80E.93FD01C9@rochcivictheatre.org>; from Tom Gall on Sat, Feb 10, 2001 at 06:08:46PM -0600
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-[ Tom Gall writes: ]
+On Sat, 10 Feb 2001 22:38:22 -0600 (CST), Robert E Brose II <bob@kunk.jriver.com> wrote:
+> I see the same problem on my Rev C iMac at 100 mb in both 2.2 and 2.4
+> kernels. I get slow transfers and broken scp's but not corrupted
+> data on complete transfers. Same machine works fine in MacOS and OSX.
 >
-> Rich Lafferty wrote:
-> >
-> > There any chance of bug report updates going to a hypothetical
-> > "linuxppc-bugs" rather than -dev?
->
->   Seems like a reaonable approach...  someone from lists.linuxppc.org
-> wanna create it?
+> Bob
 
-Ask an ye shall receive. I'll try to get to it in the next couple of
-days. Do anyone know who to talk to at sourceforge to change where the
-reports go? Does it need to be a restricted list or general discussion?
+Thanks for the input.
+
+If it is true that the iMac has the same Tx problem, since they have always used BMAC+ (AppleSpec: 10/100 on all iMacs), I guess that this would mean that BMAC+ can also have this bug.  Can any one confirm this with an additional case?
+
+It seems rather erratic on which systems are afflicted.  My brother's lombard is not affected, nor a wallstreet confirmed built after mine, which is.
+
+In anycase, enough talk.  Anyone know dbdma well enough to approach a fix? :)
 
 --
- Dave Wolfe
+Joseph P. Garcia
+http://www.execpc.com/~jpgarcia
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
