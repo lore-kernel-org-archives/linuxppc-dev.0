@@ -1,49 +1,53 @@
-Date: Thu, 18 Mar 2004 12:11:03 +0100 (CET)
-From: Marius Groeger <mgroeger@sysgo.com>
-To: Oliver Korpilla <okorpil@fh-landshut.de>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux and RTAI on the Motorola VME Boards
-In-Reply-To: <40597103.3090704@fh-landshut.de>
-Message-ID: <Pine.LNX.4.56.0403181202500.4114@mag.sysgo.com>
-References: <40597103.3090704@fh-landshut.de>
+From: "Donald Russell" <donaldrussell@lucent.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <003401c40cfc$b019f6c0$40749498@inse.lucent.com>
+Reply-To: "Donald Russell" <donaldrussell@lucent.com>
+Subject: kernel 2.6.4 build problem under CYGWIN
+Date: Thu, 18 Mar 2004 10:21:29 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 18 Mar 2004, Oliver Korpilla wrote:
+I have a cygwin system set up w/gnu cross compile tools for ppc.
+Tools seem to work OK.
 
-> Unfortunately, I didn't find very much documentation on RTAI. I'm
-> actually wondering what I need to communicate with the VME bus in
-> realtime. Can I safely call the Linux drivers functions? Do I need to
-> use a modified version of the driver? What features in a driver do not
-> mix with RTAI?
+drussell@YY232 /usr/src/linux-2.6.4
+$ /usr/local/powerpc/bin/powerpc-eabi-gcc -v
+Reading specs from
+/usr/local/powerpc/lib/gcc-lib/powerpc-eabi/3.0/specs
+Configured with:
+/usr/local/src/gnu/gcc-3.0/configure --enable-languages=c,c++ --
+with-included-gettext --enable-shared --enable-threads --target=
+powerpc-eabi --prefix=/usr/local/powerpc -v
+Thread model: single
+gcc version 3.0
 
-RTAI is a kernel on its own. It has an own scheduler and API to control (eg.
-to create threads and allowing them to synchronize with each other).
-Therefore an RTAI thread cannot call Linux kernel services.
+1st question: Can a cross compiled kernel be built under CYGWIN
+successfully ? Has anyone done this ?
 
-However, RTAI does share the kernel memory map, so any memory region mapped
-by the Linux kernel (or a driver) is also visible to RTAI.
+2nd question:
+I downloaded and attempted to build a kernel for the Motorola
+mpc8560ADS board per
+Moto  AN2579.pdf
 
-I don't know the VME driver you're about to use, but you should be
-able to safely use the VME memory regions it maps.
+ "make xconfig  " command results in the following error.
 
-BTW, you may want to join the RTAI list, where these kinds of
-questions are better directed to.
+drussell@YY232 /usr/src/linux-2.6.4
+$ make
+Makefile:398: .config: No such file or directory
+  CHK     include/linux/version.h
+  HOSTCC  scripts/fixdep
+fixdep:
+: No such file or directory
+make[1]: *** [scripts/fixdep] Error 2
+make: *** [scripts] Error 2
 
-Regards,
-Marius
+fixdep.exe is created in  /scripts/ dir
 
---
-Marius Groeger <mgroeger@sysgo.com> | Project Manager
+Any help appreciated.
 
-SYSGO Real-Time Solutions AG | Embedded and Real-Time Software
-Am Pfaffenstein 14 | 55270 Klein-Winternheim, Germany
-
-Voice: +49-6136-9948-0 | FAX: +49-6136-9948-10
-www.sysgo.com | www.elinos.com | www.osek.de | www.imerva.com
-
+Don Russell
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
