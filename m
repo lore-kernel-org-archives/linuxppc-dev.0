@@ -1,36 +1,65 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Reply-To: khendricks@ivey.uwo.ca
-To: linuxppc-dev@lists.linuxppc.org
-Subject: incorrect defiition of _FPU_IEEE for ppc linux?
-Date: Thu, 19 Apr 2001 08:21:19 -0400
-MIME-Version: 1.0
-Cc: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Message-Id: <01041908211903.25891@localhost>
+Date: Thu, 19 Apr 2001 13:36:32 +0100
+Subject: Re: XF4 (mach64) help please
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: Ani Joshi <ajoshi@shell.unixbox.com>,
+	"Michel Dnzer" <michdaen@iiic.ethz.ch>, k_fukui@highway.ne.jp
+Cc: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset=""
+Message-Id: <20010419123638.58C8ADB9E7@atlas.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Hi Ani,
 
-I ran into a problem while porting OpenOffice 625 to ppc linux.  To turn off
-exceptions under linux they set the fpu_control word to _FPU_IEEE.  This
-works under x86 linux.
+excellent...
 
-Under ppc linux, in fpu_control.h _FPU_IEEE sets the control word to
-0x000000F0 which actually enables overflow, underflow, divide by zero,
-and invalid fpu exceptions.  _FPU_DEFAULT actually disables them.
+> The attatched patch fixes the ati driver properly without the use of
+> fbdev.  Don't bother to try the option, it is not even implemented in the
+> driver.  The patch is against a current cvs tree.  If you try to hand
+> patch it against that older version with the fbdev hacks you will run into
+> problems as getting rid of the hacks is painful and time consuming.
+>
+> I'm fairly sure this patch will be fine for all nonGX mach64's, although
+> I'm not entirely sure about the Lx/Mobility ones as I don't have one to
+> hack with.  Feedback is very welcome.
 
-Isn't  fpu_control.h supplied by glibc?
+Yes, it works wonderfully:
 
-If so, shouldn't  _FPU_IEEE be actually disabling fpu exceptions under ppc
-linux and not enabling them?
+built against 4.0.99.3 pulled this morning (05:30 BST)
+2.4.4-pre3 (BK yesterday)
 
-Is this an issue in current glibc CVS too?
+----
 
-Thanks,
+Please note that "make World" fails for me (with build Servers only as an
+option in host.def)  [the mesa stuff, amongst other things falls over]
 
-Kevin
+However, the drivers build and I copied ati_drv.o, ati_misc.o over Kaoru's
+4.0.99.2-0b rpms.  (I also copied libfbdevhw.a - but, of course, that no
+longer loads).
+
+----
+
+Results:
+
++ no more flickering lines 2cm from left of screen
++ excellent scroll acceleration.
+
+I'll do X11perf if you're interested - otherwise there's plenty of other
+things to do... ;-)
+
+Two points:
+
+1/  the cursor disappears after about 5 seconds __only__ when it's over the
+active window (it stays there fine when over an inactive window or the
+desktop) -- KDE 2.0beta.
+
+2/  how difficult would it be to plumb the scroll acceleration back into the
+console driver?  (would one need access to the NDA stuff?) -- the scrolling
+of console is a real problem in blocking sound :-/
+
+thanks for the excellent work,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
