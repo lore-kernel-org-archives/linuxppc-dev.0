@@ -1,24 +1,22 @@
-Date: Sat, 17 Jul 2004 17:10:36 +0200
-From: Guido Guenther <agx@sigxcpu.org>
+Date: Sun, 18 Jul 2004 01:12:08 +0100 (BST)
+From: Ken Moffat <ken@kenmoffat.uklinux.net>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: pmdisk infrastructure
-Message-ID: <20040717151036.GB16360@bogon.ms20.nix>
-References: <20040712065951.GB9536@bogon.ms20.nix>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040712065951.GB9536@bogon.ms20.nix>
+Subject: syslib/i8259.c
+Message-ID: <Pine.LNX.4.58.0407172139370.12839@ppg_penguin.kenmoffat.uklinux.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jul 12, 2004 at 08:59:52AM +0200, Guido Guenther wrote:
-> the attached patch adds the infrastructure needed for pmdisk on ppc.
-> Most of it was done by Benjamin with some modifications by me. These are
-> the parts that don't affect anything else. The full patch is here:
->  http://honk.physik.uni-konstanz.de/~agx/linux-ppc/kernel/pmdisk-2.6.7.diff
-> Patch is against 2.6.7 but applies without problems against 2.6.7-bk20.
-Any comments on this one?
-Cheers,
- -- Guido
+ Is it me, or is i8259_irq_offset redundant ?  We test if irq_nr is >=
+than it (and subtract it if true), and we pass it to request_irq, but as
+far as I can see it never gets set, so we subtract 0 from irq_nr if that
+is >= 0.
+
+Ken
+--
+ das eine Mal als Tragödie, das andere Mal als Farce
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
