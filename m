@@ -1,35 +1,38 @@
-Message-ID: <368DE772.3E75@post.uni-bielefeld.de>
-Date: Sat, 02 Jan 1999 10:31:30 +0100
-From: "Jens Ch. Restemeier" <jenschrr@post.uni-bielefeld.de>
-Reply-To: jenschrr@post.uni-bielefeld.de
-MIME-Version: 1.0
-To: Tom Rini <tmrini@ntplx.net>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: BUG: 2.2.0-pre2 on 5500 (and maybe 6500)
-References: <Pine.LNX.4.05.9901011444130.974-100000@pc.wackyland.com>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.3.96.981231154708.14805A-100000@persephone.cs.nmt.edu>
+Date: Sat, 2 Jan 1999 16:24:51 +0100
+To: linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: __init, __openfirmware, etc...
+Message-Id: <19990102162451.002014@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom Rini wrote:
-> 
-> On Fri, 1 Jan 1999, Jens Ch. Restemeier wrote:
-> 
-> > This bugreport applies to a PMac 5500/225, and maybe a 6500, because
-> > they share a common motherboard.
-> > I'm booting 2.2.0-pre2 kernel with BootX.
-> 
-> Well, the all-important question is does this show up with a vger kernel?
-> (2.1.130)
+Hi all !
 
-I built my 2.1.127 kernel with the sources from either ftp.linuxppc.org
-or samba (can't remeber). I'd try with vger, but I can't do CVS from my
-Mac. The latest snapshot of vger I've seen around was AGES old. 
+Could someone explain me how those directive (__init, __openfirmware,
+__pmac, ...) works in the kernel ? I guess those are directive for the
+linker, and I also guess that __init marked sections will be removed from
+memory after kernel initialisation, but what are the other ones ? 
 
-The 2.2.0 kernel was downloaded as a binary.
+I ask this because I added a couple of ioctl to via-pmu (*), and as soon
+as I added calls to get_user and put_user to the function, the kernel
+refused to link. if I remove the __openfirmware directive from the ioctl
+function, then it links fine.
 
-Jens
+(*) Cort, I have backlight control working on wallstreet, those ioctls
+are for allowing user-space control of it too, I think you can remove
+your stuff from via-pmu.c. I'll send you patches as soon as I have
+cleaned them up a little bit, it's not urgent for 2.2.
+
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
