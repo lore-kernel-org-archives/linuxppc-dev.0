@@ -1,38 +1,33 @@
-Message-Id: <200004280051.RAA20647@pop3.ucdavis.edu>
-Date: Thu, 27 Apr 2000 17:51:51 -0700
-Subject: Re: XFree 4.0 dual monitor on AGP G4
-From: "W. Taylor Holliday" <wtholliday@ucdavis.edu>
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>,
-        "Michel D?nzer" <daenzerm@student.ethz.ch>
-CC: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="ISO-8859-7"
+Message-ID: <39090775.BFEECFA1@uncc.edu>
+Date: Thu, 27 Apr 2000 23:37:25 -0400
+From: root <whschult@uncc.edu>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Latest XFree86 v4.0 crashing (possible culprit sawmill)
+References: <200004270502.AAA08920@lists.linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
->  Yes it would work, there is a problem with the approach taken by
-> fbdev/glint, the BusID info isn't used at all there for the choise
-> of the device to be opened, without the fbdev option you always
-> get /dev/fb0 which might not be what you want.
+I want to say that this wasn't introduced with the rpms released the
+other day, but I'm still having the problem with them.  I can't really
+pinpoint exactly when I started having this problem (except while
+working on my last major project for my graphics class).
 
-According to the XFree 4 documentation, the BusID determines the device, and
-thus the framebuffer used, even in the case of fbdev. So I'm kinda confused.
+Here's the problem:
 
-> Here is a small patch (untested) that changes r128 to use the "fbdev"
-> option instead of using BusID to get the fbdev device.
-> If the BusID and fbdev options don't match bad things will happen
-> so be carefull there.
-> For people that don't have more than one r128 card the previous behaviour
-> works better so don't use it...
->
->   Kostas
->
+While switching desktops, X completely dies on me.  It's not
+consistently repeatable, but I've had to kill the programs it didn't
+pull with it enough times to know that something's wrong.
 
-If I apply your patch and recompile, how should I modify the config file?
-Get rid of all BusID's? Just for the second monitor?
+That's all it's doing.  X dies when I'm switching desktops, either by
+dragging the mouse, or by clicking the desktop in the deskguide.
 
-- Taylor
+
+Please tell me I'm crazy and that it isn't really happenning...
+
+
+Hank
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
