@@ -1,46 +1,49 @@
-Message-ID: <40B73451.4080001@intracom.gr>
-Date: Fri, 28 May 2004 15:45:05 +0300
+Message-ID: <40B737CA.6080205@intracom.gr>
+Date: Fri, 28 May 2004 15:59:54 +0300
 From: Pantelis Antoniou <panto@intracom.gr>
 MIME-Version: 1.0
-To: David Ho <DavidHo@nanometrics.ca>
-Cc: Dan Malek <dan@embeddededge.com>,
-	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>,
-	Tom Rini <trini@kernel.crashing.org>
-Subject: Re: RTC no longer exist on the 866/87x/88x
-References: <OFA7FE93B3.1BAFEB05-ON85256EA2.0044EB60-85256EA2.00457969@nanometrics.ca>
-In-Reply-To: <OFA7FE93B3.1BAFEB05-ON85256EA2.0044EB60-85256EA2.00457969@nanometrics.ca>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: rdiz@alumni.deec.uc.pt,
+	Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: 2.6-7-rc1 8xx - No go
+References: <40B6FAFB.8020803@intracom.gr> <40B711A6.1080603@intracom.gr> <4517.62.48.238.11.1085744283.squirrel@alumni.deec.uc.pt> <Pine.LNX.4.58.0405280812580.14722@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.58.0405280812580.14722@localhost.localdomain>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Ho wrote:
+Robert P. J. Day wrote:
+
+>On Fri, 28 May 2004 rdiz@alumni.deec.uc.pt wrote:
+>
+>
+>>Did you actually manage to compile standard (no tweak), 2.6.7-rc1 for 8xx?
+>>If so, what '8xx Machine Type' did you chose?
+>>
+>
+>and here's another almost assuredly dumb question on my part -- can
+>someone clarify the different kernel source trees that are under
+>discussion here?
+>
+I could try but I'm not insane yet :). Tom?
 
 >
+>the one i'm playing with is ppc.bkbits.net:8080/linuxppc-2.5, while the
+>posting above suggests a recent version straight from the stock kernel.org
+>repository.
 >
->
->Hi 8xx gurus,
->
->I just noticed the RTC is no longer documented/tested/supported on the
->duet.  How does this impact the current 2.4 8xx tree?
->
->I know the /dev/rtc still uses RTC on the processor, it appears to work
->fine, but I wouldn't bet my life on it for production units.
->
-I believe there's a problem with increased power consumption
-by the RTC so that's why Motorola removed it from the docs.
+that's the one I working one too.
 
 >
->How about the kernel's timing service and scheduling, does it use the
->timebase register instead?  Are these services effected at all?
+>what's the protocol for patches and updates?  do first attempts at patches
+>go into the 2.5 tree and, from there, get pushed up to the stock tree?
+>just curious about the proper way i should be updating my source tree and
+>testing.
 >
+>thanks.
 >
-Don't worry, they're not affected at all.
-
->Thanks a lot,
->
->David Ho
->Nanometrics Inc.
+>rday
 >
 >
 >
