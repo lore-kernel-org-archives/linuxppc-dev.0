@@ -1,21 +1,15 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao12.cox.net (fed1rmmtao12.cox.net [68.230.241.27])
-	by ozlabs.org (Postfix) with ESMTP id E493E2BDF2
+Return-Path: <jcd@tribudubois.net>
+Received: from mc.com (unknown [63.96.239.141])
+	by ozlabs.org (Postfix) with ESMTP id 6CC7F2BDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 Nov 2004 01:36:32 +1100 (EST)
-Date: Wed, 3 Nov 2004 07:36:30 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Vladimir <vova-ks@yandex.ru>
-Message-ID: <20041103073630.A3485@home.com>
-References: <200411031241.40681.vova-ks@yandex.ru>
-	<20041103065645.A3357@home.com>
-	<200411031717.55398.vova-ks@yandex.ru>
+	Thu,  4 Nov 2004 05:29:52 +1100 (EST)
+From: Jean-Christophe Dubois <jcd@tribudubois.net>
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Date: Wed, 03 Nov 2004 19:11:24 +0100
+Message-Id: <1099505485.26781.87.camel@fr-jdubois1.ad.mc.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200411031717.55398.vova-ks@yandex.ru>;
-	from vova-ks@yandex.ru on Wed, Nov 03, 2004 at 05:17:55PM +0300
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: kgdb on 405GP walnut-like board.
+Subject: MVME6100 LSP?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,16 +20,10 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Nov 03, 2004 at 05:17:55PM +0300, Vladimir wrote:
-> On Wednesday 03 November 2004 16:56, Matt Porter wrote:
-> > No, it's not sufficient.  It helps to check the archives first.
-> >
-> > http://ozlabs.org/pipermail/linuxppc-embedded/2004-October/000417.html
-> > http://ozlabs.org/pipermail/linuxppc-embedded/2004-October/000418.html
-> I've tried this patch but it fails to apply (at least to 2.6.8.1 from 
-> kernel.org). Am I to use another kernel version to apply this patch ?
+Is there somewhere a "free" MVME6100 LSP/BSP for Linux 2.6?
 
-The patch is against the current 2.6 BK tree, try patching a recent kernel
-release like 2.6.10-rc1.
- 
--Matt
+If this is not the right place to ask sorry for the noise.
+
+Thanks
+
+JC
