@@ -1,41 +1,39 @@
-Message-ID: <00c401c04bb1$dbf78420$57c809c0@fel>
-Reply-To: "john zhan" <johnzhan@btamail.net.cn>
-From: "john zhan" <johnzhan@btamail.net.cn>
-To: <linuxppc-embedded@lists.linuxppc.org>
+From: Graham Stoney <greyham@research.canon.com.au>
+To: "john zhan" <johnzhan@btamail.net.cn>,
+        "john zhan" <johnzhan@btamail.net.cn>,
+        <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: GDB for host development platform
+Date: Mon, 13 Nov 2000 10:50:35 +1100
+Content-Type: text/plain
 Cc: "Daris A Nevil" <dnevil@snmc.com>,
         "Cal Erickson" <cal_erickson@mvista.com>
-References: <006001bf448c$4aee3aa0$57c809c0@fel> <3A0BFE46.A7366165@snmc.com>
-Subject: Re: GDB for host development platform
-Date: Sat, 11 Nov 2000 15:34:32 +0800
+References: <006001bf448c$4aee3aa0$57c809c0@fel> <3A0BFE46.A7366165@snmc.com> <00c401c04bb1$dbf78420$57c809c0@fel>
+In-Reply-To: <00c401c04bb1$dbf78420$57c809c0@fel>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Message-Id: <00111310543400.25219@brixi>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thank you, Daris and Cal, for your reponse.
-I believe cross-debugger is good way,no mater the
-connection method, serial or Ethernet.
-My point is the native debugger targeted exec-file.
-The background of my idea is that I will build a new
- ppc system which have all necessary peripheral including
-a harddisk, keyboard ,  graphics device and other
-standard port.
-Base this platform to develop embedded applications,
-In fact,I am afraid I will break the traditional development
- mode ,discard the host machine, combine host and  target
- physically, all in one,  like programming in linux/pc.
- I think it can be easy acceptable.
-So,I hope GDB can work with exec-file target in a standalone
-linux/ppc machine.
-It is the worst news that GDB is not ready for linux/ppc exec-file target.
-Can someone tell me more about this?
-But I can still use GDB targeted extended-remote in native environment.right?
+On Sat, 11 Nov 2000, john zhan wrote:
+> So,I hope GDB can work with exec-file target in a standalone
+> linux/ppc machine.
+> It is the worst news that GDB is not ready for linux/ppc exec-file target.
 
-Thanks in advance.
+I believe you are doing something wrong; probably you have configured gdb
+wrongly.  Certainly there are many people using gdb natively on powerpc-linux,
+and many others using it in cross-development environments.  I've done both
+successfully .  It sounds like yours is configured for cross-development, but
+you're trying to use it native. What parameters did you pass to configure?
 
-john zhan.
+(And while I'm here, why are you using the old gdb-4.18 rather than gdb-5.0?)
 
+Regards,
+Graham
+--
+Graham Stoney
+Assistant Technology Manager
+Canon Information Systems Research Australia
+Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
