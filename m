@@ -1,34 +1,33 @@
-Date: Thu, 27 Apr 2000 16:42:45 -0700
-Subject: USB ISDN suport and FireWire suport?
-From: Even André Fiskvik <even@lynweb.net>
-To: <linuxppc-dev@lists.linuxppc.org>
-Message-ID: <B52E1E83.131%even@lynweb.net>
+Message-Id: <200004280042.RAA18722@pop3.ucdavis.edu>
+Date: Thu, 27 Apr 2000 17:42:33 -0700
+Subject: Re: XFree 4.0 dual monitor on AGP G4
+From: "W. Taylor Holliday" <wtholliday@ucdavis.edu>
+To: "Michel Ddnzer" <daenzerm@student.ethz.ch>
+CC: Kostas Gewrgiou <gewrgiou@imbc.gr>, linuxppc-dev@lists.linuxppc.org
 Mime-version: 1.0
-Content-type: text/plain; charset="ISO-8859-1"
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi, I just wondered if anyone know if there is support for
-either USB ISDN devices of some kind or for Fireire (e.g. Harddisks)
+>> How should I set up the config to do that?
+>
+> Section "Device"
+>  Identifier  "FBDev"
+>  Driver      "fbdev"
+>  Option      "fbdev" "/dev/fb1"
+> # This one may improve performance for some systems, try!
+> #    Option     "ShadowFB"      "off"
+> # This option increases speed at the expense of RAM. Your choice
+> #    Option     "BackingStore"
+> EndSection
 
 
---
-Best regards
-Even André Fiskvik
+Well, that didn't work. Basically the server started running, but nothing
+showed up on my second monitor. Suggestions?
 
-Webdesigner
-LynWeb Networking
-http://www.lynweb.net
-_________________________________
+- Taylor
 
-Web:  http://even.lynweb.net
-Mail: even@lynweb.net
-Tlf:  74 80 36 60
-Mob:  917 70 994
-Fax:  74 80 37 85
-Adr:  7510 Skatval
-_________________________________
-
+p.s. hey but it beats crashing the kernel :-)
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
