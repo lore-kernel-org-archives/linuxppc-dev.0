@@ -1,46 +1,35 @@
-Message-ID: <3891008C.A83C47B4@mvista.com>
-Date: Thu, 27 Jan 2000 18:35:56 -0800
-From: Jun Sun <jsun@mvista.com>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: the ppc_n_lost_interrupts thing...
+To: Kevin Puetz <puetzk@iastate.edu>
+cc: linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
+Subject: Re: Updated Mozilla M13 Release Build Available
+In-reply-to: Your message of "Thu, 27 Jan 2000 13:46:40 CST."
+             <E12DusK-0007We-00@puetz.penguinpowered.com>
+References: <E12DusK-0007We-00@puetz.penguinpowered.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Date: Thu, 27 Jan 2000 23:47:59 -0600
+From: Kevin Puetz <puetzk@iastate.edu>
+Message-Id: <E12E4GI-0001RX-00@puetz.penguinpowered.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi, all,
+In response to the problems that some of you had with my Mozilla M13 build,
+here is an updated one. If there are no problems with it now, it will be
+submitted and I will announce when the mozilla.org tarball is up to date.
 
-I am a newbie to PowerPC-linux.  Hopefully this question is
-not too dumb.
+same place as last time, I just updated the file <http://www.public.iastate.edu
+/~puetzk/>
 
-When I looked into the interrupt related code in ppc-linux,
-I got totally confused by the "ppc_n_lost_interrupts"
-variable.
+You will need to go to ftp.linuxppc.com/linuxppc-1999/software/updates and get
+libstdc++-2.10.0 (and, of course, any dependencies it has). You should not
+need to use the funky ld-hack to make libelf.so anymore - if you did so,
+delete it. You should not need to run this version as root before running it
+as a normal user.
 
-Here is the comment from pmac_pic.c file :
+If anyone could verify that this runs fine, please email me so that I can get
+mozilla.org's FTP site up to date.
 
-        /*
-         * Unfortunately, setting the bit in the enable register
-         * when the device interrupt is already on *doesn't* set
-         * the bit in the flag register or request another
-interrupt.
-         */
+As before, I'm not on the linuxppc-dev list, so please CC me.
 
->From this, I can infer that ppc_n_lost_interrupts is used to
-"fake" a new interrupt at the end of an interrupt handling.
-However,
-what I don't understand is - how could this possibly detect an
-interrupt that happens while the CPU is blocking external
-interrupt?
-In this case, ppc_n_lost_interrupts won't be incremented and when
-the external interrupt is re-enabled, we won't be able to get
-into interrupt mode.
-
-That does not sound right to me.  Could someone shed a light on
-this whole "ppc_n_lost_interrupt" thing?  Thanks in advance.
-
-
-Jun
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
