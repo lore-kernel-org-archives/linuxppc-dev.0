@@ -1,37 +1,28 @@
-Message-Id: <20010630092151.Postino-012521@smtp01.highway.ne.jp>
-Date: Sat, 30 Jun 2001 09:21:51 +0900
-To: linuxppc-dev@lists.linuxppc.org
-Cc: Paul Mackerras <paulus@samba.org>
-From: Kaoru Fukui <k_fukui@highway.ne.jp>
-Subject: problem in kernel-2.4.6.pre6
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: owner-linuxppc-dev@lists.linuxppc.org
-List-Id: <linuxppc-dev@lists.linuxppc.org>
+Date: Thu, 21 Jun 2001 18:16:24 -0400 (EDT)
+Message-Id: <200106212216.f5LMGOT428496@saturn.cs.uml.edu>
+From: "Albert D. Cahalan" <acahalan@cs.uml.edu>
+To: ghurwitz@dyndns.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Using a customg Interrupt Controller
+Sender: owner-linuxppc-embedded@lists.linuxppc.org
+List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi!
+> The problem could be (and I fear it is but hope it isn't) with atomic
+> functions. I don't know if you've followed the travails of this board, but
+> due to problems in the memory bridge controller, we don't have working
+> lwarx/stwcx. calls, which means that we do not have atomic functions; I
+> have replaced all of the atomic functions with non-atomic versions that
+> should return the same, and as of yet there are no other busmasters on the
+> board, so this should not yet prove a problem.
 
-I have had compilation problem in kernel-2.4.6.pre6-devel also standard.
-The error is
+You need eieio.
+If in doubt, sprinkle it everywhere.
+Make stuff volatile.
+Make stuff uncachable, or disable the cache for now.
+To be really forceful, use sync instead of eieio.
+Flush and/or invalidate cache lines as needed.
 
-usb-ohci.c: Infunction 'ohci_sleep_notify'
-usb-ohci.c:2752 too few argments to function 'ohci_pci_supend'
+Look up sync and eieio in a PowerPC book.
 
-
-ochi_pci_suspend (strct pci_dev *dev, u32 state){
-<snip>
-}
-
-static int ohci_sleep_notify(struct pmu_sleep_notifier * self, int when){
-<snip>
-                  case PBOOK_SLEEP_NOW:
-                       ohci_pci_suspend(ohci->ohci_dev); <--- it's worng
-<snip>
-
-}
-
-Kaoru
-
-
-** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
+** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
