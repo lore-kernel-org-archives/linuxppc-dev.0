@@ -1,77 +1,46 @@
-Date: Fri, 24 Nov 2000 20:27:32 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: linuxppc-dev@lists.linuxppc.org, debian-powerpc@lists.debian.org
-Subject: Re: apmd and other archs
-In-Reply-To: <19341019110249.29808@192.168.1.2>
-Message-ID: <Pine.HPX.4.10.10011241958140.14737-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sun, 26 Nov 2000 13:40:20 -0800
+From: Logan Johnson <logan@slackware.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: USB Keyboard and 2.2.18pre
+Message-ID: <20001126134020.A15022@slackware.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 24 Nov 2000, Benjamin Herrenschmidt wrote:
+Hello all!  I've run into an interesting problem with the newer stable kernels.
+I have an iMac DV SE (400MHz, the first DV SE.. with the stubby keyboard).
+2.2.18pre21 and pre22 and pmac_stable all seem to have the same problem, which
+is that the keyboard is non-functional at the console.
 
-> >Ok, I don't see very much the point of saving fractions of watt on a
-> >desktop but...
->
-> It can be more than fraction of watts when you put it all together, especially
-> in deep sleep. And multiply that by the number of machines out there...
+The keyboard is detected and is bound to input0.  I can ssh in,
+'cat /dev/input/event0', and watch my terminal fill with garbage as I mash
+keys on the keyboard.  But I can't get any characters to show up on the
+console.
 
-Don't worry. Intel and M$ contribute much more to global warming :-)
+The USB mouse also works fine, as I can gpm all over my boot messages.  (I
+tried copying and pasting a root login for fun, but realized after the 't'
+that it was really hard to copy and paste a carriage return. ;)
 
-> Also, the Cube is sensitive to heat problems, having some power
-> management (and CPU temp control, but that's another issue) helps.
+It doesn't seem to be a keymap issue, as both mac-us-std and us fail to
+produce any characters onscreen from any keys.
 
-Ok, style over substance. Remind me to never buy a cube...
+The 2.2.15 that shipped with linuxppc 2000 seems to have a perfectly functional
+keyboard, so my suspicion is that the problem lies in the new input layer I've
+read so much (and yet so little) about.
 
->
-> >Returning errors to user mode looks like a bad idea, it should be
-> >absolutely transparent to applications.
->
-> Well, that depends. I prefer blocking them, definitely, but that may not
-> always be possible.
-> Some things can just not be handled this way. We cannot, for example,
-> afford to schedule (or even printk) after the video driver have put the
-> chip to sleep. That's why we have these ordering rules x86 lacks, so that
-> we can sleep this driver very late in the sleep process, and wake it up
-> first. In the case of SMP boxes, we would have needed to put the other
-> CPUs to sleep before that point.
->
-> >I'm lost. Can't power management be done by the idle task ? There is one
-> >per CPU but it can't handle signala AFAIR. After all power management
-> >seems better handled by a task which never does I/O and whose only purpose
-> >is to sleep...
->
-> That could be done this way too. Are there any guarantees that the idle
-> task will run at all, however, if a process is using all the available
-> CPU time ? If we need all processors to stop scheduling userland code and
-> wait in a sleep loop (not doze nor nap in this case), we need to have a
-> way to let the idle task know that we need it to enter this special sleep
-> stage ASAP. It will have to flush all caches properly and go to sleep. On
-> some boxes, the CPU(s) will be shut down and revived via ROM hooks.
+Has anyone else seen this issue?  Alternatively, can anyone else with my
+hardware duplicate (or fail to duplicate) the problem?  I can post my kernel
+config(s) if needed.
 
-I believe the idle task blocks all signals, but once in the idle task you
-can check for pending signals (signal_pending(current)) which would be a
-way to communicate with it. It might be necessary to raise the priority of
-the idle task when you send it a signal (and set need_resched to schedule
-asap). The idle task would lower its own priority later when exiting from
-sleep. This might be a way to provide a known clean context for power
-management (and there is one idle task per processor as I said earlier).
-The scheduler should not need any change. Of course raising the priority
-of the idle task may seem strange, but when you risk overheating, it's
-urgent to become idle...
+Also, I'm perfectly happy to serve as a guinea pig if someone has an idea on
+this but not the hardware to test it with.
 
-BTW: I don't want to ever enter sleep state on my machines, a stopped
-timebase would be a catastrophe when you need accurate timestamps. Nap and
-doze are still ok, currently only the first level is entered. I'm not even
-sure it's worth going to the second level on machines which have a
-continuous stream of interrupts at >100Hz, flushing and reloading the
-cache at this rate is probably not a power saving measure when the active
-part of the memory fits in the L2 cache.
 
-	Gabriel.
+	--Logan
 
+--
+	Logan Johnson | logan@slackware.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
