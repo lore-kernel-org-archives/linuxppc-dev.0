@@ -1,41 +1,29 @@
-Message-ID: <3FBAB2B0.2020604@jonmasters.org>
-Date: Wed, 19 Nov 2003 00:00:48 +0000
-From: Jon Masters <jonathan@jonmasters.org>
+Message-ID: <000b01c3ae84$64771df0$2e9991cb@rnd>
+From: "Santosh Raj B" <santosh@ematrixtech.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: learninig material on creating custom BSP's
+Date: Wed, 19 Nov 2003 15:33:25 +0530
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Embedded Linux Feature Research
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Hai,
 
-[ I hope you do not view this as an inappropriate posting for this forum
-~  and apologise in advance if so viewed. I can take this elsewhere. ]
 
-Hi there,
+I am creating  a custom BSP for my ppc750 custom board. this is nearest to
+IBM spruce. but what modifications do I  make, how do I make and where. I
+realized that I needed to map the memory regions for my board to my bsp.
+could any one please tell me where I could find a document on how to achieve
+this.
 
-I am working on a feature for Linux User magazine, which you can find at
-- - http://www.linuxuser.co.uk/. The following might interest.
+thanks and regards
 
-The focus is on the business side of projects but introduces the reader
-to the general concepts and covers some more interesting stuff including
-various FPGA technologies, PowerPC and Microblaze ports.
-This might interest various companies with people here.
 
-Please can you let me know if your $company_with_funky_product would
-like a little publicity in return for giving me a few lines about the
-porting effort you have undertaken or the challenges involved along with
-some Hi-Res photos. So not much hard work for some press :-).
-
-I have already contacted a couple of the embedded Linux companies and a
-manufacturer of Linux STBs but am keen for additional input.
-Apologies in advance if I am not too quick in replying but I still have
-a nasty chest infection which is screwing up my plans somewhat.
-
-Cheers,
-
-Jon.
+Santosh Raj B.
+santosh@ematrixtech.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
