@@ -1,42 +1,37 @@
-Date: Sun, 1 Aug 1999 16:10:47 -0400
-From: brad allison <jackal@aol.net>
-To: Multiple recipients of list <linuxppc-dev@lists.linuxppc.org>
-Subject: Running list of R5 bugs
-Message-ID: <Pine.SGI.4.00.9908011555120.8611-100000@osiris.office.aol.com>
+From: kbhend <kbhend@business.wm.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: gdb broken under linuxppc r5 tools
+Date: Sun, 1 Aug 1999 16:12:32 -0400
+Content-Type: text/plain
+References: <99080121250000.02221@ns1102.munich.netsurf.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <99080116170800.00474@localhost.localdomain>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Sun, 01 Aug 1999, Franz Sirl wrote:
+>
+> Kevin, as a first measure, do you pass LD_BIND_NOW=1 in the environment?
+> 
+> Franz.
 
-Is there a running list of bugs introduced with R5?  Like a bug track list
-for linuxppc?
+Yes, that is the default we set with the jdk.  Unfortunately it is no help.
+Could this be kernel related?  I saw this problem with some of Paul's kernels
+under R4 and then all problems with gdb went away.  Everything worked fine
+under YDL but since my upgrade to LinuxPPC R5 and Paul's 2.2.10 kernel, the old
+problems have re-appeared.
 
-Here are three bugs I've come across in R5:
+It is like some piece of cache is not being properly flushed.
 
-* You can't call second and third mouse buttons mappings using BootX
-kernel arguements (adb_buttons=#,#) like you could in R4.
+By the way, I noticed from disassembling some code from egcs 1.1.2-12c that the
+stwu instruction is being used again.  I thought Gary Thomas patched the egcs
+source to prevent stwu from being generated becuase of some serious problems
+with it being used in certain combinations on 604e systems.  Any info on this?
 
-* ksirc core dumps when you start a /query with anyone.
+Thanks,
 
-* gimp can no longer save xpms.  Saving to xpm returns this error:
-/usr/lib/gimp/1.0/plug-ins/xpm
-: Segmentation fault caught /usr/lib/gimp/1.0/plug-ins/xpm
-(pid:951): [E]xit, [H]alt, show [S]tack trace or [P]roceed:           
-
-Those are the three I found in R5 that were not in R4.  All software was
-installed straight off the R5 CD onto a Wallstreet G3 Powerbook.
-
-All these worked fine on the same machine with the R4 installation.
-
--b
-
---
-AOL SAPI 		                        703.265.0908     AIM:jackal242
-http://jackal.fudge.org        `I was never more certain of how far away I was
-from my goal than when I was standing right beside it.' - Ethan Hawke, Gattaca
-
+Kevin
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
