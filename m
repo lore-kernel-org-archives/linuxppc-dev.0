@@ -1,35 +1,44 @@
-Date: Mon, 24 Mar 2003 18:10:15 -0800
-From: curt brune <curt@acm.org>
-To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: USB on RPXLite-DW w/ ppc-823e + ELDK
-Message-ID: <20030324181015.A14912@curtisb.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: i2c-algo-8xx ???
+Date: Tue, 25 Mar 2003 11:45:10 +0100
+Message-ID: <30C145E544071F4FB8B627789F7910BD32BDAB@csy-exchange1.giat.intra>
+From: "ARIBAUD Albert" <A.ARIBAUD@giat-industries.fr>
+To: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Hi Steven,
 
-I am trying to get USB working on an RPXLite board with a 823e
-processor.  I am using the ELDK 2.4.4 kernel from CVS -- in
-arch/ppc/8xx_io/ I see several files (uart.c, micropatch.c, etc.) that
-depend on CONFIG_USB_MPC8xxx, but I do not see how to set
-CONFIG_USB_MPC8xxx from "make menuconfig".
+(I'm new on the list, so I'll quickly present myself: I'm currently
+working on a custom mpc855t board with u-boot and linux, using ELDK
+as the host development platform.)
 
-I am also wondering about a potential hardware modification required
-to make the USB work on the RPXLite -- from a previous posting to this
-list I read:
+> Hi there,
+>
+> if I understand correctly:
+>
+> if one want to use i2c-algo-8xx on a MPC8xx one need to init
+> the CPM, install
+>   an irq handler and add an i2c bus handler.
+> That all is done in i2c-rpx.c. But I think what's done there
+> is pretty generic
+> to MPC8xx boards using the CPM for I2C.
+> (I just forced a build of this file and it works on my board.)
 
-> The 823e, and newer 850 (Rev. B) processors have some modifications
-> to better allow USB host support. These require some external
-> support (looping a clock back to the I/O pin) and the downloading of
-> a microcode patch for properly generating SOF timing.
+This is consistent with the notes on the lm_sensors site, which
+has a fairly extensive set of i2c drivers.
 
-Is this modification still necesarry?  Does anyone know the details?
+And this is consistent with some recent experiments of mine. :)
 
-Cheers,
-Curt
+> So shouldn't we rename the file and the entry in Config.in to
+> something less
+> "misleading" ?
 
+They (partly) did so in lm_sensors.
+
+Albert.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
