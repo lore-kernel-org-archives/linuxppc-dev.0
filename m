@@ -1,45 +1,31 @@
-Date: Wed, 5 Dec 2001 20:38:23 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Corey Minyard <minyard@acm.org>
-Cc: Franz Sirl <Franz.Sirl-ppc@lauterbach.com>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: Changes to PPC Linux required for GCC 3.1
-Message-ID: <20011206033823.GE17651@cpe-24-221-152-185.az.sprintbbd.net>
-References: <5.1.0.14.2.20011205134825.024d8ed8@mail.lauterbach.com> <3C0E48D2.6000409@acm.org> <20011205173728.GB27936@cpe-24-221-152-185.az.sprintbbd.net> <3C0EC2E2.4020208@acm.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3C0EC2E2.4020208@acm.org>
+From: rayson_ho@hongkong.com
+Content-Type: text/plain
+MIME-Version: 1.0
+Message-ID: <gM988793884351.18059@mail1.hongkong.com>
+Date: Thu, 6 Dec 2001 11:56:48 +0800 (CST)
+To: linuxppc-dev@lists.linuxppc.org
+Cc: 
+Subject: fetch_and_add() available on PPC Linux?
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Dec 05, 2001 at 06:59:14PM -0600, Corey Minyard wrote:
->
-> Tom Rini wrote:
->
-> >
-> >I think the reason this wasn't applied is that Paul said something about
-> >thiws being horriyingly ugly.  Corey, can you post a patch that changes
-> >RELOC(x) into a function and nothing else? :)
->
-> My original patch has the function.
+I am porting a threads library to PPC Linux... Since some applications depend on it, I can't easily switch to pthreads.
 
-Your patch had other fixes too tho.
+The library uses fetch_and_add(), which is available on AIX. I tried to compile it on PPC Linux, but failed to link.
 
-> I prefer the macro, it may be a
-> little uglier but it removes a dependency between the include file and
-> the source.
+I compiled the code on AIX with -S. Then I examined the assembly listing, and found that fetch_and_add() is a lib/OS call.
 
-Er, say what?  The macro is in the include file now...
+I would like to know if PPC Linux has something similar to fetch_and_add() on AIX, if not, are there any workarounds??
 
-> It needs to be commented though, the reason for it's
-> wierdness is not really clear.
+Thanks,
+Rayson
 
-Well, that is somewhat true.  But the early boot stuffs are somewhat
-mysterious from time to time anyways :)
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+
+----------------------------------------------
+ 歡迎使用HongKong.com郵件系統
+ Thank you for using hongkong.com Email system
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
