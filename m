@@ -1,18 +1,18 @@
-Message-ID: <3987B66D.B28457A9@lightning.ch>
-Date: Wed, 02 Aug 2000 07:49:33 +0200
-From: Daniel Marmier <daniel.marmier@lightning.ch>
-Reply-To: daniel.marmier@lightning.ch
-MIME-Version: 1.0
+Date: Wed, 2 Aug 2000 09:37:11 +0200 (METDST)
+From: Gabriel Paubert <paubert@iram.es>
 To: Rolf Liu <rolfl@sc23.sc.mcel.mot.com>
-CC: linuxppc-dev@lists.linuxppc.org
+cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: question of 'SIZEOF_HEADERS' !!!!!!!!!!!!!!!
-References: <015401bffbae$1aa27940$bf0102c8@sc.mcel.mot.com>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <015401bffbae$1aa27940$bf0102c8@sc.mcel.mot.com>
+Message-ID: <Pine.HPX.4.10.10008020935410.9070-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Rolf Liu wrote:
+On Tue, 1 Aug 2000, Rolf Liu wrote:
+
 >
 > Hi, all
 > I am linking the linux ppc kernel .
@@ -20,15 +20,12 @@ Rolf Liu wrote:
 > 'vmlinux.lds'.
 > I wonder where the symbol come from.
 
-Found in ld's info pages, section arithmetic functions :
+info ld
 
-`SIZEOF_HEADERS'
-`sizeof_headers'
-     Return the size in bytes of the output file's headers.  You can
-     use this number as the start address of the first section, if you
-     choose, to facilitate paging.
+(Hint: builtin functions section)
 
+	Gabriel.
+kkk
 
-				Daniel Marmier
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
