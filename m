@@ -1,91 +1,48 @@
-Date: Thu, 19 Jun 2003 23:53:41 -0600 (MDT)
-From: Terry Greeniaus <tgree@phys.ualberta.ca>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: pismo upgraded to 750fx not detected correctly
-In-Reply-To: <200306200459.XAA31217@lists.linuxppc.org>
-Message-ID: <Pine.LNX.4.10.10306192341590.5204-100000@pneuma.phys.ualberta.ca>
+Message-ID: <3EF39EFA.8040507@mvista.com>
+Date: Fri, 20 Jun 2003 16:55:38 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Patch for include/asm-ppc/highmem.h
+Content-Type: multipart/mixed;
+ boundary="------------060406080908020902080902"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 19 Jun 2003, Chris Studholme wrote:
+This is a multi-part message in MIME format.
+--------------060406080908020902080902
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> On Fri, 13 Jun 2003, Terry Greeniaus wrote:
->
-> > The PowerLogix 900 MHz bluechips are 750FX CPUs, however they have been
-> > strapped so that the PVR reports itself as 0x0008nnnn instead of
-> > 0x7000nnnn, so that Apple's OpenFirmware can better support them (in
-> > particular, to automatically enable the L2 cache).  The correct way (on
-> > these boards, anyhow) to determine if this is a 750FX is by writing to
-> > the HID1 register and seeing if it changed.  I have a code snippet to do
-> > this if anyone wants it, although it isn't LinuxPPC-specific.  This is
-> > backwards-compatible with normal 750 CPUs, they don't take an exception
-> > if you try to write to the HID1 register.
->
-> I would like to see the code snippet.  Do you know how the bluechip G4
-> upgrade for the pismo works?  Is it also reported as 0x0008nnnn?  If so,
-> how does your code snippet handle that case?
+This patch changes the mask value to what I believe it was intended to
+be based on the bk comments for that file.  If this is not the proper
+fix, we need to figure it out b/c it doesn't build when CONFIG_HIGHMEM
+is on (PAGE_ADDRESS is not defined).
 
-All of the G4 bluechips are either 7400 (in the older models, not
-anymore though) or 7410 CPUs strapped normally (PVR = 0x000Cnnnn [7400]
-or 0x800Cnnnn [7410]).  Since these are strapped normally, nothing
-special needs to be done to handle that case.  Here's the code snippet
-we use in our software to determine if you are on a 750 or 750FX:
+Mark
 
-UInt32 getRealPVR()
-{
-	UInt32	pvr = getSPR(287);
-	UInt32	realPVR = pvr;
-	if((pvr & 0xFFFF0000) == 0x00080000)
-	{
-		// This could be a 750FX strapped as a 750 PVR
-		UInt32 hid1 = getHID1();
-		if(hid1 & 0x00010000)
-		{
-			// PLL1 is in use, fiddle with PLL0
-			setHID1(hid1 ^ 0x00000200);
-			if(getHID1() != hid1)
-			{
-				// HID1 changed, this is a 750FX
-				realPVR = (0x70000000 |
-					(pvr & 0x0000FFFF));
-				setHID1(hid1);
-			}
-		}
-		else
-		{
-			// PLL0 is in use, fiddle with PLL1
-			setHID1(hid1 ^ 0x00000002);
-			if(getHID1() != hid1)
-			{
-				// HID1 changed, this is a 750FX
-				realPVR = (0x70000000 |
-					(pvr & 0x0000FFFF));
-				setHID1(hid1);
-			}
-		}
-	}
-	return realPVR;
-}
+--------------060406080908020902080902
+Content-Type: text/plain;
+ name="highmem.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="highmem.patch"
 
-Basically this just checks to see if we have a 750 PVR, and if we do it
-tries writing to the PLL bits of the PLL that isn't in use in HID1.  If
-HID1 changes, then we have a 750FX rather than a 750.  Finally, we reset
-HID1 back to whatever it was before we changed it.
+===== include/asm-ppc/highmem.h 1.18 vs edited =====
+--- 1.18/include/asm-ppc/highmem.h	Sat May 10 01:06:50 2003
++++ edited/include/asm-ppc/highmem.h	Fri Jun 20 16:50:26 2003
+@@ -110,7 +110,7 @@
+ static inline void kunmap_atomic(void *kvaddr, enum km_type type)
+ {
+ #if HIGHMEM_DEBUG
+-	unsigned long vaddr = (unsigned long) kvaddr & PAGE_ADDRESS;
++	unsigned long vaddr = (unsigned long) kvaddr & PAGE_MASK;
+ 	unsigned int idx = type + KM_TYPE_NR*smp_processor_id();
 
-This is a bit annoying because it means you can't always rely on a mfpvr
-instruction in some assembly code.  We run this routine once when our
-software starts up and store the result in a global variable which we
-use in the rest of the code.  Also, note that the lower 16 bits of the
-PVR remain unchanged regardless of how the CPU is strapped, so we mask
-off the top 16 bits only and replace them with 0x7000nnnn.
+ 	if (vaddr < KMAP_FIX_BEGIN) // FIXME
 
-BTW I am only subscribed to the list digest, so if you want more timely
-replies (i.e. more than once a day :P ) CC me with the list message.
-
-TG
+--------------060406080908020902080902--
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
