@@ -1,35 +1,42 @@
-To: "zhongqx" <zhongqx@guoguang.com.cn>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Probelm for linux booting 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 21 May 2002 08:45:06 +0800."
-             <001301c20060$cb3bf5c0$7301a8c0@zhongqx>
-Date: Tue, 21 May 2002 08:24:13 +0200
-Message-Id: <20020521062418.DAB461196D@denx.denx.de>
+Message-ID: <3CEA0F45.BDBBA25@etx.ericsson.se>
+Date: Tue, 21 May 2002 11:11:33 +0200
+From: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
+MIME-Version: 1.0
+To: andrew may <acmay@acmay.homeip.net>
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	Armin Kuster <akuster@mvista.com>
+Subject: Re: [PATCH] ibm ocp gpio
+References: <20020520182657.B17318@ecam.san.rr.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <001301c20060$cb3bf5c0$7301a8c0@zhongqx> you wrote:
+andrew may wrote:
 >
->      I have FADS860T board,I want to use ppcboot-1.1.5 to boot linux 2.2.4 kernel.
-> ppcboot-1.1.5 is ok,but when i use bootm command,
-> it uncompressed ok and load ramdisk image then nothing happend,  can you meet this
-> problem before? can you give me some advise? Should I need to change configure file
-> of FADS860_defconfig ? Console is SMC1 and baudrate is 115200 bps.
+> The most common thing I want to use the GPIO pins for is
+> simple lighting of some LED's. I decided to roll in some timers
+> into the generic GPIO driver rather than haveing each user of the
+> GPIO driver be forced to do some form of timers to get a usable
+> LED visual as well.
+>
+> I think I got the timer stuff correct but I am not sure.
+> I didn't bother cleaning it up until I get some feedback on it.
+>
+>   -----------------------------------------------------------------------------
+>                     Name: gpio.patch.gz
+>    gpio.patch.gz    Type: unspecified type (application/octet-stream)
+>                 Encoding: base64
 
-Probably you are just wasting your  time  on  broken  hardware.  FADS
-boards  (especially  the  older  ones  like  yours)  are not the most
-reliable type of hardware.
+I don't think we should add this It's not really something that needs to be
+done in the driver. Also you have not exported this functionality to
+userspace.
 
-Wolfgang Denk
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-As far as we know, our computer has never had an undetected error.
-		                                           -- Weisert
+Kenneth Johansson
+Ericsson AB                       Tel: +46 8 404 71 83
+Borgafjordsgatan 9                Fax: +46 8 404 72 72
+164 80 Stockholm                  kenneth.johansson@etx.ericsson.se
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
