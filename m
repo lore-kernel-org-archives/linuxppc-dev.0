@@ -1,51 +1,27 @@
-Message-ID: <40169C35.5020602@gcctech.com>
-Date: Tue, 27 Jan 2004 12:13:25 -0500
-From: "Christopher R. Johnson" <cjohnson@gcctech.com>
-Reply-To: cjohnson@gcctech.com
-MIME-Version: 1.0
-To: cjohnson@gcctech.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: gdb problems
-References: <4016965F.5060706@gcctech.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: cjohnson@gcctech.com
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: gdb problems 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 27 Jan 2004 11:48:31 EST."
+             <4016965F.5060706@gcctech.com>
+Date: Tue, 27 Jan 2004 18:13:56 +0100
+Message-Id: <20040127171401.93025C108D@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ok, answering some of my own questions:
-
-in host-side gdb, use the two commands:
-set solib-absolute-prefix
-set solib-search-path
-
-I set the first to /dev/null and the second to the path where my
-filesystem is constructed and its /lib directory (where all my shared
-libs are on the host).
-
-All the below error messages go away, but I am left with my original
-problem.  I can set breakpoints but they don't work.  What am I missing?
-
-Christopher R. Johnson wrote:
-
->
-> Maybe not the right list for this, if you have a suggestion for
-> somewhere better let me know...
->
-> My new tool chain build is working well, except that debugging with
-> gdb/gdbserver is somewhat broken.  I figured out that I needed thread_db
-> and have that built in now and delivered to the target platform.
+In message <4016965F.5060706@gcctech.com> you wrote:
 >
 > Problem #1: When I start host side gdb, I get the message:
 > warning: unable to find dynamic linker breakpoint function
 > GDB will be unable to debug shared library initializers
 > and track explicitly loaded dynamic code
->
-> I don't need to debug initializers, so I set a breakpoint at main and
-> continue.  Two error messages appear:
-> Error while mapping shared library sections:
-> /lib/ld.so.1: No such file or directory
-> Error while mapping shared library symbols:
-> /lib/ld.so.1: No such file or directory
->
+
+You missed to set solib-absolute-prefix - see
+http://www.denx.de/twiki/bin/view/DULG/DebuggingApplication#Section_9.5.2.
+
 > The program starts and breakpoint don't work.
 >
 > Problem #2:  (Maybe related?) on the target side gdbserver, after
@@ -54,27 +30,29 @@ Christopher R. Johnson wrote:
 > gdb: error initializing thread_db library.
 >
 > Yes, twice.
->
-> Why is the host side looking in /lib for target libraries?  Can I
-> control that?  How?
->
+
+Well, guess what that means?
+
 > Why is gdbserver on the target having trouble?  I see I have correctly
 > delivered the thread_db library in /lib on the target, so what gives?
->
+
+Probably you have other problems with your build of GDB /  gdbserver.
+We had to fix a couple of problems to get thread support working.
+
 > Any help or guidance would be greatly appreciated.  I build my toolchain
 > with crosstools.
->
-> --
-> Christopher R. Johnson
->
->
->
+
+Feel free to try out the GDB / gdbserver that come with the ELDK.
+
+Best regards,
+
+Wolfgang Denk
 
 --
-Christopher R. Johnson
-Principal Software Engineer
-GCC Printers
-(781)276-8763
-
+See us @ Embedded World, Nuremberg, Feb 17 - 19,  Hall 12.0 Booth 440
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+The moral of the story is: "Don't stop to  tighten  your  shoe  laces
+during the Olympics 100m finals".
+                             - Kevin Jones in <DEJo68.K1t@bri.hp.com>
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
