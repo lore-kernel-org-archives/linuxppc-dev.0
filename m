@@ -1,8 +1,8 @@
 From: "Tameen Khan" <tameen@cisco.com>
-To: "'linuxppc-dev list'" <linuxppc-dev@lists.linuxppc.org>
+To: <linuxppc-dev@lists.linuxppc.org>
 Subject: Kgdb on Motorola 8451 ppc board
-Date: Tue, 29 Jun 2004 10:54:14 -0700
-Message-ID: <004401c45e02$172f7c30$273147ab@amer.cisco.com>
+Date: Tue, 29 Jun 2004 11:21:24 -0700
+Message-ID: <004801c45e05$e33a1b20$273147ab@amer.cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
@@ -13,9 +13,8 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 I'm trying to run kgdb on  Motorola 8451 ppc board.
 I've compiled the kernel with the CONFIG_KGDB option.
 The test machine is a linux host. I'm using gdb compiled for target ppc
-architecture.
-When I try to connect to the dev machine from the test machine, I get the
-following error.
+architecture. When I try to connect to the dev machine from the test
+machine, I get the following error.
 
 (gdb) set remotebaud 9600
 (gdb) target remote /dev/ttyS1
