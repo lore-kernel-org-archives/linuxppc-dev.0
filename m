@@ -1,66 +1,44 @@
-Message-ID: <376C01F3.666112C3@primenet.com>
-Date: Sat, 19 Jun 1999 20:47:47 +0000
-From: Bob Doyle <doyle@primenet.com>
-MIME-Version: 1.0
-To: Nye Liu <nyet@nbase.com>
-CC: linuxppc-dev@lists.linuxppc.org
+Date: Sat, 19 Jun 1999 22:49:05 +0200 (CEST)
+From: Geert Uytterhoeven <geert@geert.cs.kuleuven.ac.be>
+Reply-To: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Bob Doyle <doyle@primenet.com>
+cc: Nye Liu <nyet@nbase.com>, linuxppc-dev@lists.linuxppc.org
 Subject: Re: Motorola MPC8240 Sandpoint embedded linux
-References: <376AD199.43D25@mrv.com>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <376C01F3.666112C3@primenet.com>
+Message-ID: <Pine.LNX.4.10.9906192248130.327-100000@cassiopeia.home>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Nye Liu wrote:
+On Sat, 19 Jun 1999, Bob Doyle wrote:
+> > Verify that the current serial drivers work with the Sandpoint's NS
+> > PC87308.
 > 
-> I have just started work on the MPC8240 Sandpoint platform (its
-> basically an 603e with some integrated peripherals) but this is my first
-> try at embedded linux devel. I have plenty of experience getting psos
-> and vxworks running on a few different processors, but I am unfamiliar
-> with the internals of how linux is booted.
-
-I've got one too.  I'm a newbie with the ppc so this is my platform to
-learn things.  I've mostly got a working VGA display configured and
-running...
-
-> I'm using ESTC's cheapo visionICE emulator solution, and would
-> appriciate any help with getting this thing up and running.
-
-The jury is still out on the ESTC emulator...
- 
-> The main problems that I see are:
+> The code in dink has code to initialize the two serial ports.
 > 
-> Its not CHRP or PREP.
+> If you want to get the floppy, mouse, keyboard, parallel ports, etcs
+> going you've got to configure the '87308 for that.  It looks like all
+> you have to do is provide the base addresses for the peripherals
+> to the '87308.
 > 
-> No prom, so i need to:
-> Set up the memory map.
-> Program the EPIC.
+> I couldn't find docs on National's website for the '87308 but I was
+> able to get the floppy going by just reading the dink code.  Anybody
+> know where to get docs?
 
-Dink does all that for you.  How 'bout booting linux from dink
-until linux is running?  Then go back remove dink and fix the
-startup stuff.
+I have the doc in PDF format. Let me know if you want a copy by email. I don't
+have the CD with the doc at hand, but I can send it tomorrow.
 
-> Verify that the current serial drivers work with the Sandpoint's NS
-> PC87308.
+Greetings,
 
-The code in dink has code to initialize the two serial ports.
+						Geert
 
-If you want to get the floppy, mouse, keyboard, parallel ports, etcs
-going you've got to configure the '87308 for that.  It looks like all
-you have to do is provide the base addresses for the peripherals
-to the '87308.
+--
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
-I couldn't find docs on National's website for the '87308 but I was
-able to get the floppy going by just reading the dink code.  Anybody
-know where to get docs?
-
-I was considering patching dink to add a command that would copy a
-floppy into memory.  That might ease hacking.
-
-> Please email me directly, as I am not subscribed to this list, although
-> i do read it regularly on the linuxppc site.
-> 
-> nyet@nbase.com
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
