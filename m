@@ -1,223 +1,118 @@
-Subject: Re: AW: AW: Linux 2.4.24 on PQ2FADS
-To: <tschaefer@giga-stream.de>
-Cc: "" Stefano Gaiotto " <Stefano.Gaiotto" <Stefano.Gaiotto@marconi.com>,
-	"<linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <OFEE670FCC.A0230905-ONC1256E53.002ECBF0@uk.marconicomms.com>
-From: "Stefano Gaiotto" <Stefano.Gaiotto@marconi.com>
-Date: Wed, 10 Mar 2004 14:59:12 +0100
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <404F26A5.7070807@catapult.com>
+Date: Wed, 10 Mar 2004 09:31:01 -0500
+From: "Kevin A. Sapp" <Kevin.Sapp@catapult.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=iso-8859-1
+To: linuxppc-embedded@lists.linuxppc.org,
+	Kevin Sapp <Kevin.Sapp@catapult.com>
+Subject: RAM Disk problems
+References: <20040309151442.1E311C0655@atlas.denx.de>
+In-Reply-To: <20040309151442.1E311C0655@atlas.denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Yes Thomas,
+Hello,
 
-MPC8280, '8275 and '8270 are all 0.13um (HiP7) members of PowerQUICCII
-family.
-Using your entry in cputable (o that in patch 2.4.25!...) I achieve working
-stability in my board, in fact it reaches every time
-the NFS root mounting point.
-But I till have problems with the corrupted stamps I showed you!
-Is not an overlapping memory problem as you suggested me, I'm investigating
-about that.
+I am trying to bring up a RAM disk as the root file system.
+Most everything is working until it come's time to mount it.
+The logs are below.
 
-Thank you,
-      Stefano Gaiotto
+I noticed in mount_block_root the get_fs_names appears
+to returning a zero length string.
 
+I have tried root=/dev/ram
+root=/dev/ram0
+root=/dev/rd/0
+and combinatins with noinitrd.
 
+FYI. The RAM disk will be loaded by a bus master and will have
+to be persistant.
 
-
-
-Thomas Schäfer <tschaefer@giga-stream.de> on 09/03/2004 17:43:16
-
-Please respond to <tschaefer@giga-stream.de>
-
-To:    "Stefano Gaiotto" <Stefano.Gaiotto@marconi.com>
-cc:    <linuxppc-embedded@lists.linuxppc.org>
-
-Subject:    AW: AW: Linux 2.4.24 on PQ2FADS
+Any suggestions?
+Thanks
+Kevin
 
 
-Stefano,
-
-> -----Ursprüngliche Nachricht-----
-> Von: Stefano Gaiotto [mailto:Stefano.Gaiotto@marconi.com]
-> Gesendet: Dienstag, 9. März 2004 17:05
-> An: tschaefer@giga-stream.de
-> Cc: Stefano Gaiotto <Stefano.Gaiotto; <linuxppc-embedded
-> Betreff: Re: AW: Linux 2.4.24 on PQ2FADS
->
->
->
->
-> Thomas,
->
-> I had not an entry for Hip7 such that you send me! Thak you very much for
-> your help.
-
-I'm not sure if MPC8275 is actually a HIP7 core. We used a MPC8280 on our
-boards. It is important that the CPU ID is correct in the cputable file. In
-our case, with the missing CPU ID the board always hang in the init
-program.
-
-> I'm going to chek my SDRAM initialization because, now, I see corrupted
-> stamps, like these:
->
-> ## Booting image at 00100000 ...
->    Image Name:   2.2.4 Kernel for PQ2FADS
->    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
->    Data Size:    571353 Bytes = 558 kB
->    Load Address: 00000000
->    Entry Point:  00000000
->    Verifying Checksum ... OK
->    Uncompressing Kernel Image ... OK
-> Memory BAT mapping: BAT2=32Mb, BAT3=0Mb, residual: 0Mb
->                                                       ÀLinux
-> version 2.4.24
-> (gai
-> otto@gexs22) (gcc version 3.3.2) #5 Tue Mar 9 17:00:09 CET 2004
->                                                                ÀADS setup
-> arch
-> ÀO
-> n node 0 totalpages: 8192
->                          Àzone(0): 8192 pages.
->                                               Àzone(1): 0 pages.
->
-> Àzone(2): 0
-> page
-> s.
->   ÀKernel command line: root=/dev/nfs rw
-> nfsroot=172.16.246.111:/home/gaiotto/fa
-> dsroot nobats ip=172.16.119.3
->  ÀÀÀÀ$                 ÀADS init IRQ. NR_IRÀÀÀÀÀ
->
-
-Maybe that your load address (0x100000) is too low and is overwritten when
-the kernel is uncompressed....
-
-Best regards,
-
-Thomas
-
-
->
-> Regards,
->       Stefano
->
->
->
->
->
->
-> Thomas Schäfer <tschaefer@giga-stream.de> on 09/03/2004 14:24:39
->
-> Please respond to <tschaefer@giga-stream.de>
->
-> To:    "Stefano Gaiotto" <Stefano.Gaiotto@marconi.com>
-> cc:    <linuxppc-embedded@lists.linuxppc.org>
->
-> Subject:    AW: Linux 2.4.24 on PQ2FADS
->
->
-> Hi Stefano,
->
-> just a wild guess:
->
-> check the cpu_specs[] array in your arch/ppc/kernel/cputable.c file. It
-> should
-> contain something like this entry for your 8275 CPU:
->
->     { /* 82xx (Hip7 603e cores) */
->       0xffff0000, 0x80820000, "82xx (Hip7)",
->       CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_CAN_DOZE | CPU_FTR_USE_TB |
->       CPU_FTR_CAN_NAP,
->       COMMON_PPC,
->       32, 32,
->       __setup_cpu_603
->     }
->
-> The CPU ID (0x80820000 in this case) must match your 8275 CPU ID.
-> Otherwise, generic PPC
-> will be assumed which leads to strange behaviour as soon as the
-> MMU will be
-> enabled by
-> the kernel.
->
-> second guess:
->
-> Because of the random errors you described I would check the
-> SDRAM settings
-> of the board:
-> - check ALL settings of the memory controller against the settings
-> described in the
->   data sheet of your SDRAM.
-> - check memory controller initialization sequence against the sequence
-> described in the
->   data sheet of the SDRAM and the memory controller of the CPU
-> - if both are correct: check signal integrity on your board
->
-> hope this helps.
->
-> Best regards,
->
-> Thomas Schaefer
->
-> > -----Ursprüngliche Nachricht-----
-> > Von: owner-linuxppc-embedded@lists.linuxppc.org
-> > [mailto:owner-linuxppc-embedded@lists.linuxppc.org]Im Auftrag von
-> > Stefano Gaiotto
-> > Gesendet: Dienstag, 9. März 2004 13:53
-> > An: linuxppc-embedded@lists.linuxppc.org
-> > Betreff: Linux 2.4.24 on PQ2FADS
-> >
-> >
-> >
-> > Dear colleagues,
-> >
-> > I'm trying to have Linux 2.4.24 working on my evaluation board
-> PQ2FADS-VR
-> > with ppc8275, but I'm suffering of a lot of instability problems.
-> > The Boot-loader I use is Uboot-1.0.0 witch initialise correctly
-> the board
-> > at speed 66,133,199 and correctly fills bd_info struct.
-> > But when I issue the command "=> bootm 100000" I observe every time a
-> > different behaviour: sometimes I don't see anything, sometimes the
-board
-> > stops in "Calibrating delay loop", sometimes after having written
-> > the line:
-> >
-> > Memory: 30936k available (984k kernel code, 344k data, 52k init, 0k
-> > highmem)
-> >
-> > Or the line
-> >
-> > POSIX conformance testing by UNIFIX
-> >
-> > Only occasionally it reaches the init program (stopping here).
-> >
-> > The same behaviour I observed with the images delivered by the Arabella
-> > distribution!
-> >
-> > Do you have any suggestion? MMU? Cache? Hardware?
-> >
-> > Thanks in advance for your advice.
-> >
-> > With best regards,
-> >
-> > Stefano
-> >
-> >
->
->
->
->
->
->
->
->
->
->
+=> bootm 100000 200000
+## Booting image at 00100000 ...
+   Image Name:   Linux-2.4.20
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    485362 Bytes = 473.10 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+## Loading RAMDisk Image at 00200000 ...
+   Image Name:   Kevin Simple RAMDisk
+   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
+   Data Size:    1405884 Bytes =  1.3 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+## initrd at 0x00200040 ... 0x003573FB (len=1405884=0x1573BC)
+   Loading Ramdisk to 01c27000, end 01d7e3bc ... OK
+kernel addr:00000000
+machine_init<6>Memory BAT mapping: BAT2=16Mb, BAT3=8Mb, residual: 7Mb
+Linux version 2.4.20 (kevin@linux4) (gcc version 3.2.1) #258 Wed Mar 10
+07:55:32
+ EST 2004
+setup arch<4>ADS setup arch
+On node 0 totalpages: 7936
+zone(0): 7936 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line: root=/dev/ram rw console=ttyS0,9600 nobats
+ip=192.168.82.5
+         console passed ttyS0:0
+            Checking for registered console ttyS
+         Prefered console -1
+ADS init IRQ. NR_IRQS=256
+ADS time init
+ADS calibrate decrementer. FREQ=66666666, tb_ticks_per_jiffy=166666
+           stdio console init
+serial_console_setup
+cons:c00ebc48 str:9600 cons->index:0 Calibrating delay loop... 132.71
+BogoMIPS
+Memory: 28828k available (828k kernel code, 288k data, 48k init, 0k highmem)
+Dentry cache hash table entries: 4096 (order: 3, 32768 bytes)
+Inode cache hash table entries: 2048 (order: 2, 16384 bytes)
+Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
+Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
+Page-cache hash table entries: 8192 (order: 3, 32768 bytes)
+POSIX conformance testing by UNIFIX
+ADS init
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society NET3.039
+Initializing RT netlink socket
+Starting kswapd
+devfs: v1.12c (20020818) Richard Gooch (rgooch@atnf.csiro.au)
+devfs: devfs_debug: 0x0
+devfs: boot_options: 0x1
+pty: 256 Unix98 ptys configured
+RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
+loop: loaded (max 8 devices)
+*********************SERIAL INIT*************
+MPC8260 FCC Ethernet driver
+BD rings initialised, RBASE=1B8160, TBASE=1B8360
+Created eth0
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP, IGMP
+IP: routing cache hash table of 512 buckets, 4Kbytes
+TCP: Hash tables configured (established 2048 bind 4096)
+eth0: OPEN
+IP-Config: Guessing netmask 255.255.255.0
+IP-Config: Complete:
+      device=eth0, addr=192.168.82.5, mask=255.255.255.0,
+gw=255.255.255.255,
+     host=192.168.82.5, domain=, nis-domain=(none),
+     bootserver=255.255.255.255, rootserver=255.255.255.255, rootpath=
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+RAMDISK: Compressed image found at block 0
+Freeing initrd memory: 1372k freed
+Kernel panic: VFS: Unable to mount root fs on 01:00
+ <0>Rebooting in 180 seconds..
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
