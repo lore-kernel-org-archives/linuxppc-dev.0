@@ -1,48 +1,84 @@
-Message-ID: <3F7DB265.8050408@kegel.com>
-Date: Fri, 03 Oct 2003 10:31:17 -0700
-From: Dan Kegel <dank@kegel.com>
+Message-ID: <3439AB3A99ECD5409F3A52ACF814744D158D93@norcom2.norcom.net>
+From: Lokesh Kumar <kumar.lokesh@wrx-us.com>
+To: "'Steven Blakeslee'" <BlakesleeS@embeddedplanet.com>,
+	Lokesh Kumar <kumar.lokesh@wrx-us.com>,
+	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: mpc8xx memory mapped 16550 extrenal uart driver
+Date: Fri, 3 Oct 2003 13:45:49 -0400 
 MIME-Version: 1.0
-To: Jacky Lam <jackylam@astri.org>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Queston about Walnut
-References: <20031002121733.A2E32C59E4@atlas.denx.de> <001101c3894c$38833ab0$2803050a@JackyLam> <3F7D3238.2090400@bluewin.ch> <00df01c38992$6d179b40$2803050a@JackyLam> <3F7D9F72.9020700@kegel.com> <001b01c389cd$c3f30310$0202a8c0@homevl9biy3v7e>
-In-Reply-To: <001b01c389cd$c3f30310$0202a8c0@homevl9biy3v7e>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jacky Lam wrote:
->     I upgrade my gcc to 3.3.1 on my host and start to compile my cross
-> toolchain. However, while it is compiling gcc, it has strange error that I
-> have never seen (seems gcc has made something that ld can't understand). So,
-> I guess gcc 3.3.1 may not work very well with my old glibc (provided in
-> RedHat 7.2). I don't know how to upgrade glibc safely and make it compatible
-> to existing applications. That's why I would like to upgrade the whole
-> Redhat.....and this is painful...
+HI Steven,
+Let me tell few more details of the board I have. I am using SMC1 and 2 as
+serial and SCC1 as serial as well. Then there is the fourth serial  which is
+16550 memory mapped. I want to load the driver for the 16550 as module, and
+do all the mapping and chip select setup in the module itself.
 
-I see.  Well, you can always build and install a newer binutils;
-that's not painful, and might get you past the problem.
-(If you post the error message, we might be able to help.)
+Now, if I use serial.c as the module for 16550, are there any things I need
+to do i.e. tty names, minor and major numbers etc?
 
-But I agree that doing a fresh install of e.g. Red Hat 9 is
-nicer than keeping an old system alive by little patches
-(unless you're going for an uptime record).
+Lokesh
 
->># Download bk from http://www.bitkeeper.com
->>bk clone -r$1 bk://ppc.bkserver.net/linuxppc_2_4_devel
->
->         I use CVS to grab the linuxppc-2.4-devel module. Is it the same as
-> that? Thanks.
-
-Probably.  I dunno.
-- Dan
+-----Original Message-----
+From: Steven Blakeslee [mailto:BlakesleeS@embeddedplanet.com]
+Sent: Friday, October 03, 2003 9:49 AM
+To: 'Lokesh Kumar'; 'linuxppc-embedded@lists.linuxppc.org'
+Subject: RE: mpc8xx memory mapped 16550 extrenal uart driver
 
 
---
-Dan Kegel
-http://www.kegel.com
-http://counter.li.org/cgi-bin/runscript/display-person.cgi?user=78045
+You can do the mapping anywhere you want, anywhere you do specific board
+initialization is a good spot.  Check out
+arch/ppc/platforms/sandpoint_setup.c
+arch/ppc/platforms/sandpoint_serial.h
+for an example on setting up the serial device.
+
+
+-----Original Message-----
+From: Lokesh Kumar [mailto:kumar.lokesh@wrx-us.com]
+Sent: Friday, October 03, 2003 9:26 AM
+To: 'Steven Blakeslee'; Lokesh Kumar;
+'linuxppc-embedded@lists.linuxppc.org'
+Subject: RE: mpc8xx memory mapped 16550 extrenal uart driver
+
+
+Hi Steven,
+Thanks for the quick reply. I did look at serial.c, however, i did not find
+where do we map the device to the memory i.e. where are we doing chip select
+setting and stuff. I saw that being done for CONFIG_SERIAL_TTTECH. Is that
+what you are referring to or I am missing the point completely?
+
+Lokesh
+
+-----Original Message-----
+From: Steven Blakeslee [mailto:BlakesleeS@embeddedplanet.com]
+Sent: Friday, October 03, 2003 9:16 AM
+To: 'Lokesh Kumar'; 'linuxppc-embedded@lists.linuxppc.org'
+Subject: RE: mpc8xx memory mapped 16550 extrenal uart driver
+
+
+It's already in there.  drivers/char/serial.c
+
+-----Original Message-----
+From: Lokesh Kumar [mailto:kumar.lokesh@wrx-us.com]
+Sent: Friday, October 03, 2003 9:02 AM
+To: 'linuxppc-embedded@lists.linuxppc.org'
+Subject: mpc8xx memory mapped 16550 extrenal uart driver
+
+
+
+Hi gurus,
+
+Does anybody know of a driver for an external 16550 memory mapped uart
+driver for an mpc855 based board? Any help is appreciated?
+
+
+Lokesh Kumar
+Wireless Matrix USA Inc.
+703-262-4032
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
