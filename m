@@ -1,39 +1,25 @@
-Date: Fri, 14 May 2004 16:19:08 -0700
+Date: Fri, 14 May 2004 16:23:27 -0700
 From: Matt Porter <mporter@kernel.crashing.org>
-To: Phil Thompson <philt@4bridgeworks.com>
+To: Andriy Korud <a.korud@vector.com.pl>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PPC440GX GigE support - Update
-Message-ID: <20040514161908.A30155@home.com>
-References: <C18BA5DDB58DD511BD0700C0DF0DD45028B2A3@NTSERVER4>
+Subject: Re: Status of 2.6 kernel?
+Message-ID: <20040514162327.B30155@home.com>
+References: <80908CC5B2C9DB47AAF8C77892FCB44315F774@lion.vector.com.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <C18BA5DDB58DD511BD0700C0DF0DD45028B2A3@NTSERVER4>; from philt@4bridgeworks.com on Fri, May 14, 2004 at 09:59:16AM +0100
+In-Reply-To: <80908CC5B2C9DB47AAF8C77892FCB44315F774@lion.vector.com.pl>; from a.korud@vector.com.pl on Fri, May 14, 2004 at 04:01:45PM +0200
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, May 14, 2004 at 09:59:16AM +0100, Phil Thompson wrote:
+On Fri, May 14, 2004 at 04:01:45PM +0200, Andriy Korud wrote:
 >
-> With a bit more digging I've come to the conclusion that interrupts are not
-> the cause of the problem. It seems more like the time taken by the SCSI
-> driver to initialise 2 SCSI buses is triggering the problem.
->
-> If I hack the SCSI driver detect code to just delay before returning "not
-> found" then things work with an overal delay of 2 seconds, but fail with an
-> overall delay of 4 seconds.
->
-> This would imply the problem is just within the GigE driver. Matt, comments?
+> Hi, does anybody know status of 2.6.x kernels for PowerPC/embedded (405)? In kernel config there are corresponding options?
 
-I've been looking at the problem too. I had no problem reproducing it
-here.  I've isolated it down to where the EMAC itself is receiving
-the bootp reply in its fifos (as evidenced by OCRX incrementing by
-the number of octets in a bootp reply). However, the controller is
-not getting the data into the MAL buffer from there, which is why
-you don't see the RXEOB interrupt asserted.  It could be any number
-of things, still looking.
-
-BTW, thanks for pointing out the bug in ppc4xx_pic.c, I'll get that
-change in soon.
+There is a tree, bk://source.mvista.com/linux-2.5-ocp, that has most
+4xx boards working, but it's 2.6.5.  The core 4xx support is moving into
+current 2.6, but it will be a little bit longer until important drivers
+like EMAC and IIC are merged into the stock kernel.
 
 -Matt
 
