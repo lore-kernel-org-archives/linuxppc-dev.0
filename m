@@ -1,51 +1,34 @@
-Message-ID: <3D77BAF7.CBFFB809@xilinx.com>
-Date: Thu, 05 Sep 2002 13:13:43 -0700
-From: "Peter Ryser" <Peter.Ryser@xilinx.com>
+Message-ID: <3D77D72D.1020505@mvista.com>
+Date: Thu, 05 Sep 2002 15:14:05 -0700
+From: Matthew Locke <mlocke@mvista.com>
 MIME-Version: 1.0
-To: "Peter 'p2' De Schrijver" <p2@mind.be>
+To: Fanny Wakizaka <fanny.wakizaka@cyclades.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] Xilinx TFT interface driver
-References: <20020904195856.GJ781@mind.be>
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: PCMCIA cards for MPC8xx?
+References: <005d01c254fc$220722e0$5fa1ba40@optiplex>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Peter,
+Fanny Wakizaka wrote:
 
-all the devices for which you posted patches are supported in the
-linuxppc_2_4_devel tree for more than a month. The tree contains device
-drivers/support for the following Xilinx devices
-
-- Interrupt Controller
-- 10/100 Mbit Ethernet
-- PS2 port (mouse/keyboard)
-- Uart (actually, the standare Linux Uart driver)
-- TFT
-- GPIO
-- IIC
-
-More drivers will be added soon.
-
-- Peter
-
-
-Peter 'p2' De Schrijver wrote:
-
-> Hi,
+>Hi,
+>We are developing a custom hw based on the MPC855 with support to PCMCIA. We
+>are using MontaVista linux kernel 2.4.17.
+>Could you give me some suggestions of PC Cards that worked with MPC8xx? I'm
+>looking for ethernet cards, modem cards and wireless cards.
+>Thanks in advance,
+>Fanny
 >
-> Attached you will find a patch implementing a Linux framebuffer driver
-> for the Xilinx TFT interface. It was tested on a Xilinx Virtex2Pro
-> implementation.
+I have used: cisco 340/350 and lucent wlan cards, 3com 3c589 lan cards,
+and modems cards do not work.  The problem with modem cards had
+something to do with a dependancy on serial.c (8xx uses
+arch/ppc/8xx_io/uart.c).  I don't remember the exact problem now.
+
 >
-> Comments welcome,
 >
-> Peter.
 >
->   ------------------------------------------------------------------------
->
->    xtft-patchName: xtft-patch
->              Type: Plain Text (text/plain)
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
