@@ -1,29 +1,27 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Mark Chambers <markc@mail.com>
-Reply-To: markc@mail.com
-To: "Kerl, John" <John.Kerl@Avnet.com>, der.herr@mail.hofr.at
-Subject: Re: Control-C in bash ???
-Date: Mon, 13 Jan 2003 14:39:48 -0500
+Date: Mon, 13 Jan 2003 11:48:55 -0800
+From: Chris Wedgwood <cw@f00f.org>
+To: Mark Chambers <markc@mail.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-References: <C08678384BE7D311B4D70004ACA3710511194632@amer22.avnet.com>
-In-Reply-To: <C08678384BE7D311B4D70004ACA3710511194632@amer22.avnet.com>
-MIME-Version: 1.0
-Message-Id: <200301131439.48082.markc@mail.com>
+Subject: Re: Control-C in bash ???
+Message-ID: <20030113194855.GA16266@f00f.org>
+References: <200301131409.00113.markc@mail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200301131409.00113.markc@mail.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Thanks for your suggestions, that perhaps the terminal emulator was eating the
-Ctl^C.  I scope'd the cable and it appears that the Ctl^C IS in fact getting
-transmitted.
+On Mon, Jan 13, 2003 at 02:09:00PM -0500, Mark Chambers wrote:
 
-Mark C.
+> On a PC, I can, for instance, enter "ping 192.168.1.4", then hit
+> Control-C and stop the ping.  For the life of me, I can't figure out
+> how to do the same on my MPC860 system!!!
 
-> One little gotcha that I ran into was that control-C was being
-> grabbed by the terminal emulator on my PC.  You might try
->
+if you boot init=/bin/sh or whatever and your init/login doesn't set
+the tty up, you will need to do it yourself (man stty).
 
-Original question:  Why is Ctl^C not breaking out of programs?
+
+  --cw
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
