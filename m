@@ -1,51 +1,53 @@
-Date: Fri, 9 Apr 1999 14:10:24 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: Simone Piccardi <piccardi@fi.infn.it>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: LinuxPPC on a Motorola MVME2400
-In-Reply-To: <370DBBD3.9559B590@fi.infn.it>
-Message-ID: <Pine.HPP.3.96.990409140539.13413a-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: jk@espy.org
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Blue G3 and machine check
+In-Reply-To: Your message of "Thu, 8 Apr 1999 22:58:36 -0700"
+	<v04204d03b333436e691f@[206.163.71.146]>
+References: <v04204d03b333436e691f@[206.163.71.146]>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <19990410011237E.roikawa@rr.iij4u.or.jp>
+Date: Sat, 10 Apr 1999 01:12:37 +0900
+From: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-
-
-On Fri, 9 Apr 1999, Simone Piccardi wrote:
-
+From: Joel Klecker <jk@espy.org>
+Subject: Re: Blue G3 and machine check
+> >>ftp://ppc.linux.or.jp/pub/users/oikawa/linux-pmac/bluemacg3/vmlinux-2. 
+> >>2.1-challenger2.gz
+> >>I was given many useful advice on this by Benjamin Herrenschmidt.
+> >
+> >Any chance you could put up a proper diff for the sources used to build that
+> >kernel? I'd really appreciate it. Thanks.
 > 
-> Hi,
-> we buy just some day ago a Motorola MVME 2431 VME board, to use it for
-> data acquisition for a Cosmic Ray Physics experiment. I saw from
-> previous mail that someone has started LinuxPPC on this board. 
-> Could you give us some info about it? 
-> Because I'm new to this board and to LinuxPPC (I always used linux on a
-> PC machine), there is some place (or any kind of documentation)
-> describing the boot procedure (we would like to use the net booting by
-> tftp)? 
+> Since I received absolutely no response to this, let me elaborate. I 
+> have had success in booting and running a system with this kernel, 
+> but its config does not suit my needs, therefore I really would like 
+> to have the source. The pseudo-diffs in the message I originally 
+> replied to do not seem to be enough to produce a working kernel, are 
+> they really all of the changes?
+ Yes, that was all.
 
-I have Linux/PPCeeee running quite well on 2600s. The corresponding
-patches are at:
+> If they are, then I would like a copy 
+> of the .config so I can see what the differences in configuration 
+> are. Thanks again.
+I thought it was almost default...  Then I'll make complete
+diff to 2.2.1 kernel from samba and put it later on 
+  ftp://ppc.linux.or.jp/pub/users/oikawa/linux-pmac/bluemacg3/ 
+But please note that
+ - it is minimal workaround and should not be used for long time
+ - ultraATA chip(CMD646) driver has not been ported yet, so that
+   if you need it, you have to rewrite yourself. But usual ATA bus,
+   which CDROM is connected, does work.
+ - it is a diff to kernel 2.2.1, not to latest one
 
-	ftp://vcorr1.iram.es/pub/linux-2.2/
 
-in files mvme2600.generic-patch-2.2.4 and mvme2600.vme-patch-2.2.4.
-(this last one is a VME driver subsystem which I hope to officialy
-announce soon, if I can find time to do something else than answering
-e-mail).
+Regards,
 
-I've not yet upgraded the various zImage (next week). They have serial
-consoles and I've used root-on-NFS with 2.2.1. 
-
-However, the 2400 has a new chipset (Hawk) which is not yet recognized.
-If you have the technical information about it, it will be fairly easy to
-add support in the early boot code. 
-
-	Regards,
-	Gabriel.
-
+Ryuichi Oikawa
+roikawa@rr.iij4u.or.jp
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
