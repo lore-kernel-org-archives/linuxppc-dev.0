@@ -1,48 +1,25 @@
-Message-Id: <199910271530.KAA32070@lists.linuxppc.org>
-Date: Wed, 27 Oct 1999 11:27:56 -0400 (EDT)
-From: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
-Reply-To: Kevin_Hendricks <khendricks@admin.ivey.uwo.ca>
-Subject: Netscape and missing libnullplugin.so
-To: linuxppc-dev@lists.linuxppc.org
+Date: Wed, 27 Oct 1999 10:43:30 -0500 (CDT)
+From: Vinai <vroopcha@post.its.mcw.edu>
+To: "LinuxPPC Users' List" <linuxppc-user@lists.linuxppc.org>,
+        "LinuxPPC Developers' List" <linuxppc-dev@lists.linuxppc.org>
+Subject: C-functions man pages ??
+Message-ID: <Pine.SOL.3.96.991027103951.21011A-100000@post.its.mcw.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+Hey Folks,
 
-I now have the source to the java plugin for Netscape/Mozilla (via my license 
-with Blackdown) and I have ported both the java plugin 1.1.2 (allowing the use 
-of jdk118 inside Netscape and plugin 1.2 (to allow the forthcoming jdk 1.2.2 to 
-work within netscape).
+Are there any man pages and/or developer's pckages that would give more
+info on C functions.  I am trying to port an application from IRIX to my
+linux box, and I guess the way "shmctl" is used on IRIX is a little bit
+different than how it is used on linux.  Where I can get more info about
+this ??
 
-I have been unable to get either plugin to be recognized by the latest Netscape 
-rpm available from LinuxPPC.
-
-I went and downloaded the Sparc version of the plugin to see how the whole 
-process worked under Solaris and noticed that the Solaris Netscape plugins 
-already includes a libnullplugin.so which does not seem to exist in the ppc 
-version of Netscape.  The description of libnullplugin.so is that it helps 
-support plugins under Netscape.
-
-Should there be a libnullplugin.so in /usr/lib/netscape/plugins/ under ppc?  Is 
-it needed to get other plugins to work?
-
-Any info here would be greatly appreciated.
-
-Thanks,
-
-Kevin
-
-
-
---
-Kevin B. Hendricks
-Associate Professor of Operations and Information Technology
-Richard Ivey School of Business, University of Western Ontario
-London, Ontario  N6A-3K7  CANADA   
-khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
+thanx
+vinai
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
