@@ -1,33 +1,29 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stefan Jeglinski <jeglin@4pi.com>,
+To: Greg Allen <gallen@arlut.utexas.edu>,
 	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: old-world boot freeze; 2.4.19-rc2
-Date: Sat, 20 Jul 2002 20:05:34 +0200
-Message-Id: <20020720180534.29622@192.168.4.1>
-In-Reply-To: <p05100300b95ea06f444c@[192.168.0.22]>
-References: <p05100300b95ea06f444c@[192.168.0.22]>
+Subject: Re: Directly accessing I/O ports
+Date: Sat, 20 Jul 2002 20:10:58 +0200
+Message-Id: <20020720181058.30333@192.168.4.1>
+In-Reply-To: <p05111b16b95d05434f09@[10.8.16.89]>
+References: <p05111b16b95d05434f09@[10.8.16.89]>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Just rsynced 2.4.19-rc2 from source.mvista.org (although official
->kernel is at rc3?). Built fine, but when I try to boot it on a 9500
->with a Powerlogix G3 upgrade, the last two things I see (early in the
->boot) are:
->
->setup_arch: enter
->setup_arch: bootmem
->
->And then it just locks up.
->
->Any ideas? Last kernel I've been running on this is 2.4.18, with no problems.
+>For that matter, what's the *right* way to access this sort of thing
+>from userland?
 
-I works fine on a 8500 SMP here (with no G3 upgrade though). Can you
-try routing printk to the btext engine ?
-(use my tree and add printkbext to the command line)
-Tell me what are the last messages.
+mmap /proc/bus/pci with proper flags. By defaults it's PIO,
+but you can use ioctl after the open() call and before the mmap()
+call to set the requested mapping type to MMIO, PIO, ...
+
+The code handling this is in drivers/pci/proc.c
+
+The important point is that on PPC, the PIO space isn't limited
+to one 64k space like on x86, but is a full set of separate address
+spaces (one per host PCI bus).
 
 Ben.
 
