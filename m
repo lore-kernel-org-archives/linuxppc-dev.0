@@ -1,41 +1,27 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-To: Kaoru Fukui <k_fukui@highway.ne.jp>
+Date: Sat, 6 Oct 2001 09:16:32 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Cc: Kaoru Fukui <k_fukui@highway.ne.jp>,
+	linuxppc-dev@lists.linuxppc.org
 Subject: Re: ATI Radeon 32MB PCI, Apple 17 Flat panel on B+W G3
-Date: Sat, 6 Oct 2001 11:58:37 -0400
-Cc: linuxppc-dev@lists.linuxppc.org
-References: <20011006122650.NJWF27994.tomts14-srv.bellnexxia.net@there> <20011006212902.Postino-007253@smtp01.highway.ne.jp>
-In-Reply-To: <20011006212902.Postino-007253@smtp01.highway.ne.jp>
-MIME-Version: 1.0
-Message-Id: <20011006155635.IVKV12483.tomts13-srv.bellnexxia.net@there>
+Message-ID: <20011006091632.B10546@cpe-24-221-152-185.az.sprintbbd.net>
+References: <20011006122650.NJWF27994.tomts14-srv.bellnexxia.net@there> <20011006212902.Postino-007253@smtp01.highway.ne.jp> <20011006155635.IVKV12483.tomts13-srv.bellnexxia.net@there>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20011006155635.IVKV12483.tomts13-srv.bellnexxia.net@there>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Sat, Oct 06, 2001 at 11:58:37AM -0400, Kevin B. Hendricks wrote:
 
-Thanks!
+> I will give them a try.
 
-I will give them a try.
+Radeon framebuffer support is also in -linus finally, so all of the
+trees should support it.
 
-Kevin
-
-On October 6, 2001 08:29, Kaoru Fukui wrote:
-> From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-> To: yellowdog-devel@lists.yellowdoglinux.com,
-> linuxppc-dev@lists.linuxppc.org Subject: ATI Radeon 32MB PCI, Apple 17
-> Flat panel on B+W G3
-> Date: Sat, 6 Oct 2001 08:28:52 -0400
->
-> > Any chance these are supported under PPC Linux?
-> >
-> > What kernels and XFree86 versions support ATI Radeon 32Meg PCI cards?
->
-> Ben's kernel and also current XFree86 have Radeon support.
->
-> Kaoru
->
-> > What about Apple flat panel displays?
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
