@@ -1,16 +1,23 @@
-To: James Don <JDon@spacebridge.com>
+Message-ID: <DB0585C9F6F9D411BE8F00D0B7896A4CC06032@SNCMAIL>
+From: James Don <JDon@spacebridge.com>
+To: "'Wolfgang Denk'" <wd@denx.de>, James Don <JDon@spacebridge.com>
 Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: SELF: ramdisk which required libraries if ...? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sat, 11 Jan 2003 15:31:21 EST."
-             <DB0585C9F6F9D411BE8F00D0B7896A4CC06030@SNCMAIL>
-Date: Sat, 11 Jan 2003 22:03:21 +0100
-Message-Id: <20030111210326.A6FE0C608E@atlas.denx.de>
+Subject: RE: SELF: ramdisk which required libraries if ...? 
+Date: Sat, 11 Jan 2003 19:57:50 -0500
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
+
+Yes your right ... thnx ;-)
+
+-----Original Message-----
+From: Wolfgang Denk [mailto:wd@denx.de]
+Sent: Saturday, January 11, 2003 4:03 PM
+To: James Don
+Cc: 'linuxppc-embedded@lists.linuxppc.org'
+Subject: Re: SELF: ramdisk which required libraries if ...?
 
 Dear Jim,
 
