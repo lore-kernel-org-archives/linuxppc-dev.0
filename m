@@ -1,48 +1,33 @@
-Message-ID: <3839CADC.CCDB6C7E@jlc.net>
-Date: Mon, 22 Nov 1999 17:59:40 -0500
-From: Dan Malek <dmalek@jlc.net>
+Message-ID: <BF2D59E60824D311A5F800A0C9AC13F32DC2CF@xover.hjinc.com>
+From: "Clayton, Mark" <mclayton@hjinc.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Ultra Board Plus 604
+Date: Mon, 22 Nov 1999 18:06:12 -0500
 MIME-Version: 1.0
-To: Francois Guimond <fguimond@pplmail.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux ppc newbie boot sequense
-References: <383993F5.BCE4A507@pplmail.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Francois Guimond wrote:
 
+I just found an Ultra Board Plus 604 in a box in a storage
+room where I work.  Is there a Linux port for this board?  
+The docs say it's designed for AIX and WinNT, yet it has a
+VxWorks prom in it.  In your opinion is it worth trying to 
+get Linux up and running on it?  It seems like it's too old 
+and rare to bother with, but it could be fun.  What might
+be the differences between this board and the current boards.
+Oh wait, there's another UBP with a 603e on it.
 
-> I am trying to install a linux kernel on MPC8240 cpu in a limited flash
-> space.
-> (Motorola sandpoint evaluation platform 512kb flash 32MB ram and dink32
-> software)
+Thanks
+Mark Clayton
+==========================================================
+Mark Clayton                  voice:  781-329-3200 x1155
+Harris & Jeffries             fax:    781-329-4148
+888 Washington Street         e-mail: mclayton@hjinc.com
+Dedham MA 02026 USA           web:    http://www.hjinc.com
+==========================================================
 
-
-OK, I guess it is time to post what I have.  This is kinda, sorta running.
-
-> I have got a PPC zImage compiled.
-
-Unless you make a few changes in arch/ppc/kernel, including creating
-some 8240 specific start up functions, it won't matter where you
-place the First Instruction :-).
-
-
-> Because there is no CPM  in it, I wanted to postpone the networking
-> features.
-> It means no root over nfs...
-
-No, this works fine with a PCI Ethernet card.
-
-Since the 8240/Sandpoint has such a small flash rom, it is your
-only choice.  There isn't room to store a Linux kernel or compressed
-ram disk.  You have to download the kernel over the serial port and
-use diskless NFS.  Even though it has a standard IDE and floppy
-interface, there are no provisions in Dink to load an image from
-these.......Guess it is time to write yet another Linux flash rom.
-
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
