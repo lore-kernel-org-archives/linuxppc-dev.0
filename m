@@ -1,33 +1,21 @@
-Message-Id: <v03130301b367589671fa@[204.156.153.118]>
-In-Reply-To: <199905170459.XAA29807@lists.linuxppc.org>
-Mime-Version: 1.0
-Date: Tue, 18 May 1999 10:54:27 -0700
-To: linuxppc-dev@lists.linuxppc.org
-From: Michael Blakeley <mike@blakeley.com>
-Subject: hfs plus development?
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Message-ID: <3741AB5B.D2687FBB@Colorado.EDU>
+Date: Tue, 18 May 1999 12:03:14 -0600
+From: Alex Vallens <Vallens@Colorado.EDU>
+MIME-Version: 1.0
+To: nicolas.boussekeyt@afoc.alcatel.fr
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 
+References: <"/GUID:QMjvPD5wH0xGPigAQS7cwaA*/G=nicolas/S=boussekeyt/O=afoc/PRMD=acab/ADMD=atlas/C=fr/"@MHS>
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Is anyone on the list working on HFS Plus? I've been creating data
-structures in hfs.h (based on MacOS Universal Headers, and following the
-existing structures). Now I'm starting to look at the actual fs code.
+If you have a PowerBook G3 Series (Wallstreet), simply hold the
+cmd-opt-o-f keys on startup (before the chime) and the computer will
+automatically boot into OF.
 
-I gather from the fs/hfs web site that the original author isn't really
-maintaining this code, and certainly isn't working on HFS Plus. If anyone
-else has already started on HFS Plus support, drop me a line so we can pool
-our efforts. Or if anyone wants a copy of my hfs.h to start working from....
-
-Note - this isn't anywhere _close_ to an announcement, or a request for
-beta testers :-).
-
-
-
---
-Michael Blakeley       mike@blakeley.com     <http://www.blakeley.com/>
-            Performance Analysis for Internet Technologies
+Alex
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
