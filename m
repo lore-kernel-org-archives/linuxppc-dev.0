@@ -1,27 +1,18 @@
-Return-Path: <Alexander.Povolotsky@marconi.com>
-Received: from mailgate.pit.comms.marconi.com (mailgate.pit.comms.marconi.com
-	[169.144.68.6]) by ozlabs.org (Postfix) with ESMTP id 4059667A85
+Return-Path: <Hans.Schillstrom@lgpallgon.com>
+Received: from aseit003.allgon.net (mail.lgpallgon.com [193.235.198.4])
+	by ozlabs.org (Postfix) with ESMTP id 09C4867A5C
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Jan 2005 11:22:14 +1100 (EST)
-Received: from mailman.pit.comms.marconi.com (mailman.pit.comms.marconi.com
-	[169.144.2.12])
-	by mailgate.pit.comms.marconi.com (8.12.10+Sun/8.12.10) with ESMTP id
-	j0K0M4jO024988 for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Jan 2005 19:22:04 -0500 (EST)
-Received: from uspitsmsgrtr01.pit.comms.marconi.com
-	(uspitsmsgrtr01.pit.comms.marconi.com [169.144.2.221])
-	by mailman.pit.comms.marconi.com (8.9.3/8.9.3) with ESMTP id TAA23947
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Jan 2005 19:22:03 -0500 (EST)
-Message-ID: <313680C9A886D511A06000204840E1CF0A647523@whq-msgusr-02.pit.comms.marconi.com>
-From: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
-To: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-Date: Wed, 19 Jan 2005 19:22:00 -0500
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ISO-8859-1"
-Subject: Narrowed it down - RE:  Linux 2.6-10.rc3  8xx: Only 3 characters
-	are printed well in  __in it start_kernel() upon kernel booting
+	Thu, 20 Jan 2005 22:00:55 +1100 (EST)
+From: Hans Schillstrom <hans.schillstrom@pwav.com>
+To: annamaya <annamaya@yahoo.com>
+In-Reply-To: <20050119220819.24822.qmail@web53805.mail.yahoo.com>
+References: <20050119220819.24822.qmail@web53805.mail.yahoo.com>
+Content-Type: text/plain
+Message-Id: <1106218826.7900.405.camel@hawk.allgon.net>
+Mime-Version: 1.0
+Date: Thu, 20 Jan 2005 12:00:26 +0100
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Input to the timerclk on the MPC8280
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,76 +23,80 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Here is my software "debugging tool", which allowed me to disable writing
-throgh printk()
-to the log buffer - until I want it to be enabled
-by using this "tool" I've performed some investigation
-(however inconclusive - so opinions and suggestions are welcomed).
+Hi,
+I have the same problem on MPC8270,
+and solved it two parts in u-boot:
+- Setup you PC[26] to somtething else than TMCLK ex. g,p. I/O
+    then you an automatic selecttion of BRG1 as source.
+    
+- Write a proper value in BRGC1 and make shure that 
+    bit 16-17 is 0 for selection of CPM as clock source.
 
+and then you have to "move around the brgs" in (2.6.10)
+drivers/serial/cpm_uart/cpm_uart_cpm2.c
 
-/* ... linux/init/main.c ...*/
-...
-+ unsigned long disable_printk = 1;
-  extern char *linux_banner;
-...
- __in it start_kernel(...) 
-...
-disable_printk = 0;
-printk("Alex\n");
-vfs_caches_init_early();
-mem_init();
-...
-*************************************************
+I moved smc 1&2 to brg7 & 8
+scc1 to brg2 etc
+scc4 ext clk (48MHz for USB)
 
-/* ... kernel/printk.c ... */
-...
-  DECLARE_WAIT_QUEUE_HEAD(log_wait);
-
-+ extern unsigned long disable_printk ;
-...
-asmlinkage int printk(const char *fmt, ...)
+void smc1_lineif(struct uart_cpm_port *pinfo)
 {
-        va_list args;
-        int r;
-+       if (disable_printk) return 0;
-        va_start(args, fmt);
-...
+	volatile iop_cpm2_t *io = &cpm2_immr->im_ioport;
 
-**************************************************
-I was "sliding down" those two statements:
+	/* SMC1 is only on port D */
+	io->iop_ppard |= 0x00c00000;
+	io->iop_pdird |= 0x00400000;
+	io->iop_pdird &= ~0x00800000;
+	io->iop_psord &= ~0x00c00000;
+#ifndef CONFIG_RCB8270
+	/* Wire BRG1 to SMC1 */
+	cpm2_immr->im_cpmux.cmx_smr &= 0x0f;
+	pinfo->brg = 1;
+#else
+        /* Wire BRG7 to SMC1 */
+        cpm2_immr->im_cpmux.cmx_smr &= 0x0f;
+        cpm2_immr->im_cpmux.cmx_smr |= 0x10;  /* BRG 7 */
+        pinfo->brg = 7;
+#endif
+}
 
-disable_printk = 0;
-printk("Alex\n");
+I guess you can do it in many ways ...
 
-down to cosole_init() and further down beyond it,
-while I could see "Ale" in - I was moving it further down ...
+Any one that knows why SMC1 & SMC2 gets the same BRG as SCC1 & SCC2
 
-To double check, couple times I would do just 
-
-disable_printk = 0;
-without
-printk("Alex\n");
-
-then I have seen once:
-"Con"
-
-and moving further down:
-"Den"
-
-which I think is from: "Dentry cache hash table entries ..."
-
-But I can not see my output when do it 
-just before
- vfs_caches_init_early();
-
-but it is very close to
-
-mem_init();
-
-so I am not sure, which is the culprit ...
-
-Should I put some delay between those two (what is the best way to do it ?)
-
-Thanks,
-Best regards,
-Alex
+Regards
+/Hans
+ 
+On Wed, 2005-01-19 at 23:08, annamaya wrote:
+> I've asked this question on this forum before but it
+> did not get answered. I tried asking the same question
+> in the U-Boot forum with no results. So, I am going to
+> try this again.
+> 
+> According to section 4.1.2 on Page 4-4 in the MPC8280
+> User's Manual, one should be able to use a combination
+> of  external clocks on Port C pins 25, 26, 27 and 29,
+> the CPM cloak and BRG1 to generate a 32KHz or a 4MHz
+> clock. I am unable to find  any code in u-boot or any
+> other place that initializes any of these pins to be
+> external clocks. And as for BRG1, I believe it is
+> being used for the SMC clock.
+> 
+> I am unable to understand how this is done. Can we
+> have a timerclk input WITHOUT an external clock
+> signal? Can I just use the CPM clock to generate this?
+> How is this being done in U-Boot now?
+> 
+> Thanks much for your help. I really need an answer to
+> this. 
+> 
+> 
+> 		
+> __________________________________ 
+> Do you Yahoo!? 
+> Yahoo! Mail - now with 250MB free storage. Learn more.
+> http://info.mail.yahoo.com/mail_250
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
