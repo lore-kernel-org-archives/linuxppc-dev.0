@@ -1,21 +1,18 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from witte.sonytel.be (witte.sonytel.be [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id ED7C167AAE
+Return-Path: <typedef@eircom.net>
+Received: from eurodubx.europlex.local (unknown [193.120.144.98])
+	by ozlabs.org (Postfix) with ESMTP id 4EF9C67AAE
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Feb 2005 23:23:36 +1100 (EST)
-Date: Tue, 8 Feb 2005 13:23:34 +0100 (MET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@sonycom.com
-To: Jarno Manninen <manninej@students.cc.tut.fi>
-In-Reply-To: <Pine.LNX.4.58.0502081323590.17665@mozart.cc.tut.fi>
-Message-ID: <Pine.GSO.4.61.0502081321540.1267@waterleaf.sonytel.be>
-References: <DE2CC66C40EAB74EA6D66AC71BF98E1E03055B71@TQ-MAILSRV-1>
-	<Pine.LNX.4.58.0502081323590.17665@mozart.cc.tut.fi>
+	Tue,  8 Feb 2005 23:50:47 +1100 (EST)
+Message-ID: <42079D4D.9090904@eircom.net>
+Date: Mon, 07 Feb 2005 16:54:37 +0000
+From: Bryan O'Donoghue <typedef@eircom.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>,
-	Martin Krause <Martin.Krause@tqs.de>
-Subject: Re: AW: Microwindows on Icecube/CoralP 
+To: Peter Asemann <peter.asemann@web.de>
+References: <420780F6.70209@web.de>
+In-Reply-To: <420780F6.70209@web.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: Creating a configuration for my custom MPC875 board
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,49 +23,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 8 Feb 2005, Jarno Manninen wrote:
-> On Tue, 8 Feb 2005, Martin Krause wrote:
-> > Hm, the SM501 has 8 MB internal RAM. The framebuffer lies within this
-> > memory. The SM501 is connected with the MPC5200 over the local bus
-> > interface (not over PCI) and mapped with CS1 to address range
-> > 0xE0000000-0xE3FFFFFF. The SM501 configuration registers are within
-> > the mapped memory area at 0xE3E00000. I can't imagine, why the byte
-> > swapping should only affect accesses to the famebuffer memory and not
-> > to the configuration registers (where also single bits at the right
-> > position must be set correctly). I could configure CS1 to do byte
-> > swapping, but then access to the SM501 configuration registers does
-> > not work any longer, because this bytes are swapped, too.
+Peter Asemann wrote:
+> Some days ago I was told on this mailinglist I needed to create a custom 
+> configuration in order to get linux running on my custom hardware.
 > 
-> Um. Have you written a kernel FB driver? If so then the write/read macros
-> do this swapping for you. Assuming that you use those for accessing the
-> device registers. At least SM722 requires those writes to be swapped too.
-
-Indeed.
-
-> > Geert, I've seen, you have done much of the fb stuff in the linux
-> > kernel (thank you for that!). Could you please point me to the best
-> > place, where byte swapping should be done if I want to use the linux
-> > text console in 16 bit mode with the MPC5200?
+> So I did as I was told and created an own <name>_defconfig and entries 
+> in the menu via editing arch/ppc/config.in and so on.
 > 
-> Perhaps the pseudopalette would suffice here, I guess? And supposing that
+> Well, every board seems to include it's custom header file from 
+> platforms/<NAME>.h in the include/asm/mpc8xx.h header file.
+> Now I'm curious if I also need to include something?
+> 
+> It seems there usually isn't much stuff in the <name>.h file, only an 
+> IMAP_ADDR define and the definition of struct bd_info.
+> 
+> Do I need this stuff - or how do I find out?
+> 
+> Best regards,
+> 
+> Peter Asemann
 
-Yep, text console is simple: setcolreg() must fill in the correct pixel value
-in the pseudo palette. If you swap it there, it will just work.
 
-Logo is more difficult, you need your own imageblit().
+You'll definately need to find out what _your_ IMAP_ADDR is, that is 
+something which is almost certainly going to be unique to your own PCB.
 
-> you have written a FB driver. If not then you have to do the patching at
-> the gfx-library level.
+Aside from that depending on what bootloader you are using, you may or 
+may not have to do things to enumerate a bd structure.
 
-And userspace needs to do swapping as well.
+In the case of Redboot, you would probably have to take the board 
+descriptor given by redboot and parse it, else, with u-boot, I think you 
+have _less_ maintenance on that front.
 
-Gr{oetje,eeting}s,
+Do you have a working bootloader for your board, something that will try 
+to execute a *image ? If you do, then getting Linux booting should be 
+relatively trivial.
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Bod
