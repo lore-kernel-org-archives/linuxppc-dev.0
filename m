@@ -1,115 +1,44 @@
-Message-ID: <20040304143448.95898.qmail@web10603.mail.yahoo.com>
-Date: Thu, 4 Mar 2004 06:34:48 -0800 (PST)
-From: sudhakar rajashekhara <rsudhakar_blr@yahoo.com>
-Subject: Serial ATA driver problem
-To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <40473EC2.1010400@imc-berlin.de>
+Date: Thu, 04 Mar 2004 15:35:46 +0100
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: uncached user space mapping with mmap() ???
+References: <2C1BAF8F8E1DD611862B0002A5D4C3FC02B6CFC6@renexch3.rennes.thmulti.com>
+In-Reply-To: <2C1BAF8F8E1DD611862B0002A5D4C3FC02B6CFC6@renexch3.rennes.thmulti.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi All,
+Fillod Stephane wrote:
 
-We have ported u-boot and linux-2.4.22 on to a custom
-POwerPC MPC8280 board. Everything is working fine
-except the Serial ATA driver. We are using SATA150
-Tx2plus serial ata card which sits on PCI. We got the
-driver source code from the public domain. We have
-integrated the driver source code to the kernel and
-driver module loads itself when linux kernel is coming
-up. As soon the module is loaded we get a device
-information string as "aMtxro6 0Y080M". (We have
-tested the same driver on a x86 machine and there the
-driver works perfectly and the device identification
-string got there is "Maxtor 6Y080M0".) After this the
-board comes up correctly. When we try to partition the
-device using the fdisk command (fdisk /dev/sda), we
-get the following errors:
+>>I am trying to access a hardware timer implemented in an FPGA from
+>>user space. I implemented a simple mmap() functionality (taken from
+>>Runbini's Linux Device Driver)
+>
+> Please refer to "11.13. Accessing peripherals from user space"
+> in the excellent FAQ from DENX's TWiki at :
+>
+> http://www.denx.de/twiki/bin/view/PPCEmbedded/DeviceDrivers#Section_Accessin
+> gPeripheralsFromUserSpace
+>
+> There's no need to implement kernel side stuff. /dev/mem is enough.
 
-=======================================================
-# fdisk /dev/sda
-pdc-ultra:[warning] disk1 ATA timeoutat LBA 0x0
-        pdc-ultra:[warning] submit cam busy
-scsi : aborting command due to timeout : pid 10,
-scsi0, channel 0, id 0, lun 0 0x28 00 00 00 00 00 00
-00 08 00
-pdc-ultra:[info] scsi abort success
-pdc-ultra:[warning] disk1 ATA timeoutat LBA 0x0
-        pdc-ultra:[warning] submit cam busy
-scsi : aborting command due to timeout : pid 11,
-scsi0, channel 0, id 0, lun 0 0x28 00 00 00 00 00 00
-00 08 00
-pdc-ultra:[info] scsi abort success
-pdc-ultra:[warning] disk1 ATA timeoutat LBA 0x0
-        pdc-ultra:[warning] submit cam busy
-scsi : aborting command due to timeout : pid 12,
-scsi0, channel 0, id 0, lun 0 0x28 00 00 00 00 00 00
-00 08 00
-pdc-ultra:[info] scsi abort success
-scsi0 channel 0 : resetting for second half of
-retries.
-SCSI bus is being reset for host 0 channel 0.
-pdc-ultra:[warning] scsi reset channel1 OK
-pdc-ultra:[warning] disk1 ATA timeoutat LBA 0x0
-        pdc-ultra:[warning] submit cam busy
-scsi : aborting command due to timeout : pid 13,
-scsi0, channel 0, id 0, lun 0 0x28 00 00 00 00 00 00
-00 08 00
-pdc-ultra:[info] scsi abort success
-pdc-ultra:[warning] disk1 ATA timeoutat LBA 0x0
-        pdc-ultra:[warning] submit cam busy
-SCSI disk error : host 0 channel 0 id 0 lun 0 return
-code = 27070000
- I/O error: dev 08:00, sector 0
-        pdc-ultra:[warning] submit cam busy
-        pdc-ultra:[warning] submit cam busy
-scsi0 channel 0 : resetting for second half of
-retries.
-SCSI bus is being reset for host 0 channel 0.
-pdc-ultra:[warning] scsi reset channel1 OK
-        pdc-ultra:[warning] submit cam busy
-        pdc-ultra:[warning] submit cam busy
-        pdc-ultra:[warning] submit cam busy
-SCSI disk error : host 0 channel 0 id 0 lun 0 return
-code = 27070000
- I/O error: dev 08:00, sector 2
-        pdc-ultra:[warning] submit cam busy
-        pdc-ultra:[warning] submit cam busy
-scsi0 channel 0 : resetting for second half of
-retries.
-SCSI bus is being reset for host 0 channel 0.
-pdc-ultra:[warning] scsi reset channel1 OK
-        pdc-ultra:[warning] submit cam busy
-        pdc-ultra:[warning] submit cam busy
-        pdc-ultra:[warning] submit cam busy
-SCSI disk error : host 0 channel 0 id 0 lun 0 return
-code = 27070000
- I/O error: dev 08:00, sector 4
-        pdc-ultra:[warning] submit cam busy
-        pdc-ultra:[warning] submit cam busy
-scsi0 channel 0 : resetting for second half of
-retries.
-SCSI bus is being reset for host 0 channel 0.
-pdc-ultra:[warning] scsi reset channel1 OK
-        pdc-ultra:[warning] submit cam busy
-        pdc-ultra:[warning] submit cam busy
-        pdc-ultra:[warning] submit cam busy
-SCSI disk error : host 0 channel 0 id 0 lun 0 return
-code = 27070000
- I/O error: dev 08:00, sector 6
+Oh! Nice. Thanks a million! It actually works (on my ARM board!)
 
-Unable to read /dev/sda
-#
-=======================================================
-During kernel compilation we have selected the SCSI
-support and SCSI Disk support. Apart from these do we
-have to select any other configuration during
-menuconfig? If anyone has any idea as what is causing
-this problem, please help.
+So why will people need their own mmap() driver if this kind of things
+can be done via /dev/mem ???
 
-regards,
-Sudhakar.
+And: Can I mmap() 32MB of peripheral memory into user space?
+
+--
+Steven Scholz
+
+imc Measurement & Control               imc Meﬂsysteme GmbH
+Voltastr. 5                             Voltastr. 5
+13355 Berlin                            13355 Berlin
+Germany                                 Deutschland
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
