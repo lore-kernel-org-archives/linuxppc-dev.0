@@ -1,37 +1,28 @@
-Date: Fri, 3 Sep 1999 17:17:20 +0200
-From: Hubert Figuiere <hfiguiere@businessobjects.com>
-To: phandel@cise.ufl.edu
-Cc: linuxppc mail list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Ethernet on a PowerCenter Pro
-Message-ID: <19990903171720.F17769@rhodan.businessobjects.com>
-References: <37CEF60F.D1AA12A4@Colorado.EDU> <Pine.LNX.4.10.9909030308530.656-100000@dialup-l118.cise.ufl.edu>
+In-Reply-To: <199909031256.IAA20091@pan.summer.arlington.ma.us>
+Date: Fri, 3 Sep 1999 18:27:12 +0200
+To: dsmk@imp.bu.edu, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: Fwd: Re: USB mouse kernel patch for Lombard gpm multiple mice support
+Message-Id: <19990903182712.024141@mailhost.mipsys.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.10.9909030308530.656-100000@dialup-l118.cise.ufl.edu>
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-According to phandel@cise.ufl.edu <phandel@cise.ufl.edu>:
+On Fri, Sep 3, 1999,  <dsmk@imp.bu.edu> wrote:
 
-> > Although this may be a very simple problem, I just can't get LinuxPPC 5
-> > to recognize the built-in ethernet controller on my Power Computing
-> > Power Center Pro 240. Has anyone had any success with this particular
-> > machine, or have any insight to the right settings under the control
-> > panel?
-> 
-> My PowerCenter Pro 210's built-in ethernet has worked fine with every
-> kernel I've found & made myself.  Here's what dmesg says:
-> 
-> eth0: MACE at 00:05:[etc.], chip revision 9.64
+>Lastly, I have noticed one bug with this new kernel - twice it has 
+>frozen when trying to halt.  I don't believe that my patches introduced
+>this behaviour but I am still investigating.
 
-If I recall correctly, PCPro 240 use a DEC chip for Ethernet. I
-must admit, I haven't booted Linux for a long time on my
-PowerCenter, so I'm not really sure.
-Try using DEC 21x40 card support.
+May not be your patches, I have encountered this once too.
 
+-- 
+           Perso. e-mail: <mailto:bh40@calva.net>
+           Work   e-mail: <mailto:benh@mipsys.com>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
-Hub
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
