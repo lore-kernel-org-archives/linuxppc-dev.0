@@ -1,33 +1,37 @@
-Message-ID: <3893CE3D.99AACAB6@netx4.com>
-Date: Sun, 30 Jan 2000 00:38:05 -0500
-From: Dan Malek <dan@netx4.com>
+Message-ID: <20000130063758.27283.qmail@web3006.mail.yahoo.com>
+Date: Sat, 29 Jan 2000 22:37:58 -0800 (PST)
+From: Wang Yong <wung_y@yahoo.com>
+Subject: Re: Looking for a better debug tool for embed-environment...
+To: dony <dony.he@huawei.com.cn>, Jesper Skov <jskov@redhat.com>,
+        linuxppc-embed <linuxppc-embedded@lists.linuxppc.org>
 MIME-Version: 1.0
-To: Shuangjun Zhu <r44089@email.sps.mot.com>
-CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Help about MPC823 Video and Cache
-References: <002201bf6861$20f24d10$69f001dc@sjzhu.sps.mot.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Shuangjun Zhu wrote:
 
-> After the system boot up, the text on the TV flicker fiercely out,
-> if I disable the I-Cache throught the EST visionProbe tool,
+why not try DDD(data display debugger). the debuger
+engine is gdb but it has a friendly GUI and easier to
+use. remember to configure it to use the xgdb.
 
-Determine your silicon revision and look on the Motorola web
-site for errata and application notes.  Early versions of the
-823 didn't work so well, especially at high resolution and
-refresh rates.  Later versions of the 823 added somewhat
-undocumented SIU configurations to improve the arbitration of
-the U-bus and access to the frame buffer by the video controller.
+w.y.
 
-If all seems well on the silicon front, make sure your video
-configuration is proper.  Excessively high (and unnecessary)
-refresh rates cause problems.
-
-
-	-- Dan
+--- dony <dony.he@huawei.com.cn> wrote:
+>
+> Hi,
+>     Now I am looking for a friendly GUI debug tool
+> for our
+> embed-linux-environment.
+>    Do you know other debug tools which can be used
+> in embed-environment?
+>     The "gdbserver" and "powerpc-linux-gdb" are not
+> friendly for debug,
+> especially in a large project.
+>
+>       Dony
+>
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
