@@ -1,35 +1,52 @@
-Message-Id: <9909101739.AA34034@marc.watson.ibm.com>
+Date: Fri, 10 Sep 1999 10:43:27 -0700 (PDT)
+From: Brad Midgley <brad@pht.com>
 To: Sacha Varma <sacha@ssl.co.uk>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: altivec 
-In-Reply-To: Message from Sacha Varma <sacha@ssl.co.uk>
-   of "Fri, 10 Sep 1999 11:32:36 BST." <37D8DE44.9AE2C717@ssl.co.uk>
-Date: Fri, 10 Sep 1999 13:39:31 -0400
-From: David Edelsohn <dje@watson.ibm.com>
+cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: altivec
+In-Reply-To: <37D8F922.67F18F1F@ssl.co.uk>
+Message-ID: <Pine.LNX.4.10.9909101030100.31612-100000@web1.turbolinux.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Sacha Varma writes:
+urlich drepper put a lot of work into glibc2.1 and processor capabilities 
+for exactly this problem.
 
-Sacha> Has any progress been made on LinuxPPC Altivec support? I posted a while back
-Sacha> and there was some discussion, I wondered if anyone was taking it further. I
-Sacha> suppose the arrival of G4 Macs in a few weeks' time will help kickstart things.
-Sacha> It would be great if AIM took the lead in this sort of work...
+so the RIGHT way to do this is by having two dynamic libraries, one for g4
+and one for processors without altivec. the libraries just have to be put
+in different places; glibc's search path is defined dynamically based on
+processor capabilities so the appropriate shared library is linked in.
 
-Sacha> The issues as I remember them:
+also, we can avoid the problem of binaries that blow up because they were
+compiled for a different powerpc.
 
-Sacha> .. support in egcs for the Altivec C language extensions, 
-Sacha> hopefully C++ also (someone said they had patches supplied
-Sacha> by Motorola, but I've not found mention of these on the
-Sacha> Motorola SPS site so I assume they're not for general
-Sacha> consumption)
+the assembler needs to know the new opcodes.
 
-	Apple apparently has a version of egcs-1.1.2 with an improved
-version of Motorola's AltiVec support merged in.  I still have not seen
-any offer of these patches to the GCC maintainers (and accompanying
-assignment to the FSF) for inclusion in the public sources.
+the kernel needs to know how & when to stack and unstack the altivec
+registers.
 
-David
+for capabilities, i suspect we just need a little kernel work so the
+kernel identifies altivec capability and makes that info available; then
+glibc will need to know the symbolic name to look for.
+
+the tough part will be designing a shared library and abstracting its
+entry points with an eye on performance both with and without simd
+capability. this is a problem that transcends altivec--it is relevant to
+simd processor extensions on other architectures too.
+
+> 3. People who want code that's optimised for G4 but also builds on G3
+> You could use the altivec API when coding and then have a header (as I
+>  #ifndef __VEC__
+>    /* software emulation */
+>  #else
+>    /* use native instructions */
+>  #endif
+
+
+Brad
+brad@pht.com | http://www.pht.com/~brad/
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
