@@ -1,16 +1,26 @@
-From: Jan.Rovins@radisys.com
-To: "Michael Meriin" <Michael@KSWaves.com>
-Cc: "Chuck Partridge" <Chuck_Partridge@amx.com>,
-	linuxppc-embedded@lists.linuxppc.org
+Message-Id: <sd19dc75.088@mx.amx.com>
+Date: Wed, 26 Jun 2002 15:23:19 -0500
+From: "Chuck Partridge" <Chuck_Partridge@amx.com>
+To: <Michael@KSWaves.com>, <Jan.Rovins@radisys.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: AMD Flash Interface for updating boot flash
-MIME-Version: 1.0
-Message-ID: <OF614E27C2.DDB5DF60-ON85256BE4.006C0DFB@radisys.com>
-Date: Wed, 26 Jun 2002 15:49:28 -0400
-Content-Type: text/plain; charset="us-ascii"
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Where do you set this up? If I want to use partitions, where do I put the info on how it is partitioned?
+
+I modified the kernel .config and it gives me the following startup messages:
+
+physmap flash device: 80000 at fff00000
+CFI: Found no Physically mapped flash device at location zero
+
+I'll check out the MTD list.
+
+Chuck
+>>> <Jan.Rovins@radisys.com> 06/26/02 02:49PM >>>
 I agree that MTD is the way to go, but with one small change to Michael's
 instructions.
 
