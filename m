@@ -1,46 +1,46 @@
+Date: Mon, 25 Oct 1999 14:52:11 -0400 (EDT)
+From: "Mark S. Mathews" <mark@absoval.com>
 To: Dan Malek <dan@netx4.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Console on SMC2 (was: Re: MPC823 Serial ports)
-References: <38107697.9A2576F7@eng.uct.ac.za> <3810A961.FF50C5F8@netx4.com> <kfypuy4sz1p.fsf_-_@kieraypc01.p.y.ki.era.ericsson.se> <38133CB5.61A6433B@netx4.com> <kfyr9ijr1aj.fsf@kieraypc01.p.y.ki.era.ericsson.se> <3814672F.598B1CBD@netx4.com>
-From: Marcus Sundberg <erammsu@kieraypc01.p.y.ki.era.ericsson.se>
-Date: 25 Oct 1999 16:59:37 +0200
-In-Reply-To: Dan Malek's message of "Mon, 25 Oct 1999 10:20:31 -0400"
-Message-ID: <kfyiu3vqyee.fsf@kieraypc01.p.y.ki.era.ericsson.se>
+cc: Dan Malek <dan@penguin.netx4.com>,
+        "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: MPC8xx updates to 2.2.13
+In-Reply-To: <3814641B.5A628170@netx4.com>
+Message-ID: <Pine.LNX.3.96.991025145044.18069D-100000@tristar.cc.absoval.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek <dan@netx4.com> writes:
+On Mon, 25 Oct 1999, Dan Malek wrote:
 
-> Marcus Sundberg wrote:
+> Mark S. Mathews wrote:
+> > 
+> > Hey Dan,
+> > 
+> > We just got done getting the 2.2.13 running on the RPX-lite.  We had to
+> > add CONFIG_ENET_SCC2 to its config to make it work.  Thanks for the
+> > update!
 > 
-> 
-> > It would be nice if we had "Board default" as an option for
-> > the boot console (or as an alternative - make Config.in set
-> > the correct default device when you change boards).
-> 
-> Yeah, I know, but as I have said before, I have more than a
-> dozen different boards in my office, all somewhat different.
-> The configuration files get increasingly complex with all of these
-> different possibilities.  Having separate default configurations
-> where the only difference is the console port is kind of
-> overkill.  Right now, you have to know where the console port
-> is connected, and simply select it.  I am trying to find a simple
-> configuration that will work with all boards, rather than track
-> lots of different ones.
+> You are welcome....but didn't 'make config' ask you which SCC
+> to use for the Ethernet?  You really shouldn't edit .config by
+> hand, as there are other files updated during the 'make config'
+> procedure.
 
-Yes, that is the right way to go for the distribution kernel.
-Howver, we have several different boards here too, and personally
-I'd perfer if I could just select the CPU and board type at
-configuration time, and have the rest taken from my board specific
-file. This could be allowed even if the board files in the
-distribution doesn't use this feature.
+You are so right.  When we config'd it originally, we used the defaults
+from your existing config.  If you select SCC1, then it (rightly) doesn't
+ask you about SCC2.  Our bad.
 
-//Marcus
--- 
--------------------------------+------------------------------------
-        Marcus Sundberg        | http://www.stacken.kth.se/~mackan/
- Royal Institute of Technology |       Phone: +46 707 295404
-       Stockholm, Sweden       |   E-Mail: mackan@stacken.kth.se
+Thanks for the note.
+
+-Mark
+
+Mark S. Mathews
+
+AbsoluteValue Software     Web:    http://www.absoval.com
+P.O. Box 941149            e-mail: mark@absoval.com
+Maitland, FL 32794-1149    Phone:  407.644.8582
+USA                        Fax:    407.539.1294
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
