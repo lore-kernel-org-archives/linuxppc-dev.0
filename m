@@ -1,32 +1,39 @@
-From: Daniel Wu <Daniel.Wu@alcatel.com.au>
-Subject: Re: Porting LinuxPPC
-To: linuxppc-embedded@lists.linuxppc.org
-Message-Id: <00May30.174931est.115248@border.alcanet.com.au>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-References: <20000519051051.236093C972@elph.research.canon.com.au>
- <39253A48.24B90117@snmc.com> <39253D0B.F9AF86EE@raleigh.ibm.com>
- <392562CE.A71A4F49@embeddededge.com> <392A3147.3A9AC5C2@alcatel.com.au>
-Date: Tue, 30 May 2000 17:49:30 +1000
+Date: Tue, 30 May 2000 09:51:34 +0200 (CEST)
+From: Geir Frode Raanes <geirfrs@invalid.ed.ntnu.no>
+To: Mark Morrill <mmorrill@powersurfr.com>
+cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: IBM PowerPC - Linux Connections?
+In-Reply-To: <B558204F.6F93%mmorrill@powersurfr.com>
+Message-ID: <Pine.BSF.4.21.0005300940410.44658-100000@invalid.ed.ntnu.no>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+On Mon, 29 May 2000, Mark Morrill wrote:
 
-I'm still having problems with booting the kernel - I've got to the point where the
-compressed image has been successfully decompressed and starts to execute code in
-kernel/head.S, which sets up the TLBs. However, as soon as the code turns on the
-mmu, the code crashes!
+> http://www.chips.ibm.com/products/powerpc/linux/
+>
+> I've been looking for a means to build a Linux appliance and this IBM url
+> seems to have the answer - except for a real product I can play with.
+>
+> Anybody know where I could get my hands on one of these boards?
 
-I'm running this under a BDM monitor, could this be the source of the problem? One
-thing I noticed is that the kernel uses virtual addresses starting at c0000000 and
-the BDM monitor fails to do the translation. Is there any way to get around this?
+Which one - the IBM 405GP Evaluation Kit [hint] or the
+PC-in-disguise; PowerPC Open Platform reference design?
 
-Thanks in advance.
+To have the latter I suppose you could just as well lay
+your hands on one of the demised PReP/CHRP machines.
+Small wonder Apple Just Said No.
 
-Regards,
-Daniel
+--
+  ******************************************************
+  Never ever underestimate the power of human stupidity.
+  -Robert Anson Heinlein
+
+		GeirFRS@invalid.and.so.forth
+  ******************************************************
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
