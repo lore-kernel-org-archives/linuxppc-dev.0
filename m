@@ -1,119 +1,49 @@
-From: Ruedi.Hofer@ascom.ch
-Date: Tue, 02 May 2000 16:08:58 +0100 (CED)
-Subject: Antwort: Re: Antwort: Re: FEC on the MPC860T
-To: pohland@snom.de, linuxppc-embedded@lists.linuxppc.org
-Cc: kernel@linux01.hasler.ascom.ch
-Message-id: <0FTX0022ORB1NU@pmdf-it.hasler.ascom.ch>
-MIME-version: 1.0
-Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_Dtx7X0g4/9tFElMAOSRYmw)"
+Message-ID: <390F0D6C.1631011D@embeddededge.com>
+Date: Tue, 02 May 2000 13:16:28 -0400
+From: Dan Malek <dan@netx4.com>
+MIME-Version: 1.0
+To: Christian Batt <Christian.Batt@sxb.bsf.alcatel.fr>
+CC: wd@denx.de, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Hard Disk Drive on PCMCIA port
+References: <390EEFCC.9A66D452@sxb.bsf.alcatel.fr>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---Boundary_(ID_Dtx7X0g4/9tFElMAOSRYmw)
-Content-type: TEXT/PLAIN
-Content-Transfer-Encoding: 7BIT
+Christian Batt wrote:
 
-Hi
+> We would like to know how it would be feasible to use a
+> Hard Disk Drive on such 8xx boards, by using a PCMCIA port.
 
-Well, both led's are working. When I ping from my host to the target,
-I can only see the RX led blink. However, after some time I see
-the host's MAC address in the arp table on the target.
+Yes....I have used the IBM Micro Drive in a PCMCIA adapter.  Given
+my limited hardware knowledge, I believe there are enough signals
+on the PCMCIA that you could also use an IDE connector to a notebook
+or regular IDE/ATA disk drive.  I don't know of anyone that has done
+this, as all of the designs I have seen have an external interface
+for such devices.
 
-When I ping from the target to the host, both RX and TX leds blink.
+> What are the other possibilities (PCI bridge ...) ?
 
-It seems as if the target only accepts broadcast MAC frames....
+I can put you in contact with some talented hardware engineers that
+have connected damn near everything to a 8xx without using a PCI
+bridge.  They use just a little bit of logic in some type of
+programmable logic device and out the other side is a bus of choice.
+A recent project included a notebook ATA disk drive with DMA....
 
-Any further idea?
+> Is there allready some support in the current kernels (i.e 2.2.13
+> or 2.3.99) for such HDD ?
 
-What kind of kernel are you using? 2.2.13? Montavista?
+It's there.  One of my higher priority (out of a zillion) projects
+is to get the 8xx PCMCIA integrated into the 2.2.14 and 2.3.99 kernels.
+I lost my IBM Micro Drive (had to send it back to the customer), but
+I can test with other devices I have.
 
-Ruedi
-
-
-
-
-
-
-pohland@snom.de on 02.05.2000 14:35:34
-An: Ruedi.Hofer@ascom.ch @ MailGate
-Kopie:
-Thema: Re: Antwort: Re: MPC860T
-
-Ruedi.Hofer@ascom.ch wrote:
->
-> Hi Nicolas
-
-Looks like you are progressing ...
-
-Do not enable DEBUG messages - I believe that they f... things up.
+Right now, you can simply modify the code in m8xx_setup.c to properly
+map the PCMCIA and device registers, then add the absolute minimal set
+of configuration for IDE/ATA hard disk to the kernel.
 
 
-Do you see the RX and TX leds working ?
-
-Cheers,
-Nicolas
-
->
-> Thanx for the file. It gets me a bit further...
->
-> When I output the event register in case of an interrupt, I get:
->
-> while booting:
->
-> eth0: CPM ENET Version 0.2, 08:00:3e:26:15:59
-> disabling IRQ7.
-> FEC int: 0x00a00000
-> eth1: FEC ENET Version 0.1, FEC int: 0x00a00000
-> FEC int: 0x00a00000
-> FEC int: 0x00a00000
-> FEC int: 0x00a00000
-> fec: link up
-> 08:FEC int: 0x00a00000
-> FEC int: 0x00a00000
-> fec: 10 Mbps, Half-Duplex
-> FEC int: 0x00a00000
-> 00:3e:26:15:5a
-> Sending BOOTP and RARP requests....
->
-> -> U-Bus error ?!?  Somehow a cache problem? Which kernel are you using?
->
-> and afterwards:
->
-> sh-2.03# ping 10.1.30.1
-> PING 10.1.30.1 (10.1.30.1): 56 data bytes
-> FEC int: 0x0c200000
-> FEC int: 0x0c200000
-> FEC int: 0x0c200000
-> FEC int: 0x0c200000
-> FEC int: 0x0c200000
-> FEC int: 0x0c200000
->
-> 0x0c...: Data sent ok
-> 0x002..: Does NOT exist in my databook!!!!
->
-> It seems that I'm able to send data, but can't receive any.
->
-> Ideas?
->
-> Ruedi
->
-> pohland@snom.de on 28.04.2000 18:03:39
-> An: Ruedi.Hofer@ascom.ch @ MailGate
-> Kopie:
-> Thema: Re: MPC860T
->
-> This is what I came up with when I fixed the bugs ... only 10 MBit/s. If
-> you improve it
-> please send it back. My BCSR regs are manipulated in a different area.
-> You might have to add
-> this code.
->
-> Cheers,
-> Nicolas
-
-
-
---Boundary_(ID_Dtx7X0g4/9tFElMAOSRYmw)--
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
