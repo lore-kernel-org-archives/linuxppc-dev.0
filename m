@@ -1,36 +1,46 @@
-Message-Id: <199910120348.XAA22270@novelty.umiacs.umd.edu>
-To: Eduard Hoenkamp <hoenkamp@acm.org>
-cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org,
-        derek@umiacs.umd.edu
-Subject: Re: xcdroast for ppc where? [Q] 
-In-reply-to: Your message of "Mon, 11 Oct 1999 22:18:33 +0200."
-             <v04210102b427f1eaa401@[131.174.116.121]>
-Date: Mon, 11 Oct 1999 23:48:40 -0400
-From: "Derek T. Yarnell" <derek@umiacs.umd.edu>
+Message-ID: <3802B100.740FCB7B@drgw.net>
+Date: Mon, 11 Oct 1999 22:54:40 -0500
+From: Troy Benjegerdes <hozer@drgw.net>
+MIME-Version: 1.0
+To: khendricks@ivey.uwo.ca, linuxppc-dev@lists.linuxppc.org
+Subject: Re: What's up with gcc 2.95.1 and "__va_arg_type_violation"
+References: <99100721144003.26148@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 11 Oct 1999, Eduard Hoenkamp wrote:
+Kevin Hendricks wrote:
+> 
+> Hi,
+> 
+> When attempting to run the latest build of the jdk, I get the following error
+> message (but only on non-debug builds).
+> 
+> Unsatisfied Link error: __va_arg_type_violation
+> 
+> Figuring, I simply forgot some new piece of glibc 2.1.2, I used
+> 
+> nm -o `find /lib -name "*"` | grep va_arg_type
+> 
+> (for /lib, /usr/lib, /usr/local/lib, /opt/lib, etc)
+> 
+> and this damn routine simply does not exist on my machine.
 
->
->I would like software for a CD-writer. I found pointers to XCDROAST 
->for intel linux, but those for ppclinux are dead links. Nothing under 
->metacrawler, nor altavista. I also tried the linux arhives under 
->geocrawler to no avail.
->Please help. Eduard.
->
+Actually, this generally means you are attempting to pass a 'char' through
+a va_args function. This is a "bad thing" since the char silently gets
+converted to an integer, and the compiler can't type check it. I would like
+for any character (or I think short int also) arguments to va_arg functions
+and explicitly typecast them to a 32 bit value type in the function call.
 
-try cdrecord 
-
-search for it at www.freshmeat.net
+Franz Sirl would be the guy to ask if you want to know the actually reasons
+and full technical details for this.
 
 -- 
-Derek Yarnell
-UMIACS System Staff
-derek@umiacs.umd.edu
-	
- Big money big money big money, No wammy no wammy, STOP!
-.				
+--------------------------------------------------------------------------
+| Troy Benjegerdes    |  troy@blacklablinux.com    |    hozer@drgw.net   |
+|    Unix is user friendly... You just have to be friendly to it first.  |
+| This message composed with 100% free software.    http://www.gnu.org   |
+--------------------------------------------------------------------------
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
