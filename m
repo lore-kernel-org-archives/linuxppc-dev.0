@@ -1,39 +1,43 @@
-Date: Sat, 4 Aug 2001 15:21:19 -0700 (MST)
-From: Jeff Rugen <jprugen@earthlink.net>
-To: Troy Benjegerdes <hozer@drgw.net>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: bogus SCSI timeouts and ntpd...
-In-Reply-To: <20010804121840.G17468@altus.drgw.net>
-Message-ID: <Pine.LNX.4.21.0108041518010.11122-100000@raptor.earthlink.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sat, 4 Aug 2001 22:57:09 -0400
+From: Ethan Blanton <eblanton@cs.ohiou.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: DRI on an iBook2
+Message-ID: <20010804225709.A861@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="GvXjxJ+pjyke8COw"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 4 Aug 2001, Troy Benjegerdes wrote:
+--GvXjxJ+pjyke8COw
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->
-> I have recently started getting what appear to be 'bogus' SCSI timeouts
-> after a crash and reboot, when my raid1 is re-syncing. (which amounts to
-> copying disk1 of the raid to disk2 of the raid.)
->
-> This didn't start happening until I started running ntpd at bootup..
->
-> I suspect something is broken somewhere such that when ntp adjusts the
-> time by a small amount, the SCSI layer (and generic timer code??) gets
-> confused and thinks that SCSI command have timed out.
->
+Hi,
+I see on the DRI project (http://dri.sourceforge.net/) page that the
+ATI Rage128 Mobility chipset is supported by XFree86 DRI.  However,
+I'm not having a whole lot of luck getting anything working on my
+iBook2.  I notice that I *can* turn on the kernel option for the DRM
+and select support for the ATI Rage128.  My question to this list
+before I spend too much time beating my head against this is whether
+or not DRM and/or DRI for the ATI chipsets are supported on LinuxPPC.
 
-<snip etc.>
+Thanks...
+Ethan
 
-I mailed the list a while ago about the ncr53c8xx SCSI driver hanging the
-system with SCSI timeouts a while ago on a Motorola PowerStack with the
-2.4.x kernels.  I am running xntpd at boot time.  I can (will) try
-disabling it and seeing if a 2.4.x kernel stays up for a longer period of
-time (typically less than 6 hours previously).
+--=20
+If I've told you once, I've told you once
+And once is all that you needed.
+		-- The Refreshments, "Carefree"
 
-Jeff Rugen
+--GvXjxJ+pjyke8COw
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+
+--GvXjxJ+pjyke8COw--
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
