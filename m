@@ -1,25 +1,32 @@
-Date: Tue, 21 Dec 1999 10:55:47 -0800 (PST)
-From: Ani Joshi <ajoshi@shell.unixbox.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: mozilla M11-3a
-Message-ID: <Pine.LNX.4.10.9912210859340.6233-100000@shell.unixbox.com>
+Date: Tue, 21 Dec 1999 15:19:39 -0500
+From: Satadru Pramanik <satadru@umich.edu>
+To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: TiVo TV recording device using linux on a PPC.
+Message-ID: <896774129.945789579@nic-c17-233.mw.mediaone.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+wow.   Go Linux on the PPC, but they're only using a 2.1.24 kernel.  I 
+wonder why?...
 
-	before I work ona  m12 rpm i'd like to know how this one fares
-with people, lemme know how it goes.  thanks  (btw, this is basically m12,
-just a few hours shy)
+from:
 
+http://www.tivo.com/linux/README
 
-devel.linuxppc.org/users/ajoshi/RPMS/mozilla-M11-3a.ppc.rpm
-devel.linuxppc.org/users/ajoshi/RPMS/mozilla-devel-M11-3a.ppc.rpm
+The "kernels" archive contains the source code for the Linux kernel in
+the TiVo Personal Television System software.  The "linuxdist-2.1.24"
+source tree is configured for use on an Intel X86 development
+platform.  The "linux-2.1" source tree is configured for use on the
+PowerPC-based hardware system on which the TiVo software actually runs.
 
-
-ani
-
+-=
+Satadru Pramanik
+Managing Online Editor
+The Michigan Daily
+http://michigandaily.com
+=-
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
