@@ -1,29 +1,37 @@
-Date: Mon, 14 Jan 2002 04:05:06 -0700
-From: Matt Porter <mporter@mvista.com>
-To: Ananda Rao Ladi <anandarl@mindtree.com>
-Cc: linuxppc-embedded@lists.linuxppc.org,
-	Giridhar L V <giridharl@mindtree.com>
-Subject: Re: Embedded Linux for PowerPC 440GP
-Message-ID: <20020114040506.A6755@cx258813-a.chnd1.az.home.com>
-References: <E125980C421DFD4DA0B80D55DB1EDA5807B9D6@mtv01ex01.mindtree.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <E125980C421DFD4DA0B80D55DB1EDA5807B9D6@mtv01ex01.mindtree.com>; from anandarl@mindtree.com on Thu, Jan 10, 2002 at 02:12:52PM +0530
+To: David de =?iso-8859-1?Q?Andr=E9s=20Mart=EDnez?= <ddandres@disca.upv.es>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: LinuxPPC for MPC555? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sun, 13 Jan 2002 13:18:08 +0100."
+             <3C417B00.A0DCAE7@disca.upv.es>
+Date: Mon, 14 Jan 2002 13:33:50 +0100
+Message-Id: <20020114123355.B211B10B6C@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Jan 10, 2002 at 02:12:52PM +0530, Ananda Rao Ladi wrote:
-> Is there an embedded linux available for PowerPC 440GP? I would like the
-> complete OS with BSP/LSP.
+In message <3C417B00.A0DCAE7@disca.upv.es> you wrote:
+>
+> I know it's a bit strange, but we are looking for a LinuxPPC port for
+> the Motorola MPC555.
+>
+> Does anyone know where can we find this port, or if it can be easily
+> done?
 
-Not yet.  We are working with IBM on a port for the 440GP.  This is
-part of a larger Book E architecture support effort since 440GP is
-only one of many Book E implementations to come.
+The MPC555 has no MMU, so LinuxPPC cannot be ported to it.
+
+You might check out uClinux which  works  on  MMU-less  systems,  but
+AFAIK there has been only some talk of a uClinux port for the MPC555,
+but  I  haven't  seen  any  indication  that anybody actually started
+working on it.
+
+Wolfgang Denk
 
 --
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+A supercomputer is a machine that runs an endless loop in 2 seconds.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
