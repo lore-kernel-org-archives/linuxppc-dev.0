@@ -1,29 +1,32 @@
-In-Reply-To: <389D018F.A081DBFF@unlserve.unl.edu>
-Date: Sun, 6 Feb 2000 14:34:24 +0100
-To: Takashi Oe <toe@unlserve.unl.edu>, linuxppc-dev@lists.linuxppc.org
-From: BenH <bh40@calva.net>
-Subject: Re: [patch] little-endian dmasound silently fails
-Message-Id: <20000206143424.013230@192.168.1.10>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Sun, 6 Feb 2000 07:48:01 -0800 (PST)
+From: Ani Joshi <ajoshi@shell.unixbox.com>
+To: Martin Costabel <costabel@wanadoo.fr>
+cc: Kazunori Aoshima <aoshimak@mail.cc.tohoku.ac.jp>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: Error report : make clgenfb on 2.2.14
+In-Reply-To: <389D8204.C51655F8@wanadoo.fr>
+Message-ID: <Pine.LNX.4.10.10002060745010.16688-100000@shell.unixbox.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Feb 5, 2000, Takashi Oe <toe@unlserve.unl.edu> wrote:
 
->Do you have any idea if they are used with G3 PowerBooks under Mac OS?
->There was a report long time that an user would lose ability to play
->audio CD from media bay drive after sleep, and he needed to boot Mac OS
->completely before coming back to Linux to get the lost audio CD
->capability back, though beep and other sound functions weren't affected
->at all.
+	Last week I made a fix for this, you can grab the patch at
+devel.linuxppc.org/users/ajoshi/fbcon-compat.patch.  this patch removes
+the need for adding OFfb support by removing the xpmac compat code from
+there and putting it in a new fbcon-compat.c file with some hooks from the
+driver.
 
-They don't seem to be called on the wallstreet. In recent kernels, me and
-Paul added a few timing fixes (mostly some delays here or there) and I
-added some basic power control via the FCR register. I now have sleep
-working fine when getting out of sleep. I can even play an MP3, sleep,
-and the play resumes when I wake up.
+ani
+
+On Sun, 6 Feb 2000, Martin Costabel wrote:
+>
+> Looks like you use CONFIG_FB_COMPAT_XPMAC=y and CONFIG_FB_OF off. Since
+> these references are defined in drivers/video/offb.c, you will have to
+> switch CONFIG_FB_OF on.
+>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
