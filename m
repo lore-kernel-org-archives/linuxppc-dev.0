@@ -1,23 +1,22 @@
-Return-Path: <sydneymartin@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.200])
-	by ozlabs.org (Postfix) with ESMTP id D46BE2BDB5
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Jan 2005 12:15:17 +1100 (EST)
-Received: by wproxy.gmail.com with SMTP id 71so37694wri
-	for <linuxppc-dev@ozlabs.org>; Sat, 01 Jan 2005 17:15:13 -0800 (PST)
-Message-ID: <855e88d00501011715633922b2@mail.gmail.com>
-Date: Sat, 1 Jan 2005 20:15:13 -0500
-From: Mike Martin <sydneymartin@gmail.com>
-To: Sven Luther <sven.luther@wanadoo.fr>
-In-Reply-To: <20050101165758.GA18559@pegasos>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-References: <20050101150055.GA15400@pegasos>
-	<200501011630.j01GUP1R007603@arbas.nms.ulrich-teichert.org>
-	<20050101165758.GA18559@pegasos>
-Cc: Ulrich Teichert <krypton@ulrich-teichert.org>, linuxppc-dev@ozlabs.org,
-	debian-powerpc@lists.debian.org
-Subject: Re: 43p-140 install issues
-Reply-To: mikemartin@linux.ca
+Return-Path: <benny@cellvision.com.cn>
+Received: from out01.east.net (unknown [202.130.225.2])
+	by ozlabs.org (Postfix) with ESMTP id 6D3822BDB5
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Jan 2005 15:20:31 +1100 (EST)
+Received: from unknown (HELO smtp01.east.net) ([202.130.225.4])
+	(envelope-sender <benny@cellvision.com.cn>)
+	by 0 (qmail-ldap-1.03) with SMTP
+	for <linuxppc-dev@ozlabs.org>; 2 Jan 2005 12:04:26 +0800
+Message-ID: <003d01c4f082$612d7400$1100a8c0@BENNY>
+From: "Benny Liu" <benny@cellvision.com.cn>
+To: "Sylvain Munaut" <tnt@246tNt.com>
+References: <008c01c4f005$bc1e94c0$1100a8c0@BENNY>
+	<41D721E1.8000007@246tNt.com>
+Date: Sun, 2 Jan 2005 12:20:23 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="gb2312"
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: isochronous mode of USB audio device on MPC5200
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,53 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I can boot with this image:
-http://debian.yorku.ca/debian/dists/testing/main/installer-powerpc/current/images/powerpc/netboot/vmlinuz-prep.initrd
-
-And things seems to go very well. Network configures, hard drives
-partition, it dies at "Install the base system"  with "The debootstrap
-program exited with an error (return value 255)." It instructs me to
-check /var/log/messages which now contains: "execv: No such file or
-directory"
-
-The previous step, partitioning, added:
-  "No matching physical volumes found
-  No volume groups found
-  Reading all physical volumes.  This may take a while..."
-
-Anyone?
-
-MikeMartin
-
-On Sat, 1 Jan 2005 17:57:58 +0100, Sven Luther <sven.luther@wanadoo.fr> wrote:
-> On Sat, Jan 01, 2005 at 05:30:25PM +0100, Ulrich Teichert wrote:
-> > Hi,
-> >
-> > [del]
-> > >I would prefer that we fix the debian kernels for them to work correctly
-> > >though. More on this on monday.
-> >
-> > I failed to configure a stock 2.4.28 kernel to detect the SCSI controler.
-> > I think some of Leigh patches for this must be applied, but I haven't
-> > gone any further.
-> 
-> I had some report on a power3 box, that only the SMP sym53c8xx driver worked.
-> When configuring in UP mode,
-> 
-> > [del]
-> > >Do the debian 2.4.27 kernel work on it ? I was unable to boot the 2.4.27 d-i
-> > >kernel on my powerstack, but this is a different machine, so the issues may be
-> > >a bit different.
-> >
-> > I've only tried the Woody PREP kernel, which failed in a way which I can't
-> > remember, but I'll give it a try.
-> 
-> Yes, please, i would greatly appreciate it, preferably the 2.6.8 kernel too.
-> Let' try to get this fixed before the sarge release, which is not so far off
-> now.
-> 
-> Friendly,
-> 
-> Sven Luther
-> 
->
+SGkgU3lsdmFpbiwNCg0KICAgIFlvdSBhcmUgcmlnaHQuDQoNCiAgICBJIGFtIHVzaW5nIHRoZSBs
+YXN0ZWQga2VybmVsIHNvdXJjZSBmcm9tIERlbnggd2ViIHNpdGUsIGtlcm5lbCB2ZXJzaW9uIGlz
+IDIuNC4yNSwgYnV0IHRoZSB0ZCBkZWZpbml0aW9uIGluIHVzYi1vaGNpLmggaXMgc3RpbGwgd3Jv
+bmcuIEkgbW9kaWZpZWQgdGhlIGh3UFNXIGRlZmluaXRpb24sIG5vdyB0aGUgaXNvY2hyb25vdXMg
+bW9kZSBpcyBvay4NCg0KICAgIFRoYW5rIHlvdSB2ZXJ5IG11Y2guDQoNCkJlc3QgUmVnYXJkcywN
+CkJlbm55DQoNCg0KLS0tLS0gT3JpZ2luYWwgTWVzc2FnZSAtLS0tLSANCkZyb206ICJTeWx2YWlu
+IE11bmF1dCIgPHRudEAyNDZ0TnQuY29tPg0KVG86ICJCZW5ueSBMaXUiIDxiZW5ueUBjZWxsdmlz
+aW9uLmNvbS5jbj4NCkNjOiA8bGludXhwcGMtZGV2QG96bGFicy5vcmc+DQpTZW50OiBTdW5kYXks
+IEphbnVhcnkgMDIsIDIwMDUgNjoxOSBBTQ0KU3ViamVjdDogUmU6IGlzb2Nocm9ub3VzIG1vZGUg
+b2YgVVNCIGF1ZGlvIGRldmljZSBvbiBNUEM1MjAwDQoNCg0KPiBIaSBCZW5ueQ0KPiANCj4gDQo+
+IFdoYXQgdmVyc2lvbiBvZiB0aGUga2VybmVsID8NCj4gDQo+IA0KPiBJbiB0aGUgbGFzdCAyLjQg
+SSBidWlsdCAoIHF1aXRlIGEgd2hpbGUgYWdvIC4uLiApIHRoZXJlIHdhcyBhIGZsYXcNCj4gaW4g
+dGhlIGhhbmRsaW5nIG9mIHRoZSBod1BTVyBmaWVsZCBpbiB0aGUgT0hDSSBkcml2ZXIgd2hlbiBv
+biBiaWctZW5kaWFuDQo+IHBsYXRmb3JtLiBTaW5jZSB0aGlzIGZpZWxkIGlzIG9ubHkgdXNlZCBm
+b3QgSXNvY2hyb25vdXMgdGhlIHByb2JsZW0NCj4gZGlkbid0IHNob3cgdXAgYmVmb3JlLg0KPiAN
+Cj4gVGhlIGZpZWxkcyB3ZXJlIGFzc3VtZSBieSB0aGUga2VybmVsIHRvIGJlIGluIHRoaXMgb3Jk
+ZXINCj4gDQo+IGh3UFNXWzBdDQo+IGh3UFNXWzFdDQo+IGh3UFNXWzJdDQo+IGh3UFNXWzNdDQo+
+IC4uLg0KPiANCj4gQnV0IGluIGZhY3Qgc2luY2UgdGhlIGZpZ3VyZSBpbiBvaGNpIHNwZWMgc2hv
+d3MgdGhpcyBhcnJheSBub3QgYXMgYW4NCj4gYXJyYXkgb2YgMTZiaXRzIGZpZWxkcyBidXQgYXMg
+YW4gYXJyYXkgb2YgMzJiaXRzIGludGVnZXIsIGVhY2ggY29udGFpbmluZw0KPiB0d28gaHdQU1db
+XSBpbiBsaXR0bGUgZW5kaWFuIG9yZGVyLCB0aGV5IGVuZGVkIHVwIGltcGxlbWVudGVkIGluIHRo
+ZSBvcmRlcg0KPiANCj4gaHdQU1dbMV0NCj4gaHdQU1dbMF0NCj4gaHdQU1dbM10NCj4gaHdQU1db
+Ml0NCj4gLi4uDQo+IA0KPiAoZnNja2VkIHVwIGlzbid0IGl0ID8gOykNCj4gDQo+IA0KPiBBbmQg
+dGhhdCB3YXMgbm90IHRha2VuIGludG8gYWNjb3VudCAuLi4NCj4gDQo+IA0KPiBJIG5vdGlmaWVk
+IFcuRGVuayBhYm91dCB0aGUgcHJvYmxlbSBhIHdoaWxlIGFnbywgZG9uJ3Qga25vdyBpZiBhbnkN
+Cj4gYWN0aW9uIGhhcyBiZWVuIHRha2VuLg0KPiANCj4gDQo+IA0KPiANCj4gU3lsdmFpbiBNdW5h
+dXQNCj4gDQo+IA0KPiBCZW5ueSBMaXUgd3JvdGU6DQo+IA0KPj4gSGksIGV2ZXJ5b25lLCBoYXBw
+eSBuZXcgeWVhciENCj4+IERpZCBhbnlvbmUgdHJ5IHVzYiBhdWRpbyBkZXZpY2Ugb3Igb3RoZXIg
+aXNvY2hyb25vdXMgbW9kZSB1c2IgZGV2aWNlcw0KPj4gb24gSWNlY3ViZSBib2FyZChNb3Rvcm9s
+YSBNUEM1MjAwKT8NCj4+IEkgdHJpZWQsIGJ1dCBpdCByZXBvcnRzIHRoZSBmb2xsb3dpbmcgbWVz
+c2FnZToNCj4+IC8iaG9zdC91c2Itb2hjaS5jOiBPSENJIFVucmVjb3ZlcmFibGUgRXJyb3IsIGNv
+bnRyb2xsZXIgdXNiLTAgZGlzYWJsZWQiLw0KPj4gQWZ0ZXIgdGhpcyBtZXNzYWdlLCB0aGUgaG9z
+dCBjb250cm9sbGVyIGlzIGRpc2FibGVkLg0KPj4gVGhhbmtzIGEgbG90Lg0KPj4NCj4+LS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tDQo+Pg0KPj5fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fXw0KPj5MaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0DQo+PkxpbnV4cHBjLWRldkBvemxh
+YnMub3JnDQo+Pmh0dHBzOi8vb3psYWJzLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4cHBjLWRl
+dg0KPj4NCj4gDQo+
