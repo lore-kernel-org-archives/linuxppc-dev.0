@@ -1,47 +1,52 @@
-Message-Id: <199906231305.IAA26387@www.cedarnet.org>
-Date: Wed, 23 Jun 1999 08:08:01 -0500
-Subject: Re: PowerBook sleep, first try
-From: "Kevin Puetz" <kp11901@cedarnet.org>
-To: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Wed, 23 Jun 1999 15:17:42 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
+To: Kevin Puetz <kp11901@cedarnet.org>
+cc: Justin Vallon <vallon@mindspring.com>,
+        Hollis R Blanchard <hollis+@andrew.cmu.edu>,
+        LinuxPPC-Dev List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: dl-load.c (ld.so) bug??
+In-Reply-To: <199906231258.HAA25989@www.cedarnet.org>
+Message-ID: <Pine.LNX.4.10.9906231517130.23991-100000@mercator.cs.kuleuven.ac.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Cool! Is there any hope of this working on the desktop machines that can 
-sleep? (I like my machine getting quiet when not in use, though I can live
-without.).
+On Wed, 23 Jun 1999, Kevin Puetz wrote:
+> Umm... just thought of this - a segfault in __libc_start_main is the symptom
+> of an old R4 binary on a glibc2.1 system... did ElectricFence not get
+> updated (just a thought)? Then - if both libraries load - it segfaults when
+> electricfence initializes _it's_ glibc dynamic link. One could try
+> rebuilding the SRPM and see...
+> 
+> Possible? Or am I on crack (don't know much about efence or glibc internals,
+> so... probably the latter.)
+
+I don't think so:
+
+| callisto$ dpkg -s electric-fence
+| Package: electric-fence
+| Status: install ok installed
+| Priority: standard
+| Section: devel
+| Installed-Size: 48
+| Maintainer: Debian QA Group <debian-qa@lists.debian.org>
+| Version: 2.1-1
+| Depends: libc6 (>= 2.1)
+           ^^^^^^^^^^^^^^
+| Description: A malloc(3) debugger
+|  Use virtual memory hardware to detect illegal memory accesses.
+
+Greetings,
+
+						Geert
 
 --
-+--------------------------------------------------------------------+
-|            .-'''''-.       Kevin Puetz                             |
-|          .'   _/|   `.                                             |
-|         :   =/_/      :    kp11901@cedarnet.org -preferred         |
-|        :   _/ |        :   Kevin.Puetz@039-server.pls.uni.edu      |
-|       (\  /  ,|        :   webmaster@039-server.pls.uni.edu        |
-|        \\/^\/||__     :                                            |
-|     _/~`~`""~`"` \_ .'  "Could you please continue the petty       |
-|  __/  -'/  `-._ `\_\__   bickering?  I find it - most intriguing." |
-|/     /-'`  `\   \  \-.\    --Data, STTNG, "Haven"                  |
-+--------------------------------------------------------------------+
+Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
+Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
+Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
 
-----------
->From: Benjamin Herrenschmidt <bh40@calva.net>
->To: linuxppc-dev@lists.linuxppc.ORG
->Cc: kevyn@apple.COM, Paul.Mackerras@cs.anu.edu.au, huberj@WPI.EDU
->Subject: PowerBook sleep, first try
->Date: Wed, Jun 23, 1999, 3:43 AM
->
-
->
-> Hi !
->
-> I've uploaded a first-try implementation of sleep on PowerBook G3 Series
-> (Grackle/mac-io based). It's NOT functional yet, it still hangs when
-> waking up. However, it no longer resets the machine, so it looks like the
-> ROM code is correctly identifying the wakeup code when the CPU is powered
-> back on.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
