@@ -1,20 +1,31 @@
-Message-Id: <v04003a02b36a081fcb15@[204.22.210.180]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Thu, 20 May 1999 14:49:27 -0400
+Message-ID: <BFC0587634C3D111AACB00805FA766FA0123B864@exchny12.ny.smb.com>
+From: "Velasquez, Carlos" <cv49989@imcnam.sbi.com>
 To: linuxppc-dev@lists.linuxppc.org
-From: "sean o'malley" <somalley@ed.mde.state.mi.us>
-Subject: Backup Programs
+Subject: Umax S900 CD Rom problems...
+Date: Thu, 20 May 1999 15:23:00 -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Im not sure I shouldnt be asking on another list.. But I'm looking for a
-backup system that runs under Linux and will back up MacOS machines
-(commercial or non). I am unable to find anything.  Is there such system? =(
+Hello,
 
-Sean
+Has anyone successfully installed  Linux on a Umax S900 Mac clone? If so,
+can you share your stories with me? I am having problems installing Linux on
+my Umax S900 (225 Mhz ppc with 162Meg ram, ixMicro Twin Turbo 8Meg video
+card.) Apparently, when I try to do a CD install, the installer doesn't
+recognize the CD Rom device. I believe I have a Matshita CD rom drive
+installed as an internal SCSI device (bus 0, Id 4).
 
+Also, has anyone had any success installing Linux from a Jazz drive? Any
+help will be greatly appreciated!
+
+Carlos
+
+______________________________________________________________________
+C.F. Velasquez
+Asst. Vice President
+Global Database and Technology Division
+Salomon Smith Barney, Inc.
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
