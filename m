@@ -1,33 +1,56 @@
-Message-ID: <38FF7B9C.4E5CCF3F@embeddededge.com>
-Date: Thu, 20 Apr 2000 17:50:20 -0400
-From: Dan Malek <dan@netx4.com>
+Message-ID: <38FF7CF5.C915436B@ccrl.mot.com>
+Date: Thu, 20 Apr 2000 16:56:05 -0500
+From: Steve Rossi <srossi@ccrl.mot.com>
 MIME-Version: 1.0
-To: Gabriel Paubert <paubert@iram.es>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Re^2: char type is unsigned with PPC gcc?
-References: <Pine.HPX.4.10.10004202249100.19933-100000@gra-ux1.iram.es>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: QSPAN PCI wierdness
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Gabriel Paubert wrote:
+Hi All,
 
-> Dan, brother ;-) I have the impression we are the only 2 people on this
-> planet (aliens anywhere ?)^W^W^W^Wmailing list thinking this way. But of
-> course we know that we are right ;-)
+I'm working on gettting QSPAN PCI to work using the monta vista 2.2.13
+kernel. (I finally have hardware to work with.) In head.S, after
+serial_init
+I've added a call to qspan_init() and to
+pci_scanner(). I'm printing out the Device ID/Vendor ID fields as they
+are read. The problem is that they are all 0. In fact, the config
+transactions
+are not taking place on the PCI bus. I've verified that PCI_CSR_ADDR is
+correct and my chip selects are set up correctly. I've got an analyzer
+on
+the PCI bus, and when I manually (i.e. using my debugger) create a
+configuration cycle by writing the QSPAN's config address register
+and reading the config data register I get valid data back for the
+devices
+that are on the PCI bus, and I see the transaction occur with the PCI
+analyzer. But when pci_scanner runs, I don't even see the configuration
+transactions on the PCI bus. I've stepped through the code and verified
+that the config address register write instruction and config data
+register
+read instructions occur correctly to the right addresses and all that,
+but
+the data that is returned is always zero. I've also verified that the
+data cache
+isn't turned on. I'm waiting for access to a logic analyzer so I can see
+what
+is happening on the PPC bus. But in the mean time, anyone have any ideas
 
-I think it is a secret club because there were a limited number of
-secrect decoder rings :-).  I received lots of e-mail that didn't
-copy the embedded list.....
+as to why I always get 0.
 
-I am just disappointed that Darwin hasn't had time to work on
-the extinction of little endian in our predominantly left-to-right
-world.
-
-Anyway, this has been fun and I have to get back to real work......
+Thanks,
+Steve
 
 
-	-- Dan
+--
+-------------------------------------------------------
+Steven K. Rossi                     srossi@ccrl.mot.com
+Staff Engineer
+Multimedia Communications Research Laboratory
+Motorola Labs
+-------------------------------------------------------
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
