@@ -1,59 +1,30 @@
-From: Ruedi.Hofer@ascom.ch
-Date: Mon, 10 Jan 2000 14:59:45 +0100 (CET)
-Subject: Antwort: Re: Antwort: Re: Loading the Kernel on a FADS
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: damm@kieraypc01.p.y.ki.era.ericsson.se
-Message-id: <0FO40012JHKFQY@pmdf-it.hasler.ascom.ch>
-MIME-version: 1.0
-Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_qPBN/g5o3AkItHCtIkU/Wg)"
+Message-Id: <200001101455.JAA10125@hoover.gilbarco.com>
+From: "Wohlgemuth, Jason" <jason_wohlgemuth@gilbarco.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'"
+	 <linuxppc-embedded@lists.linuxppc.org>
+Subject: Patch for qspan_pci.c problem with GCC 2.95.2
+Date: Mon, 10 Jan 2000 09:55:44 -0500
+Mime-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Anyone trying to build in pci support to the kernel using GCC 2.95.2 may
+find this patch helpful.
 
---Boundary_(ID_qPBN/g5o3AkItHCtIkU/Wg)
-Content-type: TEXT/PLAIN
-Content-Transfer-Encoding: 7BIT
+It seems that in the inline-assembly in qspan_pci.c the compiler doesn't
+recognize that the first argument to the assembly may be modified.  This
+resulted in a register getting trashed where it shouldn't have.  To fix the
+problem I modified the in-line assembly to tell the compiler that this
+register has been changed.
 
-It must be a problem of the memory mapping in the ROM.
+86c86
+<               : "=r"(x) : "r"(addr) : "%0")
+---
+>               : "=r"(x) : "r"(addr))
 
-Static members like hexdigits seem to be excluded from the 
-image if PGSZ is set to 0x10000.
-
-The pointer to this array (when called from asc_to_hex) always
-points to 0xffffffff.
-
-
-
-
-
-damm@kieraypc01.p.y.ki.era.ericsson.se on 10.01.2000 13:27:58
-An: ruedi.hofer@ascom.ch @ MailGate
-Kopie: linuxppc-embedded@lists.linuxppc.org @ MailGate 
-Thema: Re: Antwort: Re: Loading the Kernel on a FADS
-
-> Not that I understand the above problem any better, but I see where it
-> crashes more clearly now.
-> 
-> > It always crashes when it jumps into a string function from the
-> > lib 'string'. (e.g. strchr)
->
-> Any ideas??
-
-I think someone messed with PGSZ settings in main.c...
-I changed it back to 4096 and things started to work again.
-
-I don't really know why.
-
-It would be good if someone sat down and had a thought 
-about what is going on... 
- 
-Hope it helps /
-
-Magnus Damm
-
-
-
---Boundary_(ID_qPBN/g5o3AkItHCtIkU/Wg)--
+Jason <jwohlgem@mindspring.com>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
