@@ -1,30 +1,27 @@
 Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <001701c1a8df$05796620$2c80a8c0@vms.se>
-From: "Tord Andersson" <tord.andersson@its4mobility.com>
-To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: MPC823e Video Framebuffer Driver
-Date: Tue, 29 Jan 2002 17:06:46 +0100
+Message-ID: <20020129163040.43119.qmail@web9704.mail.yahoo.com>
+Date: Tue, 29 Jan 2002 08:30:40 -0800 (PST)
+From: None Atall <linux_meis@yahoo.com>
+Subject: Re: [Linux-ATM-General] Re: ATM driver for 8260 (linux 2.4.x) 
+To: Wolfgang Denk <wd@denx.de>
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20020129155511.670E1109D5@denx.denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+  It was realy cache problem! I had to disable
+both caches I,D from the head.S to find that!
+Well the receaver works ok with Dcache off....
+As I looked from the mpc860sar code, there is a
+way to tell linux not to cache specific pages.
+But the functions are not compatible with 8260.
+Does anyone know how to do that for 8260?
 
-Does anyone know where to find the source to a MPC823e Video Framebuffer
-driver.
-I have seen references in the list to a driver at:
-ftp://ftp.mvista.com/pub/Area51/embedded-planet/video.tgz
-Unfortunately, this location seems to be unreachable.
-I have also tried to search the net with no success.
-Any hints on where to find this or similar driver would be greatly
-appreciated!
-
-Kind regards,
-
-Tord Andersson
+                    Thanks a lot for your time!
+                        D. Meidanis
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
