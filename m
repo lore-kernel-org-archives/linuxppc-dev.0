@@ -1,194 +1,146 @@
-Message-ID: <000701c24a7d$4bb1b4e0$7301a8c0@zhongqx>
-From: "zhongqx" <zhongqx@guoguang.com.cn>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: eth1: transmit timed out
-Date: Fri, 23 Aug 2002 16:15:49 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Fri, 23 Aug 2002 09:51:33 +0100
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
+To: Steven Scholz <steven.scholz@imc-berlin.de>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: PCMCIA on an MPC860
+Message-ID: <20020823095133.F12271@zambia.cambridgebroadband.com>
+References: <3D64DA41.3000104@cambridgebroadband.com> <3D65EDC0.E16387CD@imc-berlin.de>
+Mime-Version: 1.0
+Content-Type: text/plain; format=flowed; charset=ISO-8859-1
+In-Reply-To: <3D65EDC0.E16387CD@imc-berlin.de>; from steven.scholz@imc-berlin.de on Fri, Aug 23, 2002 at 09:09:36 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,everyone
-      I want to use FEC on FADS(860T),but when booting linux,it can not config FEC ip address with dynamic ,it seems that FEC trasmit time out,like the following.Can anyone give me some advise?thank you very much!linux kernel is 2.4.18.
+Steven,
 
 
-=>bootm 400000
-## Booting image at 00400000 ...
-   Image Name:   2.4.18
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    524690 Bytes = 512 kB = 0 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-Linux version 2.4.18 (root@localhost.localdomain) (gcc version 2.95.3 20010111 (
-prerelease/franzo/20010111)) #1 Fri Aug 23 11:02:49 CST 2002
-On node 0 totalpages: 2048
-zone(0): 2048 pages.
-zone(1): 0 pages.
-zone(2): 0 pages.
-Kernel command line: ip=192.168.1.99:192.168.1.105::255.255.255.0 root=/dev/nfs
-nfsroot=192.168.1.105:/linuxppc/eldk-bin/ppc_8xx rw
-Decrementer Frequency = 180000000/60
-Calibrating delay loop... 47.82 BogoMIPS
-Memory: 6696k available (948k kernel code, 348k data, 52k init, 0k highmem)
-Dentry-cache hash table entries: 1024 (order: 1, 8192 bytes)
-Inode-cache hash table entries: 512 (order: 0, 4096 bytes)
-Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
-Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
-Page-cache hash table entries: 2048 (order: 1, 8192 bytes)
-POSIX conformance testing by UNIFIX
-Linux NET4.0 for Linux 2.4
-Based upon Swansea University Computer Society NET3.039
-Initializing RT netlink socket
-Starting kswapd
-devfs: v1.10 (20020120) Richard Gooch (rgooch@atnf.csiro.au)
-devfs: boot_options: 0x0
-CPM UART driver version 0.03
-ttyS00 at 0x0280 is a SMC
-block: 64 slots per queue, batch=16
-RAMDISK driver initialized: 16 RAM disks of 2048K size 1024 blocksize
-eth0: CPM ENET Version 0.2 on SCC1, 00:d0:93:00:12:34
-fec.c[1371] mii_link_interrupt: unexpected Link interrupt
-eth1: FEC ENET Version 0.2, FEC irq 3, MII irq 4, addr 00:d0:93:80:12:34
-loop: loaded (max 8 devices)
-NET4: Linux TCP/IP 1.0 for NET4.0
-IP Protocols: ICMP, UDP, TCP, IGMP
-IP: routing cache hash table of 512 buckets, 4Kbytes
-TCP: Hash tables configured (established 512 bind 512)
-Sending BOOTP and RARP requests ...... timed out!
-FEC timeout on graceful transmit stop
-IP-Config: Retrying forever (NFS root)...
-Sending BOOTP and RARP requests ..<6>NETDEV WATCHDOG: eth1: transmit timed out
-eth1: transmit timed out.
-Ring data dump: cur_tx c01b4100 (full), dirty_tx c01b4100 cur_rx: c01b4000
- tx: 16 buffers
-  c01b4100: 9c00 024e 001e2802
-  c01b4108: 9c00 002a 0019d272
-  c01b4110: 9c00 024e 001e2c02
-  c01b4118: 9c00 002a 0019d2f2
-  c01b4120: 9c00 024e 0019b002
-  c01b4128: 9c00 002a 0019d372
-  c01b4130: 9c00 024e 0019b402
-  c01b4138: 9c00 002a 0019d3f2
-  c01b4140: 9c00 024e 0019b802
-  c01b4148: 9c00 002a 0019d472
-  c01b4150: 9c00 024e 0019bc02
-  c01b4158: 9c00 002a 0019d4f2
-  c01b4160: 9c00 024e 0019a002
-  c01b4168: 9c00 002a 0019d572
-  c01b4170: 9c00 024e 0019a402
-  c01b4178: bc00 002a 0019d5f2
- rx: 32 buffers
-  c01b4000: 8000 ffff 001b3000
-  c01b4008: 8000 ffff 001b3800
-  c01b4010: 8000 ffff 001b2000
-  c01b4018: 8000 fbff 001b2800
-  c01b4020: 8000 ffff 001b1000
-  c01b4028: 8000 ffff 001b1800
-  c01b4030: 8000 feff 001b0000
-  c01b4038: 8000 ffff 001b0800
-  c01b4040: 8000 fbff 001af000
-  c01b4048: 8000 ffff 001af800
-  c01b4050: 8000 ffff 001ae000
-  c01b4058: 8000 feff 001ae800
-  c01b4060: 8000 ffff 001ad000
-  c01b4068: 8000 ffff 001ad800
-  c01b4070: 8000 ffff 001ac000
-  c01b4078: 8000 ffff 001ac800
-  c01b4080: 8000 ffff 001ab000
-  c01b4088: 8000 ffff 001ab800
-  c01b4090: 8000 ffff 001aa000
-  c01b4098: 8000 ffff 001aa800
-  c01b40a0: 8000 ffff 001a9000
-  c01b40a8: 8000 ffff 001a9800
-  c01b40b0: 8000 ffff 001a8000
-  c01b40b8: 8000 ffff 001a8800
-  c01b40c0: 8000 ffff 001a7000
-  c01b40c8: 8000 ffff 001a7800
-  c01b40d0: 8000 ffff 001a6000
-  c01b40d8: 8000 ffff 001a6800
-  c01b40e0: 8000 feff 001a5000
-  c01b40e8: 8000 ffff 001a5800
-  c01b40f0: 8000 ffff 001a4000
-  c01b40f8: a000 ffff 001a4800
-.<6>NETDEV WATCHDOG: eth1: transmit timed out
-eth1: transmit timed out.
-Ring data dump: cur_tx c01b4100 (full), dirty_tx c01b4100 cur_rx: c01b4000
- tx: 16 buffers
-  c01b4100: 9c00 024e 001e2802
-  c01b4108: 9c00 002a 0019d272
-  c01b4110: 9c00 024e 001e2c02
-  c01b4118: 9c00 002a 0019d2f2
-  c01b4120: 9c00 024e 0019b002
-  c01b4128: 9c00 002a 0019d372
-  c01b4130: 9c00 024e 0019b402
-  c01b4138: 9c00 002a 0019d3f2
-  c01b4140: 9c00 024e 0019b802
-  c01b4148: 9c00 002a 0019d472
-  c01b4150: 9c00 024e 0019bc02
-  c01b4158: 9c00 002a 0019d4f2
-  c01b4160: 9c00 024e 0019a002
-  c01b4168: 9c00 002a 0019d572
-  c01b4170: 9c00 024e 0019a402
-  c01b4178: bc00 002a 0019d5f2
- rx: 32 buffers
-  c01b4000: 8000 ffff 001b3000
-  c01b4008: 8000 ffff 001b3800
-  c01b4010: 8000 ffff 001b2000
-  c01b4018: 8000 fbff 001b2800
-  c01b4020: 8000 ffff 001b1000
-  c01b4028: 8000 ffff 001b1800
-  c01b4030: 8000 feff 001b0000
-  c01b4038: 8000 ffff 001b0800
-  c01b4040: 8000 fbff 001af000
-  c01b4048: 8000 ffff 001af800
-  c01b4050: 8000 ffff 001ae000
-  c01b4058: 8000 feff 001ae800
-  c01b4060: 8000 ffff 001ad000
-  c01b4068: 8000 ffff 001ad800
-  c01b4070: 8000 ffff 001ac000
-  c01b4078: 8000 ffff 001ac800
-  c01b4080: 8000 ffff 001ab000
-  c01b4088: 8000 ffff 001ab800
-  c01b4090: 8000 ffff 001aa000
-  c01b4098: 8000 ffff 001aa800
-  c01b40a0: 8000 ffff 001a9000
-  c01b40a8: 8000 ffff 001a9800
-  c01b40b0: 8000 ffff 001a8000
-  c01b40b8: 8000 ffff 001a8800
-  c01b40c0: 8000 ffff 001a7000
-  c01b40c8: 8000 ffff 001a7800
-  c01b40d0: 8000 ffff 001a6000
-  c01b40d8: 8000 ffff 001a6800
-  c01b40e0: 8000 feff 001a5000
-  c01b40e8: 8000 ffff 001a5800
-  c01b40f0: 8000 ffff 001a4000
-  c01b40f8: a000 ffff 001a4800
-NETDEV WATCHDOG: eth1: transmit timed out
-eth1: transmit timed out.
-Ring data dump: cur_tx c01b4100 (full), dirty_tx c01b4100 cur_rx: c01b4000
- tx: 16 buffers
-  c01b4100: 9c00 024e 001e2802
-  c01b4108: 9c00 002a 0019d272
-  c01b4110: 9c00 024e 001e2c02
-  c01b4118: 9c00 002a 0019d2f2
-  c01b4120: 9c00 024e 0019b002
-  c01b4128: 9c00 002a 0019d372
-  c01b4130: 9c00 024e 0019b402
-  c01b4138: 9c00 002a 0019d3f2
-  c01b4140: 9c00 024e 0019b802
-  c01b4148: 9c00 002a 0019d472
-  c01b4150: 9c00 024e 0019bc02
-  c01b4158: 9c00 002a 0019d4f2
-  c01b4160: 9c00 024e 0019a002
-  c01b4168: 9c00 002a 0019d572
-  c01b4170: 9c00 024e 0019a402
-  c01b4178: bc00 002a 0019d5f2
- rx: 32 buffers
-  c01b4000: 8000 ffff 001b3000
-  c01b4008: 8000 ffff 001b3800
+Thanks for your reply.  I did try an ethernet card as well.  With that
+I got a different problem -
+after insmodding the client driver I got the following error message:
+	eth1: command 0x5800 did not complete!
+
+I also got this error whenever I tried to ping.
+
+
+My Kernel IDE config is as follows:
+
+# ATA/IDE/MFM/RLL support
+#
+CONFIG_IDE=y
+
+#
+# IDE, ATA and ATAPI Block devices
+#
+CONFIG_BLK_DEV_IDE=y
+# CONFIG_BLK_DEV_HD_IDE is not set
+# CONFIG_BLK_DEV_HD is not set
+CONFIG_BLK_DEV_IDEDISK=y
+(everything else IDE related is not set)
+
+Here's my Oops:
+
+
+Oops: kernel access of bad area, sig: 11
+NIP: C00C0A0C XER: C000037F LR: C00C0A00 SP: C1763460 REGS: c17633b0
+TRAP: 0300
+MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+DAR: 40009E9A, DSISR: 00000409
+TASK = c1762000[117] 'cardmgr' Last syscall: 54 last math 00000000 last
+altivec 00000000
+GPR00: C00C0A00 C1763460 C1762000 00009B78 000000EC 00000000 C01C838C
+C0009E9A GPR08: 00009032 40009E9A C0009E9A C01C8360 53935E95 1002205C
+00000000 100B9E90 GPR16: 100BA770 00000001 007FFF00 00000000 C17636D8
+C1C9D670 00000002 C4040000 GPR24: C4040000 0000010E 00000100 C01C84B8
+00000000 00000000 C01C83C8 000000EC Call backtrace: C00C0A00 C00C0F04
+C00C10EC C00C188C C00C221C C00BBFD4 C00BCAAC C00BCB4C C403F7A4 C403FBE0
+C40031BC C4004808 C403F18C C400F874 C40105B4 C00435C8 C000259C 10002BAC
+100032C0 10004764 0FED9DBC 00000000
+
+Does this look familiar?  :-/
+
+Thanks,
+
+Alex
+
+
+On 2002.08.23 09:09 Steven Scholz wrote:
+>
+> Alex,
+>
+> actually I had the Card Service running on MPC855/860 systems with
+> Ethernet,
+> WaveLAN and ATA Cards.
+>
+> It's a while back so I try to remember realy hard now!
+>
+> I had this problem too.
+>
+> 1.) Did you try another PC Card, i.e. ethernet?
+> 2.) How are your settings for IDE in your kernel configuration?
+> 3.) I think I remember that I had to change something about the
+> request_irq /
+> request_8xxirq.
+>     I think the oops comes because the driver can't request the irq!!!
+>
+> Could you please show us you're oops!?
+>
+> Steven
+>
+>
+> Alex Zeffertt wrote:
+> >
+> > All,
+> >
+> > Has anybody had any luck getting PCMCIA to work on an MPC860?
+> >
+> > I have a custom MPC860 board, with a single PCMCIA socket connected
+> to Slot B.  This is what I have
+> > so far done:
+> >
+> > 1.
+> > Downloaded pcmcia-cs-3.2.0.tar.gz
+> > 2.
+> > Added board specific definitions in modules/m8xx_pcmcia.c for
+> >                 hardware_enable()
+> >                 hardware_disable()
+> >                 voltage_set()
+> >                 socket_get()
+> > 3.
+> > Cross compiled for the 8xx.
+> > 4.
+> > In my kernel (linux-2.4.4-2001-11-24 from Denx) I added the
+> following lines
+> >                 include/asm-ppc/<board>.h:
+> >                         /* define IO_BASE for pcmcia */
+> >                         #define _IO_BASE 0x80000000
+> >                         #define _IO_BASE_SIZE (1024*64)
+> >                 arch/ppc/mm/init.c:
+> >                         void __init MMU_init(void) {
+> >                         ...
+> >                         ioremap(_IO_BASE,_IO_BASE_SIZE);
+> >
+> >         ...as suggested by Magnus Damm in
+> >
+> http://lists.linuxppc.org/linuxppc-embedded/200005/msg00227.html
+> >
+> > HOWEVER,
+> >
+> > 5.      When I boot my board with a Flash card in the PCMCIA slot,
+> and I run:
+> >         /etc/rc.d/rc.pcmcia start
+> >         I find that ide_cs.o causes an Oops when it calls
+> ide_register().  "cardctl status"
+> >         and "cardctl ident" work though.
+> >
+> > Can anybody suggest what I'm doing wrong?
+> >
+> > Thanks in advance,
+> >
+> > Alex
+> >
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
