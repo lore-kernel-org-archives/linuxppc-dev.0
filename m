@@ -1,51 +1,29 @@
-Date: Thu, 8 Aug 2002 23:18:33 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Peter Bergner <bergner@borg.umn.edu>
-Cc: Paul Mackerras <paulus@samba.org>,
-	linuxPPC Dev <linuxppc-dev@lists.linuxppc.org>,
-	Mike Corrigan <mikejc@us.ibm.com>
-Subject: Re: FP save/restore code in ppc32/ppc64 kernels
-Message-ID: <20020808131833.GD23964@krispykreme>
-References: <20020807162302.GA39680@congo.borg.umn.edu> <20020808114646.GA23964@krispykreme>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020808114646.GA23964@krispykreme>
+Reply-To: <acurtis@onz.com>
+From: "Allen Curtis" <acurtis@onz.com>
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+	"Matt Porter" <porter@cox.net>
+Cc: <mlan@cpu.lu>, <linuxppc-dev@lists.linuxppc.org>
+Subject: RE: PCI enlightenment follow-up
+Date: Thu, 8 Aug 2002 06:58:41 -0700
+Message-ID: <NCBBIINEHIPFGJPLBEIFKEIKDKAA.acurtis@onz.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <20020808082541.15450@smtp.wanadoo.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+> >Except he's got the 1:1 BAT in the middle of default user task space.
+> >Unless he's used an advanced kernel option tweak to shrink TASK_SIZE,
+> >this will cause problems.
+>
+> Good spot. Well... I hate those BATs used to map IOs, they just
+> confuse things a bit more. I've gotten rid of them on pmac
+> for a long time.
 
-> The final thing to look at is what ptrace returns for the MSR. I
-> suggested that we should copy in the FE0/FE1 bits out of the thread
-> struct (since the MSR_FP, FE0 and FE1 bits will always be zero as
-> ptrace does a giveup_fpu just before reading any FP stuff). Paul
-> pointed out for completeness we should always set the MSR_FP bit too.
+Where can I find an updated memory map for PPC? The memory configuration
+outlined worked fine with 2.4.2. It can be changed easy enough.
 
-To follow up, this is what we currently see via ptrace:
-
-./msr
-msr = d032
-
-And here is what we see with the above fixes:
-
-./msr
-msr = f932
-
-fpemode is a small program from Paulus that changes the FE0 and
-FE1 bits via the prctl. This shows:
-
-./fpemode 0 ./msr
-msr = f032
-
-./fpemode 1 ./msr
-msr = f132
-
-./fpemode 2 ./msr
-msr = f832
-
-./fpemode 3 ./msr
-msr = f932
-
-Anton
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
