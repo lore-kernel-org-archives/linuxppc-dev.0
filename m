@@ -1,39 +1,39 @@
-Date: Tue, 27 Nov 2001 05:00:41 -0700
-From: Matt Porter <mporter@mvista.com>
-To: Dan Malek <dan@embeddededge.com>
-Cc: paulus@samba.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: include/asm-ppc/platforms/
-Message-ID: <20011127050040.A15728@cx258813-a.chnd1.az.home.com>
-References: <15363.31192.101536.919771@gargle.gargle.HOWL> <3C2B376F.9070508@embeddededge.com>
-Mime-Version: 1.0
+From: Paul Mackerras <paulus@samba.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3C2B376F.9070508@embeddededge.com>; from dan@embeddededge.com on Thu, Dec 27, 2001 at 09:59:59AM -0500
+Message-ID: <15363.33009.545085.87868@gargle.gargle.HOWL>
+Date: Tue, 27 Nov 2001 23:02:57 +1100 (EST)
+To: linuxppc-dev@lists.linuxppc.org
+Subject: gratuitous complexity
+Reply-To: paulus@samba.org
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Dec 27, 2001 at 09:59:59AM -0500, Dan Malek wrote:
->
-> Paul Mackerras wrote:
->
->
-> > Does anyone have any comments or objections?
->
-> That's a pretty good idea, and I have another one.  Name the
-> directory include/asm-ppc/ppc-platforms or something, then
-> have a symbolic link
-> 	include/asm/platform -> include/asm-ppc/ppc-platforms/<board-file>
->
-> That way we can just #include <platform.h> instead of having lots
-> of ifdefs in upper level files to determine which one is needed.  If
-> we are moving files around, let's have some effect on actually making
-> it easier to use them, too.
+I was innocently browsing through include/asm-ppc/gt64260.h when I
+came across this:
 
-Yes, this is similar to what has worked well in the arm tree.
+#ifndef	TRUE
+#define	TRUE	(0 == 0)
+#endif
 
---
-Matt Porter
-MontaVista Software, INc.
-mporter@mvista.com
+#ifndef	FALSE
+#define	FALSE	(0 != 0)
+#endif
+
+I nearly lost my dinner!  It's just not fair to spring something that
+awful on people without at least a warning for those with weak
+stomachs. :)
+
+Seriously though, it is unnecessarily complex.  If you want to use TRUE
+and FALSE, define them as 1 and 0.  The C language standard specifies
+that 0 is false and anything non-zero is true.
+
+I also wonder why we need so many functions to access the gt64260 -
+there are 19 different functions of the form gt64250*_set_*, which
+seems completely over the top to me.  How many of them actually get
+used?
+
+Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
