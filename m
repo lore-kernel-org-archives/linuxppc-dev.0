@@ -1,144 +1,113 @@
-Date: Thu, 30 Mar 2000 11:36:22 -0500 (EST)
-From: "Jo-Ellen F. Mathews" <joellen@absoval.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: PCMCIA Test for Wireless
-Message-ID: <Pine.LNX.3.96.1000330105550.21002A-100000@tristar.cc.absoval.com>
+Message-ID: <38E38C39.F5E50F40@adc.com>
+Date: Thu, 30 Mar 2000 11:17:45 -0600
+From: Darin Smith <darin_smith@adc.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: ncr scsi byte ordering & irq stuff
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Greetings,
+Howdy!
 
-First, I'd like to thank MontaVista, Magnus Damm and Embedded Planet for
-all your wonderful help in getting modules and pcmcia card services
-working on our RPX Lite 823.
+I have a 750-based board that has been running a (somewhat hacked)
+2.0.30 kernel for some time, which I am now upgrading to 2.2.14.
 
-We're still working on the port of our 11Mb wireless lan driver for Prism2
-cards to the Power Mac and RPX platforms.  However, I've been using our
-old 2Mb wireless driver to work out the module and pcmcia card services
-issues I was experiencing.
+After a lot of help from Cort, I've now got it mostly booting.  What
+I've run across now is
+a) with the ncr53c8xx driver
+  In the 2.0.x series, we kept continuing forward with a rather old
+ncr53c8xx driver (I think from pre 2.0.27).  Attempts to upgrade to the
+new driver failed with
+  CACHE TEST FAILED
+  ncr wrote 2, host read 0
+  ncr wrote 2, read back 0
 
-Below is the beginning of the capture file (I'm using minicom) from the
-RPX serial port when I ran a test.  The test results are the same
-regardless of whether the wireless driver is compiled into the kernel or
-loaded as a modules using pcmcia card services.
+which I see in the 2.2.14 kernel (I'm new to the project and just found
+out about the history with the scsi driver).  Diffing through the code
+(lots of changes!), it appears that the old code used a macro
+_LE_to_BE_long which was defined to do byte reordering if __powerpc__
+was defined, and not reorder if otherwise.  It appears that in August of
+97, Cort went in and cleaned this up substantially, also supporting the
+possibility of the NCR being in big endian mode on the PCI bus.  I
+suspect that the whole cause of our problems is a #define not getting
+set somewhere, and our driver is the wrong endianness.  Has anyone had
+any experience along these same lines?  The start of my autoconf.h looks
+like:
 
-The test scenario is this:
-* Station1 is a wireless station on the wireless network 192.168.151.0
+/*
+ * Platform support
+ */
+#define CONFIG_ADC 1   /* our system */
+#define CONFIG_NMIC 1  /* our specific hardware */
+#define CONFIG_PPC 1
+#define CONFIG_6xx 1
+#undef  CONFIG_8xx
+#undef  CONFIG_PMAC
+#undef  CONFIG_PREP
+#undef  CONFIG_CHRP
+#define CONFIG_ALL_PPC 1
+#undef  CONFIG_APUS
+#undef  CONFIG_GEMINI
+#undef  CONFIG_MBX
+#undef  CONFIG_SMP
+#define CONFIG_6xx 1
 
-* Station2 is a wired station on the wired network 192.168.100.0
+which I would think might set __BIG_ENDIAN somewhere?
 
-* RPXLite823 is a station on both networks and routes the traffic
-between the two networks.  Its root file system is mounted on wired
-station 192.168.100.160.
+b) arch/ppc/kernel/irq.c  appears to have been cleaned up significantly
+since the 2.0.x series (again, thanks Cort!).  Our hardware, or
+specifically our firmware, has some kludgy nature with interrupts.  At
+this point, I'm not sure of the history or why, or even the specifics,
+but basically the old code (post hack) looked like:
 
-We have a test script that repeatedly performs a 2MB ftp-get using wget.
+static void
+reset_int_controllers(void)
+{
+    /* Initialize interrupt controllers */
+    outb(0x11, 0x20); /* Start init sequence */
+    outb(0x40, 0x21); /* Vector base */
+    outb(0x04, 0x21); /* Cascade (slave) on IRQ2 */
+    outb(0x01, 0x21); /* Select 8086 mode */
+    outb(0xFF, 0x21); /* Mask all */
+    outb(0x11, 0xA0); /* Start init sequence */
+    outb(0x48, 0xA1); /* Vector base */
+    outb(0x02, 0xA1); /* Cascade (slave) on IRQ2 */
+    outb(0x01, 0xA1); /* Select 8086 mode */
+    outb(0xFF, 0xA1); /* Mask all */
 
-I ran the test script simultaneously on both Station1 (ftp-get from
-Station2) and Station2 (ftp-get from Station1) with RPXLite823 routing the
-traffic between them.
+#ifdef CONFIG_NMIC
+    /* ??? CONFIG_NMIC  boot firmware ppcbug supposed to set it right.
+*/
+    /* don't know why not. temporary fix until ppcbug solve it */
+    outb(0xe0, 0x4D0); /* IRQ 7/6/5 are level */
+    outb(0x8e, 0x4D1); /* IRQ 15/11/10/9 are level */
+#endif
+#ifndef CONFIG_ADC
+printk("IRQ Edge = %x/%x, Processor = %d\n", inb(0x4D0), inb(0x4D1),
+ _Processor);
+#endif
+#if 0
+    outb(0x00, 0x4D0); /* All edge triggered */
+    outb(0xCA, 0x4D1); /* Trigger mode */
+#endif
+    outb(cache_A1, 0xA1);
+    outb(cache_21, 0x21);
+    enable_irq(2);  /* Enable cascade interrupt */
+}
 
-The following partial capture shows some odd stuff I saw on the serial
-port while the test was running up to the point where the ethernet
-interface began failing.  Once the ethernet interface failed, the results
-were the same for as long as the test ran with the occasional 'neighbour
-table overflow' appearing.
+we know that we have to have this functionality for our board to work
+right...another team using VxWorks had to incorporate the same patch.
 
-The "exit" and "ping" commands appearing in the capture WERE NOT typed by
-me or anyone else.  They were "automagically" pulled from the shell
-history as the test was running.
+My only problem is that this functionality seems to have moved sometime
+during 2.1.x, and I'm not quite sure where.  Does anyone know where this
+is?  It looks like a lot of stuff like this got carved out to
+platform-specific files (prep, chrp, pmac, etc.) but I can't find any
+use of outb anywhere...did this get moved to assembly-code?
 
-Any comments on the strange serial behavior and why the ethernet interface
-failed are welcome.  We're currently not too worried about all this for
-this particular driver.  However, if the same behavior continues when we
-complete the port of our 11Mb wireless driver to the RPX Lite 823, we'll
-have a serious problem (ok, to be honest, we'll have an anxiety attack
-;-).
+TIA,
 
-Many thanks,
-Jo-Ellen
-
----------------------------------------------------------
-Jo-Ellen F. Mathews
-
-AbsoluteValue Software     Web:    http://www.absoval.com
-P.O. Box 941149            e-mail: joellen@absoval.com
-Maitland, FL 32794-1149    Phone:  407.644.8582
-USA                        Fax:    407.539.1294
----------------------------------------------------------
-ttyS0: 1 input overrun(s)
-exit
-sh-2.03#
-sh-2.03# ttyS0: 1 input overrun(s)
-CPM ENET: BSY can't happen.
-ttyS0: 2 input overrun(s)
-ping 192.168.100.120ttyS0: 2 input overrun(s)
-sh-2.03# ttyS0: 2 input overrun(s)
-ttyS0: 2 input overrun(s)
-ttyS0: 2 input overrun(s)
-ttyS0: 2 input overrun(s)
-ttyS0: 4 input overrun(s)
-ping 192.168.151.90eth0: transmit timed out.
- Ring data dump: cur_tx fa2028e8 (full) cur_rx fa2028c0.
-9c00 05ea 009f7812
-9c00 05ea 009f7012
-9c00 05ea 00a04812
-9c00 05ea 009f6812
-9c00 0042 0095ceb2
-9c00 05ea 009f6012
-9c00 05ea 00bb1012
-bc00 00a6 00196da2
-9c00 05ee 001db000
-9c00 05ee 001db800
-9c00 0046 001da000
-9c00 05ee 001da800
-9c00 05ee 001d9000
-9c00 05ee 001d9800
-9c00 05ee 001d8000
-bc00 05ee 001d8800
-eth0: tx queue full!.
-nfs: server 192.168.100.160 not responding, still trying
-eth0: transmit timed out.
- Ring data dump: cur_tx fa2028e8 (full) cur_rx fa202890.
-9c00 05ea 009f7812
-9c00 05ea 009f7012
-9c00 05ea 00a04812
-9c00 05ea 009f6812
-9c00 0042 0095ceb2
-9c00 05ea 009f6012
-9c00 05ea 00bb1012
-bc00 00a6 00196da2
-9c00 05ee 001db000
-9c00 05ee 001db800
-9c00 0046 001da000
-9c00 05ee 001da800
-9c00 05ee 001d9000
-9c00 05ee 001d9800
-9c00 05ee 001d8000
-bc00 05ee 001d8800
-eth0: tx queue full!.
-eth0: transmit timed out.
- Ring data dump: cur_tx fa2028e8 (full) cur_rx fa202898.
-9c00 05ea 009f7812
-9c00 05ea 009f7012
-9c00 05ea 00a04812
-9c00 05ea 009f6812
-9c00 0042 0095ceb2
-9c00 05ea 009f6012
-9c00 05ea 00bb1012
-bc00 00a6 00196da2
-9c00 05ee 001db000
-9c00 05ee 001db800
-9c00 0046 001da000
-9c00 05ee 001da800
-9c00 05ee 001d9000
-9c00 05ee 001d9800
-9c00 05ee 001d8000
-bc00 05ee 001d8800
-eth0: tx queue full!.
-neighbour table overflow
-neighbour table overflow
+Darin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
