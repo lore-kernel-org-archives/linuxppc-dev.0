@@ -1,61 +1,58 @@
-Date: Tue, 14 Nov 2000 13:55:51 -0600 (CST)
-From: Brian Ford <ford@vss.fsi.com>
+From: ajay.kunnath@exgate.tek.com
+Message-ID: <21F9768AF088D211BF1C0008C71E5786014EED18@ap-bang-m02.india.tek.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: glibc and kernel build problems (EST8260)
-Message-ID: <Pine.GSO.4.21.0011141339220.493-100000@eos>
+Subject: Local-PCI bridge mapping
+Date: Wed, 15 Nov 2000 03:43:16 -0800
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am trying to build glibc and the fsmlabs kernel for the EST8260 from
-scratch and am having a few problems.
+Hi,
 
-For glibc, I have read the HowTo and I think I applied the proper glibc
-patches.  I have also patched my gcc specs file.  Here is where I am
-dying:
+I have a proprietary MPC860 board which has a PLX 9054 Local-PCI
+bridge. I am running the 2.4.0 version of the kernel from
+montavista.
 
-powerpc-linux-gcc   -nostdlib -nostartfiles -r -o
-/home/ford/linux/build/glibc/elf/librtld.os '-Wl,-('
-/home/ford/linux/build/glibc/elf/dl-allobjs.os
-/home/ford/linux/build/glibc/libc_pic.a -lgcc '-Wl,-)'
-powerpc-linux-gcc   -nostdlib -nostartfiles -shared -o
-/home/ford/linux/build/glibc/elf/ld.so  \
-          /home/ford/linux/build/glibc/elf/librtld.os           \
-          -Wl,--version-script=/home/ford/linux/build/glibc/ld.so.map
--Wl,-soname=ld.so.1
-/home/ford/linux/tools/powerpc-linux/bin/ld: unable to find version
-dependency `GLIBC_2.0'
-collect2: ld returned 1 exit status
+My problem is that I am not able to map the configuration registers
+to any other address but 0x80000000. When I map it to 0x80000000, it
+works great, any other address and it just crashes. Below is the log
+of what happened when I mapped the PLX to 0xF0000000.
 
-For the kernel, I get:
+NIP: C0077C3C XER: 00000000 LR: C0077C00 REGS: c01fde30 TRAP: 0300
+MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c01fc000[1] 'swapper' Last syscall: -1
+last math 00000000 last altivec 00000000
+GPR00: 00000000 C01FDEE0 C01FC000 F0000000 C01FDEE8 C01FDEEA 00010000
+A0000000
+GPR08: 40000000 C00F0000 00000024 C00E7B80 84000029 100A11AC 00000000
+00000000
+GPR16: 00000000 00000000 00000000 00000000 FA202D64 001801B8 00380000
+000031B3
+GPR24: 00000000 FA202D00 FA202D40 00200075 00200000 F0000000 00000000
+00000000
+Call backtrace:
+001801B8 C0078E20 C00F280C C00022B0 C0007650
+Kernel panic: kernel access of bad area pc c0077c3c lr c0077c00 address
+F00000F0 tsk swapper/1
+Rebooting in 180 seconds..
 
-make[2]: Entering directory
-`/home/ford/linux/src/linuxppc_fsm/arch/ppc/mm'
-powerpc-linux-gcc -D__KERNEL__ -I/home/ford/linux/src/linuxppc_fsm/include
--Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -fno-strict-aliasing
--D__powerpc__ -fsigned-char -msoft-float -pipe -ffixed-r2
--Wno-uninitialized -mmultiple -mstring    -c -o init.o init.c
-init.c: In function `__ioremap':
-init.c:418: `isa_mem_base' undeclared (first use in this function)
-init.c:418: (Each undeclared identifier is reported only once
-init.c:418: for each function it appears in.)
-init.c: In function `hash_init':
-init.c:1486: warning: int format, long int arg (arg 2)
-init.c: At top level:
-init.c:661: warning: `get_mem_prop' declared `static' but never defined
-make[2]: *** [init.o] Error 1
 
-Any ideas?  Thanks.
+Could someone please give me some insight into what the problem could be ?
 
---
-Brian
-Ford Software Engineer
-Vital Visual Simulation Systems
-FlightSafety International
-Phone: 314-551-8460
-Fax:   314-551-8444
+Thanks,
+Ajay
 
+_______________________________________________________
+
+If you don't strike oil in twenty minutes, stop boring.
+- Andrew Carnegie, on public speaking
+________________________________________________________
+
+Ajay Kunnath
+E Mail: ajay.kunnath@tek.com
+Voice : 2215535 +3313
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
