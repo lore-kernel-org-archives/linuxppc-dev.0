@@ -1,32 +1,71 @@
-From: Kevin Hendricks <khendricks@ivey.uwo.ca>
-Reply-To: khendricks@ivey.uwo.ca
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Need help from someone with SMP machine to track down bug in native threads jdk
-Date: Sun, 12 Sep 1999 14:49:38 -0400
-Content-Type: text/plain
+Date: Sun, 12 Sep 1999 16:15:15 -0400
+From: brad allison <jackal@aol.net>
+To: Multiple recipients of list <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: no more processes crash
+In-Reply-To: <Pine.SGI.4.00.9908271030280.15912-100000@osiris.office.aol.co
+ m>
+Message-ID: <Pine.SGI.4.00.9909121607310.611-100000@osiris.office.aol.com>
 MIME-Version: 1.0
-Message-Id: <99091214534501.23575@localhost.localdomain>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+I found the bug here.  AIM (tik) tries to play a sound whenever you get an
+Instant Message.  I just noticed that sound is not working on my box.
 
-If anyone has an SMP machine out there and some time to spare, I really need
-some help tracking down a bug in the native threads version of the jdk.  I have
-a short java sample program that seg-faults eventually during heavy thread
-creation on SMP x86 linux boxes.  I would like to see if the same thing happens
-under SMP linux ppc boxes and if so help in tracking it down (I don't have
-access to any SMP machines either on x86 or ppc).
+So all these IM sounds got queued up and hung, resulting in a no more
+processes error.
 
-If interested in helping and speeding the next release of the jdk, please
-e-mail me and let me know:
+Now I'm not sure why sound doesn't work. I have a G3 rev2 B&W running
+Shaw's 2.2.6 kernel.
 
-mailto:khendricks@ivey.uwo.ca
+aumix doesn't seem to be working correctly:
+[jackal@isis ~]$ aumix -q
+vol 216, 88
+speaker 216, 88
+line 0, 0, P
+mic 0, 0, P
+cd 0, 0, R
+pcm2 15, 0
+[jackal@isis ~]$ aumix -v 0 0
+[jackal@isis ~]$ aumix -p 0 0
+[jackal@isis ~]$ aumix -q
+vol 216, 88
+speaker 216, 88
+line 0, 0, P
+mic 0, 0, P
+cd 0, 0, R
+pcm2 15, 0
 
-Thanks,
 
-Kevin
 
+On Fri, 27 Aug 1999, brad allison wrote:
+
+> 
+> 
+> On Fri, 27 Aug 1999, Wulf Hofbauer wrote:
+> 
+> > > I'm not running much.  Just about 10 aterms, netscape and aim.
+> > 
+> > Are you using LinuxPPC 1999? The utempter package as distributed by LinuxPPC
+> > is broken, xterms for example will never terminate (except by kill -9) and
+> > will fill up entries in the process table. I don't know if LinuxPPC has a
+> > fix for it (I doubt it), but you'll find the fix at www.redhat.com.
+> 
+> Anyone know if there's a fix for this?
+> 
+> I searched on lists.linuxppc.org for utempter and found no mention of this
+> problem.
+> 
+> I found rpm updates for utempter on www.redhat.com for i386, sparc, and
+> alpha but not for linuxppc.
+> 
+> -b
+
+-- 
+AOL SAPI    jackal@aol.net    jackal@kmfms.com    703.265.0908   AIM:jackal242 
+http://jackal.fudge.org        `I was never more certain of how far away I was 
+from my goal than when I was standing right beside it.' - Ethan Hawke, Gattaca
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
