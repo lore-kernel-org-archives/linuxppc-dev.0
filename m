@@ -1,57 +1,62 @@
-Message-Id: <5.1.0.14.2.20011205134825.024d8ed8@mail.lauterbach.com>
-Date: Wed, 05 Dec 2001 13:55:38 +0100
-To: Corey Minyard <minyard@acm.org>
-From: Franz Sirl <Franz.Sirl-ppc@lauterbach.com>
-Subject: Re: Changes to PPC Linux required for GCC 3.1
+Message-ID: <3C0E48D2.6000409@acm.org>
+Date: Wed, 05 Dec 2001 10:18:26 -0600
+From: Corey Minyard <minyard@acm.org>
+MIME-Version: 1.0
+To: Franz Sirl <Franz.Sirl-ppc@lauterbach.com>
 Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <3C0CF638.1030204@acm.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Subject: Re: Changes to PPC Linux required for GCC 3.1
+References: <5.1.0.14.2.20011205134825.024d8ed8@mail.lauterbach.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 17:13 04.12.2001, Corey Minyard wrote:
->I've been working on getting Linux PPC running on GCC 3.1, and I'm
->sending it from my Mac whose operating system was just compiled with a
->current GCC 3.1 tree (Hurray!)
+Franz Sirl wrote:
+
 >
->I've had to patch the kernel a little, there were a few violations and
->some problems with interactions with optimizations.  I had to do the
->following:
+> I've done
 >
->* In include/asm-ppc/prom.h, the calculations for the relocations were
->offseting a large constant with a string.  This results in bogus
->optimizations in GCC, and a comment in GCC seems to say that you
->shouldn't do this.  I've fixed it by calling a function to do the
->calculation.  I've posted something on the GCC newsgroup about this,
->too, we'll see what they say.
+> -#define RELOC(x)       (*PTRRELOC(&(x)))
+> +#define RELOC(x)       (*({ typeof(x) * __ptr  = PTRRELOC(&(x));
+> __asm__ ("" : "=r" (__ptr) : "0" (__ptr)); __ptr;}))
+>
+> a while ago in
+> <http://source.mvista.com/pipermail/linuxppc-commit/2001-September/000729.html>,
+> seems nobody applied it so far.
 
-I've done
+Ok.  It needs to be propped.
 
--#define RELOC(x)       (*PTRRELOC(&(x)))
-+#define RELOC(x)       (*({ typeof(x) * __ptr  = PTRRELOC(&(x)); __asm__
-("" : "=r" (__ptr) : "0" (__ptr)); __ptr;}))
+>
+>
+>> * In drivers/video/aty/atyfb_base.c, there were some "const __init"
+>> declarations, which are not allowed.
+>
+>
+> Ah, I see, I only saw this problem in aty128fb. I'll add the fix to
+> the linuxconsole CVS for 2.5.x.
 
-a while ago in
-<http://source.mvista.com/pipermail/linuxppc-commit/2001-September/000729.html>,
-seems nobody applied it so far.
+What about 2.4?  I'm sure people will want to compile 2.4 with gcc 3.x.
 
->* In drivers/video/aty/atyfb_base.c, there were some "const __init"
->declarations, which are not allowed.
+>
+>
+>> * In include/linux/sunrpc/clnt.h, I removed a bogus function declaration
+>> which was messing up inlining.
+>
+>
+> I guess this is 3.1 specific? I don't remember problems with 3.0.x.
 
-Ah, I see, I only saw this problem in aty128fb. I'll add the fix to the
-linuxconsole CVS for 2.5.x.
+Probably.  I've seen some other problems with GCC being fairly picky
+about declarations, and I think it's fairly new.  But the declaration
+both wrong and unnecessary.
 
->* In include/linux/sunrpc/clnt.h, I removed a bogus function declaration
->which was messing up inlining.
+>
+>
+> What about the FAT filesystem? Is gcc-3.1 now able to correctly
+> optimize the 64bit signed divide by const into a ASHIFT+fixup?
 
-I guess this is 3.1 specific? I don't remember problems with 3.0.x.
+Nope.  I was going to ask about that one.  Do you have a GCC PR on this?
 
-What about the FAT filesystem? Is gcc-3.1 now able to correctly optimize
-the 64bit signed divide by const into a ASHIFT+fixup?
-
-Franz.
+-Corey
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
