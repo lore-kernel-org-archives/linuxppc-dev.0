@@ -1,54 +1,42 @@
-To: Sébastien Côté <scote1@Matrox.COM>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Progress - new problem 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 12 Feb 2001 08:39:54 EST."
-             <20010212083954.A768@dyn-52-73.matrox.com>
-Date: Mon, 12 Feb 2001 14:52:25 +0100
-Message-Id: <20010212135230.44A5D281D9@denx.denx.de>
+Date: Mon, 12 Feb 2001 15:33:18 +0100 (CET)
+From: Marius Groeger <mag@sysgo.de>
+To: "Ross A. Osborn" <rosborn@GI.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Progress - new problem
+In-Reply-To: <20010212095429.E8453@gi.com>
+Message-ID: <Pine.LNX.4.30.0102121526160.10064-100000@mag.devdep.sysgo.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Sébastien,
+Hi Ross,
 
-in message <20010212083954.A768@dyn-52-73.matrox.com> you wrote:
->
-> > Oops? Why do you think this makes debugging more complicated? I don't
-> > care where something is mapped, it's  the  job  of  the  debugger  to
-> > resolve those addresses, isn't it?
->
-> Yes, the debugger should do it but ours don't.  Also, I haven't found a way
+On Mon, 12 Feb 2001, Ross A. Osborn wrote:
 
-Then convert it into a doorstop, and get a real debugger.
+> I have been fighting with an old Nohau BDM debugger and was trying to
+> get information together to talk my boss into ordering the BDI2000.  I
+> could not find any price information on there web site.
 
-I strongly recommend the BDI2000  by  Abatron  (see  www.abatron.ch).
-Send me a message when you want a quote for it.
+I believe the BDI2000 sells for about 2000 Euro. I can only recommend to buy
+one, the units are definitely worth the money. They have a very compentent
+and helpful support staff. Today they sent me a new firmware update, without
+having been asked for it.
 
-> to tell it to load the kernel image at address 0 even if the linking was
-> done for address 0xc0000000.  So I have to load the kernel with another
+> So, the right thing to do is to send you a message to a quote?  Is it
+> just me or is this an odd way to conduct business?
 
-You can't specify any load offsets? Oh dear. Get a real debugger!
+Try Abatron's phone or mail contact, they are usually very responsive.
 
-> > Are you really trying to run in little-endian mode? Really???
-> > You are not supposed to do that.
->
-> Yes, really!  I don't see why I shouldn't do that.  The kernel itself seems
-> to be running fine (no panic, it goes to the scheduler).  My only problem
-> right now is to load executables and I'm not sure it's endian related.
+Regards,
+Marius
 
-Be assured that this will not remain the only problem. From all I know,
-the PowerPC version of Linux is a big-endian kernel by design.
+-----------------------------------------------------------------------------
+Marius Groeger           SYSGO Real-Time Solutions GmbH     mgroeger@sysgo.de
+Software Engineering     Embedded and Real-Time Software    www.sysgo.de
+Voice: +49-6136-9948-0   Am Pfaffenstein 14                 www.osek.de
+FAX:   +49-6136-9948-10  55270 Klein-Winternheim, Germany   www.elinos.com
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Visit us at Embedded Systems: Feb 14-16 2001, Nuremberg, Halle 12/K01
-(with TQ Components); our presentation "Starke Zwerge: Embedded Linux
-auf PowerPC-Systemen" on Thursday, Feb 15 2001, 13:30 Forum Halle 11.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
