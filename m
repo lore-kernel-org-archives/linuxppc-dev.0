@@ -1,46 +1,41 @@
 From: Ruedi.Hofer@ascom.ch
-Date: Thu, 24 Feb 2000 11:01:00 +0100 (CET)
-Subject: LinuxPPC2000 on MPC860
+Date: Thu, 24 Feb 2000 12:59:28 +0100 (CET)
+Subject: Re: LinuxPPC2000 on MPC860
 To: linuxppc-embedded@lists.linuxppc.org
-Message-id: <0FQF00KBBJHKPG@pmdf-it.hasler.ascom.ch>
+Message-id: <0FQF00LG1O1J7P@pmdf-it.hasler.ascom.ch>
 MIME-version: 1.0
-Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_XxmXUtMXQ9bCQLrdyf3gHw)"
+Content-type: MULTIPART/MIXED; BOUNDARY="Boundary_(ID_DUYgDvvMdgW2CgSDu+5VNQ)"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 
---Boundary_(ID_XxmXUtMXQ9bCQLrdyf3gHw)
+--Boundary_(ID_DUYgDvvMdgW2CgSDu+5VNQ)
 Content-type: TEXT/PLAIN
 Content-Transfer-Encoding: 7BIT
 
-Hi
+Some further info.
 
-I recently donwloaded the LinuxPPC_2000_lite CD from the LinuxPPC.com page.
+I'm right now using the ramdisk.image.gz from the LinuxPPC-2000-lite cdrom
+as nfs mounted rootdisk. (I installed the ramdisk on the PC)
 
-Included in this distribution are the libc6 libs, of which I thought, would be nice to have
-on my embedded ADS860.
-(Having these libs running on my board, I would be able to cross build an application using
-shared libs. So far I have libc5 on my PPC target, but cross libc6 on my i386 host)
+Like that I get an error message right after the kernel has booted:
 
-Unfortunately, right after booting the kernel, it hangs in an infinite loop. I guess that loading
-ld.so fails.... (Just a guess, don't know how to debug that.)
+>...
+>Looking up port of RPC 100003/2 on 10.1.20.2
+>Looking up port of RPC 100005/1 on 10.1.20.2
+>VFS: Mounted root (NFS filesystem) readonly.
+>Freeing unused kernel memory: 32k init
+>tty_io.c: process 1 (swapper) used obsolete /dev/cua0 - update software to use /dev/ttyS0
 
+I found out that the kernel generates this error message in drivers/char/tty_io.c .
 
-Questions:
+Does someone know what this error message means? How to avoid it?
 
-1. Did someone try LinuxPPC 2000 on MPC860? experience??
-
-2. Should this libc6 work theoretically on MPC860?
-
-3. Does the kernel know something about the dyn. linker ld? Do I have to recompile or
-    patch the kernel??
-
-4. Does someone have the cross compiler for the old libc5 ready on the i386 host?
-
-Cheers, Ruedi
+TIA, Ruedi
 
 
---Boundary_(ID_XxmXUtMXQ9bCQLrdyf3gHw)--
+
+--Boundary_(ID_DUYgDvvMdgW2CgSDu+5VNQ)--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
