@@ -1,58 +1,41 @@
-Message-ID: <40C95EC4.8040504@intracom.gr>
-Date: Fri, 11 Jun 2004 10:27:00 +0300
-From: Pantelis Antoniou <panto@intracom.gr>
-MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: ok, so now my dynamically-linked minit starts after all.  argh.
-References: <Pine.LNX.4.58.0406101346490.18563@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.58.0406101346490.18563@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: "Stephen Williams" <612dlag102@sneakemail.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Relationship between bk libuxppc-2.4 and denx linuxppc_2_4_devel 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 10 Jun 2004 16:53:28 PDT."
+             <11675-28654@sneakemail.com>
+Date: Fri, 11 Jun 2004 09:30:54 +0200
+Message-Id: <20040611073059.D13E8C109F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Robert P. J. Day wrote:
+In message <11675-28654@sneakemail.com> you wrote:
+>
+> What is the relationship between the linuxppc-2.4 tree from
+> bk, and the anonymous cvs linuxppc_2_4_devel hosted by Denx?
 
->  gack.  after doing a thorough clean of my software tree, and rebuilding
->with a dynamically-linked minit, well, it works.  go figure.
->
->RAMDISK: Compressed image found at block 0
->VFS: Mounted root (ext2 filesystem).
->Mounted devfs on /dev
->Freeing unused kernel memory: 52k init
->Trying run_init_process with /sbin/minit
->FIFOs opened successfully.
->About to start default service.
->(hang)
->
->  in other words, i'm back where i was many days ago -- kernel booting,
->getting to minit, minit starting, then hanging.  but that's ok, given that
->i *expected* things to go south once i got to user space, based on
->previous postings here.
->
->  so, my best strategy at this point would seem to be to do the occasional
->"bk pull", and rebuild to see when i get to go further in user space.  i
->have no clue why a dynamically-linked minit suddenly started to work.
->("no, really, i didn't change anything.  honest." :-)
->
->  i'll be watching for new and exciting developments.
->
->rday
->
->
->
->
->
-If you don't happen to have the magical card that Tom seems to have
-you also need to comment out the update_mmu_cache function and
-replace it with at empty define.
+Our linuxppc_2_4_devel CVS tree is a (modified, extended) copy of the
+BK tree of the same name, which used to be the "official" development
+tree but has been declared dead a long time ago.
 
-:)
+> The latter *seems* more stable, but I'm hoping to integrate
+> in patches for me JSE board after cleaning up patches, and
+> it's not clear which tree I should work with.
 
-Regards
+You should work with  the  official  trees,  i.  e.  linuxppc-2.4  or
+linuxppc-2.5.
 
-Pantelis
+Best regards,
 
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+It would be illogical to assume that all conditions remain stable
+	-- Spock, "The Enterprise" Incident", stardate 5027.3
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
