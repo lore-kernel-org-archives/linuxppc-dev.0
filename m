@@ -1,47 +1,61 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Geert Uytterhoeven <geert@linux-m68k.org>, Val Henson <val@nmt.edu>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Val Henson <val@nmt.edu>,
+	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: EV-64260-BP & GT64260 bi_recs
-Date: Sun, 24 Mar 2002 18:18:03 +0100
-Message-Id: <20020324171803.1747@smtp.wanadoo.fr>
-In-Reply-To: <20020324165546.18197@smtp.wanadoo.fr>
-References: <20020324165546.18197@smtp.wanadoo.fr>
+Date: Sun, 24 Mar 2002 19:16:46 +0100
+Message-Id: <20020324181646.5056@smtp.adsl.oleane.com>
+In-Reply-To: <Pine.GSO.4.21.0203250948360.11999-100000@vervain.sonytel.be>
+References: <Pine.GSO.4.21.0203250948360.11999-100000@vervain.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>BTW, I just thought of something different: some people want to keep data
->>stored in bi_recs for later use, after the initialization of the
-kernel. What
->>about a new tag to mark data that is to be copied and stored for later use?
->
->Currently, I plan to keep everything. Though if we decide to put some
->flag bits in the high part of the size field, we could specify what
->to keep and what to strip.
+>Alternatively, why not create a whole device tree for this? There already
+>exists a standard for device trees: IEEE 1275 Open Firmware. Then you
+>need only
+>one extra bi_rec tag: BI_OF_TREE.
 
-Ok, rather that hacking flag bits, which I want to avoid, what about
-that: we define an optional BI_PERSISTENT tag. Any bi_rec _before_
-that tag is lost after __init (typically cmdline, initrd, informations
-used in *_setup). Any bi_rec after this tag is kept around. Tyîcally,
-this means those bi_recs are copied to separate pages (this will
-typically be BI_DEVICE recs). If you want, you can put them before
-BI_PERSISTENT and build your drivers in. If you prefer using modules,
-you can put your BI_DEVICE entries after it.
+Well, BI_OF_TREE may exist if we ever decide to move the OF interface
+out of the kernel and to the wrapper. Though it's not well suited for
+embedded platforms where we really want something as small as possible.
 
-An important point about bi_recs is that they shouldn't contain
-pointers to other things within bi_recs. They can (and will) be
-moved around, so unless explicitely defined (like initrd ptrs),
-no pointers in bi_recs.
+The device-tree has the inconvenient of duplicating a lot of informations
+that we don't necessarily need. In most embedded cases, I will only
+need about 2 or 3 BI_DEVICE records, those containing only a couple
+of informations.
 
-Again, all of this is just a small superset of the existing mecanism
-with a few utiliy functions for kernel code and drivers to locate
-bi_rec's by tag, either globally or within another bi_rec (that
-is typically BI_DEVICE). The point is that once this is coded, I
-expect bd_t & other various facilities used by bootloaders to go
-away, or at worst be moved to the wrapper.
+I'm still not completely sure about the BI_DEV_TYPE/BI_DEV_ID mecanism
+of retreiving a given BI_DEVICE yet. I have a case here where I want to
+use BI_DEVICE to carry informations about the chip select & IRQ on which
+a chip is wired on the processor external bus, along with a couple of
+flags related to some broken address select on some board revs, I want my
+driver to be able to lookup the chip itself, not a "location", so I'm still
+thinking about the best way to provide that info. Maybe an additional (and
+optional as always BI_DEV_NAME).
+
+That would give us 2 utility routines to be used by drivers to locate
+BI_DEVICE bi_recs:
+
+  bi_find_device_type(ulong dev_type, void* dev_id, size_t dev_id_size)
+  bi_find_device_name(const char* name)
+
+The first one compares BI_DEV_TYPE with dev_type, and if dev_id is non
+NULL, matches it with the variable sized BI_DEV_ID. The second one
+compares BI_DEV_NAME as a C string.
+
+The basic function for finding a bi_rec will be
+
+  bi_find(struct bi_rec* where, ulong tag);
+
+"where" will be NULL for a toplevel search, and will point to a bi_rec
+returned by one of the 2 bi_find_device routines for looking up an
+attribute within a BI_DEVICE.
+
+Any comments ? Should I start putting this together in _2_4_devel or
+only 2_5 ?
 
 Ben.
 
