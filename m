@@ -1,38 +1,60 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Peter Cordes <peter@llama.nslug.ns.ca>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: kernel lockup
-Date: Wed, 16 May 2001 11:21:54 +0200
-Message-Id: <20010516092154.16870@mailhost.mipsys.com>
-In-Reply-To: <20010516010328.D19015@llama.nslug.ns.ca>
-References: <20010516010328.D19015@llama.nslug.ns.ca>
+Message-ID: <003d01c0ddf3$085edd00$7a00000a@roma.quadrics.com>
+Reply-To: "Amelia De Vivo" <amelia.devivo@roma.quadrics.com>
+From: "Amelia De Vivo" <amelia@roma.quadrics.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Re: Addressing PCI memory
+Date: Wed, 16 May 2001 12:29:05 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->bigfoot:~# kbdrate -h
->kbdrate: invalid option -- h
->Machine check in kernel mode.
->Caused by (from SRR1=c9030): Unknown values in msr
+----- Original Message -----
+From: ashish anand <ashisha@india.infogain.com>
+To: Amelia De Vivo <amelia.devivo@roma.quadrics.com>;
+<linuxppc-dev@lists.linuxppc.org>
+Sent: Wednesday, May 16, 2001 6:40 PM
+Subject: Re: Addressing PCI memory
+
+
+> Amelia De Vivo wrote:
+> >
+> > Hi all, I'm trying to write a driver for a 64 bit PCI device. Something
+like
+> > this works well under i386 Linux, but it doesn't work at all for Linux
+> > 2.2.15 by Yellow Dog:
+> >
+> >     struct pci_dev *dev = NULL;
+> >     dev = pci_find_device(vendor, device, dev);
+> >     pci_read_config_dword(dev, PCI_BASE_ADDRESS_0, &cards[0].addr0);
+> >     cards[0].vaddr = (void *) ioremap((cards[0].addr0 &
+> > PCI_BASE_ADDRESS_MEM_MASK), cards[0].size);
+> >     writeb('A',(cards[0].vaddr)+0x1000);
 >
-> What do I do to debug this?
+>  READ PCI STATUS REGISTER TO CHECK FOR ANY MASTER/TARGET ABORT.
+
+Thanks for your reply.
+I read the pci status register and there wasn't any master/target abort
+
+>   LASTLY WHAT IS THE VALUE OF cards[0].size ?
+
+This is 0x2000000
 >
-> The machine is totally locked, not even the SysRQ combination does
->anything.  (control+command+power still resets though, since it is handled
->in hardware on oldworlds.)
+> > I have a kernel panic on writeb. Has someone some suggestion?
+>
+> LET ME KNOW THE PANIC MESSAGE....
 
-Well, I guess that kbdrate is yet another dumb x86'ism that will
-directly tap the hardware of a PC's keyboard controller...
+kernel panic: machine check
+>
+> > Thanks in advance
+> >
+> > Amelia
 
-Well, I may be wrong, but machine check usually means that you are
-trying to access non-existing hardware.
-
-There should be other informations displayed about the crash. Those
-should allow you to lookup the location of it in System.map
-
-Ben.
+Bye Amelia
+> >
+>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
