@@ -1,33 +1,59 @@
-Message-ID: <007801c07f6e$beb9c670$69f001dc@r44089-d1.sps.mot.com>
-From: "Shuangjun Zhu" <r44089@email.sps.mot.com>
-To: <mpc@mail2000.com.tw>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: linux kernel patch for Motorola FADS
-Date: Tue, 16 Jan 2001 11:45:17 +0800
+Message-ID: <3A63D066.F050245C@mvista.com>
+Date: Mon, 15 Jan 2001 23:39:02 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;	charset="gb2312"
+To: Bob Doyle <doyle@primenet.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: GCC PPC Inline Assembly Help
+References: <3A6283A7.C4327446@primenet.com> <3A629111.3F36CDE8@mvista.com> <3A63B634.44E32CF8@primenet.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-For cross compile, please see:
-http://members.home.com/mmporter/linux/cross/
+Bob Doyle wrote:
 
------Original Message-----
-From: Kirk Lee <mpc@mail2000.com.tw>
+> Nope.
 
-Dear All:
+Sorry.  I've seen a couple of questions about this lately.
 
-  I am looking for linux working under Motorola FADS.
+> The MPC8240 can only read/write 64 bits at a time when the PortX/Flash
+> bus is configured to be 64 bits wide.
 
-  I saw that soliutions4linux does provide linux-2.2.13 for Motorola FADS.
-  However, I am wondering that whether the lastest linux-2.4.0 works
-  under Motorola FADS or not.
+Oh, you tried to find a use for PortX beyond just simple stuff :-).
+I thought is was on the 60x bus.
 
-  If the answer is yes, do we need additional patches against linux-2.4.0
-  to make a working kernel image for Motorola FADS, and where to get it??
+> The MPC8240 doesn't have 'byte-lane' signals for the FLASH
 
-  Besides, is there any document describing how to build gcc cross-compile
-  environment for MPCxxx series CPU??
+Yes, yes....
+
+> Flash file system.
+
+I was afraid that was the answer :-).
+
+
+> .....That's why I'm trying
+> to force the 64-bit write to use fr0, so I can save/restore it's
+> value.  Thus the need for inline asm in gcc.
+
+Or, just write a simple assembler function and stick it in misc.S
+or something.  In a past message I responded with the necessary
+steps.....disable all exception, enable FPU, save data register,
+do your memory operation, restore the data register, disable FPU,
+enable exceptions.
+
+The other thing that would work is to copy-back cache the space
+and use cache operations to clear and push the cache line.
+
+> Actually I'm using it the way that Circle-M meant it to be used.
+
+Well.....If you notice in any of their documentation, they only
+show ROM interfaces in 64-bit mode.  Their Flash examples are either
+8- or 32-bit with external logic to decode chip enables.....
+
+Have Fun :-)!
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
