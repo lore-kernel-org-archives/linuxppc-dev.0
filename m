@@ -1,52 +1,39 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3B4AB798.687AF994@genetel.co.kr>
-Date: Tue, 10 Jul 2001 17:06:54 +0900
-From: hychon <hychon@genetel.co.kr>
-Reply-To: hychon@genetel.co.kr
-MIME-Version: 1.0
+Message-ID: <20010710082857.45181.qmail@web14503.mail.yahoo.com>
+Date: Tue, 10 Jul 2001 01:28:57 -0700 (PDT)
+From: kk <ambarishak@yahoo.com>
+Subject: Software Emulation
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: memory access
-Content-Type: text/plain; charset=EUC-KR
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi!
+Hello,
 
-I want to make a HDLC driver based on the MPC860T target board
+I have a MBX MPC823 board. while execve the /sbin/init
+from the main.c file I get an error saying
 
-To use  SCC2  as hdlc , I was access immr area by following
 
- ------------------------------------------------------------------------
+####################
+Freeing unused kernel memory : 36k init
+Bad emulation init/1
+NIP: 300256ac   instruction: 00000000 opcode: 0 A:  0
+B:  0  C: 0 code: 0 rc:  0
+pte @ 0x300256ac:
+(0xc0115300)->(oxc00dd094)->0x01fca9c9
+RPN:  01fca    PP: 2 SPS:  1 SH: 0  CI: 0  v: 1
+Kernel  VA for NIP c1fca6ac pte @ cxc1fca6ac:
+(oxc0115c1c)->(0xc010af28)->0x01fca1cd
+RPN:  01fca    PP: 0 SPS:  1 SH: 0  CI: 0  v: 1
+Software Emulation init/1 NIP: 300256ac *NIP: 0x0
+code: 1Bad emulation init/1
 
- if((mem_hdlc = open("/dev/mem", O_RDWR)) < 0){
+this message repeats continously.
 
-         perror("mem open error\n");
-         exit(2);
-  }
-
-  mem_addr_hdlc = mmap(0,(64*1024),(PROT_READ|PROT_WRITE),MAP_SHARED,
-mem_hdlc,0xFF000000 );
-
-  if((int)mem_addr_hdlc < 0 ) {
-   TRACE("mem_addr_hdlc mmap error\n");
-   exit(2);
-   }
-
-   IMMR = (immap_t *) mem_addr_hdlc;
------------------------------------------------------------------------------
-
-I used some rest area of dpmem except buffer descriptor area,
-
-then , system was down.
-
- I want to a way of use some user spaec(memory)  for  Buffer ( receving
-and transmitting data).
-
- how to memory access  " from virtual memory to physical memory and from
-physical memory to virutal memory " ?
-
-can you hlep me  with some example ???
+can any one help me,
+Thanks,
+Ambarish.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
