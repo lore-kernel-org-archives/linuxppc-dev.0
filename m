@@ -1,57 +1,28 @@
-Subject: Re: Dynamic lib loading & memory question
-From: Jeff Angielski <jangiels@speakeasy.net>
-To: "Smith, Craig" <Craig.Smith@icn.siemens.com>
-Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <EA78B62757AF1E4799828249310AC4CA04E09F03@stca206a.bus.sc.rolm.com>
+Subject: Re: On the MPC85xx development boards
+From: David Woodhouse <dwmw2@infradead.org>
+To: Mikko Alutoin <mikko.alutoin@luukku.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <1088085327022.mikko.alutoin.17388.vROgRbiXwfx6jgnkf5FAxQ@luukku.com>
 References: 
-	 <EA78B62757AF1E4799828249310AC4CA04E09F03@stca206a.bus.sc.rolm.com>
+	 <1088085327022.mikko.alutoin.17388.vROgRbiXwfx6jgnkf5FAxQ@luukku.com>
 Content-Type: text/plain
-Message-Id: <1088119724.4208.3.camel@localhost.localdomain>
+Message-Id: <1088147283.4636.110.camel@imladris.demon.co.uk>
 Mime-Version: 1.0
-Date: 24 Jun 2004 19:28:44 -0400
+Date: Fri, 25 Jun 2004 08:08:03 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 2004-06-24 at 17:58, Smith, Craig wrote:
+On Thu, 2004-06-24 at 16:55 +0300, Mikko Alutoin wrote:
+> I am under the impression that 1, 2, 4 and 5 (but not 3) come with a Linux BSP
+> included? Is this correct?
 
-> Memory: 14112k available (1564k kernel code, 436k data, 68k init, 0k
-> highmem)
+Number 3 (the WindRiver SBC8560) should be supported by 2.6 as soon as
+Linus heeds my request to pull from
+bk://linux-mtd.bkbits.net/sbc8560-2.6
 
-<snip>
-
-> ########################################
-> root@raptorlinux->~ [2] cat /proc/meminfo
->         total:    used:    free:  shared: buffers:  cached:
-> Mem:  14520320  4505600 10014720        0        0  2531328
-> Swap:        0        0        0
-> MemTotal:        14180 kB
-> MemFree:          9780 kB
-> MemShared:           0 kB
-> Buffers:             0 kB
-> Cached:           2472 kB
-> SwapCached:          0 kB
-> Active:           1088 kB
-> Inactive:         1792 kB
-> HighTotal:           0 kB
-> HighFree:            0 kB
-> LowTotal:        14180 kB
-> LowFree:          9780 kB
-> SwapTotal:           0 kB
-> SwapFree:            0 kB
->
-> Question: Why the total (and "available" value at startup) indicates
-> ~14M...why doesn't it say 16M (and what is the ~2.5M "cached" value). Thanks
-> again in advance.
-
-The memory line from the boot sequence tells you why total is not 16MB.
-The kernel is already using it... :)
-
-You can find the answer to your cached question if you look at the code
-from fs/proc/proc_misc.c
-
-Jeff Angielski
-The PTR Group
+--
+dwmw2
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
