@@ -1,44 +1,53 @@
-Date: Tue, 27 Nov 2001 08:10:07 -0800
-From: Larry McVoy <lm@bitmover.com>
-To: Gabriel Paubert <paubert@iram.es>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Why these crazy timstamps on some ChangeSets ?
-Message-ID: <20011127081007.T23210@work.bitmover.com>
-References: <Pine.LNX.4.33.0111271323540.15554-100000@gra-lx1.iram.es>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.33.0111271323540.15554-100000@gra-lx1.iram.es>; from paubert@iram.es on Tue, Nov 27, 2001 at 01:41:19PM +0100
+Date: Tue, 27 Nov 01 08:34:51 PST
+From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
+Message-Id: <0111271634.AA24348@ivan.Harhan.ORG>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Please make K2 Linux bootable without PeeMON again
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-It means that someone had screwed up clocks.  There isn't much we can do
-about it, we need increasing dates.
+Tom Rini <trini@kernel.crashing.org> wrote:
 
-On Tue, Nov 27, 2001 at 01:41:19PM +0100, Gabriel Paubert wrote:
->
-> 	Hi,
->
-> I just noticed that Changeset 1.678 and 1.679 on linuxppc_2_4_devel and
-> 1.483 on linuxppc_2_4 have a date of February 23rd 2002.
->
-> Quite annoying when browsing, because bk revtool displays all changes
-> since these commits on the same date. I strongly suspect that this will
-> last for 3 months or so, resulting in several hundred ChangeSets on the
-> same day. I use latest stable bk version BTW.
->
-> I suspect that there is no simple way of fixing this, bk won't like any
-> fiddling with timestamps to make them more realistic. There may be a
-> complex way, based on bk undo and reapplying all the patches (changing the
-> date, user name and host name on the machine so that all patches get more
-> or less the right values, but it does not look easy).
->
-> 	Gabriel.
->
->
+> Alright.  But what other magical bits do you need to shove in the
+> registers?
 
---
----
-Larry McVoy            	 lm at bitmover.com           http://www.bitmover.com/lm
+None, I just have one register (R3, the first one) point to bi_recs.
+
+> The wrappers do:
+> rec = (struct bi_record *)_ALIGN((ulong)zimage_size +
+> (1<<20)-1,(1<<20));
+>
+> Does the occult magic know the size?
+
+The booter doesn't know the size. You see, right now the user first loads the
+kernel using whatever means s/he wants, then runs my booter. The booter doesn't
+currently know the kernel size. You want to give my users an extra hassle of
+stuffing the kernel size in a register before starting my booter so the latter
+can know it. Why? What's wrong with the other alternative (my yesterday's
+patch) which would keep me happy, keep my users happy, and keep the rest of the
+Linux/PPC community happy because it doesn't break anything and is completely
+transparent?
+
+> > No, it doesn't. The patch I posted yesterday doesn't and cannot break anything.
+>
+> Er, oh yeah, thanks.:w
+
+So how about applying that patch then?
+
+> Well, the register magic is being deprecated in 2.5, or that's the plan
+> anyhow.
+
+I've heard a different plan, namely having one (1) register, no "magic", point
+to bi_recs. That's what I want.
+
+> Why can't the occult load whatever the 2.5 bi_recs look like
+> into memory someplace?
+
+Where is that someplace? I don't see how you can come up with anything other
+than something tied to aspects of the vmlinux ELF image, which I have already
+shown to be not good.
+
+MS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
