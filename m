@@ -1,37 +1,69 @@
-Subject: Re: [resolved] Re: 2.6.5/iBook G3: Oops on resume from sleep
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Aaron Lunansky <muffin@csclub.uwaterloo.ca>
+From: "Christian" <evil@www.housecafe.de>
+To: Tom Rini <trini@kernel.crashing.org>,
+	Christian Kujau <evil@g-house.de>
 Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <20040410012023.GA7393@csclub.uwaterloo.ca>
-References: <20040405215318.GA2822@mortadelo.pirispons.net>
-	 <20040407191719.GA4852@csclub.uwaterloo.ca>
-	 <1081378171.1380.68.camel@gaston>
-	 <20040408131404.GA28251@csclub.uwaterloo.ca>
-	 <1081490612.1382.125.camel@gaston>
-	 <20040409134748.GA11157@csclub.uwaterloo.ca>
-	 <1081554759.25144.155.camel@gaston>
-	 <20040410012023.GA7393@csclub.uwaterloo.ca>
-Content-Type: text/plain
-Message-Id: <1081561642.1401.162.camel@gaston>
-Mime-Version: 1.0
-Date: Sat, 10 Apr 2004 11:47:22 +1000
+Reply-To: evil@g-house.de
+Subject: Re: still unable to compile with kgdb enabled
+Date: Sat, 10 Apr 2004 16:15:59 +0100
+Message-Id: <20040410141017.M46998@www.housecafe.de>
+In-Reply-To: <20040409220646.GB1787@smtp.west.cox.net>
+References: <40771841.8040001@g-house.de> <20040409220646.GB1787@smtp.west.cox.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 2004-04-10 at 11:20, Aaron Lunansky wrote:
-> heh, good call, it was pmac_zilog that was causing the weird behaviour.
-> Removed it from my kernel (it was compiled in) and my system sleeps fine now.
+On Fri, 9 Apr 2004 15:06:46 -0700, Tom Rini wrote
+> The CVS version of the patch is against 2.6.5, and if you only
 
-Can you enable debugging in the driver (turn #undef DEBUG to #define
-DEBUG at the beginning of the driver, you may also need to boot the
-kernel with "debug" on the command line to get the messages).
+the CVS version of kgdb.sourceforge.net? i fetched it, but it still does
+not apply:
 
-See what messages you get from the driver both during boot and when
-trying to suspend. Eventually, add some more output to pmz_suspend()
-function to find out where it dies
+------------
+evil@sheep:/usr/src/linux-2.6-build$ head -n3 Makefile
+VERSION = 2
+PATCHLEVEL = 6
+SUBLEVEL = 5
+evil@sheep:/usr/src/linux-2.6-build$ cat \
+/usr/local/src/kgdb/kgdb-2/core.patch | patch -p1 --dry-run
+patching file include/linux/sched.h
+patching file include/linux/module.h
+can't find file to patch at input line 66
+Perhaps you used the wrong -p or --strip option?
+The text leading up to this was:
+--------------------------
+|--- linux-2.6.5.orig/include/linux/kgdb.h      2004-04-08
+09:40:25.496959430 -0700
+|+++ linux-2.6.5/include/linux/kgdb.h   2004-04-08 16:14:12.662858861 -0700
+--------------------------
+File to patch:
+------------
 
-Ben.
+....and so on.
+hm, i'll go then with the "-lite" patches, they apply cleanly.
+
+> pass in 'kgdbwait', it should work w/o mods (otherwise it
+> breaks in very early, and requires some additional work).
+> I've tested this out on a few machines locally, but not
+> PPC_MULTIARCH, so there might be a few incidental things
+> required to be fixed.  I've been using the KGDB_8250, and not
+> PPC_SIMPLE_SERIAL, but I plan on testing that sometime in the future.
+
+hm, i'll see what it gives with the lite-patches now.
+
+> FWIW, I'm about to go off for 2 weeks vacation, so I probably
+> won't be able to help you, if it doesn't work right away.
+
+happy holidays!
+
+Thank you,
+Christian.
+ --
+BOFH excuse #95:
+
+Pentium FDIV bug
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
