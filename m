@@ -1,67 +1,68 @@
-To: Matt Porter <mmporter@home.com>
-Cc: Cort Dougan <cort@fsmlabs.com>, Alois Fertl <alois_fertl@talknet.de>,
-        LinuxppcDev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Changes for IDE on PREP Hardware
-References: <38710186.B7930E52@talknet.de> <20000104222421.A31468@hq.fsmlabs.com> <20000105164119.C20193@cx258813-a.chnd1.az.home.com>
-From: Eric Valette <valette@crf.canon.fr>
-Date: 06 Jan 2000 13:15:48 +0100
-In-Reply-To: Matt Porter's message of "Wed, 5 Jan 2000 16:41:19 -0700"
-Message-ID: <u8d7rfl7kb.fsf@tri-yann.crf.canon.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: greyham@research.canon.com.au (Graham Stoney)
+Cc: Brendan.Simon@ctam.com.au, linuxppc-dev@lists.linuxppc.org (linuxppc-dev),
+        linuxppc-embedded@lists.linuxppc.org (linuxppc-embedded),
+        dmalek@jlc.net
+Subject: Re: MPC860 patches for glibc
+References: <20000105233607.0D48DED@elph.research.canon.com.au>
+From: Jesper Skov <jskov@cygnus.co.uk>
+Date: 06 Jan 2000 14:18:15 +0100
+In-Reply-To: greyham@research.canon.com.au's message of "Thu, 6 Jan 2000 10:36:06 +1100 (EST)"
+Message-ID: <otg0wb8hk8.fsf@thinktwice.zoftcorp.dk>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> "Matt" == Matt Porter <mmporter@home.com> writes:
+>>>>> "Graham" == Graham Stoney <greyham@research.canon.com.au> writes:
 
-Matt> On Tue, Jan 04, 2000 at 10:24:21PM -0700, Cort Dougan wrote:
->> 
->> } Attached is a patch which allows to work Motorola PREP hardware (like
->> } Blackhawk) to use IDE devices (disk and cdrom). The patch tries to
->> } selectively introduce the changes for the Motorola hardware only.
->> } IBM's can stay with their irq 13 for IDE and with their preferred
->> } method of non swapped data stream. I have no chance to test on IBM.
->> 
->> How would this work if both irqs arrive at the same time?
->> 
->> Johnnie, Matt - can you test this out on your systems?
+Graham> Brendan J Simon writes:
+>> I didn't realise there were 860 patches for glibc.  Where can I get
+>> these patches from ?
 
-Matt> Alois' IDE patch is a subset of the functionality that has made it into
-Matt> 2.2.14 from our IDE patch.  This patch doesn't account for the secondary
-Matt> IDE controller on irq 15 among other things.  I'm attaching our full
-Matt> patch as submitted versus 2.2.14pre4 so everybody can see the code I'm
-Matt> talking about.  Note that changes to ide-pci.c, ide-probe.c, and sl82c105.c
-Matt> in the patch got dropped and Alan said "maybe for 2.2.15".  The full patch
-Matt> was tested on every board MCG has made with IDE. 
+Graham> The magic mailing list archive, of course (-:
 
-Matt> As for the 8259 patch, I think it may help the problem but will 
-Matt> probably cause some bad situations disabling interrupts like that.  I
-Matt> will test it out and see if it can be used or made better so we can
-Matt> get these PReP 8259 problems behind us.
+Graham> http://lists.linuxppc.org/listarcs/linuxppc-embedded/199909/msg00000.html
 
-Just to tell you that : 
+>> What do they do ?
 
-        1) I applied the 2.2.14pre4 prepide-patch on a clean
-        linux 2.2.14 tree. Effectively the ppc part is in and
-        not the ide-pci.c, ide-probe.c, and sl82c105.c
-        2) BUT : after applying the missing part of the patches
-        the behavior is absolutely identical!!!
+Graham> Fix the cache line size for dynamic loading, and rearrange the
+Graham> FPU stuff so it doesn't get included when you build.
 
-hdc : lost interrupt...
+I think the below patch for dl-machine.c would be better. It incurs no
+loop overhead on the 32-byte cache line CPUs - and I think the double
+flush of the same line should be harmless (and cheaper than the loop
+overhead).
 
-any other hints?
+There is one small potential for error; if the macro is called with a
+(32-byte aligned pointer)+16/17/18...31 in which case the first 16
+bytes (of the 32-byte aligned address) would not be flushed on a 8xx,
+while they would be on a bigger CPU. (did that make any sense at all ;)
 
+Comments? Is it as safe/sensible as I think it is?
 
+Thanks,
+Jesper
 
--- 
-   __                 
-  /  `                   	Eric Valette
- /--   __  o _.          	Canon CRF - Communication Dept
-(___, / (_(_(__         	Rue de la touche lambert
-				35517 Cesson-Sevigne  Cedex
-				FRANCE
-Tel: +33 (0)2 99 87 68 91	Fax: +33 (0)2 99 84 11 30
-E-mail: valette@crf.canon.fr	http://www.crf.canon.fr
+--- powerpc/dl-machine.c~	Fri Mar  5 00:26:43 1999
++++ powerpc/dl-machine.c	Thu Jan  6 14:09:34 2000
+@@ -63,10 +63,17 @@
+ #define OPCODE_SLWI(ra,rs,sh) OPCODE_RLWINM(ra,rs,sh,0,31-sh)
+ 
+ 
+-#define PPC_DCBST(where) asm ("dcbst 0,%0" : : "r"(where) : "memory")
++/* The macros dealing with cache lines affect both (where) and
++   (where+16).  This is in order to support the 8xx CPUs which have
++   16-byte cache lines.  On the CPUs with 32-byte cache lines this
++   should have no noticable effect as the first store instruction
++   would effectively make the second instruction a NOP (since the line
++   would no longer be dirty). */
++#define PPC_DCBST(where) asm ("dcbst 0,%0;dcbst 0,%1" : : "r"(where), "r"((unsigned long)(where)+16) : "memory")
++#define PPC_ICBI(where) asm ("icbi 0,%0;icbi 0,%1" : : "r"(where), "r"((unsigned long)(where)+16) : "memory")
++
+ #define PPC_SYNC asm ("sync" : : : "memory")
+ #define PPC_ISYNC asm volatile ("sync; isync" : : : "memory")
+-#define PPC_ICBI(where) asm ("icbi 0,%0" : : "r"(where) : "memory")
+ #define PPC_DIE asm volatile ("tweq 0,0")
+ 
+ /* Use this when you've modified some code, but it won't be in the
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
