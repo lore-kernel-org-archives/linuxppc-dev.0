@@ -1,50 +1,29 @@
-To: "Navin Boppuri" <navin.boppuri@newisys.com>
+Message-ID: <3B7854DB.5020702@mvista.com>
+Date: Mon, 13 Aug 2001 15:29:47 -0700
+From: Matthew Locke <mlocke@mvista.com>
+MIME-Version: 1.0
+To: Navin Boppuri <navin.boppuri@newisys.com>
 Cc: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Flash Driver 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 13 Aug 2001 17:09:03 CDT."
-             <3A494DE356A49A40B37442E1E0D9F3B5063418@ptah.ad.newisys.com>
-Date: Tue, 14 Aug 2001 00:28:44 +0200
-Message-Id: <20010813222849.BA24310CBA@denx.denx.de>
+Subject: Re: CFI flash support for AMD chips
+References: <3A494DE356A49A40B37442E1E0D9F3B5063419@ptah.ad.newisys.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3A494DE356A49A40B37442E1E0D9F3B5063418@ptah.ad.newisys.com> you wrote:
+Navin Boppuri wrote:
+
+> Hello,
 >
-> Can someone tell me how to set up and use the flash driver in the 2.4.x
-> Linux kernel. I see a CFI and non-CFI support for the AMD flash chips. I
+> I am trying to use the CFI flash support for AMD chips. I selected the
+> CFI support in kernel configuration and defined the flash memory map on
+> my board ( CFI Flash device in Physical memory map). I see that CFI is
+> able to find the flash devices on my board correctly. Now, do I need to
+> create a /dev/flash device in the dev directory? What Major, Minor
+> numbers do I use? How do I actually use this driver???
+>
 
-You mean the driver we maintain?
+check out the MTD home page. http://www.linux-mtd.infradead.org
 
-> am using an AMD flash chip on my board. Which one of the drivers do I
-> load? How are these initialized?
-
-For AMD chips, configure:
-
-	CONFIG_FLASH=y
-	CONFIG_AMD_FLASH=y
-
-Add a "partition" scheme for your board to "drivers/char/flash_config.c";
-see the comment in this file.
-
-There is no more configuration needed (assuming you are booting  from
-PPCBoot, which will pass the necessary parameters to the Linux kernel
-[physical start address and size of the flash memory]).
-
-> I have not been able to find any documentation on this. Any help is very
-> appreciated.
-
-Just ask :-)
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Q: How do you spell "onomatopoeia"?
-A: The way it sounds.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
