@@ -1,32 +1,63 @@
-Message-ID: <3A65EA68.F75481A2@mvista.com>
-Date: Wed, 17 Jan 2001 13:54:32 -0500
-From: Dan Malek <dan@mvista.com>
+Message-ID: <A33AEFDC2EC0D411851900D0B73EBEF7063E50@NAPA>
+From: Hua Ji <hji@netscreen.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: cross-compier with gcc
+Date: Wed, 17 Jan 2001 11:06:44 -0800
 MIME-Version: 1.0
-To: Borlizzi Giacomo <giacomo.borlizzi@tei.ericsson.se>
-CC: "linuxppc-embedded@lists.linuxppc.org"
- <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: KERNELBASE and MMU
-References: <3A648564.671DDDD5@tei.ericsson.se> <3A64C847.D2414D1D@mvista.com> <3A65E51B.50FC28EC@tei.ericsson.se>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Borlizzi Giacomo wrote:
->
-> Does you say that linux code is not PIC? (position indipendent code)
+Hi, guys,
 
-No it is not.  You can move it around a little if you _really_
-understand the details.  For any PowerPC processor there is no
-reason to change the location regardless of the system implementation.
+Good morning!
 
-> Why such constraint on physical memory area? It don't make some
-> limitation on portability of code?
+Help needed!
 
-No portability problem.  This code runs on more processors and
-boards more easily than anything else in the world.
+I made a cross compiler on my solaris machine for powerpc-elf target.
+Everything looks fine when I did the make.
 
+When I used my powerpc-elf-gcc to compile and link my helloworld.c, I got
+some error described below. Basically,
+my helloworld.c is:
+--------
+#include <stdio.h>
+void main()
+{
+	printf("Hello World!\n");
+}
+--------
 
-	-- Dan
+The command line used for compile and link is: powerpc-elf-gcc -v -o
+helloworld helloworld.c
+
+The error is: Can't link printf codes from library!!
+
+---------
+GNU assembler version 2.9.1 (powerpc-elf), using BFD version 2.9.1
+
+/export/home4/hji/compilers/powerpc-elf-1-17/lib/gcc-lib/powerpc-elf/2.95.2/
+collect2 -V -Qy -dn -Bstatic
+-L/export/home4/hji/compilers/powerpc-elf-1-17/lib/gcc-lib/powerpc-elf/2.95.
+2 -L/export/home4/hji/compilers/powerpc-elf-1-17/powerpc-elf/lib
+/var/tmp/ccAEuQ8q.o
+/export/home4/hji/compilers/powerpc-elf-1-17/lib/gcc-lib/powerpc-elf/2.95.2/
+libgcc.a
+/export/home4/hji/compilers/powerpc-elf-1-17/lib/gcc-lib/powerpc-elf/2.95.2/
+libgcc.a
+/export/home4/hji/compilers/powerpc-elf-1-17/powerpc-elf/bin/ld: warning:
+cannot find entry symbol _start; defaulting to 01800074
+/var/tmp/ccAEuQ8q.o: In function `ppctest':
+/var/tmp/ccAEuQ8q.o(.text+0x20): undefined reference to `printf'
+GNU ld version 2.9.1 (with BFD 2.9.1)
+  Supported emulations:
+   elf32ppc
+--------------------
+
+Thanks, guys.
+
+Hua
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
