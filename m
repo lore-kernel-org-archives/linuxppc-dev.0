@@ -1,52 +1,60 @@
-Message-ID: <3CBDACD9.A8F9DF27@esteem.com>
-Date: Wed, 17 Apr 2002 10:11:53 -0700
-From: Conn Clark <clark@esteem.com>
 MIME-Version: 1.0
-To: Jacky Wang <jacky@premierme.com.tw>
-Cc: May Ling List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Does anyone port m8xx_pcmcia driver to Linux Kernel successfully?
-References: <NFBBLKLHNAGPKBMPDMALIEICKAAA.jacky@premierme.com.tw>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Anyone got eepro100 working on Walnut?
+Date: Wed, 17 Apr 2002 15:22:54 -0400
+Message-ID: <FF6CF34C346E724596A2FB5CAAB2C497884506@voyager.ops.infiniswitch.com>
+From: "Wright, David" <dwright@infiniswitch.com>
+To: "Matt Porter" <mporter@mvista.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Jacky Wang wrote:
+Greetings, all,
+
+As it turned out, the age of my kernel (2.4.14-pre3) was the
+source of the problem; I had the older pci allocation functions
+that don't allocate non-cacheable memory.  When I updated the
+kernel to use a more recent pci-dma.c, the eepro100.c driver
+I'd been using worked fine.  (It's not identical to the one in
+the latest distribution, but it's not far off.)
+
+Thanks,
+
+  -- David Wright, InfiniSwitch Corp.
+
+
+> -----Original Message-----
+> On Tue, Apr 16, 2002 at 09:08:41PM -0400, Wright, David wrote:
+> >
+> > I've been trying to get an Intel eepro100 card working on a
+> > Walnut board.  I've tried both the 1.09 and 1.19 versions of
+> > the driver (eepro100.c).  Initially, both failed the self-
+> > test step.  I was able to get past that one by invalidating
+> > the dcache after issuing the self-test directive.  However,
+> > I now find that the card is neither transmitting nor receiving
+> > reliably.  I get messages like:
+> >
+> >    eth1: Unknown receiver error, status=0x5048.  [lots of these]
+> >
+> > and
+> >
+> > eth1: Transmit timed out: status 0050  0000 at 2/8 commands
+> 00a00300 00a003000.
+> > eth1: Restarting the chip...
+> > eth1: Command unit failed to mark command 00030000 as complete at 6.
+> >
+> >
+> > Any suggestions (other than junking this card, which is not
+> > an option for me) most welcome.
 >
-> Conn,
+> Sounds like you have a buggy kernel since it looks like cache
+> coherency problems.  By the revision of the eepro100 driver you
+> are using, it sounds ancient too.
 >
-> hmm......
-> sounds good.
->
-> but, I am a newbie about programming with linux kernel and MPC850.
-> Could you tell me which kernel release and how to port it smoothly?
-
-	We are using kernel 2.2.13 and pcmcia card services 3.1.10 .
-Unfortunately our hardware is proprietary and doesn't have a full pcmcia
-interface. I had to comment out all the voltage detect and such. Other
-than that I just followed the instructions that came with the mpc8xx
-patch file. The patch used to be availible from montavista's ftp site
-but
-isn't any more.
-
-here is some help full notes.
-
-http://lists.linuxppc.org/linuxppc-embedded/200005/msg00227.html
-
-
-
-Conn
-
-
---
-
-*****************************************************************
-  If you live at home long enough, your parents will move out.
-*****************************************************************
-
-Conn Clark
-Engineering Stooge				clark@esteem.com
-Electronic Systems Technology Inc.		www.esteem.com
-
+> Try running the 2_4_devel kernel.  The current eepro100 driver
+> works fine for me on a 440 so you shouldn't have a problem
+> assuming that the walnut port is working.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
