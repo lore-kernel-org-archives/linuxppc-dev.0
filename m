@@ -1,41 +1,42 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <007001c2581e$af4a9900$370da8c0@aman>
-From: "Aman" <aman@mistralsoftware.com>
-To: "linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: NFS Mount
-Date: Mon, 9 Sep 2002 22:03:52 +0530
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: "William A. Smith" <bsmith@iphase.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MCIP805: New Linux Boot 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 09 Sep 2002 11:05:43 CDT."
+             <5.1.1.6.2.20020909104632.0356dd20@mailhost.iphase.com>
+Date: Mon, 09 Sep 2002 18:39:08 +0200
+Message-Id: <20020909163913.E4CB9FA8B@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi All
-I have a basic question.
-I have build a kernel image using the ppc linux source. Now I want to
-download the image using NFS from the host. When I tried to boot the image I
-am getting the following error.
+Dear Bill,
 
-VFS: Mounted root (nfs filesystem).
- Freeing unused kernel memory: 220k init
-Warning: unable to open an initial console.
- Kernel panic: No init found.  Try passing init= option to kernel.
-<0>Rebooting in 180 seconds..
+in message <5.1.1.6.2.20020909104632.0356dd20@mailhost.iphase.com> you wrote:
+>
+> I'm new to embedded PPC Linux.  Does anyone have a link to a good webpage
+> explaining how to make a ramdisk- or flash-based CPU boot from the rebuilt
+> kernel image I have?  This is a Motorola MCIP805 CPU.
 
-My root path in the dhcpd.conf  is /hdb/mydir/mykernel , this where I have
-un tar the linux kernel source for PPC.
-In the exports file I have exported the path /hdb/mydir.
+See http://www.denx.de/doc/TQM8xxL/ for an example, allthough  for  a
+different board.
 
-My doubt is , will there be a filesystem already in the linux source at the
-location /hdb/mydir/mykernel or I have to create it. If I have create it,
-how should I go about.
+To build a ramdisk image you could use our SELF package as a starting
+point, see ftp://ftp.denx.de/pub/LinuxPPC/usr/src/SELF/
 
-Please help me in solving this issue.
+BTW: maybe the IPHASE4539 config option is a bit familiar to you :-)
 
-Thanking you in advance
-Regards
-Aman
 
+Best regards,
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Heavier than air flying machines are impossible.
+                    -- Lord Kelvin, President, Royal Society, c. 1895
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
