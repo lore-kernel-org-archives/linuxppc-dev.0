@@ -1,34 +1,55 @@
-Message-ID: <36C33FEB.FDB02302@babcockbrown.com>
-Date: Thu, 11 Feb 1999 12:39:07 -0800
-From: root <hughc@babcockbrown.com>
-MIME-Version: 1.0
-To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
-Subject: R5 Install (Mostly) Successful on PBG3
+Date: Thu, 11 Feb 1999 17:13:47 -0500
+From: Jeff Dubrule <igor@pobox.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: GTK+-1.1.15 uploaded to /incoming
+Message-ID: <19990211171347.F16578@belltower.dartmouth.edu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I am able to install pre-R5 on my G3 Series laptop again, using the
-latest RPMS from mirror.  I used Martin Costabel's "big" ramdisk image
-and a 2.1.125 kernel.
+I just uploaded gtk+-1.1.15-1.ppc.rpm and gtk+-devel-1.1.15-1.ppc.rpm to
+/incoming on ftp.linuxppc.org.
 
-There were a few failures during intstall.  The main problem I have is
-that RPM doesn't work; any attempt to use it returns an error
-"//var/lib/rpm/nameindex.rpm: Invalid argument"
+These were compiled under MkLinux, but with glibc2 and all of the LinuxPPC
+preR5 packages installed, so it should work fine on LinuxPPC systems.
+   
+-igor
 
-Is it the double slash at the beginning of that line?  Where is it
-getting that path?  Using --dbpath doesn't seem to help...
+Name        : gtk+                        Distribution: (none)
+Version     : 1.1.15                            Vendor: (none)
+Release     : 1                             Build Date: Thu Feb 11 15:05:38
+1999
+Install date: Thu Feb 11 16:35:57 1999      Build Host: belltower
+Group       : X11/Libraries                 Source RPM:
+gtk+-1.1.15-1.src.rpm
+Size        : 2751613                          License: LGPL
+Packager    : Michael Fulbright <drmike@redhat.com>
+URL         : http://www.gtk.org
+Summary     : The Gimp Toolkit
+Description :
+The X libraries originally written for the GIMP, which are now used by
+several other programs as well.
+  
 
-Hugh
-
---
-Hugh Caley, System Administrator
-Babcock & Brown, Inc., San Francisco
-1+512+1515x694 | hughc@babcockbrown.com
-
-
-
+Name        : gtk+-devel                  Distribution: (none)   
+Version     : 1.1.15                            Vendor: (none)
+Release     : 1                             Build Date: Thu Feb 11 15:05:38
+1999
+Install date: Thu Feb 11 16:37:46 1999      Build Host: belltower
+Group       : X11/Libraries                 Source RPM:
+gtk+-1.1.15-1.src.rpm
+Size        : 3770937                          License: LGPL
+Packager    : Michael Fulbright <drmike@redhat.com>
+URL         : http://www.gtk.org
+Summary     : GIMP Toolkit and GIMP Drawing Kit
+Description :
+Static libraries and header files for the GIMP's X libraries, which are
+available as public libraries.  GLIB includes generally useful data
+structures, GDK is a drawing toolkit which provides a thin layer over
+Xlib to help automate things like dealing with different color depths,
+and GTK is a widget set for creating user interfaces.
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
