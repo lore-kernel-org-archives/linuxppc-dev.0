@@ -1,113 +1,59 @@
-Message-ID: <DB0585C9F6F9D411BE8F00D0B7896A4CC0601E@SNCMAIL>
-From: James Don <JDon@spacebridge.com>
-To: James Don <JDon@spacebridge.com>,
-	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: SELF: compile of util-linux
-Date: Thu, 9 Jan 2003 20:43:52 -0500 
+From: "Georg Klug" <gklug@giga-stream.de>
+To: "Muaddi, Cecilia" <cecilia.muaddi@alloptic.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: AW: access memory mapped registers 
+Date: Fri, 10 Jan 2003 09:19:26 +0100
+Message-ID: <FFECLICFNBJAHONLGAKMKEKGCHAA.gklug@giga-stream.de>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-reply-to: <885489B3B89FB6449F93E525DF78777F064541@srvnt506.ALLOPTIC.COM>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Scratch question 2 ...
-I thin the answer is that "patch" basically buts in the files necessary to
-build a cross compiled version of "util-linux" .... after I patch I think
-this will mean that the SED command will find some matches ...
+Hi Cecilia,
 
-I didn't need the "patch part" to build busy box (0.60.5) when I tried ...
-so I thought I could skip it ...
+> Given that, do you know what is the convention if I need to address the GPIO
+> pins in
+> the 860?   I have some FPGA which require me to download the FPGA code
+> and they are controlled via JTAG from my GPIO pins out of 860.  I can use
+> mmap to map the ppc 860 internal memory (the quick dirty way just to see if
+> works), or is there a driver already provided which will allow me to control
+> the GPIO pins from user application?
 
-I think anyways,
-Jim
+we had a similar problem with our custom 405 board and we solved it this way:
 
------Original Message-----
-From: James Don
-Sent: Thursday, January 09, 2003 8:36 PM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: SELF: compile of util-linux
+- making a device driver which does the basic stuff like accessing the GPIOs
+  in the proper way.
+- defining an ioctl interface that allows any application to download the
+  FPGA code.
+- creating an user space application which takes a filename as a parameter and
+  sends it via the ioctls to the device driver. (we called it loadfpga)
 
-Hi,
+The ioctl interface is pretty simple. It only needs just one action code
+(FpgaProg) with a block of at most 4k bytes as data and an additional option
+field showing the driver whether this block of data is the first one and/or the
+last one.
 
-I am just browsing through the SELF code ... and trying for kicks to make
-"my own version" as an exercise to learn more about packages required for a
-running embedded Linux system ...
+The driver now does just some simple actions like this:
+ - if this is the first block do the proper initilization of the downloading
+   (in our case we needed to initialize the GPIOs, puls the PROG and check the
+    INIT signal)
+ - for all blocks do the signaling via the GPIO bitwise (in our case set DIN
+    for all bits and puls the CLK signal)
+ - if this was the last block do the concluding actions (in our case do some
+    CLK pulses and wait for the DONE signal and then take the chip out of reset)
 
-So far I have ...
+The user space application is even simplier:
+ - Read the binary file in 4k blocks
+ - Issue an ioctl and set the bits signaling whether this block is the first
+    and/or the last properly.
 
-1.) Built uclibc
-2.) Built busybox with uclibc gcc wrappers
-3.) Built insmod with uclibc gcc wrappers
+This concept may also work for your case.
 
-I am reading the compile of util-linux (see below item 1) ... I am
-relatively new to linux so I have some questions (most of which are probably
-stupid seeing as just started looking at this)...
+Kind regards,
+Georg
 
-1.) The "patch" part of the compile ... is it to add kernel support for what
-I am compiling? If I managed to get a pre-built image to run on an unpatched
-kernel what am I missing?
-
-2.) When you run the "sed -e 's/XXX-powerpc-linux-/$(CROSS_PREFIX)/" I
-assume this should go into the make sysyem and put the cross compiler in the
-build ? ... sorry never used "sed" just skimmed the man page
-
-3.) For kicks I have taken the tar ball I downloaded of util-linux (version
-2.11y) and tried to compile it with the uclibc gcc wrappers (see item 2
-below) ... now this does when I get to the "make part" ... it seems to die
-because "configure" was not called ... but its not called from SELF's make
-file either ??? If I call make from the util-linux directory it calls
-configure ... but then uses my local 'cc' ...
-
-Any tips would be great ;-) In the mean time I will keep digging and
-hopefully see what's wrong with my script ;-)
-
-Best regards,
-Jim
-
-
-
-item 1
-============
-$(LOGIN)/login-utils/login: $(LOGIN)/.patch
-	$(MAKE) -C $(LOGIN)/lib
-	$(MAKE) -C $(LOGIN)/login-utils login
-
-$(LOGIN)/.patch: $(CONFIGURATION) \
-		$(TARBALLS)/util-linux-$(LOGIN_VERSION).tar.gz \
-		$(PATCHES)/util-linux-$(LOGIN_VERSION)-cross.$(P_SUFF) \
-
-$(PATCHES)/util-linux-$(LOGIN_VERSION)-nosetproctitle.$(P_SUFF) \
-		$(CONFIG)/config.mk
-	rm -fr $(LOGIN)
-	cd $(BUILD) && \
-	gzip -cd $(TARBALLS)/util-linux-$(LOGIN_VERSION).tar.gz | tar xf -
-	cd $(LOGIN) && \
-	sed -e 's/XXX-powerpc-linux-/$(CROSS_PREFIX)/' \
-
-$(PATCHES)/util-linux-$(LOGIN_VERSION)-cross.$(P_SUFF) | \
-		patch -p1 -b -z.cross && \
-	patch -p1 -b -z.no_sp
-<$(PATCHES)/util-linux-$(LOGIN_VERSION)-nosetproctitle.$(P_SUFF) && \
-	touch .patch
-
-item 2
-==============
-#!/usr/bin/bash
-
-LOGIN_UTIL_VERSION=2.11y
-LOGIN_BUILD_DIR=$HOME/ppcLoginUtil/
-
-CROSS=powerper-uclibc-
-
-echo LOGIN_BUILD_DIR=$LOGIN_BUILD_DIR
-
-rm -fr $LOGIN_BUILD_DIR/util-linux-$LOGIN_UTIL_VERSION
-tar xvfz $LOGIN_BUILD_DIR/util-linux-$LOGIN_UTIL_VERSION.tar.gz
-cd $LOGIN_BUILD_DIR/util-linux-$LOGIN_UTIL_VERSION
-
-sed -e 's/XXX-powerpc-linux-/$CROSS/' *
-
-make -C $LOGIN_BUILD_DIR/util-linux-$LOGIN_UTIL_VERSION/lib
-make -C $LOGIN_BUILD_DIR/util-linux-$LOGIN_UTIL_VERSION/login-utils login
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
