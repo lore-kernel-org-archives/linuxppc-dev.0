@@ -1,19 +1,16 @@
-Return-Path: <takeharu1219@ybb.ne.jp>
-Received: from ybbsmtp14.mail.mci.yahoo.co.jp (ybbsmtp14.mail.mci.yahoo.co.jp
-	[210.80.241.188]) by ozlabs.org (Postfix) with SMTP id 9013667A6B
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id C382867A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  9 Mar 2005 04:08:42 +1100 (EST)
-Message-ID: <422DDC16.5010008@ybb.ne.jp>
-Date: Wed, 09 Mar 2005 02:08:38 +0900
-From: Takeharu KATO <takeharu1219@ybb.ne.jp>
+	Wed,  9 Mar 2005 04:33:51 +1100 (EST)
 MIME-Version: 1.0
-To: Kumar Gala <kumar.gala@freescale.com>
-References: <42282C7F.4010407@jp.fujitsu.com>
-	<5e548efff8924e163b562381a93ffe35@freescale.com>
-In-Reply-To: <5e548efff8924e163b562381a93ffe35@freescale.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: ppcembed <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] WDT Driver for Book-E [1/2] Architecture specific part.
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Tue, 8 Mar 2005 11:33:46 -0600
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B8592E8@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Lots of memory on 826x
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,24 +21,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Kumar:
+Anybody know how to get more than 512MB (1-2GB) of RAM to work with
+2.6.11 on a 8265?
 
-Kumar Gala wrote:
-> Out of interest how did you test this?  If I find some time I will test  
-> it on an e500 system, just havent given much thought on how to test the  
-> watchdog though.
-> 
-> - kumar
-> 
-I tested the WDT driver with folowing test programs:
+Weird stuff and crashes keep happening on kernel start (vmalloc out of
+memory, and a pci driver ups) when I tell the kernel I have more than
+512MB of ram.
+The pci craches happens when I tell the kernel I have 740-760MB or more.
 
-1) API test program which tests ioctl commands.
-2) Test program which tests the behavior of the driver when
-    system hung up due to making interrupt disabled(MSR[EE]=0 case).
-    This test program is made as a kernel module.
+Any idea of where to start to look for this?
 
-Shall I send these programs off-list?
-
-Regards,
--- 
-Takeharu KATO
+Rune Torgersen
+System Developer
+Innovative Systems LLC
+1000 Innovative Drive
+Mitchell, SD 57301
+Ph: 605-995-6120
+www.innovsys.com
