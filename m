@@ -1,140 +1,241 @@
-Message-ID: <3EB01137.1070502@mvista.com>
-Date: Wed, 30 Apr 2003 11:08:55 -0700
+Message-ID: <3EB024EA.4060909@mvista.com>
+Date: Wed, 30 Apr 2003 12:32:58 -0700
 From: Randy Vinson <rvinson@mvista.com>
 MIME-Version: 1.0
 To: linuxppc-dev@lists.linuxppc.org
-Subject: GT64260 IIC Driver Patch
+Subject: Bi_rec "Library"
 Content-Type: multipart/mixed;
- boundary="------------040307060405070905050304"
+ boundary="------------040805070900070407070501"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 This is a multi-part message in MIME format.
---------------040307060405070905050304
+--------------040805070900070407070501
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 
 Greetings,
-   I've encountered a situation in the boot wrapper where the current
-2_4_devel GT64260 IIC driver needed some changes. The hardware I'm using
-(Force PowerPMC260) has a small SEEPROM  with only 256 bytes. The
-previous driver always expected 2 bytes of offset whereas my device only
-needs 1 byte. I've modified the driver to handle either type of device.
-Also, the firmware on the board i"m using leaves the IIC hardware in a
-funky state, so I added a reset/initilization sequence to correct for
-that. I've tested this patch against the MCG HXEB100 as well as the
-hardware I'm using and it works on both platforms. I also had a
-duplicate definition problem when I included gt64260_tty.c to access the
-GT64260's onboard serial ports so I made the gt64260_in_le32 and
-gt64260_out_le32 definitions static to resolve it.
+   I was looking at all of the current bi_rec creation code and noticed
+that there seemed to be a lot of work/code used to create the bi_recs. I
+thought it would be relatively easy to create a bi_rec "library" to
+clean things up and hide the messy details of bi_rec creation. I've
+attached a patch which adds the library (boot/common/bootinfo.c) and
+modified decompress_kernel in misc-simple.c to use it as an example. I
+realize that there may not be much interest at this point, but I thought
+I'd send it out anyway.
 
-   I'd like to get this added if it's OK.
-
-
-			Thanks,
 			Randy Vinson
 
---------------040307060405070905050304
+--------------040805070900070407070501
 Content-Type: text/plain;
- name="gt64260_iic.patch"
+ name="bi_rec.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="gt64260_iic.patch"
+ filename="bi_rec.patch"
 
-diff -Nru a/arch/ppc/boot/simple/gt64260_iic.c b/arch/ppc/boot/simple/gt64260_iic.c
---- a/arch/ppc/boot/simple/gt64260_iic.c	Tue Apr 29 17:04:36 2003
-+++ b/arch/ppc/boot/simple/gt64260_iic.c	Tue Apr 29 17:04:36 2003
-@@ -22,7 +22,7 @@
- static u32	gt64260_base = CONFIG_GT64260_ORIG_REG_BASE;
- #endif
-
--inline unsigned
-+static inline unsigned
- gt64260_in_le32(volatile unsigned *addr)
- {
- 	unsigned ret;
-@@ -32,7 +32,7 @@
- 	return ret;
- }
-
--inline void
-+static inline void
- gt64260_out_le32(volatile unsigned *addr, int val)
- {
- 	__asm__ __volatile__("stwbrx %1,0,%2; eieio" : "=m" (*addr) :
-@@ -97,7 +97,8 @@
- }
-
- int
--gt64260_iic_read(uint devaddr, u8 *buf, uint offset, uint count)
-+gt64260_iic_read(uint devaddr, u8 *buf, uint offset, uint offset_size,
-+		 uint count)
- {
- 	int i;
- 	int data;
-@@ -105,6 +106,16 @@
- 	int status;
-
- 	/*
-+	 * send reset
-+	 */
-+	WRITE_RESET(0);
-+	WRITE_ADDR(0);
-+	WRITE_EX_ADDR(0);
-+	WRITE_BAUD_RATE((4 << 3) | 4);
-+	if (iic_control(GT64260_I2C_ENABLE_BIT, GT64260_I2C_STATUS_IDLE) < 0)
-+		return -1;
+diff -Nru a/arch/ppc/boot/common/bootinfo.c b/arch/ppc/boot/common/bootinfo.c
+--- /dev/null	Wed Dec 31 16:00:00 1969
++++ b/arch/ppc/boot/common/bootinfo.c	Wed Apr 30 12:26:32 2003
+@@ -0,0 +1,69 @@
++/*
++ * arch/ppc/common/bootinfo.c
++ *
++ * General bootinfo record utilities
++ * Author: Randy Vinson <rvinson@mvista.com>
++ *
++ * 2002 (c) MontaVista Software, Inc. This file is licensed under the terms
++ * of the GNU General Public License version 2. This program is licensed
++ * "as is" without any warranty of any kind, whether express or implied.
++ */
 +
-+	/*
- 	 * send start
- 	 */
- 	control = GT64260_I2C_START_BIT|GT64260_I2C_ENABLE_BIT;
-@@ -126,8 +137,10 @@
- 	 */
- 	control = GT64260_I2C_ENABLE_BIT;
- 	status = GT64260_I2C_STATUS_WRITE_ACK;
--	if (iic_write_byte(offset >> 8, control, status) < 0)
--		return -1;
-+	if (offset_size > 1) {
-+		if (iic_write_byte(offset >> 8, control, status) < 0)
-+			return -1;
-+	}
- 	if (iic_write_byte(offset, control, status) < 0)
- 		return -1;
++#include <linux/types.h>
++#include <asm/bootinfo.h>
++
++#include "nonstdio.h"
++
++static struct bi_record * birec = NULL;
++
++static struct bi_record *
++__bootinfo_build(struct bi_record *rec, unsigned long tag, unsigned long size,
++		 void *data)
++{
++	/* set the tag */
++	rec->tag = tag;
++
++	/* if the caller has any data, copy it */
++	if (size)
++		memcpy(rec->data, (char *)data, size);
++
++	/* set the record size */
++	rec->size = sizeof(struct bi_record) + size;
++
++	/* advance to the next available space */
++	rec = (struct bi_record *)((unsigned long)rec + rec->size);
++
++	return rec;
++}
++
++void
++bootinfo_init(struct bi_record *rec)
++{
++
++	/* save start of birec area */
++	birec = rec;
++
++	/* create an empty list */
++	rec = __bootinfo_build(rec, BI_FIRST, 0, NULL);
++	(void) __bootinfo_build(rec, BI_LAST, 0, NULL);
++
++}
++
++void
++bootinfo_append(unsigned long tag, unsigned long size, void * data)
++{
++
++	struct bi_record *rec = birec;
++
++	/* paranoia */
++	if ((rec == NULL) || (rec->tag != BI_FIRST))
++		return;
++
++	/* find the last entry in the list */
++	while (rec->tag != BI_LAST)
++		rec = (struct bi_record *)((ulong)rec + rec->size);
++
++	/* overlay BI_LAST record with new one and tag on a new BI_LAST */
++	rec = __bootinfo_build(rec, tag, size, data);
++	(void) __bootinfo_build(rec, BI_LAST, 0, NULL);
++}
+diff -Nru a/arch/ppc/boot/common/misc-simple.c b/arch/ppc/boot/common/misc-simple.c
+--- a/arch/ppc/boot/common/misc-simple.c	Wed Apr 30 12:26:32 2003
++++ b/arch/ppc/boot/common/misc-simple.c	Wed Apr 30 12:26:32 2003
+@@ -96,7 +96,7 @@
+ #endif
+ 	char *cp;
+ 	struct bi_record *rec;
+-	unsigned long rec_loc, initrd_loc, TotalMemory = 0;
++	unsigned long initrd_loc, TotalMemory = 0;
 
-diff -Nru a/arch/ppc/boot/simple/misc-hxeb100.c b/arch/ppc/boot/simple/misc-hxeb100.c
---- a/arch/ppc/boot/simple/misc-hxeb100.c	Tue Apr 29 17:04:36 2003
-+++ b/arch/ppc/boot/simple/misc-hxeb100.c	Tue Apr 29 17:04:36 2003
-@@ -24,7 +24,8 @@
- static int found_cpu1;
- extern void hxeb100_cpu1_wait_for_kernel(void);
+ 	serial_fixups();
+ 	com_port = serial_init(0, NULL);
+@@ -223,16 +223,13 @@
+ 	gunzip(0, 0x400000, zimage_start, &zimage_size);
+ 	puts("done.\n");
 
--extern int gt64260_iic_read(uint devaddr, u8 *buf, uint offset, uint count);
-+extern int gt64260_iic_read(uint devaddr, u8 *buf, uint offset,
-+			    uint offset_size, uint count);
+-	/*
+-	 * Create bi_recs for cmd_line and initrds
+-	 */
+-	rec_loc = _ALIGN((unsigned long)(zimage_size) +
+-			(1 << 20) - 1, (1 << 20));
+-	rec = (struct bi_record *)rec_loc;
++	/* get the bi_rec address */
++	rec = bootinfo_addr(zimage_size);
 
- static bd_t board_info;
-
-@@ -35,12 +36,12 @@
- 	int dev = HXEB100_VPD_IIC_DEV;
- 	bd_t *bi = &board_info;
-
--	gt64260_iic_read(dev, (char *)&moto, 0, sizeof(moto));
-+	gt64260_iic_read(dev, (char *)&moto, 0, 2, sizeof(moto));
- 	if (moto == 0x4D4F544F) {	/* 'MOTO' */
- 	    	bi->bi_hxeb = HXEB100_BOARD_INFO_HXEB;		/* 'HXEB' */
--		gt64260_iic_read(dev, (u8 *)&bi->bi_busfreq, 80, 4);
--		gt64260_iic_read(dev, bi->bi_enetaddr[0],    94, 6);
--		gt64260_iic_read(dev, bi->bi_enetaddr[1],   103, 6);
-+		gt64260_iic_read(dev, (u8 *)&bi->bi_busfreq, 80, 2, 4);
-+		gt64260_iic_read(dev, bi->bi_enetaddr[0],    94, 2, 6);
-+		gt64260_iic_read(dev, bi->bi_enetaddr[1],   103, 2, 6);
+ 	/* We need to make sure that the initrd and bi_recs do not
+ 	 * overlap. */
+ 	if ( initrd_size ) {
++		unsigned long rec_loc = (unsigned long) rec;
+ 		initrd_loc = (unsigned long)(&__ramdisk_begin);
+ 		/* If the bi_recs are in the middle of the current
+ 		 * initrd, move the initrd to the next MB
+@@ -248,38 +245,24 @@
+ 		 	puts("\n");
+ 		}
  	}
+-
+-	rec->tag = BI_FIRST;
+-	rec->size = sizeof(struct bi_record);
+-	rec = (struct bi_record *)((unsigned long)rec + rec->size);
+-
+-	if ( TotalMemory ) {
+-		rec->tag = BI_MEMSIZE;
+-		rec->data[0] = TotalMemory;
+-		rec->size = sizeof(struct bi_record) + sizeof(unsigned long);
+-		rec = (struct bi_record *)((unsigned long)rec + rec->size);
+-	}
+
+-	rec->tag = BI_CMD_LINE;
+-	memcpy( (char *)rec->data, cmd_line, strlen(cmd_line)+1);
+-	rec->size = sizeof(struct bi_record) + strlen(cmd_line) + 1;
+-	rec = (struct bi_record *)((unsigned long)rec + rec->size);
++	bootinfo_init(rec);
++	if ( TotalMemory )
++		bootinfo_append(BI_MEMSIZE, sizeof(int), (void*)&TotalMemory);
+
+-	if ( initrd_size ) {
+-		rec->tag = BI_INITRD;
+-		rec->data[0] = initrd_loc;
+-		rec->data[1] = initrd_size;
+-		rec->size = sizeof(struct bi_record) + 2 *
+-			sizeof(unsigned long);
+-		rec = (struct bi_record *)((unsigned long)rec +
+-				rec->size);
+-	}
++	bootinfo_append(BI_CMD_LINE, strlen(cmd_line)+1, (void*)cmd_line);
++
++	/* add a bi_rec for the initrd if it exists */
++	if (initrd_size) {
++		unsigned long initrd[2];
+
+-	rec->tag = BI_LAST;
+-	rec->size = sizeof(struct bi_record);
+-	rec = (struct bi_record *)((unsigned long)rec + rec->size);
++		initrd[0] = initrd_loc;
++		initrd[1] = initrd_size;
++
++		bootinfo_append(BI_INITRD, sizeof(initrd), &initrd);
++	}
+ 	puts("Now booting the kernel\n");
+ 	serial_close(com_port);
+
+-	return (struct bi_record *)rec_loc;
++	return rec;
  }
+diff -Nru a/arch/ppc/boot/simple/Makefile b/arch/ppc/boot/simple/Makefile
+--- a/arch/ppc/boot/simple/Makefile	Wed Apr 30 12:26:32 2003
++++ b/arch/ppc/boot/simple/Makefile	Wed Apr 30 12:26:32 2003
+@@ -16,7 +16,7 @@
+
+ # Normally, we use the 'misc-simple.c' file for decompress_kernel and
+ # whatnot.  Sometimes we need to override this however.
+-MISC				:= ../common/misc-simple.o
++MISC				:= ../common/misc-simple.o ../common/bootinfo.o
+ # Additionally, we normally don't need to mess with the L2 / L3 caches
+ # if present on 'classic' PPC.
+ ifeq ($(CONFIG_6xx),y)
+diff -Nru a/include/asm-ppc/bootinfo.h b/include/asm-ppc/bootinfo.h
+--- a/include/asm-ppc/bootinfo.h	Wed Apr 30 12:26:32 2003
++++ b/include/asm-ppc/bootinfo.h	Wed Apr 30 12:26:32 2003
+@@ -10,6 +10,7 @@
+ #define _PPC_BOOTINFO_H
+
+ #include <linux/config.h>
++#include <asm/page.h>
+
+ #if defined(CONFIG_APUS) && !defined(__BOOTER__)
+ #include <asm-m68k/bootinfo.h>
+@@ -32,9 +33,18 @@
+ #define BI_BOARD_INFO		0x1018
+
+ extern struct bi_record *find_bootinfo(void);
++extern void bootinfo_init(struct bi_record *rec);
++extern void bootinfo_append(unsigned long tag, unsigned long size, void * data);
+ extern void parse_bootinfo(struct bi_record *rec);
+ extern unsigned long boot_mem_size;
+
++static inline struct bi_record *
++bootinfo_addr(unsigned long offset)
++{
++
++	return (struct bi_record *)_ALIGN((offset) + (1 << 20) - 1,
++					  (1 << 20));
++}
+ #endif /* CONFIG_APUS */
 
 
---------------040307060405070905050304--
+
+--------------040805070900070407070501--
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
