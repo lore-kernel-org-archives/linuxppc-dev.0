@@ -1,47 +1,40 @@
-To: Sylvain Munaut <tnt@246tnt.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux on MPC5200 - LITE5200EVAL & New bestcomm code ? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 03 Mar 2004 08:34:36 +0100."
-             <40458A8C.8020009@246tNt.com>
-Date: Wed, 03 Mar 2004 09:03:26 +0100
-Message-Id: <20040303080332.0EA92C0655@atlas.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain;
+  charset="us-ascii"
+From: "S. Hebbar" <shebbar@india.tejasnetworks.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: denx 2.4.20 kernel memory leak
+Date: Wed, 3 Mar 2004 14:44:15 +0530
+MIME-Version: 1.0
+Message-Id: <200403031444.15398.shebbar@india.tejasnetworks.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <40458A8C.8020009@246tNt.com> you wrote:
->
-> and it works just fine ... Apparently when the kernel was too big, the
-> area near 100000 is probably used by u-boot in some way, maybe during
+Hello,
 
-Well, it is not used by U-Boot itself, but when you have a big  Linux
-kernel it starts overwriting itself when you uncompress it to address
-0.
+I am noticing kernel memory leak when I am getting a file using ftp.
+For each ftp get session, the skbuff_head_cache is increasing.
 
-> software issue. Maybe u-boot should give some warning about that ( if
-> it's the cause, not yet sure ). But that's off topic here.
+Original:
+  skbuff_head_cache  17232  17232    160  718  718    1
+After getting a 8 MB file.
+  skbuff_head_cache  18094  18096    160  754  754    1
 
-U-Boot does not know the uncompressed size in advance. And  anyway  -
-it's  a  pilot  error  :-)  In modification of anmother famous quote:
-"U-Boot was not designed  to  stop  you  from  doing  stupid  things,
-because that would also stop you from doing clever things."
+Finally, system runs out of memory and kernel start killing processes.
 
-> Now, I'm just looking forward for new BestComm code, to get AC97 and IDE
-> DMA running ( quite slow and CPU intensive right now ... ).
+I don't think this is driver problem. I can "flud ping" (ping -f) for more
+than 24 hours without loosing any memory. I am generating 4000 packets/second
+to the target using "ping -f"
 
-:-(
+I am not sure if there is another application which causes memory leak.
 
-Best regards,
+I am using denx 2.4.20 kernel. My target processor is MPC8260.
 
-Wolfgang Denk
+Any help is much appreciated.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Q:  How many DEC repairman does it take to fix a flat ?
-A:  Five; four to hold the car up and one to swap tires.
+Regards,
+Hebbar.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
