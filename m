@@ -1,63 +1,31 @@
-Message-Id: <v04003a19b7fbbcf4b374@[24.70.162.28]>
-In-Reply-To: <20011022194702.1461@smtp.wanadoo.fr>
-References: <v04003a15b7fa25b3e8f4@[24.70.162.28]>
- <v04003a15b7fa25b3e8f4@[24.70.162.28]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Tue, 23 Oct 2001 19:45:10 -0500
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	<linuxppc-dev@lists.linuxppc.org>
-From: "Tony 'Nicoya' Mantler" <nicoya@apia.dhs.org>
-Subject: Re: idebus=133 ?
+Message-ID: <3BD60FF5.24C4B841@mandrakesoft.com>
+Date: Tue, 23 Oct 2001 20:48:53 -0400
+From: Jeff Garzik <jgarzik@mandrakesoft.com>
+MIME-Version: 1.0
+To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: any easy way to force 10/100 nics to 10?
+References: <20011023211459.NUPA19597.tomts17-srv.bellnexxia.net@there>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 2:47 PM -0500 10/22/01, Benjamin Herrenschmidt wrote:
-[...]
->Well. I don't even know if it's really a 66Mhz slot, or some kind of
->hacked 33Mhz with a doubled clock (I don't know if it really follow
->the PCI spec for 66Mhz). I heard noise when the machine was released
->about that slot not beeing completely standard.
-
-Just for the sake of trivia, I pulled up apple's docs on the B&W G3, and it
-had this to say about the slot:
-
-
->The primary PCI bus includes slot 1, which accommodates only 32-bit 66 MHz
->+3.3 V PCI cards. Slot 1 conforms to the PCI V2.1 specification with the
->exception that its clock speed is fixed at 66 MHz so it does not accept
->33 MHz cards.
+"Kevin B. Hendricks" wrote:
 >
->The Power Macintosh G3 computer is always configured with an Apple 2D/3D
->accelerated graphics card installed in slot 1, so that slot is not
->available for PCI card expansion unless the card is removed. Slot 1 is
->keyed for 3.3V only operation, so older 5V cards cannot be installed in
->that slot.
+> Hi,
+>
+> My new dsl router seems to hate 100 connections from my 10/100 nics.
+>
+> Is there an easy way to force 10mb speed (a /proc setting?)?
 
-
-So the fuss was likely about the different keying for the 3.3v cards (this
-is also an issue in some SGI x86 machines), and the 66MHz-only restriction
-(most 66MHz slots I've seen will automatically go down to 33MHz when you
-insert an older card).
-
-3.3v/universal cards seem to be becoming more widespread recently, though
-66MHz cards seem to still be thin on the ground, or not labled very
-obviously for me to notice them.
-
-
-Seems kinda silly the way everyone's talking nowadays about PCI-X and
-whatnot when you can't even get 64/66 PCI slots on anything sub-$15k, and
-even 64/33 is a rarity outside macs and servers. Ah well.
-
-
-Cheers - Tony 'Nicoya' Mantler :)
-
+The standard way, in this order, is (a) via ethtool, (b) via mii-tool,
+or (c) using a command line option at kernel boot time.
 
 --
-Tony "Nicoya" Mantler - Renaissance Nerd Extraordinaire - nicoya@apia.dhs.org
-Winnipeg, Manitoba, Canada           --           http://nicoya.feline.pp.se/
+Jeff Garzik      | Only so many songs can be sung
+Building 1024    | with two lips, two lungs, and one tongue.
+MandrakeSoft     |         - nomeansno
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
