@@ -1,16 +1,20 @@
-Return-Path: <Ed.Goforth@gd-ais.com>
-Received: from vaff01-fes.gd-ais.com (vaff01.veridian.com [137.100.144.2])
-	by ozlabs.org (Postfix) with SMTP id 2A4DD2BF0E
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 1B7782BF16
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 13 Jan 2005 10:37:16 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Wed, 12 Jan 2005 18:25:45 -0500
-Message-ID: <9A48EF7239039B48834A3F6B644B0C71EF8679@vaff06-mail01.ad.gd-ais.com>
-From: "Goforth, Edward" <Ed.Goforth@gd-ais.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: board with no RTC
+	Thu, 13 Jan 2005 10:42:59 +1100 (EST)
+Date: Wed, 12 Jan 2005 15:42:56 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: "Goforth, Edward" <Ed.Goforth@gd-ais.com>
+Message-ID: <20050112234256.GA26091@gate.ebshome.net>
+References: <9A48EF7239039B48834A3F6B644B0C71EF8679@vaff06-mail01.ad.gd-ais.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9A48EF7239039B48834A3F6B644B0C71EF8679@vaff06-mail01.ad.gd-ais.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: board with no RTC
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,14 +25,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-We have a 440gx based custom board.  I have learned that it does not
-have a RTC. Has anyone had any success with a board without a RTC, or is
-it even possible?  How much of a problem will this cause? =20
+On Wed, Jan 12, 2005 at 06:25:45PM -0500, Goforth, Edward wrote:
+> We have a 440gx based custom board.  I have learned that it does not
+> have a RTC. Has anyone had any success with a board without a RTC, or is
+> it even possible?  How much of a problem will this cause?  
+> 
 
-Should we get the board respun with a RTC?  We would prefer using a 2.4
-kernel, but would certainly go to a 2.6 kernel if that made things
-easier.
+There shouldn't be any problems without RTC except the fact that you 
+need to worry about getting correct time.
 
-Thanks in advance for any advice.
+I have many 4xx-based boards without RTC. They "just work".
 
-Ed Goforth
+--
+Eugene
