@@ -1,37 +1,29 @@
-Date: Sat, 9 Sep 2000 12:16:43 +0200 (MET DST)
-From: Roman Zippel <zippel@fh-brandenburg.de>
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-cc: Michel D?nzer <daenzerm@student.ethz.ch>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        linuxppc-dev@lists.linuxppc.org,
-        linux-apus-devel@lists.sourceforge.net
-Subject: Re: newer xfree86 4.0.1 patches
-In-Reply-To: <00090723415902.31531@enzo.bigblue.local>
-Message-ID: <Pine.GSO.4.10.10009091208470.13087-100000@zeus.fh-brandenburg.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Chas Williams <chas@cmf.nrl.navy.mil>
+Date: Sat, 9 Sep 2000 13:57:36 -0400 (EDT)
+Message-Id: <200009091757.NAA35435@borg.cmf.nrl.navy.mil>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: 64-bit pci bus on a powermac g4
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+i am writing a driver for an atm adapter and i am seeing some strange
+problems.  the card is 32/64 bit.  it works fine in my 32-bit pci bus
+on my umax s900, but in the g4 it oops' with a trap 300 during operation.
+i understand this to be 'data access exception' or 'data storage exception'.
 
-> > We have a CVS repository at SourceForge. Roman Zippel integrates bitkeeper
-> > into it, but unfortunately we don't have anyone for the reverse direction.
-> > How could that be done?
->
-> Via Linus probably, but in this special case we could arrange something.
+a couple questions:
 
-Most of the changes are in the ppc subtree, so I would rather like to see
-if they would go through one of the ppc trees, so they don't break
-anything. On the other hand they also need a small cleanup especially some
-mm part, as APUS is the only ppc machine where the memory doesn't start at
-zero, but here I'm currently still looking for some strange bug - all
-kernel virtual doesn't work (ioremap, vmalloc), but at least vmalloc did
-work and I see nothing in the changes, what could have broken it, so I'm
-still hunting...
+. is the 64bit pci bus capability functional in the g4?  (i gather it
+  must be since my 64bit ati rage pro for the second monitor is working fine)
 
-bye, Roman
+. anyone else written a driver for a 64bit pci card in the g4's?
+
+. do i need to align my dma regions to 64bits?  shouldnt the card be
+  able transfer non-dma until it gets to a dma region?  i suppose this
+  depends on the bridge/card controller.  the driver documentation
+  is a bit lacking on this detail.  it claims that tx buffers dont
+  require special alignment but if you dont use dma, of course it doesnt.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
