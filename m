@@ -1,30 +1,40 @@
-Date: Wed, 12 May 1999 08:44:31 -0400 (EDT)
-From: Tom Rini <tmrini@ntplx.net>
-To: Hugh Caley <hcaley@loomer.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Does Linux PPC support the new 'Lombard/101' Powerbook G3s?
-In-Reply-To: <373926B4.6BFD7CE7@loomer.com>
-Message-ID: <Pine.SUN.4.02.9905120842530.17765-100000@sea.ntplx.net>
+From: Konstantinos Margaritis <kmargar@cc.uoa.gr>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: cvs kernel does not compile
+Date: Wed, 12 May 1999 17:08:23 +0300
+Content-Type: text/plain
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <99051217114000.00658@proton>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 11 May 1999, Hugh Caley wrote:
+   The 2.3.0 kernel found on cvs.on.openprojects.net does not compile on
+my powerpc system (debian glibc 2.1, egcs 1.1.2pre), with the following
+error: 
 
-> Why do you think it would work, Tom?  You can't OF boot the "Wallstreet"
-> G3 laptops, can you?
+gcc -D__KERNEL__ -I/usr/src/linux/include -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -D__powerpc__ -fsigned-char -msoft-float -pipe -fno-builtin -ffixed-r2 -Wno-uninitialized -mmultiple -mstring   -DEXPORT_SYMTAB -c ksyms.c
+/usr/src/linux/include/linux/fs.h: In function `mark_buffer_clean':
+In file included from /usr/src/linux/include/linux/capability.h:13,
+                 from /usr/src/linux/include/linux/binfmts.h:5,
+                 from /usr/src/linux/include/linux/sched.h:8,
+                 from /usr/src/linux/include/linux/mm.h:4,
+                 from /usr/src/linux/include/linux/slab.h:14,                                    from /usr/src/linux/include/linux/malloc.h:4,
+                 from ksyms.c:13:
+/usr/src/linux/include/linux/fs.h:763: warning: implicit declaration of function
+ `test_and_clear_bit'
+/usr/src/linux/include/linux/fs.h: In function `mark_buffer_dirty':
+/usr/src/linux/include/linux/fs.h:771: warning: implicit declaration of function
+ `test_and_set_bit'
+ksyms.c: At top level:
+ksyms.c:361: `init_special_inode' undeclared here (not in a function)
+ksyms.c:361: initializer element for `__ksymtab_init_special_inode.value' is not
+ constant
 
-Last I knew, only the New machines (iMac/B&W) coudln't OF boot because of
-the new ELF loader (or something like that).  Other machines might have
-very odd or difficult OFs (1st G3s) but could be OF booted.  Then again, I
-don't have a Wallstreet so I can't be certain.
+It's the first time it does this. Any ideas?
 
 --
-Tom Rini (TR1265)
-http://dobbstown.yeti.edu/
-
+Konstantinos Margaritis
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
