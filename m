@@ -1,71 +1,202 @@
-Message-ID: <3E84813E.A34C2628@synergymicro.com>
-Date: Fri, 28 Mar 2003 09:07:11 -0800
-From: Dave Wilhardt <wilhardt@synergymicro.com>
-Reply-To: wilhardt@synergymicro.com
-MIME-Version: 1.0
-To: "xisto.garcia" <xisto.garcia@bol.com.br>
+Message-ID: <20030328171108.15068.qmail@web41213.mail.yahoo.com>
+Date: Fri, 28 Mar 2003 09:11:08 -0800 (PST)
+From: Prakash kanthi <pkanthi@yahoo.com>
+Subject: Flash File System Concerns
+To: Jaap-Jan Boor <jjboor@lucent.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [OT] bdiGDB connection problems
-References: <HCGOV1$IHOcMkAllk38XE89wMohNoFOIUP5KcYdl8o7qEw1dC@bol.com.br>
+In-Reply-To: <3E82F7F6.A1C684F@lucent.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"xisto.garcia" wrote:
+Folks,
 
-> > Change the BDI-2000 subnet mask to 255.255.255.0. Make sure your
-> > RedHat 8.0 host also uses same subnet mask. Delete the entry for
-> > gatweay, it is not needed. BDI does not support ping. However, if
-> > you can see arp request-replies, all is well. Fix your subnet mask.
+I have one concern regarding FFS. If you use flash for
+your entire filesystem including /var/log, /proc,
+etc.., you will be accessing flash too many times.
+
+And there is good chance that, your flash on the board
+reaches maximum number of accesses/writes limited by
+flash technology.
+
+How do people generally handle that in the industry.
+Especially, if you have on-board (non-replaceable)
+flash?
+
+Thanks,
+Prakash
+
+
+Jaap Jan: Thank you very much for precise
+instructions.
+
+
+
+
+--- Jaap-Jan Boor <jjboor@lucent.com> wrote:
+> Prakash,
 >
-> Hummm... changing the submask doesn't work... about the gateway, I
-> did'n't find a way to delete it. Anyway, they are on the same subnet!
-
-Did you click Transmit AND OK?  The "OK" is really important.
-
-> I wonder whenever my firmware is broken 8) By the way, does anybody has
-> a working 1.15 firmware?
+> You should divide your flash into parts. e.g.:
 >
-> > >I'm new to bdiGDB and I'm facing some problems with it. I've got a
-> > >bdiGDB for a 82xx PPC and I've correctly updated its firmware and
-> > >configured it through the RS232 interface, specifying its IP address,
-> > >my host IP, bla bla bla. But when I try to communicate through the
-> > >ethernet, by a telnet section, it doesn't seem to respond at all.
+> - first block(s) boot
+> - then some blocks for the kernel
+> - all remaining blocks as root fs
+>
+> You do this partitioning in the maps directory of
+> drivers/mtd.
+>
+> You can make a linux kernel with mtd and jffs2
+> support and ramdisk that
+> holds the erase, eraseall, dd, mkfs.jffs2 etc.
+> programs.
+>
+> You can load the kernel into SDRAM, run it, prepare
+> your flash (erase flash, then use mkfs.jffs2 on a
+> /dev/mtd? device
+> to prepare an fs.
+>
+> You should then make a new kernel that uses mtd as
+> rootfs, not
+> the ramdisk as rootfs.
+>
+> Jaap-Jan
+>
+> Prakash kanthi wrote:
+> >
+> > Hi Jaap Jan,
+> >
+> > Thanks for your reply. What do you mean by 'works
+> out
+> > of the box with denx'? I see the code you referred
+> to
+> > but not sure how to use it. I still have some
+> > concerns. Like,
+> >
+> > 1. How can i initially store the image into flash?
+> My
+> > flash chip is on the board.
+> > 2. How can i boot linux from flash?
+> >
+> > 3. Currently i have a 32MB SDRAM along with flash.
+> I
+> > have tools to download linux image into SDRAM.
+> Even if
+> > i go with MTD/JFFS, my concern is unless linux
+> runs
+> > flash can not be accessed and vice versa.
+> >
+> > 4. Lets say, i download linux into a safe place in
+> > SDRAM, boot it and then access flash thru MTD/JFFS
+> and
+> > store linux image into flash. Even in this case,
+> what
+> > all i need to take care of for making my flash a
+> boot
+> > device.
+> >
+> > Any detailed documentation is appreciated.
+> >
+> > Thanks,
+> > Prakash
+> >
+> > --- Jaap-Jan Boor <jjboor@lucent.com> wrote:
+> > > Hi,
 > > >
-> > >Some facts:
+> > > I use strata flash with MTD and JFSS2 as file
+> system
+> > > on top of it. Works out of the box with denx'
+> eldk
+> > > kernel and
+> > > toolchain. I've provided my own flash map but
+> you
+> > > can also use an existing one (look e.g. in
+> > > linux/drivers/mtd/maps)
 > > >
-> > >- Target MPC8260 in a MPC8260ADS board;
-> > >- RedHat Linux 8.0 as the host;
-> > >- dump from the bdi200 setup:
+> > > Jaap-Jan
 > > >
-> > >BDI Type : BDI2000 Rev.C (SN: xxx)
-> > >Loader   : V1.05
-> > >Firmware : V1.15 bdiGDB for PPC6xx/PPC7xx
-> > >Logic    : V1.02 PPC6xx/PPC7xx
-> > >MAC      : 00-0c-01-xx-xx-xx
-> > >IP Addr  : 192.168.0.2
-> > >Subnet   : 255.255.255.255
-> > >Gateway  : 255.255.255.255
-> > >Host IP  : 192.168.0.1
-> > >Config   : mpc820ads.cnf
+> > > Wolfgang Denk wrote:
+> > > >
+> > > > In message
 > > >
-> > >- The 'load mode' was correctly closed;
-> > >- The ethernet 'link' led is on and the 'rx' led blinks as packets
-> > >  ares sent on the net;
-> > >- The bdi doesn't even answer my pings!
-> > >- Sniffering the net, I've seen several ARP request and replies,
-> > >  exchanged by bdi->host and host->bdi.
+> <20030326070131.88176.qmail@web41202.mail.yahoo.com>
+> > > you wrote:
+> > > > >
+> > > > > I have a 32MB Intel Strata flash on my
+> PPC405
+> > > based
+> > > > > custom board. I need to create access
+> > > routines/APIs to
+> > > > > access the flash. I was thinking of creating
+> a
+> > > Flash
+> > > > > File System and mount it as a device in
+> Linux
+> > > > > environment.
+> > > > >
+> > > > > Are there any off the shelf FFS packages
+> > > available?
+> > > > > Generally, how the flash is used?
+> > > >
+> > > > Use the MTD layer.
+> > > >
+> > > > > I am working with micro-monitor to use its
+> Tiny
+> > > File
+> > > > > System on flash support and eventually mount
+> > > into
+> > > > > linux. Did anyone use this combination
+> before?
+> > > >
+> > > > I think you cannot do this. AFAIK the TFS code
+> is
+> > > not available under
+> > > > a GPL compatible license which prevents it
+> from
+> > > being linked with the
+> > > > Linux kernel code.
+> > > >
+> > > > Best regards,
+> > > >
+> > > > Wolfgang Denk
+> > > >
+> > > > --
+> > > > Software Engineering:  Embedded and Realtime
+> > > Systems,  Embedded Linux
+> > > > Phone: (+49)-8142-4596-87  Fax:
+> (+49)-8142-4596-88
+> > >  Email: wd@denx.de
+> > > > There is is no reason for any individual to
+> have a
+> > > computer in  their
+> > > > home.      -- Ken Olsen (President of Digital
+> > > Equipment Corporation),
+> > > >               Convention of the World Future
+> > > Society, in Boston, 1977
+> > > >
 > > >
-> > >Some questions:
-> > >
-> > >- Do I need to have my target conected to bdi in order to
-> > >  stabilish the telnet connection?
-> > >- What about the tftp server, does it have to be running at
-> > >  this point?
-> > >- What services are provided by the bdi? Telnet on TCP port 23?
-> > >  ICMP also? And what about the debugger, does it listen to
-> > >  port 2001?
-> > >- How can I get it running?
+> > > --
+> > > J.G.J. Boor
+> > > Room:  BE-525
+> > > Lucent Technologies Nederland b.v.
+> > > Phone: +31 35 687 4721
+> > > Optical Networking Group TMS Data
+> > > Fax:   +31 35 687 5976
+> > > P.O. Box 1168, 1200 BD, Hilversum, The
+> Netherlands
+> > mailto:jjboor@lucent.com
+> >
+>
+> --
+> J.G.J. Boor
+> Room:  BE-525
+> Lucent Technologies Nederland b.v.
+> Phone: +31 35 687 4721
+> Optical Networking Group TMS Data
+> Fax:   +31 35 687 5976
+> P.O. Box 1168, 1200 BD, Hilversum, The Netherlands
+mailto:jjboor@lucent.com
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
