@@ -2,23 +2,22 @@ Content-Type: text/plain; charset=iso-8859-1
 MIME-Version: 1.0
 To: trini@kernel.crashing.org
 Cc: acurtis@onz.com, dan@embeddededge.com,
-	linuxppc-embedded@lists.linuxppc.org
+	linuxppc-embedded@lists.linuxppc.org, paulus@samba.org
 From: acurtis@onz.com
-Subject: Re: 8260/8xx Embedded Boot patch
-Date: Tue, 27 Aug 2002 17:28:29 -0700 (PDT)
-Message-Id: <20020827172829.3580.h002.c007.wm@mail.directvinternet.com.criticalpath.net>
+Subject: Re: 8260/8xx IRQ patch
+Date: Tue, 27 Aug 2002 17:31:28 -0700 (PDT)
+Message-Id: <20020827173128.20304.h022.c007.wm@mail.directvinternet.com.criticalpath.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> The first thing I saw was the define_bool CONFIG_ALL_PPC n.
-> If this was actually needed someplace, there's a bug there that needs to
-> be fixed.
+> Definatly not for 2.4, for 8xx.  And did you test this on an 8xx board?
 
-This is not required. All of the xxxx8260_defconfig files define this so you do
-not get all of the generic Mac stuff like IDE and video. If it is not appropriate
-take it out. It just serves to weed out a lot of options you are just going to
-turn-off anyway.
+I do not have an 8xx board but I have tested it on the 8260. On the 8260 if you
+loaded a module that wanted to call request_irq() you crashed in a stub function.
+No mapping to request_8xxirq() from request_irq().
+
+I could make this 8260 specific if you want.
 
 ------------------------------------------------------------
 Allen Curtis              |  All good things come to those
