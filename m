@@ -1,39 +1,41 @@
-Date: Thu, 21 Nov 2002 18:10:50 +0000
-From: Jess Balint <jbalinc@insight.rr.com>
-To: LinuxPPC Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Debug Kernel Crash
-Message-Id: <20021121181050.50682d58.jbalinc@insight.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Thu, 21 Nov 2002 11:17:51 -0800
+From: Dennis Khoo <dkhoo@atmxdsl.com>
+Subject: Re: Cramfs root file system
+To: Flavio Pereira <flavio.pereira@za.flextronics.com>,
+	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Message-id: <001601c29192$afb08870$7ec7c7c7@dkhoo>
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+References: <7899847F7C05BE43A0687AD18D97DA2207F285@srv_mail.azisa.co.za>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all. I wish to know how to debug the kernel via the serial terminal. I have use the kernel, linux 2.4.19 and 2.4.20-rc2 as trying to load on a Motorola MCP750 (PReP).  The very first compile that I did booted alright, but everyone one after that does not. It stops at when residual data found. I don't know if something in my nvram is screwing it up. Following is the output when loading the kernel. Any pointers on how to debug this would be great. Thanks.
+Flavio,
 
-jess
+> Please append a correct "root=" boot option
+> Kernel panic: VFS: Unable to mount root fs on 02:00
+>
+> Now, is it possible to do what Im trying to do, if so are there any
+> suggestions as to what I'm doing wrong?
+>
 
-_BEGIN_
+I saw the same error when I was trying to mount jffs2 as root.  Maybe your
+problem is similar to mine.
 
-PPC1-Bug>nbo
-Network Booting from: DEC21140, Controller 0, Device 0
-Device Name: /pci@80000000/pci1011,9@e,0:0,0
-Loading: zImage.prep
+My solution:
 
-Client IP Address      = 10.0.0.201
-Server IP Address      = 10.0.0.73
-Gateway IP Address     = 10.0.0.33
-Subnet IP Address Mask = 255.0.0.0
-Boot File Name         = zImage.prep
-Argument File Name     =
+1)   in kernel file init/main.c 's dev_name_struct,  add entry for
+ "mtdblock", 0x1f00
+if it's not there already.
 
-Network Boot File load in progress... To abort hit <BREAK>
+2) in ppcboot =>setenv bootargs init=/linuxrc root=/dev/mtdblockx
 
-Bytes Received =&757210, Bytes Loaded =&757210
-Bytes/Second   =&378605, Elapsed Time =2 Second(s)
+Hope this helps.
 
-Residual-Data Located at: $01F88000
+Dennis Khoo
+Software Engineer
+Adapcom, Inc
 
-_END_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
