@@ -1,43 +1,38 @@
-Date: Mon, 6 Jan 2003 11:23:06 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Steven Scholz <steven.scholz@imc-berlin.de>
-Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: request_irq, MPX8xx, IDE, PCMCIA, ...
-Message-ID: <20030106182306.GB796@opus.bloom.county>
-References: <3E19B8A9.4F1F82E0@imc-berlin.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: Mon, 6 Jan 2003 12:51:25 -0800
+From: curt brune <curt@acm.org>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: wireless lan PCMCIA card advice
+Message-ID: <20030106125125.D24490@curtisb.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3E19B8A9.4F1F82E0@imc-berlin.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Jan 06, 2003 at 06:11:05PM +0100, Steven Scholz wrote:
+Hello,
 
-> Hi there,
->
-> last year ide-cs was working on MPC8xx platforms.
->
-> It was necessary to define
->
-> 	define ide_request_irq(irq,hand,flg,dev,id)
-> request_8xxirq((irq),(hand),(flg),(dev),(id))
->
-> in the board specific header file.
->
-> I just relalised that on December 16 code in ide-probe was changed!!!
+I have a RPXLite 823e based board from EmbeddedPlanet that has an open
+PCMCIA slot in it.  Currently I am booting a 2.4.4 kernel from ELDK
+which works just fine.
 
-As part of the IDE cleanup, yes.
+I would like to buy a wireless 802.11b PCMCIA card for this board and
+am wondering about any past experiences.  I have researched the
+general linux+WiFi webistes a bit, but I wanted the embedded society's
+opinion also.
 
-> What is the status of the request_8xxirq() vs request_irq() stuff?
+Any success stories out there?  If so could you include the following
+info?
 
-At the certain annoyance of Dan Malek (sorry Dan), really really soon
-now.  I've got a local (Marcelo-based) 2.4 with the changes in, and lightly
-tested.  Once it passes some more heavy 'stress', I'll ask Paul to send
-it onto Marcelo.
+  embedded board:
+  PCMCIA hardware:
+  PCMCIA vendor:
+  driver used:
+  kernel version:
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+I appreciate your help.  Please CC: me on the replies.
+
+Cheers,
+Curt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
