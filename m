@@ -1,50 +1,46 @@
-Date: Fri, 6 Aug 1999 16:20:49 -0500
-From: Dave Wolfe <dwolfe@risc.sps.mot.com>
-To: LinuxPPC-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Motorola Web Site
-Message-ID: <19990806162049.A3976@miaow.risc.sps.mot.com>
-References: <199907281336.PAA20067@denx.muc.de> <Pine.LNX.4.10.9907281254550.30083-100000@fwrsl-11.phx.mcd.mot.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.10.9907281254550.30083-100000@fwrsl-11.phx.mcd.mot.com>; from Matt Porter on Wed, Jul 28, 1999 at 01:05:39PM -0700
+Message-Id: <199908072033.NAA10643@soda.CSUA.Berkeley.EDU>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Working SMP Kernel Source for PMac
+Date: Sat, 07 Aug 1999 13:33:03 -0700
+From: Sriranga Veeraraghavan <ranga@CSUA.Berkeley.EDU>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-[ Matt Porter writes: ]
-> 
-> On Wed, 28 Jul 1999, Wolfgang Denk wrote:
-> 
-> > 3) Is Motorola going to extend it's Linux support to the embedded
-> > controllers (MPC8xx, MPX82xx) ?
->
-> I'm not speaking for Motorola Computer Group, but the idea is to
-> support all current systems under Linux. For MPC8xx and MPC82xx
-> processors, this means the MBX (8xx) and the announced MVME2100
-> (82xx).
->
-> Keep in mind that the various evaluation boards for 8xx and 82xx are
-> produced by Motorola Semiconductor Processor Sector and any support
-> for those products would have to come from them. I can tell you I
-> have zero contact with them and don't even know if they can pronounce
-> Linux. :)
 
-Nor do I speak for SPS, but I asked around and here was the answer
-I got. This person asked to remain anonymous, so obviously he's not
-speaking for SPS either, but this is the current party line:
+Hi,
 
-> Linux has been ported to the PowerPC (8xx) architecture by various
-> third parties. Motorola Netcomm has no plans to actively port Linux to
-> 8xx.
+I am trying to build an SMP kernel for my system. I am running
+LinuxPPC R4 on a PMac 7600 with a nPower 400 (2 604e 200's). I would
+like to know where to get a complete kernel source tar-ball that
+supports SMP on PMac's.
 
-Netcomm is the group that manufactures, markets, distributes, and
-supports 8xx and 82xx embedded processors. Obviously, a lot of lobbying
-needs to be done to help them "get it", but software in a semiconductor
-manufacturer is like an ethics committee at a political convention, they
-know they've got to have it, but don't understand what it's good for. :-)
+So far I have tried the stock 2.2.6 and 2.2.7 sources from kernel.org
+and the 2.2.10-pmac sources from sunsite.anu.edu.au. I have not been
+able to build a bootable SMP kernel from any of these source
+tarballs. The kernels built from these images crashes during boot in
+"swapper".
 
--- 
- Dave Wolfe
+The process I am using for building the kernel is:
+
+# cd /usr/src/linux 
+# make mrproper ; make pmac_config ; make menuconfig ; 
+# make dep && make clean && make vmlinux
+
+If there is something additional that I need to do please let me know.
+
+I am curretly using a SMP 2.2.7 kernel from borg.mit.edu, but it
+appears that borg.mit.edu only has compiled kernel images, not source
+tar-balls. If anyone has the sources for this kernel, I would
+appreciate a pointer.
+
+The only SMP kernel I have been able to built and boot sucessfully was
+2.2.0-pre6. I don't want to go back to this version since the DEC
+2x14x ethernet support was flaky.
+
+Thanks,
+
+----ranga <ranga@soda.berkeley.edu>
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
