@@ -1,32 +1,35 @@
-Date: Thu, 6 Sep 2001 11:42:58 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Cort Dougan <cort@fsmlabs.com>
-Cc: linuxppc-commit@source.mvista.com,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: egcs vs gcc-2.95.x
-Message-ID: <20010906114258.P21172@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20010906112613.M21172@cpe-24-221-152-185.az.sprintbbd.net> <20010906123022.D5873@ftsoj.fsmlabs.com>
-Mime-Version: 1.0
+Message-ID: <3B97DA58.6894B342@acm.org>
+Date: Thu, 06 Sep 2001 13:19:36 -0700
+From: Ira Weiny <iweiny@acm.org>
+MIME-Version: 1.0
+To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Cardbus issues on TiBook
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010906123022.D5873@ftsoj.fsmlabs.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Sep 06, 2001 at 12:30:22PM -0600, Cort Dougan wrote:
+As some of you may know I am trying to get an IBM microdrive working on
+my TiBook.  I know there is an issue with irq's which I am trying to
+work out but I have run into another issue I don't understand.
 
-> Is this a comment by me?  If so, that was a problem with
-> __builtin_return_address() not working in leaf functions which still exists
-> today, I believe.  The "fix" there is a hack to leave those outline in lieu
-> of the inline versions so that several functions were made non-leaf.
+I get the following message in my startup:
 
-It's unclaimed.  The comment is:
-/* alas, egcs sounds like it has a bug in this code that doesn't use the
-   inline asm correctly, and can cause file corruption. Until I hear that
-   it's fixed, I can live without the extra speed. I hope. */
+kernel: Can't get bus-range for /pci@f2000000/cardbus@1a
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+I rsync'ed with Ben H's kernel recently and I found that the ioports and
+memory ranges I had set for cardmgr were not working anymore.  So I
+started changing them.  In my efforts to find ranges that worked I found
+that "cat /proc/ioports" would result in a segfault.  From what I can
+tell it is running off the end of the buffer in vsnprintf?
+
+Before the Cardbus modules are loaded "cat /proc/ioports" works fine.
+
+So my question is, what does the above message mean?  It is something
+which is worked around later, or could it be the root of my problem?
+
+Thanks,
+Ira Weiny
+iweiny@acm.org
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
