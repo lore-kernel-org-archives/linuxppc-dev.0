@@ -1,31 +1,32 @@
-Message-ID: <35C119252057D511BB9F0003476BF8A208E5DB@freexc01.smartm.com>
-From: "Prasad, Siva" <Siva.Prasad@smartm.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: EPIC <=> OpenPIC
-Date: Wed, 3 Oct 2001 13:28:28 -0700 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Wed, 3 Oct 2001 14:48:05 -0600
+From: Cort Dougan <cort@fsmlabs.com>
+To: "Jeffrey D. Kowing" <jeffrey.d.kowing1@jsc.nasa.gov>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: What is hex num for in progress messages ?
+Message-ID: <20011003144805.D12102@ftsoj.fsmlabs.com>
+References: <15291.26679.248183.187604@igor.jsc.nasa.gov>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <15291.26679.248183.187604@igor.jsc.nasa.gov>; from jeffrey.d.kowing1@jsc.nasa.gov on Wed, Oct 03, 2001 at 02:34:15PM -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+I orginally added the progress mechanism for the IBM RS/6000's.  Some have
+a LCD display (the progress messages appear there) and som others only had
+a panel with 4 7-segment LED displays.  The numbers are supposed to be
+unique to each message so it's possible to look the message up.
 
-Is there code written or ported to EPIC (Embedded programmable interrupt
-controller - MPC 107)?.
-
-EPIC is adopted from OpenPIC.
-
-Our PPC 750 based board uses MPC107 as PCI bridge, and direct interrupts.
-Since I can't use OpenPIC directly, it would be great if some one can share
-the code for EPIC.
-
-If it is already available some place... I would appreciate the pointer.
-
-Thanks in advance.
-
--- Siva
-
+} Please forgive my ignorance, but for sometime I've been wondering what
+} that hex number passed to the ppc_md.progress function is for.  Do
+} certain debuggers like xmon use it?
+}
+} Thanks,
+} Jeff Kowing
+}
+} --
+} Jeff Kowing
+} jeffrey.d.kowing1@jsc.nasa.gov
+}
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
