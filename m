@@ -1,47 +1,49 @@
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Thu, 8 May 2003 14:14:26 -0700
-To: Kent Borg <kentborg@borg.org>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Shared Interrupts Question (2.4)
-Message-ID: <20030508211426.GA1440@rover.farnsworth.org>
-References: <20030508160856.A18714@borg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030508160856.A18714@borg.org>
+Message-ID: <002501c315a7$7e309260$020120b0@jockeXP>
+From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
+To: "Eitan Rabin" <rabin@mellanox.co.il>,
+	<linuxppc-embedded@lists.linuxppc.org>
+References: <506C3D7B14CDD411A52C00025558DED603018B6A-100000@mtlex01.yok.mtl.com>
+Subject: Re: MPC860 and I2C
+Date: Thu, 8 May 2003 23:19:12 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, May 08, 2003 at 08:08:56PM +0000, Kent Borg wrote:
+> Hi All,
 >
-> I am trying to understand "kinda shared" interrupts.
->
-> There are various interrupts in my not-yet-released CPU, and I have
-> interrupt code that knows how to talk to them.  So far so good.  I
-> also have an external interrupt controller that groups together 18
-> external interrupt sources and sends them in one CPU pin.  This
-> external controller has a register for enabling interrupts, and a
-> register for status/acknowledge.  Pretty standard.
->
-> The CPU code doesn't know about the external controller.  It seems
-> silly to rewrite the CPU-specific interrput code to accommodate this
-> board-specific detail (besides then my code won't match Dale's).  So I
-> figure I tell the kernel I am doing shared interrupts.
->
-> So where do I enable, disable, and acknowledge these external bits?
-> Specifically, I am trying to get a couple of serial ports working.  I
-> can put conditional code in serial.c startup() to enable these
-> interrupts, but how do I know which serial port?  Add a conditionally
-> compiled sub-IRQ number to serial_state structure?
->
-> Is there a cleaner way?
+> I'm trying to use the MPC I2C controller to generate I2C transactions. I
+> use  the devel kernel version and include the I2C relocation patch (seen
+> in /var/log/messages).
 
-Create and register a board-specific interrupt driver.  Assign it
-a range of irqs (non-conflicting with the main interrupt driver).
-When called with an irq outside its range, the board-specific driver
-routines forward the call to the main driver.  The board-specific driver
-does a request_irq at init time for the one main irq it is multiplexing.
+Can you post the message it prints?
 
--Dale
+>
+> I used the standard I2C driver and also tried the driver downloaded
+> directly from lmsensors.
+>
+> The problem occurs when I activate the master. As soon as I give the
+> master the start command (i2c->i2c_i2com = 0x80) for the DMA transaction
+> to start the CPU complete freezes.
+> I narrowed the problem and found out the it is actually the address of the
+> descriptor the one causing the CPU to hang. If I give addresses that are
+> relatively small, few Kilos, then everything is OK. If I give addresses
+> that are given to me by kmalloc and translated properly then the cpu
+> hangs.
+
+What address? Have you made any changes to the driver?
+Can you post some example code?
+
+> It seems to me that maybe something is wrong with the SDMA
+> configuration.
+
+hmm, if SDMA doesn't work as it should I think you would experience
+problems with the console and ethernet.
+
+Make sure that SDA and clock signals has a pull up resistor.
+
+Jocke
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
