@@ -1,35 +1,32 @@
-To: Rod Boyce <rod_boyce@stratexnet.com>
-Cc: "'Ing.Gianfranco Morandi'" <gianfranco.morandi@euro-studio.it>,
-	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: MacRaigor Wiggler 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sat, 19 Oct 2002 06:41:41 +1300."
-             <8D7C5F56B409554D9D46AC22195807F3061AED@exchwenz01.dmcwave.co.nz>
-Date: Fri, 18 Oct 2002 20:04:23 +0200
-Message-Id: <20021018180428.1BBF410143@denx.denx.de>
+Subject: Re: Problems with 2_4_devel & MVME2600 serial interrupts
+From: Hollis Blanchard <hollis@austin.ibm.com>
+To: linuxppc embedded <linuxppc-embedded@lists.linuxppc.org>
+In-Reply-To: <1034957059.8253.110.camel@granite.austin.ibm.com>
+References: <E9EEC3C2-E2B0-11D6-8132-0003931C2BFA@control.lth.se>
+	<1034957059.8253.110.camel@granite.austin.ibm.com>
+Date: 18 Oct 2002 14:33:06 -0500
+Message-Id: <1034969590.8254.124.camel@granite.austin.ibm.com>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <8D7C5F56B409554D9D46AC22195807F3061AED@exchwenz01.dmcwave.co.nz> you wrote:
+On Fri, 2002-10-18 at 11:04, Hollis Blanchard wrote:
 >
-> Through away your Wiggler and get a BDI2000.  They don't support the MMU,
-> they are slow and only work under windows.
+> On Fri, 2002-10-18 at 10:47, Anders Blomdell wrote:
+> > > Seems to me that either:
+> > > a) the pci_intack value is incorrect for your board, in which case you
+> > > should correct it
+> > Shure is, question is if it really should be caught from the pci_intack
+> > register,
+>
+> If possible, yes it should (IMHO). There was a thread on linuxppc-dev
+> about a year ago:
+> http://lists.linuxppc.org/linuxppc-dev/200112/msg00032.html
 
-This is not exactly correct.  IIRC  the  BDM4GDB  project  has  added
-support to drive the wiggler, too, including MMU support.
+Oops, this is the right thread:
+http://lists.linuxppc.org/linuxppc-dev/200111/msg00073.html
 
-But the BDI2000 is clearly the superior tool.
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Prediction is very difficult, especially of the future.  - Niels Bohr
+-Hollis
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
