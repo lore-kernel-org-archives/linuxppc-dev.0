@@ -1,28 +1,17 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from ausmtp02.au.ibm.com (ausmtp02.au.ibm.com [202.81.18.187])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "Sam Waja", Issuer "Sam Waja" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id D78D167AB7
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Feb 2005 19:03:11 +1100 (EST)
-Received: from sd0112e0.au.ibm.com (d23rh903.au.ibm.com [202.81.18.201])
-	by ausmtp02.au.ibm.com (8.12.10/8.12.10) with ESMTP id j1N808hI055904
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Feb 2005 19:00:08 +1100
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.250.244])
-	by sd0112e0.au.ibm.com (8.12.10/NCO/VER6.6) with ESMTP id
-	j1N85R1P103028
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Feb 2005 19:05:27 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11/8.12.11) with ESMTP id j1N836m5005091
-	for <linuxppc-dev@ozlabs.org>; Wed, 23 Feb 2005 19:03:06 +1100
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-To: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>
-Content-Type: text/plain
-Date: Wed, 23 Feb 2005 19:02:09 +1100
-Message-Id: <1109145729.5412.213.camel@gaston>
-Mime-Version: 1.0
-Cc: "David S. Miller" <davem@redhat.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] ppc32: Wrong vaddr in flush_hash_one_pte()
+Return-Path: <mikpe@user.it.uu.se>
+Received: from aun.it.uu.se (aun.it.uu.se [130.238.12.36])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "aun.it.uu.se",
+	Issuer "Uppsala University CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id C591167A70
+	for <linuxppc-dev@ozlabs.org>; Thu, 24 Feb 2005 07:28:30 +1100 (EST)
+From: Mikael Pettersson <mikpe@user.it.uu.se>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <16924.59237.581247.498382@alkaid.it.uu.se>
+Date: Wed, 23 Feb 2005 21:28:21 +0100
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: ppc32 weirdness with gcc-4.0 in 2.6.11-rc4
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,34 +21,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi !
+2.6.11-rc4 built with gcc-3.4.3 works fine on my eMac.
+Building with gcc-4.0.0 (20050220) however gives me a kernel
+with dead USB, and thus no keyboard or mouse, but everything
+else seems to be working.
 
-Reworking the ppc32 mm helps me find interesting bugs in the existing bug,
-well, brown paper bag for me, I made this one a while ago. The routine
-flush_hash_one_pte() used by ptep_test_and_clear_young() wasn't properly
-recaclulating the vaddr from the pte pointer & page->index. This fixes
-it. The result is that we probably never flushed things from the hash,
-so that's at least the _second_ bug affecting ptep_test_and_clear_young(),
-swap on ppc32 must have been really broken :(
+A diff between dmesg on the two kernels has an interesting nugget:
 
-Please, apply to 2.6.11...
+--- dmesg-2.6.11-rc4-gcc343	2005-02-23 20:57:54.000000000 +0100
++++ dmesg-2.6.11-rc4-gcc400	2005-02-23 21:14:44.000000000 +0100
+@@ -1,5 +1,5 @@
+ Total memory = 256MB; using 512kB for hash table (at c0300000)
+-Linux version 2.6.11-rc4-gcc343 (mikpe@darwin) (gcc version 3.4.3) #1 Wed Feb 23 20:53:57 CET 2005
++Linux version 2.6.11-rc4-gcc400 (mikpe@darwin) (gcc version 4.0.0 20050220 (experimental)) #1 Wed Feb 23 21:10:27 CET 2005
+ Found UniNorth memory controller & host bridge, revision: 210
+ Mapped at 0xfdf00000
+ Found a Intrepid mac-io controller, rev: 0, mapped at 0xfde80000
+@@ -26,11 +26,11 @@
+ OpenPIC timer frequency is 4.160000 MHz
+ PID hash table entries: 2048 (order: 11, 32768 bytes)
+ GMT Delta read from XPRAM: 0 minutes, DST: off
+-time_init: decrementer frequency = 41.600661 MHz
++time_init: decrementer frequency = 41.600571 MHz
+ Console: colour dummy device 80x25
+ Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
+ Inode-cache hash table entries: 32768 (order: 5, 131072 bytes)
+-Memory: 255872k available (1788k kernel code, 976k data, 144k init, 0k highmem)
++Memory: 255872k available (1776k kernel code, 0k data, 144k init, 0k highmem)
+ AGP special page: 0xcffff000
+ Calibrating delay loop... 830.66 BogoMIPS (lpj=4153344)
+ Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
+@@ -132,13 +132,7 @@
+ VFS: Mounted root (ext3 filesystem) readonly.
+ Freeing unused kernel memory: 144k init 4k chrp 8k prep
+ usb 3-2: new full speed USB device using ohci_hcd and address 2
+-hub 3-2:1.0: USB hub found
+-hub 3-2:1.0: 3 ports detected
+-usb 3-2.1: new low speed USB device using ohci_hcd and address 3
+-input: USB HID v1.10 Mouse [Logitech Apple Optical USB Mouse] on usb-0001:10:1b.0-2.1
+-usb 3-2.3: new full speed USB device using ohci_hcd and address 4
+-input: USB HID v1.10 Keyboard [Mitsumi Electric Apple Extended USB Keyboard] on usb-0001:10:1b.0-2.3
+-input: USB HID v1.10 Device [Mitsumi Electric Apple Extended USB Keyboard] on usb-0001:10:1b.0-2.3
++usb 3-2: can't connect bus-powered hub to this port
+ EXT3 FS on hda5, internal journal
+ Adding 1048568k swap on /dev/hda3.  Priority:-1 extents:1
+ SCSI subsystem initialized
 
-(I hope by early 2.6.12, we'll have David's patch that removes the need for
-those hacks though, and just pass us the vaddr (and mm or vma) to all the
-PTE accessors...)
+Note: "Memory: ... 0k data ..." !? Surely that can't be correct.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-Index: linux-work/arch/ppc/mm/tlb.c
-===================================================================
---- linux-work.orig/arch/ppc/mm/tlb.c	2005-01-24 17:09:23.000000000 +1100
-+++ linux-work/arch/ppc/mm/tlb.c	2005-02-23 18:53:49.000000000 +1100
-@@ -62,7 +62,7 @@
- 	ptepage = virt_to_page(ptep);
- 	mm = (struct mm_struct *) ptepage->mapping;
- 	ptephys = __pa(ptep) & PAGE_MASK;
--	addr = ptepage->index + (((unsigned long)ptep & ~PAGE_MASK) << 9);
-+	addr = ptepage->index + (((unsigned long)ptep & ~PAGE_MASK) << 10);
- 	flush_hash_pages(mm->context, addr, ptephys, 1);
- }
- 
+/Mikael
