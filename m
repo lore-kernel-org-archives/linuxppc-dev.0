@@ -1,91 +1,42 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-Id: <200310201305.IAA20143@lists.linuxppc.org>
-Content-Type: text/plain;
-  charset="iso-8859-15"
-From: Rakesh jagota <j.rakesh@gdatech.co.in>
-Reply-To: j.rakesh@gdatech.co.in
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: couldn't find the kernel version the module was compiled for
-Date: Mon, 20 Oct 2003 18:35:34 +0530
-MIME-Version: 1.0
+To: j.rakesh@gdatech.co.in
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: mpc8245 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 20 Oct 2003 13:17:36 +0530."
+             <200310200747.CAA19250@lists.linuxppc.org>
+Date: Mon, 20 Oct 2003 17:01:48 +0200
+Message-Id: <20031020150153.AC22CC59E4@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
-I am working on mpc8245 based board. I ahve compiled he rtc driver as a
-seperate modules. I have 2 function in assembly file i2c2.S. Its getting
-compiled but when I am inserting the module I am getting the above mentioned
-error.
+In message <200310200747.CAA19250@lists.linuxppc.org> you wrote:
+>
+> I am working on mpc8245 based board. I have compiled the ppcboot with 64MB
+> ram and its working fine and linux is ported successfully.
+> But when I have configured the RAM to 182MB in ppcboot, I am getting the boot
+> prompt and while loading linux its crashing . What can be the reason?
 
-i2c2.o: couldn't find the kernel version the module was compiled for
-x1226.o: Unresolved symbol load_runtime_reg
-x1226.o: Unresolved symbol store_runtime_reg
+Your RAM initialization sequence is broken.
+
+Also, 182 MB of RAM is a _very_ strange size.
+
+Also, PPCBoot is a dead project. You shouls not use  it  for  current
+work. You should rather switch to U-Boot instead.
 
 
-The assembly file is like this:
-/**************************************
- *
- * copyright @ Motorola, 1999
- *
- **************************************/
+And finally, all this is off toopic on  this  list,  and  you  should
+rather post to U-Boot-Users.
 
-#include <linux/config.h>
-#define CONFIG_HARD_I2C
-#ifdef CONFIG_HARD_I2C
-//#include <ppc_asm.tmpl>
-#include <linux/ppc_asm.tmpl>
+Best regards,
 
-#include <asm/mmu.h>
-/**********************************************************
- * function: load_runtime_reg
- *
- * input:  r3 - value of eumbbar
- *         r4 - register offset in embedded utility space
- *
- * output: r3 - register content
- **********************************************************/
-      .text
-      .align 2
-      .globl load_runtime_reg
-load_runtime_reg:
-	      lwbrx r3,r4,r3
-	      sync
- 	      bclr 20, 0
+Wolfgang Denk
 
-/****************************************************************
- * function: store_runtime_reg
- *
- * input: r3 - value of eumbbar
- *        r4 - register offset in embedded utility space
- *        r5 - new value to be stored
- *
- ****************************************************************/
-           .text
-           .align 2
-           .global store_runtime_reg
-store_runtime_reg:
-	      stwbrx r5,  r4, r3
-	      sync
-              bclr   20,0
-
-/*
-_GLOBAL(load_runtime_reg)
-	      lwbrx r3,r4,r3
-	      sync
- 	      bclr 20, 0
-
-_GLOBAL(store_runtime_reg)
-	      stwbrx r5,  r4, r3
-	      sync
-              bclr   20,0
-*/
-#endif /* CONFIG_HARD_I2C */
-
-How can I avoid this.
-
-Thanks & Regards,
-
-rakesh
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"A witty saying proves nothing."                           - Voltaire
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
