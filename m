@@ -1,63 +1,26 @@
-Message-ID: <3FDEC771.7030907@imc-berlin.de>
-Date: Tue, 16 Dec 2003 09:50:57 +0100
-From: Steven Scholz <steven.scholz@imc-berlin.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Reply-To: <zjzhou@newrocktech.com>
+From: "John Zhou" <zjzhou@newrocktech.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: reboot by software
+Date: Tue, 16 Dec 2003 17:38:46 +0800
+Message-ID: <000101c3c3b8$68333110$b702a8c0@newrock2>
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ELDK and suse 9.0
-References: <3FDEC481.2010708@iti.fi>
-In-Reply-To: <3FDEC481.2010708@iti.fi>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <3FDEC771.7030907@imc-berlin.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kate,
+Hello!
 
- > I have user eldk a lot with Redhat 9 but after they discontinued it, i
- > decided to change to
- > suse 9 but looks a like that least standard eldk 2.1.0 install does not
- > work with suse9
+I have a linux running on my mpc8260 board( power on reset at 0xfff00100, I use 32 bit flash, and directly maping 0xF0000000 ~ 0xFFFFFFF in kernel).
 
+Now, I want to reboot system by software. But, when I jump to 0xfff00100 in kernel mode, it's going dead. Can anybody help me?
 
-Wolfgang Denk wrote on the U-Boot mailings list:
+Thanks.
 
- > This is a known problem which will be fixed in ELDK-3.0 (due to be out soon).
- >
- > You have two options:
- >
- > 1) Install on an older SuSE or on a RedHat system and copy the files
- > 2) download the file ftp://ftp.denx.de/pub/tmp/ELDK-update-2.2.0.tar.bz2
- >    Then change into the source tree with the ELDK files and perform
- >    the following operations:
- >
- >         bash$ rm RPMS/rpm-4.0.3-1.03b_2.i386.rpm \
- >                 RPMS/rpm-build-4.0.3-1.03b_2.i386.rpm \
- >                 RPMS/rpm-devel-4.0.3-1.03b_2.i386.rpm \
- >                 tools/usr/lib/rpm/rpmpopt-4.0.3
- >         bash$ tar jxf /tmp/ELDK-update-2.2.0.tar.bz2
- >
- >    Then build the ISO image as documented, and try again.
- >
- >
- > Best regards,
- >
- > Wolfgang Denk
-
-Both ways work. I am using ELDK-2.2 on SuSE 9.
-
-Good luck,
-
-Steven
-
---
-Steven Scholz
-
-imc Measurement & Control               imc Meﬂsysteme GmbH
-Voltastr. 5                             Voltastr. 5
-13355 Berlin                            13355 Berlin
-Germany                                 Deutschland
-fon: +49 30 467090-0                    Tel: 030 / 467090-0
-fax: +49 30 4631576                     fax: 030 / 4631576
-
+John
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
