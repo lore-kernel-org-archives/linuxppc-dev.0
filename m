@@ -1,145 +1,74 @@
-Message-ID: <399B647A.A09F337@motorola.com>
-Date: Wed, 16 Aug 2000 23:05:14 -0500
-From: Jeffrey Hawkins <Jeffrey.F.Hawkins@motorola.com>
+Date: Wed, 16 Aug 2000 22:44:41 -0700 (PDT)
+From: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Another signal handling bug?
+Message-ID: <Pine.LNX.3.96.1000816224408.30198N-100000@deepspace.mklinux.org>
 MIME-Version: 1.0
-To: frank@jrware.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Signal mask restore anomaly
-References: <200008161925.MAA00373@tallis.jrware.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Frank,
+I've just noticed something that, unless I've really misunderstood the man
+page, is another significant bug in signal handling.  Put simply, despite
+configuration to the contrary, signals are not being blocked during their
+handlers, i.e. I'm getting nested signal handlers that never return.
 
-I am able to reproduce the same failures on a 2.2.13
-PPC Kernel, with GCC 2.95.3-2c and GLIBC 2.1.3-15d.
-Ran same test code on Solaris with correct operation.
+The code in question basically does this:
 
-The failure is definitely a MASK restoration problem.
-Since, one can recover from the problem by UNBLOCKING
-the SIGINT.
-
-I believe the problem may be an interaction between the
-Terminal I/O related SIGNALS being used (SIGTSTP and
-SIGINT) and the use of the STDIO Library calls (printf
-and getch).  By replacing the SIGTSTP and SIGINT signals
-with SIGUSR1 and SIGUSR2, everything worked correctly
-(tested via "kill" command from a separate terminal
-window).
-
-Looking at the GLIBC Bug Database, I didn't see any bugs
-which seem to correspond to this failure mechanism.  Most
-of the SIGNALS bugs seem to be related THREADS.
-
-Looks like it is time submit a bug report to GNU....
-
-Jeff
+sa.sa_handler = alarm_handler;
+sigemptyset(&sa.sa_mask);
+sa.sa_flags = 0;
+sigaction(SIGALRM, &sa, NULL);
 
 
-Frank Jas wrote:
->
-> Under certain circumstances, a signal blocked while a
-> signal handler is executing will not be restored.
->
-> This is my kernel info:
->
-> Linux 2.2.6-15apmac #1 Mon May 31 03:54:09 EDT 1999 ppc unknown
->
-> The behavior does not occur under Intel versions (2.2.5-15smp).
->
-> Below is a program that tests out the use of signal masks
-> with sigaction().  It sets up a handler for SIGINT and
-> SIGTSTP.  The handler for SIGTSTP adds SIGINT to
-> the signal mask for that handler.  So while the SIGTSTP
-> handler is executing, occurences of SIGINT will be
-> blocked until the handler returns.  SIGTSTP will also
-> be blocked.
->
-> #define _POSIX_SOURCE 1
-> #define _GNU_SOURCE 1
->
-> #include <signal.h>
-> #include <errno.h>
-> #include <stdio.h>
->
-> void on_intr (signum)
->         int signum ;
-> {
->         printf("\n    Interrupted with signal %d. \n", signum) ;
-> }
->
-> void on_tstp (signum)
->         int signum;
-> {
->         printf ("\n     Handler for SIGTSTP wants text or ^C or ^Z: ") ;
->         getchar () ;
-> }
->
-> void main ()
-> {
->         struct sigaction  new_intr_action;
->         struct sigaction  new_tstp_action;
->         int    c ;
->
->         sigemptyset (&new_intr_action.sa_mask);
->         new_intr_action.sa_handler = on_intr;
->         new_intr_action.sa_flags   = SA_RESTART;
->
->         sigaction  (SIGINT, &new_intr_action, 0);
->
->         sigemptyset (&new_tstp_action.sa_mask);
->         sigaddset   (&new_tstp_action.sa_mask, SIGINT);
->         new_tstp_action.sa_handler = on_tstp;
->         new_tstp_action.sa_flags   = SA_RESTART;
->
->         sigaction  (SIGTSTP, &new_tstp_action, 0);
->
->         printf("Starting main input loop enter text or ^Z or ^C:\n") ;
->
->         while ((c = getchar ()) != EOF) {
->                 putchar (c);
->         }
-> }
->
-> The following execution sequence leads to the anomalous behavior.
->
-> Trigger the SIGTSTP handler with a ^Z
-> While executing the handler, deliver a ^Z and ^C
-> Hit return to return from the handler.
-> Another instance of the SIGTSTP handler should execute.
-> Hit return to return from that instance of the handler.
-> Notice that the SIGINT handler does not execute and should have.
-> Any subsequent SIGINT are apparently blocked.
->
-> Apparently the nested occurence of SIGTSTP effected the restore
-> of the SIGINT mask, and the handling of the pending SIGINT.
->
-> The same behavior will result using 'kill' from another window
-> to send the signals.
->
-> Please let me know if this is not the appropriate venue for this
-> post.
->
-> Frank Jas
->
+Note that sa.sa_flags should have to be OR'ed with SA_NOMASK in order for
+the behaviour seen to occur, unless I'm drastically misreading the
+sigaction man page or unless it's incorrect.
 
---
-********************************************************
+The alarm handler's first statement is a print statement, as is the last
+statement.  There are no return statements anywhere in the handler.  I'm
+getting results that look like
 
-Jeffrey Hawkins
+In handler (should be ignoring SIGALRM signals).
+Got Lock!
+Leaving handler.
+In handler (should be ignoring SIGALRM signals).
+Got Lock!
+In handler (should be ignoring SIGALRM signals).
+We're in trouble.
+Leaving handler.
+In handler (should be ignoring SIGALRM signals).
+We're in trouble.
+Leaving handler.
+In handler (should be ignoring SIGALRM signals).
+We're in trouble.
+Leaving handler.
 
-Senior Staff Software Engineer
-Motorola Wireless Data Solutions Engineering
+And so forth.  IOW, the first few times, it's fine, but then under heavy
+load, the signal handler never returns, but yet the kernel is allowing
+SIGALRM to be delivered, resulting in a nested handler.
 
-Address: DEPT:  DQ525
-         MS:    IL-02-1055A
-         1301 East Algonquin Road
-         Schaumburg, IL 60196
+Any ideas?  BTW, this is with kernel 2.2.12.  A similar bug was found and
+fixed under MkLinux about a year ago, but I haven't heard of the problem
+in the monolithic kernel.  I can't see any other way it could occur,
+though.  It certainly shouldn't be happening in any other thread, as
+SIGALRM is blocked before threads are created, and only unblocked in the
+thread in question.  I've tried both sigprocmask and pthread_setmask for
+the initial block, both with the same results.
 
-Phone:   (847)576-7463
-FAX:     (847)576-7737
+Any ideas?
 
-********************************************************
+
+Later,
+David
+
+---------------------------------------------------------------------
+A brief Haiku:
+
+Microsoft is bad.
+It seems secure at first glance.
+Then you read your mail.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
