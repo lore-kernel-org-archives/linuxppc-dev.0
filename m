@@ -1,41 +1,29 @@
-Date: Thu, 21 Nov 2002 11:17:51 -0800
-From: Dennis Khoo <dkhoo@atmxdsl.com>
-Subject: Re: Cramfs root file system
-To: Flavio Pereira <flavio.pereira@za.flextronics.com>,
-	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Message-id: <001601c29192$afb08870$7ec7c7c7@dkhoo>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-References: <7899847F7C05BE43A0687AD18D97DA2207F285@srv_mail.azisa.co.za>
+Message-ID: <B0CD235912AED411B69800D0B7C9F60F1DF87A@mail>
+From: "Francis Yu <francisy@luxn.com>" <francisy@luxn.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: Kernel not returning from M8xx_cpm_reset
+Date: Thu, 21 Nov 2002 11:35:45 -0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Flavio,
+Hi,
+I guessed I have made the mistake of changing the KERNELBASE to 0x00000000.
+After reading some of the emails on the subject, I changed back to
+0xC0000000, and Voila! I start to see a whole bunch of kernel messages being
+dump on me. I am very excited at this point. I have not analyzed the
+messages yet, but I just want to put out this notice so that you can ignore
+my previous email. Thanks.
+Francis
 
-> Please append a correct "root=" boot option
-> Kernel panic: VFS: Unable to mount root fs on 02:00
->
-> Now, is it possible to do what Im trying to do, if so are there any
-> suggestions as to what I'm doing wrong?
->
-
-I saw the same error when I was trying to mount jffs2 as root.  Maybe your
-problem is similar to mine.
-
-My solution:
-
-1)   in kernel file init/main.c 's dev_name_struct,  add entry for
- "mtdblock", 0x1f00
-if it's not there already.
-
-2) in ppcboot =>setenv bootargs init=/linuxrc root=/dev/mtdblockx
-
-Hope this helps.
-
-Dennis Khoo
-Software Engineer
-Adapcom, Inc
+-----Original Message-----
+From: Francis Yu <francisy@luxn.com> [mailto:francisy@luxn.com]
+Sent: Wednesday, November 20, 2002 6:03 PM
+To: 'linuxppc-embedded@lists.linuxppc.org'
+Subject: Kernel not returning from M8xx_cpm_reset
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
