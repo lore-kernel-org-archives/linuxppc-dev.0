@@ -1,41 +1,39 @@
-Message-ID: <39BFACA1.1C6F7CAF@mvista.com>
-Date: Wed, 13 Sep 2000 12:34:41 -0400
-From: Dan Malek <dan@mvista.com>
+Message-ID: <39BFB1AC.A89523B7@aminocom.com>
+Date: Wed, 13 Sep 2000 16:56:12 +0000
+From: Gary Swanson <gswanson@aminocom.com>
 MIME-Version: 1.0
-To: Gong Zhuo <gongzhuo@163.net>
-CC: Linux PPC Mailing List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Any docments analyzing linuxppc kernel and it's policy?
-References: <014301c01d7f$a1592540$4607a8c0@LocalHost>
+To: Dan Malek <dan@embeddededge.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Usb slave API
+References: <380658298.965240776157.JavaMail.root@web621-wrb.mail.com> <39888816.AEA4C307@mvista.com> <001101bffd79$167e2860$0401a8c0@hoangmobile> <398A4A55.9660C07C@embeddededge.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Gong Zhuo wrote:
+Dan,
 
->   I am reading the source code of linuxppc mm.
+a while ago you wrote
 
-Okay.......
-
-> ....  It seems that the process
-> uses the logical address 0 - 0x7fffffff, and the kernel uses the logical
-> address 0xc0000000 -- (0xc0000000 + maxium memory). The rest logical address
-> will not be used by anyone. Am I right?
-
-You got the user process part right.....The kernel will map anything
-over 0x80000000 in a variety of useful and interesting ways.  The system
-memory is usually mapped to 0xc0000000, the remainder of the space is
-used for mapping I/O devices, other pages of memory with different
-attributes (uncached for example).  This is processor/board dependent,
-so there are many different mappings for this space, although we do
-try to keep them somewhat consistent.
-
->   Is there any document analyzing the linuxppc kernel and how does the
-> kernel arrange all the logical space ?
-
-I don't know.  I do know this could change daily.....
+> We are working with Embedded Planet to GPL release their host/slave USB
+> for the 823 and 850.  This should hopefully happen in about a week or
+> so.
+> I don't think anyone every posted a complete driver, due to the USB
+> stack
+> changes in the Linux kernel.
+>
+> Just sit tight for a week or so and everything should arrive.  I am sure
+> there willl be an announcement when this occurs.
+>
 
 
-	-- Dan
+I see this is mentioned on Embedded Planet in a press release as
+available as part of their LinuxPlanet dev kit, but is the source GPL'd
+and available ? I scoured Embedded Planet's and Monta Vista's web (and
+ftp for MV) sites but found nothing.
+
+Thanks for any info,
+
+Gary
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
