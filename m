@@ -1,43 +1,53 @@
-Date: Wed, 7 Nov 2001 22:26:34 +0100 (MET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
-	Sven.Dickert@planb.de, davidm@amberdata.demon.co.uk,
-	hollis@austin.ibm.com, Gabriel Paubert <paubert@iram.es>
+From: hollis@austin.ibm.com
+Date: Wed, 7 Nov 2001 16:01:49 -0600
+To: Gabriel Paubert <paubert@iram.es>
+Cc: linuxppc-dev@lists.linuxppc.org, davidm@amberdata.demon.co.uk,
+	Sven.Dickert@planb.de
 Subject: Re: RFC: i8259.c cleanup
-In-Reply-To: <0111072122.AA06299@ivan.Harhan.ORG>
-Message-ID: <Pine.GSO.4.21.0111072225300.10862-100000@mullein.sonytel.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <20011107160149.A26707@austin.ibm.com>
+References: <20011107110630.G9471@austin.ibm.com> <Pine.LNX.4.33.0111072015560.17428-100000@gra-lx1.iram.es>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.33.0111072015560.17428-100000@gra-lx1.iram.es>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 7 Nov 2001, Michael Sokolov wrote:
-> hollis@austin.ibm.com wrote:
-> > Would you say poking the 8259 directly is more "right" than using 0xbffffff0
-> > (or equivalent)?
+On Wed, Nov 07, 2001 at 10:17:05PM +0100, Gabriel Paubert wrote:
 >
-> Both methods are equally right. However, the polling method requires knowledge
-> only of the 8259s, which is required anyway, while the other method requires
-> knowledge of the interrupt acknowledge mechanism. It is also possible for
-> somebody to design a machine with 8259s without any interrupt acknowledge
-> mechanism at all, the 8259 datasheet will tell you that it has been designed
-> for such applications as well.
+> On Wed, 7 Nov 2001 hollis@austin.ibm.com wrote:
+>
+> > I laid out what I saw in
+> > http://lists.linuxppc.org/linuxppc-workstation/200109/msg00030.html . I
+> > could be wrong, but our code doesn't seem to match the datasheet very
+> > well.
+>
+> Have you ever see code matching the datasheet, or a chip matching the
+> datasheet for that matter ? :-)
 
-But because you have 2 cascaded i8259s it's more complex to poll both i8259s
-than to read the single magic interrupt acknowledge register.
+To be honest I think I was wrong. Reading the 8259 datasheet yet again has
+enlightened me as the the exact nature of "INTA" and polling. What I thought
+were ISR/IRR reads were actually INTA's (returning the ISR in the process).
 
-Gr{oetje,eeting}s,
+So the stock code is definately funny (there's no need at all to explicitly
+switch between the ISR and IRR), but correct AFAICS. Which is unfortunate for
+me... :/
 
-						Geert
+I've changed it a little to avoid this ISR selection and it's more robust (I
+can boot), but still falls over pretty easily. All routines are spin_lock()
+protected though; I'm not sure what sort of timing problem I might look for.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> > Would you say poking the 8259 directly is more "right" than using
+> > 0xbffffff0 (or equivalent)?
+>
+> Certainly not. Most ISA bridges (which are the part which contains the
+> dual 8259 Pathetic Interrupt Controller), are tested in an x86
+> environment, which generate PCI interrupt acknowledge cycles. So hitting
+> hardware bugs is much less likely than with polling.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+I'm worried this is my problem. I'm looking at the "Poll Command" section of
+the 8259 docs, and i8259.c seems completely legit...
 
+-Hollis
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
