@@ -1,41 +1,26 @@
-Date: Sun, 18 Jun 2000 17:02:36 -0700 (PDT)
-From: Ani Joshi <ajoshi@shell.unixbox.com>
+Mime-Version: 1.0
+Message-Id: <v04220801b573129ba692@[10.0.0.42]>
+Date: Sun, 18 Jun 2000 17:04:14 -0700
 To: linuxppc-dev@lists.linuxppc.org
-Subject: ATI Mach64 support in XFree86 4.0 update...
-Message-ID: <Pine.LNX.4.10.10006181702190.22994-100000@shell.unixbox.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: "Timothy A. Seufert" <tas@mindspring.com>
+Subject: 3D accel on PPC
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Since there have been many people asking about mach64 support int xfree
-4.0 I figured I might as well give you all the status of the driver.
+Has anybody made progress in getting 3D acceleration to work on PPC?
 
-I am almost done with 'porting' the ATI driver to ppc and so far its
-working quite well.  While I'm not completely finished with all the
-acceleration, what is completed are:  ScreenToScreen blits, rect fills,
-sold lines, and 8x8 mono pattern fills.
+I *thought* I saw a message a few days ago about XF 4.x DRI work
+being done to make R128 3D accel run on PPC, and I know Kostas
+Gewgriou (hope I spelled that right Kostas ;) was doing work some
+time ago on 3Dfx Glide.  But I can't seem to find much of anything in
+the mailing list archives.
 
-Unfortunately due to some binary driver incompatibilities between current
-xfree86 cvs and Jack Howarth's 4.0-stock rpms, the driver seems to not
-work with his rpms.  Luckily, the next xfree86 release is around the
-corner so once that happens I will merge the driver and put up a
-compatibile release.
+Basically, if anybody out there has accelerated GL running (or close
+to running) on either R128 or Voodoo3 hardware, I'm very interested
+in helping you debug and test it.
 
-For those interested in the driver's development, I will be placing info
-and binary snapshots (xfree liscence prohibits me from releasing source),
-at:
-
-ftp://devel.linuxppc.org/users/ajoshi/xf4
-
-Here you will find x11perf results comparison between the driver and
-Xpmac, a bootlog of the driver, and some other various things i throw up
-there.
-
-
-
-ani
-
+   Tim Seufert
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
