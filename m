@@ -1,19 +1,24 @@
-Return-Path: <sven.luther@wanadoo.fr>
-Received: from smtp10.wanadoo.fr (smtp10.wanadoo.fr [193.252.22.21])
-	by ozlabs.org (Postfix) with ESMTP id 86F1F2BF11
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Jan 2005 03:33:51 +1100 (EST)
-Date: Sun, 2 Jan 2005 17:41:22 +0100
-To: Ulrich Teichert <krypton@ulrich-teichert.org>
-Message-ID: <20050102164122.GA6866@pegasos>
-References: <20050101165758.GA18559@pegasos>
-	<200501021538.j02Fc0Ld013444@arbas.nms.ulrich-teichert.org>
+Return-Path: <sheutlin@gmx.de>
+Received: from mail.gmx.net (pop.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id B68102BF0E
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Jan 2005 08:33:38 +1100 (EST)
+From: Sebastian Heutling <sheutlin@gmx.de>
+To: Sven Luther <sven.luther@wanadoo.fr>
+In-Reply-To: <20050102093908.GA25739@pegasos>
+References: <200412261435.13562.marc.dietrich@ap.physik.uni-giessen.de>
+	<41CF77A9.9040405@gmx.net> <20041231095557.GA16480@pegasos>
+	<1104505249.6794.5.camel@weizen.left.earth>
+	<20041231222808.GB8078@pegasos>
+	<1104623790.10369.14.camel@weizen.left.earth>
+	<20050102093908.GA25739@pegasos>
+Content-Type: text/plain; charset=ISO-8859-15
+Date: Sun, 02 Jan 2005 22:33:37 +0100
+Message-Id: <1104701617.7898.12.camel@weizen.left.earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <200501021538.j02Fc0Ld013444@arbas.nms.ulrich-teichert.org>
-From: Sven Luther <sven.luther@wanadoo.fr>
-Cc: linuxppc-dev@ozlabs.org, mikemartin@linux.ca,
-	debian-powerpc@lists.debian.org
-Subject: Re: 43p-140 install issues
+Cc: linuxppc-dev@ozlabs.org,
+	Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>
+Subject: Re: [FYI] linux 2.6 still not working with PReP (ppc32)
+Reply-To: sheutlin@gmx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,33 +28,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Jan 02, 2005 at 04:38:00PM +0100, Ulrich Teichert wrote:
-> Hi,
+On Sun, 2005-01-02 at 10:39 +0100, Sven Luther wrote:
+> On Sun, Jan 02, 2005 at 12:56:29AM +0100, Sebastian Heutling wrote:
+> > On Fri, 2004-12-31 at 23:28 +0100, Sven Luther wrote:
+> > > On Fri, Dec 31, 2004 at 04:00:49PM +0100, Sebastian Heutling wrote:
+> > > > On Fri, 2004-12-31 at 10:55 +0100, Sven Luther wrote:
+> > > > > On Mon, Dec 27, 2004 at 03:47:05AM +0100, Christian wrote:
+> > > > > > Marc Dietrich schrieb:
+> > > > > > >Hi all,
+> > > > > > >
+> > > > > > >I read this thread about booting a PowerStack with newer kernels. 
+> > > > > > >Motivated by this, I tried to compile a 2.6.10 kernel on my machine (with 
+> > > > > > >sym53c825a onboard). Sadly, the scsi controller always timeouts during 
+> > > > > > >initialisation. I 
+> > > > > 
+> > > > > I also have some strange issues with network support using the standard debian
+> > > > > 2.6.8 kernel. ifconfig upping the decchip ethernet on the powerstack freezes
+> > > > > the kernel, and i hear reports of problems on IBM PReP hardware too with not
+> > > > > working ethernet, altough there is no freeze.
+> > > > > 
+> > > > > Any idea on this ? 
+> > > > 
+> > > > Does it contain the IRQ patch? Where does it boot from SCSI or net? What
+> > > > PCI-Devices are installed?
+> > > 
+> > > Probably not, just the standard debian kernel, i donÃ't remember any irq
+> > > patches, but there where a bunch of patches from leighbb. it is done
+> > 
+> > The patch is the one that is included in 2.6.10 which is mentioned above
+> > and this thread already has somewhere in the beginning. I attached it
+> > below.
+> > I haven't had the time yet to test the 2.6.10 kernel. Maybe there is
+> > another problem now ...
 > 
-> [del]
-> >Yes, please, i would greatly appreciate it, preferably the 2.6.8 kernel too.
-> >Let' try to get this fixed before the sarge release, which is not so far off
-> >now.
+> The one with three lines of modified irq lines from tom rini ? I found it in
+> google, but i also saw another bunch of prep changes which got in 2.6.9 i
+
+Hmmm ... I didn't realise any other prep changes in 2.6.9
+
+
+> think. Since debian is still using 2.6.8 and a bunch of backports, these may
+> be relevant, i think.
+
+You mean debian/testing?
+
+
 > 
-> OK, 9 hours later I had a current sarge buisnesscard CD image, with
-> interesting results. I booted the standard kernel from the cdrom
-> with `boot cdrom:`, it came up and failed to load the initrd, so it died
-> on the spot as nothing could be mounted. It was detecting that I was using
-> a serial console.
+> Also, i think for some reason i was unsubscribed while the list moved to
+> ozlab, and lost maybe the start of the thread, thanks for the attachement.
 
-You need to boot install/powerpc/vmlinuz-prep.initrd, not the vmlinux one.
+That explains a lot ;-)
 
-> Of course, I forgot to capture that session, so I did it again with logging
-> on in kermit. Then I could not boot anything from the CD, but I can still
-> boot fine from disk, so it's not a hardware problem. The LED displays F05
-> after reading something from the CDROM in this case and the machine hangs.
-> Strange.
+
 > 
-> I will try to boot via tftp, the firmware seems to be unable to boot
-> a specific file from CDROM,
+> > > netbooting, and the only pci device installed is the cirruss logic graphic
+> > > card.
+> > 
+> > If you use the standard debian kernel - ok, it doesn't work because of
+> > wrong IRQs on the PowerstackII (Utah).
+> 
+> Which i will now fix now that i am aware of the problem. There seem to be also
+> a problem on IBM prep hardware, may it be related ?
 
-Ah, strange. That said, tftp is the prefered boot method for prep hardware.
+Looking at the IRQ tables in prep_pci.c it very possible. There are a
+lot structures which have a lot of low numbered slots initialised to 0.
+Might be that its the same problem: PCI slotnumbering has changed
+resulting in wrong used entries in this tables. People should look at
+this particular place if they have problems like lost interrupts, kernel
+output saying that a device got IRQ 0, timeouts or something like that.
 
-Friendly,
+> 
+> > BTW: The onboard Winbond IDE chip works as well although no connector is
+> > provided. You only need a little bit of soldering and adjusting the IRQ
+> > of Slot 1 from 0 to 4. :-)
+> 
+> Ah, wondered about that, and saw the slots are not soldered. I wonder why go
+> to all the trouble including a IDE chip, but not solder the connectors. Seems
+> to me like peanut savings or something.
 
-Sven Luther
+I am not sure but I think there are two versions of this machine: One
+with only IDE connectors and one with only SCSI connector.
+But to be honest: I don't know as well why they didn't solder all
+connectors.
+
+
+Sebastian Heutling
