@@ -1,36 +1,35 @@
-Message-ID: <3FC6817D.7090403@jonmasters.org>
-Date: Thu, 27 Nov 2003 22:58:05 +0000
-From: Jon Masters <jonathan@jonmasters.org>
-MIME-Version: 1.0
-To: Jon Masters <jonathan@jonmasters.org>
-Cc: Peter Vandenabeele <peter.vandenabeele@mind.be>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [Fwd: ppc4xx Ports]
-References: <3FB416F9.7080303@jonmasters.org> <20031114002023.GA9509@gate.ebshome.net> <3FB423AB.80805@jonmasters.org> <20031114004805.GA9585@gate.ebshome.net> <20031126165238.O7373@mind.be> <3FC68039.4080206@jonmasters.org>
-In-Reply-To: <3FC68039.4080206@jonmasters.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: "Tord Andersson" <Tord.Andersson@combitechsystems.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MPC5200LITE - kernel BUG at page_alloc.c 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 27 Nov 2003 12:46:35 +0100."
+             <004B1D7A5257174C9044A1B7BD0E60ED447044@ratatosk.combitechsystems.com>
+Date: Fri, 28 Nov 2003 00:59:41 +0100
+Message-Id: <20031127235946.EE0CAC5F5F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Dear Tord,
 
-Jon Masters wrote:
+in message <004B1D7A5257174C9044A1B7BD0E60ED447044@ratatosk.combitechsystems.com> you wrote:
+>
+> The board is MPC5200Lite EVB version 2 with 16 Mbytes of flash memory.
+> The PCM is marked rev. G. I will run a memory test as soon as I get
+> access to the card again.
+> Below is the U-Boot printout.
 
-| I think I mentioned before that I already fixed that for the port I am
-| working on by incrementing next TLB entry by 2 if on Virtex II Pro.
-| Actually if you check a post I made to comp.arch.fpga over the summer...
-| I call it CONFIG_BROKEN_XILINX_TLB or something like that (other ports
-| are now starting to fix that too) - several other errata too.
+I can only speculate: hardware problem.
 
-I also force TLB pinning on my port and modify where the kernel TLB
-entries go while also forcing in a pinning for serial early on.
+Best regards,
 
-Montavista or someone added a patch to do that anyway now but remember I
-am using stock kernels and none of the Montavista trees :-).
+Wolfgang Denk
 
-Cheers,
-
-Jon.
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+If this is a service economy, why is the service so bad?
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
