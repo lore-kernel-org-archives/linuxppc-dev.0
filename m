@@ -1,48 +1,32 @@
-Date: Thu, 27 Jan 2000 15:12:22 -0700
-From: Cort Dougan <cort@fsmlabs.com>
+Date: Thu, 27 Jan 2000 16:17:11 -0600 (CST)
+From: Jeff Garzik <jgarzik@mandrakesoft.mandrakesoft.com>
 To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
-        Linux Frame Buffer Device Development <linux-fbdev@vuser.vu.union.edu>,
-        Ulrik De Bie <winmute@atlantique.venturi.net>
-Subject: Re: vgacon, vga16fb, clgenfb on PPC
-Message-ID: <20000127151222.W14218@hq.fsmlabs.com>
-References: <Pine.LNX.4.05.10001272250560.428-100000@callisto.of.borg>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.05.10001272250560.428-100000@callisto.of.borg>; from Geert Uytterhoeven on Thu, Jan 27, 2000 at 11:00:32PM +0100
+cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
+        Linux Frame Buffer Device Development <linux-fbdev@vuser.vu.union.edu>
+Subject: Re: [linux-fbdev] vgacon, vga16fb, clgenfb on PPC
+In-Reply-To: <Pine.LNX.4.05.10001272250560.428-100000@callisto.of.borg>
+Message-ID: <Pine.LNX.3.96.1000127161526.32564L-100000@mandrakesoft.mandrakesoft.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I lost all my PReP boxes and can't test anymore.  Motorola has a bunch of
-guys on staff doing linux/ppc development for their systems (PReP) now so
-you may want to have them test.
+On Thu, 27 Jan 2000, Geert Uytterhoeven wrote:
+> I revised my patch to make vga16fb and clgenfb compile (as modules, in my
+> case). I couldn't test clgenfb, but vga16fb works fine as my second head (S3
+[...]
 
-For now feel free to push it to the bk tree here.
+Thanks!
 
-} 	Hi,
-}
-} Finally I was able to compile a recent kernel again (2.3.41 from
-} bitkeeper/PPC)!
-}
-} I revised my patch to make vga16fb and clgenfb compile (as modules, in my
-} case). I couldn't test clgenfb, but vga16fb works fine as my second head (S3
-} Trio64V+ initialized by em86, first head on ATI Rage II+ handled by atyfb).
-}
-} Compared to my previous version from 2 months ago, I think I found the bug that
-} caused the endianness problems with vgacon on PReP: defining
-} scr_memcpyw_{from,to} to be equal to memcpy() was wrong, since in that case no
-} byteswapping was done when accessing video memory.
-}
-} The idea behind this patch is to make scr_{write,read}w() use {write,read}w()
-} when {vga,mda}con is compiled in (independent of CONFIG_FB), and to use native
-} byte ordering when it isn't.
-}
-} This patch is especially interesting for people who want to
-}
-}   - have a second head handled by vga16fb
-}   - use clgenfb
-}   - have vgacon on one head and clgenfb on the second
-}   - ...
+I was hoping someone would patch up clgenfb for Zorro.  When I updated
+it, I tried to make initialization as obvious as possible to correct.
+
+Please let me know if there are any success or failure reports for
+clgenfb...  I would love to continue to support it on Zorro, but don't
+have the hardware to do so...
+
+	Jeff
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
