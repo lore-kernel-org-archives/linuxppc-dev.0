@@ -1,22 +1,20 @@
-Return-Path: <ejohnson@acdstar.com>
-Received: from mail.acdstar.com (mail.acdstar.com [209.98.244.9])
-	by ozlabs.org (Postfix) with ESMTP id AD3A267A72
+Return-Path: <shawnxjin@gmail.com>
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.194])
+	by ozlabs.org (Postfix) with ESMTP id 9077967A2F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Feb 2005 10:53:40 +1100 (EST)
-Received: from zaphod.acdstar.com (zaphod.int.acdstar.com [192.168.2.100])
-	by mail.acdstar.com (8.13.0/8.13.0) with ESMTP id j1FNuupr003815
-	for <linuxppc-embedded@ozlabs.org>; Tue, 15 Feb 2005 17:56:56 -0600
-Message-Id: <6.2.1.2.1.20050215174631.02dfbf28@mail.int.acdstar.com>
-Date: Tue, 15 Feb 2005 17:55:21 -0600
-To: linuxppc-embedded@ozlabs.org
-From: "Eric N. Johnson (ACD)" <ejohnson@acdstar.com>
-In-Reply-To: <712A2DEC228C7448978CBD7A7AD5B090592CE2@fever.wardrobe.irob
-	ot.com>
-References: <712A2DEC228C7448978CBD7A7AD5B090592CE2@fever.wardrobe.irobot.com>
+	Wed, 16 Feb 2005 13:03:15 +1100 (EST)
+Received: by rproxy.gmail.com with SMTP id 40so87909rnz
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 15 Feb 2005 18:03:13 -0800 (PST)
+Message-ID: <c3d0340b05021518037b1758cc@mail.gmail.com>
+Date: Tue, 15 Feb 2005 18:03:12 -0800
+From: Shawn Jin <shawnxjin@gmail.com>
+To: ppcembed <linuxppc-embedded@ozlabs.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
-Subject: Re: How to set a custom baud rate using 2.6 linux distro on
- MPC5200 based board?
+Content-Type: text/plain; charset=US-ASCII
+Subject: Incomplete network configuration information when booting from NFS
+	root on Ebony
+Reply-To: Shawn Jin <shawnxjin@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,23 +25,73 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
->I'm trying to set a custom baud rate (500KBaud, in case anyone cares) on 
->one of the PSCs on a MPC5200 board.
-[snip]
->   serial_info.flags = ASYNC_SPD_CUST | ASYNC_LOW_LATENCY;
->    serial_info.custom_divisor = 48;  // clock on FTDI chip / 48 == 500KB
->
->    if ( ioctl(tty_fd, TIOCSSERIAL, &serial_info ) < 0) {
->      perror("config_serial_port: ioctl TIOCSSERIAL");
->      return(-1);
->    }
->
->This compiled fine under the ppc cross-dev tools we have but it fails with 
->an "invalid argument" error when run on the ppc board.
+Is anybody using linux-2.6.10 from kernel.org for testing IBM Ebony board?
 
-It looks like this code was written for an FTDI serial port.  The FTDI is a 
-USB to Serial converter that handles baud rate generation very differently 
-from a standard UART.
+I found that 2.6.10 is not aware of U-Boot. That is, it neither
+understands U-Boot's bd_info nor parses U-Boot's bootargs. So even if
+the ethernet MAC address is set for EMAC0 on uboot, the kernel doesn't
+get the value from it. Instead it reads MAC address from Ebony VPD,
+which results in FF:FF:FF:FF:FF:FF. Isn't it strange that mac address
+isn't set in its VPD?
 
-Eric
+After some hacks in arch/ppc/platforms/4xx/ebony.c, the kernel now can
+get MAC address and boot arguments from uboot. However a new problem
+occurs. When the kernel tries to mount a NFS root filesystem, it
+complains incomplete network configuration information. See the
+following message dump. Any hints to solve the problem? Thanks a lot.
+
+## Transferring control to Linux (at address 00000000) ...
+Linux version 2.6.10 (xjin@swl001.scs.agilent.com) (gcc version 3.3.3
+(DENX ELDK 3.1 3.3.3-8)) #11 T
+ue Feb 15 16:41:47 PST 2005
+IBM Ebony port (MontaVista Software, Inc. (source@mvista.com))
+Built 1 zonelists
+Kernel command line: root=/dev/nfs rw
+nfsroot=192.68.0.47:/opt/eldk3.1/ppc_4xx
+ip=192.168.0.245:192.168.0.47:::::off
+
+<snipped>
+
+mal0: Initialized, 4 tx channels, 2 rx channels
+emac: IBM EMAC Ethernet driver, version 2.0
+Maintained by Benjamin Herrenschmidt <benh@kernel.crashing.org>
+zmii0: input 0 in SMII mode
+eth0: IBM emac, MAC 00:04:ac:e3:1b:bb
+eth0: Found Generic MII PHY (0x08)
+zmii0: input 1 in RMII mode
+eth1: IBM emac, MAC FF:FF:FF:FF:FF:FF
+eth1: Found Generic MII PHY (0x09)
+
+<--- only eth0's mac address is set on uboot -->
+
+mice: PS/2 mouse device common for all mice
+NET: Registered protocol family 2
+IP: routing cache hash table of 1024 buckets, 8Kbytes
+TCP: Hash tables configured (established 8192 bind 16384)
+NET: Registered protocol family 1
+NET: Registered protocol family 17
+eth0: Link is Up
+eth0: Speed: 100, Full duplex.
+IP-Config: Incomplete network configuration information.
+
+????
+
+Looking up port of RPC 100003/2 on 130.27.84.47
+RPC: sendmsg returned error 101
+portmap: RPC call returned error 101
+Root-NFS: Unable to get nfsd port number from server, using default
+Looking up port of RPC 100005/1 on 130.27.84.47
+RPC: sendmsg returned error 101
+portmap: RPC call returned error 101
+Root-NFS: Unable to get mountd port number from server, using default
+RPC: sendmsg returned error 101
+mount: RPC call returned error 101
+Root-NFS: Server returned error -101 while mounting /opt/eldk3.1/ppc_4xx
+VFS: Unable to mount root fs via NFS, trying floppy.
+Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(2,0)
+ <0>Rebooting in 180 seconds..<6>eth0: Link is Up
+eth0: Speed: 100, Full duplex.
+
+-Shawn.
