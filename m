@@ -1,35 +1,24 @@
-Message-ID: <3A369297.93AFB1AC@mvista.com>
-Date: Tue, 12 Dec 2000 16:03:19 -0500
+Message-ID: <3A3694A9.4D40B63B@mvista.com>
+Date: Tue, 12 Dec 2000 16:12:09 -0500
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Brian Ford <ford@vss.fsi.com>
-CC: Graham Stoney <greyham@research.canon.com.au>,
-        linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 2.5 or 2.4 kernel profiling
-References: <Pine.GSO.4.21.0012121106530.24199-100000@eos>
+To: Peter Uttley <P.Uttley-97@student.lboro.ac.uk>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: USB camera
+References: <00b301c0647d$c4187280$74dee783@lboro.ac.uk>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Brian Ford wrote:
+Peter Uttley wrote:
 
-> Does your statement mean that 60x bus memory is mapped
-> _PAGE_COHERENT?  What is the exact meaning of the GBL bit in the FCRx
-> register?
+> I'm thinking about using the USB port on the MPC-850 for a digital camera.
 
-The GBL flag in the FCRx is orthogonal to the PAGE_COHERENT (M in WIMG)
-of the processor.  Since the CPM is a bus master, the GBL flag is used
-to indicate whether it should announce memory updates in the cache
-protocol.  The CPM shared memory is mapped uncached to the processor,
-and I don't see any reason to do that differently.  For some reason,
-I believe the GBL flag also ensures the CPM DMA will snoop the processor
-cache, and setting PAGE_COHERENT isn't necessary.  I don't know why
-I think this, except it appears to work that way :-).  Logically, we
-should be required to set PAGE_COHERENT......It's a note on my board,
-I'll keep looking at it.
-
-Thanks.
+I don't understand.  Do you mean using the 850 as a host interface and
+connecting a digital camera, or building a digital camera using the 850
+embedded in the camera and using the USB device interface for connecting
+to some host USB?
 
 
 	-- Dan
