@@ -1,37 +1,37 @@
-From: Kevin Hendricks <khendricks@ivey.uwo.ca>
-Reply-To: khendricks@ivey.uwo.ca
-To: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
-Subject: BootX 1.1.3 and Rev 2 B+W G3's ?
-Date: Thu, 16 Sep 1999 10:32:20 -0400
-Content-Type: text/plain
-References: <19990915120329.005173@mailhost.mipsys.com>
+Date: Thu, 16 Sep 1999 10:01:30 -0700 (PDT)
+From: "David A. Gatwood" <dgatwood@mvista.com>
+To: Geert Uytterhoeven <geert@sonycom.com>
+cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: New booter 
+In-Reply-To: <Pine.GSO.4.10.9909160957530.21133-100000@ivy.sonytel.be>
+Message-ID: <Pine.LNX.3.96.990916100017.2585D-100000@mvista.com>
 MIME-Version: 1.0
-Message-Id: <99091610364000.00409@localhost.localdomain>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Thu, 16 Sep 1999, Geert Uytterhoeven wrote:
 
-I am having lots of problems with BootX 1.1.3 on my rev2 B+W G3.  BootX 1.1.1
-app works fine but I have no sound support.
+> IMHO the best thing would be something like MILO on the Alpha. MILO is a
+> small binary that contains device drivers and filesystems taken from the
+> standard Linux kernel sources. Hence MILO knows about e.g. your ext2fs
+> partition and fancy U2W-SCSI adapter. On Alpha the MILO binary is put on a
+> MSDOS formatted partition. On PPC, you could store it on either a HFS or MSDOS
+> formatted partition, or use a LILO-alike scheme (raw-blocks). Even BootX could
+> load MILO under MacOS, if you want that.
 
-I upgraded to BootX 1.1.3 and added the extension and tried to boot.
+Kind of like syslinux or loadlin... somewhere in between.
 
-The extension gives a type 11 error but throws me into linux anyway.  But if I
-generate a couple of sounds (beeps) I get a complete kernel hang.  The kernel
-is also very very unstable with a seg-fault as root causing a kernel panic.
 
-None of this happens with BootX 1.1.1 (although I have no sound either).
+> Combined, you would have a shared `high-level' booter, which is called
+> by different `low-level' booters (FS (HFS/MSDOS), raw-blocks, BootX),
+> depending on your taste and architecture: 
 
-This is with Paul's kernel 2.2.10 and on the Mac side, a very stock install.
+That's kind of cool.
 
-Is anyone else seeing these problems.
 
-Any help here would be greatly appreciated.
+David
 
-Thanks,
-
-Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
