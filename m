@@ -1,32 +1,35 @@
-To: <eforslin@thalescomputers.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Linux Kernel 2.4.18 on IBM 405GP Walnut
-References: <1023916422.3d07b98643964@www.ekit.com>
-From: Roland Dreier <roland@topspin.com>
-Date: 12 Jun 2002 14:17:48 -0700
-In-Reply-To: <1023916422.3d07b98643964@www.ekit.com>
-Message-ID: <52n0u042o3.fsf@topspin.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Jim Duey <jduey@ccc-dcs.com>,
+	Eric Forslin <eforslin@thalescomputers.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Linux Kernel 2.4.18 on IBM 405GP Walnut 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 12 Jun 2002 16:19:15 -0000."
+             <3D074C7000000148@charlotte.ccc-dcs.com> (added by charlotte.ccc-dcs.com)
+Date: Thu, 13 Jun 2002 00:02:01 +0200
+Message-Id: <20020612220206.57088102F8@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->>>>> "EricW" == Eric Forslin <eric.forslin@ekit.com> writes:
+In message <3D074C7000000148@charlotte.ccc-dcs.com> (added by charlotte.ccc-dcs.com)
+Jim Duey wrote:
+>
+> Search the archives for a HowTo I wrote on getting a kernel booting on the
+> walnut.  A Google search of 'walnut howto 405' turned it up.
 
-    EricW> Has anyone had any success building version 2.4.18 of the
-    EricW> Linux Kernel for the 405GP Walnut board?  I have some
-    EricW> patched-up versions of 2.4.4 from Lineo and FSM that build
-    EricW> perfectly.  I'd prefer to take the 'from scratch' route
-    EricW> though, and start with a kernel that looks like it already
-    EricW> has support for the Walnut.  If anyone has any ideas about
-    EricW> what it takes to get this monster to build I'd like to hear
-    EricW> them because I'm getting some really strange errors.
+...and in case you cannot find MV's Journeyman CD's any more:
 
-Are you using the linux_2_4_devel BitKeeper tree?  That's probably
-your best bet, see <http://www.penguinppc.org/dev/kernel.shtml>.
+Our ELDK will do the job, too - see http://www.denx.de/ELDK/
 
-Best,
-  Roland
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+It is common sense to take a method and try it. If it fails, admit it
+frankly and try another. But above all, try something.
+                                              - Franklin D. Roosevelt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
