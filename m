@@ -1,78 +1,48 @@
-Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
-Message-ID: <3FE2101D.6000005@gcctech.com>
-Date: Thu, 18 Dec 2003 15:37:49 -0500
-From: "Christopher R. Johnson" <cjohnson@gcctech.com>
-Reply-To: cjohnson@gcctech.com
-MIME-Version: 1.0
-To: Daniel Jacobowitz <drow@false.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: powerpc gdb and gdbserver
-References: <3FE0977B.7020504@gcctech.com> <20031218171010.GA16791@nevyn.them.org> <3FE20DAE.6010708@gcctech.com> <20031218203501.GA22392@nevyn.them.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: [PATCH] 2.6.0 compile fix for non 6xx machines
+From: Josh Boyer <jwboyer@charter.net>
+To: linuxppc-dev@lists.linuxppc.org
+Cc: linuxpcc-embedded@lists.linuxppc.org
+Content-Type: text/plain
+Message-Id: <1071790169.26979.18.camel@yoda>
+Mime-Version: 1.0
+Date: Thu, 18 Dec 2003 18:27:12 -0600
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-As I mentioned, the library doesn't exist.  I need to build it, but I'm
-not sure where it comes from (glibc I think) or how to get it built.
- Its a target library, so I have to build it for ppc and deliver it to
-my target box.  That part I know how to do, its creating the library to
-begin with that I don't know how to do.
+Hi,
 
-Daniel Jacobowitz wrote:
+Don't know if this is fixed in the ppc trees or not so I'll send my
+patch anyway.  I got a link error when compiling the 2.6.0 kernel for
+the PPC 405 walnut board.  It appears it's because
+arch/ppc/kernel/ppc_ksyms.c does:
 
->On Thu, Dec 18, 2003 at 03:27:26PM -0500, Christopher R. Johnson wrote:
->
->>Ok that worked pretty well, except that gdbserver wants a library called
->>libthread_db.so on the target.  From what little I can find this looks
->>like something I should build from the glibc mess.  Does anyone know
->>what options I need to add to the glibc build in order to create this
->>library?
->>
->
->Just make a symlink to libthread_db.so.1.
->
->>Thanks!
->>
->>Daniel Jacobowitz wrote:
->>
->>>On Wed, Dec 17, 2003 at 12:50:51PM -0500, Christopher R. Johnson wrote:
->>>
->>>>I'm about to go and grab gdb to build a host-based debugger and
->>>>target-based (PPC 405GP) gdbserver.  Anybody out there with advice on
->>>>how to do this?  Should it just work out of the box or is there stuff I
->>>>need to do to gdbserver for this platform?  The sources I just found are
->>>>gdb-6.0, and I'm using quite recent tools (gcc 3.3.2 glibc 2.3.2
->>>>binutils 2.14.90.0.5 - kudos to Dan Kegle for the crosstools stuff!!!).
->>>>
->>>>Thanks!
->>>>
->>>It should simply build and work.  You build GDB by setting a --target
->>>and gdbserver by setting a --host.  If you don't want to build a native
->>>GDB at the same time, run the --host build by gdbserver/configure
->>>instead of the top-level src/configure.
->>>
->>>--
->>>Daniel Jacobowitz
->>>MontaVista Software                         Debian GNU/Linux Developer
->>>
->>>
->>--
->>Christopher R. Johnson
->>Principal Software Engineer
->>GCC Printers
->>(781)276-8763
->>
->>
->>
->>
->
+extern long mol_trampoline;
+EXPORT_SYMBOL(mol_trampoline);
 
---
-Christopher R. Johnson
-Principal Software Engineer
-GCC Printers
-(781)276-8763
+mol_trampoline is only defined in arch/ppc/kernel/head.S.  Since the
+other head_Nxx.S files are used for non-6xx compiles it can't link.
+Below is a patch to fix the compile failure.
+
+Josh
+
+diff -Naur linux-2.6.0.orig/arch/ppc/kernel/ppc_ksyms.c
+linux-2.6.0/arch/ppc/kernel/ppc_ksyms.c
+--- linux-2.6.0.orig/arch/ppc/kernel/ppc_ksyms.c	2003-12-17
+20:59:37.000000000 -0600
++++ linux-2.6.0/arch/ppc/kernel/ppc_ksyms.c	2003-12-18
+17:21:52.000000000 -0600
+@@ -367,8 +367,10 @@
+ EXPORT_SYMBOL(set_context);
+ EXPORT_SYMBOL(handle_mm_fault); /* For MOL */
+ EXPORT_SYMBOL_NOVERS(disarm_decr);
++#ifdef CONFIG_6xx
+ extern long mol_trampoline;
+ EXPORT_SYMBOL(mol_trampoline); /* For MOL */
++#endif
+ #ifdef CONFIG_PPC_STD_MMU
+ EXPORT_SYMBOL(flush_hash_pages); /* For MOL */
+ #ifdef CONFIG_SMP
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
