@@ -1,39 +1,31 @@
-Message-ID: <3EBA4D38.5030905@embeddededge.com>
-Date: Thu, 08 May 2003 08:27:36 -0400
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: "Kerl, John" <John.Kerl@Avnet.com>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: mm_ptov() in pgtable.c
-References: <B895EFF5AF34724880036BDB5B5B814813561F@amer22.avnet.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-Id: <seba78ee.024@mail.frequentis.com>
+Date: Thu, 08 May 2003 15:33:40 +0200
+From: "Gerhard TAEUBL" <Gerhard.TAEUBL@frequentis.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: PCMCIA Hardware question
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kerl, John wrote:
+Hi!
 
-> Does anyone know why we have mm_ptov() in
-> arch/ppc/mm/pgtable.c, since we already
-> have __va?
+PCMCIA works fine, I could use flashcards as IDE or Ethernetcards. But not all Ethernetcards!
 
-They are different functions.  The __va() macro
-does simple arithmetic on the 1:1 kernel mapped low memory
-addresses.  The mm_ptov() is supposed to do the opposite
-of where we use iopa(), which can be used on the entire
-virtual address space.  Since there isn't sufficient information
-in the kernel to properly implement mm_ptov() in a generic way,
-it's implementation has been stalled and we have used a
-variety of different methods to return physical addresses
-dependent on the way memory has been mapped (which unfortunately
-seems to be the Linux design preference).
+If I use a D-Link or Netgear (same chip) they work fine, but if I try to use a 3Com card the processor freeze.
+O.K. so I write a small testprogramm which run native on our custom board, and map pcmcia space and try to access the attribute memory. D-Link card works fine, 3Com card the same issue.
 
-The APUS configuration uses mm_ptov, I kind of broke it at one
-point and I'm waiting for them to stumble across it so we can
-fix it for them.
+Well back to the roots, take a scope and messaure some signals, and there I see, that the 3com cards set the WAIT signal to low, and thats it! So the MPC freeze, thats now clear, but why? I think the 3com card (PCMCIA card) set the Wait signal, so why get the wait signal not high like on the other cards? Any ideas, could this be a timing problem? But I play with the timing settings a little bit without any change.
 
+The 3com card works fine on a x86 laptop, so it isn't defect.
 
-	-- Dan
+Our hardware is a MPC860T and pcmcia is on port a (an own hardware)
+3com card: 3CCFE574BT, or a 572BT
+
+Pleas help!
+best regards
+Gerhard
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
