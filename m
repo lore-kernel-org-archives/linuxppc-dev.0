@@ -1,36 +1,61 @@
-Message-Id: <200009160921.KAA19271@hyperion.valhalla.net>
-Date: Sat, 16 Sep 2000 10:21:49 +0100
-Subject: Policy on "one size fits all" builds
-From: "Iain Sandoe" <iain@sandoe.co.uk>
+From: Thomas Graichen <news-innominate.list.linux.ppc.dev@innominate.de>
+Reply-To: Thomas Graichen <graichen@innominate.de>
+Subject: SGI XFS filesystem on ppc works now
+Date: 16 Sep 2000 09:38:53 GMT
+Message-ID: <news2mail-8pvf3d$n0t$2@mate.bln.innominate.de>
+Reply-To: thomas.graichen@innominate.de
 To: linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have a (small) dilemma.
+[info: XFS is a high performance journaling filesystem from SGI
+       which is currently being ported to linux under GPL]
 
-discussion relates to dmasound driver (but prop relates elsewhere).
+i just want to let you know that the XFS filesystem from SGI seems
+to work now quite well on the ppc now (at least on mine :-) ... it
+is still not production ready (even for the i386 it is only short
+before the official "beta" label :-) but in my experiences it runs
+on i386 really good in daily use on all-XFS machines and i did
+not have any problems on my imac in the last days too with
 
-The idea of :
+  graichen@aqua:~ > uname -a
+  Linux aqua 2.4.0-test5 #4 Sat Sep 16 12:02:25 CEST 2000 ppc unknown
+  graichen@aqua:~ > mount
+  /dev/hda9 on / type xfs (rw)   <---
+  proc on /proc type proc (rw)
+  /dev/hda5 on /boot type hfs (ro)
+  /dev/hda8 on /home type ext2 (rw)
+  devpts on /dev/pts type devpts (rw)
+  graichen@aqua:~ >
 
-"one size fits all" compiles
+if anyone is interested in giving it a try:
 
-is in direct conflict with:
+* have a look at the SGI XFS site for more info about all that
 
-"I want to build the smallest version and don't want to look for any
-hardware I know I don't have".
+    http://oss.sgi.com/projects/xfs/
 
-for example, I can put wrappers round the cuda usage in dmasound_awacs that
-will prevent it being compiled in if someone switches off CONFIG_CUDA (it
-has already been done at 2.4.0 by someone).
+* get my ppc patch against the SGI XFS cvs tree from
 
-So.  Should I wrapper or should available resources be probed at run-time?
+    http://innominate.org/~graichen/projects/xfs/ppc-xfs-diff.000914
 
-(I don't mind which way I do it - but I'd like some guidance from those who
-ultimately determine what is acceptable)
+* keep the following points in mind:
 
-Iain.
+  - do not use this for your most important data - it seems to work
+    fine but it did not have haevy testing on the ppc yet
+  - if you want to test it as root fs - add a "read-write" to your
+    yaboot.conf for the xfs root entry
+  - be patient - remounting the filesystem read-only on bootup (SuSE)
+    or shutdown (linuxppc) takes a few seconds
+
+good luck and mail me feedback if you have some
+
+t
+
+--
+thomas.graichen@innominate.de
+technical director                                       innominate AG
+clustering & security                                networking people
+tel: +49.30.308806-13  fax: -77                   http://innominate.de
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
