@@ -1,72 +1,33 @@
-Message-ID: <000901c1db3a$931e30e0$6649a8c0@LEIYINGDU>
-From: "Leiying Du" <ldu@solectek.com>
-To: "'LinuxPPC-Embedded'" <linuxppc-embedded@lists.linuxppc.org>
-References: <8D4C69676E66D511A1CB00508BBBB19215796D@ranmx1.ran.harris.com>
-Subject: Re: pcmcia problems
-Date: Wed, 3 Apr 2002 10:08:31 -0800
+Message-ID: <3CAB511C.F962DCF7@lvl7.com>
+Date: Wed, 03 Apr 2002 13:59:40 -0500
+From: Neil Horman <nhorman@lvl7.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: implementing callback tracing on sigsegv's
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Q3. You are right. This is caused by the bad CIS or you do not have CIS info
-on the card at all. Try to use the dump_cisreg & dump_cis utilities to see
-what's on your card.
-
-Leiying
------ Original Message -----
-From: "Fend, Matthias" <mfend@harris.com>
-To: "'LinuxPPC-Embedded'" <linuxppc-embedded@lists.linuxppc.org>
-Sent: Wednesday, April 03, 2002 12:55 AM
-Subject: pcmcia problems
-
-
->
-> hello everybody,
->
-> i'm trying to run pcmcia service (ISDNCard (Fritz PCMCIA V2.0) on a custom
-> mpc860 board.
->
-> i started with pcmcia-cs-3.1.33 i changed the  PCMCIA_MEM_WIN_BASE in
-> m8xx_pcmcia to 0xE0000000
-> i also implemented the adapter methods for the voltage selection
->
-> in /arch/ppc/mm/init.c  MMU_init(void)
-> i added the line
->   ioremap(0xE0000000,0x1000);
->
-> i load the modules pcmcia_core.o ds.o and m8xx_pcmcia.o
->
-> the iopins (CD,VS,WP..) seem to work fine (tested with cardctl status 0)
->
-> but if i try to run
-> > ./cardctl ident 0
-> i only get:
-> > no product info available
-> > function: 2 (serial)
-> >sh-2.03#
->
-> if i turn debug on i get this message
-> cs: overrun in get_next_tuple for socket 0
->
->
-> so now it don't know if it is a software problem or a hardware problem...
->
-> Q1: any ideas what i could try in next step
->
-> Q2: what is the difference between MEM_BASE and IO_BASE
->
-> Q3: cardmgr always think that he detects an anonyoumous memory and start
-this
-> service .. is this caused by the
-> bad cis reading or is this another problem?
->
-> thx matthias
->
->
->
-
+Hey all!
+	I've got a question regarding stack traces in user space.  I've recently
+implmented a stack trace mechanism for our platform which upon receipt of a
+SIGSEGV.  It all seems to work great, but there are two stack frames that appear
+in every stack trace that I'm interested in.  Neither maps to an address within
+the boundries of the static image which received the sigsegv.  The first I have
+determined is an address within the pthreads shared library (the function is
+_pthread_manager_sighandler), and it is my understanding that it is responsible
+for ensuring that synchronous signals are delivered to the thread which caused
+them.  The second stack frame is the real mystery to me.  Its  usually at an
+address thats a little way below address 0x80000000 (the end of addressable user
+program space, I think), and it has alot of data contained in the stack frame.
+Stack frames beyond that start with the address about which the sigsegv occured
+and procede normally up the call stack from there.  I have heard rumors this
+mystery stack frame contains data which can be very usefull in debugging but I
+have been unable to find any information on the frames format or what data
+exactly it might contain.  If anyone knows anything about this frame and where I
+might find more information about it, I would be most appreciative.  Thanks a
+bunch!
+Neil :)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
