@@ -1,49 +1,38 @@
-Date: Thu, 3 Jun 2004 13:48:04 -0700
-From: Matt Porter <mporter@KERNEL.CRASHING.ORG>
-To: Sylvain Munaut <tnt@246tnt.com>
-Cc: Tom Rini <trini@KERNEL.CRASHING.ORG>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: DMA support for MPC5xxx?
-Message-ID: <20040603134804.B24468@home.com>
-References: <20040603090635.B7347@home.com> <20040603164245.B24A9C109F@atlas.denx.de> <20040603113302.A24468@home.com> <20040603185053.GN15195@smtp.west.cox.net> <40BF87BB.4020808@246tNt.com>
+Subject: Re: nearly-working support for cpufreq on 2004 iBook G4 with 7447A
+	cpu
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: John Steele Scott <toojays@toojays.net>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
+	Christiaan Welvaart <cjw@daneel.dyndns.org>
+In-Reply-To: <200406022039.07672.toojays@toojays.net>
+References: <200405302331.35357.toojays@toojays.net>
+	 <200405311807.59356.toojays@toojays.net> <1086047232.1930.74.camel@gaston>
+	 <200406022039.07672.toojays@toojays.net>
+Content-Type: text/plain
+Message-Id: <1086301583.1838.39.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <40BF87BB.4020808@246tNt.com>; from tnt@246tnt.com on Thu, Jun 03, 2004 at 10:19:07PM +0200
+Date: Fri, 04 Jun 2004 08:26:24 +1000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Jun 03, 2004 at 10:19:07PM +0200, Sylvain Munaut wrote:
->
->  >>> See the thread starting at
->  >>> http://lists.linuxppc.org/linuxppc-dev/200311/msg00000.html
->  >>>
->  >>> David even posted on this list to get feedback  from  the
->  >>> community. But I haven't seen a single reply on the mailing
->  >>> lists.
->  >>
->  >> So? Repost. I miss stuff the first time around a lot of times
->  >> myself [this is not to indicate that I would necessarily comment
->  >> on 5200 stuff, just an example].
->  >
->  >
->  > And this time do it against 2.6.  Even if 2.4 wasn't necessarily
->  > frozen at the time we first tried, it is now.
->
-> Actually I got some patch to support MPC5200 ( and only this one, no
-> mgt5100 stuff ) for 2.6
-> It only supports booting, serial console and i2c. Not much but could
-> that be put in official tree if I submit it ? Or does it need to
-> support  more than that to worth inclusion.
-> So that at least if someone tries to implement more ( I'll resume my
-> work on it in a few weeks ), it has a base already in official tree.
+On Wed, 2004-06-02 at 21:08, John Steele Scott wrote:
 
-Why not? You're the only one showing interest in supporting 5200 in
-2.6. Post the patch and if it's clean it can go in. The "i2c", I
-assume, is an i2c host adapter driver so that needs to be separated
-so it can go to gregkh. Don't lump it in with the include/asm-ppc
-and arch/ppc core support. :)
+> I don't know much about manipulating the GPIO stuff, but I guess I will learn
+> it sometime in the next few days and hopefully get to a fully working patch.
 
--Matt
+GPIO just means "general purpose IO", it's just IO bits hanging out of
+the KeyLargo chipsets and connected to various things on the motherboard,
+in that case, one is connected to the power supply controller to control
+the power to the CPU.
+
+Look at the cpufreq code for gpios_set_cpuspeed(), it's used on models
+were both the clock frequency and the voltage are controller by GPIOs,
+keep the voltage part. Remember to ramp up the voltage before setting
+the frequency to high, and ramp it down after setting the frequency to
+low.
+
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
