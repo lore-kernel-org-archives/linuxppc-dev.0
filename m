@@ -1,63 +1,33 @@
-Message-Id: <200109211735.NAA28438@makai.watson.ibm.com>
-To: Ralph Blach <rcblach@raleigh.ibm.com>
-Cc: Dan Malek <dan@mvista.com>, linuxppc-dev@lists.linuxppc.org,
-	Holger Bettag <hobold@Informatik.Uni-Bremen.DE>,
-	Mark Salisbury <mbs@mc.com>,
-	"Timothy A. Seufert" <tas@mindspring.com>
-Subject: Re: ppc LE questions (seeking help hand info pointers) 
-In-Reply-To: Message from Ralph Blach <rcblach@raleigh.ibm.com>
-   of "Fri, 21 Sep 2001 13:01:49 EDT." <3BAB727D.C85E5CB@raleigh.ibm.com>
-Date: Fri, 21 Sep 2001 13:35:29 -0400
-From: David Edelsohn <dje@watson.ibm.com>
+Date: Fri, 21 Sep 2001 11:20:47 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Peter Bergner <bergner@brule.borg.umn.edu>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev@lists.linuxppc.org,
+	Debian PowerPC <debian-powerpc@lists.debian.org>, dan@debian.org
+Subject: Re: [ANN] yaboot maintainer change
+Message-ID: <20010921112047.B23691@cpe-24-221-152-185.az.sprintbbd.net>
+References: <20010920150939.32251@smtp.adsl.oleane.com> <20010920152246.B14835@plato.local.lan> <20010921114951.A211936@brule.borg.umn.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20010921114951.A211936@brule.borg.umn.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> Ralph Blach writes:
+On Fri, Sep 21, 2001 at 11:49:51AM -0500, Peter Bergner wrote:
 
-Ralph> I know the discussions on Book E are incorrect.  I have had the
-Ralph> privilege here in
-Ralph> IBM to work on the 440gp processor.  Although my knowledge of powerpc is
-Ralph> far from complete, I can tell everybody that from my experience that the
-Ralph> Book E architecture is superior.
+> Ethan Benson wrote:
+> : comments and suggestions are welcome, flames should go to /dev/null.
+>
+> Just a little nit, but some people might be interested, as part
+> of the "Various ppc64 & chrp fixes by Peter Bergner", we also
+> added support for booting compressed images (ie, zImage).
 
-Ralph> I believe that Book E processor which have been announced by both
-Ralph> Motorola and IBM
-Ralph> will be VERY successful.
+As in objcopy ... && gzip -9 or the 'zImage' target?  They aren't exactly
+the same..
 
-Ralph> I am personally excited by the future of book E.  The Engineers here
-Ralph> working on delivering it are simply the best with whom I have every
-Ralph> worked.  ( I have been at IBM for over 20 years).
-
-	I wish that you had not made these statements because you now
-force others from IBM to disagree with you in public or let people assume
-your opinion uniformly represents IBM.  This isn't a question of the
-quality of the implementation by engineers, it is a question of the design
-itself.  Making categorical statements that "you know" something is very
-dangerous.
-
-	PowerPC Book E effectively is a different architecture.  The User
-Instruction Set Architecture (UISA) changes address perceived problems
-which never really existed.  It is a fine architecture for its purpose,
-but it complicates the ability to share user code and tools with the rest
-of the PowerPC world and undermines the unifying opportunity for the
-PowerPC architecture scaling across a wide range of uses.
-
-	Your comments of praise focus completely on Supervisor mode
-changes.  If the designers of the Book E architecture had left the Book I
-UISA alone for compatibility with the original PowerPC archiecture, I
-believe that everyone would be a lot happier and more uniformly
-supportive.  There is a lot more agreement that the Supervisor mode
-changes are useful for the embedded market -- the target of "Book E".  I
-wish that the PowerPC Book E architecture designers had limited themselves
-to modifications which were not visible to user programs.
-
-	Change comes with a cost; compatibility is important too.
-
-David
-
-	P.S. The above comments are my own opinion and are not intended to
-imply that they represent any company or organization.  The same applies
-to Ralph's comments which should have included an equivalent disclaimer.
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
