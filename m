@@ -1,55 +1,24 @@
-Date: Mon, 25 Jan 1999 09:47:34 -0600 (CST)
-From: "David A. Gatwood" <marsmail@globegate.utm.edu>
-To: Ken Roberts <ken.r@worldnet.att.net>
-cc: Tom Harrington <tph@rmi.net>,
-        Robin Colgrove <robin@louis.bidmc.harvard.edu>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Linux and Mac together (Was: Re: mac-on-linux project status)
-In-Reply-To: <Pine.LNX.3.96.990124230812.434A-100000@dancer.at.home>
-Message-ID: <Pine.LNX.3.96.990125094415.17040D-100000@globegate.utm.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <9901251744.AA90074@marc.watson.ibm.com>
+To: Samuel Rydh <samuel@ibrium.se>
+Cc: Tom Harrington <tph@rmi.net>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: mac-on-linux project status 
+In-Reply-To: Message from Samuel Rydh <samuel@ibrium.se>
+   of "Mon, 25 Jan 1999 16:12:52 +0100." <v03130305b2d231353f9c@[192.168.0.1]>
+Date: Mon, 25 Jan 1999 12:44:11 -0500
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 24 Jan 1999, Ken Roberts wrote:
+	One of the changes from the original POWER architecture to the
+PowerPC architecture was "virtualizing" the instructions so that a
+hypervisor-like OS could virtualize the processor and allow hosted
+operating systems on a virtual machine.
 
-> >> Maybe I am just not understanding this but if both MkLinux and OS X run on 
-> >> top of the Mach microkernel, could they both be running simultaneously? If 
-> >
-> >In principle, yes,  Mach is capable of running multiple server operating 
-> >systems at the same time.  I have no idea what's involved in making this
-> >happen, but supposedly one of the advantges of a microkernel-based Linux
-> 
-> this was explained to the mklinux list quite some time back.  i believe
-> this will not work because mklinux and osx use different versions of the
-> mach kernel. 
-> 
-> from what i remember, mklinux uses a more recent kernel than the
-> official apple stuff.  the interfaces are different enough so that the
-> two worlds are incompatible. 
+	The hosted operating system thinks that it is running on hardware
+but all privileged operations trap to the hypervisor.
 
-MkLinux uses a more modern Mach than OS X server, yes.  It uses a very
-similar kernel to what OS X final is expected to use, though.  I like to
-think there are always possibilities.  I won't be certain whether there's
-any porting potential or not until OS X is released, though.
-
-
-Later,
 David
-
-David A. Gatwood                         Visit globegate's internet
-dgatwood@globegate.utm.edu                  talker, Deep Space 36
-http://globegate.utm.edu                telnet globegate.utm.edu:9624
-
------BEGIN GEEK CODE BLOCK-----
-Version 3.1
-GCS/CC/FA/H/L/MC/M/MU/PA/TW d-@ s:>- a-- C++ ++>$ UBLAS*++ ++>$
-P+?>$ L++ +>$ !E--- W++ +>$ N++(++ +)>++ +$ !o? K-? !w--- !O
-M++>$ !V-- PS+>$ !PE- Y+>$ PGP+>$ t++ +>$ 5+>++ ++$ !X- !R tv+>$
-b++>$ !DI !D- G++(++ +)>$ e>++ ++ h--! r--- !y-
-------END GEEK CODE BLOCK------
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
