@@ -1,21 +1,20 @@
-Return-Path: <krom@dgt-lab.com.pl>
-Received: from dgt-lab.com.pl (unknown [195.117.141.6])
-	by ozlabs.org (Postfix) with ESMTP id CC3DB67A7D
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id DB5CD67A7B
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 31 Jan 2005 18:42:10 +1100 (EST)
-Received: from [192.168.7.66] (proxy.dgt.com.pl [195.117.141.11])
-	by dgt-lab.com.pl (Postfix) with ESMTP id 2A24A2E881
+	Mon, 31 Jan 2005 19:51:29 +1100 (EST)
+Received: from linux.local (linux.prtnl [192.168.1.97])
+	by protonic.prtnl (Postfix) with ESMTP id 6DF4A403F
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 31 Jan 2005 08:24:43 +0100 (CET)
-Message-ID: <41FDDD46.5090609@dgt-lab.com.pl>
-Date: Mon, 31 Jan 2005 08:24:54 +0100
-From: Wojciech Kromer <krom@dgt-lab.com.pl>
+	Mon, 31 Jan 2005 09:51:29 +0100 (CET)
+From: David Jander <david.jander@protonic.nl>
+To: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
+Date: Mon, 31 Jan 2005 09:51:24 +0100
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-References: <41EE5C98.4000607@dgt.com.pl>
-In-Reply-To: <41EE5C98.4000607@dgt.com.pl>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Subject: Re: 8250 FCC in half-duplex mode transmit timed out
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200501310951.24600.david.jander@protonic.nl>
+Subject: The RS485 driver problem...
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,13 +25,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-<cut>
 
-no answer?
+Hi,
 
-so, i have one smiple question:
+If you want to connect a RS485 transceiver to a normal UART, you always have 
+the problem of dealing with enabling/disabling transmitter and recveiver. I 
+have seen hardware that misuses RS-232 hardware handshaking lines (RTS/CTS) 
+for this purpose. What I have not been able to find is a linux driver or 
+software solution to this problem.
 
-does anyone tried to make huge traffic from 82xx conneted to hub (not to 
-switch, to force half duplex mode) ???
+Has anybody used the CPM uarts (or even a standard 16C550 uart) for this 
+purpose? How?
 
-ps: my results of getting large file via ftp are described in previous mail
+Greetings,
+
+-- 
+David Jander
+Protonic Holland.
