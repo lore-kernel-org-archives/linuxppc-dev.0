@@ -1,56 +1,46 @@
-Message-ID: <3857103E.6608A366@ctam.com.au>
-Date: Wed, 15 Dec 1999 14:51:27 +1100
-From: Brendan Simon <bsimon@ctam.com.au>
-Reply-To: bsimon@ctam.com.au
+Message-ID: <385711B2.4574D1D2@netx4.com>
+Date: Tue, 14 Dec 1999 22:57:38 -0500
+From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: Dan Malek <dan@netx4.com>
-CC: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: linuxppc embedded boot problems.
-References: <3856C0D7.4E1404C9@ctam.com.au> <385703C2.AA4298E7@netx4.com> <38570544.476D42C9@ctam.com.au> <385714D8.8AD74656@netx4.com>
+To: Brian Kuschak <bkuschak@yahoo.com>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: glibc 1.99-8xx include files?
+References: <19991212014800.9853.qmail@web307.mail.yahoo.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek wrote:
-
-> Considering you are doing your own UPM, the Linux kernel will
-> find lots of timing errors with it.  It enables the MMU and
-> caches very early, so the bus timing will see something new
-> for the first time.  I hope you are peforming the proper cache
-> initialization sequence and setting all of the necessary
-> processor registers in the boot rom.
->
-> You can disable the caches in arch/ppc/kernel/head.S.  Try that.
-
-I commented out (using #if0 and #endif) the bits of code that enable the
-caches in arch/ppc/kernel/head.S and arch/ppc/mbxboot/head.S.  The kernel
-now boots.  This indicates one or more of the following:
-1) there is something I'm doing wrong which affects the cache setup.
-2) Some of the code has moved in memory which makes it work.
-3) I just got lucky this time.
-I really hope it is number 1).
-
-I now get the attached output.  Notice the "VFS: Mounted root (NFS
-filesystem) readonly." message.  So the kernel things that the root
-filesystem is mounted via NFS and it is ok with it.  But the shell never
-runs.  The root filesystem is EXACTLY the same one I put into initrd and
-that one seems to work.  So maybe the rootnfs stuff is not working properly
-for me.  Is it the ethernet driver I ported to SCC4 ?  If it is, then how
-can the root NFS filesystem be mounted.  Any clues ?
-
-Thanks again,
-Brendan Simon.
+Brian Kuschak wrote:
 
 
-[lots of other stuff removed]
-...
-VFS: Mounted root (NFS filesystem) readonly.
-BJS: INITRD: 1
-BJS: freeing memory
-Freeing unused kernel memory: 32k init
-BJS: memory freed
-BJS: kernel unlocked
+> It appears that the glibc header files in the
+> mbxroot.full.tgz filesystem on the ftp site are for
+> glibc version 2.0.
 
+I don't think so.....that image was created long before
+the glibc2 version existed.
+
+> ...  I'm using the glibc-1.99 version
+> with the 8xx patches.
+
+This should work.....
+
+
+> My code is including the 2.0 headers, but linking to
+> the 1.99 library.  It's not very happy :-)
+
+Are you sure this is happening?  When I boot an 8xx using
+the mbxroot.full file system, I can compile programs on it
+that run just fine.  Maybe I haven't stumbled across the
+features you are trying to use.
+
+I know that cross compiling to use glibc-1.99 on any system
+is very error prone.  I certainly haven't yet mastered it,
+but I am a little slow sometimes.  I still have an old R4 iMac
+for this purpose.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
