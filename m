@@ -1,36 +1,31 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>,
-	"Kevin B.  Hendricks" <khendricks@ivey.uwo.ca>
-Cc: <linuxppc-dev@lists.linuxppc.org>,
-	<yellowdog-devel@lists.yellowdoglinux.com>, <ajoshi@unixbox.com>
-Subject: Re: radeonfb.c flakiness
-Date: Tue, 19 Feb 2002 01:04:05 +0100
-Message-Id: <19300421142039.19078@smtp.wanadoo.fr>
-In-Reply-To: <20020218205555.OVAC2625.tomts5-srv.bellnexxia.net@there>
-References: <20020218205555.OVAC2625.tomts5-srv.bellnexxia.net@there>
+From: john.khan@liquidation.com
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: Idea for linux_log.h
+Date: Tue, 19 Feb 2002 16:34:51 -0500
+Message-ID: <NGBBKEOKAMAPDDCNPGFEIEAECBAA.john.khan@liquidation.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Tried that no help.  I have now figured out that the only way to make the
->DFP startup properly is to zap the parameter ram (one chime's worth) and
->then it will actually startup.  If I don't do that and I have been running
->MacOSX then no matter what I do or try it does right after the yaboot
->prompt I see a flash and then everything stays blank.
+Hi all,
 
-that's strange, since a friend of mine is experiencing exactly the same
-issue with a Rage M6 (radeon mobility) in a titanium powerbook, while I
-never see it here. The only difference is that his has a little bit slower
-CPU.
+I'm new to the list. But have something I would like to add or get opininos
+on.
 
->Perhaps Mac OSX driver is writing something to nvram or is moving the
->memory mapping for the card's interfaces.  Either way without that single
->pram zap, the screen simply goes dead and stays dead.
+I came up with this http://gfxgeek.com/ppcLinux.gif If you like it, i will
+convert it to the header file. I have about 7 years experience with digital
+art and some programming and want to help linuxppc anyway I can. I'm open to
+ideas and willing to offer help in any area of graphics needed for linuxppc
+:)
 
-I think it doesn't write anything but mode & backlight infos. Make sure
-your problem isn't caused by the powerbook backlight code ;) I think the
-way we currently fetch the backlight setting from pram is kinda broken.
+John Khan
+----------------------
+Liquidation.com
+202.467.6868 x305
+http://www.liquidation.com
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
