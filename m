@@ -1,31 +1,33 @@
-Subject: Accessing the vger.rutgers.edu tree from behind a firewall?
-To: linuxppc-embedded@lists.linuxppc.org
-Date: Mon, 13 Sep 1999 12:52:55 +1000 (EST)
+Message-ID: <37DC8183.20ECD74E@jlc.net>
+Date: Mon, 13 Sep 1999 00:45:55 -0400
+From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Message-Id: <19990913025255.83142759@elph.research.canon.com.au>
-From: greyham@research.canon.com.au (Graham Stoney)
+To: bsimon@ctam.com.au
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: glibc for mpc860
+References: <37D853D5.54331958@ctam.com.au> <37D8D890.B262F54C@kieray1.p.y.ki.era.ericsson.se> <37D8F22B.4AC79941@switchboard.ericsson.se> <37DC636C.6125C880@ctam.com.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Ok, I'm stumped.
+Brendan Simon wrote:
+> 
+> Kenneth Johansson wrote:
+> 
+> > One solution to this could be that whoever is resposible for
+> > "http://www.ppc.kernel.org/embedded.html" updated the pages. If only to point
+> > to the mailing list and the archive that would make life easier for beginners.
 
-I'd like to get read access to the Linux kernel source tree on
-vger.rutgers.edu, so I can keep up with the latest PowerPC changes for some
-embedded work I'm doing with the MPC855/860T. Ultimately, I hope to be able to
-contribute, so I may need write access too, but that's a little down the track.
+I can put whatever you want there.  I just don't know how you
+find that page without reading all of the other PPC pages that tell
+you that stuff.  That page is basically a reminder that you found
+the FTP server.
 
-My problem is that I'm behind a firewall, so I can't just use cvs pserver
-directly. I could use an ssh tunnel through our firewall if vger.rutgers.edu
-or cvs.on.openprojects.net supported it, but I haven't been able to get that
-to work either. I haven't used anonymous cvs before, so perhaps I'm missing
-something very, very obvious.
+I guess I'll try to update it once I get all of the sources
+checked into CVS.
 
-Can anyone please tell me if it's possible to get access to the cvs repository
-from behind a firewall?
 
-Thanks,
-Graham
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
