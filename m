@@ -1,37 +1,40 @@
-Date: Fri, 14 Mar 2003 10:25:36 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Ibon Gotxi Garcia <igotxi@jazzfree.com>
-Cc: Linux PPC embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: kgdb and console output
-Message-ID: <20030314172536.GF6421@ip68-0-152-218.tc.ph.cox.net>
-References: <1047642589.367.19.camel@muse>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1047642589.367.19.camel@muse>
+Message-ID: <3E725ACA.7080301@rettung.at>
+Date: Fri, 14 Mar 2003 23:42:18 +0100
+From: Guenther SOMMER <gue@rettung.at>
+MIME-Version: 1.0
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: linuxppc on dsp-board
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Mar 14, 2003 at 11:49:50AM +0000, Ibon Gotxi Garcia wrote:
+hi!
 
-[snip]
-> INIT: INIT: NIT: IT: T: : version 2.78 bootingersion 2.78 bootingrsion
-> 2.78 bootingsion 2.78 bootingon 2.78 booting
->
-> and so on.
->
-> a.- Is that a gdb problem?
-> b.- Is it related with using the same serial port for both output and
-> debugging?
-> c.- Maybe i should change the tools i use in the root filesystem (aka
-> /bin/echo ...)?
+i'd like to start linux on a dsp-board (where no linux has gone before :)))
 
-It's related to the 'console' support inside of the serial driver / kgdb
-stub.  The best way, IMHO, around this is to use the 'kgdb_demux'
-script.  I don't have the URL handy, but google knows.
+it's a dsp-board with some dsp on board an a motorola 860 processor. the
+board itself has 32mb sdram and 8 mb flash. the board has a bootloader
+integrated, which configures the mpcs and start a simple "boot-aplication".
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+normal vxworks is used, but it's time to start something useful now :)))
+
+i'd like this bootapplication to start linux, but how can i do this. the
+bootloader itself should stay, because it does the initialization.
+
+i didn't find anything like ROLO (a rom-bootloader for linux, but only
+for x86). ppcboot is a total overkill, because the board is complete
+initalized, i only need something to start the kernel (no config, no
+transfer of images, no..., only kick the kernel, which lies mapped in
+memory from the flash).
+
+the other problem is, which setting for the "board type" in the
+linux-kernel itself should (kernel from ELDK at www.denx.de) be used?
+
+hope you can give me some tips, i'd like to show my boss, that linux
+runs everywhere!
+
+greetings, guenther sommer.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
