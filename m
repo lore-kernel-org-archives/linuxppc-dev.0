@@ -1,53 +1,27 @@
-Subject: Re: Booting Linux on a Custom PPC Board
-From: Bob Beck <beck@assurtech.com>
-To: wd@denx.de
+Message-ID: <4044CA28.5050309@mvista.com>
+Date: Tue, 02 Mar 2004 10:53:44 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
+To: Deepu Paulose Thachil <dpthachil@yahoo.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20040302235149.72299C0655@atlas.denx.de>
-References: <20040302235149.72299C0655@atlas.denx.de>
-Content-Type: text/plain
-Message-Id: <1078249516.4228.7.camel@budweiser>
-Mime-Version: 1.0
-Date: 03 Mar 2004 07:45:16 +1400
+Subject: Re: Porting Linux into IBM Spruce
+References: <20040227143725.94263.qmail@web12603.mail.yahoo.com>
+In-Reply-To: <20040227143725.94263.qmail@web12603.mail.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 2004-03-03 at 13:51, Wolfgang Denk wrote:
-> In message <1078181934.4198.20.camel@budweiser> you wrote:
-> >
-> > We are writing our own boot loader code for a couple of reasons.
-> >
-> > o U-Boot does not support our ethernet chip or serial chip.
->
-> And you really  think  that  developing  a  complete  new  bootloader
-> (including drivers for your ethernet and serial chips) is less effort
-> or easier that just adding these drivers to U-Boot?
->
-> C'me on!
+Deepu Paulose Thachil wrote:
 
-Actually, we know we need to develop drivers for our ethernet and
-serial chips for Linux. We are not convinced yet that developing
-these drivers for U-Boot too is useful given the fact that VxWorks
-is already booted up.
+>Hi,
 >
-> > o VxWorks is in flash and we cannot change that in the near future.
-> > o The VxWorks boot loader initializes the hardware and
-> >   we run our custom boot loader from its shell.
+>I am trying to port linux into the IBM spruce board
+>(PPC750, CPC700..).
 >
-> U-Boot can boot VxWorks just fine.
->
-What I mean is that the VxWorks boot loader is already booting
-up an really old version of VxWorks. We aren't using VxWorks for
-this project for various reasons. It just happens to be part of
-the legacy development environment.
+Why?  Did you look at what is already in the linuxppc kernel?
 
-
-Bob
-
->
-> Best regards,
->
-> Wolfgang Denk
+Mark
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
