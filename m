@@ -1,31 +1,16 @@
-Message-ID: <C78540EA349B2D4BB83D1B0AD748E26F1BE49C@amer20.avnet.com>
-From: "Kerl, John" <John.Kerl@Avnet.com>
-To: "'Magnus Damm'" <damm@opensource.se>,
-	Guenther SOMMER <gue@rettung.at>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: linuxppc on dsp-board
-Date: Fri, 14 Mar 2003 17:18:41 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Sender: owner-linuxppc-embedded@lists.linuxppc.org
-List-Id: <linuxppc-embedded@lists.linuxppc.org>
-
-
-For more information on how to do that:
-
-http://lists.linuxppc.org/linuxppc-embedded/200302/msg00138.html
-
-Also I can send you a small tar file with source, upon request.
-
-
------Original Message-----
-From: Magnus Damm [mailto:damm@opensource.se]
-Sent: Friday, March 14, 2003 6:11 PM
-To: Guenther SOMMER
+Date: Sat, 15 Mar 2003 01:10:41 +0000
+From: Magnus Damm <damm@opensource.se>
+To: Guenther SOMMER <gue@rettung.at>
 Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: linuxppc on dsp-board
-
+Message-Id: <20030315011041.6b6004de.damm@opensource.se>
+In-Reply-To: <3E7261FB.2060904@rettung.at>
+References: <3E725ACA.7080301@rettung.at>
+	<3E7261FB.2060904@rettung.at>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Sender: owner-linuxppc-embedded@lists.linuxppc.org
+List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 I've actually run Linux on a hardware that might be something like
@@ -44,13 +29,11 @@ On Sat, 15 Mar 2003 00:12:59 +0100
 Guenther SOMMER <gue@rettung.at> wrote:
 
 >
-> > i'd like to start linux on a dsp-board (where no linux has gone before
-:)))
+> > i'd like to start linux on a dsp-board (where no linux has gone before :)))
 > >
 > > it's a dsp-board with some dsp on board an a motorola 860 processor. the
 > > board itself has 32mb sdram and 8 mb flash. the board has a bootloader
-> > integrated, which configures the mpcs and start a simple
-"boot-aplication".
+> > integrated, which configures the mpcs and start a simple "boot-aplication".
 >
 > i didn't write it straightforward. i mean it should run on the
 > control-processor (the mpc860), not on the dsps itself. but i think it
@@ -60,6 +43,5 @@ Guenther SOMMER <gue@rettung.at> wrote:
 >
 >
 >
-
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
