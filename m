@@ -1,90 +1,68 @@
-Message-ID: <3C8A9DF8.CE2BA33C@kegel.com>
-Date: Sat, 09 Mar 2002 15:42:48 -0800
-From: Dan Kegel <dank@kegel.com>
-Reply-To: dank@kegel.com
+Message-ID: <007901c1c894$d6c5b240$1a11efcb@industrialDiv.hanasys.co.kr>
+Reply-To: "Sangmoon Kim" <dogoil@etinsys.com>
+From: "Sangmoon Kim" <dogoil@etinsys.com>
+To: "Kim, Kwansuk" <kskim@neowave.co.kr>,
+	<linuxppc-embedded@lists.linuxppc.org>
+References: <OMENKEONFDLIGLHPFALBIEDACHAA.kskim@neowave.co.kr>
+Subject: Re: serial console on 405GP 
+Date: Mon, 11 Mar 2002 09:36:51 +0900
 MIME-Version: 1.0
-To: "libtool@gnu.org" <libtool@gnu.org>,
-	"linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: [patch] make libtool1.4d work when cross-compiling
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-The patch
- http://www.kegel.com/libtool-cross-2.patch
-appears to fix libtool1.4d so it sets sys_lib_search_path_spec properly,
-which is probably required for cross-compiling programs that use libtool.
+Hi, Kim,Kwansuk!
 
-To test it, I created dummy cross-compiler mycc and linker myld which are just
-trivial wrappers around cc and ld, except that mycc --print-search-dirs
-prints paths that refer to /old instead of /,
-e.g.
-   libraries: =/old/usr/lib/gcc-lib/i386-redhat-linux/2.96/:...:/old/usr/lib/
-(/old on my machine is an old installation of linux.)
+It seams you have the same problem that I had just two weeks ago.
+It is likely you have the serial port located below 0xc0000000.
+If it is so, I suggest you to move the serial port above 0xc0000000.
+If you want to know the reason, just find the mails, in this mailing list, titled "Re: execve system call question"
 
-To configure libtool, I created a small configure.in and
-Makefile.in, ran libtoolize, copied libtool.m4 to aclocal.m4 as instructed,
-ran automake --add-missing just to get install-sh etc.,
-ran autoconf, and configured with
-   CC=`pwd`/mycc LD=`pwd`/myld ./configure --build=pentium-unknown-linux --host=ppc-unknown-linux
-(the exact value for host doesn't matter as long as the processor is different).
-To verify whether libtool is configured properly, I run
-   ./libtool --config | egrep 'LD|CC|sys_lib_search_path_spec'
+- Sangmoon Kim -
 
-Before applying my patch, libtool1.4d --config outputs
-   CC="/home/dank/foo/mycc"
-   LD="/home/dank/foo/myld"
-   sys_lib_search_path_spec="/lib /usr/lib /usr/local/lib"
-In other words, the current libtool 1.4d searches the
-system libraries instead of the libraries used by the specified compiler.
+----- Original Message -----
+From: "Kim, Kwansuk" <kskim@neowave.co.kr>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Sent: Thursday, March 07, 2002 11:42 AM
+Subject: serial console on 405GP
 
-After applying an earlier version of my patch,
-  http://www.kegel.com/libtool-cross.patch,
-rerunning autoconf and configure, rerunning libtool --config | grep sys_lib
-output
-  sys_lib_search_path_spec=" =/old/usr/lib/gcc-lib/i386-redhat-linux/2.96/ ... /old/usr/lib
-which looks correct except for that odd = in front.
-(There might be a similar bug in the mingw support in libtool, which also uses --print-search-dirs.)
 
-I poked around a bit, and that = appears to be present in the output
-of 'gcc --print-search-dirs' on gcc's after 2.95.  Is it a bug in gcc,
-or just a strange feature?
-
-I modified the patch a bit to strip the = off.  The resulting patch is
-  http://www.kegel.com/libtool-cross-2.patch
-
-I'd appreciate hearing from anyone who's been trying to
-cross-compile programs built with libtool about whether
-this patch helps them.
-
-Thanks,
-Dan
-
-p.s. Here's the patch inline for convenience:
-
---- libtool.m4.orig     Sat Mar  9 07:28:58 2002
-+++ libtool.m4  Sat Mar  9 15:30:52 2002
-@@ -984,7 +984,20 @@
- version_type=none
- dynamic_linker="$host_os ld.so"
- sys_lib_dlsearch_path_spec="/lib /usr/lib"
--sys_lib_search_path_spec="/lib /usr/lib /usr/local/lib"
-+if test "$GCC" = yes; then
-+  sys_lib_search_path_spec=`$CC -print-search-dirs | grep "^libraries:" | sed -e "s/^libraries: *=*//"`
-+  if echo "$sys_lib_search_path_spec" | egrep ';' >/dev/null ; then
-+    # if the path contains ";" then we assume it to be the separator
-+    # otherwise default to the standard path separator (i.e. ":") - it is
-+    # assumed that no part of a normal pathname contains ";" but that should
-+    # okay in the real world where ";" in dirpaths is itself problematic.
-+    sys_lib_search_path_spec=`echo "$sys_lib_search_path_spec" | sed -e 's/;/ /g'`
-+  else
-+    sys_lib_search_path_spec=`echo "$sys_lib_search_path_spec" | sed  -e "s/$PATH_SEPARATOR/ /g"`
-+  fi
-+else
-+  sys_lib_search_path_spec="/lib /usr/lib /usr/local/lib"
-+fi
- need_lib_prefix=unknown
- hardcode_into_libs=no
+>
+> Dear, everyone!
+>
+> I'm poring linux-2.4.18-pre7 (from penquinppc.org) on my customized board (with IBM 405GP)
+>
+> My board has no keyboard, so I'm using serial console on UART0.
+> I ported ppcboot, and it works well.
+>
+> When I ported linux on my board, there happened some problem.
+>
+> After init forks sash (standalone shell as you know),
+> I can see the prompt of the sash but the character sent wasn't delivered to sash.
+> So what character I send to the sash. It never respond.
+>
+> I watch for the serial source (driver/char/serial.c) and enabled DEBUG option and the character sent
+> was received by kernel.
+>
+> I don't know why the characters are disappeared.
+>
+> Anyone know the reason?
+>
+> Please, help me.
+>
+>  ==============================================
+>      Just for fun...
+>                                                   - Linus Torvalds
+>  ==============================================
+>   Kwansuk Kim
+>   Engineer, NeoWave Inc.
+>   Tel   +82-31-380-4927    Fax +82-31-380-4747
+>   E-mail: kskim@neowave.co.kr
+> ==============================================
+>
+>
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
