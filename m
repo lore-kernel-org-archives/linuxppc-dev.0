@@ -1,34 +1,36 @@
-Content-Type: text/plain;
-  charset="utf-8"
-From: Rakesh Jagota <j.rakesh@gdatech.co.in>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: USER Application on IBM 405 based processor using vulcan chip
-Date: Tue, 4 Mar 2003 11:40:24 +0530
-References: <002801c2e1ee$cb9634c0$7300a8c0@avantwave.com>
-In-Reply-To: <002801c2e1ee$cb9634c0$7300a8c0@avantwave.com>
+Message-ID: <37D0F88E70D96C428C19EEB865701A38016C25F2@buda902a.siemens.hu>
+From: Meszaros Lajos <ludwigm@siemens.com>
+To: Kamalesh B <kamal@tataelxsi.co.in>,
+	Coray Tate <ctate@metrowerks.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Problem porting 2.4.17 linux to MPC8260ADS
+Date: Tue, 4 Mar 2003 10:20:45 +0100 
 MIME-Version: 1.0
-Message-ID: <djbhycas60uzv16.040320031131@gda-server>
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
-I am working for Settop Box project with IBM405 processor in linux. I am
-developing an user application to inetract the user with settop box. I am
-using i2c interface for this. I am not able to understand the following
-things:
-1. Whether we should decode the Transport straem directly or we should store
-it first and after that go for decoding and play.
+You have to initialize memory controller to certain
+addresses BEFORE any use of BATs, ioremap etc.
+For example
+  -BR1/OR1 for BCSR
+  -BR5/OR5 for ATM
+  -IMMR
+  all of them anywhere above 0xf0000000.
 
-2. How we should store the channel information and How to tune the channel.
+So You can use these addresses with or without MMU
+at same address. ( phys = virtual !!!)
 
-3. How to load the DES register.
+Best Regards
+  Ludwig
 
-Can anyone help me out to sort out these issue.
 
-Thanks in advance,
-
-Rakesh
-
+> -----Eredeti uzenet-----
+> Felado: Kamalesh B [mailto:kamal@tataelxsi.co.in]
+> Kuldve: Friday, February 21, 2003 5:16 PM
+> Cimzett: Coray Tate; linuxppc-embedded@lists.linuxppc.org
+> Targy: Problem porting 2.4.17 linux to MPC8260ADS
+[snip]
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
