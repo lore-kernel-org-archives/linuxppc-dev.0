@@ -1,42 +1,32 @@
-Message-ID: <XFMail.990602185116.heinz@bintec.de>
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <37558CC8.A5025227@wanadoo.fr>
+Date: Wed, 02 Jun 1999 21:58:00 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-In-Reply-To: <37553687.F6737A9@switchboard.ericsson.se>
-Date: Wed, 02 Jun 1999 18:51:16 +0200 (CEST)
-From: Heinz Blaettner <heinz@bintec.de>
-To: Magnus Damm <damm@kieraypc01.p.y.ki.era.ericsson.se>
-Subject: Re: MPC8xx: wrong zimage_start
-Cc: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+To: satadru pramanik <satadru@umich.edu>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: compilation failure of 2.2 series cvs kernel sources
+References: <Pine.LNX.4.10.9906021228590.15449-100000@beer.pub.umich.edu>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Magnus
-
-On 02-Jun-99 Magnus Damm wrote:
+satadru pramanik wrote:
 > 
-> Another thing - remember to read the errata for the 860.
-> Revisions before C tend to have some problems.
-> And 860T has still (B3) got problems.
->  
+> yes. I did upgrade glibc recently. ;-)
+> 
+> However, the symlink is still the same.   Do I need to change it?  And
+> wouldn't doing a cvs update change the scsi.h file "back"?  Or is that the
+> problem?
 
+I don't really know what happens in this case, but it shouldn't be hard
+to find out what version of include/scsi/scsi.h (and sg.h, which sits in
+the same boat) you have: "cvs status include/scsi/scsi.h".
+BTW, cvs log tells me that TYPE_ENCLOSURE came into scsi.h on February
+9, version 1.10.
 
-Please give me a hint where to find the errata sheets ?.
-What problems about the 860T ?    Because we choose that device :-(
-
-
-thanks
-
-        heinz
-
-___________________________________________________
-Larkinson's Law:
-        All laws are basically false.
-___________________________________________________
-Heinz Blaettner          / BinTec Communications AG
-fon:    +49 911 96 73-0  / Suedwestpark 94  
-fax:    +49 911 688 0725 / D-90449 Nuernberg
-E-Mail: heinz@bintec.de  / http://www.bintec.de
+--
+Martin
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
