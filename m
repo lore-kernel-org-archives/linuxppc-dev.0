@@ -1,29 +1,30 @@
-Message-ID: <39A55C57.4964AA3D@aminocom.com>
-Date: Thu, 24 Aug 2000 17:33:11 +0000
-From: Gary Swanson <gswanson@aminocom.com>
+Message-ID: <67505026E29DD311A9AA00508B7315F31956BA@EXCHANGE>
+From: Julia Elbert <jelbert@enerdyne.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'"
+	 <linuxppc-embedded@lists.linuxppc.org>
+Subject: Ram Disk
+Date: Thu, 24 Aug 2000 12:12:18 -0700
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: usb chipset
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Hi All,
 
-I hope this isn't an inappropriate newbie question, but here goes.
+I am running a 7mg ram disk in my 860t. I have multiple programs I start
+through linuxrc. I am streaming video, serial data, and running a web server
+on various sockets. The webserver is GoAhead. When I click on a cgi script
+my system crashes with
 
-We have been developing solutions using a PowerPC823, which has on chip
-USB support, but we are starting another development with the PowerPC
-855, which I understand doesn't have on-chip USB support.
+Software Emulation Web/62 NIP: 1009a014 *NIP: 0x0 code: ffffffdaSoftware
+Emulati
+on linuxrc/6 NIP: 1009a014 *NIP: 0x0 code: ffffffdasash-2.03#
 
-My question is; are there external USB chipsets that we can use that are
-already supported by the 2.2.14 kernel (from the MontaVista CDK 1.2), or
-does anyone have any recommendations for a chipset that would make the
-USB support as straightforward as possible ?
+Am I running out of ram? I have 16 mgs.
 
-Thank you,
-
-Gary
+Thanks in advance....
+--Julia
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
