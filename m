@@ -1,32 +1,32 @@
+Date: Fri, 24 May 2002 17:10:14 -0700
+From: Matt Porter <porter@cox.net>
 To: Khai Trinh <kqtrinh@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Where can I get the latest linuxppc2.4_devel tree? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 24 May 2002 16:47:11 PDT."
-             <20020524234711.37666.qmail@web11507.mail.yahoo.com>
-Date: Sat, 25 May 2002 02:03:41 +0200
-Message-Id: <20020525000346.2D2F911972@denx.denx.de>
+Cc: Matt Porter <porter@cox.net>, Dan Kegel <dkegel@ixiacom.com>,
+	"'linuxppc-embedded@lists.linuxppc.org '" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: in_ntoa built error
+Message-ID: <20020524171014.B21633@home.com>
+References: <20020524164039.A21633@home.com> <20020524235414.36023.qmail@web11508.mail.yahoo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20020524235414.36023.qmail@web11508.mail.yahoo.com>; from kqtrinh@yahoo.com on Fri, May 24, 2002 at 04:54:14PM -0700
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20020524234711.37666.qmail@web11507.mail.yahoo.com> you wrote:
->
-> I got my at ppckernel.org but the date on it was May
-> 4th. I know Matt checked a bunch of changes in after
-> this date. Would someone tell where the latest copy
-> is?
+On Fri, May 24, 2002 at 04:54:14PM -0700, Khai Trinh wrote:
+> But Matt, if I turn on CONFIG_BLK_DEV_INITRD or
+> CONFIG_ROOT_NFS, the code will fail to build with
+> built error in in_ntoa as I stated earlier. Dan
+> suggested I replaced it with NIPQUAD. Did he mean
+> in_ntoa or inet_ntoa?
 
-See http://penguinppc.org/dev/kernel.shtml
+This problem has been fixed for sometime in _devel, your code is
+stale.
 
-Wolfgang Denk
-
+Regards,
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Defaults are wonderful, just like fire.
-                  - Larry Wall in <1996Mar6.004121.27890@netlabs.com>
+Matt Porter
+porter@cox.net
+This is Linux Country. On a quiet night, you can hear Windows reboot.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
