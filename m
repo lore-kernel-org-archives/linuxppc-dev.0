@@ -1,41 +1,63 @@
-To: "Flavio Pereira" <Flavio.Pereira@za.flextronics.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <002201c329c0$36b5a740$940ca8c0@analogue.domain>
+From: "Frank Robbins" <Frank.Robbins@Analogue-Micro.com>
+To: <Flavio.Pereira@za.flextronics.com>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <742AC4678EF8464697DDDFE3B40F6ECD07E2CE@srv-mailrnd.azisa.co.za>
 Subject: Re: System crash in kernel_thread 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 03 Jun 2003 10:36:22 +0200."
-             <742AC4678EF8464697DDDFE3B40F6ECD07E2CD@srv-mailrnd.azisa.co.za>
-Date: Tue, 03 Jun 2003 12:00:10 +0200
-Message-Id: <20030603100015.5C92BC5492@atlas.denx.de>
+Date: Tue, 3 Jun 2003 12:06:40 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Flavio,
+A few questions you need to ask yourself
 
-in message <742AC4678EF8464697DDDFE3B40F6ECD07E2CD@srv-mailrnd.azisa.co.za> you wrote:
+1. Is this your own Hardware ?
+2. How did you arrive at your SDRAM UPM Table
+3. Are your connections identical to the one used
+4.  Do you have buffers in the connection between the SDRAM and the MPC*xx.
+This is normally unwise..and will mean more UPM modifications.
+5. What have you set the refresh to on the SDRAM? Is it correct?
+6. As soon as the MMU is enabled it will blow any missconfigured SDRAM to
+bits.(I will run erratic .. not blow the chip up).
+7. Bursting needs to enabled as everything will run at a snails pace with
+the MP8xx.
+
+Best of luck I have been here many times
+
+Frank Robbins
+
+
+----- Original Message -----
+From: "Flavio Pereira" <Flavio.Pereira@za.flextronics.com>
+To: "Wolfgang Denk" <wd@denx.de>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Sent: Tuesday, June 03, 2003 11:12 AM
+Subject: RE: System crash in kernel_thread
+
+
 >
-> I'm trying to port Linux to a proprietary board. I got u-boot working
-> good, and now that I start the kernel I find that the system _halts_
-> when it tries to run init using the kernel_thread routine in
-> init/main.c/rest_init(). Can someone suggest why this could be
-> happening?
+> Hi Wolfgang
+>
+> >One pretty common reason is that your SDRAM initialization sequence
+> >may be buggy and/or incomplete, and you experience memory errors. Re-
+> >member that more is required than just adapting the UPM tables.
+>
+> Hmmm, that is interesting. Does Linux require that burst mode access be
+> enabled, right now I have the BI bit set in the OR register. I also
+> ported SD-RAM tests into u-boot, the tests the entire memory range with
+> pattern and address and this looks good. I've obviously had to change
+> the UPM config, OR, BR registers, MCR register, MAMR register. I can't
+> think of anything else that would require some attention. Could this in
+> any way be related to cache?
+>
+>
+> Thanks
+> Flavio Pereira
+>
+>
 
-One pretty common reason is that your SDRAM  initialization  sequence
-may be buggy and/or incomplete, and you experience memory errors. Re-
-member that more is required than just adapting the UPM tables.
-
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-In the beginning there was nothing.
-And the Lord said "Let There Be Light!"
-And still there was nothing, but at least now you could see it.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
