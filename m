@@ -1,21 +1,20 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao06.cox.net (fed1rmmtao06.cox.net [68.230.241.33])
-	by ozlabs.org (Postfix) with ESMTP id 1C6922BDA0
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8D6362BDA1
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Oct 2004 06:54:46 +1000 (EST)
-Date: Wed, 13 Oct 2004 13:54:44 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Mark Chambers <markc@mail.com>
-Message-ID: <20041013135444.B21277@home.com>
-References: <065ACD8E84315E4394C835E398C8D5EB865270@COSSMGMBX02.email.corp.tld>
-	<20041013132613.A21277@home.com>
-	<00d001c4b166$04a06ea0$0301a8c0@chuck2>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <00d001c4b166$04a06ea0$0301a8c0@chuck2>;
-	from markc@mail.com on Wed, Oct 13, 2004 at 04:48:34PM -0400
-Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: Re: "I2C" versus "IIC"
+	Thu, 14 Oct 2004 06:59:26 +1000 (EST)
+In-Reply-To: <000301c4b147$24be4460$5201a8c0@GEG2400>
+References: <000301c4b147$24be4460$5201a8c0@GEG2400>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <13F5C6B8-1D5B-11D9-88FA-003065F9B7DC@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Wed, 13 Oct 2004 17:01:39 -0400
+To: "Laurent Lagrange" <lagrange@fr.oleane.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: MPC8560 problem to launch user application like /sbin/init
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,33 +25,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Oct 13, 2004 at 04:48:34PM -0400, Mark Chambers wrote:
-> 
-> 
-> > On Wed, Oct 13, 2004 at 02:18:03PM -0600, VanBaren, Gerald (AGRE) wrote:
-> > > Just to mess with your minds... I2C is a trademark of Philips
-> > > Electronics N.V. so that is probably not the best choice from a
-> > > legalistic point of view.
-> > 
-> > It's been related to me several times that this is the reason why
-> > most implementers refer to their interface/bus as IIC in
-> > documentation.
->
-> Assuming this to be true, it still may be a bit misguided.  Using 'i2c' to
-> refer to a legal implementation is no more illegal than a restaurant
-> putting 'Coke' on their menu.  What does Philips want?  They want
-> royalties from implementations of i2c, and they do not want the term
-> diluted by using it to refer to other similar protocols.  So I don't
-> think that just changing to 'iic' would pacify them in either of these
-> cases.  If it's truly i2c I don't think they care what you call your
-> variables, (just so the chip manufacturer pays up) and if it's not, 
-> find a completely different name.
 
-I was talking about the trademark infringement. You are talking about
-something completely different, patent-encumbered licensable
-technology.  The naming is subject only to trademark considerations.
+On Oct 13, 2004, at 1:07 PM, Laurent Lagrange wrote:
 
-Whether a bus implementation is subject to Philips licensing
-requirements (if any) is another area I'm not interested in. :)
+> The console is mapped on SCC1 port.
+> CCSRBAR is mapped at 0xF8000000 and immr at 0xF8080000.
 
--Matt
+I would suggest using the standard memory map the rest of
+us use for 8560.  It makes the porting lots easier.
+
+> I open 2 TLBs on memory and a big TLB for all IOs included CSSRBAR.
+> Due to IO TLB, I don't io_remap cpm2_immr.
+
+How do you to this?  The linux ppc kernel already manages all
+of this mapping for you.
+
+> All things run fine until I launch the /sbin/init file from a nfs 
+> networK.
+
+Seems like a memory mapping problem.  If you are using an 8260
+file system, have you also enabled the math emulation in the kernel?
+
+> I don't know if uboot sets other things than TLBs to access IOs
+> and if my own boot is incomplete.
+> I don't know if cpm must be io_remapped instead of using TLBs.
+
+The u-boot will configure all of the LAWs, and like your boot rom
+will also configure some of the TLBs for main memory mapping.
+The Linux kernel will change all of the TLBs using the boot rom
+TLB maps as a hint.
+
+> Any ideas would be welcome.
+
+Download linuxppc-2.4 from BitKeeper, use one of the existing
+85xx ports as a guide for your board.  Keep things consistent
+with the other board ports.  Take a look at one of the board
+ports for u-boot to see how it configures the LAWs and TLBs.
+
+
+	-- Dan
