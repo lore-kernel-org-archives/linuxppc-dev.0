@@ -1,53 +1,43 @@
-Date: Sat, 2 Jan 1999 20:14:32 -0500
-From: Daniel Jacobowitz <drow@false.org>
-To: satadru pramanik <satadru@umich.edu>
-Cc: Brad Midgley <brad@pht.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: scsi hangs [drow@cs.cmu.edu: Re: CD-writers] (fwd)
-Message-ID: <19990102201432.A736@drow.res.cmu.edu>
-References: <Pine.LNX.3.96LJ1.1b7.990102121137.439B-100000@cricket> <Pine.SOL.4.05.9901021800540.29365-100000@asteroids.rs.itd.umich.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.SOL.4.05.9901021800540.29365-100000@asteroids.rs.itd.umich.edu>; from satadru pramanik on Sat, Jan 02, 1999 at 06:04:01PM -0500
+Date: Sat, 2 Jan 1999 19:47:53 -0600 (CST)
+From: Troy Benjegerdes <hozer@drgw.net>
+To: Jeff Rugen <jrugen@primenet.com>
+cc: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: fbcon + X Server + Cirrus/Powerstack
+In-Reply-To: <Pine.BSI.3.96.981228111730.13388A-100000@usr05.primenet.com>
+Message-ID: <Pine.LNX.4.04.9901021921540.9212-100000@narn.local.drgw.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Jan 02, 1999 at 06:04:01PM -0500, satadru pramanik wrote:
-> Please let me know!!! And if this _does- fix the problem, it should go to
-> linus asap, before 2.2 gets finalized.  This certainly is a problem for
-> me, and I can't imagine seeing a 2.2 final kernel that hangs on serious
-> scsi activity. ( it crashes my web server every ten minutes.)
 > 
+> It seems Troy Benjegerdes had a problem with getting the matrox (?)
+> framebuffer to work with something as well, but I don't remember if that was
+> as a module or if it was with the X server (my tweaked clgenfb doesn't work
+> as a module, and I'm thinking it may be related to the physical address
+> above, but I haven't experimented as a module recently).
+
+ioremap is broken, at least on PReP. It works during the kernel boot-up
+sequence, but not after (when you try to load a module)
+
 > 
-> On Sat, 2 Jan 1999, Brad Midgley wrote:
-> 
-> 
-> paul,
-> 
-> what was the result of testing this patch? i see it isn't present at vger.
-> but does it make scsi activity safer? does it need more testing? should i
-> test it as-is?
-> 
-> dan, have you figured out a setup to burn cd's without panics?
+> Could the problem be that ioremap doesn't return the same address as passed
+> into it?  It seems I remember seeing a comment or some documentation that
+> indicated it was supposed to...
+
+Not on PReP.. It's sorta confusing because the kernel is mapped at
+*virtual* address 0xC0000000 and the PCI memory space is mapped at
+*physical* address 0xC0000000.
+
+--------------------------------------------------------------------------
+| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
+|    Unix is user friendly... You just have to be friendly to it first.  |
+| This message composed with 100% free software.    http://www.gnu.org   |
+--------------------------------------------------------------------------
 
 
-I am not at my machine for another week, but judging from what I have
-heard - the patch does make it safer, is certainly a good idea to
-apply, and yet still does not resolve the issue.  I need to find out
-how it affects my machine - expect this as soon as I can.
-
-Meanwhile, Satadru, I suggest you invest in an internal drive - or try
-using all your devices on the same scsi controller, which I have heard
-might help.
-
-
-Dan
-
-/--------------------------------\  /--------------------------------\
-|       Daniel Jacobowitz        |__|     CMU, CS class of 2002      |
-|   Debian GNU/Linux Developer    __   Part-Time Systems Programmer  |
-|         dan@debian.org         |  |        drow@cs.cmu.edu         |
-\--------------------------------/  \--------------------------------/
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
