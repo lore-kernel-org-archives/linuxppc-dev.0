@@ -1,33 +1,31 @@
-Message-ID: <40058CCD.7040208@embeddededge.com>
-Date: Wed, 14 Jan 2004 13:39:09 -0500
-From: Dan Malek <dan@embeddededge.com>
+Message-ID: <20040115003734.87843.qmail@web11005.mail.yahoo.com>
+Date: Wed, 14 Jan 2004 16:37:34 -0800 (PST)
+From: Xupei Liang <tliang@yahoo.com>
+Subject: Unused sectors in the ATA drive
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-To: Milliorn Gary-rxcr80 <Gary.Milliorn@motorola.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: TLB and CSSBAR problems with MPC8540 and BDI2000
-References: <5725AF6EE9FAD51195DC009027E377020B6562DD@az33exm35.corp.mot.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Milliorn Gary-rxcr80 wrote:
+Hi,
 
->   The TLB1 issue is due to the MPC85x0 errata "CPU4"; there's a s/w
-> workaround.  It's nice if BDI fixes it for you, but seems like it would
-> not be necessary.
+Our custom board (supports PPC 440 and Linux 2.4.19
+with XFS filesystem) has an ATA/IDE hard drive on it.
+The hard drive is partitioned into two MS-DOS
+partitions by the "parted" utility.  From the content
+of the MBR, I found that the first partition starts at
+sector 0x20. Now, the questions are:
+1) Can I use sectors 1-0x20 to store private data?
+2) Will current version or future versions of Linux
+use these sectors?
 
-The BDI doesn't fix anything.  I was just expecting the 'invalidate
-protect' to actually do that. :-)  I set up several TLB1 entries during
-the BDI initialization prior to debugging the boot rom.  The boot rom
-then does a flash invalidate and loads up a "new" set of TLB1 entries.
-I was expecting the values I set with the BDI to co-exist with the
-new ones, but that doesn't seem to be the case.
+Thank you.
 
-Thanks.
+Regards,
 
-
-	-- Dan
+Terry L.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
