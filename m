@@ -1,48 +1,39 @@
-Message-ID: <40CF32FA.6030901@mvista.com>
-Date: Tue, 15 Jun 2004 10:33:46 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-MIME-Version: 1.0
-To: Adrian Cox <adrian@humboldt.co.uk>
+To: iida <iida@ztec.com.br>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH][RFC] OCP support for MPC107 and relatives
-References: <1087207803.7360.83.camel@newt>  <40CDDAC7.4090608@mvista.com> <1087287047.2374.6.camel@newt>
-In-Reply-To: <1087287047.2374.6.camel@newt>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: watchdog in lite5200 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 15 Jun 2004 11:23:45 -0300."
+             <40CF0671.4040002@ztec.com.br>
+Date: Tue, 15 Jun 2004 20:36:19 +0200
+Message-Id: <20040615183624.B0BDAC13D3@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Adrian Cox wrote:
+In message <40CF0671.4040002@ztec.com.br> you wrote:
+>
+> i am tring to use the watchdog in a lite5200
+> In menuconfig , i find the watchdog in char devices
+> but none of the cotrolers is for internal watchdog of mpc5200
+> In 5xxx/IO dont appear to show a driver for internal watchdog either.
+>
+> So i have to develop the driver for watchdog in mpc5200 ?
 
->On Mon, 2004-06-14 at 18:05, Mark A. Greer wrote:
->
->
->
->>That's great that you're OCP-ifying the mpc10x code!  My only comment is
->>thatI don't like hardcoding the position of an entry in the OCP (e.g.,
->>core_ocp[0].vedor/paddr).  I don't think its safe to assume that any
->>particular piece of code will always know all of the entries in the OCP
->>and therefore what an entry's position will be.  You can use
->>'ocp_for_each_device()' and a routine that checks for the fields that
->>you want to accomplish the same thing.
->>
->>
->
->I'll try to do a new version of the patch at the end of the week.
->
->Would it work to have an empty core_ocp[] array, and then call
->ocp_add_one_device() to insert the entries? That would deal with these
->issues, as the code would look like:
->mpc10x_i2c_ocp.paddr = phys_eumb_base + MPC10X_EUMB_I2C_OFFSET;
->ocp_add_one_device(&mpc10x_i2c_ocp);
->
->Then the MPC106 path would simply not add any entries, rather than
->having to go through and mark them as invalid.
->
->
-FWIW, that's fine with me.
+No. Check out the recent version from our CVS  tree.  It  contains  a
+powerful  watchdog driver. For a documentation of the API, please see
+Documentation/man4/wdt_mpc8xx.4
 
-Mark
+Best regards,
 
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"There are three principal ways to lose money: wine, women,  and  en-
+gineers.  While  the first two are more pleasant, the third is by far
+the more certain."                      -- Baron Rothschild, ca. 1800
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
