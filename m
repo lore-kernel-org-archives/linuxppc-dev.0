@@ -1,8 +1,8 @@
 From: Paul Mackerras <paulus@samba.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <15625.11286.524300.137708@argo.ozlabs.ibm.com>
-Date: Fri, 14 Jun 2002 09:34:46 +1000 (EST)
+Message-ID: <15625.11479.788090.432664@argo.ozlabs.ibm.com>
+Date: Fri, 14 Jun 2002 09:37:59 +1000 (EST)
 To: Eugene Surovegin <ebs@innocent.com>
 Cc: Dan Malek <dan@embeddededge.com>,
 	linuxppc-embedded@lists.linuxppc.org
@@ -15,27 +15,9 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Eugene Surovegin writes:
-
-> I don't think that we should use gfp passed to consisten_alloc as a
-> parameter for get_vm_area().
->
-> This is gfp for _memory_ itself and may contain GFP_DMA for example. I
-> didn't want to allocate
-> struct vm_area from DMA pool in that case.
->
-> May be the better solution is to mask out GFP_KERNEL or GFP_ATOMIC from gfp
-> and use it.
->
-> What do you think?
-
-Maybe the best answer is to change get_vm_area to use
-
-	(in_interrupt()? GFP_ATOMIC: GFP_KERNEL)
-
-instead of GFP_KERNEL in the kmalloc call, and eliminate the need to
-add the extra parameter.  I'll run that past davem and see what he
-thinks.
+If we are going to be calling get_vm_area from interrupt context we
+need to change the write_lock/write_unlock calls to write_lock_irqsave
+and write_unlock_irqrestore.
 
 Paul.
 
