@@ -1,38 +1,38 @@
-Return-Path: <owner-linuxppc-dev@lists.linuxppc.org>
-Message-ID: <406DA118.8050405@246tNt.com>
-Date: Fri, 02 Apr 2004 19:21:28 +0200
-From: Sylvain Munaut <tnt@246tNt.com>
-MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: mpc5xxx support (Was: Re: Proposed Kconfig update patch for help
- text)
-References: <20040402165646.DF4F1C10B8@atlas.denx.de>
-In-Reply-To: <20040402165646.DF4F1C10B8@atlas.denx.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Mime-Version: 1.0 (Apple Message framework v613)
+Message-Id: <3AB702B8-84D1-11D8-9FF0-000A95A07384@sands-edge.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+From: John Whitney <jwhitney-linuxppc@sands-edge.com>
+Subject: How did the 2.6 kernel headers get so screwed up?
+Date: Fri, 2 Apr 2004 13:11:57 -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
+The title says it all.
 
->Let's rather co-operate with Motorola on this instead working against
->them. At least give them a chance.
->
->I guess they will show up here soon...
->
->
-Ok, as I said by private mail, now that I know they are actively working
-on solving the problem, I'll try to integrate the bestcom code into the
-port I'm working on.
-After all, they are the best placed people to get their hardware work
-nicely ;)
+I have a program I wrote to interface with the i2c bus.  It includes
+<linux/i2c.h> in order to get the I2C_SLAVE ioctl value, necessary to
+set the slave address.
 
-The only things that bothers me in the BestComm API is the name of the
-functions ... I think they should be prefixed with something ... just my
-2 cents.
+In 2.4 this works beautifully.  Now, in 2.6, I get boatloads of errors:
+redefinitions, admonishments not to use kernel headers from user
+programs, missing constants, you name it.
 
+And this has happened to me in more than one standard unix application
+(strace, syslogd, etc.).
 
-Sylvain Munaut
+Is there a paradigm shift going on?  What happened to conditional
+__KERNEL__ code hiding all the non-userspace-related stuff in the
+header files?  The linux-kernel list seems to just say "kernel header
+files shouldn't be used by user-space programs!".  It would be nice if
+they came up with "here's a top-level include directory just for
+userspace/kernel interfaces!", but I don't see that either.
+
+Am I supposed to submit kernel interface files (device driver ioctl()
+values, for example) to glibc somehow now?
+
+John
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
