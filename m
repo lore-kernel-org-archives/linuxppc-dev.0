@@ -1,7 +1,7 @@
-Message-ID: <20001212061238.1756.qmail@kunk.jriver.com>
-Subject: Mace woes SOLVED!
+Message-ID: <20001212061914.1845.qmail@kunk.jriver.com>
+Subject: 2.2.18 release version
 To: linuxppc-dev@lists.linuxppc.org
-Date: Tue, 12 Dec 2000 00:12:38 -0600 (CST)
+Date: Tue, 12 Dec 2000 00:19:14 -0600 (CST)
 From: Robert E Brose II <bob@kunk.jriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -9,11 +9,11 @@ Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I think I've finally figured out where the mace ethernet driver
-foobars. It appears to have a problem when  CONFIG_SYN_COOKIES is on.
+The release version showed up today on ftp.linux.org
 
-Did some flood pings and large ftp transfers and so far it's working
-fine with it off.
+It does not however have Michel Lanners controlfb dma patch and
+memory detection fix. I suppose we'll have to hand patch that till
+2.4
 
 Bob
 --
