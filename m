@@ -1,32 +1,34 @@
-Message-ID: <003701c024d9$e1f7f200$481877d3@ajou.ac.kr>
-From: "Min-kyu, Joo" <zzu@cesys.ajou.ac.kr>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: What is the ioremap() function?
-Date: Sat, 23 Sep 2000 06:12:52 +0900
+Message-ID: <39CCD01E.CCEDB059@charter.net>
+Date: Sat, 23 Sep 2000 10:45:34 -0500
+From: "Dan A. Dickey" <ddickey@charter.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ks_c_5601-1987"
+To: Manav Mediratta <manav@nimbus.tenet.res.in>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Problems with ppcboot
+References: <Pine.LNX.4.10.10009221804530.17865-100000@astra.tenet.res.in>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I have some question about ioremap() function...
+Manav Mediratta wrote:
+> Hi folks
+> Iam trying to boot my FADS with ppcboot and I have downloaded the files
+> which support FADS ,from the CVS tree at Sourceforge but it seems fads.h
+> isn't complete hence Iam not able to compile ppcboot for fads , although
+> it compiles peacefully for TQM8xx .In case any of you folks have a work
+> around for this then please let me know  .
 
-In arch/ppc/mm/init.c file, there is ioremap() function..
-What is the main functionality of ioremap()?
-
-It takes two argument...
-I must use ioremap() for flash device..
-
-I think first argument is physical address of memory mapped device, so I put that argument physical starting address of flash device. In my case, starting address of flash is 0XE4000000. and I use 4MB flash.
-Am I use virtual address for first argument?
-
-So I called ioremap() function with following line.
-
-ioremap(0xE4000000, 1024*1024*4);
-Am I correct?
-
-Please answer my question...
-
+Manav,
+Interesting that... fads.h.  I didn't realize it was there I guess.
+However, doing as the instruction say:
+	$ make FADS850SAR_config
+	$ make
+works well here.  What sort of problems are you having?
+If it is one of porting to new FADS hardware, then you will probably
+want to work on one of the include/config_FADS* files, or create a
+new one using the config_FADS850SAR.h as a model.  The 860T config
+file has not been tested, and does not work.
+	-Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
