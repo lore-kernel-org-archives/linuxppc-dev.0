@@ -1,45 +1,67 @@
-Message-ID: <36D32363.80607464@pixo.com>
-Date: Tue, 23 Feb 1999 16:53:39 -0500
-From: Mike Lockwood <lockwood@pixo.com>
+From: "Campbell, Marc" <CAMPBMA1@mail.northgrum.com>
+Reply-To: "Campbell, Marc" <campbma1@mail.northgrum.com>
+To: "Robert G. Werner" <rwerner@lx1.microbsys.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Message-ID: <36D3280F.6A8B241A@mail.northgrum.com>
+Date: Tue, 23 Feb 1999 17:13:39 -0500
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Possible problem with wait() in 2.2.1 kernel
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: PowerPC Beowulf Who?
+References: <Pine.LNX.3.96.990222221152.1258A-100000@lx1.microbsys.com>
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+There are several issues.  Some PPC specific and some not.
 
-I am in the process of trying to figure out why multithreaded debugging
-is broken on linuxppc preR5.  I ran into a few problems in gdb related
-to changes in signal numbering.  I think I have that fixed, but now I
-have a problem that appears to be in the kernel.
+General issues would include the ability to procure turn key system and software revision support.
 
-I am running the 2.2.1 kernel from samba.anu.edu.au, glibc glibc-2.1-1
-from RPMS on mirror.linuxppc.org, and a gdb I built from gdb-4.17 plus
-the gdb 4.17.0.11 patch.
+PPC specific issues start with the assurance that the necessary  libs (e.g. MPI) have been checked out on PPC hardware clusters.
 
-On line 90 of gdb/infarg.c, gdb calls the wait() system call to receive
-a signal from the program being debugged or one of its clones.  The
-problem is, wait always returns the main pid of the program being
-debugged, even if the signal occured in one of the clones created by the
-pthread library.  Because of this, gdb does not know anything about any
-of the threads created by my program, and gets very confused when it
-hits exceptions or breakpoints in one of the other threads.  
+Another PPC issue is cluster communication.  In some cases standard ethernet is not enough cluster bandwidth.  In what case does FireWire make sense in a PPC Beowulf (Linux) cluster?  Is Myrinet (www.myri.com) a more appropriate clustering communication system? If Myrinet, then where are the LinuxPPC or YDL drivers?  Myrinet lists Alpha Linux and x86 Linux but NOT PPC Linux (http://www.myri.com:80/GM/).
 
-I am running the 2.2.1 kernel and gdb 4.17.0.10 on an intel box and
-multithreaded debugging is working fine there.  Does anyone know of any
-differences between the intel and ppc 2.2.1 kernels that could explain
-this behavior?
+Who is taking initiative in the PowerPC/AltiVec Beowulf (Linux clustering) area?
 
-thanks,
-Mike
+-- Marc
 
--- 
-Mike Lockwood
-Pixo, Inc.
-lockwood@pixo.com
+Marc Campbell
+Northrop Grumman
+Technology Development
+High Performance Computing, Group Lead
+Melbourne, FL
+
+campbma1@mail.northgrum.com
+
+"Robert G. Werner" wrote:
+
+> Are the issues that different for PPC than for the other architectures that you
+> need to special attention on this matter?  My understanding was that the
+> clustering techniques used for Beowulf were based on standard libs (PVM,
+> IIRC).  Thus the issues seem like they should be pretty much the same as on any
+> other HW baring Networking HW questions.
+> Am I way off base here?
+>
+> Robert G. Werner
+> rwerner@lx1.microbsys.com
+> Impeach Conggress!!
+>
+> To believe your own thought, to believe that what is true for
+> you in your private heart is true for all men -- that is genius.
+>                 -- Ralph Waldo Emerson
+>
+> On Mon, 22 Feb 1999, Campbell, Marc wrote:
+>
+> >
+> > Any suggestions on who to contact for PowerPC & PowerPC/AltiVec Beowulf development, integration, sales, and/or support?
+> >
+> > Marc Campbell
+> > Northrop Grumman
+> > Technology Development
+> > High Performance Computing, Group Lead
+> > Melbourne, FL
+> >
+> > campbma1@mail.northgrum.com
+> >
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
