@@ -1,17 +1,15 @@
-Return-Path: <wd@denx.de>
-Received: from mailout09.sul.t-online.com (mailout09.sul.t-online.com
-	[194.25.134.84]) by ozlabs.org (Postfix) with ESMTP id 318412BDA0
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15602.mail.cnb.yahoo.com (web15602.mail.cnb.yahoo.com
+	[202.165.102.56]) by ozlabs.org (Postfix) with SMTP id 6F6DD2BDA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Oct 2004 06:03:58 +1000 (EST)
-To: Sam Song <samlinuxppc@yahoo.com.cn>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 14 Oct 2004 03:39:59 +0800."
-	<20041013193959.57540.qmail@web15605.mail.cnb.yahoo.com>
-Date: Wed, 13 Oct 2004 22:03:25 +0200
-Sender: wd@denx.de
-Message-Id: <20041013200330.DFBB8C1430@atlas.denx.de>
+	Thu, 14 Oct 2004 06:17:03 +1000 (EST)
+Message-ID: <20041013201700.69910.qmail@web15602.mail.cnb.yahoo.com>
+Date: Thu, 14 Oct 2004 04:17:00 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: Wolfgang Denk <wd@denx.de>
+In-Reply-To: <20041013200330.DFBB8C1430@atlas.denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=gb2312
 Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: Meaning of BSP and LSP 
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -24,37 +22,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <20041013193959.57540.qmail@web15605.mail.cnb.yahoo.com> you wrote:
-> 
-> I'd like to make sure about the meaning of BSP and
-> LSP. There is sth unclear in my mind, I am afraid.
+Wolfgang Denk <wd@denx.de> wrote：
+> Don't worry. These terms are not clearly defined at
+> all.
 
-Don't worry. These terms are not clearly defined at all.
+It turned to be like this. No wonder I didn't make it
+clear.:-)
 
-> IMHO, BSP includes Board's Hardware Scheme and Boot
-> Loader Code in Binary format or Source code. LSP
-> should be composed of Development Kit like ELDK and
-> Linux Kernel Source for special Board. I am right?
+> My recommendation: don't care about these terms.
 
-No. Both BSP and LSP are terms used by peple who try to turn software
-into products that can be sold. They have vendor  specific  meanings.
-Some vendors may bundle boot loader code with thei BSP, others don't.
-Only  if  you  buy  the  BSP  from a hardware manufacturer there is a
-chance that you will receive board schematics with it; etc. etc.  And
-LSP  is  just  another  marketing term to hide that somebody tries to
-sell free software the same way other RTOS vendors sell BSP's. If  it
-includes tools or not depends again on the vendor.
+OK, after taking your explanation, I wouldn't be
+confused by a salesman at least.
 
-My recommendation: don't care about these terms.
+Thanks very much. 
 
+=====
 Best regards,
 
-Wolfgang Denk
+Sam
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-The management question ... is not _whether_ to build a pilot  system
-and  throw  it away. You _will_ do that. The only question is whether
-to plan in advance to build a throwaway, or to promise to deliver the
-throwaway to customers.       - Fred Brooks, "The Mythical Man Month"
+_________________________________________________________
+Do You Yahoo!?
+150万曲MP3疯狂搜，带您闯入音乐殿堂
+http://music.yisou.com/
+美女明星应有尽有，搜遍美图、艳图和酷图
+http://image.yisou.com
+1G就是1000兆，雅虎电邮自助扩容！
+http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
