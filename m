@@ -1,21 +1,21 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id A77B42BF07
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AD2192BF07
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  6 Jan 2005 04:56:48 +1100 (EST)
-Date: Wed, 5 Jan 2005 09:56:46 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: J?n Benediktsson <jonb@marel.is>
-Message-ID: <20050105175646.GC14485@gate.ebshome.net>
-References: <OFE3F13085.168CF615-ON00256F80.003C6775-00256F80.004A9C3D@marel.is>
-	<OF9A6BA55A.0E01CA7E-ON00256F80.0051303B-00256F80.0051795E@marel.is>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <OF9A6BA55A.0E01CA7E-ON00256F80.0051303B-00256F80.0051795E@marel.is>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC5200 - problem with CF card
+	Thu,  6 Jan 2005 06:03:24 +1100 (EST)
+In-Reply-To: <20050105174838.GF4213@smtp.west.cox.net>
+References: <1102585377.41b81e218d6df@webmail.televes.com:443>
+	<20050105174838.GF4213@smtp.west.cox.net>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <71A72D18-5F4C-11D9-A045-003065F9B7DC@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Wed, 5 Jan 2005 14:03:11 -0500
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: alebas@televes.com, linuxppc-embedded@ozlabs.org
+Subject: Re: Kernel 2.6.10 running on mpc8272ads
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,31 +26,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 05, 2005 at 02:49:42PM +0000, J?n Benediktsson wrote:
-> > I am working with a custom MPC5200 board which uses the built-in 
-> > ATA/IDE controller for a compact flash card. 
-> > The Linux kernel is Denx linux_2_4_devel. 
 
-[snip]
+On Jan 5, 2005, at 12:48 PM, Tom Rini wrote:
 
-> > mpc5xxx_ide: Setting up IDE interface ide0... 
-> > Probing IDE interface ide0... 
-> > hda: SanDisk SDCFBI-1024, ATA DISK drive 
-> > hdb: probing with STATUS(0x00) instead of ALTSTATUS(0x7f) 
-> > ide0: unexpected interrupt, status=0x00, count=1 
+> Indeed.  While I had a PQ2FADS for a bit, I had to do that as well.
+> Kumar, what/why is that needed exactly?  Did I screw up in re-working
+> the 82xx init stuff and it needs to happen a bit later in boot?
 
-I had similar problem with some CF cards (while other like in your 
-case worked fine).
+I don't understand the what/why question, but that has never stopped
+me from providing answers in the past :-)
 
-Try disabling probing of the slave ide0 interface (hdb). I'm not 
-familiar with MPC5xxx, but most likely you can modify mpc5xxx_ide or 
-whatever code sets up access to your CF card.
+So, In 2.6, and I think in some of the 2.4 cpm2 stuff, we no longer
+automatically map any of the hardware IO resources for common
+access like I used to do in the past.  If you want to access the
+BCSR, you need to make sure it is ioremap()'ed in your driver before
+you make the access.  Was that the question, or was it that
+the BCSR should have been set someplace outside of the
+driver for the serial port to work?
 
-Find where an instance of ide_hwif_t is initialized for ide0 and add 
-something like:
 
-	/* Don't probe second drive */
-        hwif->drives[1].noprobe = 1;
-
---
-Eugene
+	-- Dan
