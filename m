@@ -1,40 +1,29 @@
-From: Thomas Graichen <news-innominate.list.linux.ppc.dev@innominate.de>
-Reply-To: Thomas Graichen <thomas.graichen@innominate.com>
+Date: Sun, 25 Feb 2001 02:43:50 -0600 (CST)
+From: Takashi Oe <toe@unlserve.unl.edu>
+To: Thomas Graichen <thomas.graichen@innominate.com>
+Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: ppc initrd problem?
-Date: 25 Feb 2001 08:33:49 GMT
-Message-ID: <news2mail-97ag1d$52i$3@mate.bln.innominate.de>
-References: <news2mail-97967l$g4g$2@mate.bln.innominate.de> <19350119182042.5890@smtp.wanadoo.fr>
-To: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <news2mail-97ag1d$52i$3@mate.bln.innominate.de>
+Message-ID: <Pine.A41.3.96LJ1.1b7.1010225024100.85078A-100000@unlserve.unl.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On 25 Feb 2001, Thomas Graichen wrote:
 
->>is there any known problem with initrd's on the ppc?
->>
->>i am currently trying to get a small initrd based standalone system
->>working on the ppc like i did for the i386
->>
->>  http://innominate.org/~graichen/projects/miniroot/
->>
->>to make the playing around with the xfs filesystem a bit more
->>comfortable but it does not really boot on the ppc (new world
->>mac, 2.4.1 kernel, SuSE 7.0/ppc) ...
+[...]
+> thanks a lot - btw. also tried it with 16M - same thing - compressed
+> initrd image hangs and an uncompressed loads but seems to have only
+> trash in it ("cannot find init" while /sbin/init is definitely in it)
 
-> It's a 32Mb initrd ? Well, it's possible that it gets broken then. I'm
-> not sure yaboot support such a large ramdisk. I'll give it a look.
+You may want to make the ramdisk under 2.2.x kernel or 2.4.2+loop fixes.
+I've seen some loop device problem reports in linux-kernel, and it could
+be contributing to your problem.
 
-thanks a lot - btw. also tried it with 16M - same thing - compressed
-initrd image hangs and an uncompressed loads but seems to have only
-trash in it ("cannot find init" while /sbin/init is definitely in it)
 
-t
+Takashi Oe
 
---
-thomas.graichen@innominate.com
-                                                         innominate AG
-                                                  the linux architects
-tel: +49-30-308806-13   fax: -77             http://www.innominate.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
