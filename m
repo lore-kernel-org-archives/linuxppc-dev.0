@@ -1,40 +1,44 @@
-Date: Sat, 5 Aug 2000 13:51:23 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: Tom Gall <gall@rochcivictheatre.org>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Getting things in...  Was: Re: shifts on 64bit ints
-In-Reply-To: <20000804174953.16973@mailhost.mipsys.com>
-Message-ID: <Pine.LNX.4.10.10008051350130.433-100000@cassiopeia.home>
+Message-ID: <398C263D.68F94160@student.ethz.ch>
+Date: Sat, 05 Aug 2000 16:35:41 +0200
+From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Benjamin Herrenschmidt <bh40@calva.net>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Kind of success! (r128 on PPC (Re: LinuxPPC X Server))
+References: <398AF755.E10D0C56@student.ethz.ch> <20000804175047.21209@mailhost.mipsys.com>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 4 Aug 2000, Benjamin Herrenschmidt wrote:
-> I'm an horribly bad web designer, but one cool thing to do if someone is
-> good at it, would be a web-pased patch repository. You send patches with
-> a web form (eventually an upload mecanism) along with your  email, a
-> comment, etc..., they get assigned a patch number automatically, anybody
-> can consult the database, and people with write access to BK can mark
-> them (accepted, refused, postponed, ... along with a comment) once they
-> have been handled.
+Benjamin Herrenschmidt wrote:
+
+[about aty128fb setting the RAMDAC to 15 bit for depth 16]
+
+> > fbset -i reveals that it does.
+> >
+> > Is anyone actively maintaining aty128fb or should I try to fix that as
+> > well as the panning? Looking at the X r128 driver, it shouldn't be too
+> > hard.
 >
-> Any volunteer to design such a site ?
+> Brad Douglas, but he doesn't have a PPC machine.
 
-It already exists for Samba, and once it was in a testing period for the
-Linux kernel (as maintained by Linus): Jitterbug.
+Okay, I'll contact him, thanks.
 
-Gr{oetje,eeting}s,
+My priority is to get 16 bit working, panning isn't so important for me
+because only one mode works on the Pismo anyway.
 
-						Geert
+Unfortunately, I don't have time over the weekend, but I'm cooking up a patch
+X 4.0.1 -> DRI CVS which I'm sending to the people involved.
+
+
+Michel
+
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+I'm so hungry, I could almost eat health food.
+______________________________________________________________________________
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
