@@ -1,34 +1,24 @@
-From: Paul Mackerras <paulus@linuxcare.com.au>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: linux-pmac-benh off (WAS: 2.2.18-pre17 candidate
+Date: Wed, 25 Oct 2000 15:38:08 +0200
+Message-Id: <19340919070952.5309@192.168.1.2>
+In-Reply-To: <14838.26913.598838.425732@argo.linuxcare.com.au>
+References: <14838.26913.598838.425732@argo.linuxcare.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <14838.26913.598838.425732@argo.linuxcare.com.au>
-Date: Wed, 25 Oct 2000 16:01:21 +1100 (EST)
-To: Olaf Hering <olh@suse.de>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.2.18-pre17 candidate
-In-Reply-To: <20001024221817.A24315@suse.de>
-References: <14837.11341.207379.903189@argo.linuxcare.com.au>
-	<20001024221817.A24315@suse.de>
-Reply-To: paulus@linuxcare.com.au
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Olaf Hering writes:
+Now that linux-pmac-stable (available from ppc.linuxcare.com or
+penguinppc.org) contains all my recent changes, there's no point in using
+my linux-pmac-benh tree.
 
-> Is there a way to not compile the pmac_*.c stuff when pmac is not
-> defined? At least for 2.2?
+So to everybody using it, you'd rather switch back to Paulus tree (and, I
+hope, soon to official kernel, if our patches make it into 2.2.18 final).
 
-Sure, we now have a CONFIG_POWERMAC which is defined if either
-CONFIG_PMAC or CONFIG_ALL_PPC are defined, so we can make stuff
-conditional on that.
+Ben.
 
-Paul.
-
---
-Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
-+61 2 6262 8990 tel, +61 2 6262 8991 fax
-paulus@linuxcare.com.au, http://www.linuxcare.com.au/
-Linuxcare.  Support for the revolution.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
