@@ -1,43 +1,36 @@
-Date: Mon, 15 Feb 1999 13:33:14 -0500
-From: Mayan Moudgill <mayan@watson.ibm.com>
-Message-Id: <9902151833.AA34022@mayan.watson.ibm.com>
+Date: Tue, 16 Feb 1999 11:02:59 +1100
+Message-Id: <199902160002.LAA11648@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Porting to PPC750 embedded board; what should I do now?
+In-reply-to: <9902151757.AA75924@marc.watson.ibm.com> (message from David
+	Edelsohn on Mon, 15 Feb 1999 12:57:34 -0500)
+Subject: Re: bootstrap stuffs
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <9902151757.AA75924@marc.watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+David Edelsohn <dje@watson.ibm.com> wrote:
 
-I am porting Linux (pre-) 2.2 to a PPC750 embedded board. The board has
-(currently) a 750, 2 16450-compatible UARTs, and 16MB of memory
-I have got Linux ported to the point where it can use initrd to
-do something useful.
+> 	"isync" is used to discard instruction pre-fetch and ensure that
+> all previous instructions have occurred.  isync is not necessary for your
+> situation either.
+> 
+> 	As Gabriel correctly explained, a "sync" instruction may be
+> necessary before interrupts are enabled if some off-chip operation, like
 
-I am cross-compiling from an AIX power-pc box using egcs-1.1.1.
+Sync and isync turn out to be needed on some revs of some chips
+(particularly the 601) around rfi and mtmsr instructions.
 
-I am wondering how to proceed. I have access to a x86-based Linux
-system, and may be able to get access to a PPC box running Linux.
+(In fact the 601 seems to have another weird bug - in the hash_page
+routine in head.S, the location of the rfi instruction w.r.t. cache
+lines appears to be critical on the 601; if it's wrong, you get a
+machine check on the rfi instruction.  At one stage I found that with
+2, 3, 6, or 7 nops added, it would work; with 0, 1, 4 or 5 nops added
+it wouldn't. :-)
 
-What I think I should do next is build a ramdisk with the
-appropriate pieces of software on it, and then compile a kernel
-with that as the initrd.
-
-Questions:
-	- on which platform should I build the ramdisk?
-		(in particular, since the endiannes of a PPC 
-		is different from an x86, can I do it on an x86)
-	- what should I put on the ramdisk?
-		(which executables are the minimum neccessary?;
-		remember I only have 16M total)
-	- should I use the executables from the linux-ppc RPMs, or
-		should I build from scratch? If so, what is
-		the best path.
-
-Thanks!
-
-Mayan Moudgill
-mayan@watson.ibm.com
-914 945 4348
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
