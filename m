@@ -1,28 +1,31 @@
-To: Alan Cox <alan@cymru.net>
-Cc: Geert.Uytterhoeven@cs.kuleuven.ac.be (Geert Uytterhoeven),
+From: Alan Cox <alan@cymru.net>
+Message-Id: <199812281304.NAA04349@snowcrash.cymru.net>
+Subject: Re: TCPv4 checksum errors
+To: schwab@issan.informatik.uni-dortmund.de (Andreas Schwab)
+Date: Mon, 28 Dec 1998 13:04:17 +0000 (GMT)
+Cc: alan@cymru.net, Geert.Uytterhoeven@cs.kuleuven.ac.be,
         davem@dm.cobaltmicro.com, Paul.Mackerras@cs.anu.edu.au,
         linuxppc-dev@lists.linuxppc.org, linux-m68k@lists.linux-m68k.org,
         VANDROVE@vc.cvut.cz
-Subject: Re: TCPv4 checksum errors
-References: <199812232158.VAA21083@snowcrash.cymru.net>
-From: Andreas Schwab <schwab@issan.informatik.uni-dortmund.de>
-Date: 28 Dec 1998 10:20:34 +0100
-In-Reply-To: Alan Cox's message of "Wed, 23 Dec 1998 21:58:04 +0000 (GMT)"
-Message-Id: <vyzr9tky659.fsf@issan.cs.uni-dortmund.de>
+In-Reply-To: <vyzr9tky659.fsf@issan.cs.uni-dortmund.de> from "Andreas Schwab" at Dec 28, 98 10:20:34 am
+Content-Type: text
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Alan Cox <alan@cymru.net> writes:
+> Alan Cox <alan@cymru.net> writes:
+> 
+> |> The classic bad packet error is a frame that ends up with
+> |> 
+> |> checksum =FFFF end around carry left =1
+> 
+> There can never be a carry if the sum is FFFF.  A sum of two 16 bit values
+> is never be bigger than 1FFFE.
 
-|> The classic bad packet error is a frame that ends up with
-|> 
-|> checksum =FFFF end around carry left =1
+(2 previous + previous carry)
 
-There can never be a carry if the sum is FFFF.  A sum of two 16 bit values
-is never be bigger than 1FFFE.
-
-Andreas.
+But you can show (and I sent Dave) the proof you must start in that
+situation not at a sum of zero.
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
