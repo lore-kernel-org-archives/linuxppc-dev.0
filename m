@@ -1,27 +1,43 @@
-From: Paul Mackerras <paulus@linuxcare.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: 2.3.45 on B&W G3
-Date: Fri, 18 Feb 2000 16:37:44 +1100
-Content-Type: text/plain
+Date: Fri, 18 Feb 2000 13:17:03 +0100 (MET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Paul Mackerras <paulus@linuxcare.com>
+cc: Cort Dougan <cort@fsmlabs.com>, Benjamin Herrenschmidt <bh40@calva.net>,
+        Linux/PPC Developer list <linuxppc-dev@lists.linuxppc.org>
+Subject: insw/outsw/insl/outsl (was: Re: your mail)
+In-Reply-To: <00021714275405.25243@argo.linuxcare.com.au>
+Message-ID: <Pine.GSO.4.10.10002181314290.22332-100000@dandelion.sonytel.be>
 MIME-Version: 1.0
-Message-Id: <0002181639540B.05428@argo.linuxcare.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have fixed the problem that was causing B&W G3s (and other machines with
-a PCI-to-PCI bridge) to hang early on in the boot process with the devel
-kernels.  The problem was that the pcibios_read/write_config_word calls in
-the init_p2pbridge function weren't working (they don't work until the PCI
-buses have been scanned now).  I changed those calls to ppc_md.pcibios_*
-and it gets a lot further now.
+On Thu, 17 Feb 2000, Paul Mackerras wrote:
+> Does anyone have any objection if I make insw/outsw/insl/outsl *not*
+> byte-swap the data?  The reason is that these functions are mostly used
+> for transferring blocks of data, i.e. arrays of bytes.  I haven't found a
+> single instance where they are used for transferring arrays of 16 or
+> 32-bit words.
+>
+> This would mean that we wouldn't need the kludge in the ide stuff where we
+> redefine insw as ide_insw (which doesn't byte-swap).  There is currently a
+> bug there because insl does still byte-swap, which means that if you set
+> the -c1 flag with hdparm, you get byte-swapped data. :-(
 
-My linux-pmac-devel rsync tree has this fix but is still at 2.3.45 for now.
+Hmm... This is indeed ambiguous. Is e.g. insl() used to (a) read n 32-bit words
+from (little endian) ISA I/O space, or (b) used to read n*4 bytes from ISA I/O
+space, using 32-bit accesses?
+
+What about moving this to linux-kernel? It affects all big endian platforms.
+
+Gr{oetje,eeting}s,
+
+						Geert
 
 --
-Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
-+61 2 6262 8990 tel, +61 2 6262 8991 fax
-paulus@linuxcare.com.au, http://www.linuxcare.com.au/
-Linuxcare.  Support for the revolution.
+Geert Uytterhoeven ------------- Sony Software Development Center Europe (SDCE)
+Geert.Uytterhoeven@sonycom.com ------------------- Sint-Stevens-Woluwestraat 55
+Voice +32-2-7248638 Fax +32-2-7262686 ---------------- B-1130 Brussels, Belgium
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
