@@ -1,31 +1,24 @@
-Return-Path: <vova-ks@yandex.ru>
-Received: from dgap-gw.mipt.ru (dgap-gw.mipt.ru [194.85.81.130])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.dgap.mipt.ru",
-	Issuer "DGAP Root Certificate" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0F8262BDF2
+Return-Path: <rick.mcbain@logicsense.com>
+Received: from mail78.megamailservers.com (mail78.megamailservers.com
+	[216.251.36.78])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 861EC2BDF2
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 Nov 2004 09:51:53 +1100 (EST)
-Received: from unknown (HELO localhost) ([127.0.0.1])
-	(envelope-sender <vova-ks@yandex.ru>)
-	by localhost (qmail-ldap-1.03) with SMTP
-	for <linuxppc-embedded@ozlabs.org>; 3 Nov 2004 22:51:43 -0000
-Received: from dgap-gw.mipt.ru ([127.0.0.1])
-	by localhost (dgap-gw.mipt.ru [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 30565-09 for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 Nov 2004 01:51:42 +0300 (MSK)
-From: Vladimir <vova-ks@yandex.ru>
-To: linuxppc-embedded@ozlabs.org
-Date: Thu, 4 Nov 2004 01:34:23 +0300
-References: <200411031241.40681.vova-ks@yandex.ru>
-	<200411031717.55398.vova-ks@yandex.ru>
-	<20041103073630.A3485@home.com>
-In-Reply-To: <20041103073630.A3485@home.com>
+	Thu,  4 Nov 2004 10:58:02 +1100 (EST)
+Received: from RicksPresario900 (d154-20-197-204.bchsia.telus.net
+	[154.20.197.204])
+	by mail78.megamailservers.com (8.12.10/8.12.9) with ESMTP id
+	iA3NHSxU009811
+	for <linuxppc-embedded@ozlabs.org>; Wed, 3 Nov 2004 18:17:37 -0500
+From: "Rick McBain" <rick.mcbain@logicsense.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Wed, 3 Nov 2004 15:17:27 -0800
+Message-ID: <002b01c4c1fb$49adde60$6802a8c0@RicksPresario900>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200411040134.23806.vova-ks@yandex.ru>
-Subject: Re: kgdb on 405GP walnut-like board.
+	charset="us-ascii"
+Subject: Linux port for the AMCC (was IBM) 440EP
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -36,14 +29,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 03 November 2004 17:36, Matt Porter wrote:
-> The patch is against the current 2.6 BK tree, try patching a recent kernel
-> release like 2.6.10-rc1.
-I've tried 2.6.10-rc1-bk13 from kernel.org. Is it already include this patch ?
-It successfully compiles, but at breakpoint() it fails to connect to host's 
-gdb. I've grab /dev/ttyS1 traffic and see that kgdb stub sends to host a lot 
-of zeros - nothing more. May be this is bug in serial port initialization ? 
-How can I deal with it ?
+Does anybody have a working distribution for the 440EP? We were planning
+to use a Timesys port, but we've now been told it doesn't exist (after
+months of promises it did.).  Our other option is to pay US$25K to
+MontaVista, but that seems a tad pricey, and our previous experience
+with them is that they delivered us an ARM port which fundamentally
+didn't work.
 
--- 
-         Vladimir
+Best regards,
+Rick McBain
+LogicSense Networks
+www.logicsense.com
+
+BTW. We are currently in the process of debugging our Uboot/PPCboot port
+to the 440EP which supports NAND flash...
