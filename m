@@ -1,59 +1,53 @@
-Message-ID: <39D11274.A2AF2410@snmc.com>
-Date: Tue, 26 Sep 2000 16:17:41 -0500
-From: Daris A Nevil <dnevil@snmc.com>
+Message-ID: <39D122E3.608630C5@mvista.com>
+Date: Tue, 26 Sep 2000 18:27:47 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: "Dan A. Dickey" <ddickey@charter.net>
-CC: Navin Boppuri <nboppuri@trinetcommunication.com>,
-        linuxppc-embedded@lists.linuxppc.org, greyham@research.canon.com.au
-Subject: Re: NFS problem- neighbout table overlow
-References: <018601bfc7e6$30ab9560$4a1f76d8@washington> <39D10BB4.D6F1897@charter.net>
+To: Neil Russell <caret@c-side.com>
+CC: Ruedi.Hofer@ascom.ch, linuxppc-embedded@lists.linuxppc.org,
+        kernel@linux01.hasler.ascom.ch
+Subject: Re: Limon & PowerQUICC II, Booting the kernel
+References: <0G1H00EA2SVED4@pmdf-it.hasler.ascom.ch> <20000926091205.A22470@lx.c-side.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-When you see the "neighbour table overflow" message it simply means that
-NFS cannot communicate with the server.  It could mean anything from a
-bad cable, invalid IP setup, bad driver, incorrect driver setup, etc.
-It really means that you are not successfully transporting IP packets.
+Neil Russell wrote:
 
-Regards,
-Daris Nevil
+> The downloaded kernel can be 4M-1K (0x3ffc00) in size, so I don't bother
+> with compressing it.
 
 
-"Dan A. Dickey" wrote:
->
-> Navin Boppuri wrote:
-> > Hello Everyone,
-> > I have been having problems with my custom board. The NFS mount does
-> > not
-> > work. The NFS request does not actually go the server. I dont see any
-> > packets coming to the server from this board. I did have some ring
-> > dump
-> > problems. There were some errors in Port A setting which I fixed and
-> > that is
-> > gone now. By I still see 'neighbour table overflow' messages. What can
-> > be
-> > the problem?
->
-> Navin,
-> I can't say that I remember for sure - but I seem to recall
-> this as being a problem in the Linux NFS implementation.
-> Check through the linux-kernel archives for messages regarding
-> the neighbour table overflow.  There may be a suggestion
-> on how to solve this.  I know I remember something about this...
->         -Dan
->
+Yes, please bother compressing it.  Making zImage is more than just
+compressing the file.  The code in arch/ppc/mbxboot will (interactively)
+create the command line, properly allocate the initial ram disk, and
+most importantly creates the board information structure that is
+required
+by the kernel.  There is also hardware initialization expected by the
+kernel that is often coordinated in the various functions found in
+the arch/ppc/mbxboot files.  You can't simply boot vmlinux on an
+embedded
+system and expect it to work (unless your boot rom is doing exactly
+the functions of arch/ppc/mbxboot).
 
---
-Daris A Nevil
-Simple Network Magic Corporation
-401 Kentucky Lane
-McKinney, TX 75069
-214-793-7757
-dnevil@snmc.com
-www.snmc.com
-quickstack.com
-qslinux.org
+The ELF header of the resulting zImage should be removed by just
+using 'dd':
+	dd if=zImage bs=64k skip=1 of=zImage.bin
+
+Using objcopy or other generic programs on zImage will likely result
+in a mess, because the file isn't really a valid ELF image.
+
+> limon uses an enhanced version of the bootinfo structure (not the same as
+> bd_info).
+
+The kernel expects a board info that matches what it was configured to
+use.  Every board is different.  You should modify
+arch/ppc/mbxboot/misc.c
+to know it was called by limon and properly convert or discover
+information
+necessary for the kernel version of the structure.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
