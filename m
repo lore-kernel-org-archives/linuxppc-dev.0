@@ -1,66 +1,105 @@
-Date: Sun, 10 Feb 2002 14:43:14 -0700
-From: Val Henson <val@nmt.edu>
+Date: Mon, 11 Feb 2002 05:01:14 -0900
+From: Ethan Benson <erbenson@alaska.net>
 To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] fix heartbeat
-Message-ID: <20020210144314.B6321@boardwalk>
-References: <20020208184610.E28166@boardwalk> <15460.50887.161245.222054@argo.ozlabs.ibm.com> <20020209172353.A32151@boardwalk>
+Cc: Nathan Scott <nathans@sgi.com>, linuxppc-dev@lists.linuxppc.org,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] Extended attributes syscalls for powerpc (updated, re-send)
+Message-ID: <20020211050114.G20789@plato.local.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020209172353.A32151@boardwalk>; from val@nmt.edu on Sat, Feb 09, 2002 at 05:23:53PM -0700
+Content-Type: multipart/mixed; boundary="/Zw+/jwnNHcBRYYu"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, Feb 09, 2002 at 05:23:53PM -0700, Val Henson wrote:
->
-> On Sat, Feb 09, 2002 at 05:50:47PM +1100, Paul Mackerras wrote:
-> > Val Henson writes:
-> > >
-> > > The heartbeat function will not execute properly on Gemini without
-> > > this patch. (Check for cpu 0 removed from gemini_heartbeat.)
-> >
-> > CHRP needs the heartbeat function called on all cpus, IIRC.
-> >
-> > Clearly the heartbeat_count needs to be per-cpu or else pushed into
-> > the heartbeat function.  How about we make it just
-> >
-> > 	if (ppc_md.heartbeat)
-> > 		ppc_md.heartbeat();
-> >
-> > and let the heartbeat function do the if (!smp_processor_id()) and the
-> > if (!heartbeat_count--) if it wants?
->
-> Ah, I see, the heartbeat_count is now being decremented once per timer
-> interrupt, instead of smp_nr_cpus times per timer interrupt.  Last
-> time I checked, it was still possible for the heartbeat count to go
-> negative.
->
-> It's fine the way it is.  Sorry for the unnecessary patch.
+--/Zw+/jwnNHcBRYYu
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Tsk, shouldn't read patches on the weekend... Here's the current code:
+Hi Paul,
 
-        if (ppc_md.heartbeat && !ppc_md.heartbeat_count--)
-                ppc_md.heartbeat();
+This is a re-send of an updated patch for extended attributes syscall
+allocation for powerpc, Linus has added a syscall (tkill) to the
+powerpc arch in 2.5.4 so my patch had to be adjusted and the
+allocation has changed.  Since Linus appears to randomly keep powerpc
+syscalls in sync with other architectures I believe it is imperative
+that this patch be sent along to him ASAP so we don't have to keep
+reallocating these syscalls and thus breaking userspace along the way.
 
-This decrements the count on every processor.  If cpu 0 turns off
-interrupts interrupts for a while, we get two effects: heartbeat_count
-is now decremented smp_nr_cpus - 1 times per timer interrupt, and if
-your heartbeat function doesn't explicitly prevent it, your heartbeat
-count could go negative.
+Linus has merged the Extended attributes API from Andreas Gruenbacher
+and Nathan Scott (SGI) into 2.5.3, and added the i386 syscalls.
 
-An alternative that allows you to run the heartbeat function on
-whatever cpus you like but decrements the heartbeat once per timer
-interrupt is:
+By request of Nathan I have created the attached patch to add the
+syscalls to the powerpc arch.
 
-        if (ppc_md.heartbeat && !smp_processor_id()
-	         ppc_md.heartbeat_count--)
+This patch allocates syscalls 209-220, if you have no problems with
+this allocation could you merge this patch with the powerpc 2.5
+kernel tree?  The sooner this can happen the better as Nathan is
+working on getting the userspace utilities fixed to use the official
+API and official syscall numbers, therefore we need the powerpc
+syscall numbers reserved ASAP so the userspace utilities can support
+the powerpc architecture.
 
-        if (!ppc_md.heartbeat_count)
-                ppc_md.heartbeat();
+TIA
 
-Howz that?
+This patch, and a version against the Linus 2.5.4 tree is also
+available at:
 
--VAL
+http://penguinppc.org/~eb/files/ppc-xattr-syscalls-linus.diff (Linus tree (2.5.4))
+http://penguinppc.org/~eb/files/ppc-xattr-syscalls.diff (linuxppc_2_5 tree (2.5.4-pre2))
+
+--
+Ethan Benson
+http://www.alaska.net/~erbenson/
+
+--/Zw+/jwnNHcBRYYu
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="ppc-xattr-syscalls.diff"
+
+diff -urN linux-2.5.4-ppc.orig/arch/ppc/kernel/misc.S linux-2.5.4-ppc/arch/ppc/kernel/misc.S
+--- linux-2.5.4-ppc.orig/arch/ppc/kernel/misc.S	Thu Feb  7 09:09:17 2002
++++ linux-2.5.4-ppc/arch/ppc/kernel/misc.S	Mon Feb 11 04:48:01 2002
+@@ -1231,6 +1231,18 @@
+ 	.long sys_mincore
+ 	.long sys_gettid
+ 	.long sys_tkill
++	.long sys_setxattr
++	.long sys_lsetxattr	/* 210 */
++	.long sys_fsetxattr
++	.long sys_getxattr
++	.long sys_lgetxattr
++	.long sys_fgetxattr
++	.long sys_listxattr	/* 215 */
++	.long sys_llistxattr
++	.long sys_flistxattr
++	.long sys_removexattr
++	.long sys_lremovexattr
++	.long sys_fremovexattr	/* 220 */
+ 	.rept NR_syscalls-(.-sys_call_table)/4
+ 		.long sys_ni_syscall
+ 	.endr
+diff -urN linux-2.5.4-ppc.orig/include/asm-ppc/unistd.h linux-2.5.4-ppc/include/asm-ppc/unistd.h
+--- linux-2.5.4-ppc.orig/include/asm-ppc/unistd.h	Thu Feb  7 09:08:40 2002
++++ linux-2.5.4-ppc/include/asm-ppc/unistd.h	Mon Feb 11 04:48:01 2002
+@@ -216,6 +216,18 @@
+ #define __NR_mincore		206
+ #define __NR_gettid		207
+ #define __NR_tkill		208
++#define __NR_setxattr		209
++#define __NR_lsetxattr		210
++#define __NR_fsetxattr		211
++#define __NR_getxattr		212
++#define __NR_lgetxattr		213
++#define __NR_fgetxattr		214
++#define __NR_listxattr		215
++#define __NR_llistxattr		216
++#define __NR_flistxattr		217
++#define __NR_removexattr	218
++#define __NR_lremovexattr	219
++#define __NR_fremovexattr	220
+
+ #define __NR(n)	#n
+
+
+--/Zw+/jwnNHcBRYYu--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
