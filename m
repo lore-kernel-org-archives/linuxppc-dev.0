@@ -1,47 +1,45 @@
+Date: Tue, 13 Jul 2004 13:34:37 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+Subject: fix to enet.c to enable networking when booting from flash
+Message-ID: <Pine.LNX.4.60.0407131328290.19248@dell.enoriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
-Subject: RE: Cross compiling for VxWorks/PowerPC Target from a Linux/x86 Machine
-Date: Tue, 13 Jul 2004 07:35:29 -0600
-Message-ID: <065ACD8E84315E4394C835E398C8D5EB0922AB@cossmgmbx02.email.corp.tld>
-From: "VanBaren, Gerald (AGRE)" <Gerald.VanBaren@smiths-aerospace.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> -----Original Message-----
-> From: owner-linuxppc-embedded@lists.linuxppc.org
-> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Arun
-> Prasad Velu
-> Sent: Tuesday, July 13, 2004 12:47 AM
-> To: linuxppc-embedded@lists.linuxppc.org
-> Subject: Cross compiling for VxWorks/PowerPC Target from a Linux/x86
-> Machine
->
->
->
-> Hello,
->
-> I'd like to know how feasible is it to cross compile for a
-> VxWorks/PowerPC
-> Target from a Linux/x86 Machine?
-> If there was any attempt earlier, I'd like to know about it
-> (basically to
-> get the source compiled for VxWorks/PowerPC from Linux/x86 machine).
-> Any pointer on how to go about it would also be appreciated.
->
-> Thanks and Regards
-> Arun
+   with our current 2.4.22-pre8 kernel, we found that, on our 850DE
+board (ethernet on SCC3), ethernet would work fine when we downloaded
+the bootable image, but not if we booted from the image that was
+burned into flash.
+
+   eventually, one of the guys here tracked the problem to
+arch/ppc/8xx_io/enet.c, and made the following change (around line 915
+in enet.c in both this version of the kernel and in the latest bk pull
+of linuxppc-2.5):
+
+#if defined(CONFIG_RPXLITE) || defined(CONFIG_RPXCLASSIC) ||
+defined(CONFIG_EP8xx) || defined(CONFIG_EP852)
+         /* And while we are here, set the configuration to enable
+ethernet.
+         */
+         *((volatile uint *)RPX_CSR_ADDR) &= ~BCSR0_ETHLPBK;
+         *((volatile uint *)RPX_CSR_ADDR) |=
+              (BCSR0_ETHEN | BCSR0_COLTESTDIS | BCSR0_FULLDPLXDIS);
+>        *((volatile uint *)RPX_CSR_ADDR) |=0x00100000;  <-- add this
+//1:ethernet,0:SPI
+#endif
 
 
-A co-worker get the cross compiler source from WindRiver and built it under linux.  I wasn't involved and don't know any answers, but he said it was straight forward.  Note that "straight forward" does _not_ mean effortless, depending on your level of expertise, this will take between a day and forever, probably averaging 3-5 days.  This gets you everything you need to compile and link.
+   i don't know enough about the hardware to know what this is for.  if
+anyone does, is it still an issue?  is there a better way to handle
+this?  as much as possible, i'm trying to get everything running on
+this board without messing with the kernel source.  thanks.  given
+that the author of that line is not around at the moment, i'm just
+going to poke around the source and see if i can deduce what it's for.
 
-WindRiver's proprietary tools (their debugger and configuration system) aren't included, so you have to create your configuration (or at least an initial configuration) using their Windows/Solaris tools -- this produces prjConfig.h (IIRC) configuration file which you then copy to your linux platform and which you can edit by hand if you wish to reconfigure without Windows.  You can use gdb to debug (takes some effort to understand how to make it work) or use other methods (e.g. print statements) -- I generally use print statements.
-
-Building on linux is vastly superior to the gross bloated IDE, but I'm biased -- I hate IDEs.
-
-gvb
+rday
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
