@@ -1,31 +1,41 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: Geert Uytterhoeven <geert@linux-m68k.org>,
-        Linux/PPC Development
- <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: __ioremap_at() in 2.4.0-test9-pre2
-Date: Fri, 22 Sep 2000 00:41:07 +0200
-Message-Id: <19340816161251.5999@192.168.1.10>
-In-Reply-To: <Pine.LNX.4.10.10009211536590.375-100000@cassiopeia.home>
-References: <Pine.LNX.4.10.10009211536590.375-100000@cassiopeia.home>
+Date: Thu, 21 Sep 2000 19:52:51 -0400 (EDT)
+From: James Simmons <jsimmons@acsu.buffalo.edu>
+To: Paolo Scaffardi <arsenio@tin.it>
+cc: linuxcon <linuxconsole-dev@lists.sourceforge.net>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Custom serial keyboard: playing dirty with the serial console
+In-Reply-To: <002801c02314$eb3c75a0$0a00010a@paoloweb>
+Message-ID: <Pine.LNX.4.10.10009211943580.437-100000@maxwell.futurevision.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->And we still didn't mention the nightmare called ISA memory space... Where is
->your legacy VGA memory?
+> But 'handle_scancode' only prints characters to the console, without
+> apparently processing them. I see everything i write, but when i press
+> enter (scancode 0x1c), i only see a new line in the console, not any new
+> bash prompt.
 
-I think we simply don't have access to it. Maybe on Grackle machines, we
-could try to hack the bridge config (MPC106), but I don't know if Apple's
-bandit can generate PCI mem cycles at 0.
+Hum? Try running the program showkey. It prints out the key codes for the
+keys you press. Can you post the results. If you are translating the codes
+into XT scancodes then it shpould make what I get with showkey. BTW make
+sure  you tell me what keys you pressed.
 
-Well, weren't some of the early Apple PPC servers running AIX based on
-Bandit and using legacy VGA text mode ?
-In this case, it may be possible to configure Bandit to open a window to
-the ISA memory space...
 
-Ben.
+P.S.
 
+  As I move to californis these next 2 weeks my email service will be
+switching. This means I will not be able to read my email from  Friday
+until October 2.
+
+MS: (n) 1. A debilitating and surprisingly widespread affliction that
+renders the sufferer barely able to perform the simplest task. 2. A disease.
+
+James Simmons  [jsimmons@linux-fbdev.org]               ____/|
+fbdev/console/gfx developer                             \ o.O|
+http://www.linux-fbdev.org                               =(_)=
+http://linuxgfx.sourceforge.net                            U
+http://linuxconsole.sourceforge.net
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
