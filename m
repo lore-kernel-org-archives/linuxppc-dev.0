@@ -1,34 +1,30 @@
-Message-ID: <391A15CE.41488C9D@charter.net>
-Date: Wed, 10 May 2000 21:07:10 -0500
-From: "Dan A. Dickey" <ddickey@charter.net>
+Message-ID: <001301bfbaf8$f678c970$69f001dc@sjzhu.sps.mot.com>
+From: "Shuangjun Zhu" <r44089@email.sps.mot.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Help about the libc-2.1.1 segmentation fault
+Date: Thu, 11 May 2000 11:28:19 +0800
 MIME-Version: 1.0
-To: "linuxppc-embedded@lists.linuxppc.org"
- <linuxppc-embedded@lists.linuxppc.org>,
-        cort@fsmlabs.com
-Subject: NO_RELOAD_HTAB
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;	charset="gb2312"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Cort (or anyone else),
-can you tell me what NO_RELOAD_HTAB does in more detail?
-I see it says its an optimization for the 603.  Currently
-in the source that I'm using, its set to 1 (so it *is* defined).
+Hello, everyone
 
-Some of the mmu code changes depending on whether it is
-defined or not, and I'm having problems with the the first
-InstructionTLBMiss.  I have an MPC850SAR on a FADS board.
-(Yes, I've heard all about the lowly fads...)
+On a MPC823 FADS board, I run the mpc8xx-2.2.13 kernel.
+With the libc-2.1.1.so or libc-2.1.3.so, every application happened
+    "Segmentation fault"
+But if I compile the "hello world" program with  statically
+linked library, or if I use the libc-1.99.so, there is no error.
+Can I upgrade the libc to 2.x.x?
 
-So, I was wondering what NO_RELOAD_HTAB is for before I go
-delving into 860 & 850 mmu differences and the linux code
-for them.
+BTW, I have patched the linux kernel 2.3.33 FPU emulation patch.
 
-If anyone else is reading this, can you verify that your
-linux code runs on both an 860 and 850 with no changes?
+So, what's wrong?
 
-Thanks.
-	-Dan
+Thanks in advanced!
+
+BRs,
+Shuangjun
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
