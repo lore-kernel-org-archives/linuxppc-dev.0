@@ -1,32 +1,45 @@
-Message-ID: <3ABA24B8.7694BF5B@mvista.com>
-Date: Thu, 22 Mar 2001 11:13:44 -0500
+Message-ID: <3ABA291D.A7A82D8A@mvista.com>
+Date: Thu, 22 Mar 2001 11:32:29 -0500
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-To: Kenneth Johansson <kenneth.johansson@inn.ericsson.se>
-Cc: frowand@mvista.com,
-	Matthias Fuchs <matthias.fuchs@esd-electronics.com>,
-	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>,
-	frank@esd-electronics.com
-Subject: Re: possible problem in memory management
-References: <3AB8B894.1C5FCD37@esd-electronics.com> <3AB9148A.7F25E9A0@mvista.com> <3AB9254E.FE13F585@mvista.com> <3AB9CAE4.F92F3A6B@inn.ericsson.se>
+To: Ralph Blach <rblach@intrex.net>
+Cc: linuxppc-embedded@lists.linuxppc.org,
+	David Blythe <blythe@routefree.com>
+Subject: Re: Proposed new kernel noncaching memory allocator for the 405gp
+References: <3ABA1B6A.87C5FE9B@intrex.net>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kenneth Johansson wrote:
+Ralph Blach wrote:
 
-> But I do think there is a memory bug inte the version of the kernel he is using.
+> I propose a kmalloc_noncache and a kfree_noncached.
+>
+> These would be module and would be loaded when necessary.  They would
+> operate allocating say 16k (could be any size)  of memory during boot
+> time
+> and then mapping it non cached.
 
-There certainly could be, but the Rev.C errata can show up as this
-kind of symptom.  We haven't found anything on the Rev. D with our
-QA testing.
 
-> Running emacs or simply login over telnet puts it into that state.
+That's a simplistic start, but not the right implementation.  It
+should be a clone of kmalloc/kfree that will dynamically allocate
+and free pages when necessary.  I've implemented the simplistic
+version of these functions specifically for the MPC8xx CPM and
+associated drivers, just copy those and use them if you want.
 
-I know that login over telnet works for me.  That isn't much of test,
-as it is nice to be able to debug memory problems with carefully
-controlled tests so you know if you have really corrected problems.
+You have to carefully trade off using uncached memory against the
+cache management (flush, invalidate, etc.) functions.  Using uncached
+memory is a significant performance loss, and I know the USB is
+already implemented to use cached memory and the management functions.
+This works on all of the existing processor architectures, so there
+isn't any reason to go back and change it.
+
+Why don't you just go ahead and write and test these functions and
+submit them as a patch against a recent kernel?  That would be much
+more useful than just suggesting things and being upset when the
+rest of us don't implement them because we have higher priority projects
+to work on.
 
 
 	-- Dan
