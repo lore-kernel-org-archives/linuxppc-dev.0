@@ -1,52 +1,130 @@
-Date: Thu, 11 Mar 1999 09:37:05 -0600 (CST)
-From: "David A. Gatwood" <marsmail@globegate.utm.edu>
-To: Hubert Figuiere <hub@point-barre.fr>
-cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: ADB Reset
-In-Reply-To: <19990311085536.A1755@giordino.point-barre.fr>
-Message-ID: <Pine.LNX.3.96.990311092940.6932D-100000@globegate.utm.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <4.2.0.25.19990311162952.03ed2b80@mail.lauterbach.com>
+Date: Thu, 11 Mar 1999 16:37:18 +0100
+To: "F. Heitkamp" <fheitka@ibm.net>
+From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+Subject: Re: binutils-2.9.1.0.22b
+Cc: linuxppc-dev@lists.linuxppc.org, hjl@varesearch.com (H.J. Lu)
+In-Reply-To: <199903111219.HAA13676@pc1.fred.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 11 Mar 1999, Hubert Figuiere wrote:
+Hmm, are you sure you did everything right during configure/make? I have no 
+problems with 22b on glibc-2.1 (R5) here. Just the usual ld testsuite FAILs:
 
-> According to Benjamin Herrenschmidt <bh40@calva.net>:
-> > 
-> > After the bus reset, the mouse must be re-initialised to handler 4. In
-> > fact, the whole device probing and init must be redone (mac_keyb.c). I'm
-> > working on a simple design that allow ADB peripherial drivers to register
-> > to the ADB core in order to be notified of bus resets. Stay tuned.
-> 
-> This is really ugly. Why the hell is mouse related code in the keyboard
-> driver ? I may understand that since it is ADB they are related, but
-> I find this not really clean.
+FAIL: bootstrap
+FAIL: bootstrap with --static
+FAIL: bootstrap with --traditional-format
+FAIL: bootstrap with --no-keep-memory
+FAIL: cdtest
+FAIL: cdtest with -Ur
 
-They're more than related.  With ADB, most mice (anything with more than
-one button) act as both a mouse and keyboard.  That was presumably the
-only way they could send the extra button information.  Because of this,
-the only way to get all of the mouse code out of the keyboard driver would
-be to literally have two keyboard drivers, one for real keyboards and one
-for the fake mouse-keyboards.  The best you could do would be to have the
-keyboard code only contain the code for detecting the fake keyboards and
-then switch their handler, but that would basically result in two complete
-keyboard drivers with little or no difference between them....
+And with 19a there are problems with strip, which sometimes seems to 
+corrupt binaries. I have to investigate this with 22b yet.
 
-On the other hand, basic device probing and initialization should probably
-be in a separate file, since it's not specific to any given device flavor,
-maybe adb.c or something, if it isn't already.  Just MHO.  With the added
-note that my experience with LinuxPPC's adb drivers is limited to using it
-to try to find some bugs in MkLinux's pmu driver.  ;-)
+Franz.
+
+At 13:19 11.03.99 , F. Heitkamp wrote:
 
 
-Later,
-David
-
-David A. Gatwood                         Visit globegate's internet
-dgatwood@globegate.utm.edu                  talker, Deep Space 36
-http://globegate.utm.edu                telnet globegate.utm.edu:9624
+>This binutils seems to have some problems.
+>Is there any patches, fixes, or web site with more information?
+>
+>Thanks!
+>
+>make[1]: Entering directory `/usr/src/binutils-build/bfd'
+>Making check in doc
+>make[2]: Entering directory `/usr/src/binutils-build/bfd/doc'
+>make
+>make[3]: Entering directory `/usr/src/binutils-build/bfd/doc'
+>make[3]: Nothing to be done for `all'.
+>make[3]: Leaving directory `/usr/src/binutils-build/bfd/doc'
+>make[2]: Leaving directory `/usr/src/binutils-build/bfd/doc'
+>make[2]: Entering directory `/usr/src/binutils-build/bfd'
+>make[2]: Nothing to be done for `check-am'.
+>make[2]: Leaving directory `/usr/src/binutils-build/bfd'
+>make[1]: Leaving directory `/usr/src/binutils-build/bfd'
+>make[1]: Entering directory `/usr/src/binutils-build/binutils'
+>make  check-DEJAGNU
+>make[2]: Entering directory `/usr/src/binutils-build/binutils'
+>srcdir=`cd ../../binutils-2.9.1.0.22b/binutils && pwd`; export srcdir; \
+>r=`pwd`; export r; \
+>EXPECT=expect; export EXPECT; \
+>if [ -f ./../expect/expect ]; then \
+>  TCL_LIBRARY=`cd ../../binutils-2.9.1.0.22b/binutils/../tcl/library && 
+> pwd`; \
+>  export TCL_LIBRARY; \
+>fi; \
+>runtest=runtest; \
+>if /bin/sh -c "$runtest --version" > /dev/null 2>&1; then \
+>  $runtest --tool binutils --srcdir ${srcdir}/testsuite \
+>        CC_FOR_TARGET="gcc" \
+>        CFLAGS_FOR_TARGET="-g -O2" ; \
+>else echo "WARNING: could not find \`runtest'" 1>&2; :;\
+>fi
+>WARNING: Couldn't find the global config file.
+>WARNING: Couldn't find tool init file
+>Test Run By heitkamp on Wed Mar 10 11:19:13 1999
+>Native configuration is powerpc-unknown-linux-gnu
+>
+>                === binutils tests ===
+>
+>Schedule of variations:
+>    unix
+>
+>Running target unix
+>Using /usr/local/share/dejagnu/baseboards/unix.exp as board description 
+>file for target.
+>Using /usr/local/share/dejagnu/config/unix.exp as generic interface file 
+>for target.
+>Using /usr/src/binutils-2.9.1.0.22b/binutils/testsuite/config/default.exp 
+>as tool-and-target-specific interface file.
+>Running 
+>/usr/src/binutils-2.9.1.0.22b/binutils/testsuite/binutils-all/ar.exp ...
+>FAIL: ar long file names
+>ERROR: 
+>/usr/src/binutils-2.9.1.0.22b/binutils/testsuite/binutils-all/bintest.s: 
+>assembly failed
+>Running 
+>/usr/src/binutils-2.9.1.0.22b/binutils/testsuite/binutils-all/hppa/objdump. 
+>exp ...
+>Running 
+>/usr/src/binutils-2.9.1.0.22b/binutils/testsuite/binutils-all/nm.exp ...
+>Version /usr/src/binutils-build/binutils/nm-new failed
+>ERROR: 
+>/usr/src/binutils-2.9.1.0.22b/binutils/testsuite/binutils-all/bintest.s: 
+>assembly failed
+>Running 
+>/usr/src/binutils-2.9.1.0.22b/binutils/testsuite/binutils-all/objcopy.exp ...
+>Version /usr/src/binutils-build/binutils/objcopy failed
+>ERROR: 
+>/usr/src/binutils-2.9.1.0.22b/binutils/testsuite/binutils-all/bintest.s: 
+>assembly failed
+>Running 
+>/usr/src/binutils-2.9.1.0.22b/binutils/testsuite/binutils-all/objdump.exp ...
+>Version /usr/src/binutils-build/binutils/objdump failed
+>FAIL: objdump -i
+>ERROR: 
+>/usr/src/binutils-2.9.1.0.22b/binutils/testsuite/binutils-all/bintest.s: 
+>assembly failed
+>Running 
+>/usr/src/binutils-2.9.1.0.22b/binutils/testsuite/binutils-all/size.exp ...
+>Version /usr/src/binutils-build/binutils/size failed
+>ERROR: 
+>/usr/src/binutils-2.9.1.0.22b/binutils/testsuite/binutils-all/bintest.s: 
+>assembly failed
+>
+>                === binutils Summary ===
+>
+># of unexpected failures        2
+># of unresolved testcases       2
+>make[2]: *** [check-DEJAGNU] Error 1
+>make[2]: Leaving directory `/usr/src/binutils-build/binutils'
+>make[1]: *** [check-am] Error 2
+>make[1]: Leaving directory `/usr/src/binutils-build/binutils'
+>make: *** [check-binutils] Error 2
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
