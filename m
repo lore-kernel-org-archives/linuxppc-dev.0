@@ -1,32 +1,27 @@
-Date: Thu, 6 Sep 2001 02:28:14 -0600
-From: "R. Andang Kustamsi" <andang@nmt.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: OT:  I'm looking for the following titles, used. . .
-Message-ID: <20010906022814.A1991@nmt.edu>
-References: <B7BC39CC.3A0C%michael.a.crawford@home.com>
+Date: Thu, 6 Sep 2001 11:26:13 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: linuxppc-commit@source.mvista.com,
+	linuxppc-dev@lists.linuxppc.org
+Subject: egcs vs gcc-2.95.x
+Message-ID: <20010906112613.M21172@cpe-24-221-152-185.az.sprintbbd.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <B7BC39CC.3A0C%michael.a.crawford@home.com>; from michael.a.crawford@home.com on Thu, Sep 06, 2001 at 01:28:08AM -0700
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael,
+Hello all.  I happened to be skimming asm/byteorder.h for some reason, and
+noticed that we have ___arch__swab16/___arch__swab32 written, but #if 0'ed
+because of an egcs bug.  A bit of grep'ing showed that set_bit (asm/bitops.h)
+used to be #if 0'ed because of another egcs bug but isn't now.  So the
+question is, is anyone still using egcs to compile a kernel?  If, so
+what version (1.0.x or 1.1.x) and does anyone remember what version of
+egcs produced the bug?
 
-I have the AppleTalk book for sale. It is hardcover and has dust cover.
+If nothing else, perhaps in 2.5 this should go away..
 
-Andang
-
-On Thu, Sep 06, 2001 at 01:28:08AM -0700, Michael A. Crawford wrote:
-<snip>
-> 3) Inside AppleTalk
-> By Gursharan S. Sidhu,Apple Computers, Inc. Staff
-> List Price: $39.95
-> 650 Pages
-> Edition: 2nd ed
-> Published by Addison Wesley Longman, Inc.
-> Date Published: 05/1990
-> ISBN: 0201550210
->
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
