@@ -1,34 +1,52 @@
-Date: Tue, 14 May 2002 19:24:48 -0700
-From: Matt Porter <mporter@mvista.com>
-To: sanjay k k <fren00@rediffmail.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Does PPC 440 kernel supports P2P bridge
-Message-ID: <20020514192448.A6299@home.com>
-References: <20020515014447.16612.qmail@webmail2.rediffmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020515014447.16612.qmail@webmail2.rediffmail.com>; from fren00@rediffmail.com on Wed, May 15, 2002 at 01:44:47AM -0000
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <001301c1fbed$0efb5da0$6801a8c0@guoguangacer>
+From: "gao xiaoguo" <gaoxg@guoguang.com.cn>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: tftp on ppcboot 1.1.5
+Date: Wed, 15 May 2002 16:46:48 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="gb2312"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, May 15, 2002 at 01:44:47AM -0000, sanjay k k wrote:
->
-> Does PPC 440 kernel supports P2P bridge. I have kernel from
-> development tree. It gets hanged when i plugged the P2P card in
-> PCI slot.
+I want to use tftp to download file into target machine,but always failed.
+The tftp server on linux has already been setup and tested, I tftp a file successfully
+by using other tftp client on windows.
 
-It should, PCI is no different than on any other Linux/PPC platform.
-Where does it hang?  Any kernel output?  If so, please enable
-debug in pci_auto.c and drivers/pci/pci.c. If not, please show
-early output by enabling early serial debug text or by using
-your JTAG debugger.  With a JTAG debugger you can dump
-log_buf if you are hanging before console_init.
+Following is my environment and operation log, and I found the ip/udp datagram on network
+really is 0.0.0.69->192.168.1.105,so nobody will answer to the tftp request. Why the
+ip address of server is changed from 192.168.1.105 to 0.0.0.69 ? Are there something
+I leave.
 
-Regards,
---
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+CPU:   XPC860xxZPnnD3 at 48 MHz: 4 kB I-Cache 4 kB D-Cache FEC present
+Board: FADS with db MPC821, MPC860 / MPC860SAR / MPC860T rev ENG or PILOT
+DRAM:  (4 MB SDRAM)  8 MB
+FLASH:  2 MB
+
+=>printenv
+
+bootargs=
+bootcmd=bootm 2800100
+baudrate=115200
+loads_echo=1
+clocks_in_mhz=1
+ethaddr=00:00:00:01:02:03
+serverip=192.168.1.105
+ipaddr=192.168.1.99
+netmask=255.255.255.0
+
+=>tftpt boot 100000 testfile
+
+ARP broadcast 1
+
+Retry count exceeded; starting again
+ARP broadcast 1
+TFTP from server 192.168.1.105; our IP address is 192.168.1.99
+Filename 'testfile'.
+Load address: 0x100000
+Loading: *T T T T
+Retry count exceeded; starting again
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
