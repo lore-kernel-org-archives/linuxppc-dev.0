@@ -1,57 +1,81 @@
-To: "Joao Vicente" <joao.vicente@spectel.com>
+Date: Thu, 9 Oct 2003 09:37:20 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Jacky Lam <jackylam@astri.org>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Problem debugging ppc kernel with DDD/GDB/BDI2000 on a custom MPC8260 board 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 09 Oct 2003 16:55:04 BST."
-             <DEF39A0710293E489D45B10E06645CBD0243B1E7@dub-msx1.spectelcorp.com>
-Date: Thu, 09 Oct 2003 18:18:34 +0200
-Message-Id: <20031009161839.6AF46C59E4@atlas.denx.de>
+Subject: Re: General porting question
+Message-ID: <20031009093720.A13184@home.com>
+References: <006e01c38e1b$5f72b500$2803050a@JackyLam> <20031008223518.A10052@home.com> <008c01c38e2d$27feac20$2803050a@JackyLam> <20031009063812.A11979@home.com> <001901c38e7b$0f6ed830$0202a8c0@homevl9biy3v7e>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <001901c38e7b$0f6ed830$0202a8c0@homevl9biy3v7e>; from jackylam@astri.org on Thu, Oct 09, 2003 at 11:36:07PM +0800
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Joao,
-
-in message <DEF39A0710293E489D45B10E06645CBD0243B1E7@dub-msx1.spectelcorp.com> you wrote:
+On Thu, Oct 09, 2003 at 11:36:07PM +0800, Jacky Lam wrote:
 >
-> I am affraid I am still unable to debug the kernel.
-
-Just to be sure: did you add "-g" to  your  CFLAGS_KERNEL  definition
-(in the toplevel Makefile) ?
-
-> I am not unsure if this is relevant but this is the method I am using to
-> build the kernel
+> > Almost.
+> >
+> > You can not use virt_to_* on the address returned by
+> > pci_alloc_consistent().
 >
-> make TQM8260_config
+>     Why?
 
-Don't use TQM8260_config unless you either have a  TQM8260  board  or
-you know _exactly_ what you're doing.
+Because virt_to_*() is only defined for staticly mapped kernel virtual
+addresses...consistent_alloc() is not guaranteed to return a staticly
+mapped kernel virtual address so you can't use virt_to_*().  It is not
+a generic address translation API.
 
-> make menuconfig (where I am changing FCC, MDIO and SCC parameters only)
+>     By the way, this problem will only affect the consistency of dma buffer.
+> In my case, it will only cause wrong output sound. But my card seems don't
+> consume the dma and doesn't give any interrupt in return. It's fine on PC
+> and I can receive interrupt if I write to the card's register to force an
+> interrupt. What other possible porting problem can be here? Really
+> strange....
 
-Which means your kernel will  not  work  unless  you  really  have  a
-TQM8260 board.
+Endianness issues as another person pointed out.  You still have to
+solve these address munging issues.
 
-> make oldconfig
-> make dep
-> make uImage
+> > You need to hold on to the dma_addr_t returned, perform
+> > a bus_to_virt(dma_addr_t) and then a virt_to_* will work
+> > on that address.
+>
+>     umm....then does   virt_to_phys(bus_to_virt(dma_addr_t))==dma_addr_t
 
-This looks ok to me.
+No, dma_addr_t is not necessary they same as the physical address.
+Your platform may have physical addresses mapped 1:1 with bus (PCI)
+addresses but that is not always the case (PReP, many peer-to-peer
+PCI systems. etc).
 
-> VECTOR      CATCH       ;catch unhandled exceptions
+>                     or
+>                 bus_to_virt(dma_addr_t)==pci_alloc_consistent() ?
 
-Did you try out nocatch as recommended earlier?
+No, the virtual address you get by doing a bus_to_virt(dma_addr_t)
+is != to the address that will be returned by pci_alloc_consistent()
+(on 4xx/8xx).
 
-Best regards,
+> > However, I'm not sure of the "PCI related memory space" you
+> > are referring to.  "PCI memory space" has a distinct meaning
+> > and the virt_to_*/*_to_bus APIs don't work there.  Those APIs
+> > are only valid for system memory that is accessible through
+> > inbound transactions by a PCI bus master.
+> >
+> > You can use virt_to_* on an address returned from kmalloc
+> > or __get_free_pages.
+>
+>     I also don't understand....Could you or someone "invent" these things
+> kindly give some brief explaination here (especially for the reason how
+> consistent_alloc() is implemented)? I think it will benefit many PPC
+> beginner. Thanks very much.
 
-Wolfgang Denk
+*consistent_alloc() has a "special" implementation for 4xx/8xx because
+they do not snoop memory access by external bus masters.  In order to
+allocate "consistent" memory it is necessary to create a cache inhibited
+mapping to system memory in the vmalloc area.  Virtual addresses in
+the vmalloc area cannot be translated using the virt_to_* APIs.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-I've already got a female to worry about. Her name is the Enterprise.
-	-- Kirk, "The Corbomite Maneuver", stardate 1514.0
+There are a number of threads on this topic if you check the archives.
+
+-Matt
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
