@@ -1,41 +1,43 @@
-Message-ID: <408E2AF4.2050907@fh-landshut.de>
-Date: Tue, 27 Apr 2004 11:42:12 +0200
-From: Oliver Korpilla <okorpil@fh-landshut.de>
+Message-ID: <2C1BAF8F8E1DD611862B0002A5D4C3FC02B6D052@renexch3.rennes.thmulti.com>
+From: Fillod Stephane <stephane.fillod@thomson.net>
+To: "'Sergey Urvanov'" <abs@dts.ru>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: ioperm
+Date: Tue, 27 Apr 2004 11:49:46 +0200
 MIME-Version: 1.0
-To: Marius Groeger <mgroeger@sysgo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Initrd and PPCbug, can it work?
-References: <Pine.LNX.4.58.0404211503050.20798@ppcproject1> <20040426220944.GI19246@smtp.west.cox.net> <408E000A.6040303@fh-landshut.de> <Pine.LNX.4.56.0404270913230.2035@mag.sysgo.com> <408E1ED0.4050404@fh-landshut.de> <Pine.LNX.4.56.0404271119270.2567@mag.sysgo.com>
-In-Reply-To: <Pine.LNX.4.56.0404271119270.2567@mag.sysgo.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="ISO-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Marius Groeger wrote:
-> On Tue, 27 Apr 2004, Oliver Korpilla wrote:
->
->
->>TCP: Hash tables configured (established 2048 bind 2048)
->>NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
->>cramfs: wrong magic
->>Kernel panic: VFS: Unable to mount root fs on 01:00
->>  <0>Rebooting in 180 seconds..
->
->
-> Now -- is it cramfs or ext2 that you want to boot? It looks like you haven't
-> configured ext2 in your kernel!?
->
+>Anybody seen this error?
 
-This was the first I checked - CONFIG_EXT2_FS is set to y. Besides, I
-tried doing the same with a cramfs initrd - won't work either. Cannot
-say whether I configured that right.
+No :)
 
-Maybe this is an endianess problem in my initrds?
+>I'm getting it while trying to compile  for a ppc405EP based board,
+>using the ELDK 2.1 toolchain (ppc_4xx).
 
-I don't know. :(
+Don't use ioperm. There's no io bus, only memory bus.
 
-With kind regards,
-Oliver Korpilla
+Please have a look at Denx's FAQ for accessing memory bus:
+
+
+http://www.denx.de/twiki/bin/view/PPCEmbedded/DeviceDrivers#Section_Accessin
+gPeripheralsFromUserSpace
+
+For more information, please follow this thread:
+	http://lists.linuxppc.org/linuxppc-embedded/200403/msg00059.html
+
+
+> #define BASEPORT 0x378
+
+I don't know what your BASEPORT is, but it looks very wrong.
+
+
+Welcome in ppc world.
+
+Regards,
+Stéphane
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
