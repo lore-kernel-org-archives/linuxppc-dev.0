@@ -1,24 +1,19 @@
-Return-Path: <jonmasters@gmail.com>
-Received: from mproxy.gmail.com (rproxy.gmail.com [64.233.170.192])
-	by ozlabs.org (Postfix) with ESMTP id 0EADE2BDB0
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtai01.cox.net (fed1rmmtai01.cox.net [68.230.241.58])
+	by ozlabs.org (Postfix) with ESMTP id 140F02BDB0
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  2 Oct 2004 07:54:50 +1000 (EST)
-Received: by mproxy.gmail.com with SMTP id 76so4672409rnk
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 01 Oct 2004 14:54:32 -0700 (PDT)
-Message-ID: <35fb2e590410011454270f2698@mail.gmail.com>
-Date: Fri, 1 Oct 2004 22:54:32 +0100
-From: Jon Masters <jonmasters@gmail.com>
-To: Jon Masters <jonathan@jonmasters.org>
-In-Reply-To: <415D3C2C.7050704@jonmasters.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat,  2 Oct 2004 08:21:04 +1000 (EST)
+Date: Fri, 1 Oct 2004 15:06:48 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Kumar Gala <kumar.gala@freescale.com>
+Message-ID: <20041001220648.GJ21896@smtp.west.cox.net>
 References: <35fb2e59040930165327f2dd59@mail.gmail.com>
 	<87127382-1357-11D9-8EFC-000393DBC2E8@freescale.com>
-	<1096602008.14803.16.camel@gaston> <415D3C2C.7050704@jonmasters.org>
-Cc: linuxppc-embedded@ozlabs.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87127382-1357-11D9-8EFC-000393DBC2E8@freescale.com>
+Cc: jonathan@jonmasters.org, linuxppc-embedded@ozlabs.org
 Subject: Re: bi_recs
-Reply-To: jonathan@jonmasters.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,32 +24,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 01 Oct 2004 12:14:52 +0100, Jon Masters <jonathan@jonmasters.org> wrote:
-> Benjamin Herrenschmidt wrote:
-
-> > I'd rather see you guys sync with what I did on ppc64 and use that
-> > kind of OF device-tree, we already have all the code for using it
-> > and it would make the mecanism compatible with the prep/chrp/pmac
-> > kernel...
+On Thu, Sep 30, 2004 at 10:11:03PM -0500, Kumar Gala wrote:
+> >> But on the other hand, I've given up a long time ago trying to 
+> >enforce any
+> > > kind of sane model on ppc32 because the embedded folks only care 
+> >about having
+> > > a quick ugly broken hack to work with their board, thus the 
+> >explosion of
+> > > various incompatible boot_info structures that we have nowadays.
+> >
+> >Yes indeed. It's ugly and needs fixing so I'll take a look at it - I
+> > just don't want to do this if everyone here already knows of a better
+> > solution which will work.
+> >
+> >Then Xilinx et al can generate memory maps and we can head towards
+> > having a single kernel binary bootable on multiple different ppc
+> > boards.
 > 
-> Yeah. I'm going to start ripping through your code at the weekend and
-> figure out how what you've done - not having a nice shiney ppc64 box
-> means I've not yet got an excuse to play with that tree myself. I am
-> however hopefull that my next Powerbook will be a G5 :-).
+> I would be nice to have an extensive and dynamic way to pass info from 
+> the bootloader to the kernel.  I believe that Wolfgang has stated he 
+> would be willing to change u-boot to match.  I'd be willing to fixup 
+> and move Freescale boards over to use something as long as we get 
+> u-boot to support it as well.
+> 
+> I've been told that ARM has a solution, in place, to this problem that 
+> might always be worth looking at.
 
-Hmmm...
+I know the ARM folks on the list will yell at me, but to be a bit too
+simple, it's a linked list of BI_ bits.
 
-ppc64 head.S and startup looks quite fun. After jumping through a few
-hoops you eventually end up in prom_init and start setting up the OF
-device-tree (btw it looks like at least one call to prom_panic doesn't
-relocate the string it wants to print to real memory - is this what
-the comments are referring to out of sheer interest?). I am assuming
-that you always expect to see an Open Firmware on ppc64 and simply use
-bi_recs to pass accross additional information from the bootloader,
-but I've only had a cursory look on the train on the way home from
-work this evening so please be gentle.
+I've been thinking about it, and I do believe that Ben's flattened OF
+tree wins the "show me the code" race, so lets go that way.  I'll add in
+that for most platforms we'll want to build up the tree at compile time,
+but U-Boot, and anything else smart enough can pass one in for real.
 
-I'll give this a go through over the weekend and figure out how to get
-this hooked in to the ppc32 tree.
+Jon, I look forward to your patch. :)
 
-Jon.
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
