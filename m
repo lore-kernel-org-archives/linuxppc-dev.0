@@ -1,42 +1,67 @@
-Message-ID: <D73A25AA6E54D511AD74009027B1110F4CFC08@ORION>
-From: Matt Hoover <HooverM@embeddedplanet.com>
-To: "'deepesh@india.tejasnetworks.com'" <deepesh@india.tejasnetworks.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: RE: EP8260. EST8260, SBC8260
-Date: Mon, 16 Jun 2003 09:18:53 -0400
-MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+  charset="iso-8859-15"
+From: Rakesh jagota <j.rakesh@gdatech.co.in>
+Reply-To: j.rakesh@gdatech.co.in
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Unable to mount jffs2 file system
+Date: Mon, 16 Jun 2003 19:15:34 +0530
+MIME-Version: 1.0
+Message-ID: <xpm1c2kre0rvtkh.160620031905@gda-server>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-D. Deepesh,
+Hi all,
 
-For the EP8260, see http://www.embeddedplanet.com/products/ep8260.asp
+I am working on custom design board based on IBM405 PPC. I am using OpenBios
+code and Linux -2.4.17 version from montavista. I have compiled the kernel
+with JFFS2 support.
 
-For the SBC8260, see http://www.windriver.com/products/sbc8260/
+In linux/drivers/mtd/maps/redwood.c files, we have modified the partitions as
+per our board
 
-I think the EST8260 became the SBC8260, but you will need to verify this
-with Wind River.
+Our board is having 4MB flash and 32MB sdram.
 
-I would be happy to give you a detailed description about the modules,
-please contact me directly at hooverm@embeddedplanet.com or 440-646-0077
-x136.
+#define WINDOW_ADDR      0xFFC00000
+#define WINDOW_SIZE 	     0x00400000
 
-Regards,
-Matt Hoover
-Embedded Planet
 
------Original Message-----
-From: deepesh@india.tejasnetworks.com
-Sent: Sunday, June 15, 2003 12:34 AM
-Subject: EP8260. EST8260, SBC8260
+we filled the  redwood_flash_partitions structure as below
 
-Please let me know the basic differences in the three boards:
+		name: "Redwood kernel",					//"/dev/mtd0"
+		offset: 0x00010000,
+		size: 	0x00110000
 
-1) EP8260
-2) EST8260
-3) SBC8260
+		name: "Redwood OpenBIOS Vital Product Data",		//"/dev/mtd1"
+
+		offset: 0x00000000,
+		size: 0x00010000,
+		mask_flags: MTD_WRITEABLE
+
+		name: "Redwood filesystem",				//"/dev/mtd2"
+		offset: 0x00110000,
+		size: 0x002D0000
+
+		name: "Redwood OpenBIOS",				//"/dev/mtd3"
+		offset: 0x003E0000,
+		size: 0x00020000,
+		mask_flags: MTD_WRITEABLE	/* force read-only */
+
+
+i have created a jff2 image and flashed in the mtd2 block. But while booting
+i am  getting kernel panic
+===============================================
+
+kernel panic: I have no root and I want to scream
+
+===============================================
+
+how to tell the kernel that the root filesystems is in mtdblock2
+
+
+Thanks & Regards,
+
+rakesh
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
