@@ -1,57 +1,54 @@
-Message-Id: <v04003a01b5ab20fe3205@[24.66.67.194]>
-In-Reply-To: <Pine.LNX.3.96.1000731055118.16733A-100000@mklinux.org>
+Date: Mon, 31 Jul 2000 08:53:55 -0400
+From: Josh Huber <huber@mclx.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: LinuxPPC X Server
+Message-ID: <20000731085355.B617@mclx.com>
+References: <200007302123.WAA28673@hyperion.valhalla.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 31 Jul 2000 07:31:26 -0500
-To: David Gatwood <dgatwood@mklinux.org>,
-        mklinux-announce@public.lists.apple.com,
-        mklinux-setup@public.lists.apple.com
-From: Tony Mantler <nicoya@apia.dhs.org>
-Subject: Re: MKL-ANN: Performa 52xx/53xx/62xx/63xx Support
-Cc: linuxppc-dev@lists.linuxppc.org, linuxppc-users@lists.linuxppc.org,
-        port-macppc@netbsd.org, port-mac68k@netbsd.org
+Content-Type: multipart/signed; micalg=pgp-md5;
+	protocol="application/pgp-signature"; boundary="GRPZ8SYKNexpdSJ7"
+In-Reply-To: <200007302123.WAA28673@hyperion.valhalla.net>; from iain@sandoe.co.uk on Sun, Jul 30, 2000 at 10:24:19PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 1:06 AM -0500 7/31/2000, David Gatwood wrote:
->Apologies in advance for the cross-post.
->
->As of July 31, 2000, the PowerMac 5200/5300/6200/6300 family of
->computers, and their Performa equivalents, are officially
->supported in MkLinux.  Please NOTE that only the 6214 has been
->tested, so there may be some small snags in some of the others.
->Barring any surprises, though, it should "just work".
+--GRPZ8SYKNexpdSJ7
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Sweet! I knew I set aside 1gig on my 5200's hd a year ago for a reason. :)
+On Sun, Jul 30, 2000 at 10:24:19PM +0100, Iain Sandoe wrote:
+>=20
+> I think I may have made a configuration mistake (see Michel's mail).
+
+Hmm, that's probably not the reason. (see below)
+
+> However, 300M G3, UW SCSI + 256 Mb RAM =3D=3D> 6.5-ish Hours (*all* day w=
+as only
+> a slight exaggeration :-).
+>=20
+> (OK, so I did a kernel build as well [30 mins] and had a screen saver
+> running - but... )
+
+I'm guessing that your screen saver might have been using a bit much
+CPU.  I built XF4 on my powerbook wallstreet 233 in a little under 2
+hours, with no configuration file changes. (except for ProjectRoot).
+
+Definately no UW SCSI and only 160M of ram.  You should be able to
+build in 1.5 hours I would think, with that setup. :)
+
+ttyl,
+
+--=20
+Josh
+6B21489A | GnuPG ID/Fingerprint | huber@mclx.com |
+61F0 6138 BE7B FEBF A223  E9D1 BFE1 2065 6B21 489A
+
+--GRPZ8SYKNexpdSJ7
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
 
-[...]
->      * SCSI is working, but rather slow.  It's partially hardware
->        at fault, and partially a lack of pseudo-DMA code.  Oh well.
->        It "mostly works."  As always, your mileage may vary.
-
-Hehehe. If you thought the IDE ints were messed up, you're gonna just
-*love* SCSI PDMA.
-
-
-[...]
->      * Tony Mantler (of mac68k-land) for assistance in tracking down a
->        lost IDE interrupt.
-[...]
-
-8)
-
-
-Can't wait to get home this evening to install it. You're the man, David!
-
-
-Cheers - Tony :)
-
-
---
-Tony Mantler       Renaissance Nerd Extraordinaire     nicoya@apia.dhs.org
-Winnipeg, Manitoba, Canada                     http://nicoya.feline.pp.se/
-
+--GRPZ8SYKNexpdSJ7--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
