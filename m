@@ -1,42 +1,31 @@
-Mime-Version: 1.0 (Apple Message framework v618)
-Message-Id: <3461F858-E7F6-11D8-B7C4-000A95A0560C@us.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-To: "'linuxppc-dev@lists.linuxppc.org' Development" <linuxppc-dev@lists.linuxppc.org>
-From: Hollis Blanchard <hollisb@us.ibm.com>
-Subject: PReP bootloader VGA console
-Date: Fri, 6 Aug 2004 17:16:03 -0500
+Date: Sat, 7 Aug 2004 13:04:04 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Harald Welte <laforge@gnumonks.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [PATCH] md raid autodetection on mac partitions
+Message-ID: <20040807110404.GA1854@lst.de>
+References: <20040806075918.GA11638@sunbeam2>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20040806075918.GA11638@sunbeam2>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-This is the minimal patch needed to get the bootloader prompt on VGA
-for PReP.
+On Fri, Aug 06, 2004 at 09:59:18AM +0200, Harald Welte wrote:
+> Hi!
+>
+> It took me some time to discover that there is no provision in the mac
+> parition handling code for autodetection of md raid arrays.
+>
+> Is there any particular reason why this isn't implemented?
+>
+> I've now added a new partition type 'Linux_raid_autodetect', which can
+> be used for md autodetect.
+>
+> Please consider inclusion of this patch.
 
---- 1.1/arch/ppc/boot/simple/misc-prep.c        Mon Mar  1 17:34:28 2004
-+++ edited/arch/ppc/boot/simple/misc-prep.c     Fri Aug  6 17:21:00 2004
-@@ -89,6 +89,7 @@
-         }
-
-  #if defined(CONFIG_VGA_CONSOLE)
-+       serial_fixups();
-         vga_init((unsigned char *)0xC0000000);
-  #endif /* CONFIG_VGA_CONSOLE */
-
-Of course that looks funny doesn't it? "serial_fixups()" just sets
-ISA_io, so should probably be called something else.
-
-Also it's written in assembly in legacy.S (with matching chrpmap.S),
-which could easily become prepmap.c and chrpmap.c.
-
-Even better ISA_io could have a #define that's used in misc.c and
-misc-prep.c...
-
-But all of this would require more digging through makefiles and weak
-aliases than it's probably worth.
-
---
-Hollis Blanchard
-IBM Linux Technology Center
-
+No.   raid autodetection is deprectaed, we don't want it for more
+partiton types.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
