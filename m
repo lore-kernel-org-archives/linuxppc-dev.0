@@ -1,43 +1,35 @@
-Date: Mon, 20 Mar 2000 09:55:51 -0700 (MST)
-From: Stephen Edie <sedie@terraplex.com>
-To: jingai <jingai@floatingpenguins.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: YUP and RPM dependencies
-In-Reply-To: <200003180622.BAA20354@shell.faradic.net>
-Message-ID: <Pine.LNX.4.10.10003200949070.433-100000@newhope.terraplex.com>
+Date: Mon, 20 Mar 2000 09:59:01 -0800 (PST)
+From: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
+To: Benjamin Herrenschmidt <bh40@calva.net>
+cc: Iain Sandoe <iain@sandoe.co.uk>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Mac-Side dev-tree dump
+In-Reply-To: <20000320144544.019442@mailhost.mipsys.com>
+Message-ID: <Pine.LNX.3.96.1000320095748.5441C-100000@deepspace.mklinux.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 17 Mar 2000, jingai wrote:
+On Mon, 20 Mar 2000, Benjamin Herrenschmidt wrote:
 
-...snip...
-> .so, my question is, is there a way to bypass this check (a force option
-> or somesuch)?  And if not, if anyone from  the YD team is here, please make
-> this an option.
-...snip...
+> Well, Apple already provides a tool for that. It's called Display Name
+> Registry, and can be found on their web/ftp site, in the SDK section,
+> inside the PCI DDK.
 
-I have thought about adding a dep-check disable switch, although, the
-dependency failures would re-surface after the new list of
-installed packages is put together.  Another option would be to purposely
-ignore dependency problems that exist on the installed system.
-Unfortunately, this could cause all sorts of strange problems that I'd
-rather not have to mess with.  For now, I think it is best that running
-systems remain dependency sane.  This may mean removing the kernel-headers
-require from glibc which I believe is the case with CS-1.2.
+In theory, it can be found.  I did searches on Apple's site on numerous
+occasions and never did find it....  The organization is a problem, as is
+their usual no redistribution clause, assuming that applies here.
 
-Stephen
 
-Terra Soft Solutions, Inc.
- Yellow Dog Linux
- "The Ultimate Companion for a Dedicated Server"
- http://www.yellowdoglinux.com/
+Later,
+David
 
- Black Lab Linux
- Workstations and advanced, Parallel Solutions
- http://www.blacklablinux.com/
+---------------------------------------------------------------------
+A logician trying to explain logic to a programmer is like a cat
+trying to explain to a fish what it's like to be wet.
+
+	-- unknown, possibly Franklin Veaux
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
