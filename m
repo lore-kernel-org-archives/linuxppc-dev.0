@@ -1,20 +1,13 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 4D8A167A84
-	for <linuxppc-dev@ozlabs.org>; Sat,  5 Mar 2005 11:46:04 +1100 (EST)
-Date: Fri, 4 Mar 2005 16:46:01 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Kumar Gala <kumar.gala@freescale.com>
-Message-ID: <20050305004601.GA4135@gate.ebshome.net>
-References: <402824c4830f426df0afdb3515b6df61@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <402824c4830f426df0afdb3515b6df61@freescale.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	ppcembed Mailing List <linuxppc-embedded@ozlabs.org>
-Subject: Re: RFC: SPR namespace issue
+Return-Path: <domen@coderock.org>
+Received: from trashy.coderock.org (coderock.org [193.77.147.115])
+	by ozlabs.org (Postfix) with ESMTP id DDA0067A6C
+	for <linuxppc-dev@ozlabs.org>; Sun,  6 Mar 2005 21:51:42 +1100 (EST)
+To: benh@kernel.crashing.org
+From: domen@coderock.org
+Date: Sun, 06 Mar 2005 11:44:48 +0100
+Message-Id: <20050306104449.109111F203@trashy.coderock.org>
+Cc: linuxppc-dev@ozlabs.org, c.lucas@ifrance.com, domen@coderock.org
+Subject: [patch 3/3] drivers/macintoshisdn/*: convert to pci_register_driver
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,14 +17,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 04, 2005 at 06:24:37PM -0600, Kumar Gala wrote:
-> A while ago Al Viro made some changes to the SPR defines to remove some 
-> name space conflicts.  I wanted to see if anyone had any issue with 
-> removing the short hand versions of the defines in the various reg*.h 
-> headers.  This means all SPR references will be SPRN_<FOO> going 
-> forward.
 
-I think it's a good idea.
+convert from pci_module_init to pci_register_driver
 
---
-Eugene
+Signed-off-by: Christophe Lucas <c.lucas@ifrance.com>
+Signed-off-by: Domen Puncer <domen@coderock.org>
+---
+
+
+ kj-domen/drivers/macintosh/macio_asic.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
+
+diff -puN drivers/macintosh/macio_asic.c~pci_register_driver-drivers_macintosh_macio_asic drivers/macintosh/macio_asic.c
+--- kj/drivers/macintosh/macio_asic.c~pci_register_driver-drivers_macintosh_macio_asic	2005-03-05 16:12:26.000000000 +0100
++++ kj-domen/drivers/macintosh/macio_asic.c	2005-03-05 16:12:26.000000000 +0100
+@@ -617,7 +617,7 @@ static int __init macio_module_init (voi
+ #ifdef CONFIG_PCI
+ 	int rc;
+ 
+-	rc = pci_module_init(&macio_pci_driver);
++	rc = pci_register_driver(&macio_pci_driver);
+ 	if (rc)
+ 		return rc;
+ #endif /* CONFIG_PCI */
+_
