@@ -1,46 +1,52 @@
-Message-ID: <3A7DB6B5.7370D32D@vnet.ibm.com>
-Date: Sun, 04 Feb 2001 14:08:22 -0600
-From: Tom Gall <tom_gall@vnet.ibm.com>
+Date: Sun, 4 Feb 2001 21:09:02 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "Joseph P. Garcia" <jpgarcia@execpc.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 2.4: PCIBIOS_MIN_MEM correct?
+In-Reply-To: <01020413004001.06077@momiji>
+Message-ID: <Pine.LNX.4.05.10102042107540.16275-100000@callisto.of.borg>
 MIME-Version: 1.0
-To: Dan Malek <dan@mvista.com>
-CC: Troy Benjegerdes <hozer@drgw.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Power3/4 Was: Re: Fast Altivec
-References: <3A7AE117.628B22A6@mvista.com> <20010202125143.D31120@altus.drgw.net> <3A7D8C19.B829A8D0@mvista.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dan Malek wrote:
+On Sun, 4 Feb 2001, Joseph P. Garcia wrote:
+> should PCIBIOS_MIN_MEM be 0x10000000?  I caught this when i noticed it is
 
-> I also think the POWER3/POWER4 changes are not being done correctly.
-> There is too much overlap between the processor and the platform.  The
-> POWERx ifdefs should only be related to the processor, not how the
-> platform maps stuff to PCI or other things.  Since the 7450 has a 36-bit
-> addressing capability, I wanted to use some of the changes along the
-> POWERx
-> path to help out.  More on that later..........
+That value is suited for `PC' systems.
 
-Hi Dan,
+> used as the minimum address in the pci assign resource function, used in such
+> situations as the OF/ATY-overlap re-allocate in wallstreets.  My system would
+> panic with the lcd melting effect as some may recall.
+>
+> I brute forced in the following lines in
+> drivers/pci/setup-res.c:pci_assign_resource()
+>      min = (res->flags & IORESOURCE_IO) ? PCIBIOS_MIN_IO : PCIBIOS_MIN_MEM;
+> +    if(res->start==0)
+> +         min = 0x83000000;
+>
+> resulting in the same mapping used by Michael Schmitz earlier 2.2 patch.
+> (its the only re-alloc on my system, so it works :)  My kernel isn't
+> panicing.. yet.
+>
+> Anyway, looking in /proc/iomem, one might get the idea that PCIBIOS_MIN_MEM
+> should be defined as 0x80000000.  This might resolve the problem I had in a
+> less brute way.  I haven't tried it myself yet.  waiting for a second opinion.
 
-  Point well taken. That does raise the question tho as to how to manage the set
-of changes necessary for the Power3 family of machines. At the moment it is nice
-that one define handles issues for the entire family of boxes. But you are right
-it could be split and I can see the case for making the split.
-  Which set of changes are you interested in using for the 7450? You say the chip
-has 36 bit addressing, how does that work?
+The correct fix is to add bus resources that indicate the allowed region.
+pci_assign_resource() will assign a region from the allowed region.
 
-  6392 messages yet to read... ug!  Boy am I behind in mail since LinuxWorld...
+Gr{oetje,eeting}s,
+
+						Geert
 
 --
-Hakuna Matata,
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Tom
-
------------------------------------------------------------
-PPC Linux Guy      "My heart is human, my blood is boiling,
-                    my brain IBM" -- Mr Roboto, Styxx
-tgall@rochcivictheatre.org
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
