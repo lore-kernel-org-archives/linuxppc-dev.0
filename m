@@ -1,47 +1,39 @@
-Date: Mon, 10 Mar 2003 11:48:55 -0500
-From: Manuj Dhingra <manuj_dhingra@ae.gatech.edu>
-To: Nathan Ingersoll <ningerso@ruralcenter.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev@lists.linuxppc.org
+Date: Mon, 10 Mar 2003 21:11:58 +0100 (CET)
+From: Mich Lanners <mlan@cpu.lu>
 Subject: Re: Upgrade Blues 2.4.20 Ben H kernel
-Message-ID: <20030310164855.GC11462@haar.ae.gatech.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset=ISO-8859-1
+To: iweiny@acm.org
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <1047135968.12345.81.camel@zion.wanadoo.fr>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
+Message-Id: <E18sTcy-0006un-00@piglet.grunz.lu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Subject: Re: Upgrade Blues 2.4.20 Ben H kernel
+On   8 Mar, this message from Benjamin Herrenschmidt echoed through
+cyberspace:
+>> 1) My Microdrive which I had hacked in does not work any more.  What
+>>    is the status of the ide-cs driver?  Anyone know?  It is different
+>>    than when I got it to work before and I am not sure where to begin
+>>    again.
 >
-> On Fri, 2003-03-07 at 18:57, Ira Weiny wrote:
-> > Well I decided it was time to get up to date on my TiBook.
-> >
-> > 2) m3mirror does not work?  This one really puzzles me.  lcd:0 turns
-> off the
-> >    LCD screen but crt:1 does not turn on the outside monitor.  I
-> rebooted into
-> >    Mac OS and the external port works.  The only thing I can think of
-> is that I
-> >    did use the S-video port on Mac OS to show some pictures.  Is there
-> >    something in OF which Mac OS would set which would make the external
-> port
-> >    not work with m3mirror?
->
-> Well... All it does is to enable the port by sending it the same signal
-> as the LCD. This works approx. well on the Pismo, but not with the tipb.
->
-> Somebody, I think, is working on proper mirroring based on setting up
-> the second CRTC.
->
+> There are some problems with ide-cs currently. I'll try to work on it
+> this week-end.
 
-Well I am, but I have not seen this one before. With Ben's m3mirror and
-corresponding ioctls, crt:1 did turn on the external display, it was just
-not stable.
-Could you please boot with external monitor plugged in at power on and
-pass video=aty128fb:crt:1,lcd:1 as additional boot parameters?
+You can always try and see whether this helps:
 
-cheers,
-manuj
+http://lists.linuxppc.org/linuxppc-dev/200302/msg00103.html
+
+Cheers
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
