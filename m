@@ -1,58 +1,88 @@
-To: mpc@mail2000.com.tw
-Cc: "=?big5?B?bGludXhwcGMtZW1iZWRkZWQ=?=" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: =?big5?B?RGVidWcgcHBjbGludXggd2l0aCBCREkyMDAw?= 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 11 May 2001 02:55:48 +0800."
-             <989520948.8638.mpc@mail2000.com.tw>
-Date: Thu, 10 May 2001 21:44:30 +0200
-Message-Id: <20010510194435.5CB352814D@denx.denx.de>
+From: "Albert D. Cahalan" <acahalan@cs.uml.edu>
+Message-Id: <200105101946.f4AJks3441196@saturn.cs.uml.edu>
+Subject: Re: linuxppc_2_5 source tree (and others)
+To: trini@kernel.crashing.org (Tom Rini)
+Date: Thu, 10 May 2001 15:46:54 -0400 (EDT)
+Cc: acahalan@cs.uml.edu (Albert D. Cahalan),
+	linuxppc-embedded@lists.linuxppc.org, Murray.Jensen@cmst.csiro.au
+In-Reply-To: <20010510114909.B28206@opus.bloom.county> from "Tom Rini" at May 10, 2001 11:49:09 AM
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <989520948.8638.mpc@mail2000.com.tw> you wrote:
+Tom Rini writes:
+> On Thu, May 10, 2001 at 02:40:05PM -0400, Albert D. Cahalan wrote:
+
+>> I'm very glad to have ignored this BitKeeper nonsense for
+>> the most part then. I knew there was a good reason to rely
+>> on the one true source tree from Linus. I'm not screwed like
+>> all the people working from linuxppc_2_5 are.
 >
->  I followed the procedure mentioned in BDI's manual
->  (Sec3.3.4, P29).
->  I just type 'load' on BDI's telnet terminal to load
->  target zImage file(arch/ppc/mbxboot/zImage).
->  After that BDI shows:
->  "File offset 0x00010000 to address 0x00210000 size
->   514200"
->  Then I type "go 0x00210000" on BDI's telnet terminal.
->  However, nothing happened!!
+> Right.  But the "one true source tree from Linus" doesn't always
+> work for other arches.  Why?  Keeping stuff in 100% never works.
+> There almost always has been a slightly more up-to-date tree than
+> Linus' for ages (when did the first -ac patch come out, anyone
 
-Of course something happened: your kernel crashed.
+The 2.2.14 kernel is over 15 months old. I'm expected to run
+Montevista's obsolete and severely hacked up 2.2.14 kernel if
+I want to use a PowerCore 6750. So "slightly more up-to-date"
+could mean over 15 months I guess.
 
->  I can not get any responce from serial console.
->  Did I lose something?
+> know?).  And, who exactly is screwed that's working from the old 2_5
+> tree?  There hasn't been any new activity in it for ages.
 
-Yes.  The  Linux  kernel,  even  with  the  mbxboot  bootstrap  stuff
-attached,   is  not  a  standalone  program.  It  expects  a  lot  of
-initialization to be done  by  the  firmware,  and  some  information
-passed, too.
+I nearly fell into the trap. Just recently, 2_5 was listed as
+being where the latest development happens. It certainly looked
+that way too, with support for more boards than 2_4 had.
+Until just this morning, I was thinking I ought to use 2_5!
 
-I don't see why you go such a difficult route.
+>   Shortly
+> (mainly once I'm done w/ finals) it'll be little more than exporting
+> your local changes from '2_5' and applying them in 2_4_devel.  Yes,
+> history bits will be lost, but such is life. :)
 
-Both PPCboot and Linux are running out of the  box  on  the  TQM8xxL.
-Just install and run.
+That defeats the purpose of revision control. You might as
+well use "diff" and "patch" if you will be throwing away your
+version history.
 
-If you want to debug your own kernel modifications, you can still use
-PPCBoot to load and start the kernel - but remember that PPCBoot does
-not use zImage files, it uses it's own image format instead.
+>> On the other hand, I had to do my own PowerCore 6750 VME port for
+>> the 2.4 kernel. That sucked. It would be nice if everyone had the
+>> decency to submit stuff to Linus in a way that he finds acceptable,
+>> rather than hoarding source code in obscure places that are only
+>> accessible via non-standard non-free software.
+>
+> So use rsync and import into your own CVS tree.  I think it sucks
+> too that bk isn't gpl'ed, but hey.  I don't really care that much.
 
-A simple but efficient way to enter the debugger  _after_  Linux  has
-started  and  the  MMU  has  been  turned on is to set an instruction
-breakpoint for the address range 0xC0000000 ... 0xC1000000  (use  the
-"BI" command at the telnet prompt to do so).
+The 2_2 and 2_4 trees were available via rsync, while 2_5 was not.
 
-Wolfgang Denk
+> I'd wager your port would have sucked much less if you were working
+> off the 2_5 tree too (mvme5100 support is currently 4 mvme-specific
+> files, and some new common ones other boards use too.  Some pcore
+> boards are about as simple too).
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-panic: kernel trap (ignored)
+So now you are saying I should have used the 2_5 tree?????
+Wasn't I supposed to know (by psychic methods) that the 2_5
+tree is 'dead' now?
+
+>> So, how did _you_ know that 2_5 has been 'dead' for a while?
+>
+> Well, it was on the linuxppc-commit list, which Cort has mentioned a
+> few time (hence it's majordomo now and not a sendmail alias like it
+> used to be).  It's even mentioned on the page that talks about the
+> bk trees: http://www.fsmlabs.com/linuxppcbk.html
+
+I figured that would be a list for automated check-in reports
+generated by the BitKeeper software.
+
+So anyway, we now have a 2_4_devel tree to wonder about.
+Might somebody suddenly decide to delete this tree too?
+Will changes get back to Linus, or is this a dead-end too?
+
+Having separate trees also defeats the purpose of revision control.
+One is supposed to use branches (or whatever BitKeeper calls them)
+for stable, release, development, etc.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
