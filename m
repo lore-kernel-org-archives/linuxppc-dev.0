@@ -1,42 +1,46 @@
-Date: Thu, 28 Sep 2000 18:13:20 -0500 (CDT)
-From: Takashi Oe <toe@unlserve.unl.edu>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: Benjamin Herrenschmidt <bh40@calva.net>,
-        Jon Erick Ween <jween@som.llu.edu>, linuxppc-dev@lists.linuxppc.org,
-        linux-fbdev@vuser.vu.union.edu
-Subject: Re: Xfree86-4.0.1, Lombard, Mach64 driver, X-server Crash
-In-Reply-To: <Pine.LNX.4.10.10009281307020.3468-100000@cassiopeia.home>
-Message-ID: <Pine.LNX.3.96LJ1.1b7.1000928174446.666M-100000@ofey.earthlink.net>
+Message-ID: <39D3D33F.6AA82A1D@mvista.com>
+Date: Thu, 28 Sep 2000 16:24:47 -0700
+From: Frank Rowand <frank_rowand@mvista.com>
+Reply-To: frowand@mvista.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Benjamin Herrenschmidt <bh40@calva.net>
+CC: Geert Uytterhoeven <geert@linux-m68k.org>,
+        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
+        Paul Mackerras <paulus@linuxcare.com.au>, Dan Malek <dan@mvista.com>
+Subject: Re: __ioremap_at() in 2.4.0-test9-pre2
+References: <Pine.LNX.4.10.10009231430200.413-100000@cassiopeia.home> <19340822040932.8760@mailhost.mipsys.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 28 Sep 2000, Geert Uytterhoeven wrote:
-
-> > My understanding is this:
-> > Video console uses 16 colors, and it only initializes the cmap
-> > corresponding to those 16 colors.  The other entries in cmap are up to
-> > each individual fb driver or undefined as far as console is concerned.
-> > For software cursor, driver specific (struct display_switch *)ops->revc()
-> > is used to make the cursor blink.  For the generic fbcon_cfb{16,32}_revc,
-> > it xors each pixel with masks 0xffff (depth 16) or 0xffffffff (depth 32).
-> > For controlfb which I am very familiar with, the "correct" masks are
-> > 0x3def for 555 and 0x0f0f0f0f for 8888.  That is, only 4 LSBs or low 16
-> > for each red, green, and blue are xor'ed since cmap entries corresponding
-> > to higher bits are undefined as far as fbcon support is concerned.
+Benjamin Herrenschmidt wrote:
 >
-> In 2.5.x, we'll have a user-defined xor mask for the cursor as the 17th entry
-> in the dispsw_data array.
+> >Life would be much simpler if PCI I/O space used a similar opaque IO base
+> >cookie with a corresponding ioportremap(cookie) function (looks a lot like
+> >Dan's tell_me_where() function, which I didn't realize until now :-), before
+> >feeding everything to inb() and friends. On ia32, ioportremap() would
+> evaluate
+> >to the identity.
+> >
+> >No way we can convince The Others to use this approach? It does sound logical
+> >:-)
+>
+> I'm not sure it would help. It would probably allow a kind of "mapping on
+> demand" of the IO region on memory mapped IOs platforms, but unless we
+> add another parameter to ioportremap telling it the pci_dev (or at least
+> the bus number), we can't "guess" on which IO bus the device is and which
+> physical base we must use.
+>
+> Ben.
+>
 
-Can we put it for 2.4?  As far as I can see, the actual size of
-dispsw_data matters only between fb driver and fbcon-cfbxx.c, and the
-changes required for each driver seem to be rather small.  Besides,
-controlfb is not the only one which will benefit from this change.
+Yes, we should add pci_dev to ioportremap(), which can then extract the
+bus number from pci_dev->pci_bus.
 
-
-Takashi Oe
-
+-Frank
+--
+Frank Rowand <frank_rowand@mvista.com>
+MontaVista Software, Inc
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
