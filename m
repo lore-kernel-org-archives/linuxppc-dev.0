@@ -1,27 +1,40 @@
-Message-Id: <199907071233.IAA10468@linus.mitre.org>
-To: Scott Wood <scott@broadlink.com>
-cc: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: RPX Lite kernel 
-In-reply-to: Your message of "Tue, 06 Jul 1999 10:40:01 PDT."
-             <37823F71.2BD5AF5F@broadlink.com>
-Date: Wed, 07 Jul 1999 08:33:28 -0400
-From: Charles Lepple <clepple@linus.mitre.org>
+Date: Wed, 7 Jul 1999 13:03:17 -0400
+From: Daniel Jacobowitz <drow@false.org>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: cc/gcc/egcs kernel compilation options?
+Message-ID: <19990707130317.A21114@drow.res.cmu.edu>
+References: <199907012249.XAA05762@calvin.demon.co.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <199907012249.XAA05762@calvin.demon.co.uk>; from Barrie Spence on Thu, Jul 01, 1999 at 10:49:57PM +0000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->[...] or written a utility to convert an ELF kernel into SREC format?  
+On Thu, Jul 01, 1999 at 10:49:57PM +0000, Barrie Spence wrote:
+> 
+> As a PPC newbie, why do we need/use "-msoft-float"? Is this 
+> to handle some processor implementations that don't have 
+> floating-point hardware? (and if so, does it have any overhead 
+> on the 603/604/G3 Macs?). If it does have some cost, could it 
+> not be enabled in the same way as on Intel?
+> 
+> Next question, is there any advantage to building a kernel
+> with "-mcpu=604 -mtune=604"? (or whatever is most appropriate).
 
-Have you looked at objcopy? Unless I'm mistaken, you should be able to do a
+Floating point operations in the kernel are pretty rare, and thus do
+not need to be optimized for speed; soft-float is thus acceptable.  The
+advantage is that we don't need to save/restore the FPU registers and
+state nearly as often.  And I do not know why x86 does not have this
+issue.
 
-  'objcopy -O srec vmlinux vmlinux.s19'
+Dan
 
-One issue that may crop up is the load address. objdump will let you look at
-the ELF headers to make sure that you aren't trying to load the kernel at
-at an address which does not map to RAM.
-
---Charles Lepple
-clepple@mitre.org
+/--------------------------------\  /--------------------------------\
+|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
+|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
+|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
+\--------------------------------/  \--------------------------------/
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
