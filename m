@@ -1,31 +1,49 @@
-Date: Wed, 13 Jan 1999 16:22:14 -0500 (EST)
-From: Tom Vier <nester@erols.com>
-Reply-To: thomassr@erols.com
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Porting to NuBus PowerMacs
-In-Reply-To: <19990113052720169.AAA242@[24.236.15.64]>
-Message-ID: <Pine.LNX.3.96.990113161855.4699F-100000@zero>
+Date: Wed, 13 Jan 1999 23:15:04 +0100 (CET)
+From: Geert Uytterhoeven <geert@thomas.kotnet.org>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Crash when early load of cs4236 module
+Message-ID: <Pine.LNX.4.05.9901132310180.341-100000@callisto.thomas.kotnet.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-i'd also be willing to help. i've never really done any low-level
-hardware coding, but i can certainly tweak and test things. i have
-7100/80 w/ 48megs ram and a spare 1gig i can use to test things, so i
-don't screw up my other drives.
 
-On Tue, 12 Jan 1999, Ron Nelson wrote:
-> I know you guys are only in the early stages with this but I have a 6100 
-> that I will run anything you come up with on.. I don't have mklinux on it
-> right now but I could get that on it and be a guinea pig if you need one..
+To make my sound module load automatically at boot time, I put
+
+    cs4232 io=0x530 irq=5 dma=1 dma2=5
+
+in /etc/modules (I'm using Debian `sid' on a CHRP box with cs4236 sound).
+This works fine, except that I get a kernel crash later when the boot
+scripts are initializing the network daemons:
+
+    NIP: cc831bb0
+    bad access address: 0000ac44
+    backtrace: cc8319b0      ???
+               cc8303dc      ???
+               c003438c      (c0034154 T sys_ioctl)
+               c0003898      (c0003898 T syscall_ret_1)
+               <garbage>
+
+It happens in both 2.2.0pre6 and 2.2.0pre4 and is reproducible (I hate
+file system checks on 2 GB partitions on slow disks :-(.
+
+If I remove the cs4232 line from /etc/modules again and load the module by
+hand later
+
+    modprobe cs4232 io=0x530 irq=5 dma=1 dma2=5
+
+I have no problems at all. Really weird...
+
+Greetings,
+
+						Geert
 
 --
-Tom Vier - 0x82B007A8
-thomassr@erols.com       | goto the Zero Page at:
-Tortured Souls Software  | http://www.erols.com/thomassr/zero/
-
+Geert Uytterhoeven                   Geert.Uytterhoeven@cs.kuleuven.ac.be
+Linux/m68k on Amiga, Wavelets        http://www.cs.kuleuven.ac.be/~geert/
+KotNET@Thomas Network Administration -- Make you bed part of Cyberspace!!
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
