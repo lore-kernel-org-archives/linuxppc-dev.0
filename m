@@ -1,56 +1,35 @@
-Date: Tue, 22 Feb 2000 12:50:19 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: FASSINO Jean-Philippe <jeanphilippe.fassino@cnet.francetelecom.fr>
-cc: Paul Mackerras <paulus@linuxcare.com>,
-        "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>,
-        Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: Patch for optimize context switch
-In-Reply-To: <38B27416.5F4280D5@cnet.francetelecom.fr>
-Message-ID: <Pine.HPX.4.10.10002221242260.4957-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 22 Feb 2000 15:24:43 +0100
+To: FASSINO Jean-Philippe <jeanphilippe.fassino@cnet.francetelecom.fr>,
+        linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: eieio & ld_le, ld_be
+Message-Id: <20000222152443.010969@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Tue, Feb 22, 2000, FASSINO Jean-Philippe
+<jeanphilippe.fassino@cnet.francetelecom.fr> wrote:
 
-
-On Tue, 22 Feb 2000, FASSINO Jean-Philippe wrote:
-
-> FASSINO Jean-Philippe wrote:
+>Just a question about ld_le* and ld_be*.
+>This function do a io read and enforce in-order execution with eieio.
 >
-> > FASSINO Jean-Philippe wrote:
-> >
-> >   ------------------------------------------------------------------------
-> > Context switching - times in microseconds - smaller is better
-> > -------------------------------------------------------------
-> > Host                 OS 2p/0K 2p/16K 2p/64K 8p/16K 8p/64K 16p/16K 16p/64K
-> >                         ctxsw  ctxsw  ctxsw ctxsw  ctxsw   ctxsw   ctxsw
-> > --------- ------------- ----- ------ ------ ------ ------ ------- -------
-> > ppc-linux Linux 2.2.15p    1      7     90    26    107      31     222
-> > ppc-linux Linux 2.2.15p    1      7     91    26    110      29     257
-> > ppc-linux Linux 2.2.15p    1      7     90    25    112      26     233
-> > ppc-linux Linux 2.2.15p    1      7     92    25    126      27     243
-> > ppc-linux Linux 2.2.15p    1      7    147    26    150      27     245
->
-> > ppc-linux Linux 2.2.15p    0      7     92    25    136      28     270
-> > ppc-linux Linux 2.2.15p    1      8     90    27    103      27     211
-> > ppc-linux Linux 2.2.15p    0      9     90    30    112      32     228
-> > ppc-linux Linux 2.2.15p    1      7     91    25    130      29     277
-> > ppc-linux Linux 2.2.15p    1      7     90    25    105      26     211
->
-> Sorry i forgot to say :
->     - 5 first run is without patch
->     - 5 last run is with path
+>Does eieio is really necessary when load value from IO ??
+>Maybe some computer (SMP, pci, ...) require that !
+>But, i try ld_* without eieio on my computer (G4) and that work well.
 
-That's largely in the noise: results with processes which do not pollute
-cache are slightly better wit the patch. But I don't consider this a real
-life situation. Processes which actually do some work don't see any
-practical difference. The 147 microseconds in the 3rd column is very
-probably a bogus point due to collision on L2 cache which is only 2 way
-set associative.
+Neither ld_le* nor ld_be* should do any eieio (and they don't in the
+kernel sources I just checked).
 
-	Gabriel.
+Howeverm in_le*/out_le* etc... do it. Those are necessary to enforce
+ordering of accesses when manipulating a hardware device. It's possible
+that the non-cachable & guarded state of io pages make it less important
+on G3, but it's definitely necessary to be completely safe.
+
+If you are maniuplating in-memory datas that are not related to any io
+hardware device, then you don't need eieio.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
