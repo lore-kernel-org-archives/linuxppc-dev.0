@@ -1,70 +1,43 @@
-Date: Wed, 18 Sep 2002 14:39:46 -0300
-From: Ricardo Scop <scop@digitel.com.br>
-Reply-To: Ricardo Scop <scop@plugin.com.br>
-Message-ID: <9610.020918@plugin.com.br>
-To: Atm account <linux2@cdotd.ernet.in>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re[2]: help needed for porting linux-2.5 to a ppc custom board
-In-reply-To: <Pine.OSF.4.10.10209181158001.6582-100000@moon.cdotd.ernet.in>
-References: <Pine.OSF.4.10.10209181158001.6582-100000@moon.cdotd.ernet.in>
+Date: Thu, 19 Sep 2002 10:47:45 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: lynxfb.c
+Message-ID: <20020919004744.GB1692@zax>
+References: <20020918162705.2286.qmail@webmail26.rediffmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20020918162705.2286.qmail@webmail26.rediffmail.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello Piyush,
+On Wed, Sep 18, 2002 at 04:27:05PM -0000, Linux  PPC wrote:
+>
+> Hello,
+>
+> Has anybody seen it working? We are using sensoray
+> video module, which uses Lynx3DM chip.
 
-I'm not really an expert, so I'll help only with what I know. Read
-below.
+The framebuffer driver as a whole is incomplete, and won't work as a
+frame buffer driver.  If someone were to correct that, that would be a
+Good Thing (tm).
 
-I'm also relaying this message to the public list, so they can help
-you further, possibly correcting me if I'm wrong :o)
+I wrote the driver for use on the Embedded Planet Icebox (Sensoray 322
+module).  I was primarily using the XFree86 siliconmotion driver, but
+this makes some PCish assumptions.  I wrote the framebuffer driver to
+do the basic initialization of the card - with the fb driver loaded
+it's relatively easy to get X working.  I intended to complete it -
+i.e. make it a fully working fb driver, but I never had the time.
 
-[]'s, Scop                            mailto:scop@digitel.com.br
+Note that the fb driver does do one particularly important thing - it
+initializes the memory subsystem using some undocumented prodding of
+the card.  On PCs this is performed by the card BIOS, and the video
+memory won't work correctly without it.
 
-------------------------------------------------------------------
-It might look like I'm doing nothing, but at the cellular level I'm
-really quite busy.
-
-Wednesday, September 18, 2002, 4:49:15 AM, you wrote:
-
-
-Aa> Hello Ricardo,
-
-Aa>     Thanks a lot for your replies.
-
-<snip>
-
-Aa> Actually my requirement is to have printk messages and kgdb prints coming
-Aa> from this uart. Is this possible to have printk-msgs while running kernel
-Aa> in kgdb mode?
-Sorry, I never used kgdb on my custom board (we have a BDI2000!).
-
-Aa> Sometimes my requirement is to connect some other serial device to the
-Aa> uart and that time i want to store printk messages some where else or
-Aa> dump through network-interface.
-AFAIK, you can always get printk messages through /proc/kmsg. I don't
-know if there's an already implemented way of inhibiting them from
-going to the debug console.
-
-Aa>  After going through the arch/ppc/8*_io/uart.c files, I have the
-Aa> following doubts :-
-Aa> 1. After rs_8xx_init() is called, do the printk messages come out
-Aa>   of this port using serial_console_write() function?
-No, AFAIK.
-
-Aa>    rs_8xx_init() is called from tty_init() from chr_dev_init()
-Aa>   which will also call init's() of other character drivers, whose
-Aa>   debugging printk's i want to come through this port.
-
-Aa> 2. If not, is it the case that this uart is unregistered from list
-Aa>   of consoles?
-No, neither that. The uart port is used for both purposes
-concurrently.
-
-Aa> Regards,
-Aa> Piyush.
-
+--
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.
+http://www.ozlabs.org/people/dgibson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
