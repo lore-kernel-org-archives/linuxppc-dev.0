@@ -1,51 +1,43 @@
-Message-Id: <199906102114.XAA00319@piglet.cpu.lu>
-Date: Thu, 10 Jun 1999 23:14:51 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: Q: control is a C&T 65550?
-To: drow@false.org
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <19990608101236.A5738@drow.res.cmu.edu>
+Date: Thu, 10 Jun 1999 15:28:13 -0600 (MDT)
+From: Brad Midgley <brad@turbolinux.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: [patch] mol quit-at-shutdown
+In-Reply-To: <199906102103.QAA15072@cegt201.bradley.edu>
+Message-ID: <Pine.LNX.3.95.990610151742.24326A-100000@pacific.pht.com>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On   8 Jun, this message from Daniel Jacobowitz echoed through cyberspace:
-> 
-> On Tue, Jun 08, 1999 at 04:00:48PM +0200, Geert Uytterhoeven wrote:
->> On Tue, 8 Jun 1999, Daniel Jacobowitz wrote:
->> > On Tue, Jun 08, 1999 at 07:51:39AM -0400, Jason Y. Sproul wrote:
->> > > Is it correct that the /chaos/control chip is essentially a Chips &
->> > > Technologies 65550? If so, does anyone have the variances from the 65550
->> > > datasheet, and if not, what the heck is it? :^)
->> > 
->> > It's my understanding that it's not.  No one has any documentation on
->> > it to my knowledge... I'd love to add hardware cursor support, which
->> > I'm fairly sure it has, to controlfb.  But I can't do it without some
->> > sort of reference.
->> 
->> Move the cursor under MacOS and see which registers or video memory addresses
->> change?
-> 
-> That's one of those if-i-had-more-time things - and more specifically,
-> if I knew how to dump video regs under macos.  Is it trivial?
+with this patch, mol quits when macos tries to pull down the power so the
+macos shutdown action cleanly exits the emulator.
 
-Not with my favourite tool: MacsBug. Problem is that MacsBug includes
-some kind of control driver, that is able to switch control into its
-own mode, preserving the original VRAM contents from MacOS... except
-the cursor, of course. So, when you look at control's registers with
-MacsBug, you see MacsBug's values, not MacOS'.
+it appears all the mol cleanup is done in an atexit routine so i figured
+this would be safe. my only concern is that it looks like macos does a
+couple of scsi operations AFTER telling the cuda to power down. maybe i
+should set an alarm and have the alarm kill the emulator instead...?
 
-Michel
+i would like to make the debugger interface optional via a command-line
+interface to mol next...
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+--- ../mol/drivers/cuda.c       Fri May 21 12:47:58 1999
++++ ./drivers/cuda.c    Thu Jun 10 15:26:21 1999
+@@ -332,7 +332,9 @@
+                printm("CUDA: rest system\n");
+                break;
+        case CUDA_MS_RESET:
++               break;
+        case CUDA_POWERDOWN:
++               exit(0);
+        case CUDA_POWERUP_TIME:
+                break;
+        case CUDA_AUTOPOLL: /* input_len/output_len : 1/0 */
+
+
+Brad
+brad@pht.com | http://www.pht.com/~brad/
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
