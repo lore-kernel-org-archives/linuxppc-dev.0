@@ -1,60 +1,75 @@
-Date: Fri, 9 Apr 2004 09:47:48 -0400
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: 2.6.5/iBook G3: Oops on resume from sleep
-Message-ID: <20040409134748.GA11157@csclub.uwaterloo.ca>
-References: <20040405215318.GA2822@mortadelo.pirispons.net> <20040407191719.GA4852@csclub.uwaterloo.ca> <1081378171.1380.68.camel@gaston> <20040408131404.GA28251@csclub.uwaterloo.ca> <1081490612.1382.125.camel@gaston>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1081490612.1382.125.camel@gaston>
-From: muffin@csclub.uwaterloo.ca (Aaron Lunansky)
+Message-ID: <40771841.8040001@g-house.de>
+Date: Fri, 09 Apr 2004 23:40:17 +0200
+From: Christian Kujau <evil@g-house.de>
+MIME-Version: 1.0
+To: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+Subject: still unable to compile with kgdb enabled
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-What I was saying is the system doesn't seem to crash, but ends up in a bad state.
-The system doesn't make it to sleep (the led does not 'snore').
 
-Did I miss anything?
+hi,
 
-Thanks,
-Aaron
+happily compiling kernels from 2.5 to 2.6 i finally wanted to give KGDB
+a try as suggested often enough. but i fail to do this.
 
-On Fri, Apr 09, 2004 at 04:03:32PM +1000, Benjamin Herrenschmidt wrote:
->
-> On Thu, 2004-04-08 at 23:14, Aaron Lunansky wrote:
-> > So what I've figured out so far is that the system is not crashed- the
-> > screen is still on in fact, blinking a cursor in the top left. I can ssh
-> > in to the machine but a cursory review of dmesg shows nothing of
-> > significance.
-> >
-> > Unfortunately I can't do much with an ssh session before it seems to lock up,
-> > but I can launch another ssh session if I want. Also, if I disconnect my
-> > USB keyboard while the screen is in this blinking state, I get a "USB
-> > device soandso" disconnected message.
-> >
-> > Since my machines not crashing I can poke at it some more, but I could
-> > use some pointers as to where I should poke.
->
-> You didn't reply to my questions.
->
-> > Thanks,
-> > Aaron
-> >
-> > On Thu, Apr 08, 2004 at 08:49:31AM +1000, Benjamin Herrenschmidt wrote:
-> > > On Thu, 2004-04-08 at 05:17, Aaron Lunansky wrote:
-> > > > I'm having similar issues with an ibook G3 (600MHz) - only my system
-> > > > seems to fail to sleep, and this is regardless of modules (I have
-> > > > sound/airport/ethernet compiled as modules). By fails to sleep, I mean I
-> > > > get a blank screen and it does not respond to any input. I'm not sure
-> > > > where it is when it dies though - what's the best way to figure this
-> > > > out? (how can I make SysRq work on an ibook (which has no SysRq key)).
-> > >
-> > > No, once the screen is off, there isn't much you can do. I suggest
-> > > you do some experiments in console mode, use "snooze -f" (that will
-> > > bypass pmud or pbbuttonsd, which tend to cut the backlight early).
-> > >
-> > > Also, did it die on sleep or on wakeup ? That is, did it reach the
-> > > sleep state where the led starts "snoring" ?
+i tried different kernels:
+
+vanilla 2.4.25, results are here:
+
+http://nerdbynature.de/bits/sheep/kgdb/kgdberror_linux-2.4.25.txt
+
+i was looking for a kgdb patch on kgdb.sourceforge.net, but the latest
+version there is KGDB 2.0.1-2.0.5, which is for linux-2.6.1 only. on
+http://spop.free.fr/kgdb/ i found a kgdb-1.9-for-2.4.25.patch.bz2,
+applying cleanly, but still gives me errors and does not compile:
+
+http://nerdbynature.de/bits/sheep/kgdb/kgdberror_linux-2.4.25+kgdb-1.9.txt
+
+2.4.25-ben1 (updated daily via rsync), results are here:
+http://nerdbynature.de/bits/sheep/kgdb/kgdberror_linux-2.4.25-ben1.txt
+
+again, i patched with kgdb-1.9-for-2.4.25.patch.bz2, giving me one
+reject in kernel/Makefile.rej:
+
+
+~  obj-$(CONFIG_PM) += pm.o
++ obj-$(CONFIG_KGDB) += kgdbstub.o
+
+
+
+results are here:
+http://nerdbynature.de/bits/sheep/kgdb/kgdberror_linux-2.4.25-ben1+kgdb-1.9.txt
+
+2.6.5-rc3-ben0 (updated daily via rsync), results are here:
+http://nerdbynature.de/bits/sheep/kgdb/kgdberror_linux-2.6.5-rc3-ben0.txt
+
+i was not able to apply the patches from KGDB 2.0.1-2.0.5 nor the
+patches from http://www.codemonkey.org.uk/projects/bitkeeper/kgdb/
+(lots of rejects...details needed?)
+
+so i my kernels still lack proper kgdb support :-(
+any hints?
+
+powerpc-linux-ld -V
+GNU ld version 2.14 20030612
+~  Supported emulations:
+~   elf32ppclinux
+~   elf32ppc
+~   elf32ppcsim
+
+powerpc-linux-gcc --version
+powerpc-linux-gcc (GCC) 3.3.2
+
+(crosscompile toolchain under x86, running debian/unstable)
+
+Thank you,
+Christian.
+- --
+BOFH excuse #258:
+
+That's easy to fix, but I can't be bothered.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
