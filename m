@@ -1,76 +1,29 @@
-From: Allen Curtis <acurtis@onz.com>
-Reply-To: acurtis@onz.com
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Cross compile helper patch
-Date: Tue, 27 Aug 2002 17:02:54 -0700
+Message-ID: <3D6C4C0D.8050204@embeddededge.com>
+Date: Wed, 28 Aug 2002 00:05:33 -0400
+From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="------------Boundary-00=_UG1JFDQF6PH6UU7MA6SG"
-Message-Id: <200208271702.54458.acurtis@onz.com>
+To: acurtis@onz.com
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Cross compile helper patch
+References: <200208271702.54458.acurtis@onz.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---------------Boundary-00=_UG1JFDQF6PH6UU7MA6SG
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 8bit
+Allen Curtis wrote:
 
-I am not sure where to send these so here it goes.
+> I am not sure where to send these so here it goes.
 
---
-All things come to those who wait. Some of us just have to wait a little
-longer...
---------------Boundary-00=_UG1JFDQF6PH6UU7MA6SG
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="cross.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename="cross.patch"
+It only goes in your local version of this file.  Everyone has a different
+way they want their cross compilation to work, and those of us that use
+native systems don't like this in the Makefile.  This is the historically
+consistent response to everyone that has submitted a similar patch over the years.
 
-# This is a BitKeeper generated patch for the following project:
-# Project Name: Linux 2.4 for PowerPC development tree
-# This patch format is intended for GNU patch command version 2.5 or higher.
-# This patch includes the following deltas:
-#	           ChangeSet	1.1114  -> 1.1115
-#	            Makefile	1.164   -> 1.165
-#
-# The following is the BitKeeper ChangeSet Log
-# --------------------------------------------
-# 02/08/26	acurtis@ws01.onz.com	1.1115
-# Make update for cross development.
-# --------------------------------------------
-#
-diff -Nru a/Makefile b/Makefile
---- a/Makefile	Tue Aug 27 16:21:45 2002
-+++ b/Makefile	Tue Aug 27 16:21:45 2002
-@@ -5,7 +5,12 @@
+Thanks.
 
- KERNELRELEASE=$(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)
 
--ARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ -e s/arm.*/arm/ -e s/sa110/arm/)
-+ARCH := $(shell if [ -f Make.arch ]; then \
-+			cat Make.arch; \
-+		else \
-+			uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ -e s/arm.*/arm/ -e s/sa110/arm/; \
-+		fi)
-+
- KERNELPATH=kernel-$(shell echo $(KERNELRELEASE) | sed -e "s/-//g")
-
- CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
-@@ -19,7 +24,9 @@
- HOSTCC  	= gcc
- HOSTCFLAGS	= -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer
-
--CROSS_COMPILE 	=
-+CROSS_COMPILE 	= $(shell if [ -f Make.crosscompiler ]; then \
-+			          cat Make.crosscompiler; \
-+			  fi)
-
- #
- # Include the make variables (CC, etc...)
-
---------------Boundary-00=_UG1JFDQF6PH6UU7MA6SG--
+	-- Dan
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
