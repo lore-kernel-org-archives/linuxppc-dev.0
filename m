@@ -1,19 +1,21 @@
-Return-Path: <matej.kupljen@ultra.si>
-Received: from deliver-1.mx.triera.net (deliver-1.mx.triera.net [213.161.0.31])
-	by ozlabs.org (Postfix) with ESMTP id A493067A65
+Return-Path: <markus.westergren@biologigrand.ac>
+Received: from www.biologigrand.ac (biologigrand.ac [212.32.155.2])
+	by ozlabs.org (Postfix) with ESMTP id 22B9867A79
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Feb 2005 08:21:42 +1100 (EST)
-From: Matej Kupljen <matej.kupljen@ultra.si>
-To: Sylvain Munaut <tnt@246tNt.com>
-In-Reply-To: <4213B356.3060901@246tNt.com>
-References: <1108547431.30212.37.camel@mbmatejdebian.ultra.si>
-	<4213B356.3060901@246tNt.com>
-Content-Type: text/plain
-Date: Wed, 16 Feb 2005 22:21:36 +0100
-Message-Id: <1108588896.15304.7.camel@orionlinux.starfleet.com>
-Mime-Version: 1.0
+	Thu, 17 Feb 2005 08:32:25 +1100 (EST)
+Date: Wed, 16 Feb 2005 22:32:20 +0100 (CET)
+From: Markus Westergren <markus.westergren@biologigrand.ac>
+To: Jan Damborsky <jan.damborsky@devcom.cz>
+In-Reply-To: <421324EC.5000104@devcom.cz>
+Message-ID: <Pine.LNX.4.50.0502162229140.14065-100000@220a.licentiaten.umea.hsb.se>
+References: <Pine.LNX.4.50.0502131246140.3196-100000@220a.licentiaten.umea.hsb.se>
+	<42109B82.9070604@devcom.cz>
+	<Pine.LNX.4.50.0502142045070.28518-100000@220a.licentiaten.umea.hsb.se>
+	<421324EC.5000104@devcom.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: bdi2000 debugging
+Subject: Re: Support for Adder875 in Linux 2.4
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,31 +26,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi
+On Wed, 16 Feb 2005, Jan Damborsky wrote:
 
-> The good news : I can explain you BDI2000 problem :)
+> Markus Westergren wrote:
+>
+> >I got my board working with both ethernet ports today. I'm interested in your
+> >patch so that I can see if we made the same ugly hack and if I have overlocked
+> >something :)
+> >
+> >/Markus
+> >
+> >
+> The patch is here. I am sorry it has not been done against current denk
+> source tree,
+> I used  the one from 19th January. But I hope it might satisfy for
+> understanding the way
+> the hack is done.
+>
+>
+Thank you.
 
-Thank you for the explanation. 
-
-> The bad news : AFAIK you can't fix it :(
-> 
-> There is a bug in the rev <= 1.2 of the silicon of MPC5200 : When there
-> is another XLB Master active (like USB or any bestcomm activity), the XLB
-> arbiter can get confused during debugging and you can resume nor
-> can you access memory or do anything ... you can just reboot.
-
-Hmm, this is not good. :(
-How can I determine the silicon rev.?
-I'll look it up in the docs.
-
-> It's VERY frustrating since the BDI2000 is then kind of useless for debug
-> in the cases when you need those activated ...
-
-So I have to disable USB (can live without it for debugging), bestcomm
-(hmm, how can I use console on serial port then?) and what else?
-
-Thanks again for the explanation, I'd spent one more week on this.
-Now I know I have to use a different approach :-(
-
-BR,
-Matej
+/Markus
