@@ -1,20 +1,32 @@
-Message-ID: <003101c0c129$d7458010$9e648a89@cern.ch>
-From: "Shoudong Xu" <Shoudong.Xu@cern.ch>
-To: "linuxppc-embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: convert  root file system to a binary file
-Date: Mon, 9 Apr 2001 21:18:20 +0200
+Message-ID: <3AD21837.D8AEA7E4@mvista.com>
+Date: Mon, 09 Apr 2001 16:14:47 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
+To: nunninger@web.de
+Cc: linuxppc-embedded List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: How to debug ethernet
+References: <3AD1B33D.439A45D2@enst.fr>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Could you tell me how to convert a small root file system (It has be compressed by me ,now just 6Meg) to a binary file which can be burnt into flash  ?
+Stefan Nunninger wrote:
 
-*the file system contain some directories bin lib etc ...
+> To do so I changed the file /arch/ppc/8xx_io/commproc.h  the values
+> for
+> ethernet (SCC1) as follows:
+>
 
-Best regards
-__________________________________________________________________
+> #define PA_ENET_TCLK    ((ushort)0x0200)      /* Pin  6 Port A */
+> #define PA_ENET_RCLK    ((ushort)0x0100)      /* Pin  7 Port A */
+
+Your TCLK/RCLK pair doesn't match any existing configuration, so you
+must also change the SICR_ENET_CLKRT value.  I didn't see this in
+the code you listed, so if you didn't change it, this will be
+part of the problem.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
