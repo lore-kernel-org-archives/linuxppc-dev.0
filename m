@@ -1,50 +1,41 @@
-Message-ID: <3BD9238D.6080009@humboldt.co.uk>
-Date: Fri, 26 Oct 2001 09:49:17 +0100
-From: Adrian Cox <adrian@humboldt.co.uk>
-MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Cc: Steven Scholz <steven.scholz@imc-berlin.de>,
-	LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: CAN and MPC855T/860T
-References: <20011026080628.D625310CDA@denx.denx.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Peter Desnoyers <pdesnoyers@chinook.com>
+Cc: GOTZON ASTONDOA <gastondoa@fagorautomation.es>,
+	"'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: IDE on PCMCIA error 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 26 Oct 2001 10:42:00 EDT."
+             <3BD97638.4115F7A9@chinook.com>
+Date: Fri, 26 Oct 2001 17:02:51 +0200
+Message-Id: <20011026150256.A5EF010CDB@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
-
-
-> IMHO there are two Open Source projects that look interesting:
+In message <3BD97638.4115F7A9@chinook.com> you wrote:
 >
->    1. http://home.wanadoo.nl/arnaud/
+> >Also, Linux relies on the  initialization  of
+> > the PCMCIA interface performed by PPCBoot.
+>
+> It depends.  The m8xx driver in the pcmcia-cs tree seems to initialize
+> everything except the card voltages.
 
+Right, that's when you use the CS package which is a bit of  overkill
+for  an  embedded  system,  especially  when you want to put the root
+filesystem on the flash card.
 
-Two days ago I got this code working using a SJA1000 chip on a PowerPC
-system. It's very "interesting" code, for the following reasons:
+I was speaking about the "simple" IDE interface which  you  get  with
+the  CONFIG_IDE_8xx_PCCARD  config  option  (plus  one of 8xx_PCCARD,
+8xx_DIRECT, or EXT_DIRECT). In this  case,  Linux  reads  the  memory
+mapping from the PCMCIA controller registers.
 
-1) Its initialisation is back to front. Most Linux subsystems you load a
-hardware driver which calls a function to register itself. With this you
-load the CAN subsystem which takes module arguments telling it which
-hardware drivers to use.
-
-
-2) When the interrupt handlers call worker functions, they pass the
-parameters through global variables rather than as function parameters.
-
-3) It has two different ways of keeping track of its circular buffers,
-by an index or by pointers. Different routines use different methods,
-with hilarious consequences. (This may particularly cause problems for
-users of Pelican mode.)
-
-4) It has several loops with udelays() in them. One of these gets called
-by an interrupt handler.
-
-I'm not entirely sure what to do with my changes, as I also integrated
-it into the kernel tree (the target system doesn't use modules).
+Wolfgang Denk
 
 --
-Adrian Cox   http://www.humboldt.co.uk/
-
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Only in our dreams we are free. The rest of the time we neeed  wages.
+                                    - Terry Pratchett, _Wyrd Sisters_
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
