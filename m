@@ -1,34 +1,41 @@
-From: "Brian Padalino" <bpadalino@perigee.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: PPCBoot on Ebony board
-Date: Tue, 15 Jul 2003 14:11:07 -0400
-Message-ID: <DGEEIPOFGGPOACEFBGGCOEGPCAAA.bpadalino@perigee.com>
+From: Darin.Johnson@nokia.com
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <5.1.0.14.2.20030715092123.02ef0d20@mail.ebshome.net>
+	charset="iso-8859-1"
+Subject: RE: [RFC] consistent_sync and non L1 cache line aligned buffers
+Date: Tue, 15 Jul 2003 13:18:31 -0700
+Message-ID: <F0B628F30F48064289D8CCC1EE21B7A80C48A5@mvebe001.americas.nokia.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am trying to transfer PPCBoot that I had compiled over a tftp session in
-the 440GP 1.18 ROM Monitor (02/11/02) that came on the Ebony board.  Is that
-the wrong method of trying it?  I tried using both serial ports and Kermit
-with Xon/Xoff handshaking, but it just ended up timing out.
+> invalidate_dcache_range works in L1_CACHE_LINE chunks, so if
+> start and/or
+> end of the buffer are not aligned we may corrupt data located
+> in the same
+> cache line (usually stack variable(s) declared before or after buffer
+> declaration).
 
-I keep getting the error:
-  Loading file "C:\ppc\bootp\boot.img" ...
-  Sending tftp boot request ...
-  Not a valid boot image file
+I had noticed this a long time ago when looking to see how PowerPC
+Linux had solved this problem, but discovered that it just sidestepped
+the problem.
 
-Which stems from an improper magic number at the top of the file to say it's
-a valid boot image.
+I solved the problem (in a non-Linux system) by just flushing the first
+and last lines in the requested range, and invalidating the rest.  The
+very slight performance hit is probably less than testing to see if the
+buffer is unaligned.
 
-I hate to sound like such a newbie, but can anyone help in getting PPCBoot
-on this new board?  Any help would be very appreciated.
+> To be safe I think it's better to modify consistent_sync to
+> handle such
+> "bad" buffers.
 
-Thank you,
-Brian Padalino
-
+"Bad" is the wrong word to use, in my opinion.  If the function is
+not called "invalidate_aligned_dcache_range", or is not otherwise
+clearly and unambiguously documented (in an easy to locate place)
+that there are severe restrictions on the input parameters, then
+the function itself is "bad".  The "principle of least astonishment"
+implies that a function should do just what its name implies without
+hidden surprises.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
