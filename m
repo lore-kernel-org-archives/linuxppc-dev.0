@@ -1,17 +1,16 @@
-Return-Path: <ncaruso@irobot.com>
-Received: from irobot.com (smtp1.irobot.com [66.238.211.203])
-	by ozlabs.org (Postfix) with ESMTP id A256E67A75
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id 8CB6467A75
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Feb 2005 08:33:24 +1100 (EST)
+	Wed, 16 Feb 2005 09:13:56 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C513A5.F9775F32"
-Date: Tue, 15 Feb 2005 16:33:22 -0500
-Message-ID: <712A2DEC228C7448978CBD7A7AD5B090592CE2@fever.wardrobe.irobot.com>
-From: "Caruso, Nick" <ncaruso@irobot.com>
+Content-Type: text/plain;
+	charset="utf-8"
+Date: Tue, 15 Feb 2005 16:13:54 -0600
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B8592B4@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
 To: <linuxppc-embedded@ozlabs.org>
-Subject: How to set a custom baud rate using 2.6 linux distro on MPC5200
-	based board?
+Subject: RE: 8266 SMC uart corruption
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,94 +21,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
-
-------_=_NextPart_001_01C513A5.F9775F32
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-
-I'm trying to set a custom baud rate (500KBaud, in case anyone cares) on =
-one of the PSCs on a MPC5200 board.
-The PSC is configured as a serial port and is visible and usable under =
-the 2.6 kernel we're using.
-
-I used to use the following code under 2.4 on an x86 board:
-
-   serial_info.flags =3D ASYNC_SPD_CUST | ASYNC_LOW_LATENCY;
-   serial_info.custom_divisor =3D 48;  // clock on FTDI chip / 48 =3D=3D =
-500KB
-
-   if ( ioctl(tty_fd, TIOCSSERIAL, &serial_info ) < 0) {
-     perror("config_serial_port: ioctl TIOCSSERIAL");
-     return(-1);
-   }
-
-This compiled fine under the ppc cross-dev tools we have but it fails =
-with an "invalid argument" error when run on the ppc board.
-
-I'm busy reading the driver sources but thought someone on the list =
-might be able to help me out.
-
-  thanks!
-     --nick caruso
-       irobot corporation
-       intelligent vehicles
-       r-gator project
-
-------_=_NextPart_001_01C513A5.F9775F32
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7226.0">
-<TITLE>How to set a custom baud rate using 2.6 linux distro on MPC5200 =
-based board?</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
-<BR>
-
-<P><FONT SIZE=3D2>I'm trying to set a custom baud rate (500KBaud, in =
-case anyone cares) on one of the PSCs on a MPC5200 board.<BR>
-The PSC is configured as a serial port and is visible and usable under =
-the 2.6 kernel we're using.<BR>
-<BR>
-I used to use the following code under 2.4 on an x86 board:<BR>
-<BR>
-&nbsp;&nbsp; serial_info.flags =3D ASYNC_SPD_CUST | =
-ASYNC_LOW_LATENCY;<BR>
-&nbsp;&nbsp; serial_info.custom_divisor =3D 48;&nbsp; // clock on FTDI =
-chip / 48 =3D=3D 500KB<BR>
-<BR>
-&nbsp;&nbsp; if ( ioctl(tty_fd, TIOCSSERIAL, &amp;serial_info ) &lt; 0) =
-{<BR>
-&nbsp;&nbsp;&nbsp;&nbsp; perror(&quot;config_serial_port: ioctl =
-TIOCSSERIAL&quot;);<BR>
-&nbsp;&nbsp;&nbsp;&nbsp; return(-1);<BR>
-&nbsp;&nbsp; }<BR>
-<BR>
-This compiled fine under the ppc cross-dev tools we have but it fails =
-with an &quot;invalid argument&quot; error when run on the ppc =
-board.<BR>
-<BR>
-I'm busy reading the driver sources but thought someone on the list =
-might be able to help me out.<BR>
-<BR>
-&nbsp; thanks!<BR>
-&nbsp;&nbsp;&nbsp;&nbsp; --nick caruso<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; irobot corporation<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; intelligent vehicles<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; r-gator project</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C513A5.F9775F32--
+Rm91bmQgbW9yZSBpbmZvOg0KDQpUaGUgY29ycnVwdGlvbiBoYXBwZW5zIHdoZW4gY3BtX3VhcnRf
+c2V0X3Rlcm1pb3MoKSBpcyBjYWxsZWQuDQpJIGhhdmUgbm8gaWRlYSBob3cgdG8gZml4IGl0LCBl
+eGNlcHQgZm9yIHB1dHRpbmcgaW4gYSB1ZGVsYXkoMTAwMDApIHJpZ2h0IGJlZm9yZSB0aGUgc21j
+IG1vZGUgcmVnaXN0ZXIgZ2V0cyByZXdyaXR0ZW4uDQogDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNz
+YWdlLS0tLS0NCj4gRnJvbTogUnVuZSBUb3JnZXJzZW4gDQo+IFNlbnQ6IFR1ZXNkYXksIEZlYnJ1
+YXJ5IDA4LCAyMDA1IDExOjQ2DQo+IFRvOiBsaW51eHBwYy1lbWJlZGRlZEBvemxhYnMub3JnDQo+
+IFN1YmplY3Q6IFJFOiA4MjY2IFNNQyB1YXJ0IGNvcnJ1cHRpb24NCj4gDQo+IE1vcmUgSW5mbzoN
+Cj4gVGhpcyBzZWVtcyB0byBiZSByZWxhdGVkIHRvIGNwbV91YXJ0X3N0b3BfdHgoKQ0KPiBUaGVy
+ZSBzZWVtcyB0byBiZSBhbiBleGNlc3NpdmUgYW1vdW50IG9mIHN0b3BzIGFuZCBzdGFydHMgZ29p
+bmcgb24NCj4gSW4gdGhlIGZvbGxvd2luZywgSSBwcmludCBhbiBcIGZvciBlYWNoIHRpbWUgc3Rv
+cF90eCBpcyANCj4gY2FsbGVkLCBhbmQgYSAvIGZvciBzdGFydF90eA0KPiANCj4gLS0tLS0tLS0t
+DQo+IEVYVDMtZnM6IG1vdW50ZWQgZmlsZXN5c3RlbSB3aXRoIG9yZGVyZWQgZGF0YSBtb2RlLg0K
+PiBWRlM6IE1vdW50ZWQgcm9vdCAoZXh0MyBmaWxlc3lzdGVtKS4NCj4gRnJlZWluZyB1bnVzZWQg
+a2VybmVsIG1lbW9yeTogMjg4ayBpbml0DQo+IFwvSVwvVFwvwrdcL3ZlcnNcL2lcL29uIDJcLy5c
+Lzg1IGJcL29cL290aW5cL8KgLw0KPiBcL0FjdGlcL3ZcL2F0aW5cL2dcLyBhbGxcLyBcL3N3YXBc
+LyANCj4gXC9maWxlXC9zXC8vcGFyXC90XC9pdGlvXC9uXC9zLi4uXDw2PkFkZGluZyAxMDI4MTUy
+ayBzd2FwIG9uIA0KPiAvZGV2L2hkYTIuICBQcmlvcml0eToxIGV4dGVudHM6MQ0KPiAvICAgICAg
+IFwvWyAgXC9PS1wvICBdXC8NCj4gXC9Nb3VuXC90XC9pbmcgXC9wXC9yb2MgXC9mXC9pbGUgXC9z
+XC95c3RlXC9tXC8uLi5cLyAgICBcL1sgIA0KPiBcL09LXC8gIF1cLw0KPiBcL01vdW5cL3RcL2lu
+ZyBcL3JcL29vdCBcL2ZcL2lsZSBcL3NcL3lzdGVcL21cLyBpbiANCj4gXC9yXC9lYWQtXC9vXC9u
+bHkgXC9tXC9vZGUuXC8uXC8uXC8NCj4gDQo+IC0tLS0tLS0tLS0NCj4gQW5kIHNvIG9uLg0KPiAN
+Cj4gSWYgSSBwdXQgaW4gYSB1ZGVsYXkoMTAwMDApIGF0IHRoZSBlbmQgb2YgY3BtX3VhcnRfc3Rv
+cF90eCwgDQo+IGFsbCBvdXRwdXQgcHJpbnRzIE9LLCBidXQgc2xvdy4NCj4gDQo+IDIuNi43IGFu
+ZCBwcmlvciBkb2VzIG5vdCB1c2UgdGhlIHN0b3AgYXQgYWxsIGZvcm0gd2hhdCBJIGNhbiBzZWUu
+DQo+ICANCj4gDQo+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiBGcm9tOiBSdW5l
+IFRvcmdlcnNlbiANCj4gPiBTZW50OiBUdWVzZGF5LCBGZWJydWFyeSAwMSwgMjAwNSAwODo0Mg0K
+PiA+IFRvOiBsaW51eHBwYy1lbWJlZGRlZEBvemxhYnMub3JnDQo+ID4gU3ViamVjdDogODI2NiBT
+TUMgdWFydCBjb3JydXB0aW9uDQo+ID4gDQo+ID4gSGkNCj4gPiANCj4gPiBIYXMgYW55Ym9yZHkg
+ZWxzZSBzZWVuIGNvcnJ1cHRpb24gb2YgdGhlIG91dHB1dCBmcm9tIFNNQzEgDQo+ID4gd2hlbiB1
+c2VkIGFzIHNlcmlhbCBjb25zb2xlPw0KPiA+IFRoaXMgb25seSBvY2N1cnMgaW4gaW4gMi42Ljgg
+YW5kIGxhdGVyICh3aGVuIHRoZSBDUE0gc2VyaWFsIA0KPiA+IGRyaXZlcnMgZ290IG1vdmVkKQ0K
+PiA+IEFuZCBpdCBvbmx5IG9jY3VycyB3aGVuIGluaXQgaXMgd3JpdGluZyB0byBzY3JlZW4uIDIu
+Ni43IGFuZCANCj4gPiBlYXJsaWVyIHdvcmtzIHBlcmZlY3RseS4NCj4gPiBJdCBoYXBwZW5zIGF0
+IGFsbCBiYXVkcmF0ZXMgdGVzdGVkICg5NjAwIGFuZCAxMTUyMDApDQo+ID4gDQo+ID4gQW55Ym9k
+eSBzZWVuIHNvbWV0aGluZyBzaW1pbGFyIGFuZC9vciBoYXZlIGEgY2x1ZSB3aGVyZSB0byANCj4g
+PiBzdGFydCBsb29raW5nIGZvciB0aGlzPw0KPiA+IEkgaGF2ZSBsb29rZWQgYXQgdGhlIHNlcmlh
+bCBkcml2ZXJzLCBhbmQgY2Fubm90IGZpbmQgYW55IA0KPiA+IGRpZmZlcmVuY2VzIGxhcmdlIGRp
+ZmZlcmVuY2VzIGZyb20gd2hlbnRoZXkgc3RpbGwgd2VyZSBpbiANCj4gPiBhcmNoL3BwYy84MjYw
+X2lvIHRvIHRoZSBvbmVzIGluIGRyaXZlcnMvc2VyaWFsL2NwbV91YXJ0DQo+ID4gDQo+ID4gQ2Fw
+dHVyZToNCj4gPiANCj4gPiBGcmVlaW5nIHVudXNlZCBrZXJuZWwgbWVtb3J5OiAyODhrIGnOtXQN
+Cj4gPiBJ4pagVDogdmVyc2lvbiAyLjg1IGJvb3TiiJlnDQo+ID4gLi4uDQo+ID4gSeKWoFTCoEVu
+dGVyaW5nIHJ1bmxldmVsOiAzDQo+ID4gDQo+ID4gDQo+ID4gVGhlc2UgbGluZXMgYXJlIHRoZSBv
+bmx5IG9uZXMgdGhhdCBnZXQgY29ycnVwdGVkLiBBbGwgb3RoZXIgDQo+ID4gb3V0cHV0IChrZXJu
+ZWwgcHJpbnRvdXRzLCBjb25zb2xlIGFuZCBzdGFydHVwIHNjcmlwdHMpIGFyZSBub3JtYWwuDQo+
+IA0K
