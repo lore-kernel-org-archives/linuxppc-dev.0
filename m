@@ -1,30 +1,34 @@
-Date: Sun, 18 Jan 2004 23:22:31 +0100
+Date: Sun, 18 Jan 2004 23:27:10 +0100
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Sven Luther <sven.luther@wanadoo.fr>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: OF properties access ?
-Message-ID: <20040118222231.GB11651@iliana>
-References: <20040113114625.GA9294@iliana> <1074131387.818.43.camel@gaston> <20040115074439.GB14039@iliana> <1074310140.8360.27.camel@gaston> <20040118120722.GA4603@iliana> <1074468096.795.27.camel@gaston> <20040118143225.GA6717@iliana> <20040118145158.GA7011@iliana> <20040118150502.GA7255@iliana> <1074503117.814.46.camel@gaston>
+	Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
+	Rob Baxter <robb@synergymicro.com>
+Subject: Re: multiple separate pci bridges ...
+Message-ID: <20040118222710.GE11651@iliana>
+References: <20040105214239.GA20252@iliana> <1073340725.9497.105.camel@gaston> <20040106073955.GF735@iliana> <1073376024.26508.220.camel@gaston> <20040106081143.GA1644@iliana> <Pine.GSO.4.58.0401061533510.5752@waterleaf.sonytel.be> <20040118121507.GB4603@iliana> <1074430817.9700.157.camel@thor.asgaard.local> <20040118131402.GB5729@iliana> <1074503545.812.54.camel@gaston>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1074503117.814.46.camel@gaston>
+In-Reply-To: <1074503545.812.54.camel@gaston>
 From: Sven Luther <sven.luther@wanadoo.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jan 19, 2004 at 08:05:18PM +1100, Benjamin Herrenschmidt wrote:
+On Mon, Jan 19, 2004 at 08:12:25PM +1100, Benjamin Herrenschmidt wrote:
+> On Mon, 2004-01-19 at 00:14, Sven Luther wrote:
 >
-> > Further tests show me that it is the if (l2cr == NULL) return; tests
-> > which aborts the test.
-> >
-> > Any idea what is going on here. Clearly we did read the right cpus, but
-> > it is not possible to read the "l2cr" property.
+> > Using PCI gart only. (No real AGP on this box, only a pci bus faked as
+> > AGP one.
 >
-> I think you read the "cpus" parent node and not the child node of
-> the CPU itself. You can always printk np->full_name to be sure.
+> Makes no sense. It's either an AGP bus or not an AGP bus. AGP is just a
+> superset of PCI so there is no such thing as "PCI bus faked as AGP one".
 
-Ok, will try. Thanks.
+It is a PCI bus (well actually, PCI-X could be supported), but it is
+not. The connector is an AGP one, and there is some magic chip or
+something which you need to access to do AGP-like config accessing. I
+have no idea of the details of it though, only that you need to write
+the f118/f11c address before/after each agp config space address.
 
 Friendly,
 
