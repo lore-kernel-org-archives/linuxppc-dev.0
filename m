@@ -1,31 +1,44 @@
-Message-ID: <3957DFF4.CAD11CD2@netx4.com>
-Date: Mon, 26 Jun 2000 18:57:56 -0400
-From: Dan Malek <dan@netx4.com>
+Message-ID: <20000627095430.17482.qmail@web2105.mail.yahoo.com>
+Date: Tue, 27 Jun 2000 02:54:30 -0700 (PDT)
+From: Wentao Xu <xuwentao@yahoo.com>
+Subject: why open("dev/console",O_RDWR,0) get stuck
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-To: "Gould, Rick" <RGould@placethecall.com>
-CC: linuxppc-embedded@lists.linuxppc.org, mmporter@home.com
-Subject: Re: glibc patch question and error help for building ppc cross compiler
-References: <7BFFD4ADC5D1D3119808009027B21AB51BD2C6@MAIL1>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Gould, Rick wrote:
->
-> I'm trying to build a cross-development tool chain for building under Red
-> Hat Linux 6.2 on an x86 platform targeting a Brignt Star Engineering MPC-823
-> PowerPC-based board.
+I have the code from Monta Vista on my prietary board,
+I find
+it get stuck in the open("dev/console",..) in fucntion
+init()
+in init/main.c, just before to start the shell from
+ramdisk.
+So I put a printk("ppc405_uic_enable\n") in function
+ppc405_uic_enable()
+and a printk("ppc405_uic_disable_and_ack\n") in
+function ppc405_uic_disable_and_ack().
+both functions are in file
+arch\ppc\kernel\ppc4xx_pic.c.
+
+At last I found a output of infinite train of
+ppc405_uic_enable
+ppc405_uic_disable_and_ack
+ppc405_uic_enable
+ppc405_uic_disable_and_ack
+ppc405_uic_enable
+ppc405_uic_disable_and_ack
+ppc405_uic_enable
+ppc405_uic_disable_and_ack
+........,
+
+I get lost. Which friends can give me an idea?
+
+Wentao
 
 
-Unless you really want to build the tools yourself, you can download
-the 8xx CDK from MontaVista (www.mvista.com).  It has the tools,
-libraries, applications, and NFS diskless image for cross development
-on that host environment.  The BSE-IP is supported in that package,
-you just need to manually configure it (use the EP RPX-Lite as a
-starting point).
-
-
-	-- Dan
+Get Yahoo! Mail - Free email you can access from anywhere!
+http://mail.yahoo.com/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
