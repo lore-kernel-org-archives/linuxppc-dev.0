@@ -1,41 +1,22 @@
-Message-ID: <3E9D9A19.3010106@paulidav.org>
-Date: Wed, 16 Apr 2003 10:59:53 -0700
-From: Vladimir Gurevich <vag@paulidav.org>
-MIME-Version: 1.0
+From: Cort Dougan <cort@fsmlabs.com>
+Date: Wed, 16 Apr 2003 12:24:53 -0600
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Are big pages really been used?
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: [PATCH] Fix RPX and add flash-burner in linuxppc_2_4_devel
+Message-ID: <20030416182453.GP20197@host109.fsmlabs.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+This patch fixes the RPX boot which was generating a bad boot image (it was
+an ELF) and will do the 'cp' command line correctly, too.
 
-Some time ago, during the discussion about module efficiency,
-Dan Malek wrote the following:
+This patch also adds a boot image that will burn itself (and an initrd if
+present) to the flash on the RPX.
 
-> The other thing people probably don't realize is the added overhead
-> of using modules.  They are placed in dynamically allocated memory,
-> wasting memory space and causing addtional MMU overhead on processors
-> where you really want to minimize such things.  When compiled into the
-> kernel and covered with a large page mapping, you are likely to see
-> lower interrupt latencies and less jitter, along with a more compact
-> memory footprint.
+It's large so I put it here:
 
-I was looking at TLB entries on my 405GP-based system running 2.4.17-based
-kernel by executing "tlb 0 63" command in BDI-2000 and could not see any
-big page mappings. All page entries were 4K in size (and I could see many
-that were clearly covering portions of kernel code)
-
-My questions are:
-   a) Does the abovementioned quote apply to 4xx CPUs
-   b) If yes, where can I get the patches
-   c) If no, how difficult might it be to do the modification
-   d) Are there provisions in Linux VM to use variable-sized pages to cover
-      big contiguous memory regions in order to reduce TLB reloading.
-
-Thanks,
-Vladimir
-
+http://www2.fsmlabs.com/~cort/rpx.patch.gz
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
