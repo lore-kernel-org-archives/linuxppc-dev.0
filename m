@@ -1,130 +1,57 @@
-Subject: [Fwd: 2.6.0-test4-mm3-1 (PPC) kernel BUG in refill_inactive_zone
-	at mm/vmscan.c:610]
-From: Chris PeBenito <pebenito@gentoo.org>
-To: LinuxPPC Development Mail List <linuxppc-dev@lists.linuxppc.org>
-Content-Type: text/plain
-Message-Id: <1062684842.1849.149.camel@chris.pebenito.net>
-Mime-Version: 1.0
-Date: Thu, 04 Sep 2003 09:14:03 -0500
+Message-ID: <3F574958.4090402@acm.org>
+Date: Thu, 04 Sep 2003 09:16:56 -0500
+From: Corey Minyard <minyard@acm.org>
+MIME-Version: 1.0
+To: Matt Porter <mporter@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Change to allow signal handlers to set SE and BE bits.
+References: <3F4FB0F3.9090906@acm.org> <20030829131824.B18608@home.com>
+In-Reply-To: <20030829131824.B18608@home.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-(fwd due to typo in original email mail list addr)
------Forwarded Message-----
-> From: Chris PeBenito <pebenito@gentoo.org>
-> To: LKML <linux-kernel@vger.kernel.org>
-> Cc: linuxppc-devel@lists.linuxppc.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Subject: 2.6.0-test4-mm3-1 (PPC) kernel BUG in refill_inactive_zone at mm/vmscan.c:610
-> Date: Wed, 03 Sep 2003 14:25:11 -0500
->
-> I got this oops on 2.6.0-test4-mm3-1 on PPC which leads to a panic:
->
-> Oops: Exception in kernel mode, sig: 5 [#1]
-> NIP: C00409B8 LR: C004092C SP: C07DBE00 REGS: c07dbd50 TRAP: 0700    Not tainted
-> MSR: 00021032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-> TASK = cfe0ea10[7] 'kswapd0' Last syscall: -1
-> GPR00: C061B840 C07DBE00 CFE0EA10 00100100 00200200 00000020 C01FCDB0 00000020
-> GPR08: C061B854 00000001 C061B840 C061B83F 00000418 003770AC 00000000 00000000
-> GPR16: 00000000 00000000 00000000 00000080 C07DBE68 C07DBE60 C07DBE68 00000000
-> GPR24: C07DBE60 C07DBF58 00000065 C01FCDB0 C07DBE58 0000001B C01FCDA0 C061B828
-> Call trace:
->  [c0040f60] shrink_zone+0x8c/0xb8
->  [c0041330] balance_pgdat+0x130/0x218
->  [c00414cc] kswapd+0xb4/0xb8
->  [c000a9b0] kernel_thread+0x44/0x60
-> kernel BUG in refill_inactive_zone at mm/vmscan.c:610!
-> Oops: Exception in kernel mode, sig: 5 [#2]
-> NIP: C00409A0 LR: C004092C SP: C23C9BE0 REGS: c23c9b30 TRAP: 0700    Not tainted
-> MSR: 00021032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-> TASK = cd306120[11170] 'python2.2' Last syscall: 6
-> GPR00: 00000000 C23C9BE0 CD306120 00100100 00200200 00000020 C01FCDB0 00000020
-> GPR08: C01FCDA0 00010440 C061B840 00000001 C029E2A8 100DEACC 104C4F40 104C4F2C
-> GPR16: 00000000 00000000 00000000 00000080 C23C9C48 C23C9C40 C23C9C48 00000000
-> GPR24: C23C9C40 C23C9D08 00000080 C01FCDB0 C23C9C38 00000000 C01FCDA0 C061B828
-> Call trace:
->  [c0040f60] shrink_zone+0x8c/0xb8
->  [c0041048] shrink_caches+0xbc/0x100
->  [c004112c] try_to_free_pages+0xa0/0x174
->  [c00395c8] __alloc_pages+0x208/0x368
->  [c00436e4] do_wp_page+0xd4/0x3d0
->  [c00448e8] handle_mm_fault+0x17c/0x188
->  [c0012a84] do_page_fault+0x1dc/0x3a8
->  [c0007dec] ret_from_except+0x0/0x14
-> kernel BUG in refill_inactive_zone at mm/vmscan.c:610!
-> Oops: Exception in kernel mode, sig: 5 [#3]
-> NIP: C00409A0 LR: C004092C SP: CEFB7C00 REGS: cefb7b50 TRAP: 0700    Not tainted
-> MSR: 00021032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-> TASK = cf5c2a90[2825] 'metalog' Last syscall: 167
-> GPR00: 00000000 CEFB7C00 CF5C2A90 00100100 00200200 00000020 C01FCDB0 00000020
-> GPR08: CEFB7D28 00010440 C061B840 00000061 00000040 1001E0E8 100C0000 00000005
-> GPR16: 10010000 00000000 00000000 00000080 CEFB7C68 CEFB7C60 CEFB7C68 00000000
-> GPR24: CEFB7C60 CEFB7D28 00000080 C01FCDB0 CEFB7C58 00000000 C01FCDA0 C061B828
-> Call trace:
->  [c0040f60] shrink_zone+0x8c/0xb8
->  [c0041048] shrink_caches+0xbc/0x100
->  [c004112c] try_to_free_pages+0xa0/0x174
->  [c00395c8] __alloc_pages+0x208/0x368
->  [c0039754] __get_free_pages+0x2c/0x70
->  [c0067470] __pollwait+0x48/0xd8
->  [c0149900] datagram_poll+0x138/0x13c
->  [c0143b0c] sock_poll+0x2c/0x3c
->  [c0067dc4] do_pollfd+0xd8/0xe0
->  [c0067e30] do_poll+0x64/0xf0
->  [c0068034] sys_poll+0x178/0x288
->  [c000781c] ret_from_syscall+0x0/0x44
-> kernel BUG in refill_inactive_zone at mm/vmscan.c:610!
-> Oops: Exception in kernel mode, sig: 5 [#4]
-> NIP: C00409A0 LR: C004092C SP: C06AFBE0 REGS: c06afb30 TRAP: 0700    Not tainted
-> MSR: 00021032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-> TASK = cffdb9d0[1] 'init' Last syscall: 142
-> GPR00: 00000000 C06AFBE0 CFFDB9D0 00100100 00200200 00000020 C01FCDB0 00000020
-> GPR08: C06AFD08 00010440 C061B840 00000061 00000040 1001F410 00000000 00000400
-> GPR16: 00000000 CFFE748C 00000000 00000080 C06AFC48 C06AFC40 C06AFC48 00000000
-> GPR24: C06AFC40 C06AFD08 00000080 C01FCDB0 C06AFC38 00000000 C01FCDA0 C061B828
-> Call trace:
->  [c0040f60] shrink_zone+0x8c/0xb8
->  [c0041048] shrink_caches+0xbc/0x100
->  [c004112c] try_to_free_pages+0xa0/0x174
->  [c00395c8] __alloc_pages+0x208/0x368
->  [c0039754] __get_free_pages+0x2c/0x70
->  [c0067470] __pollwait+0x48/0xd8
->  [c0060818] pipe_poll+0xa8/0xb0
->  [c006780c] do_select+0x218/0x280
->  [c0067b54] sys_select+0x298/0x430
->  [c000d638] ppc_select+0xa8/0xac
->  [c000781c] ret_from_syscall+0x0/0x44
-> Kernel panic: Attempted to kill init!
-> kernel BUG in refill_inactive_zone at mm/vmscan.c:610!
-> Oops: Exception in kernel mode, sig: 5 [#5]
-> NIP: C00409A0 LR: C004092C SP: CE481BD0 REGS: ce481b20 TRAP: 0700    Not tainted
-> MSR: 00021032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-> TASK = ce5f3508[3258] 'ntpd' Last syscall: 142
-> GPR00: 00000000 CE481BD0 CE5F3508 00100100 00200200 00000020 C01FCDB0 00000020
-> GPR08: CE481CF8 00010440 C061B840 00000061 00000040 1005AC40 00000000 00000070
-> GPR16: 00000000 C8F4638C 00000000 00000080 CE481C38 CE481C30 CE481C38 00000000
-> GPR24: CE481C30 CE481CF8 00000080 C01FCDB0 CE481C28 00000000 C01FCDA0 C061B828
-> Call trace:
->  [c0040f60] shrink_zone+0x8c/0xb8
->  [c0041048] shrink_caches+0xbc/0x100
->  [c004112c] try_to_free_pages+0xa0/0x174
->  [c00395c8] __alloc_pages+0x208/0x368
->  [c0039754] __get_free_pages+0x2c/0x70
->  [c0067470] __pollwait+0x48/0xd8
->  [c0149900] datagram_poll+0x138/0x13c
->  [c0143b0c] sock_poll+0x2c/0x3c
->  [c006780c] do_select+0x218/0x280
->  [c0067b54] sys_select+0x298/0x430
->  [c000d638] ppc_select+0xa8/0xac
->  [c000781c] ret_from_syscall+0x0/0x44
->  <0>Rebooting in 180 seconds..
---
-Chris PeBenito
-<pebenito@gentoo.org>
-Developer, SELinux
-Hardened Gentoo Linux
+Actually, using the SE bit may not be the best way to handle this to
+cover all the PPC variants.
 
-Public Key: http://pgp.mit.edu:11371/pks/lookup?op=get&search=0xE6AF9243
-Key fingerprint = B0E6 877A 883F A57A 8E6A  CB00 BC8E E42D E6AF 9243
+Would it be better to have a special bit field someplace that is used to
+communicate between the signal handler and the kernel?  Some
+possibilities are:
+
+    * The top 16 bits of the trap field
+    * The currently unused mq field (except on APUS?)
+    * A new field in the signal frame
+
+I'm thinking that reserving the top 16 bits of the trap field may be the
+best.  It would always come in as zero (so existing software won't be
+broken) and it will be available for all processors and will not be used
+for anything else by the processor.
+
+Any thoughts?
+
+-Corey
+
+Matt Porter wrote:
+
+>On Fri, Aug 29, 2003 at 03:00:51PM -0500, Corey Minyard wrote:
+>
+>
+>>I have a debugger that runs in an application that requires access to
+>>the SE and BE bits.  The following patch adds that capability to
+>>2.4.21-ben1.  I have tested this, and gdb still seems to correctly step
+>>out of signal handlers, and it seems to work for 4xx.  Does this look ok?
+>>
+>>
+>
+>Please change MSR_SE->MSR_DWE in the 4xx-specific sections.  Also,
+>a comment should be added to each generic section use of MSR_SE to
+>make it clear that this is the BookE/4xx MSR_DWE.
+>
+>-Matt
+>
+>
+>
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
