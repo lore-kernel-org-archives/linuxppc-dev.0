@@ -1,31 +1,42 @@
-From: "Calum Selkirk" <cselkirk@sophix.uklinux.net>
-Date: Wed, 10 Jan 2001 11:46:26 +0000
-To: LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: /proc/sys/net/ipv4/ip_always_defrag
-Message-ID: <20010110114626.I27006@sophix.uklinux.net>
-References: <B6813150.8234%bootc@worldnet.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <B6813150.8234%bootc@worldnet.fr>; from bootc@worldnet.fr on Tue, Jan 09, 2001 at 09:21:34PM +0100
+Date: Wed, 10 Jan 2001 14:29:47 +0000
+Subject: Re: ibook sound, limping mixer
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: Christof Petig <christof@petig-baender.de>,
+        Conrad H Ziesler <cziesler@umich.edu>, linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
+Message-Id: <20010110143207.0568BDB9FD@atlas.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Chris Boot [bootc@worldnet.fr] wrote:
+on  Wed, Jan 10, 2001, Christof Petig wrote:
+> Conrad H Ziesler wrote:
+>> in case this is of any use to anyone:
+> Yes, I'm very interested. Since I actually started looking into the
+> specs and sources, but did not find the time to start coding the same.
 
-> One minor problem though, is that when I boot up (from a LinuxPPC 2000
-> installation), after the "Entering non-interactive startup" message, I
-> get a message stating that it could not find the file
-> "/proc/sys/net/ipv4/ip_always_defrag", which it tries to set to "1" by
-> echoing to it.  Can this be ignored?  Is there a way of either getting
-> this proc entry back or removing the script code that echoes to it?  I
-> must admit that I haven't looked at any of the files in /etc/rc.d with
-> great detail...
+so am I (of course).  I've taken a copy over to my devl area - and I will
+figure out how to include it into the next stage of dmasound devl soon.
 
-this is controlled by /etc/sysctl.conf
+>> since the dac3550a has write-only i2c registers, its pretty hard to debug
+>> the i2c interface.  probably if someone puts an oscilloscope probe on the
+>> i2c bus signals it should all become clear.
+>>
+> I would recommend a logic analyzer or better an i2c analyzer. I have an
+> oscilloscope but I would not dare to try reading i2c signals by hand.
 
-HTH
+well, I have a storage scope (which would possibly do it) [I don't run to a
+logic analyser]
 
-calum
+- but more fundamental problem - no iBook - if someone in the UK (unless
+someone from elsewhere is prepared to ship one) wants to lend one - I'll see
+what I can do... it's not a machine I can justify buying at the moment.
+
+[my test set is G3/Beige, Lombard, 9600/233, and, when I get the disk
+re-partitioned G4/500].
+
+ciao,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
