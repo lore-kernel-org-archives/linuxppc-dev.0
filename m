@@ -1,27 +1,17 @@
-Return-Path: <flar@pants.nu>
-Received: from cynthia.pants.nu (adsl-216-102-214-42.dsl.snfc21.pacbell.net
-	[216.102.214.42]) by ozlabs.org (Postfix) with ESMTP id 49CA667A70
-	for <linuxppc-dev@ozlabs.org>; Sun, 20 Feb 2005 06:17:45 +1100 (EST)
-Date: Sat, 19 Feb 2005 11:17:42 -0800
-From: Brad Boyer <flar@allandria.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Message-ID: <20050219191741.GB2807@pants.nu>
-References: <20050126113554.GD19633@schottelius.org>
-	<1106746946.6250.56.camel@gaston>
-	<20050208075421.GB21154@schottelius.org>
-	<8f293b6dbedd2ae1a825608a48a0604b@kernel.crashing.org>
-	<20050218111304.GH5801@schottelius.org>
-	<f585c9c6e4bdfbba6dcaafc96b7c0607@kernel.crashing.org>
-	<20050218122009.GK5801@schottelius.org>
-	<629f63c4608b762de8bf6f962b6180ef@kernel.crashing.org>
-	<20050218175822.GA30616@pants.nu>
-	<06fb81c4f23d0b47f8205b433fa6eb21@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 90E7767A67
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Feb 2005 16:09:45 +1100 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Content-Type: text/plain
+Date: Mon, 21 Feb 2005 16:09:33 +1100
+Message-Id: <1108962573.5412.1.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <06fb81c4f23d0b47f8205b433fa6eb21@kernel.crashing.org>
-Cc: Nico Schottelius <nico-linux-ppc@schottelius.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] Heartbeat LED for iBook
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] ppc32: fix ptep_test_and_clear_young
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,26 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Feb 18, 2005 at 07:10:42PM +0100, Segher Boessenkool wrote:
-> ADB has nothing to do with the PMU (well, the PMU emulates an ADB
-> device, sort of).
-> 
-> The Linux kernel multiplexes the /dev/adb device to also serve as
-> a channel to the PMU, though.  This ugliness should be fixed, some
-> day...
+Hi !
 
-The original PMU chip (in the Macintosh Portable) was used for
-several purposes, including being the ADB transceiver. Most of
-the revisions of the PMU that have shipped have still driven a
-real ADB chain, although that has changed in more recent models.
+ppc32's implementation of ptep_test_and_clear_young() has a logic error
+which makes it fail to flush the hash table. Thus PAGE_ACCESSED is
+almost never set again after beeing cleared (unless something else cause
+that hash entry to be flushed).
 
-The /dev/adb mess is a reflection of the mess that is the current
-ADB subsystem in the kernel. You can write code in the kernel
-that uses adb_request() to send non-adb PMU commands, and it
-works due to the way it all works underneath. I was going to work
-on it, but I got sidetracked with other issues that made it hard
-to debug the various ADB drivers. If noone else gets to it, I
-will eventually. I'm just not sure when I will have time.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-	Brad Boyer
-	flar@allandria.com
+Index: linux-work/include/asm-ppc/pgtable.h
+===================================================================
+--- linux-work.orig/include/asm-ppc/pgtable.h	2005-01-24 17:09:50.000000000 +1100
++++ linux-work/include/asm-ppc/pgtable.h	2005-02-21 16:00:26.000000000 +1100
+@@ -560,12 +560,12 @@
+ static inline int ptep_test_and_clear_young(pte_t *ptep)
+ {
+ 	unsigned long old;
+-	old = (pte_update(ptep, _PAGE_ACCESSED, 0) & _PAGE_ACCESSED);
++	old = pte_update(ptep, _PAGE_ACCESSED, 0);
+ #if _PAGE_HASHPTE != 0
+ 	if (old & _PAGE_HASHPTE)
+ 		flush_hash_one_pte(ptep);
+ #endif
+-	return old != 0;
++	return (old & _PAGE_ACCESSED) != 0;
+ }
+ 
+ static inline int ptep_test_and_clear_dirty(pte_t *ptep)
