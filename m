@@ -1,25 +1,29 @@
-Message-ID: <3C2C9906.9070005@embeddededge.com>
-Date: Fri, 28 Dec 2001 11:08:38 -0500
+Message-ID: <3C2CA87E.3060105@embeddededge.com>
+Date: Fri, 28 Dec 2001 12:14:38 -0500
 From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: Ralf Weidemann <weidemann@fh-dortmund.de>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.4.16-ben0: clock broken ?
-References: <3C0509E7.938BB01D@fh-dortmund.de>
+To: Armin Kuster <akuster@mvista.com>
+Cc: Michael Sokolov <msokolov@ivan.Harhan.ORG>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: Platform files question
+References: <0111281640.AA27241@ivan.Harhan.ORG> <3C0527AF.9CA07809@mvista.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ralf Weidemann wrote:
+Armin Kuster wrote:
 
 
-> I get a clock shift of about a month in the latest 2.4.16-ben0.
-> Something broken ?
+> AFAIK your board header should go in include/asm-ppc/platforms and your
+> board.c file should go arch/ppc/platforms
 
-I did too on my tibook.  I just reset my clock :-).  I saw some
-e-mail or something about arch/ppc/kernel/time.c being broken in
-Ben's kernel.
+Which is of course true today but a big change from the way the kernel
+has evolved.  We used to put all of the include files (or others) that
+were unique to a platform (or unused outside of the kernel) together
+in lower level directories.  Just a bit of trivia so eveyone understands
+why it was done the "old" way and why it may be hard to change to the
+"new" way :-).
 
 
 	-- Dan
