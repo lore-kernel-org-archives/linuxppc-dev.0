@@ -1,17 +1,19 @@
-Return-Path: <annamaya@yahoo.com>
-Received: from web53801.mail.yahoo.com (web53801.mail.yahoo.com
-	[206.190.36.196]) by ozlabs.org (Postfix) with SMTP id 535552BDF2
+Return-Path: <wd@denx.de>
+Received: from mailout01.sul.t-online.com (mailout01.sul.t-online.com
+	[194.25.134.80]) by ozlabs.org (Postfix) with ESMTP id 9AF572BDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Nov 2004 06:01:47 +1100 (EST)
-Message-ID: <20041109190145.21112.qmail@web53801.mail.yahoo.com>
-Date: Tue, 9 Nov 2004 11:01:45 -0800 (PST)
-From: annamaya <annamaya@yahoo.com>
-To: Dan Malek <dan@embeddededge.com>
-In-Reply-To: <541C85D6-327E-11D9-8E74-003065F9B7DC@embeddededge.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 10 Nov 2004 08:10:43 +1100 (EST)
+To: Conn Clark <clark@esteem.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 09 Nov 2004 09:27:59 PST."
+	<4190FE1F.4080105@esteem.com>
+Date: Tue, 09 Nov 2004 20:51:36 +0100
+Sender: wd@denx.de
+Message-Id: <20041109195141.82111C1430@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC8xx binaries running on a MPC82xx board
+Subject: Re: How much easier makes owning a BDI2000 things? 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,38 +24,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thanks much for the input. I have been reading the
-manual for the MPC82xx and I will continue to do so
-till I understand the processor better.
+In message <4190FE1F.4080105@esteem.com> you wrote:
+>
+> 	Its worth it weight in gold bringing up custom boards the first time 
+> and writing/debuging the boot rom. It allows you to change register 
 
---- Dan Malek <dan@embeddededge.com> wrote:
+... or when debugging the Linux kernel, device drivers and especially
+RTAI real-time modules (because you can really freeze the CPU  state,
+including timers etc.).
 
-> 
-> On Nov 9, 2004, at 12:30 PM, annamaya wrote:
-> 
-> > I appreciate your reply. And I apologize for
-> asking
-> > you again if this was in the archives.
-> 
-> It was a joke.  I would have said "read the
-> archives"
-> if they were around. :-)  Now we have some of the
-> info in the "new" archives.
-> 
-> > ......Can you be more specific and give me some
-> > examples?
-> 
-> This isn't the place to discuss that.  Grab the
-> manuals,
-> read them, you will see the differences.
-> 
-> 
-> 	-- Dan
-> 
-> 
+> 	We haven't used ours much for debugging once things were up and 
+> running(we have fallen back to using printk statements for debugging). 
+> Though it can be used for that and some core kernel developers do use 
+> it. (probably for debugging the printk code of the kernel  ;-)  )
+
+Seems you never had to deal with any time critical problems, then.
 
 
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+Best regards,
+
+Wolfgang Denk
+
+-- 
+See us @ Embedded/Electronica Munich, Nov 09 - 12, Hall A.6 Booth 513
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Name one thing windows is better than unix in?
+                                          Making money for Microsoft?
+         -- Randal L. Schwartz in <8cvi5t4c3t.fsf@gadget.cscaper.com>
