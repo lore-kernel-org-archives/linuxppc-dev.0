@@ -1,119 +1,76 @@
-Date: Sat, 26 Aug 2000 23:44:21 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: David Monro <davidm@amberdata.demon.co.uk>
-cc: Linux/ppc Dev List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: PCI resource initialisation
-In-Reply-To: <39A826A6.D551486F@amberdata.demon.co.uk>
-Message-ID: <Pine.HPX.4.10.10008262304590.29062-100000@gra-ux1.iram.es>
+Message-ID: <39A83AE4.851C566C@denise.shiny.it>
+Date: Sat, 26 Aug 2000 17:47:16 -0400
+From: Giuliano Pochini <pochini@denise.shiny.it>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: 2.4.0-test7 doesn't compile - patch
+Content-Type: multipart/mixed;
+ boundary="------------3A15C6D5258034DEE5985398"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 26 Aug 2000, David Monro wrote:
+This is a multi-part message in MIME format.
+--------------3A15C6D5258034DEE5985398
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
->
-> Hi,
->
-> I need to make some changes to the way we do our PCI resource allocation
-> :-)
->
-> Currently the code goes like this (in pci.c:pcibios_init()):
->
->         pci_scan_bus(0, &generic_pci_ops, NULL);
->         if (ppc_md.pcibios_fixup)
->                 ppc_md.pcibios_fixup();
->         pcibios_claim_resources(&pci_root_buses);
->
-> So we find all the devices, hack any we don't like, and then grab all
-> the resources. This means that we pretty much accept whatever the
-> firmware provides, which includes leaving any uninitialised resources
-> alone. This doesn't work properly on IBM 850 machines because the
-> firmware doesn't initialise any devices it doesn't recognise, and also
-> (for example) doesn't bother initialising the memory mapped resource of
-> the built-in ethernet (presumably because they expected people to use
-> the IO resource instead, which in fact we do).
 
-For PrePboot I took the decision to reassign all PCI resources before te
-kernel even ahd a chance to run. It works quite well for me, but I had no
-choice since I basically switch from a PreP to a CHRP mapping. Actually
-given the variety of hardware we are trying to supprt, I suspect that
-pushing a few things into the bootloaders (like reading the OF tree if
-available) can only be better.
+2.4.0-test7 doesn't compile due to new flock stuff and - obviously - PowerPC
+tree hasn't been updated. The attached file is needed to compile per ppc.
 
->
-> The 2.4 kernel does provide a function,
-> pci_assign_unassigned_resources(), which will find pci resources which
-> haven't been claimed yet and do the appropriate thing with them.
 
-Not always, unfortunately.
+Bye.
+--------------3A15C6D5258034DEE5985398
+Content-Type: application/octet-stream;
+ name="fcntl.h"
+Content-Disposition: attachment;
+ filename="fcntl.h"
+Content-Transfer-Encoding: base64
 
-> As I see it we have a few choices:
->
-> do:
-> 	pci_scan_bus(0, &generic_pci_ops, NULL);
->         if (ppc_md.pcibios_fixup)
->                 ppc_md.pcibios_fixup();
->         pcibios_claim_resources(&pci_root_buses);
-> 	pci_assign_unassigned_resources();
->
-> which should allocate any left alone by the original code, and does
-> work, but still means we have to hack the original resources (eg on IBM
-> 850s the SCSI hos adapters seem to always get allocated IO port
-> resources above 0x20000000, which we relocate in a not very safe manner
-
-You mean completely unsafe, it has caused hangs in some cases.
-
-> down to 0x01000000). It also assumes we don't need to do any more fixups
-> for the newly discovered resources.
-
->
-> or we could do:
-> 	pci_scan_bus(0, &generic_pci_ops, NULL);
-> 	pci_assign_unassigned_resources();
->         if (ppc_md.pcibios_fixup)
->                 ppc_md.pcibios_fixup();
->
-> which results in the kernel completely reassigning all the PCI
-> resources. This should mean that the resources all get allocated in
-> areas that we would like to find them in, and means that the
-> pcibios_fixup code should be a little simpler. This is my preferred
-> solution, but I guess might break something.
->
-> Note that I can't really do this just for the PReP code; if I put the
-> pci_assign_unassigned_resources() call in the prep_pcibios_fixup()
-> function it will completely remap the bus and claim all the resources,
-> and then pcibios_claim_resources() will walk the tree trying to claim
-> each resource again and get a conflict on every resource!
->
-> Of course we could simply make pcibios_init() another arch-dependant
-> function - what do people think?
-
-I am fed up with all these arch dependant functions, to the point that
-I am convinced that ppc_md should disappear.
-
-> On a related, is it true to say that every driver which uses ioremap()
-> to map memory on cards into virtual space needs to have isa_mem_base
-> added to the base address before it will work? As far as I can tell
-> virtually no drivers do this at the moment; I note a rather
-> dirty-looking hack in chrp_pci.c where we hack the resource entries for
-> the matrox card so that the driver doesn't need rewriting. Or should we
-> simply do this for all memory resources on all cards?
-
-Yes, you should do it. Actually I had something like this in my tree, but
-it's now disabled since I switch the hardware to a CHRP map.
-
-The resource code is still insufficient, there should be a way to have the
-physical address, the bus address and in some cases the kernel virtual
-address of a given resource. For I/O space, which is permanently mapped,
-the resource should contain a kernel virtual address (the existence of
-isa_io_base in itself is an aberration, have you counted how many lwz
-instructions in the kernel access it ?). For memory resources, it should
-contain a processor physical address which is the input to ioremap.
-
-	Regards,
-	Gabriel.
+I2lmbmRlZiBfUFBDX0ZDTlRMX0gKI2RlZmluZSBfUFBDX0ZDTlRMX0gKCi8qIG9wZW4vZmNu
+dGwgLSBPX1NZTkMgaXMgb25seSBpbXBsZW1lbnRlZCBvbiBibG9ja3MgZGV2aWNlcyBhbmQg
+b24gZmlsZXMKICAgbG9jYXRlZCBvbiBhbiBleHQyIGZpbGUgc3lzdGVtICovCiNkZWZpbmUg
+T19BQ0NNT0RFCSAgIDAwMDMKI2RlZmluZSBPX1JET05MWQkgICAgIDAwCiNkZWZpbmUgT19X
+Uk9OTFkJICAgICAwMQojZGVmaW5lIE9fUkRXUgkJICAgICAwMgojZGVmaW5lIE9fQ1JFQVQJ
+CSAgIDAxMDAJLyogbm90IGZjbnRsICovCiNkZWZpbmUgT19FWENMCQkgICAwMjAwCS8qIG5v
+dCBmY250bCAqLwojZGVmaW5lIE9fTk9DVFRZCSAgIDA0MDAJLyogbm90IGZjbnRsICovCiNk
+ZWZpbmUgT19UUlVOQwkJICAwMTAwMAkvKiBub3QgZmNudGwgKi8KI2RlZmluZSBPX0FQUEVO
+RAkgIDAyMDAwCiNkZWZpbmUgT19OT05CTE9DSwkgIDA0MDAwCiNkZWZpbmUgT19OREVMQVkJ
+T19OT05CTE9DSwojZGVmaW5lIE9fU1lOQwkJIDAxMDAwMAojZGVmaW5lIEZBU1lOQwkJIDAy
+MDAwMAkvKiBmY250bCwgZm9yIEJTRCBjb21wYXRpYmlsaXR5ICovCiNkZWZpbmUgT19ESVJF
+Q1RPUlkgICAgICAwNDAwMDAJLyogbXVzdCBiZSBhIGRpcmVjdG9yeSAqLwojZGVmaW5lIE9f
+Tk9GT0xMT1cgICAgICAwMTAwMDAwCS8qIGRvbid0IGZvbGxvdyBsaW5rcyAqLwojZGVmaW5l
+IE9fTEFSR0VGSUxFICAgICAwMjAwMDAwCiNkZWZpbmUgT19ESVJFQ1QJMDQwMDAwMAkvKiBk
+aXJlY3QgZGlzayBhY2Nlc3MgaGludCAtIGN1cnJlbnRseSBpZ25vcmVkICovCgojZGVmaW5l
+IEZfRFVQRkQJCTAJLyogZHVwICovCiNkZWZpbmUgRl9HRVRGRAkJMQkvKiBnZXQgY2xvc2Vf
+b25fZXhlYyAqLwojZGVmaW5lIEZfU0VURkQJCTIJLyogc2V0L2NsZWFyIGNsb3NlX29uX2V4
+ZWMgKi8KI2RlZmluZSBGX0dFVEZMCQkzCS8qIGdldCBmaWxlLT5mX2ZsYWdzICovCiNkZWZp
+bmUgRl9TRVRGTAkJNAkvKiBzZXQgZmlsZS0+Zl9mbGFncyAqLwojZGVmaW5lIEZfR0VUTEsJ
+CTUKI2RlZmluZSBGX1NFVExLCQk2CiNkZWZpbmUgRl9TRVRMS1cJNwoKI2RlZmluZSBGX1NF
+VE9XTgk4CS8qICBmb3Igc29ja2V0cy4gKi8KI2RlZmluZSBGX0dFVE9XTgk5CS8qICBmb3Ig
+c29ja2V0cy4gKi8KI2RlZmluZSBGX1NFVFNJRwkxMAkvKiAgZm9yIHNvY2tldHMuICovCiNk
+ZWZpbmUgRl9HRVRTSUcJMTEJLyogIGZvciBzb2NrZXRzLiAqLwoKI2RlZmluZSBGX0dFVExL
+NjQJMTIJLyogIHVzaW5nICdzdHJ1Y3QgZmxvY2s2NCcgKi8KI2RlZmluZSBGX1NFVExLNjQJ
+MTMKI2RlZmluZSBGX1NFVExLVzY0CTE0CgovKiBmb3IgRl9bR0VUfFNFVF1GTCAqLwojZGVm
+aW5lIEZEX0NMT0VYRUMJMQkvKiBhY3R1YWxseSBhbnl0aGluZyB3aXRoIGxvdyBiaXQgc2V0
+IGdvZXMgKi8KCi8qIGZvciBwb3NpeCBmY250bCgpIGFuZCBsb2NrZigpICovCiNkZWZpbmUg
+Rl9SRExDSwkJMAojZGVmaW5lIEZfV1JMQ0sJCTEKI2RlZmluZSBGX1VOTENLCQkyCgovKiBm
+b3Igb2xkIGltcGxlbWVudGF0aW9uIG9mIGJzZCBmbG9jayAoKSAqLwojZGVmaW5lIEZfRVhM
+Q0sJCTQJLyogb3IgMyAqLwojZGVmaW5lIEZfU0hMQ0sJCTgJLyogb3IgNCAqLwoKLyogb3Bl
+cmF0aW9ucyBmb3IgYnNkIGZsb2NrKCksIGFsc28gdXNlZCBieSB0aGUga2VybmVsIGltcGxl
+bWVudGF0aW9uICovCiNkZWZpbmUgTE9DS19TSAkJMQkvKiBzaGFyZWQgbG9jayAqLwojZGVm
+aW5lIExPQ0tfRVgJCTIJLyogZXhjbHVzaXZlIGxvY2sgKi8KI2RlZmluZSBMT0NLX05CCQk0
+CS8qIG9yJ2Qgd2l0aCBvbmUgb2YgdGhlIGFib3ZlIHRvIHByZXZlbnQKCQkJCSAgIGJsb2Nr
+aW5nICovCiNkZWZpbmUgTE9DS19VTgkJOAkvKiByZW1vdmUgbG9jayAqLwoKI2lmZGVmIF9f
+S0VSTkVMX18KI2RlZmluZSBGX1BPU0lYCQkxCiNkZWZpbmUgRl9GTE9DSwkJMgojZGVmaW5l
+IEZfQlJPS0VOCTQJLyogYnJva2VuIGZsb2NrKCkgZW11bGF0aW9uICovCiNlbmRpZiAvKiBf
+X0tFUk5FTF9fICovCgpzdHJ1Y3QgZmxvY2sgewoJc2hvcnQgbF90eXBlOwoJc2hvcnQgbF93
+aGVuY2U7CglvZmZfdCBsX3N0YXJ0OwoJb2ZmX3QgbF9sZW47CglwaWRfdCBsX3BpZDsKfTsK
+CnN0cnVjdCBmbG9jazY0IHsKCXNob3J0ICBsX3R5cGU7CglzaG9ydCAgbF93aGVuY2U7Cgls
+b2ZmX3QgbF9zdGFydDsKCWxvZmZfdCBsX2xlbjsKCXBpZF90ICBsX3BpZDsKfTsKCiNlbmRp
+Zgo=
+--------------3A15C6D5258034DEE5985398--
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
