@@ -1,80 +1,68 @@
-From: "Prabhakar Kalasani" <kalasani@sena.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RPX-CLLF porting
-Date: Fri, 14 May 2004 16:57:56 +0900
-Message-ID: <ACEDKFIMODAHBNCONGOHGEOFCDAA.kalasani@sena.com>
+Message-ID: <C18BA5DDB58DD511BD0700C0DF0DD45028B2A3@NTSERVER4>
+From: Phil Thompson <philt@4bridgeworks.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: PPC440GX GigE support - Update
+Date: Fri, 14 May 2004 09:59:16 +0100
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi all,
-I have got RPX-CLLF target , I'm trying to port PPC Linux , I made tftp,nfs
-and DHCP setup and I could able to load the kernel using tftp , the problem
-is I couldn't able to run the kernel .
+With a bit more digging I've come to the conclusion that interrupts are not
+the cause of the problem. It seems more like the time taken by the SCSI
+driver to initialise 2 SCSI buses is triggering the problem.
 
-Here is the Log:
+If I hack the SCSI driver detect code to just delay before returning "not
+found" then things work with an overal delay of 2 seconds, but fail with an
+overall delay of 4 seconds.
 
-MPC8xx PlanetCore Boot Loader v2.00
-Copyright 2001 Embedded Planet.  All rights reserved.
-DRAM available size = 16 MB
-wvCV
-DRAM OK
+This would imply the problem is just within the GigE driver. Matt, comments?
 
-Autoboot in 2 seconds.
-ESC to abort, SPACE or ENTER to go.
-Autoboot aborted.
+Thanks,
+Phil
 
->set
-Baud                                           = 9600
-Multiplier   (Clock multiplier)                = 5
-Board                                          = CLLF
-Revision                                       = BW31
-Processor                                      = 855
-Variant                                        = T
-DRam         (Mbytes onboard dram)             = 16
-Cols         (Columns onboard dram)            = 10
-NVRam        (Kbytes onboard nvram)            = 512
-Sttm         (Degrees C*10)                    = 0
-Twirl                                          = Y
-ICache                                         = N
-SYPCR                                          = FFFF0689
-RAMtest                                        = Y
-RestoreCE    (Cannot go to ram if set)         = N
-SerPort      (Serial port to use for monitor)  = SMC1
-SerOut       (Serial output of loader)         = Always
-RS232        (Enable rs232 drivers)            = Y
-IP                                             = 192.168.222.200
-Target                                         = 192.168.222.208
-File                                           = vmlinux
-ENET                                           = 0010EC002D1E
-DefaultENET                                    = ENET
-TftpRAM                                        = High
-Start                                          = 400000
-Format                                         = NetBin
-Autoboot                                       = Confirm
+> -----Original Message-----
+> From: Phil Thompson
+> Sent: 13 May 2004 12:44
+> Subject: RE: PPC440GX GigE support
+>
+> I'm having some problems with this on an Ocotea board (using the
+> latest source).
+>
+> With the default Ocotea configuration everything works fine when
+> booting over both eth0 and eth3. If I then configure support for the
+> SYM53C8XX_2 SCSI driver then everything continues to be fine for eth0,
+> but with eth3 the system times out trying to autoconfigure using
+> BOOTP. Packets are being sent Ok (irq 10 is raised and you see them on
+> the wire), but they are not received (irq 11 is never raised).
+>
+> About 1 time in 10 the system will boot successfully.
+>
+> I don't think the SCSI driver is particularly relevant - just that
+> it is a source of interrupts (irq 23) that occur after the MAL
+> interrupts are enabled and before the kernel tries to use the network
+> to autoconfigure.
+>
+> The implication is that there are problems in ppc4xx_pic.c in handling
+> the 3rd UIC of the 440GX. There seems to be at least one bug in
+> ppc4xx_uic_end() in the first case statement - there is no "case 2:"
+> clause and it looks as if there should be - but it isn't the cause of
+> the problem.
+>
+> I'll continue digging, but I'd welcome any ideas from anybody with
+> more experience of interrupt handling on the 440GX.
+>
+> > -----Original Message-----
+> > From: Matt Porter [mailto:mporter@kernel.crashing.org]
+> > Sent: 19 April 2004 19:57
+> > Subject: PPC440GX GigE support
+> >
+> > I've pushed a bunch of code for this to the linux-2.5-ocp tree.
+> > It overhauls the EMAC driver a bit and adds a number of fields to
+> > the new OCP EMAC .additions field that are set per SoC or by the
+> > board specific code. There's support for GigE on EMAC2/3, the TAH,
+> > zerocopy, and jumbo frames.
 
->t
-Load using tftp via Ethernet
-Enter server IP address <192.168.222.208> :
-Enter server filename   <vmlinux> :
-Enter (B)inary or (S)record input mode <B> :
-Enter address offset  : <00400000 hex> :
-.512.1024..2048...
-Total bytes = 1839078 in 9948811 uSecs
-Loaded addresses 00400000 through 005C0FE5.
-Start address = 00400000
->g
-[Go 00400000]
-
-There after no responce from the target...
-
-Anybody can help ?
-Thanks in advance
-
-Regards,
-KP
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
