@@ -1,9 +1,9 @@
-Message-ID: <3850EFAE.2E127301@eng.uct.ac.za>
-Date: Fri, 10 Dec 1999 14:18:54 +0200
+Message-ID: <3850F28A.D36731A3@eng.uct.ac.za>
+Date: Fri, 10 Dec 1999 14:31:06 +0200
 From: Grant Carter <gcarter@eng.uct.ac.za>
 MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Serial ports
+Subject: Kernel woes for versions > 2.2.5
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
@@ -11,31 +11,20 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 Hi all
 
-I posted a question a while ago to the list about not being able to get
-the second serial port ttyS1 (on SMC2) working on my BSE-IP board
-running the 2.2.5. The kernel finds the port but when I echo something
-to it, nothing comes out of the port. I received some replies but
-nothing that was suggested has worked. Could someone please suggest how
-I can test the second serial port and then hopefully get it working.
-Below are the things that I have tried so far:
+I have successfully compiled the 2.2.5 kernel which is found on the ftp
+site for my BSE-IP board. Now that that seems to work, I would like to
+get a newer version of the kernel working. I have tried unsucessfully
+with both the 2.3.18 kernel on the CVS server and the tarball of it that
+Dan put up for ftp. The problem is that after the kernel has been loaded
+into RAM at address 200000 and told to execute from address 210000, the
+processor just hangs with no output on the console. It doesn't even get
+to the "Linux/PPC load:" prompt. The process I just described was what I
+was told to do for 2.2.5 and it works just great. Is there a different
+method for the other kernel versions? Any ideas on where to go from
+here?
 
-I added SMC2 to the rs_table in arch/ppc/8xx_io/uart.c and the kernel
-detected the port.
-CPM UART driver version 0.02
-ttyS00 at 0x0280 is a SMC
-ttyS01 at 0x0380 is a SMC
-
-I have made sure that there is the correct device nodes in /dev 
-# ls -la ttyS*
-crw-r--r--   1 root     0          4,  64 Sep  7  1998 ttyS0
-crw-rw----   1 root     66         4,  65 Dec 10  1999 ttyS1
-
-Does anyone have any ideas where I can go from here. I am not 100% that
-the hardware is working so perhaps that could be the problem.
-
-Many thanks in advance
+Many thanks in advance,
 Grant
-
 
 -- 
 Grant Carter                              gcarter@eng.uct.ac.za
