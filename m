@@ -1,88 +1,44 @@
-From: "Jon Erick Ween" <jween@som.llu.edu>
-To: jeramy b smith <ultrapenguin@netscape.net>,
-        "Jon Erick Ween" <jween@som.llu.edu>,
-        <linuxppc-dev@lists.linuxppc.org>
-Cc: <schmitz@opal.biophys.uni-duesseldorf.de>
-Subject: Re: Xfree86-4.0.1, Lombard, Been There - Done That
-Date: Wed, 27 Sep 2000 21:51:47 -0700
-Message-ID: <7736FE84141B.AAA10E3@som.llu.edu>
+Message-Id: <200009280600.IAA00829@piglet.grunz.lu>
+Date: Thu, 28 Sep 2000 08:00:40 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: PCI fixups (was: re: xf 4.0.1 with rage II/rage...)
+To: bh40@calva.net
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <19340822040450.7355@mailhost.mipsys.com>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-jeramy b smith <ultrapenguin@netscape.net> wrote:
->For the 80th and last time. Get the XF86Config.pismo from howarths
-directory.
+On  27 Sep, this message from Benjamin Herrenschmidt echoed through cyberspace:
+> I'm not very confident on the device tree content on those UniNorth
+> machines. I prefer reading the decoded regions from the address select
+> register of the bridge itself ;) (There's code in Darwin that shows how
+> it works).
 
-Well, that's where I started. But, this being the 80th time around, I'll go
-back and try again. Funny how small things can send you off track
-sometimes.
+I don't mind you doing that ;-) Is there any standard for reading these
+things off the bridge?
 
->Switch the references from rage128 to ati. Copy this file to
->/etc/X11/XF86Config . The timings will work. I am not using the latest
-version
->of the ati driver (X) but mine works. When booting a recent kernel with
->yaboot, you should not have to specify video= on a lombard. It will by
-default
->use 1024x768 60hz and atyfb. If you are not getting a cursor, I would bet
-You
->either gummed something up in your .config or you are specifying
-uneccessary
->video options.
+> Where can I find your patch that does this region hacking ?
 
-Actually, I just discovered the cursor is black. Moving the mouse cursor
-(gdm) over it brings it out. Must be a color setting that's off.
+http://www.cpu.lu/~mlan/linux/dev/2.4.0-t6-pci.diff
 
->Also make sure you aren't telling yaboot to use "novideo".
+Or, more generally, at:
 
-I really didn't specify anything manually, just installed the generic
-yaboot with mkofboot first and then ybin as I referenced new kernel images.
-I'll go back an look at the .config file and see.
+http://www.cpu.lu/~mlan/linux/dev/pci.html
 
->If
->you are not getting a cursor after verifying that, use one of Ben's
->precompiled kernels. I am using one of his older precompiled kernels (with
+Have fun!
 
->direct boot ati accel fixed), the ati driver from a month ago, xf401 from
->franz's rpms, and a slightly edited XF86Config file that used the pismo
-file
->as a template.  The only bug I have is that i get a few blue garbage
-pixels
->when areas with blue in them redraw.
->
->-Jeramy
+Michel
 
-
-Thanks Jon
-
->> OK, I've switched from BootX to Yboot using a stable 2.2.17 kernel and
-the
->> most recent XF86-4.0.1 and ati driver sources I can find. I seem to get
->> different PCI assignments to the ATI chip on boot-up (looking at dmesg
->> compared with using BootX) but the X-server still doesn't detect the
-chip
->> with "startx" or "XFree86" and exits with a "device not found" and "no
->> screens" error. Any further suggestions?
->>
->> Thanks
->>
->> Jon
->>
->> --
->> Jon Erik Ween, MD
->>
->> Cognitive and Cerebrovascular Neurology
->>
->> Assistant Professor
->> Loma Linda University School of Medicine
->>
->> Director, Stroke Program
->> Loma Linda University Medical Center
->>
->>
->
->
->
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
