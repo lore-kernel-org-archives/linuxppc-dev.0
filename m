@@ -1,42 +1,46 @@
-Date: Wed, 14 Nov 2001 13:20:04 -0500 (EST)
-From: Daniel Berlin <dan@cgsoftware.com>
-To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Cc: <linuxppc-dev@lists.linuxppc.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+To: Daniel Berlin <dan@cgsoftware.com>
 Subject: Re: DFP support for kernel radeonfb.c added
-In-Reply-To: <20011114175006.VAAL9849.tomts10-srv.bellnexxia.net@there>
-Message-ID: <Pine.LNX.4.33.0111141318380.20197-100000@www.cgsoftware.com>
+Date: Wed, 14 Nov 2001 13:28:56 -0500
+Cc: <linuxppc-dev@lists.linuxppc.org>
+References: <Pine.LNX.4.33.0111141318380.20197-100000@www.cgsoftware.com>
+In-Reply-To: <Pine.LNX.4.33.0111141318380.20197-100000@www.cgsoftware.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <20011114182613.TIGV16532.tomts17-srv.bellnexxia.net@there>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Just a note, on the tibook rev b, the EDID is in EDID1 for the LCD.
-No idea if it'll make an EDID2/EDID if you plug in an external monitor.
->
-> All of this depends on their being an EDID block in /proc under the Radeon
-> device tree (it exists on my machine).  You can simply look in /proc in
-> the device_tree to see if one exists on your machine (need to have the
-> monitor connected for it to be created).
->
-> Since there are a lot of changes and since other people have submitted
-> radeon patches recently, I have attached my complete files (radeonfb.c and
-> radeon.h) in the form of a tar archive to this e-mail so that others may
-> more easily understand the changes.
->
-> I hope this helps others with flat panels but be warned I have only tested
-> them on my own machine.  So don't come back to me if your FP goes up in
-> smoke.  Use at your own RISK!
->
-> BTW: Using a dviAtor, and an Apple 17 inch flat panel is a real blast and
-> now all of my eye strain is gone!
->
-> Have fun!
->
-> Kevin
->
->
->
+Hi Daniel,
 
+On November 14, 2001 01:20, Daniel Berlin wrote:
+> Just a note, on the tibook rev b, the EDID is in EDID1 for the LCD.
+> No idea if it'll make an EDID2/EDID if you plug in an external monitor.
+
+Arrgghh!  Okay, I guess knowing the name of the OF EDID block is not going
+to be easy!
+
+My tree has both "DFP,EDID", and "LCD,DFP" so my code only looks for:
+
+DFP,EDID
+LCD,EDID
+and
+EDID
+
+I will add "EDID1" also (and "EDID2") just to make sure nothing breaks
+along the way.
+
+Ben is correct here, perhaps we should do our own I2C to grab our own EDID
+block directly from the monitor and not play the "what name did OF give
+it" game.
+
+I have not looked at the I2C code to see how complex it is.  Does anyone
+have any working code or sample code I can look at?
+
+Thanks,
+
+Kevin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
