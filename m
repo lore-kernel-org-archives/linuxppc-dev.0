@@ -1,15 +1,18 @@
-Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15608.mail.cnb.yahoo.com (web15608.mail.cnb.yahoo.com
-	[202.165.102.62]) by ozlabs.org (Postfix) with SMTP id D4A292BDB5
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 287252BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 16 Nov 2004 12:55:52 +1100 (EST)
-Message-ID: <20041116015539.39185.qmail@web15608.mail.cnb.yahoo.com>
-Date: Tue, 16 Nov 2004 09:55:39 +0800 (CST)
-From: Sam Song <samlinuxppc@yahoo.com.cn>
-To: Dan Malek <dan@embeddededge.com>
-In-Reply-To: <38FB8908-373F-11D9-A70B-003065F9B7DC@embeddededge.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
+	Tue, 16 Nov 2004 13:18:42 +1100 (EST)
+In-Reply-To: <20041116015539.39185.qmail@web15608.mail.cnb.yahoo.com>
+References: <20041116015539.39185.qmail@web15608.mail.cnb.yahoo.com>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <34E4EF1E-3776-11D9-A70B-003065F9B7DC@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Mon, 15 Nov 2004 21:21:21 -0500
+To: Sam Song <samlinuxppc@yahoo.com.cn>
 Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: Any possibility of common mini test kernel for 8xx/82xx/85xx?
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -22,39 +25,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dan Malek <dan@embeddededge.com> wrote：
-> On Nov 14, 2004, at 4:28 AM, Sam Song wrote:
-> 
-> > could I deduce a possibility that we can make a
-> > common mini test kerenl which only support
-> > Monitor/RAMDISK/EXT2 for 8xx/82xx/85xx? Or even
-> > better work on all PowerPC boards?
-> 
-> The Linux kernels are very different and would have
-> to be unique. I have small ram disks for demos that
-> I run on all PowerPC platforms.
 
-Oh, I now know what you meant. But the common small
-ram disks could also be very attractive to some folks
-like me. Make one leg stable so that we can move
-another one to march, anyway. :-) 
+On Nov 15, 2004, at 8:55 PM, Sam Song wrote:
 
-Could you pls offer the cute one to us? Oops, I am too
-greedy to make myself annoyed. Just ignore me if it
-touch sth inappropriate to open.
+> Could you pls offer the cute one to us?
 
-Thank you very much.
+I think it's a great exercise for the reader :-)
+Just pick an 8xx distribution and make a small
+ramdisk that boots to a shell prompt.  I'm not
+a busybox fan, but if you want that you could do
+that one, too.  The 8xx distribution will run on
+any PowerPC core.
 
-=====
-Best regards,
-
-Sam
-
-_________________________________________________________
-Do You Yahoo!?
-150万曲MP3疯狂搜，带您闯入音乐殿堂
-http://music.yisou.com/
-美女明星应有尽有，搜遍美图、艳图和酷图
-http://image.yisou.com
-1G就是1000兆，雅虎电邮自助扩容！
-http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
+	-- Dan
