@@ -1,58 +1,38 @@
-From: "Georg Klug" <gklug@giga-stream.de>
-To: <svacca@valcom.com>
-Cc: "Ppc Embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Thruput slow unless select() on stdin frequently
-Date: Tue, 5 Nov 2002 10:00:32 +0100
-Message-ID: <FFECLICFNBJAHONLGAKMAELNCGAA.gklug@giga-stream.de>
+Message-ID: <20021105111412.27408.qmail@web8005.mail.in.yahoo.com>
+Date: Tue, 5 Nov 2002 03:14:12 -0800 (PST)
+From: rekha gvv <rekhagvvc@yahoo.co.in>
+Subject: glibc 2.2.5 error
+To: linuxppc-embedded@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-In-Reply-To: <01C28414.C30A9C20.svacca@valcom.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi Steven,
-
-unfortunately, I don't know your board, but from the effect you are seeing,
-I would say it is some sort of an interrupt problem. Do you have shared
-IRQs? Was the interrupt service routine of the "QMC channel" driver
-correctly installed? Does the interrupt really occur? Those would be the
-things I would be searching next.
-
-Kind regards,
-Georg Klug
-
-> --- stdin appears to block until a select() tests it, thus slowing
->    system code execution way down. ---
->
-> My MPC860T app executes UDP recvfrom()'s and sendto()'s
-> at regular intervals.  The recvfrom() UDP pkt data is queued with
-> a buffer descriptor for transmission on a QMC channel to an
-> external device.  The data read from the device on a QMC
-> channel is queued with a buffer descriptor for subsequent sendto().
->
-> But if I do not constantly execute a select() (timeout = 10us)
-> on stdin (serial keyboard - not being used often) at a fast enough
-> rate (i.e. if the select() is executed in it's own thread and doesn't
-> get scheduled frequently enough) the code execution slows way
-> down, and I find that the queued QMC channel data, residing
-> in the circular queues doesn't get transmitted fast enough
-> and the queues grow and grow.  Doing no select() on stdin
-> basically shuts the QMC buff desc processing down.
->
-> It's as though, even with no serial chars coming in, stdin
-> blocks until the select() tests it.  I need to avoid this blocking, yet
-> still periodically check for a serial key input on stdin.
->
-> Any ideas out there in Linux Embedded-land?
->
-> Thanks,
->
-> Steven
->
->
->
+HI,
+when i try to compile glibc 2.2.5 for the
+powerpc-linux target on a i686 host system ..i get the
+following errors.can i know which version of glibc
+should i use ?
+i did a configure and set --target=powerpc-linux
+--host=i686-pc-linux-gnu
+>make
+*************************************************
+gcc -nostdlib -nostartfiles -o iconvconfig
+-Wl,-dynamic-linker=/usr/local/lib/ld-linux.so.
+2    ../csu/crt1.o ../csu/crti.o `gcc
+--print-file-name=crtbegin.o` iconvconfig.o strtab.o
+xmalloc.o
+-Wl,-rpath-link=..:../math:../elf:../dlfcn:../nss:../nis:../rt:../resolv:../cryp
+t ../libc.so.6 ../libc_nonshared.a -lgcc `gcc
+--print-file-name=crtend.o` ../csu/crtn.o
+../libc.so.6: undefined reference to `fileno_unlocked'
+collect2: ld returned 1 exit status
+make[1]: *** [iconvconfig] Error 1
+make[1]: Leaving directory
+`/usr/src/glibc-2.2.5/iconv'
+make: *** [iconv/others] Error 2
+*****************************************
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
