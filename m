@@ -1,40 +1,30 @@
-Date: Sun, 18 Jul 1999 16:23:47 -0600 (MDT)
-From: Dan Burcaw <dburcaw@terraplex.com>
-To: Tom Rini <trini@disparity.net>
-cc: Paul.Mackerras@cs.anu.edu.au, stp9@cornell.edu,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: USB on "Bronze" PowerBook?
-In-Reply-To: <Pine.BSF.3.96.990718225201.50420H-100000@silver.teardrop.net>
-Message-ID: <Pine.LNX.3.96.990718162333.8407B-100000@newhope.terraplex.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Mon, 19 Jul 1999 12:26:35 +1000
+Message-Id: <199907190226.MAA01159@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: barretp@mcmail.cis.mcmaster.ca
+CC: linuxppc-dev@lists.linuxppc.org, linuxppc-user-digest@lists.linuxppc.org
+In-reply-to: <v04003a00b3b7de41a7b6@[10.0.0.2]> (message from Paul Barrette on
+	Sun, 18 Jul 1999 15:51:53 -0400)
+Subject: Re: some progress: opening display /platinum@F8000000... failed
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <v04003a00b3b7de41a7b6@[10.0.0.2]>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> 
-> The new PBs have a different OHCI chip (not an OPTi, name escapes me right
-> now). which neither inkays or the current stack seem to have much/any luck
-> with.
+Paul Barrette <barretp@mcmail.cis.mcmaster.ca> wrote:
 
-IIRC, it's a Lucent chip.
+> NB it gave me the same problem! opening display /platinum@F8000000... failed
 
-> 
-> ---
-> Tom Rini (TR1265)
-> http://gate.crashing.org/~trini/
-> 
+That message is a bit of a red herring, all it is telling you is that
+OF doesn't have a method for initializing the platinum, but you knew
+that anyway.  It just means that you can't use the video=ofonly
+option.
 
-> 
+There are some problems with the platinumfb driver.  Mark Abene posted
+a message recently with a better version of the platinumfb driver.
 
-
-Dan
-
-Terra Soft Solutions, Inc.
- email: dburcaw@yellowdoglinux.com
- website: http://www.yellowdoglinux.com/
-
-
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
