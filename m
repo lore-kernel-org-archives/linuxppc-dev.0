@@ -1,22 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 696D32BDB5
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Oct 2004 09:23:40 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Guido Guenther <agx@sigxcpu.org>
-In-Reply-To: <20041004151259.GC5637@bogon.ms20.nix>
+Return-Path: <toojays@toojays.net>
+Received: from smtp3.adl2.internode.on.net (smtp3.adl2.internode.on.net
+	[203.16.214.203]) by ozlabs.org (Postfix) with ESMTP id 7731F2BDB5
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Oct 2004 09:30:46 +1000 (EST)
+Received: from nev.toojays.net (ppp48-50.lns1.adl2.internode.on.net
+	[150.101.48.50])
+	by smtp3.adl2.internode.on.net (8.12.9/8.12.9) with ESMTP id
+	i94M8kOU036467
+	for <linuxppc-dev@ozlabs.org>; Tue, 5 Oct 2004 07:38:47 +0930 (CST)
+From: John Steele Scott <toojays@toojays.net>
+To: linuxppc-dev@ozlabs.org
+Date: Tue, 5 Oct 2004 07:37:52 +0930
 References: <20041004112105.GA5637@bogon.ms20.nix>
 	<1096897172.23141.87.camel@gaston>
-	<20041004135108.GB5637@bogon.ms20.nix>
-	<1096899251.15766.101.camel@gaston>
-	<20041004151259.GC5637@bogon.ms20.nix>
-Content-Type: text/plain
-Message-Id: <1096931912.23141.107.camel@gaston>
-Mime-Version: 1.0
-Date: Tue, 05 Oct 2004 09:18:33 +1000
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <1096897172.23141.87.camel@gaston>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2244723.NgqaxnrVMZ";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200410050737.59754.toojays@toojays.net>
+Cc: 
 Subject: Re: [agx@sigxcpu.org: [PATCH]: swsusp on linux-2.6.9-rc3]
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,20 +28,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2004-10-05 at 01:12, Guido Guenther wrote:
-> On Tue, Oct 05, 2004 at 12:14:11AM +1000, Benjamin Herrenschmidt wrote:
-> > A hack I wrote a while ago that allows to run the MacOS "ndrv" video
-> > driver within a userland "shell" in linux. It works with old-style
-> > 'ndrv's that ATI still uses but not with the newer nVidia 'fully native'
-> > drivers and it can spy all IOs done by the driver
+--nextPart2244723.NgqaxnrVMZ
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> Nice. Can you think of a way to monitor calls of MacOS X into the OF?
+On Mon, 4 Oct 2004 11:09 pm, Benjamin Herrenschmidt wrote:
+> I have more of that in a tree here that I need to rediff... paulus also
+> got real sleep working on his M10 based 15" albook by spying the MacOS
+> driver using that ndrver hack I wrote a while ago, hopefully, we'll get
+> that in shape & merged soon.
 
-It has nothing to do with OF. We need to spy the IO accesses. Roughly
-the same mecanism I use on linux but moved to kernel-land in OS X
-would be possible but complicated: basically feeding the nvdia driver
-with a non-mapped IO area and catching all faults, emulating the actual
-accesses and logging them. But my knowledge of OS X low levels isn't
-that good and I don't have time to work on that.
+Presumably this same technique could be used to figure out sleep for the M9=
+ in=20
+the iBook G4s? I've been hanging out for that feature for some time.
 
-Ben.
+cheers,
+
+John
+
+--nextPart2244723.NgqaxnrVMZ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+Comment: Messages with missing or bad signatures may have been forged or modified in transit!
+
+iD8DBQBBYcm/0BW7kPcXjRURAtp6AJ9VYyNfZmFW4kjyhXIXLwYupi1IHQCgqOYx
+HZ3RqQ0adwzn8c4BgAZyiVM=
+=3FJk
+-----END PGP SIGNATURE-----
+
+--nextPart2244723.NgqaxnrVMZ--
