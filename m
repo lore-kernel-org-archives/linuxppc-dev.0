@@ -1,57 +1,76 @@
-Message-Id: <4.2.0.58.20001203235133.009a3620@engr.de.psu.edu>
-Date: Sun, 03 Dec 2000 23:54:31 -0500
-To: Jonathan Lane <jingai@shell.faradic.net>, debian-powerpc@lists.debian.org
-From: Eric Reischer <reischer@psu.edu>
-Subject: Re: 3COM 3c905c again
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <200012040049.eB40ndh24760@shell.faradic.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-Id: <p04330100b650e03a5dcb@[192.168.0.1]>
+In-Reply-To: <Pine.GSO.4.10.10012032140410.7958-100000@rose.sonytel.be>
+References: <Pine.GSO.4.10.10012032140410.7958-100000@rose.sonytel.be>
+Date: Mon, 4 Dec 2000 01:09:49 -0500
+To: linuxppc-dev@lists.linuxppc.org
+From: Stefan Jeglinski <jeglin@4pi.com>
+Subject: arguing IRQ (was Re: dual IRQ 23)
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-As for the PCI slots, I'm afraid I can't be much of any help.  The error
-you are describing in your syslog, that basically means that your DHCP
-server does not have any more IP addresses to give out to clients.  If you
-administer this server, then you might want to consider adding more
-addresses to the scope.  When the machine comes up, I'll bet if you do an
-ifconfig, and take a look at your eth1 adapter settings (if it's there), it
-won't have an IP address, which explains why packets aren't bouncing back
-to your ping source.
-
-Eric
+[I apologize in advance to Geert, Michel, and Ben if I have
+misrepresented their previous statements below - I'm trying to figure
+this out still]
 
 
+Geert said:
 
-At 07:49 PM 12/3/00 , Jonathan Lane wrote:
->Okay, I swapped cards around, and it turns out that *anything* in
->PCI slots 3-6 are not correctly configured (this is on a UMAX S900).
->I moved the USB card and NIC to slots 1 and 2, and my video card
->to slot 4, which appears to be working (although I've not tried
->using X yet, as XF86 4.0.1 is currently broken...).
+>Shared interrupts are allowed by PCI. If it doesn't work, it means one of the
+>drivers (or both) can't cope with shared interrupts. The solution is
+>to fix the driver(s).
+
+However, another consensus seems to be available, as per Michel Lanners:
+
+>01:0c.0 FireWire (IEEE 1394): NEC Corporation: Unknown device 00cd
+>(rev 01) (prog-if 10 [OHCI])
+>[snip]
+>  Interrupt: pin A routed to IRQ 1
+>This is most certainly wrong -> ^
 >
->However, now I am having another problem:  When I ping the machine,
->I see the RX light on the NIC flash, but the source machine doesn't
->get any responses.
+>01:0d.0 USB Controller: OPTi Inc. 82C861 (rev 10) (prog-if 10 [OHCI])
+>[snip]
+>  Interrupt: pin A routed to IRQ 23
+>                  and this too ->^^
 >
->A few things to note:  Every once in a while, I see the following
->message:
+>Bot of these devices should get IRQ25. Why? Because on Macs, all four
+>IRQ lines of a PCI slot are OR'ed together on the bridge chip.
+>Therefore, there is one single fixed IRQ per PCI slot. So, the devices
+>behind the PCI-to-PCI bridge in slot 00:0f should all have the same IRQ,
+>which should be, following the obvious logic, IRQ 25.
 >
->         eth1: Setting promiscuous mode.
->
->Also, in my syslog, dhcpd complains with:
->
->Aug 27 16:42:20 colour dhcpd-2.2.x: DHCPDISCOVER from 08:00:46:05:9c:c8
->via eth1
->Aug 27 16:42:20 colour dhcpd-2.2.x: no free leases on subnet 192.168.1.0
->
->(Ignore the date, my clock had yet to be set).  But this indicates that
->packets *are* getting thru, as the MAC address shown above is correct.
->
->If anyone can shed some light on this matter, I'd greatly appreciate it.
->I'd also like to know why the last four PCI slots don't work properly,
->although it appears it's not incredibly important now, unless X doesn't
->work...
+>Either a problem with the P2P bridge code in Linux, or with detecting
+>the IRQ's out of OF, as Ben suggested.
+
+It seems to me that both should have the same interrupt, as Michel
+states - after all, they are on the same PCI card; however, the
+larger issue is whether neither should be 23, because 23 is already
+assigned:
+
+>00:0d.0 SCSI storage controller: Adaptec AIC-7881U
+>[snip]
+>  Interrupt: pin A routed to IRQ 23
+
+
+Indeed, Ben has said along these lines:
+
+>Ok, I found the problem, I think, with the interrupt. I'm still
+>investigating, but what it looks like is that the OF tree puts the
+>AAPL,interrupt property in the pci-bridge node, not in the sub-nodes.
+>So we must make sure the routine that gets interrupts from the tree
+>on oldworld iterates to parent devices when it can't find the
+>AAPL,interrupt property.
+
+
+Which again indicates that the problem is in the PCI (?) code.
+
+So, is Geert right (PCI ok at least in this aspect, drivers are
+buggy)? Or are Ben/Michel right (drivers OK, PCI/IRQ buggy)?
+
+
+
+Stefan Jeglinski
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
