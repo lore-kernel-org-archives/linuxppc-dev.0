@@ -1,59 +1,89 @@
-Date: Tue, 12 Aug 2003 16:22:21 -0300
-From: Ricardo Scop <scop@digitel.com.br>
-Reply-To: Ricardo Scop <scop@plugin.com.br>
-Message-ID: <16682.030812@plugin.com.br>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re[2]: Questions about ARP
-In-reply-To: <00512BA4F9D3D311912A009027E9B8F4AC3D67@nt.sixnet.com>
-References: <00512BA4F9D3D311912A009027E9B8F4AC3D67@nt.sixnet.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <3F3941A3.2090600@esteem.com>
+Date: Tue, 12 Aug 2003 12:36:03 -0700
+From: Conn Clark <clark@esteem.com>
+MIME-Version: 1.0
+To: david.jander@protonic.nl
+Cc: May Ling List <linuxppc-embedded@lists.linuxppc.org>,
+	Wolfgang Denk <wd@denx.de>
+Subject: Re: Memory map with "holes"...
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-It is _also_ in RFC2131:
+David,
 
-"The client SHOULD perform a
-check on the suggested address to ensure that the address is not
-already in use.  For example, if the client is on a network that
-supports ARP, the client may issue an ARP request for the suggested
-request.  When broadcasting an ARP request for the suggested address,
-the client must fill in its own hardware address as the sender's
-hardware address, and 0 as the sender's IP address, to avoid
-confusing ARP caches in other hosts on the same subnet."
+     It is possible to design a system to accomidate larger ram chips
+for future expansion with out leaving holes in your memory map. We did
+this on our ESTeem 192E. What you need to do is design your memory
+system around the samllest chip in the memory family you intend to use.
+connect the bank selects lines to the address immediately following the
+highest address line used by the smallest memory part. Then following
+the bank selects place the other address lines to the larger memory parts
 
--Scop.
+This is how we did ours ( and it works with the larger parts )
 
-Tuesday, August 12, 2003, 11:05:40 AM, you wrote:
+We designed our board using a Micron part MT48LC2M32B2. But we decieded
+to include an extra clock cycle so we could use other manufacturers parts,
+Such as Toshiba TC59S6432CFT and Samsung K4S643232C(not tested)
 
+Micron has said that they will make a bigger parts in the same foot print.
 
-DE> Steven Scholz wrote:
+This is how we hooked up our ram to make provisions for the larger parts.
+(Note that the two additional address lines have an * next to them)
 
->> Windows is checking for duplicate addresses using ARP packets
->> with source _and_
->> destination address set to the address in question. So of
->> course Linux won't answer it!
->>
->> But I can't find a single word in the RFC2131
->> (http://www.faqs.org/rfcs/rfc2131.html)
->> saying that the
->> Source Address _must_ set to 0.0.0.0!!!!
+MPC850                    SDRAM
+=============================
+A29                        A0
+A28                        A1
+A27                        A2
+A26                        A3
+A25                        A4
+A24                        A5
+A23                        A6
+A22                        A7
+A13                        A8
+A12                        A9
+GPL_A0                     A10
+*A8                        A11 (pin 71)
+*A7                        A12 (pin 69)
+A10                        BA0
+A9                         BA1
+OE_GPL_A1                  RAS
+GPL_A2                     CAS
+GPL_A3                     WE
 
-DE> It is actually in RFC1541 "... The client may
-DE>    perform a check on the suggested address to ensure that the address
-DE>    is not already in use.  For example, if the client is on a network
-DE>    that supports ARP, the client may issue an ARP request for the
-DE>    suggested request.  When broadcasting an ARP request for the
-DE>    suggested address, the client must fill in its own hardware address
-DE>    as the sender's hardware address, and 0 as the sender's IP address,
-DE>    to avoid confusing ARP caches in other hosts on the same subnet."
+This design will probably work with little modification on all of the MPC860
+family.
 
-[]'s, Scop                            mailto:scop@digitel.com.br
+Hope this helps
 
---------------------------------------------------------------------
-"Ninety-eight percent of the adults in this country are decent,
-hard-working, honest citizens. It's the other lousy two percent that
-get all the publicity. But then -- we elected them."  ~Lily Tomlin
+     Conn
+
+David Jander wrote:
+ >
+ > We are designing a board based on the MPC852T (MPC866 serivate), and
+ > I want to make sure there is the possibility to mount different-size
+ > SDRAM chips on it, so I just connect the two bank-select pins to some
+ > higher address lines, leaving some out in between, in order to acomodate
+ > for bigger chips in the future. The bottom line is that I will get the
+ > memory map split up into 4 segments with vast holes between each segment
+ > that are undefined. What do I need to keep in mind regarding linux
+ > about this? I suppose it isn't an issue, but I want to be sure I don't
+ > get any trouble later. Any experience with memory holes? I suppose the
+ > boot-loader should tell the kernel about the memory-map, in a way just
+ > like lilo on an x86 machine, am I right? Does this work the same way on
+ > linux-ppc ?
+
+--
+
+*****************************************************************
+   If you live at home long enough, your parents will move out.
+  (Warning they may try to sell their house out from under you.)
+*****************************************************************
+
+Conn Clark
+Engineering Stooge				clark@esteem.com
+Electronic Systems Technology Inc.		www.esteem.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
