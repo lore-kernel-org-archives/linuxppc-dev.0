@@ -1,60 +1,63 @@
-From: nyet@nbase.com (Nye Liu)
-Message-Id: <199906242015.NAA28109@beavis.nbase.com>
-Subject: 8240 Sandpoint
-To: doyle@primenet.com
-Date: Thu, 24 Jun 1999 13:15:16 -0700 (PDT)
-Cc: linuxppc-dev@lists.linuxppc.org, nyet@internal.nbase.com (Nye Liu, x248, )
-In-Reply-To: <199906242009.NAA28078@beavis.nbase.com> from "Nye Liu" at Jun 24, 99 01:09:45 pm
+Message-Id: <199906242144.XAA00300@piglet.cpu.lu>
+Date: Thu, 24 Jun 1999 23:44:31 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: MESH problems in 2.2.x
+To: Geert.Uytterhoeven@cs.kuleuven.ac.be
+cc: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.10.9906240953080.4063-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > I have just started work on the MPC8240 Sandpoint platform (its
-> > basically an 603e with some integrated peripherals) but this is my first
-> > try at embedded linux devel. I have plenty of experience getting psos
-> > and vxworks running on a few different processors, but I am unfamiliar
-> > with the internals of how linux is booted.
-> 
-> I've got one too.  I'm a newbie with the ppc so this is my platform to
-> learn things.  I've mostly got a working VGA display configured and
-> running...
+On  24 Jun, this message from Geert Uytterhoeven echoed through cyberspace:
+>> > So to boot recent kernels when you have sync-capable devices on the MESH, two
+>> > conditions have to be met:
+>> > 
+>> >   - boot 2.1.130 first
+>> >   - mesh_sync_targets = 0 (setting CONFIG_SCSI_MESH_SYNC_RATE=0 doesn't work)
+>> > 
+>> > Anyone else seeing this?
+>> 
+>> No:
+>> 
+>> scsi0 : MESH
+>> scsi1 : 53C94
+>> scsi : 2 hosts.
+>> mesh: target 1 synchronous at 10.0 MB/s
+>>   Vendor: IBM       Model: DFHSS1F       !c  Rev: 1717
+>>   Type:   Direct-Access                      ANSI SCSI revision: 02
+>> Detected scsi disk sda at scsi0, channel 0, id 1, lun 0
+[other drives deleted]
 
-Could you send me patches vs. a known kernel tarball, or a link to the
-changes you made? Also, what kind of VGA card are you using? I can't
-even get my board booted.
+I might add that this is on a PowerMac 7600.
 
-> > I'm using ESTC's cheapo visionICE emulator solution, and would
-> > appriciate any help with getting this thing up and running.
-> 
-> The jury is still out on the ESTC emulator...
+> Then it's my QUANTUM FIREBALL_TM3200S 300X :-(
 
-I can get it to load kernels to RAM and to FLASH, but I have yet
-to build a kernel that doesn't go off into space and crash the board.
+Hmmm... I remember that in the early (and glorious ;-) days of MkLinux
+DR2.1, there were lots of problems with the 7600's original internal
+drives, being mostly Quantum Fireball TM1280S drives. I don't remeber
+the problems clearly, but one of the solutions was to move the Quantum
+drive to an ID different from 0. David Gatwood might remember what the
+issue was....
 
->  Dink does all that for you.  How 'bout booting linux from dink
->  until linux is running?  Then go back remove dink and fix the
->  startup stuff.
+On the other hand, I'm not sure the MESH in my 7600 is the same as the
+one on your motherboard (except the name and the registers, maybe); so
+that might be an explanation for your problems as well. For the record,
+the MESH on the 7600 is integrated inside GrandCentral, an Apple ASIC
+on the PCI bus, that handles the rst of the IO as well.
 
-I tried loading via DINK... same thing as above. I really think I dont
-have a good build yet ;) Also, its TERRIBLY slow compared to the ESTC
-loader (since its serial only).
+Michel
 
->  I couldn't find docs on National's website for the '87308 but I was
->  able to get the floppy going by just reading the dink code.  Anybody
->  know where to get docs?
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
-UGH. i was looking for this too: no luck. I will contact mot as well and
-see if i cant get some docs from our FAE.
-
->  I was considering patching dink to add a command that would copy a
->  floppy into memory.  That might ease hacking.
-
-Yes yes that would be a nice feature.
-
-Nye Liu
-nyet@nbase.com
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
