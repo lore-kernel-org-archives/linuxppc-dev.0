@@ -1,52 +1,36 @@
-Subject: RE: Going to sleep atomically
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Thu, 8 Mar 2001 20:51:11 -0000
-Message-ID: <EADB10BAC266A14A85ECBF8686A73E3108AFBC@kolkrabbi.flaga.is>
-From: =?iso-8859-1?B?S+FyaSBEYXbt8HNzb24=?= <kd@flaga.is>
-To: "Embedded Linux list" <linuxppc-embedded@lists.linuxppc.org>
+Date: Fri, 9 Mar 2001 10:47:03 +1100
+From: Graham Stoney <greyham@research.canon.com.au>
+To: Gabriel Paubert <paubert@iram.es>
+Cc: "Srinivas Rao.M" <msrao@vxl.co.in>,
+	Embedded Linux list <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: speed and space Optimization
+Message-ID: <20010309104703.B6166@brixi.research.canon.com.au>
+References: <Pine.SCO.3.91.1010308204511.15429B-100000@vayudoot> <Pine.HPX.4.10.10103081631390.9166-100000@gra-ux1.iram.es>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.HPX.4.10.10103081631390.9166-100000@gra-ux1.iram.es>; from paubert@iram.es on Thu, Mar 08, 2001 at 04:48:21PM +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Oooops.
-Sorry for the confusion.
+On Thu, Mar 08, 2001 at 04:48:21PM +0100, Gabriel Paubert wrote:
+> -Os was faster than -O2 which was faster than -O3 for some routines.
 
-I stand corrected.
+I had similar results benchmarking our application on an 855T: -Os was both
+smallest and fastest on gcc-2.95.2.  This makes sense since the I-cache on
+embedded CPUs is relatively small, and tighter/smaller code takes less time
+to fetch.  The difference between -Os and -O2 in terms of speed and space
+were only very minor.  -O3 made code larger and slower, by inlining functions
+and blowing the cache out too much; I'd strongly recommend against using it.
 
-K.D.
+My suggestion is that the best starting point is to use -Os.
 
-> -----Original Message-----
-> From: Roland Dreier [mailto:roland@topspincom.com]
-> Sent: 8. mars 2001 16:42
-> To: Embedded Linux list
-> Cc: Kári Davíðsson
-> Subject: Re: Going to sleep atomically
->
->
->
->     KD> Like in blocking read() and poll() etc?
->     KD> interruptable_sleep_on() or sleep_on()
->
-> No!!  Do _not_ use sleep_on() in new code.  It isn't atomic (there is
-> a race condition where you will miss the wakeup).  In an earlier post
-> to this mailing list
-> (<http://lists.linuxppc.org/listarcs/linuxppc-embedded/200102/
-> msg00093.html>)
-> I gave the following good advice:
->
->     You really don't want to use sleep_on() any more (Linus wants to
->     remove it for 2.5).  Take a look at
->
->     <http://lwn.net/2001/0201/a/sleep-fix.php3>
->
->     for a safer way to sleep, or use the wait_event macro (in
->     linux/sched.h).
->
-> Roland
->
->
->
+Regards,
+Graham
+--
+Graham Stoney
+Assistant Technology Manager
+Canon Information Systems Research Australia
+Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
