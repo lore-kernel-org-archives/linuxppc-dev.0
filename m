@@ -1,24 +1,20 @@
-Return-Path: <robin@india.tejasnetworks.com>
-Received: from pop-mail.india.tejasnetworks.com (pop.india.tejasnetworks.com
-	[164.164.94.84]) by ozlabs.org (Postfix) with SMTP id 4A6AB67A87
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id 8398967A79
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 Feb 2005 20:40:25 +1100 (EST)
-Received: from kilbil (unknown [192.168.1.59])
-	by india.tejasnetworks.com (*****) with ESMTP id E0B959B323
+	Tue, 15 Feb 2005 20:59:33 +1100 (EST)
+Received: from linux.local (linux.prtnl [192.168.1.97])
+	by protonic.prtnl (Postfix) with ESMTP id 3E2C640A1
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 Feb 2005 14:57:04 +0530 (IST)
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: robin <robin@india.tejasnetworks.com>
-To: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Date: Tue, 15 Feb 2005 15:09:42 +0530
-References: <EA78B62757AF1E4799828249310AC4CA071D281F@stca206a.bus.sc.rolm.com>
-	<28F2CE72-0BF0-11D9-97DC-003065F9B7DC@embeddededge.com>
-	<20050210150437.GA19134@logos.cnet>
-In-Reply-To: <20050210150437.GA19134@logos.cnet>
+	Tue, 15 Feb 2005 10:59:33 +0100 (CET)
+From: David Jander <david.jander@protonic.nl>
+To: linuxppc-embedded@ozlabs.org
+Date: Tue, 15 Feb 2005 10:59:26 +0100
 MIME-Version: 1.0
-Message-Id: <200502151509.42223.robin@india.tejasnetworks.com>
-Subject: Reading of RTC
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200502151059.26578.david.jander@protonic.nl>
+Subject: QSlinux dead?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,21 +25,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+
 Hi,
-Can you please give me some info during system initialization?
 
-1. Which file does the reading of RTC to set the system time?
+I am looking for some pointers to people who work on QSlinux, or if it's dead, 
+who know where I can ge the source.
+I went to www.qslinux.org, but the links there are mostly dead, all e-mail 
+sent to addresses listed on the support page of snmc (the makers of qs) 
+bounce back.
+Does anybody on this list know what's happening to SNMC (QSlinux)?
+They claim to have developed several MPC8xx drivers, released under GPL, but 
+as of today I am unable to find a trace of them. Only thing left is calling 
+the phone number listed on their site, but I figured that I might better ask 
+around here first.
 
-   In redhat, i have seen that the RTC is set from the script=20
-   /etc/rc.d/rc.sysinit. But my MPC /etc/rc.d/rc.sysinit does
-   not seem to do anything like that:(
+Greetings,
 
-2. How does the kernel interprets the time read from the RTC?
-   Is it interpreted as UTC or the local time?? Or is it configurable??
-
-I am running denx kernel 2.4.20
-Regards,
-Robin
-
---=20
-Dreams are free, but you get soaked on the connect time.
+-- 
+David Jander
