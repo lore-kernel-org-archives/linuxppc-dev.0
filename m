@@ -1,28 +1,35 @@
-Mime-Version: 1.0
-Message-Id: <p05100300b767eba042c3@[192.168.1.100]>
-In-Reply-To: <3B4225B4.2DC560C@xyterra.com>
-References: <3B4225B4.2DC560C@xyterra.com>
-Date: Tue, 3 Jul 2001 14:39:52 -0700
-To: "Tim M. Sanders" <tsanders@xyterra.com>,
-	linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-From: Erik van Roode <erik@cthulhu.demon.nl>
-Subject: Re: Open Firmware info
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+To: linuxppc-dev@lists.linuxppc.org
+Subject: TiPBG4 sleep stops working with linux-2.4.6-pre8-benh
+From: gtgj@pacbell.net (Gregorio Gervasio Jr.)
+Date: 04 Jul 2001 02:02:31 -0700
+Message-ID: <m3ith9m5i0.fsf@adsl-63-196-7-11.dsl.snfc21.pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 13:06 -0700 7/3/01, Tim M. Sanders wrote:
->Where can I find info on open firmware?  Is there a reference
->implementation?  Does Linux have any support for it?
+        ... The screen goes blank but the LED doesn't blink.  I need
+to reboot with Ctrl-Cmd-Power.  This is using "snooze" or closing the
+lid, with pmud-0.7-2.  This worked with at least linux-2.4.5-pre3-benh.
 
-OPEN FIRMWARE HOME PAGE
-     http://playground.sun.com/1275/home.html
+The last thing in the syslog is:
 
-And perhaps there is some stuff to be found here:
-     http://developer.apple.com/technotes/
+Jul  4 00:38:23 localhost pmud[744]: initiating user requested sleep
+Jul  4 00:38:23 localhost pmud[744]: running /etc/power/pwrctl sleep ac
+Jul  4 00:38:23 localhost pwrctl: no function for PMU 12
 
-Erik
---
+When linux-2.4.5-pre3 works, this would be followed by:
+
+Jul  4 00:21:41 localhost pmud[753]: going to sleep
+
+Note that this is while running X11.  In multi-user console,
+2.4.5-pre3 also fails to sleep, although it again works fine in
+single-user console.  The 2.4.6-pre8 kernel fails in all modes.
+
+        Any ideas?
+
+Gregorio Gervasio, Jr.
+gtgj@pacbell.net
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
