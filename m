@@ -1,55 +1,77 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
-To: Olaf Hering <olh@suse.de>,
-	yellowdog-devel@lists.yellowdoglinux.com
-Subject: Re: new G4 dual 1 gig is here - how to install?
-Date: Wed, 13 Feb 2002 08:49:40 -0500
-Cc: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
-	linuxppc-dev@lists.linuxppc.org
-References: <416D9C76-201E-11D6-BE69-0003938E434C@ivey.uwo.ca> <D232876A-2024-11D6-A30D-0003938E434C@ivey.uwo.ca> <20020213090002.B4386@suse.de>
-In-Reply-To: <20020213090002.B4386@suse.de>
+To: benh@kernel.crashing.org
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: SUNGEM config
+References: <Pine.LNX.4.33.0202121351140.23572-100000@blues.wcg.mcgill.ca>
+	<20020213105951.10807@mailhost.mipsys.com>
+Reply-To: Jens Schmalzing <jens.schmalzing@physik.uni-muenchen.de>
+From: Jens Schmalzing <jens.schmalzing@physik.uni-muenchen.de>
+Date: 14 Feb 2002 01:52:46 +0900
+Message-ID: <87k7th2ujl.fsf@theorie.physik.uni-muenchen.de>
 MIME-Version: 1.0
-Message-Id: <20020213134454.HEFJ3415.tomts13-srv.bellnexxia.net@there>
+Content-Type: multipart/mixed; boundary="=-=-="
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+--=-=-=
+
 Hi,
 
-Thanks everyone for you helpful hints.
+> I know there are some laptop specific tools that monitor the link
+> and do the shutdown of the interface when there is no link but I
+> don't have any precise pointer at hand.
 
-I have now done a make zImage and built  it so I will try that option
-tonight.
+On Debian systems, this is done by a small daemon named ifd in the
+laptop-net package.
 
-I was also able to boot into Mac OS 9.2 and run DisplayNameRegistry and
-dumped it to a file so I should be able to figure out the correct path to
-the scsi boot device from that info (I hope).
+Unfortunately, it uses the SIOCGMIIPHY and SIOCGMIIREG ioctls for link
+detection, which on my Pismo reproducibly lead to machine check
+oopses.  I've managed to track down the problem, a patch is included
+below.  Basically, instead of really reading the registers it fakes
+and returns a register setting from the cached status of the device.
+Right now, it is fairly ugly, since it only works for that relevant
+one bit.
 
-If not, I will try the idea of putting a small Mac OS boot script on a
-scsi partion and try to use the "print-env" boot-device info to figure out
-the of boot path.  And then I will try either changing the ofboot.b script
-or trying to boot yaboot directly.
+Regards, Jens.
 
-I will give all of these things a try tonight and report back.
 
-Thanks again for all of the ideas.
+--=-=-=
+Content-Type: text/x-patch
+Content-Disposition: attachment; filename=sungem-ioctl.patch
+Content-Description: Patch to SUNGEM driver for GMAC
 
-Kevin
+--- linux-benh/drivers/net/sungem.c	Wed Feb  6 20:01:22 2002
++++ linux/drivers/net/sungem.c	Thu Feb 14 01:37:41 2002
+@@ -2553,11 +2540,16 @@
+ 		break;
 
-On February 13, 2002 03:00, Olaf Hering wrote:
-> On Tue, Feb 12, Kevin B. Hendricks wrote:
-> > BTW: Are there any nice utilities to let me snoop through the OF
-> > device tree under Mac OSX.  I know I can get DisplayName Registry to
-> > work under MacOS 9.2 but would rather do my machine snooping under OSX
-> > if possible.
->
-> Copy the boot file in the root of a hfs partition, select that one as
-> boot volume. Boot to OF prompt, type "printenv boot-device", that will
-> give you a clue about that path name. Then change the ,\\:tbxi part to
-> ,filename.
->
->
-> Gruss Olaf
+ 	case SIOCGMIIPHY:		/* Get address of MII PHY in use. */
++	case SIOCDEVPRIVATE:		/* for binary compat, remove in 2.5 */
+ 		data->phy_id = gp->mii_phy_addr;
+ 		/* Fallthrough... */
+
+ 	case SIOCGMIIREG:		/* Read MII PHY register. */
+-		data->val_out = __phy_read(gp, data->reg_num & 0x1f, data->phy_id & 0x1f);
++	case SIOCDEVPRIVATE+1:		/* for binary compat, remove in 2.5 */
++		if(data->reg_num==1 && gp->lstate==link_up)
++			data->val_out = PCS_MIISTAT_LS;
++		else
++			data->val_out = 0;
+ 		rc = 0;
+ 		break;
+
+--=-=-=
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+
+P.S.: I forget whether to include or to attach patches.  My apologies
+if I have done it incorrectly.
+
+--
+J'qbpbe, le m'en fquz pe j'qbpbe!
+Le veux aimeb et mqubib panz je pézqbpbe je djuz tqtaj!
+
+--=-=-=--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
