@@ -1,5 +1,5 @@
-Message-ID: <3AD1F7F0.23C8BA38@mvista.com>
-Date: Mon, 09 Apr 2001 13:57:04 -0400
+Message-ID: <3AD21750.173DEEE6@mvista.com>
+Date: Mon, 09 Apr 2001 16:10:56 -0400
 From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
 To: David Schleef <ds@schleef.org>
@@ -13,29 +13,22 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 David Schleef wrote:
 
-> Check again.  The unsigned arithmetic works correctly.
-
-OK.
-
-
->   (starting with a full queue)
-
-This one can't happen because of the race conditions are avoided
-by the use of cep->lock.
-
 > The other (and more likely) is:
->
->   - fcc_enet_start_xmit() fills up the TX ring, thus cep->skb_cur
->     == cep->skb->dirty.
 
+>         if(cep->skb_cur == cep->skb_dirty)break;
 
-What driver are you using?  That line of code hasn't been in a driver
-for a very long time.  This was a very obvious bug that has been
-corrected long ago.  You should be using the FSM Labs linuxppc_2_5
-bitkeeper tree for any of the 8xx/82xx development.  There are lots
-of things that were placed in the 2_5 tree when the 2.4 tree was frozen.
-We are now trying to merge them back, but there are still some pieces
-left to go.
+OK, I kind of found this too.  My last message indicated this
+should have been fixed, and if this _exact_ line of code is in
+your driver, it is too old.  The proper test checks for the buffer
+pointers equal, and also adds the 'tx_full' condition so the
+wrap around case is properly handled.
+
+The current version of this driver has been subjected to the
+University of New Hampshire Interoperability testing lab by
+a very large communication company.  The test reports were sent
+to me, I made some changes according to their recommendations,
+and I believe they were happy with the results.  I would hope
+they found all of the errors :-).
 
 
 	-- Dan
