@@ -1,50 +1,31 @@
-Message-ID: <3C67B119.4080702@elsoft.ch>
-Date: Mon, 11 Feb 2002 12:55:05 +0100
-From: "David =?ISO-8859-1?Q?M=FCller?= (ELSOFT AG)" <d.mueller@elsoft.ch>
+Message-ID: <3C67B551.75074F10@ardistech.com>
+Date: Mon, 11 Feb 2002 13:13:05 +0100
+From: "bart@ardistech.com" <bart@ardistech.com>
+Reply-To: bart@ardistech.com
 MIME-Version: 1.0
-To: andrew may <acmay@acmay.homeip.net>
-Cc: Armin <akuster@pacbell.net>,
-	Stefan Roese <stefan.roese@esd-electronics.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PPC405gp enet Soft Reset
-References: <20020207191741.A26185@ecam.san.rr.com> <EFEAIMDCOOOHIEPHDNFJOEJBDKAA.stefan.roese@esd-electronics.com> <20020208103557.A27732@ecam.san.rr.com> <3C63AE1A.7000907@pacbell.net> <20020208120140.B27732@ecam.san.rr.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Dan Malek <dan@embeddededge.com>
+Cc: Alex Zeffertt <ajz@cambridgebroadband.com>,
+	Embedded Linux PPC List <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: MPC823: i2c-algo-8xx read interrupt?
+References: <3C63EC39.ACEECA08@ardistech.com> <3C640532.5000708@embeddededge.com> <3C640C11.4080407@cambridgebroadband.com> <3C6410F1.4000104@embeddededge.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
-
-andrew may wrote:
-> On Fri, Feb 08, 2002 at 10:53:14AM +0000, Armin wrote:
 >
->>Andrew & Stefan,
->>
->>The softrest could probably be removed from the _init.  its dup'd in _open.
->>
+> > .....  Alternatively, turn off the TX
+> > interrupt and use the RX interrupt instead....
 >
-> Here is another problem I have with find_phy, that it seems that mii reads to
-> reg 2 of a non-existent address does not return an error but a read to reg 3
-> does.
->
-> Here is a log from ppcboot since it is easy to test this there without doing
-> a kernel build. My phy is at address 0x1f.
->
-> => mii read 0x1 2
-> 07FF
-> => mii read 0x1 3
-> read err 3
-> a2: read: EMAC_STACR=0xffffc023, i=2
-> Error reading from the PHY
-> 07FF
->
+I turned of the TX interrupt and used the RX interrupt, and this very often works :(
+But not always. Approx. one out of 300 reads (reading one byte off a I2C expander chip)
+the RX interrupt gets 'lost' (in the CPM?). Maybe the distance in time between the RX
+and TX internal interrupt flags get to close and one of them wins? Or something like
+Wolgang Denk found in RISC timers overwriting port B data register, but now parts
+of the RISC software competing for the I2CER?
 
-I'm seeing this error too on our boards. But i'm not certain, if it's a
-problem of the MII controller in the 405 or a problem of the LXT971.
-What revision of the 405 do you have? What clock frequency your 405 run at?
+Anyway, I now use the TX interrupt again because the RX is not reliable.
 
-
-Dave
-
+	Bart
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
