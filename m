@@ -1,19 +1,12 @@
-Return-Path: <afleming@freescale.com>
-Received: from ftpbox.mot.com (ftpbox.mot.com [129.188.136.101])
-	by ozlabs.org (Postfix) with ESMTP id ABAAD2BDB5
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 30 Nov 2004 09:16:32 +1100 (EST)
-Received: from az33exr04.mot.com (pobox4.mot.com [10.64.251.243])
-	by ftpbox.mot.com (Motorola/Ftpbox) with ESMTP id iATMGPOP019060
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 29 Nov 2004 15:16:26 -0700 (MST)
-Mime-Version: 1.0 (Apple Message framework v619)
-Message-Id: <4B6DFECD-4254-11D9-A096-000393C30512@freescale.com>
-Content-Type: multipart/mixed; boundary=Apple-Mail-3-1052811554
-To: linuxppc-embedded@ozlabs.org
-From: Andy Fleming <afleming@freescale.com>
-Date: Mon, 29 Nov 2004 16:16:19 -0600
-Subject: [PATCH] Performance Monitor/Oprofile support for e500
+Return-Path: <zhonglei@RCS-9000.COM>
+Date: Tue, 30 Nov 2004 10:32:22 +0800
+Message-Id: <200411301032.AA40894774@RCS-9000.COM>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: "zhonglei" <zhonglei@RCS-9000.COM>
+To: <Linuxppc-embedded@ozlabs.org>
+Subject: problems on USB
+Reply-To: zhonglei@RCS-9000.COM
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,948 +17,176 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+hi
+   My system is Lite5200 with DENX Embedded Linux running on it.When I tried to enable my USB port to use my u-disk, 
 
---Apple-Mail-3-1052811554
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
-	charset=US-ASCII;
-	format=flowed
+the problem occured.
+   I have enabled USB support with 'make xconfig'. The reports are as follows:
+********************************************************************
+  U-Boot 1.1.2 (Nov 12 2004 - 11:46:06)
 
-This patch adds support for using the performance monitors on e500, and 
-for oprofile.
+CPU:   MPC5200 v1.2 at 462 MHz
+       Bus 132 MHz, IPB 132 MHz, PCI 33 MHz
+Board: Motorola MPC5200 (IceCube)
+I2C:   85 kHz, ready
+DRAM:  64 MB
+FLASH: 16 MB
+PCI:   Bus Dev VenId DevId Class Int
+        00  1a  1057  5803  0680  00
+In:    serial
+Out:   serial
+Err:   serial
+Net:   FEC ETHERNET
+IDE:   Bus 0: OK
+  Device 0: Model: Flash Card Firm: 2N3-0925 Ser#: CF00000000
+            Type: Removable Hard Disk
+            Capacity: 123.0 MB = 0.1 GB (251904 x 512)
+  Device 1: not available
 
+Autostarting.Press any key to abort..
 
---Apple-Mail-3-1052811554
-Content-Transfer-Encoding: 7bit
-Content-Type: application/octet-stream; x-unix-mode=0644;
-	name="op_kernel_patch_11292004"
-Content-Disposition: attachment;
-	filename=op_kernel_patch_11292004
+Hit any key to stop autoboot:  0
+Using FEC ETHERNET device
+TFTP from server 198.87.102.60; our IP address is 198.87.102.210
+Filename 'MPC5200/uImage'.
+Load address: 0x100000
+Loading: #################################################################
+###############################################################
+######################################
+done
+Bytes transferred = 857559 (d15d7 hex)
+## Booting image at 00100000 ...
+   Image Name:   Linux-2.4.25
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    857495 Bytes = 837.4 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+Memory BAT mapping: BAT2=64Mb, BAT3=0Mb, residual: 0Mb
+Linux version 2.4.25 (root@198.87.102.60.netdial.caribe.net) (gcc version 3.2.24
+On node 0 totalpages: 16384
+zone(0): 16384 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line: root=/dev/nfs rw nfsroot=198.87.102.60:/home/zl/ELDK/ppc_8f
+Calibrating delay loop... 307.20 BogoMIPS
+Memory: 62212k available (1500k kernel code, 464k data, 76k init, 0k highmem)
+Dentry cache hash table entries: 8192 (order: 4, 65536 bytes)
+Inode cache hash table entries: 4096 (order: 3, 32768 bytes)
+Mount cache hash table entries: 512 (order: 0, 4096 bytes)
+Buffer cache hash table entries: 4096 (order: 2, 16384 bytes)
+Page-cache hash table entries: 16384 (order: 4, 65536 bytes)
+POSIX conformance testing by UNIFIX
+PCI: Probing PCI hardware
+PCI: Cannot allocate resource region 0 of device 00:1a.0
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society NET3.039
+Initializing RT netlink socket
+Starting kswapd
+Journalled Block Device driver loaded
+JFFS2 version 2.2. (C) 2001-2003 Red Hat, Inc.
+pty: 256 Unix98 ptys configured
+ttyS0 on PSC1
+ttyS1 on PSC2
+ttyS2 on PSC3
+RAMDISK driver initialized: 16 RAM disks of 16384K size 1024 blocksize
+loop: loaded (max 8 devices)
+Uniform Multi-Platform E-IDE driver Revision: 7.00beta4-2.4
+ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+Port Config is: 0x11050004
+ipb=132MHz, set clock period to 7
+GPIO config: 11050004
+ATA invalid: 01000000
+ATA hostcnf: 03000000
+ATA pio1   : 100a0a00
+ATA pio2   : 02040600
+XLB Arb cnf: 0000a366
+mpc5xxx_ide: Setting up IDE interface ide0...
+ATA DMA task: 5
+Probing IDE interface ide0...
+hda: Flash Card, CFA DISK drive
+ide0 at 0xf0003a60-0xf0003a67,0xf0003a5c on irq 45
+hda: attached ide-disk driver.
+hda: 251904 sectors (129 MB) w/0KiB Cache, CHS=984/16/16
+Partition check:
+ hda: hda1
+Icecube Bank 0: Found 1 x8 devices at 0x0 in 8-bit mode
+Icecube Bank 0: Found 1 x8 devices at 0x800000 in 8-bit mode
+ Amd/Fujitsu Extended Query Table at 0x0040
+Icecube Bank 0: CFI does not contain boot bank location. Assuming top.
+number of CFI chips: 2
+cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.
+Icecube flash bank 0: Using static image partition definition
+Creating 5 MTD partitions on "Icecube Bank 0":
+0x00000000-0x00800000 : "Spare"
+0x00800000-0x00900000 : "kernel"
+0x00900000-0x00c00000 : "initrd"
+0x00c00000-0x00f00000 : "jffs"
+0x00f00000-0x01000000 : "Firmware"
+usb.c: registered new driver hub
+host/usb-ohci.c: USB OHCI at membase 0xf0001000, IRQ 44
+host/usb-ohci.c: usb-0, Built-In ohci
+usb.c: new USB bus registered, assigned bus number 1
+hub.c: USB hub found
+hub.c: 1 port detected
+NET4: Linux TCP/IP 1.0 for NET4.0
+eth0: Phy @ 0x0, type LXT971 (0x001378e2)
+IP Protocols: ICMP, UDP, TCP, IGMP
+IP: routing cache hash table of 512 buckets, 4Kbytes
+TCP: Hash tables configured (established 4096 bind 8192)
+eth0: config: auto-negotiation on, 100FDX, 100HDX, 10FDX, 10HDX.
+eth0: Waiting for the link to be up...
+eth0: status: link up, 100 Mbps Full Duplex, auto-negotiation complete.
+IP-Config: Complete:
+      device=eth0, addr=198.87.102.210, mask=255.0.0.0, gw=198.87.102.60,
+     host=icecube, domain=, nis-domain=(none),
+     bootserver=198.87.102.60, rootserver=198.87.102.60, rootpath=
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+Looking up port of RPC 100003/2 on 198.87.102.60
+Looking up port of RPC 100005/1 on 198.87.102.60
+VFS: Mounted root (nfs filesystem).
+Freeing unused kernel memory: 76k init
+INIT: version 2.84 booting
+                Welcome to DENX Embedded Linux Environment
+                Press 'I' to enter interactive startup.
+Building the cache [  OK  ]
+Mounting proc filesystem:  [  OK  ]
+Configuring kernel parameters:  [  OK  ]
+RTC_RD_TIME: Invalid argument
+ioctl() to /dev/rtc to read the time failed.
+Setting clock : Wed Dec 31 19:00:09 EST 1969 [  OK  ]
+Setting hostname icecube:  [  OK  ]
+Mounting USB filesystem:  mount: mount point /proc/bus/usb does not exist
+[FAILED]
+Activating swap partitions:  [  OK  ]
+Checking filesystems
+[  OK  ]
+Mounting local filesystems:  [  OK  ]
+Enabling swap space:  [  OK  ]
+modprobe: Can't open dependencies file /lib/modules/2.4.25/modules.dep (No such)
+INIT: Entering runlevel: 3
+Entering non-interactive startup
+Setting network parameters:  [  OK  ]
+Bringing up loopback interface:  [  OK  ]
+Starting system logger: [  OK  ]
+Starting kernel logger: [  OK  ]
+Initializing random number generator:  [  OK  ]
+Starting portmapper: [  OK  ]
+Mounting NFS filesystems:  [  OK  ]
+Mounting other filesystems:  [  OK  ]
+Starting xinetd: [  OK  ]
 
-diff -Nru a/arch/ppc/kernel/Makefile b/arch/ppc/kernel/Makefile
---- a/arch/ppc/kernel/Makefile	2004-11-29 15:04:37 -06:00
-+++ b/arch/ppc/kernel/Makefile	2004-11-29 15:04:37 -06:00
-@@ -14,7 +14,7 @@
- obj-y				:= entry.o traps.o irq.o idle.o time.o misc.o \
- 					process.o signal.o ptrace.o align.o \
- 					semaphore.o syscalls.o setup.o \
--					cputable.o ppc_htab.o
-+					cputable.o ppc_htab.o perfmon.o
- obj-$(CONFIG_6xx)		+= l2cr.o cpu_setup_6xx.o
- obj-$(CONFIG_POWER4)		+= cpu_setup_power4.o
- obj-$(CONFIG_MODULES)		+= module.o ppc_ksyms.o
-@@ -24,6 +24,7 @@
- obj-$(CONFIG_SMP)		+= smp.o smp-tbsync.o
- obj-$(CONFIG_TAU)		+= temp.o
- obj-$(CONFIG_ALTIVEC)		+= vecemu.o vector.o
-+obj-$(CONFIG_FSL_BOOKE)		+= perfmon_fsl_booke.o
- 
- ifndef CONFIG_MATH_EMULATION
- obj-$(CONFIG_8xx)		+= softemu8xx.o
-diff -Nru a/arch/ppc/kernel/head_e500.S b/arch/ppc/kernel/head_e500.S
---- a/arch/ppc/kernel/head_e500.S	2004-11-29 15:04:37 -06:00
-+++ b/arch/ppc/kernel/head_e500.S	2004-11-29 15:04:37 -06:00
-@@ -666,7 +666,8 @@
- 	EXCEPTION(0x2050, SPEFloatingPointRound, UnknownException, EXC_XFER_EE)
- 
- 	/* Performance Monitor */
--	EXCEPTION(0x2060, PerformanceMonitor, UnknownException, EXC_XFER_EE)
-+	EXCEPTION(0x2060, PerformanceMonitor, PerformanceMonitorException, EXC_XFER_STD)
-+
- 
- 	/* Debug Interrupt */
- 	DEBUG_EXCEPTION
-diff -Nru a/arch/ppc/kernel/perfmon.c b/arch/ppc/kernel/perfmon.c
---- /dev/null	Wed Dec 31 16:00:00 196900
-+++ b/arch/ppc/kernel/perfmon.c	2004-11-29 15:04:37 -06:00
-@@ -0,0 +1,94 @@
-+/* kernel/perfmon.c
-+ * PPC 32 Performance Monitor Infrastructure
-+ *
-+ * Author: Andy Fleming
-+ * Copyright (c) 2004 Freescale Semiconductor, Inc
-+ *
-+ *  This program is free software; you can redistribute it and/or
-+ *  modify it under the terms of the GNU General Public License
-+ *  as published by the Free Software Foundation; either version
-+ *  2 of the License, or (at your option) any later version.
-+ */ 
-+
-+#include <linux/errno.h>
-+#include <linux/sched.h>
-+#include <linux/kernel.h>
-+#include <linux/mm.h>
-+#include <linux/stddef.h>
-+#include <linux/unistd.h>
-+#include <linux/ptrace.h>
-+#include <linux/slab.h>
-+#include <linux/user.h>
-+#include <linux/a.out.h>
-+#include <linux/interrupt.h>
-+#include <linux/config.h>
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/prctl.h>
-+
-+#include <asm/pgtable.h>
-+#include <asm/uaccess.h>
-+#include <asm/system.h>
-+#include <asm/io.h>
-+#include <asm/reg.h>
-+#include <asm/xmon.h>
-+
-+/* A lock to regulate grabbing the interrupt */
-+spinlock_t perfmon_lock = SPIN_LOCK_UNLOCKED;
-+
-+#ifdef CONFIG_FSL_BOOKE
-+static void dummy_perf(struct pt_regs *regs)
-+{
-+	unsigned int pmgc0 = mfpmr(PMRN_PMGC0);
-+
-+	pmgc0 &= ~PMGC0_PMIE;
-+	mtpmr(PMRN_PMGC0, pmgc0);
-+}
-+
-+#else
-+/* Ensure exceptions are disabled */
-+#define MMCR0_PMXE      (1UL << (31 - 5))
-+
-+static void dummy_perf(struct pt_regs *regs)
-+{
-+	unsigned int mmcr0 = mfspr(SPRN_MMCR0);
-+
-+	mmcr0 &= ~MMCR0_PMXE;
-+	mtspr(SPRN_MMCR0, mmcr0);
-+}
-+#endif
-+
-+void (*perf_irq)(struct pt_regs *) = dummy_perf;
-+
-+/* Grab the interrupt, if it's free.
-+ * Returns 0 on success, -1 if the interrupt is taken already */
-+int request_perfmon_irq(void (*handler)(struct pt_regs *))
-+{
-+	int err = 0;
-+
-+	spin_lock(&perfmon_lock);
-+
-+	if (perf_irq == dummy_perf)
-+		perf_irq = handler;
-+	else {
-+		pr_info("perfmon irq already handled by %p\n", perf_irq);
-+		err = -1;
-+	}
-+
-+	spin_unlock(&perfmon_lock);
-+
-+	return err;
-+}
-+
-+void free_perfmon_irq(void)
-+{
-+	spin_lock(&perfmon_lock);
-+
-+	perf_irq = dummy_perf;
-+
-+	spin_unlock(&perfmon_lock);
-+}
-+
-+EXPORT_SYMBOL(perf_irq);
-+EXPORT_SYMBOL(request_perfmon_irq);
-+EXPORT_SYMBOL(free_perfmon_irq);
-diff -Nru a/arch/ppc/kernel/perfmon_fsl_booke.c b/arch/ppc/kernel/perfmon_fsl_booke.c
---- /dev/null	Wed Dec 31 16:00:00 196900
-+++ b/arch/ppc/kernel/perfmon_fsl_booke.c	2004-11-29 15:04:37 -06:00
-@@ -0,0 +1,230 @@
-+/* kernel/perfmon_fsl_booke.c
-+ * Freescale Book-E Performance Monitor code
-+ *
-+ * Author: Andy Fleming
-+ * Copyright (c) 2004 Freescale Semiconductor, Inc
-+ *
-+ *  This program is free software; you can redistribute it and/or
-+ *  modify it under the terms of the GNU General Public License
-+ *  as published by the Free Software Foundation; either version
-+ *  2 of the License, or (at your option) any later version.
-+ */ 
-+
-+#include <linux/errno.h>
-+#include <linux/sched.h>
-+#include <linux/kernel.h>
-+#include <linux/mm.h>
-+#include <linux/stddef.h>
-+#include <linux/unistd.h>
-+#include <linux/ptrace.h>
-+#include <linux/slab.h>
-+#include <linux/user.h>
-+#include <linux/a.out.h>
-+#include <linux/interrupt.h>
-+#include <linux/config.h>
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/prctl.h>
-+
-+#include <asm/pgtable.h>
-+#include <asm/uaccess.h>
-+#include <asm/system.h>
-+#include <asm/io.h>
-+#include <asm/reg.h>
-+#include <asm/xmon.h>
-+
-+void init_pmc_stop(int ctr);
-+void set_pmc_event(int ctr, int event);
-+void set_pmc_user_kernel(int ctr, int user, int kernel);
-+void set_pmc_marked(int ctr, int mark0, int mark1);
-+void pmc_start_ctr(int ctr, int enable);
-+void pmc_start_ctrs(int enable);
-+void pmc_stop_ctrs(void);
-+void dump_pmcs(void);
-+
-+static inline u32 get_pmlca(int ctr);
-+static inline void set_pmlca(int ctr, u32 pmlca);
-+
-+static inline u32 get_pmlca(int ctr)
-+{
-+	u32 pmlca;
-+
-+	switch (ctr) {
-+		case 0:
-+			pmlca = mfpmr(PMRN_PMLCA0);
-+			break;
-+		case 1:
-+			pmlca = mfpmr(PMRN_PMLCA1);
-+			break;
-+		case 2:
-+			pmlca = mfpmr(PMRN_PMLCA2);
-+			break;
-+		case 3:
-+			pmlca = mfpmr(PMRN_PMLCA3);
-+			break;
-+		default:
-+			panic("Bad ctr number\n");
-+	}
-+
-+	return pmlca;
-+}
-+
-+static inline void set_pmlca(int ctr, u32 pmlca)
-+{
-+	switch (ctr) {
-+		case 0:
-+			mtpmr(PMRN_PMLCA0, pmlca);
-+			break;
-+		case 1:
-+			mtpmr(PMRN_PMLCA1, pmlca);
-+			break;
-+		case 2:
-+			mtpmr(PMRN_PMLCA2, pmlca);
-+			break;
-+		case 3:
-+			mtpmr(PMRN_PMLCA3, pmlca);
-+			break;
-+		default:
-+			panic("Bad ctr number\n");
-+	}
-+}
-+
-+void init_pmc_stop(int ctr)
-+{
-+	u32 pmlca = (PMLCA_FC | PMLCA_FCS | PMLCA_FCU |
-+			PMLCA_FCM1 | PMLCA_FCM0);
-+	u32 pmlcb = 0;
-+
-+	switch (ctr) {
-+		case 0:
-+			mtpmr(PMRN_PMLCA0, pmlca);
-+			mtpmr(PMRN_PMLCB0, pmlcb);
-+			break;
-+		case 1:
-+			mtpmr(PMRN_PMLCA1, pmlca);
-+			mtpmr(PMRN_PMLCB1, pmlcb);
-+			break;
-+		case 2:
-+			mtpmr(PMRN_PMLCA2, pmlca);
-+			mtpmr(PMRN_PMLCB2, pmlcb);
-+			break;
-+		case 3:
-+			mtpmr(PMRN_PMLCA3, pmlca);
-+			mtpmr(PMRN_PMLCB3, pmlcb);
-+			break;
-+		default:
-+			panic("Bad ctr number!\n");
-+	}
-+}
-+
-+void set_pmc_event(int ctr, int event)
-+{
-+	u32 pmlca;
-+
-+	pmlca = get_pmlca(ctr);
-+
-+	pmlca = (pmlca & ~PMLCA_EVENT_MASK) |
-+		((event << PMLCA_EVENT_SHIFT) &
-+		 PMLCA_EVENT_MASK);
-+
-+	set_pmlca(ctr, pmlca);
-+}
-+
-+void set_pmc_user_kernel(int ctr, int user, int kernel)
-+{
-+	u32 pmlca;
-+
-+	pmlca = get_pmlca(ctr);
-+
-+	if(user)
-+		pmlca &= ~PMLCA_FCU;
-+	else
-+		pmlca |= PMLCA_FCU;
-+
-+	if(kernel)
-+		pmlca &= ~PMLCA_FCS;
-+	else
-+		pmlca |= PMLCA_FCS;
-+
-+	set_pmlca(ctr, pmlca);
-+}
-+
-+void set_pmc_marked(int ctr, int mark0, int mark1)
-+{
-+	u32 pmlca = get_pmlca(ctr);
-+
-+	if(mark0)
-+		pmlca &= ~PMLCA_FCM0;
-+	else
-+		pmlca |= PMLCA_FCM0;
-+
-+	if(mark1)
-+		pmlca &= ~PMLCA_FCM1;
-+	else
-+		pmlca |= PMLCA_FCM1;
-+
-+	set_pmlca(ctr, pmlca);
-+}
-+
-+void pmc_start_ctr(int ctr, int enable)
-+{
-+	u32 pmlca = get_pmlca(ctr);
-+
-+	pmlca &= ~PMLCA_FC;
-+
-+	if (enable)
-+		pmlca |= PMLCA_CE;
-+	else
-+		pmlca &= ~PMLCA_CE;
-+
-+	set_pmlca(ctr, pmlca);
-+}
-+
-+void pmc_start_ctrs(int enable)
-+{
-+	u32 pmgc0 = mfpmr(PMRN_PMGC0);
-+
-+	pmgc0 &= ~PMGC0_FAC;
-+	pmgc0 |= PMGC0_FCECE;
-+
-+	if (enable)
-+		pmgc0 |= PMGC0_PMIE;
-+	else
-+		pmgc0 &= ~PMGC0_PMIE;
-+
-+	mtpmr(PMRN_PMGC0, pmgc0);
-+}
-+
-+void pmc_stop_ctrs(void)
-+{
-+	u32 pmgc0 = mfpmr(PMRN_PMGC0);
-+
-+	pmgc0 |= PMGC0_FAC;
-+
-+	pmgc0 &= ~(PMGC0_PMIE | PMGC0_FCECE);
-+
-+	mtpmr(PMRN_PMGC0, pmgc0);
-+}
-+
-+void dump_pmcs(void)
-+{
-+	printk("pmgc0: %x\n", mfpmr(PMRN_PMGC0));
-+	printk("pmc\t\tpmlca\t\tpmlcb\n");
-+	printk("%8x\t%8x\t%8x\n", mfpmr(PMRN_PMC0),
-+			mfpmr(PMRN_PMLCA0), mfpmr(PMRN_PMLCB0));
-+	printk("%8x\t%8x\t%8x\n", mfpmr(PMRN_PMC1),
-+			mfpmr(PMRN_PMLCA1), mfpmr(PMRN_PMLCB1));
-+	printk("%8x\t%8x\t%8x\n", mfpmr(PMRN_PMC2),
-+			mfpmr(PMRN_PMLCA2), mfpmr(PMRN_PMLCB2));
-+	printk("%8x\t%8x\t%8x\n", mfpmr(PMRN_PMC3),
-+			mfpmr(PMRN_PMLCA3), mfpmr(PMRN_PMLCB3));
-+}
-+
-+EXPORT_SYMBOL(init_pmc_stop);
-+EXPORT_SYMBOL(set_pmc_event);
-+EXPORT_SYMBOL(set_pmc_user_kernel);
-+EXPORT_SYMBOL(set_pmc_marked);
-+EXPORT_SYMBOL(pmc_start_ctr);
-+EXPORT_SYMBOL(pmc_start_ctrs);
-+EXPORT_SYMBOL(pmc_stop_ctrs);
-+EXPORT_SYMBOL(dump_pmcs);
-diff -Nru a/arch/ppc/kernel/traps.c b/arch/ppc/kernel/traps.c
---- a/arch/ppc/kernel/traps.c	2004-11-29 15:04:37 -06:00
-+++ b/arch/ppc/kernel/traps.c	2004-11-29 15:04:37 -06:00
-@@ -71,6 +71,7 @@
-  * Trap & Exception support
-  */
- 
-+extern void (*perf_irq)(struct pt_regs *);
- 
- spinlock_t die_lock = SPIN_LOCK_UNLOCKED;
- 
-@@ -725,6 +726,11 @@
- 	}
- }
- #endif /* CONFIG_ALTIVEC */
-+
-+void PerformanceMonitorException(struct pt_regs *regs)
-+{
-+	perf_irq(regs);
-+}
- 
- #ifdef CONFIG_FSL_BOOKE
- void CacheLockingException(struct pt_regs *regs, unsigned long address,
-diff -Nru a/arch/ppc/oprofile/Makefile b/arch/ppc/oprofile/Makefile
---- a/arch/ppc/oprofile/Makefile	2004-11-29 15:04:37 -06:00
-+++ b/arch/ppc/oprofile/Makefile	2004-11-29 15:04:37 -06:00
-@@ -6,4 +6,4 @@
- 		oprofilefs.o oprofile_stats.o \
- 		timer_int.o )
- 
--oprofile-y := $(DRIVER_OBJS) init.o
-+oprofile-y := $(DRIVER_OBJS) common.o op_model_fsl_booke.o
-diff -Nru a/arch/ppc/oprofile/common.c b/arch/ppc/oprofile/common.c
---- /dev/null	Wed Dec 31 16:00:00 196900
-+++ b/arch/ppc/oprofile/common.c	2004-11-29 15:04:37 -06:00
-@@ -0,0 +1,163 @@
-+/*
-+ * PPC 32 oprofile support
-+ * Based on PPC64 oprofile support
-+ * Copyright (C) 2004 Anton Blanchard <anton@au.ibm.com>, IBM
-+ *
-+ * Copyright (C) Freescale Semiconductor, Inc 2004
-+ *
-+ * Author: Andy Fleming
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/oprofile.h>
-+#include <linux/slab.h>
-+#include <linux/init.h>
-+#include <linux/smp.h>
-+#include <linux/errno.h>
-+#include <asm/ptrace.h>
-+#include <asm/system.h>
-+#include <asm/perfmon.h>
-+#include <asm/cputable.h>
-+
-+#include "op_impl.h"
-+
-+extern struct op_ppc32_model op_model_fsl_booke;
-+static struct op_ppc32_model *model;
-+
-+static struct op_counter_config ctr[OP_MAX_COUNTER];
-+static struct op_system_config sys;
-+
-+static void op_handle_interrupt(struct pt_regs *regs)
-+{
-+	model->handle_interrupt(regs, ctr);
-+}
-+
-+static int op_ppc32_setup(void)
-+{
-+	/* Install our interrupt handler into the existing hook.  */
-+	if(request_perfmon_irq(&op_handle_interrupt))
-+		return -EBUSY;
-+
-+	mb();
-+
-+	/* Pre-compute the values to stuff in the hardware registers.  */
-+	model->reg_setup(ctr, &sys, model->num_counters);
-+
-+#if 0
-+	/* FIXME: Make multi-cpu work */
-+	/* Configure the registers on all cpus.  */
-+	on_each_cpu(model->reg_setup, NULL, 0, 1);
-+#endif
-+
-+	return 0;
-+}
-+
-+static void op_ppc32_shutdown(void)
-+{
-+	mb();
-+
-+	/* Remove our interrupt handler. We may be removing this module. */
-+	free_perfmon_irq();
-+}
-+
-+static void op_ppc32_cpu_start(void *dummy)
-+{
-+	model->start(ctr);
-+}
-+
-+static int op_ppc32_start(void)
-+{
-+	on_each_cpu(op_ppc32_cpu_start, NULL, 0, 1);
-+	return 0;
-+}
-+
-+static inline void op_ppc32_cpu_stop(void *dummy)
-+{
-+	model->stop();
-+}
-+
-+static void op_ppc32_stop(void)
-+{
-+	on_each_cpu(op_ppc32_cpu_stop, NULL, 0, 1);
-+}
-+
-+static int op_ppc32_create_files(struct super_block *sb, struct dentry *root)
-+{
-+	int i;
-+
-+	for (i = 0; i < model->num_counters; ++i) {
-+		struct dentry *dir;
-+		char buf[3];
-+
-+		snprintf(buf, sizeof buf, "%d", i);
-+		dir = oprofilefs_mkdir(sb, root, buf);
-+
-+		oprofilefs_create_ulong(sb, dir, "enabled", &ctr[i].enabled);
-+		oprofilefs_create_ulong(sb, dir, "event", &ctr[i].event);
-+		oprofilefs_create_ulong(sb, dir, "count", &ctr[i].count);
-+		oprofilefs_create_ulong(sb, dir, "kernel", &ctr[i].kernel);
-+		oprofilefs_create_ulong(sb, dir, "user", &ctr[i].user);
-+
-+		/* FIXME: Not sure if this is used */
-+		oprofilefs_create_ulong(sb, dir, "unit_mask", &ctr[i].unit_mask);
-+	}
-+
-+	oprofilefs_create_ulong(sb, root, "enable_kernel", &sys.enable_kernel);
-+	oprofilefs_create_ulong(sb, root, "enable_user", &sys.enable_user);
-+
-+	/* Default to tracing both kernel and user */
-+	sys.enable_kernel = 1;
-+	sys.enable_user = 1;
-+
-+	return 0;
-+}
-+
-+static struct oprofile_operations oprof_ppc32_ops = {
-+	.create_files	= op_ppc32_create_files,
-+	.setup		= op_ppc32_setup,
-+	.shutdown	= op_ppc32_shutdown,
-+	.start		= op_ppc32_start,
-+	.stop		= op_ppc32_stop,
-+	.cpu_type	= NULL		/* To be filled in below. */
-+};
-+
-+int __init oprofile_arch_init(struct oprofile_operations **ops)
-+{
-+	char *name;
-+	int cpu_id = smp_processor_id();
-+
-+#ifdef CONFIG_FSL_BOOKE
-+	model = &op_model_fsl_booke;
-+#else
-+	printk(KERN_ERR "oprofile enabled on unsupported processor!\n");
-+	return -ENODEV;
-+#endif
-+
-+	name = kmalloc(32, GFP_KERNEL);
-+
-+	if (NULL == name)
-+		return -ENOMEM;
-+
-+	sprintf(name, "ppc/%s", cur_cpu_spec[cpu_id]->cpu_name);
-+
-+	oprof_ppc32_ops.cpu_type = name;
-+
-+	model->num_counters = cur_cpu_spec[cpu_id]->num_pmcs;
-+
-+	*ops = &oprof_ppc32_ops;
-+
-+	printk(KERN_INFO "oprofile: using %s performance monitoring.\n",
-+	       oprof_ppc32_ops.cpu_type);
-+
-+	return 0;
-+}
-+
-+void oprofile_arch_exit(void)
-+{
-+	kfree(oprof_ppc32_ops.cpu_type);
-+	oprof_ppc32_ops.cpu_type = NULL;
-+}
-diff -Nru a/arch/ppc/oprofile/init.c b/arch/ppc/oprofile/init.c
---- a/arch/ppc/oprofile/init.c	2004-11-29 15:04:37 -06:00
-+++ /dev/null	Wed Dec 31 16:00:00 196900
-@@ -1,23 +0,0 @@
--/**
-- * @file init.c
-- *
-- * @remark Copyright 2002 OProfile authors
-- * @remark Read the file COPYING
-- *
-- * @author John Levon <levon@movementarian.org>
-- */
--
--#include <linux/kernel.h>
--#include <linux/oprofile.h>
--#include <linux/init.h>
--#include <linux/errno.h>
--
--int __init oprofile_arch_init(struct oprofile_operations ** ops)
--{
--	return -ENODEV;
--}
--
--
--void oprofile_arch_exit(void)
--{
--}
-diff -Nru a/arch/ppc/oprofile/op_impl.h b/arch/ppc/oprofile/op_impl.h
---- /dev/null	Wed Dec 31 16:00:00 196900
-+++ b/arch/ppc/oprofile/op_impl.h	2004-11-29 15:04:37 -06:00
-@@ -0,0 +1,45 @@
-+/*
-+ * Copyright (C) 2004 Anton Blanchard <anton@au.ibm.com>, IBM
-+ *
-+ * Based on alpha version.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#ifndef OP_IMPL_H
-+#define OP_IMPL_H 1
-+
-+#define OP_MAX_COUNTER 8
-+
-+/* Per-counter configuration as set via oprofilefs.  */
-+struct op_counter_config {
-+	unsigned long enabled;
-+	unsigned long event;
-+	unsigned long count;
-+	unsigned long kernel;
-+	unsigned long user;
-+	unsigned long unit_mask;
-+};
-+
-+/* System-wide configuration as set via oprofilefs.  */
-+struct op_system_config {
-+	unsigned long enable_kernel;
-+	unsigned long enable_user;
-+};
-+
-+/* Per-arch configuration */
-+struct op_ppc32_model {
-+	void (*reg_setup) (struct op_counter_config *,
-+			   struct op_system_config *,
-+			   int num_counters);
-+	void (*start) (struct op_counter_config *);
-+	void (*stop) (void);
-+	void (*handle_interrupt) (struct pt_regs *,
-+				  struct op_counter_config *);
-+	int num_counters;
-+};
-+
-+#endif /* OP_IMPL_H */
-diff -Nru a/arch/ppc/oprofile/op_model_fsl_booke.c b/arch/ppc/oprofile/op_model_fsl_booke.c
---- /dev/null	Wed Dec 31 16:00:00 196900
-+++ b/arch/ppc/oprofile/op_model_fsl_booke.c	2004-11-29 15:04:37 -06:00
-@@ -0,0 +1,185 @@
-+/*
-+ * oprofile/op_model_e500.c
-+ *
-+ * Freescale Book-E oprofile support, based on ppc64 oprofile support
-+ * Copyright (C) 2004 Anton Blanchard <anton@au.ibm.com>, IBM
-+ *
-+ * Copyright (c) 2004 Freescale Semiconductor, Inc
-+ *
-+ * Author: Andy Fleming
-+ * Maintainer: Kumar Gala <Kumar.Gala@freescale.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/oprofile.h>
-+#include <linux/init.h>
-+#include <linux/smp.h>
-+#include <asm/ptrace.h>
-+#include <asm/system.h>
-+#include <asm/processor.h>
-+#include <asm/cputable.h>
-+#include <asm/reg_booke.h>
-+#include <asm/page.h>
-+#include <asm/perfmon.h>
-+
-+#include "op_impl.h"
-+
-+static unsigned long reset_value[OP_MAX_COUNTER];
-+
-+static int num_counters;
-+static int oprofile_running;
-+
-+static inline unsigned int ctr_read(unsigned int i)
-+{
-+	switch(i) {
-+		case 0:
-+			return mfpmr(PMRN_PMC0);
-+		case 1:
-+			return mfpmr(PMRN_PMC1);
-+		case 2:
-+			return mfpmr(PMRN_PMC2);
-+		case 3:
-+			return mfpmr(PMRN_PMC3);
-+		default:
-+			return 0;
-+	}
-+}
-+
-+static inline void ctr_write(unsigned int i, unsigned int val)
-+{
-+	switch(i) {
-+		case 0:
-+			mtpmr(PMRN_PMC0, val);
-+			break;
-+		case 1:
-+			mtpmr(PMRN_PMC1, val);
-+			break;
-+		case 2:
-+			mtpmr(PMRN_PMC2, val);
-+			break;
-+		case 3:
-+			mtpmr(PMRN_PMC3, val);
-+			break;
-+		default:
-+			break;
-+	}
-+}
-+
-+
-+static void fsl_booke_reg_setup(struct op_counter_config *ctr,
-+			     struct op_system_config *sys,
-+			     int num_ctrs)
-+{
-+	int i;
-+
-+	num_counters = num_ctrs;
-+
-+	/* freeze all counters */
-+	pmc_stop_ctrs();
-+
-+	/* Our counters count up, and "count" refers to
-+	 * how much before the next interrupt, and we interrupt
-+	 * on overflow.  So we calculate the starting value
-+	 * which will give us "count" until overflow.
-+	 * Then we set the events on the enabled counters */
-+	for (i = 0; i < num_counters; ++i) {
-+		reset_value[i] = 0x80000000UL - ctr[i].count;
-+
-+		init_pmc_stop(i);
-+
-+		set_pmc_event(i, ctr[i].event);
-+
-+		set_pmc_user_kernel(i, ctr[i].user, ctr[i].kernel);
-+	}
-+}
-+
-+static void fsl_booke_start(struct op_counter_config *ctr)
-+{
-+	int i;
-+
-+	mtmsr(mfmsr() | MSR_PMM);
-+
-+	for (i = 0; i < num_counters; ++i) {
-+		if (ctr[i].enabled) {
-+			ctr_write(i, reset_value[i]);
-+			/* Set Each enabled counterd to only
-+			 * count when the Mark bit is not set */
-+			set_pmc_marked(i, 1, 0);
-+			pmc_start_ctr(i, 1);
-+		} else {
-+			ctr_write(i, 0);
-+
-+			/* Set the ctr to be stopped */
-+			pmc_start_ctr(i, 0);
-+		}
-+	}
-+
-+	/* Clear the freeze bit, and enable the interrupt.
-+	 * The counters won't actually start until the rfi clears
-+	 * the PMM bit */
-+	pmc_start_ctrs(1);
-+
-+	oprofile_running = 1;
-+
-+	pr_debug("start on cpu %d, pmgc0 %x\n", smp_processor_id(),
-+			mfpmr(PMRN_PMGC0));
-+}
-+
-+static void fsl_booke_stop(void)
-+{
-+	/* freeze counters */
-+	pmc_stop_ctrs();
-+
-+	oprofile_running = 0;
-+
-+	pr_debug("stop on cpu %d, pmgc0 %x\n", smp_processor_id(),
-+			mfpmr(PMRN_PMGC0));
-+
-+	mb();
-+}
-+
-+
-+static void fsl_booke_handle_interrupt(struct pt_regs *regs,
-+				    struct op_counter_config *ctr)
-+{
-+	unsigned long pc;
-+	int is_kernel;
-+	int val;
-+	int i;
-+	unsigned int cpu = smp_processor_id();
-+
-+	/* set the PMM bit (see comment below) */
-+	mtmsr(mfmsr() | MSR_PMM);
-+
-+	pc = regs->nip;
-+	is_kernel = (pc >= KERNELBASE);
-+
-+	for (i = 0; i < num_counters; ++i) {
-+		val = ctr_read(i);
-+		if (val < 0) {
-+			if (oprofile_running && ctr[i].enabled) {
-+				oprofile_add_sample(pc, is_kernel, i, cpu);
-+				ctr_write(i, reset_value[i]);
-+			} else {
-+				ctr_write(i, 0);
-+			}
-+		}
-+	}
-+
-+	/* The freeze bit was set by the interrupt. */
-+	/* Clear the freeze bit, and reenable the interrupt.
-+	 * The counters won't actually start until the rfi clears
-+	 * the PMM bit */
-+	pmc_start_ctrs(1);
-+}
-+
-+struct op_ppc32_model op_model_fsl_booke = {
-+	.reg_setup		= fsl_booke_reg_setup,
-+	.start			= fsl_booke_start,
-+	.stop			= fsl_booke_stop,
-+	.handle_interrupt	= fsl_booke_handle_interrupt,
-+};
-diff -Nru a/include/asm-ppc/cputable.h b/include/asm-ppc/cputable.h
---- a/include/asm-ppc/cputable.h	2004-11-29 15:04:37 -06:00
-+++ b/include/asm-ppc/cputable.h	2004-11-29 15:04:37 -06:00
-@@ -71,7 +71,6 @@
- #define CPU_FTR_TAU			0x00000010
- #define CPU_FTR_CAN_DOZE		0x00000020
- #define CPU_FTR_USE_TB			0x00000040
--#define CPU_FTR_604_PERF_MON		0x00000080
- #define CPU_FTR_601			0x00000100
- #define CPU_FTR_HPTE_TABLE		0x00000200
- #define CPU_FTR_CAN_NAP			0x00000400
-diff -Nru a/include/asm-ppc/perfmon.h b/include/asm-ppc/perfmon.h
---- /dev/null	Wed Dec 31 16:00:00 196900
-+++ b/include/asm-ppc/perfmon.h	2004-11-29 15:04:37 -06:00
-@@ -0,0 +1,18 @@
-+#ifndef __PERFMON_H
-+#define __PERFMON_H
-+
-+int request_perfmon_irq(void (*handler)(struct pt_regs *));
-+void free_perfmon_irq(void);
-+
-+#ifdef CONFIG_FSL_BOOKE
-+void init_pmc_stop(int ctr);
-+void set_pmc_event(int ctr, int event);
-+void set_pmc_user_kernel(int ctr, int user, int kernel);
-+void set_pmc_marked(int ctr, int mark0, int mark1);
-+void pmc_start_ctr(int ctr, int enable);
-+void pmc_start_ctrs(int enable);
-+void pmc_stop_ctrs(void);
-+void dump_pmcs(void);
-+#endif
-+
-+#endif /* __PERFMON_H */
-diff -Nru a/include/asm-ppc/reg_booke.h b/include/asm-ppc/reg_booke.h
---- a/include/asm-ppc/reg_booke.h	2004-11-29 15:04:37 -06:00
-+++ b/include/asm-ppc/reg_booke.h	2004-11-29 15:04:37 -06:00
-@@ -51,6 +51,59 @@
- #define mtpmr(rn, v)	asm volatile("mtpmr " __stringify(rn) ",%0" : : "r" (v))
- #endif /* __ASSEMBLY__ */
- 
-+/* Freescale Book E Performance Monitor APU Registers */
-+#define PMRN_PMC0	0x010	/* Performance Monitor Counter 0 */
-+#define PMRN_PMC1	0x011	/* Performance Monitor Counter 1 */
-+#define PMRN_PMC2	0x012	/* Performance Monitor Counter 1 */
-+#define PMRN_PMC3	0x013	/* Performance Monitor Counter 1 */
-+#define PMRN_PMLCA0	0x090	/* PM Local Control A0 */
-+#define PMRN_PMLCA1	0x091	/* PM Local Control A1 */
-+#define PMRN_PMLCA2	0x092	/* PM Local Control A2 */
-+#define PMRN_PMLCA3	0x093	/* PM Local Control A3 */
-+
-+#define PMLCA_FC	0x80000000	/* Freeze Counter */
-+#define PMLCA_FCS	0x40000000	/* Freeze in Supervisor */
-+#define PMLCA_FCU	0x20000000	/* Freeze in User */
-+#define PMLCA_FCM1	0x10000000	/* Freeze when PMM==1 */
-+#define PMLCA_FCM0	0x08000000	/* Freeze when PMM==0 */
-+#define PMLCA_CE	0x04000000	/* Condition Enable */
-+
-+#define PMLCA_EVENT_MASK 0x007f0000	/* Event field */
-+#define PMLCA_EVENT_SHIFT	16
-+
-+#define PMRN_PMLCB0	0x110	/* PM Local Control B0 */
-+#define PMRN_PMLCB1	0x111	/* PM Local Control B1 */
-+#define PMRN_PMLCB2	0x112	/* PM Local Control B2 */
-+#define PMRN_PMLCB3	0x113	/* PM Local Control B3 */
-+
-+#define PMLCB_THRESHMUL_MASK	0x0700	/* Threshhold Multiple Field */
-+#define PMLCB_THRESHMUL_SHIFT	8
-+
-+#define PMLCB_THRESHOLD_MASK	0x003f	/* Threshold Field */
-+#define PMLCB_THRESHOLD_SHIFT	0
-+
-+#define PMRN_PMGC0	0x190	/* PM Global Control 0 */
-+
-+#define PMGC0_FAC	0x80000000	/* Freeze all Counters */
-+#define PMGC0_PMIE	0x40000000	/* Interrupt Enable */
-+#define PMGC0_FCECE	0x20000000	/* Freeze countes on
-+					   Enabled Condition or
-+					   Event */
-+
-+#define PMRN_UPMC0	0x000	/* User Performance Monitor Counter 0 */
-+#define PMRN_UPMC1	0x001	/* User Performance Monitor Counter 1 */
-+#define PMRN_UPMC2	0x002	/* User Performance Monitor Counter 1 */
-+#define PMRN_UPMC3	0x003	/* User Performance Monitor Counter 1 */
-+#define PMRN_UPMLCA0	0x080	/* User PM Local Control A0 */
-+#define PMRN_UPMLCA1	0x081	/* User PM Local Control A1 */
-+#define PMRN_UPMLCA2	0x082	/* User PM Local Control A2 */
-+#define PMRN_UPMLCA3	0x083	/* User PM Local Control A3 */
-+#define PMRN_UPMLCB0	0x100	/* User PM Local Control B0 */
-+#define PMRN_UPMLCB1	0x101	/* User PM Local Control B1 */
-+#define PMRN_UPMLCB2	0x102	/* User PM Local Control B2 */
-+#define PMRN_UPMLCB3	0x103	/* User PM Local Control B3 */
-+#define PMRN_UPMGC0	0x180	/* User PM Global Control 0 */
-+
- 
- /* Machine State Register (MSR) Fields */
- #define MSR_UCLE	(1<<26)	/* User-mode cache lock enable */
+icecube login: root
+Last login: Wed Dec 31 19:02:11 on console
+bash-2.05b# 
+****************************************************************
 
---Apple-Mail-3-1052811554--
+It seems that the USB port has been detected.But the filesystem mounted unsuccessfully!(Mounting USB filesystem:  
+
+mount: mount point /proc/bus/usb does not exist)
+
+Please give a hand! Thanks in advance!!!!!
+
+BestRegards
+zhonglei
