@@ -1,32 +1,47 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3B7D8268.5060902@mvista.com>
-Date: Fri, 17 Aug 2001 13:45:28 -0700
-From: Matthew Locke <mlocke@mvista.com>
+Message-ID: <3B7D82D5.DD98A109@minolta-qms.com>
+Date: Fri, 17 Aug 2001 14:47:17 -0600
+From: Mark Pilon <mark.pilon@minolta-qms.com>
 MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Liu HongXun-a16975 <a16975@motorola.com>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Is there a PCI based 802.11b device driver for ppc linux?
-References: <01139FC052A0D411900B00508B9535FC02A9CA76@ZCH07EXM04.corp.mot.com> <20010817131403.G556@cpe-24-221-152-185.az.sprintbbd.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: init fails w/ new build of gcc & glibc
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Tom Rini wrote:
+Hi,
 
-> On Fri, Aug 17, 2001 at 11:11:28AM +0800, Liu HongXun-a16975 wrote:
->
->> Hi, all,
->> Our customized ppc based board only has PCI interface. I wonder if there is a PCI based 802.11b device driver for ppc linux?
->
->
-> Well, it depends on the chipset.  And is it a PCI one or a pcmcia one in a
-> pcmcia pci card.  I think some of the prism II and whatnot based cards work.
-> Take a look in drivers/net/wireless.
->
+I'm attempting to build gcc for powerPC as well as new binutils &
+glibc, -- all in an attempt to support a new 4xx chip w/ floating
+point.
 
-Both the prism II and Cisco PCI cards have device drivers.
+I'm using HHL 1.2 for the 405 & walnut as my base and am attempting
+to start using the new compiler and libraries:
 
+I've recompiled the kernel w/ the new compiler (albeit -msoft-float)
+and it boots fine;
+
+running w/ the hhl 1.2 libraries the whole system runs fine;
+
+supplying all of the libraries built under the new glibc causes the
+following when init is spawned:
+
+Kernel panic: Attempted to kill init!
+init: error while loading shared libraries: cannot open sh ared object file:
+cannot load shared object file: No such file or directory
+
+-- there is no comment as to what's missing ...
+
+I can spawn sash in place of 'init' and that runs (no surprise ...)
+-- I realize I've probably screwed up something pretty basic --
+I'm probably out of synch somewhere in the libraries but don't
+know how to debug this further.
+
+under sash, when I try to -exec /bin/ldd /bin/busybox all I get
+is a file-not-found for ldd ...
+
+thanks in advance,
+
+Mark
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
