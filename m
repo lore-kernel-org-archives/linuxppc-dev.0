@@ -1,58 +1,84 @@
-Message-ID: <3AD717A1.57872288@mvista.com>
-Date: Fri, 13 Apr 2001 11:13:37 -0400
-From: Dan Malek <dan@mvista.com>
+Message-ID: <3AD78DB3.6077A539@routefree.com>
+Date: Fri, 13 Apr 2001 16:37:23 -0700
+From: David Blythe <blythe@routefree.com>
 MIME-Version: 1.0
-To: Masahide Tomita <tomita@itl.nyc.co.jp>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Which rootfilesystem should I use on booting MBX860?
-References: <a04320401b6fc63ce0068@[192.168.10.144]>
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: 4xx tlbmiss renables interrupts while in kgdb
+Content-Type: multipart/mixed;
+ boundary="------------4B5179B0DCB57D1E28D5909B"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Masahide Tomita wrote:
+This is a multi-part message in MIME format.
+--------------4B5179B0DCB57D1E28D5909B
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-> Building the kernel and booting it on MBX was successful, but I'm so
-> confused about usage of initrd and so on.
+The 4xx tlbmiss handler reenables interrupts while handling a page
+fault.  Sometimes kgdb generates faults (that are ignored) while
+grubbing around in memory for backtraces and such and has the side
+effect of leaving interrupts enabled.  Makes debugging drivers more
+entertaining.
 
-I still believe the easiest thing to do is build up a small NFS
-root file system for testing.  When it has what you want, just
-copy it to a ramdisk.
+Here is a small, but not particularly elegant patch to fix it (against
+the mvista 010216 release for the 405).
+	david
+--------------4B5179B0DCB57D1E28D5909B
+Content-Type: text/plain; charset=us-ascii;
+ name="patch7"
+Content-Disposition: inline;
+ filename="patch7"
+Content-Transfer-Encoding: 7bit
 
-> I'm using ramdisk.image from MontaVista,
+Index: arch/ppc/mm/4xx_tlb.c
+===================================================================
+diff -u -r1.2 4xx_tlb.c
+--- arch/ppc/mm/4xx_tlb.c	2001/03/16 20:18:16	1.2
++++ arch/ppc/mm/4xx_tlb.c	2001/04/13 23:27:12
+@@ -50,6 +50,9 @@
 
-I don't believe there is a ramdisk image provided in any MontaVista
-kit, so I don't know where this came from.  There certainly isn't
-anything provided for an 8xx.
 
+ /* Global Variables */
++#if defined(CONFIG_XMON) || defined(CONFIG_KGDB)
++extern void (*debugger_fault_handler)(struct pt_regs *);
++#endif
 
-> Options, which I can think of now, are:
+ static pin_entry_t    pin_table[PPC4XX_TLB_SIZE];
+ static unsigned long  tlb_next_replace = 0;
+@@ -347,6 +350,10 @@
+ 	dtlb_miss_count++;
 
-At least you have options and can make trade offs :-).
+ 	if (tlbMiss(regs, badaddr, wasWrite, 1)) {
++#if defined(CONFIG_XMON) || defined(CONFIG_KGDB)
++		/* don't enable interrupts while in the debugger */
++		if (!debugger_fault_handler)
++#endif
+ 		sti();
+ 		do_page_fault(regs, badaddr, wasWrite);
+ 		cli();
+@@ -362,6 +369,9 @@
+ 	itlb_miss_count++;
 
-> ...... I also don't know how to recompile tools to
-> run them without libraries.
+ 	if (!current) {
++#if defined(CONFIG_XMON) || defined(CONFIG_KGDB)
++		if (!debugger_fault_handler)
++#endif
+ 		sti();
+ 		bad_page_fault(regs, regs->nip);
+ 		cli();
+@@ -369,6 +379,9 @@
+ 	}
 
-If you are using the complete set of tools, libraries and applications
-from Hard Hat Linux, you don't need to recompile anything.
+ 	if (tlbMiss(regs, regs->nip, 0, 1)) {
++#if defined(CONFIG_XMON) || defined(CONFIG_KGDB)
++		if (!debugger_fault_handler)
++#endif
+ 		sti();
+ 		do_page_fault(regs, regs->nip, 0);
+ 		cli();
 
->   2. mount command doesn't work.
+--------------4B5179B0DCB57D1E28D5909B--
 
-Yes, it does.  Use the one for the 8xx and use the proper libraries.
-
-> And Ether is not up. Command ifconfig doesn't work either.
-
-Huh?  Yes, it does.  There is a problem in the driver that it
-doesn't shut down properly, but you can always bring it up and
-reconfigure it.
-
-One of the advantages of using everything from Hard Hat Linux is
-the tools, libraries, and applications are all built and tested
-to work together for a specific target.  Don't be mixing, matching,
-and copying stuff around or you will just end up with a mess.  Install
-what you need from the RPMs.
-
-	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
