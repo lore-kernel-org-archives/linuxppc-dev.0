@@ -1,33 +1,36 @@
-To: Dan Malek <dan@embeddededge.com>
-Cc: Alex Zeffertt <ajz@cambridgebroadband.com>,
+Date: Wed, 28 Nov 2001 16:36:37 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Wolfgang Denk <wd@denx.de>
+Cc: Dan Malek <dan@embeddededge.com>,
+	Alex Zeffertt <ajz@cambridgebroadband.com>,
 	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 8xx parameter RAM clashes 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 28 Dec 2001 12:21:05 EST."
-             <3C2CAA01.6040801@embeddededge.com>
-Date: Wed, 28 Nov 2001 18:35:08 +0100
-Message-Id: <20011128173513.92695F9BB@denx.denx.de>
+Subject: Re: 8xx parameter RAM clashes
+Message-ID: <20011128163637.B29541@cpe-24-221-152-185.az.sprintbbd.net>
+References: <3C2CAA01.6040801@embeddededge.com> <20011128173513.92695F9BB@denx.denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20011128173513.92695F9BB@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3C2CAA01.6040801@embeddededge.com> you wrote:
+On Wed, Nov 28, 2001 at 06:35:08PM +0100, Wolfgang Denk wrote:
 >
-> > it would be nice if the drivers would  register  the  locations  they
-> > use,  and  actually  CHECK for collisions, instead of silently let us
-> > run into strange and often hard to debug error conditions.
+> In message <3C2CAA01.6040801@embeddededge.com> you wrote:
+> >
+> > > it would be nice if the drivers would  register  the  locations  they
+> > > use,  and  actually  CHECK for collisions, instead of silently let us
+> > > run into strange and often hard to debug error conditions.
+> >
+> > So, add it then.
 >
-> So, add it then.
+> Does that mean that such a patch would be accepted?
 
-Does that mean that such a patch would be accepted?
-
-Wolfgang Denk
+Yes.  And if you want to throw in more error checking/handling, please
+do.
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-I have often regretted my speech, never my silence.
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
