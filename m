@@ -1,37 +1,39 @@
-Subject: Re: DVI External Monitor on TiBook IV
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: daRonin <daronin@digimerc.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.4.53.0302131535570.1429@daronin.digimerc.com>
-References: 
-	 <Pine.LNX.4.44.0302101721560.23854-100000@zirkon.biophys.uni-duesseldorf.de>
-	 <1044898053.10697.27.camel@thor>
-	 <Pine.LNX.4.53.0302131535570.1429@daronin.digimerc.com>
-Content-Type: text/plain
-Message-Id: <1045220800.1122.22.camel@zion.wanadoo.fr>
-Mime-Version: 1.0
-Date: 14 Feb 2003 12:06:40 +0100
+Date: Fri, 14 Feb 2003 11:32:44 -0600 (CST)
+From: vinai <vroopcha@mcw.edu>
+To: Matt Porter <porter@cox.net>
+Cc: "LinuxPPC Developers' List" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: vmalloc limits in PPC kernels ?
+Message-ID: <Pine.LNX.4.44.0302141128590.273-100000@kaiso.biophysics.mcw.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 2003-02-13 at 23:52, daRonin wrote:
-> I am running with external Cinema 23" display on my TiBook IV (Radeon
-> Mobility 9000).
->
-> The combination works great with earily 2.4.20 kernels, however with
-> 2.4.20-ben5 my LCD stays on and goes white.
->
-> I managed to determine that LCD is not turned on by radeonfb, it turns own
-> earlier in the boot process. So even with video=ofonly the LCD stays on.
->
-> My knowledge of kernel workings is not sufficent to determine where
-> exactely the problem occurs. I would appreciate any lead into the right
-> direction...
+Matt,
 
-Please send me your latest working version of radeonfb.c
+Thanks much for the information you provided below.  Are there any
+pointers/references as to why these changes were actually implemented,
+or is it really a case of "the source being the guide" ?  As I said,
+this issue is really troubling for us, and I want to see if there is
+a "clean" way to circumvent that limit without screwing up the MM
+subsystem (at least not too badly :) ...
 
-Ben.
+cheers
+vinai
 
+On Thu, 13 Feb 2003, Matt Porter wrote:
+
+> All architectures have a limit.  Its size is defined by
+> VMALLOC_END-VMALLOC_START and further limited by the size of each
+> preceding allocation (+ a PAGE_SIZE pad) before the allocation in
+> question.  Allocations also include ioremaps and on some architectures
+> consistent memory allocations absorb vmalloc space.
+>
+> You can see the constraints in asm-ppc/pgtable.h.  On PPC, it is possible
+> to change the default parameters in order to expand the amount of vmalloc
+> space available.  This is accomplished via config options under the
+> advanced kernel options menu.  With PAGE_OFFSET at 0x40000000 and highmem,
+> I've run a system with nearly 3GB of vmalloc space.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
