@@ -1,80 +1,63 @@
-Message-ID: <3FD032C1.9060504@intracom.gr>
-Date: Fri, 05 Dec 2003 09:24:49 +0200
-From: Pantelis Antoniou <panto@intracom.gr>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <001c01c3bb0a$e18eb900$0400a8c0@eurostudio.local>
+From: "AlessandroPPC" <aleppcrossi@libero.it>
+To: "Wolfgang Denk" <wd@denx.de>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <20031203181613.75859C5F5F@atlas.denx.de>
+Subject: R: ram root filesystem 
+Date: Fri, 5 Dec 2003 09:36:28 +0100
 MIME-Version: 1.0
-To: Dan Malek <dan@embeddededge.com>
-Cc: Paul Mackerras <paulus@samba.org>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: the door is closing for 2.4
-References: <16334.33020.624995.521330@cargo.ozlabs.ibm.com> <3FCEFB59.80300@intracom.gr> <3FCF3CE0.4020008@embeddededge.com> <3FCF4D78.9000706@intracom.gr> <3FCF540C.3010302@embeddededge.com>
-In-Reply-To: <3FCF540C.3010302@embeddededge.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek wrote:
+Many Thanks Wolfgang Denk for your indacations.
+Something abaut your questions.
 
-> Pantelis Antoniou wrote:
->
->> Once upon a time I had it at least compile, but for my board only.
->> But then you mentioned you were working on it and I dropped it.
->
->
-> I had been working on it, primarily to get the processor specific
-> changes done.
->
->> Could you please elaborate on the tasks that need to be done?
->> I know that the head_8xx.S file definetely needs alot of work,
->> and you mentioned the drivers.
->
->
-> The serial driver doesn't compile since the serial subsystem was
-> reworked.  The old data structures used to represent port
-> information (in particular serial_state) no longer works.
-> Yes, head_8xx.S needs lots of work, but to me that is the easy part :-)
+> Question 1: why don't you use the  much  simpler  and  smaller  setup
+> based  on  the  SELF  ramdisk  example  image included with the ELDK?
+> Please see http://www.denx.de/twiki/bin/view/DULG/HowToAddFiles
 
-Well if you can get head_8xx.S in some decent shape I can get it to boot
-since in a board of mine I don't use the built-in uart but an external
-MAX3100.
+My application now is running and it is stable with nfs-ELDK package, and I
+want pass
+to ram fs to do a more efficiently embedded system with the minimum
+difference respect
+ to nfs because I don't want to lose the stability.
 
-Do the serial drivers based on the generic_serial interface still work
-in 2.6?
+> Question 2: Why don't you simply use the genext2fs  tool  that  comes
+> included  with  the  ELDK?  It  is much simpler, and requires no root
+> permissions to create a ramdisk image.
+>
 
->
->
->> What is the minimum stuff needed to make it work at least for my
->> boards?
->
->
-> Make it compile again, I'll take it from there.
+Yes I will try the genext2fs  tool .
 
-OK, I'll try (maybe with taking out the 8xx uart out completely).
+> The "rc.sysint" was never meant to be used from a ramdisk based  root
+> filesystem.  If  you  change  your configuration, you are expected to
+> adapt all related config files and init scripts, too.
+
+Ok I 'm just adapting my config files and init scripts.
+
 
 >
->> I'd be happy to help at least as long as my busy schedule permits.
+> It makes no sense to run fsck on  a  ramdisk  image  which  was  just
+> unpacked.  Also,  IMHO  it  makes littlee sense to use the full-blown
+> SysV init style scripts in an embedded system which is running from a
+> ramdisk image.
 >
->
-> Me, too.  Just don't be annoyed if it takes me a while to respond,
-> especially if testing changes is involved.
->
-> Thanks.
->
->
->     -- Dan
->
->
->
->
-And finally do you think it makes sence to try to consolidate the 8xx
-and 82xx drivers?
-If we're going to need some major restructuring and/or rewrite of the
-drivers that
-makes sense IMHO.
+Yes I agree, but the question is : why a tool thought to check fs don't work
+on my fs image? Where is the mistake?
+Sorry, but what do yo mean with IMHO ?
 
-Regards
+> Have a look at the ELF image thatis included with the ELDK,  and  use
+> this as a base.
+>
+I'm investigating abaut your ELF image...
 
-Pantelis
+Thanks again,
+Regards,
+Alessandro
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
