@@ -1,39 +1,63 @@
-In-Reply-To: <20040401191715.GC3786@gate.ebshome.net>
-References: <9EB527A2-83F5-11D8-9FF0-000A95A07384@sands-edge.com> <20040401100546.A27472@home.com> <4317F0F4-8405-11D8-9FF0-000A95A07384@sands-edge.com> <20040401181926.GA3630@gate.ebshome.net> <406C658E.10500@embeddededge.com> <20040401185956.GB3786@gate.ebshome.net> <2C2F00BD-8410-11D8-9FF0-000A95A07384@sands-edge.com> <20040401191715.GC3786@gate.ebshome.net>
 Mime-Version: 1.0 (Apple Message framework v613)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <CDB1AF42-8413-11D8-9FF0-000A95A07384@sands-edge.com>
-Cc: Dan Malek <dan@embeddededge.com>,
-	Matt Porter <mporter@kernel.crashing.org>,
-	linuxppc-dev@lists.linuxppc.org
+To: linuxppc-dev@lists.linuxppc.org
+Message-Id: <20BB0EB5-841D-11D8-9FF0-000A95A07384@sands-edge.com>
+Content-Type: multipart/mixed; boundary=Apple-Mail-30--534250508
 From: John Whitney <jwhitney-linuxppc@sands-edge.com>
-Subject: Re: Problems with dma_alloc_coherent()
-Date: Thu, 1 Apr 2004 14:35:59 -0500
-To: Eugene Surovegin <ebs@ebshome.net>
+Subject: arch/ppc/Makefile wiping out /dev/null
+Date: Thu, 1 Apr 2004 15:42:44 -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> I think we should add such info to a structure which describes the
-> _bus_, not
-> _device_.
-> I'm not "new-device-model" guru, so I cannot comment _how_ this can be
-> implemented though :)
+--Apple-Mail-30--534250508
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 
-Yes, after thinking about it, it made more sense to modify the "struct
-bus_type" structure to have the bus memory map offset.  We could then
-have an OCP bus type, PLB bus type, etc.  However, that would be a core
-kernel change, and I don't know how easy it is to get those pushed back
-into the mainline.
+In arch/ppc/Makefile, the line
 
-Also, after looking at the kernel code more (I'm fairly new to 2.6,
-which I'm sure you've deduced), it looks like most routines expect
-instances of type "bus_type" to be enumeratable/hot-swappable, and many
-of the busses I'd use in the embedded world wouldn't fit.  I don't know
-how easy or difficult it would be to use the bus_type code construct in
-this fashion.
+NEW_AS := $(shell echo dssall | $(AS) -o /dev/null >/dev/null 2>&1 ;
+echo $$?)
+
+is causing my host's /dev/null file to be wiped out if I don't specify
+CROSS_COMPILE, and the hosts' "as" is getting called instead of the
+cross-compiler.  Apparently, "as" assumes that the file specified by
+"-o file" belongs to it, and deletes it if an error occurs in the
+compilation process.  I get this happening to me when I issue the
+command:
+
+sudo make ARCH=ppc INSTALL_MOD_PATH=<path> modules_install
+
+In this case, I wasn't compiling anything so I didn't specify
+CROSS_COMPILE, with the aforementioned result.  I've attached a patch
+for this file which changes the offending line to:
+
+NEW_AS := $(shell echo dssall | $(AS) -o /tmp/.as.$$$$ >/dev/null 2>&1
+; echo $$?)
+
+Which appears to work as intended (at least, my 2.14 binutils
+ppc7xx-linux-as returns a value of 0 for this, and the failing x86 "as"
+is returning 1, which I believe is the expected behavior), and doesn't
+cause /dev/null to be deleted.
 
 John
 
+--Apple-Mail-30--534250508
+Content-Transfer-Encoding: 7bit
+Content-Type: application/octet-stream; x-unix-mode=0600; name="Makefile.patch"
+Content-Disposition: attachment; filename=Makefile.patch
+
+--- linuxppc-2.6.5-rc2.orig/arch/ppc/Makefile	2004-04-01 14:20:36.000000000 -0500
++++ linuxppc-2.6.5-rc2/arch/ppc/Makefile	2004-04-01 15:31:07.000000000 -0500
+@@ -87,7 +87,7 @@
+
+ ifdef CONFIG_6xx
+ # Ensure this is binutils 2.12.1 (or 2.12.90.0.7) or later
+-NEW_AS	:= $(shell echo dssall | $(AS) -o /dev/null >/dev/null 2>&1 ; echo $$?)
++NEW_AS	:= $(shell echo dssall | $(AS) -o /tmp/.as.$$$$ >/dev/null 2>&1 ; echo $$?)
+ GOODVER	:= 2.12.1
+ else
+ NEW_AS	:= 0
+
+--Apple-Mail-30--534250508--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
