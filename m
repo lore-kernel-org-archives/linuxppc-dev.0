@@ -1,53 +1,98 @@
-Date: Wed, 24 Apr 2002 11:26:26 -0700
+Date: Wed, 24 Apr 2002 11:30:04 -0700
 From: andrew may <acmay@acmay.homeip.net>
-To: andrew may <acmay@acmay.homeip.net>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: [PATCH] IBM ocp I2C
-Message-ID: <20020424112626.A22212@ecam.san.rr.com>
-References: <20020423200127.G20394@ecam.san.rr.com> <20020423200151.H20394@ecam.san.rr.com>
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: [PATCH]IBM ocp iic_xfer
+Message-ID: <20020424113004.B22212@ecam.san.rr.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="HlL+5n6rz5pIUxbD"
-In-Reply-To: <20020423200151.H20394@ecam.san.rr.com>
+Content-Type: multipart/mixed; boundary="cmJC7u66zC7hs+87"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
---HlL+5n6rz5pIUxbD
+--cmJC7u66zC7hs+87
 Content-Type: text/plain; charset=us-ascii
 
-This patch is also needed to get it to compile. I forgot
-to check things after I removed the stuff from the headers.
+This patch is mostly cosmetic. I moved the iic_doAddress function and
+added the i2c_transfer function from PPCBoot inside an #if 0 the #else
+is all the code that it should replace when it is fixed up. The commnets
+contian a little more info.
 
---HlL+5n6rz5pIUxbD
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="i2c-clock2.patch"
+--cmJC7u66zC7hs+87
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename="i2c-tran.patch.gz"
+Content-Transfer-Encoding: base64
 
-# This is a BitKeeper generated patch for the following project:
-# Project Name: Linux 2.4 for PowerPC development tree
-# This patch format is intended for GNU patch command version 2.5 or higher.
-# This patch includes the following deltas:
-#	           ChangeSet	1.966   -> 1.967
-#	drivers/i2c/i2c-adap-ibm_ocp.c	1.2     -> 1.3
-#
-# The following is the BitKeeper ChangeSet Log
-# --------------------------------------------
-# 02/04/24	amay@infosec-server.infosec	1.967
-# remove dead code
-# --------------------------------------------
-#
-diff -Nru a/drivers/i2c/i2c-adap-ibm_ocp.c b/drivers/i2c/i2c-adap-ibm_ocp.c
---- a/drivers/i2c/i2c-adap-ibm_ocp.c	Wed Apr 24 11:21:27 2002
-+++ b/drivers/i2c/i2c-adap-ibm_ocp.c	Wed Apr 24 11:21:27 2002
-@@ -304,8 +304,6 @@
-       iic_ibmocp_data[i]->data = (struct iic_regs *)iic_ibmocp_adaps[i];
-       iic_ibmocp_data[i]->setiic = iic_ibmocp_setbyte;
-       iic_ibmocp_data[i]->getiic = iic_ibmocp_getbyte;
--      iic_ibmocp_data[i]->getown = 0;
--      iic_ibmocp_data[i]->getclock = 0;
-       iic_ibmocp_data[i]->waitforpin = iic_ibmocp_waitforpin;
-       iic_ibmocp_data[i]->udelay = 80;
-       iic_ibmocp_data[i]->mdelay = 80;
+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
+Q/8PI2ml5K7yfyY2SMMAMgAA
 
---HlL+5n6rz5pIUxbD--
+--cmJC7u66zC7hs+87--
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
