@@ -1,47 +1,26 @@
-Message-ID: <B25E2E5A003CD311B61E00902778AF2A0204463D@SERVER1>
-From: Brian Kuschak <brian.kuschak@skystream.com>
-To: "'Dan Malek'" <dan@mvista.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: dcache BUG()
-Date: Mon, 7 May 2001 16:01:36 -0700 
+Message-ID: <3AF729B6.6EAB3D34@mvista.com>
+Date: Mon, 07 May 2001 19:03:18 -0400
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Eli Chen <eli@routefree.com>, brian.kuschak@skystream.com,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: dcache BUG()
+References: <027b01c0d728$9a702b80$4b00000a@foolio1> <3AF710DC.37209810@mvista.com> <20010507143047.B1118@opus.bloom.county>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-If I use the 'old' atomic functions from arch/ppc/kernel/misc.S instead of
-the inline functions in atomic.h, the problem doesn't seem to happen.
-Normally it happens in about 15 minutes, but I've been running over an hour
-now and haven't seen it.
+Tom Rini wrote:
 
-Perhaps there is something else wrong with the __asm__ macros in atomic.h ??
+> Er, 2_5 isn't unavailable yet.
 
--Brian
-
-
------Original Message-----
-From: Eli Chen [mailto:eli@routefree.com]
-Sent: Monday, May 07, 2001 3:43 PM
-To: Brian Kuschak; 'Dan Malek'
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: dcache BUG()
+Cool, thanks....If you guys could just give that one a test drive,
+it would be helpful.  I've lost my Rev. D for a few days on another
+project, but will start testing again soon.
 
 
-> I looked at the atomic.h code and think I found one bug, however it
-doesn't
-> solve my problem.  See if this patch makes sense to you.  Looks like a
-typo
-> when the atomic_* functions were converted from assembler to inline.  The
-> bne should be 'bne-' for the atomic decrement operation.
-
-The "-" after bne is just a hint for the branch prediction mechanism I
-believe (the 5th bit in the BO operand).  I couldn't figure out why every
-other atomic_* function besides atomic decrement has "bne-", but that
-shouldn't affect the behavior.  I have also tried changing it to "bne-", but
-it has no effect.
-
-Eli
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
