@@ -1,36 +1,31 @@
-Date: Thu, 18 Dec 2003 09:13:56 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Andreas Oberritter <obi@saftware.de>
-Cc: Robin Gilks <robin.gilks@tait.co.nz>,
-	linuxppc-embedded@lists.linuxppc.org
 Subject: Re: wdt_mpc8xx documentation
-Message-ID: <20031218161356.GA28108@stop.crashing.org>
-References: <3FE12DCD.10609@tait.co.nz> <1071726766.3533.11.camel@shiva.eth.saftware.de>
+From: Andreas Oberritter <obi@saftware.de>
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <20031218161356.GA28108@stop.crashing.org>
+References: <3FE12DCD.10609@tait.co.nz>
+	 <1071726766.3533.11.camel@shiva.eth.saftware.de>
+	 <20031218161356.GA28108@stop.crashing.org>
+Content-Type: text/plain
+Message-Id: <1071766780.971.39.camel@shiva.eth.saftware.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1071726766.3533.11.camel@shiva.eth.saftware.de>
+Date: Thu, 18 Dec 2003 17:59:40 +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Dec 18, 2003 at 06:52:46AM +0100, Andreas Oberritter wrote:
-> Hi Robin,
+On Thu, 2003-12-18 at 17:13, Tom Rini wrote:
+> > Tom, would you put this driver into the 2.4 ppc trees if I rediffed it?
 >
-> Have a look at our driver, which uses the kernel's watchdog api:
-> http://cvs.tuxbox.org/cgi-bin/viewcvs.cgi/*checkout*/tuxbox/cdk/Patches/linux-2.4.23-pre6-m8xxwdt.diff?rev=HEAD&content-type=text/plain
->
-> It will probably never get into vanilla 2.4 because Marcelo doesn't
-> respond to my Emails. However, it is really stable since months...
-> What other driver were you talking about?
->
-> Tom, would you put this driver into the 2.4 ppc trees if I rediffed it?
+> Have there been any updates since the last one you sent me?  I've
+> actually got it in a tree I'm going to get Marcelo to pull from.
+> Thanks.
 
-Have there been any updates since the last one you sent me?  I've
-actually got it in a tree I'm going to get Marcelo to pull from.
-Thanks.
+That's great news! The driver has not been not changed since then. The
+last patch I sent to you was for 2.4.23-pre7 I think. Thank you!
 
---
-Tom Rini
-http://gate.crashing.org/~trini/
+Regards,
+Andreas
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
