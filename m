@@ -1,63 +1,52 @@
-Mime-Version: 1.0
-Message-Id: <p05100301b7a5c073cc62@[10.0.0.42]>
-In-Reply-To: <200108191559.RAA01163@piglet.grunz.lu>
+Message-Id: <v04003a08b7a5cb79017f@[24.70.162.12]>
+In-Reply-To: <p05100301b7a5c073cc62@[10.0.0.42]>
 References: <200108191559.RAA01163@piglet.grunz.lu>
-Date: Sun, 19 Aug 2001 12:51:31 -0700
-To: mlan@cpu.lu, hozer@drgw.net
-From: "Timothy A. Seufert" <tas@mindspring.com>
+ <200108191559.RAA01163@piglet.grunz.lu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Sun, 19 Aug 2001 15:08:46 -0500
+To: "Timothy A. Seufert" <tas@mindspring.com>, mlan@cpu.lu,
+	hozer@drgw.net
+From: Tony Mantler <nicoya@apia.dhs.org>
 Subject: Re: About TAU (and ICTC)
 Cc: linuxppc-dev@lists.linuxppc.org
-Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michel,
+At 2:51 PM -0500 8/19/2001, Timothy A. Seufert wrote:
+[...]
+>But if you think about it, it probably doesn't reduce the total power
+>needed to do a given task.  It just spreads the power use over a
+>longer period of time.  So you'll use roughly the same amount of
+>energy to do one kernel compile no matter what the ICTC setting is;
+>it'll just get done slower with ICTC on.
+>
+>In fact, because programs will generally take longer to run with ICTC
+>on, I suspect that ICTC is *less* power efficient than going all-out.
+>Only part of the CPU's power use is dynamic (and therefore subject to
+>regulation via ICTC).  There's dielectric leakage current, which is
+>constant no matter what you do, and, more importantly, plenty of
+>clocked circuits which are not shut down by the dynamic power save
+>circuitry.  From this one can conclude that power use per unit of
+>computation done is likely higher when using ICTC.
+[...]
 
-I'd have to agree.  ICTC policy should really be userspace, as should
-all policy.
+Hmm, I wonder how much thermal-resistive factors would affect this. Y'know,
+generally when a circuit is warmer, it's resistance increases, and
+subsequently it gets warmer, etc, so depending on how the curves weigh out
+(if at all), there might be some hidden power savings in doing calculations
+cooler and longer rather than warmer and shorter.
 
-The exception would be when it's desired to use the feature for its
-original intended purpose, reduction of die temperature when that
-temperature reaches a critical threshold.  That would also mean using
-the TAU the way it was intended: you set the upper and lower TAU
-thresholds as desired, and the TAU ISR turns ICTC on when the high
-threshold is passed and off when it moves past the lower.
-
-Even in that scenario, userspace should enable/disable thermal
-throttling and its thresholds, probably via /proc entries.
+Maybe? I dunno.
 
 
-I'm actually not sure it makes sense to use ICTC as a powersave
-feature.  The way it works is simply by making use of the dynamic
-powersave feature built into the CPU -- functional units that aren't
-being used aren't clocked.  Decrease the frequency of use and you
-decrease the rate of power consumption.
+Cheers - Tony 'Nicoya' Mantler :)
 
-But if you think about it, it probably doesn't reduce the total power
-needed to do a given task.  It just spreads the power use over a
-longer period of time.  So you'll use roughly the same amount of
-energy to do one kernel compile no matter what the ICTC setting is;
-it'll just get done slower with ICTC on.
 
-In fact, because programs will generally take longer to run with ICTC
-on, I suspect that ICTC is *less* power efficient than going all-out.
-Only part of the CPU's power use is dynamic (and therefore subject to
-regulation via ICTC).  There's dielectric leakage current, which is
-constant no matter what you do, and, more importantly, plenty of
-clocked circuits which are not shut down by the dynamic power save
-circuitry.  From this one can conclude that power use per unit of
-computation done is likely higher when using ICTC.
-
-Could you test this?  I.e. run a continuous kernel compile and record
-not only how long the battery lasts but how many compiles got done
-before the end.
-
-(It's probably for this reason that Apple uses variable clock speed
-rather than ICTC to save power on their recent portables.  For
-example the new model iBook normally runs at 500 MHz, but can switch
-down to 400 MHz while on battery power.)
 --
-Tim Seufert
+Tony "Nicoya" Mantler - Renaissance Nerd Extraordinaire - nicoya@apia.dhs.org
+Winnipeg, Manitoba, Canada           --           http://nicoya.feline.pp.se/
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
