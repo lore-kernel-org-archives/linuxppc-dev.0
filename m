@@ -1,24 +1,14 @@
-Return-Path: <Renaud.Barbier@ge.com>
-Received: from ext-nj2gw-3.online-age.net (ext-nj2gw-3.online-age.net
-	[216.35.73.165]) by ozlabs.org (Postfix) with ESMTP id F20B967A71
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Jan 2005 01:22:57 +1100 (EST)
-Received: from int-nj2gw-3.online-age.net (int-nj2gw-3 [3.159.236.67])
-	by ext-nj2gw-3.online-age.net (8.12.9/8.12.9/990426-RLH) with ESMTP id
-	j0JEMkjx024427 for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Jan 2005 09:22:49 -0500 (EST)
-Received: from cinmlef07.e2k.ad.ge.com (localhost [127.0.0.1])
-	by int-nj2gw-3.online-age.net (8.12.9/8.12.8/990426-RLH) with ESMTP id
-	j0JEMjA3008437 for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Jan 2005 09:22:46 -0500 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Wed, 19 Jan 2005 08:23:49 -0600
-Message-ID: <45ABD2373C33C4459D42B40EC4F346F2054C18B8@FTWMLVEM03.e2k.ad.ge.com>
-From: "Barbier, Renaud (GE Infrastructure)" <Renaud.Barbier@ge.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: task_no_data_intr
+Return-Path: <joern@wohnheim.fh-wedel.de>
+Date: Wed, 19 Jan 2005 16:14:56 +0100
+From: =?iso-8859-1?Q?J=F6rn?= Engel <joern@wohnheim.fh-wedel.de>
+To: Sachin P <sachinpc@gmail.com>
+Message-ID: <20050119151456.GA26711@wohnheim.fh-wedel.de>
+References: <66164fbc0501190353265167b0@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <66164fbc0501190353265167b0@mail.gmail.com>
+Cc: Linuxppc-embedded@ozlabs.org
+Subject: Re: consistent_alloc() on PPC
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,14 +19,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-hda: STI Flash 6.2.0, CFA DISK drive
-Probing IDE interface ide1...
-ide0 at 0xeff8-0xefff,0xeff6 on irq 27
-hda: attached ide-disk driver.
-hda: task_no_data_intr: status=3D0x51 { DriveReady SeekComplete Error }
-hda: task_no_data_intr: error=3D0x04 { DriveStatusError }
-hda: 500736 sectors (256 MB) w/1KiB Cache, CHS=3D978/16/32
+On Wed, 19 January 2005 17:23:42 +0530, Sachin P wrote:
+> 
+> I am facing some problems porting my drivers to the PPC platform . Am
+> currently using consistent_alloc() and consistent_free() to
+> allocate/free (non-cached) DMA ble memory.
+> Is there any function/patch/macro, equivalent to
+> phy_to_virt()/virt_to_phy() for memory returned by consistent_alloc()?
 
+Imo not.  I ended up writing a private version of it, along these
+lines:
 
-Any idea why I would get the message about task_no_data_intr.
-I am using a compact flash. Interrupt seems to work though.
+static inline unsigned long private_io_to_bus(void *addr)
+{
+        return iopa((unsigned long)addr) + offset;
+}
+
+Wouldn't hurt if you could generalize it somehow.
+
+Jörn
+
+-- 
+Everything should be made as simple as possible, but not simpler.
+-- Albert Einstein
