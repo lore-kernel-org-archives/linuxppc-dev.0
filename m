@@ -1,42 +1,39 @@
-In-Reply-To: <199908310148.LAA14647@tango.anu.edu.au>
-Date: Tue, 31 Aug 1999 15:08:26 +0200
-To: Paul.Mackerras@cs.anu.edu.au, linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Improving gatwick interrupts
-Message-Id: <19990831150826.024152@mailhost.mipsys.com>
+Date: Tue, 31 Aug 1999 08:47:38 -0500
+From: Dave Wolfe <dwolfe@risc.sps.mot.com>
+To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org,
+        linuxppc-announce@lists.linuxppc.org
+Subject: New lists (was: IBM 850)
+Message-ID: <19990831084738.E15516@miaow.risc.sps.mot.com>
+References: <XFMail.990829054219.gdt@linuxppc.org> <Pine.LNX.3.96L.990830235758.8182E-100000@unix47.andrew.cmu.edu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.3.96L.990830235758.8182E-100000@unix47.andrew.cmu.edu>; from Hollis R Blanchard on Tue, Aug 31, 1999 at 12:06:26AM -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi !
+[ Hollis R Blanchard writes: ]
+> 
+> Hey folks, there's a new list at lists.linuxppc.org for PowerPC
+> workstations. It should be a lot less traffic than linuxppc-user,
+> so hopefully you can join? That is, if you're still interested in
+> Linux/PPC on your hardware.
 
-The current implementation of the interrupt handler for gatwick (the
-second mac-io found on some PowerBooks) is not perfect. Currently, it's a
-special handler for the cascaded interrupt which will decode the GW
-interrupt and call back recursively the ppc_irq_dispatch_handler.
+Since Hollis has let the cat out of the bag, :-) I'd better make the
+announcement...
 
-That means that while a given GW interrupt is beeing handled, all other
-GW interrupts are suspended (masked). In theory, once we have ask&mask'ed
-the real interrupt in GW controller, we could re-enable the GW cascade
-interrupt itself to let other interrupts come in from the second controller. 
+Two new lists have been created on lists.linuxppc.org:
 
-The problem is that it requires an awful hack to the current
-architecture, like passing a special parameter to
-ppc_irq_dispatch_handler with the interrupt to re-enable after the
-ack&mask operation.
+   linuxppc-embedded       Linux on PowerPC embedded systems discussions
+   linuxppc-workstation    Linux on PowerPC PReP and CHRP system discussions
 
-Do you think there is interest in doing that ? Currently, the only
-possible users of GW interrupts are the internal modem of the wallstreet,
-the left media bay IDE devices or the left media bay floppies.
-
+No digest versions for these yet, since they aren't expected to
+reach the volume of mail to need digests, but we'll see. Go to
+http://lists.linuxppc.org/ and follow the links to subscribe or read the
+info files to subscribe via e-mail.
 
 -- 
-           Perso. e-mail: <mailto:bh40@calva.net>
-           Work   e-mail: <mailto:benh@mipsys.com>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
-
+ Dave Wolfe
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
