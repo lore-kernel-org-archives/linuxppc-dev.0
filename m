@@ -1,33 +1,25 @@
-From: o.moerbeek@syllogic.com
-Reply-To: otto@cable.a2000.nl
+Message-ID: <37A9A9E0.2D7B8755@mitre.org>
+Date: Thu, 05 Aug 1999 11:12:32 -0400
+From: Charles Lepple <clepple@mitre.org>
+MIME-Version: 1.0
 To: linuxppc-dev@lists.linuxppc.org
-cc: gewrgiou@imbc.gr, rshaw@inficad.com, otto@cable.a2000.nl
-Message-ID: <C12567C4.005220FB.00@syllogic.com>
-Date: Thu, 5 Aug 1999 16:57:03 +0200
-Subject: Re: 2.2.10 kernel and Apple ISO USB keyboards
-Mime-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Subject: initrd troubles
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Did initrd support break in 2.3.x? I'm trying to load an inital ramdisk
+on a Dy4 card, and the ramdisk.image.gz data is preserved when the card
+boots into linux (passes a simple checksum test). However, I can only
+list directories in the filesystem -- any time I try and read a
+pre-existing file, it is empty (stat calls return a non-zero size,
+though), and when I write a file and read it back, it seems to work. (Of
+course, this means that I can't exec() anything that was on the
+filesystem when the card boots...) Anyone seen this?
 
-
-Hi to you all,
-
-With some help from  Kostas Gewrgiou (thanks!) I solved my keyboard key to mouse
-button mapping problem. There's a How To on <http://www.xs4all/nl~om>. The
-tricky part for me was seeing that due to some Xautoconfig problem the X server
-did not use the xkb extension. Actually xkb not only works with USB ISO
-keyboards, but with ALL Mac keyboards, be it ADB or USB.
-
-Happily running 2.2.10,
-Otto
-
---
-Otto Moerbeek
-otto@cable.a2000.nl
-
+--Charles Lepple
+clepple@mitre.org
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
