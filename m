@@ -1,52 +1,35 @@
-Message-ID: <3D63F0D5.8010401@dslextreme.com>
-Date: Wed, 21 Aug 2002 12:58:13 -0700
-From: akuster <akuster@dslextreme.com>
-Reply-To: akuster@dslextreme.com
+Message-ID: <3D641186.2020800@mvista.com>
+Date: Wed, 21 Aug 2002 15:17:42 -0700
+From: Todd Poynor <tpoynor@mvista.com>
 MIME-Version: 1.0
-To: Brian Kuschak <bkuschak@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 4xx ethernet and power management
-References: <20020821003010.49406.qmail@web40209.mail.yahoo.com> <3D63BC50.5090801@dslextreme.com>
+To: akuster@dslextreme.com
+Cc: jim <jduey@ccc-dcs.com>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Question about ppc4xx_dma.h
+References: <20020820203619.A456239211@server.weathercom.com> <3D62CE63.1030606@dslextreme.com> <3D63EC67.4000302@dslextreme.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-akuster wrote:
->
-> Brian Kuschak wrote:
->
->> The new power management code is killing the 405GP
->> on-chip ethernet (no interrupts, no phy
->> communications, no packets).
->>
->> If I comment out the body of ppc4xx_pm_init() in
->> ppc4xx_pm.c, ethernet works again.
->>
->> I'm using the 2.4.19 kernel from
->> bk://ppc.bkbits.net/linuxppc_2_4_devel (CS 1.1114).
->>
->> Armin, any comments?
->>
->> Regards,
->> Brian Kuschak
->
->
-> Brian,
->
-> That would be a bad thing.  I will double check but I think that might
-> have been corrected in a later version.  Try pulling a later BK tree.
->
-> Armin
->
->
+Noticed that the order of clearing the old transfer mode bits and
+setting the p_dma_ch->mode bits is reversed in the new patch, not sure
+if this causes problems:
+
++       tmp_cntl |= (p_dma_ch->mode | DMA_CH_ENABLE);
++
++       switch (dmanr) {
++       case 0:
++               control = mfdcr(DCRN_DMACR0);
++               control |= tmp_cntl;
++               control &= ~(DMA_TM_MASK | DMA_TD);     /* clear all
+mode bits */
+
+This seems to set and then clear the p_dma_ch->mode bits in control
+prior to writing to the DMACR, a problem?
 
 
-Brian,
-
-I justed tried the latest BK and it worked fine
-
-armin
+--
+Todd
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
