@@ -1,75 +1,72 @@
-Date: Mon, 2 Aug 1999 13:14:43 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Paul.Mackerras@cs.anu.edu.au
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: MESH problems in 2.2.x
-In-Reply-To: <Pine.LNX.4.10.9907151045030.15826-100000@mercator.cs.kuleuven.ac.be>
-Message-ID: <Pine.LNX.4.10.9908021312150.7348-100000@mercator.cs.kuleuven.ac.be>
+Message-ID: <XFMail.990802052054.gdt@linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <990801202455.ZM22552@redrock.lan>
+Date: Mon, 02 Aug 1999 05:20:54 -0600 (MDT)
+From: Gary Thomas <gdt@linuxppc.org>
+To: Kevin Buettner <kev@primenet.com>
+Subject: Re: gdb broken under linuxppc r5 tools
+Cc: linuxppc-dev@lists.linuxppc.org
+Cc: linuxppc-dev@lists.linuxppc.org,
+        Franz Sirl <Franz.Sirl-kernel@lauterbach.com>,
+        "Kevin B. Hendricks" <kbhend@business.wm.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 15 Jul 1999, Geert Uytterhoeven wrote:
-> On Wed, 14 Jul 1999, Paul Mackerras wrote:
-> > Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be> wrote:
-> > > Just made some diff between 2.1.130 and the `broken' kernels. The following
-> > > two things make me suspicious:
-> > > 
-> > > Index: drivers/scsi/mesh.c
-> > > @@ -1643,6 +1643,7 @@
-> > >  static void
-> > >  mesh_completed(struct mesh_state *ms, Scsi_Cmnd *cmd)
-> > >  {
-> > > +#if 0
-> > >  	if (ms->completed_q == NULL)
-> > >  		ms->completed_q = cmd;
-> > >  	else
-> > > @@ -1651,6 +1652,9 @@
-> > >  	cmd->host_scribble = NULL;
-> > >  	queue_task(&ms->tqueue, &tq_immediate);
-> > >  	mark_bh(IMMEDIATE_BH);
-> > > +#else
-> > > +	(*cmd->scsi_done)(cmd);
-> > > +#endif
-> > >  }
-> > >  
-> > >  /*
-> > > 
-> > > Why did Dave (mesh.c 1.20, according to the vger CVS logs, which don't help me
-> > > much) do this?
-> > 
-> > I made that change, I think maybe I sent it straight to Linus and it
-> > got into vger via the official releases or something.
-> > 
-> > The point was that I realized, looking at the scsi code (which has
-> > changed quite a bit since I wrote the original mesh driver) that the
-> > scsi done routine was going to schedule a BH handler anyway so there
-> > was no point in mesh.c having complexity to arrange for that.  I was
-> > cleaning up the SMP locking in mesh.c at the time and making that
-> > change was an alternative to getting the locking right for the
-> > completed_q stuff.
+
+On 01-Aug-99 Kevin Buettner wrote:
 > 
-> But on my UP box, changing the `#if 0' to `#if 1' fixed all my MESH
-> problems...
+> On Aug 1,  9:03pm, Franz Sirl wrote:
+> 
+>> Am Son, 01 Aug 1999 schrieb Kevin B. Hendricks:
+>> >Hey,
+>> >
+>> >Does anyone know what's up with gdb lately?  It used to be quite stable but
+>> >since I upgraded to the glibc, binutils, egcs, gdb from Linuxppc R5 cd, I
+>> >can't seem to set any breakpoints in shared libraries (or they show up
+>> >someplace else at random).  Functions are missing (or don't show up) and if
+>> >I try to disassemble one function in a shared library, I often get another.
+>> >
+>> >I really need a working stable gdb.
+>> >
+>> >Has anyone else run into this.  If so, exactly what versions of gdb, glibc,
+>> >binutils, egcs are stable together, especially when working with shared
+>> >libraries?
+>> 
+>> Well, you've hit one of our weakest points here. AFAIK there's currently
+>> nobody
+>> taking care of gdb on Linux/PPC. In fact we are lucky that Kevin Buettner's
+>> old
+>> patch could be converted to 4.17.x. Unfortunately it's still not integrated
+>> into gdb's mainline due to copyright issues, so we have to reintegrate the
+>> patch
+>> in every new version :-(.
+>> 
+>> So, is someone willing to take care of gdb on Linux/PPC?
+> 
+> Kevin, Franz, et.al,
+> 
+> Earlier this year, Metrowerks and I signed the copyright assignments
+> required by the FSF.  Beginning August 9, I will be starting work at
+> Cygnus as a GDB engineer.  One of the things that I'll work on is a
+> merge of my patches into the current gdb mainline.  It'll be my goal
+> to get a solid, usable gdb up and running on Linux/PPC again.
+> 
 
-Well, I've been too early...
+Kevin B.,
 
-After a power down of my Quantum Fireball TMS3200 I still have to boot a
-2.1.130 first to avoid getting the `scsi_done()' messages under 2.3.x.
-Intermittent soft reboots don't require this. Apart from that, the drive works
-fine with FAST-10 under 2.3.{6,10}.
+Firstly, congratulations and welcome to the fold :-)
 
-Greetings,
+Secondly, while you're in there, can you look at my patches for GDB-4.18.
+I've made a useable GDB for this version, with no input from any of the
+4.17 patches BTW.  They might be easier to make into a "clean" set for
+the latest version.  You can find my patches in the RPM I uploaded to
+  ftp://ftp.linuxppc.org/users/gdt/redhat/SRPMS
 
-						Geert
+When you get something ready, let me know and I'll help check it out.
 
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
-
+Thanks.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
