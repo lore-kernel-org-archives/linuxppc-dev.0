@@ -1,36 +1,29 @@
-Date: Wed, 5 Jun 2002 09:56:31 -0400
-From: Bill Fink <billfink@mindspring.com>
-To: <acurtis@onz.com>
-Cc: linuxppc-dev@lists.linuxppc.org,
-	Bill Fink <billfink@mindspring.com>
-Subject: Re: Debugging Network Performance
-Message-Id: <20020605095631.6f8a03e3.billfink@mindspring.com>
-In-Reply-To: <NCBBIINEHIPFGJPLBEIFMECIDIAA.acurtis@onz.com>
-References: <20020605011832.63bf4ff5.billfink@mindspring.com>
-	<NCBBIINEHIPFGJPLBEIFMECIDIAA.acurtis@onz.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: acurtis@onz.com
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: BDI2000 mail list? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 05 Jun 2002 06:40:04 PDT."
+             <NCBBIINEHIPFGJPLBEIFGECKDIAA.acurtis@onz.com>
+Date: Wed, 05 Jun 2002 15:59:42 +0200
+Message-Id: <20020605135947.C6070102F2@denx.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 5 Jun 2002, "Allen Curtis" wrote:
-
-> >     "It would be interesting to see where the cpu is being used. Could you
-> >     boot with profile=2 and use readprofile to find the worst cpu hogs
-> >     during a run?"
+In message <NCBBIINEHIPFGJPLBEIFGECKDIAA.acurtis@onz.com> you wrote:
 >
-> Where can I find documentation on the profile=## option? Are there also
-> tools that will help to interpret the logs?
+> What is the appropriate list for obtaining BDI2000 support?
 
-Since I didn't actually try it, I don't have a lot more information.
->From /usr/src/linux/Documentation/kernel-parameters.txt:
+This list is as good as any other; just ask your question.
 
-        profile=        [KNL] enable kernel profiling via /proc/profile
-                        (param:log level).
+Wolfgang Denk
 
-And of course check the readprofile man page.
-
-						-Bill
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Everyting looks interesting until you do it. Then you find it's  just
+another job.                     - Terry Pratchett, _Moving Pictures_
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
