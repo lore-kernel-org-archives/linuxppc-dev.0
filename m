@@ -1,104 +1,84 @@
-Date: Sat, 20 May 2000 22:07:01 -0700
-From: Matt Porter <mmporter@home.com>
-To: tjroberts@lucent.com, linuxppc-embedded@lists.linuxppc.org
-Message-Id: <slrn8iernk.lpg.mmporter@liberty.chnd1.az.home.com>
-Subject: Re: QUERY: Embedded PowerPC Linux?
-References: <39243D0C.68406C9D@lucent.com>
-Reply-To: mporter@mvista.com
+Date: Sun, 21 May 2000 18:28:35 -0600 (MDT)
+From: Brent <bimhoff@ns1.planetspork.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: MBX boot problems
+Message-ID: <Pine.GSO.4.05.10005211739380.9894-100000@ns1.planetspork.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-[This message has also been posted.]
-On Thu, 18 May 2000 13:57:16 -0500, Tom Roberts <tjroberts@lucent.com> wrote:
->	Our LSPS-1 board has 3 PPC604 100MHz CPUs with 16 MBytes of
->	SDRAM each, an ISA interface to the host, and a SCSA-bus
->	telephony interface. Our LSPS-2 board has 3 PPC750 200
->	MHz CPUs with 64 MBytes of SDRAM each, a PCI interface to
->	the host, and an H.110 telephony interface. These boards have
->	no conventional computer peripherals, and can only communicate
->	with the host via memory. We have sample versions of this
->	latter board with PPC755 CPUs and PPC7400 CPUs, and 128 MBytes
->	SDRAM per CPU -- these are our real interest for Linux. it
->	is likely that in the future we will add Ethernet interfaces
->	to our boards.
->
->I downloaded the Yellowdog PPC linux source, and am attempting to
->configure it to boot on our PowerPC board (single CPU, 48 MB SDRAM).
->This board has no I/O whatsoever (except an H.110 telephony interface
->for which I'll have to write a driver). I already have written a driver
->which communicates via memory buffers to/from the host, and have tested
->it using stub code based upon our proprietary on-board OS.
->
->
->The problem is: this Linux distribution thinks that anything which is
->not a PPC8xx is a Macintosh of some sort or another. So I have been
->searching out CONFIG_PMAC (and others) and adding in my own CONFIG_LSPS
->as appropriate. This means removing large numbers of drivers and
->initialization files, and is not very pretty. The hard part is those
->confounded "#ifndef CONFIG_8xx" some of which I need to keep and
->some of which I must replace....
->
->Is there a better distribution to start from than Yellowdog for such
->bare-bones hardware? So far all of the "embedded PowerPC" links I
->have found share the assumption that "embedded" means a PPC8xx;
->my embedded processors are MPC604, MPC750, MPC755, and MPC7400; and
->they are embedded so deeply that they have no conventional I/O at all.
+So I've searched the archives and read the readme's, and it still won't
+boot. :)
 
-You are talking about a different distribution to start from but that is
-really just a collection of apps and tools centered around the Linux
-kernel itself.  If I understand correctly, you are concerned about the
-fact that the kernel itself doesn't seem very aware of embedded 6xx/7xx/7xxx
-systems.  Well, that's true.  The assumption is that 6xx/7xx/7xxx are only
-chrp/pmac/prep desktop systems and 8xx/82xx are embedded systems but that
-is changing quickly.
+Story so far- I got the mbxboot.min downloaded and put on a box with tftp
+and NFS access. The initial load seems to work fine, based on the
+following portion of output:
 
-I've worked on several embedded 750 ports recently in which I've implemented
-some preliminary concepts that should make things _much_ easier when porting
-embedded 6xx/7xx systems that don't conform to chrp/pmac/prep specs.
+EPPC-Bug>pl 20 0
+Network Booting from: MPC860, Controller 20, Device 0
+Loading: zImage
+Client IP Address = 205.170.190.252
+Server IP Address = 205.170.190.3
+Gateway IP Address = 0.0.0.0
+Subnet IP Address Mask = 255.255.255.0
+Boot File Name = zImage
+Argument File Name =
 
-You basically follow MACH_prep and/or MACH_gemini since they are much
-simpler than pmac.  Provide kernel/head.S, mm/init.c, and kernel/setup.c
-changes where necessary for your MACH type.  I generally prefer setting
-up a PReP style memmap unless I'm on a CPCI board and need all that extra
-PCI mem space (to map other boards RAM into).
+Bytes Received =&492532, Bytes Loaded =&492532
+Bytes/Second =&246266, Elapsed Time =2 Secondloaded at:  00210000 0030E42C
 
-Board specific support should go into kernel/<board>_setup.c, <board>_pci.c,
-<board>_pic.c, <board>_time.c, <board>_stubs.c.  <board>_stubs.c is where
-I stub out all the chrp/pmac/prep garbage like "prom_init()" to make the
-linker happy and have a reasonablly slim kernel for 29F040 boot flashes.
-..._pic.c and ..._time.c are new since <board>_setup.c is getting to be
-too lengthy for my tastes.  <board>pci.c has something new in that
-I'm adding a (rather simplistic) PCI autoconfig routine to the pci_init()
-call since a firmware/monitor is not always available or desired.
+relocated to:	00100000 001FE42C
+board data at:	043F4558 043F4580
+relocated to:	00200100 00200128
+zimage at:	00216000 00276D6D
+avail ram:	0030E42C 043F5000
 
-Everything to this point is non-intrusive into the current arch/ppc
-build process which is good.  The only intrusive thing I add is is a
-CONFIG_EMBEDDED which arch/ppc/kernel/Makefile keys off of to not link
-in all the extra chrp/pmac/prep stuff as well as not linking in the
-drivers/macintosh/ library archive.  An embedded port simply sets up
-config.in to define CONFIG_EMBEDDED when their board is selected from
-the machine type selection.
+Linux/PPC load:
 
-One sore point is that MACH_<board> is defined as a single bit flag so we
-will run out of those with the many MACH types that want to be in the
-kernel in the near future.  That should probably get fixed up to something
-with more longevity.
+At this point, things go bad.  I've tried two things. 1) hitting enter and
+letting things fall as they may.  This didn't work since there seemed to
+be a problem with it dropping the middle digit of the first octet of the
+src/dst IP addresses in the boot args.  2)  explicitly defining the boot
+arguments with appropriate settings.
 
-The other thing that needs to happen is that the directory structure
-will need a reorg to avoid clutter since each port that is merged into
-the kernel will add 2-6 files to arch/ppc/kernel/.  I would really
-like to see a structure more like arch/ppc/kernel/<system1>,<system2>,etc.
-Perhaps the system dependent files belong in arch/ppc/system/<system1>,etc..
-Cort has been receptive to something like this in the past, I just like
-some input before "showing the code". :)
+Both return approximately the same results (shown below).
 
-I've Cc'ed linuxppc-embedded to move the discussion there where it
-really belongs.
 
---
-Matt Porter
-MontaVista Software, Inc.
-mporter@mvista.com
+Uncompressing Linux...done.
+Now booting the kernel
+Linux version 2.1.119 (dan@pbdan.clearone.com) (gcc version egcs-2.90.25
+980302 (egcs-1.0.2 prerelease)) #31 Mon Sep 7 18:14:20 EDT 1998
+Boot arguments: root=/dev/nfs nfsaddrs=205.170.190.252:205.170.190.3
+nfsroot=205 .170.190.3:/nfs/mbxroot
+time_init: decrementer frequency = 187500000/60
+Memory: 67572k available (732k kernel code, 1292k data, 36k init)
+[c0000000,c440 0000]
+PCI: Probing PCI hardware
+NIP: C00085A4 XER: 20000000 LR: C0008314 REGS: c00ce958 TRAP: 0200
+MSR: 00001932 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c00ccb08[0] 'swapper' mm->pgd c00ca000 Last syscall: 0
+last math 00000000
+GPR00: 0000000C C00CEA48 C00CCB08 00000086 00000000 0000000E C00CEA80
+00000000
+GPR08: FA210500 0000000D 0000000C FA210500 C00CEA68 00000000 00000000
+00000000
+GPR16: 00000000 00000000 00000000 00000000 00000000 043F4558 00000000
+FFFFFFFF
+GPR24: C011FD30 C00CEA90 00000000 00000000 00000000 C011FD20 00000000
+C00CEA84
+Call backtrace: 00000182 C00CEAD0 C00E1E84 C00E2340 C00DB6A4 C00021A8
+Kernel panic: kernel access of bad area pc c00085a4 lr c0008314 address
+C000FFF0 tsk swapper/0 In swapper task - not syncing
+Rebooting in 180 seconds..
+
+I'm sure that all means something to someone, but not me. :)  Can anyone
+offer suggestions?
+
+Thanks
+
+-brent
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
