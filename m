@@ -1,17 +1,18 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao01.cox.net (fed1rmmtao01.cox.net [68.230.241.38])
-	by ozlabs.org (Postfix) with ESMTP id AAD9A2BD6A
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D7C012BD6A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 12 Oct 2004 04:47:07 +1000 (EST)
-Date: Mon, 11 Oct 2004 11:47:05 -0700
-From: Tom Rini <trini@kernel.crashing.org>
+	Tue, 12 Oct 2004 04:49:49 +1000 (EST)
+In-Reply-To: <20041011173344.62221.qmail@web53810.mail.yahoo.com>
+References: <20041011173344.62221.qmail@web53810.mail.yahoo.com>
+Mime-Version: 1.0 (Apple Message framework v619)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <A83476D0-1BB6-11D9-909B-003065F9B7DC@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Mon, 11 Oct 2004 14:52:10 -0400
 To: annamaya <annamaya@yahoo.com>
-Message-ID: <20041011184705.GD6871@smtp.west.cox.net>
-References: <20041011181553.GC6871@smtp.west.cox.net>
-	<20041011183828.93046.qmail@web53803.mail.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20041011183828.93046.qmail@web53803.mail.yahoo.com>
 Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: Booting Linux using a PlanetCore BootLoader
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -24,23 +25,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 11, 2004 at 11:38:28AM -0700, annamaya wrote:
 
-> Oops! Thanks for pointing that blooper. I am so used
-> to dealing with the U-Boot header of 64 bytes that I
-> misread the ELF header size as 64 bytes instead of 64
-> KBytes. 
-> 
-> Anyways, it looks like I am much farther that I have
-> ever been before. Now, I see that the PC is stuck at
-> some address that I am not sure what to make off. Is
-> this before the MMU has been turned on? Also, it looks
-> like my BDI is not showing the "Debug entry cause"
-> correctly.
+On Oct 11, 2004, at 1:33 PM, annamaya wrote:
 
-Could you send more of the boot-log ?  And what board is this exactly on
-what kernel?  Thanks.
+> I will try the zImage trick
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+It's not a trick nor magic :-)  It's required for use
+with these boards because......
+
+> ...but I just wanted to know
+> if the assumption here is that the kernel already
+> understands the EEPROM data format to construct
+> bd_info. Is that correct?
+
+....the kernel does not understand anything about
+the EEPROM format on this board.  This is the
+reason this "front end" bootloader was created.
+The standard interface to the kernel is the
+board descriptor, the board specific data in
+the EEPROM or elsewhere is usually quite
+varied and isn't appropriate to have in the
+kernel when it can be easily represented in
+a standard manner.
+
+Thanks.
+
+
+	-- Dan
