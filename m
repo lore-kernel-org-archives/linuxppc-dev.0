@@ -1,72 +1,48 @@
-Date: Sun, 15 Feb 2004 23:20:35 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Yang <yangqs@163.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: clock() seems not work !
-Message-ID: <20040216072035.GB25104@gate.ebshome.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: "Jack Liu" <Jack_liu@usish.com>
+Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: Sandpoint problems 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 16 Feb 2004 08:51:42 +0800."
+             <200402160051.i1G0pKqA003808@ms.usish.com>
+Date: Mon, 16 Feb 2004 10:35:14 +0100
+Message-Id: <20040216093519.B09DEC1096@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Feb 16, 2004 at 03:13:55PM +0800, Yang wrote:
-> >On Mon, Feb 16, 2004 at 11:58:07AM +0800, Yang wrote:
-> >>
-> >>  i am writting applications based ppc+MVL3.0, which i want to get CPU
-> >> time,but clock() seems not work for me, for this i did a simple test,as
-> >> follows:
-> >> /*----------------*/
-> >>   while(1)
-> >> 	{
-> >>       printf("current time is ld \n",clock());
-> >> 	  sleep(1);
-> >> 	}
-> >> /*----------------*/
-> >>      But it printed the same value all the while. How is it?
-> >>
-> >
-> >What do you expect from this function?
-> >
-> >Did you read manual entry for clock()?
-> >
-> >On POSIX systems clock() returns (number of seconds * CLOCKS_PER_SEC)
-> >spent by the process, not a system time/tick count...
-> >
-> >Your program is doing _nothing_, so it's normal that clock() returns
-> >the same number. Change sleep(1) to some busy loop and you'll see the
-> >difference.
-> >
-> >Eugene.
+In message <200402160051.i1G0pKqA003808@ms.usish.com> you wrote:
 >
-> In fact i want to get a "timeout" utility ,which check periodically if a program has expired.
-> Based X86
+>   I am planning to use U-Boot to replace DINK13 shipped in Sandpoint
+> platform. I got a sucessful compilation by: Make Sandpoint8245_config,
+> Make all . Then I Burn u_boot.src in the Boot ROM. IT CAN'T BOOT. I used
+> all default setting in the PrPMC8245 and Sandpoint board. I didn't know
+> the reason. Anybody knows?
 
-What do you mean under x86?
+First, this is off topic on the linuxppc-embedded list.  Please  send
+U-Boot related questions to the u-boot-users list. Thanks.
 
-You aren't talking about Linux x86, are you ?
+What exactly did you do?  "I  Burn  u_boot.src"?  There  is  no  file
+u_boot.src.  Do  you  mean  u_boot.srec? Note that this is a S-Record
+file - are you sure you need to use the S-record file?
 
-I'm just curious, what OS are you porting this code from (looks like
-DOS to me :) ?
+Where exactly in flash did you program it? How did  you  verify  that
+the flash programming worked?
 
->i use clock() to set a timeout and it return the tick count of CPU.
-> But it's entirely different in Linux. In most my case the timeout is a couple of 10ms.
->   The following codes are some fragments in my X86 system, how can i migrate them to Linux?
-> /*------------------------------------------------*/
->  long set_timeout(long timeout)
->  {
->   return(clock()+timeout/55);  /* i386 tick once per 55ms */
->  }
->
->  char chk_timeout(long settime)
->  {
->    return (clock() >= settime) ? TIMEOUT : NO_TIMEOUT;
->  }
-> /*-------------------------------------------------*/
->
 
-OK, I think you should check gettimeofday() function.
+And what exactly do you mean by "it can't  boot"?  (An  why  are  you
+shouting?) Is the board completely dead? Is there Some output? Which?
+Does U-Boot run, but fails to boot Linux? Or what?
 
-Eugene.
+Best regards,
+
+Wolfgang Denk
+
+--
+See us @ Embedded World, Nuremberg, Feb 17 - 19,  Hall 12.0 Booth 440
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+After Goliath's defeat, giants ceased to command respect.
+- Freeman Dyson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
