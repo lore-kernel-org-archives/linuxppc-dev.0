@@ -1,48 +1,27 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: =?ISO-8859-1?Q?J=F6rn=20Nettingsmeier?= <nettings@folkwang-hochschule.de>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: pismo sleep behaviour w/ 2.4.4-benh
-Date: Sun, 13 May 2001 22:57:07 +0200
-Message-Id: <20010513205707.32365@smtp.wanadoo.fr>
-In-Reply-To: <3AFEDE1E.BBB789AC@folkwang-hochschule.de>
-References: <3AFEDE1E.BBB789AC@folkwang-hochschule.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Sun, 13 May 2001 15:39:53 -0700
+From: Anton Blanchard <anton@samba.org>
+To: Bastien Nocera <hadess@hadess.net>
+Cc: LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Kernel sound problems (and misc)
+Message-ID: <20010513153953.A16897@va.samba.org>
+References: <kara.5052-0.989768459@kara.hadess.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <kara.5052-0.989768459@kara.hadess.net>; from hadess@hadess.net on Sun, May 13, 2001 at 04:40:59PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->well, that's just what i'm using.
->but i have a suse distro (7.1).
->it works for you ?  no falling asleep, no lockups ?
 
-I never had the falling asleep problem. For some reason, your
-pmud either receives a sleep message from somebody, or incorrectly
-thinks it got one...
+> The misc problem is, while trying to compile paulus' kernel, the vmlinux
+> target fails to link with rwsem_down_write_failed and rwsem_wake
+> undefined references.
 
-I had a few lockups, most related to problems with the kernel
-console code (when sleeping from console). I never had a lockup
-in X but I know that some part of the kernel are quite fragile
-regarding power management (USB for example).
+Did you make oldconfig? You should this in your .config:
 
-Do you have any other device attached ? (like a PCMCIA card ?)
+# CONFIG_RWSEM_GENERIC_SPINLOCK is not set
+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
 
->are there subtle hardware differences on some pismos ?
->or could it be due to the distro.... pretty unlikely IMHO, given the
->fact that i ditched the SuSE kernel and used yours.
->all i could think of are the card manager and the userland usb
->stuff.
->
->---
->
->btw, i put the book asleep with snooze -f (circumventing pmud), and
->it came back without going back to sleep. so yes, the problem seems
->to be pmud.
-
-You probably need to alter your /etc/pwrctl script, yes. I don't
-have mine at hand right now, I'll send it tomorrow.
-
-Ben.
-
+Anton
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
