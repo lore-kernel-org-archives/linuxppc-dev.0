@@ -1,38 +1,42 @@
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <407EA4CA.4080208@embeddededge.com>
+Date: Thu, 15 Apr 2004 11:05:46 -0400
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Jon Loeliger <jdl@motorola.com>
+Cc: Gerrit Van de Velde <gvd@denayer.wenk.be>,
+	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: MPC85xx support
-From: Jon Loeliger <jdl@motorola.com>
-To: Gerrit Van de Velde <gvd@denayer.wenk.be>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <407E5F36.80003@denayer.wenk.be>
-References: <407E5F36.80003@denayer.wenk.be>
-Content-Type: text/plain
-Date: 15 Apr 2004 08:35:33 -0500
-Message-Id: <1082036134.20892.8.camel@baz.sps.mot.com>
-Mime-Version: 1.0
+References: <407E5F36.80003@denayer.wenk.be> <1082036134.20892.8.camel@baz.sps.mot.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, 2004-04-15 at 05:08, Gerrit Van de Velde wrote:
->
-> Hi,
->
-> I was wondering how well the mpc85xx of motorola (PowerPC e500 core) is
-> currently supported in the linux/u-boot combination.
-> Can anyone give some pointers about this matter ?
->
-> Kind regards,
-> Gerrit Van de Velde
+Jon Loeliger wrote:
 
-Hi Gerrit,
+> I am planning to release an updated version of the mpc85xx support
+> for U-Boot in just a few days.  It will be updated to Rev 1.1 and
+> has major improvements to the TSEC driver.
 
-I am planning to release an updated version of the mpc85xx support
-for U-Boot in just a few days.  It will be updated to Rev 1.1 and
-has major improvements to the TSEC driver.  An updated Linux release
-is close as well, but I'll let my partner in crime speak there. :-)
+Major improvements?  I recently posted a patch for the RPC/STx 8560
+board that included some TSEC updates, I don't know if they have made
+it into the CVS.  If not, please snag that from the mailing list so
+they are not lost.
 
-Are there specific features you are concerned about?
+> .....  An updated Linux release
+> is close as well, but I'll let my partner in crime speak there. :-)
 
-jdl
+Those of us working on 85xx support have our own local versions of
+Linux 2.4.  Due to the amount of change and the desire to keep 2.4
+stable, we are negotiating some clever ways to get this checked into
+the public trees.  I have the U-boot and kernel available for the
+RPC/STx GP3 boards on my server, if that is useful to get you started.
+
+Thanks.
+
+
+	-- Dan
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
