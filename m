@@ -1,66 +1,38 @@
-Date: Sun, 15 Dec 2002 18:35:49 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Todd Poynor <tpoynor@mvista.com>
+From: Cort Dougan <cort@fsmlabs.com>
+Date: Sun, 15 Dec 2002 12:15:26 -0700
+To: Tom Rini <trini@kernel.crashing.org>
 Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Support for Arctic platform (405LP based)
-Message-ID: <20021215073549.GB16755@zax.zax>
-References: <20021213043628.GI21319@zax.zax> <3DFA3420.10105@mvista.com>
+Message-ID: <20021215121526.M30941@duath.fsmlabs.com>
+References: <20021213043628.GI21319@zax.zax> <20021212215126.V23952@duath.fsmlabs.com> <20021213151808.GI19456@opus.bloom.county>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3DFA3420.10105@mvista.com>
+In-Reply-To: <20021213151808.GI19456@opus.bloom.county>; from trini@kernel.crashing.org on Fri, Dec 13, 2002 at 08:18:08AM -0700
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, Dec 13, 2002 at 11:25:20AM -0800, Todd Poynor wrote:
-> A few comments and questions...
->
-> I assume symbol CONFIG_ARCTIC2 is more appropriate than CONFIG_ARCTIC,
-> with additional symbols possibly to be invented in the future to
-> distinguish minor changes in board rev 3, 4, ... But mentioning this
-> just in case it might make future maintenance easier to use a single
-> symbol for common Arctic family code.
+How about killing the _2_4_devel tree?  When I created it I want it to be a
+playground for stabilizing then moving things over to 2_4 failry quickly.
+It seems to have become the defacto "want board X, you better use
+_2_4_devel" tree.
 
-Well... the difference between Artic-1 and Arctic-2 is not just a
-board revision - they are quite different devices, with different
-peripherals on board.  So there's not much point sharing a cnofig
-option for these two.  On the other hand Arctic-3 (if and when it
-exists) is likely to be a relatively small revision of Arctic-2, so
-we'll probably want to use the CONFIG_ARCTIC2 symbol for it as well.
+When I went looking for a working 4xx tree recently I had to write a script
+that would go through the last year of changesets in _2_4 and _2_4_devel
+and try to build them then stick the result into a file.  That ran for 7
+days on a 2.0Ghz Dual x86.  Then, that only gave me a list of building
+trees.  Knowing that there's only 1 tree would be much easier!
 
-> CONFIG_IBM_OPENBIOS is taken out of the CONFIG_SYCAMORE section of
-> arch/ppc/config.in?
+I'll send you some wonderful New Mexico wine in exchange for your efforts!
 
-Err... I have no idea what you're asking.  How did SYCAMORE get into
-this?
-
-> Duplication of the CONFIG_BEECH case in
-> arch/ppc/boot/simple/embed_config.c: might be trying to enable the SSX
-> bootloader for Beech, but since CONFIG_IBM_OPENBIOS is on for Beech it
-> seems we'd have dup definitions?  Would more SSX code would be necessary
-> anyhow?
-
-Again, I'm afraid I'm having trouble parsing that paragraph - what do
-you want to know?
-
-> CONFIG_PPC_RTC is used to protect RTC code, most of these were
-> explicitly removed from other platforms some time ago, not sure what the
-> status of this is since there are a couple platforms that still use it.
->
-> I notice the bd_t has no entry for the ethernet MAC address in firmware,
-> like Beech, but am hoping there's an EEPROM on the device that holds
-> this info.  On Beech it causes some ugliness because the usual EEPROM is
-> not provided, so only the bootloader can program the ether dev's MAC.
-> And consequently the generic ethernet driver is hacked to deal with that.
-
-The ethernet on the Artic-2 debug board (RTL8019 based - not the same
-as the Beech's ethernet - driver coming soon) does indeed have an
-EEPROM.
-
---
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.
-http://www.ozlabs.org/people/dgibson
+} One of my goals for winter break is to try and make the _devel tree less
+} divergent, at least w.r.t. 'classic' PPCs.  I'm not sure if 4xx support
+} is in a stage yet that Paul is happy to move it to the _2_4 tree and
+} then on to Marcelo yet.
+}
+} --
+} Tom Rini (TR1265)
+} http://gate.crashing.org/~trini/
+}
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
