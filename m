@@ -1,50 +1,33 @@
-Message-ID: <00e001c06484$1095fe60$74dee783@lboro.ac.uk>
-From: "Peter Uttley" <P.Uttley-97@student.lboro.ac.uk>
-To: "Dan Malek" <dan@mvista.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <00b301c0647d$c4187280$74dee783@lboro.ac.uk> <3A3694A9.4D40B63B@mvista.com>
-Subject: Re: USB camera
-Date: Tue, 12 Dec 2000 21:39:46 -0000
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Wed, 13 Dec 2000 09:34:38 +1100
+From: Graham Stoney <greyham@research.canon.com.au>
+To: Paugam Luc <PAUGAML@thmulti.com>
+Cc: "'Graham Stoney'" <greyham@research.canon.com.au>,
+        "'linux-ppc Mailing-List'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: PowerPC-embedded HOWTO-12 ?
+Message-ID: <20001213093438.A17129@brixi.research.canon.com.au>
+References: <8B43573754BCD211B5970008C74B8126010F774B@RENEXCH3.rennes.thmulti.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <8B43573754BCD211B5970008C74B8126010F774B@RENEXCH3.rennes.thmulti.com>; from PAUGAML@thmulti.com on Tue, Dec 12, 2000 at 11:09:04AM +0100
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Sorry about that reading it back it doesn't make sense,
+On Tue, Dec 12, 2000 at 11:09:04AM +0100, Paugam Luc wrote:
+> I can't access chapter 12 of your PowerPC-embedded-HOWTO document.
+> It seems that there is a broken link !!!
 
-What I mean is using the 850 as a host interface and connecting the digital
-camera.
+Don't tell me, let me guess: you've looking at the copy on nbci.com, right?
+Their site is very unreliable.  I've just uploaded it again there, but try
+it at its new home of penguinppc.org:
+    http://penguinppc.org/usr/embedded/howto/PowerPC-Embedded-HOWTO-12.html
 
-Pete.
-
-
------ Original Message -----
-From: Dan Malek <dan@mvista.com>
-To: Peter Uttley <P.Uttley-97@student.lboro.ac.uk>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Sent: 12 December 2000 21:12
-Subject: Re: USB camera
-
-
->
-> Peter Uttley wrote:
->
-> > I'm thinking about using the USB port on the MPC-850 for a digital
-camera.
->
-> I don't understand.  Do you mean using the 850 as a host interface and
-> connecting a digital camera, or building a digital camera using the 850
-> embedded in the camera and using the USB device interface for connecting
-> to some host USB?
->
->
-> -- Dan
->
->
->
->
-
+Regards,
+Graham
+--
+Graham Stoney
+Assistant Technology Manager
+Canon Information Systems Research Australia
+Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
