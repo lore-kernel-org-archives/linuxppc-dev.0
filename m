@@ -1,42 +1,44 @@
-Subject: Re: Activating SystemACE support
-From: Jeff Angielski <jeff@theptrgroup.com>
-To: Stephen Williams <612dlag102@sneakemail.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <10318-29667@sneakemail.com>
-References: <10318-29667@sneakemail.com>
+Subject: RE: PCI daughter card with USB on a 405GP
+From: Xavier Miville <xmiville@oerlikon.ca>
+To: v.sudeep@exgate.tek.com
+Cc: samsongshzu@yahoo.com.cn, wd@denx.de,
+	mporter@kernel.crashing.org, laurent.mohin@acterna.com,
+	linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <AE20493C16DE7F46BC29B257C8D708D30130405C@mail.oerlikon.ca>
+References: <AE20493C16DE7F46BC29B257C8D708D30130405C@mail.oerlikon.ca>
 Content-Type: text/plain
-Message-Id: <1077811344.4225.12.camel@localhost.localdomain>
+Message-Id: <1077812871.1585.26.camel@PC856-DDUVAL.oerlikon.ca>
 Mime-Version: 1.0
-Date: 26 Feb 2004 11:02:24 -0500
+Date: 26 Feb 2004 11:27:51 -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, 2004-02-25 at 22:54, Stephen Williams wrote:
+You will need to apply the corresponding linuxppc patch
+(/pub/linux/kernel/ports/ppc/2.4) to 2.4.22. The zvmlinux doesn't seem
+to be built with only 2.4.22.
+
+Hope this helps.
+
+On Thu, 2004-02-26 at 09:05, v.sudeep@exgate.tek.com wrote:
+> 3. I downloaded and built the tool chain for the 405GP. And am running
+> into
+> problems trying to compile the linux 2.4.22 kernel. I am not sure of
+> what I
+> must do to create the treeboot image... I think by default it does not
+> do
+> it.. it creates only the vmlinux.gz
 >
-> I have a board that, like the Xilinx ml300 board, has a SystemACE
-> chip on it. I would like to activate the existing SystemACE drivers
-> support in the kernel, but it is not clear to me how I pass to the
-> drivers the base address and IRQ that has been assigned. Does anyone
-> has any suggestions?
->
 
-The SystemACE driver is currently written as a subset of the
-CONFIG_XILINX_OCP code.  So the easiest thing is to just add another
-xparameters_xxxx.h and have it conditionally included into the
-arch/ppc/platforms/xilinx_ocp/xparameters.h file.  Put your board
-specific information in that file and you should be fine from there.
+--
+Xavier Miville
+Junior Firmware Engineer
+Engineering Department
+Oerlikon Contraves Inc.
 
-You might have to also munge the config.in files and/or Makefiles to
-make sure everything gets included that needs to be there to support the
-SystemACE.
-
-Incidentally, I would be interested in hearing what kind of transfer
-rates people are seeing using the SystemACE.  I have run some Bonnie
-tests on the filesystem on my MPC8266 board and it is pretty slow.
-
-Jeff Angielski
-The PTR Group
+Tel: (450) 542-5683
+Fax: (450) 358-7708
+xmiville@oerlikon.ca
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
