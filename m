@@ -1,22 +1,23 @@
-Return-Path: <jchapman@katalix.com>
-Received: from ptb-relay02.plus.net (ptb-relay02.plus.net [212.159.14.213])
+Return-Path: <jakub@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CCD4D67A7D
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Feb 2005 02:50:49 +1100 (EST)
-Message-ID: <421DF7D0.2050803@katalix.com>
-Date: Thu, 24 Feb 2005 15:50:40 +0000
-From: James Chapman <jchapman@katalix.com>
-MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-References: <421CEC19.2010703@katalix.com>
-	<20050223222534.GM345@smtp.west.cox.net>
-	<421D97FE.4080100@katalix.com>
-	<20050224141809.GP345@smtp.west.cox.net>
-In-Reply-To: <20050224141809.GP345@smtp.west.cox.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: PATCH: add ppc PVR register values for 7447A and 7457 CPUs
+	by ozlabs.org (Postfix) with ESMTP id 0CF3467A81
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Feb 2005 03:01:48 +1100 (EST)
+Date: Thu, 24 Feb 2005 11:01:39 -0500
+From: Jakub Jelinek <jakub@redhat.com>
+To: Mikael Pettersson <mikpe@csd.uu.se>
+Message-ID: <20050224160139.GF853@devserv.devel.redhat.com>
+References: <16924.59237.581247.498382@alkaid.it.uu.se>
+	<1109210688.15027.2.camel@gaston>
+	<16925.60927.49095.758660@alkaid.it.uu.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <16925.60927.49095.758660@alkaid.it.uu.se>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: ppc32 weirdness with gcc-4.0 in 2.6.11-rc4
+Reply-To: Jakub Jelinek <jakub@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,13 +27,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Tom Rini wrote:
+On Thu, Feb 24, 2005 at 04:08:47PM +0100, Mikael Pettersson wrote:
+> _However_, the 0k data message is due to a gcc-4.0 bug, and below
+> you'll find a test program which illustrates it.
 
-> Is there something you can't get from cur_cpu_spec[0] ?  That's why all
-> of the PVR definitions _should_ be unneeded now.
+http://gcc.gnu.org/PR20196
 
-No, I'll use cur_cpu_spec[]. Thanks
-
--- 
-James Chapman
-PGP key : http://www.katalix.com/~jchapman/pgpkey.txt
+	Jakub
