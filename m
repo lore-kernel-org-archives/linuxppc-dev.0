@@ -1,36 +1,37 @@
+Date: Thu, 17 Jun 2004 11:19:54 +0200
+Message-Id: <HZG4L6$A14A0723F533A1C86A3AF192DB6EF298@scarlet.be>
 Subject: Re: [PATCH] PPC601 MQ handling
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stef Simoens <stef.simoens@pi.be>
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>,
-	Paul Mackerras <paulus@samba.org>
-In-Reply-To: <HZF5JG$8DFE4973242834322717FEB2CD3FE797@scarlet.be>
-References: <HZF5JG$8DFE4973242834322717FEB2CD3FE797@scarlet.be>
-Content-Type: text/plain
-Message-Id: <1087418693.8556.236.camel@gaston>
-Mime-Version: 1.0
-Date: Wed, 16 Jun 2004 15:44:54 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+From: "Stef Simoens" <stef.simoens@pi.be>
+To: "benh" <benh@kernel.crashing.org>
+Cc: "linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>,
+	"paulus" <paulus@samba.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 2004-06-16 at 15:42, Stef Simoens wrote:
-> This is a patch to handle the MQ-register found on 601 CPU's. It's a diff against linux-2.6.7. Could this patch be included in further Linux kernels?
+> Did you check it was actually saved/restored by the signal code ?
 >
-> The patch can also be downloaded from http://users.tijd.com/~tdn46485/linux-2.6.7-mq.patch
-> I also wrote a small testcase (http://users.tijd.com/~tdn46485/mqtest.s)
-> The test makes a division, enters a for loop, and prints the contents of the MQ register.
->
-> Changes:
-> * Add a CONFIG_PPC601_MQ option
-> * Set CPU_FTR_MQ for 601 (arch/ppc/cputable.c, include/asm-ppc/cputable.h)
-> * Save and restore the MQ register (arch/ppc/entry.S, include/asm-ppc/reg.h)
-> * Delete the 'not used' message, mq debug (arch/ppc/kernel/ppc-stub.c, include/asm-ppc/ptrace.h)
->
-> Signed-off-by: Stef Simoens <stef.simoens@pi.be>
+> Ben.
 
-Did you check it was actually saved/restored by the signal code ?
+I looked up when XER gets saved/restored to save/restore MQ.
 
-Ben.
+I tested my patch with
+mqtest &
+(start other programs which are 'MQ-enabled')
+fg
+^Z
+...
+and mqtest gave me the correct output.
+
+I used the same principle to patch my 2.4 kernel and I'm running with the patch for over 3 months now.
+
+If this isn't the answer you wanted, could you please point out what I should be testing?
+
+Thanks
+
+Stef
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
