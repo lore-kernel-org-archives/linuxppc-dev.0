@@ -1,47 +1,38 @@
-Date: Wed, 25 Jul 2001 09:39:02 -0400
-From: Ethan Blanton <eblanton@cs.ohiou.edu>
-To: linuxppc-dev@lists.linuxppc.org, netdev@oss.sgi.com
-Subject: airport reset on iBook2
-Message-ID: <20010725093902.E2864@localhost.localdomain>
+Date: Wed, 25 Jul 2001 14:42:39 -0500
+From: Hollis Blanchard <hollis@austin.ibm.com>
+To: Sven Dickert <Sven.Dickert@planb.de>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: 601 BAT's
+Message-ID: <20010725144239.A11885@austin.ibm.com>
+References: <20010724105114.A17706@remote.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="11Y7aswkeuHtSBEs"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20010724105114.A17706@remote.org>; from Sven.Dickert@planb.de on Tue, Jul 24, 2001 at 10:51:14AM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---11Y7aswkeuHtSBEs
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, Jul 24, 2001 at 10:51:14AM +0200, Sven Dickert wrote:
+>
+>   At the moment I'm working on sound support. I changed
+> -#define CAROLINA_IRQ_EDGE_MASK_HI   0xA4  /* IRQ's 8-15 [10,13,15] */
+> +#define CAROLINA_IRQ_EDGE_MASK_HI   0xA0  /* IRQ's 8-15 [10,13,15] */
+> in arch/ppc/kernel/prep_pci.c
+> I found this 'patch' at http://penguinppc.org/dev/prep/tp850.diff
 
-Hey,
-I don't know if this is a known problem (I haven't seen it mentioned)
-or not, but I'm getting the following error from my Airport card
-reasonably often:
+Neither the 40P nor the Thinkpad 850 are Carolina systems, so those constants
+should remain how they are and new ones for other systems introduced. That
+will mean slight changes to the IBM section of prep_route_pci_interrupts(),
+but nothing major.
 
-Jul 25 09:27:50 localhost kernel: NETDEV WATCHDOG: eth1: transmit timed out
-Jul 25 09:27:50 localhost kernel: eth1: Tx timeout! Resetting card.
+In your patch you're using a segment register because 601 BAT's are only 8MB
+(and we need more for IO space). Someone suggested using ioremap in the driver
+(the one causing the page fault), but I suspect the whole reason those BAT
+regions are there is to support legacy IO and not have to get everything to
+ioremap? Is there an equivalent to ioremap that allows the virtual address to
+be specified (want to map 0x80000000 physical to 0x80000000 virtual [NOT
+n+io_base] for IO ports)?
 
-It carries with it the undesirable consequence that sometimes all
-network traffic stalls for anywhere from 1-10 (subjectively) seconds.
-This is probably happening on the order of every 3-5 hours, but when
-it happens it often happens several times in the span of a few minutes.
-
-I am sending this to linuxppc-dev and netdev, as I don't know whether
-this is airport-specific, or orinoco/hermes related.
-Ethan
-
---=20
-If I've told you once, I've told you once
-And once is all that you needed.
-		-- The Refreshments, "Carefree"
-
---11Y7aswkeuHtSBEs
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
-
---11Y7aswkeuHtSBEs--
+-Hollis
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
