@@ -1,73 +1,47 @@
-Message-ID: <20011023182151.64337.qmail@web13103.mail.yahoo.com>
-Date: Tue, 23 Oct 2001 11:21:51 -0700 (PDT)
-From: Dave Ray <g4tinker@yahoo.com>
+Date: Tue, 23 Oct 2001 12:29:48 -0600 (MDT)
+From: Derrik Pates <dpates@dsdk12.net>
+To: Dave Ray <g4tinker@yahoo.com>
+Cc: <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: Sound on G4 tower, almost 
-To: Derrik Pates <dpates@dsdk12.net>
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.4.33.0110222140340.20732-100000@andromeda.dsdk12.net>
+In-Reply-To: <20011023182151.64337.qmail@web13103.mail.yahoo.com>
+Message-ID: <Pine.LNX.4.33.0110231224250.7493-100000@andromeda.dsdk12.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---- Derrik Pates <dpates@dsdk12.net> wrote:
-> On Mon, 22 Oct 2001, Dave Ray wrote:
->
-> > The syslog messages that I posted previously do
-> show
-> > some errors when loading dmasound_pmac. I'm
-> wondering
-> > if those errors are related to the symptoms. Any
-> help
-> > appreciated.
->
-> I looked at the output you posted, and I didn't see
-> any errors in those
-> messages. I'm using the same driver (albeit on a
-> FireWire iBook, which has
-> a DACA chip, but the messages are similar), and so I
-> know there is nothing
-> in any of those messages to indicate any
-> non-functioning (in fact, it
-> claimed to have found the Texas/Tumbler I2C mixer
-> device). What program
-> are you using to try to change mixer settings? Have
-> you tried playing any
-> audio, and if so, what happened? Did you receive an
-> error, or did it just
-> play silently, or what?
+On Tue, 23 Oct 2001, Dave Ray wrote:
 
-All sound apps just play silently without complaint,
-but errors appear in the syslog.
+> However for this debugging I'm leaving esound off and
+> I should still be able to get terminal beeps and play
+> mp3's from gqmpeg. All audio programs happily run,
+> without complaint, but no sound comes out. When I try
+> to adjust volume I get the syslog errors. I'm stumped
+> and open to any suggestions.
 
-Just to give some more background, I'm running the
-latest audiofile libs and latest esound libs,
-enlightenment 0.16.5, kernel 2.4.13-BenH. Under
-previous hardware, audio (awacs) always worked, and I
-generally ran esound.
+What errors are those? Nothing you've posted so far looks like an error to
+me.
 
-However for this debugging I'm leaving esound off and
-I should still be able to get terminal beeps and play
-mp3's from gqmpeg. All audio programs happily run,
-without complaint, but no sound comes out. When I try
-to adjust volume I get the syslog errors. I'm stumped
-and open to any suggestions.
+> Oct 19 20:53:48 garuda kernel: tumbler:no device
 
-The following lines in the syslog looked suspicious:
+That's from not having a devnode for "amp-mute", "headphone-mute" or
+"headphone-detect". I don't think that's a problem.
 
-Oct 19 20:53:48 garuda kernel: tumbler:no device
-.....
-.....
-Oct 19 20:53:48 garuda kernel: i2c-keywest: Ack Status
-on addr expected but got: 0x09 on addr: 0x34
-.....
-(see original post for full syslog)
+> Oct 19 20:53:48 garuda kernel: i2c-keywest: Ack Status
+> on addr expected but got: 0x09 on addr: 0x34
 
-I suspect that the driver is failing to open the real
-hardware and registering a dummy device.
+That's just because the tas3001 driver code (the mixer for the
+Tumbler/Texas) is searching all available I2C buses, and the first one
+doesn't have what it's looking for.
 
--Dave
+> I suspect that the driver is failing to open the real
+> hardware and registering a dummy device.
+
+I suspect your mixer app is opening the wrong mixer devnode.
+
+Derrik Pates      |   Sysadmin, Douglas School   |    #linuxOS on EFnet
+dpates@dsdk12.net |     District (dsdk12.net)    |    #linuxOS on OPN
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
