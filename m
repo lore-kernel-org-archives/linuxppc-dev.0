@@ -1,42 +1,37 @@
-From: linas@austin.ibm.com
-Date: Mon, 10 Nov 2003 17:57:41 -0600
-To: Christian <evil@g-house.de>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: ppc32 lockups with 2.6
-Message-ID: <20031110175740.A32176@forte.austin.ibm.com>
-References: <3FA5698A.9000905@g-house.de> <3FAABE62.4090804@g-house.de> <20031110125044.A22030@forte.austin.ibm.com> <3FB01392.60500@g-house.de>
+Subject: Re: pmac_halt() bug
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Igal Baevsky <igal.baevsky@terayon.com>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <booek6$vvl$1@sea.gmane.org>
+References: <7AFDCF4E-FCCB-11D6-8F24-003065F22EAA@mindspring.com>
+	 <booek6$vvl$1@sea.gmane.org>
+Content-Type: text/plain
+Message-Id: <1068508789.31229.70.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3FB01392.60500@g-house.de>; from evil@g-house.de on Mon, Nov 10, 2003 at 11:39:14PM +0100
+Date: Tue, 11 Nov 2003 10:59:50 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Nov 10, 2003 at 11:39:14PM +0100, Christian wrote:
-> linas@austin.ibm.com wrote:
-> > I'd suggest getting the KDB kernel patches, and then poking around to
-> > see what the system was doing when it locked up.
->
-> kdb, hm, i'll see if i can handle this. would some output from gdb help too?
+On Tue, 2003-11-11 at 03:33, Igal Baevsky wrote:
 
-kdb is a built-in kernel debugger. gdb is useless for this case,
-although kgdb could be another alternative.
+> Tim,
+> Is there any way to halt PMAC machine with no powering it off ?
+> I will realy appretiate your answer - the problem you mentioned above is
+> the exact problem I'm dealing with .
+> Thanks.
+> Igal
 
-> > What were the stack traces? does it always lock up in the same routine?
->
-> the debugger will show, as nothing else showed up and even SysReq was
-> not working anymore.
+I see no good reason why you want to do such a halt that just spins and
+do nothing but suck power...
 
-Hmm,  that's bad ... does sysreq work before the lockup?
+If the problem is to have the machine turn back on, I fail to see how
+halting it this way would help. The only thing I can imagine is enabling
+the server mode option. I added that feature to my very latest trees
+for Core99 machines and later (AGP machines), and there used to be a
+tool doing that for CUDA based machines.
 
-> > What line of code was it
-> > executiing when it did that?
+Ben.
 
-No, I meant in the kernel, the output of the kdb 'bt' command, which
-shows what the kernel was doing when kdb was entereed.  But if sysreq
-really doesn't work, then theres a chance that kdb won't either, and
-that means ... hmm...
-
---linas
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
