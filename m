@@ -1,43 +1,50 @@
-Date: Tue, 20 Apr 1999 10:29:07 -0500 (CDT)
-From: "David A. Gatwood" <marsmail@globegate.utm.edu>
-To: root <roboj@ibm.net>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Kernel 2.2.6-ac1 problem
-In-Reply-To: <371BBD46.246D9D0F@ibm.net>
-Message-ID: <Pine.LNX.3.96.990420102601.23151G-100000@globegate.utm.edu>
+Date: Tue, 20 Apr 1999 17:40:59 +0200 (MET DST)
+From: David De Ridder <s970707@uia.ua.ac.be>
+Reply-To: David De Ridder <david.de.ridder@bitsmart.com>
+To: Gabriel Paubert <paubert@iram.es>
+cc: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
+Subject: MVME2306 : kernel 2.2.6 SUCCESS !
+Message-ID: <Pine.SO4.4.05.9904201732460.14947-100000@hsins.uia.ac.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 19 Apr 1999, root wrote:
+Hi,
 
-> I compiled the latest kernel from source and I created vmlinux with no
-> problems.  After installing it in my system folder on my mac partition
-> and booting linux again, I get I/O errors somewhat randomly.
-> The message that is displayed is "No space left on device".  The file
-> /var/log/messages conatins the following lines:
-> 
-> Apr 19 23:23:07 localhost kernel: EXT2-fs error (device ide0(3,4)):
-> ext2_new_block: Free blocks count corrupted for block group 13
+a quick report :
 
-We've had similar problems with free block corruption under MkLinux
-(2.0.37).  This may be a red herring, but I've only noticed the damage on
-the last partition mounted.  You might try mounting a bogus partition
-after the others and see if it goes away.  Just a wild thought.  Anyway,
-the problem began when someone ported some changes from the current
-development sources into the 2.0.xx tree, between 2.0.33 and 2.0.36 (the
-former was fine, the latter has the problem.  It might be easier to find
-in the context of 2.0.xx since many less things were changing....
+* I patched my 2.2.4 source tree to 2.2.6 (through 2.2.5)
+* I applied Gabriel's latest patches (for 2.2.6). First generic,
+  then vme. There were no messages during patching (``patch -p0 -s'').
+* ``make distclean'' on the patched tree
+* ``make oldconfig'' using Gabriel's mvme2600.config.nfsroot for 2.2.6
+* ``make bzImage'' (went flawless)
+* ``make modules'' - no problems this time
+* ``make modules_install''
+* ``depmod -a'' gives no messages (this is good)
 
+Then, I fed the new kernel arch/ppc/prepboot/zImage to my TFTP server,
+did a reboot, and there I was, up and running.
+A little applause for Gabriel Paubert, who was very fast and helpful
+in clearing some obstacles.
 
-Later,
-David
+Just to make sure, I did a ``modprobe universe'', and the kernel said :
 
-David A. Gatwood                         Visit globegate's internet
-dgatwood@globegate.utm.edu                  talker, Deep Space 36
-http://globegate.utm.edu                telnet globegate.utm.edu:9624
+``Universe VME bridge revision #1 found at bus=0, dev=13''
+
+This looks fine. When I get some info on how to use the /dev/vme, I'll
+start experimenting with it.
+
+I think I'm going home now,
+ 
++-----------------------------------------------------------------+
+   David 'Septimus' De Ridder     <david.de.ridder@bitsmart.com>
+
+"Oh please don't make us watch it again !"
+   - 'The Muppet Show' 
++-----------------------------------------------------------------+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
