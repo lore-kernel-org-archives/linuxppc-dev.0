@@ -1,31 +1,47 @@
-Message-ID: <37AAFF24.F7326812@motorola.com>
-Date: Fri, 06 Aug 1999 08:28:36 -0700
-From: Robert Shaw <robert.shaw@motorola.com>
-Reply-To: rshaw@inficad.com
+From: "Ira K. Weiny" <iweiny@kdat.csc.calpoly.edu>
+Message-Id: <199908061807.LAA11714@kdat.csc.calpoly.edu>
+Subject: Kernal crashes 
+To: linuxppc-dev@lists.linuxppc.org
+Date: Fri, 6 Aug 1999 11:07:42 -0700 (PDT)
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <bh40@calva.net>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: New BootX 1.1.2 problems...
-References: <19990806115706.026854@mail.mipsys.com>
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Ben,
+I have used 2.1.24 kernal with a MkLinux/LinuxPPC mixture
+system.  It's a long story but it worked.
 
-> >   * Now, here's the weird one, no matter what I choose in the kernel
-> >     pop-up, it ALWAYS loads the first on in the list! No matter what.
-> >     This is of course bad. :(
->
-> Does this happens with the extension only or both extension and
-> application ? I'll see on my side if I find an obvious bug and re-release
-> a version (I already have one other fix ;-)
+I have just upgraded to R5 of the LinuxPPC distribution
+(linuxppc.com) which has the 2.2.6 kernal.
 
-Yes, it happens with both.
+I used my same scripts to connect with ppp to my ISP.  But the new pppd and
+chat programs.
 
--- Robert
-rshaw@inficad.com
-http://www.inficad.com/~rshaw/
+I have now expierenced serveral kernal crashes when running Netscape, and
+once with rlogin.  The last of which destroyed my file system and now I
+can't even log in.  Very disapointing.  I have emailed the linuxppc-user
+list concerning this issue and apparently others have the same problem but
+no one knows how to fix it.
+
+I know the kernal goes down because I can not even telnet to the box.  Well
+maybe telnetd just went down, but I can't even get a getty to shut the
+machine down and that is why the file system is hosed.
+
+Is there something different between the kernals concering serial support?
+And if so what can I do about it?
+
+I sent something to the linuxppc-user list but the only response I got back
+was "I just don't use Netscape"  Well the problem happened with rlogin and I
+don't see any reason Netscape (a user program) could mess up the kernal.  If
+just Netscape were crashing that would be a different issue.
+
+Can anybody help me with this.
+
+Thanks
+Ira Weiny
+iweiny@acm.org
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
