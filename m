@@ -1,40 +1,36 @@
-Message-Id: <4.3.2.7.2.20001027005559.00ad3e50@192.168.1.2>
-Date: Fri, 27 Oct 2000 01:34:55 +0100
-To: Kyle Harris <kharris@nexus-tech.net>,
-        linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-From: Eurico Inocencio <emi@cdftel.pt>
-Subject: Re: BDM recommendations
-In-Reply-To: <39F86C2D.C242473B@nexus-tech.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Subject: Re: Script for RPX Lite DW - Help!!!!
+To: jerry.nguyen@serialsystem.com.sg (Nguyen Xuan Hoang)
+Date: Fri, 27 Oct 2000 12:03:04 +1100 (EST)
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <01ec01c03fa9$041ce7c0$1f01a8c0@hoangmobile> from "Nguyen Xuan Hoang" at Oct 26, 2000 05:01:11 PM
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <20001027010304.551AA209@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello
+Nguyen Xuan Hoang writes:
+> I am using RPX Lite DW board, unfortunately I did erase the boot code on the
+> flash and the board become unusable.
+>
+> I have an BDM debugger, but don't have the parameter to initialize UPM and
+> memory map. So I could not revise the board.
 
->I'm looking to purchase a new BDM emulator. Does anyone have
->suggestions. I've been using EST's for several years on the 68xxx
->platform and have been very pleased with it. But, of course, the PPC is
->not supported with my current model and they recommend upgrading to
->visionProbe for support ($$$).
+You don't need to initialize the UPM in order to reprogram flash devices via
+BDM; you just have to enable the appropriate chip select via the relevant
+BRx and ORx register.  Two register writes is all you need (assuming your
+BDM already disables the pesky watchdog for you).  What BDM are you using?
+Embedded Planet tech support should be able to help you with this sort of
+thing.
 
-I also bough one BDI2000 for PowerPc 82XX from Abatron,
-the product is quite good, support works not only fix problems
-but also to improve the product. For example I received frequent
-firmware updates with new features (support for MMU, Linux kernel
-image download). With DDD in control of the BDI box you get a great
-graphical debugger.
-
-Just another happy user
-
-
------------------------------------------------------------------------
-  Eurico Mendes Inocencio          CDFtel,
-Lda
-  Ph. No:  +351.22.3389843         Rua Goncalo Cristovao, 347 - Sala 205
-  FAX No:  +351.22.3389845         4000-270 PORTO
-  E-mail:  mailto:emi@cdftel.pt    Portugal
------------------------------------------------------------------------
+Regards,
+Graham
+--
+Graham Stoney
+Principal Hardware/Software Engineer
+Canon Information Systems Research Australia
+Ph: +61 2 9805 2909  Fax: +61 2 9805 2929
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
