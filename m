@@ -1,67 +1,40 @@
-Reply-To: <zjzhou@newrocktech.com>
-From: "John Zhou" <zjzhou@newrocktech.com>
-To: <kotaeji@secui.com>, <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: [Q] question about using x86 gdb to debug the remote ppc target (kgdb)
-Date: Fri, 9 Jan 2004 13:50:58 +0800
-Message-ID: <000801c3d674$8ed1f260$b702a8c0@newrock2>
+From: "Q-ha Park" <qha@infoeq.com>
+To: "=?ks_c_5601-1987?B?J7HoxKHIryc=?=" <willy@airpoint.co.kr>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: socket programming without RTnet.
+Date: Fri, 9 Jan 2004 16:20:16 +0900
+Message-ID: <00bc01c3d681$09486310$2a21a8c0@qha>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="US-ASCII"
-In-Reply-To: <006701c3d673$30cb7890$2c373737@hwteam6549>
+	charset="ks_c_5601-1987"
+In-Reply-To: <025c01c3d671$a30702a0$21589edd@CHKIMVAIO>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Maybe you should use ppc_82xx-gdb to connect remote target.
+>
+> What I want is to make some network applications just as I
+> did with vxWorks. A 'network application' means using
+> socket/bind/sendto/recvfrom etc APIs to send and receive data
+> to/from outside of me or between internal tasks.
 
-Regards,
-John
+>
+> I can't figure out what kernel space' and 'userland' mean.
+> Well I am strange with embedded linux on ppc860 because I
+> stayed with other RTOSs such as vxWorks and Nuclues. Would
+> you explain more in detail?
 
------Original Message-----
-From: owner-linuxppc-embedded@lists.linuxppc.org
-[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of kotaeji
-Sent: Friday, January 09, 2004 1:41 PM
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: [Q] question about using x86 gdb to debug the remote ppc target
-(kgdb)
+I can see what you're trying to do. You're doing exactly the same thing
+I've seen from embedded programmers just came to the great Linux world;
+they often tend to call functions under #ifdef __KERNEL__. Don't do
+that.
 
+You should learn how to write a user application in linux environment.
+i.e. You don't need {init,exit}_module, you don't define __KERNEL__ or
+MODULE, you don't insmod to run your program. After that, the command
+"man" should come in handy. e.g. man sendto, ...
 
-
-Hi, I have a question about using kgdb on PowerPC (8245)
-
-Is it possible that the host is x86, and the remote target
-is powerpc as following picture ?
-
-    HOST(x86)  ----------------------------- TARGET(ppc)
-      gdb              serial line           kgdb patch
-
-When I connect to target by gdb on x86 and do "info registers"
-to show target registers, it shows x86 registers.
-
-(gdb) info registers
-eax            0x2000   8192
-ecx            0xc3c6dd00       -1010377472
-edx            0xc3c6c000       -1010384896
-ebx            0xc0341540       -1070328512
-esp            0xc0341400       0xc0341400
-ebp            0xc3c6dd80       0xc3c6dd80
-esi            0xc3c6de4c       -1010377140
-edi            0x280008e8       671090920
-eip            0x0      0x0
-eflags         0x2      2
-cs             0x0      0
-ss             0xc5000000       -989855744
-ds             0xfed2a80        267201152
-es             0x10020300       268567296
-fs             0x0      0
-gs             0x0      0
-
-
-Is there any way that I can use x86 gdb to debug remote ppc target?
-Should I use powerpc gdb (like YellowDog) in order to debug
-ppc target?
-
-Any comments appreciated.
+Q-ha Park
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
