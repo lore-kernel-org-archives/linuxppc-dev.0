@@ -1,34 +1,31 @@
-Message-ID: <37DC636C.6125C880@ctam.com.au>
-Date: Mon, 13 Sep 1999 12:37:32 +1000
-From: Brendan Simon <bsimon@ctam.com.au>
-Reply-To: bsimon@ctam.com.au
+Subject: Accessing the vger.rutgers.edu tree from behind a firewall?
+To: linuxppc-embedded@lists.linuxppc.org
+Date: Mon, 13 Sep 1999 12:52:55 +1000 (EST)
 MIME-Version: 1.0
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: glibc for mpc860
-References: <37D853D5.54331958@ctam.com.au> <37D8D890.B262F54C@kieray1.p.y.ki.era.ericsson.se> <37D8F22B.4AC79941@switchboard.ericsson.se>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <19990913025255.83142759@elph.research.canon.com.au>
+From: greyham@research.canon.com.au (Graham Stoney)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Kenneth Johansson wrote:
+Ok, I'm stumped.
 
-> One solution to this could be that whoever is resposible for
-> "http://www.ppc.kernel.org/embedded.html" updated the pages. If only to point
-> to the mailing list and the archive that would make life easier for beginners.
+I'd like to get read access to the Linux kernel source tree on
+vger.rutgers.edu, so I can keep up with the latest PowerPC changes for some
+embedded work I'm doing with the MPC855/860T. Ultimately, I hope to be able to
+contribute, so I may need write access too, but that's a little down the track.
 
-Yep.  I agree.  The embedded mailing lists needs a few more pointers and
-documentation if possible.
+My problem is that I'm behind a firewall, so I can't just use cvs pserver
+directly. I could use an ssh tunnel through our firewall if vger.rutgers.edu
+or cvs.on.openprojects.net supported it, but I haven't been able to get that
+to work either. I haven't used anonymous cvs before, so perhaps I'm missing
+something very, very obvious.
 
+Can anyone please tell me if it's possible to get access to the cvs repository
+from behind a firewall?
 
-> > Check the list-archives!
-> > I've already posted patches and instructions twice, the last time
-> > just a week ago:
-
-I only checked the linuxppc-embedded mailing list.  I have just found some
-references in the linuxppc-dev mailing list.
-
-Brendan Simon.
-
+Thanks,
+Graham
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
