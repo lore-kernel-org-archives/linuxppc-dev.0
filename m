@@ -1,17 +1,21 @@
-Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15805.mail.cnb.yahoo.com (web15805.mail.cnb.yahoo.com
-	[202.165.102.85]) by ozlabs.org (Postfix) with SMTP id 3F40F2BDB5
+Return-Path: <kalle.pokki@iki.fi>
+Received: from smtp1.song.fi (smtp1.song.fi [194.100.2.121])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5465F2BF0B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Dec 2004 13:10:49 +1100 (EST)
-Message-ID: <20041214020406.19414.qmail@web15805.mail.cnb.yahoo.com>
-Date: Tue, 14 Dec 2004 10:04:06 +0800 (CST)
-From: Sam Song <samlinuxppc@yahoo.com.cn>
-To: Sam Song <samlinuxppc@yahoo.com.cn>,
-	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+	Tue, 14 Dec 2004 18:10:18 +1100 (EST)
+Received: from [194.100.64.94] (host94.eke.fi [194.100.64.94])
+	by smtp1.song.fi (Postfix) with ESMTP id C329743CD
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 14 Dec 2004 09:02:57 +0200 (EET)
+Message-ID: <41BE908C.2060608@iki.fi>
+Date: Tue, 14 Dec 2004 09:04:44 +0200
+From: Kalle Pokki <kalle.pokki@iki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
-Subject: Re: System hanged,
-	which one is the killer? [was Re: What's the problem could be?]
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: state of 8xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,29 +26,10 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Sam Song <samlinuxppc@yahoo.com.cn> wrote：
-> I found that neither USB HOST keyboard nor my PCMCIA
-> keyboard could lead to system hang.
+Hi,
 
-Sorry, syntax error.
-
-The above line sould be: I found that BOTH USB HOST
-keyboard AND my PCMCIA keyboard could lead to system
-hang.
-
-Thanks, 
-
-
-=====
-Best regards,
-
-Sam
-
-_________________________________________________________
-Do You Yahoo!?
-150万曲MP3疯狂搜，带您闯入音乐殿堂
-http://music.yisou.com/
-美女明星应有尽有，搜遍美图、艳图和酷图
-http://image.yisou.com
-1G就是1000兆，雅虎电邮自助扩容！
-http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
+I have tried to compile Linux 2.6 for my custom 8xx board, but the 
+support for 8xx seems to be broken at the moment. Searching the lists 
+indicates there was at least some problem with memory management a 
+couple of months ago. Is anyone looking into this, or do you have any 
+idea when 8xx could be working again?
