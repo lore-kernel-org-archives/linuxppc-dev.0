@@ -1,20 +1,25 @@
-Return-Path: <jwboyer@jdub.homelinux.org>
-Received: from jdub.homelinux.org (67-41-71-119.roch.qwest.net [67.41.71.119])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 202152BF16
+Return-Path: <tony.p.lee@gmail.com>
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.194])
+	by ozlabs.org (Postfix) with ESMTP id 6B1652BF0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  8 Jan 2005 10:24:59 +1100 (EST)
-From: Josh Boyer <jwboyer@jdub.homelinux.org>
-To: cashton@amcc.com
-In-Reply-To: <I9YH3802.341@hadar.amcc.com>
-References: <I9YH3802.341@hadar.amcc.com>
-Content-Type: text/plain
-Date: Fri, 07 Jan 2005 16:30:46 -0600
-Message-Id: <1105137046.16242.5.camel@jdub.homelinux.org>
+	Sun,  9 Jan 2005 14:36:41 +1100 (EST)
+Received: by rproxy.gmail.com with SMTP id a36so66124rnf
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 08 Jan 2005 19:36:40 -0800 (PST)
+Message-ID: <470b639705010819304b3b3118@mail.gmail.com>
+Date: Sat, 8 Jan 2005 19:30:00 -0800
+From: Tony Lee <tony.p.lee@gmail.com>
+To: Robin <robin@india.tejasnetworks.com>
+In-Reply-To: <41DE3A2A.3050105@india.tejasnetworks.com>
 Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: Looking for PowerPC Linux experts in Austin, TX
+Content-Type: text/plain; charset=US-ASCII
+References: <20050106121238.BB99AC108D@atlas.denx.de>
+	<41DC9568.6090106@india.tejasnetworks.com>
+	<Pine.LNX.4.61.0501061450190.4945@mag.sysgo.com>
+	<41DE3A2A.3050105@india.tejasnetworks.com>
+Cc: Linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: TZ variable setting for denx 2.4.20
+Reply-To: Tony Lee <tony.p.lee@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,14 +30,62 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2005-01-07 at 10:42 -0600, Charlie Ashton wrote:
-> Kumar,
+What's denx?
+Anyway, in my embeded ppc-linux, I set it with 
+/etc/TZ
+
+echo "PST8PDT" > /etc/TZ to set it to pacific time.
+
+Have fun.
+
+-Tony
+
+
+On Fri, 07 Jan 2005 12:58:42 +0530, Robin <robin@india.tejasnetworks.com> wrote:
+> Hi
+> Thanx for your response. I am setting TZ variable as
+> given in the documentation.
+>    export TZ="xxx5:30yyy4:30,M10.1.1,M2.1.1"
+> Its working fine till Dec 31 23:59:59GMT. On Jan 01 00:00:00,
+>  its not taking DST into account at all.
 > 
-> The primary interest is in community involvement but we're always interested
-> in talking to great engineers about opportunities to join our team.
+> Please tell me some way of setting it across an year boundary.
+> Thanks,
+> Robin
+> 
+> Marius Groeger wrote:
+> 
+> > Robin,
+> >
+> > On Thu, 6 Jan 2005, Robin wrote:
+> >
+> >> I have tried with the standard linux date too. That too doesnt seem
+> >> to consider timezone variable that has been set. Can you give me a
+> >> way for setting timezone for southern hemisphere countries?? The
+> >> busybox code uses strftime function. But that does not seem to
+> >> consider TZ variable...
+> >
+> >
+> > You should read up on how glibc handles all that timezone stuff:
+> >
+> >   sh# info libc "TZ Variable"
+> >
+> > Most notably, make sure you /etc/localtime is set up correctly. There
+> > is also a tool (script) called tzselect which may be helpful for you.
+> >
+> > Note I'm not exactly an expert on this, I'm just giving pointers...
+> >
+> > Regards,
+> > Marius
+> >
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
 
-I think the Austin, TX part of your request has some people confused.
-The community is much much larger than Austin, so why are you only
-interested in talking with people from there?
 
-josh
+-- 
+-Tony
+Having fun with FPGA HW + ppc + Linux
