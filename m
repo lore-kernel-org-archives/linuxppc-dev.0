@@ -1,35 +1,24 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Timothy A. Seufert" <tas@mindspring.com>,
-	<linuxppc-dev@lists.linuxppc.org>
-Subject: Re: PCMCIA issues
-Date: Thu, 13 Sep 2001 14:54:02 +0200
-Message-Id: <20010913125402.29847@smtp.adsl.oleane.com>
-In-Reply-To: <p05100300b7c6188b0203@[10.0.0.42]>
-References: <p05100300b7c6188b0203@[10.0.0.42]>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Thu, 13 Sep 2001 16:22:50 +0200
+From: Xavier Grave <grave@ipno.in2p3.fr>
+To: dev ppc <linuxppc-dev@lists.linuxppc.org>
+Subject: mvme5100 memory model ?
+Message-ID: <20010913162250.C5558@ipnpcu5.in2p3.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->
->Sep 13 01:08:38 localhost cardmgr[259]: socket 1: Anonymous Memory
->Sep 13 01:08:38 localhost kernel: cs: unable to map card memory!
->Sep 13 01:08:38 localhost kernel: cs: unable to map card memory!
->Sep 13 01:08:39 localhost cardmgr[259]: executing: 'modprobe memory_cs'
->Sep 13 01:08:39 localhost cardmgr[259]: + modprobe: Can't locate
->module memory_cs
->Sep 13 01:08:39 localhost cardmgr[259]: modprobe exited with status 255
->Sep 13 01:08:39 localhost cardmgr[259]: module
->/lib/modules/2.4.10-pre8/pcmcia/memory_cs.o not available
->Sep 13 01:08:40 localhost cardmgr[259]: get dev info on socket 1
->failed: Resource temporarily unavailable
+ReHi,
 
-Not sure for the details as I'm not a PCMCIA expert, but I know
-paulus fixes some issues with pcmcia resource allocation. His patch
-haven't make it upstream yet but is in my tree.
+Is the mvme5100 memory model chrp or prep ?
+The mvme2300 memory model is prep. I'm asking
+this because I'm looking to solve iomem problems
+(I have send a previous email on this).
 
-Ben.
-
+O+ xavier
+--
+33 (0) 1 69 15 79 59
+De chacun selon ses forces, a chacun selon ses besoins
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
