@@ -1,65 +1,32 @@
-Message-ID: <38AA15EF.34407992@huawei.com.cn>
-Date: Wed, 16 Feb 2000 11:13:51 +0800
+Message-ID: <38AA7CE4.1BE02D32@huawei.com.cn>
+Date: Wed, 16 Feb 2000 18:33:08 +0800
 From: dony <dony.he@huawei.com.cn>
 MIME-Version: 1.0
-To: sungyeon <sungyeon@cosmo.etri.re.kr>
-CC: Ruedi.Hofer@ascom.ch,
-        linuxppc-embed <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: initrd question...
-References: <0FPX00FFH0XJV5@pmdf-it.hasler.ascom.ch> <38AA0E9C.619E523@huawei.com.cn> <006a01bf7829$d9390c10$5a01a8c0@blue>
+CC: linuxppc-embedded@lists.linuxppc.org
+Subject: Problems about gdbserver...
+References: <385179C1.F699B552@ittc.ukans.edu>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
+Hello,
 
-
-sungyeon wrote:
-
-> ----- Original Message -----
-> From: "dony" <dony.he@huawei.com.cn>
-> To: <Ruedi.Hofer@ascom.ch>; "linuxppc-embed"
-> <linuxppc-embedded@lists.linuxppc.org>
-> Sent: Wednesday, February 16, 2000 11:42 AM
-> Subject: initrd question...
->
-> >
-> > Hello:
-> >     Now I want to get my initrd running. I use the ramdisk demo
-> "ramdisk.image.gz" under
-> > arch/ppc/mbxboot and compile my zvmlinux.initrd.
-> >     The target boots correctly at the beginning. It decompresses the
-> kernel and runs the kernel and
-> > shows the boot messages. When all is done, it begins to mount root
-> filesystem (on Ramdisk), and shows
-> > the following messages:
-> >         RAMDISK:Compressed image found at block 0
-> >         VFS:Mounted root (ext2 filesystem)
-> >          Freeing unused kernel memory:28k init
-> > Then nothing happen.
->
-> If your root file system is nfs, and disable BOOTP kernel option
-> then nothing happen. like you.
->
-> I'v changed root file system from NFS to RAMdisk. and disabled BOOTP.
-
-Yes, I have also done this. But the problem still exists. why?
-
->
->
-> > At this time it should show the shell prompt. But I don't know why it
-> didn't show. And I couldnot input
-> > any character.
-> > Cross-compile environment:
-> > [binutils-2.9.1.0.19a        egcs-1.1.2           glibc-2.1(including
-> crypt, linuxthreads)]
-> > I cross-compile my kernel under the above environment.
-> > Any suggestions will be highly appreciated.
-> > Thank in advance
-> > dony
-> >
-> >
-> >
+     I  have a gdbserver first running on the target board (gdbserever :7777
+mytest), and then powerpc-linux-gdb running on the host. When I type "target
+remote 10.11.27.244:7777" (10.11.27.244 is the Ip of target board) on the host
+"(gdb)" prompt, it shows the error messages:
+    Remote debugging using 10.11.27.244:7777
+    Couldn't establish connection to remote target
+    Remote communication error:Connection reset by peer.
+And at the target board side, error messages as follows:
+    #./gdbserver :7777 mytest
+    Process mytest created; pid=8
+    pid 7:killed (signal 11)
+    #
+Do you know why and how can I solve it?
+Thanks very much.
+dony
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
