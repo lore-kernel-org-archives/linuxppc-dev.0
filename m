@@ -1,58 +1,63 @@
-Date: Fri, 8 Mar 2002 15:54:37 -0500
-Subject: some issues with dual G4 1Gig machines
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v481)
-Cc: yellowdog-devel@lists.yellowdoglinux.com
-To: linuxppc-dev@lists.linuxppc.org
-From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
-Message-Id: <B3C17D88-32D6-11D6-815C-0003938E434C@ivey.uwo.ca>
+Message-ID: <3C893BB9.6040002@cymes.de>
+Date: Fri, 08 Mar 2002 23:31:21 +0100
+From: Matthias Grimm <joker@cymes.de>
+MIME-Version: 1.0
+To: "Joseph P. Garcia" <jpgarcia@execpc.com>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: pbbuttons, need some help
+References: <3C852E12.3030300@cymes.de>	<20020306090814.15511@mailhost.mipsys.com>	<3C87B6C8.9070905@cymes.de> <20020307134140.56d70400.jpgarcia@execpc.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Joseph P. Garcia wrote:
 Hi,
 
-I have been using a modified version of Ben's kernel (modified to
-recognize the 7455's and built to support smp (but NOT to distribute
-irqs to all processors).
+ > The best way to get battery info now is to use to use /proc/pmu/ in newer
 
-Basically this machine has been rock steady and I have gone days (weeks)
-without rebooting it into Mac OSX (I realize that is no a long time but
-I just got the machine in early Feb).
+> (2.4) kernels.  My gkrellm-pmu plugin used to use adb directly, then PMUD,
+> now /proc/pmu/.  I had to poke and prod at Paul Mackerras' Batmon to figure
+> out O'Hare.  But /proc/pmu is transparent to what kind of system its on.
+> Divide and conquer.  Nice that another conduit thats system independant
+> exists.
 
-However the last time I tried to shut it down I received the following
-error message:
 
-/sbin/shutdown -h now
-...
-The system is halted.
+Yes, you are right. Why do something again what's already done. I looked
+into the kernel source, afterwards into PMUD and then I thought that's
+the way and other possibilities didn't come into my mind although I knew
+/proc/pmu. So I will borrow some code from gkrellm-pmu for that task. ;-)
 
-smp_call_function on cpu 0: other cpus not responding (0)
 
-Serial port locked ON by debugger!
+> Along those same lines, I have a sugesstion for the gtk client for
+> pbbuttons.  The program should use the X keycodes rather than associate
+> with the daemon that controls the hardware.  This serves two purposes: X
+> handles any client/server mess, and the GUI will be the system independant
+> figurehead it should be (IMO).  Bastien wrote a similar program that uses
+> the keycodes, so it could be used on any system with the keys, even an x86.
+> (hadess.net)
 
-wait_on_irq, CPU 0:
-irq: 1 [0 1]
-bh: 0 [0 0]
 
-And it hangs here waiting and it never shuts down the machine.
+I didn't understand excactly what you mean. The GTK client is only a
+simple stupid program that will do what it's told from the server. It
+hasn't any own input routines except the message queue where the
+messages from the server arrive. It doesn't get in contact with any
+keycodes, neither from X nor from terminal.
 
-Are there any known races or problems in the shutdown and halting
-sequence for smp machines?  My guess is this sequence is not overly
-tested!
+What do you mean with 'client/server mess'? I don't use the X-protokoll
+for communication and I don't think it would make much sense. We would
+hardly benefit from the X-protokoll because the network transparency
+isn't needed here. We only want to make the handling of our machines
+more comfortable. Or have I misunderstood you here?
 
-Also I seem to error messages about duplicate ticks (an smp issue?) and
-my clock loses something like 5 minutes a day (basically running
-unloaded most of the time).
 
-Are either of these known issues?
+> Hope this helps.
 
-Ideas welcome?
 
-Are all the required changes in your latest tree and should I just grab
-it.
+Discussions will always help :-) Who else would turn me arround 180
+degrees in a blind alley ;-)
 
-Kevin
+  Matthias
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
