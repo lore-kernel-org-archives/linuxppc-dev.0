@@ -1,28 +1,44 @@
-Date: Wed, 31 Jan 2001 18:49:01 +0200 (EET)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Gareth Hughes <gareth@valinux.com>, <linuxppc-dev@lists.linuxppc.org>,
-        <linux-fbdev@vuser.vu.union.edu>
-Subject: Re: r128 DRI driver now fully functional on PPC
-In-Reply-To: <19341226052133.13170@mailhost.mipsys.com>
-Message-ID: <Pine.LNX.4.30.0101311825220.9967-100000@idd-01.imbc.gr>
+Message-ID: <3A7853D6.5AE4CC71@iiic.ethz.ch>
+Date: Wed, 31 Jan 2001 19:05:10 +0100
+From: Michel Dänzer <michdaen@iiic.ethz.ch>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Stefan Jeglinski <jeglin@4pi.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: continuing XF402 (atimisc) problems
+References: <p04330102b69d64c82c08@[24.163.36.97]> <19341226073701.30276@mailhost.mipsys.com>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 31 Jan 2001, Benjamin Herrenschmidt wrote:
+Benjamin Herrenschmidt wrote:
+>
+> >I've been over this on the -user list and the YDL list, and cc-ed Ani
+> >a few times with it (no response). No one seems to have a clue as to
+> >the cause of the problem, which is described concisely at:
+> >
+> ><http://lists.linuxppc.org/listarcs/linuxppc-user/200101/msg00672.html>
+> >
+> >(more detail available if necessary)
+> >
+> >This is on a 6500 (on-board RageII) with a RagePro PCI card. I have
+> >tried rolling my own XF402 build, with Ani's driver updates, and get
+> >the exact same XFree log result. I've also tried several of kfukui's
+> >402 rpms, including use of his "old drivers," again with exactly the
+> >same result.
+>
+> Check that you have the correct fbdevhw module and that it's loaded in
+> your XF86Config file.
 
-> I'll do some tests with the broken 16 bits mode to see if I get 3D
-> working properly. I'll then see if I can figure out what cause the chip
-> to lockup without UseFBDev.
+The atimisc driver should load fbdevhw if it needs it. Look at the r128 or
+glint, ... drivers on how to do it.
 
-After a quick look i noticed that R128EnterVTFBDev/R128LeaveVTFBDev have to
-enable/disable DRI just as R128EnterVT/R128LeaveVT. So dont try to switch to
-console until its fixed while you use UseFBDev and DRI.
+Anyway, this whole fbdevhw mess will hopefully soon go away for a clean
+solution.
 
-Kostas
 
+--
+Earthling Michel Dänzer (MrCooper)    \   Debian GNU/Linux (powerpc) developer
+CS student, Free Software enthusiast   \        XFree86 and DRI project member
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
