@@ -1,54 +1,44 @@
-From: Gareth Hughes <gareth@valinux.com>
-To: Dan Malek <dan@mvista.com>
-Date: Fri, 19 Jan 2001 17:53:27 +1100
-Message-ID: <3A67E467.74544C4C@valinux.com>
+Message-Id: <200101190658.HAA00760@piglet.grunz.lu>
+Date: Fri, 19 Jan 2001 07:58:13 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: Problem with FEC on CLLF
+To: mgopik@yahoo.com
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20010103152029.51915.qmail@web11108.mail.yahoo.com>
 MIME-Version: 1.0
-CC: michdaen@iiic.ethz.ch, dri-devel@lists.sourceforge.net,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: [Dri-devel] Re: PPC Lockup (ati-pcigart-branch)
-References: <3A67B401.8282A00F@relog.ch> <3A67BAC3.94EFEA3A@mvista.com>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Dan Malek wrote:
+On   3 Jan, this message from gopi krishna echoed through cyberspace:
+> If we connect this to our switch *through a
+> hub*(100mbps half duplex), everything is working fine.
 >
-> Michel Dänzer wrote:
-> >
-> > [CC'ing linuxppc-dev, hopefully someone there knows what might be up...]
-> >
-> > This is where it dies:
-> >
-> >         /* FIXME: We should really have a kernel call for this...
-> >          */
-> >         entry->virtual = __vmalloc( (pages << PAGE_SHIFT),
-> >                                     GFP_KERNEL,
-> >                                     PAGE_KERNEL);
+> If we connect this directly to the switch, both the
+> switch and the cllf show the link status to be up and
+> connected(100mbps, half duplex), but ping doesnt work.
 >
-> This isn't very much information, but only one thing can really
-> be wrong........
+> We have noticed that the switch recieves the
+> packets(frames) that the cllf is sending on the fec
+> port,  the switch is sending some frames to the cllf
+> fec port, but cllf doesnt receive even a single frame.
 >
-> What is the value of 'pages'?  I suspect it is huge (and perhaps
-> wrong).  The GFP_KERNEL flag will cause vmalloc() to wait for pages
-> to become available (i.e. it will swap other things out).  If this
-> value in incorrect, this call will wait forever for pages that are
-> never going to arrive.  Worse, it is going to keep sucking up pages
-> and holding them, so nothing else is going to run either.  Is "pages"
-> really the number of pages, or a size that was never converted to pages?
+> Any pointers to the possible problem/solution?
 
-Pages is definitely the number of pages (at least when I wrote the
-code...).
+I have seen things like that happen with bad cables. 100 Mb/s is very
+sensitive to cable quality. Use a good, commercial-grade pre-built
+cable, not homemade.
 
-> ...and for the 'FIXME' comment, you want a function that does
-> what? vmalloc?  Why don't you just call it (or one of the more
-> appropriate variants if necessary)?
+Michel
 
-This was originally when I was passing a flag to make the memory
-uncached.  This wasn't needed, and we really should be using
-vmalloc_32(...) instead (which will result in exactly the same code, but
-it is cleaner).
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
--- Gareth
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
