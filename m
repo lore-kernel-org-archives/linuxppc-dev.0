@@ -1,37 +1,76 @@
-Date: Wed, 26 May 1999 15:03:56 -0400 (EDT)
-From: Tom Rini <tmrini@ntplx.net>
-To: Elliot Lee <sopwith@redhat.com>
-cc: jpgarcia@execpc.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: endian patches to esound, audiofile, x11amp_beta for pbG3
-In-Reply-To: <Pine.LNX.4.10.9905261102420.9719-100000@lacrosse.corp.redhat.com>
-Message-ID: <Pine.LNX.4.05.9905261502380.26691-100000@pc.wackyland.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: kd@flaga.is
+To: linuxppc-dev@lists.linuxppc.org
+Message-ID: <0025677D.006A7F31.00@notes.flaga.is>
+Date: Wed, 26 May 1999 19:23:13 +0000
+Subject: Networking strangeness (MPC823)
+Mime-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 26 May 1999, Elliot Lee wrote:
+Hello,
 
-> The audiofile in GNOME CVS is supposed to have a lot of endianness fixes
-> already - you may want to try it. (Not sure how binary compatible it is
-> with 0.1.6 though).
-> 
-> Anyways, my main point is that you really need to get these patches to the
-> original authors of the respective packages so that they can be
-> integrated. The audiofile author is michael@68k.org. The esound author is
-> ericmit@ix.netcom.com (that e-mail address reportedly no longer works
-> though - perhaps try getting things through raster@redhat.com instead).
+Finally we managed to debug the hardware and get Linux to recognise the NFS
+server (Serving the rootfilesystem).
+"Everything" seems to work (ping, shell, ls, ......) but when using ping on
+the MPC823 hardware (which is custom
+made) to ping itself we get strange error that I have never seen before on
+AlphaLinux and I386Linux. The error message
+goes below. Does anyone know what is causing this problem? The error
+message "Neighbour table overflow" is printed
+out in net/ipv4/route.c, i.e. it is a kernel error message. I am using
+mbxroot.full as a nfsmounted root file system (from
+ftp://linuxppc.cs.nmt.edu/pub/linuxppc/embedded/).
 
-The main reason most of these programs don't "work" right now is they were
-fixed at one point.  The dmasound driver used to be in big endian mode.
-Now, it's in LE mode and all the old patches need to be reversed on LPPC,
-but not for MkL.  It can be a bit messy.  But, there is a semi-elegant fix
-for it all.
+Thanks,
 
----
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+K.D.
+
+The ping output. ping command is given on the mpc823 board. IP address
+192.168.145.220 is the mpc823 board. IP address 192.168.145.222 is the NFS
+server.
+
+# ping 192.168.145.220
+PING 192.168.145.220 (192.168.145.220): 56 data bytes
+neighbour table overflow
+ping: sendto: No buffer space available
+ping: wrote 192.168.145.220 64 chars, ret=-1
+neighbour table overflow
+ping: sendto: No buffer space available
+ping: wrote 192.168.145.220 64 chars, ret=-1
+neighbour table overflow
+ping: sendto: No buffer space available
+ping: wrote 192.168.145.220 64 chars, ret=-1
+neighbour table overflow
+ping: sendto: No buffer space available
+ping: wrote 192.168.145.220 64 chars, ret=-1
+
+ping: wrote 192.168.145.220 64 chars, ret=-1
+neighbour table overflow
+ping: sendto: No buffer space available
+ping: wrote 192.168.145.220 64 chars, ret=-1
+neighbour table overflow
+ping: sendto: No buffer space available
+ping: wrote 192.168.145.220 64 chars, ret=-1
+
+--- 192.168.145.220 ping statistics ---
+6 packets transmitted, 0 packets received, 100% packet loss
+# ping 192.168.145.222
+PING 192.168.145.222 (192.168.145.222): 56 data bytes
+64 bytes from 192.168.145.222: icmp_seq=0 ttl=64 time=3.8 ms
+64 bytes from 192.168.145.222: icmp_seq=1 ttl=64 time=2.2 ms
+64 bytes from 192.168.145.222: icmp_seq=2 ttl=64 time=2.2 ms
+64 bytes from 192.168.145.222: icmp_seq=3 ttl=64 time=2.2 ms
+64 bytes from 192.168.145.222: icmp_seq=4 ttl=64 time=2.2 ms
+64 bytes from 192.168.145.222: icmp_seq=5 ttl=64 time=2.2 ms
+64 bytes from 192.168.145.222: icmp_seq=6 ttl=64 time=2.2 ms
+
+--- 192.168.145.222 ping statistics ---
+7 packets transmitted, 7 packets received, 0% packet loss
+round-trip min/avg/max = 2.2/2.4/3.8 ms
+
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
