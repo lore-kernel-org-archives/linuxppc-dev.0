@@ -1,36 +1,35 @@
-Message-Id: <200402070134.TAA20218@lists.linuxppc.org>
-Date: Sat, 7 Feb 2004 9:31:54 +0800
-From: "sun-zj" <sun-zj@tdk-tech.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: wd@denx.de
-Reply-To: "sun-zj" <sun-zj@tdk-tech.com>
-Subject: how to Compile linuxppc 2.5
-Content-Type: text/plain
-MIME-Version: 1.0
+To: "sun-zj" <sun-zj@tdk-tech.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: how to Compile linuxppc 2.5 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sat, 07 Feb 2004 09:31:54 +0800."
+             <20040207013712.CE6EA42E99@denx.de>
+Date: Sat, 07 Feb 2004 02:49:19 +0100
+Message-Id: <20040207014924.DA008C109E@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi:
-I am using linuxppc-2.4.pre2, it works fine. But now I have some questions.
-My board is FADS and CPU is PPC860T(FEC ethernet). I test its' network
-performance. When I send to much data to PPC+linux,the linux OS can't repond
-any my input through serial. after some time, the login process is killed,
-and I can't login anymore but I can ping it from other computer. what happen
-to that??
-second, I want to see whether the linuxppc_2.5 has some improvement for
-that. so I download the linuxppc_2.5 from denx by BK Clone. But how can
-extract the source files from BK's file?? Under the
-linuxppc_2.5 how Can compile the kernel?? I compile the official kernel
-2.6.2. It dones't know what I make(I use "make FADS_config" command and denx
-cross toolchains)??
+In message <20040207013712.CE6EA42E99@denx.de> you wrote:
+>
+> second, I want to see whether the linuxppc_2.5 has some improvement for
+> that. so I download the linuxppc_2.5 from denx by BK Clone. But how can
 
-Thanks a lots for your instructions.
+This is impossible.
 
-Best Regards.
-Zongjun Sun
+You will not find a 2.5 source tree on our servers, and  we  also  do
+NOT use Bitkeeper.
 
-Bejing TDK Corp. Ltd
-8610-82644933 ext:6210
+Best regards,
+
+Wolfgang Denk
+
+--
+See us @ Embedded World, Nuremberg, Feb 17 - 19,  Hall 12.0 Booth 440
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+How many QA engineers does it take to screw in a lightbulb? 3:  1  to
+screw it in and 2 to say "I told you so" when it doesn't work.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
