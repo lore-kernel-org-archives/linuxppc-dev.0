@@ -1,34 +1,21 @@
-Message-ID: <E69FF45ADA3BD511A25900047623CC4F12AA74@JUPITER>
-From: Neil Wilson <NWILSON@Airspan.com>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Sandpoint 3 + MPC7450 + HHL2
-Date: Wed, 27 Jun 2001 10:08:10 +0100
-MIME-Version: 1.0
+From: amyyah@china.com
 Content-Type: text/plain
+MIME-Version: 1.0
+Message-ID: <IR989372807863.02967@mail3.china.com>
+Date: Wed, 27 Jun 2001 19:21:36 +0800 (CST)
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: 
+Subject: Is my CDK right?
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+I installed CDK1.2 in my host PC for motorola-MCP750.Everything runs correctly. Later, I installed CDK for another board MCPN750. I found there's nothing under directory /opt/hardhat/host/bin. And under LSP directory, N750 cover the 750, also the file in directory /opt/hardhat/devkit/ppc/7xx/target/boot.Is it correctly?
+************************************
+留学移民,免费评估.
+http://www.mercan.com.cn/mercan2000/china.htm
 
-I managed to get the JourneyMan 2 82XX booting up on my Sandpoint3 MPC7450 -
-after adding a enable for the TimeBase - however when a ramdisk is mounted
-up I get very slow serial response, like several seconds to print a string,
-does anyone have some ideas of what I could look at to resolve this, I have
-an Abatron bdi etc but a lot of this is new to me so any help would be very
-welcome. Thanks.
-
-Neil
---
--------------------------------------------------------
-Neil Wilson                 Airspan Communications Ltd.
-nwilson@airspan.com         Cambridge House
-Tel: 01895-467265           Oxford Road
-
-                            Uxbridge
-                            Middlesex
-www.airspan.com             UB8 1UN
--------------------------------------------------------
+定制中华网短信息（http://sms.china.com），天气、新闻、股市行情手触可得。
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
