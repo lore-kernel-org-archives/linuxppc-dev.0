@@ -1,19 +1,15 @@
-Return-Path: <robin@india.tejasnetworks.com>
-Received: from pop-mail.india.tejasnetworks.com (smtp.india.tejasnetworks.com
-	[164.164.94.83]) by ozlabs.org (Postfix) with SMTP id E0CF72BF0E
+Return-Path: <vbordug@dev.rtsoft.ru>
+Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
+	by ozlabs.org (Postfix) with SMTP id 42FBC2BF22
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  7 Jan 2005 18:26:51 +1100 (EST)
-Message-ID: <41DE3A2A.3050105@india.tejasnetworks.com>
-Date: Fri, 07 Jan 2005 12:58:42 +0530
-From: Robin <robin@india.tejasnetworks.com>
+	Sat,  8 Jan 2005 02:29:55 +1100 (EST)
+Message-ID: <41DEA4AF.8080800@dev.rtsoft.ru>
+Date: Fri, 07 Jan 2005 18:03:11 +0300
+From: Vitaly Bordug <vbordug@dev.rtsoft.ru>
 MIME-Version: 1.0
-To: Marius Groeger <mgroeger@sysgo.com>
-References: <20050106121238.BB99AC108D@atlas.denx.de>
-	<41DC9568.6090106@india.tejasnetworks.com>
-	<Pine.LNX.4.61.0501061450190.4945@mag.sysgo.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: Linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: TZ variable setting for denx 2.4.20
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=KOI8-R; format=flowed
+Subject: MPC8272 PCI bridge problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,40 +20,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi
-Thanx for your response. I am setting TZ variable as
-given in the documentation.
-   export TZ="xxx5:30yyy4:30,M10.1.1,M2.1.1"
-Its working fine till Dec 31 23:59:59GMT. On Jan 01 00:00:00,
- its not taking DST into account at all.
+Hi to all.
 
-Please tell me some way of setting it across an year boundary.
-Thanks,
-Robin
+I am working on 8272ADS PCI bridge support in 2.4 kernel.
 
+Does anybody have this working more or less? The point is that it's 
+nearly works for me, but I can't
+get interrupt from CPLD interrupt controller and thus  PCI cascade  
+handler  won't triggered even once.
 
-Marius Groeger wrote:
+I ioremap IC register (0xf4730000 according to RM) in m8260_setup_arch. 
+After find_bridges call (where PCI staff is configured in immr) the
+values of IC status and mask registers change, though they haven't been 
+touched in the function. 
 
-> Robin,
->
-> On Thu, 6 Jan 2005, Robin wrote:
->
->> I have tried with the standard linux date too. That too doesnt seem 
->> to consider timezone variable that has been set. Can you give me a 
->> way for setting timezone for southern hemisphere countries?? The 
->> busybox code uses strftime function. But that does not seem to 
->> consider TZ variable...
->
->
-> You should read up on how glibc handles all that timezone stuff:
->
->   sh# info libc "TZ Variable"
->
-> Most notably, make sure you /etc/localtime is set up correctly. There 
-> is also a tool (script) called tzselect which may be helpful for you.
->
-> Note I'm not exactly an expert on this, I'm just giving pointers...
->
-> Regards,
-> Marius
->
+Any advice or clue will be greatly appreciated.
+ 
+-- 
+Thanks, Vitaly
