@@ -1,24 +1,29 @@
-Date: Mon, 11 Oct 1999 13:47:45 -0700 (PDT)
-From: Sean Chitwood <darkmane@w-link.net>
-Reply-To: darkmane@w-link.net
-To: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
-Subject: glibc....
-Message-ID: <Pine.LNX.4.10.9910111344060.1730-100000@darkmane.w-link.net>
+Message-ID: <38025915.7E56440D@Colorado.EDU>
+Date: Mon, 11 Oct 1999 15:39:34 -0600
+From: Alex Vallens <Vallens@Colorado.EDU>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: hollis@andrew.cmu.edu
+CC: Jules Bean <jmlb2@hermes.cam.ac.uk>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: The New iMac
+References: <Pine.SOL.4.10a.9910111932100.13312-100000@red.csi.cam.ac.uk> <38024BB1.DACA1A47@andrew.cmu.edu>
+Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi-
-	I'm working to try and get mozilla compiling on LinuxPPC again. Has anyone had any success getting glibc-2.1.2 to compile? There seems to be a bug in the current version of glibc(2.1.1-6c) and I was wondering if anyone had updated glibc?
+It looks as though the real question is does it work on the iBook. The
+only significant addition to the new iMacs is the "New World" interface.
+This, if I remember correctly, posed some problems this summer when we
+tried to boot one of the iMacs at Macworld off the Linux CD. Has anyone
+messed around with booting an iBook with the Linux kernel? If this
+obstacle can be leaped, I'm sure the iMac will be easily booted also.
 
-	Sean aka Darkmane
-+------------------------------
-+ Eagerly awaiting 10/16/99
-+ The date he weds Melissa Webb
-+ His only wife.
-+------------------------------
+What about the G4's? Anyone seen one of those Sawtooth machines, (not
+the Yikes!, since Yikes! is still the G3 architecture with a G4 slapped
+on)? All three of these have "New World" ROMs, so getting one to work
+should be enough to get all to boot.
+
+Alex
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
