@@ -1,77 +1,40 @@
-From: acurtis@directvinternet.com
-Reply-To: <acurtis@directvinternet.com>
-To: "Yu Bo-BOYU1" <Bo.Yu@motorola.com>,
-	"Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: printk and 
-Date: Fri, 8 Nov 2002 07:55:56 -0800
-Message-ID: <NCBBIINEHIPFGJPLBEIFMEHGDOAA.acurtis@directvinternet.com>
+Reply-To: <joakim.tjernlund@lumentis.se>
+From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
+To: "Christian Schroeder" <christian.schroeder@imms.de>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Cc: <reklies@mazet.de>, <linz@mazet.de>
+Subject: RE: Microcode patching
+Date: Fri, 8 Nov 2002 16:56:10 +0100
+Message-ID: <IGEFJKJNHJDCBKALBJLLCEMJFHAA.joakim.tjernlund@lumentis.se>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-In-Reply-To: <0B0A39652BB0D411BCCF00508B9512EC08AEB627@tx14exm05.ftw.mot.com>
+In-Reply-To: <1036764594.3dcbc5b26bd42@imp.imms.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-What processor are you using?
+Hi
+>
+> Hi all,
+>
+> I've got a question regarding the mpc8xx microcode patches in
+> arch/ppc/8xx_io/micropatch.c. We do need usb host mode, i2c and
+> ethernet operation at the same time. As I understood, i can't load
+> the microcode patches for usb sof generation and iic/spi together,
+> because they "live" at the same address. Now my question: What occurs
+> if I don't load the ii2/spi patch. I do need the usb sof timing, but
+> does the i2c-Interface work without the iic/spi patch ? As I read on
+> the motorola webserver, the iic/spi is needed for concurrent operation
+> of scc ethernet and i2c. Does i2c work correctly without the patch if
+> I don't use ethernet ?
 
-I have seen this on 8260 processors because the startup code trys to
-reconfigure the clocks and subsequently the baud rate generators. Something
-like this is the first thing I would check.
+I2C will work fine without I2C microcode patch if you don't use ethernet on SCC1
 
-> -----Original Message-----
-> From: owner-linuxppc-embedded@lists.linuxppc.org
-> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Yu
-> Bo-BOYU1
-> Sent: Monday, November 04, 2002 2:05 PM
-> To: Linuxppc-Embedded (E-mail)
-> Subject: printk and
->
->
->
-> Hi,
->
-> The linux object did not go very far on my custom board. As soon as it
-> decompress
-> itself then it hang silently. The last printout is "Now booting
-> the kernel".
->
-> I am trying to understand why printk() did not print out even one
-> character
-> as this
-> function is called at very beginning of start_kernel(). I had the
-> following
-> questions.
->
-> 1. What does this statement mean in kernel/printk.c ?
->
-> __setup("console=", console_setup);
->
-> 2. How does the underneath driver of printk() is initialized? If
-> printk() is
-> called before
-> init_IRQ(). I assume it can only push characters out instead of accepting
-> input just
-> like putc() or serial_putc() before uncompessing linux. But after intense
-> search inside
-> linux source code, I am still puzzled...
->
-> This is the boot log.
-> Starting at 0x800000...
->
-> loaded at: 00800000 0089E1BC
-> zimage at: 00805870 0089AC70
-> avail ram: 00400000 00800000
->
-> Linux/PPC load:
-> Uncompressing Linux...done.
-> Now booting the kernel
->
->
-> Thanks.
->
-> Bo
->
+Also, I submitted a new i2c-algo-8xx.c driver to this list about 2 weeks ago. It contains
+sevral bug fixes and improvements. It's not in linuxppc BK yet, but I think it will be soon.
+
+    Jocke
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
