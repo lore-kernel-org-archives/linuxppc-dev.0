@@ -1,65 +1,56 @@
-To: Eli Brin <elib@rokonet.co.il>
-Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Access u-boot environment variables from Linux 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sun, 13 Jul 2003 17:38:55 +0200."
-             <75DF04AC5ED4D511A9810090273CB4163F5DDD@rokonet-e.rokonet.co.il>
-Date: Mon, 14 Jul 2003 00:04:35 +0200
-Message-Id: <20030713220440.AA7A0C6D82@atlas.denx.de>
+Message-ID: <3F124BF5.6070803@intracom.gr>
+Date: Mon, 14 Jul 2003 09:21:41 +0300
+From: Pantelis Antoniou <panto@intracom.gr>
+MIME-Version: 1.0
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: Wolfgang Denk <wd@denx.de>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Ethernet PHY chip discovery not working on 855T with 971/972
+ chips
+References: <20030711155226.GV17433@ip68-0-152-218.tc.ph.cox.net> <20030711182921.0F0CFC6D82@atlas.denx.de> <20030711185050.GB17433@ip68-0-152-218.tc.ph.cox.net>
+In-Reply-To: <20030711185050.GB17433@ip68-0-152-218.tc.ph.cox.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Eli,
+Tom Rini wrote:
 
-in message <75DF04AC5ED4D511A9810090273CB4163F5DDD@rokonet-e.rokonet.co.il> you wrote:
+>On Fri, Jul 11, 2003 at 08:29:16PM +0200, Wolfgang Denk wrote:
 >
-> I have configure the config.mk.TQM860L_FEC file with: HAVE_FLASH_ENV = yes.
+[snip]
 
-I thinkthis file is referring to a _very_ old version  of  the  Linux
-kernel.  You'd  better use the Linux kernel and the SELF package that
-comes included with the ELDK, or use the top of our CVS tree.
-
-> modprobe: modprobe: Can't locate module char-major-60
-> /dev/flasha: No such device
 >
-> I can see all /dev/flasha and others.
+>>IIRC the last time we such discussions simply nothing  happened:  see
+>>for example to code for dp_alloc / dp_free that was submitted several
+>>times.
+>>
 >
-> The kernel is the default TQM860L_FEC  from the ELDK (not from SELF, but
-> should be the same).
+>google knows nothing of this, can you give a pointer into the thread
+>please?  Thanks.
+>
+>
+I was the one that sent the patches (search for dpalloc).
 
-Grrrgh...
+A link to the thread in the archive is here.
 
-Your description gives no indication of what you're trying to do, and
-what you're doing. Please note, that you have  two  options  for  the
-flash  driver:  the  old,  non-standard  character  device  interface
-[/dev/flash*] (which is there just for  backward  compatibility  with
-some  existing projects, and because it supports a mmap() interface),
-or   you   can   use   the   standard   MTD   interface   [/dev/mtd*,
-/dev/mtdblock*].
+http://lists.linuxppc.org/linuxppc-embedded/200212/msg00302.html
 
->From your description I think you want to use the MTD interface.
+As it stands I maintain them for the linuxppc_2_4_devel tree
+and I'm waiting for the 2.5 to build in order to port them
+there and resubmit.
 
-The  MTD  interface  is  also  what  is  being   used   the   default
-configurations of our current kernel trees.
+>
+>--
+>Tom Rini
+>http://gate.crashing.org/~trini/
+>
+>
+>
+>
+>
+Regards
 
-If I guess right, you want to access /dev/mtd*, not /dev/flash*
+Pantelis
 
-
-Also, judging from the subject of your posting, you  should  probably
-read the "tools/env/README" file in the U-Boot source tree.
-
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-A wise person makes his  own  decisions,  a  weak  one  obeys  public
-opinion.                                           -- Chinese proverb
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
