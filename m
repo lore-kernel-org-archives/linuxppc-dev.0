@@ -1,38 +1,70 @@
-Message-Id: <4.2.2.20000203124644.00d6e9f0@mail.munich.netsurf.de>
-Date: Thu, 03 Feb 2000 12:50:43 +0100
-To: Patrik Jonsson <patrik@ucolick.org>
-From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Subject: Re: lidstdc++ string problems
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.GSO.4.03.10002030203260.27105-100000@isis.ucolick.org
- >
-References: <38993D7F.B0964A77@dalim.de>
+From: jlquinn@us.ibm.com
+To: Stephane GEORGES <sg@dalim.de>
+cc: linuxppc-dev@lists.linuxppc.org
+Message-ID: <8525687A.0058F740.00@D51MTA03.pok.ibm.com>
+Date: Thu, 3 Feb 2000 11:11:58 -0500
+Subject: Re: Speed tests - G4-400 and PIII-600
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 11:10 03.02.00 , Patrik Jonsson wrote:
+Bogomips is a totally meaningless measure of performance.  It is a measure
+of how many empty loops can run in a given time period.  This value is used
+to calibrate short timing intervals in the kernel.  So it is only useful
+for comparing how fast a machine can do absolutely nothing.  Check out the
+BogoMips mini-HOWTO.
 
->Hi everyone,
->
->I wonder if there is a known problem with the c++ string class? (I just
->upgraded to gcc 2.95.2, but it didn't help.) What happens is that I read
->into a string from a char* using a strstream as " strstream >> string".
->This works on other machines, but on linuxppc the resulting string
->contains junk at the end that is in another string object defined earlier.
->It's like it doesn't properly define what the length is. If I look at it
->in gdb, the "dat" field contains the right char*, but when reading it more
->stuff appears at the end. It's HIGHLY annoying, it's plain impossible to
->make anything work! Is this known / is there a fix or something? It seems
->bad if we can't trust the standard library... :(
+If you seriously want to benchmark the two machines, you first have to
+decide what you are benchmarking - disk performance, processor speed,
+memory bandwith, network performance, kernel performance, etc.  There are a
+number of benchmark programs out there that attempt to generate reasonably
+comparable numbers (I'm sure I will miss many favorites): lmbench,
+bytemark, gcc benchmark suite (for testing performance regressions in gcc),
+STREAM, HINT, to name a few.
 
-Can you send me a small testcase that abort()'s if the bug is hit and does
-exit(0) otherwise? Which gcc-2.95.2 RPM did you use? 1g? Which compiler
-options? Does -W -Wall warn about anything?
+Also, compiler versions significantly affect the performance as well.
+egcs-1.1.2 is out of date.  gcc-2.95 includes a number of optimizations not
+present.  The current mainline gcc contains even more optimization work.
 
-Franz.
+FInally, unless you are just looking for bragging rights, the best
+benchmark you can use is the applications you intend to run on these
+machines.  Everything else is just an approximation.
+
+Jerry Quinn
+jlquinn@us.ibm.com
+
+
+
+Stephane GEORGES <sg@dalim.de>@lists.linuxppc.org on 02/03/2000 03:34:07 AM
+
+Sent by:  owner-linuxppc-dev@lists.linuxppc.org
+
+
+To:
+cc:   linuxppc-dev@lists.linuxppc.org
+Subject:  Speed tests - G4-400 and PIII-600
+
+
+
+
+I've made speed tests on programs running on my LinuxPPC on G4-400 Mhz AGP,
+and on Pentium III 600 Mhz.
+
+[snip]
+
+Bogomips:
+    - on Intel : ~ 600
+    - on PowerPC: ~ 800
+
+The test programs are dealing with run-length images processing.
+
+I was disapointed by the fact that the Intel machine ran 25% faster
+than the PowerPC machine.
+
+I thought that a G4-400 was worth a PIII-800 ...
+Maybe gcc including Alvitec patches will provide better performances ...
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
