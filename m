@@ -1,36 +1,115 @@
-Message-Id: <199912160653.HAA00308@piglet.grunz.lu>
-Date: Thu, 16 Dec 1999 07:53:20 +0100 (CET)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: Bug in X 3.3.5
-To: dorland@lords.com
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <19991215202647.A503@HSE-MTL-ppp4549.qc.sympatico.ca>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
+Date: Thu, 16 Dec 1999 11:01:23 -0800
+From: "David N. Welton" <davidw@linuxcare.com>
+To: "LinuxPPC Developer's List" <linuxppc-dev@lists.linuxppc.org>
+Subject: xmon stack trace tool
+Message-ID: <19991216110123.F5452@bassano.linuxcare.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  15 Dec, this message from Eric Dorland echoed through cyberspace:
-> 
-> I've noticed a problem for a while in X. When I've got a lot of disk i/o
-> going on, and then move the mouse, sometimes false mouse button 3 down
-> events are sent to the server. I don't really understand why this is
-> happening, but it only happens with a lot of disk i/o.
+I wrote a little tool in Python that, when given an xmon stack trace
+on the command line, gives you a list of the equivalment function
+names by sifting through System.map (xmonstacktrace must be run in the
+same directory as System.map).
 
-I guess this has something to do with the ADB driver not getting enough
-processor time to do its job. I've never seen it on my setup, though
-(7600 with R4 and Xpmac-mga, official kernel 2.2.13)..
+Here it is:
 
-Michel
+----
+#!/usr/bin/python
+# xmonstacktrace.py, by David N. Welton <davidw@linuxcare.com>
+# Example:
+# @hal [/usr/local/src/linux] $ time xmonstracktrace.py c00223f0 c0028940 c0028ac0 c00295d8 c0026d7c c0027380 c0026694 c0148900 c013f71c c0003738 
+# c002235c c0022524 = 'shrink_mmap', c00223f0
+# c00288f8 c00289c4 = 'do_try_to_free_pages', c0028940
+# c0028a88 c0028adc = 'try_to_free_pages', c0028ac0
+# c0029544 c00298a8 = '__get_free_pages', c00295d8
+# c0026c50 c002710c = 'kmem_cache_grow', c0026d7c
+# c00271a4 c002741c = 'kmem_cache_alloc', c0027380
+# c002654c c0026a9c = 'kmem_cache_create', c0026694
+# c01488d0 c01489bc = 'kmem_cache_sizes_init', c0148900
+# c013f5dc c013f7a8 = 'start_kernel', c013f71c
+# c000365c c00038a8 = 'start_here', c0003738
+# Computed with 116 compares.
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+import sys
+import string
 
+addresses = []
+records = []
+
+class Record:
+    def __init__(self, lower, upper, symbol):
+        self.lower = lower
+        self.upper = upper
+        self.symbol = symbol
+
+    def __repr__(self):
+        return "%s %s = '%s'" %(self.lower, self.upper, self.symbol)
+
+    def __cmp__(self, other):
+        if cmp(other, self.lower) < 0:
+            return -1 # to low
+        elif cmp(other, self.upper) > 0:
+            return 1 # to high
+        else:
+            return 0
+
+def getSystemMap(recs):
+    mapfile = open("System.map")
+    saveline = "00000000"
+    symbol = ""
+    n = 0
+
+    while 1:
+        ln = mapfile.readline()
+        if ln == "":
+            break
+
+        splitln = string.split(ln)
+        recs.append(Record(saveline, splitln[0], symbol))
+        saveline = splitln[0]
+        symbol = splitln[2]
+            
+    recs.append(Record(splitln[0], "ffffffff", symbol))
+    mapfile.close()
+            
+def getrecords(recs, addrs):
+    ops = 0
+    for a in addrs:
+        start = 0
+        end = len(recs)
+        n = end
+
+        while 1:
+            n = int((end + start) / 2) 
+            res = cmp(a, recs[n])
+            ops = ops + 1
+            if res < 0:
+                start = n
+            elif res > 0:
+                end = n
+            else:
+                print "%s, %s\n" %(recs[n], a),
+                break
+
+    return ops
+
+i = 1
+while i < len(sys.argv):
+    addresses.append(sys.argv[i])
+    i = i + 1
+
+getSystemMap(records)
+print "Computed with %d compares." %(getrecords(records, addresses))
+----
+
+Ciao,
+-- 
+David N. Welton, Developer, Linuxcare, Inc.
+415.354.4878 x241 tel, 415.701.7457 fax
+davidw@linuxcare.com, http://www.linuxcare.com/
+Linuxcare. At the center of Linux.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
