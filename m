@@ -1,58 +1,46 @@
-Date: Wed, 8 Dec 1999 17:24:18 -0800 (PST)
-From: "David A. Gatwood" <dgatwood@deepspace.mklinux.org>
-To: Tony Mantler <eek@escape.ca>
-cc: linuxppc-dev@lists.linuxppc.org, Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: Non-OF Ports (was Re: Need developer to help move JDK ppc port forward)
-In-Reply-To: <v04003a02b47493b8bdac@[216.81.20.25]>
-Message-ID: <Pine.LNX.3.96.991208172006.11794D-100000@deepspace.mklinux.org>
+Date: Wed, 8 Dec 1999 20:33:15 -0500 (EST)
+From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
+To: David Monro <davidm@amberdata.demon.co.uk>
+cc: linuxppc-workstation@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: IRQ problems on IBM 850
+In-Reply-To: <384E9672.7632BAB9@amberdata.demon.co.uk>
+Message-ID: <Pine.LNX.3.96L.991208201431.3883D-100000@unix47.andrew.cmu.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 8 Dec 1999, Tony Mantler wrote:
-
-> At 4:12 PM -0600 12/8/99, Takashi Oe wrote:
-> >On Wed, 8 Dec 1999, Kevin_Hendricks wrote:
-> >[...I'm sorry to hear about JDK port...]
-> >> Also, if anyone needs a 40 something year old former PDP-8 and PDP-11
-> >>programmer
-> >> with time on his hands to help out a *true* Open Source project, let me
-> >>know...
-> >
-> >Do you still have 8100 with you?  If so, porting Linux/PPC to your machine
-> >may be a project for you.  Now that BootX can boot MkLinux, everything
-> >there is open source (finally).
+On Wed, 8 Dec 1999, David Monro wrote:
 > 
-> Speaking of Non-OF machines...
+> Gabriel Paubert wrote:
+> > 
+> > Using interrupt 13 is strange, to say the least. It was reserved for FPU
+> > errors on x86 processors. In your case obviously the interrupts are
+> > expected (since you have a timeout) but have stayed masked for some
+> > reason. We have to find where this happens. Some code paths might have an
+> > unbalanced enable/disable_irq but I suspect that it will be hard to find.
 > 
-> I was thinking it would help porting (in my case, to my 5200, which I
-> unfortunatley haven't had much chance to work on lately) if BootX were able
-> to construct a fake OF device tree in the absence of a real one.
-> 
-> I'm not sure exactly what the structure should be, but the kernel shoudn't
-> need a whole bunch information as the NuBus style hardware is fairly simple.
-> 
-> I'd do it myself, but I don't have codewarrior. (Fooey on non-free MacOS
-> dev tools) :)
+> Umm. Possible data point which may help here - I cannot cause my machine
+> to do anything silly unless I hit two interrupt sources at the same
+> time. I can compile kernels on the IDE disk (irq 13) till the cows come
+> home if I don't have the ethernet enabled and don't play with the mouse
+> too much. If I enable the ethernet (irq 15 I think), or play with the
+> mouse a lot (irq 12), sooner or later I die. My (very uneducated) guess
+> is that it has something to do with getting two interrupts in a very
+> short space of time. I guess I should try thrashing one of the lower 8
+> interrupts (serial mouse I guess would do it) and see if that can cause
+> problems, or whether it is restricted to the second controller.
 
-Heheh.  Stay tuned on the 5200.  My finals are over, and I have a few
-things left to do before I'm free for a while.  I've tracked down more
-information about the booting failures and I've started moving through the
-MkLinux code from the early stuff by checkout date trying to figure out
-exactly where it stopped starting to boot.  As soon as I've figured out
-what's wrong there, it should be trivial to get these machines at least
-partially working.
+The problem definately occurs when two interrupts come in simultaneously on
+the cascaded controller. It shouldn't happen with one cascaded and one
+non-cascaded interrupt, though I guess it couldn't hurt to verify...
 
-We (MkLinux) already have an interrupt handler for them that I think is
-mostly right, along with hooks for the hardware addresses of every
-significant chip on the motherboards (there aren't very many), so the
-remainder of the porting is details.  I have a 6214 in my dorm room that I
-want to get off the floor, hence porting should go much faster now.  ;-)
+I don't think anyone's gotten anywhere towards a fix though. I certainly
+haven't had time to look into it, and neither has anyone else I've been in
+contact with...
 
-
-David
+-Hollis
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
