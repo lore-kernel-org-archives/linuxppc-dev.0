@@ -1,24 +1,25 @@
-Message-ID: <38B341A7.9F6E5DEC@grn.georet.net>
-Date: Tue, 22 Feb 2000 21:10:47 -0500
-From: Ryan Boder <rboder@grn.georet.net>
-Reply-To: rboder@grn.georet.net
+Message-ID: <000b01bf7dc1$f2bb8940$54a20fcf@jsmith>
+From: "Jeramy B Smith" <jsmith@PenguinPPC.org>
+To: <debian-powerpc@lists.debian.org>, <linuxppc-user@lists.linuxppc.org>,
+        <linuxppc-dev@lists.linuxppc.org>
+Subject: Who's Who List for PowerPC Linux
+Date: Tue, 22 Feb 2000 23:50:52 -0600
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: PowerMac G4 and pcmcia flash cards
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+The rough draft of this list is at penguinppc.org/who.html
 
-need to write a little boot prom and I would like to use my G4 to put it
-on a flash card. I have tried using pcmcia card services by David Hinds
-and it won't even install. This is no surprise since he claims in the
-HOWTO that Macs are not supproted yet. How you guys been using pcmcia
-devices and does anyone know if I can do it on my G4?
+It is intended to help newbies and aspiring developers figure out who
+everyone is and what is or is not being worked on. If I spelled your name
+wrong, forgot your big project, or did not put you on the list; send me an
+email and I'll put you up.
 
-Ryan
+
+-Jeramy
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
