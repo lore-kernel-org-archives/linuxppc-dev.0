@@ -1,26 +1,32 @@
-Date: Tue, 9 Mar 1999 15:43:27 +0100
-To: linuxppc-dev@lists.linuxppc.org
-From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Putting OF code in nvram
-Message-Id: <19990309154327.006222@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Tue, 9 Mar 1999 10:05:40 -0500 (EST)
+From: Tom Rini <tmrini@ntplx.net>
+To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
+cc: "G. [iso-8859-1] Laurs" <laures@hp1.esiea.fr>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: No-IDE kernel compile link errors
+In-Reply-To: <Pine.LNX.3.96L.990309092723.1664A-100000@unix47.andrew.cmu.edu>
+Message-ID: <Pine.SUN.4.02.9903091000001.15788-100000@sea.ntplx.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi !
+On Tue, 9 Mar 1999, Hollis R Blanchard wrote:
 
-Does someone still have pointers to those nvram OF patches that existed
-for old 7500/8500 machines ? I'm looking for infos about the process of
-putting stuffs in here, not really in the patches themselves.
+ However, since I really don't want anything to do with IDE in my
+kernel, I'll
+> hope this gets taken care of - or do the NMT patches mentioned fix it? FWIW, I
+> got my sources from NMT (the 3/7 vger snapshot).
 
--- 
-           E-Mail: <mailto:bh40@calva.net>
-BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+The NMT snapshots are just what's in vger.  This patch is not.  Goto the
+patch/pmac-ide-module or ide-module dir, grab that and try again.  I
+think this is the same thing I ran into when I was running the iMac w/
+nfsroot and had ide modularized for fun.
 
-
-
+--
+Tom Rini (TR1265)
+http://dobbstown.yeti.edu/
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
