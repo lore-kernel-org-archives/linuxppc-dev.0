@@ -1,16 +1,16 @@
 Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15810.mail.cnb.yahoo.com (web15810.mail.cnb.yahoo.com
-	[202.165.102.90]) by ozlabs.org (Postfix) with SMTP id 42A312BF07
+Received: from web15806.mail.cnb.yahoo.com (web15806.mail.cnb.yahoo.com
+	[202.165.102.86]) by ozlabs.org (Postfix) with SMTP id B2ECD2BDB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Dec 2004 12:51:25 +1100 (EST)
-Message-ID: <20041214015124.55109.qmail@web15810.mail.cnb.yahoo.com>
-Date: Tue, 14 Dec 2004 09:51:24 +0800 (CST)
+	Tue, 14 Dec 2004 13:04:17 +1100 (EST)
+Message-ID: <20041214020414.13580.qmail@web15806.mail.cnb.yahoo.com>
+Date: Tue, 14 Dec 2004 10:04:14 +0800 (CST)
 From: Sam Song <samlinuxppc@yahoo.com.cn>
-To: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-In-Reply-To: <20041207113615.9141.qmail@web15805.mail.cnb.yahoo.com>
+To: Sam Song <samlinuxppc@yahoo.com.cn>,
+	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=gb2312
-Subject: System hanged,
+Subject: Re: System hanged,
 	which one is the killer? [was Re: What's the problem could be?]
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,50 +23,17 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 Sam Song <samlinuxppc@yahoo.com.cn> wrote£º
-> Hi, all
-> 
-> An system application crash running on 2.4.18 was
-> happened on my custom 8xx board every now and then,
-> especially recently. Yeah, the probelm is becoming
-> more and more obvious. Personally, I deem it as an
-> default of application software because there are
-> some complicated application softwares like GUI and
-a
-> browser. But I also suspect that my custom keyboard
-> did it because there were about 70-80 PCMCIA
-> interrupts created once I hit just one key. I used
-> PCMCIA interrupt to accept the rubber keyboard
-> input.
+> I found that neither USB HOST keyboard nor my PCMCIA
+> keyboard could lead to system hang.
 
-Well, after some test on keyboard drivers, I found
-that neither USB HOST keyboard nor my PCMCIA keyboard
-could lead to system hang. It seems that the killer
-isn't the PCMCIA keyboard driver.
- 
-> Any other possibility?
+Sorry, syntax error.
 
-Seems have. The interesting thing was that I could
-quit from the hanged application with a special key
-and restarted the application and continued operate.
-I, however, noticed some errors hints printed on the
-LCD panel as "No enough video memory" during the
-break.
+The above line sould be: I found that BOTH USB HOST
+keyboard AND my PCMCIA keyboard could lead to system
+hang.
 
-So my attention was drawn to the 823 LCD driver. Two
-different 10.4" SHARP TFT LCD panel with 640*480 and
-800*600 were tested on the same target. I found that
-640*480 system was more robust than 800*600 one. There
-were also some hang happened with some disorder input
-on 640*480 but the system could recover to normal
-after some time like 3-5 mintues. The recoverable
-result never appeared on 800*600.
+Thanks, 
 
-Here I'd like to make sure one thing that whether I
-could extend the video memory to meet the application
-need. There are a lot of RAM on my target, at least
-64MB. Any suggestion?
-
-Thanks in advance,
 
 =====
 Best regards,
