@@ -1,57 +1,29 @@
-Message-ID: <3AA9176B.1F1AA505@mvista.com>
-Date: Fri, 09 Mar 2001 09:48:27 -0800
-From: Matthew Locke <mlocke@mvista.com>
-MIME-Version: 1.0
-To: David Hopcroft <dhopcroft@aminocom.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Problem implementing pcmcia_cs on ppc 823 hardware
-References: <01030917160500.00652@dhopcroft>
-Content-Type: text/plain; charset=us-ascii
+From: "Todd_Tomaino"@vnci.net
+To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <85256A0A.0072CACC.00@ushq1.vnci.net>
+Date: Fri, 9 Mar 2001 16:00:51 -0500
+Subject: i2c w/ 2.2.14 on the RPXLite
+Mime-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Try upgrading to the latest pcmcia-cs which is 3.1.24.  There have been
-several changes.
+Hello,
 
-Are you sure your card is 16 bit?  Typically the 100Mbit cards are
-CardBus(32bit).
+I have recently converted from Montavista HHL 1.0 to 1.2.  When using the
+new version I am having difficulties getting the i2c driver to load.  I
+have selected it during "make config" and seen it link and compile during
+"make dep" and "make zImage", but when I boot the RPXLite there is no sign
+of the driver.  I have added printk messages to to iic.c to make the
+loading more obvious, but it's not there.  Other drivers that appeared to
+load before (spi for example) are also not present.   My problems are
+compounded by the fact that I am a newbie.  If anyone has any information
+it would be greatly appreciated.
 
-David Hopcroft wrote:
->
-> Hi,
->
-> I wonder if any one can shed some light on a problem I am having? I am trying
-> to implement PCMCIA services on a custom PPC based board.
->
-> I am using;
->         Processor - PPC 823 @ 64MHz
->         Kernel - 2.2.14
->         Card Services - 3.1.10
->         PCMCIA card - Xircom CreditCard Ethernet (CE3B-100BTX)
->
-> I "insmod" the required modules (pcmcia_core, m8xx_pcmcia, ds and xirc2ps_cs)
-> and run cardmgr.
->
-> The problem arises when I insert a pcmcia card, into it's slot. At which
-> point I get a "Kernel panic: machine check".  This seems to be around the area,
-> in the code, where the card services are starting to read it's CIS/attribute
-> area.
->
-> I have iormap'd _IO_BASE to 0x80000000 in init.c
->
-> My BMT is enabled but set to 255(Max value).
->
-> The bus frequency of the board is 32Mhz I have tried setting this in the code
-> to values of 32 & 32000000 with the same results. looking at file m8xx_pcmcia.c
-> it should be set to the latter.
->
-> Can any one suggest any thing obvious I have missed, or misunderstood?
->
-> I can post a debug log if required, but it's quite long.
->
-> ---
-> David Hopcroft
->
+best regards,
+
+Todd
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
