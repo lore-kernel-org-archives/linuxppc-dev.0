@@ -1,34 +1,43 @@
-Date: Fri, 28 Sep 2001 08:18:28 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Brian Waite <bwaite@cspi.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 2.4.10 stable tree
-Message-ID: <20010928081828.T23005@cpe-24-221-152-185.az.sprintbbd.net>
-References: <200109281516.LAA00192@orchid.cspi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200109281516.LAA00192@orchid.cspi.com>
+Date: Fri, 28 Sep 2001 10:41:23 -0700
+Subject: Re: Problem serial.c on module
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v472)
+Cc: "KOBAYASHI R. Taizo" <tkoba@ike-dyn.ritsumei.ac.jp>,
+	linuxppc-dev@lists.linuxppc.org
+To: Tom Rini <trini@kernel.crashing.org>
+From: "David A. Gatwood" <dgatwood@apple.com>
+In-Reply-To: <20010928081508.S23005@cpe-24-221-152-185.az.sprintbbd.net>
+Message-Id: <08F1F38A-B438-11D5-9814-003065B90BBC@apple.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Sep 28, 2001 at 11:07:18AM -0400, Brian Waite wrote:
+On Friday, September 28, 2001, at 08:15 AM, Tom Rini wrote:
 
-> I have been working on a stable port of the MVME5100 from the devel tree. I
-> had everything working from 2.4.9 and I got onot other projects. I just
-> grabbed the 2.4.10 stable tree and noticed the arch/ppc/boot/simple directory
-> has been removed. I was using simple/head.S to bring up the board. What
-> should I be using now? Have you abandoned a simple head.S layout and require
-> all baords to have their own head.S now? I am just making sure I am not
-> missing something.
+> On Fri, Sep 28, 2001 at 02:33:01PM +0900, KOBAYASHI R. Taizo wrote:
+>
+>> I examined this problem and had a question.
+>> Dose it need following branch?
+>> ================L5375==
+>> #ifdef CONFIG_ALL_PPC
+>>         /* early PowerMacs would machine check */
+>>         if (_machine == _MACH_Pmac) {
+>>                 printk(KERN_INFO "serial.c: nothing to do on
+>> PowerMacs.\n");
+>>                 return 0;
+>>         }
+>> #endif
+>> =======================
+>
+> Some older machines apparently do.  The current 'workaround' in 2_4 is
+> #if defined(CONFIG_ALL_PPC) && !defined(MODULE).
 
-Er.  linuxppc_2_4 (the 'stable' branch) does not have the new boot stuffs
-yet.  I will once things are done however.  Since you're moving the mvme5100
-stuff from linuxppc_2_4_devel into linuxppc_2_4 (If I'm reading this right),
-just move the arch/ppc/boot/simple stuff as well.
+That's disgusting.  This should be doing the Linux equivalent of setjmp
+and trapping the machine check and returning 0.  Hardware probes
+shouldn't need hacks like this.  Just my $0.02.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+
+David
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
