@@ -1,15 +1,17 @@
-Return-Path: <cfriesen@nortelnetworks.com>
-Received: from zcars04f.nortelnetworks.com (zcars04f.nortelnetworks.com
-	[47.129.242.57]) by ozlabs.org (Postfix) with ESMTP id E29332BF12
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Dec 2004 09:08:22 +1100 (EST)
-Message-ID: <41B0E18C.2060801@nortelnetworks.com>
-Date: Fri, 03 Dec 2004 15:58:36 -0600
-From: Chris Friesen <cfriesen@nortelnetworks.com>
+Return-Path: <evil@g-house.de>
+Received: from mail.g-house.de (ns1.g-housing.de [62.75.136.201])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 027752BDF2
+	for <linuxppc-dev@ozlabs.org>; Sun,  5 Dec 2004 10:04:26 +1100 (EST)
+Message-ID: <41B23DF2.4010303@g-house.de>
+Date: Sat, 04 Dec 2004 23:45:06 +0100
+From: Christian Kujau <evil@g-house.de>
 MIME-Version: 1.0
-To: Linux kernel <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Subject: looking for help, attempting to debug high latency in 2.4 kernel
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [FYI] linux 2.6 still not working with PReP (ppc32)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,31 +21,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Hi guys,
+hi,
 
-I'm running 2.4.22 on ppc32.  Embedded system, just 74xx cpu, dual tulip network 
-links and fiberchannel card.  Card has 1.5GB of memory, rootfs is tmpfs, system 
-has some NFS mounts.
+upon receiving some calls about the status on this issue, i decided to
+update http://bugme.osdl.org/show_bug.cgi?id=1494 , which i reported a
+while back. yes, this is "just a PReP" and i am fully aware that PReP is
+not used in recent setups any more and i too will not my PReP for HPC
+applications. but perhaps someone has an idea about what's goin on here.
 
-We're seeing userspace delayed for almost a second every so often.  No idea 
-what's causing it.
+the bugreport should give you th full details, in short: linux 2.5.30 is
+the last working kernel for ppc32/PReP with networking enabled.
+(net)booting a recent 2.6 kernels spit out lots of these:
 
-We've got scheduler instrumentation showing a usespace task starting to run, 
-then a bunch of tasks being put on the runqueue, and finally we wake up and 
-start running normally again almost a full second later.  The timing is not 
-exactly the same in each case, but it's usually close to a second of delay.
+(with tulip NIC)
+Dec  3 23:56:39 192.168.10.9 irq 9: nobody cared!
+Dec  3 23:56:39 192.168.10.9 Call trace:
+Dec  3 23:56:39 192.168.10.9 [c002e99c] __report_bad_irq+0x34/0xac
+Dec  3 23:56:39 192.168.10.9 [c002eb00] note_interrupt+0xd0/0x104
+Dec  3 23:56:39 192.168.10.9 [c002e480] __do_IRQ+0x174/0x184
+Dec  3 23:56:39 192.168.10.9 [c00053e0] do_IRQ+0x38/0x98
+Dec  3 23:56:39 192.168.10.9 [c00044cc] ret_from_except+0x0/0x14
+Dec  3 23:56:39 192.168.10.9 [c002e748] setup_irq+0xd8/0x138
+Dec  3 23:56:39 192.168.10.9 [c002e938] request_irq+0x90/0xc0
+Dec  3 23:56:39 192.168.10.9 [c0103504] tulip_open+0x30/0xb6c
+Dec  3 23:56:39 192.168.10.9 [c0117274] dev_open+0xb0/0xd8
+Dec  3 23:56:39 192.168.10.9 [c0118a7c] dev_change_flags+0x6c/0x144
+Dec  3 23:56:39 192.168.10.9 [c0123db4] netpoll_setup+0x1c4/0x364
+Dec  3 23:56:39 192.168.10.9 [c0106fe0] init_netconsole+0x3c/0x94
+Dec  3 23:56:39 192.168.10.9 [c0003a64] init+0xb8/0x230
+Dec  3 23:56:39 192.168.10.9 [c0006524] kernel_thread+0x44/0x60
+Dec  3 23:56:39 192.168.10.9 handlers:
+Dec  3 23:56:39 192.168.10.9 [<c010101c>] (tulip_interrupt+0x0/0xd3c)
+Dec  3 23:56:39 192.168.10.9 Disabling IRQ #9
 
-I'm looking for some tips on how to go about tracking this down.
+(with 3c59x NIC)
+192.168.10.9 NETDEV WATCHDOG: eth0: transmit timed out
+192.168.10.9 eth0: transmit timed out, tx_status 00 status e800.
+192.168.10.9 diagnostics: net 0cc0 media 8802 dma 002000b3 fifo 0000
+192.168.10.9 eth0: Interrupt posted but not delivered -- IRQ blocked by
+another device?
+192.168.10.9 Flags; bus-master 1, dirty 67(3) current 68(4)
+192.168.10.9 Transmit list 806fe480 vs. c06fe3e0.
+192.168.10.9 0: @c06fe200  length 80000054 status 00000054
+192.168.10.9 1: @c06fe2a0  length 8000005e status 0000005e
+192.168.10.9 2: @c06fe340  length 80000064 status 00000064
+192.168.10.9 3: @c06fe3e0  length 80000075 status 00000075
+192.168.10.9 4: @c06fe480  length 8000005b status 0000005b
+192.168.10.9 5: @c06fe520  length 80000051 status 00000051
+192.168.10.9 6: @c06fe5c0  length 8000005a status 0000005a
+192.168.10.9 7: @c06fe660  length 8000005a status 0000005a
+192.168.10.9 8: @c06fe700  length 8000005a status 0000005a
+192.168.10.9 9: @c06fe7a0  length 8000005a status 0000005a
+192.168.10.9 10: @c06fe840  length 8000005a status 0000005a
+192.168.10.9 11: @c06fe8e0  length 8000005a status 0000005a
+192.168.10.9 12: @c06fe980  length 8000005a status 0000005a
+192.168.10.9 13: @c06fea20  length 8000005a status 0000005a
+192.168.10.9 14: @c06feac0  length 8000005a status 0000005a
+192.168.10.9 13: @c06fea20  length 8000005a status 0000005a
+192.168.10.9 14: @c06feac0  length 8000005a status 0000005a
+192.168.10.9 15: @c06feb60  length 8000005a status 0000005a
 
-Where are my delays likely to be coming from? Long-running code paths?  Long 
-periods with interrupts off?  I dunno where to start.
+is it possible to use another irq for the network-device driver?
+Documentation/kernel-parameters.txt gives some options about other
+drivers, but i can't tell how to specify "use this irq" for tulip/3c59x.
 
-Would porting lockmeter be a good idea?  Is there anyone who's already done this 
-for ppc?
+especially the "IRQ blocked by another device?" message makes me think,
+that manual irq config could help here. but maybe i'm wrong.
 
-I appreciate any help.
+the results posted on http://nerdbynature.de/bits/sheep/2.6.10-rc2/ are
+from current 2.6 kernels: the offical tree and the linuxppc25 tree was used.
 
-Thanks,
+thank you for comments,
+Christian.
+- --
+BOFH excuse #441:
 
-Chris
+Hash table has woodworm
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.5 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://enigmail.mozdev.org
+
+iD8DBQFBsj3y+A7rjkF8z0wRAldLAJ9QFTfr8UeOtXbnSCGWBVJr7IAAKgCgiHRV
+iB/ozetyCDIMSfAa+1MRxVc=
+=b5BK
+-----END PGP SIGNATURE-----
