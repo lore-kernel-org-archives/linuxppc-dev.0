@@ -1,14 +1,30 @@
-Reply-To: <kotaeji@secui.com>
-From: "kotaeji" <kotaeji@secui.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: [Q] question about using x86 gdb to debug the remote ppc target (kgdb)
-Date: Fri, 9 Jan 2004 14:41:10 +0900
-Message-ID: <006701c3d673$30cb7890$2c373737@hwteam6549>
+Reply-To: <zjzhou@newrocktech.com>
+From: "John Zhou" <zjzhou@newrocktech.com>
+To: <kotaeji@secui.com>, <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: [Q] question about using x86 gdb to debug the remote ppc target (kgdb)
+Date: Fri, 9 Jan 2004 13:50:58 +0800
+Message-ID: <000801c3d674$8ed1f260$b702a8c0@newrock2>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
+	charset="US-ASCII"
+In-Reply-To: <006701c3d673$30cb7890$2c373737@hwteam6549>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+Maybe you should use ppc_82xx-gdb to connect remote target.
+
+Regards,
+John
+
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of kotaeji
+Sent: Friday, January 09, 2004 1:41 PM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: [Q] question about using x86 gdb to debug the remote ppc target
+(kgdb)
+
 
 
 Hi, I have a question about using kgdb on PowerPC (8245)
