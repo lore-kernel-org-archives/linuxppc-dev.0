@@ -1,46 +1,29 @@
-Date: Wed, 21 Jul 1999 09:20:42 -0700 (MST)
-From: Matt Porter <mmporter@home.com>
-To: Johnnie Peters <jpeters@phx.mcd.mot.com>
-cc: VALETTE Eric <valette@crf.canon.fr>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Is the vger 2.2 kernel branch dead
-In-Reply-To: <37939E1D.1964B05@phx.mcd.mot.com>
-Message-ID: <Pine.LNX.3.96.990721082132.13818A-100000@liberty.chnd1.az.home.com>
+Message-ID: <3795F8F5.1748BBEB@generation.net>
+Date: Wed, 21 Jul 1999 12:44:37 -0400
+From: Simon Piette <spiette@generation.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ryan Nielsen <ran@krazynet.com>,
+        LinuxPPC-Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: imsttfb (was Re: X : caught signal 11 ?)
+References: <Pine.PMDF.3.96.990720092348.538970380F-100000@uni.edu> <37949060.878FF791@generation.net> <19990720150626.B22422@gondolin.asf>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 19 Jul 1999, Johnnie Peters wrote:
+Ryan Nielsen wrote:
 
-> Matt Porter wrote:
-> > 
-> > On Mon, 19 Jul 1999, VALETTE Eric wrote:
-> > 
-> > > I tried to upgrade here and no changes during one month!!!
-> > > As there still some important bugs in 2.2.10++, I wonder
-> > > why nothing happens???
-> > 
-> > Perhaps nobody has submitted any bug fixes?
-> > 
-> Actually that is not true.  Motorola has submitted changes to both Paul
-> and Cort that have not made it into vger.  Last I know the sources in
-> vger would not boot on Motorola platforms other than Blackhawks and
-> Utahs.
-> 
-> I'd very much like to get the changes in.
+> > BTW, is anybody knows which arguments to give (for BootX) if I want to remove the
+> > "No video driver" options? I've tried a few combinations (like
+> > video=imsttfb:vmode:17,cmode:16), but even the console is almost unusable. I think
+> > that the only to use the IMS is to check that "No video driver" option.
+>
+> does video=imsttfb:noaccel work?
 
-I was being facetious.  Honestly, somebody is feeding me a major line of
-crap.  Cort claims to get no patches from Motorola, yet Johnnie claims to
-be sending them in.  Since my stuff is in Johnnie's repository, it's a
-problem for me.  Hopefully, this time things start going in cause if
-not we'll have to find another route.
+Unfortunately no. What would be the advantages if I don't get accelleration? Do you
+have ans IMS TwinTurbo card?
 
--- 
-Matt Porter
-mmporter@home.com
-This is Linux Country. On a quiet night, you can hear Windows reboot.
-
+Simon
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
