@@ -1,32 +1,31 @@
-Message-ID: <3A598EB5.638622B6@relog.ch>
-Date: Mon, 08 Jan 2001 10:56:05 +0100
-From: Michel Dänzer <daenzer@relog.ch>
-Reply-To: michdaen@iiic.ethz.ch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Conrad H Ziesler <cziesler@umich.edu>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: ibook, hda power off sequence (for IBM travelstar) 
+Date: Mon, 8 Jan 2001 12:26:25 +0100
+Message-Id: <19341203045809.13248@mailhost.mipsys.com>
+In-Reply-To: 
+ <Pine.SOL.4.10.10101061727190.28634-100000@frogger.gpcc.itd.umich.edu>
+References: 
+ <Pine.SOL.4.10.10101061727190.28634-100000@frogger.gpcc.itd.umich.edu>
 MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-CC: Tony Mantler <nicoya@apia.dhs.org>,
-        Linux/m68k <linux-m68k@lists.linux-m68k.org>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] drivers/macintosh/Config.in
-References: <20010106171733.M556@opus.bloom.county> <v04003a08b67ddaff44fe@[24.70.162.12]> <20010107173805.B19404@opus.bloom.county>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tom Rini wrote:
+>
+>This bit of code replaces pmu_shutdown from via-pmu.c, its the easiest
+>hack to get the IDE code to issue a sleep command to the disk at shutdown
+>time.
 
-> I also (may) move things like MOL into that file.
+Broadcasting fake sleep requests is definitely not the correct way to
+acheive what you want. Either add direct call to some ide-pmac sleep
+function in the arch shutdown function, or use the shutdown notifiers in
+ide-pmac to force a disk shutdown.
 
-We're still hoping to get MOL working on APUS anytime soon, and according to
-the web page it should work on PReP and CHRP boxen.
+I'll have a look at it when I'm really back.
 
+Ben.
 
-Michel
-
-
---
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and the DRI project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
