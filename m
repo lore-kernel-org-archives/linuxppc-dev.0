@@ -1,14 +1,22 @@
-Message-Id: <5.1.0.14.2.20020418075224.02319a00@falcon.si.com>
-Date: Thu, 18 Apr 2002 08:03:05 -0400
-To: linuxppc-embedded@lists.linuxppc.org
-From: Jerry Van Baren <vanbaren_gerald@si.com>
+Message-Id: <scbe86ef.044@mx.amx.com>
+Date: Thu, 18 Apr 2002 08:42:02 -0500
+From: "Chuck Partridge" <Chuck_Partridge@amx.com>
+To: <linuxppc-embedded@lists.linuxppc.org>, <vanbaren_gerald@si.com>
 Subject: Re: SB Interrupt problem (OT)
-In-Reply-To: <scbda4cd.072@mx.amx.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
+
+Actually in the case of the ALI Southbridge, there are registers for selection Edge/Level for each Interrupt input on the 8259s.  I did run across this problem early on, and had to set each input for the correct edge/level configuration.  I'll look at the EOI and see what is required.
+
+Thanks for the insight.
+
+Chuck
+
+
+>>> Jerry Van Baren <vanbaren_gerald@si.com> 04/18/02 07:03AM >>>
 
 In x86 hardware, the 8259 is configured to be EDGE sensitive, not level.  I
 assume you carried this over to your new design.  Edge triggering means
