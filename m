@@ -1,52 +1,88 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: Tue, 30 Apr 2002 10:40:35 +0200
-From: Gunnar Larisch <la@softing.com>
-To: Wolfgang Denk <wd@denx.de>
-Cc: Dross Zhou <zjuzhou@yahoo.com.cn>,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: How to mount romfs in flash as root filesystem?
-Message-ID: <20020430104035.A28417@w-la.dhcp.softing.com>
-References: <20020429141408.33240.qmail@web15001.mail.bjs.yahoo.com> <20020429143529.A188FFF68@denx.denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020429143529.A188FFF68@denx.denx.de>; from Wolfgang Denk on Mon, Apr 29, 2002 at 04:35:24PM +0200
+Subject: RE: How to mount romfs in flash as root filesystem?
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Tue, 30 Apr 2002 09:33:21 -0000
+Message-ID: <EADB10BAC266A14A85ECBF8686A73E31937F0E@kolkrabbi.flaga.is>
+From: =?iso-8859-1?B?S+FyaSBEYXbt8HNzb24=?= <kd@flaga.is>
+To: "Gunnar Larisch" <la@softing.com>, "Wolfgang Denk" <wd@denx.de>
+Cc: "Dross Zhou" <zjuzhou@yahoo.com.cn>,
+	<linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, Apr 29, 2002 at 04:35:24PM +0200, Wolfgang Denk wrote:
+> -----Original Message-----
+> From: Gunnar Larisch [mailto:la@softing.com]
+> Sent: 30. apríl 2002 08:41
+> To: Wolfgang Denk
+> Cc: Dross Zhou; linuxppc-embedded@lists.linuxppc.org
+> Subject: Re: How to mount romfs in flash as root filesystem?
 >
-> In message <20020429141408.33240.qmail@web15001.mail.bjs.yahoo.com> you wrote:
+>
+>
+> On Mon, Apr 29, 2002 at 04:35:24PM +0200, Wolfgang Denk wrote:
 > >
-> > 	Now my kernel has support ROMFS ,i can mount
-> > /dev/mtdblock0 /mnt -t romfs and use chroot /mnt as
-> > root filesystem.But i want to mount /dev/mtdblock0 as
-> > root filesystem when system reboot,how to?I have try
-> > many parameters into kernel such as "root=/dev/mtdblk0
-> > romfs ro", but it is no use, it also mount NFS
+> > In message
+> <20020429141408.33240.qmail@web15001.mail.bjs.yahoo.com> you wrote:
+> > >
+> > > 	Now my kernel has support ROMFS ,i can mount
+> > > /dev/mtdblock0 /mnt -t romfs and use chroot /mnt as
+> > > root filesystem.But i want to mount /dev/mtdblock0 as
+> > > root filesystem when system reboot,how to?I have try
+> > > many parameters into kernel such as "root=/dev/mtdblk0
+> > > romfs ro", but it is no use, it also mount NFS
+> >
+> > Probably because you mistyoed  the  device  name?  There
+> is  an  'o'
+> > missing, it seems.
+> >
+> > > root,how can i mount /dev/mtdblock0 (ROMFS) as root
+> > > filesystem?I used linux2.4.4 from denx .
+> >
+> > Just pass "root=/dev/mtdblock0", that's all.
 >
-> Probably because you mistyoed  the  device  name?  There  is  an  'o'
-> missing, it seems.
->
-> > root,how can i mount /dev/mtdblock0 (ROMFS) as root
-> > filesystem?I used linux2.4.4 from denx .
->
-> Just pass "root=/dev/mtdblock0", that's all.
+> This will not work. You must use "root=/dev/mtdblock/0" and
 
-This will not work. You must use "root=/dev/mtdblock/0" and Linux must be
-configured with devfs, devfs must be mounted before and boot support
-from ramdisk must be disabled.
+wrong! Wolfgang is correct just check how the root parameter is parsed
+in
+init/do_mounts.c function name_to_kdev_t().
 
-Gunnar Larisch
---
-Gunnar Larisch
-Dipl.-Ing.
-Entwicklung
-Softing AG - Dep. Industrial Communication
-Richard-Reitzner-Allee 6
-85540 Haar (near Munich)
-Germany
-Tel.: ++49 / (0) 89 / 4 56 56 - 183
-Fax.: ++49 / (0) 89 / 4 56 56 - 399
+If you pass root=/dev/mtdblock/0 it will try to convert the third "/" to
+a number which it can not and the minor number becomes 0 which is
+accedentally correct but is very wrong if you plan to mount
+/dev/mtdblock/1
+as you root.
+
+> Linux must be
+> configured with devfs, devfs must be mounted before and boot support
+
+It can be either way. You can use devfs in which case you must make it
+mountable at boot. You can also get away without devfs but then you must
+
+suppply all the necessary device nodes in your filesystem.
+
+> from ramdisk must be disabled.
+
+Don't spread wrong information!
+
+Regards,
+
+K.D.
+
+>
+> Gunnar Larisch
+> --
+> Gunnar Larisch
+> Dipl.-Ing.
+> Entwicklung
+> Softing AG - Dep. Industrial Communication
+> Richard-Reitzner-Allee 6
+> 85540 Haar (near Munich)
+> Germany
+> Tel.: ++49 / (0) 89 / 4 56 56 - 183
+> Fax.: ++49 / (0) 89 / 4 56 56 - 399
+>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
