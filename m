@@ -1,22 +1,23 @@
 From: Joe Green <jgreen@mvista.com>
 To: diekema@bucks.si.com (diekema_jon), linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Wait Queue bug triggered on EST SBC8260
-Date: Wed, 24 May 2000 13:24:17 -0700
+Date: Wed, 24 May 2000 13:29:45 -0700
 Content-Type: text/plain
 Cc: all@cideas.com
 References: <m12uhYO-001SyaC@bucks>
 In-Reply-To: <m12uhYO-001SyaC@bucks>
 MIME-Version: 1.0
-Message-Id: <0005241329030B.07271@minotaur.mvista.com>
+Message-Id: <0005241332450C.07271@minotaur.mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-As the patch indicates, we've only really built and tested this for
-2.2.14 at this time.  We will be porting the scheduler to 2.4 when we
-add support for that release, but I can't tell you if or when it might
-be ported to any of the 2.3 versions.  The source code is provided, so
-you can try to port it yourself if you wish.
+I should also point out that the real-time scheduler primarily changes
+the responsiveness of processes and threads that are scheduled with
+real-time priorities.  Non-realtime threads are handled by the standard
+scheduler algorithm, so if there's a bug in there it may very well
+still be present with the real-time scheduler, unless it was something
+we caught in our testing.
 
 On Wed, 24 May 2000, diekema_jon wrote:
 > Previous message:
@@ -66,6 +67,7 @@ On Wed, 24 May 2000, diekema_jon wrote:
 > This updated version fixes a build problem on the PowerPC.
 >
 > CONTACT: <source@mvista.com>
+
 --
 Joe Green <jgreen@mvista.com>
 MontaVista Software, Inc.
