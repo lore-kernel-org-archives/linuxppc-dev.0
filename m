@@ -1,19 +1,17 @@
-Return-Path: <KendallB@scitechsoft.com>
-Received: from mail.scitechsoft.com (mail.scitechsoft.com [63.195.13.67])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A9ADF2BE83
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Dec 2004 09:02:57 +1100 (EST)
-Received: from KENDALLB (nat.scitechsoft.com [63.195.13.75])
-	by mail.scitechsoft.com (8.12.8/8.12.8) with ESMTP id iBALJwCm016246
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Dec 2004 13:20:00 -0800
-From: "Kendall Bennett" <KendallB@scitechsoft.com>
-To: linuxppc-dev@ozlabs.org
-Date: Fri, 10 Dec 2004 13:23:06 -0800
-MIME-Version: 1.0
-Message-ID: <41B9A33A.26557.5DDD7EC8@localhost>
-Content-type: text/plain; charset=US-ASCII
-Subject: Write Combining for PowerPC?
+Return-Path: <magnus.damm@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.202])
+	by ozlabs.org (Postfix) with ESMTP id 61C372BEA0
+	for <linuxppc-dev@ozlabs.org>; Sun, 12 Dec 2004 01:54:50 +1100 (EST)
+Received: by wproxy.gmail.com with SMTP id 49so259888wri
+	for <linuxppc-dev@ozlabs.org>; Sat, 11 Dec 2004 06:54:48 -0800 (PST)
+Message-ID: <aec7e5c304121106482fcdba62@mail.gmail.com>
+Date: Sat, 11 Dec 2004 15:48:07 +0100
+From: Magnus Damm <magnus.damm@gmail.com>
+To: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="----=_Part_164_2615098.1102776487641"
+Subject: [PATCH] drivers/ide/ppc/mpc8xx.c - volatile fix
+Reply-To: Magnus Damm <magnus.damm@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,32 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Guys,
+------=_Part_164_2615098.1102776487641
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-We are working on some PowerPC machines and noticed that the boxes don't 
-appear to support the equivalent of Write Combining that we get on x86 
-boxes. Copies to Video Memory on our Motorola Sandpoint box run about 
-10Mb/s, which is terribly, terribly slow!
+Hello,
 
-Does anyone know if it is possible to do something similar to Write 
-Combining for the PowerPC architecture, to speed up CPU access to the 
-linear framebuffer? Part of the problem is that for video overlay support 
-(not motion compensation) you have to dump the entire YUV frame into 
-video memory for the hardware overlay, and even on a 1GHz PPC box playing 
-an MPEG2 stream is not possible as X takes up over 80% of the CPU just to 
-copy the YUV data to video memory!
+I fixed this in a local tree for a customer half a year ago (mvl-3.1)
+and forgot to report it to the lists. Now I came across it in vanilla
+2.5.10-rc3. I have not tested the fix but it is pretty obvious that
+access with a non-volatile pointer to hardware is bad, at least with
+gcc-3 or above.
 
-Obviously bus mastering will help solve this problem, but it would be 
-better if there was a way to enabling faster CPU access to the 
-framebuffer as well.
+Please apply. Or ignore if already fixed. =)
 
-Regards,
+Thanks.
 
----
-Kendall Bennett
-Chief Executive Officer
-SciTech Software, Inc.
-Phone: (530) 894 8400
-http://www.scitechsoft.com
+/ magnus (needs CC)
 
-~ SciTech SNAP - The future of device driver technology! ~
+------=_Part_164_2615098.1102776487641
+Content-Type: application/octet-stream;
+	name="linux-2.6.9-mpc8xx-volatile.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="linux-2.6.9-mpc8xx-volatile.patch"
+
+LS0tIGxpbnV4LTIuNi45L2RyaXZlcnMvaWRlL3BwYy9tcGM4eHguYwkyMDA0LTEyLTExIDEzOjA1
+OjA5LjAwMDAwMDAwMCArMDEwMAorKysgbGludXgtMi42LjktbXBjOHh4LXZvbGF0aWxlL2RyaXZl
+cnMvaWRlL3BwYy9tcGM4eHguYwkyMDA0LTEyLTExIDE1OjQ5OjE2LjAwMDAwMDAwMCArMDEwMApA
+QCAtMTcyLDcgKzE3Miw3IEBACiAJdm9sYXRpbGUgcGNtY2lhX3dpbl90ICp3aW47CiAJdm9sYXRp
+bGUgcGNtY29uZjh4eF90ICpwY21wOwogCi0JdWludCAqcGdjcng7CisJdm9sYXRpbGUgdWludCAq
+cGdjcng7CiAJdTMyIHBjbWNpYV9waHlfYmFzZTsKIAl1MzIgcGNtY2lhX3BoeV9lbmQ7CiAJc3Rh
+dGljIHVuc2lnbmVkIGxvbmcgcGNtY2lhX2Jhc2UgPSAwOwo=
+------=_Part_164_2615098.1102776487641--
