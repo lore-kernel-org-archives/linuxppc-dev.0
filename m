@@ -1,43 +1,38 @@
-Date: Tue, 29 Jun 2004 16:15:38 +0200 (CEST)
-From: Marius Groeger <mgroeger@sysgo.com>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+To: Sylvain Munaut <tnt@246tnt.com>
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+	Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: kernel option "Command line partition table parsing" 
-In-Reply-To: <Pine.LNX.4.60.0406290859430.24373@localhost.localdomain>
-Message-ID: <Pine.LNX.4.56.0406291606500.5355@mag.sysgo.com>
-References: <20040629125710.B6B28C109F@atlas.denx.de>
- <Pine.LNX.4.60.0406290859430.24373@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 29 Jun 2004 14:46:30 +0200."
+             <40E164A6.8060502@246tNt.com>
+Date: Tue, 29 Jun 2004 16:37:10 +0200
+Message-Id: <20040629143715.2AF7EC109F@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 29 Jun 2004, Robert P. J. Day wrote:
+In message <40E164A6.8060502@246tNt.com> you wrote:
+>
+> I'd suggest having a look at the comment on top of
+>
+> drivers/mtd/cmdlinepart.c
+>
+> But I'm not sure if rpxlite.c . From what I see, it may require to add
+> a "probe" to look at the command line. Someone ?
 
-> excellent, this just gets better and better.  however, will partition
-> definitions on the command line override those in rpxlite.c?  i notice
-> that the generic rpxlite.c that comes from the bk tree has a default
-> partition definition of fe000000/800000.  should that be removed
-> first?  or will it be ignored?  it's not clear from the comments in
-> the source.
+It's tested and working in our version of the linuxppc_2_4_devel tree.
 
-I don't think your version of rpxlite.c supports command line
-partitioning at all. The official one doesn't. You should see the
-existing mapping drivers such as physmap.c to learn how to add this,
-it is not difficult.
+Best regards,
 
-The implementation should always give precedence to the command line
-defininition.
-
-Regards,
-Marius
+Wolfgang Denk
 
 --
-Marius Groeger <mgroeger@sysgo.com>           Project Manager
-SYSGO AG                      Embedded and Real-Time Software
-Voice: +49 6136 9948 0                  FAX: +49 6136 9948 10
-www.sysgo.com | www.elinos.com | www.osek.de | www.imerva.com
-
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+"...all the  good  computer  designs  are  bootlegged;  the  formally
+planned  products,  if  they  are built at all, are dogs!" - David E.
+Lundstrom, "A Few Good Men From Univac", MIT Press, 1987
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
