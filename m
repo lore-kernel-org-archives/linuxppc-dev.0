@@ -1,38 +1,29 @@
-Date: Fri, 23 Apr 1999 17:02:13 -0600 (MDT)
-From: Dan Burcaw <dburcaw@terraplex.com>
-To: linuxppc-dev@lists.linuxppc.org
-cc: linuxppc-user@lists.linuxppc.org
-Subject: Blue & White G3s
-Message-ID: <Pine.LNX.3.96.990423165930.19388A-100000@newhope.terraplex.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sat, 24 Apr 1999 22:35:04 +1000
+Message-Id: <199904241235.WAA25761@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: paubert@iram.es
+CC: dje@watson.ibm.com, linuxppc-dev@lists.linuxppc.org
+In-reply-to: <Pine.HPP.3.96.990420223651.20020P-100000@gra-ux1.iram.es>
+	(message from Gabriel Paubert on Tue, 20 Apr 1999 22:43:24 +0200
+	(METDST))
+Subject: Re: Current egcs, binutils and kernel (fwd)
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <Pine.HPP.3.96.990420223651.20020P-100000@gra-ux1.iram.es>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Folks,
+Gabriel Paubert <paubert@iram.es> wrote:
 
-Our in-house development team has successfully ported the CMD646
-driver to the Linux/PPC kernel, offering the much anticipated support
-for the primary ATA chain. This driver supports the ultra-DMA features
-of the chipset, allowing data transfer in excess of 30MB per second.
-The Blue & Whites are now fully functional with ATA, SCSI, and USB.
+> to correctly implement this. And then I've noticed just after that people
+> do more work than necessary in the cvt_df and cvt_fd routines: floating
+> point loads and stores never affect or depend on the FPSCR contents, so
 
-This kernel, which should be used for TESTING ONLY is available at:
-ftp://ftp.yellowdoglinux.com/pub/yellowdog/kernel/blueg3/
+Arrghl, you're right.  I had thought you could get overflows or other
+errors being signalled, that's why I had the fpscr load/save in there,
+but it appears from the manual that I was wrong.
 
-Again, this kernel is for testing only.
-
-Please let me know how it works on your Blue and White.
-
-Thanks,
-Dan
-
-Terra Soft Solutions, Inc.
- email: dburcaw@yellowdoglinux.com
- website: http://www.yellowdoglinux.com/
-
-
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
