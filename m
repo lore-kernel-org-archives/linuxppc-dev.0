@@ -1,29 +1,21 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from witte.sonytel.be (witte.sonytel.be [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 8A51067A30
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Jan 2005 23:36:20 +1100 (EST)
-Date: Fri, 21 Jan 2005 13:36:14 +0100 (MET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@sonycom.com
-To: Jerome Glisse <j.glisse@gmail.com>
-In-Reply-To: <4240b916050121032230b9c5dc@mail.gmail.com>
-Message-ID: <Pine.GSO.4.61.0501211335450.1075@waterleaf.sonytel.be>
-References: <4240b916050109074053e328b1@mail.gmail.com>
-	<16865.39960.274092.996530@cargo.ozlabs.ibm.com>
-	<20050110145219.GB2226@smtp.west.cox.net>
-	<4240b9160501101014317b8d85@mail.gmail.com>
-	<20050110182940.GA3391@smtp.west.cox.net>
-	<4240b91605011010593d2f3b3d@mail.gmail.com>
-	<20050110191248.GB3391@smtp.west.cox.net>
-	<4240b91605011011314bb06814@mail.gmail.com>
-	<4240b91605011211101ed322a8@mail.gmail.com>
-	<20050120231442.GE2626@smtp.west.cox.net>
-	<4240b916050121032230b9c5dc@mail.gmail.com>
+Return-Path: <minyard@acm.org>
+Received: from rwcrmhc13.comcast.net (rwcrmhc13.comcast.net [204.127.198.39])
+	by ozlabs.org (Postfix) with ESMTP id 317D567A5D
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Jan 2005 01:45:08 +1100 (EST)
+Message-ID: <41F11439.4050303@acm.org>
+Date: Fri, 21 Jan 2005 08:39:53 -0600
+From: Corey Minyard <minyard@acm.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Tom Rini <trini@kernel.crashing.org>, linuxppc64-dev@ozlabs.org
-Subject: Re: Classic PPC specific ASM (CONFIG_6XX)
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+References: <41EC29A8.1040703@mvista.com>
+	<1106259956.18397.10.camel@gaston>	<41F0449C.5020603@mvista.com>
+	<1106265672.5387.14.camel@gaston>	<41F04849.70506@mvista.com>
+	<1106266338.18397.21.camel@gaston>
+	<Pine.GSO.4.61.0501211013330.1075@waterleaf.sonytel.be>
+In-Reply-To: <Pine.GSO.4.61.0501211013330.1075@waterleaf.sonytel.be>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: [RFC] Option to disable mapping genrtc calls to ppc_md calls
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,50 +25,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 21 Jan 2005, Jerome Glisse wrote:
-> On Thu, 20 Jan 2005 16:14:42 -0700, Tom Rini <trini@kernel.crashing.org> wrote:
-> > On Wed, Jan 12, 2005 at 08:10:58PM +0100, Jerome Glisse wrote:
-> > 
-> > > Wanted to know what is going on with CONFIG_6xx?  You will use
-> > > my patch or do you have another better way ? :)
-> > 
-> > Can you resend it please?
-> > 
-> 
-> Here is another version (the previous one used ifdef to comment
-> out function call but i read somewhere that this doesn't follow
-> codeguideline). Anyway i think that my patch is a ugly hack.
-> 
-> Signed-off-by: Jerome Glisse <j.glisse@gmail.com>
-> 
-> best,
-> Jerome Glisse
-> 
-> 
-> 
-> diff -Naur linux/arch/ppc/boot/simple/misc-prep.c
-> linux-2.6.10/arch/ppc/boot/simple/misc-prep.c
-> --- linux/arch/ppc/boot/simple/misc-prep.c	2004-12-24 22:33:51.000000000 +0100
-> +++ linux-2.6.10/arch/ppc/boot/simple/misc-prep.c	2005-01-21
-> 12:09:50.976426672 +0100
-> @@ -34,7 +34,11 @@
->  extern void serial_fixups(void);
->  extern struct bi_record *decompress_kernel(unsigned long load_addr,
->  		int num_words, unsigned long cksum);
-> +#ifdef CONFIG_6XX
->  extern void disable_6xx_mmu(void);
-> +#elif
-> +void disable_6xx_mmu(void) {}
-   ^^^^^^^^^^^^^^^^^^^^
-You better make this one static inline.
+Geert Uytterhoeven wrote:
 
-Gr{oetje,eeting}s,
+>On Fri, 21 Jan 2005, Benjamin Herrenschmidt wrote:
+>  
+>
+>>On Thu, 2005-01-20 at 17:09 -0700, Mark A. Greer wrote:
+>>    
+>>
+>>>Yes but as I wrote, I don't have time right now.
+>>>      
+>>>
+>> ... which is exactly my rant ... embedded companies never have time
+>>to do the right thing...
+>>    
+>>
+>
+>Because they have strict (paid for) deadlines, unlike the `we do it for
+>fun'-crowd led by Linus ;-)
+>  
+>
+[begin soapbox]
 
-						Geert
+I disagree with this attitude.  I believe there is a balance to be 
+struck between doing
+things right and meeting deadlines, and I believe the embedded hardware 
+companies
+are way too far off on the meeting deadlines side of things.  From what 
+I can tell, they
+tend to be penny-wise and pound-foolish.  (They do things that save them 
+a little bit
+of money in one area and cost a lot in another area.)
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+This is, of course, a generalization.  I see some good things happening 
+in some areas.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+IMHO, this is due to the fact that these are mostly run by hardware 
+engineers
+and software is an afterthought.  For instance, I have dealt with one 
+company who
+used a non-standard interface where a standard one was available.  They 
+probably
+saved 1-2 dollars per board.  This change probably cost $150,000 in 
+software costs.
+There is no way they will sell close to 75,000 boards.  Penny-wise, 
+pound-foolish.
+And they have 10-20 years of support for this non-standard hack.
+
+The more consistent you make things, the lower the software cost.  When 
+you follow
+standards, it lowers software costs.  Software is *expensive* to create; 
+the more
+you can reuse what is there, the better off you are.  It seems to me 
+that the PPC
+hardware vendors have spent 10s if not 100s of millions of dollars in 
+software costs
+that were really kind of pointless.  If things were more standard and 
+consistent,
+things would work just as well (and almost certainly better) and the 
+cost would be
+much lower.  Then us software folks who work on embedded linux could work on
+making things better instead of chasing new board ports.
+
+As I mentioned, there is a balance here.  If you are selling, 10 million 
+units, saving a
+dollar per unit at the cost of $150,000 in software is well worth it.  
+If you can get a 50%
+improvement in performance, it's probably worth it.  But to gain no 
+benefit, cost
+yourself a lot of money, and reduce your reliability (new software is 
+generally less
+reliable than old), well, that sounds silly to me.
+
+[end soapbox]
+
+After saying this, I don't know how to fix the PPC world.  But every 
+customization
+that requires software changes is one more reason for people to use x86 
+(where
+new boards "just work" but can be tuned for performance) and not PPC (where
+new boards are pain and suffering to get working and there is no time to 
+tune them
+for performance).
+
+-Corey
