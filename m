@@ -1,93 +1,77 @@
-Date: Sat, 8 Dec 2001 12:24:58 +0100 (CET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Michel Lanners <mlan@cpu.lu>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: NVRAM stuck in DST?
-In-Reply-To: <200112070759.IAA00984@piglet.grunz.lu>
-Message-ID: <Pine.LNX.4.33.0112081120400.2808-100000@gra-lx1.iram.es>
+Message-ID: <3C126A90.C9768C76@folkwang-hochschule.de>
+Date: Sat, 08 Dec 2001 20:31:28 +0100
+From: =?iso-8859-1?Q?J=F6rn?= Nettingsmeier <nettings@folkwang-hochschule.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 2.4.17-pre[12]-ben0 trees hang on unsuspend
+References: <3C1222A8.59C17879@folkwang-hochschule.de> <20011208164612.1404@smtp.wanadoo.fr>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 7 Dec 2001, Michel Lanners wrote:
-
+Benjamin Herrenschmidt wrote:
 >
-> Hi all,
+> >Benjamin Herrenschmidt wrote:
+> >>
+> >> >
+> >> >so far, it has not died after resume. but it only went through 3
+> >> >sleep cycles so far...
+> >
+> >after a few days of frequent use, i can say that sleep/wakeup
+> >bahaviour has improved vastly.
+> >however there was again one hard lockup yesterday.
+> >i was on the road when it hit, so i haven't been able to ping or ssh
+> >into the machine.
+> >i think it only happens when you strike a key immediately after
+> >sleep, before the standby led starts glowing.
 >
-> For some time now (in fact since going back from summer time to winter
-> time), my PowerMac 7500 gains one hour at very system boot. No matter
-> how I configure it to save sytsem time as GMT or as localtime in the
-> RTC, I _always_ get +1 hour on boot.
+> Ok, I'll do some experiments and see if I can find something.
 
-Do you use any program like adjtime, ntp or write directly to the clock
-through the RTC driver ?
+let me know if can test something for you.
+is there any bulletproof method to capture kernel messages on a
+pismo when it goes bang ?
+has somebody used the modem port as a serial console ? i have a
+spare modem lying around, perhaps it might be worth trying...
 
-If it;s the former, I don't understand how it can happen since the
-settimeofday/adjtimex interface will use the offset found in the NVRAM.
-
-For the latter, your clock will be screwed up. But not consistently by 1
-hour:
-
-- at boot: read the clock which claims to be UT+2, substract 2 hours
-
-- when writing system clock to RTC:
-	- if localtime: write UT+1 to RTC, on next boot you will be
-	one hour late
-	- if UT: write system time to RTC, on next boot you will be
-	two hours late
-
-Unless I've got the signs wrong, your clock should be running late. And it
-should depend on whether you are in UTC or not.
-
-I agree there is a bug, but besides the fact that it's not easy to solve,
-it should not produce the symptoms that you describe. IMHO time handling
-should never go through the RTC driver to start with, or at least it
-should be better abstracted: it's too important and too intimately related
-to other parts of the kernel.
-
-But believe me, you don't want to overwrite time offset of DST in the
-NVRAM. Decent clocks are in UT or TAI...
-
+> >> >btw, alsa compiles now, the feature.h header is there.
+> >> >
+> >> >thanks,
+> >>
+> >> feature.h ? That one is gone and have been replaced by pmac_feature.h
+> >> for some time now. Maybe Alsa was fixed to handle the new mecanism.
+> >
+> >oops, my fault. i had manually copied the feature.h from the
+> >"official tree" into yours some days ago, and of course it remained
+> >there when i rsynced again....
+> >yes, alsa compiles even without that old header. looks like it has
+> >been fixed.
+> >
+> >anyway, it seems that the kernel.org tree still has feature.h, and
+> >not pmac-feature.h. if the new mechanism is consensus, it should be
+> >propagated to the official tree asap, so that port maintainers
+> >become aware of it. my reports about the compile problems to
+> >alsa-dev were ignored, because people could not make sense of me
+> >whining about a missing header that was obviously there.
 >
-> I've looked at kernel messages, and it says there:
->
-> ...
-> GMT Delta read from XPRAM: 120 minutes, DST: on
-> ...
->
-> Hmmm... DST on? That's wrong; we're not in DST anymore! And the current
-> offset to GMT is one hour, not two hours. I'm wondering whether
-> something else besides MacOS sets those values.
+> Patches are in marcelo's hands, they should be in 2.4.17 before
+> it goes final.
 
-No, the only thing the kernel may overwrite is the time.
+good news !
 
->
-> If not, then I'll be stuck with whatever NVRAM values MacOS wrote there
-> when it was last booted. Which means that unless at every DST time
-> change, unless I bot MacOS once, I'll be stuck with the wrong time....
 
-No, I don't think that it is the problem. I believe that the adjtimex
-syscall should be enhanced to perform the task of saving time to RTC
-when needed, because it is easier to abstract the platform specific
-weirdness there than through the RTC driver.
+thanks for your quick responses and your help.
 
->
-> Also, just for my understanding, doesn't MacOS save the system time in
-> the RTC in localtime?
+best,
 
-It does, unfortunately (same for Windows).
+jörn
 
-> In that case I don't see how time _advances_ on
-> boot... unless the MacOS RTC is in DST-less localtime.
->
-> Anybody with more insight here?
-
-Still trying to understand exactly what happens.
-
-	Regards,
-	Gabriel.
-
+--
+Jörn Nettingsmeier
+home://Kurfürstenstr.49.45138.Essen.Germany
+phone://+49.201.491621
+http://spunk.dnsalias.org
+http://www.linuxdj.com/audio/lad/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
