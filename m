@@ -1,87 +1,41 @@
-Message-ID: <398C3A74.95DFE7BA@esd-electronics.com>
-Date: Sat, 05 Jul 2000 18:01:56 +0200
-From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+Date: Wed, 5 Jul 2000 12:27:57 -0400 (EDT)
+From: "TWG - pat, mark & steve" <twg@world.std.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Problems with HardHat/NFS root filesystems
+Message-ID: <Pine.SGI.3.95.1000705121641.27740C-100000@world.std.com>
 MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: making kernel for ppc405gp from montavista sources
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Thanks, Wolfgang, for your response.  It helped somewhat.  Here's what I
+discovered:
 
-I downloaded the linux_tar.gz file from montavista and unpacked it ! I
-copied the .config file from the same location to the kernel tree's
-root. Before I did a "make mrproper".
+1. I am also unable to run ash.static
+2. I forgot to mention another error message (actually, I thought it was
+trivial but it's not), I also get a "Warning: unable to open an initial
+console" error message.
 
-When I run a "make dep" I got an error ! Well, I could start to check
-out if there is an error in the tree, but I think that there is a
-general mistake I made !
+3. I also had to make a change when installing HHL, and I think this is
+the key to my problem.  Basically, the RedHat install I chose left me with
+a relatively small root partition, giving most of the disk space to
+partitions mounted as /usr and /home.  Since the HHL stuff wouldn't fit in
+/opt, I made a directory, /usr/opt, and linked it to /opt. (soft)
 
-Does anybody know where the error comes from ? Here is the output of my
-"make dep":
+In /etc/exports, I export the volume as /opt/hardhat.....
 
-----------------------
-mfuchs@pc-matthias:~/mvista_405_linux_new/linux > make dep
-make -C arch/ppc/boot fastdep
-make[1]: Entering directory
-`/home/mfuchs/mvista_405_linux_new/linux/arch/ppc/boot'
-/home/mfuchs/mvista_405_linux_new/linux/scripts/mkdep *.[Sch] > .depend
-make[1]: Leaving directory
-`/home/mfuchs/mvista_405_linux_new/linux/arch/ppc/boot'
-make -C arch/ppc/chrpboot fastdep
-make[1]: Entering directory
-`/home/mfuchs/mvista_405_linux_new/linux/arch/ppc/chrpboot'
-/home/mfuchs/mvista_405_linux_new/linux/scripts/mkdep *.[Sch] > .depend
-make[1]: Leaving directory
-`/home/mfuchs/mvista_405_linux_new/linux/arch/ppc/chrpboot'
-make -C arch/ppc/treeboot fastdep
-make[1]: Entering directory
-`/home/mfuchs/mvista_405_linux_new/linux/arch/ppc/treeboot'
-/home/mfuchs/mvista_405_linux_new/linux/scripts/mkdep *.[Sch] > .depend
-make[1]: Leaving directory
-`/home/mfuchs/mvista_405_linux_new/linux/arch/ppc/treeboot'
-scripts/mkdep init/*.c > .depend
-scripts/mkdep `find /home/mfuchs/mvista_405_linux_new/linux/include/asm
-/home/mfuchs/mvista_405_linux_new/linux/include/linux
-/home/mfuchs/mvista_405_linux_new/linux/include/scsi
-/home/mfuchs/mvista_405_linux_new/linux/include/net -follow -name \*.h !
--name modversions.h -print` > .hdepend
-make _sfdep_kernel _sfdep_drivers _sfdep_mm _sfdep_fs _sfdep_net
-_sfdep_ipc _sfdep_lib _sfdep_arch/ppc/kernel _sfdep_arch/ppc/mm
-_sfdep_arch/ppc/lib _FASTDEP_ALL_SUB_DIRS="kernel drivers mm fs net ipc
-lib arch/ppc/kernel arch/ppc/mm arch/ppc/lib"
-make[1]: Entering directory `/home/mfuchs/mvista_405_linux_new/linux'
-make -C kernel fastdep
-make[2]: Entering directory
-`/home/mfuchs/mvista_405_linux_new/linux/kernel'
-make[2]: *** No rule to make target
-`/home/mfuchs/mvista_405_linux_new/linux/include/linux/autoconf.h',
-needed
-by
-`/home/mfuchs/mvista_405_linux_new/linux/include/linux/modules/signal.ver'.
-Stop.
-make[2]: Leaving directory
-`/home/mfuchs/mvista_405_linux_new/linux/kernel'
-make[1]: *** [_sfdep_kernel] Error 2
-make[1]: Leaving directory `/home/mfuchs/mvista_405_linux_new/linux'
-make: *** [dep-files] Error 2
-mfuchs@pc-matthias:~/mvista_405_linux_new/linux >
---------------------------------------
+However, when I do an "exportfs -av" the exported volume shows up as
+/usr/opt/hardhat.....
 
-thanks for advise
-Matthias
+I specified /opt/hardhat... in /etc/dhcpd.conf
 
---
--------------------------------------------------
-\ Matthias Fuchs                                 \
- \ esd electronic system design Gmbh              \
-  \ Vahrenwalder Straﬂe 205                        \
-   \ D-30165 Hannover                               \
-    \ email: matthias.fuchs@esd-electronics.com      \
-     \ phone: +49-511-37298-0                         \
-      \ fax:   +49-511-37298-68                        \
-       --------------------------------------------------
+I think, therefore, that NFS is not allowing access to the proper
+directories, and that's why it can't find an init (or a /dev/console!)
+
+Am I on the right track?
+Thanks,
+Mark Phillips
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
