@@ -1,38 +1,34 @@
-Message-ID: <37D0F88E70D96C428C19EEB865701A3801DC62E6@buda902a.siemens.hu>
-From: =?ISO-8859-1?Q?M=E9sz=E1ros_Lajos?= <ludwigm@siemens.com>
+From: "Petersen, David (MED, GEMS-IT)" <David.Petersen@med.ge.com>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: SCC as serial console on 8260
-Date: Thu, 6 Nov 2003 15:12:49 +0100 
+Message-ID: <B1243F436404D511A5CF009027E705DA148191C2@uswaumsx09medge.med.ge.com>
+Subject: m8260_cpm_hostalloc() data reads incorrect data
+Date: Thu, 6 Nov 2003 08:52:55 -0600 
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="ISO-8859-1"
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Can we use the SCCs as console on 8260
-based boards? (2.4.18 and 2.4.22)
+	I am working on a platform with an mpc8270 processor running a
+kernel from the latest 2.4 development tree.  I have created a driver based
+on uart.c for one of the SCCs.
+The receive buffers are allocated using the m8260_cpm_hostalloc(). I am
+getting receive interrupts and verfied that the data is written by the cpm
+to the correct physical memory location using a logic analyzer. However the
+data that is read from the buffer is incorrect.  As a sanity check, I
+allocated my buffers using m8260_cpm_dpalloc() and I then read the correct
+data.
 
-1. The arch/ppc/8260_io/uart.c initializes
-(near) all port in the
-	"int __init rs_8xx_init()"
-but in the kernel early phase the
-	"static int __init serial_console_setup()"
-doesn't. (the SMCs only)
+	I've looked through the hostalloc function as well as the
+__alloc_bootmem() function that initially allocates two pages of data for
+the CPM in mpc8260_cpm_reset(). It is unclear to me how this memory can be
+in a PAGE_NO_CACHE region as it needs to be for the CPM. I'm not sure if it
+is something in my system initialization that would put the memory that
+alloc_bootmem() uses in a noncacheable area or if the memory initially
+allocated for the CPM in mpc8260_cpm_reset() needs to be done differently.
 
-2. With the U-boot as loader the setting of the
-port bits is unnecessary (I think). The case
-of "enet.c" and "fcc_enet.c" is the same.
 
-	Ludwig
-_____________________________________
-Mészáros Lajos
-Siemens  Hungary
-SIEMENS Information and Communication Networks
-ICN D XDSL
-1143 Budapest, Gizella u. 51-57.
-Hungary
-Fax: +36 1 471-2222
-E-mail: mailto:ludwigm@siemens.com
+Tom
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
