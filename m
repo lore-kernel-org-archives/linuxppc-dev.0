@@ -1,49 +1,51 @@
-Date: Tue, 27 Nov 2001 08:22:44 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.linuxppc.org, Keith Owens <kaos@ocs.com.au>
-Subject: Re: include/asm-ppc/platforms/
-Message-ID: <20011127082244.I13091@cpe-24-221-152-185.az.sprintbbd.net>
-References: <15363.31192.101536.919771@gargle.gargle.HOWL>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <15363.31192.101536.919771@gargle.gargle.HOWL>
+Date: Tue, 27 Nov 01 07:33:27 PST
+From: msokolov@ivan.Harhan.ORG (Michael Sokolov)
+Message-Id: <0111271533.AA24180@ivan.Harhan.ORG>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Please make K2 Linux bootable without PeeMON again
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Nov 27, 2001 at 10:32:40PM +1100, Paul Mackerras wrote:
+Tom Rini <trini@kernel.crashing.org> wrote:
 
-> I want to create a new directory, include/asm-ppc/platforms, for those
-> files which mainly contain configuration information for specific
-> platforms, such as address and IRQ assignments for on-board devices.
-> The files that I want to move into include/asm-ppc/platforms are:
-[snip]
+> Er, why can't you find the magic location for the bi_recs and set that
+> as well as the other registers you need to?
 
-What about:
-amgia*.h ans-lcd.h backlight.h heathrow.h keylargo.h pmac_feature.h
-prep_nvram.h gg2.h uninorth.h and maybe ppc405_dma.h as well.  I think I
-might have missed a few pmac-specific platform headers in there...
+Because that location is tied to the kernel's symbols (__bss_start in this
+case), and I have no way of knowing where that is. The kernel has already been
+loaded into memory (by occult) by the time my booter runs, and my booter
+doesn't have access to the original vmlinux ELF header or to System.map.
 
-> This requires corresponding minor changes to 14 files in
-> arch/ppc/platforms and 5 files in include/asm-ppc, plus some changes
-> in the files that move to include/asm-ppc/platforms.
+> > The patch below makes the K2 vmlinux expect a pointer to bi_recs in R3 like I
+> > do on the Adirondack and makes the "simple" zImage goo pass a pointer to its
+> > magic bi_recs in R3.
 >
-> Does anyone have any comments or objections?
+> And breaks all of the other ports which use 'simple' and expect bi_recs
+> in the 'normal' place.
 
-Like I said on IRC, I don't think this really helps much.  I will
-conceed that in _devel we have more .h files in include/asm-$(ARCH) than
-anyone else, but if we're going to do some organization, lets do more
-than throwing lots of files in one directory, which could keep on
-growing...
+No, it doesn't. The patch I posted yesterday doesn't and cannot break anything.
+The bi_recs are still being created in exactly the same place as before, I just
+made the wrapper set R3 to point to that location before jumping to the kernel.
+As R3 on entry to the kernel was previously undefined for "simple", this cannot
+break anything. Why R3? Because there already is a precedent for it
+(Adirondack).
 
-I sort of like the include/asm-ppc/platforms symlink idea, but I forget
-if kbuild-2.5 works well with this or if it is/was painful.  Keith?
+> For now I'd much rather add back in the register
+> checks.
 
-Barring that, maybe make processor, platform and peripheral dirs?
+You mean put arch/ppc/platforms/k2_setup.c back the way it was? That would work
+for me. In that case you would also need to make
+arch/ppc/boot/common/relocate.S put at least some meaningful values in R4 and
+R6 (at least zeros) so that the kernel doesn't interpret garbage in those
+registers as pointers to stuff.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+> For 2.5 we can agree on a less magical and more predictable
+> location.  Would somewhere around the end of memory work for you?
+
+But why won't you just let me put it where I want and tell the kernel where I
+put it? I'll fork Linux if I have to, but I would prefer not to.
+
+MS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
