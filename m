@@ -1,58 +1,37 @@
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: boot methods 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 02 Nov 2001 18:55:47 MST."
-             <20011102185547.B29932@cpe-24-221-152-185.az.sprintbbd.net>
-Date: Sat, 03 Nov 2001 10:45:37 +0100
-Message-Id: <20011103094543.10BDA10CDB@denx.denx.de>
+Date: Sat, 3 Nov 2001 11:59:20 +0100 (CET)
+From: Jonas Smedegaard <dr@jones.dk>
+Reply-To: Jonas Smedegaard <js@debian.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: <linuxppc-dev@lists.linuxppc.org>
+Subject: Open Firmware debugging through Ethernet
+In-Reply-To: <20011031160313.7048@smtp.adsl.oleane.com>
+Message-ID: <Pine.LNX.4.33.0111031156300.792-100000@auryn.jones.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <20011102185547.B29932@cpe-24-221-152-185.az.sprintbbd.net> you wrote:
->
-> Vendor                Extension               How
-> IBM Spruce            .spruce                 ???
-> Force PowerCore       .pcore                  PowerBoot (Force firmware)
-> Force PowerPMC 250    .pcore                  PowerBoot
-> M.E.N. F1             .menf1                  ??? (Probably custom fw).
-> Motorola LoPEC        .pplus/.bugboot[1]      PPCBUG
-> Motorola MCPN765      same                    same
-> Motorola MVME5100     same                    same
-> Motorola PrPMC750     same                    same
-> Motorola PrPMC750     same                    same
-> Motorola Sandpoint    .sandpoint              DINK32
+Hi,
 
-also: Sandpoint         .PPCBoot		PPCBoot
+I stumbled across this today, that might be useful to kernel hackers:
 
+Open Firmware debugging through Ethernet fram another machine.
 
-> SBS Adirondack        - Uses runlnx, no in-kernel booting bits
-> SBS K2                .k2                     pmon
-> Zynx 4500             .zx4500                 ??
+http://developer.apple.com/technotes/tn/tn2023.html
 
-add:
+Kind regards,
 
-  "CU824" Board (8240)
-  Microsys Electronics	.PPCBoot		PPCBoot
+ - Jonas
 
-  MOUSSE Board (8240)	.PPCBoot		PPCBoot
+P.S.
 
-  EVB64260 (74xx)	.PPCBoot		PPCBoot
-
-> Why is the how important?  With the exception of firmware-deficiencies,
-> the current wrapper doesn't really care what it came from.  And they
-
-...or there is no wrapper at all.
-
-Wolfgang Denk
+Please Cc me, as I am not subscribed to the list
 
 --
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-You are only young once, but you can stay immature indefinitely.
+Jonas Smedegaard (+45 40843136)          http://dr.jones.dk/~jonas/
+Spiff ApS (= IT-guide dr. Jones ApS)     http://dr.jones.dk/
+Debian GNU/Linux developer               http://people.debian.org/~js/
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
