@@ -1,32 +1,38 @@
-To: Paul Mackerras <paulus@samba.org>
-Cc: "Dale Farnsworth" <dale@farnsworth.org>,
-	Tom Rini <trini@kernel.crashing.org>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Patch boot/common/relocate.S to start kernel at 0x000c 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 05 Mar 2003 11:47:45 +1100."
-             <15973.18737.651334.824024@argo.ozlabs.ibm.com>
-Date: Wed, 05 Mar 2003 02:03:13 +0100
-Message-Id: <20030305010318.6A4D3C6E0C@atlas.denx.de>
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Tue, 4 Mar 2003 21:28:34 -0700
+To: Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: Patch boot/common/relocate.S to start kernel at 0x000c
+Message-ID: <20030305042834.GA5355@rover.farnsworth.org>
+References: <15973.18737.651334.824024@argo.ozlabs.ibm.com> <20030305010318.6A4D3C6E0C@atlas.denx.de> <15973.24544.124365.553602@argo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <15973.24544.124365.553602@argo.ozlabs.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-In message <15973.18737.651334.824024@argo.ozlabs.ibm.com> you wrote:
+On Wed, Mar 05, 2003 at 02:24:32AM +0000, Paul Mackerras wrote:
+> Wolfgang Denk writes:
 >
-> Why are we still using locations 0 and 4 if that is causing trouble?
-> Why not change to 0xf0 and 0xf4 or something else out of the way?  We
+> > BTW: _all_ this writing to kernel text is a Bad  Thing  (TM),  as  it
+> > makes XIP (for example running from ROM) really difficult.
+>
+> Well, there is no reason why the secondary hold code shouldn't just
+> reference an ordinary variable in the kernel data section.  It would
+> take a couple more instructions, but that shouldn't be a problem.  The
+> starting address for the secondary hold code needs to be well-known
+> (at least to the prep boot wrapper) but the variable that it spins on
+> doesn't.
+>
+> Paul.
 
-BTW: _all_ this writing to kernel text is a Bad  Thing  (TM),  as  it
-makes XIP (for example running from ROM) really difficult.
+Well, that does add the requirement that kernel data be mapped at its
+linked-at address before __secondary_hold references said variable.
 
+By the way, the recent addition of the call to smp_call_init_cpu,
+places the same requirement on __secondary_start, unfortunately.
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Of all the things I've lost, I miss my mind the most.
+-Dale
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
