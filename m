@@ -1,42 +1,72 @@
-Message-ID: <20020816183915.84950.qmail@web11508.mail.yahoo.com>
-Date: Fri, 16 Aug 2002 11:39:15 -0700 (PDT)
-From: Khai Trinh <kqtrinh@yahoo.com>
-Subject: 440 PCI adapter card DMA question
-To: Matt Porter <porter@cox.net>
+To: "Dejan Jovanovic" <dejanj@erlangtech.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20020813083403.A30884@home.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: Linux on SBC8260 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 14 Aug 2002 11:03:06 CDT."
+             <00e301c243ac$14182dc0$db00000a@dejanj>
+Date: Fri, 16 Aug 2002 21:09:33 +0200
+Message-Id: <20020816190938.B2A2410DF4@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Matt,
+In message <00e301c243ac$14182dc0$db00000a@dejanj> you wrote:
+>
+> I am trying to run Linux on a EST's SBC8260 board.
+>
+> First thing I have tried is using ppcboot to load the Linux kernel image.
+> - ppcboot version is 1.1.6
+> - Linux version is 2.4.4 - the one that comes with ELDK from Wolfgang. (as a
+> side question - is it enough if I do the 'make est8260_config' or I need to do
+> menuconfig as well after that?)
 
-Welcome back to the ppc mailing list. I would like
-your answer to my question really bad on the topic of
-mapping the PCI bus DMA address to the PLB address
-space for setting up the 440GP DMA. I don't have the
-email I sent you anymore.
+The general procedure is always the same:
 
-On one of your response email to me, you said the
-440GP maps PCI<->PLB 1:1 and I can use the PCI bus
-address directly as a PLB address to program the 440GP
-DMA controller.
+	make est8260_config
+	make oldconfig              or make menuconfig
+	make dep
+	make pImage
 
-The thing is that the DMA high and low register only
-allows 36-bit programming whereas the PCI bus address
-given to me by the Host is 64-bit.
+"make oldconfig" is good if you don't  want  to  change  the  default
+configuration  (which is probably a good idea to get a system running
+first), while "make menuconfig" is goot to modify  the  configuration
+to  your  specific  needs (you should know what you're doing then, of
+course).
 
-Don't I have to manually setup the PCI-PLB mapping
-before I can program the DMA controller? OR the 440
-kernel has already handle that?
+> First I have used the Linux kernel image, one in arch/ppc/coffboot and converted
+> using mkimage tool (with parameters -a 0x0000_0000 and -e 0x0000_0000)
 
-Your comment and response are very important and
-appreciated...
+This is done automatically with "make pImage".
 
-Thanks again,
---Khai
+> After that I have executed ppcboot 'bootm' command, and got the message
+> 'Loading Kernel Image OK' -- (?? this is strange though - should it not say here
+> Uncompressing Kernel Image ?)
 
+This depends. If you use an uncompressed  kernel  image  (build  with
+mkimage  option  "-C  none")  you'll  see  " Loading %s ... ", with a
+compressed image you'll get " Uncompressing %s ... ".
+
+> After that nothing happens on my serial console.
+
+Probably you made some errors when building the image  -  that's  why
+there is the "pImage" make target, to provide a working solution.
+
+> So I tried to use the BDI2000 to debug this.
+> I skipped the ppcboot, and loaded the Linux Kernel Image (now the one from
+> arch/ppc/mbxboot) into the RAM directly.
+> After setting the PC and doing a 'go' I got the message that the 'Target has
+
+You cannot (simply) do this.  The  Linux  kernel  expects  a  lot  of
+hardware initialization before it can run, and even then it expects a
+couple of arguments passed to it.
+
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+EMACS belongs in <sys/errno.h>: Editor too big!
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
