@@ -1,128 +1,78 @@
-Message-ID: <3B56A30B.2070702@hadess.net>
-Date: Thu, 19 Jul 2001 10:06:19 +0100
-From: Bastien Nocera <hadess@hadess.net>
-MIME-Version: 1.0
-To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+Date: Thu, 19 Jul 2001 11:28:53 +0200 (CEST)
+From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+To: Bastien Nocera <hadess@hadess.net>
 Cc: Iain Sandoe <iain@sandoe.co.uk>,
 	"Joseph P. Garcia" <jpgarcia@execpc.com>, benh@kernel.crashing.org,
 	linuxppc-dev@lists.linuxppc.org
 Subject: Re: 2.4 - buttons, temperature, ictc
-References: <Pine.LNX.4.10.10107182324190.27335-100000@zirkon.biophys.uni-duesseldorf.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <3B56A30B.2070702@hadess.net>
+Message-ID: <Pine.LNX.4.10.10107191113250.29149-100000@zirkon.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Michael Schmitz wrote:
-
->>>Yep. Plus any other power status change events. /proc/pmu has got nothing
->>>to do with it, neither has /proc/apm.
->>>
->>>
->>I mean that we could strip the code of pmu by half, using /proc/pmu
->>instead of poking /dev/pmu directly (which is broken).
->>The OS is supposed to give applications an abstraction layer on top of
->>the hardware. pmud attacking the hardware directly is broken (and the
->>amount of code needed to do this in the kernel is minimum).
->>
->
-> This depends - does /proc/pmu allow me to poll for 'new' data, or will it
-> always return with the same data immediately? I'd rather use /dev/pmu and
-> rely on getting one reply every second.
-
-
-It's possible to add an event so that /proc/pmu is only polled when
-needed. If you rely on pmud to give you new data every second, I think
-you're dreaming (or it would need to be async). Using pmud's socket to
-get battery status is just very very slow and dodgy.
-
-
->>>Nope. Not power related. Not 'PMU'd.
->>>
->>>
->>Let's make "pmud" mean "PowerMac Uber Daemon" then...
->>
->
-> Sigh. That's hard to understand, isn't it? Let's do pmud one job
-> (monitoring the battery status, plus the remotely related lid switch) and
-> do that well. Let's not make it do anything a Powerbook user might want
-> due to the special hardware features. How do you translate 'eierlegende
-> Wollmilchsau' in English?
-
-
-Right, I'm pretty sure you can put power management, and some key event
-handling in less than a 100k of sources.
-I really don't see where the bloat is...
-
-
-> But this is only my preference. If you want a Powermac bloat daemon, write
-> and maintain it. If users want the added features they'll use it.
+> > This depends - does /proc/pmu allow me to poll for 'new' data, or will it
+> > always return with the same data immediately? I'd rather use /dev/pmu and
+> > rely on getting one reply every second.
 >
 >
->>>>- volume keypress event would be a bad idea to implement inside pmud
->>>>because that's the kind of thing you want visual feedback for, and there
->>>>are a lot of different sound implementations that this could be built on
->>>>top of. (aRts/alsa/oss)
->>>>
->>>>
->>>Nope. See above.
->>>
->>>
->>Huh, are you agreeing with me there ?
->>
+> It's possible to add an event so that /proc/pmu is only polled when
+
+Fine. How would I do that, with the current /proc/pmu interface?
+
+> needed. If you rely on pmud to give you new data every second, I think
+> you're dreaming (or it would need to be async). Using pmud's socket to
+
+No, I said /dev/pmu gives me new data once a second, right now. Read my
+lips: /dev/pmu (kernel interface to the PMU), _not_ the socket pmud offers
+for other apps to read from.
+
+> Right, I'm pretty sure you can put power management, and some key event
+> handling in less than a 100k of sources.
+> I really don't see where the bloat is...
+
+Show me the source.
+
+And let me rephrase my concern: it's less about code _size_ but code
+_complexity_. We need one process to monitor power status and take
+appropriate action. That's enough of a task for a single process. We
+appear to need another to monitor keyboard events, and take appropriate
+action. Power status and key events have absolutely nothing in common.
+That's why I hold that there should be separate daemons.
+
+> > Doing many unrelated things badly is the problem I see. But the general
+> > purpose event handler might even run on x86. Thanks for supporting my
+> > side of this argument :-)
 >
-> For a different reason. I don't give a damn about how you implement volume
-> control but I don't want to bother pmud with it. Not its job.
-
-
-Yep.
-
-
-
->>>Neither. Again, see above. Write a general purpose all powerful event
->>>daemon for this. Don't bloat pmud because of some unspecific desire for
->>>feeping creaturitis. This is Linux (Unix), not MockOS.
->>>
->>>
->>I don't see the problem there... Bloat of pmud ? hmm, maybe a more
->>general-purpose daemon would be interesting, even for x86'ers.
->>
 >
-> Doing many unrelated things badly is the problem I see. But the general
-> purpose event handler might even run on x86. Thanks for supporting my
-> side of this argument :-)
+> Pmud is just *that*, an event handler. Read Joseph's mail.
 
+I disagree. It's a specialized handler, and it isn't even using the
+'event' mechanism employed by the future input code. Joe outlined the
+design principles of the _input_ event code, nothing more, nothing less.
 
-Pmud is just *that*, an event handler. Read Joseph's mail.
-In the end this code wouldn't be pmud anymore, so we wouldn't have the
-problem of you saying that it doesn't fit into the "power management
-unit" daemon ;P
+By extension of your argument, we'd have to put a web server and a mail
+server into pmud as well. After all, network packets are just other
+events coming in.
 
+> In the end this code wouldn't be pmud anymore, so we wouldn't have the
+> problem of you saying that it doesn't fit into the "power management
+> unit" daemon ;P
 
->>>Nope, not longer an option (kernel bloat, even worse than app bloat).
->>>
->>>
->>Hahaha, this was a good one. If the kernel doesn't recognize the key
->>(ie. it doesn't generate a keycode), we can't make anything out of it.
->>We *have* to have these keys in the usb and adb keycodes translation tables.
->>
->
-> Sure, but handling of these keys goes in user space. So far it's in the
-> kernel as well, and if I understand Franz right that's going to change
-> (because now there's a nice generic interface, no special ADB hacks). The
-> new input code is a chance to implement things in a generic, portable way,
-> let's do it right. Otherwise the whole thing wouldn't be worth the hassle
-> (and hassle we had plenty, with breaking interfaces in an incompatible
-> way in the stable kernel series)
+Sure, write another daemon that handles all sorts of events in a central
+place. Keep adding tasks to it. In the end, it'll look like a hybrid
+between MacOS and Windows I guess.
 
+You will have noticed that I rather prefer the design guideline of 'keep
+it stupid simple' here.
 
-I agree with that.
+Anyway, as this is linuxppc-dev and not debian-powerpc I'll stop arguing
+here. The author of pmud is Stephan Leemburg, direct feature requests
+there. I just happen to maintain the corresponding Debian package.
 
-Cheers
-
---
-/Bastien Nocera
-http://hadess.net
+	Michael
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
