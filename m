@@ -1,82 +1,64 @@
-Date: Fri, 24 Mar 2000 11:19:42 +0200 (EET)
-From: Kostas Gewrgiou <gewrgiou@imbc.gr>
-To: "William H. Schultz" <whschult@uncc.edu>
-cc: Michel Dänzer <michdaen@iiic.ethz.ch>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: XFree86 4.0 Generic VGA
-In-Reply-To: <B5002664.69%whschult@uncc.edu>
-Message-ID: <Pine.LNX.4.21.0003241106550.866-100000@idd-01.imbc.gr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-7
+In-Reply-To: <v04220802b500d91f6693@[10.0.0.42]>
+Date: Fri, 24 Mar 2000 10:43:34 +0100
+To: "Timothy A. Seufert" <tas@mindspring.com>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: LongTrail PCI resource assignment
+Message-Id: <20000324104334.016529@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 23 Mar 2000, William H. Schultz wrote:
+On Fri, Mar 24, 2000, Timothy A. Seufert <tas@mindspring.com> wrote:
 
+
+>1. Duplication of information across multiple data structures is
+>evil.  It should be avoided at all costs.
 >
-> on 3/23/00 3:52 PM, Michel Dänzer at michdaen@iiic.ethz.ch wrote:
->
-> > "William H. Schultz" wrote:
-> >
-> >>> Have you tried the tdfx driver? IIRC Kostas has it working.
-> >>>
-> >> Forgive me for being slow, but where can I get it?  I was
-> >> under the impression that the tdfx driver, unlike most of
-> >> the others, was compiled straight into the kernel.  I know
-> >> I haven't gotten that to work.
-> >
-> > No, it's part of the XFree86 4.0 sources. Do you mean the DRM kernel module
-> > (for DRI hardware accelerated 3D) for it? You don't need that for 2D, but if
-> > you'd like it to work, contact Kostas.
-> >
+>If there was a really, really good reason to keep OF up to date
+>(like, say, if we could break back into the OF console like you can
+>on Sparcs), then it would be OK.  Otherwise it is most likely
+>unnecessary bloat, and leads to potential confusion (and bugs).  Is
+>there any such reason on ppc?
 
-  The default tdfx driver in the XFree sources isn't going to work :(
-it depends on PIO to drive the card and that isn't working under ppc
-we need to find the correct io_base and mmap it for the driver to work
-(other drivers need it as well, not only tdfx)
+The OF tree is still used by devices inside the mac-io chip. But in this
+case, the PCI bus number is not used. There are a few places where we
+need to find the OF entry for a PCI device in order to read some
+properties left by MacOS/OF. This is done at startup to read the
+interrupt tree (but this can be done before the fixup). I don't have
+other specific cases in mind, but there is at least one thing for which
+we need a valid OF tree: to be able to get an OF path from a device in
+order to configure the OF bootloader.
+This is not used currently since we still need some more kernel support
+that I didn't implement yet, but this will definitely be needed if we
+want a  way to configure yaboot and OF automatically from Linux without
+having to type the full OF path to the boot device.
 
- Finding the io_base from userland without the kernel giving us a hand
-isn't easy i am adding code this days that tries to get the correct
-values depending on the host bridge (thanks Ryuichi for the help here)
-this is something that i would have prefer not to do, but until
-the kernel people do something about this problem this is the only
-way :(.
+>2. Most arch types obviously don't have an OF tree at all.
+>Presumably they just do everything with the pci_dev list.  Therefore,
+>ppc should too -- it's a bad idea to be different in an unnecessary
+>way.
 
-> >
-> >> XFree86 -configure definately doesn't work.  I know I should
-> >> be paying more attention to the errors, but I get fewer by
-> >> running xf86configure instead of the other way.
-> >
-> > What does it do?
-> >
-> >
-> > Michel
->
-> On a fresh install, typeing  XFree86 -configure brings up the following
-> (note that for some reason, the tdfx driver is not installed.  Like I asked
-> before:  where can I get it?  Also note that I'm running on a 2.2.14
-> kernel):
->
->
-...
-> Fatal server error:
-> Caught signal 11.  Server aborting
->
+Well, If it was only for me, I would have craped PCI probing in favor of
+a device-tree only operations ;) But that's not the point. I agree that
+to be consistent with other archs and to have portable drivers, we must
+rely on PCI probing alone whenever possible.
+There are cases where we don't have choice:
 
-  A sigsegv is probably because one of the drivers tried to do PIO
+ - We need some infos from the device tree to identify machine models
 
->
-> Apparently it was compiled on 2.2.15, but I'm running 2.2.14.  Oh yeah, the
-> tdfx driver that is in there, I copied from a 3.9.16 install that actually
-> had the driver.  It gives the same error whether it's there or not.
+ - The interrupt-tree is interleaved in the device tree, so we need it to
+   configure the PIC.
 
-  The 3.9.16 driver is unlikely to work under 4.0 many things changed
-since then.
+ - We need the device tree to probe ASIC cells inside the various
+incarnations of
+   Apple ASICs. This is currently the way we probe for devices like the PMU,
+   Cuda, AWACS, MESH, OpenPIC, etc... Those drivers also use the tree in
+order to get some
+   infos like the presence of an ADB bus, etc...
 
-> Hank
->
-
-  Kostas
+ - We retreive the eth. HW address from the tree
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
