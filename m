@@ -1,47 +1,43 @@
-Message-ID: <397C11D7.51A7DBAB@student.ethz.ch>
-Date: Mon, 24 Jul 2000 11:52:23 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
-MIME-Version: 1.0
-To: Iain Sandoe <iain@sandoe.co.uk>
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Kernel build headers [was: Re: problems about __cli()]
-References: <200007240811.JAA05417@hyperion.valhalla.net>
-Content-Type: text/plain; charset=iso-8859-1
+Date: Mon, 24 Jul 2000 08:19:59 -0400
+From: Josh Huber <huber@mclx.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: problems about __cli()
+Message-ID: <20000724081959.B263@mclx.com>
+References: <Pine.LNX.4.10.10007221608490.430-100000@cassiopeia.home> <3979E3BB.1B23FE2@wanadoo.fr>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-md5;
+	protocol="application/pgp-signature"; boundary="dc+cDN39EJAMEtIO"
+In-Reply-To: <3979E3BB.1B23FE2@wanadoo.fr>; from costabel@wanadoo.fr on Sat, Jul 22, 2000 at 08:11:07PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Iain Sandoe wrote:
+--dc+cDN39EJAMEtIO
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> [root@athena stable-dma-int]# make vmlinux
-> gcc -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -o
-> scripts/split-include scripts/split-include.c
-> In file included from /usr/include/errno.h:36,
->                  from scripts/split-include.c:26:
-> /usr/include/bits/errno.h:25: linux/errno.h: No such file or directory
->
-> On 2.4.0-test4 (just to see if the build script makes *any* difference):
->
-> [root@athena linux-2.4.0-t4-wrk]# make vmlinux
-> gcc -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -o
-> scripts/split-include scripts/split-include.c
-> In file included from /usr/include/errno.h:36,
->                  from scripts/split-include.c:26:
-> /usr/include/bits/errno.h:25: linux/errno.h: No such file or directory
+On Sat, Jul 22, 2000 at 08:11:07PM +0200, Martin Costabel wrote:
+> There *are* situations where you need /usr/src/linux to point to your
+> current kernel sources. This is when you compile modules for the current
+> kernel, a prominent example being MOL.
 
-You are lacking the glibc header files. On my Debian potato system I have:
+Actually, I prefer to add a -I/path/to/kernel/include to the module
+makefiles rather than the /usr/src/linux symlink. I suppose it's
+personal preference, but I find that having to explicitly specify
+where the kernel source is reduces the posibility of a screwed
+compile.
 
-> dpkg -S linux/errno.h
-libc6-dev: /usr/include/linux/errno.h
+--=20
+Josh
+6B21489A | GnuPG ID/Fingerprint | huber@mclx.com |
+61F0 6138 BE7B FEBF A223  E9D1 BFE1 2065 6B21 489A
 
-
-Michel
+--dc+cDN39EJAMEtIO
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
 
---
-What do you mean, my birth certificate expired?
-______________________________________________________________________________
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
+--dc+cDN39EJAMEtIO--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
