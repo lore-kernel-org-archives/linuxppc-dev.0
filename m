@@ -1,27 +1,41 @@
-Date: Thu, 26 Aug 1999 11:11:18 -0700 (PDT)
-From: "David A. Gatwood" <dgatwood@mvista.com>
-To: Tony Mantler <eek@escape.ca>
-cc: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Performa 5200
-In-Reply-To: <v04003a02b3ea789770f8@[216.81.21.14]>
-Message-ID: <Pine.LNX.3.96.990826110904.32028B-100000@mvista.com>
+Message-Id: <199908262105.XAA03192@piglet.cpu.lu>
+Date: Thu, 26 Aug 1999 23:05:40 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: bug in l2cr status display?
+To: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 26 Aug 1999, Tony Mantler wrote:
+Hi all,
 
-> Speaking of which, is there any documentation on the subject? (code,
-> commented code, dead trees, whatever)
+While playing with the l2cr in order to set it manually after OF
+booting, I've come across the following.
 
-At the moment, the only thing I'm aware of is the MkLinux code.  I'm not
-sure how far that goes, since it only makes it out of the booter on about
-half the machines.
+It seems that the effect of the L2CR[DO] bit isn't clear. In the 750
+user manual, in the table describing l2cr, it says '... setting  this
+bit enables the caching of instructions'. This doesn't corrsspond to
+the name of the register, nor to what I see with my G3 upgrade card: in
+normal operation, L2CR[DO] isn't set, but it makes no sense to disable
+instruction caching excpet for test purposes.
 
+So, what's happening? Is the user manual wrong? In that case, we should
+correct arch/ppc/kernel/ppc_htab.c accordingly.
 
-David
+Any Motorola engineer around? Others with better docs? FWIW, I checked
+the 750 errata already... nothing.
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
