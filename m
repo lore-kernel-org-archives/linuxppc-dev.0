@@ -1,84 +1,68 @@
-Date: Sat, 4 Mar 2000 19:18:19 +0100 (CET)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Kevin Hendricks <khendricks@ivey.uwo.ca>
-cc: Paul Mackerras <paulus@linuxcare.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Patch to fix imps2 emulation for usb mice in stable 2.2.X series
-In-Reply-To: <00030409183800.00482@localhost.localdomain>
-Message-ID: <Pine.LNX.4.10.10003041853430.15981-100000@opal.biophys.uni-duesseldorf.de>
+From: Kevin Hendricks <khendricks@ivey.uwo.ca>
+Reply-To: khendricks@ivey.uwo.ca
+To: Kostas Gewrgiou <gewrgiou@imbc.gr>
+Subject: RE: patch to get latest XFree 4.0 snapshot (xf3918) to work on pp cwith r128
+Date: Sat, 4 Mar 2000 13:55:34 -0500
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-=_nWlrBbmQBhCDarzOwKkYHIDdqSCD"
+References: <Pine.LNX.4.21.0003041753480.1870-100000@idd-01.imbc.gr>
+In-Reply-To: <Pine.LNX.4.21.0003041753480.1870-100000@idd-01.imbc.gr>
+Cc: linuxppc-dev@lists.linuxppc.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <00030413590600.00885@localhost.localdomain>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> Will you please install this patch into the 2.2.X stable kernel series?  It
-> will make our imps2 usb mouse properly follow the conventions for imps2 mice
-> and make it more like what the 2.3.XX kernels are doing right now
 
-You remind me of another USB mouse issue I stumbled on with 2.2.15: I had
-happily set up X to use the USB mouse as secondary mouse in the Xinput
-section for some time, when suddenly 2.2.15 changed the USB mouse
-behavior. All USB mouse clicks were doubled or tripled ...
+--Boundary-=_nWlrBbmQBhCDarzOwKkYHIDdqSCD
+Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 
-Just feeding USB mouse events to ADB might seem like a cute hack, but what
-happens if somebody actually opens the USB mouse device (horror) and wants
-to feed mouse events to X for his own purpose ? This patch makes the hack
-a config option; what's missing is a test to determine whether the mouse
-device has already been opened, so we get redirection of mouse events to
-ADB as long as the mouse isn't in use for something else. mouse->active=1
-is already used to enable the hack, so we probably need to check for
-mouse->active < 2 before calling adb_mouse_interrupt (haven't tested
-that).
+Hi Kostas,
 
-Works For Me (tm) with XFree 3.3.3.1 ...
+Here is the patch to fix the cursor for 16bpp and 8bpp for XFree 4.0 r128. (It
+is attached). It is almost exactly what you sent to me earlier.
 
-	Michael
+By the way, true 16 bit depth (565) does not work on my machine. The screen
+comes up but everything is very very green!
 
---- drivers/usb/mouse.c.org	Wed Mar  1 13:59:15 2000
-+++ drivers/usb/mouse.c	Sat Mar  4 18:52:31 2000
-@@ -117,7 +117,7 @@
- 	if (mouse->fasync)
- 		kill_fasync(mouse->fasync, SIGIO, POLL_IN);
+Reverting to 16bpp and 15 depth (555) works fine.
 
--#ifdef CONFIG_ADBMOUSE
-+#ifdef CONFIG_USB_ADBMOUSE
- 	/* XXX send the movement/buttons to the ADB mouse code as well */
- 	{
- 		extern void adb_mouse_interrupt(unsigned char *, int);
-@@ -130,7 +130,7 @@
- 		buf[3] = ((~data[0] << 6) & 0x80);
- 		adb_mouse_interrupt(buf, 4);
- 	}
--#endif /* CONFIG_ADBMOUSE */
-+#endif /* CONFIG_USB_ADBMOUSE */
+I hope this one makes it into the XFree 4.0 final.
 
- 	return 1;
- }
-@@ -418,11 +418,11 @@
+Thanks,
 
- 	printk(KERN_INFO "USB HID boot protocol mouse driver registered.\n");
+Kevin
 
--#ifdef CONFIG_ADBMOUSE
-+#ifdef CONFIG_USB_ADBMOUSE
- 	/* make the mouse(s) work as an adb mouse even when
- 	   the usb mouse device isn't open */
- 	mouse->active = 1;
--#endif /* CONFIG_ADBMOUSE */
-+#endif /* CONFIG_USB_ADBMOUSE */
 
- 	return 0;
- }
---- drivers/usb/Config.in.org	Sat Mar  4 18:51:42 2000
-+++ drivers/usb/Config.in	Sat Mar  4 18:51:30 2000
-@@ -31,6 +31,9 @@
- comment 'USB Devices'
-    dep_tristate '  USB hub support (Required!)' CONFIG_USB_HUB $CONFIG_USB
-    dep_tristate '  USB mouse support' CONFIG_USB_MOUSE $CONFIG_USB
-+   if [ "$CONFIG_USB_MOUSE" != "n" -a "$CONFIG_ADBMOUSE" != "n" ]; then
-+      bool '    Feed USB mouse packets to ADB mouse driver?' CONFIG_USB_ADBMOUSE
-+   fi
-    dep_tristate '  USB HP scanner support' CONFIG_USB_HP_SCANNER $CONFIG_USB
-    dep_tristate '  USB keyboard support' CONFIG_USB_KBD $CONFIG_USB
-    dep_tristate '  USB Audio support' CONFIG_USB_AUDIO $CONFIG_USB
+
+--
+Kevin B. Hendricks
+Associate Professor of Operations and Information Technology
+Richard Ivey School of Business, University of Western Ontario
+London, Ontario  N6A-3K7  CANADA
+khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
+
+
+--Boundary-=_nWlrBbmQBhCDarzOwKkYHIDdqSCD
+Content-Type: application/x-gzip;
+  name="be_cursor.patch.gz"
+Content-Disposition: attachment; filename="be_cursor.patch.gz"
+Content-Transfer-Encoding: base64
+
+H4sICL5bwTgAA2JlX2N1cnNvci5wYXRjaADVlPFvmkAUx38uf8VLmyzggcChzOlc7CwxJpttqM26
+tIYgHJXMqblTq1m6v30H6ERUarcl294P4OM+9+77nu+eoiiw8NQJHT9Q9ytTbxmhc0LVwaO6CCgh
+FVP1aci/MJXquBI/HG9G2ZgWveKEkvnJtTuFjy4FKIGOqwault8A1jRNQAj9euytsEa1VK5iMwnb
+aIBimrKuA4per6HREOAsHHnDmU/gNI5CyUNxcCpAtBDArfP+c9dyLu0Ly4Z6PfLbLcfqXLTPO4Jy
+5pMgHBFY2ZVz/en8SgQXZOiDBGm7F5TVL1H0BlxcQXKlO60H9c2HvnRn9GqHaT1L4zwaZ2l9TaO1
+7kSwgfdLXsHHy94PH1C9Hz4g+l6APbCRhbWegLLZ6ebh7NIq8hOMZRyAdxLUcuCdBI0ceCdB3ONt
+SUZ+GEQNGvezrldkbADScUkua3FHJ8Vi7pzw7e2ObbVEO2rtpt1tOi2r4zQ73Q9SLcEub7r7ATmJ
+8Aq+b9aaNzZvfr41brhgTEFc8jO0GizhLZgl/kZIgm88nWPuT+bi+DJbh47MR6gGjD/+Jhj/L+wx
+nHoDMRwFY+XdJFyQodNfTglLMk3McxmBUnXbNzb+c/VK2897mcjaXsxo+y82PaWdPiXul9p2ofDv
+FIpf8ZfL/zc35RSKTzV3NpymC3VsnQr8LE4VdiX+wZWV9KdoQg0Zib0cgXCyFedFrrKegatz0+4z
+8ywae1yi8AMfQSLHvggAAA==
+
+--Boundary-=_nWlrBbmQBhCDarzOwKkYHIDdqSCD--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
