@@ -1,46 +1,30 @@
-Message-ID: <396DB817.4C2D82F1@relog.ch>
-Date: Thu, 13 Jul 2000 14:37:43 +0200
-From: Michel Dänzer <daenzer@relog.ch>
-Reply-To: daenzerm@student.ethz.ch
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Takashi Oe <toe@unlserve.unl.edu>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Recent controlfb.c change in BK's linuxppc_2_3
+Date: Thu, 13 Jul 2000 14:54:41 +0200
+Message-Id: <20000713125441.25387@mailhost.mipsys.com>
+In-Reply-To: 
+ <Pine.LNX.3.96LJ1.1b7.1000713071025.18408B-100000@ofey.inetnebr.com>
+References: 
+ <Pine.LNX.3.96LJ1.1b7.1000713071025.18408B-100000@ofey.inetnebr.com>
 MIME-Version: 1.0
-To: Taylor Holliday <wtholliday@ucdavis.edu>
-CC: Linux PPC Developer List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Xfree 4.0.1 dual head attempt
-References: <396D1C7B.AA6864F5@ucdavis.edu>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Taylor Holliday wrote:
+>
+>I've just noticed that the function, control_vram_reqd() was renamed to
+>control_vram_read() in BK tree.  The function is supposed to calculate the
+>amound of VRAM required for given vmode and cmode.  That's why it was
+>named that *_reqd().  AFAICS, *_read() naming has no meaning and
+>misleading.  Please change it back or rename it to something better.
 
-> Attached is the latest XFree86.0.log as well as the XF86Config from my
-> recent build (yesterday) of 4.0.1 with the drivers rsync'ed from
-> penguinppc.org. Hey, at least it doesn't crash the machine (AGP G4, 2
-> r128) :-). Any suggestions on what to do or where to start debugging?
+Oops, sorry... q vs. a is a comon typo here in France, and I incorrectly
+"fixed" this without looking the code too closely. I'll put a more
+explicit name.
 
-A gdb backtrace mey be interesting, at least with a static server.
+Thanks.
 
-
-> (==) ServerLayout "DualHead"
-> (**) |-->Screen "Screen0" (0)
-> (**) |   |-->Monitor "Monitor0"
-> (**) |   |-->Device "r128"
-> (**) |-->Screen "Screen1" (1)
-> (**) |   |-->Monitor "Monitor0"
-> (**) |   |-->Device "r128.1"
-
-You are using the same Monitor for both Screens. Have you tried using
-different ones? (All in terms of XF86Config ;)
-
-
-Michel
-
-
---
-Pauli's exclusive, Heisenberg's uncertain, and Schroedinger just waves.
-______________________________________________________________________________
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
