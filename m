@@ -1,8 +1,8 @@
-Message-ID: <C97ABDA0DC2DD511BA400002A5097413280506@jdry.lanier.com>
-From: "Donovan, Chris" <cdonovan@lanier.com>
+Message-ID: <41EDEC3C1B88D51186EB00A0C9CFADF702FA88@AMWMAIL>
+From: Cindy Peters <cinpet@adaptivemicro.com>
 To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Linux on a NCD Explora 450 Xterm
-Date: Tue, 25 Sep 2001 09:46:13 -0400
+Subject: Cross-compiling standard utilities for MPC823
+Date: Tue, 25 Sep 2001 10:12:33 -0500
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
@@ -10,27 +10,48 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I've got a NCD Explora 450 Xterm which I am trying to load up Linux on. The
-Explora has a PowerPC 403CGX processor in it. During normal use the Explora
-uses tftp to load an NCDware image from one of our servers.
+I am attempting to cross-compile the file utilities that I downloaded from
+the linuxppc ftp site for the MPC823 on an x86 PC running Redhat 6.2. I am
+getting an error when configure is trying to determine the byte ordering.
+Following is a clip from the config.log file.
 
-I have compiled a Linux kernel configured for an Oak board. After I ran
-"make zImage" I found vmlinux but I was unable to find vmlinux.img. There
-were no errors indicating that there was a problem.
+configure:2220: checking whether byte ordering is bigendian
+configure:2242: powerpc-linux-gcc -c -g -O2  conftest.c >&5
+configure: In function `main':
+configure:2236: `bogus' undeclared (first use in this function)
+configure:2236: (Each undeclared identifier is reported only once
+configure:2236: for each function it appears in.)
+configure:2236: parse error before `endian'
+configure: failed program was:
+#line 2228 "configure"
+#include "confdefs.h"
+#include <sys/types.h>
+#include <sys/param.h>
 
-At this point, I'm trying to figure out how to take vmlinux and boot it on
-the Explora. Both vmlinux and the NCDware image seem to be ELF executables
-but when I try to load the vmlinux file onto the Explora via tftp I get the
-following error: "Address out of range. File is bad or too large for
-installed memory." The vmlinux file is much smaller then the NCDware file
-and I get the same error even if I pad blanks on the end of vmlinux to make
-it the same size as the NCDware file. I assume that this is not an
-appropriate file to be loading to the Explora. Does anyone have any
-suggestions for a way to go about creating an appropriate file? I'm
-interested in developing this if someone can provide some guidance on how to
-do it. Thanks.
+int
+main ()
+{
+#if !BYTE_ORDER || !BIG_ENDIAN || !LITTLE_ENDIAN
+ bogus endian macros
+#endif
 
-Chris Donovan
-Lanier Worldwide
+  ;
+  return 0;
+}
+
+I have tried defining BIG_ENDIAN and BYTE_ORDERING but that is not helping.
+Can someone tell me what I need to do to successfully cross-compile this?
+Here is the command line I am using.
+
+AR=powerpc-linux-ar AS=powerpc-linux-as LD=powerpc-linux-ld \
+  RANLIB=powerpc-linux-ranlib CC=powerpc-linux-gcc NM=powerpc-linux-nm \
+  ./configure --build=i686-pc-linux-gnu --host=powerpc-unknown-linux-gnu \
+  --target=powerpc-unknown-linux-gnu \
+	--prefix=/opt/usr/local/powerpc-linux
+
+Thanks,
+
+Cindy Peters
+Adaptive Micro-Ware, Inc.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
