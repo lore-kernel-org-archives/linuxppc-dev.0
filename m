@@ -1,59 +1,44 @@
-Message-ID: <3B978E09.3A25E2CD@aps.anl.gov>
-Date: Thu, 06 Sep 2001 09:54:01 -0500
-From: Andrew Johnson <anj@aps.anl.gov>
-MIME-Version: 1.0
-To: =?iso-8859-1?Q?=C0=B1=B5=BF=BC=AE?= <manulsan@daintelecom.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Can't run init... MPC8240
-References: <004601c13710$d26abee0$2000a8c0@private>
-Content-Type: text/plain; charset=iso-8859-1
+Date: Thu, 6 Sep 2001 07:55:42 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: acmay@acmay.homeip.net
+Cc: Dan Malek <dan@mvista.com>, John Tyner <jtyner@cs.ucr.edu>,
+	linuxppc-commit@source.mvista.com,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: patch for mktree.c on cross compiles
+Message-ID: <20010906075542.A21172@cpe-24-221-152-185.az.sprintbbd.net>
+References: <20010905120613.I14548@ecam.san.rr.com> <3B968E75.A63F26EA@mvista.com> <20010905212050.K18940@cpe-24-221-152-185.az.sprintbbd.net> <20010905223903.D621@sink.san.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20010905223903.D621@sink.san.rr.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-À±µ¿¼® wrote:
+On Wed, Sep 05, 2001 at 10:39:03PM -0700, acmay@acmay.homeip.net wrote:
+> On Wed, Sep 05, 2001 at 09:20:50PM -0700, Tom Rini wrote:
+> > On Wed, Sep 05, 2001 at 04:43:33PM -0400, Dan Malek wrote:
+> > > andrew may wrote:
+> > > > I would think everything in arch/ppc/boot/utils should be checked
+> > > > for endian problems on cross compiles.
+> > >
+> > > Are the network-host macros the right things to use?  That's what
+> > > always comes to mind for me, but I suspect there is a more standard
+> > > set of macros from 'endian.h' or something........If it's OK with
+> > > everyone I'll check it in, but it does look kind of weird.
+> >
+> > Well, after some quick digging, here's what I found.  If we include
+> > <asm/byteoder.h>, and deal with some __'s, which are exported outside
 >
-> I am working MPC8240 custom board with Sandpoint8240 BSP
-> from MVista CDK 2.0 .   I think that I made something wrong.
+> One problem with trying this is that <asm/byteoder.h> will only be for
+> the target, not the compiling host. I think mktree should stick with
+> standard userspace include headers and stay away from kernel headers.
 
-Check that your installation of the Sandpoint LSP actually completed
-without any errors - I found that the HHL-2.0 release had some problems
-and many of the target binaries were not installed properly (the first
-time through the install process it hung up, and although it appeared to
-work the second time it didn't install all the packages that it should).
-You can check this by doing an ls as follows, which from a (fully
-installed) development host should look like this:
+Er.  No, <asm/byteorder.h> _should_ be a userspace header.  At least on
+Linux..  For BSD (and Linux with _USE_BSD) we can use sys/types.h and get
+back a __BYTE_ORDER, I _think_...
 
-host$ ls /opt/hardhat/devkit/ppc/82xx/target/sbin
-MAKEDEV*    ifdown*                 lsmod@       rmmod@
-badblocks*  ifup*                   lspci*       route*
-depmod*     init*                   mii-tool*    runlevel*
-devfsd*     insmod*                 mke2fs*      setpci*
-dumpe2fs*   insmod.static*          mkfs*        shutdown*
-e2fsck*     insmod_ksymoops_clean*  mkfs.ext2*   slattach*
-fdisk*      install-info*           mkswap*      sln*
-fsck*       ipmaddr*                modinfo*     start-stop-daemon*
-fsck.ext2*  iptunnel*               modprobe@    sulogin*
-fsck.ext3*  kallsyms@               plipconfig*  swapoff@
-fsck.nfs*   kbdrate*                pmap_dump*   swapon*
-genksyms*   kernelversion*          pmap_set*    sysctl*
-getty*      killall5*               portmap*     syslogd*
-halt*       klogd*                  poweroff@    telinit@
-hdparm*     ksyms@                  rarp*        tune2fs*
-hwclock*    ldconfig*               reboot@      unix_chkpwd*
-ifconfig*   losetup*                resize2fs*
-
-If many of those files are missing from your installation then you have
-the same problem, which explains why your target can't find /sbin/init.  I
-modified the HardHat installation script and did some parts of the
-installation manually, but I don't have my modified version any more.  I
-don't know if MontaVista have developed a fix for this yet, but I did tell
-them about it several months ago.
-
-- Andrew
 --
-Perfection is reached, not when there is no longer anything to add,
-but when there is no longer anything to take away.
-- Antoine de Saint-Exupery
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
