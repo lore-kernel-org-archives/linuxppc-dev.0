@@ -1,30 +1,27 @@
-Date: Sun, 15 Nov 1998 18:27:09 -0700 (MST)
-From: Brad Midgley <brad@pht.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: floppy driver bug: write-protect
-Message-ID: <Pine.LNX.3.95.981115182106.10912A-100000@pacific.pht.com>
+Message-ID: <368BBBF9.E9824C8B@madison-web.com>
+Date: Thu, 31 Dec 1998 13:01:29 -0500
+From: Jason Haas <jhaas@madison-web.com>
+Reply-To: jhaas@linuxppc.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Multiple recipients of list <linux-pmac@samba.anu.edu.au>
+CC: linuxppc-dev@lists.linuxppc.org
+Subject: 2.2-pre2 kernel posted
+References: <19981226140951Z12607245-2991+1183@samba.anu.edu.au> <v03010d03b2ad6f849c7f@[209.96.178.13]>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-is this a known bug?
+We've put a new 2.2 development kernel up on ftp.linuxppc.org.  It
+should run on any machine. 
 
-on intel linux, if you try to mount a write-protected floppy disk
-read-write, the mount succeeds but is demoted to read-only. 
+ftp://ftp.linuxppc.org/linuxppc/linuxppc-pre-R5/RedHat.installer/vmlinux-2.2.0-pre2
 
-the current pmac kernel will mount the disk read-write and will allow
-"writes" to the disk. the writes even appear to succeed and the mounted
-filesystem returns really strange results when you look at it (it's
-caching the "writes" and everything seems normal until uncached data has
-to be loaded from the disk!)
+The RAM disk image has also been modified:
 
-is it known how to query the drive for the write-protect status? does this
-problem affect any other removable media?
+ftp://ftp.linuxppc.org/linuxppc/linuxppc-pre-R5/RedHat.installer/ramdisk.image.gz
 
-brad
-
+Enjoy.
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
