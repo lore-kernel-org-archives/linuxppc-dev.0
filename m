@@ -1,48 +1,89 @@
-From: Paul Mackerras <paulus@linuxcare.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <14790.58502.25252.825448@argo.linuxcare.com.au>
-Date: Tue, 19 Sep 2000 14:59:02 +1100 (EST)
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: __ioremap_at() in 2.4.0-test9-pre2
-In-Reply-To: <Pine.LNX.4.10.10009172058340.715-100000@cassiopeia.home>
-References: <Pine.LNX.4.10.10009172058340.715-100000@cassiopeia.home>
-Reply-To: paulus@linuxcare.com.au
+Message-Id: <200009190513.GAA14252@hyperion.valhalla.net>
+Date: Tue, 19 Sep 2000 06:13:46 +0100
+Subject: Updated dmasound patch to ed19.
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Geert Uytterhoeven writes:
+Hi list,
 
-[snip]
-> +extern void *__ioremap_at(unsigned long phys, unsigned long size,
-> +			  unsigned long flags);
+I've just updated the dmasound back-port patch (2.2.17/18) to ed19 (my
+third, it's 19th ;-)  I will try to do a 2.4.0-t8 version in the next few
+days.
 
-> and wondered what __ioremap_at() is used for? It's nowhere defined.
+BTW: the module is now called dmasound_pmac.o
+(reflecting an intention to roll in DACA along with the existing AWACS,
+Screamer & Burgundy Codec support).
 
-Ah, did that leak into the patch?  It didn't need to go in but it
-doesn't hurt I guess.
+It's on www.sourceforge.net/projects/ppclinux/
+and www.drfruitcake.com/linux/linuxppc.html (check out the Penguin PPC all
+star band...)
 
-What I am intending to do is to map the I/O space of all the PCI host
-bridges in consecutive areas beginning at some address such as
-0xff000000, with some amount of space such as 64kB or 1MB per bridge,
-whatever is appropriate.  Then we adjust the I/O port numbers in the
-pci_dev structures by adding on host_bridge_nr * space_per_bridge.  As
-a side effect, isa_io_base (which is really pci_io_base) becomes a
-constant.
+This ed rolls in:
+ the comments/changes made by Geert to the RFC
+ pismo fixes by Matthias & Ben H
+ pismo & build-in testing by Henry
+ testing by Jiri, Gwyn, Steffen and others...
 
-To do this we need a version of ioremap which takes a virtual address
-as well as a physical address.  This is what __ioremap_at was intended
-to be.  I got as far as duplicating the __ioremap declaration before
-deciding that I needed to think about it a bit more. :-)
+It is OK against linux-pmac-benh (2.2.18-p4-b1) and applied successfully to
+linux-pmac-stable.
 
-Specifically I need some input from people working on 8xx and prep
-systems as to whether this idea will cause any problems.  It may make
-it more difficult to use a BAT to map I/O regions.  I notice that prep
-still uses isa_io_base = 0x80000000 and maps the whole 256MB starting
-at 0x80000000 with a BAT.
+It is worth trying esp. if you have a newer PMac - several people have
+reported sound OK with it (e.g. iMac DV) where the monolithic doesn't quite
+happen...  but, of course, this should apply equally to 2.4.0...
 
-Paul.
+*record works for me* with it... (I used SoX 12.17 to test)
+
+Bug-fixes:
+    read() should no longer crash the kernel if you try with an unsupported
+translation.
+   the ioremap() AWACS  window is now correct size (may make no difference
+depending on ioremap()'s granularity). but, you never know, it just might
+make byte-swapping work on some machines that didn't before...
+
+Changes:
+    SNDCTL_DSP_GETOPTS added - may be useful for some userland apps (I had a
+report that at least one needs it to work)
+   SNDCTL_DSP_GETFMTS now works as per OSS Doc. - this may help userland
+apps decide on the right settings.
+
+Numerous small things to try and help figure out the different PMac models &
+sample rates etc.
+
+More info in /dev/sndstat about the h'ware.
+
+====
+
+Other archs... I'm not ignoring them.  The changes should apply equally (if
+someone knows the right things to put in - about 10 lines of code needed for
+each).  I just don't have any way of testing for those machines...
+
+On the other hand, if you do nothing, then they should behave as they did
+before (barring Geert's comment that the changes hadn't been compiled or
+tested ;-).
+
+====
+
+This is (probably) the last one in this form.  The (Pmac) code is getting
+very messy with lots of measures to check for different PMac models/audio
+setups.  I'm about to do a more major re-write of that section.
+
+====
+
+Thanks very much to all testers & contributors esp.:
+Geert - for comments on both style & substance ;-) ....
+Matthias, Ben H & Henry for pismo fixings & testings
+Jiri for spotting the read() crash...
+Steffen & Gwyn for endian-ness testing
+
+& to Ben H - for putting up with more than his fair share of dumb questions
+;-)
+
+Iain.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
