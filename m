@@ -1,43 +1,27 @@
-Message-ID: <39632985.5BE39349@relog.ch>
-Date: Wed, 05 Jul 2000 14:26:45 +0200
-From: Michel Dänzer <daenzer@relog.ch>
-Reply-To: daenzerm@student.ethz.ch
-MIME-Version: 1.0
-CC: Andrew Clausen <clausen@gnu.org>, linuxppc-dev@lists.linuxppc.org,
-        GNU Parted list <parted@gnu.org>,
-        linux-apus-user@lists.sourceforge.net
-Subject: Re: GNU Parted, linuxppc support coming :-)
-References: <39625AB3.6A5447CE@gnu.org> <39632512.1953DBAA@amulet.co.jp>
-Content-Type: text/plain; charset=iso-8859-1
+Date: Thu, 6 Jul 2000 01:36:50 +1200
+From: Gwyn Judd <b.judd@xtra.co.nz>
+To: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>
+Subject: seemingly random lock-up with kernel 2.2.17p7
+Message-ID: <20000706013650.A2546@thislove.dyndns.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Andrew Clausen wrote:
->
-> I'm trying to support the Mac partition map, but I'll need some help,
-> since I don't have a PowerPC :-(
->
-> Could someone send me their partition map?  You can get this with:
->
->         # dd if=/dev/hda bs=512 count=MAP-SIZE | gzip | map.gz
->
-> If you don't know how big your partition map (+1 for driver block) is,
-> then 64 should do (?).  (What's a reasonable size for a partition
-> map?)
+This has me puzzled. I'm not sure if it is a kernel panic or just X
+freezing since it never leaves anything in the logs. Has anyone had this
+problem? It seems to happen most often when I am listening to mp3's
+although it has happened a few times while it was just sitting there
+doing nothing.
 
-Does parted support Amiga partition maps? If not, I'm sure APUS users will
-gladly send you their partition maps...
-
-
-Michel
-
+Also I am using BootX. Someone mentioned that the kernel is unreliable
+with BootX. I have not experienced any problems (barring the one that I
+mentioned) with it. What sorts of things are likely to happen? What is
+the upgrade process like to go to one of the newer bootloaders?
 
 --
-UNIX is like Sex:
-If you don't know it, you don't miss it. But if you know it, you'll need it.
-______________________________________________________________________________
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
+Gwyn Judd (b.judd@xtra.co.nz)
+When we talk of tomorrow, the gods laugh.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
