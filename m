@@ -1,32 +1,39 @@
-To: iweiny@pacbell.net
-Cc: linuxppc-dev@lists.linuxppc.org (linuxdev)
+Date: Wed, 12 Jan 2000 10:31:45 +0100 (MET)
+From: Gabriel Paubert <paubert@iram.es>
+To: Jesper Skov <jskov@cygnus.co.uk>
+cc: iweiny@pacbell.net, linuxdev <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: User level Macros for Endianess
-References: <200001120832.AAA10014@batcave2.localdomain>
-From: Jesper Skov <jskov@cygnus.co.uk>
-Date: 12 Jan 2000 10:11:03 +0100
-In-Reply-To: iweiny@pacbell.net's message of "Wed, 12 Jan 2000 00:32:11 -0800 (PST)"
-Message-ID: <othfgj64ew.fsf@thinktwice.zoftcorp.dk>
+In-Reply-To: <othfgj64ew.fsf@thinktwice.zoftcorp.dk>
+Message-ID: <Pine.HPX.4.10.10001121021250.20852-100000@gra-ux1.iram.es>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->>>>> "iweiny" == iweiny  <iweiny@pacbell.net> writes:
 
-iweiny> What Macros should I be using to key off of for this?  I have
-iweiny> looked through /usr/include/endian.h and
-iweiny> /usr/include/bits/endian.h.  BYTE_ORDER (without the leading
-iweiny> underscores) is only defined if __USE_BSD is defined.  BOTH
-iweiny> __BIG_ENDIAN and __LITTLE_ENDIAN are defined as are BIG_ENDIAN
-iweiny> and LITTLE_ENDIAN.  I'm so confused?
 
-#include <asm/byteorder.h>
+On 12 Jan 2000, Jesper Skov wrote:
 
-then use __le32_to_cpu and friends (see
-/usr/include/linux/byteorder/generic.h)
+> #include <asm/byteorder.h>
+> 
+> then use __le32_to_cpu and friends (see
+> /usr/include/linux/byteorder/generic.h)
+> 
+> I'm not sure if that's the Proper Way(TM) to do it from user land
+> though.
 
-I'm not sure if that's the Proper Way(TM) to do it from user land
-though.
+No, it's very different between application and kernel code (unfortunately
+since this forced me to write 2 very different vme.h include files for VME
+systems, it's not only a simple cp). Under Linux, asm/byteorder.h is the
+right way to get the correct macros, and either LITTLE_ENDIAN or
+BIG_ENDIAN is defined.
 
-Jesper
+>From userland both are defined and then BYTE_ORDER is set to one of these
+(strange architecture might even have a byte order which is neither like
+the PDP) so the check is #if __BYTE_ORDER==__BIG_ENDIAN ...
+
+	Gabriel.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
