@@ -1,50 +1,37 @@
-Date: Wed, 8 Nov 2000 21:42:45 +1100
-From: Steven Hanley <sjh@svana.org>
-To: Linux PPC Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: how to pass kernel command line arguments?
-Message-ID: <20001108214245.A31388@wibble.net>
-Reply-To: Steven Hanley <sjh@wibble.net>
+Date: Wed, 8 Nov 2000 23:02:30 +1100
+From: Chris Leishman <masklin@debian.org>
+To: "D.J. Barrow" <barrow_dj@yahoo.com>
+Cc: Chris Leishman <masklin@debian.org>, Rod Stewart <stewart@lab43.org>,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Airport debug (was Re: airport woes?)
+Message-ID: <20001108230230.A4113@nina.dev.fol>
+References: <20001106153722.12662.qmail@web219.mail.yahoo.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20001106153722.12662.qmail@web219.mail.yahoo.com>; from barrow_dj@yahoo.com on Mon, Nov 06, 2000 at 07:37:22AM -0800
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-All
+On Mon, Nov 06, 2000 at 07:37:22AM -0800, D.J. Barrow wrote:
+>
+> Hi,
+> I don't have an Airport but am familiar with
+> programming linux network device drivers.
+>
+> This symtom sounds like a it could be a classic tbusy
+> (transmit busy ) getting  stuck on in the driver in
+> the network device structure.
+>
 
-Okay I shall be more specific, how do I pass kernel command line arguments
-(say for example a video=whatever) to the kernel when booting the kernel on
-the hfs floppy disk image that comes with debian potato. Does anyone know?
+Actually - I don't think this is the problem, since it only locks up the send
+_for the single TCP connection_.  Other TCP connections, or new ones, work
+fine.
 
-The debian install manual does not mnention what mechanism the floppy uses
-to boot, however it is a normal mac like
+It is interesting that I only ever get the problem when accessing distant
+systems (where the link is slower and less reliable) - and then it happens
+very consistantly.
 
-[21:40:04] 5 innuendo root /mnt/floppy>ls -la
-total 1203
-drwx--x--x   4 root     root            9 Nov  8 21:17 ./
-drwxr-xr-x   4 root     root         1024 Oct  9  1998 ../
-dr-x--x--x   2 root     root            9 Nov  8 21:17 .finderinfo/
-dr-x--x--x   2 root     root            9 Nov  8 21:17 .resource/
--rw-------   1 root     root          300 Nov  8 21:17 .rootinfo
--rwx--x--x   1 root     root            0 Jul 25 11:45 Finder*
--rwx--x--x   1 root     root            0 Apr  7  2000 System*
--rwx--x--x   1 root     root       268171 Jul 25 11:52 System.map*
--rwx--x--x   1 root     root       961719 Nov  8 21:17 zImage*
-
-I suspect the .rootinfo may have something to do with the bootup for linux,
-though not sure and I dont know where to find docs on this stuff either.
-
-Thanks
-
-	See You
-	    Steve
-
---
-sjh@wibble.net http://wibble.net/~sjh/
-Look Up In The Sky
-   Is it a bird?  No
-      Is it a plane?  No
-         Is it a small blue banana?
-YES
+Chris
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
