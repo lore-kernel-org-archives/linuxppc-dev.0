@@ -1,40 +1,32 @@
-Date: Mon, 11 Jan 1999 08:11:01 -0800 (PST)
-From: Matt McLean <keys@yikes.com>
-To: Tom Rini <trini@globe.linuxppc.org>
-cc: Olaph Swensen <olaph@takilma.nurk.org>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: compiling ssh / R5 install
-In-Reply-To: <Pine.LNX.3.96.990110161916.15302A-100000@globe>
-Message-ID: <Pine.BSF.4.01.9901110809020.8099-100000@brio.yikes.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <19990111042611.A152@gondolin>
+Date: Mon, 11 Jan 1999 17:29:13 +0100
+To: linuxppc-dev@lists.linuxppc.org, Ryan Nielsen <ran@krazynet.com>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: Linux-2.2.0-pre5 SMP broken on PReP?
+Message-Id: <19990111172913.007726@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 10 Jan 1999, Tom Rini wrote:
+On Mon, Jan 11, 1999, Ryan Nielsen <ran@krazynet.com> wrote:
 
-__USE_GNU is the internal macro... compile with -D_GNU_SOURCE. :-)
+>it is crashing in kswapd, not the ncr driver.
+>
+>I got pre6 to work by reverse-patching the kswapd part of mm/vmscan.c down to
+>pre4
+>this is only needed for SMP...
 
-m.
+Linus posted some messages about this on the kernel ML, pre-7 should fix
+all that mess, the memory trashing may finally work fine after all ;-)
 
-> 
-> On Tue, 5 Jan 1999, Olaph Swensen wrote:
-> 
-> > login.c:437: structure has no member named `ut_syslen'
-> 
-> #if out this line or remove
-> 
-> > login.c:441: structure has no member named `e_termination'
-> > login.c:442: structure has no member named `e_exit'
-> 
-> __e_*
-> 
-> > login.c:454: `WTMPX_FILE' undeclared (first use in this function)
-> > login.c:454: (Each undeclared identifier is reported only once
-> > login.c:454: for each function it appears in.)
-> 
-> Needs a __USE_GNU or something along those lines, IIRC.  At least these
-> are glibc 2.1 changes/probelsm for everybody. :)
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
