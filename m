@@ -1,40 +1,35 @@
-Message-ID: <20020125055315.55328.qmail@web20408.mail.yahoo.com>
-Date: Thu, 24 Jan 2002 21:53:15 -0800 (PST)
-From: Venkat Raghu <venkatraghu2002@yahoo.com>
-Subject: "sc" ...
-To: linuxppc-embedded@lists.linuxppc.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: "Sangmoon Kim" <dogoil@etinsys.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Ramdisk Question 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 25 Jan 2002 14:22:11 +0900."
+             <007b01c1a560$3e368b50$1a11efcb@industrialDiv.hanasys.co.kr>
+Date: Fri, 25 Jan 2002 10:00:20 +0100
+Message-Id: <20020125090025.CF263102DA@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
- Hi,
+In message <007b01c1a560$3e368b50$1a11efcb@industrialDiv.hanasys.co.kr> you wrote:
+>
+> I am porting linux on a custom mpc755 board.
+> I used linuxppc_2_4 from montavista rsync,
+> and simple-ramdisk.tar.gz from denx ftp.
 
-  I think in order to generate system call exception
-  using instruction "sc", we have to update  EVPR
-  with "mtspr". So that corresponding handler will be
-  called based upon the contents of EVPR.
+This ramdisk image was build for MPC8xx systems; I never tested it on
+a 75x. It probably does not work there.
 
-   But in source code that I am seeing has something
-  like:
-   mr r6,r3
-   ori r3,r5, value
-   li  r0,somevalue
-   sc
-   ....
-   ...
+You better rebuild your own image with binaries  and  librarioes  for
+the 75x; let me know if you have problems.
 
-   Even if EVPR is not updated with any value  a
-   Machine check interrupt is being generated.
-  1) Kindly clarify how control goes to machine check
-   interrupt handler, is it beacuse of call to "sc"
-   or some other event triggers interrupt?
-  2) Why "sc" is being called without setting EVPR.
+Wolfgang Denk
 
-  I have not subscribed to this list. Kindly mail me
-  at venkatraghu2002@yahoo.com
-  Thankyou.
-  Venkat.
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+The inappropriate cannot be beautiful.
+             - Frank Lloyd Wright _The Future of Architecture_ (1953)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
