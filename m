@@ -1,18 +1,18 @@
 Return-Path: <walt.wimer@timesys.com>
 Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
-	by ozlabs.org (Postfix) with ESMTP id 3D19D67A64
+	by ozlabs.org (Postfix) with ESMTP id D5D2067A70
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Mar 2005 01:44:41 +1000 (EST)
+	Wed, 30 Mar 2005 02:01:26 +1000 (EST)
 From: "Walter L. Wimer III" <walt.wimer@timesys.com>
-To: Bastos Fernandez Alexandre <ALEBAS@televes.com>
-In-Reply-To: <51DB8827D393D411BB69003048003F4601B1C1CE@tvesntr>
-References: <51DB8827D393D411BB69003048003F4601B1C1CE@tvesntr>
+To: linuxppc-embedded@ozlabs.org
+In-Reply-To: <42441B13.7080703@ru.mvista.com>
+References: <1111705036.15834.29.camel@excalibur.timesys.com>
+	<42441B13.7080703@ru.mvista.com>
 Content-Type: text/plain
-Date: Tue, 29 Mar 2005 10:44:39 -0500
-Message-Id: <1112111080.26645.14.camel@excalibur.timesys.com>
+Date: Tue, 29 Mar 2005 11:01:24 -0500
+Message-Id: <1112112084.26645.27.camel@excalibur.timesys.com>
 Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: Problem running Linux 2.6.11 on MPC8272ADS
+Subject: Re: PCI support under 2.6.11.4 on MPC8272ADS ???
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,93 +24,111 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Thanks for the data points, Alex.
+Thanks to all who offered suggestions regarding PCI on the MPC8272ADS.
+I too suspected that the PCI bus frequency may have been the problem,
+and even spent some time looking at the clock configuration in the
+Freescale documentation before I posted my message.  The documentation
+seemed very confusing, so I decided to pursue a few different avenues in
+parallel, including posting to the list.
 
-I'm using U-Boot 1.1.1 and vanilla kernel.org 2.6.11.4 (actually now
-2.6.11.5).  My BCSR_ADDR looks the same as what you've listed below, so
-I'd guess the difference is with U-Boot...  (Another engineer here
-installed U-Boot on my board, from, I believe, a binary copy he got from
-a Freescale(?) CD...  I didn't build U-Boot from source...  That's
-something I'll need to take a look at...)
+Since Andrei and Vitaly further implicated the bus frequency, I went
+back and took a closer look at it.  After much staring at the
+documentation, dumping registers, trying a 66MHz-capable card, etc. I
+can report that this was indeed the problem.  A 66MHz-capable Promise
+IDE controller card does seem to work.
 
-Mike, have you discovered anything further about your problem?
+I'd like to change the bus speed to <= 33MHz, but this still looks non-
+trivial.  If I understand things properly, it looks like my best bet is
+to modify the Hard Reset Configuration Word in flash to set the
+PCI_MODCK bit to "low range" (25 to 50 MHz, instead of 50 to 66 MHz).
+
+Can anyone confirm my understanding?
 
 
+Thanks again!
 
 Walt
 
 
 
-On Tue, 2005-03-29 at 08:29 +0200, Bastos Fernandez Alexandre wrote:
-> Hi, 
+On Fri, 2005-03-25 at 17:07 +0300, Vitaly Bordug wrote:
+> Hi Walt,
 > 
-> >From "linux/arch/ppc/platforms/pq2ads.h"
-> #define BCSR_ADDR ((uint) 0xf4500000)
-> >From "u-boot/include/configs/MPC8260ADS.h"
-> #define CFG_BCSR 0xF4500000
-> So ...
-> Which version of u-boot and/or linux tree are you using?
-> With linuxppc-2.5 and u-boot 1.2 everything works fine for me.
-> Maybe Mike's problem is other. Maybe not. :-)
+> Well, the incorrect VendorID almost clearly points to the incompatible
+> PCI bus frequency - try to set it to 33Mhz. 
+> AFAIR, I saw my network card as video adapter in the lspci output. 
 > 
-> Best regards,
-> Alex
+> The 2.4 stuff was tested rather thoroughly. The current 2.6.11 support
+> is examined with HPT370 and PDC20268 PCI IDE.
 > 
-> > -----Original Message-----
-> > From:	Walter L. Wimer III [SMTP:walt.wimer@timesys.com]
-> > Sent:	Monday, March 28, 2005 6:07 PM
-> > To:	Mike Rapoport
-> > Cc:	linuxppc-embedded@ozlabs.org
-> > Subject:	Re: Problem running Linux 2.6.11 on MPC8272ADS
+> You may also try my latest patch to the stock linux 2.5. 
+> 
+> Wimer, Walt wrote: 
+> > Using Vitaly's 2.4-based patch below as a starting point, I've been
+> > adding PCI support to 2.6.11.4 for the MPC8272ADS board.
+> > 
+> > The good news is that I think I have PCI interrupts pretty well sorted
+> > out, and I see *something* half-way reasonable from "lspci".
+> > 
+> > The bad news is that neither of the ethernet cards that I'm trying will
+> > actually work, and I see some very weird behavior with PCI configuration
+> > space:
+> > 
+> >   Card 1:  Some Realtek RTL8139D-based card
+> >   Card 2:  NETGEAR FA311 (National Semi DP83815 chip)
+> > 
+> > With either card installed alone, both U-Boot and my kernel identify the
+> > cards correctly in PCI configuration space.
+> > 
+> > With *both* cards installed, both U-Boot and my kernel see the Realtek-
+> > based card correctly, but the NETGEAR card has a corrupted Vendor ID
+> > (e.g. 0x1000 or 0x1003 instead of the correct 0x100b).  This happens
+> > regardless of which PCI slots I use for the cards (I've tried virtually
+> > every combination).  This smells of a power problem or something to me.
+> > 
+> > And again, even with either card alone, the drivers have serious
+> > problems talking to the cards.  I get various error messages from
+> > the drivers and I see badly mangled packets on the wire.  It's also
+> > not uncommon for the whole system to freeze...
+> > 
+> > Has anyone else seen similar behavior?
+> > 
+> > Has anyone had success with PCI on this board (under any kernel
+> > version)?
 > > 
 > > 
-> > Hi Mike,
-> > 
-> > I had the same "hang" experience.  The file arch/ppc/platforms/pq2ads.c
-> > contains the following function:
-> > 
-> >   void __init
-> >   m82xx_board_setup(void)
-> >   {
-> >   	/* Enable the 2nd UART port */
-> >   	*(volatile uint *)(BCSR_ADDR + 4) &= ~BCSR1_RS232_EN2;
-> >   }
+> > Any ideas / data points are appreciated.
 > > 
 > > 
-> > I had to ifdef-out the assignment statement above.  It appears that the
-> > definition for BCSR_ADDR in the kernel code differs from what U-Boot is
-> > using, and that area of memory isn't properly mapped into the kernel
-> > address space this early in the boot sequence.  As a result, I was
-> > getting an Oops() before the console was even enabled (I could see the
-> > Oops message by examining the kernel's printk log buffer using a
-> > BDI-2000 hardware debugger).
-> > 
-> > 
-> > 
-> > Good luck,
+> > Thanks!!!
 > > 
 > > Walt Wimer
-> > TimeSys Corporation
 > > 
 > > 
 > > 
-> > 
-> > On Sun, 2005-03-27 at 11:31 +0200, Mike Rapoport wrote:
-> > > Hi,
-> > > I'm trying to bring up the Linux 2.6.11 on MPC8272ADS and it seem to 
-> > > hang up at the very beginning.
-> > > I use ads8272_defconfig and then enable console on SCC:
+> >   
+> > > This patch adds PCI bridge support for MPC8272 and PQ2FADS to the
+> > > current linuxppc-2.4 tree. Actually it has been tested with 8272, but
+> > > PQ2 _should_ also work, though it will complain that host bridge ID is
+> > > unrecognized.
 > > > 
-> > > CONFIG_SERIAL_CPM=y
-> > > CONFIG_SERIAL_CPM_CONSOLE=y
-> > > CONFIG_SERIAL_CPM_SCC1=y
+> > > Signed-off-by: Vitaly Bordug <vbordug at ru.mvista.com>
 > > > 
+> > > --
+> > > Sincerely, Vitaly
 > > > 
-> > > when I boot the kernel from the u-boot the system hangs up right after 
-> > > the kernel decompression.
-> > > 
+> > > -------------- next part --------------
+> > > A non-text attachment was scrubbed...
+> > > Name: pq2-pci.patch
+> > > Type: text/x-patch
+> > > Size: 20111 bytes
+> > > Desc: not available
+> > > Url : http://ozlabs.org/pipermail/linuxppc-embedded/attachments/20050218/12060ce8/pq2-pci.bin
+> > >     
 > > 
-> > _______________________________________________
-> > Linuxppc-embedded mailing list
-> > Linuxppc-embedded@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> > 
+> >   
+> 
+> -- 
+> Sincerely, 
+> Vitaly
