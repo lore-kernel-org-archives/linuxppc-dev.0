@@ -1,36 +1,44 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <6776269.1007503954578.JavaMail.tester@hvwww8>
-Date: Tue, 4 Dec 2001 17:12:34 -0500 (EST)
-From: Alejandro Erives <pelochino@hotvoice.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: TCP/IP Performance
-Mime-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_Part_57656_6777095.1007503954578"
+To: Okehee Goh <ogoh@asu.edu>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: How to dissable COM1 of MBX860 in order for SMC1 to be serial Console port?? 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 04 Dec 2001 14:42:46 MST."
+             <CPEELCODKANPCLBCAGOFIELICAAA.ogoh@asu.edu>
+Date: Tue, 04 Dec 2001 23:24:11 +0100
+Message-Id: <20011204222416.8E1D6F9C0@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-------=_Part_57656_6777095.1007503954578
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+In message <CPEELCODKANPCLBCAGOFIELICAAA.ogoh@asu.edu> you wrote:
+>
+>  The system MBX860's EPPC-Bug uses COM1 as a serial port instead of SMC1.
+>  I want to know how to disable COM1 of MBX860 in order for SMC1 to be serial
+> Console port??
 
-Hello,
+How about using some existing firmware?
 
-Where can I find information relating to the performance (frames/second,
-etc) of TCP/IP under PowerPC embedded Linux?  Would this be
-different depending upon the device?  The devices in consideration
-are the MPC860 and the MPC8260.  Thank you for all your help.
+>  Is there any other thing I have to do for this work?
+>  The following is my source code.
 
-Sincerely,
-Alejandro
+Don't re-invent  the  wheel  again  and  again.  All  this  has  been
+implemented  so  many  times  before.  Grab  for instance the PPCBoot
+sources, and use these.
 
+Or even better,  check  if  PPCBoot  does  not  provide  exactly  the
+functions  you are trying to implement yourslef (and if it doesn't it
+may still be simpler to contribute your extensions to PPCBoot instead
+of starting from scratch).
 
+Wolfgang Denk
 
---------------------------------------------------------------------------
-Global Internet phone calls, voicemail, fax, e-mail and instant messaging.
-Sign-up today at http://www.hotvoice.com
-------=_Part_57656_6777095.1007503954578--
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+At the source of every error which is blamed on the computer you will
+find at least two human errors, including the error of blaming it  on
+the computer.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
