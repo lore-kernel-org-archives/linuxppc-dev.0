@@ -1,47 +1,53 @@
-Subject: Re: MPC5200Lite PCI & IRQ
-From: David Woodhouse <dwmw2@infradead.org>
-To: Bertrand Baudet <bbaudet@lacie.com>
-Cc: linuxppc-embedded@lists.linuxppc.org, jgarzik@redhat.com,
-	B.Zolnierkiewicz@elka.pw.edu.pl
-In-Reply-To: <5A96167EBCEA8440A48790B5419953AE13C443@gr-lafayette.lacie.com>
-References: <5A96167EBCEA8440A48790B5419953AE13C443@gr-lafayette.lacie.com>
-Content-Type: text/plain
-Message-Id: <1087550915.19489.3137.camel@hades.cambridge.redhat.com>
-Mime-Version: 1.0
-Date: Fri, 18 Jun 2004 10:28:35 +0100
+To: "Andrew Dennison" <andrew.dennison@motec.com.au>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: JTAG debuggers for Motorola 8xx/82xx/85xx 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 18 Jun 2004 15:21:15 +1000."
+             <002601c454f4$13e589a0$ee00a8c0@CAT>
+Date: Fri, 18 Jun 2004 11:39:58 +0200
+Message-Id: <20040618094003.1DC3EC13D3@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 2004-06-04 at 15:00 +0200, Bertrand Baudet wrote:
-> Hi,
+In message <002601c454f4$13e589a0$ee00a8c0@CAT> you wrote:
 >
-> I'm trying to plug a sata card in the PCI slot of the MPC5200Lite.
-...
-> By default the IRQ line of the sata card is 0,
-...
-> From the source code, it looks like a value 0 for the IRQ means the IRQ
-> is disabled.
+> > Note that the GDB in our ELDK not only supports the BDM4GDB, but also
+> > the wiggler ...
 >
-> From "drivers/ide/ide-probe.c", in the 'hwif_init' function:
-> ...
-> if (!hwif->irq) {
->    if (!(hwif->irq = ide_default_irq(hwif->io_ports[IDE_DATA_OFFSET])))
->    {
->       printk("%s: DISABLED, NO IRQ\n", hwif->name);
->       return (hwif->present = 0);
->    }
-> }
-> ...
->
-> Commenting out the above code allow the PCI card to run properly.
+> So I could use a wiggler and GDB from ELDK with MPC5200?
 
-This is a bug in the IDE driver. Zero is a perfectly valid IRQ number --
-I have boxes where PCI slots get IRQ #0 too. Please fix the IDE driver
-and send the patch to the IDE maintainer.
+No, sorry if I gave you a wrong idea.
+
+So far we can only support the BDM interface; to implement  interface
+software  for  the  JTAG/COP  port  as  used  on  60x  based  systems
+(including the MPC5200) you need special documentation from Motorola,
+which is only available under a pretty strict NDA. The terms of  this
+NDA  prevent any open source implementation, so we cannot add this to
+GDB.
+
+
+> I've been asked to try to avoid buying a BDI2000 for now :(
+
+What a silly question ;-)
+
+> I already have the Greenhills slingshot and Metrowerks Wiretap from the
+> 5200lite kit but they seem to be paper weights without their (expensive)
+> integrated software tools...
+
+Indeed.
+
+Just go ahead and buy a BDI2000...
+
+Best regards,
+
+Wolfgang Denk
 
 --
-dwmw2
-
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Contrary to popular belief, thinking does not cause brain damage.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
