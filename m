@@ -1,52 +1,58 @@
-Message-ID: <762A181C0D966E459A2EB3B810142C7703861518@nmrusdunsx12.nmrlan.net>
-From: "Wells, Charles" <Charles.Wells@nielsenmedia.com>
-To: "'Robert P. J. Day'" <rpjday@mindspring.com>
-Cc: Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: random ramblings on 8xx patches (long and tedious :-)
-Date: Thu, 22 Jul 2004 13:10:02 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+In-Reply-To: <762A181C0D966E459A2EB3B810142C7703861518@nmrusdunsx12.nmrlan.net>
+References: <762A181C0D966E459A2EB3B810142C7703861518@nmrusdunsx12.nmrlan.net>
+Mime-Version: 1.0 (Apple Message framework v618)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <75D875A6-DC05-11D8-9220-003065F9B7DC@embeddededge.com>
+Cc: "'Robert P. J. Day'" <rpjday@mindspring.com>,
+	Embedded Linux PPC list <linuxppc-embedded@lists.linuxppc.org>
+From: Dan Malek <dan@embeddededge.com>
+Subject: Re: random ramblings on 8xx patches (long and tedious :-)
+Date: Thu, 22 Jul 2004 13:35:01 -0400
+To: "Wells, Charles" <Charles.Wells@nielsenmedia.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu 7/22/2004 8:00 AM, rday wrote:
+On Jul 22, 2004, at 1:10 PM, Wells, Charles wrote:
 
-> apparently, the onboard USB on the 850 is somewhat flaky, which is
-> why the USB SOF patch isn't even selectable in micropatch.c, is that
-> it?
+> ....... The real problem is that the
+> MPC850 USB controller was designed for target-mode applications and not
+> host-mode applications.  Host-mode in the MPC850 is, at best, an
+> after-thought.
 
-I've been working in the background for over a year now to get the host-mode
-USB interface working on our custom '850 hardware (running vxworks
-(unfortunately)).  The problem is not so much that the USB controller is
-"flakey", it does what it does quite reliably.  The real problem is that the
-MPC850 USB controller was designed for target-mode applications and not
-host-mode applications.  Host-mode in the MPC850 is, at best, an
-after-thought.
+That's true.  Having been a part of the early development of all of the
+8xx
+parts, there were lots of requirements that changed once the parts "hit
+the street."
 
-At the implementation level, there are (at least) two major problems:
 
-0. The MPC850 USB controller is neither of the popular USB 1.1
-implementation models (UHCI or OHCI).  Since the controller is really an SCC
-implemented in microcode in the CP, it has buffer descriptors (BDs) rather
-than transfer descriptors (TDs).  Further, it doesn't do any of the
-tree-walking that a proper [UO]HCI does.  It's pretty ugly if you're trying
-to use a manufacturer-supplied driver.
+> 0. The MPC850 USB controller is neither of the popular USB 1.1
+> implementation models (UHCI or OHCI).
 
-1. The USB spec. says that the start of frame (SOF) pulse must be sent
-within  +/- 500 nanoseconds of the beginning of every 1 msec. frame
-interval. There is no provision in the MPC850 hardware to do this
-automatically and it's simply impossible to get anywhere close to this
-timing with software.  I haven't timed it, but I suspect the microcode patch
-has trouble meeting this spec. as well.  It does get a whole lot closer than
-a software-only solution, though.
+It's not the only one.  I think there are more embedded controllers that
+are not UHCI/OHCI than those that are.  Since we work in the source
+code world, it hasn't really been much of a problem.
 
-There's a bunch of other detailed problems that I won't bore everyone with.
-Bottom line: Don't expect too much out of the MPC850 USB controller in
-host-mode.
+> ..... I haven't timed it, but I suspect the microcode patch
+> has trouble meeting this spec. as well.  It does get a whole lot
+> closer than
+> a software-only solution, though.
 
-Regards,
-Charlie
+The microcode patch works quite well.
+
+> There's a bunch of other detailed problems that I won't bore everyone
+> with.
+> Bottom line: Don't expect too much out of the MPC850 USB controller in
+> host-mode.
+
+There are Linux versions of software that work fine in many
+applications.
+USB in general doesn't rate high on my list of engineering successes.
+I'm never surprised when I plug something in to any kind of system
+and it doesn't work.
+
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
