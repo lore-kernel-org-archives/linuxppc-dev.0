@@ -1,42 +1,50 @@
-To: "Oliver Fuchs" <olivers.lists@gmx.net>
+Message-ID: <20040827083331.18765.qmail@web15610.mail.cnb.yahoo.com>
+Date: Fri, 27 Aug 2004 16:33:31 +0800 (CST)
+From: Song Sam <samlinuxppc@yahoo.com.cn>
+Subject: Re: Cramfs Limitations 
+To: Wolfgang Denk <wd@denx.de>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Does ext2 based on MTD acceptable for Embedded Development? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 27 Aug 2004 09:08:23 +0200."
-             <412EFA07.27872.405FEB@localhost>
-Date: Fri, 27 Aug 2004 09:39:57 +0200
-Message-Id: <20040827074002.58692C109F@atlas.denx.de>
+In-Reply-To: <20040827073838.E2DD9C109F@atlas.denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <412EFA07.27872.405FEB@localhost> you wrote:
+Wolfgang Denk <wd@denx.de> wrote£º
+
+> Why not? Of course you can. You just cannot write to it.
+
+But I know little on application code's behavior. I
+cannot adjust it's write operation, I am afraid.
+It's another folk's job to code the application.
+
+> > choice but use JFFS2 for deployment, which performance couldn't
+> > compare with RAMDISK.It's a pity that RAMDISK cannot update some
+> > info permanently. EXT2 seems not a
 >
-> > still want to consult with you such a question.Dose
-> > ext2 filesystem besed on MTD a acceptable option?
->
-> I would not use ext2 on MTD.
+> You can use any filesystem, including one on a RAMDISK.
 
-We do, and it works perfect. You just want to make sure to  mount  it
-read-only.
+Good hints. I don't really want to give up RAMDISK for
+it has a better performance than JFFS2 and EXT2.
 
-> JFFS2 is much better for that purpose for in contrast to ext2, it is
-> power down reliable and performs wear leveling.
+> If the root filesystem happens to be read-only, you just need to
+> provide a writable filesystem for those things that need to get
+> written. In case of data that may
 
-These  features  are  only  interesting  when  you  need  a  writable
-filesystem.
+Recently, I have been thinking about to build up a
+sector on FLASH for R/W operation, like JFFS2. Then my
+root fileystem still keeps as RAMDISK. So I can get a
+fastest boot process and write sector while running.
+In your opinion, this way should work. Right?
 
-Best regards,
+> get lost at reboot you can use tmpfs, and for persistent storage you
+> can use JFFS2.
 
-Wolfgang Denk
+tmfs is new to me but interesting. I will try it.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Program maintenance is an entropy-increasing process,  and  even  its
-most skilfull execution only delays the subsidence of the system into
-unfixable obsolescence.       - Fred Brooks, "The Mythical Man Month"
+Thanks for your further help a lot!
+
+Sam
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
