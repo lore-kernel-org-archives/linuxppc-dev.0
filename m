@@ -1,27 +1,50 @@
-Message-ID: <3804E9CC.5E02521F@arcormail.de>
-Date: Wed, 13 Oct 1999 21:21:33 +0100
-From: Michael Fenske <michael.fenske@arcormail.de>
-Reply-To: michael.fenske@arcormail.de
+Message-ID: <3805582E.2D32F329@primenet.com>
+Date: Thu, 14 Oct 1999 04:12:30 +0000
+From: Bob Doyle <doyle@primenet.com>
 MIME-Version: 1.0
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+To: Michael Meissner <meissner@cygnus.com>
 CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Problem with glibc-2.1.3-0a.src.rpm ?
-References: <3803A7BC.4175E431@arcormail.de>
-	 <99101300580600.00880@ns1102.munich.netsurf.de> <4.2.1.10.19991013114246.00d1d1b0@mail.lauterbach.com>
+Subject: Re: PowerPC function returning long long
+References: <38041087.62AB190@primenet.com> <Pine.HPX.4.10.9910130940210.7415-100000@gra-ux1.iram.es> <19991013082759.A7133@elmo.cygnus.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Franz Sirl wrote:
+Michael Meissner wrote:
 > 
-> Which rpm version are you using? In any case, try upgrading to 3.0.3
-> <ftp://devel.linuxppc.org/users/fsirl/R5/RPMS/ppc/> and then reinstall
-> gcc-2.95.1.
+> On Wed, Oct 13, 1999 at 10:06:02AM +0200, Gabriel Paubert wrote:
+> >
+> > On Wed, 13 Oct 1999, Bob Doyle wrote:
+> >
 
-Ok, I did that. But it doesn't help.
+[snip]
 
-Michael
+> The above doesn't work with -mreg-names and/or -pedantic.  Instead you should
+> write:
+> 
+> unsigned long long get_timebase(void) {
+>         unsigned long long retval;
+>         unsigned long junk;
+>         __asm__ __volatile__ ("\n\
+> 1:      mftbu   %1\n\
+>         mftb    %L0\n\
+>         mftbu   %0\n\
+>         cmpw    %0,%1\n\
+>         bne     1b"
+>         : "=r" (retval), "=r" (junk));
+>         return retval;
+> }
 
+Thanks, thats just what I was looking for... 
+
+I've found several tutorials on x86 GNU inline asm but none on the
+PowerPC.
+If I were to write a HOWTO would anyone volunteer to proof read
+and/or contribute code examples?  I suspect I'm not the only one 
+struggling through this.
+
+Bob Doyle
+doyle@primenet.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
