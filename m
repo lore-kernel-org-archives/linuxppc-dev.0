@@ -1,50 +1,58 @@
-Date: Wed, 13 Nov 2002 14:52:59 +0500 (GMT+0500)
-From: Atm account <linux2@cdotd.ernet.in>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Problem in booting PPC with kernel 2.5.44
-In-Reply-To: <Pine.OSF.4.10.10209141216080.2765-100000@moon.cdotd.ernet.in>
-Message-ID: <Pine.OSF.4.10.10211131428120.9066-100000@moon.cdotd.ernet.in>
+Date: Wed, 13 Nov 2002 22:11:16 +0100 (MET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Gabriel Paubert <paubert@iram.es>
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: IDE on LongTrail
+In-Reply-To: <3DC7AC62.6040409@iram.es>
+Message-ID: <Pine.GSO.4.21.0211132202190.7985-100000@vervain.sonytel.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello All,
-  We are porting Linux 2.5.44 for our custom board which has
- 603e processor..
-    We are using the arch/ppc/boot/simple bootloader with minor
-modifications. At the end of boot-code relocation to 8 Mb, the code jumps
-to the relocated code and thereafter
-does the decompression (decompress_kernel)of the vmlinux image to physical
-address 0 and jumps to the 0th location (3 nops followed by code). It is
-from here that early_init is called.
-    Now the problem is ... the kernel has been linked at 3GB and a call in
-kernel/head.S which says ---
-       bl early_init
-translates to sth like =>    bl 0Xc000xxxx
-   I dont have the MMU on at this point nor any dual mapping being done
-thru the BATs. So how is the above code supposed to execute ?????
-Our board precisely hangs after this jump.
+On Tue, 5 Nov 2002, Gabriel Paubert wrote:
+> Geert Uytterhoeven wrote:
+> > According to the IBM LongTrail schematics, PINT[CD] on the W83C553 are
+> > connected to EXT_INT[56] on the Apple Hydra, which are OpenPIC inputs.
+> > The connections are called `IDE_NM_INT_P/S' and 'IDE_NM_INT_S'. So it should be
+> > possible, unless Tatung changed that.
+>
+> Ok, in this case. look at page 125. You have to set bit 11 (LEGIRQ) to
+> route the interrupts to IRQC for both channels. You can only separately
+> route each channel (IRQC for channel 0, IRQD for channel1) if you channel
+> 1 in legacy mode it seems. That's at least what I understand.
+>
+> > Will do some more W83C553 doc parsing soon :-)
+>
+> Parsing is nothing; you also have to interpret the oracle ;-)
 
-Also, later in the same file (kernel/head.S) i have a piece of code which
-goes like ...
+Well, after exactly following the instructions at page 125 I made it work
+(using setpci for manual register poking):
+  1. Disable ISA interrupts by writing 0x00 to the IDE interrupt routing
+     register on the PCI/ISA bridge (used to be 0xef, i.e. IRQs 14 and 15)
+  2. Enable native mode for both channels by writing 0x33 to the IDE mode
+     register
+  3. Set LEGIRQ to route the interrupts for both channels to IRQC.
 
-        bl      mmu_off
-__after_mmu_off:
-        bl      clear_bats
-        bl      flush_tlbs
+And `modprobe ide-probe-mod' gave me a working primary IDE channel! Haven't
+tested the second channel yet.
 
-        bl      initial_bats
+The confusing part is that for (2) you need `native mode' (PCI native mode, I
+think), while for (3) you need `legacy mode'...
 
-after doing a mmu_off (disabling translations) we again do branches which
-actually translate to the 3Gb addresses. How r they supposed to execute ?
+Will cook a patch later...
 
-  Can somebody pls explain ..
+Gr{oetje,eeting}s,
 
-thanx in advance :)
+						Geert
 
-Nishant
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
