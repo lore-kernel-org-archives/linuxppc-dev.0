@@ -1,43 +1,42 @@
-Message-ID: <20040620202719.25741.qmail@web60407.mail.yahoo.com>
-Date: Sun, 20 Jun 2004 13:27:19 -0700 (PDT)
-From: Dieu Morales <dieumorales@yahoo.com>
-Subject: GT64260_eth (Ethernet) Driver
-To: linuxppc-embedded@lists.linuxppc.org
+From: "Andrew Dennison" <andrew.dennison@motec.com.au>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: JTAG debuggers for Motorola 8xx/82xx/85xx 
+Date: Mon, 21 Jun 2004 10:21:13 +1000
+Message-ID: <000d01c45725$a929c570$ee00a8c0@CAT>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <000b01c45534$8542bba0$0301a8c0@chuck2>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Greetings, I am working with the latest 2.6.7 kernel
-source on a ppc radstone PPC7A board and was curious
-if anyone was in the process or planned on porting the
-gt64260_eth driver to support the 2.6.x kernel.
+Mark Chambers wrote:
+> Andrew,
+>
+> I went down this same path!  No, the 5200 JTAG is quite
+> different from 8xx
+> and a little different from 8xxx so no version of the Wiggler
+> will work,
+> although Macraigor says they are planning to support 5200 soon.
+>
+> When I was evaluating the 5200Lite I used the Motorola boot to load
+> zImage.elf, and that let me play with linux.
+>
 
-Not being familiar with the gt64260 Ethernet device or
-code, I plan to take it line by line. I have attempted
-to use the driver from the ppc.bkbits.net 2.4
-development tree and currently have only changed the
-dev = init_etherdev(dev, sizeof (gt_eth_priv));
-to
-dev = alloc_etherdev(sizeof (gt_eth_priv_struct ));
-Shortly after, when attempting to allocate the Tx and
-Rx page buffers, I get an exception in the
-uncachedPages function.  I have traced the problem to
-the pmd_presentò(*pmd) function in va_to_pte(addr)
-returning 0.  I dumped the values of pmd, init_mm, and
-pmd in the va_to_pte() and the values seemed O.K., so
-I commented out the pmd_presentò(*pmd) check but was
-once again stopped by the pte_present(*pte) check.  I
-have seen the driver operate under 2.4.26 dev tree
-from ppc.bkbits.net where this problem does not occur.
-One difference I have noticed is that during
-initialization of the 2.6.7 kernel, I do not get the
-following output.
-Buffer-cache hash table entries:
-Page-cache hash table entries:
-The filemap.c, where the "Page-cache " printk resides
-in 2.4, looks heavily reworked, so I don't suspect
-this is an issue?
+Hi Mark,
+Yeah - I used the Motorola boot loader to install u-boot to boot low on my
+5200lite.
+
+However I've almost finished our custom HW design so need proper tools to
+bring up the new board. I'm doing both the hardware and software so I make
+my own recommendations - after consulting with others so I don't re-invent
+the wheel...
+
+Hadn't realised there was a mix of BDM and JTAG on PPC processors - the
+5200 is the first PPC I've played with.
+
+Andrew
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
