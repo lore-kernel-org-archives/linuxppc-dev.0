@@ -1,53 +1,32 @@
-Date: Fri, 19 Feb 1999 20:54:54 -0800 (PST)
-From: Scott Trimmer <strimmer@rift.foo.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Compiling Kernel 2.2.1 on a G3
-In-Reply-To: <Pine.LNX.3.96.990219201949.20971B-100000@rift.foo.net>
-Message-ID: <Pine.LNX.3.96.990219205402.21016A-100000@rift.foo.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <v04103d00b2f3c9868068@[208.150.38.73]>
+Date: Sat, 20 Feb 1999 14:31:44 +0100
+To: Steven Bytnar <s-bytnar@uiuc.edu>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: PPC Privileged mode
+Message-Id: <19990220143144.012590@smtp.calvacom.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-OK, whatever settings I just tried worked, but all of my text is huge.
-vmode either is not working, or I'm not using it right.  Again any help
-would be appreciated.  Thanks.
-	-Scott
-=;)
+On Fri, Feb 19, 1999, Steven Bytnar <s-bytnar@uiuc.edu> wrote:
 
-On Fri, 19 Feb 1999, Scott Trimmer wrote:
 
-> I have tried for weeks to get ANY kernel compiled, and I can get the
-> kernel to compile.  But when I copy it into my System Folder on the mac,
-> and boot every piece of text on the consoles is colored boxed with colored
-> circles in the center of them.  Why is this, and what can I do?  The
-> penguin in the upper right corner shows correctly, as well as the first
-> message saying that kernel 2.2.1 is booting.
-> 
-> System Specs: 
-> Original G3 266 MiniTower w/ a ATI Rage II/DVD+
-> Apple 720 Monitor
-> 6MB video mem
-> 
-> Steps I took to compile:
-> make menuconfig  (set settings)
-> make dep
-> make clean
-> make zImage
-> make modules
-> make modules-install
-> ftp'd the vmlinux file to another machine, booted MacOS ftp'd it back to
-> my computer in binary mode.  Installed in system folder, and ran bootx.  
-> 
-> Typing blind and starting X works (funny vmode but it works).  What can I
-> do?  I want to get this working.
-> 	-Scott
-> P.S. Thanks for all your help in advance.  
-> 
-> 
-> 
-> 
+>How do I exit cleanly from PPC supervisor mode to MacOS? I am trying 
+>to work with the code in BootX, but it was meant to execute the 
+>kernel and never return. My purpose is only to read and write to 
+>supervisor read/writable registers on the chip without destroying 
+>MacOS.
+
+Use the code in "GrabG3CacheSettings". It uses a different mecanism by
+patching MacOS "sc" exception handler.
+
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
