@@ -1,36 +1,38 @@
-Message-ID: <3BC716D2.6020902@humboldt.co.uk>
-Date: Fri, 12 Oct 2001 17:14:10 +0100
-From: Adrian Cox <adrian@humboldt.co.uk>
-MIME-Version: 1.0
-To: Matt Porter <mporter@mvista.com>
-Cc: mod+linuxppc-dev@mclx.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: PPC+southbridge designs
-References: <200110121337.JAA21171@missioncriticallinux.com> <20011012050917.A15738@cx258813-a.chnd1.az.home.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-Id: <200110121622.f9CGMmY11334@aslan.scsiguy.com>
+To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Cc: linuxppc-dev@lists.linuxppc.org,
+	yellowdog-devel@lists.yellowdoglinux.com
+Subject: Re: no luck with Adaptec SCSI controller in 2.4.X 
+In-Reply-To: Your message of "Fri, 12 Oct 2001 10:10:12 EDT."
+             <20011012140752.FUZG10438.tomts12-srv.bellnexxia.net@there>
+Date: Fri, 12 Oct 2001 10:22:48 -0600
+From: "Justin T. Gibbs" <gibbs@scsiguy.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Matt Porter wrote:
+>Here is what dmesg says:
+>
+>SCSI subsystem driver Revision: 1.00
+>ahc_pci:1:2:0: Reading SEEPROM...done.
+>ahc_pci:1:2:0: internal 50 cable not present
+>ahc_pci:1:2:0: external cable not present
 
-> On Fri, Oct 12, 2001 at 09:37:27AM -0400, mod+linuxppc-dev@mclx.com wrote:
->>How many existing PPC-based machines incorporate one
->>of those kitchen-sink southbridge chips like the VIA
->>VT82C686B that are normally found in x86-based machines?
+What is your real cable configuration?  This implies that we found
+*no* cables on the card.  I'm sure that is not correct.  Can you also
+tell me the exact markings on the card?  I'd like to fix the cable
+detection logic.
 
-
-> A lot of them.  Hardware developers for high-end PPC embedded designs
-> like them as a way to get UARTs, PIC, and IDE in one dirt-cheap package.
-> Software developers hate them because they are evil.
-
-
-Once they've used them once, the hardware engineers think they're evil
-as well. But I did get a 7410 system with a Via 686a up and running the
-2.4-devel kernel. I think all the necessary fixes have percolated into
-the main tree, except for one MIDI fix which is only in Alan Cox's kernel.
+>From the messages file, it appears that the timing out device is
+simply not bothering to complete commands it has accepted.  We
+abort these stuck commands successfully and even try them again,
+but the device won't cooperate.  This appears to be your Quantum
+Fireball - a drive with a very spotty history.  Perhaps the drive
+will function correctly if tagged queing is disabled for it.  You
+can do this only for target 1 with the "tag_info" option.  There may
+also be firmware updates for this drive.
 
 --
-Adrian Cox   http://www.humboldt.co.uk/
-
+Justin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
