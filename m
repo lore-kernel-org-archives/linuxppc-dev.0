@@ -1,75 +1,53 @@
-Date: Wed, 29 May 2002 14:16:26 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Dan Malek <dan@embeddededge.com>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	Armin Kuster <akuster@mvista.com>,
-	linuxppc-embedded@lists.linuxppc.org,
-	Paul Mackerras <paulus@samba.org>
-Subject: Re: Another OCP enet patch
-Message-ID: <20020529041626.GD16537@zax>
-References: <20020527040330.GH16537@zax> <20020527162323.GB32718@opus.bloom.county> <20020528005728.GO16537@zax> <3CF35E49.60203@embeddededge.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3CF35E49.60203@embeddededge.com>
+Message-ID: <002b01c206cd$59f7a760$1a11efcb@industrialDiv.hanasys.co.kr>
+Reply-To: "Sangmoon Kim" <dogoil@etinsys.com>
+From: "Sangmoon Kim" <dogoil@etinsys.com>
+To: "Matt Porter" <porter@cox.net>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+References: <022501c20633$cbeb4f10$1a11efcb@industrialDiv.hanasys.co.kr> <20020528062351.A2267@home.com>
+Subject: Re: map iomem in linux_2_4_dev
+Date: Wed, 29 May 2002 13:57:34 +0900
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, May 28, 2002 at 06:39:05AM -0400, Dan Malek wrote:
+Hi,
 >
-> David Gibson wrote:
+> You don't need io_block_mapping.  Follow one of the many examples to
+> use early_serial_init with an ioremap call for your UART.
 >
+> The only reason your method works is that the io_block_mapping is
+> actually using a BAT on our classic PPC platform.  ioremap will
+> look for an existent BAT mapping and just return the translated
+> virtual address in this case.  Relying on this is bad practice
+> since it will not work on other PPC systems.
 >
->
-> >Changing consistent_sync() to use its own constants isn't completely
-> >trivial, because asm/pci.h calls consistent_sync() with the constants
-> >passed as arguments to pci_map_single() et al, ....
->
-> The constent_sync() is not unique to 4xx and it absolutely must not
-> be required to use pci headers/functions for it to work properly.
-> These lower level functions are common to other platforms, other drivers
-> will call consistent_* functions directly, and in some cases the platforms
-> or drivers that use these functions will not require (nor compile correctly)
-> if PCI is enabled.  Unfortunately, making some of these drivers work without
-> PCI defined was the great challenge, so changing these constant the time I
-> put these functions into PowerPC was the least of the problem :-)
+Right, I exactly wanted to do that.
+I called io_block_mapping() on initialization code.
+More precisly on <board name>_map_io(),
+which is in arch/ppc/platforms/<board_name>_setup().
+It has nothing to do with competibility.
+And... Is there any ppc without BAT?
+I didn't know that.
 
-I agree it must not depend on PCI functions, but I don't see the
-problem with PCI headers (well, I do, but it seems less important than
-other considerations).  consistent_sync() relies on the PCI direction
-constants defined in linux/pci.h *now* - it checks them explicitly in
-its switch statement (so does the ARM version).  That works fine,
-because pci.h defines the direction constants even if CONFIG_PCI=n.
-The constants don't really have anything to do with PCI, and are
-already used for SBUS DMA directions on Sparc and IIRC for ISA DMA in
-some places.  We're talking about whether the *callers* of
-consistent_sync() should need pci.h.
+> As David correctly pointed out, only use io_block_mapping when
+> you absolutely must control the placement of the virtual address.
+Than, if the system initialization code is changed,
+the driver code should be changed too.
 
-> >.....  So, to decouple the consistent_sync() constants from
-> >the PCI direction constants we would have to put a switch in every
-> >time consistent_sync() is used in asm/pci.h.
+> There are cases when this is necessary since the hardware engineers
+> always send us garbage to support.  Mapping a UART at init time is
+> not one of these.
 >
-> Just define them so they have the same value as their PCI counterparts.
+Actually, I'm a hardware guy.
+In most cases, mapping UART is not needed,
+but on the hardware I designed, it is needed.
+Because its physical addres is 0x78000000.
+Don't blame us too much.
+It takes much money to change hardware.
 
-Well, it looks like I'm not going to win this argument, but calling
-with one name for a constant and checking for another in the
-implementation, relying on them to have the same value bothers me
-much, much more that a few irrelevant PCI_ on the front of constant
-names (which is not to say that the latter doesn't bother me at all).
-
-> >... In io.h along with the prototype for
-> >consistent_sync() would be a better idea.
->
-> Yes, thank you :-)
-
-Ok, well if we have to have the two sets of constants, please lets put
-them in io.h and not in ocp-dma.h.  They have nothing to do with OCP
-(just as they have nothing to do with PCI).
-
---
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.  -- H.L. Mencken
-http://www.ozlabs.org/people/dgibson
+- Sangmoon Kim -
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
