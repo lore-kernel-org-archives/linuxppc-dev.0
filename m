@@ -1,19 +1,19 @@
-Return-Path: <ratman.k@gmail.com>
-Received: from mproxy.gmail.com (mproxy.gmail.com [216.239.56.247])
-	by ozlabs.org (Postfix) with ESMTP id 97C322BDF2
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao06.cox.net (fed1rmmtao06.cox.net [68.230.241.33])
+	by ozlabs.org (Postfix) with ESMTP id CB8F72BDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 Nov 2004 07:38:22 +1100 (EST)
-Received: by mproxy.gmail.com with SMTP id q44so24947cwc
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 Nov 2004 12:38:21 -0800 (PST)
-Message-ID: <004601c4d19b$77367450$a1b210ac@nvidia.com>
-From: "r.k" <ratman.k@gmail.com>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Tue, 23 Nov 2004 12:31:47 -0800
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0043_01C4D158.660000E0"
-Subject: mpc7447a
+	Wed, 24 Nov 2004 08:24:38 +1100 (EST)
+Date: Tue, 23 Nov 2004 14:24:36 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: "r.k" <ratman.k@gmail.com>
+Message-ID: <20041123142436.A26213@home.com>
+References: <004601c4d19b$77367450$a1b210ac@nvidia.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <004601c4d19b$77367450$a1b210ac@nvidia.com>;
+	from ratman.k@gmail.com on Tue, Nov 23, 2004 at 12:31:47PM -0800
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: mpc7447a
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,29 +24,9 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Tue, Nov 23, 2004 at 12:31:47PM -0800, r.k wrote:
+> any ideas how to generate tool chain for mpc7447a ???
 
-------=_NextPart_000_0043_01C4D158.660000E0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Again and again in the archives: http://kegel.com/crosstool/
 
-any ideas how to generate tool chain for mpc7447a ???
-------=_NextPart_000_0043_01C4D158.660000E0
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Diso-8859-1">
-<META content=3D"MSHTML 6.00.2800.1458" name=3DGENERATOR>
-<STYLE></STYLE>
-</HEAD>
-<BODY bgColor=3D#ffffff>
-<DIV><FONT face=3DArial size=3D2>any ideas how to generate tool chain =
-for mpc7447a=20
-???</FONT></DIV></BODY></HTML>
-
-------=_NextPart_000_0043_01C4D158.660000E0--
+-Matt
