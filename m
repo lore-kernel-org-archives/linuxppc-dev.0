@@ -1,97 +1,145 @@
-Message-ID: <3E3E6086.6000209@intracom.gr>
-Date: Mon, 03 Feb 2003 14:28:54 +0200
-From: Pantelis Antoniou <panto@intracom.gr>
+Message-ID: <D73A25AA6E54D511AD74009027B1110F3C0601@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'OHMURA Yutaka'" <ohmura@co-nss.co.jp>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: How to use EP8260 MTD device?
+Date: Mon, 3 Feb 2003 09:19:57 -0500 
 MIME-Version: 1.0
-To: joakim.tjernlund@lumentis.se
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] arch/ppc/8xx_io/enet.c, version 3
-References: <IGEFJKJNHJDCBKALBJLLIENMFJAA.joakim.tjernlund@lumentis.se>
-In-Reply-To: <IGEFJKJNHJDCBKALBJLLIENMFJAA.joakim.tjernlund@lumentis.se>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Joakim Tjernlund wrote:
+It looks like you are using the MTD with the onboard FLASH.  I noticed you
+have "CONFIG_MTD_PHYSMAP_BUSWIDTH=2", the FLASH on the ep8260 is a 64bit
+bus, wouldn't that mean this should be a "CONFIG_MTD_PHYSMAP_BUSWIDTH=4".
 
->>>This is the second version of my patch that removes the expensive memcpy of
->>>received
->>>ethernet frames in interrupt context.
->>>
->>>I have 1 report(from Ricardo Scop) of 20% increase in packets/second, packet
->>>size 1500 when
->>>applied to 8260 FEC(needs to be applied manually). But min packet size
->>>decreased with 10 %.
->>>This version should fix the 10% decrease case.
->>>
->>>This patch could be adapted 8xx_io/fec.c and 8260_io/enet.c and
->>>8260/fcc_enet.c with little effort.
->>>
->>>Better fix a bug in set_multicast_list(), move the dmi list forward when
->>>    walking it(dmi = dmi->next;)
->>>
->>>New stuff:
->>>   - Configrable: copy small packets or pass them directly, see
->>>COPY_SMALL_FRAMES in code.
->>>   - Collision reporting fix form Thomas Lange.
->>>   - Don't pass receive frames which has error upwards.
->>>   - Report RX_OV errors as fifo errors, not crc errors.
->>>
->>>Please test and report any problems and performace improvements.
->>>
->>>
->>Hi
->>
->>This is the third version of my optimized enet.c patch.
->>Changes since version 2:
->>  1) invalidate the whole buffer BEFORE it is given to he CPM. Previously
->>     it was invalidated after the packet was received and that could lead to buffer
->>     corruption in some cases.
->>
->>  2) use dma_cache_inv() instead of invalidate_dcache_range() since that will work
->>     for both 8xx and 82xx.
->>
->>  3) decrease the allocated buffer length.
->>
->>  4) disabled COPY_SMALL_FRAME. Define it somewhere if you want to save some memory.
->>
->>  5) probably some white space changes got in too.
->>
->>Any chance to see it the devel tree?
->>
->>More than 3 months has passed since version 2 and the only problem reported was
->>1) and the fix has been know since mid November.
->>
->>Dan, you said you would integrate this patch(or some version of it) in November. I
->>think I have waited long enough now. Please do ASAP.
->>
->> Jocke
->>
->>
->[SNIP]
->
->Zero feedback so far. Is there zero interest to improve the mpc code in linuxppc?
->Anyhow, I give up. Don't have the energy to resend over and over again.
->
->   Jocke
->
->
->
->
->
->
-Please don't give up.
+Also, there are more configurations you can make, particularly for FLASH.
+You should use make menuconfig and look at the other options.
 
-I'll try it and you'll have my feedback within the week.
+Lastly, there is mention of MTD for the RPX LITE and CLLF boards.  These
+have the same FLASH but a 32 bit bus, you may be able to modify this support
+to include 64 bit for the ep8260.
 
-Anyhow, what is the deal with 8xx/82xx?
-At least the maintainers should ack the patch, and if it is not suitable
-for inclusion they should state for what reason.
+-----Original Message-----
+From: OHMURA Yutaka [mailto:ohmura@co-nss.co.jp]
+Sent: Friday, January 31, 2003 8:40 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: How to use EP8260 MTD device?
 
-We don't want to discourage people sending patches.
-Right?
 
-Pantelis
+
+Hi,
+
+In this ML, no one uses EP8260?
+Or TSL(2.4.7 base)?
+
+I changed my .config as follows, but still not work.
+> # Memory Technology Devices (MTD)
+> CONFIG_MTD=y
+> CONFIG_MTD_DEBUG=y
+> CONFIG_MTD_DEBUG_VERBOSE=3
+> CONFIG_MTD_PARTITIONS=y
+> CONFIG_MTD_CHAR=y
+> CONFIG_MTD_BLOCK=y
+> CONFIG_FTL=y
+>
+> # RAM/ROM/Flash chip drivers
+> CONFIG_MTD_CFI=y
+> CONFIG_MTD_GEN_PROBE=y
+> CONFIG_MTD_CFI_AMDSTD=y
+>
+> # Mapping drivers for chip access
+> CONFIG_MTD_PHYSMAP=y
+> CONFIG_MTD_PHYSMAP_START=FF000000
+> CONFIG_MTD_PHYSMAP_LEN=FFFFFF
+> CONFIG_MTD_PHYSMAP_BUSWIDTH=2
+
+By the way, TSL uses DEC register for timer, is this same in pure PPC-Linux?
+I could't find pure PPC-Linux 2.4.7 source code...
+
+Regards,
+
+Yutaka
+
+OHMURA Yutaka <ohmura@co-nss.co.jp> wrote:
+
+>
+> Hello,
+>
+> Now I'm trying to use Embedded Planet 8260 board Flash memory with TimeSys
+> Linux 3.1(TSL). I have two type of this board. One has 200MHz clock, have
+RTC,
+> 64MB PSDRAM, 32MB LSDRAM and 16MB Flash ROM. The other has 300MHz clock,
+> no RTC, 32MB PSDRAM and 8MB Flash ROM. My goal is use MTD device under TSL
+with
+> 300MHz MPU board, but the board looks some other difference with 200MHz
+board,
+> so TSL can't works fine, so at first I'm trying to use MTD device with
+200MHz
+> board. But I can't use MTD until now.
+> In now situation, /dev/mtd and /dev/mtdblock are normal directory and
+there are
+> nothing under the directory.
+>
+> Please tell me how to use MTD on EP8260 under TSL!
+>
+> Here is my .config
+> > # Memory Technology Devices (MTD)
+> > CONFIG_MTD=y
+> > CONFIG_MTD_DEBUG=y
+> > CONFIG_MTD_DEBUG_VERBOSE=3
+> > CONFIG_MTD_PARTITIONS=y
+> > CONFIG_MTD_CHAR=y
+> > CONFIG_MTD_BLOCK=y
+> > CONFIG_FTL=y
+>
+> > # RAM/ROM/Flash chip drivers
+> > CONFIG_MTD_CFI=y
+> > CONFIG_MTD_JEDECPROBE=y
+> > CONFIG_MTD_GEN_PROBE=y
+> > CONFIG_MTD_CFI_AMDSTD=y	<-On board Flash memory looks AMD
+> 				  chip but the print faint so I
+> 				  can't read chip type
+> > CONFIG_MTD_CFI_AMDSTD=y
+> > CONFIG_MTD_OBSOLETE_CHIPS=y
+> > CONFIG_MTD_AMDSTD=y
+>
+> > # Mapping drivers for chip access
+> > CONFIG_MTD_PHYSMAP=y
+> > CONFIG_MTD_PHYSMAP_START=FF800000	<-adjusting to 300MHz board
+> > CONFIG_MTD_PHYSMAP_LEN=70000000	  I hope 200MHz board can work with
+> 					  this parameter
+> > CONFIG_MTD_PHYSMAP_BUSWIDTH=2
+> other MTD parameters are not set
+>
+> Under this environment, MTD driver says
+> > physmap flash device: 6ffffc at ff800000
+> > CFI: Found no Physically mapped flash device at location zero
+> > RPX Lite or CLLF flash device: 2000000 at fe000000
+> > CFI: Found no RPX device at location zero
+> > $Id: ftl.c,v 1.38 2001/09/23 21:15:12 dwmw2 Exp $
+>
+> This is first time to use MTD for me, so if you know good reference to use
+it,
+> please tell me too.
+> /usr/src/timesys/ep8260/2.4.7-timesys-3.1.180/kernel/Documents was not
+help me.
+>
+> Regards,
+>
+> Yutaka
+>
+>
+
+
+_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+OHMURA, Yutaka <ohmura@co-nss.co.jp>
+  Nissin Systems co.,ltd.
+  (Phone) +81-75-344-7950  (FAX) +81-75-344-7888
+   Ayakoji, Horikawa street, Shimogyo-ku, KYOTO, JAPAN
+_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
