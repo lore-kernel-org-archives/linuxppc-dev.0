@@ -1,55 +1,42 @@
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <16575.53851.142603.669967@cargo.ozlabs.ibm.com>
-Date: Fri, 4 Jun 2004 11:37:31 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Stef Simoens" <stef.simoens@pi.be>
-Cc: "linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: align.c handling of lswi / stswi
-In-Reply-To: <HYMQXY$68CD56C10E486DAA5C77966D406CE84C@scarlet.be>
-References: <HYMQXY$68CD56C10E486DAA5C77966D406CE84C@scarlet.be>
+Subject: Re: write stuff in the PRAM?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Colin LEROY <colin@colino.net>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <010201c447e2$e173cc20$3cc8a8c0@epro.dom>
+References: <010201c447e2$e173cc20$3cc8a8c0@epro.dom>
+Content-Type: text/plain
+Message-Id: <1086378195.12665.9.camel@gaston>
+Mime-Version: 1.0
+Date: Fri, 04 Jun 2004 14:43:16 -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Stef Simoens writes:
-
-> While testing the PPC601 MQ patch, some programs were giving
-> reproducible BUS errors. gcc 601-optimized code uses lswi / stswi,
-> and the fix_alignment function didn't know how to handle this. I
-> worked the alignment fix out for these instructions
-> (arch/ppc/kernel/align.c)
+On Tue, 2004-06-01 at 09:15, Colin LEROY wrote:
+> Hi,
 >
-> My changes work (testing right now, with the MQ patch), however I'm
-> not sure if my coding style is OK.
-> The main changes are:
-> - "union data" to "union data[7]" to store up to 4 * 8 = 32 bytes.
+> I'm trying to get TV-out work on my iBook G4.
+> After booting with a CRT attached, I get
+> $ cat /proc/device-tree/pci@f0000000/ATY,ViaParent@10/ATY,Via_B@1/display-type
+> CRT
+>
+> I get the same after booting with a TV attached.
+>
+> It looks like setting this to "STV" would make TV video-out work (or at least
+> help it work ;-).
+>
+> Is there any way to do such a thing (either a tool, a kernel patch, or in
+> openfirmware voodoo) ?
 
-Hmmm, it would be nice to do lswx/stswx as well as lswi/stswi, and the
-x versions can do up to 128 bytes.  I think we should just have
-special cases for lsw* and stsw* instead of trying to use the existing
-LD and ST cases.
+Nah. OF doesn't know how to setup the TV Out I think and radeonfb
+definitely doesn't. It's a quite complicated process, I've seen a bit
+of code from ATI supposed to do that a while ago full of comments about
+things not working properly & black magic =P
 
-> I looked in the 64-bit alignment code (arch/ppc64/kernel/align.c)
-> and found 'switch (nb)' cleaner than the existing 'for (i = 0; i <
-> nb; ++i)'.
+Maybe once I'll try again getting that to work but that mean that day
+I'm really terminally bored :)
 
-It's a matter of taste; the for loop is certainly more compact.
+Ben.
 
-> Is my patch to fix the alignment of stswi / lswi wanted? I'm not
-> planning to use #ifdef because stswi/lswi are valid ppc instructions
-> (however, because of timing, gcc probably won't generate them on non
-> 601).
-
-I think it would be good to handle lswi/stswi properly.  While we are
-at it we should do lswx/stswx and lwm/stmw as well.
-
-> Is it wanted to 'restyle' the ppc32 align.c to the ppc64 version --
-> with only ppc32 instructions and the same functionality of the
-> existing ppc32 align.c of course...
-
-Not particularly.
-
-Paul.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
