@@ -1,37 +1,47 @@
-Date: Thu, 27 May 1999 02:21:26 +0200 (CEST)
-From: =?ISO-8859-1?Q?Kolbj=F8rn_Barmen?= <kolla@nvg.ntnu.no>
-To: Tom Rini <tmrini@ntplx.net>
-cc: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: ioctl 0x7667 in Xpmac
-In-Reply-To: <Pine.LNX.4.05.9905261445580.26691-100000@pc.wackyland.com>
-Message-ID: <Pine.LNX.4.10.9905270216210.11906-100000@daneel.nvg.ntnu.no>
+Message-ID: <374CCD26.AB2C6ADC@eos.ncsu.edu>
+Date: Thu, 27 May 1999 00:42:14 -0400
+From: Scott Sams <sbsams@eos.ncsu.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+To: jsproul@mail.wesleyan.edu, linuxppc-dev@lists.linuxppc.org
+Subject: Re: AWACS Bug
+References: <Pine.GSO.4.05.9905251646130.14882-100000@mail.wesleyan.edu>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 26 May 1999, Tom Rini wrote:
+Thank you for the helpful information. However, neither of the tricks
+you suggested helped me. Is it possible to damage the AWACS chip on the
+motherboard (maybe by an electrical surge?) and still have the machine
+run? 
 
-> Which means no frame buffer, and most likely MkL.  We should begin working
-> on the installer changes to support APUS in a day or two.  Mind sending me
-> privatly the emails of a few people that would wish to test things out?
-> (or would the linux-apus list be interested?  I could subscribe for a
-> little while.. :))
+I guess I will have to install a new card. Do you know of any other PCI
+sound cards that work under linuxppc on a powermac?
 
+Thanks,
 
-Whatever you do, put me on your list :)
+Scott
 
-I've let my linux partitions pending for a while, waiting for some new
-installer images to test. I can test install from ftp, nfs, smb, cdrom, 
-disk.. have I forgotten anything.. http? Anways, I'm ready for whatever :) 
+Jason Y. Sproul wrote:
+> 
+> Have you tried a motherboard reset and/or powerdown? For the former, you
+> have to locate the reset switch on the motherboard - should be near the
+> battery. For the latter, you have to yank the backup battery on the
+> motherboard and leave it out and the machine unconnected to *anything* for
+> at least four hours. (Overnight is preferable.) I've seen Macs get wedged
+> badly enough that an mboard powerdown and a few hits of the reset were
+> necessary to flush everything. Developing PCI cards isn't always fun...
+> 
+> ........................................................................
+> Jason Y. Sproul                    http://www.con.wesleyan.edu/~jsproul/
+> jsproul@wesleyan.edu            jsproul@iced.com    http://www.iced.com/
+>      Eagles may soar, but weasels don't get sucked into jet engines.
 
-
- Kolbjørn Barmen |    a3k/o6o/6o4e/AmigaOS/MacOS/LinuxPPC   |    // T e a m
- <kolla@nvg.org> | a12ooCT/o3o/Linux-m68k  a6oo/o3o/AmigaOS | \XX/ A M I G A
- Nettverksgruppa |    "I met the Amiga and fell in love..." | <amiga.nvg.org>
-             »» Norwegian University of Technology and Science ««
+-- 
+ ____ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~      Scott Sams         
+(____  _  _-|-|-                    sbsams@eos.ncsu.edu      
+_____)(__(_)| |        http://www.catt.ncsu.edu/~sbsams
+~~~~~~~~~~~~~~~~
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
