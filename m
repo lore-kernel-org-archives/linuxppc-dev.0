@@ -1,6 +1,5 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Date: 5 Jun 2002 09:15:27 -0000
-Message-ID: <20020605091527.20240.qmail@webmail9.rediffmail.com>
+Date: 5 Jun 2002 09:18:36 -0000
+Message-ID: <20020605091836.24714.qmail@webmail9.rediffmail.com>
 MIME-Version: 1.0
 From: "vandana  mehtani" <vandana_mehtani123@rediffmail.com>
 Reply-To: "vandana  mehtani" <vandana_mehtani123@rediffmail.com>
