@@ -1,42 +1,49 @@
-Date: Fri, 14 Jun 2002 10:33:30 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Armin <akuster@pacbell.net>
-Cc: Dan Malek <dan@embeddededge.com>,
-	Paul Mackerras <paulus@samba.org>,
+Date: Thu, 13 Jun 2002 17:38:07 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Dan Malek <dan@embeddededge.com>,
+	Eugene Surovegin <ebs@innocent.com>,
 	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: First cut at large page support on 40x
-Message-ID: <20020614003330.GN4228@zax>
-References: <20020604035947.GH2762@zax> <3CFCFC20.80101@embeddededge.com> <15614.37065.549142.218906@argo.ozlabs.ibm.com> <3CFEE9A3.5060300@embeddededge.com> <15614.63160.272890.683586@argo.ozlabs.ibm.com> <3CFF1624.2070808@embeddededge.com> <20020612035203.GQ25800@zax> <3D06E702.4000709@embeddededge.com> <20020612064344.GT25800@zax> <3D08E0CD.4040806@pacbell.net>
+Subject: Re: [PATCH] pci_alloc_consistent in an interrupt context
+Message-ID: <20020614003807.GD13541@opus.bloom.county>
+References: <5.1.0.14.2.20020613122317.02e34480@mail.zultys.com> <20020613205824.GX13541@opus.bloom.county> <3D0912F4.4020300@embeddededge.com> <20020613215635.GB13541@opus.bloom.county> <20020614002419.GM4228@zax>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3D08E0CD.4040806@pacbell.net>
+In-Reply-To: <20020614002419.GM4228@zax>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Thu, Jun 13, 2002 at 11:13:33AM -0700, Armin wrote:
+On Fri, Jun 14, 2002 at 10:24:19AM +1000, David Gibson wrote:
 >
-> David Gibson
+> On Thu, Jun 13, 2002 at 02:56:35PM -0700, Tom Rini wrote:
 > >
-> >Heh, so instead we got a half-assed re-implementation (with a whole
-> >bunch of extraneous pointless crap) in the form of the OCP layer.
+> > On Thu, Jun 13, 2002 at 05:47:32PM -0400, Dan Malek wrote:
+> > > Tom Rini wrote:
+> > >
+> > > >..... But I don't see (immediatly) why the change to
+> > > >pci_alloc_consistent was needed as well.
+> > >
+> > > It was a mistake on my part......when CONFIG_NOT_COHERENT_CACHE is used,
+> > > the consisten_alloc() returns the dma_handle, and we have to ensure we
+> > > don't do the virt_to_bus later to get it (because it will be wrong once
+> > > iopa() is discarded :-)
 > >
+> > Ah..  So this part is a correct and necessary fix, separate from the
+> > rest of the patch?
 >
-> Crap...this pointless crap has made it easier to add driver support to
-> new IBM 4xx processors. And the Idea goes beyond PPC :)  Cosmetic
-> changes don't help make things not half-assed and mature.  Flushing the
-> idea, API's and usage does.
+> That's right.  But I think the patch below is a better fix for the
+> problem.  It makes consistent_alloc()/consistent_free() just do the
+> right thing for both cache coherent and cache non-coherent processors,
+> so we can get rid of the ifdef in pci_alloc_consistent() and
+> pci_free_consistent().
 
-No actually.  It's become easier to add driver support to new IBM 4xx
-processors because of the several sensible and useful ideas that have
-gone in along with all the extraneous pointless crap.  All my ocp
-patches have had the aim of leaving the former intact while
-(gradually) removing the latter.
+Er, the problem of setting dma_handle twice?
+
+My only concern is that are things still consistent on non consistent
+procs?
 
 --
-David Gibson			| For every complex problem there is a
-david@gibson.dropbear.id.au	| solution which is simple, neat and
-				| wrong.  -- H.L. Mencken
-http://www.ozlabs.org/people/dgibson
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
