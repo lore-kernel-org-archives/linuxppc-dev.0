@@ -1,39 +1,62 @@
-Message-Id: <200008300559.HAA00748@piglet.grunz.lu>
-Date: Wed, 30 Aug 2000 07:59:37 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: [PATCH] via-cuda (CUDA_COMBINED_FORMAT_IIC)
-To: iain@sandoe.co.uk
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <200008292353.AAA19158@hyperion.valhalla.net>
-MIME-Version: 1.0
-Content-Type: TEXT/plain; charset=us-ascii
+Date: Wed, 30 Aug 2000 10:35:41 +0200
+From: "Andi Kleen" <ak@suse.de>
+To: flar@allandria.com
+Cc: matthew@wil.cx (Matthew Wilcox), khalfmann@libra.de (Halfmann Klaus),
+        roman@augan.com (Roman Zippel), linuxppc-dev@lists.linuxppc.org,
+        linux-fsdevel@vger.kernel.org
+Subject: Re: Btree directories (Re: Status of HFS+ support)
+Message-ID: <20000830103541.A10787@gruyere.muc.suse.de>
+References: <20000829181851.D6395@parcelfarce.linux.theplanet.co.uk> <200008300222.TAA13173@marcus.allandria.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200008300222.TAA13173@marcus.allandria.com>; from flar@allandria.com on Tue, Aug 29, 2000 at 07:22:05PM -0700
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Iain,
+On Tue, Aug 29, 2000 at 07:22:05PM -0700, flar@allandria.com wrote:
+> Matthew Wilcox wrote:
+> > You can lock while you're in a call, but eventually, you fill up the
+> > user's buffer and return.  At that point, you have to drop the lock
+> > because they might never call you again.  So you have to consider
+> > the case of a file being added or removed between calls to getdents.
+> > Current HFS doesn't even pretend to try.  It just stores an index (0
+> > .. n-1) and you pick up from there.  So sometimes you get files twice,
+> > sometimes files don't show up at all.
+> >
+> > I suspect you need to store the key of the item you just found, and
+> > then continue filling in the buffer from there on subsequent calls.
+> > The trouble is that there frequently isn't enough space available to
+> > do that.  The proposed ext2 btree extensins needed 64 bits of space and
+> > there was only 32 bits available.  What size keys does HFS+ have?
+>
+> Catalog keys in HFS+ can be anywhere from 8 bytes all the way up to
+> 518 bytes. I actually do save the key and do a search in the btree
+> in my HFS+ module. (It doesn't seem to work however. And yes, I'm
+> helping out Klaus with his code as well as working on a kernel
+> module with completely separate code.)
 
-On  30 Aug, this message from Iain Sandoe echoed through cyberspace:
-> Unfortunately, the one chip I *really* want to probe (the TDA7433 on the
-> audio card -  i2c address 0x8a) doesn't seem to give a proper response... so
-> if anyone knows more about this - I'd be interested.
+You're sharing a problem with JFS then (and reiserfs to a certain
+extent).
 
-Hmm, are you sure it is actually attached to the CUDA's I2C bus? The
-7x00/8x00 series have a video input chip on an I2C bus as well, but not
-on CUDA... it's on PlanB, which includes its own I2C implementation. I
-don't know about the sound chips in those boxes, however. My first bet
-would be looking around AWACS if there is no I2C bus hidden there
-somewhere.
+In theory you could put as much state as you want into a private field
+of the file structure of the directory. This just ignores two ugly things:
+NFS and telldir. Both basically require you to generate stateless 32bit
+cookies that safely walk your directory.
 
-Michel
+The only good solution I know is a stable namespace that never shrinks unless
+the last entry is removed (basically what ext2 directories do). Then you can
+just have an offset into that namespace. Namespace could be hash + collision
+counter.
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+[XFS uses some trick of assuming that buffer sizes are big enough for one
+of their hash buckets, but it'll surely break in a lot of cases]
+
+Without stable name space probably your only option is to add dummy entries
+into the btree holes instead of rebalancing the tree, and removing all holes
+when the last entry goes away.
+
+-Andi
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
