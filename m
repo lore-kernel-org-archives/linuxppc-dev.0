@@ -1,34 +1,81 @@
-Subject: Re: Missing isa_ symbols
+Subject: Need testers: G3 @ G4 laptops (powerbooks & ibooks)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Christoph Hellwig <hch@lst.de>,
-	Tom Rini <trini@kernel.crashing.org>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <1076847875.6959.58.camel@gaston>
-References: <20040203210321.GA19689@lst.de>
-	 <20040203231728.GF1860@smtp.west.cox.net> <20040214164611.GA15893@lst.de>
-	 <Pine.GSO.4.58.0402151141120.22078@waterleaf.sonytel.be>
-	 <1076847875.6959.58.camel@gaston>
+To: "debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>,
+	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
 Content-Type: text/plain
-Message-Id: <1076847914.6958.60.camel@gaston>
+Message-Id: <1077074495.1082.94.camel@gaston>
 Mime-Version: 1.0
-Date: Sun, 15 Feb 2004 23:25:15 +1100
+Date: Wed, 18 Feb 2004 14:21:36 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 2004-02-15 at 23:24, Benjamin Herrenschmidt wrote:
-> > > +#define __ISA_IO_base ((char *)(PAGE_OFFSET))
-> >
-> > This is not true, I think.
->
-> Don't we have an isa_io_base and isa_mem_base ? let's just use
-> these and return 0xffffffff if not there... (assume base = 0 as
-> non-existing is safe, we'll never ioremap these at 0 physical)
+Hi need people who own those machiens, especially the recent iBook2 models
+with a G3 CPU and titanium powerbooks with a G4, to test this patch and
+tell me if sleep mode still works reliably or becomes unstable.
 
-I mean at 0 virtual of course ... time to go to bed
+(It won't help machines that cannot already sleep).
+
+Applies on top of current 2.6 but may apply to 2.4 as well..
+
+Thanks !
 
 Ben.
+
+===== arch/ppc/kernel/l2cr.S 1.15 vs edited =====
+--- 1.15/arch/ppc/kernel/l2cr.S	Tue Oct 14 17:28:01 2003
++++ edited/arch/ppc/kernel/l2cr.S	Wed Feb 18 14:14:33 2004
+@@ -130,11 +130,13 @@
+ 	mtspr	HID0,r4			/* Disable DPM */
+ 	sync
+
++#if 0
+ 	/* Flush & disable L1 */
+ 	mr	r5,r3
+ 	bl	__flush_disable_L1
+ 	mr	r3,r5
+-
++#endif
++
+ 	/* Get the current enable bit of the L2CR into r4 */
+ 	mfspr	r4,L2CR
+
+@@ -236,8 +238,10 @@
+ 	sync
+
+ 4:
+-	bl	__inval_enable_L1
+
++#if 0
++	bl	__inval_enable_L1
++#endif
+ 	/* Restore HID0[DPM] to whatever it was before */
+ 	sync
+ 	mtspr	1008,r8
+@@ -394,11 +398,10 @@
+ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+  	sync
+
+-	/* Load counter to 0x1000 cache lines (128k) and
++	/* Load counter to 0x4000 cache lines (512k) and
+ 	 * load cache with datas
+ 	 */
+-	lis	r3,0x0002
+-//	li	r3,0x1000	/* 128kB / 32B */
++	li	r3,0x4000	/* 512kB / 32B */
+ 	mtctr	r3
+ 	li	r3, 0
+ 1:
+@@ -409,8 +412,7 @@
+ 	sync
+
+ 	/* Now flush those cache lines */
+-	lis	r3,0x0002
+-//	li	r3,0x1000	/* 128kB / 32B */
++	li	r3,0x4000	/* 512kB / 32B */
+ 	mtctr	r3
+ 	li	r3, 0
+ 1:
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
