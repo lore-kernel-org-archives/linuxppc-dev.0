@@ -1,32 +1,39 @@
-Message-Id: <sc907704.027@gw_tms_syd2.pty.tms.thomson-csf.com>
-Date: Thu, 14 Mar 2002 10:09:58 +1100
-From: "Jeremy Rosen" <Jeremy.Rosen@au.thalesgroup.com>
-To: <linuxppc-embedded@lists.linuxppc.org>, <boppuri_navin@yahoo.com>
-Subject: Re: SPI Driver
+Date: Thu, 14 Mar 2002 13:21:46 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Armin Kuster <akuster@mvista.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: ppc405_dma warnings
+Message-ID: <20020314022146.GP22020@zax>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I plan to,
-but right now it is too incomplete for release. ( no support for
-multiple SPI device, no multithreading protection etc...)
-moreover, I am working with a development board which has no SPI
-device, so it has been tested only in loopback mode (the real board
-we're developing should be available soon. )
+Armin,
 
-just leave me a couple of weeks to work on it, and I'll send it to
-everyone...
+ppc405_dma.c has several constructs like:
+	p_dma_ch->polarity = polarity & GET_DMA_POLARITY(0);
+where GET_DMA_POLARITY() is defined:
+	#define GET_DMA_POLARITY(chan) DMAReq##chan##_ActiveLow | \
+		DMAAck##chan##_ActiveLow | EOT##chan##_ActiveLow
 
->>> sdfg sdfg <boppuri_navin@yahoo.com> 03/14/02 09:55am >>>
-Hello Jeremy,
+Note the macro has no parentheses around its definition, which is
+unusual.  IIRC C precedence will mean this code turns out as:
+	p_dma_ch->polarity = (polarity & DMAReq0_ActiveLow) | \
+		DMAAck0_ActiveLow | EOT0_ActiveLow
+which looks wrong to me and if correct is an insane use of a macro.
+It's also giving compiler warnings.
 
-Would you be nice enough to put those drivers on some
-site and send that link to everyone on the mailing
-list? Thanks.
+I'm guessing that the macro should just get parentheses, but that's a
+semantic change so I don't want to make it without knowing for sure.
+Could you check this?
 
-Navin.
+--
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.  -- H.L. Mencken
+http://www.ozlabs.org/people/dgibson
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
