@@ -1,33 +1,36 @@
-Date: Wed, 17 Feb 1999 10:26:37 -0600 (CST)
-From: Troy Benjegerdes <hozer@drgw.net>
-To: Renaud Dreyer <rdreyer@math.berkeley.edu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: CD-R under Linuxppc?
-In-Reply-To: <199902170512.VAA03324@fhloston>
-Message-ID: <Pine.LNX.4.04.9902171025360.432-100000@narn.local.drgw.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <Pine.LNX.3.96.990216232757.32682C-100000@persephone.cs.nmt.edu>
+Date: Wed, 17 Feb 1999 17:32:33 +0100
+To: Cort Dougan <cort@persephone.cs.nmt.edu>, linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: Restructuring Efforts
+Message-Id: <19990217173233.029089@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 16 Feb 1999, Renaud Dreyer wrote:
+On Tue, Feb 16, 1999, Cort Dougan <cort@persephone.cs.nmt.edu> wrote:
 
-> 
->    I was thinking of buying a CD-R drive, mainly for back-up purposes.
-> Is it possible to burn CD's under any of the current Linuxppc kernels
-> at this point? I'm looking at an external SCSI Sony drive. Thanks,
-> 
+>With metered (and well behaved :) changes going into a linux/ppc cvs tree
+>I think that wouldn't be a problem.  So I can get a handle on the scope of
+>things, how many people would want r/w access to a linux/ppc cvs tree?
 
-2.1.13x worked for me, and I see no reason why 2.2.1 won't work. (you
-might need to patch include/asm-ppc/shmparam.h to increase the max amount
-of shared mem for cdrecord)
+I would prefer that rather than one on vger. Many parts of Linux are
+still really obscure to me and I'm really afraid of breaking things. I
+prefer having to deal with two trees: an "official" one with qualified
+patches than can be tested by users and that will ultimately go to Linus,
+and a "developement" tree containing more cutting-edge stuffs.
 
---------------------------------------------------------------------------
-| Troy Benjegerdes    |       troy@microux.com     |    hozer@drgw.net   |
-|    Unix is user friendly... You just have to be friendly to it first.  |
-| This message composed with 100% free software.    http://www.gnu.org   |
---------------------------------------------------------------------------
+However, the problem that will quickly come from that is the difficulty
+to merge changes from the dev tree to vger, at least until 2.3.x is split.
+
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
+
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
