@@ -1,34 +1,39 @@
-In-Reply-To: <19991128154913.A15762@io.nu>
-Date: Mon, 29 Nov 1999 00:06:45 +0100
-To: Shaw Terwilliger <sterwill@io.nu>, paulus@linuxcare.com
-CC: linuxppc-dev@lists.linuxppc.org, dan@netx4.com
-From: BenH <bh40@calva.net>
-Subject: Re: 2.3.30-pre3
-Message-Id: <19991129000645.003441@smtp.calvacom.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-Id: <v04220806b46780295d6d@[129.105.186.98]>
+In-Reply-To: <Pine.HPX.4.10.9911190941180.5120-100000@gra-ux1.iram.es>
+References: <Pine.HPX.4.10.9911190941180.5120-100000@gra-ux1.iram.es>
+Date: Sun, 28 Nov 1999 19:01:54 -0600
+To: Gabriel Paubert <paubert@iram.es>
+From: Geoff Hutchison <ghutchis@wso.williams.edu>
+Subject: Re: Building Question
+Cc: Martin Costabel <costabel@wanadoo.fr>, linuxppc-dev@lists.linuxppc.org
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Nov 28, 1999, Shaw Terwilliger <sterwill@io.nu> wrote:
+At 11:46 AM +0100 11/19/99, Gabriel Paubert wrote:
+>Anyway, this probably means that the application has a lot initialized
+>data (a few big arrays with some elements statically initialized could
+>cause it but it's a wild guess). The resulting executable will be huge in
+>any case (objdump --head will tell you how much you would have saved by
+>looking at the size of the plt).
 
->I can make diffs if anyone wants them; I'm sure some other people would
->rather like to build from Paul's unstable tree.  :)  I'd been using
->his stable tree, but for the last 3 months, I can't boot one of his
->stable kernels without getting a machine check somewhere in init.
->The unstable ones have no problems with it, although my USB mouse seems
->to have stopped working... (so now I'm trying to make Xpmac use some
->keys to emulate mouse buttons, but they seem hard-coded, so it'll be
->a little harder than I thought).
+Thanks for your help. Fortunately it turned out to be much simpler. I 
+saw someone suggest upgrading to a newer binutils for a similar 
+problem and it helped. I'm now using the latest binutils RPM and 
+don't seem to have any problems.
 
-Yes, please, send me your patches. Paul will be away for a few weeks and
-I want to move all my patches (there are more coming ;) to 2.3.x asap.
+You are right that it has a lot of initialized data. It has one 
+"defaults.cc" file with a large amount of static defaults. We'll 
+probably discuss whether it's better to keep this or have a default 
+config file load in before the user's config file.
 
-BTW, dmasound is broken in Paul's current stable 2.2.14pre. I don't know
-yet what's going on but it looks like the driver had major changes
-(backported sound in from 2.3.x ?). I can't get any sound output on my
-wallstreet anymore. I'll try to look into this next week.
+Thanks to everyone for their help!
+Cheers,
 
+-Geoff Hutchison
+Williams Students Online
+http://wso.williams.edu/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
