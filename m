@@ -1,28 +1,29 @@
-Message-ID: <3D6DB30E.6060509@embeddededge.com>
-Date: Thu, 29 Aug 2002 01:37:18 -0400
-From: Dan Malek <dan@embeddededge.com>
+Date: 29 Aug 2002 09:39:39 -0000
+Message-ID: <20020829093939.21236.qmail@webmail28.rediffmail.com>
 MIME-Version: 1.0
-To: caokai <tk19@taikebj.com.cn>
-Cc: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 8xx's IMMR can not be 0x12200000?
-References: <3D6D7B65.DC29B971@taikebj.com.cn>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+From: "vandana  mehtani" <vandana_mehtani123@rediffmail.com>
+Reply-To: "vandana  mehtani" <vandana_mehtani123@rediffmail.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: documentation 
+Content-type: text/plain;
+	format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-caokai wrote:
+Hello everybody,
+I am trying to study the code for head8xx.h.
+but the documentation to understand the powerpc assembly is
+somehow inadequate,
+I have the powerpc programming environment.
+but it seems that there is a need to understand the "as" specific
+assembler ..
+Where can i get the documentation.
+The information is very scattered.
 
->      But if I set IMMR to 0xFF000000, the linux kernel can work good.
->      I think this limitation must be somewhere in the
-> arch/ppc/kernel/head_8xx.S.right?
-
-It's a requirement to be mapped at a very high address like this for
-the kernel to work properly.  This is due to the early memory mapping
-required by the kernel to access devices in this space.  There is lots
-of discussion about this if you search the e-mail archives and FAQs.
-
-	-- Dan
+thanks in advance
+regards
+vandana
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
