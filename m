@@ -1,54 +1,56 @@
-Date: Sat, 3 Jun 2000 11:22:31 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Michel Dänzer <daenzerm@student.ethz.ch>
-cc: Takashi Oe <toe@unlserve.unl.edu>, Michel Lanners <mlan@cpu.lu>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: [patch] VRAM detection in controlfb
-In-Reply-To: <3938C6A2.8FB95D17@student.ethz.ch>
-Message-ID: <Pine.LNX.4.05.10006031120360.1278-100000@callisto.of.borg>
+Message-ID: <3938FB56.F6900AB@pop.agri.ch>
+Date: Sat, 03 Jun 2000 14:34:37 +0200
+From: Andreas Tobler <toa@pop.agri.ch>
+Reply-To: toa@pop.agri.ch
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+To: Takashi Oe <toe@unlserve.unl.edu>
+CC: Linux -Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 7200 & bitkeeper/linuxcare devel?
+References: <Pine.LNX.3.96LJ1.1b7.1000602162200.22680A-101000@ofey.inetnebr.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 3 Jun 2000, Michel Dänzer wrote:
-> Geert Uytterhoeven wrote:
-> > > XF4's fbdev is not working right for me either.  The weird displacement
-> > > occurs on both of display cards (control, matrox) I have.  I think the
-> > > current XF4 is of no use for fbdev only people.
-> >
-> > Probably XF4 handles fix.smem_start being not on a page boundary
-> > incorrectly.
+Hi,
+
+Takashi Oe wrote:
 >
-> What would it have to do to handle it?
+> Hi,
+>
+> On Fri, 2 Jun 2000, Andreas Tobler wrote:
+>
+> > Hi,
+> > has anyone gotten a bitkeeper 2.4.0test1-ac7 or a linuxcare 2.3.99p9 to
+> > boot under a 7200?
+>
+> I think I know why the kernel fails to boot on your machine.  I had to get
+> around this problem for my current project.  I've sent a patch for it to
+> Paul about a week ago, but, so far, nothing happened yet.  Just in case,
+> the same patch is attached here.
+>
+> In your last post, you had a xmon log which said something like ".....
+> vector: 700 ....", and I infer that kernel died with program check
+> exception.
+>
+> Anyway, in arch/ppc/kernel/time.c, timer_interrupt() and do_gettimeofday()
+> use "mftb" instruction which is not implemented in PPC 601, hence, the
+> exception.  The patch workarounds this, but, personally, I feel the
+> previous implementation which just used DEC register was better than my
+> patch or the current one when all PPCs are considered.
 
-Round down smem_start and mmap() it, and readd the offset. Cfr.
+Well, I applied this patch to the bitkeeper 2.4.0-test1-ac7, bingo, it
+boots again. Until the detection of my adaptec happens. Boop. Here I get
+a resource conflict and the machine wants to reboot since all my disk
+are hanging on the 2940UW. This is a known problem for all linuxers,
+also the ia32 and others. Have to read the posts on lk about this. Right
+now I build a 2.3.99p9 from linuxcare with your patch. I expect it to
+boot since the adaptec stuff was broken on 2.4 up.
 
-    ati_smem_start = (unsigned long)fb_fix.smem_start & PAGE_MASK;
-    ati_smem_offset = (unsigned long)fb_fix.smem_start & ~PAGE_MASK;
-    ati_smem_len = (ati_smem_offset+fb_fix.smem_len+~PAGE_MASK) & PAGE_MASK;
+So a big thanks to you Takashi, I can't say right now about the quality
+about the patch, I have to study it exactly. But so far I'm able to work further.
 
-    addr = (unsigned long)mmap(NULL, ati_smem_len, PROT_READ | PROT_WRITE,
-				MAP_SHARED, fb_fd, 0);
-
-    ati_smem = addr+ati_smem_offset;
-
-    ...
-
-    munmap((caddr_t)(ati_smem & PAGE_MASK), ati_smem_len);
-
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Andreas
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
