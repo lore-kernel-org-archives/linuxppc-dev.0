@@ -1,26 +1,50 @@
-Message-ID: <0D9416AE7F95D411A8710008C7332F3F03218B@GUILDFORD4_NT>
-From: Daniel Furse <daniel.furse@iptest.com>
-To: "Linux Embedded List (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Ramdisk image
-Date: Thu, 30 Nov 2000 17:09:01 -0000
+Message-ID: <3A2693B6.B79E95FD@mvista.com>
+Date: Thu, 30 Nov 2000 12:51:50 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: diekema_jon <diekema@bucks.si.com>
+CC: Brian Ford <ford@vss.fsi.com>, linuxppc-embedded@lists.linuxppc.org,
+        dan_malek@mvista.com
+Subject: Re: EST SBC8260 and Canary CTX-1170
+References: <m141Uzk-001SzWC@bucks>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi everyone,
+diekema_jon wrote:
 
-How do I go about creating a ramdisk image for an embedded PPC system? I
-downloaded a pre-built image, which is now giving me problems, and I would
-like to create a new one. I have downloaded fileutils, but I have been
-unable to cross-compile them (we use RedHat x86 host, with gcc). Is there a
-patch or something? Is there a method/HOWTO/documentation somewhere about
-how to do this?
+> ....  When I run with FEC2 active,
+> I get a type of 0x00437412.  I would expect this to look something
+> like 0x0180????.
 
-Many thanks is advance,
+Probably an MII timing problem.
 
-Dan Furse
+
+> When Dan Malek runs with the National Semi PHY DP83840A, how fast
+> is the MPC8260 running?
+
+I run a variety of clock speed combinations depending upon
+performance data customers request.
+
+> ....  I think that Dan is running at 166Mhz,
+> if so we might have a timing problem on I2C bus.
+
+You mean MII control/status lines, I assume.  I have had lots of
+trouble with this and am constantly changing the MII function in the
+driver.  I have used about six different PHYs on a variety of boards,
+none of them will respond the same.  Some seem very sensitive to the
+clock duty cycle, and I may just have to write some function that
+carefully provides the clock using the timebase registers and interrupts
+disabled.  I don't want to do this because of the interrupt latencies
+it could cause.  You can tune this function to work with one or two
+PHYs, and when you try something else it just doesn't work.
+
+
+	-- Dan
+
+--
+
+	I like MMUs because I don't have a real life.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
