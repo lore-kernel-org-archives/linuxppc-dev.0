@@ -1,38 +1,38 @@
-Date: Wed, 18 Apr 2001 14:04:21 +1000
-From: Steven Hanley <sjh@svana.org>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: XF4, SysRq, VT, mouse buttons, Keymaps and all that
-Message-ID: <20010418140421.C535@wibble.net>
-Reply-To: Steven Hanley <sjh@wibble.net>
-References: <20010418002843.8305BDBACB@atlas.valhalla.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20010418002843.8305BDBACB@atlas.valhalla.net>; from iain@sandoe.co.uk on Wed, Apr 18, 2001 at 01:28:52AM +0100
+Message-Id: <200104180551.HAA00793@piglet.grunz.lu>
+Date: Wed, 18 Apr 2001 07:50:56 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: TiBook trackpad in benh's kernel?
+To: gtgj@pacbell.net
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <m366g3c5od.fsf@adsl-63-196-7-48.dsl.snfc21.pacbell.net>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Apr 18, 2001 at 01:28:52AM +0100, Iain Sandoe wrote:
-> The frustration is that the keycodes are listed in
-> /proc/sys/dev/mac_hid/mouse_buttonX_keycode - but finding out which physical
-> key combination relates to the numbers doesn't appear to be trivial.
+On  17 Apr, this message from Gregorio Gervasio Jr. echoed through cyberspace:
+> m> Anyone else seen this? I can't get the trackpad on my TiBook working
+> m> with benh's latest tres (rsync'ed a few days ago).
+>
+> g>         Seems to work for me.  I'm using his 2.4.4-pre1 tree rsync'ed
+> g> on April 12.  I am using cmode:32, too.
+>
+>         Oops, sorry, I lied.  I boot in cmode:8 (but run X in 32bpp).
 
-AFAIU the numbers there are identical to those in
-/usr/src/linux/include/linux/input.h even when you have adb keycodes theya
-re still the linux keycode numbers.
+Yeah, so do I now.
 
-if you have the linux keycodes enabled using showkey in console will give
-you the keycode for a key corresponding to what is in that header file.
+Thanks
 
-	See You
-	    Steve
+Michel
 
---
-sjh@wibble.net http://wibble.net/~sjh/
-Look Up In The Sky
-   Is it a bird?  No
-      Is it a plane?  No
-         Is it a small blue banana?
-YES
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
