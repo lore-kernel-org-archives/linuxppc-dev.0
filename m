@@ -1,44 +1,62 @@
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: [PATCH] Hymod board support and related changes ... 
-In-Reply-To: Message from Tom Rini <trini@kernel.crashing.org>
-   of "Tue, 28 May 2002 12:26:52 MST." <20020528192652.GM1295@opus.bloom.county>
+Date: Wed, 29 May 2002 12:40:36 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Armin Kuster <akuster@mvista.com>
+Cc: Paul Mackerras <paulus@samba.org>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Recleanups in ocp.h
+Message-ID: <20020529024036.GY16537@zax>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Date: Wed, 29 May 2002 12:10:35 +1000
-Message-ID: <23598.1022638235@msa.cmst.csiro.au>
-From: Murray Jensen <Murray.Jensen@csiro.au>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Tue, 28 May 2002 12:26:52 -0700, Tom Rini <trini@kernel.crashing.org> writes:
->On Tue, May 28, 2002 at 03:48:35PM +1000, Murray Jensen wrote:
->> Hymod board support and related changes ...
->>
->> - Hymod board support
->> - 8260 fcc_enet: more flexible (or at least readable) approach to
->>   configuring i/o pins
->> - 8260 fcc_enet: support different PHY interrupt "vector"s for each FCC
->> - 8260 setup: fixed ppcboot jump address; should be 0x...110 not 0x...104
->> - 8260 setup: turn off interrupts before jumping to the boot rom
->
->Can you split this up into logical patches?
+Your last batch of OCP changes seems to have reintroduced at least one
+thing which I removed, for no readily apparent reason, and introduced
+a couple of other silly things:
+	- the procdir field of struct ocp_dev is back, but it's still
+unused
+	- the new dma_mask field is used nowhere
+	- you've changed the type of the paddr field to (void *) which
+is wrong.  It's a physical address so it should have type
+(phys_addr_t)
 
-OK
+diff -urN /home/dgibson/kernel/linuxppc_2_4_devel/include/asm-ppc/ocp.h linux-grinch/include/asm-ppc/ocp.h
+--- /home/dgibson/kernel/linuxppc_2_4_devel/include/asm-ppc/ocp.h	Wed May 29 12:36:03 2002
++++ linux-grinch/include/asm-ppc/ocp.h	Wed May 29 12:36:57 2002
+@@ -117,17 +117,11 @@
+ 	char name[16];
+ 	u16 num;
+ 	enum ocp_type type;	/* OCP device type */
+-	void *paddr;
++	phys_addr_t paddr;
+ 	void *vaddr;
+ 	u32 flags;
+ 	struct irq_resources irq_resource[MAX_EMACS][OCP_MAX_IRQS];
+ 	void *ocpdev;		/* ocp device struct  pointer */
+-	u64		dma_mask;	/* Mask of the bits of bus address this
+-					   device implements.  Normally this is
+-					   0xffffffff.  You only need to change
+-					   this if your device has broken DMA
+-					   or supports 64-bit transfers.  */
+-
+ #if defined(CONFIG_PM)
+ 	u32 current_state;	/* Current operating state. In ACPI-speak,
+ 				   this is D0-D3, D0 being fully functional,
+@@ -139,7 +133,6 @@
+ 	int (*enable_wake) (u32 state, int enable);	/* Enable wake event */
+ #endif
+ #if defined(CONFIG_OCP_PROC)
+-	struct proc_dir_entry *procdir;	/* dir entry in /proc/bus */
+ 	struct proc_dir_entry *procent;	/* device entry in /proc/bus/ocp */
+ #endif
+ };
 
->Also, instead of testing
->TQM8260 || HYMOD for PPCBoot, why don't we just add in something like:
->if [ "$CONFIG_TQM8260" = "y" -o  "$CONFIG_HYMOD" = "y" \
->	-o "$CONFIG_TQM8xx" = "y" ] ;then
->   define_bool CONFIG_PPCBOOT y
->fi
->
->And use that.
 
-Agreed. I will re-submit this patch. I will spend a bit of time on it, to see
-if there are any other "generic" ppcboot configurations that could be rolled
-into this. Cheers!
-								Murray...
-
+--
+David Gibson			| For every complex problem there is a
+david@gibson.dropbear.id.au	| solution which is simple, neat and
+				| wrong.  -- H.L. Mencken
+http://www.ozlabs.org/people/dgibson
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
