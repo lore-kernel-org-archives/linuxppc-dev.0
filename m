@@ -1,42 +1,62 @@
-Message-Id: <200003242216.XAA00508@piglet.grunz.lu>
-Date: Fri, 24 Mar 2000 23:16:08 +0100 (CET)
+Message-Id: <200003242239.XAA00513@piglet.grunz.lu>
+Date: Fri, 24 Mar 2000 23:39:45 +0100 (CET)
 From: Michel Lanners <mlan@cpu.lu>
 Reply-To: mlan@cpu.lu
-Subject: Re: LongTrail PCI resource assignment
-To: schmitz@opal.biophys.uni-duesseldorf.de
+Subject: PCI bus numbering?
+To: mj@ucw.cz
 cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <Pine.LNX.4.10.10003241142540.18758-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
 Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On  24 Mar, this message from Michael Schmitz echoed through cyberspace:
->
->> >Another advantage of no longer using the information from the OF tree is that
->> >we can just call pci_assign_unassigned_resources() and get everything
->> >reassigned, without worrying about inconsistencies with the OF device tree.
->> >
->> >BTW, if you do want to keep the OF device tree consistent,
->> >pcibios_update_resource() is the place to do this.
->>
->> If this is called _after_ we have done the bus re-numbering, updating the
->> OF tree will be difficult since we need the old bus number to match the
->> PCI device with it's OF entry.
->
-> On a somewhat related issue (the PCI mapping funnies for the Lombard and
-> possibly other Rage Pro devices): what are the penalties if I 'correct'
-> the PCI mapping for the Rage Pro within atyfb_of_init?
+Hi Martin,
 
-A good advice: don't do it ;-). If OF does something wrong with the ATI
-device, then fix it in arch-specific PCI fixup code, so that all other
-code using that device can be left untouched.
+I have a few questions about the new 2.3 PCI code. I may have asked the
+first one before, I don't remember...
 
-Put the special code in the special places, so that the general code
-only needs to care for the general case ;-)
+Anyway, here they are:
+
+1. I there an easy way to get at the struct pci_bus from the bus
+number? I need to go and update resources on a bus I only know the
+number of. Do I have to walk the list of buses?
+
+2. Is there an easy way (again, short of walking the list of buses) to
+get the next free bus number? Problem is: the newer Macs have a weired
+host bridge called UNI-North, which in fact has three separate PCI
+buses, but they are all labeled bus 0. In the PMac PCI ficup code, we
+may want to renumber that and make them three separate buses.
+
+Obviously, we'd like to leave the bus with the slots alone, so that any
+cards with P2P bridges don't need to be renumbered. That leaves two
+buses with a handful of (known) devices to put on to new buses, which we
+need to number...
+
+3. What addresses are IO-space resources supposed to contain? Bus
+physical? Kernel virtual? On x86 platforms, it doesn't matter, but all
+other platforms lack anything special about IO space, so they access it
+as normal memory-mapped IO (albeit in very small chunks ;-).
+
+On PowerMacs, the IO space on a PCI bus is mapped by the host bridge to
+a regular memory region; so obviously there's an address translation
+involved. With multiple host bridges (or UNI-North, for that
+matter), there can be multiples of such translations. Hence, a simple
+offset applied in inb() and friends doesn't help. The bridge init code
+ioremap()s the IO space, and those are the addresses you want a driver
+to use to acces the IO ports. Therefore it makes sense to put those
+addresses into pci_dev's resources.
+
+Which means that the hotplug resource (re)allocation code needs to know
+about this, so it can convert the IO-port virtual address into physical,
+de-offset it and write it into the BAR's.
+
+Coments?
 
 Michel
+
+PS Anybody wants to take the subject to Linux-kernel and have other
+archs' comments about it? I'm not on that list....
 
 -------------------------------------------------------------------------
 Michel Lanners                 |  " Read Philosophy.  Study Art.
