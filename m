@@ -1,58 +1,45 @@
-Message-Id: <199901082349.AAA13864@denx.muc.de>
-To: linuxppc-dev@lists.linuxppc.org
-From: Wolfgang Denk <wd@denx.muc.de>
-Subject: MBX860: How to boot with initrd ?
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-Date: Sat, 09 Jan 1999 00:49:17 +0100
+Message-Id: <199901091003.LAA00374@piglet.cpu.lu>
+Date: Sat, 9 Jan 1999 11:03:17 +0100 (CET)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: PCI Detection/ programming / GPIB
+To: kozioziemski1@llnl.gov
+cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <m3k8yz3s7b.fsf@unites9500.llnl.gov>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On   7 Jan, this message from Bernard Kozioziemski echoed through cyberspace:
+> I have a National Instruments PCI GPIB (IEE-488) card installed in my
+> PowerMac 9500. There is some work on the x86 front to support GPIB, so I
+> thought I'd start there. Unfortunately, the card is not found by linux when
+> booting. /proc/pci lists 3 devices: Apple Bandit, VGA compat controller
+> (grpahics card) and Apple Grand Central. I'm not sure where to start in
+> detecting this board, and I was wondering if someone on this list could
+> give me a few pointers to (beginner :) info, or example code. Thanks,
 
-I'm trying to boot with `initrd' support on a MBX860 system.  I  know
-how  to  configure  and build the kernel, and I know how to build the
-disk image, and I even seem to be able  to  build  the  zImage.initrd
-image.  But  I  must be missing something, because such an image will
-not boot; all I see is:
+Problem is that you probably have your card in the slots controlled by
+the second bandit host bridge; which is not automatically scanned.
 
-	...
-	Bytes Received =&941768, Bytes Loaded =&941768
-	Bytes/Second   =&134538, Elapsed Time =7 Second(s)loaded at:     00210000 0030E440
-	relocated to:  00100000 001FE440
-	board data at: 023F4228 023F4250
-	relocated to:  00200100 00200128
-	zimage at:     00216000 002674C9
-	relocated to:  023A3000 023F44C9
-	initrd at:     002674C9 002E45DF
-	avail ram:     0030E440 023A3000
+Try moving your card into a different slot (close to the graphics
+card). Of the six slots, three each are controlled by a separate bandit
+host bridge.
 
-	Linux/PPC load: console=tty0 console=ttyS0,9600n8
-	Uncompressing Linux...done.
-	Now booting the kernel
+I'm working on a patch that scans the second PCI bus as well. I'll let
+you know when I have something available.
 
-Then the system hangs, and I have to reset it.
+Michel
 
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+9, Montee St. Crepin           |    Ask Questions.  Make Mistakes.
+L-1365 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
-Any help appreciated...
-
-Let's assume that I want to populate the `initrd'  with  exactly  the
-same  files  as  included  in the `mbxroot.min.tgz' example. [This is
-what I'm  testing  with,  additionally  I  have  only  added  a  link
-`/linuxrc' which points to `/bin/sh'].
-
-What might be missing? I'm sure it's just  a  minor  detail,  however
-critical :-(
-
-TIA,
-
-Wolfgang
-
--- 
-Phone:  (+49)-89-95720-110   Fax: (+49)-89-95720-112   wd@denx.muc.de
-Office: (+49)-89-722-27328               Wolfgang.Denk@ICN.Siemens.DE
-He who hesitates is not only lost, but miles from the next exit.
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
