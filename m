@@ -1,128 +1,91 @@
-Date: Mon, 20 Oct 2003 11:41:05 +0200
-From: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Subject: RE: [PATCH] Remove 7  instructions in 8xx ITLB Miss when pinned TLBs
- is set
-In-reply-to: <004001c3967f$f3a7a890$020120b0@jockeXP>
-To: dan@embeddededge.com
-Cc: "Linuxppc-Embedded@Lists. Linuxppc. Org" <linuxppc-embedded@lists.linuxppc.org>
-Reply-To: joakim.tjernlund@lumentis.se
-Message-id: <IGEFJKJNHJDCBKALBJLLEEIBGAAA.joakim.tjernlund@lumentis.se>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-Id: <200310201305.IAA20143@lists.linuxppc.org>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+From: Rakesh jagota <j.rakesh@gdatech.co.in>
+Reply-To: j.rakesh@gdatech.co.in
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: couldn't find the kernel version the module was compiled for
+Date: Mon, 20 Oct 2003 18:35:34 +0530
+MIME-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> > Joakim Tjernlund wrote:
-> >
-> > > I realized that kernel space won't cause ITLB misses when CONFIG_PIN_TLB is set. At least on
-> > > my system(no module support).
-> >
-> > Why do this?  For years we have been trying to remove #ifdefs from the kernel,
->
-> Then why did you add CONFIG_PIN_TLB in the first place? It is not required for
-> proper operation. It is a performance enhancement, just like my patch.
->
-> > this does nothing but add useless configuration complexity, it doesn't save
-> > any space or execution time,
->
-> But it does. 12 instructions removed and 5 added equals 7*4 bytes saved in the fast path.
-> Executionwise you save 4 instructions:
-> stw     r20, 0(r0)
-> andi.   r21, r20, 0x0800
-> beq     3f
-> lwz     r21, 0(r0)
->
-> There is one instruction between the load of the L1 entry and where it is used by the cmplwi
-> instruction:
-> lwz     r21, 0(r20)     /* Get the level 1 entry */
-> mfcr    r20
-> cmplwi  cr0,r21,0x0fff
->
-> > and the first time you load a module the kernel
-> > will crash.
->
-> So I have to add a test for module support, not a big deal.
->
->  Jocke
+Hi all,
+I am working on mpc8245 based board. I ahve compiled he rtc driver as a
+seperate modules. I have 2 function in assembly file i2c2.S. Its getting
+compiled but when I am inserting the module I am getting the above mentioned
+error.
 
-Hi Again
+i2c2.o: couldn't find the kernel version the module was compiled for
+x1226.o: Unresolved symbol load_runtime_reg
+x1226.o: Unresolved symbol store_runtime_reg
 
-I have updated the patch to address the modules issue. I have also included my response to Dans mail
-since I forgot to include the list in that reply.
 
-Also, I count 24 instructions in the fast path with my patch and 31 instructions without
-my patch. 24 instructions == 6 cache lines and 31 instructions == 7.75 cachelines.
-2 cachelines is saved by the patch.
+The assembly file is like this:
+/**************************************
+ *
+ * copyright @ Motorola, 1999
+ *
+ **************************************/
 
- Jocke
+#include <linux/config.h>
+#define CONFIG_HARD_I2C
+#ifdef CONFIG_HARD_I2C
+//#include <ppc_asm.tmpl>
+#include <linux/ppc_asm.tmpl>
 
-Index: arch/ppc/kernel/head_8xx.S
-===================================================================
-RCS file: /home/cvsadmin/cvsroot/kernel/linuxppc/arch/ppc/kernel/head_8xx.S,v
-retrieving revision 1.10
-diff -u -r1.10 head_8xx.S
---- arch/ppc/kernel/head_8xx.S	8 Oct 2003 10:15:40 -0000	1.10
-+++ arch/ppc/kernel/head_8xx.S	17 Oct 2003 14:47:34 -0000
-@@ -325,8 +325,10 @@
- 	lwz	r3, 12(r0)
- #endif
- 	mtspr	M_TW, r20	/* Save a couple of working registers */
-+#if !CONFIG_PIN_TLB || CONFIG_MODULES
- 	mfcr	r20
- 	stw	r20, 0(r0)
-+#endif
- 	stw	r21, 4(r0)
- 	mfspr	r20, SRR0	/* Get effective address of fault */
- #ifdef CONFIG_8xx_CPU6
-@@ -337,6 +339,7 @@
- 	mtspr	MD_EPN, r20	/* Have to use MD_EPN for walk, MI_EPN can't */
- 	mfspr	r20, M_TWB	/* Get level 1 table entry address */
+#include <asm/mmu.h>
+/**********************************************************
+ * function: load_runtime_reg
+ *
+ * input:  r3 - value of eumbbar
+ *         r4 - register offset in embedded utility space
+ *
+ * output: r3 - register content
+ **********************************************************/
+      .text
+      .align 2
+      .globl load_runtime_reg
+load_runtime_reg:
+	      lwbrx r3,r4,r3
+	      sync
+ 	      bclr 20, 0
 
-+#if !CONFIG_PIN_TLB || CONFIG_MODULES
- 	/* If we are faulting a kernel address, we have to use the
- 	 * kernel page tables.
- 	 */
-@@ -349,6 +352,13 @@
- 	lwz	r21, 0(r20)	/* Get the level 1 entry */
- 	rlwinm.	r20, r21,0,0,19	/* Extract page descriptor page address */
- 	beq	2f		/* If zero, don't try to find a pte */
-+#else
-+	lwz	r21, 0(r20)	/* Get the level 1 entry */
-+	mfcr	r20
-+	cmplwi	cr0,r21,0x0fff	/* Test page descriptor page address */
-+	bng-	2f		/* If zero, don't try to find a pte */
-+	mtcr	r20
-+#endif
+/****************************************************************
+ * function: store_runtime_reg
+ *
+ * input: r3 - value of eumbbar
+ *        r4 - register offset in embedded utility space
+ *        r5 - new value to be stored
+ *
+ ****************************************************************/
+           .text
+           .align 2
+           .global store_runtime_reg
+store_runtime_reg:
+	      stwbrx r5,  r4, r3
+	      sync
+              bclr   20,0
 
- 	/* We have a pte table, so load the MI_TWC with the attributes
- 	 * for this "segment."
-@@ -390,17 +400,24 @@
- 	mtspr	MI_RPN, r20	/* Update TLB entry */
+/*
+_GLOBAL(load_runtime_reg)
+	      lwbrx r3,r4,r3
+	      sync
+ 	      bclr 20, 0
 
- 	mfspr	r20, M_TW	/* Restore registers */
-+#if !CONFIG_PIN_TLB || CONFIG_MODULES
- 	lwz	r21, 0(r0)
- 	mtcr	r21
-+#endif
- 	lwz	r21, 4(r0)
- #ifdef CONFIG_8xx_CPU6
- 	lwz	r3, 8(r0)
- #endif
- 	rfi
+_GLOBAL(store_runtime_reg)
+	      stwbrx r5,  r4, r3
+	      sync
+              bclr   20,0
+*/
+#endif /* CONFIG_HARD_I2C */
 
--2:	mfspr	r20, M_TW	/* Restore registers */
-+2:
-+#if !CONFIG_PIN_TLB || CONFIG_MODULES
- 	lwz	r21, 0(r0)
- 	mtcr	r21
-+#else
-+	mtcr	r20
-+#endif
-+	mfspr	r20, M_TW	/* Restore registers */
- 	lwz	r21, 4(r0)
- #ifdef CONFIG_8xx_CPU6
- 	lwz	r3, 8(r0)
+How can I avoid this.
 
+Thanks & Regards,
+
+rakesh
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
