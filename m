@@ -1,184 +1,66 @@
-Message-Id: <200011191104.MAA00729@piglet.grunz.lu>
-Date: Sun, 19 Nov 2000 12:04:26 +0100 (CET)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: per-fb mmap for platinumfb and valkyriefb in 2.4
-To: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <200009132037.WAA00873@piglet.grunz.lu>
+Message-Id: <200011192002.eAJK28Y23640@shell.faradic.net>
+Date: Sun, 19 Nov 2000 15:02:08 -0500
+From: jingai <jingai@floatingpenguins.com>
+To: "linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
+Subject: No Subject
+Reply-To: jingai@floatingpenguins.com
 MIME-Version: 1.0
-Content-Type: MULTIPART/mixed; BOUNDARY="134458388-1804289383-974631872=:683"
+Content-Type: text/plain; charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---134458388-1804289383-974631872=:683
-Content-Type: TEXT/plain; charset=us-ascii
+This may not be the appropriate list to post this on, but since it
+does work on my x86 box at work, here goes...
 
-Hi all,
+I'm having trouble burning multisession discs with cdrdao.  My
+TOC file is as follows:
 
-I finally came 'round to making a fixed version of my patches available.
-It is attached below, and also available on sourceforge
-(http://sourceforge.net/patch/?func=detailpatch&patch_id=101500&group_id=8234)
+CD_ROM_XA
+TRACK AUDIO
+FILE "audio.raw" 0
 
-This is for 2.4 only. If anyone wants to go ahead and give it a try; let
-me know how it works out, and also whether it improves anything ;-)
+TRACK MODE2_FORM1
+DATAFILE "data.raw"
 
-Cheers
+And the command line:
 
-Michel
+cdrdao write --multi --device 1,4,0 my.toc
 
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+Here is the output from cdrdao:
 
---134458388-1804289383-974631872=:683
-Content-Type: TEXT/plain; CHARSET=US-ASCII
-Content-Disposition: attachment; filename="2.4-powermacfb.diff"
+Cdrdao version 1.1.3 - (C) Andreas Mueller <mueller@daneb.ping.de>
+  SCSI interface library - (C) Joerg Schilling
+  L-EC encoding library - (C) Heiko Eissfeldt
+  Paranoia DAE library - (C) Monty
 
---- linux-2.4.paul/drivers/video/platinumfb.c	Sat Aug  5 09:40:52 2000
-+++ linux/drivers/video/platinumfb.c	Wed Sep 13 22:06:57 2000
-@@ -111,6 +111,8 @@
- 			     struct fb_info *info);
- static int platinum_set_cmap(struct fb_cmap *cmap, int kspc, int con,
- 			     struct fb_info *info);
-+static int platinum_mmap(struct fb_info *info, struct file *file,
-+			     struct vm_area_struct *vma);
+1,4,0: YAMAHA CRW6416S  Rev: 1.0c
+Using driver: Generic SCSI-3/MMC - Version 1.0 (data) (options 0x0000)
 
+Starting write simulation at speed 6...
+Pausing 10 seconds - hit CTRL-C to abort.
+Process can be aborted with QUIT signal (usually CTRL-\).
+Using POSIX real time scheduling.
+Executing power calibration...
+cdrdao: No such device or address. Cannot set SG_SET_TIMEOUT.
 
- /*
-@@ -163,6 +165,7 @@
- 	fb_set_var:	platinum_set_var,
- 	fb_get_cmap:	platinum_get_cmap,
- 	fb_set_cmap:	platinum_set_cmap,
-+	fb_mmap:	platinum_mmap,
- };
+It is apparently failing on the power calibration, but with the same
+CD writer at work, it does not fail here.
 
- static int platinum_get_fix(struct fb_fix_screeninfo *fix, int con,
-@@ -326,6 +329,50 @@
- 		return fb_set_cmap(cmap, kspc, platinum_setcolreg, info);
- 	else
- 		fb_copy_cmap(cmap, &disp->cmap, kspc ? 0 : 1);
-+	return 0;
-+}
-+
-+/* Private mmap since we want to have a different caching on the framebuffer
-+ * for platinumfb.
-+ * Note there's no locking in here; it's done in fb_mmap() in fbmem.c.
-+ */
-+static int platinum_mmap(struct fb_info *info, struct file *file,
-+			 struct vm_area_struct *vma)
-+{
-+	struct fb_ops *fb = info->fbops;
-+	struct fb_fix_screeninfo fix;
-+	struct fb_var_screeninfo var;
-+	unsigned long off, start;
-+	u32 len;
-+
-+	fb->fb_get_fix(&fix, PROC_CONSOLE(info), info);
-+	off = vma->vm_pgoff << PAGE_SHIFT;
-+
-+	/* frame buffer memory */
-+	start = fix.smem_start;
-+	len = PAGE_ALIGN((start & ~PAGE_MASK)+fix.smem_len);
-+	if (off >= len) {
-+		/* memory mapped io */
-+		off -= len;
-+		fb->fb_get_var(&var, PROC_CONSOLE(info), info);
-+		if (var.accel_flags)
-+			return -EINVAL;
-+		start = fix.mmio_start;
-+		len = PAGE_ALIGN((start & ~PAGE_MASK)+fix.mmio_len);
-+		pgprot_val(vma->vm_page_prot) |= _PAGE_NO_CACHE|_PAGE_GUARDED;
-+	} else {
-+		/* framebuffer */
-+		pgprot_val(vma->vm_page_prot) |= _PAGE_WRITETHRU;
-+	}
-+	start &= PAGE_MASK;
-+	if ((vma->vm_end - vma->vm_start + off) > len)
-+		return -EINVAL;
-+	off += start;
-+	vma->vm_pgoff = off >> PAGE_SHIFT;
-+	if (io_remap_page_range(vma->vm_start, off,
-+	    vma->vm_end - vma->vm_start, vma->vm_page_prot))
-+		return -EAGAIN;
-+
- 	return 0;
- }
+My second problem happens both on x86 and PowerPC.  If I
+specify the --multi option to cdrdao, it fails shortly after the
+burn begins (it does write some data to the disc though) with
+a buffer underrun.  If I omit the --multi option, it burns fine
+on x86.  Seeing as I am trying to burn a multisession disc,
+it's kind of necessary (I think?) to specify the --multi
+option.
 
---- linux-2.4.paul/drivers/video/valkyriefb.c	Fri Aug 25 03:17:16 2000
-+++ linux/drivers/video/valkyriefb.c	Wed Sep 13 22:20:39 2000
-@@ -128,6 +128,8 @@
- 			  struct fb_info *info);
- static int valkyrie_set_cmap(struct fb_cmap *cmap, int kspc, int con,
- 			  struct fb_info *info);
-+static int valkyrie_mmap(struct fb_info *info, struct file *file,
-+			  struct vm_area_struct *vma);
+Both boxes are running Debian woody and kernel 2.2.18pre21.
 
- static int read_valkyrie_sense(struct fb_info_valkyrie *p);
- static inline int valkyrie_vram_reqd(int video_mode, int color_mode);
-@@ -152,6 +154,7 @@
- 	fb_set_var:	valkyrie_set_var,
- 	fb_get_cmap:	valkyrie_get_cmap,
- 	fb_set_cmap:	valkyrie_set_cmap,
-+	fb_mmap:	valkyrie_mmap,
- };
+Any help would be greatly appreciated.
 
- static int valkyriefb_getcolreg(u_int regno, u_int *red, u_int *green,
-@@ -269,6 +272,50 @@
- 		return fb_set_cmap(cmap, kspc, valkyriefb_setcolreg, info);
- 	}
- 	fb_copy_cmap(cmap, &disp->cmap, kspc ? 0 : 1);
-+	return 0;
-+}
-+
-+/* Private mmap since we want to have a different caching on the framebuffer
-+ * for valkyriefb.
-+ * Note there's no locking in here; it's done in fb_mmap() in fbmem.c.
-+ */
-+static int valkyrie_mmap(struct fb_info *info, struct file *file,
-+			 struct vm_area_struct *vma)
-+{
-+	struct fb_ops *fb = info->fbops;
-+	struct fb_fix_screeninfo fix;
-+	struct fb_var_screeninfo var;
-+	unsigned long off, start;
-+	u32 len;
-+
-+	fb->fb_get_fix(&fix, PROC_CONSOLE(info), info);
-+	off = vma->vm_pgoff << PAGE_SHIFT;
-+
-+	/* frame buffer memory */
-+	start = fix.smem_start;
-+	len = PAGE_ALIGN((start & ~PAGE_MASK)+fix.smem_len);
-+	if (off >= len) {
-+		/* memory mapped io */
-+		off -= len;
-+		fb->fb_get_var(&var, PROC_CONSOLE(info), info);
-+		if (var.accel_flags)
-+			return -EINVAL;
-+		start = fix.mmio_start;
-+		len = PAGE_ALIGN((start & ~PAGE_MASK)+fix.mmio_len);
-+		pgprot_val(vma->vm_page_prot) |= _PAGE_NO_CACHE|_PAGE_GUARDED;
-+	} else {
-+		/* framebuffer */
-+		pgprot_val(vma->vm_page_prot) |= _PAGE_WRITETHRU;
-+	}
-+	start &= PAGE_MASK;
-+	if ((vma->vm_end - vma->vm_start + off) > len)
-+		return -EINVAL;
-+	off += start;
-+	vma->vm_pgoff = off >> PAGE_SHIFT;
-+	if (io_remap_page_range(vma->vm_start, off,
-+	    vma->vm_end - vma->vm_start, vma->vm_page_prot))
-+		return -EAGAIN;
-+
- 	return 0;
- }
+Regards,
+Jonathan
 
-
---134458388-1804289383-974631872=:683--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
