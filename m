@@ -1,63 +1,42 @@
-From: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Cc: ian reinhart geiser <geiseri@msoe.edu>, linuxppc-dev@lists.linuxppc.org
-Message-Id: <v03110701b53c67db3905@[129.100.29.243]>
-In-Reply-To: 
- <Pine.LNX.4.10.10005080915420.8539-100000@opal.biophys.uni-duesseldorf.de>
-References: <00050714365900.05361@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 8 May 2000 08:56:46 -0400
-Subject: Re: Problems Compileing PVM
+Date: Mon, 8 May 2000 16:19:59 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "D.J. Barrow" <barrow_dj@yahoo.com>
+cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Help with cross-endian bitfields?
+In-Reply-To: <20000508101331.16264.qmail@web204.mail.yahoo.com>
+Message-ID: <Pine.LNX.4.10.10005081618471.1144-100000@cassiopeia.home>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+On Mon, 8 May 2000, D.J. Barrow wrote:
+> struct blah
+> {
+>    unsigned a : 3;
+>    unsigned b : 3;
+>    unsigned c : 2;
+> } __attribute__(packed);
+>
+> I personally would be expecting to use ((*((u8
+> *)&blah[0]))&0x0e0)>>5 to get the info from blah.a on
+> both little & big endian machines.
 
->That's what I meant by 'sloppy programming'. Your instructions cover
->everything but one tiny detail: it is common practice to pass the 'args'
->va_list argument to other functions further down. In some cases I've seen,
->a pointer to the va_list argument is passed (which breaks on PPC). What's
->the proper coding style here?
+Which no longer works if a is longer than 8 bits and/or spans multiple bytes.
+For PCI accesses, you can work around this by using {read,write}l(), which do
+byte swapping on big-endian platforms as well.
 
-In the jdk ppc code, we do exactly that.  In fact, a bunch of us argued
-that the ppc vararg stuff was very broken because of this fact but the sysv
-abi is the bible and no one with any power would change it.
+Gr{oetje,eeting}s,
 
-I asked Franz about adding a macro to do this properly (just like the
-va_start, va_end) but as it stands, there is no cross-platform way to pass
-pointers to varargs.  So all code that does this will require a ppc ifdef.
-
-Here is how we handle this case in the jdk source along with a code snippet
-to illustrate its use.
-
-If it were up to me I would add an official macro called va_ptr or something:
-
-/* fix for varargs differences */
-#if defined(__powerpc__)
-#define VARGS(x) (x)
-#else
-#define VARGS(x) (&x)
-#endif
-
-static ResultType JNICALL
-jni_CallVoidMethodV(JNIEnv *env, jobject obj,
-                          jmethodID methodID, va_list args) {
-    ResultType result;
-    result = jni_Invoke(env, obj, methodID,
-                        jni_PushArgumentsVararg, VARGS(args),
-                        INVOKE_VIRTUAL | retType).unionType;
-    return result;
-}
-
-Kevin
+						Geert
 
 --
-Kevin B. Hendricks, Associate Professor of Operations and Information
-Technology
-Richard Ivey School of Business, University of Western Ontario
-London, Ontario  N6A-3K7  CANADA
-khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
+Geert Uytterhoeven -- Linux/{m68k~Amiga,PPC~CHRP} -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
