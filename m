@@ -1,32 +1,212 @@
-Message-ID: <3DA73AF0.18581E40@esteem.com>
-Date: Fri, 11 Oct 2002 13:56:16 -0700
-From: Conn Clark <clark@esteem.com>
+From: Niklaus Giger <ngiger@mus.ch>
+Reply-To: ngiger@mus.ch
+To: paulus@samba.org, linuxppc-embedded@lists.linuxppc.org
+Subject: Status of PPC403-OAK-port? Somebody using it?
+Date: Sun, 13 Oct 2002 20:03:11 +0200
 MIME-Version: 1.0
-To: May Ling List <linuxppc-embedded@lists.linuxppc.org>
-Subject: Where does the MPC8xx pcmcia pbr0 register get programed?
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Multipart/Mixed;
+  boundary="------------Boundary-00=_B5MX2EOQ1GJDZAU2XCWB"
+Message-Id: <200210132003.13437.ngiger@mus.ch>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi All,
+--------------Boundary-00=_B5MX2EOQ1GJDZAU2XCWB
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 
-	Where does the pcmcia pbr0 register get programed in the 2.4.19
-kernel?  Or is the boot rom expected to set this?
+Hi
+I am working in a company which has produced a custom board with a PPC403GCX
+on it. As I (my very personal opinion) am not very satisfied with the license
+policy of a leading embedded OS supplier (we are still running vxWorks 5.2),
+I am investigating some alternatives.
 
-Thanks in advance.
+When I was looking the last time (about two years ago) Grant Erickson was just
+able to boot the 403GCX and had considerable problems with its ethernet
+controller. (As we use the same controller in our board I have also spent a
+few months to debug its HW and SW deficiencies.)
 
-	Conn
+A few days ago I got (via Bitkeeper) a copy of the 2.5 development kernel (the
+2.4 and 2.4_devel seem to have more problems).
+
+As far as I see the onboard serial controller is not supported. Am I right?
+I think it would not be a great deal to add this, as e.g. we would surely need
+it as it is for us currently the main debugging device.
+
+Setting the CONFIG_OAKNET to y, produced quite a few warnings, which are fixed
+with the attached patch.
+
+As I never posted a patch to the linux kernel, and the documentation is not
+very clear about how to submit patches to whom I am trying it with this
+email. This patch fixes only compilation errors for the OAK but I do not
+think that the ethernet device would run.
+
+I know that TiVo is using the PPC403GCX. Does somebody else use this port? Or
+knows of somebody is using it? Are there success stories or tales about
+failures? It would be nice to here from you.
+
+Please CC to me directly and do not expect an answer in the next 10 days as I
+will be on vacation.
+
+Best regards
+
 --
+Niklaus Giger
+Wieshoschet 6
+CH-8753 Mollis
+Tel. ++41 55 612 20 54 (privat)
+Tel. ++41 55 618 64 68 (Geschäft)
+--------------Boundary-00=_B5MX2EOQ1GJDZAU2XCWB
+Content-Type: application/x-gzip;
+  name="patch.628.gz"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="patch.628.gz"
 
-*****************************************************************
-  If you live at home long enough, your parents will move out.
- (Warning they may try to sell their house out from under you.)
-*****************************************************************
+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
 
-Conn Clark
-Engineering Stooge				clark@esteem.com
-Electronic Systems Technology Inc.		www.esteem.com
+--------------Boundary-00=_B5MX2EOQ1GJDZAU2XCWB--
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
