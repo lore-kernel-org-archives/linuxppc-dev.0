@@ -1,66 +1,37 @@
-Message-Id: <383BA0DF.510AA33E@ict.ac.cn>
-Date: Wed, 24 Nov 1999 16:25:03 +0800
+Message-Id: <383BA2FD.E894EC61@ict.ac.cn>
+Date: Wed, 24 Nov 1999 16:34:05 +0800
 From: LiuTao <tliu@ict.ac.cn>
 Mime-Version: 1.0
-To: Jim Chapman <jim.chapman@iname.com>
+To: Dan Malek <dmalek@jlc.net>
 Cc: LinuxPPC Developers List <linuxppc-dev@lists.linuxppc.org>,
         "linuxppc-embedded@lists.linuxppc.org"
  <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: need suggestions
-References: <383AF067.2B8EB961@iname.com>
+References: <3839F122.3BF6FEDF@ict.ac.cn> <383A0E2D.CFACF894@jlc.net> <383A0E2E.9A261E81@ict.ac.cn> <383A30B7.37700779@jlc.net>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Jim:
+Hi:
 
-I have a bootrom of vxWorks and I want to use it to download any
-files that I need through FTP or TFTP. When I try to do it, I found
-some problems.
-If I use it to download vxWorks's image through FTP, that's all right.
-If I use it to download vxWorks's image through TFTP, there is error.
-If I use it to download a test image(ELF file), there is error too.
-I think there must be some requirements to the download files, right?
-Maybe the format of ELF is not correct?
-I also want to make a bootrom of Linux, can you tell me how to do it?
-I am a newbie, so if you can, tell me something in detail please.
+Dan Malek wrote:
+> My approach is to actually port a Linux kernel to the 8xx board, which
+I have a ADS8xx board and I downloaded kernel source mpc8xx-2.2.13.tgz
+from ppc.kernel.org. Can you tell me how to port it to ADS8xx board and
+make a bootrom of Linux?
+I am a newbie, so please tell something in detail.
 Thanks!
 
 LiuTao
 
-Jim Chapman wrote:
+> is pretty easy these days for just the minimal network support, then
+> slightly "customize" it (so it doesn't use _all_ of memory) and flash
+> is using S-record download or BDM tools.  I then just use the Linux
+> kernel with a TFTP application to do the job.  Just mmap() the unused
+> memory for loading a new image, and modify the reboot to call a
+> specific address rather than return to rom.
 > 
-> Re: using a vxworks bootrom to load zImage
-> 
-> I am using a standard vxworks bootrom to load a zImage, but I had to
-> make a few modifications to the zImage startup code to make it work. For
-> us, it is useful to share the same target hardware between vxworks and
-> linux developers, without having to reblow the flash bootrom each time
-> we switch. And by building BOOTP into the vxworks bootrom, we simply
-> change the BOOTP server entry to have the target boot vxWorks or zImage
-> without changing the bootrom. However, once we're rid of vxworks
-> altogether, then a linux-centric bootrom would be a much better
-> solution.
-> 
-> It turns out that the vxworks bootrom ELF support doesn't handle named
-> ELF sections (it's yet another undocumented feature of Wind River code
-> -- it silently ignores sections that aren't ".text" or ".data"...), and
-> since the compressed vmlinux image is objcopy'd into a special "image"
-> section by arch/ppc/mbxboot/Makefile, I had to find a way to put the
-> image section inside the text segment so that the image data would be
-> copied by the vxworks bootrom. There may be a clever way to do that
-> using ld scripts, but I ended up converting the image data to assembly,
-> and used a couple of public symbols at the start/end of the data so that
-> (a modified) decompress_kernel() could find the image. The
-> binary-to-assembly convertor is a simple perl script which does almost
-> the same thing as vxWorks' binToAsm tool.
-> 
-> The initrd stuff would need similar treatment, but since I don't use
-> initrd, I haven't implemented it.
-> 
-> If you want more details (and the binToAsm perl script) let me know.
-> 
-> -Jim
+>         -- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
