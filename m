@@ -1,8 +1,8 @@
-Message-ID: <EFB813091B18D511BD3600508B644F820A617EBC@tx14exm06.ftw.mot.com>
+Message-ID: <EFB813091B18D511BD3600508B644F820A617EBE@tx14exm06.ftw.mot.com>
 From: Zajac Adam-AAZ004 <Adam.Zajac@motorola.com>
 To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
-Subject: Question on the fs choice
-Date: Tue, 11 May 2004 18:20:52 -0500
+Subject: Protecting shared resources with preemptive  kernel
+Date: Tue, 11 May 2004 18:55:59 -0500
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
@@ -10,33 +10,20 @@ List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
 Hello,
+My group has been working on a custom board based on MPC8540 and running
+Linux kernel 2.4.20.
+We've written some device drivers and came across an issue of protecting
+shared resources within the kernel context that one day may have a
+preemption turned on.
+We tried to evaluate using spin-lock's for that purpose, but there're some
+articles on the web that suggest it is not a safe solution when the kernel
+preemption is turned on (potentially the kernel may hang).
+I was just wondering if anybody has any experience with protecting shared
+resources within a kernel context (e.g. for device drivers) when the
+preemption is enabled.
+Any suggestions and ideas would be greatly appreciated.
 
-We've built a custom board based on MPC8540 that runs Linux OS and utilizes
-compact flash card to store the kernel on a raw-data partition (read-only)
-and root file system on an Ext2 partition (read-write). As Ext2 is not a
-journaling FS, in case of any power failure the file system is not cleanly
-unmounted and the fscheck complains upon a system start-up.
-Also, sometimes the file system partition gets corrupted when we power-cycle
-the card instead of shutting the system down gracefully (the card is build
-to be "hot-swappable" so we test it on purpose).
-
-I saw Wolfgang Denx's post discouraging any use of the CF cards for an
-embedded platform where write operations are performed under power-failure
-prone environment. Unfortunately, this is the reality we're facing on our
-card.
-
-I'm seeking some help with selecting the file system that would survive
-power failure if the CF card didn't get damaged during a write cycle (we're
-gonna perform a thorough testing to assess the severity of that issue).
-
-I've seen some articles suggesting one of the journaling systems, like Ext3,
-XFS or ReiserFS.
-
-Has anybody successfully implemented any of these FS systems on an embedded
-platform equipped with a compact flash card working as a main storage
-medium?
-
-Any help would be greatly appreciated.
+Thanks,
 
 Adam Zajac
 Motorola Inc, Global Telecom Solutions Sector
