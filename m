@@ -1,27 +1,43 @@
-Message-ID: <F9102D41F595D311ACA7009027DE2C84033FFE27@c3po.heurikon.com>
-From: "Montgomery, Tim" <timm@artesyncp.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: PPC RTC on I2C
-Date: Mon, 25 Nov 2002 16:13:17 -0600
+Message-ID: <3DE2A78F.63B1B117@midrivers.com>
+Date: Mon, 25 Nov 2002 15:43:27 -0700
+From: Mark Pilon <mpilon@midrivers.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: "Extra cflags for kbuild 2.4." [ _devel tree ]
+References: <F9102D41F595D311ACA7009027DE2C84033FFE27@c3po.heurikon.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hey all,
+Hi,
 
-I'm working on getting i2c support working on a module that has its RTC on i2c.
+I've been away from the list for a few months and would appreciate
+some larger context w/ that comment and cflags in Makefile --
 
-I've got my i2c client written, but i2c-core and friends don't load until very late in the game; setting ppc_md.get/set (at least in platform_init) is not very useful.
+I'm confused as include/linux/kernel.h includes stdarg.h, but
+the 'extra cflags' specify: -nostdinc -iwithprefix include,
+causing this inclusion not to be satisfied ...
 
-Any thoughts on a graceful way to implement kernel RTC support using an i2c-based RTC (w/o bypassing the kernel's i2c layer)?
+commenting out:
+kbuild_2_4_nostdinc	:= -nostdinc -iwithprefix include
+export kbuild_2_4_nostdinc
 
-Apologies if I've missed something obvious.
+causes the build to compile better.
 
-Regards,
-Tim
+my apologies if I've missed something here;
 
+Mark
+
+
+--
+Mark Pilon
+Minolta-QMS
+
+P.O. Box 37
+325 Dawson County Road 227
+Fallon, MT.  59326-0037
+1-406-486-5539 (primary voice line)
+1-406-853-0433 (cell)
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
