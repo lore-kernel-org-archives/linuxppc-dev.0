@@ -1,84 +1,63 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3CADD870.4050200@control.auc.dk>
-Date: Fri, 05 Apr 2002 19:01:36 +0200
-From: Jon Fridriksson <jonff@control.auc.dk>
-MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Cannot boot properly
-References: <20020405144452.6FF7E11250@denx.denx.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Fri, 5 Apr 2002 10:28:54 -0700
+From: Matt Porter <mporter@mvista.com>
+To: Greg Griffes <ggg@ieee.org>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 7400 mmu_init problem
+Message-ID: <20020405102854.A15453@home.com>
+References: <00e101c1dc8e$f4f8d720$6401a8c0@attbi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <00e101c1dc8e$f4f8d720$6401a8c0@attbi.com>; from ggg@ieee.org on Fri, Apr 05, 2002 at 05:45:08AM -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wolfgang Denk wrote:
+On Fri, Apr 05, 2002 at 05:45:08AM -0500, Greg Griffes wrote:
+>
+> Hello,
+>
+> I am trying to port linuxppc_2_4_devel to a custom 750 design.
+> Using the GNU binutils and gcc-core-2.95.3 tools.
 
->Dear Jon,
->
->in message <3CADA82E.9000502@control.auc.dk> you wrote:
->
->>I connect my target to my PC through an ethernet and a serial port and
->>mount a NFS root file system. Here is where the probem arises with the
->>newer kernel. When i boot (with bootm command in ppcboot), the output on
->>my screen is all garbled where everything was ok before. The kernel is
->>still active on the target but does not respond throgh the serial port
->>anymore. (I use minicom to connect and boot parameters are set to 9600
->>baud in ppcboot).  Any ideas?? Does the newer kernel overide the baud
->>
->
->Check the output carefully, and compare against a working  system.  I
->bet, that most of the time every second character is missing, right?
->
-Right!
+7400 (subject line) or 750? :)  It doesn't matter though.
 
->If this i the case, you have mis-configured the  serial  ports.  Make
->sure  to  enable  both SMC1 and SMC2 in the kernel configuration, and
->select the right one as console port. Also make sure that you  select
->CONFIG_ALTSMC2.
+> After ppc_md.progress reports "MMU: exit" in mm/init.c::mmu_init()
+> the kernel goes into panic() and dies there.
 >
+> I have been using a lousy, unreliable JTAG debugger. Today, I have a
+> BDI2000 and will be learning how to use it and GDB :-))
 
-Done that and now it works !!
+Even with a bad debugger you should be able to dump log_buf to
+see the oops message.
 
-Thank you for your quick response
+> Has anyone experienced this in the past?
 
+If I had a nickel for every time...
 
-Regards
-Jon F. Hjartar
+> Does anyone have a rough idea of the cause of the problem?
+> My guess is that it could be many possible problems, but, it has to
+> be something that I did wrong in <my>_setup.c I haven't changed
+> much in the kernel itself.
 
->
->
->If you check with your ".config" file, the following  options  should
->be selected:
->
->	CONFIG_SMC1_UART=y
->	# CONFIG_CONS_SMC1 is not set
->	CONFIG_UART_MAXIDL_SMC1=1
->	CONFIG_SMC1_UART_RX_BDNUM=4
->	CONFIG_SMC1_UART_RX_BDSIZE=32
->	CONFIG_SMC1_UART_TX_BDNUM=4
->	CONFIG_SMC1_UART_TX_BDSIZE=32
->	CONFIG_SMC2_UART=y
->	CONFIG_ALTSMC2=y
->	CONFIG_CONS_SMC2=y
->	CONFIG_UART_MAXIDL_SMC2=1
->	CONFIG_SMC2_UART_RX_BDNUM=4
->	CONFIG_SMC2_UART_RX_BDSIZE=32
->	CONFIG_SMC2_UART_TX_BDNUM=4
->	CONFIG_SMC2_UART_TX_BDSIZE=32
->
->[This  system  uses  SMC2  as  console  port  -  the   settings   for
->CONFIG_CONS_SMC1 and CONFIG_CONS_SMC2 may be different on your box]
->
->>settings somehow? Is it necessary to upgrade to ppcboot-1.1.5 for the
->>newer kernel to boot??
->>
->
->This is not necessary (though recommended anyway).
->
->Wolfgang Denk
->
+We can only guess since we don't know your hardware and can't see
+your board specific code.  However, you made it out of MMU_init
+and most likely got to start_kernel:setup_arch.  I can only guess
+that you access an unmapped area in your <board>_setup_arch.
 
+> The low level IO is mapped at 0xEC00_0000; could that be a problem?
+
+What low level IO?  Are you attempting to map and use it early on?
+We need more details to help further.
+
+> The kernel is configured very slim, could I be excluding necessary
+> functionality?
+
+Not really.
+
+Regards,
 --
-
+Matt Porter
+MontaVista Software, Inc.
+mporter@mvista.com
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
