@@ -1,43 +1,50 @@
-Message-Id: <l03130301b2a1312f4205@[172.16.10.14]>
-In-Reply-To: <367A328E.9ED@post.uni-bielefeld.de>
-References: <l03130300b29d351e3bbc@[172.16.10.14]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Sat, 19 Dec 1998 23:34:16 +1300
-To: jenschrr@post.uni-bielefeld.de
-From: Bryan Christianson <bryanc@ihug.co.nz>
-Subject: Re: Porting  a driver from x86 to LinucPPC
-Cc: linuxppc-dev@lists.linuxppc.org
+From: kd@flaga.is
+To: Dan Malek <dmalek@jlc.net>
+cc: linuxppc-dev@lists.linuxppc.org
+Message-ID: <002566DF.004E489D.00@notes.flaga.is>
+Date: Sat, 19 Dec 1998 14:15:03 +0000
+Subject: Re: MPX860 : MBX_IMAP_ADDR undefined
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->Bryan Christianson wrote:
->>
->> I'm trying to port a device driver from x86 to linuxppc. I am running into
->> problems with big/little endian-ness.
->>
->> The device is a PCI card. Do I need to explicitly translate the data
->> between big-endian and little-endian or will the io routines (outl, inl and
->> inw) take care of this for me? On x86 I didn't even think about this issue,
->> but now I have a feeling that maybe I should have.
->
->I just fixed the NE2000 driver for this.
->
->inl/outl will fix PCI's liddle-endianess to host-endianness. There is
->some documentation in include/asm/io.h.
->
+Well, the file is named linux-2.1.131.tar.bz2 and it was downloaded from
+ftp.kernel.org.
+So I assume it is the real thing 8-).
 
-Thanks - I've got the thing working now. The inl/outl stuff worked fine,
-but this card also uses inw. I had to flip the bytes on the returned value
-and the card burst into life.
+Magnus Damm also pointed this out that MBX_IMAP_ADDR should be IMAP_ADDR.
 
-Bryan
+Thank you,
 
---
-Bryan Christianson
-email:		<mailto:bryanc@ihug.co.nz>
-Home Page:	<http://crash.ihug.co.nz/~bryanc>
+K.D.
+
+
+
+
+Dan Malek <dmalek@jlc.net> on 12/18/98 06:15:02 PM
+
+To:   Kári Davíðsson/Flaga hf/IS
+cc:   linuxppc-dev@lists.linuxppc.org
+Subject:  Re: MPX860 : MBX_IMAP_ADDR undefined
+
+
+
+
+kd@flaga.is wrote:
+
+> ...... Unfortunately this fails on arch/ppc/kernel/irq.c
+> because of  MBX_IMAP_ADDR undefined
+
+Really?  It should simply be IMAP_ADDR now.  The sources
+I downloaded a few days ago were correct.  Are you sure
+you downloaded the right stuff from the right place?
+
+
+    -- Dan
+
+
+
+
 
 
 
