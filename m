@@ -1,23 +1,21 @@
-Message-ID: <3E4BCF5D.80501@ecubics.com>
-Date: Thu, 13 Feb 2003 10:01:17 -0700
-From: emanuel stiebler <emu@ecubics.com>
+Message-ID: <3E4C0C73.50704@xopnetworks.com>
+Date: Thu, 13 Feb 2003 15:21:55 -0600
+From: Srini Amble <samble@xopnetworks.com>
 MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: linux on minimal 8245
+Subject: Any guiding document for porting kernel?
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
-anybody out here has the necessary configuration files to boot linux on
-a minimal mpc8245, and likes to share it ?
-(minimal means just SDRAM/FLASH/internal serial, the i82559er ethernet
-is not important at the moment)
+Is there any document available on the net to serve as a guiding
+instrument for porting kernel under ELDK to platforms other than the
+ones supported by ELDK? Any pointers is very much appreciated.
 
-preferably on the ELDK ...
-thanks,
-emanuel
+Thanks in advance
+
+Srini
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
