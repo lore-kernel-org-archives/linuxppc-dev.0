@@ -1,46 +1,41 @@
-From: Ryan Nielsen <ran@krazynet.com>
-Date: Fri, 11 Jun 1999 13:07:54 -0700
-To: Alvin Brattli <Alvin.Brattli@phys.uit.no>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: patch for dmasound bug
-Message-ID: <19990611130754.A67@gondolin>
-References: <19990602130509.A269@gondolin> <199906102256.AAA01670@mitra.phys.uit.no>
-Mime-Version: 1.0
+Message-ID: <XFMail.990611232427.heinz@bintec.de>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <199906102256.AAA01670@mitra.phys.uit.no>; from Alvin Brattli on Fri, Jun 11, 1999 at 12:56:26AM +0200
+MIME-Version: 1.0
+In-Reply-To: <199906111644.SAA06210@denx.muc.de>
+Date: Fri, 11 Jun 1999 23:24:27 +0200 (CEST)
+From: Heinz Blaettner <heinz@bintec.de>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Help booting MBX through bootd
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Alvin Brattli wrote:
-> >This restores the rate/byteswap to normal after playing a beep
-> >if you for example stop timidity, make a beep, resume, the sound
-> >will be slower than normal (without this patch).
-> 
-> Although this patch might do what it was intended for, it has some
-> unwanted consequences on the PowerBook G3 Series, namely that one gets a
-> constant, really annoying hiss from the loudspeakers, most notably
-> during the boot sequence.  Without this patch, the hiss stops after a
-> system beep (like when you do an "echo ^G" in a shell), but now even
-> this does not help.  So, if this patch is included in the standard
-> distribution, I suspect we will hear a lot of complaints from PowerBook
-> G3 users.
 
-is this better?
---- dmasound.c	1999/02/05 05:45:42	1.41
-+++ dmasound.c	1999/06/11 20:04:43
-@@ -3255,6 +3255,11 @@
- 	save_flags(flags); cli();
- 	if (beep_playing) {
- 		st_le16(&beep_dbdma_cmd->command, DBDMA_STOP);
-+		out_le32(&awacs_txdma->control, (RUN|PAUSE|FLUSH|WAKE) << 16);
-+		out_le32(&awacs->control, MASK_IEPC
-+			 | (awacs_rate_index << 8) | 0x11
-+			 | (awacs_revision < AWACS_BURGUNDY? MASK_IEE: 0));
-+		out_le32(&awacs->byteswap, sound.hard.format != AFMT_S16_BE);
- 		beep_playing = 0;
- 	}
- 	restore_flags(flags);
+On 11-Jun-99 Wolfgang Denk wrote:
+>> The fact that the cache magic in sysdeps/powerpc/memset.S in glibc
+>> will make the dynamic linker crash in it's early startup phase is
+>> quite a big problem... ;)
+>> Also sysdeps/powerpc/dl-machine.c makes an assumption about the cache
+>> line size, but that seems to be less fatal.
+> 
+> Grrrghh... I see.
+
+Maybe a thumb question ?
+How does the wrong cache line size makes that the code corrupts ???
+I will belive that the execution speed might not be optimal ?
+
+Can someone throw some light on this I don't understand this behaviour ?
+
+...
+
+Thanks
+
+heinz
+
+___________________________________________________
+Command, n.:
+        Statement presented by a human and accepted by a computer in
+        such a manner as to make the human feel as if he is in control.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
