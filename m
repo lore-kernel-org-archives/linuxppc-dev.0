@@ -1,74 +1,51 @@
-Message-ID: <20001216050700.16326.qmail@web4605.mail.yahoo.com>
-Date: Fri, 15 Dec 2000 21:07:00 -0800 (PST)
-From: Jerry Nguyen <jerry_nguyen_75@yahoo.com>
-Subject: Re: PCMCIA have machine check
-To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <1072F1A27E99D3119747005004B9A380BF28A6@MAIL>
+From: Brett Carswell <BrettC@nulec.com.au>
+To: "'Dan Malek'" <dan@mvista.com>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'"
+	 <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: RPX Lite w MontaVista 1.2
+Date: Mon, 18 Dec 2000 08:03:44 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
- Hi ,
+I enabled the NVRAM in the config and everything works great now.
+Thanks
 
- Thank for all valuable advice. I have checked the
-spec of Wireless LAN
- PCMCIA card, the wait signal is longer than the
-setting of BMT. That
-explain
- why we have the machine check.  My fix is modify the
-the Machine Check
- Interrupt handler when read or write PCMCIA because
-we still need monitor
- Machine check in some case and The driver work fine
-now.
-
- Once again thank very much
- Jerry
-
-
-> ----- Original Message -----
-> From: <mlocke@jps.net>
-> To: "Nguyen Xuan Hoang"
-<jerry.nguyen@serialsystem.com.sg>
-> Cc: <linuxppc-embedded@lists.linuxppc.org>;
-<support@mvista.com>
-> Sent: Wednesday, December 13, 2000 9:36 AM
-> Subject: Re: PCMCIA have machine check
+> -----Original Message-----
+> From: Dan Malek [mailto:dan@mvista.com]
+> Sent: Friday, 15 December 2000 3:20 AM
+> To: Brett Carswell
+> Cc: 'linuxppc-embedded@lists.linuxppc.org'
+> Subject: Re: RPX Lite w MontaVista 1.2
 >
 >
-> >
-> > You probably have the old RPX bootloader.  It sets
-the Bus Montior
-timeout
-> > which causes machine checks for every IO
-operation.  Contact EP tech
-> support
-> > and request PlanetCore, the new bootloader.
-> > Nguyen Xuan Hoang wrote:
-> >
-> > > Hi,
-> > >
-> > > I am trying to run Wireless Lan PCMCIA on
-RPXLite board,  but the
-system
-> > > just randomly crash (a machine check error).  I
-have trace the error,
-it
-> > > happen when we read or write the I/O port on the
-wireless LAN. It
-seems
-> the
-> > > PCMCIA controller not set correctly. Have anyone
-experience about this
-> > > problem, please give me some advice.
-> > >
-> > > Thank in advance
-> > > Jerry
-> > >
-> >
-> >
 >
-
+> Brett Carswell wrote:
+>
+> > I have downloaded the MontaVista CDK 1.2 and installed
+> everything for the
+> > RPX lite. I followed the documentation and I can load the s
+> record image
+> > into an RPX Lite board (850SR)
+>
+> Hmmm....I left some debug stuff in arch/ppc/mbxboot/embed_config.c....
+> Edit that file, remove the:
+>
+> 	{
+> 		int i;
+> 		cp = (u_char *)0xfa000000;
+>
+> 		.....
+> 	}
+>
+> piece of code that appears early in the function rpx_cfg().  If you
+> don't have a board with NVRAM, this will certainly fail.
+>
+> Sorry about that, let me know how it goes.
+>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
