@@ -1,83 +1,85 @@
-Date: Tue, 4 May 1999 09:36:27 -0500
-From: Brian Ford <ford@vss.fsi.com>
-To: Brendan Simon <brendan@dgs.monash.edu.au>
-cc: Cross-GCC <crossgcc@cygnus.com>, egcs mailing list <egcs@cygnus.com>,
-        linuxppc-user <linuxppc-user@lists.linuxppc.org>,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: egcs-1.1.2 powerpc cross-compiler question.
-In-Reply-To: <372E6B45.92CCD632@dgs.monash.edu.au>
-Message-ID: <Pine.SGI.4.03.9905040924570.1503-100000@uscream.vss.fsi.com>
+From: Konstantinos Margaritis <kmargar@cc.uoa.gr>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: xserver-fbdev 3.3.3.1 error
+Date: Tue, 4 May 1999 20:01:42 +0300
+Content-Type: text/plain
+Cc: debian-powerpc@lists.debian.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <99050420073900.08450@proton>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 4 May 1999, Brendan Simon wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
 
-> I've tried building egcs-1.1.2 as a powerpc-eabi cross compiler and a
-> powerpc-linux cross compiler.  I had instructions from the LinuxPPC web
-> site on building the powerpc-linux cross compiler.  The configure
-> command was "configure --target=powerpc-linux --with-newlib".  The only
-> difference between my setup and the instructions on the web site is that
-> I am using the FULL egcs-1.1.2 source where as the instructions were for
-> the CORE egcs-1.1.2 source.  I want to use C and C++ so I used the full
-> distribution.  The error message I am getting looks like its related to
-> the objective C build which I don't need but I am interested in trying
-> it one day.  The errors are:
-> 
-> egcs-1.1.2/gcc/objc/runtime.h:31 stdio.h: No such file or directory
-> egcs-1.1.2/gcc/objc/runtime.h:31 ctype.h: No such file or directory
-> 
-> I did not have these problems building the native linux build of
-> egcs-1.1.2.  It obviously knows how/where to find the appropriate
-> headers.
-> 
-> How can I get the objc build to find the appropriate header files ?
-> Can I just delete the gcc/objc directory to avoid building objc ?
-> 
-You must use the --with-headers=dir configure flag to point to the c
-library header files you will be using in your embeded system.  I do not
-believe you can build objc without them.
 
-Yes, I think you should be able to avoid building objc just by deleting it
-or moving it to a new name.
+Well I seem to have a problem with my xserver. Other people don't seem to
+have such a problem, however. So it's either my setup or the fbdev driver
+(valkyrie). Here is the output of startx with the 3.3.3.1-2 xserver (I am
+using a debian glibc 2.1 distribution). The window manager is kwm (kde)
+but I am experiencing similar problems with enlightnement, windowmaker,
+icewm, etc. although not directly at startup.Any ideas are welcome.Many
+other programs are showing this behaviour even if I manage to boot up
+a window manager. The strange thing is that I CAN use xserver 3.3.2.3
+without any problems, apart from the MIT-SHM extension is for some reason
+missing on this one, plus it is kind of buggy.
 
-> The CONFIGURE file in the INSTALL directory says that if you use
-> --enable-languages=c++ then the other languages will be omitted.  I
-> tried that but I still get the above error messages indicating that the
-> objc compiler is trying to be built.
-> 
-I do not believe that that configure flag works with the 1.1.2 release,
-only the current snapshots.  Please use make LANGUAGES='c c++' for this
-purpose.  Also, you could just use make cross as it was designed for this
-purpose.
 
-> Thanks,
-> Brendan Simon.
-> 
-> PS. The other difference I had to the LinuxPPC howto, is I included
-> --program-prefix=powerpc-linux- when building egcs and binutils.  Will
-> egcs have a problem finding the correct binutils with this option ?
-> Would --exec-prefix help to solve this, if this is a problem ?
->
-I don't quite know enough to be helpfull on this question, but if you
-build binutils and egcs in one shot by putting links to the individual 
-binutils packages in the egcs tree and use make cross, everything will
-just work and the installed binaries will have the target as their prefix
-without you needing to specify it.
+XFree86 Version 3.3.3.1 / X Window System
+(protocol Version 11, revision 0, vendor release 6300)
+Release Date: January 4 1999
+	If the server is older than 6-12 months, or if your card is newer
+	than the above date, look for a newer version before reporting
+	problems.  (see http://www.XFree86.Org/FAQ)
+Operating System: Linux 2.2.5 ppc [ELF] 
+Configured drivers:
+   FBDev: Server for frame buffer device
+   (Patchlevel 10): mfb, afb, cfb8, cfb16, cfb32
+(using VT number 7)
 
-> Brendan.
-> 
+XF86Config: /etc/X11/XF86Config
+(**) stands for supplied, (--) stands for probed/default values
+(**) XKB: disabled
+(**) Mouse: type: BusMouse, device: /dev/mouse, buttons: 3
+(**) FBDev: Graphics device ID: "Linux/m68k Frame Buffer Device"
+(**) FBDev: Monitor ID: "Generic Monitor"
+(**) FontPath set to "/usr/X11R6/lib/X11/fonts/misc/,/usr/X11R6/lib/X11/fonts/75dpi/:unscaled,/usr/X11R6/lib/X11/fonts/100dpi/:unscaled,/usr/X11R6/lib/X11/fonts/Type1/,/usr/X11R6/lib/X11/fonts/Speedo/,/usr/X11R6/lib/X11/fonts/75dpi/,/usr/X11R6/lib/X11/fonts/100dpi/"
+(**) FBDev: Using default frame buffer video mode
+(--) FBDev: Frame buffer device: valkyrie
+(--) FBDev: Video memory: 768K @ 0xf1001000
+(--) FBDev: MMIO regs: 0K @ 0xf130a000
+(--) FBDev: Type 0 type_aux 0 bits_per_pixel 8
+(--) FBDev: Hardware accelerator: None
+(--) FBDev: No driver support for hardware acceleration
+(--) FBDev: Using cfb8 driver
+kwm: X_PutImage(0x1c00011): BadLength (poly request too large or internal Xlib length error)
+kwm: failure during initialisation; aborting
 
---
-Brian Ford
-Software Engineer
-Vital Visual Simulation Systems
-FlightSafety International
-Phone: 314-551-8460
-Fax:   314-551-8444
+waiting for X server to shut down kaudioserver: Captured signal 1.
+kaudioserver: disconnectChild() with pid 8240
+            Return = 0
+kaudioserver: Captured signal 17.
+kaudioserver: disconnectChild() with pid 8240
+            Return = 0
+kaudioserver: Exiting on myExit(1).
+Starting audio server with talk id 2696.
 
+
+
+
+- --
+Konstantinos Margaritis
+
+-----BEGIN PGP SIGNATURE-----
+Version: 2.6.3ia
+Charset: noconv
+
+iQCVAwUBNy8pX/alfJok8qABAQFHRAP9FObn4v7z8ACw66MXMYDl+qgi8P7wp0mA
+FPgIa8YJHKzM68qLN1zJyWcwb2Jjlj0eHoZ+BNG8kLHF/oU+UyPlENnbDpMxBtUc
+ff3X9LhKPVt+9Q3j7Z9deP5YvGQDV2QoBwfIS9Rt3XC49V268tr57Sr8kVhigc1D
+WJa2m4cY3gY=
+=tJam
+-----END PGP SIGNATURE-----
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
