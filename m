@@ -1,15 +1,17 @@
-Return-Path: <annamaya@yahoo.com>
-Received: from web53805.mail.yahoo.com (web53805.mail.yahoo.com
-	[206.190.36.200]) by ozlabs.org (Postfix) with SMTP id CB8062BDB8
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao02.cox.net (fed1rmmtao02.cox.net [68.230.241.37])
+	by ozlabs.org (Postfix) with ESMTP id 1E1842BD6A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 12 Oct 2004 03:51:02 +1000 (EST)
-Message-ID: <20041011175055.93158.qmail@web53805.mail.yahoo.com>
-Date: Mon, 11 Oct 2004 10:50:54 -0700 (PDT)
-From: annamaya <annamaya@yahoo.com>
-To: Dan Malek <dan@embeddededge.com>
-In-Reply-To: <079593FC-1BA4-11D9-A165-003065F9B7DC@embeddededge.com>
-MIME-Version: 1.0
+	Tue, 12 Oct 2004 04:15:55 +1000 (EST)
+Date: Mon, 11 Oct 2004 11:15:53 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: annamaya <annamaya@yahoo.com>
+Message-ID: <20041011181553.GC6871@smtp.west.cox.net>
+References: <079593FC-1BA4-11D9-A165-003065F9B7DC@embeddededge.com>
+	<20041011175055.93158.qmail@web53805.mail.yahoo.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20041011175055.93158.qmail@web53805.mail.yahoo.com>
 Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: Booting Linux using a PlanetCore BootLoader
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -22,72 +24,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I loaded a zImage into address 0x100000 in RAM and
-verified that this was indeed an ELF file. I then said
-"go 0x100040" which would start executing the code
-after skipping the 64 bytes of ELF header. But this is
-what I see happen. 
+On Mon, Oct 11, 2004 at 10:50:54AM -0700, annamaya wrote:
 
-BDI>info
-    Target CPU        : MPC8280/8220/5200 (Zeppo)
-    Target state      : debug mode
-    Debug entry cause : <reserved 0>
-    Current PC        : 0x00100040
-    Current CR        : 0x20004022
-    Current MSR       : 0x00000000
-    Current LR        : 0xfff0531c
+> I loaded a zImage into address 0x100000 in RAM and
+> verified that this was indeed an ELF file. I then said
+> "go 0x100040" which would start executing the code
+> after skipping the 64 bytes of ELF header. But this is
+> what I see happen. 
 
-It looks like address 0x0 is reserved for some weird
-reason. When I do a dump of the 0x0 area, it looks
-like there is copy of the planetcore bootloader here
-since I see some text indicating that. If I dont have
-the BDI hooked up, I see an immediate reboot of the
-device, consistant with executing the bootloader at
-0x0. 
+It's 64Kilobytes, so you'd want 0x00110000.  You also might be loading
+yourself a bit too low.  The default link address is (assuming this is
+2.4 and I'm still recalling right) 0x00200000, so you might as well load
+things there.
 
-Any inputs on why this is happenning? I just
-understand the PlanetCore bootloader very well.
-
---- Dan Malek <dan@embeddededge.com> wrote:
-
-> 
-> On Oct 11, 2004, at 12:04 PM, annamaya wrote:
-> 
-> > I am trying to boot a linux kernel using a
-> PlanetCore
-> > BootLoader on an embedded planet board. I am used
-> to
-> > always using U-Boot for my Kernel booting needs. I
-> am
-> > not sure how to get this going on a PlanetCore
-> boot
-> > loader.
-> 
-> You need to build a zImage so you get the simple
-> bootloader that will read the information from the
-> EEPROM
-> and format the board structure.
-> 
-> Load the zImage file as a binary.  It has a 64K ELF
-> header
-> on it, so you can either use 'dd' to strip that
-> before the
-> download or add 64K to the load address to use as
-> the
-> start address.  The start address is the first
-> instruction of
-> the image (or +64K if you didn't remove the ELF
-> header).
-> 
-> 
-> 	-- Dan
-> 
-> 
-
-
-
-		
-_______________________________
-Do you Yahoo!?
-Declare Yourself - Register online to vote today!
-http://vote.yahoo.com
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
