@@ -1,130 +1,44 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	<yellowdog-devel@lists.yellowdoglinux.com>,
-	<linuxppc-dev@lists.linuxppc.org>
+From: benh@kernel.crashing.org
+To: <yellowdog-devel@lists.yellowdoglinux.com>,
+	<linuxppc-dev@lists.linuxppc.org>,
+	"Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
 Subject: Re: some questions on new dual 1Gig G4's support?
-Date: Mon, 4 Feb 2002 12:57:20 -0500
-References: <20020202144614.WRFZ11118.tomts10-srv.bellnexxia.net@there> <20020202201115.17827@smtp.wanadoo.fr>
-In-Reply-To: <20020202201115.17827@smtp.wanadoo.fr>
+Date: Mon, 4 Feb 2002 19:15:38 +0100
+Message-Id: <20020204181538.4089@mailhost.mipsys.com>
+In-Reply-To: <20020203185831.MQZJ9396.tomts12-srv.bellnexxia.net@there>
+References: <20020203185831.MQZJ9396.tomts12-srv.bellnexxia.net@there>
 MIME-Version: 1.0
-Message-Id: <20020204175119.RDWC23298.tomts23-srv.bellnexxia.net@there>
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Ben,
+>
+>Is this L3 cache problem with DOZE and NAP an errata for 7450?  I looked
+>in the updates 7450 manual (with 7455 specifics already added to it) and I
+>did not see any limitations on NAP or DOZE (it is 840 some pages long so
+>perhaps I am not lookingin the right places yet).
 
-Okay the following is a bit over my head.  So any helpful hints welcomed
-from anyone!
+No. It's 2 things. First the NAP must be disabled depending on the
+errata (7450 + L3), but also, neither the 7450 nor the 7455 support
+DOZE, they can only NAP or do nothing. Worst, on the 7455, it's bad
+to set HID0:DOZE as it actually has a different meaning.
 
->Then go figure if the L3 is also incompatible with
-> NAP mode or not. If it is not, you can strip the code that clears
-> the "can DOZE" feature. Note that ideally, we should change that
-> code to be 2 different feature bits, one for can DOZE, and one for
-> can NAP (as the 7450/55 can only NAP, not DOZE).
-> You can change that easily, basically define the new bit for NAP
-> in cputable.h, set it for all CPUs (except 7450 rev 2.0) in
-> cputable, and remove DOZE capability from 7450/55. Once done,
-> tweak the code in arch/ppc/kernel/idle.c so that it does power
-> save if either of these bits is set, but also make sure it does
-> not try to NAP if powersave_nap isn't set (as some host bridges
-> can't handle it, it will be set properly by pmac_feature).
-> If your CPU can't DOZE but can NAP, but powersave_nap is false,
-> do nothing.
+So let's split the can doze & can nap into 2 different features.
 
-I just finished reading Section 10.2 of the newly revised 7450 family User
-Manual (that thing is over 800 pages long).
+>> pmac_feature.c : add an entry in the machine table for your machine
+>> based on OF "model" property.
+>
+>According to the Apple developers note just released for this machine its
+>model ID is simply "PowerMac3,5" which is unchanged from previous versions
+>and already covered in the pmac_feature.c file.
 
-They clearly say that 7451 and 7455 do not have a settable DOZE state.
-Instead the DOZE state is just an intermediate state between the Full
-Power Mode state and the NAP state.   They have a nice event transition
-driven state diagram to illustrate all of this.   According to the manual
-the purpose of this transitory state (DOZE) is to allow bus snooping.
-There is also a SLEEP mode that is diferent from NAP (saves more power)
-and that does not ever enter the trasient DOZE state on its way back to
-the FULL Power State.
+Ok.
 
-The differnces between NAP and SLEEP are as follows (according to the
-manual)
-
----
-10.2.2 Nap Mode
-...
- Because the processor is in nap mode, the system
-causes the processor to enter doze state by negating QACK(bar). The
-processor snoops bus operations and performs appropriate memory coherency
-operations while in the doze mode. When the system reasserts QACK(bar),
-the processor returns to the nap mode after completing any memory
-operations.
----
-
-versus
-
----
-10.2.3 Sleep Mode
-The sleep mode disables all clocking in the MPC7451. The PLL remains
-locked for fast wake response. The JTAG logic remains operational. Note
-that the MPC7451 does not enter doze state to snoop if it is in sleep
-mode. Caches must be flushed to guarantee cache coherency if other system
-components access memory while the MPC7451 is sleeping.
----
-
-
-It is interesting to note that the recommended algo to enter either sleep
-or nap includes the following (again quoting from the revised manual)
-
-
----
-10.2.4 Power Management Software Considerations
-Because the MPC7451 is a three-issue processor with out-of-order execution
-capability, care must be taken in how the power management mode is
-entered. Furthermore, nap and sleep modes require all outstanding bus
-operations to be completed before these modes are entered. Normally,
-during system configuration time, one of these power management
-modes would be selected by setting the appropriate HID0 bit. Later on, the
-mode is invoked by setting MSR[POW]. To ensure a clean transition into and
-out of a power-management mode, the mtmsr which sets the POW bit must be
-preceded by the proper cache flushes, instruction cache disable followed
-by isync, TLB invalidates, and then dssall and sync
-instructions. The sleep mode entry sequence is as follows:
-
-mtHIDO (NAP | SLEEP)
-...
-...
-dssall
-... cache flushes... (1)
-... instruction cache disable ... (2)
-isync (3)
-... TLB invalidates ... (4)
-loop    sync
-mtmsr[POW = 1]
-isync
-b loop
-
-
-The dssall instruction is needed to kill any outstanding stream touch
-instructions not killed by a sync.
-----
-
-So this looks pretty detailed and it clearly says to flush all caches
-before entering and disable the instruction cache but it does not  show
-any differences between NAP and SLEEP.
-
-So what advantage of bus snooping with NAP (that tranistions to DOZE and
-back) if you must flush all of the cache's before entering and leaving NAP
-or SLEEP?
-
-I don't understand the advantage of NAP unless the QACK(bar) signal to the
-processor is enabled for all memory writes by all other processors, DMA
-chips, etc.   Is this true for *everything* that accesses L1, L2, L3 cache?
-
-Can anyone explain what I am misunderstanding here?
-
-Thanks,
-
-Kevin
+>So I will spend my time reading up on NAP and DOZE and trying to see if
+>and how that has changed since the 7450.
+>
+>Thanks for all your help!
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
