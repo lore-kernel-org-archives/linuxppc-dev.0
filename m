@@ -1,37 +1,85 @@
-Date: Mon, 28 Aug 2000 14:05:44 +0200 (CEST)
-From: Ronald Wahl <rwa@peppercon.de>
-To: Dan Malek <dan@embeddededge.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: allocating uncachable memory
-In-Reply-To: <39A6AF42.323B88C@embeddededge.com>
-Message-ID: <Pine.LNX.4.21.0008281358290.1082-100000@goliath.issistance.de>
+Message-ID: <39AA5944.18063A3F@student.ethz.ch>
+Date: Mon, 28 Aug 2000 14:21:25 +0200
+From: Michel Dänzer <daenzerm@student.ethz.ch>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: sprenger <sprenger@in.tum.de>
+CC: Stefan Berndtsson <stefan@nocrew.org>,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: xf4 and lombard
+References: <39A5E3F7.1030409@in.tum.de> <87em3dyy5m.fsf@hades.nocrew.org> <39AA6F8C.50707@in.tum.de>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 25 Aug 2000, Dan Malek wrote:
-
-> > question again: How can I get an alias mapping (with _PAGE_NO_CACHE |
-> > _PAGE_GUARDED) of some already mapped pages.
+sprenger wrote:
 >
-> There isn't anything generic right now.  A few of us are working on
-> a solution, as there are other processors affected (IBM 4xx) as well.
-> If you look at the uart or Ethernet drivers, you will notice they
-> allocate pages of memory, track down the PTEs and set the attributes
-> directly.  You can use that as an example.
+> > May I just ask.. how the heck did you get xf4 running on lombard? :)
+> >
+> > All I manage to get is a black screen and I can't do anything anymore.
+> > The machine is still running, so I can reboot it via network.
+> >
+> > It's a lombard/333 running 2.4.0-test6.
+> >
+> > xf4 is compiled from sources found on a link from the instructions
+> > at linuxppc.org and the rsynced version of the ati-driver, as of
+> > about 17.00 CET 2000-08-25.
+> >
+> use yaboot as said. at the moment i am running  2.4.0-t7 paulus-kernel.
+> sometimes i have some blue dots on my screen but  the rest is fine.
 >
-> Don't forget that managing the caches in software (via flushes and
-> invalidates) could actually provide better performance for data
-> transfers due to the cache bursting available when caches are enabled.
+> i have also attached my xf86config-file. the values in the screen
+> section were floating around in the net - do not ask me where i found
+> them. as you see i do not use them, the ati-driver determines its own
+> values and they are much better. comment out the lines with "Xkb..." i
+> need them because of my german keyboard layout.
 
-Yeah, that's what i do currently. But I had to write an
-invalidate_dcache_range() first. I used the code of
-flush_dcache_range() and replaced dcbst by dcbi. Now it
-seems to work. Thanks for this hint, Dan.
+Let me comment on a few things:
 
-ron
 
+>     SubSection  "extmod"
+>         Option  "omit xfree86-dga"
+>     EndSubSection
+
+You normally want to replace this with just
+
+    Load "extmod"
+
+as DGA is deactivated otherwise. This is from an outdated example XF86Config,
+way back somewhere at 3.9.x when DGA wasn't working yet.
+
+
+>     DefaultDepth 24
+>
+>     SubSection "Display"
+>         Depth           32
+>         Modes           "1024x768"
+>         ViewPort        0 0
+>         Virtual         1024 768
+
+These ViewPort and Virtual values are default for the specified mode and as
+such not needed.
+
+>     EndSubSection
+
+There is no depth 32 in X 4. 32 bpp is depth 24, fbbpp 32. If you want 32 bpp,
+add
+
+    DefaultFbBpp 32
+
+under the DefaultDepth line and
+
+	FbBpp		32
+
+in a Display Subsection for Depth 24. OTOH maybe it's the default anyway
+(driver dependent), grep -i bpp /var/log/XFree86.0.log tells for sure.
+
+
+Michel
+
+
+--
+Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
+Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
