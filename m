@@ -1,22 +1,18 @@
-Return-Path: <ashok.hegde@motorola.com>
-Received: from ftpbox.mot.com (ftpbox.mot.com [129.188.136.101])
-	by ozlabs.org (Postfix) with ESMTP id 8F9AD67A79
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 986DA67A79
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  7 Mar 2005 21:33:51 +1100 (EST)
-Received: from il06exr04.mot.com (il06exr04.mot.com [129.188.137.134])
-	by ftpbox.mot.com (Motorola/Ftpbox) with ESMTP id j27AXnoR024058
-	for <linuxppc-embedded@ozlabs.org>; Mon, 7 Mar 2005 03:33:49 -0700 (MST)
-Received: from zin24exm01.ap.mot.com (zin24exm01.ap.mot.com [10.232.25.1])
-	by il06exr04.mot.com (8.13.1/8.13.0) with ESMTP id j27AYPNF003121
-	for <linuxppc-embedded@ozlabs.org>; Mon, 7 Mar 2005 04:34:26 -0600 (CST)
-Message-ID: <772BCEF88A1DD91191F80011856715F301C2B56C@zin24exm01.ap.mot.com>
-From: Hegde Ashok-aah024 <ashok.hegde@motorola.com>
-To: linuxppc-embedded@ozlabs.org
-Date: Mon, 7 Mar 2005 16:03:33 +0530 
+	Mon,  7 Mar 2005 21:42:07 +1100 (EST)
+Message-ID: <422C30CF.5010906@anagramm.de>
+Date: Mon, 07 Mar 2005 11:45:35 +0100
+From: Clemens Koller <clemens.koller@anagramm.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: MV64360 MPSC - console problem
+To: Kumar Gala <kumar.gala@freescale.com>
+References: <58ddcf3f9fe35315256e2fa3d7361081@freescale.com>
+In-Reply-To: <58ddcf3f9fe35315256e2fa3d7361081@freescale.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: ppcembed Mailing List <linuxppc-embedded@ozlabs.org>
+Subject: Re: gcc-3.3.3 from YDL4 problems?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,23 +23,61 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi All,
+Hello, Kumar!
 
-  I am trying to bring up linux-2.6.10 on ppc based system with
-MV64360(marvell controller).
-I am unable to use mpsc as the console, serial text debug messages are
-coming fine i.e. ppc_md.progress able to print properly on the serial port.
-I observed that  when console_init() is being called from init/main.c  none
-of our "mpsc" init functions are called.
-Also I see that there is no call to "console_initcall" in mpsc driver.
-According to my understanding this call is required in serial drivers used
-as consoles.
- I took this mpsc driver from "bk://source.mvista.com/linux-2.5-marvell" as
-mentioned in ppc mailinglist.
-   Hardware has been tested with linux-2.4.20 flavour and it is absolutely
-fine.
+> Has anyone else had any issues with building kernels (2.6.11) with 
+> gcc-3.3.3 from YDL4.  Ran into a problem today were a 2.6.11 build for 
+> MPC8540 ADS breaks with gcc-3.3.3 but works ok with a 3.4.3.
 
-Appreciate any help.
+You know that I build the mpc8540_ads also.
+I use the Denx ELDK 3.1 with gcc 3.3.3 and it breaks due to an unknown
+rfci instruction:
 
-Thanks,
-Ashok
+$ make
+   CHK     include/linux/version.h
+   CC      scripts/mod/empty.o
+   MKELF   scripts/mod/elfconfig.h
+   HOSTCC  scripts/mod/file2alias.o
+   HOSTCC  scripts/mod/modpost.o
+   HOSTCC  scripts/mod/sumversion.o
+   HOSTLD  scripts/mod/modpost
+   CC      arch/ppc/kernel/asm-offsets.s
+   CHK     include/asm-ppc/offsets.h
+   CC      init/main.o
+   CHK     include/linux/compile.h
+   UPD     include/linux/compile.h
+   CC      init/version.o
+   CC      init/do_mounts.o
+   CC      init/do_mounts_devfs.o
+   CC      init/do_mounts_rd.o
+   CC      init/do_mounts_initrd.o
+   LD      init/mounts.o
+   CC      init/initramfs.o
+   CC      init/calibrate.o
+   LD      init/built-in.o
+   CHK     usr/initramfs_list
+   AS      usr/initramfs_data.o
+   LD      usr/built-in.o
+   AS      arch/ppc/kernel/entry.o
+arch/ppc/kernel/entry.S: Assembler messages:
+arch/ppc/kernel/entry.S:800: Error: Unrecognized opcode: `rfci'
+make[1]: *** [arch/ppc/kernel/entry.o] Error 1
+make: *** [arch/ppc/kernel] Error 2
+
+But if I use your powerpc-linux-gnuspe-* (cross-)toolchain it
+builds fine. Maybe some compile options for 3.3.3 might be sufficient
+to fix that... my way is to use 3.4.3.
+
+Best greets,
+
+Clemens Koller
+_______________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Str. 45/1
+81379 Muenchen
+Germany
+
+http://www.anagramm.de
+Phone: +49-89-741518-50
+Fax: +49-89-741518-19
