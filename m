@@ -1,42 +1,55 @@
-To: linuxppc-dev@lists.linuxppc.org
-From: Igal Baevsky <igal.baevsky@terayon.com>
-Subject: Re: pmac_halt() bug
-Date: Mon, 10 Nov 2003 18:33:09 +0200
-Message-ID: <booek6$vvl$1@sea.gmane.org>
-References: <7AFDCF4E-FCCB-11D6-8F24-003065F22EAA@mindspring.com>
+Date: Mon, 10 Nov 2003 09:46:24 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: John Whitney <john.whitney@timesys.com>
+Cc: "Mailing List: linuxppc-dev" <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Bad code path in DoSyscall
+Message-ID: <20031110094624.A29465@home.com>
+References: <BBD51F48.2329%john.whitney@timesys.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-In-Reply-To: <7AFDCF4E-FCCB-11D6-8F24-003065F22EAA@mindspring.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <BBD51F48.2329%john.whitney@timesys.com>; from john.whitney@timesys.com on Mon, Nov 10, 2003 at 10:56:08AM -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tim Seufert wrote:
+On Mon, Nov 10, 2003 at 10:56:08AM -0500, John Whitney wrote:
 >
-> In platforms/pmac_setup.c, pmac_halt() is defined as follows:
->
-> pmac_halt(void)
-> {
->     pmac_power_off();
-> }
->
-> Arguably, this is a bug because there should be a distinction between
-> halt and poweroff.  I've seen posts on user mailing lists from at least
-> two different people who want to halt without actually powering off,
-> but cannot do so because of this bug.  (I think the reasons have
-> something to do with attempting to get their machines to turn back on
-> automatically when power is restored after a UPS-initiated shutdown.)
->
->
->
->
+> There seems to be a bad code path in the assembly routine DoSyscall()
+> (arch/ppc/kernel/entry.S).  In the case of an invalid syscall being made (in
+> my case, from user space), DoSyscall is called and eventually branches to
+> label 66.  Note that before the branch, r12 is set to zero.
 
-Tim,
-Is there any way to halt PMAC machine with no powering it off ?
-I will realy appretiate your answer - the problem you mentioned above is
-the exact problem I'm dealing with .
-Thanks.
-Igal
+<snip>
 
+>     /* disable interrupts so current_thread_info()->flags can't change */
+> 30: LOAD_MSR_KERNEL(r10,MSR_KERNEL) /* doesn't include MSR_EE */
+>     SYNC
+>     MTMSRD(r10)
+>     lwz r9,TI_FLAGS(r12)
+>
+> Which immediately causes a bad page fault kernel oops.  I haven't come up
+> with a patch yet, but will try to when I get the time unless someone with
+> more knowledge in this area wants to do it.  Just wanted to let the list
+> know about the problem.
+
+Thanks, here's a patch to grab the thread info when you go down the
+no syscall path. This should cure the problem.
+
+It's against linuxppc-2.5.  I think that's what you meant since this
+bug isn't in 2.4.
+
+-Matt
+
+===== arch/ppc/kernel/entry.S 1.40 vs edited =====
+--- 1.40/arch/ppc/kernel/entry.S        Sat Sep 27 03:58:48 2003
++++ edited/arch/ppc/kernel/entry.S      Mon Nov 10 09:36:55 2003
+@@ -234,6 +234,7 @@
+        RFI
+
+ 66:    li      r3,ENOSYS
++       rlwinm  r12,r1,0,0,18   /* current_thread_info() */
+        b       22b
+
+        .globl  ret_from_fork
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
