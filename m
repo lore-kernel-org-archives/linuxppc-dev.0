@@ -1,32 +1,28 @@
+Message-ID: <004501c2e989$a10a66c0$020120b0@jockeXP>
+From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
+To: "Dan Malek" <dan@embeddededge.com>,
+	"Stephan Linke" <Stephan.Linke@epygi.de>
+Cc: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
+References: <FCEAKDJJAPHPLJFINDAJCELACOAA.Stephan.Linke@epygi.de> <3E70B17E.9090507@embeddededge.com>
+Subject: Re: question on howto use invalidate_dcache_range
+Date: Thu, 13 Mar 2003 18:54:38 +0100
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-Subject: RE: Hardcoded Hash_base?
-Date: Thu, 13 Mar 2003 12:44:50 -0500
-Message-ID: <2702075D4DE2B043BF5EB82E9CFAD45B093BD8@mail1.mediatrix.com>
-From: "Jean-Denis Boyer" <jdboyer@mediatrix.com>
-To: "Kent Borg" <kentborg@borg.org>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> In arch/ppc/mm/hashtable.S Hash_base is hardcoded at 0xc0180000, with
-> a comment suggesting that that value is "just an example".  It seems
-> to be colliding with my initrd, so I am thinking I want to move it.
+>
+> Stephan Linke wrote:
+>
+> > After all is it realy neccessary to use invalidate_dcache range before giving the transmit buffer to the DMA?
+>
+> The logically correct cache operation is to invalidate an incoming buffer
+> after the DMA has completed
 
-As the comment says, this code is patched at runtime.
-It is done by MMU_init_hw, in arch/ppc/mm/ppc_mmu.c.
-The value of Hash_base could be anything, it doesn't matter.
+Yes, but you still need to invalidate the buffer before also or invalidate it when the buffer is freed which
+may be possible if you are using your own buffer mgmt.
 
-Regards,
---------------------------------------------
- Jean-Denis Boyer, B.Eng., Technical Leader
- Mediatrix Telecom Inc.
- 4229 Garlock Street
- Sherbrooke (Québec)
- J1L 2C8  CANADA
- (819)829-8749 x241
---------------------------------------------
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
