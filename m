@@ -1,49 +1,24 @@
-Message-ID: <367A9A78.138EC0EC@jlc.net>
-Date: Fri, 18 Dec 1998 13:10:00 -0500
+Message-ID: <367A9BA6.1FDD4CE7@jlc.net>
+Date: Fri, 18 Dec 1998 13:15:02 -0500
 From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-To: Magnus Damm <eramdam@kieray1.p.y.ki.era.ericsson.se>
+To: kd@flaga.is
 CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Problems starting up system on a MPC823FADS
-References: <199812161805.TAA14779@kieray1>
+Subject: Re: MPX860 : MBX_IMAP_ADDR undefined
+References: <002566DC.006770DB.00@notes.flaga.is>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Magnus Damm wrote:
+kd@flaga.is wrote:
 
-> Or the ethernetdriver assumes more than the ethernetaddress.
+> ...... Unfortunately this fails on arch/ppc/kernel/irq.c
+> because of  MBX_IMAP_ADDR undefined
 
-It shouldn't need more.  I have recently ported Linux to
-three different embedded boards, one that had almost no
-boot rom and certainly no Ethernet set up.  All I added was
-the initialization of the Etherenet address and it works
-fine.
-
-Since there is variation among the boards in the
-way they connect some Ethernet control pins or the
-use of external control/status registers for the PHY
-part, I wonder if we don't accidently hit one of these
-later and mess it up.
-
-
-> I know that Dan Malek has got boot-code for the FADS, right Dan?
-
-Should be on the linuxppc.cs.nmt.edu server.
-
-
-> Why not create a board.h file?
-
-I did :-).  It just has not yet made it to the real distribution
-yet.  Almost all of the board specific CONFIG_xxx #defines
-have either been removed or changed to a generic CONFIG_8xx.
-All of the files now simply include "asm/mpc8xx.h", which looks
-almost identical to the file you described.
-
-I am trying to get this to work properly for all of the boards
-I currently have.  I will soon just dump a tarball of my
-directory on the server for everyone to see.
+Really?  It should simply be IMAP_ADDR now.  The sources
+I downloaded a few days ago were correct.  Are you sure
+you downloaded the right stuff from the right place?
 
 
     -- Dan
