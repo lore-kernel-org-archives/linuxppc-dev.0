@@ -1,34 +1,31 @@
-Date: Fri, 24 May 2002 17:12:38 -0700
-From: Matt Porter <porter@cox.net>
-To: Khai Trinh <kqtrinh@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Where can I get the latest linuxppc2.4_devel tree?
-Message-ID: <20020524171238.C21633@home.com>
-References: <20020524234711.37666.qmail@web11507.mail.yahoo.com>
-Mime-Version: 1.0
+Message-Id: <200205250114.g4P1ELi08721@panix1.panix.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: P2P bridge (DEC 21154) initialization on MCP750
+From: Rajappa Iyer <rsi@panix.com>
+Date: 24 May 2002 21:14:21 -0400
+Reply-To: rsi@panix.com
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20020524234711.37666.qmail@web11507.mail.yahoo.com>; from kqtrinh@yahoo.com on Fri, May 24, 2002 at 04:47:11PM -0700
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, May 24, 2002 at 04:47:11PM -0700, Khai Trinh wrote:
->
-> I got my at ppckernel.org but the date on it was May
-> 4th. I know Matt checked a bunch of changes in after
-> this date. Would someone tell where the latest copy
-> is?
+I'm having problems with the PCI-PCI bridge (DEC 21154) on the MCP750
+and would appreciate any words of wisdom.  Basically, this bridge does
+not get initialized and therefore no devices are probed on the
+secondary bus.
 
-Whoa...I get it now. :) Join us in the present by fetching
-a copy by one of the methods described at
-http://www.penguinppc.org/dev/kernel.shtml
+I've tried all three kernel trees from source.mvista.com
+(linuxppc_2_4, linuxppc_2_4_devel and linuxppc_2_5).  The devel branch
+does not get past the Bogomips calibration loop.  The other two do not
+initialize the bridge.
 
-Move quick, it's not broken at the moment.
+Any ideas on how to fix this?
 
-Regards,
+Thanks,
+Rajappa
 --
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+<rsi@panix.com> a.k.a. Rajappa Iyer.
+	They also surf who stand in the waves.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
