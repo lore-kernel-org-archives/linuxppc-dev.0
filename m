@@ -1,46 +1,46 @@
-Date: Thu, 9 Oct 2003 23:53:03 -0800
-From: Ethan Benson <erbenson@alaska.net>
-To: LinuxPPC Developers <linuxppc-dev@lists.linuxppc.org>
+Date: Fri, 10 Oct 2003 12:39:04 -0400
+From: Bill Fink <billfink@mindspring.com>
+To: Gabriel Paubert <paubert@iram.es>
+Cc: linuxppc-dev@lists.linuxppc.org,
+	Bill Fink <billfink@mindspring.com>
 Subject: Re: Time precision, adjtime(x) vs. gettimeofday
-Message-ID: <20031010075302.GT2828@plato.local.lan>
+Message-Id: <20031010123904.24a8c6cd.billfink@mindspring.com>
+In-Reply-To: <20031010073314.GA14632@iram.es>
 References: <20031010011254.078c84a8.billfink@mindspring.com>
+	<20031010073314.GA14632@iram.es>
 Mime-Version: 1.0
-In-Reply-To: <20031010011254.078c84a8.billfink@mindspring.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Oct 10, 2003 at 01:12:54AM -0400, Bill Fink wrote:
+On Fri, 10 Oct 2003, Gabriel Paubert wrote:
+
+> On Fri, Oct 10, 2003 at 01:12:54AM -0400, Bill Fink wrote:
+> >
+> > This discussion prompted me to finally ask about another clock related
+> > problem I see on the 867 MHz G4 systems at work.  The clocks on these
+> > systems continuously run 0.2% slow (about 3 minutes per day).  Apparently
+> > this is more than ntp can adjust for (using scaling), as I get many of
+> > these error messages in the log:
 >
-> This discussion prompted me to finally ask about another clock related
-> problem I see on the 867 MHz G4 systems at work. The clocks on
-> these systems continuously run 0.2% slow (about 3 minutes per day).
-> Apparently this is more than ntp can adjust for (using scaling), as I
-> get many of these error messages in the log:
+> Indeed, the limit of NTP is about 500ppm (0.05%) AFAIR. Anything higher
+> and you go into period time steps like the one you report.
+>
+> 2.4.20 is recent enough and should not have this kind of problems.
+>
+> What is the initial decrementer frequency from boot messages log?
 
-is it a quicksilver G4?  i maintain one of those and its time goes off
-much faster then that (3 minutes within a couple hours).
+clifford% dmesg | grep -i decr
+time_init: decrementer frequency = 33.290001 MHz
 
-the fix is rather simple:
+> What is the timebase frequency from OF?
+> (od -td4 /proc/device-tree/cpus/PowerPC,G4/timebase-frequency)
 
---- linux.old/arch/ppc/platforms/pmac_time.c.orig	Sat Nov 30 02:33:49 2002
-+++ linux/arch/ppc/platforms/pmac_time.c	Sat Nov 30 02:33:22 2002
-@@ -262,7 +262,9 @@
- 	 * calibration. That's better since the VIA itself seems
- 	 * to be slightly off. --BenH
- 	 */
-+#if 0
- 	if (!machine_is_compatible("MacRISC2"))
-+#endif
- 		if (via_calibrate_decr())
- 			return;
+clifford% od -td4 /proc/device-tree/cpus/PowerPC,G4/timebase-frequency
+0000000    33290001
+0000004
 
-in the case of the quicksilver VIA is FAR better then whatever it uses
-instead.
-
---
-Ethan Benson
-http://www.alaska.net/~erbenson/
+						-Bill
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
