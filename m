@@ -1,57 +1,35 @@
-Message-Id: <200106291741.f5THf9810232@stimpy.networkrobots.com>
-Date: Fri, 29 Jun 2001 10:45:18 -0700
-To: Dan Malek <dan@mvista.com>, jtm@smoothsmoothie.com
-From: Paul White <pwhite@networkrobots.com>
-Subject: Re: (allocating non-cachable memory) (or More on the i82596)
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <3B3C30CD.34B20F02@mvista.com>
-References: <20010626160844.A20988@shamus.smoothsmoothie.com>
+Date: Fri, 29 Jun 2001 10:46:18 -0700
+From: John Cagle <jcagle@kernel.org>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: 405GP network receive problem
+Message-ID: <20010629104618.A22541@kernel.org>
+References: <Pine.LNX.3.95.1010627084008.2380C-100000@november.bhjjh.erols.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.3.95.1010627084008.2380C-100000@november.bhjjh.erols.com>; from ghurwitz@dyndns.com on Wed, Jun 27, 2001 at 08:43:16AM -0400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan,
+I am debugging a custom board design based on the 405GP and have a problem
+receiving lots of TCP/IP traffic (like FTP).  We're using a 2.4 kernel based
+on Monta Vista's CDK 1.2.  UDP traffic (like TFTP) works very well, but it
+doesn't ever have back-to-back receives, typically.  The problem occurs
+at both 10mbit and 100Mbit.
 
-It doesn't just matter if the CPU is cache coherent or not.  If you have a
-System Controller, which controls
-the memory, and the DMA'ing device is off of that System Controller, then
-the controller must support
-Snooping, to generate CleanBlock,FlushBlock, or KillBlock transactions on
-the CPU's bus.
+I have narrowed the problem down (using ttcp) to the following:
 
-The CPU supporting cache coherency just means it supports at least one of
-these snoop transactions.
-Someone still needs to generate these transactions.
+During back-to-back receives (within microseconds) of two large (1500 bytes)
+TCP packets, the second packet is usually dropped by the 405GP.  When I
+check ifconfig statistics, it shows the 1 lost packet, but also shows 2
+framing errors.
 
-Paul W.
+Has anyone else seen this type of problem with the 405GP or does anyone
+know what the problem might be?
 
-
-At 03:39 AM 6/29/2001 -0400, Dan Malek wrote:
->
->jtm@smoothsmoothie.com wrote:
->
->> .... The buffer memory will get filled
->> via DMA, and therefore must not be cached.
->
->Huh????  The 8260 is cache coherent, you don't need to do that.
->
->For processors that are not cache coherent (4xx and 8xx), there
->are standard 'consistent_alloc()' functions available.
->
->
->	-- Dan
->
->
--------------------------------------------------------------
-Network Robots, Inc.         /--\               Paul H. White
-                           / ____ \
-4695 Chabot Dr. #200      / ( oo ) \       Software Developer
-Pleasanton, CA 94588     /   ----   \             Engineering
-(925) 924-8600           \   ----   /          (925) 580-4883
-                          \  V--V  /
-                           \      /
-                             \--/
+Thanks,
+John
+------------------------------
+John Cagle <jcagle@kernel.org>
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
