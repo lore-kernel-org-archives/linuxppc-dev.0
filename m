@@ -1,31 +1,39 @@
-Date: Thu, 13 Jul 2000 11:24:07 -0700
-Subject: Re: Xfree 4.0.1 dual head attempt
-From: "W. Taylor Holliday" <wtholliday@ucdavis.edu>
-To: Nelson Abramson <pogtal@erols.com>
-CC: Linux PPC Developer List <linuxppc-dev@lists.linuxppc.org>
-Message-ID: <B5935757.2DC%wtholliday@ucdavis.edu>
-In-Reply-To: <396DCBCB.A4A574C8@erols.com>
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Thu, 13 Jul 2000 20:35:07 +0200
+From: Olaf Hering <olh@suse.de>
+To: Josh Huber <huber@mclinux.com>
+Cc: Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: > 512 MB of ram on G4?
+Message-ID: <20000713203507.A8255@suse.de>
+References: <20000713142202.A1289@mclx.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20000713142202.A1289@mclx.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Thu, Jul 13, Josh Huber wrote:
 
-> This may be a stupid question, but why have you commented out your input
-> devices?
+> Hey, I'm trying to put 1GB of ram in an Apple G4 box here, but I'm having
+> trouble.  Anything higher (well, in increments of 256M) is dumping me into
+> xmon early on boot (before the fbcons is initialized).
 >
-> --Nelson Abramson
->
+> Any thoughts?  I'm unable to use xmon because of the USB
+> keyboard...unfortunately.  Too bad Apple didn't put a real serial port on
+> these machines :(
 
-I'm using implicit input devices - that is basically left over from when I
-was understanding XF 4 config.
-See http://www.xfree86.org/4.0.1/DESIGN2.html. I doubt the segfault has
-anything to do with the implicit devices because they work just fine with a
-single monitor. Nonetheless, I'm going to revert to explicit devices to
-simplify things.
+use mem= as argument, the highest mem I got was mem=703M.
 
--Taylor
 
+
+
+
+Gruss Olaf
+
+--
+ $ man clone
+
+BUGS
+       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
