@@ -1,47 +1,36 @@
-Date: Mon, 11 Oct 1999 20:20:26 -0700 (MST)
-From: Tom Rini <trini@kernel.crashing.org>
-To: Eric Dorland <dorland@lords.com>
-cc: Elliot Lee <sopwith@redhat.com>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: esound for PPC
-In-Reply-To: <19991011231039.A526@HSE-MTL-ppp4363.qc.sympatico.ca>
-Message-ID: <Pine.LNX.4.10.9910112018260.15511-100000@opus.bloom.county>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <199910120348.XAA22270@novelty.umiacs.umd.edu>
+To: Eduard Hoenkamp <hoenkamp@acm.org>
+cc: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org,
+        derek@umiacs.umd.edu
+Subject: Re: xcdroast for ppc where? [Q] 
+In-reply-to: Your message of "Mon, 11 Oct 1999 22:18:33 +0200."
+             <v04210102b427f1eaa401@[131.174.116.121]>
+Date: Mon, 11 Oct 1999 23:48:40 -0400
+From: "Derek T. Yarnell" <derek@umiacs.umd.edu>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, 11 Oct 1999, Eric Dorland wrote:
+On Mon, 11 Oct 1999, Eduard Hoenkamp wrote:
 
-> On Mon, Oct 11, 1999 at 01:09:12PM -0700, Tom Rini wrote:
-> > 
-> > On Mon, 11 Oct 1999, Eric Dorland wrote:
-> > 
-> > > It appears I spoke to soon about sound working perfectly. Whenever esd plays
-> > > a 16bit wav file, the sound plays at about half speed. Ugg. At least its not
-> > > static anymore. I'm going to see if I can track down why this is happening
-> > > (maybe its some on-the-fly endianess swaping slowing it down), but I don't
-> > > know sound code all that well, so anyone that does, please lend a hand.
-> > 
-> > Elliot has the old set of patches ported up to 0.2.15, and hopefully will
-> > be in 0.2.16 :)
-> 
-> Which old set of patches? I've tried Elliot's 0.2.15 and it doesn't fix 
-> the playing of 16bit sounds. BTW, you need a patch to be able to compile 
-> Elliot's 0.2.15. It seems the configure file assumes that a ppc linux is 
-> MkLinux, and uses its driver instead of OSS. It appears its MkLinux that has 
-> the little-endian sound driver, not linuxppc. Anyway the attached patch 
-> changes removes the MkLinux testing (I don't know how to tell the
-> difference), and just uses OSS.
+>
+>I would like software for a CD-writer. I found pointers to XCDROAST 
+>for intel linux, but those for ppclinux are dead links. Nothing under 
+>metacrawler, nor altavista. I also tried the linux arhives under 
+>geocrawler to no avail.
+>Please help. Eduard.
+>
 
-The patches which exist in a copy of 0.2.14, hence any working esound.
-They did not make it into 0.2.15, but will hopefully be in 0.2.16.  It
-does tell from MkL & Linux/PPC, and it also makes everything work "ok"
-again.
+try cdrecord 
 
----
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+search for it at www.freshmeat.net
 
+-- 
+Derek Yarnell
+UMIACS System Staff
+derek@umiacs.umd.edu
+	
+ Big money big money big money, No wammy no wammy, STOP!
+.				
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
