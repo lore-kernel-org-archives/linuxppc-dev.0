@@ -1,48 +1,40 @@
-Message-ID: <3EA7D9D1.4090308@mvista.com>
-Date: Thu, 24 Apr 2003 07:34:25 -0500
-From: Mark Hatle <fray@mvista.com>
-MIME-Version: 1.0
-To: Rakesh Jagota <j.rakesh@gdatech.co.in>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Library size
-References: <781he2iuwdfhp6z.240420031340@gda-server>
-In-Reply-To: <781he2iuwdfhp6z.240420031340@gda-server>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Date: Thu, 24 Apr 2003 10:58:44 -0400
+From: Callebaut Benoit <callebaut@mailandnews.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Linux & DMA transfer (applied to 8245)
+Message-ID: <3EB17B45@mailandnews.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Search the list archives for Library Optimization.
+Hi ,
+I am implementing DMA transfers initiated by the processor for the MPC8245.
+Since the standard pci_alloc_consistent take only a pci_dev structure but no
+addresses, I added a configuration function to set the target address (PCI)
+and the other parameters.
+I can see that the DMA transfer is started, and finished (an interrupt is
+generated) but I don't see the data copied on the target device ( DSP with a 4
+MB memory window on PCI bus.)
+My question is : What type of addreess must I give to configure the DMA
+controller.
+Are there also caching issues that may prevent good read/write operation
+s? I suppose that the flushing og the cache done in pci_alloc_consistent is
+enough.
+Thanks
+------------------------------------------------------------------------------
+----
+Benoit Callebaut
+Software Development Engineer
+Barco | Control Rooms
+Noordlaan 5, 8520 Kuurne, Belgium
 
-There a ways to reduce the size of a glibc C library, or you should us an
-alternative C library such as uClibc.
+Tel 	+32(0)56 36 84 28
+Fax 	+32(0)56 36 86 05
 
---Mark
-
-Rakesh Jagota wrote:
-> Hi all,
-> I am working on custome design board based on IBM power PC 405. We have seen
-> the libraries like :
->
-> ld-2.2.3.so
-> libcrypt-2.2.3.so
-> ld.so.1
-> libpthread-0.9.so
-> libSegFault.so
-> libc-2.2.3.so
->
-> in the filesystem, lib folder.
-> "libc-2.2.3.so" is taking arounr 1.5MB space. Is there any way to reduce the
-> size of this file and whats the use of this file.
->
-> Thanks & Regards,
->
-> Rakesh Jagota
->
->
->
->
->
+mailto:benoit.callebaut@barco.com
+http://www.barcocontrolrooms.com
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
