@@ -1,53 +1,61 @@
-Date: Sat, 20 May 2000 15:38:37 -0700 (PDT)
-From: Matt McLean <keys@yikes.com>
-To: Ethan Benson <erbenson@alaska.net>
-cc: Debian-PowerPC <debian-powerpc@lists.debian.org>,
+Date: Sat, 20 May 2000 18:17:06 -0800
+From: Ethan Benson <erbenson@alaska.net>
+To: Matt McLean <keys@yikes.com>
+Cc: Debian-PowerPC <debian-powerpc@lists.debian.org>,
         Linux/PPC-devel <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: Paul's 2.2.15 does not boot a 7200
-In-Reply-To: <20000520002947.A6452@plato.local.lan>
-Message-ID: <Pine.BSF.4.21.0005201535200.59827-100000@nerf.yikes.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <20000520181706.F7243@plato.local.lan>
+References: <20000520002947.A6452@plato.local.lan> <Pine.BSF.4.21.0005201535200.59827-100000@nerf.yikes.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="juZjCTNxrMaZdGZC"
+In-Reply-To: <Pine.BSF.4.21.0005201535200.59827-100000@nerf.yikes.com>; from keys@yikes.com on Sat, May 20, 2000 at 03:38:37PM -0700
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hey,
+--juZjCTNxrMaZdGZC
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
 
-That sounds like it's not recognizing your onboard video...
+On Sat, May 20, 2000 at 03:38:37PM -0700, Matt McLean wrote:
+> Hey,
+>=20
+> That sounds like it's not recognizing your onboard video...
 
-Be sure you have CONFIG_FB, CONFIG_FB_OF, and CONFIG_FB_PLATINUM set to
-yes in your kernel config...
+would that cause the kernel to fail to boot entirely?  the machine
+never becomes pingable, sshable, nor does it dial ppp at boot like it
+usually does. =20
 
-Otherwise, do you have a strange CPU upgrade?  Did earlier versions of
-Paul's kernel work on your machine?
+> Be sure you have CONFIG_FB, CONFIG_FB_OF, and CONFIG_FB_PLATINUM set to
+> yes in your kernel config...
 
--Matt
+yup, my .config is available on request, i did not want to spam the
+list with such a large file.  besides i tried using paul's config
+included in his rsync tree as well, it failed too, the exact same way...
 
-On Sat, 20 May 2000, Ethan Benson wrote:
+> Otherwise, do you have a strange CPU upgrade?  Did earlier versions of
+> Paul's kernel work on your machine?
 
-> Hi,
->
-> I have rsynced paul's stable kernel tree to 2.2.15 proper (no pre),
-> this kernel works quite well with a G3 via yaboot, but will not boot a
-> 7200 (via quik).  I have tried my own custom config as well as Paul's
-> config included in the rsync tree.  quik loads the kernel successfully
-> and prints `Copying Device tree' just like it does for 2.2.14 but the
-> monitor just stays black and nothing else happens, it never boots any
-> further.
->
-> the quik used is the current debian quik sources, patched by Dan
-> Jacobowitz to support powermacs. (there is no macos on this machine so
-> bootx is not an option, nor testable)
->
-> has anyone else had problems with 2.2.15 on 7200s?
->
-> the system runs Debian potato, and runs paul's 2.2.14.
->
-> --
-> Ethan Benson
-> http://www.alaska.net/~erbenson/
->
+no and yes, the machine is perfectly stock except for having more
+ram.  and paul's 2.2.14 works on it (that is what it is running now)
 
+--=20
+Ethan Benson
+http://www.alaska.net/~erbenson/
+
+--juZjCTNxrMaZdGZC
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.0.1 (GNU/Linux)
+Comment: For info see http://www.gnupg.org
+
+iEYEARECAAYFAjknRyIACgkQJKx7GixEevyM0gCdGlwDzEDEJhBARaJVoHm3sh3m
+zE8AnRj4xXPVhM7ek8rrCqc0699u5V5y
+=4UZ3
+-----END PGP SIGNATURE-----
+
+--juZjCTNxrMaZdGZC--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
