@@ -1,58 +1,39 @@
-Reply-To: <yooth@ipone.co.kr>
-From: "Yoo. Jonghoon" <yooth@ipone.co.kr>
-To: "SangTae Ha" <stha@postech.edu>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: RPXclassic PPCBOOT on RAM
-Date: Mon, 25 Jun 2001 15:42:50 +0900
-Message-ID: <NFBBLHGHILCOPCKBODHAAEAJCBAA.yooth@ipone.co.kr>
-MIME-Version: 1.0
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+From: August Hoerandl <ahoerandl@gmx.at>
+Reply-To: ahoerandl@gmx.at
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: new uart on MPC8xx 
+Date: Mon, 25 Jun 2001 10:36:49 +0200
 Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <010601c0fd39$ef0cca90$3877b5d3@dolbae>
+  charset="iso-8859-1"
+MIME-Version: 1.0
+Message-Id: <01062510364900.00667@linuxhoe>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->From my experience, it is required at least 3 things to
-be changed If ppcboot works well from flash,
-(1) TEXT_BASE to be located in RAM
-(2) set CFG_MONITOR_BASE equal to TEXT_BASE
-(3) skip DRAM initializaion sequence in func. initdram(),
-     except returning size of DRAM.
+I was checking the new uart (got the kernel from
+ftp://ftp.denx.de/pub/LinuxPPC/usr/src/linux-2.4.4-2001-05-12.tar.bz2 )
 
-Good luck to you
+I tried to use some pins on port b for handshake and it refuses to compile:
+The problem is in uart.c around line 80:
 
-===============================================
-Yoo. Jonghoon,        IPone inc.
-===============================================
-e-mail : yooth@ipone.co.kr
-tel : 82-2-02-2222-4631
-===============================================
+#if (CONFIG_UART_DTR_CONTROL_SCC1 == PORT_B)
+#define PORT_DTR1_PAR immap->im_ioport.iop_pbpar
 
-> -----Original Message-----
-> From: owner-linuxppc-embedded@lists.linuxppc.org
-> [mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of SangTae Ha
-> Sent: Monday, June 25, 2001 2:45 PM
-> To: linuxppc-embedded@lists.linuxppc.org
-> Subject: RPXclassic PPCBOOT on RAM
->
->
->
-> I am trying to have the PPCBOOT work on RPXclassic board. I've
-> already port the 8xxROM this board already but I've failed with
-> PPCBOOT. All configuration parameters are same with 8xxROM and my
-> BDI2000 didn't get the flash information of RPXClassic (FLASH
-> TYPE, CHIPSIZE, BUSWIDTH), therefore I really want to test the
-> PPCBOOT on RAM space first to debug. In order to make srec file
-> run on RAM space, I changed TEXT_BASE=0x00100000 parameter in
-> config.mk. I think there woule be many efficient debugging
-> techniques. I am currently using BDI2000, as I mentioned above,
-> but I couldn't get the flash work. How can I debug the PPCBOOT
-> efficiently in my current stage? Any comments would be appreciated.
->
-> Thanks in advance.
->
->
+but 8xx_immap.h reads:
 
+typedef struct comm_proc {
+        ...
+        uint   cp_pbdir;
+
+so port b is a little different from all the other ports ;-)
+
+Has anyone got a patch to correct this ?
+
+Thanks
+Gustl
+
+ps: is this list the right place to report such troubles ?
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
