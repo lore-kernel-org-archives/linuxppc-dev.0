@@ -1,26 +1,29 @@
-Date: Sun, 27 Jan 2002 16:27:37 -0800
-From: Tim Moss <ppc@to11.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: 2.4.18-pre7-ben0 MESH SCSI error
-Message-ID: <20020128002737.GC10356@hmpiii2.trinity200.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-Id: <200201280141.KAA17879@mail.highway.ne.jp>
+Date: Mon, 28 Jan 2002 10:38:05 +0900 (JST)
+From: Kaoru Fukui <k_fukui@highway.ne.jp>
+Subject: Re: Broken asm/div64.h macro
+To: hozer@drgw.net
+Cc: linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <20020127114910.A14725@altus.drgw.net>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I just got around to upgrading the kernels on my 9500/180 and 9500/132
-to 2.4.18-pre7-ben0 from benh 2.4.14-ben0. I use the exact same kernel
-on both machines and 2.4.14-ben0 has been working fine. On the 9500/180,
-2.4.18-pre7-ben0 works well so far but it won't boot on the 9500/132. It
-loads the MESH driver and then just continues spitting out this message
-until I turn the machine off
+On 27 Jan, Troy Benjegerdes wrote:
+> Did you actually try compiling PPC this way??
+>
+> vsprintf.o(.text+0x494): undefined reference to `__umoddi3'
+> vsprintf.o(.text+0x494): relocation truncated to fit: R_PPC_REL24
+> __umoddi3
+> vsprintf.o(.text+0x4ac): undefined reference to `__udivdi3'
+> vsprintf.o(.text+0x4ac): relocation truncated to fit: R_PPC_REL24
+> __udivdi3
 
-mesh: SCSI bus reset detected: waiting for end...done
+libgcc.a has those libraries.
 
-Any idea how to get this working on the 9500/132?
-Thanks
+Kaoru
 
---
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
