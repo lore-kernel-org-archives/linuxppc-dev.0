@@ -1,20 +1,17 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 30E3F2BDC5
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Sep 2004 03:19:11 +1000 (EST)
-In-Reply-To: <Pine.LNX.4.60.0409210852200.9739@localhost.localdomain>
-References: <20040921125227.46AE2C108D@atlas.denx.de>
-	<Pine.LNX.4.60.0409210852200.9739@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v619)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <9D3EF712-0BF2-11D9-97DC-003065F9B7DC@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Tue, 21 Sep 2004 13:21:03 -0400
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linuxppc-dev mailing list <linuxppc-dev@ozlabs.org>
-Subject: Re: thoughts and questions on 8xx patches 
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao11.cox.net (fed1rmmtao11.cox.net [68.230.241.28])
+	by ozlabs.org (Postfix) with ESMTP id 524542BDC5
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Sep 2004 09:15:47 +1000 (EST)
+Date: Tue, 21 Sep 2004 16:15:42 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Chris Friesen <cfriesen@nortelnetworks.com>
+Message-ID: <20040921231542.GD16619@smtp.west.cox.net>
+References: <414B6363.5060106@nortelnetworks.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <414B6363.5060106@nortelnetworks.com>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: support for revision C of the mcpn765?
 List-Id: "Linux on PowerPC \(Including Embedded\) Developers Mail List"
 	<linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,25 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Sep 17, 2004 at 04:21:23PM -0600, Chris Friesen wrote:
 
-On Sep 21, 2004, at 8:56 AM, Robert P. J. Day wrote:
+> 
+> We've got revision C of the mcpn765 from Motorola.  The main difference 
+> appears to be that it uses the 82c686 chip rather than the 586, requiring 
+> some extra checking in mcpn765_init2().
+> 
+> Is there a patch already out there, or should I send one in?
 
-> ok, so i'll back off and ask one more question.
+Please post a patch vs a current 2.6 (and if you haven't already, read
+Documentation/SubmittingPatches and read the Developer's Certificate of
+Origin).  Thanks.
 
-Create and test the patch that works for you.  Don't be creating
-options and code for things you can't test and verify.  Those
-of us that have lived through the generations of microcode
-patches and processor variants know you can't guess what
-the future will bring.  If someone else has a need to extend
-the work you have done, they will do that to meet their
-requirements.
-
-If you make the options available and write the code to
-match, people are going to believe it works.  If you can't
-test it, they will struggle with it and we will have these
-"... this is obviously broken ..." discussions all over again.
-
-Thanks.
-
-
-	-- Dan
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
