@@ -1,14 +1,16 @@
-Return-Path: <jdl@freescale.com>
-From: Jon Loeliger <jdl@freescale.com>
-To: Jaka =?iso-8859-2?Q?Mo=E8nik?= <jaka@activetools.si>
-In-Reply-To: <1109951593.32294.5.camel@x.at.lan>
-References: <1109951593.32294.5.camel@x.at.lan>
-Content-Type: text/plain; charset=iso-8859-2
-Message-Id: <1109952363.8949.10.camel@cashmere.sps.mot.com>
-Mime-Version: 1.0
-Date: Fri, 04 Mar 2005 10:06:03 -0600
-Cc: Embedded PPC Linux Mailing List <Linuxppc-embedded@ozlabs.org>
-Subject: Re: U-Boot hangs in relocate_code after sw reboot
+Return-Path: <galak@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 25D7967A76
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat,  5 Mar 2005 06:09:29 +1100 (EST)
+Date: Fri, 4 Mar 2005 13:09:18 -0600 (CST)
+From: Kumar Gala <galak@freescale.com>
+To: akpm@osdl.org, greg@kroah.com
+Message-ID: <Pine.LNX.4.61.0503041303290.18551@blarg.somerset.sps.mot.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
+Subject: [PATCH] ppc32: trivial fix for e500 oprofile build
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,35 +21,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2005-03-04 at 09:53, Jaka Moènik wrote:
-> hello!
-> 
-> I don't really know if this mailing list is the proper place to direct
-> questions regarding U-Boot, but I've seen some preceding posts about it,
-> so I thought I'd ask...
+Andrew, Greg
 
-Let's start with:  The U-Boot list is over at:
-    u-boot-users <u-boot-users@lists.sourceforge.net>
+Here is a patch for the new 2.6.11 release tree and for Linus.
 
-> I've ported U-Boot over to a custom MPC8560 (PQ3) based board - it works
-> well, 
+Fix for trivial fix for 2.6.11 oprofile compilation on e500 based ppc.
 
-Good...  So, what version did you start with?
-And how custom is it?  We just might need a few more details here... :-)
+Signed-off-by: Andy Fleming <afleming@freescale.com>
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
-> except that after a sw reboot (from linux kernel or u-boot
-> itself),
+---
 
-There were some early releases of 8560 U-Boot code that
-didn't do SW Reset right.  Let's make sure we are running
-a modern U-Boot for the 85xx first.
-
->  it only gets to the part where it relocates itself to RAM and
-> then hangs - the last debug output is 
-
-There are some U-Boot FAQs down this line too.
-
-> has anyone experienced similar problems? any hints on what to look at?
-
-HTH,
-jdl
+diff -Nru a/arch/ppc/oprofile/op_model_fsl_booke.c b/arch/ppc/oprofile/op_model_fsl_booke.c
+--- a/arch/ppc/oprofile/op_model_fsl_booke.c	2005-03-04 13:02:52 -06:00
++++ b/arch/ppc/oprofile/op_model_fsl_booke.c	2005-03-04 13:02:52 -06:00
+@@ -150,7 +150,6 @@
+ 	int is_kernel;
+ 	int val;
+ 	int i;
+-	unsigned int cpu = smp_processor_id();
+ 
+ 	/* set the PMM bit (see comment below) */
+ 	mtmsr(mfmsr() | MSR_PMM);
+@@ -162,7 +161,7 @@
+ 		val = ctr_read(i);
+ 		if (val < 0) {
+ 			if (oprofile_running && ctr[i].enabled) {
+-				oprofile_add_sample(pc, is_kernel, i, cpu);
++				oprofile_add_pc(pc, is_kernel, i);
+ 				ctr_write(i, reset_value[i]);
+ 			} else {
+ 				ctr_write(i, 0);
