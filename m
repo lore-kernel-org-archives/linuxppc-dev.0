@@ -1,21 +1,33 @@
-Date: Tue, 10 Aug 1999 13:22:26 +0200 (CEST)
+Date: Tue, 10 Aug 1999 14:56:12 +0200 (CEST)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Martin Costabel <costabel@wanadoo.fr>
-cc: Hollis R Blanchard <hollis+@andrew.cmu.edu>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: cvs.on.openprojects.net status?
-In-Reply-To: <37B0068E.C8853FC3@wanadoo.fr>
-Message-ID: <Pine.LNX.4.10.9908101322021.32043-100000@mercator.cs.kuleuven.ac.be>
+To: Paul.Mackerras@cs.anu.edu.au
+cc: mlan@cpu.lu, drow@false.org, mj@ucw.cz, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Trying a Promise Ultra/66 on powerpc
+In-Reply-To: <199908100010.KAA19153@tango.anu.edu.au>
+Message-ID: <Pine.LNX.4.10.9908101455510.32043-100000@mercator.cs.kuleuven.ac.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 10 Aug 1999, Martin Costabel wrote:
-> Seems that not much testing for the PPC is going on for the vger tree.
+On Tue, 10 Aug 1999, Paul Mackerras wrote:
+> Michel Lanners <mlan@cpu.lu> wrote:
+> > I'd vote for making I/O ports a memory addresss like any other, and
+> > making sure drivers get this address right. See my other post for
+> > details..
+> 
+> The problem is, there are PCI device drivers which assume you can get
+> an address in I/O space from a PCI device (either directly from the
+> config-space base address registers or from the pci_dev struct) and
+> then just do inb and outb on that port address.  That's why inb/outb
+> add _IO_BASE to the port number.
+> 
+> One way might be to adjust the base addresses in all the pci_dev
+> structs and then make sure all drivers use the address from the
+> pci_dev struct rather than reading config space themselves.
 
-I'm aware that the vger tree doesn't boot on my LongTrail as well.
+Which will make our /proc/ioports look funny.
 
 Greetings,
 
