@@ -1,31 +1,46 @@
-Date: Thu, 3 Feb 2000 02:10:29 -0800 (PST)
-From: Patrik Jonsson <patrik@ucolick.org>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: lidstdc++ string problems
-In-Reply-To: <38993D7F.B0964A77@dalim.de>
-Message-ID: <Pine.GSO.4.03.10002030203260.27105-100000@isis.ucolick.org>
+Date: Thu, 3 Feb 2000 11:10:50 +0100 (MET)
+From: "Ingvar Hagelund; UiO" <ingvar@unik.no>
+To: linuxppc-workstation@lists.linuxppc.org
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: /dev/fb0 device does not exist
+In-Reply-To: <389927FC.6BE10CF0@amberdata.demon.co.uk>
+Message-ID: <Pine.GSO.4.10.10002031027020.7245-100000@tyr.unik.no>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi everyone,
 
-I wonder if there is a known problem with the c++ string class? (I just
-upgraded to gcc 2.95.2, but it didn't help.) What happens is that I read
-into a string from a char* using a strstream as " strstream >> string".
-This works on other machines, but on linuxppc the resulting string
-contains junk at the end that is in another string object defined earlier.
-It's like it doesn't properly define what the length is. If I look at it
-in gdb, the "dat" field contains the right char*, but when reading it more
-stuff appears at the end. It's HIGHLY annoying, it's plain impossible to
-make anything work! Is this known / is there a fix or something? It seems
-bad if we can't trust the standard library... :(
+Hello again everybody
 
-Any hints would be much appreciated,
+I'm back with some questions on linuxppc-1999 on the 43P-133 (7248-133).
 
-	/Patrik
+When I try to start the fb_dev X-server or try to use the fbset command, I
+only get the error
+/dev/fb0: No such device
+
+ls -l /dev/fb0 gives me
+crw----rwx   1 ingvar   root      29,   0 Jan 28  2000 /dev/fb0
+
+so the device file should exist.
+
+Does this mean my kernel has no support for the frame buffer device?
+
+I run linuxppc-1999 with kernel 2.2.6-16aprep, with no changes on the
+kernel since the installation.
+
+Ingvar
+
+------------------------------------------------------------------------
+Ingvar Hagelund             Phone: (+47) 22740512
+E-mail: ingvar@unik.no      WWW: http://www.ifi.uio.no/~ingvarha
+Adress: Ringshusveien 10,   N-1176  OSLO, NORWAY
+Experience GNU/Linux!
+
+linuxppc-1999 installation howto for the 7248 @
+http://www.ifi.uio.no/~ingvarha/43p
+-------------------------------------------------------------------------
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
