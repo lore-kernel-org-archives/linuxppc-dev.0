@@ -1,26 +1,54 @@
-Date: Mon, 26 Feb 2001 13:33:18 +0100 (CET)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Thomas Graichen <thomas.graichen@innominate.com>
+Message-ID: <021801c0a016$749636a0$2501000a@sid>
+From: "Sid" <sid@innvo.com>
+To: "Karl-Heinz Krempels" <charlie@pool.informatik.rwth-aachen.de>
 Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: ppc initrd problem?
-In-Reply-To: <news2mail-97ahue$qt6$1@mate.bln.innominate.de>
-Message-ID: <Pine.LNX.4.30.0102261332330.29045-100000@opal.biophys.uni-duesseldorf.de>
+References: <Pine.SOL.4.10.10102261324080.29120-100000@jennifer.informatik.rwth-aachen.de>
+Subject: Re: MBX860 - minicom
+Date: Tue, 27 Feb 2001 01:06:21 +0800
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> i did some more trying now: it seems to work with 16M (maybe with more
-> too) if the image is only lightly loaded - but if i fill the 16M
-> more it hangs at boot with
+> Hi,
 >
->   RAMDISK: Compressed image found at block 0
+> please check your cables. I think its a handshaking problem.
+>
+> \Charlie.
 
-Wouldn't that indicate a size limitation for the compressed ramdisk file
-somewhere in the booter?
+Hi,
 
-	Michael
+I discovered the reason. My 3.3 V input pin was only receiving 1.8V and all
+the lights were not turning on.
+
+This is because I couldn't find a standard power supply for this board and I
+had to make a make-shift one and apparently the load on the 3.3V pin is so
+high that my power supply can't handle it.
+
+Could anyone using this board tell me what kind of power supply they are
+using on this board? Maybe even the expected load resistance at normal
+operation, so that I have a rough gauge of the Input current required to
+drive it at 3.3V.
+
+Do power pcs have a different lkind of power supply than the i386 machines?
+As in the Voltage/Current specs.
+
+Thank you once again.
+
+regards,
+Sid
+--
+sid@siddhartha.8m.com
+
+Kirk: "Oh, by the way, thank you for this."
+Spock: "I know of your fondness for antiques."
+Kirk: "'It was the best of times, it was the worst of times.'  Message,
+Spock?"
+Spock: "None that I'm conscious of.  Except of course, happy birthday.
+  Surely, the best of times."
+--"STII:TWOK", Stardate 8130.3
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
