@@ -1,59 +1,54 @@
-Message-ID: <3CF4F06E.3080800@eccincorp.com>
-Date: Wed, 29 May 2002 11:14:54 -0400
-From: Jon Baker <jon@eccincorp.com>
-Reply-To: jon@eccincorp.com
+Message-ID: <3CF4FB77.3010203@mvista.com>
+Date: Wed, 29 May 2002 09:01:59 -0700
+From: Armin Kuster <akuster@mvista.com>
 MIME-Version: 1.0
-To: Embedded Linux Forum <linuxppc-embedded@lists.linuxppc.org>
-Subject: How do you link resolve kernel references
+To: Dan Malek <dan@embeddededge.com>
+Cc: David Gibson <david@gibson.dropbear.id.au>,
+	Tom Rini <trini@kernel.crashing.org>,
+	linuxppc-embedded@lists.linuxppc.org,
+	Paul Mackerras <paulus@samba.org>
+Subject: Re: Another OCP enet patch
+References: <20020527040330.GH16537@zax> <20020527162323.GB32718@opus.bloom.county> <20020528005728.GO16537@zax> <3CF35E49.60203@embeddededge.com> <20020529041626.GD16537@zax> <3CF4ED71.4040706@embeddededge.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am new to embedded Linux and am trying to develop code on Hard Hat 1.2 with an
-Embedded Planet RPX Classic MPC860T / CLLF_BW31 with Red Hat 7.2.
+Dan Malek wrote:
 
-We currently build a "kernel" image which we program to flash.  This flash image
-is the linux kernel and some of our code.  We then load more application code
-either via (1) FTP or (2) NFS.  The application code is compiled separately from
-the flash image.  We compile many small utility programs to executeables then
-FTP them in (say to /app dir) then run them from the Bash prompt on the target.
+> We can't change the PCI names, so I just suggested we change the names to
+> consistent_sync(), define those in io.h (so non-PCI systems don't have to
+> include pci header files just to get a flag name), and put a big comment
+> around the flag definitions that they have to match the PCI_ names.
 
-My question is this:  If my separately compiled program references (ie extern) a
-a function that is in the flashed image, how do I link it to resolve that extern?
+Why not put the flag definition in a /linux/dma.h and include that in
+/linux/pci.h.  Have the pci flags be defined as the ones in dma.h.  That
+way it's obvious where the orginal defines are and easier to maintain. :)
 
-I want to do some debugging.  I have added some logging code and structures in
-several functions in the flash image.  All structures and functions ("get" and
-"set") are in dbg_fns.c.  I make many "set" calls to log data from various
-functions in the flash image.  Everything links fine since all objects are
-present upon linking (dbg_fns.o is linked with all caller objects to build the
-flash image).  I want to add a utility (dbg_pr.c) that I can FTP to /app that I
-can call from the Bash prompt to display the logged info.  dbg_pr.c simply calls
-the "get" function in dbg_fns.c to dump the logged data.  When I compile the
-display function  I get errors on the externs to the "get" functions in the
-flash image.
 
-The only example I have to go from is that the only references I see in our
-application code to flashed functions is done via a driver.  Is this the only
-way/recommended way to access "kernel" functions?  Conceptually a driver does
-not make sense to me since I just want to print a structure not access a device.
+dma.h
+/* This defines the direction arg to the DMA mapping routines. */
+#define DMA_BIDIRECTIONAL	0
+#define DMA_TODEVICE		1
+#define DMA_FROMDEVICE		2
+#define DMA_NONE		3
 
-I know our applications also access shared library functions (ie libc-2.1.3.so).
-  These are in std dirs that the compiler and loader search.  How were the
-library functions compiled?  Do the library functions reference kernel
-functions?  Or do they only use driver calls?
+pci.h
+/* This defines are defined in linux/dma.h */
+#define PCI_DMA_BIDIRECTIONAL	DMA_BIDIRECTIONAL
+#define PCI_DMA_TODEVICE	DMA_TODEVICE
+#define PCI_DMA_FROMDEVICE	DMA_FROMDEVICE
+#define PCI_DMA_NONE		DMA_NONE
 
-Thanks
 
-Jon Baker
-
-===================================
-Jon Baker
-Software Engineer
-Efficient Channel Coding, Inc.
-216-635-1610
-www.eccincorp.com
-===================================
+>
+>
+>     -- Dan
+>
+>
+>
+>
+Armin
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
