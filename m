@@ -1,50 +1,35 @@
-Date: Mon, 23 Aug 1999 21:42:11 -0600 (MDT)
-From: Dan Burcaw <dburcaw@terraplex.com>
-To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: USB 1.16 support?
-In-Reply-To: <Pine.LNX.3.96L.990823202809.10874B-100000@unix47.andrew.cmu.edu>
-Message-ID: <Pine.LNX.4.10.9908232139560.2393-100000@newhope.terraplex.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 24 Aug 1999 14:35:33 +1000
+Message-Id: <199908240435.OAA05026@tango.anu.edu.au>
+From: Paul Mackerras <paulus@cs.anu.edu.au>
+To: linuxppc-dev@lists.linuxppc.org
+In-reply-to: <19990823163610.A31129@mango.genunix.net> (message from anthony
+	tong on Mon, 23 Aug 1999 16:36:10 -0500)
+Subject: Re: BootX enhancement request
+Reply-to: Paul.Mackerras@cs.anu.edu.au
+References: <Pine.SGI.4.00.9908231613030.7470-100000@osiris.office.aol.com> <Pine.BSF.3.96.990823162311.86405K-100000@silver.teardrop.net> <19990823163610.A31129@mango.genunix.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hollis,
+anthony tong <atong@uiuc.edu> wrote:
 
-The newer shipping B&Ws and iMacs do have USB 1.16. I've patched UUSBD to
-make it work. See
-ftp://ftp.yellowdoglinux.com/pub/yellowdog/kernel/patches/linux-2.2.6-uusbd.patch
+> If you have a version of MacOS that saves the monitor mode in nvram,
+> you shouldn't need to give any kernel arguments. Alternatively you
+> can use the linuxpmac tool nvvideo to set this.
 
+Yep.  There are two problems at the moment, which I should get off my
+butt and fix. :-)
 
-Regards,
-Dan
+The first is that the current machines use a different structure for
+nvram, based on the CHRP spec, which means that just using a fixed
+offset in nvram doesn't work.  In fact it seems like macos adds a OF
+property with a really strange encoding to store arbitrary bits of
+information for the device drivers for arbitrary devices.
 
-On Mon, 23 Aug 1999, Hollis R Blanchard wrote:
+The second is that macos is now using mode numbers > 20.  I haven't
+worked out the correspondence yet.
 
-> 
-> I think the new (333 MHz) iMacs and new B&W G3's are being shipped with
-> keyboards and/or mice that require USB 1.16, and current Linux support is at
-> 1.10. Could someone confirm this is the case?
-> 
-> I read a while ago about someone who disabled the version checking code in the
-> USB stack and got a 1.16 device or two to work. Can anyone comment on that?
-> Is that approach generally valid, at least until 1.16 support is there? And is
-> 1.16 that much different from 1.10 to make it incompatible?
-> 
-> -Hollis
-> 
-> 
-> 
-
-
-Dan
-
-Yellow Dog Linux for Apple G3 and PowerPC
-  email: dburcaw@yellowdoglinux.com
-  website: http://www.yellowdoglinux.com/
-
+Paul.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
