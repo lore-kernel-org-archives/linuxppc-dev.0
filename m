@@ -1,28 +1,30 @@
-Message-ID: <1b6001c417f6$229c2a70$3cc8a8c0@epro.dom>
-From: "Colin LEROY" <colin@colino.net>
-To: "Linux/PPC Development" <linuxppc-dev@lists.linuxppc.org>
-Cc: <benh@kernel.crashing.org>
-Subject: PREEMPT problems
-Date: Thu, 1 Apr 2004 16:32:18 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Kumar Gala <kumar.gala@motorola.com>
+Cc: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Proposed Kconfig update patch for help text 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 01 Apr 2004 07:49:32 MDT."
+             <67423B18-83E3-11D8-B6FB-000393DBC2E8@motorola.com>
+Date: Thu, 01 Apr 2004 17:02:06 +0200
+Message-Id: <20040401150211.90D85C10A4@atlas.denx.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+In message <67423B18-83E3-11D8-B6FB-000393DBC2E8@motorola.com> you wrote:
+>
+> Also, what about 52xx?
 
-This won't be really helpful, as I have no time to investigate, but I seem
-to have problems with preempt (and latest main-tree BK). After a few hours
-of uptime, I get hanging processes (sed, cvs (can't be network related as
-the CVSROOT is local)) and gcc segfaults while compiling kernel.
+Excellent question. OTOH - what do we need a Kconfig option for, when
+the whole 52xx code is still missing in the official trees?   Tom?
 
-Maybe it's not completely fixed yet...
+Wolfgang Denk
+
 --
-Colin
-  This message represents the official view of the voices
-  in my head.
-
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+The inappropriate cannot be beautiful.
+             - Frank Lloyd Wright _The Future of Architecture_ (1953)
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
