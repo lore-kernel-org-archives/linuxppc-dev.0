@@ -1,31 +1,39 @@
-Message-ID: <3A01AEB4.B49D209B@iigi.net>
-Date: Thu, 02 Nov 2000 13:13:08 -0500
-From: John Jones <john@iigi.net>
+Message-ID: <00933BFA237CD2119B3400409543582704A27F@MEV01>
+From: Ian Abbott <abbotti@mev.co.uk>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: A few bugfixes
+Date: Thu, 2 Nov 2000 18:24:39 -0000 
 MIME-Version: 1.0
-To: LinuxPPC Mailing List <linuxppc-embedded@lists.linuxppc.org>
-Subject: ld.so.1
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am trying to install the rpm:  hhl-ppc_8xx-binutils-2.10.0.12-1 and I
-am getting the error:
+"epicom" wrote:
 
-ld.so.1 is needed by hhl-ppc_8xx-binutils
+>  I have found several bugs in versions 2.4.0-test*, I don't
+> know if they
+> exist
+> in 2.2.* versions, but it is posible.
 
-I checked the .../target/lib and that file (link) is there.
+The first two (of three) do.
 
-Anyone know what I should do?
+The first one:
+> >>  return(((unsigned long)(pte_val(*pte)) & PAGE_MASK) | (address &
+> ~(PAGE_MASK-1)));
 
-Thanks.
+is logically wrong but I think it is a harmless bug.
 
--John
+> In the wish to have been useful to improve the PPC port of
+> the linux kernel:
+>
+>
+> Luis Recuerda,
 
+Thanks, Luis!
 
 --
-<Help further Linux by signing the Linux Driver Petition:
-http://www.libranet.com/petition.html>
-
+-=( Ian Abbott @ MEV Ltd.    E-mail: <abbotti@mev.co.uk>             )=-
+-=( Tel: +44 (0)161 477 1898   FAX: +44 (0)161 718 3587              )=-
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
