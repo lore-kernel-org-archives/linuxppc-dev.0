@@ -1,18 +1,20 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 5ED6567A6C
+Return-Path: <mgreer@mvista.com>
+Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
+	by ozlabs.org (Postfix) with ESMTP id 8541B67A67
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Mar 2005 04:38:09 +1100 (EST)
-In-Reply-To: <4227400A.2040704@anagramm.de>
-References: <4227400A.2040704@anagramm.de>
-Mime-Version: 1.0 (Apple Message framework v619.2)
+	Fri,  4 Mar 2005 04:58:21 +1100 (EST)
+Message-ID: <42275039.7000702@mvista.com>
+Date: Thu, 03 Mar 2005 10:58:17 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
+To: James Chapman <jchapman@katalix.com>
+References: <42235B0A.3070302@katalix.com> <422384CA.6090004@mvista.com>
+	<4223977C.4070502@katalix.com> <42239A2D.8070205@mvista.com>
+	<4224C285.6000409@katalix.com>
+In-Reply-To: <4224C285.6000409@katalix.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <efa0dd16adf3fd276dbcf160d03486c8@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Thu, 3 Mar 2005 11:38:01 -0600
-To: "Clemens Koller" <clemens.koller@anagramm.de>
-Cc: ppcembed Linux list <linuxppc-embedded@ozlabs.org>
-Subject: Re: Kernel 2.6.11 SERIAL_PORT_DFNS broken in MPC8540_ADS
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH 2.6.11-rc4] ppc: add support for Radstone ppc7d boards
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,77 +25,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Ahh, this is because we dont build the boot code for 85xx.  Since the=20
-only bootloader I'm aware of is u-boot, we do the following:
+James Chapman wrote:
 
-$ make uImage
+> Revised patch for Radstone PPC7D board support.
+>
+> Signed-off-by: James Chapman <jchapman@katalix.com>
+>
+> - use mv64x60_set_bus() to setup for PCI scans rather than
+>   writing to chip P2P_CONFIG registers directly. 
 
-- kumar
 
-On Mar 3, 2005, at 10:49 AM, Clemens Koller wrote:
+Looks good, James, except for a couple minor things.  If/when you 
+address the comments, please resubmit the entire patch with a proper 
+description so I can forward it on -- http://linux.yyz.us/patch-format.html
 
-> Hello, Kumar,
->
-> I guess you are the right person to help me with the MPC85xx devices
->  and platforms.
->  Maybe you remember that I use a MPC8540 on the Board from Microsys.
->  (www.microsys.de).
->
-> The Problem: 2.6.11 (as well as 2.6.11-rc4) breaks due to a
->  missing SERIAL_PORT_DFNS for mpc8540_ads in ns16550:
->
-> root@ecam:/share/kernel/linux$ make
->  =A0=A0 CHK=A0=A0=A0=A0 include/linux/version.h
-> make[1]: `arch/ppc/kernel/asm-offsets.s' is up to date.
->  =A0=A0 CHK=A0=A0=A0=A0 include/linux/compile.h
-> =A0=A0 CHK=A0=A0=A0=A0 usr/initramfs_list
-> make[1]: `arch/ppc/boot/images/uImage' is up to date.
->  =A0=A0 CC=A0=A0=A0=A0=A0 arch/ppc/boot/common/ns16550.o
-> arch/ppc/boot/common/ns16550.c:20: error: `SERIAL_PORT_DFNS' =
-undeclared
-> here (not in a function)
->  arch/ppc/boot/common/ns16550.c:20: error: initializer element is not
-> constant
->  arch/ppc/boot/common/ns16550.c:20: error: (near initialization for
->  `rs_table[0]')
->  make[2]: *** [arch/ppc/boot/common/ns16550.o] Error 1
->  make[1]: *** [arch/ppc/boot/common] Error 2
->  make: *** [zImage] Error 2
->
->
->
-> Well, I see that you try to get rid of the mess... but I still
->  didn't understand all your changes and the different flavors of
->  the platforms. (Uses the SBC8560 non-std. serial ports on external
->  interrupts? But all the others are 'normal' MPC85xx_DUART types?)
->
-> STD_SERIAL_PORT_DFNS are also missing... so, how can I tell that
->  I want to use the same as I did in 2.6.10? Can I use STD_UART_OP?
-> Or is it deprecated to use an extra define if I don't have any
->  special non std. hardware.
->
-> What is the best way for me to integrate my board (which will be used
->  in another system with some more PCI devices not part of the Microsys
->  platform) into your platform / device structures?
->
-> Currently, only minor changes were necessary to get 2.6.10 mpc8540ads
->  working with my board. I needed to change only
->  the PHY addresses (ids) on the FECs)
->  and the PCI Interrupt routing (IDSEL -> IRQ ABCD)
->  as they are wired up slightly different.
->
->
->
-> Best greets,
->
-> Clemens Koller
-> _______________________________
-> R&D Imaging Devices
->  Anagramm GmbH
->  Rupert-Mayer-Str. 45/1
->  81379 Muenchen
->  Germany
->
-> http://www.anagramm.de
-> Phone: +49-89-741518-50
->  Fax: +49-89-741518-19
+Thanks,
+
+Mark
+--
+
+ > diff -Nru a/arch/ppc/platforms/radstone_ppc7d.c 
+b/arch/ppc/platforms/radstone_ppc7d.c
+
+ > +#if defined(CONFIG_SERIAL_MPSC_CONSOLE)
+ > +       mv64x60_mpsc_init(port, uart);
+
+Don't you mean "mv64x60_progress_init( <base> );" ?
+
+ > diff -Nru a/arch/ppc/platforms/radstone_ppc7d.h 
+b/arch/ppc/platforms/radstone_ppc7d.h
+
+ >+#define PPC7D_MV64360_REG_BASE                 0xfef00000
+
+You don't really need this b/c CONFIG_MV64X60_NEW_BASE should have the 
+correct value.
