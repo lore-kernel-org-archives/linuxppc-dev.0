@@ -1,42 +1,37 @@
-Date: Tue, 11 May 1999 16:54:35 -0500 (CDT)
-From: Derek Moeller <moeller@networksplus.net>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: USB Development
-In-Reply-To: <3738793B.416467E2@deneba.com>
-Message-ID: <Pine.LNX.3.96.990511165021.904D-100000@ns1.networksplus.net>
+Date: Tue, 11 May 1999 17:12:33 -0500 (CDT)
+From: "David A. Gatwood" <marsmail@globegate.utm.edu>
+To: Darron Froese <darron@calgary.westworld.ca>
+cc: Nathan Ingersoll <ningerso@d.umn.edu>,
+        "Kevin B. Hendricks" <kbhend@business.wm.edu>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: Anyone playing with Darwin 0.2 binary yet?
+In-Reply-To: <199905112039.OAA01269@moses.odi.ca>
+Message-ID: <Pine.LNX.3.96.990511170537.19687C-100000@globegate.utm.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 11 May 1999, michael cardenas wrote:
+On Tue, 11 May 1999, Darron Froese wrote:
 
-> But, I am a programmer, and I'm very interested in helping develop
-> linux.
+> > I think that it only works with G3 or newer machines.
 > 
-> My question is, where can I get the kernel source to get started and
-> what compiler do I use? Is there a kernel build faq? I recently
-> purchased the 4.1 cd, but I already had 4.1 installed.
+> Not quite correct - some people have reported success (on the Darwin
+> Development Mailing List) installing it on other machines - machines that
+> were initially supposed to run "Rhapsody" but ended up not being officially
+> supported by Mac OS X Server - PCI based Power Macs that aren't G3's: the
+> 7500, 7600, 8500, 8600, 9500 and 9600 all come to mind.
 
-	Go to w3.one.net/~johnb for a lot of information on iMac linux. It
-also has instructions for compiling a newer kernel with USB support, and
-the UUSBD has been updated several times since the 2.2.1 kernel that you
-are probably using. I think you can also find links to the development
-homepage for the UUSBD project. Finally, there is a new USB driver project
-for the kernel that will merge with the UUSBD code base in the future (at
-least, I'm betting on it). I'm running the 2.2.6 kernel on the iMac right
-now from the instructions on the iMac linux page.
-	Good luck!
+It's officially unsupported, but I'm under the impression that it will
+probably work at least partially on most PCI machines.
 
---
 
-+--------------------------------------+
- Derek Moeller moeller@networksplus.net 
-     Linux for PowerPC User, Student    
-   http://www.networksplus.net/moeller	 
-    "aut inveniam viam aut faciam"	 
-+--------------------------------------+
+David
+
+David A. Gatwood                         Visit globegate's internet
+dgatwood@globegate.utm.edu                  talker, Deep Space 36
+http://globegate.utm.edu                telnet globegate.utm.edu:9624
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
