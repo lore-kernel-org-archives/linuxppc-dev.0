@@ -1,36 +1,41 @@
-Message-ID: <381696C9.43512555@fadata.bg>
-Date: Wed, 27 Oct 1999 09:08:09 +0300
-From: "Momchil 'Velco' Velikov" <velco@fadata.bg>
-Reply-To: velco@fadata.bg
+From: hollis@andrew.cmu.edu
+Message-ID: <3816973A.375F987D@andrew.cmu.edu>
+Date: Wed, 27 Oct 1999 02:10:02 -0400
 MIME-Version: 1.0
-To: Bob Toxen <bob@roger.realminfo.com>
+To: Neil Russell <caret@c-side.com>
 CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Nested stdarg broken?
-References: <199910262303.TAA26743@roger.realminfo.com>
-Content-Type: text/plain; charset=koi8-r
+Subject: Re: RevD iMac USB errors (was Problems compiling ppc kernels)
+References: <19991027030045.28758.qmail@kunk.jriver.com> <381674D5.15A925B5@andrew.cmu.edu> <19991026225703.G11654@lx.c-side.com>
+Content-Type: text/plain; charset=iso-2022-jp
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Bob Toxen wrote:
+Neil Russell wrote:
 > 
-> My application uses stdarg (#include <stdarg.h>, va_start, and friends)
-> in a function that then calls vfprintf which also uses stdarg.
+> On Tue, Oct 26, 1999 at 11:43:17PM -0400, hollis@andrew.cmu.edu wrote:
+> > > Does anyone else have any insight into this?  Can anyone point me to
+> > > a kernel binary that works on the iMac?  How about the config file for
+> > > the said kernel?
+> > >
+> > > I have a rev.D iMac, purchased about a month ago (just before the new
+> > > iMac came out).
+> >
+> > The kernels on rshaw's pages (http://www.linuxppc.org/blueg3) should
+> > work fine. The trick is just to comment out the USB version-checking
+> > code. I think he has the patch there as well.
 > 
-> The variable args get garbled by the time they get to vfprintf.  The
-> fmt arg does not get garbled.
-Here's what you can read at
-http://egcs.cygnus.com/gcc-2.95/gcc-2.95.1.html
-under section "Platform specific bugfixes and improvements"
-         Fix varargs/stdarg code generation bug for rs6000/ppc svr4
-targets. 
-Maybe this helps, maybe not.
+> I tried several of those kernels and they would not even boot.  I also
+> built a kernel with the version checking commented out and those kernels
+> would not even find the keyboard.
 
-Regards,
--velco
+Those kernels should definately boot... are you downloading them from
+the Mac OS side? Linux apparently has some issues copying to HFS that
+can render kernels unbootable (this is from personal experience).
 
-btw, 2.95.2 is out
+If those still don't work, try the kernel at
+ftp://ftp.linuxppc.org/kernels/BlueG3/v2.2.6/vmlinux-2.2.6-rev1.gz
 
--velco
+-Hollis
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
