@@ -1,33 +1,40 @@
-Message-ID: <392C42C9.28AF07D8@embeddededge.com>
-Date: Wed, 24 May 2000 16:59:53 -0400
+Message-ID: <392C4A4B.2839C790@embeddededge.com>
+Date: Wed, 24 May 2000 17:31:55 -0400
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: Shuangjun Zhu <r44089@email.sps.mot.com>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: PCMCIA support for 860 -- lost interrupt
-References: <006f01bfc53e$3eb0c680$69f001dc@sjzhu.sps.mot.com>
+To: diekema_jon <diekema@bucks.si.com>
+CC: linuxppc-embedded@lists.linuxppc.org, all@cideas.com
+Subject: Re: Floating Point problems with Linux on the EST SBC8260
+References: <m12uh7W-001SyaC@bucks>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Shuangjun Zhu wrote:
->
-> 1. why "lost interrupt"? irq for IDE is 9, PCMCIA_INTERRUPT=13,
->    so, which hardware trigger IRQ 9?
-> 2. why vpp=0.0, where can I change it, in ide_cs.c or m8xx_pcmcia.c?
->
-> Note:
->
-> I have changed arch/ppc/kernel/ppc8xx_pic.c, so that request_irq() looks
-> like this:
+diekema_jon wrote:
 
-See, this is why I changed the function name in the first place.
-request_irq() assumes a PC-like interrupt structure, which doesn't work
-on the MPC8xx internal interrupt controller.  You need to add an
-indirect function call to the 'md' structure that will install the
-IDE interrupt handler.  When you use the PCMCIA for ATA/IDE, you should
-call a function that installs the PCMCIA interrupt vector.
+> - What is the state of floating point support with Linux on the
+>   MPC8260?
+
+Same as any 603 with FPU.
+
+
+> Platform: EST SBC8260 w/ MPC8260 Rev A.1 running at 166 Mhz
+> Ethernet: 10 Mbs (SCC)
+> Linux kernel: 2.3.99-pre9
+> root filesystem (NFS mounted): MontaVista Hard Hat Linux version 1.1
+> Toolset: Denx Software CDK recompiled with gcc configured for
+>          --with-cpu=603e and hard-float (i.e. no --nfp)
+
+
+You can't be mixing stuff like this.  If you would read the documentation
+provided with the MontaVista CDK, you would have discovered that you
+need to use the tools, libraries, applications, and file systems with
+the kit.  Further, you would have discovered the 1.1 CDK is for an 8xx
+and the libraries are compiled for soft (in-line) floating point.  You
+are mixing floating point instructions with library and compiler support
+that assumes otherwise.......The CDK 1.1 is an update to CDK 1.0.  The
+documentation is found in the 1.0 directory.
 
 
 	-- Dan
