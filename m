@@ -1,26 +1,30 @@
-Message-ID: <3E32D0DD.5050805@embeddededge.com>
-Date: Sat, 25 Jan 2003 13:01:01 -0500
-From: Dan Malek <dan@embeddededge.com>
-MIME-Version: 1.0
-To: Omanakuttan <omanakuttan@tataelxsi.co.in>
+Date: Sat, 25 Jan 2003 15:17:58 -0800
+From: Chris Zimman <chris@cryptoapps.com>
+To: brian.auld@adic.com
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: kernel hangs in copy_and_flush while `lwzx` instruction
-References: <3E32B782.9060603@tataelxsi.co.in>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: BDI2000: What's the quickest way to get one??
+Message-ID: <20030125231758.GA23408@mail.cryptoapps.com>
+Reply-To: Chris Zimman <chris@cryptoapps.com>
+References: <995FF289C9D69747A09E42992644595405B23623@penguin.adic.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <995FF289C9D69747A09E42992644595405B23623@penguin.adic.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Omanakuttan wrote:
+On Sat, Jan 25, 2003 at 07:53:07AM -0800, brian.auld@adic.com wrote:
+> The subject line is my question ... with PPC4xx software.
 
-> kernel hangs while executing the following lines in arch/ppc/kernel/head.S.
+See http://www.ultsol.com, they are one of the US resellers.
 
-You shouldn't be executing that code at all for this board/processor combination.
-The conditions that get you into this indicate the kernel isn't built or
-loaded properly.
+I don't work for them or anything, just have had good experience with
+them.
 
+> I presume the 4xx includes the 440GP.
 
-	-- Dan
+Yep, it does.
 
+--Chris
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
