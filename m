@@ -1,46 +1,36 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <9CFB9DA5261CD611A29B00508B78904807F880ED@ex-deu-munich02.force.de>
-From: "Demke, Torsten" <Torsten.Demke@fci.com>
-To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: problem with standard libc on 8xx
-Date: Fri, 27 Feb 2004 09:55:12 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Gerhard Jaeger <g.jaeger@sysgo.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: MPC5200Lite and PCI issues... 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 27 Feb 2004 09:35:06 +0100."
+             <200402270935.06816.g.jaeger@sysgo.com>
+Date: Fri, 27 Feb 2004 09:56:54 +0100
+Message-Id: <20040227085659.B2B2CC0655@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello all,
+In message <200402270935.06816.g.jaeger@sysgo.com> you wrote:
+>
+> while playing around with a Lite5200 eval-board, I noticed that
+> there seems to be some problems with the PCI bus. Some cards
+> are detected without any problems and also can be accessed
+> some cards not. Apart for the 5V/3.3V issues, I think there are
+> some problems with this board.
+> Are there any experiences? Explanations? Solutions, or workarounds?
 
-I created my own root-fs for a MPC8xx platform
-using standard Debian packages (including libc).
-When I start the system, the init scripts hangs
-whenever it executes a function (exceptt some simple
-thinks like 'echo').
-- the same root-fs starts without problem on a MPC8245 platform.
-- the root-fs starts when I exchange the libc with the libraries
-from the ELDK.
+Remember that there is just one PCI interrupt on the LITE5200;  cards
+that require another one will not work.
 
-I guess that the Debian libc uses floating point - which
-is not available on MPC8xx - but I thougt the kernel would
-emulate this calls (CONFIG_MATH_EMULATION=y).
+Best regards,
 
-Any hints?
+Wolfgang Denk
 
-Regards,
-Torsten
-
-  Torsten Demke
-  Software Engineer
-  Force Computers GmbH
-  - A Solectron Company -
-  Lilienthalstr. 15
-  D-85579 Neubiberg/München
-  Tel. ++49/89/60814-404
-  Fax ++49/89/60814-112
-  mailto:torsten.demke@fci.com
-  www.forcecomputers.com
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+Every time history repeats itself the price goes up.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
