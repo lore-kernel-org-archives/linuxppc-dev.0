@@ -1,29 +1,32 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <000901c09fe8$def06760$8021690a@huawei.com>
-From: "dony" <dony.he@huawei.com>
-To: "Wolfgang Denk" <wd@denx.de>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-References: <20010222074732.6B566281D9@denx.denx.de>
-Subject: Which board use 8260 CPU?
-Date: Mon, 26 Feb 2001 19:40:08 +0800
+Message-ID: <3A9A7080.995B7E00@mvista.com>
+Date: Mon, 26 Feb 2001 10:04:32 -0500
+From: Dan Malek <dan@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Stefano Coluccini <s.coluccini@caen.it>
+Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: KERNELBASE at 0xa0000000
+References: <NDBBIFIMCKPOADMAJOKMEEEMCPAA.s.coluccini@caen.it>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
+Stefano Coluccini wrote:
+>
+> Hi,
+>   anybody knows why in the MCPN765 port KERNELBASE is at 0xa0000000 instead
+> of 0xc0000000 ?
 
-    I just downloaded ppcboot.tar.gz files.
-   Since my custom board use 8260, I want to find a board  using 8260 from ppcboot/board as a example.  I know "cogent"  board supports 8260, but it seems to be a little complex for me.
-Are there other boards using  8260 CPU which can meet the following requirements:
- 1  Initialize CPU core registers , SDRAM, MMU,SIU, CPM
- 2  Initialize Serial Port and Network (SMC , FCC).
-3  Download kernel from tftp server or load kernel from on-board flash ?
+Yep.  It was a quick hack to get a system with 1GByte of memory
+working.  It works fine with all other memory configurations as well.
 
-Thank you very much.
-dony
+I don't see any reason anymore (once Matt Porter dumps all of the
+PReP stuff :-) that we shouldn't be able to move all kernel base
+addresses to 0x80000000 or to allow 3 G user spaces.  On PowerPC,
+we are simply tossing away 1G of address space that should be
+utilized to make our life easier.
 
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
