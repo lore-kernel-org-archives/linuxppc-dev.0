@@ -1,20 +1,30 @@
 Mime-Version: 1.0
-Message-Id: <p04320402b57ce2ed6257@[192.168.240.10]>
-Date: Mon, 26 Jun 2000 12:43:58 +0200
+Message-Id: <p04320403b57cee530fee@[192.168.240.10]>
+Date: Mon, 26 Jun 2000 13:39:03 +0200
 To: linuxppc-dev@lists.linuxppc.org
 From: Alain RICHARD <alain.richard@equation.fr>
-Subject: Ethernet drivers no longer compiles as a module
+Subject: iBook and Kernel 2.2.17pre7
 Content-Type: text/plain; charset="iso-8859-1" ; format="flowed"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-The mace and bmac ethernet driver has been modified in the current
-2.2.17pre7 driver (rsync linuxcare.com.au::linux-pmac-stable) and do
-not compiles any longer as modules.
+I have just made some tests to the kernel 2.2.17pre7 stable from
+linuxcare on my iBook :
 
-It seems some variables definitions has been removed from the
-module_cleanup function.
+- The atyfb driver now recognize my iBook ATI Mobility 3D Rage L
+chipset. The only problem I have with it is that the initialisation
+mode detection is bad and you have to issue a "vmode 10" to get it
+working properly.
+
+- The gmac ethernet driver now is able to do promiscuous mode
+(tcpdump) and Appletalk.
+
+I hope to be able to run XFree 4.0 or 4.0.1 at least with the fb
+driver (it seems that the ati driver in XFree do not recognize the
+ATI Mobility 3D Rage L chipset).
+
+Regards,
 --
 -------------------------------------------------------
 Alain RICHARD <mailto:alain.richard@equation.fr>
