@@ -1,20 +1,20 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao05.cox.net (fed1rmmtao05.cox.net [68.230.241.34])
-	by ozlabs.org (Postfix) with ESMTP id B49A467A64
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao11.cox.net (fed1rmmtao11.cox.net [68.230.241.28])
+	by ozlabs.org (Postfix) with ESMTP id DE32267A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 12 Feb 2005 02:20:06 +1100 (EST)
-Date: Fri, 11 Feb 2005 08:20:01 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Andre' Draszik <andid@gmx.net>
-Message-ID: <20050211152001.GB9443@smtp.west.cox.net>
-References: <4206EFDC.3090904@gmx.net>
-	<20050208223348.GA31592@smtp.west.cox.net>
-	<420C6EC6.4020800@gmx.net>
+	Sat, 12 Feb 2005 02:32:46 +1100 (EST)
+Date: Fri, 11 Feb 2005 08:32:44 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: emre kara <emrekara2002@yahoo.co.uk>
+Message-ID: <20050211083244.A27632@cox.net>
+References: <20050211135501.19902.qmail@web25710.mail.ukl.yahoo.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <420C6EC6.4020800@gmx.net>
+In-Reply-To: <20050211135501.19902.qmail@web25710.mail.ukl.yahoo.com>;
+	from emrekara2002@yahoo.co.uk on Fri, Feb 11, 2005 at 01:55:01PM
+	+0000
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH][PPC32] mktree fix
+Subject: Re: 1000MB (GMII) ports on IBM 440GX (ocotea)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,25 +25,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, Feb 11, 2005 at 09:37:26AM +0100, Andre' Draszik wrote:
-> Tom Rini wrote:
-> >On Mon, Feb 07, 2005 at 05:34:36AM +0100, Andre' Draszik wrote:
-> >
-> >
-> >>This one fixes mktree. The image size stored in the header is pretty off 
-> >>without
-> >>this patch. (yes, it can make a difference of upto almost 64k)
-> >>
-> >>Signed-off-by: Andre' Draszik <andid@gmx.net>
-> >
-> >
-> >With this wrong, what breaks?  Thanks.
-> 
-> I don't think anything breaks but if somebody relies on the image size 
-> stored in the header, up to almost 64k bytes of flash could be wasted.
+On Fri, Feb 11, 2005 at 01:55:01PM +0000, emre kara wrote:
+> Dear All;
+> I have problems on ppc440gx ( IBM 440gx evaluatation
+> board)  gigabit ethernet ports.
+> I have configurated and compiled linux kernel version
+> 2.4.29 (latest) for ocotea board and it worked fine
+> with two MII /Fast Ethernet ports,but i can't find any
+> way to configure GMII (gigabit) ethernet driver for
+> other on chip two gigabit ports, in the platform
+> specific file (arch/ppc/platforms/ocotea.c) the source
+> configures only two fast ethernet ports.
+> I have also loaded Montavista's preview kernel on my
+> board and in this kernel,  four ethernet ports worked
+> fine, but there are huge differences between two
+> kernels so I can't find a way to overcome this
+> problem.
+> Is anyone have an idea for the solution?
+> Thank you.
+> Emre
 
-OK.  I'll push this up once 2.6.12-rc1 opens up.
+You need to read the archives. This is a faq. Hint: you
+want 2.6.
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+The archives can be found here where you signed up for the list.
+
+-Matt
