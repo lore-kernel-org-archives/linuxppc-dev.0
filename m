@@ -1,14 +1,31 @@
-From: Graf Alex <alex.graf@siemens.com>
-To: "'Lokesh Kumar'" <lokesh.kumar@wrx-us.com>,
+Message-ID: <3439AB3A99ECD5409F3A52ACF814744D158D70@norcom2.norcom.net>
+From: Lokesh Kumar <lokesh.kumar@wrx-us.com>
+To: "'Graf Alex'" <alex.graf@siemens.com>,
+	Lokesh Kumar <lokesh.kumar@wrx-us.com>,
 	linuxppc-embedded@lists.linuxppc.org
-Message-ID: <791B3205DB661A42B4BFE5464A7D1D02010E464A@chzugexch01.abatos.com>
-Subject: AW: mic2563 dual slot pcmcia controller
-Date: Fri, 29 Aug 2003 08:54:54 +0200
+Subject: RE: mic2563 dual slot pcmcia controller
+Date: Fri, 29 Aug 2003 08:23:32 -0400
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+I have 2.4.18 kernel, and is booted by u-boot 0.4. However, I do not think
+that I should do any init of pcmcia controller from the u-boot, because
+u-boot does not use it and hence should not init it. I want to init it
+inside the kernel. I thought m8xx_setup.c and m8xx_pcmcia.c is a better
+place to do all my chip select for controlling mic2563 and the other pcmcia
+related settings.
+
+Lokesh
+
+-----Original Message-----
+From: Graf Alex [mailto:alex.graf@siemens.com]
+Sent: Friday, August 29, 2003 2:55 AM
+To: 'Lokesh Kumar'; linuxppc-embedded@lists.linuxppc.org
+Subject: AW: mic2563 dual slot pcmcia controller
 
 
 Hello
