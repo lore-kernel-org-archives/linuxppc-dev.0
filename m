@@ -1,13 +1,34 @@
-Message-ID: <003201c2c275$45a441b0$5e207aa1@fish>
-From: "Jason Park" <jason@amadeus.kist.re.kr>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Problem with BDI2000 flash programming
-Date: Thu, 23 Jan 2003 09:20:12 +0900
+Message-ID: <8D7C5F56B409554D9D46AC22195807F3061C2A@exchwenz01.dmcwave.co.nz>
+From: Rod Boyce <rod_boyce@stratexnet.com>
+To: "'Jason Park'" <jason@amadeus.kist.re.kr>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Problem with BDI2000 flash programming
+Date: Thu, 23 Jan 2003 13:30:55 +1300
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="ks_c_5601-1987"
+	charset="KS_C_5601-1987"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+You are going to need to check the settings in your BDI configuration file
+(ep8260.cfg.init).  This file is going to need a flash section that details
+the address of the flash, the type of flash, and what programming mode to
+use.  You do not include that here so I'll assume that you have not added
+this section.  Check you BDI manual for the flash settings and set it to
+what your board uses.
+
+
+Regards,
+Rod Boyce.
+
+
+
+-----Original Message-----
+From: Jason Park [mailto:jason@amadeus.kist.re.kr]
+Sent: Thursday, 23 January 2003 1:20 p.m.
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Problem with BDI2000 flash programming
 
 
 hi, im new to this email list.. but i am having some problems with my board
