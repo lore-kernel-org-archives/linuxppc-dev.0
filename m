@@ -1,30 +1,47 @@
-Message-ID: <40B58C98.40205@fh-landshut.de>
-Date: Thu, 27 May 2004 08:37:12 +0200
-From: Oliver Korpilla <okorpil@fh-landshut.de>
-Reply-To: okorpil@fh-landshut.de
+From: Marco Schramel <Schramel.Linux@go.bartec.de>
+To: Wolfgang Denk <wd@denx.de>
+Subject: Re: insmod trouble
+Date: Thu, 27 May 2004 09:15:58 +0200
+References: <20040525095554.A5EC4C109F@atlas.denx.de>
+In-Reply-To: <20040525095554.A5EC4C109F@atlas.denx.de>
+Cc: "PPC_LINUX" <linuxppc-embedded@lists.linuxppc.org>
 MIME-Version: 1.0
-To: Eugene Surovegin <ebs@ebshome.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ioremap() question
-References: <40B4AB27.5020202@fh-landshut.de> <20040526171234.GA4255@gate.ebshome.net>
-In-Reply-To: <20040526171234.GA4255@gate.ebshome.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200405270915.58686.Schramel.Linux@go.bartec.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Eugene Surovegin wrote:
+Hi all,
 
->On Wed, May 26, 2004 at 04:35:19PM +0200, Oliver Korpilla wrote:
->
->
->You cannot use virt_to_bus() on ioremap returned addresses.
->
->
->
-Thanks! Do I need something like phys_to_bus() instead?
+my problem was ...
+> > --------------------------------------------------
+> > bash-2.05b# insmod demodriver.o
+> > demodriver.o: unresolved symbol module_unregister_chrdev
+> > demodriver.o: unresolved symbol register_chrdev
+> > demodriver.o: unresolved symbol led_init
+> > demodriver.o: unresolved symbol printk
+> > ------------------------------------------------
+> >
+> > What is the reason for this messages ??
 
-With kind regards,
-Oliver Korpilla
+Solution: You have to disable "Set version information on all module symbols" under "Loadable module support" in our kernel config.
+
+Thanx for comments
+Marco
+
+
+---------
+Marco Schramel
+R&D
+Bartec GmbH
+Schulstr. 30
+94239 Gotteszell, Germany
+www.bartec.de
+Marco.Schramel@go.bartec.de
+Phone:  +49 (0)9929/301332
+Fax:    +49 (0)9929/301112
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
