@@ -1,21 +1,13 @@
-Return-Path: <olh@suse.de>
-Received: from Cantor.suse.de (news.suse.de [195.135.220.2])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "mail.suse.de",
-	Issuer "SuSE Linux AG internal IMAP-Server CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id BCC7067A78
-	for <linuxppc-dev@ozlabs.org>; Sun, 30 Jan 2005 02:53:53 +1100 (EST)
-Date: Sat, 29 Jan 2005 16:53:44 +0100
-From: Olaf Hering <olh@suse.de>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@osdl.org>
-Message-ID: <20050129155344.GA9832@suse.de>
-References: <200501260514.j0Q5E5iq017078@hera.kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <200501260514.j0Q5E5iq017078@hera.kernel.org>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] ppc32: Add support for Pegasos machines
+Return-Path: <CWernham@Airspan.com>
+Message-ID: <41FDF480.9040204@airspan.com>
+Date: Mon, 31 Jan 2005 09:04:00 +0000
+From: Colin Wernham <cwernham@airspan.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: [PATCH]PPC4XX Dma fixes, burst and sg improvements
+Reply-To: cwernham@airspan.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,99 +17,238 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- On Wed, Jan 26, Linux Kernel Mailing List wrote:
+Here's the resubmitted patches for PPC4XX DMA improvements/fixes. If 
+these are still mangled by my mailer then I'll resend them as attachments.
 
-> ChangeSet 1.2046, 2005/01/25 20:33:08-08:00, benh@kernel.crashing.org
-> 
-> 	[PATCH] ppc32: Add support for Pegasos machines
-> 	
-> 	This patch, mostly from Sven Luther and reworked by me, adds support for
-> 	Pegasos machines to the ppc32 arch. The patch contains all of the arch
-> 	code. I'll send separately a few driver changes as well.
-> 	
-> 	Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> 	Signed-off-by: Andrew Morton <akpm@osdl.org>
-> 	Signed-off-by: Linus Torvalds <torvalds@osdl.org>
-> 
-> 
-> 
->  arch/ppc/platforms/chrp_pci.c   |   38 +++++++++++++++++---
-
-> diff -Nru a/arch/ppc/platforms/chrp_pci.c b/arch/ppc/platforms/chrp_pci.c
-> --- a/arch/ppc/platforms/chrp_pci.c	2005-01-25 21:14:21 -08:00
-> +++ b/arch/ppc/platforms/chrp_pci.c	2005-01-25 21:14:21 -08:00
-> @@ -195,7 +215,7 @@
->  	struct pci_controller *hose;
->  	unsigned int *dma;
->  	char *model, *machine;
-> -	int is_longtrail = 0, is_mot = 0;
-> +	int is_longtrail = 0, is_mot = 0, is_pegasos = 0;
->  	struct device_node *root = find_path_device("/");
->  
->  	/*
-> @@ -207,6 +227,10 @@
->  	if (machine != NULL) {
->  		is_longtrail = strncmp(machine, "IBM,LongTrail", 13) == 0;
->  		is_mot = strncmp(machine, "MOT", 3) == 0;
-> +		if (strncmp(machine, "Pegasos2", 8) == 0)
-> +			is_pegasos = 2;
-> +		else if (strncmp(machine, "Pegasos", 7) == 0)
-> +			is_pegasos = 1;
->  	}
->  	for (dev = root->child; dev != NULL; dev = dev->sibling) {
->  		if (dev->type == NULL || strcmp(dev->type, "pci") != 0)
-> @@ -275,5 +303,7 @@
->  		}
->  	}
->  
-> -	ppc_md.pcibios_fixup = chrp_pcibios_fixup;
-> +	/* Do not fixup interrupts from OF tree on pegasos */
-> +	if (is_pegasos != 0)
-> +		ppc_md.pcibios_fixup = chrp_pcibios_fixup;
->  }
-
-This breaks other chrp boards, like a B50.
-
-PCI: Enabling device 0000:00:10.0 (0140 -> 0143)
-sym0: <875> rev 0x4 at pci 0000:00:10.0 irq 7
-sym0: No NVRAM, ID 7, Fast-20, SE, parity checking
-sym0: SCSI BUS has been reset.
-scsi0 : sym-2.1.18n
-sym0:0:0: ABORT operation started.
-sym0:0:0: ABORT operation timed-out.
-sym0:0:0: DEVICE RESET operation started.
-sym0:0:0: DEVICE RESET operation timed-out.
-sym0:0:0: BUS RESET operation started.
-sym0:0:0: BUS RESET operation timed-out.
-sym0:0:0: HOST RESET operation started.
-Uninitialised timer!
-This is just a warning.  Your computer is OK
-function=0xc02a0000, data=0x28000028
-Call trace:
- [c0028028] check_timer_failed+0x7c/0x9c
- [c0028074] del_timer+0x2c/0xb0
- [c0111c68] __sym_eh_done+0x8c/0x98
- [c0110654] sym_xpt_done+0x2c/0x40
- [c0117930] sym_flush_comp_queue+0x160/0x190
- [c0117fd0] sym_start_up+0x194/0x7d8
- [c0111994] sym_eh_handler+0x1bc/0x2d0
- [c0107644] scsi_try_host_reset+0x8c/0x104
- [c0108ac0] scsi_error_handler+0x8c0/0xe68
- [c0006e14] kernel_thread+0x44/0x60
-sym0: SCSI BUS has been reset.
-sym0:0:0: HOST RESET operation timed-out.
-scsi: Device offlined - not ready after error recovery: host 0 channel 0 id 0 lun 0
+Colin.
 
 
-Signed-off-by: Olaf Hering <olh@suse.de>
 
---- ./arch/ppc/platforms/chrp_pci.c~	2005-01-29 16:22:09.288047704 +0100
-+++ ./arch/ppc/platforms/chrp_pci.c	2005-01-29 16:44:03.905193820 +0100
-@@ -304,6 +304,6 @@
- 	}
- 
- 	/* Do not fixup interrupts from OF tree on pegasos */
--	if (is_pegasos != 0)
-+	if (!is_pegasos)
- 		ppc_md.pcibios_fixup = chrp_pcibios_fixup;
- }
+===============================================================
+--- linux-2.6.10/arch/ppc/syslib/ppc4xx_dma.c	2004-12-24 
+21:35:40.000000000 +0000
++++ linux-current/arch/ppc/syslib/ppc4xx_dma.c	2005-01-19 
+15:34:30.000000000 +0000
+@@ -512,6 +512,8 @@ ppc4xx_get_channel_config(unsigned int d
+  		return DMA_STATUS_BAD_CHANNEL;
+  	}
+
++	memcpy(p_dma_ch, &dma_channels[dmanr], sizeof (ppc_dma_ch_t));
++
+  #if DCRN_POL > 0
+  	polarity = mfdcr(DCRN_POL);
+  #else
+@@ -604,6 +606,84 @@ ppc4xx_get_peripheral_width(unsigned int
+  	return (GET_DMA_PW(control));
+  }
+
++/*
++ * Clears the channel status bits
++ */
++int
++ppc4xx_clr_dma_status(unsigned int dmanr)
++{
++	if (dmanr >= MAX_PPC4xx_DMA_CHANNELS) {
++		printk(KERN_ERR "ppc4xx_clr_dma_status: bad channel: %d\n", dmanr);
++		return DMA_STATUS_BAD_CHANNEL;
++	}
++	mtdcr(DCRN_DMASR, ((u32)DMA_CH0_ERR | (u32)DMA_CS0 | (u32)DMA_TS0) >> 
+dmanr);
++	return DMA_STATUS_GOOD;
++}
++
++/*
++ * Enables the burst on the channel (BTEN bit in the control/count 
+register)
++ * Note:
++ * For scatter/gather dma, this function MUST be called before the
++ * ppc4xx_alloc_dma_handle() func as the chan count register is copied 
+into the
++ * sgl list and used as each sgl element is added.
++ */
++int
++ppc4xx_enable_burst(unsigned int dmanr)
++{
++	unsigned int ctc;
++	if (dmanr >= MAX_PPC4xx_DMA_CHANNELS) {
++		printk(KERN_ERR "ppc4xx_enable_burst: bad channel: %d\n", dmanr);
++		return DMA_STATUS_BAD_CHANNEL;
++	}
++        ctc = mfdcr(DCRN_DMACT0 + (dmanr * 0x8)) | DMA_CTC_BTEN;
++	mtdcr(DCRN_DMACT0 + (dmanr * 0x8), ctc);
++	return DMA_STATUS_GOOD;
++}
++/*
++ * Disables the burst on the channel (BTEN bit in the control/count 
+register)
++ * Note:
++ * For scatter/gather dma, this function MUST be called before the
++ * ppc4xx_alloc_dma_handle() func as the chan count register is copied 
+into the
++ * sgl list and used as each sgl element is added.
++ */
++int
++ppc4xx_disable_burst(unsigned int dmanr)
++{
++	unsigned int ctc;
++	if (dmanr >= MAX_PPC4xx_DMA_CHANNELS) {
++		printk(KERN_ERR "ppc4xx_disable_burst: bad channel: %d\n", dmanr);
++		return DMA_STATUS_BAD_CHANNEL;
++	}
++	ctc = mfdcr(DCRN_DMACT0 + (dmanr * 0x8)) &~ DMA_CTC_BTEN;
++	mtdcr(DCRN_DMACT0 + (dmanr * 0x8), ctc);
++	return DMA_STATUS_GOOD;
++}
++/*
++ * Sets the burst size (number of peripheral widths) for the channel
++ * (BSIZ bits in the control/count register))
++ * must be one of:
++ *    DMA_CTC_BSIZ_2
++ *    DMA_CTC_BSIZ_4
++ *    DMA_CTC_BSIZ_8
++ *    DMA_CTC_BSIZ_16
++ * Note:
++ * For scatter/gather dma, this function MUST be called before the
++ * ppc4xx_alloc_dma_handle() func as the chan count register is copied 
+into the
++ * sgl list and used as each sgl element is added.
++ */
++int
++ppc4xx_set_burst_size(unsigned int dmanr, unsigned int bsize)
++{
++	unsigned int ctc;
++	if (dmanr >= MAX_PPC4xx_DMA_CHANNELS) {
++		printk(KERN_ERR "ppc4xx_set_burst_size: bad channel: %d\n", dmanr);
++		return DMA_STATUS_BAD_CHANNEL;
++	}
++	ctc = mfdcr(DCRN_DMACT0 + (dmanr * 0x8)) &~ DMA_CTC_BSIZ_MSK;
++	ctc |= (bsize & DMA_CTC_BSIZ_MSK);
++	mtdcr(DCRN_DMACT0 + (dmanr * 0x8), ctc);
++	return DMA_STATUS_GOOD;
++}
+
+  EXPORT_SYMBOL(ppc4xx_init_dma_channel);
+  EXPORT_SYMBOL(ppc4xx_get_channel_config);
+@@ -622,3 +702,7 @@ EXPORT_SYMBOL(ppc4xx_get_dma_residue);
+  EXPORT_SYMBOL(ppc4xx_enable_dma_interrupt);
+  EXPORT_SYMBOL(ppc4xx_disable_dma_interrupt);
+  EXPORT_SYMBOL(ppc4xx_get_dma_status);
++EXPORT_SYMBOL(ppc4xx_clr_dma_status);
++EXPORT_SYMBOL(ppc4xx_enable_burst);
++EXPORT_SYMBOL(ppc4xx_disable_burst);
++EXPORT_SYMBOL(ppc4xx_set_burst_size);
+===============================================================
+--- linux-2.6.10/include/asm-ppc/ppc4xx_dma.h	2004-12-24 
+21:35:01.000000000 +0000
++++ linux-current/include/asm-ppc/ppc4xx_dma.h	2005-01-19 
+10:59:55.000000000 +0000
+@@ -137,9 +137,10 @@ extern unsigned long DMA_MODE_WRITE, DMA
+  #define DMA_TCE_ENABLE     (1<<(8-DMA_CR_OFFSET))
+  #define SET_DMA_TCE(x)     (((x)&0x1)<<(8-DMA_CR_OFFSET))
+
+-#define DMA_DEC            (1<<(2)	/* Address Decrement */
++#define DMA_DEC            (1<<(2))	/* Address Decrement */
+  #define SET_DMA_DEC(x)     (((x)&0x1)<<2)
+  #define GET_DMA_DEC(x)     (((x)&DMA_DEC)>>2)
++
+
+  /*
+   * Transfer Modes
+@@ -244,6 +245,14 @@ typedef uint32_t sgl_handle_t;
+  #define DMA_SG2            (1<<5)
+  #define DMA_SG3            (1<<4)
+
++/* DMA Channel Count Register */
++#define DMA_CTC_BTEN     (1<<23)    /* Burst Enable/Disable bit */
++#define DMA_CTC_BSIZ_MSK (3<<21)    /* Mask of the Burst size bits */
++#define DMA_CTC_BSIZ_2   (0)
++#define DMA_CTC_BSIZ_4   (1<<21)
++#define DMA_CTC_BSIZ_8   (2<<21)
++#define DMA_CTC_BSIZ_16  (3<<21)
++
+  /*
+   * DMA SG Command Register
+   */
+@@ -482,6 +491,7 @@ typedef struct {
+  	char td;		/* transfer direction */
+  #endif
+
++	char int_on_final_sg;/* for scatter/gather - only interrupt on last sg */
+  } ppc_dma_ch_t;
+
+  /*
+@@ -545,6 +555,9 @@ extern int ppc4xx_delete_dma_sgl_element
+  extern int ppc4xx_alloc_dma_handle(sgl_handle_t *, unsigned int, 
+unsigned int);
+  extern void ppc4xx_free_dma_handle(sgl_handle_t);
+  extern int ppc4xx_get_dma_status(void);
++extern int ppc4xx_enable_burst(unsigned int);
++extern int ppc4xx_disable_burst(unsigned int);
++extern int ppc4xx_set_burst_size(unsigned int, unsigned int);
+  extern void ppc4xx_set_src_addr(int dmanr, phys_addr_t src_addr);
+  extern void ppc4xx_set_dst_addr(int dmanr, phys_addr_t dst_addr);
+  extern void ppc4xx_enable_dma(unsigned int dmanr);
+===============================================================
+--- linux-2.6.10/arch/ppc/syslib/ppc4xx_sgdma.c	2004-12-24 
+21:35:18.000000000 +0000
++++ linux-current/arch/ppc/syslib/ppc4xx_sgdma.c	2005-01-19 
+15:07:47.000000000 +0000
+@@ -120,6 +120,12 @@ ppc4xx_add_dma_sgl(sgl_handle_t handle,
+  		psgl->ptail = psgl->phead;
+  		psgl->ptail_dma = psgl->phead_dma;
+  	} else {
++		if(p_dma_ch->int_on_final_sg) {
++			/* mask out all dma interrupts, except error, on tail
++			before adding new tail. */
++			psgl->ptail->control_count &=
++				~(SG_TCI_ENABLE | SG_ETI_ENABLE);
++		}
+  		psgl->ptail->next = psgl->ptail_dma + sizeof(ppc_sgl_t);
+  		psgl->ptail++;
+  		psgl->ptail_dma += sizeof(ppc_sgl_t);
+@@ -160,7 +166,7 @@ ppc4xx_enable_dma_sgl(sgl_handle_t handl
+  	p_dma_ch = &dma_channels[psgl->dmanr];
+  	psgl->ptail->control_count &= ~SG_LINK;	/* make this the last dscrptr */
+  	sg_command = mfdcr(DCRN_ASGC);
+-
++
+  	ppc4xx_set_sg_addr(psgl->dmanr, psgl->phead_dma);
+
+  	sg_command |= SSG_ENABLE(psgl->dmanr);
+@@ -217,7 +223,7 @@ ppc4xx_get_dma_sgl_residue(sgl_handle_t
+  	}
+
+  	sgl_addr = (ppc_sgl_t *) __va(mfdcr(DCRN_ASG0 + (psgl->dmanr * 0x8)));
+-	count_left = mfdcr(DCRN_DMACT0 + (psgl->dmanr * 0x8));
++	count_left = mfdcr(DCRN_DMACT0 + (psgl->dmanr * 0x8)) & SG_COUNT_MASK;
+
+  	if (!sgl_addr) {
+  		printk("ppc4xx_get_dma_sgl_residue: sgl addr register is null\n");
+@@ -351,10 +357,11 @@ ppc4xx_delete_dma_sgl_element(sgl_handle
+  int
+  ppc4xx_alloc_dma_handle(sgl_handle_t * phandle, unsigned int mode, 
+unsigned int dmanr)
+  {
+-	sgl_list_info_t *psgl;
++	sgl_list_info_t *psgl=NULL;
+  	dma_addr_t dma_addr;
+  	ppc_dma_ch_t *p_dma_ch = &dma_channels[dmanr];
+  	uint32_t sg_command;
++	uint32_t ctc_settings;
+  	void *ret;
+
+  	if (dmanr >= MAX_PPC4xx_DMA_CHANNELS) {
+@@ -412,6 +419,11 @@ ppc4xx_alloc_dma_handle(sgl_handle_t * p
+  	mtdcr(DCRN_ASGC, sg_command);
+  	psgl->sgl_control = SG_ERI_ENABLE | SG_LINK;
+
++	/* keep control count register settings */
++	ctc_settings = mfdcr(DCRN_DMACT0 + (dmanr * 0x8))
++		& (DMA_CTC_BSIZ_MSK | DMA_CTC_BTEN); /*burst mode settings*/
++	psgl->sgl_control |= ctc_settings;
++
+  	if (p_dma_ch->int_enable) {
+  		if (p_dma_ch->tce_enable)
+  			psgl->sgl_control |= SG_TCI_ENABLE;
+===============================================================
+[End]
