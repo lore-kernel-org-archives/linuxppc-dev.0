@@ -1,12 +1,24 @@
-Message-ID: <406448EC.5030009@euronet.nl>
-Date: Fri, 26 Mar 2004 16:14:52 +0100
-From: Jos Beck <jos_beck@euronet.nl>
+Message-ID: <D73A25AA6E54D511AD74009027B1110F5BB139@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'Jos Beck'" <jos_beck@euronet.nl>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: Preferred Phy for MPC8260
+Date: Fri, 26 Mar 2004 10:21:44 -0500
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Preferred Phy for MPC8260
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+intel lxt971
+
+-----Original Message-----
+From: Jos Beck [mailto:jos_beck@euronet.nl]
+Sent: Friday, March 26, 2004 10:15 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Preferred Phy for MPC8260
+
 
 
 Hi,
