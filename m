@@ -1,41 +1,75 @@
-Reply-To: <acurtis@onz.com>
-From: "Allen Curtis" <acurtis@onz.com>
-To: "Armin" <akuster@pacbell.net>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: ibm_ocp_enet.c - PHY implementation requirements?
-Date: Tue, 7 May 2002 22:03:59 -0700
-Message-ID: <NCBBIINEHIPFGJPLBEIFAEKJDGAA.acurtis@onz.com>
+Message-ID: <3CD8E84F.3010600@esd-electronics.com>
+Date: Wed, 08 May 2002 10:56:47 +0200
+From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <3CD7F783.8070704@pacbell.net>
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: unexpected bahavior with module - relocation problem ?
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> There are a few stubs for the zmii bridge
+Hi all,
 
-I guess I am confused about how to create stubs. I looked at the code and it
-appears that it wants to schedule mii functions to be completed for config,
-ack, shutdown, ... I didn't see anything in the list processing that would
-avoid the queue process. For instance, if you wanted to just initialize the
-phy_status field from the config(), how could you do this without having it
-go into the mii_queue processor? (setup for 100Mb, Full-Duplex)
+I got a little problem that I cannot really understand.
+I wrote a little device driver for a 405 PPC board. The driver registers a miscdevice.
 
-> The MII functions can most likely be placed into it's own file and you
-> might want to think about creating  a spi.c file for its implementation.
+Normally all misc devices are listed under /proc/misc.
+My first attempt resulted in a /proc/misc looking like this:
 
-I totally agree.
+# cat /proc/misc
+187          <- "test" is missing here !
+185 gpio
 
->   This would allow us to have them be complied in depending on what mode
-> is configured. The questions is can we come up with a common api to mii
-> & spi?
+The code is attached. When I change the init stuff for the miscdevice structure
+a little bit (see below with WORKING defined), I got the expected bahavior.
 
-The phy_info structure looks general enough. It is the function list
-processing that concerns me. I will think about it tomorrow when the brain
-is a little clearer. (and I have to come up with a viable solution)
+Is this a relocation problem when loading the module ? In the two version the NAME string
+sits in different segments. Is there a way to fix the problem by a compiler switch ? Is this a PPC issue ?
+I noticed that the Linux rtc driver uses the same code as I do, but it does not have the problem.
+The difference is that my code is a lkm and mot compiled into the kernel.
 
-THX
+Matthias
+
+...
+
+#define NAME   "test"
+#define MINOR  187
+
+#ifdef WORKING
+static char name[]=NAME;
+#endif
+
+static struct file_operations my_fops =
+{
+...
+};
+
+static struct miscdevice my_miscdev =
+{
+#ifdef WORKING
+   name:  name, // results in correct bahavior
+#else
+   name:  NAME, // results in missing module name in /proc/misc
+#endif
+   minor: MINOR,
+   fops:  &my_fops
+};
+
+int __init my_init(void)
+{
+   misc_register(&my_miscdev);
+   return 0;
+}
+
+
+void __exit my_exit(void)
+{
+   misc_deregister(&my_miscdev);
+}
+
+module_init(my_init);
+module_exit(my_exit);
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
