@@ -1,62 +1,189 @@
-Date: Fri, 7 Dec 2001 14:01:14 +0100 (CET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Corey Minyard <minyard@acm.org>,
-	Franz Sirl <Franz.Sirl-ppc@lauterbach.com>,
-	<linuxppc-dev@lists.linuxppc.org>, <paulus@samba.org>
-Subject: Re: Changes to PPC Linux required for GCC 3.1
-In-Reply-To: <200112052124.4573@enzo.bigblue.local>
-Message-ID: <Pine.LNX.4.33.0112071346210.2808-100000@gra-lx1.iram.es>
+Date: Fri, 7 Dec 2001 14:57:21 -0600 (CST)
+From: Kumar Gala <kumar.gala@motorola.com>
+To: linuxppc-dev@lists.linuxppc.org
+Cc: paulus@samba.org, <ezannoni@cygnus.com>, <dmj+@andrew.cmu.edu>,
+	<fsirl@kernel.crashing.org>
+Subject: AltiVec register ptrace support
+In-Reply-To: <Pine.LNX.4.33.0112071346210.2808-100000@gra-lx1.iram.es>
+Message-ID: <Pine.GSO.4.40.0112071443310.2903-300000@softail.somerset.sps.mot.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: MULTIPART/MIXED; BOUNDARY="-559023410-758783491-1007757885=:2903"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 5 Dec 2001, Franz Sirl wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+  Send mail to mime@docserver.cac.washington.edu for more info.
 
->
-> On Wednesday 05 December 2001 20:45, Tom Rini wrote:
-> > On Wed, Dec 05, 2001 at 06:50:38PM +0100, Benjamin Herrenschmidt wrote:
-> > > >I think the reason this wasn't applied is that Paul said something about
-> > > >thiws being horriyingly ugly.  Corey, can you post a patch that changes
-> > > >RELOC(x) into a function and nothing else? :)
-> > >
-> > > I prefer this beeing resolved at compile time. The reason Paul didn't
-> > > want it at first is because he didn't want a workaround for a pre-release
-> > > gcc bug. Since this is becoming a "feature", it makes sense to get the
-> > > workaround. Paulus will confirm or not what I'm saying though...
-> >
-> > This was actually being hit by a 3.0.x release at the time I think (and
-> > we worked around it another way).  I'd prefer a clean function over an
-> > ugly macro any day :)
->
-> I don't understand how my patch makes the RELOC hack uglier than it is
-> already by itself ;-). The few affected files should really be reworked to be
-> compiled with something like -fPIC -mrelocateable (maybe with -msdata and
-> setup r12 accordingly).
+---559023410-758783491-1007757885=:2903
+Content-Type: TEXT/PLAIN; CHARSET=US-ASCII
+Content-ID: <Pine.GSO.4.40.0112071445071.2903@softail.somerset.sps.mot.com>
 
-I agree, RELOC should die. Actually my bootloader for PreP machines is
-compiled with -mrelocatable (that's sufficient). The only trick is that I
-sacrificed a register (r13) to hold a pointer to a structure which
-contains the few most heavily used variables.
+I have two different patches to the ptrace mechanism to add support
+for AltiVec registers.
 
-Actually I'm almost certain that -msdata and similar options are
-incompatible with -mrelocatable, or at least were 3 years ago. Not many
-things have changes in this area in GCC since then AFAICT. That's why I
-had to resort to this trick (easily hidden in macros if you want to) to
-limit code growth, but you should realize that I'm an absolute fanatic of
-minimal code size. Actually code size is not that important in a loader
-that is thrown away early (OTOH current PPC kernels are so incredibly
-bloated that it's not even funny).
+linux-2.4.8-altivec-ptrace.patch:  Adds support similar to existing
+mechanisms to get/set registers via PEEK/POKE calls extending the FPU
+model.
 
-Nevertheless, I found it very nice to have a system which does not have
-any hardwired address (except for exception vectors).  It only needs a few
-big enough contiguous chunks of memory.
+linux-2.4.16-altivec-ptrace.patch: Adds support for new ptrace commands
+that match sparc/x86 PTRACE_{GET,SET}*REGS.  These dump the full register
+state in a single call.
 
-	Gabriel.
+Personally, I would like to see the PTRACE_{GET,SET}*REGS method adopted
+for 2.4.x.  RedHat is trying to push out some GDB changes for AltiVec that
+require closure on this matter.
 
+I would then be willing to add support for getting/setting the
+full GPR+ register state, and FPR+ register state for 2.5.x (will keeping
+the existing support in place for GPRs+, and FPRs).  I would like to see
+the PPC ptrace follow more what x86 and sparc are doing.  I would also
+like to collect together the FPR state and VR state into new structs in
+the thread state.  This would be similar to how x86 handles FPR and FPX.
+
+There are some other aspects to this problem that should be fixed in
+2.5.x.  However, before starting into that I would like to get closure on
+the AltiVec ptrace support for 2.4.x.
+
+thanks
+
+- kumar
+
+
+---559023410-758783491-1007757885=:2903
+Content-Type: TEXT/PLAIN; CHARSET=US-ASCII; NAME="linux-2.4.16-altivec-ptrace.patch"
+Content-Transfer-Encoding: BASE64
+Content-ID: <Pine.GSO.4.40.0112071444450.2903@softail.somerset.sps.mot.com>
+Content-Description: 
+Content-Disposition: ATTACHMENT; FILENAME="linux-2.4.16-altivec-ptrace.patch"
+
+ZGlmZiAtdXJOIGxpbnV4LTIuNC4xNi9hcmNoL3BwYy9rZXJuZWwvcHRyYWNl
+LmMgbGludXgtMi40LjE2LWF2ZWNwdHJhY2UvYXJjaC9wcGMva2VybmVsL3B0
+cmFjZS5jDQotLS0gbGludXgtMi40LjE2L2FyY2gvcHBjL2tlcm5lbC9wdHJh
+Y2UuYwlNb24gTm92IDI2IDA3OjI5OjE3IDIwMDENCisrKyBsaW51eC0yLjQu
+MTYtYXZlY3B0cmFjZS9hcmNoL3BwYy9rZXJuZWwvcHRyYWNlLmMJRnJpIERl
+YyAgNyAxNDozNzoyMCAyMDAxDQpAQCAtNzEsNiArNzEsNjQgQEANCiAJcmV0
+dXJuIC1FSU87DQogfQ0KIA0KKyNpZmRlZiBDT05GSUdfQUxUSVZFQw0KKy8q
+DQorICogR2V0IGNvbnRlbnRzIG9mIEFsdGlWZWMgcmVnaXN0ZXIgc3RhdGUg
+aW4gdGFzayBUQVNLDQorICovDQorc3RhdGljIGlubGluZSBpbnQgZ2V0X3Zy
+cmVncyh1bnNpZ25lZCBsb25nICpkYXRhLCBzdHJ1Y3QgdGFza19zdHJ1Y3Qg
+KnRhc2spDQorew0KKwlpbnQgaSwgajsNCisNCisgICAgICAgIC8qIGNvcHkg
+QWx0aVZlYyByZWdpc3RlcnMgVlJbMF0gLi4gVlJbMzFdICovDQorCWZvciAo
+aSA9IDA7ICBpIDwgMzI7ICBpKyspDQorICAgICAgICB7DQorICAgICAgICAg
+ICBmb3IgKGogPSAwOyBqIDwgNDsgaisrLCBkYXRhKyspIA0KKyAgICAgICAg
+ICAgew0KKwkgICAgICBfX3B1dF91c2VyKHRhc2stPnRocmVhZC52cltpXS51
+W2pdLCBkYXRhKTsNCisgICAgICAgICAgIH0NCisgICAgICAgIH0NCisNCisg
+ICAgICAgIC8qIGNvcHkgVlNDUiAqLw0KKyAgICAgICAgZm9yIChpID0gMDsg
+aSA8IDQ7IGkrKywgZGF0YSsrKSANCisgICAgICAgIHsNCisJICAgX19wdXRf
+dXNlcih0YXNrLT50aHJlYWQudnNjci51W2ldLCBkYXRhKTsNCisgICAgICAg
+IH0NCisNCisgICAgICAgIC8qIGNvcHkgVlJTQVZFICovDQorICAgICAgICBf
+X3B1dF91c2VyKHRhc2stPnRocmVhZC52cnNhdmUsIGRhdGEpOw0KKw0KKwly
+ZXR1cm4gKDApOw0KK30NCisNCisvKg0KKyAqIFdyaXRlIGNvbnRlbnRzIG9m
+IEFsdGlWZWMgcmVnaXN0ZXIgc3RhdGUgaW50byB0YXNrIFRBU0suDQorICov
+DQorc3RhdGljIGlubGluZSBpbnQgc2V0X3ZycmVncyhzdHJ1Y3QgdGFza19z
+dHJ1Y3QgKnRhc2ssIHVuc2lnbmVkIGxvbmcqIGRhdGEpDQorew0KKwlpbnQg
+aSwgajsNCisNCisgICAgICAgIC8qIGNvcHkgQWx0aVZlYyByZWdpc3RlcnMg
+VlJbMF0gLi4gVlJbMzFdICovDQorCWZvciAoaSA9IDA7ICBpIDwgMzI7ICBp
+KyspDQorICAgICAgICB7DQorICAgICAgICAgICBmb3IgKGogPSAwOyBqIDwg
+NDsgaisrLCBkYXRhKyspIA0KKyAgICAgICAgICAgew0KKwkgICAgICBfX2dl
+dF91c2VyKHRhc2stPnRocmVhZC52cltpXS51W2pdLCBkYXRhKTsNCisgICAg
+ICAgICAgIH0NCisgICAgICAgIH0NCisNCisgICAgICAgIC8qIGNvcHkgVlND
+UiAqLw0KKyAgICAgICAgZm9yIChpID0gMDsgaSA8IDQ7IGkrKywgZGF0YSsr
+KSANCisgICAgICAgIHsNCisJICAgX19nZXRfdXNlcih0YXNrLT50aHJlYWQu
+dnNjci51W2ldLCBkYXRhKTsNCisgICAgICAgIH0NCisNCisgICAgICAgIC8q
+IGNvcHkgVlJTQVZFICovDQorICAgICAgICBfX2dldF91c2VyKHRhc2stPnRo
+cmVhZC52cnNhdmUsIGRhdGEpOw0KKw0KKwlyZXR1cm4gKDApOw0KK30NCisj
+ZW5kaWYNCisNCiBzdGF0aWMgaW5saW5lIHZvaWQNCiBzZXRfc2luZ2xlX3N0
+ZXAoc3RydWN0IHRhc2tfc3RydWN0ICp0YXNrKQ0KIHsNCkBAIC0yNTgsNyAr
+MzE2LDM1IEBADQogCWNhc2UgUFRSQUNFX0RFVEFDSDoNCiAJCXJldCA9IHB0
+cmFjZV9kZXRhY2goY2hpbGQsIGRhdGEpOw0KIAkJYnJlYWs7DQorI2lmZGVm
+IENPTkZJR19BTFRJVkVDDQorCWNhc2UgUFRSQUNFX0dFVFZSUkVHUzogeyAv
+KiBHZXQgdGhlIGNoaWxkIGFsdGl2ZWMgcmVnaXN0ZXIgc3RhdGUuICovDQor
+CQlpZiAoIWFjY2Vzc19vayhWRVJJRllfV1JJVEUsICh1bnNpZ25lZCBsb25n
+KilkYXRhLA0KKwkJCSAgICAgICAoc2l6ZW9mKF9fdmVjdG9yMTI4KSAqIDMz
+ICsgc2l6ZW9mKHVuc2lnbmVkIGxvbmcpKSkpIHsNCisJCQlyZXQgPSAtRUlP
+Ow0KKwkJCWJyZWFrOw0KKwkJfQ0KKyAgICAgICAgICAgICAgICBpZiAoY2hp
+bGQtPnRocmVhZC5yZWdzLT5tc3IgJiBNU1JfVkVDKSB7DQorICAgICAgICAg
+ICAgICAgICAgIGdpdmV1cF9hbHRpdmVjKGNoaWxkKTsNCisgICAgICAgICAg
+ICAgICAgfQ0KKwkJcmV0ID0gZ2V0X3ZycmVncygodW5zaWduZWQgbG9uZyop
+ZGF0YSwgY2hpbGQpOw0KKwkJYnJlYWs7DQorCX0NCiANCisJY2FzZSBQVFJB
+Q0VfU0VUVlJSRUdTOiB7IC8qIFNldCB0aGUgY2hpbGQgYWx0aXZlYyByZWdp
+c3RlciBzdGF0ZS4gKi8NCisJCWlmICghYWNjZXNzX29rKFZFUklGWV9SRUFE
+LCAodW5zaWduZWQgbG9uZyopZGF0YSwNCisJCQkgICAgICAgKHNpemVvZihf
+X3ZlY3RvcjEyOCkgKiAzMyArIHNpemVvZih1bnNpZ25lZCBsb25nKSkpKSB7
+DQorCQkJcmV0ID0gLUVJTzsNCisJCQlicmVhazsNCisJCX0NCisJCS8qIHRo
+aXMgaXMgdG8gY2xlYXIgdGhlIE1TUl9WRUMgYml0IHRvIGZvcmNlIGEgcmVs
+b2FkIG9mIHJlZ2lzdGVyDQorCQkgKiBzdGF0ZSBmcm9tIG1lbW9yeSAqLw0K
+KyAgICAgICAgICAgICAgICBpZiAoY2hpbGQtPnRocmVhZC5yZWdzLT5tc3Ig
+JiBNU1JfVkVDKSB7DQorICAgICAgICAgICAgICAgICAgIGdpdmV1cF9hbHRp
+dmVjKGNoaWxkKTsNCisgICAgICAgICAgICAgICAgfQ0KKwkJcmV0ID0gc2V0
+X3ZycmVncyhjaGlsZCwgKHVuc2lnbmVkIGxvbmcqKWRhdGEpOw0KKwkJYnJl
+YWs7DQorCX0NCisjZW5kaWYNCiAJZGVmYXVsdDoNCiAJCXJldCA9IC1FSU87
+DQogCQlicmVhazsNCmRpZmYgLXVyTiBsaW51eC0yLjQuMTYvaW5jbHVkZS9h
+c20tcHBjL3B0cmFjZS5oIGxpbnV4LTIuNC4xNi1hdmVjcHRyYWNlL2luY2x1
+ZGUvYXNtLXBwYy9wdHJhY2UuaA0KLS0tIGxpbnV4LTIuNC4xNi9pbmNsdWRl
+L2FzbS1wcGMvcHRyYWNlLmgJTW9uIE1heSAyMSAxNzowMjowNiAyMDAxDQor
+KysgbGludXgtMi40LjE2LWF2ZWNwdHJhY2UvaW5jbHVkZS9hc20tcHBjL3B0
+cmFjZS5oCUZyaSBEZWMgIDcgMTQ6Mzc6NDAgMjAwMQ0KQEAgLTEwMyw1ICsx
+MDMsOSBAQA0KICNkZWZpbmUgUFRfRlBSMzEgKFBUX0ZQUjAgKyAyKjMxKQ0K
+ICNkZWZpbmUgUFRfRlBTQ1IgKFBUX0ZQUjAgKyAyKjMyICsgMSkNCiANCisv
+KiBBcmJpdHJhcmlseSBjaG9vc2UgdGhlIHNhbWUgcHRyYWNlIG51bWJlcnMg
+YXMgdXNlZCBieSB0aGUgU3BhcmMgY29kZS4gKi8NCisjZGVmaW5lIFBUUkFD
+RV9HRVRWUlJFR1MgICAgICAgICAgMTgNCisjZGVmaW5lIFBUUkFDRV9TRVRW
+UlJFR1MgICAgICAgICAgMTkNCisNCiAjZW5kaWYNCiANCg==
+---559023410-758783491-1007757885=:2903
+Content-Type: TEXT/PLAIN; charset=US-ASCII; name="linux-2.4.8-altivec-ptrace.patch"
+Content-Transfer-Encoding: BASE64
+Content-ID: <Pine.GSO.4.40.0112071457210.2903@softail.somerset.sps.mot.com>
+Content-Description: 
+Content-Disposition: attachment; filename="linux-2.4.8-altivec-ptrace.patch"
+
+LS0tIGxpbnV4LTIuNC44L2FyY2gvcHBjL2tlcm5lbC9wdHJhY2UuYwlNb24g
+SnVsIDMwIDE1OjE3OjMwIDIwMDENCisrKyBsaW51eC0yLjQuOC1wdHJhY2Uv
+YXJjaC9wcGMva2VybmVsL3B0cmFjZS5jCVdlZCBPY3QgMjQgMTQ6MjY6NTUg
+MjAwMQ0KQEAgLTE1OCwxMiArMTU4LDIzIEBADQogCQlyZXQgPSAtRUlPOw0K
+IAkJLyogY29udmVydCB0byBpbmRleCBhbmQgY2hlY2sgKi8NCiAJCWluZGV4
+ID0gKHVuc2lnbmVkIGxvbmcpIGFkZHIgPj4gMjsNCisjaWZkZWYgQ09ORklH
+X0FMVElWRUMNCisJCWlmICgoYWRkciAmIDMpIHx8IGluZGV4ID4gUFRfVlJT
+QVZFKQ0KKwkJCWJyZWFrOw0KKyNlbHNlDQogCQlpZiAoKGFkZHIgJiAzKSB8
+fCBpbmRleCA+IFBUX0ZQU0NSKQ0KIAkJCWJyZWFrOw0KKyNlbmRpZg0KIA0K
+IAkJaWYgKGluZGV4IDwgUFRfRlBSMCkgew0KIAkJCXRtcCA9IGdldF9yZWco
+Y2hpbGQsIChpbnQpIGluZGV4KTsNCiAJCX0gZWxzZSB7DQorI2lmZGVmIENP
+TkZJR19BTFRJVkVDDQorCQkJaWYgKGluZGV4ID49IFBUX1ZSMCAmJiBpbmRl
+eCA8PSBQVF9WUlNBVkUpIHsNCisJCQkJaWYgKGNoaWxkLT50aHJlYWQucmVn
+cy0+bXNyICYgTVNSX1ZFQykNCisJCQkJCWdpdmV1cF9hbHRpdmVjKGNoaWxk
+KTsNCisJCQl9IGVsc2UNCisjZW5kaWYNCiAJCQlpZiAoY2hpbGQtPnRocmVh
+ZC5yZWdzICE9IE5VTEwNCiAJCQkgICAgJiYgY2hpbGQtPnRocmVhZC5yZWdz
+LT5tc3IgJiBNU1JfRlApDQogCQkJCWdpdmV1cF9mcHUoY2hpbGQpOw0KQEAg
+LTE5MCw3ICsyMDEsMTEgQEANCiAJCXJldCA9IC1FSU87DQogCQkvKiBjb252
+ZXJ0IHRvIGluZGV4IGFuZCBjaGVjayAqLw0KIAkJaW5kZXggPSAodW5zaWdu
+ZWQgbG9uZykgYWRkciA+PiAyOw0KKyNpZmRlZiBDT05GSUdfQUxUSVZFQw0K
+KwkJaWYgKChhZGRyICYgMykgfHwgaW5kZXggPiBQVF9WUlNBVkUpDQorI2Vs
+c2UNCiAJCWlmICgoYWRkciAmIDMpIHx8IGluZGV4ID4gUFRfRlBTQ1IpDQor
+I2VuZGlmDQogCQkJYnJlYWs7DQogDQogCQlpZiAoaW5kZXggPT0gUFRfT1JJ
+R19SMykNCkBAIC0xOTgsNiArMjEzLDEyIEBADQogCQlpZiAoaW5kZXggPCBQ
+VF9GUFIwKSB7DQogCQkJcmV0ID0gcHV0X3JlZyhjaGlsZCwgaW5kZXgsIGRh
+dGEpOw0KIAkJfSBlbHNlIHsNCisjaWZkZWYgQ09ORklHX0FMVElWRUMNCisJ
+CQlpZiAoaW5kZXggPj0gUFRfVlIwICYmIGluZGV4IDw9IFBUX1ZSU0FWRSkg
+ew0KKwkJCQlpZiAoY2hpbGQtPnRocmVhZC5yZWdzLT5tc3IgJiBNU1JfVkVD
+KQ0KKwkJCQkJZ2l2ZXVwX2FsdGl2ZWMoY2hpbGQpOw0KKwkJCX0NCisjZW5k
+aWYNCiAJCQlpZiAoY2hpbGQtPnRocmVhZC5yZWdzICE9IE5VTEwNCiAJCQkg
+ICAgJiYgY2hpbGQtPnRocmVhZC5yZWdzLT5tc3IgJiBNU1JfRlApDQogCQkJ
+CWdpdmV1cF9mcHUoY2hpbGQpOw0KLS0tIGxpbnV4LTIuNC44L2luY2x1ZGUv
+YXNtLXBwYy9wdHJhY2UuaAlNb24gSnVsIDMwIDEyOjQxOjE3IDIwMDENCisr
+KyBsaW51eC0yLjQuOC1wdHJhY2UvaW5jbHVkZS9hc20tcHBjL3B0cmFjZS5o
+CVdlZCBPY3QgMjQgMTQ6Mjc6MjAgMjAwMQ0KQEAgLTEwMyw1ICsxMDMsMTIg
+QEANCiAjZGVmaW5lIFBUX0ZQUjMxIChQVF9GUFIwICsgMiozMSkNCiAjZGVm
+aW5lIFBUX0ZQU0NSIChQVF9GUFIwICsgMiozMiArIDEpDQogDQorLyogb2xk
+IGVuZCBvZiBQVFJBQ0VfUEVFS1VTUiByYW5nZSAqLw0KKw0KKyNkZWZpbmUg
+UFRfVlIwICAoUFRfRlBTQ1IgKyAxKSAgICAgICAgIC8qIHRoaXMgaGFzIHZh
+bHVlIG9mIDExNCwganVzdCBiZXlvbmQgdGhlIGZwc2NyLiAqLw0KKyNkZWZp
+bmUgUFRfVlIzMSAoUFRfVlIwICsgNCozMSkNCisjZGVmaW5lIFBUX1ZTQ1Ig
+KFBUX1ZSMCArIDQqMzIpICAgICAgICAgICAgICAgIC8qIHRoaXMgaGFzIHZh
+bHVlIG9mIDI0OCAqLw0KKyNkZWZpbmUgUFRfVlJTQVZFIChQVF9WUjAgKyA0
+KjMzKSAgICAgIC8qIHRoaXMgaGFzIHZhbHVlIG9mIDI1MiAqLw0KKw0KICNl
+bmRpZg0KIA0K
+---559023410-758783491-1007757885=:2903--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
