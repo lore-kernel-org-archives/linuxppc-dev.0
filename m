@@ -1,17 +1,16 @@
 Return-Path: <rpjday@mindspring.com>
 Received: from mailhost.rdmcorp.com (world.rdmcorp.com [204.225.180.10])
-	by ozlabs.org (Postfix) with ESMTP id A6F542BDB4
+	by ozlabs.org (Postfix) with ESMTP id EEFF82BDB4
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  8 Oct 2004 21:23:14 +1000 (EST)
-Received: from [10.1.1.102] (10.1.2.1) by mailhost.rdmcorp.com (Worldmail
-	1.3.167) for linuxppc-embedded@ozlabs.org; 8 Oct 2004 07:23:07 -0400
-Date: Fri, 8 Oct 2004 07:16:18 -0400 (EDT)
+	Fri,  8 Oct 2004 22:51:23 +1000 (EST)
+Date: Fri, 8 Oct 2004 08:44:27 -0400 (EDT)
 From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Message-ID: <Pine.LNX.4.60.0410080704170.6219@dell.enoriver.com>
+To: Tom Rini <trini@kernel.crashing.org>
+Message-ID: <Pine.LNX.4.60.0410080840520.6091@dell.enoriver.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Subject: cleaning up the Kconfig menu structure -- the bigger picture
+Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: next pass of cleaning up micropatch.c
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,50 +22,201 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-   somewhat related to dan malek's posting, but i think part of the 
-problem with trying to figure out what the menuconfig menus should 
-support is that the relevant options are organized in a confusingly 
-haphazard way.
+   numerous changes to micropatch.c:
 
-   if you're building a kernel for an 8xx system, obviously you'll 
-choose the 8xx processor, at which point naturally a number of other 
-kernel config menu entries (dependent on the "8xx" config variable and 
-falling off of that) suddenly become visible.  unfortunately, in 
-really badly-chosen places.
+   1) define patching macros for brevity
+   2) make sections for each patch more modular
+   3) comment out questionable verify_patch() routine for now, since
+ 	no one seems to call it
 
-   consider, first, serial port options.  if you choose 8xx, then 
-you'll be presented with the menu choices:
 
-   Device Drivers -->
-     Character devices -->
-       Serial drivers -->
-         CPM SCC/SMC serial port support --> etc, etc.
+comments?  it's still not the final cut, just another step along
+the way.
 
-now, is this the right place for configuring CPM SCC/SMC serial port 
-support?  sure, some people might say.  after all, it's serial port 
-stuff, it should be under "Serial drivers".  makes perfect sense, 
-right?
+   Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
-   in that case, if you wanted to configure "CPM SCC Ethernet", why 
-would you go under "MPC8xx CPM Options" rather than the general 
-networking menu?  this is clearly inconsistent.
 
-   more to the point, i've always found it a bit strange that selecting 
-"8xx" as a processor would suddenly cause the top-level "MPC8xx CPM 
-Options" menu to appear, when other 8xx-related stuff was still 
-scattered elswewhere throughout the kernel source tree.
 
-   it might make more sense, if you choose "8xx", to have *all* 
-8xx-related stuff to suddenly appear under a single top-level menu: 
-serial ports, networking, patches, etc.  at least, you'd get to see 
-everything in one place, and calculating interdependencies would be 
-simpler (no, you can't choose SMC1 to be both a serial port and an 
-ethernet, that sort of thing).
 
-   i don't know if this suggestion is feasible but, really, it seems 
-clear that the current menu structure is pretty ad hoc and 
-disorganized.
+===== arch/ppc/8xx_io/micropatch.c 1.3 vs edited =====
+--- 1.3/arch/ppc/8xx_io/micropatch.c	2004-10-07 18:28:32 -04:00
++++ edited/arch/ppc/8xx_io/micropatch.c	2004-10-08 08:34:58 -04:00
+@@ -621,15 +621,29 @@
+  };
+  #endif
 
-   thoughts?
+-/* Load the microcode patch.  This is called early in the CPM initialization
+- * with the controller in the reset state.  We enable the processor after
+- * we load the patch.
++/*
++ *  Shortcut macros for patching code.
+   */
++
++#define PATCH2000 \
++	dp = (uint *)(commproc->cp_dpmem); \
++	for (i=0; i<(sizeof(patch_2000)/4); i++) \
++		*dp++ = patch_2000[i];
++
++#define PATCH2E00 \
++	dp = (uint *)&(commproc->cp_dpmem[0x0e00]); \
++	for (i=0; i<(sizeof(patch_2e00)/4); i++) \
++		*dp++ = patch_2e00[i];
++
++#define PATCH2F00 \
++	dp = (uint *)&(commproc->cp_dpmem[0x0f00]); \
++	for (i=0; i<(sizeof(patch_2f00)/4); i++) \
++		*dp++ = patch_2f00[i];
++
++
+  void
+-cpm_load_patch(volatile immap_t *immr)
+-{
+-#ifdef CONFIG_UCODE_PATCH
+-	volatile uint		*dp;
++cpm_load_patch(volatile immap_t *immr) {
++	volatile uint		*dp;		/* Dual-ported RAM. */
+  	volatile cpm8xx_t	*commproc;
+  	volatile iic_t		*iip;
+  	volatile spi_t		*spp;
+@@ -638,42 +652,22 @@
 
-rday
+  	commproc = (cpm8xx_t *)&immr->im_cpm;
+
+-	/* We work closely with commproc.c.  We know it only allocates
+-	 * from data only space.
+-	 * For this particular patch, we only use the bottom 512 bytes
+-	 * and the upper 256 byte extension.  We will use the space
+-	 * starting at 1K for the relocated parameters, as the general
+-	 * CPM allocation won't come from that area.
+-	 */
+-	commproc->cp_rccr = 0;
+-
+-	/* Copy the patch into DPRAM.
+-	 *
+-	 * ADDENDUM:  I am somewhat nervous about the next few lines,
+-	 * as they imply that *any* patch will *always* consist of at
+-	 * least the patch_2000[] and patch_2f00[] arrays, and it's 
+-	 * not clear to me that that's true.  More to come here as I
+-	 * figure this out.
+-	*/
+-	dp = (uint *)(commproc->cp_dpmem);
+-	for (i=0; i<(sizeof(patch_2000)/4); i++)
+-		*dp++ = patch_2000[i];
+-
+-	dp = (uint *)&(commproc->cp_dpmem[0x0f00]);
+-	for (i=0; i<(sizeof(patch_2f00)/4); i++)
+-		*dp++ = patch_2f00[i];
+-
+  #ifdef CONFIG_USB_SOF_UCODE_PATCH
+-
+-	/* Enable uCode fetches from DPRAM. */
++	commproc->cp_rccr = 0;
++	PATCH2000
++	PATCH2F00
+  	commproc->cp_rccr = 0x0009;
+
+-	printk("USB uCode patch installed\n");
+-#endif /* CONFIG_USB_SOF_PATCH */
++	printk("USB SOF microcode patch installed\n");
++#endif /* CONFIG_USB_SOF_UCODE_PATCH */
+
+  #if defined(CONFIG_I2C_SPI_UCODE_PATCH) || \
+      defined(CONFIG_I2C_SPI_SMC1_UCODE_PATCH)
+
++	commproc->cp_rccr = 0;
++	PATCH2000
++	PATCH2F00
++
+  	iip = (iic_t *)&commproc->cp_dparam[PROFF_IIC];
+  # define RPBASE 0x0500
+  	iip->iic_rpbase = RPBASE;
+@@ -684,63 +678,42 @@
+  	spp = (spi_t *)&commproc->cp_dparam[PROFF_SPI];
+  	spp->spi_rpbase = i;
+
+-# if defined(CONFIG_I2C_SPI_SMC1_UCODE_PATCH)
+-	dp = (uint *)&(commproc->cp_dpmem[0x0e00]);
+-	for (i=0; i<(sizeof(patch_2e00)/4); i++)
+-		*dp++ = patch_2e00[i];
++# if defined(CONFIG_I2C_SPI_UCODE_PATCH)
++	commproc->cp_cpmcr1 = 0x802a;
++	commproc->cp_cpmcr2 = 0x8028;
++	commproc->cp_cpmcr3 = 0x802e;
++	commproc->cp_cpmcr4 = 0x802c;
++	commproc->cp_rccr = 1;
+
+-	/* Enable the traps to get to it.
+-	*/
++	printk("I2C/SPI microcode patch installed.\n");
++# endif /* CONFIG_I2C_SPI_UCODE_PATCH */
++
++# if defined(CONFIG_I2C_SPI_SMC1_UCODE_PATCH)
++	PATCH2E00
+  	commproc->cp_cpmcr1 = 0x8080;
+  	commproc->cp_cpmcr2 = 0x808a;
+  	commproc->cp_cpmcr3 = 0x8028;
+  	commproc->cp_cpmcr4 = 0x802a;
+-
+-	/* Enable uCode fetches from DPRAM.
+-	*/
+  	commproc->cp_rccr = 3;
+
+  	smp = (smc_uart_t *)&commproc->cp_dparam[PROFF_SMC1];
+  	smp->smc_rpbase = 0x1FC0;
+
+-	printk("I2C/SPI/SMC1 ucode patch installed.\n");
++	printk("I2C/SPI/SMC1 microcode patch installed.\n");
+  # endif /* CONFIG_I2C_SPI_SMC1_UCODE_PATCH) */
+
+-# if defined(CONFIG_I2C_SPI_UCODE_PATCH)
+-	/* Enable the traps to get to it.
+-	*/
+-	commproc->cp_cpmcr1 = 0x802a;
+-	commproc->cp_cpmcr2 = 0x8028;
+-	commproc->cp_cpmcr3 = 0x802e;
+-	commproc->cp_cpmcr4 = 0x802c;
+-
+-	/* Enable uCode fetches from DPRAM.
+-	*/
+-	commproc->cp_rccr = 1;
+-
+-	printk("I2C/SPI ucode patch installed.\n");
+-# endif /* CONFIG_I2C_SPI_UCODE_PATCH */
+-
+-	/* Relocate the IIC and SPI parameter areas.  These have to
+-	 * aligned on 32-byte boundaries.
+-	 */
+-	iip = (iic_t *)&commproc->cp_dparam[PROFF_IIC];
+-	iip->iic_rpbase = RPBASE;
+-
+-	/* Put SPI above the IIC, also 32-byte aligned.
+-	*/
+-	i = (RPBASE + sizeof(iic_t) + 31) & ~31;
+-	spp = (spi_t *)&commproc->cp_dparam[PROFF_SPI];
+-	spp->spi_rpbase = i;
+-
+-#endif
+-#endif /* CONFIG_UCODE_PATCH */
++#endif /* some variation of the I2C/SPI patch was selected */
+  }
+
++/*
++ *  Take this entire routine out, since no one calls it and its 
++ * logic is suspect.
++ */
++
++#if 0
+  void
+  verify_patch(volatile immap_t *immr)
+  {
+-#ifdef CONFIG_UCODE_PATCH
+  	volatile uint		*dp;
+  	volatile cpm8xx_t	*commproc;
+  	int i;
+@@ -769,5 +742,5 @@
+  		}
+
+  	commproc->cp_rccr = 0x0009;
+-#endif /* CONFIG_UCODE_PATCH */
+  }
++#endif
