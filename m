@@ -1,23 +1,46 @@
-Message-ID: <20011019042029.91154.qmail@web15001.mail.bjs.yahoo.com>
-Date: Fri, 19 Oct 2001 12:20:29 +0800 (CST)
-From: =?gb2312?q?Dross=20Zhou?= <zjuzhou@yahoo.com.cn>
-Subject: How to connect ppp protocol to my socket modem?
-To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <3BCFC5FC.CCFF554D@staubli.com>
+Date: Fri, 19 Oct 2001 08:19:40 +0200
+From: Pierre AUBERT <p.aubert@staubli.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
+To: Jeremy Rosen <Rosen.Jeremy@tms-pty.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: choosing a card
+References: <sbd033de.079@tms-pty.com>
+Content-Type: text/plain; charset=iso-8859-1
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hello all,
-I have compiled kernel with CONFIG_PPP ,and i have
-added  /dev/ppp into my file system.But i don't how to
-write driver to connect to ppp protocol whith my
-socket modem?
-My borad is using MPC850 with Hardhat Linux 2.4.2.
+Jeremy Rosen wrote:
 
-thanks.
-ZhouChang
+> Thanks to your advices, we are going to order another development board,
+> instead of the FADS that we had so far for testing.
+>
+> so the next question is : what board to chose..
+>
+> we want to have a 860T on it...
+> is the ADS board O.K ?
+>
+> thx
+>
+> Jeremy
+>
+
+We're working with the Embedded Planet board (the RPX Classic LF BW_31) and it
+works fine.
+For more informations, please consult http://www.embeddedplanet.com
+
+Regards
+
+
+--
+------------------------------------------------------------------------------
+Pierre Aubert                   |   Phone:  +33 4 50 65 62 88
+                                |   Fax:    +33 4 50 65 62 08
+STÄUBLI Faverges                |
+Place Robert STÄUBLI            |   Mailto:p.aubert@staubli.com
+74210 Faverges FRANCE           |   http://www.staubli.com
+------------------------------------------------------------------------------
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
