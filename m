@@ -1,40 +1,36 @@
-Message-ID: <20021118122042.74002.qmail@web8001.mail.in.yahoo.com>
-Date: Mon, 18 Nov 2002 04:20:42 -0800 (PST)
-From: rekha gvv <rekhagvvc@yahoo.co.in>
-Subject: glibc 2.2.2  error 
-To: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <3DD8DD24.1080809@motorola.com>
+Date: Mon, 18 Nov 2002 12:29:24 +0000
+From: John Traill <john.traill@motorola.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Michael Habermann <mhabermann@gmx.de>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: linuxppc-2.5 / Sandpoint X2
+References: <3DD4E4D3.4030805@motorola.com> <3DD83DB8.5090600@gmx.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hello,
-I am setting up glibc for powerpc target but It gives
-me errors ..
-I have set the options
-CC=powerpc-linux-gcc
-./configure --build=powerpc-linux \
-> --enable-add-ons=linuxthreads \
-> --with-headers=/usr/local/powerpc-linux/include
+The existing switch configuration works for a 2.4 kernel. Changing S5 makes no difference.
 
-But when u compile  it is not able to find the headers
-there ...
-it gives these errors ...
-so can anyone specify the right options to configure
-glibc.
+Michael Habermann wrote:
+>
+> John Traill wrote:
+>
+>> However I'm not sure if this is indicative of an error in the changes
+>> above or just the fact that the kernel isn't doing
+>> anything else but service irq's.
+>
+>
+> Check the switch S5, which changes the IRQ polarity. Maybe the interrupt
+> line is always asserted.
+> On a 8240 CPU, it needs reversed polarity.
+>
 
+--
 
-In file included from ../posix/bits/posix1_lim.h:126,
-                 from :1:
-../linuxthreads/sysdeps/unix/sysv/linux/bits/local_lim.h:36:26:
-linux/limits.h: No such file or directory
-make[1]: *** [../bits/stdio_lim.st] Error 1
-make[1]: Leaving directory `/usr/src/glibc-2.2.2/csu'
-make: *** [csu/subdir_lib] Error 2
-
-
-thankyou!
+Regards, John
+___________________________________________________________________________
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
