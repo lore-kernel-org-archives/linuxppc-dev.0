@@ -1,67 +1,37 @@
-To: linuxppc-dev@lists.linuxppc.org
-Subject: sigaltstack and SA_ONSTACK for linuxppc (patch)
-Reply-To: minyard@acm.org
-From: Corey Minyard <minyard@acm.org>
-Date: 22 Feb 1999 15:20:52 -0600
-Message-ID: <m2aey6p22z.fsf@wf-rch.cirr.com>
+Date: Mon, 22 Feb 1999 16:42:41 -0700 (MST)
+From: Matt Porter <mmporter@home.com>
+To: Cort Dougan <cort@persephone.cs.nmt.edu>
+cc: Paul.Mackerras@cs.anu.edu.au,
+        Hartmut Koptein <koptein@et-inf.fho-emden.de>,
+        zankel@tarantel.rz.fh-muenchen.de, bh40@calva.net,
+        davidsen@prodigy.com, marsmail@globegate.utm.edu, dvdoug@tiac.net,
+        paubert@iram.es, jskov@cygnus.co.uk, hozer@drgw.net,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: [ppc-dev] Summary: Restructuring Efforts
+In-Reply-To: <Pine.LNX.3.96.990222112522.4988B-100000@persephone.cs.nmt.edu>
+Message-ID: <Pine.LNX.3.96.990222164134.2394B-100000@liberty.chnd1.az.home.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I just read that the SheepSaver people were a little stuck because
-LinuxPPC didn't have  a working sigaltstack.
+On Mon, 22 Feb 1999, Cort Dougan wrote:
 
-The following patch implements SA_ONSTACK in 2.2, in case nobody has
-done that yet.  I hope it is correct, it seems to work well for me.
+How about miscboot?  I know, I know, it's not that big of deal...
 
--- 
-Corey Minyard                   Internet:  minyard@acm.org
-  Work: minyard@nortelnetworks.com  UUCP:  minyard@wf-rch.cirr.com
+> Thus the name arch/ppc/mbxboot rather than emb_boot or some such thing.
+> They're all not mbx, but that makes it more clear that it's for mbx-type
+> boards (rather than prep/mtx).
+> 
+> }I was concerned that people might think that ALL embedded boards would
+> }fall into the "embedded" bootloader and it could cause confusion down the
 
---- linux-2.2p4.orig/arch/ppc/kernel/signal.c   Sun Nov 15 12:51:44 1998
-+++ linux-2.2p4/arch/ppc/kernel/signal.c        Thu Jan 14 15:12:22 1999
-@@ -144,6 +144,7 @@
- 
-        if (act) {
-                old_sigset_t mask;
-+
-                if (verify_area(VERIFY_READ, act, sizeof(*act)) ||
-                    __get_user(new_ka.sa.sa_handler, &act->sa_handler) ||
-                    __get_user(new_ka.sa.sa_restorer, &act->sa_restorer))
-@@ -258,7 +259,7 @@
- badframe:
-        lock_kernel();
-        do_exit(SIGSEGV);
--}
-+}
- 
- /*
-  * Set up a signal frame.
-@@ -374,7 +375,7 @@
-        if (!oldset)
-                oldset = &current->blocked;
- 
--       newsp = frame = regs->gpr[1] - sizeof(struct sigregs);
-+       newsp = frame = 0;
- 
-        for (;;) {
-                unsigned long signr;
-@@ -470,6 +471,15 @@
-                                /* NOTREACHED */
-                        }
-                }
-+
-+               if (    (ka->sa.sa_flags & SA_ONSTACK)
-+                    && (! on_sig_stack(regs->gpr[1]))) {
-+                               newsp = (current->sas_ss_sp
-+                                        + current->sas_ss_size);
-+               } else {
-+                       newsp = regs->gpr[1];
-+               }
-+               newsp = frame = newsp - sizeof(struct sigregs);
- 
-                /* Whee!  Actually deliver the signal.  */
-                handle_signal(signr, ka, &info, oldset, regs, &newsp, frame);
+--
+Matt Porter
+mmporter@home.com
+This is Linux Country. On a quiet night, you can hear Windows reboot.
+
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
