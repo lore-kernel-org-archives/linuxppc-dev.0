@@ -1,33 +1,22 @@
-Message-ID: <20020224110851.37552.qmail@web14001.mail.yahoo.com>
-Date: Sun, 24 Feb 2002 03:08:51 -0800 (PST)
-From: William Wu <crax4ever@yahoo.com>
-Subject: timesys linux on RPX-classic
-To: applebaumk@embeddedplanet.com
-Cc: linuxppc-embedded@lists.linuxppc.org
+Message-ID: <20083A3BAEF9D211BDB600805F8B14F3010A15A6@NTSERVER>
+From: Tzahi Oved <tzahio@voltaire.com>
+To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: ppcboot 1.1.4 & linuxppc 2.4.10
+Date: Sun, 24 Feb 2002 21:16:15 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="windows-1255"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
 Hi,
-
-We just bought a RPX-classic from EmbeddedPlanet,
-and I downloadded the linux image from
-www.timesys.com.
-
-I got the linux image to boot in the board.  But while
-in init, it stopped.  It always stopped after
-rc init at run level 2.  then it just print out:
-"....b" on the console then stopped.
-
-can anyone help us at this case?
-
+I'm trying to put together the ppcboot and linuxppc on the Galileo EV64260.
+After succeeding in loading the ppcboot, I'm tring to load the linuxppc in
+image mode (after using the mkimage utility on the vmlinux.gz file). After
+the ppcboot decompresses the kernel image it get's stack and doesn't even
+get to the Linux version printing.
+Any suggestions ??
 thanks
-
-sincerely
-
-William Wu
-
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
