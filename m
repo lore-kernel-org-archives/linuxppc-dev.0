@@ -1,69 +1,62 @@
-Message-Id: <200204041235.g34CZDw22993@p2.parker.boston.ma.us>
-To: Dan Malek <dan@embeddededge.com>
+Message-ID: <3CAC5F5F.9000602@embeddededge.com>
+Date: Thu, 04 Apr 2002 09:12:47 -0500
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Brad Parker <brad@parker.boston.ma.us>
 Cc: David Gibson <david@gibson.dropbear.id.au>,
 	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Workaround for USB DMA bugs 
-In-Reply-To: Message from Dan Malek <dan@embeddededge.com>
-   of "Wed, 03 Apr 2002 21:54:29 EST." <3CABC065.6050107@embeddededge.com>
-Date: Thu, 04 Apr 2002 07:35:13 -0500
-From: Brad Parker <brad@parker.boston.ma.us>
+Subject: Re: Workaround for USB DMA bugs
+References: <200204041235.g34CZDw22993@p2.parker.boston.ma.us>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dan Malek wrote:
->
->David Gibson wrote:
->
->
->> It's becoming easier though, with the __cacheline_aligned macro.  Plus
->> I think if the buffer is individually kmalloc()ed it will be properly
->> aligned.
->
->Alignment is only half the problem.  You have to ensure the object is
->modulo cache line size as well.  You can't be sharing cache lines subject
->to DMA with other DMA or processor core data.
+Brad Parker wrote:
 
-Maybe I need to go drink some coffee, but I'm confused by this thread.
+> Maybe I need to go drink some coffee, but I'm confused by this thread.
 
-The real problem, as I recall, was that cache invalidate routine one
-in the 405 port didn't respect the addresses handed to it and instead
-invalidated the entire cache line, even if it went beyond the address
-range provided.
+I'll try to explain it in more detail.
 
-This behavior was different than other ports, specfically the ARM
-port.
+> The real problem, as I recall, was that cache invalidate routine one
+> in the 405 port didn't respect the addresses handed to it and instead
+> invalidated the entire cache line, even if it went beyond the address
+> range provided.
 
-I don't think the patch was needed on the ARM.  It was just need on
-the 405.
+You can't invalidate, flush, manage anything less than a cache line.
 
-Fixing the usb code is a good idea, but it would just hide the real
-problem.
+The problem is the same on all processors, it doesn't matter how the
+DMA object is allocated either.  Suppose you have a processor with
+something larger than an 8 byte cache line. Suppose you have some DMA buffer
+(kmalloc'ed or just static declared), that is only 8 bytes for example,
+and it starts at memory location 0x1000.  Suppose the processor (or
+another DMA) had some data that starts at location 0x1008.  The logically
+correct thing to do for an incoming DMA is to first invalidate the
+cache line, then do the DMA, then when the processor accesses the
+DMA buffer it will re-load the cache line.  In this example, if the
+processor writes some variable at location 0x1008, the invalidate
+will also invalide this processor data, which is wrong.  The next
+access by the processor to this variable will read some old piece
+of data, not the last thing it wrote to memory.
 
-The original problem was that the USB code was doing DMA off the
-stack.  I don't recommend that, but I can't find any reason why it
-specifically should not work or not be allowed.  (and listen, if you
-argue that it's philosophically bad I agree - note I said
-*technically* wrong).
+So, the solution was to first flush this line, then invalidate it.
+Well, that works better but still isn't correct.  If the processor
+accesses the memory at location 0x1008 before the DMA is complete,
+then the cache line is filled with the old stale DMA buffer, and
+when the processor accesses the DMA buffer you don't get the
+data that is the result of the DMA.
 
-When the ohci driver did a cache invalidate on the buffer - in
-preparation for dma into the buffer - it destroyed part of the stack,
-the part which had not yet been flushed.
+The only reason this patch appears to work is because we are lucky,
+and the processor doesn't access anything in the cache line prior
+to the DMA completion.
 
-On other ports, like the ARM, the cache invalidate routine 'notices'
-if the address range is not cache line aligned and flushes the parts
-which are not.
+It's the same for all incoherent processors.  Memory is accessed
+in cache line chunks, you can't invalidate, flush or otherwise
+manage part of a cache line.  The stack is a weird place to put
+a DMA buffer, but that has nothing to do with this problem.
 
-I argued long ago (to parties which are present but probably sleeping
-right now :-)) that this should be changed.
 
-I'll make this argument again, now.
+	-- Dan
 
-also, I think the comment in the code is incorrect.  I think the code
-should read that the cache_invalidate routine is broken on some ports.
-
-off to make some coffee...
-
--brad
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
