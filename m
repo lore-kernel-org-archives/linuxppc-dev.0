@@ -1,36 +1,85 @@
-To: Ron Bianco <ronb@lcsaudio.com>
-Cc: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Kernel choices for 824x with ext3 FS 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 21 Oct 2003 15:36:48 PDT."
-             <000701c39823$d04388b0$4d00a8c0@warp-speed>
-Date: Wed, 22 Oct 2003 10:31:32 +0200
-Message-Id: <20031022083137.5AD55C59E4@atlas.denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: 4xx watchdog handling
+Date: Wed, 22 Oct 2003 08:08:38 -0400
+Message-ID: <C6D44AA99ECEB540A5498F15F92DA07D6888AD@amperion01>
+From: "Jeff David" <jdavid@amperion.com>
+To: "Brian Kuschak" <bkuschak@yahoo.com>,
+	<linuxppc-embedded@lists.linuxppc.org>,
+	<ppcboot-users@lists.sourceforge.net>,
+	"Robert Labrecque" <lbrecque@us.ibm.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Ron,
+This is a problem with the 405H which may have been experienced and
+possibly solved by someone out there in the user community.
 
-in message <000701c39823$d04388b0$4d00a8c0@warp-speed> you wrote:
+We're using the ppc4xx watchdog handler that comes with Linux 2.4.17.
+It uses the PIT, as described by Brian, below.
+
+What we've seen is that the watchdog sometimes expires unexpectedly
+during the ppc405wd_open function, specifically, when the Watchdog Reset
+Control (WRC) bits are written to the TCR register.  (These bits control
+the reset function.)
+
+According to the manual, however, the reset function should not occur
+when the ENW and WIS bits are cleared in the TSR register.  I have added
+code to make absolutely certain that they are cleared just before
+setting the WRC bits.
+
+The only thing that I have not tried yet, is to turn off critical
+interrupts (which control the watchdog interrupt) during the setting of
+the WRC bits, but these seems drastic and unnecessary, since the
+watchdog interrupt is not even enabled!  Does this seem like a viable
+solution?
+
+There is nothing in the 405 errata about this.  Has anybody else
+experienced this problem?
+
+Thanks,
+Jeff
+
+
+> -----Original Message-----
+> From: Brian Kuschak [mailto:bkuschak@yahoo.com]
+> Sent: Friday, November 01, 2002 2:14 PM
+> To: linuxppc-embedded@lists.linuxppc.org
+> Cc: bkuschak@yahoo.com
+> Subject: 4xx watchdog handling
 >
-> Thanks, I wasn't sure what that module name referred to or the tree's status.
-> I just did a cvs checkout on it.
-> I suppose it is a superset of the linux_2_4_devel tree at penguinppc.org?
+>
+>
+> Regarding the way 2.4.19 handles the 4xx watchdog:
+>
+> The 4xx timer interrupt, the PIT, is the lowest
+> priority exception (18). All the external IRQs come in
+> at a higher priority (16).  This is opposite of x86,
+> where the timer ISR is highest priority (0).
+>
+> This would seem to negate the effectiveness of drivers
+> which implement "work limits" in their ISRs (like many
+> ethernet drivers).  These drivers do an RFI after
+> doing a certain amount of work, leaving the interrupt
+> pending and returning later to finish up.  In the case
+> of 4xx, a pending PIT interrupt would not be serviced
+> due to its lower priority.  In the case of heavy IRQ
+> load, the watchdog can expire.
+>
+> Has anyone considered implementing the 4xx watchdog
+> interrupt itself as the place to refresh the watchdog?
+>  We could still use the existing method of a heartbeat
+> counter decremented each time, but just do the
+> refreshing in a watchdog ISR rather than the timer
+> ISR.  This way the watchdog could be reliably
+> refreshed even during heavy IRQ loads.
+>
+> Any comments?
+>
+> -Brian
+>
+>
 
-Not exactly a superset, as we froze the version after 2.4.20. But  we
-added / fixed a couple of things. So probably the best descritpion is
-to say it's a branch off the "official" tree based on 2.4.20
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-It's a small world, but I wouldn't want to paint it.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
