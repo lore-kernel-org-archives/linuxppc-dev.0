@@ -1,38 +1,36 @@
-Message-ID: <38BCE4EF.85135592@inu.se>
-Date: Wed, 01 Mar 2000 10:37:51 +0100
-From: Björn Lundberg <bjorn.lundberg@inu.se>
+Message-ID: <38BD140B.A82C085B@vas-gmbh.de>
+Date: Wed, 01 Mar 2000 13:58:51 +0100
+From: Frank Przybylski <Frank.Przybylski@vas-gmbh.de>
 MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Performance 2.2.13 and USB work
-References: <20000229054521.6C2385064E@brixi.research.canon.com.au>
-Content-Type: text/plain; charset=iso-8859-1
+Subject: Re: PCMCIA-IDE for mpc8xx-linux-2.2.13
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-We've been using 2.2.5 and wanted to move up to 2.2.13
+Hi,
 
-So, we made a diff on all changes we've done on Malek's 2.2.5 and
-applied that to 2.2.13.
-We then ran a test on it and found 2.2.13 was 3 times slower than 2.2.5!
+I'm trying to connect an IDE disk to the mpc860, on a TQM-860L Module
+running linux-2.2.13.
+According to Dan Malek it should be possible to use the PCMCIA port as a
+simple IDE interface (as stated also in m8xx_setup.c).
+When I try to compile the kernel with IDE/ATA-2 disk support, I get
+'m8xx_setup.c: In function `m8xx_ide_init_hwif_ports':'
+'m8xx_setup.c:418: `PCMCIA_MEM_ADDR' undeclared (first use in this
+function)'.
+So I guess I need some patches for port access and irq mapping,
+mentioned by Dan.
+Is it possible to make these patches available on the net?
 
-We haven't analyzed what made the difference (or in fact what changes
-we've introduced to 2.2.13 with the patch, other than the reported
-conflicts).
-
-Is there anyone that experienced the same fenomena?
-What might be the reason for this?
-
-USB,
-We've been working on an USB host controller interface for the MPC850
-and now it works with the ACM driver. It doesn't support URB for now.
-
-Cheers
- Bjorn
+tia
+      Frank
 --
-Björn Lundberg, Coach R&D
-Honeywell INUcontrol / H&BC, SW10
-Tel: +46 (0)33 23 23 85  Fax: +46 (0)33 23 23 10
-bjorn.lundberg@inu.se    www.inu.se
+===============================================================================
+Frank Przybylski,VAS GmbH,Gotenstr.6,20097 Hamburg,GERMANY,TEL:+49 40
+238568-14
+   mailto:Frank.Przybylski@vas-gmbh.de , visit us at
+http://www.vas-gmbh.de
+===============================================================================
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
