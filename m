@@ -1,56 +1,42 @@
-Subject: MMU Problem bringing up kernel with PPC 603 chip
+Subject: Re: ADS860 - unable to load kernel- Bad magic number
 From: Bob Beck <beck@assurtech.com>
-To: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20040227103636.78365C0655@atlas.denx.de>
-References: <20040227103636.78365C0655@atlas.denx.de>
+To: mgroeger@sysgo.com
+Cc: linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.56.0402271730001.24044@mag.sysgo.com>
+References: <Iq959772845498.03218@webmail1.inner-21cn.com>
+	 <1077816291.4242.6.camel@budweiser>
+	 <Pine.LNX.4.56.0402271730001.24044@mag.sysgo.com>
 Content-Type: text/plain
-Message-Id: <1077830593.4199.7.camel@budweiser>
+Message-Id: <1077834132.4625.2.camel@budweiser>
 Mime-Version: 1.0
-Date: 27 Feb 2004 11:23:13 +1400
+Date: 27 Feb 2004 12:22:12 +1400
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-All,
+On Sat, 2004-02-28 at 06:32, Marius Groeger wrote:
+> On Thu, 27 Feb 2004, Bob Beck wrote:
+>
+> >  What is the difference between vmlinux and zImage.embedded ?
+>
+> vmlinux is the plain kernel ELF image. You can use it to analyse the kernel
+> code or symbols, but you cannot boot it as-is.
+>
+> zImage.embedded is the compressed kernel image plus some glue code used as a
+> bridge between the firmware and the kernel.
+>
 
-I'm bringing up my 1st kernel on a proprietary board
-using a PPC 603E chip.
+On my proprietary board (PPC 603). I do not have access to flash
+so I am loading vmlinux into RAM and jumping to 0x10000. It is
+running into problems in mmu_off.
 
+Should I be loading zImage.embedded instead ?
 
-The kernel is configured using the 6xx/7xx ppc selection.
+Bob
 
-The kernel starts executing at __start in head.S and
-branches to early_init(). I have stubbed out the call
-to prom_init() since this is an embedded system and
-not a power mac (as the comments at the top of the
-prom.c file indicate).
-
-The code returns to head.S and branches to mmu_off.
-Here is the code for mmu_off.
-
-mmu_off:
-	addi	r4, r3, __after_mmu_off - _start
-	mfmsr	r3
-	andi.	r0,r3,MSR_DR|MSR_IR		/* MMU enabled? */
-	beqlr
-	andc	r3,r3,r0
-	mtspr	SRR0,r4
-	mtspr	SRR1,r3
-	sync
-	RFI
-
-This executes all the way to the "RFI" instruction,
-but never comes back to the place in the code that
-called mmu_off.
-
-Why is the "return from interrupt" going out into
-space ? Any suggestions ?
-
-
-Best Regards,
-
-Bob Beck
-beck@assurtech.com
+I can see
+> Regards,
+> Marius
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
