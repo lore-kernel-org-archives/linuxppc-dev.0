@@ -1,109 +1,123 @@
-Date: Wed, 7 Apr 2004 15:17:19 -0400
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: 2.6.5/iBook G3: Oops on resume from sleep
-Message-ID: <20040407191719.GA4852@csclub.uwaterloo.ca>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Aaron Lunansky <muffin@csclub.uwaterloo.ca>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <20040407191719.GA4852@csclub.uwaterloo.ca>
 References: <20040405215318.GA2822@mortadelo.pirispons.net>
+	 <20040407191719.GA4852@csclub.uwaterloo.ca>
+Content-Type: text/plain
+Message-Id: <1081378171.1380.68.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040405215318.GA2822@mortadelo.pirispons.net>
-From: muffin@csclub.uwaterloo.ca (Aaron Lunansky)
+Date: Thu, 08 Apr 2004 08:49:31 +1000
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I'm having similar issues with an ibook G3 (600MHz) - only my system
-seems to fail to sleep, and this is regardless of modules (I have
-sound/airport/ethernet compiled as modules). By fails to sleep, I mean I
-get a blank screen and it does not respond to any input. I'm not sure
-where it is when it dies though - what's the best way to figure this
-out? (how can I make SysRq work on an ibook (which has no SysRq key)).
+On Thu, 2004-04-08 at 05:17, Aaron Lunansky wrote:
+> I'm having similar issues with an ibook G3 (600MHz) - only my system
+> seems to fail to sleep, and this is regardless of modules (I have
+> sound/airport/ethernet compiled as modules). By fails to sleep, I mean I
+> get a blank screen and it does not respond to any input. I'm not sure
+> where it is when it dies though - what's the best way to figure this
+> out? (how can I make SysRq work on an ibook (which has no SysRq key)).
 
-I get this with every 2.6.* kernel I've tried, including 2.6.5. I
-previously had sleep working on my ibook with a 2.6 kernel, but I've
-since replaced the (dead) hard drive. I can get my ibook to sleep with
-a 2.4.24 kernel.
+No, once the screen is off, there isn't much you can do. I suggest
+you do some experiments in console mode, use "snooze -f" (that will
+bypass pmud or pbbuttonsd, which tend to cut the backlight early).
 
-Thanks,
-Aaron
+Also, did it die on sleep or on wakeup ? That is, did it reach the
+sleep state where the led starts "snoring" ?
 
-On Mon, Apr 05, 2004 at 11:53:18PM +0200, Kiko Piris wrote:
+> I get this with every 2.6.* kernel I've tried, including 2.6.5. I
+> previously had sleep working on my ibook with a 2.6 kernel, but I've
+> since replaced the (dead) hard drive. I can get my ibook to sleep with
+> a 2.4.24 kernel.
 >
-> Hi,
+> Thanks,
+> Aaron
 >
-> Yesterday I compiled vanilla 2.6.5 (plus laptop-mode patch).
+> On Mon, Apr 05, 2004 at 11:53:18PM +0200, Kiko Piris wrote:
+> >
+> > Hi,
+> >
+> > Yesterday I compiled vanilla 2.6.5 (plus laptop-mode patch).
+> >
+> > Today I noticed an oops when resuming from sleep.
+> >
+> > Here's what I get on the screen console:
+> >
+> > ---8<---
+> > adb: starting probe task...
+> > adb devices: [2]: 2 c4 [3]: 3 1 [7] 1f
+> > ADB keyboard at 2, handler 1
+> > ADB mouse at 3, handler set to 4 (trackpad)
+> > adb: finished probe task...
+> > tumbler: i2c is not initialized
+> > Oops: kernel access of bad area, sig: 11 [#1]
+> > NIP: DA378C3C LR: DA468E0C SP: D4F13D70 REGS: d4f13cc0 TRAP: 0301    Not tainted
+> > MSR: 0000b032 EE: 1 PR: 0 FP: 1 ME: 1 IR/DR: 11
+> > DAR: 00000006, DSISR: 40000000
+> > TASK = d74920c0[1233] 'pmud' Last syscall: 54
+> > GPR00: DA468E0C D4F13D70 D74920C0 00000000 00000040 00000000 00000000 00000040
+> > GPR08: 00000002 FFFFFFFF D74920C0 00000000 2DE985CF
+> > Call trace:
+> >  [da468e0c] snapper_set_capture_source+0x28/0x38 [snd_powermac]
+> >  [da46936c] tumbler_resume+0xa0/0x138 [snd_powermac]
+> >  [da466318] snd_pmac_resume+0xf4/0xf8 [snd_powermac]
+> >  [da466364] snd_pmac_sleep_notify+0x48/0x54 [snd_powermac]
+> >  [c030788c] 0xc030788c
+> >  [c0307fe0] 0xc0307fe0
+> >  [c03084c4] 0xc03084c4
+> >  [c0308d2c] 0xc0308d2c
+> >  [c0067c04] sys_ioctl+0xdc/0x2f4
+> >  [c0007600] ret_from_syscall+0x0/0x44
+> > eth0: Link is up at 100 Mbps, full-duplex.
+> > eth0: Pause is disabled
+> > --->8---
+> >
+> > And the system is completely hung (I've copied it by hand, so I could
+> > have made a mistake typing).
+> >
+> > I've noticed that if I put the iBook to sleep having unloaded alsa, it
+> > resumes ok. Having alsa loaded, I can reproduce it 100% of the times.
+> >
+> >
+> > Some info about my system:
+> >
+> > * Debian Sid up2date.
+> >
+> > * Kernel config, if needed, is uploaded at
+> > http://www.pirispons.net/bulma/llista/iBook/
+> >
+> > $ cat /proc/version
+> > Linux version 2.6.5 (root@sacarino) (gcc version 3.3.3 (Debian 20040401)) #1 Sun Apr 4 14:23:10 CEST 2004
+> >
+> > $ cat /proc/cpuinfo
+> > processor       : 0
+> > cpu             : 750FX
+> > temperature     : 47 C (uncalibrated)
+> > clock           : 400MHz
+> > revision        : 2.3 (pvr 7000 0203)
+> > bogomips        : 793.71
+> > machine         : PowerBook4,3
+> > motherboard     : PowerBook4,3 MacRISC2 MacRISC Power Macintosh
+> > detected as     : 257 (iBook 2 rev. 2)
+> > pmac flags      : 0000000b
+> > L2 cache        : 512K unified
+> > memory          : 384MB
+> > pmac-generation : NewWorld
+> >
+> >
+> > Please, let me know if I can provide any additional information.
+> >
+> > Many thanks in advance
+> >
+> > --
+> > Kiko
+> >
 >
-> Today I noticed an oops when resuming from sleep.
->
-> Here's what I get on the screen console:
->
-> ---8<---
-> adb: starting probe task...
-> adb devices: [2]: 2 c4 [3]: 3 1 [7] 1f
-> ADB keyboard at 2, handler 1
-> ADB mouse at 3, handler set to 4 (trackpad)
-> adb: finished probe task...
-> tumbler: i2c is not initialized
-> Oops: kernel access of bad area, sig: 11 [#1]
-> NIP: DA378C3C LR: DA468E0C SP: D4F13D70 REGS: d4f13cc0 TRAP: 0301    Not tainted
-> MSR: 0000b032 EE: 1 PR: 0 FP: 1 ME: 1 IR/DR: 11
-> DAR: 00000006, DSISR: 40000000
-> TASK = d74920c0[1233] 'pmud' Last syscall: 54
-> GPR00: DA468E0C D4F13D70 D74920C0 00000000 00000040 00000000 00000000 00000040
-> GPR08: 00000002 FFFFFFFF D74920C0 00000000 2DE985CF
-> Call trace:
->  [da468e0c] snapper_set_capture_source+0x28/0x38 [snd_powermac]
->  [da46936c] tumbler_resume+0xa0/0x138 [snd_powermac]
->  [da466318] snd_pmac_resume+0xf4/0xf8 [snd_powermac]
->  [da466364] snd_pmac_sleep_notify+0x48/0x54 [snd_powermac]
->  [c030788c] 0xc030788c
->  [c0307fe0] 0xc0307fe0
->  [c03084c4] 0xc03084c4
->  [c0308d2c] 0xc0308d2c
->  [c0067c04] sys_ioctl+0xdc/0x2f4
->  [c0007600] ret_from_syscall+0x0/0x44
-> eth0: Link is up at 100 Mbps, full-duplex.
-> eth0: Pause is disabled
-> --->8---
->
-> And the system is completely hung (I've copied it by hand, so I could
-> have made a mistake typing).
->
-> I've noticed that if I put the iBook to sleep having unloaded alsa, it
-> resumes ok. Having alsa loaded, I can reproduce it 100% of the times.
->
->
-> Some info about my system:
->
-> * Debian Sid up2date.
->
-> * Kernel config, if needed, is uploaded at
-> http://www.pirispons.net/bulma/llista/iBook/
->
-> $ cat /proc/version
-> Linux version 2.6.5 (root@sacarino) (gcc version 3.3.3 (Debian 20040401)) #1 Sun Apr 4 14:23:10 CEST 2004
->
-> $ cat /proc/cpuinfo
-> processor       : 0
-> cpu             : 750FX
-> temperature     : 47 C (uncalibrated)
-> clock           : 400MHz
-> revision        : 2.3 (pvr 7000 0203)
-> bogomips        : 793.71
-> machine         : PowerBook4,3
-> motherboard     : PowerBook4,3 MacRISC2 MacRISC Power Macintosh
-> detected as     : 257 (iBook 2 rev. 2)
-> pmac flags      : 0000000b
-> L2 cache        : 512K unified
-> memory          : 384MB
-> pmac-generation : NewWorld
->
->
-> Please, let me know if I can provide any additional information.
->
-> Many thanks in advance
->
-> --
-> Kiko
->
+--
+Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
