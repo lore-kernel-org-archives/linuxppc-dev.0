@@ -1,52 +1,43 @@
-Message-ID: <3F4571C4.4090900@kegel.com>
-Date: Thu, 21 Aug 2003 18:28:36 -0700
-From: Dan Kegel <dank@kegel.com>
+Reply-To: <zjzhou@newrocktech.com>
+From: "John Zhou" <zjzhou@newrocktech.com>
+To: "'Lokesh Kumar'" <lokesh.kumar@wrx-us.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: scc1 serial
+Date: Fri, 22 Aug 2003 12:41:22 +0800
+Message-ID: <000201c36867$a3a58600$9f02a8c0@newrock2>
 MIME-Version: 1.0
-To: Mark Hatle <fray@mvista.com>
-Cc: C Doyle <cdoyle35@hotmail.com>,
-	libusb-devel@lists.sourceforge.net,
-	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: libusb harhat/eldk cross-compile problems
-References: <Law10-F1011bpqRbwXQ0004bf26@hotmail.com> <3F452F86.2050004@mvista.com>
-In-Reply-To: <3F452F86.2050004@mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <3439AB3A99ECD5409F3A52ACF814744D158D66@norcom2.norcom.net>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Mark Hatle wrote:
-> C Doyle wrote:
->>    I'm trying to get the libusb to cross compile ...
->>
->> checking size of char... configure: error: can not run test program while
->> cross compiling
->
-> You will need to override the configure step for figuring out things via
-> compilation and running.
->
-> You will need to look at the configure script and see if you can
-> override the sizeof char.  (Similarly to how you overrode
-> ac_cv_func_setvbuf_reversed on the command line.)
->
-> If that is not possible, you will have to hack "configure" with the hard
-> coded value.  (To do it "right" you should modify configure.in, then run
-> autoconf.  However, that doesn't always work.)
+You should read the file uart.c (\arch\ppc\8xx_io\uart.c), and give you some modification.
 
-Also, that particular problem is solved by newer versions
-of autoconf, so in the best of all possible worlds, you
-just need to have autoconf-2.53 or later installed,
-and type
-   autoconf
-before running configure.   That only works sometimes, though,
-since configure.in sometimes needs to be fixed a little bit to
-work with the new autoconf.
-- Dan
+luck to you.
+
+-----Original Message-----
+From: owner-linuxppc-embedded@lists.linuxppc.org
+[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Lokesh
+Kumar
+Sent: Thursday, August 21, 2003 5:38 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: scc1 serial
 
 
---
-Dan Kegel
-http://www.kegel.com
-http://counter.li.org/cgi-bin/runscript/display-person.cgi?user=78045
+
+Hi Everybody,
+I have 855T based board, and have 2.4.18 kernel on it. The console is on
+SMC1. I want to configure SCC1 as serial as well. To do that, I took uart.c
+file from denx eldk, and the Config.in as well. My question -
+
+is that it, or do I need to change any more files, before I configure SCC1
+and UART?
+
+Lokesh Kumar
+Wireless Matrix USA Inc.
+703-262-4032
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
