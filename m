@@ -1,106 +1,331 @@
-Message-ID: <D73A25AA6E54D511AD74009027B1110F3C05ED@ORION>
-From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-To: "'Leonardo Pereira Santos'" <lsantos@pd3.com.br>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: Can software discover MPC8xx variant?
-Date: Wed, 29 Jan 2003 12:31:37 -0500
+Message-ID: <DB0585C9F6F9D411BE8F00D0B7896A4CC06124@SNCMAIL>
+From: James Don <JDon@spacebridge.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Cross Compile Build Question
+Date: Wed, 29 Jan 2003 12:50:18 -0500
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I'm guessing you've never worked with a contract manufacturer.  :) jk
+Hi ...
 
------Original Message-----
-From: Leonardo Pereira Santos [mailto:lsantos@pd3.com.br]
-Sent: Wednesday, January 29, 2003 12:15 PM
-To: Steven Blakeslee
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Can software discover MPC8xx variant?
+I posted a question regarding this a little while ago but I didn't really
+get anywhere with solutions I was given ...
+
+I am trying to build GCC with the below 3 scripts build-gccBootStrap.sh,
+build-glibc.sh, and build-gccWithGlibc.sh ... I keep having problems once I
+get to the part where gcc is build gthr-threads.h ...
+
+I can build glibc and bootstrapped compiler with newlib just fine ...
+
+The error I get is:
+
+In file included from gthr-default.h:1,
+                 from ../../gcc-2.95.3/gcc/gthr.h:98,
+                 from ../../gcc-2.95.3/gcc/libgcc2.c:3034:
+../../gcc-2.95.3/gcc/gthr-posix.h:39: parse error before `__gthread_key_t'
+../../gcc-2.95.3/gcc/gthr-posix.h:39: warning: data definition has no type
+or storage class
+../../gcc-2.95.3/gcc/gthr-posix.h:40: parse error before `__gthread_once_t'
+../../gcc-2.95.3/gcc/gthr-posix.h:40: warning: data definition has no type
+or storage class
+../../gcc-2.95.3/gcc/gthr-posix.h:41: parse error before `__gthread_mutex_t'
+../../gcc-2.95.3/gcc/gthr-posix.h:41: warning: data definition has no type
+or storage class
+../../gcc-2.95.3/gcc/gthr-posix.h:59: `pthread_create' undeclared here (not
+in a function)
+../../gcc-2.95.3/gcc/gthr-posix.h:78: parse error before `*'
+../../gcc-2.95.3/gcc/gthr-posix.h:78: parse error before `)'
+
+
+I have been told it is probably a problem with --headers ... but I am not so
+sure ... I think I have set it up properly ... as you can see below ...
+
+Thanks as always,
+Jim
 
 
 
-Ok, but in this case the hardware itself wouldn't know waht revision or
-whatever it is. And they already have to change the processor, so you have
-to
-change the hardware anyway, mount or not a few resistors shouldn't be hard.
+#!/bin/bash
 
-On Wednesday 29 January 2003 15:02, you wrote:
-> Or you could set it in some type of data structure in your bootloader.  No
-> hardware change this way.
->
-> -----Original Message-----
-> From: Leonardo Pereira Santos [mailto:lsantos@pd3.com.br]
-> Sent: Wednesday, January 29, 2003 11:30 AM
-> To: linuxppc-embedded@lists.linuxppc.org
-> Subject: Re: Can software discover MPC8xx variant?
->
->
->
->
-> As the 8xx family is supported by the kernel, I assume that what you want
-> is to know if the 8xx processor running supports some feature? If this is
-> the case, I can tell you how to do it the way I'd.
-> You can define some ioport with pull-up and pool-down resistors and in the
-> manufacturing process specifiy if this board is for product A, then you
-> should use MPC850DSL and you will mount some of the pull-ups and
-> pull-downs. If the board is for product B, then you should mount MPC850SAR
-> and mount differently the pull-ups and downs. By reading the value on the
-> selected pins, you might de able to know what board this is. This scheme
-> can also be used to know what hardware revision your board have.
->
-> On Wednesday 29 January 2003 12:13, Marius Groeger wrote:
-> > On Wed, 29 Jan 2003, Alex Zeffertt wrote:
-> > > Can anybody tell me if there is a way to identify which processor from
-> > > the MPC8xx family software is running on.  I hoped I could use the
-IMMR
-> > > special purpose register.  However, this only tells you the silicon
-> > > revision, which can have the same value even if the processors are
-> > > different!
-> > >
-> > > Does the processor type (e.g. 862, 857T, 857DSL) reside anywhere in
-the
-> > > processor?
-> >
-> > U-Boot/PPCboots cpu/mpc8xx/cpu.c contains a lot of generic type
-> > detection code, but even there the assumes that the basic type is
-> > known at compile time.
-> >
-> > Regards,
-> > Marius
->
->
----------------------------------------------------------------------------
->
-> >-- Marius Groeger           SYSGO Real-Time Solutions AG
-> > mgroeger@sysgo.de Software Engineering     Embedded and Real-Time
-> > Software www.sysgo.de Voice: +49-6136-9948-0   Am Pfaffenstein 14
-> > www.osek.de FAX:   +49-6136-9948-10  55270 Klein-Winternheim, Germany
-> > www.elinos.com
->
-> - --
->
-> Leonardo Pereira Santos
-> Engenheiro de Projetos
-> PD3 Tecnologia
-> av. Pará 330/202
-> (51) 3337 1237
->
-> Today Fortune tells us:
-> Are you scared of speed? If so, try Windows NT.
->
->
-- --
+#-------------------------------------------------------------
+# This bash script creates a linux x866 gcc cross compiler
+# for powerpc. This file has been tested with the following
+# modules:
+#    1.) binutils-2.13.90.0.2.tar.gz
+#    2.) gcc-3.2.tar.gz
+#    3.) newlib-synSept12-2002.tar.gz
+#-------------------------------------------------------------
 
-Leonardo Pereira Santos
-Engenheiro de Projetos
-PD3 Tecnologia
-av. Pará 330/202
-(51) 3337 1237
+# Defining target
+TARGET=powerpc-linux
 
-Today Fortune tells us:
-Is knowledge knowable?  If not, how do we know that?
+
+# Defining prefix - final toolchain location
+PREFIX=$HOME/ppcgcc
+
+# PATH must updated
+PATH=$PREFIX/bin:$PATH
+export PATH
+
+# My local includes
+#INCLUDE=/usr/include/
+INCLUDE=/home/jgdon/ppclinux/include
+
+# Configuring packages versions
+GCC_VER=2.95.3
+BINUTILS_VER=2.13.90.0.2
+NEWLIB_VER=1.10.0
+
+
+echo ===================================================
+echo BUILDING BINUTILS FOR $TARGET
+echo ===================================================
+# binutils
+rm -rf binutils-$BINUTILS_VER binutils
+tar zxvf binutils-$BINUTILS_VER.tar.gz
+mkdir binutils
+cd binutils
+../binutils-$BINUTILS_VER/configure --target=$TARGET --prefix=$PREFIX
+make all
+make install
+cd ..
+
+
+
+echo ===================================================
+echo BUILDING GCC FOR $TARGET
+echo ===================================================
+
+echo extract GCC source from tar ball ...
+rm -rf gcc-$GCC_VER gcc
+tar zxvf gcc-core-$GCC_VER.tar.gz
+tar zxvf gcc-g++-$GCC_VER.tar.gz
+
+
+echo extract newlib source from tar ball- needed for gcc ...
+rm -rf  newlib-$NEWLIB_VER newlib
+tar zxvf newlib-$NEWLIB_VER.tar.gz
+
+echo set up symbolic links to newlib in gcc dir
+cd  gcc-$GCC_VER
+ln -s ../newlib-$NEWLIB_VER/newlib newlib
+ln -s ../newlib-$NEWLIB_VER/libgloss libgloss
+cd ..
+
+echo build gcc ...
+mkdir gcc
+cd gcc
+../gcc-$GCC_VER/configure --target=$TARGET --with-newlib --prefix=$PREFIX
+--with-gnu-as --with-gnu-ld --with-headers=$INCLUDE
+make all
+make install
+cd ..
+
+
+
+echo ===================================================
+echo BUILDING NEWLIB FOR $TARGET
+echo ===================================================
+# newlib
+mkdir newlib
+cd newlib
+../newlib-$NEWLIB_VER/configure --target=$TARGET --prefix=$PREFIX --nfp
+make all
+make install
+cd ..
+
+
+
+-=-=-=-=-=-=-=-=-
+
+#!/bin/bash
+
+#-------------------------------------------------------------
+# This file builds glibc and recompiles gcc to link it to gcc
+#
+# This bash script creates a linux x866 gcc cross compiler
+# for powerpc. This file has been tested with the following
+# modules:
+#    1.) binutils-2.13.90.0.2.tar.gz
+#    2.) gcc-3.2.tar.gz
+#    3.) newlib-synSept12-2002.tar.gz
+#-------------------------------------------------------------
+
+# Defining target
+TARGET=powerpc-linux
+
+
+# Defining prefix - final toolchain location
+PREFIX=$HOME/ppcgcc
+
+# PATH must updated
+PATH=$PREFIX/bin:$PATH
+export PATH
+
+# My local includes
+INCLUDE=/home/jgdon/ppclinux/include
+
+# Configuring packages versions
+GCC_VER=2.95.3
+BINUTILS_VER=2.13.90.0.2
+NEWLIB_VER=1.10.0
+
+
+#Define where kernel source is
+KERNEL_SOURCE=$HOME/ppclinux
+
+#These are the glibc files I am using ...
+#   glibc-linuxthreads-2.3.1.tar.gz
+#   glibc-2.3.1.tar.gz
+GLIBC_THREADS_VER=2.2.3
+GLIBC_VER=2.2.3
+
+#
+#Where we want to install compiled glibc
+#
+INSTALL_DIR=$HOME/powerpc-linux-gcc-glibc/
+
+
+
+
+
+
+
+echo ===================================================
+echo BUILDING GLIBC FOR $TARGET
+echo ===================================================
+ln -sf $KERNEL_SOURCE/include/asm $INSTALL_DIR/include/asm
+ln -sf $KERNEL_SOURCE/include/linux $INSTALL_DIR/include/linux
+tar zxfv glibc-$GLIBC_VER.tar.gz
+cd glibc-$GLIBC_VER
+tar zxfv ../glibc-linuxthreads-$GLIBC_THREADS_VER.tar.gz
+CC=powerpc-linux-gcc AR=powerpc-linux-ar RANLIB=powerpc-linux-ranlib
+./configure --host=powerpc-linux --enable-add-ons
+--with-headers=$INSTALL_DIR/include --prefix=
+make
+make install_root=$INSTALL_DIR install
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-
+
+#!/bin/bash
+
+#-------------------------------------------------------------
+# This file builds glibc and recompiles gcc to link it to gcc
+#
+# This bash script creates a linux x866 gcc cross compiler
+# for powerpc. This file has been tested with the following
+# modules:
+#    1.) binutils-2.13.90.0.2.tar.gz
+#    2.) gcc-3.2.tar.gz
+#    3.) newlib-synSept12-2002.tar.gz
+#-------------------------------------------------------------
+
+# Defining target
+TARGET=powerpc-linux
+
+
+# Defining prefix - final toolchain location
+PREFIX=$HOME/ppcgcc
+
+# PATH must updated
+PATH=$PREFIX/bin:$PATH
+export PATH
+
+# My local includes
+#INCLUDE=/usr/include/
+INCLUDE=$HOME/powerpc-linux-gcc-glibc/include
+
+# Configuring packages versions
+GCC_VER=2.95.3
+BINUTILS_VER=2.13.90.0.2
+NEWLIB_VER=1.10.0
+
+
+#Define where kernel source is
+KERNEL_SOURCE=$HOME/ppclinux
+
+#These are the glibc files I am using ...
+#   glibc-linuxthreads-2.3.1.tar.gz
+#   glibc-2.3.1.tar.gz
+GLIBC_THREADS_VER=2.2.3
+GLIBC_VER=2.2.3
+
+#
+#Where we want to install compiled glibc
+#
+INSTALL_DIR=$HOME/powerpc-linux-gcc-glibc/
+
+# These are the instructions to build glibc from penguinppc.org ...
+#
+#You must first follow the kernel instructions, but you may omit the make
+zImage portion
+#      ln -sf <top of Linux kernel tree>/include/asm
+/usr/powerpc-linux/include/asm
+#      ln -sf <top of Linux kernel tree>/include/linux
+/usr/powerpc-linux/include/linux
+#      tar zxf glibc-x.x.x.tar.gz
+#      cd glibc-x.x.x
+#      tar zxf ../glibc-linuxthreads-x.x.x.tar.gz
+#      CC=powerpc-linux-gcc
+#      AR=powerpc-linux-ar
+#      RANLIB=powerpc-linux-ranlib
+#      ./configure --host=powerpc-linux --enable-add-ons
+--with-headers=/usr/local/powerpc-linux/include --prefix=
+#      make
+#DANGER: You WILL screw up your system if you forget the install_root part
+of the next command.
+#      make install_root=/usr/local/powerpc-linux install
+
+
+echo ===================================================
+echo BUILDING GLIBC FOR $TARGET
+echo ===================================================
+#ln -sf $KERNEL_SOURCE/include/asm $INSTALL_DIR/include/asm
+
+#ln -sf $KERNEL_SOURCE/include/linux $INSTALL_DIR/include/linux
+
+#tar zxfv glibc-$GLIBC_VER.tar.gz
+
+#cd glibc-$GLIBC_VER
+
+#tar zxfv ../glibc-linuxthreads-$GLIBC_THREADS_VER.tar.gz
+
+#CC=powerpc-linux-gcc AR=powerpc-linux-ar RANLIB=powerpc-linux-ranlib
+./configure --host=powerpc-linux --enable-add-ons
+--with-headers=$INSTALL_DIR/include --prefix=
+
+#make
+
+#make install_root=$INSTALL_DIR install
+
+
+echo ===================================================
+echo BUILDING GCC WITH GLIBC FOR $TARGET
+echo ===================================================
+cd $PREFIX
+rm -rf gcc-$GCC_VER gcc-glibc
+tar zxvf gcc-core-$GCC_VER.tar.gz
+tar zxvf gcc-g++-$GCC_VER.tar.gz
+
+
+#To rebuild gcc using glibc instead of newlib for the library:
+mkdir gcc-glibc
+cd gcc-glibc
+#../gcc-$GCC_VER/configure --target=powerpc-linux --enable-shared
+--enable-threads
+../gcc-$GCC_VER/configure --target=$TARGET --prefix=$PREFIX --enable-shared
+--with-gnu-as --with-gnu-ld --with-headers=$INCLUDE --enable-threads
+make
+make install
+cd ..
+
+echo ===================================================
+echo FINISHED BUILDING GCC WITH GLIBC FOR $TARGET
+echo ===================================================
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
