@@ -1,29 +1,27 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
 From: "Sally Wang" <swang@otcwireless.com>
 To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Linux on SandPoint with PPC8240 
-Date: Tue, 4 Dec 2001 15:43:24 -0800
-Message-ID: <JEEJJBIBHMGFHCANFACIMEDNCAAA.swang@otcwireless.com>
+Subject: RE: Linux on SandPoint with PPC8240
+Date: Tue, 4 Dec 2001 19:19:04 -0800
+Message-ID: <JEEJJBIBHMGFHCANFACIOEEACAAA.swang@otcwireless.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+	charset="us-ascii"
+In-Reply-To: <20011204145721.A636@cx258813-a.chnd1.az.home.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-My name is Sally Wang.
+Also I am looking for development tools for our project. It will using linux
+as OS, MPC8241 as CPU, and our own hardware board. What kind of tools you
+advice for debugging kernel and drivers ?
 
-I am thinking to port linux upon SandPoint board. Where can I get the source
-codes which can be easily ported to SandPoint ?
-
-I looking for help.
-
-
-Best Regards,
+I am looking forward to your helps.
 
 
+Thanks in advance,
 
-Sally
+
+Sally Wang
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
