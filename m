@@ -1,5 +1,5 @@
-Message-Id: <200007251926.UAA20564@hyperion.valhalla.net>
-Date: Tue, 25 Jul 2000 20:25:05 +0100
+Message-Id: <200007251929.UAA20734@hyperion.valhalla.net>
+Date: Tue, 25 Jul 2000 20:30:07 +0100
 Subject: Re: sound again [was: Re: xf4 bug report]
 From: "Iain Sandoe" <iain@sandoe.co.uk>
 To: SteffenH@hyperion-software.de, linuxppc-dev@lists.linuxppc.org
@@ -9,18 +9,19 @@ Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
- Wed, Jul 26, 2000,  Steffen Haeuser wrote:
-> Am 25-Jul-00 schrieb Iain Sandoe:
-
-> Okay, installed the new one...
+HI Steffen,
+[...]
 >
-> Well, it behaves just the same like the old kernel... same error-message...
+>>AH HA!!! - you are the first "burgundy" reply I've had... I will be *very*
+>>interested to hear how it goes...
+>
+> What does this mean ? This burgundy stuff ?
 
-Glad to hear it boots OK (I wasn't sure that the AppleSCSI driver wouldn't
-panic on boot - it used to on my Lombard)...
-
-But... does the sound work when you load the modules by hand? (see web-page
-for details).  I suspect you have a bogus entry in your conf.modules...
+It's a more "advanced" version of the AWACS chip - should actually be easier
+to deal with since you can actually read the registers in it (instead of
+having to remember what you wrote - I always *did* hate write only
+registers)...
+ :-)
 
 Iain.
 
