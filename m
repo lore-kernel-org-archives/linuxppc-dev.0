@@ -1,89 +1,51 @@
-From: "chendong" <dong_chen@jetronic.com.cn>
+Subject: Re: FEC on MPC862P freezes CPM
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
 To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: what 's wrong with the kernel booting?
-Mime-Version: 1.0
+In-Reply-To: <3EBFDDD4.5010707@net.hcc.nl>
+References: <3EBFDDD4.5010707@net.hcc.nl>
 Content-Type: text/plain
-Date: Tue, 13 May 2003 16:17:56 +0800
-Message-Id: <20030513082339.VRHT16484.lcfep4.online.sh.cn@chendong>
+Date: 13 May 2003 09:55:59 +0100
+Message-Id: <1052816159.29719.2.camel@zambia>
+Mime-Version: 1.0
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hi,all
- I port uboot0.2.0 in my 405Gpr board.But I got some problems when
-booting kernel.Have anyone gave some advice?
-		Thanks
-		wood
+I don't understand what you mean by "SCC1 is used for ethernet".  You
+already said that you're using the FEC!  Either use FEC for ethernet or
+use an SCC.  You cannot use both - after all there's only one MII bus!
 
-tftp 0x200000
-ENET Speed is 100 Mbps - FULL duplex connection
-ARP broadcast 1
-Got good ARP - start TFTP
-TFTP from server 192.168.0.83; our IP address is 192.168.0.2
-Filename 'zImage.treeboot'.
-Load address: 0x200000
-Loading: #################################################################
-	 ##############################################
-done
-Bytes transferred = 568052 (8aaf4 hex)
-=> tfp 0x100000
-ENET Speed is 100 Mbps - FULL duplex connection
-ARP broadcast 1
-Got good ARP - start TFTP
-TFTP from server 192.168.0.83; our IP address is 192.168.0.2
-Filename 'zImage.treeboot'.
-Load address: 0x100000
-Loading: *#################################################################
-	 ##########
-done
-Bytes transferred = 379656 (5cb08 hex)
-=> bootm 0x100000 0x200000
-## Booting image at 00100000 ...
-   Image Name:   Powerpc Linux Kernel
-   Created:      2003-05-09  15:01:24 UTC
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    379592 Bytes = 370.7 kB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-## Current stack ends at 0x00F8F580 => set upper limit to 0x00800000
-## cmdline at 0x007FFC00 ... 0x007FFC0D
-bd address  = 0x00F8FF90
-memstart    = 0x00000000
-memsize     = 0x01000000
-flashstart  = 0xFFF80000
-flashsize   = 0x00080000
-flashoffset = 0x00040000
-sramstart   = 0x00000000
-sramsize    = 0x00000000
-bootflags   = 0x7FFFFF00
-procfreq    =    400 MHz
-plb_busfreq =    100 MHz
-pci_busfreq = 33.333 MHz
-ethaddr     = 00:D0:59:B8:36:C0
-IP addr     = 192.168.0.2
-baudrate    =   9600 bps
-## Loading RAMDisk Image at 00200000 ...
-   Image Name:   Simple Ramdisk-Image
-   Created:      2001-05-13  10:49:23 UTC
-   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
-   Data Size:    567988 Bytes = 554.7 kB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-## initrd at 0x00200040 ... 0x0028AAF3 (len=567988=0x8AAB4)
-   Loading Ramdisk to 00f04000, end 00f8eab4 ... OK
-## Transferring control to Linux (at address 00000000) ...
-id mach(): done
-MMU:enter
-MMU:hw init
-MMU:mapin
-MMU:mapin_ram done
-MMU:setio
-MMU:exit
-setup_arch: enter
-setup_arch: bootmem
-arch: exit
+Alex
+
+On Mon, 2003-05-12 at 18:45, Willy Jacobs wrote:
+>
+> We are using a MPC862P (XPC862PCZP80B, 2K26A silicon) in a system with
+> UTOPIA (master) and FEC simultaneously in UTOPIA muxed bus mode. The
+> processor runs at 50 MHz (CPM and bus). For references in the MPC862
+> Users' Manual, see figure 35-1 (page 35-4), table 41-6 (page 41-7), and
+> figure 42-3 (page 42-7). The FEC MII signals are mapped on PCMCIA port A.
+>
+> For testing we are using Linux. The Linux console is mapped onto SCC3,
+> and SCC1 is used for ethernet. Initialization for SCC3 is done first,
+> followed by the initialization of the FEC (as described on paragraph
+> 41.3 (page 41-8)): ECNTRL[FEC_PINMUX]=1; setup the buffer descriptors;
+> UTMODE[SPLIT]=0, PDPAR[UT]=1; PDPAR[8]=1 (MDII_MDC). A printk to SCC3 in
+> above situation will "freeze" the CPM in the transmit of the SCC3
+> buffers. More concrete it will never pass this while loop:
+> 	while (bdp->cbd_sc & BD_SC_READY) ;
+> The UTIOPIA initialization will be done later.
+>
+> With PDPAR[UT]=0 SCC3 and UTOPIA works without any problem.
+> Note that above CPM "freeze" problem also occurs using another RTOS
+> (VRTX) and a similar use of SCCs, FEC, and UTOPIA.
+>
+> Is this problem known?
+> Is there another initialization sequence needed?
+> --
+> willy
+>
+>
+>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
