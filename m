@@ -1,74 +1,34 @@
-Message-ID: <8D7C5F56B409554D9D46AC22195807F3061601@exchwenz01.smtp.dmcwave.co.nz>
-From: Rod Boyce <rod_boyce@DMCWave.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: RE: 8xx SPI drivers
-Date: Wed, 19 Dec 2001 12:17:24 +1300
+Message-ID: <3C1FD7CC.246C3007@mvista.com>
+Date: Tue, 18 Dec 2001 16:57:00 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: trini@mvista.com,
+	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: PPC bootloader cache enabling
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-All,
+Tom,
 
-I have written a generic SPI driver that copes with most hardware
-idiosyncrasies MSB first or LSB first this is all available in the 8xx SPI
-code I then provide an interface for other drivers to call this driver after
-selecting the device to do the SPI transaction.  I also allow users to
-interface directly to the SPI device change clocking parameters and let the
-user take care of selecting the SPI device this then is a very flexible
-device that any SPI device can use.  It is also a load-able module sorry
-although having done it once I could recreate the code given the inclination
-some hardware, a debugger, (depending on ownership of the driver money,) and
-time.
+In the bootloader, we enable the L1 instruction cache and disable the L1
+data cache.  If I understood the manuals correctly:
 
-Regards,
-Rod
+On a 750 (according to user's manual):
+- The cache is unified so even though you have the L1 data cache
+disabled, if you have L2 on, data will get cached there.
 
-		-----Original Message-----
-		From:	Dan Malek [mailto:dan@embeddededge.com]
-		Sent:	Wednesday, 19 December 2001 11:57
-		To:	Navin Boppuri
-		Cc:	Kevin Fry; linuxppc-embedded@lists.linuxppc.org
-		Subject:	Re: 8xx SPI drivers
+On a 7400/7410 (according to user's manuals):
+- Last sentence in the first paragraph of section 3.7.3.1 states, "if
+the L1 data cache is disabled, the L2 cache must also be disabled."
 
+In _setup_L2CR, the L2 cache is invalidated but its then enabled at the
+end.  Am I missing something or is this a bug in _setup_L2CR?  If its a
+bug, maybe we should rename it to invalidate_disable_l2 or something
+like that?
 
-		Navin Boppuri wrote:
+Mark
 
-		> I have no website of my own to put this stuff on yet.
-
-		Just ask to post it on penguinppc.org.  There is an embedded
-section
-		there.....but why do you want to post something like this?
-I mean,
-		we don't post any of the other drivers or code we do
-anywhere but in
-		the sources themselves.
-
-		> Also, I would like to thank Alex for cleaning up my driver
-and for
-		> actually using it.
-
-		Keep in mind that SPI designs are very dependent upon the
-board/product
-		design.  Many of the systems that use SPI have external
-hardware for
-		device selection and control.  The generic driver is
-suitable for clocking
-		bits in/out but often isn't sufficient to make everything
-work.  Due to the
-		timing of SPISEL, I sometimes had to just write a software
-bit-toggle function
-		to make it work.
-
-		Thanks.
-
-
-			-- Dan
-
-
-		** Sent via the linuxppc-embedded mail list. See
-http://lists.linuxppc.org/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
