@@ -1,37 +1,44 @@
-Date: Fri, 3 Sep 1999 10:53:25 -0500 (CDT)
-From: Grant Erickson <erick205@tc.umn.edu>
-To: Dan Malek <dmalek@jlc.net>
-cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: GLIBC wont compile for MPC860
-In-Reply-To: <37CFEDCD.ACA47B7C@jlc.net>
-Message-Id: <Pine.SOL.4.10.9909031049370.20882-100000@garnet.tc.umn.edu>
+Message-ID: <37CFF4F1.774CA038@jlc.net>
+Date: Fri, 03 Sep 1999 12:18:57 -0400
+From: Dan Malek <dmalek@jlc.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Richard Hendricks <ra6353@email.sps.mot.com>,
+        linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Status of MPC823FADS port?
+References: <37CFECB2.9064DD78@email.sps.mot.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Fri, 3 Sep 1999, Dan Malek wrote:
-> Marcus Sundberg wrote:
-> > Yes definitely. I intend to submit some patches as soon.....
+Richard Hendricks wrote:
 > 
-> Thank you.  This was discussed years ago when we first started
-> the 8xx port, but nothing was ever done in the old libraries.
-> I just used to make the couple of changes in the code and compile
-> with the -mcpu=860 flag and post the binaries on the server.
+> Hello,
+>   I was just curious as to the status of the MPC823FADS port of
+> LinuxPPC.  I am interested in the video portion.  I wrote the video demo
+> driver on Motorola's website, and would love to help.
 
-I'd rather see the patches in sooner than later. At present, I'm playing
-around with the IBM 403GCX and there seem to be a large number of
-similarities between the issues faced by the 8XX community and those faced
-by the 40X community.
 
-> That has been on and off for a long time as well.  It is there
-> to specifically support the 8xx (and now 8260) using standard
-> distribution libraries.  I am just now porting that kernel version
-> to the 8xx, so we'll see how it works....
+I don't recommend using any (F)ADS board with Linux/PPC.  Trying
+to set up the hardware and download a kernel is a horrible
+experience.  You spend all of your time creating development
+tools and none of it developing any application software.
 
-Hopefully, I'll get a chance to run it against the 403 as well when I get
-to that point.
+The quality control of (F)ADS boards seems poor as well.  I have
+spent weeks tracking down weird software bugs only to find some
+hardware problem, usually out of spec signals on the board.  I
+use the board next to it and it works fine.
 
+With high quality boards available from a variety of sources
+today, there is no need for the agony of using a (F)ADS board.
+
+I am working on some video interfaces for other 823 boards.
+I have a bunch of LCD screens that I have to prove to work with
+the 823.
+
+I will keep you posted.
+
+
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
