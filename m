@@ -1,38 +1,34 @@
-Date: Fri, 9 Jan 2004 09:20:25 -0800
-From: Brad Boyer <flar@allandria.com>
-To: Harald Welte <laforge@gnumonks.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Why does config MAC_EMUMOUSEBTN depend on INPUT_ADBHID ?
-Message-ID: <20040109172025.GB24203@pants.nu>
-References: <20040109131027.GJ31820@sunbeam.de.gnumonks.org>
-Mime-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Trouble compiling kernel for G5.
+From: Stefan Berndtsson <stefan@nocrew.org>
+Date: Fri, 09 Jan 2004 18:24:14 +0100
+Message-ID: <874qv5c9xd.fsf@hades.nocrew.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20040109131027.GJ31820@sunbeam.de.gnumonks.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Jan 09, 2004 at 02:10:27PM +0100, Harald Welte wrote:
-> Can anybody please explain why this dependency exists?  On my desktop G4
-> machine, there is no need to compile ADB support, since it uses an usb
-> keyboard.  However, I'd still like to have the mouse button emulation.
+When trying to compile the latest rsynced kernel (checked today, 2004-01-09)
+from source.mvista.com::linuxppc-2.5-benh (2.6.1-rc1-ben1) for my G5, I
+run into the following message with SATA:
 
-I think it's mostly historical. I'm pretty sure that it was originally
-tied in very intimately to ADB. These days it's tied into the input
-system, and is mostly independent. It does declare itself to be an
-ADB device, tho. I'm not sure if that will confuse anything if there
-isn't ADB support in the kernel.
+  CC      drivers/scsi/sata_svw.o
+drivers/scsi/sata_svw.c:236: error: request for member `bios_param' in something not a structure or union
+drivers/scsi/sata_svw.c:236: error: initializer element is not constant
+drivers/scsi/sata_svw.c:236: error: (near initialization for `k2_sata_sht.proc_info')
+drivers/scsi/sata_svw.c: In function `k2_sata_init_one':
+drivers/scsi/sata_svw.c:369: warning: label `err_out_unmap' defined but not used
+make[2]: *** [drivers/scsi/sata_svw.o] Error 1
+make[1]: *** [drivers/scsi] Error 2
+make: *** [drivers] Error 2
 
-> I cannot select it without compiling the (for this machine) superfluous
-> ADB support.
->
-> Is this intentional?
+My .config can be found at http://stefan.nocrew.org/config-g5.txt
 
-I'm pretty sure it isn't intentional. I suspect noone cared enough to
-fix the dependency when it was no longer important.
+GCC version is 3.3.3, currently running kernel 2.6.0-test10.
 
-	Brad Boyer
-	flar@allandria.com
+Anything else needed from me?
 
+/Stefan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
