@@ -1,33 +1,55 @@
-Date: Wed, 21 Nov 2001 11:59:54 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: linuxppc-dev@lists.linuxppc.org,
-	Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-commit@source.mvista.com
-Subject: Re: Incoming to hostme.bitkeeper.com:/ua/repos/p/ppc/linuxppc_2_4_devel
-Message-ID: <20011121115954.I3436@cpe-24-221-152-185.az.sprintbbd.net>
-References: <20011121185116.6539A100D1@hostme.bitkeeper.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20011121185116.6539A100D1@hostme.bitkeeper.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+To: Kostas Gewrgiou <gewrgiou@imbc.gr>
+Subject: Re: xfree86/fbdevhw not sending right mode to radeonfb.c
+Date: Wed, 21 Nov 2001 14:42:03 -0500
+Cc: Michel =?iso-8859-1?q?D=E4nzer?= <michdaen@iiic.ethz.ch>,
+	<linuxppc-dev@lists.linuxppc.org>
+References: <Pine.LNX.4.33.0111191248340.10443-100000@idd-01.imbc.gr>
+In-Reply-To: <Pine.LNX.4.33.0111191248340.10443-100000@idd-01.imbc.gr>
+MIME-Version: 1.0
+Message-Id: <20011121193918.PTJS24249.tomts11-srv.bellnexxia.net@there>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, Nov 21, 2001 at 10:51:16AM -0800, ppc@bitkeeper.com wrote:
+Hi Kostas,
 
-> ChangeSet@1.682, 2001-11-21 11:39:42-07:00, trini@opus.bloom.county
->   Re-implement passing the System.map into the chrp wrapper if CONFIG_XMON.
->   Currently we always add in the map if CONFIG_XMON, but we could make even
->   this conditional.
+FYI: Well I finally figured out what was up.  It seems the first thing the
+special code for "DFPValidateModes" in radeon_driver.c does is delete all
+modes since the timing info is technically not needed by them for DFP.
 
-I have this done but untested on pmac.  The problem is that on
-'coffboot' we specify not only a link address for .text but for .data as
-well, and with a System.map in the .rodata, these locations overlap.
-Does anyone know why we do -Ttext 500000 -Tdata 510000 for coffboot?  Is
-there a certain alignment we have to keep?
+That is just a pisser since it removes the completely valid mode I had
+placed into the XF86Config-4 for just that reason.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+So no great mystery but I just don't think they should do that when using
+fbdevhw.
+
+That is only part of the problem, the other is that if you change the
+depth from what is used by the frame buffer it does mess up as others have
+reported.
+
+Kevin
+
+On November 19, 2001 06:00, Kostas Gewrgiou wrote:
+> On Sun, 18 Nov 2001, Kevin B. Hendricks wrote:
+> > I am willing to dig deeper to track this one down if someone can point
+> > me to the code that parses the mode info from the XF86Config-4 file
+> > and loads it into the mode structure.
+>
+> Hello Kevin,
+>
+> Take a look at xf86parseModesSection(),xf86parseModeLine() etc
+> in xc/programs/Xserver/hw/xfree86/parser/Monitor.c
+> and also at configMonitor()
+> in xc/programs/Xserver/hw/xfree86/common/xf86Config.c
+>
+> You might want to take a look at the  *Mode*.c files in ..../common
+> as well.
+>
+> Good luck.
+>
+> Kostas
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
