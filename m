@@ -1,101 +1,40 @@
-Message-Id: <sd19dc75.088@mx.amx.com>
-Date: Wed, 26 Jun 2002 15:23:19 -0500
-From: "Chuck Partridge" <Chuck_Partridge@amx.com>
-To: <Michael@KSWaves.com>, <Jan.Rovins@radisys.com>
-Cc: <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <3D1A2BD9.5090004@bluewin.ch>
+Date: Wed, 26 Jun 2002 23:02:17 +0200
+From: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
+MIME-Version: 1.0
+To: Chuck Partridge <Chuck_Partridge@amx.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: AMD Flash Interface for updating boot flash
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+References: <sd19dc75.088@mx.amx.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Where do you set this up? If I want to use partitions, where do I put the info on how it is partitioned?
+On 06/26/2002 10:23 PM, Chuck Partridge wrote:
 
-I modified the kernel .config and it gives me the following startup messages:
-
-physmap flash device: 80000 at fff00000
-CFI: Found no Physically mapped flash device at location zero
-
-I'll check out the MTD list.
-
-Chuck
->>> <Jan.Rovins@radisys.com> 06/26/02 02:49PM >>>
-I agree that MTD is the way to go, but with one small change to Michael's
-instructions.
-
-configure MTD for  char driver support, and do
-dd if=bootloader of=/dev/mtd0
-
-/dev/mtd0 is a raw char device that is best to write a binary boot image
-to flash,
-/dev/mtdblock0 is a block device that is best for file system images,
-which can then be mounted.
-
-You can get expert advice from the MTD list:
-
-http://lists.infradead.org/mailman/listinfo/linux-mtd/
-
-Jan
-
-
-
-
-"Michael Meriin" <Michael@KSWaves.com>
-Sent by: owner-linuxppc-embedded@lists.linuxppc.org
-06/26/2002 12:17 PM
-
-
-        To:     "Chuck Partridge" <Chuck_Partridge@amx.com>,
-<linuxppc-embedded@lists.linuxppc.org>
-        cc:
-        Subject:        Re: AMD Flash Interface for updating boot flash
-
-
-
-Just define your flash as a MTD device and then, from user space use dd
-command to copy your bootloader to flash:
-
-dd if=bootloader of=/dev/mtdblock0
-
-Best Regards,
-                     Michael Meriin
-
-
------ Original Message -----
-From: "Chuck Partridge" <Chuck_Partridge@amx.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Sent: Wednesday, June 26, 2002 17:09
-Subject: AMD Flash Interface for updating boot flash
-
-
+>Where do you set this up? If I want to use partitions, where do I put the info on how it is partitioned?
 >
-> Hello all,
+>I modified the kernel .config and it gives me the following startup messages:
 >
-> I have been searching the archives and I am a bit confused, so bear with
-me if this is too simple a question.
+>physmap flash device: 80000 at fff00000
+>CFI: Found no Physically mapped flash device at location zero
 >
-> I need to provide a way to update my boot flash from user space.
-> Our user application will download an boot flash image and save it (to a
-file or a buffer), we must then write the flash.
-> I have seen references in the archives to Denx's
-drivers/char/amd_flash.c
-and to MTD drivers, or I can
-> implement my own driver, but I'm not sure of the best (i.e. easiest and
-cleanest) way.
+>I'll check out the MTD list.
 >
-> I don't need to put a file system on the flash.  All it does is hold the
-PPCBoot image.  The flash part is an AMD
-> 29LV004B and is setup for 8 bit interface.  I am running a 2.4.17 kernel
-on an 8245.
+>Chuck
 >
-> Any suggestions?
->
-> Thanks,
->
-> Chuck
->
->
+Have a look to
+
+  http://www.denx.de/doc/TQM8xxL/advanced-topics.html#FLASH-FILESYSTEMS
+
+That's the way it is done for TQM8xxL. Maybe you just need to setup a
+mapping
+for your board in drivers/mtd/maps.
+
+Hope it helps,
+
+Wolfgang.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
