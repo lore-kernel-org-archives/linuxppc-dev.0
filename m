@@ -1,19 +1,17 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0FF7667B35
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Apr 2005 09:21:48 +1000 (EST)
-Date: Wed, 6 Apr 2005 16:21:45 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Wolfgang Denk <wd@denx.de>
-Message-ID: <20050406232145.GA28977@gate.ebshome.net>
-References: <20050406223751.E4297C108D@atlas.denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050406223751.E4297C108D@atlas.denx.de>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: Kernel SCM saga..
+Return-Path: <cfriesen@nortel.com>
+Received: from zcars04f.nortelnetworks.com (zcars04f.nortelnetworks.com
+	[47.129.242.57]) by ozlabs.org (Postfix) with ESMTP id B955067B28
+	for <linuxppc-dev@ozlabs.org>; Thu,  7 Apr 2005 09:30:36 +1000 (EST)
+Message-ID: <42547112.9000302@nortel.com>
+Date: Wed, 06 Apr 2005 17:30:26 -0600
+From: Chris Friesen <cfriesen@nortel.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <425429BF.1050706@nortel.com> <1112829596.9518.210.camel@gaston>
+In-Reply-To: <1112829596.9518.210.camel@gaston>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: question on inline assembly and long long values
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,22 +21,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 07, 2005 at 12:37:46AM +0200, Wolfgang Denk wrote:
-> are there any plans yet how to continue PPC  kernel  development  now
-> that Linus (and probably others, too) stopped using BitKeeper?
+Benjamin Herrenschmidt wrote:
+> On Wed, 2005-04-06 at 12:26 -0600, Chris Friesen wrote:
+> 
+>>I want to retrieve the msr (which is 64-bits) on a 970 when running in 
+>>32-bit mode.
 
-Well, most of the recent 2.6 PPC kernel development was based on 
-sending _patches_ to akpm, I don't see how Linus' decision to stop 
-using BK will significantly affect this.
+> Is this in kernel mode ? Why are you doing that ? 
 
-Also, BK trees don't go anywhere right now, so I guess we can still 
-use BK to get/maintain the latest official sources for patch 
-generation. I'm pretty sure Linus and other maintainers will come up 
-with replacement. Probably it won't be as convenient as BK at first, 
-but I hope this will be fixed eventually - there are couple of open 
-source revision control systems out there which look promising.
+Yes it is.
 
-So, I wouldn't overly dramatize current situation.
+We wanted to manipulate the high word of the msr on the 970, from C 
+code, while running in 32-bit mode.  I'll be doing something similar to 
+get at the high word of HID1 (to enable the en_icbi bit).
 
---
-Eugene
+Is there some other way to do this?
+
+Chris
