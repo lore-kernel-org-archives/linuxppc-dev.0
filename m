@@ -1,46 +1,29 @@
-To: "Stephan Linke" <Stephan.Linke@epygi.de>
-Cc: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: problems running I2C and/or SPI on 857 board 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 26 Mar 2002 11:03:47 +0100."
-             <FCEAKDJJAPHPLJFINDAJEENDCDAA.Stephan.Linke@epygi.de>
-Date: Tue, 26 Mar 2002 11:29:45 +0100
-Message-Id: <20020326102950.BDF16109F3@denx.denx.de>
+Message-ID: <3CA05D0A.FA7A25FE@imc-berlin.de>
+Date: Tue, 26 Mar 2002 12:35:38 +0100
+From: Steven Scholz <steven.scholz@imc-berlin.de>
+MIME-Version: 1.0
+To: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: MPC8xx, SCC and pppd
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <FCEAKDJJAPHPLJFINDAJEENDCDAA.Stephan.Linke@epygi.de> you wrote:
->
-> At the moment all my tries are based on the existing drivers in PPCBOOT.
+Hi there,
 
-Which version of PPCBoot? The official releases (1.1.5)  should  work
-just fine; they do so on several tested systems.
+I want to ppp to my custom board, i.e. connect a modem to my board and
+react on incomming calls.
+I suppose I have to run some mgetty/pppd combination.
 
-If you're using the top of tree on the CVS server (i. e. the  version
-which includes the "Grand Unifying I2C interface patch") you may have
-to  adjust a couple of things; this is not that well tested / working
-yet.
+Has anyone used the mgetty/pppd (Point to Point Protocol daemon) with
+the MPC8xx's SCCs?
 
-> Using no microcode patch, and DPRAM allocation.
+I want to know if I actually need to route the Ring Indicator from the
+modem to one of MPC8xx'S external IRQs? Or would it be enough for mgetty
+(or pppd) to react on Carrier Detect (with is included in the SCC)?
 
-I wonder why you use the CPM code at all.  I  always  found  it  much
-easier to use CONFIG_SOFT_I2C ...
+Thanks,
 
-> DPRAM allocation pointed out a bug so I guess it's not that well tested yet
-> :( .
-> Trying fixed DPRAM offsets and microcode now...
-
-Please submit a patch!
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The price of curiosity is a terminal experience.
-                         - Terry Pratchett, _The Dark Side of the Sun_
+Steven
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
