@@ -1,36 +1,31 @@
-Date: Wed, 22 Jan 2003 15:17:12 +0530
-From: Chirag Kantharia <kantharia@hathway.com>
-To: Prakash kanthi <pkanthi@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux Kernel hangs after execve("/bin/sh")
-Message-ID: <20030122094712.GA5406@timesys.com>
-Reply-To: Chirag Kantharia <kantharia@hathway.com>
-References: <20030122055708.ED27DC608E@atlas.denx.de> <20030122091532.1705.qmail@web41202.mail.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030122091532.1705.qmail@web41202.mail.yahoo.com>
+Message-ID: <00bc01c2c205$e4c95520$e600a8c0@udtech.net>
+From: "Shen Rong" <rshen@udtech.com.cn>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: wrong definition in cpm_8260.h?
+Date: Wed, 22 Jan 2003 19:03:25 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="Windows-1252"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Jan 22, 2003 at 01:15:32AM -0800, Prakash kanthi wrote:
-| I wrote a small standalone program hello.c to test, if
-| i can dynamically load it from init() instead of
-| loading /bin/sh. I compiled the program added it to my
-| ramdisk and called from init(). Following is the
-| output. You can see that, it did all of it that it did
-| for /bin/sh and also tried to open /etc/ld.so.preload
-| and /etc/ld.so.cache and failed. But again towards the
-| end, it tries to open /lib/libc.so.6 and succeds but
-| still no output is displayed that hello.c is trying to
-| print.
+Hi,
 
-Quite sometime back, I had run into similar problem. init=/bin/bash
-would not work, but init=/bin/helloworld would work. Later, I realized
-that the board did not have FPU, and I had to pass relevant flags to
-glibc, while compilation. The same might be the case with your board.
+In cpm_8260.h, BD_ENET_RX_STATS is defined to 0x1ff, which leads
+to the fcc driver can't clean the BD_ENET_RX_LAST&BD_ENET_RX_FIRST bits
+with the following statement:
+    bdp->cbd_sc &= ~BD_ENET_RX_STATS;
 
---
-Chirag Kantharia, symonds.net/~chyrag/
+The first&last bits are set by the CPM not the CPU, so they
+should be cleared after the frame is received. So it should be:
+
+#define BD_ENET_RX_STATS ((ushort)0x0fff) /* All status bits */
+
+The same problem in ppcboot.
+
+
+Shenrong
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
