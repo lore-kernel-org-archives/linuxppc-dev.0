@@ -1,37 +1,38 @@
-Message-ID: <01C01144.112416C0.jween@gte.net>
-From: "Jon Erik Ween, MD" <jween@gte.net>
-Reply-To: "jween@gte.net" <jween@gte.net>
-To: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
-Subject: XF86-4.0.1 on Lombard
-Date: Mon, 28 Aug 2000 22:49:16 -0700
+Message-Id: <200008290604.IAA00738@piglet.grunz.lu>
+Date: Tue, 29 Aug 2000 08:04:18 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: PCI resource initialisation
+To: geert@linux-m68k.org
+cc: davidm@amberdata.demon.co.uk, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <Pine.LNX.4.10.10008281437040.372-100000@cassiopeia.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi!
+On  28 Aug, this message from Geert Uytterhoeven echoed through cyberspace:
+> You could also start from my patches for the CHRP LongTrail (which seems to
+> work fine on PowerMac as well, especially on 7200 with extra SCSI cards :-).
+> It assigns resources to all devices that don't have (valid) resources
+> assigned.
 
-I'm trying to get XF86-4.0.1 to work on my Lombard Powerbook running
-2.2.15pre3. RPMs install OK, I've installed the expanded xkb and updated
-the XF86Config file sample as posted by njolly on X for PPC. Starting X I
-get a parse error for the first Section "Module" stating that " is not a
-key word. Replacing with ' or deleting begs a quoted-string-required error.
-Anybody know why this is? Trying to upgrade or even rebuild the kernel is a
-real pain in the batuski since the kernel source from the LinuxPPC folks
-seems to be a bug-ridden swamp. Suggestions?
+I already wanted to point out your patches, Geert :-)
 
-I would be forever grateful!
+How about actually getting them _into_ the PPC kernel trees? Do you have
+any plans in that direction?
 
-Jon
+Cheers
 
-Jon Erik Ween, MD
-Assistant Professor
-Cognitive and Cerebrovascular Neurology
-Director, Stroke Program
-Loma Linda University School of Medicine
-Neurology Dept.
-Loma Linda, CA 92354
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
