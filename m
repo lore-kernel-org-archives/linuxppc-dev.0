@@ -1,27 +1,33 @@
-Message-ID: <008501c2e9ab$23dcd670$020120b0@jockeXP>
-From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
-To: "Dan Malek" <dan@embeddededge.com>
-Cc: "Stephan Linke" <Stephan.Linke@epygi.de>,
-	"Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
-References: <FCEAKDJJAPHPLJFINDAJCELACOAA.Stephan.Linke@epygi.de> <3E70B17E.9090507@embeddededge.com> <004501c2e989$a10a66c0$020120b0@jockeXP> <3E70C88B.70004@embeddededge.com>
-Subject: Re: question on howto use invalidate_dcache_range
-Date: Thu, 13 Mar 2003 22:54:31 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Date: Thu, 13 Mar 2003 17:06:20 -0500
+From: Kent Borg <kentborg@borg.org>
+To: Jean-Denis Boyer <jdboyer@mediatrix.com>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: Hardcoded Hash_base?
+Message-ID: <20030313170620.P3222@borg.org>
+References: <2702075D4DE2B043BF5EB82E9CFAD45B093BD8@mail1.mediatrix.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <2702075D4DE2B043BF5EB82E9CFAD45B093BD8@mail1.mediatrix.com>; from jdboyer@mediatrix.com on Thu, Mar 13, 2003 at 12:44:50PM -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Joakim Tjernlund wrote:
+On Thu, Mar 13, 2003 at 12:44:50PM -0500, Jean-Denis Boyer wrote:
 >
-> > Yes, but you still need to invalidate the buffer before also or invalidate it when the buffer is freed which
-> > may be possible if you are using your own buffer mgmt.
+> > In arch/ppc/mm/hashtable.S Hash_base is hardcoded at 0xc0180000, with
+> > a comment suggesting that that value is "just an example".  It seems
+> > to be colliding with my initrd, so I am thinking I want to move it.
 >
-> Why?
+> As the comment says, this code is patched at runtime.
+> It is done by MMU_init_hw, in arch/ppc/mm/ppc_mmu.c.
+> The value of Hash_base could be anything, it doesn't matter.
 
-See http://lists.linuxppc.org/linuxppc-embedded/200303/msg00184.html
+I guess it does say that.  I my eyes glazed over the several times I
+tried to understand the comment right before that.
 
- Jocke
+Thanks,
+
+-kb
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
