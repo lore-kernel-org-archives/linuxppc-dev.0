@@ -1,47 +1,29 @@
-Message-ID: <3EFC7DE4.8080402@bluewin.ch>
-Date: Fri, 27 Jun 2003 19:24:52 +0200
-From: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
+Reply-To: jfd@broadcom.com
+From: "James Dougherty" <jfd@broadcom.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Cheap FBDev for LinuxPPC
+Date: Fri, 27 Jun 2003 12:26:57 -0700
+Message-ID: <000201c33ce2$1371b3c0$124c100a@LTSJCAJFD>
 MIME-Version: 1.0
-To: Christophe.LINDHEIMER@fr.thalesgroup.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Driver on Linux
-References: <D96E2AFA0DF3D211B139009027454948034CBE5D@helios.gnv.tcc.thomson-csf.com>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <AB5AF73EAF23304EA1B932174137CED703039D@m5tmail.m5t.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On 06/27/2003 07:10 PM Christophe.LINDHEIMER@fr.thalesgroup.com wrote:
-> Hi.
->
-> I am working on a PPC860.
->
-> I have developped two drivers.
->
-> The driver 2 needs to use functions that are in driver 1.
-> driver 1 is /dev/visu.
->
-> I thought I could make fd=open("/dev/visu", 0) in init of the driver 2 but I
-> get ooops.
+Hello,
 
-For file access within the kernel see for example:
+I am working on a project with MPC8245 and have
+the need for a VGA device which I can use to map
+the frame-buffer ram directly.
 
-  http://www.fenrus.demon.nl/kernel.html
+A colleague of mine is recommending the SiliconMotion
+chipset.. could anyone comment on this?
 
-> I also need to make
+If so, what cards could I purchase at Frye's or some
+store..
 
-> I also need to make something like ioctl(fd, IO_Special... )but the function
-> ioctl is unknown in the kernel.
->
-> What is the right way to work when you need to do that ?
+Finally, does anyone have any code for this baby?
 
-Using file access in the kernel is usually a bad thing. I think it's
-easier and more straightforward to provide a small set of exported
-kernel functions which the second (driver) module can use.
-
-Hope it helps.
-
-Wolfgang.
-
+Many thanks in advance.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
