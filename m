@@ -1,51 +1,53 @@
-Date: Thu, 3 Oct 2002 11:20:28 -0700
-From: Matt Porter <porter@cox.net>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: 4xx file moving
-Message-ID: <20021003112028.C5138@home.com>
-References: <15772.16902.782403.737549@nanango.paulus.ozlabs.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <15772.16902.782403.737549@nanango.paulus.ozlabs.org>; from paulus@samba.org on Thu, Oct 03, 2002 at 11:11:34PM +1000
+Date: Thu, 3 Oct 2002 16:20:14 -0500
+Mime-Version: 1.0 (Apple Message framework v546)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Subject: RFC: generic vector unit support?
+From: Kumar Gala <kumar.gala@motorola.com>
+To: linuxppc-dev@lists.linuxppc.org
+Message-Id: <E81F90F8-D715-11D6-B5AB-003065BFB10E@motorola.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Oct 03, 2002 at 11:11:34PM +1000, Paul Mackerras wrote:
->
-> In an effort to keep the diffs between Linus' tree and linuxppc-2.5
-> down, I am planning to send Linus (get Linus to pull) a changeset that
-> will create arch/ppc/platforms/4xx and move files into it.  I plan to
-> put the ibm*.[ch] files in arch/ppc/platforms/4xx, though, rather than
-> arch/ppc/kernel/4xx, since those files are really almost entirely
-> about what I/O devices are on the chip rather than anything to do with
-> the core.
->
-> That will mean that I will be moving those files in linuxppc-2.5 from
-> arch/ppc/kernel/4xx to arch/ppc/platforms/4xx as well.  That leaves
-> only a few files in arch/ppc/kernel/4xx, so I am not sure that it
-> needs to exist, and I won't send Linus a changeset to create
-> arch/ppc/kernel/4xx yet - not until I am convinced we need it.
+In added in the context switching code for the signal processing engine
+on the e500 core I noticed that a fair amount of the code matched what
+is being down for altivec.
 
-I had the impression that the platforms/ directory was for platform
-specific (in my mind, board-specific) files.  I would then imagine
-that the ibm*.[ch] files would belong in kernel/.  They are similar
-to the pplus_common.c and mpc10x_common.c libraries of code that
-will be shared by many "platforms" (boards).  Anyway, I have been
-working on the premise that board specific files go in platforms/
-and shared code goes in kernel/.
+SPE is a 64-bit wide vector engine on the e500 core (it extends the GPR
+register file).
 
-I'd like to hear others interpretations and especially yours so
-we are all on the same page.  IMHO, the above makes the most sense...
-even for SoC processors like 4xx which can have peripherals
-mix-and-matched in custom silicon runs in a similar puzzle fashion
-to the many 7xx/74xx type embedded board designs we see. ;)
+I was wondering if it would make sense to change the altivec code to be
+more generic and have the SPE code and AltiVec code share the same
+functions.  It is not possible to have both AltiVec and SPE in the same
+processor (they share opcode space).
 
-Regards,
---
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+Changes would include:
+CONFIG_ALTIVEC/CONFIG_SPE -> CONFIG_VECTOR
+(we would still have some CONFIG_ALTIVEC/CONFIG_SPE for altivec/spe
+specific handling)
+
+last_task_used_altivec -> last_task_used_vector
+giveup_altivec -> giveup_vector
+dump_altivec -> dump_vector
+enable_kernel_altivec -> enable_kernel_vector
+
+I am not sure about what to do about ptrace.  We extended the interface
+to have two new request types (PTRACE_GETVRREGS, PTRACE_SETVRREGS)
+which return the full altivec state (all registers, vscr, vrsave).  We
+could overload these request types to return all the 'vector' state
+depending on which processor we are.  This would mean debuggers would
+have to know which processor we are to know how big of a buffer to have
+for ptrace calls, the memory layout, etc.
+
+We also extend generic vector idea to allow dumping of altivec/SPE
+register state into core files (which we do not do currently).
+
+If we think this is the way to go, I will make a set of patches for the
+2.4devel and 2.5 trees.
+
+thanks
+
+- kumar
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
