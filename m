@@ -1,55 +1,32 @@
 Reply-To: <acurtis@onz.com>
 From: "Allen Curtis" <acurtis@onz.com>
-To: "Kenneth Johansson" <kenneth.johansson@etx.ericsson.se>,
-	<linuxppc-embedded@lists.linuxppc.org>
-Cc: <kuster@pacbell.net>, <acmay@acmay.homeip.ne>
-Subject: RE: IBM ocp I2C circular dependency
-Date: Tue, 7 May 2002 07:04:59 -0700
-Message-ID: <NCBBIINEHIPFGJPLBEIFMEJMDGAA.acurtis@onz.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: ibm_ocp_enet.c - PHY implementation requirements?
+Date: Tue, 7 May 2002 07:15:19 -0700
+Message-ID: <NCBBIINEHIPFGJPLBEIFEEJNDGAA.acurtis@onz.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-In-Reply-To: <3CD7D04C.1E9122A0@etx.ericsson.se>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I can not speak toward the modularization issue but if the i2c is anything
-like the old 8260 version, change the interruptible_sleep_on() to
-interruptible_sleep_on_timeout(). IMHO this is the easiest fix.
+We have an 405GP design, very similar to the Walnut LSP. One of the major
+differences is that we have a BroadCom 9-port switch instead of a dedicated
+PHY for Ethernet. Supporting the switch is much easier than a dedicated PHY
+because you can always assume:  100Mb, Full-Duplex and you do not have to
+handle disconnect and mode change interrupts. The problem is that the OCP
+Ethernet implementation has become much more complex and it is not obvious
+what must be supported when adding a new interface and what could be a stub.
+(and its expected result)
 
------Original Message-----
-From: owner-linuxppc-embedded@lists.linuxppc.org
-[mailto:owner-linuxppc-embedded@lists.linuxppc.org]On Behalf Of Kenneth
-Johansson
-Sent: Tuesday, May 07, 2002 6:02 AM
-To: linuxppc-embedded@lists.linuxppc.org
-Cc: kuster@pacbell.net; acmay@acmay.homeip.ne
-Subject: IBM ocp I2C circular dependency
+Another issue is that the switch supports both the MII and SPI interfaces.
+These are mutually exclusive, determined by first access to the device. Our
+design requires the use of the SPI interface. All currently supported PHY
+are MII, which is expected. Do you forsee any problems using SPI within
+ibm_ocp_phy.c?
 
-
-
-i2c-adap-ibm_ocp.c uses
-	i2c_iic_add_bus and i2c_iic_del_bus from i2c-algo-ibm_ocp.c
-
-i2c-algo-ibm_ocp.c uses
-	iic_ibmocp_waitforpin from i2c-adap-ibm_ocp.c
-
-This makes it impossible to build as a module. I'am not shure how you want
-to
-solv this.
-
-Also I found a problem with the code when I access a i2c memory from
-userspace and no chip is present at that address. After that it's not
-possible to access anything else on the I2C bus. Works OK as long as I use
-addresses that have a device that answers (I think).
-
-
---
-Kenneth Johansson
-Ericsson AB                       Tel: +46 8 404 71 83
-Borgafjordsgatan 9                Fax: +46 8 404 72 72
-164 80 Stockholm                  kenneth.johansson@etx.ericsson.se
+TIA
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
