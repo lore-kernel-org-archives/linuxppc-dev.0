@@ -1,37 +1,45 @@
-To: "dong in kang" <dkang@east.isi.edu>
+Message-ID: <3ECAB014.80902@mvista.com>
+Date: Tue, 20 May 2003 15:45:40 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
+To: dong in kang <dkang@east.isi.edu>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Kernel parameters (Sandpoint X3 with Altimus MPC755) 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 20 May 2003 15:26:55 EDT."
-             <001a01c31f05$c656f130$45a97241@Minjoo>
-Date: Tue, 20 May 2003 21:35:51 +0200
-Message-Id: <20030520193556.1BC42C6162@atlas.denx.de>
+Subject: Re: Kernel parameters (Sandpoint X3 with Altimus MPC755)
+References: <001a01c31f05$c656f130$45a97241@Minjoo>
+In-Reply-To: <001a01c31f05$c656f130$45a97241@Minjoo>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear Dong In Kang,
+dong in kang wrote:
 
-in message <001a01c31f05$c656f130$45a97241@Minjoo> you wrote:
+> It turns out that BDI has a few different versions.
+>BDI for Codewarrior, BDI for GDB, etc.
+>I just heard from Codewarrior that BDI for Codewarrior doesn't support MMU,
+>which means address translation is not supported.
+>I have to buy BDI for GDB.
 >
->  It turns out that BDI has a few different versions.
-> BDI for Codewarrior, BDI for GDB, etc.
-> I just heard from Codewarrior that BDI for Codewarrior doesn't support MMU,
-> which means address translation is not supported.
-> I have to buy BDI for GDB.
+Ah, okay.
 
-Note that you don't have to buy a new BDI2000, just  a  new  firmware
-(bdiGDB) for it.
+> About your question, I downloaded the zImage.initrd at 0x800000.
+>I didn't turn on the default command line. Now I turn on the default command
+>line as
+> CONFIG_CMDLINE="mem=128M ramdisk_size=20480 console=ttyS0,9600 console=tty0
+>root=/dev/ram init=/bin/sh"
+>The Sandpoint X3 has 128M ram and my ramdisk size is 20M.
+>It should be right, isn't it?
+>
+Nope.  Unless you have a new version of DINK that is fixed, it doesn't
+set up the memory controller correctly for the RAM above 32MB.  There
+should be comments indicating this in
+arch/ppc/platforms/sandpoint_setup.c:sandpoint_find_end_of_memory() or
+some such (since I don't know what version of MVL you're running).
 
-Best regards,
+Try it again with only this on your cmdline: "mem=32M" and see if that
+helps.
 
-Wolfgang Denk
+Mark
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-The software required `Windows 95 or better', so I installed Linux.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
