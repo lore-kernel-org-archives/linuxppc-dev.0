@@ -1,32 +1,33 @@
-Date: Wed, 15 Aug 2001 14:13:12 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: John Crew <jcrew@chinook.com>
-Cc: clark@esteem.com, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Loading Hard Hat 2.0
-Message-ID: <20010815141312.Q15482@cpe-24-221-152-185.az.sprintbbd.net>
-References: <E95059F24D57D411B2C200B0D02023B12737B6@shade.CHINOOK.COM>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <E95059F24D57D411B2C200B0D02023B12737B6@shade.CHINOOK.COM>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Weird flash problem with saveenv
+Date: Wed, 15 Aug 2001 16:18:23 -0500
+Message-ID: <3A494DE356A49A40B37442E1E0D9F3B5063420@ptah.ad.newisys.com>
+From: "Navin Boppuri" <navin.boppuri@newisys.com>
+To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Aug 15, 2001 at 05:04:46PM -0400, John Crew wrote:
+Hello,
 
-> We installed the Hard Hat 2.0 Professional
-> version on Red Hat 7.1. There is a minor
-> install script problem. It checks the version
-> number in file /etc/redhat-release to decide how
-> to install. Change 7.1 to 7.0 and then run the
-> installation script.
+I have AM29LV640DU (128 uniform sectors 32kwords each) chips on my
+custom board. I have been able to do "saveenv" on all but one of my
+boards. I notice that the erase is not performed correctly and
+therefore, the following write fails. Well, I initially thought it was a
+bad hardware issue, but I have no problem when I use the BDI to program
+the same exact environment sectors (I am using 2 of them). BDI erases
+and writes to these sectors without any issues. The erase and write
+fails only in PPCBOOT. And before I get queries from someone, I am darn
+sure that I am using the same exact ppcboot image on each of my boards.
+So, I am in a fix since I cannot saveenv to the flash and I cannot blame
+the hardware. And this happens only on ONE board.
 
-That's the workaround.  It should be fine, provided you don't want
-to keep HHL1.2 and HHL2.0 around at the same time, using the official
-method.
+Any ideas?????
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Thank you,
+Navin
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
