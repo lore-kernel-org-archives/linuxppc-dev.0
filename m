@@ -1,48 +1,56 @@
-Message-Id: <se2ed94f.020@mail.kieback-peter.de>
-Date: Wed, 22 Jan 2003 17:47:57 +0100
-From: "Klaus Heydeck" <Heydeck@kieback-peter.de>
-To: "<" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Antw: Re: Lauterbach ICD In-Circuit Debugger
+Message-Id: <5.1.0.14.2.20030122125449.0278e080@falcon.si.com>
+Date: Wed, 22 Jan 2003 12:57:30 -0500
+To: linuxppc-embedded@lists.linuxppc.org
+From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
+Subject: Re: Problem Exporting Symbol
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->>
->> A lot of people suggest to use the Abatron BDI2000 as debug system. I used
->> the Lauterbach TRACE32-ICD system with ARM processors without MMU (no
->> Linux) and it works extremely well.
->> The manufacturer claims it fully supports both the MMU and the Linux kernel
->> (see here for more details
->> http://www.lauterbach.com/cgi-bin/docloc.pl?file=rtoslinux.pdf). Can
->> anybody who used it confirm this point?
->
->I can. You can debug the kernel and e.g. interrupts using virtual
->addresses very well, you just have to specify the mapping
->(e.g. for ppc map phys 0x00000000 to 0xc0000000)
->
->I've not looked in detail yet to debug user processes.
->
-We are using the TRACE32-ICD (MPC8xx) with U-Boot and Kernel 2.4.4.
-Kernel debugging works without any problems. User space debugging is also
-fine - but only if you don't have to debug shared libraries :-(
-I think the T32 is a very good choice for kernel debugging, especially if you
-have experience with the GUI and don t need the documentation or online help ;-)
-If the problems with the shared libs are solved you have _one_ debugger for
-kernel and applications.
+OK, the source module was pointed out to me (arch/ppc/mm/fault.c).  The
+problem is that Shiv is targeting the 8260, but va_to_pte() is only defined
+for 8xx or CONFIG_GT64260_ETH.  Shiv doesn't say if he has
+CONFIG_GT64260_ETH defined, I'm guessing not.
 
-Best regards,
-Klaus Heydeck
+The code in question:
 
---
-Klaus Heydeck
-Kieback & Peter GmbH & Co KG
-Abt. Softwareentwicklung
-Tempelhofer Weg 50
-12347 Berlin / Germany
-Tel. +49 30 60095 522
-Fax. +49 30 60095 540
+#if defined(CONFIG_8xx) || defined(CONFIG_GT64260_ETH)
+
+/* The pgtable.h claims some functions generically exist, but I
+  * can't find them......
+  */
+pte_t *va_to_pte(unsigned long address)
+
+
+gvb
+
+
+At 07:25 PM 1/21/2003 -0500, shivkumarb@hotmail.com wrote:
+
+>Hi All,
+>
+>       I am trying to write SPI driver for 8260, based on the SPI driver for
+>the MPC860 that I got from this list. I am trying to export the symbol
+>'va_to_pte', for the driver module, in the kernel.
+>
+>       I included this in arch/ppc/kernel/ppc_ksyms.c, by using the
+>EXPORT_SYMTAB(va_to_pte) function. But when I tried to rebuild the kernel
+>(make zImage), it keeps coming back with the following error:
+>
+>arch/ppc/kernel/kernel.o(__ksymtab+0x0370): undefined reference to
+>'va_to_pte'
+>
+>      I have exported other symbols, by following similar procedure. Is there
+>something that I am missing.
+>
+>       I am running Linux kernel 2.4.2. Any inputs will be very helpful.
+>
+>   Thanks and Regards,
+>     Shiv
+>
+>
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
