@@ -1,188 +1,33 @@
 From: jlquinn@us.ibm.com
 To: linuxppc-dev@lists.linuxppc.org
-Message-ID: <852568B0.006F298E.00@D51MTA03.pok.ibm.com>
-Date: Tue, 28 Mar 2000 15:14:19 -0500
-Subject: [PATCH] keyboard fix
+Message-ID: <852568B0.00703001.00@D51MTA03.pok.ibm.com>
+Date: Tue, 28 Mar 2000 15:25:31 -0500
+Subject: readw byte sex?
 Mime-Version: 1.0
-Content-type: multipart/mixed;
-	Boundary="0__=0KP9JWQ2eqCluq1Kqhc4XyWYWhDSCHJ0AmrtKIhH982qrcAMxOHiQEer"
+Content-type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
---0__=0KP9JWQ2eqCluq1Kqhc4XyWYWhDSCHJ0AmrtKIhH982qrcAMxOHiQEer
-Content-type: text/plain; charset=us-ascii
-Content-Disposition: inline
+I've seen info about this go by in the past, but wasn't paying careful
+attention...
 
-Cort, Ben, etc, can you please apply this patch to the tree?  It's the
-powercomputing capslock patch that allows reasonable use of the capslock
-key including mapping it to a control key.  It detects apple keyboards and
-doesn't apply the fix to them.  It's been tested on a few apple keyboards
-now, courtesy of Shawn A., and Iain Sandoe and seems to be sane so far.
+I'm working on trying to get my Advansys 970UW working under PPC linux
+2.2.x.  I'm not tackling 2.3.x because I don't think the driver itself is
+up to date with respect to the 2.3 tree, while it is OK for x86 and alpha
+2.2.x.  I'm having (surprise, surprise) byte swapping problems, which I so
+far am tracing to the following construct and pals:
 
+ x = le16_to_cpu(readw(addr))
 
-The patch is against 2.2.14, but looks like it should be clean for 2.3 as
-well.
+Both of these are byteswapping, leaving me with a reversed value, which of
+course causes havoc later.  What's the correct way to do this?  I can't
+find where the exact platform-independent semantics of readw are defined.
+
+Is this a FAQ?
 
 Thanks,
 Jerry Quinn
-
-
----------------------- Forwarded by Jerome L Quinn/Watson/IBM on 03/28/2000
-03:11 PM ---------------------------
-
-From: Jerome L Quinn on 03/23/2000 09:35 AM
-
-To:   "shawn a." <space19@earthlink.net>
-cc:
-From: Jerome L Quinn/Watson/IBM@IBMUS
-Subject:  Re: Please try! (Keyboard patch)  (Document link: Jerome L Quinn)
-
-Here you go Shawn.  I didn't realize that the original patch had gotten
-mangled.  I also got bounced off the list due to mail problems here so need
-to resubscribe, so please respond to me as well as the list.  Thanks,
-
-
-Jerry
-
-
-(See attached file: pcccaps.patch)
-
-"shawn a." <space19@earthlink.net> on 03/23/2000 05:50:37 AM
-
-To:   Jerome L Quinn/Watson/IBM@IBMUS
-cc:
-Subject:  Re: Please try! (Keyboard patch)
-
-
-
-On Thu, Mar 16, 2000 at 09:41:14AM -0500, jlquinn@us.ibm.com wrote:
-> I don't know if I said clearly in my last message that I was especially
-> hoping I could get people with Apple keyboards (most people) to try this
-> patch to make sure that it doesn't break capslock behavior there.
-Without
-> tests on non-PCC keyboards, this patch can't go into the kernel.
->
-> Thanks,
-> Jerry Quinn
->
->
-Hi Jerry,
-  I have an Apple keyboard and I was going to test out your patch. But I
-have a small problem.  The patch(s) you sent to dev seem to be malformed
-so they won't apply. Anyways if you still need a tester, send me a fixed
-patch and I'll be happy to test it for you.
-
-Thanks,
-shawn a.
-
-
-
-
-
---0__=0KP9JWQ2eqCluq1Kqhc4XyWYWhDSCHJ0AmrtKIhH982qrcAMxOHiQEer
-Content-type: application/octet-stream;
-	name="pcccaps.patch"
-Content-Disposition: attachment; filename="pcccaps.patch"
-Content-Transfer-Encoding: base64
-
-LS0tIG1hY19rZXliLmMJRnJpIE1hciAxNyAwOTo0Nzo1MSAyMDAwCisrKyBsaW51eC0yLjIvZHJp
-dmVycy9tYWNpbnRvc2gvbWFjX2tleWIuYwlGcmkgTWFyIDE3IDEwOjU0OjEzIDIwMDAKQEAgLTIy
-NywxMSArMjI3LDEyIEBACiBzdGF0aWMgdm9pZCBrYmRfcmVwZWF0KHVuc2lnbmVkIGxvbmcpOwog
-c3RhdGljIHN0cnVjdCB0aW1lcl9saXN0IHJlcGVhdF90aW1lciA9IHsgTlVMTCwgTlVMTCwgMCwg
-MCwga2JkX3JlcGVhdCB9Owogc3RhdGljIGludCBsYXN0X2tleWNvZGU7CitzdGF0aWMgaW50IGxh
-c3RfaWQ7CiAKIHN0YXRpYyB2b2lkIG1hY2tleWJfcHJvYmUodm9pZCk7CiAKIHN0YXRpYyB2b2lk
-IGtleWJvYXJkX2lucHV0KHVuc2lnbmVkIGNoYXIgKiwgaW50LCBzdHJ1Y3QgcHRfcmVncyAqLCBp
-bnQpOwotc3RhdGljIHZvaWQgaW5wdXRfa2V5Y29kZShpbnQsIGludCk7CitzdGF0aWMgdm9pZCBp
-bnB1dF9rZXljb2RlKGludCwgaW50LCBpbnQpOwogc3RhdGljIHZvaWQgbGVkc19kb25lKHN0cnVj
-dCBhZGJfcmVxdWVzdCAqKTsKIHN0YXRpYyB2b2lkIG1hY19wdXRfcXVldWUoaW50KTsKIApAQCAt
-MjYyLDYgKzI2MywxMiBAQAogc3RhdGljIHN0cnVjdCBhZGJfaWRzIG1vdXNlX2lkczsKIHN0YXRp
-YyBzdHJ1Y3QgYWRiX2lkcyBidXR0b25zX2lkczsKIAorLyogS2luZCBvZiBrZXlib2FyZCBjYXBz
-bG9jayAqLworI2RlZmluZSBBREJLQkRfQ0FQU19BUFBMRQkwCS8qIFN0YW5kYXJkIGFwcGxlIGxv
-Y2tpbmcgY2Fwc2xvY2sgKi8KKyNkZWZpbmUgQURCS0JEX0NBUFNfUENDCQkxCS8qIFBvd2VyY29t
-cHV0aW5nIGtleWJvYXJkIGNhcHNsb2NrICovCisKK3N0YXRpYyBpbnQgYWRiX2tiZGNhcHNfa2lu
-ZHNbMTZdOworCiAvKiBLaW5kIG9mIG1vdXNlICAqLwogI2RlZmluZSBBREJNT1VTRV9TVEFOREFS
-RF8xMDAJMAkvKiBTdGFuZGFyZCAxMDBjcGkgbW91c2UgKGhhbmRsZXIgMSkgKi8KICNkZWZpbmUg
-QURCTU9VU0VfU1RBTkRBUkRfMjAwCTEJLyogU3RhbmRhcmQgMjAwY3BpIG1vdXNlIChoYW5kbGVy
-IDIpICovCkBAIC0zMTYsMTcgKzMyMyw5MCBAQAogCWlmIChuYiAhPSAzIHx8IChkYXRhWzBdICYg
-MykgIT0gS0VZQl9LRVlSRUcpCiAJCXJldHVybjsJCS8qIGlnbm9yZSBpdCAqLwogCWtiZF9wdF9y
-ZWdzID0gcmVnczsKLQlpbnB1dF9rZXljb2RlKGRhdGFbMV0sIDApOworCWlucHV0X2tleWNvZGUo
-KGRhdGFbMF0+PjQpLCBkYXRhWzFdLCAwKTsKIAlpZiAoIShkYXRhWzJdID09IDB4ZmYgfHwgKGRh
-dGFbMl0gPT0gMHg3ZiAmJiBkYXRhWzFdID09IDB4N2YpKSkKLQkJaW5wdXRfa2V5Y29kZShkYXRh
-WzJdLCAwKTsKKwkJaW5wdXRfa2V5Y29kZSgoZGF0YVswXT4+NCksIGRhdGFbMl0sIDApOwogfQog
-CiBzdGF0aWMgdm9pZAotaW5wdXRfa2V5Y29kZShpbnQga2V5Y29kZSwgaW50IHJlcGVhdCkKK2lu
-cHV0X2tleWNvZGUoaW50IGlkLCBpbnQga2V5Y29kZSwgaW50IHJlcGVhdCkKIHsKKwlzdGF0aWMg
-aW50IHBjY19jYXBzX3N0YXRlID0gMDsKKwogCXN0cnVjdCBrYmRfc3RydWN0ICprYmQ7CiAJaW50
-IHVwX2ZsYWc7CiAKKworCS8qIEtsdWRnZSB0byB0cnkgdG8gZml4IGNhcHNsb2NrIGJlaGF2aW9y
-IGZvciBwb3dlcmNvbXB1dGluZworCSAgIGtleWJvYXJkcy4gIE9uIHRoZXNlLCAweGI5IGlzIHJl
-dHVybmVkIG9uIGFsdGVybmF0aW5nCisJICAgY2Fwc2xvY2sgZG93biBldmVudHMuICBjYXBzbG9j
-ayB1cCByZXR1cm5zIDB4ODAgLSB0aGUgc2FtZQorCSAgIGFzIEEuICBGdW4gZnVuLiAgKi8KKwkv
-KiBUaGlzIGlzIGEgc3RhdGUgbWFjaGluZSB0byB1bnRhbmdsZSBjYXBzbG9jayB1cCBhbmQgJ2En
-IHVwCisJICAgb24gcG93ZXJjb21wdXRpbmcga2V5Ym9hcmRzICovCisJaWYgKGFkYl9rYmRjYXBz
-X2tpbmRzW2lkXSA9PSBBREJLQkRfQ0FQU19QQ0MpIHsKKwkJc3dpdGNoIChrZXljb2RlKSB7CisJ
-CWNhc2UgMHgzOToKKwkJY2FzZSAweGI5OgorCQkJc3dpdGNoIChwY2NfY2Fwc19zdGF0ZSkgewor
-CQkJY2FzZSAwOgorCQkJCXBjY19jYXBzX3N0YXRlID0gMjsKKwkJCQlicmVhazsKKwkJCWNhc2Ug
-MToKKwkJCQlwY2NfY2Fwc19zdGF0ZSA9IDM7CisJCQkJYnJlYWs7CisJCQljYXNlIDQ6CisJCQkJ
-cGNjX2NhcHNfc3RhdGUgPSA1OworCQkJCWJyZWFrOworCQkJZGVmYXVsdDoKKwkJCQlicmVhazsK
-KwkJCX0KKwkJCWtleWNvZGUgPSAweDM5OwkvKiBDaGFuZ2UgdG8gY2Fwc2xvY2sgZG93biAqLwor
-CQkJYnJlYWs7CisJCWNhc2UgMHgwMDoKKwkJCXN3aXRjaCAocGNjX2NhcHNfc3RhdGUpIHsKKwkJ
-CWNhc2UgMDoKKwkJCQlwY2NfY2Fwc19zdGF0ZSA9IDE7CisJCQkJYnJlYWs7CisJCQljYXNlIDI6
-CisJCQljYXNlIDQ6CS8qIFdlIGd1ZXNzZWQgcmlnaHQgaW4gcmV0dXJuaW5nIEEgdXAgcHJldmlv
-dXNseSAqLworCQkJCXBjY19jYXBzX3N0YXRlID0gMzsKKwkJCQlicmVhazsKKwkJCWRlZmF1bHQ6
-CisJCQkJYnJlYWs7CisJCQl9CisJCQlicmVhazsKKworCQkJLyogVGhpcyBpcyB0aGUgYnJva2Vu
-IDB4ODAgcmV0dXJuIGNvZGUgZnJvbSBjYXBzbG9jaworCQkJICAgb3IgQS4gIFdlIGFsd2F5cyBh
-c3N1bWUgQSByZWxlYXNlIGZpcnN0LiAqLworCQljYXNlIDB4ODA6CisJCQlzd2l0Y2ggKHBjY19j
-YXBzX3N0YXRlKSB7CisJCQljYXNlIDA6CisJCQljYXNlIDE6CQkvKiBBIHVwICovCisJCQkJcGNj
-X2NhcHNfc3RhdGUgPSAwOworCQkJCWJyZWFrOworCQkJY2FzZSAyOgkJLyogQ2Fwc0xvY2sgdXAg
-Ki8KKwkJCQlwY2NfY2Fwc19zdGF0ZSA9IDA7CisJCQkJa2V5Y29kZSA9IDB4Yjk7CisJCQkJYnJl
-YWs7CisJCQljYXNlIDM6CS8qIEFzc3VtZSBBIHVwIC0gd2UgZG9uJ3QgcmVhbGx5IGtub3cgKi8K
-KwkJCQlwY2NfY2Fwc19zdGF0ZSA9IDQ7CisJCQkJa2V5Y29kZSA9IDB4ODA7CisJCQkJYnJlYWs7
-CisJCQljYXNlIDQ6CS8qIE5vdyBhc3N1bWUgQ2Fwc0xvY2sgdXAgKi8KKwkJCQlwY2NfY2Fwc19z
-dGF0ZSA9IDA7CisJCQkJa2V5Y29kZSA9IDB4Yjk7CisJCQkJYnJlYWs7CisJCQljYXNlIDU6CQkv
-KiBSZXR1cm4gYW4gQSB1cCAqLworCQkJCXBjY19jYXBzX3N0YXRlID0gNDsKKwkJCQlrZXljb2Rl
-ID0gMHg4MDsKKwkJCQlicmVhazsKKwkJCX0KKwkJCWJyZWFrOworCQlkZWZhdWx0OgorCQkJYnJl
-YWs7CisJCX0KKwl9CisKICAJa2JkID0ga2JkX3RhYmxlICsgZmdfY29uc29sZTsKIAl1cF9mbGFn
-ID0gKGtleWNvZGUgJiAweDgwKTsKIAlrZXljb2RlICY9IDB4N2Y7CkBAIC0zNzcsNiArNDU3LDcg
-QEAKIAlpZiAoa2JkLT5rYmRtb2RlICE9IFZDX1JBVykgewogCQlpZiAoIXVwX2ZsYWcgJiYgIWRv
-bnRfcmVwZWF0W2tleWNvZGVdKSB7CiAJCQlsYXN0X2tleWNvZGUgPSBrZXljb2RlOworCQkJbGFz
-dF9pZCA9IGlkOwogCQkJcmVwZWF0X3RpbWVyLmV4cGlyZXMgPSBqaWZmaWVzICsgKHJlcGVhdD8g
-SFovMTU6IEhaLzIpOwogCQkJYWRkX3RpbWVyKCZyZXBlYXRfdGltZXIpOwogCQl9CkBAIC0zODYs
-MTQgKzQ2NywyMyBAQAogCQkgKiBnZW5lcmF0aW5nIGFuIHVwL2Rvd24gZXZlbnQgZm9yIGVhY2gg
-dGltZSBjYXBzCiAJCSAqIGlzIHByZXNzZWQvcmVsZWFzZWQuIEFsc28sIG1ha2VzIHN1cmUgdGhh
-dCB0aGUKIAkJICogTEVEIGFyZSBoYW5kbGVkLiAgYXRvbmdAdWl1Yy5lZHUKKwkJICoKKwkJICog
-U2tpcCB0aGUgY2FwcyBsb2NrIGtsdWRnZSBmb3IgcG93ZXJjb21wdXRpbmcKKwkJICoga2V5Ym9h
-cmRzLiAgV2UgZGVhbCB3aXRoIGl0IHdpdGggdGhlIHN0YXRlIG1hY2hpbmUKKwkJICogYXQgdGhl
-IGJlZ2lubmluZyBvZiB0aGUgZnVuY3Rpb24uCisJCSAqIGpscXVpbm5AdXMuaWJtLmNvbQogCQkg
-Ki8KIAkJIHN3aXRjaCAoa2V5Y29kZSkgewogCQkgLypjYXNlIDB4Yjk6Ki8KIAkJIGNhc2UgMHgz
-OToKLQkJCWhhbmRsZV9zY2FuY29kZSgweDM5LCAxKTsKLQkJCWhhbmRsZV9zY2FuY29kZSgweDM5
-LCAwKTsKLQkJIAltYXJrX2JoKEtFWUJPQVJEX0JIKTsKLQkJIAlyZXR1cm47CisJCQlpZiAoYWRi
-X2tiZGNhcHNfa2luZHNbaWRdICE9IEFEQktCRF9DQVBTX1BDQykgeworCQkJCWhhbmRsZV9zY2Fu
-Y29kZSgweDM5LCAxKTsKKwkJCQloYW5kbGVfc2NhbmNvZGUoMHgzOSwgMCk7CisJCQkJbWFya19i
-aChLRVlCT0FSRF9CSCk7CisJCQkJcmV0dXJuOworCQkJfQorCQkJbWFya19iaChLRVlCT0FSRF9C
-SCk7CisJCQlicmVhazsKIAkJIGNhc2UgMHg0NzoKIAkJIC8qY2FzZSAweGM3OiovCiAJCSAJbWFy
-a19iaChLRVlCT0FSRF9CSCk7CkBAIC00MTEsNyArNTAxLDcgQEAKIAogCXNhdmVfZmxhZ3MoZmxh
-Z3MpOwogCWNsaSgpOwotCWlucHV0X2tleWNvZGUobGFzdF9rZXljb2RlLCAxKTsKKwlpbnB1dF9r
-ZXljb2RlKGxhc3RfaWQsIGxhc3Rfa2V5Y29kZSwgMSk7CiAJcmVzdG9yZV9mbGFncyhmbGFncyk7
-CiB9CiAKQEAgLTczMiw2ICs4MjIsNyBAQAogewogCXN0cnVjdCBhZGJfcmVxdWVzdCByZXE7CiAJ
-aW50IGk7CisJaW50IGo7CiAKICNpZmRlZiBDT05GSUdfQURCTU9VU0UKIAlhZGJfcmVnaXN0ZXIo
-QURCX01PVVNFLCAwLCAmbW91c2VfaWRzLCBtb3VzZV9pbnB1dCk7CkBAIC03NTksNyArODUwLDI1
-IEBACiAJCQlwcmludGsoIkFEQiBrZXlib2FyZCBhdCAlZCwgaGFuZGxlciBzZXQgdG8gM1xuIiwg
-aWQpOwogCQllbHNlCiAJCQlwcmludGsoIkFEQiBrZXlib2FyZCBhdCAlZCwgaGFuZGxlciAxXG4i
-LCBpZCk7Ci0JfQorCisJCS8qIFRyeSB0byBkZXRlY3QgYSBQb3dlcmNvbXB1dGluZyBrZXlib2Fy
-ZCAqLworCQlhZGJfcmVxdWVzdCgmcmVxLCBOVUxMLCBBREJSRVFfU1lOQyB8IEFEQlJFUV9SRVBM
-WSwgMSwKKwkJCSAgICBBREJfUkVBRFJFRyhpZCwgMikpOworCQlwcmludGsoIkFEQiBrZXlib2Fy
-ZCBhdCAlZCwgcmVnIDIgcmV0dXJucyAlZCBieXRlczoiLCBpZCwgcmVxLnJlcGx5X2xlbik7CisJ
-CWZvcihqPTE7IGo8cmVxLnJlcGx5X2xlbjsgaisrKQorCQkJcHJpbnRrKCIgJXgiLCByZXEucmVw
-bHlbal0pOworCQlwcmludGsoIlxuIik7CisKKwkJaWYgKHJlcS5yZXBseV9sZW4gPT0gMyAmJiBy
-ZXEucmVwbHlbMV0gPT0gMHhmZiAmJiAKKwkJICAgIHJlcS5yZXBseVsyXSAhPSAweGZmKSB7CisJ
-CQlhZGJfa2JkY2Fwc19raW5kc1tpZF0gPSBBREJLQkRfQ0FQU19QQ0M7CisJCQlwcmludGsoIkFE
-QiBrZXlib2FyZCBhdCAlZCBpcyBQb3dlcmNvbXB1dGluZ1xuIiwgaWQpOworCQl9CisJCWVsc2Ug
-eworCQkJYWRiX2tiZGNhcHNfa2luZHNbaWRdID0gQURCS0JEX0NBUFNfQVBQTEU7CisJCQlwcmlu
-dGsoIkFEQiBrZXlib2FyZCBhdCAlZCBpcyBBcHBsZVxuIiwgaWQpOworCQl9CisgCX0KIAogCS8q
-IFRyeSB0byBzd2l0Y2ggYWxsIG1pY2UgdG8gaGFuZGxlciA0LCBvciAyIGZvciB0aHJlZS1idXR0
-b24KIAkgICBtb2RlIGFuZCBmdWxsIHJlc29sdXRpb24uICovCg==
-
---0__=0KP9JWQ2eqCluq1Kqhc4XyWYWhDSCHJ0AmrtKIhH982qrcAMxOHiQEer--
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
