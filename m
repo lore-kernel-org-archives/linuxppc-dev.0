@@ -1,28 +1,34 @@
-Message-ID: <B25E2E5A003CD311B61E00902778AF2A0204430F@server1.skystream.com>
-From: Brian Kuschak <brian.kuschak@skystream.com>
+Date: Thu, 25 Jan 2001 18:18:37 -0800
+Message-Id: <200101260218.SAA28758@xoommail.com>
+From: Leonard Ye <leonardye@xoommail.com>
+Subject: is (F)ADS 8xx board mature enough?
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: 405GP ethernet driver
-Date: Thu, 25 Jan 2001 17:03:29 -0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Has anyone been using the 405GP ethernet driver from MontaVista?
+Hi all,
 
-It looks like it is based on a driver from IBM.  The transmit mechanism is
-different from other linux ethernet drivers that I am familiar with.  Looks
-like they only use a single TX buffer descriptor.  The TX interrupt must be
-serviced before the next packet can be sent, which leads to lower
-performance.  Mine tops out around 60Mbps.
+A newbie question.  Currently, I am considering using FADS 823/850/860
+board for embedded system development.  While I was reading the "Linux for
+PowerPC Embedded Systems HOWTO" as every newbie did initially, I was
+referred to the message written by Dan Malek on 03 Sep 1999 in this
+maillist. His oppinion on FADS 8xx is that "I don't recommend using any
+(F)ADS board with Linux/PPC."  The full message can be viewed at:
+http://lists.linuxppc.org/listarcs/linuxppc-embedded/199909/msg00007.html
 
-Has anyone tinkered with this driver to implement a real TX ring buffer?  I
-don't want to duplicate effort if the work is already done.
+It has been more than one year since this message was written. I would like
+to know has this situation been changed?  I need  good PCMCIA, ethernet and
+UART support, USB support is need in the second stage of development.  Any
+comments from you guys?
 
-Thanks,
-Brian Kuschak
+Regards,
+Leonard Ye
+
+______________________________________________________
+Get free e-mail at http://www.email.com
+Visit http://ecards.nbci.com to send
+exclusive NBCi electronic greeting cards.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
