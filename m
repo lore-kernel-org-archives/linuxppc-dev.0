@@ -1,54 +1,42 @@
 To: Jeremy Bowen <Jeremy.Bowen@opennw.com>
-Cc: "'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>,
-	support@abatron.ch
+Cc: "'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: Problems with MMU: address translation for 0xXXXXXXXX failed 
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 15 May 2003 11:56:32 +1200."
-             <DEA23DB61B62D4118B5900508B323B84012CC7D7@OPENMAIL>
-Date: Thu, 15 May 2003 02:19:06 +0200
-Message-Id: <20030515001911.88A7AC6092@atlas.denx.de>
+In-reply-to: Your message of "Thu, 15 May 2003 12:05:00 +1200."
+             <DEA23DB61B62D4118B5900508B323B84012CC7D8@OPENMAIL>
+Date: Thu, 15 May 2003 02:23:22 +0200
+Message-Id: <20030515002327.EE9DAC6092@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <DEA23DB61B62D4118B5900508B323B84012CC7D7@OPENMAIL> you wrote:
-> > I don't accuse, I just tell you.
+In message <DEA23DB61B62D4118B5900508B323B84012CC7D8@OPENMAIL> you wrote:
 >
-> You can tell me I'm a purple elephant but that doesn't make it true :-)
+> I'm happy to pay a hardware maintenenace contract for if the hardware breaks
+> down but if the product I bought initially contains a defect in manufacture
+> then I see no reason to have to pay for this fault. The defect in this case
+> is buggy firmware.
 
-I just tell you a fact: The BDI2000 firmware is  a  software  product
-for which you have to pay a license fee. The license explicitely says
-that this license cannot be transferred.
+You may be wrong again.
 
-> > To get access to the firmware which comes on a floppy disk  you  have
-> > to open the plastic bag thereby destroying a sticker that reads:
+Are you absolutely sure that it's  a  bug  in  the  firmware?  Please
+consider  the possibility that the firware was designed for a version
+of the Linux kernel which showed a  different  behaviour.  You  might
+want  to  check  when  the PTBASE support first appeared in the Linux
+kernel and relate this to BDI2000 firmware releases.
+
+> > You stated that you received the software "from a  friend".  This  is
+> > not  exactly  the  same  as  receiving  an  official update from your
+> > distributor.
 >
-> To access the new firmware, I unzip the zip file.
-> There is no text to read. There is no license agreement.
->
-> > I am not a lawyer, but this is pretty clear text, isn't it?
->
-> There was *no* text accompanying the zipfile.
+> Not it is not the same, however both statements can be true with no
+> contradiction.
 
-I want to call your attention to the fact that if  you  received  the
-zip  file  from  anyboy else but Abatron support or from one of their
-official distributors you might have been given an  illegal  copy  of
-the software.
-
-In the previous message you claimed that you were using version  1.09
-before, i. e. you must have purchased your BDI2000 before the release
-of  1.10 which was in November 2001. So your one year warranty period
-must have ended in November 2002 (or earlier). 1.12 was  released  in
-anuary  2003  -  if  you  did not pay for an extension of the support
-(which you obviously did not, as you did  not  even  know  that  this
-option exists) you probably have no legal right to use version 1.12.
-
-
-I agree that it is unfortunate that Abatron did not include any  EULA
-or  other  legal  stuff in their zip files. I have put Abatron on the
-Cc: list, maybe they will change this now.
+Let's put it straight: either you (or  your  company)  payed  for  an
+extension  of  your  software  support,  or  your  copy of the bdiGDB
+software version 1.12 is illegal. Period.
 
 
 Wolfgang Denk
@@ -56,7 +44,7 @@ Wolfgang Denk
 --
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-A fanatic is a person who can't change his mind and won't change  the
-subject.                                          - Winston Churchill
+A bore is someone who persists in holding his own views after we have
+enlightened him with ours.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
