@@ -1,57 +1,36 @@
-Message-ID: <20030706212206.49489.qmail@web41509.mail.yahoo.com>
-Date: Sun, 6 Jul 2003 14:22:06 -0700 (PDT)
-From: bhupinder sahran <bhup_sah@yahoo.com>
-Subject: Re: Problems in the kernel for EP8260 Board.
-To: deepesh@india.tejasnetworks.com,
-	linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <1057294269.3f0507bd27111@pop-mail.india.tejasnetworks.com>
+From: =?gb2312?B?tqG68dPA?= <nari_dhy@nari-china.com>
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <002201c34425$425bff70$4a44900a@hydingnb>
+Subject: partitions info of CF flash
+Date: Mon, 7 Jul 2003 09:15:26 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi
-1.Pass the parameter root=/dev/ram0 from the boot
-loader.
-2. Disable the support for NFS in kernel.
+hi
+    My evaluation board is Xilinx ML300. RTOS is MVL pro3.0.
+    I have two problems.
+    One is how I pass the partition info to kernel. There are three
+parts in CF flash. The first saves .cfgs with FAT FS(which fs should
+i select? msdos/vfat). The second saves zImage. The last one is used
+as root device with ext2 fs(a better one?). I have looked the code
+in drivers/block/xilinx_sysace/adapter.c. I find it seems only to
+initialize the CF device without the partitions.
+    The other is that where can i get the driver for uart
+lite(xilinx_uartlite.c).
 
-U may have the success
+Thanks
 
-Bhupi
-www.gdatech.com
-
-
---- deepesh@india.tejasnetworks.com wrote:
->
-> Hi,
->
->   I am having an EP8260 Board. And the linux I am
-> using is from TimeSys.
-> I made a gzipped ramdisk.image.gz. Following are the
-> last few lines
-> before the board hung.
->
-> TCP: Hash tables configured (established 128 bind
-> 210)
-> NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-> RAMDISK: Compressed image found at block 0
-> Freeing initrd memory: 4389k freed
-> EXT2-fs warning: checktime reached, running e2fsck
-> is recommended
-> VFS: Mounted root (ext2 filesystem).
-> Mounted devfs on /äv
-> Root-NFS: No NFS server available, giving up.
-> VFS: Unable to mount root fs via NFS, trying floppy.
-> modprobe: modprobe: Can't open dependencies file
-> /lib/modules/2.4.7-timesys-3.1.180/modules.dep
-> (N
-> )
->
-> Thank you,
-> Deepesh
->
->
-
+---
+ding hou yong
+Nanjing Electrical Automation Institute
+Tel: 86-25-3429900-2425
+GSM: 86-(0)13814021009
+FAX: 86-25-3429900-2425
+Email: nari_dhy@nari-china.con
+Http: www.nari-china.com
+---
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
