@@ -1,71 +1,33 @@
-Message-ID: <63228.213.107.143.228.1048441818.squirrel@www.solinno.co.uk>
-Date: Sun, 23 Mar 2003 17:50:18 -0000 (GMT)
-Subject: [PATCH] Fix memory size not being passed to kernel from prep boot loader
-From: "Leigh Brown" <leigh@solinno.co.uk>
-To: <paulus@samba.org>
-Cc: <linuxppc-dev@lists.linuxppc.org>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="----=_20030323175018_73009"
+Date: Mon, 24 Mar 2003 10:19:09 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: linuxppc-dev@lists.linuxppc.org,
+	Paul Mackerras <paulus@samba.org>
+Subject: Re: ppc: Makefile tidy-up round 2
+Message-ID: <20030324171909.GA13300@ip68-0-152-218.tc.ph.cox.net>
+References: <20030320222759.GA12267@mars.ravnborg.org> <20030322215403.GA15911@mars.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20030322215403.GA15911@mars.ravnborg.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-------=_20030323175018_73009
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+On Sat, Mar 22, 2003 at 10:54:03PM +0100, Sam Ravnborg wrote:
+> More Makefile tidy-up - made on top of previous patches.
+>
+> 1) fixed a few bugs introduced when cleaning up boot/prep/Makefile
+> 2) cleaned up boot/openfirmware/makefile
+> 3) Got rid of boot/common/dummy.c
+> 	It is now located in three copies but thats OK for a three line file
+> See cset comments below.
+>
+> I have skipped "simple" clean up for now. Is it worth the effort?
 
-Hi,
+Well, it's the most used, and has some other bits which need to be
+cleaned up.  So, yes please.
 
-Current linuxppc_2_4 doesn't work on my 140 because the boot loader isn't
-passing in the memory size.  This patch fixes that.
-
-Please apply.
-
-Cheers,
-
-Leigh.
-
-
-
-
-
-------=_20030323175018_73009
-Content-Type: application/octet-stream; name="prep_memsize.diff"
-Content-Disposition: attachment; filename="prep_memsize.diff"
-Content-Transfer-Encoding: base64
-
-ZGlmZiAtdXJOWCAvaG9tZS9sZWlnaC8uZGlmZmV4IGxpbnV4cHBjXzJfNC1wcmV2L2FyY2gvcHBj
-L2Jvb3QvcHJlcC9taXNjLmMgbGludXhwcGNfMl80LWxvY2FsL2FyY2gvcHBjL2Jvb3QvcHJlcC9t
-aXNjLmMKLS0tIGxpbnV4cHBjXzJfNC1wcmV2L2FyY2gvcHBjL2Jvb3QvcHJlcC9taXNjLmMJMjAw
-My0wMy0yMyAxNToyNDo1My4wMDAwMDAwMDAgKzAwMDAKKysrIGxpbnV4cHBjXzJfNC1sb2NhbC9h
-cmNoL3BwYy9ib290L3ByZXAvbWlzYy5jCTIwMDMtMDMtMjMgMTc6MTg6MTkuMDAwMDAwMDAwICsw
-MDAwCkBAIC0yMTQsNiArMjE0LDkgQEAKIAkJcHV0cygiXG4iKTsKIAl9CiAKKwkvKiBBc3N1bWUg
-MzJNIGluIHRoZSBhYnNlbmNlIG9mIG1vcmUgaW5mby4uLiAqLworCVRvdGFsTWVtb3J5ID0gMzIg
-KiAxMDI0ICogMTAyNDsKKwogCWlmIChyZXNpZHVhbCkgewogCQkvKgogCQkgKiBUZWxsIHRoZSB1
-c2VyIHdoZXJlIHRoZSByZXNpZHVhbCBkYXRhIGlzLgpAQCAtMjc0LDEzICsyNzcsMTMgQEAKIAkJ
-CQlzdGFydF9tdWx0aSA9IDE7CiAJCX0KIAkJbWVtY3B5KGhvbGRfcmVzaWR1YWwscmVzaWR1YWws
-c2l6ZW9mKFJFU0lEVUFMKSk7CisKKwkJaWYgKHJlc2lkdWFsLT5Ub3RhbE1lbW9yeSkKKwkJCVRv
-dGFsTWVtb3J5ID0gcmVzaWR1YWwtPlRvdGFsTWVtb3J5OwogCX0gZWxzZSB7CiAJCS8qIFRlbGwg
-dGhlIHVzZXIgd2UgZGlkbid0IGZpbmQgYW55dGhpbmcuICovCiAJCXB1dHMoIk5vIHJlc2lkdWFs
-IGRhdGEgZm91bmQuXG4iKTsKIAotCQkvKiBBc3N1bWUgMzJNIGluIHRoZSBhYnNlbmNlIG9mIG1v
-cmUgaW5mby4uLiAqLwotCQlUb3RhbE1lbW9yeSA9IDB4MDIwMDAwMDA7Ci0KIAkJLyoKIAkJICog
-VGhpcyBpcyBhICdiZXN0IGd1ZXNzJyBjaGVjay4gIFdlIHdhbnQgdG8gbWFrZSBzdXJlCiAJCSAq
-IHdlIGRvbid0IHRyeSB0aGlzIG9uIGEgUFJlUCBib3ggd2l0aG91dCBPRgpAQCAtMzA2LDkgKzMw
-OSw2IEBACiAJCQlUb3RhbE1lbW9yeSA9IG1lbV9pbmZvWzFdOwogCQkJYnJlYWs7CiAJCX0KLQot
-CQlob2xkX3Jlc2lkdWFsLT5Ub3RhbE1lbW9yeSA9IFRvdGFsTWVtb3J5OwotCQlyZXNpZHVhbCA9
-IGhvbGRfcmVzaWR1YWw7CiAgICAgICAgIH0KIAogCS8qIGFzc3VtZSB0aGUgY2h1bmsgYmVsb3cg
-OE0gaXMgZnJlZSAqLwpAQCAtNDI0LDYgKzQyNCwxMSBAQAogCQkJc2l6ZW9mKHVuc2lnbmVkIGxv
-bmcpOwogCQlyZWMgPSAoc3RydWN0IGJpX3JlY29yZCAqKSgodW5zaWduZWQgbG9uZylyZWMgKyBy
-ZWMtPnNpemUpOwogCisgICAgICAgICAgICAgICAgcmVjLT50YWcgPSBCSV9NRU1TSVpFOworICAg
-ICAgICAgICAgICAgIHJlYy0+ZGF0YVswXSA9IFRvdGFsTWVtb3J5OworICAgICAgICAgICAgICAg
-IHJlYy0+c2l6ZSA9IHNpemVvZihzdHJ1Y3QgYmlfcmVjb3JkKSArIHNpemVvZih1bnNpZ25lZCBs
-b25nKTsKKyAgICAgICAgICAgICAgICByZWMgPSAoc3RydWN0IGJpX3JlY29yZCAqKSgodW5zaWdu
-ZWQgbG9uZylyZWMgKyByZWMtPnNpemUpOworCiAJCXJlYy0+dGFnID0gQklfQ01EX0xJTkU7CiAJ
-CW1lbWNweSggKGNoYXIgKilyZWMtPmRhdGEsIGNtZF9saW5lLCBzdHJsZW4oY21kX2xpbmUpKzEp
-OwogCQlyZWMtPnNpemUgPSBzaXplb2Yoc3RydWN0IGJpX3JlY29yZCkgKyBzdHJsZW4oY21kX2xp
-bmUpICsgMTsK
-
-------=_20030323175018_73009--
-
+--
+Tom Rini
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
