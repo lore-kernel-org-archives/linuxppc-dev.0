@@ -1,79 +1,72 @@
-Date: Sat, 13 Feb 1999 13:28:38 -0700 (MST)
-From: Brad Midgley <brad@pht.com>
-Reply-To: Brad Midgley <brad@pht.com>
-To: Geert Uytterhoeven <geert@geert.cs.kuleuven.ac.be>
-cc: linux-fbdev@vuser.vu.union.edu, linuxppc-dev@lists.linuxppc.org
-Subject: Re: [linux-fbdev] some modes "default" solutions
-Message-ID: <Pine.LNX.3.96LJ1.1b7.990213120624.657A-100000@cricket>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <s6c5d350.036@intertapeipg.com>
+Date: Sat, 13 Feb 1999 19:10:10 -0500
+From: Aleksandar Kobilarov <aleks@intertapeipg.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Linux 2.2.1 Kernel scsi troubles
+Mime-Version: 1.0
+Content-Type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-geert,
+I used to have the same problem on my first-gen. G3 tower when I used to boot
+with a floppy/OF combo and 2.1.24. When I switched to BootX (thanks a billion,
+Ben H.) + 2.1.125 (and 2.1.130 and 2.2.0 consequently), the problems
+disappeared.
 
-> With `mode default' XF68_FBDev will use this virtual screen, unless you
-> override the virtual screen size with `Virtual x y' in your XF86Config.
-                                         ^^^^^^^^^^^ 
+>>> Piotr Muszynski <u0295020@iwate-u.ac.jp> - 2/13/99 6:54 AM >>>
 
-"Virtual" is ignored in Xfb when using modes default. i looked at fbdev.c
-in xfree to find a reason for this. i think it's because this line of code
+I have the same problem (aborting MESH target) on my
+7500/601/100MHz/64MB with 2 disks,  linuxppc r4:
 
- fbdevInfoRec.SwitchMode = fbdevSwitchMode;
+binutils-2.9.1-19a
+modutils-2.1.121-1
+egcs-1.1-1b
+egcs-c++-1.1-1b
+egcs-as-gcc-1.1-1b
+egcs-fixes-1-1
+glibc-0.961212-1o
+glibc-devel-0.961212-1o
+glibc-static-0.961212-1o
 
-is only executed if the mode is NOT default. fbdevSwitchMode() is
-responsible for ultimately making the ioctl call that changes mode
-(including virtual size) so the higher layers of the X server won't even
-know how to change the virtual size. 
+/dev/sda -- MacOS,  with BootX/vmlinux    (Fireball) --> this one's
+aborted
+/dev/sdb -- half MacOS, half Linux        (IBM)
 
-it's probably not a simple matter of adding that line however. i'm not
-sure how you'd make sure all the other parameters of the graphics mode
-match up. 
+Attached devices:
+Host: scsi0 Channel: 00 Id: 00 Lun: 00
+  Vendor: QUANTUM  Model: FIREBALL1280S    Rev: 630G
+  Type:   Direct-Access                    ANSI SCSI revision: 02
+Host: scsi0 Channel: 00 Id: 01 Lun: 00
+  Vendor: IBM      Model: DCAS-32160       Rev: S65A
+  Type:   Direct-Access                    ANSI SCSI revision: 02
+Host: scsi0 Channel: 00 Id: 03 Lun: 00
+  Vendor: SONY     Model: CD-ROM CDU-8005  Rev: 1.0j
+  Type:   CD-ROM                           ANSI SCSI revision: 02
 
-The config below comes up with virtual 1024x1024 on my 7500 and 1024x6128
-on the imac. (using v3.3.3 18Nov1998) 
+Is there anything I could help with?
 
-brad
+BTW, vmlinux by Paul displayed only the welcome line.  2.2.1 boots
+further (until failing on MESH) only after adding #ifdef __SMP__ /
+#endif to arch/ppc/kernel/head.S (lines 1208/1212).
 
----------- Forwarded message ----------
-Section "Files"
-    RgbPath	"/usr/X11R6/lib/X11/rgb"
-    FontPath	"/usr/X11R6/lib/X11/fonts/misc/"
-    FontPath	"/usr/X11R6/lib/X11/fonts/Type1/"
-    FontPath	"/usr/X11R6/lib/X11/fonts/Speedo/"
-    FontPath	"/usr/X11R6/lib/X11/fonts/75dpi/"
-    FontPath	"/usr/X11R6/lib/X11/fonts/100dpi/"
-EndSection
-Section "ServerFlags"
-EndSection
-Section "Keyboard"
-    Protocol	"Standard"
-    AutoRepeat	500 5
-XkbDisable
-EndSection
-Section "Pointer"
-    Protocol	"busmouse"
-    Device	"/dev/mouse"
-EndSection
-Section "Monitor"
-    Identifier	"Generic"
-EndSection
-Section "Device"
-    Identifier "Linux Frame Buffer Device"
-    Option "noaccel"
-EndSection
-Section "Screen"
-    Driver	"fbdev"
-    Device	"Linux Frame Buffer Device"
-    Monitor	"Generic"
-    SubSection	"Display"
-        Modes	"default"
-	Virtual 1024 768
-    EndSubsection
-EndSection
+piotru
 
-
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                           
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
