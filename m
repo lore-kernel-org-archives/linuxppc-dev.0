@@ -1,123 +1,27 @@
-Message-Id: <m132Dbb-001SyaC@bucks>
+Message-Id: <m132bGV-001SyaC@bucks>
 From: diekema@bucks.si.com (diekema_jon)
-Subject: Differences between 8xx and 7xx MontaVista root file systems
-To: linuxppc-embedded@lists.linuxppc.org
-Date: Wed, 14 Jun 2000 09:53:19 -0400 (EDT)
+Subject: Linux kernel oops during high NFS read activity...
+To: linuxppc-embedded@lists.linuxppc.org, dan_malek@mvista.com
+Date: Thu, 15 Jun 2000 11:09:07 -0400 (EDT)
 Cc: all@cideas.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-	Differences in operation between
-	/opt/hardhat/devkit/ppc/8xx/target and
-	/opt/hardhat/devkit/ppc/7xx/target from the MontaVista CDK
+	Linux kernel oops during high NFS read activity...
 
 	Hardware:
 
-	    EST SBC8260
-	    MPC8260 Rev A.1 CPU/CPM/BUS: 200/133/66 Mhz
-
-	MontaVista CDK packages being used:
-
-hhl-rpmconfig-0.7-1
-
-hhl-ppc_7xx-ash-0.2-1
-hhl-ppc_7xx-bash-2.03-5
-hhl-ppc_7xx-binutils-2.9.5.0.22-7
-hhl-ppc_7xx-filesystem-2.0-4
-hhl-ppc_7xx-fileutils-4.0-2
-hhl-ppc_7xx-ftp-0.15-3
-hhl-ppc_7xx-ftpd-0.11-3
-hhl-ppc_7xx-gcc-2.95.2-10
-hhl-ppc_7xx-gdb-4.17.0.11-2
-hhl-ppc_7xx-gdb-client-4.17.0.11-2
-hhl-ppc_7xx-gdb-server-4.17.0.11-2
-hhl-ppc_7xx-glibc-2.1.2-10
-hhl-ppc_7xx-gpm-1.17.9-1
-hhl-ppc_7xx-gzip-1.2.4-2
-hhl-ppc_7xx-inetd-0.10-6
-hhl-ppc_7xx-ldconfig-1.9.5-2
-hhl-ppc_7xx-libtermcap-2.0.8-3
-hhl-ppc_7xx-microwindows-0.88pre7-1
-hhl-ppc_7xx-modutils-2.1.121-2
-hhl-ppc_7xx-net-tools-1.53-2
-hhl-ppc_7xx-ping-0.10-6
-hhl-ppc_7xx-popt-1.4-1
-hhl-ppc_7xx-procps-2.0.4-2
-hhl-ppc_7xx-psmisc-18-2
-hhl-ppc_7xx-pump-0.7.2-1
-hhl-ppc_7xx-sash-3.4-3
-hhl-ppc_7xx-sh-utils-2.0-4
-hhl-ppc_7xx-strace-3.99.1-2
-hhl-ppc_7xx-sysvinit-2.77-6
-hhl-ppc_7xx-tar-1.13.11-2
-hhl-ppc_7xx-telnet-4.4.2-3
-hhl-ppc_7xx-telnetd-0.10-3
-hhl-ppc_7xx-termcap-9.12.6-2
-hhl-ppc_7xx-textutils-2.0-2
-hhl-ppc_7xx-util-linux-2.9w-4
-hhl-ppc_7xx-zlib-1.1.3-2
-hhl-ppc_7xx-zsrec-1.0-3
-
-hhl-ppc_8xx-ash-0.2-1
-hhl-ppc_8xx-bash-2.03-5
-hhl-ppc_8xx-binutils-2.9.5.0.22-7
-hhl-ppc_8xx-filesystem-2.0-4
-hhl-ppc_8xx-fileutils-4.0-2
-hhl-ppc_8xx-ftp-0.15-3
-hhl-ppc_8xx-ftpd-0.11-3
-hhl-ppc_8xx-gcc-2.95.2-10
-hhl-ppc_8xx-gdb-4.17.0.11-2
-hhl-ppc_8xx-gdb-client-4.17.0.11-2
-hhl-ppc_8xx-gdb-server-4.17.0.11-2
-hhl-ppc_8xx-glibc-2.1.2-10
-hhl-ppc_8xx-gpm-1.17.9-1
-hhl-ppc_8xx-gzip-1.2.4-2
-hhl-ppc_8xx-inetd-0.10-6
-hhl-ppc_8xx-ldconfig-1.9.5-2
-hhl-ppc_8xx-libtermcap-2.0.8-3
-hhl-ppc_8xx-microwindows-0.88pre7-1
-hhl-ppc_8xx-modutils-2.1.121-2
-hhl-ppc_8xx-net-tools-1.53-2
-hhl-ppc_8xx-ping-0.10-6
-hhl-ppc_8xx-popt-1.4-1
-hhl-ppc_8xx-procps-2.0.4-2
-hhl-ppc_8xx-psmisc-18-2
-hhl-ppc_8xx-pump-0.7.2-1
-hhl-ppc_8xx-sash-3.4-3
-hhl-ppc_8xx-sh-utils-2.0-4
-hhl-ppc_8xx-strace-3.99.1-2
-hhl-ppc_8xx-sysvinit-2.77-6
-hhl-ppc_8xx-tar-1.13.11-2
-hhl-ppc_8xx-telnet-4.4.2-3
-hhl-ppc_8xx-telnetd-0.10-3
-hhl-ppc_8xx-termcap-9.12.6-2
-hhl-ppc_8xx-textutils-2.0-2
-hhl-ppc_8xx-util-linux-2.9w-4
-hhl-ppc_8xx-zlib-1.1.3-2
-hhl-ppc_8xx-zsrec-1.0-3
+	- EST SBC8260
+	- MPC8260 Rev A.1 CPU/CPM/BUS: 200/133/66 Mhz
 
 	Environment:
 
-	- Using the /opt/hardhat/devkit/ppc/7xx/target for the
-	  NFS mounted root filesystem
 	- Linux: 2.4.0-test1-ac10
-
-	Warnings:
-
-	- (init) used obsolete /dev/cua - update software to use /dev/ttyS0
-	- (swapper) used obsolete /dev/cua - update software to use /dev/ttyS0
-
-	Problems:
-
-	- "mount -o rsize=8192,wsize=8192,rw,remount /" complains about
-	  "directory to mount not in host:dir format".  If I use the 8xx
-	  root, then it works as expected.
-
-	- bash does NOT provide job control.  If I use the 8xx root, then
-	  bash runs with job control.
+	- Using the /opt/hardhat/devkit/ppc/8xx/target for the
+	  NFS mounted root filesystem
 
 Total memory = 16MB; using 0kB for hash table (at 00000000)
 Linux version 2.4.0-test1-ac10 (diekema@dell) (gcc version 2.95.2 19991024 (release)) #43 Tue Jun 13 10:08:58 EDT 2000
@@ -160,14 +64,8 @@ kmem_create: Forcing size word alignment - nfs_fh
 Looking up port of RPC 100003/2 on 126.28.1.117
 Looking up port of RPC 100005/2 on 126.28.1.117
 VFS: Mounted root (nfs filesystem).
-Freeing unused kernel memory: 48k iniü
-tty_io.c: process 1 (swapper) used obsolete /dev/cua - update software to use /dev/ttyS0
-tty_io.c: process 1 (init) used obsolete /dev/cua - update software to use /dev/ttý0
-tty_io.c: process 1 (init) used obsolete /dev/cua - update software to use /dev/ttyS0
-INIT:
-tty_io.c: process 1 (init) used obsolete /dev/cua - update software to use /dev/ttyS0
-version 2.77 boÿing
-tty_io.c: process 1 (init) used obsolete /dev/cua - update software to use /dev/ttyS0
+Freeing unused kernel memory: 48k init
+INIT: version 2.77 booti
 + /sbin/ifconfig lo 127.0.0.1
 +
 + mount /proc
@@ -175,9 +73,9 @@ tty_io.c: process 1 (init) used obsolete /dev/cua - update software to use /dev/
 eth0      Link encap:Ethernet  HWaddr 00:A0:1E:01:04:05
           inet addr:126.1.4.5  Bcast:126.255.255.255  Mask:255.0.0.0
           UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:1094 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:448 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:3 txqueuelen:100
+          RX packets:1073 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:447 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:2 txqueuelen:100
           Base address:0x8000
 
 lo        Link encap:Local Loopback
@@ -189,9 +87,88 @@ lo        Link encap:Local Loopback
 
 + mount -a
 + mount -o rsize=8192,wsize=8192,rw,remount /
-mount: directory to mount not in host:dir format
+INIT: Entering runlevel:
 
-# bash
-bash: no job control in this shell
+# cat /z-pound.sh
+#!/bin/sh
+
+date
+tar cf -  [a-c,e-o,q-z]* | wc -c
+exec $0
+
+# cd /
+# /z-pound.sh &
+
+# ps auxw
+USER       PID %CPU %MEM   VSZ  RSS TTY      STAT START   TIME COMMAND
+root         1  0.1  1.1  1212  164 ?        S    16:00   0:00 init
+root         2  0.2  0.0     0    0 ?        SW   16:00   0:00 [kswapd]
+root         3  0.0  0.0     0    0 ?        SW   16:00   0:00 [kflushd]
+root         4  0.0  0.0     0    0 ?        SW   16:00   0:00 [kupdate]
+root         5  1.7  0.0     0    0 ?        SW   16:00   0:03 [rpciod]
+root        25  0.0  2.1  1296  324 ttyS0    S    16:00   0:00 /bin/sh
+root        27  0.0  1.0  1580  156 ?        S    16:00   0:00 /bin/inetd
+root        31  0.0  3.4  1288  516 ttyS0    S    16:00   0:00 /bin/sh /z-pound.sh
+root        37  5.0  5.2  1656  772 ttyS0    D    16:02   0:00 tar cf - bin etc lib libexec mnt opt sbin share tmp vrc vrc.N z-pound
+root        38  0.5  3.0  1212  452 ttyS0    S    16:02   0:00 wc -c
+root        39 33.0  5.8  2764  860 ttyS0    R    16:02   0:00 ps auxw
+
+NIP: C00CF230 XER: 00000000 LR: C0020ABC REGS: c010dd60 TRAP: 0300
+MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c010c000[0] 'swapper' Last syscall: 120
+last math c0384000 last altivec 00000000
+GPR00: 5A5A5A5A C010DE10 C010C000 C0BAB393 FFFFFF92 00000000 00000001 00000000
+GPR08: 0000007D 5A5A5A5A C012E6D8 C0BAB410 24444022 1004206C 00000000 00000000
+GPR16: 00000000 00000000 00000000 00000000 00001032 C00DFFB8 C012E2F0 C0110000
+GPR24: C0130000 C0130000 C0110000 C0141980 C011B780 C0130000 C00CF200 C0BAB393
+Call backtrace:
+C00206EC C0020ABC C001BD10 C001BBE0 C001B968 C0004BF4 C0005D8C
+C0005DD0 C011C7DC 000036C0
+Kernel panic: kernel access of bad area pc c00cf230 lr c0020abc address 5A5A5A5E tsk swapper/0
+In interrupt handler - not syncing
+Rebooting in 180 seconds..floating point used in kernel (task=c010c000, pc=ff000100)
+
+dell 119} sh/backtrace
+C00206EC C0020ABC C001BD10 C001BBE0 C001B968 C0004BF4 C0005D8C
+C0005DD0 C011C7DC 000036C0
+0xc00206ec -- 0xc0020648 + 0x00a4   update_process_times
+0xc0020abc -- 0xc0020748 + 0x0374   timer_bh
+0xc001bd10 -- 0xc001bcd0 + 0x0040   bh_action
+0xc001bbe0 -- 0xc001bb4c + 0x0094   tasklet_hi_action
+0xc001b968 -- 0xc001b8b0 + 0x00b8   do_softirq
+0xc0004bf4 -- 0xc0004bf4 + 0x0000   do_bottom_half_ret
+0xc0005d8c -- 0xc0005d4c + 0x0040   idled
+0xc0005dd0 -- 0xc0005dc0 + 0x0010   cpu_idle
+0xc011c7dc -- 0xc011c64c + 0x0190   start_kernel
+0x000036c0 -- 0xc0126fa4 + 0x3fedc71c   packet_proto_init
+
+
+I tried the test again, and received another kernel oops.
+
+
+kmem_free: Bad obj addr (objp=c0b4f4c0, name=nfs_read_data)
+kernel BUG at slab.c:1664!
+NIP: C002D8E8 XER: 00000000 LR: C002D8E8 REGS: c01d9d20 TRAP: 0700
+MSR: 00089032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+TASK = c01d8000[5] 'rpciod' Last syscall: -1
+last math c0fa0000 last altivec 00000000
+GPR00: C002D8E8 C01D9DD0 C01D8000 0000001B 00001032 C010FF80 C01F6260 00000000
+GPR08: 0000001B C0110000 F00000C8 C01D9D10 24444028 1004206C 00000000 00000000
+GPR16: C011A210 C0120000 C011AC64 00000000 C0120000 C0110000 C0130000 C010B3E0
+GPR24: C0100000 C011AC64 C0120000 C010B3E0 C0B4F63C C0B4FF21 C0B4F4C0 C01F4340
+Call backtrace:
+C002D8E8 C005B234 C00D1D50 C00D1584 C00D176C C00D222C C0008FAC
+Kernel panic: Exception in kernel pc c002d8e8 signal 4
+Rebooting in 180 seconds..floating point used in kernel (task=c01d8000, pc=ff000100)
+
+dell 120} sh/backtrace
+C002D8E8 C005B234 C00D1D50 C00D1584 C00D176C C00D222C C0008FAC
+0xc002d8e8 -- 0xc002d558 + 0x0390   kmem_cache_free
+0xc005b234 -- 0xc005b218 + 0x001c   nfs_readdata_release
+0xc00d1d50 -- 0xc00d1b5c + 0x01f4   rpc_release_task
+0xc00d1584 -- 0xc00d10ec + 0x0498   __rpc_execute
+0xc00d176c -- 0xc00d1634 + 0x0138   __rpc_schedule
+0xc00d222c -- 0xc00d20d4 + 0x0158   rpciod
+0xc0008fac -- 0xc0008f80 + 0x002c   kernel_thread
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
