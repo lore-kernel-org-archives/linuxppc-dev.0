@@ -1,18 +1,24 @@
-Date: Wed, 11 Apr 2001 13:56:10 -0600
-From: Cort Dougan <cort@fsmlabs.com>
-To: Tim Moloney <moloney@mrsl.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Interrupt handling via OpenPIC
-Message-ID: <20010411135610.A1276@ftsoj.fsmlabs.com>
-References: <00bf01c0c2ac$54b6e650$6c125acf@mrsl.com>
+Message-Id: <4.3.2.7.2.20010411132655.03baa688@mira-sjcm-2.cisco.com>
+Date: Wed, 11 Apr 2001 13:29:16 -0700
+To: linuxppc-embedded@lists.linuxppc.org
+From: Michael Norton <mnorton@cisco.com>
+Subject: Basic Stamps LinuxPPC2000 on G4
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <00bf01c0c2ac$54b6e650$6c125acf@mrsl.com>; from moloney@mrsl.com on Wed, Apr 11, 2001 at 01:24:57PM -0400
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-You'll have to talk to synergy about that one.  I'm not sure how the PMC
-interrupts are routed on that board (I've never tested a PMC card on it).
+hi,
+
+I want to develop robotics software on my G4 using LinuxPPC 2000. Are there
+any sites or people out there who can make recommendations of what type of
+Basic Stamp I should use? Basically looking for some advice. I want my
+robot to be LinuxPPC powered.
+
+thanks,
+
+Mike
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
