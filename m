@@ -1,46 +1,31 @@
-Message-ID: <39AF896D.E0E1EE28@student.ethz.ch>
-Date: Fri, 01 Sep 2000 12:48:13 +0200
-From: Michel Dänzer <daenzerm@student.ethz.ch>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Martin Costabel <costabel@wanadoo.fr>,
+        linuxppc-dev
+ <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: 2.4 problems
+Date: Fri, 1 Sep 2000 12:57:38 +0200
+Message-Id: <20000901105738.4534@mailhost.mipsys.com>
+In-Reply-To: <39AF028E.1C024B66@wanadoo.fr>
+References: <39AF028E.1C024B66@wanadoo.fr>
 MIME-Version: 1.0
-To: Marc Dietrich <Marc.Dietrich@hrz.uni-giessen.de>
-CC: Benjamin Herrenschmidt <bh40@calva.net>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: asm statement in include/asm not ansi conform
-References: <Pine.A41.4.21.0009011115240.32258-100000@c2.hrz.uni-giessen.de>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Marc Dietrich wrote:
->
-> On Thu, 31 Aug 2000, Benjamin Herrenschmidt wrote:
->
-> > There's no support for the AGP bus mastering on PowerMac yet. I've been
-> > running into trouble implementing that due to differences between what
-> > the linux /dev/agpgart driver expect an AGP chipset to do, and what
-> > Apple's UniNorth can actually do.
-> >
-> > I plan (this week-end) to look more closely at the r128 DRI code to see
-> > how it uses the AGP and possibly implement a pmac-specific driver (at
-> > least for now. Once I have working code, I can try to get the existing /
-> > dev/agpgart driver redesigned).
->
-> I fear this won't help much in my case (with b&w G3). Anyway there's still
-> a lot to do. DRI is very unstable and it seems that some functions are
-> missing.
+>You mean when I type on the local "dead" keyboard? I couldn't test this
+>yet, because the machine from which I sshed in was 15 km away at work.
+>And after a while I had the bad idea to type "hwclock -r", upon which
+>the 6400 was really dead, so I could not test it any further. While I
+>observed it, the ADB interrupt did not increase.
 
-It has been very stable for me so far, I suspect we have different definitions
-for "stable". About the missing stuff (and any problems), please post to
-dri-devel@lists.sourceforge.net or submit bugs to the DRI project at
-SourceForge. I'm not currently aware of any major bug, so I don't really know
-what to do :)
+Ok, so it looks like Cuda gets dead.
 
+Iain Sandoe recently did work to improve the robustness of the Cuda state
+machine. I didn't yet have time to look at his code, but it may be
+interesting for you to test his patch.
 
-Michel
+Ben.
 
-
---
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86 and The DRI Project
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
