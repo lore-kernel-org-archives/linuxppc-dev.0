@@ -1,51 +1,44 @@
-From: "Stephan Linke" <Stephan.Linke@epygi.de>
-To: "Linuxppc-Embedded" <linuxppc-embedded@lists.linuxppc.org>
-Subject: FW: 8xx FEC gets stuck while like is down
-Date: Wed, 2 Oct 2002 16:33:47 +0200
-Message-ID: <FCEAKDJJAPHPLJFINDAJMEHECJAA.Stephan.Linke@epygi.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: acurtis@onz.com
+Cc: "Flavio Pereira" <fpereira@azisa.com>,
+	"Yu Bo-BOYU1" <Bo.Yu@motorola.com>,
+	"linuxppc embedded" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: 8260 configuration 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 02 Oct 2002 07:27:20 PDT."
+             <NCBBIINEHIPFGJPLBEIFCEMKDMAA.acurtis@onz.com>
+Date: Wed, 02 Oct 2002 16:47:52 +0200
+Message-Id: <20021002144757.8BCDFFA99@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+In message <NCBBIINEHIPFGJPLBEIFCEMKDMAA.acurtis@onz.com> you wrote:
+>
+> > > 2. The start address is fixed to 0x0
+> > >
+> >
+> > One "start" address that is not fixed is the initial load
+> > address. Where the
+> > kernel is put in RAM with decompressing etc. You should have to
+> > worry about
+> > this if you are using one of the available boot loaders.
+>
+> Sorry, should NOT have to worry about that address...
 
-I discovered a strange behavior of the 8xx FEC driver. (kernel v2.4.18)
-(PHY: LXT972)
+Wrong, you SHOULD worry about this address. Load the kernel to a  low
+enough  address  (say  at  0x10000)  and  the uncompressing code will
+probably overwrite the kernel image.
 
-During a test where I was sending pings on the FEC interface I
-unplugged the cable for a few minutes. After reconnecting the
-cable the FEC driver still refused sending new packets.
+Best regards,
 
-I figured out the following: The tx_full variable was still set and so
-(verry likely) the wait queue was still deactivated.
-Looks like the following happend: No one keept the xmit function from trying
-to send  new data turing the time when a link was detected (fep->link =
-0->1) and fec_restart() has not been called yet (due to delays by working
-through the MII command list). So the TX buffer get filled and finaly the
-tx_full condition occures causing the wait queue to be stoped. In
-fec_restart() the skb in the TX buffers are discarded and transmition is
-restarted. But no one took care of the tx_full condition so no one restarted
-the wait queue.
+Wolfgang Denk
 
-Maybe some of my own changes caused that problem. (Mainly using bottom half
-handlers for the events.) So I compaired it with the original sources: But
-there's no reason why this shouldn't happen in ther normal sources (except
-maybe a slightly relaxed timing).
-
-I see two chances to avoid this condition:
-  a) Completely disable the TX path during that time.
-   (My current patch stops the transmit queue
-    when the something changed at the PHY,
-    waiting for fec_restart() to restart the queue.)
-  b) Simply restart the wait queue at the end of fec_restart()
-    every time it is disabled.
-
-Any ideas?
-
-Thanks, Stephan Linke
-
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+If the facts don't fit the theory, change the facts.
+                                                   -- Albert Einstein
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
