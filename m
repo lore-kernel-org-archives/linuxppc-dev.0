@@ -1,37 +1,68 @@
+Message-ID: <3E7ACA85.26F72374@cdotd.ernet.in>
+Date: Fri, 21 Mar 2003 01:17:09 -0700
+From: Rahul Dev <rahuld@cdotd.ernet.in>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: 8250 IDMA BD Len?
-Date: Thu, 20 Mar 2003 22:01:53 -0800
-Message-ID: <BD92DBD34D62AC4FA034933E33E53F7E1724F2@grog>
-From: "Penn, John" <jpenn@magisnetworks.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: no bash prompt
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Does anybody know why the length field
-of an 8250 IDMA BD would not contain the
-number of bytes transferred before /DONE
-is asserted.
+Dear all,
 
-This is a dual memory transfer from
-the local bus to 60x memory.  I am
-initially setting the BD length to 1752.
-I can see the correct length in the bd_cnt
-field in the parameter ram after /DONE has
-asserted and the IDMA has invalidated the BD.
+    I am running linux 2.4.2  over  ads  powerpc (8260) board.
+    Since , there is no support of scsi  controller over the board , i m
+using ramdisk image.
 
-What I get is the original length I programmed
-in, 1752.  The data is there and good.
+    I m getting the following  prints:
 
-DMA_WRAP = 64
-SS_MAX = 32
-STS = 4
-DTS = 32
+Linux version 2.4.2 (rahuld@hpv2k-35) (gcc version 3.0.4) #1
+ Fri Mar 7 15:30:25 IST 2003
+Boot arguments:
+On node 0 totalpages: 4095
+zone(0): 4095 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line:
+Warning: real time clock seems stuck!
+Calibrating delay loop... 244.12 BogoMIPS
+Memory: 13016k available (724k kernel code, 260k data, 40k init, 0k
+highmem)
+Dentry-cache hash table entries: 2048 (order: 2, 16384 bytes)
+Buffer-cache hash table entries: 1024 (order: 0, 4096 bytes)
+Page-cache hash table entries: 4096 (order: 2, 16384 bytes)
+Inode-cache hash table entries: 1024 (order: 1, 8192 bytes)
+POSIX conformance testing by UNIFIX
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society NET3.039
+Starting kswapd v1.8
+CPM UART driver version 0.01
+ttyS0 on SCC1 at 0x8000, BRG1
+ttyS1 on SCC2 at 0x8100, BRG2
+block: queued sectors max/low 8581kB/2860kB, 64 slots per queue
+RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
+RAMDISK: ext2 filesystem found at block 0
+RAMDISK: Loading 2048 blocks [1 disk] into ram disk... done.
+Freeing initrd memory: 0k freed
+ Serial driver version 5.02 (2000-08-09) with no serial options enabled
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP
+IP: routing cache hash table of 512 buckets, 4Kbytes
+TCP: Hash tables configured (established 512 bind 1024)
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+setting up filesystem
+VFS: Mounted root (ext2 filesystem).
+Freeing unused kernel memory: 40k init
 
-Thanks for the help.
+The  problem is that i m not getting  bash  prompt.
+Then i  added  one application in my ramdisk.image  that  prints  some
+message  on  "/dev/console" .
+But i m not getting any prints .
+Can anybody point out that where could the problem be??
 
-John Penn
+thanx and regards,
+ -rd
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
