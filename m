@@ -1,40 +1,45 @@
-Message-ID: <20011112180046.14147.qmail@dag.newtech.fi>
+Message-ID: <3BF02921.2C95A660@mvista.com>
+Date: Mon, 12 Nov 2001 12:55:13 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
 To: Dan Malek <dan@embeddededge.com>
-Cc: Dag Nygren <dag@newtech.fi>,
-	Sarnath Kannan <sparc64@rediffmail.com>,
-	ashish anand <ashisha@india.infogain.com>,
-	linuxppc-embedded@lists.linuxppc.org, dag@newtech.fi
-Subject: Re: "OpenPIC versus EPIC" in MPC8240 ! 
-In-Reply-To: Message from Dan Malek <dan@embeddededge.com>
-   of "Mon, 12 Nov 2001 11:58:49 EST." <3BEFFFC9.4050609@embeddededge.com>
-Mime-Version: 1.0
+Cc: Sarnath Kannan <sparc64@rediffmail.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: IDE in Mode 1 (Sandpoint) how ?
+References: <20011112124640.6795.qmail@mailweb22.rediffmail.com> <3BEFF427.4000309@embeddededge.com>
 Content-Type: text/plain; charset=us-ascii
-Date: Mon, 12 Nov 2001 20:00:46 +0200
-From: Dag Nygren <dag@newtech.fi>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> Dag Nygren wrote:
->
->
-> > I thiught I did that, but noone seems to be interested.. ;-)
->
-> Yeah :-).  I was hoping Paul or someone else would make a suggestion.
-> A few of us (and people more interested and affected by OpenPIC other
-> than me) had discussed some other, slightly more pleasing hacks.....
-> Right now I'm swamped with other projects, although I have some
-> Sandpoint work on my list and when I do that I will incorporate
-> what you have done.
->
-> Thanks.
+Dan Malek wrote:
 
-Thanks to you,
+> Sarnath Kannan wrote:
+>
+> > hi all,
+> > The Sandpoint user's manual says that WinBond's IDE controller is disabled in mode 1 (s3-down, s4-up), but MontaVista's kernel works in mode 1 with IDE support!
+> > How is this possible ?
 
-i know it is not perfect, but it certainly is better than the
-current solution...
+Because the documentation is misleading...
 
-Dag
+> The up/down comment is relative to the installation of the board in the chassis.
+> Mine are actually the other way around.  I'm not even sure if on/off nomenclature
+> would work.
+
+Sarnath, Dan is completely correct, it is relative so you need to first *carefully read* the comments in sandpoint_setup.c that describe the switch setting,
+*understand them*, and then *follow them*.   Especially the part where it says:
+
+
+     " * 'down' is in the direction from the PCI slots towards the PPMC slot;
+      * 'up' is in the direction from the PPMC slot towards the PCI slots.
+      * Be careful, the way the sandpoint board is installed in XT chasses will
+      * make the directions reversed."
+
+> Just keep in mind the troubles are local to your configuration, as this software
+> operates fine on a properly configured board.  Just move switches until it works,
+> then leave them alone :-).
+
+ditto
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
