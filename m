@@ -1,24 +1,29 @@
-Message-ID: <3CABEDE9.5020404@embeddededge.com>
-Date: Thu, 04 Apr 2002 01:08:41 -0500
+Message-ID: <3CABEFCE.8050006@embeddededge.com>
+Date: Thu, 04 Apr 2002 01:16:46 -0500
 From: Dan Malek <dan@embeddededge.com>
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
+To: Jeremy Rosen <Jeremy.Rosen@au.thalesgroup.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Workaround for USB DMA bugs
-References: <20020403024321.GN1026@zax> <3CAB3F0B.8080700@embeddededge.com> <20020403234051.GG21034@zax> <3CABC065.6050107@embeddededge.com> <20020404034809.GL21034@zax> <3CABD1E0.7020008@embeddededge.com> <20020404052349.GN21034@zax>
+References: <scac60f5.069@au.thalesgroup.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-David Gibson wrote:
+Jeremy Rosen wrote:
 
-> Possibly a better approach would be to make the consistent_sync()
-> function be more careful and flush rather than invalidate cachelines
 
-That's basically what this patch does, with the overhead of always
-writing instead of just invalidating.  We just went the whole circle
-here, as this isn't a logically correct solution :-).
+> can't we use the __GFP_DMA flag to specify that the area must have
+> algnment enforced ?
+
+Maybe, but that isn't its intended use.
+
+> or did I misunderstand the use of this flag ?
+
+This flag is used on architectures that have memory only accessible
+from the processor, not from a DMA device, to ensure a DMA device
+gets a memory bank that it can access.
 
 
 	-- Dan
