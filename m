@@ -1,72 +1,61 @@
-From: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>
-To: Dan Malek <dan@mvista.com>
-Cc: linuxppc-dev@lists.linuxppc.org
-Message-Id: <v03110707b5e296d40e11@[129.100.29.243]>
-In-Reply-To: <39BCE634.C7A36F00@mvista.com>
-References: <v03110706b5e196db363a@[64.229.14.120]>
- <v03110702b5e28dbeebb2@[129.100.29.243]>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 11 Sep 2000 10:11:33 -0400
+Date: Mon, 11 Sep 2000 11:17:16 -0400
+From: Daniel Jacobowitz <dmj+@andrew.cmu.edu>
+To: linuxppc-dev@lists.linuxppc.org
 Subject: Re: Roles for distributions
+Message-ID: <20000911111716.A1460@drow.them.org>
+References: <v03110706b5e196db363a@[64.229.14.120]>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <v03110706b5e196db363a@[64.229.14.120]>; from khendricks@ivey.uwo.ca on Sun, Sep 10, 2000 at 03:52:16PM -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Dan,
+Kevin, with due respect, I don't see how you can post something like
+this and NOT expect to get flamed hard in return.  I'm going to try not
+to, though.
 
->Oh yeah....and one of the first things I read on Monday morning is you
->being nasty to people working hard creating distributions.  There are
->lots of us that work hard to make all of this happen, from fixing a
->little bug, to creating the packages anyone can use, to creating
->complete distribtions.
->
->If you don't like the way some of these folks are creating distibutions
->or supporting them, you should start by contacting them and expressing
->your suggestions.  A blanket "everyone is screwing up" statement isn't
->terribly helpful.
+On Sun, Sep 10, 2000 at 03:52:16PM -0400, Kevin B. Hendricks wrote:
+> Why aren't the current PPC linux distributions putting full time developers
+> on key projects?
 
-I guess I won't get my apology.  ;-)
+Because no one can afford to.  The PPC linux market, while growing, is
+small.  LinuxPPC, Inc. makes what contribution they can, in the form of
+supporting existing volunteers; I'm sure some of the other
+distributions do the same.
 
-Since this seems to be personal, this will be my last posting to the list
-on this subject.  If you want to continue this argument, please do so
-off-line.
+> Why don't SuSE, YellowDogLinux, LinuxPPC, etc have anyone regularly
+> contributing to the toolchains (checking builds, reporting and fixing bugs,
+> etc)?  We (ppc) should have somebody with commit priviledges on gdb,
+> binutils, and glibc 2.2 helping and supporting things (and GeoffK doesn't
+> count since he is simply too busy).
 
->You are not a unique individual in this regard.  Although for for
->someone that has worked in this community for so long, I would have
->expected something a little constructive.
+It takes a tremendous amount of experience, as I'm sure you're aware,
+to contribute usefully to the toolchain.  There aren't very many people
+who can do it.  Most of those who can have full time jobs doing it, in
+areas that pay their bills - that some of them have the time to do it
+volunteer is a miracle.
 
-It was constructive, you read it as an attack.  Both Dan Burcaw and Olaf
-responed to my mail and they did not view it that way.  In fact, they both
-responded that they agreed but due to limitations (i.e. budgets) there was
-not alot they could do but that they would try.
+> And what about the other key projects: mozilla, helix/gnome, KDE, galeon,
+> apache, etc?
 
->I happen to be one of those full time employees you pissed off, and then
->after spending 12 hours a day working on a distribution I spend six more
->working on software you will see tomorrow.....seven days a week.
+I wonder why you put apache here... Apache needed almost no fixes for
+powerpc; the last batch I recall were glibc 2.1 / db2 related, and
+several of us got them fixed about two years ago.
 
-If you remember, I never accused anyone of not working hard or
-contributing.   You are the only one that has done that.
+There are volunteers working on all of the above.  No one can afford to
+pay anyone to.
 
-> I had better get one from you.
+> (and I do try to help out with glibc and things when I have time).
 
-So I get personally attacked by you and I owe you an apology. Is that correct?
+And that is all we can ask of anyone.
 
-My wife is right, I do give too much time for free to ppc.  We fight about
-it constantly.  Things certainly have changed over the last 20 years.
+Dan
 
-I should just retire, it simply isn't worth it since this is how my
-contributions are viewed by you and others.
-
-Kevin
-
-
---
-Kevin B. Hendricks, Associate Professor of Operations and Information
-Technology
-Richard Ivey School of Business, University of Western Ontario
-London, Ontario  N6A-3K7  CANADA
-khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
-
+/--------------------------------\  /--------------------------------\
+|       Daniel Jacobowitz        |__|        SCS Class of 2002       |
+|   Debian GNU/Linux Developer    __    Carnegie Mellon University   |
+|         dan@debian.org         |  |       dmj+@andrew.cmu.edu      |
+\--------------------------------/  \--------------------------------/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
