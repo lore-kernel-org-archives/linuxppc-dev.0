@@ -1,55 +1,57 @@
-Message-ID: <42AB6BE23C29D511831E0002B3202488199989@messenger.radlan.co.il>
-From: Ofer Rashuk <OferR@Radlan.co.il>
-To: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: kernel panic while Booting 8240
-Date: Sun, 30 Sep 2001 12:19:51 +0200
+From: Paul Mackerras <paulus@samba.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="windows-1255"
-Sender: owner-linuxppc-embedded@lists.linuxppc.org
-List-Id: <linuxppc-embedded@lists.linuxppc.org>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <15287.46303.790901.552531@cargo.ozlabs.ibm.com>
+Date: Mon, 1 Oct 2001 10:12:15 +1000 (EST)
+To: "KOBAYASHI R. Taizo" <tkoba@ike-dyn.ritsumei.ac.jp>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: Problem serial.c on module
+In-Reply-To: <20010928.143301.74755222.tkoba@ike-dyn.ritsumei.ac.jp>
+References: <20010928.143301.74755222.tkoba@ike-dyn.ritsumei.ac.jp>
+Reply-To: paulus@samba.org
+Sender: owner-linuxppc-dev@lists.linuxppc.org
+List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi
-I'm using 8240 on a costume board with Monta Vista LSP.
-while booting after system has been mounted i am receiving an Kernel Panic.
-I'm not sure what parameters i need to pass to init.
-dose any body have an idea?
+KOBAYASHI R. Taizo writes:
 
+> I examined this problem and had a question.
+> Dose it need following branch?
+> ================L5375==
+> #ifdef CONFIG_ALL_PPC
+>         /* early PowerMacs would machine check */
+>         if (_machine == _MACH_Pmac) {
+>                 printk(KERN_INFO "serial.c: nothing to do on PowerMacs.\n");
+>                 return 0;
+>         }
+> #endif
+> =======================
 
-eth0: OEM i82557/i82558 10/100 Ethernet, 00:A0:F7:33:34:35, IRQ 18.
-  Board assembly 000101-001, Physical connectors present: MII
-  Primary interface chip i82555 PHY #1.
-  Forcing 10Mbs half-duplex operation.
-  General self-test: passed.
-  Serial sub-system self-test: passed.
-  Internal registers self-test: passed.
-  ROM checksum self-test: passed (0xd6a8ca49).
-NET4: Linux TCP/IP 1.0 for NET4.0
-IP Protocols: ICMP, UDP, TCP
-IP: routing cache hash table of 512 buckets, 4Kbytes
-TCP: Hash tables configured (established 4096 bind 4096)
-Sending BOOTP requests.... OK
-IP-Config: Got BOOTP answer from 176.210.1.1, my address is 176.210.100.174
-NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-Looking up port of RPC 100003/2 on 176.210.100.112
-Looking up port of RPC 100005/2 on 176.210.100.112
-VFS: Mounted root (nfs filesystem).
-Freeing unused kernel memory: 180k init 4k openfirmware
-Kernel panic: No init found.  Try passing init= option to kernel.
-Rebooting in 180 seconds..
+That code has been on my hit-list for quite a while now.  It's been
+one of those situations where someone thinks that someone else had a
+problem that was fixed by that code.  Unless someone can email me
+specifically with a situation where that code fixes a real problem,
+that code will get deleted shortly.  And if there is a real problem I
+will try to find a better way to solve it that that code.
 
+The only valid concern I have heard so far is Ben's comment that OF
+might have put some other PCI device at the I/O port addresses that
+are probed by the serial driver.  If this has actually been a problem
+for anyone I would like to hear the details.
 
-Ofer Rashuk-Rosenthal.
-Software team leader.
-RADLAN Computer Communication ltd.
-Atidim Technological Park, Blgd. 4
-Tel-Aviv 61131, Israel
+Ultimately we should move to a scheme where each platform registers
+its serial ports early on in the initialization.
 
-Tel:+972-3-7657924
-Fax:+972-3-6487368
-mailto:oferr@radlan.com
-Web : Http://www.radlan.com
+> -static int __devinit
+> +static int
+> +#ifndef MODULE
+> +__devinit
+> +#endif
+>  pci_plx9050_fn(struct pci_dev *dev, struct pci_board *board, int enable)
 
+This change is ugly and should be unnecessary.  What was this trying
+to achieve?
 
-** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
+Paul.
+
+** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
