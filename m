@@ -1,25 +1,35 @@
-Reply-To: <acurtis@onz.com>
-From: "Allen Curtis" <acurtis@onz.com>
-To: "Paul Mackerras" <paulus@au1.ibm.com>, <markc@mail.com>
+Date: Fri, 20 Sep 2002 00:12:45 -0400 (EDT)
+From: Tony Howard <tahoward@ntrnet.net>
+To: Robert E Brose II <bob@kunk.jriver.com>
 Cc: <linuxppc-dev@lists.linuxppc.org>
-Subject: RE: undefined IRQs in request_irq
-Date: Thu, 19 Sep 2002 06:46:40 -0700
-Message-ID: <NCBBIINEHIPFGJPLBEIFAEFADMAA.acurtis@onz.com>
+Subject: Re: cdrecord, cdrdao failing with scsi bus reset
+In-Reply-To: <20020920202109.14386.qmail@kunk.jriver.com>
+Message-ID: <Pine.LNX.4.33.0209192356070.1980-100000@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <15753.7943.294858.151802@argo.ozlabs.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> No.  IMO the current request_8xxirq / request_irq stuff is completely
-> bogus.  I can understand it as a temporary construction while
-> debugging stuff, but it has long outlived its usefulness.  We should
-> just use request_irq for everything, request_8xxirq should die.
+Do you know where I could find this patch (or who wrote it?)
 
-Multiple people have submitted patches to fix this but they have not made it
-into the release code. What can be done?
+Tony
+
+On Fri, 20 Sep 2002, Robert E Brose II wrote:
+
+>
+> DAO doesn't work with the stock scsi drivers (at least not through
+> 2.4.18). You need to apply a patch to the kernel drivers to get
+> it working otherwise use tao.
+>
+> Bob
+> --
+> /~\ The ASCII       | Robert E. Brose II    N0QBJ
+> \ / Ribbon Campaign | http://www.qbjnet.com/
+>  X  Help cure       | mailto:bob@qbjnet.com
+> / \ HTML Email      | public key at http://www.qbjnet.com/key.html
+>
+>
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
