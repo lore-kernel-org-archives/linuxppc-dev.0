@@ -1,50 +1,53 @@
-Date: Wed, 1 Dec 1999 23:15:52 -0800
-From: Richard Henderson <rth@cygnus.com>
-To: Jason Kim <jwk2@EECS.Lehigh.EDU>
-Cc: khendricks@ivey.uwo.ca,
+Date: Thu, 2 Dec 1999 00:27:19 -0700
+From: Kevin Buettner <kev@primenet.com>
+Message-Id: <991202072719.ZM11771@saguaro.lan>
+In-Reply-To: Jason Kim <jwk2@eecs.lehigh.edu>
+        "Re: patch for problem with va-ppc.h included with egcs and gcc-2.95.2" (Dec  2, 12:20am)
+References: <4.2.2.19991130110534.00b563b0@mail.lauterbach.com>
+	<4.2.2.19991201162019.03c111b0@mail.lauterbach.com>
+	<384574A2.A003F5F6@eecs.lehigh.edu>
+	<99120114490800.04790@localhost.localdomain>
+	<38460186.8CEC249C@eecs.lehigh.edu>
+To: "gcc-patches@gcc.gnu.org" <gcc-patches@gcc.gnu.org>,
         "linuxppc-dev@lists.linuxppc.org" <linuxppc-dev@lists.linuxppc.org>,
-        "gcc-patches@gcc.gnu.org" <gcc-patches@gcc.gnu.org>,
-        "David A. Gatwood" <dgatwood@deepspace.mklinux.org>,
-        Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+        Jason Kim <jwk2@eecs.lehigh.edu>
 Subject: Re: patch for problem with va-ppc.h included with egcs and gcc-2.95.2
-Message-ID: <19991201231552.A15266@cygnus.com>
-References: <4.2.2.19991130110534.00b563b0@mail.lauterbach.com> <4.2.2.19991201162019.03c111b0@mail.lauterbach.com> <384574A2.A003F5F6@eecs.lehigh.edu> <99120114490800.04790@localhost.localdomain> <38460186.8CEC249C@eecs.lehigh.edu>
-Mime-Version: 1.0
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <38460186.8CEC249C@eecs.lehigh.edu>; from Jason Kim on Thu, Dec 02, 1999 at 12:20:06AM -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Dec 02, 1999 at 12:20:06AM -0500, Jason Kim wrote:
-> Well, xemacs-21.1.8, Mesa-3.0, gcc-2.95.2, xscreensaver-3.21, gle-2.3 and
-> ssh-2.0.13 all compile and link against the older dynamic libraries, but
-> use the va_list definition from my patch. All seem to work fine.
+On Dec 2, 12:20am, Jason Kim wrote:
 
-An interesting happy accident.  The PPC SVR4 ABI passes structures
-by reference, which at the machine level winds up looking just like
-it does when the array decomposes into a pointer.
+> Anybody have any examples of where there IS va_list passage from
+> user code to existing dynlib code (or vice versa)?  I tried a bit,
+> and couldn't find any, and am thinking that there isn't any.  If
+> that is the case, then applying the patch en-mass seems harmless way
+> for getting rid of the array based va_list once and for all.
 
-> Anybody have any examples of where there IS va_list passage from user code to
-> existing dynlib code (or vice versa)?
+How about anything that calls vprintf, vsprintf, or vsnprintf?
 
-Of course -- vfprintf.
+A more concrete example: Suppose you've compiled the perl library
+to use the old interface and then compile an application which
+uses it with your va_list interface.  Then suppose the application
+calls sv_vsetpvfn() in the perl library.  Would it work?
 
-> If that is the case, then applying the patch en-mass
-> seems harmless way for getting rid of the array based va_list once
-> and for all.
+I feel like I'm playing devil's advocate here because I would really
+like it if you (or someone) could straighten out the ppc va_list
+issues.  I've been bitten by problems similar to the ones that you've
+encountered more than once over the years.  Recently I had to fix a
+problem in gdb where it would've been nice to do a va_list copy. 
+Instead, I restructured the code so that a copy wasn't necessary.  It
+turned out to be doable in this instance, but I'm aware of some code
+in libiberty that can't be restructured so easily.  (But for some
+reason, it seems to be working now on linux/ppc.  I remember a time
+when it didn't.)
 
-Except that we're not going to do that.  We'll stay with the
-letter of the PPC SVR4 ABI law, thanks. 
+Kevin
 
-Despite what you may think, PPC is not unique in its use of an
-array definition for va_list.  Whatever changes that might could
-be made in gcc doesn't make the code in question any more correct
-pedantically, and will continue to break when you go use someone
-else's compiler.
-
-
-
-r~
+-- 
+Kevin Buettner
+kev@primenet.com, kevinb@cygnus.com
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
