@@ -1,40 +1,37 @@
-To: Miku Jha <jha_miku@yahoo.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: cross compiling gdb for ppc 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 10 Jul 2003 21:57:49 PDT."
-             <20030711045749.4201.qmail@web40306.mail.yahoo.com>
-Date: Fri, 11 Jul 2003 09:02:46 +0200
-Message-Id: <20030711070251.DEC2EC6D82@atlas.denx.de>
+Date: Fri, 11 Jul 2003 00:27:27 -0700
+From: Peter Ryser <Peter.Ryser@xilinx.com>
+Subject: Re: Linux on the Virtex II Pro?
+To: "Kerl, John" <John.Kerl@avnet.com>
+Cc: "'Charles Lockhart'" <lockhart@jeans.ifa.hawaii.edu>,
+	linuxppc-embedded@lists.linuxppc.org
+Message-id: <3F0E66DF.2BD1A6CA@xilinx.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+References: <C7FFFEA58B43D311920D0004ACE5333F0F53583A@amer25.avnet.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <20030711045749.4201.qmail@web40306.mail.yahoo.com> you wrote:
->
-> When I run the gdb to debug the core file it somehow
-> refers to the libraries in the /lib path
-> the libraries for my target machine are somewhere
-> else.
->
-> I wanted to know if there is any option or workaround
-> to make gdb point to correct libraries.
+> Current Linux/PPC trees already
+> include support for 405 as well as the Xilinx ML300 board.
+> (The Linux/PPC tree I got had slightly stale libgen'ed
+> code, which I simply replaced with current libgen'ed code
+> from my XPS project.)  I can send you a patch file on request.
 
-RTFM.
+At the beginning of July the linuxppc_2_4_devel tree has been updated with the
+drivers shipping with EDK 3.2 SP2. Further, all necessary changes have been
+pushed to move from V2PDK to EDK (interrupt controller bit ordering, System ACE
+byte/word addressing, etc.).
 
-See especially the "solib-absolute-prefix" variable.
+Unfortunately, the on-going changes to the OCP implementation (not Virtex-II
+Pro related) break the kernel compilation for ML300.
+
+- Peter
 
 
-Best regards,
+----
+http://www.xilinx.com/ml300
+http://www.xilinx.com/edk
 
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-What the gods would destroy they first submit to  an  IEEE  standards
-committee.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
