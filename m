@@ -1,51 +1,32 @@
-Date: Tue, 9 Nov 1999 20:44:35 -0800 (PST)
-From: "David A. Gatwood" <dgatwood@mvista.com>
-To: Doomsday Machine <pogtal@erols.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: OffTopic: Is the PowerBook 145d anygood?
-In-Reply-To: <3828F478.3D2CD022@erols.com>
-Message-ID: <Pine.LNX.3.96.991109204333.13037N-100000@mvista.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 10 Nov 1999 00:42:25 -0500
+Message-Id: <199911100542.AAA08374@tiktok.cygnus.com>
+From: Michael Meissner <meissner@cygnus.com>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Linux 2.2.13 on an original PowerStack-I
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 9 Nov 1999, Doomsday Machine wrote:
+I have an original PowerStack-I (66 Mhz 603 with no cache) that has
+been sitting idle since about January, and I thought I would turn it
+into a web server.  I did the usual boot with my carefully preserved
+FD_SETUP, base tools, build tools, FD_BOOT diskettes, and set up a R4
+system, and tried to boot with the 2.2.13 kernel I'm running on my
+PowerStack-II (a 'UTAH' 200 Mhz 604e, 512K Cache).  It seemed to fail
+miserably looking for hda/hdb.  Is there a known patch to make the
+older PowerStack-I boot?  I vaguelly recall having this problem except
+reversed in the January time frame (standard kernel would boot on the
+older machine but not boot on the newer machine, but there was a patch
+available to make it boot on the new machine which broke the old
+machine -- evidently that patch went into the tree).  Ideally, I could
+run the same kernel on both machines, but I could live with different
+kernels.
 
-> "David A. Gatwood" wrote:
-> 
-> > On Tue, 9 Nov 1999, Doomsday Machine wrote:
-> >
-> > > Well, besides it being completely off topic, the 145b is seriously
-> > > outdated.  It's fine for wordprocessing (I guess) but not much else.  I
-> > > guess if you really wanted to, you could probably load mklinux on it,
-> >
-> > Umm... MkLinux only works on PPC machines.  That's a 68k.  Can run NetBSD,
-> > though.
-> 
-> Didn't they have a version of mklinux for 68k?  Or maybe that was a link to
-> the linux/68k project...oh well, it's been a while since I ran mklinux on my
-> 8500 :)
+Thanks in advance.
 
-Yeah, that's a linux/68k project link.
-
-
-> > > but that would be some work, cause it doesn't have a cdrom, and I don't
-> > > know if it can get ethernet hookups.
-> >
-> > Not unless you happen to find one of the old Cabletron Ethernet to SCSI
-> > adapters.  Asante's aren't supported under *BSD for usual corporate
-> > reasons.
-> 
-> Yeah.  I suppose if you purchased the 145b, you could take out a serial
-> port, hardwire an ethernet port to it, write your own drivers...;-) 
-
-True, it did have two.  If you're really enterprising, you might be able
-to go above 56k....  ;-)
-
-
-David
-
+-- 
+Michael Meissner, Cygnus Solutions
+PMB 198, 174 Littleton Road #3, Westford, Massachusetts 01886
+email: meissner@cygnus.com	phone: 978-486-9304	fax: 978-692-4482
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
