@@ -1,25 +1,39 @@
-Date: Wed, 23 Feb 2000 10:27:47 -0500 (EST)
-From: Brian <gilmanb@dipswitch.penguinpowered.com>
+Message-ID: <B0CAE42C9EE0D311AAAD00500422FC6302CD7B@iis000.microdata.fr>
+From: Patrick Lerda <Lerda@microprocess.com>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: vdkbuilder on PPC?
-In-Reply-To: <38b3effd38fb6775@amyris.wanadoo.fr> (added by amyris.wanadoo.fr)
-Message-ID: <Pine.LNX.4.21.0002231025570.29076-100000@dipswitch.penguinpowered.com>
+Subject: Linux 2.3.47 .... PCI boards... Linux beta in general
+Date: Wed, 23 Feb 2000 17:36:05 +0100
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello out there in Linux Land....
+I've tried linux 2.3.47 on my PowerPC 740 board, the core seems working but
+a lot of drivers don't work properly.
+
+serial:	linux see my two ISA 16C550 intel compatible, but console go only to
+framebuffer
+
+PCI boards:
+	Adaptec SCSI, start and crash when HD is found. OOPS here
+	IDE	idem
+
+	Ethernet NE2000 board found, fail later.
+	Tulip, found fail later.
 
 
-	Has anyone tried to compile/use vdkbuilder under LinuxPPC? I
-successfully compiled the sources but keep getting "plugin" runtime
-errors....Has anyone else experienced the same thing? Thanks in advance!
+otherwise:
+	USB core seems to work
 
-						Brian Gilman
-						Scientific Programmer
-						MIT
+
+A lot of problems, probably only endian related...
+
+
+If you have success with theses kernels.
+
+
+Patrick LERDA
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
