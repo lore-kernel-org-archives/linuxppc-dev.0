@@ -1,39 +1,54 @@
-Date: Tue, 18 Apr 2000 20:20:53 +0200 (METDST)
-From: Gabriel Paubert <paubert@iram.es>
-To: David Monro <davidm@amberdata.demon.co.uk>
-cc: Linux/ppc Dev List <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: prep interrupt routing
-In-Reply-To: <38FB7B28.9DFFDBE1@amberdata.demon.co.uk>
-Message-ID: <Pine.HPX.4.10.10004182018020.19933-100000@gra-ux1.iram.es>
+Message-ID: <38FD00AA.6C423CB@fla.fujitsu.com>
+Date: Tue, 18 Apr 2000 17:41:14 -0700
+From: "Francis G. McCabe" <fgm@fla.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: Putting linuxPPC on my new pismo
+Content-Type: multipart/mixed;
+ boundary="------------2CAB28855FFAEDF5B06CBECF"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> The PCI-ISA bridge is the "IBM Fire Coral" chip - does anybody actually
-> have a part number for this chip so I can look it up on IBM's site?
+This is a multi-part message in MIME format.
+--------------2CAB28855FFAEDF5B06CBECF
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-Open your box and look at the chip ?
+I realize that there has been a lot of discussion about this. However, I
+havent seen my problem mentioned.
 
-> Output from the above command:
-> prozac:~# lspci -xxxsb.0
-> 00:0b.0 ISA bridge: IBM Fire Coral (rev 02)
-> 00: 14 10 0a 00 07 00 00 04 02 00 01 06 00 00 00 00
-> 10: 01 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 30: 00 00 00 00 00 00 00 00 00 00 00 00 ff 00 00 00
+When I try to install linuxPPC 2000 on my brand new PB2000, I get the
+error:
 
-Standard header, not much to say except for the 0xff which looks crazy.
+hda: lost interrupt
 
-> 40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 50: 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+Any suggestions?
 
-Only one non zero bit in the whole device specific area. It does not look
-like you can do much about interrupt routing if it's similar to
-WinBond and Intel bridges.
+I am reasonably familiar with linux on intel systems, and have installed
+linuxPPC on my wife's iMac, but I dont know where to go from here...
+--------------2CAB28855FFAEDF5B06CBECF
+Content-Type: text/x-vcard; charset=us-ascii;
+ name="fgm.vcf"
+Content-Description: Card for Francis G. McCabe
+Content-Disposition: attachment;
+ filename="fgm.vcf"
+Content-Transfer-Encoding: 7bit
 
-	Gabriel.
+begin:vcard
+n:McCabe;Francis
+tel;cell:650 740 6673
+tel;work:408 530 4549
+x-mozilla-html:FALSE
+org:Fujitsu Labs of America
+adr:;;595 Lawrence Expressway;Sunnyvale;CA;94086;USA
+version:2.1
+email;internet:fgm@fla.fujitsu.com
+x-mozilla-cpt:;9040
+fn:Francis G. McCabe
+end:vcard
+
+--------------2CAB28855FFAEDF5B06CBECF--
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
