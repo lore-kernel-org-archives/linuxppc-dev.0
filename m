@@ -1,8 +1,8 @@
-Message-ID: <A1C99F4731CAD111BA5400A024FC3B0CBE046E@ESBILMA01EDCGE>
+Message-ID: <A1C99F4731CAD111BA5400A024FC3B0CBE047C@ESBILMA01EDCGE>
 From: "Billalabeitia, Jose Carlos (IndSys, GEPM)" <jc.billalabeitia@indsys.ge.com>
 To: linuxppc-embedded@lists.linuxppc.org
 Subject: Re: Formatting JFFS2 Flash
-Date: Thu, 14 Mar 2002 03:13:53 -0500
+Date: Thu, 14 Mar 2002 03:33:55 -0500
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
