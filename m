@@ -1,31 +1,26 @@
 From: "Rob Taylor" <robt@flyingpig.com>
 To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Anybody get 2.4 successful with sandpoint?
-Date: Wed, 27 Sep 2000 10:01:28 +0100
-Message-ID: <001301c02861$8583a5b0$b400a8c0@eventhorizon>
+Subject: RE: switching linux kernels
+Date: Wed, 27 Sep 2000 10:31:56 +0100
+Message-ID: <001801c02865$c71c1c10$b400a8c0@eventhorizon>
 MIME-Version: 1.0
 Content-Type: text/plain;charset="iso-8859-1"
-In-Reply-To: <39D0D4EC.44A255DB@mvista.com>
+In-Reply-To: <39D18CAD.FDC505E0@mvista.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->
-> There is a sandpoint port to 2.4.0-test2 by MontaVista sitting at
-> ftp://www.mvista.com/pub/Area51/sandpoint-8240/sandpoint.linux.tar.gz
->
-> It can be built from with the 8240 tools from the MontaVista 1.2 CDK.  It
-> works on an 8240 and a 755/107 combo but there are some outstanding problems
-> too that I have not yet had time to look at.  Take a look, it may save you
-> some time.
+> Please don't use in/out macros on PowerPC....especially on 8xx their
+> underlying address arithmetic will likely break more things that it
+> fixes.
+> Use memory mapped I/O (readb/writeb, etc.) and ioremap().....
 
-I'm currently porting ppcboot to 8240-sandpoint, and using your kernel sources
-as a reference for a couple of things (epic, winbond).
-
-Out of interest what outstanding problems are there?
+presumably this is due to int in/out macros adding _IO_BASE to the pointer? So
+am I right in thinking that it makes sense to use in/out for ISA accesses (if
+_IO_BASE is set correctly for your platform) and readb/writeb/.. for the rest of
+your memory mapped registers?
 
 Thanks,
-
 Rob Taylor
 Flying Pig Systems
 
