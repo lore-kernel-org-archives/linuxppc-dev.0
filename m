@@ -1,26 +1,30 @@
-Date: Mon, 27 Aug 2001 09:07:29 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: linuxppc-commit@source.mvista.com,
+Message-ID: <3B8A8F26.EC447C4@mvista.com>
+Date: Mon, 27 Aug 2001 14:19:18 -0400
+From: Dan Malek <dan@mvista.com>
+MIME-Version: 1.0
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-commit@source.mvista.com,
 	linuxppc-dev@lists.linuxppc.org
-Subject: ppc_htab.c again
-Message-ID: <20010827090729.B6925@cpe-24-221-152-185.az.sprintbbd.net>
-Mime-Version: 1.0
+Subject: Re: ppc_htab.c again
+References: <20010827090729.B6925@cpe-24-221-152-185.az.sprintbbd.net>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hey all.  I notice paul made ppc_htab.c compile on all arches again.  I'm
-not about to undo this or anything, but I still don't agree with it.  It
-does _not_ do anything when running on !6xx, more more specifically
-!CPU_FTR_L2CR.  We -EFAULT on this case before we do anything.  I _think_
-but I'm not totally sure that the bits which were printed out before, in the
-stock code are bogus.  I also think that if we are going to put in other,
-useful infos on all procs, we should put it in another file (src and /proc).
-Just my 2 cents.
+Tom Rini wrote:
+>
+> Hey all.  I notice paul made ppc_htab.c compile on all arches again.  I'm
+> not about to undo this or anything, but I still don't agree with it.
 
---
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+Just look at it carefully.  In the past, on processors without HPTE
+the code was almost one big no-op (due to conditional tests, etc.) but
+somewhere there were a few sublte generic operations (like tlbie) that
+were important to (nearly) all processors.  I often took advantage of
+that.  The code would compile, no #ifdef necessary, generic functions
+called, and in the end "the right thing" would happen :-).
+
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
