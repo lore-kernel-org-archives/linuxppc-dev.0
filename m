@@ -1,18 +1,19 @@
-Return-Path: <wd@denx.de>
-Received: from mailout08.sul.t-online.com (mailout08.sul.t-online.com
-	[194.25.134.20]) by ozlabs.org (Postfix) with ESMTP id D0CDE2BF10
+Return-Path: <jangiels@speakeasy.net>
+Received: from mail4.speakeasy.net (mail4.speakeasy.net [216.254.0.204])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 19E2E2BF07
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 31 Dec 2004 11:23:26 +1100 (EST)
+	Fri, 31 Dec 2004 11:34:04 +1100 (EST)
+From: Jeff Angielski <jangiels@speakeasy.net>
 To: "Povolotsky, Alexander" <Alexander.Povolotsky@marconi.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 30 Dec 2004 17:27:53 EST."
-	<313680C9A886D511A06000204840E1CF0A647439@whq-msgusr-02.pit.comms.marconi.com>
-Date: Fri, 31 Dec 2004 00:08:34 +0100
-Sender: wd@denx.de
-Message-Id: <20041230230839.1A1B7C1430@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+In-Reply-To: <313680C9A886D511A06000204840E1CF0A647439@whq-msgusr-02.pit.comms.marconi.com>
+References: <313680C9A886D511A06000204840E1CF0A647439@whq-msgusr-02.pit.comms.marconi.com>
+Content-Type: text/plain
+Message-Id: <1104452884.13899.6.camel@nighteyes.localdomain>
+Mime-Version: 1.0
+Date: Thu, 30 Dec 2004 19:28:04 -0500
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 Subject: Re: inflate returned FFFFFFFD - what does this error exactly mean ?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,40 +25,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Alex,
-
-in message <313680C9A886D511A06000204840E1CF0A647439@whq-msgusr-02.pit.comms.marconi.com> you wrote:
+On Thu, 2004-12-30 at 17:27, Povolotsky, Alexander wrote:
+> Hi,
 > 
 > After few days of wondering through debugging (and with great help) I fixed
 > (by inserting watch dog resets into beginning of  while loops in zlib
 > functions) my first problem -strange reboot failures during decompression of
-
-You know why I recommended U-Boot :-)
-
+> the kernel image by the bootloader.
+> However my luck expired beyond this fix so far ... ;-).
 > Now I am getting "controlled" failure (during the same decompression as
 > described above):
-> 
-> I_BAD
-> return Z_DATA_ERROR
-> after zlib_inflate
-> inflate returned FFFFFFFD
-> exit
-> 
-> what does this error exactly mean ?
 
-Most probably it means that the areas where the compressed  image  is
-stored   and   to  where  you  copy  the  uncompressed  code  to  are
-over-lapping. Try storing the compressed image at  a  higher  address
-(like 0x400000 or so).
+A quick suggestion would be try increase the load address that you are
+using for loading the kernel image.  You might have a slight bit of
+overlap that is only showing up after the memory contains non-zero
+values.
 
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-How many seconds are there in a year? If I tell you there are 3.155 x
-10^7, you won't even try to remember it. On the other hand, who could
-forget that, to within half a percent, pi seconds is  a  nanocentury.
-                                               -- Tom Duff, Bell Labs
+Jeff Angielski
