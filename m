@@ -1,10 +1,10 @@
-Message-ID: <40843C7A.10604@lucent.com>
-Date: Mon, 19 Apr 2004 14:54:18 -0600
+Message-ID: <40843D73.9090500@lucent.com>
+Date: Mon, 19 Apr 2004 14:58:27 -0600
 From: Mike Wellington <wellington@lucent.com>
 MIME-Version: 1.0
 To: Peter Ryser <Peter.Ryser@xilinx.com>
 Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: ppc4xx_find_bridges( ) hangs kernel on Xilinx ML300  (PCI)
+Subject: PCI - i *thought* the edk2 was what I was using!
 References: <1b6001c417f6$229c2a70$3cc8a8c0@epro.dom> <40842D14.9040708@lucent.com> <40843B02.6080907@xilinx.com>
 In-Reply-To: <40843B02.6080907@xilinx.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
@@ -12,9 +12,15 @@ Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Awesome!  You Rock!
+Peter - I thought that the edk2 example from the link
+you gave me was the pcore I was using.  I will start
+over from scratch and try again.
 
--mikew
+My machine is busy doing some big  downloads/backups
+so it will be tonite/tomorrow before I can verify
+and report back.
+
+
 
 
 
@@ -34,38 +40,5 @@ Peter Ryser wrote:
 > - Peter
 >
 >
-> Mike Wellington wrote:
->
->>
->> Hi-
->>   I am trying to port the Xilinx PCI code to
->> an embedded linux kernel.  The code calls
->> ppc4xx_find_bridges( ) during the kernel initialization
->> and hangs the kernel.
->>
->>   I built the GPL 2.4 kernel from the Open Source
->> archives and it hangs also.
->>
->>   Then I copied ppc405_pci.c from the GPL source
->> to my kernel tree and copied  head_4xx.S from the
->> GPL source to my kernel tree and it still
->> hangs.
->>
->>   I'm starting to wonder if there is something
->> wrong with the PCI support for the Xilinx OCP PCI
->> core.
->>
->>   Does anybody have a working PCI device on a
->> Xilinx Virtex-II Pro using the Xilinx-supplied
->> PCI core?
->>
->> -mike wellington
->>  wellington@lucent.com
->>  anyplatform@bithead.com
->>
->>
->>
->>
-
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
