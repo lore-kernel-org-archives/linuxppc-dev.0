@@ -1,36 +1,38 @@
-Message-ID: <3AFC342C.8C224CD8@mvista.com>
-Date: Fri, 11 May 2001 14:49:16 -0400
-From: Dan Malek <dan@mvista.com>
+Message-ID: <B25E2E5A003CD311B61E00902778AF2A02044682@SERVER1>
+From: Brian Kuschak <brian.kuschak@skystream.com>
+To: "'Gabriel Paubert'" <paubert@iram.es>
+Cc: "'Dan Malek'" <dan@mvista.com>, Eli Chen <eli@routefree.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: RE: dcache BUG()
+Date: Fri, 11 May 2001 17:44:19 -0700
 MIME-Version: 1.0
-To: Gabriel Paubert <paubert@iram.es>
-Cc: frowand@mvista.com, Brian Kuschak <brian.kuschak@skystream.com>,
-	Eli Chen <eli@routefree.com>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: dcache BUG()
-References: <Pine.HPX.4.10.10105111119110.29518-100000@gra-ux1.iram.es>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Gabriel Paubert wrote:
->
+Hi Gabriel,
 
-> Nother do 601, 603, and a lot of others...
+I tried your patch, but as you expected it didn't fix the problem.  I ran it
+twice, once with my kernel as I got it from MontaVista, and once with the
+atomic_set() function using regular stw (as it is in the offical sources, I
+believe).
 
-Oh, I believe they do..........but, I haven't been wrong lately,
-so maybe it's my turn again :-).
+In both cases I got the de_put messages in a few minutes, and once I got the
+dentry BUG().
 
-> For a proof I just tested the sequence lwarx + stw + sync ....
+I think Eli might have had better luck, but I'm not sure how long he was
+running the test.
 
-OK, so I learned my one thing for the day, I'm going home now...
-
-> Not even "in some other contexts".
-
-That was a bad choice of words on my part.  I should have used
-"function scope" or something like that.  I was responding to about
-three different messages at the time, sorry.
+Regards,
+Brian
 
 
-	-- Dan
+
+> Patch follows, it includes my previous patch. I don't think that it will
+> solve your problem, unless you happen to use a preemptible kernel.
+> While I was at it,  I removed the useless stwcx. in transfer_to_handler.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
