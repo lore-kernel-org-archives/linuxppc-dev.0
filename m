@@ -1,38 +1,38 @@
-From: "Donald MacArthur" <dmacarth@ufl.edu>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: Embedded Planet RPX LICC_E board and Timesys
-Date: Fri, 6 Dec 2002 07:24:48 -0500
-Message-ID: <NDBBIHDFKLJKGJJGMFJOIEHJCGAA.dmacarth@ufl.edu>
+Message-ID: <3DF0A39D.2090401@intracom.gr>
+Date: Fri, 06 Dec 2002 15:18:21 +0200
+From: Pantelis Antoniou <panto@intracom.gr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Regarding consistent_alloc
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I am currently working on a research project involving
-the RPX MPC850SR LICC_E board from Embedded Planet.
+Hi
 
-I tried the BSP provided by Timesys for the 850
-but after tftping the image to the board and
-'go' nothing happened.  I spoke to the reps from
-timesys and embedded planet and found that the
-850 BSP was compiled for the LITE_CW versions of the
-Embedded Planet boards.  These differed due to the
-existence of NVRAM and an RTC.
+Can someone tell what is the deal with these functions?
 
-I recompiled the kernel using several different configurations
-and was able to get the kernel to boot when the NVRAM option
-was turned off.  I can boot the kernel and load the NFS
-root with the initrd and ramdisk options turned off but
-when I enable these options, the kernel stops booting at
-the ramdisk creation.
+consistent_alloc et. al. are very useful to me now that I'm
+cleaning up my QMC driver. But they are exported.
 
-Can anyone provide any insight about this problem?
+Is there any reason why they are not exported for use by
+modules?
 
-Thank You
-Donald MacArthur
-dmacarth@ufl.edu
+Also they appear to be tied to the PCI bus, a reduntant
+dependancy IMHO.
+
+Regards
+
+--
+Pantelis Antoniou
+INTRACOM S.A. Greece
+
+"> I read slashdot because it's so hard to find
+ >> anything else intelligent to read.
+
+Keep searching..."
+-- as seen on slashdot --
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
