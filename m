@@ -1,25 +1,40 @@
-From: kd@flaga.is
+Message-ID: <373CD376.7B669411@worldnet.fr>
+Date: Sat, 15 May 1999 03:52:54 +0200
+From: blokos <blokos@worldnet.fr>
+MIME-Version: 1.0
 To: linuxppc-dev@lists.linuxppc.org
-Message-ID: <00256772.00016CF9.00@notes.flaga.is>
-Date: Sat, 15 May 1999 00:15:31 +0000
-Subject: Re: MBX (MPC860) Question
-Mime-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Subject: maccoach and linux ppc
+References: <199905141333.PAA29803@Bespin.worldnet.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hello again,
+Support wrote:
 
-The solution for me was to unplug the hardwaredebugger. Then all page
-faults stopped and everything
-seems to be working.
+> Maccoach is a great product that permit your server to reboot
+> automatically when it crashes... but it works only with Mac os. So i
+> ve sent an email to Maccoach support and that is the answer
 
-A nice side effect is that the hardware seems to be runniing at least 3-4
-times faster than with the dam thing connected. 8-)
+> >hello,
 
-K.D.
+> >our server is a Power mac with linux PPC,
+> >is your product could work with this system ??
+> >
+> >it will be very great !!
+>
+> We don't have a linux PPC version available.
+>
+> However we'll be happy to supply all technical information needed to
+> anyone willing make a linux PPC driver.
+>
+> Regards,
+>
+> Henk Kampman
+> Neuron Data Systems
+> http://www.neuronsys.com/
 
+ If some developer would work on it, it will be very cool !!!
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
