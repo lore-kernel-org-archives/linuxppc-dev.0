@@ -1,42 +1,27 @@
-Subject: Re: Changes to "The plan"
-To: akuster@dslextreme.com
-Cc: linuxppc-embedded@lists.linuxppc.org
-Message-ID: <OFA1123D85.667B22FB-ON85256C06.004182DD@raleigh.ibm.com >
-From: "Ralph Blach" <rcblach@us.ibm.com>
-Date: Tue, 30 Jul 2002 08:02:42 -0400
-MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <004501c237d3$92952430$db00000a@dejanj>
+From: "Dejan Jovanovic" <dejanj@erlangtech.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: SBC8260 - bdi.cfg
+Date: Tue, 30 Jul 2002 09:15:35 -0500
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Armin
+Hello,
 
-It has always been my contention the the 4xx should be organized in the
-following structure
-Core
-Chip
-board
+Is there somebody that has a working BDI configuration file
+for the SBC8260 board?
 
-This would tree would then reflect the reallity of chip design methodology.
-the 405 now has many variants
-so it would be
-405 Core
-   Chip
-      405CR
-      405GP
-      Board
-                 Walnut
-                  .
-                  .
-                  .
-      NPE405L
-       .
-       .
-       .
+I have deleted a working boot loader on the board and now I
+have trouble burning new bootloader image on the board.
 
+If anyone has actually wrote the BDI configuration file for
+this board without having any bootloader on it, can you
+please post it here.
 
-Chip
+Thanks
+Dejan Jovanovic
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
