@@ -1,101 +1,67 @@
-Message-ID: <38DF9AD6.7E08D346@pop.agri.ch>
-Date: Mon, 27 Mar 2000 19:31:12 +0200
-From: Andreas Tobler <toa@pop.agri.ch>
-Reply-To: toa@pop.agri.ch
-MIME-Version: 1.0
-To: Linux-Dev <linuxppc-dev@lists.linuxppc.org>
-Subject: pci-detection of Cardbus cards.
-Content-Type: text/plain; charset=us-ascii
+To: gewrgiou@imbc.gr
+Cc: khendricks@ivey.uwo.ca, ajoshi@shell.unixbox.com,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: Some issues to resolve with XFree 4.0 yet
+In-Reply-To: Your message of "Mon, 27 Mar 2000 14:09:03 +0300 (EEST)"
+	<Pine.LNX.4.21.0003260204250.15969-100000@idd-01.imbc.gr>
+References: <Pine.LNX.4.21.0003260204250.15969-100000@idd-01.imbc.gr>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20000328024133B.roikawa@rr.iij4u.or.jp>
+Date: Tue, 28 Mar 2000 02:41:33 +0900
+From: Ryuichi Oikawa <roikawa@rr.iij4u.or.jp>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi all,
+From: Kostas Gewrgiou <gewrgiou@imbc.gr>
+Subject: Re: Some issues to resolve with XFree 4.0 yet
 
-this is mail nbr 2 concerning pci-patches from Michel. I had to split it
-up, since there are two topics.
-
-I hoped to get some support in detecting the CardBus card I have
-correctly. I tried it on a 2399p3, the lspci -vv shows the same as below
-except the function of the card.
-
-
-What I try to get working is the following:
-
-excerpt of lspci -vv from a 2215p14 kernel patched with this patch:
-
-http://www.rr.iij4u.or.jp/~roikawa/others.html
-
-I don't know if the numbering below is correct: 01:00.0 for the first
-function of the device.
-Also, how would it be best to integrate the detection of such cards? In
-the patch above the special bridge TI1131 was hardcoded. But as I know,
-other PB's (Lombard) uses different (TI1211 or so) chips.
-Is it necessary to code all different chips or is there a generaL approach?
+> > You then asked me to look at getting it to work without using the FBDev.  Given
+> > my earlier patch which calculates XCLK using OF supplied values in the pll
+> > registers, all you need to do to use it without FBDev is to simply comment out
+> > the calls to vgaHWSave and vgaHWRestore in r128_driver.c.
+> >
+>
+>   You will also need to add code to switch the framebuffer in the right
+> endian for the depth and probably disable the int10 module.
+ Yes, you're right. The r128 driver is now working fine on my B&W G3 without
+fbdev support in 8/15/16/24 bit depth so far, except one problem -- offb
+console becomes blank screen on VT switch(I'm not using aty128fb). r128 driver
+doesn't seem to restore the original state perfectly. But this isn't harmless
+because I have running second and third head(with xinerama).
 
 
-
----lspci2215p14---
-00:13.0 CardBus bridge: Texas Instruments PCI1131 (rev 01)
-	Subsystem: Unknown device 104c:ac15
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR- FastB2B-
-	Status: Cap- 66Mhz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR-
-	Latency: 32 set, cache line size 08
-	Interrupt: pin A routed to IRQ 22
-	Region 0: Memory at 81803000 (32-bit, non-prefetchable)
-	Bus: primary=00, secondary=01, subordinate=04, sec-latency=64
-Memory window 0: 90000000-90005000
-	BridgeCtl: Parity- SERR- ISA- VGA- MAbort- >Reset- 16bInt- PostWrite+
-	16-bit legacy interface ports at 0007
-
-00:13.1 CardBus bridge: Texas Instruments PCI1131 (rev 01)
-	Subsystem: Unknown device 104c:ac15
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR- FastB2B-
-	Status: Cap- 66Mhz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR-
-	Latency: 32 set, cache line size 08
-	Interrupt: pin B routed to IRQ 23
-	Region 0: Memory at 81802000 (32-bit, non-prefetchable)
-	Bus: primary=00, secondary=06, subordinate=09, sec-latency=64
-	BridgeCtl: Parity- SERR- ISA- VGA- MAbort- >Reset+ 16bInt- PostWrite-
-	16-bit legacy interface ports at 0007
-
-01:00.0 Ethernet controller: Xircom: Unknown device 0003 (rev 03)
-	Subsystem: Unknown device 115d:1181
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr+
-Stepping- SERR- FastB2B-
-	Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR-
-	Latency: 20 min, 40 max, 40 set
-	Interrupt: pin A routed to IRQ 255
-	Region 0: I/O ports at <unassigned>
-	Region 1: Memory at 90004800 (32-bit, non-prefetchable)
-	Region 2: Memory at 90004000 (32-bit, non-prefetchable)
-	Expansion ROM at 90000000
-	Capabilities: [dc] Power Management version 1
-		Flags: PMEClk- AuxPwr+ DSI- D1+ D2+ PME+
-		Status: D0 PME-Enable- DSel=0 DScale=2 PME-
-
-01:00.1 Serial controller: Xircom: Unknown device 0103 (rev 03) (prog-if 02)
-	Subsystem: Unknown device 115d:1181
-	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR- FastB2B-
-	Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR-
-	Interrupt: pin A routed to IRQ 255
-	Region 0: I/O ports at <unassigned> [disabled]
-	Capabilities: [dc] Power Management version 1
-		Flags: PMEClk- AuxPwr+ DSI- D1+ D2+ PME+
-		Status: D0 PME-Enable- DSel=0 DScale=2 PME-
-
----end---
+>   Thats a good question, right now they don't work at all under ppc for
+> drivers that don't switch vgahw to MMIO.
+ So I disabled all vgahw access to prevent seg. fault. I think Rage128
+VGA register access is not necessary at least for powermacs.
 
 
-Thanks for any hints/help
+> > I think the only outstanding issue on r128 is the damn flashing white square
+> > when cursor images are changed.  I have looked and looked at this but I can't
+> > figure out why this is happening unless a big white square is someone's
+> > idea of a transparent cursor! ;-)
+> >
+>   This is strange, from what i see in the driver it hides the cursor before
+> loading the image so i can't imagine why you get the artifacts
+ Though I could be wrong, it may not be strange. R128LoadCursorImage()
+starts display cursor immediately after the cursor image is written
+to the frame buffer, but rage128 frame buffer write is always FIFO'ed
+while CRTC write is never FIFO'ed. So it'll be possible to start display
+cursor before the image write is complete.
+ In my case I commented out cursor ON/OFF code in R128LoadCursorImage()
+since mid-level routine calls R128HideCursor/R128ShowCursor before and
+after cursor image is loaded. I haven't seen this cursor flashing yet.
 
-Andreas
+BTW, I noticed an interesting x11perf score. x11perf -scroll500 marked ~300/sec
+for ATI Rage128RE connected to 66MHz bus on B&W G3 rev.1, but ~600/sec for an
+old Matrox Millennium II to 33MHz bus, measured at 32bpp/24bit depth.
+
+
+Regards,
+
+Ryuichi Oikawa
+roikawa@rr.iij4u.or.jp
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
