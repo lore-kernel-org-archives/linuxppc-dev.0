@@ -1,60 +1,39 @@
-Date: Wed, 30 Jun 1999 08:46:35 -0500 (CDT)
-From: Kevin Puetz <kp11901@mail.cedarnet.org>
-To: Eric Dorland <dorland@lords.com>
-cc: Kevin Puetz <puetz@penguinpowered.COM>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Problems with the atyfb driver on Power Mac G3
-In-Reply-To: <l03130302b39f629aff60@[209.226.106.187]>
-Message-ID: <Pine.SGI.3.95.990630084239.6543C-100000@www.cedarnet.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <199906301412.JAA27511@www2.tuckeris.com>
+Date: Wed, 30 Jun 1999 09:01:18 -0500
+Subject: LinuxPPC R5 on PowerBook Series 1999
+From: "Charles A. Jolley" <charles.jolley@zeratec.com>
+To: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-nOn Wed, 30 Jun 1999, Eric Dorland wrote:
+Hi all:
+    I have not been able to find any data on the status of running Linux on
+the new PowerBooks released in May.  I downloaded the standard R5
+distribution installer last night, however, and tried to run it.  After
+clicking the "Linux" button on BootX, it wrote a few lines to the console
+and then the screen appeared to shut off.  The hard drive was still clicking
+away, however, so I think the kernel might have still been running.
 
-> >1st thing for both of you (and other users) - STAY AWAY FROM 2.3.x UNLESS
-> >YOU KNOW WHY YOU ARE MOVING TO IT!
-> 
-> I don't use them. I just booted with 2.3.6 once because it contained the
-> latest atyfb driver, to see if it would help. It didn't.
+    So, I have two questions:
 
-Geert suggested just moving atyfb.c from 2.3.6 into 2.2.10 - that is
-definately less risky. But when Linus says developmental release, it
-means this version would never have left the project team in a normal
-software company.
+1.  Is there anyone else who is working on getting Linux running on these
+models or are there any additional updates beyond the R5 distribution that I
+should get and try and...
 
-> >On a happier note, I checked out 2.2.10 today (use -rlinux_2_2 if you use
-> >cvs to switch branches), and built it, and the dancing pixels and other
-> >artifacts are gone (on a rev 1 G3 desktop with Rage II+, but I had the same
-> >symptoms, so maybe the same fix will help).
-> 
-> I'm glad someone's having some luck :) What settings is the kernel
-> reporting (mlck, pll, etc.)?
+2.  I thought I might try to get things working, or at least figure out why
+the kernel doesn't boot.  The only issue is I can't get any feedback from
+the kernel on why it dies.  It prints a short message when it first starts
+but then the screen goes dead before I can read it.  Is there another way to
+get that information out?   In fact, since there are no serial ports on this
+machine (just USB...like the iMac), how do I get any feedback from the
+kernel without functioning video? (or an OF interface to help me along,
+which is what I do in my other kernel development...)
 
-67/200 (I think, from memory) but this is a Rage II+ not a Rage Pro (It's
-a rev 1 box) so the values may not apply to your situation well.
-
-> >I think 2.2.10 has the mach64 work from 2.3.6 backported into it w/o the
-> >other potential problems
-> 
-> I don't think the stock 2.2.10 kernel has the latest drivers in it, but you
-> can drop the atyfb.c file from 2.3.6 into a 2.2.10 tree and it should
-> compile without problems. I believe someone has a precompiled kernel that
-> is like this. I use the 2.2.10 kernel everyday, but the snow persists.
-
-Hmm... it went away for me. Want the vmlinux? I can send it to you if you
-want (not that it should be any different than one you built, but...). It
-has pretty much normal config+mac-on-linux patches.
-
-> Eric Dorland
-> mailto:dorland@lords.com
-> 
-> 
-
-Kevin Puetz <kp11901@www.cedarnet.org>
-
-
+Thanks,
+-Charles
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
