@@ -1,61 +1,50 @@
-Message-ID: <38D7B56B.3E351682@ncal.verio.com>
-Date: Tue, 21 Mar 2000 09:46:19 -0800
-From: Henry Worth <haworth@ncal.verio.com>
+Date: Tue, 21 Mar 2000 18:52:05 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: anthony tong <atong@uiuc.edu>
+cc: Kostas Gewrgiou <gewrgiou@imbc.gr>,
+        Kevin Hendricks <khendricks@ivey.uwo.ca>,
+        Benjamin Herrenschmidt <bh40@calva.net>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: Patches to fix aty128fb and xf400 r128 to work with both Rage128
+ and Rage128Pros
+In-Reply-To: <20000321112355.A5368@rogue.genunix.net>
+Message-ID: <Pine.LNX.4.05.10003211849030.994-100000@callisto.of.borg>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Powerbook 2000 (Pismo) status.
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Just a quick update on status for the PB2000,
+On Tue, 21 Mar 2000, anthony tong wrote:
+> Kostas Gewrgiou (Tue, Mar 21, 2000 at 06:56:25PM +0200):
+> > #ifdef __powerpc__ for this it should be better to see if the card has
+> > an OF or BIOS rom first since that will allow people to keep using cards
+> > with bios roms under ppc (i wonder if anyone is doing this)
+> > Any ideas on how we can check if a card has OF or BIOS roms ?
+>
+> this is from memory (probably from the mach64 days): Bit 0 of the
+> PCI configuration register 0x30 is 0 if a PC style BIOS doesn't
+> exist. So we could do a check for that instead if this is verified
+> to still be true.
 
-The remaining media bay problems were fixed this weekend.
+Not true. Register 0x30 is 0 for both my S3 (with PC BIOS) and ATI (with OF
+BIOS). I think you refer to the indiator for the enabled ROM?
 
-Ben Herrenschmidt fixed the color map problems on the mobility
-chip for the aty128fb, and I debugged and tested them last night.
-Once we verify a few fixes for offb, I think it will be time
-to get a binary out for testing. Since Ben has mentioned
-it on the user list, the sources are in his linux-pmac-benh source
-tree at linuxcare.au if anyone with a compile platform wants
-to try to involved in testing.
+    #define  PCI_ROM_ADDRESS_ENABLE 0x01
 
-I have also been testing a version of the Rage Xpmac which
-recognizes the Mobility chip courtesy of Kevin Hendricks.
-No problems yet.
+So you have to enable the ROM and check for the PC BIOS signature (don't know
+what it is, but it should exist).
 
-So far the networking is working well, I've seen transfers of
-over 6MBs. If not connected at boot it detects an active line
-being plugged in and initializes the PHY chip.
+Gr{oetje,eeting}s,
 
-Remaining issues are inconveniences and several are shared with
-the iBooks:
+						Geert
 
-> Like the iBook there is no power management yet, the new
-  PMU is undocumented and hasn't been reverse engineered. Ben's
-  iBook has a dead hard disk which is holding up his efforts,
-  though he seems to keep pretty busy on other projects...
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-> The LCD display is bright! There are no brightness or
-  contrast controls yet, the question that needs to be
-  researched is whether these are controlled by the PMU or
-  the Rage Mobility's power management facilities.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
-> Sound??? Haven't tried, haven't even inquired as to the
-  iBook's status.
-
-> USB traps: some combinations of the keyboard and mouse I have
-  will work on one boot and cause a trap on the next (I think
-  the mouse, a Logitech 4-button scroller is causing the
-  driver's confusion).
-
-> PCMCIA/card slot: there is a new PCI bridge used that will
-  need support.
-
-> Support for the second framebuffer or mirroring the LCD
-  framebuffer to the external monitor or video ports.
-
-Henry
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
