@@ -1,40 +1,35 @@
-Date: Wed, 12 Mar 2003 12:22:40 -0700
-From: Matt Porter <porter@cox.net>
-To: Eric Seppanen <eds@reric.net>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: cache control functions
-Message-ID: <20030312122240.B28769@home.com>
-References: <20030312130214.A7123@reric.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20030312130214.A7123@reric.net>; from eds@reric.net on Wed, Mar 12, 2003 at 01:02:14PM -0600
+To: Eli Brin <elib@rokonet.co.il>
+Cc: "'linuxppc-embedded@lists.linuxppc.org'" <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: openssl 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 12 Mar 2003 18:11:54 +0200."
+             <75DF04AC5ED4D511A9810090273CB41661519B@ROKONET-E>
+Date: Wed, 12 Mar 2003 20:42:09 +0100
+Message-Id: <20030312194214.10A46C58BB@atlas.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Wed, Mar 12, 2003 at 01:02:14PM -0600, Eric Seppanen wrote:
+In message <75DF04AC5ED4D511A9810090273CB41661519B@ROKONET-E> you wrote:
 >
-> I'm writing a driver module, for a pci device that lives in a 405GPr
-> based system.  I notice that the 405 doesn't seem to have a consistent
-> cache after the pci device busmasters a bunch of data into SDRAM (or
-> before it pulls data out), so I think the thing I'm supposed to do is
-> call (depending on direction) one of these:
+> We are working with ELDK 2.0.2, target - TQM860L
+...
+> We don't have the /dev/random and /dev/urandom. How do we create them -
+> mknod?
 
-<snip>
+it's not that trrivial. Normally, many sources  of  "ramdomness"  are
+used to generate input for the random device, like key presses on the
+keyboard,  mouse movements, etc. Most of this is simply not available
+in an embedded system. You will have to tweak this a bit...
 
-> Is this intentional or an oversight?  I can't see how I can write a
-> driver for a busmaster device (that will work on a 405) without them.
+Wolfgang Denk
 
-Use the standard API described in Documentation/DMA-mapping.txt
-You will find that there are PPC-specific (sort of, ARM has the same
-names) versions of generic PCI DMA API defined in include/asm-ppc/io.h
-Those can be used on on-chip or other non-PCI type device (stuff on
-the EBC for 4xx).
-
-Regards,
 --
-Matt Porter
-porter@cox.net
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+I have a theory that it's impossible to prove anything, but  I  can't
+prove it.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
