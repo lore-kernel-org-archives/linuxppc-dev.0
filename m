@@ -1,45 +1,77 @@
-Message-ID: <3CE99643.B7188518@ixiacom.com>
-Date: Mon, 20 May 2002 17:35:15 -0700
-From: Dan Kegel <dkegel@ixiacom.com>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <001301c20060$cb3bf5c0$7301a8c0@zhongqx>
+From: "zhongqx" <zhongqx@guoguang.com.cn>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Probelm for linux booting
+Date: Tue, 21 May 2002 08:45:06 +0800
 MIME-Version: 1.0
-To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Cc: dank@kegel.com
-Subject: bitkeeper, the 2_4_devel tree, and branches
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="gb2312"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-My naive assumption, looking at the changesets listed at
-http://ppc.bkbits.net:8080/linuxppc_2_4_devel/
-was that if I cloned the repository as of two adjacent
-changesets, and exported from those repositories,
-the result would differ by exactly the second changeset.
+Hello,
+     I have FADS860T board,I want to use ppcboot-1.1.5 to boot linux 2.2.4 kernel.
+ppcboot-1.1.5 is ok,but when i use bootm command,
+it uncompressed ok and load ramdisk image then nothing happend,  can you meet this
+problem before? can you give me some advise? Should I need to change configure file
+of FADS860_defconfig ? Console is SMC1 and baudrate is 115200 bps.
 
-That's probably true at some level, but when I tried
-it with the two tags 1.899 and v2.4.18 (aka 1.2.2.131),
-which are adjacent in the changeset list on that web page,
-I got two entirely different trees.  It seems many branches
-exist in the linuxppc_2_4_devel tree, and that bk names
-branches using the godawful SCCS/CVS branch naming scheme.
-(Hrmf- after getting used to Perforce's branch naming, it's
-hard to go back to the
-branch-name-is-suffix-on-version-number-of-each-file
-way of life.)
+=>printenv
+bootargs=
+bootcmd=bootm 2800100
+baudrate=115200
+loads_echo=1
+clocks_in_mhz=1
+ethaddr=00:d0:93:00:12:34
+serverip=192.168.1.105
+ipaddr=192.168.1.99
+stdin=serial
+stdout=serial
+stderr=serial
 
-Bitkeeper's doc is a bit thin on branches; for instance,
-http://www.bitkeeper.com/manpages/bk-terms-1.html doesn't
-have a definition for 'branch'.
+Environment size: 187/16380 bytes
+=>bdi
+memstart    = 0x00000000
+memsize     = 0x00800000
+flashstart  = 0x02800000
+flashsize   = 0x00200000
+flashoffset = 0x00044000
+sramstart   = 0x00000000
+sramsize    = 0x00000000
+immr_base   = 0xFF000000
+bootflags   = 0x00000001
+intfreq     =     48 MHz
+busfreq     =     48 MHz
+ethaddr     = 00:D0:93:00:12:34
+IP addr     = 192.168.1.99
+baudrate    = 115200 bps
+=>? (May 20 2002 - 14:53:39)
 
-So it seems that, unless one knows what one is doing,
-one should avoid any revisions with more than one dot
-in their name, and one should shun the tags 'v2.4.xx',
-which are probably just mirrors of the Linus kernels.
-
-Can someone confirm this, say a couple words on the use
-of branches in the 2_4_devel tree, and explain how the
-v2.4.xx tags are useful to linux ppc kernel hackers?
-Thanks!
-- Dan
+CPU:   XPC860xxZPnnD3 at 48 MHz: 4 kB I-Cache 4 kB D-Cache FEC present
+Board: FADS with db MPC821, MPC860 / MPC860SAR / MPC860T rev ENG or PILOT
+DRAM:  (4 MB SDRAM)  8 MB
+FLASH:  2 MB
+In:    serial
+Out:   serial
+Err:   serial
+=>bootm 02880000 02900000
+## Booting image at 02880000 ...
+   Image Name:   linux-2.4.4 kernel image
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    390207 Bytes = 381 kB = 0 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+## Loading RAMDisk Image at 02900000 ...
+   Image Name:   Simple Ramdisk-Image
+   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
+   Data Size:    567988 Bytes = 554 kB = 0 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Loading Ramdisk to 006d0000, end 0075aab4 ... OK
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
