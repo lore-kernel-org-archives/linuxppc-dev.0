@@ -1,29 +1,43 @@
-Date: Fri, 14 Nov 2003 08:20:49 -0700
+Date: Fri, 14 Nov 2003 08:57:35 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Kumar Gala <kumar.gala@motorola.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-	Wolfgang Denk <wd@denx.de>, Dale Farnsworth <dale@farnsworth.org>,
-	Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>,
-	Gabriel Paubert <paubert@iram.es>
-Subject: Re: MPC5200 Patches
-Message-ID: <20031114152049.GB13003@ip68-0-152-218.tc.ph.cox.net>
-References: <Pine.GSO.4.21.0311122039580.1561-100000@waterleaf.sonytel.be> <55821B76-1669-11D8-A264-000393DBC2E8@motorola.com>
+To: Christian Kujau <evil@g-house.de>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: ppc32 lockups with 2.6
+Message-ID: <20031114155735.GC13003@ip68-0-152-218.tc.ph.cox.net>
+References: <3FA5698A.9000905@g-house.de> <3FAABE62.4090804@g-house.de> <20031110125044.A22030@forte.austin.ibm.com> <3FB01392.60500@g-house.de> <20031110175740.A32176@forte.austin.ibm.com> <3FB02C85.6090400@g-house.de> <20031111153658.GH8584@ip68-0-152-218.tc.ph.cox.net> <3FB2D757.1010304@g-house.de> <20031113174745.GA11560@ip68-0-152-218.tc.ph.cox.net> <3FB41A14.3040108@g-house.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <55821B76-1669-11D8-A264-000393DBC2E8@motorola.com>
+In-Reply-To: <3FB41A14.3040108@g-house.de>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Nov 14, 2003 at 12:11:06AM -0600, Kumar Gala wrote:
+On Fri, Nov 14, 2003 at 12:56:04AM +0100, Christian Kujau wrote:
 
-> What about a single i2c-mpc.c that handles 10x/824x/85xx/5xxx since
-> they all seem to support the same programming model from what I can
-> tell (5xxx seems not to support broadcast).  This would cover all
-> non-CPM instances of I2C on Motorola PPC parts.
+> Tom Rini wrote:
+> >
+> >Ok, it's been a while since anyone tried KGDB it seems.  The following
+> >is an untested (yet) patch that makes it compile and maybe work:
+> >
+> >===== arch/ppc/Kconfig 1.46 vs edited =====
+> [...]
+>
+>
+> ok, i could have done the stuff in Kconfig though, next time i will do
+> so at once. well, compiling wnt fine on the ppc now (my i386 cross
+> compile is still pending), but the things with the serial console will
+> have to wait now. hm, i'm not online at the weekend, so don't expect
+> much results these days. thank you very much for checking back to this
+> issue, i (and hopefully some other PreP people out there) really
+> appreciate this.
+>
+> Christian.
+>
+> PS: oh, will this patch reach mainline anytime soon?
 
-So long as it can be done in a clean manner, this is probably a great
-idea.  Thanks for volunteering. :)
+Probably once Andrew Morton takes over again, at least some parts of the
+patch will go in, an the rest possibly in 2.6.1, depending on how much
+he wants to let arches sync up.
 
 --
 Tom Rini
