@@ -1,21 +1,21 @@
-From: Jeremy Rosen <Jeremy.Rosen@au.thalesgroup.com>
-To: linuxppc-embedded@lists.linuxppc.org
-Message-Id: <sc9b235b.074@gw_tms_syd2.pty.tms.thomson-csf.com>
-Date: Fri, 22 Mar 2002 12:27:52 +1100
-Subject: m8xx power management
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Message-ID: <001b01c1d149$74e86690$6649a8c0@LEIYINGDU>
+From: "Leiying Du" <ldu@solectek.com>
+To: <linuxppc-embedded@lists.linuxppc.org>
+Subject: Kernel Debug Info
+Date: Thu, 21 Mar 2002 18:29:56 -0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-hello
+How could I dump the kernel debug info on the console instead of syslog?
+Like,
+printk(KERN_NOTICE "cs: unable to map card memory!\n");
+Thanks,
 
-before I start working on it... did anybody try to implement the m8xx
-power management under linux ??
+Leiying
 
-thx
-
-Jeremy
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
