@@ -1,28 +1,61 @@
-Message-ID: <39C3F4DA.2363A35E@mvista.com>
-Date: Sat, 16 Sep 2000 18:31:54 -0400
-From: Dan Malek <dan@mvista.com>
+Date: Sun, 17 Sep 2000 00:32:08 -0500 (CDT)
+From: Troy Benjegerdes <hozer@drgw.net>
+To: Cort Dougan <cort@fsmlabs.com>, Paul Mackerras <paulus@linuxcare.com.au>,
+        Takashi Oe <toe@unlserve.unl.edu>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: success 2.4.0-test8 with latest bk
+In-Reply-To: <Pine.LNX.3.96LJ1.1b7.1000914012752.12786A-100000@ofey.earthlink.net>
+Message-ID: <Pine.LNX.4.21.0009170029140.20663-100000@altus.drgw.net>
 MIME-Version: 1.0
-To: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: BK 2.4-test8 PCI/USB/G4
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-For those of you using the latest 2.4 BitKeeper tree on a G4, I have
-a partial solution to making USB work again.  After pulling updates,
-simply 'bk get -r1.18 arch/ppc/kernel/pci.c', which will get the
-previous version of this file.  Build the kernel and at least you get
-the mouse/keyboard, X, and stuff like that again.  At least you can
-make progress on other tasks while we sort this out.
+I got curious, and I tracked down the commented out
+__clear_user(Hash, hash_size)
 
-Have fun!
+to version 1.10 of init.c
 
+arch/ppc/mm/init.c
+  1.10 00/02/04 13:20:23 cort@medea.fsmlabs.com +15 -2
+  Changes to fix PPC64 MM (short term fix) and protect the system
+  map memory from being written over.
 
-	-- Dan
+Cort, any chance you happen to recall why that was needed
+
+>
+> On Thu, 14 Sep 2000, Paul Mackerras wrote:
+>
+> > Takashi Oe writes:
+> >
+> > > Could you try the following change for arch/ppc/mm/init.c?
+> > [snip]
+> > > 		Hash = mem_pieces_find(Hash_size, Hash_size);
+> > > 		clear_hash_table();
+> >
+> > Huh?  There is a __clear_user(Hash, Hash_size) call in there but it's
+> > commented out, which I don't understand at all.  Certainly the hash
+> > table needs to be cleared.
+>
+> Yeah, that's what I thought when I first saw the code a few months ago.
+>
+> >                             Using cacheable_memzero would probably be
+> > the fastest way to do it.
+>
+> __clear_user() works but I can't use cacheable_memzero() since frame
+> buffer memory resides on the same memory block.
+>
+>
+> Takashi Oe
+>
+>
+>
+>
 
 --
+--------------------------------------------------------------------------
+Troy Benjegerdes                'da hozer'                hozer@drgw.net
 
-	I like MMUs because I don't have a real life.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
