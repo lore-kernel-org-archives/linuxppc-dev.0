@@ -1,33 +1,33 @@
-Message-ID: <3FCF3EB7.5080404@embeddededge.com>
-Date: Thu, 04 Dec 2003 09:03:35 -0500
-From: Dan Malek <dan@embeddededge.com>
+Reply-To: <joakim.tjernlund@lumentis.se>
+From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
+To: "'Tom Rini'" <trini@kernel.crashing.org>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: tx_full v.s tx_free race fix in 8xx_io/enet.c?
+Date: Thu, 4 Dec 2003 15:32:04 +0100
+Message-ID: <000201c3ba73$63dba410$0a01a8c0@LUMENTIS02>
 MIME-Version: 1.0
-To: Wojciech Kromer <krom@dgt-lab.com.pl>
-Cc: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: memory problem with fec on 8250
-References: <3FCD956B.8030604@gazeta.pl> <3FCEF441.2030808@dgt-lab.com.pl> <20031204091536.GA1050@gate.ebshome.net> <3FCF0252.7070202@dgt-lab.com.pl> <20031204101901.GB1050@gate.ebshome.net> <3FCF0E68.4010303@dgt-lab.com.pl> <20031204105532.GA2065@gate.ebshome.net> <3FCF19C3.9070205@dgt-lab.com.pl>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: 
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Wojciech Kromer wrote:
+> Something I find a bit odd is that I can run ping -s 1472 -f
+> <myTargetIp>
+> without problems, but if i "jump start" the ping with "ping
+> -s 800 -f <myTargetIp> -l 8"
+> I start to loose packages. Ifconfig shows no errors for both cases.
+> Do you get the same?
+>
+>  Jocke
 
-> _anyone_ knows why there is such difference between allocs and frees in
-> fcc_enet.c
+Found this problem. It is the backoff/retry logic thats
+causing very long TX delays. If I reduce "retlim"(retry limit) from
+15 to 6, the system recovers from a large packet ping storm.
 
-What kernel and driver is this?
+Is it a bad idea to reduce the retry limit?
 
-The latest one I checked into linuxppc_2_4_devel a long time ago
-had the benefit of being tested at the UNH Interoperability Laboratory.
-This included performance testing and error recovery.  For this driver
-to be failing, it must have been modified from that version and we
-need to determine what was done to get it corrected.
-
-Thanks.
-
-
-	-- Dan
-
+ Jocke
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
