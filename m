@@ -1,21 +1,18 @@
 Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao10.cox.net (fed1rmmtao10.cox.net [68.230.241.29])
-	by ozlabs.org (Postfix) with ESMTP id 4F8C42BDB5
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Dec 2004 05:49:26 +1100 (EST)
-Date: Mon, 6 Dec 2004 11:49:21 -0700
+Received: from fed1rmmtao04.cox.net (fed1rmmtao04.cox.net [68.230.241.35])
+	by ozlabs.org (Postfix) with ESMTP id CC2FC2BDA0
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Dec 2004 05:54:18 +1100 (EST)
+Date: Mon, 6 Dec 2004 11:54:16 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Christian Kujau <evil@g-house.de>
-Message-ID: <20041206184921.GD7153@smtp.west.cox.net>
-References: <41B23DF2.4010303@g-house.de>
-	<1102207299.6778.16.camel@weizen.left.earth>
-	<41B36845.4080004@g-house.de>
+To: Linus Torvalds <torvalds@osdl.org>,
+	Kernel Mailing List <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
+Message-ID: <20041206185416.GE7153@smtp.west.cox.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="17pEHd4RhPHOinZp"
-In-Reply-To: <41B36845.4080004@g-house.de>
-Cc: linuxppc-dev@ozlabs.org, Sven Hartge <hartge@ds9.argh.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] linux 2.6 not^Wnow working with PReP (ppc32)
+Content-Type: text/plain; charset=us-ascii
+Cc: Sven Hartge <hartge@ds9.gnuu.de>, Meelis Roos <mroos@linux.ee>,
+	Christian Kujau <evil@g-house.de>
+Subject: [PATCH 2.6.10-rc3][PPC32] Fix Motorola PReP (PowerstackII Utah) PCI
+	IRQ map
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,44 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The PCI IRQ map for the old Motorola PowerStackII (Utah) boards was
+incorrect, but this breakage wasn't exposed until 2.5, and finally fixed
+until recently by Sebastian Heutling <sheutlin@gmx.de>.
 
---17pEHd4RhPHOinZp
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Christian Kujau <evil@g-house.de>
+Signed-off-by: Tom Rini <trini@kernel.crashing.org>
 
-On Sun, Dec 05, 2004 at 08:57:57PM +0100, Christian Kujau wrote:
+--- 1.32/arch/ppc/platforms/prep_pci.c	2004-10-12 14:29:11 -07:00
++++ edited/arch/ppc/platforms/prep_pci.c	2004-12-06 09:20:52 -07:00
+@@ -49,10 +49,10 @@
+         0,   /* Slot 1  - unused */
+         5,   /* Slot 2  - SCSI - NCR825A  */
+         0,   /* Slot 3  - unused */
+-        1,   /* Slot 4  - Ethernet - DEC2114x */
++        3,   /* Slot 4  - Ethernet - DEC2114x */
+         0,   /* Slot 5  - unused */
+-        3,   /* Slot 6  - PCI Card slot #1 */
+-        4,   /* Slot 7  - PCI Card slot #2 */
++        2,   /* Slot 6  - PCI Card slot #1 */
++        3,   /* Slot 7  - PCI Card slot #2 */
+         5,   /* Slot 8  - PCI Card slot #3 */
+         5,   /* Slot 9  - PCI Bridge */
+              /* added here in case we ever support PCI bridges */
 
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
->=20
-> whoops! a bit too early, i had to change 3 lines, not one.
->=20
->=20
-> Signed-off-by: Christian Kujau <evil@g-house.de>
->=20
->=20
-> (new patch attached; credits should go to Sebastian Heutling aka
-> sheutlin@gmx.de)
-
-This doesn't cause anything bad to happen on mine (and it shouldn't,
-being a Blackhawk and all :)), so I'll send this on.  Thanks.
-
---=20
+-- 
 Tom Rini
 http://gate.crashing.org/~trini/
-
---17pEHd4RhPHOinZp
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.5 (GNU/Linux)
-
-iD8DBQFBtKmwdZngf2G4WwMRAgYrAJwNYjolVuBg7dEQMK33ZrKgeZqKCgCfX9E+
-qlXOs3T55KI2IVZMGk3ghJE=
-=mluE
------END PGP SIGNATURE-----
-
---17pEHd4RhPHOinZp--
