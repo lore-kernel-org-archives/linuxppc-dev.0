@@ -1,44 +1,27 @@
-Date: Tue, 2 May 2000 18:18:57 +0200
-From: Olaf Hering <olh@suse.de>
-To: claude@convergence.de
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Pismo boots then ?
-Message-ID: <20000502181857.A3528@suse.de>
-Reply-To: linuxppc-dev@lists.linuxppc.org
-References: <20000502181359.A1157@warez.convergence.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20000502181359.A1157@warez.convergence.de>
+Date: Tue, 2 May 2000 13:14:10 -0400 (EDT)
+From: Scott Knight <scott@re-104-1.read.indiana.edu>
+To: linuxppc-dev@lists.linuxppc.org
+Subject: 2.3.99-pre6 sound hfs
+Message-ID: <Pine.LNX.4.10.10005021311560.745-100000@fletch.read.indiana.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, May 02, claude@convergence.de wrote:
+	Alright, i have a couple questions. Ive gotten the latest kernel
+to compile and everything but on my 8500 im seeing some problems. The frst
+is with sound and mixers. For some reaosn thepart that should be
+controlling the microphone mixer controls my rca inputs and the rca inputs
+controls the microhphone input. This is extermely weird and wondered if
+anyone else had a problem. Secondly is hfs support. Its nutty. I cant
+mount any hfs cdroms. I can mount hfs hard drives but if something is
+tried to copy to it it crashes the computer hard and emsse up the ahrd
+drive a bit. Anyone know what the deal is with this? And yes I have hfs
+support compiled in. ANy advice or help would be greatly apprecaited.
+Thanks a lot.
 
+	Scott Knight
 
-> Finally, my kernel booted nice into the Suse install items, but I
-> haven't the suse CD (only the linuxppc1999 CD), and unfortunately I
-> wasn't able to continue my installation.
-
-Just replace the ramdisk.image.gz with the version from your CD.
-
-> ? Do I need absolutely one of the newest distribution CD (ppc2000 or
-> suseppc), or can I continue in an other way (using the linuxppc1999
-> distribution, or doing it via FTP, or even NFS).
-
-The binaries should work, you need only the latest kernel version.
-Take it from BenH's website or from
-ftp://ftp.suse.com/pub/suse/ppc/update/BETA.
-The /proc/sys/dev directory might be useful, you can switch some
-features on and off :=)
-
-
-Gruss Olaf
-
---
- $ man clone
-
-BUGS
-       Main feature not yet implemented...
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
