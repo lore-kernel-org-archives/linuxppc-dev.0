@@ -1,23 +1,32 @@
-Date: Tue, 15 Dec 1998 21:59:18 -0500 (EST)
-From: satadru pramanik <satadru@umich.edu>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: external drive not syncing.
-Message-ID: <Pine.SOL.3.95.981215215757.27481A-100000@poleposition.rs.itd.umich.edu>
+Date: Tue, 15 Dec 1998 22:35:48 -0600 (CST)
+From: Troy Benjegerdes <hozer@drgw.net>
+To: VALETTE Eric <valette@crf.canon.fr>
+cc: cort@persephone.cs.nmt.edu, linuxppc-dev@lists.linuxppc.org
+Subject: Re: changes to the kernel
+In-Reply-To: <m0zo3lc-0000WVC@tri-yann.crf.canon.fr>
+Message-ID: <Pine.LNX.4.04.9812152229540.30336-100000@narn.local.drgw.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I have an external drive that refuses to sync after 15 minutes of intense
-drive activity.  any attempt to sync, ex, typing "sync" at the command
-prompt, causes a hard crash, not even a kernel panic.  Any thoughts?
+On Thu, 10 Dec 1998, VALETTE Eric wrote:
 
-----
-satadru pramanik www.umich.edu/~satadru
-Do, or do not.  There is no try.
--Yoda
----
+> Inflates returns %d... I will send a patch enabling to print decimal
+> as well... NB : this bug has been reported by alois on the mailling list
+> with a fix and I have reposted the fix.
+> 
+
+FYI, I've had this problem on a 604e/133 blackhawk board. I worked around
+it by setting the optimization level for arch/ppc/boot to -O instead of
+-O2 in the makefile.
+
+--------------------------------------------------------------------------
+| Troy Benjegerdes    |    troybenj@iastate.edu    |    hozer@drgw.net   |
+|    Unix is user friendly... You just have to be friendly to it first.  |
+| This message composed with 100% free software.    http://www.gnu.org   |
+--------------------------------------------------------------------------
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
