@@ -1,47 +1,53 @@
-Message-Id: <4.3.2.7.2.20000711172513.03963320@mail.munich.netsurf.de>
-Date: Tue, 11 Jul 2000 17:29:57 +0200
-To: "Robert Thompson" <rothomp3@vt.edu>
-From: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-Subject: Re: trackpad
-Cc: "Hollis Blanchard" <hollis@amulet.co.jp>, <pogtal@erols.com>,
-        <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <003b01bfeb47$848cf960$1a6a1504@strayer.edu>
-References: <003b01bfeaa6$744c6e60$1a6a1504@strayer.edu>
- <396ACDF9.826580D3@amulet.co.jp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <396B42F0.EF939444@embeddededge.com>
+Date: Tue, 11 Jul 2000 11:53:20 -0400
+From: Dan Malek <dan@netx4.com>
+MIME-Version: 1.0
+To: Adrian Cox <apc@agelectronics.co.uk>
+CC: Dan Malek <dan@netx4.com>, linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Help with string.S
+References: <3967B1E3.80CAC746@embeddededge.com> <396969E1.A7256E4A@lightning.ch> <396A5162.411F49EF@embeddededge.com> <396AF1B8.6FB1401C@agelectronics.co.uk>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-At 16:51 11.07.00, Robert Thompson wrote:
+Adrian Cox wrote:
 
-> > > Hmm... anybody have any clue what's different
-> > > between the trackpad on the Pismo and on the iBook? It's not like ADB
->isn't
-> > > working: the keyboard works fine, so ADB is working at least mostly
->fine.
-> > > Like
-> > > I said, I use an external trackball anyway, but I'm sure somebody will
->be
-> > > angry
-> > > about this at some point...
-> >
-> > Robbie, I missed the beginning of the thread, but did you follow Ben's
-> > directions?
->
->Yes, I followed them exactly. Like I said, external usb mice work fine, and
->the internal adb keyboard works fine, but the trackpad (also adb) doesn't
->work at all. I tried gpm -m /dev/mouse -t imps2 and several variations
->thereof, but nothing worked. The trackpad is detected correctly by the
->kernel, according to dmesg. There are no errors reported of any kind, the
->trackpad simply does nothing.
+> The 7xx(x) processors don't have the alignment handler set up ....
 
-Can you please post the dmesg part where all the ADB/USB devices get
-registered to inputs? And please also the line which contains "adb devices"
-in the dmesg and your kernel .config.
+Paul and I (and possibly others) conspired and added this in the late
+2.3.xx kernels for all processors.  It had been floating around for
+the MPC8xx processors, I hit it again on the 8260, and we just made
+the code generic for all processors.  It "fixes" alignment faults and
+will also zero memory on a dcbz fault.  Hmmm, I wonder if this code
+actually gets called and if it still does the right thing?  I'll check
+it again.
 
-Franz.
+> Or by removing the cache operations. Even if they stay, could they be a
+> compilation time optimisation for particular processors?
 
+While the code wasn't really correct for anything but 32 byte cache
+lines, it should work correctly on 16 byte lines.  You don't get the
+performance increase as the dcbz is only performed every other cache
+line.  However, like David mentioned, it really is broken for 64 and
+128 byte cache lines.  Here, you zero a long line, but only fill 32
+bytes of data.  You end up with a nearly zero filled buffer.
+
+Anyway, enough talk, it has to be fixed.  I'll do the best I can.  I
+would like to remove the assumption in copy_tofrom_user that we can
+fault in so many places in the cache line.  Considering all of the
+alignment restrictions, it seems to me you will only fault on the
+first access to the cache line (it isn't like you are going to
+cross a page boundary in the middle of a line).  This would simplify
+the function and make for a much smaller exception table.
+
+> The 7400 certainly doesn't need the dcbz, as it will perform an implicit
+> allocation if the entire cache line is written by store instructions.
+
+No, but those cache streaming instructions and data move cache hints
+really do something.  It was my attempt at humor, you see :-).
+
+
+	-- Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
