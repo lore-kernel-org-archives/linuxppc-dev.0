@@ -1,42 +1,54 @@
-To: Jeremy Bowen <Jeremy.Bowen@opennw.com>
-Cc: "'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Problems with MMU: address translation for 0xXXXXXXXX failed 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 13 May 2003 16:19:26 +1200."
-             <DEA23DB61B62D4118B5900508B323B84012CC7D1@OPENMAIL>
-Date: Tue, 13 May 2003 09:55:18 +0200
-Message-Id: <20030513075523.E8207C6092@atlas.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Date: 13 May 2003 16:05:15 +0800
+Message-ID: <20030513160515.79677.qmail@eyou.com>
+From: "rick.liu" <dovi@eyou.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Reply-To: "rick.liu" <dovi@eyou.com>
+Subject: Why my console output nothing
+Content-Type: text/plain
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <DEA23DB61B62D4118B5900508B323B84012CC7D1@OPENMAIL> you wrote:
->
-> I'm trying to get a BDI2000 (firmware v1.09) working in order to debug a
-> kernel module.
-> I'm using an Embedded Planet RPXlite MPC850 board running kernel v2.4.20
-...
-> Am I missing something obvious ? Is this the right way to go about debugging
-> a loadable module ? Any help would be gratefully appreciated.
+Hi all
+      I am using ELDK to port linux to a simple MPC860T board. I use SMC1 to
+connect to the serial port and as the console.But I can't go any further
+because when i powerup,the console doesnot show any message.List my steps
+here:
+      1. edit ~/.kermrc as what was shown in <Denx ppcboot and linux
+Guide(tqm8xxl)>.
+      2. modify several line of  'TQM860L.h'.
+      3. modify my UPM table and register OR1/BR1 to OR4/BR4(my sdram uses
+cs4) in the file tqm8xx.c.
+      4. bash>make distclean.
+      5. bash>make TQM860L_config.
+      7. bash>make all
+      8. use a flash programmer to burn the u-boot.bin to my boot flash.
+      9. bash>kermit -c
+         Connecting to /dev/ttyS0, speed 115200
+         Escape character:xxxxxxxxxxxxxxx :enabled
+         Type xxxxxxxxxxxxxxxxxxxxxxxxxxx to got back
+         or xxxxxxxxxxxxxxxxxxxxxxxxxxxxx options
+         --------------------------------------
+      10.power up,but nothing is output.
 
-There were a couple of changes  /  extensions  to  the  MMU  support.
-Firmware version 1.09 is pretty old (Aug 2001). You might want to try
-a  more  recent one. Also check the changes to the Linux kernel - the
-use of the PTBASE parameter has changed; the BDI2000 now expects (and
-the Linux kernel automatically updates) the  physical  address  which
-holds  the  virtual  address  of  the  array  with the two page table
-pointers.
+PS:my board info:MPC860T/SCC1 ETHERNET/SMC1 Serial/PCMCIA/CS0 FLASH 0/CS4
+SDRAM
+
+It's my first time to build a embedded linux project,wish u can help me out.
+
+Thanks a lot!
+
+Best regards!
 
 
-Best regards,
 
-Wolfgang Denk
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Status quo. Latin for "the mess we're in."
+
+
+
+--http://www.eyou.com
+--稳定可靠的免费电子信箱  语音邮件  移动书签  日历服务  网络存储...亿邮未尽
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
