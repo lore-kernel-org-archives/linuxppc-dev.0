@@ -1,59 +1,53 @@
-From: Chas Williams <chas@cmf.nrl.navy.mil>
-Date: Fri, 4 Feb 2000 21:15:04 -0500
-Message-Id: <200002050215.VAA02658@fermi.cmf.nrl.navy.mil>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Re: anyone build 2.3.42 for ppc?
-References: <200002042204.RAA44619@p2.parker.boston.ma.us>
+Date: Fri, 4 Feb 2000 19:55:22 -0800 (PST)
+From: Brad Midgley <brad@turbolinux.com>
+To: Takashi Oe <toe@unlserve.unl.edu>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: [patch] little-endian dmasound silently fails
+In-Reply-To: <Pine.LNX.3.96LJ1.1b7.1000204175200.3438D-100000@ofey.inetnebr.com>
+Message-ID: <Pine.LNX.4.20.0002041952120.32666-100000@mail.turbolinux.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-i needed to apply the following to fix nvram access:
+> How does it write "little-endian data"?  Does the program take care of CPU
+> being big-endian in some way?  If not, I'd think it's the program's fault.
 
---- drivers/char/misc.c.000     Fri Feb  4 18:00:52 2000
-+++ drivers/char/misc.c Fri Feb  4 18:03:43 2000
-@@ -72,6 +72,7 @@
- extern int rtc_DP8570A_init(void);
- extern int rtc_MK48T08_init(void);
- extern int dsp56k_init(void);
-+extern int nvram_init(void);
- extern int radio_init(void);
- extern int pc110pad_init(void);
- extern int pmu_device_init(void);
-@@ -207,6 +208,9 @@
- #endif
- #ifdef CONFIG_ATARI_DSP56K
-        dsp56k_init();
-+#endif
-+#ifdef CONFIG_NVRAM
-+       nvram_init();
- #endif
- #ifdef CONFIG_MISC_RADIO
-        radio_init();
+the api provides for a way for clients to set the driver to accept
+little-endian data. worse than simply not implementing it, dmasound also
+makes it *appear* that it implements it.
 
-i also saw another problem i chrp_setup.c, and i believe this is the correct
-fix but have no way to test it.
+#include <stdio.h>
+#include <sys/ioctl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <linux/soundcard.h>
 
---- arch/ppc/kernel/chrp_setup.c.000    Fri Feb  4 17:14:16 2000
-+++ arch/ppc/kernel/chrp_setup.c        Fri Feb  4 17:14:27 2000
-@@ -394,7 +394,7 @@
-         * We do it this way since our irq_desc[irq].handler can change
-         * with RTL and no longer be open_pic -- Cort
-         */
--       if ( irq >= open_pic.irq_offset)
-+       if ( irq >= open_pic_irq_offset)
-                openpic_eoi( smp_processor_id() );
- }
+void die(char *m) {
+  printf("%s\n", m);
+  exit(1);
+}
 
-@@ -411,7 +411,7 @@
-                        (*(unsigned long *)get_property(np,
-                                                        "8259-interrupt-acknowle
-dge", NULL));
-        }
--       open_pic.irq_offset = 16;
-+       open_pic_irq_offset = 16;
-        for ( i = 16 ; i < NR_IRQS ; i++ )
-                irq_desc[i].handler = &open_pic;
-        openpic_init(1);
+int main(int argc, char *argv[]) {
+  int fd, bytesex;
+
+  fd = open("/dev/dsp", O_WRONLY);
+  if(fd < 0) die("couldn't open /dev/dsp");
+
+  bytesex = AFMT_S16_LE;
+  if(ioctl(fd, SNDCTL_DSP_SETFMT, &bytesex))
+    die("little-endian sound isn't implemented in this driver\n");
+
+  printf("supposedly the sound driver supports little-endian data. :(\n");
+
+  return 0;
+}
+
+
+Brad
+brad@turbolinux.com | http://www.turbolinux.com/~brad/
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
