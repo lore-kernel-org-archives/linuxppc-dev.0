@@ -1,66 +1,83 @@
-Message-Id: <4.2.2.20000525110602.00a704c0@mail.kerbango.com>
-Date: Thu, 25 May 2000 11:07:30 -0700
-To: gjohnson@research.canon.com.au (Greg Johnson)
-From: Steve Calfee <calfee@kerbango.com>
-Subject: Re: IDMA: Setting Up Parameter RAM.
-Cc: linuxppc-embedded@lists.linuxppc.org
-In-Reply-To: <20000525060239.3F99C3C989@elph.research.canon.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <392D7B80.73E54AFF@embeddededge.com>
+Date: Thu, 25 May 2000 15:14:08 -0400
+From: Dan Malek <dan@netx4.com>
+MIME-Version: 1.0
+To: "Mark S. Mathews" <mark@absoval.com>
+CC: SangTae Ha <stha@postech.edu>, linuxppc-embedded@lists.linuxppc.org
+Subject: Re: How to load kernel on RPX Lite Board ?
+References: <Pine.LNX.3.96.1000525100001.30564B-100000@tristar.cc.absoval.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 04:02 PM 5/25/00 +1000, you wrote:
+"Mark S. Mathews" wrote:
 
->Hi all,
->
->I am having a little problem with IDMA parameter RAM on the 855T/860.
->The problem is that when I set up the parameter RAM's DMA Channel
->Mode Register, and the IDMA BD Base Address pointer, the CPM does not
->appear to recognise these new values. I am quite confident that I
->am setting up the ports etc for our board correctly. I shall elaborate.
->
->When I power on our board, boot, load our driver for the hardware,
->setup the IDMA/Parameter RAM/Buffer Descriptors and attempt to start
->an IDMA transfer,  nothing happens. (reloading driver and retries
->do not work)
->
->When I then hit the reset button (no power cycle) and go through the
->same ritual, IDMA works fine.
->
->The reason being is that values for the IDMA Parameter RAM DMA Channel
->mode register (DCMR) and IDMA BD Base Address pointer (IBASE) that
->were written in the first attempt on power-on are preserved in
->DPRAM over the reboot. Why would these value apparently be written
->in the first attempt, but appear not to be recognised by the CPM???
->
->In addition, if I power on, and use the boot loader to program the
->IDMA Parameter RAM DCMR and IBASE elements, then boot Linux, load
->the driver and attempt a DMA operation, It all works fine. The
->reason I don't want to be content with setting this information up
->in the boot loader is that we want to be able to eventually allocate
->and release buffer descriptors.
->
->I suspect that I am not setting up something correctly that affects
->the way that the Communications Processor responds to changes in the
->Parameter RAM.
->
->Can anyoue offer any clues/hints/guesses???
+> I believe (but not sure) that zsrec discards the ELF header and uses it's
+> own image location assumptions.  It's magic....and just works.  ;-)
+> The zsrec source isn't too tough to look at if you really need to know.
 
-Check to make sure the addresses you feed the cpm are physical (not memory
-mapped) addresses.
+It's not magic, I was just too lazy to find all of the objcopy
+parameters that would do the same thing :-).  The "magic" (which has
+been recently broken for some targets in 2.3.99) is in the zImage.
+
+The zImage is a 64K ELF header (which should be discarded) followed by
+a simple relocate/uncompress set of functions with a compressed kernel
+and optional compressed ram disk packed against these functions.  There
+are some assumptions built into these functions, and externally you should
+not try to map any structure to this file.  Strip the 64K header and
+you just have a linear array of bits that can be safely loaded anywhere
+at or above a 2 Mbyte address (5 Mbyte for 8260).  Jump to the first
+location and it will go.  Other processor architectures follow this
+model as well.
+
+A very important note.....Because of the initrd logic in the Linux
+kernel, you can't uncompress a ram disk from Flash rom, it must be
+in RAM (pages are discarded when this is done).  The "magic" functions
+assume if loaded above 16 Mbytes, and a ram disk is attached, the
+ram disk portion of the image must be copied to ram.  If loading in
+ram above 16 Mbytes this will result in an unnecessary copying of
+the ram disk image, so it is probably best to load the image somewhere
+below 16 Mbytes if in memory.  There are lots of other assumptions
+and "special" memory locations used within these functions to support
+a variety of loading options on various boards and products.  It is
+best you realize this is a bunch of bits for production use and don't
+try to modify it for something else.  Lots of people depend on this
+image as it is.
 
 
+All zsrec does is skip the ELF header, then convert the remaining
+bits to S-records with a base address you can specify.  The default
+base is 2M bytes because it was written for small memory 8xx systems.
+Specifiy a different address with the -s start option, followed by
+a hex base address.  This is required for the 8260 zImage.  Or better,
+write your own program that can download/flash the binary without an
+S-record conversion.
+
+There are other programs (which I don't have but know other people do :-)
+that will convert this zImage into binary formats supported by BDM/JTAG
+download tools.  Basically, just strip the ELF header and tack a
+simple binary header to the top.  Everyone (until recently) seemed
+to like this approach because it was quick and easy, and there aren't
+any symbols or other debug information that make this a useful ELF
+image.  It is also the most compact Flash ROM image that reduces the
+requirements on that resource.
+
+> 1) Copy your kernel image to RAM using RPXU tftp
+> 2) Use the RPXU flash program command to copy from RAM to flash
+> 3) Use the RPXU to jump to your flash load address
+
+The file arch/ppc/mbxboot/misc.c contains an "RPX Signature" for
+autoboot.  There is an address you can modify that reflects the
+actual load location in Flash rom.  I chose to use FF840000 as that
+is the first of the 256K sectors on a 8M Flash board.  The smaller
+sectors preceeding this location are used for the new RPX bootloader
+or by existing products for non-volatile storage.
+
+I believe all of this information (and more) is provided from Embedded
+Planet and MontaVista as part of the Linux Planet development kit.
 
 
-Regards, Steve
-
-__________________________________________
-Steve Calfee	--	embedded systems consultant
-calfee@home.com
-cell phone: (510) 468-5837
-Kerbango phone: (408) 517-3355
-
+	-- Dan
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
