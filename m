@@ -1,34 +1,62 @@
-From: David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <3C569C1A.38BBF76F@etx.ericsson.se> 
-References: <3C569C1A.38BBF76F@etx.ericsson.se>  <3C5673A4.662CC3E6@cambridgebroadband.com> 
-To: Kenneth Johansson <kenneth.johansson@etx.ericsson.se>
-Cc: Alex Zeffertt <ajz@cambridgebroadband.com>,
-	linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>,
-	"mtd@infradead.org" <linux-mtd@lists.infradead.org>
-Subject: Re: JFFS2: strange output 
-Mime-Version: 1.0
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <20020129142321.38639.qmail@web9706.mail.yahoo.com>
+Date: Tue, 29 Jan 2002 06:23:21 -0800 (PST)
+From: None Atall <linux_meis@yahoo.com>
+Subject: Re: [Linux-ATM-General] Re: ATM driver for 8260 (linux 2.4.x)
+To: Der Herr Hofrat <der.herr@mail.hofr.at>,
+	linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <200201291247.g0TClwl07353@hofr.at>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Date: Tue, 29 Jan 2002 13:13:21 +0000
-Message-ID: <11887.1012310001@redhat.com>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-kenneth.johansson@etx.ericsson.se said:
-> After 11 of the above I get the following message in /var/log/messages:
->
-> Dec 24 00:05:55 gonzo kernel: Waiting for chip to read, status = 4
-> Dec 24 00:05:55 gonzo kernel: Waiting for chip to read, status = 7
-> Dec 24 00:06:26 gonzo last message repeated 2841 times
->
-> By this point the copies are progressing painfully slowly.
+ Mr Hofrat is right!
+For some reason the interrupt handler reads old
+values, although the CPM puts new data. (I checked it
+using JTAG). It seems
+like the old data are kept on buffers and are not
+refreshed. Unfortunetely i did what Hofrat saied,
+but it doesn't work. Is there a function for forcing
+refresh? flush_tlb or flush_dcache perhaps?
 
-Those messages are harmless. They're removed in non-ancient versions of the
-code. The system slows down partly due to the garbage collection, and
-partly due to the spewing of these messages.
+                     Thanks!
+                       D. Meidanis
 
---
-dwmw2
+--- Der Herr Hofrat <der.herr@mail.hofr.at> wrote:
+> >
+> >   But until you do it, could you help me in one
+> > problem
+> > that i have? I have imported the mpc860sar driver
+> > myself. But i have this problem. When i use the
+> aread
+> > program, i seem to take the data ok. But if from
+> the
+> > transmit computer i send quick the data, the CPM
+> seems
+> > to
+> > jump positions in the Interrupt Queue. I mean that
+> my
+> > pointer (SW) increases correct, but the CPM
+> increases
+> > without putting an interrupt entry. Any ideas?
+> > Also, in the original driver Alex used the
+> > mm_alloc_uncached_pages function, but i have
+> replased
+> > it with kmalloc(size, GFP_KERNEL). Is it correct?
+> >
+> I don't know about the details of your setup - but
+> we had similar phenomenon with
+> a driver on the CPM that acknowledged the interrupt
+> too late - the therapy
+> was to move the interrupt ack to the top of the
+> driver and all was well.
+>
+> so maby you are seeing the same problem due to the
+> same driver coding error .
+>
+> hofrat
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
