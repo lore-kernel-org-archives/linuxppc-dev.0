@@ -1,28 +1,36 @@
-Date: Thu, 27 Mar 2003 13:13:13 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Leigh Brown <leigh@solinno.co.uk>
-Cc: paulus@samba.org, linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] Fix memory size not being passed to kernel from prep boot loader
-Message-ID: <20030327201313.GG31771@ip68-0-152-218.tc.ph.cox.net>
-References: <63228.213.107.143.228.1048441818.squirrel@www.solinno.co.uk>
-Mime-Version: 1.0
+Message-ID: <3E835BF0.756A152F@mvista.com>
+Date: Thu, 27 Mar 2003 12:15:44 -0800
+From: Scott Anderson <scott_anderson@mvista.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.linuxppc.org,
+	Gabriel Paubert <paubert@iram.es>
+Subject: Re: linux x86 binaries on PPC
+References: <20030123151624.GA4998@iram.es> <20030123191224.GA1534@iliana>
+		 <20030124094616.GA1832@iram.es> <1043413132.684.17.camel@zion.wanadoo.fr>
+		 <20030124153858.GC5192@iram.es> <1043423977.684.33.camel@zion.wanadoo.fr>
+		 <20030130083723.GA4654@iram.es> <1043916971.1028.6.camel@zion.wanadoo.fr>
+		 <20030130094655.GA5883@iram.es> <1043922015.1023.12.camel@zion.wanadoo.fr>
+		 <20030130110909.GA6697@iram.es> <1048772134.668.16.camel@zion.wanadoo.fr>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <63228.213.107.143.228.1048441818.squirrel@www.solinno.co.uk>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, Mar 23, 2003 at 05:50:18PM -0000, Leigh Brown wrote:
+Benjamin Herrenschmidt wrote:
+>
+> Remember that old debate we had about 2 years ago about using an x86
+> emulator to run x86 binaries on linux/ppc ? Looks like Fabrice Bellard
+> did it ;)
+>
+> http://fabrice.bellard.free.fr/qemu/
 
-> Current linuxppc_2_4 doesn't work on my 140 because the boot loader isn't
-> passing in the memory size.  This patch fixes that.
+I wonder how it compares to bochs:
+  http://bochs.sourceforge.net/
 
-Paul broke it in the massive merge of other PReP changes.  Can you try
-just adding the BI_MEM_SIZE record code in?  The rest of those changes
-should be superfluous.  Thanks.
-
---
-Tom Rini
-http://gate.crashing.org/~trini/
+    Scott Anderson
+    scott_anderson@mvista.com   MontaVista Software Inc.
+    (408)328-9214               1237 East Arques Ave.
+    http://www.mvista.com       Sunnyvale, CA  94085
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
