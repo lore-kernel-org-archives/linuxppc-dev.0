@@ -1,67 +1,49 @@
-Message-Id: <199908051808.UAA00314@piglet.cpu.lu>
-Date: Thu, 5 Aug 1999 20:08:43 +0200 (CEST)
-From: Michel Lanners <mlan@cpu.lu>
-Reply-To: mlan@cpu.lu
-Subject: Re: OF booting of G3-upgraded 7600?
-To: Paul.Mackerras@cs.anu.edu.au
-cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <199908050141.LAA10285@tango.anu.edu.au>
+Message-Id: <199908051503.JAA31292@carboncode.com>
+To: linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Re: kapm: PowerBook G3 Power Management?
+Date: Thu, 5 Aug 1999 11:11:14 -0700
+From: Don Lunder <speedy@carboncode.com>
+In-Reply-To: <v04210105b3cf696f065c@[128.125.70.248]>
+References: <v04210105b3cf696f065c@[128.125.70.248]>
+Content-Type: text/plain; charset="US-ASCII"
 MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Paul,
+Right now, I am currently trying to get a grasp for the PMU setup, and get 
+a working version of a dockable apm program.
 
-On   5 Aug, this message from Paul Mackerras echoed through cyberspace:
->> Default Catch!, code=FFF00400
-> 
-> That's an instruction access exception.  What were the srr0 and srr1
-> values?  Also, doing ".registers" will show the state of all of the
-> registers.
+Paul's work on the PMU unit has worked well for my 2400/180c, and from what 
+I gather, it also works on the 3400 and original G3.  (I am actually able 
+to put my computer to sleep, and awaken it back)
 
-Here you are:
+Currently, I'm trying to decode the info from the PMU.  Maybe if Paul or 
+some one is reading they can help me out.
 
-(values are correct (5 in %CR), the layout is 'by hand')
+Going off the Charge Used value, my 2400 died at about 1515 I believe. 
+Nothing close to the 6500 that Paul and his 3400 lasted to.  My Power Rate 
+Consumption hovers around 160-210 depending on what I am doing.
+Also, my voltage is right around 190 when charging.
 
-0> boot CLAIM FAILED!, code=FFF00400
- ok
-0> .registers
-	Client's Fix Pt Regs:
-  00 DEADBEEF DEADBEEF DEADBEEF 003F4400 00000020 FF8099B8 DEADBEEF 000000FF
-  08 00000002 00000008 DEADBEEF DEADBEEF DEADBEEF DEADBEEF 003F0000 DEADBEEF
-  10 DEADBEEF DEADBEEF DEADBEEF DEADBEEF DEADBEEF DEADBEEF DEADBEEF DEADBEEF
-  18 DEADBEEF DEADBEEF DEADBEEF DEADBEEF DEADBEEF DEADBEEF DEADBEEF DEADBEEF
+How do these numbers compare to the 3400 and original G3?  I'll have to run 
+some more tests to see how the PowerRate consumption affects the Charge 
+Used variables, so I can get an accurate "remaining time" calculation.
 
-	Special Regs:
-   %IV: 00000400 %SRR0: 003F4058 %SRR1: 08003070
-   %CR: 5EADBEEF   %LR: DEADBEEF  %CTR: 00000000 %XER: C000BE6F
-  %DAR: 00001000 %DISR: 42000000 %SDR1: 06FE0000
- ok
-0> msr@ ok 
-1> u. B070 ok
-0>
+I have never been able to use the Batmon program (since I've only run R5 on 
+the PowerBook) so I'm not really sure how that program reacts to things 
+either. But it seems that unless you completely charge the PowerBook, the 
+Charge Used field remains constant, until the Battery has reached its full 
+charge again.  But if you stop charging before that happens, the Charge 
+Used field is still the same, this can't be correct.  I could be wrong 
+here.  So, if anybody could help me decoding this information, that would 
+be great!!! Then I could get a program out to those lucky 24/3400 & Orig G3 
+owners.  And maybe Paul or some one will get a newer PowerBook so he can 
+work his magic ;)
 
->> - on subsequent 'boot' commands:
->> 
->> 0> boot Claim failed
-> 
-> The loader is trying to use memory that is already allocated, since it
-> was allocated by the loader last time. :-)
+Thanks,
 
-Seems reasonable...
-
-Thanks
-
-Michel
-
--------------------------------------------------------------------------
-Michel Lanners                 |  " Read Philosophy.  Study Art.
-23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
-L-1710 Luxembourg              |
-email   mlan@cpu.lu            |
-http://www.cpu.lu/~mlan        |                     Learn Always. "
+Don Lunder
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
