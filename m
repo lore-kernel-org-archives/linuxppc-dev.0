@@ -1,81 +1,135 @@
-Date: Tue, 6 Jan 2004 18:44:26 +0100
-To: Rob Baxter <robb@synergymicro.com>
-Cc: Sven Luther <sven.luther@wanadoo.fr>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: multiple separate pci bridges ...
-Message-ID: <20040106174426.GA9530@iliana>
-References: <20040105164038.GA16158@iliana> <1073338095.9497.70.camel@gaston> <20040105214239.GA20252@iliana> <1073340725.9497.105.camel@gaston> <20040106073955.GF735@iliana> <1073376024.26508.220.camel@gaston> <20040106081143.GA1644@iliana> <Pine.GSO.4.58.0401061533510.5752@waterleaf.sonytel.be> <20040106144545.GA7261@iliana> <20040106153305.GA6251@synergy>
+From: Marcus Barrow <mbarrow@sangate.com>
+To: linuxppc-dev@lists.linuxppc.org
+Content-Type: text/plain
+Date: 06 Jan 2004 15:53:02 -0500
+Message-Id: <1073422383.5359.157.camel@boat.sangate.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20040106153305.GA6251@synergy>
-From: Sven Luther <sven.luther@wanadoo.fr>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Jan 06, 2004 at 08:33:05AM -0700, Rob Baxter wrote:
+        Hi Sven:
+
+        I think there is some basic brokeness in the Discovery
+        specific code. I've been meaning to go and look at some
+        of the original code, to see if some stuff was left on
+        the floor.
+
+        On our evalution boards the P2P registers are not set
+        up. So you indeed have two PCI bus 0. The P2P register
+        for PCI bus 1 should be initialized to identify it as
+        bus 1, or whatever the right value is considering
+        any more bridges found on bus 0.
+
+        If you insert pci cards which contain bridges on them,
+        they only work on the bus 0 slots...
+
+        Do you have something like ppcboot or uboot starting
+        your system or just a kernel? If you are using a real
+        boot rom, you could try initializing the p2p registers
+        by hand, then booting...
+
+        I'm hoping to work on this in the next few days.
+
+                                Regards, Marcus Barrow
+
+
+
+
+On Mon, 2004-01-05 at 11:40, Sven Luther wrote:
 >
-> On Tue, Jan 06, 2004 at 03:45:45PM +0100, Sven Luther wrote:
+> On Sun, Jan 04, 2004 at 11:06:08PM +0100, Sven Luther wrote:
 > >
-> > On Tue, Jan 06, 2004 at 03:40:30PM +0100, Geert Uytterhoeven wrote:
-> > > On Tue, 6 Jan 2004, Sven Luther wrote:
-> > > > On Tue, Jan 06, 2004 at 07:00:24PM +1100, Benjamin Herrenschmidt wrote:
-> > > > > Type 0 is an access to the primary segment (doesn't contain
-> > > > > a bus number), type 1 is to be forwarded to another bus
-> > > > > segment by a P2P bridge. So for anything directly attached
-> > > > > to the host bridge, it's a type 0 access. Anything else is
-> > > > > type 1. Typically, if the bus number of your "target" ==
-> > > > > hose->first_busno, it's type 0, else type 1
-> > > >
-> > > > Yep, except we have two pci controllers, and it should be type 0
-> > > > for both of them.
+> > On Mon, Jan 05, 2004 at 08:45:24AM +1100, Benjamin Herrenschmidt
+wrote:
 > > >
-> > > Yep, two hoses, with different hose->first_busno.
-> >
-> > A, yes, right.
-> >
-> > > > > They could have appeared as on-chip PCI devices on a
-> > > > > "pseudo-bus", but we can eventually just match with the host's
-> > > > > PCI device.
-> > > >
-> > > > Ok. but this can also be faked or something ? But, how can we
-> > > > match with the host PCI device, if we are going to hide it ?
 > > >
-> > > Hide the memory BAR only, not the full PCI device.
+> > > > PCI: Probing PCI hardware
+> > > > Scanning bus 00
+> > > > Found 00:00 [11ab/6460] 000600 00
+> > > > Found 00:08 [1106/3044] 000c00 00
+> > > > Found 00:28 [1000/0001] 000100 00
+> > > > Found 00:60 [1106/8231] 000601 00
+> > > > Found 00:61 [1106/0571] 000101 00
+> > > > Found 00:62 [1106/3038] 000c03 00
+> > > > Found 00:63 [1106/3038] 000c03 00
+> > > > Found 00:64 [1106/8235] 000000 00
+> > > > Found 00:65 [1106/3058] 000401 00
+> > > > Found 00:66 [1106/3068] 000780 00
+> > > > Found 00:68 [1106/3065] 000200 00
+> > > > Fixups for bus 00
+> > > > Bus scan for 00 returning with max=00
+> > > > Scanning bus 10
+> > > > Fixups for bus 10
+> > > > Bus scan for 10 returning with max=10
+> > > > PCI: Cannot allocate resource region 4 of device 00:00.0
+> > > >
+> > > > So, the 0x10 incrementation is fine, but the agp bus is not
+working
+> > > > correctly, and thus the agp graphic card not recognized (and
+thus no
+> > > > radeonfb).
+> > > >
+> > > > That said, i believe the 00:00.0 (should that not be 10:00.0
+because of
+> > > > the renumbering) is the Marvell Discovery II pci controller, and
+the
+> > > > actual agp card should be found just behind.
+> > >
+> > > What video card is this ?
 > >
-> > Ok, will try that.
+> > A Radeon 9200 SE 64M, from Xpert Vision. The kernel is patched for
+> > Radeon 9200 SE support. (Both i have are Yd models).
 >
-> We hide all of the PCI resources (i.e., PCI BARs) by initializing all
-> of resources to zero. This allows us to load drivers (e.g., ethernet)
-> specific to the Discovery. Registers internal to the Discovery (via
-> the PowerPC bus) need to be initialized and queried for memory, PCI
-> I/O, PCI memory, and PCI prefecthable memory mappings (hopefully your
-> firmware does this).
+> Ok, i got it to work finally, at least upto asking me for a root
+> filesystem, which i don't yet have on this harddisk.
 >
-> Here's the code from our pcibios_fixup:
+> Now, I have some technical questions about how to best do a few
+things.
 >
-> 	dev = NULL;
-> 	while ((dev = pci_find_device(PCI_VENDOR_ID_GALILEO,
-> 				PCI_DEVICE_ID_GALILEO_GT64260, dev))) {
-> 		for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
-> 			dev->resource[i].flags = 0;
-> 			dev->resource[i].start = 0;
-> 			dev->resource[i].end = 0;
-> 		}
-> 	}
+> I was recommended to set the ppc_md.pci_exclude_device so that the
+> device 0 (the marvell bridge itself) is not seen by linux. I did this
+by
+> following the 4xx example, which should be ok.
+>
+> But, i have to do access some address which i need to ioremap. I
+created
+> a hose->cfg_peg2_magic to to put this ioremapped address in. I guess
+> this is not the most clean way of doing this or something, any hint on
+> how to best do it ? I need to set this in chrp_find_bridges or
+something
+> such, and use the address in the read/write_config functions.
+>
+> Also, i had to manually set hose->bus_offset = 0x10, since that didn't
+> seem to be set automatically. I don't know why though.
+>
+> And finally, about the stuff which blocked me most, i am somewhat
+> bewildered. I use this :
+>
+>         data = 0x80000000 | ((dev->bus->number - hose->bus_offset) <<
+16)
+>               | (dev->devfn << 8) | (offset & 0xff);
+>
+> As the address to write to, but the indirect pci stuff uses offset &
+> 0xfc, which blanks bits 0 & 1 for pci config type selection. What am i
+> misunderstanding or doing wrong here ?
+>
+> A, and a last question to Rob Baxter, did you manage to get the
+builtin
+> gigabyte ethernet port to work, and if yes, with which code, an
+> existing driver or some home built driver. Can you eventually share
+the
+> code or something such ?
+>
+> Anyway, thanks for your help.
+>
+> Friendly,
+>
+> Sven Luther
+>
+>
+>
 
-Ok, thanks, will try it out.
-
-BTW, could you please do something to not reject my incoming email ?
-Black listing frances biggest ISP is somewhat silly, and my last
-experience with such black lister was not conclusive. They blacklisted
-it on the basis of 50 or so spams received over one year period, most of
-them not even comming from wanadoo but from other ISPs.
-
-Friendly,
-
-Sven Luther
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
