@@ -1,81 +1,65 @@
-Date: Sat, 22 Jan 2000 15:53:47 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Troy Benjegerdes <hozer@drgw.net>
-cc: linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: Argh, PReP netbooting doesn't use residual data
-In-Reply-To: <Pine.LNX.4.10.10001172159080.20769-100000@altus.drgw.net>
-Message-ID: <Pine.HPX.4.10.10001221531010.18916-100000@gra-ux1.iram.es>
+From: Kevin Hendricks <khendricks@ivey.uwo.ca>
+Reply-To: khendricks@ivey.uwo.ca
+To: yellowdog-general@lists.yellowdoglinux.com,
+        linuxppc-user@lists.linuxppc.org, linuxppc-dev@lists.linuxppc.org
+Subject: Yet Another New Version of Xpmac (Revision 9)
+Date: Sat, 22 Jan 2000 10:14:38 -0500
+Content-Type: text/plain
+Cc: debian-powerpc@lists.debian.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <00012210225200.00497@localhost.localdomain>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Hi,
+
+I have just posted the latest version (revision 9) of Ryuichi Oikawa's Xpmac
+Xserver which is accelerated for Rage128 and Mach64.   This version has support
+for usb mice as well as adb mice.
+
+This is a bugfix release:
+
+- includes fix to allow auto vt switching for Mac-On-Linux (MoL) users
+
+- fix for seg-faults during Xpmac startup for machines that don't have
+  /dev/usbmouse
 
 
-On Mon, 17 Jan 2000, Troy Benjegerdes wrote:
+***Please upgrade to at least Xpmac revision 8 because of bug fixes for serious
+usbmouse problems that can cause hangs, lost mouse clicks, etc****
 
->
->
-> Is there any sane way to fix arch/ppc/boot/misc.c so that PReP machines
-> that are network booting can figure out how much memory the machine has?
->
-> I have a MVME 2600 with 16 MB of RAM I have been fighting with the last
-> week until I realized it assumed 32 MB while the machine only had 16, and
-> *did not* print a warning message of any sorts.
->
-> Gabriel Paubert has done quite a bit of work on his prep bootloader.. Are
-> there some reasons that this bootloader could not be included as a config
-> option?
+Please give it a try and let me know if you run into problems:
+AFTER making sure you have tried everything in the ReadThisFirst.txt file!).
 
-On this subject, I've just created a new linux-2.3 directory in which
-you'll find the patches for the kernel I boot on my MVME2600 and 2400.
-They include prepboot as config option, but the patch includes many other
-things too.
+The URL's given below are on my work desktop workstation which I need to do
+my research and can't handle a big load so please check at Robert Shaw's G3 site
+http://www.linuxppc.org/blueg3/ first for revision 9 before downloading it from
+the URL's given below.
 
-Note that this kernel is still unstable at least on the machines wit root
-on NFS (the 2600 with SCSI disk seems to work fine): after some time and
-for unknown reasons, filesystems, except the root filesystems, disappear:
-the result of ls -a on these nodes returns only . and .. (but if proc is
-still mounted /proc/mounts does not show anything abnormal):
+(ps. I have not given Robert much of a head's up (again!) so if
+you can wait a day or so it should soon appear on his site).
 
-Then strange things happen like:
-[root@vdevel packages]# df
-Filesystem           1k-blocks      Used Available Use% Mounted on
-vlab1:/acroot/vdevel   2012932   1514623    394272  79% /
-none                   2012932   1514623    394272  79% /proc
-none                   2012932   1514623    394272  79% /dev/pts
-vlab1:/usr/src/        2012932   1514623    394272  79% /usr/src
-vlab1:/home            2012932   1514623    394272  79% /home
+The URLs are:
 
-but I'm still in /usr/src/packages and ls works:
+ftp://khendricks.ivey.uwo.ca/pub/
+http://khendricks.ivey.uwo.ca/rage128_usb/
 
-[root@vdevel packages]# pwd
-/usr/src/packages
-[root@vdevel packages]# ls
-XFree      gcc-newppc-branch    gcc_work 	glibc-linuxthreads-2.1.tar.gz
-gcc-build  gcc_latest_snapshot  glibc-2.1.tar.gz
+If you have trouble downloading this file using netcape, remember to use the
+right mouse button (or under MacOS click and hold the link to download the file
+as source (versus text).).  Note, some netscapes automagically gunzip the file
+for you without removing the .gz from the name.  Check the file sizes to be
+sure what your netscape does.
 
-and funny things:
-[root@vdevel packages]# uptime
-Error: /proc must be mounted
-  To mount /proc at boot you need an /etc/fstab line like:
-      /proc   /proc   proc    defaults
-  In the meantime, mount /proc /proc -t proc
-Error: /proc must be mounted
-  To mount /proc at boot you need an /etc/fstab line like:
-      /proc   /proc   proc    defaults
-  In the meantime, mount /proc /proc -t proc
-Error: /proc must be mounted
-  To mount /proc at boot you need an /etc/fstab line like:
-      /proc   /proc   proc    defaults
-  In the meantime, mount /proc /proc -t proc
-  1:31pm  up -24855 days, -3:-14,  1 user,  load average: 0.00, 0.00, 0.00
+Have fun!
 
-I suspect a VFS/dcache issue with NFS or something similar. Not the HW
-since 2.2.12 is rock solid on the same machine...
+Kevin
 
-	Gabriel.
+
+p.s. If you need or want the source, e-mail me directly and I would be happy to
+send it to you as an e-mail attachment.  To build the source, you must place
+it in the XFree 3.3.5 source tree to replace the original powermac
+directory using Tom Rini's ppc source rpm.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
