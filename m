@@ -1,68 +1,71 @@
-Date: Mon, 7 Jun 2004 01:48:12 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Marius Groeger <mgroeger@sysgo.com>
+Date: Mon, 7 Jun 2004 11:12:42 +0200 (CEST)
+From: Marius Groeger <mgroeger@sysgo.com>
+To: Eugene Surovegin <ebs@ebshome.net>
 Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: [RFC] Simple ioremap cache
-Message-ID: <20040607084812.GA5808@gate.ebshome.net>
-References: <20040605002915.GA17603@gate.ebshome.net> <Pine.LNX.4.56.0406070931180.3147@mag.sysgo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.56.0406070931180.3147@mag.sysgo.com>
+In-Reply-To: <20040607084812.GA5808@gate.ebshome.net>
+Message-ID: <Pine.LNX.4.56.0406071100110.11623@mag.sysgo.com>
+References: <20040605002915.GA17603@gate.ebshome.net>
+ <Pine.LNX.4.56.0406070931180.3147@mag.sysgo.com> <20040607084812.GA5808@gate.ebshome.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Mon, Jun 07, 2004 at 09:46:16AM +0200, Marius Groeger wrote:
-> I'm not sure, however, whether your current patch actually saves _TLB_
-> misses.
+On Mon, 7 Jun 2004, Eugene Surovegin wrote:
 
-Huh?
+> With my patch only _one_ TLB mapping will be required for _all_ 4K-sized
+> ioremaps of 0x0000000140000000:
 
-Let's consider two drivers - serial & emac on 44x. Both of them ioremap
-different parts of the same phys page, but without the patch these will be
-_different_ virtual mappings, e.g. if they access their respective I/O registers
-_two_ TLB entries will be used.
+Yes, now I understand. You're after a different kind of optimization
+which I had in mind. It makes absolutely sense to me, and should also
+be portable to other cores.
 
-Here is real example (see my original e-mail):
+> > Have you counted them to prove it?
+>
+> No, it seemed quite obvious to me :)
 
-UART0 ioremaps 0x0000000140000200 and gets 0xfdfea200 as a virtual kernel
-address
+Yeah to me, too now ... :-)
 
-EMAC0 ioremaps 0x0000000140000800 and gets 0xd1000800.
+> > To do this, I think you also need
+> > to flag a bigger virtual page size to the MMU, eg. program a different
+> > PAGESZ_* value (see include/asm-ppc/mmu.h). If you don't, the MMU has to
+> > manage diffent chunks all the same, they just happen to be virtually
+> > contiguous.
+>
+> I don't follow you here, sorry. Could you give some examples with
+> the real TLB contents for the cases you are describing?
 
-You'll need _two_ TLB entries for these mappings:
+What I mean is to merge/coaelsce individual mappings within the same
+IO area. Eg., consider an IO area with multiple resources at
+0xd000.0000 spanning more than one 4k page. Now, driver A requests
+access to a page at 0xd0000.0100, and driver B wants to access
+0xd0003.0400. Usually, this would lead to 2 diffent mapping entries
+for the following phys base/size pairs (0xd0000.0000, 0x1000);
+(0xd0003.0000, 0x1000). With optimization, this could be handled by
+one mapping at 0xd0000.0000 spanning a 16k page. It's a bit like when
+BATs are used to cover larger chunks.
 
-0xfdfea000 -> 0x0000000140000000
-0xd1000000 -> 0x0000000140000000
+Again, this was an idea we had a while ago. I don't know how much real
+remedy is in implementing it. There once was also talk about a "big
+TLB" patch. I haven't checked if this is already part of 2.5/2.6.
 
-With my patch only _one_ TLB mapping will be required for _all_ 4K-sized
-ioremaps of 0x0000000140000000:
+> What do you mean "just mapping entries" ? TLB slots contain these "mapping
+> entries", that's the whole purpose of TLB.
 
-0xfdfea000 -> 0x0000000140000000
+Yes, but 4xx allows for variable sized TLBs.
 
-440GP has a 64 entry TLB and believe me, when you are running user mode app,
-there are a lot of TLB misses, and decreasing TLB pressure (e.g. requiring less
-TLB entries for driver I/O) _will_ save you some TLB misses.
+Sorry for the confusion. But maybe this tickles your inspiration :-)
 
-> Have you counted them to prove it?
+Regards,
+Marius
 
-No, it seemed quite obvious to me :)
+--
+Marius Groeger <mgroeger@sysgo.com>           Project Manager
+SYSGO AG                      Embedded and Real-Time Software
+Voice: +49 6136 9948 0                  FAX: +49 6136 9948 10
+www.sysgo.com | www.elinos.com | www.osek.de | www.imerva.com
 
-> To do this, I think you also need
-> to flag a bigger virtual page size to the MMU, eg. program a different
-> PAGESZ_* value (see include/asm-ppc/mmu.h). If you don't, the MMU has to
-> manage diffent chunks all the same, they just happen to be virtually
-> contiguous.
-
-I don't follow you here, sorry. Could you give some examples with the real TLB
-contents for the cases you are describing?
-
-> So I think what you're saving right now is just mapping entries (which also
-> is a valid thing to gain).
-
-What do you mean "just mapping entries" ? TLB slots contain these "mapping
-entries", that's the whole purpose of TLB.
-
-Eugene.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
