@@ -1,42 +1,46 @@
-Date: Fri, 10 Mar 2000 10:18:36 +0100 (MET)
-From: Gabriel Paubert <paubert@iram.es>
-To: Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
-cc: Sean Harding <sharding@dogcow.org>, linuxppc-dev@lists.linuxppc.org
-Subject: Re: compiler optimization? something else?
-In-Reply-To: <4.3.2.20000309152803.00ca9100@mail.munich.netsurf.de>
-Message-ID: <Pine.HPX.4.10.10003100954580.22162-100000@gra-ux1.iram.es>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <v03110701b4edaa5c1f3e@[129.100.29.243]>
+Date: Fri, 10 Mar 2000 10:40:38 +0100
+To: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
+        linuxppc-dev@lists.linuxppc.org
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: IDE problems with 2.3.49?- same with 2.2.15pre3
+Message-Id: <20000310104038.012318@mailhost.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Thu, Mar 9, 2000, Kevin B. Hendricks <khendricks@ivey.uwo.ca> wrote:
 
-
-On Thu, 9 Mar 2000, Franz Sirl wrote:
-
-> But what compiler options did it use on with your compile? I downloaded it
-> myself and it seems to default to a simple -O, which is a rather
-> non-optimal choice. Try editing the Makefile and play with combinations of
-> these options:
+>1. Where can I get the yaboot-0.5 version as a MacOS app that can be used
+>from zip
 >
-> -O2, -O3, -funroll-loops, -funroll-all-loops, -ffast-math (dunno if this
-> one has an effect on PPC at all), -finline-functions, -mcpu=604, -mcpu=750
+>2.  I do not want to again repartition.  Is booting from a zip using the
+>o-f keys my only choice now?  Instead of using a zip, could I burn a cd-rom
+>with yaboot on it that I put in when I want to of boot and then restart and
+>hold down the c key?  Would it be better to put your of-booting script on
+>the cdrom?
 
--ffast_math has some effects in the generic part of the compiler
-(simplifying some expressions and constant folding) since even some
-obvious mathematical relationships do not hold with IEEE floating point.
-Main reasons are the existence of NaNs and the distinction between
-positive and negative zeroes. (x+0 and x-0 can't be simplified, x==x may
-not be true...).  -ffast-math will also replace divisions by constants
-with multiplies, which may be slightly less precise but is always
-significantly faster (especially on a 604).
+If you used BootX, then I beleive you already have an HFS or HFS+
+partition. Just put yaboot there along with a yaboot.conf file, and set
+the OF "boot-device" path to point to it. If you want to dual boot MacOS
+and Linux, copy also the dual boot OF script I posted some time ago (it's
+also in the ybin package from Ethan Benson) and set OF to boot this
+script (and don't forget to edit the OF path inside the script). Then,
+use the space bar at boot to choose which OS you want.
 
-If you don't have a 601 -fgfxopt might also help since it will generate
-fsel instructions for min/max/conditional moves. fsel is unfortunately not
-implemented on 601 so you can't set gfxopt for distributions.
+>Also, is there any chance BootX will be fixed to work with these machines
+>or am I SOL (I spend as much time using MacOS as LinuxPPC and liked the
+>control of simple dual booting without messing with of).
 
-	Gabriel.
+There are more chances that we finally make a tool to configure OF and
+yaboot easily than for BootX to be fixed. The BootX problem with the
+iMacDV is not simple since MacOS actualy shuts down some hardware devices
+completely (apparently, the clock of the ATI controller seems to be
+switched off) before I take control. With other machines, we would have
+to find a way to stop all devices that may do bus mastering and reset
+them to a known state.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
