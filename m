@@ -1,53 +1,72 @@
-Message-ID: <3856B837.CAC7CCE9@email.sps.mot.com>
-Date: Tue, 14 Dec 1999 15:35:51 -0600
-From: "Richard Hendricks" <ra6353@email.sps.mot.com>
+Message-ID: <3856C0D7.4E1404C9@ctam.com.au>
+Date: Wed, 15 Dec 1999 09:12:40 +1100
+From: Brendan Simon <bsimon@ctam.com.au>
+Reply-To: bsimon@ctam.com.au
 MIME-Version: 1.0
-To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: fads823 ethernet interface does (seams) not send data
-References: <OF18F33680.CFE448E8-ON00256843.003AAE59@flaga.is> <38515AF9.3F756E5E@netx4.com>
+To: linuxppc-embedded <linuxppc-embedded@lists.linuxppc.org>
+Subject: linuxppc embedded boot problems.
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-The problem may lie with the multiplexing of the pins for the (not
-availible) softmodem.  The short story is to look at page 6 of 9 of the
-MPC823FADSDB schematics. That 74LCX257 does some routing control of
-various signals, and may be causing some confusion and pain.  The MPC823
-FADS User's Manual should also have a picture on page 4-7 and a
-discussion on page 4-6 about this "feature".  The important thing is the
-picture, it shows how all the signals are REALLY connected between the
-daugthercard and motherboard.
 
-In your case, you'll notice that the PA7/ETHTCK from the motherboard is
-really connected to PA5/ETHTCK on the daughtercard.  I have seen
-Ethernet working on the MPC823FADS board, so I know it CAN be done.
+Just when I thought I had things sussed out, something changes and I'm
+back to square one.  Sigh.......
 
-Dan Malek wrote:
-> 
-> kd@flaga.is wrote:
-> 
-> > Is it possible that this has something to do with the microcode patch
-> > presented in 2.213?
-> 
-> No, it has nothing to do with that.  It is only skeleton code
-> that someday may perform a patch.  The drivers are not yet
-> updated to handle it.  The microcode patches either work
-> correctly or not at all, there is no in between.
-> 
-> I have never used an SCC Ethernet on the FADS, but there must
-> be control register bits or other 8xx general purpose I/O
-> pins that are required to be set correctly for the Ethernet PHY
-> to operate correctly.  You have to also make sure all of the
-> SCC clock and I/O pins are properly configured for the hardware
-> design.  I can guarantee some of this may not be correct for
-> the 823 FADS, as all boards seem to use something different.
-> 
-> The 8xx SCC Ethernet driver will only run on half duplex mode.
-> There is no auto sensing like is provided on (some) FEC 10/100
-> Ethernet PHYs.  The SCC (and FEC) has to be configured differently
-> for half or full duplex operation.
-> 
->         -- Dan
+I have HAD linuxppc (embedded-2.2.5) working on a custom MPC860 board.
+By working I mean booting to the bash prompt and being able to view the
+initrd filesystem with ls.  I have compiled some simple apps that print
+things to the console but they only work if I compile with -static
+option.
+
+I now want to get the network going and really want to get root nfs
+stuff going so development is easy.  I decided to put a whole lot of
+printk statements in the enet.c code to see what was happening.  I
+loaded this code and all the printk statements are output to the console
+when I try "root=/dev/nfs ......" and the boot prompt and I even saw
+that statement that the root file system was mounted.  Cool, but the
+console hung and there is no bash shell.  I put some more printks in
+init/main.c to see how far the code was getting.
+NOW HERE IS WHERE THE WIERDNESS STARTS.  The kernel no longer boots.
+WHAT !!!  The boot code seems to uncompress the kernel image into RAM
+but then nothing else happens.  Here is the output:
+
+loaded at:     FF801000 FF812BAC
+relocated to:  00100000 00111BAC
+board data at: 001001C4 001001E0
+relocated to:  00200100 0020011C
+zimage at:     FF807000 FF868100
+avail ram:     00201000 01000000
+
+Linux/PPC load:
+Uncompressing Linux...done.
+Now booting the kernel
+
+That is all I get.  What the hell could be causing this.  OK, time to
+take all the printk statements out so I can get back to where I left
+off.  I can't believe it; the same thing happens.  I have appended the
+output sections of my image.  It looks OK and I have had this thing
+booting before so there must be something I'm missing.  I'm a bit
+concerned about the possible overlap of the .bss and image sections.
+Could some bss data be overwriting the image data at runtime ???
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00004870  ff801000  ff801000  00001000  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .rodata       00000470  ff805870  ff805870  00005870  2**4
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  2 .data         00000300  ff806000  ff806000  00006000  2**2
+                  CONTENTS, ALLOC, LOAD, DATA
+  3 .bss          0000bbac  ff807000  ff807000  00007000  2**2
+                  ALLOC
+  4 image         00061104  ff807000  ff807000  00007000  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+
+
+Thanks,
+Brendan Simon.
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
