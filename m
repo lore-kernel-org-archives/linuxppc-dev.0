@@ -1,28 +1,50 @@
-Date: Wed, 4 Oct 2000 10:14:07 -0700
-From: Kevin Buettner <kev@primenet.com>
-Message-Id: <1001004171407.ZM31953@saguaro.lan>
-In-Reply-To: Michael Norton <mnorton@cisco.com>
-        "Purify or Comparable???" (Oct  4,  5:44am)
-References: <39DAFC02.52938515@cisco.com>
-To: mnorton@cisco.com, linuxppc-dev@lists.linuxppc.org
-Subject: Re: Purify or Comparable???
+Date: Wed, 4 Oct 2000 20:09:19 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+cc: Olaf Hering <olh@suse.de>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Patch: PCI resource fixup for atyfb (was: Re: xf 4.0.1 + ati
+ driver with rage II/rage pro)
+In-Reply-To: <Pine.LNX.4.10.10010031820450.15293-100000@opal.biophys.uni-duesseldorf.de>
+Message-ID: <Pine.LNX.4.10.10010042008500.374-100000@cassiopeia.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Oct 4,  5:44am, Michael Norton wrote:
+On Tue, 3 Oct 2000, Michael Schmitz wrote:
+> > > > plum:~ # fbset -depth 24
+> > > > ioctl FBIOPUT_VSCREENINFO: Invalid argument
+> > >
+> > > That's normal, you also have to decrease the virtual size, which was
+> > > initialized to the maximum possible value w.r.t. RAM size.
+> >
+> > It seems to be a problem with the color palette or somehow color depth
+> > related.
+> > First I just switched to 1024x768-60 and it didn't work, the next time I
+> > added -depth 24 and it works fine. So mol can not increase the color
+>
+> vmode also needs both arguments for me. fbset crashing when you omit the
+> depth argument is weird - does fbset not read the current depth from the
+> device before a mode set, Geert?
 
-> What software tool is recommended for examining memory leaks in code?
-> Does a close cousin of Purify exist for LinuxPPC/ What do you coders
-> recommend?
+Yes it does.
 
-I've never used Purify, so I can't offer a comparison, but...
+> We sure could hack the kernel ioctl to take depth 0 as 'dont change' and
+> print a warning?
 
-I've found that dmalloc works quite well for debugging memory
-allocation related problems.  See http://dmalloc.com/.
+No, that would violate the `round up' policy.
 
-Kevin
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
