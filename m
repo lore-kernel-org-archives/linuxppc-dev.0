@@ -1,50 +1,48 @@
-Date: Wed, 11 Feb 2004 20:31:47 +0100 (MET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Hank <compdata@alltel.net>
-Cc: Linux/m68k <linux-m68k@lists.linux-m68k.org>
-Subject: Re: compiiler failure 2/11/04 on Macintosh Quadra 840AV: linux-m68k
- -r 2.4.24
-In-Reply-To: <402A7B08.9090904@alltel.net>
-Message-ID: <Pine.GSO.4.58.0402112028570.28274@waterleaf.sonytel.be>
-References: <402A7B08.9090904@alltel.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Re: 64-bit user-space on G5? Never, soonish, or unknown?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Mikael Pettersson <mikpe@user.it.uu.se>
+Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
+In-Reply-To: <16426.14204.974363.611192@alkaid.it.uu.se>
+References: <16426.14204.974363.611192@alkaid.it.uu.se>
+Content-Type: text/plain
+Message-Id: <1076537642.866.127.camel@gaston>
+Mime-Version: 1.0
+Date: Thu, 12 Feb 2004 09:14:02 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 11 Feb 2004, Hank wrote:
-> Changed the options in config to compile for the input hid.
+On Thu, 2004-02-12 at 01:09, Mikael Pettersson wrote:
+> We're considering buying a G5 for porting a compiler/runtime-system
+> project to PPC and eventually PPC64.
 >
-> mac_hid.c: In function `mac_hid_sysctl_keycodes':
-> mac_hid.c:298: `ppc_md' undeclared (first use in this function)
-> mac_hid.c:298: (Each undeclared identifier is reported only once
-> mac_hid.c:298: for each function it appears in.)
-> mac_hid.c: In function `mac_hid_init_hw':
-> mac_hid.c:484: `ppc_md' undeclared (first use in this function)
-> make[3]: *** [mac_hid.o] Error 1
-> make[2]: *** [first_rule] Error 2
-> make[1]: *** [_subdir_macintosh] Error 2
-> make: *** [_dir_drivers] Error 2
+> The question is, will Linux ever support a 64-bit user-space
+> on the G5? From my reading of arch/ppc and arch/ppc64, the
+> differences seem major so I'm not holding my breath, but perhaps
+> there is hope.
+>
+> Or should we just treat the G5 as a faster 32-bitter?
+>
+> Or should we use some other OS than Linux :-(
 
-Hmm, someone stuck too many PPC-isms in that file ;-)
+There is a 64 bits kernel for the G5, it's currently available
+on YDL site, though I'll have the whole thing merged with Linus in
+a few days (with some luck, 2.6.3 will boot out of the box on those
+in both 32 bits and 64 bits versions).
 
-Try replacing `ppc_md.ppc_kbd_sysrq_xlate' by `mach_kbd_translate' and see
-whether that works.
+I don't know of a distro that offer 64 bits userland yet, YDL is
+working on a bi-arch setup, there are SuSE and RedHat distros for
+IBM p/iSeries though those don't support G5s at the moment, but it
+may just be a matter of using the right kernel with them and maybe
+tweaking the installer...
 
-BTW, apparently much of the initialization is duplicated in
-arch/m68k/mac/config.c and drivers/macintosh/mac_hid.c and thus needs some
-clean ups.
+And you can always build your own toolchain & glibc :)
 
-Gr{oetje,eeting}s,
+The 64 bits kernel allow you to run both 32 and 64 bits userland,
+the common practice is to have a 32 bit userland with the necessary
+libs to be able to build & run _some_ 64 bits executables.
 
-						Geert
+Ben
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
