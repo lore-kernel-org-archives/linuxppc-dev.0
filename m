@@ -1,31 +1,48 @@
-Message-Id: <5.1.0.14.0.20020301083221.01d7da58@pop.gmx.de>
-Date: Fri, 01 Mar 2002 08:37:29 +0800
-To: "Jon-Erling Dahl" <jon-erling.dahl@its4mobility.com>,
-	"'Linux PPC'" <linuxppc-embedded@lists.linuxppc.org>
-From: Michael Habermann <MHabermann@gmx.de>
-Subject: Re: libraryopt
-In-Reply-To: <GKEKJGELJKLLBBAFIGAIGEJGCAAA.jon-erling.dahl@its4mobility.
- com>
-References: <638AA0336D7ED411928700D0B7B0D75B01E2011D@mail2.aiinet.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Message-ID: <6B546A602AD2D211BFF00008C7A4288905844007@hrtades2.atea.be>
+From: Goddeeris Frederic <Frederic.Goddeeris@siemens.atea.be>
+To: "'Owen Green '" <owenjinggreen@yahoo.com>,
+	"'Christian Pellegrin '" <chri@infis.univ.trieste.it>
+Cc: "'linuxppc-embedded@lists.linuxppc.org '" <linuxppc-embedded@lists.linuxppc.org>
+Subject: RE: gdbserver ppc8xx
+Date: Fri, 1 Mar 2002 11:07:53 +0100 
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 01:24 PM 2/28/2002 +0100, Jon-Erling Dahl wrote:
->I'm having problems getting libraryopt doing something.
->(http://libraryopt.sourceforge.net)
->Is there anybody out there that have used this utility
->successfully?
+Did you try using strace? This can give you info about why gdbserver quits.
 
-There was a thread about this topic, with detailed descriptions. Maybe this
-link helps you:
-http://lists.linuxppc.org/linuxppc-embedded/200110/msg00156.html
+I also had a problem with gdbserver and this is the way I solved it...
 
-I have not managed to use libraryopt (I tried not very hard), but was
-successful with mklibs.sh.
-If you are using hardhat linux, libraryopt is recommended.
+Fred
+
+-----Original Message-----
+From: Owen Green
+To: Christian Pellegrin
+Cc: linuxppc-embedded@lists.linuxppc.org
+Sent: 2/28/02 2:50 PM
+Subject: Re: gdbserver ppc8xx
+
+
+--- Christian Pellegrin <chri@infis.univ.trieste.it>
+wrote:
+> On Wed, 27 Feb 2002, Owen Green wrote:
+>
+> > edition but I got something like:
+> > #gdbserver :7777 /bin/test
+> > Process /bin/test created; pid = 48
+> > getprotobyname:Sucess.
+> > Exiting
+> > #
+> just copy /etc/protocols from whatever distro you
+> like. Bye!
+>
+
+This did not work, I got the getprotobyname: Sucess,
+what means my /etc/protocols have the entry for tcp.
+Thanks anyway.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
