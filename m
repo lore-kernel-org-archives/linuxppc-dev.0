@@ -1,34 +1,39 @@
-Date: Tue, 20 Jul 1999 10:31:27 -0400 (EDT)
-From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-Reply-To: Hollis R Blanchard <hollis+@andrew.cmu.edu>
-To: puetzk6715@uni.edu
-cc: Yann Bizeul <yann@tynsoe.COM>, linuxppc-dev@lists.linuxppc.org,
-        linuxppc-user@lists.linuxppc.org
-Subject: Re: X : caught signal 11 ?
-In-Reply-To: <Pine.PMDF.3.96.990720092348.538970380F-100000@uni.edu>
-Message-ID: <Pine.LNX.3.96L.990720102648.1737C-100000@unix47.andrew.cmu.edu>
+Message-ID: <37949060.878FF791@generation.net>
+Date: Tue, 20 Jul 1999 11:06:08 -0400
+From: Simon Piette <spiette@generation.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: puetzk6715@uni.edu, LinuxPPC-Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: X : caught signal 11 ?
+References: <Pine.PMDF.3.96.990720092348.538970380F-100000@uni.edu>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 20 Jul 1999 puetzk6715@uni.edu wrote:
+puetzk6715@uni.edu wrote:
 
-> Well, I switch on and off all the time (I have 6 console VT's and 2 X
-> VT's). I used to get palette problems, but not since I applied anthony
-> tong's patch and rebuilt X. It never died (well, it did in my cobbled
-> pre-R5, but not in the released LinuxPPC 1999).
+> > On Tue, 20 Jul 1999, Yann Bizeul wrote:
+> > >
+> > > I've a little bit more informations.
+> > > 1) X caught signal 11 and quits each time I go back to a console.
+> > > 2) X quits each time XScreensaver is launching
+> > >
+> > > Iuse the XFree server provided by Release 5
+> >
+> > I also have problem 1), though I guess I've managed to disable xscreensaver so
+> > X does its built-in blanking thing (with no power saving =( ).
+> >
 
-I see. What video driver are you using? Yann, you too? As I mentioned, I'm
-using platinumfb on a PowerCenter 132. I'm wondering if it's the driver. I
-just got Mark Abene's updated driver but haven't had a chance to try it yet
-(and won't for the rest of the week). For those of you who want to see if it
-fixes anything, I've put it up at
-http://www.andrew.cmu.edu/~hollis/platinumfb.c
+I have problem 2), but when I'm disabling xscreensaver! I'm using R5 (final) on
+UMAX J700 with an IMS TwinTurbo 128 (2 Mb VRAM) . Power saving does not work in
+either ways.
 
--Hollis
+BTW, is anybody knows which arguments to give (for BootX) if I want to remove the
+"No video driver" options? I've tried a few combinations (like
+video=imsttfb:vmode:17,cmode:16), but even the console is almost unusable. I think
+that the only to use the IMS is to check that "No video driver" option.
 
+Simon Piette
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
