@@ -1,11 +1,11 @@
-Date: Thu, 17 Oct 2002 18:34:56 +0200 (CEST)
-From: Marius Groeger <mag@sysgo.de>
+Date: Thu, 17 Oct 2002 17:36:17 +0100 (BST)
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
 To: Tom Rini <trini@kernel.crashing.org>
-Cc: Alex Zeffertt <ajz@cambridgebroadband.com>,
-	leeyang <leeyang@ycig.com>, <linuxppc-embedded@lists.linuxppc.org>
+Cc: leeyang <leeyang@ycig.com>,
+	<linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: 860 rtc problem
 In-Reply-To: <20021017162357.GL695@opus.bloom.county>
-Message-ID: <Pine.LNX.4.40.0210171832270.15987-100000@mag.devdep.sysgo.de>
+Message-ID: <Pine.LNX.4.44.0210171728470.2469-100000@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
@@ -14,6 +14,7 @@ List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 On Thu, 17 Oct 2002, Tom Rini wrote:
 
+>
 > On Thu, Oct 17, 2002 at 05:18:21PM +0100, Alex Zeffertt wrote:
 > > On Thu, 17 Oct 2002, Tom Rini wrote:
 > >
@@ -42,20 +43,18 @@ On Thu, 17 Oct 2002, Tom Rini wrote:
 > get/set routines there to be overriden ? Doing that would be nice and
 > clean, and also allow the 'new' genrtc driver in 2.5 to just work as
 > well.
+>
 
-Probably a little late, but: see also drivers/macintosh/rtc.c which is
-a perfectly generic rtc driver at a perfectly non-generic location.
-Don't mix this up with drivers/char/rtc.c, which is the other way
-round. Shudder.
+I don't understand.  Why do you need to modify these functions?  They
+already work!  All I have done is to create a character driver that calls
+them (via their pointers ppc_md.set_rtc_time, and ppc_md.get_rtc_time).
 
-Regards,
-Marius
+The driver registers itself on the standard rtc major and minor numbers
+and supports the standard RTC_RD_TIME/RTC_SET_TIME ioctls.
 
------------------------------------------------------------------------------
-Marius Groeger           SYSGO Real-Time Solutions AG       mgroeger@sysgo.de
-Software Engineering     Embedded and Real-Time Software    www.sysgo.de
-Voice: +49-6136-9948-0   Am Pfaffenstein 14                 www.osek.de
-FAX:   +49-6136-9948-10  55270 Klein-Winternheim, Germany   www.elinos.com
+What is genrtc?  (I'm not using 2.5 yet.)
+
+Alex
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
