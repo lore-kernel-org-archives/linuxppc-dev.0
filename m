@@ -1,31 +1,24 @@
-From: phandel@cise.ufl.edu
-Date: Sun, 7 May 2000 20:04:22 -0400 (EDT)
-To: Alain Birtz <abz@videotron.ca>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: How to set on/off the keyboard led ?
-In-Reply-To: <3915EA53.F863A6C9@videotron.ca>
-Message-ID: <Pine.LNX.4.21.0005072001590.12656-100000@adsl-78-160-189.gnv.bellsouth.net>
+Message-ID: <01ec01bfb8ad$e8888fa0$bf0102c8@dell191.sc.mcel.mot.com>
+From: "Rolf Liu" <rolfl@sc23.sc.mcel.mot.com>
+To: <linuxppc-dev@lists.linuxppc.org>
+Subject: problem with Makefile
+Date: Mon, 8 May 2000 13:26:05 +0800
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 7 May 2000, Alain Birtz wrote:
-
-> Where can I get info to set on/off the keyboard led (usb)?
-
-Take a look at ifled, which uses the keyboard LEDs to indicate network
-send/receive activity.  Works well with LinuxPPC, and the source code is
-very straightforward.
-
-http://www.sudac.org/~napolium/linux/ifled/ifled-0.6.tar.gz
-
-
-Thanks,
-Peter
-
-GCS d+ s+: a-- C++ UL+++ L+++ M++ PS-- PE++ Y+ PGP+ t+ X+ tv-- b+ e++>+++ y-
+Hi, all,
+You know, the current Makefile for linux-ppc is based on linux shell.My
+current work
+is to translate the Makefile of linux-ppc into a standard one, such as one
+for windows-based
+Makefile,which is meaningful to other standard "make" utilities,including
+the Borland make ,and
+the Microsoft make.If anyone had such experience , advice is appreciate.
+Thanks.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
