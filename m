@@ -1,60 +1,44 @@
-Date: Tue, 27 Nov 2001 08:58:23 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Michael Sokolov <msokolov@ivan.Harhan.ORG>
+Date: Tue, 27 Nov 2001 08:10:07 -0800
+From: Larry McVoy <lm@bitmover.com>
+To: Gabriel Paubert <paubert@iram.es>
 Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: Please make K2 Linux bootable without PeeMON again
-Message-ID: <20011127085823.K13091@cpe-24-221-152-185.az.sprintbbd.net>
-References: <0111271533.AA24180@ivan.Harhan.ORG>
+Subject: Re: Why these crazy timstamps on some ChangeSets ?
+Message-ID: <20011127081007.T23210@work.bitmover.com>
+References: <Pine.LNX.4.33.0111271323540.15554-100000@gra-lx1.iram.es>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <0111271533.AA24180@ivan.Harhan.ORG>
+In-Reply-To: <Pine.LNX.4.33.0111271323540.15554-100000@gra-lx1.iram.es>; from paubert@iram.es on Tue, Nov 27, 2001 at 01:41:19PM +0100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, Nov 27, 2001 at 07:33:27AM -0800, Michael Sokolov wrote:
+It means that someone had screwed up clocks.  There isn't much we can do
+about it, we need increasing dates.
+
+On Tue, Nov 27, 2001 at 01:41:19PM +0100, Gabriel Paubert wrote:
 >
-> Tom Rini <trini@kernel.crashing.org> wrote:
+> 	Hi,
 >
-> > Er, why can't you find the magic location for the bi_recs and set that
-> > as well as the other registers you need to?
+> I just noticed that Changeset 1.678 and 1.679 on linuxppc_2_4_devel and
+> 1.483 on linuxppc_2_4 have a date of February 23rd 2002.
 >
-> Because that location is tied to the kernel's symbols (__bss_start in this
-> case), and I have no way of knowing where that is. The kernel has already been
-> loaded into memory (by occult) by the time my booter runs, and my booter
-> doesn't have access to the original vmlinux ELF header or to System.map.
-
-Alright.  But what other magical bits do you need to shove in the
-registers?  The wrappers do:
-rec = (struct bi_record *)_ALIGN((ulong)zimage_size +
-(1<<20)-1,(1<<20));
-
-Does the occult magic know the size?
-
-> > > The patch below makes the K2 vmlinux expect a pointer to bi_recs in R3 like I
-> > > do on the Adirondack and makes the "simple" zImage goo pass a pointer to its
-> > > magic bi_recs in R3.
-> >
-> > And breaks all of the other ports which use 'simple' and expect bi_recs
-> > in the 'normal' place.
+> Quite annoying when browsing, because bk revtool displays all changes
+> since these commits on the same date. I strongly suspect that this will
+> last for 3 months or so, resulting in several hundred ChangeSets on the
+> same day. I use latest stable bk version BTW.
 >
-> No, it doesn't. The patch I posted yesterday doesn't and cannot break anything.
-
-Er, oh yeah, thanks.:w
-
-
-> > For 2.5 we can agree on a less magical and more predictable
-> > location.  Would somewhere around the end of memory work for you?
+> I suspect that there is no simple way of fixing this, bk won't like any
+> fiddling with timestamps to make them more realistic. There may be a
+> complex way, based on bk undo and reapplying all the patches (changing the
+> date, user name and host name on the machine so that all patches get more
+> or less the right values, but it does not look easy).
 >
-> But why won't you just let me put it where I want and tell the kernel where I
-> put it? I'll fork Linux if I have to, but I would prefer not to.
-
-Well, the register magic is being deprecated in 2.5, or that's the plan
-anyhow.  Why can't the occult load whatever the 2.5 bi_recs look like
-into memory someplace?
+> 	Gabriel.
+>
+>
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+---
+Larry McVoy            	 lm at bitmover.com           http://www.bitmover.com/lm
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
