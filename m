@@ -1,59 +1,62 @@
-Subject: Re: USB, 2.6-test11 and hot flaming death
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: tom_gall@mac.com
-Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <1B4D801D-21D6-11D8-970C-0003939E069A@mac.com>
-References: <1B4D801D-21D6-11D8-970C-0003939E069A@mac.com>
-Content-Type: text/plain
-Message-Id: <1070080961.683.26.camel@gaston>
-Mime-Version: 1.0
-Date: Sat, 29 Nov 2003 15:43:19 +1100
+Message-ID: <3FC9EEC6.8040507@g-house.de>
+Date: Sun, 30 Nov 2003 14:21:10 +0100
+From: Christian Kujau <evil@g-house.de>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.linuxppc.org
+Subject: 2.6 PReP issues, still freezing
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 2003-11-29 at 06:07, tom_gall@mac.com wrote:
-> Greets,
->
-> I've seen this now with both test11 and test10 on Dual G5 hardware with
-> the 32 bit kernel direct from the benh bk tree. I have seen this on
-> more than one G5 so I at least know it's not my hardware.
->
-> Current pull of test11 and test10 will at boot up give the following
-> error messages :
->
-> hid: probe of 4-1.1:1.1 failed with error -5
-> hub 4-1:1.0: hub_port_status failed (err = -108)
-> hub 4-1:1.0: hub_port_status failed (err = -108)
-> hub 4-1:1.0: hub_hub_status failed (err = -108)
-> hub 4-1:1.0: get_hub_status failed
-> hub 4-1:1.0: hub_port_status failed (err = -108)
-> hub 4-1:1.0: hub_port_status failed (err = -108)
-> hub 4-1:1.0: hub_port_status failed (err = -108)
-> hub 4-1:1.0: hub_hub_status failed (err = -108)
-> hub 4-1:1.0: get_hub_status failed
-> usb 4-1: USB disconnect, address 2
-> usb 4-1.1: USB disconnect, address 3
+hi,
 
-This is new to test11 ? Can you find a specific patch that broke
-it or it's just a timing condition ? -108 is -ESHUTDOWN. Looking
-back in the log, the error actually comes from:
+after more days of compiling (at least now i know my ppc has good RAM
+:-) ) and testing serveral kernels, i think now it's not a
+network-related but a ppc-specific problem.
 
-It's 100% reproduceable ?
+Andrew Morton gave me the hint to just copy drivers/net/tulip/ from the
+working 2.5.30 kernel to a recent one. i've done so; i've copied all
+tulip stuff to a fresh 2.6.0-test11 kernel, after booting i was able to
+load the module, but a following "ifconfig eth1 192.168.2.1" freezed the
+machine -- as every kernel after 2.5.30 i was able to compile.
 
-ohci_hcd 0001:02:0b.0: OHCI Unrecoverable Error, disabled
-drivers/usb/input/hid-core.c: ctrl urb status -2 received
-ohci_hcd 0001:02:0b.0: HC died; cleaning up
-drivers/usb/input/hid-core.c: timeout initializing reports
+a fix from Jeff Garzik went to linuxppc-dev (i saw it on lkml too),
+subject was "2.6 PReP fix? (Was: [jgarzik@pobox.com: [PATCH/CFT] de2104x
+fixes])". i found out, that i can load 3 different modules for my card:
 
-Hrm... We should try to reset the chip when that happens at least,
-dunno why it happened in the first place though. Maybe some PCI
-problem... What is the cache line size as shown by lspci for the
-OHCIs and the EHCI ?
+00:0e.0 Ethernet controller: Digital Equipment Corporation DECchip 21140
+[FasterNet] (rev 22)
+         Flags: bus master, medium devsel, latency 0, IRQ 11
+         I/O ports at 1800 [size=128]
+         Memory at c300a000 (32-bit, non-prefetchable) [size=128]
+         Expansion ROM at c1040000 [disabled] [size=256K]
 
-It's weird, it seems to indicate the chip just decided to die...
 
-Ben.
+/lib/modules/2.6.0-test11/kernel/drivers/net/tulip:
+de2104x.ko  de4x5.ko  tulip.ko
+
+/lib/modules/2.5.30/kernel/drivers/net/tulip:
+de2104x.o  de4x5.o  tulip.o
+
+and every module gave me a freeze with 2.6.0-test11 (oh, i forgot to
+test, if de2104x.o and de4x5.o are working correctly with 2.5.30 since
+i've used always "tulip")
+
+and so, this makes me think it's a ppc-specific problem. no, i don't say
+it's easier now to fix, perhaps it's even harder, because a lot has
+changed in the ppc port too. if we could blame the device-driver, the
+codesize to play with would be a lot smaller...
+
+but since really no other PReP people complain, i think i'll stay with
+2.4. a while. the machine is not that fast and i need a faster one anyway...
+
+Thank you for your time,
+Christian.
+--
+BOFH excuse #389:
+
+/dev/clue was linked to /dev/null
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
