@@ -1,40 +1,39 @@
-Message-ID: <393F06DE.2485FA73@mvista.com>
-Date: Wed, 07 Jun 2000 21:37:18 -0500
-From: Jim Lewis <jlewis@mvista.com>
+Subject: Task Queues
+To: linuxppc-embedded@lists.linuxppc.org ( Linux PPC Mailing List)
+Date: Thu, 8 Jun 2000 14:23:35 +1000 (EST)
 MIME-Version: 1.0
-To: "Todd_Tomaino"@vnci.net
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MPC860 ADS Board Question
-References: <852568A4.0062C32E.00@ushq1.objectivecom.com>
 Content-Type: text/plain; charset=us-ascii
+Message-Id: <20000608042335.85655415FA@elph.research.canon.com.au>
+From: gjohnson@research.canon.com.au (Greg Johnson)
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-"Todd_Tomaino"@vnci.net wrote:
+Hi All,
 
-> I **think** that the MPC860 ADS board will accept either the 860 or the
-> 821, and NOT the 823.  BUT since the MPC823 is the reduced-cost, enhanced
-> replacement for the MPC821, and I would like to use the video controller,
-> and I have an ADS board, I figured I'd ask if anyone knows if this will
-> definitively not work (maybe I should be more positive...does anyone know
-> if this WILL work??).  I guess the other option is to buy the RPX-Lite 823
-> board from Embedded Planet.
+I am trying to create an ISR for our hardware that implements a
+"bottom half" interrupt handler. I use a task queue to do this
+since our driver is a loadable module. Everything works fine
+except that if the task is added to the tq_immediate task queue
+it does not seem to run. If I use the tq_scheduler task queue
+it works fine. I gather that for bottom halfves that it is
+appropriate to schedule them on the immediate queue.
 
-That would be a VERY good idea. If you want  to be up and running, developing
-Linux application code quickly, invest a few hundred dollars in a board like
-the RPX Lite.
+I have also tried running other tasks that are scheduled elsewhere
+in the driver, and have the same problem.
 
-The ADS can be made to work, but expect to spend lots of extra time getting to
-the point where you are developing application code.
+Thanks
 
--jim
+Greg.
 
->
->
-> thanks,
->      Todd
->
-
+--
++------------------------------------------------------+
+| Do you want to know more? www.geocities.com/worfsom/ |
+|              ..ooOO Greg Johnson OOoo..              |
+| HW/SW Engineer        gjohnson@research.canon.com.au |
+| Canon Information Systems Research Australia (CISRA) |
+| 1 Thomas Holt Dr., North Ryde, NSW, 2113,  Australia |
+|      "I FLEXed my BISON and it went YACC!" - me.     |
++------------------------------------------------------+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
