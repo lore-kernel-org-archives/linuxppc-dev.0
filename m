@@ -1,24 +1,38 @@
-Message-Id: <5.1.0.14.0.20020528205925.00b539f0@pop.gmx.de>
-Date: Tue, 28 May 2002 21:04:14 +0200
-To: vandana mehtani <vandana_mehtani@yahoo.com>,
-	linuxppc-embedded@lists.linuxppc.org
-From: Michael Habermann <MHabermann@gmx.de>
-Subject: Re: stuck up on FADS board
-In-Reply-To: <20020528103556.81524.qmail@web12706.mail.yahoo.com>
+Date: Tue, 28 May 2002 12:26:52 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Murray Jensen <Murray.Jensen@csiro.au>
+Cc: linuxppc-embedded@lists.linuxppc.org
+Subject: Re: [PATCH] Hymod board support and related changes ...
+Message-ID: <20020528192652.GM1295@opus.bloom.county>
+References: <17991.1022564915@msa.cmst.csiro.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17991.1022564915@msa.cmst.csiro.au>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-At 03:35 AM 5/28/2002 -0700, vandana mehtani wrote:
->where can i find the documentation..
+On Tue, May 28, 2002 at 03:48:35PM +1000, Murray Jensen wrote:
+> Hymod board support and related changes ...
+>
+> - Hymod board support
+> - 8260 fcc_enet: more flexible (or at least readable) approach to
+>   configuring i/o pins
+> - 8260 fcc_enet: support different PHY interrupt "vector"s for each FCC
+> - 8260 setup: fixed ppcboot jump address; should be 0x...110 not 0x...104
+> - 8260 setup: turn off interrupts before jumping to the boot rom
 
-This HowTo is very useful.
-http://penguinppc.org/embedded/howto/PowerPC-Embedded-HOWTO.html
+Can you split this up into logical patches?  Also, instead of testing
+TQM8260 || HYMOD for PPCBoot, why don't we just add in something like:
+if [ "$CONFIG_TQM8260" = "y" -o  "$CONFIG_HYMOD" = "y" \
+	-o "$CONFIG_TQM8xx" = "y" ] ;then
+   define_bool CONFIG_PPCBOOT y
+fi
 
-Also the archive of this mailing list and the archive of the ppcboot
-mailing list.
+And use that.
 
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
