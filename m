@@ -1,27 +1,31 @@
-Date: Wed, 7 Apr 1999 15:58:21 -0400 (EDT)
-From: satadru pramanik <satadru@umich.edu>
+From: Gerd Knorr <kraxel@goldbach.in-berlin.de>
+Date: Wed, 7 Apr 1999 22:59:23 +0200
+Message-Id: <199904072059.WAA00714@bogomips.masq.in-berlin.de>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: Mac OS X Server Filesystem Format
-Message-ID: <Pine.LNX.4.10.9904071556570.13483-100000@beer.pub.umich.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Re: Uhh...Where Is The Source?
+In-Reply-To: <199904071702.MAA15337@lists.linuxppc.org>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-has anybody tried to mount any of the Mac OS X Server CDs inside linux?
-I assume they have a BSD format... Mounting auto doesn't work with the
-CDs.   With ALL Linux filesystems enabled in the kernel, what mount
-options would I use to get the CD to mount?
+In lists.linuxppc.dev, you wrote:
+> 
+> I can't find any source code for the LinuxPPC applications. I've been going 
+> around in circles trying to find ".c" files for fetchmail, sendmail, vim, etc. 
+> Every directory in /src, /etc, and such seems to have an "SRPMS" or "RPMS" 
+> directory in it which, themselves have "SRPMS" and "RPMS" directories...which 
+> makes me confused.
 
+SRPMS is hot:
 
-----
-satadru pramanik `satadru@umich.edu'
-"Put your hand on a hot stove for a minute, and it seems like an hour. Sit
-with a pretty girl for an hour, and it seems like a minute. THAT'S
-relativity." 
--Albert Einstein
----
+macintoy root /vol/cdrom/SRPMS# rpm -qlp fetchmail-4.4.7-1a.src.rpm
+fetchmail-4.4.7.tar.gz
+fetchmail.gif
+fetchmail.spec
+
+The first one is the original source package.
+
+  Gerd
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
