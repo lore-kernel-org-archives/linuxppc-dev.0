@@ -1,40 +1,27 @@
-Message-ID: <3810A961.FF50C5F8@netx4.com>
-Date: Fri, 22 Oct 1999 14:13:53 -0400
+Message-ID: <3810F8F6.B831114B@netx4.com>
+Date: Fri, 22 Oct 1999 19:53:26 -0400
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
-To: Grant Carter <gcarter@eng.uct.ac.za>
-CC: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: MPC823 Serial ports
-References: <38107697.9A2576F7@eng.uct.ac.za>
+To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
+Subject: MPC8xx updates to 2.2.13
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Grant Carter wrote:
-> 
-> Hi all
-> 
-> I am trying to get the second serial port (SMC2) up and running. I have
-> found that it was removed from arch/ppc/8xx_io/uart.c in the rs_table
-> struct. I have added this again and now the kernel (2.2.5) seems to find
-> it on bootup.
+I just put a tar image of 2.2.13 with the 8xx updates on
+ppc.kernel.org.  I needed it for a couple of real applications....
 
-Yes.  I was using SMC2 on the TDM when I made the update.  You
-can enable up to four (because of baud rate generators) serial
-ports for uarts.  Pick any that you want.  This will be more
-configurable in newer versions of the config scripts I am going
-to check into CVS one of these days.
+It has a few things in it that I have yet to check into the 2.3.xx
+baseline.  In particular there are a couple of 10/100 Ethernet
+PHYs I want to ensure work properly.  There are also CPM port
+configurations I want to complete.
 
-> What else do I need to do to get it working as when I echo something to
-> it, I get nothing out of the port.
-
-Make sure you have the device nodes in /dev properly defined.
-They should be:
-	ttyS0 4,64
-	ttyS1 4,65
-	ttyS2 4,66
-	ttyS3 4,67
+I tested it on the MBX, BrightStar Engineering BSE-IP, and the
+Embedded Planet RPX-CLLF.  If you are using the CLLF, there is
+some additional information about booting over the 10/100 Ethernet
+on the FEC that may be helpful.  Ask and I will post that in
+a separate message so it doesn't get lost here.
 
 
 
