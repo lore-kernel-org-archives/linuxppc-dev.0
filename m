@@ -1,33 +1,57 @@
-Message-ID: <396DF758.1576ECF4@alum.rit.edu>
-Date: Thu, 13 Jul 2000 13:07:36 -0400
-From: "Andrew W. Reynolds" <awreynolds@alum.rit.edu>
+Message-ID: <396DFF7E.5741A903@mvista.com>
+Date: Thu, 13 Jul 2000 12:42:22 -0500
+From: Jim Lewis <jlewis@mvista.com>
 MIME-Version: 1.0
-To: Dan Malek <dan@netx4.com>
-CC: zzh <david-1z@263.net>, linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Local sdram in 8260 board
-References: <396D8712.26614@mta5> <396DE8B7.AD4CD03D@embeddededge.com>
-Content-Type: text/plain; charset=us-ascii; x-mac-type="54455854"; x-mac-creator="4D4F5353"
+To: Steven Tarr <tarr@lucent.com>
+CC: "Dan A. Dickey" <ddickey@charter.net>, Kwansuk Kim <kskim@neowave.co.kr>,
+        LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: network toolsl don't still work...
+References: <NEBBKFENMLEDKDHMEHPJKEPECAAA.kskim@neowave.co.kr> <396D3C79.2332C112@charter.net> <396DD286.EF20C9F5@lucent.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-This could be the setup of the SDRAM control word. When the cache is enabled it
-begins bursting data from the SDRAM. When the SDRAM control word is not set to
-burst 32 bytes it will cause the memory exception.
+Steven,
+If you strip libnss_files.so-2.1.3, it is about 40K. That is still more than 10 lines of
+code, but it is lots better than 240K!
 
-Dan Malek wrote:
+-Jim
+Steven Tarr wrote:
 
-> zzh wrote:
+> Mr. Dickey ---
 >
-> > ...it will get machine check exception
-> > at address 0x1000004 which is in the local sdram.When i disable the
-> > cache ,it will work.
+> Please have an ice cream cone on me!  I thank you.
 >
-> It sounds like something is wrong with your memory controller
-> configuration.  The cache enable/disable also affect the type of
-> bus cycles that are used to access memory.
+> cheers --
+> tarr
 >
->         -- Dan
+> NOTE  - libnss_files.so-2.1.3 and its various links need to be included in the
+> libraries....
+>
+> NOTE2 -  So, I have to add a library of >240K   so that I can get a simple network
+> (ping)
+>                        application to function! The original function
+> getprotobyname() was 10 lines of C code.
+>
+> "Dan A. Dickey" wrote:
+>
+> > Kwansuk Kim wrote:
+> > >
+> > > Thanks for you cooperation.
+> > >
+> > > When I make soft link from /lib to /opt/.../lib, bash can read the library files.
+> > >
+> > > But ping program doesn't work yet.
+> >
+> > Check /etc/nsswitch.conf
+> >         -Dan
+> >
+>
+> --
+> Steve Tarr
+> tarr@lucent.com
+> 303-538-4056
 >
 
 
