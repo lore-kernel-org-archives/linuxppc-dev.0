@@ -1,30 +1,31 @@
-Date: Mon, 29 Mar 1999 23:06:14 -0500 (EST)
-From: Tom Vier <nester@erols.com>
-Reply-To: Tom Vier <thomassr@erols.com>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: mozilla xptcall ppc asm needed
-Message-ID: <Pine.LNX.4.05.9903292302060.4962-100000@localhost.erols.com>
+Date: Mon, 29 Mar 1999 22:25:07 -0600 (CST)
+From: Dave Weis <djweis@plconline.com>
+To: David Edelsohn <dje@watson.ibm.com>
+cc: linuxppc-dev@lists.linuxppc.org
+Subject: Re: modifying boot loader 
+In-Reply-To: <9903300405.AA56644@marc.watson.ibm.com>
+Message-ID: <Pine.LNX.3.95.990329222203.1767A-100000@catbert.desm.plconline.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-future versions of mozilla will depend on xpconnect, which requiers
-xptcall, which must be written in asm.
 
-there's already x86 linux code, but ppc code is needed.
+On Mon, 29 Mar 1999, David Edelsohn wrote:
+>       I doubt LinuxPPC will work on a 601-based machine.  The PPC601 was a
+> POWER architecture chip with PowerPC user instructions added. 
 
-the xptcall faq is at:
-http://www.mozilla.org/scriptable/xptcall-faq.html
+Based on what I read in the source, they are supported. I guess I'll find
+out in a bit.
 
-does anyone who knows ppc asm have time to do this? it's a very small
-function.
+dave
 
---
-Tom Vier - 0x82B007A8
-thomass@erols.com
-http://www.erols.com/thomassr/zero/
+-- 
+David Weis                | 10520 New York Ave, Des Moines, IA 50322
+djweis@plconline.com      | Voice 515-278-0133 Ext 231
+http://www.plconline.com/ | "Great spirits will always encounter violent
+                          | opposition from mediocre minds" - Einstein
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
