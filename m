@@ -1,48 +1,40 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: linas@austin.ibm.com
+Date: Thu, 28 Aug 2003 12:02:44 -0500
 To: Giuliano Pochini <pochini@shiny.it>
-Cc: linuxppc-dev@lists.linuxppc.org
-In-Reply-To: <XFMail.20030828152509.pochini@shiny.it>
-References: <XFMail.20030828152509.pochini@shiny.it>
-Message-Id: <1062078425.1290.139.camel@gaston>
-Mime-Version: 1.0
-Date: Thu, 28 Aug 2003 15:47:06 +0200
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev@lists.linuxppc.org
 Subject: Re: Random crashes
-Content-Type: text/plain
+Message-ID: <20030828120243.A50750@forte.austin.ibm.com>
+References: <20030824092456.3c36fa5b.pochini@shiny.it> <1061714789.753.12.camel@gaston> <20030824174408.520f2cb3.pochini@shiny.it> <1061740217.31688.33.camel@gaston> <20030827220627.1e437823.pochini@shiny.it>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20030827220627.1e437823.pochini@shiny.it>; from pochini@shiny.it on Wed, Aug 27, 2003 at 10:06:27PM +0200
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 2003-08-28 at 15:25, Giuliano Pochini wrote:
-> On 28-Aug-2003 Benjamin Herrenschmidt wrote:
-> >> > Strange. I haven't been reported such problems. Can you try an older kernel
-> >> > just in case ? Could also be bad ram...
-> >>
-> >> I tried 2.4.22 and I replaced the RAM. Nothing. Digging in the oops
-> >> collection I found this one which doesn't look very nice:
-> >>
-> >> Jul 23 21:37:55 localhost kernel: Machine check in kernel mode.
-> >> Jul 23 21:37:55 localhost kernel: Caused by (from SRR1=20009030): L1 Data Cache error
-> >>
-> >> I'll send the machine back for repair, altought I think they'll not even
-> >> notice the problem because it happens sporadically :(((
-> >
-> > Well... I'm not 100% sure the message is correct, though from what you say,
-> > it seems indeed there is a CPU fault...
+On Wed, Aug 27, 2003 at 10:06:27PM +0200, Giuliano Pochini wrote:
 >
-> Yes, but it happened only once. All the others were "normal" segfaults, in both
-> userspace and kernel space and hard lockups.
+> > > Random... lockups, oopses, sig11... but nothing useful because is happens
+> > > in random places. Ok, so the answer is no. Maybe the hw is faulty. It's
+> > > the only kernel I used on this mac.
 
-Did you try a few things like running single CPU and not enabling IRQ
-distribution on all CPUs ?
+Can you monitor cpu temp somehow? I had this once when a cpu fan would
+barely spin.
 
-> .../...
->
-> Unrelated thing: tlbli instruction can cause problems on 7455 (bug.20).
-> arch/ppc/kernel/head.S does not use the suggested workaround.
+Slightly off-topic: I've always wanted to have a memory-cache checker
+kerneld that ran continuously in the background.
 
-We don't use tlbli on 745x, only on 603s.
+More off-topic. I've always wanted to have an on-line, background fsck
+checker running continuously.   I've had problems where a journalling
+FS would think the FS was fine, log journal clean, but in fact, the fs
+had slowly accumulated errors over many months due to ?? faulty
+electronics ??.   Biting the bullet and spending half a day on fsck
+would reveal the problem; but that's an unhappy way to do things.
 
-Ben.
+I guess i've got this jones for systems that run perfectly reliably
+perfectly securely all the time ...
 
+--linas
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
