@@ -1,18 +1,21 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from Mancubus.xs4all.nl (mancubus.xs4all.nl [213.84.146.227])
-	by ozlabs.org (Postfix) with ESMTP id D1D1767A70
+Return-Path: <joakim.tjernlund@lumentis.se>
+Received: from dmz.lumentis.net (unknown [212.105.56.244])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id ECE0167A6E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Jan 2005 05:05:37 +1100 (EST)
-From: David Jander <david.jander@protonic.nl>
-To: linuxppc-embedded@ozlabs.org
-Date: Wed, 19 Jan 2005 19:47:16 +0100
-References: <20050119164938.72597.qmail@web53803.mail.yahoo.com>
-In-Reply-To: <20050119164938.72597.qmail@web53803.mail.yahoo.com>
+	Thu, 20 Jan 2005 05:06:50 +1100 (EST)
+From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
+To: "Dan Malek" <dan@embeddededge.com>
+Date: Wed, 19 Jan 2005 19:06:41 +0100
+Message-ID: <JPEALJAFNGDDLOPNDIEEAEEEDAAA.joakim.tjernlund@lumentis.se>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200501191947.16167.david.jander@protonic.nl>
-Subject: Re: FW: cpm_spi.c under kernel 2.6
+	charset="US-ASCII"
+In-Reply-To: <28C8C10C-6A3F-11D9-9943-003065F9B7DC@embeddededge.com>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	"Linuxppc-Embedded@Ozlabs. Org" <linuxppc-embedded@ozlabs.org>
+Subject: RE: [PATCH] Handle I-TLB Error and Miss separately on 8xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,27 +26,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 19 January 2005 17:49, annamaya wrote:
-> That reminds me that I need to make the spi driver
-> available somewhere all the time. But I am not sure
-> when I will be able to do that. Meanwhile, you should
-> be able to start of with the old driver for the 8xx
-> that should be around somewhere under the rubble. :-)
-> Or, you can start off with the sample code in u-boot
-> that was derived from the original driver.
+> 
+> On Jan 18, 2005, at 5:02 PM, Joakim Tjernlund wrote:
+> 
+> > Then all that is missing is my dcbX patch and support for 16K pages :)
+> 
+> We'll get to that.  I'd prefer to support 4K and 8M pages, though.  I had
 
-I just wanted to add, that if anyone is going to get busy again with the 8xx 
-SPI driver(s) in u-boot and linux-2.4, I'd like to know, since I am too.
-In u-boot there are two 8xx-SPI-drivers, one software and one in hardware, and 
-they seem both broken now (I'm still using CVS versions around 1.1.2 
-somewhere maybe I should cvs update :-)
-Specifically spi_xmit() get each other in the way. There are two such 
-functions in u-boot, both non-static and with (very) different prototypes, so 
-I am starting to figure out the best way of fixing that mess. Is anyone busy 
-with the same task?
+8MB pages for user space? Isn't that a bit big?
 
-Greetings,
+> started on doing that, some code remnants are still there, but I never
+> got it to work without adding too much code to the I-tlbmiss hander.
+> I want an tlbmiss handler like the example in the manual, about 10
+> lines of straight code.  I don't like to be mucking around with PTE 
+> entries
+> a higher level function could/should have set for us in a less critical 
+> path.
 
--- 
-David Jander
-Protonic Holland.
+yes, that would be nice :)
+
+> 
+> 	-- Dan
+> 
