@@ -1,23 +1,23 @@
-Message-ID: <37DDC204.22888BE8@chpc.utah.edu>
-Date: Mon, 13 Sep 1999 21:33:24 -0600
-From: Lou Langholtz <ldl@chpc.utah.edu>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.linuxppc.org
-Subject: stty < /dev/modem blocks???
+From: Ryan Nielsen <ran@krazynet.com>
+Date: Mon, 13 Sep 1999 22:22:35 -0700
+To: Daniel Jacobowitz <drow@false.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Subject: resource forks (Re: New booter)
+Message-ID: <19990913222235.A587@gondolin.asf>
+References: <19990913192403.030901@mailhost.mipsys.com> <m3aeqqoai5.fsf@soma.andreas.org> <19990913141229.A30982@them.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <19990913141229.A30982@them.org>; from Daniel Jacobowitz on Mon, Sep 13, 1999 at 02:12:30 -0400
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On my 2.2.12 kernel with some hacks I've added I can't use stty to get
-the configuration info for /dev/ttyS0. stty < /dev/ttyS0 (aka
-/dev/modem) just hangs. strace stty < /dev/ttyS0 does the same thing.
-strace doesn't even show me any output. Ctrl-C kills the stty or strace
-but shouldn't stty work on the modem serial device to get the config
-info? Is it just the hacks I've added in my kernel perhaps? stty
-< /dev/pts/0 works just fine. Ideas?
+Daniel Jacobowitz wrote:
+> You don't.  You can hack them with a hex editor if you prefer.  Are
+> there decent tools for dealing with hfs resource forks from linux? Not
+> that I know of but there is nothing stopping someone from writing one.
 
-Thanks!!
-
+A start would be http://www.con.weslayan.edu/~jsproul/linux/macfontutils.html
+http://krazynet.com/hx/cicn.tar.gz is an Apple Color Icon viewer using code from macfontutils.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
