@@ -1,32 +1,27 @@
-Message-Id: <200111262204.RAA20995@missioncriticallinux.com>
-From: mod+linuxppc-embedded@MissionCriticalLinux.com
+From: Simon Winwood <sjw@cse.unsw.edu.au>
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: VT82C686B IDE and Linux/PPC woes 
-In-Reply-To: Your message of "Mon, 26 Nov 1901 13:26:00 PST."
-             <0111262126.AA22174@ivan.Harhan.ORG>
-Date: Mon, 26 Nov 2001 17:04:51 -0500
+Date: Tue, 27 Nov 2001 10:30:42 +1100
+Subject: More walnut boottime "fun"
+Message-ID: <20011127103042.A11612@cse.unsw.edu.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-On Mon, 26 Nov 1901 13:26:00 PST msokolov wrote:
->Has anyone here other than us with the Adirondack ever designed
->a PPC board with a VT82C686B south bridge and put Linux/PPC on
->it?  If anyone has done this, what magic did you do for the IDE?
+	Hi,
 
+	Apart from NFS not working, it looks like the bootloader is
+clobbering itself when the image is reasonably large (> 1M?).
 
-I'd also be interested in responses to that question
-since the PPC box I'm porting to has that same VIA
-south bridge chip in it and I can't figure out how
-to access the IDE command/status registers therein.
+	This happens when it relocates itself (the initrd or whatever
+overwrites the relocation code).
 
-It's infuriating since it's clear that a lot of
-the pieces are working: I can read/write all the
-Config registers (all seven functions worth) and I
-have the RS232 controller running and the interrupt
-controller routing interrupts, etc, etc.  But the
-IDE command/status registers just seem to contain
-junk and the driver consequently gives up on it...
+	Has anyone fixed this, or should I keep going ;)
 
+	Simon
+
+p.s. this is only an issue where the dest address < the load address, as
+on walnut and friends
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
