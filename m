@@ -1,34 +1,30 @@
-Message-ID: <397DA646.568FDDD2@relog.ch>
-Date: Tue, 25 Jul 2000 16:37:58 +0200
-From: Michel Dänzer <daenzer@relog.ch>
-Reply-To: daenzerm@student.ethz.ch
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: FASSINO Jean-Philippe <jeanphilippe.fassino@francetelecom.fr>,
+        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: RTAS on PowerMac Newworld
+Date: Tue, 25 Jul 2000 16:41:31 +0200
+Message-Id: <20000725144131.11499@mailhost.mipsys.com>
+In-Reply-To: <397D98FA.35AEF244@francetelecom.fr>
+References: <397D98FA.35AEF244@francetelecom.fr>
 MIME-Version: 1.0
-To: SteffenH@hyperion-software.de
-CC: linuxppc-dev@lists.linuxppc.org
-Subject: Re: xf4 bug report
-References: <yam8241.298.146589904@mail.lf-online.de>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Steffen Haeuser wrote:
+>In the kernel for PPC, a lot a code is here just to do what doing RTAS :
+>pci config,
+>via (CUDA and PMU) (no need if no ADB keyboard), ...
+>When doing embedded systems, this drivers is very big and can be saving by
+>using
+>RTAS which i think is a very good thing in  CHRP specification. It's
+>strange that
+>apple do not provide it fully.
 
-> Ah. Any idea when the next Beta of the X Server will be out ?
+Well, they didn't care about it. Note that Macs are far from beeing
+embedded boxes ;)
 
-You can always stay up-to-date using XFree86's public CVS or better with Ani
-Joshi's rsync archive.
+Ben.
 
-For the RPMs, ask Jack Howarth...
-
-
-Michel
-
-
---
-It's not a bug, it's tradition!
-______________________________________________________________________________
-Earthling Michel Dänzer (MrCooper)  \  CS student and free software enthusiast
-Debian GNU/Linux (powerpc,i386) user \   member of XFree86, Team *AMIGA*, AUGS
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
