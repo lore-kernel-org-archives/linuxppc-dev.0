@@ -1,64 +1,50 @@
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: "Kevin B. Hendricks" <kevin.hendricks@sympatico.ca>
-To: Michel =?iso-8859-1?q?D=E4nzer?= <michel@daenzer.net>,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: Weird interrupt problem
-Date: Wed, 7 Aug 2002 20:28:01 -0400
-References: <1028761518.1262.1236.camel@tibook>
-In-Reply-To: <1028761518.1262.1236.camel@tibook>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Matt Porter <porter@cox.net>
+Cc: <mlan@cpu.lu>, <acurtis@onz.com>,
+	<linuxppc-dev@lists.linuxppc.org>
+Subject: Re: PCI enlightenment follow-up
+Date: Thu, 8 Aug 2002 10:25:41 +0200
+Message-Id: <20020808082541.15450@smtp.wanadoo.fr>
+In-Reply-To: <20020807153401.A20123@home.com>
+References: <20020807153401.A20123@home.com>
 MIME-Version: 1.0
-Message-Id: <200208072028.01216.kevin.hendricks@sympatico.ca>
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+>
+>> >> sym53c8xx: np->base2_ba = 0x07ffc000
+>> >> /* 1-to-1 BAT mapping */
+>> >> sym53c8xx: 0x4fffc000 = remap_pci_mem(0x4fffc000, 0x00002000)
+>> >
+>> >This looks good indeed.
+>
+>Except he's got the 1:1 BAT in the middle of default user task space.
+>Unless he's used an advanced kernel option tweak to shrink TASK_SIZE,
+>this will cause problems.
 
-Twice now I have seen something that may be related.  The whole system
-becomes very sluggish with either one or both cpus consuming 99% of
-capacity while receiving funny interrupt messages.
+Good spot. Well... I hate those BATs used to map IOs, they just
+confuse things a bit more. I've gotten rid of them on pmac
+for a long time.
 
-I literally had to shutdown the system which took forever (I had to keep
-hitting <return> to allow the second cpu to have a chance at things).
-
-This is with an almost stock ben 2.4.19-pre10 kernel compiled for SMP on a
-Dual G4 1-gig machine.  I have never seen anything in the message logs
-that provides a good hint at why this is happening.
-
-Again it has only happended twice now but it is very annoying (the system
-becomes so sluggish you almost think it has hung completely).
-
-I have no idea if this is related but it may be.
-
-Kevin
-
-On August 7, 2002 07:05, Michel Dänzer wrote:
-> Today this happened to me the second time: All of a sudden, the USB
-> mouse stopped working. At the same time this appeared in the syslog:
+>> >> sym53c8xx: ncr_script_copy_and_bind(src 0xc04f7ce0, dst 0xc04be054)
+>> >> sym53c8xx: ncr_script_copy_and_bind(src 0xc04f7ce0, dst 0xc04be054)
+>> >> sym53c8xx: 0xf0ccff07 = cpu_to_scr(0x07ffccf0)
+>> >             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>> >Nope, reversed address. That will not work. Don't touch the address,
+>> >touch the data if necessary. What needs to be swapped is data going
+>> >_over_ the little-endian PCI bus. Addreses don't go _over_ the bus, they
+>> >address resources _on_ the bus.
+>>
+>> Sure of that ? First let's look at what the driver actually does in that
+>> routine. I know that the NCR chips are have bus-masterers ;)
 >
-> Aug  7 17:19:57 tibook kernel: Unhandled interrupt 1d, disabled
+>This is definitely correct. The script engine expects everything little
+>endian and so on a BE system you see it defined as cpu_to_le32.
 >
-> Plugging the mouse to the other socket worked, but it wouldn't work
-> again in the original one. As you can see in the attached
-> /proc/interrupts, interrupt 29 (=1d) is unknown. Interestingly,
-> interrupt 28 seems to be for the USB socket which stopped working (I
-> think it was the same one when the first problem first occured, might be
-> coincidence though). Was it somehow rewarded for its 100'000th
-> occurence? ;) Seriously, is it possible that the number changed somehow?
->
->
-> This wouldn't be all that bad, if the whole system wasn't very sluggish
-> afterwards. When it occured the first time, I had CONFIG_TAU enabled in
-> the kernel, which Ben said might cause the sluggishness at least. But
-> now it's disabled.
->
->
-> This is on a TiBook III/667 running 2.4.18-ben0-lotsanicestuff if it
-> matters. The first occurence was with 2.4.19-presomething-ben0.
->
->
-> Has anyone experienced anything similar?
+>It still feels like an address translation issue despite things
+>looking good from the data we have.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
