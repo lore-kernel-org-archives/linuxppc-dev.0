@@ -1,19 +1,18 @@
-Return-Path: <wd@denx.de>
-Received: from mailout04.sul.t-online.com (mailout04.sul.t-online.com
-	[194.25.134.18]) by ozlabs.org (Postfix) with ESMTP id E3FA867ABC
+Return-Path: <markc@mail.com>
+Received: from relay01.roc.ny.frontiernet.net (relay01.roc.ny.frontiernet.net
+	[66.133.131.34]) by ozlabs.org (Postfix) with ESMTP id F415067AA4
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  9 Feb 2005 00:00:31 +1100 (EST)
-To: Bryan O'Donoghue <typedef@eircom.net>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 07 Feb 2005 16:54:37 GMT."
-	<42079D4D.9090904@eircom.net>
-Date: Tue, 08 Feb 2005 14:00:02 +0100
-Sender: wd@denx.de
-Message-Id: <20050208130007.31252C108D@atlas.denx.de>
+	Wed,  9 Feb 2005 00:08:37 +1100 (EST)
+Message-ID: <002001c50ddf$d849a3e0$0301a8c0@chuck2>
+From: "Mark Chambers" <markc@mail.com>
+To: "Martin Krause" <Martin.Krause@tqs.de>
+References: <DE2CC66C40EAB74EA6D66AC71BF98E1E03055B6E@TQ-MAILSRV-1>
+Date: Tue, 8 Feb 2005 08:12:28 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: Creating a configuration for my custom MPC875 board 
+Subject: Re: Microwindows on Icecube/CoralP 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,25 +23,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <42079D4D.9090904@eircom.net> Bryan O'Donoghue wrote:
->
-> You'll definately need to find out what _your_ IMAP_ADDR is, that is 
-> something which is almost certainly going to be unique to your own PCB.
+>> > This will not work. Microwindows can only  use  a  plain framebuffer
+>> > interface,  but  the Coral-P does not allow for such a driver
+>> > because of the fact that it has a little-endian register interface.
+>> 
+>> Or is it because 5200 swaps bytes around on PCI.  
 
-Actually the location of the IMMR area i just a part of the  system's
-memory  map, which you just make up yourself - i. e. you can chose it
-pretty freely, and in many cases you just copy  te  mapping  of  some
-existing, similar board.
+>I have similar problems with an MPC5200 board and a Silicon Motion
+>SM501 (Voyager) grafic controller. The controller has a PCI and a
+>local bus interface. We use the local bus interface to connect it
+>with the 5200. In 32 bit truecolor mode everything works fine, but
+>in 16 bit mode bytes are swapped: 0x12345678 => 0x34127856.
+>I'm not sure, if this problem has something to do with the CoralP
+>problem, but it is likely too similar to be completely independent.
 
-Of course you have to understand what you  are  doing,  but  this  is
-always the case, isn't it?
+Two questions:  Is your local bus set up as 32 bits wide, and are
+you writing 32 bits at a time?  The little/big endian issue only 
+shows up when writing smaller values than the width of the 
+interface.  In other words, an x86 and a PPC will write a 32bit
+word to 32bit memory in exactly the same way.  The difference
+comes in how they address bytes or words within that 32bit data
+lane.  So if you, for instance, are writing longs in truecolor mode
+and bytes in 16 bit mode that could explain what you are seeing.
 
-Best regards,
+On the 5200 you've got two issues to deal with:  You've got 
+the byte/short addressing mismatches that might show up, then
+you've also got to take into account that 5200 swaps the
+byte lanes around.
 
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-To understand a program you must become  both  the  machine  and  the
-program.
+Mark
