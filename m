@@ -1,89 +1,87 @@
-Message-ID: <40B35372.9080201@intracom.gr>
-Date: Tue, 25 May 2004 17:08:50 +0300
-From: Pantelis Antoniou <panto@intracom.gr>
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linuxppc-Embedded <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: 2.6 on 8xx (was [PATCH] Driver for FECs on motorola DUET (87x/88x))
-References: <40A38968.6060701@intracom.gr> <40A4C04A.8060508@intracom.gr> <F8A7B640-A5F0-11D8-9559-003065F9B7DC@embeddededge.com> <40B1FB42.1040306@intracom.gr> <505FCE42-ADA6-11D8-B485-003065F9B7DC@embeddededge.com> <40B327EF.2090903@intracom.gr> <Pine.LNX.4.58.0405250954480.28787@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.58.0405250954480.28787@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: [Fwd: Memory layout question]
+Date: Tue, 25 May 2004 09:17:45 -0500
+Message-ID: <DB1DE297F535B340AEAE1E51B221C3D007E83FF4@FTWMLVEM02.e2k.ad.ge.com>
+From: "Heater, Daniel (GE Infrastructure)" <Daniel.Heater@gefanuc.com>
+To: "Oliver Korpilla" <okorpil@fh-landshut.de>
+Cc: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Robert P. J. Day wrote:
+We're setting up a 2700 here to test with, so that will help.
 
->On Tue, 25 May 2004, Pantelis Antoniou wrote:
+> It's not done and over with virt_to_bus() etc.
 >
+> What we basically got here is a PCI configuration and
+> portability issue.
 >
->>Hi there
->>
->>Success!!!
->>
->>  netvia-ppc root # uname -a
->>  Linux netvia-ppc 2.6.6 #54 Tue May 25 13:53:27 EEST 2004 ppc ppc ppc
->>GNU/Linux
->>
->>Everything works now, the problem was with the uart driver, had a
->>problem with
->>the interrupts.
->>
+> On the MVME2100, e.g., the PCI host bridge grabs I/O resource
+> 0x80000000
+> - 0xFFFFFFFF.
 >
->i'm definitely interested in what it took for you to get this to work.
->currently, i've got a perfectly working system, booting a 2.4-based
->kernel, compiled with ELDK 3.0, on a customized 8xx board.  this system
->uses the now-deprecated "devfs".
+> On the VMIC driver it requests an I/O memory ressource, and a
+> region on
+> the I/O memory is awarded.
 >
-I used an NFS mounted root ELDK 3.0 filesystem. By mistake I booted with
-devfs and everything worked except the telnet networked logins.
-Did not have time to check why though.
+> In order to request a region being mapped by the PCI host bridge, one
+> would have to request a region of the PCI host bridge
+> resource, not the
+> I/O resource.
+
+Can the pci_lo_bound and pci_hi_bound module parameter be used to
+limit the range of memory resources requested to those available to
+the PCI bridge that the Universe chip lives behind.
 
 >
->i bk-cloned the linuxppc-2.5 tree, did "make menuconfig" as best i could
->(guessing every so often at some of the new features), compiled a new
->kernel and, glory be, actually got the new kernel to boot up to the point
->of trying to start "init", at which point it hung.
+> As far as I can deduce from looking at kernel/resource.c
+> allocate_resource(), find_resource() and __request_resource() have no
+> recursion, so one cannot request an appropriate region from the
+> iomem_resource.
 >
-Well you wont get any further than this using the stock kernel.
+> I guess to do it portably PCI functions may be needed, though
+> I'm still
+> looking at it.
+>
+>  From my current knowledge, the driver may have 3 issues:
+> 1) How to request a "safe" range of PCI addresses.
 
-I had to use my own ethernet and a ported over serial uart driver for CPM2
-boards.
+The pci_lo_bound and pci_hi_bound module parameters may help.
 
-Also some tweaking is needed to the irq dispatch and defining out
-some mmu staff which do not apply for 8xx.
+> 2) How to map those PCI addresses safely to virtual (kernel) and bus
+> (PCI device) addresses.
+> 3) Using the safer readb/readw ... etc. calls, or stuff like
+> memcpy_io
+> to portably access the VME bus, perhaps in read() and write()
+> implementations, perhaps deprecating the not-so-portable
+> dereferencing
+> of a pointer.
 
->
->i'm using embedded planet's planet core bootloader and, although i'd love
->to make the switch to u-boot, given that planet core seems to be doing the
->job at the moment, i think i won't tempt the gods just yet.  that's a
->later project.
->
->
-My condolences :)
+Issue 3 gets confusing, (as endian issues always do). On VMIC hardware,
+there is custom byte swapping hardware to deal with the big-endian VMEbus
+to little-endian PCI bus. The Universe chip also has some internal byte
+swapping hardware. I not sure that the read[bwl]/write[bwl] calls
+would do the correct thing considering the existing byte swapping hardware.
+(I'm not sure it would do the wrong thing either :-/)
 
->given that "devfs" is now technically obsolete, i'm wondering what you did
->in terms of the kernel configuration, and what you had to do in your root
->filesystem to effect the switch over to (i'm assuming) sysfs+udev.
+> 1) and 2) are non-issues on the x86, because of the PCI and memory
+> layout. So all these 3 issues are about portability.
 >
-I did nothing special; it appeared to just work.
+> I'm looking into this, starting with 2) currently.
+>
+> Maybe the driver would be easier to port and maintain, if the
+> universe
+> gets treated like a "proper" PCI device right from the start. I'm not
+> experienced enough to say something about that right now.
 
->
->mind sharing your .config file for this?  i'm not interested in getting
->every feature of this board to work at the moment -- just getting to the
->command line prompt would make me happy.
->
-Patience, I'll clean the stuff up and post them here.
+Unfortunately, that's the design of the Tundra Universe chip.
+I don't thing there is any way for us to correct that.
 
->
->rday
->
->
->
->
-Regards
-
-Pantelis
-
+Daniel L. Heater
+Software Development, Embedded Systems
+GE Fanuc Automation Americas, Inc.
+VMIC, Inc.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
