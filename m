@@ -1,47 +1,53 @@
-Date: Mon, 8 Apr 2002 10:14:43 -0400
-From: Bill Fink <billfink@mindspring.com>
-To: Michel D?nzer <michel@daenzer.net>
-Cc: linuxppc-dev@lists.linuxppc.org,
-	yellowdog-general@lists.terrasoftsolutions.com
-Subject: Re: dmasound audio patch
-Message-Id: <20020408101443.01f48537.billfink@mindspring.com>
-In-Reply-To: <1018270252.1870.8601.camel@tibook>
-References: <20020407172358.36f3fd3e.billfink@mindspring.com>
-	<1018261838.1870.7347.camel@tibook>
-	<20020408084102.195d67bd.billfink@mindspring.com>
-	<1018270252.1870.8601.camel@tibook>
+Date: Mon, 8 Apr 2002 08:20:26 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Linux/PPC BK repository <linuxppc@helium.Harhan.ORG>
+Cc: linuxppc-commit@source.mvista.com,
+	linuxppc-dev@lists.linuxppc.org
+Subject: Re: Incoming to helium.harhan.org:/home/linuxppc/linuxppc_2_4_alt
+Message-ID: <20020408152026.GG2716@opus.bloom.county>
+References: <200204060739.g367duV18841@helium.Harhan.ORG>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200204060739.g367duV18841@helium.Harhan.ORG>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On 08 Apr 2002, Michel Dänzer wrote:
+[Just some code comments for now, actual comments in another mail]
 
-> On Mon, 2002-04-08 at 14:41, Bill Fink wrote:
-> > On 08 Apr 2002, Michel Dänzer wrote:
-> >
-> > > Must be an old version of xmms? It swaps bytes if necessary since 1.2.5
-> > > or so.
-> >
-> > Hi Michel,
-> >
-> > That's good to know.  I was using xmms-1.2.4 that came with YDL 2.1,
-> > but I see that YDL 2.2 has xmms-1.2.5, so I'll give that a try.
->
-> Hmm, looking at our xmms changelog, the endianness fixes may only be in
-> 1.2.6 or later. YMMV.
+> ChangeSet
+>   1.925 02/04/05 23:09:25 msokolov@helium.harhan.org +60 -0
+[snip]
+>   arch/ppc/kernel/setup.c
+>     1.105 02/04/01 00:01:18 msokolov@helium.harhan.org +49 -5
+>     Add generic PPC32 config
 
-Well even the just released YDL 2.2 only has xmms-1.2.5, which is still
-broken.  For the record, I did get the Rawhide xmms-1.2.7 source RPM and
-did an "rpm --rebuild" on it, and can report that xmms-1.2.7 does in fact
-work fine, but that was a fair amount of work and time.  I'm still going
-to stick with my friend's dmasound kernel patch, so I don't have to go
-through all this for the next sound app I might happen to try that's not
-yet endianness aware.
+We shouldn't be #ifdef'ing externs, since it doesn't matter.  The
+pmac/prep/chrp ones were hidden just because the line above was, iirc.
 
-						-Thanks
+And the one downside to the GENERIC_PPC32 platform_init, is that we're
+back to adding:
+#ifdef CONFIG_x
+ case _MACH_x:
+  x_init(...);
+  break;
+#endif
 
-						-Bill
+Which I think Paul was happy to see die :)
+
+[snip]
+>   arch/ppc/config.in
+>     1.127 02/03/31 23:58:43 msokolov@helium.harhan.org +18 -21
+>     Add generic PPC32 config, implemented for
+>     Adirondack, EV-64260A, and K2
+
+Do any of these boards actually have an ISA slot?  IIRC, CONFIG_ISA is
+used for stuff which could be plugged into an ISA slot, not so much
+things that could be on the ISA bus.  Right now it's an ALL_PPC-only
+option because it's actually needed for sound on some PReP boxes..
+
+--
+Tom Rini (TR1265)
+http://gate.crashing.org/~trini/
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
