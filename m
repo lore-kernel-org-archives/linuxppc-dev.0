@@ -1,26 +1,20 @@
-Date: Fri, 7 Jul 2000 15:28:06 +0200
-From: Olaf Hering <olh@suse.de>
+Message-ID: <3965DC16.7CB143B3@amulet.co.jp>
+Date: Fri, 07 Jul 2000 22:33:10 +0900
+From: Hollis Blanchard <hollis@amulet.co.jp>
+MIME-Version: 1.0
 To: Tom Gall <tom_gall@vnet.ibm.com>
-Cc: yellowdog-devel@lists.yellowdoglinux.com, linuxppc-dev@lists.linuxppc.org
+CC: yellowdog-devel@lists.yellowdoglinux.com, linuxppc-dev@lists.linuxppc.org
 Subject: Re: RFC: Changing default partition type for linux/ppc
-Message-ID: <20000707152806.E12840@suse.de>
 References: <20000707105915.30418@mailhost.mipsys.com> <3965D59C.BC1BAC93@vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3965D59C.BC1BAC93@vnet.ibm.com>
+Content-Type: text/plain; charset=iso-2022-jp
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, Jul 07, Tom Gall wrote:
-
+Tom Gall wrote:
 >
 > Benjamin Herrenschmidt wrote:
->
-> > Hi all !
->
-> Greets!
->
+> >
 > > So I suggest moving to Linux_ext2, Linux_swap, or maybe simply Linux and
 > > Linux_swap (since ext2 is not the only filesystem Linux may put on
 > > these). Using a different type for swap would help avoiding confusion.
@@ -29,20 +23,22 @@ On Fri, Jul 07, Tom Gall wrote:
 > problems with MacOS, OS X etc... Hopefully Apple's OSes wouldn't do anything evil
 > to the partition they don't recognize.
 
-As someone real important said a couple of weeks ago:
-Don't trust them.
+Well, they don't at this point. For example in partitioning tool in
+LinuxPPC 2000, LinuxPPC Inc decided it would be better to use the type
+"Linux_PPC". This works (in that nothing gets overwritten, corrupted,
+etc) but has the disadvantage that no other software knows anything
+about that type.
 
+If you were writing software it would be pretty poor form to find data
+you didn't understand and decide to "fix" it. I know there are programs
+like that out there (if you look at
+http://www.win.tue.nl/~aeb/partitions/partition_types-1.html it seems
+there is a rich history of them), but Apple seems to be doing well in
+that regard so far...
 
-You know the slogan of Apple ;)
+Of course, everything may change with OS X but I would hope they don't
+get malicious all of a sudden.
 
-
-
-Gruss Olaf
-
---
- $ man clone
-
-BUGS
-       Main feature not yet implemented...
+-Hollis
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
