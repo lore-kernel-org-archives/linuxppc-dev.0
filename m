@@ -1,19 +1,27 @@
-Return-Path: <wd@denx.de>
-Received: from mailout06.sul.t-online.com (mailout06.sul.t-online.com
-	[194.25.134.19]) by ozlabs.org (Postfix) with ESMTP id 643C82BF16
+Return-Path: <jostein.pettersen@westerngeco.com>
+Received: from mail.slb.com (eurmta02.montrouge.eur.slb.com [163.187.152.23])
+	by ozlabs.org (Postfix) with ESMTP id CE9C52BF0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Jan 2005 15:58:55 +1100 (EST)
-To: "Pedro Aguilar" <paguilar@junkerhq.net>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 10 Jan 2005 18:04:21 +0100."
-	<61163.81.72.55.167.1105376661.squirrel@81.72.55.167>
-Date: Mon, 10 Jan 2005 19:49:29 +0100
-Sender: wd@denx.de
-Message-Id: <20050110184934.EACAAC108D@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: 8xx_imap patch for the mpc8xx ATM driver 
+	Wed, 12 Jan 2005 07:30:09 +1100 (EST)
+Received: from pmxchannel-daemon.eurmta02.montrouge.eur.slb.com by
+	eurmta02.montrouge.eur.slb.com
+	(iPlanet Messaging Server 5.2 Patch 2 (built Jul 14 2004))
+	id <0IA600C0E69Y88@eurmta02.montrouge.eur.slb.com> for
+	linuxppc-embedded@ozlabs.org; Tue, 11 Jan 2005 20:29:58 +0000 (GMT)
+Received: from wgmail3.oslo.eur.slb.com
+	(wgmail3.oslo.eur.slb.com [134.32.44.153]) by
+	eurmta02.montrouge.eur.slb.com
+	(iPlanet Messaging Server 5.2 Patch 2 (built Jul 14 2004))
+	with ESMTP id <0IA600K5F69NVM@eurmta02.montrouge.eur.slb.com> for
+	linuxppc-embedded@ozlabs.org; Tue, 11 Jan 2005 20:29:48 +0000 (GMT)
+Date: Tue, 11 Jan 2005 21:29:38 +0100
+From: Jostein Pettersen <jostein.pettersen@westerngeco.com>
+To: linuxppc-embedded@ozlabs.org
+Message-id: <5.1.0.14.2.20050111210842.024ca490@wgmail3.oslo.eur.slb.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii; format=flowed
+Cc: Tormod Tjaberg <ttjaberg@oslo.westerngeco.slb.com>
+Subject: Linux hangs after early_init()
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,19 +32,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Pedro,
+Hi,
 
-in message <61163.81.72.55.167.1105376661.squirrel@81.72.55.167> you wrote:
-> 
-> It is a very simple change in the include/asm-ppc/8xx_imap.h file .
+I'm trying to get Linux (2.4.19) up and running on a BMW board (from 
+Broadcom) with a 8245 processor. I'm using ppcboot 1.2.0.
 
-Checked in. Thanks a lot.
+I've found that early_init() in setup.c does not return. Everything is ok 
+up until the very end of early_init().
 
-Best regards,
+Something very basic must be wrong. I would be happy for some some pointers 
+as to what this could be!
 
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-I am an atheist, thank God!
+Cheers,
+Jostein Pettersen
