@@ -1,123 +1,40 @@
-Date: Wed, 16 Aug 2000 19:29:39 +0000 (Local time zone must be set--see zic manual page)
-From: Thorsten Sprenger <root@informatik.tu-muenchen.de>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: xf4 and lombard
-Message-ID: <Pine.LNX.4.21.0008161915300.78-200000@anubis.local>
+Message-ID: <399AEF94.A927EE72@wanadoo.fr>
+Date: Wed, 16 Aug 2000 21:46:28 +0200
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="133632-656489213-966454179=:78"
+To: Ani Joshi <ajoshi@shell.unixbox.com>
+CC: Andreas Tobler <toa@pop.agri.ch>, Jack Howarth <howarth@bromo.med.uc.edu>,
+        linuxppc-dev@lists.linuxppc.org
+Subject: Re: bk 2.4-test7 broken
+References: <Pine.LNX.4.10.10008160749260.28397-100000@shell.unixbox.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-  Send mail to mime@docserver.cac.washington.edu for more info.
+Ani Joshi wrote:
+>
+> FWIW, 2.4.0-test7-pre4 (kernel.org)  boots here on a 603e.  Few minor
+> fixing up needed for the build, perhaps one of you should do a bk vs.
+> kernel.org diff and find your problem.
 
---133632-656489213-966454179=:78
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Seems to have been the right idea. By putting the arch/ppc and
+include/asm-ppc directories from linux-pmac-devel into my linux-bk-devel
+copy and then applying the kernel.org test7-pre4 patch (plus some minor
+fiddling), I have now a kernel that boots, calls itself 2.4.0-test7 and
+still has the new input layer from the bk-devel tree.
 
-hi !
+It also should have the latest patches for RTC, but I cannot test this,
+because I get
+   hwclock: Open of /dev/rtc failed, errno=2: No such file or directory
+just as with Paul's 2.4.0-test6 kernel. I am using devfs, so the
+/dev/rtc device should be created automagically, and in 2.4.0-test5 this
+worked.
 
-i have compiled xfree 4.0.1 with the latest xfree86-pmac tree from
-linuxppc.org. as kernel i use the latest pmac-stable and pmac-devel from
-linuxcare. when starting the x-server i get a dark screen, final beep and
-- after 180 seconds - the system reboots (kernel panic?).
+What the problem was is hard to say, because there are now a lot of
+diffs to the bk-devel tree.
 
-the ati driver doesn't recognize the real amount of videoram, even if i
-use the 'VideoRam'-option. i have attached the some parts of my
-XF86Config.0.log file (the system i use at the moment is really bad - no
-cut'n paste).
-
-does anyone know how to solve this problem ?
-
-thank you very much in advance !
-/thorsten
-
-
---133632-656489213-966454179=:78
-Content-Type: TEXT/PLAIN; charset=US-ASCII; name="XFree86.0.log"
-Content-ID: <Pine.LNX.4.21.0008161929390.78@anubis.local>
-Content-Description: 
-Content-Disposition: attachment; filename="XFree86.0.log"
-Content-Transfer-Encoding: BASE64
-
-Li4uLi4uLi4NCihJSSkgVW5sb2FkTW9kdWxlOiAic2NhbnBjaSINCihJSSkg
-VW5sb2FkaW5nIC91c3IvWDExUjYvbGliL21vZHVsZXMvbGlic2NhbnBjaS5h
-DQooLS0pIFBDSTogKDA6MTc6MCkgQVRJIE1hY2g2NCBMSSByZXYgMjIwLCBN
-ZW0gQCAweDgxMDAwMDAwLzI0LCAweDgxZmZmMDAwLzEyLCBJL08gQCAweDBj
-MDAvOA0KKElJKSBBZGRyZXNzYWJsZSBidXMgcmVzb3VyY2UgcmFuZ2VzIGFy
-ZQ0KCVswXSAtMQkweDAwMDAwMDAwIC0gMHhmZmZmZmZmZiAoMHgwKSBNWEIN
-CglbMV0gLTEJMHgwMDAwMDAwMCAtIDB4MDAwMGZmZmYgKDB4MTAwMDApIElY
-Qg0KKElJKSBPUy1yZXBvcnRlZCByZXNvdXJjZSByYW5nZXM6DQooSUkpIEFj
-dGl2ZSBQQ0kgcmVzb3VyY2UgcmFuZ2VzOg0KCVswXSAtMQkweDgwODAwMDAw
-IC0gMHg4MDg3ZmZmZiAoMHg4MDAwMCkgTVhCDQoJWzFdIC0xCTB4ODA4ODIw
-MDAgLSAweDgwODgyZmZmICgweDEwMDApIE1YQg0KCVsyXSAtMQkweDgxZmZm
-MDAwIC0gMHg4MWZmZmZmZiAoMHgxMDAwKSBNWEIoQikNCglbM10gLTEJMHg4
-MTAwMDAwMCAtIDB4ODFmZmZmZmYgKDB4MTAwMDAwMCkgTVhCKEIpDQoJWzRd
-IC0xCTB4MDAwMDBjMDAgLSAweDAwMDAwY2ZmICgweDEwMCkgSVhCKEIpDQoo
-SUkpIEFjdGl2ZSBQQ0kgcmVzb3VyY2UgcmFuZ2VzIGFmdGVyIHJlbW92aW5n
-IG92ZXJsYXBzOg0KCVswXSAtMQkweDgwODAwMDAwIC0gMHg4MDg3ZmZmZiAo
-MHg4MDAwMCkgTVhCDQoJWzFdIC0xCTB4ODA4ODIwMDAgLSAweDgwODgyZmZm
-ICgweDEwMDApIE1YQg0KCVsyXSAtMQkweDgxZmZmMDAwIC0gMHg4MWZmZmZm
-ZiAoMHgxMDAwKSBNWEIoQikNCglbM10gLTEJMHg4MTAwMDAwMCAtIDB4ODFm
-ZmZmZmYgKDB4MTAwMDAwMCkgTVhCKEIpDQoJWzRdIC0xCTB4MDAwMDBjMDAg
-LSAweDAwMDAwY2ZmICgweDEwMCkgSVhCKEIpDQooSUkpIE9TLXJlcG9ydGVk
-IHJlc291cmNlIHJhbmdlcyBhZnRlciByZW1vdmluZyBvdmVybGFwcyB3aXRo
-IFBDSToNCihJSSkgQWxsIHN5c3RlbSByZXNvdXJjZSByYW5nZXM6DQoJWzBd
-IC0xCTB4ODA4MDAwMDAgLSAweDgwODdmZmZmICgweDgwMDAwKSBNWEINCglb
-MV0gLTEJMHg4MDg4MjAwMCAtIDB4ODA4ODJmZmYgKDB4MTAwMCkgTVhCDQoJ
-WzJdIC0xCTB4ODFmZmYwMDAgLSAweDgxZmZmZmZmICgweDEwMDApIE1YQihC
-KQ0KCVszXSAtMQkweDgxMDAwMDAwIC0gMHg4MWZmZmZmZiAoMHgxMDAwMDAw
-KSBNWEIoQikNCglbNF0gLTEJMHgwMDAwMGMwMCAtIDB4MDAwMDBjZmYgKDB4
-MTAwKSBJWEIoQikNCi4uLi4uLi4uLg0KKElJKSBBVEk6IEFUSSBkcml2ZXIg
-KHZlcnNpb24gNS4zLjUpIGZvciBjaGlwc2V0czogYXRpLCBhdGl2Z2ENCigt
-LSkgQ2hpcHNldCBBVEkgTWFjaDY0IDNEIFJhZ2UgTFQgUHJvIChQQ0kpIGZv
-dW5kDQooSUkpIHJlc291cmNlIHJhbmdlcyBhZnRlciB4Zjg2Q2xhaW1GaXhl
-ZFJlc291cmNlcygpIGNhbGw6DQoJWzBdIC0xCTB4ODA4MDAwMDAgLSAweDgw
-ODdmZmZmICgweDgwMDAwKSBNWEINCglbMV0gLTEJMHg4MDg4MjAwMCAtIDB4
-ODA4ODJmZmYgKDB4MTAwMCkgTVhCDQoJWzJdIC0xCTB4ODFmZmYwMDAgLSAw
-eDgxZmZmZmZmICgweDEwMDApIE1YQihCKQ0KCVszXSAtMQkweDgxMDAwMDAw
-IC0gMHg4MWZmZmZmZiAoMHgxMDAwMDAwKSBNWEIoQikNCglbNF0gLTEJMHgw
-MDAwMGMwMCAtIDB4MDAwMDBjZmYgKDB4MTAwKSBJWEIoQikNCkZvdW5kIGEg
-TWFjaDY0IG9uIGEgUG93ZXJQQw0KKFdXKSAqKioqSU5WQUxJRCBNRU0gQUxM
-T0NBVElPTioqKiogYjogMHg4MTAwMDAwMCBlOiAweDgxZmZmZmZmIGNvcnJl
-Y3RpbmcHDQpvd24NCglbMF0gLTEJMHg4MWZmZjAwMCAtIDB4ODFmZmZmZmYg
-KDB4MTAwMCkgTVhCDQoJWzFdIC0xCTB4MDAwMDBjMDAgLSAweDAwMDAwY2Zm
-ICgweDEwMCkgSVhCDQooSUkpIHdpbmRvdzoNCglbMF0gLTEJMHgwMDAwMDAw
-MCAtIDB4ZmZmZmZmZmYgKDB4MCkgTVhCDQooSUkpIHJlc1NpemU6DQoJWzBd
-IC0xCTB4MDAwMDAwMDAgLSAweGZmZmZmZmZmICgweDApIE1YQg0KKElJKSB3
-aW5kb3cgZml4ZWQ6DQoJWzBdIC0xCTB4MDAwMDAwMDAgLSAweGZmZmZmZmZm
-ICgweDApIE1YQg0KKElJKSByZXNvdXJjZSByYW5nZXMgYWZ0ZXIgcHJvYmlu
-ZzoNCglbMF0gLTEJMHgwMTAwMDAwMCAtIDB4MDFmZmZmZmYgKDB4MTAwMDAw
-MCkgTVhCKEIpDQoJWzFdIC0xCTB4ODA4MDAwMDAgLSAweDgwODdmZmZmICgw
-eDgwMDAwKSBNWEINCglbMl0gLTEJMHg4MDg4MjAwMCAtIDB4ODA4ODJmZmYg
-KDB4MTAwMCkgTVhCDQoJWzNdIC0xCTB4ODFmZmYwMDAgLSAweDgxZmZmZmZm
-ICgweDEwMDApIE1YQihCKQ0KCVs0XSAwCTB4MDAwYTAwMDAgLSAweDAwMGFm
-ZmZmICgweDEwMDAwKSBNU0INCglbNV0gMAkweDAwMGIwMDAwIC0gMHgwMDBi
-N2ZmZiAoMHg4MDAwKSBNU0INCglbNl0gMAkweDAwMGI4MDAwIC0gMHgwMDBi
-ZmZmZiAoMHg4MDAwKSBNU0INCglbN10gLTEJMHgwMDAwMGMwMCAtIDB4MDAw
-MDBjZmYgKDB4MTAwKSBJWEIoQikNCglbOF0gMAkweDAwMDAwM2IwIC0gMHgw
-MDAwMDNiYiAoMHhjKSBJU0INCglbOV0gMAkweDAwMDAwM2MwIC0gMHgwMDAw
-MDNkZiAoMHgyMCkgSVNCDQooSUkpIFNldHRpbmcgdmdhIGZvciBzY3JlZW4g
-MC4NCihJSSkgTG9hZGluZyBzdWIgbW9kdWxlICJmYmRldmh3Ig0KKElJKSBM
-b2FkTW9kdWxlOiAiZmJkZXZodyINCihJSSkgTG9hZGluZyAvdXNyL1gxMVI2
-L2xpYi9tb2R1bGVzL2xpbnV4L2xpYmZiZGV2aHcuYQ0KKElJKSBNb2R1bGUg
-ZmJkZXZodzogdmVuZG9yPSJUaGUgWEZyZWU4NiBQcm9qZWN0Ig0KCWNvbXBp
-bGVkIGZvciA0LjAuMSwgbW9kdWxlIHZlcnNpb24gPSAwLjAuMQ0KCUFCSSBj
-bGFzczogWEZyZWU4NiBWaWRlbyBEcml2ZXIsIHZlcnNpb24gMC4yDQooLS0p
-IEFUSSgwKTogRGVwdGggMjQsICgrKykgZnJhbWVidWZmZXIgYnBwIDI0DQoo
-PT0pIEFUSSgwKTogUkdCIHdlaWdodCA4ODgNCig9PSkgQVRJKDApOiBEZWZh
-dWx0IHZpc3VhbCBpcyBUcnVlQ29sb3INCk1hcHBpbmcgTU1JTyBAIDB4MTdm
-ZjAwMCB3aXRoIHNpemUgMHgxMDAwDQp0ZXN0aW5nIG1taW8gdy8gc2NyYXRj
-aCByZWdzLi4uDQpTQ1JBVENIX1JFRzAgPSAweDANClNDUkFUQ0hfUkVHMCA9
-IDB4MTIzNDU2NzgNClNDUkFUQ0hfUkVHMSA9IDB4MA0KU0NSQVRDSF9SRUcx
-ID0gMHhkZWFkYmVlZg0KQ2hpcCBUeXBlID0gMHgwLCBSZXYgPSAweDANCigt
-LSkgQVRJKDApOiBWaWRlb1JhbTogNyBrQnl0ZSAoT0ZGKQ0KKD09KSBBVEko
-MCk6IFVzaW5nIGdhbW1hIGNvcnJlY3Rpb24gKDEuMCwgMS4wLCAxLjApDQoo
-SUkpIEFUSSgwKTogUG93ZXJCb29rRzM6IFVzaW5nIGhzeW5jIHJhbmdlIG9m
-ICAgMS4wMC0zMDAuMDAga0h6DQooSUkpIEFUSSgwKTogUG93ZXJCb29rRzM6
-IFVzaW5nIHZyZWZyZXNoIHJhbmdlIG9mICAgMS4wMC0zMDAuMDAgSHoNCihJ
-SSkgQVRJKDApOiBNYXhpbXVtIGNsb2NrOiAgODAuMDAgTUh6DQo=
---133632-656489213-966454179=:78--
+--
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
