@@ -1,42 +1,37 @@
-Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
-Message-ID: <3FF91D0F.7010203@dgt-lab.com.pl>
-Date: Mon, 05 Jan 2004 09:15:11 +0100
-From: Wojciech Kromer <krom@dgt-lab.com.pl>
-MIME-Version: 1.0
-To: "Linuxppc-Embedded (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: memory problem with fec on 8250
-References: <200401041555.JAA03904@lists.linuxppc.org>
-In-Reply-To: <200401041555.JAA03904@lists.linuxppc.org>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Date: Mon, 5 Jan 2004 15:38:47 +0100
+From: Wouter Cloetens <wouter@mind.be>
+To: linuxppc-embedded@lists.linuxppc.org
+Cc: v2p@mind.be
+Subject: Re: [PATCH] Insight Memec Virtex-II Pro Development Board support
+Message-ID: <20040105143847.GE31876@roadkill.intern.mind.be>
+References: <20031212215601.GH3935@roadkill.intern.mind.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20031212215601.GH3935@roadkill.intern.mind.be>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-U¿ytkownik Samo Pogacnik napisa³:
+On Fri, Dec 12, 2003 at 10:56:01PM +0100, Wouter Cloetens wrote:
+> If needed, we can also submit the diff against the linuxppc_2_4 tree.
 
->Hello!
->
->Is it possible that there is something wrong in the way how the:
->"netif_wake_queue(dev)" gets called from the interrupt handler in the
->"fcc_enet.c"?
->I can confirm this problem for 2.4.18 as well as 2.6.0 kernels on mpc82xx.
->
->bye, Samo
->
->
->
->
-i don't know exactly what's wrong with 82xx code,
-but i wrote a small patch that frees unfreed skbuf before allocating new
-one,
-and now it works fine
+That's available too now on ftp://ftp.mind.be/Virtex2Pro/patch-v2.4.23_linuxppc_2_4/.
+One notable difference with the patch against the devel tree is that
+I've applied a patch to allow the boot code to pick up the command line
+from RedBoot (arch/ppc/boot/simple/misc-embedded.c).
 
-additionaly, i had no problem with (almost) the same code on 8xx
+> The patches should be applied in the following order:
 
+See the README file in that directory.
+
+> We commit to maintaining this port on an ongoing basis against the
+> linuxppc_2_4 tree.
+
+And that's still true. Would any of the committers be so kind as to
+merge this into the linuxppc_2_4[_devel] trees? Or is there anything
+else (besides posting the link to the patches here) we should do to get
+this stuff in?
 --
-* * * * * * * * * * * *
-* per pedes ad astra! *
-* * * * * * * * * * * *    mailto:krom@dgt-lab.com.pl
-
+There are 10 types of people in the world: Those who understand binary, and those who don't.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
