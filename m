@@ -1,41 +1,42 @@
-Date: Fri, 18 Jul 2003 10:35:58 -0400
-Message-Id: <200307181435.h6IEZwN21368@hyper.wm.sps.mot.com>
-From: Peter Barada <pbarada@mail.wm.sps.mot.com>
-To: Charles.Wells@nielsenmedia.com
-Cc: slowforce@21cn.com, linuxppc-embedded@lists.linuxppc.org
-In-reply-to: 
-	<762A181C0D966E459A2EB3B810142C7701514BF1@nmrusdunsx12.nmrlan.net>
-	(Charles.Wells@nielsenmedia.com)
-Subject: Re: need a fast byteorder changing routine
-References: <762A181C0D966E459A2EB3B810142C7701514BF1@nmrusdunsx12.nmrlan.net>
+Message-ID: <F9102D41F595D311ACA7009027DE2C840527B4D7@c3po.heurikon.com>
+From: "Johnson, Stephen" <stevebj@artesyncp.com>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: RE: kmalloc vs pci_alloc_consistent
+Date: Fri, 18 Jul 2003 09:56:35 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->Li,
->
->If you must do it one word at a time, the following works.
->
->long SwapBytes(long* p)
->{
->  __asm__(" lwbrx 3,0,3");
->}
->
->Charlie
+I found a nice thread of conversation that allowed me to see some of the
+history behind pci_alloc_consistent().
 
-And if you want it inlined:
+I read one thing noted on a man page for kmalloc that should be highlighted.
+"the GFP_DMA flag may be set to indicate the memory must be suitable for
+DMA. ***This can mean different things on different platforms.*** For
+example, on x86, it means that the memory must come from the first 16MB."
 
-static inline unsigned long loadWordAndSwapBytes(unsigned long *p)
-{
-  unsigned long val;
+For ppc arch, how about
+#define kmalloc  pci_alloc_unconsistent  /* just joking */
 
-  __asm__ ("lwbrx %0,0,%1" : "=r" (val) : "r" (p));
-  return val;
-}
 
---
-Peter Barada                             Peter.Barada@motorola.com
-Wizard                                   781-852-2768 (direct)
-WaveMark Solutions(A Motorola Company)   781-270-0193 (fax)
+
+
+-----Original Message-----
+From: Johnson, Stephen
+Sent: Friday, July 18, 2003 8:34 AM
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: kmalloc vs pci_alloc_consistent
+
+
+
+I don't know the history behind pci_alloc and wanted to throw this out there
+to get some clarification.
+
+What's the benefit of pci_alloc over using kmalloc with flags for a
+cache-safe buffer?
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
