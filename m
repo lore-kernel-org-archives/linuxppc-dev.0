@@ -1,15 +1,23 @@
-Return-Path: <stephane.fillod@thomson.net>
-Received: from dmzraw2.extranet.tce.com (dmzraw2.extranet.tce.com
-	[157.254.234.138]) by ozlabs.org (Postfix) with ESMTP id 9D8E067A8A
-	for <linuxppc-dev@ozlabs.org>; Tue,  5 Apr 2005 21:35:18 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Tue, 5 Apr 2005 13:35:02 +0200
-Message-ID: <1CFEB358338412458B21FAA0D78FE86D4F0D2E@rennsmail02.eu.thmulti.com>
-From: "Fillod Stephane" <stephane.fillod@thomson.net>
-To: "karthik" <karthik.r@samsung.com>, <linuxppc-dev@ozlabs.org>
-Subject: RE: How to read EDID Information of Monitor [OT]
+Return-Path: <j.glisse@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.203])
+	by ozlabs.org (Postfix) with ESMTP id CC62D67A72
+	for <linuxppc-dev@ozlabs.org>; Tue,  5 Apr 2005 21:52:39 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id 37so1359610wra
+	for <linuxppc-dev@ozlabs.org>; Tue, 05 Apr 2005 04:52:33 -0700 (PDT)
+Message-ID: <4240b91605040504525fd877e5@mail.gmail.com>
+Date: Tue, 5 Apr 2005 13:52:33 +0200
+From: Jerome Glisse <j.glisse@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1112656372.26086.88.camel@gaston>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <4240b916050404033230db0551@mail.gmail.com>
+	<1112618509.26086.68.camel@gaston>
+	<4240b91605040412117b29d4ca@mail.gmail.com>
+	<1112656372.26086.88.camel@gaston>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: linux 2.6.12-rc1-bk5 compilation error
+Reply-To: Jerome Glisse <j.glisse@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,13 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-karthik wrote:
->In my project i am facing problem of how to read EDID information of
-Monitor
+I almost successfully run the 2.6.12-rc2, there were some
+bad old stuff lying around. But i needed the two workaround
+to compile it. So maybe this two could be applied to the kernel ?
 
-http://freshmeat.net/search/?q=3Dedid+&section=3Dprojects
-http://www.google.com/search?q=3DEDID&meta=3D
+Now the only issue which remains is that the radeon framebuffer
+no more set a proper mode for my screen. The screen complain
+about a out of range mode. But as soon as X start i get a proper
+mode set but can't switch to console.
 
+The screen is a crt one on a radeon 9600 with dvi->vga adapter.
+Which works well on 2.6.10
 
---=20
-Stephane
+I will try t look at radeon framebuffer see if i can find anythings.
+Any idea of which change on that code may be the origin of this ?
+
+Jerome Glisse
