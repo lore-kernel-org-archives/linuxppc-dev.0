@@ -1,33 +1,27 @@
-Subject: Re: Ibook G4 modem
+Subject: Re: OF properties access ?
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Colin Leroy <colin@colino.net>
+To: Sven Luther <sven.luther@wanadoo.fr>
 Cc: linuxppc-dev list <linuxppc-dev@lists.linuxppc.org>
-In-Reply-To: <115601c3dabc$06d9cdf0$3cc8a8c0@ANOSP>
-References: <115601c3dabc$06d9cdf0$3cc8a8c0@ANOSP>
+In-Reply-To: <20040113114625.GA9294@iliana>
+References: <20040113114625.GA9294@iliana>
 Content-Type: text/plain
-Message-Id: <1074126209.5123.22.camel@gaston>
+Message-Id: <1074131387.818.43.camel@gaston>
 Mime-Version: 1.0
-Date: Thu, 15 Jan 2004 11:23:29 +1100
+Date: Thu, 15 Jan 2004 12:49:47 +1100
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 2004-01-15 at 03:32, Colin Leroy wrote:
-> Hi,
+> But, the pmac OF (at least on the powerbook i got someone to check for
+> me), does have a l2cr property, not a l2cr-value one. The same goes on
+> for voltaire.debian.org, which is a dual G4 500MHz.
 >
-> Anyone knows what's the modem in the iBook G4 ? It doesn't even appear in
-> `lspci` nor `lsusb`.
-> in the device-tree, however, there's an escc node (compatible:
-> "chrp,es0"), with ch-a and ch-b (but they have empty "slot-names").
-> There's also an i2c-modem node (compatible: "minidash2").
->
-> Googling for minidash2 returns nothing...
-> Linuxant scripts to detect chipsets don't find anything, either.
->
-> Anyone knows something about it ?
+> Does this mean that the -value appended is for looking at the content of
+> l2cr, or something such ?
 
-The linuxant stuff should work. It's an USB modem. But it's only
-powered up when the USB driver is loaded ;)
+No. The L2 is assumed to be set by the firmware. That "l2cr-value" is just
+an optional thing that BootX can set before booting the kernel to force
+a different L2 setup, typically used with G3 upgrade cards.
 
 Ben.
 
