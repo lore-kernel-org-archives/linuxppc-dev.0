@@ -1,59 +1,66 @@
-Date: Sun, 13 May 2001 12:46:01 -0400
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Kernel bug 
-Message-ID: <20010513124601.A24522@kybl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: Tomas Jura <tjura@binghamton.edu>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bastien Nocera <hadess@hadess.net>,
+	LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Kernel sound problems (and misc)
+Date: Sun, 13 May 2001 19:05:55 +0200
+Message-Id: <20010513170555.17579@smtp.wanadoo.fr>
+In-Reply-To: <989768459.4941.0.camel@kara>
+References: <989768459.4941.0.camel@kara>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi, everybody
+>
+>OK, there goes the main problem: mixer problems. There are 3 ways to
+>output sound on this iMac DV summer 2000 (OF tree still available from
+>tidbit.org).
+>- the front speakers: the preferred way obviously. Main volume is of no
+>use (doesn't do anything), the speakers volume goes from mute, or loud
+>to very loud.
 
-I probably hit some kernel bug, which apply to load
-accounting and/or task creation.  This happens me three
-times this week.  Can somebody help me to prepare trap for
-it and find what has happens ? I'm not kernel guru and not
-very familiar with ppc assembler.
+I think on those models, we must set the sound chip volume to a fixed
+value and control the "SRS" amplifier using I2C. I don't have all the
+details in mind yet however.
 
-Thanks.
-Tomas
+>- the front audio sockets: there aren't independant of the front
+>speakers, doesn't really matter, but that means it's not possible to
+>shut the sound of the speakers and listen to the music with a headphone.
+>It might be a hardware problem.
 
-Hardware, Software and Symptoms:
+Probably related to the above problem.
 
-HW: PPC G3 beige, 160 MB of memory, (CONFIG_HIGHMEM off)
-SW: Debian 2.2 unstable, kernel 2.2.5-pre1 (gcc 2.95.4)
-Do kernel debug options included ( sysmon,....)
-Also happened with kernel 2.2.4-x.
-Loaded machine (>1)( running package instalation or
-compilation). Then dies a wmtop (Window Maker top). It is not
-suid program. In this moment apperars in syslog
+>- the audio socket for external speakers on the left handside of the
+>machine: there's no volume control for them. Bringing down all the
+>volume controls shut off the front speakers (good), but there's no way
+>to raise or lower the sound on this output either.
 
-Oops: kernel access of bad area, sig: 11
-NIP: C0058B90 XER: 00000000 LR:
-C00563A8 SP: C87C7D50 REGS: c87c7ca0 TRAP: 0300
-MSR: 00009032 EE: 1 PR: 0 FP: 0
-ME: 1 IR/DR: 11
-DAR: 00000004, DSISR: 40000000
-TASK = c87c6000[18224] 'wmtop'
-Last syscall: 3
-.......
-than any attempt of process listing fails (never finish
-and stay hooked) and every time there is three proceses at the
-end of listnig:
+Well, if it's a "line" output, it can be considered normal. (the line
+output of a portable CD player has no volume control for example). You
+should look at what happens with MacOS.
 
-24459 ?        S      0:00 /USR/SBIN/CRON
-24460 ?        S      0:00 /bin/sh -c   if [ -x /usr/sbin/exim -a -f /etc/exim/exim.conf ]; then /usr/s
-24461 ?        S      0:00 /usr/sbin/exim -q
-<end of list, frozen forever>
+>So, to sum it up, the main volume control does absolutely nothing on
+>this machine, and the speaker volume control is either mute, loud, or
+>very loud. I'd be glad to help on finding out the problem.
+>
+>The misc problem is, while trying to compile paulus' kernel, the vmlinux
+>target fails to link with rwsem_down_write_failed and rwsem_wake
+>undefined references.
 
-Yes, exim mailer is suid ;-(
+Use my tree for pmac.
 
-Load measurement is still possible but, shows number of
-frozen processes.
-Any ideas where is a mistake or how to solve it?
+>I hope somebody can help me tackle these.
 
-Just happen again. Going to reboot....
+The main issue is that almost each Apple motherboard has a different
+wiring of the sound chips. Some of them (the newer ones) seem to
+describe things in the OF tree, older ones need us to hard code
+the layout. Our current driver doesn't cope with that very well
+yet. Also, some boards have external hardware (like amplifiers,
+SRS module, ...) that need to be controlled with the I2C bus, for
+which we don't have drivers for all machines.
+
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
