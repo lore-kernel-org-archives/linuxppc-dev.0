@@ -1,37 +1,32 @@
-Date: Thu, 7 Jan 1999 18:30:19 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@cs.kuleuven.ac.be>
-To: Brad Midgley <brad@pht.com>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: system.h and "::"
-In-Reply-To: <Pine.LNX.3.96LJ1.1b7.990107085341.599A-100000@cricket>
-Message-ID: <Pine.LNX.4.03.9901071829510.16860-100000@mercator.cs.kuleuven.ac.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linuxppc-dev@lists.linuxppc.org
+Subject: PCI Detection/ programming / GPIB
+Reply-To: kozioziemski1@llnl.gov
+From: Bernard Kozioziemski <kozioziemski1@llnl.gov>
+Date: 07 Jan 1999 09:31:36 -0800
+Message-ID: <m3k8yz3s7b.fsf@unites9500.llnl.gov>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, 7 Jan 1999, Brad Midgley wrote:
-> using the latest snapshot of r5 (and its associated libs/compiler), i have
-> a problem with asm/system.h that i hope has a simple fix.
-> 
-> i wrote a c++ program that includes some system header files. it chokes
-> when asm/system.h gets included because "::" appears in that file. that
-> has special meaning to the c++ compiler. the compile succeeds if it's
-> broken up into ": :" but will that cause any problems? does that have the
-> same meaning in assembly? the patch ends this message. 
 
-Thanks! I fixed all occurencies in the vger tree.
+Greets,
+I've been running LinuxPPC for a few months now, but I want to become less
+dependent on MacOS. I would really like to use LinuxPPC to run some data
+collection software similar to what I have under MacOS. 
 
-Greetings,
+I have a National Instruments PCI GPIB (IEE-488) card installed in my
+PowerMac 9500. There is some work on the x86 front to support GPIB, so I
+thought I'd start there. Unfortunately, the card is not found by linux when
+booting. /proc/pci lists 3 devices: Apple Bandit, VGA compat controller
+(grpahics card) and Apple Grand Central. I'm not sure where to start in
+detecting this board, and I was wondering if someone on this list could
+give me a few pointers to (beginner :) info, or example code. Thanks,
 
-						Geert
+Bernie Kozioziemski
 
---
-Geert Uytterhoeven                     Geert.Uytterhoeven@cs.kuleuven.ac.be
-Wavelets, Linux/{m68k~Amiga,PPC~CHRP}  http://www.cs.kuleuven.ac.be/~geert/
-Department of Computer Science -- Katholieke Universiteit Leuven -- Belgium
-
+-- 
+kozioziemski1@llnl.gov
+(925)424-6317
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
 [[ not forced back to the list, so be sure to  Cc linuxppc-dev  if your ]]
