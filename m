@@ -1,27 +1,33 @@
-Date: Mon, 12 Apr 1999 16:21:09 -0500 (CDT)
-From: Dave Weis <djweis@plconline.com>
+Date: Mon, 12 Apr 1999 20:09:37 -0400 (EDT)
+From: satadru pramanik <satadru@umich.edu>
 To: linuxppc-dev@lists.linuxppc.org
-Subject: rs6000 stuff
-Message-ID: <Pine.LNX.3.95.990412161744.21669A-100000@catbert.desm.plconline.com>
+Subject: ggi and frame buffer
+Message-ID: <Pine.LNX.4.10.9904122007520.23848-100000@beer.pub.umich.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+Since linuxppc defaults to using a FB-device, ggi should work, right?  So
+I compiled the latest snapshit, and when I tried to run a demo, ie
+"cube3d" I got this:
+cube3d: error in loading shared libraries: /usr/local/lib/libgg.so.0:
+R_PPC_REL2
+4 relocation out of range
 
-I found a good book about the rs6000 hardware. info is available at
-http://www.mkp.com/books_catalog/1-55860-344-1.asp
-It says that it would be helpful for people porting other operating
-systems to the architecture. Needless to say, it's on order...
+Any clues to what this is?  Has anybody gotten libgii and libggi to work
+successfully on LinuxPPC, especially pre-rel5?
 
-djweis
 
--- 
-David Weis                | 10520 New York Ave, Des Moines, IA 50322
-djweis@plconline.com      | Voice 515-278-0133 Ext 231
-http://www.plconline.com/ | "Great spirits will always encounter violent
-                          | opposition from mediocre minds" - Einstein
+
+----
+satadru pramanik `satadru@umich.edu'
+"Put your hand on a hot stove for a minute, and it seems like an hour. Sit
+with a pretty girl for an hour, and it seems like a minute. THAT'S
+relativity." 
+-Albert Einstein
+---
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
