@@ -1,25 +1,32 @@
-Message-ID: <3AD4722B.3B22120@matrox.com>
-Date: Wed, 11 Apr 2001 11:03:07 -0400
-From: =?iso-8859-1?Q?S=E9bastien=20C=F4t=E9?= <scote1@matrox.com>
+From: "Alan Wang" <wung_y@sina.com>
+To: "Linuxppc-EmbeddedMaillist" <linuxppc-embedded@lists.linuxppc.org>
+Subject: problem when read internal memory
+Date: Thu, 12 Apr 2001 00:41:45 +0800
+Message-ID: <EBEGJCKFJMJLDPEKGAKJOEBGCAAA.wung_y@sina.com>
 MIME-Version: 1.0
-To: LinuxPPC-embedded list <linuxppc-embedded@lists.linuxppc.org>
-Subject: frequency in sandpoint_calibrate_decr
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+	charset="gb2312"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Hi,
+Hi, all
+  we're porting linux-2.2.13 to our customized board(MPC823e). I modified some head file according
+the specification of our board such as memory map. the IMMR is set to 0xff000000. now, the kernel
+can be loaded by bootloader(written by ourselves). but inm8xx_cpm_reset() which is called in
+setup_arch:
+void m8xx_cpm_reset(uint host_page_addr)
+{
+	volatile immap_t	 *imp;
+	volatile cpm8xx_t	*commproc;
+	pte_t			*pte;
 
-In MontaVista's kernel 2.4.0-test2, the frequency in
-sandpoint_calibrate_decr() is set to 66 Mhz.  What frequency is this?
-The processor, the bus ???
+	imp = (immap_t *)IMAP_ADDR;
+	commproc = (cpm8xx_t *)&imp->im_cpm;
+ this line generates a machine check exception when write/read to internal memory.
 
-Increasing this speed seems to get rid of my stability problems (at
-last!), so I'd like to know the real value I should put there.
+why? any suggestion and comment are welcome. thank you.
 
-Thanks,
-
-Sébas..
+A.W.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
