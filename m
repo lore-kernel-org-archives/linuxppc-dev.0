@@ -1,67 +1,59 @@
-From: flar@allandria.com
-Message-Id: <200009160501.WAA02418@marcus.allandria.com>
-Subject: Re: Status of HFS+ support
-To: nicoya@apia.dhs.org (Tony Mantler)
-Date: Fri, 15 Sep 2000 22:01:06 -0700 (PDT)
-Cc: geert@linux-m68k.org (Geert Uytterhoeven),
-        khalfmann@libra.de (Halfmann Klaus),
-        linux-fsdevel@vger.kernel.org ('linux-fsdevel@vger.kernel.org '),
-        linuxppc-dev@lists.linuxppc.org ('linuxppc-dev@lists.linuxppc.org '),
-        olh@suse.de ('Olaf Hering')
-In-Reply-To: <v04003a00b5e80ad96727@[24.70.162.14]> from "Tony Mantler" at Sep 15, 2000 12:40:38 PM
+From: Paul Mackerras <paulus@linuxcare.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Message-ID: <14786.65401.393966.936283@argo.linuxcare.com.au>
+Date: Sat, 16 Sep 2000 16:04:57 +1100 (EST)
+To: linuxppc-dev@lists.linuxppc.org
+Subject: recent fixes in devel tree
+Reply-To: paulus@linuxcare.com.au
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tony Mantler wrote:
-> Checking an hfs or hfs+ filesystem is very very easy.
+I've been fixing a few things in the development kernel (2.4.0-test8)
+lately:
 
-Well, I don't know that I'd call it very easy, but it's certainly easier
-than trying to actually fix it. :)
+PCMCIA.  I have fixed an endianness bug in the pcmcia/cardbus support
+in the kernel, and added some code to get the interrupt routing right
+on my 1999 G3 powerbook ("lombard").  I also fixed a bad bug that we
+had in our free_irq() implementation.  I have been testing with a 3com
+combo ethernet/modem card which seems to work just fine now, although
+there does seem to be some sort of a problem on the initial card
+insertion still.
 
-> I could picture walking down the catalog btree and check to see that the
-> sidelinks and downlinks all agree on which node they're pointing at, and
-> while you're at it, make sure the nodes don't point to garbage.
->
-> You'd then probably repeat that procedure on the Extents btree.
->
-> After that's done, you'd probably walk the leaf nodes of the catalog tree
-> to check that the filesystem heiarchy is still sane. After that, it would
-> probably follow to walk the leaf nodes in the extents btree and check for
-> overlaps, then compare it with the volume bitmap.
->
-> There's probably a few other checks that would be good too, like checking
-> for stale extents records or something.
+Machine checks on accesses to non-existent I/O ports on powermacs.
+I changed the definitions of inb/w/l and outb/w/l so that they use a
+sync instruction after the load or store, instead of eieio.  If the
+location doesn't respond and we get a machine check, it should occur
+at the sync instruction and we then use the existing exception
+handling mechanism that we use for get_user/put_user etc. to recover
+and keep going.  An inb/w/l to a non-existent port will return -1
+rather than crashing the system as before.
 
-That all sounds reasonable. Probably wouldn't even take that long, and
-would likely prove the correctness or incorrectness of the code in some
-instances. The thing that would be a pain to check but very important
-is to check the sorting order in all trees. I may even try to get something
-running this weekend if I get a chance.
+As part of this I added code to sort the exception table.  Because we
+have so many sections (pmac, prep, chrp, apus, etc. as well as the
+usual init section and the main text section) the exception table gets
+out of order and it is necessary to sort it so that the binary search
+works correctly.
 
-> Repairing an HFS(+) drive is a whole other matter entirely. Saying "This
-> ain't no journaling filesystem" would be an understatement of galactic
-> proportions (which, I should add, would also make threading the filesystem
-> very painful). Consider that when you insert a new leaf node into one of
-> the btrees, you have at the absolute very least 5 pointers to update. Power
-> goes out? oops, now 2 of those pointers are pointing at one node, and 2 are
-> pointing at some other node, and one's full of garbage 'cause the HD didn't
-> get a chance to write out the whole node. Which pointers are correct? who
-> knows, I don't think apple ever documented a prefered serialization order
-> for any of the fs changes.
+Copy speedups using cache prefetching.  I found that on the G4, using
+the dcbt instruction to prefetch data into the cache in the inner loop
+of copy_to/from_user and copy_page gives very substantial speedups.
+For example, `cat largefile >/dev/null' used to go at around 140MB/s
+on my 450MHz G4 cube (assuming largefile fits into memory) and now it
+goes at around 400MB/s. :-)  Interestingly, dcbt makes no difference
+at all on the G3 machines I tried.  I presume it is a no-op on the G3.
 
-Yes, it is a bit of a mess.
+The fixes are in the linuxppc_2_3 bk tree and in my rsync tree at
+ppc.samba.org::linux-pmac-devel.  Cort or I will send some patches to
+Linus soon and hopefully they will go in.
 
-> imho, the only reliable way to repair a crashed HFS(+) drive is with a hex
-> editor.
+Paul.
 
-Well, automated tools can fix some of the damage. I've had good luck fixing
-drives with Norton Utilities, although there are some problems it chokes on.
-
-	Brad Boyer
-	flar@pants.nu
-
+--
+Paul Mackerras, Senior Open Source Researcher, Linuxcare, Inc.
++61 2 6262 8990 tel, +61 2 6262 8991 fax
+paulus@linuxcare.com.au, http://www.linuxcare.com.au/
+Linuxcare.  Support for the revolution.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
