@@ -1,38 +1,65 @@
-Date: Thu, 4 Jan 2001 09:37:10 +0530 (IST)
-From: "Srinivas Rao.M" <msrao@vxl.co.in>
-To: linuxppc-dev@lists.linuxppc.org
-Subject: Critical section - pSOS+
-In-Reply-To: <XFMail.20010103201404.gthomas@redhat.com>
-Message-ID: <Pine.SCO.3.91.1010104092854.21798A-100000@vayudoot>
+Message-ID: <3A541B7F.98ABCD9D@wanadoo.fr>
+Date: Thu, 04 Jan 2001 07:43:11 +0100
+From: Martin Costabel <costabel@wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: bootc@worldnet.fr
+CC: Geert Uytterhoeven <geert@linux-m68k.org>,
+        LinuxPPC Dev <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Changes in the Valkyrie driver from 2.1.24 to 2.2.18
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi to all,
+Geert Uytterhoeven wrote:
 
- I am sorry, This question is not releated to the list directly.
+> On Wed, 3 Jan 2001, Chris Boot wrote:
+> > It has struck me, after weeks of research, that my problems in booting my
+> > 5400/180 cold through OpenFirmware are caused by changes in the Linux
 
- We have a custom board built using MPC860 processor and running the
-pSOS+ kernel. We are running a multitasking application on this. we are
-facing a problem with the critical section.
-we have in pSOS+, splx(1) and splx(0) calls for disabling and enabling the
-interrupts respectively. Having multiple tasks running on the kernel,
-suppose if one task disables the interrupt by calling splx(1),
-The other task can enable the interrupts back to the old posture by
-calling splx(0). Hence the critical section code is left in the non
-critical section area. Unlike UNIX, pSOS+ doesnot provide, the interrupts
-locking (and unlocking) mechanism at the task level.
-In such contexts how can we solve this problem.
+Chris, are you trying to boot with Quik? This, in fact, stopped working
+on the 5400/6400 around kernel 2.1.125, IIRC. What's wrong with using
+BootX?
 
-Thanks in advance.
-Srini...
+> > kernel.  This machine uses the Valkyrie display device, and in 2.1.24 this
+> > is handled by directly accessing its memory, whereas in 2.2.18 it is
+> > accessed through OpenFirmware.
+
+The main change from 2.1.24 was to use the FB drivers structure. The
+init through offb or through fbmem has no effect whatsoever if one boots
+from BootX.
+
+> >                                OpenFirmware is known to choke on this
+> > machine when using the display (as in CLAIM failed).
+
+And seeing people fight against this windmill was one of the motivations
+for BenH to develop BootX in 1998.
+
+> >
+> > My suspicions were aroused when, after disabling CONFIG_FB, the machine
+> > booted cold without any problems whatsoever.
+
+And what display?
+
+> >
+> > Is it at all possible to use Valkyrie without going through OpenFirmware at
+> > all?  It is not selectable if I disable CONFIG_FB_OF.  Would it be possible
+> > to port the older non-OF driver to the newer kernel?  What are the
+> > disadvantages of using the older memory-based driver to the newer OF-based
+> > driver?
+>
+> Have you tried 2.4.0-testX yet?
+>
+> In 2.4.0-testX, valkyriefb is initialized without the help of offb.
+> I don't have a 2.2.18 tree at hand, but you can probably use a similar method
+> in 2.2.18 with some hacking (call valkyriefb_init() from drivers/video/fbmem.c,
+> and not offb_init()).
+
+Geert, this modification is contained in the 2.2.18 kernels from bk and
+from Paul. It just didn't make it into the official 2.2.18 tree. But
+most users of valkyrie probably don't care anyway.
 
 --
-
-The beginning of knowledge is the discovery of something we do not understand.
--Frank Herbert
-(contributed by Chris Johnston)
+Martin
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
