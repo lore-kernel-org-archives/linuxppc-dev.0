@@ -1,35 +1,29 @@
-To: "wang cheng" <wangcheng@rails.com.cn>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: I cann't initialize the OR/BR registers in cpu_init.c?? 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 13 Oct 2003 13:15:32 +0800."
-             <3498237a46.37a4634982@rails.com.cn>
-Date: Mon, 13 Oct 2003 17:16:07 +0200
-Message-Id: <20031013151612.78056C59E4@atlas.denx.de>
+Message-ID: <3F8AFD48.5070507@embeddededge.com>
+Date: Mon, 13 Oct 2003 15:30:16 -0400
+From: Dan Malek <dan@embeddededge.com>
+MIME-Version: 1.0
+To: Steffen Rumler <Steffen.Rumler@siemens.com>
+Cc: =?ISO-8859-1?Q?G=E9rard_Gu=E9vel?= <gguevel@interfaceconcept.com>,
+	linuxppc-embedded@lists.linuxppc.org
+Subject: Re: 8260 FCC enet driver problem
+References: <000001c38766$68b14d90$5201a8c0@GEG2400> <3F86A52B.1070803@siemens.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <3498237a46.37a4634982@rails.com.cn> you wrote:
->
->    I'm porting u-boot-0.4.0 to my WindRiver MDP PRO board now,some
-> addressing specifications are listed below.I choose the
-
-You  asked  the  very  same  question  just  two  hours  ago  on  the
-U-Boot-users mailing list.
+Steffen Rumler wrote:
 
 
-Please read and digest my reply first before sending the same message
-to more mailing lists.
+> I have not seen this kind of synchronization (PHY -- MAC) in fcc_enet.c.
+> I don't know why.
 
-Wolfgang Denk
+The code is there.  You need a PHY interrupt to the processor when
+the link status changes, then the PHY status is interrogated to set
+up the MAC.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-"UNIX was not designed to stop you from doing stupid things,  because
-that would also stop you from doing clever things."       - Doug Gwyn
+
+	-- Dan
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
