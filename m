@@ -1,31 +1,108 @@
-Date: Thu, 05 Apr 2001 12:33:17 +0100
-Subject: Re: DMASOUND->rev6  (2.4.3)(attn: Xine, MOL, PowerComputing,
-	 ibook, Tumbler)
-From: "Iain Sandoe" <iain@sandoe.co.uk>
+Content-Type: Multipart/Mixed;
+  charset="iso-8859-1";
+  boundary="------------Boundary-00=_BIKBHCHTWLWMSTPJ6Y85"
+From: Nicolas Dimitrijevic <nicolas.dimitrijevic@newsup.univ-mrs.fr>
 To: linuxppc-dev@lists.linuxppc.org
-Cc: benh@kernel.crashing.org,
-	Paul Mackerras <paulus@linuxcare.com.au>
-Mime-version: 1.0
-Content-type: text/plain; charset="utf-8"
-Message-Id: <20010405113300.A10B7DBA11@atlas.valhalla.net>
+Subject: Re: 3dfx kernel patch
+Date: Thu, 5 Apr 2001 14:39:47 +0200
+References: <20010403010620.Postino-017265@smtp01.highway.ne.jp> <Pine.BSF.4.32.0104021003480.40704-200000@shell.unixbox.com> <20010403040535.Postino-018013@smtp01.highway.ne.jp>
+In-Reply-To: <20010403040535.Postino-018013@smtp01.highway.ne.jp>
+MIME-Version: 1.0
+Message-Id: <01040514394702.16846@mars.xinus.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-I wrote:
-> -----
->
-> what's been changed (and who might be interested ;-) :
+--------------Boundary-00=_BIKBHCHTWLWMSTPJ6Y85
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 
-but forgot to add:
+Hello,
 
-Keylargo rev 2 is now detected and H/W byte swap disabled if it is seen.
-[untested].
+Here is my [big] patch for tdfxfb
 
-If any G4/tumbler people get action (AFAICT this is Keylargo Rev3) could
-they tell me if that needs to be picked up too?
+added :
+- support for PPC with full accel (char, string, cursor) for 8/16/24/32 bpp
+- support for 2X DAC mode (for > 1280x1024-75) (PPC/x86)
+- bugs corrections, should whork with all framebuffer app's. (PPC/x86)
 
-ciao,
-Iain.
+BUT, I never tested this on x86 :/
+
+--
+Nicolas Dimitrijevic
+(nicod)
+
+--------------Boundary-00=_BIKBHCHTWLWMSTPJ6Y85
+Content-Type: application/x-gzip;
+  charset="iso-8859-1";
+  name="tdfxfb-nicod.diff.gz"
+Content-Disposition: attachment; filename="tdfxfb-nicod.diff.gz"
+Content-Transfer-Encoding: base64
+
+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
+7HsyyHJj9z9ljRdnYDEAAA==
+
+--------------Boundary-00=_BIKBHCHTWLWMSTPJ6Y85--
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
