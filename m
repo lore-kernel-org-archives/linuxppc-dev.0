@@ -1,26 +1,29 @@
-Date: Thu, 11 May 2000 04:21:17 -0500
-From: chris mccraw <chrism@brahma.ticam.utexas.edu>
-To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-Cc: jeramy b smith <ultrapenguin@netscape.net>,
-        Bernhard Reiter <bernhard@intevation.de>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: Lombard hard freeze (update: mem>64MB)
-Message-ID: <20000511042117.A308806@point.ticam.utexas.edu>
-References: <20000511001504.11506.qmail@www0p.netaddress.usa.net> <Pine.LNX.4.10.10005111102470.4724-100000@opal.biophys.uni-duesseldorf.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.10.10005111102470.4724-100000@opal.biophys.uni-duesseldorf.de>; from schmitz@opal.biophys.uni-duesseldorf.de on Thu, May 11, 2000 at 11:07:39AM +0200
+From: Benjamin Herrenschmidt <bh40@calva.net>
+To: Albrecht Dreﬂ <ad@mpifr-bonn.mpg.de>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Q: IO window remapping
+Date: Thu, 11 May 2000 14:48:07 +0200
+Message-Id: <20000511124808.2431@mailhost.mipsys.com>
+In-Reply-To: <391289B2.4060C2DF@mpifr-bonn.mpg.de>
+References: <391289B2.4060C2DF@mpifr-bonn.mpg.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Fri, May 5, 2000, Albrecht Dreﬂ <ad@mpifr-bonn.mpg.de> wrote:
 
-> Seems there's more people successfully running >64M in their Lombard here
-> than it first seemed. Someone pointed to the kernel problem corner, so
-> what kernel versions were these success stories run on?
+>As a result, any pcmcia package operation (like card insertion) fails as
+no io
+>ports can be assigned.
 >
-> (Mine's some old 2.2.13, 2.2.15pre9, 2.3.48 and 2.3.99pre6)
+>I hope this question is not too dumb: What is the correct range for this IO
+>window?  Where should I fix it (probabely in arch/ppc/kernel/pmac_pci.c)?
+>
+>Thanks in advance, Albrecht
 
-2.2.12 thru 2.2.15pre20, i think.  no 2.3 here.
+The cardbus bridge is on the external PCI of Uni-N, so, on this machine,
+the IO base should be 0xf2000000.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
