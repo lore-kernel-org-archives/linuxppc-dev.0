@@ -1,49 +1,37 @@
-Message-ID: <3CC79510.BF265F98@timesys.com>
-Date: Thu, 25 Apr 2002 11:03:04 +0530
-From: ashish anand <ashish.anand@timesys.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: <mlan@cpu.lu>, <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Problem in pmac PCI fixup
+Date: Sun, 28 Apr 2002 17:16:09 +0200
+Message-Id: <20020428151609.30064@smtp.wanadoo.fr>
+In-Reply-To: <E171qYc-0000AJ-00@piglet.grunz.lu>
+References: <E171qYc-0000AJ-00@piglet.grunz.lu>
 MIME-Version: 1.0
-To: steven blakeslee <thesbman@msn.com>, nanogui@linuxhacker.org,
-	linuxppc-dev@lists.linuxppc.org
-Subject: Re: [nanogui] question concerning accessing RAM
-References: <F22iAkAagmQ5WTaYeVs000056bc@hotmail.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-check if by any chance you have missed ioremapping the lcd framebuffer
+>--- linux-2.4.19-pre6-lvm-gentoo/arch/ppc/kernel/pmac_pci.c     Sun Apr
+>28 09:14:09 2002
+>+++ linux-2.4.16-planb/arch/ppc/kernel/pmac_pci.c       Sun Apr
+>28 17:18:39 2002
+>@@ -493,8 +503,6 @@
+>                unsigned char pin;
+>                struct device_node* node;
+>
+>-               if (pci_read_config_byte(dev, PCI_INTERRUPT_PIN, &pin) ||
+>!pin)
+>-                       continue; /* No interrupt generated -> no fixup */
+>                node = pci_device_to_OF_node(dev);
+>                if (!node) {
+>                        printk("No OF node for device %x:%x\n", dev->bus-
+>>number, dev->devfn >> 3);
+>
+>Anybody have any problem with that approach?
 
-steven blakeslee wrote:
->
-> I'm working on a driver for embedded Linux 2.4 on a ppc board to use a 640
-> by 480 LCD.  I've been able to set up the lcd registers and register the new
-> frame buffer.  The problem is every time I try to use the frame buffer I get
-> an error.
->
-> Oops: kernel access of bad area, sig: 11
-> NIP: C0107D7C XER: 00000000 LR: C0107D30 SP: C3AD7E70 REGS: c3ad7dc0 TRAP:
-> 0300
-> MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-> DAR: C0111380, DSISR: 82000000
-> TASK = c3ad6000[80] 'nano-X' Last syscall: 5
-> last math 00000000 last altivec 00000000
-> GPR00: C0111380 C3AD7E70 C3AD6000 00000000 00000000 00000000 C3BD9AEC
-> C3BD9010
-> GPR08: 0000001B C0111370 C3AD6000 38635619 24000022 10044D98 00000000
-> 00000000
-> GPR16: 00000000 00000000 00000000 00000000 00009032 03AD7F40 00000000
-> C0002BC8
-> GPR24: C00028E0 00000000 C01E6750 C3BD9A90 00000000 C025DA14 00000000
-> C0262248
-> Call backtrace:
-> C0107D30 C00A5088 C00573AC C00572B0 C0057800 C0002984 7C0802A6
->
-> I use alloc_bootmem_pages(PAGE_SIZE*75) to allocate the memory, I do this in
-> m8xx_setup.c.  I get a pointer and use a for loop to modify the memory I
-> just allocated, when the kernel initializes the lcd registers the
-> appropriate color shows on the LCD.  The problem is after the kernel boots I
-> am unable to modify this ram again.  I have tried using the frame buffer and
-> also I have tried several modules.  If anyone can give advice I would
-> appreciate it.
+No problem with that, it's actually what we do in chrp.
+
+Ben.
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
