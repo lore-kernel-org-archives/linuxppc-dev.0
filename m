@@ -1,44 +1,42 @@
-Message-ID: <3CB6A2FE.62FFB14E@imc-berlin.de>
-Date: Fri, 12 Apr 2002 11:03:58 +0200
-From: Steven Scholz <steven.scholz@imc-berlin.de>
+Message-ID: <3CB6B3D7.8030007@poczta.onet.pl>
+Date: Fri, 12 Apr 2002 12:15:51 +0200
+From: Krzysztof Jankowski <kjankow@poczta.onet.pl>
 MIME-Version: 1.0
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: sporadic kernel panic during boot (MPC8xx, FEC)
-References: <Pine.LNX.4.44.0204110914100.18980-100000@sole.infis.univ.trieste.it> <3CB539DF.CF3BDD85@imc-berlin.de> <20020411153136.GE15663@opus.bloom.county> <3CB5DE9A.9070802@bluewin.ch> <20020411191258.GA2785@opus.bloom.county>
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: early stage boot progress indication
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> > >No.  -rv2.4.18 got you 2.4.18 from kernel.org, no PPC changes at all.
-> > You mean it's identical to linux-2.4.18.tar.gz from kernel.org?
-> Yes.
+Hi,
+I'm pretty new to PPC but I was following this newsgroup for some time.
+I've got PPC405 on a custom design board and I'd like to debug the reason why my
+linux kernel doesn't work on it. I've downloaded the latest kernel sources
+(2.4-devel) so there is no problem with missing or broken 405 support on it.
+I wanted to use UART0 for debugging purposes, so I've created simple C function
+sending a character to a physical PLB address of UART0 (this function doesn't use
+stack for sure, a character to be send is being passed via R3). I'm accessing
+physical memory using writel() and readl() macros. The idea seems to be OK.
 
-Yes. Indeed. I just compared the two trees and got
+I put a few my function calls into head_4xx.S file and everything seems to work (I
+could see characters on minicom) till the kernel started to execute after
+'start_here' label. I know that at this stage kernel's addresses were remapped
+from 0x0000xxxx to 0xc000xxxx (am I right?) due MMU being enabled by
+'turn_on_mmu'. So I remapped UART's memory space by 'io_block_mapping' - but this
+didn't help.
 
-/opt/linuxppc > dircmp -s devel_2_4_18 linux
-2002-04-12 10:18       Comparison of devel_2_4_18 linux        Seite
-1
+What's going on ? Why I'm not seeing characters now ? Did the kernel hang
+somewhere in the middle or am I tottaly wrong in the early debugging idea ?
 
-different       ./fs/binfmt_elf.c
-different       ./net/ipv4/udp.c
+Thanks for any help,
+Krzysztof
 
 
-But I am still not sure if I understand what that means. Is there a
-FAQ/README/HowTo about the LinuxPPC/Bitkeeper/Versionnumbering
-somewhere?
 
-Which ChangeSet or Tag stands for a stable PPC kernel?
+--
+Encyklopedia multimedialna w prezencie!
+http://www.e-mail.onet.pl
 
-Which ChangeSet equals (with regard to functionality) the official
-linux-2.4.18 from kernel.org?
-
-Does the ChangesSet 1.900 (which is shortly after Tag 2.4.18) contain
-all the stuff that's in the offical kernel?
-
-Thanks,
-
-Steven
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
