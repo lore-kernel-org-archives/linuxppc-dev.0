@@ -1,36 +1,35 @@
-To: "svacca@valcom.com" <svacca@valcom.com>
-Cc: "LinuxEmbeddedMailList (E-mail)" <linuxppc-embedded@lists.linuxppc.org>
-Subject: Re: Execute Reset via CheckStop approach 
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 23 Jul 2002 09:45:37 EDT."
-             <01C2322D.B3A24AF0.svacca@valcom.com>
-Date: Tue, 23 Jul 2002 15:54:20 +0200
-Message-Id: <20020723135425.6DEF310875@denx.denx.de>
+Return-Path: <owner-linuxppc-embedded@lists.linuxppc.org>
+Message-ID: <CA78D1B723D8D411AF0300508BDCF74F3F6D37@NTCORREO>
+From: IGOR LURI <iluri@fagorautomation.es>
+To: =?ISO-8859-1?Q?EMBEDDED_LINUXPPC_=28Correo_electr=F3nico=29?= <linuxppc-embedded@lists.linuxppc.org>
+Subject: Direct IDE on PCMCIA port
+Date: Tue, 23 Jul 2002 16:22:24 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="ISO-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-In message <01C2322D.B3A24AF0.svacca@valcom.com> you wrote:
->
-> I would like to execute an Internal Hard Reset on an MPC860T
-> bd. using the Checkstop Reset approach.
+Hi all,
 
-THis is what we do on all 8xx and 8260 systems.
+We have a custom board based on mpc823 with Linux 2.4.4 from Denx Software
+Engineering and we want to initialize the PCMCIA interface as True IDE mode.
 
-> Does anyone have some code that I could utilize to implement
-> this?
 
-Sure. Check out our 2.4.4 kernel tree; see
-http://www.denx.de/solutions-en.html#CVS-Linux
+ We want to use "MPC8xx Direct IDE support on PCMCIA port" option of the
+kernel to acces a Compact Flash or a PC IDE HardDisk. To use this option,
+the firmware has to initialize the PCMCIA interface.
 
-Wolfgang Denk
+I have seen in the PPCBoot source code a function called "ide_init" that
+initialize PCMCIA interface as a common memory space . The Compact Flash can
+work as a common memory space but a PC IDE HarDisk only supports True IDE
+mode.
 
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
-Nothing ever becomes real till it is experienced -- even a proverb is
-no proverb to you till your life has illustrated it.     - John Keats
+Someone knows how can we initialize PCMCIA registers to acces a disk
+(Compact Flash or IDE HarDisk) in True IDE mode?
+
+
+Thanks in advance.
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
