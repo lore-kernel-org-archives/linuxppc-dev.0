@@ -1,43 +1,69 @@
-Date: Tue, 13 Apr 1999 23:19:45 -0700 (MST)
-From: Matt Porter <mmporter@home.com>
-To: Simone Piccardi <piccardi@fi.infn.it>
-cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: LinuxPPC on a Motorola MVME2400
-In-Reply-To: <371338D4.4FCAF400@fi.infn.it>
-Message-ID: <Pine.LNX.3.96.990413231440.12330L-100000@liberty.chnd1.az.home.com>
+Date: Wed, 14 Apr 1999 10:54:33 +0300 (EEST)
+From: Kostas Gewrgiou <gewrgiou@imbc.gr>
+To: satadru pramanik <satadru@umich.edu>
+cc: Niels Roest <N.P.Roest@ITS.TUDelft.NL>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: ggi and frame buffer
+In-Reply-To: <Pine.LNX.4.10.9904131507570.9430-100000@beer.pub.umich.edu>
+Message-ID: <Pine.LNX.4.10.9904141023400.14384-100000@idd-01.imbc.gr>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Tue, 13 Apr 1999, Simone Piccardi wrote:
 
-> thanks for the info. I was trying to build the cross-compiler (so still
-> I do not even try to boot the system). I look at your page, but I find a
-> broken link for binutils. 
+I just grabbed the source rpms and build them, 
+works fine under X (XFree86-3.3.3.1-29b) dga seems to have some problems though
+console works fine also (some times resolution change gives invalide scan 
+ranges)
 
-I fixed the build instructions on my page for binutils and egcs, but have
-not tested or updated the binary packages to match yet.  glibc
-instructions are not updated at this time because alpha.gnu.org is down
-and I can't verify the latested glibc version.
+All this under R4 (most rpms are upgraded to near R5 versions)
 
-> I have also another question, I'm using RedHat 5.2 that has egcs 1.0.3
-> (but not for gcc, must I switch to Debian?). 
-> I find some rpm for egcs 1.1.2, but in the page you are using 1.1.1,
-> must I find this release ? 
+  Kostas Gewrgiou
 
-My page was just outdated.  I've been using the older versions since I'm
-just working kernel issues and it is has been faster to build kernels on
-an available PII/400.  rpms for egcs you're finding are most likely native
-compilers.  There is no need to switch dists.  Also, I will update my
-binary packages soon and the Debian should be available on the next
-official Debian release.
 
---
-Matt Porter
-mmporter@home.com
-This is Linux Country. On a quiet night, you can hear Windows reboot.
+
+On Tue, 13 Apr 1999, satadru pramanik wrote:
+
+> 
+> I'm specifically looking to see if anybody has it working under the
+> console.
+> 
+> On Tue, 13 Apr 1999, Niels Roest wrote:
+> 
+> On Mon, 12 Apr 1999, satadru pramanik wrote:
+> 
+> > 
+> > Since linuxppc defaults to using a FB-device, ggi should work, right?  So
+> > I compiled the latest snapshit, and when I tried to run a demo, ie
+> > "cube3d" I got this:
+> > cube3d: error in loading shared libraries: /usr/local/lib/libgg.so.0:
+> > R_PPC_REL2
+> > 4 relocation out of range
+> > 
+> > Any clues to what this is?  Has anybody gotten libgii and libggi to work
+> > successfully on LinuxPPC, especially pre-rel5?
+> > 
+> > 
+> I did compile it on pre-rel5, the one with libc-2.0.108, and kernel 2.2.1,
+> on an 7600 (that's with a control chip if that matters)
+> It was a while ago, I rm-ed the sources, but I tried
+> it on linux-heretic (I compiled both xheretic and ggiheretic)
+> and it still works ok. Note: this is not on console, but in X.
+> I didn't try it in console. so ggi on X works.
+> Niels
+> 
+> 
+> 
+> ----
+> satadru pramanik `satadru@umich.edu'
+> "Put your hand on a hot stove for a minute, and it seems like an hour. Sit
+> with a pretty girl for an hour, and it seems like a minute. THAT'S
+> relativity." 
+> -Albert Einstein
+> ---
+> 
+> 
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
