@@ -1,18 +1,21 @@
-Return-Path: <stephane.fillod@thomson.net>
-Received: from dmzraw2.extranet.tce.com (dmzraw2.extranet.tce.com
-	[157.254.234.138]) by ozlabs.org (Postfix) with ESMTP id A8A6A67A7E
+Return-Path: <jason.mcmullan@timesys.com>
+Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
+	by ozlabs.org (Postfix) with ESMTP id 5AC7567A78
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Mar 2005 21:36:10 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Wed, 23 Mar 2005 11:36:03 +0100
-Message-ID: <1CFEB358338412458B21FAA0D78FE86D4F0D19@rennsmail02.eu.thmulti.com>
-From: "Fillod Stephane" <stephane.fillod@thomson.net>
-To: "Vijay Padiyar" <vijay_padiyar@hotmail.com>,
-	"LinuxPPC Support" <linuxppc-embedded@ozlabs.org>
-Subject: RE: question about writing to memory directly from user space in
-	Linux
+	Thu, 24 Mar 2005 00:44:21 +1100 (EST)
+From: Jason McMullan <jason.mcmullan@timesys.com>
+To: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <9b9c4447ceb975b7b6dd1498ec686e41@freescale.com>
+References: <1111523269.2987.58.camel@ad.doubleclick.net>
+	<9b9c4447ceb975b7b6dd1498ec686e41@freescale.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-9mb8yMLqAudEUV/yO23l"
+Date: Wed, 23 Mar 2005 08:44:19 -0500
+Message-Id: <1111585459.2987.77.camel@ad.doubleclick.net>
+Mime-Version: 1.0
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] CPM2 cleanups
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,38 +26,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Vijay Padiyar wrote:
->I am running Linux 2.6.10 on an MPC8260 target. We have an I2C
-controller
->that is part of our application code. In VxWorks, we could address the
->MPC8260 I2C memory registers directly from application space and so
-this was
->not a problem.
 
-The I2C abstraction layer of Linux is very good, and user-land support
-quite comfortable. Why bother port/develop a new driver? Besides,=20
-interrupt handling in user-space can be troublesome..
+--=-9mb8yMLqAudEUV/yO23l
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
->Can you suggest some kind of a "synchronization" function which I can
-call
->from *user space* which will ensure that all values written to mmaped
-memory
->locations from user space are actually flushed to their physical
-locations?
->I think this might be a potential problem with my code.
+On Tue, 2005-03-22 at 23:53 -0600, Kumar Gala wrote:
+> Some additional comments:
+>=20
+> * Did you actually try setting CPM_IRQ_OFFSET to a non-zero value?  I'm=20
+> guessing this doesnt work since you are not offset the irq passed into=20
+> the other functions.  For example, if CPM_IRQ_OFFSET is 64, will=20
+> cpm2_mask_irq() work?
 
-Please have a look at Denx's FAQ for accessing memory bus:
+  YAA! Good catch! (fix fix fix fix....)
 
-=20
-http://www.denx.de/twiki/bin/view/PPCEmbedded/DeviceDrivers#Section_Acce
-ssingPeripheralsFromUserSpace
-or shorter: http://tinyurl.com/6c7th
+> * what is SA_NOTHREAD all about?
 
-Depending on the O_SYNC flag passed to open, the mmap'ed memory will be
-accessed through non guarded cache or not. See linux/drivers/char/mem.c.
-The ppc instruction "eieio" deals with I/O ordering.
+  Stale debugging code. Will be removed on the next patch.
 
-
-Regards,
 --=20
-Stephane
+Jason McMullan <jason.mcmullan@timesys.com>
+TimeSys Corporation
+
+
+--=-9mb8yMLqAudEUV/yO23l
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+
+iD8DBQBCQXKz8/0vJ5szK6kRAsiwAJ9DDJAz4pOGO9hRuw74RxCyOyYHBgCgwntR
+fdSNTVt/cyO/h4L1bc3/JIQ=
+=DxLd
+-----END PGP SIGNATURE-----
+
+--=-9mb8yMLqAudEUV/yO23l--
