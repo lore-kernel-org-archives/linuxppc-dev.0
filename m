@@ -1,34 +1,32 @@
-From: John Buswell <johnb@one.net>
-To: anthony tong <atong@uiuc.edu>
-cc: linuxppc-dev@lists.linuxppc.org
+Date: Sat, 8 Jan 2000 13:34:54 -0600
+From: anthony tong <atong@uiuc.edu>
+To: John Buswell <johnb@one.net>
+Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: iMac DV and aty128fb
-In-Reply-To: <Pine.LNX.3.96.1000108181304.23736A-100000@shell>
-Message-ID: <Pine.LNX.3.96.1000108191613.23736F-100000@shell>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Date: Sat, 8 Jan 2000 14:19:59 -0500
+Message-ID: <20000108133454.A25347@ux5.cso.uiuc.edu>
+References: <20000108110850.A5252@students.uiuc.edu> <Pine.LNX.3.96.1000108181304.23736A-100000@shell>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.3.96.1000108181304.23736A-100000@shell>; from John Buswell on Sat, Jan 08, 2000 at 01:17:41PM -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 8 Jan 2000, John Buswell wrote:
+John Buswell (Sat, Jan 08, 2000 at 01:17:41PM -0500):
+> 
+> On Sat, 8 Jan 2000, anthony tong wrote:
+> 
+> > What if you don't boot with a vmode argument and use the proper video
+> > timings provided by fbset after you boot?
+> 
+> if i don't boot with the vmode option I don't get any display :)
 
-> is there any place that documents what parameters I can pass to the kernel
-> with video= ? 
+Try this: can you boot into MacOS and run Apple's DeviceNameRegistry?
+You should be able to get that from Apple's PCI Device Driver dev kit
+(don't have url off hand).
 
-The display works fine in regular frame buffer mode (eg.
-video=offb:ofonly). One thing I left out, aside from the video scew, in
-both text and X modes, there is about an inch on the right hand side that
-is black in console or white in X where the display is just not there
-(mouse pointer disappears if you move it into that region), it looks like
-the display is just cut off..
-
-in text mode, the text just disappears :)
-
-is this something that could be fixed by tweaking fbset options or
-something that needs to be fixed in the ati128fb driver?
-
-thanks
+If you can send me a copy of the program's output it'd be appreciated.
+The MacOS ATI drivers tend to leave a few clues it its entries there.
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
