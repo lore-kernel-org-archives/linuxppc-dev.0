@@ -1,59 +1,59 @@
-Message-Id: <199908301312.IAA02257@mailhub.iastate.edu>
-Date: Mon, 30 Aug 1999 08:16:18 -0500
-Subject: Re: Communicator Crashes X II
-From: "Kevin Puetz" <puetzk@iastate.edu>
-To: Ira K Weiny <iweiny@falcon.csc.calpoly.edu>, lambert@jeol.com,
-        linuxppc-dev@lists.linuxppc.org
-Mime-version: 1.0
-Content-type: text/plain; charset="US-ASCII"
+Date: Mon, 30 Aug 1999 08:36:24 -0500 (CDT)
+From: Nicholas Coult <coult@ima.umn.edu>
+To: David Riley <happyoscar42@usa.net>
+cc: Stephen Edie <sedie@terraplex.com>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: Xfree86 support for Voodoo 3 acceleration
+In-Reply-To: <37C973C9.B6FB489@usa.net>
+Message-ID: <Pine.LNX.4.10.9908300832530.16851-100000@lilac.ima.umn.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-A serial port buffer issue is behind the 'FB. overflow ####' crash, also 
-often exposed during VT changes while PPP is running.
+On Sun, 29 Aug 1999, David Riley wrote:
 
-This could be related. Or it might not. I really don't know the subsystem
-well enough to say.
->From: Ira K Weiny <iweiny@falcon.csc.calpoly.edu>
->To: lambert@jeol.com, linuxppc-user@lists.linuxppc.org,
-linuxppc-dev@lists.linuxppc.org
->Subject: Re: Communicator Crashes X II
->Date: Mon, Aug 30, 1999, 12:07 AM
+> 
+> Stephen Edie wrote:
+> 
+> > Is the full source code to the driver available?  Or is it written using
+> > the Glide libraries?  If it is written using Glide, than it will be
+> > necessary to contact 3dfx and get Glide ported to PPC Linux before it can
+> > be ported.  Otherwise, it's entirely possible.  :)
+> 
+> This ought to happen once someone gets a LinuxPPC machine to Darryl Strauss
+> <http://glide.xxedgexx.com>.
+> 
+> 
 
-> Well I may have some more news about this problem...
+>From all appearances we don't need to wait for Darryl to have support
+for 2-d acceleration in XFreee86.  Here is what Darryl himself had
+to say in response to a post of mine in 3dfx.glide.linux:
+
+> Nicholas Coult wrote:
+>> 
+>> What would it take to get support for the Voodoo 3 card under XFree-86 on
+>> Linux/PPC?  How much of the support on the Intel side is
+>> Intel-hardware-specific?
 >
-> Fisrt I just locked up using lynx!!!  Box rebooted after? 1min?  Again proves
-> this is not Netscape, nor a font issue etc.
-
-Yikes! When lynx locks up the whole box, that would rule out an X-related
-instability... Were you in an xterm or straight console? Was X running on
-another VT?
-
-> I had 2 hard crashes one right after the other.  The first after having set up
-> my printer on my other serial port.  One thing I did during this was to unplug
-> my Pilot cradle and plug in my Printer.  The two crashes occured shortly after
-> that.  Could this be a problem with the serial code/our hardware.  (PS I know
-> that you are not supposed to hot swap the serial ports.  I just have gotten
-> into bad habbits over the years. ;-)
-
-I thought serial ports were supposed to be safe :-)
-Only buses (like ADB/parallel) were supposed to be problematic.
-
-> I don't know about others but my 8500 has been moved from dorm room to home
-> and around more times that I can think.  I have plug/unpluged the serial port
-> more time that I can think.  A couple of us have said they use Cable modems
-> and I am going to DSL as soon as Pac Bell can get out here to hook me up.
-> This tends to rule out the networking code...
-
-Except that at least one person with a crashing COmmunicator does not use
-PPP.
-
-> So what about the serial ports.  I am thinking the problem may lie there.
-> Does anyone else have thoughts/info which might support this theory.
+>Getting the X server to run shouldn't be bad. It might require changes
+>to do byte swapping. 
 >
-> Thanks
-> Ira Weiny
+>3D support would require Glide and at the moment there aren't any plans
+>to port Glide to other platforms.
+>
+>                                                        - |Daryll
+
+What I'm saying is, someone just needs to take the existing code and
+tweak it a bit and plug it into the FBDev code and voila! We'll
+have support for 2-d acceleration with Voodoo 3 cards.  I'd do it
+myself if I had even the least clue where to begin - anybody have some 
+pointers?
+
+Dr. Nicholas Coult, Research Associate
+Institute for Mathematics and Its Applications, University of Minnesota
+Home Page: www.ima.umn.edu/~coult              Office: 555 Vincent Hall
+Email: coult@ima.umn.edu      Phone: (612) 624-2527 Fax: (612) 624-4163
 
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
