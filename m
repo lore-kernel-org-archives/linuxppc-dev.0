@@ -1,20 +1,20 @@
-Return-Path: <akpm@osdl.org>
-Received: from mail.osdl.org (fw.osdl.org [65.172.181.6])
-	by ozlabs.org (Postfix) with ESMTP id 14C642BDF2
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Nov 2004 15:31:13 +1100 (EST)
-Date: Mon, 22 Nov 2004 20:24:41 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Message-Id: <20041122202441.511c055d.akpm@osdl.org>
-In-Reply-To: <41A27F77.9080401@mvista.com>
-References: <419E6900.5070001@mvista.com>
-	<20041119155854.02af2174.akpm@osdl.org>
-	<41A27F77.9080401@mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH][PPC32] Marvell host bridge support (mv64x60)
+Return-Path: <schmitz@zirkon.biophys.uni-duesseldorf.de>
+Received: from zirkon.biophys.uni-duesseldorf.de
+	(zirkon.biophys.uni-duesseldorf.de [134.99.176.3])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 54F342BDF2
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Nov 2004 19:05:42 +1100 (EST)
+Date: Tue, 23 Nov 2004 09:05:35 +0100 (CET)
+From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1101160237.13598.121.camel@gaston>
+Message-ID: <Pine.LNX.4.44.0411230900020.6419-100000@zirkon.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
+Subject: Re: TEST: Sleep patch #4
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,21 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-"Mark A. Greer" <mgreer@mvista.com> wrote:
+> > > http://gate.crashing.org/~benh/albook-ibookg4-sleep-4.diff
+> >
+> > Sorry for coming late to the party ... the current code works nicely on
+> > the 17" PB. On the first boot with that code, I had the PLL freak out (or
+> > so it looked like) but I couldn't reproduce that. Needless to say, the
+> > new PLL fixup code produces the same dividers as the hardcoded fixup
+> > before, so it should work :-)
 >
-> Andrew Morton wrote:
-> 
->  >Anyway, I'll stick this as-is in -mm.  Feel free to send an incremental
->  >patch, or a replacement.
->  >
-> 
->  Here is an incremental patch [hopefully] with your concerns addressed.  
+> It reads them from OF at boot. What do you mean by "freak out" ? the
+> usual problem with those models where the display gets all fuzzy ? I'm
 
-OK, thanks.  I added this to the queue for post-2.6.10.  I'll assume that
-silence means assent from the rest of the ppc team ;)
+Yep - the display get totally unreadable, worse than before when the PLL
+wouldn't lock properly. When I turned down the backlight (using the
+f-keys), it would switch off and not come back up until X had fully
+started. Though that might be a bug in pbbuttonsd as well, to be honest (I
+turned the backlight off before pbbuttonsd started, perhaps).
 
-(Patches are at
+> not completely sure what's up, I tend to blame the panel power sequence
+> nowadays ...
 
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.10-rc2/2.6.10-rc2-mm3/broken-out/ppc32-marvell-host-bridge-support-mv64x60.patch
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.10-rc2/2.6.10-rc2-mm3/broken-out/ppc32-support-for-marvell-ev-64260-bp-eval-platform.patch
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.10-rc2/2.6.10-rc2-mm3/broken-out/ppc32-support-for-artesyn-katana-cpci-boards.patch
+Anything I can do to test that?
+
+	Michael
