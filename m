@@ -1,16 +1,16 @@
-Return-Path: <galak@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id BDC4567A65
+Return-Path: <felix@allot.com>
+Received: from mail.allot.com (r2.allot.com [199.203.223.3])
+	by ozlabs.org (Postfix) with ESMTP id DD87667A6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 19 Mar 2005 11:26:59 +1100 (EST)
-Date: Fri, 18 Mar 2005 18:26:52 -0600 (CST)
-From: Kumar Gala <galak@freescale.com>
-To: Tom Rini <trini@kernel.crashing.org>
-Message-ID: <Pine.LNX.4.61.0503181818330.26408@blarg.somerset.sps.mot.com>
+	Sun, 20 Mar 2005 21:21:28 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [RFC] ppc32: Report chip version in common /proc/cpuinfo handling
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C52D35.12BAD1CC"
+Date: Sun, 20 Mar 2005 12:09:10 +0200
+Message-ID: <1111313350.10719.18.camel@felix.allot.com>
+From: "Felix Radensky" <felix@allot.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: New PowerQUICC III support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,100 +21,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Tom,
+This is a multi-part message in MIME format.
 
-You asked me to look at doing the following.  I just want to make sure 
-this is what we want to do (and call it).  I'm a little concerned that 
-'chip' is not necessary the right name in light of TSI10x and MV64x60 
-being described by ppc_sys in the future.
+------_=_NextPart_001_01C52D35.12BAD1CC
+Content-Type: text/plain;
+	charset="UTF-8"
+Content-Transfer-Encoding: base64
 
-- kumar
+SGksIGZvbGtzDQoNCkFyZSB0aGVyZSBhbnkgcGxhbnMgdG8gc3VwcG9ydCBuZXcgUG93ZXJRVUlD
+QyBJSUkgbW9kZWxzIChlLmcuIDg1NDMsDQo4NTQ4KSANCmluIHRoZSBuZWFyIGZ1dHVyZSA/IElz
+IGFueW9uZSB3b3JraW5nIG9uIGl0ID8NCg0KVElBLg0KDQpGZWxpeC4NCg==
 
---
+------_=_NextPart_001_01C52D35.12BAD1CC
+Content-Type: text/html;
+	charset="UTF-8"
+Content-Transfer-Encoding: base64
 
-Moved reporting of chip revision from board specific to common handing of 
-/proc/cpuinfo.  In light of numerous PPC system-on-chip devices, we report 
-both the cpu version (reflects the core version) and the chip version 
-(reflects the system-on-chip version).
+PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUUkFOU0lUSU9OQUwv
+L0VOIj4NCjxIVE1MPg0KPEhFQUQ+DQogIA0KICA8TUVUQSBOQU1FPSJHRU5FUkFUT1IiIENPTlRF
+TlQ9Ikd0a0hUTUwvMy4yLjQiPg0KPC9IRUFEPg0KPEJPRFk+DQpIaSwgZm9sa3M8QlI+DQo8QlI+
+DQpBcmUgdGhlcmUgYW55IHBsYW5zIHRvIHN1cHBvcnQgbmV3IFBvd2VyUVVJQ0MgSUlJIG1vZGVs
+cyAoZS5nLiA4NTQzLCA4NTQ4KSA8QlI+DQppbiB0aGUgbmVhciBmdXR1cmUgPyBJcyBhbnlvbmUg
+d29ya2luZyBvbiBpdCA/PEJSPg0KPEJSPg0KVElBLjxCUj4NCjxCUj4NCkZlbGl4Lg0KPC9CT0RZ
+Pg0KPC9IVE1MPg0K
 
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
-
----
-diff -Nru a/arch/ppc/kernel/setup.c b/arch/ppc/kernel/setup.c
---- a/arch/ppc/kernel/setup.c	2005-03-18 18:17:16 -06:00
-+++ b/arch/ppc/kernel/setup.c	2005-03-18 18:17:16 -06:00
-@@ -40,6 +40,7 @@
- #include <asm/nvram.h>
- #include <asm/xmon.h>
- #include <asm/ocp.h>
-+#include <asm/ppc_sys.h>
- 
- #if defined CONFIG_KGDB
- #include <asm/kgdb.h>
-@@ -245,6 +246,11 @@
- 
- 	seq_printf(m, "bogomips\t: %lu.%02lu\n",
- 		   lpj / (500000/HZ), (lpj / (5000/HZ)) % 100);
-+
-+#if defined (CONFIG_85xx) || defined (CONFIG_83xx)
-+	if (cur_ppc_sys_spec->ppc_sys_name)
-+		seq_printf(m, "chip\t\t: %s\n", cur_ppc_sys_spec->ppc_sys_name);
-+#endif
- 
- #ifdef CONFIG_SMP
- 	seq_printf(m, "\n");
-diff -Nru a/arch/ppc/platforms/83xx/mpc834x_sys.c b/arch/ppc/platforms/83xx/mpc834x_sys.c
---- a/arch/ppc/platforms/83xx/mpc834x_sys.c	2005-03-18 18:17:16 -06:00
-+++ b/arch/ppc/platforms/83xx/mpc834x_sys.c	2005-03-18 18:17:16 -06:00
-@@ -143,7 +143,6 @@
- 	pvid = mfspr(SPRN_PVR);
- 	svid = mfspr(SPRN_SVR);
- 
--	seq_printf(m, "chip\t\t: MPC%s\n", cur_ppc_sys_spec->ppc_sys_name);
- 	seq_printf(m, "Vendor\t\t: Freescale Inc.\n");
- 	seq_printf(m, "Machine\t\t: mpc%s sys\n", cur_ppc_sys_spec->ppc_sys_name);
- 	seq_printf(m, "core clock\t: %d MHz\n"
-diff -Nru a/arch/ppc/platforms/85xx/mpc85xx_ads_common.c b/arch/ppc/platforms/85xx/mpc85xx_ads_common.c
---- a/arch/ppc/platforms/85xx/mpc85xx_ads_common.c	2005-03-18 18:17:16 -06:00
-+++ b/arch/ppc/platforms/85xx/mpc85xx_ads_common.c	2005-03-18 18:17:16 -06:00
-@@ -129,7 +129,6 @@
- 	pvid = mfspr(SPRN_PVR);
- 	svid = mfspr(SPRN_SVR);
- 
--	seq_printf(m, "chip\t\t: MPC%s\n", cur_ppc_sys_spec->ppc_sys_name);
- 	seq_printf(m, "Vendor\t\t: Freescale Semiconductor\n");
- 	seq_printf(m, "Machine\t\t: mpc%sads\n", cur_ppc_sys_spec->ppc_sys_name);
- 	seq_printf(m, "clock\t\t: %dMHz\n", freq / 1000000);
-diff -Nru a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c b/arch/ppc/platforms/85xx/mpc85xx_cds_common.c
---- a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c	2005-03-18 18:17:16 -06:00
-+++ b/arch/ppc/platforms/85xx/mpc85xx_cds_common.c	2005-03-18 18:17:16 -06:00
-@@ -146,7 +146,6 @@
- 	pvid = mfspr(SPRN_PVR);
- 	svid = mfspr(SPRN_SVR);
- 
--	seq_printf(m, "chip\t\t: MPC%s\n", cur_ppc_sys_spec->ppc_sys_name);
- 	seq_printf(m, "Vendor\t\t: Freescale Semiconductor\n");
- 	seq_printf(m, "Machine\t\t: CDS - MPC%s (%x)\n", cur_ppc_sys_spec->ppc_sys_name, cadmus[CM_VER]);
- 	seq_printf(m, "clock\t\t: %dMHz\n", freq / 1000000);
-diff -Nru a/arch/ppc/platforms/85xx/sbc85xx.c b/arch/ppc/platforms/85xx/sbc85xx.c
---- a/arch/ppc/platforms/85xx/sbc85xx.c	2005-03-18 18:17:16 -06:00
-+++ b/arch/ppc/platforms/85xx/sbc85xx.c	2005-03-18 18:17:16 -06:00
-@@ -129,7 +129,6 @@
- 	pvid = mfspr(SPRN_PVR);
- 	svid = mfspr(SPRN_SVR);
- 
--	seq_printf(m, "chip\t\t: MPC%s\n", cur_ppc_sys_spec->ppc_sys_name);
- 	seq_printf(m, "Vendor\t\t: Wind River\n");
- 	seq_printf(m, "Machine\t\t: SBC%s\n", cur_ppc_sys_spec->ppc_sys_name);
- 	seq_printf(m, "clock\t\t: %dMHz\n", freq / 1000000);
-diff -Nru a/arch/ppc/platforms/85xx/stx_gp3.c b/arch/ppc/platforms/85xx/stx_gp3.c
---- a/arch/ppc/platforms/85xx/stx_gp3.c	2005-03-18 18:17:16 -06:00
-+++ b/arch/ppc/platforms/85xx/stx_gp3.c	2005-03-18 18:17:16 -06:00
-@@ -268,7 +268,6 @@
- 
- 	memsize = total_memory;
- 
--	seq_printf(m, "chip\t\t: MPC%s\n", cur_ppc_sys_spec->ppc_sys_name);
- 	seq_printf(m, "Vendor\t\t: RPC Electronics STx \n");
- 	seq_printf(m, "Machine\t\t: GP3 - MPC%s\n", cur_ppc_sys_spec->ppc_sys_name);
- 	seq_printf(m, "bus freq\t: %u.%.6u MHz\n", freq / 1000000,
+------_=_NextPart_001_01C52D35.12BAD1CC--
