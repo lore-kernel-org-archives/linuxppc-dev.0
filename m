@@ -1,28 +1,38 @@
-Message-ID: <3810F8F6.B831114B@netx4.com>
-Date: Fri, 22 Oct 1999 19:53:26 -0400
+Message-ID: <3810FB75.87486F32@netx4.com>
+Date: Fri, 22 Oct 1999 20:04:05 -0400
 From: Dan Malek <dan@netx4.com>
 MIME-Version: 1.0
 To: "linuxppc-embedded@lists.linuxppc.org" <linuxppc-embedded@lists.linuxppc.org>
-Subject: MPC8xx updates to 2.2.13
+Subject: Linux on CLLF: Don't ask, I'll tell
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-I just put a tar image of 2.2.13 with the 8xx updates on
-ppc.kernel.org.  I needed it for a couple of real applications....
+I decided to post this before I forget.
 
-It has a few things in it that I have yet to check into the 2.3.xx
-baseline.  In particular there are a couple of 10/100 Ethernet
-PHYs I want to ensure work properly.  There are also CPM port
-configurations I want to complete.
+This information is only important if you want to use the
+10/100 Ethernet on the Embedded Planet RPX-CLLF (or Classic).
 
-I tested it on the MBX, BrightStar Engineering BSE-IP, and the
-Embedded Planet RPX-CLLF.  If you are using the CLLF, there is
-some additional information about booting over the 10/100 Ethernet
-on the FEC that may be helpful.  Ask and I will post that in
-a separate message so it doesn't get lost here.
+Well, here is something that is important in any case.  The
+CLLF is "just" a Classic without the PCI and a smaller form
+factor.  To build a kernel for the CLLF, just select RPXC (or
+RPX-Classic) and don't select the PCI configuration.  There
+is no menu selection for the CLLF.
 
+I don't have the Ethernet PHY completed for this board.  So, we
+need help from the boot ROM monitor to initialize it.  At the
+main menu, select 'O' for On-board I/O tests.  At the next
+menu, select '9' for the 100 Mbit Ethernet.  At the next menu,
+select '0' (that's zero) to toggle between 10 and 100 so it
+matches your network.  Now, at this point I also downloaded
+the kernel, so I don't know if you need to actually perform
+some I/O at this point.  Make sure you hit enough ESCs to
+get back to the main menu....
+
+When the kernel boots, ignore the FEC messages about link
+status.  It is looking at registers and bits that are not
+appropriate for the PHY on this board.
 
 
 	-- Dan
