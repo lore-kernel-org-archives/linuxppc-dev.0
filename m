@@ -1,37 +1,41 @@
-Date: Thu, 7 Feb 2002 11:29:50 -0700 (MST)
-From: Derrik Pates <dpates@dsdk12.net>
-To: Ani Joshi <ajoshi@shell.unixbox.com>
-Cc: Jeffery von Ronne <jronne@ics.uci.edu>,
-	=?iso-8859-1?Q?Michel_D=E4nzer?= <michel@daenzer.net>,
-	Kaoru Fukui <k_fukui@highway.ne.jp>,
-	<linuxppc-dev@lists.linuxppc.org>
+Date: Thu, 7 Feb 2002 11:26:43 -0800 (PST)
+From: Ani Joshi <ajoshi@shell.unixbox.com>
+To: Derrik Pates <dpates@dsdk12.net>
+Cc: linuxppc-dev@lists.linuxppc.org
 Subject: Re: two aty128 frame buffers?
-In-Reply-To: <Pine.BSF.4.44.0202062110280.82577-100000@shell.unixbox.com>
-Message-ID: <Pine.LNX.4.43.0202071127340.16392-100000@andromeda.dsdk12.net>
+In-Reply-To: <Pine.LNX.4.43.0202071127340.16392-100000@andromeda.dsdk12.net>
+Message-ID: <Pine.BSF.4.44.0202071122270.40334-100000@shell.unixbox.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Wed, 6 Feb 2002, Ani Joshi wrote:
+On Thu, 7 Feb 2002, Derrik Pates wrote:
 
-> You can't use 2 cards which require ISA IO (vgaHW uses ISA IO on rage128)
-> right now, because of the multiple busses on the G4 machines.  You can
-> comment out all the vgaHW calls and that will probably work, but without
-> doing that it will always crash on any ISA IO operation.  The reason is
-> because your second bus's ISA IO isn't mapped.
+> The issue is the same with the G3 tower - the video card is by default in
+> the 32-bit, 66 MHz PCI slot, which is a logically separate bus from the
+> 64-bit, 33 MHz bus that the other 3 slots are part of. What sort of mods
+> will it take to make that work, anyway?
 
-The issue is the same with the G3 tower - the video card is by default in
-the 32-bit, 66 MHz PCI slot, which is a logically separate bus from the
-64-bit, 33 MHz bus that the other 3 slots are part of. What sort of mods
-will it take to make that work, anyway?
+There is work now in X to get this working, it requires a layer of PCI
+abstraction which is pretty raw at the moment.  Hopefully in a few months
+something solid should come out.  However, since we're discussing Rage128
+cards in Mac's here, it can be said that the vga IO that is being done is
+totally unnecessary, as the Rage128 does not require a vga mode to be
+saved or restored on Macs.  So totally disabling the vga IO if you are
+just using those 2 cards on your machine can be a valid solution (for your
+situation, obviously not an X solution).
 
-I've discovered that putting both cards in bus 0 (64-bit, 33 MHz bus) gets
-both the cards going, though - and well, that works for me...
+> I've discovered that putting both cards in bus 0 (64-bit, 33 MHz bus) gets
+> both the cards going, though - and well, that works for me...
 
-Derrik Pates      |   Sysadmin, Douglas School   |    #linuxOS on EFnet
-dpates@dsdk12.net |     District (dsdk12.net)    |    #linuxOS on OPN
+Yes, unfortunately though people on AGP G4's tend to use an AGP and a PCI
+card.  I suppose they could do what you are doing and use the bottom 2 (or
+however it works on G4s) PCI cards if they have 2 PCI boards.
+
+
+ani
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
