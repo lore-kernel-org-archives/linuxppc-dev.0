@@ -1,50 +1,46 @@
-Date: Fri, 24 Mar 2000 14:48:59 +0100 (CET)
-From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: Gabriel Paubert <paubert@iram.es>
-cc: Benjamin Herrenschmidt <bh40@calva.net>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        linuxppc-dev@lists.linuxppc.org
-Subject: Re: LongTrail PCI resource assignment
-In-Reply-To: <Pine.HPX.4.10.10003241425470.14656-100000@gra-ux1.iram.es>
-Message-ID: <Pine.LNX.4.10.10003241443040.21215-100000@opal.biophys.uni-duesseldorf.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <v03110700b50123f3f40f@[129.100.29.243]>
+In-Reply-To: <Pine.LNX.4.10.10003231730190.10447-200000@shell.unixbox.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Fri, 24 Mar 2000 09:03:23 -0500
+To: Ani Joshi <ajoshi@shell.unixbox.com>
+From: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>
+Subject: proper regw and regrw16?
+Cc: linuxppc-dev@lists.linuxppc.org, bh40@calva.net
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-> > Probing the PCI config in atyfb_of_init (code stolen from the non-OFFB
-> > case), I get:
-> >
-> >  atyfb_of_init: got 2 adresses for ATY: 81000000-81ffffff 80881000-80881fff
-> >  atyfb: chunk 0 base 0x81000000 breg 16 io 0 pbase 0x81000000 size 0x1000000
-> >  atydb: chunk 1 base 0x80881000 breg 20 io 1 pbase 0xc01 size 0x100
-> >  atydb: chunk 2 base 0x0 breg 24 io 0 pbase 0x81fff000 size 0x1000
-> >  atydb: chunk 3 base 0x4 breg 28 io 0 pbase 0x0 size 0x0
-> >
-> > I'd like to correct the first one to only include the big endian aperture,
-> > and the third one to use the little endian aperture (0x817ff000). Can this
-> > be done in atyfb_init?
->
-> Don't touch the resources which correspond to assigned PCI bus addresses
-> because they correspond to the address ranges to which chip decoders
-> respond. Lying in this area makes dynamic allocation and hotplugging
-> impossible by giving the resource allocator the impression that some area
-> is free. Rather attach asubtree to the already existing device resources.
+Hi Ani and Ben,
 
-So it's perfectly legal for resources within the same device to overlap?
-WTF does X not tolerate this and disables the overlapping one?
+I asked about the "correct" form for regr and regw to the list a while back
+(and it generated a big discussion!) and I put in the "best" suggested form
+but it obviously impacts something.
 
-(Side note: X also reports the mem resources in reverse order, or maybe
-sorted by end address, and disables the larger of the two apertures
-because it saw the smaller one first, even though the smaller one is
-completely embedded in the larger).
+So exactly what in the generated code is different about these two cases
+that makes such a big difference in performance?  I need to understand why
+the "output constraint" approach has such a bad performance impact?
 
-I'm not sure adding subtrees will help - I guess X might go ahead and
-disable the main resources anyway. Will the subtree resources remain
-accessible in that case?
 
-	Michael
+--- r128_reg.h.orig	Thu Mar 23 18:10:17 2000
++++ r128_reg.h	Thu Mar 23 18:15:43 2000
+@@ -50,9 +50,7 @@
+
+ static inline void regw(volatile unsigned long base_addr, unsigned long
+regindex, unsigned long regdata)
+ {
+- asm volatile ("stwbrx %1,%2,%3; eieio"
+-          : "=m" (*(volatile unsigned *)(base_addr+regindex))
+-          : "r" (regdata), "b" (regindex), "r" (base_addr));
++	asm volatile ("stwbrx %0,%1,%2; eieio" : : "r"(regdata), "b"
+(regindex), "r"(base_addr) : "memory");
+ }
+
+Could you post the assembler (.S) file that each of these makes?
+
+Thanks,
+
+Kevin
 
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
