@@ -1,45 +1,35 @@
-Date: Sat, 6 May 2000 14:18:22 +0200 (CEST)
+Date: Sat, 6 May 2000 14:44:36 +0200 (CEST)
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Kazunori Aoshima <aoshimak@mail.cc.tohoku.ac.jp>
-cc: Jeff Garzik <jgarzik@mandrakesoft.com>, linux-fbdev@vuser.vu.union.edu,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: PATCH 2.3.99.7.5: update for clgenfb fbdev driver
-In-Reply-To: <200005060603.PAA08017@mail.cc.tohoku.ac.jp>
-Message-ID: <Pine.LNX.4.10.10005061413570.406-100000@cassiopeia.home>
+To: Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
+Subject: ISA memory space
+Message-ID: <Pine.LNX.4.10.10005061442360.406-100000@cassiopeia.home>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sat, 6 May 2000, Kazunori Aoshima wrote:
-> From: Geert Uytterhoeven <geert@linux-m68k.org>
-> on " Re: PATCH 2.3.99.7.5: update for clgenfb fbdev driver "
-> date: Fri, 5 May 2000 13:38:26 +0200 (CEST) >>>
->
-> > On Fri, 5 May 2000, Jeff Garzik wrote:
-> > > updates my cirrus logic fbdev driver with a few cleanups, fix 0xA0000
-> > > bug (note to alan), module and PCI cleanups, ...
-> >
-> > Since clgen_of_init() is exactly the same as clgenfb_init(), and since clgenfb
-> > uses PCI resource management, can't we simply get rid of the OF specific stuff
-> > in clgenfb?
-> >
-> > Can someone please test this by disabling Offb (CONFIG_FB_OF=n) and seeing
-> > whether everything still works fine? Thanks!
->
-> I would like to test it on my PowerStack.
->
-> The test need to test two things.
->
-> 1. Add clgenfb (Version? I have 1.9.4.4 .) patch on newest
->    kernel 2.3.99.7.5 .
+2.3.x lacks the macros to access ISA memory space (untested):
 
-You best use clgenfb from 2.3.99-pre7-6, I think.
+--- include/asm-ppc/io.h.orig	Wed May  3 14:33:53 2000
++++ include/asm-ppc/io.h	Sat May  6 14:41:08 2000
+@@ -54,6 +54,16 @@
+ #define writel(b,addr) out_le32((volatile u32 *)(addr),(b))
+ #endif
 
-> 2. CONFIG_FB_OF=n and CONFIG_FB_CLGEN=y needs on the config file.
-
-Yes, that should do it.
++#define isa_readb(a)			readb(_ISA_MEM_BASE+(a))
++#define isa_readw(a)			readw(_ISA_MEM_BASE+(a))
++#define isa_readl(a)			readl(_ISA_MEM_BASE+(a))
++#define isa_writeb(b,a)			writeb(b,_ISA_MEM_BASE+(a))
++#define isa_writew(w,a)			writew(w,_ISA_MEM_BASE+(a))
++#define isa_writel(l,a)			writel(l,_ISA_MEM_BASE+(a))
++#define isa_memset_io(a,b,c)		memset_io(_ISA_MEM_BASE+(a),(b),(c))
++#define isa_memcpy_fromio(a,b,c)	memcpy_fromio((a),_ISA_MEM_BASE+(b),(c))
++#define isa_memcpy_toio(a,b,c)		memcpy_toio(_ISA_MEM_BASE+(a),(b),(c))
++
+ /*
+  * The insw/outsw/insl/outsl macros don't do byte-swapping.
+  * They are only used in practice for transferring buffers which
 
 Gr{oetje,eeting}s,
 
