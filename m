@@ -1,40 +1,33 @@
-Date: Tue, 15 Dec 1998 09:46:32 -0700 (MST)
-From: Jeff Rugen <jrugen@primenet.com>
-To: David Ray <daver@idiom.com>
-cc: linux-pmac@samba.anu.edu.au,
-        linuxppc-dev <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: QuickCam
-In-Reply-To: <v02140b06b299f1f9865f@[209.157.72.95]>
-Message-ID: <Pine.BSI.3.96.981215094023.4080A-100000@usr04.primenet.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 15 Dec 1998 17:56:27 +0100
+To: Liste LinuXppc/dev <linuxppc-dev@lists.linuxppc.org>,
+        David Ray <daver@idiom.com>
+From: Benjamin Herrenschmidt <bh40@calva.net>
+Subject: Re: Complete fix for PB 2400 16-bit video problem
+Message-Id: <19981215175627.030106@mail.mipsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Sun, Dec 13, 1998, David Ray <daver@idiom.com> wrote:
 
-The PC version of the Quickcam uses the parallel and keyboard ports, but
-only uses the keyboard port for power.  When I was running 2.0.30 on a
-Motorola PowerStack, I had one of the quickcam drivers built and working
-(one that works as a module, not the stand-alone applications).  Since then,
-I've moved the printer to my PowerStack's paralell port so haven't tried to
-see if the 2.1.x drivers work (they didn't around 2.1.60, but part of the
-problem was a lack of software that used the new interface -- the ioctls
-have changed from 2.0.x drivers to the ones in the kernel... at least I
-think that was the problem).
+>It appears that the 16-bit in the console still has some problems. The color
+>balance is off, but useable. Red is too bright and blue is too dim. I use a
+>custom prompt that uses ansi colors so the color balance at the console
+is more
+>apparent on my system than on one that just uses white characters.
 
-To work with a Mac, you'll have to modify the code that assumes a parallel
-port to work with the Mac serial interface.  I assume there's source code
-out there that interfaces with a Mac quickcam, but I've never looked at it.
-Connectix used to have a web page listing third party software
-(shareware/freeware/etc) but since they sold the Quickcams to Logitech, I
-don't know where you'd find it.
+There is still a little issue with DIRECTCOLOR vs. TRUECOLOR and default
+console color map, I think Tim will post a patch soon but if he can't,
+I'll try a fix and send it to the list (I don't own a 2400 so I can't test).
 
-----------------------------------------------------------------------------
-Jeff Rugen                      jrugen@primenet.com
+-- 
+           E-Mail: <mailto:bh40@calva.net>
+BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
 
-...Had this been an actual emergency, we would have fled in terror, and you 
-would not have been informed.
+
+
 
 
 [[ This message was sent via the linuxppc-dev mailing list. Replies are ]]
