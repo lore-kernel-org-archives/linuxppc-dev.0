@@ -1,31 +1,34 @@
-Message-ID: <3BD4681C.C3FE8A8C@mvista.com>
-Date: Mon, 22 Oct 2001 14:40:28 -0400
-From: Dan Malek <dan@mvista.com>
-MIME-Version: 1.0
-To: John F Davis <johndavi@us.ibm.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: 405GP cat /proc/interrupts
-References: <OF8E67EA1A.B526D51D-ON85256AED.0064781F@raleigh.ibm.com>
+Date: Mon, 22 Oct 2001 16:21:18 -0400
+From: Kent Borg <kentborg@borg.org>
+To: linuxppc-embedded@lists.linuxppc.org
+Subject: Dying of First sti()
+Message-ID: <20011022162118.A13160@borg.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-John F Davis wrote:
+I have been trying to move work from an old Linux PPC kernel to a
+current (rsync-ed from source.mvista.com::linuxppc_2_4_devel) kernel
+tree.  I have a 405GP on a custom board.
 
-> ....  With that said, why does cat /proc/interrupts say that I am
-> using Edge Sensitive interrupts when I have
-> modified the TR register to be Level sensitive?
+In this effort I am getting some output on the serial port, I make it
+in init/main.c to the point where sti() is about to be called.  But I
+never get back from the sti() call.
 
-Because the information printed by /proc/interrupts doesn't come directly
-from the hardware registers, but rather (and irrelevant in this case) part
-of the irq descriptor structure.  You could set a bit in the irq descriptor
-to make the print out pretty, but it won't have any effect on the system.
-The proper solution is to set the the information in the irq descriptor,
-and have the controller initialization read this and program the hardware
-registers properly.  You just skipped to the last step.
+Early in the boot I turned off all interrupt sources.  Using RISC
+Watch I can (laboriously) trace through timer_interrupt(), and I am
+not caught in an infinite loop in there, it does return.
+
+I am thinking our limited boot ROM isn't setting up everything the
+kernel expects.
+
+Ideas?
 
 
-	-- Dan
+Thanks,
+
+-kb
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
