@@ -1,56 +1,54 @@
-From: Kevin Hendricks <khendricks@ivey.uwo.ca>
-Reply-To: khendricks@ivey.uwo.ca
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>,
-        Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Help! Getting aty128fb.c to work with newest sawtooth machines
-Date: Sat, 11 Mar 2000 09:38:39 -0500
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.linuxppc.org
-References: <Pine.LNX.4.21.0003060013070.30614-100000@idd-01.imbc.gr>
-In-Reply-To: <Pine.LNX.4.21.0003060013070.30614-100000@idd-01.imbc.gr>
+Date: Sat, 11 Mar 2000 15:50:16 +0100 (CET)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Michel Dänzer <michdaen@iiic.ethz.ch>
+cc: "Kevin B. Hendricks" <khendricks@ivey.uwo.ca>,
+        Kostas Gewrgiou <gewrgiou@imbc.gr>, linuxppc-dev@lists.linuxppc.org
+Subject: Re: patch to get latest XFree 4.0 snapshot (xf3918) to work on
+ ppcwithr128
+In-Reply-To: <38C98B3D.AB06EE7E@iiic.ethz.ch>
+Message-ID: <Pine.LNX.4.10.10003111521590.14494-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Message-Id: <00031109361000.07471@localhost.localdomain>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi Kostas,
+> > One would sure hope so. The 4.0 X server dies horribly during device
+> > configuration on my Lombard. After feeding it a hand-crafted XF86Config,
+> > it just hangs the machine.
+>
+> Which driver?
+>
+> With the fbdev driver, you have to specify the bus ID of the graphics chip,
+> e.g.
+>
+>     BusID	"0:1:0"
 
-If just received a G4 450 but if I try to use aty128fb.c in any resolution
-higher than 1024x768 8bpp it will fail miserably with the screen split into 3
-vertical panes.
+I'll try that. But the results I get with X -probeonly are more than
+confusing. After I tosses out most of the driver modules, the probe runs
+once or twice, and gets sporadic SIGILL the rest of the time. To the
+extent of not succeeding at all for the rest of the day. Or succeeding
+only from the console but not from a slogin session (signal 4 in the
+slogin session consistently). The signal happens apparently at different
+times during X startup - while loading the dbe module, after loading the
+fbdevhw module.
 
-If I try blindly launching xf 4.0 r128, it inherits the fb mode and I end up
-with 3 panes as well.
+The chip was detected on the PCI bus - what's the BusID supposed to do in
+this situation? Keep X from probing the other PCI devices?
 
-This is obviously a aty128fb.c problem since it occurs in the console.
+OK, tried to feed it the BusID (0:17:0 as reported by the probe). Results:
+a beep, and the warnings 'invalid mem allocation' and 'invalid IO
+allocation'. The IO range smells like a port address range, is that
+remapped by the PCI bridge? lspci reports the IO range as disabled. I'll
+look into Geerts description of the Mach64 memory layout to figure out
+what aperture X tries to use here.
 
-I looked at Anthony's code (remember the problem I had earlier when he tried to
-read values for the dotclock and xclk out of the of device tree?) and then used
-lsprop to print out the graphics card info.
+Trying a 'startx' with this config leaves me with the bell on and the
+machine hung.
 
-Unfortunately, there were no nice of-tree variables in my G4 tree at all but it
-did report my card as a Rage128Pro and not a simple Rage128.
+I haven't patched or configured anything in the X source.
 
-Is a Rage128Pro different from a Rage128 when it comes to setting it up,
-register usage, etc or is this simply a problem with the default timings
-setting being incorrect for this card?
+	Michael
 
-Interestingly enough, I can boot with aty128fb with 1024x768 and 8bpp and the
-console is fine (no 3 panes) and I can then successfully start up XFree4.0 with
-r128 acceleration so things do appear to be working under some cases.
-
-Is there any tool (code piece, etc) I can use to probe the timing info as used
-under MacOS?
-
-Thanks,
-
-Kevin
-
- -- Kevin B. Hendricks
-Associate Professor of Operations and Information Technology
-Richard Ivey School of Business, University of Western Ontario
-London, Ontario  N6A-3K7  CANADA
-khendricks@ivey.uwo.ca, (519) 661-3874, fax: 519-661-3959
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
