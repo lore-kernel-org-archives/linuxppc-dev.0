@@ -1,28 +1,40 @@
 To: Tom Rini <trini@kernel.crashing.org>
-Cc: lm@bitmover.com, Stephen Cameron <steve.cameron@hp.com>,
+Cc: Stephen Cameron <steve.cameron@hp.com>,
 	linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Bitkeeper trouble
-References: <20020528165639.A28325@zuul.cca.cpqcorp.net>
-	<20020528222106.GC5997@opus.bloom.county>
-From: Roland Dreier <roland@topspin.com>
-Date: 28 May 2002 15:33:14 -0700
-In-Reply-To: <20020528222106.GC5997@opus.bloom.county>
-Message-ID: <52wutnuclx.fsf@topspin.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: Bitkeeper trouble 
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 28 May 2002 15:21:06 PDT."
+             <20020528222106.GC5997@opus.bloom.county>
+Date: Wed, 29 May 2002 00:33:14 +0200
+Message-Id: <20020528223319.BCE1011973@denx.denx.de>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
->>>>> "Tom" == Tom Rini <trini@kernel.crashing.org> writes:
+In message <20020528222106.GC5997@opus.bloom.county> you wrote:
+>
+> What does 'bk parent' say?  If it's not
+> bk://ppc.bkbits.net/linuxppc_2_4_devel, try doing:
+> bk parent bk://ppc.bkbits.net/linuxppc_2_4_devel
+> and then pulling again.  I'm not sure why, but ppc.bkserver.net seems to
+> be gone.
 
-    Tom> I'm not sure why, but ppc.bkserver.net seems to be gone.
+Well, from here it looks like a name server problem:
 
-Looks like Bitmover messed up the DNS for ppc.bkserver.net:
+Non-authoritative answer:
+Name:   ppc.bkserver.net
+Address: 10.3.9.222
 
-$ host ppc.bkserver.net
-ppc.bkserver.net    	A	10.3.9.222
+This explains why I get "no route to host" errors...
 
-R.
+Wolfgang Denk
+
+--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-4596-87  Fax: (+49)-8142-4596-88  Email: wd@denx.de
+The human mind treats a new idea the way the body  treats  a  strange
+protein - it rejects it.                                 - P. Medawar
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
