@@ -1,37 +1,57 @@
-Message-ID: <3DCF62E2.89F1C882@bmrtech.com>
-Date: Mon, 11 Nov 2002 15:57:22 +0800
-From: sjk <jack.sun@bmrtech.com>
-Reply-To: jack.sun@bmrtech.com
 MIME-Version: 1.0
-To: "Dr. Craig Hollabaugh" <craig@hollabaugh.com>
-Cc: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: gdbserver and gdb cross debug?
-References: <20021111074041.EBB0127DE1@chuy.ouraynet.com>
-Content-Type: text/plain
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Microcode patching
+Date: Mon, 11 Nov 2002 12:29:07 -0000
+Message-ID: <EADB10BAC266A14A85ECBF8686A73E3193812E@kolkrabbi.flaga.is>
+From: =?iso-8859-1?B?S+FyaSBEYXbt8HNzb24=?= <kd@medcare.is>
+To: <linuxppc-embedded@lists.linuxppc.org>
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dr. Craig,
+I can deffinitly recomend the driver Joakim sent here. Works much better than the stock driver.
 
-I am using MontaVista Linux LSP. The ibm-walnut-ppc405gp LSP works correctly
-on walnut board. We can cross debug applications by ppc_405-gdb and
-gdbserver(version 5.1).
-But the following problem occurs on EP405 board.
-Is it possible that the problem is caused by library, memory or initialization
-of PPC405GP registers?
+K.D.
 
-Sun
-
-"Dr. Craig Hollabaugh" wrote:
-
-> > I am porting Linux on EP405 board. So I use gdbserver and gdb to debug
-> > applications,but only the first
-> > breakpoint could be stopped.Then if i press 'step', the program will
-> > execute to end straightforwardly . Any other breakpoints could not break
-> > the execution.
+> -----Original Message-----
+> From: Joakim Tjernlund [mailto:joakim.tjernlund@lumentis.se]
+> Sent: 8. nóvember 2002 15:56
+> To: Christian Schroeder; linuxppc-embedded@lists.linuxppc.org
+> Cc: reklies@mazet.de; linz@mazet.de
+> Subject: RE: Microcode patching
 >
-> Which tools are you using? I've been using the fine ELDK from denx on a
-> walnut board without problems like you mention above.
+>
+>
+> Hi
+> >
+> > Hi all,
+> >
+> > I've got a question regarding the mpc8xx microcode patches in
+> > arch/ppc/8xx_io/micropatch.c. We do need usb host mode, i2c and
+> > ethernet operation at the same time. As I understood, i can't load
+> > the microcode patches for usb sof generation and iic/spi together,
+> > because they "live" at the same address. Now my question:
+> What occurs
+> > if I don't load the ii2/spi patch. I do need the usb sof timing, but
+> > does the i2c-Interface work without the iic/spi patch ? As I read on
+> > the motorola webserver, the iic/spi is needed for
+> concurrent operation
+> > of scc ethernet and i2c. Does i2c work correctly without
+> the patch if
+> > I don't use ethernet ?
+>
+> I2C will work fine without I2C microcode patch if you don't
+> use ethernet on SCC1
+>
+> Also, I submitted a new i2c-algo-8xx.c driver to this list
+> about 2 weeks ago. It contains
+> sevral bug fixes and improvements. It's not in linuxppc BK
+> yet, but I think it will be soon.
+>
+>     Jocke
+>
+>
+
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
