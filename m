@@ -1,39 +1,36 @@
-Date: Wed, 10 Mar 1999 17:40:09 +0100
-From: Hubert Figuiere <hub@point-barre.fr>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-Cc: linuxppc-dev@lists.linuxppc.org
-Subject: Re: ADB Reset
-Message-ID: <19990310174009.A1526@giordino.point-barre.fr>
-References: <19990310123639.A292@giordino.point-barre.fr> <19990310131908.030129@mail.mipsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <19990310131908.030129@mail.mipsys.com>; from Benjamin Herrenschmidt on Wed, Mar 10, 1999 at 01:19:08PM +0100
+Date: Wed, 10 Mar 1999 13:41:41 -0500 (EST)
+From: Hollis R Blanchard <hollis+@andrew.cmu.edu>
+To: Hubert Figuiere <hub@point-barre.fr>
+cc: LinuxPPC Dev List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: Sound drops
+In-Reply-To: <19990310152621.H896@giordino.point-barre.fr>
+Message-ID: <Pine.LNX.3.96L.990310133932.1996F-100000@unix47.andrew.cmu.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-According to Benjamin Herrenschmidt <bh40@calva.net>:
+On Wed, 10 Mar 1999, Hubert Figuiere wrote:
+> 
+> I don't like to work in silence, so I usually play back a 
+> bunch of mp3 with xaudio under Linux PPC from my PowerBook.
 
-> After the bus reset, the mouse must be re-initialised to handler 4. In
-> fact, the whole device probing and init must be redone (mac_keyb.c). I'm
-> working on a simple design that allow ADB peripherial drivers to register
-> to the ADB core in order to be notified of bus resets. Stay tuned.
+xaudio? Haven't heard of it.
 
-That would be cool if we can get the "adb_mouse_kinds" array (or
-at least the current mouse kind) within the adbmouse.c driver.
-This would allow to make the driver works at the right speed with
-Kensington mice....
-I have made such patch that seems to be on the right way (I could
-not validate it completely).
+> The problem is that I get a lot of sound drops like if the machine
+> were "mono-tasking". I have never had this with PC hardware under Linux.
+> 
+> It appears that those drops occurs when doing intensive graphics like
+> a Netscape redrawing or a huge text scroll within an xterm. This happens
+> with Xpmac or XFB_Dev.
 
-BTW, while I'm at it, it looks like extended ADB protocol provide
-"high bits" for dx and dy, but they seems to be unused in
-adbmouse.c. Any ideas for this ?
+Try adding a buffer switch - for example, mpg123 takes -b1024 where 1024 is
+the size of the buffer in K, IIRC. I don't have any idea what xaudio is, but
+I think most sound playback programs have specifiable buffers.
 
+-Hollis
 
-Hub
--- 
-World Wide Wait: the real meaning for WWW.
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
