@@ -1,73 +1,66 @@
-Date: Sun, 12 Aug 2001 10:47:41 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Iain Sandoe <iain@sandoe.co.uk>
-Cc: Derrik Pates <demon@devrandom.net>,
-	linuxppc-dev@lists.linuxppc.org
+Date: Sun, 12 Aug 2001 11:59:03 +0100
 Subject: Re: Fix for PPC audio devices that can't reendianize samples
-In-Reply-To: <20010811232652.D17E62F06D@apollo.valhalla.net>
-Message-ID: <Pine.LNX.4.05.10108121044370.15315-100000@callisto.of.borg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: "Iain Sandoe" <iain@sandoe.co.uk>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linuxppc-dev@lists.linuxppc.org
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
+Message-Id: <20010812110432.463FB2F068@apollo.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Sun, 12 Aug 2001, Iain Sandoe wrote:
-> On Sat, Aug 11, 2001,  Geert Uytterhoeven wrote:
-> > On Fri, 10 Aug 2001, Iain Sandoe wrote:
-> >> > The attached patch adds code to drivers/sound/dmasound/trans_16.c to
-> >> > byteswap little-endian audio samples for hardware that needs it (like the
-> >> > DACA audio chip in the iBook and iBook FireWire), and also marks the DACA
-> >> > in the iBook FireWire as being unable to handle little-endian audio
-> >> > samples (in dmasound_awacs.c).
-> >>
-> >> we've been round this loop ;-)))
-> >>
-> >> the reason that the byte-swap code was taken out of trans_16.c is that it
-> >> will never be allowed into the kernel.
-> >
-> > And we'll have to remove the current byteswap code in the kernel (there still
-> > is some).
+On  Sun, Aug 12, 2001,  Geert Uytterhoeven wrote:
+> On Sun, 12 Aug 2001, Iain Sandoe wrote:
+>> On Sat, Aug 11, 2001,  Geert Uytterhoeven wrote:
+>> > On Fri, 10 Aug 2001, Iain Sandoe wrote:
+>> (a) working out what to do about mksound() - this is messy as it is and
+>> needs fixing in order to deal with DACA & Tumbler (it fiddles with the H/W
+>> which makes it chip-specific at present)...
 >
-> Well, actually, I'd like to lose all the translation stuff (rate conversion,
-> format conversion etc.).  This belongs in User-Land and is preventing me
-> from implementing mmio (which would be useful for the more serious
-> applications).
+> Yes, mksound() messes with the sound hardware on most m68k boxes too.
 
-Sorry, that's what I meant: all translation code.
+right.
 
-> My main problems atm are:
->
-> (a) working out what to do about mksound() - this is messy as it is and
-> needs fixing in order to deal with DACA & Tumbler (it fiddles with the H/W
-> which makes it chip-specific at present)...
+> Perhaps we should make it more generic, and move it to dmasound?
 
-Yes, mksound() messes with the sound hardware on most m68k boxes too.
+My thoughts of the last few weeks are along these lines...
 
-Perhaps we should make it more generic, and move it to dmasound?
-The disadvantage is that you can't get system beep anymore without dmasound.
+At the moment we (PPC/PMac) have a wavetable synthesis of the beep in
+dmasound_awacs.c.  Unfortunately, it changes sample-rate and AFMT settings
+in a way that is quite AWACS/Screamer/Burgundy - specific... this must
+altered to implement DACA & Tumbler drivers properly (we have temporary
+separate hacks for these at the moment).
 
-> (b) wondering if losing all that stuff is going to be acceptable to the m68k
-> ports (or whether we will end up having a PPC-specific driver).
+What I was thinking of doing is moving the WT synthesis into dmasound_core.c
+and implementing it by mixing the beep into the incoming sound stream.  The
+the wavetable parameters would be driven by current AFMT/sample rate
+settings (rather than changing them to-and-fro 'behind the back' of
+dmasound_core.c).
 
-If the removal of the translation stuff is imposed from upstream (Linus/Alan),
-we must comply. Once user space is fixed, it should work everywhere. So m68k
-will benefit from the work done on PPC (once in a time it was vice versa :-)
+Of course, that works for any Low-Level driver backed onto dmasound_core.c
+(including all the m68k ones)...  and we can lose all the chip-specific
+mksound code from the LL drivers.
 
-> (c) not having any time ... (but that's an old problem) ...
+there are two objections to this:
 
-Idem ditto.
+(a) This is not quite 'zero-kernel-code' (the mixing will require some
+arithmetic in a per-sample loop)
 
-Gr{oetje,eeting}s,
+- it would be better (and more flexible) if the mksound beep was generated
+by User-land code and mixed via something like aRtsd ... but, of course,
+that imposes a requirement to have such a thing running to have console beep
+(at least on PMac PPC)... which might not suit everyone.
 
-						Geert
+(b) it would mean that mksound would cease to function if mmio is
+implemented and that mode is in use.  However, AFAICT this second point is
+pretty un-solvable...
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> The disadvantage is that you can't get system beep anymore without dmasound.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+well, PPC/PMac doesn't have mksound without dmasound anyway.
 
+ciao,
+Iain.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
