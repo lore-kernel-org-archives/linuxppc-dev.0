@@ -1,100 +1,62 @@
-Date: Sun, 26 Mar 2000 22:30:09 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Richard Zidlicky <Richard.Zidlicky@stud.informatik.uni-erlangen.de>
-cc: Linux/m68k <linux-m68k@lists.linux-m68k.org>,
-        Linux/PPC for APUS <linux-apus@sunsite.auc.dk>,
-        Linux/PPC Development <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: dmasound split
-In-Reply-To: <20000324201650.D351@sirizidl.dialin.rrze.uni-erlangen.de>
-Message-ID: <Pine.LNX.4.05.10003262222030.3263-100000@callisto.of.borg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sun, 26 Mar 2000 17:46:05 -0500
+From: Dan Foster <dsf@gblx.net>
+To: Brian <gilmanb@dipswitch.penguinpowered.com>
+Cc: sterwill@abisource.com, linuxppc-dev@lists.linuxppc.org, dsf@gblx.net
+Subject: Re: MAJOR SECURITY HOLE IN BIND!!
+Message-ID: <20000326174605.A16692@frontiernet.net>
+References: <Pine.LNX.4.21.0003261555310.2585-100000@dipswitch.penguinpowered.com> <Pine.LNX.4.21.0003261704270.3251-100000@dipswitch.penguinpowered.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.21.0003261704270.3251-100000@dipswitch.penguinpowered.com>; from gilmanb@dipswitch.penguinpowered.com on Sun, Mar 26, 2000 at 05:09:49PM -0500
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Fri, 24 Mar 2000, Richard Zidlicky wrote:
-> found the bug that caused jerky play with the splitted driver (did you get
-> my PM with the bug description??).
+Hot Diggety! Brian was rumored to have wrote:
 >
-> The problem is with sq_setup() or its invocation, with the default 32K
-> buffer size sq_setup gets called with a bufSize argument of 32  !!
-> So it sets write_sq accordingly and little surprise - a buffer size of 32
-> bytes is not enough for smooth playing.
-> It appears as this bug would affect all architectures.
+> 	It looks like there is a vulnerability in bind that allows a
+> malicious user to gain root access through bind by expoiting something
+> called the "NXT" bug...Artifacts of this break in are the empty folder
+> ADMROCKS in /var/named....
 
-Thanks a lot!
+Actually, this has been known for some months now :) Stuff like this is
+why the ISC put out latest version of BIND being 8.2.2-P5. Publically known
+since November 10, 1999.
 
-I incorporated your driver for the Q40 and made a new release.
+> 	All users should upgrade thier BIND to the lastest version to
+> avoid the hassle and frustration that I will/have gone through...
 
-Changes:
+Agreed. I'm sorry you went through that nasty experience.
 
-  - Add support for Q40 (from Richard Zidlicky). The driver now consists of 5
-    pieces:
+That said, part of the responsibility of running daemons that makes services
+accessible to the internet - be it X, lpd, mountd, sendmail, named, etc. -
+one simply has to keep up with security patches by periodically re-checking
+for them or subscribing to security mailing lists. A bothersome responsibility,
+but unavoidable in today's age of cyber-scumbags.
 
-       o dmasound_core: machine-independent stuff
-       o dmasound_atari: support for Atari TT and Falcon [m68k]
-       o dmasound_awacs: support for PowerMac Awacs/Burgundy [ppc]
-       o dmasound_paula: support for Amiga Paula [m68k/ppc]
-       o dmasound_q40: support for Q40
+Also, a firewall will help a lot if properly configured, but can still be
+tricked under certain circumstances - so it's only one of multiple avenues
+for attacking the problem of cyber-scumbags; securing all applications and
+systems on the internal network counts, too.
 
-  - Disable sound on PowerBook when dmasound is not compiled in (triggered by a
-    report from Michel Lanners).
-  - Use the new module_{init,exit}() scheme, so dmasound_init() no longer has
-    to be called in drivers/char/mem.c (triggered by a report from Iain
-    Sandoe).
-  - Removed unused DMASND_* definitions.
-  - All buffer sizes are in bytes now, except for {read,write}BufSize and
-    {MIN,MAX}_BUFSIZE, which are in KB (fixes bug reported by Richard
-    Zidlicky).
-  - Declared more small static functions inline.
-  - Clean up of #include lists.
-  - Remove dmasound_active, since it's not necessary (was never set anyway).
-  - Many small clean ups.
+You might want to also look into using Abacus's PortSentry (freeware) to
+actually *monitor* for possible attacks - it can then immediately fire off
+mail, page someone, add host to ipchains blacklist, etc. Very nice stuff.
 
-Caveats:
+http://www.psionic.com/
 
-  - Only dmasound_paula was tested on Amiga under Linux/m68k, using a modular
-    configuration. I did compile the other drivers (also dmasound_paula under
-    Linux/PPC). Dmasound_q40 did not compile due to the lack of some Q40
-    specific definitions in the current Linux/m68k tree.
+*topic change*
 
-  - Builtin behavior has not been tested yet! Since the rest of the sound
-    system is initialized using module_init() as well, correct operation
-    depends on correct link order in drivers/sound/Makefile. Please let us know
-    whether it works.
+My apologies for the absence of linuxppc content, except to say that I hope
+to be trying out the LinuxPPC 2000 stuff soon. The installer alone is exactly
+what I expected from LinuxPPC 1999 :) In fact, from what I've heard about
+the new installer...I think it'll help encourage some more people that I
+know to give it a shot since the pdisk stuff *really* scared them off - not
+to mention heavy swapping+slow startup for X (for the install stuff).
 
-  - I forgot to move everything to drivers/sound/dmasound/. Since it's already
-    late (BTW, I hate switching to DST!), I prefer to send out this patch
-    first. Of course patches are welcomed :-)
+I don't have the in-depth knowledge needed to contribute to the dev stuff
+here, but have been reading the PCI and X stuff lately with much interest.
 
-Patches:
-
-  - Against Linus' 2.3.99-pre3:
-
-    http://home.tvd.be/cr26864/Patches/dmasound-v2.diff.gz
-
-  - Against my previous release + patch:
-
-    http://home.tvd.be/cr26864/Patches/dmasound-v1pl1-v2.diff.gz
-
-Thank you very much for testing it on all supported platforms[*]!
-If everything works fine, I'll send it to Linus for inclusion in 2.4.0.
-
-Enjoy!
-
-Gr{oetje,eeting}s,
-
-						Geert
-
-[*] I'm aware that Linux/m68k 2.3.x is broken on Atari, so I don't insist on
-    reports for dmasound_atari :-)
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+-Dan
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
