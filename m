@@ -1,42 +1,50 @@
-Date: Thu, 7 Feb 2002 20:02:27 -0700
-From: Tom Rini <trini@kernel.crashing.org>
+Date: Fri, 8 Feb 2002 01:05:23 -0500 (EST)
+From: Christopher Murtagh <christopher.murtagh@mcgill.ca>
 To: Val Henson <val@nmt.edu>
-Cc: linuxppc-dev@lists.linuxppc.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	<linuxppc-dev@lists.linuxppc.org>
 Subject: Re: Highmem on PPC?
-Message-ID: <20020208030227.GA15584@opus.bloom.county>
-References: <20020205115618.D6834@boardwalk> <20020205193316.19866@smtp.wanadoo.fr> <20020207144308.C19569@boardwalk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20020207144308.C19569@boardwalk>
+Message-ID: <Pine.LNX.4.33.0202080101000.9080-100000@blues.wcg.mcgill.ca>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Feb 07, 2002 at 02:43:08PM -0700, Val Henson wrote:
->
-> On Tue, Feb 05, 2002 at 08:33:16PM +0100, Benjamin Herrenschmidt wrote:
-> >
-> > And let me know if you find something ;)
->
-> I pulled the latest linuxppc_2_4_devel, ported gemini to it, and ran
-> an overnight test with:
->
-> NFS mounted root filesystem
-> while (true) do make clean; make -j8 zImage; done
-> crashme +2000 666 100 8:00:00 2
-> Flood ping in and out
->
-> On a dual 7410 Gemini with 1 GB RAM.  Used all but 70MB of memory.  No
-> hangs.
->
-> The weird thing is that crashme was supposed to run for 8 hours but
-> it's been running for over 14 hours now.  Any ideas?
+On Thu, 7 Feb 2002, Val Henson wrote:
+>Also, I don't think this was a particularly good test of highmem since I
+>don't think many bounce buffers were used, or that the kernel had much
+>reason to map/unmap many highmem pages.  Unfortunately, my SCSI
+>controller isn't working quite right and I can't test with a hard disk
+>as a result.  Any ideas for stressing the system harder?
 
-Hmm.  Have you tried timing some 'simple' things and seeing if thats
-correct?
+ My Dual800 ran fine for well over a week in my office with 1GB of RAM and
+with SMP. It also ran with a load average of around 10 for a couple of
+hours when I tried to stress test it. It was only when it started getting
+a bit of network traffic after moving it into our machine room did it
+crash, and then it crashed often. (It was also compiled with GMAC and BMAC
+network drivers).
+
+ So, don't know if this info helps or not, but I'd say try giving it a
+network stress test as well as a heavy CPU load. Once I turned off SMP, it
+seems to be very stable (still with 1 GB of RAM).
+
+Cheers,
+
+Chris
 
 --
-Tom Rini (TR1265)
-http://gate.crashing.org/~trini/
+
+Christopher Murtagh
+Webmaster / Sysadmin
+Web Communications Group
+McGill University
+Montreal, Quebec
+Canada
+
+Tel.: (514) 398-3122
+Fax:  (514) 398-2017
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
