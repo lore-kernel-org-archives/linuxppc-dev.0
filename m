@@ -1,62 +1,92 @@
-Message-ID: <002101c23a8d$4d54d480$43ba459b@ntu.edu.sg>
-From: "shaowei dai" <dshaowei@rfnetech.com>
-To: <linuxppc-embedded@lists.linuxppc.org>
-References: <20020729040824.GA2351@zax> <20020729100009.A23843@flint.arm.linux.org.uk> <20020729144408.GA11206@opus.bloom.county> <00a801c239ea$191a9c20$43ba459b@ntu.edu.sg> <3D4AC468.83BCD667@opensource.se>
-Subject: Re: symbol card with orinoco_cs on mpc823
-Date: Sat, 3 Aug 2002 09:30:07 +0800
+Message-ID: <20020803200625.52603.qmail@web20703.mail.yahoo.com>
+Date: Sat, 3 Aug 2002 13:06:25 -0700 (PDT)
+From: bhupinder sahran <bhup_sah@yahoo.com>
+Subject: Re: Problems with I2C reads
+To: Keith Outwater <Keith_Outwater@mvis.com>,
+	linuxppc-embedded@lists.linuxppc.org
+In-Reply-To: <668950F487446B4FB0CEAE9760FD2D620BE6B3@taurus.primary.local>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-Dear all:
+hi
 
-Thanks for all the help. I've found out the problem.
-It's indeed a low-level problem. m8xx-pcmcia can't reconginize the io size
-of this kind of card.
-So i just manully set it to correct one. Then it works fine.
+I think u r missing onr thing.
 
-Thanks the authors. The two drivers are so great!
-
-regards
-
------ Original Message -----
-From: "Magnus Damm" <damm@opensource.se>
-To: "shaowei dai" <dshaowei@rfnetech.com>
-Sent: Saturday, August 03, 2002 1:42 AM
-Subject: Re: symbol card with orinoco_cs on mpc823
+sequence should be like this
 
 
-> Try disabling the busmonitor if it's enabled.
+> Start signal
+> Slave address (r/w/ bit = write)
+> Register address
+> Start signal
+> Slave address (r/w/ bit = read)
+> Read register data
+>NO ack.......................u have to give
+> Stop signal
+
+
+Try to give No ack after reading the register data.
+
+bye
+Bhupi
+Deep  into silicon with Linux.....
+www.gdatech.com
+
+--- Keith Outwater <Keith_Outwater@mvis.com> wrote:
 >
-> / Magnus
+> Greetings all -
 >
-> shaowei dai wrote:
-> >
-> > Hello,
-> >
-> > Has anybody tried orinodo_cs 0.11b or 0.12b with success on symbol
-> > Spectrum24 High rate11M card on mpc platform?
-> > I've tried 2.4.18-pre3 and 2.4.19-rc3 kernel with orinoco driver. It
-works
-> > fine with intersil card. But
-> > when i try it on symbol card, it always crashes. After tracing down i
-find
-> > it is caused by hermes_init(). It seems the
-> > call to hermes_write_regn(hw,INTEN,0)  cause the crash. The ksymoops
-also
-> > suggest this function. It is just an io write. What can be wrong? And
-most
-> > strange thing is why it doesn't cause any trouble in normal intersil
-card.
-> >
-> > Any ideas is greatly appreciate!
-> >
-> > regards
-> > David
-> >
+> I am trying to talk to an I2C device (Analog Devices
+> AD9888) using the
+> MPC860 CPM I2C interface from userland.
+> Writes work fine, but the chip requires a strange
+> write-read sequence
+> for reading back registers.  For example, to read a
+> register:
+>
+> Start signal
+> Slave address (r/w/ bit = write)
+> Register address
+> Start signal
+> Slave address (r/w/ bit = read)
+> Read register data
+> Stop signal
+>
+> Note that there is no stop between the write and the
+> read.  If you put a
+> stop in, the chip will not acknowledge the read, so
+> using /dev/i2c-0
+> with write() and read() does not work.
+>
+> I tried using the ioctl() interface and passed
+> I2C_RDWR to try to
+> suppress the stop command between messages, but it
+> does not seem to work
+> (checked it on a scope).
+> I looked at the ioctl() handler for I2C_RDWR and it
+> was not clear to me
+> whether that particular ioctl option should work
+> with a write-read
+> sequence or not.  As far as I can tell it does not
+> work.
+> I looked for other ways to do this, but found
+> nothing.
+>
+> Has anyone used I2C like this before? Any hints or
+> suggestions?
+>
+> Thanks!
+> Keith
+>
+> Keith Outwater
+> Senior Staff Engineer
+> Microvision, Inc.
+> (425) 415-6693
+>
+>
 >
 
 
