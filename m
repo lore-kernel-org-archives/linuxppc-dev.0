@@ -1,84 +1,43 @@
-From: Benjamin Herrenschmidt <bh40@calva.net>
-To: <jcarr@linuxppc.org>, <linuxppc-dev@lists.linuxppc.org>
-Subject: Re: call_prom & call_method_1
-Date: Mon, 9 Oct 2000 22:29:40 +0200
-Message-Id: <19340903140124.17579@192.168.1.10>
-In-Reply-To: <Pine.LNX.4.10.10009160815360.24020-100000@jcarr.linuxppc.org>
-References: <Pine.LNX.4.10.10009160815360.24020-100000@jcarr.linuxppc.org>
+Message-Id: <200010092132.XAA00839@piglet.grunz.lu>
+Date: Mon, 9 Oct 2000 23:32:25 +0200 (CEST)
+From: Michel Lanners <mlan@cpu.lu>
+Reply-To: mlan@cpu.lu
+Subject: Re: can't boot 2.4.0-t9
+To: schmitz@opal.biophys.uni-duesseldorf.de
+cc: pochini@shiny.it, bh40@calva.net, linuxppc-dev@lists.linuxppc.org,
+        pochini@denise.shiny.it, tkanerva@ees2.oulu.fi
+In-Reply-To: <Pine.LNX.4.10.10010092018570.30240-100000@opal.biophys.uni-duesseldorf.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/plain; charset=us-ascii
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->I'll summarize breifly what I think happens and what I can't figure out. I
->was wrong about the call_method() name. I was recalling from memory the
->first time. It's call_prom() and call_method_1() in prom.c in yaboot.
->
->Before those routines get called, yaboot_start is called from crt0.S. Then
->prom_init( r5 ) is called. I assume r5 means register 5? I couldn't figure
->out how r5 gets set before yaboot runs but would be interested to know
->just out of curiousity if anyone knows. Once prom_init starts, it calls
+On   9 Oct, this message from Michael Schmitz echoed through cyberspace:
+> BTW: has the cputemp diff been posted for 2.4 already? If not I'd be happy
+> to provide it.
 
-r5 is passed as a parameter by Open FIrmware when entering crt0.S, it's a
-pointer to the OF callback mecanism.
+See if it's on sourceforge. If not, put it there.
 
->The confusing part here is that I can not find any reference to the string
->"finddevice" in OF. (There is a "find-device" word.) Other things sent
->to call_prom include "find-package", "getprop", etc. I guessed at
->"setprop" and that works. To make matters worse, call_method_1 is itself
->identical to call_prop( "call-method", ... ) "call-method" is not defined
->in OF either.
+> There's been some discussion on what CPU clock to use if we
+> can't get the clock from OF - is there a max. CPU clock known for such
+> machines?
 
-Those are OF client interface calls. They are not documented in the
-"user" side of OF, they are calls used by client programs (like yaboot)
-to talk with OF.
+Getting the right clock is absolutely non-critical, only the code blocks
+the CPU longer than necessary if the clock is assumed too high.
 
->call_prom("interpret", 1, 1, char *forth ) is interesting in that it will
->interpret raw forth. This is how I got the mouse to work. However, I can
->not find any example in yaboot where forth words are sent to call_prom().
->So it seems call_prom is not the right call to use.
->
->call_method_1() does infact get passed OF words like "load" and
->"block-size". So the whole syntax for that appears to be the same as:
+Other than that, it might be a good idea to just hardcode something like
+600 MHz in there for now... We can always change that later if somebody
+comes up with a CPU clock detection that always works...
 
-Yup. call_method use OF client interface call "call-method" to have OF
-call a method of a given package. The package method are usually
-implemented in forth.
+Michel
 
->call_prom( "call-method", prom_handle, "load", prom_handle, nargs, ... );
->
->I suspect I need to do something like:
->
->call_prom( "call-method", multiboot_handle, "get-mouse_event", 3, &x, &y
->&mouse );
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
 
-You may need to open the multiboot package before that. Also, I'm not
-sure it's safe to use the multiboot private methods this way. I'd rather
-decrypt what multiboot "get-mouse_event" does and reproduce that
-behaviour (probably by calling either the USB HID package or the ADB package).
-
->So these would be the questions:
->
->1) Does anyone know what other strings can be sent to call_prom besides
->"getprop", "findpackage", "interpret"?
-
-claim, release, ... well, those are defined in the OF client interface
-spec of the OF standard. Firmorks has, I think, a separate book for them
-
->2) Are those strings words within OF that can been looked at with see?
-
-No, well, AFAIK...
-
->3) Can a phandle
-
-but ?
-
->Nonetheless, without having a better correlation between the strings
->("getprop", "setprop", "findpackage", "interpret") and what those strings
->do( and what other valid strings can be used ) it will be hard to receive
->feedback from the mouse.
-
-Ben.
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
