@@ -1,39 +1,32 @@
-Date: Tue, 13 Apr 1999 15:57:32 -0500 (CDT)
-From: Dave Weis <djweis@plconline.com>
-To: Benjamin Herrenschmidt <bh40@calva.net>
-cc: Jim Somerville <somer@nortelnetworks.com>, linuxppc-dev@lists.linuxppc.org
+Date: Tue, 13 Apr 1999 17:26:31 -0400 (EDT)
+From: Tom Rini <tmrini@ntplx.net>
+To: Jim Somerville <somer@nortelnetworks.com>
+cc: "'linuxppc-dev@lists.linuxppc.org'" <linuxppc-dev@lists.linuxppc.org>
 Subject: Re: quik vs. bootx
-In-Reply-To: <19990413212835.023110@mail.mipsys.com>
-Message-ID: <Pine.LNX.3.95.990413155539.25330I-100000@catbert.desm.plconline.com>
+In-Reply-To: <03E3E0690542D211A1490000F80836F4877DEC@zcard00f.ca.nortel.com>
+Message-ID: <Pine.LNX.4.05.9904131724590.487-100000@pc.wackyland.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
+On Tue, 13 Apr 1999, Jim Somerville wrote:
 
-> BootX is not meant to _replace_ quik. Since OF is not working well enough
-> on a lot of Macs, BootX may be your only choice, but if quik works for
-> you and you like it, then use it, it's hopefully still working. OF
-> booting is better from a "theorical" point of view ;-)
+> None of my systems have MacOS on them...I'm using quik.  I have no desire
+> to reinstall MacOS just so I can boot linux.  Will quik work with the 2.2
+> kernel, or will I be screwed here?  I'm currently using 2.1.24 on all my
+> systems.
 
-I installed the most current version of linuxppc a few weeks ago on a
-7300/200. BootX 1.0b6 would just freeze with macos on the screen when I
-would try to boot from a scsi device. I did install quik during the
-install. it does work if i have the floppy in and pass root= and noinitrd.
+Quik works fine w/ 2.2.x and 2.1.xxx.  Tho when you install R5 you might
+have a bit of trouble. (BootX only install ATM, but putting the ramdisk
+and a vmlinux into a .coff ala R4 is doable of course.  And if anyone
+wishes to make the installer do the Quik things needed, patches are
+welcome.)
 
-dave
-
-
--- 
-David Weis                | 10520 New York Ave, Des Moines, IA 50322
-djweis@plconline.com      | Voice 515-278-0133 Ext 231
-
-When they took the Fourth Amendment, I was quiet because I didn't deal drugs.
-When they took the Sixth Amendment, I was quiet because I was innocent.
-When they took the Second Amendment, I was quiet because I didn't own a gun.
-Now they've taken the First Amendment and I can't say anything.
-
+---
+Tom Rini (TR1265)
+http://dobbstown.yeti.edu/
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
