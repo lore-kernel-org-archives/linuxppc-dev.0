@@ -1,39 +1,42 @@
-Reply-To: <lourens@mecalc.co.za>
-From: "LC Geldenhuys" <lourens@mecalc.co.za>
-To: <linuxppc-embedded@lists.linuxppc.org>
-Subject: RE: Kernel Mode Software Emulation NIP: 00001FFC - cache coherency problem on m8xx processors
-Date: Fri, 26 Mar 2004 09:23:52 +0200
-Message-ID: <002401c41303$4dae8890$8702a8c0@lcgnotebook>
+Date: Fri, 26 Mar 2004 09:00:50 +0100 (CET)
+From: Jaap-Jan Boor <jjboor@aimsys.nl>
+To: Steven Scholz <steven.scholz@imc-berlin.de>
+Cc: LinuxPPC <linuxppc-embedded@lists.linuxppc.org>
+Subject: Re: O(1) scheduler for PPC?
+In-Reply-To: <4062DBC9.4090808@imc-berlin.de>
+Message-ID: <Pine.LNX.4.44.0403260858030.25458-100000@linpc003.aimsys.nl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <20040325231357.GA22460@logos.cnet>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-> -----Original Message-----
-> From: owner-linuxppc-embedded@lists.linuxppc.org
-> [mailto:owner-linuxppc-embedded@lists.linuxppc.org] On Behalf
-> Of Marcelo Tosatti
-> Sent: 26 March 2004 01:14 AM
-> To: linuxppc-embedded@lists.linuxppc.org
-> Subject: Kernel Mode Software Emulation NIP: 00001FFC - cache
-> coherency problem on m8xx processors
+On Thu, 25 Mar 2004, Steven Scholz wrote:
 
-<snip>
+>
+> Hi there,
+>
+> is the backport of Ingo Molnar's O(1) scheduler in the official linux-2.4.2x
+> tree and is it available for the PPC?
 
-> I'm not exactly sure why we were jumping to "1FFC" instead of "2000",
-> but adding "isync" before "bl transfer_to_handler" in both
-> DecrementTimer
-> and HardwareInterrupt fixed the problem for us.
+an up-to-date patch together with the preemptible kernel and low-latency
+patches for 2.4.25 are available here:
 
-This sounds distinctly familiar to the CPU13 Errata. Do you have
-Instruction fetch show cycles enabled in ICTRL[IST_SER]? See:
-http://e-www.motorola.com/files/32bit/doc/errata/MPC860CE.pdf
+http://www.plumlocosoft.com/kernel
 
-Cheers,
-  Lourens
+>
+> Thanks,
+>
+> Steven
+>
+>
+>
+
+--
+J.G.J. Boor			  Anton Philipsweg 1
+Software Engineer		  1223 KZ Hilversum
+AimSys bv              		  tel. +31 35 689 1941
+Postbus 2194, 1200 CD Hilversum   mailto:jjboor@aimsys.nl
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
