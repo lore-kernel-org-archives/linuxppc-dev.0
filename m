@@ -1,63 +1,45 @@
-Date: Fri, 20 Jul 2001 11:23:43 +0100
-Subject: Re: powermac (other ppc?) events
+Date: Fri, 20 Jul 2001 11:49:30 +0100
+Subject: Re: Video acceleration on IMSTT with bk (and Ben's) 2.4.7-pre6
+	 kernel
 From: "Iain Sandoe" <iain@sandoe.co.uk>
-To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
-Cc: "Joseph P. Garcia" <jpgarcia@execpc.com>,
-	Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
-	linuxppc-dev@lists.linuxppc.org
+To: Simon Piette <simonp@Sat.QC.CA>, linuxppc-dev@lists.linuxppc.org
 Mime-version: 1.0
 Content-type: text/plain; charset="US-ASCII"
-Message-Id: <20010720102336.13001DBA25@atlas.valhalla.net>
+Message-Id: <20010720104923.458D3DBA98@atlas.valhalla.net>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
->> Look, I don't have a proper opinion on how the keys are achieved ...
->>
->> ---
->>
->> all I want is that the sound driver is:
->>
->> 1/ called through the standard ioctl() for volume - however many "volumes"
->> you want to adjust.
->>
->> This is so that *your* interface will work with *any* dmasound-supported
->> hardware (without hacking dmasound for each chipset).
+I wrote:
+>> I just compiled 2.4.7pre6 from Ben's tree, and another one from bk, with
+>> the same results. It compiled without any problems, but I can't have
+>> accelerated video. I use "video=imsttfb:vmode:17,cmode:16 video=ofonly"
+>> as kernel args to have a working unaccelerated video. Without ofonly, I
+>> get some blue dots forming a very distortioned screen of what should be
+>> there (linux logo and kernel verbosity). Without the imsttfb part, it
+>> won't work after the initial boot screen: it stops after
+> [snip]
 >
-> That was my idea in this - have some sound event daemon watch for events
-> and call the proper ioctl. What was with the sound driver only permitting
-> a single open() at a time? Would aumix running block the sound
-> event daemon's ioctl?
+> BK 2.4.7-pre6:
+>
+> OK.  It comes up for me 9600/233 with video acceleration and runs "single".
+>
+> However, it won't start the X-server the error is something like:
+>
+>  _X11TransConnectUNIX??? errno = 111
 
-The single open() rule is for /dev/dsp ... it is part of the OSS spec.
-Actually, it is the opposite of what you've suggested - the OSS rule says
-that open() shall *not* block - waiting for the device - but return straight
-away with EBUSY.  (we *were* blocking on a sleep queue).
+This is because I was being a dumb-bunny ...
 
-Up until my latest set of patches we were breaking this rule.  As of today
-those patches are in Ben's tree but not BK (although they are in my ftp
-space on penguinppc.org as well).
+and had forgotten that I no longer use Xpmac compat on my build system (but
+still use Xpmac on the IMSTT -- anyone know if XF-4.1 is OK on IMSTT?)
 
-/dev/mixerXX can be opened multiple times - so this doesn't affect aumix et.
-al.
+It's all OK now (as of a build of 2.4.7-pre8 this morning).
 
-However, one of the really nasty things about OSS is that you can't
-guarantee that /dev/mixer0 belongs to /dev/dsp0  (cute eh?).  So, if you
-have a sound dev open and want to be sure that you are sending volume
-controls to the same device you have to send the mixer commands to /dev/dsp.
+> Other symptom is that the splash screen #cpus penguin is missing it's
+> background.
 
-It's, perhaps, a moot point since "mixers" are really User Interface devices
-- and there is an identification of which mixer you are talking to supplied
-by one of the ioctls() - so, for example, with the latest (patch, benh)
-dmasound_pmac - you will see the dmasound mixer identified as "Power Mac
-Built-In Sound" on a kmixer tab.
-
-If your GUI/Command Line mixer-of-choice doesn't identify the actual device
-- it needs modifying - because otherwise it stores up trouble for the user
-where there are multiple devices in the system...
-
-as I have (perhaps wryly) noted ... most of the OSS mixer authors don't seem
-to have RTF(OSS)M ;-)))
+this symptom remains (as does missing graphics on the redhat logo etc. on
+the KDE2 login splash screen).
 
 ciao,
 Iain.
