@@ -1,16 +1,25 @@
-Subject: RE: EP405 network interface
-From: Toni Van Remortel <t.vanremortel@ha.be>
-Reply-To: t.vanremortel@ha.be
-To: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+Message-ID: <D73A25AA6E54D511AD74009027B1110F3C0901@ORION>
+From: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+To: "'t.vanremortel@ha.be'" <t.vanremortel@ha.be>
 Cc: PPC Mailinglist <linuxppc-embedded@lists.linuxppc.org>
-In-Reply-To: <D73A25AA6E54D511AD74009027B1110F3C08ED@ORION>
-References: <D73A25AA6E54D511AD74009027B1110F3C08ED@ORION>
-Content-Type: text/plain
-Message-Id: <1057155922.5332.5.camel@toni>
-Mime-Version: 1.0
-Date: 02 Jul 2003 16:25:24 +0200
+Subject: RE: EP405 network interface
+Date: Wed, 2 Jul 2003 10:29:40 -0400 
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
+
+
+You need to look at the board's user manual.  There is a section called
+"Board Control and Status Registers"
+
+-----Original Message-----
+From: Toni Van Remortel [mailto:t.vanremortel@ha.be]
+Sent: Wednesday, July 02, 2003 10:25 AM
+To: Steven Blakeslee
+Cc: PPC Mailinglist
+Subject: RE: EP405 network interface
 
 
 How and where?
@@ -60,6 +69,5 @@ Op do 26-06-2003, om 20:39 schreef Steven Blakeslee:
 >
 >
 >
-
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
