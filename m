@@ -1,28 +1,39 @@
-Message-Id: <200010121625.LAA22009@lists.linuxppc.org>
-From: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>
-Reply-To: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>
-To: Kostas Gewrgiou <gewrgiou@imbc.gr>
-Cc: "Hendricks, Kevin" <khendricks@ivey.uwo.ca>, Josh Huber
-	 <huber@mclx.com>,
-        Linux/PowerPC Devel List
-	 <linuxppc-dev@lists.linuxppc.org>
-Date: Thu, 12 Oct 2000 12:25:30 -0400
-Content-Type: text/plain;
-	charset=us-ascii
-Subject: Re: dual head r128
-Mime-Version: 1.0 (Apple Message framework v337)
+Message-Id: <200010121640.MAA06292@mal-ach.watson.ibm.com>
+To: Gabriel Paubert <paubert@iram.es>
+cc: Benjamin Herrenschmidt <bh40@calva.net>,
+        Kostas Gewrgiou <gewrgiou@imbc.gr>,
+        Linux/PowerPC Devel List <linuxppc-dev@lists.linuxppc.org>
+Subject: Re: dual head r128 
+In-Reply-To: Message from Gabriel Paubert <paubert@iram.es>
+   of "Thu, 12 Oct 2000 17:49:22 +0200." <Pine.HPX.4.10.10010121719150.16113-100000@gra-ux1.iram.es>
+Date: Thu, 12 Oct 2000 12:40:17 -0400
+From: David Edelsohn <dje@watson.ibm.com>
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+>>>>> Gabriel Paubert writes:
 
-> The current test only checks if a rom is present not if a bios or OF segment
-> is there, it needs to be fixed to check that its really reading from a
-> bios rom and not from something else (OF).
+>> On the kernel side, one of the PCI IO busses will be mapped to ISA. What
+>> I'll do is basically to change the kernel inb/outb functions to do
+>> something like
+>>
+>> if (addr < 64k)
+>> do_io(isa_io_base + addr)
+>> else
+>> do_io(addr)
 
-So that is what is happening.  Perhaps we could simply add a check to make sure the REF clock value read from whatever looks like a bios actually is one of the 3 allowed values (2950, ...) and if so, assume the bios is present and if not default to something else.
+Gabriel> No please, is there anybody bloat-conscious on this damned list ? Burying
+Gabriel> more and more code inside each {in,out}[bwl] is not the solution.
 
-Kevin
+Gabriel> Just define a macro ISA_PORT or something like this and update the kernel
+Gabriel> to replace all the in/out to fixed ports to do in/out(ISA_PORT(n)). If you
+Gabriel> don't do it you'll get a nice panic so you'll find all the places quite
+Gabriel> fast.
+
+	Yes, it is very important to avoid adding many layers of branches
+to the code if anyone cares about performance.
+
+David
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
