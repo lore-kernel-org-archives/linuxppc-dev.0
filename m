@@ -1,44 +1,44 @@
-Message-ID: <3881266E.828DAED5@ctam.com.au>
-Date: Sun, 16 Jan 2000 13:01:19 +1100
-From: Brendan J Simon <Brendan.Simon@ctam.com.au>
-Reply-To: Brendan.Simon@ctam.com.au
+Message-ID: <38828BEE.CD5838A3@huawei.com.cn>
+Date: Mon, 17 Jan 2000 11:26:38 +0800
+From: dony <dony.he@huawei.com.cn>
 MIME-Version: 1.0
-To: dony <dony.he@huawei.com.cn>
-CC: linuxppc-embed <linuxppc-embedded@lists.linuxppc.org>
+To: Jim Lewis <jlewis@mvista.com>
+CC: Brendan.Simon@ctam.com.au,
+        linuxppc-embed <linuxppc-embedded@lists.linuxppc.org>
 Subject: Re: Cross-compile Applications for 860 on x86
-References: <386C150F.22B1A3D0@huawei.com.cn> <386ABF52.922267E9@ctam.com.au> <38701F3A.FAD6263E@huawei.com.cn> <386ADE53.D3411F6A@ctam.com.au> <38704D0B.94438516@huawei.com.cn> <386AFFC5.E0134DB8@ctam.com.au> <38708C86.2CD58E66@huawei.com.cn> <387142DF.7A3025D0@ctam.com.au> <38715DAE.B6CBC772@huawei.com.cn> <3871572F.FA4E7842@ctam.com.au> <38717C52.ECF1AFFD@huawei.com.cn> <3871953B.345DDA23@ctam.com.au> <38754F28.B6B4CE70@huawei.com.cn> <38754419.20D95C5A@ctam.com.au> <3876A6E5.3488738B@huawei.com.cn> <3876C6FD.794BD1BF@ctam.com.au> <387A87DF.4ED23CA6@huawei.com.cn> <387A81F3.702B29A2@ctam.com.au> <387C4D8D.9C058F1C@huawei.com.cn> <387D3212.A4E9904F@ctam.com.au> <387DAFAF.DB0096C7@huawei.com.cn> <387E460F.B007CE56@ctam.com.au> <387E7F82.99AF83CE@huawei.com.cn> <387E7AF5.A92A6122@ctam.com.au> <387E9927.48689C08@huawei.com.cn> <387EBEB9.B69B1680@ctam.com.au> <387EDEF5.DBD612FA@huawei.com.cn>
+References: <200001141101.MAA30605@denx.local.net> <387F0D81.48F7CABE@iname.com> <38827CD5.D7A44261@huawei.com.cn> <388292FB.4401C930@mvista.com>
 Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-dony wrote:
 
-> Hi,
->      When I compile the SASH  with "-static" options and then replace /bin/sh with sash.
-> When reseting my MPC860 based board, the kernel boot normally and can show the boot messages. But at last it
-> cannot show the "bash#" prompt. If I input "ls" or such commands,
-> It justs shows :
+
+Jim Lewis wrote:
+
+> dony wrote:
 >
->     ls
->     pid 8: killed (signal 11)
->     ls
->     pid 9: killed (signal 11)
->     ls
->     pid 10: killed (signal 11)
+> > Hi,
+> >
+> > I download a older version of sash and now it works. It can run any built-in commands , but it fails to run
+> > external programs , such as my test program "mytest". I put it both on / and /bin.
+> > "-printenv" shows "PATH=/bin:/usr/bin:/etc". When I type "mytest" or "/bin/mytest" on the command prompt ">" , it
+> > says "No such file or directory". And I cannot find some lines
+> > about  "SASH"  in init/main.c.
+> > Do you know why?
 >
-> Do you know why? What do I miss?
+> Sounds like it  cannot find shared objects such as libc.so. You have two choices:
+> 1) when you link the program, add the "-static" option
 
-Maybe.  Did you redefine SASH to 1 in init/main.c ?
-I'm not sure if it is necessary but it might help.  It looks like SASH is running but you do not have a prompt.
+If I compile my test program which have only one "printf" line with "-static", It is about 1M size!  So I don't think
+it's a good idea for me now.
 
-Typing "ls" causes the ls executable in /bin to run (or try to).  You are getting signal 11 (seg fault) because
-of shared library problems.  I too haven't solved these yet :(
+>
+> 2) put the necessary libraries in /lib
 
-Type "help" and you will see the list of builtin commands.  Try "-ls" and you should get a directory listing
-using the builtin version of ls instead of /bin/ls.
-
-Brendan Simon.
+"rpc.nfsd -F -d call" says that it cannot find /etc/ld.so.cache and /etc/ld.so.preload. Yes, I have not these two files
+after I decompress mbxroot.full.tgz.
+Would you please send me a copy of these files? Thank you very much.h.
 
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
