@@ -1,27 +1,22 @@
-Date: Tue, 26 Feb 2002 12:17:27 -0800
-From: David Ashley <dash@xdr.com>
-Message-Id: <200202262017.g1QKHR904656@xdr.com>
+Message-ID: <3C7BF0F5.A830D984@midrivers.com>
+Date: Tue, 26 Feb 2002 13:32:53 -0700
+From: Mark Pilon <mpilon@midrivers.com>
+MIME-Version: 1.0
 To: linuxppc-embedded@lists.linuxppc.org
-Subject: Re: Linux 2.4.17 bug, mmap of /dev/mem
+Subject: how to enable core files ?
+Content-Type: text/plain; charset=us-ascii
 Sender: owner-linuxppc-embedded@lists.linuxppc.org
 List-Id: <linuxppc-embedded@lists.linuxppc.org>
 
 
-The problem is related to CONFIG_VT. If CONFIG_VT is set, the problem happens.
-If CONFIG_VT isn't set, the problem doesn't happen, or doesn't happen as
-often.
-2.4.10 CONFIG_VT = off, no problem
-2.4.14 CONFIG_VT = off, no problem
-in both cases if I turn CONFIG_VT on, the mmap problem manifests itself.
+That is, what do I have to set / enable / include on my target
+so that a core file will be created when an application SEGVs ?
 
-2.4.17 CONFIG_VT = on, CONFIG_FB = off, CONFIG_INPUT = off, mmap program
-   fails after 12 iterations
-2.4.17 CONFIG_VT = off, CONFIG_FB = off, CONFIG_INPUT = off, mmap program
-   fails after 6000+ iterations.
-2.4.17 CONFIG_VT = on, CONFIG_FB = on, CONFIG_INPUT = on, mmap program
-   fails after 228 iterations.
+I'm running Wolfgang's SELF -- and really need to be able to poke
+at a core file when my app dies.
 
-This is really a puzzler to me.
--Dave
+thanks,
+
+Mark
 
 ** Sent via the linuxppc-embedded mail list. See http://lists.linuxppc.org/
