@@ -1,31 +1,32 @@
-In-Reply-To: <Pine.LNX.4.05.9908262332140.1005-100000@opus.bloom.county>
-Date: Fri, 27 Aug 1999 11:20:42 +0200
-To: Tom Rini <trini@kernel.crashing.org>, linuxppc-dev@lists.linuxppc.org
+In-Reply-To: <37C64B37.49029CC6@wanadoo.fr>
+Date: Fri, 27 Aug 1999 11:21:40 +0200
+To: Martin Costabel <costabel@wanadoo.fr>, linuxppc-dev@lists.linuxppc.org
 From: Benjamin Herrenschmidt <bh40@calva.net>
-Subject: Re: BootX enhancement request
-Message-Id: <19990827112042.001235@mailhost.mipsys.com>
+Subject: Re: vger-2.3.15 on pmac
+Message-Id: <19990827112140.011174@mailhost.mipsys.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-On Thu, Aug 26, 1999, Tom Rini <trini@kernel.crashing.org> wrote:
+On Fri, Aug 27, 1999, Martin Costabel <costabel@wanadoo.fr> wrote:
 
->> Thus I can remove the nvram code from atyfb?
->
->Why?  It works fine on lots of older machines w/ ati cards and older MacOS
->versions.  If you remove it I can garrenty people will notice and
->complain.
+>For drivers/macintosh/mac_keyb.c, I applied also BenH's patches that are
+>in the 2.2 branch on vger, but not yet in the main branch. For me, this
+>has the effect that the keyboard gets put on handler 3 instead of 5, so
+>that in raw mode it produces different keycodes for the right modifier
+>keys, and I can therefore use adb_buttons=2,58,124 to get
+>button2=Opt_L+click, button3=Opt_R+click, like in Xpmac.
 
-We should get rid of it for atyfb once we have DDC working. According to
-Apple, all machines with ATI controllers are using DDC now. The nvram
-setting would still be useful for the older video controllers.
+I'm not sure my patches are still needed. The last time I synced with
+Paul's tree, the handler ID bug was fixed, but I didn't check vger yet.
 
 -- 
            Perso. e-mail: <mailto:bh40@calva.net>
            Work   e-mail: <mailto:benh@mipsys.com>
 BenH.      Web   : <http://calvaweb.calvacom.fr/bh40/>
+
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
