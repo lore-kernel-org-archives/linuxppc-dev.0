@@ -1,47 +1,44 @@
-Message-ID: <3A592881.91E8EBD4@speakeasy.org>
-Date: Sun, 07 Jan 2001 21:40:01 -0500
-From: Ray Knight <audilvr@speakeasy.org>
-MIME-Version: 1.0
-To: Tony Mantler <nicoya@apia.dhs.org>
-CC: Tom Rini <trini@kernel.crashing.org>,
-        Linux/m68k <linux-m68k@lists.linux-m68k.org>,
+Date: Mon, 8 Jan 2001 08:16:05 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Iain Sandoe <iain@sandoe.co.uk>
+cc: drscholl <drscholl@users.sourceforge.net>,
+        "Clayton,Keith - Programmer" <Clayton@ltcc.cc.ca.us>,
+        "'alex@cosmo.allay.net'" <alex@cosmo.allay.net>,
         linuxppc-dev@lists.linuxppc.org
-Subject: Re: [PATCH] drivers/macintosh/Config.in
-References: <v04003a08b67ddaff44fe@[24.70.162.12]>
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: Endianness and comparing IP's
+In-Reply-To: <20010106234445.44216E690@apollo.valhalla.net>
+Message-ID: <Pine.LNX.4.05.10101080815200.27204-100000@callisto.of.borg>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Tony Mantler wrote:
+On Sat, 6 Jan 2001, Iain Sandoe wrote:
+> > /* convert the bytes of a 32-bit integer to little endian */
+> > #define BSWAP32(c)
+> > ((c>>24)&0xff)|((c>>8)&0xff00)|((c<<8)&0xff0000)|(c<<24)
 >
-> At 6:17 PM -0600 1/6/2001, Tom Rini wrote:
-> >Hey all.  I was wondering what both camps would think of a
-> >drivers/macintosh/Config.in?  It would simply a few things and remove some
-> >duplicated bits.  I've attached my first attempt at it, and everything should
-> >look the same as before (I did rename some of the ADB driver comments from
-> >the m68k side so they matched the others).
-> >
-> >Comments?  (We probably wouldn't see this until 2.5 anyways tho..)
+>  #define BSWAP32(c) \
+> (((c>>24)&0xff)|((c>>8)&0xff00)|((c<<8)&0xff0000)|(c<<24))
 >
-> Does the input layer work on the 68k drivers? I don't know that I've ever
-> heard of anyone testing it.
 >
-> The patch looks fairly sane to me. If it breaks something, it's not very
-> hard to fix a config file.
+> will work as you expect it too... ;-)
 >
-> Cheers - Tony 'Nicoya' Mantler :)
->
+> precedence is a funny thing...
 
-The input layer doesn't currently compile on the m68k Macs.  (undefined
-variables)  I didn't look to closely at it because right now I'm just
-trying to get a 2.4.0 kernel that will boot.  I'll go back and take a
-better look at that when I reach my goal of getting a bootable kernel on
-an LC475.
+Similarly, replace `c' by `(c)'.
+
+Gr{oetje,eeting}s,
+
+						Geert
 
 --
-Ray Knight
-audilvr@speakeasy.org
-Linux-Mac68k Developer
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 ** Sent via the linuxppc-dev mail list. See http://lists.linuxppc.org/
