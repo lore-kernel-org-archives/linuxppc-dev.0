@@ -1,21 +1,27 @@
-From: LinuxPPC-Dev@associate.com
-Date: 22 Mar 1999 17:51:56 -0500
-Message-ID: <19990322225156.15333.qmail@associate.com>
+Message-Id: <199903230217.TAA11981@moses.odi.ca>
+Date: Mon, 22 Mar 1999 19:17:47 -0700
+Subject: ANS Patches en route to the 2.2.x kernel?
+From: "Darron Froese" <darron@calgary.westworld.ca>
 To: linuxppc-dev@lists.linuxppc.org
-cc: root@associate.com
-Subject: Pre-5 ddd-static-3.1.1-2a.ppc.rpm is corrupt
+CC: linuxppc-ans-support@hellfire.dusers.drexel.edu
+Mime-version: 1.0
+Content-type: text/plain; charset="US-ASCII"
 Sender: owner-linuxppc-dev@lists.linuxppc.org
 List-Id: <linuxppc-dev@lists.linuxppc.org>
 
 
-Hi,
+I've been trying to watch all of the recent kernel releases and ac patches
+for signs of the ANS patches (video, ethernet, etc.) by David T. McWherter
+and have been left unsatisfied.
 
-I'm unsure of who is maintaining the linuxppc-preR5 RPMS, but wanted to let
-that person know that it appears that ddd-static-3.1.1-2a.ppc.rpm  is corrupt.
-
-Thanks
-
-glen_stewart@associate.com
+Is there a way to look and see if various patches have been
+sent/accepted/waiting in queue? I've grepped through some of the latest
+patches without finding it....anyone know where it is and it's status?
+--
+Darron
+darron@odi.ca
+<http://i.am/darron/>
+PGP Key: http://pgp.ai.mit.edu:11371/pks/lookup?op=get&search=0xAF31C682
 
 [[ This message was sent via the linuxppc-dev mailing list.  Replies are ]]
 [[ not  forced  back  to the list, so be sure to Cc linuxppc-dev if your ]]
