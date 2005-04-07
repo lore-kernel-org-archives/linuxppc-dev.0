@@ -1,21 +1,18 @@
-Return-Path: <wfarnsworth@mvista.com>
-Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
-	by ozlabs.org (Postfix) with ESMTP id 596B367A2E
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao05.cox.net (fed1rmmtao05.cox.net [68.230.241.34])
+	by ozlabs.org (Postfix) with ESMTP id 695ED67B1B
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  8 Apr 2005 02:05:50 +1000 (EST)
-From: Wade Farnsworth <wfarnsworth@mvista.com>
-To: Josh Boyer <jwboyer@jdub.homelinux.org>
-In-Reply-To: <1112835532.6160.37.camel@jdub.homelinux.org>
-References: <1112808085.24527.296.camel@rhino.az.mvista.com>
-	<1112808669.24673.304.camel@rhino.az.mvista.com>
-	<1112808814.24527.307.camel@rhino.az.mvista.com>
-	<1112835532.6160.37.camel@jdub.homelinux.org>
-Content-Type: text/plain
-Message-Id: <1112889944.24527.325.camel@rhino.az.mvista.com>
+	Fri,  8 Apr 2005 02:19:37 +1000 (EST)
+Date: Thu, 7 Apr 2005 09:19:35 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
+Message-ID: <20050407161935.GM3396@smtp.west.cox.net>
+References: <JPEALJAFNGDDLOPNDIEEGEGJDCAA.joakim.tjernlund@lumentis.se>
 Mime-Version: 1.0
-Date: 07 Apr 2005 09:05:45 -0700
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH 3/3] PPC440EP: MTD support for the Bamboo Board
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <JPEALJAFNGDDLOPNDIEEGEGJDCAA.joakim.tjernlund@lumentis.se>
+Cc: "Linuxppc-Embedded@Ozlabs. Org" <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] [RFC] workaround buggy dcbX instructions in 8xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,88 +23,59 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2005-04-06 at 17:58, Josh Boyer wrote:
-> On Wed, 2005-04-06 at 10:33 -0700, Wade Farnsworth wrote:
-> 
-> Cool beans.  Can't wait to test this out tomorrow.  Just a couple comments.
-> 
-> <snip>
-> 
-> > +struct ppc440ep_ndfc_regs {
-> > +       uint cmd;
-> > +       uint addr;
-> > +       uint data;
-> > +       uint reserved1;
-> > +       uint ecc0;
-> > +       uint ecc1;
-> > +       uint ecc2;
-> > +       uint ecc3;
-> > +       uint ecc4;
-> > +       uint ecc5;
-> > +       uint ecc6;
-> > +       uint ecc7;
-> > +       uint b0cr;
-> > +       uint b1cr;
-> > +       uint b2cr;
-> > +       uint b3cr;
-> > +       uint cr;
-> > +       uint sr;
-> > +       uint hwctl;
-> > +       uint reserved2;
-> > +       uint revid;
-> > +};
-> 
-> These ecc registers actually have a use...
-> 
-> <snip>
-> 
-> > +
-> > +       /* Set address of NAND IO lines (Using Linear Data Access Region) */
-> > +       this->IO_ADDR_R = (void __iomem *) ((ulong) bamboo_ndfc + 0x1000);
-> > +       this->IO_ADDR_W = (void __iomem *) ((ulong) bamboo_ndfc + 0x1000);
-> > +       /* Reference hardware control function */
-> > +       this->hwcontrol  = bamboo_nand0_hwcontrol;
-> > +       /* Set command delay time */
-> > +       this->chip_delay = 12;
-> > +       this->eccmode    = NAND_ECC_SOFT;
-> > +       this->write_byte = bamboo_nand0_write_byte;
-> > +       this->read_byte  = bamboo_nand0_read_byte;
-> > +       this->write_buf  = bamboo_nand0_write_buf;
-> > +       this->read_buf   = bamboo_nand0_read_buf;
-> > +       this->verify_buf = bamboo_nand0_verify_buf;
-> > +       this->dev_ready  = bamboo_dev_ready;
-> 
-> <snip>
-> 
-> > +       /* Link the private data with the MTD structure */
-> > +       bamboo_nand1_mtd->priv = this;
-> > +
-> > +       /* Set address of NAND IO lines (Using Linear Data Access Region) */
-> > +       this->IO_ADDR_R = (void __iomem *) ((ulong) bamboo_ndfc + 0x1000);
-> > +       this->IO_ADDR_W = (void __iomem *) ((ulong) bamboo_ndfc + 0x1000);
-> > +       /* Reference hardware control function */
-> > +       this->hwcontrol  = bamboo_nand1_hwcontrol;
-> > +       /* Set command delay time */
-> > +       this->chip_delay = 25;
-> > +       this->eccmode    = NAND_ECC_SOFT;
-> > +       this->write_byte = bamboo_nand1_write_byte;
-> > +       this->read_byte  = bamboo_nand1_read_byte;
-> > +       this->write_buf  = bamboo_nand1_write_buf;
-> > +       this->read_buf   = bamboo_nand1_read_buf;
-> > +       this->verify_buf = bamboo_nand1_verify_buf;
-> > +       this->dev_ready  = NULL;
-> 
-> ... so any reason why NAND_ECC_SOFT is used instead of making use of the
-> ECC registers that come with the NDFC?
+On Wed, Apr 06, 2005 at 05:22:57PM +0200, Joakim Tjernlund wrote:
 
-Mainly because I haven't looked at what it would take to get HW ECC
-working yet.  I'll look at this when I have time, but until then at
-least the NAND flashes are functional.
+> All cache instructions in 8xx are somewhat buggy as they
+> do not update the DAR register when causing a DTLB Miss/Error
+[snip]
+> ===== head_8xx.S 1.21 vs edited =====
+[snip]
+> +#define CONFIG_8xx_DCBxFIXED
 
-> 
-> Overall, I think the patch looks good.  Care to send it to the MTD
-> maintainers so it gets in their CVS tree?
+If this is configurable, it needs to be done in the Kconfig like, well a
+real config option.  The arguement for doing it as a config option is
+that it is possible to avoid these instructions in userland (I _think_
+with a properly configured gcc, all you need to do is remove the
+memset.S file from glibc), and avoid the (theoretical) slow-down.
 
-Will do.
+That said, it should also probably be an 'advanced' option that defaults
+to the fixup.
 
--Wade
+[snip]
+> +#ifdef CONFIG_8xx_DCBxFIXED
+> +/* These macros are used to tag DAR with a known value so that the
+> + * DataTLBError can recognize a buggy dcbx instruction and workaround
+> + * the problem.
+> + */
+> +#define TAG_VAL 0x00f0	/*  -1 may also be used */
+
+Is there an advantage of using -1?  If it just "or we could use",
+perhaps we should just comment about it, and always define TAG_VAL to
+0x00f0 (which will make the rest of the patch a bit cleaner).
+
+[snip]
+> +#ifdef CONFIG_8xx_DCBxFIXED
+> +/* This is the workaround procedure to calculate the data EA for buggy dcbx,dcbi instructions
+> + * by decoding the registers used by the dcbx instruction and adding them.
+> + * DAR is set to the calculated address and r10 also holds the EA on exit.
+> + */
+> +//#define INSTR_CHECK /* define to verify if it is a dcbx instr. Should not be needed. */
+> +//#define NO_SELF_MODIFYING_CODE /* define if you don't want to use self modifying code */
+> +//#define DEBUG_DCBX_INSTRUCTIONS /* for debugging only. Needs INSTR_CHECK defined as well. */
+> +//#define KERNEL_SPACE_ONLY /* define if user space do NOT contain dcbx instructions. */
+
+Aside from preferring #undef FOO to /* #define FOO *//* Comment */ and
+detesting // comments:
+- Perhaps just one debug symbol (combine INSTR_CHECK and
+  DEBUG_DCBX_INSTRUCTIONS).
+- Is there (aside from "eww, self modifying code") a good reason to have
+  NO_SELF_MODIFYING_CODE ?
+- Since today, IIRC, we avoid these instructions in the kernel anyhow,
+  is there a reason for KERNEL_SPACE_ONLY ?  In my mind at least, I
+  could see a why for userspace-only, but would think an all/nothing
+  approach is probably most sane (if you can avoid in space A why not
+  B?).
+
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
