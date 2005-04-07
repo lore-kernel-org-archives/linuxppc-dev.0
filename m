@@ -1,17 +1,23 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 9599367B1F
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Apr 2005 07:42:13 +1000 (EST)
-In-Reply-To: <20050407173821.GQ3396@smtp.west.cox.net>
-References: <20050407173821.GQ3396@smtp.west.cox.net>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <f3f5e13e4c8b3cb7b327fb51db84150d@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Thu, 7 Apr 2005 16:41:59 -0500
-To: "Tom Rini" <trini@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] invalid instructions in kernel mode
+Return-Path: <schwab@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de",
+	Issuer "SuSE Linux AG internal IMAP-Server CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 6D9C867B16
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Apr 2005 08:05:59 +1000 (EST)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <1112594783.26086.22.camel@gaston>
+	<1112616384.19004.60.camel@gaston>
+From: Andreas Schwab <schwab@suse.de>
+Date: Fri, 08 Apr 2005 00:05:49 +0200
+In-Reply-To: <1112616384.19004.60.camel@gaston> (Benjamin Herrenschmidt's
+	message of "Mon, 04 Apr 2005 22:06:24 +1000")
+Message-ID: <jezmwa6y4i.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
+Subject: Re: iBook G3 owners
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,46 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-On Apr 7, 2005, at 12:38 PM, Tom Rini wrote:
+> http://gate.crashing.org/~benh/ppc32-pmac-sleep-fix.diff
 
-> On Thu, Mar 31, 2005 at 07:47:32PM +0200, Fillod Stephane wrote:
->
-> > When CPU has no (classic) FPU, and math emulation is disabled,
->  > fp instructions are not allowed in kernel mode.
->  [snip]
->  > --- linux/arch/ppc/kernel/misc.S=A0=A0=A0=A0=A0 26 Mar 2005 =
-03:28:36 -0000
->  > 1.1.1.2
->  > +++ linux/arch/ppc/kernel/misc.S=A0=A0=A0=A0=A0 31 Mar 2005 =
-16:33:25 -0000
->  > @@ -1096,7 +1096,8 @@
->  >=A0=A0 * and exceptions as if the cpu had performed the load or =
-store.
->  >=A0=A0 */
->  >=A0
-> > -#if defined(CONFIG_4xx) || defined(CONFIG_E500)
-> > +#if !(defined(CONFIG_4xx) || defined(CONFIG_E500) ||
->  > defined(CONFIG_8xx)) ||=A0 defined(CONFIG_MATH_EMULATION)
-> > +#if defined(CONFIG_4xx) || defined(CONFIG_E500)
-> >=A0 _GLOBAL(cvt_fd)
-> >=A0 =A0=A0=A0=A0 lfs=A0=A0=A0=A0 0,0(r3)
->  >=A0 =A0=A0=A0=A0 stfd=A0=A0=A0 0,0(r4)
->  > @@ -1125,6 +1126,7 @@
->  >=A0 =A0=A0=A0=A0 stfd=A0=A0=A0 0,-4(r5)
->  >=A0 =A0=A0=A0=A0 blr
->  >=A0 #endif
->  > +#endif
->
-> The problem here is, HEY! (classic) FP instrs in the kernel.=A0 The
->  question is why?=A0 Or rather, why are these four classic FP instrs
->  (lfs/lfd/stfd/stfs) being done on CONFIG_4xx || E500 when neither has
->  classic FP?=A0 I think the problem here is that on !FPU
-> (which is 4xx||E500||8xx, or so), we need to rewrite these two
->  functions (yes, 8xx does emulate them if hit, but that's a tangent).
+This patch does not work on the 750fx, I'm getting random crashes on
+wakeup.  When I replace it with this one-liner, all is well again:
 
-What is not clear to me is what condition causes these to get hit on an=20=
+--- linux-2.6.12-rc2.orig/arch/ppc/platforms/pmac_cache.S	2005-04-04 23:05:41.000000000 +0200
++++ linux-2.6.12-rc2/arch/ppc/platforms/pmac_cache.S	2005-04-07 23:22:04.000000000 +0200
+@@ -73,7 +73,7 @@
+ 
+ 	/* disable / invalidate / enable L1 data */
+ 	mfspr	r3,SPRN_HID0
+-	rlwinm	r0,r0,0,~HID0_DCE
++	rlwinm	r3,r3,0,~(HID0_DCE | HID0_ICE)
+ 	mtspr	SPRN_HID0,r3
+ 	sync
+ 	isync
 
-e500.
+Andreas.
 
-- kumar
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
