@@ -1,17 +1,18 @@
 Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao01.cox.net (fed1rmmtao01.cox.net [68.230.241.38])
-	by ozlabs.org (Postfix) with ESMTP id A368667B1F
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Apr 2005 03:38:27 +1000 (EST)
-Date: Thu, 7 Apr 2005 10:38:21 -0700
+Received: from fed1rmmtao08.cox.net (fed1rmmtao08.cox.net [68.230.241.31])
+	by ozlabs.org (Postfix) with ESMTP id 51F0A67AC5
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Apr 2005 04:17:39 +1000 (EST)
+Date: Thu, 7 Apr 2005 11:17:26 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Fillod Stephane <stephane.fillod@thomson.net>
-Message-ID: <20050407173821.GQ3396@smtp.west.cox.net>
-References: <1CFEB358338412458B21FAA0D78FE86D4F0D23@rennsmail02.eu.thmulti.com>
+To: Giovambattista Pulcini <gpulcini@swintel.it>,
+	Gabriel Paubert <paubert@iram.es>
+Message-ID: <20050407181726.GS3396@smtp.west.cox.net>
+References: <20050311172401.18ba47f6.akpm@osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1CFEB358338412458B21FAA0D78FE86D4F0D23@rennsmail02.eu.thmulti.com>
+In-Reply-To: <20050311172401.18ba47f6.akpm@osdl.org>
 Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] invalid instructions in kernel mode
+Subject: Re: Fw: Problem with NTP on (embedded) PPC, patch and RFC
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,37 +22,95 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 31, 2005 at 07:47:32PM +0200, Fillod Stephane wrote:
+> Date: Fri, 11 Mar 2005 14:16:32 +0100
+> From: Giovambattista Pulcini <gpulcini@swintel.it>
+> To: LKML <linux-kernel@vger.kernel.org>
+> Subject: Problem with NTP on (embedded) PPC, patch and RFC
+> 
+> 
+> Hi,
+> 
+> On an embedded device based on the IBM 405GP, but this may be a general 
+> problem for most PPC platforms except for chrp and gemini, the NTP 
+> utility 'ntptime' always returns error code 5 (TIME_ERROR) even after 
+> that NTP status reaches the PLL and FLL state. Analysis of problem 
+> showed that the time_state variable set to TIME_ERROR by 
+> do_settimeofday() is never set back to TIME_OK.
+> I found the problem in 2.4.10-1 (Lynuxworks BlueCat) but I also checked 
+> the 2.6.11 and found similar problem. Many architectures under arch/ppc 
+> may be affected with the exception of chrp and gemini.
+> 
+> Steps to reproduce:
+> On a PowerPC (non-CHRP) platform, set the system date with 'date', 
+> configure and start the NTP daemon as client of a working NTP server. 
+> Wait for it to reach the PLL/FLL state. Issue the 'ntptime' command and 
+> check that the following two errors never disappear no matter how long 
+> you let it running: "ntp_gettime() returns code 5 (ERROR)", 
+> "ntp_adjtime() returns code 5 (ERROR)".
+> 
+> Detailed analysis:
+> AFAIK NTP relies on the global time_state variable which is statically 
+> initialized to TIME_OK (kernel/timer.c). The ntptime utility calls 
+> adjtimex() which results in a call to do_adjtimex() and prints its 
+> return value which is basically the value of time_state. It is changed 
+> by (kernel/timer.c)second_overflow() and by the 
+> (kernel/time.c)do_adjtimex() state machine.
+> These two functions never set time_state to TIME_OK once it has been set 
+> to TIME_ERROR.
+> Also, do_settimeofday() sets the STA_UNSYNC flag in time_status and sets 
+> time_state to TIME_ERROR (in ppc but not in ppc64 nor in x86).
+> The function (arch/ppc/kernel/time.c)timer_interrupt() calls the 
+> ppc_md.set_rtc_time() when certain conditions are met, as follows 
+> (time.c:171):
+> 
+>         if ( ppc_md.set_rtc_time && (time_status & STA_UNSYNC) == 0 &&
+>              xtime.tv_sec - last_rtc_update >= 659 &&
+>              abs(xtime.tv_usec - (1000000-1000000/HZ)) < 500000/HZ &&
+>              jiffies - wall_jiffies == 1) {
+>               if (ppc_md.set_rtc_time(xtime.tv_sec+1 + time_offset) == 0)
+> 
+> In the CHRP architecture (see arch/ppc/platforms/chrp_*) the specific 
+> implementation of the set_rtc_time(), chrp_set_rtc_time(), has a check 
+> like this (chrp_time.c:76):
+> 
+>         if ( (time_state == TIME_ERROR) || (time_state == TIME_BAD) )
+>                 time_state = TIME_OK;
+> 
+> which is the only chance for the time_state to be set back to TIME_OK 
+> after a do_settimeofday(). In other platforms this is not done.
+> 
+> 
+> Proposed patch:
+> This change should make NTP to work on any ppc platform, while not 
+> breaking chrp and gemini. Although I've tested it only on mine.
+> --- linux-2.6.11/arch/ppc/kernel/time.c 2005-03-02 08:38:17.000000000 +0100
+> +++ linux/arch/ppc/kernel/time.c        2005-03-08 14:16:56.000000000 +0100
+> @@ -272,7 +272,6 @@
+> 
+>         time_adjust = 0;                /* stop active adjtime() */
+>         time_status |= STA_UNSYNC;
+> -       time_state = TIME_ERROR;        /* p. 24, (a) */
+>         time_maxerror = NTP_PHASE_LIMIT;
+>         time_esterror = NTP_PHASE_LIMIT;
+>         write_sequnlock_irqrestore(&xtime_lock, flags);
+> 
+> 
+> My question:
+> I've read some documentation but I am by no means an expert in the NTP 
+> kernel support implementation. So I ask you where the time_state should 
+> be reset to TIME_OK. Should this be done by the <platform>set_rtc_time() ?
+> Or, as in the x86 case, do_settimeofday should not set time_state to 
+> TIME_ERROR ?
+> 
+> 
+> Giovambattista Pulcini
 
-> When CPU has no (classic) FPU, and math emulation is disabled,
-> fp instructions are not allowed in kernel mode.
-[snip]
-> --- linux/arch/ppc/kernel/misc.S	26 Mar 2005 03:28:36 -0000
-> 1.1.1.2
-> +++ linux/arch/ppc/kernel/misc.S	31 Mar 2005 16:33:25 -0000
-> @@ -1096,7 +1096,8 @@
->   * and exceptions as if the cpu had performed the load or store.
->   */
->  
-> -#if defined(CONFIG_4xx) || defined(CONFIG_E500)
-> +#if !(defined(CONFIG_4xx) || defined(CONFIG_E500) ||
-> defined(CONFIG_8xx)) ||  defined(CONFIG_MATH_EMULATION)
-> +#if defined(CONFIG_4xx) || defined(CONFIG_E500)
->  _GLOBAL(cvt_fd)
->  	lfs	0,0(r3)
->  	stfd	0,0(r4)
-> @@ -1125,6 +1126,7 @@
->  	stfd	0,-4(r5)
->  	blr
->  #endif
-> +#endif
-
-The problem here is, HEY! (classic) FP instrs in the kernel.  The
-question is why?  Or rather, why are these four classic FP instrs
-(lfs/lfd/stfd/stfs) being done on CONFIG_4xx || E500 when neither has
-classic FP?  I think the problem here is that on !FPU
-(which is 4xx||E500||8xx, or so), we need to rewrite these two
-functions (yes, 8xx does emulate them if hit, but that's a tangent).
+So, digging back to 2.2.20 even, i386 does not have this TIME_ERROR
+line, and we do.  Gabriel, as guru of all things NTP-related, can you
+please shed some enlightenment on what should be fixed?  Should we drop
+that line?  Make the various RTC drivers do the check CHRP does (which
+at first thought seems like a 'Hey, that's wrong, let me kludge it' kind
+of thing.  Thanks.
 
 -- 
 Tom Rini
