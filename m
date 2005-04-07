@@ -1,23 +1,18 @@
-Return-Path: <schwab@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "SuSE Linux AG internal IMAP-Server CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 6D9C867B16
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Apr 2005 08:05:59 +1000 (EST)
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <1112594783.26086.22.camel@gaston>
-	<1112616384.19004.60.camel@gaston>
-From: Andreas Schwab <schwab@suse.de>
-Date: Fri, 08 Apr 2005 00:05:49 +0200
-In-Reply-To: <1112616384.19004.60.camel@gaston> (Benjamin Herrenschmidt's
-	message of "Mon, 04 Apr 2005 22:06:24 +1000")
-Message-ID: <jezmwa6y4i.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
-Subject: Re: iBook G3 owners
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao05.cox.net (fed1rmmtao05.cox.net [68.230.241.34])
+	by ozlabs.org (Postfix) with ESMTP id CDB2167B20
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Apr 2005 08:14:42 +1000 (EST)
+Date: Thu, 7 Apr 2005 15:14:40 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Kumar Gala <kumar.gala@freescale.com>
+Message-ID: <20050407221440.GT3396@smtp.west.cox.net>
+References: <20050407173821.GQ3396@smtp.west.cox.net>
+	<f3f5e13e4c8b3cb7b327fb51db84150d@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <f3f5e13e4c8b3cb7b327fb51db84150d@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] invalid instructions in kernel mode
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,29 +22,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+On Thu, Apr 07, 2005 at 04:41:59PM -0500, Kumar Gala wrote:
+> 
+> On Apr 7, 2005, at 12:38 PM, Tom Rini wrote:
+> 
+> >On Thu, Mar 31, 2005 at 07:47:32PM +0200, Fillod Stephane wrote:
+> >
+> >> When CPU has no (classic) FPU, and math emulation is disabled,
+> > > fp instructions are not allowed in kernel mode.
+> > [snip]
+> > > --- linux/arch/ppc/kernel/misc.S????? 26 Mar 2005 03:28:36 -0000
+> > > 1.1.1.2
+> > > +++ linux/arch/ppc/kernel/misc.S????? 31 Mar 2005 16:33:25 -0000
+> > > @@ -1096,7 +1096,8 @@
+> > >?? * and exceptions as if the cpu had performed the load or store.
+> > >?? */
+> > >?
+> >> -#if defined(CONFIG_4xx) || defined(CONFIG_E500)
+> >> +#if !(defined(CONFIG_4xx) || defined(CONFIG_E500) ||
+> > > defined(CONFIG_8xx)) ||? defined(CONFIG_MATH_EMULATION)
+> >> +#if defined(CONFIG_4xx) || defined(CONFIG_E500)
+> >>? _GLOBAL(cvt_fd)
+> >>? ???? lfs???? 0,0(r3)
+> > >? ???? stfd??? 0,0(r4)
+> > > @@ -1125,6 +1126,7 @@
+> > >? ???? stfd??? 0,-4(r5)
+> > >? ???? blr
+> > >? #endif
+> > > +#endif
+> >
+> >The problem here is, HEY! (classic) FP instrs in the kernel.? The
+> > question is why?? Or rather, why are these four classic FP instrs
+> > (lfs/lfd/stfd/stfs) being done on CONFIG_4xx || E500 when neither has
+> > classic FP?? I think the problem here is that on !FPU
+> >(which is 4xx||E500||8xx, or so), we need to rewrite these two
+> > functions (yes, 8xx does emulate them if hit, but that's a tangent).
+> 
+> What is not clear to me is what condition causes these to get hit on an 
+> e500.
 
-> http://gate.crashing.org/~benh/ppc32-pmac-sleep-fix.diff
-
-This patch does not work on the 750fx, I'm getting random crashes on
-wakeup.  When I replace it with this one-liner, all is well again:
-
---- linux-2.6.12-rc2.orig/arch/ppc/platforms/pmac_cache.S	2005-04-04 23:05:41.000000000 +0200
-+++ linux-2.6.12-rc2/arch/ppc/platforms/pmac_cache.S	2005-04-07 23:22:04.000000000 +0200
-@@ -73,7 +73,7 @@
- 
- 	/* disable / invalidate / enable L1 data */
- 	mfspr	r3,SPRN_HID0
--	rlwinm	r0,r0,0,~HID0_DCE
-+	rlwinm	r3,r3,0,~(HID0_DCE | HID0_ICE)
- 	mtspr	SPRN_HID0,r3
- 	sync
- 	isync
-
-Andreas.
+They are called in align.c from fix_alignment().  As has been said, some
+of the stress testing apps in LTP will trigger this.  Since the comment
+around the code in question (in fix_alignent()) is
+/* Single-precision FP load and store require conversions... */
+perhaps it's more valid to not define these functions on e500 || 4xx,
+and make the two cases in the switch there depend on !e500 && !4xx.
 
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Tom Rini
+http://gate.crashing.org/~trini/
