@@ -1,15 +1,35 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 5855067A2E
+Return-Path: <eamunoz@us.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.132])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E33A067B1A
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  8 Apr 2005 05:22:18 +1000 (EST)
+	Fri,  8 Apr 2005 05:56:41 +1000 (EST)
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+	[9.17.195.107])
+	by e34.co.us.ibm.com (8.12.10/8.12.9) with ESMTP id j37JuZ5b304656
+	for <linuxppc-embedded@ozlabs.org>; Thu, 7 Apr 2005 15:56:35 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay05.boulder.ibm.com (8.12.10/NCO/VER6.6) with ESMTP id
+	j37JuZNh205232
+	for <linuxppc-embedded@ozlabs.org>; Thu, 7 Apr 2005 13:56:35 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11/8.12.11) with ESMTP id
+	j37JuZQL010886
+	for <linuxppc-embedded@ozlabs.org>; Thu, 7 Apr 2005 13:56:35 -0600
+Received: from d03nm691.boulder.ibm.com (d03nm691.boulder.ibm.com
+	[9.17.195.60])
+	by d03av03.boulder.ibm.com (8.12.11/8.12.11) with ESMTP id
+	j37JuZDh010883
+	for <linuxppc-embedded@ozlabs.org>; Thu, 7 Apr 2005 13:56:35 -0600
+To: linuxppc-embedded@ozlabs.org
+Message-ID: <OFBEBF187E.5BDC9AA1-ON87256FDC.006D71EC-86256FDC.006E4252@us.ibm.com>
+From: Eduardo Munoz <eamunoz@us.ibm.com>
+Date: Thu, 7 Apr 2005 14:58:16 -0500
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C53BA7.1C51A8E4"
-Date: Thu, 7 Apr 2005 14:22:17 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B859341@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] FCC Ethernet startup crash
+Content-type: multipart/alternative;
+	Boundary="0__=08BBE54FDFFEF77C8f9e8a93df938690918c08BBE54FDFFEF77C"
+Subject: undefined reference to `zs_kgdb_
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,55 +40,55 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
-
-------_=_NextPart_001_01C53BA7.1C51A8E4
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-This patch fizxes a race condition in the FCC ethernet driver, where the
-ethernet driver starts to receive packets before the IP layer is
-initialized.
-
-This pathch is originally from Stefan Nickl <Stefan.Nickl@kontron.com>
-for the linuxppc2.4 three, redone for 2.6 and tested.
-
-Signed-off-by: Rune Torgersen <runet@innovsys.com>
+--0__=08BBE54FDFFEF77C8f9e8a93df938690918c08BBE54FDFFEF77C
+Content-type: text/plain; charset=US-ASCII
 
 
-Rune Torgersen
-System Developer
-Innovative Systems LLC
-1000 Innovative Drive
-Mitchell, SD 57301
-Ph: 605-995-6120
-www.innovsys.com
 
-------_=_NextPart_001_01C53BA7.1C51A8E4
-Content-Type: application/octet-stream;
-	name="fcc_enet_startup_crash.patch"
-Content-Transfer-Encoding: base64
-Content-Description: fcc_enet_startup_crash.patch
-Content-Disposition: attachment;
-	filename="fcc_enet_startup_crash.patch"
 
-PT09PT0gYXJjaC9wcGMvODI2MF9pby9mY2NfZW5ldC5jIDEuMjQgdnMgZWRpdGVkID09PT09Ci0t
-LSAxLjI0L2FyY2gvcHBjLzgyNjBfaW8vZmNjX2VuZXQuYwkyMDA1LTAzLTE4IDE0OjUxOjMxIC0w
-NjowMAorKysgZWRpdGVkL2FyY2gvcHBjLzgyNjBfaW8vZmNjX2VuZXQuYwkyMDA1LTA0LTA3IDE0
-OjEzOjMxIC0wNTowMApAQCAtMjE1OCwxNiArMjE1OCw2IEBACiAJKih2b2xhdGlsZSB1aW50ICop
-KEJDU1JfQUREUiArIDEyKSAmPSB+QkNTUjNfRkVUSElFTjI7CiAJKih2b2xhdGlsZSB1aW50ICop
-KEJDU1JfQUREUiArIDEyKSB8PSAgQkNTUjNfRkVUSDJfUlNUOwogI2VuZGlmCi0KLSNpZiBkZWZp
-bmVkKENPTkZJR19VU0VfTURJTykgfHwgZGVmaW5lZChDT05GSUdfVFFNODI2MCkKLQkvKiBzdGFy
-dCBpbiBmdWxsIGR1cGxleCBtb2RlLCBhbmQgbmVnb3RpYXRlIHNwZWVkCi0JICovCi0JZmNjX3Jl
-c3RhcnQgKGRldiwgMSk7Ci0jZWxzZQotCS8qIHN0YXJ0IGluIGhhbGYgZHVwbGV4IG1vZGUKLQkg
-Ki8KLQlmY2NfcmVzdGFydCAoZGV2LCAwKTsKLSNlbmRpZgogfQogCiAjaWZkZWYJQ09ORklHX1VT
-RV9NRElPCkBAIC0yMzY3LDYgKzIzNTcsMTYgQEAKIGZjY19lbmV0X29wZW4oc3RydWN0IG5ldF9k
-ZXZpY2UgKmRldikKIHsKIAlzdHJ1Y3QgZmNjX2VuZXRfcHJpdmF0ZSAqZmVwID0gZGV2LT5wcml2
-OworCisjaWYgZGVmaW5lZChDT05GSUdfVVNFX01ESU8pIHx8IGRlZmluZWQoQ09ORklHX1RRTTgy
-NjApCisJLyogc3RhcnQgaW4gZnVsbCBkdXBsZXggbW9kZSwgYW5kIG5lZ290aWF0ZSBzcGVlZAor
-CSAqLworCWZjY19yZXN0YXJ0IChkZXYsIDEpOworI2Vsc2UKKwkvKiBzdGFydCBpbiBoYWxmIGR1
-cGxleCBtb2RlCisJICovCisJZmNjX3Jlc3RhcnQgKGRldiwgMCk7CisjZW5kaWYKIAogI2lmZGVm
-CUNPTkZJR19VU0VfTURJTwogCWZlcC0+c2VxdWVuY2VfZG9uZSA9IDA7Cg==
 
-------_=_NextPart_001_01C53BA7.1C51A8E4--
+Hey!!
+
+I am trying to compile my ppc  kernel 2.6 with KGDB enable and it fails
+with the following message:
+
+LD      .tmp_vmlinux1
+arch/ppc/platforms/built-in.o(.init.text+0xfc4): In function
+`pmac_setup_arch':
+arch/ppc/platforms/pmac_setup.c:301: undefined reference to `zs_kgdb_hook'
+make: *** [.tmp_vmlinux1] Error 1
+error: Bad exit status from /var/tmp/rpm-tmp.40235 (%build)
+
+I am sure you have seen this!
+Any ideas how to fix it??
+
+Regards,
+Eduardo A. Munoz
+eamunoz@us.ibm.com
+512-838-8219
+
+--0__=08BBE54FDFFEF77C8f9e8a93df938690918c08BBE54FDFFEF77C
+Content-type: text/html; charset=US-ASCII
+Content-Disposition: inline
+
+<html><body>
+<p>Hey!!<br>
+<br>
+I am trying to compile my ppc  kernel 2.6 with KGDB enable and it fails with the following message: <br>
+<br>
+LD      .tmp_vmlinux1<br>
+arch/ppc/platforms/built-in.o(.init.text+0xfc4): In function `pmac_setup_arch':<br>
+arch/ppc/platforms/pmac_setup.c:301: undefined reference to `zs_kgdb_hook'<br>
+make: *** [.tmp_vmlinux1] Error 1<br>
+error: Bad exit status from /var/tmp/rpm-tmp.40235 (%build)<br>
+<br>
+I am sure you have seen this! <br>
+Any ideas how to fix it??<br>
+<br>
+Regards,<br>
+Eduardo A. Munoz<br>
+eamunoz@us.ibm.com<br>
+512-838-8219<br>
+<br>
+</body></html>
+--0__=08BBE54FDFFEF77C8f9e8a93df938690918c08BBE54FDFFEF77C--
