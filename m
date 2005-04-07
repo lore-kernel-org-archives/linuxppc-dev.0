@@ -1,15 +1,13 @@
 Return-Path: <galak@freescale.com>
-Date: Thu, 7 Apr 2005 14:14:10 -0500 (CDT)
+Date: Thu, 7 Apr 2005 14:26:05 -0500 (CDT)
 From: Kumar Gala <galak@freescale.com>
 To: Andrew Morton <akpm@osdl.org>
-Message-ID: <Pine.LNX.4.61.0504071354060.5277@blarg.somerset.sps.mot.com>
+Message-ID: <Pine.LNX.4.61.0504071414230.5277@blarg.somerset.sps.mot.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>,
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
 	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] ppc32: make usage of CONFIG_PTE_64BIT & CONFIG_PHYS_64BIT
- consistent
+Subject: [PATCH] ppc32: Allow adjust of pfn offset in pte
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,80 +19,33 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Andrew,
 
-CONFIG_PTE_64BIT & CONFIG_PHYS_64BIT are not currently consistently used 
-in the code base.  Fixed up the usage such that CONFIG_PTE_64BIT is used 
-when we have a 64-bit PTE regardless of physical address width.  
-CONFIG_PHYS_64BIT is used if the physical address width is larger than 
-32-bits, regardless of PTE size.
-
-These changes required a few sub-arch specific ifdef's to be fixed and the 
-introduction of a physical address format string.
+Allow the pfn to be offset by more than just PAGE_SHIFT in the pte.  
+Today, PAGE_SHIFT tends to allow us to have 12-bits of flags in the pte.  
+In the future if we have a larger pte we can allocate more bits for flags 
+by offsetting the pfn even further.
 
 Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
 ---
 
-diff -Nru a/arch/ppc/mm/pgtable.c b/arch/ppc/mm/pgtable.c
---- a/arch/ppc/mm/pgtable.c	2005-04-07 14:13:06 -05:00
-+++ b/arch/ppc/mm/pgtable.c	2005-04-07 14:13:06 -05:00
-@@ -74,7 +74,7 @@
- #define p_mapped_by_tlbcam(x)	(0UL)
- #endif /* HAVE_TLBCAM */
- 
--#ifdef CONFIG_44x
-+#ifdef CONFIG_PTE_64BIT
- /* 44x uses an 8kB pgdir because it has 8-byte Linux PTEs. */
- #define PGDIR_ORDER	1
- #else
-@@ -142,13 +142,13 @@
- 	__free_page(ptepage);
- }
- 
--#ifndef CONFIG_44x
-+#ifndef CONFIG_PHYS_64BIT
- void __iomem *
- ioremap(phys_addr_t addr, unsigned long size)
- {
- 	return __ioremap(addr, size, _PAGE_NO_CACHE);
- }
--#else /* CONFIG_44x */
-+#else /* CONFIG_PHYS_64BIT */
- void __iomem *
- ioremap64(unsigned long long addr, unsigned long size)
- {
-@@ -162,7 +162,7 @@
- 
- 	return ioremap64(addr64, size);
- }
--#endif /* CONFIG_44x */
-+#endif /* CONFIG_PHYS_64BIT */
- 
- void __iomem *
- __ioremap(phys_addr_t addr, unsigned long size, unsigned long flags)
-@@ -193,7 +193,7 @@
- 	 */
- 	if ( mem_init_done && (p < virt_to_phys(high_memory)) )
- 	{
--		printk("__ioremap(): phys addr "PTE_FMT" is RAM lr %p\n", p,
-+		printk("__ioremap(): phys addr "PHYS_FMT" is RAM lr %p\n", p,
- 		       __builtin_return_address(0));
- 		return NULL;
- 	}
-diff -Nru a/include/asm-ppc/mmu.h b/include/asm-ppc/mmu.h
---- a/include/asm-ppc/mmu.h	2005-04-07 14:13:06 -05:00
-+++ b/include/asm-ppc/mmu.h	2005-04-07 14:13:06 -05:00
-@@ -15,11 +15,13 @@
-  * virtual/physical addressing like 32-bit virtual / 36-bit
-  * physical need a larger than native word size type. -Matt
+diff -Nru a/include/asm-ppc/pgtable.h b/include/asm-ppc/pgtable.h
+--- a/include/asm-ppc/pgtable.h	2005-04-07 14:25:07 -05:00
++++ b/include/asm-ppc/pgtable.h	2005-04-07 14:25:07 -05:00
+@@ -431,10 +431,15 @@
+  * Conversions between PTE values and page frame numbers.
   */
--#ifndef CONFIG_PTE_64BIT
-+#ifndef CONFIG_PHYS_64BIT
- typedef unsigned long phys_addr_t;
-+#define PHYS_FMT	"%.8lx"
- #else
- typedef unsigned long long phys_addr_t;
- extern phys_addr_t fixup_bigphys_addr(phys_addr_t, phys_addr_t);
-+#define PHYS_FMT	"%16Lx"
- #endif
  
- /* Default "unsigned long" context */
+-#define pte_pfn(x)		(pte_val(x) >> PAGE_SHIFT)
++/* in some case we want to additionaly adjust where the pfn is in the pte to
++ * allow room for more flags */
++#define PFN_SHIFT_OFFSET	(PAGE_SHIFT)
++
++#define pte_pfn(x)		(pte_val(x) >> PFN_SHIFT_OFFSET)
+ #define pte_page(x)		pfn_to_page(pte_pfn(x))
+ 
+-#define pfn_pte(pfn, prot)	__pte(((pte_t)(pfn) << PAGE_SHIFT) | pgprot_val(prot))
++#define pfn_pte(pfn, prot)	__pte(((pte_basic_t)(pfn) << PFN_SHIFT_OFFSET) |\
++					pgprot_val(prot))
+ #define mk_pte(page, prot)	pfn_pte(page_to_pfn(page), prot)
+ 
+ /*
