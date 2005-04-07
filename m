@@ -1,18 +1,21 @@
-Return-Path: <jpl@xiphos.ca>
-Received: from mail.net (custpop.ca.mci.com [142.77.1.111])
-	by ozlabs.org (Postfix) with ESMTP id 7531267AC7
+Return-Path: <wfarnsworth@mvista.com>
+Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
+	by ozlabs.org (Postfix) with ESMTP id 596B367A2E
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  8 Apr 2005 00:21:13 +1000 (EST)
-Message-ID: <425541C8.6060408@xiphos.ca>
-Date: Thu, 07 Apr 2005 10:20:56 -0400
-From: Joshua Lamorie <jpl@xiphos.ca>
-MIME-Version: 1.0
-To: Wolfgang Grandegger <wolfgang.grandegger@bluewin.ch>
-References: <42545228.9060003@xiphos.ca> <4254FB38.9040202@bluewin.ch>
-In-Reply-To: <4254FB38.9040202@bluewin.ch>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: rtai@rtai.org, linuxppc-embedded@ozlabs.org
-Subject: Re: Unhandled relocation of type 11
+	Fri,  8 Apr 2005 02:05:50 +1000 (EST)
+From: Wade Farnsworth <wfarnsworth@mvista.com>
+To: Josh Boyer <jwboyer@jdub.homelinux.org>
+In-Reply-To: <1112835532.6160.37.camel@jdub.homelinux.org>
+References: <1112808085.24527.296.camel@rhino.az.mvista.com>
+	<1112808669.24673.304.camel@rhino.az.mvista.com>
+	<1112808814.24527.307.camel@rhino.az.mvista.com>
+	<1112835532.6160.37.camel@jdub.homelinux.org>
+Content-Type: text/plain
+Message-Id: <1112889944.24527.325.camel@rhino.az.mvista.com>
+Mime-Version: 1.0
+Date: 07 Apr 2005 09:05:45 -0700
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH 3/3] PPC440EP: MTD support for the Bamboo Board
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,94 +26,88 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Gidday there,
+On Wed, 2005-04-06 at 17:58, Josh Boyer wrote:
+> On Wed, 2005-04-06 at 10:33 -0700, Wade Farnsworth wrote:
+> 
+> Cool beans.  Can't wait to test this out tomorrow.  Just a couple comments.
+> 
+> <snip>
+> 
+> > +struct ppc440ep_ndfc_regs {
+> > +       uint cmd;
+> > +       uint addr;
+> > +       uint data;
+> > +       uint reserved1;
+> > +       uint ecc0;
+> > +       uint ecc1;
+> > +       uint ecc2;
+> > +       uint ecc3;
+> > +       uint ecc4;
+> > +       uint ecc5;
+> > +       uint ecc6;
+> > +       uint ecc7;
+> > +       uint b0cr;
+> > +       uint b1cr;
+> > +       uint b2cr;
+> > +       uint b3cr;
+> > +       uint cr;
+> > +       uint sr;
+> > +       uint hwctl;
+> > +       uint reserved2;
+> > +       uint revid;
+> > +};
+> 
+> These ecc registers actually have a use...
+> 
+> <snip>
+> 
+> > +
+> > +       /* Set address of NAND IO lines (Using Linear Data Access Region) */
+> > +       this->IO_ADDR_R = (void __iomem *) ((ulong) bamboo_ndfc + 0x1000);
+> > +       this->IO_ADDR_W = (void __iomem *) ((ulong) bamboo_ndfc + 0x1000);
+> > +       /* Reference hardware control function */
+> > +       this->hwcontrol  = bamboo_nand0_hwcontrol;
+> > +       /* Set command delay time */
+> > +       this->chip_delay = 12;
+> > +       this->eccmode    = NAND_ECC_SOFT;
+> > +       this->write_byte = bamboo_nand0_write_byte;
+> > +       this->read_byte  = bamboo_nand0_read_byte;
+> > +       this->write_buf  = bamboo_nand0_write_buf;
+> > +       this->read_buf   = bamboo_nand0_read_buf;
+> > +       this->verify_buf = bamboo_nand0_verify_buf;
+> > +       this->dev_ready  = bamboo_dev_ready;
+> 
+> <snip>
+> 
+> > +       /* Link the private data with the MTD structure */
+> > +       bamboo_nand1_mtd->priv = this;
+> > +
+> > +       /* Set address of NAND IO lines (Using Linear Data Access Region) */
+> > +       this->IO_ADDR_R = (void __iomem *) ((ulong) bamboo_ndfc + 0x1000);
+> > +       this->IO_ADDR_W = (void __iomem *) ((ulong) bamboo_ndfc + 0x1000);
+> > +       /* Reference hardware control function */
+> > +       this->hwcontrol  = bamboo_nand1_hwcontrol;
+> > +       /* Set command delay time */
+> > +       this->chip_delay = 25;
+> > +       this->eccmode    = NAND_ECC_SOFT;
+> > +       this->write_byte = bamboo_nand1_write_byte;
+> > +       this->read_byte  = bamboo_nand1_read_byte;
+> > +       this->write_buf  = bamboo_nand1_write_buf;
+> > +       this->read_buf   = bamboo_nand1_read_buf;
+> > +       this->verify_buf = bamboo_nand1_verify_buf;
+> > +       this->dev_ready  = NULL;
+> 
+> ... so any reason why NAND_ECC_SOFT is used instead of making use of the
+> ECC registers that come with the NDFC?
 
-Thanks for the hint.  However I can't see any reference to -fPIC in the 
-makefiles for ppcperflib.  One thing I have discovered though is that 
-type 11 is defined in /usr/include/elf.h as R_PPC_ELF14.  This error 
-happens twice, for __fixdfsi, and when I look for references to 
-__fixdfsi, I find that there are two calls to...
+Mainly because I haven't looked at what it would take to get HW ECC
+working yet.  I'll look at this when I have time, but until then at
+least the NAND flashes are functional.
 
-    blt __fixdfsi
+> 
+> Overall, I think the patch looks good.  Care to send it to the MTD
+> maintainers so it gets in their CVS tree?
 
-inside ppc_dtoui.S.  Looking at the PPC Ref Guide, I see that blt is a 
-mnemonic for bc (branch conditional) and uses a relative offset of 14 
-bits.  In the same function there is also a use of 'bl' (branch, long I 
-think) calling the same __fixdfsi.  So I'm going to add a stupid line of 
-assembly to conditionally jump over the branch to __fixdfsi... I hope 
-that will work, but I haven't touched assembly since an 80286.
+Will do.
 
-Joshua
-
-Wolfgang Grandegger wrote:
-
->Hello,
->
->I'm not a linker expert but some time ago I got the gcc soft floating
->library working for 8xx and 4xx in kernel space. The problem was with
->PIC. Maybe your library is built with PIC and it's required without. You
->may want to have a look to:
->
->  ftp://ftp.denx.de/pub/RTAI/contrib/fp_ppc_8xx.tar.bz2
->
->Wolfgang.
->
->
->On 04/06/2005 11:18 PM Joshua Lamorie wrote:
->  
->
->>Please excuse this cross-post, but I think it is of interest to both 
->>RTAI and Linux PPC folks.
->>
->>I am making a kernel module (an RTAI task) that needs floating point 
->>support so I'm using IBMs perflib floating-point libraries (on a 
->>Virtex-II Pro, aka ppc405).
->>
->>This is actually built from Matlab/simulink real-time workshop output (I 
->>can't use rtai-lab because I don't think lxrt is available for ppc)... 
->>so there end up being many object files to link.
->>
->>So, in the end I have a linker command as follows.
->>
->>powerpc-405-linux-gnu-ld -r -m elf32ppclinux -L/some/directories
->>matlab_root/rtw/c/libsrc/rt_zcfcn.o other.o inputs.o -o module_output.o
->>perflibs/fpopt/libppcfp.a
->>
->>Then I go to insert the module and....
->>/var/shm # insmod test001_build_rtmodule.o
->>Warning: loading test001_build_rtmodule.o will taint the kernel: non-GPL 
->>license - Proprietary
->>  See http://www.tux.org/lkml/#export-tainted for information about 
->>tainted modules
->>test001_build_rtmodule.o: Unhandled relocation of type 11 for __fixdfsi
->>test001_build_rtmodule.o: Unhandled relocation of type 11 for __fixdfsi
->>
->>Hrmm... so any ideas on what type 11 is?  I can see from the code in 
->>modutils that this value is inside rel->r_info, such as R_PPC_ADDR32 or 
->>R_PPC_ADDR16_HA.
->>
->>But where do I get more info about where r_info gets assigned?  Do I 
->>need to link libppcfp.a in a particular way?
->>
->>Any hints would be appreciated.
->>
->>Thanks in advance.
->>
->>Joshua
->>
->>    
->>
-
--- 
-
-Xiphos Technologies
-(514) 848-9640 x227
-(514) 848-9644 fax
-
-www.xiplink.com
-_______________________________________________
-The information transmitted is intended only for the
-person or entity to which it is addressed and may contain
-confidential and/or privileged material.  If you have
-received this in error, please contact the sender and delete
-this communication and any copy immediately. Thank you.
+-Wade
