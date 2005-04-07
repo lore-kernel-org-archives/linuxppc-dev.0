@@ -1,20 +1,18 @@
-Return-Path: <wojciech.kromer@dgt.com.pl>
-Received: from dgt.com.pl (mail.dgt.com.pl [195.117.141.2])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E0FAC67A6F
+Return-Path: <jjboor@aimsys.nl>
+Received: from smtp05.wanadoo.nl (smtp05.wanadoo.nl [194.134.35.145])
+	by ozlabs.org (Postfix) with ESMTP id 05AE867A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Apr 2005 17:51:44 +1000 (EST)
-Message-ID: <4254E681.2090009@dgt.com.pl>
-Date: Thu, 07 Apr 2005 09:51:29 +0200
-From: Wojciech Kromer <wojciech.kromer@dgt.com.pl>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-References: <4253CB3B.7040009@dgt.com.pl>	<977733d4c9325dbf4052cea66b10824c@aimsys.nl>	<4254D1D1.8090000@dgt.com.pl>
-	<b401be5cfa8b051577b461a9ece7950d@aimsys.nl>
-In-Reply-To: <b401be5cfa8b051577b461a9ece7950d@aimsys.nl>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Subject: Re: USB on 8250 PCI
+	Thu,  7 Apr 2005 18:06:12 +1000 (EST)
+In-Reply-To: <D57126AC5DCCD411B90800508BE3A7CA15417CF8@zrtpd0jk.us.nortel.com>
+References: <D57126AC5DCCD411B90800508BE3A7CA15417CF8@zrtpd0jk.us.nortel.com>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <115167a16e7159a98b8c426246e793a1@aimsys.nl>
+From: Jaap-Jan Boor <jjboor@aimsys.nl>
+Date: Thu, 7 Apr 2005 10:06:10 +0200
+To: "Mike Ford" <mford@nortel.com>
+Cc: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
+Subject: Re: mpc8260 Multi channel controller howto and kernel driver code
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,23 +23,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dnia 2005-04-07 09:31, Użytkownik Jaap-Jan Boor napisał:
+we have a built a driver and use it on a 8270, I can
+sent you the code.
 
-> What kernel version do you use?
-> In a 2.4 series kernel, you might check m8260_pcibios_fixup()
-> and probably set dev->irq ?
+Jaap-Jan
+
+On 6-apr-05, at 19:11, Mike Ford wrote:
+
 >
-> I don't know yet if this is the same in 2.6. I recently saw a lot of 
-> pci setup related changes in this mailing list.
 >
-> Jaap-Jan
 >
+> Hello Om,
+>
+> Did you ever publish your MPC8260 MCC driver code??
+>
+> Thanks,
+>
+> Mike Ford
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 
-i'm using 2.4.19 and 2.4.25 usb code
-irqs, and io maps are set correctly
-
-when trying to use ohci code there is one interrupt at startup:
-<3>usb-ohci.c: OHCI Unrecoverable Error, controller usb-00:1e.0
-
-anyone knows, what does it mean?
-i've modified code to ignore it...
+___
+J.G.J. Boor                       Anton Philipsweg 1
+Software Engineer                 1223 KZ Hilversum
+AimSys bv                         tel. +31 35 689 1941
+Postbus 2194, 1200 CD Hilversum   jjboor at aimsys dot nl
