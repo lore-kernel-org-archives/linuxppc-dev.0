@@ -1,17 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <c689550a30a3129f8576f78eaa6f7af4@freescale.com>
-References: <1112770418.9567.137.camel@gaston>
-	<c689550a30a3129f8576f78eaa6f7af4@freescale.com>
-Content-Type: text/plain
-Date: Thu, 07 Apr 2005 21:15:20 +1000
-Message-Id: <1112872520.9517.282.camel@gaston>
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao04.cox.net (fed1rmmtao04.cox.net [68.230.241.35])
+	by ozlabs.org (Postfix) with ESMTP id AF55867A6B
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Apr 2005 03:10:28 +1000 (EST)
+Date: Thu, 7 Apr 2005 10:10:26 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Jerome Glisse <j.glisse@gmail.com>
+Message-ID: <20050407171026.GO3396@smtp.west.cox.net>
+References: <4240b916050404033230db0551@mail.gmail.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	linux-ppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: pte_update and 64-bit PTEs on PPC32?
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4240b916050404033230db0551@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: linux 2.6.12-rc1-bk5 compilation error
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,54 +21,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, Apr 04, 2005 at 11:32:39AM +0100, Jerome Glisse wrote:
 
-> Ben, I agree with you about having the flags in a single word so we can 
-> lock them properly.  In the short term it appears that the issue I'm 
-> running into is explicit with ptep_get_and_clear():
-> 
-> static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned 
-> long addr,
->                                         pte_t *ptep)
-> {
->          return __pte(pte_update(ptep, ~_PAGE_HASHPTE, 0));
-> }
-> 
-> It appears that we should be returning the pte that was passed in, 
-> before its modified?  (seems a little silly to me, why bother, the 
-> caller could do this 
+> Once again i face an error that i got with a previous
+> 2.6 kernel (i already posted about this in january
+> i think).
+[snip]
+> Anyway what puzzle me is that it seems i am the
+> only one to face this ? Am i alone :) ?
 
-No, we should return the PTE that was there before the change
-atomically. It can't be done by the caller as if the caller was just
-reading the PTE, there would be a race where the PTE could still change
-between what you read and what you update. It has to be an atomic
-operation.
+I think you're the only person building a zImage for a 32bit kernel with
+a 64bit toolchain for MULTIPLATFORM, yes. :)
 
-> -- i've posted to lkml on the issue?).  Anyways, 
-> since pte_update only returns the lower 32-bits the wrong thing 
-> happens.  The following seems to be a better implementation of 
-> ptep_get_and_clear() for ppc32 which resolves my issue:
-> 
-> static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned 
-> long addr,
->                                         pte_t *ptep)
-> {
->          pte_t tmp = *ptep;
->          pte_update(ptep, ~_PAGE_HASHPTE, 0);
->          return tmp;
-> }
-> 
-> If we are ok with this I'll send a patch upstream for it.  I'd like to 
-> still discuss how to make this all proper long term.  Currently, 
-> ptep_get_and_clear was the only user of pte_update that used the return 
-> value for anything but flags.  One change would be for it to return 
-> just the flags portion of the pte it was given.  Another would be for 
-> us to implement a proper 64-bit pte version of pte_update.
-> 
-> - kumar
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+This is a valid problem, however.  Does the following also work for you?
+
+Signed-off-by: Tom Rini <trini@kernel.crashing.org>
+
+Index: linux-2.6.10/arch/ppc/boot/simple/Makefile
+===================================================================
+--- linux-2.6.10.orig/arch/ppc/boot/simple/Makefile
++++ linux-2.6.10/arch/ppc/boot/simple/Makefile
+@@ -118,10 +118,13 @@ zimageinitrd-$(pcore)			:= zImage.initrd
+          end-$(pcore)			:= pcore
+    cacheflag-$(pcore)			:= -include $(clear_L2_L3)
+ 
++# Really only valid if CONFIG_6xx=y
+       zimage-$(CONFIG_PPC_PREP)		:= zImage-PPLUS
+ zimageinitrd-$(CONFIG_PPC_PREP)		:= zImage.initrd-PPLUS
++ifeq ($(CONFIG_6xx),y)
+      extra.o-$(CONFIG_PPC_PREP)		:= prepmap.o
+         misc-$(CONFIG_PPC_PREP)		+= misc-prep.o mpc10x_memory.o
++endif
+          end-$(CONFIG_PPC_PREP)		:= prep
+ 
+          end-$(CONFIG_SANDPOINT)	:= sandpoint
+
 -- 
-Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Tom Rini
+http://gate.crashing.org/~trini/
