@@ -1,19 +1,16 @@
-Return-Path: <cfriesen@nortel.com>
-Received: from zcars04e.nortelnetworks.com (zcars04e.nortelnetworks.com
-	[47.129.242.56]) by ozlabs.org (Postfix) with ESMTP id EF08B67B33
-	for <linuxppc-dev@ozlabs.org>; Thu,  7 Apr 2005 10:09:37 +1000 (EST)
-Message-ID: <42547A39.4060001@nortel.com>
-Date: Wed, 06 Apr 2005 18:09:29 -0600
-From: Chris Friesen <cfriesen@nortel.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <425429BF.1050706@nortel.com> <1112829596.9518.210.camel@gaston>	
-	<42547112.9000302@nortel.com> <1112831363.9518.215.camel@gaston>	
-	<4254771B.2070802@nortel.com> <1112831823.9568.219.camel@gaston>
-In-Reply-To: <1112831823.9568.219.camel@gaston>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: question on inline assembly and long long values
+Return-Path: <benh@kernel.crashing.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Dan Malek <dan@embeddededge.com>
+In-Reply-To: <e27030866ac1c1efda319294eba6b626@embeddededge.com>
+References: <20050406223751.E4297C108D@atlas.denx.de>
+	<e27030866ac1c1efda319294eba6b626@embeddededge.com>
+Content-Type: text/plain
+Date: Thu, 07 Apr 2005 10:13:08 +1000
+Message-Id: <1112832788.9518.229.camel@gaston>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: Kernel SCM saga..
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,18 +20,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Wed, 2005-04-06 at 17:56 -0600, Chris Friesen wrote:
->>Benjamin Herrenschmidt wrote:
->>>But the kernel code always runs in 64 bits mode...
->>
->>The ppc kernel (not ppc64) runs in 64-bit mode?  An unsigned long long 
->>fits in a single register in C code?
+On Wed, 2005-04-06 at 19:33 -0400, Dan Malek wrote:
+> On Apr 6, 2005, at 6:37 PM, Wolfgang Denk wrote:
 > 
-> Ah no, it doesn't, but then, be careful to have interrupts off when you
-> do that are the interrupt handler won't save the high half of the
-> registers between the mtmsrd and your "splitting" of it.
+> > are there any plans yet how to continue PPC  kernel  development  now
+> > that Linus (and probably others, too) stopped using BitKeeper?
+> 
+> For all practical purposes, we have stopped using it as intended long
+> ago.   When we first started, those of us responsible for maintaining 
+> part
+> of the sources simply continuously pushed updates.  Very efficient, 
+> everyone
+> saw what was up to date.  Since 2.4, we have all been passing patches
+> around,  pushing things into BK didn't seem to matter, and usually
+> were ignored or lost.  People responsible for certain areas of 
+> maintenance
+> are now just bypassed with sometimes bad patches just given to Andrew
+> directly.  We may as well go back to using CVS and passing patches
+> around, since it easier to do that than the way we have been using BK.
 
-Right.  All this stuff is running with interrupts off.
+The problem is that we used to have our "own" tree which ended up beeing
+a grab bag for all the crap on earth and would drift from upstream in
+unmanageable ways.
 
-Chris
+We are now working much more directly with upstream, and it's not about
+random people sending random patches to akpm, for most arch patches,
+andrew is actually asking us (or rather paulus) whether to accept or not
+the patch. It does sometimes slip through but that's minimal.
+
+If you feel that your stuff isn't properly going upstream in time, then
+maybe that is because you aren't sending the patch to the right person
+or putting it in the right place ?
+
+All patches posted to linuxppc-dev and linuxppc64-dev are tracked by an
+automatic system. They may take some time to go upstream, but they are
+never lost.
+
+Ben.
