@@ -1,21 +1,22 @@
-Return-Path: <Joakim.Tjernlund@lumentis.se>
-Received: from dmz.lumentis.net (unknown [212.105.56.244])
+Return-Path: <jwboyer@jdub.homelinux.org>
+Received: from jdub.homelinux.org (67-41-71-119.roch.qwest.net [67.41.71.119])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9DE3A67B17
+	by ozlabs.org (Postfix) with ESMTP id C606667A2E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Apr 2005 07:24:54 +1000 (EST)
-From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
-To: "Marcelo Tosatti" <marcelo.tosatti@cyclades.com>
-Date: Wed, 6 Apr 2005 23:24:46 +0200
-Message-ID: <BCEFJBPJCGFCNMMMIDBHKEGBCLAA.Joakim.Tjernlund@lumentis.se>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <20050406121649.GC11066@logos.cnet>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: 8xx v2.6 TLB problems and suggested workaround
-Reply-To: Joakim.Tjernlund@lumentis.se
+	Thu,  7 Apr 2005 10:58:53 +1000 (EST)
+From: Josh Boyer <jwboyer@jdub.homelinux.org>
+To: Wade Farnsworth <wfarnsworth@mvista.com>
+In-Reply-To: <1112808814.24527.307.camel@rhino.az.mvista.com>
+References: <1112808085.24527.296.camel@rhino.az.mvista.com>
+	<1112808669.24673.304.camel@rhino.az.mvista.com>
+	<1112808814.24527.307.camel@rhino.az.mvista.com>
+Content-Type: text/plain
+Date: Wed, 06 Apr 2005 19:58:52 -0500
+Message-Id: <1112835532.6160.37.camel@jdub.homelinux.org>
+Mime-Version: 1.0
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH 3/3] PPC440EP: MTD support for the Bamboo Board
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,49 +27,81 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> On Tue, Apr 05, 2005 at 11:51:42PM +0200, Joakim Tjernlund wrote:
-> > Hi Marcelo
-> > 
-> > Reading your report it doesn't sound likely but I will ask anyway:
-> > Is it possible that the problem you are seeing isn't caused by the
-> > "famous" CPU bug mentioned here: 
-> > http://ozlabs.org/pipermail/linuxppc-embedded/2005-January/016351.html
-> > 
-> > The DTLB error handler needs DAR to be set correctly and since the
-> > dcbX instructions doesn't set DAR in either DTLB Miss nor DTLB Error you
-> > may end up trying to fix the wrong address.
-> 
-> Hi Joakim,
-> 
-> First of all, thanks your care!
+On Wed, 2005-04-06 at 10:33 -0700, Wade Farnsworth wrote:
 
-NP, I want to be able to run 8xx on 2.6 in the future.
- 
-> 
-> Well, I dont think the above issue is exactly what we're hitting because
-> DAR is correctly updated on our case with "dcbst".
+Cool beans.  Can't wait to test this out tomorrow.  Just a couple comments.
 
-Are you sure? Cant remeber all details but this looks a bit strange to me
-SPR  826 : 0x00001f00         7936
-is not 0x00001 supposed to be the physical page?
+<snip>
 
-Also DSISR: C2000000 looks strange and "impossible". Are you sure this value
-is correct?
+> +struct ppc440ep_ndfc_regs {
+> +       uint cmd;
+> +       uint addr;
+> +       uint data;
+> +       uint reserved1;
+> +       uint ecc0;
+> +       uint ecc1;
+> +       uint ecc2;
+> +       uint ecc3;
+> +       uint ecc4;
+> +       uint ecc5;
+> +       uint ecc6;
+> +       uint ecc7;
+> +       uint b0cr;
+> +       uint b1cr;
+> +       uint b2cr;
+> +       uint b3cr;
+> +       uint cr;
+> +       uint sr;
+> +       uint hwctl;
+> +       uint reserved2;
+> +       uint revid;
+> +};
 
-Don't understand why the "tlbie()" call  works around the problem. Can you
-explain that a bit more?
+These ecc registers actually have a use...
 
-> 
-> The problem is that it is treated as a write operation, but shouldnt.
-> 
-> Maybe it is related to dcbst's inability to set DAR?
+<snip>
 
-Could be, but even if it isn't you are in trouble when dcbX instr.
-generates DTLB Misses/Errors Sooner or later you will end up with
-strange SEGV or hangs.
+> +
+> +       /* Set address of NAND IO lines (Using Linear Data Access Region) */
+> +       this->IO_ADDR_R = (void __iomem *) ((ulong) bamboo_ndfc + 0x1000);
+> +       this->IO_ADDR_W = (void __iomem *) ((ulong) bamboo_ndfc + 0x1000);
+> +       /* Reference hardware control function */
+> +       this->hwcontrol  = bamboo_nand0_hwcontrol;
+> +       /* Set command delay time */
+> +       this->chip_delay = 12;
+> +       this->eccmode    = NAND_ECC_SOFT;
+> +       this->write_byte = bamboo_nand0_write_byte;
+> +       this->read_byte  = bamboo_nand0_read_byte;
+> +       this->write_buf  = bamboo_nand0_write_buf;
+> +       this->read_buf   = bamboo_nand0_read_buf;
+> +       this->verify_buf = bamboo_nand0_verify_buf;
+> +       this->dev_ready  = bamboo_dev_ready;
 
-> 
-> BTW, about the CPU15 bug fix, has there been any effort to port/merge 
-> it in v2.6 ?
+<snip>
 
-None that I know.
+> +       /* Link the private data with the MTD structure */
+> +       bamboo_nand1_mtd->priv = this;
+> +
+> +       /* Set address of NAND IO lines (Using Linear Data Access Region) */
+> +       this->IO_ADDR_R = (void __iomem *) ((ulong) bamboo_ndfc + 0x1000);
+> +       this->IO_ADDR_W = (void __iomem *) ((ulong) bamboo_ndfc + 0x1000);
+> +       /* Reference hardware control function */
+> +       this->hwcontrol  = bamboo_nand1_hwcontrol;
+> +       /* Set command delay time */
+> +       this->chip_delay = 25;
+> +       this->eccmode    = NAND_ECC_SOFT;
+> +       this->write_byte = bamboo_nand1_write_byte;
+> +       this->read_byte  = bamboo_nand1_read_byte;
+> +       this->write_buf  = bamboo_nand1_write_buf;
+> +       this->read_buf   = bamboo_nand1_read_buf;
+> +       this->verify_buf = bamboo_nand1_verify_buf;
+> +       this->dev_ready  = NULL;
+
+... so any reason why NAND_ECC_SOFT is used instead of making use of the
+ECC registers that come with the NDFC?
+
+Overall, I think the patch looks good.  Care to send it to the MTD
+maintainers so it gets in their CVS tree?
+
+thx,
+josh
