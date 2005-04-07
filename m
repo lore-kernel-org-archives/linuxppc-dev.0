@@ -1,13 +1,17 @@
-Return-Path: <galak@freescale.com>
-Date: Thu, 7 Apr 2005 14:26:05 -0500 (CDT)
-From: Kumar Gala <galak@freescale.com>
-To: Andrew Morton <akpm@osdl.org>
-Message-ID: <Pine.LNX.4.61.0504071414230.5277@blarg.somerset.sps.mot.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] ppc32: Allow adjust of pfn offset in pte
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 9599367B1F
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Apr 2005 07:42:13 +1000 (EST)
+In-Reply-To: <20050407173821.GQ3396@smtp.west.cox.net>
+References: <20050407173821.GQ3396@smtp.west.cox.net>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <f3f5e13e4c8b3cb7b327fb51db84150d@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Thu, 7 Apr 2005 16:41:59 -0500
+To: "Tom Rini" <trini@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] invalid instructions in kernel mode
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,35 +21,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andrew,
 
-Allow the pfn to be offset by more than just PAGE_SHIFT in the pte.  
-Today, PAGE_SHIFT tends to allow us to have 12-bits of flags in the pte.  
-In the future if we have a larger pte we can allocate more bits for flags 
-by offsetting the pfn even further.
+On Apr 7, 2005, at 12:38 PM, Tom Rini wrote:
 
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+> On Thu, Mar 31, 2005 at 07:47:32PM +0200, Fillod Stephane wrote:
+>
+> > When CPU has no (classic) FPU, and math emulation is disabled,
+>  > fp instructions are not allowed in kernel mode.
+>  [snip]
+>  > --- linux/arch/ppc/kernel/misc.S=A0=A0=A0=A0=A0 26 Mar 2005 =
+03:28:36 -0000
+>  > 1.1.1.2
+>  > +++ linux/arch/ppc/kernel/misc.S=A0=A0=A0=A0=A0 31 Mar 2005 =
+16:33:25 -0000
+>  > @@ -1096,7 +1096,8 @@
+>  >=A0=A0 * and exceptions as if the cpu had performed the load or =
+store.
+>  >=A0=A0 */
+>  >=A0
+> > -#if defined(CONFIG_4xx) || defined(CONFIG_E500)
+> > +#if !(defined(CONFIG_4xx) || defined(CONFIG_E500) ||
+>  > defined(CONFIG_8xx)) ||=A0 defined(CONFIG_MATH_EMULATION)
+> > +#if defined(CONFIG_4xx) || defined(CONFIG_E500)
+> >=A0 _GLOBAL(cvt_fd)
+> >=A0 =A0=A0=A0=A0 lfs=A0=A0=A0=A0 0,0(r3)
+>  >=A0 =A0=A0=A0=A0 stfd=A0=A0=A0 0,0(r4)
+>  > @@ -1125,6 +1126,7 @@
+>  >=A0 =A0=A0=A0=A0 stfd=A0=A0=A0 0,-4(r5)
+>  >=A0 =A0=A0=A0=A0 blr
+>  >=A0 #endif
+>  > +#endif
+>
+> The problem here is, HEY! (classic) FP instrs in the kernel.=A0 The
+>  question is why?=A0 Or rather, why are these four classic FP instrs
+>  (lfs/lfd/stfd/stfs) being done on CONFIG_4xx || E500 when neither has
+>  classic FP?=A0 I think the problem here is that on !FPU
+> (which is 4xx||E500||8xx, or so), we need to rewrite these two
+>  functions (yes, 8xx does emulate them if hit, but that's a tangent).
 
----
+What is not clear to me is what condition causes these to get hit on an=20=
 
-diff -Nru a/include/asm-ppc/pgtable.h b/include/asm-ppc/pgtable.h
---- a/include/asm-ppc/pgtable.h	2005-04-07 14:25:07 -05:00
-+++ b/include/asm-ppc/pgtable.h	2005-04-07 14:25:07 -05:00
-@@ -431,10 +431,15 @@
-  * Conversions between PTE values and page frame numbers.
-  */
- 
--#define pte_pfn(x)		(pte_val(x) >> PAGE_SHIFT)
-+/* in some case we want to additionaly adjust where the pfn is in the pte to
-+ * allow room for more flags */
-+#define PFN_SHIFT_OFFSET	(PAGE_SHIFT)
-+
-+#define pte_pfn(x)		(pte_val(x) >> PFN_SHIFT_OFFSET)
- #define pte_page(x)		pfn_to_page(pte_pfn(x))
- 
--#define pfn_pte(pfn, prot)	__pte(((pte_t)(pfn) << PAGE_SHIFT) | pgprot_val(prot))
-+#define pfn_pte(pfn, prot)	__pte(((pte_basic_t)(pfn) << PFN_SHIFT_OFFSET) |\
-+					pgprot_val(prot))
- #define mk_pte(page, prot)	pfn_pte(page_to_pfn(page), prot)
- 
- /*
+e500.
+
+- kumar
