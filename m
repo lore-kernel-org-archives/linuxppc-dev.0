@@ -1,18 +1,14 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao08.cox.net (fed1rmmtao08.cox.net [68.230.241.31])
-	by ozlabs.org (Postfix) with ESMTP id 51F0A67AC5
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Apr 2005 04:17:39 +1000 (EST)
-Date: Thu, 7 Apr 2005 11:17:26 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Giovambattista Pulcini <gpulcini@swintel.it>,
-	Gabriel Paubert <paubert@iram.es>
-Message-ID: <20050407181726.GS3396@smtp.west.cox.net>
-References: <20050311172401.18ba47f6.akpm@osdl.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050311172401.18ba47f6.akpm@osdl.org>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: Fw: Problem with NTP on (embedded) PPC, patch and RFC
+Return-Path: <galak@freescale.com>
+Date: Thu, 7 Apr 2005 14:07:48 -0500 (CDT)
+From: Kumar Gala <galak@freescale.com>
+To: Andrew Morton <akpm@osdl.org>
+Message-ID: <Pine.LNX.4.61.0504071341260.5277@blarg.somerset.sps.mot.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Linus Torvalds <torvalds@osdl.org>, Paul Mackerras <paulus@samba.org>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH] ppc32: Fix pte_update for 64-bit PTEs
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,96 +18,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Date: Fri, 11 Mar 2005 14:16:32 +0100
-> From: Giovambattista Pulcini <gpulcini@swintel.it>
-> To: LKML <linux-kernel@vger.kernel.org>
-> Subject: Problem with NTP on (embedded) PPC, patch and RFC
-> 
-> 
-> Hi,
-> 
-> On an embedded device based on the IBM 405GP, but this may be a general 
-> problem for most PPC platforms except for chrp and gemini, the NTP 
-> utility 'ntptime' always returns error code 5 (TIME_ERROR) even after 
-> that NTP status reaches the PLL and FLL state. Analysis of problem 
-> showed that the time_state variable set to TIME_ERROR by 
-> do_settimeofday() is never set back to TIME_OK.
-> I found the problem in 2.4.10-1 (Lynuxworks BlueCat) but I also checked 
-> the 2.6.11 and found similar problem. Many architectures under arch/ppc 
-> may be affected with the exception of chrp and gemini.
-> 
-> Steps to reproduce:
-> On a PowerPC (non-CHRP) platform, set the system date with 'date', 
-> configure and start the NTP daemon as client of a working NTP server. 
-> Wait for it to reach the PLL/FLL state. Issue the 'ntptime' command and 
-> check that the following two errors never disappear no matter how long 
-> you let it running: "ntp_gettime() returns code 5 (ERROR)", 
-> "ntp_adjtime() returns code 5 (ERROR)".
-> 
-> Detailed analysis:
-> AFAIK NTP relies on the global time_state variable which is statically 
-> initialized to TIME_OK (kernel/timer.c). The ntptime utility calls 
-> adjtimex() which results in a call to do_adjtimex() and prints its 
-> return value which is basically the value of time_state. It is changed 
-> by (kernel/timer.c)second_overflow() and by the 
-> (kernel/time.c)do_adjtimex() state machine.
-> These two functions never set time_state to TIME_OK once it has been set 
-> to TIME_ERROR.
-> Also, do_settimeofday() sets the STA_UNSYNC flag in time_status and sets 
-> time_state to TIME_ERROR (in ppc but not in ppc64 nor in x86).
-> The function (arch/ppc/kernel/time.c)timer_interrupt() calls the 
-> ppc_md.set_rtc_time() when certain conditions are met, as follows 
-> (time.c:171):
-> 
->         if ( ppc_md.set_rtc_time && (time_status & STA_UNSYNC) == 0 &&
->              xtime.tv_sec - last_rtc_update >= 659 &&
->              abs(xtime.tv_usec - (1000000-1000000/HZ)) < 500000/HZ &&
->              jiffies - wall_jiffies == 1) {
->               if (ppc_md.set_rtc_time(xtime.tv_sec+1 + time_offset) == 0)
-> 
-> In the CHRP architecture (see arch/ppc/platforms/chrp_*) the specific 
-> implementation of the set_rtc_time(), chrp_set_rtc_time(), has a check 
-> like this (chrp_time.c:76):
-> 
->         if ( (time_state == TIME_ERROR) || (time_state == TIME_BAD) )
->                 time_state = TIME_OK;
-> 
-> which is the only chance for the time_state to be set back to TIME_OK 
-> after a do_settimeofday(). In other platforms this is not done.
-> 
-> 
-> Proposed patch:
-> This change should make NTP to work on any ppc platform, while not 
-> breaking chrp and gemini. Although I've tested it only on mine.
-> --- linux-2.6.11/arch/ppc/kernel/time.c 2005-03-02 08:38:17.000000000 +0100
-> +++ linux/arch/ppc/kernel/time.c        2005-03-08 14:16:56.000000000 +0100
-> @@ -272,7 +272,6 @@
-> 
->         time_adjust = 0;                /* stop active adjtime() */
->         time_status |= STA_UNSYNC;
-> -       time_state = TIME_ERROR;        /* p. 24, (a) */
->         time_maxerror = NTP_PHASE_LIMIT;
->         time_esterror = NTP_PHASE_LIMIT;
->         write_sequnlock_irqrestore(&xtime_lock, flags);
-> 
-> 
-> My question:
-> I've read some documentation but I am by no means an expert in the NTP 
-> kernel support implementation. So I ask you where the time_state should 
-> be reset to TIME_OK. Should this be done by the <platform>set_rtc_time() ?
-> Or, as in the x86 case, do_settimeofday should not set time_state to 
-> TIME_ERROR ?
-> 
-> 
-> Giovambattista Pulcini
+Andrew,
 
-So, digging back to 2.2.20 even, i386 does not have this TIME_ERROR
-line, and we do.  Gabriel, as guru of all things NTP-related, can you
-please shed some enlightenment on what should be fixed?  Should we drop
-that line?  Make the various RTC drivers do the check CHRP does (which
-at first thought seems like a 'Hey, that's wrong, let me kludge it' kind
-of thing.  Thanks.
+(this should probably go in for 2.6.12)
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+While the existing pte_update code handled atomically modifying a 64-bit 
+PTE, it did not return all 64-bits of the PTE before it was modified.  
+This causes problems in some places that expect the full PTE to be 
+returned, like ptep_get_and_clear().
+
+Created a new pte_update function that is conditional on CONFIG_PTE_64BIT. 
+It atomically reads the low PTE word which all PTE flags are required to 
+be in and returns a premodified full 64-bit PTE.
+
+Since we now have an explicit 64-bit PTE version of pte_update we can also 
+remove the hack that existed to get the low PTE word regardless of size.
+
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+
+---
+
+diff -Nru a/include/asm-ppc/pgtable.h b/include/asm-ppc/pgtable.h
+--- a/include/asm-ppc/pgtable.h	2005-04-07 14:01:09 -05:00
++++ b/include/asm-ppc/pgtable.h	2005-04-07 14:01:09 -05:00
+@@ -526,10 +526,10 @@
+  * Atomic PTE updates.
+  *
+  * pte_update clears and sets bit atomically, and returns
+- * the old pte value.
+- * The ((unsigned long)(p+1) - 4) hack is to get to the least-significant
+- * 32 bits of the PTE regardless of whether PTEs are 32 or 64 bits.
++ * the old pte value.  In the 64-bit PTE case we lock around the
++ * low PTE word since we expect ALL flag bits to be there
+  */
++#ifndef CONFIG_PTE_64BIT
+ static inline unsigned long pte_update(pte_t *p, unsigned long clr,
+ 				       unsigned long set)
+ {
+@@ -543,10 +543,31 @@
+ "	stwcx.	%1,0,%3\n\
+ 	bne-	1b"
+ 	: "=&r" (old), "=&r" (tmp), "=m" (*p)
+-	: "r" ((unsigned long)(p+1) - 4), "r" (clr), "r" (set), "m" (*p)
++	: "r" (p), "r" (clr), "r" (set), "m" (*p)
+ 	: "cc" );
+ 	return old;
+ }
++#else
++static inline unsigned long long pte_update(pte_t *p, unsigned long clr,
++				       unsigned long set)
++{
++	unsigned long long old;
++	unsigned long tmp;
++
++	__asm__ __volatile__("\
++1:	lwarx	%L0,0,%4\n\
++	lwzx	%0,0,%3\n\
++	andc	%1,%L0,%5\n\
++	or	%1,%1,%6\n"
++	PPC405_ERR77(0,%3)
++"	stwcx.	%1,0,%4\n\
++	bne-	1b"
++	: "=&r" (old), "=&r" (tmp), "=m" (*p)
++	: "r" (p), "r" ((unsigned long)(p) + 4), "r" (clr), "r" (set), "m" (*p)
++	: "cc" );
++	return old;
++}
++#endif
+ 
+ /*
+  * set_pte stores a linux PTE into the linux page table.
