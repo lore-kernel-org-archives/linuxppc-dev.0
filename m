@@ -1,17 +1,16 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id E70E767B2A
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Apr 2005 02:02:50 +1000 (EST)
-In-Reply-To: <159727e9d7fb3a3d217b6edf411e43c1@freescale.com>
-References: <159727e9d7fb3a3d217b6edf411e43c1@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <a60ee360bc78c75b14e7607d9471643c@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Fri, 8 Apr 2005 11:02:47 -0500
-To: Fillod Stephane <stephane.fillod@thomson.net>
+Return-Path: <stephane.fillod@thomson.net>
+Received: from dmzraw2.extranet.tce.com (dmzraw2.extranet.tce.com
+	[157.254.234.138]) by ozlabs.org (Postfix) with ESMTP id BFACE67B31
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Apr 2005 03:37:05 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Fri, 8 Apr 2005 19:36:28 +0200
+Message-ID: <1CFEB358338412458B21FAA0D78FE86D4F0D39@rennsmail02.eu.thmulti.com>
+From: "Fillod Stephane" <stephane.fillod@thomson.net>
+To: "Kumar Gala" <kumar.gala@freescale.com>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] invalid instructions in kernel mode
+Subject: RE: [PATCH] invalid instructions in kernel mode
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,13 +20,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fillod,
+Kumar Gala wrote:
+> Are you running this via a ramdisk or nfs?  If ramdisk can you post it
 
-Are you running this via a ramdisk or nfs?  If ramdisk can you post it 
-somewhere that I can get to?
+> somewhere that I can get to?
 
-Also, can you email the list with the kernel oops that shows up.
+I'm running via NFS.
 
-thanks
+> Also, can you email the list with the kernel oops that shows up.
 
-- kumar
+I'll do that next week.
+
+Anyway, reading the source suffices to realize there's a problem when=20
+MATH_EMULATION is disabled on a FPU-less system with user programs=20
+using load/store fp instructions.
+
+--=20
+Stephane
