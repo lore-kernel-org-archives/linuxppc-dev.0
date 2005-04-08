@@ -1,20 +1,15 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8013767B2A
+Return-Path: <misterpj@hotmail.com>
+Received: from hotmail.com (bay102-f14.bay102.hotmail.com [64.4.61.24])
+	by ozlabs.org (Postfix) with ESMTP id ED7AA67B3A
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  9 Apr 2005 07:17:46 +1000 (EST)
-In-Reply-To: <91B22F93A880FA48879475E134D6F0BEB9C02A@CA1EXCLV02.adcorp.kla-tencor.com>
-References: <91B22F93A880FA48879475E134D6F0BEB9C02A@CA1EXCLV02.adcorp.kla-tencor.com>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <ecff8a1f4747344cf61d26b4875f1849@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Fri, 8 Apr 2005 17:17:44 -0400
-To: "Howard, Marc" <Marc.Howard@kla-tencor.com>
-Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: Re: cross-compiling under cygwin?
+	Sat,  9 Apr 2005 08:20:40 +1000 (EST)
+Message-ID: <BAY102-F14D1411952500A507C745EC13F0@phx.gbl>
+From: "Gigi PJ" <misterpj@hotmail.com>
+To: linuxppc-embedded@ozlabs.org
+Date: Sat, 09 Apr 2005 00:03:35 +0200
+Mime-Version: 1.0
+Content-Type: text/plain; format=flowed
+Subject: MPC8xx SCC for sync. HDLC on 2.4 kernel
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,24 +20,11 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Jos, Ricardo,
+is there any chance to share the code for high speed HDLC over MPC8260 ?
+I'm not able to find any source apart the original one by Rodolfo Giometti 
+:(
 
-On Apr 8, 2005, at 2:48 PM, Howard, Marc wrote:
-
-> If I were Catholic I'd have to say a bunch of Hail Mary's for 
-> mentioning
-> this but...
-
-I've already said plenty. :-)
-
-> Yes you can run NFS on Windows.
-
-Oh geeze, no wonder the Pope died.  He probably heard this!
-(I think that sealed my fate .... )
-
-> The other gotcha is that it can only export NTFS file systems,
-> not FAT32.
-
-So, how do I export a root file system with /dev nodes?
-
-
-	-- Dan
+Thanks
+Regards
+Gigi
