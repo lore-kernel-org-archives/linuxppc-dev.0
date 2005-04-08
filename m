@@ -1,17 +1,20 @@
-Return-Path: <chris.elston@radstone.co.uk>
-Received: from mail14.messagelabs.com (mail14.messagelabs.com [212.125.75.19])
-	by ozlabs.org (Postfix) with SMTP id A856367B23
+Return-Path: <Stefan.Nickl@kontron.com>
+Received: from kom-mail1.kontron-modular.com (unknown [62.159.155.196])
+	by ozlabs.org (Postfix) with ESMTP id CB84467B21
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  8 Apr 2005 19:30:20 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C53C1D.BB9C9000"
-Date: Fri, 8 Apr 2005 10:31:24 +0100
-Message-ID: <F38DEABE0E171746B133C1ABBD142D9703691AF1@radmail.Radstone.Local>
-From: "Chris Elston" <chris.elston@radstone.co.uk>
-To: <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
-Subject: [PATCH 2.6.12-rc2 1/2] ppc32: fix for misreported SDRAM size on
-	Radstone PPC7D platform
+	Fri,  8 Apr 2005 20:49:08 +1000 (EST)
+From: Stefan Nickl <Stefan.Nickl@kontron.com>
+To: Tom Rini <trini@kernel.crashing.org>
+In-Reply-To: <20050407163607.GN3396@smtp.west.cox.net>
+References: <f476b44c655d9125f95b6d3ddc225576@embeddededge.com>
+	<DCEAAC0833DD314AB0B58112AD99B93B85933A@ismail.innsys.innovsys.com>
+	<20050407163607.GN3396@smtp.west.cox.net>
+Content-Type: multipart/mixed; boundary="=-3Ogt3FZwaClP4ObqV5n4"
+Date: Fri, 08 Apr 2005 12:49:00 +0200
+Message-Id: <1112957340.12792.23.camel@lucy.pep-kaufbeuren.de>
+Mime-Version: 1.0
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: FCC Ethernet startup crash
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,72 +25,106 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C53C1D.BB9C9000
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+--=-3Ogt3FZwaClP4ObqV5n4
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-This=20patch=20fixes=20the=20SDRAM=20output=20from=20/proc/cpuinfo.
-The=20previous=20code=20assumed=20that=20there=20was=20only=20one=20bank
-of=20SDRAM,=20and=20that=20the=20size=20in=20the=20memory=20configuration
-register=20was=20the=20total=20size.
+On Thu, 2005-04-07 at 09:36 -0700, Tom Rini wrote:
+> > The patch Stefan Nickl gave to me works perfectly, and all it does is
+> > basically move the fcc_restart.
+> > The kernel was still calling fcc_restart twiche per FCC at startup (one
+> > time on init_fcc_startup, and then again in fcc_open), now it just calls
+> > it twice in fcc_open. Seems to work.
+> 
+> Would someone please post what's needed vs current'ish 2.6 so we can get
+> the proper fix up & in? :)  With the Signed-off-by & all that.. Thanks.
 
-Signed-off-by:=20Chris=20Elston=20<chris.elston@radstone.co.uk>
+I took a little longer because I was not happy with the simple
+cut'n'paste version. I believe the actual problem is that fcc_restart()
+mustn't be called before netif_start_queue(). So the original version
+only shortens the race period, it does not actually resolve it.
 
-________________________________________________________________________
-This=20e-mail=20has=20been=20scanned=20for=20all=20viruses=20by=20Star.=20=
-The
-service=20is=20powered=20by=20MessageLabs.=20For=20more=20information=20on=
-=20a=20proactive
-anti-virus=20service=20working=20around=20the=20clock,=20around=20the=20gl=
-obe,=20visit:
-http://www.star.net.uk
-________________________________________________________________________
-------_=_NextPart_001_01C53C1D.BB9C9000
-Content-Type: application/octet-stream;
-	name="ppc7d_sdram_size.patch"
-Content-Transfer-Encoding: base64
-Content-Description: ppc7d_sdram_size.patch
-Content-Disposition: attachment;
-	filename="ppc7d_sdram_size.patch"
+Unfortunately I'm deprived of suitable hardware as the focus of my work
+has shifted in the last months, so I urge everyone out there to give it
+a try.
 
-LS0tIGxpbnV4LTIuNi4xMi1yYzIvYXJjaC9wcGMvcGxhdGZvcm1zL3JhZHN0b25lX3BwYzdkLmMJ
-MjAwNS0wNC0wNyAxMjozMTo0My4wMDAwMDAwMDAgKzAxMDAKKysrIGxpbnV4LTIuNi4xMi1yYzIt
-Y2RlL2FyY2gvcHBjL3BsYXRmb3Jtcy9yYWRzdG9uZV9wcGM3ZC5jCTIwMDUtMDQtMDcgMTI6Mjg6
-NTEuMDAwMDAwMDAwICswMTAwCkBAIC0yNTMsNiArMjU5LDggQEAKIAl1OCB2YWwxLCB2YWwyOwog
-CXN0YXRpYyBpbnQgZmxhc2hfc2l6ZXNbNF0gPSB7IDY0LCAzMiwgMCwgMTYgfTsKIAlzdGF0aWMg
-aW50IGZsYXNoX2JhbmtzWzRdID0geyA0LCAzLCAyLCAxIH07CisJc3RhdGljIGludCBzZHJhbV9i
-YW5rX3NpemVzWzRdID0geyAxMjgsIDI1NiwgNTEyLCAxIH07CisJaW50IHNkcmFtX251bV9iYW5r
-cyA9IDI7CiAJc3RhdGljIGNoYXIgKnBjaV9tb2Rlc1tdID0geyAiUENJMzMiLCAiUENJNjYiLAog
-CQkiVW5rbm93biIsICJVbmtub3duIiwKIAkJIlBDSVgzMyIsICJQQ0lYNjYiLApAQCAtMjc5LDEz
-ICsyODcsMTcgQEAKIAkJICAgKHZhbDEgPT0gUFBDN0RfQ1BMRF9NQl9UWVBFX1BMTF8xMDApID8g
-MTAwIDoKIAkJICAgKHZhbDEgPT0gUFBDN0RfQ1BMRF9NQl9UWVBFX1BMTF82NCkgPyA2NCA6IDAp
-OwogCisJdmFsID0gaW5iKFBQQzdEX0NQTERfTUVNX0NPTkZJRyk7CisJaWYgKHZhbCAmIFBQQzdE
-X0NQTERfU0RSQU1fQkFOS19OVU1fTUFTSykgc2RyYW1fbnVtX2JhbmtzLS07CisKIAl2YWwgPSBp
-bmIoUFBDN0RfQ1BMRF9NRU1fQ09ORklHX0VYVEVORCk7Ci0JdmFsMSA9IHZhbCAmIFBQQzdEX0NQ
-TERfU0RSQU1fQkFOS19TSVpFX01BU0s7Ci0Jc2VxX3ByaW50ZihtLCAiU0RSQU1cdFx0OiAlZCVj
-IiwKLQkJICAgKHZhbDEgPT0gUFBDN0RfQ1BMRF9TRFJBTV9CQU5LX1NJWkVfMTI4TSkgPyAxMjgg
-OgotCQkgICAodmFsMSA9PSBQUEM3RF9DUExEX1NEUkFNX0JBTktfU0laRV8yNTZNKSA/IDI1NiA6
-Ci0JCSAgICh2YWwxID09IFBQQzdEX0NQTERfU0RSQU1fQkFOS19TSVpFXzUxMk0pID8gNTEyIDog
-MSwKLQkJICAgKHZhbDEgPT0gUFBDN0RfQ1BMRF9TRFJBTV9CQU5LX1NJWkVfMUcpID8gJ0cnIDog
-J00nKTsKKwl2YWwxID0gKHZhbCAmIFBQQzdEX0NQTERfU0RSQU1fQkFOS19TSVpFX01BU0spID4+
-IDY7CisJc2VxX3ByaW50ZihtLCAiU0RSQU1cdFx0OiAlZCBiYW5rcyBvZiAlZCVjLCB0b3RhbCAl
-ZCVjIiwKKwkJICAgc2RyYW1fbnVtX2JhbmtzLAorCQkgICBzZHJhbV9iYW5rX3NpemVzW3ZhbDFd
-LAorCQkgICAoc2RyYW1fYmFua19zaXplc1t2YWwxXSA8IDEyOCkgPyAnRycgOiAnTScsCisJCSAg
-IHNkcmFtX251bV9iYW5rcyAqIHNkcmFtX2Jhbmtfc2l6ZXNbdmFsMV0sCisJCSAgIChzZHJhbV9i
-YW5rX3NpemVzW3ZhbDFdIDwgMTI4KSA/ICdHJyA6ICdNJyk7CiAJaWYgKHZhbDIgJiBQUEM3RF9D
-UExEX01CX1RZUEVfRUNDX0ZJVFRFRF9NQVNLKSB7CiAJCXNlcV9wcmludGYobSwgIiBbRUNDICVz
-YWJsZWRdIiwKIAkJCSAgICh2YWwyICYgUFBDN0RfQ1BMRF9NQl9UWVBFX0VDQ19FTkFCTEVfTUFT
-SykgPyAiZW4iIDoKLS0tIGxpbnV4LTIuNi4xMi1yYzIvYXJjaC9wcGMvcGxhdGZvcm1zL3JhZHN0
-b25lX3BwYzdkLmgJMjAwNS0wNC0wNyAxMjozMTo0My4wMDAwMDAwMDAgKzAxMDAKKysrIGxpbnV4
-LTIuNi4xMi1yYzItY2RlL2FyY2gvcHBjL3BsYXRmb3Jtcy9yYWRzdG9uZV9wcGM3ZC5oCTIwMDUt
-MDQtMDcgMTI6Mjg6NTEuMDAwMDAwMDAwICswMTAwCkBAIC0yNDAsNiArMjQwLDcgQEAKICNkZWZp
-bmUgUFBDN0RfQ1BMRF9GTEFTSF9DTlRMCQkJMHgwODZFCiAKIC8qIE1FTU9SWV9DT05GSUdfRVhU
-RU5EICovCisjZGVmaW5lIFBQQzdEX0NQTERfU0RSQU1fQkFOS19OVU1fTUFTSwkJMHgwMgogI2Rl
-ZmluZSBQUEM3RF9DUExEX1NEUkFNX0JBTktfU0laRV9NQVNLCQkweGMwCiAjZGVmaW5lIFBQQzdE
-X0NQTERfU0RSQU1fQkFOS19TSVpFXzEyOE0JCTAKICNkZWZpbmUgUFBDN0RfQ1BMRF9TRFJBTV9C
-QU5LX1NJWkVfMjU2TQkJMHg0MAo=
+Signed-off-by: Stefan Nickl <Stefan.Nickl@kontron.com>
 
-------_=_NextPart_001_01C53C1D.BB9C9000--
+-- 
+Stefan Nickl
+Kontron Modular Computers
+
+
+--=-3Ogt3FZwaClP4ObqV5n4
+Content-Disposition: attachment; filename=fcc_enet_startup_crash_v2.patch
+Content-Type: text/x-patch; name=fcc_enet_startup_crash_v2.patch;
+	charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+
+--- linux-2.5/arch/ppc/8260_io/fcc_enet.c.bak	2005-04-08 09:37:40.000000000 +0200
++++ linux-2.5/arch/ppc/8260_io/fcc_enet.c	2005-04-08 12:01:55.000000000 +0200
+@@ -2158,16 +2158,6 @@ init_fcc_startup(fcc_info_t *fip, struct
+ 	*(volatile uint *)(BCSR_ADDR + 12) &= ~BCSR3_FETHIEN2;
+ 	*(volatile uint *)(BCSR_ADDR + 12) |=  BCSR3_FETH2_RST;
+ #endif
+-
+-#if defined(CONFIG_USE_MDIO) || defined(CONFIG_TQM8260)
+-	/* start in full duplex mode, and negotiate speed
+-	 */
+-	fcc_restart (dev, 1);
+-#else
+-	/* start in half duplex mode
+-	 */
+-	fcc_restart (dev, 0);
+-#endif
+ }
+ 
+ #ifdef	CONFIG_USE_MDIO
+@@ -2372,24 +2362,28 @@ fcc_enet_open(struct net_device *dev)
+ 	fep->sequence_done = 0;
+ 	fep->link = 0;
+ 
+-	if (fep->phy) {
+-		fcc_restart(dev, 0);	/* always start in half-duplex */
+-		mii_do_cmd(dev, fep->phy->ack_int);
+-		mii_do_cmd(dev, fep->phy->config);
+-		mii_do_cmd(dev, phy_cmd_config);  /* display configuration */
+-		while(!fep->sequence_done)
+-			schedule();
+-
+-		mii_do_cmd(dev, fep->phy->startup);
+-		netif_start_queue(dev);
+-		return 0;		/* Success */
+-	}
+-	return -ENODEV;		/* No PHY we understand */
++	if (!fep->phy)
++		return -ENODEV;		/* No PHY we understand */
++
++	mii_do_cmd(dev, fep->phy->ack_int);
++	mii_do_cmd(dev, fep->phy->config);
++	mii_do_cmd(dev, phy_cmd_config);  /* display configuration */
++	while(!fep->sequence_done)
++		schedule();
++
++	mii_do_cmd(dev, fep->phy->startup);
+ #else
+ 	fep->link = 1;
+-	fcc_restart(dev, 0);	/* always start in half-duplex */
+-	netif_start_queue(dev);
+-	return 0;					/* Always succeed */
+ #endif	/* CONFIG_USE_MDIO */
++
++	netif_start_queue(dev);
++
++#if defined(CONFIG_USE_MDIO) || defined(CONFIG_TQM8260)
++	fcc_restart (dev, 1);	/* start in full duplex mode */
++#else
++	fcc_restart (dev, 0);	/* start in half duplex mode */
++#endif
++
++	return 0;		/* Always succeed */
+ }
+ 
+
+--=-3Ogt3FZwaClP4ObqV5n4--
