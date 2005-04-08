@@ -1,19 +1,20 @@
-Return-Path: <mgreer@mvista.com>
-Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
-	by ozlabs.org (Postfix) with ESMTP id 614A067A64
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5894B67A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  9 Apr 2005 04:32:47 +1000 (EST)
-Message-ID: <4256CE41.1000404@mvista.com>
-Date: Fri, 08 Apr 2005 11:32:33 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-MIME-Version: 1.0
-To: Daniel Ann <ktdann@gmail.com>
-References: <9b7ca65705040801455b84eb0d@mail.gmail.com>
-In-Reply-To: <9b7ca65705040801455b84eb0d@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: Best way to determine tb_ticks_per_jiffy
-	inside	todc_calibrate_decr()
+	Sat,  9 Apr 2005 04:32:49 +1000 (EST)
+In-Reply-To: <Pine.LNX.4.61.0504081010330.14089@localhost.localdomain>
+References: <Pine.LNX.4.61.0504081010330.14089@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <e6dbd8188d62839f349bec5a4cd0b352@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Fri, 8 Apr 2005 14:32:44 -0400
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: Re: cross-compiling under cygwin?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,46 +25,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Daniel,
 
-Daniel Ann wrote:
+On Apr 8, 2005, at 10:13 AM, Robert P. J. Day wrote:
 
->Hey folks,
->
->I seem to have problem getting 1 second right. Board has no RTC so
->I've basically NULLed all the todc_XXX functions except
->todc_calibrate_decr.
->
+>   i've just had a request from a colleague who wants to do all the
+> cross-compilation for our 8xx board on a windows box, rather than
+> linux.
 
-If you don't have an RTC, you shouldn't be using any todc_xxx routines.
+Just remember there is lots more to building and developing
+than compiling a kernel.  In addition to the compiler, you need
+lots of support tools.  Once you get a kernel, you have to create
+some kind of file system, of course NFS won't work on Windows,
+creating a ramdisk without a loopback device and file system
+support is quite a challenge, too.
 
->
->Now question is, what value should I be assigning it to tb_ticks_per_jiffy ?
->
->I was able to dig up some info from the archive, and it read,
->=-=-=-FROM ARCHIVE =-=-=-
->You must find this value by yourself but a good starting point is your
->frequency in Hz (I think)
->Example of the code
->	unsigned int freq = 28000000;
->	tb_tick_per_jiffy = freq/HZ;
->	tb_to_us = mulhwu_scale_factor(freq,1000000);
->=-=-=-END OF ARCHIVE =-=-=-
->
->I'm fine with working it out myself but where do I start ? My board
->has 33MHz OSC, so I've trie freq = 33 * 1000000 (where HZ is defined
->100) but it turned out to be little short. I could have just tried few
->more trial and error, but I prefer knowing what I'm doing so.. :)
->
+I don't understand why you wouldn't want to develop on a
+Linux (or at least Unix) host, since you need those skills
+and environment for the target.  Do they just like impossible
+challenges in their way to getting real work done? :-)
 
-There are several platform files that explicitly set tb_ticks_per_jiffy 
-and tb_to_us.  Did you try looking at those?
 
-Also, 33MHz does not sound right but then you don't say what processor 
-you're using so who knows.  You need to find the bus freq used by the 
-cpu/system.  Try looking for the freq of the processor's SYSCLK input.  
-Then you probably have to divide that by 4 to get the frequency that the 
-decrementer runs at.  That's the value that you should use for the 
-'freq' variable in the example code you included in your email.
-
-Mark
+	-- Dan
