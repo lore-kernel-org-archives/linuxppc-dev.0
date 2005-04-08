@@ -1,23 +1,16 @@
-Return-Path: <leigh@solinno.co.uk>
-Received: from titan.server-plant.co.uk (titan.server-plant.co.uk [80.71.3.50])
-	by ozlabs.org (Postfix) with ESMTP id AD89267B27
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Apr 2005 21:54:37 +1000 (EST)
-Message-ID: <33467.82.10.231.190.1112960162.squirrel@82.10.231.190>
-In-Reply-To: <20050406185049.GF3396@smtp.west.cox.net>
-References: <20050328232355.GA1982@pegasos>
-	<20050331142813.GH25923@smtp.west.cox.net>
-	<20050331184549.GA28069@pegasos> <4251D5BA.5080905@gmx.net>
-	<20050405053930.GD4604@pegasos>
-	<20050405143802.GS25923@smtp.west.cox.net> <42533FA1.1070001@gmx.net>
-	<20050406185049.GF3396@smtp.west.cox.net>
-Date: Fri, 8 Apr 2005 12:36:02 +0100 (BST)
-From: "Leigh Brown" <leigh@solinno.co.uk>
-To: "Tom Rini" <trini@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: PREP sym53c8xx sym53c8xx brokeness due to
- 2.6.9-rc1-bk1	introduced residual data patch ...
+Return-Path: <kumar.gala@freescale.com>
+In-Reply-To: <20050408082635.GB4992@iram.es>
+References: <20050408082635.GB4992@iram.es>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <8fc7723059937dc9876c5c14fdcd92ae@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Fri, 8 Apr 2005 09:08:28 -0500
+To: "Gabriel Paubert" <paubert@iram.es>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>,
+	linux-ppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: pte_update and 64-bit PTEs on PPC32?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,62 +20,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Tom Rini said:
-> On Wed, Apr 06, 2005 at 03:47:13AM +0200, Christian wrote:
->> Tom Rini wrote:
->> > Can either of you verify that say 2.6.11.6 w/ "noresidual" on the
->> > command-line works?  Thanks.
->>
->> i booted vanilla 2.6.11.6 with noresidual (and "nopresidual" too, as
->> Sven
->> sugggested), but the scsi errors did not went away :(
->>
->> on a side note, and perhaps totally unrelated: i always have
->> PROC_PREPRESIDUAL=y in my .config, but i never had /proc/residual as
->> promised from the help text.
+
+On Apr 8, 2005, at 3:26 AM, Gabriel Paubert wrote:
+
+> On Wed, Apr 06, 2005 at 04:33:14PM -0500, Kumar Gala wrote:
+>  > Here is a version that works if CONFIG_PTE_64BIT is defined.=A0 If =
+we
+> > like this, I can simplify the pte_update so we dont need the=20
+> (unsigned
+> > long)(p+1) - 4) trick anymore.=A0 Let me know.
+>  >
+> > - kumar
+>  >
+> > #ifdef CONFIG_PTE_64BIT
+> > static inline unsigned long long pte_update(pte_t *p, unsigned long=20=
+
+> clr,
+>  >=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 unsigned long set)
+>  > {
+>  >=A0=A0=A0=A0=A0=A0=A0=A0 unsigned long long old;
+>  >=A0=A0=A0=A0=A0=A0=A0=A0 unsigned long tmp;
+>  >
+> >=A0=A0=A0=A0=A0=A0=A0=A0 __asm__ __volatile__("\
+>  > 1:=A0=A0=A0=A0=A0 lwarx=A0=A0 %L0,0,%4\n\
+>  >=A0=A0=A0=A0=A0=A0=A0=A0 lwzx=A0=A0=A0 %0,0,%3\n\
+>  >=A0=A0=A0=A0=A0=A0=A0=A0 andc=A0=A0=A0 %1,%L0,%5\n\
+> >=A0=A0=A0=A0=A0=A0=A0=A0 or=A0=A0=A0=A0=A0 %1,%1,%6\n\
+>  >=A0=A0=A0=A0=A0=A0=A0=A0 stwcx.=A0 %1,0,%4\n\
+>  >=A0=A0=A0=A0=A0=A0=A0=A0 bne-=A0=A0=A0 1b"
+>  >=A0=A0=A0=A0=A0=A0=A0=A0 : "=3D&r" (old), "=3D&r" (tmp), "=3Dm" (*p)
+> >=A0=A0=A0=A0=A0=A0=A0=A0 : "r" (p), "r" ((unsigned long)(p) + 4), "r" =
+(clr), "r"=20
+> (set),
+> > "m" (*p)
 >
-> Odd.  I thought that only happened if you had no residual data at all
-> (which can happen on Powerstacks, esp if netbooting the kernel).  But in
-> that case the new code shouldn't be hit at all.  Leigh?
+> Are you sure of your pointer arithmetic? I believe that
+>  you'd rather want to use (unsigned char)(p)+4. Or even better:
 
-Hi, I'm back from my holidays, and have had a look at this.  As I spent
-lots of time understanding the horrendous mess that was
-prep_pcibios_fixup(), I'd be loath to back out the changes I made
-(especially as they work so well for me ;-) ).
+Realize that I'm converting the pointer to an int, so its not exactly=20
+normal pointer math.  Was stick with the pre-existing stye.
 
-It turns out that prep_pib_init() is the culprit.  Although it would
-appear to be coded for the non-openpic case, it obviously doesn't work.
-The old version of prep_pcibios_fixup() only called it if there is an
-openpic on the machine.  We can restore that behaviour with the
-following patch:
+>
+> :"r" (p), "b" (4), "r" (clr), "r" (set)
+>
+> and change the first line to:=A0 lwarx %L0,%4,%3.
+>
+> Even more devious, you don't need the %4 parameter:
+>
+> =A0=A0=A0=A0=A0=A0=A0 li %L0,4
+>  =A0=A0=A0=A0=A0=A0=A0 lwarx %L0,%L0,%3
+>
+> since %L0 cannot be r0. This saves one register.
 
---- prep_pci.c.orig	2005-04-08 11:49:25.743718088 +0000
-+++ prep_pci.c	2005-04-08 12:23:00.541422280 +0000
-@@ -1245,8 +1245,13 @@
- 		pci_write_config_byte(dev, PCI_INTERRUPT_LINE, dev->irq);
- 	}
+Actually the compiler effective does this for me.  If you look at the=20
+generated asm, the only additional instruction is an 'addi' and some=20
+'mr' to handle getting things in the correct registers for the return. =20=
 
--	/* Setup the Winbond or Via PIB */
--	prep_pib_init();
-+	/* Setup the Winbond or Via PIB - prep_pib_init() is coded for
-+	 * the non-openpic case, but it breaks (at least) the Utah
-+	 * (Powerstack II Pro4000), so only call it if we have an
-+	 * openpic.
-+	 */
-+	if (have_openpic)
-+		prep_pib_init();
- }
+Not really sure if there is much else to do to optimize this.
 
- static void __init
+>  >=A0=A0=A0=A0=A0=A0=A0=A0 : "cc" );
+>
+> On PPC, I always prefer saying cr0 over cc. Maybe it's just
+>  me, but it's the canonical register name in the architecture.
 
-I've no idea even what machines would be affected by this, but it
-fixes Sven's problem and restores the old behaviour, so that
-can't be bad.
+Was sticking with the style of what already existed, but I agree that=20
+cr is more natural to read than cc.
 
-I guess fixing prep_pib_init() would be the better solution but
-I wouldn't know where to start.  If this band-aid is good enough
-I can submit a proper patch, if you like.
-
-Cheers,
-
-Leigh.
+- kumar
