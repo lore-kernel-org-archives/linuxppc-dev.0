@@ -1,16 +1,23 @@
-Return-Path: <kumar.gala@freescale.com>
-In-Reply-To: <20050408210458.GA16672@iram.es>
-References: <20050408210458.GA16672@iram.es>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <b726e816980791ad8575b4718ef98645@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Fri, 8 Apr 2005 18:32:36 -0500
-To: "Gabriel Paubert" <paubert@iram.es>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	linux-ppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: pte_update and 64-bit PTEs on PPC32?
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 44A4D67B47
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Apr 2005 09:48:54 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Tom Rini <trini@kernel.crashing.org>
+In-Reply-To: <20050408153407.GZ3396@smtp.west.cox.net>
+References: <4240b916050404033230db0551@mail.gmail.com>
+	<20050407171026.GO3396@smtp.west.cox.net>
+	<4240b91605040803137e9e7ddc@mail.gmail.com>
+	<20050408153407.GZ3396@smtp.west.cox.net>
+Content-Type: text/plain
+Date: Sat, 09 Apr 2005 09:47:20 +1000
+Message-Id: <1113004040.9568.385.camel@gaston>
+Mime-Version: 1.0
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH 2.6.12-rc2] ppc32: Fix building 32bit kernel for 64bit
+	machines (Was: Re: linux 2.6.12-rc1-bk5 compilation error)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,50 +28,47 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Apr 8, 2005, at 4:04 PM, Gabriel Paubert wrote:
+Go for it i
 
-> On Fri, Apr 08, 2005 at 02:01:13PM -0500, Kumar Gala wrote:
->  > >Now that I read it carefully, I realize that I was wrong. But =
-there
->  > >is still some room for optimization; the parameter that you don't
->  > >need is %3: simply replace lwzx %0,0,%3 by lwz %0,-4(%4).
-> >
-> > Doesn't help, realize that we are going to have "r3" with a pointer=20=
-
-> to
-> > pte.=A0 There is no way w/o an add to get to the next word for the=20=
-
-> lwarx.
->
-> I'd have to see the context. One less parameter to an asm block may
->  also make the compiler life easier.
-
-The only thing we could do is make the 4 a constant param and change=20
-the lwarx to use it.. not sure if thats any better than what we are=20
-doing.
-
->  >
-> > >But I'm not sure that OOO cannot play tricks on you, what =
-guarantees
->  > > that the lwz is done after lwarx?
->  >
-> > I'm assuming since its a single asm block, gcc is not allowed to
-> > reorder it.
->
-> Not GCC, but the hardware. If loads can pass loads and lwarx has
->  more internal housekeeping overhead (obviously) than lwz. Especially
->  in the case of a processor with 2 LSU:
->  - lwarx issued to LSU1
->  - lwz issued LSU2 in the same clock cycle
->
-> I'm not sure at all that that you are guaranteed not to get
-> potentially stale data from the lwz on SMP. Loads are weekly
-> ordered in general wrt each other and lwarx is no exception
->  AFAIR. The fact that the two words are guaranteed to be in
-> the same cache line makes it extremely unlikely, but not
-> impossible.
-
-You are correct, I guess I really need an eieio in between the lwarx=20
-and lwzx
-
-- kumar=
+> When building a ppc32 MULTIPLATFORM kernel for a 64bit pmac, we try and
+> build certain files or use certain functions that make no sense in that
+> context.  This catches the last of these.
+> 
+> Signed-off-by: Tom Rini <trini@kernel.crashing.org>
+> 
+> --- linux-2.6.orig/arch/ppc/platforms/pmac_cache.S
+> +++ linux-2.6/arch/ppc/platforms/pmac_cache.S
+> @@ -28,6 +28,9 @@
+>   */
+>  
+>  _GLOBAL(flush_disable_caches)
+> +#ifndef CONFIG_6xx
+> +	blr
+> +#else
+>  BEGIN_FTR_SECTION
+>  	b	flush_disable_745x
+>  END_FTR_SECTION_IFSET(CPU_FTR_SPEC7450)
+> @@ -323,3 +326,4 @@ END_FTR_SECTION_IFSET(CPU_FTR_L3CR)
+>  	mtmsr	r11		/* restore DR and EE */
+>  	isync
+>  	blr
+> +#endif	/* CONFIG_6xx */
+> --- linux-2.6.orig/arch/ppc/boot/simple/Makefile
+> +++ linux-2.6/arch/ppc/boot/simple/Makefile
+> @@ -123,10 +123,13 @@ zimageinitrd-$(pcore)			:= zImage.initrd
+>           end-$(pcore)			:= pcore
+>     cacheflag-$(pcore)			:= -include $(clear_L2_L3)
+>  
+> +# Really only valid if CONFIG_6xx=y
+>        zimage-$(CONFIG_PPC_PREP)		:= zImage-PPLUS
+>  zimageinitrd-$(CONFIG_PPC_PREP)		:= zImage.initrd-PPLUS
+> +ifeq ($(CONFIG_6xx),y)
+>       extra.o-$(CONFIG_PPC_PREP)		:= prepmap.o
+>          misc-$(CONFIG_PPC_PREP)		+= misc-prep.o mpc10x_memory.o
+> +endif
+>           end-$(CONFIG_PPC_PREP)		:= prep
+>  
+>           end-$(CONFIG_SANDPOINT)	:= sandpoint
+> 
+-- 
+Benjamin Herrenschmidt <benh@kernel.crashing.org>
