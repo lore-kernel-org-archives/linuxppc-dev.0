@@ -1,20 +1,16 @@
-Return-Path: <joakim.tjernlund@lumentis.se>
-Received: from dmz.lumentis.net (unknown [212.105.56.244])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3C43967B22
+Return-Path: <chris.elston@radstone.co.uk>
+Received: from mail14.messagelabs.com (mail14.messagelabs.com [212.125.75.19])
+	by ozlabs.org (Postfix) with SMTP id D26AF67A6F
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  8 Apr 2005 18:01:14 +1000 (EST)
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: "Marcelo Tosatti" <marcelo.tosatti@cyclades.com>
-Date: Fri, 8 Apr 2005 10:01:01 +0200
-Message-ID: <JPEALJAFNGDDLOPNDIEEAEHJDCAA.joakim.tjernlund@lumentis.se>
+	Fri,  8 Apr 2005 18:22:54 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <20050407193846.GE19449@logos.cnet>
+Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C53C13.65232CF2"
+Date: Fri, 8 Apr 2005 09:17:24 +0100
+Message-ID: <F38DEABE0E171746B133C1ABBD142D9703691AEA@radmail.Radstone.Local>
+From: "Chris Elston" <chris.elston@radstone.co.uk>
+To: <akpm@osdl.org>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: 8xx v2.6 TLB problems and suggested workaround
+Subject: [PATCH 2.6.12-rc2 2/2] ppc32: add rtc hooks in PPC7D platform file
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,134 +21,74 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Marcelo
+This is a multi-part message in MIME format.
 
-> -----Original Message-----
-> From: Marcelo Tosatti [mailto:marcelo.tosatti@cyclades.com]
-> Joakim,
-> 
-> On Thu, Apr 07, 2005 at 10:35:30PM +0200, Joakim Tjernlund wrote:
-> > > -----Original Message-----
-> > > From: Marcelo Tosatti [mailto:marcelo.tosatti@cyclades.com]
-> > > Sent: den 7 april 2005 14:00
-> > > On Wed, Apr 06, 2005 at 11:24:46PM +0200, Joakim Tjernlund wrote:
-> > > > > On Tue, Apr 05, 2005 at 11:51:42PM +0200, Joakim Tjernlund wrote:
-> > > > > > Hi Marcelo
-> > > > > > 
-> > > > > > Reading your report it doesn't sound likely but I will ask anyway:
-> > > > > > Is it possible that the problem you are seeing isn't caused by the
-> > > > > > "famous" CPU bug mentioned here: 
-> > > > > > http://ozlabs.org/pipermail/linuxppc-embedded/2005-January/016351.html
-> > > > > > 
-> > > > > > The DTLB error handler needs DAR to be set correctly and since the
-> > > > > > dcbX instructions doesn't set DAR in either DTLB Miss nor DTLB Error you
-> > > > > > may end up trying to fix the wrong address.
-> > > > > 
-> > > > > Hi Joakim,
-> > > > > 
-> > > > > First of all, thanks your care!
-> > > > 
-> > > > NP, I want to be able to run 8xx on 2.6 in the future.
-> > > >  
-> > > > > 
-> > > > > Well, I dont think the above issue is exactly what we're hitting because
-> > > > > DAR is correctly updated on our case with "dcbst".
-> > > > 
-> > > > Are you sure? Cant remeber all details but this looks a bit strange to me
-> > > > SPR  826 : 0x00001f00         7936
-> > > > is not 0x00001 supposed to be the physical page? 
-> > > 
-> > > SPR 826 contains the page attributes, not Physical Page Number (which is held 
-> > > by SPR 825).
-> > 
-> > Yes, my memory is getting really bad :)
-> > 
-> > Does SPR 825 hould the correct physical page? 0x000001e0 looks like
-> > Zero to me(I should probably bring the manual home so i don't have the rely on
-> > my bad memory :)
-> 
-> Yes, it is zero. That is because there is no pte entry for the page yet (DataStoreTLBMiss
-> sets the pte even if its zero). Thats when DataTLBError (EA present in TLB entry but valid
-> bit not set) gets called.
+------_=_NextPart_001_01C53C13.65232CF2
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-I see.
+This=20patch=20adds=20the=20hooks=20into=20the=20PPC7D=20platforms=20file=20=
+to
+support=20the=20DS1337=20RTC=20device=20as=20the=20clock=20device=20for=20=
+the=20
+PPC7D=20board.
 
-> 
-> > > > Also DSISR: C2000000 looks strange and "impossible". Are you sure this value
-> > > > is correct?  
-> > > 
-> > > As defined by the PEM, bit 1 indicates "data-store error exception", bit 2 
-> > > indicates:
-> 
-> I meant "bit 0 and bit 1".
-> 
-> > > "Set if the translation of an attempted access is not found in the primary hash 
-> > > table entry group (HTEG), or in the rehashed secondary HTEG, or in the range of a 
-> > > DBAT register (page fault condition); otherwise cleared." 
-> > > 
-> > > And bit 6 indicates a store operation (shouldnt be set). 
-> > 
-> > Yes, but bit 0 is also set and if I remember correctly(don't have the manual handy)
-> > it should always be zero?
+Signed-off-by:=20Chris=20Elston=20<chris.elston@radstone.co.uk>
 
-I was looking at the DTLB Error excetion(p. 7-15) in the MPC860 User's Manual. There
- bit 1 = invalid TLB
- bit 4 = protection violation 
- bit 6 = store operation
-the rest is always zero.
-Thats why DSISR = C2000000 looks somewhat impossible since bit 0 is set and that one
-should always be zero.
 
-hmm, I just remembered that there is a comment in mm/fault.c that 8xx always set bit 0 even
-though it shouldn't. There is also a 8xx specific test with bit 3(0x1000000) in fault.c but 
-bit 3 is always zero according the MPC860 Manual for a DTLB Error.
+________________________________________________________________________
+This=20e-mail=20has=20been=20scanned=20for=20all=20viruses=20by=20Star.=20=
+The
+service=20is=20powered=20by=20MessageLabs.=20For=20more=20information=20on=
+=20a=20proactive
+anti-virus=20service=20working=20around=20the=20clock,=20around=20the=20gl=
+obe,=20visit:
+http://www.star.net.uk
+________________________________________________________________________
+------_=_NextPart_001_01C53C13.65232CF2
+Content-Type: application/octet-stream;
+	name="ppc7d_rtc_hooks.patch"
+Content-Transfer-Encoding: base64
+Content-Description: ppc7d_rtc_hooks.patch
+Content-Disposition: attachment;
+	filename="ppc7d_rtc_hooks.patch"
 
-Then we end up with bit 1(invalid TLB) and bit 6(store operation) set. Maybe one
-could make the DTLB Error handler test if bit 1 is set and then branch to
-DataAccess and then deal with the problem in fault.c?
+LS0tIGxpbnV4LTIuNi4xMi1yYzIvYXJjaC9wcGMvcGxhdGZvcm1zL3JhZHN0b25lX3BwYzdkLmMJ
+MjAwNS0wNC0wNyAxMjozMTo0My4wMDAwMDAwMDAgKzAxMDAKKysrIGxpbnV4LTIuNi4xMi1yYzIt
+Y2RlL2FyY2gvcHBjL3BsYXRmb3Jtcy9yYWRzdG9uZV9wcGM3ZC5jCTIwMDUtMDQtMDcgMTI6Mjg6
+NTEuMDAwMDAwMDAwICswMTAwCkBAIC02OCw2ICs2OCw3IEBACiAjZGVmaW5lIFBQQzdEX1JTVF9Q
+SU4JCQkxNyAJLyogR1BQMTcgKi8KIAogZXh0ZXJuIHUzMiBtdjY0MzYwX2lycV9iYXNlOworZXh0
+ZXJuIHNwaW5sb2NrX3QgcnRjX2xvY2s7CiAKIHN0YXRpYyBzdHJ1Y3QgbXY2NHg2MF9oYW5kbGUg
+Ymg7CiBzdGF0aWMgaW50IHBwYzdkX2hhc19hbG1hOwpAQCAtNzUsNiArNzYsMTEgQEAKIGV4dGVy
+biB2b2lkIGdlbjU1MF9wcm9ncmVzcyhjaGFyICosIHVuc2lnbmVkIHNob3J0KTsKIGV4dGVybiB2
+b2lkIGdlbjU1MF9pbml0KGludCwgc3RydWN0IHVhcnRfcG9ydCAqKTsKIAorLyogRklYTUUgLSBt
+b3ZlIHRvIGggZmlsZSAqLworZXh0ZXJuIGludCBkczEzMzdfZG9fY29tbWFuZChpbnQgaWQsIGlu
+dCBjbWQsIHZvaWQgKmFyZyk7CisjZGVmaW5lIERTMTMzN19HRVRfREFURSAgICAgICAgIDAKKyNk
+ZWZpbmUgRFMxMzM3X1NFVF9EQVRFICAgICAgICAgMQorCiAvKiByZXNpZHVhbCBkYXRhICovCiB1
+bnNpZ25lZCBjaGFyIF9fcmVzW3NpemVvZihiZF90KV07CiAKQEAgLTEyMzYsNiArMTI0OCwzOCBA
+QAogCXByaW50ayhLRVJOX0lORk8gIlJhZHN0b25lIFRlY2hub2xvZ3kgUFBDN0RcbiIpOwogCWlm
+IChwcGNfbWQucHJvZ3Jlc3MpCiAJCXBwY19tZC5wcm9ncmVzcygicHBjN2Rfc2V0dXBfYXJjaDog
+ZXhpdCIsIDApOworCit9CisKKy8qIFJlYWwgVGltZSBDbG9jayBzdXBwb3J0LgorICogUFBDN0Qg
+aGFzIGEgRFMxMzM3IGFjY2Vzc2VkIGJ5IEkyQy4KKyAqLworc3RhdGljIHVsb25nIHBwYzdkX2dl
+dF9ydGNfdGltZSh2b2lkKQoreworICAgICAgICBzdHJ1Y3QgcnRjX3RpbWUgdG07CisgICAgICAg
+IGludCByZXN1bHQ7CisKKyAgICAgICAgc3Bpbl9sb2NrKCZydGNfbG9jayk7CisgICAgICAgIHJl
+c3VsdCA9IGRzMTMzN19kb19jb21tYW5kKDAsIERTMTMzN19HRVRfREFURSwgJnRtKTsKKyAgICAg
+ICAgc3Bpbl91bmxvY2soJnJ0Y19sb2NrKTsKKworICAgICAgICBpZiAocmVzdWx0ID09IDApCisg
+ICAgICAgICAgICAgICAgcmVzdWx0ID0gbWt0aW1lKHRtLnRtX3llYXIsIHRtLnRtX21vbiwgdG0u
+dG1fbWRheSwgdG0udG1faG91ciwgdG0udG1fbWluLCB0bS50bV9zZWMpOworCisgICAgICAgIHJl
+dHVybiByZXN1bHQ7Cit9CisKK3N0YXRpYyBpbnQgcHBjN2Rfc2V0X3J0Y190aW1lKHVuc2lnbmVk
+IGxvbmcgbm93dGltZSkKK3sKKyAgICAgICAgc3RydWN0IHJ0Y190aW1lIHRtOworICAgICAgICBp
+bnQgcmVzdWx0OworCisgICAgICAgIHNwaW5fbG9jaygmcnRjX2xvY2spOworICAgICAgICB0b190
+bShub3d0aW1lLCAmdG0pOworICAgICAgICByZXN1bHQgPSBkczEzMzdfZG9fY29tbWFuZCgwLCBE
+UzEzMzdfU0VUX0RBVEUsICZ0bSk7CisgICAgICAgIHNwaW5fdW5sb2NrKCZydGNfbG9jayk7CisK
+KyAgICAgICAgcmV0dXJuIHJlc3VsdDsKIH0KIAogLyogVGhpcyBrZXJuZWwgY29tbWFuZCBsaW5l
+IHBhcmFtZXRlciBjYW4gYmUgdXNlZCB0byBoYXZlIHRoZSB0YXJnZXQKQEAgLTEyOTMsNiArMTMz
+NywxMCBAQAogCWRhdGE4IHw9IDB4MDc7CiAJb3V0YihkYXRhOCwgUFBDN0RfQ1BMRF9MRURTKTsK
+IAorICAgICAgICAvKiBIb29rIHVwIFJUQy4gV2UgY291bGRuJ3QgZG8gdGhpcyBlYXJsaWVyIGJl
+Y2F1c2Ugd2UgbmVlZCB0aGUgSTJDIHN1YnN5c3RlbSAqLworICAgICAgICBwcGNfbWQuc2V0X3J0
+Y190aW1lID0gcHBjN2Rfc2V0X3J0Y190aW1lOworICAgICAgICBwcGNfbWQuZ2V0X3J0Y190aW1l
+ID0gcHBjN2RfZ2V0X3J0Y190aW1lOworCiAJcHJfZGVidWcoIiVzOiBleGl0XG4iLCBfX0ZVTkNU
+SU9OX18pOwogfQogCg==
 
-> 
-> Well, bit 0 and bit 1 are set. 
-> 
-> > > > Don't understand why the "tlbie()" call works around the problem. Can you
-> > > > explain that a bit more?
-> > > 
-> > > It must be because the TLB entry is now removed from the cache, which avoids 
-> > > dcbst from faulting as a store.
-> > > 
-> > > There must be some relation to the invalid present TLB entry and dcbst
-> > > misbehaviour.
-> > > 
-> > > I didnt check what happens with the TLB after tlbie(), I should do that.
-> > > But I suppose it gets wiped off?
-> > 
-> > Unless the pte gets populated(valid) before the next TLB miss I think you
-> > will repeat the same sequence that caused the error in the first place. 
-> > So why does that work? 
-> 
-> It does get populated.
-> 
-> The sequence is:
-> 
-> 1)  userspace access triggers DataTLBMiss
-> 
-> 2) DataTLBMiss sets TLB from Linux pte. At this stage pte entry is still 
-> zeroed (pte table entry clear). Thats why PPN points to page "00000".
-> 
-> 3) DataTLBError (TLB EA match but valid bit not set) - jumps to page fault
-> handler
-> 
-> 4) do_no_page() 
-> 	- allocates a page
-> 	- set pte accordingly 
-> 	- update_mmu_cache()  (dcbst access faults as a write)
-> 
-> So, there must be some relation over dcbst's misbehaviour and the _invalid_ 
-> zero RPN TLB entry. 
-> 
-> Thing is dcbst is not supposed to fault as a store operation, from what PEM
-> indicates.
-
-Ah, now I get it. Thanks.
-
- Jocke
+------_=_NextPart_001_01C53C13.65232CF2--
