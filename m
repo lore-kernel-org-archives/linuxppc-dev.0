@@ -1,17 +1,21 @@
-Return-Path: <paubert@iram.es>
-From: Gabriel Paubert <paubert@iram.es>
-Date: Fri, 8 Apr 2005 10:26:35 +0200
-To: Kumar Gala <kumar.gala@freescale.com>
-Message-ID: <20050408082635.GB4992@iram.es>
-References: <5b292a628bb78373928a0e1626086707@freescale.com>
-	<05453aab0716da8fcade8f835418d680@freescale.com>
+Return-Path: <j.glisse@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.205])
+	by ozlabs.org (Postfix) with ESMTP id 33AC467B2D
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Apr 2005 20:13:23 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id 68so1660314wra
+	for <linuxppc-dev@ozlabs.org>; Fri, 08 Apr 2005 03:13:22 -0700 (PDT)
+Message-ID: <4240b91605040803137e9e7ddc@mail.gmail.com>
+Date: Fri, 8 Apr 2005 11:13:19 +0100
+From: Jerome Glisse <j.glisse@gmail.com>
+To: Tom Rini <trini@kernel.crashing.org>
+In-Reply-To: <20050407171026.GO3396@smtp.west.cox.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <05453aab0716da8fcade8f835418d680@freescale.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	linux-ppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: pte_update and 64-bit PTEs on PPC32?
+Content-Type: text/plain; charset=ISO-8859-1
+References: <4240b916050404033230db0551@mail.gmail.com>
+	<20050407171026.GO3396@smtp.west.cox.net>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: linux 2.6.12-rc1-bk5 compilation error
+Reply-To: Jerome Glisse <j.glisse@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,48 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 06, 2005 at 04:33:14PM -0500, Kumar Gala wrote:
-> Here is a version that works if CONFIG_PTE_64BIT is defined.  If we 
-> like this, I can simplify the pte_update so we dont need the (unsigned 
-> long)(p+1) - 4) trick anymore.  Let me know.
-> 
-> - kumar
-> 
-> #ifdef CONFIG_PTE_64BIT
-> static inline unsigned long long pte_update(pte_t *p, unsigned long clr,
->                                        unsigned long set)
-> {
->         unsigned long long old;
->         unsigned long tmp;
-> 
->         __asm__ __volatile__("\
-> 1:      lwarx   %L0,0,%4\n\
->         lwzx    %0,0,%3\n\
->         andc    %1,%L0,%5\n\
->         or      %1,%1,%6\n\
->         stwcx.  %1,0,%4\n\
->         bne-    1b"
->         : "=&r" (old), "=&r" (tmp), "=m" (*p)
->         : "r" (p), "r" ((unsigned long)(p) + 4), "r" (clr), "r" (set), 
-> "m" (*p)
+> I think you're the only person building a zImage for a 32bit kernel with
+> a 64bit toolchain for MULTIPLATFORM, yes. :)
 
-Are you sure of your pointer arithmetic? I believe that
-you'd rather want to use (unsigned char)(p)+4. Or even better:
+I should move to 64bits :)
+ 
+> This is a valid problem, however.  Does the following also work for you?
 
-:"r" (p), "b" (4), "r" (clr), "r" (set)
+It partly works (correct the problem with disable_6xx_mmu)
+but i still have to the following for resolving __flush_disable_L1
 
-and change the first line to:  lwarx %L0,%4,%3.
+I changed the makefile in arch/ppc/kernel to have this :
+obj-$(CONFIG_POWER4) += cpu_setup_power4.o
+into :
+obj-$(CONFIG_POWER4) += l2cr.o cpu_setup_power4.o
 
-Even more devious, you don't need the %4 parameter:
-
-	li %L0,4
-	lwarx %L0,%L0,%3
-
-since %L0 cannot be r0. This saves one register.
-
->         : "cc" );
-
-On PPC, I always prefer saying cr0 over cc. Maybe it's just
-me, but it's the canonical register name in the architecture.
-
-	Gabriel
+Jerome Glisse
