@@ -1,20 +1,13 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D6E7567B23
+Return-Path: <ncaruso@saticoy.hq.irobot.com>
+Received: from irobot.com (smtp1.irobot.com [66.238.211.203])
+	by ozlabs.org (Postfix) with ESMTP id 8DACE67B27
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  8 Apr 2005 23:39:59 +1000 (EST)
-In-Reply-To: <JPEALJAFNGDDLOPNDIEEAEHJDCAA.joakim.tjernlund@lumentis.se>
-References: <JPEALJAFNGDDLOPNDIEEAEHJDCAA.joakim.tjernlund@lumentis.se>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <86dfdfc8a80cde21c19c09403139ae3b@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Fri, 8 Apr 2005 09:39:47 -0400
-To: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: 8xx v2.6 TLB problems and suggested workaround
+	Sat,  9 Apr 2005 00:07:53 +1000 (EST)
+Date: Fri, 8 Apr 2005 09:56:12 -0400
+From: nick caruso <ncaruso@saticoy.hq.irobot.com>
+Message-Id: <200504081356.j38DuCqe028355@saticoy.hq.irobot.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Question about problem with serial line behavior
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,38 +18,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi
 
-On Apr 8, 2005, at 4:01 AM, Joakim Tjernlund wrote:
+We are bringing up linux on a custom MPC5200 board based on the Lite5200 design published by Freescale.  
 
-> I was looking at the DTLB Error excetion(p. 7-15) in the MPC860 User's 
-> Manual. There
+We're using u-boot as the boot loader.  We run the console serial line at 115200 Baud.
 
-Yeah, well what the manual says and what really happens seems to be
-two different things.
+On some boards, the serial console spews gibberish *after* u-boot has started linux.  On other boards, with exactly the same software, this does not happen.
 
-> .... There is also a 8xx specific test with bit 3(0x1000000) in 
-> fault.c but
-> bit 3 is always zero according the MPC860 Manual for a DTLB Error.
+Linux boots fine in both cases; we can telnet in to the boards and everything seems fine (the console port is even configured correctly according to linux).
 
-Read the comment.  It really happens.  I spent lots and lots of time 
-sorting
-out how the 8xx works, setting up precise test cases and examining the
-results.  Stop reading the manual too closely and create test cases to
-see what exactly happens.
+But looking at the output on the console serial line with a scope, we can see that the baud rate seems to be set much higher - higher in fact than our line drivers can handle.
 
-> Then we end up with bit 1(invalid TLB) and bit 6(store operation) set. 
-> Maybe one
-> could make the DTLB Error handler test if bit 1 is set and then branch 
-> to
-> DataAccess and then deal with the problem in fault.c?
+To re-iterate, the u-boot loader works fine at 115200 on these boards; it's only after we start the linux kernel that the output becomes gibberish,  And the same software loaded on other boards does not exhibit this behavior.  The other boards are identical in design to the failing boards.
 
-No.  That is adding even more code to the "normal" path.  The TLB miss
-should simply take a value from memory and load it into the TLB.  
-Nothing
-more.  It should emulate what a hardware implementation would do ...
-eight instructions, no branches, if done properly :-)
+Does anyone have any suggestions as to what might be going wrong here?  
 
-Thanks.
+The linux kernel we're using is based on a 2.6.7 kernel.
 
+  any help would be greatly appreciated!
 
-	-- Dan
+    thanks, and best regards,
+
+      Nick Caruso
+      ncaruso@irobot.com
