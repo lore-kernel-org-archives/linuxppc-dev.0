@@ -1,20 +1,16 @@
-Return-Path: <ktdann@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.196])
-	by ozlabs.org (Postfix) with ESMTP id 9940467A64
+Return-Path: <chris.elston@radstone.co.uk>
+Received: from mail14.messagelabs.com (mail14.messagelabs.com [212.125.75.19])
+	by ozlabs.org (Postfix) with SMTP id 18E0967B23
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  8 Apr 2005 18:52:13 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 57so674715wri
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 08 Apr 2005 01:52:12 -0700 (PDT)
-Message-ID: <9b7ca65705040801455b84eb0d@mail.gmail.com>
-Date: Fri, 8 Apr 2005 17:45:22 +0900
-From: Daniel Ann <ktdann@gmail.com>
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Best way to determine tb_ticks_per_jiffy inside
-	todc_calibrate_decr()
-Reply-To: Daniel Ann <ktdann@gmail.com>
+	Fri,  8 Apr 2005 19:30:18 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C53C1D.BC3EAFE8"
+Date: Fri, 8 Apr 2005 10:31:25 +0100
+Message-ID: <F38DEABE0E171746B133C1ABBD142D9703691AF2@radmail.Radstone.Local>
+From: "Chris Elston" <chris.elston@radstone.co.uk>
+To: <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
+Subject: [PATCH 2.6.12-rc2 2/2] ppc32: add rtc hooks in PPC7D platform file
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,39 +21,73 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hey folks,
+This is a multi-part message in MIME format.
 
-I seem to have problem getting 1 second right. Board has no RTC so
-I've basically NULLed all the todc_XXX functions except
-todc_calibrate_decr.
+------_=_NextPart_001_01C53C1D.BC3EAFE8
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Now question is, what value should I be assigning it to tb_ticks_per_jiffy ?
+This=20patch=20adds=20the=20hooks=20into=20the=20PPC7D=20platforms=20file=20=
+to
+support=20the=20DS1337=20RTC=20device=20as=20the=20clock=20device=20for=20=
+the=20
+PPC7D=20board.
 
-I was able to dig up some info from the archive, and it read,
-=-=-=-FROM ARCHIVE =-=-=-
-You must find this value by yourself but a good starting point is your
-frequency in Hz (I think)
-Example of the code
-	unsigned int freq = 28000000;
-	tb_tick_per_jiffy = freq/HZ;
-	tb_to_us = mulhwu_scale_factor(freq,1000000);
-=-=-=-END OF ARCHIVE =-=-=-
+Signed-off-by:=20Chris=20Elston=20<chris.elston@radstone.co.uk>
 
-I'm fine with working it out myself but where do I start ? My board
-has 33MHz OSC, so I've trie freq = 33 * 1000000 (where HZ is defined
-100) but it turned out to be little short. I could have just tried few
-more trial and error, but I prefer knowing what I'm doing so.. :)
+________________________________________________________________________
+This=20e-mail=20has=20been=20scanned=20for=20all=20viruses=20by=20Star.=20=
+The
+service=20is=20powered=20by=20MessageLabs.=20For=20more=20information=20on=
+=20a=20proactive
+anti-virus=20service=20working=20around=20the=20clock,=20around=20the=20gl=
+obe,=20visit:
+http://www.star.net.uk
+________________________________________________________________________
+------_=_NextPart_001_01C53C1D.BC3EAFE8
+Content-Type: application/octet-stream;
+	name="ppc7d_rtc_hooks.patch"
+Content-Transfer-Encoding: base64
+Content-Description: ppc7d_rtc_hooks.patch
+Content-Disposition: attachment;
+	filename="ppc7d_rtc_hooks.patch"
 
-Before I was trying it with 100 * 1000000 which had delays like 10:1.
-Now its only about 1.5:1. So, I guess I'm on the right track.... so
-can anyone please help me out here?
+LS0tIGxpbnV4LTIuNi4xMi1yYzIvYXJjaC9wcGMvcGxhdGZvcm1zL3JhZHN0b25lX3BwYzdkLmMJ
+MjAwNS0wNC0wNyAxMjozMTo0My4wMDAwMDAwMDAgKzAxMDAKKysrIGxpbnV4LTIuNi4xMi1yYzIt
+Y2RlL2FyY2gvcHBjL3BsYXRmb3Jtcy9yYWRzdG9uZV9wcGM3ZC5jCTIwMDUtMDQtMDcgMTI6Mjg6
+NTEuMDAwMDAwMDAwICswMTAwCkBAIC02OCw2ICs2OCw3IEBACiAjZGVmaW5lIFBQQzdEX1JTVF9Q
+SU4JCQkxNyAJLyogR1BQMTcgKi8KIAogZXh0ZXJuIHUzMiBtdjY0MzYwX2lycV9iYXNlOworZXh0
+ZXJuIHNwaW5sb2NrX3QgcnRjX2xvY2s7CiAKIHN0YXRpYyBzdHJ1Y3QgbXY2NHg2MF9oYW5kbGUg
+Ymg7CiBzdGF0aWMgaW50IHBwYzdkX2hhc19hbG1hOwpAQCAtNzUsNiArNzYsMTEgQEAKIGV4dGVy
+biB2b2lkIGdlbjU1MF9wcm9ncmVzcyhjaGFyICosIHVuc2lnbmVkIHNob3J0KTsKIGV4dGVybiB2
+b2lkIGdlbjU1MF9pbml0KGludCwgc3RydWN0IHVhcnRfcG9ydCAqKTsKIAorLyogRklYTUUgLSBt
+b3ZlIHRvIGggZmlsZSAqLworZXh0ZXJuIGludCBkczEzMzdfZG9fY29tbWFuZChpbnQgaWQsIGlu
+dCBjbWQsIHZvaWQgKmFyZyk7CisjZGVmaW5lIERTMTMzN19HRVRfREFURSAgICAgICAgIDAKKyNk
+ZWZpbmUgRFMxMzM3X1NFVF9EQVRFICAgICAgICAgMQorCiAvKiByZXNpZHVhbCBkYXRhICovCiB1
+bnNpZ25lZCBjaGFyIF9fcmVzW3NpemVvZihiZF90KV07CiAKQEAgLTEyMzYsNiArMTI0OCwzOCBA
+QAogCXByaW50ayhLRVJOX0lORk8gIlJhZHN0b25lIFRlY2hub2xvZ3kgUFBDN0RcbiIpOwogCWlm
+IChwcGNfbWQucHJvZ3Jlc3MpCiAJCXBwY19tZC5wcm9ncmVzcygicHBjN2Rfc2V0dXBfYXJjaDog
+ZXhpdCIsIDApOworCit9CisKKy8qIFJlYWwgVGltZSBDbG9jayBzdXBwb3J0LgorICogUFBDN0Qg
+aGFzIGEgRFMxMzM3IGFjY2Vzc2VkIGJ5IEkyQy4KKyAqLworc3RhdGljIHVsb25nIHBwYzdkX2dl
+dF9ydGNfdGltZSh2b2lkKQoreworICAgICAgICBzdHJ1Y3QgcnRjX3RpbWUgdG07CisgICAgICAg
+IGludCByZXN1bHQ7CisKKyAgICAgICAgc3Bpbl9sb2NrKCZydGNfbG9jayk7CisgICAgICAgIHJl
+c3VsdCA9IGRzMTMzN19kb19jb21tYW5kKDAsIERTMTMzN19HRVRfREFURSwgJnRtKTsKKyAgICAg
+ICAgc3Bpbl91bmxvY2soJnJ0Y19sb2NrKTsKKworICAgICAgICBpZiAocmVzdWx0ID09IDApCisg
+ICAgICAgICAgICAgICAgcmVzdWx0ID0gbWt0aW1lKHRtLnRtX3llYXIsIHRtLnRtX21vbiwgdG0u
+dG1fbWRheSwgdG0udG1faG91ciwgdG0udG1fbWluLCB0bS50bV9zZWMpOworCisgICAgICAgIHJl
+dHVybiByZXN1bHQ7Cit9CisKK3N0YXRpYyBpbnQgcHBjN2Rfc2V0X3J0Y190aW1lKHVuc2lnbmVk
+IGxvbmcgbm93dGltZSkKK3sKKyAgICAgICAgc3RydWN0IHJ0Y190aW1lIHRtOworICAgICAgICBp
+bnQgcmVzdWx0OworCisgICAgICAgIHNwaW5fbG9jaygmcnRjX2xvY2spOworICAgICAgICB0b190
+bShub3d0aW1lLCAmdG0pOworICAgICAgICByZXN1bHQgPSBkczEzMzdfZG9fY29tbWFuZCgwLCBE
+UzEzMzdfU0VUX0RBVEUsICZ0bSk7CisgICAgICAgIHNwaW5fdW5sb2NrKCZydGNfbG9jayk7CisK
+KyAgICAgICAgcmV0dXJuIHJlc3VsdDsKIH0KIAogLyogVGhpcyBrZXJuZWwgY29tbWFuZCBsaW5l
+IHBhcmFtZXRlciBjYW4gYmUgdXNlZCB0byBoYXZlIHRoZSB0YXJnZXQKQEAgLTEyOTMsNiArMTMz
+NywxMCBAQAogCWRhdGE4IHw9IDB4MDc7CiAJb3V0YihkYXRhOCwgUFBDN0RfQ1BMRF9MRURTKTsK
+IAorICAgICAgICAvKiBIb29rIHVwIFJUQy4gV2UgY291bGRuJ3QgZG8gdGhpcyBlYXJsaWVyIGJl
+Y2F1c2Ugd2UgbmVlZCB0aGUgSTJDIHN1YnN5c3RlbSAqLworICAgICAgICBwcGNfbWQuc2V0X3J0
+Y190aW1lID0gcHBjN2Rfc2V0X3J0Y190aW1lOworICAgICAgICBwcGNfbWQuZ2V0X3J0Y190aW1l
+ID0gcHBjN2RfZ2V0X3J0Y190aW1lOworCiAJcHJfZGVidWcoIiVzOiBleGl0XG4iLCBfX0ZVTkNU
+SU9OX18pOwogfQogCg==
 
-Also, could anyone spill their brain on mulhwu_scale_factor() ? I've
-followed the code and ended up reading what seems to be a assembler.
-(Should have paid attention during the lectures :P) Any hint on this ?
-
-Thanks heaps..
-Cheers,
-
--- 
-Daniel
+------_=_NextPart_001_01C53C1D.BC3EAFE8--
