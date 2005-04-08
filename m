@@ -1,19 +1,24 @@
-Return-Path: <paubert@iram.es>
-From: Gabriel Paubert <paubert@iram.es>
-Date: Fri, 8 Apr 2005 23:44:25 +0200
-To: Dan Malek <dan@embeddededge.com>
-Message-ID: <20050408214425.GA17572@iram.es>
-References: <20050408184442.GA13709@iram.es>
-	<8497276598d775128a73efb06803a9ba@freescale.com>
-	<20050408210458.GA16672@iram.es>
-	<091e271750ba6ff4b07e0a9cb9f68dae@embeddededge.com>
+Return-Path: <j.glisse@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.200])
+	by ozlabs.org (Postfix) with ESMTP id 52EA467B54
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Apr 2005 08:27:52 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id 37so1241854wra
+	for <linuxppc-dev@ozlabs.org>; Fri, 08 Apr 2005 15:27:51 -0700 (PDT)
+Message-ID: <4240b916050408152737ee7286@mail.gmail.com>
+Date: Fri, 8 Apr 2005 23:27:50 +0100
+From: Jerome Glisse <j.glisse@gmail.com>
+To: Tom Rini <trini@kernel.crashing.org>
+In-Reply-To: <20050408153407.GZ3396@smtp.west.cox.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <091e271750ba6ff4b07e0a9cb9f68dae@embeddededge.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	linux-ppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: pte_update and 64-bit PTEs on PPC32?
+Content-Type: text/plain; charset=ISO-8859-1
+References: <4240b916050404033230db0551@mail.gmail.com>
+	<20050407171026.GO3396@smtp.west.cox.net>
+	<4240b91605040803137e9e7ddc@mail.gmail.com>
+	<20050408153407.GZ3396@smtp.west.cox.net>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2.6.12-rc2] ppc32: Fix building 32bit kernel for 64bit
+	machines (Was: Re: linux 2.6.12-rc1-bk5 compilation error)
+Reply-To: Jerome Glisse <j.glisse@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,19 +28,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Apr 08, 2005 at 05:31:43PM -0400, Dan Malek wrote:
+> OK, I think the following is a better workaround for that (based on
+> arch/ppc/platforms/pmac_sleep.S):
 > 
-> On Apr 8, 2005, at 5:04 PM, Gabriel Paubert wrote:
+> When building a ppc32 MULTIPLATFORM kernel for a 64bit pmac, we try and
+> build certain files or use certain functions that make no sense in that
+> context.  This catches the last of these.
 > 
-> >...... Loads are weekly
->                               ^^^^^^
-> >ordered in general wrt each other and lwarx is no exception
-> >AFAIR.
-> 
-> Maybe that's my performance problem :-)
+> Signed-off-by: Tom Rini <trini@kernel.crashing.org>
 
-Good catch ;-) 
+Works fine over here. Thx.
 
-I believe it's my funniest typo to date.
-
-	Gabriel
+Jerome Glisse
