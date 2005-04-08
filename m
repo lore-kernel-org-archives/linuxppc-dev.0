@@ -1,16 +1,16 @@
-Return-Path: <kumar.gala@freescale.com>
-In-Reply-To: <20050408082635.GB4992@iram.es>
-References: <20050408082635.GB4992@iram.es>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <8fc7723059937dc9876c5c14fdcd92ae@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Fri, 8 Apr 2005 09:08:28 -0500
-To: "Gabriel Paubert" <paubert@iram.es>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	linux-ppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: pte_update and 64-bit PTEs on PPC32?
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao03.cox.net (fed1rmmtao03.cox.net [68.230.241.36])
+	by ozlabs.org (Postfix) with ESMTP id 6D81F67B23
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Apr 2005 00:38:34 +1000 (EST)
+Date: Fri, 8 Apr 2005 07:38:28 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Andrew Morton <akpm@osdl.org>,
+	Kernel Mailing List <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
+Message-ID: <20050408143828.GW3396@smtp.west.cox.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Giovambattista Pulcini <gpulcini@swintel.it>
+Subject: [PATCH 2.6.12-rc2]: ppc32: Fix a problem with NTP on !(chrp||gemini)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,71 +20,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The following problem was found by Giovambattista Pulcini
+<gpulcini@swintel.it>, who also provided a partial patch, and this has
+been verified by our time guru Gabriel Paubert <paubert@iram.es>.
 
-On Apr 8, 2005, at 3:26 AM, Gabriel Paubert wrote:
+The problem is that in do_settimeofday() we always set time_state to
+TIME_ERROR and except on two platforms, never re-set it.  This meant
+that ntp_gettime() and ntp_adjtime() always returned TIME_ERROR,
+incorrectly.  Based on Gabriel's analysis, time_state is used for
+leap-second processing, and ppc shouldn't be mucking with it.
 
-> On Wed, Apr 06, 2005 at 04:33:14PM -0500, Kumar Gala wrote:
->  > Here is a version that works if CONFIG_PTE_64BIT is defined.=A0 If =
-we
-> > like this, I can simplify the pte_update so we dont need the=20
-> (unsigned
-> > long)(p+1) - 4) trick anymore.=A0 Let me know.
->  >
-> > - kumar
->  >
-> > #ifdef CONFIG_PTE_64BIT
-> > static inline unsigned long long pte_update(pte_t *p, unsigned long=20=
+From: Giovambattista Pulcini <gpulcini@swintel.it>
+Signed-off-by: Tom Rini <trini@kernel.crashing.org>
 
-> clr,
->  >=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 unsigned long set)
->  > {
->  >=A0=A0=A0=A0=A0=A0=A0=A0 unsigned long long old;
->  >=A0=A0=A0=A0=A0=A0=A0=A0 unsigned long tmp;
->  >
-> >=A0=A0=A0=A0=A0=A0=A0=A0 __asm__ __volatile__("\
->  > 1:=A0=A0=A0=A0=A0 lwarx=A0=A0 %L0,0,%4\n\
->  >=A0=A0=A0=A0=A0=A0=A0=A0 lwzx=A0=A0=A0 %0,0,%3\n\
->  >=A0=A0=A0=A0=A0=A0=A0=A0 andc=A0=A0=A0 %1,%L0,%5\n\
-> >=A0=A0=A0=A0=A0=A0=A0=A0 or=A0=A0=A0=A0=A0 %1,%1,%6\n\
->  >=A0=A0=A0=A0=A0=A0=A0=A0 stwcx.=A0 %1,0,%4\n\
->  >=A0=A0=A0=A0=A0=A0=A0=A0 bne-=A0=A0=A0 1b"
->  >=A0=A0=A0=A0=A0=A0=A0=A0 : "=3D&r" (old), "=3D&r" (tmp), "=3Dm" (*p)
-> >=A0=A0=A0=A0=A0=A0=A0=A0 : "r" (p), "r" ((unsigned long)(p) + 4), "r" =
-(clr), "r"=20
-> (set),
-> > "m" (*p)
->
-> Are you sure of your pointer arithmetic? I believe that
->  you'd rather want to use (unsigned char)(p)+4. Or even better:
+--- 1.37/arch/ppc/kernel/time.c	2005-01-20 22:02:08 -07:00
++++ edited/arch/ppc/kernel/time.c	2005-04-08 07:30:46 -07:00
+@@ -272,7 +272,6 @@
+ 
+ 	time_adjust = 0;                /* stop active adjtime() */
+ 	time_status |= STA_UNSYNC;
+-	time_state = TIME_ERROR;        /* p. 24, (a) */
+ 	time_maxerror = NTP_PHASE_LIMIT;
+ 	time_esterror = NTP_PHASE_LIMIT;
+ 	write_sequnlock_irqrestore(&xtime_lock, flags);
+--- 1.11/arch/ppc/platforms/chrp_time.c	2005-01-25 14:50:14 -07:00
++++ edited/arch/ppc/platforms/chrp_time.c	2005-04-08 07:30:53 -07:00
+@@ -115,8 +115,6 @@
+ 	chrp_cmos_clock_write(save_control, RTC_CONTROL);
+ 	chrp_cmos_clock_write(save_freq_select, RTC_FREQ_SELECT);
+ 
+-	if ( (time_state == TIME_ERROR) || (time_state == TIME_BAD) )
+-		time_state = TIME_OK;
+ 	spin_unlock(&rtc_lock);
+ 	return 0;
+ }
+--- 1.17/arch/ppc/platforms/gemini_setup.c	2005-03-13 16:29:43 -07:00
++++ edited/arch/ppc/platforms/gemini_setup.c	2005-04-08 07:30:56 -07:00
+@@ -433,9 +433,6 @@
+ 	/* done writing */
+ 	gemini_rtc_write(reg, M48T35_RTC_CONTROL);
+ 
+-	if ((time_state == TIME_ERROR) || (time_state == TIME_BAD))
+-		time_state = TIME_OK;
+-
+ 	return 0;
+ }
 
-Realize that I'm converting the pointer to an int, so its not exactly=20
-normal pointer math.  Was stick with the pre-existing stye.
-
->
-> :"r" (p), "b" (4), "r" (clr), "r" (set)
->
-> and change the first line to:=A0 lwarx %L0,%4,%3.
->
-> Even more devious, you don't need the %4 parameter:
->
-> =A0=A0=A0=A0=A0=A0=A0 li %L0,4
->  =A0=A0=A0=A0=A0=A0=A0 lwarx %L0,%L0,%3
->
-> since %L0 cannot be r0. This saves one register.
-
-Actually the compiler effective does this for me.  If you look at the=20
-generated asm, the only additional instruction is an 'addi' and some=20
-'mr' to handle getting things in the correct registers for the return. =20=
-
-Not really sure if there is much else to do to optimize this.
-
->  >=A0=A0=A0=A0=A0=A0=A0=A0 : "cc" );
->
-> On PPC, I always prefer saying cr0 over cc. Maybe it's just
->  me, but it's the canonical register name in the architecture.
-
-Was sticking with the style of what already existed, but I agree that=20
-cr is more natural to read than cc.
-
-- kumar
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
