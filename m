@@ -1,21 +1,17 @@
-Return-Path: <colin@colino.net>
-Received: from paperstreet.colino.net (colino.net [213.41.131.56])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B997B67B4C
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Apr 2005 05:10:25 +1000 (EST)
-Received: from jack.colino.net (jack.colino.net [192.168.0.11])
-	by paperstreet.colino.net (Postfix) with ESMTP id 818AE101D9
-	for <linuxppc-dev@ozlabs.org>; Fri,  8 Apr 2005 21:10:16 +0200 (CEST)
-Date: Fri, 8 Apr 2005 21:10:15 +0200
-From: Colin Leroy <colin@colino.net>
-To: linuxppc-dev@ozlabs.org
-Message-ID: <20050408211015.35350110@jack.colino.net>
-In-Reply-To: <Pine.LNX.4.60.0504081039570.23066@bigrock.cs.ubc.ca>
-References: <Pine.LNX.4.60.0504081039570.23066@bigrock.cs.ubc.ca>
+Return-Path: <paubert@iram.es>
+From: Gabriel Paubert <paubert@iram.es>
+Date: Fri, 8 Apr 2005 23:04:58 +0200
+To: Kumar Gala <kumar.gala@freescale.com>
+Message-ID: <20050408210458.GA16672@iram.es>
+References: <20050408184442.GA13709@iram.es>
+	<8497276598d775128a73efb06803a9ba@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Subject: Re: Thanks!!
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <8497276598d775128a73efb06803a9ba@freescale.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>,
+	linux-ppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: pte_update and 64-bit PTEs on PPC32?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,24 +21,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 08 Apr 2005 at 10h04, Dustin Lang wrote:
+On Fri, Apr 08, 2005 at 02:01:13PM -0500, Kumar Gala wrote:
+> >Now that I read it carefully, I realize that I was wrong. But there
+> >is still some room for optimization; the parameter that you don't
+> >need is %3: simply replace lwzx %0,0,%3 by lwz %0,-4(%4).
+> 
+> Doesn't help, realize that we are going to have "r3" with a pointer to 
+> pte.  There is no way w/o an add to get to the next word for the lwarx.
 
-Hi, 
+I'd have to see the context. One less parameter to an asm block may
+also make the compiler life easier. 
 
-> Which makes me wonder if 2.4 was running at 765 the whole time.
-> Maybe because of this, 2.6 FEELS faster :)
+> 
+> >But I'm not sure that OOO cannot play tricks on you, what guarantees
+> > that the lwz is done after lwarx?
+> 
+> I'm assuming since its a single asm block, gcc is not allowed to 
+> reorder it.
 
-2.6 feels faster on desktop for other reasons too, such as a faster
-scheduler (at least it was the case when I switched to 2.6, maybe 2.4
-got a faster one too).
+Not GCC, but the hardware. If loads can pass loads and lwarx has
+more internal housekeeping overhead (obviously) than lwz. Especially
+in the case of a processor with 2 LSU:
+- lwarx issued to LSU1
+- lwz issued LSU2 in the same clock cycle
 
->  Also, the backlight fine
-> control is great!  I'll play with sleep/resume this weekend and
-> report my status.
+I'm not sure at all that that you are guaranteed not to get 
+potentially stale data from the lwz on SMP. Loads are weekly 
+ordered in general wrt each other and lwarx is no exception
+AFAIR. The fact that the two words are guaranteed to be in 
+the same cache line makes it extremely unlikely, but not 
+impossible.
 
-You mentioned you have an nVidia GPU, so I guess you won't have much
-success - nVidia cards are badly supported as they're being very secret
-about their hardware.
-
--- 
-Colin
+	Gabriel
