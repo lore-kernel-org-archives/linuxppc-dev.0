@@ -1,15 +1,18 @@
-Return-Path: <chris.elston@radstone.co.uk>
-Received: from mail14.messagelabs.com (mail14.messagelabs.com [212.125.75.19])
-	by ozlabs.org (Postfix) with SMTP id E39CD67A64
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtai02.cox.net (fed1rmmtai02.cox.net [68.230.241.57])
+	by ozlabs.org (Postfix) with ESMTP id 0C96367B25
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  9 Apr 2005 00:41:51 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C53C49.3A8A5688"
-Date: Fri, 8 Apr 2005 15:42:46 +0100
-Message-ID: <F38DEABE0E171746B133C1ABBD142D9703691AFD@radmail.Radstone.Local>
-From: "Chris Elston" <chris.elston@radstone.co.uk>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: MTD Mapping driver - out of vmalloc space
+	Sat,  9 Apr 2005 00:46:02 +1000 (EST)
+Date: Fri, 8 Apr 2005 07:46:00 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Message-ID: <20050408144600.GX3396@smtp.west.cox.net>
+References: <Pine.LNX.4.61.0504081010330.14089@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.61.0504081010330.14089@localhost.localdomain>
+Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: Re: cross-compiling under cygwin?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,232 +23,166 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Fri, Apr 08, 2005 at 10:13:09AM -0400, Robert P. J. Day wrote:
 
-------_=_NextPart_001_01C53C49.3A8A5688
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+>   i've just had a request from a colleague who wants to do all the
+> cross-compilation for our 8xx board on a windows box, rather than
+> linux.
+> 
+>   there was talk of cygwin, and kdevelop as well.  i'm still parsing
+> the rest of the email but is there a canonical URL that discusses
+> working in the windows environment?
+> 
+>   i'm just about to head over to denx.de to see what i can find.
+> thanks for any pointers.
 
-Dear=20all,
+The cross-tool list has had some of this.  As of 2.6.10 at least, the
+following was still needed, and too ugly and/or cygwin version specific
+to be submitted to the kernel proper (still applies cleanly to
+2.6.12-rc2, but untested in Cygwin env):
 
-I'm=20writing=20an=20MTD=20mapping=20driver=20for=20a=20board=20with=20(up=
-=20to)=20512M=20SDRAM,=20and
-(up=20to)=20256M=20Flash=20and=20I've=20hit=20a=20bit=20of=20a=20problem.=20=
-=20The=20standard=20way=20to=20write
-a=20mapping=20driver=20seems=20to=20be=20to=20map=20the=20whole=20of=20the=
-=20Flash=20into=20kernel=20virtual
-memory=20space.=20=20While=20this=20is=20not=20a=20problem=20for=20small=20=
-Flash=20devices,=20I'm=20hitting
-the=20limit=20of=20the=20vmalloc=20space.=20=20
+Source: MontaVista Software, Inc.
+MR: 8836
+Type: Defect Fix
+Disposition: local
+Signed-off-by: Tom Rini <trini@mvista.com>
+Description:
+	A collection of unmergeable Cygwin fixes:
+	- Cygwin doesn't have <inttypes.h> nor <stdint.h>, but doesn't
+	  need them for certain values anyhow.
+	- For certain ELF things, we rely on libelf being provided by
+	  the MVL environment.
+	- /usr/include/asm/byteorder.h provided ntohl/htonl.
+	- <limits.h> defines PATH_MAX as an expression, which means
+	it cannot be used in some places.
 
-So=20I=20decided=20to=20modify=20my=20mapping=20driver=20to=20work=20throu=
-gh=20a=20smaller=20virtual=20
-addressing=20window.
+Index: linux-2.6.11.2/arch/ppc/boot/utils/mktree.c
+===================================================================
+--- linux-2.6.11.2.orig/arch/ppc/boot/utils/mktree.c
++++ linux-2.6.11.2/arch/ppc/boot/utils/mktree.c
+@@ -15,9 +15,9 @@
+ #include <sys/stat.h>
+ #include <unistd.h>
+ #include <netinet/in.h>
+-#ifdef __sun__
++#if defined(__sun__)
+ #include <inttypes.h>
+-#else
++#elif !defined(__CYGWIN__)
+ #include <stdint.h>
+ #endif
+ 
+Index: linux-2.6.11.2/scripts/mod/modpost.h
+===================================================================
+--- linux-2.6.11.2.orig/scripts/mod/modpost.h
++++ linux-2.6.11.2/scripts/mod/modpost.h
+@@ -7,7 +7,11 @@
+ #include <sys/mman.h>
+ #include <fcntl.h>
+ #include <unistd.h>
++#ifdef __CYGWIN__
++#include <libelf/libelf.h>
++#else
+ #include <elf.h>
++#endif
+ 
+ #include "elfconfig.h"
+ 
+Index: linux-2.6.11.2/scripts/mod/mk_elfconfig.c
+===================================================================
+--- linux-2.6.11.2.orig/scripts/mod/mk_elfconfig.c
++++ linux-2.6.11.2/scripts/mod/mk_elfconfig.c
+@@ -1,7 +1,11 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
++#ifdef __CYGWIN__
++#include <libelf/libelf.h>
++#else
+ #include <elf.h>
++#endif
+ 
+ int
+ main(int argc, char **argv)
+Index: linux-2.6.11.2/scripts/mod/sumversion.c
+===================================================================
+--- linux-2.6.11.2.orig/scripts/mod/sumversion.c
++++ linux-2.6.11.2/scripts/mod/sumversion.c
+@@ -1,7 +1,10 @@
++#if defined(__sun__)
+ #include <netinet/in.h>
+-#ifdef __sun__
+ #include <inttypes.h>
++#elif defined(__CYGWIN__)
++#include <asm/byteorder.h>	/* For ntohl/htonl */
+ #else
++#include <netinet/in.h>
+ #include <stdint.h>
+ #endif
+ #include <ctype.h>
+Index: linux-2.6.11.2/scripts/mod/file2alias.c
+===================================================================
+--- linux-2.6.11.2.orig/scripts/mod/file2alias.c
++++ linux-2.6.11.2/scripts/mod/file2alias.c
+@@ -19,9 +19,9 @@ typedef Elf32_Addr	kernel_ulong_t;
+ #else
+ typedef Elf64_Addr	kernel_ulong_t;
+ #endif
+-#ifdef __sun__
++#if defined(__sun__)
+ #include <inttypes.h>
+-#else
++#elif !defined(__CYGWIN__)
+ #include <stdint.h>
+ #endif
+ 
+Index: linux-2.6.11.2/arch/ppc/boot/utils/mkbugboot.c
+===================================================================
+--- linux-2.6.11.2.orig/arch/ppc/boot/utils/mkbugboot.c
++++ linux-2.6.11.2/arch/ppc/boot/utils/mkbugboot.c
+@@ -21,9 +21,9 @@
+ #include <stdlib.h>
+ #include <errno.h>
+ #include <fcntl.h>
+-#ifdef __sun__
++#if defined(__sun__)
+ #include <inttypes.h>
+-#else
++#elif !defined(__CYGWIN__)
+ #include <stdint.h>
+ #endif
+ 
+Index: linux-2.6.11.2/lib/gen_crc32table.c
+===================================================================
+--- linux-2.6.11.2.orig/lib/gen_crc32table.c
++++ linux-2.6.11.2/lib/gen_crc32table.c
+@@ -1,6 +1,8 @@
+ #include <stdio.h>
+ #include "crc32defs.h"
++#ifndef __CYGWIN__
+ #include <inttypes.h>
++#endif
+ 
+ #define ENTRIES_PER_LINE 4
+ 
+Index: linux-2.6.11.2/usr/gen_init_cpio.c
+===================================================================
+--- linux-2.6.11.2.orig/usr/gen_init_cpio.c
++++ linux-2.6.11.2/usr/gen_init_cpio.c
+@@ -10,6 +10,12 @@
+ #include <ctype.h>
+ #include <limits.h>
+ 
++/* Cygwin's <limits.h> defines PATH_MAX as (260 - 1) which just won't do. */
++#ifdef __CYGWIN__
++#undef PATH_MAX
++#define PATH_MAX	259
++#endif
++
+ /*
+  * Original work by Jeff Garzik
+  *
 
-Basically,=20all=20reads/writes=20are=20redirected=20through=20my=20custom=
-=20functions=20which
-first=20ensure=20that=20the=20correct=20physical=20address=20range=20is=20=
-mapped=20into=20virtual
-space=20and=20then=20drop=20through=20to=20the=20standard=20read/write=20f=
-unctions.=20=20The=20mapping
-is=20achieved=20using=20ioremap/iounmap=20calls.=20=20(code=20attached)
-
-David=20Woodhouse=20pointed=20out=20that=20this=20approach=20is=20not=20vi=
-able=20because=20the=20reads
-and=20writes=20must=20be=20atomic=20-=20and=20ioremap=20can=20potentially=20=
-sleep.=20=20So=20I'm=20stuck=20as
-to=20how=20to=20proceed.
-
-Ideally=20what=20I'd=20like=20is=20to=20be=20able=20to=20allocate=20a=20bl=
-ock=20of=20virtual=20addresses=20at=20
-init=20time=20and=20then=20dynamically=20modify=20the=20physical=20address=
-=20range=20that=20it=20refers=20to.
-Since=20I=20wouldn't=20be=20requesting=20any=20more=20vmalloc=20space=20-=20=
-just=20changing=20the=20mapping=20
-for=20the=20space=20I=20have=20got=20-=20I'd=20hopefully=20be=20able=20to=20=
-make=20this=20a=20non-blocking
-operation.=20=20Unfortunately=20I=20have=20no=20idea=20how=20to=20go=20abo=
-ut=20this=20-=20or=20even=20if=20it's
-possible=20:)
-
-Thanks=20in=20advance,
-
-Chris.
-
-________________________________________________________________________
-This=20e-mail=20has=20been=20scanned=20for=20all=20viruses=20by=20Star.=20=
-The
-service=20is=20powered=20by=20MessageLabs.=20For=20more=20information=20on=
-=20a=20proactive
-anti-virus=20service=20working=20around=20the=20clock,=20around=20the=20gl=
-obe,=20visit:
-http://www.star.net.uk
-________________________________________________________________________
-------_=_NextPart_001_01C53C49.3A8A5688
-Content-Type: application/octet-stream;
-	name="rsppc7d-flash.c"
-Content-Transfer-Encoding: base64
-Content-Description: rsppc7d-flash.c
-Content-Disposition: attachment;
-	filename="rsppc7d-flash.c"
-
-LyoKICogUmFkc3RvbmUgVGVjaG5vbG9neSBQUEM3RCBGbGFzaCBtZW1vcnkgZHJpdmVyLgogKiBD
-b3B5cmlnaHQgKEMpIDIwMDUgUmFkc3RvbmUgVGVjaG5vbG9neSA8Y2hyaXMuZWxzdG9uQHJhZHN0
-b25lLmNvLnVrPgogKgogKiBCYXNlZCBvbjogY2VpdmEuYywgd2hpY2ggaGFzIHRoZSBmb2xsb3dp
-bmcgY29weXJpZ2h0OgogKiBDZWl2YSBmbGFzaCBtZW1vcnkgZHJpdmVyLgogKiBDb3B5cmlnaHQg
-KEMpIDIwMDIgUm9iIFNjb3R0IDxyc2NvdHRAbXRyb2IuZmRucy5uZXQ+CiAqCiAqIEJhc2VkIG9u
-OiBzYTExMDAtZmxhc2guYywgd2hpY2ggaGFzIHRoZSBmb2xsb3dpbmcgY29weXJpZ2h0OgogKiBG
-bGFzaCBtZW1vcnkgYWNjZXNzIG9uIFNBMTF4MCBiYXNlZCBkZXZpY2VzCiAqCiAqIChDKSAyMDAw
-IE5pY29sYXMgUGl0cmUgPG5pY29AY2FtLm9yZz4KICoKICovCgojaW5jbHVkZSA8bGludXgvY29u
-ZmlnLmg+CiNpbmNsdWRlIDxsaW51eC9tb2R1bGUuaD4KI2luY2x1ZGUgPGxpbnV4L3R5cGVzLmg+
-CiNpbmNsdWRlIDxsaW51eC9pb3BvcnQuaD4KI2luY2x1ZGUgPGxpbnV4L2tlcm5lbC5oPgojaW5j
-bHVkZSA8bGludXgvaW5pdC5oPgoKI2luY2x1ZGUgPGxpbnV4L210ZC9tdGQuaD4KI2luY2x1ZGUg
-PGxpbnV4L210ZC9tYXAuaD4KI2luY2x1ZGUgPGxpbnV4L210ZC9wYXJ0aXRpb25zLmg+CiNpbmNs
-dWRlIDxsaW51eC9tdGQvY29uY2F0Lmg+CgojaW5jbHVkZSA8YXNtL2lvLmg+CiNpbmNsdWRlIDxh
-c20vcHBjYm9vdC5oPgoKI2luY2x1ZGUgPHBsYXRmb3Jtcy9yYWRzdG9uZV9wcGM3ZC5oPgoKZXh0
-ZXJuIHVuc2lnbmVkIGNoYXIgX19yZXNbXTsgLyogcmVzaWR1YWwgZGF0YSBzdHJ1Y3R1cmUgKi8K
-c3RhdGljIGJkX3QgKmJpbmZvID0gKGJkX3QgKilfX3JlczsKCi8qCiAqIFNlZSBpbmNsdWRlL2xp
-bnV4L210ZC9wYXJ0aXRpb25zLmggZm9yIGRlZmluaXRpb24gb2YgdGhlIG10ZF9wYXJ0aXRpb24K
-ICogc3RydWN0dXJlLgogKi8KCiNkZWZpbmUgUlNQUEM3RF9CT09UX1BBUlRJVElPTl9TSVpFCTB4
-ODAwMDAwCiNkZWZpbmUgUlNQUEM3RF9LRVJORUxfUEFSVElUSU9OX1NJWkUJMHg0MDAwMDAKCnN0
-YXRpYyBzdHJ1Y3QgbXRkX3BhcnRpdGlvbiByc3BwYzdkX3BhcnRpdGlvbnNbXSA9IHsKICAgICAg
-ICB7CiAgICAgICAgICAgICAgICAubmFtZSA9ICAgICAgICAgIlVzZXIiLAogICAgICAgICAgICAg
-ICAgLnNpemUgPSAgICAgICAgIDAsCS8qIHNldCBhdCBydW50aW1lICovCiAgICAgICAgICAgICAg
-ICAub2Zmc2V0ID0gICAgICAgMAogICAgICAgIH0sewogICAgICAgICAgICAgICAgLm5hbWUgPSAg
-ICAgICAgICJLZXJuZWwiLAogICAgICAgICAgICAgICAgLnNpemUgPSAgICAgICAgIFJTUFBDN0Rf
-S0VSTkVMX1BBUlRJVElPTl9TSVpFLAogICAgICAgICAgICAgICAgLm9mZnNldCA9ICAgICAgIE1U
-RFBBUlRfT0ZTX0FQUEVORAogICAgICAgIH0sewogICAgICAgICAgICAgICAgLm5hbWUgPSAgICAg
-ICAgICJQUENCb290IiwKICAgICAgICAgICAgICAgIC5zaXplID0gICAgICAgICBSU1BQQzdEX0JP
-T1RfUEFSVElUSU9OX1NJWkUsCiAgICAgICAgICAgICAgICAub2Zmc2V0ID0gICAgICAgTVREUEFS
-VF9PRlNfQVBQRU5ELAogICAgICAgICAgICAgICAgLm1hc2tfZmxhZ3MgPSAgIE1URF9XUklURUFC
-TEUgIC8qIGZvcmNlIHJlYWQtb25seSAqLwogICAgICAgIH0KfTsKCnN0YXRpYyBpbnQgX19pbml0
-IHJzcHBjN2Rfc3RhdGljX3BhcnRpdGlvbnMoc3RydWN0IG10ZF9wYXJ0aXRpb24gKipwYXJ0cykK
-ewoJaW50IG5iX3BhcnRzID0gMDsKCglyc3BwYzdkX3BhcnRpdGlvbnNbMF0uc2l6ZSA9IGJpbmZv
-LT5iaV9mbGFzaHNpemUgLSAKCQkJCSAgICAgUlNQUEM3RF9LRVJORUxfUEFSVElUSU9OX1NJWkUg
-LSAKCQkJCSAgICAgUlNQUEM3RF9CT09UX1BBUlRJVElPTl9TSVpFOwoJKnBhcnRzICAgICAgID0g
-cnNwcGM3ZF9wYXJ0aXRpb25zOwoJbmJfcGFydHMgICAgID0gQVJSQVlfU0laRShyc3BwYzdkX3Bh
-cnRpdGlvbnMpOwoKCXJldHVybiBuYl9wYXJ0czsKfQoKc3RydWN0IHJzcHBjN2RfaW5mbyB7Cgl1
-bnNpZ25lZCBsb25nIGJhc2U7Cgl1bnNpZ25lZCBsb25nIHNpemU7CglpbnQgd2lkdGg7Cgl2b2lk
-IF9faW9tZW0gKnZiYXNlOwoJc3RydWN0IG1hcF9pbmZvICptYXA7CglzdHJ1Y3QgbXRkX2luZm8g
-Km10ZDsKCXN0cnVjdCByZXNvdXJjZSAqcmVzOwp9OwoKc3RhdGljIHN0cnVjdCBtYXBfaW5mbyAq
-aW9fbWFwcGVkX21hcCA9IE5VTEw7CgovKgogKiBJbiBvcmRlciB0byBhdm9pZCBydW5uaW5nIG91
-dCBvZiB2bWFsbG9jIHNwYWNlLCB0aGlzCiAqIGZ1bmN0aW9uIGlzIHVzZWQgdG8gJ3BhZ2UnIHRo
-ZSBtYXAgd2hpY2ggaXMgY3VycmVudGx5IAogKiBiZWluZyB1c2VkIGluIGFuZCBvdXQgb2Ygdm1h
-bGxvYy4KICovCnN0YXRpYyB2b2lkIF9faW9tZW0gKnJzcHBjN2RfaW9yZW1hcF9mbGFzaChzdHJ1
-Y3QgbWFwX2luZm8gKm1hcCkKewoJaWYgKG1hcCAhPSBpb19tYXBwZWRfbWFwKSB7CgkJaWYgKGlv
-X21hcHBlZF9tYXApIHsKCQkJaW91bm1hcChpb19tYXBwZWRfbWFwLT52aXJ0KTsKCQkJaW9fbWFw
-cGVkX21hcC0+dmlydCA9IE5VTEw7CgkJfQoJCWlvX21hcHBlZF9tYXAgPSBtYXA7CgkJaW9fbWFw
-cGVkX21hcC0+dmlydCA9IGlvcmVtYXAobWFwLT5waHlzLCBtYXAtPnNpemUpOwoJCWlmICghaW9f
-bWFwcGVkX21hcC0+dmlydCkgewoJCQlwcmludGsoS0VSTl9FUlIgInJzcHBjN2RfZmxhc2g6IHVu
-YWJsZSB0byBpb3JlbWFwIEZsYXNoXG4iKTsKCQl9Cgl9CgoJcmV0dXJuIGlvX21hcHBlZF9tYXAt
-PnZpcnQ7Cn0KCi8qIAogKiBGbGFzaCBhY2Nlc3MgZnVuY3Rpb25zIC0gZmFsbCB0aHJvdWdoIHRv
-IGRlZmF1bHQgCiAqIGZ1bmN0aW9ucyBhZnRlciBpb3JlbWFwcGluZyB0aGUgY3VycmVudCBtYXAu
-CiAqLwpzdGF0aWMgaW5saW5lIG1hcF93b3JkIHJzcHBjN2RfZmxhc2hfcmVhZChzdHJ1Y3QgbWFw
-X2luZm8gKm1hcCwgdW5zaWduZWQgbG9uZyBvZnMpCnsKCXJzcHBjN2RfaW9yZW1hcF9mbGFzaCht
-YXApOwoJcmV0dXJuIGlubGluZV9tYXBfcmVhZChtYXAsIG9mcyk7Cn0KCnN0YXRpYyB2b2lkIHJz
-cHBjN2RfZmxhc2hfd3JpdGUoc3RydWN0IG1hcF9pbmZvICptYXAsIGNvbnN0IG1hcF93b3JkIGRh
-dHVtLCB1bnNpZ25lZCBsb25nIG9mcykKewoJcnNwcGM3ZF9pb3JlbWFwX2ZsYXNoKG1hcCk7Cglp
-bmxpbmVfbWFwX3dyaXRlKG1hcCwgZGF0dW0sIG9mcyk7CQp9CgpzdGF0aWMgdm9pZCByc3BwYzdk
-X2ZsYXNoX2NvcHlfZnJvbShzdHJ1Y3QgbWFwX2luZm8gKm1hcCwgdm9pZCAqdG8sIHVuc2lnbmVk
-IGxvbmcgZnJvbSwgc3NpemVfdCBsZW4pCnsKCXJzcHBjN2RfaW9yZW1hcF9mbGFzaChtYXApOwoJ
-aW5saW5lX21hcF9jb3B5X2Zyb20obWFwLCB0bywgZnJvbSwgbGVuKTsKfQoKc3RhdGljIHZvaWQg
-cnNwcGM3ZF9mbGFzaF9jb3B5X3RvKHN0cnVjdCBtYXBfaW5mbyAqbWFwLCB1bnNpZ25lZCBsb25n
-IHRvLCBjb25zdCB2b2lkICpmcm9tLCBzc2l6ZV90IGxlbikKewoJcnNwcGM3ZF9pb3JlbWFwX2Zs
-YXNoKG1hcCk7CglpbmxpbmVfbWFwX2NvcHlfdG8obWFwLCB0bywgZnJvbSwgbGVuKTsKfQoKI2Rl
-ZmluZSBNQVhfTlJfU1VCTVREIDQKCnN0YXRpYyBzdHJ1Y3QgcnNwcGM3ZF9pbmZvIGluZm9bTUFY
-X05SX1NVQk1URF07CgpzdGF0aWMgaW50IF9faW5pdCByc3BwYzdkX3NldHVwX210ZChzdHJ1Y3Qg
-cnNwcGM3ZF9pbmZvICpyc3BwYzdkLCBpbnQgbnIsIHN0cnVjdCBtdGRfaW5mbyAqKnJtdGQpCnsK
-CXN0cnVjdCBtdGRfaW5mbyAqc3ViZGV2W25yXTsKCXN0cnVjdCBtYXBfaW5mbyAqbWFwczsKCWlu
-dCBpLCBmb3VuZCA9IDAsIHJldCA9IDA7CgoJLyoKCSAqIEFsbG9jYXRlIHRoZSBtYXBfaW5mbyBz
-dHJ1Y3RzIGluIG9uZSBnby4KCSAqLwoJbWFwcyA9IGttYWxsb2Moc2l6ZW9mKHN0cnVjdCBtYXBf
-aW5mbykgKiBuciwgR0ZQX0tFUk5FTCk7CglpZiAoIW1hcHMpCgkJcmV0dXJuIC1FTk9NRU07Cglt
-ZW1zZXQobWFwcywgMCwgc2l6ZW9mKHN0cnVjdCBtYXBfaW5mbykgKiBucik7CgoJLyoKCSAqIENs
-YWltIGFuZCB0aGVuIG1hcCB0aGUgbWVtb3J5IHJlZ2lvbnMuCgkgKi8KCWZvciAoaSA9IDA7IGkg
-PCBucjsgaSsrKSB7CgkJaWYgKHJzcHBjN2RbaV0uYmFzZSA9PSAodW5zaWduZWQgbG9uZyktMSkK
-CQkJYnJlYWs7CgkJCgkJcnNwcGM3ZFtpXS5yZXMgPSByZXF1ZXN0X21lbV9yZWdpb24ocnNwcGM3
-ZFtpXS5iYXNlLCByc3BwYzdkW2ldLnNpemUsICJyc3BwYzdkIGZsYXNoIik7CgkJaWYgKCFyc3Bw
-YzdkW2ldLnJlcykgewoJCQlyZXQgPSAtRUJVU1k7CgkJCWJyZWFrOwoJCX0KCgkJcnNwcGM3ZFtp
-XS5tYXAgPSBtYXBzICsgaTsKCgkJcnNwcGM3ZFtpXS5tYXAtPm5hbWUgPSAicnNwcGM3ZCBmbGFz
-aCI7CgkJcnNwcGM3ZFtpXS5tYXAtPnNpemUgPSByc3BwYzdkW2ldLnNpemU7CgkJcnNwcGM3ZFtp
-XS5tYXAtPnBoeXMgPSByc3BwYzdkW2ldLmJhc2U7CgkJcnNwcGM3ZFtpXS5tYXAtPmJhbmt3aWR0
-aCA9IHJzcHBjN2RbaV0ud2lkdGg7CgoJCXJzcHBjN2RbaV0ubWFwLT5yZWFkID0gcnNwcGM3ZF9m
-bGFzaF9yZWFkOwoJCXJzcHBjN2RbaV0ubWFwLT53cml0ZSA9IHJzcHBjN2RfZmxhc2hfd3JpdGU7
-CgkJcnNwcGM3ZFtpXS5tYXAtPmNvcHlfZnJvbSA9IHJzcHBjN2RfZmxhc2hfY29weV9mcm9tOwoJ
-CXJzcHBjN2RbaV0ubWFwLT5jb3B5X3RvID0gcnNwcGM3ZF9mbGFzaF9jb3B5X3RvOwoKCQlyc3Bw
-YzdkW2ldLm10ZCA9IGRvX21hcF9wcm9iZSgiY2ZpX3Byb2JlIiwgcnNwcGM3ZFtpXS5tYXApOwoJ
-CWlmIChyc3BwYzdkW2ldLm10ZCA9PSBOVUxMKSB7CgkJCXJldCA9IC1FTlhJTzsKCQkJYnJlYWs7
-CgkJfQoJCXJzcHBjN2RbaV0ubXRkLT5vd25lciA9IFRISVNfTU9EVUxFOwoJCXN1YmRldltpXSA9
-IHJzcHBjN2RbaV0ubXRkOwoKCQlwcmludGsoS0VSTl9JTkZPICJyc3BwYzdkIGZsYXNoOiBDRkkg
-ZGV2aWNlIGF0IDB4JTA4bHgsICVkTWlCLCAiCgkJCSIlZC1iaXRcbiIsIHJzcHBjN2RbaV0uYmFz
-ZSwgcnNwcGM3ZFtpXS5tdGQtPnNpemUgPj4gMjAsCgkJCXJzcHBjN2RbaV0ud2lkdGggKiA4KTsK
-CQlmb3VuZCArPSAxOwoJfQoKCS8qCgkgKiBFTlhJTyBpcyBzcGVjaWFsLiAgSXQgbWVhbnMgd2Ug
-ZGlkbid0IGZpbmQgYSBjaGlwIHdoZW4KCSAqIHdlIHByb2JlZC4gIFdlIG5lZWQgdG8gdGVhciBk
-b3duIHRoZSBtYXBwaW5nLCBmcmVlIHRoZQoJICogcmVzb3VyY2UgYW5kIG1hcmsgaXQgYXMgc3Vj
-aC4KCSAqLwoJaWYgKHJldCA9PSAtRU5YSU8pIHsKCQlyZWxlYXNlX3Jlc291cmNlKHJzcHBjN2Rb
-aV0ucmVzKTsKCQlyc3BwYzdkW2ldLnJlcyA9IE5VTEw7Cgl9CgoJLyoKCSAqIElmIHdlIGZvdW5k
-IG9uZSBkZXZpY2UsIGRvbid0IGJvdGhlciB3aXRoIGNvbmNhdCBzdXBwb3J0LgoJICogSWYgd2Ug
-Zm91bmQgbXVsdGlwbGUgZGV2aWNlcywgdXNlIGNvbmNhdCBpZiB3ZSBoYXZlIGl0CgkgKiBhdmFp
-bGFibGUsIG90aGVyd2lzZSBmYWlsLgoJICovCglpZiAocmV0ID09IDAgfHwgcmV0ID09IC1FTlhJ
-TykgewoJCWlmIChmb3VuZCA9PSAxKSB7CgkJCSpybXRkID0gc3ViZGV2WzBdOwoJCQlyZXQgPSAw
-OwoJCX0gZWxzZSBpZiAoZm91bmQgPiAxKSB7CgkJCS8qCgkJCSAqIFdlIGRldGVjdGVkIG11bHRp
-cGxlIGRldmljZXMuICBDb25jYXRlbmF0ZQoJCQkgKiB0aGVtIHRvZ2V0aGVyLgoJCQkgKi8KI2lm
-ZGVmIENPTkZJR19NVERfQ09OQ0FUCgkJCSpybXRkID0gbXRkX2NvbmNhdF9jcmVhdGUoc3ViZGV2
-LCBmb3VuZCwKCQkJCQkJICAicnNwcGM3ZCBmbGFzaCIpOwoJCQlpZiAoKnJtdGQgPT0gTlVMTCkK
-CQkJCXJldCA9IC1FTlhJTzsKI2Vsc2UKCQkJcHJpbnRrKEtFUk5fRVJSICJyc3BwYzdkIGZsYXNo
-OiBtdWx0aXBsZSBkZXZpY2VzICIKCQkJICAgICAgICJmb3VuZCBidXQgTVREIGNvbmNhdCBzdXBw
-b3J0IGRpc2FibGVkLlxuIik7CgkJCXJldCA9IC1FTlhJTzsKI2VuZGlmCgkJfQoJfQoKCS8qCgkg
-KiBJZiB3ZSBmYWlsZWQsIGNsZWFuIHVwLgoJICovCglpZiAocmV0KSB7CgkJZG8gewoJCQlpZiAo
-cnNwcGM3ZFtpXS5tdGQpCgkJCQltYXBfZGVzdHJveShyc3BwYzdkW2ldLm10ZCk7CgkJCWlmIChy
-c3BwYzdkW2ldLnJlcykKCQkJCXJlbGVhc2VfcmVzb3VyY2UocnNwcGM3ZFtpXS5yZXMpOwoJCX0g
-d2hpbGUgKGktLSk7CgoJCWtmcmVlKG1hcHMpOwoJfQoKCXJldHVybiByZXQ7Cn0KCnN0YXRpYyB2
-b2lkIF9fZXhpdCByc3BwYzdkX2Rlc3Ryb3lfbXRkKHN0cnVjdCByc3BwYzdkX2luZm8gKnJzcHBj
-N2QsIHN0cnVjdCBtdGRfaW5mbyAqbXRkKQp7CglpbnQgaTsKCglkZWxfbXRkX3BhcnRpdGlvbnMo
-bXRkKTsKCglpZiAobXRkICE9IHJzcHBjN2RbMF0ubXRkKQoJCW10ZF9jb25jYXRfZGVzdHJveSht
-dGQpOwoKCWZvciAoaSA9IE1BWF9OUl9TVUJNVEQ7IGkgPj0gMDsgaS0tKSB7CgkJaWYgKHJzcHBj
-N2RbaV0ubXRkKQoJCQltYXBfZGVzdHJveShyc3BwYzdkW2ldLm10ZCk7CgkJaWYgKHJzcHBjN2Rb
-aV0ucmVzKQoJCQlyZWxlYXNlX3Jlc291cmNlKHJzcHBjN2RbaV0ucmVzKTsKCX0KCglpZiAoaW9f
-bWFwcGVkX21hcCkKCQlpb3VubWFwKGlvX21hcHBlZF9tYXAtPnZpcnQpOwoKCWtmcmVlKHJzcHBj
-N2RbMF0ubWFwKTsKfQoKLyoKICogV2UgZGVmaW5lIHRoZSBtZW1vcnkgc3BhY2UsIHNpemUsIGFu
-ZCB3aWR0aCBmb3IgdGhlIGZsYXNoIG1lbW9yeQogKiBzcGFjZSBoZXJlLgogKi8KCiNkZWZpbmUg
-UlNQUEM3RF9GTEFTSF9CQU5LX1dJRFRIIDQKCnN0YXRpYyBpbnQgX19pbml0IHJzcHBjN2Rfc2V0
-dXBfZmxhc2godm9pZCkKewoJaW50IG5yLCBiYW5rc3osIGJhbmtucjsKCXVuc2lnbmVkIGNoYXIg
-bWVtY2ZnOwoKICAgICAgICBzdGF0aWMgaW50IGZsYXNoX3NpemVzWzRdID0geyAweDA0MDAwMDAw
-LCAweDAyMDAwMDAwLCAwLCAweDAxMDAwMDAwIH07CiAgICAgICAgc3RhdGljIGludCBmbGFzaF9i
-YW5rc1s0XSA9IHsgNCwgMywgMiwgMSB9OwoKCW1lbWNmZyA9IGluYihQUEM3RF9DUExEX01FTV9D
-T05GSUdfRVhURU5EKTsKCWJhbmtzeiA9IGZsYXNoX3NpemVzW21lbWNmZyAmIFBQQzdEX0NQTERf
-RkxBU0hfREVWX1NJWkVfTUFTS107CgliYW5rbnIgPSBmbGFzaF9iYW5rc1sobWVtY2ZnICYgUFBD
-N0RfQ1BMRF9GTEFTSF9CQU5LX05VTV9NQVNLKSA+PiAyXTsKCglmb3IgKG5yID0gMDsgbnIgPCBi
-YW5rbnI7IG5yKyspCgl7CgkJaW5mb1tucl0uYmFzZSA9IGJpbmZvLT5iaV9mbGFzaHN0YXJ0ICsg
-KG5yICogYmFua3N6KTsKCQlpbmZvW25yXS5zaXplID0gYmFua3N6OwoJCWluZm9bbnJdLndpZHRo
-ID0gUlNQUEM3RF9GTEFTSF9CQU5LX1dJRFRIOwoJfQoKCXJldHVybiBiYW5rbnI7Cn0KCnN0YXRp
-YyBzdHJ1Y3QgbXRkX3BhcnRpdGlvbiAqcGFyc2VkX3BhcnRzOwpzdGF0aWMgY29uc3QgY2hhciAq
-cHJvYmVzW10gPSB7ICJjbWRsaW5lcGFydCIsIE5VTEwgfTsKCnN0YXRpYyB2b2lkIF9faW5pdCBy
-c3BwYzdkX2xvY2F0ZV9wYXJ0aXRpb25zKHN0cnVjdCBtdGRfaW5mbyAqbXRkKQp7Cgljb25zdCBj
-aGFyICpwYXJ0X3R5cGUgPSBOVUxMOwoJaW50IG5yX3BhcnRzID0gMDsKCWRvIHsKCQkvKgoJCSAq
-IFBhcnRpdGlvbiBzZWxlY3Rpb24gc3R1ZmYuCgkJICovCgkJbnJfcGFydHMgPSBwYXJzZV9tdGRf
-cGFydGl0aW9ucyhtdGQsIHByb2JlcywgJnBhcnNlZF9wYXJ0cywgMCk7CgkJaWYgKG5yX3BhcnRz
-ID4gMCkgewoJCQlwYXJ0X3R5cGUgPSAiY29tbWFuZCBsaW5lIjsKCQkJYnJlYWs7CgkJfQoJCW5y
-X3BhcnRzID0gcnNwcGM3ZF9zdGF0aWNfcGFydGl0aW9ucygmcGFyc2VkX3BhcnRzKTsKCQlpZiAo
-bnJfcGFydHMgPiAwKSB7CgkJCXBhcnRfdHlwZSA9ICJzdGF0aWMiOwoJCQlicmVhazsKCQl9CgkJ
-cHJpbnRrKCJmb3VuZDogJWQgcGFydGl0aW9uc1xuIiwgbnJfcGFydHMpOwoJfSB3aGlsZSAoMCk7
-CgoJaWYgKG5yX3BhcnRzID09IDApIHsKCQlwcmludGsoS0VSTl9OT1RJQ0UgInJzcHBjN2QgZmxh
-c2g6IG5vIHBhcnRpdGlvbiBpbmZvICIKCQkJImF2YWlsYWJsZSwgcmVnaXN0ZXJpbmcgd2hvbGUg
-Zmxhc2hcbiIpOwoJCWFkZF9tdGRfZGV2aWNlKG10ZCk7Cgl9IGVsc2UgewoJCXByaW50ayhLRVJO
-X05PVElDRSAicnNwcGM3ZCBmbGFzaDogdXNpbmcgJXMgcGFydGl0aW9uICIKCQkJImRlZmluaXRp
-b25cbiIsIHBhcnRfdHlwZSk7CgkJYWRkX210ZF9wYXJ0aXRpb25zKG10ZCwgcGFyc2VkX3BhcnRz
-LCBucl9wYXJ0cyk7Cgl9CgoJLyogQWx3YXlzIHN1Y2NlZWRzLiAqLwp9CgpzdGF0aWMgdm9pZCBf
-X2V4aXQgcnNwcGM3ZF9kZXN0cm95X3BhcnRpdGlvbnModm9pZCkKewoJaWYgKHBhcnNlZF9wYXJ0
-cykKCQlrZnJlZShwYXJzZWRfcGFydHMpOwp9CgpzdGF0aWMgc3RydWN0IG10ZF9pbmZvICpteW10
-ZDsKCnN0YXRpYyBpbnQgX19pbml0IHJzcHBjN2RfbXRkX2luaXQodm9pZCkKewoJaW50IHJldDsK
-CWludCBucjsKCgluciA9IHJzcHBjN2Rfc2V0dXBfZmxhc2goKTsKCWlmIChuciA8IDApCgkJcmV0
-dXJuIG5yOwoKCXJldCA9IHJzcHBjN2Rfc2V0dXBfbXRkKGluZm8sIG5yLCAmbXltdGQpOwoJaWYg
-KHJldCkKCQlyZXR1cm4gcmV0OwoKCXJzcHBjN2RfbG9jYXRlX3BhcnRpdGlvbnMobXltdGQpOwoK
-CXJldHVybiAwOwp9CgpzdGF0aWMgdm9pZCBfX2V4aXQgcnNwcGM3ZF9tdGRfY2xlYW51cCh2b2lk
-KQp7Cglyc3BwYzdkX2Rlc3Ryb3lfbXRkKGluZm8sIG15bXRkKTsKCXJzcHBjN2RfZGVzdHJveV9w
-YXJ0aXRpb25zKCk7Cn0KCm1vZHVsZV9pbml0KHJzcHBjN2RfbXRkX2luaXQpOwptb2R1bGVfZXhp
-dChyc3BwYzdkX210ZF9jbGVhbnVwKTsKCk1PRFVMRV9BVVRIT1IoIkNocmlzIEVsc3RvbiA8Y2hy
-aXMuZWxzdG9uQHJhZHN0b25lLmNvLnVrPiIpOwpNT0RVTEVfREVTQ1JJUFRJT04oIk1URCBtYXAg
-ZHJpdmVyIGZvciBSYWRzdG9uZSBQUEM3RCIpOwpNT0RVTEVfTElDRU5TRSgiR1BMIik7Cg==
-
-------_=_NextPart_001_01C53C49.3A8A5688--
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
