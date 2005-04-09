@@ -1,23 +1,29 @@
-Return-Path: <colin@colino.net>
-Received: from paperstreet.colino.net (colino.net [213.41.131.56])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+Return-Path: <glppd-linuxppc-dev-3@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6492467A2E
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Apr 2005 17:50:40 +1000 (EST)
-Received: from jack.colino.net (jack.colino.net [192.168.0.11])
-	by paperstreet.colino.net (Postfix) with ESMTP id 4A77B101D9
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Apr 2005 09:50:30 +0200 (CEST)
-Date: Sat, 9 Apr 2005 09:50:28 +0200
-From: Colin Leroy <colin@colino.net>
+	by ozlabs.org (Postfix) with ESMTP id 920D667A2E
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Apr 2005 18:09:17 +1000 (EST)
+Received: from root by ciao.gmane.org with local (Exim 4.43)
+	id 1DK9nj-0002Eb-PE
+	for linuxppc-dev@ozlabs.org; Sat, 09 Apr 2005 08:50:39 +0200
+Received: from krepost.taket.org ([82.233.235.217])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Sat, 09 Apr 2005 08:50:39 +0200
+Received: from salvetti by krepost.taket.org with local (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Sat, 09 Apr 2005 08:50:39 +0200
 To: linuxppc-dev@ozlabs.org
-Message-ID: <20050409095028.650f9bfc@jack.colino.net>
-In-Reply-To: <8dccd67e3fe7b5de7cb0f3b87a4a0bef@embeddededge.com>
-References: <Pine.LNX.4.60.0504081039570.23066@bigrock.cs.ubc.ca>
-	<20050408211015.35350110@jack.colino.net>
-	<8dccd67e3fe7b5de7cb0f3b87a4a0bef@embeddededge.com>
+From: Djoume SALVETTI <salvetti@crans.org>
+Date: Sat, 9 Apr 2005 08:50:55 +0200
+Message-ID: <20050409065055.GB23120@krepost.taket.org>
+References: <1113006674.9568.414.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Subject: Re: Thanks!!
+Content-Type: text/plain; charset=iso-8859-1
+Sender: news <news@sea.gmane.org>
+Cc: debian-powerpc@lists.debian.org
+Subject: Re: Sound drivers for newer machines: need help
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,23 +33,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 08 Apr 2005 at 17h04, Dan Malek wrote:
+Le samedi 04/09/05 Benjamin Herrenschmidt <benh@kernel.crashing.org> a écrit :
+> echo `cat /proc/device-tree/model`
 
-Hi, 
+PowerBook6,4
 
-> 
-> On Apr 8, 2005, at 3:10 PM, Colin Leroy wrote:
-> 
-> > 2.6 feels faster on desktop for other reasons too, such as a faster
-> > scheduler (at least it was the case when I switched to 2.6, maybe
-> > 2.4 got a faster one too).
-> 
-> A faster scheduler?  Now, that's one I've never heard :-)
+> for i in `find /proc/device-tree -name layout-id -print`; do echo $i && hexdump -n4 $i; done
 
-See http://kerneltrap.org/node/342 and
-http://www.hpl.hp.com/research/linux/kernel/o1.php if you want more
-infos.
-
+return nothing.
 
 -- 
-Colin
+Djoumé SALVETTI
