@@ -1,17 +1,22 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <schwab@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "mx1.suse.de",
+	Issuer "SuSE Linux AG internal IMAP-Server CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 2940A67B54
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Apr 2005 10:53:59 +1000 (EST)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <1113006674.9568.414.camel@gaston>
+From: Andreas Schwab <schwab@suse.de>
+Date: Sat, 09 Apr 2005 02:53:50 +0200
+In-Reply-To: <1113006674.9568.414.camel@gaston> (Benjamin Herrenschmidt's
+	message of "Sat, 09 Apr 2005 10:31:14 +1000")
+Message-ID: <jer7hkvkgx.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <16983.8839.391784.458466@cargo.ozlabs.ibm.com>
-Date: Sat, 9 Apr 2005 10:32:07 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Gabriel Paubert <paubert@iram.es>
-In-Reply-To: <20050408184442.GA13709@iram.es>
-References: <20050408082635.GB4992@iram.es>
-	<8fc7723059937dc9876c5c14fdcd92ae@freescale.com>
-	<20050408184442.GA13709@iram.es>
+Content-Type: text/plain; charset=iso-8859-1
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	linux-ppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: pte_update and 64-bit PTEs on PPC32?
+	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
+Subject: Re: Sound drivers for newer machines: need help
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,16 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Gabriel Paubert writes:
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-> But I'm not sure that OOO cannot play tricks on you, what guarantees
-> that the lwz is done after lwarx?
+> echo `cat /proc/device-tree/model`
 
-Nothing, but it doesn't matter, because we have the
-mm->page_table_lock, and anything that is changing the top 32 bits, or
-anything in the bottom 32 bits other than the _PAGE_HASHPTE bit,
-must also take the mm->page_table_lock.  The low-level hash_page
-routine can change the _PAGE_HASHPTE bit without having that lock,
-which is why we need the atomic sequence.
+PowerMac7,3
 
-Paul.
+> for i in `find /proc/device-tree -name layout-id -print`; do echo $i && hexdump -n4 $i; done
+
+/proc/device-tree/ht@0,f2000000/pci@1/mac-io@7/i2s@10000/i2s-a@0/sound/layout-id
+0000000 0000 0024                              
+0000004
+
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
