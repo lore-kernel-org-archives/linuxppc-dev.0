@@ -1,20 +1,17 @@
-Return-Path: <dalang@cs.ubc.ca>
-Received: from badenpowell.cs.ubc.ca (badenpowell.cs.ubc.ca [142.103.6.71])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4B06A67B46
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Apr 2005 10:37:46 +1000 (EST)
-Date: Fri, 8 Apr 2005 17:37:39 -0700 (PDT)
-From: Dustin Lang <dalang@cs.ubc.ca>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1113006674.9568.414.camel@gaston>
-Message-ID: <Pine.LNX.4.60.0504081736520.26633@bigrock.cs.ubc.ca>
-References: <1113006674.9568.414.camel@gaston>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <16983.8839.391784.458466@cargo.ozlabs.ibm.com>
+Date: Sat, 9 Apr 2005 10:32:07 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Gabriel Paubert <paubert@iram.es>
+In-Reply-To: <20050408184442.GA13709@iram.es>
+References: <20050408082635.GB4992@iram.es>
+	<8fc7723059937dc9876c5c14fdcd92ae@freescale.com>
+	<20050408184442.GA13709@iram.es>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
-Subject: Re: Sound drivers for newer machines: need help
+	linux-ppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: pte_update and 64-bit PTEs on PPC32?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,42 +21,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Gabriel Paubert writes:
 
-Hi Ben,
+> But I'm not sure that OOO cannot play tricks on you, what guarantees
+> that the lwz is done after lwarx?
 
-> echo `cat /proc/device-tree/model`
-PowerBook6,2
+Nothing, but it doesn't matter, because we have the
+mm->page_table_lock, and anything that is changing the top 32 bits, or
+anything in the bottom 32 bits other than the _PAGE_HASHPTE bit,
+must also take the mm->page_table_lock.  The low-level hash_page
+routine can change the _PAGE_HASHPTE bit without having that lock,
+which is why we need the atomic sequence.
 
-and the second command prints nothing.
-
-Cheers,
-dstn.
-
-
-
-> Hi !
->
-> If you have a newer machine, that is a machine released on or after
-> 2002, can you please send me the output of:
->
-> echo `cat /proc/device-tree/model`
->
-> and
->
-> for i in `find /proc/device-tree -name layout-id -print`; do echo $i && hexdump -n4 $i; done
->
-> If the later returns nothing, it's fine, just tell me.
->
-> I'm especially interested in the various models of G5 based machines. It
-> seems apple is having all sorts of very different sound HW setups on
-> those machines, and I'm trying to figure out exactly what is where based
-> on those infos and the darwin sources.
->
-> Ben.
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
+Paul.
