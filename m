@@ -2,15 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D937B67B2A
-	for <linuxppc-dev@ozlabs.org>; Sun, 10 Apr 2005 09:28:57 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 0A34B67B1A
+	for <linuxppc-dev@ozlabs.org>; Sun, 10 Apr 2005 09:40:07 +1000 (EST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: =?ISO-8859-1?Q?Martin-=C9ric?= Racine <q-funk@iki.fi>
-In-Reply-To: <Pine.LNX.4.21.0504091309420.18767-100000@hal.pp.fishpool.fi>
-References: <Pine.LNX.4.21.0504091309420.18767-100000@hal.pp.fishpool.fi>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: Sun, 10 Apr 2005 09:27:12 +1000
-Message-Id: <1113089232.9568.434.camel@gaston>
+To: "Matthew T. Atkinson" <matthew@agrip.org.uk>
+In-Reply-To: <1113081689.15872.4.camel@localhost>
+References: <1113006674.9568.414.camel@gaston>
+	<1113081689.15872.4.camel@localhost>
+Content-Type: text/plain
+Date: Sun, 10 Apr 2005 09:38:27 +1000
+Message-Id: <1113089907.9517.446.camel@gaston>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
@@ -24,31 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2005-04-09 at 13:12 +0300, Martin-Éric Racine wrote:
-> On Sat, 9 Apr 2005, Benjamin Herrenschmidt wrote:
+On Sat, 2005-04-09 at 22:21 +0100, Matthew T. Atkinson wrote:
+> 'ello,
 > 
-> > If you have a newer machine, that is a machine released on or after
-> > 2002, can you please send me the output of:
+> On Sat, 2005-04-09 at 10:31 +1000, Benjamin Herrenschmidt wrote:
+> > echo `cat /proc/device-tree/model`
 > 
-> [...]
+> PowerBook5,4
 > 
-> > I'm especially interested in the various models of G5 based machines. It
-> > seems apple is having all sorts of very different sound HW setups on
-> > those machines, and I'm trying to figure out exactly what is where based
-> > on those infos and the darwin sources.
+> > for i in `find /proc/device-tree -name layout-id -print`; do echo $i && hexdump -n4 $i; done
 > 
-> Why limit this to new hardware, though?  Why not modularize the pmac ALSA
-> tree and completely fix all previous hardware variants as well?
+> /proc/device-tree/pci@f2000000/mac-io@17/i2s@10000/i2s-a@10000/sound/layout-id
+> 0000000 0000 0033
+> 0000004
+> 
+> For your information, in case this helps...
+> 
+> I am using ALSA and it appears to work except that only one program can
+> access the sound hardware at a time (so is just like OSS :-)).  If I am
+> playing music in XMMS and then try to aplay a .wav file, it will hang
+> until XMMS is closed for example.
 
-Which is what I am doing, I just need some more infos about new hardware
-because the HW setup done by Apple on those is fairly confusing.
- 
-> Btw, not sound-related but nonetheless a bug in the device tree:
-> 
-> /proc/device-tree/psuedo-hid
-> 
-> That wouldn't be a typo now, would it?
+If you set apps like xmms to actually use alsa output, you can have
+mixing but for that, you have to enable the dmix plugin in your alsa
+config. Look for infos about that on this list archive.
 
-Might be but nobody cares about this one anyway.
-
-Ben.
+> The trick of altering the HZ of mp3 plug-in to remove the choppiness
+> doesn't seem to work for all mp3 files (thought does for the vast
+> majority).
+> 
+> Many thanks for looking into this (and all the other work you do --
+> sleep support, for example, has been *incredibly* useful)!
+> 
+> best regards,
+> 
+> 
+-- 
+Benjamin Herrenschmidt <benh@kernel.crashing.org>
