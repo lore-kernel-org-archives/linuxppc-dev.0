@@ -1,25 +1,24 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from parcelfarce.linux.theplanet.co.uk
-	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2A1E667B46
+Return-Path: <ktdann@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.199])
+	by ozlabs.org (Postfix) with ESMTP id 79FED67B1A
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  9 Apr 2005 09:28:14 +1000 (EST)
-Date: Fri, 8 Apr 2005 08:07:25 -0300
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Dan Malek <dan@embeddededge.com>
-Message-ID: <20050408110724.GG19449@logos.cnet>
-References: <20050407120013.GF14822@logos.cnet>
-	<BCEFJBPJCGFCNMMMIDBHGEGHCLAA.Joakim.Tjernlund@lumentis.se>
-	<20050407193846.GE19449@logos.cnet>
-	<19116173cb07648317c2a73a9c822c70@embeddededge.com>
+	Sat,  9 Apr 2005 11:30:04 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id 57so844605wri
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 08 Apr 2005 18:30:00 -0700 (PDT)
+Message-ID: <9b7ca6570504081829cb84a7d@mail.gmail.com>
+Date: Sat, 9 Apr 2005 10:29:57 +0900
+From: Daniel Ann <ktdann@gmail.com>
+To: "Mark A. Greer" <mgreer@mvista.com>
+In-Reply-To: <4256CE41.1000404@mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <19116173cb07648317c2a73a9c822c70@embeddededge.com>
-Cc: Joakim Tjernlund <Joakim.Tjernlund@lumentis.se>,
-	linuxppc-embedded@ozlabs.org
-Subject: Re: 8xx v2.6 TLB problems and suggested workaround
+Content-Type: text/plain; charset=ISO-8859-1
+References: <9b7ca65705040801455b84eb0d@mail.gmail.com>
+	<4256CE41.1000404@mvista.com>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: Best way to determine tb_ticks_per_jiffy inside
+	todc_calibrate_decr()
+Reply-To: Daniel Ann <ktdann@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,52 +29,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Apr 9, 2005 3:32 AM, Mark A. Greer <mgreer@mvista.com> wrote:
+> If you don't have an RTC, you shouldn't be using any todc_xxx routines.
 
-Hi Dan,
+Yeah, I figured this much :)
 
-On Thu, Apr 07, 2005 at 10:09:58PM -0400, Dan Malek wrote:
-> 
-> On Apr 7, 2005, at 3:38 PM, Marcelo Tosatti wrote:
-> 
-> >Would be nice to have someone from 8xx team look into this?
-> 
-> I'll look into it and find some solution.  
+> There are several platform files that explicitly set tb_ticks_per_jiffy
+> and tb_to_us.  Did you try looking at those?
 
-What do you envision as another solution? 
+Actually that didnt occur to me since I thought it was related to the
+supplied oscillator. Not knowing what their board is equiped with, I
+couldnt trust their value any more than my estimated value. But
+reading your next comment, it seems that it's related to processor as
+well.
 
-We have two now: 
+> Also, 33MHz does not sound right but then you don't say what processor
+> you're using so who knows.  You need to find the bus freq used by the
+> cpu/system.  Try looking for the freq of the processor's SYSCLK input.
+> Then you probably have to divide that by 4 to get the frequency that the
+> decrementer runs at.  That's the value that you should use for the
+> 'freq' variable in the example code you included in your email.
 
-1) _tlbie() on update_mmu_cache() surrounded by CONFIG_8xx #ifdef 
-Did you give up about it? 
+Okay guess I had all these things mixed up in head. What I should have
+said is, source to PCI_SYNC_IN is 33MHz.
+Anyway, following the MPC8245 hardware Spec pdf file, I was able to
+find the peripheral logic/memory bus clock to be 99,000,000. Dividing
+that by 4 like you said, gave me the value of 24,750,000. Which is
+I've used it to get very real 1 second :)
 
-2) jump directly from DataTLBMiss to fault handler. 
-You seem to dislike it.
+BTW, why do you have to divide it by 4 ?
 
-What else you think can be done? 
-
-> I suspect it is an interaction with the previous TLB miss and the behavior
-> of the dcbst TLB look up.  Perhaps, if we ensure the
-> TLB entry is not valid at the time of the dcbst, it will work.
-
-Note that the TLB entry is _not valid_ at the time of the dcbst:
-
-BDI>rds 824
-SPR  824 : 0x10011f05    268508933
-BDI>rds 825
-SPR  825 : 0x000001e0          480
-BDI>rds 826
-SPR  826 : 0x00001f00         7936 
-
-bit 18 (valid bit) of SPR 826 is not set.
-
-So even with the TLB invalid, dcbst misbehaves.
-
-> This is why the tlbie() I added as a hack a long time
-> ago made the "problem" disappear.  The other dcbxx
-> instructions in the code work on already existing pages,
-> while this one is a special case of a miss on a page
-> that doesn't exist.
-> 
-> Thanks.
-> 
-> 	-- Dan
+-- 
+Daniel
