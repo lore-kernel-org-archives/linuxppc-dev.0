@@ -1,20 +1,25 @@
-Return-Path: <rmcguire@uwbt.com>
-Received: from mail19d.g19.rapidsite.net (mail19d.dulles19-verio.com
-	[204.202.242.120]) by ozlabs.org (Postfix) with SMTP id A7AAB67B2B
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8FA1A67A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  9 Apr 2005 12:25:02 +1000 (EST)
-Received: from mx06.stngva01.us.mxservers.net (204.202.242.35)
-	by mail19d.g19.rapidsite.net (RS ver 1.0.95vs) with SMTP id
-	2-0688313497 for <linuxppc-embedded@ozlabs.org>;
-	Fri,  8 Apr 2005 22:24:59 -0400 (EDT)
-From: "Russell McGuire" <rmcguire@uwbt.com>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Fri, 8 Apr 2005 19:25:01 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Message-ID: <20050408222459.GA68831@mail19d.g19.rapidsite.net>
-Subject: 8260 ATM drivers / stack
+	Sat,  9 Apr 2005 15:17:58 +1000 (EST)
+In-Reply-To: <20050408110724.GG19449@logos.cnet>
+References: <20050407120013.GF14822@logos.cnet>
+	<BCEFJBPJCGFCNMMMIDBHGEGHCLAA.Joakim.Tjernlund@lumentis.se>
+	<20050407193846.GE19449@logos.cnet>
+	<19116173cb07648317c2a73a9c822c70@embeddededge.com>
+	<20050408110724.GG19449@logos.cnet>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <86e2fa4b5afe5bd8afc33ca47a7ab50c@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Sat, 9 Apr 2005 01:16:50 -0400
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Cc: Joakim Tjernlund <Joakim.Tjernlund@lumentis.se>,
+	linuxppc-embedded@ozlabs.org
+Subject: Re: 8xx v2.6 TLB problems and suggested workaround
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,13 +30,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I saw a while back on this list that some users had posted some luck with
-getting the ATM drivers to work on an 8260. I am currently working on
-getting the ATM stack to work with an 8280 CPU. I think this was back in
-like '02.
 
-Was wondering if any of those people, or others with similar experience were
-still participating on this mailing list. Would appreciate any pointers,
-etc..
+On Apr 8, 2005, at 7:07 AM, Marcelo Tosatti wrote:
 
--R. RcGuire
+> 1) _tlbie() on update_mmu_cache() surrounded by CONFIG_8xx #ifdef
+> Did you give up about it?
+
+I think a tlbia() of the vaddr should work here.  No sense blowing
+away the whole TLB cache for this.
+
+> What else you think can be done?
+
+It would be interesting to change __flush_dcache_icache()
+to use the 8xx SPR cache operations instead of the dcbst instruction.
+I wouldn't be surprised if it worked differently, but I'd not be
+able to explain it :-)
+
+Thanks.
+
+	-- Dan
