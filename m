@@ -1,18 +1,19 @@
-Return-Path: <delobelle@blueyonder.co.uk>
-Received: from smtp-out1.blueyonder.co.uk (smtp-out1.blueyonder.co.uk
-	[195.188.213.4]) by ozlabs.org (Postfix) with ESMTP id AC36167B2A
-	for <linuxppc-dev@ozlabs.org>; Sat,  9 Apr 2005 12:02:47 +1000 (EST)
-Message-ID: <425733B8.1040906@blueyonder.co.uk>
-Date: Sat, 09 Apr 2005 02:45:28 +0100
-From: Arnaud Delobelle <delobelle@blueyonder.co.uk>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <root@danielinux.net>
+Received: from ms004msg.fastwebnet.it (ms004msg.fastwebnet.it [213.140.2.58])
+	by ozlabs.org (Postfix) with ESMTP id 344A467B2B
+	for <linuxppc-dev@ozlabs.org>; Sat,  9 Apr 2005 12:06:39 +1000 (EST)
+From: Daniele Lacamera <root@danielinux.net>
+To: linuxppc-dev@ozlabs.org
+Date: Sat, 9 Apr 2005 03:06:33 +0100
 References: <1113006674.9568.414.camel@gaston>
 In-Reply-To: <1113006674.9568.414.camel@gaston>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200504090406.34820.root@danielinux.net>
+Cc: "debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
 Subject: Re: Sound drivers for newer machines: need help
+Reply-To: root@danielinux.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,19 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> Hi !
-> 
-> If you have a newer machine, that is a machine released on or after
-> 2002, can you please send me the output of:
-> 
+On Saturday 09 April 2005 02:31, Benjamin Herrenschmidt wrote: 
 > echo `cat /proc/device-tree/model`
 
-PowerBook5,2
+PowerBook6,8
 
-> for i in `find /proc/device-tree -name layout-id -print`; do echo $i && hexdump -n4 $i; done
+(the newest 1.5Ghz 12" powerbook)
 
-Nothing
+> 
+> and
+> 
+> for i in `find /proc/device-tree -name layout-id -print`; do echo $i 
+&& hexdump -n4 $i; done
+
+
+/proc/device-tree/pci@f2000000/mac-io@17/i2s@0/i2s-a@10000/sound/layout-id
+0000000 0000 0048
+0000004
+
+
 
 -- 
-Arnaud
+Daniele Lacamera
+root{at}danielinux.net
