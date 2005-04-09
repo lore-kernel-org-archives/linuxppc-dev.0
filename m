@@ -1,17 +1,20 @@
-Return-Path: <matthew@agrip.org.uk>
-Received: from oblique.agrip.org.uk (i-195-137-71-106.freedom2surf.net
-	[195.137.71.106]) by ozlabs.org (Postfix) with ESMTP id 7F6AF67A2E
-	for <linuxppc-dev@ozlabs.org>; Sun, 10 Apr 2005 07:57:52 +1000 (EST)
-From: "Matthew T. Atkinson" <matthew@agrip.org.uk>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1113006674.9568.414.camel@gaston>
+Return-Path: <paubert@iram.es>
+Received: from gra-vd1.iram.es (gra-vd1.iram.es [150.214.224.250])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C469967B2E
+	for <linuxppc-dev@ozlabs.org>; Sun, 10 Apr 2005 08:06:40 +1000 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Sun, 10 Apr 2005 00:06:19 +0200
+To: =?iso-8859-1?Q?Martin-=C9ric?= Racine <q-funk@iki.fi>
+Message-ID: <20050409220619.GA4354@iram.es>
 References: <1113006674.9568.414.camel@gaston>
-Content-Type: text/plain
-Date: Sat, 09 Apr 2005 22:21:29 +0100
-Message-Id: <1113081689.15872.4.camel@localhost>
+	<Pine.LNX.4.21.0504091309420.18767-100000@hal.pp.fishpool.fi>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <Pine.LNX.4.21.0504091309420.18767-100000@hal.pp.fishpool.fi>
+Cc: "debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 Subject: Re: Sound drivers for newer machines: need help
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,35 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-'ello,
+On Sat, Apr 09, 2005 at 01:12:31PM +0300, Martin-Éric Racine wrote:
+> On Sat, 9 Apr 2005, Benjamin Herrenschmidt wrote:
+> 
+> > If you have a newer machine, that is a machine released on or after
+> > 2002, can you please send me the output of:
+> 
+> [...]
+> 
+> > I'm especially interested in the various models of G5 based machines. It
+> > seems apple is having all sorts of very different sound HW setups on
+> > those machines, and I'm trying to figure out exactly what is where based
+> > on those infos and the darwin sources.
+> 
+> Why limit this to new hardware, though?  Why not modularize the pmac ALSA
+> tree and completely fix all previous hardware variants as well?
+> 
+> Btw, not sound-related but nonetheless a bug in the device tree:
+> 
+> /proc/device-tree/psuedo-hid
+> 
+> That wouldn't be a typo now, would it?
 
-On Sat, 2005-04-09 at 10:31 +1000, Benjamin Herrenschmidt wrote:
-> echo `cat /proc/device-tree/model`
+It is a typo by Apple. It is the name in the firmware of my
+PowerMacG4 466 (PowerMac3,4) under the OF prompt too 
+(psuedo-hid and psuedo-sound). 
 
-PowerBook5,4
+OTOH in my Pismo (PowerBook3,1) these same name are spelled 
+correctly, despite the fact that it is older (but it has had 
+at least one firmware upgrade while the G4 has none AFAIR).
 
-> for i in `find /proc/device-tree -name layout-id -print`; do echo $i && hexdump -n4 $i; done
+/proc/device-tree keeps the names given by OF and only adds 
+a few of its own, "linux,phandle" mostly.
 
-/proc/device-tree/pci@f2000000/mac-io@17/i2s@10000/i2s-a@10000/sound/layout-id
-0000000 0000 0033
-0000004
-
-For your information, in case this helps...
-
-I am using ALSA and it appears to work except that only one program can
-access the sound hardware at a time (so is just like OSS :-)).  If I am
-playing music in XMMS and then try to aplay a .wav file, it will hang
-until XMMS is closed for example.
-
-The trick of altering the HZ of mp3 plug-in to remove the choppiness
-doesn't seem to work for all mp3 files (thought does for the vast
-majority).
-
-Many thanks for looking into this (and all the other work you do --
-sleep support, for example, has been *incredibly* useful)!
-
-best regards,
-
-
--- 
-Matthew T. Atkinson <matthew@agrip.org.uk>
+	Gabriel
