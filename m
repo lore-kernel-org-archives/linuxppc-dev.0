@@ -1,19 +1,19 @@
-Return-Path: <ben@serosoft.com>
-Received: from smtp-out2.blueyonder.co.uk (smtp-out2.blueyonder.co.uk
-	[195.188.213.5]) by ozlabs.org (Postfix) with ESMTP id E64FA67A6B
-	for <linuxppc-dev@ozlabs.org>; Sun, 10 Apr 2005 22:31:10 +1000 (EST)
-From: Ben Hill <ben@serosoft.com>
+Return-Path: <matthew@agrip.org.uk>
+Received: from oblique.agrip.org.uk (i-195-137-71-106.freedom2surf.net
+	[195.137.71.106]) by ozlabs.org (Postfix) with ESMTP id B230467B35
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Apr 2005 00:23:05 +1000 (EST)
+From: "Matthew T. Atkinson" <matthew@agrip.org.uk>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1113006674.9568.414.camel@gaston>
+In-Reply-To: <1113089907.9517.446.camel@gaston>
 References: <1113006674.9568.414.camel@gaston>
+	<1113081689.15872.4.camel@localhost> <1113089907.9517.446.camel@gaston>
 Content-Type: text/plain
-Date: Sun, 10 Apr 2005 13:13:49 +0100
-Message-Id: <1113135229.5547.24.camel@localhost.localdomain>
+Date: Sun, 10 Apr 2005 15:16:25 +0100
+Message-Id: <1113142585.5505.27.camel@localhost>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
 Subject: Re: Sound drivers for newer machines: need help
-Reply-To: ben@serosoft.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,21 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2005-04-09 at 10:31 +1000, Benjamin Herrenschmidt wrote:
-> echo `cat /proc/device-tree/model`
+'ello,
 
-PowerBook5,6
+On Sun, 2005-04-10 at 09:38 +1000, Benjamin Herrenschmidt wrote:
+> If you set apps like xmms to actually use alsa output, you can have
+> mixing but for that, you have to enable the dmix plugin in your alsa
+> config. Look for infos about that on this list archive.
 
-> 
-> for i in `find /proc/device-tree -name layout-id -print`; do echo $i && hexdump -n4 $i; done
+Thanks to both who suggested this; at last its all working with multiple
+apps!
 
-find: /proc/device-tree/uni-n@f8000000/i2c@f8001000/i2c-bus@1/fan@5c/pulses/rev: No such file or directory
-/proc/device-tree/pci@f2000000/mac-io@17/i2s@0/i2s-a@10000/sound/layout-id
-0000000 0000 0046
-0000004
+best regards,
 
-HTH
 
 -- 
-ben@serosoft.com - www.seigan.org
-PGP Key fingerprint = 4309 1C58 5143 AFAC F69E  11CD 76FD 56D4 1223 E387
+Matthew T. Atkinson <matthew@agrip.org.uk>
