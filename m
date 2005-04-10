@@ -1,19 +1,19 @@
-Return-Path: <wd@denx.de>
-Received: from mailout06.sul.t-online.com (mailout06.sul.t-online.com
-	[194.25.134.19]) by ozlabs.org (Postfix) with ESMTP id DBD0767A64
+Return-Path: <rpjday@mindspring.com>
+Received: from mailhost.rdmcorp.com (world.rdmcorp.com [204.225.180.10])
+	by ozlabs.org (Postfix) with ESMTP id CFECE67A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 11 Apr 2005 02:59:35 +1000 (EST)
-To: "Howard, Marc" <Marc.Howard@kla-tencor.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 08 Apr 2005 11:48:32 PDT."
-	<91B22F93A880FA48879475E134D6F0BEB9C02A@CA1EXCLV02.adcorp.kla-tencor.com>
-Date: Sun, 10 Apr 2005 18:59:15 +0200
-Sender: wd@denx.de
-Message-Id: <20050410165921.09B36C108D@atlas.denx.de>
+	Mon, 11 Apr 2005 03:08:19 +1000 (EST)
+Date: Sun, 10 Apr 2005 13:06:07 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Kylo Ginsberg <kylo@kylo.net>
+In-Reply-To: <42594D18.4070403@kylo.net>
+Message-ID: <Pine.LNX.4.61.0504101302010.28010@localhost.localdomain>
+References: <Pine.LNX.4.61.0504101046030.8150@localhost.localdomain>
+	<42594D18.4070403@kylo.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: Re: cross-compiling under cygwin? 
+Subject: Re: how to get busybox shell prompt on console port?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,23 +24,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <91B22F93A880FA48879475E134D6F0BEB9C02A@CA1EXCLV02.adcorp.kla-tencor.com> you wrote:
-> 
-> Yes you can run NFS on Windows.  The systems we ship inside our
-> equipment have a Win2k Server host and the embedded boards hang off of
+On Sun, 10 Apr 2005, Kylo Ginsberg wrote:
 
-And this really supports things like special files,  user  and  group
-id's, permissions including set-uid and hardlinks and all that?
+> I use this line in /etc/inittab (assuming you've built busybox to include sh):
+>
+> ttyCPM0::respawn:-/bin/sh
 
-Best regards,
+(first, a caveat: even though this is the 2.6 kernel, i'm still using
+devfs for historical reasons.  that will change shortly but may be
+part of my problems.)
 
-Wolfgang Denk
+i'm pretty sure i tried that combo, and several others like it, and i
+finally had success with the following entry in /etc/inittab:
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Hello! I'm from outer space,  and I've made myself look like a signa-
-ture.  While  you  are reading this, I'm having sex with your eyes. I
-know it feels good to you, because you're smiling. I'm very horny, so
-send me to someone else when you've had enough. Thanks!
-                              Sincerely, A Stranger in a Strange Land
+  ::respawn:/bin/sh < /dev/console > /dev/console 2> /dev/console
+
+yes, it's disgusting but it works.  once i got a prompt, i noticed
+that these are the contents of /dev:
+
+crw-------    1 root     root     204,  46 Dec 31  1969 <NULL>0
+crw-------    1 root     root     204,  47 Dec 31  1969 <NULL>1
+crw-------    1 root     root       5,   1 Oct  2 08:56 console
+crw-rw-rw-    1 root     root       1,   7 Dec 31  1969 full
+drwxr-xr-x    1 root     root            0 Dec 31  1969 input
+crw-r-----    1 root     root       1,   2 Dec 31  1969 kmem
+crw-r--r--    1 root     root       1,  11 Dec 31  1969 kmsg
+drwxr-xr-x    1 root     root            0 Dec 31  1969 loop
+crw-r-----    1 root     root       1,   1 Dec 31  1969 mem
+drwxr-xr-x    1 root     root            0 Dec 31  1969 misc
+crw-rw-rw-    1 root     root       1,   3 Dec 31  1969 null
+crw-r-----    1 root     root       1,   4 Dec 31  1969 port
+crw-rw-rw-    1 root     root       5,   2 Dec 31  1969 ptmx
+drwxr-xr-x    1 root     root            0 Dec 31  1969 pts
+drwxr-xr-x    1 root     root            0 Dec 31  1969 pty
+crw-r--r--    1 root     root       1,   8 Dec 31  1969 random
+drwxr-xr-x    1 root     root            0 Dec 31  1969 rd
+lr-xr-xr-x    1 root     root            4 Sep 25  1969 root -> rd/0
+drwxr-xr-x    1 root     root            0 Dec 31  1969 shm
+crw-rw-rw-    1 root     root       5,   0 Dec 31  1969 tty
+crw-r--r--    1 root     root       1,   9 Dec 31  1969 urandom
+crw-rw-rw-    1 root     root       1,   5 Dec 31  1969 zero
+
+
+  in other words, no /dev/ttyCPM0 which may be why that first solution
+never worked (i'm still fuzzy on support for the serial/console ports
+so i'm reading up on that now.)  but given that i have a /dev/console,
+i'll stick with that for now until i have a better fix.
+
+  and what's the two "NULL" entries up there?  those are new to me.
+
+rday
