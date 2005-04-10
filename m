@@ -1,21 +1,21 @@
-Return-Path: <yeokiwi@gmail.com>
-Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.198])
-	by ozlabs.org (Postfix) with ESMTP id 7722B67A2E
+Return-Path: <Joakim.Tjernlund@lumentis.se>
+Received: from dmz.lumentis.net (unknown [212.105.56.244])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 001AC67B2B
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 10 Apr 2005 14:57:57 +1000 (EST)
-Received: by rproxy.gmail.com with SMTP id g11so1911323rne
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 09 Apr 2005 21:57:55 -0700 (PDT)
-Message-ID: <af025844050409215122eff23@mail.gmail.com>
-Date: Sun, 10 Apr 2005 12:51:15 +0800
-From: Yeo Keewee <yeokiwi@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-In-Reply-To: <20050410020004.967A967B3E@ozlabs.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20050410020004.967A967B3E@ozlabs.org>
-Subject: Problem with customized MPC5200 board(copy from lite5200 design)
-Reply-To: Yeo Keewee <yeokiwi@gmail.com>
+	Sun, 10 Apr 2005 20:08:49 +1000 (EST)
+From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
+To: "Marcelo Tosatti" <marcelo.tosatti@cyclades.com>
+Date: Sun, 10 Apr 2005 12:08:29 +0200
+Message-ID: <BCEFJBPJCGFCNMMMIDBHEEGOCLAA.Joakim.Tjernlund@lumentis.se>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <20050409223721.GA27454@logos.cnet>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: 8xx v2.6 TLB problems and suggested workaround
+Reply-To: Joakim.Tjernlund@lumentis.se
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,18 +26,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+> -----Original Message-----
+> From: Marcelo Tosatti [mailto:marcelo.tosatti@cyclades.com]
+> On Sat, Apr 09, 2005 at 09:03:54PM +0200, Joakim Tjernlund wrote:
+> > > 
+> > > On Apr 8, 2005, at 7:07 AM, Marcelo Tosatti wrote:
 
-Our hardware group had designed a mpc5200 board using the same design
-as lite5200.
-Currently, we are using bdi2000(icecube config) to attempt to access
-the internal registers. By using the same procedure on lite5200, we
-can access the registers but we always could not do it on our board.
+[SNIP]
 
-Besides a hardware design flaw, is there any other init procedures
-that are required to use bdi2000 on our custom board?
+> > I still think this can be resolved in fault.c. Replace 
+> > 	andis.	r11, r10, 0x0200	/* If set, indicates store op */
+> > 	beq	2f
+> > in the DTLB Error handler with
+> > 	andis.	r11, r10, 0x4800	/* If set, indicates invalid pte or protection violation */
+> > 	bne	2f
+> 
+> Why does the current code jump to page fault handler in case of store operation?
 
-Did anyone face this kind of problem?
+It doesn't. It jumps if some other bit is set as well. In your dcbst case it seems like invalid
+is set too. I hope that will be enough to work something out in fault.c.
+ 
+> 
+> Out of curiosity, aren't there any other valid bit combinations for DSISR other
+> than 0x4800 which should allow a fastpath DataTLBError ?
 
-rgds
-Yeo Kee Wee
+Don't know, hopefully Dan knows.
+
+> 
+> I can't find DSISR settings in MPC860UM.pdf neither paper manual. AFAICS it
+> always refer to the PEM when talking about DSISR bit assignments. 
+> 
+> I can't find section "7-15" as you mentioned in the other email.
+
+It is page 7-15 and I think(not having the manual handy) that chapter 7 describes the
+different exceptions including the DTLB Error.
+
+> 
+> > In fault.c you can check if both store and invalid is set simultaneously. If it is, clear
+> > the store flag and continue as usual.
+> 
+> One point is that by changing the in-kernel dcbst implementation userspace is 
+> still vulnerable to the problem.
+> 
+> Now fixing the exception handler to deal with such boggosity as Joakim proposes is 
+> complete - it handles userspace dcbst callers.
+
+Yes, ldso uses dcbst and icbi. Currently it works fine because a normal store
+has been performed before dcbst/icbi is executed.
+
+ Jocke
