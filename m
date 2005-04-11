@@ -1,17 +1,18 @@
-Return-Path: <rpjday@mindspring.com>
-Received: from mailhost.rdmcorp.com (world.rdmcorp.com [204.225.180.10])
-	by ozlabs.org (Postfix) with ESMTP id 9C74567B25
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id 6648267B59
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 11 Apr 2005 23:39:39 +1000 (EST)
-Received: from [10.1.1.138] (10.1.2.1) by mailhost.rdmcorp.com (Worldmail
-	1.3.167) for linuxppc-embedded@ozlabs.org; 11 Apr 2005 09:39:37 -0400
-Date: Mon, 11 Apr 2005 09:37:28 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Message-ID: <Pine.LNX.4.61.0504110931540.6667@localhost.localdomain>
+	Mon, 11 Apr 2005 23:51:58 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Subject: moving from devfs to udev with 2.6 kernel on 8xx board?
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Mon, 11 Apr 2005 08:51:53 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B859354@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Stefan Nickl" <Stefan.Nickl@kontron.com>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: RE: [PATCH] RE: FCC Ethernet startup crash
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,18 +23,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+=20
 
-  since i don't have enough anguish in my life, i thought i might take
-today to see if i can migrate from devfs to udev on my 8xx board.  at
-the moment, with a 2.6.11.7 kernel, i have:
+> -----Original Message-----
+> From: Stefan Nickl [mailto:Stefan.Nickl@kontron.com]=20
+> Sent: Monday, April 11, 2005 04:20
+> On Fri, 2005-04-08 at 09:39 -0500, Rune Torgersen wrote:
+> > I'm not sure what is going on, but that patch causes me to=20
+> get "eth0: tx
+> > queue full!." messages as soon as I try to use the ethernet
+> > (Same thing happened if I just tried to remove the fcc_restart from
+> > init_fcc_startup)
+> But regarding my current indisposition with hardware, I'd suggest to
+> choose the smaller of the two evils, that is calling fcc_restart()
+> before starting the queue, leaving but a tiny race condition=20
+> on rx side.
 
-  busybox-1.00
-  networking with the I2C/SPI/SMC1 patch installed
-  devfs
-  JFFS2 support in kernel (but no partition definition yet)
-
-before i start reading up on udev, any guidance on whether this will
-be straightforward, or will i want to slit my wrists by lunch time?
-thanks.
-
-rday
+Still get the tx full messages.
+They do go away if I call fcc_restart twice in a row... (again)=09
+I'll look a little more on what it is doing
