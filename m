@@ -1,18 +1,31 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 6648267B59
+Return-Path: <g.jaeger@sysgo.com>
+Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
+	by ozlabs.org (Postfix) with ESMTP id E42CC67B5B
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 11 Apr 2005 23:51:58 +1000 (EST)
+	Tue, 12 Apr 2005 00:17:17 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by mail.sysgo.com (Postfix) with ESMTP id 9FD65FB874
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 11 Apr 2005 16:09:51 +0200 (CEST)
+Received: from donald.sysgo.com (unknown [172.20.1.30])
+	by mail.sysgo.com (Postfix) with ESMTP id 7CDC7FB874
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 11 Apr 2005 16:09:51 +0200 (CEST)
+Received: from kah.ulm.sysgo.com (unknown [172.40.1.2])
+	by donald.sysgo.com (Postfix) with ESMTP id E03D2F292F
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 11 Apr 2005 16:17:11 +0200 (CEST)
+Received: from gja.ulm.sysgo.com (gja.ulm.sysgo.com [172.40.1.130])
+	by kah.ulm.sysgo.com (8.9.3/8.8.8) with ESMTP id QAA29823
+	for <linuxppc-embedded@ozlabs.org>; Mon, 11 Apr 2005 16:27:35 +0200
+From: Gerhard Jaeger <g.jaeger@sysgo.com>
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
+Date: Mon, 11 Apr 2005 16:17:10 +0200
 Content-Type: text/plain;
-	charset="us-ascii"
-Date: Mon, 11 Apr 2005 08:51:53 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B859354@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Stefan Nickl" <Stefan.Nickl@kontron.com>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: RE: [PATCH] RE: FCC Ethernet startup crash
+  charset="iso-8859-15"
+Message-Id: <200504111617.10935.g.jaeger@sysgo.com>
+Subject: [PATCH] PPC44x: Fixes early bootup messages for Bamboo
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,22 +36,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-=20
+While playing around with the Bamboo board (440EP based), I noticed,
+that the early bootup messages won't work, because of the wrong TLB
+setup for this processor. This patch fixes that issue.
 
-> -----Original Message-----
-> From: Stefan Nickl [mailto:Stefan.Nickl@kontron.com]=20
-> Sent: Monday, April 11, 2005 04:20
-> On Fri, 2005-04-08 at 09:39 -0500, Rune Torgersen wrote:
-> > I'm not sure what is going on, but that patch causes me to=20
-> get "eth0: tx
-> > queue full!." messages as soon as I try to use the ethernet
-> > (Same thing happened if I just tried to remove the fcc_restart from
-> > init_fcc_startup)
-> But regarding my current indisposition with hardware, I'd suggest to
-> choose the smaller of the two evils, that is calling fcc_restart()
-> before starting the queue, leaving but a tiny race condition=20
-> on rx side.
+-Gerhard
 
-Still get the tx full messages.
-They do go away if I call fcc_restart twice in a row... (again)=09
-I'll look a little more on what it is doing
+Signed-off-by: Gerhard Jaeger <gjaeger@sysgo.com>
+
+--- linux-2.6.11/arch/ppc/kernel/head_44x.S.orig	2005-04-11 15:49:47.000000000 +0200
++++ linux-2.6.11/arch/ppc/kernel/head_44x.S	2005-04-11 15:50:43.000000000 +0200
+@@ -190,7 +190,9 @@ skpinv:	addi	r4,r4,1				/* Increment */
+ 
+ 	/* xlat fields */
+ 	lis	r4,UART0_PHYS_IO_BASE@h		/* RPN depends on SoC */
++#ifndef CONFIG_440EP
+ 	ori	r4,r4,0x0001		/* ERPN is 1 for second 4GB page */
++#endif /* CONFIG_440EP */
+ 
+ 	/* attrib fields */
+ 	li	r5,0
