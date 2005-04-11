@@ -1,17 +1,30 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 042C567B2B
+Return-Path: <jdl@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 5589C67B19
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 12 Apr 2005 00:40:26 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C53EA4.65523A50"
-Date: Mon, 11 Apr 2005 09:40:24 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B859355@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Stefan Nickl" <Stefan.Nickl@kontron.com>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: RE: [PATCH] RE: FCC Ethernet startup crash
+	Tue, 12 Apr 2005 01:59:09 +1000 (EST)
+From: Jon Loeliger <jdl@freescale.com>
+To: Tom Rini <trini@kernel.crashing.org>
+In-Reply-To: <20050407174936.GR3396@smtp.west.cox.net>
+References: <424ACFF1.5000403@bitsim.se>
+	<111d2ae873d1bfee413409dfc4f2f064@freescale.com>
+	<424BEDFC.8080300@jonmasters.org>
+	<1112284541.23088.77.camel@cashmere.sps.mot.com>
+	<4250EACF.1040403@bitsim.se> <42511D55.4040507@ru.mvista.com>
+	<20050407172003.GP3396@smtp.west.cox.net>
+	<1112895351.11987.89.camel@cashmere.sps.mot.com>
+	<20050407174936.GR3396@smtp.west.cox.net>
+Content-Type: text/plain
+Message-Id: <1113235114.9846.11.camel@cashmere.sps.mot.com>
+Mime-Version: 1.0
+Date: Mon, 11 Apr 2005 10:58:34 -0500
+Cc: Jon Masters <jonathan@jonmasters.org>,
+	Andrei Konovalov <akonovalov@ru.mvista.com>,
+	Sylvain Munaut <tnt@246tNt.com>,
+	Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>,
+	Jakob Viketoft <jakob.viketoft@bitsim.se>
+Subject: Re: Flat OF Device Tree for ppc32 [was: Platform bus/ppc sys
+	model...]
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,68 +35,74 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Thu, 2005-04-07 at 12:49, Tom Rini wrote:
 
-------_=_NextPart_001_01C53EA4.65523A50
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+> Please post to the list as an RFC.  Thanks.
 
-Found a soulution.
-Still have no idea about the cause.
+Folks,
 
-The part that had to be called twice toget the ethernet to work was=20
+Apologies to those who have received this notice twice.
+I first sent it to the list where it was summarily
+denied for size reasons.
 
-	/* Enable transmit/receive */
-	fccp->fcc_gfmr |=3D FCC_GFMR_ENR | FCC_GFMR_ENT;
+I have now posted a tgz file here instead:
 
-So I added that to the end of init_fcc_startup(), and kept the rest of
-the patch the same as v1 (or v2)
-None of the interrupts are enabled at this time, so any spurious packets
-will not get reported up to IP layer anyways.
+    http://www.jdl.com/bdt_cleanup.tgz
 
-This works on my hardware. (tested with ping -f)
+What follows is my original email content.
 
-Signed-off-by: Rune Torgersen <runet@innovsys.com>
 
-------_=_NextPart_001_01C53EA4.65523A50
-Content-Type: application/octet-stream; name="fcc_enet_startup_crash_v4.patch"
-Content-Transfer-Encoding: base64
-Content-Description: fcc_enet_startup_crash_v4.patch
-Content-Disposition: attachment;
-	filename="fcc_enet_startup_crash_v4.patch"
+OK, for those keeping score over on the U-Boot list, _this_
+message is really intended to be sent to the public list. :-)
 
-PT09PT0gYXJjaC9wcGMvODI2MF9pby9mY2NfZW5ldC5jIDEuMjQgdnMgZWRpdGVkID09PT09Ci0t
-LSAxLjI0L2FyY2gvcHBjLzgyNjBfaW8vZmNjX2VuZXQuYwkyMDA1LTAzLTE4IDE0OjUxOjMxIC0w
-NjowMAorKysgZWRpdGVkL2FyY2gvcHBjLzgyNjBfaW8vZmNjX2VuZXQuYwkyMDA1LTA0LTExIDA5
-OjM0OjEwIC0wNTowMApAQCAtMjE1OSwxNSArMjE1OSw4IEBACiAJKih2b2xhdGlsZSB1aW50ICop
-KEJDU1JfQUREUiArIDEyKSB8PSAgQkNTUjNfRkVUSDJfUlNUOwogI2VuZGlmCiAKLSNpZiBkZWZp
-bmVkKENPTkZJR19VU0VfTURJTykgfHwgZGVmaW5lZChDT05GSUdfVFFNODI2MCkKLQkvKiBzdGFy
-dCBpbiBmdWxsIGR1cGxleCBtb2RlLCBhbmQgbmVnb3RpYXRlIHNwZWVkCi0JICovCi0JZmNjX3Jl
-c3RhcnQgKGRldiwgMSk7Ci0jZWxzZQotCS8qIHN0YXJ0IGluIGhhbGYgZHVwbGV4IG1vZGUKLQkg
-Ki8KLQlmY2NfcmVzdGFydCAoZGV2LCAwKTsKLSNlbmRpZgorCS8qIEVuYWJsZSB0cmFuc21pdC9y
-ZWNlaXZlICovCisJZmNjcC0+ZmNjX2dmbXIgfD0gRkNDX0dGTVJfRU5SIHwgRkNDX0dGTVJfRU5U
-OwogfQogCiAjaWZkZWYJQ09ORklHX1VTRV9NRElPCkBAIC0yMzcyLDI0ICsyMzY1LDI4IEBACiAJ
-ZmVwLT5zZXF1ZW5jZV9kb25lID0gMDsKIAlmZXAtPmxpbmsgPSAwOwogCi0JaWYgKGZlcC0+cGh5
-KSB7Ci0JCWZjY19yZXN0YXJ0KGRldiwgMCk7CS8qIGFsd2F5cyBzdGFydCBpbiBoYWxmLWR1cGxl
-eCAqLwotCQltaWlfZG9fY21kKGRldiwgZmVwLT5waHktPmFja19pbnQpOwotCQltaWlfZG9fY21k
-KGRldiwgZmVwLT5waHktPmNvbmZpZyk7Ci0JCW1paV9kb19jbWQoZGV2LCBwaHlfY21kX2NvbmZp
-Zyk7ICAvKiBkaXNwbGF5IGNvbmZpZ3VyYXRpb24gKi8KLQkJd2hpbGUoIWZlcC0+c2VxdWVuY2Vf
-ZG9uZSkKLQkJCXNjaGVkdWxlKCk7Ci0KLQkJbWlpX2RvX2NtZChkZXYsIGZlcC0+cGh5LT5zdGFy
-dHVwKTsKLQkJbmV0aWZfc3RhcnRfcXVldWUoZGV2KTsKLQkJcmV0dXJuIDA7CQkvKiBTdWNjZXNz
-ICovCi0JfQotCXJldHVybiAtRU5PREVWOwkJLyogTm8gUEhZIHdlIHVuZGVyc3RhbmQgKi8KKwlp
-ZiAoIWZlcC0+cGh5KQorCQlyZXR1cm4gLUVOT0RFVjsJCS8qIE5vIFBIWSB3ZSB1bmRlcnN0YW5k
-ICovCisKKwltaWlfZG9fY21kKGRldiwgZmVwLT5waHktPmFja19pbnQpOworCW1paV9kb19jbWQo
-ZGV2LCBmZXAtPnBoeS0+Y29uZmlnKTsKKwltaWlfZG9fY21kKGRldiwgcGh5X2NtZF9jb25maWcp
-OyAgLyogZGlzcGxheSBjb25maWd1cmF0aW9uICovCisJd2hpbGUoIWZlcC0+c2VxdWVuY2VfZG9u
-ZSkKKwkJc2NoZWR1bGUoKTsKKworCW1paV9kb19jbWQoZGV2LCBmZXAtPnBoeS0+c3RhcnR1cCk7
-CiAjZWxzZQogCWZlcC0+bGluayA9IDE7Ci0JZmNjX3Jlc3RhcnQoZGV2LCAwKTsJLyogYWx3YXlz
-IHN0YXJ0IGluIGhhbGYtZHVwbGV4ICovCi0JbmV0aWZfc3RhcnRfcXVldWUoZGV2KTsKLQlyZXR1
-cm4gMDsJCQkJCS8qIEFsd2F5cyBzdWNjZWVkICovCiAjZW5kaWYJLyogQ09ORklHX1VTRV9NRElP
-ICovCisKKwluZXRpZl9zdGFydF9xdWV1ZShkZXYpOworCisjaWYgZGVmaW5lZChDT05GSUdfVVNF
-X01ESU8pIHx8IGRlZmluZWQoQ09ORklHX1RRTTgyNjApCisJZmNjX3Jlc3RhcnQgKGRldiwgMSk7
-CS8qIHN0YXJ0IGluIGZ1bGwgZHVwbGV4IG1vZGUgKi8KKyNlbHNlCisJZmNjX3Jlc3RhcnQgKGRl
-diwgMCk7CS8qIHN0YXJ0IGluIGhhbGYgZHVwbGV4IG1vZGUgKi8KKyNlbmRpZgorCisJcmV0dXJu
-IDA7CQkvKiBBbHdheXMgc3VjY2VlZCAqLwogfQogCg==
+Here (as noted above) are my diffs against a clone of
+    http://linux.bkbits.net/linux-2.6
+as last pulled a couple days ago. (*)
 
-------_=_NextPart_001_01C53EA4.65523A50--
+Please consider this a Request For Comments for now.  Feel free
+to apply it and test it out as well, of course. :-)  I'll sign-off
+on it when it has ripened some more and gets a nod or two...
+
+These changes relocate almost all of the ppcboot.h definitions
+into new files, arc/ppc/syslib/fw_bdt.[ch] and front them
+with a new, shim interface in include/asm-ppc/firmware.h.
+
+There is a Kconfig option that allows you to select between
+a "bd_t" interface and a non-existant "OF Flat dev tree"
+interface.  Choose wisely (default) for now.  It adds the
+new fw_bdt.o file.
+
+Some potential gotchas or points to note:
+
+- As of this patch, no interface to any board should change.
+  This just isolates the scattered bd_t references to one place.
+
+- On Kumar's advice arch/ppc/boot/simple was totally ignored.
+  For now; this round.  It can be next on the hit parade easily.
+  It holds the last reference to ppcboot.h still.
+
+- Earlier cut-n-paste of some devices led to me changing a few
+  files over in 68k land to remove some now-obsolete ppcboot.h
+  related comments justs for completeness.
+
+- I've compiled uImage using defconfigs for the following boards:
+
+        8560_ads        cpci690         ash             redwood5
+        8540_ads        ads_8272        TQM8260         est8260
+        rpx8260         bseip           mbx             mpc834x_sys
+        ocotea          lite5200        hdpu            lopec
+        TQM860L         rpxlite         radstone_ppc7d  walnut
+
+- The file include/asm-ppc/ppcboot.h used to contain a nested
+  include of linux/types.h that was tacitly used by many files.
+  In ripping ppcboot.h out of many platform .h files, I've had
+  to add direct #include <linux/types.h> in several places.
+  If your board isn't listed above and it looks really broken,
+  consider if it needs a <linux/types.h>?
+
+
+Enjoy,
+jdl
+
+--
+(*) -- BK is dead.  Long live BK!
