@@ -1,25 +1,16 @@
-Return-Path: <andid@gmx.net>
-Received: from bullshit.yoobay.net (projekt.yoobay.net [62.111.67.101])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BD30A67A67
+Return-Path: <Marc.Howard@KLA-Tencor.com>
+Received: from CA1EXBH01.adcorp.kla-tencor.com (mailout01.kla-tencor.com
+	[192.146.1.171]) by ozlabs.org (Postfix) with ESMTP id AB69267B1C
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 12 Apr 2005 02:11:44 +1000 (EST)
-Received: from [10.1.1.125] (pD9E7F9AF.dip.t-dialin.net [217.231.249.175])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by bullshit.yoobay.net (Postfix) with ESMTP id 4F6B82D169
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 11 Apr 2005 17:12:39 +0200 (CEST)
-Message-ID: <425A92FD.8070301@gmx.net>
-Date: Mon, 11 Apr 2005 17:08:45 +0200
-From: Andre' Draszik <andid@gmx.net>
+	Tue, 12 Apr 2005 04:30:24 +1000 (EST)
 MIME-Version: 1.0
-To: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-References: <Pine.LNX.4.61.0504110931540.6667@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.61.0504110931540.6667@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Subject: Re: moving from devfs to udev with 2.6 kernel on 8xx board?
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Mon, 11 Apr 2005 11:30:32 -0700
+Message-ID: <91B22F93A880FA48879475E134D6F0BEBDE4B2@CA1EXCLV02.adcorp.kla-tencor.com>
+From: "Howard, Marc" <Marc.Howard@KLA-Tencor.com>
+To: "Embedded PPC Linux list" <linuxppc-embedded@ozlabs.org>
+Subject: RE: cross-compiling under cygwin? 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,34 +21,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Wolfgang,
 
-Robert P. J. Day wrote:
-> before i start reading up on udev, any guidance on whether this will
-> be straightforward, or will i want to slit my wrists by lunch time?
-> thanks.
+It has a /dev filesystem but exporting it doesn't work.  Yes, user and
+group ids are supported and it can either be from group/passwd files or
+NIS.  It does have hard and soft links.  It is a pretty extensive port
+(formerly known as Internix).
 
-for me, this was quite straightforward on a 405 board. you should 
-remeber to create two device nodes in your filesystem, though:
+It is a solution for environments that have IT departments full of
+Micro$soft trained robots located an ocean away who will only allow
+installation of Redmond-blessed add-ons.
 
-crw-rw----  1 root root 5, 1 2005-04-04 04:03 console
-crw-rw-rw-  1 root root 1, 3 2005-02-20 11:39 null
+I'm not pushing it as a solution but it is a free way to have a mount a
+NFS-style filesystem on an embedded linux board.  I believe I did
+mention that I disliked recommending it but to deny it exists would be
+censorship.
 
-else it won't work...
+Marc W. Howard
 
-one thing to note is that udev is quite slow on bootup (at least here). 
-after init is started some initial device nodes are created, this takes 
-like 5 to 10 seconds here. i don't know if there is a way to decrease 
-that time:
-
-Freeing unused kernel memory: 92k init
-INIT: version 2.86 booting
-Mounting a tmpfs over /dev...done.
-Creating initial device nodes...done.
-
-that is a bit annoying... but i didn't put any energy in resolving that 
-issue yet, so maybe it's easy ;)
-
-
-hth,
-andre
+> -----Original Message-----
+> From: wd@denx.de [mailto:wd@denx.de]=20
+> Sent: Sunday, April 10, 2005 9:59 AM
+> To: Howard, Marc
+> Cc: Embedded PPC Linux list
+> Subject: Re: cross-compiling under cygwin?=20
+>=20
+> In message=20
+> <91B22F93A880FA48879475E134D6F0BEB9C02A@CA1EXCLV02.adcorp.kla-
+> tencor.com> you wrote:
+> >=20
+> > Yes you can run NFS on Windows.  The systems we ship inside our
+> > equipment have a Win2k Server host and the embedded boards=20
+> hang off of
+>=20
+> And this really supports things like special files,  user  and  group
+> id's, permissions including set-uid and hardlinks and all that?
+>=20
+> Best regards,
+>=20
+> Wolfgang Denk
+>=20
+> --=20
+> Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+> Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+> Hello! I'm from outer space,  and I've made myself look like a signa-
+> ture.  While  you  are reading this, I'm having sex with your eyes. I
+> know it feels good to you, because you're smiling. I'm very horny, so
+> send me to someone else when you've had enough. Thanks!
+>                               Sincerely, A Stranger in a Strange Land
+>=20
