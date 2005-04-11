@@ -1,18 +1,22 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 274D367B1A
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Apr 2005 01:39:37 +1000 (EST)
-In-Reply-To: <1CFEB358338412458B21FAA0D78FE86D4F0D39@rennsmail02.eu.thmulti.com>
-References: <1CFEB358338412458B21FAA0D78FE86D4F0D39@rennsmail02.eu.thmulti.com>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <ccf472df421e6d08840588571af40aaa@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Mon, 11 Apr 2005 10:39:20 -0500
-To: Dan Malek <dan@embeddededge.com>,
-	Fillod Stephane <stephane.fillod@thomson.net>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] invalid instructions in kernel mode
+Return-Path: <vincent@vinc17.org>
+Received: from ay.vinc17.org (jlefevre.net1.nerim.net [80.65.226.245])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0309867B1D
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Apr 2005 05:58:09 +1000 (EST)
+Date: Mon, 11 Apr 2005 21:42:14 +0200
+From: Vincent Lefevre <vincent@vinc17.org>
+To: Colin Leroy <colin@colino.net>
+Message-ID: <20050411194214.GE2603@ay.vinc17.org>
+References: <1113184854.9567.522.camel@gaston>
+	<20050411101853.7f0e9385@colin.toulouse>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20050411101853.7f0e9385@colin.toulouse>
+Cc: Andrew Morton <akpm@osdl.org>,
+	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>,
+	Takashi Iwai <tiwai@suse.de>, linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] pmac: Improve sleep code of tumbler driver
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,41 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ok,
+On 2005-04-11 10:18:53 +0200, Colin Leroy wrote:
+> I suppose it also fixes the occasionnal loud static noise that
+> sometimes at wakeup, for example on iBook G4s. Good :)
 
-After some debug on Friday and this weekend I understand what's going=20
-on.  The reason we hit the code path in the kernel is due to the fact=20
-that we are actually executing an integer load/store that is=20
-misaligned, however when we read the instruction from memory we get a=20
-float point instruction.  This is due to the fact that test app is not=20=
+Could this be related to this bug?
 
-properly handling its self generated code.
+http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=244467
 
-Note, I was testing with math-emu turned on.
-
-It seems to me that when we introduce CONFIG_PPC_FPU that we ifdef=20
-around the code and return 0 in the 44x/e500 cases w/o FPUs
-
-- kumar
-
-On Apr 8, 2005, at 12:36 PM, Fillod Stephane wrote:
-
-> Kumar Gala wrote:
->  > Are you running this via a ramdisk or nfs?=A0 If ramdisk can you =
-post=20
-> it
->
-> > somewhere that I can get to?
->
-> I'm running via NFS.
->
-> > Also, can you email the list with the kernel oops that shows up.
->
-> I'll do that next week.
->
-> Anyway, reading the source suffices to realize there's a problem when
-> MATH_EMULATION is disabled on a FPU-less system with user programs
-> using load/store fp instructions.
->
-> --=20
-> Stephane
+-- 
+Vincent Lefèvre <vincent@vinc17.org> - Web: <http://www.vinc17.org/>
+100% accessible validated (X)HTML - Blog: <http://www.vinc17.org/blog/>
+Work: CR INRIA - computer arithmetic / SPACES project at LORIA
