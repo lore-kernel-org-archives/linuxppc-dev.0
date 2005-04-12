@@ -1,20 +1,15 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id E690767B14
+Return-Path: <junita_ppc@yahoo.com>
+Received: from web53701.mail.yahoo.com (web53701.mail.yahoo.com
+	[206.190.37.22]) by ozlabs.org (Postfix) with SMTP id 9F73567A2E
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Apr 2005 02:12:34 +1000 (EST)
-Date: Tue, 12 Apr 2005 09:12:31 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Daniel Ann <ktdann@gmail.com>
-Message-ID: <20050412161230.GA18567@gate.ebshome.net>
-References: <9b7ca6570504120138738b554f@mail.gmail.com>
-Mime-Version: 1.0
+	Wed, 13 Apr 2005 03:45:24 +1000 (EST)
+Message-ID: <20050412173842.73101.qmail@web53701.mail.yahoo.com>
+Date: Tue, 12 Apr 2005 10:38:41 -0700 (PDT)
+From: Junita Ajith <junita_ppc@yahoo.com>
+To: linuxppc-embedded@ozlabs.org, pari@gdatech.com
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9b7ca6570504120138738b554f@mail.gmail.com>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: Trying to understand alloc_skb()
+Subject: Help needed Linux-2.6 - MPC8541
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,15 +20,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 12, 2005 at 05:38:01PM +0900, Daniel Ann wrote:
-> My problem is that, kernel dies with "alloc_skb called nonatomically
-> from interrupt c00ba718" message. After browsing mailing list, I think
-> its to do with not providing it with enough locks prior.
-> 
-> Question is, what kind of lock should I be providing ?
+Hi
+   We are trying to port Linux-2.6 for our custom
+MPC8541 board.
 
-You don't need any locks, just pass correct gfp_mask parameter to 
-alloc_skb when it's called from IRQ context, e.g. GFP_ATOMIC.
+   We have a TSEC and an FEC in the board.
 
---
-Eugene
+With the "Networking Support" disabled in the Kernel,
+the board boots up fine and gets to the prompt.
+
+   But with the "Networking Support" enabled in the
+kernel  the board hangs where it identifies the PHY,
+inspite of giving the corrct PHY ID.
+
+
+   Any help is greatly appreciated.
+
+PS:
+    We have linux-2.4 ported for the same board and so
+ taking that as reference trying to port Linux-2.6 ,
+ but havent succeeded yet.
+
+ Thanks
+ Junita
+
+
+		
+__________________________________ 
+Do you Yahoo!? 
+Make Yahoo! your home page 
+http://www.yahoo.com/r/hs
