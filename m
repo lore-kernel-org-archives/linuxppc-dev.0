@@ -1,25 +1,21 @@
-Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "SuSE Linux AG internal IMAP-Server CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 6586C67A67
-	for <linuxppc-dev@ozlabs.org>; Tue, 12 Apr 2005 08:50:04 +1000 (EST)
-To: Colin Leroy <colin@colino.net>
-References: <1113184854.9567.522.camel@gaston>
-	<20050411101853.7f0e9385@colin.toulouse>
-	<20050411194214.GE2603@ay.vinc17.org>
-From: Andreas Schwab <schwab@suse.de>
-Date: Tue, 12 Apr 2005 00:49:53 +0200
-In-Reply-To: <20050411194214.GE2603@ay.vinc17.org> (Vincent Lefevre's
-	message of "Mon, 11 Apr 2005 21:42:14 +0200")
-Message-ID: <jeekdhudwu.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: Andrew Morton <akpm@osdl.org>,
-	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>,
-	Takashi Iwai <tiwai@suse.de>, linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] pmac: Improve sleep code of tumbler driver
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CCEB367B31
+	for <linuxppc-dev@ozlabs.org>; Tue, 12 Apr 2005 10:05:58 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <425A92B1.6080907@sipsolutions.net>
+References: <1113113792.9517.476.camel@gaston>
+	<425A92B1.6080907@sipsolutions.net>
+Content-Type: text/plain
+Date: Tue, 12 Apr 2005 10:04:50 +1000
+Message-Id: <1113264290.5388.16.camel@gaston>
+Mime-Version: 1.0
+Cc: Takashi Iwai <tiwai@suse.de>, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
+Subject: Re: [PATCH] pmac: sound support for latest laptops
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,23 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Vincent Lefevre <vincent@vinc17.org> writes:
+On Mon, 2005-04-11 at 17:07 +0200, Johannes Berg wrote:
+> Hi,
+> 
+> >This patch hacks the current Alsa snd-powermac driver to add support for
+> >recent machine models with the tas3004 chip, that is basically new
+> >laptop models. The Mac Mini is _NOT_ yet supported by this patch (soon
+> >soon ...). The G5s (iMac or Desktop) will need the rewritten sound
+> >driver on which I'm working on (I _might_ get a hack for analog only on
+> >some G5s on the current driver, but no promise).
+> >  
+> >
+> That's cool. I do have one slight problem with it though: When I turn 
+> down the Master mixer and up PCM it sounds badly overmodulated. I can 
+> keep PCM at about 75% and turn up master, and all is fine. Would it make 
+> sense to limit the PCM mixer to about 75% of its current limits, or how 
+> does that actually work in the hardware?
 
-> On 2005-04-11 10:18:53 +0200, Colin Leroy wrote:
->> I suppose it also fixes the occasionnal loud static noise that
->> sometimes at wakeup, for example on iBook G4s. Good :)
->
-> Could this be related to this bug?
->
-> http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=244467
+Well, the driver will let you do the setting you want, even if it's
+wrong :) You should indeed keep PCM at about 75% and use the master.
 
-I'm also hearing something like that on iBook G3, but only when setting
-the input source to the microphone.
+There is also an issue with bad quality speakers used by Apple. OS X has
+a built-in software DSP that does equalisation & filtering in the kernel
+driver, and they have specific settings for it for various machine model
+speakers. Obviously, we don't have such thing.
 
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Ben.
