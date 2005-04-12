@@ -1,25 +1,21 @@
 Return-Path: <ktdann@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.204])
-	by ozlabs.org (Postfix) with ESMTP id 5486767B40
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.202])
+	by ozlabs.org (Postfix) with ESMTP id 579B567B40
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 12 Apr 2005 13:55:54 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 57so1393254wri
+	Tue, 12 Apr 2005 14:03:54 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id 57so1394418wri
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 11 Apr 2005 20:55:53 -0700 (PDT)
-Message-ID: <9b7ca657050411205576f4618f@mail.gmail.com>
-Date: Tue, 12 Apr 2005 12:55:53 +0900
+	Mon, 11 Apr 2005 21:03:53 -0700 (PDT)
+Message-ID: <9b7ca65705041121035cb963c@mail.gmail.com>
+Date: Tue, 12 Apr 2005 13:03:53 +0900
 From: Daniel Ann <ktdann@gmail.com>
-To: "Mark A. Greer" <mgreer@mvista.com>
-In-Reply-To: <425AC449.4070401@mvista.com>
+To: Grant Likely <glikely@gmail.com>
+In-Reply-To: <528646bc050411113074ad93b5@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <9b7ca65705040801455b84eb0d@mail.gmail.com>
-	<4256CE41.1000404@mvista.com>
-	<9b7ca6570504081829cb84a7d@mail.gmail.com>
-	<425AC449.4070401@mvista.com>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: Best way to determine tb_ticks_per_jiffy inside
-	todc_calibrate_decr()
+References: <528646bc050411113074ad93b5@mail.gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Eliminating RTC from MPC5200
 Reply-To: Daniel Ann <ktdann@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -31,13 +27,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Apr 12, 2005 3:39 AM, Mark A. Greer <mgreer@mvista.com> wrote:
-> Because the internally kept time in ppc linux is based on the
-> decrementer counter and, according to the manual for the 8245, the
-> decrementer counter is decremented once every four sys_logic_clk
-> cycles.  Therefore, you need to divide by 4.
+On Apr 12, 2005 3:30 AM, Grant Likely <glikely@gmail.com> wrote:
+> Is this true?  Can I eliminate the need for the RTC If I modify
+> mpc52xx_calibrate_decr() in arch/ppc/syslib/mpc52xx_setup.c and
+> mpc52xx_ipbfreq() in arch/ppc/boot/simple/mpc52xx_tty.c?  I'm assuming
+> that I can hard code the system clock speeds for my specific hardware.
 
-Gotcha. Thanks ^^
+This kinda relates back to my previous post.
+Tho I'm not using mpc52xx, my board doesnt have RTC as well. And I
+simply blocked out all the time related functions except the
+calibrate_decr. And hard coded the freq.
+
+It works nicely.
+
+BTW, I'm using mpc8245. You should be able to find my post dating back
+no more than a week or two. Originally I had trouble working out the
+freq, but its all solved thanks to Mark ^^
 
 -- 
 Daniel
