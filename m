@@ -1,22 +1,23 @@
-Return-Path: <marcin.dawidowicz@kontron.pl>
-Received: from postoffice.rnd.kontron.pl (unknown [217.153.29.44])
-	by ozlabs.org (Postfix) with ESMTP id 2D5ED67A33
+Return-Path: <ktdann@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.195])
+	by ozlabs.org (Postfix) with ESMTP id 2DA7C67B14
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 12 Apr 2005 21:05:12 +1000 (EST)
-Received: from linux.site (unknown [192.168.3.180])
-	by postoffice.rnd.kontron.pl (Postfix) with ESMTP id C1DF82DB2
+	Tue, 12 Apr 2005 23:05:16 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id 71so3916439wra
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 12 Apr 2005 12:36:06 +0200 (CEST)
-From: Marcin Dawidowicz <marcin.dawidowicz@kontron.pl>
-To: linuxppc-embedded@ozlabs.org
-Date: Tue, 12 Apr 2005 12:36:18 +0200
-References: <200504121214.28076.Schramel.Linux@go.bartec.de>
-In-Reply-To: <200504121214.28076.Schramel.Linux@go.bartec.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200504121236.19326.marcin.dawidowicz@kontron.pl>
-Subject: Re: IDE and PCI
+	Tue, 12 Apr 2005 06:05:14 -0700 (PDT)
+Message-ID: <9b7ca657050412060556af952e@mail.gmail.com>
+Date: Tue, 12 Apr 2005 22:05:14 +0900
+From: Daniel Ann <ktdann@gmail.com>
+To: Daniel Ann <ktdann@gmail.com>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+In-Reply-To: <20050412122405.GA27920@tuxdriver.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <9b7ca6570504120138738b554f@mail.gmail.com>
+	<20050412122405.GA27920@tuxdriver.com>
+Subject: Re: Trying to understand alloc_skb()
+Reply-To: Daniel Ann <ktdann@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,21 +28,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
-On Tuesday 12 of April 2005 12:14, Marco Schramel wrote:
-> Hi
->
-> we runs a 2.4.25 on a custum board (MPC8270). We use compact flash over
-> UPM. All runs fine. But if i config in the pci bus the i/o accesses on
-> compact flash will fail. The kernel booting fails and it hangs up. At the
-> same time i can read out the cf registers with bdi.
-> It crashes on the first INB() call in ide_probe.c.   "stat =
-> hwif->INB(hwif->io_ports[IDE_STATUS_OFFSET]);". Without pci it works fine.
+On Apr 12, 2005 9:24 PM, John W. Linville <linville@tuxdriver.com> wrote:
+> You may want to consider dev_alloc_skb...
 
-Propably isa_io_base is set to beginning of PCI IO area when PCI is enabled. 
-So all io accesses are mapped in different location. In this case you may 
-need to add additional offset to default io port addresses for compact flash 
-access.
+Ahh that's right. I remember reading a little comment on top dev_alloc_skb().
+Thank you so much. At least that inspired me :)
 
-Best regards,
-Marcin
+Thing is, I got this error during a call to notifier_call_chain. So..
+I would have to go thru the functions who is responsible for issueing
+alloc_skb directly. Gonna take a little while :P
+
+Cheers,
+
+-- 
+Daniel
