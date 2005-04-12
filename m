@@ -1,22 +1,17 @@
-Return-Path: <ktdann@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.202])
-	by ozlabs.org (Postfix) with ESMTP id 579B567B40
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15810.mail.cnb.yahoo.com (web15810.mail.cnb.yahoo.com
+	[202.165.102.90]) by ozlabs.org (Postfix) with SMTP id 413BC67B41
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 12 Apr 2005 14:03:54 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 57so1394418wri
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 11 Apr 2005 21:03:53 -0700 (PDT)
-Message-ID: <9b7ca65705041121035cb963c@mail.gmail.com>
-Date: Tue, 12 Apr 2005 13:03:53 +0900
-From: Daniel Ann <ktdann@gmail.com>
-To: Grant Likely <glikely@gmail.com>
-In-Reply-To: <528646bc050411113074ad93b5@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <528646bc050411113074ad93b5@mail.gmail.com>
+	Tue, 12 Apr 2005 14:10:27 +1000 (EST)
+Message-ID: <20050412041021.64111.qmail@web15810.mail.cnb.yahoo.com>
+Date: Tue, 12 Apr 2005 12:10:21 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: "Mark A. Greer" <mgreer@mvista.com>
+In-Reply-To: 6667
+MIME-Version: 1.0
+Content-Type: text/plain; charset=gb2312
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Eliminating RTC from MPC5200
-Reply-To: Daniel Ann <ktdann@gmail.com>
+Subject: Re: 824x Sandpoint with 2.6.x
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,22 +22,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Apr 12, 2005 3:30 AM, Grant Likely <glikely@gmail.com> wrote:
-> Is this true?  Can I eliminate the need for the RTC If I modify
-> mpc52xx_calibrate_decr() in arch/ppc/syslib/mpc52xx_setup.c and
-> mpc52xx_ipbfreq() in arch/ppc/boot/simple/mpc52xx_tty.c?  I'm assuming
-> that I can hard code the system clock speeds for my specific hardware.
+--- "Mark A. Greer" <mgreer@mvista.com> wrote:
+> Sam Song wrote:
+> 
+> >Hi all,
+> >
+> >I'd like to know where I could get a good start on
+> >824x Sandpoint board with 2.6.x? Is linuxppc-2.5 BK
+> >tree nice for me to work?
+> 
+> No. Use linux-2.5/6.
 
-This kinda relates back to my previous post.
-Tho I'm not using mpc52xx, my board doesnt have RTC as well. And I
-simply blocked out all the time related functions except the
-calibrate_decr. And hard coded the freq.
+Thanks a lot, Mark.
 
-It works nicely.
+Sam
 
-BTW, I'm using mpc8245. You should be able to find my post dating back
-no more than a week or two. Originally I had trouble working out the
-freq, but its all solved thanks to Mark ^^
-
--- 
-Daniel
+_________________________________________________________
+Do You Yahoo!?
+150万曲MP3疯狂搜，带您闯入音乐殿堂
+http://music.yisou.com/
+美女明星应有尽有，搜遍美图、艳图和酷图
+http://image.yisou.com
+1G就是1000兆，雅虎电邮自助扩容！
+http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
