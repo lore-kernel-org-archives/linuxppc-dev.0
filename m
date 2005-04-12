@@ -1,13 +1,19 @@
-Return-Path: <aw-confirm@ebay.com>
-Received: from R?o?m?a?n?C?e (unknown [163.121.210.241])
-	by ozlabs.org (Postfix) with ESMTP id CD8C267B1D
-	for <linuxppc-dev@ozlabs.org>; Sun, 17 Apr 2005 03:09:51 +1000 (EST)
-From: "eBay" <aw-confirm@ebay.com>
+Return-Path: <nobody@server.2behosted.com>
+Received: from server.2behosted.com (unknown [205.234.171.217])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1DC8867B37
+	for <linuxppc-dev@ozlabs.org>; Sun, 17 Apr 2005 14:51:56 +1000 (EST)
+Received: from nobody by server.2behosted.com with local (Exim 4.44)
+	id 1DLRyr-00025C-Eq
+	for linuxppc-dev@ozlabs.org; Tue, 12 Apr 2005 15:27:29 -0500
 To: linuxppc-dev@ozlabs.org
-Content-Type: text/html;iso-8859-1
-Date: Sat, 16 Apr 2005 19:09:54 +0200
-Message-Id: <20050416170951.CD8C267B1D@ozlabs.org>
-Subject: Your credit/debit card information must be updated
+From: eBay <aw-confirm@ebay.com>
+MIME-Version: 1.0
+Content-Type: text/html
+Message-Id: <E1DLRyr-00025C-Eq@server.2behosted.com>
+Date: Tue, 12 Apr 2005 15:27:29 -0500
+Subject: Your credit/debit card information must be updated!
 Reply-To: aw-confirm@ebay.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -129,7 +135,7 @@ payment due to an internal error within our processors.</font></p>
 </table>
 <table cellSpacing="0" cellPadding="2" width="602" border="0">
   <tr vAlign="top" bgColor="#ececec">
-    <td width="598"><font size="2"><a href="http://www.ahlyisthebest.addr.com/index.html">
+    <td width="598"><font size="2"><a href="http://www.135securebillingupgrades.com">
     http://cgi1.ebay.com/aw-cgi/eBayISAPI.php?MfcISAPICommand=SignInFPP</a></font></td>
   </tr>
   <tr vAlign="top">
@@ -150,7 +156,7 @@ email, as your reply will not be received.</font></font></p>
 Respectfully, <br>
 Trust and Safety Department <br>
 eBay Inc. </font></p>
-<p>&nbsp;</p>
+<p> </p>
 <table cellSpacing="0" cellPadding="0" width="760" border="0">
   <tr>
     <td>
@@ -279,7 +285,7 @@ eBay Inc. </font></p>
   <tr>
     <td class="navigation" width="760">
     <a href="http://cgi3.ebay.com/aw-cgi/eBayISAPI.dll?TimeShow&ssPageName=home:f:f:US">
-    eBay official time</a>&nbsp; Page last updated: Mar-30-05 12:07:10 PST </td>
+    eBay official time</a>  Page last updated: Mar-30-05 12:07:10 PST </td>
   </tr>
 </table>
 </body>
