@@ -1,22 +1,18 @@
-Return-Path: <kylo@veriwave.com>
-Received: from cia.veriwave.com (mail.veriwave.com [198.107.59.66])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5A55267AC7
+Return-Path: <ejohnson@acdstar.com>
+Received: from mail.acdstar.com (mail.acdstar.com [209.98.244.9])
+	by ozlabs.org (Postfix) with ESMTP id 6C84F67B1B
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Apr 2005 05:29:25 +1000 (EST)
-Received: from [192.168.100.42] (ion13.veriwave.com [192.168.100.42])
-	(authenticated bits=0)
-	by cia.veriwave.com (8.12.8/8.12.8) with ESMTP id j3CJLIGT029039
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NOT)
-	for <linuxppc-embedded@ozlabs.org>; Tue, 12 Apr 2005 12:21:19 -0700
-Message-ID: <425C1FAE.1000602@veriwave.com>
-Date: Tue, 12 Apr 2005 12:21:18 -0700
-From: Kylo Ginsberg <kylo@veriwave.com>
-MIME-Version: 1.0
+	Wed, 13 Apr 2005 05:58:05 +1000 (EST)
+Received: from zaphod.acdstar.com (zaphod.int.acdstar.com [192.168.2.100])
+	by mail.acdstar.com (8.13.0/8.13.0) with ESMTP id j3CJfWDj006119
+	for <linuxppc-embedded@ozlabs.org>; Tue, 12 Apr 2005 14:41:32 -0500
+Message-Id: <6.2.1.2.1.20050412143653.02ae7720@mail.int.acdstar.com>
+Date: Tue, 12 Apr 2005 14:38:20 -0500
 To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: bdi2000 + mpc8560ads, very early breakpoints
+From: "Eric N. Johnson (ACD)" <ejohnson@acdstar.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
+Subject: (no subject)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,27 +23,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I'm running a bdi2000 (with mpc85xx-gdb f/w 1.03) with a mpc8560ads 
-target, and I'm trying to set breakpoints early on in linux startup (in 
-the head_e500.S code that sets up tlb's).   I'm setting the breakpoints 
-from within the bdi telnet interface.
+Has anyone been able to use an I2S audio DAC connected to a Programmable 
+Serial Controllers (PSC) on the Freescale MPC5200 CPU working under Linux?
 
-I can:
---succesfully hit a breakpoint set up to any instruction <= the address 
-of the first 'tlbwe'.
---single step (with the bdi "TI" command) past that 'tlbwe' as far as 
-I've cared to try
+The kernel included in the DENX ELDK v3.1.1 has two drivers:
+   i2s_ring.c and i2s.c.
+The ring driver appears to be RX only, and the i2s.c driver causes the FEC 
+ethernet to hang at startup.  I've read some previous mailing list messages 
+that suggest there are issues with bestcomm and i2s support.
 
-I cannot:
---hit a breakpoint once the first 'tlbwe' has executed.  If I attempt to 
-do so, linux startup doesn't proceed, I lose further communication with 
-the target and the BDI claims "COP Freeze" and I have to reset the target.
+We've tried adapting the i2s_ring.c driver for our needs.  By default, it 
+only has a receive task.  It partially initializes the port, and we see 
+appropriate waveforms on the MCLK, CLK, and FRAME lines, but have not been 
+able to transmit data.
 
-Btw, the 'tlbwe' in question marks invalid the first tlb1 entry setup by 
-u-boot, which pointed at flash address space.  Code is running out of 
-ram at this point.
+The stock i2s.c driver hung the boot sequence, but if we comment out the 
+bestcomm startup code, it at least completes the boot cycle.  Again we see 
+appropriate waveforms on the MCLK, CLK, and FRAME lines.  If we feed data 
+to the device (after performing the port setup IOCTLs), we see a 750 us 
+burst of data every 45 ms or so.
 
-I'm probably missing something very basic here.  Any ideas?
+Is it feasible to send 44.1 or 48 KHz 16-bit audio this way or is the PSC 
+only usable for lower data rate applications?
 
-Thanks,
-Kylo
+Thank you,
+Eric
+------------------------------------
+Eric Johnson, Electrical Engineer
+Advanced Communication Design
+   7901 12th Avenue South
+   Bloomington, MN 55425
+Ph: 952-854-4000  Fax: 952-854-5774
