@@ -1,17 +1,22 @@
-Return-Path: <frannk_m1@yahoo.com>
-Received: from web32204.mail.mud.yahoo.com (web32204.mail.mud.yahoo.com
-	[68.142.207.135]) by ozlabs.org (Postfix) with SMTP id AB12967AC7
+Return-Path: <kylo@veriwave.com>
+Received: from cia.veriwave.com (mail.veriwave.com [198.107.59.66])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5A55267AC7
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Apr 2005 05:14:59 +1000 (EST)
-Message-ID: <20050412190817.746.qmail@web32204.mail.mud.yahoo.com>
-Date: Tue, 12 Apr 2005 12:08:16 -0700 (PDT)
-From: Frank <frannk_m1@yahoo.com>
-To: Paul Gortmaker <p_gortmaker@yahoo.com>,
-	linuxppc-embedded@ozlabs.org
-In-Reply-To: 6667
+	Wed, 13 Apr 2005 05:29:25 +1000 (EST)
+Received: from [192.168.100.42] (ion13.veriwave.com [192.168.100.42])
+	(authenticated bits=0)
+	by cia.veriwave.com (8.12.8/8.12.8) with ESMTP id j3CJLIGT029039
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NOT)
+	for <linuxppc-embedded@ozlabs.org>; Tue, 12 Apr 2005 12:21:19 -0700
+Message-ID: <425C1FAE.1000602@veriwave.com>
+Date: Tue, 12 Apr 2005 12:21:18 -0700
+From: Kylo Ginsberg <kylo@veriwave.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Subject: Re: Warm reboot on 826x targets
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: bdi2000 + mpc8560ads, very early breakpoints
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,69 +27,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+I'm running a bdi2000 (with mpc85xx-gdb f/w 1.03) with a mpc8560ads 
+target, and I'm trying to set breakpoints early on in linux startup (in 
+the head_e500.S code that sets up tlb's).   I'm setting the breakpoints 
+from within the bdi telnet interface.
 
---- Paul Gortmaker <p_gortmaker@yahoo.com> wrote:
-> I've been trying to get a WRS 8265 to do a warm reboot, and
-> found some
-> things that I am wondering about.
-> 
-> Firstly, is anyone having success on having "reboot" restart
-> the machine
-> on a similar platform?
-> 
-> Secondly, the default BOOTROM_RESTART_ADDR is 0x40000104
-> (sbc82xx.h) and I
-> was wondering if this matches any platforms out there.  On
-> this board, the
-> place where U-Boot lives is 0xFFF00104 -- and I've verified
-> this by typing
-> "g fff00104" at the U-Boot prompt which causes U-Boot to
-> simply restart.
-> 
-> I've changed the value in sbc82xx.h and now at the reboot,
-> instead of a
-> register dump, it simply hangs.  Looking at m8260_gorom (in
-> kernel/head.S)
-> it clears the MSR_EE (ext int. enable) bit in the MSR before
-> jumping --
-> but I was wondering if there are other bits in MSR that need
-> to be
-> cleared; e.g. instruction relocation enable and data
-> relocation enable
-> (MSR_IR and MSR_DR). The register bits are on p76 of
-> MPCFPE32B.pdf from
-> Freescale.
-> 
-> I guess if somebody even said "it works for me" then I'd have
-> a better
-> feeling thinking that what is done to the MSR currently is
-> sufficient.
-> 
-> Paul.
-> 
-I'm working on the exact same problem with u-boot (trying to do
-warm reboot from the VxWorks shell). I modified romInit.S to
-pass control to u-boot (at 0xfe000000) and that works just fine.
-But after I boot VxWorks from u-boot (go 0xfff00100) and invoke
-reboot from the VxWorks shell, it just hangs. If I boot VxWorks
-without invoking u-boot first, it works fine. If you find the
-problem befor me, let me know and I'll do tha same...
+I can:
+--succesfully hit a breakpoint set up to any instruction <= the address 
+of the first 'tlbwe'.
+--single step (with the bdi "TI" command) past that 'tlbwe' as far as 
+I've cared to try
 
-> 
-> 		
-> __________________________________ 
-> Do you Yahoo!? 
-> Yahoo! Small Business - Try our new resources site!
-> http://smallbusiness.yahoo.com/resources/
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+I cannot:
+--hit a breakpoint once the first 'tlbwe' has executed.  If I attempt to 
+do so, linux startup doesn't proceed, I lose further communication with 
+the target and the BDI claims "COP Freeze" and I have to reset the target.
 
+Btw, the 'tlbwe' in question marks invalid the first tlb1 entry setup by 
+u-boot, which pointed at flash address space.  Code is running out of 
+ram at this point.
 
-		
-__________________________________ 
-Do you Yahoo!? 
-Yahoo! Small Business - Try our new resources site!
-http://smallbusiness.yahoo.com/resources/
+I'm probably missing something very basic here.  Any ideas?
+
+Thanks,
+Kylo
