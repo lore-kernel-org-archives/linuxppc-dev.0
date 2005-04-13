@@ -1,12 +1,12 @@
 Return-Path: <scarayol@assystembrime.com>
 Received: from srv_courtaboeuf.brime.fr (unknown [81.255.87.178])
-	by ozlabs.org (Postfix) with ESMTP id AF90467A67
+	by ozlabs.org (Postfix) with ESMTP id 4528B67B2E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Apr 2005 02:16:25 +1000 (EST)
-To: akpm@osdl.org;
-Message-ID: <OF255CB959.8F4DBEC4-ONC1256FE2.0023569C@brime.fr>
+	Thu, 14 Apr 2005 02:18:24 +1000 (EST)
+To: akpm@osdl.org
+Message-ID: <OFE975A4F1.3D68503C-ONC1256FE2.0059A386@brime.fr>
 From: scarayol@assystembrime.com
-Date: Wed, 13 Apr 2005 18:17:21 +0200
+Date: Wed, 13 Apr 2005 18:19:24 +0200
 MIME-Version: 1.0
 Content-type: text/plain; charset=iso-8859-1
 Cc: linuxppc-embedded@ozlabs.org
@@ -20,6 +20,7 @@ List-Post: <mailto:linuxppc-embedded@ozlabs.org>
 List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+
 
 Hi all,
 
@@ -70,4 +71,5 @@ F - 29337 QUIMPER CEDEX
 T=E9l: +33 2 98 10 30 06
 mailto:scarayol@assystembrime.com
 ----------------------------------------------------------
+
 =
