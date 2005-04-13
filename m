@@ -1,13 +1,13 @@
 Return-Path: <rpjday@mindspring.com>
 Received: from mailhost.rdmcorp.com (world.rdmcorp.com [204.225.180.10])
-	by ozlabs.org (Postfix) with ESMTP id 4900267B30
+	by ozlabs.org (Postfix) with ESMTP id 7EDBB67B50
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Apr 2005 21:00:25 +1000 (EST)
-Date: Wed, 13 Apr 2005 06:57:21 -0400 (EDT)
+	Wed, 13 Apr 2005 21:01:37 +1000 (EST)
+Date: Wed, 13 Apr 2005 06:58:35 -0400 (EDT)
 From: "Robert P. J. Day" <rpjday@mindspring.com>
 To: Vijay Padiyar <vijay_padiyar@hotmail.com>
 In-Reply-To: <BAY1-DAV1171F1D6CBF80125D8198D8B340@phx.gbl>
-Message-ID: <Pine.LNX.4.61.0504130656100.6223@localhost.localdomain>
+Message-ID: <Pine.LNX.4.61.0504130658060.6223@localhost.localdomain>
 References: <BAY1-DAV1171F1D6CBF80125D8198D8B340@phx.gbl>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -35,7 +35,7 @@ On Wed, 13 Apr 2005, Vijay Padiyar wrote:
 > for Linux that doesn't take up much space and is suitable for
 > embedded applications.
 
-we're using "ftplib", which comes with both the library and the "qftp"
-client.  seems to run well on our 8xx board alongside busybox-1.00.
+whoops, sorry, i just noticed the word "server" in there.  my previous
+post referred just to a client.  sorry.
 
 rday
