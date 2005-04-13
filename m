@@ -1,17 +1,18 @@
-Return-Path: <stephane.fillod@thomson.net>
-Received: from dmzraw2.extranet.tce.com (dmzraw2.extranet.tce.com
-	[157.254.234.138]) by ozlabs.org (Postfix) with ESMTP id 6230E67A2E
+Return-Path: <mgreer@mvista.com>
+Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
+	by ozlabs.org (Postfix) with ESMTP id 14AA667A2E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Apr 2005 02:34:17 +1000 (EST)
+	Thu, 14 Apr 2005 02:48:31 +1000 (EST)
+Message-ID: <425D4D55.40708@mvista.com>
+Date: Wed, 13 Apr 2005 09:48:21 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Wed, 13 Apr 2005 18:33:59 +0200
-Message-ID: <1CFEB358338412458B21FAA0D78FE86D4F0D44@rennsmail02.eu.thmulti.com>
-From: "Fillod Stephane" <stephane.fillod@thomson.net>
-To: <scarayol@assystembrime.com>
+To: Sam Song <samlinuxppc@yahoo.com.cn>
+References: <20050412041021.64111.qmail@web15810.mail.cnb.yahoo.com>
+In-Reply-To: <20050412041021.64111.qmail@web15810.mail.cnb.yahoo.com>
+Content-Type: text/plain; charset=GB2312
 Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: mmap : please help !
+Subject: Re: 824x Sandpoint with 2.6.x
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,24 +23,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Sophie CARAYOL wrote:
-[...]
-> What is the good manner to read or write in the physical memory?
+Sam Song wrote:
 
-Please have a look at Denx's FAQ for accessing memory bus:
+>--- "Mark A. Greer" <mgreer@mvista.com> wrote:
+>  
+>
+>>Sam Song wrote:
+>>
+>>    
+>>
+>>>Hi all,
+>>>
+>>>I'd like to know where I could get a good start on
+>>>824x Sandpoint board with 2.6.x? Is linuxppc-2.5 BK
+>>>tree nice for me to work?
+>>>      
+>>>
+>>No. Use linux-2.5/6.
+>>    
+>>
+>
+>Thanks a lot, Mark.
+>
 
-=20
-http://www.denx.de/twiki/bin/view/PPCEmbedded/DeviceDrivers#Section_Acce
-ssingPeripheralsFromUserSpace
-or shorter: http://tinyurl.com/6c7th
+No problem, Sam. Let me know if you encounter any problems with it.
 
-Depending on the O_SYNC flag passed to open, the mmap'ed memory will be
-accessed through non guarded cache or not. See linux/drivers/char/mem.c.
-The ppc instruction "eieio" deals with I/O ordering.
-
-
-Kenavo
---=20
-Stephane
-
-PS: be careful not sending twice the same mail to the list=20
+Mark
