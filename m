@@ -1,26 +1,22 @@
-Return-Path: <greg@kroah.com>
-Received: from perch.kroah.org (mail.kroah.org [69.55.234.183])
-	by ozlabs.org (Postfix) with ESMTP id 1129867B1F
-	for <linuxppc-dev@ozlabs.org>; Wed, 13 Apr 2005 18:01:14 +1000 (EST)
-Date: Tue, 12 Apr 2005 22:18:24 -0700
-From: Greg KH <greg@kroah.com>
-To: Leigh Brown <leigh@solinno.co.uk>
-Message-ID: <20050413051824.GA25287@kroah.com>
-References: <20050328232355.GA1982@pegasos>
-	<20050331142813.GH25923@smtp.west.cox.net>
-	<20050331184549.GA28069@pegasos> <4251D5BA.5080905@gmx.net>
-	<20050405053930.GD4604@pegasos>
-	<20050405143802.GS25923@smtp.west.cox.net>
-	<42533FA1.1070001@gmx.net>
-	<20050406185049.GF3396@smtp.west.cox.net>
-	<33467.82.10.231.190.1112960162.squirrel@82.10.231.190>
-	<20050409113317.25ECF157F18@jar.solinno.co.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050409113317.25ECF157F18@jar.solinno.co.uk>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	Tom Rini <trini@kernel.crashing.org>
-Subject: Re: [PATCH 2.6.11+] ppc32: Make the Powerstack II Pro4000 boot again
+Return-Path: <torsten.demke@motorola.com>
+Received: from motgate6.mot.com (motgate6.mot.com [144.189.100.106])
+	by ozlabs.org (Postfix) with ESMTP id 980D167B59
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Apr 2005 19:17:08 +1000 (EST)
+Received: from az33exr02.mot.com (az33exr02.mot.com [10.64.251.232])
+	by motgate6.mot.com (Motorola/Motgate6) with ESMTP id j3D9H6B8019279
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Apr 2005 02:17:06 -0700 (MST)
+Received: from zwg57exm01.ds.mot.com (zwg57exm01.ea.mot.com [10.170.189.6])
+	by az33exr02.mot.com (8.13.1/8.13.0) with ESMTP id j3D9I7HV016508
+	for <linuxppc-dev@ozlabs.org>; Wed, 13 Apr 2005 04:18:09 -0500 (CDT)
+Message-ID: <43395BE65409D911B9FF00110A9BFFDC01955581@zwg57exm01.ea.mot.com>
+From: Demke Torsten-atd012 <torsten.demke@motorola.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	debian-powerpc@lists.debian.org,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Date: Wed, 13 Apr 2005 11:16:55 +0200
+MIME-Version: 1.0
+Content-Type: text/plain
+Subject: RE: Sound drivers for newer machines: need help
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,96 +26,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Apr 09, 2005 at 12:33:17PM +0100, Leigh Brown wrote:
-> On Fri, 8 Apr 2005 07:54:31 -0700 Tom Rini wrote:
-> > On Fri, Apr 08, 2005 at 12:36:02PM +0100, Leigh Brown wrote:
-> > > Tom Rini said:
-> > > > On Wed, Apr 06, 2005 at 03:47:13AM +0200, Christian wrote:
-> > > >> Tom Rini wrote:
-> > > >> > Can either of you verify that say 2.6.11.6 w/ "noresidual" on the
-> > > >> > command-line works?  Thanks.
-> > > >>
-> > > >> i booted vanilla 2.6.11.6 with noresidual (and "nopresidual" too, as
-> > > >> Sven sugggested), but the scsi errors did not went away :(
-> > > >>
-> > > >> on a side note, and perhaps totally unrelated: i always have
-> > > >> PROC_PREPRESIDUAL=y in my .config, but i never had /proc/residual as
-> > > >> promised from the help text.
-> > > >
-> > > > Odd.  I thought that only happened if you had no residual data at all
-> > > > (which can happen on Powerstacks, esp if netbooting the kernel).  But
-> > > > in that case the new code shouldn't be hit at all.  Leigh?
-> > > 
-> > > Hi, I'm back from my holidays, and have had a look at this.  As I spent
-> > > lots of time understanding the horrendous mess that was
-> > > prep_pcibios_fixup(), I'd be loath to back out the changes I made
-> > > (especially as they work so well for me ;-) ).
-> > > 
-> > > It turns out that prep_pib_init() is the culprit.  Although it would
-> > > appear to be coded for the non-openpic case, it obviously doesn't work.
-> > > The old version of prep_pcibios_fixup() only called it if there is an
-> > > openpic on the machine.  We can restore that behaviour with the
-> > > following patch:
-> > > 
-> > > --- prep_pci.c.orig	2005-04-08 11:49:25.743718088 +0000
-> > > +++ prep_pci.c	2005-04-08 12:23:00.541422280 +0000
-> > > @@ -1245,8 +1245,13 @@
-> > >  		pci_write_config_byte(dev, PCI_INTERRUPT_LINE, dev->irq);
-> > >  	}
-> > > 
-> > > -	/* Setup the Winbond or Via PIB */
-> > > -	prep_pib_init();
-> > > +	/* Setup the Winbond or Via PIB - prep_pib_init() is coded for
-> > > +	 * the non-openpic case, but it breaks (at least) the Utah
-> > > +	 * (Powerstack II Pro4000), so only call it if we have an
-> > > +	 * openpic.
-> > > +	 */
-> > > +	if (have_openpic)
-> > > +		prep_pib_init();
-> > >  }
-> > > 
-> > >  static void __init
-> > > 
-> > > I've no idea even what machines would be affected by this, but it
-> > > fixes Sven's problem and restores the old behaviour, so that
-> > > can't be bad.
-> > > 
-> > > I guess fixing prep_pib_init() would be the better solution but
-> > > I wouldn't know where to start.  If this band-aid is good enough
-> > > I can submit a proper patch, if you like.
-> > 
-> > If this works, I'd like to see this get into 2.6.12.  Please re-send to
-> > akpm / this list.  Assuming it's just the above:
-> > Acked-by: Tom Rini <trini@kernel.crashing.org>
+Hi,
+
+just another one:
+
+echo `cat /proc/device-tree/model`
+PowerBook5,5
+
+for i in `find /proc/device-tree -name layout-id -print`; do echo $i && hexdump -n4 $i; done
+Nothing
+
+Regards,
+Torsten
+
+
+> -----Original Message-----
+> From: linuxppc-dev-bounces@ozlabs.org
+> [mailto:linuxppc-dev-bounces@ozlabs.org]On Behalf Of Benjamin
+> Herrenschmidt
+> Sent: Samstag, 9. April 2005 02:31
+> To: debian-powerpc@lists.debian.org; linuxppc-dev list
+> Subject: Sound drivers for newer machines: need help
 > 
-> On Fri, 8 Apr 2005 08:57:17 -0700, Tom Rini wrote:
-> > On Fri, Apr 08, 2005 at 05:51:40PM +0200, Christian wrote:
-> > > Tom Rini wrote:
-> > > > 
-> > > > If this works, I'd like to see this get into 2.6.12.  Please re-send to
-> > > > akpm / this list.  Assuming it's just the above:
-> > > > Acked-by: Tom Rini <trini@kernel.crashing.org>
-> > > 
-> > > yes! i just applied Leigh's patch (thanks!) to a pristine 2.6.11.6 and my
-> > > PReP here booted fine:
-> > >   http://www.nerdbynature.de/bits/hal/2.6.11.6/leigh/
-> > 
-> > Great.  Leigh, can you also submit to gregkh for 2.6.11.7?  Thanks.
 > 
-> This patch restores the original behaviour of prep_pcibios_fixup() to
-> only call prep_pib_init() on machines with an openpic.  This allows
-> the Powerstack II Pro4000 to boot again.
+> Hi !
 > 
-> Signed-off-by: Leigh Brown <leigh@solinno.co.uk>
-
-The proper place for -stable patches, is to have them sent to
-stable@kernel.org with a valid changelog comment (not a ton of
-context...)
-
-Please do that, and it will be reviewed.
-
-Also, is this patch already in mainline?
-
-thanks,
-
-greg k-h
+> If you have a newer machine, that is a machine released on or after
+> 2002, can you please send me the output of:
+> 
+> echo `cat /proc/device-tree/model`
+> 
+> and
+> 
+> for i in `find /proc/device-tree -name layout-id -print`; do 
+> echo $i && hexdump -n4 $i; done
+> 
+> If the later returns nothing, it's fine, just tell me.
+> 
+> I'm especially interested in the various models of G5 based 
+> machines. It
+> seems apple is having all sorts of very different sound HW setups on
+> those machines, and I'm trying to figure out exactly what is 
+> where based
+> on those infos and the darwin sources.
+> 
+> Ben.
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
