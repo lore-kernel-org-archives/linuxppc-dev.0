@@ -1,25 +1,18 @@
-Return-Path: <ktdann@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.206])
-	by ozlabs.org (Postfix) with ESMTP id DDCD367A2E
+Return-Path: <fabidi@ultsol.com>
+Received: from smtpauth09.mail.atl.earthlink.net
+	(smtpauth09.mail.atl.earthlink.net [209.86.89.69])
+	by ozlabs.org (Postfix) with ESMTP id A608467A67
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Apr 2005 22:32:27 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 57so90069wri
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Apr 2005 05:32:26 -0700 (PDT)
-Message-ID: <9b7ca65705041305327bd600f6@mail.gmail.com>
-Date: Wed, 13 Apr 2005 21:32:25 +0900
-From: Daniel Ann <ktdann@gmail.com>
-To: Daniel Ann <ktdann@gmail.com>,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-In-Reply-To: <20050413051326.GA12632@gate.ebshome.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <9b7ca6570504120138738b554f@mail.gmail.com>
-	<20050412161230.GA18567@gate.ebshome.net>
-	<9b7ca657050412215025872ce3@mail.gmail.com>
-	<20050413051326.GA12632@gate.ebshome.net>
-Subject: Re: Trying to understand alloc_skb()
-Reply-To: Daniel Ann <ktdann@gmail.com>
+	Thu, 14 Apr 2005 00:00:29 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Date: Wed, 13 Apr 2005 09:37:27 -0400
+Message-ID: <81C69D96BDD30640952C7A404004AA25018DB9@ultsol01.tewks.ultsol.local>
+From: "Fahd Abidi" <fabidi@ultsol.com>
+To: "Kylo Ginsberg" <kylo@veriwave.com>,
+	<linuxppc-embedded@ozlabs.org>
+Subject: RE: bdi2000 + mpc8560ads, very early breakpoints
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,26 +23,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 4/13/05, Eugene Surovegin <ebs@ebshome.net> wrote:
-> Then do it. It should be trivial to unwind the stack and much simpler
-> than moving this code to process context.
+Try the suggestions pointed out in here:
 
-Actually, Im not too sure what is required to put something in kernel
-in process context. Maybe its alot harder than I think it is...
+http://www.ultsol.com/faq-P308.htm
 
-> I think it's a bad idea. You are trying to workaround a problem
-> instead of fixing it. My experience shows that sooner or later it'll
-> come back and hit you anyway :).
+This is based off suggestions from another customer. Let me know if this
+works for you or not.
 
-I'm with you on this. It just that I didnt think putting my code in
-process context would be regarded as workaround. Since kernel itself
-ran fine, only after putting in my change it caused problem, I simply
-thought that putting changes to code that was already there is more
-severe than making further changes to what I've done. At least this
-way, change is still within my domain.
+Fahd
 
-But again, if putting my function in process context is that hard..
-okay I better think otherwise :)
+-----Original Message-----
+From: Kylo Ginsberg [mailto:kylo@veriwave.com]=20
+Sent: Tuesday, April 12, 2005 3:21 PM
+To: linuxppc-embedded@ozlabs.org
+Subject: bdi2000 + mpc8560ads, very early breakpoints
 
---=20
-Daniel
+I'm running a bdi2000 (with mpc85xx-gdb f/w 1.03) with a mpc8560ads=20
+target, and I'm trying to set breakpoints early on in linux startup (in=20
+the head_e500.S code that sets up tlb's).   I'm setting the breakpoints=20
+from within the bdi telnet interface.
+
+I can:
+--succesfully hit a breakpoint set up to any instruction <=3D the =
+address=20
+of the first 'tlbwe'.
+--single step (with the bdi "TI" command) past that 'tlbwe' as far as=20
+I've cared to try
+
+I cannot:
+--hit a breakpoint once the first 'tlbwe' has executed.  If I attempt to
+
+do so, linux startup doesn't proceed, I lose further communication with=20
+the target and the BDI claims "COP Freeze" and I have to reset the
+target.
+
+Btw, the 'tlbwe' in question marks invalid the first tlb1 entry setup by
+
+u-boot, which pointed at flash address space.  Code is running out of=20
+ram at this point.
+
+I'm probably missing something very basic here.  Any ideas?
+
+Thanks,
+Kylo
+
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
