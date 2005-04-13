@@ -1,23 +1,21 @@
 Return-Path: <ktdann@gmail.com>
-Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.196])
-	by ozlabs.org (Postfix) with ESMTP id 7FAB767B56
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.193])
+	by ozlabs.org (Postfix) with ESMTP id AA8D567B56
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Apr 2005 14:47:22 +1000 (EST)
-Received: by rproxy.gmail.com with SMTP id a36so96325rnf
+	Wed, 13 Apr 2005 14:50:09 +1000 (EST)
+Received: by rproxy.gmail.com with SMTP id a36so97325rnf
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 12 Apr 2005 21:47:21 -0700 (PDT)
-Message-ID: <9b7ca65705041221402e23543@mail.gmail.com>
-Date: Wed, 13 Apr 2005 13:40:41 +0900
+	Tue, 12 Apr 2005 21:50:05 -0700 (PDT)
+Message-ID: <9b7ca657050412215025872ce3@mail.gmail.com>
+Date: Wed, 13 Apr 2005 13:50:05 +0900
 From: Daniel Ann <ktdann@gmail.com>
 To: Daniel Ann <ktdann@gmail.com>,
 	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-In-Reply-To: <20050412135114.GB27920@tuxdriver.com>
+In-Reply-To: <20050412161230.GA18567@gate.ebshome.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 References: <9b7ca6570504120138738b554f@mail.gmail.com>
-	<20050412122405.GA27920@tuxdriver.com>
-	<9b7ca657050412060556af952e@mail.gmail.com>
-	<20050412135114.GB27920@tuxdriver.com>
+	<20050412161230.GA18567@gate.ebshome.net>
 Subject: Re: Trying to understand alloc_skb()
 Reply-To: Daniel Ann <ktdann@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -30,20 +28,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 4/12/05, John W. Linville <linville@tuxdriver.com> wrote:
-> My guess would be that your best bet is to move your call to
-> notifier_call_chain off to a workqueue.  notifier_call_chain (and/or
-> one or more of the functions it is calling) is likely written to
-> expect to be in process context.
+On 4/13/05, Eugene Surovegin <ebs@ebshome.net> wrote:
+> You don't need any locks, just pass correct gfp_mask parameter to
+> alloc_skb when it's called from IRQ context, e.g. GFP_ATOMIC.
 
-I was thinking that this might have something to do with BH stuff that
-I've left out from reading. (rather complicated :P)
-Forgive me for trying to take an easy way, but moving things to
-workqueue, do you mean putting it in bottom half? (Im sorta guessing
-bottom half is like something you do after finishing high priority
-tasks)
+Thing is, I'm not actually calling alloc_skb directly from my
+function. I'm calling notifier_call_chain() and somehow inadvertently
+it is getting called. If I was to give GFP_ATOMIC, then I'd have to
+first find the code that is responsible.
 
-(I guess you had this coming) How do you move it to the workqueue?
+Reading what John said earlier, rather than trying to find the code
+that is calling alloc_skb, I should be moving the calls to my
+fnuctions into process context.
+
+So.. I'm gonna go ahead with John's suggestion.. but only problem now
+is how do I move it to process context :P (May be more importantly,
+how do I know that the code needs to be in process context or not?
+which will prevent further headaches and possible coding a time bomb
+:) )
 
 --=20
 Daniel
