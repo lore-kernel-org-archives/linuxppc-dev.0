@@ -1,19 +1,21 @@
-Return-Path: <rupeshs@myw.ltindia.com>
-Received: from Mailout.ltindia.com (unknown [203.199.60.6])
-	by ozlabs.org (Postfix) with ESMTP id F1B4867B59
+Return-Path: <jarno.manninen@tut.fi>
+Received: from kivi.ton.tut.fi (kivi.ton.tut.fi [193.166.235.14])
+	by ozlabs.org (Postfix) with ESMTP id 8F68D67B39
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Apr 2005 19:08:49 +1000 (EST)
-Received: (from EMAIL [192.168.172.1])
-	by lntmail.ltindia.com (SMSSMTP 4.0.0.59) with SMTP id
-	M2005041314232015239
-	for <linuxppc-embedded@ozlabs.org>; Wed, 13 Apr 2005 14:23:20 +0530
-Message-Id: <s25d2c02.087@EMAIL>
-Date: Wed, 13 Apr 2005 14:25:40 +0530
-From: "Rupesh S" <rupeshs@myw.ltindia.com>
-To: <vijay_padiyar@hotmail.com>, <busybox@mail.busybox.net>,
-	<linuxppc-embedded@ozlabs.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 13 Apr 2005 19:46:58 +1000 (EST)
+Received: from b34.paawola.ton.tut.fi ([195.148.75.85])
+	by kivi.ton.tut.fi with esmtp (Exim 3.35 #1 (Debian))
+	id 1DLeTn-0003Jj-00
+	for <linuxppc-embedded@ozlabs.org>; Wed, 13 Apr 2005 12:48:15 +0300
+From: Jarno Manninen <jarno.manninen@tut.fi>
+To: linuxppc-embedded@ozlabs.org
+Date: Wed, 13 Apr 2005 12:27:11 +0300
+References: <s25d2c02.087@EMAIL>
+In-Reply-To: <s25d2c02.087@EMAIL>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200504131227.11638.jarno.manninen@tut.fi>
 Subject: Re: Can you suggest a small FTP utility for Linux suitable for
 	embedded systems?
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -26,26 +28,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Wednesday 13 April 2005 11:55, Rupesh S wrote:
 
-I know 'betaftpd' is small & suitable for small systems.
+> I know 'betaftpd' is small & suitable for small systems.
 
---
-Rupesh S
+I'm not sure if these two are related but I have found 
 
->>> "Vijay Padiyar" <vijay_padiyar@hotmail.com> 04/13/05 02:00PM >>>
-Hi there
+http://bftpd.sourceforge.net/
 
-I am running BusyBox 1.0 on the Linux 2.6.10 kernel on an MPC8260 target.
-Since BusyBox currently doesn't appear to provide an FTP server utility, I
-wanted to know where I can get a small FTP utility for Linux that doesn't
-take up much space and is suitable for embedded applications.
+useful.
 
-Regards
+- Jarno
 
-Vijay Padiyar
-
-http://www.vijaypadiyar.eu.tf=20
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org=20
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> >>> "Vijay Padiyar" <vijay_padiyar@hotmail.com> 04/13/05 02:00PM >>>
+>
+> Hi there
+>
+> I am running BusyBox 1.0 on the Linux 2.6.10 kernel on an MPC8260 target.
+> Since BusyBox currently doesn't appear to provide an FTP server utility, I
+> wanted to know where I can get a small FTP utility for Linux that doesn't
+> take up much space and is suitable for embedded applications.
+>
+> Regards
+>
+> Vijay Padiyar
+>
+> http://www.vijaypadiyar.eu.tf
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
