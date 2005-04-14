@@ -1,18 +1,21 @@
-Return-Path: <Schramel.Linux@go.bartec.de>
-Received: from mail.bartec.de (mail.bartec.de [217.5.168.170])
-	by ozlabs.org (Postfix) with SMTP id 2CCDA67A64
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C358167A2E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Apr 2005 23:04:06 +1000 (EST)
-From: Marco Schramel <Schramel.Linux@go.bartec.de>
-To: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
-Date: Thu, 14 Apr 2005 15:34:10 +0200
+	Thu, 14 Apr 2005 23:55:54 +1000 (EST)
+In-Reply-To: <200504141534.10883.Schramel.Linux@go.bartec.de>
 References: <1628E43D99629C46988BE46087A3FBB9205B50@ep-01.EmbeddedPlanet.local>
-In-Reply-To: <1628E43D99629C46988BE46087A3FBB9205B50@ep-01.EmbeddedPlanet.local>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200504141534.10883.Schramel.Linux@go.bartec.de>
-Cc: PPC_LINUX <linuxppc-embedded@ozlabs.org>
+	<200504141534.10883.Schramel.Linux@go.bartec.de>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <69d6c72eb39adf58f9138ec9e53a3c40@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Thu, 14 Apr 2005 09:55:44 -0400
+To: Marco Schramel <Schramel.Linux@go.bartec.de>
+Cc: Steven Blakeslee <BlakesleeS@embeddedplanet.com>,
+	PPC_LINUX <linuxppc-embedded@ozlabs.org>
 Subject: Re: CPM uart
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,29 +27,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Steven,
 
-thank you for your answer.
+On Apr 14, 2005, at 9:34 AM, Marco Schramel wrote:
 
+>> The selection of the BRGs is hard coded last time I checked.
 
-> The selection of the BRGs is hard coded last time I checked.  When you
-> add SMC1 and SMC2 it may use the wrong BRG for SCC1.  Check the BRG
-> registers, the cmx_smr register and cmx_scr register and make sure
-> everything matches up. 
-
-But this original code seems to be ok.
-
-static int rs_brg_map[] = {
-	6,	/* BRG7 for SMC1 */
-	7,	/* BRG8 for SMC2 */
-	0,	/* BRG1 for SCC1 */
-	1,	/* BRG2 for SCC2 */
-	2,	/* BRG3 for SCC3 */
-};
+Newer drivers don't do this.  They are probably stuck in the 
+linuxppc_devel
+kernels and never made it into the main tree.  The only problem with
+BRGs will be with 8xx, where the max is 4 and some variants have fewer.
 
 
-	/* Wire BRG7 to SMC1 and BRG8 to SMC2 */
-	immap->im_cpmux.cmx_smr = 0x11;
-
-Best regards
-Marco
+	-- Dan
