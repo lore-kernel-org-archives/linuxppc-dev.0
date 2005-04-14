@@ -1,22 +1,17 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D29DC67B3A
+Return-Path: <chris.elston@radstone.co.uk>
+Received: from mail14.messagelabs.com (mail14.messagelabs.com [212.125.75.19])
+	by ozlabs.org (Postfix) with SMTP id EA56C67B7E
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 15 Apr 2005 01:51:52 +1000 (EST)
-In-Reply-To: <200504141454.03704.Schramel.Linux@go.bartec.de>
-References: <200504140926.01775.Schramel.Linux@go.bartec.de>
-	<a06218f5ec69af94cf7d5f7616eed028@embeddededge.com>
-	<200504141454.03704.Schramel.Linux@go.bartec.de>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <c8e8aeb6fa88fbff91b96fc5ab92e61e@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Thu, 14 Apr 2005 11:51:45 -0400
-To: Marco Schramel <Schramel.Linux@go.bartec.de>
-Cc: PPC_LINUX <linuxppc-embedded@ozlabs.org>
-Subject: Re: CPM uart
+	Fri, 15 Apr 2005 02:02:33 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Thu, 14 Apr 2005 16:58:05 +0100
+Message-ID: <F38DEABE0E171746B133C1ABBD142D9703691B09@radmail.Radstone.Local>
+From: "Chris Elston" <chris.elston@radstone.co.uk>
+To: "Venky Krishnan" <venky.home@gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: embedded newbie
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,27 +22,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+>=20I=20bought=20an=20old=20powerpc=20PMC=20card=20and=20a=20PCI=20adapter=
+=20to=20fit=20this=20into
+>=20the=20PC=20PCI=20slot.=20However=20a=20'lspci=20-v'=20at=20the=20comma=
+nd=20doesn't=20show=20any
+>=20difference=20with/without=20the=20card.=20Does=20this=20mean=20the=20c=
+ard=20is=20fried?
 
-On Apr 14, 2005, at 8:54 AM, Marco Schramel wrote:
+Maybe=20fried,=20or=20maybe=20it's=20just=20incompatible=20with=20your=20P=
+CI/PMC=20adapter.=20=20What=20I/O=20voltage=20is=20the=20PMC=20card=205v=20=
+or=203.3v?=20=20Does=20the=20PMC=20card=20have=20any=20independent=20I/O=20=
+options=20-=20RS232=20header=20or=20anything=20else?=20=20Does=20it=20have=
+=20any=20status=20LEDs?=20=20What=20type=20of=20card=20is=20it?
 
-> I use kernel version 2.4.25 of denx and the uart version is
-> static char *serial_name = "CPM UART driver";
-> static char *serial_version = "0.01";
+Thanks,
 
-I don't remember the progress of the new cpm serial drivers in 2.4,
-I've been spending too much time in 2.6.  If you find a 2.4 kernel
-with the new serial driver model (drivers/seral/cpm_uart) that
-would be a big help.
+Chris.
 
-> Are there newer versions? Sorry, but i am not up to date with the uart.
-> Is my configuration so extraordinary ;-) ?
-
-Yes, there are newer versions and I've never tried what you are
-doing.  The console code has always been sensitive to configurations.
-Although the #defines may look like it will work, the code often isn't
-there to support it, and I know wasn't there in that old version of the 
-code.
-
-Thanks.
-
-	-- Dan
+________________________________________________________________________
+This=20e-mail=20has=20been=20scanned=20for=20all=20viruses=20by=20Star.=20=
+The
+service=20is=20powered=20by=20MessageLabs.=20For=20more=20information=20on=
+=20a=20proactive
+anti-virus=20service=20working=20around=20the=20clock,=20around=20the=20gl=
+obe,=20visit:
+http://www.star.net.uk
+________________________________________________________________________
