@@ -1,17 +1,25 @@
-Return-Path: <scarayol@assystembrime.com>
-Received: from srv_courtaboeuf.brime.fr (unknown [81.255.87.178])
-	by ozlabs.org (Postfix) with ESMTP id 6B61967B73
+Return-Path: <stephane.fillod@thomson.net>
+Received: from dmzraw2.extranet.tce.com (dmzraw2.extranet.tce.com
+	[157.254.234.138]) by ozlabs.org (Postfix) with ESMTP id 88C4967A6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 15 Apr 2005 00:37:15 +1000 (EST)
-To: Jean-Christophe Dubois <jdubois@mc.com>
-Message-ID: <OF6D9DF5A3.572A1EAE-ONC1256FE3.004DDA93@brime.fr>
-From: scarayol@assystembrime.com
-Date: Thu, 14 Apr 2005 16:37:53 +0200
+	Fri, 15 Apr 2005 00:51:40 +1000 (EST)
+Received: from smtprelay.indy.tce.com (ismtprelay.indy.tce.com
+	[157.254.96.114])
+	by dmzraw2.extranet.tce.com (8.12.5/8.12.5) with ESMTP id
+	j3EEpclh017620
+	for <linuxppc-embedded@ozlabs.org>; Thu, 14 Apr 2005 14:51:38 GMT
+Received: from boulsmailbh02.eu.thmulti.com (localhost [127.0.0.1])
+	by smtprelay.indy.tce.com (8.9.3/8.9.1) with ESMTP id OAA06987
+	for <linuxppc-embedded@ozlabs.org>; Thu, 14 Apr 2005 14:51:37 GMT
 MIME-Version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Cc: linuxppc-embedded@ozlabs.org
-Subject: =?iso-8859-1?q?R=E9f=2E_=3A_Re=3A_R=E9f=2E_=3A_RE=3A_mmap_=3A_pl?=
- =?iso-8859-1?q?ease_help?=  !
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Thu, 14 Apr 2005 16:51:16 +0200
+Message-ID: <1CFEB358338412458B21FAA0D78FE86D4F0D47@rennsmail02.eu.thmulti.com>
+From: "Fillod Stephane" <stephane.fillod@thomson.net>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: =?iso-8859-1?q?RE=3A_R=E9f=2E_=3A_Re=3A_R=E9f=2E_=3A_RE=3A_mmap_?=
+	=?iso-8859-1?q?=3A_please_help__!?=
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,105 +30,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Sophie CARAYOL wrote:
+>But, the real question is : if you use the /dev/mem (with open() and =
+mmap
+>()), could you use, in the user space, the pointer returned by the mmap
+>function to access the physical memory or do you have to use read/write =
+(on
+>the file descriptor) to access physical memory because i haven't the =
+same
+>results according to the used method.
 
-Hello Jean-Christophe,
+The read/write method is a heavy weight method, while the pointer =
+returned by mmap is light and very efficient way in user-space, and It =
+just works(tm).
 
-That's right, I verify all the useful parameters in my driver and
-everything seems OK.
-But, the real question is : if you use the /dev/mem (with open() and mm=
-ap
-()), could you use, in the user space, the pointer returned by the mmap=
+Have you made sure the read/write is bypassing caching/speculative mode?
+Can some timing issues explain the difference? Are you reading/writing=20
+the right number of bytes?
+Can you check both methods on a ReadOnly hardware register, with a known
+value to be read?
 
-function to access the physical memory or do you have to use read/write=
- (on
-the file descriptor) to access physical memory because i haven't the sa=
-me
-results according to the used method.
-Thanks for 'od' but i haven't in my packages.
+>Thanks for 'od' but i haven't in my packages.
 
-Sophie.
-
-
-
-                                                                       =
-                                                                       =
-
-                    Jean-Christop                                      =
-                                                                       =
-
-                    he Dubois            Pour :  scarayol@assystembrime=
-.com                                                                   =
-
-                    <jdubois@mc.c        cc :    linuxppc-embedded@ozla=
-bs.org                                                                 =
-
-                    om>                  Objet :      Re: R=E9f. : RE: =
-mmap : please help !                                                   =
- =20
-                                                                       =
-                                                                       =
-
-                    14/04/05                                           =
-                                                                       =
-
-                    12:09                                              =
-                                                                       =
-
-                                                                       =
-                                                                       =
-
-                                                                       =
-                                                                       =
+Anything else from dd with hexdump to your own built peek & poke?
+What about mempoke from Conor McLoughlin?
+http://ozlabs.org/pipermail/linuxppc-embedded/2004-October/015871.html
 
 
-
-
-Hello Sophie,
-
-On Thu, 2005-04-14 at 11:38 +0200, scarayol@assystembrime.com wrote:
-> St=E9phane,
->
-> thanks for your help.
-> But I think that, except instruction eieio,  I do similar things. You=
- use
-> the virtual address returned by mmap but have you the same values if =
-you
-> use write/read(axs_mem_fd,...) instead of in_8/out_8.
-> That is  my problem : I want to be sure that when I use the virtual
-address
-> returned by mmap, I access really to the physical memory mapped area.=
-
-
-As the /dev/map_mc is your custom driver it should be fairly easy for
-you to check the parameters you pass to remap_page_range().
-
-> Do you know a shell command in order to dump the memory and verify wh=
-at I
-> do ?
-
-try "od"
-
-JC
-
-> ----------------------------------------------------------
-> Sophie CARAYOL
->
-> TECHNOLOGIES & SYSTEMES
-> 50 rue du Pr=E9sident Sadate
-> F - 29337 QUIMPER CEDEX
->
-> T=E9l: +33 2 98 10 30 06
-> mailto:scarayol@assystembrime.com
-> ----------------------------------------------------------
->
->
->
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-
-
-
-=
+Regards,
+--=20
+Stephane
