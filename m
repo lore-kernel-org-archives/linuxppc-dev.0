@@ -1,26 +1,19 @@
-Return-Path: <ktdann@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.199])
-	by ozlabs.org (Postfix) with ESMTP id 1E27F67B67
+Return-Path: <Schramel.Linux@go.bartec.de>
+Received: from mail.bartec.de (mail.bartec.de [217.5.168.170])
+	by ozlabs.org (Postfix) with SMTP id 2CCDA67A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Apr 2005 22:36:36 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 70so773670wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Apr 2005 05:36:24 -0700 (PDT)
-Message-ID: <9b7ca657050414053650cc817@mail.gmail.com>
-Date: Thu, 14 Apr 2005 21:36:24 +0900
-From: Daniel Ann <ktdann@gmail.com>
-To: Daniel Ann <ktdann@gmail.com>,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-In-Reply-To: <9b7ca65705041305327bd600f6@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <9b7ca6570504120138738b554f@mail.gmail.com>
-	<20050412161230.GA18567@gate.ebshome.net>
-	<9b7ca657050412215025872ce3@mail.gmail.com>
-	<20050413051326.GA12632@gate.ebshome.net>
-	<9b7ca65705041305327bd600f6@mail.gmail.com>
-Subject: Re: Trying to understand alloc_skb()
-Reply-To: Daniel Ann <ktdann@gmail.com>
+	Thu, 14 Apr 2005 23:04:06 +1000 (EST)
+From: Marco Schramel <Schramel.Linux@go.bartec.de>
+To: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+Date: Thu, 14 Apr 2005 15:34:10 +0200
+References: <1628E43D99629C46988BE46087A3FBB9205B50@ep-01.EmbeddedPlanet.local>
+In-Reply-To: <1628E43D99629C46988BE46087A3FBB9205B50@ep-01.EmbeddedPlanet.local>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200504141534.10883.Schramel.Linux@go.bartec.de>
+Cc: PPC_LINUX <linuxppc-embedded@ozlabs.org>
+Subject: Re: CPM uart
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,22 +24,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 4/13/05, Eugene Surovegin <ebs@ebshome.net> wrote:
-> Then do it. It should be trivial to unwind the stack and much simpler
-> than moving this code to process context.
+Hi Steven,
 
-You know what ?? You were right about it being trivial. Didnt take me
-to too long to find the line and saw what was going on.
-Initially I started reading on how to put the line in process context,
-but soon I realised its not something you want to spend your afternoon
-on :P (Currently I dont have too many afternoons for this)
+thank you for your answer.
 
-Anyway, thanks for the pointer.
 
-Actual problem came from rtnetlink.c file where it called
-rtmsg_ifinfo(). This in turn, called alloc_skb with GFP_KERNEL, rather
-an GFP_ATOMIC. I guess GFP_KERNEL is right, but what's the difference
-?
+> The selection of the BRGs is hard coded last time I checked.  When you
+> add SMC1 and SMC2 it may use the wrong BRG for SCC1.  Check the BRG
+> registers, the cmx_smr register and cmx_scr register and make sure
+> everything matches up. 
 
---=20
-Daniel
+But this original code seems to be ok.
+
+static int rs_brg_map[] = {
+	6,	/* BRG7 for SMC1 */
+	7,	/* BRG8 for SMC2 */
+	0,	/* BRG1 for SCC1 */
+	1,	/* BRG2 for SCC2 */
+	2,	/* BRG3 for SCC3 */
+};
+
+
+	/* Wire BRG7 to SMC1 and BRG8 to SMC2 */
+	immap->im_cpmux.cmx_smr = 0x11;
+
+Best regards
+Marco
