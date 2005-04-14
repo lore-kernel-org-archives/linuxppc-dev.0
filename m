@@ -1,17 +1,19 @@
-Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15807.mail.cnb.yahoo.com (web15807.mail.cnb.yahoo.com
-	[202.165.102.87]) by ozlabs.org (Postfix) with SMTP id BF54667B67
+Return-Path: <wd@denx.de>
+Received: from mailout11.sul.t-online.com (mailout11.sul.t-online.com
+	[194.25.134.85]) by ozlabs.org (Postfix) with ESMTP id 728E867B59
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Apr 2005 15:01:07 +1000 (EST)
-Message-ID: <20050414050104.51491.qmail@web15807.mail.cnb.yahoo.com>
-Date: Thu, 14 Apr 2005 13:01:04 +0800 (CST)
-From: Sam Song <samlinuxppc@yahoo.com.cn>
-To: "Mark A. Greer" <mgreer@mvista.com>
-In-Reply-To: 6667
-MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
+	Thu, 14 Apr 2005 15:49:18 +1000 (EST)
+To: larry_chen@agilent.com
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 13 Apr 2005 16:35:36 MDT."
+	<26F517960E0A454BAC0748B5C33D5DEA18A722@wcosmb05.cos.agilent.com>
+Date: Thu, 14 Apr 2005 07:48:43 +0200
+Sender: wd@denx.de
+Message-Id: <20050414054848.98881C108D@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: 824x Sandpoint with 2.6.x
+Subject: Re: ELDK 3.1.1 support for x86_64 host architecture 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,37 +24,80 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---- "Mark A. Greer" <mgreer@mvista.com> wrote:
-[snip]
-> No problem, Sam. Let me know if you encounter any
-> problems with it.
+In message <26F517960E0A454BAC0748B5C33D5DEA18A722@wcosmb05.cos.agilent.com> you wrote:
+> 
+> I've noticed that the ELDK build and install scripts do NOT
+> support x86_64 host architecture.
 
-Well, encounter one puzzle on bd_info:-)
+Which sort of host system is this (Processor(s), RAM, Linux distribution) ?
 
-I use 2.6.11 release package on my custom Sandpoint
-board with u-boot. In 2.6.11 ppcboot.h, I noticed 
-that there were no CONFIG_8260 but CONFIG_CPM2, 
-which had a conflict with bd_info of u-boot. Does
-CONFIG_CPM2 means CONFIG_8260 in 2.6.x? If so, it
-seems that I should use CPM2 UART driver rather 
-than the one CONFIG_SERIAL_8250 which is defined by
-sandpoint_defconfig. Well, CPM2 UART driver support
-is off line from menuconfig:-(
+> What support for x86_64 host architecture ever attempted
+> by anyone?
 
-I created one image only with 8250 serial and RAMDISK
-support kernel. The console setting is "ttyS0,115200".
-But hanged after loading the kernel... What could the
-problem be?
+It works fine here on several Athlon / Opteron systems running Fedora
+Core 2 and Fedora Core 3; for example:
 
-Thanks for your kind help,
+-> cat /etc/issue
+Fedora Core release 2 (Tettnang)
+Kernel \r on an \m
 
-Sam
+-> uname -a
+Linux pollux 2.6.10-1.770_FC2smp #1 SMP Sat Feb 26 19:46:59 EST 2005 x86_64 x86_64 x86_64 GNU/Linux
+-> cat /proc/cpuinfo 
+processor       : 0
+vendor_id       : AuthenticAMD
+cpu family      : 15
+model           : 5
+model name      : AMD Opteron(tm) Processor 246
+stepping        : 10
+cpu MHz         : 2004.596
+cache size      : 1024 KB
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 1
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 pni syscall nx mmxext lm 3dnowext 3dnow
+bogomips        : 3940.35
+TLB size        : 1088 4K pages
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 40 bits physical, 48 bits virtual
+power management: ts fid vid ttp
 
-_________________________________________________________
-Do You Yahoo!?
-150ÍòÇúMP3·è¿ñËÑ£¬´øÄú´³ÈëÒôÀÖµîÌÃ
-http://music.yisou.com/
-ÃÀÅ®Ã÷ÐÇÓ¦ÓÐ¾¡ÓÐ£¬ËÑ±éÃÀÍ¼¡¢ÑÞÍ¼ºÍ¿áÍ¼
-http://image.yisou.com
-1G¾ÍÊÇ1000Õ×£¬ÑÅ»¢µçÓÊ×ÔÖúÀ©ÈÝ£¡
-http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
+processor       : 1
+vendor_id       : AuthenticAMD
+cpu family      : 15
+model           : 5
+model name      : AMD Opteron(tm) Processor 246
+stepping        : 10
+cpu MHz         : 2004.596
+cache size      : 1024 KB
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 1
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 pni syscall nx mmxext lm 3dnowext 3dnow
+bogomips        : 4005.88
+TLB size        : 1088 4K pages
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 40 bits physical, 48 bits virtual
+power management: ts fid vid ttp
+
+-> type ppc_8xx-gcc
+ppc_8xx-gcc is /opt/eldk/usr/bin/ppc_8xx-gcc
+-> ppc_8xx-gcc -v
+Reading specs from /opt/eldk-3.1.1/usr/bin/../lib/gcc-lib/ppc-linux/3.3.3/specs
+Configured with: ../configure --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --enable-shared --enable-threads=posix --disable-checking --with-system-zlib --enable-__cxa_atexit --with-newlib --enable-languages=c,c++ --disable-libgcj --host=i386-redhat-linux --target=ppc-linux
+Thread model: posix
+gcc version 3.3.3 (DENX ELDK 3.1.1 3.3.3-9)
+
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Neckties strangle clear thinking.                       -- Lin Yutang
