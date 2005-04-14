@@ -1,20 +1,26 @@
-Return-Path: <Schramel.Linux@go.bartec.de>
-Received: from mail.bartec.de (mail.bartec.de [217.5.168.170])
-	by ozlabs.org (Postfix) with SMTP id 454F267B70
+Return-Path: <ktdann@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.199])
+	by ozlabs.org (Postfix) with ESMTP id 1E27F67B67
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Apr 2005 22:24:34 +1000 (EST)
-From: Marco Schramel <Schramel.Linux@go.bartec.de>
-To: Dan Malek <dan@embeddededge.com>,
-	"PPC_LINUX" <linuxppc-embedded@ozlabs.org>
-Date: Thu, 14 Apr 2005 14:54:03 +0200
-References: <200504140926.01775.Schramel.Linux@go.bartec.de>
-	<a06218f5ec69af94cf7d5f7616eed028@embeddededge.com>
-In-Reply-To: <a06218f5ec69af94cf7d5f7616eed028@embeddededge.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200504141454.03704.Schramel.Linux@go.bartec.de>
-Subject: Re: CPM uart
+	Thu, 14 Apr 2005 22:36:36 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id 70so773670wra
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 14 Apr 2005 05:36:24 -0700 (PDT)
+Message-ID: <9b7ca657050414053650cc817@mail.gmail.com>
+Date: Thu, 14 Apr 2005 21:36:24 +0900
+From: Daniel Ann <ktdann@gmail.com>
+To: Daniel Ann <ktdann@gmail.com>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+In-Reply-To: <9b7ca65705041305327bd600f6@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <9b7ca6570504120138738b554f@mail.gmail.com>
+	<20050412161230.GA18567@gate.ebshome.net>
+	<9b7ca657050412215025872ce3@mail.gmail.com>
+	<20050413051326.GA12632@gate.ebshome.net>
+	<9b7ca65705041305327bd600f6@mail.gmail.com>
+Subject: Re: Trying to understand alloc_skb()
+Reply-To: Daniel Ann <ktdann@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,29 +31,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Dan,
+On 4/13/05, Eugene Surovegin <ebs@ebshome.net> wrote:
+> Then do it. It should be trivial to unwind the stack and much simpler
+> than moving this code to process context.
 
-thanks for your answer.
+You know what ?? You were right about it being trivial. Didnt take me
+to too long to find the line and saw what was going on.
+Initially I started reading on how to put the line in process context,
+but soon I realised its not something you want to spend your afternoon
+on :P (Currently I dont have too many afternoons for this)
 
-> > During booting kernel hangs on initializing ttyS2 forever.
-> 
-> That is the console port, so take a look at the code for its
-> initialization for something affected by this configuration.
-> What kernel are you using?  There have been lots of
-> updates in recent versions.
+Anyway, thanks for the pointer.
 
-I use kernel version 2.4.25 of denx and the uart version is 
-static char *serial_name = "CPM UART driver";
-static char *serial_version = "0.01";
+Actual problem came from rtnetlink.c file where it called
+rtmsg_ifinfo(). This in turn, called alloc_skb with GFP_KERNEL, rather
+an GFP_ATOMIC. I guess GFP_KERNEL is right, but what's the difference
+?
 
-Are there newer versions? Sorry, but i am not up to date with the uart.
-Is my configuration so extraordinary ;-) ?
-
-Thanks
-Marco
-
-
-
--- 
----------
-Marco Schramel
+--=20
+Daniel
