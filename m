@@ -1,18 +1,20 @@
-Return-Path: <jdubois@mc.com>
-Received: from mc.com (iris-63.mc.com [63.96.239.141])
-	by ozlabs.org (Postfix) with ESMTP id 261E367A2E
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8E7D667A67
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Apr 2005 20:27:09 +1000 (EST)
-From: Jean-Christophe Dubois <jdubois@mc.com>
-To: scarayol@assystembrime.com
-In-Reply-To: <OFD3D0F6BD.3557C244-ONC1256FE3.0033B4B5@brime.fr>
-References: <OFD3D0F6BD.3557C244-ONC1256FE3.0033B4B5@brime.fr>
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 14 Apr 2005 12:09:56 +0200
-Message-Id: <1113473397.27480.5.camel@fr-jdubois1.ad.mc.com>
-Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: =?iso-8859-1?q?R=E9f=2E?= : RE: mmap : please help !
+	Thu, 14 Apr 2005 22:01:59 +1000 (EST)
+In-Reply-To: <200504140926.01775.Schramel.Linux@go.bartec.de>
+References: <200504140926.01775.Schramel.Linux@go.bartec.de>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <a06218f5ec69af94cf7d5f7616eed028@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Thu, 14 Apr 2005 08:01:47 -0400
+To: Marco Schramel <Schramel.Linux@go.bartec.de>
+Cc: PPC_LINUX <linuxppc-embedded@ozlabs.org>
+Subject: Re: CPM uart
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,44 +25,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Sophie,
 
-On Thu, 2005-04-14 at 11:38 +0200, scarayol@assystembrime.com wrote:
-> St=C3=A9phane,
->=20
-> thanks for your help.
-> But I think that, except instruction eieio,  I do similar things. You use
-> the virtual address returned by mmap but have you the same values if you
-> use write/read(axs_mem_fd,...) instead of in_8/out_8.
-> That is  my problem : I want to be sure that when I use the virtual addre=
-ss
-> returned by mmap, I access really to the physical memory mapped area.
+On Apr 14, 2005, at 3:26 AM, Marco Schramel wrote:
 
-As the /dev/map_mc is your custom driver it should be fairly easy for
-you to check the parameters you pass to remap_page_range().=20
+> During booting kernel hangs on initializing ttyS2 forever.
 
-> Do you know a shell command in order to dump the memory and verify what I
-> do ?
+That is the console port, so take a look at the code for its
+initialization for something affected by this configuration.
+What kernel are you using?  There have been lots of
+updates in recent versions.
 
-try "od"
+> What could be wrong ? I only changed the io port configuration in the 
+> init function.
 
-JC
+Heh :-)  There are lots of permutations of serial ports that probably
+haven't been tested.  You probably found one of them.
 
-> ----------------------------------------------------------
-> Sophie CARAYOL
->=20
-> TECHNOLOGIES & SYSTEMES
-> 50 rue du Pr=C3=A9sident Sadate
-> F - 29337 QUIMPER CEDEX
->=20
-> T=C3=A9l: +33 2 98 10 30 06
-> mailto:scarayol@assystembrime.com
-> ----------------------------------------------------------
->=20
->=20
->=20
->=20
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Thanks.
+
+
+	-- Dan
