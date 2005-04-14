@@ -1,15 +1,22 @@
-Return-Path: <anonymous@m1.netfirms.com>
-Received: from qmail-cgi-bulk-0.netfirms.com (16-mail.netfirms.com
-	[64.34.64.16]) by ozlabs.org (Postfix) with SMTP id 5EE9A67A33
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Apr 2005 16:21:34 +1000 (EST)
-Date: 14 Apr 2005 02:21:47 -0000
-Message-ID: <20050414022147.96436.qmail@cgi2>
-To: linuxppc-dev@ozlabs.org
-From: Paul Kadiri <pemith13@yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Subject: From the Desk of Mr. Paul Kadiri
-Reply-To: pakadi13@yahoo.com
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (sipsolutions.net [66.160.135.76])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 61F7467B5E
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Apr 2005 22:56:10 +1000 (EST)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1113113792.9517.476.camel@gaston>
+References: <1113113792.9517.476.camel@gaston>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-ix/IDBPL7bIg3nVUeOyP"
+Date: Thu, 14 Apr 2005 14:55:44 +0200
+Message-Id: <1113483344.5614.17.camel@localhost>
+Mime-Version: 1.0
+Cc: Takashi Iwai <tiwai@suse.de>, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
+Subject: Re: [PATCH] pmac: sound support for latest laptops
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,66 +27,56 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
->From the Desk of Mr. Paul Kadiri
-    
-Dear Sir/Madam,
-       My name is Paul Kadiri, I am a banker with one of the banks 
-in Lagos in Nigeria. I have urgent and very confidential 
-business proposition for you. On June 6 2002, a Zimbabwean 
-farmer/businessman made a numbered time(Fixed) deposited 
-for twelve calendar months, valued at $15,320,000.00 
-(Fifteen million,three hundred and twenty thousand united 
-states dollars-five) in my branch. Upon maturity, I sent a 
-routine notification to his forwarding address but got no 
-reply. After a month,i sent a reminder and finally we 
-discovered from his co-farmer who previously had a joint 
-account with him in my bank that he died in the land 
-crisis in Zimbabwe.
- 
-  On further investigation, I found out that he did not 
-leave a WILL and all attempts to trace his next of kin 
-were fruitless. I therefore made further investigation and 
-discovered that he did not declare any next of kin in all 
-his official documents, including his Bank Deposit
-paperwork.
- 
- This sum of US$15,320,000.00 is still sitting in the Bank 
-and the interest is being rolled over with the principal 
-sum at the end of each year. No one will come forward to 
-claim it. According to the Nigerian Law, at the expiration 
-of 5 (five) years, the money will revert to the ownership 
-of the Nigerian Government{STATE} if nobody applies to 
-claim the funds. Consequently, my proposal is that I will 
-like you as a foreigner to stand in as his next of kin so 
-that the fruits of this old man's labor will not get into 
-the hands of some corrupt officials. I will intimate you 
-with the requirements that the attorney will need to 
-prepare the necessary documents and affidavits, which will 
-put you in place as the next of kin upon your positive 
-response.
- 
- We shall employ the services of two attorneys for drafting 
-and notarization of the WILL and obtain the necessary 
-documents and letter of probate/administration in your 
-favor for the transfer. A bank Account in any part of the 
-world, which you provide, will then facilitate the 
-transfer of this money to you as the beneficiary/next of 
-kin. The money will be paid into your account for us to 
-share in the ratio of 70% for me and 30% for you, There is 
-no risk at all as all the paperwork for this transaction 
-will be done by the attorney and my position as the 
-Regional manager guarantees the successful execution of 
-this transaction. Upon your positive response,i shall let 
-you know who i am,the name of my bank and the name of the 
-deceased.I will also provide you with more details and 
-relevant documents that will put you in a clearer picture 
-of this pending transaction.
- Please observe utmost confidentiality, and be rest assured 
-that this transaction would be most profitable for both of 
-us because I shall require your assistance to invest my 
-share in your country.
-You can email me via this email 
-address:pakadi13@yahoo.com
-Awaiting your urgent reply 
-Yours faithfully.
-Mr. Paul Kadiri
+--=-ix/IDBPL7bIg3nVUeOyP
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+> This patch hacks the current Alsa snd-powermac driver to add support for
+> recent machine models with the tas3004 chip, that is basically new
+> laptop models.
+
+So this works, but is incompatible with gstreamer. I took it with a
+rhythmbox/gstreamer developer and he said that it's a driver issue. A
+gstreamer log is here:
+http://johannes.sipsolutions.net/files/rhythmbox-alsa-debug
+(produced by GST_DEBUG=3Dalsa*:5 rhythmbox 2>&1 | tee logfile)
+
+He also asked me to try
+$ gst-launch-0.8 sinesrc ! alsasink device=3Dhw:0
+
+which yields:
+RUNNING pipeline ...
+ERROR: pipeline doesn't want to play.
+
+So the conclusion was:
+"set_periods_near ioctl does something weird"
+
+Any ideas?
+
+johannes
+
+--=-ix/IDBPL7bIg3nVUeOyP
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (SIP Solutions)
+
+iQIVAwUAQl5oTqVg1VMiehFYAQL6xBAAlEnplTi3aRE2i99HrYvmVEYa9/yAcb9g
+2JyEZtcOQyNhLPzyqtWeJe3Kq29U6saB6V7xJI9eEO+wRtrWkzmY/x2dJKHg094s
+kaL78b0gqwSQzXg/rzBpxVrY8Wus1CQinC5JIsqkB5dlYpZCd1WVs5LuQN31cQgO
+SNs7Uglia04ucAdH7AawwDl4PSwzXtHRYjxgwE32vsuCzp5a2eYsO8X7bKvoO/ld
+JREyzbWfuCdBZ4pSlD+spUXakQp+kSEGR3MIu1q5/6Xye4iy6eEcoWw1TvSp2vMS
+71OSm+0xZehwBF22/FWEZ3CPoHarRx2Fxmu8WN71cnA+ErrMA7w95kSiXk/2d6RX
+z9XB7AQ8ewrM5r2JYnBtdjThYCdtF2wrH1XzfoIcNNemBaAWzoTmKi+ecWbKLG3/
+ODTDg7uhKk/mHrszZ8TujzjkFcjeVvileU81mBdEz/Sz9DtlLuE7lTT+I/EkIRcL
+PkfzaNt4iZy6Ai3IunCfRC/c42pIc5N75UVO1LkopXm9WS89Zu+U08v/yeP1F3uI
+kpRO8QmarQc6aacpJYYkTskVDvwhLpK/xBMDyCK5bKU+usGxdHggVTES/clTtDya
+DGpsMm9nkyVmGmQwCeV+oyeDKWzi+t6gNp5He+2Gy3SHer1cepMcEsPy0IaVEfqg
+kysI3ZP+O7U=
+=YwOt
+-----END PGP SIGNATURE-----
+
+--=-ix/IDBPL7bIg3nVUeOyP--
