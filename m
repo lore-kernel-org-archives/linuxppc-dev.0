@@ -1,20 +1,20 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 3D73467B74
+Return-Path: <joern@wohnheim.fh-wedel.de>
+Received: from moskovskaya.fh-wedel.de (mail.fh-wedel.de [213.39.232.198])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2AFF367B1E
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 15 Apr 2005 14:01:15 +1000 (EST)
-Date: Thu, 14 Apr 2005 21:01:12 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Message-ID: <20050415040112.GB11362@gate.ebshome.net>
-References: <425EB470.9040203@am.sony.com>
+	Fri, 15 Apr 2005 15:45:21 +1000 (EST)
+Date: Fri, 15 Apr 2005 07:45:23 +0200
+From: =?iso-8859-1?Q?J=F6rn?= Engel <joern@wohnheim.fh-wedel.de>
+To: Chris Elston <chris.elston@radstone.co.uk>
+Message-ID: <20050415054523.GC32689@wohnheim.fh-wedel.de>
+References: <F38DEABE0E171746B133C1ABBD142D9703691B00@radmail.Radstone.Local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <425EB470.9040203@am.sony.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
-Subject: Re: {PATCH] Fix IBM EMAC driver ioctl bug
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <F38DEABE0E171746B133C1ABBD142D9703691B00@radmail.Radstone.Local>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: MTD Mapping driver - out of vmalloc space
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,31 +25,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 14, 2005 at 11:20:32AM -0700, Geoff Levand wrote:
-> Fix IBM EMAC driver ioctl bug.
+On Tue, 12 April 2005 11:07:38 +0100, Chris Elston wrote:
 > 
-> I found IBM EMAC driver bug.
-> So mii-tool command print wrong status.
+> Thanks for everyone's input on this, I've moved the kernel virtual
+> base address to 0xa0000000, and it works fine now.  
 > 
->   # mii-tool
->   eth0: 10 Mbit, half duplex, no link
->   eth1: 10 Mbit, half duplex, no link
-> 
-> I can get correct status on fixed kernel.
-> 
->   # mii-tool
->   eth0: negotiated 100baseTx-FD, link okZZ
->   eth1: negotiated 100baseTx-FD, link ok
-> 
+> I'm still not convinced that this is a future proof solution 
+> though.  What happens when I get a board with 512MB Flash 1GB SDRAM?
+> I can push the top of the SDRAM out to the high mem area, but I'll 
+> have to encroach further into user space to map the Flash.  There's
+> no good reason that the whole of the Flash need be mapped at the same
+> time. (Perhaps performance?)
 
-There is a problem with this patch. I'm aware of this problem for 
-quite some time, but chose to keep the current code.
+Definitely performance.  At the end of the day, you need a bigger
+namespace of some sorts.  Possible solutions are:
 
-This IOCTL implementation has been here for many years in all 
-revisions of the driver, so I think we should keep it as is, because 
-some software could rely on it, and your change will break it. 
+o a 64bit machine,
+o a 4GiB/4GiB kernel/user split and
+o a PPC440 with 36bit addressing and some hardware and ioremap tricks
+  to move flash above the 32bit limit.
 
-And all new code should use ethtool anyway :).
+The 4/4 split also costs some performance.  It doesn't violate the
+'flash read must be atomic' requirement, though.
+
+Jörn
 
 -- 
-Eugene
+...one more straw can't possibly matter...
+-- Kirby Bakken
