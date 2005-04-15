@@ -1,18 +1,23 @@
-Return-Path: <geoffrey.levand@am.sony.com>
-Received: from mail8.fw-bc.sony.com (mail8.fw-bc.sony.com [160.33.98.75])
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4B0D367B28
+	by ozlabs.org (Postfix) with ESMTP id 2519167B73
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 15 Apr 2005 12:43:39 +1000 (EST)
-Message-ID: <425EB470.9040203@am.sony.com>
-Date: Thu, 14 Apr 2005 11:20:32 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Matt Porter <mporter@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
-Subject: {PATCH] Fix IBM EMAC driver ioctl bug
+	Fri, 15 Apr 2005 12:50:37 +1000 (EST)
+In-Reply-To: <200504142024.41126.rscop@matrix.com.br>
+References: <200504140926.01775.Schramel.Linux@go.bartec.de>
+	<a06218f5ec69af94cf7d5f7616eed028@embeddededge.com>
+	<200504141454.03704.Schramel.Linux@go.bartec.de>
+	<200504142024.41126.rscop@matrix.com.br>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <ca0dbea676037b37464b3318b4271a30@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Thu, 14 Apr 2005 22:50:22 -0400
+To: Ricardo Scop <rscop@matrix.com.br>
+Cc: PPC_LINUX <linuxppc-embedded@ozlabs.org>
+Subject: Re: CPM uart
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,38 +28,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Fix IBM EMAC driver ioctl bug.
 
-I found IBM EMAC driver bug.
-So mii-tool command print wrong status.
+On Apr 14, 2005, at 7:24 PM, Ricardo Scop wrote:
 
-  # mii-tool
-  eth0: 10 Mbit, half duplex, no link
-  eth1: 10 Mbit, half duplex, no link
+> I suggest you to seek all smc_scc_num references inside both the 
+> console
+> routines and the #ifdef SCC_CONSOLE ... #endif code snippets. They 
+> should be
+> subtracted by SCC_NUM_BASE whenever they're used to access SCC-related 
+> stuff,
 
-I can get correct status on fixed kernel.
+This has all been corrected in later versions of the driver.  Take a
+look at the linuxppc_2.4_devel or some other BK ppc kernels.  Start
+at penguinppc.org for kernel access information.
 
-  # mii-tool
-  eth0: negotiated 100baseTx-FD, link okZZ
-  eth1: negotiated 100baseTx-FD, link ok
+Yes, I know, it shouldn't be in this state, but it is.  Find the 
+various kernel
+sources and peruse for what fits your requirements.
 
-Hiroaki Fuse
+Thanks.
 
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com> for CELF
----
-
-Index: linux-2.6.11/drivers/net/ibm_emac/ibm_emac_core.c
-===================================================================
---- linux-2.6.11.orig/drivers/net/ibm_emac/ibm_emac_core.c	2005-04-14 10:54:20.014023550 -0700
-+++ linux-2.6.11/drivers/net/ibm_emac/ibm_emac_core.c	2005-04-14 10:55:24.723458722 -0700
-@@ -1587,7 +1587,7 @@
- static int emac_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
- {
- 	struct ocp_enet_private *fep = dev->priv;
--	uint *data = (uint *) & rq->ifr_ifru;
-+	uint16_t *data = (uint16_t *) & rq->ifr_ifru;
- 
- 	switch (cmd) {
- 	case SIOCGMIIPHY:
-
--EOF
+	-- Dan
