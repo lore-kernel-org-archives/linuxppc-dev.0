@@ -1,23 +1,17 @@
-Return-Path: <venky.home@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.192])
-	by ozlabs.org (Postfix) with ESMTP id D20B667B72
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15806.mail.cnb.yahoo.com (web15806.mail.cnb.yahoo.com
+	[202.165.102.86]) by ozlabs.org (Postfix) with SMTP id 638C467B1B
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 15 Apr 2005 12:07:02 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 37so958220wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Apr 2005 19:06:54 -0700 (PDT)
-Message-ID: <c4dda2d1050414190652728716@mail.gmail.com>
-Date: Thu, 14 Apr 2005 22:06:54 -0400
-From: Venky Krishnan <venky.home@gmail.com>
-To: Chris Elston <chris.elston@radstone.co.uk>
-In-Reply-To: <F38DEABE0E171746B133C1ABBD142D9703691B09@radmail.Radstone.Local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <AcVBBIZTWdTv7OcdSOGj6u8CP3/JKwABeBhg>
-	<F38DEABE0E171746B133C1ABBD142D9703691B09@radmail.Radstone.Local>
+	Fri, 15 Apr 2005 12:24:33 +1000 (EST)
+Message-ID: <20050415022430.52080.qmail@web15806.mail.cnb.yahoo.com>
+Date: Fri, 15 Apr 2005 10:24:30 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: "Mark A. Greer" <mgreer@mvista.com>
+In-Reply-To: 6667
+MIME-Version: 1.0
+Content-Type: text/plain; charset=gb2312
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: embedded newbie
-Reply-To: Venky Krishnan <venky.home@gmail.com>
+Subject: Re: 824x Sandpoint with 2.6.x
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,33 +22,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thanks for your reply. The PMC card is an SBS palomar II card which I
-think is a 5v card. No LED's on the card. I have started looking
-around for a 3pin RS232 cable.
+"Mark A. Greer" <mgreer@mvista.com>
 
-Thanks again for your inputs...
+Re: 824x Sandpoint with 2.6.x
 
-- venky
-=20
 
-On 4/14/05, Chris Elston <chris.elston@radstone.co.uk> wrote:
-> > I bought an old powerpc PMC card and a PCI adapter to fit this into
-> > the PC PCI slot. However a 'lspci -v' at the command doesn't show any
-> > difference with/without the card. Does this mean the card is fried?
->=20
-> Maybe fried, or maybe it's just incompatible with your PCI/PMC adapter.  =
-What I/O voltage is the PMC card 5v or 3.3v?  Does the PMC card have any in=
-dependent I/O options - RS232 header or anything else?  Does it have any st=
-atus LEDs?  What type of card is it?
->=20
-> Thanks,
->=20
-> Chris.
->=20
-> ________________________________________________________________________
-> This e-mail has been scanned for all viruses by Star. The
-> service is powered by MessageLabs. For more information on a proactive
-> anti-virus service working around the clock, around the globe, visit:
-> http://www.star.net.uk
-> ________________________________________________________________________
->
+--- Sam Song <samlinuxppc@yahoo.com.cn> wrote:
+[snip]
+> which had a conflict with bd_info of u-boot. Does
+> CONFIG_CPM2 means CONFIG_8260 in 2.6.x? If so, it
+> seems that I should use CPM2 UART driver rather 
+> than the one CONFIG_SERIAL_8250 which is defined by
+> sandpoint_defconfig. Well, CPM2 UART driver support
+> is off line from menuconfig:-(
+
+I got the answer after a glance at the Manual itself.
+824x is so different to 8260/8270. No CPM at all on
+it. The DUART's program model is compatible with 
+16550. Also no IMMR value... I thought 824x could have
+a model as 8260 or even 8xx. New things learned!
+
+> I created one image only with 8250 serial and
+> RAMDISK support kernel. The console setting was
+> "ttyS0,115200". But hanged after loading the 
+> kernel... What could the problem be?
+
+Still no luck. From the print message I set, it passed
+MMU_init() and mpc10x_bridge_init(), then stopped.
+
+Any clue on it? 
+
+Thanks,
+
+Sam
+
+_________________________________________________________
+Do You Yahoo!?
+150万曲MP3疯狂搜，带您闯入音乐殿堂
+http://music.yisou.com/
+美女明星应有尽有，搜遍美图、艳图和酷图
+http://image.yisou.com
+1G就是1000兆，雅虎电邮自助扩容！
+http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
