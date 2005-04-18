@@ -1,20 +1,19 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 2A33D67B19
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Apr 2005 02:14:22 +1000 (EST)
-Date: Mon, 18 Apr 2005 09:14:20 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Sanjay Bajaj <sbajaj@tsi-telsys.com>
-Message-ID: <20050418161420.GA25352@gate.ebshome.net>
-References: <0007F077BB3476449151699150E8FEA20592C8@exchange.tsi-telsys.com>
+Return-Path: <tony.p.lee@gmail.com>
+Message-ID: <470b63970504180952587057aa@mail.gmail.com>
+Date: Mon, 18 Apr 2005 09:52:50 -0700
+From: Tony Lee <tony.p.lee@gmail.com>
+To: Peter Ryser <Peter.Ryser@xilinx.com>
+In-Reply-To: <4239C6AE.3050803@xilinx.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <0007F077BB3476449151699150E8FEA20592C8@exchange.tsi-telsys.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Unable to capture device interrupts on ppc440gx?
+Content-Type: text/plain; charset=ISO-8859-1
+References: <002001c52aef$d29dbb70$9c9c9182@ddns.htc.nl.philips.com>
+	<4239A41E.7040200@xilinx.com>
+	<001501c52b0a$0ee36ca0$9c9c9182@ddns.htc.nl.philips.com>
+	<4239C6AE.3050803@xilinx.com>
+Cc: Linuxppc-embedded@ozlabs.org
+Subject: Re: Problems with MontaVista Linux on a Memec Virtex-II pro ff672
+	board
+Reply-To: Tony Lee <tony.p.lee@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,18 +24,135 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 18, 2005 at 12:02:52PM -0400, Sanjay Bajaj wrote:
-> In the device driver open function, I call request_irq() to register 
-> my interrupt handler function to a specified IRQ number. It 
-> succeeds. 
-> But when I enable the interrupt (and we can detect the hardware line 
-> is active) on the hardware, the interrupt handler in NOT invoked. Is 
-> there something I am missing? Any help or pointers are appreciated.
+Peter,=20
 
-Did you configure polarity and triggering settings for this IRQ 
-source? If not, look for example at ebony.c (ppc4xx_uic_ext_irq_cfg) 
-keeping in mind, that Ebony has 440GP CPU. 440GX has 5 additional 
-IRQ lines.
+Maybe xilinx can come up with app note on how to debug the kernel=20
+bring up / hanging issue with chipscope on PLB bus.
 
--- 
-Eugene
+That would be the most powerful way to demo how to use the=20
+Xilinx VP HW platform to debug some tricky kernel issues.
+You have a extreme flexible platform for this.  We just need a
+xilinx's guiding hand from time to time.
+
+
+I can use the same help too for following issues with linux on VP 20.  :-) =
+=20
+
+   * I have trouble finding where 700+ msec cpu time went in my
+currect system - kernel, ISR, other user tasks.
+
+   * Sometime on power on, the linux would lockup before everything is read=
+y.
+
+
+-Tony
+
+
+On 3/17/05, Peter Ryser <Peter.Ryser@xilinx.com> wrote:
+> Also try to boot the first Linux kernel (the one without the Flash
+> support) on the EDK design with Flash support. It will help narrow down
+> the problem to the HW or the SW.
+>=20
+> - Peter
+>=20
+> S. van Beek wrote:
+>=20
+> >>How did you add the Flash (EMC) peripheral? Did you use the Base System
+> >>Builder to generate your hardware?
+> >>
+> >>
+> >
+> >Yes, we started a new project using the base system builder with the sam=
+e
+> >options as the previous (working) project and flash, so the address rang=
+e
+> >should be ok. I'll check tomorrow, right now its time to go home ;)
+> >
+> >Regards,
+> >Sander
+> >
+> >----- Original Message -----
+> >From: "Peter Ryser" <Peter.Ryser@xilinx.com>
+> >To: "S. van Beek" <nlv11891@prle>
+> >Cc: <Linuxppc-embedded@ozlabs.org>
+> >Sent: Thursday 17 March 2005 16:37
+> >Subject: Re: Problems with MontaVista Linux on a Memec Virtex-II pro ff6=
+72
+> >board
+> >
+> >
+> >
+> >
+> >>How did you add the Flash (EMC) peripheral? Did you use the Base System
+> >>Builder to generate your hardware?
+> >>
+> >>If you configure the hardware manually and use the OPB EMC make sure
+> >>that you add the address range to the PLB2OPB bridge.
+> >>
+> >>- Peter
+> >>
+> >>
+> >>S. van Beek wrote:
+> >>
+> >>
+> >>
+> >>>Hello there,
+> >>>
+> >>>This is our first post on this list, hi all!
+> >>>We're two Dutch students working with a Virtex-II pro ff672 board from
+> >>>Memec with the Communications 2 module. We've compiled a simple kernel
+> >>>wich comes with MontaVista Linux 3.1 (2.4.20) with ethernet and a
+> >>>serial port. It mounts its root filesystem over NFS and everything
+> >>>seems to work nicely. The next step we wanted to make was
+> >>>adding support for the Flash on the com board. We added the IP to the
+> >>>hardware and loaded the new bitstream in the FPGA. Next thing, we
+> >>>enabled support for MTD devices in the kernel. After that, the kernel
+> >>>did not seem to boot anymore. It stopped at the message 'Now booting
+> >>>the kernel'. So we read some documentation about debugging. We
+> >>>recompiled this kernel with the -g -ggdb options and removed the -O
+> >>>(optimalization) flag. Then we did not even see the ppc boot loader
+> >>>messages anymore when trying to boot. So we tried to compile the first
+> >>>kernel (with only serial and ethernet support) -wich worked fine
+> >>>before- with debugging and it gave us the same result.. no output at
+> >>>
+> >>>
+> >all.
+> >
+> >
+> >>>Can anyone give us some hints on what we can try more to find out what
+> >>>is going wrong?
+> >>>
+> >>>Regards,
+> >>>Sander van Beek
+> >>>Daniel van Os
+> >>>
+> >>>----------------------------------------------------------------------=
+--
+> >>>
+> >>>_______________________________________________
+> >>>Linuxppc-embedded mailing list
+> >>>Linuxppc-embedded@ozlabs.org
+> >>>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> >>>
+> >>>
+> >>>
+> >>
+> >>
+> >>
+> >
+> >
+> >
+> >
+> >
+> >
+>=20
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>=20
+
+
+--=20
+-Tony
+Having fun with FPGA HW + ppc + Linux
