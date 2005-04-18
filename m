@@ -1,28 +1,20 @@
-Return-Path: <steven.scholz@imc-berlin.de>
-Received: from mail.imc-berlin.de (mail.imc-berlin.de [217.110.46.186])
-	by ozlabs.org (Postfix) with ESMTP id F0C7967A70
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id DAA0567A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 18 Apr 2005 23:50:56 +1000 (EST)
-Received: from mailserver.berlin.imc-berlin.de
-	(mailserver.berlin.imc-berlin.de [10.0.0.19])
-	by mail.imc-berlin.de (Postfix) with ESMTP id 9B6CE2F016
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 18 Apr 2005 15:24:45 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by mailserver.berlin.imc-berlin.de (Postfix) with ESMTP id 8B084118E0
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 18 Apr 2005 15:24:45 +0200 (CEST)
-Received: from [10.0.2.10] (scholz.berlin.imc-berlin.de [10.0.2.10])
-	by mailserver.berlin.imc-berlin.de (Postfix) with ESMTP id D667FA125
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 18 Apr 2005 15:24:44 +0200 (CEST)
-Message-ID: <4263B51B.3030903@imc-berlin.de>
-Date: Mon, 18 Apr 2005 15:24:43 +0200
-From: Steven Scholz <steven.scholz@imc-berlin.de>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Subject: gdb-6.3 for mpx8xx?
+	Tue, 19 Apr 2005 01:24:16 +1000 (EST)
+Date: Mon, 18 Apr 2005 08:24:05 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: "Bellino, Phil" <pbellino@mrv.com>
+Message-ID: <20050418152405.GE8014@gate.ebshome.net>
+References: <19EE6EC66973A5408FBE4CB7772F6F0A02899377@ltnmail.xyplex.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <19EE6EC66973A5408FBE4CB7772F6F0A02899377@ltnmail.xyplex.com>
+Cc: LinuxPPC <linuxppc-embedded@ozlabs.org>
+Subject: Re: 2.6.11 kernel, PPC, and IPv6
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,11 +25,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi there,
+On Mon, Apr 18, 2005 at 09:20:39AM -0400, Bellino, Phil wrote:
+> I do not know if this email is appropriate for this mailing list, but I
+> thought I would give it a try.
+> 
+> Is there anyone out there who is using(or attempting to use) IPv6 with PPC
+> and a 2.6.11 kernel with whom I could email directly with some specific
+> questions?
 
-has someone successfully built gdb-6.3 for mpx8xx processors?
+I'm using IPv6 on my powerbook and 440GX ref platform (Ocotea). They 
+both seems to get link-local and global addresses (from local router 
+running radvd) just fine.
 
-Thanks.
+But don't mail me directly :), if you have questions - just ask the 
+list, although I don't think this a proper place. Try netdev list 
+(netdev@oss.sgi.com)
 
---
-Steven
+-- 
+Eugene
