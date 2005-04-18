@@ -1,24 +1,17 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.199])
-	by ozlabs.org (Postfix) with ESMTP id 5399A67A70
+Return-Path: <pstudencki@yahoo.com>
+Received: from web51310.mail.yahoo.com (web51310.mail.yahoo.com
+	[206.190.38.176]) by ozlabs.org (Postfix) with SMTP id A85D867A67
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Apr 2005 07:14:24 +1000 (EST)
-Received: by rproxy.gmail.com with SMTP id 40so473603rnz
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 18 Apr 2005 14:14:23 -0700 (PDT)
-Message-ID: <c3d0340b05041814144133a608@mail.gmail.com>
-Date: Mon, 18 Apr 2005 14:14:23 -0700
-From: Shawn Jin <shawnxjin@gmail.com>
-To: ppcembed <linuxppc-embedded@ozlabs.org>
-In-Reply-To: <20050416005026.GB1086@gate.ebshome.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <c3d0340b05041514362746169a@mail.gmail.com>
-	<20050415221235.GA29802@gate.ebshome.net>
-	<c3d0340b0504151609397d73f7@mail.gmail.com>
-	<20050416005026.GB1086@gate.ebshome.net>
-Subject: Re: Interrupt prioritization on linux for ppc440
-Reply-To: Shawn Jin <shawnxjin@gmail.com>
+	Tue, 19 Apr 2005 07:24:06 +1000 (EST)
+Message-ID: <20050418212401.33270.qmail@web51310.mail.yahoo.com>
+Date: Mon, 18 Apr 2005 14:24:01 -0700 (PDT)
+From: Pawel Studencki <pstudencki@yahoo.com>
+To: Eugene Surovegin <ebs@ebshome.net>
+In-Reply-To: 6667
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: using initramfs with ppc
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,31 +22,118 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 4/15/05, Eugene Surovegin <ebs@ebshome.net> wrote:
-> I really think that if you need some special higher-priority IRQ
-> context you'd better use RTAI or RTLinux. At least, they make clear
-> (IIRC) that these IRQ contexts are special.
+hello,
 
-OK, I'll look into RTAI or RTLinux for priority issue.
+It can be wrong kernel parameter or problem with mtd
+or cramfs support. But if I see my kernel messages,
+everything seems to be OK for me. I've attached kernel
+logging, so let me know, if I'm wrong.
 
-> What could be interesting, though, is to to make all 4xx IRQs
-> critical, in this case we could use VR to quickly determine which IRQ
-> was asserted, instead of current implementation when we use bit
-> operations. Not sure, if performance gain is really worth the
-> effort :)
+Do I need initramfs if I want to mount root filesystem
+on CRAMFS? If so, with special devices?
 
-If we use VR to determine which IRQ was asserted, it's kind of
-reverse. We usually fetch a handler by its IRQ number. It could
-require to change irq_desc[] and request_irq().
+I found some problems here:
+static int __init do_mount_root(char *name, char *fs,
+int flags, void *data)
+{
+	int err = sys_mount(name, "/root", fs, flags, data);
+	if (err)
+		return err;
+[...]
+}
+return -2.
 
-VR can be calculated automatically provided that VCR is set. What
-should be the vector base address? One possible way is similar to the
-way how IVPR is set to interrupt_base in head_44x.S but leave the
-actual interrupt handler blank, which will be filled in later with a
-jump instruction which jumps to the actual ISR once a device driver
-request its irq. This means that request_irq() needs to modify kernel
-code. Kinda of dangerous, isn't it? This might be part of
-infrastructure change you mentioned?
+Directory "/root" hasn't been found! Does this funtion
+look for on initramfs???
 
-Regards,
--Shawn.
+best regards
+Pawel
+------------------------------------
+Kernel command line: console=ttyCPM0, 57600
+root=/dev/mtdblock1 
+rootfstype=cramfs ro
+PID hash table entries: 128 (order: 7, 2048 bytes)
+Decrementer Frequency = 187500000/60
+m8xx_wdt: wdt disabled (SYPCR: 0xFFFFFF88)
+Console: colour dummy device 80x25
+Dentry cache hash table entries: 4096 (order: 2, 16384
+ytes)
+Inode-cache hash table entries: 2048 (order: 1, 8192
+ytes)
+Memory: 14772k available (976k kernel code, 368k data,
+60k init, 0k 
+highmem)
+Mount-cache hash table entries: 512 (order: 0, 4096
+bytes)
+NET: Registered protocol family 16
+JFFS2 version 2.2. (NAND) (C) 2001-2003 Red Hat, Inc.
+Serial: CPM driver $Revision: 0.01 $
+ttyCPM0 at MMIO 0xff000a60 (irq = 43) is a CPM UART
+io scheduler noop registered
+loop: loaded (max 8 devices)
+physmap flash device: 400000 at ffc00000
+phys_mapped_flash: Found 1 x16 devices at 0x0 in
+16-bit bank
+ Amd/Fujitsu Extended Query Table at 0x0040
+number of CFI chips: 1
+cfi_cmdset_0002: Disabling erase-suspend-program due
+to code 
+brokenness.
+Creating 5 MTD partitions on "phys_mapped_flash":
+0x00000000-0x000d0000 : "Kernel"
+mtd: Giving out device 0 to Kernel
+0x000d0000-0x001d0000 : "RootFS"
+mtd: Giving out device 1 to RootFS
+0x001d0000-0x00300000 : "ApplFS1"
+mtd: Giving out device 2 to ApplFS1
+0x00300000-0x00330000 : "U-Boot"
+mtd: Giving out device 3 to U-Boot
+0x00330000-0x00400000 : "ApplFS2"
+mtd: Giving out device 4 to ApplFS2
+VFS: Cannot open root device "mtdblock1" or
+unknown-block(31,1)
+Please append a correct "root=" boot option
+Kernel panic - not syncing: VFS: Unable to mount root
+fs on 
+unknown-block(31,1)
+
+
+
+--- Eugene Surovegin <ebs@ebshome.net> wrote:
+> On Mon, Apr 18, 2005 at 08:34:42AM -0700, Pawel
+> Studencki wrote:
+> > Hello,
+> >  
+> > I use a custom board with 8xx and kernel 2.6.11
+> and
+> > try to mount root fs
+> > based on cramfs. I still have problems with
+> mounting
+> > VFS:
+> > 
+> > VFS: Cannot open root device "mtdblock1" or
+> > unknown-block(31,1)
+> > Please append a correct "root=" boot option
+> > Kernel panic - not syncing: VFS: Unable to mount
+> root
+> > fs on
+> > unknown-block(31,1)
+> > 
+> > I found, that perhaps the reason is initramfs.
+> 
+> Unlikely.
+> 
+> Please, check that you have mtdblock device enabled
+> in config, also 
+> that you have configured your flash support, and
+> mtdblock1 partition 
+> actually exists.
+> 
+> -- 
+> Eugene
+> 
+
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
