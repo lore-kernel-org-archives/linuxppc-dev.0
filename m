@@ -1,20 +1,34 @@
-Return-Path: <andreas.jaggi@waterwave.ch>
-Received: from server5.hostpoint.ch (server5.hostpoint.ch [217.26.52.15])
+Return-Path: <pestes@us.ibm.com>
+Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 587AC67B31
-	for <linuxppc-dev@ozlabs.org>; Mon, 18 Apr 2005 00:13:02 +1000 (EST)
-Date: Sun, 17 Apr 2005 15:42:23 +0200
-From: Andreas Jaggi <andreas.jaggi@waterwave.ch>
-To: Vojtech Pavlik <vojtech@suse.cz>
-Message-ID: <20050417154223.6d1af254@localhost>
+	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3C81867A6C
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Apr 2005 07:15:11 +1000 (EST)
+Received: from e4.ny.us.ibm.com ([192.168.1.104])
+	by pokfb.esmtp.ibm.com (8.12.11/8.12.11) with ESMTP id j3IJgRk2020578
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Apr 2005 15:42:27 -0400
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e4.ny.us.ibm.com (8.12.11/8.12.11) with ESMTP id j3IJgKIG032715
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Apr 2005 15:42:20 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.12.10/NCO/VER6.6) with ESMTP id
+	j3IJgKZd088042
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Apr 2005 15:42:20 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11/8.12.11) with ESMTP id j3IJgK86023472
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Apr 2005 15:42:20 -0400
+Received: from unary.wma.ibm.com (unary.wma.ibm.com [9.54.149.20])
+	by d01av01.pok.ibm.com (8.12.11/8.12.11) with ESMTP id j3IJgJiF023461
+	for <linuxppc-dev@ozlabs.org>; Mon, 18 Apr 2005 15:42:19 -0400
+From: Phil Estes <pestes@us.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Mon, 18 Apr 2005 15:42:07 -0400
+Message-Id: <1113853327.3750.21.camel@unary.wma.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org,
-	linux-input@atrey.karlen.mff.cuni.cz
-Subject: [PATCH 2.6.11.7] macintosh/adbhid.c: adb buttons support for
- aluminium PowerBook G4
+Subject: writev test failure related to arch/ppc/lib/string.S changes?
+Reply-To: pestes@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,82 +39,30 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 Hi,
+Recently I applied some 2.6.7 ppc32 patches to a 2.6.5 kernel, which
+included the 1.1612.2.78 changeset titled "[PATCH] PPC32: Fix copy
+prefetch on non coherent PPCs".  The functionality I meant to get from
+that backport is working fine, but a test team which is testing my
+changes note that a standard LTP testcase in the writev family now
+fails, which they tracked to the changes made in arch/ppc/lib/string.S
+from the above changeset.
 
-This patch adds support for the special adb buttons of the aluminium
-PowerBook G4.
+Their comments follow:
+> I checked the string.S of 2.6.7. I think there is a bug in it. 
+> At 114, we set ctr=r0-r7. If exception occurs, it then goes to 104,
+> then 92 where r3 is set to LG_CACHELINE_BYTES. Then it goes to 99.
+>
+> But in the remarks before 99, the number of bytes not copied is 
+> r5 + (ctr << r3). This is not as what has happen because 
+> ctr = r0 - r7. The ctr should be adjusted before it goes to 99.
 
-Signed-off-by: Andreas Jaggi <andreas.jaggi@waterwave.ch>
+The failing test being noted is the LTP writev02 test, which is 
+an "expected to FAIL" testcase, but passes in this case.  A bad 
+address is passed to writev, but instead of EFAULT, a positive 
+integer is returned.  Again, backing out the above changeset 
+causes this test (among a few other writev variants which expect 
+failure) to pass accordingly.
 
-
-diff -uNr a/drivers/macintosh/adbhid.c b/drivers/macintosh/adbhid.c
---- a/drivers/macintosh/adbhid.c	2005-04-09 22:49:49.000000000 +0200
-+++ b/drivers/macintosh/adbhid.c	2005-04-10 15:27:54.000000000 +0200
-@@ -555,6 +555,42 @@
- #endif /* CONFIG_PMAC_BACKLIGHT */
- 			input_report_key(&adbhid[id]->input, KEY_BRIGHTNESSUP, down);
- 			break;
-+
-+		case 0xc:	/* videomode switch */
-+			input_report_key(&adbhid[id]->input, KEY_SWITCHVIDEOMODE, down);
-+			break;
-+
-+		case 0xd:	/* keyboard illumination toggle */
-+			input_report_key(&adbhid[id]->input, KEY_KBDILLUMTOGGLE, down);
-+			break;
-+
-+		case 0xe:	/* keyboard illumination decrease */
-+			input_report_key(&adbhid[id]->input, KEY_KBDILLUMDOWN, down);
-+			break;
-+
-+		case 0xf:
-+			switch (data[1]) {
-+			case 0x8f:
-+			case 0x0f:
-+				/* keyboard illumination increase */
-+				input_report_key(&adbhid[id]->input, KEY_KBDILLUMUP, down);
-+				break;
-+
-+			case 0x7f:
-+			case 0xff:
-+				/* keypad overlay toogle */
-+				break;
-+
-+			default:
-+				printk(KERN_INFO "Unhandled ADB_MISC event %02x, %02x, %02x, %02x\n",
-+				       data[0], data[1], data[2], data[3]);
-+				break;
-+			}
-+			break;
-+		default:
-+			printk(KERN_INFO "Unhandled ADB_MISC event %02x, %02x, %02x, %02x\n",
-+			       data[0], data[1], data[2], data[3]);
-+			break;
- 		}
- 	  }
- 	  break;
-@@ -775,6 +811,10 @@
- 			set_bit(KEY_BRIGHTNESSUP, adbhid[id]->input.keybit);
- 			set_bit(KEY_BRIGHTNESSDOWN, adbhid[id]->input.keybit);
- 			set_bit(KEY_EJECTCD, adbhid[id]->input.keybit);
-+			set_bit(KEY_SWITCHVIDEOMODE, adbhid[id]->input.keybit);
-+			set_bit(KEY_KBDILLUMTOGGLE, adbhid[id]->input.keybit);
-+			set_bit(KEY_KBDILLUMDOWN, adbhid[id]->input.keybit);
-+			set_bit(KEY_KBDILLUMUP, adbhid[id]->input.keybit);
- 			break;
- 		}
- 		if (adbhid[id]->name[0])
-diff -uNr a/include/linux/input.h b/include/linux/input.h
---- a/include/linux/input.h	2005-04-09 22:49:49.000000000 +0200
-+++ b/include/linux/input.h	2005-04-10 15:28:33.214974136 +0200
-@@ -328,6 +328,11 @@
- #define KEY_BRIGHTNESSUP	225
- #define KEY_MEDIA		226
- 
-+#define KEY_SWITCHVIDEOMODE	227
-+#define KEY_KBDILLUMTOGGLE	228
-+#define KEY_KBDILLUMDOWN	229
-+#define KEY_KBDILLUMUP		230
-+
- #define KEY_UNKNOWN		240
- 
- #define BTN_MISC		0x100
+Thanks for your help,
+Phil Estes
+pestes@us.ibm.com
