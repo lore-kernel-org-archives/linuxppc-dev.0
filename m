@@ -1,25 +1,27 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id AAE8467A6C
+Return-Path: <shawnxjin@gmail.com>
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.196])
+	by ozlabs.org (Postfix) with ESMTP id CDDCC67A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Apr 2005 08:27:48 +1000 (EST)
-Date: Mon, 18 Apr 2005 15:27:46 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: "Lawrence E. Bakst" <ml@iridescent.org>
-Message-ID: <20050418222746.GF25352@gate.ebshome.net>
+	Tue, 19 Apr 2005 09:11:03 +1000 (EST)
+Received: by rproxy.gmail.com with SMTP id 40so477544rnz
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 18 Apr 2005 16:11:02 -0700 (PDT)
+Message-ID: <c3d0340b050418161112b879b5@mail.gmail.com>
+Date: Mon, 18 Apr 2005 16:11:02 -0700
+From: Shawn Jin <shawnxjin@gmail.com>
+To: Shawn Jin <shawnxjin@gmail.com>,
+	ppcembed <linuxppc-embedded@ozlabs.org>
+In-Reply-To: <20050418220605.GE25352@gate.ebshome.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 References: <c3d0340b05041514362746169a@mail.gmail.com>
 	<20050415221235.GA29802@gate.ebshome.net>
 	<c3d0340b0504151609397d73f7@mail.gmail.com>
-	<p06210211be8997487f7c@mail.iridescent.org>
-	<20050418172532.GB25352@gate.ebshome.net>
-	<p06210215be89c5d708df@mail.iridescent.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <p06210215be89c5d708df@mail.iridescent.org>
-Cc: ppcembed <linuxppc-embedded@ozlabs.org>
+	<20050416005026.GB1086@gate.ebshome.net>
+	<c3d0340b05041814144133a608@mail.gmail.com>
+	<20050418220605.GE25352@gate.ebshome.net>
 Subject: Re: Interrupt prioritization on linux for ppc440
+Reply-To: Shawn Jin <shawnxjin@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,62 +32,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 18, 2005 at 01:54:44PM -0700, Lawrence E. Bakst wrote:
-> I'd point out that your own statements were pretty general to start 
-> off with. 
-
-Sure, because I wasn't the one who needed critical IRQs :). It really 
-works this way: people who need some new facility either implement it 
-themselves and submit patch or present their case which can, in 
-theory, motivate someone else to implement this.
-
-So far _none_ of the people whining about absence of critical IRQs did 
-either.
-
-Things like "It'd be nice to have this" aren't good enough :)
-
-
-> I would have liked to elaborate but unfortunately the work 
-> is an ongoing research effort for a client under NDA so I can't say 
-> very much.
-
-Nice.
-
-> 
-> >Also, it'd be nice if you explained how you dealt with infrastructure
-> >problems I mentioned in my previous e-mail.
-> 
-> We didn't deal with them as we have a kind of special case. I am not 
-> trying to minimize the importance of that issue in the general case.
-> 
+On 4/18/05, Eugene Surovegin <ebs@ebshome.net> wrote:
+> On Mon, Apr 18, 2005 at 02:14:23PM -0700, Shawn Jin wrote:
 > >
-> >Answering your question about "real time interrupt latency
-> >constraints", I have to ask what _exact_ latencies you need, and why
-> >do you think Linux can provide hard real-time guarantees?
-> 
-> We are trying to get to an interrupt response time of substantially 
-> less than what you mention below. In this case "substantially" means 
-> between 2 and 3 decimal orders of magnitude.
+> > > What could be interesting, though, is to to make all 4xx IRQs
+> > > critical, in this case we could use VR to quickly determine which IRQ
+> > > was asserted, instead of current implementation when we use bit
+> > > operations. Not sure, if performance gain is really worth the
+> > > effort :)
+> >
+> > If we use VR to determine which IRQ was asserted, it's kind of
+> > reverse. We usually fetch a handler by its IRQ number. It could
+> > require to change irq_desc[] and request_irq().
+>=20
+> You seems don't undestand what I'm talking about. VR can help us with
+> determining what IRQ was asserted. It has nothing to do with irq_desc.
 
-Are you really sure that Linux on 440GX is a good platform for 
-microsecond or less IRQ latency? At this speeds, you have to worry 
-about TLB misses, cache issues, etc. 
+I guess I understand your statement of using VR to quickly determin
+IRQ number. (VR - VCR) >> 9 is the irq number if UIC0_SR0 has the
+highest priority, which  is quicker than bit searching.
 
-> The only point I was trying to make is that the critical interrupt 
-> facility was useful to us. That was it. It's not clear to me that 
-> within the constraints of how Linux works, the various 
-> infrastructure issues, as well as politics, that it could be made 
-> useful to others in a generalized form.
+However there could be a possible problem when a 2nd critical
+interrupt is asserted before the 1st one is served. Then fetching the
+VR returns the address for the 2nd interrupt. Of course if UIC can
+queue interrupts when calculating VRs, there wouldn't be such a
+problem.
 
-IMO, it'd be nice to have something like super-high-priority IRQs for 
-some specific tasks in the kernel. However, this needs some generic 
-support first, to be useful. Also, not all CPUs have something like 
-Critical interrupts, so maybe simple IRQ virtualization will be more 
-generic approach.
-
-So far, I see one use for critical interrupts, which doesn't require 
-such generic support - make all IRQS critical, so we can use some 
-basic prioritization and vector generation.
-
--- 
-Eugene
+Regards,
+-Shawn.
