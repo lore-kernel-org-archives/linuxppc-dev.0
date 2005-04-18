@@ -1,22 +1,24 @@
-Return-Path: <ml@iridescent.org>
-Received: from mx0.connactivity.com (mx0.connactivity.com [66.112.160.20])
-	by ozlabs.org (Postfix) with ESMTP id B294D67AC5
+Return-Path: <shawnxjin@gmail.com>
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.199])
+	by ozlabs.org (Postfix) with ESMTP id 5399A67A70
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Apr 2005 06:55:01 +1000 (EST)
+	Tue, 19 Apr 2005 07:14:24 +1000 (EST)
+Received: by rproxy.gmail.com with SMTP id 40so473603rnz
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 18 Apr 2005 14:14:23 -0700 (PDT)
+Message-ID: <c3d0340b05041814144133a608@mail.gmail.com>
+Date: Mon, 18 Apr 2005 14:14:23 -0700
+From: Shawn Jin <shawnxjin@gmail.com>
+To: ppcembed <linuxppc-embedded@ozlabs.org>
+In-Reply-To: <20050416005026.GB1086@gate.ebshome.net>
 Mime-Version: 1.0
-Message-Id: <p06210215be89c5d708df@mail.iridescent.org>
-In-Reply-To: <20050418172532.GB25352@gate.ebshome.net>
+Content-Type: text/plain; charset=ISO-8859-1
 References: <c3d0340b05041514362746169a@mail.gmail.com>
 	<20050415221235.GA29802@gate.ebshome.net>
 	<c3d0340b0504151609397d73f7@mail.gmail.com>
-	<p06210211be8997487f7c@mail.iridescent.org>
-	<20050418172532.GB25352@gate.ebshome.net>
-Date: Mon, 18 Apr 2005 13:54:44 -0700
-To: Eugene Surovegin <ebs@ebshome.net>
-From: "Lawrence E. Bakst" <ml@iridescent.org>
-Content-Type: text/plain; charset="us-ascii"
-Cc: ppcembed <linuxppc-embedded@ozlabs.org>
+	<20050416005026.GB1086@gate.ebshome.net>
 Subject: Re: Interrupt prioritization on linux for ppc440
+Reply-To: Shawn Jin <shawnxjin@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,46 +29,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-At 10:25 AM -0700 4/18/05, Eugene Surovegin wrote:
->On Mon, Apr 18, 2005 at 10:01:02AM -0700, Lawrence E. Bakst wrote:
->> I just want to say that in certain applications critical interrupts
->> can be put to good use. There are issues you have to deal with when
->> you use them. I wonder if any of the people saying that they "really
->> don't think it's worth it" have ever had to meet any real time
->> interrupt latency constraints?
->
->You know, it'd help if instead of some general statements, you gave
->real example and explained, why default stuff doesn't work for you.
+On 4/15/05, Eugene Surovegin <ebs@ebshome.net> wrote:
+> I really think that if you need some special higher-priority IRQ
+> context you'd better use RTAI or RTLinux. At least, they make clear
+> (IIRC) that these IRQ contexts are special.
 
-I'd point out that your own statements were pretty general to start off with. I would have liked to elaborate but unfortunately the work is an ongoing research effort for a client under NDA so I can't say very much.
+OK, I'll look into RTAI or RTLinux for priority issue.
 
->Also, it'd be nice if you explained how you dealt with infrastructure
->problems I mentioned in my previous e-mail.
+> What could be interesting, though, is to to make all 4xx IRQs
+> critical, in this case we could use VR to quickly determine which IRQ
+> was asserted, instead of current implementation when we use bit
+> operations. Not sure, if performance gain is really worth the
+> effort :)
 
-We didn't deal with them as we have a kind of special case. I am not trying to minimize the importance of that issue in the general case.
+If we use VR to determine which IRQ was asserted, it's kind of
+reverse. We usually fetch a handler by its IRQ number. It could
+require to change irq_desc[] and request_irq().
 
->
->Answering your question about "real time interrupt latency
->constraints", I have to ask what _exact_ latencies you need, and why
->do you think Linux can provide hard real-time guarantees?
+VR can be calculated automatically provided that VCR is set. What
+should be the vector base address? One possible way is similar to the
+way how IVPR is set to interrupt_base in head_44x.S but leave the
+actual interrupt handler blank, which will be filled in later with a
+jump instruction which jumps to the actual ISR once a device driver
+request its irq. This means that request_irq() needs to modify kernel
+code. Kinda of dangerous, isn't it? This might be part of
+infrastructure change you mentioned?
 
-We are trying to get to an interrupt response time of substantially less than what you mention below. In this case "substantially" means between 2 and 3 decimal orders of magnitude.
-
->
->And yes, I work for company which makes VoIP hardware, and soft
->real-time qualities of 2.4 Linux kernel (preempt, low-lat) are good
->enough for us (~1-5 ms average scheduling latency), without any need
->of critical interrupts.
-
-We're operating in different environments and doing different things. With the kind of response time we're trying to achieve we can't afford to schedule anything.
-
-The only point I was trying to make is that the critical interrupt facility was useful to us. That was it. It's not clear to me that within the constraints of how Linux works, the various infrastructure issues, as well as politics, that it could be made useful to others in a generalized form.
-
-Best,
-
-leb
-
-
->
->--
->Eugene
+Regards,
+-Shawn.
