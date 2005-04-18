@@ -1,20 +1,15 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id DAA0567A64
+Return-Path: <pstudencki@yahoo.com>
+Received: from web51309.mail.yahoo.com (web51309.mail.yahoo.com
+	[206.190.38.175]) by ozlabs.org (Postfix) with SMTP id EE05667B1C
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Apr 2005 01:24:16 +1000 (EST)
-Date: Mon, 18 Apr 2005 08:24:05 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: "Bellino, Phil" <pbellino@mrv.com>
-Message-ID: <20050418152405.GE8014@gate.ebshome.net>
-References: <19EE6EC66973A5408FBE4CB7772F6F0A02899377@ltnmail.xyplex.com>
-Mime-Version: 1.0
+	Tue, 19 Apr 2005 01:34:44 +1000 (EST)
+Message-ID: <20050418153442.83479.qmail@web51309.mail.yahoo.com>
+Date: Mon, 18 Apr 2005 08:34:42 -0700 (PDT)
+From: Pawel Studencki <pstudencki@yahoo.com>
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <19EE6EC66973A5408FBE4CB7772F6F0A02899377@ltnmail.xyplex.com>
-Cc: LinuxPPC <linuxppc-embedded@ozlabs.org>
-Subject: Re: 2.6.11 kernel, PPC, and IPv6
+Subject: using initramfs with ppc
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,21 +20,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 18, 2005 at 09:20:39AM -0400, Bellino, Phil wrote:
-> I do not know if this email is appropriate for this mailing list, but I
-> thought I would give it a try.
-> 
-> Is there anyone out there who is using(or attempting to use) IPv6 with PPC
-> and a 2.6.11 kernel with whom I could email directly with some specific
-> questions?
+Hello,
+ 
+I use a custom board with 8xx and kernel 2.6.11 and
+try to mount root fs
+based on cramfs. I still have problems with mounting
+VFS:
 
-I'm using IPv6 on my powerbook and 440GX ref platform (Ocotea). They 
-both seems to get link-local and global addresses (from local router 
-running radvd) just fine.
+VFS: Cannot open root device "mtdblock1" or
+unknown-block(31,1)
+Please append a correct "root=" boot option
+Kernel panic - not syncing: VFS: Unable to mount root
+fs on
+unknown-block(31,1)
 
-But don't mail me directly :), if you have questions - just ask the 
-list, although I don't think this a proper place. Try netdev list 
-(netdev@oss.sgi.com)
+I found, that perhaps the reason is initramfs. How do
+you use initramfs on
+ppc?
+Is it possible to turn off initramfs? If I've
+understood correct
+"Documentation/early-userspace/README", there is
+possibility to boot direct
+from flash.
 
--- 
-Eugene
+My filesystem for initramfs is very simple in default
+"initramfs_list" file:
+
+dir /dev 0755 0 0
+nod /dev/console 0600 0 0 c 5 1
+dir /root 0700 0 0
+
+
+do I have to append special files or directories?
+
+thanks for any hints.
+
+regards
+Pawel
+
+
+		
+__________________________________ 
+Do you Yahoo!? 
+Yahoo! Small Business - Try our new resources site!
+http://smallbusiness.yahoo.com/resources/ 
