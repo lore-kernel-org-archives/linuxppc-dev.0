@@ -1,26 +1,23 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0957D67A6C
+Return-Path: <manojpadhi@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.204])
+	by ozlabs.org (Postfix) with ESMTP id 87B6E67A2E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Apr 2005 10:27:46 +1000 (EST)
-Date: Mon, 18 Apr 2005 17:27:43 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Shawn Jin <shawnxjin@gmail.com>
-Message-ID: <20050419002743.GA26825@gate.ebshome.net>
-References: <c3d0340b05041514362746169a@mail.gmail.com>
-	<20050415221235.GA29802@gate.ebshome.net>
-	<c3d0340b0504151609397d73f7@mail.gmail.com>
-	<20050416005026.GB1086@gate.ebshome.net>
-	<c3d0340b05041814144133a608@mail.gmail.com>
-	<20050418220605.GE25352@gate.ebshome.net>
-	<c3d0340b050418161112b879b5@mail.gmail.com>
+	Tue, 19 Apr 2005 10:43:14 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id 37so1656243wra
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 18 Apr 2005 17:43:13 -0700 (PDT)
+Message-ID: <5f99347005041817365ccba934@mail.gmail.com>
+Date: Mon, 18 Apr 2005 19:36:32 -0500
+From: Manoj Padhi <manojpadhi@gmail.com>
+To: Pawel Studencki <pstudencki@yahoo.com>,
+	linuxppc-embedded@ozlabs.org
+In-Reply-To: <20050418220133.GD25352@gate.ebshome.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <c3d0340b050418161112b879b5@mail.gmail.com>
-Cc: ppcembed <linuxppc-embedded@ozlabs.org>
-Subject: Re: Interrupt prioritization on linux for ppc440
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20050418212401.33270.qmail@web51310.mail.yahoo.com>
+	<20050418220133.GD25352@gate.ebshome.net>
+Subject: Re: using initramfs with ppc
+Reply-To: Manoj Padhi <manojpadhi@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,20 +28,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 18, 2005 at 04:11:02PM -0700, Shawn Jin wrote:
+Pawel,
+I am new to embedded linux development and planning to develop a small
+project using embedded linux.
 
-[snip]
+I looked for an evaluation kit in the market and it comes around $1100
++ development tool licence (starts at $6K). Hence I need some advice
+regarding getting an custom board and use free tools. Can you suggest
+such a board.
 
-> However there could be a possible problem when a 2nd critical
-> interrupt is asserted before the 1st one is served. Then fetching the
-> VR returns the address for the 2nd interrupt. Of course if UIC can
-> queue interrupts when calculating VRs, there wouldn't be such a
-> problem.
+Thanks in advance for your help.
 
-According to the user manual, UIC indeed queues IRQs based on their 
-priorities, so I guess there shouldn't be any problems.
+-Manoj
 
-Look at paragraphs titled "Vector generation scenarios".
+On 4/18/05, Eugene Surovegin <ebs@ebshome.net> wrote:
+> On Mon, Apr 18, 2005 at 02:24:01PM -0700, Pawel Studencki wrote:
+> > It can be wrong kernel parameter or problem with mtd
+> > or cramfs support. But if I see my kernel messages,
+> > everything seems to be OK for me. I've attached kernel
+> > logging, so let me know, if I'm wrong.
+>=20
+> Could you send me privately your .config ?
+>=20
+> --
+> Eugene
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>=20
 
--- 
-Eugene
+
+--=20
+Thanks
+Manoj
