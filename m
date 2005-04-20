@@ -1,16 +1,16 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <16997.40860.448984.215343@cargo.ozlabs.ibm.com>
-Date: Wed, 20 Apr 2005 10:17:32 +1000
+Message-ID: <16997.44986.658492.623633@cargo.ozlabs.ibm.com>
+Date: Wed, 20 Apr 2005 11:26:18 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <fd32aa7b6cff252fcc11bd3e37c8c6c5@freescale.com>
-References: <Pine.LNX.4.61.0504120957180.12787@blarg.somerset.sps.mot.com>
-	<fd32aa7b6cff252fcc11bd3e37c8c6c5@freescale.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Jason McMullan <jason.mcmullan@timesys.com>
-Subject: Re: [PATCH] ppc32: refactor FPU exception handling
+In-Reply-To: <700d35a3fce7b67412f955baf473b426@freescale.com>
+References: <Pine.LNX.4.61.0504120101210.10781@blarg.somerset.sps.mot.com>
+	<700d35a3fce7b67412f955baf473b426@freescale.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] ppc32: Fix alignment exception checking on load/store
+	multiple instructions
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,10 +22,8 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Kumar Gala writes:
 
-> What is the state of this patch?
+> What is the state of ack'ing this patch?
 
-Sorry.  It looks fine.  I won't send it to Andrew Morton just at the
-moment, though, since he is away (at LCA) and not keeping up with his
-email (as he just told me :).
+It's fine, I'll forward it to akpm in due course.
 
 Paul.
