@@ -1,17 +1,19 @@
-Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15809.mail.cnb.yahoo.com (web15809.mail.cnb.yahoo.com
-	[202.165.102.89]) by ozlabs.org (Postfix) with SMTP id CFC2467A6C
+Return-Path: <sriharsha.vardhan@gmail.com>
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.201])
+	by ozlabs.org (Postfix) with ESMTP id 57A7F67A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 20 Apr 2005 23:59:53 +1000 (EST)
-Message-ID: <20050420135951.78443.qmail@web15809.mail.cnb.yahoo.com>
-Date: Wed, 20 Apr 2005 21:59:51 +0800 (CST)
-From: Sam Song <samlinuxppc@yahoo.com.cn>
-To: "Mark A. Greer" <mgreer@mvista.com>
-In-Reply-To: 6667
-MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: 824x Sandpoint with 2.6.x
+	Thu, 21 Apr 2005 02:06:48 +1000 (EST)
+Received: by rproxy.gmail.com with SMTP id g11so271645rne
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 20 Apr 2005 09:06:45 -0700 (PDT)
+Message-ID: <9925a578050420090064596ec8@mail.gmail.com>
+Date: Wed, 20 Apr 2005 21:30:04 +0530
+From: Sriharsha Vardhan <sriharsha.vardhan@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: config file
+Reply-To: Sriharsha Vardhan <sriharsha.vardhan@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,33 +24,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-"Mark A. Greer" <mgreer@mvista.com> wrote:
-> Get rid of the
-> "console=uart,mmio,0xfdfce500,115200n8" part of the
-> cmdline and see what happens (keep the
-> "console=ttyS0,115200" part).
+Hi
+I checked your thread about 2.6.11-5 on 8xx @
+http://ozlabs.org/pipermail/linuxppc-embedded/2005-March/017468.html.
 
-I suspect there are sth wrong with uart iomem_base.
-In my 2.4.24 porting, the following two lines must
-be added in sandpoint_setup_arch, or I could get the
-same result as 2.6.x.
+I am working on 860 and I tried both 2.6.11-5 and 2.6.11-7. I get
+struck up exactly at same error  as you mentiond . i.e
+  Linux/PPC load: rw root=3D/dev/ram0
+  Uncompressing Linux...done.
+  Now booting the kernel
+ .....nothing after this..
 
-rs_table[0].port = (ulong) ioremap (rs_table[0].port,
-PAGE_SIZE);
-rs_table[0].iomem_base = (u8 *) rs_table[0].port;
 
-But the pity is that there are no rs_table used in
-2.6.x serial driver.
+I just want to cross check my config file. Can you please send me your
+config file.
 
-Thanks again,
+Have a nice day.
 
-Sam
-
-_________________________________________________________
-Do You Yahoo!?
-150万曲MP3疯狂搜，带您闯入音乐殿堂
-http://music.yisou.com/
-美女明星应有尽有，搜遍美图、艳图和酷图
-http://image.yisou.com
-1G就是1000兆，雅虎电邮自助扩容！
-http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
+harsha
