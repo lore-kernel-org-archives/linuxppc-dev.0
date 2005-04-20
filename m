@@ -1,23 +1,19 @@
-Return-Path: <Atit_Shah@satyam.com>
-Received: from njpmail.satyam.com (njpmail.satyam.com [204.179.188.132])
-	by ozlabs.org (Postfix) with ESMTP id 755CD67A67
+Return-Path: <wd@denx.de>
+Received: from mailout05.sul.t-online.com (mailout05.sul.t-online.com
+	[194.25.134.82]) by ozlabs.org (Postfix) with ESMTP id 28F0167A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 20 Apr 2005 14:56:00 +1000 (EST)
-Received: from blr.satyam.com (blr.satyam.com [208.220.245.73])
-	by njpmail.satyam.com (8.11.6/8.11.6) with ESMTP id j3K4lUI04494
-	for <linuxppc-embedded@ozlabs.org>; Wed, 20 Apr 2005 00:47:56 -0400
-Received: from Disclaimerbng.corp.satyam.ad
-	(IDENT:TRMAeDaIjJQJB1+zTARkbNO3PcPT1Eec@localhost [127.0.0.1])
-	by blr.satyam.com (8.11.6/8.11.6) with ESMTP id j3K4o8b05708
-	for <linuxppc-embedded@ozlabs.org>; Wed, 20 Apr 2005 10:20:08 +0530
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Wed, 20 Apr 2005 10:22:40 +0530
-Message-ID: <D8595042F3765A4285B848A78A2C2ED102774F@bsdmsg002.corp.satyam.ad>
-From: "Atit_Shah" <Atit_Shah@satyam.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: RAM test - How to
+	Wed, 20 Apr 2005 17:40:29 +1000 (EST)
+To: "Atit_Shah" <Atit_Shah@satyam.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 20 Apr 2005 10:22:40 +0530."
+	<D8595042F3765A4285B848A78A2C2ED102774F@bsdmsg002.corp.satyam.ad>
+Date: Wed, 20 Apr 2005 09:40:03 +0200
+Sender: wd@denx.de
+Message-Id: <20050420074008.B7CA2C1784@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: RAM test - How to 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,23 +24,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+In message <D8595042F3765A4285B848A78A2C2ED102774F@bsdmsg002.corp.satyam.ad> you wrote:
+> 
+> 	I am using a SDRAM having a port size 64 and size 32MB, and the
+> burst length is 4. I want to know how i can test my RAM for burst mode
+> operation. I have read in a couple of places that there is no sure RAM
+> test but there must be some reasonable test which can be performed to
+> atleast be sure that the RAM functions fine under burst mode.
 
-	I am using a SDRAM having a port size 64 and size 32MB, and the
-burst length is 4. I want to know how i can test my RAM for burst mode
-operation. I have read in a couple of places that there is no sure RAM
-test but there must be some reasonable test which can be performed to
-atleast be sure that the RAM functions fine under burst mode.
+You can probably implement a memory test like this one:
 
-Thanks=20
-Atit
+1)  Map a region of physical RAM into two virtual regions:
+    one cached and the the other one uncached.
+2)  Fill the cached region with a pattern, and flush the cache
+2a) Check the uncached region to match the pattern
+2b) Check the cached region to match the pattern
+3)  Fill the uncached region with a pattern
+3a) Check the cached region to match the pattern
+3b) Check the uncached region to match the pattern
+4)  Change the patterns and go to step 2.
 
+You probably want to do this in your boot loader, though.
 
-DISCLAIMER:
-This email (including any attachments) is intended for the sole use of =
-the intended recipient/s and may contain material that is CONFIDENTIAL =
-AND PRIVATE COMPANY INFORMATION. Any review or reliance by others or =
-copying or distribution or forwarding of any or all of the contents in =
-this message is STRICTLY PROHIBITED. If you are not the intended =
-recipient, please contact the sender by email and delete all copies; =
-your cooperation in this regard is appreciated.
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+A Freudian slip is when you say one thing but mean your mother.
