@@ -1,10 +1,10 @@
 Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15808.mail.cnb.yahoo.com (web15808.mail.cnb.yahoo.com
-	[202.165.102.88]) by ozlabs.org (Postfix) with SMTP id A23B467A67
+Received: from web15809.mail.cnb.yahoo.com (web15809.mail.cnb.yahoo.com
+	[202.165.102.89]) by ozlabs.org (Postfix) with SMTP id CFC2467A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 20 Apr 2005 23:54:03 +1000 (EST)
-Message-ID: <20050420135401.29160.qmail@web15808.mail.cnb.yahoo.com>
-Date: Wed, 20 Apr 2005 21:54:01 +0800 (CST)
+	Wed, 20 Apr 2005 23:59:53 +1000 (EST)
+Message-ID: <20050420135951.78443.qmail@web15809.mail.cnb.yahoo.com>
+Date: Wed, 20 Apr 2005 21:59:51 +0800 (CST)
 From: Sam Song <samlinuxppc@yahoo.com.cn>
 To: "Mark A. Greer" <mgreer@mvista.com>
 In-Reply-To: 6667
@@ -23,25 +23,24 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 "Mark A. Greer" <mgreer@mvista.com> wrote:
-> >Kernel command line:
-> >console=uart,mmio,0xfdfce500,115200n8
-> >console=ttyS0,115200
-> >root=/dev/ram rw ramdisk_size=200000
-> >ip=192.168.0.3:192.168..2:::sandpoint:et
-> >h0:off panic=1
-> >
-> <snip>
-> 
 > Get rid of the
 > "console=uart,mmio,0xfdfce500,115200n8" part of the
 > cmdline and see what happens (keep the
 > "console=ttyS0,115200" part).
 
-If so, kernel will hang after loading the kernel......
-I cannot see any active info.Is early console output 
-message not enough to find out something useful? 
+I suspect there are sth wrong with uart iomem_base.
+In my 2.4.24 porting, the following two lines must
+be added in sandpoint_setup_arch, or I could get the
+same result as 2.6.x.
 
-Thanks,
+rs_table[0].port = (ulong) ioremap (rs_table[0].port,
+PAGE_SIZE);
+rs_table[0].iomem_base = (u8 *) rs_table[0].port;
+
+But the pity is that there are no rs_table used in
+2.6.x serial driver.
+
+Thanks again,
 
 Sam
 
