@@ -1,24 +1,17 @@
-Return-Path: <glenn@aoi-industries.com>
-Received: from vms040pub.verizon.net (vms040pub.verizon.net [206.46.252.40])
-	by ozlabs.org (Postfix) with ESMTP id B5F9767A67
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15808.mail.cnb.yahoo.com (web15808.mail.cnb.yahoo.com
+	[202.165.102.88]) by ozlabs.org (Postfix) with SMTP id A23B467A67
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 20 Apr 2005 23:02:30 +1000 (EST)
-Received: from [192.168.1.47] ([68.163.130.201])
-	by vms040.mailsrvcs.net (Sun Java System Messaging Server 6.2 HotFix
-	0.04 (built Dec 24 2004)) with ESMTPA id
-	<0IF800I9WUS3FPU1@vms040.mailsrvcs.net> for
-	linuxppc-embedded@ozlabs.org; Wed, 20 Apr 2005 07:02:28 -0500 (CDT)
-Date: Wed, 20 Apr 2005 08:02:45 -0400
-From: Glenn Burkhardt <glenn@aoi-industries.com>
-In-reply-to: <42663E71.60005@ybb.ne.jp>
-To: Takeharu KATO <takeharu1219@ybb.ne.jp>
-Message-id: <200504200802.45998.glenn@aoi-industries.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-References: <20050419013712.AE32FB01E4@loki.aoi-industries.com>
-	<42663E71.60005@ybb.ne.jp>
+	Wed, 20 Apr 2005 23:54:03 +1000 (EST)
+Message-ID: <20050420135401.29160.qmail@web15808.mail.cnb.yahoo.com>
+Date: Wed, 20 Apr 2005 21:54:01 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: "Mark A. Greer" <mgreer@mvista.com>
+In-Reply-To: 6667
+MIME-Version: 1.0
+Content-Type: text/plain; charset=gb2312
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: PPC 44x Watchdog timer
+Subject: Re: 824x Sandpoint with 2.6.x
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,30 +22,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-After looking at the current BitKeeper 2.4 development tree on 
-source.mvista.com, it looks like the use of the hardware watchdog timer was 
-discontinued at some point in favor of using the general purpose timer.  The 
-watchdog exception interrupt isn't used, and it's only configurable for 
-PPC405 (although I think that the technique would work for the whole 4xx 
-family).
+"Mark A. Greer" <mgreer@mvista.com> wrote:
+> >Kernel command line:
+> >console=uart,mmio,0xfdfce500,115200n8
+> >console=ttyS0,115200
+> >root=/dev/ram rw ramdisk_size=200000
+> >ip=192.168.0.3:192.168..2:::sandpoint:et
+> >h0:off panic=1
+> >
+> <snip>
+> 
+> Get rid of the
+> "console=uart,mmio,0xfdfce500,115200n8" part of the
+> cmdline and see what happens (keep the
+> "console=ttyS0,115200" part).
 
-Or am I misreading the code?
+If so, kernel will hang after loading the kernel......
+I cannot see any active info.Is early console output 
+message not enough to find out something useful? 
 
-It would also be nice if your patch were applied to the 2.6 kernel tree.
+Thanks,
 
-On Wednesday 20 April 2005 07:35 am, Takeharu KATO wrote:
-> Hi
->
-> IIRC, MontaVistaLinux has this feature.
-> As far as I know, I found it in Monta Vista Linux 3 years ago at least.
-> I've not checked resent kernel of Monta Vista Linux, so I am sorry if
-> it is wrong now.
->
-> Glenn Burkhardt wrote:
-> > Is there a patch for the built in watchdog timer in the 440GP available
-> > anywhere for the 2.4 kernel (viz., ELDK kernels)?
->
-> By the way, BOOKE_WDT patch has not been commited to up-stream kernel.
-> Matt(or Kumar?), please apply the patch.
->
-> Regards,
+Sam
+
+_________________________________________________________
+Do You Yahoo!?
+150万曲MP3疯狂搜，带您闯入音乐殿堂
+http://music.yisou.com/
+美女明星应有尽有，搜遍美图、艳图和酷图
+http://image.yisou.com
+1G就是1000兆，雅虎电邮自助扩容！
+http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
