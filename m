@@ -1,19 +1,15 @@
-Return-Path: <sriharsha.vardhan@gmail.com>
-Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.201])
-	by ozlabs.org (Postfix) with ESMTP id 57A7F67A64
+Return-Path: <sbajaj@tsi-telsys.com>
+Received: from exchange.tsi-telsys.com (unknown [205.230.130.11])
+	by ozlabs.org (Postfix) with ESMTP id 8895F67A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Apr 2005 02:06:48 +1000 (EST)
-Received: by rproxy.gmail.com with SMTP id g11so271645rne
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 20 Apr 2005 09:06:45 -0700 (PDT)
-Message-ID: <9925a578050420090064596ec8@mail.gmail.com>
-Date: Wed, 20 Apr 2005 21:30:04 +0530
-From: Sriharsha Vardhan <sriharsha.vardhan@gmail.com>
+	Thu, 21 Apr 2005 03:38:00 +1000 (EST)
+Message-ID: <42669370.90706@tsi-telsys.com>
+Date: Wed, 20 Apr 2005 13:37:52 -0400
+From: Sanjay Bajaj <sbajaj@tsi-telsys.com>
+MIME-Version: 1.0
 To: linuxppc-embedded@ozlabs.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: config file
-Reply-To: Sriharsha Vardhan <sriharsha.vardhan@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: DMA Problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,21 +20,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi
-I checked your thread about 2.6.11-5 on 8xx @
-http://ozlabs.org/pipermail/linuxppc-embedded/2005-March/017468.html.
+I am having a setup issue with the DMA channel 0 with the DMA Controller 
+on PPC440GX. The code I wrote is:
 
-I am working on 860 and I tried both 2.6.11-5 and 2.6.11-7. I get
-struck up exactly at same error  as you mentiond . i.e
-  Linux/PPC load: rw root=3D/dev/ram0
-  Uncompressing Linux...done.
-  Now booting the kernel
- .....nothing after this..
+#if defined(CONFIG_PPC4xx_DMA)
+    /* Setup the DMA */
+    DPRINTK("PPC4xx pwidth: %d\n", ppc4xx_get_peripheral_width(DMA_CH0));
+    ppc4xx_set_dma_mode(DMA_CH0, DMA_MODE_READ);
+    ppc4xx_set_src_addr(DMA_CH0, (phys_addr_t)(pdev->x2mem_phys_addr + 
+src_addr));
+    ppc4xx_set_dst_addr(DMA_CH0, (phys_addr_t)dst_addr);
+    ppc4xx_set_dma_count(DMA_CH0, count);
+    ppc4xx_enable_dma(DMA_CH0);
+    DPRINTK("PPC4xx DMA Status: %d\n", ppc4xx_get_dma_status());
+#endif
 
+The DMA never completes and leaves a residue of 'count'. What am I missing?
 
-I just want to cross check my config file. Can you please send me your
-config file.
-
-Have a nice day.
-
-harsha
+Please Help.
+Sanjay
