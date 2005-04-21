@@ -1,20 +1,22 @@
-Return-Path: <Schramel.Linux@go.bartec.de>
-Received: from mail.bartec.de (mail.bartec.de [217.5.168.170])
-	by ozlabs.org (Postfix) with SMTP id D809A67A6B
+Return-Path: <ktdann@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.197])
+	by ozlabs.org (Postfix) with ESMTP id 4B45867A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Apr 2005 19:10:56 +1000 (EST)
-From: Marco Schramel <Schramel.Linux@go.bartec.de>
-To: Eugene Surovegin <ebs@ebshome.net>
-Date: Thu, 21 Apr 2005 11:44:28 +0200
+	Thu, 21 Apr 2005 19:54:24 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id 57so584448wri
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 21 Apr 2005 02:54:22 -0700 (PDT)
+Message-ID: <9b7ca65705042102544b9db187@mail.gmail.com>
+Date: Thu, 21 Apr 2005 18:54:22 +0900
+From: Daniel Ann <ktdann@gmail.com>
+To: Marco Schramel <Schramel.Linux@go.bartec.de>
+In-Reply-To: <200504211117.25584.Schramel.Linux@go.bartec.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 References: <200504211117.25584.Schramel.Linux@go.bartec.de>
-	<20050421085037.GB8189@gate.ebshome.net>
-In-Reply-To: <20050421085037.GB8189@gate.ebshome.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200504211144.28584.Schramel.Linux@go.bartec.de>
 Cc: PPC_LINUX <linuxppc-embedded@ozlabs.org>
 Subject: Re: mtd mount problem
+Reply-To: Daniel Ann <ktdann@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,44 +27,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Eugene,
+On 4/21/05, Marco Schramel <Schramel.Linux@go.bartec.de> wrote:
+> It all seems to be fine, but...
+>=20
+> dev # mount -t jffs2 /dev/mtdblock1 /mnt/Flash1
+> mount: Mounting /dev/mtdblock1 on /mnt/Flash1 failed: No such device
 
-thanks for your answer
+Shouldnt you be doing eraseall first ? It seems to me, you were
+writing output of date to the flash earlier.
 
-> Check that you have CONFIG_MTD_BLOCK enabled in your .config. 
-#
-# Memory Technology Devices (MTD)
-#
-CONFIG_MTD=y
-CONFIG_MTD_DEBUG=y
-CONFIG_MTD_DEBUG_VERBOSE=0
-CONFIG_MTD_PARTITIONS=y
-# CONFIG_MTD_CONCAT is not set
-# CONFIG_MTD_REDBOOT_PARTS is not set
-# CONFIG_MTD_CMDLINE_PARTS is not set
-CONFIG_MTD_CHAR=y
-CONFIG_MTD_BLOCK=y
-# CONFIG_FTL is not set
-# CONFIG_NFTL is not set
-# CONFIG_INFTL is not set
+If you get No such device, it maybe that your configuration of bus
+width, and base address could be wrong. (I take it that you did
+configure the physmap)
 
-> 
-> Also, check that you have /dev/mtdblock1 node in /dev directory on the 
-> target.
->
-
-This is what i meant before with ramdisk. 
-
-/dev # ls -al mtdblock1
-brw-rw-r--    1 root     root      31,   1 Mar 17  2005 mtdblock1
-
-It should be ok. Isn't it ??
-
-Thanks
-Marco
-
-
-
--- 
----------
-Marco Schramel
+--=20
+Daniel
