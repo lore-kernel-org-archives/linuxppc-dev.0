@@ -1,30 +1,21 @@
-Return-Path: <pierre.kestener@cea.fr>
-Received: from cirse.extra.cea.fr (cirse.extra.cea.fr [132.166.172.102])
-	by ozlabs.org (Postfix) with ESMTP id 52B0C67A67
+Return-Path: <vbordug@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
+	by ozlabs.org (Postfix) with SMTP id 1C0E667A67
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Apr 2005 01:18:04 +1000 (EST)
-Received: from argiope.saclay.cea.fr (argiope.saclay.cea.fr [132.166.192.108])
-	by cirse.extra.cea.fr (8.12.10/8.12.10/CEAnet-Internet.4.0) with
-	ESMTP id j3LFI1AN000183 for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Apr 2005 17:18:01 +0200 (MEST)
-Received: from pisaure.intra.cea.fr (unverified) by argiope.saclay.cea.fr
-	(Content Technologies SMTPRS 4.3.17) with ESMTP id
-	<T70722ce48484a6c06c968@argiope.saclay.cea.fr> for
-	<linuxppc-embedded@ozlabs.org>; Thu, 21 Apr 2005 17:18:01 +0200
-Received: from muguet.saclay.cea.fr (muguet.saclay.cea.fr [132.166.192.6])
-	by pisaure.intra.cea.fr (8.12.11/8.12.11) with ESMTP id j3LFGqNU008463
-	for <linuxppc-embedded@ozlabs.org>; Thu, 21 Apr 2005 17:16:53 +0200
-	(envelope-from pierre.kestener@cea.fr)
-Message-ID: <4267C424.7000700@cea.fr>
-Date: Thu, 21 Apr 2005 17:17:56 +0200
-From: Pierre Kestener <pierre.kestener@cea.fr>
+	Fri, 22 Apr 2005 01:29:08 +1000 (EST)
+Message-ID: <4267C6C2.4020808@ru.mvista.com>
+Date: Thu, 21 Apr 2005 19:29:06 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
 MIME-Version: 1.0
-To: Pierre Kestener <pierre.kestener@cea.fr>
-References: <42662502.5060108@cea.fr>
-In-Reply-To: <42662502.5060108@cea.fr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Virtex2pro OPB frequency 10/100Mbs ethernet link related problem
+To: Rune Torgersen <runet@innovsys.com>
+References: <DCEAAC0833DD314AB0B58112AD99B93B859369@ismail.innsys.innovsys.com>
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B859369@ismail.innsys.innovsys.com>
+Content-Type: multipart/alternative;
+	boundary="------------070602080605030605000307"
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH 2.6.12-rc2] Freescale 8272ADS PCI bridge support to
+ thestock linux-2.5 (updated)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,58 +26,149 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+This is a multi-part message in MIME format.
+--------------070602080605030605000307
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-i made a mistake by downloading the wrong  bitstream into the  virtex, 
-so the linux kernel was ok but  not the FPGA.
-My previous message must not be taken into account.
+Rune Torgersen wrote:
 
-sorry
-Pierre Kestener.
+> 
+>
+>  
+>
+>>Not 100% sure.  Maybe Wolfgang or someone else know what the existing 
+>>m8260 pci functionality is suppose to work with.  It seems 
+>>odd that it 
+>>did not have some of the bits you added for the 8272ads.  Its 
+>>not clear 
+>>to me if it actually worked on any systems or not.  Let see 
+>>if Wolfgang 
+>>has any insight as a first step.
+>>    
+>>
+>
+>The current one works on 8266/8265 based boards. It requires u-boot to
+>partiallyt set up PCI first.
+>I have a patch tat enables 8266ADS support, but have never posted it
+>(also because it has been superceded by PQ2ADS patches)
+>
+>The missing pieces are the siumcr setup, which is done in U-Boot (almost
+>better to do it there as it is highly board dependant, and you would
+>have an afoul lot of #ifdefs to support all variants)
+>
+>The other missing part is setup of the second outbound PCI wondow
+>(pcimask1/pcibr1). This is not used, bacqause the whole outbound window
+>is set up to be contiguous, and is covered by pcimsk0/pcibr0
+>
+>I am running a slightly modified version of m8260_setup_pci on an
+>internal board port, and it works just fine.
+>
+>Only change I'v had to do (to m8260_find bridges) is to add a bit on the
+>IORESOURCE_IO part, so that IO memory is detected correctly.
+>
+>        pci_init_resource(&hose->io_resource,
+>			  MPC826x_PCI_LOWER_IO,
+>			  MPC826x_PCI_UPPER_IO,
+>			  IORESOURCE_IO | 1, "PCI I/O"); // the 1 added
+>so IO areas work. :FIXME: find real source
+>
+>
+>  
+>
+This is all right. The only thing I still don't understand - how this 
+stuff work without PCI IRQ (don't know much about 8266 though). On my 
+8272 only one IRQ is produced and it should be demux'ed in order for PCI 
+devices to work. I agree that the siumcr stuff would better reside in 
+the firmware, and I have submitted related patch to the u-boot-users 
+list, but I have no idea whether it would be accepted or not (Wolfgang?).
 
-
-Pierre Kestener wrote:
-
-> Hello,
->
-> I have noticed a strange behavior regarding NFS on my target 
-> (Virtex2pro ff1152 from Memec) when increasing OPB/PLB bus frequency 
-> from 50 MHz to 66.666667MHz to be able to use a 100 Mbs ethernet link 
-> (it is mentionned in the OPB/EMAC IP doc
-> that Bus clock should be more than 65 MHz to have 100Mbs).
->
-> I use U-boot (ML300 port with small modifications) for the bootloader 
-> step (download linux kernel via tftp) and kernel 2.4.20. The root 
-> filesytem is mounted via NFS.
->
-> At 50MHz, everything works fine. Ethernet link speed is 10 Mbs. I can 
-> check that on my Ethernet switch.
->
-> When using 66.666667MHz OPB frequency, ethernet Link speed is indeed 
-> 100Mbs. U-boot works perfectly but linux boot fails trying to get nfs 
-> server port !!!
->
-> Using "tcpdump" on my linux host, i can see that target sends ARP 
-> packets and the server replies but nothing happends...
->
->    09:04:28.848228 arp who-has myHost.extra.cea.fr tell 132.166.xxx.yyy
->    09:04:28.848265 arp reply myHost.extra.cea.fr is-at 00:06:5b:xx:yy:zz
->
-> Has anyone seen such a behavior, using a 100Mbs ethernet link with a 
-> Virtex2pro target ?
-> Any idea regarding this problem (hardware or software) ?
->
-> Thanks a lost.
-> Best Regards.
->
-> Pierre Kestener.
->
-
+The main point I actually dislike in the current m8260 implementation is 
+that it adds defines for the PCI memory map while it exists (and already 
+included) in platforms/pq2ads.h. The memory maps are nearly the same so 
+we should decide which one will remain.
 
 -- 
-+-------------------------------------------+
- CEA Saclay -- DSM/DAPNIA/SEDI
- 91191 Gif-sur-Yvette - FRANCE
- tel : +33 (0)1 69 08 57 09
- http://pierre.kestener.free.fr/
-+-------------------------------------------+
+Sincerely, 
+Vitaly
+
+
+--------------070602080605030605000307
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
+  <title></title>
+</head>
+<body bgcolor="#ffffff" text="#000000">
+Rune Torgersen wrote:
+<blockquote
+ cite="midDCEAAC0833DD314AB0B58112AD99B93B859369@ismail.innsys.innovsys.com"
+ type="cite">
+  <pre wrap=""> 
+
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">Not 100% sure.  Maybe Wolfgang or someone else know what the existing 
+m8260 pci functionality is suppose to work with.  It seems 
+odd that it 
+did not have some of the bits you added for the 8272ads.  Its 
+not clear 
+to me if it actually worked on any systems or not.  Let see 
+if Wolfgang 
+has any insight as a first step.
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+The current one works on 8266/8265 based boards. It requires u-boot to
+partiallyt set up PCI first.
+I have a patch tat enables 8266ADS support, but have never posted it
+(also because it has been superceded by PQ2ADS patches)
+
+The missing pieces are the siumcr setup, which is done in U-Boot (almost
+better to do it there as it is highly board dependant, and you would
+have an afoul lot of #ifdefs to support all variants)
+
+The other missing part is setup of the second outbound PCI wondow
+(pcimask1/pcibr1). This is not used, bacqause the whole outbound window
+is set up to be contiguous, and is covered by pcimsk0/pcibr0
+
+I am running a slightly modified version of m8260_setup_pci on an
+internal board port, and it works just fine.
+
+Only change I'v had to do (to m8260_find bridges) is to add a bit on the
+IORESOURCE_IO part, so that IO memory is detected correctly.
+
+        pci_init_resource(&amp;hose-&gt;io_resource,
+			  MPC826x_PCI_LOWER_IO,
+			  MPC826x_PCI_UPPER_IO,
+			  IORESOURCE_IO | 1, "PCI I/O"); // the 1 added
+so IO areas work. :FIXME: find real source
+
+
+  </pre>
+</blockquote>
+This is all right. The only thing I still don't understand - how this
+stuff work without PCI IRQ (don't know much about 8266 though). On my
+8272 only one IRQ is produced and it should be demux'ed in order for
+PCI devices to work. I agree that the siumcr stuff would better reside
+in the firmware, and I have submitted related patch to the u-boot-users
+list, but I have no idea whether it would be accepted or not
+(Wolfgang?).<br>
+<br>
+The main point I actually dislike in the current m8260 implementation
+is that it adds defines for the PCI memory map while it exists (and
+already included) in platforms/pq2ads.h. The memory maps are nearly the
+same so we should decide which one will remain.<br>
+<br>
+<pre class="moz-signature" cols="72">-- 
+Sincerely, 
+Vitaly
+</pre>
+</body>
+</html>
+
+--------------070602080605030605000307--
