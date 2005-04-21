@@ -1,22 +1,22 @@
 Return-Path: <roger.larsson@norran.net>
 Received: from ns.skekraft.net (ns.skekraft.net [213.199.96.131])
-	by ozlabs.org (Postfix) with ESMTP id BD9B567A67
+	by ozlabs.org (Postfix) with ESMTP id 8B95967A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Apr 2005 06:29:55 +1000 (EST)
+	Fri, 22 Apr 2005 06:42:24 +1000 (EST)
 Received: from icd.localnet (131.net95.skekraft.net [213.199.95.131])
-	by ns.skekraft.net (Postfix) with ESMTP id 670FAA4021
+	by ns.skekraft.net (Postfix) with ESMTP id 38750A4028
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Apr 2005 22:29:51 +0200 (CEST)
+	Thu, 21 Apr 2005 22:42:23 +0200 (CEST)
 From: Roger Larsson <roger.larsson@norran.net>
 To: linuxppc-embedded@ozlabs.org
-Date: Thu, 21 Apr 2005 22:29:47 +0200
-References: <004B1D7A5257174C9044A1B7BD0E60ED0178CC05@ratatosk.combitechsystems.com>
-In-Reply-To: <004B1D7A5257174C9044A1B7BD0E60ED0178CC05@ratatosk.combitechsystems.com>
+Date: Thu, 21 Apr 2005 22:42:20 +0200
+References: <42669370.90706@tsi-telsys.com>
+In-Reply-To: <42669370.90706@tsi-telsys.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200504212229.47834.roger.larsson@norran.net>
-Subject: Re: Preemption patch problem
+  charset="iso-8859-1"
+Message-Id: <200504212242.20464.roger.larsson@norran.net>
+Subject: [DBG SRC] Re: DMA Problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,55 +27,77 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thursday 21 April 2005 12.08, Bj=F6rn =D6stby wrote:
-> Greetings.
+On Wednesday 20 April 2005 19.37, Sanjay Bajaj wrote:
+> I am having a setup issue with the DMA channel 0 with the DMA Controller
+> on PPC440GX. The code I wrote is:
 >
-> I have been struggling with the famous preemption patch (from Robert Love)
-> the past few days. Im using mpc823e and tried with kernels
-> 2.4.{18,21,22,23}. The patch applies flawless and so on, but when the
-> kernel is up and running strange memory problems start to appear like:
+> #if defined(CONFIG_PPC4xx_DMA)
+>     /* Setup the DMA */
+>     DPRINTK("PPC4xx pwidth: %d\n", ppc4xx_get_peripheral_width(DMA_CH0));
+>     ppc4xx_set_dma_mode(DMA_CH0, DMA_MODE_READ);
+>     ppc4xx_set_src_addr(DMA_CH0, (phys_addr_t)(pdev->x2mem_phys_addr +
+> src_addr));
+>     ppc4xx_set_dst_addr(DMA_CH0, (phys_addr_t)dst_addr);
+>     ppc4xx_set_dma_count(DMA_CH0, count);
+>     ppc4xx_enable_dma(DMA_CH0);
+>     DPRINTK("PPC4xx DMA Status: %d\n", ppc4xx_get_dma_status());
+> #endif
 >
-> _alloc_pages: 0-order allocation failed (gfp=3D0x1d2/0)
-
-[
-   #define __GFP_DMA       0x01
-* #define __GFP_HIGHMEM   0x02
-* #define __GFP_WAIT      0x10    /* Can wait and reschedule? */
-   #define __GFP_HIGH      0x20    /* Should access emergency pools? */
-* #define __GFP_IO        0x40    /* Can start low memory physical IO? */
-* #define __GFP_HIGHIO    0x80    /* Can start high mem physical IO? */
-* #define __GFP_FS        0x100   /* Can call down to low-level FS? */
-
-=2D - -
-#define GFP_HIGHUSER    (             __GFP_WAIT | __GFP_IO | __GFP_HIGHIO =
-|=20
-__GFP_FS | __GFP_HIGHMEM)
-=2D - -
-]
-
-So page_alloc is called with GFP_HIGHUSER, from where and why?
-
-Try to find out what is causing this, set the 'vm_gfp_debug'
-see 'linux/mm/page_alloc.c'
-
+> The DMA never completes and leaves a residue of 'count'. What am I missing?
 >
-> Right, so... It seems like a giant memory leak of some sort, cause when I
-> run programs the kernel goes ballistic and starts reaping processes:
->
-> "VM: Killing process <name>"
 
-Well the problem is that it actually is not getting any memory. It might be
-code that retries to allocate memory when there really are none (you probab=
-ly
-do not use swap)
+Request irq and dma?
 
->
-> Eventually it comes down to "VM: killing init" and then it's curtains.
->
-> I know that these problems is caused by the patch since the kernel runs
-> smooth without the patch applied. Does anyone have a clue what to do here
-> (beside let go of the patch)?
+	if ((ret = request_irq(dma_irq, dma_irq_handler, SA_SHIRQ, "NAME")))
+		- - -
+	/* reserve a DMA channel */
+	if (DBG_DMA(request_dma(DMA_CH0, const char *device_id))
 
-Analyze memory usage on the working non patched kernel.
+BTW you should check return values, try this:
+
+int fgrabber_report_dma_error(const char *call, int ret)
+{
+    switch (ret)
+    {
+	case DMA_STATUS_GOOD:
+//	    printk(KERN_DEBUG "dma: %s STATUS_GOOD\n", call);
+	    break;
+	case DMA_STATUS_BAD_CHANNEL:
+	    printk(KERN_DEBUG "dma: %s STATUS_BAD_CHANNEL\n", call);
+	    break;
+	case DMA_STATUS_BAD_HANDLE:
+	    printk(KERN_DEBUG "dma: %s STATUS_BAD_HANDLE", call);
+	    break;
+	case DMA_STATUS_BAD_MODE:
+	    printk(KERN_DEBUG "dma: %s STATUS_BAD_MODE", call);
+	    break;
+	case DMA_STATUS_NULL_POINTER:
+	    printk(KERN_DEBUG "dma: %s STATUS_NULL_POINTER", call);
+	    break;
+	case DMA_STATUS_OUT_OF_MEMORY:
+	    printk(KERN_DEBUG "dma: %s STATUS_OUT_OF_MEMORY", call);
+	    break;
+	case DMA_STATUS_SGL_LIST_EMPTY:
+	    printk(KERN_DEBUG "dma: %s STATUS_SGL_LIST_EMPTY", call);
+	    break;
+	case DMA_STATUS_GENERAL_ERROR:
+	    printk(KERN_DEBUG "dma: %s STATUS_GENERAL_ERROR", call);
+	    break;
+	case DMA_STATUS_CHANNEL_NOTFREE:   
+	    printk(KERN_DEBUG "dma: %s STATUS_CHANNEL_NOTFREE", call);
+	    break;
+	default:
+	    printk(KERN_DEBUG "dma: %s STATUS(0x%x)", call, ret);
+	    break;
+     }
+
+    return ret;
+}
+
+#ifdef DEBUG_DMA
+#define DBG_DMA(call) fgrabber_report_dma_error(#call, call)
+#else
+#define DBG_DMA(call) call
+#endif
 
 /RogerL
