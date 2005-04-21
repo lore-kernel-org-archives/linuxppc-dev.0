@@ -1,20 +1,19 @@
-Return-Path: <Bjorn.Ostby@combitechsystems.com>
-Received: from ms-101.aerotechtelub.se (ms-101.aerotechtelub.se
-	[192.176.33.163]) by ozlabs.org (Postfix) with ESMTP id 5BDDB67A64
+Return-Path: <wd@denx.de>
+Received: from mailout09.sul.t-online.com (mailout09.sul.t-online.com
+	[194.25.134.84]) by ozlabs.org (Postfix) with ESMTP id 4970167A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Apr 2005 20:24:50 +1000 (EST)
-Received: from ratatosk.combitechsystems.com (unverified) by
-	ms-101.aerotechtelub.se (Clearswift SMTPRS 5.0.9) with ESMTP id
-	<T70711706b9c0b021a1c4c@ms-101.aerotechtelub.se> for
-	<linuxppc-embedded@ozlabs.org>; Thu, 21 Apr 2005 12:14:31 +0200
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C5465A.18D4BF87"
-Date: Thu, 21 Apr 2005 12:08:42 +0200
-Message-ID: <004B1D7A5257174C9044A1B7BD0E60ED0178CC05@ratatosk.combitechsystems.com>
-From: =?iso-8859-1?B?Qmr2cm4g1nN0Ynk=?= <Bjorn.Ostby@combitechsystems.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Preemption patch problem
+	Thu, 21 Apr 2005 20:32:56 +1000 (EST)
+To: Marco Schramel <Schramel.Linux@go.bartec.de>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 21 Apr 2005 11:17:25 +0200."
+	<200504211117.25584.Schramel.Linux@go.bartec.de>
+Date: Thu, 21 Apr 2005 12:32:29 +0200
+Sender: wd@denx.de
+Message-Id: <20050421103234.ED367C1510@atlas.denx.de>
+Cc: PPC_LINUX <linuxppc-embedded@ozlabs.org>
+Subject: Re: mtd mount problem 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,125 +24,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+In message <200504211117.25584.Schramel.Linux@go.bartec.de> you wrote:
+> 
+> /dev # date > /dev/mtd1
+> MTD_open
+> MTD_ioctl
+> MTD_write
+> MTD do_write_buffer(): software timeout
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ERROR ERROR ERROR ERROR ERROR ERROR ERROR
 
-This is a multi-part message in MIME format.
+> MTD_close
+> /dev #
+> 
+> It all seems to be fine, but...
 
-------_=_NextPart_001_01C5465A.18D4BF87
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+I disagree. There was a  pretty  clear  error  message  above.  Don't
+ignore this, it will bite you later.
 
-Greetings.
+> dev # mount -t jffs2 /dev/mtdblock1 /mnt/Flash1
+> mount: Mounting /dev/mtdblock1 on /mnt/Flash1 failed: No such device
 
-I have been struggling with the famous preemption patch (from Robert =
-Love) the past few days. Im using mpc823e=20
-and tried with kernels 2.4.{18,21,22,23}. The patch applies flawless and =
-so on, but when the kernel is up and running
-strange memory problems start to appear like:
+Assuming that this is a mount builtin to the  busybox,  this  message
+means  that  there  is  no such file as "/dev/mtdblock1" in your root
+file system - exactly as the error message says.
 
-_alloc_pages: 0-order allocation failed (gfp=3D0x1d2/0)
+> I checked out the Majors of my ramdisk, they are ok.
 
-Right, so... It seems like a giant memory leak of some sort, cause when =
-I run programs the kernel goes ballistic and
-starts reaping processes:
+What has a ramdisk to do with this?
 
-"VM: Killing process <name>"
-
-Eventually it comes down to "VM: killing init" and then it's curtains.
-
-I know that these problems is caused by the patch since the kernel runs =
-smooth without the patch applied.
-Does anyone have a clue what to do here (beside let go of the patch)?=20
-
+What does "cat /proc/mtd" show? What are  the  kernel  boot  messages
+look like?
 
 Best regards,
-Bj=F6rn=20
------------------------------------------
-"failure is not an option"
 
+Wolfgang Denk
 
-
-
-
-------_=_NextPart_001_01C5465A.18D4BF87
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.0.6249.1">
-<TITLE>Preemption patch problem</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
-
-<P><SPAN LANG=3D"sv"><FONT SIZE=3D2 =
-FACE=3D"Arial">Greetings.</FONT></SPAN>
-</P>
-
-<P><SPAN LANG=3D"sv"><FONT SIZE=3D2 FACE=3D"Arial">I have been =
-struggling with the famous preemption patch (from Robert Love) the past =
-few days. Im using mpc823e </FONT></SPAN>
-
-<BR><SPAN LANG=3D"sv"><FONT SIZE=3D2 FACE=3D"Arial">and tried with =
-kernels 2.4.{18,21,22,23}. The patch applies flawless and so on, but =
-when the kernel is up and running</FONT></SPAN>
-
-<BR><SPAN LANG=3D"sv"><FONT SIZE=3D2 FACE=3D"Arial">strange memory =
-problems start to appear like:</FONT></SPAN>
-</P>
-
-<P><SPAN LANG=3D"sv"><FONT SIZE=3D2 FACE=3D"Arial">_alloc_pages: 0-order =
-allocation failed (gfp=3D0x1d2/0)</FONT></SPAN>
-</P>
-
-<P><SPAN LANG=3D"sv"><FONT SIZE=3D2 FACE=3D"Arial">Right, so&#8230; It =
-seems like a giant memory leak of some sort, cause when I run programs =
-the kernel goes ballistic and</FONT></SPAN>
-
-<BR><SPAN LANG=3D"sv"><FONT SIZE=3D2 FACE=3D"Arial">starts reaping =
-processes:</FONT></SPAN>
-</P>
-
-<P><SPAN LANG=3D"sv"><FONT SIZE=3D2 FACE=3D"Arial">&quot;VM: Killing =
-process &lt;name&gt;&quot;</FONT></SPAN>
-</P>
-
-<P><SPAN LANG=3D"sv"><FONT SIZE=3D2 FACE=3D"Arial">Eventually it comes =
-down to &quot;VM: killing init&quot; and then it's =
-curtains.</FONT></SPAN>
-</P>
-
-<P><SPAN LANG=3D"sv"><FONT SIZE=3D2 FACE=3D"Arial">I know that these =
-problems is caused by the patch since the kernel runs smooth without the =
-patch applied.</FONT></SPAN>
-
-<BR><SPAN LANG=3D"sv"><FONT SIZE=3D2 FACE=3D"Arial">Does anyone have a =
-clue what to do here (beside let go of the patch)? </FONT></SPAN>
-</P>
-<BR>
-
-<P><SPAN LANG=3D"sv"><FONT SIZE=3D2 FACE=3D"Arial">Best =
-regards,</FONT></SPAN>
-
-<BR><SPAN LANG=3D"sv"><FONT SIZE=3D2 FACE=3D"Arial">Bj=F6rn =
-</FONT></SPAN>
-
-<BR><SPAN LANG=3D"sv"><FONT SIZE=3D2 =
-FACE=3D"Arial">-----------------------------------------</FONT></SPAN>
-
-<BR><SPAN LANG=3D"sv"><FONT SIZE=3D2 FACE=3D"Arial">&quot;failure is not =
-an option&quot;</FONT></SPAN>
-</P>
-<BR>
-<BR>
-<BR>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C5465A.18D4BF87--
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+"It was the Law of the Sea, they said. Civilization ends at  the  wa-
+terline.  Beyond  that,  we  all enter the food chain, and not always
+right at the top."                               - Hunter S. Thompson
