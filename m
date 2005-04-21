@@ -1,19 +1,18 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
-	by ozlabs.org (Postfix) with SMTP id B49D967A6B
+Return-Path: <Schramel.Linux@go.bartec.de>
+Received: from mail.bartec.de (mail.bartec.de [217.5.168.170])
+	by ozlabs.org (Postfix) with SMTP id 465C467A2E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Apr 2005 22:04:28 +1000 (EST)
-Message-ID: <426796C7.3090501@ru.mvista.com>
-Date: Thu, 21 Apr 2005 16:04:23 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
+	Thu, 21 Apr 2005 22:33:38 +1000 (EST)
+From: Marco Schramel <Schramel.Linux@go.bartec.de>
+To: "PPC_LINUX" <linuxppc-embedded@ozlabs.org>
+Date: Thu, 21 Apr 2005 15:02:48 +0200
+References: <20050421103234.ED367C1510@atlas.denx.de>
+In-Reply-To: <20050421103234.ED367C1510@atlas.denx.de>
 MIME-Version: 1.0
-To: Kumar Gala <galak@freescale.com>, linuxppc-embedded@ozlabs.org
-References: <425D35E0.4040305@nm.ru> <425D5885.2040605@ru.mvista.com>
-	<Pine.LNX.4.61.0504201401270.8563@linen.am.freescale.net>
-In-Reply-To: <Pine.LNX.4.61.0504201401270.8563@linen.am.freescale.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: Re: [PATCH 2.6.12-rc2] Freescale 8272ADS PCI bridge support to the
- stock linux-2.5 (updated)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200504211502.48761.Schramel.Linux@go.bartec.de>
+Subject: Re: mtd mount problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,34 +23,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
+Hi,
 
->On Wed, 13 Apr 2005, Vitaly Bordug wrote:
->
->Finally, had some time to really look at this patch, comments are inline. 
->Look for (galak).  A few high level comments:
->
->Can we fold pq2ads_setup_hose into pq2ads_setup_pci? 
->
-No problem, I think...
+> > 
+> > /dev # date > /dev/mtd1
+> > MTD_open
+> > MTD_ioctl
+> > MTD_write
+> > MTD do_write_buffer(): software timeout
+> ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> ERROR ERROR ERROR ERROR ERROR ERROR ERROR
 
-> Also, is there 
->anything to be done to unify m8260_setup_pci & 
->pq2ads_setup_pci..
->
-Well, in my opinion, m8260_setup_pci should be replaced with 
-pq2ads_setup_pci, as far as they are intended to do the same (as I 
-mentioned in my very first PCI patch marked as RFC). But I actually 
-cannot test this stuff on anything other than 8272ads, so this way I'm 
-trying not to break existing code. The latter, BTW, currently has 
-limited functionality and I _guess_ I will not break anything if only 
-pq2ads_setup_pci remain. What do you think?
+This only occurs if i write the second time to the flash memory without erasing it before.
 
-Other issues will be fixed shortly.
+> What has a ramdisk to do with this?
 
-Thanks.
+I wrote in a message later, that i meant the /dev nodes in this case. 
 
+> What does "cat /proc/mtd" show? What are  the  kernel  boot  messages
+> look like?
+> 
+mtd0: 01000000 00020000 "JFFS2 partition 1"
+mtd1: 00800000 00020000 "JFFS2 partition 2"
+mtd2: 00400000 00020000 "RAMDISK "
+mtd3: 00300000 00020000 "kernel image 2_4"
+mtd4: 00100000 00020000 "Das U-Boot "
 
--- 
-Sincerely, 
-Vitaly
+Best regards
+Marco
