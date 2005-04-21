@@ -1,22 +1,18 @@
-Return-Path: <ktdann@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.197])
-	by ozlabs.org (Postfix) with ESMTP id 4B45867A64
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15801.mail.cnb.yahoo.com (web15801.mail.cnb.yahoo.com
+	[202.165.102.81]) by ozlabs.org (Postfix) with SMTP id 22BAD67A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Apr 2005 19:54:24 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 57so584448wri
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Apr 2005 02:54:22 -0700 (PDT)
-Message-ID: <9b7ca65705042102544b9db187@mail.gmail.com>
-Date: Thu, 21 Apr 2005 18:54:22 +0900
-From: Daniel Ann <ktdann@gmail.com>
-To: Marco Schramel <Schramel.Linux@go.bartec.de>
-In-Reply-To: <200504211117.25584.Schramel.Linux@go.bartec.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <200504211117.25584.Schramel.Linux@go.bartec.de>
-Cc: PPC_LINUX <linuxppc-embedded@ozlabs.org>
-Subject: Re: mtd mount problem
-Reply-To: Daniel Ann <ktdann@gmail.com>
+	Thu, 21 Apr 2005 19:58:51 +1000 (EST)
+Message-ID: <20050421095849.66260.qmail@web15801.mail.cnb.yahoo.com>
+Date: Thu, 21 Apr 2005 17:58:49 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: Atit_Shah <Atit_Shah@satyam.com>, kishorekrd@gmail.com
+In-Reply-To: 6667
+MIME-Version: 1.0
+Content-Type: text/plain; charset=gb2312
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: MPC8245 custom board,
+	Linux 2.4 kernel hangs after uncompressing
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,18 +23,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 4/21/05, Marco Schramel <Schramel.Linux@go.bartec.de> wrote:
-> It all seems to be fine, but...
->=20
-> dev # mount -t jffs2 /dev/mtdblock1 /mnt/Flash1
-> mount: Mounting /dev/mtdblock1 on /mnt/Flash1 failed: No such device
+--- Atit_Shah <Atit_Shah@satyam.com> wrote:
+> I forgot to mention this...u should do a soft reset.
+> If you go about powering off and on your board your
+> buffer will be flushed. But for a soft reset the
+> contents will be retained.
 
-Shouldnt you be doing eraseall first ? It seems to me, you were
-writing output of date to the flash earlier.
+Ummm, in my experience, if kernel hangs, either it
+could reboot automatically or it will stop there 
+and doesn't respone any input from serial console. My
+situation is the second. So soft reset couldn't work
+at all:)
 
-If you get No such device, it maybe that your configuration of bus
-width, and base address could be wrong. (I take it that you did
-configure the physmap)
+Thanks,
 
---=20
-Daniel
+Sam
+
+
+_________________________________________________________
+Do You Yahoo!?
+注册世界一流品质的雅虎免费电邮
+http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/
