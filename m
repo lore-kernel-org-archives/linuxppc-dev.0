@@ -1,18 +1,17 @@
 Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15801.mail.cnb.yahoo.com (web15801.mail.cnb.yahoo.com
-	[202.165.102.81]) by ozlabs.org (Postfix) with SMTP id 22BAD67A6C
+Received: from web15803.mail.cnb.yahoo.com (web15803.mail.cnb.yahoo.com
+	[202.165.102.83]) by ozlabs.org (Postfix) with SMTP id A0CF467A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Apr 2005 19:58:51 +1000 (EST)
-Message-ID: <20050421095849.66260.qmail@web15801.mail.cnb.yahoo.com>
-Date: Thu, 21 Apr 2005 17:58:49 +0800 (CST)
+	Thu, 21 Apr 2005 20:03:05 +1000 (EST)
+Message-ID: <20050421100303.82254.qmail@web15803.mail.cnb.yahoo.com>
+Date: Thu, 21 Apr 2005 18:03:03 +0800 (CST)
 From: Sam Song <samlinuxppc@yahoo.com.cn>
-To: Atit_Shah <Atit_Shah@satyam.com>, kishorekrd@gmail.com
+To: Eugene Surovegin <ebs@ebshome.net>
 In-Reply-To: 6667
 MIME-Version: 1.0
 Content-Type: text/plain; charset=gb2312
 Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: MPC8245 custom board,
-	Linux 2.4 kernel hangs after uncompressing
+Subject: Re: MPC8245 custom board, Linux 2.4 kernel hangs after uncompressing
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,24 +22,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---- Atit_Shah <Atit_Shah@satyam.com> wrote:
-> I forgot to mention this...u should do a soft reset.
-> If you go about powering off and on your board your
-> buffer will be flushed. But for a soft reset the
-> contents will be retained.
+Eugene Surovegin <ebs@ebshome.net> wrote:
+> On Thu, Apr 21, 2005 at 03:19:10PM +0800, Sam Song
+> wrote:
+> > Interesting to me as well. I also have such a
+> > similar problem. But I wanna to know how I can 
+> > return to u-boot with software workaround after 
+> > kernel hanging.
+>
+> Easy, use BDI (or any other hw debugger) and reset
+> target when it hangs.
 
-Ummm, in my experience, if kernel hangs, either it
-could reboot automatically or it will stop there 
-and doesn't respone any input from serial console. My
-situation is the second. So soft reset couldn't work
-at all:)
-
-Thanks,
+Thanks, Eugene. This one should work. It seems that 
+I must use a HW tool to deal with my trouble.
 
 Sam
 
-
 _________________________________________________________
 Do You Yahoo!?
-注册世界一流品质的雅虎免费电邮
-http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/
+150万曲MP3疯狂搜，带您闯入音乐殿堂
+http://music.yisou.com/
+美女明星应有尽有，搜遍美图、艳图和酷图
+http://image.yisou.com
+1G就是1000兆，雅虎电邮自助扩容！
+http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
