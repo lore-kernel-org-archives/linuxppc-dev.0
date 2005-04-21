@@ -1,18 +1,22 @@
-Return-Path: <mgreer@mvista.com>
-Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
-	by ozlabs.org (Postfix) with ESMTP id 112C767A64
+Return-Path: <roger.larsson@norran.net>
+Received: from ns.skekraft.net (ns.skekraft.net [213.199.96.131])
+	by ozlabs.org (Postfix) with ESMTP id BD9B567A67
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Apr 2005 05:57:39 +1000 (EST)
-Message-ID: <426805AD.1070803@mvista.com>
-Date: Thu, 21 Apr 2005 12:57:33 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
+	Fri, 22 Apr 2005 06:29:55 +1000 (EST)
+Received: from icd.localnet (131.net95.skekraft.net [213.199.95.131])
+	by ns.skekraft.net (Postfix) with ESMTP id 670FAA4021
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 21 Apr 2005 22:29:51 +0200 (CEST)
+From: Roger Larsson <roger.larsson@norran.net>
+To: linuxppc-embedded@ozlabs.org
+Date: Thu, 21 Apr 2005 22:29:47 +0200
+References: <004B1D7A5257174C9044A1B7BD0E60ED0178CC05@ratatosk.combitechsystems.com>
+In-Reply-To: <004B1D7A5257174C9044A1B7BD0E60ED0178CC05@ratatosk.combitechsystems.com>
 MIME-Version: 1.0
-To: Sam Song <samlinuxppc@yahoo.com.cn>
-References: <20050421024005.32847.qmail@web15805.mail.cnb.yahoo.com>
-In-Reply-To: <20050421024005.32847.qmail@web15805.mail.cnb.yahoo.com>
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: 824x Sandpoint with 2.6.x
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200504212229.47834.roger.larsson@norran.net>
+Subject: Re: Preemption patch problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,24 +27,55 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Sam Song wrote:
-
->>You can even use the
->>progress facility to dump the __log_buf.
->>    
->>
+On Thursday 21 April 2005 12.08, Bj=F6rn =D6stby wrote:
+> Greetings.
 >
->I don't have such experience. If possible, could u
->give me a linkage or doc for me to have a look?
+> I have been struggling with the famous preemption patch (from Robert Love)
+> the past few days. Im using mpc823e and tried with kernels
+> 2.4.{18,21,22,23}. The patch applies flawless and so on, but when the
+> kernel is up and running strange memory problems start to appear like:
 >
+> _alloc_pages: 0-order allocation failed (gfp=3D0x1d2/0)
 
-The "doc" is the source code.
+[
+   #define __GFP_DMA       0x01
+* #define __GFP_HIGHMEM   0x02
+* #define __GFP_WAIT      0x10    /* Can wait and reschedule? */
+   #define __GFP_HIGH      0x20    /* Should access emergency pools? */
+* #define __GFP_IO        0x40    /* Can start low memory physical IO? */
+* #define __GFP_HIGHIO    0x80    /* Can start high mem physical IO? */
+* #define __GFP_FS        0x100   /* Can call down to low-level FS? */
 
->BTW, Could I use KGDB to try it?
->  
+=2D - -
+#define GFP_HIGHUSER    (             __GFP_WAIT | __GFP_IO | __GFP_HIGHIO =
+|=20
+__GFP_FS | __GFP_HIGHMEM)
+=2D - -
+]
+
+So page_alloc is called with GFP_HIGHUSER, from where and why?
+
+Try to find out what is causing this, set the 'vm_gfp_debug'
+see 'linux/mm/page_alloc.c'
+
 >
+> Right, so... It seems like a giant memory leak of some sort, cause when I
+> run programs the kernel goes ballistic and starts reaping processes:
+>
+> "VM: Killing process <name>"
 
-It may help but it depends on how far you're getting and what your
-problem is.
+Well the problem is that it actually is not getting any memory. It might be
+code that retries to allocate memory when there really are none (you probab=
+ly
+do not use swap)
 
-Mark
+>
+> Eventually it comes down to "VM: killing init" and then it's curtains.
+>
+> I know that these problems is caused by the patch since the kernel runs
+> smooth without the patch applied. Does anyone have a clue what to do here
+> (beside let go of the patch)?
+
+Analyze memory usage on the working non patched kernel.
+
+/RogerL
