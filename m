@@ -1,18 +1,20 @@
-Return-Path: <Atit_Shah@satyam.com>
-Received: from njpmail.satyam.com (njpmail.satyam.com [204.179.188.132])
-	by ozlabs.org (Postfix) with ESMTP id 56EA767A64
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 9843367B15
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Apr 2005 18:50:18 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Date: Thu, 21 Apr 2005 14:15:33 +0530
-Message-ID: <D8595042F3765A4285B848A78A2C2ED1027753@bsdmsg002.corp.satyam.ad>
-From: "Atit_Shah" <Atit_Shah@satyam.com>
-To: "Sam Song" <samlinuxppc@yahoo.com.cn>, <kishorekrd@gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: MPC8245 custom board,
-	Linux 2.4 kernel hangs after uncompressing
+	Thu, 21 Apr 2005 18:50:42 +1000 (EST)
+Date: Thu, 21 Apr 2005 01:50:37 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Marco Schramel <Schramel.Linux@go.bartec.de>
+Message-ID: <20050421085037.GB8189@gate.ebshome.net>
+References: <200504211117.25584.Schramel.Linux@go.bartec.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200504211117.25584.Schramel.Linux@go.bartec.de>
+Cc: PPC_LINUX <linuxppc-embedded@ozlabs.org>
+Subject: Re: mtd mount problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,64 +25,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I forgot to mention this...u should do a soft reset. If you go about =
-powering off and on your board your buffer will be flushed. But for a =
-soft reset the contents will be retained.
+On Thu, Apr 21, 2005 at 11:17:25AM +0200, Marco Schramel wrote:
+> Hi all,
+> 
+> in our system (MPC8270, 2.4.25) i can't mount the mtd devices (two AM29LV256MH)
+> 
+> I created a map based on tqm8260.c. I can use the "eraseall" command and i can write the mtdx devices.
+> But if i try to mount the mtd devices (jffs or jffs2) then it fails.
+> Output:
+> The eraseall command
+> /dev # eraseall /dev/mtd1
+> MTD_open
+> MTD_ioctl
+> MTD_write
+> Erased 8192 Kibyte @ 0 -- 100% complete.
+> MTD_close
+> 
+> try to write
+> /dev # date > /dev/mtd1
+> MTD_open
+> MTD_ioctl
+> MTD_write
+> MTD_close
+> 
+> ok, now try onesmore
+> /dev # date > /dev/mtd1
+> MTD_open
+> MTD_ioctl
+> MTD_write
+> MTD do_write_buffer(): software timeout
+> MTD_close
+> /dev #
+> 
+> It all seems to be fine, but...
+> 
+> dev # mount -t jffs2 /dev/mtdblock1 /mnt/Flash1
+> mount: Mounting /dev/mtdblock1 on /mnt/Flash1 failed: No such device
+> 
+> I checked out the Majors of my ramdisk, they are ok.
 
------Original Message-----
-From: Sam Song [mailto:samlinuxppc@yahoo.com.cn]=20
-Sent: Thursday, April 21, 2005 12:49 PM
-To: Atit_Shah; kishorekrd@gmail.com
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: MPC8245 custom board, Linux 2.4 kernel hangs after =
-uncompressing=20
+ramdisk? why?
 
-Atit_Shah <Atit_Shah@satyam.com> wrote=A3=BA
-> 1. Check your log buffer...your console may not be
-> initialized yet so all your printk are logged at a=20
-> particular memory location. Checkout the
-> System.map file in the Linux folder for "log_buf".
-> The address that you have there subtract it with=20
-> the kernel base address. Then in view your
-> memory at that location. We used U-Boot so we gave
-> the command
-> =09
-> 	md <log_buff address>
+Check that you have CONFIG_MTD_BLOCK enabled in your .config. 
 
-Interesting to me as well. I also have such a similar
-problem. But I wanna to know how I can return to=20
-u-boot with software workaround after kernel hanging.
-At least, I must power-off and power-on my target to
-get back to u-boot console. If so, the last kernel=20
-printk message would lost IMHO.
+Also, check that you have /dev/mtdblock1 node in /dev directory on the 
+target.
 
-Thanks,
-
-Sam
-
-P.S. Atit_Shah, if possibel, pls set your subscribing
-setting  "...daily digest" as "no" to avoid reply
-inconvenience on the title:)
-
-_________________________________________________________
-Do You Yahoo!?
-150=CD=F2=C7=FAMP3=B7=E8=BF=F1=CB=D1=A3=AC=B4=F8=C4=FA=B4=B3=C8=EB=D2=F4=C0=
-=D6=B5=EE=CC=C3
-http://music.yisou.com/
-=C3=C0=C5=AE=C3=F7=D0=C7=D3=A6=D3=D0=BE=A1=D3=D0=A3=AC=CB=D1=B1=E9=C3=C0=CD=
-=BC=A1=A2=D1=DE=CD=BC=BA=CD=BF=E1=CD=BC
-http://image.yisou.com
-1G=BE=CD=CA=C71000=D5=D7=A3=AC=D1=C5=BB=A2=B5=E7=D3=CA=D7=D4=D6=FA=C0=A9=C8=
-=DD=A3=A1
-http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mai=
-l_1g/
-
-
-DISCLAIMER:
-This email (including any attachments) is intended for the sole use of =
-the intended recipient/s and may contain material that is CONFIDENTIAL =
-AND PRIVATE COMPANY INFORMATION. Any review or reliance by others or =
-copying or distribution or forwarding of any or all of the contents in =
-this message is STRICTLY PROHIBITED. If you are not the intended =
-recipient, please contact the sender by email and delete all copies; =
-your cooperation in this regard is appreciated.
+-- 
+Eugene
