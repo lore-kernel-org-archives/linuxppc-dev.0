@@ -1,17 +1,23 @@
-Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15805.mail.cnb.yahoo.com (web15805.mail.cnb.yahoo.com
-	[202.165.102.85]) by ozlabs.org (Postfix) with SMTP id B1E6867A6B
+Return-Path: <Atit_Shah@satyam.com>
+Received: from njpmail.satyam.com (njpmail.satyam.com [204.179.188.132])
+	by ozlabs.org (Postfix) with ESMTP id 55E5C67A67
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Apr 2005 12:40:10 +1000 (EST)
-Message-ID: <20050421024005.32847.qmail@web15805.mail.cnb.yahoo.com>
-Date: Thu, 21 Apr 2005 10:40:05 +0800 (CST)
-From: Sam Song <samlinuxppc@yahoo.com.cn>
-To: "Mark A. Greer" <mgreer@mvista.com>
-In-Reply-To: 6667
+	Thu, 21 Apr 2005 14:25:32 +1000 (EST)
+Received: from blr.satyam.com (blr.satyam.com [208.220.245.73])
+	by njpmail.satyam.com (8.11.6/8.11.6) with ESMTP id j3L4HAI00314
+	for <linuxppc-embedded@ozlabs.org>; Thu, 21 Apr 2005 00:17:35 -0400
+Received: from Disclaimerbng.corp.satyam.ad
+	(IDENT:HF7kmXmF2RYIoLPb0gCkNdn7yQbnvD5Q@localhost [127.0.0.1])
+	by blr.satyam.com (8.11.6/8.11.6) with ESMTP id j3L4JqA02689
+	for <linuxppc-embedded@ozlabs.org>; Thu, 21 Apr 2005 09:49:53 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: 824x Sandpoint with 2.6.x
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Thu, 21 Apr 2005 09:54:05 +0530
+Message-ID: <D8595042F3765A4285B848A78A2C2ED1027750@bsdmsg002.corp.satyam.ad>
+From: "Atit_Shah" <Atit_Shah@satyam.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Linux booting problem when initializing flash file system
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,50 +28,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-"Mark A. Greer" <mgreer@mvista.com> wrote:
-> > I cannot see any active info.Is early console
-> > output message not enough to find out something 
-> > useful? 
->
-> Sure it does. You have to enable it, then add some
-> progress lines to help narrow down where you're
-> panic'ing/hanging. 
+Hi All,
 
-Well, the cmdline I added is the switch of early
-console enable, which I should enable 
-CONFIG_SERIAL_8250_CONSOLE in kernel config first. A
-new and nice feature of 2.6.x to me.
+	I am using a board which has a ST Micro Electronics Flash
+(M29W640DB) and when booting the Linux Kernel I get the following error:
 
-> You can even use the
-> progress facility to dump the __log_buf.
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x00000000:
+0x0020 instead
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x00000004:
+0x22df instead
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x0000000c:
+0x0008 instead
 
-I don't have such experience. If possible, could u
-give me a linkage or doc for me to have a look?
+Further such events for this erase block will not be printed
+JFFS2: Erase block at 0x00000000 is not formatted. It will be erased
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x00020000:
+0x0020 instead
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x00020004:
+0x22df instead
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x0002000c:
+0x0008 instead
 
-> I'm taking your unwillingness to use a jtag/cops
-> debugger as indication
-> that you don't have such a tool!?!?
+And it ends with................
 
-For the moment, I don't have such a cute hardware 
-tool which can support source code debug like 
-BDI2000. To be frank, I haven't used a hardware tool 
-to debug kernel. Perhaps the problem I met wasn't 
-complicated to use it. But now it is another story:-)
-BTW, Could I use KGDB to try it?
+Cowardly refusing to erase blocks on filesystem with no valid JFFS2
+nodes
+Kernel panic: VFS: Unable to mount root fs on 1f:00
+<0>Rebooting in 180 seconds..
 
-Thanks,
+The reference board using an AMD flash works fine. I selected the ST
+Flash from make xconfig in Linux but the kernel crashes before it even
+calls start_kernel.
+Could somebody suggest wrong....
 
-Sam
+Thanks
+Atit
 
-Best regards,
 
-Sam
 
-_________________________________________________________
-Do You Yahoo!?
-150万曲MP3疯狂搜，带您闯入音乐殿堂
-http://music.yisou.com/
-美女明星应有尽有，搜遍美图、艳图和酷图
-http://image.yisou.com
-1G就是1000兆，雅虎电邮自助扩容！
-http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
+
+DISCLAIMER:
+This email (including any attachments) is intended for the sole use of =
+the intended recipient/s and may contain material that is CONFIDENTIAL =
+AND PRIVATE COMPANY INFORMATION. Any review or reliance by others or =
+copying or distribution or forwarding of any or all of the contents in =
+this message is STRICTLY PROHIBITED. If you are not the intended =
+recipient, please contact the sender by email and delete all copies; =
+your cooperation in this regard is appreciated.
