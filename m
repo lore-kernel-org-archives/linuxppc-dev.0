@@ -1,19 +1,19 @@
-Return-Path: <wd@denx.de>
-Received: from mailout09.sul.t-online.com (mailout09.sul.t-online.com
-	[194.25.134.84]) by ozlabs.org (Postfix) with ESMTP id 4970167A64
+Return-Path: <vbordug@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
+	by ozlabs.org (Postfix) with SMTP id B49D967A6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Apr 2005 20:32:56 +1000 (EST)
-To: Marco Schramel <Schramel.Linux@go.bartec.de>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 21 Apr 2005 11:17:25 +0200."
-	<200504211117.25584.Schramel.Linux@go.bartec.de>
-Date: Thu, 21 Apr 2005 12:32:29 +0200
-Sender: wd@denx.de
-Message-Id: <20050421103234.ED367C1510@atlas.denx.de>
-Cc: PPC_LINUX <linuxppc-embedded@ozlabs.org>
-Subject: Re: mtd mount problem 
+	Thu, 21 Apr 2005 22:04:28 +1000 (EST)
+Message-ID: <426796C7.3090501@ru.mvista.com>
+Date: Thu, 21 Apr 2005 16:04:23 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@freescale.com>, linuxppc-embedded@ozlabs.org
+References: <425D35E0.4040305@nm.ru> <425D5885.2040605@ru.mvista.com>
+	<Pine.LNX.4.61.0504201401270.8563@linen.am.freescale.net>
+In-Reply-To: <Pine.LNX.4.61.0504201401270.8563@linen.am.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: [PATCH 2.6.12-rc2] Freescale 8272ADS PCI bridge support to the
+ stock linux-2.5 (updated)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,45 +24,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <200504211117.25584.Schramel.Linux@go.bartec.de> you wrote:
-> 
-> /dev # date > /dev/mtd1
-> MTD_open
-> MTD_ioctl
-> MTD_write
-> MTD do_write_buffer(): software timeout
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-ERROR ERROR ERROR ERROR ERROR ERROR ERROR
+Kumar Gala wrote:
 
-> MTD_close
-> /dev #
-> 
-> It all seems to be fine, but...
+>On Wed, 13 Apr 2005, Vitaly Bordug wrote:
+>
+>Finally, had some time to really look at this patch, comments are inline. 
+>Look for (galak).  A few high level comments:
+>
+>Can we fold pq2ads_setup_hose into pq2ads_setup_pci? 
+>
+No problem, I think...
 
-I disagree. There was a  pretty  clear  error  message  above.  Don't
-ignore this, it will bite you later.
+> Also, is there 
+>anything to be done to unify m8260_setup_pci & 
+>pq2ads_setup_pci..
+>
+Well, in my opinion, m8260_setup_pci should be replaced with 
+pq2ads_setup_pci, as far as they are intended to do the same (as I 
+mentioned in my very first PCI patch marked as RFC). But I actually 
+cannot test this stuff on anything other than 8272ads, so this way I'm 
+trying not to break existing code. The latter, BTW, currently has 
+limited functionality and I _guess_ I will not break anything if only 
+pq2ads_setup_pci remain. What do you think?
 
-> dev # mount -t jffs2 /dev/mtdblock1 /mnt/Flash1
-> mount: Mounting /dev/mtdblock1 on /mnt/Flash1 failed: No such device
+Other issues will be fixed shortly.
 
-Assuming that this is a mount builtin to the  busybox,  this  message
-means  that  there  is  no such file as "/dev/mtdblock1" in your root
-file system - exactly as the error message says.
+Thanks.
 
-> I checked out the Majors of my ramdisk, they are ok.
-
-What has a ramdisk to do with this?
-
-What does "cat /proc/mtd" show? What are  the  kernel  boot  messages
-look like?
-
-Best regards,
-
-Wolfgang Denk
 
 -- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"It was the Law of the Sea, they said. Civilization ends at  the  wa-
-terline.  Beyond  that,  we  all enter the food chain, and not always
-right at the top."                               - Hunter S. Thompson
+Sincerely, 
+Vitaly
