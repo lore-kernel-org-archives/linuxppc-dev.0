@@ -1,18 +1,18 @@
-Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15803.mail.cnb.yahoo.com (web15803.mail.cnb.yahoo.com
-	[202.165.102.83]) by ozlabs.org (Postfix) with SMTP id 93BE867A67
+Return-Path: <hxie@centecnetworks.com>
+Received: from mail.centecnetworks.com (unknown [222.92.63.19])
+	by ozlabs.org (Postfix) with ESMTP id 7E10E67A6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Apr 2005 12:30:24 +1000 (EST)
-Message-ID: <20050422023020.98562.qmail@web15803.mail.cnb.yahoo.com>
-Date: Fri, 22 Apr 2005 10:30:20 +0800 (CST)
-From: Sam Song <samlinuxppc@yahoo.com.cn>
-To: Wolfgang Denk <wd@denx.de>
-In-Reply-To: 6667
+	Fri, 22 Apr 2005 12:48:57 +1000 (EST)
+Received: from [10.10.25.198] ([222.92.63.20]) (authenticated)
+	by mail.centecnetworks.com (8.10.2/8.10.2) with ESMTP id j3L2kvS18229
+	for <linuxppc-embedded@ozlabs.org>; Thu, 21 Apr 2005 10:46:57 +0800
+Message-ID: <42686640.9010007@centecnetworks.com>
+Date: Fri, 22 Apr 2005 10:49:36 +0800
+From: Anchor <hxie@centecnetworks.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC8245 custom board,
-	Linux 2.4 kernel hangs after uncompressing
+To: inuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Content-Type: multipart/mixed; boundary="------------000000080906030705040105"
+Subject: prpmc linux support help
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,29 +23,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Wolfgang Denk <wd@denx.de> wrote:
-> > Interesting to me as well. I also have such a
-> > similar problem. But I wanna to know how I can 
-> > return to u-boot with software workaround after 
-> > kernel hanging.
-> 
-> Press the reset button?
-> 
+This is a multi-part message in MIME format.
+--------------000000080906030705040105
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-The pity is that hardware reset doesn't work on my
-board. Sadly... Well, just to confirm this case. If
-had, is it possible to flush the content of __log_buf
-after reset?
+Hi all:
 
-Thanks a lot,
+   I will spent my a lot time to perpare a bootloader and kernel image 
+for motorala's prpmc600 board.
+who can give me a exist and completed source code for bootloader and 
+kernel image, and kernel
+version is 2.6.X is best choose.
 
-Sam
+thanks very much!!!
 
-_________________________________________________________
-Do You Yahoo!?
-150万曲MP3疯狂搜，带您闯入音乐殿堂
-http://music.yisou.com/
-美女明星应有尽有，搜遍美图、艳图和酷图
-http://image.yisou.com
-1G就是1000兆，雅虎电邮自助扩容！
-http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
+anchor
+
+2005-04-22
+
+--------------000000080906030705040105
+Content-Type: text/x-vcard; charset=utf-8;
+ name="hxie.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="hxie.vcf"
+
+begin:vcard
+fn:Anchor Xie
+n:Xie;Anchor
+email;internet:anchor_xie@centecnetworks.com
+tel;work:86-512-62885850-826
+tel;cell:86-13382170766
+version:2.1
+end:vcard
+
+
+--------------000000080906030705040105--
