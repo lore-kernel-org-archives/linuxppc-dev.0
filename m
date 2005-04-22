@@ -1,24 +1,17 @@
-Return-Path: <joern@wohnheim.fh-wedel.de>
-Received: from moskovskaya.fh-wedel.de (mail.fh-wedel.de [213.39.232.198])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0C20667AC6
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15802.mail.cnb.yahoo.com (web15802.mail.cnb.yahoo.com
+	[202.165.102.82]) by ozlabs.org (Postfix) with SMTP id 470C267A67
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Apr 2005 12:11:19 +1000 (EST)
-Date: Fri, 22 Apr 2005 04:11:17 +0200
-From: =?iso-8859-1?Q?J=F6rn?= Engel <joern@wohnheim.fh-wedel.de>
-To: Marco Schramel <Schramel.Linux@go.bartec.de>,
-	PPC_LINUX <linuxppc-embedded@ozlabs.org>
-Message-ID: <20050422021117.GC27755@wohnheim.fh-wedel.de>
-References: <20050421103234.ED367C1510@atlas.denx.de>
-	<200504211502.48761.Schramel.Linux@go.bartec.de>
-	<20050422013134.GB27755@wohnheim.fh-wedel.de>
-	<20050422015337.GC20046@gate.ebshome.net>
-	<20050422015552.GD20046@gate.ebshome.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20050422015552.GD20046@gate.ebshome.net>
-Subject: Re: mtd mount problem
+	Fri, 22 Apr 2005 12:21:54 +1000 (EST)
+Message-ID: <20050422022151.45161.qmail@web15802.mail.cnb.yahoo.com>
+Date: Fri, 22 Apr 2005 10:21:51 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: "Mark A. Greer" <mgreer@mvista.com>
+In-Reply-To: 6667
+MIME-Version: 1.0
+Content-Type: text/plain; charset=gb2312
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: 824x Sandpoint with 2.6.x
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,34 +22,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 21 April 2005 18:55:52 -0700, Eugene Surovegin wrote:
-> On Thu, Apr 21, 2005 at 06:53:37PM -0700, Eugene Surovegin wrote:
-> > On Fri, Apr 22, 2005 at 03:31:34AM +0200, J?rn Engel wrote:
-> > 
-> > [snip]
-> > 
-> > > 1. Erase the flash partition.  Either
-> > >    o eraseall /dev/mtdX or
-> > >    o cat file_filled_with_0xff > /dev/mtdblockX
-> > 
-> > Huh? I fail to see how options you listed are equivalent. By 
-> > "cat"ing file filled with 0xff you cannot erase flash, period.
-> > 
-> > Only eraseall (or erase, if partition occupies 1 erase block) flash 
-> > can be erased.
+"Mark A. Greer" <mgreer@mvista.com> wrote:
+> > BTW, Could I use KGDB to try it?
+> >  
 > 
-> Oops, sorry, I failed to notice /dev/mtdblockX. Stupid me. Ignore this 
-> noise.
+> It may help but it depends on how far you're getting
+> and what your problem is.
 
-Btw, I've also written a tool called 'ff' once.  It will simply write
-tons of 0xff to stdout.  Rewriting the thing from scratch should be
-slightly faster than me trying to look for the source (about 4 lines
-of code?).
+OK, Mark. Thanks so much for your help. Let me try
+how far I could go:)
 
-J鰎n
+Sam
 
--- 
-My second remark is that our intellectual powers are rather geared to
-master static relations and that our powers to visualize processes
-evolving in time are relatively poorly developed.
--- Edsger W. Dijkstra
+_________________________________________________________
+Do You Yahoo!?
+150万曲MP3疯狂搜，带您闯入音乐殿堂
+http://music.yisou.com/
+美女明星应有尽有，搜遍美图、艳图和酷图
+http://image.yisou.com
+1G就是1000兆，雅虎电邮自助扩容！
+http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
