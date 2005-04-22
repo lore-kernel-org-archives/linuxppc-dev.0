@@ -1,19 +1,20 @@
-Return-Path: <joern@wohnheim.fh-wedel.de>
-Received: from moskovskaya.fh-wedel.de (mail.fh-wedel.de [213.39.232.198])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A018C67A33
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 9C64167AC7
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Apr 2005 11:31:36 +1000 (EST)
-Date: Fri, 22 Apr 2005 03:31:34 +0200
-From: =?iso-8859-1?Q?J=F6rn?= Engel <joern@wohnheim.fh-wedel.de>
-To: Marco Schramel <Schramel.Linux@go.bartec.de>
-Message-ID: <20050422013134.GB27755@wohnheim.fh-wedel.de>
+	Fri, 22 Apr 2005 11:53:40 +1000 (EST)
+Date: Thu, 21 Apr 2005 18:53:37 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: J?rn Engel <joern@wohnheim.fh-wedel.de>
+Message-ID: <20050422015337.GC20046@gate.ebshome.net>
 References: <20050421103234.ED367C1510@atlas.denx.de>
 	<200504211502.48761.Schramel.Linux@go.bartec.de>
+	<20050422013134.GB27755@wohnheim.fh-wedel.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <200504211502.48761.Schramel.Linux@go.bartec.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050422013134.GB27755@wohnheim.fh-wedel.de>
 Cc: PPC_LINUX <linuxppc-embedded@ozlabs.org>
 Subject: Re: mtd mount problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -26,39 +27,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 21 April 2005 15:02:48 +0200, Marco Schramel wrote:
-> 
-> > > /dev # date > /dev/mtd1
-> > > MTD_open
-> > > MTD_ioctl
-> > > MTD_write
-> > > MTD do_write_buffer(): software timeout
-> > ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> > ERROR ERROR ERROR ERROR ERROR ERROR ERROR
-> 
-> This only occurs if i write the second time to the flash memory without erasing it before.
+On Fri, Apr 22, 2005 at 03:31:34AM +0200, J?rn Engel wrote:
 
-That's harmless.  Flash is a write-once medium between erases.
+[snip]
 
-Your setup appears sane in principle, so there must me a subtle
-mistake you made (bugs are out of the question of course ;).  Missing
-a real howto, let me run through the sequence:
+> 1. Erase the flash partition.  Either
+>    o eraseall /dev/mtdX or
+>    o cat file_filled_with_0xff > /dev/mtdblockX
 
-1. Erase the flash partition.  Either
-   o eraseall /dev/mtdX or
-   o cat file_filled_with_0xff > /dev/mtdblockX
+Huh? I fail to see how options you listed are equivalent. By 
+"cat"ing file filled with 0xff you cannot erase flash, period.
 
-2. Do *not* write anything to it afterwards.  Jffs2 would just error
-   out.
-
-3. Mount jffs2.  Either
-   o mount mtdX -t jffs2 <mount_point> or
-   o mount /dev/mtdblockX -t jffs2 <mount_point>
-  
-
-Jörn
+Only eraseall (or erase, if partition occupies 1 erase block) flash 
+can be erased.
 
 -- 
-The grand essentials of happiness are: something to do, something to
-love, and something to hope for.
--- Allan K. Chalmers
+Eugene
