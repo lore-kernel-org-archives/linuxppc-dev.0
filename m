@@ -1,22 +1,17 @@
-Return-Path: <ka99@mail.ru>
-Received: from mx4.mail.ru (fallback.mail.ru [194.67.57.14])
-	by ozlabs.org (Postfix) with ESMTP id A147267A67
+Return-Path: <Bjorn.Ostby@combitechsystems.com>
+Received: from ms-101.aerotechtelub.se (ms-101.aerotechtelub.se
+	[192.176.33.163]) by ozlabs.org (Postfix) with ESMTP id A05F367A67
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Apr 2005 18:56:12 +1000 (EST)
-Received: from f6.mail.ru (f6.mail.ru [194.67.57.36])
-	by mx4.mail.ru (mPOP.Fallback_MX) with ESMTP id 39E2F168D41
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Apr 2005 12:17:07 +0400 (MSD)
-Received: from mail by f6.mail.ru with local id 1DOtLO-000OW6-00
-	for linuxppc-embedded@ozlabs.org; Fri, 22 Apr 2005 12:16:58 +0400
-From: =?koi8-r?Q?=D0=C5=D4=D2=20=D0=C5=D4=D2=CF=D7?= <ka99@mail.ru>
-To: linuxppc-embedded@ozlabs.org
-Mime-Version: 1.0
-Date: Fri, 22 Apr 2005 12:16:58 +0400
-Content-Type: text/plain; charset=koi8-r
-Message-Id: <E1DOtLO-000OW6-00.ka99-mail-ru@f6.mail.ru>
-Subject: problem with INI-9100U driver for INIC-940P SCSI controller
-Reply-To: =?koi8-r?Q?=D0=C5=D4=D2=20=D0=C5=D4=D2=CF=D7?= <ka99@mail.ru>
+	Fri, 22 Apr 2005 20:48:29 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Fri, 22 Apr 2005 12:47:22 +0200
+Message-ID: <004B1D7A5257174C9044A1B7BD0E60ED0178CC06@ratatosk.combitechsystems.com>
+From: =?iso-8859-1?B?Qmr2cm4g1nN0Ynk=?= <Bjorn.Ostby@combitechsystems.com>
+To: <roger.larsson@norran.net>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: Preemption patch problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,23 +23,98 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-                                   Hello all!
- 
-       My name is Alex. I am porting linux to shr4162 target. This is PPC based target. It has Inic940P SCSI
-     
-       controller. When attaching a SCSI disk I can monitor from time to time the folloing problem:
+OK! Thanks for the info.=20
+I've implemented the gfp_debug and fiddled around a bit. Memory
+problems is not my specialty and the only new info attached to the error =
+message is:
 
-       even first request for disk info( vendor Id, Model, etc) fails because no interrupts are caught by cpu
-   
-       or scsi controller does not issue interrupts after completetion of the request. As I said this situation 
+"This architecture does not implement dump_stack()"
 
-       is floating - during some Linux bootings, this request and some other basic requests( capacity request,
-     
-       reading partition table and ctr.) work fine. The disk itself is Ok. It works fine on analogous target, based
+...Which seems fair for a ppc.
 
-       on ARM920CPU and having same SCSI contrller( Inic-940P). If anybody experienced similar problems, please
+I have however carefully studied the memfree value in /proc/meminfo and
+by every instance I execute of "cat /proc/meminfo" it decreases by 8K.
+Since I had ruthless much time this morning, I actually manually =
+depleted the whole 32 MB with this call.. When there's about 500kb left, =
+suddenly 200kb
+is given back, but if I do multiple "cat":s real fast, memfree goes =
+below 500kb and the kernel just starts killing processes.
 
-       share your experience. I would appriciate much.
+Anyway, im not that keen on start hacking the kernel to get this patch=20
+going. I had put my hope to some strange kernel-config option which I =
+might
+had missed. If anyone knows of this, please let me know.
 
-       Kind regards,
-       Kirnasov A.
+
+Best regards,
+Bjorn Ostby
+
+
+
+
+
+-----Original Message-----
+From: Roger Larsson [mailto:roger.larsson@norran.net]=20
+Sent: den 21 april 2005 22:30
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Preemption patch problem
+
+
+On Thursday 21 April 2005 12.08, Bj=F6rn =D6stby wrote:
+> Greetings.
+>
+> I have been struggling with the famous preemption patch (from Robert=20
+> Love) the past few days. Im using mpc823e and tried with kernels=20
+> 2.4.{18,21,22,23}. The patch applies flawless and so on, but when the=20
+> kernel is up and running strange memory problems start to appear like:
+>
+> _alloc_pages: 0-order allocation failed (gfp=3D0x1d2/0)
+
+[
+   #define __GFP_DMA       0x01
+* #define __GFP_HIGHMEM   0x02
+* #define __GFP_WAIT      0x10    /* Can wait and reschedule? */
+   #define __GFP_HIGH      0x20    /* Should access emergency pools? */
+* #define __GFP_IO        0x40    /* Can start low memory physical IO? =
+*/
+* #define __GFP_HIGHIO    0x80    /* Can start high mem physical IO? */
+* #define __GFP_FS        0x100   /* Can call down to low-level FS? */
+
+- - -
+#define GFP_HIGHUSER    (             __GFP_WAIT | __GFP_IO | =
+__GFP_HIGHIO |=20
+__GFP_FS | __GFP_HIGHMEM)
+- - -
+]
+
+So page_alloc is called with GFP_HIGHUSER, from where and why?
+
+Try to find out what is causing this, set the 'vm_gfp_debug' see =
+'linux/mm/page_alloc.c'
+
+>
+> Right, so... It seems like a giant memory leak of some sort, cause=20
+> when I run programs the kernel goes ballistic and starts reaping=20
+> processes:
+>
+> "VM: Killing process <name>"
+
+Well the problem is that it actually is not getting any memory. It might =
+be code that retries to allocate memory when there really are none (you =
+probably do not use swap)
+
+>
+> Eventually it comes down to "VM: killing init" and then it's curtains.
+>
+> I know that these problems is caused by the patch since the kernel=20
+> runs smooth without the patch applied. Does anyone have a clue what to =
+
+> do here (beside let go of the patch)?
+
+Analyze memory usage on the working non patched kernel.
+
+/RogerL
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org =
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
