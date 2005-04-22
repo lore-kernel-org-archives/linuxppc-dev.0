@@ -1,26 +1,22 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 5BFDB67A67
+Return-Path: <ka99@mail.ru>
+Received: from mx4.mail.ru (fallback.mail.ru [194.67.57.14])
+	by ozlabs.org (Postfix) with ESMTP id A147267A67
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Apr 2005 18:44:42 +1000 (EST)
-Received: from de01smr01.am.mot.com (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	j3M8kdec020281 for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Apr 2005 01:46:39 -0700 (MST)
-Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
-	[10.192.130.11])
-	by de01smr01.am.mot.com (8.13.1/8.13.0) with ESMTP id j3M8lcrb029118
+	Fri, 22 Apr 2005 18:56:12 +1000 (EST)
+Received: from f6.mail.ru (f6.mail.ru [194.67.57.36])
+	by mx4.mail.ru (mPOP.Fallback_MX) with ESMTP id 39E2F168D41
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Apr 2005 03:47:39 -0500 (CDT)
-Message-ID: <9FCDBA58F226D911B202000BDBAD467301502FBB@zch01exm40.ap.freescale.net>
-From: Li Yang-r58472 <LeoLi@freescale.com>
-To: =?koi8-r?Q?=D0=C5=D4=D2_=D0=C5=D4=D2=CF=D7?= <ka99@mail.ru>,
-	linuxppc-embedded@ozlabs.org
-Date: Fri, 22 Apr 2005 16:44:37 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="koi8-r"
-Subject: RE: search in ppclinux mailing list
+	Fri, 22 Apr 2005 12:17:07 +0400 (MSD)
+Received: from mail by f6.mail.ru with local id 1DOtLO-000OW6-00
+	for linuxppc-embedded@ozlabs.org; Fri, 22 Apr 2005 12:16:58 +0400
+From: =?koi8-r?Q?=D0=C5=D4=D2=20=D0=C5=D4=D2=CF=D7?= <ka99@mail.ru>
+To: linuxppc-embedded@ozlabs.org
+Mime-Version: 1.0
+Date: Fri, 22 Apr 2005 12:16:58 +0400
+Content-Type: text/plain; charset=koi8-r
+Message-Id: <E1DOtLO-000OW6-00.ka99-mail-ru@f6.mail.ru>
+Subject: problem with INI-9100U driver for INIC-940P SCSI controller
+Reply-To: =?koi8-r?Q?=D0=C5=D4=D2=20=D0=C5=D4=D2=CF=D7?= <ka99@mail.ru>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,33 +27,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Google probably will do the similar job
-using:  site:http://ozlabs.org/pipermail/linuxppc-embedded/ {keyword}
 
-Best Regards,
-Leo
+                                   Hello all!
+ 
+       My name is Alex. I am porting linux to shr4162 target. This is PPC based target. It has Inic940P SCSI
+     
+       controller. When attaching a SCSI disk I can monitor from time to time the folloing problem:
 
+       even first request for disk info( vendor Id, Model, etc) fails because no interrupts are caught by cpu
+   
+       or scsi controller does not issue interrupts after completetion of the request. As I said this situation 
 
-> -----Original Message-----
-> From: linuxppc-embedded-bounces@ozlabs.org
-> [mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of =
-=A7=E1=A7=D6=A7=E4=A7=E2
-> =A7=E1=A7=D6=A7=E4=A7=E2=A7=E0=A7=D3
-> Sent: Friday, April 22, 2005 4:34 PM
-> To: linuxppc-embedded@ozlabs.org
-> Subject: search in ppclinux mailing list
->=20
->=20
->=20
->                                       Hello all!
->=20
->      Does anybody know ppclinux mailing archives with ability to =
-search by
-> subject in them. I would appreciate a lot.
->=20
->      Kind regards,
->      Kirnasov A.
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+       is floating - during some Linux bootings, this request and some other basic requests( capacity request,
+     
+       reading partition table and ctr.) work fine. The disk itself is Ok. It works fine on analogous target, based
+
+       on ARM920CPU and having same SCSI contrller( Inic-940P). If anybody experienced similar problems, please
+
+       share your experience. I would appriciate much.
+
+       Kind regards,
+       Kirnasov A.
