@@ -1,21 +1,24 @@
-Return-Path: <jwboyer@jdub.homelinux.org>
-Received: from jdub.homelinux.org (67-41-71-119.roch.qwest.net [67.41.71.119])
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from parcelfarce.linux.theplanet.co.uk
+	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DE14467A70
+	by ozlabs.org (Postfix) with ESMTP id E110567A33
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 23 Apr 2005 08:04:44 +1000 (EST)
-From: Josh Boyer <jwboyer@jdub.homelinux.org>
-To: Eugene Surovegin <ebs@ebshome.net>
-In-Reply-To: <20050422215339.GA9488@gate.ebshome.net>
-References: <OF6EA2D85F.3FCDDAC2-ON85256FEB.00750EFB@teal.com>
-	<20050422215339.GA9488@gate.ebshome.net>
-Content-Type: text/plain
-Date: Fri, 22 Apr 2005 17:04:44 -0500
-Message-Id: <1114207484.27280.9.camel@jdub.homelinux.org>
+	Sat, 23 Apr 2005 08:17:43 +1000 (EST)
+Date: Fri, 22 Apr 2005 14:14:12 -0300
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Joakim Tjernlund <Joakim.Tjernlund@lumentis.se>,
+	Dan Malek <dan@embeddededge.com>
+Message-ID: <20050422171412.GC15370@logos.cnet>
+References: <86e2fa4b5afe5bd8afc33ca47a7ab50c@embeddededge.com>
+	<BCEFJBPJCGFCNMMMIDBHKEGMCLAA.Joakim.Tjernlund@lumentis.se>
+	<20050409223721.GA27454@logos.cnet>
 Mime-Version: 1.0
-Cc: Jeff.Fellin@rflelect.com, linuxppc-embedded@ozlabs.org
-Subject: Re: Flash Statistics
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050409223721.GA27454@logos.cnet>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: 8xx v2.6 TLB problems and suggested workaround
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,28 +29,78 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2005-04-22 at 14:53 -0700, Eugene Surovegin wrote:
-> On Fri, Apr 22, 2005 at 05:19:17PM -0400, Jeff.Fellin@rflelect.com wrote:
+
+Dan, 
+
+I haven't heard your opinion on Joakim's proposed change yet. 
+
+It looks plausible, and its more complete than dcbst's reimplementation 
+with 8xx specific cache functions (because it also covers userspace dcbst
+callers).
+
+I would love to see this getting fixed in v2.6 mainline.
+
+Thanks
+
+On Sat, Apr 09, 2005 at 07:37:21PM -0300, Marcelo Tosatti wrote:
+> On Sat, Apr 09, 2005 at 09:03:54PM +0200, Joakim Tjernlund wrote:
+> > > 
+> > > On Apr 8, 2005, at 7:07 AM, Marcelo Tosatti wrote:
+> > > 
+> > > > 1) _tlbie() on update_mmu_cache() surrounded by CONFIG_8xx #ifdef
+> > > > Did you give up about it?
+> > > 
+> > > I think a tlbia() of the vaddr should work here.  No sense blowing
+> > > away the whole TLB cache for this.
 > > 
-> > I am looking for information in the kernel or elsewhere about flash usage
-> > statistics. I'm interested in knowing how
-> > many times a sector has been erased and written to. This doesn't have to be
-> > for all time, since other tools
-> > can erase and write the flash (U-boot), but just what the activity during
-> > application processing. We use the
-> > flash to store configuration files that are changeable and would like to
-> > determine the expected lifetime
-> > of the chips at use sites.
-> > 
-> > Any pointers to places where flash statistics are maintained or tools to
-> > collect these statistics is
-> > appreciated.
+> > Umm, isn't it the other way around? tlbie flushes one TLB whereas tlbia flushes
+> > all TLBs.
 > 
-> Flash datasheet must have this information.
-
-They have information on the maximum number of writes per eraseblock,
-yes.  But I think Jeff is looking for some statistic gathering tools he
-can use to figure out how his application workload is effecting flash.
-I doubt that is in any datasheets ;).
-
-josh
+> Yep
+> 
+> > > > What else you think can be done?
+> > > 
+> > > It would be interesting to change __flush_dcache_icache()
+> > > to use the 8xx SPR cache operations instead of the dcbst instruction.
+> > 
+> > yes, but I think these operates on physical addresses which makes it a bit harder.
+> 
+> Other than the fact of userspace dcbst users.
+> 
+> > I still think this can be resolved in fault.c. Replace 
+> > 	andis.	r11, r10, 0x0200	/* If set, indicates store op */
+> > 	beq	2f
+> > in the DTLB Error handler with
+> > 	andis.	r11, r10, 0x4800	/* If set, indicates invalid pte or protection violation */
+> > 	bne	2f
+> 
+> Why does the current code jump to page fault handler in case of store operation? 
+> 
+> Out of curiosity, aren't there any other valid bit combinations for DSISR other
+> than 0x4800 which should allow a fastpath DataTLBError ?
+> 
+> I can't find DSISR settings in MPC860UM.pdf neither paper manual. AFAICS it
+> always refer to the PEM when talking about DSISR bit assignments. 
+> 
+> I can't find section "7-15" as you mentioned in the other email.
+> 
+> > In fault.c you can check if both store and invalid is set simultaneously. If it is, clear
+> > the store flag and continue as usual.
+> 
+> One point is that by changing the in-kernel dcbst implementation userspace is 
+> still vulnerable to the problem.
+> 
+> Now fixing the exception handler to deal with such boggosity as Joakim proposes is 
+> complete - it handles userspace dcbst callers. 
+> 
+> > > I wouldn't be surprised if it worked differently, but I'd not be
+> > > able to explain it :-)
+> > > 
+> > > Thanks.
+> > > 
+> > > 	-- Dan
+> > > 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
