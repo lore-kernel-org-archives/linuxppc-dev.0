@@ -1,18 +1,18 @@
-Return-Path: <jwboyer@jdub.homelinux.org>
-Received: from jdub.homelinux.org (67-41-71-119.roch.qwest.net [67.41.71.119])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 23CD467A64
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id EC22667A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 23 Apr 2005 07:41:26 +1000 (EST)
-From: Josh Boyer <jwboyer@jdub.homelinux.org>
+	Sat, 23 Apr 2005 07:53:42 +1000 (EST)
+Date: Fri, 22 Apr 2005 14:53:39 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
 To: Jeff.Fellin@rflelect.com
-In-Reply-To: <OF6EA2D85F.3FCDDAC2-ON85256FEB.00750EFB@teal.com>
+Message-ID: <20050422215339.GA9488@gate.ebshome.net>
 References: <OF6EA2D85F.3FCDDAC2-ON85256FEB.00750EFB@teal.com>
-Content-Type: text/plain
-Date: Fri, 22 Apr 2005 16:41:27 -0500
-Message-Id: <1114206087.27280.4.camel@jdub.homelinux.org>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <OF6EA2D85F.3FCDDAC2-ON85256FEB.00750EFB@teal.com>
 Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: Flash Statistics
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -25,7 +25,8 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2005-04-22 at 17:19 -0400, Jeff.Fellin@rflelect.com wrote:
+On Fri, Apr 22, 2005 at 05:19:17PM -0400, Jeff.Fellin@rflelect.com wrote:
+> 
 > I am looking for information in the kernel or elsewhere about flash usage
 > statistics. I'm interested in knowing how
 > many times a sector has been erased and written to. This doesn't have to be
@@ -40,9 +41,7 @@ On Fri, 2005-04-22 at 17:19 -0400, Jeff.Fellin@rflelect.com wrote:
 > collect these statistics is
 > appreciated.
 
-You might try http://linux-mtd.infradead.org
+Flash datasheet must have this information.
 
-I'm not aware of any write statistics gathering tools, but MTD is where
-they would/should be.
-
-josh
+-- 
+Eugene
