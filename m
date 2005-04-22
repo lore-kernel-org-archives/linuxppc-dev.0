@@ -1,17 +1,30 @@
-Return-Path: <p_gortmaker@yahoo.com>
-Received: from web60507.mail.yahoo.com (web60507.mail.yahoo.com
-	[216.109.116.128]) by ozlabs.org (Postfix) with SMTP id AD8CB67A67
+Return-Path: <markc@mail.com>
+Received: from relay02.roc.ny.frontiernet.net (relay02.roc.ny.frontiernet.net
+	[66.133.182.165]) by ozlabs.org (Postfix) with ESMTP id 8708767A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 23 Apr 2005 05:46:40 +1000 (EST)
-Message-ID: <20050422194638.56637.qmail@web60507.mail.yahoo.com>
-Date: Fri, 22 Apr 2005 12:46:38 -0700 (PDT)
-From: Paul Gortmaker <p_gortmaker@yahoo.com>
-To: Eugene Surovegin <ebs@ebshome.net>
-In-Reply-To: 6667
+	Sat, 23 Apr 2005 06:21:48 +1000 (EST)
+Received: from filter09.roc.ny.frontiernet.net
+	(filter09.roc.ny.frontiernet.net [66.133.183.76])
+	by relay02.roc.ny.frontiernet.net (Postfix) with ESMTP id 256D03705DB
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 22 Apr 2005 19:50:18 +0000 (UTC)
+Received: from relay02.roc.ny.frontiernet.net ([66.133.182.165])
+	by filter09.roc.ny.frontiernet.net (filter09.roc.ny.frontiernet.net
+	[66.133.183.76]) (amavisd-new, port 10024)
+	with LMTP id 18066-11-80 for <linuxppc-embedded@ozlabs.org>;
+	Fri, 22 Apr 2005 19:50:18 +0000 (UTC)
+Received: from chuck2 (70-97-124-8.br1.rmn.wv.frontiernet.net [70.97.124.8])
+	by relay02.roc.ny.frontiernet.net (Postfix) with ESMTP id CA0A63703BF
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 22 Apr 2005 19:50:16 +0000 (UTC)
+Message-ID: <002101c54774$83c85590$0301a8c0@chuck2>
+From: "Mark Chambers" <markc@mail.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Fri, 22 Apr 2005 15:50:18 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Warm reboot on 826x targets
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_001E_01C54752.FBBC7710"
+Subject: pthread debugging problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,94 +35,86 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I should have asked what version of U-Boot you were using.  I've had
-U-Boot 1.1.1 on this thing from the beginning, but I've heard that some
-people are sticking with 1.0 on production stuff.
+This is a multi-part message in MIME format.
 
-I've found that I can't use the watchdog timer for a reboot, since it is
-"write once" (SYCPR) and I'm guessing U-Boot writes to it at boot.
+------=_NextPart_000_001E_01C54752.FBBC7710
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-As a different twist, I tried doing a reset like the m8xx does, as shown
-below, but that just caused a hang as well, so I'm wondering if the
-problem is more low level (board isn't set up properly, etc.)
+I am debugging a simple program with several threads, using pthreads.=20
+printf's tell me that the threading is working, but I am unable to debug
+the program with gdb (gdbserver on the target).  I get spurious
+'Program received signal SIG32, Real-time even 32' messages.
+I'm using a stock ELDK tree via NFS boot.  I couldn't tell you the ELDK
+version but I've listed some of the components below.
 
-Paul.
+I've found postings in the general linux community, but they don't seem
+to apply in this case.  I've compiled a late gdb (6.2), tried later =
+versions
+of all the libraries that seem relevant, to no avail.  Any ideas?  Or,
+equally valuable, is anybody debugging pthreads successfully on ppc,
+what is your setup?
 
-/*
- *This is a tweaked version of the m8xx_restart.
- */
-static void
-sbc82xx_restart(char *cmd)
-{
-        __volatile__ unsigned char dummy;
-        unsigned long msr;
+Thanks,
+Mark Chambers
 
-        volatile car_cpm2_t *cc = &cpm2_immr->im_clkrst;
+versions:
+libc-2.2.1
+libpthread-0.9.so
+kernel - 2.4.19
+------=_NextPart_000_001E_01C54752.FBBC7710
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-        msr = mfmsr();
-        mtmsr(msr & ~MSR_EE);
-        __asm__ __volatile__("": : :"memory");
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.2800.1498" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV><FONT face=3DArial size=3D2>I am debugging a simple program with =
+several=20
+threads, using pthreads.&nbsp;</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>printf's tell me that the threading is =
+working, but=20
+I am unable to debug</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>the program with gdb (gdbserver on the=20
+target).&nbsp; I get spurious</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>'Program received signal SIG32, =
+Real-time even 32'=20
+messages.</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>I'm using a stock ELDK tree via NFS =
+boot.&nbsp; I=20
+couldn't tell you the ELDK</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>version but I've listed some of the =
+components=20
+below.</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>I've found postings in the general =
+linux community,=20
+but they don't seem</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>to apply in this case.&nbsp; I've =
+compiled a late=20
+gdb (6.2), tried later versions</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>of all the libraries that seem =
+relevant,&nbsp;to no=20
+avail.&nbsp; Any ideas?&nbsp; Or,</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>equally valuable, is anybody debugging =
+pthreads=20
+successfully on ppc,</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>what is your setup?</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>Thanks,</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>Mark Chambers</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>versions:</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>libc-2.2.1</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>libpthread-0.9.so</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>kernel - =
+2.4.19</FONT></DIV></BODY></HTML>
 
-        /* Checkstop reset enable -- Sec. 5.3 of MPC8260UM.pdf */
-        cc->car_rmr = 0x80000000;
-
-        msr = mfmsr();
-        mtmsr(msr & ~MSR_ME);
-
-        dummy = cc->res[0];
-        BUG();
-}
-
-
-
---- Eugene Surovegin <ebs@ebshome.net> wrote:
-> On Tue, Apr 12, 2005 at 11:14:35AM -0700, Paul Gortmaker wrote:
-> > I've been trying to get a WRS 8265 to do a warm reboot, and found some
-> > things that I am wondering about.
-> > 
-> > Firstly, is anyone having success on having "reboot" restart the
-> machine
-> > on a similar platform?
-> > 
-> > Secondly, the default BOOTROM_RESTART_ADDR is 0x40000104 (sbc82xx.h)
-> and I
-> > was wondering if this matches any platforms out there.  On this board,
-> the
-> > place where U-Boot lives is 0xFFF00104 -- and I've verified this by
-> typing
-> > "g fff00104" at the U-Boot prompt which causes U-Boot to simply
-> restart.
-> > 
-> > I've changed the value in sbc82xx.h and now at the reboot, instead of
-> a
-> > register dump, it simply hangs.  Looking at m8260_gorom (in
-> kernel/head.S)
-> > it clears the MSR_EE (ext int. enable) bit in the MSR before jumping
-> --
-> > but I was wondering if there are other bits in MSR that need to be
-> > cleared; e.g. instruction relocation enable and data relocation enable
-> > (MSR_IR and MSR_DR). The register bits are on p76 of MPCFPE32B.pdf
-> from
-> > Freescale.
-> > 
-> > I guess if somebody even said "it works for me" then I'd have a better
-> > feeling thinking that what is done to the MSR currently is sufficient.
-> 
-> I don't have any problems using reboot() on 8248 based board. 
-> Kernel.org-based 2.4.29 tree.
-> 
-> I have U-Boot at 0xfe00'0000, and I use 0xfe00'0104 as a second 
-> parameter for m8260_gorom. Also make sure that first parameter is also 
-> correct:
-> 
-> 	m8260_gorom(__pa(__res), 0xfe000104);
-> 
-> -- 
-> Eugene
-> 
-> 
-
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+------=_NextPart_000_001E_01C54752.FBBC7710--
