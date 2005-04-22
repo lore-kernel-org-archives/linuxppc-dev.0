@@ -1,30 +1,23 @@
-Return-Path: <markc@mail.com>
-Received: from relay02.roc.ny.frontiernet.net (relay02.roc.ny.frontiernet.net
-	[66.133.182.165]) by ozlabs.org (Postfix) with ESMTP id 8708767A64
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from parcelfarce.linux.theplanet.co.uk
+	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3444467AC5
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 23 Apr 2005 06:21:48 +1000 (EST)
-Received: from filter09.roc.ny.frontiernet.net
-	(filter09.roc.ny.frontiernet.net [66.133.183.76])
-	by relay02.roc.ny.frontiernet.net (Postfix) with ESMTP id 256D03705DB
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Apr 2005 19:50:18 +0000 (UTC)
-Received: from relay02.roc.ny.frontiernet.net ([66.133.182.165])
-	by filter09.roc.ny.frontiernet.net (filter09.roc.ny.frontiernet.net
-	[66.133.183.76]) (amavisd-new, port 10024)
-	with LMTP id 18066-11-80 for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Apr 2005 19:50:18 +0000 (UTC)
-Received: from chuck2 (70-97-124-8.br1.rmn.wv.frontiernet.net [70.97.124.8])
-	by relay02.roc.ny.frontiernet.net (Postfix) with ESMTP id CA0A63703BF
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Apr 2005 19:50:16 +0000 (UTC)
-Message-ID: <002101c54774$83c85590$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Fri, 22 Apr 2005 15:50:18 -0400
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_001E_01C54752.FBBC7710"
-Subject: pthread debugging problem
+	Sat, 23 Apr 2005 06:41:35 +1000 (EST)
+Date: Fri, 22 Apr 2005 12:39:21 -0300
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Pantelis Antoniou <panto@intracom.gr>
+Message-ID: <20050422153921.GI12703@logos.cnet>
+References: <20050421183239.GJ6525@logos.cnet>
+	<20050421185027.GB12442@logos.cnet> <42689729.3030100@intracom.gr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <42689729.3030100@intracom.gr>
+Cc: 26-devel@cyclades.com, linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [26-devel] v2.6 performance slowdown on MPC8xx: Measuring TLB
+	cache misses
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,86 +28,93 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------=_NextPart_000_001E_01C54752.FBBC7710
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
 
-I am debugging a simple program with several threads, using pthreads.=20
-printf's tell me that the threading is working, but I am unable to debug
-the program with gdb (gdbserver on the target).  I get spurious
-'Program received signal SIG32, Real-time even 32' messages.
-I'm using a stock ELDK tree via NFS boot.  I couldn't tell you the ELDK
-version but I've listed some of the components below.
 
-I've found postings in the general linux community, but they don't seem
-to apply in this case.  I've compiled a late gdb (6.2), tried later =
-versions
-of all the libraries that seem relevant, to no avail.  Any ideas?  Or,
-equally valuable, is anybody debugging pthreads successfully on ppc,
-what is your setup?
+On Fri, Apr 22, 2005 at 09:18:17AM +0300, Pantelis Antoniou wrote:
+> Marcelo Tosatti wrote:
+> >On Thu, Apr 21, 2005 at 03:32:39PM -0300, Marcelo Tosatti wrote:
+> >
+> >>Capture session of /proc/tlbmiss with 1 second interval:
+> >
+> >
+> >Forgot to attach /proc/tlbmiss patch, here it is.
+> >
+> >
+> [snip]
+> 
+> >
+> > 
+> 
+> Thanks Marcelo.
+> 
+> I'll try to run this on my 870 board & mail the results.
 
-Thanks,
-Mark Chambers
+Hi, 
 
-versions:
-libc-2.2.1
-libpthread-0.9.so
-kernel - 2.4.19
-------=_NextPart_000_001E_01C54752.FBBC7710
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Here goes more data about the v2.6 performance slowdown on MPC8xx.
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Diso-8859-1">
-<META content=3D"MSHTML 6.00.2800.1498" name=3DGENERATOR>
-<STYLE></STYLE>
-</HEAD>
-<BODY bgColor=3D#ffffff>
-<DIV><FONT face=3DArial size=3D2>I am debugging a simple program with =
-several=20
-threads, using pthreads.&nbsp;</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>printf's tell me that the threading is =
-working, but=20
-I am unable to debug</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>the program with gdb (gdbserver on the=20
-target).&nbsp; I get spurious</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>'Program received signal SIG32, =
-Real-time even 32'=20
-messages.</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>I'm using a stock ELDK tree via NFS =
-boot.&nbsp; I=20
-couldn't tell you the ELDK</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>version but I've listed some of the =
-components=20
-below.</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>I've found postings in the general =
-linux community,=20
-but they don't seem</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>to apply in this case.&nbsp; I've =
-compiled a late=20
-gdb (6.2), tried later versions</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>of all the libraries that seem =
-relevant,&nbsp;to no=20
-avail.&nbsp; Any ideas?&nbsp; Or,</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>equally valuable, is anybody debugging =
-pthreads=20
-successfully on ppc,</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>what is your setup?</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>Thanks,</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>Mark Chambers</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>versions:</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>libc-2.2.1</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>libpthread-0.9.so</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>kernel - =
-2.4.19</FONT></DIV></BODY></HTML>
+Thanks Benjamin for the TLB miss counter idea! 
 
-------=_NextPart_000_001E_01C54752.FBBC7710--
+This are results of the following test script which zeroes the TLB counters,
+copies 16MB of data from memory to memory using "dd", and reads the counters
+again. 
+
+-- 
+
+#!/bin/bash
+echo 0 > /proc/tlbmiss
+time dd if=/dev/zero of=file bs=4k count=3840
+cat /proc/tlbmiss
+
+-- 
+
+The results:
+
+v2.6: 				v2.4: 				delta
+[root@CAS root]# sh script     	[root@CAS root]# sh script     
+real    0m4.241s                         real    0m3.440s
+user    0m0.140s                         user    0m0.090s
+sys     0m3.820s                         sys     0m3.330s
+
+I-TLB userspace misses: 142369  I-TLB userspace misses: 2179    ITLB u: 139190
+I-TLB kernel misses: 118288    	I-TLB kernel misses: 1369	ITLB k: 116319
+D-TLB userspace misses: 222916 	D-TLB userspace misses: 180249	DTLB u: 38667
+D-TLB kernel misses: 207773    	D-TLB kernel misses: 167236	DTLB k: 38273
+
+The sum of all TLB miss counter delta's between v2.4 and v2.6 is: 
+
+139190 + 116319 + 38667 + 38273  = 332449 
+
+Multiplied by 23 cycles, which is the average wait time to read a 
+page translation miss from memory:
+
+332449 * 23 = 7646327 cycles.
+
+Which is about 16% of 48000000, the total number of cycles this CPU 
+performs on one second. Its very likely that there is a significant
+indirect effect of this TLB miss increase, other than the wasted 
+cycles to bring the page tables from memory: exception execution time 
+and context switching.
+
+Checking "time" output, we can see 1s of slowdown:  
+
+[root@CAS root]# time dd if=/dev/zero of=file bs=4k count=3840 
+
+v2.4:				v2.6:				diff
+real    0m3.366s		real    0m4.360s		0.994s
+user    0m0.080s		user    0m0.111s	        0.31s
+sys     0m3.260s		sys     0m4.218s 		0.958s
+
+Mostly caused by increased kernel execution time.
+
+This proves that the slowdown is, in great part, due to increased 
+translation cache trashing. 
+
+Now, what is the best way to bring the performance back to v2.4 levels? 
+
+For this "dd" test, which is dominated by "sys_read/sys_write", I thought 
+of trying to bring the hotpath functions into the same pages, thus
+decreasing the number of page translations required for such tasks.
+
+Comments are appreciated.
