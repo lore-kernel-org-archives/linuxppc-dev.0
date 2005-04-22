@@ -1,24 +1,17 @@
-Return-Path: <panto@intracom.gr>
-Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
-	by ozlabs.org (Postfix) with ESMTP id BC44067A64
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15808.mail.cnb.yahoo.com (web15808.mail.cnb.yahoo.com
+	[202.165.102.88]) by ozlabs.org (Postfix) with SMTP id D1DFC67A70
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Apr 2005 16:31:53 +1000 (EST)
-Received: from mailserv.intranet.gr (localhost [127.0.0.1])
-	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id j3M6aCWQ027665
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Apr 2005 09:36:12 +0300 (EEST)
-Message-ID: <42689729.3030100@intracom.gr>
-Date: Fri, 22 Apr 2005 09:18:17 +0300
-From: Pantelis Antoniou <panto@intracom.gr>
+	Fri, 22 Apr 2005 16:49:46 +1000 (EST)
+Message-ID: <20050422064944.15401.qmail@web15808.mail.cnb.yahoo.com>
+Date: Fri, 22 Apr 2005 14:49:44 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: Atit_Shah <Atit_Shah@satyam.com>, Kishore Devireddy <kishorekrd@gmail.com>
+In-Reply-To: 6667
 MIME-Version: 1.0
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-References: <20050421183239.GJ6525@logos.cnet>
-	<20050421185027.GB12442@logos.cnet>
-In-Reply-To: <20050421185027.GB12442@logos.cnet>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: 26-devel@cyclades.com, linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [26-devel] v2.6 performance slowdown on MPC8xx: Measuring TLB
- cache misses
+Content-Type: text/plain; charset=gb2312
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: MPC8245 custom board, Linux 2.4 kernel hangs after uncompressing
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,24 +22,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Marcelo Tosatti wrote:
-> On Thu, Apr 21, 2005 at 03:32:39PM -0300, Marcelo Tosatti wrote:
-> 
->>Capture session of /proc/tlbmiss with 1 second interval:
-> 
-> 
-> Forgot to attach /proc/tlbmiss patch, here it is.
-> 
-> 
-[snip]
+Atit_Shah <Atit_Shah@satyam.com> wrote:
+> All I know is PSDMR is for 8260 and it pertains to
+> burst mode operation. I don’t know MCCR :)
 
-> 
->  
+OK, get it. Your experience is about 8260 not for 
+824x. 
 
-Thanks Marcelo.
+Thanks,
 
-I'll try to run this on my 870 board & mail the results.
+Sam
 
-Regards
-
-Pantelis
+_________________________________________________________
+Do You Yahoo!?
+150万曲MP3疯狂搜，带您闯入音乐殿堂
+http://music.yisou.com/
+美女明星应有尽有，搜遍美图、艳图和酷图
+http://image.yisou.com
+1G就是1000兆，雅虎电邮自助扩容！
+http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
