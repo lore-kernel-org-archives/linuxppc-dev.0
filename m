@@ -1,16 +1,23 @@
-Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15810.mail.cnb.yahoo.com (web15810.mail.cnb.yahoo.com
-	[202.165.102.90]) by ozlabs.org (Postfix) with SMTP id D987367A6B
+Return-Path: <clasu@luukku.com>
+Received: from pato.luukku.com (pato.luukku.com [194.215.205.55])
+	by ozlabs.org (Postfix) with ESMTP id 97D9F67A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 23 Apr 2005 22:16:47 +1000 (EST)
-Message-ID: <20050423121645.63553.qmail@web15810.mail.cnb.yahoo.com>
-Date: Sat, 23 Apr 2005 20:16:45 +0800 (CST)
-From: Sam Song <samlinuxppc@yahoo.com.cn>
-To: "Mark A. Greer" <mgreer@mvista.com>
+	Sun, 24 Apr 2005 01:28:00 +1000 (EST)
+Received: from localhost (mta2-o.i.luukku.com [10.0.1.122])
+	by mta2-o.i.luukku.com (Postfix) with ESMTP id 0548110806A
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 23 Apr 2005 18:07:20 +0300 (EEST)
+Received: from lippu (www5.i.luukku.com [10.0.1.35])
+	by mta2-g.i.luukku.com (Postfix) with ESMTP id EA3FB8800E
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 23 Apr 2005 18:07:19 +0300 (EEST)
+Message-ID: <1114268839955.clasu.41340._Jq1rpPPGxteNPNX4EzpwA@luukku.com>
+Date: Sat, 23 Apr 2005 18:07:19 +0300 (EEST)
+From: clasu@luukku.com
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: 824x sandpoint and 2.6.x
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: ioremap problem with kernel 2.6.11 on mpc8270
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,52 +28,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-"Mark A. Greer" <mgreer@mvista.com> wrote:
-> >had, is it possible to flush the content of 
-__log_buf
-> >after reset?
->
-> Sam,
-> 
-> I thought I finally noticed yesterday that you're
-> using 2.4. If that is
-> the case, you want to dump "log_buf" not
-> "__log_buf".
+Hi there,
 
-Uh, I copy the above note to this thread to
-continue:-)
+I'm porting kernel version 2.6.11 to a custom board with an MPC8270 control=
+ler.
+The kernel is booting and when it runs the init routine of a custom nand dr=
+iver it
+generates a machine check exception.
 
-The turth is that I ported denx 2.4.24 successfully on
-my board
- and try to port it to 2.6.x.  To my understanding,
-UART init was
-bad for some reason. It was auto configured as 16450
-rather than 
-16550A as 2.4.  Besides, ttyS0 iomem base address in
-2.6 is different
-to the one in 2.4 although they have the same serial
-address setting.
-I wander which kind of possiblity coud lead to this
-result or even better
-to point out some useful printk locations to me. 
+The call to ioremap(0x40000000, 0x2000000) returns an address of
+0xe1000000 and the exception is caused by an iowrite8() call to the address
+returned by ioremap(). The same happens if the memory address is read.
 
-If possible, could you pls show me a right 2.6 boot
-process of
- sandpoint X3/2? I wanna to find out some nice hints
-of it. This
-is the first time to me so hard to debug a kernel
-before normal 
-console. 
+In further investigations I have found out that the writes and reads are no=
+t
+mapped to the physical address 0x40000000. ioremap() returned 0xe1000000
+and that is also the physical address where the writes and reads are mapped=
+ to.
+(=3Dno mapping).
 
-Thanks a lot,
+The same driver (minor changes to struct names) works on the same board in
+a linux kernel 2.6.7-rc1. In this kernel ioremap returns the same address
+(0xe1000000) as in version 2.6.11 but all accesses are mapped to 0x40000000
+as they should be.
 
-Sam  
+I use the same board and same u-boot (1.1.2) to start both kernels.
 
-_________________________________________________________
-Do You Yahoo!?
-150ÕÚ«˙MP3∑ËøÒÀ—£¨¥¯ƒ˙¥≥»Î“Ù¿÷µÓÃ√
-http://music.yisou.com/
-√¿≈Æ√˜–«”¶”–æ°”–£¨À—±È√¿Õº°¢—ﬁÕº∫Õø·Õº
-http://image.yisou.com
-1GæÕ «1000’◊£¨—≈ª¢µÁ” ◊‘÷˙¿©»›£°
-http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
+It seems to me that the ioremap call fails somehow in 2.6.11 and that the p=
+age
+tables are not updated correctly.
+
+I have not been able to find out what causes this but it would make may day=
+ if
+someone could help me a bit.
+
+Best regards,
+
+-Claus-
+
+...................................................................
+Luukku Plus paketilla p=E4=E4set eroon tila- ja turvallisuusongelmista.
+Hanki Luukku Plus ja helpotat el=E4m=E4=E4si. http://www.mtv3.fi/luukku
