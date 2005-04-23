@@ -1,28 +1,18 @@
-Return-Path: <B.VanLaere@unpeu.com>
-Received: from outmx026.isp.belgacom.be (outmx026.isp.belgacom.be
-	[195.238.2.91]) by ozlabs.org (Postfix) with ESMTP id B114867A64
-	for <linuxppc-dev@ozlabs.org>; Sat, 23 Apr 2005 01:38:06 +1000 (EST)
-Received: from outmx026.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx026.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id j3MFc1PQ017614
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Apr 2005 17:38:01 +0200
-	(envelope-from <B.VanLaere@unpeu.com>)
-Received: from Autokrach.kot.unpeu.com (229-51.244.81.adsl.skynet.be
-	[81.244.51.229])
-	by outmx026.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id j3MFbx5V017568
-	for <linuxppc-dev@ozlabs.org>; Fri, 22 Apr 2005 17:38:00 +0200
-	(envelope-from <B.VanLaere@unpeu.com>)
-From: Van Laere Benjamin <B.VanLaere@unpeu.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-wVyFwDV4trqiD73QEtTs"
-Date: Fri, 22 Apr 2005 17:38:15 +0200
-Message-Id: <1114184295.4243.14.camel@Autokrach.kot.unpeu.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8CD4F67A67
+	for <linuxppc-dev@ozlabs.org>; Sat, 23 Apr 2005 13:52:02 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andrew Morton <akpm@osdl.org>
+Content-Type: text/plain
+Date: Sat, 23 Apr 2005 13:51:19 +1000
+Message-Id: <1114228279.5996.44.camel@gaston>
 Mime-Version: 1.0
-Subject: Pismo (powerbook) kernel .config file
-Reply-To: B.VanLaere@unpeu.com
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
+Subject: [PATCH] ppc32: Fix a sleep issues on some laptops
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,102 +22,259 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi !
 
---=-wVyFwDV4trqiD73QEtTs
-Content-Type: multipart/alternative; boundary="=-vOIHRVbDxrnTIjGcR6fY"
+Some earlier models of aluminium powerbooks and ibook G4s have a clock
+chip that requires some tweaking before and after sleep. It seems that
+without that magic incantation to disable and re-enable clock spreading,
+RAM isn't properly refreshed during sleep. This fixes it.
 
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
---=-vOIHRVbDxrnTIjGcR6fY
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-Hi everyone,
-
-    I don't know if it's the best place to post this request (just tell
-me if it's not), but I'm looking for a good working kernel .config file
-for my powerbook Pismo. I heared the 2.4.X are the last kernels
-supporting the vga port, is that true? If It is, then I'm looking for a
-2.4.X and a 2.6.X series .config file. If someone could post me (or tell
-where to find) those files, it would be really helpfull for me!
-
-    Thanks.
-
-
-
-                                   =20
-________________________________________________________________________
-                        Stop software patents!=20
-                                Gnu Tux
-                      Linux registerd user 326571=20
-                        GnuPG key ID 0x73A37869=20
-       Thanks to avoid sending me Word or PowerPoint attachments=20
-________________________________________________________________________
-
---=-vOIHRVbDxrnTIjGcR6fY
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 TRANSITIONAL//EN">
-<HTML>
-<HEAD>
-  <META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; CHARSET=3DUTF-8">
-  <META NAME=3D"GENERATOR" CONTENT=3D"GtkHTML/3.6.2">
-</HEAD>
-<BODY>
-Hi everyone,<BR>
-<BR>
-&nbsp;&nbsp;&nbsp; I don't know if it's the best place to post this request=
- (just tell me if it's not), but I'm looking for a good working kernel .con=
-fig file for my powerbook Pismo. I heared the 2.4.X are the last kernels su=
-pporting the vga port, is that true? If It is, then I'm looking for a 2.4.X=
- and a 2.6.X series .config file. If someone could post me (or tell where t=
-o find) those files, it would be really helpfull for me!<BR>
-<BR>
-&nbsp;&nbsp;&nbsp; Thanks.<BR>
-<BR>
-<BR>
-<TABLE CELLSPACING=3D"0" CELLPADDING=3D"0" WIDTH=3D"100%">
-<TR>
-<TD>
-<DIV ALIGN=3Dcenter></DIV><BR>
-<DIV ALIGN=3Dcenter>
-<HR SIZE=3D"1">
-</DIV><BR>
-<DIV ALIGN=3Dcenter><B><FONT SIZE=3D"4"><A HREF=3D"http://www.nosoftwarepat=
-ents.com/">Stop software patents!</A></FONT></B> </DIV><BR>
-<DIV ALIGN=3Dcenter><A HREF=3D"http://www.gnu.org"><IMG SRC=3D"http://www.g=
-nu.org/graphics/gnu-head-sm.jpg" ALIGN=3D"middle" ALT=3D"Gnu" BORDER=3D"0">=
-</A> <A HREF=3D"http://www.linux.org"><IMG SRC=3D"http://www.isc.tamu.edu/~=
-lewing/linux/sit3-shine.7.gif" WIDTH=3D"140" HEIGHT=3D"140" ALIGN=3D"middle=
-" ALT=3D"Tux" BORDER=3D"0"></A></DIV><BR>
-<DIV ALIGN=3Dcenter><A HREF=3D"http://counter.li.org">Linux registerd user =
-326571</A> </DIV><BR>
-<DIV ALIGN=3Dcenter><A HREF=3D"http://gnupg.org">GnuPG</A> <A HREF=3D"http:=
-//keyserver.veridis.com:11371/export?id=3D-7320026422647228311">key</A> <A =
-HREF=3D"http://keyserver.veridis.com:11371/search?q=3D0x73A37869">ID 0x73A3=
-7869</A> </DIV><BR>
-<DIV ALIGN=3Dcenter><A HREF=3D"http://www.gnu.org/philosophy/no-word-attach=
-ments.html">Thanks to avoid sending me Word or PowerPoint attachments</A>=20
-<HR SIZE=3D"1">
-</DIV>
-</TD>
-</TR>
-</TABLE>
-</BODY>
-</HTML>
-
---=-vOIHRVbDxrnTIjGcR6fY--
-
---=-wVyFwDV4trqiD73QEtTs
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.0 (GNU/Linux)
-
-iD8DBQBCaRpnmmoKwHOjeGkRAvn0AJ0WupFUAe08So1FXtRckRLTS+bFogCfaARv
-+vDZSZExgTdblVpHJN7bLUo=
-=UG3e
------END PGP SIGNATURE-----
-
---=-wVyFwDV4trqiD73QEtTs--
+Index: linux-work/arch/ppc/platforms/pmac_feature.c
+===================================================================
+--- linux-work.orig/arch/ppc/platforms/pmac_feature.c	2005-04-12 18:07:50.000000000 +1000
++++ linux-work/arch/ppc/platforms/pmac_feature.c	2005-04-22 17:07:30.000000000 +1000
+@@ -1590,6 +1590,112 @@
+ 	mdelay(10);
+ }
+ 
++
++static void __pmac pmac_tweak_clock_spreading(struct macio_chip* macio, int enable)
++{
++	/* Hack for doing clock spreading on some machines PowerBooks and
++	 * iBooks. This implements the "platform-do-clockspreading" OF
++	 * property as decoded manually on various models. For safety, we also
++	 * check the product ID in the device-tree in cases we'll whack the i2c
++	 * chip to make reasonably sure we won't set wrong values in there
++	 *
++	 * Of course, ultimately, we have to implement a real parser for
++	 * the platform-do-* stuff...
++	 */
++
++	if (macio->type == macio_intrepid) {
++		if (enable)
++			UN_OUT(UNI_N_CLOCK_SPREADING, 2);
++		else
++			UN_OUT(UNI_N_CLOCK_SPREADING, 0);
++		mdelay(40);
++	}
++
++	while (machine_is_compatible("PowerBook5,2") ||
++	       machine_is_compatible("PowerBook5,3") ||
++	       machine_is_compatible("PowerBook6,2") ||
++	       machine_is_compatible("PowerBook6,3")) {
++		struct device_node *ui2c = of_find_node_by_type(NULL, "i2c");
++		struct device_node *dt = of_find_node_by_name(NULL, "device-tree");
++		u8 buffer[9];
++		u32 *productID;
++		int i, rc, changed = 0;
++		
++		if (dt == NULL)
++			break;
++		productID = (u32 *)get_property(dt, "pid#", NULL);
++		if (productID == NULL)
++			break;
++		while(ui2c) {
++			struct device_node *p = of_get_parent(ui2c);
++			if (p && !strcmp(p->name, "uni-n"))
++				break;
++			ui2c = of_find_node_by_type(ui2c, "i2c");
++		}
++		if (ui2c == NULL)
++			break;
++		DBG("Trying to bump clock speed for PID: %08x...\n", *productID);
++		rc = pmac_low_i2c_open(ui2c, 1);
++		if (rc != 0)
++			break;
++		pmac_low_i2c_setmode(ui2c, pmac_low_i2c_mode_combined);
++		rc = pmac_low_i2c_xfer(ui2c, 0xd2 | pmac_low_i2c_read, 0x80, buffer, 9);
++		DBG("read result: %d,", rc);
++		if (rc != 0) {
++			pmac_low_i2c_close(ui2c);
++			break;
++		}
++		for (i=0; i<9; i++)
++			DBG(" %02x", buffer[i]);
++		DBG("\n");
++		
++		switch(*productID) {
++		case 0x1182:	/* AlBook 12" rev 2 */
++		case 0x1183:	/* iBook G4 12" */
++			buffer[0] = (buffer[0] & 0x8f) | 0x70;
++			buffer[2] = (buffer[2] & 0x7f) | 0x00;
++			buffer[5] = (buffer[5] & 0x80) | 0x31;
++			buffer[6] = (buffer[6] & 0x40) | 0xb0;
++			buffer[7] = (buffer[7] & 0x00) | (enable ? 0xc0 : 0xba);
++			buffer[8] = (buffer[8] & 0x00) | 0x30;
++			changed = 1;
++			break;
++		case 0x3142:	/* AlBook 15" (ATI M10) */
++		case 0x3143:	/* AlBook 17" (ATI M10) */
++			buffer[0] = (buffer[0] & 0xaf) | 0x50;
++			buffer[2] = (buffer[2] & 0x7f) | 0x00;
++			buffer[5] = (buffer[5] & 0x80) | 0x31;
++			buffer[6] = (buffer[6] & 0x40) | 0xb0;
++			buffer[7] = (buffer[7] & 0x00) | (enable ? 0xd0 : 0xc0);
++			buffer[8] = (buffer[8] & 0x00) | 0x30;
++			changed = 1;
++			break;
++		default:
++			DBG("i2c-hwclock: Machine model not handled\n");
++			break;
++		}
++		if (!changed) {
++			pmac_low_i2c_close(ui2c);
++			break;
++		}
++		pmac_low_i2c_setmode(ui2c, pmac_low_i2c_mode_stdsub);
++		rc = pmac_low_i2c_xfer(ui2c, 0xd2 | pmac_low_i2c_write, 0x80, buffer, 9);
++		DBG("write result: %d,", rc);
++		pmac_low_i2c_setmode(ui2c, pmac_low_i2c_mode_combined);
++		rc = pmac_low_i2c_xfer(ui2c, 0xd2 | pmac_low_i2c_read, 0x80, buffer, 9);
++		DBG("read result: %d,", rc);
++		if (rc != 0) {
++			pmac_low_i2c_close(ui2c);
++			break;
++		}
++		for (i=0; i<9; i++)
++			DBG(" %02x", buffer[i]);
++		pmac_low_i2c_close(ui2c);
++		break;
++	}
++}
++
++
+ static int __pmac
+ core99_sleep(void)
+ {
+@@ -1601,11 +1707,8 @@
+ 	    macio->type != macio_intrepid)
+ 		return -ENODEV;
+ 
+-	/* The device-tree contains that in the hwclock node */
+-	if (macio->type == macio_intrepid) {
+-		UN_OUT(UNI_N_CLOCK_SPREADING, 0);
+-		mdelay(40);
+-	}
++	/* Disable clock spreading */
++	pmac_tweak_clock_spreading(macio, 0);
+ 
+ 	/* We power off the wireless slot in case it was not done
+ 	 * by the driver. We don't power it on automatically however
+@@ -1749,11 +1852,8 @@
+ 	UN_OUT(UNI_N_CLOCK_CNTL, save_unin_clock_ctl);
+ 	udelay(100);
+ 
+-	/* Restore clock spreading */
+-	if (macio->type == macio_intrepid) {
+-		UN_OUT(UNI_N_CLOCK_SPREADING, 2);
+-		mdelay(40);
+-	}
++	/* Enable clock spreading */
++	pmac_tweak_clock_spreading(macio, 1);
+ 
+ 	return 0;
+ }
+@@ -2718,97 +2818,11 @@
+ 		MACIO_BIC(HEATHROW_FCR, HRW_SOUND_POWER_N);
+ 	}
+ 
+-	/* Hack for bumping clock speed on the new PowerBooks and the
+-	 * iBook G4. This implements the "platform-do-clockspreading" OF
+-	 * property. For safety, we also check the product ID in the
+-	 * device-tree to make reasonably sure we won't set wrong values
+-	 * in the clock chip.
+-	 *
+-	 * Of course, ultimately, we have to implement a real parser for
+-	 * the platform-do-* stuff...
++	/* Some machine models need the clock chip to be properly setup for
++	 * clock spreading now. This should be a platform function but we
++	 * don't do these at the moment
+ 	 */
+-	while (machine_is_compatible("PowerBook5,2") ||
+-	       machine_is_compatible("PowerBook5,3") ||
+-	       machine_is_compatible("PowerBook6,2") ||
+-	       machine_is_compatible("PowerBook6,3")) {
+-		struct device_node *ui2c = of_find_node_by_type(NULL, "i2c");
+-		struct device_node *dt = of_find_node_by_name(NULL, "device-tree");
+-		u8 buffer[9];
+-		u32 *productID;
+-		int i, rc, changed = 0;
+-		
+-		if (dt == NULL)
+-			break;
+-		productID = (u32 *)get_property(dt, "pid#", NULL);
+-		if (productID == NULL)
+-			break;
+-		while(ui2c) {
+-			struct device_node *p = of_get_parent(ui2c);
+-			if (p && !strcmp(p->name, "uni-n"))
+-				break;
+-			ui2c = of_find_node_by_type(ui2c, "i2c");
+-		}
+-		if (ui2c == NULL)
+-			break;
+-		DBG("Trying to bump clock speed for PID: %08x...\n", *productID);
+-		rc = pmac_low_i2c_open(ui2c, 1);
+-		if (rc != 0)
+-			break;
+-		pmac_low_i2c_setmode(ui2c, pmac_low_i2c_mode_combined);
+-		rc = pmac_low_i2c_xfer(ui2c, 0xd2 | pmac_low_i2c_read, 0x80, buffer, 9);
+-		DBG("read result: %d,", rc);
+-		if (rc != 0) {
+-			pmac_low_i2c_close(ui2c);
+-			break;
+-		}
+-		for (i=0; i<9; i++)
+-			DBG(" %02x", buffer[i]);
+-		DBG("\n");
+-		
+-		switch(*productID) {
+-		case 0x1182:	/* AlBook 12" rev 2 */
+-		case 0x1183:	/* iBook G4 12" */
+-			buffer[0] = (buffer[0] & 0x8f) | 0x70;
+-			buffer[2] = (buffer[2] & 0x7f) | 0x00;
+-			buffer[5] = (buffer[5] & 0x80) | 0x31;
+-			buffer[6] = (buffer[6] & 0x40) | 0xb0;
+-			buffer[7] = (buffer[7] & 0x00) | 0xc0;
+-			buffer[8] = (buffer[8] & 0x00) | 0x30;
+-			changed = 1;
+-			break;
+-		case 0x3142:	/* AlBook 15" (ATI M10) */
+-		case 0x3143:	/* AlBook 17" (ATI M10) */
+-			buffer[0] = (buffer[0] & 0xaf) | 0x50;
+-			buffer[2] = (buffer[2] & 0x7f) | 0x00;
+-			buffer[5] = (buffer[5] & 0x80) | 0x31;
+-			buffer[6] = (buffer[6] & 0x40) | 0xb0;
+-			buffer[7] = (buffer[7] & 0x00) | 0xd0;
+-			buffer[8] = (buffer[8] & 0x00) | 0x30;
+-			changed = 1;
+-			break;
+-		default:
+-			DBG("i2c-hwclock: Machine model not handled\n");
+-			break;
+-		}
+-		if (!changed) {
+-			pmac_low_i2c_close(ui2c);
+-			break;
+-		}
+-		pmac_low_i2c_setmode(ui2c, pmac_low_i2c_mode_stdsub);
+-		rc = pmac_low_i2c_xfer(ui2c, 0xd2 | pmac_low_i2c_write, 0x80, buffer, 9);
+-		DBG("write result: %d,", rc);
+-		pmac_low_i2c_setmode(ui2c, pmac_low_i2c_mode_combined);
+-		rc = pmac_low_i2c_xfer(ui2c, 0xd2 | pmac_low_i2c_read, 0x80, buffer, 9);
+-		DBG("read result: %d,", rc);
+-		if (rc != 0) {
+-			pmac_low_i2c_close(ui2c);
+-			break;
+-		}
+-		for (i=0; i<9; i++)
+-			DBG(" %02x", buffer[i]);
+-		pmac_low_i2c_close(ui2c);
+-		break;
+-	}
++	pmac_tweak_clock_spreading(&macio_chips[0], 1);
+ 
+ #endif /* CONFIG_POWER4 */
+ 
