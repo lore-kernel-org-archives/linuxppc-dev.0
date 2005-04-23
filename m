@@ -1,22 +1,23 @@
-Return-Path: <Joakim.Tjernlund@lumentis.se>
-Received: from dmz.lumentis.net (unknown [212.105.56.244])
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 43F8F67A6C
+	by ozlabs.org (Postfix) with ESMTP id 8D04467B15
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 24 Apr 2005 07:32:10 +1000 (EST)
-From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
-To: "Marcelo Tosatti" <marcelo.tosatti@cyclades.com>
-Date: Sat, 23 Apr 2005 23:31:54 +0200
-Message-ID: <BCEFJBPJCGFCNMMMIDBHKEIICLAA.Joakim.Tjernlund@lumentis.se>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+	Sun, 24 Apr 2005 07:32:41 +1000 (EST)
 In-Reply-To: <20050423124245.GJ12703@logos.cnet>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: [26-devel] v2.6 performance slowdown on MPC8xx: Measuring TLB
+References: <BCEFJBPJCGFCNMMMIDBHMEIHCLAA.Joakim.Tjernlund@lumentis.se>
+	<20050423124245.GJ12703@logos.cnet>
+Mime-Version: 1.0 (Apple Message framework v622)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <31d4fa0af2a0d11f029d675ae5bd331c@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Sat, 23 Apr 2005 17:32:27 -0400
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Cc: Joakim Tjernlund <Joakim.Tjernlund@lumentis.se>,
+	linuxppc-embedded@ozlabs.org
+Subject: Re: [26-devel] v2.6 performance slowdown on MPC8xx: Measuring TLB
 	cache misses
-Reply-To: Joakim.Tjernlund@lumentis.se
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,23 +28,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> Hi Joakim,
-> 
-> On Sat, Apr 23, 2005 at 07:23:51PM +0200, Joakim Tjernlund wrote:
-> > > Now, what is the best way to bring the performance back to v2.4 levels? 
-> > > 
-> > > For this "dd" test, which is dominated by "sys_read/sys_write", I thought 
-> > > of trying to bring the hotpath functions into the same pages, thus
-> > > decreasing the number of page translations required for such tasks.
-> > > 
-> > > Comments are appreciated
-> > 
-> > Does CONFIG_PIN_TLB make a difference?
-> 
-> No it does not. 
 
-hmm, strange. I would expect the kernel ITLB Misses to be zero and the kernel DTLB
-Misses be a lot smaller. Have any numbers handy?
+On Apr 23, 2005, at 8:42 AM, Marcelo Tosatti wrote:
+
+>> Does CONFIG_PIN_TLB make a difference?
+>
+> No it does not.
+
+For some reason this option and code didn't make it from
+2.4 to 2.6.  It should have some effect on small memory (16Mbyte)
+systems with processor that have more than 16 TLB entries.
 
 
- Jocke 
+	-- Dan
