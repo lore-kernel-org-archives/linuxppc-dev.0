@@ -1,21 +1,23 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2D18D67A6C
+Return-Path: <tnt@246tNt.com>
+Received: from outmx010.isp.belgacom.be (outmx010.isp.belgacom.be
+	[195.238.3.233]) by ozlabs.org (Postfix) with ESMTP id DE60367AC6
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 24 Apr 2005 10:00:52 +1000 (EST)
-In-Reply-To: <BCEFJBPJCGFCNMMMIDBHKEILCLAA.Joakim.Tjernlund@lumentis.se>
-References: <BCEFJBPJCGFCNMMMIDBHKEILCLAA.Joakim.Tjernlund@lumentis.se>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <72ea00c21943f86d32f1a46a62ebc367@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Sat, 23 Apr 2005 20:00:39 -0400
-To: <Joakim.Tjernlund@lumentis.se>
+	Mon, 25 Apr 2005 04:12:19 +1000 (EST)
+Received: from outmx010.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx010.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
+	ESMTP id j3OIC7lE029519
+	for <linuxppc-embedded@ozlabs.org>; Sun, 24 Apr 2005 20:12:07 +0200
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <426BE189.4070502@246tNt.com>
+Date: Sun, 24 Apr 2005 20:12:25 +0200
+From: Sylvain Munaut <tnt@246tNt.com>
+MIME-Version: 1.0
+To: Grant Likely <glikely@gmail.com>
+References: <528646bc050422101815562d6c@mail.gmail.com>
+In-Reply-To: <528646bc050422101815562d6c@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [26-devel] v2.6 performance slowdown on MPC8xx: Measuring TLB
-	cache misses
+Subject: Re: Status of linux-2.5-mpc52xx tree
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,15 +28,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-On Apr 23, 2005, at 7:51 PM, Joakim Tjernlund wrote:
-
-> hmm, I have more than 24MB of memory and I can run CONFIG_PIN_TLB just
-> fine with modules off in kernel 2.4. Havn't tried 2.6 yet.
-
-Doh.  Oh, I see.  We only do the optimization for the instruction 
-misses.
-I'll have to take a closer look at Marcelo's 2.6 tests.
+Grant Likely wrote:
+> Sylvain, I'm wondering what the status is of the linux-2.5-mpc52xx
+> tree that you're maintaining.  Specifically, what patches have not yet
+> been merged into Linus' tree?  Also, with the whole BK debacle, have
+> you given any thought to what you are going to transition to?
 
 
-	-- Dan
+Globally I'm not using BK anymore (and don't want to agree with the new 
+license that would forbid me anywork on something close to a SCM) so the 
+BK tree will be shut down very soon.
+
+As a replacement that will just be patches for the moment, ... I'm 
+constructing the set right now. I've received many patches and 
+testing/reviewing all of then is taking me more time than I thought. 
+Also testing different SCM is time consuming too ...
+
+Globally for now the whole BK thing has considerably slowed my work 
+(lots of time to find something else ...). Anyway, when the patches are 
+ready and working here, I'll post the link to this list.
+
+
+
+	Sylvain
