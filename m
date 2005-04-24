@@ -1,21 +1,18 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from parcelfarce.linux.theplanet.co.uk
-	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2455A67B2F
+Return-Path: <wd@denx.de>
+Received: from mailout07.sul.t-online.com (mailout07.sul.t-online.com
+	[194.25.134.83]) by ozlabs.org (Postfix) with ESMTP id 9DB4B67B25
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 25 Apr 2005 08:34:10 +1000 (EST)
-Date: Sun, 24 Apr 2005 14:25:18 -0300
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Wolfgang Denk <wd@denx.de>
-Message-ID: <20050424172518.GB22786@logos.cnet>
-References: <20050421183239.GJ6525@logos.cnet>
-	<20050424205945.372F7C1510@atlas.denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050424205945.372F7C1510@atlas.denx.de>
-Cc: 26-devel@cyclades.com, linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+	Mon, 25 Apr 2005 08:51:41 +1000 (EST)
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sun, 24 Apr 2005 14:25:18 -0300."
+	<20050424172518.GB22786@logos.cnet>
+Date: Mon, 25 Apr 2005 00:51:19 +0200
+Sender: wd@denx.de
+Message-Id: <20050424225124.E7314C1510@atlas.denx.de>
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
 Subject: Re: v2.6 performance slowdown on MPC8xx: Measuring TLB cache misses
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,62 +24,76 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sun, Apr 24, 2005 at 10:59:40PM +0200, Wolfgang Denk wrote:
-> Dear Marcelo,
+Dear Marcelo,
 
-Hi Wolfgang! 
-
-> thanks for starting this discussion, and for providing a patch for 8xx. 
-
-Thanks so much for spending the time to do this, some very interesting
-results inside..
-
-> However, I think we should not only look at the TLB handling problems
-> on the 8xx processors. This is probably just a part of  the  problem.
-> In  general  the 2.6 performance on (small) embedded systems is much,
-> much worse than what we see with a 2.4 kernel. 
+in message <20050424172518.GB22786@logos.cnet> you wrote:
 > 
-> I put some results (2.4.25 vs. 2.6.11.7 on a MPC860 and on a MPC8240)
-> at http://www.denx.de/twiki/bin/view/Know/Linux24vs26
-> 
-> Here is the summary:
-> 
-> Using the 2.6 kernel on embedded  systems  implicates  the  following
-> disadvantages:
-> * Slow to build: 2.6 takes 30...40% longer to compile
-> * Big memory footprint in flash: the 2.6 compressed kernel image is
->   30...40% bigger 
->
-> * Big memory footprint in RAM: the 2.6 kernel needs 30...40% more
->   RAM; the available RAM size for applications is 700kB smaller
+> Others have mentioned, and I agree, that sysfs is likely to be the major 
+> cause for boot-time slowdown. Have you tried disabling sysfs? 
 
-I've shrank the v2.6 kernel build to a size significantly smaller than our 
-v2.4 build, and performance did not increase at all. 
+No, not yet.
 
->From that, I could figure that the performance problem, in this case, 
-was not related to decreased available free memory. From then on I started
-going the TLB direction.
+> Question: Such huge regressions are seen on MPC8xx only, MPC82xx slowdown 
+> is not so bad, correct? 
 
-But yes, in general, v2.6 image is bigger and memory consumption is higher 
-than v2.4. 
+No. You can find both the LMBENCH summar and the raw data at
+http://www.denx.de/twiki/pub/Know/Linux24vs26/lmbench_results resp.
+http://www.denx.de/twiki/pub/Know/Linux24vs26/lmbench_results_raw.tar.gz
 
-One important project in this area is linux-tiny, which allows one to 
-disable unwanted features.
+In most cases the MPC8240 is as bad as the  MPC860;  just  for  local
+communication   bandwidth  there  is  a  visible  dependency  on  the
+processor: pipes are faster on 8240 but much slower (49%) on the 860,
+but the UNIX sockets are 11% slower on 8240 while we  get  about  the
+same speed as with 2.4 on the 860, etc.
 
-> * Slow to boot: 2.6 takes 5...15% longer to boot into multi-user mode
+Here is the context switching part:
 
-Others have mentioned, and I agree, that sysfs is likely to be the major 
-cause for boot-time slowdown. Have you tried disabling sysfs? 
+Context switching - times in microseconds - smaller is better
+-------------------------------------------------------------------------
+Host                 OS  2p/0K 2p/16K 2p/64K 8p/16K 8p/64K 16p/16K 16p/64K
+                         ctxsw  ctxsw  ctxsw ctxsw  ctxsw   ctxsw   ctxsw
+--------- ------------- ------ ------ ------ ------ ------ ------- -------
+sp8240     Linux 2.4.25         200.4   69.0  217.1   78.1   219.9    78.5
+sp8240     Linux 2.4.25         207.5   63.4  229.9   93.7   230.8    81.1
+sp8240     Linux 2.4.25         207.4   72.4  230.6   89.5   233.9    86.3
+sp8240    Linux 2.6.11. 8.9400  254.1  143.0  261.3  161.3   259.4   160.6
+sp8240    Linux 2.6.11. 8.5100  234.4  127.4  256.4  161.4   251.3   149.0
+sp8240    Linux 2.6.11. 8.5400  211.8  128.0  240.2  157.7   243.7   153.9
+tqm8xx     Linux 2.4.25   29.4   64.7          78.4           81.6        
+tqm8xx     Linux 2.4.25   32.9   56.5          75.8           80.0        
+tqm8xx     Linux 2.4.25   29.9   66.7          76.6           80.8        
+tqm8xx    Linux 2.6.11.   44.7   90.3         132.1          131.3        
+tqm8xx    Linux 2.6.11.   48.8  117.1         132.7          136.6        
+tqm8xx    Linux 2.6.11.   47.6   90.7         126.7          133.1        
 
-> * Slow to run: context switches up to 96% slower, local communication
->   latencies up to 80% slower, file system latencies up to 76% slower,
->   local communication bandwidth less than 50% in some cases. 
+and the local comm latencies:
 
-I've noticed the v2.6 scheduler context switching _more_ than v2.4...
+*Local* Communication latencies in microseconds - smaller is better
+---------------------------------------------------------------------
+Host                 OS 2p/0K  Pipe AF     UDP  RPC/   TCP  RPC/ TCP
+                        ctxsw       UNIX         UDP         TCP conn
+--------- ------------- ----- ----- ---- ----- ----- ----- ----- ----
+sp8240     Linux 2.4.25        46.5 120. 522.5 1362. 842.1 1817. 2828
+sp8240     Linux 2.4.25        47.1 135. 504.6 1330. 880.2 1838. 2774
+sp8240     Linux 2.4.25        47.1 134. 535.2 1369. 855.4 1810. 2929
+sp8240    Linux 2.6.11. 8.940  89.4 251. 683.0 1506. 1020. 2021. 3507
+sp8240    Linux 2.6.11. 8.510  89.5 251. 701.7 1500. 1075. 2032. 3492
+sp8240    Linux 2.6.11. 8.540  88.2 263. 703.1 1550. 1110. 2076. 3588
+tqm8xx     Linux 2.4.25  29.4 145.3 309. 682.3 1427. 1000. 1896. 2992
+tqm8xx     Linux 2.4.25  32.9 144.3 338. 675.9 1434. 1002. 1933. 2990
+tqm8xx     Linux 2.4.25  29.9 150.5 352. 679.4 1429. 1006. 1931. 2983
+tqm8xx    Linux 2.6.11.  44.7 238.8 522. 940.4 1629. 1265. 2125. 3792
+tqm8xx    Linux 2.6.11.  48.8 255.2 531.             1255.       3750
+tqm8xx    Linux 2.6.11.  47.6 258.6 550.             1252.       3783
 
-Question: Such huge regressions are seen on MPC8xx only, MPC82xx slowdown 
-is not so bad, correct? 
+Actually the 8240 is worse than the 860 in some of the tests...
 
-> It's a disappointing result, indeed.
+Best regards,
 
-Yes we are in bad shape :( 
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Man did not weave the web of life; he  is  merely  a  strand  in  it.
+Whatever he does to the web, he does to himself.     - Seattle [1854]
