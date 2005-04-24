@@ -1,19 +1,23 @@
-Return-Path: <wd@denx.de>
-Received: from mailout04.sul.t-online.com (mailout04.sul.t-online.com
-	[194.25.134.18]) by ozlabs.org (Postfix) with ESMTP id 779B467B18
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from parcelfarce.linux.theplanet.co.uk
+	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3968E67B2A
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 25 Apr 2005 07:00:12 +1000 (EST)
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 21 Apr 2005 15:32:39 -0300."
-	<20050421183239.GJ6525@logos.cnet>
-Date: Sun, 24 Apr 2005 22:59:40 +0200
-Sender: wd@denx.de
-Message-Id: <20050424205945.372F7C1510@atlas.denx.de>
-Cc: 26-devel@cyclades.com, linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: v2.6 performance slowdown on MPC8xx: Measuring TLB cache misses
+	Mon, 25 Apr 2005 08:04:18 +1000 (EST)
+Date: Sun, 24 Apr 2005 13:55:20 -0300
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Dan Malek <dan@embeddededge.com>
+Message-ID: <20050424165520.GA22786@logos.cnet>
+References: <BCEFJBPJCGFCNMMMIDBHKEILCLAA.Joakim.Tjernlund@lumentis.se>
+	<72ea00c21943f86d32f1a46a62ebc367@embeddededge.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <72ea00c21943f86d32f1a46a62ebc367@embeddededge.com>
+Cc: Joakim.Tjernlund@lumentis.se, linuxppc-embedded@ozlabs.org
+Subject: Re: [26-devel] v2.6 performance slowdown on MPC8xx: Measuring TLB
+	cache misses
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,39 +28,63 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Marcelo,
 
-thanks for starting this discussion, and for providing a patch for 8xx.
+Hi Dan, Joakim,
 
-However, I think we should not only look at the TLB handling problems
-on the 8xx processors. This is probably just a part of  the  problem.
-In  general  the 2.6 performance on (small) embedded systems is much,
-much worse than what we see with a 2.4 kernel.
+On Sat, Apr 23, 2005 at 08:00:39PM -0400, Dan Malek wrote:
+> 
+> On Apr 23, 2005, at 7:51 PM, Joakim Tjernlund wrote:
+> 
+> >hmm, I have more than 24MB of memory and I can run CONFIG_PIN_TLB just
+> >fine with modules off in kernel 2.4. Havn't tried 2.6 yet.
+> 
+> Doh.  Oh, I see.  We only do the optimization for the instruction 
+> misses.
+> I'll have to take a closer look at Marcelo's 2.6 tests.
 
-I put some results (2.4.25 vs. 2.6.11.7 on a MPC860 and on a MPC8240)
-at http://www.denx.de/twiki/bin/view/Know/Linux24vs26
+The PIN TLB entry option does not make much difference in my tests, 
+never did.
 
-Here is the summary:
+Who wrote the code? Are there results which indicate a performance gain
+from TLB pinning on 8xx? If so, where are such results? 
 
-Using the 2.6 kernel on embedded  systems  implicates  the  following
-disadvantages:
-* Slow to build: 2.6 takes 30...40% longer to compile
-* Big memory footprint in flash: the 2.6 compressed kernel image is
-  30...40% bigger
-* Big memory footprint in RAM: the 2.6 kernel needs 30...40% more
-  RAM; the available RAM size for applications is 700kB smaller
-* Slow to boot: 2.6 takes 5...15% longer to boot into multi-user mode
-* Slow to run: context switches up to 96% slower, local communication
-  latencies up to 80% slower, file system latencies up to 76% slower,
-  local communication bandwidth less than 50% in some cases.
+One problem that I've noted is that initial_mmu sets {I,D}TLB index
+to be 27 (11100). 
 
-It's a disappointing result, indeed.
+MI_RSV4I protects TLB's 27...31.
 
-Best regards,
+Given that both {I,D}TLB INDEX's are _decreased_ on each update, it seems
+to me that initial_mmu should set {I,D}TLB INDEX to 31, which will then 
+decrease down to 27 after 4 TLB's are created.  
 
-Wolfgang Denk
+Another question that comes to mind is why initial_mmu does create 
+additional 8Meg TLB entries for D-cache but not for I-cache: 
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Another megabytes the dust.
+#ifdef CONFIG_PIN_TLB
+        /* Map two more 8M kernel data pages.
+        */
+	...
+#endif
+
+I'll do some more CONFIG_PIN_TLB tests this week...
+
+--- head_8xx.S.orig2	2005-04-24 17:55:59.000000000 -0300
++++ head_8xx.S	2005-04-24 17:57:44.000000000 -0300
+@@ -697,7 +697,7 @@
+ 	tlbia			/* Invalidate all TLB entries */
+ #ifdef CONFIG_PIN_TLB
+ 	lis	r8, MI_RSV4I@h
+-	ori	r8, r8, 0x1c00
++	ori	r8, r8, 0x1f00
+ #else
+ 	li	r8, 0
+ #endif
+@@ -705,7 +705,7 @@
+ 
+ #ifdef CONFIG_PIN_TLB
+ 	lis	r10, (MD_RSV4I | MD_RESETVAL)@h
+-	ori	r10, r10, 0x1c00
++	ori	r10, r10, 0x1f00
+ 	mr	r8, r10
+ #else
+ 	lis	r10, MD_RESETVAL@h
