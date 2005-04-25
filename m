@@ -1,18 +1,18 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao08.cox.net (fed1rmmtao08.cox.net [68.230.241.31])
-	by ozlabs.org (Postfix) with ESMTP id 8AB5167B1B
+Return-Path: <ejohnson@acdstar.com>
+Received: from mail.acdstar.com (mail.acdstar.com [209.98.244.9])
+	by ozlabs.org (Postfix) with ESMTP id 8398367A6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Apr 2005 00:50:41 +1000 (EST)
-Date: Mon, 25 Apr 2005 07:50:29 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-Message-ID: <20050425145029.GD3112@smtp.west.cox.net>
-References: <20050413195713.GF11131@logos.cnet>
+	Tue, 26 Apr 2005 05:22:49 +1000 (EST)
+Received: from zaphod.acdstar.com (zaphod.int.acdstar.com [192.168.2.100])
+	by mail.acdstar.com (8.13.0/8.13.0) with ESMTP id j3PJQZax002086
+	for <linuxppc-embedded@ozlabs.org>; Mon, 25 Apr 2005 14:26:35 -0500
+Message-Id: <6.2.1.2.1.20050425130606.030aa288@mail.int.acdstar.com>
+Date: Mon, 25 Apr 2005 14:22:56 -0500
+To: linuxppc-embedded@ozlabs.org
+From: "Eric N. Johnson (ACD)" <ejohnson@acdstar.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050413195713.GF11131@logos.cnet>
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [RFC] attempt to remove misc-embedded.c
+Content-Type: text/plain; charset="us-ascii"; format=flowed
+Subject: New MPC5200 Eratta/ATA Bugs
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,26 +23,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 13, 2005 at 04:57:13PM -0300, Marcelo Tosatti wrote:
+Freescale just realeased a new version of the eratta (hardware bugs) 
+document for the MPC5200.  It was posted last week, and adds some pretty 
+significant problems to the FEC Ethernet and IDE/ATA sections.
 
-> 
-> Hi Tom,
-> 
-> This is an attempt to move remove misc-embedded.c by moving its quirks to
-> misc.c. 
-> 
-> It needs further fixing and cleaning, for sure. 
+Specifically, I'm wonder if Eratta ID 485 may be the cause of some of the 
+IDE issues we've been attributing to Bestcomm:
 
-I like the idea of deleting misc-embedded.c, but I don't think we should
-haven't make many changes to misc.c (except perhaps abstracting away a
-few more hunks of it) as I _think_ most of the cpu-specific stuff can be
-moved around now to the misc-board.c files.
+  "During the concurrent access of ATA DMA READ and PCI or LPC the
+   ATA_ISOLATION signal can be incorrectly driven when ATA is paused."
 
-> Are there any major disagreements about the change? 
-> Might need to define a bd_t structure for all ppc's? 
+Unfortunately, their proposed workaround isn't appropriate for many 
+cases.  They suggest that you not use "ATA_ISOLATION" and connect the ATA 
+device directly to the LP bus without any buffering.  This could lead to 
+serious bus integrity issues, especially if the ATA device is connected by 
+a ribbon cable.
 
-That's something to be left for the flat OF tree thread. :)
-
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+Eric
+------------------------------------
+Eric Johnson, Electrical Engineer
+Advanced Communication Design
+   7901 12th Avenue South
+   Bloomington, MN 55425
+Ph: 952-854-4000  Fax: 952-854-5774
