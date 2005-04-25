@@ -1,22 +1,20 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao02.cox.net (fed1rmmtao02.cox.net [68.230.241.37])
-	by ozlabs.org (Postfix) with ESMTP id 7F55067AC5
+Return-Path: <stuart.yoder@conformative.com>
+Received: from relay3.mail.twtelecom.net (relay3.mail.twtelecom.net
+	[216.136.95.10]) by ozlabs.org (Postfix) with ESMTP id 40A9267A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Apr 2005 06:26:53 +1000 (EST)
-Date: Mon, 25 Apr 2005 13:26:41 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-Message-ID: <20050425202641.GD19245@smtp.west.cox.net>
-References: <20050413195713.GF11131@logos.cnet>
-	<20050425145029.GD3112@smtp.west.cox.net>
-	<20050425143619.GF25420@logos.cnet>
-	<20050425195519.GA2970@gate.ebshome.net>
-	<20050425145916.GA25998@logos.cnet>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050425145916.GA25998@logos.cnet>
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [RFC] attempt to remove misc-embedded.c
+	Tue, 26 Apr 2005 07:27:49 +1000 (EST)
+Received: from Spaceballs (66-194-80-47.gen.twtelecom.net [66.194.80.47])
+	by relay3.mail.twtelecom.net (Postfix) with ESMTP id 8EFB24AC3
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 25 Apr 2005 16:10:37 -0500 (CDT)
+From: "Stuart Yoder" <stuart.yoder@conformative.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Mon, 25 Apr 2005 16:10:28 -0500
+Message-ID: <052201c549db$37e8b430$2f010a0a@foundation.com>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0523_01C549B1.4F12AC30"
+Subject: PowerPC + SMP
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,36 +25,65 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 25, 2005 at 11:59:17AM -0300, Marcelo Tosatti wrote:
-> On Mon, Apr 25, 2005 at 12:55:20PM -0700, Eugene Surovegin wrote:
-> > On Mon, Apr 25, 2005 at 11:36:19AM -0300, Marcelo Tosatti wrote:
-> > > So the plan is to move all cpu specific code in decompress_kernel() to cpu specific code :)
-> > > 
-> > > Including
-> > > 
-> > > #ifdef CONFIG_44x
-> > >         /* Reset MAL */
-> > >         mtdcr(DCRN_MALCR(DCRN_MAL_BASE), MALCR_MMSR);
-> > >         /* Wait for reset */
-> > >         while (mfdcr(DCRN_MALCR(DCRN_MAL_BASE)) & MALCR_MMSR) {};
-> > >         /* Reset EMAC */
-> > >         *(volatile unsigned long *)PPC44x_EMAC0_MR0 = 0x20000000;
-> > >         __asm__ __volatile__("eieio");
-> > > #endif
-> > 
-> > Hmm, strange, 2.4 has this code already moved to misc-44x.c, I wonder 
-> > why this change never made it to 2.6.
-> > 
-> > Marcelo, I assume you are going to make this look like 2.4, right?
-> 
-> Sure, that looks better. 
-> 
-> Ok, so we can just make something minimal as misc-4xx, for 8xx, and 
-> have everything which can be outside decompress_kernel() there.
+This is a multi-part message in MIME format.
 
-Yes, I think we're starting to understand eachother, as that sounds like
-what I was talking about.
+------=_NextPart_000_0523_01C549B1.4F12AC30
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+Hi.
+ 
+I am trying to figure out where in the PowerPC kernel the HID1 register
+is updated to enable bits dealing with cache coherency in an SMP system.
+Grepping through the arch/ppc source does not reveal much.
+ 
+I have two 7447A processors and somewhere the ABE and SYNCBE bits in
+HID1 need to be turned on to enable cache coherency.   Is supposed to
+happen in the bootloader prior to the kernel running??
+ 
+Thanks,
+Stuart Yoder
+
+------=_NextPart_000_0523_01C549B1.4F12AC30
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<TITLE>Message</TITLE>
+
+<META content=3D"MSHTML 6.00.2800.1400" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><SPAN class=3D754450621-25042005><FONT face=3DArial=20
+size=3D2>Hi.</FONT></SPAN></DIV>
+<DIV><SPAN class=3D754450621-25042005><FONT face=3DArial=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV><SPAN class=3D754450621-25042005><FONT face=3DArial size=3D2>I am =
+trying to=20
+figure out where in the PowerPC kernel the HID1 register is updated to =
+enable=20
+bits dealing with cache coherency in an SMP system.&nbsp;&nbsp; Grepping =
+through=20
+the arch/ppc source does not reveal much.</FONT></SPAN></DIV>
+<DIV><SPAN class=3D754450621-25042005><FONT face=3DArial=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV><SPAN class=3D754450621-25042005><FONT face=3DArial size=3D2>I =
+have&nbsp;two=20
+7447A processors and somewhere the ABE and SYNCBE bits in HID1&nbsp;need =
+to be=20
+turned on to enable cache coherency.&nbsp;&nbsp; Is supposed to happen =
+in the=20
+bootloader prior to the kernel running??</FONT></SPAN></DIV>
+<DIV><SPAN class=3D754450621-25042005><FONT face=3DArial=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV><SPAN class=3D754450621-25042005><FONT face=3DArial=20
+size=3D2>Thanks,</FONT></SPAN></DIV>
+<DIV><SPAN class=3D754450621-25042005><FONT face=3DArial size=3D2>Stuart =
+
+Yoder</FONT></SPAN></DIV></BODY></HTML>
+
+------=_NextPart_000_0523_01C549B1.4F12AC30--
