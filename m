@@ -3,14 +3,14 @@ Received: from parcelfarce.linux.theplanet.co.uk
 	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4EC6067B3B
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Apr 2005 16:04:29 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 966B767B2F
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Apr 2005 16:04:35 +1000 (EST)
 To: torvalds@osdl.org
-Message-Id: <E1DPwhr-0007S7-2P@parcelfarce.linux.theplanet.co.uk>
+Message-Id: <E1DPwi1-0007Sd-5F@parcelfarce.linux.theplanet.co.uk>
 From: Al Viro <viro@www.linux.org.uk>
-Date: Mon, 25 Apr 2005 07:04:31 +0100
+Date: Mon, 25 Apr 2005 07:04:41 +0100
 Cc: linuxppc-dev@ozlabs.org
-Subject: [PATCH] ppc user annotations: debug_setconetext(2)
+Subject: [PATCH] ppc sparse annotations: emulate_string_inst()
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,18 +20,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-	3rd argument of sys_debug_setcontext() is also a userland pointer.
+	replaced declaration of EA from u32 to unsigned long - this beast
+is used only to cast it to (userland) pointer and proper integer type for
+that is unsigned long.
 Signed-off-by: Al Viro <viro@parcelfarce.linux.theplanet.co.uk>
 ----
-diff -urN RC12-rc3-ppc-i2c/arch/ppc/kernel/signal.c RC12-rc3-ppc-signal/arch/ppc/kernel/signal.c
---- RC12-rc3-ppc-i2c/arch/ppc/kernel/signal.c	Mon Apr 25 00:40:03 2005
-+++ RC12-rc3-ppc-signal/arch/ppc/kernel/signal.c	Mon Apr 25 00:40:09 2005
-@@ -511,7 +511,7 @@
- }
+diff -urN RC12-rc3-mveth/arch/ppc/kernel/traps.c RC12-rc3-ppc-traps/arch/ppc/kernel/traps.c
+--- RC12-rc3-mveth/arch/ppc/kernel/traps.c	Wed Apr 20 21:25:28 2005
++++ RC12-rc3-ppc-traps/arch/ppc/kernel/traps.c	Mon Apr 25 01:36:38 2005
+@@ -403,7 +403,7 @@
+ 	u8 rA = (instword >> 16) & 0x1f;
+ 	u8 NB_RB = (instword >> 11) & 0x1f;
+ 	u32 num_bytes;
+-	u32 EA;
++	unsigned long EA;
+ 	int pos = 0;
  
- int sys_debug_setcontext(struct ucontext __user *ctx,
--			 int ndbg, struct sig_dbg_op *dbg,
-+			 int ndbg, struct sig_dbg_op __user *dbg,
- 			 int r6, int r7, int r8,
- 			 struct pt_regs *regs)
- {
+ 	/* Early out if we are an invalid form of lswx */
