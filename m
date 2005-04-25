@@ -1,16 +1,18 @@
-Return-Path: <viro@www.linux.org.uk>
-Received: from parcelfarce.linux.theplanet.co.uk
-	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C1FC567B3B
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Apr 2005 16:05:03 +1000 (EST)
-To: torvalds@osdl.org
-Message-Id: <E1DPwhw-0007SQ-3f@parcelfarce.linux.theplanet.co.uk>
-From: Al Viro <viro@www.linux.org.uk>
-Date: Mon, 25 Apr 2005 07:04:36 +0100
-Cc: linuxppc-dev@ozlabs.org
-Subject: [PATCH] ppc iomem annotations: mv643xx_eth
+Return-Path: <stuart.yoder@conformative.com>
+Received: from relay3.mail.twtelecom.net (relay3.mail.twtelecom.net
+	[216.136.95.10]) by ozlabs.org (Postfix) with ESMTP id DF91B67A6D
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Apr 2005 07:44:43 +1000 (EST)
+Received: from Spaceballs (66-194-80-47.gen.twtelecom.net [66.194.80.47])
+	by relay3.mail.twtelecom.net (Postfix) with ESMTP id 72ED24968
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Apr 2005 16:11:16 -0500 (CDT)
+From: "Stuart Yoder" <stuart.yoder@conformative.com>
+To: <linuxppc-dev@ozlabs.org>
+Date: Mon, 25 Apr 2005 16:11:08 -0500
+Message-ID: <052701c549db$4fb20760$2f010a0a@foundation.com>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0528_01C549B1.66DBFF60"
+Subject: PowerPC + SMP
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,27 +22,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-	void * __iomem replaced with intended void __iomem *.
-Signed-off-by: Al Viro <viro@parcelfarce.linux.theplanet.co.uk>
-----
-diff -urN RC12-rc3-ppc-signal/drivers/net/mv643xx_eth.c RC12-rc3-mveth/drivers/net/mv643xx_eth.c
---- RC12-rc3-ppc-signal/drivers/net/mv643xx_eth.c	Wed Apr 20 21:25:38 2005
-+++ RC12-rc3-mveth/drivers/net/mv643xx_eth.c	Mon Apr 25 01:36:36 2005
-@@ -99,7 +99,7 @@
+This is a multi-part message in MIME format.
+
+------=_NextPart_000_0528_01C549B1.66DBFF60
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+
+Hi.
  
- static inline u32 mv_read(int offset)
- {
--	void *__iomem reg_base;
-+	void __iomem *reg_base;
+I am trying to figure out where in the PowerPC kernel the HID1 register
+is updated to enable bits dealing with cache coherency in an SMP system.
+Grepping through the arch/ppc source does not reveal much.
  
- 	reg_base = mv643xx_eth_shared_base - MV643XX_ETH_SHARED_REGS;
+I have two 7447A processors and somewhere the ABE and SYNCBE bits need
+to be turned on to enable cache coherency.   Is supposed to happen in
+the bootloader prior to the kernel running??
  
-@@ -108,7 +108,7 @@
- 
- static inline void mv_write(int offset, u32 data)
- {
--	void * __iomem reg_base;
-+	void __iomem *reg_base;
- 
- 	reg_base = mv643xx_eth_shared_base - MV643XX_ETH_SHARED_REGS;
- 	writel(data, reg_base + offset);
+Thanks,
+Stuart Yoder
+
+------=_NextPart_000_0528_01C549B1.66DBFF60
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<TITLE>Message</TITLE>
+
+<META content=3D"MSHTML 6.00.2800.1400" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><FONT face=3DArial size=3D2>
+<DIV><SPAN class=3D754450621-25042005><FONT face=3DArial=20
+size=3D2>Hi.</FONT></SPAN></DIV>
+<DIV><SPAN class=3D754450621-25042005><FONT face=3DArial=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV><SPAN class=3D754450621-25042005><FONT face=3DArial size=3D2>I am =
+trying to=20
+figure out where in the PowerPC kernel the HID1 register is updated to =
+enable=20
+bits dealing with cache coherency in an SMP system.&nbsp;&nbsp; Grepping =
+through=20
+the arch/ppc source does not reveal much.</FONT></SPAN></DIV>
+<DIV><SPAN class=3D754450621-25042005><FONT face=3DArial=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV><SPAN class=3D754450621-25042005><FONT face=3DArial size=3D2>I =
+have&nbsp;two=20
+7447A processors and somewhere the ABE and SYNCBE bits need to be turned =
+on to=20
+enable cache coherency.&nbsp;&nbsp; Is supposed to happen in the =
+bootloader=20
+prior to the kernel running??</FONT></SPAN></DIV>
+<DIV><SPAN class=3D754450621-25042005><FONT face=3DArial=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV><SPAN class=3D754450621-25042005><FONT face=3DArial=20
+size=3D2>Thanks,</FONT></SPAN></DIV>
+<DIV><SPAN class=3D754450621-25042005><FONT face=3DArial size=3D2>Stuart =
+
+Yoder</FONT></SPAN></DIV></FONT></DIV></BODY></HTML>
+
+------=_NextPart_000_0528_01C549B1.66DBFF60--
