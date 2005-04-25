@@ -1,17 +1,15 @@
-Return-Path: <kopac@iskratel.si>
-Received: from ittmr.iskratel.si (ittmr.iskratel.si [193.77.24.3])
-	by ozlabs.org (Postfix) with ESMTP id 33A9267B28
+Return-Path: <mike@compulab.co.il>
+Received: from alex (62-90-235-247.barak.net.il [62.90.235.247])
+	by ozlabs.org (Postfix) with ESMTP id 97A3667B2F
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 25 Apr 2005 18:30:32 +1000 (EST)
+	Mon, 25 Apr 2005 18:48:48 +1000 (EST)
+Message-ID: <426CBD2C.6060006@compulab.co.il>
+Date: Mon, 25 Apr 2005 11:49:32 +0200
+From: Mike Rapoport <mike@compulab.co.il>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-2"
-Date: Mon, 25 Apr 2005 10:14:08 +0200
-Message-ID: <57D0409C9DC47A4B936406AC1788FA0019A8AD@ntmailkr.iskratel.si>
-From: "Kopac Drago    ITWED2" <kopac@iskratel.si>
-To: <linuxppc-embedded@ozlabs.org>
-Cc: heinz.wrobel@motorola.com
-Subject: old SNDF presentation
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: MPC8272 USB host driver
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,22 +20,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi,
+I'm trying to enable integrated USB host controller on MPC8272.
+I'd like to use transaction level interface with automatic SOF 
+generation but I do not receive SOF interrupts although I keep them enabled.
+What can be the reason of such behavior?
 
-Hello Mr.  Wrobel,
-
-My name is Drago Kopac (Iskratel, Slovenia, freescale customer). We =
-atend SNDF on=20
-regular base.
-
-I have remembered your interesting session on SNDF 2004 (Frankfurt) =
-titled
-Avoiding Classic Pitfalls in Networking and Communications Software: =
-Writing Better Code=20
-Unfortunatelly I could=B4t find it on Freescale pages.=20
-Since we are checking linux ethernet driver FCC regarding =
-caching/decaching (PQII)  I would politely
-ask you to check if  you have it somewhere in your archive in electronic =
-form ?=20
-
-Best Regards,
-Drago
+-- 
+Sincerely Yours,
+Mike Rapoport
