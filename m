@@ -1,19 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DA03067B25
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Apr 2005 13:36:49 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stuart Yoder <stuart.yoder@conformative.com>
-In-Reply-To: <052701c549db$4fb20760$2f010a0a@foundation.com>
-References: <052701c549db$4fb20760$2f010a0a@foundation.com>
-Content-Type: text/plain
-Date: Tue, 26 Apr 2005 13:36:34 +1000
-Message-Id: <1114486594.7183.12.camel@gaston>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: PowerPC + SMP
+Return-Path: <surendra.yadav@softdel.com>
+Received: from softdel.com (unknown [202.68.143.18])
+	by ozlabs.org (Postfix) with ESMTP id 9882367A6C
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Apr 2005 23:02:52 +1000 (EST)
+Received: from surendraw2k ([192.168.10.91]) by softdel.com ([192.168.10.4])
+	with SMTP (MDaemon.PRO.v6.0.2.R)
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Apr 2005 18:25:46 +0530
+From: "Surendra Yadav" <surendra.yadav@softdel.com>
+To: <linuxppc-dev@ozlabs.org>
+Date: Tue, 26 Apr 2005 18:35:47 +0530
+Message-ID: <BPEMKMADCCCPHPEDDKOOCEDLCEAA.surendra.yadav@softdel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: gdbserver problem on powerpc.
+Reply-To: surendra.yadav@softdel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,19 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2005-04-25 at 16:11 -0500, Stuart Yoder wrote:
-> Hi.
->  
-> I am trying to figure out where in the PowerPC kernel the HID1
-> register is updated to enable bits dealing with cache coherency in an
-> SMP system.   Grepping through the arch/ppc source does not reveal
-> much.
->  
-> I have two 7447A processors and somewhere the ABE and SYNCBE bits need
-> to be turned on to enable cache coherency.   Is supposed to happen in
-> the bootloader prior to the kernel running??
+Hi,
 
-It's usually expected to happen in the firmware yes, though the kernel
-does some of it's own 'fixups' (look at setup_cpu_6xx.S)
+I downloaded gdb-6.0 and cross compiled gdbserver for powerpc platform.
 
-Ben.
+When gdbserver I tried to run gdbserver it gives "No such file or
+directory".
+But I can see this file is present in the bin directory. Even I tried
+precompiled binary from ELDK but that also does not work and gives the same
+message. Can any one suggest what is the wrong?
+
+I gave the command #gdbserver 192.168.10.243:2345 hello .
+
+Alternatively I tried following command from the bin directory. hello
+program is also in the bin the dir. But it won't work.
+
+#./gdbserver 192.168.10.243:2345 ./hello
+
+Regards,
+Surendra
