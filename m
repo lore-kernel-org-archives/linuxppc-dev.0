@@ -1,19 +1,33 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.195])
-	by ozlabs.org (Postfix) with ESMTP id EC60F67AC7
+Return-Path: <robin.gilks@tait.co.nz>
+Received: from gatekeeper.tait.co.nz (tel096021.tait.co.nz [202.37.96.21])
+	by ozlabs.org (Postfix) with ESMTP id F1A6567B26
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Apr 2005 08:17:26 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 37so1470543wra
+	Tue, 26 Apr 2005 12:57:36 +1000 (EST)
+Received: from gatekeeper.tait.co.nz (merlin.tait.co.nz [127.0.0.1])
+	by localhost.tait.co.nz (Postfix) with ESMTP id F340A10BEE1
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 25 Apr 2005 15:17:22 -0700 (PDT)
-Message-ID: <c3d0340b0504251517589940b8@mail.gmail.com>
-Date: Mon, 25 Apr 2005 15:17:22 -0700
-From: Shawn Jin <shawnxjin@gmail.com>
-To: ppcembed <linuxppc-embedded@ozlabs.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: 2.6.10 unable to mount a root fs on ramdisk
-Reply-To: Shawn Jin <shawnxjin@gmail.com>
+	Tue, 26 Apr 2005 14:57:35 +1200 (NZST)
+Received: from sunstrike.tait.co.nz (unknown [172.25.40.92])
+	by gatekeeper.tait.co.nz (Postfix) with ESMTP id 6D09310BEE0
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 26 Apr 2005 14:57:35 +1200 (NZST)
+Received: from conversion-daemon.sunstrike.tait.co.nz by sunstrike.tait.co.nz
+	(Sun Java System Messaging Server 6.1 (built Apr 28 2004))
+	id <0IFJ00B0179EXB00@sunstrike.tait.co.nz>
+	(original mail from robin.gilks@tait.co.nz) for
+	linuxppc-embedded@ozlabs.org; Tue, 26 Apr 2005 14:57:35 +1200 (NZST)
+Received: from [172.25.114.91] by sunstrike.tait.co.nz
+	(Sun Java System Messaging Server 6.1 (built Apr 28 2004))
+	with ESMTP id <0IFJ002949JZ42A0@sunstrike.tait.co.nz> for
+	linuxppc-embedded@ozlabs.org; Tue, 26 Apr 2005 14:57:35 +1200 (NZST)
+Date: Tue, 26 Apr 2005 14:57:35 +1200
+From: Robin Gilks <robin.gilks@tait.co.nz>
+To: ppc embedded list <linuxppc-embedded@ozlabs.org>
+Message-id: <426DAE1F.7000404@tait.co.nz>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=ISO-8859-1
+Subject: 8xx SMC break handling
+Reply-To: robin.gilks@tait.co.nz
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,65 +38,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Greeting
 
-Tried to mount a root fs on ramdisk on an ebony board but the
-following error shows up.
+Can anyone tell me if the break handling of an async SMC port will 
+report a break immediately or whether it only reports it on the receipt 
+of a valid character (which is what I'm seeing at present). As usual the 
+  UM is a bit dry in this area!!
 
-Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(1=
-,0)
+Maybe I've not enabled all that I need to in the SMC setup (based on 
+2.4.22 Denx kernel UART driver).
 
-There may be a simple answer for this common error. But I haven't
-found out it after googling for a while. I remember I had a similar
-problem when trying to mount a jffs2 as the root fs. The solution is
-to add rootfstype=3Djffs2. I downloaded the ramdisk image from DENX's
-ftp site. So I'm sure the image itself has no problem.
+Thanks...
 
-I already enabled RAMDISK and initrd support in kernel configuration.
+-- 
+Robin Gilks
+Senior Design Engineer          Phone: (+64)(3) 357 1569
+Tait Electronics                Fax  :  (+64)(3) 359 4632
+PO Box 1645 Christchurch        Email : robin.gilks@tait.co.nz
+New Zealand
 
-=3D> run ramroot
-## Booting image at 00400000 ...
-   Image Name:   Linux-2.6.10
-   Created:      2005-02-23  18:40:02 UTC
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    887207 Bytes =3D 866.4 kB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-## Current stack ends at 0x07FA9CC0 =3D> set upper limit to 0x00800000
-## cmdline at 0x007FFC00 ... 0x007FFC10
-bd address  =3D 0x07FAAF90
-memstart    =3D 0x00000000
-memsize     =3D 0x08000000
-flashstart  =3D 0xFF800000
-flashsize   =3D 0x00480000
-flashoffset =3D 0x00000000
-sramstart   =3D 0x00000000
-sramsize    =3D 0x00000000
-bootflags   =3D 0x00000005
-intfreq     =3D    400 MHz
-busfreq     =3D 133.333 MHz
-baudrate    =3D   9600 bps
-## Loading RAMDisk Image at 00600000 ...
-   Image Name:   Simple Embedded Linux Framework
-   Created:      2002-10-24   9:30:38 UTC
-   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
-   Data Size:    1476478 Bytes =3D  1.4 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-## initrd at 0x00600040 ... 0x007687BD (len=3D1476478=3D0x16877E)
-   Loading Ramdisk to 07e41000, end 07fa977e ... OK
-## Transferring control to Linux (at address 00000000) ...
-Linux version 2.6.10  (gcc version 3.3.3 (DENX ELDK 3.1 3.3.3-8)) #1 We
-d Feb 23 10:34:11 PST 2005
-IBM Ebony port (MontaVista Software, Inc. (source@mvista.com))
-<SNIPPED>
-NET: Registered protocol family 1
-NET: Registered protocol family 17
-Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(1=
-,0)
-
-Thanks,
--Shawn.
+=======================================================================
+This email, including any attachments, is only for the intended
+addressee.  It is subject to copyright, is confidential and may be
+the subject of legal or other privilege, none of which is waived or
+lost by reason of this transmission.
+If the receiver is not the intended addressee, please accept our
+apologies, notify us by return, delete all copies and perform no
+other act on the email.
+Unfortunately, we cannot warrant that the email has not been
+ altered or corrupted during transmission.
+=======================================================================
