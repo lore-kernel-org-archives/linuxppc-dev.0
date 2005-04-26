@@ -1,16 +1,19 @@
-Return-Path: <viro@www.linux.org.uk>
-Received: from parcelfarce.linux.theplanet.co.uk
-	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 837D067B22
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Apr 2005 11:10:29 +1000 (EST)
-To: torvalds@osdl.org
-Message-Id: <E1DQEb0-0007qT-UN@parcelfarce.linux.theplanet.co.uk>
-From: Al Viro <viro@www.linux.org.uk>
-Date: Tue, 26 Apr 2005 02:10:38 +0100
-Cc: linuxppc-dev@ozlabs.org
-Subject: [PATCH] ppc annotations: i2c-mpc 
+	by ozlabs.org (Postfix) with ESMTP id DA03067B25
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Apr 2005 13:36:49 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stuart Yoder <stuart.yoder@conformative.com>
+In-Reply-To: <052701c549db$4fb20760$2f010a0a@foundation.com>
+References: <052701c549db$4fb20760$2f010a0a@foundation.com>
+Content-Type: text/plain
+Date: Tue, 26 Apr 2005 13:36:34 +1000
+Message-Id: <1114486594.7183.12.camel@gaston>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: PowerPC + SMP
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,27 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-	Usual iomem annotations and NULL noise removal.
-Signed-off-by: Al Viro <viro@parcelfarce.linux.theplanet.co.uk>
-----
-diff -urN RC12-rc3-mpsc/drivers/i2c/busses/i2c-mpc.c RC12-rc3-i2c-mpc/drivers/i2c/busses/i2c-mpc.c
---- RC12-rc3-mpsc/drivers/i2c/busses/i2c-mpc.c	Wed Apr 20 21:25:33 2005
-+++ RC12-rc3-i2c-mpc/drivers/i2c/busses/i2c-mpc.c	Mon Apr 25 19:53:08 2005
-@@ -55,7 +55,7 @@
- #define CSR_RXAK 0x01
- 
- struct mpc_i2c {
--	char *base;
-+	void __iomem *base;
- 	u32 interrupt;
- 	wait_queue_head_t queue;
- 	struct i2c_adapter adap;
-@@ -444,7 +444,7 @@
- 
-       fail_add:
- 	if (i2c->irq != 0)
--		free_irq(i2c->irq, 0);
-+		free_irq(i2c->irq, NULL);
-       fail_irq:
- 	iounmap(i2c->base);
-       fail_map:
+On Mon, 2005-04-25 at 16:11 -0500, Stuart Yoder wrote:
+> Hi.
+>  
+> I am trying to figure out where in the PowerPC kernel the HID1
+> register is updated to enable bits dealing with cache coherency in an
+> SMP system.   Grepping through the arch/ppc source does not reveal
+> much.
+>  
+> I have two 7447A processors and somewhere the ABE and SYNCBE bits need
+> to be turned on to enable cache coherency.   Is supposed to happen in
+> the bootloader prior to the kernel running??
+
+It's usually expected to happen in the firmware yes, though the kernel
+does some of it's own 'fixups' (look at setup_cpu_6xx.S)
+
+Ben.
