@@ -1,18 +1,21 @@
-Return-Path: <stuart.yoder@conformative.com>
-Received: from relay3.mail.twtelecom.net (relay3.mail.twtelecom.net
-	[216.136.95.10]) by ozlabs.org (Postfix) with ESMTP id DF91B67A6D
-	for <linuxppc-dev@ozlabs.org>; Tue, 26 Apr 2005 07:44:43 +1000 (EST)
-Received: from Spaceballs (66-194-80-47.gen.twtelecom.net [66.194.80.47])
-	by relay3.mail.twtelecom.net (Postfix) with ESMTP id 72ED24968
-	for <linuxppc-dev@ozlabs.org>; Mon, 25 Apr 2005 16:11:16 -0500 (CDT)
-From: "Stuart Yoder" <stuart.yoder@conformative.com>
-To: <linuxppc-dev@ozlabs.org>
-Date: Mon, 25 Apr 2005 16:11:08 -0500
-Message-ID: <052701c549db$4fb20760$2f010a0a@foundation.com>
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0528_01C549B1.66DBFF60"
-Subject: PowerPC + SMP
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CA26467AC5
+	for <linuxppc-dev@ozlabs.org>; Tue, 26 Apr 2005 10:38:13 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Eddy Petrisor <eddy.petrisor@gmail.com>
+In-Reply-To: <426D8A32.8090005@gmail.com>
+References: <1114228279.5996.44.camel@gaston> <426C17D3.7000807@gmail.com>
+	<426D8A32.8090005@gmail.com>
+Content-Type: text/plain
+Date: Tue, 26 Apr 2005 10:42:15 +1000
+Message-Id: <1114476136.18808.11.camel@gaston>
+Mime-Version: 1.0
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
+Subject: Re: [PATCH] ppc32: Fix a sleep issues on some laptops
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,66 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Tue, 2005-04-26 at 03:24 +0300, Eddy Petrisor wrote:
+> I had soem mail problems and this mail was not sent
+> 
+> Eddy Petrisor wrote:
+> > Benjamin Herrenschmidt wrote:
+> > 
+> >> Hi !
+> >>
+> >> Some earlier models of aluminium powerbooks and ibook G4s have a clock
+> >> chip that requires some tweaking before and after sleep. It seems that
+> >> without that magic incantation to disable and re-enable clock spreading,
+> >> RAM isn't properly refreshed during sleep. This fixes it.
+> > 
+> > over which version of kernel does this apply, or where can we find it, 
+> > already included? I had some problems with sleeping (well, not me, my 
+> > powerbook :o)
 
-------=_NextPart_000_0528_01C549B1.66DBFF60
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+It should apply on 2.6.12-rc* and maybe 2.6.11
 
-Hi.
- 
-I am trying to figure out where in the PowerPC kernel the HID1 register
-is updated to enable bits dealing with cache coherency in an SMP system.
-Grepping through the arch/ppc source does not reveal much.
- 
-I have two 7447A processors and somewhere the ABE and SYNCBE bits need
-to be turned on to enable cache coherency.   Is supposed to happen in
-the bootloader prior to the kernel running??
- 
-Thanks,
-Stuart Yoder
-
-------=_NextPart_000_0528_01C549B1.66DBFF60
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<TITLE>Message</TITLE>
-
-<META content=3D"MSHTML 6.00.2800.1400" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><FONT face=3DArial size=3D2>
-<DIV><SPAN class=3D754450621-25042005><FONT face=3DArial=20
-size=3D2>Hi.</FONT></SPAN></DIV>
-<DIV><SPAN class=3D754450621-25042005><FONT face=3DArial=20
-size=3D2></FONT></SPAN>&nbsp;</DIV>
-<DIV><SPAN class=3D754450621-25042005><FONT face=3DArial size=3D2>I am =
-trying to=20
-figure out where in the PowerPC kernel the HID1 register is updated to =
-enable=20
-bits dealing with cache coherency in an SMP system.&nbsp;&nbsp; Grepping =
-through=20
-the arch/ppc source does not reveal much.</FONT></SPAN></DIV>
-<DIV><SPAN class=3D754450621-25042005><FONT face=3DArial=20
-size=3D2></FONT></SPAN>&nbsp;</DIV>
-<DIV><SPAN class=3D754450621-25042005><FONT face=3DArial size=3D2>I =
-have&nbsp;two=20
-7447A processors and somewhere the ABE and SYNCBE bits need to be turned =
-on to=20
-enable cache coherency.&nbsp;&nbsp; Is supposed to happen in the =
-bootloader=20
-prior to the kernel running??</FONT></SPAN></DIV>
-<DIV><SPAN class=3D754450621-25042005><FONT face=3DArial=20
-size=3D2></FONT></SPAN>&nbsp;</DIV>
-<DIV><SPAN class=3D754450621-25042005><FONT face=3DArial=20
-size=3D2>Thanks,</FONT></SPAN></DIV>
-<DIV><SPAN class=3D754450621-25042005><FONT face=3DArial size=3D2>Stuart =
-
-Yoder</FONT></SPAN></DIV></FONT></DIV></BODY></HTML>
-
-------=_NextPart_000_0528_01C549B1.66DBFF60--
+Ben.
