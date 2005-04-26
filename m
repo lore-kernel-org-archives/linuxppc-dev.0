@@ -1,18 +1,17 @@
-Return-Path: <olh@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "SuSE Linux AG internal IMAP-Server CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 5821C67AC5
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Apr 2005 07:33:10 +1000 (EST)
-Date: Tue, 26 Apr 2005 23:10:19 +0200
-From: Olaf Hering <olh@suse.de>
-To: Jeff Mahoney <jeffm@suse.de>
-Message-ID: <20050426211019.GA11579@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Return-Path: <jeffm@suse.de>
+Received: from locomotive.unixthugs.org (locomotive.csh.rit.edu
+	[129.21.60.149]) by ozlabs.org (Postfix) with ESMTP id 1E62667A2E
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Apr 2005 07:55:03 +1000 (EST)
+Message-ID: <426EB698.9030108@suse.de>
+Date: Tue, 26 Apr 2005 17:46:00 -0400
+From: Jeff Mahoney <jeffm@suse.de>
+MIME-Version: 1.0
+To: Olaf Hering <olh@suse.de>
+References: <20050426211019.GA11579@suse.de>
+In-Reply-To: <20050426211019.GA11579@suse.de>
+Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@ozlabs.org, reiserfs-dev@namesys.com
-Subject: [PATCH] make gcc -O1 in fs/reiserfs optional
+Subject: Re: [PATCH] make gcc -O1 in fs/reiserfs optional
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,54 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jeff,
+Olaf Hering wrote:
+> Jeff,
+> 
+> you added this EXTRA_CFLAGS= during 2.4 development, I think the broken
+> compiler was gcc 3.2 on SLES8. Can we turn this -O1 into a .config
+> option?
 
-you added this EXTRA_CFLAGS= during 2.4 development, I think the broken
-compiler was gcc 3.2 on SLES8. Can we turn this -O1 into a .config
-option?
+Hi Olaf -
 
+Yeah, the initial problem was that the anti aliasing[*] code when -O2
+was enabled was being way too cautious and ended up allocating something
+like 6k on the stack in do_balance(). It was observable elsewhere, but
+not so problematic.
 
-Signed-off-by: Olaf Hering <olh@suse.de>
+My ppc box isn't booting right now. If you've verified that newer
+versions of the compiler don't blow the stack in do_balance(), I'm not
+opposed to it.
 
-Index: linux-2.6.12-rc3-olh/fs/reiserfs/Makefile
-===================================================================
---- linux-2.6.12-rc3-olh.orig/fs/reiserfs/Makefile
-+++ linux-2.6.12-rc3-olh/fs/reiserfs/Makefile
-@@ -21,13 +21,7 @@ ifeq ($(CONFIG_REISERFS_FS_POSIX_ACL),y)
- reiserfs-objs += xattr_acl.o
- endif
- 
--# gcc -O2 (the kernel default)  is overaggressive on ppc32 when many inline
--# functions are used.  This causes the compiler to advance the stack
--# pointer out of the available stack space, corrupting kernel space,
--# and causing a panic. Since this behavior only affects ppc32, this ifeq
--# will work around it. If any other architecture displays this behavior,
--# add it here.
--ifeq ($(CONFIG_PPC32),y)
-+ifeq ($(CONFIG_REISERFS_CC_REDUCE_OPTIMZE),y)
- EXTRA_CFLAGS := -O1
- endif
- 
-Index: linux-2.6.12-rc3-olh/fs/Kconfig
-===================================================================
---- linux-2.6.12-rc3-olh.orig/fs/Kconfig
-+++ linux-2.6.12-rc3-olh/fs/Kconfig
-@@ -186,6 +186,18 @@ config REISERFS_FS
- 	  If you like it, you can pay us to add new features to it that you
- 	  need, buy a support contract, or pay us to port it to another OS.
- 
-+config REISERFS_CC_REDUCE_OPTIMZE
-+	bool "Reduce CC optimization level to workaround compiler bugs"
-+	depends on PPC32
-+	default n
-+	help
-+	  gcc -O2 (the kernel default) is overaggressive on ppc32 when many inline
-+	  functions are used.  This causes the compiler to advance the stack
-+	  pointer out of the available stack space, corrupting kernel space,
-+	  and causing a panic. Since this behavior only affects ppc32, this ifeq
-+	  will work around it. If any other architecture displays this behavior,
-+	  add it here.
-+
- config REISERFS_CHECK
- 	bool "Enable reiserfs debug mode"
- 	depends on REISERFS_FS
+-Jeff
+
+[*]: I think that's the right term - I'm not a compiler developer :)
+
+-- 
+Jeff Mahoney
+SuSE Labs
