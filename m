@@ -1,17 +1,18 @@
-Return-Path: <stuart.yoder@conformative.com>
-Received: from relay3.mail.twtelecom.net (relay3.mail.twtelecom.net
-	[216.136.95.10]) by ozlabs.org (Postfix) with ESMTP id 8212E67A6D
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Apr 2005 05:07:47 +1000 (EST)
-From: "Stuart Yoder" <stuart.yoder@conformative.com>
-To: "'Wolfgang Denk'" <wd@denx.de>
-Date: Tue, 26 Apr 2005 14:07:36 -0500
-Message-ID: <056501c54a93$382d7bc0$2f010a0a@foundation.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <20050426173513.23FD1C1510@atlas.denx.de>
-Cc: 'linuxppc-dev list' <linuxppc-dev@ozlabs.org>
-Subject: RE: PowerPC + SMP 
+Return-Path: <olh@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de",
+	Issuer "SuSE Linux AG internal IMAP-Server CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 5821C67AC5
+	for <linuxppc-dev@ozlabs.org>; Wed, 27 Apr 2005 07:33:10 +1000 (EST)
+Date: Tue, 26 Apr 2005 23:10:19 +0200
+From: Olaf Hering <olh@suse.de>
+To: Jeff Mahoney <jeffm@suse.de>
+Message-ID: <20050426211019.GA11579@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@ozlabs.org, reiserfs-dev@namesys.com
+Subject: [PATCH] make gcc -O1 in fs/reiserfs optional
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,53 +22,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Jeff,
 
-We've run into a few issues with U-boot, but they are not unsolveable--
+you added this EXTRA_CFLAGS= during 2.4 development, I think the broken
+compiler was gcc 3.2 on SLES8. Can we turn this -O1 into a .config
+option?
 
--it doesn't provide an alternate execution path for the 2nd CPU when it
-is started by the kernel
--U-boot needs to detect which CPU is executing
--U-boot on the 2nd CPU should not execute any platform/board specific
-setup code-- this is stuff you only want to do once
--U-boot on the 2nd CPU cannot relocate itself to SDRAM because Linux is
-already running there and assumes it owns all of memory
--it needs some way of getting to the Linux kernel entry point for
-secondary CPUs
--it also appears that it should set up HID1 (other stuff??) for SMP
-systems
 
-Stuart
+Signed-off-by: Olaf Hering <olh@suse.de>
 
-> -----Original Message-----
-> From: Wolfgang Denk [mailto:wd@denx.de] 
-> Sent: Tuesday, April 26, 2005 12:35 PM
-> To: Stuart Yoder
-> Cc: 'linuxppc-dev list'
-> Subject: Re: PowerPC + SMP 
-> 
-> 
-> In message <054301c54a6f$d1cf82b0$2f010a0a@foundation.com> you wrote:
-> > 
-> > I am using U-boot on my SMP system and U-boot is not SMP aware.  Do 
-> > you
-> 
-> Strictly speaking this statement is wrong.
-> 
-> So far I am not aware of a port of U-Boot to a SMP system.  
-> If  there was  such  a  port, and if it was properly done, 
-> then U-Boot probably _were_ SMP aware.
-> 
-> Best regards,
-> 
-> Wolfgang Denk
-> 
-> -- 
-> Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-> Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: 
-> wd@denx.de Every program has at least one bug and can be 
-> shortened by  at  least one  instruction  --  from  which,  
-> by induction, one can deduce that every program can be 
-> reduced to one instruction which doesn't work.
-> 
-> 
-> 
+Index: linux-2.6.12-rc3-olh/fs/reiserfs/Makefile
+===================================================================
+--- linux-2.6.12-rc3-olh.orig/fs/reiserfs/Makefile
++++ linux-2.6.12-rc3-olh/fs/reiserfs/Makefile
+@@ -21,13 +21,7 @@ ifeq ($(CONFIG_REISERFS_FS_POSIX_ACL),y)
+ reiserfs-objs += xattr_acl.o
+ endif
+ 
+-# gcc -O2 (the kernel default)  is overaggressive on ppc32 when many inline
+-# functions are used.  This causes the compiler to advance the stack
+-# pointer out of the available stack space, corrupting kernel space,
+-# and causing a panic. Since this behavior only affects ppc32, this ifeq
+-# will work around it. If any other architecture displays this behavior,
+-# add it here.
+-ifeq ($(CONFIG_PPC32),y)
++ifeq ($(CONFIG_REISERFS_CC_REDUCE_OPTIMZE),y)
+ EXTRA_CFLAGS := -O1
+ endif
+ 
+Index: linux-2.6.12-rc3-olh/fs/Kconfig
+===================================================================
+--- linux-2.6.12-rc3-olh.orig/fs/Kconfig
++++ linux-2.6.12-rc3-olh/fs/Kconfig
+@@ -186,6 +186,18 @@ config REISERFS_FS
+ 	  If you like it, you can pay us to add new features to it that you
+ 	  need, buy a support contract, or pay us to port it to another OS.
+ 
++config REISERFS_CC_REDUCE_OPTIMZE
++	bool "Reduce CC optimization level to workaround compiler bugs"
++	depends on PPC32
++	default n
++	help
++	  gcc -O2 (the kernel default) is overaggressive on ppc32 when many inline
++	  functions are used.  This causes the compiler to advance the stack
++	  pointer out of the available stack space, corrupting kernel space,
++	  and causing a panic. Since this behavior only affects ppc32, this ifeq
++	  will work around it. If any other architecture displays this behavior,
++	  add it here.
++
+ config REISERFS_CHECK
+ 	bool "Enable reiserfs debug mode"
+ 	depends on REISERFS_FS
