@@ -1,18 +1,18 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0FB7267A6C
+Return-Path: <stuart.yoder@conformative.com>
+Received: from relay3.mail.twtelecom.net (relay3.mail.twtelecom.net
+	[216.136.95.10]) by ozlabs.org (Postfix) with ESMTP id 5DE3C67AC6
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Apr 2005 04:48:34 +1000 (EST)
-Date: Tue, 26 Apr 2005 11:48:28 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-Message-ID: <20050426184828.GA22714@gate.ebshome.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-embedded@ozlabs.org
-Subject: [PATCH] ppc32: backport Book-E decrementer handling fix from 2.6
+	Wed, 27 Apr 2005 05:16:25 +1000 (EST)
+From: "Stuart Yoder" <stuart.yoder@conformative.com>
+To: "'Kumar Gala'" <kumar.gala@freescale.com>
+Date: Tue, 26 Apr 2005 14:16:14 -0500
+Message-ID: <056601c54a94$6d0cae50$2f010a0a@foundation.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <9380e411aa15fa62ab142301af963314@freescale.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: PowerPC + SMP
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,28 +23,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Marcelo,
+Thanks Kumar.
 
-this is backport of Matt Porter's patch for Book-E decrementer 
-handling in timer_interrupt. 
+How can I know what assumptions the kernel makes about the state of the
+CPU/system when it begins execution? Is this clearly documented
+anywhere?
 
-The fix has been in 2.6 from August but never made it to 2.4, and I 
-re-discovered this fix last week :)
+Do you know of open source bootloaders for Linux that would demonstrate
+how to set up the CPUs as the Linux kernel expects.
 
-Original Matt's post to linuxppc-dev with explanation can be found at:
-http://ozlabs.org/pipermail/linuxppc-dev/2004-August/017458.html
+Thanks,
+Stuart
 
-Signed-off-by: Eugene Surovegin <ebs@ebshome.net>
-
-===== arch/ppc/kernel/time.c 1.16 vs edited =====
---- 1.16/arch/ppc/kernel/time.c	2003-07-03 09:56:34 -07:00
-+++ edited/arch/ppc/kernel/time.c	2005-04-26 11:37:58 -07:00
-@@ -150,7 +150,7 @@
- 
- 	hardirq_enter(cpu);
- 
--	while ((next_dec = tb_ticks_per_jiffy - tb_delta(&jiffy_stamp)) < 0) {
-+	while ((next_dec = tb_ticks_per_jiffy - tb_delta(&jiffy_stamp)) <= 0) {
- 		jiffy_stamp += tb_ticks_per_jiffy;
- 		if (!user_mode(regs))
- 			ppc_do_profile(instruction_pointer(regs));
+> -----Original Message-----
+> From: Kumar Gala [mailto:kumar.gala@freescale.com]=20
+> Sent: Monday, April 25, 2005 4:40 PM
+> To: Stuart Yoder
+> Cc: linuxppc-embedded@ozlabs.org
+> Subject: Re: PowerPC + SMP
+>=20
+>=20
+> On Apr 25, 2005, at 4:10 PM, Stuart Yoder wrote:
+>=20
+> > Hi.
+> > =A0
+> > I am trying to figure out where in the PowerPC kernel the HID1
+> > register is updated to enable bits dealing with cache=20
+> coherency in an=20
+> > SMP system.=A0=A0 Grepping through the arch/ppc source does not =
+reveal=20
+> > much.
+> > =A0
+> > I have=A0two 7447A processors and somewhere the ABE and SYNCBE bits =
+in
+> > HID1=A0need to be turned on to enable cache coherency.=A0=A0 Is=20
+> supposed to=20
+> > happen in the bootloader prior to the kernel running??
+>=20
+> The expectation is that the bootloader normally handles such things.
+>=20
+> - kumar
+>=20
+>=20
+>=20
+>=20
