@@ -1,18 +1,21 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 8448667A6C
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao08.cox.net (fed1rmmtao08.cox.net [68.230.241.31])
+	by ozlabs.org (Postfix) with ESMTP id 0712767B19
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Apr 2005 04:36:48 +1000 (EST)
-In-Reply-To: <F237EFC9919B064C8BF5A44CDA5DA0C212F678@matisse01.matissenetworks.com>
-References: <F237EFC9919B064C8BF5A44CDA5DA0C212F678@matisse01.matissenetworks.com>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <e29792bf3239d4cfb5861e7826300795@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Wed, 27 Apr 2005 13:36:42 -0500
-To: "Chiradeep Vittal" <chiradeep@matissenetworks.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Linux Kernel Issue: MPC8540 Errata (CPU29)
+	Thu, 28 Apr 2005 04:43:29 +1000 (EST)
+Date: Wed, 27 Apr 2005 11:41:41 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Kumar Gala <kumar.gala@freescale.com>
+Message-ID: <20050427114141.F11404@cox.net>
+References: <20050427112218.E11404@cox.net>
+	<caa74808cb385f021bedcf5769502e1d@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <caa74808cb385f021bedcf5769502e1d@freescale.com>;
+	from kumar.gala@freescale.com on Wed, Apr 27, 2005 at 01:35:32PM
+	-0500
+Cc: David Ho <DavidHo@nanometrics.ca>, linuxppc-embedded@ozlabs.org
+Subject: Re: OLS 2005
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,27 +26,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Apr 27, 2005, at 12:46 PM, Chiradeep Vittal wrote:
+On Wed, Apr 27, 2005 at 01:35:32PM -0500, Kumar Gala wrote:
+> > > I'm only worried about the weather. I was told it's pretty hot
+> > > there in July :).
+> >
+> > Haha...come visit us in Phoenix.  Weather is definitely near
+> >  perfect in Ottawa, IMHO.
+> 
+> Agreed, I'd rather be in Ottawa in July.  Which was nice last year and 
+> hopefully this year as well.
+> 
+> > > If you can give more info about what to do in Ottawa in addition
+> > > to drinking beer and attending OLS it'd be great :P
+> 
+> I wondering if we can get a PPC BoF together, however not sure exactly 
+> what we would talk about.  Any ideas?
 
-> We're running Linux Kernel 2.4.26 on an 8540 ADS derivative. We're
->  seeing an
-> "illegal instruction"=A0 (SIGILL) exception under some circumstances
-> (during a pthread_create call). We were wondering if this could be a
-> symptom of
-> CPU29 and if there is a patch available for CPU29.
->
-> "CPU29 L1 instruction cache gets multiple entries for same line after
->  change
-> in MSR[IS] bit "
->
-> www.freescale.com/files/32bit/doc/errata/MPC8540CE.pdf
+We can talk about the elusive flattened OF tree for ppc32. :) It's
+probably smart just to gather for a pub BoF about embedded Linux/PPC
+stuff in general. We always have plenty of things...
 
-The way the Linux kernel manages the MMU on e500 it doesn't actually=20
-ever modify MSR[IS] or MSR[DS].  They are always zero so I dont believe=20=
-
-you are hitting this errata.
-
-Are you running with math emulation turned on?  Do you know what the=20
-instruction is that causes the SIGILL?
-
-- kumar
+-Matt
