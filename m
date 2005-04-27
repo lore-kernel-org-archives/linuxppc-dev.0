@@ -1,35 +1,24 @@
-Return-Path: <robin.gilks@tait.co.nz>
-Received: from gatekeeper.tait.co.nz (tel096021.tait.co.nz [202.37.96.21])
-	by ozlabs.org (Postfix) with ESMTP id 0C67867A6F
+Return-Path: <Heinz.Wrobel@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id D88BB67AC6
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Apr 2005 12:26:20 +1000 (EST)
-Received: from gatekeeper.tait.co.nz (merlin.tait.co.nz [127.0.0.1])
-	by localhost.tait.co.nz (Postfix) with ESMTP id 4888410B919
+	Wed, 27 Apr 2005 16:54:58 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	j3R6wqMd004223 for <linuxppc-embedded@ozlabs.org>;
+	Tue, 26 Apr 2005 23:58:52 -0700 (MST)
+Received: from zwg18exm01.ea.freescale.net (zwg18exm01.ea.freescale.net
+	[10.170.73.30])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id j3R6vF1p007617
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Apr 2005 14:26:18 +1200 (NZST)
-Received: from sunstrike.tait.co.nz (unknown [172.25.40.92])
-	by gatekeeper.tait.co.nz (Postfix) with ESMTP id B694010B917
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Apr 2005 14:26:17 +1200 (NZST)
-Received: from conversion-daemon.sunstrike.tait.co.nz by sunstrike.tait.co.nz
-	(Sun Java System Messaging Server 6.1 (built Apr 28 2004))
-	id <0IFK00M01YX6QJ00@sunstrike.tait.co.nz>
-	(original mail from robin.gilks@tait.co.nz) for
-	linuxppc-embedded@ozlabs.org; Wed, 27 Apr 2005 14:26:17 +1200 (NZST)
-Received: from [172.25.114.91] by sunstrike.tait.co.nz
-	(Sun Java System Messaging Server 6.1 (built Apr 28 2004))
-	with ESMTP id <0IFL00DMK2RTO8B0@sunstrike.tait.co.nz> for
-	linuxppc-embedded@ozlabs.org; Wed, 27 Apr 2005 14:26:17 +1200 (NZST)
-Date: Wed, 27 Apr 2005 14:26:17 +1200
-From: Robin Gilks <robin.gilks@tait.co.nz>
-In-reply-to: <426DAE1F.7000404@tait.co.nz>
-To: ppc embedded list <linuxppc-embedded@ozlabs.org>
-Message-id: <426EF849.4060007@tait.co.nz>
-MIME-version: 1.0
-Content-type: text/plain; format=flowed; charset=ISO-8859-1
-References: <426DAE1F.7000404@tait.co.nz>
-Subject: Re: 8xx SMC break handling - SOLVED
-Reply-To: robin.gilks@tait.co.nz
+	Wed, 27 Apr 2005 01:57:16 -0500 (CDT)
+Message-ID: <DF02D66C37C26B4C8018BF84F0E37FEC08440764@zwg18exm01.ea.freescale.net>
+From: Wrobel Heinz-r39252 <Heinz.Wrobel@freescale.com>
+To: Eugene Surovegin <ebs@ebshome.net>, linuxppc-embedded@ozlabs.org
+Date: Wed, 27 Apr 2005 08:54:44 +0200
+MIME-Version: 1.0
+Content-Type: text/plain
+Subject: RE: [RFC] [PATCH] ppc32: workaround for spurious IRQs on PQ2
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -40,39 +29,63 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Robin Gilks wrote:
-> Greeting
-> 
-> Can anyone tell me if the break handling of an async SMC port will 
-> report a break immediately or whether it only reports it on the receipt 
-> of a valid character (which is what I'm seeing at present). As usual the 
->  UM is a bit dry in this area!!
-> 
-> Maybe I've not enabled all that I need to in the SMC setup (based on 
-> 2.4.22 Denx kernel UART driver).
-> 
-> Thanks...
-> 
+Eugene,
 
-Turns out that although the standard UART driver traps 'break', its 
-never unmasked in the SMCM register - missed this as the manual lumps 
-the SMCM register with the SMCE reg!!
+check slides 17, 20-22 out of my SNDF 2004 presentation H1125 found at
+http://www.freescale.com/webapp/sps/site/overview.jsp?nodeId=052577pzMPYZjg286165422098
 
--- 
-Robin Gilks
-Senior Design Engineer          Phone: (+64)(3) 357 1569
-Tait Electronics                Fax  :  (+64)(3) 359 4632
-PO Box 1645 Christchurch        Email : robin.gilks@tait.co.nz
-New Zealand
+... and attend the June 2005 FTF in Orlando ...
+http://www.freescale.com/ftf *grin*
 
-=======================================================================
-This email, including any attachments, is only for the intended
-addressee.  It is subject to copyright, is confidential and may be
-the subject of legal or other privilege, none of which is waived or
-lost by reason of this transmission.
-If the receiver is not the intended addressee, please accept our
-apologies, notify us by return, delete all copies and perform no
-other act on the email.
-Unfortunately, we cannot warrant that the email has not been
- altered or corrupted during transmission.
-=======================================================================
+Heinz
+ 
+
+> -----Original Message-----
+> From: linuxppc-embedded-bounces@ozlabs.org 
+> [mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of 
+> Eugene Surovegin
+> Sent: Tuesday, April 26, 2005 9:22 PM
+> To: linuxppc-embedded@ozlabs.org
+> Subject: [RFC] [PATCH] ppc32: workaround for spurious IRQs on PQ2
+> 
+> Hi!
+> 
+> There is a problem with big amount of spurious IRQs on 8248-based 
+> design I'm working on.
+> 
+> I observed this problem with 2.4.30 kernel, but it was reported to be
+> still present on 2.6 as well.
+> 
+> Traces show that spurious IRQ happens right after handle_IRQ_events() 
+> enables external interrupts and _before_ even calling real IRQ 
+> handler.
+> 
+> I fixed this problem by adding sync at the end of cpm2_mask_and_ack. 
+> Using out_XXX macros for accessing SIU register doesn't seem to help.
+> Dan thinks there are some pipeline-related issues here, although I 
+> failed to found any mentions of them in 8272 user manual.
+> 
+> Also, there is a possibility, that we need more explicit sync's in 
+> cpm2_pic code.
+> 
+> Signed-off-by: Eugene Surovegin <ebs@ebshome.net>
+> 
+> ===== arch/ppc/syslib/cpm2_pic.c 1.11 vs edited =====
+> --- 1.11/arch/ppc/syslib/cpm2_pic.c	2005-03-31 02:59:05 -08:00
+> +++ edited/arch/ppc/syslib/cpm2_pic.c	2005-04-26 11:55:51 -07:00
+> @@ -90,6 +90,7 @@
+>  	ppc_cached_irq_mask[word] &= ~(1 << bit);
+>  	simr[word] = ppc_cached_irq_mask[word];
+>  	sipnr[word] = 1 << bit;
+> +	mb();
+>  }
+>  
+>  static void cpm2_end_irq(unsigned int irq_nr)
+> 
+> 
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
