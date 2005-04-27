@@ -1,16 +1,18 @@
-Return-Path: <Schramel.Linux@go.bartec.de>
-Received: from mail.bartec.de (mail.bartec.de [217.5.168.170])
-	by ozlabs.org (Postfix) with SMTP id 4632B67AC5
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id C7F3767B17
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Apr 2005 00:41:48 +1000 (EST)
-From: Marco Schramel <Schramel.Linux@go.bartec.de>
-To: "PPC_LINUX" <linuxppc-embedded@ozlabs.org>
-Date: Wed, 27 Apr 2005 16:59:52 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200504271659.52998.Schramel.Linux@go.bartec.de>
-Subject: PCI IO_BASE
+	Thu, 28 Apr 2005 00:42:10 +1000 (EST)
+In-Reply-To: <1114609634.30649.14.camel@ad.doubleclick.net>
+References: <1114609634.30649.14.camel@ad.doubleclick.net>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <609724aa0424d00c851e3d085ce6d56f@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Wed, 27 Apr 2005 09:42:04 -0500
+To: "Jason McMullan" <jason.mcmullan@timesys.com>
+Cc: PPC_LINUX <linuxppc-embedded@ozlabs.org>
+Subject: Re: MPC8xx Platformization
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,49 +23,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Jason,
 
-actually my system (2.4.25 on MPC8270 with PCI) runs fine and it will be tested. Thanks to all.
-But one thing isn't really clear. The IO_BASE and memory windows for pci.
+Two comments:
+1. put mpc8xx_devices.c & mpc8xx_sys.c in arch/ppc/syslib (I moved the 
+85xx ones here and its where 83xx & 52xx are)
+2. can we just use hard coded offsets for start & end values.  I really 
+hate assuming that the global immap_t structure is always correct.  I'm 
+assuming on 8xx these values really aren't changing, take a look at 
+mpc83xx_devices.c
 
-This is original taken from arch/ppc/plattforms/ads8260.h
+thanks
 
-/* window for a PCI master to access MPC8266 memory */
-#define PCI_SLV_MEM_LOCAL	0x00000000	/* Local base */
-#define PCI_SLV_MEM_BUS		0x00000000	/* PCI base */
+- kumar
 
-/* window for the processor to access PCI memory with prefetching */
-#define PCI_MSTR_MEM_LOCAL		0x80000000	/* Local base */
-#define PCI_MSTR_MEM_BUS		0x80000000	/* PCI base   */
-#define PCI_MSTR_MEM_SIZE		0x20000000	/* 512MB */
+On Apr 27, 2005, at 8:47 AM, Jason McMullan wrote:
 
-/* window for the processor to access PCI memory without prefetching */
-#define PCI_MSTR_MEMIO_LOCAL	0xA0000000	/* Local base */
-#define PCI_MSTR_MEMIO_BUS		0xA0000000	/* PCI base   */
-#define PCI_MSTR_MEMIO_SIZE		0x20000000	/* 512MB */
-
-/* window for the processor to access PCI I/O */
-#define PCI_MSTR_IO_LOCAL	0xF4000000      /* Local base */
-#define PCI_MSTR_IO_BUS         0x00000000	/* PCI base   */
-#define PCI_MSTR_IO_SIZE        0x04000000	/* 64MB */
-
-#define _IO_BASE				PCI_MSTR_IO_LOCAL
-#define _ISA_MEM_BASE		PCI_MSTR_MEMIO_LOCAL
-#define PCI_DRAM_OFFSET	PCI_SLV_MEM_BUS
-#endif /* CONFIG_PCI */
-
-These memory windows are not really clear to me. Which documentation can expand my theoretical background? Any comments are welcome.
-
-If CONFIG_PCI is defined the io accesses will depend on the _IO_BASE (at example for ide accesses, now i know ;-)).
-Why it depends on it ?
-If i will adapt another chip with the standard io-accesses of /asm/io.h, which things i ve to know (offsets, windowsizes,etc..)?  
-
-Thanks for your comments.
-
-Marco
-
-
-
--- 
----------
-Marco Schramel
+> _______________________________________________
+> Linuxppc-embedded mailing list
+>  Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+> Date: April 27, 2005 8:48:03 AM CDT
+> Subject:
+>
+>
+>
+> Date: April 27, 2005 8:48:03 AM CDT
+> Subject:
+>
+>
+> <ATT520952.txt><mpc8xx-platformize.patch>
+>
+> <signature.asc>
+>
