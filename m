@@ -1,21 +1,22 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao08.cox.net (fed1rmmtao08.cox.net [68.230.241.31])
-	by ozlabs.org (Postfix) with ESMTP id 0712767B19
+Return-Path: <roger.larsson@norran.net>
+Received: from ns.skekraft.net (ns.skekraft.net [213.199.96.131])
+	by ozlabs.org (Postfix) with ESMTP id 1BC9E67A6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Apr 2005 04:43:29 +1000 (EST)
-Date: Wed, 27 Apr 2005 11:41:41 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Kumar Gala <kumar.gala@freescale.com>
-Message-ID: <20050427114141.F11404@cox.net>
-References: <20050427112218.E11404@cox.net>
-	<caa74808cb385f021bedcf5769502e1d@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <caa74808cb385f021bedcf5769502e1d@freescale.com>;
-	from kumar.gala@freescale.com on Wed, Apr 27, 2005 at 01:35:32PM
-	-0500
-Cc: David Ho <DavidHo@nanometrics.ca>, linuxppc-embedded@ozlabs.org
-Subject: Re: OLS 2005
+	Thu, 28 Apr 2005 08:30:29 +1000 (EST)
+Received: from icd.localnet (131.net95.skekraft.net [213.199.95.131])
+	by ns.skekraft.net (Postfix) with ESMTP id 1E070A400C
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 28 Apr 2005 00:30:24 +0200 (CEST)
+From: Roger Larsson <roger.larsson@norran.net>
+To: linuxppc-embedded@ozlabs.org
+Date: Thu, 28 Apr 2005 00:29:35 +0200
+References: <200504271233.18856.glenn@aoi-industries.com>
+In-Reply-To: <200504271233.18856.glenn@aoi-industries.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200504280029.35461.roger.larsson@norran.net>
+Subject: Re: Status of Linux 2.6 for 40x and 44x CPUs
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,24 +27,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 27, 2005 at 01:35:32PM -0500, Kumar Gala wrote:
-> > > I'm only worried about the weather. I was told it's pretty hot
-> > > there in July :).
-> >
-> > Haha...come visit us in Phoenix.  Weather is definitely near
-> >  perfect in Ottawa, IMHO.
-> 
-> Agreed, I'd rather be in Ottawa in July.  Which was nice last year and 
-> hopefully this year as well.
-> 
-> > > If you can give more info about what to do in Ottawa in addition
-> > > to drinking beer and attending OLS it'd be great :P
-> 
-> I wondering if we can get a PPC BoF together, however not sure exactly 
-> what we would talk about.  Any ideas?
+On Wednesday 27 April 2005 18.33, Glenn Burkhardt wrote:
+> From the looks of the benchmarks described here:
+>
+> http://www.denx.de/twiki/bin/view/Know/Linux24vs26
+>
+> and the results are basically confirmed here:
+>
+> http://www.2cpu.com/articles/98_1.html
+>
+> there are good reasons to avoid using the 2.6 kernel.  Frankly, I'm
+> surprised and would have thought that the changes in the scheduler would
+> have brought improvements, as did the report here:
+>
+> http://www.lynuxworks.com/corporate/news/2004/linux-kernel-2.6.php
 
-We can talk about the elusive flattened OF tree for ppc32. :) It's
-probably smart just to gather for a pub BoF about embedded Linux/PPC
-stuff in general. We always have plenty of things...
+At all depends on what you measure (and that you actually measure
+what you think you are measuring :-)
 
--Matt
+"A PREEMPTIBLE KERNEL."
+
+  This is about how quick your higher priority thread actually gets to run
+  after an event (i.e. driver to application). It is not about how fast the
+  context switch itself is.
+
+  Why 2.4 might be faster:
+     Measure context switch time where one process wakes up another
+     while going to sleep has less overhead.
+
+  Modified test
+    Let the above processes run with SCHED_RR or SCHED_FIFO
+    add a third process that uses the kernel a lot - like memory management.
+
+"AN EFFICIENT SCHEDULER"
+
+  This is more about what will happen if you have more than a few processes
+  in the run queue - avoids searching all of them...
+
+  Why 2.4 might be faster:
+   A search of a list with only one element is hard to beat!
+   But try to measure using lots of processes running at the same time.
+
+/RogerL
