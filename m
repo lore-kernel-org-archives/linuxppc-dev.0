@@ -1,23 +1,21 @@
-Return-Path: <panto@intracom.gr>
-Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
-	by ozlabs.org (Postfix) with ESMTP id 4402C67A64
+Return-Path: <vijesh.vh@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.201])
+	by ozlabs.org (Postfix) with ESMTP id 464CA67A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Apr 2005 19:50:51 +1000 (EST)
-Received: from mailserv.intranet.gr (localhost [127.0.0.1])
-	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id j3R9tEWL016535
+	Wed, 27 Apr 2005 23:09:10 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id 37so233290wra
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Apr 2005 12:55:16 +0300 (EEST)
-Message-ID: <426F5D1A.7050805@intracom.gr>
-Date: Wed, 27 Apr 2005 12:36:26 +0300
-From: Pantelis Antoniou <panto@intracom.gr>
-MIME-Version: 1.0
-To: Pantelis Antoniou <panto@intracom.gr>
-References: <426F4598.6080009@intracom.gr>
-In-Reply-To: <426F4598.6080009@intracom.gr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: USB Host on 8271 (A cry for help)
+	Wed, 27 Apr 2005 06:09:06 -0700 (PDT)
+Message-ID: <8e78982e05042706097427f3e0@mail.gmail.com>
+Date: Wed, 27 Apr 2005 18:39:06 +0530
+From: Vijesh VH <vijesh.vh@gmail.com>
+To: linuxppc-embedded@ozlabs.org,
+	NanoGUI Mailing List <nanogui@linuxhacker.org>
+Mime-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_1822_5297844.1114607346501"
+Subject: Browsers that support javascript and Nano-X
+Reply-To: Vijesh VH <vijesh.vh@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,48 +26,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Pantelis Antoniou wrote:
-> Hi there
-> 
-> I'm trying to get USB host mode to work on 8271 and I'm
-> stumped.
-> 
-> The major problem is that automatic SOF generation as mentioned
-> in the manual appears to not work (or it's not clear how to
-> enable it).
-> 
-> I'm trying to port the 8xx based driver, which works
-> adequately after applying the microcode patch.
-> 
-> Sadly usb host mode on 82xx appears to suck even more.
-> 
-> If anyone has *any* code that works for host mode on 82xx please
-> contact me.
-> 
-> Regards
-> 
-> Pantelis
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
+------=_Part_1822_5297844.1114607346501
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Found it.
+Hi,
+Has any one tried cross compiling (for PowerPc4 05)any javascript supported=
+=20
+browser. If so please help me out in selection of the open source browsers.
 
-Now it works. RCCR[EIE] must be set.
+Architecture:PowerPC 405 Embedded Processor
+GUI: NanoX
 
-But is this mentioned anywhere in the USB chapter of the manual?
+--=20
+Thanks and Regards,
+Vijesh V H
 
-NO! That would be too easy.
+------=_Part_1822_5297844.1114607346501
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Regards
+<br>Hi,<br>
+Has any one tried cross compiling (for PowerPc4 05)any javascript
+supported browser. If so please help me out in selection of the open
+source browsers.<br>
+<br>
+Architecture:PowerPC 405 Embedded Processor<br>
+GUI: NanoX<br>
+<br>-- <br>Thanks and Regards,<br>Vijesh V H=20
 
-Pantelis.
-
-PS. Please, would someone from freescale include this fine
-point in the manual?
-
-Thank you.
+------=_Part_1822_5297844.1114607346501--
