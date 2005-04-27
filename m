@@ -1,17 +1,20 @@
-Return-Path: <DavidHo@nanometrics.ca>
-Received: from mail.nanometrics.ca (mail.nanometrics.ca [206.191.47.130])
-	by ozlabs.org (Postfix) with SMTP id 2565767AC5
+Return-Path: <glenn@aoi-industries.com>
+Received: from aoi-industries.com (mail.aoi-industries.com [216.204.214.42])
+	by ozlabs.org (Postfix) with ESMTP id 7DE1267B16
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Apr 2005 00:55:53 +1000 (EST)
-In-Reply-To: <8e78982e05042706097427f3e0@mail.gmail.com>
-To: Vijesh VH <vijesh.vh@gmail.com>
-Message-ID: <OF5DB7FA7E.C2F91E1F-ON85256FF0.00503CA6-85256FF0.0050A520@nanometrics.ca>
-From: David Ho <DavidHo@nanometrics.ca>
-Date: Wed, 27 Apr 2005 10:40:51 -0400
+	Thu, 28 Apr 2005 02:33:22 +1000 (EST)
+Received: from loki (loki [192.168.2.30])
+	by aoi-industries.com (Postfix) with ESMTP id 79C51C61C
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 27 Apr 2005 12:33:19 -0400 (EDT)
+From: Glenn Burkhardt <glenn@aoi-industries.com>
+To: linuxppc-embedded@ozlabs.org
+Date: Wed, 27 Apr 2005 12:33:18 -0400
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Browsers that support javascript and Nano-X
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200504271233.18856.glenn@aoi-industries.com>
+Subject: Re: Status of Linux 2.6 for 40x and 44x CPUs
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,54 +25,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+=46rom the looks of the benchmarks described here:
 
-At Nanometrics, we have compiled Konqueror-embedded, kdenox, and
-qt-embedded for our Motorola PowerPC 8xx platform.
-Total memory usage of the browser is around 20Megs.
-I don't believe ppc8xx is not too much different from the PowerPC 405, but
-I might be wrong.
-If you need help you can post questions at konq-e@kde.org
+http://www.denx.de/twiki/bin/view/Know/Linux24vs26
 
-David
+and the results are basically confirmed here:
 
+http://www.2cpu.com/articles/98_1.html
 
+there are good reasons to avoid using the 2.6 kernel.  Frankly, I'm surpris=
+ed=20
+and would have thought that the changes in the scheduler would have brought=
+=20
+improvements, as did the report here:
 
-                                                                           
-             Vijesh VH                                                     
-             <vijesh.vh@gmail.                                             
-             com>                                                       To 
-             Sent by:                  linuxppc-embedded@ozlabs.org,       
-             linuxppc-embedded         NanoGUI Mailing List                
-             -bounces@ozlabs.o         <nanogui@linuxhacker.org>           
-             rg                                                         cc 
-                                                                           
-                                                                   Subject 
-             04/27/2005 09:09          Browsers that support javascript    
-             AM                        and Nano-X                          
-                                                                           
-                                                                           
-             Please respond to                                             
-                 Vijesh VH                                                 
-             <vijesh.vh@gmail.                                             
-                   com>                                                    
-                                                                           
-                                                                           
+http://www.lynuxworks.com/corporate/news/2004/linux-kernel-2.6.php
 
-
-
-
-
-Hi,
-Has any one tried cross compiling (for PowerPc4 05)any javascript supported
-browser. If so please help me out in selection of the open source browsers.
-
-Architecture:PowerPC 405 Embedded Processor
-GUI: NanoX
-
---
-Thanks and Regards,
-Vijesh V H _______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+But it looks like the major improvements are in filesystem performance, so =
+for=20
+embedded use, 2.4 will be around for quite a while.
