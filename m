@@ -1,18 +1,16 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 742C267AC6
+Return-Path: <yuwei_qin@photontec.com>
+Received: from null.21cn.com (ent.ForPtr.21cn.com [202.105.45.53])
+	by ozlabs.org (Postfix) with SMTP id 1257F67A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Apr 2005 05:23:20 +1000 (EST)
-In-Reply-To: <056601c54a94$6d0cae50$2f010a0a@foundation.com>
-References: <056601c54a94$6d0cae50$2f010a0a@foundation.com>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <0959397aecc420eff4922c4b2b826976@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Tue, 26 Apr 2005 14:23:17 -0500
-To: "Stuart Yoder" <stuart.yoder@conformative.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: PowerPC + SMP
+	Wed, 27 Apr 2005 11:44:15 +1000 (EST)
+Date: Wed, 27 Apr 2005 09:37:59 +0800
+From: "=?gb2312?B?x9jT7s6w?=" <yuwei_qin@photontec.com>
+To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain;
+	charset="gb2312"
+Message-ID: <Ya949572905971.23961@receive11.inner-21cn.com>
+Subject: NET-SNMP(snmpd) in PPC 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,22 +21,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-On Apr 26, 2005, at 2:16 PM, Stuart Yoder wrote:
-
-> Thanks Kumar.
->
-> How can I know what assumptions the kernel makes about the state of the
->  CPU/system when it begins execution? Is this clearly documented
->  anywhere?
-
-Unfortunately this is something we dont have clearly documented today.  
-As they say the code is the documentation.
-
-> Do you know of open source bootloaders for Linux that would demonstrate
->  how to set up the CPUs as the Linux kernel expects.
-
-No, maybe take a look at linuxbios, not sure if it does SMP or not.  
-However, I'm not aware of any open source PPC SMP bootloaders.
-
-- kumar
+RGVhciB1c3JlcnOjoQ0KICAgICANCiAgICBJIGFtIHRyeWluZyB0byBydW4gc25tcGQgaW4gcG93
+ZXJwYyA4NTIgIHRocm91Z2ggY3Jvc3MtIGNvbXBpbGUuIFRoZSB2ZXJzaW9uIG9mIG5ldC1zbm1w
+IEkgdXNlZCBpcyA1LjIuMS4gdGhlIG9wZXJhdGUgc3lzdGVtIG9mIGhvc3QgSSB1c2VkIGlzIEZl
+ZG9yYSAzLg0KDQogVGhlIHN0ZXBzIEkgZm9sbG93ZWQgaXMgOg0KICAgKDEgKSBzZXQgdGhlIGVu
+dmlyb25tZW50IHZhcmlhYmxlDQogICAgICAgICQgQ0M9cG93ZXJwYy1saW51eC1nY2MNCiAgICAg
+ICAgJCBleHBvcnQgQ0MNCiAgICAgICAgJCBBUj1wb3dlcnBjLWxpbnV4LWFyDQogICAgICAgICQg
+ZXhwb3J0IEFSDQooMiApIGNvbmZpZ3VyZSBhbmQgaW5zdGFsbCB0aGUgTkVULVNOTVA6DQogICAg
+ICAgJCAuL2NvbmZpZ3VyZSCoQ2hvc3QgPXBvd2VycGMtbGludXggqEN3aXRoLWVuZGlhbm5lc3M9
+bGl0dGxlIKhDcHJlZml4PS90ZXN0ICAgIKhDZXhlYy1wcmVmaXg9L3Rlc3QgICAgDQogICAgICAg
+JCBtYWtlDQogICAgICAgJCBtYWtlIGluc3RhbGwNCiAgICgzKSB0aGVuIGFsbCBvZiB0aGUgZmls
+ZXMgYXJlIGluc3RhbGxlZCBpbiB0aGUgL3Rlc3QgZGlyZWN0b3J5DQogICAgICAgJCBjZCAvdGVz
+dA0KICAgICAgICQgbHMNCiAgICAgICBiaW4gbGliIHNiaW4gaW5jbHVkZSBtYW4gc2hhcmUNCiAg
+ICAoNCkgb3BlbmluZyB1cCB0aGUgdGFyZ2V0IG1hY2hpbmUocG93ZXJwYyA4NTIpIHRocm91Z2gg
+dGhlIKGwbWluaWNvbaGxDQogICAgICAgaW4gdGhlIG1pbmljb20gSSB0eXBlZCANCiAgICAgICAj
+IG1vdW50IKhDdCBuZnMgKioqLioqKi4qKi4qKjovdGVzdCAvdGVzdA0KICAgICg1ICkgdGhlbiBJ
+IHRyeSB0byBydW4gdGhlIHNubXBkIGluIHRoZSB0YXJnZXQgbWFjaGluZSwgaW4gdGhlIKGwbWlu
+aWNvbaGxIEkgdHlwZWQgOg0KICAgICAgICMgY2QgIC90ZXN0L3NiaW4NCiAgICAgICAjIC4vc25t
+cGQgDQogICAgICANCiAgICBJIGdvdCA6DQogICAgICAgIKGwbmZzOiAqKiouKioqLioqLioqIHNl
+cnZlciBub3QgcmVzcG9uZGluZyAgc3RpbGwgdHJ5aW5nobENCg0KICAgICBJIHdhbnQgdG8ga25v
+dyBob3cgY2FuIEkgcnVuIHRoZSBzbm1wZCBpbiB0aGUgdGFyZ2V0IG1hY2hpbmUocHBjIDg1Mikg
+dGhyb3VnaHQgY3Jvc3MtY29tcGlsZS4gDQogICAgICAgDQoNCgkNCg0KoaGhoaGhoaFZb3VycyBT
+aW5jZXJlbHkNCiAgICAgICAgICAgICAgICAgIFl1d2VpIFFpbg0KoaGhoaGhoaGhoaGhoaGhoXl1
+d2VpX3FpbkBwaG90b250ZWMuY29tDQqhoaGhoaGhoaGhoaGhoaGhoaGhoTIwMDUtMDQtMjYNCg==
