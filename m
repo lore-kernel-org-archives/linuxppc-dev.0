@@ -1,16 +1,35 @@
-Return-Path: <yuwei_qin@photontec.com>
-Received: from null.21cn.com (ent.ForPtr.21cn.com [202.105.45.53])
-	by ozlabs.org (Postfix) with SMTP id 1257F67A64
+Return-Path: <robin.gilks@tait.co.nz>
+Received: from gatekeeper.tait.co.nz (tel096021.tait.co.nz [202.37.96.21])
+	by ozlabs.org (Postfix) with ESMTP id 0C67867A6F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Apr 2005 11:44:15 +1000 (EST)
-Date: Wed, 27 Apr 2005 09:37:59 +0800
-From: "=?gb2312?B?x9jT7s6w?=" <yuwei_qin@photontec.com>
-To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Message-ID: <Ya949572905971.23961@receive11.inner-21cn.com>
-Subject: NET-SNMP(snmpd) in PPC 
+	Wed, 27 Apr 2005 12:26:20 +1000 (EST)
+Received: from gatekeeper.tait.co.nz (merlin.tait.co.nz [127.0.0.1])
+	by localhost.tait.co.nz (Postfix) with ESMTP id 4888410B919
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 27 Apr 2005 14:26:18 +1200 (NZST)
+Received: from sunstrike.tait.co.nz (unknown [172.25.40.92])
+	by gatekeeper.tait.co.nz (Postfix) with ESMTP id B694010B917
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 27 Apr 2005 14:26:17 +1200 (NZST)
+Received: from conversion-daemon.sunstrike.tait.co.nz by sunstrike.tait.co.nz
+	(Sun Java System Messaging Server 6.1 (built Apr 28 2004))
+	id <0IFK00M01YX6QJ00@sunstrike.tait.co.nz>
+	(original mail from robin.gilks@tait.co.nz) for
+	linuxppc-embedded@ozlabs.org; Wed, 27 Apr 2005 14:26:17 +1200 (NZST)
+Received: from [172.25.114.91] by sunstrike.tait.co.nz
+	(Sun Java System Messaging Server 6.1 (built Apr 28 2004))
+	with ESMTP id <0IFL00DMK2RTO8B0@sunstrike.tait.co.nz> for
+	linuxppc-embedded@ozlabs.org; Wed, 27 Apr 2005 14:26:17 +1200 (NZST)
+Date: Wed, 27 Apr 2005 14:26:17 +1200
+From: Robin Gilks <robin.gilks@tait.co.nz>
+In-reply-to: <426DAE1F.7000404@tait.co.nz>
+To: ppc embedded list <linuxppc-embedded@ozlabs.org>
+Message-id: <426EF849.4060007@tait.co.nz>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=ISO-8859-1
+References: <426DAE1F.7000404@tait.co.nz>
+Subject: Re: 8xx SMC break handling - SOLVED
+Reply-To: robin.gilks@tait.co.nz
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,26 +40,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-RGVhciB1c3JlcnOjoQ0KICAgICANCiAgICBJIGFtIHRyeWluZyB0byBydW4gc25tcGQgaW4gcG93
-ZXJwYyA4NTIgIHRocm91Z2ggY3Jvc3MtIGNvbXBpbGUuIFRoZSB2ZXJzaW9uIG9mIG5ldC1zbm1w
-IEkgdXNlZCBpcyA1LjIuMS4gdGhlIG9wZXJhdGUgc3lzdGVtIG9mIGhvc3QgSSB1c2VkIGlzIEZl
-ZG9yYSAzLg0KDQogVGhlIHN0ZXBzIEkgZm9sbG93ZWQgaXMgOg0KICAgKDEgKSBzZXQgdGhlIGVu
-dmlyb25tZW50IHZhcmlhYmxlDQogICAgICAgICQgQ0M9cG93ZXJwYy1saW51eC1nY2MNCiAgICAg
-ICAgJCBleHBvcnQgQ0MNCiAgICAgICAgJCBBUj1wb3dlcnBjLWxpbnV4LWFyDQogICAgICAgICQg
-ZXhwb3J0IEFSDQooMiApIGNvbmZpZ3VyZSBhbmQgaW5zdGFsbCB0aGUgTkVULVNOTVA6DQogICAg
-ICAgJCAuL2NvbmZpZ3VyZSCoQ2hvc3QgPXBvd2VycGMtbGludXggqEN3aXRoLWVuZGlhbm5lc3M9
-bGl0dGxlIKhDcHJlZml4PS90ZXN0ICAgIKhDZXhlYy1wcmVmaXg9L3Rlc3QgICAgDQogICAgICAg
-JCBtYWtlDQogICAgICAgJCBtYWtlIGluc3RhbGwNCiAgICgzKSB0aGVuIGFsbCBvZiB0aGUgZmls
-ZXMgYXJlIGluc3RhbGxlZCBpbiB0aGUgL3Rlc3QgZGlyZWN0b3J5DQogICAgICAgJCBjZCAvdGVz
-dA0KICAgICAgICQgbHMNCiAgICAgICBiaW4gbGliIHNiaW4gaW5jbHVkZSBtYW4gc2hhcmUNCiAg
-ICAoNCkgb3BlbmluZyB1cCB0aGUgdGFyZ2V0IG1hY2hpbmUocG93ZXJwYyA4NTIpIHRocm91Z2gg
-dGhlIKGwbWluaWNvbaGxDQogICAgICAgaW4gdGhlIG1pbmljb20gSSB0eXBlZCANCiAgICAgICAj
-IG1vdW50IKhDdCBuZnMgKioqLioqKi4qKi4qKjovdGVzdCAvdGVzdA0KICAgICg1ICkgdGhlbiBJ
-IHRyeSB0byBydW4gdGhlIHNubXBkIGluIHRoZSB0YXJnZXQgbWFjaGluZSwgaW4gdGhlIKGwbWlu
-aWNvbaGxIEkgdHlwZWQgOg0KICAgICAgICMgY2QgIC90ZXN0L3NiaW4NCiAgICAgICAjIC4vc25t
-cGQgDQogICAgICANCiAgICBJIGdvdCA6DQogICAgICAgIKGwbmZzOiAqKiouKioqLioqLioqIHNl
-cnZlciBub3QgcmVzcG9uZGluZyAgc3RpbGwgdHJ5aW5nobENCg0KICAgICBJIHdhbnQgdG8ga25v
-dyBob3cgY2FuIEkgcnVuIHRoZSBzbm1wZCBpbiB0aGUgdGFyZ2V0IG1hY2hpbmUocHBjIDg1Mikg
-dGhyb3VnaHQgY3Jvc3MtY29tcGlsZS4gDQogICAgICAgDQoNCgkNCg0KoaGhoaGhoaFZb3VycyBT
-aW5jZXJlbHkNCiAgICAgICAgICAgICAgICAgIFl1d2VpIFFpbg0KoaGhoaGhoaGhoaGhoaGhoXl1
-d2VpX3FpbkBwaG90b250ZWMuY29tDQqhoaGhoaGhoaGhoaGhoaGhoaGhoTIwMDUtMDQtMjYNCg==
+Robin Gilks wrote:
+> Greeting
+> 
+> Can anyone tell me if the break handling of an async SMC port will 
+> report a break immediately or whether it only reports it on the receipt 
+> of a valid character (which is what I'm seeing at present). As usual the 
+>  UM is a bit dry in this area!!
+> 
+> Maybe I've not enabled all that I need to in the SMC setup (based on 
+> 2.4.22 Denx kernel UART driver).
+> 
+> Thanks...
+> 
+
+Turns out that although the standard UART driver traps 'break', its 
+never unmasked in the SMCM register - missed this as the manual lumps 
+the SMCM register with the SMCE reg!!
+
+-- 
+Robin Gilks
+Senior Design Engineer          Phone: (+64)(3) 357 1569
+Tait Electronics                Fax  :  (+64)(3) 359 4632
+PO Box 1645 Christchurch        Email : robin.gilks@tait.co.nz
+New Zealand
+
+=======================================================================
+This email, including any attachments, is only for the intended
+addressee.  It is subject to copyright, is confidential and may be
+the subject of legal or other privilege, none of which is waived or
+lost by reason of this transmission.
+If the receiver is not the intended addressee, please accept our
+apologies, notify us by return, delete all copies and perform no
+other act on the email.
+Unfortunately, we cannot warrant that the email has not been
+ altered or corrupted during transmission.
+=======================================================================
