@@ -1,20 +1,20 @@
-Return-Path: <glenn@aoi-industries.com>
-Received: from aoi-industries.com (mail.aoi-industries.com [216.204.214.42])
-	by ozlabs.org (Postfix) with ESMTP id 7DE1267B16
+Return-Path: <jason.mcmullan@timesys.com>
+Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
+	by ozlabs.org (Postfix) with ESMTP id 7262C67B16
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Apr 2005 02:33:22 +1000 (EST)
-Received: from loki (loki [192.168.2.30])
-	by aoi-industries.com (Postfix) with ESMTP id 79C51C61C
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Apr 2005 12:33:19 -0400 (EDT)
-From: Glenn Burkhardt <glenn@aoi-industries.com>
-To: linuxppc-embedded@ozlabs.org
-Date: Wed, 27 Apr 2005 12:33:18 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200504271233.18856.glenn@aoi-industries.com>
-Subject: Re: Status of Linux 2.6 for 40x and 44x CPUs
+	Thu, 28 Apr 2005 02:39:02 +1000 (EST)
+From: Jason McMullan <jason.mcmullan@timesys.com>
+To: PPC_LINUX <linuxppc-embedded@ozlabs.org>
+In-Reply-To: <609724aa0424d00c851e3d085ce6d56f@freescale.com>
+References: <1114609634.30649.14.camel@ad.doubleclick.net>
+	<609724aa0424d00c851e3d085ce6d56f@freescale.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-rBeCTQD28LFJq9WWdSBC"
+Date: Wed, 27 Apr 2005 12:38:58 -0400
+Message-Id: <1114619938.4115.0.camel@ad.doubleclick.net>
+Mime-Version: 1.0
+Subject: Re: MPC8xx Platformization
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,22 +25,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-=46rom the looks of the benchmarks described here:
 
-http://www.denx.de/twiki/bin/view/Know/Linux24vs26
+--=-rBeCTQD28LFJq9WWdSBC
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-and the results are basically confirmed here:
+On Wed, 2005-04-27 at 09:42 -0500, Kumar Gala wrote:
+> Jason,
+>=20
+> Two comments:
+> 1. put mpc8xx_devices.c & mpc8xx_sys.c in arch/ppc/syslib (I moved the=20
+> 85xx ones here and its where 83xx & 52xx are)
 
-http://www.2cpu.com/articles/98_1.html
+Ok.
 
-there are good reasons to avoid using the 2.6 kernel.  Frankly, I'm surpris=
-ed=20
-and would have thought that the changes in the scheduler would have brought=
-=20
-improvements, as did the report here:
+> 2. can we just use hard coded offsets for start & end values.  I really=20
+> hate assuming that the global immap_t structure is always correct.  I'm=20
+> assuming on 8xx these values really aren't changing, take a look at=20
+> mpc83xx_devices.c
 
-http://www.lynuxworks.com/corporate/news/2004/linux-kernel-2.6.php
+No problem. I'll get another patch out soon.
 
-But it looks like the major improvements are in filesystem performance, so =
-for=20
-embedded use, 2.4 will be around for quite a while.
+--=20
+Jason McMullan <jason.mcmullan@timesys.com>
+TimeSys Corporation
+
+
+--=-rBeCTQD28LFJq9WWdSBC
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+
+iD8DBQBCb8Ah8/0vJ5szK6kRArIpAJwPXsSIv5MBBds+D50XXBPbw/3aKwCgo03i
+nBKvOVH4DvjLwztyOaxpJ7Y=
+=mAXS
+-----END PGP SIGNATURE-----
+
+--=-rBeCTQD28LFJq9WWdSBC--
