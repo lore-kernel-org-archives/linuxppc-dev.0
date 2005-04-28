@@ -1,18 +1,18 @@
-Return-Path: <chiradeep@matissenetworks.com>
-Received: from matisse01.matissenetworks.com
-	(h-66-166-77-18.snvacaid.covad.net [66.166.77.18])
-	by ozlabs.org (Postfix) with ESMTP id 24B4667B33
+Return-Path: <greg.weeks@timesys.com>
+Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
+	by ozlabs.org (Postfix) with ESMTP id 9DD2E67A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 29 Apr 2005 04:32:16 +1000 (EST)
+	Fri, 29 Apr 2005 04:50:29 +1000 (EST)
+Message-ID: <42713071.9010803@timesys.com>
+Date: Thu, 28 Apr 2005 14:50:25 -0400
+From: Greg Weeks <greg.weeks@timesys.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Thu, 28 Apr 2005 11:31:42 -0700
-Message-ID: <F237EFC9919B064C8BF5A44CDA5DA0C212F681@matisse01.matissenetworks.com>
-From: "Chiradeep Vittal" <chiradeep@matissenetworks.com>
-To: "Kumar Gala" <kumar.gala@freescale.com>
+To: Chiradeep Vittal <chiradeep@matissenetworks.com>
+References: <F237EFC9919B064C8BF5A44CDA5DA0C212F681@matisse01.matissenetworks.com>
+In-Reply-To: <F237EFC9919B064C8BF5A44CDA5DA0C212F681@matisse01.matissenetworks.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: Linux Kernel Issue: MPC8540 Errata (CPU29)
+Subject: Re: Linux Kernel Issue: MPC8540 Errata (CPU29)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,65 +23,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-It turns out to be a compiler issue.
-We're using gcc 3.4.3 with optimization level -Os. The following program =
-will generate the illegal instruction with -Os but not with -O2
-	int main (int argc, char** argv)
-	{=09
-	  int seq[] =3D {0, 1, 2};
-	  return 0;
-	}
-The reason is that the compiler generates code with the stswi =
-instruction which is not supported by the e500. Here's our compiler =
-configuration:
-Configured with: =
-/home/steve/perforce/sw/opt/crosstool/build/powerpc-8540-linux-gnu/gcc-3.=
-4.3-glibc-2.3.2/gcc-3.4.3/configure --target=3Dpowerpc-8540-linux-gnu =
---host=3Di686-host_pc-linux-gnu =
---prefix=3D/home/steve/perforce/sw/opt/cross-compile/powerpc-8540-linux-g=
-nu/gcc-3.4.3-glibc-2.3.2 --with-cpu=3D8540 =
---enable-cxx-flags=3D-mcpu=3D8540 =
---with-headers=3D/home/steve/perforce/sw/opt/cross-compile/powerpc-8540-l=
-inux-gnu/gcc-3.4.3-glibc-2.3.2/powerpc-8540-linux-gnu/include =
---with-local-prefix=3D/home/steve/perforce/sw/opt/cross-compile/powerpc-8=
-540-linux-gnu/gcc-3.4.3-glibc-2.3.2/powerpc-8540-linux-gnu --disable-nls =
---enable-threads=3Dposix --enable-symvers=3Dgnu --enable-__cxa_atexit =
---enable-languages=3Dc,c++ --enable-shared --enable-c99 =
---enable-long-long
+Chiradeep Vittal wrote:
 
-Any recommendations?
-
-Thanks
---
-Chiradeep
-
------Original Message-----
-From: Kumar Gala [mailto:kumar.gala@freescale.com]=20
-Sent: Wednesday, April 27, 2005 11:37 AM
-To: Chiradeep Vittal
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Linux Kernel Issue: MPC8540 Errata (CPU29)
-
-On Apr 27, 2005, at 12:46 PM, Chiradeep Vittal wrote:
-
-> We're running Linux Kernel 2.4.26 on an 8540 ADS derivative. We're
->  seeing an
-> "illegal instruction"=A0 (SIGILL) exception under some circumstances
-> (during a pthread_create call). We were wondering if this could be a
-> symptom of
-> CPU29 and if there is a patch available for CPU29.
+>It turns out to be a compiler issue.
+>We're using gcc 3.4.3 with optimization level -Os. The following program will generate the illegal instruction with -Os but not with -O2
+>	int main (int argc, char** argv)
+>	{	
+>	  int seq[] = {0, 1, 2};
+>	  return 0;
+>	}
+>The reason is that the compiler generates code with the stswi instruction which is not supported by the e500. Here's our compiler configuration:
+>Configured with: /home/steve/perforce/sw/opt/crosstool/build/powerpc-8540-linux-gnu/gcc-3.4.3-glibc-2.3.2/gcc-3.4.3/configure --target=powerpc-8540-linux-gnu --host=i686-host_pc-linux-gnu --prefix=/home/steve/perforce/sw/opt/cross-compile/powerpc-8540-linux-gnu/gcc-3.4.3-glibc-2.3.2 --with-cpu=8540 --enable-cxx-flags=-mcpu=8540 --with-headers=/home/steve/perforce/sw/opt/cross-compile/powerpc-8540-linux-gnu/gcc-3.4.3-glibc-2.3.2/powerpc-8540-linux-gnu/include --with-local-prefix=/home/steve/perforce/sw/opt/cross-compile/powerpc-8540-linux-gnu/gcc-3.4.3-glibc-2.3.2/powerpc-8540-linux-gnu --disable-nls --enable-threads=posix --enable-symvers=gnu --enable-__cxa_atexit --enable-languages=c,c++ --enable-shared --enable-c99 --enable-long-long
 >
-> "CPU29 L1 instruction cache gets multiple entries for same line after
->  change
-> in MSR[IS] bit "
+>Any recommendations?
+>  
 >
-> www.freescale.com/files/32bit/doc/errata/MPC8540CE.pdf
+Here's the patch we use to get GCC to stop generating the invalid 
+intructions.
 
-The way the Linux kernel manages the MMU on e500 it doesn't actually=20
-ever modify MSR[IS] or MSR[DS].  They are always zero so I dont believe=20
-you are hitting this errata.
+Greg Weeks
 
-Are you running with math emulation turned on?  Do you know what the=20
-instruction is that causes the SIGILL?
 
-- kumar
+--- gcc-orig/gcc/config/rs6000/rs6000.h    2003-12-08 20:57:45.000000000 
+-0500
++++ gcc-new/gcc/config/rs6000/rs6000.h    2004-09-15 14:23:36.680978222 
+-0400
+@@ -550,10 +550,10 @@
+ #define TARGET_LONG_DOUBLE_128 (rs6000_long_double_type_size == 128)
+ #define TARGET_ALTIVEC_ABI rs6000_altivec_abi
+ #define TARGET_ALTIVEC_VRSAVE rs6000_altivec_vrsave
++#define TARGET_E500 (rs6000_cpu == PROCESSOR_PPC8540)
+ 
+ #define TARGET_SPE_ABI 0
+ #define TARGET_SPE 0
+-#define TARGET_E500 0
+ #define TARGET_ISEL 0
+ #define TARGET_FPRS 1
+ 
