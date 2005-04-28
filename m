@@ -1,19 +1,18 @@
-Return-Path: <p2@mind.be>
-Received: from nat.office.mind.be. (NAT.office.mind.be [62.166.230.82])
-	by ozlabs.org (Postfix) with ESMTP id A821567B1B
+Return-Path: <markc@mail.com>
+Received: from relay04.roc.ny.frontiernet.net (relay04.roc.ny.frontiernet.net
+	[66.133.182.167]) by ozlabs.org (Postfix) with ESMTP id 477A967B2D
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Apr 2005 19:53:30 +1000 (EST)
-Received: from p2 by codecarverwith local (Exim 3.36 #1 (Debian))
-	id 1DR5c4-0004i4-00
-	for <linuxppc-embedded@ozlabs.org>; Thu, 28 Apr 2005 11:47:16 +0200
-Date: Thu, 28 Apr 2005 11:47:16 +0200
-To: linuxppc-embedded@ozlabs.org
-Message-ID: <20050428094716.GA17582@mind.be>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="AhhlLboLdkugWU4S"
-From: Peter 'p2' De Schrijver <p2@mind.be>
-Subject: connecting BDI2000 to ML403
+	Thu, 28 Apr 2005 22:04:46 +1000 (EST)
+Message-ID: <00f101c54bea$7b5d26e0$0301a8c0@chuck2>
+From: "Mark Chambers" <markc@mail.com>
+To: <linuxppc-embedded@ozlabs.org>,
+	"Peter 'p2' De Schrijver" <p2@mind.be>
+References: <20050428094716.GA17582@mind.be>
+Date: Thu, 28 Apr 2005 08:04:41 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Re: connecting BDI2000 to ML403
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,34 +23,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+>Hi,
+>
+>I'm trying to figure out how to connect the BDI 2000 with a Xilinx ML403 
+>development board. As far as I can see in the ML403 schematics, the JTAG
+>connector lacks the nTRST and the HALT signals needed for JTAG
+>debugging. Any ideas ?
+>
+>Thanks,
+>
+>Peter (p2).
 
---AhhlLboLdkugWU4S
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The BDI doesn't need nTRST or HALT, so that's not your problem.  nTRST
+must be pulled high, but the BDI doesn't need to drive that signal.
 
-Hi,
-
-I'm trying to figure out how to connect the BDI 2000 with a Xilinx ML403=20
-development board. As far as I can see in the ML403 schematics, the JTAG
-connector lacks the nTRST and the HALT signals needed for JTAG
-debugging. Any ideas ?
-
-Thanks,
-
-Peter (p2).
-
---AhhlLboLdkugWU4S
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.5 (GNU/Linux)
-
-iD8DBQFCcLEkKLKVw/RurbsRAsfdAJ0Rh6i/aVhRv4UwxAlg30UUTAMLrwCgiym9
-ivJcvMneY3P9GVnVqSXKA+I=
-=dRBv
------END PGP SIGNATURE-----
-
---AhhlLboLdkugWU4S--
+Mark Chambers
