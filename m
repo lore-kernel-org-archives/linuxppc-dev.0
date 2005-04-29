@@ -1,18 +1,17 @@
-Return-Path: <mgreer@mvista.com>
-Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
-	by ozlabs.org (Postfix) with ESMTP id 40AA367B27
+Return-Path: <mlei30@yahoo.com>
+Received: from web61008.mail.yahoo.com (web61008.mail.yahoo.com
+	[216.155.196.97]) by ozlabs.org (Postfix) with SMTP id 2824367A6F
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 29 Apr 2005 10:44:58 +1000 (EST)
-Message-ID: <42718380.3050902@mvista.com>
-Date: Thu, 28 Apr 2005 17:44:48 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
+	Fri, 29 Apr 2005 12:11:27 +1000 (EST)
+Message-ID: <20050429020445.24822.qmail@web61008.mail.yahoo.com>
+Date: Thu, 28 Apr 2005 19:04:45 -0700 (PDT)
+From: ming lei <mlei30@yahoo.com>
+To: Glenn Burkhardt <glenn@aoi-industries.com>
+In-Reply-To: 6667
 MIME-Version: 1.0
-To: Sam Song <samlinuxppc@yahoo.com.cn>
-References: <20050423121645.63553.qmail@web15810.mail.cnb.yahoo.com>
-In-Reply-To: <20050423121645.63553.qmail@web15810.mail.cnb.yahoo.com>
-Content-Type: multipart/mixed; boundary="------------020802060307010409030900"
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: 824x sandpoint and 2.6.x
+Subject: Re: kernel BUG at page_alloc.c:225 on PPC440GP
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,98 +23,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-This is a multi-part message in MIME format.
---------------020802060307010409030900
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: 7bit
+I cannot remember everything right now. There was a
+problem with the init bootmem reservation that caused
+this BUG. Two region of bootmem got overlapped
+somehow.
 
-Sam Song wrote:
+--- Glenn Burkhardt <glenn@aoi-industries.com> wrote:
+> I know it's been a year and a half since you
+> submitted this report to the 
+> mailing list, but was this problem ever resolved?  I
+> think I'm seeing 
+> something similar in the 2.4.23 kernel.
+> 
+> Thanks!
+> 
 
->If possible, could you pls show me a right 2.6 boot
->process of
-> sandpoint X3/2? I wanna to find out some nice hints
->of it. This
->is the first time to me so hard to debug a kernel
->before normal 
->console. 
->
-
-Here is the output of a 7457 sandpoint on a very old root filesystem.
-Output for any other processor will be the same.
---
-
---------------020802060307010409030900
-Content-Type: text/plain;
- name="sandpoint.log"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="sandpoint.log"
-
-bG9hZGVkIGF0OiAgICAgMDExMDAwMDAgMDEyMjgxMzQKcmVsb2NhdGVkIHRvOiAgMDA4MDAw
-MDAgMDA5MjgxMzQKemltYWdlIGF0OiAgICAgMDA4MDU4MzEgMDA5MjU0NkMKYXZhaWwgcmFt
-OiAgICAgMDA0MDAwMDAgMDA4MDAwMDAKCkxpbnV4L1BQQyBsb2FkOiBpcD1vbgpVbmNvbXBy
-ZXNzaW5nIExpbnV4Li4uZG9uZS4KTm93IGJvb3RpbmcgdGhlIGtlcm5lbApUb3RhbCBtZW1v
-cnkgPSAzMk1COyB1c2luZyA2NGtCIGZvciBoYXNoIHRhYmxlIChhdCBjMDI4MDAwMCkKTGlu
-dXggdmVyc2lvbiAyLjYuMTItcmMyIChtZ3JlZXJAbWFnLmF6Lm12aXN0YS5jb20pIChnY2Mg
-dmVyc2lvbiAzLjQuMyAoTW9udGFWaXMKdGEgMy40LjMtMTEuMC4wLjA1MDAxNTAgMjAwNS0w
-Mi0wNykpICMxIFRodSBBcHIgMjggMTE6NTM6NDUgTVNUIDIwMDUKTW90b3JvbGEgU1BTIFNh
-bmRwb2ludCBUZXN0IFBsYXRmb3JtClBvcnQgYnkgTW9udGFWaXN0YSBTb2Z0d2FyZSwgSW5j
-LiAoc291cmNlQG12aXN0YS5jb20pCkJ1aWx0IDEgem9uZWxpc3RzCktlcm5lbCBjb21tYW5k
-IGxpbmU6IGlwPW9uCk9wZW5QSUMgVmVyc2lvbiAxLjIgKDEgQ1BVcyBhbmQgMjAgSVJRIHNv
-dXJjZXMpIGF0IGZkZmQwMDAwCk9wZW5QSUMgdGltZXIgZnJlcXVlbmN5IGlzIDEwMC4wMDAw
-MDAgTUh6ClBJRCBoYXNoIHRhYmxlIGVudHJpZXM6IDI1NiAob3JkZXI6IDgsIDQwOTYgYnl0
-ZXMpCnRpbWVfaW5pdDogZGVjcmVtZW50ZXIgZnJlcXVlbmN5ID0gMjQuMzU3OTQ1IE1IegpE
-ZW50cnkgY2FjaGUgaGFzaCB0YWJsZSBlbnRyaWVzOiA4MTkyIChvcmRlcjogMywgMzI3Njgg
-Ynl0ZXMpCklub2RlLWNhY2hlIGhhc2ggdGFibGUgZW50cmllczogNDA5NiAob3JkZXI6IDIs
-IDE2Mzg0IGJ5dGVzKQpNZW1vcnk6IDI5ODI0ayBhdmFpbGFibGUgKDE4MjhrIGtlcm5lbCBj
-b2RlLCA1NjhrIGRhdGEsIDEwOGsgaW5pdCwgMGsgaGlnaG1lbSkKTW91bnQtY2FjaGUgaGFz
-aCB0YWJsZSBlbnRyaWVzOiA1MTIKTkVUOiBSZWdpc3RlcmVkIHByb3RvY29sIGZhbWlseSAx
-NgpQQ0k6IFByb2JpbmcgUENJIGhhcmR3YXJlClBDSTogQ2Fubm90IGFsbG9jYXRlIHJlc291
-cmNlIHJlZ2lvbiAxIG9mIGRldmljZSAwMDAwOjAwOjAwLjAKdXNiY29yZTogcmVnaXN0ZXJl
-ZCBuZXcgZHJpdmVyIHVzYmZzCnVzYmNvcmU6IHJlZ2lzdGVyZWQgbmV3IGRyaXZlciBodWIK
-R2VuZXJpYyBSVEMgRHJpdmVyIHYxLjA3ClNlcmlhbDogODI1MC8xNjU1MCBkcml2ZXIgJFJl
-dmlzaW9uOiAxLjkwICQgNCBwb3J0cywgSVJRIHNoYXJpbmcgZGlzYWJsZWQKdHR5UzAgYXQg
-TU1JTyAweDAgKGlycSA9IDQpIGlzIGEgTlMxNjU1MEEKdHR5UzEgYXQgTU1JTyAweDAgKGly
-cSA9IDMpIGlzIGEgTlMxNjU1MEEKaW8gc2NoZWR1bGVyIG5vb3AgcmVnaXN0ZXJlZAppbyBz
-Y2hlZHVsZXIgYW50aWNpcGF0b3J5IHJlZ2lzdGVyZWQKaW8gc2NoZWR1bGVyIGRlYWRsaW5l
-IHJlZ2lzdGVyZWQKaW8gc2NoZWR1bGVyIGNmcSByZWdpc3RlcmVkClJBTURJU0sgZHJpdmVy
-IGluaXRpYWxpemVkOiAxNiBSQU0gZGlza3Mgb2YgNDA5Nksgc2l6ZSAxMDI0IGJsb2Nrc2l6
-ZQpsb29wOiBsb2FkZWQgKG1heCA4IGRldmljZXMpCmUxMDA6IEludGVsKFIpIFBSTy8xMDAg
-TmV0d29yayBEcml2ZXIsIDMuMy42LWsyLU5BUEkKZTEwMDogQ29weXJpZ2h0KGMpIDE5OTkt
-MjAwNCBJbnRlbCBDb3Jwb3JhdGlvbgplMTAwOiBldGgwOiBlMTAwX3Byb2JlOiBhZGRyIDB4
-YmZmZmYwMDAsIGlycSAyMSwgTUFDIGFkZHIgMDA6MDA6ODI6NTg6NTA6MDIKVW5pZm9ybSBN
-dWx0aS1QbGF0Zm9ybSBFLUlERSBkcml2ZXIgUmV2aXNpb246IDcuMDBhbHBoYTIKaWRlOiBB
-c3N1bWluZyAzM01IeiBzeXN0ZW0gYnVzIHNwZWVkIGZvciBQSU8gbW9kZXM7IG92ZXJyaWRl
-IHdpdGggaWRlYnVzPXh4CnVzYm1vbjogZGVidWdzIGlzIG5vdCBhdmFpbGFibGUKTkVUOiBS
-ZWdpc3RlcmVkIHByb3RvY29sIGZhbWlseSAyCklQOiByb3V0aW5nIGNhY2hlIGhhc2ggdGFi
-bGUgb2YgNTEyIGJ1Y2tldHMsIDRLYnl0ZXMKVENQIGVzdGFibGlzaGVkIGhhc2ggdGFibGUg
-ZW50cmllczogMjA0OCAob3JkZXI6IDIsIDE2Mzg0IGJ5dGVzKQpUQ1AgYmluZCBoYXNoIHRh
-YmxlIGVudHJpZXM6IDIwNDggKG9yZGVyOiAxLCA4MTkyIGJ5dGVzKQpUQ1A6IEhhc2ggdGFi
-bGVzIGNvbmZpZ3VyZWQgKGVzdGFibGlzaGVkIDIwNDggYmluZCAyMDQ4KQpORVQ6IFJlZ2lz
-dGVyZWQgcHJvdG9jb2wgZmFtaWx5IDEKTkVUOiBSZWdpc3RlcmVkIHByb3RvY29sIGZhbWls
-eSAxNwplMTAwOiBldGgwOiBlMTAwX3dhdGNoZG9nOiBsaW5rIHVwLCAxMDBNYnBzLCBoYWxm
-LWR1cGxleApTZW5kaW5nIEJPT1RQIHJlcXVlc3RzIC4gT0sKSVAtQ29uZmlnOiBHb3QgQk9P
-VFAgYW5zd2VyIGZyb20gMTkyLjE2OC4xLjEsIG15IGFkZHJlc3MgaXMgMTkyLjE2OC4xLjY1
-CklQLUNvbmZpZzogQ29tcGxldGU6CiAgICAgIGRldmljZT1ldGgwLCBhZGRyPTE5Mi4xNjgu
-MS42NSwgbWFzaz0yNTUuMjU1LjI1NS4wLCBndz0yNTUuMjU1LjI1NS4yNTUsCiAgICAgaG9z
-dD1lZXByb182LCBkb21haW49LCBuaXMtZG9tYWluPShub25lKSwKICAgICBib290c2VydmVy
-PTE5Mi4xNjguMS4xLCByb290c2VydmVyPTE5Mi4xNjguMS4xLCByb290cGF0aD0vb3B0L2hh
-cmRoYXQvZGV2a2kKdC9wcGMvNzR4eC90YXJnZXQvCkxvb2tpbmcgdXAgcG9ydCBvZiBSUEMg
-MTAwMDAzLzIgb24gMTkyLjE2OC4xLjEKTG9va2luZyB1cCBwb3J0IG9mIFJQQyAxMDAwMDUv
-MSBvbiAxOTIuMTY4LjEuMQpWRlM6IE1vdW50ZWQgcm9vdCAobmZzIGZpbGVzeXN0ZW0pIHJl
-YWRvbmx5LgpGcmVlaW5nIHVudXNlZCBrZXJuZWwgbWVtb3J5OiAxMDhrIGluaXQKSU5JVDog
-dmVyc2lvbiAyLjc4IGJvb3RpbmcKQWN0aXZhdGluZyBzd2FwLi4uCkNoZWNraW5nIGFsbCBm
-aWxlIHN5c3RlbXMuLi4KUGFyYWxsZWxpemluZyBmc2NrIHZlcnNpb24gMS4yMiAoMjItSnVu
-LTIwMDEpCkNhbGN1bGF0aW5nIG1vZHVsZSBkZXBlbmRlbmNpZXMuLi4gZGVwbW9kOiBRTV9N
-T0RVTEVTOiBGdW5jdGlvbiBub3QgaW1wbGVtZW50ZWQKCmRvbmUuCkxvYWRpbmcgbW9kdWxl
-czogCm1vZHByb2JlOiBDYW4ndCBvcGVuIGRlcGVuZGVuY2llcyBmaWxlIC9saWIvbW9kdWxl
-cy8yLjYuMTItcmMyL21vZHVsZXMuZGVwIChObyBzCnVjaCBmaWxlIG9yIGRpcmVjdG9yeSkK
-bWtkaXI6IGNhbm5vdCBjcmVhdGUgZGlyZWN0b3J5IGAvZGV2L3B0cyc6IEZpbGUgZXhpc3Rz
-Ck1vdW50aW5nIGxvY2FsIGZpbGVzeXN0ZW1zLi4uCm5vdGhpbmcgd2FzIG1vdW50ZWQKQ2xl
-YW5pbmc6IC9ldGMvbmV0d29yay9pZnN0YXRlLgpTZXR0aW5nIHVwIElQIHNwb29maW5nIHBy
-b3RlY3Rpb246IHJwX2ZpbHRlci4KRGlzYWJsZSBUQ1AvSVAgRXhwbGljaXQgQ29uZ2VzdGlv
-biBOb3RpZmljYXRpb246IGRvbmUuCklOSVQ6IEVudGVyaW5nIHJ1bmxldmVsOiAzClN0YXJ0
-aW5nIHN5c3RlbSBsb2cgZGFlbW9uOiBzeXNsb2dkIGtsb2dkLgpTdGFydGluZyBpbnRlcm5l
-dCBzdXBlcnNlcnZlcjogaW5ldGQuCgpNb250YVZpc3RhIExpbnV4IDMuMCwgUHJvZmVzc2lv
-bmFsIEVkaXRpb24KCmVlcHJvXzYgbG9naW46IAo=
---------------020802060307010409030900--
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
