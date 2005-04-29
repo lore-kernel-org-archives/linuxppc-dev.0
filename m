@@ -1,17 +1,20 @@
-Return-Path: <mlei30@yahoo.com>
-Received: from web61008.mail.yahoo.com (web61008.mail.yahoo.com
-	[216.155.196.97]) by ozlabs.org (Postfix) with SMTP id 2824367A6F
+Return-Path: <wd@denx.de>
+Received: from mailout02.sul.t-online.com (mailout02.sul.t-online.com
+	[194.25.134.17]) by ozlabs.org (Postfix) with ESMTP id DF35E679F4
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 29 Apr 2005 12:11:27 +1000 (EST)
-Message-ID: <20050429020445.24822.qmail@web61008.mail.yahoo.com>
-Date: Thu, 28 Apr 2005 19:04:45 -0700 (PDT)
-From: ming lei <mlei30@yahoo.com>
-To: Glenn Burkhardt <glenn@aoi-industries.com>
-In-Reply-To: 6667
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: kernel BUG at page_alloc.c:225 on PPC440GP
+	Fri, 29 Apr 2005 16:03:08 +1000 (EST)
+To: kylo@kylo.net
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 28 Apr 2005 15:21:30 PDT."
+	<61cc712d05042815211d84e870@mail.gmail.com>
+Date: Fri, 29 Apr 2005 08:02:53 +0200
+Sender: wd@denx.de
+Message-Id: <20050429060258.DCCE1C1510@atlas.denx.de>
+Cc: Chiradeep Vittal <chiradeep@matissenetworks.com>,
+	linuxppc-embedded@ozlabs.org
+Subject: Re: Linux Kernel Issue: MPC8540 Errata (CPU29) 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,23 +25,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-I cannot remember everything right now. There was a
-problem with the init bootmem reservation that caused
-this BUG. Two region of bootmem got overlapped
-somehow.
-
---- Glenn Burkhardt <glenn@aoi-industries.com> wrote:
-> I know it's been a year and a half since you
-> submitted this report to the 
-> mailing list, but was this problem ever resolved?  I
-> think I'm seeing 
-> something similar in the 2.4.23 kernel.
+In message <61cc712d05042815211d84e870@mail.gmail.com> you wrote:
 > 
-> Thanks!
-> 
+> I have the same issue with gcc3.4.3 and an e500 target.  You can give
+> gcc the -mno-string to inhibit generation of those load/store string
+> instructions.  I don't know if gcc can be configured such that its
+> default is not to generate those instructions.
 
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+Yes, it can. In config/rs6000/rs6000.c replace
+
+	if (BYTES_BIG_ENDIAN && optimize_size)
+	  target_flags |= MASK_MULTIPLE | MASK_STRING;
+by
+	if (BYTES_BIG_ENDIAN && optimize_size)
+	  target_flags |= 
+	    (MASK_MULTIPLE | MASK_STRING) & ~processor_target_table[j].target_disable;
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Do you suppose the reason the ends of the `Intel Inside'  logo  don't
+match up is that it was drawn on a Pentium?
