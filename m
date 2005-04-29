@@ -1,20 +1,22 @@
-Return-Path: <wd@denx.de>
-Received: from mailout02.sul.t-online.com (mailout02.sul.t-online.com
-	[194.25.134.17]) by ozlabs.org (Postfix) with ESMTP id DF35E679F4
+Return-Path: <joern@wohnheim.fh-wedel.de>
+Received: from moskovskaya.fh-wedel.de (mail.fh-wedel.de [213.39.232.198])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A13F4679E2
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 29 Apr 2005 16:03:08 +1000 (EST)
-To: kylo@kylo.net
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 28 Apr 2005 15:21:30 PDT."
-	<61cc712d05042815211d84e870@mail.gmail.com>
-Date: Fri, 29 Apr 2005 08:02:53 +0200
-Sender: wd@denx.de
-Message-Id: <20050429060258.DCCE1C1510@atlas.denx.de>
-Cc: Chiradeep Vittal <chiradeep@matissenetworks.com>,
-	linuxppc-embedded@ozlabs.org
-Subject: Re: Linux Kernel Issue: MPC8540 Errata (CPU29) 
+	Fri, 29 Apr 2005 16:48:39 +1000 (EST)
+Date: Fri, 29 Apr 2005 08:48:28 +0200
+From: =?iso-8859-1?Q?J=F6rn?= Engel <joern@wohnheim.fh-wedel.de>
+To: Josh Boyer <jwboyer@jdub.homelinux.org>
+Message-ID: <20050429064828.GA20003@wohnheim.fh-wedel.de>
+References: <OF6EA2D85F.3FCDDAC2-ON85256FEB.00750EFB@teal.com>
+	<20050422215339.GA9488@gate.ebshome.net>
+	<1114207484.27280.9.camel@jdub.homelinux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1114207484.27280.9.camel@jdub.homelinux.org>
+Cc: Jeff.Fellin@rflelect.com, linuxppc-embedded@ozlabs.org
+Subject: Re: Flash Statistics
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,28 +27,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <61cc712d05042815211d84e870@mail.gmail.com> you wrote:
+On Fri, 22 April 2005 17:04:44 -0500, Josh Boyer wrote:
+> > 
+> > Flash datasheet must have this information.
 > 
-> I have the same issue with gcc3.4.3 and an e500 target.  You can give
-> gcc the -mno-string to inhibit generation of those load/store string
-> instructions.  I don't know if gcc can be configured such that its
-> default is not to generate those instructions.
+> They have information on the maximum number of writes per eraseblock,
+> yes.  But I think Jeff is looking for some statistic gathering tools he
+> can use to figure out how his application workload is effecting flash.
+> I doubt that is in any datasheets ;).
 
-Yes, it can. In config/rs6000/rs6000.c replace
+Or in any currently existing mtd driver, for that matter.
 
-	if (BYTES_BIG_ENDIAN && optimize_size)
-	  target_flags |= MASK_MULTIPLE | MASK_STRING;
-by
-	if (BYTES_BIG_ENDIAN && optimize_size)
-	  target_flags |= 
-	    (MASK_MULTIPLE | MASK_STRING) & ~processor_target_table[j].target_disable;
-
-Best regards,
-
-Wolfgang Denk
+Jörn
 
 -- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Do you suppose the reason the ends of the `Intel Inside'  logo  don't
-match up is that it was drawn on a Pentium?
+Fancy algorithms are buggier than simple ones, and they're much harder
+to implement. Use simple algorithms as well as simple data structures.
+-- Rob Pike
