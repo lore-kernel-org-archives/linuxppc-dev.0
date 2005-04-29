@@ -1,19 +1,20 @@
-Return-Path: <wd@denx.de>
-Received: from mailout02.sul.t-online.com (mailout02.sul.t-online.com
-	[194.25.134.17]) by ozlabs.org (Postfix) with ESMTP id 39FD367A70
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id A501F67A70
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 30 Apr 2005 06:55:45 +1000 (EST)
-To: Peter Asemann <peter.asemann@web.de>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 29 Apr 2005 17:47:01 +0200."
-	<427256F5.8080903@web.de>
-Date: Fri, 29 Apr 2005 22:55:24 +0200
-Sender: wd@denx.de
-Message-Id: <20050429205529.4631BC1510@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: problem compiling linux with ELDK: `bd_t' undeclared 
+	Sat, 30 Apr 2005 08:23:14 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Fri, 29 Apr 2005 17:23:12 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B85937C@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Vitaly Bordug" <vbordug@ru.mvista.com>,
+	"Kumar Gala" <kumar.gala@freescale.com>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: RE: [PATCH 2.6.12-rc2] Freescale 8272ADS PCI bridge support to
+	thestock linux-2.5 (updated)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,29 +25,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <427256F5.8080903@web.de> you wrote:
-> 
-> I'm having a problem compiling Linux 2.4.25 as included in ELDK version 
-> 3.1 / Build 2004-11-10.
-> 
-> When trying to compile ppc_8xx/usr/src/linux-2.4.25/drivers/char/flash.c 
-> it throws an error:
+The patch works on MPC8266ADS board using PQ2FADS setup with a couple of
+hacks to disable some stuff the PQ2 has that the 8266ADS doesn't
 
-You are using an inappropriate configuration of the Linux kernel.
-
-> It looks like it misses ppcboot.h or something. Is there something I 
-> need to select in the kernel configuration to get rid of that error?
-
-Not to select, but to unselect: don't try enabling  the  CONFIG_FLASH
-option  if (1) you don't know exactly what you're doing *and* (2) you
-are really using on of the boards supported by this driver (which  is
-obsolete und unsupported, btw.).
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-A failure will not appear until a unit has passed final inspection.
+> -----Original Message-----
+> From: Vitaly Bordug [mailto:vbordug@ru.mvista.com]=20
+> Sent: Friday, April 29, 2005 06:29
+> To: Kumar Gala
+> Cc: Rune Torgersen; Wolfgang Denk; Tom Rini; linuxppc-embedded list
+> Subject: Re: [PATCH 2.6.12-rc2] Freescale 8272ADS PCI bridge=20
+> support to thestock linux-2.5 (updated)
+>=20
+> Kumar,
+>=20
+> This is what currently intended to represent on-chip PCI=20
+> bridge support=20
+> for PQ2 family.
+> It's approved working on my 8272 and have a very good probably of the=20
+> same on the PQ2FADS-VR board. It contains low-level (SIUMCR & CPLD IC=20
+> chip select ) setup only for 8272 and PQ2FADS, considering=20
+> that u-boot=20
+> does this stuff for 8266 boards. The actual source files are=20
+> renamed to=20
+> m82xx_pci.[ch].
+>=20
+> Rune, can you test this for m8266/8265 ? I guess while IRQ stuff is=20
+> nearly the same, this _should_ work as is or with minimum=20
+> effort. Note=20
+> that you'll need to define PCI_INT_TO_SIU in platforms/pq2ads.h (I=20
+> suppose it's the same as PQ2FADS - SIU_INT_IRQ6,  but I'm not sure).
+>=20
+> Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+>=20
+> --=20
+> Sincerely,=20
+> Vitaly
+>=20
+>=20
