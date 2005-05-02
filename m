@@ -1,19 +1,15 @@
-Return-Path: <wd@denx.de>
-Received: from mailout03.sul.t-online.com (mailout03.sul.t-online.com
-	[194.25.134.81]) by ozlabs.org (Postfix) with ESMTP id 9BBE4679F8
+Return-Path: <blofeldus@yahoo.com>
+Received: from web53504.mail.yahoo.com (web53504.mail.yahoo.com
+	[206.190.37.65]) by ozlabs.org (Postfix) with SMTP id 7F76367B19
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  3 May 2005 00:40:40 +1000 (EST)
-To: Peter Asemann <peter.asemann@web.de>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 02 May 2005 15:25:44 +0200."
-	<42762A58.7090104@web.de>
-Date: Mon, 02 May 2005 16:40:16 +0200
-Sender: wd@denx.de
-Message-Id: <20050502144021.C1FE5C1510@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Linux 2.4.25 from ELDK 3.1 won't compile 
+	Tue,  3 May 2005 01:00:07 +1000 (EST)
+Message-ID: <20050502145326.80965.qmail@web53504.mail.yahoo.com>
+Date: Mon, 2 May 2005 07:53:25 -0700 (PDT)
+From: roger blofeld <blofeldus@yahoo.com>
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Subject: MPC5200 I2S Driver -- where?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,21 +20,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <42762A58.7090104@web.de> you wrote:
-> I still didn't manage to compile a kernel. Though I unselected as much 
-> features as I could, the compiler still isn't happy. Any ideas?
+Hi,
+ A few weeks ago a simple I2S driver was discussed on this list. Is
+that driver available for download anywhere? I'd like to try it out
+with a simple DAC I have connected to an IceCube board.
 
-Which board are you using? Are you sure that  the  board  support  is
-complete  and  working?  Is  there  a  default configuration for your
-board? Does this one work?
+Thanks
+-roger
 
-Did you RTFM (the DULG, to be precise) ?
 
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Status quo. Latin for "the mess we're in."
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
