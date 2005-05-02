@@ -3,15 +3,19 @@ Received: from pentafluge.infradead.org (pentafluge.infradead.org
 	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D7DC367A70
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 May 2005 17:59:53 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 8535A67B32
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 May 2005 18:30:30 +1000 (EST)
 From: David Woodhouse <dwmw2@infradead.org>
-To: akpm@osdl.org, linuxppc-dev@ozlabs.org
+To: akpm@osdl.org
+In-Reply-To: <1115020651.3287.0.camel@localhost.localdomain>
+References: <1115020651.3287.0.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Mon, 02 May 2005 08:57:30 +0100
-Message-Id: <1115020651.3287.0.camel@localhost.localdomain>
+Date: Mon, 02 May 2005 09:28:18 +0100
+Message-Id: <1115022498.3287.3.camel@localhost.localdomain>
 Mime-Version: 1.0
-Subject: [PATCH] ppc32: platform-specific functions missing from kallsyms.
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] ppc32: platform-specific functions missing from
+	kallsyms.
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,19 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The PPC32 kernel puts platform-specific functions into separate sections
-so that unneeded parts of it can be freed when we've booted and actually
-worked out what we're running on today. 
+On Mon, 2005-05-02 at 08:57 +0100, David Woodhouse wrote:
+> The PPC32 kernel puts platform-specific functions into separate sections
+> so that unneeded parts of it can be freed when we've booted and actually
+> worked out what we're running on today. 
+> 
+> This makes kallsyms ignore those functions, because they're not between
+> _[se]text or _[se]inittext. Rather than teaching kallsyms about the
+> various pmac/chrp/etc sections, this patch adds '_[se]extratext' markers
+> for kallsyms.
+> 
+> Signed-off-by: David Woodhouse <dwmw2@infradead.org> 
+> 
+> --- linux-2.6.11/arch/ppc/kernel/vmlinux.lds~	2005-05-01 10:43:10.000000000 +0100
+> +++ linux-2.6.11/arch/ppc/kernel/vmlinux.lds	2005-05-02 08:06:52.000000000 +0100
 
-This makes kallsyms ignore those functions, because they're not between
-_[se]text or _[se]inittext. Rather than teaching kallsyms about the
-various pmac/chrp/etc sections, this patch adds '_[se]extratext' markers
-for kallsyms.
+Bah. s/vmlinux.lds/vmlinux.lds.S/
 
-Signed-off-by: David Woodhouse <dwmw2@infradead.org> 
-
---- linux-2.6.11/arch/ppc/kernel/vmlinux.lds~	2005-05-01 10:43:10.000000000 +0100
-+++ linux-2.6.11/arch/ppc/kernel/vmlinux.lds	2005-05-02 08:06:52.000000000 +0100
+--- linux-2.6.11/arch/ppc/kernel/vmlinux.lds.S~	2005-05-01 10:43:10.000000000 +0100
++++ linux-2.6.11/arch/ppc/kernel/vmlinux.lds.S	2005-05-02 08:06:52.000000000 +0100
 @@ -147,6 +147,7 @@ SECTIONS
    __init_end = .;
  
@@ -134,7 +144,6 @@ Signed-off-by: David Woodhouse <dwmw2@infradead.org>
  		unsigned long symbol_end=0;
  
  		/* do a binary search on the sorted kallsyms_addresses array */
-
 
 -- 
 dwmw2
