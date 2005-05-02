@@ -1,32 +1,18 @@
-Return-Path: <juhl-lkml@dif.dk>
-Received: from saerimmer.dif.dk (mail.dif.dk [193.138.115.101])
-	by ozlabs.org (Postfix) with ESMTP id 0E3B167A6F
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 May 2005 08:57:42 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by saerimmer.dif.dk (Postfix) with ESMTP id A2EA8FFC6E
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 May 2005 01:09:16 +0200 (CEST)
-Received: from saerimmer.dif.dk ([127.0.0.1])
-	by localhost (saerimmer [127.0.0.1]) (amavisd-new,
-	port 10024) with ESMTP id 08898-04 for <linuxppc-dev@ozlabs.org>;
-	Mon,  2 May 2005 01:09:16 +0200 (CEST)
-Received: from diftmgw2.backbone.dif.dk (diftmgw2.backbone.dif.dk
-	[10.227.136.246])
-	by saerimmer.dif.dk (Postfix) with ESMTP id 39380FFC70
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 May 2005 01:09:14 +0200 (CEST)
-Date: Mon, 2 May 2005 01:01:11 +0200 (CEST)
-From: Jesper Juhl <juhl-lkml@dif.dk>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0ACC767A70
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 May 2005 11:09:07 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Andrew Morton <akpm@osdl.org>
-In-Reply-To: <20050501154654.2bf7606d.akpm@osdl.org>
-Message-ID: <Pine.LNX.4.62.0505020054351.2488@dragon.hyggekrogen.localhost>
-References: <20050430164303.6538f47c.akpm@osdl.org>
-	<6uu0lnf0gm.fsf@zork.zork.net>
-	<Pine.LNX.4.62.0505011749280.2488@dragon.hyggekrogen.localhost>
-	<20050501154654.2bf7606d.akpm@osdl.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: =?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>,
-	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.12-rc3-mm2: ppc pte_offset_map()
+Content-Type: text/plain
+Date: Mon, 02 May 2005 11:07:08 +1000
+Message-Id: <1114996028.7112.358.camel@gaston>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Linus Torvalds <torvalds@osdl.org>
+Subject: [PATCH] ppc32: Workaround a cache flush issue on sleep
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,86 +22,134 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 1 May 2005, Andrew Morton wrote:
+Hi !
 
-> Jesper Juhl <juhl-lkml@dif.dk> wrote:
-> >
-> > On Sun, 1 May 2005, Sean Neakums wrote:
-> > 
-> > > On my Mackertosh (PowerBook5.4), build fails with the following:
-> > > 
-> > >   fs/proc/task_mmu.c: In function `smaps_pte_range':
-> > >   fs/proc/task_mmu.c:177: warning: implicit declaration of function `kmap_atomic'
-> > >   fs/proc/task_mmu.c:177: error: `KM_PTE0' undeclared (first use in this function)
-> > >   fs/proc/task_mmu.c:177: error: (Each undeclared identifier is reported only once
-> > >   fs/proc/task_mmu.c:177: error: for each function it appears in.)
-> > >   fs/proc/task_mmu.c:207: warning: implicit declaration of function `kunmap_atomic'
-> > > 
-> > > With the naive patch below, it builds with this warning and everything works.
-> > > 
-> > >   fs/proc/task_mmu.c: In function `smaps_pte_range':
-> > >   fs/proc/task_mmu.c:208: warning: passing arg 1 of `kunmap_atomic' makes pointer from integer without a cast
-> > > 
-> > 
-> > Try this patch :
-> > 
-> > Signed-off-by: Jesper Juhl <juhl-lkml@dif.dk>
-> > 
-> > --- linux-2.6.12-rc3-mm2-orig/fs/proc/task_mmu.c	2005-05-01 04:04:25.000000000 +0200
-> > +++ linux-2.6.12-rc3-mm2/fs/proc/task_mmu.c	2005-05-01 17:49:14.000000000 +0200
-> > @@ -2,6 +2,7 @@
-> >  #include <linux/hugetlb.h>
-> >  #include <linux/mount.h>
-> >  #include <linux/seq_file.h>
-> > +#include <linux/highmem.h>
-> >  
-> >  #include <asm/elf.h>
-> >  #include <asm/uaccess.h>
-> > @@ -204,7 +205,7 @@ static void smaps_pte_range(pmd_t *pmd,
-> >  			}
-> >  		}
-> >  	} while (address < end);
-> > -	pte_unmap(pte);
-> > +	pte_unmap((void *)pte);
-> >  }
-> 
-> Should be
-> 
-> 	pte_unmap(ptep);
-> 
-Of course, stupid me. I should have seen the 
-	[...]
-        ptep = pte_offset_map(pmd, address);
-	[...]
-            pte = *ptep;
-            address += PAGE_SIZE;
-            ptep++;
-	[...]
-bit a few lines above. Guess I should have spend more than 2min creating 
-the patch.
+We are experiencing a problem when flushing the CPU caches before sleep
+on some laptop models using the 750FX CPU rev 1.X. While I haven't been
+able to figure out a proper explanation for what's going on, I do have a
+workaround that seem to work reliably and allows those machine to sleep
+and wakeup properly again. This should be applied for 2.6.12. I'll
+re-update that code if/when I ever find exactly what is happening with
+those CPU revisions.
 
-Thanks.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Here's an updated patch.
-
-Signed-off-by: Jesper Juhl <juhl-lkml@dif.dk>
-
---- linux-2.6.12-rc3-mm2-orig/fs/proc/task_mmu.c	2005-05-01 04:04:25.000000000 +0200
-+++ linux-2.6.12-rc3-mm2/fs/proc/task_mmu.c	2005-05-02 00:59:11.000000000 +0200
-@@ -2,6 +2,7 @@
- #include <linux/hugetlb.h>
- #include <linux/mount.h>
- #include <linux/seq_file.h>
-+#include <linux/highmem.h>
+Index: linux-work/arch/ppc/platforms/pmac_cache.S
+===================================================================
+--- linux-work.orig/arch/ppc/platforms/pmac_cache.S	2005-04-24 11:37:38.000000000 +1000
++++ linux-work/arch/ppc/platforms/pmac_cache.S	2005-04-24 12:00:46.000000000 +1000
+@@ -64,27 +64,39 @@
+ 	mtspr	SPRN_HID0,r4		/* Disable DPM */
+ 	sync
  
- #include <asm/elf.h>
- #include <asm/uaccess.h>
-@@ -204,7 +205,7 @@ static void smaps_pte_range(pmd_t *pmd,
- 			}
- 		}
- 	} while (address < end);
--	pte_unmap(pte);
-+	pte_unmap(ptep);
- }
+-	/* disp-flush L1 */
+-	li	r4,0x4000
+-	mtctr	r4
++	/* Disp-flush L1. We have a weird problem here that I never
++	 * totally figured out. On 750FX, using the ROM for the flush
++	 * results in a non-working flush. We use that workaround for
++	 * now until I finally understand what's going on. --BenH
++	 */
++
++	/* ROM base by default */
+ 	lis	r4,0xfff0
+-1:	lwzx	r0,r0,r4
++	mfpvr	r3
++	srwi	r3,r3,16
++	cmplwi	cr0,r3,0x7000
++	bne+	1f
++	/* RAM base on 750FX */
++	li	r4,0
++1:	li	r4,0x4000
++	mtctr	r4
++1:	lwz	r0,0(r4)
+ 	addi	r4,r4,32
+ 	bdnz	1b
+ 	sync
+ 	isync
  
- static void smaps_pmd_range(pud_t *pud,
+-	/* disable / invalidate / enable L1 data */
++	/* Disable / invalidate / enable L1 data */
+ 	mfspr	r3,SPRN_HID0
+-	rlwinm	r0,r0,0,~HID0_DCE
++	rlwinm	r3,r3,0,~(HID0_DCE | HID0_ICE)
+ 	mtspr	SPRN_HID0,r3
+ 	sync
+ 	isync
+-	ori	r3,r3,HID0_DCE|HID0_DCI
++	ori	r3,r3,(HID0_DCE|HID0_DCI|HID0_ICE|HID0_ICFI)
+ 	sync
+ 	isync
+ 	mtspr	SPRN_HID0,r3
+-	xori	r3,r3,HID0_DCI
++	xori	r3,r3,(HID0_DCI|HID0_ICFI)
+ 	mtspr	SPRN_HID0,r3
+ 	sync
+ 
+@@ -110,11 +122,20 @@
+ 	lis	r4,2
+ 	mtctr	r4
+ 	lis	r4,0xfff0
+-1:	lwzx	r0,r0,r4
++1:	lwz	r0,0(r4)
++	addi	r4,r4,32
++	bdnz	1b
++	sync
++	isync
++	lis	r4,2
++	mtctr	r4
++	lis	r4,0xfff0
++1:	dcbf	0,r4
+ 	addi	r4,r4,32
+ 	bdnz	1b
+ 	sync
+ 	isync
++
+ 	/* now disable L2 */
+ 	rlwinm	r5,r5,0,~L2CR_L2E
+ 	b	2f
+@@ -135,6 +156,13 @@
+ 	mtspr	SPRN_L2CR,r4
+ 	sync
+ 	isync
++
++	/* Wait for the invalidation to complete */
++1:	mfspr	r3,SPRN_L2CR
++	rlwinm.	r0,r3,0,31,31
++	bne	1b
++
++	/* Clear L2I */
+ 	xoris	r4,r4,L2CR_L2I@h
+ 	sync
+ 	mtspr	SPRN_L2CR,r4
+@@ -142,16 +170,18 @@
+ 
+ 	/* now disable the L1 data cache */
+ 	mfspr	r0,SPRN_HID0
+-	rlwinm	r0,r0,0,~HID0_DCE
++	rlwinm	r0,r0,0,~(HID0_DCE|HID0_ICE)
+ 	mtspr	SPRN_HID0,r0
+ 	sync
+ 	isync
+ 
+ 	/* Restore HID0[DPM] to whatever it was before */
+ 	sync
+-	mtspr	SPRN_HID0,r8
++	mfspr	r0,SPRN_HID0
++	rlwimi	r0,r8,0,11,11		/* Turn back HID0[DPM] */
++	mtspr	SPRN_HID0,r0
+ 	sync
+-
++
+ 	/* restore DR and EE */
+ 	sync
+ 	mtmsr	r11
+@@ -201,7 +231,7 @@
+         mtctr   r4
+  	li      r4,0
+ 1:
+-        lwzx    r0,r0,r4
++        lwz     r0,0(r4)
+         addi    r4,r4,32                /* Go to start of next cache line */
+         bdnz    1b
+         isync
