@@ -1,19 +1,25 @@
-Return-Path: <wd@denx.de>
-Received: from mailout04.sul.t-online.com (mailout04.sul.t-online.com
-	[194.25.134.18]) by ozlabs.org (Postfix) with ESMTP id 9D15167B46
+Return-Path: <peter.asemann@web.de>
+Received: from fmmailgate04.web.de (fmmailgate04.web.de [217.72.192.242])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4A3A267B50
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  2 May 2005 20:28:34 +1000 (EST)
-To: "s.deepak" <s.deepak@gdatech.co.in>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 02 May 2005 12:22:39 +0530."
-	<02cb01c54ee3$87e93ec0$4000a8c0@DeepakS>
-Date: Mon, 02 May 2005 12:28:15 +0200
-Sender: wd@denx.de
-Message-Id: <20050502102820.2024CC1510@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Memory Usage Growth in File access 
+	Mon,  2 May 2005 23:25:58 +1000 (EST)
+Received: by fmmailgate04.web.de (8.12.10/8.12.10/webde Linux 0.7) with ESMTP
+	id j42DPx30013731
+	for <linuxppc-embedded@ozlabs.org>; Mon, 2 May 2005 15:25:59 +0200
+Received: from [131.188.52.149] (helo=[131.188.52.149])
+	by smtp08.web.de with asmtp (TLSv1:RC4-MD5:128) (WEB.DE 4.105 #282)
+	id 1DSavk-0001Y8-00
+	for linuxppc-embedded@ozlabs.org; Mon, 02 May 2005 15:25:48 +0200
+Message-ID: <42762A58.7090104@web.de>
+Date: Mon, 02 May 2005 15:25:44 +0200
+From: Peter Asemann <peter.asemann@web.de>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Sender: peter.asemann@web.de
+Subject: Linux 2.4.25 from ELDK 3.1 won't compile
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,39 +30,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <02cb01c54ee3$87e93ec0$4000a8c0@DeepakS> you wrote:
->
-> I am  facing an issue in file operation, when we read/write continuously
-> to  a large file in our  ppc 405 based device , memory usage shown in
-> /proc/meminfo   increases by the number of bytes accessed.And after
-> closing the application also the memory used is not released and  it
-> goes to cached memory .
+I still didn't manage to compile a kernel. Though I unselected as much 
+features as I could, the compiler still isn't happy. Any ideas?
 
-Welcome to the world of efficient use of resources.
+Peter Asemann
 
-What you see is perfectly normal behaviour and  one  of  the  reasons
-that LInux provides excellent performance.
 
-> Can anyone suggest me some idea how to trace out the problem.
+make[1]: Entering directory 
+`/opt/asemann/eldk/ppc_8xx/usr/src/linux-2.4.25/arch/ppc/kernel'
 
-There is no problem. What you see is normal the way it  was  designed
-to work.
+(...)
 
-> When i run the below given code first time the memory grows,when  i run
-> succesively it doesn't grow again , may be using the already taken
-> memory.
-
-Indeed. Also if you have a way to  trace  accesses  to  your  storage
-media  you  will see that the secondrun needs much less accesses, and
-is faster, too.
-
-Welcome to Unix.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Today is the yesterday you worried about tomorrow.
+ppc_8xx-gcc -D__KERNEL__ 
+-I/opt/asemann/eldk/ppc_8xx/usr/src/linux-2.4.25/include -Wall 
+-Wstrict-prototypes -Wno-trigraphs -O2 -fno-strict-aliasing -fno-common 
+-fomit-frame-pointer 
+-I/opt/asemann/eldk/ppc_8xx/usr/src/linux-2.4.25/arch/ppc -fsigned-char 
+-msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring 
+-nostdinc -I /opt/asemann/eldk/usr/lib/gcc-lib/ppc-linux/3.3.3/include 
+-DKBUILD_BASENAME=m8xx_setup  -c -o m8xx_setup.o m8xx_setup.c
+m8xx_setup.c:64: error: `bd_t' undeclared here (not in a function)
+m8xx_setup.c: In function `m8xx_calibrate_decr':
+m8xx_setup.c:192: error: `bd_t' undeclared (first use in this function)
+m8xx_setup.c:192: error: (Each undeclared identifier is reported only once
+m8xx_setup.c:192: error: for each function it appears in.)
+m8xx_setup.c:192: error: `binfo' undeclared (first use in this function)
+m8xx_setup.c:192: error: parse error before ')' token
+m8xx_setup.c:196: error: `IMAP_ADDR' undeclared (first use in this function)
+m8xx_setup.c: In function `m8xx_set_rtc_time':
+m8xx_setup.c:269: error: `IMAP_ADDR' undeclared (first use in this function)
+m8xx_setup.c: In function `m8xx_get_rtc_time':
+m8xx_setup.c:279: error: `IMAP_ADDR' undeclared (first use in this function)
+m8xx_setup.c: In function `m8xx_restart':
+m8xx_setup.c:288: error: `IMAP_ADDR' undeclared (first use in this function)
+m8xx_setup.c: In function `m8xx_show_percpuinfo':
+m8xx_setup.c:317: error: `bd_t' undeclared (first use in this function)
+m8xx_setup.c:317: error: `bp' undeclared (first use in this function)
+m8xx_setup.c:319: error: parse error before ')' token
+m8xx_setup.c: In function `m8xx_find_end_of_memory':
+m8xx_setup.c:377: error: `bd_t' undeclared (first use in this function)
+m8xx_setup.c:377: error: `binfo' undeclared (first use in this function)
+m8xx_setup.c:380: error: parse error before ')' token
+m8xx_setup.c:378: warning: unused variable `__res'
+m8xx_setup.c: In function `m8xx_map_io':
+m8xx_setup.c:394: error: `IMAP_ADDR' undeclared (first use in this function)
+m8xx_setup.c:394: error: `IMAP_SIZE' undeclared (first use in this function)
+m8xx_setup.c: In function `platform_init':
+m8xx_setup.c:441: error: `bd_t' undeclared (first use in this function)
+make[1]: *** [m8xx_setup.o] Error 1
+make[1]: Leaving directory 
+`/opt/asemann/eldk/ppc_8xx/usr/src/linux-2.4.25/arch/ppc/kernel'
+make: *** [_dir_arch/ppc/kernel] Error 2
