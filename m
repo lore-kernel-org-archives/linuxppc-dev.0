@@ -1,19 +1,19 @@
-Return-Path: <ole.torvmark@radionor.no>
-Received: from mail.radionor.no (217-13-18-54.dd.nextgentel.com [217.13.18.54])
-	by ozlabs.org (Postfix) with ESMTP id 2AF8A67B41
+Return-Path: <wd@denx.de>
+Received: from mailout04.sul.t-online.com (mailout04.sul.t-online.com
+	[194.25.134.18]) by ozlabs.org (Postfix) with ESMTP id 9D15167B46
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  2 May 2005 19:52:26 +1000 (EST)
-Received: from [192.168.0.159] (olesibm.radionor.no [192.168.0.159])
-	by mail.radionor.no (Postfix) with ESMTP id 7F5F827294
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  2 May 2005 11:29:19 +0200 (CEST)
-Message-ID: <4275F2BB.9050100@radionor.no>
-Date: Mon, 02 May 2005 11:28:27 +0200
-From: Ole Andreas Torvmark <ole.torvmark@radionor.no>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: Ethernet bridging on MPC8248
+	Mon,  2 May 2005 20:28:34 +1000 (EST)
+To: "s.deepak" <s.deepak@gdatech.co.in>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 02 May 2005 12:22:39 +0530."
+	<02cb01c54ee3$87e93ec0$4000a8c0@DeepakS>
+Date: Mon, 02 May 2005 12:28:15 +0200
+Sender: wd@denx.de
+Message-Id: <20050502102820.2024CC1510@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Memory Usage Growth in File access 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,38 +24,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi !
+In message <02cb01c54ee3$87e93ec0$4000a8c0@DeepakS> you wrote:
+>
+> I am  facing an issue in file operation, when we read/write continuously
+> to  a large file in our  ppc 405 based device , memory usage shown in
+> /proc/meminfo   increases by the number of bytes accessed.And after
+> closing the application also the memory used is not released and  it
+> goes to cached memory .
 
-I've a custom board with a MPC8248 with two LXT972 10/100MBit ethernet phys.
+Welcome to the world of efficient use of resources.
 
-The board is running 2.6.9-rc1, and I'm using the FCC ENET Version 0.3 
-driver with some modifications.
+What you see is perfectly normal behaviour and  one  of  the  reasons
+that LInux provides excellent performance.
 
-My question is :
+> Can anyone suggest me some idea how to trace out the problem.
 
-I've tried to get ethernet briding between the two ethernet ports to work.
+There is no problem. What you see is normal the way it  was  designed
+to work.
 
-I've set up the following :
+> When i run the below given code first time the memory grows,when  i run
+> succesively it doesn't grow again , may be using the already taken
+> memory.
 
-ifconfig eth0 0.0.0.0
-ifconfig eth1 0.0.0.0
-brctl addbr br0
-brctl addif br0 eth0
-brctl addif br0 eth1
-ifconfig br0 192.168.0.222 netmask 255.255.255.0
+Indeed. Also if you have a way to  trace  accesses  to  your  storage
+media  you  will see that the secondrun needs much less accesses, and
+is faster, too.
 
-If I connect a machine to port 0 (eth0) then I can ping the bridge from 
-that machine,
-If I connect a machine to port 1 (eth1) I cannot ping the bridge.
-If I connect machines to both ports, I cannot ping one machine from the 
-other, the only thing i can successfully ping is from port 0 to bridge 
-and from bridge to port 0
+Welcome to Unix.
 
-Is this a known problem with the FCC ENET driver or does it support 
-bridging fully ?
+Best regards,
 
-best regards
+Wolfgang Denk
 
-Ole Andreas Torvmark
-R & D Engineer
-Radionor Communications AS
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Today is the yesterday you worried about tomorrow.
