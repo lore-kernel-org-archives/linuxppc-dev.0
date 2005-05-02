@@ -1,16 +1,19 @@
-Return-Path: <stephane.fillod@thomson.net>
-Received: from dmzraw2.extranet.tce.com (dmzraw2.extranet.tce.com
-	[157.254.234.138]) by ozlabs.org (Postfix) with ESMTP id 9ED4167B1F
+Return-Path: <ole.torvmark@radionor.no>
+Received: from mail.radionor.no (217-13-18-54.dd.nextgentel.com [217.13.18.54])
+	by ozlabs.org (Postfix) with ESMTP id 2AF8A67B41
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  2 May 2005 18:36:14 +1000 (EST)
+	Mon,  2 May 2005 19:52:26 +1000 (EST)
+Received: from [192.168.0.159] (olesibm.radionor.no [192.168.0.159])
+	by mail.radionor.no (Postfix) with ESMTP id 7F5F827294
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon,  2 May 2005 11:29:19 +0200 (CEST)
+Message-ID: <4275F2BB.9050100@radionor.no>
+Date: Mon, 02 May 2005 11:28:27 +0200
+From: Ole Andreas Torvmark <ole.torvmark@radionor.no>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Mon, 2 May 2005 10:36:05 +0200
-Message-ID: <1CFEB358338412458B21FAA0D78FE86D4F0D5A@rennsmail02.eu.thmulti.com>
-From: "Fillod Stephane" <stephane.fillod@thomson.net>
-To: "bobys" <bobys@tataelxsi.co.in>, <linuxppc-embedded@ozlabs.org>
-Subject: RE: Performance issue - VoIP application on Linux 2.4.22
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Ethernet bridging on MPC8248
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,40 +24,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-bobys wrote:
->Hello everybody,
->I have a multithreaded VoIP application in user space and a kernel
-driver
->module on MPC 8248 based board.
->During media data transfer( Video Call) I have observed one strange
->behavior
->that at specific interval, cpu utilization is reaching to 100 % and
-then
->rolls back to 0 %.  This behavior repeats at regular intervals of time
->during the call.
->During this time, data rate and memory utilization is constant
-throughout
->the Call. Also number of interrupts received and processed in the
-kernel
->driver is constant.  We have checked the code many times, but couldn't
-find
->any of the threads/driver hogging the processor time.
->We are using Linux kernel 2.4.22  with kernel preemption enabled and
-low
->latency patch added. Please let me know anybody have seen same behavior
-and
->how to sort this out.
+Hi !
 
-I have no idea with 2.4.x. However, if you have OProfile[1] support
-available in your kernel (look for custom module on 2.4), that's quite
-easy=20
-to spot the cpu utilization burst.
+I've a custom board with a MPC8248 with two LXT972 10/100MBit ethernet phys.
 
-[1] http://oprofile.sf.net
+The board is running 2.6.9-rc1, and I'm using the FCC ENET Version 0.3 
+driver with some modifications.
 
+My question is :
 
-Best Regards
---=20
-Stephane
+I've tried to get ethernet briding between the two ethernet ports to work.
 
-PS: OProfile is a neat tool. We won't thank enough the OProfile team.
+I've set up the following :
+
+ifconfig eth0 0.0.0.0
+ifconfig eth1 0.0.0.0
+brctl addbr br0
+brctl addif br0 eth0
+brctl addif br0 eth1
+ifconfig br0 192.168.0.222 netmask 255.255.255.0
+
+If I connect a machine to port 0 (eth0) then I can ping the bridge from 
+that machine,
+If I connect a machine to port 1 (eth1) I cannot ping the bridge.
+If I connect machines to both ports, I cannot ping one machine from the 
+other, the only thing i can successfully ping is from port 0 to bridge 
+and from bridge to port 0
+
+Is this a known problem with the FCC ENET driver or does it support 
+bridging fully ?
+
+best regards
+
+Ole Andreas Torvmark
+R & D Engineer
+Radionor Communications AS
