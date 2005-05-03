@@ -1,19 +1,18 @@
-Return-Path: <ianw@cse.unsw.edu.au>
-Received: from note.orchestra.cse.unsw.EDU.AU (note.orchestra.cse.unsw.EDU.AU
-	[129.94.242.24]) by ozlabs.org (Postfix) with ESMTP id 6CABD679E6
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 May 2005 09:48:14 +1000 (EST)
-From: Ian Wienand <ianw@gelato.unsw.edu.au>
-Sender: ianw@cse.unsw.edu.au
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 4 May 2005 09:48:11 +1000
-Message-ID: <20050503234811.GA10048@cse.unsw.EDU.AU>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8C64D679F2
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 May 2005 09:53:13 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Colin Leroy <colin@colino.net>
+In-Reply-To: <20050503083728.3bedc3ef@colin.toulouse>
 References: <1115072133.6031.33.camel@gaston>
-	<20050503222200.GA29940@cse.unsw.EDU.AU>
-	<1115163690.7568.45.camel@gaston>
+	<20050503083728.3bedc3ef@colin.toulouse>
+Content-Type: text/plain
+Date: Wed, 04 May 2005 09:50:56 +1000
+Message-Id: <1115164256.7627.57.camel@gaston>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="zYM0uCDKw75PZbzx"
-In-Reply-To: <1115163690.7568.45.camel@gaston>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	DebianPPC <debian-powerpc@lists.debian.org>
 Subject: Re: Laptop sleep & current "git" tree
@@ -26,40 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
---zYM0uCDKw75PZbzx
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Wed, May 04, 2005 at 09:41:30AM +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2005-05-04 at 08:22 +1000, Ian Wienand wrote:
-> > Is there a fix in the works for the Radeon timing thing that makes the
-> > screen go a little weird on wakeup?
+On Tue, 2005-05-03 at 08:37 +0200, Colin Leroy wrote:
+> On Tue, 03 May 2005 08:15:33 +1000
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 > 
-> I don't know this problem, what happens precisely and what model of
-> radeon chip do you have ?
+> Hi Ben,
+> 
+> > All my pending patches regarding power management are now upstream in
+> > Linus "git" repository. That means I expect those to fix all known
+> > issues (with the notable exception of the USB related problems, all of
+> > these things aren't yet there but they aren't under my control, so
+> > still unplug USB devices).
+> 
+> All the USB patches from David Brownell that I tracked are in
+> git too, including the ehci repower stuff I sent him. I don't have
+> issues with these patches applied. Do you?
 
-We discussed it briefly previously
+I have no problem but I didn't see the hub power switching patch on my
+git commit logs and it wasn't in linus tree yesterday at least :) I'll
+dbl check later today. It's on greg's queue though for sure so it should
+be in 2.6.12 hopefully.
 
-http://lists.debian.org/debian-powerpc/2005/04/msg00138.html
-
- "Ok. I suspect the wakeup effect might be caused by the delays in
- radeonfb that I added to work around some chip errata... You can try
- hacking them out from the errata function in radeonfb.h"
-
--i
-
---zYM0uCDKw75PZbzx
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQFCeA27WDlSU/gp6ecRAlkNAKCDsd1cGf+CDgK9+aDpA/eQFObbOwCfQ6yT
-PyBjdIKt+f6sYdoODgwUZQ0=
-=M9kC
------END PGP SIGNATURE-----
-
---zYM0uCDKw75PZbzx--
+Ben.
