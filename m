@@ -1,20 +1,20 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E1556679E3
+Return-Path: <kishorekrd@gmail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.192])
+	by ozlabs.org (Postfix) with ESMTP id 80DB0679E1
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  4 May 2005 04:47:40 +1000 (EST)
-In-Reply-To: <20050502204259.GB4065@logos.cnet>
-References: <20050502204259.GB4065@logos.cnet>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <d81a525fa15c1adfc6774a1e445dde8c@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Tue, 3 May 2005 14:47:28 -0400
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: CONFIG_PIN_TLB experiments
+	Wed,  4 May 2005 05:59:51 +1000 (EST)
+Received: by zproxy.gmail.com with SMTP id 13so37798nzn
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 03 May 2005 12:59:47 -0700 (PDT)
+Message-ID: <2cf2641f050503125913fc3eac@mail.gmail.com>
+Date: Tue, 3 May 2005 12:59:47 -0700
+From: Kishore Devireddy <kishorekrd@gmail.com>
+To: Sam Song <samlinuxppc@yahoo.com.cn>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=GB2312
+Cc: Atit_Shah <Atit_Shah@satyam.com>, linuxppc-embedded@ozlabs.org
+Subject: Re: MPC8245 custom board, disabling SDRAM burst mode
+Reply-To: Kishore Devireddy <kishorekrd@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,19 +25,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-On May 2, 2005, at 4:42 PM, Marcelo Tosatti wrote:
-
-> I've been testing the CONFIG_PIN_TLB option under v2.6, results are 
-> not good.
-
-As you pointed out before, the implementation looks incorrect,
-so I'll take a look at it and verify with tests.  I'm currently 
-debugging
-some hardware problems with a new 8xx board, when I get over
-that I'll look at it.
-
-Thanks.
-
-
-	-- Dan
+SGkKCldoYXQgc2hvdWxkIEkgY2hhbmdlIHJlbGF0ZWQgdG8gTUNDUiB0byBkaXNhYmxlIFNEUkFN
+IGJ1cnN0IG1vZGUgb24gTVBDODI0NT8KClRoYW5rcwpLaXNob3JlCgoKT24gNC8yMS8wNSwgU2Ft
+IFNvbmcgPHNhbWxpbnV4cHBjQHlhaG9vLmNvbS5jbj4gd3JvdGU6Cj4gQXRpdF9TaGFoIDxBdGl0
+X1NoYWhAc2F0eWFtLmNvbT4gd3JvdGWjugo+ID4gV2hhdCB3ZSBkaWQgd2FzIHZlcmlmaWVkIHRo
+ZSB2YWx1ZSBvZiBQU0RNUiByZWdpc3Rlcgo+ID4gdmFsdWUgZm91bmQgaW4geW91ciBib2FyZCBz
+cGVjaWZpYyBoZWFkZXIgZmlsZSBpbgo+ID4gaW5jbHVkZS9jb25maWdzLzxib2FyZG5hbWUuaD4K
+PiAKPiBVbW1tLCBQU0RNUiByZWdpc3RlciBpcyBmb3IgODI2MCBwZXJoYXBzPyBJIGV2ZW4KPiBk
+aWRuJ3QgZmluZCBpdCBpbiA4MjQ1VU0uIERvIHlvdSBtZWFuIE1DQ1Igb2YgODI0NT8KPiAKPiBU
+aGFua3MsCj4gCj4gU2FtCj4gCj4gX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fCj4gRG8gWW91IFlhaG9vIT8KPiAxNTDN8sf6TVAzt+i/8cvR
+o6y0+MT6tLPI69L0wNa17szDCj4gaHR0cDovL211c2ljLnlpc291LmNvbS8KPiDDwMWuw/fQx9Om
+09C+odPQo6zL0bHpw8DNvKGi0d7NvLrNv+HNvAo+IGh0dHA6Ly9pbWFnZS55aXNvdS5jb20KPiAx
+R77NyscxMDAw1dejrNHFu6K159PK19TW+sCpyN2joQo+IGh0dHA6Ly9jbi5yZC55YWhvby5jb20v
+bWFpbF9jbi90YWcvMWcvKmh0dHA6Ly9jbi5tYWlsLnlhaG9vLmNvbS9ldmVudC9tYWlsXzFnLwo+
+IApIaQoKSSBhbSB0cnlpbmcgdG8gcnVuIEVtYmVkZGVkIGxpbnV4IChFTERLKSAoMi40IGtlcmVu
+bCkgb24gYSBjdXN0b20gcG93ZXJwYyBib2FyZCwKd2hpY2ggaXMgc2ltaWxhciB0byBBcnRpcyBB
+MzAwMCBib2FyZC4gVGhpcyBib2FyZCBoYXMKbXBjODI0NShYUEM4MjQ1TFpZMjY2QiksIG5hdHNl
+bWkgODM4MTUgZXRoZXJuZXQsIDRNQiBpbnRlbCBlMjhmMzIwCmZsYXNoLCAxNk1CIHdpbmJvbmQg
+dzk4NjQzMkRILTYgU0RSQU0uIFNvIEkgY29uZmlndXJlZCBhbmQgY29tcGlsZWQKVS1ib290IGZv
+ciBBMzAwMCBib3JhZC4gVS1ib290IHdvcmtlZCBvbiBteSBib2FyZCBhbHNvLiBOZXh0IEkKY29t
+cGlsZWQgRUxESyAzLjAgZm9yIFNhbmRwb2ludCA4MjQ1IGJvYXJkIGFuZCBjb3BpZWQgdG8gZmxh
+c2guIEJ1dApsaW51eCBoYW5ncyBhZnRlciB1bmNvbXByZXNzaW5nCgpVLUJvb3QgMS4xLjIgKEFw
+ciAxNCAyMDA1IC0gMDA6MDI6MjkpCgpDUFU6ICAgTVBDODI0NSBSZXZpc2lvbiAxLjIgYXQgMjQ5
+Ljk5OSBNSHo6IDE2IGtCIEktQ2FjaGUgMTYga0IgRC1DYWNoZQpCb2FyZDogQTMwMDAgTG9jYWwg
+QnVzIGF0IDk5Ljk5OSBNSHoKSTJDOiAgIHJlYWR5CkRSQU06ICAxNiBNQgpGTEFTSDogR2V0IGZs
+YXNoIGJhbmsgMCBAIDB4ZmZjMDAwMDAKTWFudWYuIElEIEAgMHhmZjgwMDAwMDogMHgwMDAwMDA4
+OQpEZXZpY2UgSUQgQCAweGZmODAwMDAxOiAweDAwMDAwMDE2CiMjIEZsYXNoIGJhbmsgMCBhdCAw
+eGZmYzAwMDAwIHNpemVzOiAweDAwNDAwMDAwCnByb3RlY3QgbW9uaXRvciBmZmYwMDAwMCBAIDQw
+MDAwCnByb3RlY3QgZW52aXJvbnRtZW50IGZmZmMwMDAwIEAgMjAwMDAKIyMgRmluYWwgRmxhc2gg
+YmFuayBzaXplczogMDA0MDAwMDAKNCBNQgogICAgIDAwICAxMyAgMTAwYiAgMDAyMCAgMDIwMCAg
+ZmYKSW46ICAgIHNlcmlhbApPdXQ6ICAgc2VyaWFsCkVycjogICBzZXJpYWwKTmV0OiAgIG5hdHNl
+bWk6IEVFUFJPTSBjb250ZW50czoKZmZmZiBmZmZmIGZmZmYgZmZmZiBmZmZmIGZmZmYgZmZmZiBm
+ZmZmIGZmZmYgZmZmZiBmZmZmIGZmZmYKZHA4MzgxNSMwCldhcm5pbmc6IGRwODM4MTUjMCBNQUMg
+YWRkcmVzc2VzIGRvbid0IG1hdGNoOgpBZGRyZXNzIGluIFNST00gaXMgICAgICAgICBGRjpGRjpG
+RjpGRjpGRjpGRgpBZGRyZXNzIGluIGVudmlyb25tZW50IGlzICAwMDo0MDowNTpCMDpGMTpCQQoK
+QTMwMDA+IHRmdHBib290IDQwMDAwMCB1SW1hZ2UuZWxkawpVc2luZyBkcDgzODE1IzAgZGV2aWNl
+ClRGVFAgZnJvbSBzZXJ2ZXIgMTkyLjE2OC4xLjEyNDsgb3VyIElQIGFkZHJlc3MgaXMgMTkyLjE2
+OC4xLjU0CkZpbGVuYW1lICd1SW1hZ2UuZWxkaycuCkxvYWQgYWRkcmVzczogMHg0MDAwMDAKTG9h
+ZGluZzogIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMjIyMKICAgICAgIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKICAgICAgIyMjIyMjIyMjIyMjIyMjIyMjIwpk
+b25lCkJ5dGVzIHRyYW5zZmVycmVkID0gNzU3OTI2IChiOTBhNiBoZXgpCkEzMDAwPiBib290bQoj
+IyBCb290aW5nIGltYWdlIGF0IDAwNDAwMDAwIC4uLgpJbWFnZSBOYW1lOiAgIExpbnV4LTIuNC4y
+NQpJbWFnZSBUeXBlOiAgIFBvd2VyUEMgTGludXggS2VybmVsIEltYWdlIChnemlwIGNvbXByZXNz
+ZWQpCkRhdGEgU2l6ZTogICAgNzU3ODYyIEJ5dGVzID0gNzQwLjEga0IKTG9hZCBBZGRyZXNzOiAw
+MDAwMDAwMApFbnRyeSBQb2ludDogIDAwMDAwMDAwClZlcmlmeWluZyBDaGVja3N1bSAuLi4gT0sK
+VW5jb21wcmVzc2luZyBLZXJuZWwgSW1hZ2UgLi4uIE9LCgpub3RoaW5nIGhhcHBlbnMgYWZ0ZXIg
+dGhpcyB1bnRpbCBJIHJlYm9vdCB0aGUgYm9hcmQuIEkgcmVhZCB1LWJvb3QgRkFRCmFuZCBjb25m
+aWd1cmVkIGJkX2luZm8gc3RydWN0dXJlIHNhbWUgZm9yIGJvdGggdS1ib290IGFuZCBMaW51eC4g
+SQpmb3VuZCB0aGF0IENGR19JTU1SIGlzIG5vdCBhcHBsaWNhYmxlIHRvIE1QQzgyNDUuIEkgYWxz
+byB1c2VkCmNsb2Nrc19pbl9taHogdmFyaWFibGUgYWxzbyBiZWZvcmUgbG9hZGluZyBMaW51eC4g
+SSBhbSBzdHVjayBoZXJlLgpDb3VsZCB5b3UgcGxlYXNlIGxldCBtZSBrbm93IHdoYXQgc2hvdWxk
+IEkgZG8gbmV4dD8KClRoYW5rcwpLaXNob3JlCg==
