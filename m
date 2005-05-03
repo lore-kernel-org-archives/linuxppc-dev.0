@@ -1,25 +1,20 @@
-Return-Path: <cliffw@osdl.org>
-Received: from smtp.osdl.org (fire.osdl.org [65.172.181.4])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 6DAAF679F2
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 May 2005 08:05:01 +1000 (EST)
-Date: Tue, 3 May 2005 15:04:48 -0700
-From: cliff white <cliffw@osdl.org>
-To: Jesper Juhl <juhl-lkml@dif.dk>
-Message-ID: <20050503150448.651bf748@es175>
-In-Reply-To: <Pine.LNX.4.62.0505020054351.2488@dragon.hyggekrogen.localhost>
-References: <20050430164303.6538f47c.akpm@osdl.org>
-	<6uu0lnf0gm.fsf@zork.zork.net>
-	<Pine.LNX.4.62.0505011749280.2488@dragon.hyggekrogen.localhost>
-	<20050501154654.2bf7606d.akpm@osdl.org>
-	<Pine.LNX.4.62.0505020054351.2488@dragon.hyggekrogen.localhost>
+Return-Path: <ianw@cse.unsw.edu.au>
+Received: from note.orchestra.cse.unsw.EDU.AU (note.orchestra.cse.unsw.EDU.AU
+	[129.94.242.24]) by ozlabs.org (Postfix) with ESMTP id AB679679E6
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 May 2005 08:27:09 +1000 (EST)
+From: Ian Wienand <ianw@gelato.unsw.edu.au>
+Sender: ianw@cse.unsw.edu.au
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 4 May 2005 08:22:00 +1000
+Message-ID: <20050503222200.GA29940@cse.unsw.EDU.AU>
+References: <1115072133.6031.33.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Andrew Morton <akpm@osdl.org>, =?ISO-8859-1?Q?Rog?=,
-	linux-kernel@vger.kernel.org,
-	=?ISO-8859-1?Q?=E9rio?= Brito <rbrito@ime.usp.br>, linuxppc-dev@ozlabs.org
-Subject: Re: 2.6.12-rc3-mm2: ppc pte_offset_map()
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="jI8keyz6grp/JLjh"
+In-Reply-To: <1115072133.6031.33.camel@gaston>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	DebianPPC <debian-powerpc@lists.debian.org>
+Subject: Re: Laptop sleep & current "git" tree
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,107 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2 May 2005 01:01:11 +0200 (CEST)
-Jesper Juhl <juhl-lkml@dif.dk> wrote:
 
-> On Sun, 1 May 2005, Andrew Morton wrote:
-> 
-> > Jesper Juhl <juhl-lkml@dif.dk> wrote:
-> > >
-> > > On Sun, 1 May 2005, Sean Neakums wrote:
-> > > 
-> > > > On my Mackertosh (PowerBook5.4), build fails with the following:
-> > > > 
-> > > >   fs/proc/task_mmu.c: In function `smaps_pte_range':
-> > > >   fs/proc/task_mmu.c:177: warning: implicit declaration of function `kmap_atomic'
-> > > >   fs/proc/task_mmu.c:177: error: `KM_PTE0' undeclared (first use in this function)
-> > > >   fs/proc/task_mmu.c:177: error: (Each undeclared identifier is reported only once
-> > > >   fs/proc/task_mmu.c:177: error: for each function it appears in.)
-> > > >   fs/proc/task_mmu.c:207: warning: implicit declaration of function `kunmap_atomic'
-> > > > 
-> > > > With the naive patch below, it builds with this warning and everything works.
-> > > > 
-> > > >   fs/proc/task_mmu.c: In function `smaps_pte_range':
-> > > >   fs/proc/task_mmu.c:208: warning: passing arg 1 of `kunmap_atomic' makes pointer from integer without a cast
-> > > > 
-> > > 
-> > > Try this patch :
-> > > 
-> > > Signed-off-by: Jesper Juhl <juhl-lkml@dif.dk>
-> > > 
-> > > --- linux-2.6.12-rc3-mm2-orig/fs/proc/task_mmu.c	2005-05-01 04:04:25.000000000 +0200
-> > > +++ linux-2.6.12-rc3-mm2/fs/proc/task_mmu.c	2005-05-01 17:49:14.000000000 +0200
-> > > @@ -2,6 +2,7 @@
-> > >  #include <linux/hugetlb.h>
-> > >  #include <linux/mount.h>
-> > >  #include <linux/seq_file.h>
-> > > +#include <linux/highmem.h>
-> > >  
-> > >  #include <asm/elf.h>
-> > >  #include <asm/uaccess.h>
-> > > @@ -204,7 +205,7 @@ static void smaps_pte_range(pmd_t *pmd,
-> > >  			}
-> > >  		}
-> > >  	} while (address < end);
-> > > -	pte_unmap(pte);
-> > > +	pte_unmap((void *)pte);
-> > >  }
-> > 
-> > Should be
-> > 
-> > 	pte_unmap(ptep);
-> > 
-> Of course, stupid me. I should have seen the 
-> 	[...]
->         ptep = pte_offset_map(pmd, address);
-> 	[...]
->             pte = *ptep;
->             address += PAGE_SIZE;
->             ptep++;
-> 	[...]
-> bit a few lines above. Guess I should have spend more than 2min creating 
-> the patch.
-> 
-> Thanks.
-> 
-> Here's an updated patch.
+--jI8keyz6grp/JLjh
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Works for me on iBook, G4. Compiles fine and boots. No performance info yet.
-Thanks bunches 
-cliffw
+On Tue, May 03, 2005 at 08:15:33AM +1000, Benjamin Herrenschmidt wrote:
+> I would appreciate extensive testing, provided you figure out how to
+> retreive the "git" repository from kernel.org :) There must be some
+> howto somewhere, but I'm afraid I don't have a link at hand.
 
-> 
-> Signed-off-by: Jesper Juhl <juhl-lkml@dif.dk>
-> 
-> --- linux-2.6.12-rc3-mm2-orig/fs/proc/task_mmu.c	2005-05-01 04:04:25.000000000 +0200
-> +++ linux-2.6.12-rc3-mm2/fs/proc/task_mmu.c	2005-05-02 00:59:11.000000000 +0200
-> @@ -2,6 +2,7 @@
->  #include <linux/hugetlb.h>
->  #include <linux/mount.h>
->  #include <linux/seq_file.h>
-> +#include <linux/highmem.h>
->  
->  #include <asm/elf.h>
->  #include <asm/uaccess.h>
-> @@ -204,7 +205,7 @@ static void smaps_pte_range(pmd_t *pmd,
->  			}
->  		}
->  	} while (address < end);
-> -	pte_unmap(pte);
-> +	pte_unmap(ptep);
->  }
->  
->  static void smaps_pmd_range(pud_t *pud,
-> 
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+It's so far working well for me on an 800Mhz iBook (750fx) after quite
+a few sleep and resume cycles.
 
+Is there a fix in the works for the Radeon timing thing that makes the
+screen go a little weird on wakeup?
 
--- 
-"Ive always gone through periods where I bolt upright at four in the morning; 
-now at least theres a reason." -Michael Feldman
+FWIW, the two step way to get the git tree I followed was
+
+wget http://www.kernel.org/pub/software/scm/cogito/cogito-0.8.tar.bz2
+(install, modify path in Makefile if you want)
+
+cd /usr/src
+mkdir linux-2.6-git
+cd linux-2.6-git
+cg-init rsync://rsync.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+
+-i
+ianw@gelato.unsw.edu.au
+http://www.gelato.unsw.edu.au
+
+--jI8keyz6grp/JLjh
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+
+iD8DBQFCd/mIWDlSU/gp6ecRAmH5AJ4w4iy3H23mKTJD225COTpkDzAsjACfVUkR
+vGgUDbdEwc6+QNViRNSYjFo=
+=z9S2
+-----END PGP SIGNATURE-----
+
+--jI8keyz6grp/JLjh--
