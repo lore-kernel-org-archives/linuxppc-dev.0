@@ -1,20 +1,17 @@
-Return-Path: <kishorekrd@gmail.com>
-Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.192])
-	by ozlabs.org (Postfix) with ESMTP id 80DB0679E1
+Return-Path: <galak@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 941ED679EA
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  4 May 2005 05:59:51 +1000 (EST)
-Received: by zproxy.gmail.com with SMTP id 13so37798nzn
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 03 May 2005 12:59:47 -0700 (PDT)
-Message-ID: <2cf2641f050503125913fc3eac@mail.gmail.com>
-Date: Tue, 3 May 2005 12:59:47 -0700
-From: Kishore Devireddy <kishorekrd@gmail.com>
-To: Sam Song <samlinuxppc@yahoo.com.cn>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=GB2312
-Cc: Atit_Shah <Atit_Shah@satyam.com>, linuxppc-embedded@ozlabs.org
-Subject: Re: MPC8245 custom board, disabling SDRAM burst mode
-Reply-To: Kishore Devireddy <kishorekrd@gmail.com>
+	Wed,  4 May 2005 10:29:49 +1000 (EST)
+Date: Tue, 3 May 2005 18:50:38 -0500 (CDT)
+From: Kumar Gala <galak@freescale.com>
+To: Greg KH <greg@kroah.com>
+Message-ID: <Pine.LNX.4.61.0505031849120.19691@nylon.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>,
+	linux-kernel@vger.kernel.org, sensors@stimpy.netroedge.com
+Subject: [PATCH] I2C-MPC: Allow for sharing of the interrupt line
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,56 +22,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-SGkKCldoYXQgc2hvdWxkIEkgY2hhbmdlIHJlbGF0ZWQgdG8gTUNDUiB0byBkaXNhYmxlIFNEUkFN
-IGJ1cnN0IG1vZGUgb24gTVBDODI0NT8KClRoYW5rcwpLaXNob3JlCgoKT24gNC8yMS8wNSwgU2Ft
-IFNvbmcgPHNhbWxpbnV4cHBjQHlhaG9vLmNvbS5jbj4gd3JvdGU6Cj4gQXRpdF9TaGFoIDxBdGl0
-X1NoYWhAc2F0eWFtLmNvbT4gd3JvdGWjugo+ID4gV2hhdCB3ZSBkaWQgd2FzIHZlcmlmaWVkIHRo
-ZSB2YWx1ZSBvZiBQU0RNUiByZWdpc3Rlcgo+ID4gdmFsdWUgZm91bmQgaW4geW91ciBib2FyZCBz
-cGVjaWZpYyBoZWFkZXIgZmlsZSBpbgo+ID4gaW5jbHVkZS9jb25maWdzLzxib2FyZG5hbWUuaD4K
-PiAKPiBVbW1tLCBQU0RNUiByZWdpc3RlciBpcyBmb3IgODI2MCBwZXJoYXBzPyBJIGV2ZW4KPiBk
-aWRuJ3QgZmluZCBpdCBpbiA4MjQ1VU0uIERvIHlvdSBtZWFuIE1DQ1Igb2YgODI0NT8KPiAKPiBU
-aGFua3MsCj4gCj4gU2FtCj4gCj4gX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fCj4gRG8gWW91IFlhaG9vIT8KPiAxNTDN8sf6TVAzt+i/8cvR
-o6y0+MT6tLPI69L0wNa17szDCj4gaHR0cDovL211c2ljLnlpc291LmNvbS8KPiDDwMWuw/fQx9Om
-09C+odPQo6zL0bHpw8DNvKGi0d7NvLrNv+HNvAo+IGh0dHA6Ly9pbWFnZS55aXNvdS5jb20KPiAx
-R77NyscxMDAw1dejrNHFu6K159PK19TW+sCpyN2joQo+IGh0dHA6Ly9jbi5yZC55YWhvby5jb20v
-bWFpbF9jbi90YWcvMWcvKmh0dHA6Ly9jbi5tYWlsLnlhaG9vLmNvbS9ldmVudC9tYWlsXzFnLwo+
-IApIaQoKSSBhbSB0cnlpbmcgdG8gcnVuIEVtYmVkZGVkIGxpbnV4IChFTERLKSAoMi40IGtlcmVu
-bCkgb24gYSBjdXN0b20gcG93ZXJwYyBib2FyZCwKd2hpY2ggaXMgc2ltaWxhciB0byBBcnRpcyBB
-MzAwMCBib2FyZC4gVGhpcyBib2FyZCBoYXMKbXBjODI0NShYUEM4MjQ1TFpZMjY2QiksIG5hdHNl
-bWkgODM4MTUgZXRoZXJuZXQsIDRNQiBpbnRlbCBlMjhmMzIwCmZsYXNoLCAxNk1CIHdpbmJvbmQg
-dzk4NjQzMkRILTYgU0RSQU0uIFNvIEkgY29uZmlndXJlZCBhbmQgY29tcGlsZWQKVS1ib290IGZv
-ciBBMzAwMCBib3JhZC4gVS1ib290IHdvcmtlZCBvbiBteSBib2FyZCBhbHNvLiBOZXh0IEkKY29t
-cGlsZWQgRUxESyAzLjAgZm9yIFNhbmRwb2ludCA4MjQ1IGJvYXJkIGFuZCBjb3BpZWQgdG8gZmxh
-c2guIEJ1dApsaW51eCBoYW5ncyBhZnRlciB1bmNvbXByZXNzaW5nCgpVLUJvb3QgMS4xLjIgKEFw
-ciAxNCAyMDA1IC0gMDA6MDI6MjkpCgpDUFU6ICAgTVBDODI0NSBSZXZpc2lvbiAxLjIgYXQgMjQ5
-Ljk5OSBNSHo6IDE2IGtCIEktQ2FjaGUgMTYga0IgRC1DYWNoZQpCb2FyZDogQTMwMDAgTG9jYWwg
-QnVzIGF0IDk5Ljk5OSBNSHoKSTJDOiAgIHJlYWR5CkRSQU06ICAxNiBNQgpGTEFTSDogR2V0IGZs
-YXNoIGJhbmsgMCBAIDB4ZmZjMDAwMDAKTWFudWYuIElEIEAgMHhmZjgwMDAwMDogMHgwMDAwMDA4
-OQpEZXZpY2UgSUQgQCAweGZmODAwMDAxOiAweDAwMDAwMDE2CiMjIEZsYXNoIGJhbmsgMCBhdCAw
-eGZmYzAwMDAwIHNpemVzOiAweDAwNDAwMDAwCnByb3RlY3QgbW9uaXRvciBmZmYwMDAwMCBAIDQw
-MDAwCnByb3RlY3QgZW52aXJvbnRtZW50IGZmZmMwMDAwIEAgMjAwMDAKIyMgRmluYWwgRmxhc2gg
-YmFuayBzaXplczogMDA0MDAwMDAKNCBNQgogICAgIDAwICAxMyAgMTAwYiAgMDAyMCAgMDIwMCAg
-ZmYKSW46ICAgIHNlcmlhbApPdXQ6ICAgc2VyaWFsCkVycjogICBzZXJpYWwKTmV0OiAgIG5hdHNl
-bWk6IEVFUFJPTSBjb250ZW50czoKZmZmZiBmZmZmIGZmZmYgZmZmZiBmZmZmIGZmZmYgZmZmZiBm
-ZmZmIGZmZmYgZmZmZiBmZmZmIGZmZmYKZHA4MzgxNSMwCldhcm5pbmc6IGRwODM4MTUjMCBNQUMg
-YWRkcmVzc2VzIGRvbid0IG1hdGNoOgpBZGRyZXNzIGluIFNST00gaXMgICAgICAgICBGRjpGRjpG
-RjpGRjpGRjpGRgpBZGRyZXNzIGluIGVudmlyb25tZW50IGlzICAwMDo0MDowNTpCMDpGMTpCQQoK
-QTMwMDA+IHRmdHBib290IDQwMDAwMCB1SW1hZ2UuZWxkawpVc2luZyBkcDgzODE1IzAgZGV2aWNl
-ClRGVFAgZnJvbSBzZXJ2ZXIgMTkyLjE2OC4xLjEyNDsgb3VyIElQIGFkZHJlc3MgaXMgMTkyLjE2
-OC4xLjU0CkZpbGVuYW1lICd1SW1hZ2UuZWxkaycuCkxvYWQgYWRkcmVzczogMHg0MDAwMDAKTG9h
-ZGluZzogIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMjIyMKICAgICAgIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKICAgICAgIyMjIyMjIyMjIyMjIyMjIyMjIwpk
-b25lCkJ5dGVzIHRyYW5zZmVycmVkID0gNzU3OTI2IChiOTBhNiBoZXgpCkEzMDAwPiBib290bQoj
-IyBCb290aW5nIGltYWdlIGF0IDAwNDAwMDAwIC4uLgpJbWFnZSBOYW1lOiAgIExpbnV4LTIuNC4y
-NQpJbWFnZSBUeXBlOiAgIFBvd2VyUEMgTGludXggS2VybmVsIEltYWdlIChnemlwIGNvbXByZXNz
-ZWQpCkRhdGEgU2l6ZTogICAgNzU3ODYyIEJ5dGVzID0gNzQwLjEga0IKTG9hZCBBZGRyZXNzOiAw
-MDAwMDAwMApFbnRyeSBQb2ludDogIDAwMDAwMDAwClZlcmlmeWluZyBDaGVja3N1bSAuLi4gT0sK
-VW5jb21wcmVzc2luZyBLZXJuZWwgSW1hZ2UgLi4uIE9LCgpub3RoaW5nIGhhcHBlbnMgYWZ0ZXIg
-dGhpcyB1bnRpbCBJIHJlYm9vdCB0aGUgYm9hcmQuIEkgcmVhZCB1LWJvb3QgRkFRCmFuZCBjb25m
-aWd1cmVkIGJkX2luZm8gc3RydWN0dXJlIHNhbWUgZm9yIGJvdGggdS1ib290IGFuZCBMaW51eC4g
-SQpmb3VuZCB0aGF0IENGR19JTU1SIGlzIG5vdCBhcHBsaWNhYmxlIHRvIE1QQzgyNDUuIEkgYWxz
-byB1c2VkCmNsb2Nrc19pbl9taHogdmFyaWFibGUgYWxzbyBiZWZvcmUgbG9hZGluZyBMaW51eC4g
-SSBhbSBzdHVjayBoZXJlLgpDb3VsZCB5b3UgcGxlYXNlIGxldCBtZSBrbm93IHdoYXQgc2hvdWxk
-IEkgZG8gbmV4dD8KClRoYW5rcwpLaXNob3JlCg==
+I2C-MPC: Allow for sharing of the interrupt line
+
+On the MPC8548 devices we have multiple I2C-MPC buses however they are on the
+same interrupt line.  Made request_irq pass SA_SHIRQ now so the second bus can
+register for the same IRQ.
+
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+
+---
+commit cc75b79f8142eb8a50432cf612bb1ab189136cd0
+tree 79fd2184cd5cfee440f3ca2952f7c9f834ece443
+parent 52292c9b8c16aa9024a65aaeeca434bb8fec7d24
+author Kumar K. Gala <kumar.gala@freescale.com> 1115164017 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> 1115164017 -0500
+
+Index: drivers/i2c/busses/i2c-mpc.c
+===================================================================
+--- 59c7aae8cab7c4e1e557dd3a4fff6afbffab38e2/drivers/i2c/busses/i2c-mpc.c  (mode:100644 sha1:6f33496d31c31e6c57d3d2479db4afb4dad23617)
++++ 79fd2184cd5cfee440f3ca2952f7c9f834ece443/drivers/i2c/busses/i2c-mpc.c  (mode:100644 sha1:c8a8703dcbcb16fdd5ccd5fddf8f322d2509d5dd)
+@@ -325,7 +325,7 @@
+ 	if (i2c->irq != OCP_IRQ_NA)
+ 	{
+ 		if ((result = request_irq(ocp->def->irq, mpc_i2c_isr,
+-					  0, "i2c-mpc", i2c)) < 0) {
++					  SA_SHIRQ, "i2c-mpc", i2c)) < 0) {
+ 			printk(KERN_ERR
+ 			       "i2c-mpc - failed to attach interrupt\n");
+ 			goto fail_irq;
+@@ -424,7 +424,7 @@
+ 
+ 	if (i2c->irq != 0)
+ 		if ((result = request_irq(i2c->irq, mpc_i2c_isr,
+-					  0, "fsl-i2c", i2c)) < 0) {
++					  SA_SHIRQ, "i2c-mpc", i2c)) < 0) {
+ 			printk(KERN_ERR
+ 			       "i2c-mpc - failed to attach interrupt\n");
+ 			goto fail_irq;
