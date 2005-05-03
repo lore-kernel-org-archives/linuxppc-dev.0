@@ -1,19 +1,29 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from parcelfarce.linux.theplanet.co.uk
-	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DDBD0679F4
+	by ozlabs.org (Postfix) with ESMTP id 49B8C679F9
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  3 May 2005 11:06:27 +1000 (EST)
-Date: Mon, 2 May 2005 17:42:59 -0300
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Dan Malek <dan@embeddededge.com>,
-	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Message-ID: <20050502204259.GB4065@logos.cnet>
+	Tue,  3 May 2005 16:16:59 +1000 (EST)
+Received: from root by ciao.gmane.org with local (Exim 4.43)
+	id 1DSqbr-0005wp-8A
+	for linuxppc-embedded@ozlabs.org; Tue, 03 May 2005 08:10:19 +0200
+Received: from s0106000024c002e0.ss.shawcable.net ([70.64.46.12])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Tue, 03 May 2005 08:10:19 +0200
+Received: from jbi130 by s0106000024c002e0.ss.shawcable.net with local (Gmexim
+	0.1 (Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Tue, 03 May 2005 08:10:19 +0200
+To: linuxppc-embedded@ozlabs.org
+From: jbi130@yahoo.com
+Date: 03 May 2005 00:15:14 -0600
+Message-ID: <87sm14n8ct.fsf@nimrod.unx.ca>
+References: <4275F2BB.9050100@radionor.no>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Subject: CONFIG_PIN_TLB experiments
+Sender: news <news@sea.gmane.org>
+Subject: Re: Ethernet bridging on MPC8248
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,73 +34,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Ole Andreas Torvmark <ole.torvmark@radionor.no> writes:
 
-Hi 8xx folks,
+> ifconfig eth0 0.0.0.0
+> ifconfig eth1 0.0.0.0
+> brctl addbr br0
+> brctl addif br0 eth0
+> brctl addif br0 eth1
+> ifconfig br0 192.168.0.222 netmask 255.255.255.0
+> 
+> If I connect a machine to port 0 (eth0) then I can ping the bridge
+> from that machine,
+> 
+> If I connect a machine to port 1 (eth1) I cannot ping the bridge.
+> If I connect machines to both ports, I cannot ping one machine from
+> the other, the only thing i can successfully ping is from port 0 to
+> bridge and from bridge to port 0
+> 
+> Is this a known problem with the FCC ENET driver or does it support
+> bridging fully ?
 
-I've been testing the CONFIG_PIN_TLB option under v2.6, results are not good. 
-
-The 8Mbyte TLB entries do not seem to work as expected, they do not 
-cover the regions which they claim to. Accesses inside the region 
-covered by pinned 8Mb TLB result in pagefaults and 4kb entries getting
-created.
-
-Actually, CONFIG_PIN_TLB slowdowns the system, as expected (there are only 
-28 usable TLB's instead of 32).
-
-
-v2.6 CONFIG_PIN_TLB:
-I-TLB userspace misses: 162113
-I-TLB kernel misses: 135911
-D-TLB userspace misses: 289452
-D-TLB kernel misses: 257039
-
-v2.6 without CONFIG_PIN_TLB:
-I-TLB userspace misses: 160828
-I-TLB kernel misses: 134746
-D-TLB userspace misses: 253557
-D-TLB kernel misses: 227383
-
-
-The following BDI output shows the pinned, 8MByte data page mapping present,
-at 0xc0000000.
-
-BDI>rds 826
-SPR  826 : 0x00007f00        32512
-BDI>rms 792 0x0c001C00
-BDI>rms 824 1
-BDI>rds 824
-SPR  824 : 0xc00000f0  -1073741584
-BDI>rds 825
-SPR  825 : 0x00000fe0         4064
-BDI>rds 826
-SPR  826 : 0x00007fff        32767       <- "0x00007fff" was 0x00007f00" initially. 
-				             I tried enabling usermode access without
-					     success.
-
-There are several 4Kb mappings inside the range covered by this 8Mb TLB entry, 
-for example: 
-
-BDI>rms 792 0x0c000200
-BDI>rms 824 1
-BDI>rds 824
-SPR  824 : 0xc0224f17  -1071493353
-BDI>rds 825
-SPR  825 : 0x002241e0      2245088
-BDI>rds 826
-SPR  826 : 0x00007f00        32512
-
-And more, without so much detail:
-SPR  824 : 0xc0224f17  -1071493353
-SPR  824 : 0xc01fbf17  -1071661289
-SPR  824 : 0xc0246f17  -1071354089
-SPR  824 : 0xc023ff17  -1071382761
-SPR  824 : 0xc7e35f17  - 941400297
-SPR  824 : 0xc0244f17  -1071362281
-SPR  824 : 0xc023ef17  -1071386857
-
-Note that protection (SPR 826) is exactly the same as the 8Mbyte page protection. 
-
-Why is the translation mechanism rejection the pinned mappings? 
-
-Dan, have you ever seen this work? Am I misunderstanding how the pinned
-entries are supposed to work? 
+Have you made sure that eth0 and eth1 are 'up'?  eg) ifconfig eth0 up.
+I'm not sure, but br0 may need to be up as well.
