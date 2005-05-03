@@ -1,28 +1,18 @@
-Return-Path: <ALEBAS@televes.com>
-Received: from mailext.televes.com (unknown [212.163.42.136])
-	by ozlabs.org (Postfix) with ESMTP id 8F77867A01
+Return-Path: <clark@esteem.com>
+Received: from mail5.hsphere.cc (mail5.hsphere.cc [216.157.145.25])
+	by ozlabs.org (Postfix) with SMTP id 8C970679F0
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  3 May 2005 16:26:28 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by mailext.televes.com (Postfix) with ESMTP id 48E36327FA8
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  3 May 2005 08:40:57 +0200 (CEST)
-Received: from mailext.televes.com ([127.0.0.1])
-	by localhost (mailext [127.0.0.1]) (amavisd-new, port 10024) with SMTP
-	id 15660-09 for <linuxppc-embedded@ozlabs.org>;
-	Tue,  3 May 2005 08:40:57 +0200 (CEST)
-Received: from televes.com (unknown [212.163.42.137])
-	by mailext.televes.com (Postfix) with SMTP id 0BA75327F6B
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  3 May 2005 08:40:57 +0200 (CEST)
-Message-ID: <51DB8827D393D411BB69003048003F4601B1C1EF@tvesntr>
-From: Bastos Fernandez Alexandre <ALEBAS@televes.com>
-To: 'Ole Andreas Torvmark' <ole.torvmark@radionor.no>
-Date: Tue, 3 May 2005 08:24:13 +0200 
+	Wed,  4 May 2005 04:29:25 +1000 (EST)
+Message-ID: <4277BF8F.8040206@esteem.com>
+Date: Tue, 03 May 2005 11:14:39 -0700
+From: Conn Clark <clark@esteem.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+References: <20050502204259.GB4065@logos.cnet>
+In-Reply-To: <20050502204259.GB4065@logos.cnet>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: Ethernet bridging on MPC8248
+Subject: Re: CONFIG_PIN_TLB experiments
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,65 +23,98 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Ole,
+Marcelo Tosatti wrote:
+> Hi 8xx folks,
 
-Maybe those mails from archives would answer your questions. As long as
-I know this is still present in kernel:
+<SNIP>
 
-http://ozlabs.org/pipermail/linuxppc-embedded/2004-October/015617.html
-http://ozlabs.org/pipermail/linuxppc-embedded/2004-October/015620.html
+> 
+> Actually, CONFIG_PIN_TLB slowdowns the system, as expected (there are only 
+> 28 usable TLB's instead of 32).
+> 
+> 
+> v2.6 CONFIG_PIN_TLB:
+> I-TLB userspace misses: 162113
+> I-TLB kernel misses: 135911
+> D-TLB userspace misses: 289452
+> D-TLB kernel misses: 257039
+> 
+> v2.6 without CONFIG_PIN_TLB:
+> I-TLB userspace misses: 160828
+> I-TLB kernel misses: 134746
+> D-TLB userspace misses: 253557
+> D-TLB kernel misses: 227383
+> 
+> 
 
-So, you have to change set_multicast_list to support the promiscous mode
-needed by your bridge.
+Considering that the TLB kernel misses are higher with tlb pinning it 
+appears as though the pinned TLBs are not marked as valid.
 
-Best regards,
 
-Alex.
+> The following BDI output shows the pinned, 8MByte data page mapping present,
+> at 0xc0000000.
+> 
+> BDI>rds 826
+> SPR  826 : 0x00007f00        32512
+> BDI>rms 792 0x0c001C00
+> BDI>rms 824 1
+> BDI>rds 824
+> SPR  824 : 0xc00000f0  -1073741584
+> BDI>rds 825
+> SPR  825 : 0x00000fe0         4064
+> BDI>rds 826
+> SPR  826 : 0x00007fff        32767       <- "0x00007fff" was 0x00007f00" initially. 
+> 				             I tried enabling usermode access without
+> 					     success.
+> 
+> There are several 4Kb mappings inside the range covered by this 8Mb TLB entry, 
+> for example: 
+> 
+> BDI>rms 792 0x0c000200
+> BDI>rms 824 1
+> BDI>rds 824
+> SPR  824 : 0xc0224f17  -1071493353
+> BDI>rds 825
+> SPR  825 : 0x002241e0      2245088
+> BDI>rds 826
+> SPR  826 : 0x00007f00        32512
+> 
+> And more, without so much detail:
+> SPR  824 : 0xc0224f17  -1071493353
+> SPR  824 : 0xc01fbf17  -1071661289
+> SPR  824 : 0xc0246f17  -1071354089
+> SPR  824 : 0xc023ff17  -1071382761
+> SPR  824 : 0xc7e35f17  - 941400297
+> SPR  824 : 0xc0244f17  -1071362281
+> SPR  824 : 0xc023ef17  -1071386857
+> 
+> Note that protection (SPR 826) is exactly the same as the 8Mbyte page protection. 
+> 
+> Why is the translation mechanism rejection the pinned mappings? 
+> 
+> Dan, have you ever seen this work? Am I misunderstanding how the pinned
+> entries are supposed to work? 
 
-> -----Original Message-----
-> From:	Ole Andreas Torvmark [SMTP:ole.torvmark@radionor.no]
-> Sent:	Monday, May 02, 2005 11:28 AM
-> To:	linuxppc-embedded@ozlabs.org
-> Subject:	Ethernet bridging on MPC8248
-> 
-> Hi !
-> 
-> I've a custom board with a MPC8248 with two LXT972 10/100MBit ethernet
-> phys.
-> 
-> The board is running 2.6.9-rc1, and I'm using the FCC ENET Version 0.3 
-> driver with some modifications.
-> 
-> My question is :
-> 
-> I've tried to get ethernet briding between the two ethernet ports to work.
-> 
-> I've set up the following :
-> 
-> ifconfig eth0 0.0.0.0
-> ifconfig eth1 0.0.0.0
-> brctl addbr br0
-> brctl addif br0 eth0
-> brctl addif br0 eth1
-> ifconfig br0 192.168.0.222 netmask 255.255.255.0
-> 
-> If I connect a machine to port 0 (eth0) then I can ping the bridge from 
-> that machine,
-> If I connect a machine to port 1 (eth1) I cannot ping the bridge.
-> If I connect machines to both ports, I cannot ping one machine from the 
-> other, the only thing i can successfully ping is from port 0 to bridge 
-> and from bridge to port 0
-> 
-> Is this a known problem with the FCC ENET driver or does it support 
-> bridging fully ?
-> 
-> best regards
-> 
-> Ole Andreas Torvmark
-> R & D Engineer
-> Radionor Communications AS
+When you load the Mx_EPN of the pinned area is the EV bit being set?
+
+
 > 
 > _______________________________________________
 > Linuxppc-embedded mailing list
 > Linuxppc-embedded@ozlabs.org
 > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+
+
+-- Conn
+
+*****************************************************************
+Blessed be the heretic, for he causes some to think and unites
+the rest against him.
+*****************************************************************
+
+Conn Clark
+Engineering Assistant                clark@esteem.com
+Electronic Systems Technology Inc.        www.esteem.com
+
+Stock Ticker Symbol                ELST
