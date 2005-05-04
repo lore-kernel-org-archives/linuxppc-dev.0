@@ -2,16 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8C64D679F2
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 May 2005 09:53:13 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 4B21F679E9
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 May 2005 10:05:27 +1000 (EST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Colin Leroy <colin@colino.net>
-In-Reply-To: <20050503083728.3bedc3ef@colin.toulouse>
+To: Ian Wienand <ianw@gelato.unsw.edu.au>
+In-Reply-To: <20050503234811.GA10048@cse.unsw.EDU.AU>
 References: <1115072133.6031.33.camel@gaston>
-	<20050503083728.3bedc3ef@colin.toulouse>
+	<20050503222200.GA29940@cse.unsw.EDU.AU>
+	<1115163690.7568.45.camel@gaston>
+	<20050503234811.GA10048@cse.unsw.EDU.AU>
 Content-Type: text/plain
-Date: Wed, 04 May 2005 09:50:56 +1000
-Message-Id: <1115164256.7627.57.camel@gaston>
+Date: Wed, 04 May 2005 10:03:13 +1000
+Message-Id: <1115164994.7628.73.camel@gaston>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	DebianPPC <debian-powerpc@lists.debian.org>
@@ -25,25 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2005-05-03 at 08:37 +0200, Colin Leroy wrote:
-> On Tue, 03 May 2005 08:15:33 +1000
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Wed, 2005-05-04 at 09:48 +1000, Ian Wienand wrote:
+> On Wed, May 04, 2005 at 09:41:30AM +1000, Benjamin Herrenschmidt wrote:
+> > On Wed, 2005-05-04 at 08:22 +1000, Ian Wienand wrote:
+> > > Is there a fix in the works for the Radeon timing thing that makes the
+> > > screen go a little weird on wakeup?
+> > 
+> > I don't know this problem, what happens precisely and what model of
+> > radeon chip do you have ?
 > 
-> Hi Ben,
+> We discussed it briefly previously
 > 
-> > All my pending patches regarding power management are now upstream in
-> > Linus "git" repository. That means I expect those to fix all known
-> > issues (with the notable exception of the USB related problems, all of
-> > these things aren't yet there but they aren't under my control, so
-> > still unplug USB devices).
+> http://lists.debian.org/debian-powerpc/2005/04/msg00138.html
 > 
-> All the USB patches from David Brownell that I tracked are in
-> git too, including the ehci repower stuff I sent him. I don't have
-> issues with these patches applied. Do you?
+>  "Ok. I suspect the wakeup effect might be caused by the delays in
+>  radeonfb that I added to work around some chip errata... You can try
+>  hacking them out from the errata function in radeonfb.h"
 
-I have no problem but I didn't see the hub power switching patch on my
-git commit logs and it wasn't in linus tree yesterday at least :) I'll
-dbl check later today. It's on greg's queue though for sure so it should
-be in 2.6.12 hopefully.
+Ah yes, those... oh well, that is not very urgent, and it should be a
+bit better with my cmap batching patch. You can always hack locally and
+remove the delay of 5ms in the PLL workaround in radeonfb.h since it
+seems nobody ever really hits the bug taht this workaround is supposed
+to fix...
 
 Ben.
