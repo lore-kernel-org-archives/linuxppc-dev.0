@@ -1,15 +1,22 @@
-Return-Path: <galak@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 2C291679F5
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 May 2005 14:13:48 +1000 (EST)
-Date: Tue, 3 May 2005 21:52:19 -0500 (CDT)
-From: Kumar Gala <galak@freescale.com>
-To: Andrew Morton <akpm@osdl.org>
-Message-ID: <Pine.LNX.4.61.0505032150260.19926@nylon.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] ppc32: Simplified PPC core revision report
+Return-Path: <colin@colino.net>
+Received: from paperstreet.colino.net (colino.net [213.41.131.56])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5C373679FA
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 May 2005 16:35:45 +1000 (EST)
+Date: Wed, 4 May 2005 08:35:34 +0200
+From: Colin Leroy <colin@colino.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <20050504083534.368ae1bd@colin.toulouse>
+In-Reply-To: <1115164256.7627.57.camel@gaston>
+References: <1115072133.6031.33.camel@gaston>
+	<20050503083728.3bedc3ef@colin.toulouse>
+	<1115164256.7627.57.camel@gaston>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	DebianPPC <debian-powerpc@lists.debian.org>
+Subject: Re: Laptop sleep & current "git" tree
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,67 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We can identify new Freescale PPC cores by the fact that the MSB of the PVR is
-set.  If we are a new Freescale core the decode of major/minor revision numbers
-is simplified so we dont have to add new case checks for a every new Freescale
-core.
+On Wed, 04 May 2005 09:50:56 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+> I have no problem but I didn't see the hub power switching patch on my
+> git commit logs and it wasn't in linus tree yesterday at least :) I'll
+> dbl check later today. It's on greg's queue though for sure so it
+> should be in 2.6.12 hopefully.
 
----
-commit 1ecd8eef1f05b100f3933a7de25f88a3314b0a97
-tree 739c8916a8f4edd214007de1dd8610d0e1c49235
-parent cc75b79f8142eb8a50432cf612bb1ab189136cd0
-author Kumar K. Gala <kumar.gala@freescale.com> 1115174649 -0500
-committer Kumar K. Gala <kumar.gala@freescale.com> 1115174649 -0500
+Yes, I was mistaken, what I wanted to say is that it's in gregkh and 
+-mm :)
+I hope it'll go in, it could be one of the first perfect kernel for
+apple laptops !
 
-Index: arch/ppc/kernel/setup.c
-===================================================================
---- 79fd2184cd5cfee440f3ca2952f7c9f834ece443/arch/ppc/kernel/setup.c  (mode:100644 sha1:e97ce635b99e6d84640457c775c77d7eb49f4efb)
-+++ 739c8916a8f4edd214007de1dd8610d0e1c49235/arch/ppc/kernel/setup.c  (mode:100644 sha1:5dfb42f1a1529d561bf73b5b5c1411a3e51f6402)
-@@ -221,27 +221,26 @@
- 			return err;
- 	}
- 
--	switch (PVR_VER(pvr)) {
--	case 0x0020:	/* 403 family */
--		maj = PVR_MAJ(pvr) + 1;
--		min = PVR_MIN(pvr);
--		break;
--	case 0x1008:	/* 740P/750P ?? */
--		maj = ((pvr >> 8) & 0xFF) - 1;
--		min = pvr & 0xFF;
--		break;
--	case 0x8083:	/* e300 */
--		maj = PVR_MAJ(pvr);
--		min = PVR_MIN(pvr);
--		break;
--	case 0x8020:	/* e500 */
-+	/* If we are a Freescale core do a simple check so
-+	 * we dont have to keep adding cases in the future */
-+	if ((PVR_VER(pvr) & 0x8000) == 0x8000) {
- 		maj = PVR_MAJ(pvr);
- 		min = PVR_MIN(pvr);
--		break;
--	default:
--		maj = (pvr >> 8) & 0xFF;
--		min = pvr & 0xFF;
--		break;
-+	} else {
-+		switch (PVR_VER(pvr)) {
-+			case 0x0020:	/* 403 family */
-+				maj = PVR_MAJ(pvr) + 1;
-+				min = PVR_MIN(pvr);
-+				break;
-+			case 0x1008:	/* 740P/750P ?? */
-+				maj = ((pvr >> 8) & 0xFF) - 1;
-+				min = pvr & 0xFF;
-+				break;
-+			default:
-+				maj = (pvr >> 8) & 0xFF;
-+				min = pvr & 0xFF;
-+				break;
-+		}
- 	}
- 
- 	seq_printf(m, "revision\t: %hd.%hd (pvr %04x %04x)\n",
+-- 
+Colin
