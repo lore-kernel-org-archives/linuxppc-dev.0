@@ -1,23 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4B21F679E9
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 May 2005 10:05:27 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ian Wienand <ianw@gelato.unsw.edu.au>
-In-Reply-To: <20050503234811.GA10048@cse.unsw.EDU.AU>
-References: <1115072133.6031.33.camel@gaston>
-	<20050503222200.GA29940@cse.unsw.EDU.AU>
-	<1115163690.7568.45.camel@gaston>
-	<20050503234811.GA10048@cse.unsw.EDU.AU>
-Content-Type: text/plain
-Date: Wed, 04 May 2005 10:03:13 +1000
-Message-Id: <1115164994.7628.73.camel@gaston>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	DebianPPC <debian-powerpc@lists.debian.org>
-Subject: Re: Laptop sleep & current "git" tree
+Return-Path: <galak@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 2C291679F5
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 May 2005 14:13:48 +1000 (EST)
+Date: Tue, 3 May 2005 21:52:19 -0500 (CDT)
+From: Kumar Gala <galak@freescale.com>
+To: Andrew Morton <akpm@osdl.org>
+Message-ID: <Pine.LNX.4.61.0505032150260.19926@nylon.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] ppc32: Simplified PPC core revision report
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,27 +19,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2005-05-04 at 09:48 +1000, Ian Wienand wrote:
-> On Wed, May 04, 2005 at 09:41:30AM +1000, Benjamin Herrenschmidt wrote:
-> > On Wed, 2005-05-04 at 08:22 +1000, Ian Wienand wrote:
-> > > Is there a fix in the works for the Radeon timing thing that makes the
-> > > screen go a little weird on wakeup?
-> > 
-> > I don't know this problem, what happens precisely and what model of
-> > radeon chip do you have ?
-> 
-> We discussed it briefly previously
-> 
-> http://lists.debian.org/debian-powerpc/2005/04/msg00138.html
-> 
->  "Ok. I suspect the wakeup effect might be caused by the delays in
->  radeonfb that I added to work around some chip errata... You can try
->  hacking them out from the errata function in radeonfb.h"
+We can identify new Freescale PPC cores by the fact that the MSB of the PVR is
+set.  If we are a new Freescale core the decode of major/minor revision numbers
+is simplified so we dont have to add new case checks for a every new Freescale
+core.
 
-Ah yes, those... oh well, that is not very urgent, and it should be a
-bit better with my cmap batching patch. You can always hack locally and
-remove the delay of 5ms in the PLL workaround in radeonfb.h since it
-seems nobody ever really hits the bug taht this workaround is supposed
-to fix...
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
-Ben.
+---
+commit 1ecd8eef1f05b100f3933a7de25f88a3314b0a97
+tree 739c8916a8f4edd214007de1dd8610d0e1c49235
+parent cc75b79f8142eb8a50432cf612bb1ab189136cd0
+author Kumar K. Gala <kumar.gala@freescale.com> 1115174649 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> 1115174649 -0500
+
+Index: arch/ppc/kernel/setup.c
+===================================================================
+--- 79fd2184cd5cfee440f3ca2952f7c9f834ece443/arch/ppc/kernel/setup.c  (mode:100644 sha1:e97ce635b99e6d84640457c775c77d7eb49f4efb)
++++ 739c8916a8f4edd214007de1dd8610d0e1c49235/arch/ppc/kernel/setup.c  (mode:100644 sha1:5dfb42f1a1529d561bf73b5b5c1411a3e51f6402)
+@@ -221,27 +221,26 @@
+ 			return err;
+ 	}
+ 
+-	switch (PVR_VER(pvr)) {
+-	case 0x0020:	/* 403 family */
+-		maj = PVR_MAJ(pvr) + 1;
+-		min = PVR_MIN(pvr);
+-		break;
+-	case 0x1008:	/* 740P/750P ?? */
+-		maj = ((pvr >> 8) & 0xFF) - 1;
+-		min = pvr & 0xFF;
+-		break;
+-	case 0x8083:	/* e300 */
+-		maj = PVR_MAJ(pvr);
+-		min = PVR_MIN(pvr);
+-		break;
+-	case 0x8020:	/* e500 */
++	/* If we are a Freescale core do a simple check so
++	 * we dont have to keep adding cases in the future */
++	if ((PVR_VER(pvr) & 0x8000) == 0x8000) {
+ 		maj = PVR_MAJ(pvr);
+ 		min = PVR_MIN(pvr);
+-		break;
+-	default:
+-		maj = (pvr >> 8) & 0xFF;
+-		min = pvr & 0xFF;
+-		break;
++	} else {
++		switch (PVR_VER(pvr)) {
++			case 0x0020:	/* 403 family */
++				maj = PVR_MAJ(pvr) + 1;
++				min = PVR_MIN(pvr);
++				break;
++			case 0x1008:	/* 740P/750P ?? */
++				maj = ((pvr >> 8) & 0xFF) - 1;
++				min = pvr & 0xFF;
++				break;
++			default:
++				maj = (pvr >> 8) & 0xFF;
++				min = pvr & 0xFF;
++				break;
++		}
+ 	}
+ 
+ 	seq_printf(m, "revision\t: %hd.%hd (pvr %04x %04x)\n",
