@@ -2,19 +2,19 @@ Return-Path: <dan@embeddededge.com>
 Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F130F679F5
+	by ozlabs.org (Postfix) with ESMTP id 2D162679FD
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  5 May 2005 09:13:08 +1000 (EST)
-In-Reply-To: <4278DDAF.6010605@ru.mvista.com>
-References: <4278DDAF.6010605@ru.mvista.com>
+	Thu,  5 May 2005 09:13:14 +1000 (EST)
+In-Reply-To: <4278DDBF.8080705@ru.mvista.com>
+References: <4278DDBF.8080705@ru.mvista.com>
 Mime-Version: 1.0 (Apple Message framework v622)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <a82c91599367bc3ffad39b98969078cd@embeddededge.com>
+Message-Id: <7bbdd4818c0ce43867d32ab3c1a317dc@embeddededge.com>
 From: Dan Malek <dan@embeddededge.com>
-Date: Wed, 4 May 2005 19:08:45 -0400
+Date: Wed, 4 May 2005 18:43:44 -0400
 To: Vitaly Bordug <vbordug@ru.mvista.com>
 Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [RFC][PATCH 2.6.12-rc2 2/3] FCC Ethernet PlatformDevice support
+Subject: Re: [RFC][PATCH 2.6.12-rc2 3/3] FCC Ethernet PlatformDevice support
 	for 82xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -29,15 +29,14 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 On May 4, 2005, at 10:35 AM, Vitaly Bordug wrote:
 
-> This patch adds some helper functions to the common CPM2 code in order 
-> to prevent
-> direct *immr usage within network driver.
+> This patch contains actual Ethernet driver on platform bus. Currently 
+> tested on MPC8272ADS  (PQII) board.
 
-No, please don't do this.
-We don't need "helper" functions for the IO port in this manner.
-I've got a new scheme that's been discussed, I just need a few
-more "free" hours to finish it.  Suffer with the current situation
-for a little longer, we'll get this fixed the right way shortly.
+Hold off on this, please.
+
+We need to get Panto to review it against the restructuring of all of 
+the
+existing drivers.
 
 Thanks.
 
