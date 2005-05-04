@@ -1,16 +1,16 @@
 Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao08.cox.net (fed1rmmtao08.cox.net [68.230.241.31])
-	by ozlabs.org (Postfix) with ESMTP id B69EF679EF
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 May 2005 01:28:09 +1000 (EST)
-Date: Wed, 4 May 2005 08:28:07 -0700
+Received: from fed1rmmtao04.cox.net (fed1rmmtao04.cox.net [68.230.241.35])
+	by ozlabs.org (Postfix) with ESMTP id 0E256679E9
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 May 2005 01:34:22 +1000 (EST)
+Date: Wed, 4 May 2005 08:34:19 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Kumar Gala <kumar.gala@freescale.com>
-Message-ID: <20050504152806.GU1221@smtp.west.cox.net>
+To: Dan Malek <dan@embeddededge.com>
+Message-ID: <20050504153419.GV1221@smtp.west.cox.net>
 References: <17016.29775.224816.691409@cargo.ozlabs.ibm.com>
-	<3ef0069e8d123c43579a8cc85d20467c@freescale.com>
+	<466e699745cf24e660e296530f6e34dc@embeddededge.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3ef0069e8d123c43579a8cc85d20467c@freescale.com>
+In-Reply-To: <466e699745cf24e660e296530f6e34dc@embeddededge.com>
 Cc: linuxppc-dev@ozlabs.org
 Subject: Re: [PATCH] Set cpu explicitly in kernel compiles
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -22,23 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 04, 2005 at 08:45:51AM -0500, Kumar Gala wrote:
+On Wed, May 04, 2005 at 07:28:30AM -0400, Dan Malek wrote:
 > 
-> On May 4, 2005, at 2:05 AM, Paul Mackerras wrote:
+> On May 4, 2005, at 3:05 AM, Paul Mackerras wrote:
 > 
-> >What do people think of this patch?? The motivation for it is that a
-> > biarch gcc-4.0 will by default tune for POWER4, even for a 32-bit
-> > compile, meaning that we end up with a lot of nops we don't need.
-> > This also takes out -mstring.
-> >
-> >With this, the text size reduces by about 120k for my normal config
-> > when compiling with a biarch gcc-4.0.? The text size also reduces
-> > slightly when compiling with the Debian gcc-3.3.5 (32-bit only, not
-> > biarch).
+> >+cpu-opt-$(CONFIG_6xx)		+= -mcpu=750 -mtune=7450
 > 
-> What is attributed to this large of a text size change.  I've always 
+> What about cores that aren't CONFIG_6xx (8xx, 4xx, e500, etc.)?
 
-My guess is taking out the nops that we don't need on !POWER4.
+There's two choices.  We can either go down the route x86 has of each
+CPU family choice defaulting to a cpu-opt-..., or we could do roughly
+what we do today and force the default cpu/tune to be whatever the
+default is on gcc-3.3.x (which I assume is really gcc-3.x.x, but..).
+
+Since there are folks working on optimizing toolchains on at least some
+of the newer CPUs, I'd be inclined to say we should do something like
+cpu-opt-y := ... gcc-3.3.x defaults ...
+cpu-opt-$(CONFIG_6xx) := -mcpu=750 -mtune=7450
+cpu-opt-$(CONFIG_8xx) := -mcpu=800 -mtune=800 # Or whatever it is..
+
+CFLAGS += $(cpu-opt-y)
+
+> How about we create a CONFIG_GCC_CPUOPT and
+> CONFIG_AS_OPT, and just get these out of the configuration file?
+
+Ick.  It's possible, but unfun, to go from CONFIG_FOO="string" to
+cflags. 
 
 -- 
 Tom Rini
