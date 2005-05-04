@@ -1,22 +1,12 @@
-Return-Path: <colin@colino.net>
-Received: from paperstreet.colino.net (colino.net [213.41.131.56])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5C373679FA
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 May 2005 16:35:45 +1000 (EST)
-Date: Wed, 4 May 2005 08:35:34 +0200
-From: Colin Leroy <colin@colino.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <20050504083534.368ae1bd@colin.toulouse>
-In-Reply-To: <1115164256.7627.57.camel@gaston>
-References: <1115072133.6031.33.camel@gaston>
-	<20050503083728.3bedc3ef@colin.toulouse>
-	<1115164256.7627.57.camel@gaston>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	DebianPPC <debian-powerpc@lists.debian.org>
-Subject: Re: Laptop sleep & current "git" tree
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17016.29775.224816.691409@cargo.ozlabs.ibm.com>
+Date: Wed, 4 May 2005 17:05:51 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Cc: trini@kernel.crashing.org
+Subject: [PATCH] Set cpu explicitly in kernel compiles
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,18 +16,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 04 May 2005 09:50:56 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+What do people think of this patch?  The motivation for it is that a
+biarch gcc-4.0 will by default tune for POWER4, even for a 32-bit
+compile, meaning that we end up with a lot of nops we don't need.
+This also takes out -mstring.
 
-> I have no problem but I didn't see the hub power switching patch on my
-> git commit logs and it wasn't in linus tree yesterday at least :) I'll
-> dbl check later today. It's on greg's queue though for sure so it
-> should be in 2.6.12 hopefully.
+With this, the text size reduces by about 120k for my normal config
+when compiling with a biarch gcc-4.0.  The text size also reduces
+slightly when compiling with the Debian gcc-3.3.5 (32-bit only, not
+biarch).
 
-Yes, I was mistaken, what I wanted to say is that it's in gregkh and 
--mm :)
-I hope it'll go in, it could be one of the first perfect kernel for
-apple laptops !
+If there are no objections I'll send this to Andrew and Linus.
 
--- 
-Colin
+Paul.
+
+diff -urN linux-2.6/arch/ppc/Makefile pmac-2.5/arch/ppc/Makefile
+--- linux-2.6/arch/ppc/Makefile	2005-05-02 08:29:36.000000000 +1000
++++ pmac-2.5/arch/ppc/Makefile	2005-05-03 16:45:57.000000000 +1000
+@@ -23,15 +23,14 @@
+ LDFLAGS_vmlinux	:= -Ttext $(KERNELLOAD) -Bstatic
+ CPPFLAGS	+= -Iarch/$(ARCH)
+ AFLAGS		+= -Iarch/$(ARCH)
+-CFLAGS		+= -Iarch/$(ARCH) -msoft-float -pipe \
+-		-ffixed-r2 -mmultiple
++CFLAGS		+= -Iarch/$(ARCH) -msoft-float -pipe -ffixed-r2 -mmultiple
+ CPP		= $(CC) -E $(CFLAGS)
+ 
+ CHECKFLAGS	+= -D__powerpc__
+ 
+-ifndef CONFIG_E500
+-CFLAGS		+= -mstring
+-endif
++cpu-opt-$(CONFIG_6xx)		+= -mcpu=750 -mtune=7450
++
++CFLAGS += $(cpu-opt-y)
+ 
+ cpu-as-$(CONFIG_PPC64BRIDGE)	+= -Wa,-mppc64bridge
+ cpu-as-$(CONFIG_4xx)		+= -Wa,-m405
