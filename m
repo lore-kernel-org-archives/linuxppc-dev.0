@@ -1,24 +1,20 @@
-Return-Path: <panto@intracom.gr>
-Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
-	by ozlabs.org (Postfix) with ESMTP id 5A4FE67A67
+Return-Path: <vbordug@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
+	by ozlabs.org (Postfix) with SMTP id DFFC367A67
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  5 May 2005 23:43:20 +1000 (EST)
-Received: from mailserv.intranet.gr (localhost [127.0.0.1])
-	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id j45Dls5t014654
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 5 May 2005 16:47:54 +0300 (EEST)
-Message-ID: <427A1F54.5020108@intracom.gr>
-Date: Thu, 05 May 2005 16:27:48 +0300
-From: Pantelis Antoniou <panto@intracom.gr>
+	Thu,  5 May 2005 23:56:22 +1000 (EST)
+Message-ID: <427A2604.8040808@ru.mvista.com>
+Date: Thu, 05 May 2005 17:56:20 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
 MIME-Version: 1.0
-To: Dan Malek <dan@embeddededge.com>
-References: <4278DDBF.8080705@ru.mvista.com> <427A01B7.9090200@intracom.gr>
-	<427A1423.3040509@ru.mvista.com> <427A1361.6060005@intracom.gr>
-	<fb6d7d007dc9f75553f1390b86c5f72b@embeddededge.com>
-In-Reply-To: <fb6d7d007dc9f75553f1390b86c5f72b@embeddededge.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Eugene Surovegin <ebs@ebshome.net>
+References: <4278DDA4.7060200@ru.mvista.com>
+	<20050504164624.GB11439@gate.ebshome.net>
+In-Reply-To: <20050504164624.GB11439@gate.ebshome.net>
+Content-Type: multipart/alternative;
+	boundary="------------090404050405060504000500"
 Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [RFC][PATCH 2.6.12-rc2 3/3] FCC Ethernet PlatformDevice support
+Subject: Re: [RFC][PATCH 2.6.12-rc2 1/3] FCC Ethernet PlatformDevice support
  for 82xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -30,50 +26,245 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dan Malek wrote:
-> 
-> On May 5, 2005, at 8:36 AM, Pantelis Antoniou wrote:
-> 
->> In my experience it's much easier to configure these things once.
->> Hunting down where the driver modifies pins & clocks is a nightmare, if
->> you ever use a non standard configuration.
-> 
-> 
-> That doesn't quite work, as we have discussed before.  The problem with
-> setting them in the board set up is you can have loadable modules and
-> select among several different IO pin configurations depending upon
-> what you load.  So, the plan is to have the drivers make a generic
-> call out request using feature_call() to the supporting functions in the
-> board specific directory.  This is for more than just IO pin 
-> configurations,
-> since boards may have power management or other external logic that
-> has to be routed to the physical interface.  For example, the SCC Ethernet
-> driver will perform a feature_call() during set up requesting any necessary
-> configuration for SCC2.  The board specific function can chose to ignore
-> this and get the "default" configuration, or to do whatever is necessary
-> unique to the board to enable the external data path.  All that drivers 
-> know
-> is there are a couple of specific places where they need configuration
-> assistance, they don't care what the specific board has to do.
-> 
+This is a multi-part message in MIME format.
+--------------090404050405060504000500
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Sounds nice. I'm a much simpler guy it seems :)
+Eugene Surovegin wrote:
 
-> It's in the works and nearly done for a few example 85xx and 82xx
-> boards and CPM2 drivers.  I'll be checking it in shortly.  I just haven't
-> decided if I want a varargs list or a data structure for passing the
-> information and results.
-> 
+>On Wed, May 04, 2005 at 06:35:16PM +0400, Vitaly Bordug wrote:
+>  
+>
+>>This patch adds generic PlatformDevice support to the 82xx family.
+>>Only FCC's exist currently in the structure, as there is the driver 
+>>which will utilize this.
+>>
+>>    
+>>
+>
+>[snip]
+>
+>  
+>
+>>+#ifdef CONFIG_CPM2
+>>+	identify_ppc_sys_by_id(cpm2_immr->im_memctl.memc_immr << 16);
+>>+
+>>+	/* Set up the MAC addresses for the FECs
+>>+	 */
+>>+	fec = ppc_sys_platform_devices[MPC82xx_FCC1].dev.platform_data;
+>>+	memcpy(fec->mac_addr,bi->bi_enetaddr,6);
+>>+
+>>+	fec = ppc_sys_platform_devices[MPC82xx_FCC2].dev.platform_data;
+>>+#ifdef CONFIG_ADS8272
+>>+	memcpy(fec->mac_addr,bi->bi_enet1addr,6);
+>>+#else
+>>+	memcpy(fec->mac_addr,bi->bi_enetaddr,6);
+>>+	fec->macaddr[5] ^= 1;
+>>+#endif
+>>+#endif
+>>    
+>>
+>
+>What is this? Why does common file contain board specific ifdefs????
+>
+>[snip]
+>
+>  
+>
+>>+/* FCC1 Clock Source Configuration.  There are board specific.
+>>+   Can only choose from CLK9-12 */
+>>+#if defined(CONFIG_ADS8272)
+>>+#define F1_RXCLK	11
+>>+#define F1_TXCLK	10
+>>+#else
+>>+#define F1_RXCLK	12
+>>+#define F1_TXCLK	11
+>>+#endif
+>>    
+>>
+>
+>Same thing. Why on earth you continue current 8xxx trend of putting 
+>board specific crap into common files?
+>
+>  
+>
+>>+
+>>+/* FCC2 Clock Source Configuration.  There are board specific.
+>>+   Can only choose from CLK13-16 */
+>>+#ifdef CONFIG_ADS8272
+>>+#define F2_RXCLK	15
+>>+#define F2_TXCLK	16
+>>+#else
+>>+#define F2_RXCLK	13
+>>+#define F2_TXCLK	14
+>>+#endif
+>>    
+>>
+>
+>Ditto.
+>
+>  
+>
+>>+#ifdef CONFIG_ADS8272
+>>+#define PC_MDIO		0x00002000U
+>>+#define PC_MDCK		0x00001000U
+>>+#else
+>>+#define PC_MDIO		0x00000004U
+>>+#define PC_MDCK		0x00000020U
+>>+#endif
+>>    
+>>
+>
+>Ditto.
+>
+>  
+>
+>>+				.name	= "phyinterrupt",
+>>+				.start	= SIU_INT_IRQ5,
+>>+				.end	= SIU_INT_IRQ5,
+>>+				.flags	= IORESOURCE_IRQ,
+>>+			},
+>>    
+>>
+>
+>Why is this here? PHY interrupt routing is _board_ specific.
+>
+>  
+>
+I have fixed these yet, but I think it will be more reasonable to update 
+this together with respective driver which I'll work on together with 
+Pantelis.
+Thank you for review.
 
-Mind sharing?
+-- 
+Sincerely, 
+Vitaly
 
-> Thanks.
-> 
->     -- Dan
-> 
-> 
-> 
 
-Regards
+--------------090404050405060504000500
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Pantelis
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
+  <title></title>
+</head>
+<body bgcolor="#ffffff" text="#000000">
+Eugene Surovegin wrote:
+<blockquote cite="mid20050504164624.GB11439@gate.ebshome.net"
+ type="cite">
+  <pre wrap="">On Wed, May 04, 2005 at 06:35:16PM +0400, Vitaly Bordug wrote:
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">This patch adds generic PlatformDevice support to the 82xx family.
+Only FCC's exist currently in the structure, as there is the driver 
+which will utilize this.
+
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+[snip]
+
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">+#ifdef CONFIG_CPM2
++	identify_ppc_sys_by_id(cpm2_immr-&gt;im_memctl.memc_immr &lt;&lt; 16);
++
++	/* Set up the MAC addresses for the FECs
++	 */
++	fec = ppc_sys_platform_devices[MPC82xx_FCC1].dev.platform_data;
++	memcpy(fec-&gt;mac_addr,bi-&gt;bi_enetaddr,6);
++
++	fec = ppc_sys_platform_devices[MPC82xx_FCC2].dev.platform_data;
++#ifdef CONFIG_ADS8272
++	memcpy(fec-&gt;mac_addr,bi-&gt;bi_enet1addr,6);
++#else
++	memcpy(fec-&gt;mac_addr,bi-&gt;bi_enetaddr,6);
++	fec-&gt;macaddr[5] ^= 1;
++#endif
++#endif
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+What is this? Why does common file contain board specific ifdefs????
+
+[snip]
+
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">+/* FCC1 Clock Source Configuration.  There are board specific.
++   Can only choose from CLK9-12 */
++#if defined(CONFIG_ADS8272)
++#define F1_RXCLK	11
++#define F1_TXCLK	10
++#else
++#define F1_RXCLK	12
++#define F1_TXCLK	11
++#endif
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+Same thing. Why on earth you continue current 8xxx trend of putting 
+board specific crap into common files?
+
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">+
++/* FCC2 Clock Source Configuration.  There are board specific.
++   Can only choose from CLK13-16 */
++#ifdef CONFIG_ADS8272
++#define F2_RXCLK	15
++#define F2_TXCLK	16
++#else
++#define F2_RXCLK	13
++#define F2_TXCLK	14
++#endif
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+Ditto.
+
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">+#ifdef CONFIG_ADS8272
++#define PC_MDIO		0x00002000U
++#define PC_MDCK		0x00001000U
++#else
++#define PC_MDIO		0x00000004U
++#define PC_MDCK		0x00000020U
++#endif
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+Ditto.
+
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">+				.name	= "phyinterrupt",
++				.start	= SIU_INT_IRQ5,
++				.end	= SIU_INT_IRQ5,
++				.flags	= IORESOURCE_IRQ,
++			},
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+Why is this here? PHY interrupt routing is _board_ specific.
+
+  </pre>
+</blockquote>
+I have fixed these yet, but I think it will be more reasonable to
+update this together with respective driver which I'll work on together
+with Pantelis.<br>
+Thank you for review. <br>
+<br>
+<pre class="moz-signature" cols="72">-- 
+Sincerely, 
+Vitaly
+</pre>
+</body>
+</html>
+
+--------------090404050405060504000500--
