@@ -1,19 +1,23 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 24F3C67AC7
+Return-Path: <jmasel@arabellasw.com>
+Received: from gold.webfusion.co.uk (gold.webfusion.co.uk [212.67.202.159])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0FB6F67A40
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  6 May 2005 00:03:19 +1000 (EST)
-In-Reply-To: <42797FDE.7080909@ybb.ne.jp>
-References: <42797FDE.7080909@ybb.ne.jp>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <905bacf60cf1e3167d4f42dba31c9d4f@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Thu, 5 May 2005 09:02:58 -0500
-To: "Takeharu KATO" <takeharu1219@ybb.ne.jp>
-Cc: Glenn Burkhardt <glenn@aoi-industries.com>,
-	"Gala Kumar K.-galak" <galak@freescale.com>, linuxppc-embedded@ozlabs.org
-Subject: Re: PPC 44x Watchdog timer
+	Fri,  6 May 2005 00:25:09 +1000 (EST)
+Received: from bzq-82-81-29-215.red.bezeqint.net ([82.81.29.215] helo=Jonathan)
+	by gold.webfusion.co.uk with asmtp (Exim 3.36 #1) id 1DTgrw-0004Lt-00
+	for linuxppc-embedded@ozlabs.org; Thu, 05 May 2005 14:58:24 +0100
+From: "Jonathan Masel" <jmasel@arabellasw.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Thu, 5 May 2005 16:58:10 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <mailman.0.1115279646.20825.linuxppc-embedded@ozlabs.org>
+Message-Id: <E1DTgrw-0004Lt-00@gold.webfusion.co.uk>
+Subject: Re: [RFC][PATCH 2.6.12-rc2 3/3] FCC Ethernet PlatformDevice
+Reply-To: jmasel@arabellasw.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,40 +28,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Are you interested in looking at our Resource Manager? It works in 2.4 and
+2.6 kernels for a wide range of PQ's (virtually all of them).
 
-On May 4, 2005, at 9:07 PM, Takeharu KATO wrote:
+It seems to take some of these ideas, but further. The basic idea is to
+handle at all on-chip resources in an orderly and robust way (not just
+modularly, but that too). We allocate parallel port pins, clocks (BRG or
+CLK), internal DPRAM and communication channels to "consumers". Board
+specific (if/where needed) are all located in a single per-board file.
+Allocation is all dynamic and we can check that we're not conflicting with
+prior requests. There are quite a few other goodies too (display all
+consumers to which certain resources are allocated, etc).
 
-> Hi
->
-> Glenn Burkhardt wrote:
->
-> > watchdog exception interrupt isn't used, and it's only configurable 
-> for
-> > PPC405 (although I think that the technique would work for the whole 
-> 4xx
-> > family).
->  >
-> > Or am I misreading the code?
->  >
-> No, the kernel which I mentioned before is MontaVistaLinux.
-> IIRC, I look the WDT relevant codes in MontaVistaLinux2.X few years 
-> ago.
-> Of course, It was prepared for PowerPC40X...
->
-> > It would also be nice if your patch were applied to the 2.6 kernel 
-> tree.
-> >
-> Sorry, It's not my jurisdiction.
-> Matt(Porter) or Kumar(Gala) may be responsible for this work.
->  #Finally, the patch should be approved by akpm and linus, of course...
->
-> Matt or Kumar, would you merge BOOKE_WDT patch to 2.6 kernel tree?
->  IIRC, This patch has been left under review state about two month.
->  Is there something to be needed for the patch?
+This lets us easily handle dynamic configurations. E.g. configure pins for
+I2C during reset or start-up, modify them later on when you need ATM (they
+are multiplexed on the same pins on several devices). Or, as you mentioned,
+dynamic modules - but even when they have potentially conflicting requests.
 
-Sorry, I think Matt and I have been busy with normal "work".  I'll take 
-a look at this in the next week.  If you can update the patches to 
-something current that would help (but is not critical).
+And it is one, simple to use mechanism that we use across all devices
+(adapted for PQ1, PQ2 and PQ3).
 
-thanks
-- kumar
+If you're interested, please let me know. We'd be happy to contribute it if
+it will help.
+
+Jonathan
