@@ -1,21 +1,19 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
-	by ozlabs.org (Postfix) with SMTP id DFFC367A67
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 24F3C67AC7
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  5 May 2005 23:56:22 +1000 (EST)
-Message-ID: <427A2604.8040808@ru.mvista.com>
-Date: Thu, 05 May 2005 17:56:20 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-MIME-Version: 1.0
-To: Eugene Surovegin <ebs@ebshome.net>
-References: <4278DDA4.7060200@ru.mvista.com>
-	<20050504164624.GB11439@gate.ebshome.net>
-In-Reply-To: <20050504164624.GB11439@gate.ebshome.net>
-Content-Type: multipart/alternative;
-	boundary="------------090404050405060504000500"
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [RFC][PATCH 2.6.12-rc2 1/3] FCC Ethernet PlatformDevice support
- for 82xx
+	Fri,  6 May 2005 00:03:19 +1000 (EST)
+In-Reply-To: <42797FDE.7080909@ybb.ne.jp>
+References: <42797FDE.7080909@ybb.ne.jp>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <905bacf60cf1e3167d4f42dba31c9d4f@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Thu, 5 May 2005 09:02:58 -0500
+To: "Takeharu KATO" <takeharu1219@ybb.ne.jp>
+Cc: Glenn Burkhardt <glenn@aoi-industries.com>,
+	"Gala Kumar K.-galak" <galak@freescale.com>, linuxppc-embedded@ozlabs.org
+Subject: Re: PPC 44x Watchdog timer
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,245 +24,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------090404050405060504000500
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Eugene Surovegin wrote:
+On May 4, 2005, at 9:07 PM, Takeharu KATO wrote:
 
->On Wed, May 04, 2005 at 06:35:16PM +0400, Vitaly Bordug wrote:
->  
+> Hi
 >
->>This patch adds generic PlatformDevice support to the 82xx family.
->>Only FCC's exist currently in the structure, as there is the driver 
->>which will utilize this.
->>
->>    
->>
+> Glenn Burkhardt wrote:
 >
->[snip]
+> > watchdog exception interrupt isn't used, and it's only configurable 
+> for
+> > PPC405 (although I think that the technique would work for the whole 
+> 4xx
+> > family).
+>  >
+> > Or am I misreading the code?
+>  >
+> No, the kernel which I mentioned before is MontaVistaLinux.
+> IIRC, I look the WDT relevant codes in MontaVistaLinux2.X few years 
+> ago.
+> Of course, It was prepared for PowerPC40X...
 >
->  
+> > It would also be nice if your patch were applied to the 2.6 kernel 
+> tree.
+> >
+> Sorry, It's not my jurisdiction.
+> Matt(Porter) or Kumar(Gala) may be responsible for this work.
+>  #Finally, the patch should be approved by akpm and linus, of course...
 >
->>+#ifdef CONFIG_CPM2
->>+	identify_ppc_sys_by_id(cpm2_immr->im_memctl.memc_immr << 16);
->>+
->>+	/* Set up the MAC addresses for the FECs
->>+	 */
->>+	fec = ppc_sys_platform_devices[MPC82xx_FCC1].dev.platform_data;
->>+	memcpy(fec->mac_addr,bi->bi_enetaddr,6);
->>+
->>+	fec = ppc_sys_platform_devices[MPC82xx_FCC2].dev.platform_data;
->>+#ifdef CONFIG_ADS8272
->>+	memcpy(fec->mac_addr,bi->bi_enet1addr,6);
->>+#else
->>+	memcpy(fec->mac_addr,bi->bi_enetaddr,6);
->>+	fec->macaddr[5] ^= 1;
->>+#endif
->>+#endif
->>    
->>
->
->What is this? Why does common file contain board specific ifdefs????
->
->[snip]
->
->  
->
->>+/* FCC1 Clock Source Configuration.  There are board specific.
->>+   Can only choose from CLK9-12 */
->>+#if defined(CONFIG_ADS8272)
->>+#define F1_RXCLK	11
->>+#define F1_TXCLK	10
->>+#else
->>+#define F1_RXCLK	12
->>+#define F1_TXCLK	11
->>+#endif
->>    
->>
->
->Same thing. Why on earth you continue current 8xxx trend of putting 
->board specific crap into common files?
->
->  
->
->>+
->>+/* FCC2 Clock Source Configuration.  There are board specific.
->>+   Can only choose from CLK13-16 */
->>+#ifdef CONFIG_ADS8272
->>+#define F2_RXCLK	15
->>+#define F2_TXCLK	16
->>+#else
->>+#define F2_RXCLK	13
->>+#define F2_TXCLK	14
->>+#endif
->>    
->>
->
->Ditto.
->
->  
->
->>+#ifdef CONFIG_ADS8272
->>+#define PC_MDIO		0x00002000U
->>+#define PC_MDCK		0x00001000U
->>+#else
->>+#define PC_MDIO		0x00000004U
->>+#define PC_MDCK		0x00000020U
->>+#endif
->>    
->>
->
->Ditto.
->
->  
->
->>+				.name	= "phyinterrupt",
->>+				.start	= SIU_INT_IRQ5,
->>+				.end	= SIU_INT_IRQ5,
->>+				.flags	= IORESOURCE_IRQ,
->>+			},
->>    
->>
->
->Why is this here? PHY interrupt routing is _board_ specific.
->
->  
->
-I have fixed these yet, but I think it will be more reasonable to update 
-this together with respective driver which I'll work on together with 
-Pantelis.
-Thank you for review.
+> Matt or Kumar, would you merge BOOKE_WDT patch to 2.6 kernel tree?
+>  IIRC, This patch has been left under review state about two month.
+>  Is there something to be needed for the patch?
 
--- 
-Sincerely, 
-Vitaly
+Sorry, I think Matt and I have been busy with normal "work".  I'll take 
+a look at this in the next week.  If you can update the patches to 
+something current that would help (but is not critical).
 
-
---------------090404050405060504000500
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
-  <title></title>
-</head>
-<body bgcolor="#ffffff" text="#000000">
-Eugene Surovegin wrote:
-<blockquote cite="mid20050504164624.GB11439@gate.ebshome.net"
- type="cite">
-  <pre wrap="">On Wed, May 04, 2005 at 06:35:16PM +0400, Vitaly Bordug wrote:
-  </pre>
-  <blockquote type="cite">
-    <pre wrap="">This patch adds generic PlatformDevice support to the 82xx family.
-Only FCC's exist currently in the structure, as there is the driver 
-which will utilize this.
-
-    </pre>
-  </blockquote>
-  <pre wrap=""><!---->
-[snip]
-
-  </pre>
-  <blockquote type="cite">
-    <pre wrap="">+#ifdef CONFIG_CPM2
-+	identify_ppc_sys_by_id(cpm2_immr-&gt;im_memctl.memc_immr &lt;&lt; 16);
-+
-+	/* Set up the MAC addresses for the FECs
-+	 */
-+	fec = ppc_sys_platform_devices[MPC82xx_FCC1].dev.platform_data;
-+	memcpy(fec-&gt;mac_addr,bi-&gt;bi_enetaddr,6);
-+
-+	fec = ppc_sys_platform_devices[MPC82xx_FCC2].dev.platform_data;
-+#ifdef CONFIG_ADS8272
-+	memcpy(fec-&gt;mac_addr,bi-&gt;bi_enet1addr,6);
-+#else
-+	memcpy(fec-&gt;mac_addr,bi-&gt;bi_enetaddr,6);
-+	fec-&gt;macaddr[5] ^= 1;
-+#endif
-+#endif
-    </pre>
-  </blockquote>
-  <pre wrap=""><!---->
-What is this? Why does common file contain board specific ifdefs????
-
-[snip]
-
-  </pre>
-  <blockquote type="cite">
-    <pre wrap="">+/* FCC1 Clock Source Configuration.  There are board specific.
-+   Can only choose from CLK9-12 */
-+#if defined(CONFIG_ADS8272)
-+#define F1_RXCLK	11
-+#define F1_TXCLK	10
-+#else
-+#define F1_RXCLK	12
-+#define F1_TXCLK	11
-+#endif
-    </pre>
-  </blockquote>
-  <pre wrap=""><!---->
-Same thing. Why on earth you continue current 8xxx trend of putting 
-board specific crap into common files?
-
-  </pre>
-  <blockquote type="cite">
-    <pre wrap="">+
-+/* FCC2 Clock Source Configuration.  There are board specific.
-+   Can only choose from CLK13-16 */
-+#ifdef CONFIG_ADS8272
-+#define F2_RXCLK	15
-+#define F2_TXCLK	16
-+#else
-+#define F2_RXCLK	13
-+#define F2_TXCLK	14
-+#endif
-    </pre>
-  </blockquote>
-  <pre wrap=""><!---->
-Ditto.
-
-  </pre>
-  <blockquote type="cite">
-    <pre wrap="">+#ifdef CONFIG_ADS8272
-+#define PC_MDIO		0x00002000U
-+#define PC_MDCK		0x00001000U
-+#else
-+#define PC_MDIO		0x00000004U
-+#define PC_MDCK		0x00000020U
-+#endif
-    </pre>
-  </blockquote>
-  <pre wrap=""><!---->
-Ditto.
-
-  </pre>
-  <blockquote type="cite">
-    <pre wrap="">+				.name	= "phyinterrupt",
-+				.start	= SIU_INT_IRQ5,
-+				.end	= SIU_INT_IRQ5,
-+				.flags	= IORESOURCE_IRQ,
-+			},
-    </pre>
-  </blockquote>
-  <pre wrap=""><!---->
-Why is this here? PHY interrupt routing is _board_ specific.
-
-  </pre>
-</blockquote>
-I have fixed these yet, but I think it will be more reasonable to
-update this together with respective driver which I'll work on together
-with Pantelis.<br>
-Thank you for review. <br>
-<br>
-<pre class="moz-signature" cols="72">-- 
-Sincerely, 
-Vitaly
-</pre>
-</body>
-</html>
-
---------------090404050405060504000500--
+thanks
+- kumar
