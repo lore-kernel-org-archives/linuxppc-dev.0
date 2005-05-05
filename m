@@ -1,20 +1,25 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 74A6C67A6C
+Return-Path: <panto@intracom.gr>
+Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
+	by ozlabs.org (Postfix) with ESMTP id 5A4FE67A67
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  5 May 2005 23:31:53 +1000 (EST)
-In-Reply-To: <1115297124.9050.12.camel@jmcmullan.timesys>
-References: <1115297124.9050.12.camel@jmcmullan.timesys>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <736378e38e2e5b0b7266f5c075e20ac1@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Thu, 5 May 2005 09:31:41 -0400
-To: Jason McMullan <jason.mcmullan@timesys.com>
-Cc: PPC_LINUX <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] 2.6.11.7 MPC8xx Swap Band-Aid
+	Thu,  5 May 2005 23:43:20 +1000 (EST)
+Received: from mailserv.intranet.gr (localhost [127.0.0.1])
+	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id j45Dls5t014654
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 5 May 2005 16:47:54 +0300 (EEST)
+Message-ID: <427A1F54.5020108@intracom.gr>
+Date: Thu, 05 May 2005 16:27:48 +0300
+From: Pantelis Antoniou <panto@intracom.gr>
+MIME-Version: 1.0
+To: Dan Malek <dan@embeddededge.com>
+References: <4278DDBF.8080705@ru.mvista.com> <427A01B7.9090200@intracom.gr>
+	<427A1423.3040509@ru.mvista.com> <427A1361.6060005@intracom.gr>
+	<fb6d7d007dc9f75553f1390b86c5f72b@embeddededge.com>
+In-Reply-To: <fb6d7d007dc9f75553f1390b86c5f72b@embeddededge.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [RFC][PATCH 2.6.12-rc2 3/3] FCC Ethernet PlatformDevice support
+ for 82xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,30 +30,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Dan Malek wrote:
+> 
+> On May 5, 2005, at 8:36 AM, Pantelis Antoniou wrote:
+> 
+>> In my experience it's much easier to configure these things once.
+>> Hunting down where the driver modifies pins & clocks is a nightmare, if
+>> you ever use a non standard configuration.
+> 
+> 
+> That doesn't quite work, as we have discussed before.  The problem with
+> setting them in the board set up is you can have loadable modules and
+> select among several different IO pin configurations depending upon
+> what you load.  So, the plan is to have the drivers make a generic
+> call out request using feature_call() to the supporting functions in the
+> board specific directory.  This is for more than just IO pin 
+> configurations,
+> since boards may have power management or other external logic that
+> has to be routed to the physical interface.  For example, the SCC Ethernet
+> driver will perform a feature_call() during set up requesting any necessary
+> configuration for SCC2.  The board specific function can chose to ignore
+> this and get the "default" configuration, or to do whatever is necessary
+> unique to the board to enable the external data path.  All that drivers 
+> know
+> is there are a couple of specific places where they need configuration
+> assistance, they don't care what the specific board has to do.
+> 
 
-On May 5, 2005, at 8:45 AM, Jason McMullan wrote:
+Sounds nice. I'm a much simpler guy it seems :)
 
-> First off, this patch works.
+> It's in the works and nearly done for a few example 85xx and 82xx
+> boards and CPM2 drivers.  I'll be checking it in shortly.  I just haven't
+> decided if I want a varargs list or a data structure for passing the
+> information and results.
+> 
 
-Well ..... if you invalidate TLBs and flush cache often enough,
-you can mask lots of problems :-)
+Mind sharing?
 
+> Thanks.
+> 
+>     -- Dan
+> 
+> 
+> 
 
-> Secondly, I don't know exactly why. I just found all the band-aids I
-> could for MPC8xx swap functionality, applied them, and fixed the places
-> where it still bled.
+Regards
 
-We shouldn't have the 8xx as a special case for the swap flags and
-information.  We need to take a closer look at this.  I guess I'll do 
-that
-as part of fixing up the PTEs for the BDI2000 as well.
-
-> It's more of a dancing bear, than a real fix, but I now have working
-> swap (using ATA over Ethernet) on my MPC885 ADS.
-
-IIRC, ATA over Ethernet isn't the same as disk doing DMA due to the
-data copies involved.
-
-Thanks.
-
-	-- Dan
+Pantelis
