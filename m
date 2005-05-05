@@ -1,17 +1,24 @@
-Return-Path: <jason.mcmullan@timesys.com>
-Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
-	by ozlabs.org (Postfix) with ESMTP id AC25F67A40
+Return-Path: <panto@intracom.gr>
+Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
+	by ozlabs.org (Postfix) with ESMTP id 2D457679FA
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  5 May 2005 22:45:27 +1000 (EST)
-From: Jason McMullan <jason.mcmullan@timesys.com>
-To: PPC_LINUX <linuxppc-embedded@ozlabs.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-NIQcK6Dp9y7d3A8S3gnQ"
-Date: Thu, 05 May 2005 08:45:23 -0400
-Message-Id: <1115297124.9050.12.camel@jmcmullan.timesys>
-Mime-Version: 1.0
-Subject: [PATCH] 2.6.11.7 MPC8xx Swap Band-Aid
+	Thu,  5 May 2005 22:52:19 +1000 (EST)
+Received: from mailserv.intranet.gr (localhost [127.0.0.1])
+	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id j45Cusrn019755
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 5 May 2005 15:56:54 +0300 (EEST)
+Message-ID: <427A1361.6060005@intracom.gr>
+Date: Thu, 05 May 2005 15:36:49 +0300
+From: Pantelis Antoniou <panto@intracom.gr>
+MIME-Version: 1.0
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+References: <4278DDBF.8080705@ru.mvista.com> <427A01B7.9090200@intracom.gr>
+	<427A1423.3040509@ru.mvista.com>
+In-Reply-To: <427A1423.3040509@ru.mvista.com>
+Content-Type: text/plain; charset=KOI8-R; format=flowed
+Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [RFC][PATCH 2.6.12-rc2 3/3] FCC Ethernet PlatformDevice support
+ for 82xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,114 +29,79 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Vitaly Bordug wrote:
+> 
+>> Hi Vitaly
+>>
+>> Since I'm also working on this, lets try to merge our work in
+>> one driver.
+>>
+>> A few points regarding my driver.
+>>
+>> 1) It currently supports both 8xx FEC, 82xx FCCs.
+>> 2) It will also support SCC ENETS on both 8xx & 82xx, and
+>>    FECs on coldfire's & 52xx's.
+>> 3) We should treat the current MII logic as temporary since
+>>    Andy Flemming has a replacement by a MII bus.
+>>
+>> Regarding your driver, there are a couple of things it
+>> does arguably better than mine.
+>>
+>> 1) It has more complete platformization.
+>> 2) Adjustuble ring sizes.
+>>
+>> And here are some gripes.
+>>
+>> 1) I'm not a proponent of having drivers configuring pins,
+>>    clocks & other things that are properties of each specific board.
+>>    I'd rather have the bootloader or the platform initialization
+>>    handle it once, and have the driver just use these settings.
+>>    Opinions on this matter differ however :).
+>> 2) There are a number of platform defines that are not needed.
+>>
+>> Well, what do you think?
+>>
+> The idea itself sounds very good.
+> So, let's, as a starting point, implement mentioned things 
+> (platformization and dynamic rings) within your driver (if you don't 
+> mind of course).
 
---=-NIQcK6Dp9y7d3A8S3gnQ
-Content-Type: multipart/mixed; boundary="=-eBQbI/NoVx4V22m5L7pF"
+Please go ahead.
 
+> More specifically, I am going to add necessary platform stuff for 82xx 
+> and 8xx since we have only 8272ads and 885ads to test this on.
+> 
+> Firmware-only board-specific stuff configuration is a good thing, but 
+> IMHO it's impossible to provide a universal bootloader configuration 
+> that will meet all possible requirements, and a person should recompile 
+> or even modify the firmware in such cases. That is why I included clocks 
+> and etc stuff to the platform_data structure, so that in board-specific 
+> headers this values could be redefined if necessary. However I'm not 
+> sure about PIN setup, should it also reside in the platform_data struct, 
+> or in the driver (as it is in my patch).
 
---=-eBQbI/NoVx4V22m5L7pF
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Granted, to do that in the bootloader is very hard.
+However we can definately do that in the board setup file, like
+arch/ppc/platforms/pq2ads_setup.c
 
-First off, this patch works.
+In my experience it's much easier to configure these things once.
+Hunting down where the driver modifies pins & clocks is a nightmare, if
+you ever use a non standard configuration.
 
-Secondly, I don't know exactly why. I just found all the band-aids I=20
-could for MPC8xx swap functionality, applied them, and fixed the places
-where it still bled.
-
-It's more of a dancing bear, than a real fix, but I now have working=20
-swap (using ATA over Ethernet) on my MPC885 ADS.
-
-Enjoy!
-
---=20
-Jason McMullan <jason.mcmullan@timesys.com>
-TimeSys Corporation
-
-
---=-eBQbI/NoVx4V22m5L7pF
-Content-Disposition: attachment; filename=cpu-ppc-mpc8xx-swap.patch
-Content-Transfer-Encoding: base64
-Content-Type: text/x-patch; name=cpu-ppc-mpc8xx-swap.patch; charset=ISO-8859-1
-
-RGF0ZToJCVRodSwgMDUgTWF5IDIwMDUgMDg6MzE6MjQgLTA0MDANClN1bW1hcnk6CU1QQzh4eCBz
-d2FwIHN1cHBvcnQNClJlbGF0aXZlLXRvOglsaW51eC0yLjYuMTEuNw0KRGVzY3JpcHRpb246IE1Q
-Qzh4eCBzd2FwIHN1cHBvcnQsIGJhbmQtYWlkZWQgdG9nZXRoZXIgZnJvbSBwYXRjaGVzIGJ5Og0K
-CVNhdG9zaGkgQWRhY2hpIDxhZGFjaGlAYWEuYXAudGl0ZWNoLmFjLmpwPg0KCU1hcmNlbG8gVG9z
-YXR0aSA8bWFyY2Vsby50b3NhdHRpQGN5Y2xhZGVzLmNvbT4NCglKYXNvbiBNY011bGxhbiA8amFz
-b24ubWNtdWxsYW5AdGltZXN5cy5jb20+DQpTaWduZWQtT2ZmLUJ5OiAgSmFzb24gTWNNdWxsYW4g
-PGphc29uLm1jbXVsbGFuQHRpbWVzeXMuY29tPg0KDQotLS0gbGludXgtb3JpZy9hcmNoL3BwYy9r
-ZXJuZWwvaGVhZF84eHguUw0KKysrIGxpbnV4L2FyY2gvcHBjL2tlcm5lbC9oZWFkXzh4eC5TDQpA
-QCAtMzU5LDkgKzM1OSw3IEBADQogDQogCS4gPSAweDEyMDANCiBEYXRhU3RvcmVUTEJNaXNzOg0K
-LSNpZmRlZiBDT05GSUdfOHh4X0NQVTYNCiAJc3R3CXIzLCA4KHIwKQ0KLSNlbmRpZg0KIAlET184
-eHhfQ1BVNigweDNmODAsIHIzKQ0KIAltdHNwcglNX1RXLCByMTAJLyogU2F2ZSBhIGNvdXBsZSBv
-ZiB3b3JraW5nIHJlZ2lzdGVycyAqLw0KIAltZmNyCXIxMA0KQEAgLTM5MCw2ICszODgsMTYgQEAN
-CiAJbWZzcHIJcjEwLCBNRF9UV0MJLyogLi4uLmFuZCBnZXQgdGhlIHB0ZSBhZGRyZXNzICovDQog
-CWx3eglyMTAsIDAocjEwKQkvKiBHZXQgdGhlIHB0ZSAqLw0KIA0KKwlsaQlyMywgMA0KKwljbXB3
-CXIxMCwgcjMgICAgICAgICAgICAvKiBkb2VzIHRoZSBwdGUgY29udGFpbiBhIHZhbGlkIGFkZHJl
-c3M/ICovDQorCWJuZQk0Zg0KKwltZnNwciAgIHIxMCwgTV9UVyAgICAgICAvKiBSZXN0b3JlIHJl
-Z2lzdGVycyAqLw0KKwlsd3ogICAgIHIxMSwgMChyMCkNCisJbXRjciAgICByMTENCisJbHd6ICAg
-ICByMTEsIDQocjApDQorCWx3eglyMywgOChyMCkNCisJYiBEYXRhQWNjZXNzDQorNDoNCiAJLyog
-SW5zZXJ0IHRoZSBHdWFyZGVkIGZsYWcgaW50byB0aGUgVFdDIGZyb20gdGhlIExpbnV4IFBURS4N
-CiAJICogSXQgaXMgYml0IDI3IG9mIGJvdGggdGhlIExpbnV4IFBURSBhbmQgdGhlIFRXQyAoYXQg
-bGVhc3QNCiAJICogSSBnb3QgdGhhdCByaWdodCA6LSkuICBJdCB3aWxsIGJlIGJldHRlciB3aGVu
-IHdlIGNhbiBwdXQNCkBAIC00MTksOSArNDI3LDcgQEANCiAJbHd6CXIxMSwgMChyMCkNCiAJbXRj
-cglyMTENCiAJbHd6CXIxMSwgNChyMCkNCi0jaWZkZWYgQ09ORklHXzh4eF9DUFU2DQogCWx3egly
-MywgOChyMCkNCi0jZW5kaWYNCiAJcmZpDQogDQogLyogVGhpcyBpcyBhbiBpbnN0cnVjdGlvbiBU
-TEIgZXJyb3Igb24gdGhlIE1QQzh4eC4gIFRoaXMgY291bGQgYmUgZHVlDQotLS0gbGludXgtb3Jp
-Zy9hcmNoL3BwYy9tbS9pbml0LmMNCisrKyBsaW51eC9hcmNoL3BwYy9tbS9pbml0LmMNCkBAIC01
-ODUsNyArNTg1LDcgQEANCiANCiB2b2lkIGZsdXNoX2RjYWNoZV9pY2FjaGVfcGFnZShzdHJ1Y3Qg
-cGFnZSAqcGFnZSkNCiB7DQotI2lmZGVmIENPTkZJR19CT09LRQ0KKyNpZiBkZWZpbmVkKENPTkZJ
-R19CT09LRSkgfHwgZGVmaW5lZChDT05GSUdfOHh4KQ0KIAlfX2ZsdXNoX2RjYWNoZV9pY2FjaGUo
-a21hcChwYWdlKSk7DQogCWt1bm1hcChwYWdlKTsNCiAjZWxzZQ0KQEAgLTYzMiw5ICs2MzIsMTUg
-QEANCiAJCXN0cnVjdCBwYWdlICpwYWdlID0gcGZuX3RvX3BhZ2UocGZuKTsNCiAJCWlmICghUGFn
-ZVJlc2VydmVkKHBhZ2UpDQogCQkgICAgJiYgIXRlc3RfYml0KFBHX2FyY2hfMSwgJnBhZ2UtPmZs
-YWdzKSkgew0KLQkJCWlmICh2bWEtPnZtX21tID09IGN1cnJlbnQtPmFjdGl2ZV9tbSkNCisJCQlp
-ZiAodm1hLT52bV9tbSA9PSBjdXJyZW50LT5hY3RpdmVfbW0pIHsNCisjaWZkZWYgQ09ORklHXzh4
-eAkJLyogRXZpbCBtYXNraW5nIG9mIGxhcmdlciBwcm9ibGVtcy4NCisJCQkJICogV2Ugc2hvdWxk
-bid0IGhhdmUgdG8gZG8gdGhpcyBpZg0KKwkJCQkgKiB3ZSBoYXZlIHByb3Blcmx5IGludmFsaWRh
-dGVkIQ0KKwkJCQkgKi8NCisJCQkJZmx1c2hfdGxiX3BhZ2Uodm1hLGFkZHJlc3MpOw0KKyNlbmRp
-Zg0KIAkJCQlfX2ZsdXNoX2RjYWNoZV9pY2FjaGUoKHZvaWQgKikgYWRkcmVzcyk7DQotCQkJZWxz
-ZQ0KKwkJCX0gZWxzZQ0KIAkJCQlmbHVzaF9kY2FjaGVfaWNhY2hlX3BhZ2UocGFnZSk7DQogCQkJ
-c2V0X2JpdChQR19hcmNoXzEsICZwYWdlLT5mbGFncyk7DQogCQl9DQotLS0gbGludXgtb3JpZy9p
-bmNsdWRlL2FzbS1wcGMvcGd0YWJsZS5oDQorKysgbGludXgvaW5jbHVkZS9hc20tcHBjL3BndGFi
-bGUuaA0KQEAgLTY3OCw3ICs2NzgsMTEgQEANCiAjZGVmaW5lIF9fc3dwX3R5cGUoZW50cnkpCQko
-KGVudHJ5KS52YWwgJiAweDFmKQ0KICNkZWZpbmUgX19zd3Bfb2Zmc2V0KGVudHJ5KQkJKChlbnRy
-eSkudmFsID4+IDUpDQogI2RlZmluZSBfX3N3cF9lbnRyeSh0eXBlLCBvZmZzZXQpCSgoc3dwX2Vu
-dHJ5X3QpIHsgKHR5cGUpIHwgKChvZmZzZXQpIDw8IDUpIH0pDQorI2lmZGVmIENPTkZJR184eHgN
-CisjZGVmaW5lIF9fcHRlX3RvX3N3cF9lbnRyeShwdGUpCQkoKHN3cF9lbnRyeV90KSB7IChwdGVf
-dmFsKHB0ZSkgJiB+X1BBR0VfQUNDRVNTRUQpID4+IDMgfSkNCisjZWxzZQ0KICNkZWZpbmUgX19w
-dGVfdG9fc3dwX2VudHJ5KHB0ZSkJCSgoc3dwX2VudHJ5X3QpIHsgcHRlX3ZhbChwdGUpID4+IDMg
-fSkNCisjZW5kaWYNCiAjZGVmaW5lIF9fc3dwX2VudHJ5X3RvX3B0ZSh4KQkJKChwdGVfdCkgeyAo
-eCkudmFsIDw8IDMgfSkNCiANCiAvKiBFbmNvZGUgYW5kIGRlY29kZSBhIG5vbmxpbmVhciBmaWxl
-IG1hcHBpbmcgZW50cnkgKi8NCi0tLSBsaW51eC1vcmlnL2luY2x1ZGUvYXNtLXBwYy90bGJmbHVz
-aC5oDQorKysgbGludXgvaW5jbHVkZS9hc20tcHBjL3RsYmZsdXNoLmgNCkBAIC03Miw3ICs3Miw3
-IEBADQogc3RhdGljIGlubGluZSB2b2lkIGZsdXNoX3RsYl9wYWdlX25vaGFzaChzdHJ1Y3Qgdm1f
-YXJlYV9zdHJ1Y3QgKnZtYSwNCiAJCQkJCSB1bnNpZ25lZCBsb25nIHZtYWRkcikNCiAJeyBfdGxi
-aWUodm1hZGRyKTsgfQ0KLXN0YXRpYyBpbmxpbmUgdm9pZCBmbHVzaF90bGJfcmFuZ2Uoc3RydWN0
-IG1tX3N0cnVjdCAqbW0sDQorc3RhdGljIGlubGluZSB2b2lkIGZsdXNoX3RsYl9yYW5nZShzdHJ1
-Y3Qgdm1fYXJlYV9zdHJ1Y3QgKnZtYSwNCiAJCQkJdW5zaWduZWQgbG9uZyBzdGFydCwgdW5zaWdu
-ZWQgbG9uZyBlbmQpDQogCXsgX190bGJpYSgpOyB9DQogc3RhdGljIGlubGluZSB2b2lkIGZsdXNo
-X3RsYl9rZXJuZWxfcmFuZ2UodW5zaWduZWQgbG9uZyBzdGFydCwNCi0tLSBsaW51eC1vcmlnL21t
-L3N3YXBmaWxlLmMNCisrKyBsaW51eC9tbS9zd2FwZmlsZS5jDQpAQCAtODAsNyArODAsNyBAQA0K
-IAkJV0FSTl9PTihwYWdlX2NvdW50KHBhZ2UpIDw9IDEpOw0KIA0KIAkJYmRpID0gYmRldi0+YmRf
-aW5vZGUtPmlfbWFwcGluZy0+YmFja2luZ19kZXZfaW5mbzsNCi0JCWJkaS0+dW5wbHVnX2lvX2Zu
-KGJkaSwgcGFnZSk7DQorCQlibGtfcnVuX2JhY2tpbmdfZGV2KGJkaSwgcGFnZSk7DQogCX0NCiAJ
-dXBfcmVhZCgmc3dhcF91bnBsdWdfc2VtKTsNCiB9DQo=
+The driver however can probe for it's configuration and display it so
+that we can tell what is going on.
 
 
---=-eBQbI/NoVx4V22m5L7pF--
+> 
+> Another thing we should change in existing code is direct cpm2_immr 
+> usage - the driver should be as isolated from this as possible. Dan 
+> mentioned that the stuff that will offer IOport and likewise access 
+> right way is almost completed so I'm looking forward some details about 
+> it from him.
+> 
 
---=-NIQcK6Dp9y7d3A8S3gnQ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Yes, that's another thing that must be done; please go ahead.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.0 (GNU/Linux)
+Regards
 
-iD8DBQBCehVj8/0vJ5szK6kRAn14AJ9E5nfOtATKDwr8/vaS+ox6k2L24wCfW/My
-HpTAveLBmYPWBs5KIRHecXs=
-=akbb
------END PGP SIGNATURE-----
-
---=-NIQcK6Dp9y7d3A8S3gnQ--
+Pantelis
