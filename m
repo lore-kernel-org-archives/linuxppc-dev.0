@@ -1,23 +1,21 @@
-Return-Path: <jmasel@arabellasw.com>
-Received: from gold.webfusion.co.uk (gold.webfusion.co.uk [212.67.202.159])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0FB6F67A40
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 1977267AC6
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  6 May 2005 00:25:09 +1000 (EST)
-Received: from bzq-82-81-29-215.red.bezeqint.net ([82.81.29.215] helo=Jonathan)
-	by gold.webfusion.co.uk with asmtp (Exim 3.36 #1) id 1DTgrw-0004Lt-00
-	for linuxppc-embedded@ozlabs.org; Thu, 05 May 2005 14:58:24 +0100
-From: "Jonathan Masel" <jmasel@arabellasw.com>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Thu, 5 May 2005 16:58:10 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <mailman.0.1115279646.20825.linuxppc-embedded@ozlabs.org>
-Message-Id: <E1DTgrw-0004Lt-00@gold.webfusion.co.uk>
-Subject: Re: [RFC][PATCH 2.6.12-rc2 3/3] FCC Ethernet PlatformDevice
-Reply-To: jmasel@arabellasw.com
+	Fri,  6 May 2005 00:30:53 +1000 (EST)
+In-Reply-To: <427A2604.8040808@ru.mvista.com>
+References: <4278DDA4.7060200@ru.mvista.com>
+	<20050504164624.GB11439@gate.ebshome.net>
+	<427A2604.8040808@ru.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <47856218c8d9bef3dfdb6a00d67aafc6@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Thu, 5 May 2005 09:30:51 -0500
+To: "Vitaly Bordug" <vbordug@ru.mvista.com>
+Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [RFC][PATCH 2.6.12-rc2 1/3] FCC Ethernet PlatformDevice support
+	for 82xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,27 +26,110 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Are you interested in looking at our Resource Manager? It works in 2.4 and
-2.6 kernels for a wide range of PQ's (virtually all of them).
+Can you send just an updated patch for just the base platform 
+additions.  What I'm looking for is just changes/additions of the 
+following files:
 
-It seems to take some of these ideas, but further. The basic idea is to
-handle at all on-chip resources in an orderly and robust way (not just
-modularly, but that too). We allocate parallel port pins, clocks (BRG or
-CLK), internal DPRAM and communication channels to "consumers". Board
-specific (if/where needed) are all located in a single per-board file.
-Allocation is all dynamic and we can check that we're not conflicting with
-prior requests. There are quite a few other goodies too (display all
-consumers to which certain resources are allocated, etc).
+arch/ppc/syslib/mpc82xx_device.c
+arch/ppc/syslib/mpc82xx_sys.c
+include/asm-ppc/mpc8260.h
+include/asm-ppc/ppc_sys.h
 
-This lets us easily handle dynamic configurations. E.g. configure pins for
-I2C during reset or start-up, modify them later on when you need ATM (they
-are multiplexed on the same pins on several devices). Or, as you mentioned,
-dynamic modules - but even when they have potentially conflicting requests.
+thanks
 
-And it is one, simple to use mechanism that we use across all devices
-(adapted for PQ1, PQ2 and PQ3).
+- kumar
 
-If you're interested, please let me know. We'd be happy to contribute it if
-it will help.
+On May 5, 2005, at 8:56 AM, Vitaly Bordug wrote:
 
-Jonathan
+>  Eugene Surovegin wrote:
+> On Wed, May 04, 2005 at 06:35:16PM +0400, Vitaly Bordug wrote:
+>
+> This patch adds generic PlatformDevice support to the 82xx family.
+> Only FCC's exist currently in the structure, as there is the driver
+> which will utilize this.
+>
+>
+> [snip]
+>
+>
+> +#ifdef CONFIG_CPM2
+> +       identify_ppc_sys_by_id(cpm2_immr->im_memctl.memc_immr << 16);
+> +
+> +       /* Set up the MAC addresses for the FECs
+> +        */
+> +       fec = ppc_sys_platform_devices[MPC82xx_FCC1].dev.platform_data;
+> +       memcpy(fec->mac_addr,bi->bi_enetaddr,6);
+> +
+> +       fec = ppc_sys_platform_devices[MPC82xx_FCC2].dev.platform_data;
+> +#ifdef CONFIG_ADS8272
+> +       memcpy(fec->mac_addr,bi->bi_enet1addr,6);
+> +#else
+> +       memcpy(fec->mac_addr,bi->bi_enetaddr,6);
+> +       fec->macaddr[5] ^= 1;
+> +#endif
+> +#endif
+>
+> What is this? Why does common file contain board specific ifdefs????
+>
+> [snip]
+>
+>
+> +/* FCC1 Clock Source Configuration.  There are board specific.
+> +   Can only choose from CLK9-12 */
+> +#if defined(CONFIG_ADS8272)
+> +#define F1_RXCLK       11
+> +#define F1_TXCLK       10
+> +#else
+> +#define F1_RXCLK       12
+> +#define F1_TXCLK       11
+> +#endif
+>
+> Same thing. Why on earth you continue current 8xxx trend of putting
+> board specific crap into common files?
+>
+>
+> +
+> +/* FCC2 Clock Source Configuration.  There are board specific.
+> +   Can only choose from CLK13-16 */
+> +#ifdef CONFIG_ADS8272
+> +#define F2_RXCLK       15
+> +#define F2_TXCLK       16
+> +#else
+> +#define F2_RXCLK       13
+> +#define F2_TXCLK       14
+> +#endif
+>
+> Ditto.
+>
+>
+> +#ifdef CONFIG_ADS8272
+> +#define PC_MDIO                0x00002000U
+> +#define PC_MDCK                0x00001000U
+> +#else
+> +#define PC_MDIO                0x00000004U
+> +#define PC_MDCK                0x00000020U
+> +#endif
+>
+> Ditto.
+>
+>
+> +                               .name   = "phyinterrupt",
+> +                               .start  = SIU_INT_IRQ5,
+> +                               .end    = SIU_INT_IRQ5,
+> +                               .flags  = IORESOURCE_IRQ,
+> +                       },
+>
+> Why is this here? PHY interrupt routing is _board_ specific.
+>
+>
+>  I have fixed these yet, but I think it will be more reasonable to 
+> update this together with respective driver which I'll work on 
+> together with Pantelis.
+>  Thank you for review.
+>
+>
+> -- 
+> Sincerely,
+> Vitaly
+>
+> <ATT400050.txt>
