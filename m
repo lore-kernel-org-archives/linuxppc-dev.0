@@ -1,11 +1,10 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17017.44421.790813.918463@cargo.ozlabs.ibm.com>
-Date: Thu, 5 May 2005 15:22:13 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Tom Rini <trini@kernel.crashing.org>
-In-Reply-To: <20050505044737.GY1221@smtp.west.cox.net>
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DD1F867A3B
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 May 2005 22:12:53 +1000 (EST)
+In-Reply-To: <17017.42136.824607.253146@cargo.ozlabs.ibm.com>
 References: <17016.29775.224816.691409@cargo.ozlabs.ibm.com>
 	<466e699745cf24e660e296530f6e34dc@embeddededge.com>
 	<17017.16478.767293.191940@cargo.ozlabs.ibm.com>
@@ -13,8 +12,13 @@ References: <17016.29775.224816.691409@cargo.ozlabs.ibm.com>
 	<17017.39523.745634.193331@cargo.ozlabs.ibm.com>
 	<20050505041225.GX1221@smtp.west.cox.net>
 	<17017.42136.824607.253146@cargo.ozlabs.ibm.com>
-	<20050505044737.GY1221@smtp.west.cox.net>
-Cc: linuxppc-dev@ozlabs.org
+Mime-Version: 1.0 (Apple Message framework v622)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <74e4ebe2933fc8b81b86b8e645a98f1c@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Thu, 5 May 2005 08:12:39 -0400
+To: Paul Mackerras <paulus@samba.org>
+Cc: Tom Rini <trini@kernel.crashing.org>, linuxppc-dev@ozlabs.org
 Subject: Re: [PATCH] Set cpu explicitly in kernel compiles
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,21 +29,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Tom Rini writes:
 
-> Why won't it work with generic gcc4 ?  Will something more than a lot of
-> extra nops be added?
+On May 5, 2005, at 12:44 AM, Paul Mackerras wrote:
 
-Well, say you are compiling for 405.  You either need to have a gcc
-that was configured with --with-cpu=405, or you need to have hacked
-arch/ppc/Makefile to add -mcpu=405.  In both cases the problem doesn't
-arise.  It only arises if you have a biarch gcc4 that was configured
-without any --with-cpu=xxx option and is run without any -mcpu=xxx
-option.
+> The problem only comes up if you configure gcc4 as biarch.  I can't
+> imagine anyone building a biarch compiler for 4xx or 8xx. :)
 
-If you think we should have -mcpu=xxx on the command line for 4xx,
-44x, 8xx, etc., then that's fine, but that is a separate problem from
-what my patch was addressing (one which my patch might make it easier
-to fix, though).
+Why not?  I've never built a "special" compiler for any development
+work, and am very likely to use the default compiler installed on
+my YDL system (which could likely be a G5) for building any
+embedded PowerPC software.
 
-Paul.
+> So yes, only CONFIG_6xx is affected by biarch gcc4 assuming POWER4.
+> Other families would only be affected if you were using a generic
+> gcc4, which won't work at present anyway, since we don't add
+> -mcpu=xxx.
+
+What do you mean by "won't work"?  The compiler simply refuses
+or builds for a POWER4 because we don't have the proper -mcpu
+flags?
+
+Thanks.
+
+
+	-- Dan
