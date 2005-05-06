@@ -1,17 +1,17 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 61B73679E9
+Return-Path: <sam@ravnborg.org>
+Received: from dslsmtp.struer.net (dslsmtp.struer.net [62.242.36.21])
+	by ozlabs.org (Postfix) with ESMTP id 9DAEF679F8
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  7 May 2005 07:57:12 +1000 (EST)
-In-Reply-To: <33091.80.160.117.125.1115415913.squirrel@80.160.117.125>
-References: <33091.80.160.117.125.1115415913.squirrel@80.160.117.125>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <4bbf50644ea82dacac17b057628f55de@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Fri, 6 May 2005 16:57:10 -0500
-To: "Sam Ravnborg" <sam@ravnborg.org>
-Cc: Tom Rini <trini@kernel.crashing.org>,
+	Sat,  7 May 2005 08:17:50 +1000 (EST)
+Message-ID: <33091.80.160.117.125.1115415913.squirrel@80.160.117.125>
+In-Reply-To: <cbf07e669ed84066a0bc366ca254123b@freescale.com>
+References: <cbf07e669ed84066a0bc366ca254123b@freescale.com>
+Date: Fri, 6 May 2005 23:45:13 +0200 (CEST)
+From: "Sam Ravnborg" <sam@ravnborg.org>
+To: "Kumar Gala" <kumar.gala@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
+Cc: Tom Rini <trini@kernel.crashing.org>, Sam Ravnborg <sam@ravnborg.org>,
 	Linux Kernel list <linux-kernel@vger.kernel.org>,
 	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
 Subject: Re: PPC uImage build not reporting correctly
@@ -25,57 +25,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-On May 6, 2005, at 4:45 PM, Sam Ravnborg wrote:
-
-> > Sam,
->  >
->  > Tom pointed me at you to look at a makefile issue with
->  > arch/ppc/boot/images/Makefile.=A0 When I do the following:
->  >
->  > $ make uImage
->  >=A0=A0=A0 CHK=A0=A0=A0=A0 include/linux/version.h
-> > make[1]: `arch/ppc/kernel/asm-offsets.s' is up to date.
->  >=A0=A0=A0 CHK=A0=A0=A0=A0 include/linux/compile.h
-> >=A0=A0=A0 CHK=A0=A0=A0=A0 usr/initramfs_list
-> >=A0=A0=A0 UIMAGE=A0 arch/ppc/boot/images/uImage
-> > Image Name:=A0=A0 Linux-2.6.12-rc3
->  > Created:=A0=A0=A0=A0=A0 Fri May=A0 6 10:19:28 2005
-> > Image Type:=A0=A0 PowerPC Linux Kernel Image (gzip compressed)
->  > Data Size:=A0=A0=A0 993322 Bytes =3D 970.04 kB =3D 0.95 MB
->  > Load Address: 0x00000000
->  > Entry Point:=A0 0x00000000
->  >=A0=A0=A0 Image: arch/ppc/boot/images/uImage not made
->  >
->  > The issue is that the file arch/ppc/boot/images/uImage does exit=20
-> (the
->  > 'not made' is not correct).
->  >
->  > $(obj)/uImage: $(obj)/vmlinux.gz
-> >=A0=A0=A0=A0=A0=A0=A0=A0=A0 $(Q)rm -f $@
->  >=A0=A0=A0=A0=A0=A0=A0=A0=A0 $(call if_changed,uimage)
-> >=A0=A0=A0=A0=A0=A0=A0=A0=A0 @echo '=A0 Image: $@' $(if $(wildcard =
-$@),'is ready','not=20
-> made')
->  >
->  > It seems the $(wildcard $@) expands at the start of the rule.=A0 =
-Any
->  > ideas?
+> Sam,
 >
-> It probarly uses the build-in cache in make - and I see no easy way to
->  tell make not to use the cache in this case.
->  Could you try to replace "$(wildcard $@)" with something like:
-> $(shell if -f $@ echo Y; fi)
+> Tom pointed me at you to look at a makefile issue with
+> arch/ppc/boot/images/Makefile.  When I do the following:
 >
-> Untested - I'm not on a Linux box right now.
+> $ make uImage
+>    CHK     include/linux/version.h
+> make[1]: `arch/ppc/kernel/asm-offsets.s' is up to date.
+>    CHK     include/linux/compile.h
+>    CHK     usr/initramfs_list
+>    UIMAGE  arch/ppc/boot/images/uImage
+> Image Name:   Linux-2.6.12-rc3
+> Created:      Fri May  6 10:19:28 2005
+> Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+> Data Size:    993322 Bytes = 970.04 kB = 0.95 MB
+> Load Address: 0x00000000
+> Entry Point:  0x00000000
+>    Image: arch/ppc/boot/images/uImage not made
+>
+> The issue is that the file arch/ppc/boot/images/uImage does exit (the
+> 'not made' is not correct).
+>
+> $(obj)/uImage: $(obj)/vmlinux.gz
+>          $(Q)rm -f $@
+>          $(call if_changed,uimage)
+>          @echo '  Image: $@' $(if $(wildcard $@),'is ready','not made')
+>
+> It seems the $(wildcard $@) expands at the start of the rule.  Any
+> ideas?
 
-I tried the following w/o success:
+It probarly uses the build-in cache in make - and I see no easy way to
+tell make not to use the cache in this case.
+Could you try to replace "$(wildcard $@)" with something like:
+$(shell if -f $@ echo Y; fi)
 
-$(obj)/uImage: $(obj)/vmlinux.gz
-         $(Q)rm -f $@
-         $(call if_changed,uimage)
-         @echo '  Image: $@' $(shell if [ -f $@ ]; then echo 'is ready';=20=
+Untested - I'm not on a Linux box right now.
 
-else echo 'not made'; fi)
-
-- kumar=
+   Sam
