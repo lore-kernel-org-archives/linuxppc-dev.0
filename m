@@ -1,21 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A379F679A6
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 May 2005 15:15:21 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Keenan Pepper <keenanpepper@gmail.com>
-In-Reply-To: <427AE616.1030908@gmail.com>
-References: <42784801.7080105@gmail.com> <1115251597.7567.163.camel@gaston>
-	<427AE616.1030908@gmail.com>
-Content-Type: text/plain
-Date: Fri, 06 May 2005 15:15:11 +1000
-Message-Id: <1115356511.28075.5.camel@gaston>
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao04.cox.net (fed1rmmtao04.cox.net [68.230.241.35])
+	by ozlabs.org (Postfix) with ESMTP id 5EE9667B4E
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 May 2005 00:53:16 +1000 (EST)
+Date: Fri, 6 May 2005 07:53:13 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Message-ID: <20050506145313.GE1221@smtp.west.cox.net>
+References: <17016.29775.224816.691409@cargo.ozlabs.ibm.com>
+	<466e699745cf24e660e296530f6e34dc@embeddededge.com>
+	<17017.16478.767293.191940@cargo.ozlabs.ibm.com>
+	<45e21c1ae2899849665fb894a2adcc20@embeddededge.com>
+	<17017.39523.745634.193331@cargo.ozlabs.ibm.com>
+	<20050505041225.GX1221@smtp.west.cox.net>
+	<17017.42136.824607.253146@cargo.ozlabs.ibm.com>
+	<20050505044737.GY1221@smtp.west.cox.net>
+	<17017.44421.790813.918463@cargo.ozlabs.ibm.com>
+	<205f4a46b0d9eddd5c46ff1678c9e4ca@kernel.crashing.org>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
-Subject: Re: Oops in snd-powermac on powerbook 3400
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <205f4a46b0d9eddd5c46ff1678c9e4ca@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] Set cpu explicitly in kernel compiles
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,116 +30,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2005-05-05 at 23:35 -0400, Keenan Pepper wrote:
-> I fixed it!
+On Fri, May 06, 2005 at 04:44:33PM +0200, Segher Boessenkool wrote:
+> >Well, say you are compiling for 405.  You either need to have a gcc
+> >that was configured with --with-cpu=405, or you need to have hacked
+> >arch/ppc/Makefile to add -mcpu=405.  In both cases the problem doesn't
+> >arise.  It only arises if you have a biarch gcc4 that was configured
+> >without any --with-cpu=xxx option and is run without any -mcpu=xxx
+> >option.
 > 
-> I changed it to use the same device node for sound as for chip->node, 
-> and it started beeping at me! Apparently sometime between 2.6.8 and 
-> 2.6.12-rc3 the KIOCSOUND ioctl was implemented, because it sure didn't 
-> beep before.
+> It happens for any installation where the default chosen by the GCC
+> used is not the -mcpu=XXX flag you need used for your kernel.  Which
+> is a much more general statement than the biarch one.  Most people just
+> get lucky, because they compile code with a compiler that is defaulted
+> for their target, and userland and kernel use (about) the same options
+> on most targets.  Not so in biarch land (bleeech).
+
+Note that up until very recently (and just a bit before conflicting
+opcodes were added), no -mcpu=XXX was required.  For example, I compiled
+a 44x kernel with a -mcpu=750 toolchain no problems shortly after Paul
+posted this.  The only exception to this rule I can possibly think of is
+85xx.  But even that would be the "very recently" thing I mentioned as
+I know you can use an 82xx-set toolchain to build for 85xx.
+
+Having said that..
+
+> >If you think we should have -mcpu=xxx on the command line for 4xx,
+> >44x, 8xx, etc., then that's fine, but that is a separate problem from
+> >what my patch was addressing (one which my patch might make it easier
+> >to fix, though).
 > 
-> BTW, this is the first time I've ever fixed a kernel bug.
+> Please always use -mcpu=XXX (and perhaps -mtune=XXX), that's the only
+> "correct" way to fix this.  Or _never_ do any -mcpu=, and let users
+> override it in the CC setting in the Makefile.  But I like the first
+> option better.
 
-Ok, I think your patch was whitespace damaged, so I re-did it by hand ;)
+We should setup cpu-opt-$(CONFIG_every choice) to fix new gcc breakage
+(and I guess we shouldn't have removed the do-nothing ones we had a few
+years ago).
 
-Here's the result. Please test. Also, other people around, please test
-if with this patch, snd-powermac works, especially on oldworld machines!
-
-I'll submit upstream tomorrow hopefully.
-
-Ben.
-
-Index: linux-work/sound/ppc/pmac.c
-===================================================================
---- linux-work.orig/sound/ppc/pmac.c	2005-05-02 10:51:00.000000000 +1000
-+++ linux-work/sound/ppc/pmac.c	2005-05-06 15:13:22.000000000 +1000
-@@ -876,7 +876,7 @@
-  */
- static int __init snd_pmac_detect(pmac_t *chip)
- {
--	struct device_node *sound;
-+	struct device_node *sound = NULL;
- 	unsigned int *prop, l;
- 	struct macio_chip* macio;
- 
-@@ -906,20 +906,22 @@
- 		chip->is_pbook_G3 = 1;
- 	chip->node = find_devices("awacs");
- 	if (chip->node)
--		return 0; /* ok */
-+		sound = chip->node;
- 
- 	/*
- 	 * powermac G3 models have a node called "davbus"
- 	 * with a child called "sound".
- 	 */
--	chip->node = find_devices("davbus");
-+	if (!chip->node)
-+		chip->node = find_devices("davbus");
- 	/*
- 	 * if we didn't find a davbus device, try 'i2s-a' since
- 	 * this seems to be what iBooks have
- 	 */
- 	if (! chip->node) {
- 		chip->node = find_devices("i2s-a");
--		if (chip->node && chip->node->parent && chip->node->parent->parent) {
-+		if (chip->node && chip->node->parent &&
-+		    chip->node->parent->parent) {
- 			if (device_is_compatible(chip->node->parent->parent,
- 						 "K2-Keylargo"))
- 				chip->is_k2 = 1;
-@@ -928,9 +930,11 @@
- 	if (! chip->node)
- 		return -ENODEV;
- 
--	sound = find_devices("sound");
--	while (sound && sound->parent != chip->node)
--		sound = sound->next;
-+	if (!sound) {
-+		sound = find_devices("sound");
-+		while (sound && sound->parent != chip->node)
-+			sound = sound->next;
-+	}
- 	if (! sound)
- 		return -ENODEV;
- 	prop = (unsigned int *) get_property(sound, "sub-frame", NULL);
-@@ -1019,7 +1023,8 @@
- 		}
- 	}
- 	if (chip->pdev == NULL)
--		printk(KERN_WARNING "snd-powermac: can't locate macio PCI device !\n");
-+		printk(KERN_WARNING "snd-powermac: can't locate macio PCI"
-+		       " device !\n");
- 
- 	detect_byte_swap(chip);
- 
-@@ -1027,7 +1032,8 @@
- 	   are available */
- 	prop = (unsigned int *) get_property(sound, "sample-rates", &l);
- 	if (! prop)
--		prop = (unsigned int *) get_property(sound, "output-frame-rates", &l);
-+		prop = (unsigned int *) get_property(sound,
-+						     "output-frame-rates", &l);
- 	if (prop) {
- 		int i;
- 		chip->freqs_ok = 0;
-@@ -1054,7 +1060,8 @@
- /*
-  * exported - boolean info callbacks for ease of programming
-  */
--int snd_pmac_boolean_stereo_info(snd_kcontrol_t *kcontrol, snd_ctl_elem_info_t *uinfo)
-+int snd_pmac_boolean_stereo_info(snd_kcontrol_t *kcontrol,
-+				 snd_ctl_elem_info_t *uinfo)
- {
- 	uinfo->type = SNDRV_CTL_ELEM_TYPE_BOOLEAN;
- 	uinfo->count = 2;
-@@ -1063,7 +1070,8 @@
- 	return 0;
- }
- 
--int snd_pmac_boolean_mono_info(snd_kcontrol_t *kcontrol, snd_ctl_elem_info_t *uinfo)
-+int snd_pmac_boolean_mono_info(snd_kcontrol_t *kcontrol,
-+			       snd_ctl_elem_info_t *uinfo)
- {
- 	uinfo->type = SNDRV_CTL_ELEM_TYPE_BOOLEAN;
- 	uinfo->count = 1;
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
