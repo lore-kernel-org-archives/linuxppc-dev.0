@@ -1,16 +1,18 @@
-Return-Path: <a.korud@vector.com.pl>
-Received: from 3bit.vector.com.pl (3bit.vector.com.pl [81.210.9.37])
-	by ozlabs.org (Postfix) with ESMTP id 6CDB967B3D
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id D4B8667A58
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  6 May 2005 23:18:35 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Fri, 6 May 2005 15:18:33 +0200
-Message-ID: <60E856FD577CC04BA3727AF4122D3F16113578@3bit.vector.com.pl>
-From: "Andriy Korud" <a.korud@vector.com.pl>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: PCI mapping problems? (440EP/Bamboo)
+	Sat,  7 May 2005 01:23:17 +1000 (EST)
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <cbf07e669ed84066a0bc366ca254123b@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Fri, 6 May 2005 10:23:05 -0500
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>,
+	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: PPC uImage build not reporting correctly
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,38 +23,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi, I'm trying to make PCI on Bamboo usable at 33MHz and have the =
-following problem:
-Kernel 2.6.11 with Bamboo patches (either from the list or my own) =
-boots, PCI is scanned fine:
+Sam,
 
-PCI: Probing PCI hardware
-Scanning bus 00
-Found 00:20 [1260/3890] 000280 00
-Fixups for bus 00
-Bus scan for 00 returning with max=3D00
-PCI fixup irq: (0000:00:04.0) got 25
-PCI: bridge rsrc 0..ffff (100), parent c01b0f80
-PCI: bridge rsrc a0000000..afffffff (200), parent c01b0f64
-PCI:0000:00:04.0: Resource 0: afffe000-afffffff (f=3D200)
+Tom pointed me at you to look at a makefile issue with 
+arch/ppc/boot/images/Makefile.  When I do the following:
 
-lspci is also working fine, but when trying to load any driver, kernel =
-crashes on first actual device access, i.e. on writew() operation.
-When tried to look which address it's trying to access - 0xd1058000 in =
-my case - seems confusing for me - should not this address be withing =
-PCI address range - 0xa... and withing this device address range - =
-0xafffe000-afffffff?
-Tracking deeper I've found that this address is taken from calling =
-pci_resource_start(pdev, 0) whithing probe function in driver.=20
+$ make uImage
+   CHK     include/linux/version.h
+make[1]: `arch/ppc/kernel/asm-offsets.s' is up to date.
+   CHK     include/linux/compile.h
+   CHK     usr/initramfs_list
+   UIMAGE  arch/ppc/boot/images/uImage
+Image Name:   Linux-2.6.12-rc3
+Created:      Fri May  6 10:19:28 2005
+Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+Data Size:    993322 Bytes = 970.04 kB = 0.95 MB
+Load Address: 0x00000000
+Entry Point:  0x00000000
+   Image: arch/ppc/boot/images/uImage not made
 
-This problem is generic - at least 3 different pci drivers crash when =
-trying to writew() to bad address.
+The issue is that the file arch/ppc/boot/images/uImage does exit (the 
+'not made' is not correct).
 
-Can anybody give some advice in which direction should I continue my =
-debugging?
+$(obj)/uImage: $(obj)/vmlinux.gz
+         $(Q)rm -f $@
+         $(call if_changed,uimage)
+         @echo '  Image: $@' $(if $(wildcard $@),'is ready','not made')
 
-Thanks in advance,
+It seems the $(wildcard $@) expands at the start of the rule.  Any 
+ideas?
 
---
-
-Andriy Korud
+- kumar 
