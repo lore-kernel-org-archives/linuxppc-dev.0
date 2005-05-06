@@ -1,22 +1,20 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0679067A3E
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from parcelfarce.linux.theplanet.co.uk
+	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D51CD679F2
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  7 May 2005 04:43:04 +1000 (EST)
-Date: Fri, 6 May 2005 11:43:02 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Message-ID: <20050506184302.GA28614@gate.ebshome.net>
-References: <427B22A0.8010704@ru.mvista.com>
-	<20050506081805.GA19401@gate.ebshome.net>
-	<427B3465.1070502@ru.mvista.com>
+	Sat,  7 May 2005 06:19:45 +1000 (EST)
+Date: Fri, 6 May 2005 12:45:39 -0300
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Dan Malek <dan@embeddededge.com>,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Message-ID: <20050506154539.GA6452@logos.cnet>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <427B3465.1070502@ru.mvista.com>
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [RFC][PATCH 2.6.12-rc2] Updated platform additions for 82xx
+Cc: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
+Subject: How to fix 8xx dcbst bug?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,42 +25,62 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 06, 2005 at 01:09:57PM +0400, Vitaly Bordug wrote:
+
+Hi Dan,
+
+So, restarting this conversation...
+
+On Tue, Apr 05, 2005 at 11:58:17AM -0400, Dan Malek wrote:
 > 
-> PHY_INTERRUPT is defined in the board-specific platforms/pq2ads.h 
-> (likewise approach was used in 2.4). Others from this define crowd 
-> should reside as they are IMHO, until we have some common board-specific 
-> header for 82xx (or all these will be scattered along different 82xx 
-> platform defines such as tqm8260.h etc. which is even worse).  What do 
-> you think?
+> On Apr 4, 2005, at 3:17 PM, Marcelo Tosatti wrote:
+> 
+> >Problem is that the "dcbst" instruction will, _sometimes_ (the 
+> >failure/success rate is about 1/4
+> >with my test application) fault as a _write_ operation on the data.
+> 
+> Oh, geeze .... It's all coming back to me now ....
+> 
+> The 8xx cache operations don't always operate as defined in the PEM.
+> There are likely to be some archive discussions within the Freescale
+> knowledge data base that describe the different behaviors I've seen
+> with the chip variants and revisions.  I can't find any of those e-mail
+> discussions, so I'll try to recall from memory.
+> 
+> The PEM cache instructions are all implemented in a microcode that
+> uses the 8xx unique cache control SPRs.  Depending upon the state
+> of the cache and MMU, it seems in some cases the EA translation is
+> subject to a "normal" protection match instead of a load operation 
+> match.
+> 
+> The behavior of these operations isn't consistent across all of the 8xx
+> processor revisions, especially with early silicon if people are still
+> using those.	During conversations with Freescale engineers, it seems
+> the only guaranteed operation was to use the 8xx unique SPRs, but
+> I think I only did that in 8xx specific functions.
+>
+> We have way too much code in the TLB exception handlers already,
+> so let's just try a tlbia of the EA in the update_mmu_cache, with an 
+> #ifdef
+> for the 8xx.	
 
-The best way I think is to NOT use defines like PHY_INTERRUPT at all. 
-This is what I mean in my previous e-mail when I said I didn't quite 
-like approach your chosen but thought it was OK for now.
+>  We may want to make the dcbxxx instructions 
+> some
+> kind of macro, so on 8xx we can include such operations in otherwise
+> "standard" software.
 
-I think that platform files should initialize only stuff which is 
-common for all boards using this platform.
+Now that I think of it, userspace dcbst users should not be an issue
+because the intermediate invalid TLB entry is not visible to applications.
 
-Board specific stuff should be _filled_ in board .c file. Basically we 
-have two different ways to do board specific stuff (I think feature 
-call stuff which Dan is proposing is orthogonal to these):
+Userspace sees only: not present pte, or valid present pte.
 
-1) Add some defines with generic name like PHY_INTERRUPT_FCC1, allow 
-board specific _header_ file to define them and use some default if 
-it wasn't overridden by the board port. This is I believe approach you 
-have chosen.
+Well, at least the entry which has been causing problems,
+created by DataStoreTLBMiss.
 
-2) _Fill_ corresponding platform_device fields in the board C file. 
-This is what I think is better.
+Is it safe to assume that dcbst usage on userspace is restricted
+to valid TLBs? Since MMU SPRs are restricted to supervisor 
+protection, I think so.
 
-Approach 1) is less intrusive because it's similar to what we were 
-doing so far.
+So, if that is true, can you please merge the update_mmu_cache() fix 
+for the dcbst misbehaviour previously discussed ? 
 
-Approach 2) is more flexible (e.g. I wasn't to use the same kernel 
-image for all boards from some family, and they may use different IRQ 
-routing). Also, 2) avoids "header file hell", when board info scattered 
-around different headers and sometime it's not that obvious where 
-particular define comes from.
-
--- 
-Eugene
+Thanks!!
