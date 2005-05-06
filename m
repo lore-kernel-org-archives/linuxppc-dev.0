@@ -1,22 +1,26 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from parcelfarce.linux.theplanet.co.uk
-	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 305B8679E2
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 76758679E2
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  7 May 2005 04:10:31 +1000 (EST)
-Date: Fri, 6 May 2005 10:38:58 -0300
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+	Sat,  7 May 2005 04:16:44 +1000 (EST)
+Date: Fri, 6 May 2005 11:16:42 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
 To: Dan Malek <dan@embeddededge.com>
-Message-ID: <20050506133858.GA6032@logos.cnet>
-References: <20050505172035.GB3339@logos.cnet>
-	<1b2c7da800815bcdd76ddf27a2ab9c55@embeddededge.com>
+Message-ID: <20050506181642.GE19401@gate.ebshome.net>
+References: <427B22A0.8010704@ru.mvista.com>
+	<20050506081805.GA19401@gate.ebshome.net>
+	<427B3465.1070502@ru.mvista.com>
+	<20050506170809.GC19401@gate.ebshome.net>
+	<7ad6626ea88c1e1ec98d310f4db438f7@embeddededge.com>
+	<20050506173246.GD19401@gate.ebshome.net>
+	<1ee36950a2147d4208cf9af575be7478@embeddededge.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1b2c7da800815bcdd76ddf27a2ab9c55@embeddededge.com>
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] 8xx: fix usage of pinned 8Mbyte TLB entries
+In-Reply-To: <1ee36950a2147d4208cf9af575be7478@embeddededge.com>
+Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [RFC][PATCH 2.6.12-rc2] Updated platform additions for 82xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,77 +31,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-> >The following patch changes "mmu_mapin_ram" (hook used by mapin_ram), 
-> >to
-> >begin creation of pagetables after the first 8Megs, preserving the
-> >8Mbyte TLB entry.
+On Fri, May 06, 2005 at 01:45:58PM -0400, Dan Malek wrote:
 > 
-> Please don't do this.  It isn't necessary.
-
-Why it is not necessary? 
-
-Have you read the section of the manual which I pasted here? 
-
-> >This changes the assumption that DMA allocations can start at the first
-> >kernel address, given that those need to be marked uncached due to DMA
-> >cache coherency issues.
+> On May 6, 2005, at 1:32 PM, Eugene Surovegin wrote:
 > 
-> VM space for uncached DMA has always been allocated using vmalloc(),
-> the location of the physical pages backing this space is irrelevant.    
->
-> The only thing you have to ensure is the virtual address is outside 
-> of the pinned entry.  
-
-What you replied to is:
-
-"This changes the assumption that DMA allocations can start at the first
-kernel address, given that those need to be marked uncached due to DMA
-cache coherency issues." 
-
-I think we mean the same, yes? 
-
-> If something about the way the VM space is structured in 2.6 is
-> different, we need to fix that in general. 
-
->
-> >Panto: FEC currently does
-> >
-> >        mem_addr = __get_free_page(GFP_KERNEL);
-> >        cbd_base = (cbd_t *)mem_addr;
+> >Yeah, I think 3 parameters approach is OK. IOCTL handlers are made
+> >like this and so far they proved to be quite flexible.
 > 
-> This is just plain broken and it shouldn't do this.
-> 
-> >We are still using v2.4 FEC driver, so this fixed it:
-> >
-> >//      mem_addr = __get_free_page(GFP_KERNEL);
-> >        mem_addr = dma_alloc_coherent(NULL, PAGE_SIZE, &physaddr,
-> >                        GFP_KERNEL);
-> 
-> This is the proper way, and should be moved to the equivalent in 2.6.
-> 
-> >Allocateing from the coherent memory DMA region. Which sits at, I 
-> >suppose,
-> >after initial 8Megs in all configurations (should be always).
-> 
-> You are making this too complicated :-)  All we have to do is use the
-> proper dma allocators and make sure the TLBs are pinned properly.
-> That is all.
+> I thought we also discussed placing the PHY irq numbers in the
+> platform data structure at one time? :-)  
 
-Sorry, but, what is too complicated? 
+This is exactly what Vitaly is doing in his patches. My comment was 
+about general use of 3 parameters "feature" calls vs variadic ones, 
+not about you particular example for PHY IRQ :).
 
-The patch I sent does two things (pretty much the same thing you suggest 
-after stating that its "too complicated", AFAICS):
-
-1) avoids the creation of pte tables in the 8Mbyte range, thus preserving
-the pinned TLB entry.
-2) restricts bootmem to above 8Mbyte region
-
-And last thing is: 
-
-3) Memory for DMA pages must not be in the pinned region. ie. drivers 
-should not allocate memory directly for DMA purposes.
-
-Dan, I would really enjoy having access to some of your precious 8xx
-knowledge: share it, along with the correct way to fix this and the 
-other pending issues.
+-- 
+Eugene
