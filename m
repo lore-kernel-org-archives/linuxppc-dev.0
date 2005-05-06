@@ -1,15 +1,22 @@
-Return-Path: <galak@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 3694767A42
-	for <linuxppc-dev@ozlabs.org>; Sat,  7 May 2005 04:38:22 +1000 (EST)
-Date: Fri, 6 May 2005 13:38:05 -0500 (CDT)
-From: Kumar Gala <galak@freescale.com>
-To: Andrew Morton <akpm@osdl.org>
-Message-ID: <Pine.LNX.4.61.0505061336250.28348@nylon.am.freescale.net>
+Return-Path: <eddy.petrisor@gmail.com>
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.200])
+	by ozlabs.org (Postfix) with ESMTP id A783E679E2
+	for <linuxppc-dev@ozlabs.org>; Sat,  7 May 2005 08:06:13 +1000 (EST)
+Received: by rproxy.gmail.com with SMTP id a36so908832rnf
+	for <linuxppc-dev@ozlabs.org>; Fri, 06 May 2005 15:06:12 -0700 (PDT)
+Message-ID: <427BE8B0.5030802@gmail.com>
+Date: Sat, 07 May 2005 00:59:12 +0300
+From: Eddy Petrisor <eddy.petrisor@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] ppc32: Fix POWER3/POWER4 compiler error
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <1115072133.6031.33.camel@gaston>	
+	<20050503222200.GA29940@cse.unsw.EDU.AU>
+	<1115163690.7568.45.camel@gaston>
+In-Reply-To: <1115163690.7568.45.camel@gaston>
+Content-Type: text/plain; charset=x-user-defined; format=flowed
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	DebianPPC <debian-powerpc@lists.debian.org>
+Subject: Re: Laptop sleep & current "git" tree
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,32 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In separating out support for hardware floating point we missed the fact that
-both POWER3 and POWER4 have HW FP.  Enable CONFIG_PPC_FPU for POWER3 
-and POWER4 fixes the issue.
+Benjamin Herrenschmidt wrote:
+> 
+> I don't know this problem, what happens precisely and what model of
+> radeon chip do you have ?
+> 
+I am just interfering as you talked about radeon models; is there any 
+good news regarding the >9600 chipsets?
+I know there was a project (R300 iirc) that wanted to make a driver, but 
+progress was slow or non-existant last time I heard about it.
 
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
----
-commit c196b5792abdb89f18ee55fb5a84afe89b0fc92d
-tree 82bf0144d326efbdfe33c81eb1a7e23bb9dc081b
-parent 6741f3a7f9922391cd02b3ca1329e669497dc22f
-author Kumar K. Gala <kumar.gala@freescale.com> 1115399859 -0500
-committer Kumar K. Gala <kumar.gala@freescale.com> 1115399859 -0500
-
-Index: arch/ppc/Kconfig
-===================================================================
---- cda5ab7ce1bc4b36cb164e6daee18c7649348fb4/arch/ppc/Kconfig  (mode:100644 sha1:d0d94e56b90b9ec8ab65c4780c4b0804663482af)
-+++ 82bf0144d326efbdfe33c81eb1a7e23bb9dc081b/arch/ppc/Kconfig  (mode:100644 sha1:600f23d7fd33aae9e5115875ada43a289e075b5d)
-@@ -77,9 +77,11 @@
- 	bool "44x"
- 
- config POWER3
-+	select PPC_FPU
- 	bool "POWER3"
- 
- config POWER4
-+	select PPC_FPU
- 	bool "POWER4 and 970 (G5)"
- 
- config 8xx
+-- 
+Regards,
+EddyP
+===========================
+I had a favourite quote, but I forgot it. And it was insightful.
