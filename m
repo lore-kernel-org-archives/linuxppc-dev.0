@@ -1,22 +1,21 @@
 Return-Path: <marcelo.tosatti@cyclades.com>
 Received: from parcelfarce.linux.theplanet.co.uk
 	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D8A5C679EA
+	by ozlabs.org (Postfix) with ESMTP id BA6C8679EB
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  8 May 2005 05:10:32 +1000 (EST)
-Date: Sat, 7 May 2005 10:57:46 -0300
+	Sun,  8 May 2005 05:24:12 +1000 (EST)
+Date: Sat, 7 May 2005 11:42:24 -0300
 From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Message-ID: <20050507135746.GB16996@logos.cnet>
-References: <20050506154539.GA6452@logos.cnet>
-	<JPEALJAFNGDDLOPNDIEECEAKDDAA.joakim.tjernlund@lumentis.se>
+To: Joakim Tjernlund <Joakim.Tjernlund@lumentis.se>
+Message-ID: <20050507144224.GD16996@logos.cnet>
+References: <20050424165520.GA22786@logos.cnet>
+	<BCEFJBPJCGFCNMMMIDBHGEJMCLAA.Joakim.Tjernlund@lumentis.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <JPEALJAFNGDDLOPNDIEECEAKDDAA.joakim.tjernlund@lumentis.se>
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: How to fix 8xx dcbst bug?
+In-Reply-To: <BCEFJBPJCGFCNMMMIDBHGEJMCLAA.Joakim.Tjernlund@lumentis.se>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [26-devel] v2.6 performance slowdown on MPC8xx: Measuring TLB
+	cache misses
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,69 +26,75 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sat, May 07, 2005 at 08:24:01PM +0200, Joakim Tjernlund wrote:
+On Sat, May 07, 2005 at 08:10:38PM +0200, Joakim Tjernlund wrote:
+> > Hi Dan, Joakim,
 > > 
-> > 
-> > Hi Dan,
-> > 
-> > So, restarting this conversation...
-> > 
-> > On Tue, Apr 05, 2005 at 11:58:17AM -0400, Dan Malek wrote:
+> > On Sat, Apr 23, 2005 at 08:00:39PM -0400, Dan Malek wrote:
 > > > 
-> > > On Apr 4, 2005, at 3:17 PM, Marcelo Tosatti wrote:
+> > > On Apr 23, 2005, at 7:51 PM, Joakim Tjernlund wrote:
 > > > 
-> > > >Problem is that the "dcbst" instruction will, _sometimes_ (the 
-> > > >failure/success rate is about 1/4
-> > > >with my test application) fault as a _write_ operation on the data.
+> > > >hmm, I have more than 24MB of memory and I can run CONFIG_PIN_TLB just
+> > > >fine with modules off in kernel 2.4. Havn't tried 2.6 yet.
 > > > 
-> > > Oh, geeze .... It's all coming back to me now ....
-> > > 
-> > > The 8xx cache operations don't always operate as defined in the PEM.
-> > > There are likely to be some archive discussions within the Freescale
-> > > knowledge data base that describe the different behaviors I've seen
-> > > with the chip variants and revisions.  I can't find any of those e-mail
-> > > discussions, so I'll try to recall from memory.
-> > > 
-> > > The PEM cache instructions are all implemented in a microcode that
-> > > uses the 8xx unique cache control SPRs.  Depending upon the state
-> > > of the cache and MMU, it seems in some cases the EA translation is
-> > > subject to a "normal" protection match instead of a load operation 
-> > > match.
-> > > 
-> > > The behavior of these operations isn't consistent across all of the 8xx
-> > > processor revisions, especially with early silicon if people are still
-> > > using those.	During conversations with Freescale engineers, it seems
-> > > the only guaranteed operation was to use the 8xx unique SPRs, but
-> > > I think I only did that in 8xx specific functions.
-> > >
-> > > We have way too much code in the TLB exception handlers already,
-> > > so let's just try a tlbia of the EA in the update_mmu_cache, with an 
-> > > #ifdef
-> > > for the 8xx.	
+> > > Doh.  Oh, I see.  We only do the optimization for the instruction 
+> > > misses.
+> > > I'll have to take a closer look at Marcelo's 2.6 tests.
 > > 
-> > >  We may want to make the dcbxxx instructions 
-> > > some
-> > > kind of macro, so on 8xx we can include such operations in otherwise
-> > > "standard" software.
+> > The PIN TLB entry option does not make much difference in my tests, 
+> > never did.
 > > 
-> > Now that I think of it, userspace dcbst users should not be an issue
-> > because the intermediate invalid TLB entry is not visible to applications.
+> > Who wrote the code? Are there results which indicate a performance gain
+> > from TLB pinning on 8xx? If so, where are such results? 
 > > 
-> > Userspace sees only: not present pte, or valid present pte.
+> > One problem that I've noted is that initial_mmu sets {I,D}TLB index
+> > to be 27 (11100). 
 > > 
-> > Well, at least the entry which has been causing problems,
-> > created by DataStoreTLBMiss.
+> > MI_RSV4I protects TLB's 27...31.
 > > 
-> > Is it safe to assume that dcbst usage on userspace is restricted
-> > to valid TLBs? Since MMU SPRs are restricted to supervisor 
-> > protection, I think so.
+> > Given that both {I,D}TLB INDEX's are _decreased_ on each update, it seems
+> > to me that initial_mmu should set {I,D}TLB INDEX to 31, which will then 
+> > decrease down to 27 after 4 TLB's are created.  
+> > 
+> > Another question that comes to mind is why initial_mmu does create 
+> > additional 8Meg TLB entries for D-cache but not for I-cache: 
+> > 
+> > #ifdef CONFIG_PIN_TLB
+> >         /* Map two more 8M kernel data pages.
+> >         */
+> > 	...
+> > #endif
 > 
-> Not sure what you mean here. Currently all dcbX instr. in user space 
-> have to be on valid\populated pte's since otherwise it will SEGV. 
+> Not completly sure that this is correct. There are a few:
+> 	addi	r10, r10, 0x0100
+>  	mtspr	SPRN_MD_CTR, r10
+> later on which will "overflow" 0x1f00 into 0x2000 etc.
 
-OK. The BUG in update_mmu_cache() is triggered because dcbX happens 
-on populated but invalid page mapping.
+Yep. This is not correct at all: the TLB index is increased 
+at each miss, not decreased as the manual says. 
 
-> If you write your app so that any dcbX will only cause a plain DTLB you are
-> safe, just look at ld.so. This should not be a requirement but for 8xx it is currently and I think 8xx gets
-> away with it because nobody is using swap on 8xx.
+I have confirmed it with the BDI... 
+
+>  Jocke
+> > 
+> > I'll do some more CONFIG_PIN_TLB tests this week...
+> > 
+> > --- head_8xx.S.orig2	2005-04-24 17:55:59.000000000 -0300
+> > +++ head_8xx.S	2005-04-24 17:57:44.000000000 -0300
+> > @@ -697,7 +697,7 @@
+> >  	tlbia			/* Invalidate all TLB entries */
+> >  #ifdef CONFIG_PIN_TLB
+> >  	lis	r8, MI_RSV4I@h
+> > -	ori	r8, r8, 0x1c00
+> > +	ori	r8, r8, 0x1f00
+> >  #else
+> >  	li	r8, 0
+> >  #endif
+> > @@ -705,7 +705,7 @@
+> >  
+> >  #ifdef CONFIG_PIN_TLB
+> >  	lis	r10, (MD_RSV4I | MD_RESETVAL)@h
+> > -	ori	r10, r10, 0x1c00
+> > +	ori	r10, r10, 0x1f00
+> >  	mr	r8, r10
+> >  #else
+> >  	lis	r10, MD_RESETVAL@h
