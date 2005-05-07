@@ -1,22 +1,22 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from parcelfarce.linux.theplanet.co.uk
-	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 78044679F7
+	by ozlabs.org (Postfix) with ESMTP id 2BC81679F2
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  7 May 2005 10:38:29 +1000 (EST)
-Date: Fri, 6 May 2005 17:03:38 -0300
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Dan Malek <dan@embeddededge.com>
-Message-ID: <20050506200338.GC14486@logos.cnet>
+	Sat,  7 May 2005 13:09:33 +1000 (EST)
+In-Reply-To: <20050506200338.GC14486@logos.cnet>
 References: <20050505172035.GB3339@logos.cnet>
 	<1b2c7da800815bcdd76ddf27a2ab9c55@embeddededge.com>
 	<20050506133858.GA6032@logos.cnet>
 	<3ebef94782a6090ac3eb44bd7e78efbf@embeddededge.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3ebef94782a6090ac3eb44bd7e78efbf@embeddededge.com>
+	<20050506200338.GC14486@logos.cnet>
+Mime-Version: 1.0 (Apple Message framework v622)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <84773f72b8bba863c9471c0d121223a8@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Fri, 6 May 2005 23:09:15 -0400
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
 Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
 Subject: Re: [PATCH] 8xx: fix usage of pinned 8Mbyte TLB entries
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -30,125 +30,74 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Hi Dan,
+On May 6, 2005, at 4:03 PM, Marcelo Tosatti wrote:
 
-On Fri, May 06, 2005 at 06:49:11PM -0400, Dan Malek wrote:
-> 
-> On May 6, 2005, at 9:38 AM, Marcelo Tosatti wrote:
-> 
-> >1) avoids the creation of pte tables in the 8Mbyte range, thus 
-> >preserving
-> >the pinned TLB entry.
-> 
-> This has nothing to do with "preserving" the pinned TLB entry.
-> The pinned entries are placed into the reserved portion of the TLB,
-> and are never evicted.  
+> The data I have tells me otherwise. I have seen the I-TLB entries
+> getting created for kernel space.
 
-OK.
+Of course.  That's because the pinned entries aren't working :-)
 
-> We never get a fault on these pages, so wenever look up an 
-> entry in the page table. 
+> Can't the BDI work on the 8Mbyte page?  Same for other software
+> or debuggers...
 
-The data I have tells me otherwise. I have seen the I-TLB entries 
-getting created for kernel space.  
+The BDI can, but other software functions will walk the page
+tables looking for PTE information.
 
-I did the following:
+>         /* get the PTE for the bootpage */
+>         if (!get_pteptr(&init_mm, bootpage, &pte))
+>                panic("get_pteptr failed\n");
+>
+>         /* and make it uncachable */
+>         pte_val(*pte) |= _PAGE_NO_CACHE;
+>         _tlbie(bootpage);
 
-- insert a break at the beginning of start_kernel, another break at 
-the end of start_kernel.
-- boot, BDI stops at start_kernel.
-- dump I-TLB contents, no entries for "start_kernel" pages on I-TLB.
-- "go".
-- BDI stops at the end of start_kernel.
-- dump I-TLB contents, see the 4kb entries for "start_kernel" I-cache
-there (ie we _do_ get faults on these pages).
+This is a bad hack (that I wrote) that needs to get fixed.
 
-Check it out.
+> Because DMA pages need to have their PTE's marked as uncached, which 
+> in turn
+> means their TLB's need to be marked as uncached.
 
-If your setup is not working yet I can get the data for you tomorrow.
+Right, but these are allocated from the vmalloc() space, far away
+from the pinned entries.
 
-> We need to create the
-> page tables for informational purposes, so software or debugger
-> lookups will do the right thing.
+> I dont think you can have multiple overlapping TLB entries.
 
-Can't the BDI work on the 8Mbyte page?  Same for other software 
-or debuggers... 
+Sure you can, we do it all of the time.  The kernel maps all of
+memory, and then user applications do it again.  The only time
+it causes a problem is when you have different cache attributes
+for the same physical page.  In this case, you need to ensure
+you only use one mapping.  You can't have the same virtual
+address twice in the TLB (iirc, the 8xx automatically invalidates
+an existing one if you do this), but you can have the same
+physical page mapped multiple times.
 
-Any in-kernel algorithm which relies on direct pte manipulation 
-looks fragile... 
 
-i386 and some (?) other architectures do use big pages for the first 
-kernel addresses, right? 
+> How is the MMU supposed to decide between multiple mappings
+> for the same address ?
 
-> >2) restricts bootmem to above 8Mbyte region
-> 
-> Why is this necessary? 
+You are thinking backward.  The MMU maps the virtual address
+accessed, there is only one valid at a time.  You can have multiple
+VM addresses accessing the same physical page.
 
-void __init
-m8xx_setup_arch(void)
-{
-        int     cpm_page;
+> That is how it is now. See previous posts with detailed TLB debugging.
 
-        cpm_page = (int) alloc_bootmem_pages(PAGE_SIZE);
+Something isn't correct if it isn't working.
 
-        /* Reset the Communication Processor Module.
-        */
-        m8xx_cpm_reset(cpm_page);
+> Maybe you thought you got it right because the initial 8Mbyte
+> mapping works?
 
-...
+No, this is required to work for some execute in place from rom
+systems I have done.  It was adapted from that.  The initial 8M
+mapping must be evicted when the  mapin_ram() is done.  It's
+supposed to happen that way.
 
-void
-m8xx_cpm_reset(uint bootpage)
-{
-...
-        /* get the PTE for the bootpage */
-        if (!get_pteptr(&init_mm, bootpage, &pte))
-               panic("get_pteptr failed\n");
+> Unfortunately that mapping is trashed after overlapping
+> pte's are created.
 
-        /* and make it uncachable */
-        pte_val(*pte) |= _PAGE_NO_CACHE;
-        _tlbie(bootpage);
+Right, that is supposed to happen unless TLB pinning
+is configured.
 
-        host_buffer = bootpage;
-        host_end = host_buffer + PAGE_SIZE;
+Thanks.
 
-> >3) Memory for DMA pages must not be in the pinned region. ie. drivers
-> >should not allocate memory directly for DMA purposes.
-> 
-> Why not?  
 
-Because DMA pages need to have their PTE's marked as uncached, which in turn 
-means their TLB's need to be marked as uncached. 
-
-> It doesn't matter if we cover a VM space with a bunch of 4K
-> entries or a single 8M entry.   The physical pages are always going to
-> be multiple mapped, either through the mapin_ram() space or a single 8M
-> entry, and also through the vmalloc() space.  You just have to ensure,
-> in any case, that you don't access the pages through both VM spaces.
-
-I dont think you can have multiple overlapping TLB entries. 
-
-How is the MMU supposed to decide between multiple mappings 
-for the same address ? 
-
-> >Dan, I would really enjoy having access to some of your precious 8xx
-> >knowledge: share it, along with the correct way to fix this and the
-> >other pending issues.
-> 
-> The correct fix is rather simple, just make sure you configure the TLB
-> to reserve entries, and get the pinned entries into those reserved
-> entries.
-
-That is how it is now. See previous posts with detailed TLB debugging.
-
-> I know I had it right once, I don't know what happened :-) 
-
-Maybe you thought you got it right because the initial 8Mbyte 
-mapping works? 
-
-Unfortunately that mapping is trashed after overlapping 
-pte's are created.
-
-> Just hang on and I'll get you some code to test ....
-
-Sure...
+	-- Dan
