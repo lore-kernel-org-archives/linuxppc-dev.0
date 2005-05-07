@@ -1,21 +1,21 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+Return-Path: <Joakim.Tjernlund@lumentis.se>
+Received: from dmz.lumentis.net (unknown [212.105.56.244])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3D66A679EF
+	by ozlabs.org (Postfix) with ESMTP id 856E9679EF
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  8 May 2005 06:24:12 +1000 (EST)
-In-Reply-To: <BCEFJBPJCGFCNMMMIDBHGEJMCLAA.Joakim.Tjernlund@lumentis.se>
-References: <BCEFJBPJCGFCNMMMIDBHGEJMCLAA.Joakim.Tjernlund@lumentis.se>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <779d257b5aa25f341bc452dabf5987c4@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Sat, 7 May 2005 16:24:01 -0400
-To: <Joakim.Tjernlund@lumentis.se>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [26-devel] v2.6 performance slowdown on MPC8xx: Measuring TLB
-	cache misses
+	Sun,  8 May 2005 08:47:47 +1000 (EST)
+From: "Joakim Tjernlund" <Joakim.Tjernlund@lumentis.se>
+To: <wd@denx.de>
+Date: Sun, 8 May 2005 00:47:38 +0200
+Message-ID: <BCEFJBPJCGFCNMMMIDBHKEJOCLAA.Joakim.Tjernlund@lumentis.se>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <20050507183913.A7238C1512@atlas.denx.de>
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: RE: How to fix 8xx dcbst bug? 
+Reply-To: Joakim.Tjernlund@lumentis.se
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,28 +26,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+> 
+> In message <JPEALJAFNGDDLOPNDIEECEAKDDAA.joakim.tjernlund@lumentis.se> you wrote:
+> >
+> ...
+> > safe, just look at ld.so. This should not be a requirement but for 8xx it is currently and I think 8xx gets
+> > away with it because nobody is using swap on 8xx.
+> 
+> I understand that the "not using swap" refers to 2.6 kernel only, right?
+> 
+> Because on 2.4, we use swap on several systems quite heavily. I  have
+> to admit that we had to patch pgtable.h to get it work.
 
-On May 7, 2005, at 2:10 PM, Joakim Tjernlund wrote:
+I was once told by a senior kernel hacker(Dan?) that using swap could make an already
+populated pte invalid. This was for 2.4 kernels.
 
-> Not completly sure that this is correct. There are a few:
-> 	addi	r10, r10, 0x0100
->  	mtspr	SPRN_MD_CTR, r10
-> later on which will "overflow" 0x1f00 into 0x2000 etc.
+ldso uses dcbst and icbi heavly during relocation but always after doing a store to the
+address in question. That will make sure that if dcbst/icbi causes a TLB Miss, it will be
+a simple/regular TLB miss not requiring any special handling i fault.c
 
-Oh right, I forgot I did that.  I explicitly set the tlb index before
-each write.  Sorry, I thought it was due to more bits of index
-in the 885.
+Perhaps using dcbst/icbi in this way will not make the pte go away between the store and the
+dcbst/icbi instructions when also using swap. Someone more exprienced will have to answer that.
 
-So, I guess what was there should have worked.
-
-OK, so the reason TLB pinning doesn't work is a tlbie() can
-evict the pinned entry.  That stupid code in the cpm reset
-will throw them out, plus anything else that would do a
-tlbie() of a kernel address within the pinned space (like
-the update_mmu_cache() hack).  We have to fix those,
-and look for any others where that may happen.
-
-Thanks.
-
-
-	-- Dan
+ Jocke
