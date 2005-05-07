@@ -1,24 +1,24 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from parcelfarce.linux.theplanet.co.uk
-	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D0FF4679F2
+	by ozlabs.org (Postfix) with ESMTP id 4A7F0679F3
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  7 May 2005 13:41:47 +1000 (EST)
-Date: Fri, 6 May 2005 20:05:23 -0300
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Dan Malek <dan@embeddededge.com>
-Message-ID: <20050506230523.GA15908@logos.cnet>
+	Sat,  7 May 2005 14:39:16 +1000 (EST)
+In-Reply-To: <20050506230523.GA15908@logos.cnet>
 References: <20050505172035.GB3339@logos.cnet>
 	<1b2c7da800815bcdd76ddf27a2ab9c55@embeddededge.com>
 	<20050506133858.GA6032@logos.cnet>
 	<3ebef94782a6090ac3eb44bd7e78efbf@embeddededge.com>
 	<20050506200338.GC14486@logos.cnet>
 	<84773f72b8bba863c9471c0d121223a8@embeddededge.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <84773f72b8bba863c9471c0d121223a8@embeddededge.com>
+	<20050506230523.GA15908@logos.cnet>
+Mime-Version: 1.0 (Apple Message framework v622)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <6f231f4afce0886929ca99426a86b47a@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Sat, 7 May 2005 00:39:02 -0400
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
 Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
 Subject: Re: [PATCH] 8xx: fix usage of pinned 8Mbyte TLB entries
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -31,94 +31,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 06, 2005 at 11:09:15PM -0400, Dan Malek wrote:
-> 
-> On May 6, 2005, at 4:03 PM, Marcelo Tosatti wrote:
-> 
-> >The data I have tells me otherwise. I have seen the I-TLB entries
-> >getting created for kernel space.
-> 
-> Of course.  That's because the pinned entries aren't working :-)
-> 
-> >Can't the BDI work on the 8Mbyte page?  Same for other software
-> >or debuggers...
-> 
-> The BDI can, but other software functions will walk the page
-> tables looking for PTE information.  
 
-Do you have any practical example which you are certain is going
-to break? 
+On May 6, 2005, at 7:05 PM, Marcelo Tosatti wrote:
 
-I dont remember any, and I dont think any software should be walking
-kernel pte's directly...
+> Do you have any practical example which you are certain is going
+> to break?
 
-It is not possible to have the 8Mbyte pinned TLB and 4kb pagetables 
-mapping the same kernel virtual addresses.
+Not at the moment, but that doesn't mean we shouldn't maintain
+consistency for anyone that wants to do so.
 
-> >        /* get the PTE for the bootpage */
-> >        if (!get_pteptr(&init_mm, bootpage, &pte))
-> >               panic("get_pteptr failed\n");
-> >
-> >        /* and make it uncachable */
-> >        pte_val(*pte) |= _PAGE_NO_CACHE;
-> >        _tlbie(bootpage);
-> 
-> This is a bad hack (that I wrote) that needs to get fixed.
-> 
-> >Because DMA pages need to have their PTE's marked as uncached, which 
-> >in turn
-> >means their TLB's need to be marked as uncached.
-> 
-> Right, but these are allocated from the vmalloc() space, far away
-> from the pinned entries. 
+> I dont remember any, and I dont think any software should be walking
+> kernel pte's directly...
+
+Anyone can call get_pteptr and should get the proper information.
+
+> It is not possible to have the 8Mbyte pinned TLB and 4kb pagetables
+> mapping the same kernel virtual addresses.
+
+I know, but we don't do that.  Like I said, if the 8M pinned entry is
+in the TLB, we don't get exceptions for this space and we don't look
+up PTEs and replace them.
+
+> You can't have both a 4kb page and a 8Mbyte page mapping the virtual
+> address KERNELBASE + 0.
 >
-> >I dont think you can have multiple overlapping TLB entries.
-> 
-> Sure you can, we do it all of the time.  The kernel maps all of
-> memory, and then user applications do it again.  The only time
-> it causes a problem is when you have different cache attributes
-> for the same physical page.  In this case, you need to ensure
-> you only use one mapping.  You can't have the same virtual
-> address twice in the TLB (iirc, the 8xx automatically invalidates
-> an existing one if you do this), but you can have the same
-> physical page mapped multiple times.  
+> Do you agree?
 
-You can't have both a 4kb page and a 8Mbyte page mapping the virtual 
-address KERNELBASE + 0. 
+Yes, but that isn't what we are doing.  We can have the 8M page
+mapping virtual address 0xc0000000 to 0x0000000, and also another
+4k page, at say 0xd0000000 map the same 0x00000000 physical page.
+There are many circumstances when we have a kernel VM address
+and a user VM address map the same physical page.  This is also
+what we do to get uncached VM addresses for DMA.
 
-Do you agree? 
+> Right - I'm talking about kernel virtual addresses: in this specific 
+> case,
+> we can't have more than one mapping for the first page at KERNELBASE.
 
-> >How is the MMU supposed to decide between multiple mappings
-> >for the same address ?
-> 
-> You are thinking backward.  The MMU maps the virtual address
-> accessed, there is only one valid at a time.  You can have multiple
-> VM addresses accessing the same physical page.
+You can't do that in any case for anything, and I'm confused why you
+keep mentioning this :-)
 
-Right - I'm talking about kernel virtual addresses: in this specific case,
-we can't have more than one mapping for the first page at KERNELBASE.
+> So you do agree that pte's should not be created for the first
+> 8MBytes if CONFIG_PIN_TLB is set? :)
 
-> >That is how it is now. See previous posts with detailed TLB debugging.
-> 
-> Something isn't correct if it isn't working.  
->
-> >Maybe you thought you got it right because the initial 8Mbyte
-> >mapping works?
-> 
-> No, this is required to work for some execute in place from rom
-> systems I have done.  It was adapted from that.  The initial 8M
-> mapping must be evicted when the  mapin_ram() is done.  It's
-> supposed to happen that way.
-> 
-> >Unfortunately that mapping is trashed after overlapping
-> >pte's are created.
-> 
-> Right, that is supposed to happen unless TLB pinning
-> is configured.
+NO.  Just leave that code alone.  I don't understand why you think
+doing this will have any effect on the system operation.  If you are
+able to run a system without creating these tables, then the pinned
+TLBs must be working.  If pinned TLBs weren't working, the kernel
+would crash.
 
-OK, we seem to be on the same page now. 
+Thanks.
 
-So you do agree that pte's should not be created for the first
-8MBytes if CONFIG_PIN_TLB is set? :) 
 
-Should I send an updated patch or you plan to do that? 
+	-- Dan
