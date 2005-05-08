@@ -2,19 +2,20 @@ Return-Path: <dan@embeddededge.com>
 Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B10F8679E0
+	by ozlabs.org (Postfix) with ESMTP id C21C7679E0
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  8 May 2005 11:00:41 +1000 (EST)
-In-Reply-To: <BCEFJBPJCGFCNMMMIDBHKEJOCLAA.Joakim.Tjernlund@lumentis.se>
-References: <BCEFJBPJCGFCNMMMIDBHKEJOCLAA.Joakim.Tjernlund@lumentis.se>
+	Sun,  8 May 2005 11:10:53 +1000 (EST)
+In-Reply-To: <20050506154539.GA6452@logos.cnet>
+References: <20050506154539.GA6452@logos.cnet>
 Mime-Version: 1.0 (Apple Message framework v622)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <a94ed840e6b2cf1aba35fc0beadff22d@embeddededge.com>
+Message-Id: <52dc3ae70f883699b1e48b7d742afcaf@embeddededge.com>
 From: Dan Malek <dan@embeddededge.com>
-Date: Sat, 7 May 2005 21:00:28 -0400
-To: Joakim.Tjernlund@lumentis.se
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: How to fix 8xx dcbst bug? 
+Date: Sat, 7 May 2005 21:10:17 -0400
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Cc: Joakim Tjernlund <joakim.tjernlund@lumentis.se>,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: How to fix 8xx dcbst bug?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,23 +27,20 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On May 7, 2005, at 6:47 PM, Joakim Tjernlund wrote:
+On May 6, 2005, at 11:45 AM, Marcelo Tosatti wrote:
 
-> I was once told by a senior kernel hacker(Dan?) that using swap could 
-> make an already
-> populated pte invalid. This was for 2.4 kernels.
+>
+> Hi Dan,
+>
+> So, restarting this conversation...
 
-The original problem was I didn't pay attention to the swap PTE when
-constructing the originals for the 8xx.  The swap PTE has to be 
-indicated
-as such in one of the lowest 2 bits of the PTE, as the rest of the PTE 
-is
-used for the swap block number.  What would happen is there would
-be the occasion where some control bit was set in the PTE within the
-swap block number, and upon restoring from disk the wrong block
-would be brought into memory (or the fact it was swapped was lost).
+One of the things I don't want to lose sight of during
+all of this is the real performance problem in 2.6.
+Your test results show there is something that needs
+attention, regardless of using pinned entries.  We
+need to continue some of this investigation, it
+affects all processors.
 
 Thanks.
-
 
 	-- Dan
