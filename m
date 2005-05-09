@@ -1,18 +1,19 @@
 Return-Path: <kumar.gala@freescale.com>
 Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 041C4679F1
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 99568679F6
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 10 May 2005 02:58:27 +1000 (EST)
-In-Reply-To: <9EDE1664710B26419A57B21CBCBB8D0B01950175@XY01EX01.xy01.xyratex.com>
-References: <9EDE1664710B26419A57B21CBCBB8D0B01950175@XY01EX01.xy01.xyratex.com>
+	Tue, 10 May 2005 03:27:20 +1000 (EST)
+In-Reply-To: <427F4D38.70102@intracom.gr>
+References: <427F4D38.70102@intracom.gr>
 Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=WINDOWS-1252; format=flowed
-Message-Id: <e402bb363cdf2e59ae7ae8a1bc2f8654@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <89f1e01d28e3fd391c2c636707a02be1@freescale.com>
 From: Kumar Gala <kumar.gala@freescale.com>
-Date: Mon, 9 May 2005 11:58:23 -0500
-To: "Kostantinos Baliotis" <Kostantinos_Baliotis@xyratex.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: mpc 83xx immap_t question 
+Date: Mon, 9 May 2005 12:26:52 -0500
+To: "Pantelis Antoniou" <panto@intracom.gr>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH  01/04] Freescale Ethernet combined driver
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,34 +24,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Any reason we dont allow this driver on 85xx?  (should be same as 82xx)
 
-On May 9, 2005, at 11:16 AM, Kostantinos Baliotis wrote:
+- kumar
 
-> Hi folks,
+On May 9, 2005, at 6:44 AM, Pantelis Antoniou wrote:
+
+> Hi
 >
-> =A0
+> The following patch is a combined FCC/FEC ethernet driver
+> for the Freescale line of PowerQUICCs.
 >
-> I=92m trying to port a custom driver to mpc8343E processor (a =
-relatively=20
-> new one). I would be grateful if someone could point me out some links=20=
-
-> with specific patches, sources (or if it is possible the appropriate=20=
-
-> cross compile tool chain) for this target CPU.
-
-It uses a 603 based core so any standard PPC cross compiler should be=20
-fine.
-
-> At this stage my main concern is if this new freescale=20
-> embedded=A0processor supports the immap_t structure (known from the =
-good=20
-> old mpc860).
-
-Not exactly sure what you are mean here.  However, there are not any=20
-plans to create master immap_t structures anymore.
-
-> I should mention that I=92m using a 2.4 Linux kernel at the moment.
-
-2.6 has basic support for 834x in 2.6.12-rc4.
-
-- kumar=
+> FECs on 8xx and FCCs on 82xx are supported.
+>
+> This part of the patch contains makefiles and friends.
+>
+> Regards
+>
+> Pantelis
+>
+> Signed-off-by: Pantelis Antoniou <panto@intracom.gr>
+> <fs_enet-01.patch>
