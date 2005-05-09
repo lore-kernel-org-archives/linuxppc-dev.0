@@ -1,30 +1,22 @@
-Return-Path: <panto@intracom.gr>
-Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
-	by ozlabs.org (Postfix) with ESMTP id C3AD967A00
+Return-Path: <glikely@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.202])
+	by ozlabs.org (Postfix) with ESMTP id A798D67A06
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  9 May 2005 16:25:59 +1000 (EST)
-Received: from mailserv.intranet.gr (localhost [127.0.0.1])
-	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id j496UZA1023117
+	Mon,  9 May 2005 16:36:39 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id 57so1146800wri
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 9 May 2005 09:30:36 +0300 (EEST)
-Message-ID: <427EFEAF.6030903@intracom.gr>
-Date: Mon, 09 May 2005 09:09:51 +0300
-From: Pantelis Antoniou <panto@intracom.gr>
-MIME-Version: 1.0
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-References: <20050505172035.GB3339@logos.cnet>
-	<1b2c7da800815bcdd76ddf27a2ab9c55@embeddededge.com>
-	<20050506133858.GA6032@logos.cnet>
-	<3ebef94782a6090ac3eb44bd7e78efbf@embeddededge.com>
-	<20050506200338.GC14486@logos.cnet>
-	<84773f72b8bba863c9471c0d121223a8@embeddededge.com>
-	<20050506230523.GA15908@logos.cnet>
-	<6f231f4afce0886929ca99426a86b47a@embeddededge.com>
-	<20050507140527.GC16996@logos.cnet>
-In-Reply-To: <20050507140527.GC16996@logos.cnet>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] 8xx: fix usage of pinned 8Mbyte TLB entries
+	Sun, 08 May 2005 23:36:38 -0700 (PDT)
+Message-ID: <528646bc05050823366a4cf9e6@mail.gmail.com>
+Date: Mon, 9 May 2005 00:36:38 -0600
+From: Grant Likely <glikely@gmail.com>
+To: Atit_Shah <Atit_Shah@satyam.com>
+In-Reply-To: <D8595042F3765A4285B848A78A2C2ED102779F@bsdmsg002.corp.satyam.ad>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <D8595042F3765A4285B848A78A2C2ED102779F@bsdmsg002.corp.satyam.ad>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Network Setup - HOW TO
+Reply-To: Grant Likely <glikely@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,28 +27,55 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Marcelo Tosatti wrote:
->>NO.  Just leave that code alone.  I don't understand why you think
->>doing this will have any effect on the system operation.  If you are
->>able to run a system without creating these tables, then the pinned
->>TLBs must be working.  If pinned TLBs weren't working, the kernel
->>would crash.
-> 
-> 
-> I just booted a kernel with 4kb PTE mappings at KERNELBASE and
-> the pinned TLB was not trashed.
-> 
-> So, I was talking nonsense. :)
-> 
-> The only problem are DMA users who dont use dma_alloc_coherent API. 
-> 
-> 
-> 
+On 5/8/05, Atit_Shah <Atit_Shah@satyam.com> wrote:
+> My company uses the 172.19.x.x IP addresses, I want a PC with
+> 192.168.x.x IP address to access the company network via a router. I
+> have a router running Linux and having 2 Ethernet ports. I configured
+> the systems in the following 2 ways:
+So, two subnets:
+Eth0 on subnet 192.168.0.0/255.255.0.0
+Eth1 on subnet 172.19.0.0/255.255.0.0
 
-Perhaps I'm jumping in too late, but in my 8xx trees all my drivers
-use the correct API. So this will not be a problem after we fix the
-drivers :)
+>=20
+> 1. Eth0 (LAN port) - 172.19.56.218
+>    Eth1 (WAN port) - 172.19.56.219
+>    Single System   - 192.168.100.10 - IP Address
+>                            172.19.56.218  - Gateway
+>                            172.19.56.218  - DNS
+This is wrong.  IP address for Eth0 must be on the 192.168.0.0/16 subnet
 
-Regards
+>=20
+> 2. Eth0 (LAN port) - 192.168.100.20
+>    Eth1 (WAN port) - 172.19.56.219
+>    Single System   - 192.168.100.10 - IP Address
+>                            192.168.100.20 - Gateway
+>                            192.168.100.20 - DNS
+This is correct, but the DNS server does not have to be your router.
 
-Pantelis
+>=20
+> But I am not able to ping from the router to my single system in either
+> way.
+> How should I configure router to make this possible for the 2 networks
+> to communicate?
+Is you netmask set right?  Does /sbin/route show sane IP routes?  What
+do you see on the wire? (Use Ethereal on a third computer).  If you
+cannot ping then you've got a fundamental flaw in your configurations.
+ Get this working before worrying about DHCP or routing.
+
+>=20
+> The second question is how to run DHCP on my router so it can receive a
+> dynamic IP and assign dynamic IP when I power my router?
+You need to run both dhcpd and dhcpcd.  dhcpd to assign IP to your
+client.  dhcpcd to get an IP from the network.
+
+It sounds like you need to brush up on your IP networking knowledge w/
+linux.  Go look at the howtos on www.tldp.org.  Specifically on
+networking and DHCP.  You should get this stuff working on a regular
+PC w/ 2 network cards running linux first before trying to get it
+going on your embedded board.
+
+Also, as I asked before, please include relevant output logs with your
+posts and I strongly recommend sniffing the Ethernet traffic with a
+tool like Ethereal.
+
+g.
