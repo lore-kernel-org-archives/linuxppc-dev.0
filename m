@@ -1,17 +1,25 @@
-Return-Path: <graju@facetime.com>
-Received: from postman.facetime.com (unknown [203.145.176.100])
-	by ozlabs.org (Postfix) with ESMTP id B274867A3E
+Return-Path: <peter.asemann@web.de>
+Received: from fmmailgate05.web.de (fmmailgate05.web.de [217.72.192.243])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6B16567A33
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  9 May 2005 20:12:29 +1000 (EST)
+	Mon,  9 May 2005 20:17:54 +1000 (EST)
+Received: by fmmailgate05.web.de (8.12.10/8.12.10/webde Linux 0.7) with ESMTP
+	id j499wY7w030014
+	for <linuxppc-embedded@ozlabs.org>; Mon, 9 May 2005 11:58:34 +0200
+Received: from [131.188.52.149] (helo=[131.188.52.149])
+	by smtp07.web.de with asmtp (TLSv1:RC4-MD5:128) (WEB.DE 4.105 #282)
+	id 1DV51y-00035n-00
+	for linuxppc-embedded@ozlabs.org; Mon, 09 May 2005 11:58:30 +0200
+Message-ID: <427F3441.2010108@web.de>
+Date: Mon, 09 May 2005 11:58:25 +0200
+From: Peter Asemann <peter.asemann@web.de>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C5547F.BC0B1545"
-Date: Mon, 9 May 2005 15:43:24 +0530
-Message-ID: <83986B58C72FC447AAC98F916BAB6A5734EDAF@postman.facetime.com>
-From: "Gopala Krishnam Raju" <graju@facetime.com>
-To: "Vijesh VH" <vijesh.vh@gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: Linuxppc-embedded Digest, montavista
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Sender: peter.asemann@web.de
+Subject: Writing a small test program - a bit off topic
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,186 +30,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hi there!
 
-------_=_NextPart_001_01C5547F.BC0B1545
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+I *hope* this mail isn't very off topic. In principle it probably is, 
+but I don't know a mailing list which is about writing test programs to 
+test processors in order to debug a hardware to get linux running. Plus, 
+I suppose there are people out there who could help me. So I hope you 
+won't stone me for this post.
 
-Hello vijesh
-=20
-that i could not make i am getting error for that so i am using the base =
-os initrd i.e fedora core 3 initrd
-=20
-Regards
-=20
-GGKRAJU
+Whatever:
+I have to write some test program for a mpc875 processor. It should run 
+in the processor cache as the memory of the hardware doesn't work for 
+hardware-problem-reasons.
 
------Original Message-----
-From: Vijesh VH [mailto:vijesh.vh@gmail.com]
-Sent: Monday, May 09, 2005 3:14 PM
-To: Gopala Krishnam Raju
-Subject: Re: Linuxppc-embedded Digest, montavista
+I set up the memory mapping of the IMMR of the processor with the 
+debugger (BDM4GDB) so the IMMR is at 0xff000000.
+Then I want to change the state of two leds. This can be done by writing 
+some values into some memory-mapped MPC registers (PEDAT / PEDIR) which 
+reside at IMMR + 0xac8 / 0xad8.
 
+I wrote a C program to do that; As there is no OS I think I can just try 
+to write to memory locations directly:
 
-Hello Raju,
-You have to create Initrd using initrd command and do necessary changes =
-in the grub and in /boot folder
+#define CONFIG_8xx
 
-Regards
-Vijesh..=20
+int main(void){
+long* a;
+long* b;
+a = (long*)0xff000ac8;
+*a = 0x00001800;
+b = (long*)0xff000ad8;
+*b = 0x00001800;
+}
 
+Actually, if I compile it (using Denx ELDK 3.1) with
 
-On 5/9/05, Gopala Krishnam Raju < graju@facetime.com> wrote:=20
+ppc-linux-gcc -static led.c -o led
 
-hello Linux gurus
+the resulting program is 477K big.
+On the other hand, if I do
 
-I have created a boot image for montavista doing the following way.
+ppc-linux-as -mcom led.s
+and
+ppc-linux-as -mcom led.s -o led.bin
 
-1. I did make mrproper.
+the resulting program is 439 byte big.
 
-2. Then make xconfig.
+Now, my questions are: Will the 439 byte program faciliated this way do 
+what I want? Did I make some fatal newbie mistakes? Does somebody know 
+how to upload code to the mpc instruction cache and execute it?
 
-3. Selected the target architecture.
+Thanks for reading,
 
-4. saved the configuration file and then=20
-
-5. I have said make dep.  There was no errors it compiled well.
-
-6. I ran make bzImage to get the bzImage.  It also went well without any =
-errors.
-
-7. got the bzImage in /linux..../arch/i386/boot/.  then i have copied =
-this to /boot.=20
-
-8. Made necessary changes in the grub.conf.
-
-        but while booting i am getting an error saying that vfs: kernal =
-panic.
-        any ideas regarding this.
-
-        i also tried with make modules.=20
-
-        that also went well. but after starting with the new kernel it =
-is giving error vfs: kernal panic.
-
-        target and host are both platforms.
-
-Regards
-
-GGKRAJU
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-
-
-
-
-
---=20
-Thanks and Regards,
-Vijesh V H=20
-
-
-------_=_NextPart_001_01C5547F.BC0B1545
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-
-
-<META content=3D"MSHTML 6.00.2800.1498" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><SPAN class=3D468571010-09052005><FONT face=3DArial color=3D#0000ff =
-size=3D2>Hello=20
-vijesh</FONT></SPAN></DIV>
-<DIV><SPAN class=3D468571010-09052005><FONT face=3DArial color=3D#0000ff =
-
-size=3D2></FONT></SPAN>&nbsp;</DIV>
-<DIV><SPAN class=3D468571010-09052005><FONT face=3DArial color=3D#0000ff =
-size=3D2>that i=20
-could not make i am getting error for that so i am using the base os =
-initrd i.e=20
-fedora core 3 initrd</FONT></SPAN></DIV>
-<DIV><SPAN class=3D468571010-09052005><FONT face=3DArial color=3D#0000ff =
-
-size=3D2></FONT></SPAN>&nbsp;</DIV>
-<DIV><SPAN class=3D468571010-09052005><FONT face=3DArial color=3D#0000ff =
-
-size=3D2>Regards</FONT></SPAN></DIV>
-<DIV><SPAN class=3D468571010-09052005><FONT face=3DArial color=3D#0000ff =
-
-size=3D2></FONT></SPAN>&nbsp;</DIV>
-<DIV><SPAN class=3D468571010-09052005><FONT face=3DArial color=3D#0000ff =
-
-size=3D2>GGKRAJU</FONT></SPAN></DIV>
-<BLOCKQUOTE>
-  <DIV class=3DOutlookMessageHeader dir=3Dltr align=3Dleft><FONT =
-face=3DTahoma=20
-  size=3D2>-----Original Message-----<BR><B>From:</B> Vijesh VH=20
-  [mailto:vijesh.vh@gmail.com]<BR><B>Sent:</B> Monday, May 09, 2005 3:14 =
-
-  PM<BR><B>To:</B> Gopala Krishnam Raju<BR><B>Subject:</B> Re: =
-Linuxppc-embedded=20
-  Digest, montavista<BR><BR></FONT></DIV>Hello Raju,<BR>You have to =
-create=20
-  Initrd using initrd command and do necessary changes in the grub and =
-in /boot=20
-  folder<BR><BR>Regards<BR>Vijesh.. <BR><BR>
-  <DIV><SPAN class=3Dgmail_quote>On 5/9/05, <B =
-class=3Dgmail_sendername>Gopala=20
-  Krishnam Raju</B> &lt;<A=20
-  href=3D"mailto:graju@facetime.com">graju@facetime.com</A>&gt; =
-wrote:</SPAN>
-  <BLOCKQUOTE class=3Dgmail_quote=20
-  style=3D"PADDING-LEFT: 1ex; MARGIN: 0pt 0pt 0pt 0.8ex; BORDER-LEFT: =
-rgb(204,204,204) 1px solid">hello=20
-    Linux gurus<BR><BR>I have created a boot image for montavista doing =
-the=20
-    following way.<BR><BR>1. I did make mrproper.<BR><BR>2. Then make=20
-    xconfig.<BR><BR>3. Selected the target architecture.<BR><BR>4. saved =
-the=20
-    configuration file and then <BR><BR>5. I have said make=20
-    dep.&nbsp;&nbsp;There was no errors it compiled well.<BR><BR>6. I =
-ran make=20
-    bzImage to get the bzImage.&nbsp;&nbsp;It also went well without any =
-
-    errors.<BR><BR>7. got the bzImage in=20
-    /linux..../arch/i386/boot/.&nbsp;&nbsp;then i have copied this to =
-/boot.=20
-    <BR><BR>8. Made necessary changes in the=20
-    =
-grub.conf.<BR><BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;but =
-while=20
-    booting i am getting an error saying that vfs: kernal=20
-    panic.<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;any ideas=20
-    regarding =
-this.<BR><BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i=20
-    also tried with make modules.=20
-    <BR><BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;that also =
-went well.=20
-    but after starting with the new kernel it is giving error vfs: =
-kernal=20
-    panic.<BR><BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;target =
-and=20
-    host are both=20
-    =
-platforms.<BR><BR>Regards<BR><BR>GGKRAJU<BR>_____________________________=
-__________________<BR>Linuxppc-embedded=20
-    mailing list<BR><A=20
-    =
-href=3D"mailto:Linuxppc-embedded@ozlabs.org">Linuxppc-embedded@ozlabs.org=
-</A><BR><A=20
-    =
-href=3D"https://ozlabs.org/mailman/listinfo/linuxppc-embedded">https://oz=
-labs.org/mailman/listinfo/linuxppc-embedded</A><BR></BLOCKQUOTE></DIV><BR=
-><BR><BR>--=20
-  <BR>Thanks and Regards,<BR>Vijesh V H </BLOCKQUOTE></BODY></HTML>
-
-------_=_NextPart_001_01C5547F.BC0B1545--
+Peter Asemann
