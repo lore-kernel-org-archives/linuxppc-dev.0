@@ -1,21 +1,20 @@
-Return-Path: <jason.mcmullan@timesys.com>
-Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
-	by ozlabs.org (Postfix) with ESMTP id 62514679A6
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao09.cox.net (fed1rmmtao09.cox.net [68.230.241.30])
+	by ozlabs.org (Postfix) with ESMTP id A589E679F0
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 10 May 2005 06:05:02 +1000 (EST)
-In-Reply-To: <427F3441.2010108@web.de>
-Content-Type: multipart/signed; boundary="=-AFAPEJkROvEFWUG5vgSJ";
-	micalg=pgp-sha1; protocol="application/pgp-signature"
-References: <427F3441.2010108@web.de>
-Date: Mon, 09 May 2005 16:04:57 -0400
-Message-ID: <1115669098.9050.48.camel@jmcmullan.timesys>
-MIME-Version: 1.0
-Date: Mon, 9 May 2005 15:59:17 -0400
-Message-ID: <1115669098.9050.48.camel@jmcmullan.timesys>
-From: "McMullan, Jason" <jason.mcmullan@timesys.com>
-To: "Peter Asemann" <peter.asemann@web.de>
-Cc: PPC_LINUX <linuxppc-embedded@ozlabs.org>
-Subject: Re: Writing a small test program - a bit off topic
+	Tue, 10 May 2005 06:38:22 +1000 (EST)
+Date: Mon, 9 May 2005 13:38:09 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Pantelis Antoniou <panto@intracom.gr>
+Message-ID: <20050509133808.A16776@cox.net>
+References: <427F4D3F.1010802@intracom.gr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <427F4D3F.1010802@intracom.gr>;
+	from panto@intracom.gr on Mon, May 09, 2005 at 02:45:03PM +0300
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH  03/04] Freescale Ethernet combined driver
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,42 +25,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Mon, May 09, 2005 at 02:45:03PM +0300, Pantelis Antoniou wrote:
+> Hi
+> 
+> The following patch is a combined FCC/FEC ethernet driver
+> for the Freescale line of PowerQUICCs.
+> 
+> FECs on 8xx and FCCs on 82xx are supported.
+> 
+> This part of the patch contains the mac drivers
+> for FEC & FCC.
 
---=-AFAPEJkROvEFWUG5vgSJ
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+As mentioned on IRC, this needs to be scrubbed of all iopa() usage
+in favor of standard DMA API calls.
 
-On Mon, 2005-05-09 at 11:58 +0200, Peter Asemann wrote:
-> I *hope* this mail isn't very off topic. In principle it probably is,=20
-> but I don't know a mailing list which is about writing test programs to=20
-> test processors in order to debug a hardware to get linux running. Plus,=20
-> I suppose there are people out there who could help me. So I hope you=20
-> won't stone me for this post.
-
-assuming 'foo.c' is your program, and you want to run it at origin 0.
-
-Step 1)	ppc8xx-linux-gcc -Dmain=3D_start -nostdlib foo.c -o foo
-
-Step 2) ppc8xx-linux-objcopy foo -O binary foo.bin
-
-Done!
-
-=09
---=20
-Jason McMullan <jason.mcmullan@timesys.com>
-TimeSys Corporation
-
-
---=-AFAPEJkROvEFWUG5vgSJ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.0 (GNU/Linux)
-
-iD8DBQBCf8Jp8/0vJ5szK6kRAvp8AKCB4sLS3Vs9/XOJXD4wHnWQVT2KTwCdHxfn
-QtvuB/S93NssTUCTU2nFxSg=
-=ISen
------END PGP SIGNATURE-----
-
---=-AFAPEJkROvEFWUG5vgSJ--
+-Matt
