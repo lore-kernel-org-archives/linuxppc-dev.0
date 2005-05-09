@@ -1,17 +1,30 @@
-Return-Path: <Atit_Shah@satyam.com>
-Received: from vvamail.satyam.com (vvamail.satyam.com [208.220.247.17])
-	by ozlabs.org (Postfix) with ESMTP id D2F65679EA
+Return-Path: <panto@intracom.gr>
+Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
+	by ozlabs.org (Postfix) with ESMTP id C3AD967A00
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  9 May 2005 15:47:41 +1000 (EST)
+	Mon,  9 May 2005 16:25:59 +1000 (EST)
+Received: from mailserv.intranet.gr (localhost [127.0.0.1])
+	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id j496UZA1023117
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 9 May 2005 09:30:36 +0300 (EEST)
+Message-ID: <427EFEAF.6030903@intracom.gr>
+Date: Mon, 09 May 2005 09:09:51 +0300
+From: Pantelis Antoniou <panto@intracom.gr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Mon, 9 May 2005 11:16:41 +0530
-Message-ID: <D8595042F3765A4285B848A78A2C2ED102779F@bsdmsg002.corp.satyam.ad>
-From: "Atit_Shah" <Atit_Shah@satyam.com>
-To: "Grant Likely" <glikely@gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: Network Setup - HOW TO
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+References: <20050505172035.GB3339@logos.cnet>
+	<1b2c7da800815bcdd76ddf27a2ab9c55@embeddededge.com>
+	<20050506133858.GA6032@logos.cnet>
+	<3ebef94782a6090ac3eb44bd7e78efbf@embeddededge.com>
+	<20050506200338.GC14486@logos.cnet>
+	<84773f72b8bba863c9471c0d121223a8@embeddededge.com>
+	<20050506230523.GA15908@logos.cnet>
+	<6f231f4afce0886929ca99426a86b47a@embeddededge.com>
+	<20050507140527.GC16996@logos.cnet>
+In-Reply-To: <20050507140527.GC16996@logos.cnet>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] 8xx: fix usage of pinned 8Mbyte TLB entries
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,78 +35,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-My company uses the 172.19.x.x IP addresses, I want a PC with
-192.168.x.x IP address to access the company network via a router. I
-have a router running Linux and having 2 Ethernet ports. I configured
-the systems in the following 2 ways:
+Marcelo Tosatti wrote:
+>>NO.  Just leave that code alone.  I don't understand why you think
+>>doing this will have any effect on the system operation.  If you are
+>>able to run a system without creating these tables, then the pinned
+>>TLBs must be working.  If pinned TLBs weren't working, the kernel
+>>would crash.
+> 
+> 
+> I just booted a kernel with 4kb PTE mappings at KERNELBASE and
+> the pinned TLB was not trashed.
+> 
+> So, I was talking nonsense. :)
+> 
+> The only problem are DMA users who dont use dma_alloc_coherent API. 
+> 
+> 
+> 
 
-1. Eth0 (LAN port) - 172.19.56.218=20
-   Eth1 (WAN port) - 172.19.56.219
-   Single System   - 192.168.100.10 - IP Address
-			   172.19.56.218  - Gateway
-			   172.19.56.218  - DNS
+Perhaps I'm jumping in too late, but in my 8xx trees all my drivers
+use the correct API. So this will not be a problem after we fix the
+drivers :)
 
-2. Eth0 (LAN port) - 192.168.100.20=20
-   Eth1 (WAN port) - 172.19.56.219
-   Single System   - 192.168.100.10 - IP Address
-			   192.168.100.20 - Gateway
-			   192.168.100.20 - DNS
-	  =09
-But I am not able to ping from the router to my single system in either
-way.
-How should I configure router to make this possible for the 2 networks
-to communicate?=20
+Regards
 
-The second question is how to run DHCP on my router so it can receive a
-dynamic IP and assign dynamic IP when I power my router?=20
-
-Atit
-
-
------Original Message-----
-From: Grant Likely [mailto:glikely@gmail.com]=20
-Sent: Friday, May 06, 2005 8:59 PM
-To: Atit_Shah
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Network Setup - HOW TO
-
-On 5/5/05, Atit_Shah <Atit_Shah@satyam.com> wrote:
-> Hi all,
->=20
->         I have a custom board designed to function as a router. It has
-2
-> Ethernet ports. Eth1 is a WAN port and Eth0 is a LAN port. This is
-what
-> I wish to do:
-> 1. connect the board/router to my company network
-> 2. connect a normal system running windows or linux to the router
-> 3. I should be able to ping or browse the net using the normal system
-> via the router through the company network.
->=20
-> I have connect the normal network cable (not a cross wire cable)
-between
-> the router and the company network. The router does not seem to get a
-> dynamic IP. Why and What should I do for it to get one?
-Are you running a dhcp client?  Let's see the log output
->=20
-> I connect a system to eth0 again with a normal network cable (not a
-> cross wire cable) but the system does not seem to get an IP assigned
-> even when I run the dhcp server on my router....used udhcpd command.
-Why
-> and how can I get it up?
-What do you see on the wire?  Bring up Ethereal to capture traffic.
-
->=20
-> Appreciate a response on this....
-Not enough information.  Include output logs please.
-
-
-
-DISCLAIMER:
-This email (including any attachments) is intended for the sole use of =
-the intended recipient/s and may contain material that is CONFIDENTIAL =
-AND PRIVATE COMPANY INFORMATION. Any review or reliance by others or =
-copying or distribution or forwarding of any or all of the contents in =
-this message is STRICTLY PROHIBITED. If you are not the intended =
-recipient, please contact the sender by email and delete all copies; =
-your cooperation in this regard is appreciated.
+Pantelis
