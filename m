@@ -1,21 +1,16 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 5061D679F1
+Return-Path: <Kostantinos_Baliotis@xyratex.com>
+Received: from XY01EX01.xy01.xyratex.com (news.uk.xyratex.com [194.131.166.8])
+	by ozlabs.org (Postfix) with ESMTP id CA6CD679A6
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 10 May 2005 01:19:07 +1000 (EST)
-In-Reply-To: <Pine.LNX.4.63.0505061718380.6288@xmission.xmission.com>
-References: <Pine.LNX.4.63.0505061718380.6288@xmission.xmission.com>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <b0aede90eb15562c0dd5a44c10d1b965@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Mon, 9 May 2005 10:19:01 -0500
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	"<cpclark@xmission.com> <cpclark@xmission.com>" <cpclark@xmission.com>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>,
-	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: PPC uImage build not reporting correctly
+	Tue, 10 May 2005 02:28:44 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C554B2.73D618C9"
+Date: Mon, 9 May 2005 17:16:27 +0100
+Message-ID: <9EDE1664710B26419A57B21CBCBB8D0B01950175@XY01EX01.xy01.xyratex.com>
+From: "Kostantinos Baliotis" <Kostantinos_Baliotis@xyratex.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: mpc 83xx immap_t question 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,34 +21,149 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
-On May 6, 2005, at 6:22 PM, <cpclark@xmission.com> wrote:
+------_=_NextPart_001_01C554B2.73D618C9
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-> On Fri, 6 May 2005, Kumar Gala wrote:
->  > I tried the following w/o success:
->  >
-> > $(obj)/uImage: $(obj)/vmlinux.gz
-> >=A0=A0=A0=A0=A0=A0=A0=A0 $(Q)rm -f $@
->  >=A0=A0=A0=A0=A0=A0=A0=A0 $(call if_changed,uimage)
-> >=A0=A0=A0=A0=A0=A0=A0=A0 @echo '=A0 Image: $@' $(shell if [ -f $@ ]; =
-then echo 'is=20
-> ready'; else
->  > echo 'not made'; fi)
->
-> Couldn't you eliminate the ($shell ..) construct altogether, like=20
-> this?:
->
-> $(obj)/uImage: $(obj)/vmlinux.gz
-> =A0=A0=A0=A0=A0=A0=A0 $(Q)rm -f $@
->  =A0=A0=A0=A0=A0=A0=A0 $(call if_changed,uimage)
-> =A0=A0=A0=A0=A0=A0=A0 @echo -n '=A0 Image: $@'
->  =A0=A0=A0=A0=A0=A0=A0 @if [ -f $@ ]; then echo 'is ready' ; else echo =
-'not made'; fi
+Hi folks,
 
-Yes, and this seems to actually work.
+=20
 
-Sam, does this look reasonable to you.  If so I will work up a patch.
+I'm trying to port a custom driver to mpc8343E processor (a relatively
+new one). I would be grateful if someone could point me out some links
+with specific patches, sources (or if it is possible the appropriate
+cross compile tool chain) for this target CPU.
 
-thanks
+At this stage my main concern is if this new freescale embedded
+processor supports the immap_t structure (known from the good old
+mpc860).
 
-- kumar
+I should mention that I'm using a 2.4 Linux kernel at the moment.
+
+Thank you for your time and consideration.
+
+=20
+
+Kostas
+
+=20
+
+=20
+
+=20
+
+
+------_=_NextPart_001_01C554B2.73D618C9
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 10 (filtered)">
+
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+p
+	{margin-right:0in;
+	margin-left:0in;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+span.EmailStyle17
+	{font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Hi folks,</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>I&#8217;m trying to port a custom driver to mpc8343E
+processor (a relatively new one). I would be grateful if someone could =
+point me
+out some links with specific patches, sources (or if it is possible the =
+appropriate
+cross compile tool chain) for this target CPU.</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>At this stage my main concern is if this new =
+freescale
+embedded&nbsp;processor supports the immap_t structure (known from the =
+good old
+mpc860).</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>I should mention that I&#8217;m using a 2.4 Linux =
+kernel at
+the moment.</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Thank you for your time and =
+consideration.</span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>&nbsp;</span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>Kostas</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;</span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'>&nbsp;</span></font></p>
+
+</div>
+
+</body>
+
+</html>
+=00
+------_=_NextPart_001_01C554B2.73D618C9--
