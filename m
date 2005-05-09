@@ -1,19 +1,18 @@
-Return-Path: <kylo.ginsberg@gmail.com>
-Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.206])
-	by ozlabs.org (Postfix) with ESMTP id 8F784679FD
+Return-Path: <patrick.huesmann@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.196])
+	by ozlabs.org (Postfix) with ESMTP id 6A698679FA
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 10 May 2005 04:53:08 +1000 (EST)
-Received: by rproxy.gmail.com with SMTP id g11so1571364rne
+	Tue, 10 May 2005 04:58:16 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id 57so1301890wri
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 09 May 2005 11:53:06 -0700 (PDT)
-Message-ID: <61cc712d050509115330ae1b7f@mail.gmail.com>
-Date: Mon, 9 May 2005 11:53:06 -0700
-From: Kylo Ginsberg <kylo.ginsberg@gmail.com>
+	Mon, 09 May 2005 11:58:14 -0700 (PDT)
+Message-ID: <427FB3A5.5080702@gmail.com>
+Date: Mon, 09 May 2005 21:01:57 +0200
+From: Patrick Huesmann <patrick.huesmann@gmail.com>
+MIME-Version: 1.0
 To: linuxppc-embedded@ozlabs.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: USB on PQ3?
-Reply-To: Kylo Ginsberg <kylo.ginsberg@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: How to increase kernel stack size?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,11 +23,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi folks,
+Hi,
 
-What is the state of support for USB under PQ3 processors?  We will be
-using the 8555E.  I've seen USB support mentioned here on a PQ2 and
-8xx, but don't see that source in 2.6.12-rc4.  Thanks for any
-pointers.
+is there a way to set the kernel stack size (for interrupts) at compile 
+time?
+I need to have more stack space for the external interrupt on a PPC-405.
 
-Kylo
+BTW, I'm using a RTAI patch but it shouldn't matter as the realtime 
+interrupts use the same stack as Linux interrupts.
+
+TIA,
+Patrick
