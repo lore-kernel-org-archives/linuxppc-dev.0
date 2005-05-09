@@ -1,17 +1,24 @@
-Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15808.mail.cnb.yahoo.com (web15808.mail.cnb.yahoo.com
-	[202.165.102.88]) by ozlabs.org (Postfix) with SMTP id 078DF679E1
+Return-Path: <panto@intracom.gr>
+Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
+	by ozlabs.org (Postfix) with ESMTP id 40CDA67A6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  9 May 2005 21:53:55 +1000 (EST)
-Message-ID: <20050509115352.19472.qmail@web15808.mail.cnb.yahoo.com>
-Date: Mon, 9 May 2005 19:53:52 +0800 (CST)
-From: Sam Song <samlinuxppc@yahoo.com.cn>
-To: "Mark A. Greer" <mgreer@mvista.com>
-In-Reply-To: <42718380.3050902@mvista.com>
+	Mon,  9 May 2005 22:01:00 +1000 (EST)
+Received: from mailserv.intranet.gr (localhost [127.0.0.1])
+	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id j49C5XtH006697
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 9 May 2005 15:05:36 +0300 (EEST)
+Message-ID: <427F4D28.4090204@intracom.gr>
+Date: Mon, 09 May 2005 14:44:40 +0300
+From: Pantelis Antoniou <panto@intracom.gr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: 824x sandpoint and 2.6.x
+To: Dan Malek <dan@embeddededge.com>, Kumar Gala <kumar.gala@freescale.com>,
+	Eugene Surovegin <ebs@ebshome.net>, Vitaly Bordug <vbordug@ru.mvista.com>,
+	Tom Rini <trini@kernel.crashing.org>,
+	Marcelo Tosatti <marcelo.tosatti@cyclades.com>,
+	Jason McMullan <jason.mcmullan@timesys.com>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: [HEADS UP]  Freescale Ethernet combined driver
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,27 +29,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Mark,
+Hi
 
-It booted finally although something more need to
-fix later. It truned out to be the problem of
-UART init part.
+A patch containing a combined Freescale Ethernet driver for the
+PQI/PQII, will follow. The patch is against 2.6.11.7 since my git-foo
+is at bit weak.
 
-"Mark A. Greer" <mgreer@mvista.com> wrote:
+Note that it's not a superset of all the FEC/FCC drivers floating
+around; it's geared to be the base of the final community developed driver.
 
-> Here is the output of a 7457 sandpoint on a very old
-> root filesystem.
-> Output for any other processor will be the same.
+Let's talk about it...
 
-Thanks so much,
+Regards
 
-Sam
-
-_________________________________________________________
-Do You Yahoo!?
-150万曲MP3疯狂搜，带您闯入音乐殿堂
-http://music.yisou.com/
-美女明星应有尽有，搜遍美图、艳图和酷图
-http://image.yisou.com
-1G就是1000兆，雅虎电邮自助扩容！
-http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
+Pantelis
