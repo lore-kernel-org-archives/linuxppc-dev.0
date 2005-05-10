@@ -1,17 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8D04B679E7
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 May 2005 15:27:20 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andrew Morton <akpm@osdl.org>
-Content-Type: text/plain
-Date: Tue, 10 May 2005 15:23:46 +1000
-Message-Id: <1115702626.6157.28.camel@gaston>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] ppc32: small cpufreq update
+Return-Path: <GARCIAJ@3il.fr>
+Received: from email.3il.fr (email.3il.fr [195.25.243.230])
+	by ozlabs.org (Postfix) with ESMTP id D8740679E2
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 May 2005 23:45:35 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Tue, 10 May 2005 15:45:42 +0200
+Message-ID: <D4FDDD1349B5AC46B68FC26AD8AF42D6226B26@exnet.3il.fr>
+From: =?iso-8859-1?Q?Garcia_J=E9r=E9mie?= <GARCIAJ@3il.fr>
+To: <linuxppc-dev@ozlabs.org>
+Subject: Serial console settings nightmare...
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,121 +19,121 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi !
+Hi everybody,
+I'm trying to get a montavista hardhat pro 3.1 (kernel 2.4.20) running =
+on our hardware. This one uses a ppc 405 EP.
+In order to do that, we use a vxWorks bootloader to download via ftp the =
+linux image (zImage.treeboot) in  memory.=20
+We had to modify some parts of linux code to achieve that. Indeed, linux =
+bootstrap (which relocate & decompress) waits a board info structure =
+from the bootloader;
+in our case the vxWorks bootloader was not able to do that so we had =
+this in a static way :
 
-This patch adds a missing attribute to pmac cpufreq so that
-"scaling_available_frequencies" works. It also cleans up the duplicate
-definitions for low and high speed constants.
+/**********************/
+/*   ppc4xx_setup.c   */
+/**********************/
+void __init
+platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
+	      unsigned long r6, unsigned long r7)
+{
+  parse_bootinfo(find_bootinfo());
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: John Clemens <clemej@alum.rpi.edu>
+/* We use VxWorks bootrom, so we have to create ourselves the boot info =
+structure */
+  bd_t my_bd_t;
+ =20
+  strcpy(my_bd_t.bi_s_version,"v1");                  /*  Version of =
+this structure   */
+  strcpy(my_bd_t.bi_r_version,"bootrom linux 1.0") ;  /*  Version of the =
+IBM ROM      */
+  my_bd_t.bi_memsize        =3D 16*1024*1024 ;          /* DRAM =
+installed, in bytes     */
+  my_bd_t.bi_intfreq      =3D 200000000 ;     /* Processor speed, in Hz  =
+     */
+  my_bd_t.bi_busfreq      =3D 100000000 ;     /* PLB Bus speed, in Hz    =
+     */
+  my_bd_t.bi_pllouta_freq =3D 400000000 ;     /* PLL OUTA speed, in Hz   =
+     */
+  my_bd_t.bi_opb_busfreq  =3D 50000000 ;      /* OPB Bus speed, in Hz    =
+     */
+  my_bd_t.bi_iic_fast[0]  =3D 0 ;             /* Use fast i2c mode       =
+     */       =20
+ =20
+  memcpy((void *) __res, (void *) &my_bd_t,sizeof (bd_t));
 
-Index: linux-work/arch/ppc/platforms/pmac_cpufreq.c
-===================================================================
---- linux-work.orig/arch/ppc/platforms/pmac_cpufreq.c	2005-05-02 10:48:08.000000000 +1000
-+++ linux-work/arch/ppc/platforms/pmac_cpufreq.c	2005-05-10 10:10:44.000000000 +1000
-@@ -85,14 +85,11 @@
- static int has_cpu_l2lve;
- 
- 
--#define PMAC_CPU_LOW_SPEED	1
--#define PMAC_CPU_HIGH_SPEED	0
--
- /* There are only two frequency states for each processor. Values
-  * are in kHz for the time being.
-  */
--#define CPUFREQ_HIGH                  PMAC_CPU_HIGH_SPEED
--#define CPUFREQ_LOW                   PMAC_CPU_LOW_SPEED
-+#define CPUFREQ_HIGH                  0
-+#define CPUFREQ_LOW                   1
- 
- static struct cpufreq_frequency_table pmac_cpu_freqs[] = {
- 	{CPUFREQ_HIGH, 		0},
-@@ -100,6 +97,11 @@
- 	{0,			CPUFREQ_TABLE_END},
- };
- 
-+static struct freq_attr* pmac_cpu_freqs_attr[] = {
-+	&cpufreq_freq_attr_scaling_available_freqs,
-+	NULL,
-+};
-+
- static inline void local_delay(unsigned long ms)
- {
- 	if (no_schedule)
-@@ -355,7 +357,7 @@
- 	static unsigned long prev_l3cr;
- 
- 	freqs.old = cur_freq;
--	freqs.new = (speed_mode == PMAC_CPU_HIGH_SPEED) ? hi_freq : low_freq;
-+	freqs.new = (speed_mode == CPUFREQ_HIGH) ? hi_freq : low_freq;
- 	freqs.cpu = smp_processor_id();
- 
- 	if (freqs.old == freqs.new)
-@@ -363,7 +365,7 @@
- 
- 	if (notify)
- 		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
--	if (speed_mode == PMAC_CPU_LOW_SPEED &&
-+	if (speed_mode == CPUFREQ_LOW &&
- 	    cpu_has_feature(CPU_FTR_L3CR)) {
- 		l3cr = _get_L3CR();
- 		if (l3cr & L3CR_L3E) {
-@@ -371,8 +373,8 @@
- 			_set_L3CR(0);
- 		}
- 	}
--	set_speed_proc(speed_mode == PMAC_CPU_LOW_SPEED);
--	if (speed_mode == PMAC_CPU_HIGH_SPEED &&
-+	set_speed_proc(speed_mode == CPUFREQ_LOW);
-+	if (speed_mode == CPUFREQ_HIGH &&
- 	    cpu_has_feature(CPU_FTR_L3CR)) {
- 		l3cr = _get_L3CR();
- 		if ((prev_l3cr & L3CR_L3E) && l3cr != prev_l3cr)
-@@ -380,7 +382,7 @@
- 	}
- 	if (notify)
- 		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
--	cur_freq = (speed_mode == PMAC_CPU_HIGH_SPEED) ? hi_freq : low_freq;
-+	cur_freq = (speed_mode == CPUFREQ_HIGH) ? hi_freq : low_freq;
- 
- 	return 0;
- }
-@@ -423,7 +425,8 @@
- 	policy->cpuinfo.transition_latency	= CPUFREQ_ETERNAL;
- 	policy->cur = cur_freq;
- 
--	return cpufreq_frequency_table_cpuinfo(policy, &pmac_cpu_freqs[0]);
-+	cpufreq_frequency_table_get_attr(pmac_cpu_freqs, policy->cpu);
-+	return cpufreq_frequency_table_cpuinfo(policy, pmac_cpu_freqs);
- }
- 
- static u32 __pmac read_gpio(struct device_node *np)
-@@ -457,7 +460,7 @@
- 	no_schedule = 1;
- 	sleep_freq = cur_freq;
- 	if (cur_freq == low_freq)
--		do_set_cpu_speed(PMAC_CPU_HIGH_SPEED, 0);
-+		do_set_cpu_speed(CPUFREQ_HIGH, 0);
- 	return 0;
- }
- 
-@@ -473,8 +476,8 @@
- 	 * is that we force a switch to whatever it was, which is
- 	 * probably high speed due to our suspend() routine
- 	 */
--	do_set_cpu_speed(sleep_freq == low_freq ? PMAC_CPU_LOW_SPEED
--			 : PMAC_CPU_HIGH_SPEED, 0);
-+	do_set_cpu_speed(sleep_freq == low_freq ?
-+			 CPUFREQ_LOW : CPUFREQ_HIGH, 0);
- 
- 	no_schedule = 0;
- 	return 0;
-@@ -488,6 +491,7 @@
- 	.suspend	= pmac_cpufreq_suspend,
- 	.resume		= pmac_cpufreq_resume,
- 	.flags		= CPUFREQ_PM_NO_WARN,
-+	.attr		= pmac_cpu_freqs_attr,
- 	.name		= "powermac",
- 	.owner		= THIS_MODULE,
- };
+...
+
+/**********************/
+/*   embed_config.c   */
+/**********************/
+bd_t * get_board_info(void)
+{
+  my_strcpy(my_bd_t.bi_s_version,"v1");                   /*  Version of =
+this structure   */
+  my_strcpy(my_bd_t.bi_r_version,"bootrom linux 1.0") ;   /*  Version of =
+the IBM ROM      */
+  my_bd_t.bi_memsize =3D 16*1024*1024 ;                     /* DRAM =
+installed, in bytes     */
+  my_bd_t.bi_intfreq      =3D 200000000 ;     /* Processor speed, in Hz  =
+     */
+  my_bd_t.bi_busfreq      =3D 100000000 ;     /* PLB Bus speed, in Hz    =
+     */
+  my_bd_t.bi_pllouta_freq =3D 400000000 ;     /* PLL OUTA speed, in Hz   =
+     */
+  /*my_bd_t.bi_opb_busfreq  =3D 50000000 ;    /* OPB Bus speed, in Hz    =
+     */
+  /*my_bd_t.bi_iic_fast[0]  =3D 0 ;           /* Use fast i2c mode       =
+     */
+
+  /* We return the address of our global structure */                 =20
+  return &my_bd_t;
+} =20
+
+
+After that modifications the kernel boot process seemed to begin =
+properly. But I can't see it properly on my serial console after
+the linux bootstrap give the control to the kernel execution entry point =
+(head_4xx.S).=20
+Here is what I see on it:
+
+loaded at:     00C7B250 00D374C4
+relocated to:  00400000 004BC274
+board data at: 004B913C 004B9190
+relocated to:  0040547C 004054D0
+zimage at:     00405AFF 004B8B22
+avail ram:     004BD000 01000000
+
+Linux/PPC load: console=3DttyS0,38400 root=3D/dev/nfs rw ip=3Don
+Uncompressing Linux...done.
+Now booting the kernel
+.?w..tg?..*/)1j..-b?./?...V..?..-..W..E..?..4.)-W.?.-CV....i\Q!n.?v.-....=
+;rs5k.5%.?i-.?-.-..V.....?!.-.?.Cn..?-.Fh-..g-.?wH.k...                  =
+        .[1;156H.[1;156H.
+
+As you can see, I'd like my linux to have a serial setting of 38400 8n1. =
+To achieve that, I modified the following things:
+
+- in "ns16550.c":  #define SERIAL_BAUD 38400       //(instead of 9600)
+- in "tty_io.c" (console_init() function ): =20
+        tty_std_termios.c_iflag =3D ICRNL | IXON;
+	tty_std_termios.c_oflag =3D OPOST | ONLCR;
+        tty_std_termios.c_cflag =3D B38400 | CS8 | CREAD | HUPCL;   =
+//(instead of 9600)
+	tty_std_termios.c_lflag =3D ISIG | ICANON | ECHO | ECHOE | ECHOK =
+|ECHOCTL | ECHOKE | IEXTEN;
+- in "arch/ppc/platforms/myplatform.h" :  #define BASE_BAUD xxxxxx
+
+As you can see I haven't given a value for the BASE_BAUD value. Indeed, =
+I can not find the right method to calculate it.
+Could someone give me the formula please given the following infos:
+  - UART_DIV =3D 0x15  (so 21 in decimal)
+  - all other clocking info are given above in the "get_board_info"
+
+
+Do you see sometrhing wrong there cause without any "readable" console =
+I'm totally blind and I can't debug anything.
+Please help me cause I've read so many forums,docs, and others that I'm =
+really desperate... HELP!!!
+
+J=E9r=E9mie
