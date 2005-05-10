@@ -1,27 +1,17 @@
-Return-Path: <panto@intracom.gr>
-Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
-	by ozlabs.org (Postfix) with ESMTP id E412D679F0
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id 80C49679F1
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 10 May 2005 23:52:39 +1000 (EST)
-Received: from mailserv.intranet.gr (localhost [127.0.0.1])
-	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id j4ADvGKk011946
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 10 May 2005 16:57:18 +0300 (EEST)
-Message-ID: <4280B8D2.4080702@intracom.gr>
-Date: Tue, 10 May 2005 16:36:18 +0300
-From: Pantelis Antoniou <panto@intracom.gr>
+	Wed, 11 May 2005 00:53:27 +1000 (EST)
 MIME-Version: 1.0
-To: Matt Porter <mporter@kernel.crashing.org>
-References: <427F4D3F.1010802@intracom.gr> <20050509133808.A16776@cox.net>
-	<4280985D.80108@intracom.gr>
-	<f1e15a8d9ed033e850b56ca965754a43@embeddededge.com>
-	<20050510062744.A21835@cox.net> <4280B3CB.8030007@intracom.gr>
-	<20050510064702.B21835@cox.net>
-In-Reply-To: <20050510064702.B21835@cox.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH  03/04] Freescale Ethernet combined driver
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Tue, 10 May 2005 09:53:25 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B85938C@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Matt Porter" <mporter@kernel.crashing.org>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: RE: [PATCH  03/04] Freescale Ethernet combined driver
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,45 +22,11 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Matt Porter wrote:
-> On Tue, May 10, 2005 at 04:14:51PM +0300, Pantelis Antoniou wrote:
-> 
->>Matt Porter wrote:
->>
->>>On Tue, May 10, 2005 at 08:13:48AM -0400, Dan Malek wrote:
->>>
->>>
->>>>On May 10, 2005, at 7:17 AM, Pantelis Antoniou wrote:
->>>>
->>>>
->>>>
->>>>>This patch replace iopa use with virt_to_phys.
->>>>
->>>>Not gonna work .....
->>>>
->>>>When you map uncached on 8xx you get a new vmalloc()
->>>>space.  The virt_to_xxx macros don't work on those addresses.
->>>>You need to use the dma_consistent() function, stash the
->>>>real physical address it returns and then use it where
->>>>appropriate.
->>>
->>>
->>>That and the use of virt_to_* and friends is deprecated by
->>>the DMA API. You'll never get that upstream even if it were
->>>a case where it did work.  That's a good thing to know for
->>>anybody doing other drivers...
->>>
->>>-Matt
->>>
->>>
->>
->>OK then.
->>
->>What's the recommended function to call to go from a
->>virtual -> physical address, but without doing a cache
->>flush/invalidate?
-> 
-> 
+=20
+> > What's the recommended function to call to go from a
+> > virtual -> physical address, but without doing a cache
+> > flush/invalidate?
+>=20
 > There is no generic function to do that in a driver since
 > no mainstream drivers in the kernel need to do it. Generally
 > you can rework the driver such that you cache the DMA address
@@ -80,18 +36,13 @@ Matt Porter wrote:
 > dma_addr_t/void * for later use. The other way is to kmalloc and
 > dma_map_single() (stashing the same way) which is basically the
 > same thing.
-> 
-> Do you have a case where this doesn't work?
-> 
 
-No that will do just fine.
+For 8xx/82xx (and other PQ cpus) there is a lot of drivers liberally
+using
+__pa and __va to get physical and virtual adresses for structures and
+buffer descriptor tables for the CPM.
 
-I just want to know the recommended way to do it.
+What would the preferred way of handling both of these be?
+__pa() -> dma_map_single() ?
 
-> -Matt
-> 
-> 
-
-Regards
-
-Pantelis
+__va() -> ?
