@@ -1,15 +1,18 @@
-Return-Path: <GARCIAJ@3il.fr>
-Received: from email.3il.fr (email.3il.fr [195.25.243.230])
-	by ozlabs.org (Postfix) with ESMTP id D8740679E2
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 May 2005 23:45:35 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Tue, 10 May 2005 15:45:42 +0200
-Message-ID: <D4FDDD1349B5AC46B68FC26AD8AF42D6226B26@exnet.3il.fr>
-From: =?iso-8859-1?Q?Garcia_J=E9r=E9mie?= <GARCIAJ@3il.fr>
+Return-Path: <stuart.yoder@conformative.com>
+Received: from relay1.mail.twtelecom.net (relay1.mail.twtelecom.net
+	[216.136.102.250]) by ozlabs.org (Postfix) with ESMTP id 93D32679F0
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 May 2005 01:42:10 +1000 (EST)
+Received: from Spaceballs (66-194-80-47.gen.twtelecom.net [66.194.80.47])
+	by relay1.mail.twtelecom.net (Postfix) with ESMTP id B8F228D2
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 May 2005 10:11:08 -0500 (CDT)
+From: "Stuart Yoder" <stuart.yoder@conformative.com>
 To: <linuxppc-dev@ozlabs.org>
-Subject: Serial console settings nightmare...
+Date: Tue, 10 May 2005 10:11:33 -0500
+Message-ID: <021501c55572$965f2e20$2f010a0a@foundation.com>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0216_01C55548.AD892620"
+Subject: SMP kernel testing
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,121 +22,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi everybody,
-I'm trying to get a montavista hardhat pro 3.1 (kernel 2.4.20) running =
-on our hardware. This one uses a ppc 405 EP.
-In order to do that, we use a vxWorks bootloader to download via ftp the =
-linux image (zImage.treeboot) in  memory.=20
-We had to modify some parts of linux code to achieve that. Indeed, linux =
-bootstrap (which relocate & decompress) waits a board info structure =
-from the bootloader;
-in our case the vxWorks bootloader was not able to do that so we had =
-this in a static way :
+This is a multi-part message in MIME format.
 
-/**********************/
-/*   ppc4xx_setup.c   */
-/**********************/
-void __init
-platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-	      unsigned long r6, unsigned long r7)
-{
-  parse_bootinfo(find_bootinfo());
+------=_NextPart_000_0216_01C55548.AD892620
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-/* We use VxWorks bootrom, so we have to create ourselves the boot info =
-structure */
-  bd_t my_bd_t;
- =20
-  strcpy(my_bd_t.bi_s_version,"v1");                  /*  Version of =
-this structure   */
-  strcpy(my_bd_t.bi_r_version,"bootrom linux 1.0") ;  /*  Version of the =
-IBM ROM      */
-  my_bd_t.bi_memsize        =3D 16*1024*1024 ;          /* DRAM =
-installed, in bytes     */
-  my_bd_t.bi_intfreq      =3D 200000000 ;     /* Processor speed, in Hz  =
-     */
-  my_bd_t.bi_busfreq      =3D 100000000 ;     /* PLB Bus speed, in Hz    =
-     */
-  my_bd_t.bi_pllouta_freq =3D 400000000 ;     /* PLL OUTA speed, in Hz   =
-     */
-  my_bd_t.bi_opb_busfreq  =3D 50000000 ;      /* OPB Bus speed, in Hz    =
-     */
-  my_bd_t.bi_iic_fast[0]  =3D 0 ;             /* Use fast i2c mode       =
-     */       =20
- =20
-  memcpy((void *) __res, (void *) &my_bd_t,sizeof (bd_t));
+So we have our SMP kernel up and going on our system.  Are there any
+particular tests or applications out there that kernel developers use to
+really beat and stress an SMP kernel-- lots of threads, spinlocks, etc?
+I didn't see anything SMP specific in the LTP tests.
+ 
+Or, are you basically 99.9% of the way there if the system works at all?
 
-...
+ 
+Thanks,
+Stuart
 
-/**********************/
-/*   embed_config.c   */
-/**********************/
-bd_t * get_board_info(void)
-{
-  my_strcpy(my_bd_t.bi_s_version,"v1");                   /*  Version of =
-this structure   */
-  my_strcpy(my_bd_t.bi_r_version,"bootrom linux 1.0") ;   /*  Version of =
-the IBM ROM      */
-  my_bd_t.bi_memsize =3D 16*1024*1024 ;                     /* DRAM =
-installed, in bytes     */
-  my_bd_t.bi_intfreq      =3D 200000000 ;     /* Processor speed, in Hz  =
-     */
-  my_bd_t.bi_busfreq      =3D 100000000 ;     /* PLB Bus speed, in Hz    =
-     */
-  my_bd_t.bi_pllouta_freq =3D 400000000 ;     /* PLL OUTA speed, in Hz   =
-     */
-  /*my_bd_t.bi_opb_busfreq  =3D 50000000 ;    /* OPB Bus speed, in Hz    =
-     */
-  /*my_bd_t.bi_iic_fast[0]  =3D 0 ;           /* Use fast i2c mode       =
-     */
+------=_NextPart_000_0216_01C55548.AD892620
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-  /* We return the address of our global structure */                 =20
-  return &my_bd_t;
-} =20
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<TITLE>Message</TITLE>
 
+<META content=3D"MSHTML 6.00.2800.1400" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><SPAN class=3D662060715-10052005><FONT face=3DArial size=3D2>So we =
+have our SMP=20
+kernel up and going on our system.&nbsp; Are there any particular tests =
+or=20
+applications out there that kernel developers use to really beat and =
+stress an=20
+SMP kernel-- lots of threads, spinlocks, etc?&nbsp;&nbsp; I didn't see =
+anything=20
+SMP specific in the LTP tests.</FONT></SPAN></DIV>
+<DIV><SPAN class=3D662060715-10052005><FONT face=3DArial=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV><SPAN class=3D662060715-10052005><FONT face=3DArial size=3D2>Or, =
+are you=20
+basically 99.9% of the way there if the system works at =
+all?&nbsp;&nbsp;&nbsp;=20
+</FONT></SPAN></DIV>
+<DIV><SPAN class=3D662060715-10052005><FONT face=3DArial=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV><SPAN class=3D662060715-10052005><FONT face=3DArial=20
+size=3D2>Thanks,</FONT></SPAN></DIV>
+<DIV><SPAN class=3D662060715-10052005><FONT face=3DArial=20
+size=3D2>Stuart</FONT></SPAN></DIV></BODY></HTML>
 
-After that modifications the kernel boot process seemed to begin =
-properly. But I can't see it properly on my serial console after
-the linux bootstrap give the control to the kernel execution entry point =
-(head_4xx.S).=20
-Here is what I see on it:
-
-loaded at:     00C7B250 00D374C4
-relocated to:  00400000 004BC274
-board data at: 004B913C 004B9190
-relocated to:  0040547C 004054D0
-zimage at:     00405AFF 004B8B22
-avail ram:     004BD000 01000000
-
-Linux/PPC load: console=3DttyS0,38400 root=3D/dev/nfs rw ip=3Don
-Uncompressing Linux...done.
-Now booting the kernel
-.?w..tg?..*/)1j..-b?./?...V..?..-..W..E..?..4.)-W.?.-CV....i\Q!n.?v.-....=
-;rs5k.5%.?i-.?-.-..V.....?!.-.?.Cn..?-.Fh-..g-.?wH.k...                  =
-        .[1;156H.[1;156H.
-
-As you can see, I'd like my linux to have a serial setting of 38400 8n1. =
-To achieve that, I modified the following things:
-
-- in "ns16550.c":  #define SERIAL_BAUD 38400       //(instead of 9600)
-- in "tty_io.c" (console_init() function ): =20
-        tty_std_termios.c_iflag =3D ICRNL | IXON;
-	tty_std_termios.c_oflag =3D OPOST | ONLCR;
-        tty_std_termios.c_cflag =3D B38400 | CS8 | CREAD | HUPCL;   =
-//(instead of 9600)
-	tty_std_termios.c_lflag =3D ISIG | ICANON | ECHO | ECHOE | ECHOK =
-|ECHOCTL | ECHOKE | IEXTEN;
-- in "arch/ppc/platforms/myplatform.h" :  #define BASE_BAUD xxxxxx
-
-As you can see I haven't given a value for the BASE_BAUD value. Indeed, =
-I can not find the right method to calculate it.
-Could someone give me the formula please given the following infos:
-  - UART_DIV =3D 0x15  (so 21 in decimal)
-  - all other clocking info are given above in the "get_board_info"
-
-
-Do you see sometrhing wrong there cause without any "readable" console =
-I'm totally blind and I can't debug anything.
-Please help me cause I've read so many forums,docs, and others that I'm =
-really desperate... HELP!!!
-
-J=E9r=E9mie
+------=_NextPart_000_0216_01C55548.AD892620--
