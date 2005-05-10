@@ -1,21 +1,22 @@
-Return-Path: <patrick.huesmann@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.199])
-	by ozlabs.org (Postfix) with ESMTP id 172D4679E2
+Return-Path: <cpclark@xmission.com>
+Received: from mgr2.xmission.com (mgr2.xmission.com [198.60.22.202])
+	by ozlabs.org (Postfix) with ESMTP id 2E738679F1
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 10 May 2005 20:54:31 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 37so1757324wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 10 May 2005 03:54:30 -0700 (PDT)
-Message-ID: <93579fec0505100354623af3fc@mail.gmail.com>
-Date: Tue, 10 May 2005 12:54:30 +0200
-From: Patrick Huesmann <patrick.huesmann@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-In-Reply-To: <427FB3A5.5080702@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <427FB3A5.5080702@gmail.com>
-Subject: Re: How to increase kernel stack size?
-Reply-To: Patrick Huesmann <patrick.huesmann@gmail.com>
+	Tue, 10 May 2005 21:06:34 +1000 (EST)
+Date: Tue, 10 May 2005 04:34:16 -0600 (MDT)
+From: cpclark@xmission.com
+To: Sam Ravnborg <sam@ravnborg.org>
+In-Reply-To: <20050510042828.GA8398@mars.ravnborg.org>
+Message-ID: <Pine.LNX.4.63.0505100420380.8140@xmission.xmission.com>
+References: <Pine.LNX.4.63.0505061718380.6288@xmission.xmission.com>
+	<b0aede90eb15562c0dd5a44c10d1b965@freescale.com>
+	<20050510042828.GA8398@mars.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>,
+	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: PPC uImage build not reporting correctly
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,22 +27,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Just FYI:
+On Tue, 10 May 2005, Sam Ravnborg wrote:
 
-The symbol INIT_TASK_SIZE defines the length of a union (task_union)
-which holds the kernel stack. But when I define this value to be
-larger than 8192, the kernel wouldn't boot.
-So this value is probably hard-coded somewhere else.
+> On Mon, May 09, 2005 at 10:19:01AM -0500, Kumar Gala wrote:
+> > 
+> > On May 6, 2005, at 6:22 PM, <cpclark@xmission.com> wrote:
+> > 
+> > >On Fri, 6 May 2005, Kumar Gala wrote:
+> > > > I tried the following w/o success:
+> > > >
+> > > > $(obj)/uImage: $(obj)/vmlinux.gz
+> > > >         $(Q)rm -f $@
+> > > >         $(call if_changed,uimage)
+> > > >         @echo ' Image: $@' $(shell if [ -f $@ ]; then echo 'is ready'; else echo 'not made'; fi)
+> > >
+> > >Couldn't you eliminate the ($shell ..) construct altogether, like this?:
+> > >
+> > >$(obj)/uImage: $(obj)/vmlinux.gz
+> > >        $(Q)rm -f $@
+> > >        $(call if_changed,uimage)
+> > >        @echo -n '? Image: $@'
+> > >        @if [ -f $@ ]; then echo 'is ready' ; else echo 'not made'; fi
+> > 
+> > Yes, and this seems to actually work.
+> > 
+> > Sam, does this look reasonable to you.  If so I will work up a patch.
+>
+> Looks ok - but I do not see why use of $(shell ...) did not work out.
 
-BTW, I'm using 2.4.26
+As I understand it, the $(shell ...) construct doesn't "work" in the case 
+cited above because make evaluates/expands the $(shell ...) stuff while it 
+is parsing the makefile and building the command list--i.e. before it has 
+issued any commands to build anything.  What seems to be desired in this 
+case is a file-existence test which runs "inline" with respect to the 
+preceding commands.  The use of $(shell ...) inside a command 
+subverts/preempts that natural sequence.  I think. :-)
 
-Does someone know how to increase the kernel stack size for PPC archs?
-I really need more stack for my external interrupt b/c sometimes the
-peripheral generates fast bursts on the external interrupt line, which
-lead to kernel stack overflow.
-(SA_INTERRUPT doesn't help because this is a realtime interrupt).
-
-Any ideas?
-
-TIA,
-Patrick
+Chris
