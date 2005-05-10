@@ -1,19 +1,22 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0875B679E0
+Return-Path: <panto@intracom.gr>
+Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
+	by ozlabs.org (Postfix) with ESMTP id 5BD80679E0
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 10 May 2005 22:14:12 +1000 (EST)
-In-Reply-To: <4280985D.80108@intracom.gr>
+	Tue, 10 May 2005 22:31:59 +1000 (EST)
+Received: from mailserv.intranet.gr (localhost [127.0.0.1])
+	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id j4ACabjn023221
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 10 May 2005 15:36:39 +0300 (EEST)
+Message-ID: <4280A5EB.4000306@intracom.gr>
+Date: Tue, 10 May 2005 15:15:39 +0300
+From: Pantelis Antoniou <panto@intracom.gr>
+MIME-Version: 1.0
+To: Dan Malek <dan@embeddededge.com>
 References: <427F4D3F.1010802@intracom.gr> <20050509133808.A16776@cox.net>
 	<4280985D.80108@intracom.gr>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <f1e15a8d9ed033e850b56ca965754a43@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Tue, 10 May 2005 08:13:48 -0400
-To: Pantelis Antoniou <panto@intracom.gr>
+	<f1e15a8d9ed033e850b56ca965754a43@embeddededge.com>
+In-Reply-To: <f1e15a8d9ed033e850b56ca965754a43@embeddededge.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: Tom Rini <trini@kernel.crashing.org>,
 	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 Subject: Re: [PATCH  03/04] Freescale Ethernet combined driver
@@ -27,26 +30,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Dan Malek wrote:
+> 
+> On May 10, 2005, at 7:17 AM, Pantelis Antoniou wrote:
+> 
+>> This patch replace iopa use with virt_to_phys.
+> 
+> 
+> Not gonna work .....
+> 
+> When you map uncached on 8xx you get a new vmalloc()
+> space.  The virt_to_xxx macros don't work on those addresses.
+> You need to use the dma_consistent() function, stash the
+> real physical address it returns and then use it where
+> appropriate.
+> 
 
-On May 10, 2005, at 7:17 AM, Pantelis Antoniou wrote:
+Hmm. Correct. The dma_consistent() function will
+do some cache flushing, but we don't really care about that
+anyway.
 
-> This patch replace iopa use with virt_to_phys.
+Oh well. Patch will be forthcoming...
 
-Not gonna work .....
+>> +    W32(ep, fen_genfcc.fcc_rbase, virt_to_phys(fep->rx_bd_base));
+>> +    W32(ep, fen_genfcc.fcc_tbase, virt_to_phys(fep->tx_bd_base));
+> 
+> 
+> I thought you were getting rid of these weirdo macros and
+> write normal code for data structure access?  Please .....
+> 
 
-When you map uncached on 8xx you get a new vmalloc()
-space.  The virt_to_xxx macros don't work on those addresses.
-You need to use the dma_consistent() function, stash the
-real physical address it returns and then use it where
-appropriate.
+This is going to be difficult since the /net/drivers maintainer
+insists on using them. I used to have direct data structure
+accesses so it won't be difficult to change.
 
-> +	W32(ep, fen_genfcc.fcc_rbase, virt_to_phys(fep->rx_bd_base));
-> +	W32(ep, fen_genfcc.fcc_tbase, virt_to_phys(fep->tx_bd_base));
+But we must have a consunsus.
 
-I thought you were getting rid of these weirdo macros and
-write normal code for data structure access?  Please .....
+> Thanks.
+> 
+> 
+>     -- Dan
+> 
+> 
+> 
 
-Thanks.
+Regards
 
-
-	-- Dan
+Pantelis
