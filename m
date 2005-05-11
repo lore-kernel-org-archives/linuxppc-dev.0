@@ -1,23 +1,20 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pfepa.post.tele.dk (pfepa.post.tele.dk [195.41.46.235])
-	by ozlabs.org (Postfix) with ESMTP id 1D9EB679EB
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id B871F679E2
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 11 May 2005 14:59:58 +1000 (EST)
-Date: Wed, 11 May 2005 07:01:19 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: cpclark@xmission.com
-Message-ID: <20050511050119.GC8025@mars.ravnborg.org>
-References: <Pine.LNX.4.63.0505061718380.6288@xmission.xmission.com>
-	<b0aede90eb15562c0dd5a44c10d1b965@freescale.com>
-	<20050510042828.GA8398@mars.ravnborg.org>
-	<Pine.LNX.4.63.0505100420380.8140@xmission.xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.63.0505100420380.8140@xmission.xmission.com>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>,
-	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: PPC uImage build not reporting correctly
+	Wed, 11 May 2005 20:40:43 +1000 (EST)
+Received: from linux.local (linux.prtnl [192.168.1.97])
+	by protonic.prtnl (Postfix) with ESMTP id 7137C409A
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 11 May 2005 12:40:51 +0200 (CEST)
+From: David Jander <david.jander@protonic.nl>
+To: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Date: Wed, 11 May 2005 12:40:35 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200505111240.35425.david.jander@protonic.nl>
+Subject: Status of isp116x driver... (on mpc8xx)?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,17 +25,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
- >
-> > Looks ok - but I do not see why use of $(shell ...) did not work out.
-> 
-> As I understand it, the $(shell ...) construct doesn't "work" in the case 
-> cited above because make evaluates/expands the $(shell ...) stuff while it 
-> is parsing the makefile and building the command list--i.e. before it has 
-> issued any commands to build anything.  What seems to be desired in this 
-> case is a file-existence test which runs "inline" with respect to the 
-> preceding commands.  The use of $(shell ...) inside a command 
-> subverts/preempts that natural sequence.  I think. :-)
 
-That explains it - thanks!
+Hi,
 
-	Sam
+I connected a Philips ISP1160 usb host controller to a MPC852T-based custom 
+board. I am using CVS kernel from DENX. 
+I added some stuff to hcd-1161.h and hcd-1161.c to support our hardware, and 
+it seems to work at first.
+The controller is recognized, initialized and everything seems fine, but when 
+I connect a device to one of the two ports, every time the function 
+fnvIsp1161AtlRead() is called, it reads in a 72 byte-long block of zeroes.
+Then I get "not enough configurations..." (error=-22).
+If I printk-out the contents of the buffer status register (REG_BUFF_STS) at 
+that point, it is zero (=no data read).
+Nevertheless, putting a scope on the physical USB wires, I can see quite some 
+amount of non-zero data flying by.
+
+Is the isp1160 chip really supported by the driver? tested?
+Are access timings very critical? I see some ugly iodelay_hcd() calls here and 
+there, are they necessary? why?
+
+What about the other (older??) hc_isp116x.c driver floating around somewhere 
+on the net, from Roman Weissgaerber? I found version 0.9.6 (apparently for 
+kernel 2.4.22) somewhere, made some adaptations to get it loaded in our 
+kernel but it either oopses after initializing the hc, or simply freezes.
+Whats the relationship between this and the driver hacked by Wolfgang Denk?
+
+Is someone using a isp116x on a mpc8xx and can tell his experience on getting 
+it working?
+
+Greetings,
+
+-- 
+David Jander
+Protonic Holland.
