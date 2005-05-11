@@ -1,19 +1,17 @@
-Return-Path: <wd@denx.de>
-Received: from mailout06.sul.t-online.com (mailout06.sul.t-online.com
-	[194.25.134.19]) by ozlabs.org (Postfix) with ESMTP id E0C34679F7
+Return-Path: <galak@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id E1D30679E0
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 11 May 2005 23:28:33 +1000 (EST)
-To: David Jander <david.jander@protonic.nl>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 11 May 2005 12:40:35 +0200."
-	<200505111240.35425.david.jander@protonic.nl>
-Date: Wed, 11 May 2005 15:28:05 +0200
-Sender: wd@denx.de
-Message-Id: <20050511132810.E7228C1512@atlas.denx.de>
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: Status of isp116x driver... (on mpc8xx)? 
+	Thu, 12 May 2005 01:10:50 +1000 (EST)
+Date: Wed, 11 May 2005 10:10:31 -0500 (CDT)
+From: Kumar Gala <galak@freescale.com>
+To: Andrew Morton <akpm@osdl.org>
+Message-ID: <Pine.LNX.4.61.0505111008010.9895@nylon.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH] ppc32: Fix uImage make target to report success correctly
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,32 +22,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear David,
+The existing make rule when building a uImage would check to see
+if the image file existed to report 'is ready' or 'not made'.
+However make appeared to compute the file list before the rule
+was executed.
 
-in message <200505111240.35425.david.jander@protonic.nl> you wrote:
-> 
-> I connected a Philips ISP1160 usb host controller to a MPC852T-based custom 
-> board. I am using CVS kernel from DENX. 
-> I added some stuff to hcd-1161.h and hcd-1161.c to support our hardware, and 
-> it seems to work at first.
-...
-> Is the isp1160 chip really supported by the driver? tested?
+Signed-off-by: Chris Clark <cpclark@xmission.com>
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org> 
 
-We only use (and tested) this driver with a ISP1361 ...
+---
+commit f772a90e948f019c3111a94394b3a649874417c7
+tree c9d59c269792db4933039da49b3b3836ac5b01f5
+parent c140244727aa88fcaefe34af4abc56e85b471da2
+author Kumar K. Gala <kumar.gala@freescale.com> Tue, 10 May 2005 10:27:46 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> Tue, 10 May 2005 10:27:46 -0500
 
-> Is someone using a isp116x on a mpc8xx and can tell his experience on getting 
-> it working?
+ ppc/boot/images/Makefile |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletion(-)
 
-Sorry, we don't have any experience with a 1160. The  driver  in  our
-tree  works fine with the 1362, both as host driver and as device (as
-a gadget driver).
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-No man knows what true happiness is until he gets married.  By  then,
-of course, its too late.
+Index: arch/ppc/boot/images/Makefile
+===================================================================
+--- dd5d97e6f88b8fbfcc09878d837c8e90590484b8/arch/ppc/boot/images/Makefile  (mode:100644)
++++ c9d59c269792db4933039da49b3b3836ac5b01f5/arch/ppc/boot/images/Makefile  (mode:100644)
+@@ -22,7 +22,8 @@
+ $(obj)/uImage: $(obj)/vmlinux.gz
+ 	$(Q)rm -f $@
+ 	$(call if_changed,uimage)
+-	@echo '  Image: $@' $(if $(wildcard $@),'is ready','not made')
++	@echo -n '  Image: $@ '
++	@if [ -f $@ ]; then echo 'is ready' ; else echo 'not made'; fi
+ 
+ # Files generated that shall be removed upon make clean
+ clean-files	:= sImage vmapus vmlinux* miboot* zImage* uImage
