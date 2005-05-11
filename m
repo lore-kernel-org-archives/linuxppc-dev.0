@@ -1,18 +1,23 @@
-Return-Path: <markc@mail.com>
-Received: from relay01.roc.ny.frontiernet.net (relay01.roc.ny.frontiernet.net
-	[66.133.182.164]) by ozlabs.org (Postfix) with ESMTP id 58A7567A2E
+Return-Path: <sam@ravnborg.org>
+Received: from pfepa.post.tele.dk (pfepa.post.tele.dk [195.41.46.235])
+	by ozlabs.org (Postfix) with ESMTP id 1D9EB679EB
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 11 May 2005 08:29:37 +1000 (EST)
-Message-ID: <001701c555af$c8ca0e10$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-To: "Marcelo Tosatti" <marcelo.tosatti@cyclades.com>,
-	"linux-ppc-embedded" <linuxppc-embedded@ozlabs.org>
-References: <20050510154145.GB8444@logos.cnet>
-Date: Tue, 10 May 2005 18:29:46 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: Re: m8xx_pcmcia driver ported to v2.6
+	Wed, 11 May 2005 14:59:58 +1000 (EST)
+Date: Wed, 11 May 2005 07:01:19 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: cpclark@xmission.com
+Message-ID: <20050511050119.GC8025@mars.ravnborg.org>
+References: <Pine.LNX.4.63.0505061718380.6288@xmission.xmission.com>
+	<b0aede90eb15562c0dd5a44c10d1b965@freescale.com>
+	<20050510042828.GA8398@mars.ravnborg.org>
+	<Pine.LNX.4.63.0505100420380.8140@xmission.xmission.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.63.0505100420380.8140@xmission.xmission.com>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>,
+	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: PPC uImage build not reporting correctly
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,30 +28,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+ >
+> > Looks ok - but I do not see why use of $(shell ...) did not work out.
 > 
-> There is one pending problem: the M8xx does not accept 
-> access to non present ioports (an exception is triggered),
-> which is quite common while inserting/removing cards.
-> 
-> We've hacked around this in our tree, Panto once mentioned 
-> that another PPC's do handle those exceptions fine (?).
-> 
+> As I understand it, the $(shell ...) construct doesn't "work" in the case 
+> cited above because make evaluates/expands the $(shell ...) stuff while it 
+> is parsing the makefile and building the command list--i.e. before it has 
+> issued any commands to build anything.  What seems to be desired in this 
+> case is a file-existence test which runs "inline" with respect to the 
+> preceding commands.  The use of $(shell ...) inside a command 
+> subverts/preempts that natural sequence.  I think. :-)
 
-Ah yes, I remember this problem from the 68360 days.
+That explains it - thanks!
 
-This is a matter of how you set up the option register ORx
-for a particular chip select.  You can choose external or 
-internal acknowledge.  You can have both at the same time:
-if you set up the ORx for the maximum number of wait states
-and also select external acknowledge, the cycle will end
-with the external acknowledge, or end with the maximum
-wait states if no external ack is generated.  Also note that
-the internal/external ack bit can be changed on the fly - so,
-for instance, you could turn external ack on once a card
-was inserted.  
-
-As I recall, some PCMCIA cards can have VERY long
-cycles in the configuration space, so even the maximum 
-number of wait states in ORx may not be sufficient.
-
-Mark Chambers
+	Sam
