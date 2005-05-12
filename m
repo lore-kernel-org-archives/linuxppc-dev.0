@@ -1,15 +1,15 @@
-Return-Path: <ven_ramesh81@yahoo.com>
-Received: from web50804.mail.yahoo.com (web50804.mail.yahoo.com
-	[206.190.38.113]) by ozlabs.org (Postfix) with SMTP id 356F367B32
+Return-Path: <Gehirnmann@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 9E78A67A59
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 May 2005 17:36:28 +1000 (EST)
-Message-ID: <20050512072946.39500.qmail@web50804.mail.yahoo.com>
-Date: Thu, 12 May 2005 00:29:46 -0700 (PDT)
-From: venkata ramesh <ven_ramesh81@yahoo.com>
+	Thu, 12 May 2005 17:50:47 +1000 (EST)
+Date: Thu, 12 May 2005 09:50:46 +0200 (MEST)
+From: "Peter Gehirnforce" <Gehirnmann@gmx.de>
 To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Subject: Hi!
+Message-ID: <25943.1115884246@www45.gmx.net>
+Content-Type: text/plain; charset="us-ascii"
+Subject: ELDK/DENX linking fails for <iostream>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,22 +20,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi!
-I am developing driver for MPC8260 for MCC.
-After issuing reset command, there is space
-for intrrupt table but flag is generated
-for interrupt queue is overflow.
-Can u suggest me how to solve the problem ??
+Hi,
 
+when I try to link (after successful compile), I get the following type of
+errors (for example):
+...
+undefined reference to 'std::allocator<char>::allocator[in-charge]()'
+...
+undefined reference to '__cxa_allocate_exception'
+...
+Can someone explain what happens?
 
-Thanks.
+thx
+Peter
 
-Regards,
-RAMESH
-
-
-
-		
-Yahoo! Mail
-Stay connected, organized, and protected. Take the tour:
-http://tour.mail.yahoo.com/mailtour.html
+-- 
++++ Lassen Sie Ihren Gedanken freien Lauf... z.B. per FreeSMS +++
+GMX bietet bis zu 100 FreeSMS/Monat: http://www.gmx.net/de/go/mail
