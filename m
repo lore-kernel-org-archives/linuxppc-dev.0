@@ -1,23 +1,23 @@
-Return-Path: <panto@intracom.gr>
-Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
-	by ozlabs.org (Postfix) with ESMTP id DEBD1679E6
+Return-Path: <Atit_Shah@satyam.com>
+Received: from njpmail.satyam.com (njpmail.satyam.com [204.179.188.132])
+	by ozlabs.org (Postfix) with ESMTP id 9A22767B1B
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 May 2005 16:23:07 +1000 (EST)
-Received: from mailserv.intranet.gr (localhost [127.0.0.1])
-	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id j4C6RlIg022082
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 May 2005 09:27:48 +0300 (EEST)
-Message-ID: <4282F263.8080501@intracom.gr>
-Date: Thu, 12 May 2005 09:06:27 +0300
-From: Pantelis Antoniou <panto@intracom.gr>
+	Thu, 12 May 2005 16:25:08 +1000 (EST)
+Received: from blr.satyam.com (blr.satyam.com [208.220.245.73])
+	by njpmail.satyam.com (8.11.6/8.11.6) with ESMTP id j4C6GDI19409
+	for <linuxppc-embedded@ozlabs.org>; Thu, 12 May 2005 02:16:16 -0400
+Received: from Disclaimerbng.corp.satyam.ad
+	(IDENT:eJQ53YYhCf12KhZIky/WsoZ6TSdaNasn@localhost [127.0.0.1])
+	by blr.satyam.com (8.11.6/8.11.6) with ESMTP id j4C6Iu617917
+	for <linuxppc-embedded@ozlabs.org>; Thu, 12 May 2005 11:48:56 +0530
 MIME-Version: 1.0
-To: Mark Chambers <markc@mail.com>
-References: <20050510154145.GB8444@logos.cnet>
-	<001701c555af$c8ca0e10$0301a8c0@chuck2>
-In-Reply-To: <001701c555af$c8ca0e10$0301a8c0@chuck2>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: m8xx_pcmcia driver ported to v2.6
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Thu, 12 May 2005 11:54:40 +0530
+Message-ID: <D8595042F3765A4285B848A78A2C2ED10277B8@bsdmsg002.corp.satyam.ad>
+From: "Atit_Shah" <Atit_Shah@satyam.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: RE: Network Setup - HOW TO
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,49 +28,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Mark Chambers wrote:
->>There is one pending problem: the M8xx does not accept 
->>access to non present ioports (an exception is triggered),
->>which is quite common while inserting/removing cards.
->>
->>We've hacked around this in our tree, Panto once mentioned 
->>that another PPC's do handle those exceptions fine (?).
->>
-> 
-> 
-> Ah yes, I remember this problem from the 68360 days.
-> 
-> This is a matter of how you set up the option register ORx
-> for a particular chip select.  You can choose external or 
-> internal acknowledge.  You can have both at the same time:
-> if you set up the ORx for the maximum number of wait states
-> and also select external acknowledge, the cycle will end
-> with the external acknowledge, or end with the maximum
-> wait states if no external ack is generated.  Also note that
-> the internal/external ack bit can be changed on the fly - so,
-> for instance, you could turn external ack on once a card
-> was inserted.  
-> 
-> As I recall, some PCMCIA cards can have VERY long
-> cycles in the configuration space, so even the maximum 
-> number of wait states in ORx may not be sufficient.
-> 
-> Mark Chambers
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
+Hi all,
 
-Unfortunately this does not work on 8xx since the PCMCIA
-port is not on a chip select. It's a different peripheral
-and always expectes a DTACK to terminate the cycle.
+	I have a custom router and ported the udhcp server/client on it.
+My router has 2 ports eth0 - LAN and eth1 - WAN. My setup is as follows:
+1.=20
+To eth0: connect a stand alone windows machine
 
-To get over this problem we need to do something more drastic.
+when I run the server with the command "uphcpd", it by default runs on
+eth0. then on the windows machine when I say "ipconfig /renew", the
+router assigns an IP address to the system - perfect.
 
-Take a look at the __do_in_asm macro in include/asm-ppc/io.h.
+2.
+To eth0: connect to my company network.
+
+when I run the server with the command "uphcpd", it by default runs on
+eth0. then when I run the client "udhcpc" the router assigns an IP
+address to eth0 obtained from the company server - perfect.
+
+All this happens on eth0 ONLY.
+
+I wish to configure the router as follows:
+To eth0: stand alone system
+To eth1: company network
+
+The router should get an IP from my company server and assign it to eth1
+and then it should assign a IP to my standalone system connected to
+eth0. how do I do this?
 
 Regards
+Atit Shah
 
-Pantelis
+
+DISCLAIMER:
+This email (including any attachments) is intended for the sole use of =
+the intended recipient/s and may contain material that is CONFIDENTIAL =
+AND PRIVATE COMPANY INFORMATION. Any review or reliance by others or =
+copying or distribution or forwarding of any or all of the contents in =
+this message is STRICTLY PROHIBITED. If you are not the intended =
+recipient, please contact the sender by email and delete all copies; =
+your cooperation in this regard is appreciated.
