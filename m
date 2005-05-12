@@ -1,23 +1,23 @@
 Return-Path: <panto@intracom.gr>
 Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
-	by ozlabs.org (Postfix) with ESMTP id A2D5167A6F
+	by ozlabs.org (Postfix) with ESMTP id DEBD1679E6
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 May 2005 16:13:52 +1000 (EST)
+	Thu, 12 May 2005 16:23:07 +1000 (EST)
 Received: from mailserv.intranet.gr (localhost [127.0.0.1])
-	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id j4C6IXf4016294
+	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id j4C6RlIg022082
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 May 2005 09:18:33 +0300 (EEST)
-Message-ID: <4282F03B.8050703@intracom.gr>
-Date: Thu, 12 May 2005 08:57:15 +0300
+	Thu, 12 May 2005 09:27:48 +0300 (EEST)
+Message-ID: <4282F263.8080501@intracom.gr>
+Date: Thu, 12 May 2005 09:06:27 +0300
 From: Pantelis Antoniou <panto@intracom.gr>
 MIME-Version: 1.0
-To: Markus Klotzbuecher <mk@creamnet.de>
-References: <20050509182747.GA27743@mary> <4280937C.8000709@intracom.gr>
-	<20050510172930.GA14125@mary>
-In-Reply-To: <20050510172930.GA14125@mary>
+To: Mark Chambers <markc@mail.com>
+References: <20050510154145.GB8444@logos.cnet>
+	<001701c555af$c8ca0e10$0301a8c0@chuck2>
+In-Reply-To: <001701c555af$c8ca0e10$0301a8c0@chuck2>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [ANNOUNCE] mini_fo-0.6.0 overlay file system
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: m8xx_pcmcia driver ported to v2.6
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,29 +28,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Markus Klotzbuecher wrote:
-> Hi Pantelis
-> 
-> On Tue, May 10, 2005 at 01:57:00PM +0300, Pantelis Antoniou wrote:
-> 
-> 
->>This sounds interesting.
+Mark Chambers wrote:
+>>There is one pending problem: the M8xx does not accept 
+>>access to non present ioports (an exception is triggered),
+>>which is quite common while inserting/removing cards.
 >>
->>Could you post the patches in the list so that we can discuss
->>them properly?
+>>We've hacked around this in our tree, Panto once mentioned 
+>>that another PPC's do handle those exceptions fine (?).
+>>
 > 
 > 
-> The module is currently built outside of the kernel sources, how would
-> you like me to post it?
+> Ah yes, I remember this problem from the 68360 days.
 > 
-> Markus
+> This is a matter of how you set up the option register ORx
+> for a particular chip select.  You can choose external or 
+> internal acknowledge.  You can have both at the same time:
+> if you set up the ORx for the maximum number of wait states
+> and also select external acknowledge, the cycle will end
+> with the external acknowledge, or end with the maximum
+> wait states if no external ack is generated.  Also note that
+> the internal/external ack bit can be changed on the fly - so,
+> for instance, you could turn external ack on once a card
+> was inserted.  
+> 
+> As I recall, some PCMCIA cards can have VERY long
+> cycles in the configuration space, so even the maximum 
+> number of wait states in ORx may not be sufficient.
+> 
+> Mark Chambers
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 > 
 > 
 
-Yes, so we can discuss them...
+Unfortunately this does not work on 8xx since the PCMCIA
+port is not on a chip select. It's a different peripheral
+and always expectes a DTACK to terminate the cycle.
 
-It's a very useful functionality that's I'd like to be present
-in the vanilla kernel if possible.
+To get over this problem we need to do something more drastic.
+
+Take a look at the __do_in_asm macro in include/asm-ppc/io.h.
 
 Regards
 
