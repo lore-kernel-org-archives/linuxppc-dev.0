@@ -1,16 +1,21 @@
-Return-Path: <majidkhan14@rediffmail.com>
-Received: from rediffmail.com (unknown [203.199.83.28])
-	by ozlabs.org (Postfix) with SMTP id F31C3679E6
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 May 2005 16:48:35 +1000 (EST)
-Date: 12 May 2005 06:43:16 -0000
-Message-ID: <20050512064316.16591.qmail@webmail18.rediffmail.com>
-MIME-Version: 1.0
-From: "majid khan khan" <majidkhan14@rediffmail.com>
-To: linuxppc-dev@ozlabs.org
-Content-type: multipart/alternative;
-	boundary="Next_1115880193---0-203.199.83.28-16471"
-Subject: how is flow in linux right from bootstrap program
-Reply-To: majid khan khan <majidkhan14@rediffmail.com>
+Return-Path: <marc.leeman@ieee.org>
+Received: from scorpius.homelinux.org (213.219.172.5.adslpower.by.edpnet.be
+	[213.219.172.5]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1507A67B3F
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 May 2005 18:15:24 +1000 (EST)
+Date: Thu, 12 May 2005 09:47:51 +0200
+From: Marc Leeman <marc.leeman@gmail.com>
+To: majid khan khan <majidkhan14@rediffmail.com>
+Message-ID: <20050512074751.GH21217@scorpius.homelinux.org>
+References: <20050512064316.16591.qmail@webmail18.rediffmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="ibvzjYYg+QDzMCy1"
+In-Reply-To: <20050512064316.16591.qmail@webmail18.rediffmail.com>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: how is flow in linux right from bootstrap program
+Reply-To: Marc Leeman <marc.leeman@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,33 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- This is a multipart mime message
 
-
---Next_1115880193---0-203.199.83.28-16471
-Content-type: text/plain;
-	charset=iso-8859-1
+--ibvzjYYg+QDzMCy1
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
+
+>    i am new to PowerPC arch , is anyone tell me what is the best way to k=
+now
+
+Off the top of my mind; ...
+
+The only thing that you need to know IIRC is that the boot address is at
+0xfff00000. I believe that's fixed. If your bootloader is placed there,
+you can let it jump to whereever you want.
+
+--=20
+  greetz, marc
+Harvey, kiss my medulla oblongata.
+	Crichton - Infinite Possibilities - Daedalus Demands.shtml
+scorpius 2.6.11 #1 Wed Mar 2 16:38:38 CET 2005 GNU/Linux
+
+--ibvzjYYg+QDzMCy1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 Content-Disposition: inline
 
- =A0=0AHi All,=0A=0Ai am new to PowerPC arch , is anyone tell me what is th=
-e best way to know the flow in linux-ppc right from bootstrap program. if i=
-t could be better if anyone already has the flow for specific processor say=
- MPC7447 processsor along with their function names. =0A=0Aur reply most ap=
-preciated.=0A=0AThanks,=0A=0AMajid   =0A=0A=0AThanks/Majid.
---Next_1115880193---0-203.199.83.28-16471
-Content-type: text/html;
-	charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.0 (GNU/Linux)
 
-<P>=0A&nbsp; <BR>=0AHi All,<BR>=0A<BR>=0Ai am new to PowerPC arch , is anyo=
-ne tell me what is the best way to know the flow in linux-ppc right from bo=
-otstrap program. if it could be better if anyone already has the flow for s=
-pecific processor say MPC7447 processsor along with their function names. <=
-BR>=0A<BR>=0Aur reply most appreciated.<BR>=0A<BR>=0AThanks,<BR>=0A<BR>=0AM=
-ajid&nbsp;  <BR>=0A=0A</P>=0A=0A=0AThanks/Majid.<br><br>=0A<A target=3D"_bl=
-ank" HREF=3D"http://clients.rediff.com/signature/track_sig.asp"><IMG SRC=3D=
-"http://ads.rediff.com/RealMedia/ads/adstream_nx.cgi/www.rediffmail.com/inb=
-ox.htm@Bottom" BORDER=3D0 VSPACE=3D0 HSPACE=3D0></a>=0A
---Next_1115880193---0-203.199.83.28-16471--
+iD8DBQFCgwonUQpj09NWLeERAtZQAKC8RukRglM7CvgbJuZf1Az4AKlAugCfUVcn
+hyCJelz9t31SzRuDbOPMLys=
+=L7Ab
+-----END PGP SIGNATURE-----
+
+--ibvzjYYg+QDzMCy1--
