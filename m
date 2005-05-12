@@ -1,19 +1,18 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 39D6867A3E
+Return-Path: <sawitt@electra.rsc.raytheon.com>
+Received: from tus-gate2.raytheon.com (tus-gate2.raytheon.com [199.46.245.231])
+	by ozlabs.org (Postfix) with ESMTP id E94F567A03
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 13 May 2005 01:37:59 +1000 (EST)
-In-Reply-To: <427BDBCF.8030908@ybb.ne.jp>
-References: <427BDBCF.8030908@ybb.ne.jp>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <b8b42fd26b024d5e26060a508600f631@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Thu, 12 May 2005 10:37:38 -0500
-To: "Takeharu KATO" <takeharu1219@ybb.ne.jp>
-Cc: Glenn Burkhardt <glenn@aoi-industries.com>,
-	"Gala Kumar K.-galak" <galak@freescale.com>, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] BOOKE_WDT Part 1/2 (Re: PPC 44x Watchdog timer)
+	Fri, 13 May 2005 02:15:44 +1000 (EST)
+Date: Thu, 12 May 2005 08:48:27 -0700 (PDT)
+From: Steve Witt <sawitt@electra.rsc.raytheon.com>
+To: Atit_Shah <Atit_Shah@satyam.com>
+In-Reply-To: <D8595042F3765A4285B848A78A2C2ED10277B8@bsdmsg002.corp.satyam.ad>
+Message-ID: <Pine.LNX.4.62.0505120840240.29988@zeus.ful.us.ray.com>
+References: <D8595042F3765A4285B848A78A2C2ED10277B8@bsdmsg002.corp.satyam.ad>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: Network Setup - HOW TO
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,99 +23,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> diff -Nupr linux-2.6.orig/arch/ppc/kernel/head_4xx.S
->  linux-2.6/arch/ppc/kernel/head_4xx.S
-> --- linux-2.6.orig/arch/ppc/kernel/head_4xx.S=A0=A0 2005-05-06
-> 05:03:55.000000000 +0900
->  +++ linux-2.6/arch/ppc/kernel/head_4xx.S=A0=A0=A0=A0=A0=A0=A0 =
-2005-05-07=20
-> 05:03:24.000000000 +0900
->  @@ -430,27 +430,24 @@ label:
+On Thu, 12 May 2005, Atit_Shah wrote:
+
+-- snip --
+
+> The router should get an IP from my company server and assign it to eth1
+> and then it should assign a IP to my standalone system connected to
+> eth0. how do I do this?
 >
 
-Any reason you moved this code into DecrementerHandler?
+I suspect you need to spend some time with the documentation of udhcp. You 
+should be able to configure with network interface the server and client 
+run on.
 
-> =A0 /* 0x1000 - Programmable Interval Timer (PIT) Exception */
->  =A0 =A0=A0=A0=A0=A0 START_EXCEPTION(0x1000, Decrementer)
->  -=A0=A0=A0=A0=A0=A0 NORMAL_EXCEPTION_PROLOG
-> -=A0=A0=A0=A0=A0=A0 lis=A0=A0=A0=A0 r0,TSR_PIS@h
-> -=A0=A0=A0=A0=A0=A0 mtspr=A0=A0 SPRN_TSR,r0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=
-=A0 /* Clear the PIT exception */
->  -=A0=A0=A0=A0=A0=A0 addi=A0=A0=A0 r3,r1,STACK_FRAME_OVERHEAD
-> -=A0=A0=A0=A0=A0=A0 EXC_XFER_LITE(0x1000, timer_interrupt)
-> +=A0=A0=A0=A0=A0=A0 b=A0=A0=A0 DecrementerHandler
->
-> =A0 #if 0
->  =A0 /* NOTE:
->  - * FIT and WDT handlers are not implemented yet.
->  + * FIT handler is not implemented yet.
->  =A0=A0 */
->
-> =A0 /* 0x1010 - Fixed Interval Timer (FIT) Exception
->  =A0 */
->  =A0 =A0=A0=A0=A0=A0 STND_EXCEPTION(0x1010,=A0 FITException,=A0=A0 =
-=A0=A0=A0=A0=A0=A0=A0=20
-> UnknownException)
->
-> -/* 0x1020 - Watchdog Timer (WDT) Exception
->  -*/
->  -
->  -=A0=A0=A0=A0=A0=A0 CRITICAL_EXCEPTION(0x1020, WDTException, =
-UnknownException)
-> =A0 #endif
->
-> +/* 0x1020 - Watchdog Timer (WDT) Exception
->  + */
->  +=A0=A0=A0=A0=A0=A0 START_EXCEPTION(0x1020, WDTException)
-> +=A0=A0=A0=A0=A0=A0 b=A0=A0=A0 WatchDogHandler
-> +
->  =A0 /* 0x1100 - Data TLB Miss Exception
->  =A0=A0 * As the name implies, translation is not in the MMU, so =
-search the
->  =A0=A0 * page tables and fix it.=A0 The only purpose of this function =
-is to
->  @@ -732,6 +729,13 @@ label:
->  =A0 =A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 (MSR_KERNEL & =
-~(MSR_ME|MSR_DE|MSR_CE)), \
->  =A0 =A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 NOCOPY, =
-crit_transfer_to_handler, ret_from_crit_exc)
->
-> +DecrementerHandler:
-> +=A0=A0=A0=A0=A0=A0 NORMAL_EXCEPTION_PROLOG
-> +=A0=A0=A0=A0=A0=A0 lis=A0=A0=A0 r0,TSR_PIS@h
-> +=A0=A0=A0=A0=A0=A0 mtspr=A0=A0=A0 SPRN_TSR,r0=A0=A0=A0=A0=A0=A0=A0 /* =
-Clear the PIT exception */
->  +=A0=A0=A0=A0=A0=A0 addi=A0=A0=A0 r3,r1,STACK_FRAME_OVERHEAD
-> +=A0=A0=A0=A0=A0=A0 EXC_XFER_LITE(0x1000, timer_interrupt)
-> +
->  =A0 /*
->  =A0=A0 * The other Data TLB exceptions bail out to this point
->  =A0=A0 * if they can't resolve the lightweight TLB fault.
->  @@ -804,6 +808,19 @@ finish_tlb_load:
-> =A0 =A0=A0=A0=A0=A0 PPC405_ERR77_SYNC
-> =A0 =A0=A0=A0=A0=A0 rfi=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=
-=A0=A0 /* Should sync shadow TLBs */
->  =A0 =A0=A0=A0=A0=A0 b=A0=A0=A0=A0=A0=A0 .=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=
-=A0=A0=A0 /* prevent prefetch past rfi */
->  +/*
->  + * WatchDog Exception
->  + */
->  +WatchDogHandler:
-> +=A0=A0=A0=A0=A0=A0 CRITICAL_EXCEPTION_PROLOG;
-> +=A0=A0=A0=A0=A0=A0 addi=A0=A0=A0 r3,r1,STACK_FRAME_OVERHEAD;
-> +#if defined(CONFIG_BOOKE_WDT)
-> +=A0=A0=A0=A0=A0=A0 EXC_XFER_TEMPLATE(booke_wdt_exception, 0x1022, =
-(MSR_KERNEL &
-> ~(MSR_ME|MSR_DE|MSR_CE)),NOCOPY, crit_transfer_to_handler,
->  ret_from_crit_exc)
-> +
->  +#else
->  +=A0=A0=A0=A0=A0=A0 EXC_XFER_TEMPLATE(UnknownException, 0x1022, =
-(MSR_KERNEL &
-> ~(MSR_ME|MSR_DE|MSR_CE)),NOCOPY, crit_transfer_to_handler,
->  ret_from_crit_exc)
-> +#endif=A0 /*=A0 CONFIG_BOOKE_WDT=A0 */
->  +
->
-> =A0 /* extern void giveup_fpu(struct task_struct *prev)
->  =A0=A0 *
+> DISCLAIMER: This email (including any attachments) is intended for the 
+> sole use of the intended recipient/s and may contain material that is 
+> CONFIDENTIAL AND PRIVATE COMPANY INFORMATION. Any review or reliance by 
+> others or copying or distribution or forwarding of any or all of the 
+> contents in this message is STRICTLY PROHIBITED. If you are not the 
+> intended recipient, please contact the sender by email and delete all 
+> copies; your cooperation in this regard is appreciated.
+
+Now that I've read this disclaimer, its not clear that I am allowed (by 
+your company) to answer your question. Its not clear to me whether I'm the 
+intended recipient, nor whether this information you've sent is company 
+private (to your company) or not.
+
+These types of disclaimers are completely inappropriate for communications 
+with a group of people discussing Open Source software and are, in fact, 
+pointless. If you have company private information, then the 
+responsibility to protect it is yours, not mine. I would ask that you 
+remove this from subsequent emails to this list.
