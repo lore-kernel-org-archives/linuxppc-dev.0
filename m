@@ -1,20 +1,25 @@
-Return-Path: <markc@mail.com>
-Received: from relay04.roc.ny.frontiernet.net (relay04.roc.ny.frontiernet.net
-	[66.133.182.167]) by ozlabs.org (Postfix) with ESMTP id 1AFEB67A3E
+Return-Path: <richard.danter@ntlworld.com>
+Received: from mta08-winn.mailhost.ntl.com (smtpout16.mailhost.ntl.com
+	[212.250.162.16]) by ozlabs.org (Postfix) with ESMTP id D5B4067B24
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 May 2005 21:29:38 +1000 (EST)
-Message-ID: <006101c556e5$ebbfeb10$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-To: "Pantelis Antoniou" <panto@intracom.gr>
-References: <20050510154145.GB8444@logos.cnet>
-	<001701c555af$c8ca0e10$0301a8c0@chuck2>
-	<4282F263.8080501@intracom.gr>
-Date: Thu, 12 May 2005 07:29:48 -0400
+	Thu, 12 May 2005 21:31:54 +1000 (EST)
+Received: from aamta07-winn.mailhost.ntl.com ([212.250.162.8])
+	by mta08-winn.mailhost.ntl.com with ESMTP id
+	<20050512113152.DGIG26549.mta08-winn.mailhost.ntl.com@aamta07-winn.mailhost.ntl.com>
+	for <linuxppc-embedded@ozlabs.org>; Thu, 12 May 2005 12:31:52 +0100
+Received: from [192.168.1.10] (really [82.4.184.52])
+	by aamta07-winn.mailhost.ntl.com with ESMTP id
+	<20050512113152.JGDT1399.aamta07-winn.mailhost.ntl.com@[192.168.1.10]>
+	for <linuxppc-embedded@ozlabs.org>; Thu, 12 May 2005 12:31:52 +0100
+Message-ID: <42833E9B.3090608@ntlworld.com>
+Date: Thu, 12 May 2005 12:31:39 +0100
+From: Richard Danter <richard.danter@ntlworld.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: m8xx_pcmcia driver ported to v2.6
+To: linuxppc-embedded@ozlabs.org
+References: <427F553A.1060506@ntlworld.com>
+In-Reply-To: <427F553A.1060506@ntlworld.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: linux-2.6.10, ppc8280, odd ARP request - solved
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,40 +30,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> >>There is one pending problem: the M8xx does not accept 
-> >>access to non present ioports (an exception is triggered),
-> >>which is quite common while inserting/removing cards.
-> >>
-> > Ah yes, I remember this problem from the 68360 days.
-> > 
-> > This is a matter of how you set up the option register ORx
-> > <snip>
-> > for instance, you could turn external ack on once a card
-> > was inserted.  
-> > 
-> > As I recall, some PCMCIA cards can have VERY long
-> > cycles in the configuration space, so even the maximum 
-> > number of wait states in ORx may not be sufficient.
-> > 
-> Unfortunately this does not work on 8xx since the PCMCIA
-> port is not on a chip select. It's a different peripheral
-> and always expectes a DTACK to terminate the cycle.
+Richard Danter wrote:
 > 
-> To get over this problem we need to do something more drastic.
+> My board boots using U-Boot. It tftp loads the kernel image via FCC2, so 
+> I know the FCC's are working (I have tested the others too). This part 
+> is fine, but once the kernel has loaded it tries to NFS mount the root 
+> filesystem. When it gets to the point of looking up the RPC port it 
+> first sends an ARP request for the server. When eth0 is any of the FCC's 
+> I see a 59 byte packet on the wire (using ethereal). The server either 
+> does not see the packet or just ignores it so there is no reply to the 
+> board.
 > 
-> Take a look at the __do_in_asm macro in include/asm-ppc/io.h.
+> When I boot using SCC1 as eth0 the ARP request sent is 60 bytes long. It 
+> is replied to and the NFS mount works.
 > 
-> Regards
-> 
-> Pantelis
-> 
+> I noticed that U-Boot also sends an ARP request before the tftp download 
+> starts and it is 60 bytes long using both SCC and FCC ports. But as far 
+> as I know, ARP requests can be varying length (the last few bytes seem 
+> to be just padding).
 
-You are right, I had forgotten that.  I'd also forgotten that PCMCIA
-uses negative WAIT, which should have a pull-up on it, so there
-should be no problem with non-existent cards.
+Looks like the problem may be with the setup of the FCC, particularly 
+with working out what speed to run at. I connected my board to a 
+100BaseT hub and it worked perfectly. It was failing when I was using an 
+older 10BaseT hub. In both cases the hub is a Netgear and I have never 
+had a problem with any other board or PC.
 
-Another potential problem could be the Bus Monitor Timeout
-being set too short and generating a TEA before a valid WAIT is
-released.
+Odd how it effects Linux but not U-Boot. Seems to indicate a driver 
+issue anyway.
 
-Mark Chambers
+Rich
