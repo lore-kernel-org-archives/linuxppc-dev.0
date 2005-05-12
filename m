@@ -1,35 +1,16 @@
-Return-Path: <glppd-linuxppc-dev-3@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B1756679EA
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 May 2005 10:08:50 +1000 (EST)
-Received: from root by ciao.gmane.org with local (Exim 4.43)
-	id 1DVeeb-0007MV-PY
-	for linuxppc-dev@ozlabs.org; Wed, 11 May 2005 02:00:45 +0200
-Received: from ppp199-46.lns1.adl1.internode.on.net ([203.122.199.46])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 May 2005 02:00:45 +0200
-Received: from toojays by ppp199-46.lns1.adl1.internode.on.net with local
-	(Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 May 2005 02:00:45 +0200
+Return-Path: <majidkhan14@rediffmail.com>
+Received: from rediffmail.com (unknown [203.199.83.28])
+	by ozlabs.org (Postfix) with SMTP id F31C3679E6
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 May 2005 16:48:35 +1000 (EST)
+Date: 12 May 2005 06:43:16 -0000
+Message-ID: <20050512064316.16591.qmail@webmail18.rediffmail.com>
+MIME-Version: 1.0
+From: "majid khan khan" <majidkhan14@rediffmail.com>
 To: linuxppc-dev@ozlabs.org
-From: John Steele Scott <toojays@toojays.net>
-Date: Wed, 11 May 2005 09:33:26 +0930
-Message-ID: <87u0lar5m9.fsf@toojays.net>
-References: <1115072133.6031.33.camel@gaston>
-	<20050503083728.3bedc3ef@colin.toulouse>
-	<1115164256.7627.57.camel@gaston>
-	<20050507140644.5919b4c3@jack.colino.net> <87k6mamj6o.fsf@toojays.net>
-	<20050508113925.36f9989f@jack.colino.net> <8764xtxs61.fsf@toojays.net>
-	<20050509083553.25d58928@colin.toulouse>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-	micalg=pgp-sha1; protocol="application/pgp-signature"
-Sender: news <news@sea.gmane.org>
-Cc: debian-powerpc@lists.debian.org
-Subject: Re: Laptop sleep & current "git" tree
+Content-type: multipart/alternative;
+	boundary="Next_1115880193---0-203.199.83.28-16471"
+Subject: how is flow in linux right from bootstrap program
+Reply-To: majid khan khan <majidkhan14@rediffmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,37 +20,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---=-=-=
+ This is a multipart mime message
+
+
+--Next_1115880193---0-203.199.83.28-16471
+Content-type: text/plain;
+	charset=iso-8859-1
 Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Colin Leroy <colin@colino.net> writes:
-> On Mon, 09 May 2005 08:05:18 +0930
-> John Steele Scott <toojays@toojays.net> wrote:
->
->> I forwarded the bug report to linux-usb-devel as per Colin's
->> suggestion, and David Brownell has fixed it. His post, which includes
->> the patch, can be found at
->> <http://marc.theaimsgroup.com/?l=3Dlinux-usb-devel&m=3D111558764113428&w=
-=3D2>
->
-> Great! Do you know if he plans pushing it to 2.6.12 quickly?=20
+ =A0=0AHi All,=0A=0Ai am new to PowerPC arch , is anyone tell me what is th=
+e best way to know the flow in linux-ppc right from bootstrap program. if i=
+t could be better if anyone already has the flow for specific processor say=
+ MPC7447 processsor along with their function names. =0A=0Aur reply most ap=
+preciated.=0A=0AThanks,=0A=0AMajid   =0A=0A=0AThanks/Majid.
+--Next_1115880193---0-203.199.83.28-16471
+Content-type: text/html;
+	charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-I don't know. After fixing that hub issue, I still get an oops if my USB
-trackball is connected during sleep.
-
-cheers,
-
-John
-
---=-=-=
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.5 (GNU/Linux)
-Comment: Messages with missing or bad signatures may have been forged or modified in transit!
-
-iD8DBQBCgUvf0BW7kPcXjRURAqqWAKCMjMTcbj7QssJR4aKok0zakdQH9QCcCgfK
-MR/j5bwUWLDS5QPynylP0Jk=
-=5icQ
------END PGP SIGNATURE-----
---=-=-=--
+<P>=0A&nbsp; <BR>=0AHi All,<BR>=0A<BR>=0Ai am new to PowerPC arch , is anyo=
+ne tell me what is the best way to know the flow in linux-ppc right from bo=
+otstrap program. if it could be better if anyone already has the flow for s=
+pecific processor say MPC7447 processsor along with their function names. <=
+BR>=0A<BR>=0Aur reply most appreciated.<BR>=0A<BR>=0AThanks,<BR>=0A<BR>=0AM=
+ajid&nbsp;  <BR>=0A=0A</P>=0A=0A=0AThanks/Majid.<br><br>=0A<A target=3D"_bl=
+ank" HREF=3D"http://clients.rediff.com/signature/track_sig.asp"><IMG SRC=3D=
+"http://ads.rediff.com/RealMedia/ads/adstream_nx.cgi/www.rediffmail.com/inb=
+ox.htm@Bottom" BORDER=3D0 VSPACE=3D0 HSPACE=3D0></a>=0A
+--Next_1115880193---0-203.199.83.28-16471--
