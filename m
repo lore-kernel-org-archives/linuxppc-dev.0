@@ -1,17 +1,14 @@
-Return-Path: <TNghiem@oerlikon.ca>
-Received: from mail.oerlikon.ca (unknown [205.233.198.228])
-	by ozlabs.org (Postfix) with ESMTP id 039B3679E0
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 May 2005 06:36:46 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ISO-8859-15"
-Date: Fri, 13 May 2005 16:36:43 -0400
-Message-ID: <CCD52035B75A5D4E8A481EFB132C42EA2835F7@mail.oerlikon.ca>
-From: "Nghiem, Tien" <TNghiem@oerlikon.ca>
-To: "Colin Leroy" <colin@colino.net>
-Cc: linuxppc-dev@ozlabs.org,
-	=?ISO-8859-15?Q?Garcia_J=E9r=E9mie?= <GARCIAJ@3il.fr>
-Subject: RE: eth0: PHY id 0x00221619 is not supported! HELP
+Return-Path: <domen@nd47.coderock.org>
+Received: from trashy.coderock.org (coderock.org [193.77.147.115])
+	by ozlabs.org (Postfix) with ESMTP id DAEC167A6B
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 May 2005 08:23:00 +1000 (EST)
+Message-Id: <20050513221214.176864000@nd47.coderock.org>
+Date: Sat, 14 May 2005 00:12:14 +0200
+From: domen@coderock.org
+To: paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org, domen@coderock.org,
+	Nishanth Aravamudan <nacc@us.ibm.com>
+Subject: [patch 1/1] ppc/fcc_enet: replace schedule_timeout() with ssleep()
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,48 +18,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Colin,
-
-I worked on a project 2 years ago, and the hardware supplier decided to
-change the tranceiver twice during the course of the project.  So =
-instead of modifying the mii_phy_table
-each time the transeiver was changed, I bypassed the id check. =20
-
-I did this because I doubt that in the future people are going to be =
-interested in updating software, and delivering a new s/w version when a =
-hardware fix is performed.
-
-It's not clean, but it's easy and convenient.
-This is just a suggestion of mine for a quick fix.
-
-Tien
-
------Original Message-----
-From: Colin Leroy [mailto:colin@colino.net]
-Sent: Friday, May 13, 2005 3:31 PM
-To: Nghiem, Tien
-Cc: Garcia J=E9r=E9mie; linuxppc-dev@ozlabs.org
-Subject: Re: eth0: PHY id 0x00221619 is not supported! HELP
+From: Nishanth Aravamudan <nacc@us.ibm.com>
 
 
-On 13 May 2005 at 14h05, Nghiem, Tien wrote:
+Use ssleep() instead of schedule_timeout() to guarantee the task delays
+as expected.
 
-Hi,=20
+Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
+Signed-off-by: Domen Puncer <domen@coderock.org>
 
->          rc =3D reset_one_mii_phy(phy, mii_id);
->         //if (rc)
->         //        return -ENODEV;
+---
+ fcc_enet.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-Why disabling such guards?
+Index: quilt/arch/ppc/8260_io/fcc_enet.c
+===================================================================
+--- quilt.orig/arch/ppc/8260_io/fcc_enet.c
++++ quilt/arch/ppc/8260_io/fcc_enet.c
+@@ -1305,12 +1305,11 @@ static void mii_parse_dm9161_scsr(uint m
+ 
+ static void mii_dm9161_wait(uint mii_reg, struct net_device *dev)
+ {
+-	int timeout = HZ;
++	int timeout_secs = 1;
+ 
+ 	/* Davicom takes a bit to come up after a reset,
+ 	 * so wait here for a bit */
+-	set_current_state(TASK_UNINTERRUPTIBLE);
+-	schedule_timeout(timeout);
++	ssleep(timeout_secs);
+ }
+ 
+ static phy_info_t phy_info_dm9161 = {
 
->         //for (i=3D0; (def =3D mii_phy_table[i]) !=3D NULL; i++)
->         //        if ((id & def->phy_id_mask) =3D=3D def->phy_id)
->         //                break;
-
-Just an idea, I guess it'd be far more clean to add the phy id to
-mii_phy_table[] (and, optionally, send the patch so you won't have to
-do it everytime).
-
-You're just asking for breakage there.
---=20
-Colin
+--
