@@ -1,20 +1,20 @@
 Return-Path: <jason.mcmullan@timesys.com>
 Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
-	by ozlabs.org (Postfix) with ESMTP id 0F542679FF
+	by ozlabs.org (Postfix) with ESMTP id 577C967A2E
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 14 May 2005 03:24:35 +1000 (EST)
+	Sat, 14 May 2005 03:29:30 +1000 (EST)
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-xBv0Swrf7GBHO6gatHdB"
-Date: Fri, 13 May 2005 13:24:30 -0400
-Message-ID: <1116005072.9050.86.camel@jmcmullan.timesys>
-Date: Fri, 13 May 2005 13:18:40 -0400
+	boundary="=-tIsTz41QpNkvyOWsC6Hj"
+Date: Fri, 13 May 2005 13:29:25 -0400
+Message-ID: <1116005367.9050.89.camel@jmcmullan.timesys>
+Date: Fri, 13 May 2005 13:23:35 -0400
 MIME-Version: 1.0
-Message-ID: <1116005072.9050.86.camel@jmcmullan.timesys>
+Message-ID: <1116005367.9050.89.camel@jmcmullan.timesys>
 From: "McMullan, Jason" <jason.mcmullan@timesys.com>
 To: "PPC_LINUX" <linuxppc-embedded@ozlabs.org>,
 	"Linux Kernel" <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2.6.11.7] Swapping OOPS fix for ATA Over Ethernet
+Subject: [PATCH 2.6.11.7] ATA-Over-Ethernet Root device
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,51 +26,125 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
---=-xBv0Swrf7GBHO6gatHdB
-Content-Type: multipart/mixed; boundary="=-KO/UJfUyoPtCKubXaLRa"
+--=-tIsTz41QpNkvyOWsC6Hj
+Content-Type: multipart/mixed; boundary="=-OwW01X+aNfdhNhau45n4"
 
 
---=-KO/UJfUyoPtCKubXaLRa
+--=-OwW01X+aNfdhNhau45n4
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-This patch fixes swapping for devices that do not need to define an
-unplug_io_fn().
+This patch allows you to use ATA Over Ethernet as your root device,
+with 'root=3D/dev/etherd/eX.Y/disc'
 
+Limited testing, just for review.
+
+Advantages:
+	1) Ext3 over AOE caches dirents, so it's faster and less network
+	   traffic than NFS root
+	2) Smaller than NFS root code (for embedded systems)
+	3) Proper locking semantics with Ext3, ReiserFS, etc.
 
 --=20
 Jason McMullan <jason.mcmullan@timesys.com>
 TimeSys Corporation
 
 
---=-KO/UJfUyoPtCKubXaLRa
-Content-Disposition: attachment; filename=swapping-unplug-oops.patch
-Content-Type: text/x-patch; name=swapping-unplug-oops.patch; charset=ISO-8859-1
+--=-OwW01X+aNfdhNhau45n4
+Content-Disposition: attachment; filename=aoe-root.patch
 Content-Transfer-Encoding: base64
+Content-Type: text/x-patch; name=aoe-root.patch; charset=ISO-8859-1
 
-RGVzY3JpcHRpb246IEZpeCBPT1BTIHdoZW4gc3dhcHBpbmcgb24gYSBkZXZpY2UgdGhhdCBkb2Vz
-bid0IGhhdmUNCglhbiB1bnBsdWdfaW9fZm4gZGVmaW5lZCAoaWUsIEFUQSBPdmVyIEV0aGVybmV0
-KQ0KU2lnbmVkLU9mZi1CeTogSmFzb24gTWNNdWxsYW4gPGphc29uLm1jbXVsbGFuQHRpbWVzeXMu
-Y29tPg0KDQotLS0gbGludXgtb3JpZy9tbS9zd2FwZmlsZS5jDQorKysgbGludXgvbW0vc3dhcGZp
-bGUuYw0KQEAgLTgwLDcgKzgwLDcgQEANCiAJCVdBUk5fT04ocGFnZV9jb3VudChwYWdlKSA8PSAx
-KTsNCiANCiAJCWJkaSA9IGJkZXYtPmJkX2lub2RlLT5pX21hcHBpbmctPmJhY2tpbmdfZGV2X2lu
-Zm87DQotCQliZGktPnVucGx1Z19pb19mbihiZGksIHBhZ2UpOw0KKwkJYmxrX3J1bl9iYWNraW5n
-X2RldihiZGksIHBhZ2UpOw0KIAl9DQogCXVwX3JlYWQoJnN3YXBfdW5wbHVnX3NlbSk7DQogfQ0K
+RGVzY3JpcHRpb246IEFUQSBPdmVyIEV0aGVybmV0IHJvb3QgZGV2aWNlDQoJaWUgJ3Jvb3Q9L2Rl
+di9ldGhlcmQvZTAuMC9kaXNjJyBvbiB0aGUga2VybmVsIGNvbW1hbmQgbGluZQ0KU2lnbmVkLU9m
+Zi1CeTogSmFzb24gTWNNdWxsYW4gPGphc29uLm1jbXVsbGFuQHRpbWVzeXMuY29tPg0KDQotLS0g
+bGludXgtb3JpZy9kcml2ZXJzL2Jsb2NrL0tjb25maWcNCisrKyBsaW51eC9kcml2ZXJzL2Jsb2Nr
+L0tjb25maWcNCkBAIC01MDYsNCArNTA2LDE5IEBADQogCVRoaXMgZHJpdmVyIHByb3ZpZGVzIFN1
+cHBvcnQgZm9yIEFUQSBvdmVyIEV0aGVybmV0IGJsb2NrDQogCWRldmljZXMgbGlrZSB0aGUgQ29y
+YWlkIEV0aGVyRHJpdmUgKFIpIFN0b3JhZ2UgQmxhZGUuDQogDQorY29uZmlnIEFUQV9PVkVSX0VU
+SF9ST09UDQorCWJvb2wgIkFUQSBvdmVyIEV0aGVybmV0IHJvb3QgZGV2aWNlIg0KKwlkZXBlbmRz
+IG9uIEFUQV9PVkVSX0VUSD15DQorCWhlbHANCisJICBJZiB5b3Ugd2FudCB0byB1c2UgQVRBIE92
+ZXIgRXRoZXJuZXQgYXMgdGhlIHJvb3QgZGV2aWNlLA0KKwkgIHNldCB0aGlzIHRvICd5Jw0KKw0K
+K2NvbmZpZyBBVEFfT1ZFUl9FVEhfUk9PVF9TSEVMRg0KKwlpbnQgIlNoZWxmIElEIg0KKwlkZXBl
+bmRzIG9uIEFUQV9PVkVSX0VUSF9ST09UDQorCQ0KK2NvbmZpZyBBVEFfT1ZFUl9FVEhfUk9PVF9T
+TE9UDQorCWludCAiU2xvdCBJRCINCisJZGVwZW5kcyBvbiBBVEFfT1ZFUl9FVEhfUk9PVA0KKw0K
+IGVuZG1lbnUNCi0tLSBsaW51eC1vcmlnL2RyaXZlcnMvYmxvY2svYW9lL2FvZS5oDQorKysgbGlu
+dXgvZHJpdmVycy9ibG9jay9hb2UvYW9lLmgNCkBAIC0xNTMsNiArMTUzLDcgQEANCiBpbnQgYW9l
+ZGV2X2luaXQodm9pZCk7DQogdm9pZCBhb2VkZXZfZXhpdCh2b2lkKTsNCiBzdHJ1Y3QgYW9lZGV2
+ICphb2VkZXZfYnltYWModW5zaWduZWQgY2hhciAqKTsNCitzdHJ1Y3QgYW9lZGV2ICphb2VkZXZf
+YnltYWpvcl9taW5vcih1bG9uZyBtYWpvciwgdWxvbmcgbWlub3IpOw0KIHZvaWQgYW9lZGV2X2Rv
+d25kZXYoc3RydWN0IGFvZWRldiAqZCk7DQogc3RydWN0IGFvZWRldiAqYW9lZGV2X3NldCh1bG9u
+ZywgdW5zaWduZWQgY2hhciAqLCBzdHJ1Y3QgbmV0X2RldmljZSAqLCB1bG9uZyk7DQogaW50IGFv
+ZWRldl9idXN5KHZvaWQpOw0KLS0tIGxpbnV4LW9yaWcvZHJpdmVycy9ibG9jay9hb2UvYW9lYmxr
+LmMNCisrKyBsaW51eC9kcml2ZXJzL2Jsb2NrL2FvZS9hb2VibGsuYw0KQEAgLTIyOSw2ICsyMjks
+NyBAQA0KIAlnZC0+Y2FwYWNpdHkgPSBkLT5zc2l6ZTsNCiAJc25wcmludGYoZ2QtPmRpc2tfbmFt
+ZSwgc2l6ZW9mIGdkLT5kaXNrX25hbWUsICJldGhlcmQvZSVsZC4lbGQiLA0KIAkJZC0+YW9lbWFq
+b3IsIGQtPmFvZW1pbm9yKTsNCisJc3RybmNweShnZC0+ZGV2ZnNfbmFtZSwgZ2QtPmRpc2tfbmFt
+ZSwgc2l6ZW9mIGdkLT5kZXZmc19uYW1lKTsNCiANCiAJZ2QtPnF1ZXVlID0gJmQtPmJsa3E7DQog
+CWQtPmdkID0gZ2Q7DQotLS0gbGludXgtb3JpZy9kcml2ZXJzL2Jsb2NrL2FvZS9hb2VkZXYuYw0K
+KysrIGxpbnV4L2RyaXZlcnMvYmxvY2svYW9lL2FvZWRldi5jDQpAQCAtMjgsNiArMjgsMjMgQEAN
+CiAJcmV0dXJuIGQ7DQogfQ0KIA0KK3N0cnVjdCBhb2VkZXYgKg0KK2FvZWRldl9ieW1ham9yX21p
+bm9yKHVsb25nIG1ham9yLCB1bG9uZyBtaW5vcikNCit7DQorCXN0cnVjdCBhb2VkZXYgKmQ7DQor
+CXVsb25nIGZsYWdzOw0KKw0KKwlzcGluX2xvY2tfaXJxc2F2ZSgmZGV2bGlzdF9sb2NrLCBmbGFn
+cyk7DQorDQorCWZvciAoZD1kZXZsaXN0OyBkOyBkPWQtPm5leHQpDQorCQlpZiAoZC0+YW9lbWFq
+b3IgPT0gbWFqb3IgJiYgZC0+YW9lbWlub3IgPT0gbWlub3IpDQorCQkJYnJlYWs7DQorDQorCXNw
+aW5fdW5sb2NrX2lycXJlc3RvcmUoJmRldmxpc3RfbG9jaywgZmxhZ3MpOw0KKwlyZXR1cm4gZDsN
+Cit9DQorDQorDQogLyogY2FsbGVkIHdpdGggZGV2bGlzdCBsb2NrIGhlbGQgKi8NCiBzdGF0aWMg
+c3RydWN0IGFvZWRldiAqDQogYW9lZGV2X25ld2Rldih1bG9uZyBuZnJhbWVzKQ0KLS0tIGxpbnV4
+LW9yaWcvZHJpdmVycy9ibG9jay9hb2UvYW9lbWFpbi5jDQorKysgbGludXgvZHJpdmVycy9ibG9j
+ay9hb2UvYW9lbWFpbi5jDQpAQCAtNyw2ICs3LDEzIEBADQogI2luY2x1ZGUgPGxpbnV4L2hkcmVn
+Lmg+DQogI2luY2x1ZGUgPGxpbnV4L2Jsa2Rldi5oPg0KICNpbmNsdWRlIDxsaW51eC9tb2R1bGUu
+aD4NCisjaW5jbHVkZSA8bGludXgvZGV2ZnNfZnNfa2VybmVsLmg+DQorI2lmZGVmIENPTkZJR19B
+VEFfT1ZFUl9FVEhfUk9PVA0KKyNpbmNsdWRlIDxsaW51eC9kZWxheS5oPg0KKyNpbmNsdWRlIDxs
+aW51eC9ydG5ldGxpbmsuaD4NCisjaW5jbHVkZSA8bGludXgvbmV0ZGV2aWNlLmg+DQorI2luY2x1
+ZGUgPG5ldC9zb2NrLmg+DQorI2VuZGlmDQogI2luY2x1ZGUgImFvZS5oIg0KIA0KIE1PRFVMRV9M
+SUNFTlNFKCJHUEwiKTsNCkBAIC01Myw2ICs2MCw0MyBAQA0KIAl9DQogfQ0KIA0KKyNpZmRlZiBD
+T05GSUdfQVRBX09WRVJfRVRIX1JPT1QNCit2b2lkIGFvZV9yb290KHVuc2lnbmVkIGxvbmcgbWFq
+b3IsIHVuc2lnbmVkIGxvbmcgbWlub3IpDQorew0KKwlzdHJ1Y3QgbmV0X2RldmljZSAqZGV2Ow0K
+Kw0KKwlwcmludGsoS0VSTl9JTkZPDQorCQkiYW9lOiBXYWl0aW5nIGZvciByb290IEFPRSBkZXZp
+Y2UgZSVsZC4lbGRcbiIsIG1ham9yLCBtaW5vcik7DQorDQorCS8qIEdpdmUgaGFyZHdhcmUgYSBj
+aGFuY2UgdG8gc2V0dGxlICovDQorCW1zbGVlcCg1MDApOw0KKw0KKwlydG5sX3NobG9jaygpOw0K
+KwkvKiBicmluZyBsb29wYmFjayBkZXZpY2UgdXAgZmlyc3QgKi8NCitwcmludGsoIkJyaW5nIHVw
+IGxvb3BiYWNrLi4uXG4iKTsNCisJaWYgKGRldl9jaGFuZ2VfZmxhZ3MoJmxvb3BiYWNrX2Rldiwg
+bG9vcGJhY2tfZGV2LmZsYWdzIHwgSUZGX1VQKSA8IDApDQorCQlwcmludGsoS0VSTl9FUlIgIkFP
+RSBSb290OiBGYWlsZWQgdG8gb3BlbiAlc1xuIiwgbG9vcGJhY2tfZGV2Lm5hbWUpOw0KKw0KKwkv
+KiBTZXR1cCBhbGwgbmV0d29yayBkZXZpY2VzICovDQorCWZvciAoZGV2ID0gZGV2X2Jhc2U7IGRl
+diA7IGRldiA9IGRldi0+bmV4dCkgew0KKwkJaWYgKGRldiA9PSAmbG9vcGJhY2tfZGV2KQ0KKwkJ
+CWNvbnRpbnVlOw0KK3ByaW50aygiQnJpbmcgdXAgJXMuLi5cbiIsZGV2LT5uYW1lKTsNCisJCWRl
+dl9jaGFuZ2VfZmxhZ3MoZGV2LCBkZXYtPmZsYWdzIHwgSUZGX1VQKTsNCisJfQ0KKwlydG5sX3No
+dW5sb2NrKCk7DQorDQorCS8qIEdpdmUgZHJpdmVycyBhIGNoYW5jZSB0byBzZXR0bGUgKi8NCisJ
+c3NsZWVwKDEpOw0KKw0KKwlkbyB7DQorCQlhb2VjbWRfY2ZnKG1ham9yLCBtaW5vcik7DQorCQlt
+c2xlZXAoMSk7DQorCX0gd2hpbGUgKCFhb2VkZXZfYnltYWpvcl9taW5vcihDT05GSUdfQVRBX09W
+RVJfRVRIX1JPT1RfU0hFTEYsQ09ORklHX0FUQV9PVkVSX0VUSF9ST09UX1NMT1QpKTsNCisNCit9
+DQorI2VuZGlmDQorDQogc3RhdGljIHZvaWQNCiBhb2VfZXhpdCh2b2lkKQ0KIHsNCkBAIC02Myw2
+ICsxMDcsNyBAQA0KIAlhb2VjaHJfZXhpdCgpOw0KIAlhb2VkZXZfZXhpdCgpOw0KIAlhb2VibGtf
+ZXhpdCgpOwkJLyogZnJlZSBjYWNoZSBhZnRlciBkZS1hbGxvY2F0aW5nIGJ1ZnMgKi8NCisJZGV2
+ZnNfcmVtb3ZlKCJldGhlcmQiKTsNCiB9DQogDQogc3RhdGljIGludCBfX2luaXQNCkBAIC03MCw2
+ICsxMTUsOCBAQA0KIHsNCiAJaW50IHJldDsNCiANCisJZGV2ZnNfbWtfZGlyKCJldGhlcmQiKTsN
+CisJICAgICAgICANCiAJcmV0ID0gYW9lZGV2X2luaXQoKTsNCiAJaWYgKHJldCkNCiAJCXJldHVy
+biByZXQ7DQpAQCAtOTEsNiArMTM4LDkgQEANCiAJcHJpbnRrKEtFUk5fSU5GTw0KIAkgICAgICAg
+ImFvZTogYW9lX2luaXQ6IEFvRSB2Mi42LSVzIGluaXRpYWxpc2VkLlxuIiwNCiAJICAgICAgIFZF
+UlNJT04pOw0KKyNpZmRlZiBDT05GSUdfQVRBX09WRVJfRVRIX1JPT1QNCisJYW9lX3Jvb3QoQ09O
+RklHX0FUQV9PVkVSX0VUSF9ST09UX1NIRUxGLENPTkZJR19BVEFfT1ZFUl9FVEhfUk9PVF9TTE9U
+KTsNCisjZW5kaWYNCiAJZGlzY292ZXJfdGltZXIoVElOSVQpOw0KIAlyZXR1cm4gMDsNCiANCkBA
+IC0xMDIsNiArMTUyLDcgQEANCiAJYW9lY2hyX2V4aXQoKTsNCiAgY2hyX2ZhaWw6DQogCWFvZWRl
+dl9leGl0KCk7DQorCWRldmZzX3JlbW92ZSgiZXRoZXJkIik7DQogCQ0KIAlwcmludGsoS0VSTl9J
+TkZPICJhb2U6IGFvZV9pbml0OiBpbml0aWFsaXNhdGlvbiBmYWlsdXJlLlxuIik7DQogCXJldHVy
+biByZXQ7DQo=
 
 
+--=-OwW01X+aNfdhNhau45n4--
 
---=-KO/UJfUyoPtCKubXaLRa--
-
---=-xBv0Swrf7GBHO6gatHdB
+--=-tIsTz41QpNkvyOWsC6Hj
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.0 (GNU/Linux)
 
-iD8DBQBChOLO8/0vJ5szK6kRAjEfAJ988G8q55d34Dbr6HCnFBXxcFhtkwCgr5Zb
-mCbHr/HBHUmNaU+qDZJx9oQ=
-=r/Zv
+iD8DBQBChOP18/0vJ5szK6kRAq/+AJ49GvEJ0WTjAATaaALeA3YEsiwSIQCgt2ci
+6bd4BbTLHDZPHtjCrh2oho8=
+=kiMa
 -----END PGP SIGNATURE-----
 
---=-xBv0Swrf7GBHO6gatHdB--
+--=-tIsTz41QpNkvyOWsC6Hj--
