@@ -1,30 +1,22 @@
-Return-Path: <acurtis@onz.com>
-Received: from dell2650.onz.com (onz.com [67.121.61.113])
-	by ozlabs.org (Postfix) with ESMTP id A35D667A40
+Return-Path: <gautran@mrv.com>
+Received: from mailman.xyplex.com (mailman.xyplex.com [140.179.176.116])
+	by ozlabs.org (Postfix) with ESMTP id B7D0D67B14
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 14 May 2005 03:40:08 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by dell2650.onz.com (Postfix) with ESMTP id 6AE082B4306
+	Sat, 14 May 2005 03:43:25 +1000 (EST)
+Received: from ltnmail.xyplex.com (ltnmail.xyplex.com [140.179.176.25])
+	by mailman.xyplex.com (8.9.3+Sun/8.9.3) with ESMTP id NAA29114
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 13 May 2005 10:10:02 -0700 (PDT)
-Received: from dell2650.onz.com ([127.0.0.1])
-	by localhost (dell2650.onz.com [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 25343-02 for <linuxppc-embedded@ozlabs.org>;
-	Fri, 13 May 2005 10:10:01 -0700 (PDT)
-Received: from D35HH141 (unknown [192.168.1.1])
-	(using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(No client certificate requested)
-	by dell2650.onz.com (Postfix) with ESMTP id CDEC82B4160
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 13 May 2005 10:10:01 -0700 (PDT)
-Message-ID: <000601c557de$99627550$6601a8c0@D35HH141>
-From: "Allen Curtis" <acurtis@onz.com>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Fri, 13 May 2005 10:09:59 -0700
+	Fri, 13 May 2005 13:27:22 -0400 (EDT)
+Message-ID: <4284E379.1060907@mrv.com>
+Date: Fri, 13 May 2005 13:27:21 -0400
+From: Guillaume Autran <gautran@mrv.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0002_01C557A3.EB96EDF0"
-Subject: [PATCH 2.6.12-rc2] Freescale 8272ADS PCI bridge support to the
+To: PPC_LINUX <linuxppc-embedded@ozlabs.org>
+References: <005b01c557bd$c04e2770$0301a8c0@chuck2>
+	<ed43f07150d50a594be2bc2589e902a0@freescale.com>
+In-Reply-To: <ed43f07150d50a594be2bc2589e902a0@freescale.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: MPC885 - USB HCI drivers.
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,38 +27,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hi,
 
-------=_NextPart_000_0002_01C557A3.EB96EDF0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Is there any driver for the USB host controller interface built-in the 
+MPC885 processors.
+Does anyone have any experience with it ?
 
-What is the status of this patch?
-Where can I find the kernel tree with this integrated?
+Thanks.
+Guillaume.
 
-TIA
-
-------=_NextPart_000_0002_01C557A3.EB96EDF0
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Diso-8859-1">
-<META content=3D"MSHTML 6.00.2900.2627" name=3DGENERATOR>
-<STYLE></STYLE>
-</HEAD>
-<BODY bgColor=3D#ffffff>
-<DIV><FONT face=3DArial size=3D2>What is the status of this =
-patch?</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2>Where can I find the kernel tree with =
-this=20
-integrated?</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>TIA</FONT></DIV>
-<DIV>&nbsp;</DIV></BODY></HTML>
-
-------=_NextPart_000_0002_01C557A3.EB96EDF0--
+-- 
+=======================================
+Guillaume Autran
+Senior Software Engineer
+MRV Communications, Inc.
+Tel: (978) 952-4932 office
+E-mail: gautran@mrv.com
+======================================= 
