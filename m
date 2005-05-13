@@ -1,22 +1,18 @@
-Return-Path: <gautran@mrv.com>
-Received: from mailman.xyplex.com (mailman.xyplex.com [140.179.176.116])
-	by ozlabs.org (Postfix) with ESMTP id B7D0D67B14
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 4628B67B1E
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 14 May 2005 03:43:25 +1000 (EST)
-Received: from ltnmail.xyplex.com (ltnmail.xyplex.com [140.179.176.25])
-	by mailman.xyplex.com (8.9.3+Sun/8.9.3) with ESMTP id NAA29114
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 13 May 2005 13:27:22 -0400 (EDT)
-Message-ID: <4284E379.1060907@mrv.com>
-Date: Fri, 13 May 2005 13:27:21 -0400
-From: Guillaume Autran <gautran@mrv.com>
-MIME-Version: 1.0
-To: PPC_LINUX <linuxppc-embedded@ozlabs.org>
-References: <005b01c557bd$c04e2770$0301a8c0@chuck2>
-	<ed43f07150d50a594be2bc2589e902a0@freescale.com>
-In-Reply-To: <ed43f07150d50a594be2bc2589e902a0@freescale.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Subject: MPC885 - USB HCI drivers.
+	Sat, 14 May 2005 03:44:00 +1000 (EST)
+In-Reply-To: <000601c557de$99627550$6601a8c0@D35HH141>
+References: <000601c557de$99627550$6601a8c0@D35HH141>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <757b7fc162262dae582e1d85b6f36e62@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Fri, 13 May 2005 12:43:58 -0500
+To: "Allen Curtis" <acurtis@onz.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH 2.6.12-rc2] Freescale 8272ADS PCI bridge support to the
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,20 +23,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Allen,
 
-Is there any driver for the USB host controller interface built-in the 
-MPC885 processors.
-Does anyone have any experience with it ?
+On May 13, 2005, at 12:09 PM, Allen Curtis wrote:
 
-Thanks.
-Guillaume.
+> What is the status of this patch?
 
--- 
-=======================================
-Guillaume Autran
-Senior Software Engineer
-MRV Communications, Inc.
-Tel: (978) 952-4932 office
-E-mail: gautran@mrv.com
-======================================= 
+Still open.
+
+> Where can I find the kernel tree with this integrated?
+
+One doesn't exist.
+
+- kumar
