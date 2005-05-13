@@ -1,20 +1,19 @@
-Return-Path: <jason.mcmullan@timesys.com>
-Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
-	by ozlabs.org (Postfix) with ESMTP id 7707C679E0
+Return-Path: <acurtis@onz.com>
+Received: from dell2650.onz.com (onz.com [67.121.61.113])
+	by ozlabs.org (Postfix) with ESMTP id BB72F67A3D
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 14 May 2005 05:18:02 +1000 (EST)
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-1s30lE676ScUP47dQ9WY"
-Date: Fri, 13 May 2005 15:17:58 -0400
-Message-ID: <1116011879.9050.92.camel@jmcmullan.timesys>
-Date: Fri, 13 May 2005 15:12:07 -0400
-MIME-Version: 1.0
-Message-ID: <1116011879.9050.92.camel@jmcmullan.timesys>
-From: "McMullan, Jason" <jason.mcmullan@timesys.com>
-To: "Linux Kernel" <linux-kernel@vger.kernel.org>,
-	"PPC_LINUX" <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH 2.6.11.7] ATA Over Ethernet Root, Mark 2
+	Sat, 14 May 2005 07:09:46 +1000 (EST)
+In-Reply-To: <757b7fc162262dae582e1d85b6f36e62@freescale.com>
+References: <000601c557de$99627550$6601a8c0@D35HH141>
+	<757b7fc162262dae582e1d85b6f36e62@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v622)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <541a45636bdf88d9eb3c08febd63d5c5@onz.com>
+From: Allen Curtis <acurtis@onz.com>
+Date: Fri, 13 May 2005 14:09:46 -0700
+To: Kumar Gala <kumar.gala@freescale.com>
+Cc: Ppc Embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH 2.6.12-rc2] Freescale 8272ADS PCI bridge support to the
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,125 +24,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Is the patch necessary? In the March archive it appears that people 
+were using the standard 8260 PCI support. What is the issue? Perhaps I 
+could provide a patch to m8260_pci.c (as you suggested)
 
---=-1s30lE676ScUP47dQ9WY
-Content-Type: multipart/mixed; boundary="=-ER3Ts8eIi2roJJOQ+zOR"
+>> Where can I find the kernel tree with this integrated?
+>
+> One doesn't exist.
+>
+Is there an embedded 2.5/2.6 tree somewhere? (I know about the 
+bkbits.net/ppc/linux-2.5 tree
 
-
---=-ER3Ts8eIi2roJJOQ+zOR
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-Second revision of my ATA Over Ethernet root device patch, now with
-white space correction and removed debugging crud.
-
-Any more comment, suggestions?
-
---=20
-Jason McMullan <jason.mcmullan@timesys.com>
-TimeSys Corporation
-
-
---=-ER3Ts8eIi2roJJOQ+zOR
-Content-Disposition: attachment; filename=aoe-root.patch
-Content-Transfer-Encoding: base64
-Content-Type: text/x-patch; name=aoe-root.patch; charset=ISO-8859-1
-
-IyMjIyBBdXRvLWdlbmVyYXRlZCBwYXRjaCAjIyMjDQpEYXRlOiAgICAgICAgRnJpLCAxMyBNYXkg
-MjAwNSAxNToxNTowNCAtMDQwMA0KU2lnbmVkLU9mZi1CeTogSmFzb24gTWNNdWxsYW4gPGphc29u
-Lm1jbXVsbGFuQHRpbWVzeXMuY29tPg0KRGVzY3JpcHRpb246IEFUQSBPdmVyIEV0aGVybmV0IHJv
-b3QgZGV2aWNlDQoJaWUgJ3Jvb3Q9L2Rldi9ldGhlcmQvZTAuMC9kaXNjJyBvbiB0aGUga2VybmVs
-IGNvbW1hbmQgbGluZQ0KRGVwZW5kczoNCglsaW51eC0yLjYuMTEuNw0KDQojIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMjIyMjIyMjDQoNCkluZGV4IG9mIGNoYW5nZXM6DQoNCiBLY29uZmlnICAgICAg
-IHwgICAxNSArKysrKysrKysrKysrKysNCiBhb2UvYW9lLmggICAgIHwgICAgMSArDQogYW9lL2Fv
-ZWJsay5jICB8ICAgIDEgKw0KIGFvZS9hb2VkZXYuYyAgfCAgIDE2ICsrKysrKysrKysrKysrKysN
-CiBhb2UvYW9lbWFpbi5jIHwgICA1MCArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKw0KIDUgZmlsZXMgY2hhbmdlZCwgODMgaW5zZXJ0aW9ucygrKQ0KDQoN
-Ci0tLSBsaW51eC1vcmlnL2RyaXZlcnMvYmxvY2svS2NvbmZpZw0KKysrIGxpbnV4L2RyaXZlcnMv
-YmxvY2svS2NvbmZpZw0KQEAgLTUwNiw0ICs1MDYsMTkgQEANCiAJVGhpcyBkcml2ZXIgcHJvdmlk
-ZXMgU3VwcG9ydCBmb3IgQVRBIG92ZXIgRXRoZXJuZXQgYmxvY2sNCiAJZGV2aWNlcyBsaWtlIHRo
-ZSBDb3JhaWQgRXRoZXJEcml2ZSAoUikgU3RvcmFnZSBCbGFkZS4NCiANCitjb25maWcgQVRBX09W
-RVJfRVRIX1JPT1QNCisJYm9vbCAiQVRBIG92ZXIgRXRoZXJuZXQgcm9vdCBkZXZpY2UiDQorCWRl
-cGVuZHMgb24gQVRBX09WRVJfRVRIPXkNCisJaGVscA0KKwkgIElmIHlvdSB3YW50IHRvIHVzZSBB
-VEEgT3ZlciBFdGhlcm5ldCBhcyB0aGUgcm9vdCBkZXZpY2UsDQorCSAgc2V0IHRoaXMgdG8gJ3kn
-DQorDQorY29uZmlnIEFUQV9PVkVSX0VUSF9ST09UX1NIRUxGDQorCWludCAiU2hlbGYgSUQiDQor
-CWRlcGVuZHMgb24gQVRBX09WRVJfRVRIX1JPT1QNCisJDQorY29uZmlnIEFUQV9PVkVSX0VUSF9S
-T09UX1NMT1QNCisJaW50ICJTbG90IElEIg0KKwlkZXBlbmRzIG9uIEFUQV9PVkVSX0VUSF9ST09U
-DQorDQogZW5kbWVudQ0KLS0tIGxpbnV4LW9yaWcvZHJpdmVycy9ibG9jay9hb2UvYW9lLmgNCisr
-KyBsaW51eC9kcml2ZXJzL2Jsb2NrL2FvZS9hb2UuaA0KQEAgLTE1Myw2ICsxNTMsNyBAQA0KIGlu
-dCBhb2VkZXZfaW5pdCh2b2lkKTsNCiB2b2lkIGFvZWRldl9leGl0KHZvaWQpOw0KIHN0cnVjdCBh
-b2VkZXYgKmFvZWRldl9ieW1hYyh1bnNpZ25lZCBjaGFyICopOw0KK3N0cnVjdCBhb2VkZXYgKmFv
-ZWRldl9ieW1ham9yX21pbm9yKHVsb25nIG1ham9yLCB1bG9uZyBtaW5vcik7DQogdm9pZCBhb2Vk
-ZXZfZG93bmRldihzdHJ1Y3QgYW9lZGV2ICpkKTsNCiBzdHJ1Y3QgYW9lZGV2ICphb2VkZXZfc2V0
-KHVsb25nLCB1bnNpZ25lZCBjaGFyICosIHN0cnVjdCBuZXRfZGV2aWNlICosIHVsb25nKTsNCiBp
-bnQgYW9lZGV2X2J1c3kodm9pZCk7DQotLS0gbGludXgtb3JpZy9kcml2ZXJzL2Jsb2NrL2FvZS9h
-b2VibGsuYw0KKysrIGxpbnV4L2RyaXZlcnMvYmxvY2svYW9lL2FvZWJsay5jDQpAQCAtMjI5LDYg
-KzIyOSw3IEBADQogCWdkLT5jYXBhY2l0eSA9IGQtPnNzaXplOw0KIAlzbnByaW50ZihnZC0+ZGlz
-a19uYW1lLCBzaXplb2YgZ2QtPmRpc2tfbmFtZSwgImV0aGVyZC9lJWxkLiVsZCIsDQogCQlkLT5h
-b2VtYWpvciwgZC0+YW9lbWlub3IpOw0KKwlzdHJuY3B5KGdkLT5kZXZmc19uYW1lLCBnZC0+ZGlz
-a19uYW1lLCBzaXplb2YgZ2QtPmRldmZzX25hbWUpOw0KIA0KIAlnZC0+cXVldWUgPSAmZC0+Ymxr
-cTsNCiAJZC0+Z2QgPSBnZDsNCi0tLSBsaW51eC1vcmlnL2RyaXZlcnMvYmxvY2svYW9lL2FvZWRl
-di5jDQorKysgbGludXgvZHJpdmVycy9ibG9jay9hb2UvYW9lZGV2LmMNCkBAIC0yOCw2ICsyOCwy
-MiBAQA0KIAlyZXR1cm4gZDsNCiB9DQogDQorc3RydWN0IGFvZWRldiAqYW9lZGV2X2J5bWFqb3Jf
-bWlub3IodWxvbmcgbWFqb3IsIHVsb25nIG1pbm9yKQ0KK3sNCisJc3RydWN0IGFvZWRldiAqZDsN
-CisJdWxvbmcgZmxhZ3M7DQorDQorCXNwaW5fbG9ja19pcnFzYXZlKCZkZXZsaXN0X2xvY2ssIGZs
-YWdzKTsNCisNCisJZm9yIChkID0gZGV2bGlzdDsgZDsgZCA9IGQtPm5leHQpDQorCQlpZiAoZC0+
-YW9lbWFqb3IgPT0gbWFqb3IgJiYgZC0+YW9lbWlub3IgPT0gbWlub3IpDQorCQkJYnJlYWs7DQor
-DQorCXNwaW5fdW5sb2NrX2lycXJlc3RvcmUoJmRldmxpc3RfbG9jaywgZmxhZ3MpOw0KKwlyZXR1
-cm4gZDsNCit9DQorDQorDQogLyogY2FsbGVkIHdpdGggZGV2bGlzdCBsb2NrIGhlbGQgKi8NCiBz
-dGF0aWMgc3RydWN0IGFvZWRldiAqDQogYW9lZGV2X25ld2Rldih1bG9uZyBuZnJhbWVzKQ0KLS0t
-IGxpbnV4LW9yaWcvZHJpdmVycy9ibG9jay9hb2UvYW9lbWFpbi5jDQorKysgbGludXgvZHJpdmVy
-cy9ibG9jay9hb2UvYW9lbWFpbi5jDQpAQCAtNyw2ICs3LDE0IEBADQogI2luY2x1ZGUgPGxpbnV4
-L2hkcmVnLmg+DQogI2luY2x1ZGUgPGxpbnV4L2Jsa2Rldi5oPg0KICNpbmNsdWRlIDxsaW51eC9t
-b2R1bGUuaD4NCisjaW5jbHVkZSA8bGludXgvZGV2ZnNfZnNfa2VybmVsLmg+DQorDQorLyogQU9F
-IFJvb3QgZGV2aWNlIGluY2x1ZGVzICovDQorI2luY2x1ZGUgPGxpbnV4L2RlbGF5Lmg+DQorI2lu
-Y2x1ZGUgPGxpbnV4L3J0bmV0bGluay5oPg0KKyNpbmNsdWRlIDxsaW51eC9uZXRkZXZpY2UuaD4N
-CisjaW5jbHVkZSA8bmV0L3NvY2suaD4NCisNCiAjaW5jbHVkZSAiYW9lLmgiDQogDQogTU9EVUxF
-X0xJQ0VOU0UoIkdQTCIpOw0KQEAgLTUzLDYgKzYxLDQxIEBADQogCX0NCiB9DQogDQorI2lmZGVm
-IENPTkZJR19BVEFfT1ZFUl9FVEhfUk9PVA0KK3ZvaWQgYW9lX3Jvb3QodW5zaWduZWQgbG9uZyBt
-YWpvciwgdW5zaWduZWQgbG9uZyBtaW5vcikNCit7DQorCXN0cnVjdCBuZXRfZGV2aWNlICpkZXY7
-DQorDQorCXByaW50ayhLRVJOX0lORk8NCisJCSJhb2U6IFdhaXRpbmcgZm9yIHJvb3QgQU9FIGRl
-dmljZSBlJWxkLiVsZFxuIiwgbWFqb3IsIG1pbm9yKTsNCisNCisJLyogR2l2ZSBoYXJkd2FyZSBh
-IGNoYW5jZSB0byBzZXR0bGUgKi8NCisJbXNsZWVwKDUwMCk7DQorDQorCXJ0bmxfc2hsb2NrKCk7
-DQorCS8qIGJyaW5nIGxvb3BiYWNrIGRldmljZSB1cCBmaXJzdCAqLw0KKwlpZiAoZGV2X2NoYW5n
-ZV9mbGFncygmbG9vcGJhY2tfZGV2LCBsb29wYmFja19kZXYuZmxhZ3MgfCBJRkZfVVApIDwgMCkN
-CisJCXByaW50ayhLRVJOX0VSUiAiQU9FIFJvb3Q6IEZhaWxlZCB0byBvcGVuICVzXG4iLCBsb29w
-YmFja19kZXYubmFtZSk7DQorDQorCS8qIFNldHVwIGFsbCBuZXR3b3JrIGRldmljZXMgKi8NCisJ
-Zm9yIChkZXYgPSBkZXZfYmFzZTsgZGV2IDsgZGV2ID0gZGV2LT5uZXh0KSB7DQorCQlpZiAoZGV2
-ID09ICZsb29wYmFja19kZXYpDQorCQkJY29udGludWU7DQorCQlkZXZfY2hhbmdlX2ZsYWdzKGRl
-diwgZGV2LT5mbGFncyB8IElGRl9VUCk7DQorCX0NCisJcnRubF9zaHVubG9jaygpOw0KKw0KKwkv
-KiBHaXZlIGRyaXZlcnMgYSBjaGFuY2UgdG8gc2V0dGxlICovDQorCXNzbGVlcCgxKTsNCisNCisJ
-ZG8gew0KKwkJYW9lY21kX2NmZyhtYWpvciwgbWlub3IpOw0KKwkJbXNsZWVwKDEpOw0KKwl9IHdo
-aWxlICghYW9lZGV2X2J5bWFqb3JfbWlub3IoQ09ORklHX0FUQV9PVkVSX0VUSF9ST09UX1NIRUxG
-LENPTkZJR19BVEFfT1ZFUl9FVEhfUk9PVF9TTE9UKSk7DQorDQorfQ0KKyNlbmRpZg0KKw0KIHN0
-YXRpYyB2b2lkDQogYW9lX2V4aXQodm9pZCkNCiB7DQpAQCAtNjMsNiArMTA2LDcgQEANCiAJYW9l
-Y2hyX2V4aXQoKTsNCiAJYW9lZGV2X2V4aXQoKTsNCiAJYW9lYmxrX2V4aXQoKTsJCS8qIGZyZWUg
-Y2FjaGUgYWZ0ZXIgZGUtYWxsb2NhdGluZyBidWZzICovDQorCWRldmZzX3JlbW92ZSgiZXRoZXJk
-Iik7DQogfQ0KIA0KIHN0YXRpYyBpbnQgX19pbml0DQpAQCAtNzAsNiArMTE0LDggQEANCiB7DQog
-CWludCByZXQ7DQogDQorCWRldmZzX21rX2RpcigiZXRoZXJkIik7DQorCSAgICAgICAgDQogCXJl
-dCA9IGFvZWRldl9pbml0KCk7DQogCWlmIChyZXQpDQogCQlyZXR1cm4gcmV0Ow0KQEAgLTkxLDYg
-KzEzNyw5IEBADQogCXByaW50ayhLRVJOX0lORk8NCiAJICAgICAgICJhb2U6IGFvZV9pbml0OiBB
-b0UgdjIuNi0lcyBpbml0aWFsaXNlZC5cbiIsDQogCSAgICAgICBWRVJTSU9OKTsNCisjaWZkZWYg
-Q09ORklHX0FUQV9PVkVSX0VUSF9ST09UDQorCWFvZV9yb290KENPTkZJR19BVEFfT1ZFUl9FVEhf
-Uk9PVF9TSEVMRixDT05GSUdfQVRBX09WRVJfRVRIX1JPT1RfU0xPVCk7DQorI2VuZGlmDQogCWRp
-c2NvdmVyX3RpbWVyKFRJTklUKTsNCiAJcmV0dXJuIDA7DQogDQpAQCAtMTAyLDYgKzE1MSw3IEBA
-DQogCWFvZWNocl9leGl0KCk7DQogIGNocl9mYWlsOg0KIAlhb2VkZXZfZXhpdCgpOw0KKwlkZXZm
-c19yZW1vdmUoImV0aGVyZCIpOw0KIAkNCiAJcHJpbnRrKEtFUk5fSU5GTyAiYW9lOiBhb2VfaW5p
-dDogaW5pdGlhbGlzYXRpb24gZmFpbHVyZS5cbiIpOw0KIAlyZXR1cm4gcmV0Ow0K
-
-
---=-ER3Ts8eIi2roJJOQ+zOR--
-
---=-1s30lE676ScUP47dQ9WY
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.0 (GNU/Linux)
-
-iD8DBQBChP1m8/0vJ5szK6kRAslIAKClmuDNMgWFWcPMKfqld0UsyGvzbwCeJHdE
-UzVzNQit0GZQ0lhpXB8lcmI=
-=tCAu
------END PGP SIGNATURE-----
-
---=-1s30lE676ScUP47dQ9WY--
+TIA
