@@ -1,17 +1,24 @@
-Return-Path: <tim.martin@viasat.com>
-Received: from annex.viasat.com (eagle.viasat.com [199.106.52.54])
-	by ozlabs.org (Postfix) with ESMTP id 31D6F67AC7
+Return-Path: <mcr@sandelman.ottawa.on.ca>
+Received: from pike.sandelman.ca (pike.sandelman.ca [205.150.200.164])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "pike.sandelman.ca",
+	Issuer "Michael Richardson" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 3C40567B22
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 14 May 2005 09:57:24 +1000 (EST)
-Message-ID: <846BA3AF7C8A2048937F1801FD3129C902DB5944@messenger.viasat.com>
-From: "Martin, Tim" <tim.martin@viasat.com>
-To: "'wd@denx.de'" <wd@denx.de>
-Date: Fri, 13 May 2005 16:57:18 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Cc: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-Subject: RE: MPC860 CP / CPM Misbehaving 
+	Sat, 14 May 2005 10:06:57 +1000 (EST)
+Received: from sandelman.ottawa.on.ca (wlan232.sandelman.ca [205.150.200.232])
+	by pike.sandelman.ca (Postfix) with ESMTP id 196566371A
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 13 May 2005 19:37:08 -0400 (EDT)
+Received: from marajade.sandelman.ottawa.on.ca (marajade [127.0.0.1])
+	by sandelman.ottawa.on.ca (Postfix) with ESMTP id 30DF0BCAC
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 13 May 2005 19:37:02 -0400 (EDT)
+To: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
+Date: Fri, 13 May 2005 19:37:02 -0400
+Message-ID: <3086.1116027422@marajade.sandelman.ottawa.on.ca>
+From: Michael Richardson <mcr@sandelman.ottawa.on.ca>
+Subject: problems with ppc405 on 2.6.11.8.
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,63 +29,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Wolfgang,
-
-The SDRAM timings (UPM registers) are setup by a BDM/JTAG debugger script.
-The same script is run when I download the other software, which works.
-
-That being said, I wasn't the one who wrote the UPM portion of the script
-and it is one of the few things I haven't verified, so it does sound like a
-likely candidate.  Thanks for the tip.
-
-Tim
-
------Original Message-----
-From: wd@denx.de [mailto:wd@denx.de]
-Sent: Friday, May 13, 2005 4:42 PM
-To: Martin, Tim
-Cc: 'linuxppc-embedded@ozlabs.org'
-Subject: Re: MPC860 CP / CPM Misbehaving 
+-----BEGIN PGP SIGNED MESSAGE-----
 
 
-In message <846BA3AF7C8A2048937F1801FD3129C902DB5942@messenger.viasat.com>
-you wrote:
-> 
-> I'm using a custom MPC860 based embedded board and having problems with
-SCC1
-> and SMC1 reception.  I have SCC1 setup in ethernet mode, and SMC1 setup in
-> UART mode.  The general problem manifests itself as getting receive buffer
-> descriptors (BDs) from the CPM with the OV bit set (bit 14 of the RxBD
-> status/control field, "Overrun. Set when a receiver overrun occurs during
-> reception").
-...
-> This isn't a board hardware problem, the board runs fine with other
-software
-> (different operating system, etc).  It's most likely a configuration
-problem
-> on my end.
+A customer of mine has a PPC405 system, which was based upon the
+Embedded Planet design. It runs U-boot 0.4.0, and the system currently
+ships with a kernel based upon Timesys 2.4.18. 
 
-<speculation>
+We are in the process of upgrading to 2.6.11. (linus, not timesys. We
+see no value add from timesys)
 
-Are you 100% sure that your SDRAM is working fine when stressed  with
-burst mode accesses?
+The major stumbling block was using boot/simple/{head,relocate}.S,
+and the inftrees.c. For reasons we do not understand, the system would
+fail in huft_build() when (setting up for) decompressing.  We traced
+through this using our bdi2000, after failing with puts() additions. 
 
-See http://www.denx.de/twiki/bin/view/DULG/UBootCrashAfterRelocation
-</speculation>
+My gut instinct was originally that we were blowing our stack, or
+overwriting running code while decompressing. 
 
-> My thoughts are that it's almost as if the CP (CPM RISC processor) or SDMA
-> is being occasionally frozen out while the core PowerPC MPC860 processor
-is
+Kyle McMartin tried (I'm not sure why yet) replacing the head.S with
+the one from 2.4.18-timesys. It seemed to solve the problem.
 
-You may see "funny" problems when your SDRAM is  not  working  right.
-And  yes,  this may happen especially on DMA transfers which will use
-burst mode.
+I'm posting this in two hopes:
+    a) that someone else not hit the same problem.
+    b) that someone else might have a suggestion on 
+       what might be different between head.S+relocate.S and head.S(2.4.18).
 
-Best regards,
+- -- 
+] Michael Richardson          Xelerance Corporation, Ottawa, ON |  firewalls  [
+] mcr @ xelerance.com           Now doing IPsec training, see   |net architect[
+] http://www.sandelman.ca/mcr/    www.xelerance.com/training/   |device driver[
+] panic("Just another Debian GNU/Linux using, kernel hacking, security guy"); [
 
-Wolfgang Denk
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-        ... Hiroshima 45 ... Chernobyl 86 ... Windows 95 ...
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.2 (GNU/Linux)
+Comment: Finger me for keys
+
+iQCVAwUBQoU6E4qHRg3pndX9AQEtswP5AXD3+gxobRZWfZUGU7MqzoJSJFCLcrYc
+0yqfGHBL79g3zbkJUONnE30qBBdEyYkH5ghmg6Xqxt4YjgPId3ZOWHBtrRrp+PCA
+lBm8WzsgBBBT5SCKNDe6kOy2rSKUjunxv4GXJ0lSQpZMvuceAOmD73no4tWIM/I8
+2iETSMLkr9Q=
+=2Tlk
+-----END PGP SIGNATURE-----
