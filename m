@@ -1,18 +1,23 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 62D1B679EB
+Return-Path: <ecashin@coraid.com>
+Received: from coraid.com (ns1.coraid.com [65.14.39.133])
+	by ozlabs.org (Postfix) with ESMTP id B515F679F4
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 17 May 2005 02:25:26 +1000 (EST)
-In-Reply-To: <20050516153939.6CF17C1512@atlas.denx.de>
-References: <20050516153939.6CF17C1512@atlas.denx.de>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <7bba70c93cea3585269a98b62de4777f@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Mon, 16 May 2005 11:25:19 -0500
-To: "Wolfgang Denk" <wd@denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Missing m8260_cpm_dpfree() 
+	Tue, 17 May 2005 03:21:41 +1000 (EST)
+To: Greg KH <greg@kroah.com>
+References: <1116011879.9050.92.camel@jmcmullan.timesys>
+	<20050514072826.GB20021@kroah.com>
+	<1116249602.9050.105.camel@jmcmullan.timesys>
+	<20050516162011.GA8716@kroah.com>
+From: Ed L Cashin <ecashin@coraid.com>
+Date: Mon, 16 May 2005 13:03:22 -0400
+In-Reply-To: <20050516162011.GA8716@kroah.com> (Greg KH's message of "Mon,
+	16 May 2005 09:20:11 -0700")
+Message-ID: <87wtpz5cit.fsf@coraid.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: PPC_LINUX <linuxppc-embedded@ozlabs.org>, akpm@zip.com.au,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2.6.11.7] ATA Over Ethernet Root, Mark 2
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,34 +28,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On May 16, 2005, at 10:39 AM, Wolfgang Denk wrote:
+Greg KH <greg@kroah.com> writes:
 
-> In message <20050516161503.0081b1b0.ajz@cambridgebroadband.com> you=20
-> wrote:
->  >
-> > I have a question about the MPC8260 dual port RAM allocation=20
-> routines.
->  >
-> > In arch/ppc/8260_io/commproc.c this is a=A0 m8260_cpm_dpalloc()=20
-> routine,
->  > but the m8260_cpm_dpfree() routine is missing.=A0 Does anybody know=20=
-
-> where
->  > I can find this?
+> On Mon, May 16, 2005 at 09:14:02AM -0400, McMullan, Jason wrote:
+...
+[gregkh writes]
+>> > Also, please CC the aoe maintainer, that's documented in
+>> > Documentation/SubmittingPatches :)
+>> 
+>>   I did to support@coraid.com, in a separate message.
 >
-> It was never implemented.
->
-> We added this in the context of the 8xx tree, and submitted=A0 it=A0 =
-here
->  at least twice. The patches were never accepted for the publich sourc
->  trees,=A0 so=A0 we=A0 stopped=A0 wasting=A0 our=A0 time on this. I =
-think Pantelis
->  Antoniou (?) submitted similar code later, but I don't remember=A0 =
-what
->  happened to it.
+> That's not the email address listed in MAINTAINERS, is it?
 
-The 2.6 kernel has a better set of functions around managing cpm memory=20=
+I did get it, though.  I didn't realize that the reason for the patch
+is for use on systems that have so little RAM that they can't have an
+initrd.
 
-based on changes from Pantelis.
+It seems like the system will hang forever with no diagnostics if the
+root device isn't found.  Perhaps an error message would be helpul?
 
-- kumar
+I do wonder whether the problem this patch solves might be a special
+case that doesn't merit the extra complexity of a Kconfig knob.  It is
+certainly a useful patch for some users, but I don't know how many.
+
+-- 
+  Ed L Cashin <ecashin@coraid.com>
