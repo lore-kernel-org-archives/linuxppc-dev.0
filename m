@@ -1,19 +1,15 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
-	by ozlabs.org (Postfix) with SMTP id 4CC16679E0
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15802.mail.cnb.yahoo.com (web15802.mail.cnb.yahoo.com
+	[202.165.102.82]) by ozlabs.org (Postfix) with SMTP id 4617E679F1
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 16 May 2005 17:44:07 +1000 (EST)
-Message-ID: <42884F42.7090706@ru.mvista.com>
-Date: Mon, 16 May 2005 11:44:02 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
+	Mon, 16 May 2005 22:59:38 +1000 (EST)
+Message-ID: <20050516125932.71078.qmail@web15802.mail.cnb.yahoo.com>
+Date: Mon, 16 May 2005 20:59:31 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: 'linuxppc-embedded maillist' <linuxppc-embedded@ozlabs.org>
 MIME-Version: 1.0
-To: Allen Curtis <acurtis@onz.com>
-References: <000601c557de$99627550$6601a8c0@D35HH141>	<757b7fc162262dae582e1d85b6f36e62@freescale.com>
-	<541a45636bdf88d9eb3c08febd63d5c5@onz.com>
-In-Reply-To: <541a45636bdf88d9eb3c08febd63d5c5@onz.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH 2.6.12-rc2] Freescale 8272ADS PCI bridge support to the
+Content-Type: text/plain; charset=gb2312
+Subject: 2.6.x insmod problem on 82xx platform
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,32 +20,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Allen,
-Some details about 8272 PCI below...
-Allen Curtis wrote:
+Hi all,
 
-> Is the patch necessary? In the March archive it appears that people 
-> were using the standard 8260 PCI support. What is the issue? Perhaps I 
-> could provide a patch to m8260_pci.c (as you suggested)
->
-The point is that stuff existent in the current tree for the 82xx has 
-limited functionality.  Take a look at 
-http://ozlabs.org/pipermail/linuxppc-embedded/2005-April/017948.html. 
-Current source _does not_ contain any IRQ handlers & demux (which the 
-patch adds), so the device will remain malfunction. Also the patch has 
-some 8272 & PQ2FADS - specific bits.
+I met a strange problem when trying to insmod a 
+extern module in 2.6.12-rc2 on a MPC8241 board.
+Even lsmod didn't work. Following is the error
+message working on ELDK3.0. 
 
->>> Where can I find the kernel tree with this integrated?
->>
->>
->> One doesn't exist.
->>
-> Is there an embedded 2.5/2.6 tree somewhere? (I know about the 
-> bkbits.net/ppc/linux-2.5 tree
->
-There is no special `embedded` tree - use one from kernel.org or git 
-repo if you need development version (http://www.kernel.org/git/).
+bash-2.05b# insmod mymodule.o
+insmod: QM_MODULES: Function not implemented
 
--- 
-Sincerely, 
-Vitaly
+bash-2.05b# lsmod
+Module                  Size  Used by
+lsmod: QM_MODULES: Function not implemented
+
+I greped QM_MODULES in the kernel source code
+but found nothing. What's happening to LKM in
+2.6.x? 
+
+Don't tell me that LKM hasn't been supported
+yet in 2.6.x:-)
+
+Thanks in advance,
+
+Sam
+
+_________________________________________________________
+Do You Yahoo!?
+150万曲MP3疯狂搜，带您闯入音乐殿堂
+http://music.yisou.com/
+美女明星应有尽有，搜遍美图、艳图和酷图
+http://image.yisou.com
+1G就是1000兆，雅虎电邮自助扩容！
+http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
