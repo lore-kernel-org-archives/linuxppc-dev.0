@@ -1,23 +1,24 @@
-Return-Path: <ecashin@coraid.com>
-Received: from coraid.com (ns1.coraid.com [65.14.39.133])
-	by ozlabs.org (Postfix) with ESMTP id B515F679F4
+Return-Path: <kylo.ginsberg@gmail.com>
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.200])
+	by ozlabs.org (Postfix) with ESMTP id 0363067A39
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 17 May 2005 03:21:41 +1000 (EST)
-To: Greg KH <greg@kroah.com>
-References: <1116011879.9050.92.camel@jmcmullan.timesys>
-	<20050514072826.GB20021@kroah.com>
-	<1116249602.9050.105.camel@jmcmullan.timesys>
-	<20050516162011.GA8716@kroah.com>
-From: Ed L Cashin <ecashin@coraid.com>
-Date: Mon, 16 May 2005 13:03:22 -0400
-In-Reply-To: <20050516162011.GA8716@kroah.com> (Greg KH's message of "Mon,
-	16 May 2005 09:20:11 -0700")
-Message-ID: <87wtpz5cit.fsf@coraid.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: PPC_LINUX <linuxppc-embedded@ozlabs.org>, akpm@zip.com.au,
-	Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2.6.11.7] ATA Over Ethernet Root, Mark 2
+	Tue, 17 May 2005 07:50:19 +1000 (EST)
+Received: by rproxy.gmail.com with SMTP id g11so1412756rne
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 16 May 2005 14:50:18 -0700 (PDT)
+Message-ID: <61cc712d05051614507b688c6e@mail.gmail.com>
+Date: Mon, 16 May 2005 14:50:18 -0700
+From: Kylo Ginsberg <kylo.ginsberg@gmail.com>
+To: Guillaume Autran <gautran@mrv.com>
+In-Reply-To: <4284E379.1060907@mrv.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <005b01c557bd$c04e2770$0301a8c0@chuck2>
+	<ed43f07150d50a594be2bc2589e902a0@freescale.com>
+	<4284E379.1060907@mrv.com>
+Cc: PPC_LINUX <linuxppc-embedded@ozlabs.org>
+Subject: Re: MPC885 - USB HCI drivers.
+Reply-To: Kylo Ginsberg <kylo.ginsberg@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,28 +29,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Greg KH <greg@kroah.com> writes:
+Guillaume,
 
-> On Mon, May 16, 2005 at 09:14:02AM -0400, McMullan, Jason wrote:
-...
-[gregkh writes]
->> > Also, please CC the aoe maintainer, that's documented in
->> > Documentation/SubmittingPatches :)
->> 
->>   I did to support@coraid.com, in a separate message.
+There is a driver in the linux-2.4 tree at denx.de, although I have no
+experience with it.  Here's info on the cvs repository:=20
+http://www.denx.de/e/solution-se.php.  Look in drivers/usb for
+m8xxhci.[ch]  This code is not in the 2.4/2.6 trees on kernel.org, not
+sure if patches have been submitted.  I don't know the history here.
+
+I will shortly be in need of a 2.6-based driver for the mpc8555e, but
+haven't found any patches.  I'll probably look to port this driver, so
+if you need to modify it, please post patches.
+
+Cheers,
+Kylo
+
+
+On 5/13/05, Guillaume Autran <gautran@mrv.com> wrote:
+> Hi,
+>=20
+> Is there any driver for the USB host controller interface built-in the
+> MPC885 processors.
+> Does anyone have any experience with it ?
+>=20
+> Thanks.
+> Guillaume.
+>=20
+> --
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> Guillaume Autran
+> Senior Software Engineer
+> MRV Communications, Inc.
+> Tel: (978) 952-4932 office
+> E-mail: gautran@mrv.com
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>=20
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 >
-> That's not the email address listed in MAINTAINERS, is it?
-
-I did get it, though.  I didn't realize that the reason for the patch
-is for use on systems that have so little RAM that they can't have an
-initrd.
-
-It seems like the system will hang forever with no diagnostics if the
-root device isn't found.  Perhaps an error message would be helpul?
-
-I do wonder whether the problem this patch solves might be a special
-case that doesn't merit the extra complexity of a Kconfig knob.  It is
-certainly a useful patch for some users, but I don't know how many.
-
--- 
-  Ed L Cashin <ecashin@coraid.com>
