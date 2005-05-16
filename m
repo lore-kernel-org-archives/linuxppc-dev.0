@@ -1,19 +1,19 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id DA7F7679E1
+Return-Path: <wd@denx.de>
+Received: from mailout03.sul.t-online.com (mailout03.sul.t-online.com
+	[194.25.134.81]) by ozlabs.org (Postfix) with ESMTP id B557A679F4
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 17 May 2005 01:31:10 +1000 (EST)
-In-Reply-To: <0.20050516_092837.tnt@patchsend.246tNt.com>
-References: <0.20050516_092837.tnt@patchsend.246tNt.com>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <5fe12cfac05d60b8af016382594e50db@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Mon, 16 May 2005 10:30:56 -0500
-To: "Sylvain Munaut" <tnt@246tNt.com>
-Cc: Asier Llano Palacios <a.llano@usyscom.com>,
-	ML linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] i2c: Race fix for i2c-mpc.c
+	Tue, 17 May 2005 01:39:46 +1000 (EST)
+To: Alex Zeffertt <ajz@cambridgebroadband.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 16 May 2005 16:15:03 BST."
+	<20050516161503.0081b1b0.ajz@cambridgebroadband.com>
+Date: Mon, 16 May 2005 17:39:34 +0200
+Sender: wd@denx.de
+Message-Id: <20050516153939.6CF17C1512@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Missing m8260_cpm_dpfree() 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,67 +24,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Sylvain,
+In message <20050516161503.0081b1b0.ajz@cambridgebroadband.com> you wrote:
+> 
+> I have a question about the MPC8260 dual port RAM allocation routines.
+> 
+> In arch/ppc/8260_io/commproc.c this is a  m8260_cpm_dpalloc() routine,
+> but the m8260_cpm_dpfree() routine is missing.  Does anybody know where
+> I can find this?
 
-Are you really still using the OCP side of the driver?  Do we need a=20
-similar fix for the platform driver side?
+It was never implemented.
 
-- kumar
+We added this in the context of the 8xx tree, and submitted  it  here
+at least twice. The patches were never accepted for the publich sourc
+trees,  so  we  stopped  wasting  our  time on this. I think Pantelis
+Antoniou (?) submitted similar code later, but I don't remember  what
+happened to it.
 
-On May 16, 2005, at 1:24 AM, Sylvain Munaut wrote:
+Best regards,
 
-> i2c: Race fix for i2c-mpc.c
->
-> The problem was that the clock speed and driver data is
->  initialized after the i2c adapter was added. This caused
->  the i2c bus to start working at a wrong speed. (Mostly
-> noticable on the second bus on mpc5200)
->
-> With this patch we've tried to keep the i2c adapter
->  working perfectly all the time it is included in the system.
->  Initialize before added, Remove garbage after deleleted.
->
->
->
->  Submitted-by: Asier Llano Palacios
->  Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
-> ---
->  --- linux-2.6/drivers/i2c/busses/i2c-mpc.c=A0=A0=A0=A0=A0 2005-05-16=20=
+Wolfgang Denk
 
-> 09:08:02.000000000 +0200
->  +++ linux-2.6/drivers/i2c/busses/i2c-mpc.c=A0=A0=A0=A0=A0 2005-05-16=20=
-
-> 09:09:51.000000000 +0200
->  @@ -333,6 +333,9 @@
->  =A0=A0=A0=A0=A0=A0=A0 } else
->  =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 i2c->irq =3D 0;
->  =A0
->  +=A0=A0=A0=A0=A0=A0 mpc_i2c_setclock(i2c);
-> +=A0=A0=A0=A0=A0=A0 ocp_set_drvdata(ocp, i2c);
->  +
->  =A0=A0=A0=A0=A0=A0=A0 i2c->adap =3D mpc_ops;
->  =A0=A0=A0=A0=A0=A0=A0 i2c_set_adapdata(&i2c->adap, i2c);
->  =A0
->  @@ -341,8 +344,6 @@
->  =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 goto fail_add;
->  =A0=A0=A0=A0=A0=A0=A0 }
->  =A0
->  -=A0=A0=A0=A0=A0=A0 mpc_i2c_setclock(i2c);
-> -=A0=A0=A0=A0=A0=A0 ocp_set_drvdata(ocp, i2c);
->  =A0=A0=A0=A0=A0=A0=A0 return result;
->  =A0
->  =A0=A0=A0=A0=A0=A0 fail_add:
->  @@ -358,8 +359,8 @@
->  =A0static void __devexit mpc_i2c_remove(struct ocp_device *ocp)
->  =A0{
->  =A0=A0=A0=A0=A0=A0=A0 struct mpc_i2c *i2c =3D ocp_get_drvdata(ocp);
-> -=A0=A0=A0=A0=A0=A0 ocp_set_drvdata(ocp, NULL);
->  =A0=A0=A0=A0=A0=A0=A0 i2c_del_adapter(&i2c->adap);
->  +=A0=A0=A0=A0=A0=A0 ocp_set_drvdata(ocp, NULL);
->  =A0
->  =A0=A0=A0=A0=A0=A0=A0 if (ocp->def->irq !=3D OCP_IRQ_NA)
-> =A0=A0=A0=A0=A0=A0=A0 =A0=A0=A0=A0=A0=A0=A0 free_irq(i2c->irq, i2c);
->  _______________________________________________
-> Linuxppc-embedded mailing list
->  Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Good manners are the settled  medium  of  social,  as  specie  is  of
+commercial, life; returns are equally expected for both.
+           - Lord Chesterfield _Letters to his Son_, 25 December 1753
