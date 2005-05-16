@@ -1,22 +1,18 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id ABD75679F9
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 May 2005 01:52:33 +1000 (EST)
-In-Reply-To: <1116255938.5095.133.camel@gaston>
-References: <1116222720.5095.86.camel@gaston>
-	<7d5cfed0ee1edade8050d2c4da94b3f1@freescale.com>
-	<c58d28ab50872f95d4c4a751d1768513@embeddededge.com>
-	<1116255938.5095.133.camel@gaston>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <fe487e7a8a89e65cfefd4f5dd39a982d@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Mon, 16 May 2005 11:52:38 -0400
+Return-Path: <wd@denx.de>
+Received: from mailout03.sul.t-online.com (mailout03.sul.t-online.com
+	[194.25.134.81]) by ozlabs.org (Postfix) with ESMTP id CFD7A679F3
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 May 2005 02:11:47 +1000 (EST)
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, John Reiser <jreiser@BitWagon.com>
-Subject: Re: 2GB address space limit on 32-bit PowerPC Macintosh
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 17 May 2005 01:05:38 +1000."
+	<1116255938.5095.133.camel@gaston>
+Date: Mon, 16 May 2005 18:11:03 +0200
+Sender: wd@denx.de
+Message-Id: <20050516161108.5BD3CC1512@atlas.denx.de>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: 2GB address space limit on 32-bit PowerPC Macintosh 
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,32 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+In message <1116255938.5095.133.camel@gaston> you wrote:
+>
+> I suppose it would add about ... 1 instruction :) Which is probably
+> barely measurable compared to the cost of the cache misses of getting to
+> the page table entires...
 
-On May 16, 2005, at 11:05 AM, Benjamin Herrenschmidt wrote:
-
-> I suppose it would add about ... 1 instruction :)
-
-It's a little more than that :-)
+That would be just another "just 1 instruction"  modifircation  to  a
+time  critical path in a kernel which already now is so slow compared
+against an old 2.4 kernel that I'm really surprised to  nobody  seems
+to care.
 
 > But I agree that we don't abolutely _need_ to break everybody. Maybe a
 > better compromise would be to have the default beeing per CPU family ?
 > 6xx/7xx/7xxx could default to 3G and 8xx stay at 2G...
 
-That's still going to break nearly every embedded board.  My point is
-that is all configurable for each individual board, so if you want that 
-to
-be the default for a board, then just update the defconfig for that 
-board.
-The PMac is only one "board" out of many we support, and I don't think
-it should be considered the default or generic configuration any more
-than any other board.  The PMac is the easiest to update because it's
-a single configuration file.  If you want that to have a 3G default task
-space, then update that one configuration file.  As we have time we
-will update all of the others, and when we get to the point where most
-boards are of that configuration, we'll make it the default and the
-minority of boards become the special cases.
+How many systems actually need this? Why make the <1% of the  systems
+that need it the default?
 
-Thanks.
+Best regards,
 
+Wolfgang Denk
 
-	-- Dan
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Q: Why do PCs have a reset button on the front?
+A: Because they are expected to run Microsoft operating systems.
