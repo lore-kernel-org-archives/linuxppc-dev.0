@@ -1,25 +1,21 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx007.isp.belgacom.be (outmx007.isp.belgacom.be
-	[195.238.3.234]) by ozlabs.org (Postfix) with ESMTP id 73E1F679F3
+Return-Path: <greg@kroah.com>
+Received: from perch.kroah.org (mail.kroah.org [69.55.234.183])
+	by ozlabs.org (Postfix) with ESMTP id A5988679EF
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 17 May 2005 02:05:29 +1000 (EST)
-Received: from outmx007.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx007.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id j4GG5NvN010562
-	for <linuxppc-embedded@ozlabs.org>; Mon, 16 May 2005 18:05:24 +0200
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <4288C4FD.8080104@246tNt.com>
-Date: Mon, 16 May 2005 18:06:21 +0200
-From: Sylvain Munaut <tnt@246tNt.com>
-MIME-Version: 1.0
-To: Kumar Gala <kumar.gala@freescale.com>
-References: <0.20050516_092837.tnt@patchsend.246tNt.com>
-	<5fe12cfac05d60b8af016382594e50db@freescale.com>
-In-Reply-To: <5fe12cfac05d60b8af016382594e50db@freescale.com>
-Content-Type: multipart/mixed; boundary="------------070109070302080201010104"
-Cc: Asier Llano Palacios <a.llano@usyscom.com>,
-	ML linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] i2c: Race fix for i2c-mpc.c
+	Tue, 17 May 2005 02:20:18 +1000 (EST)
+Date: Mon, 16 May 2005 09:20:11 -0700
+From: Greg KH <greg@kroah.com>
+To: "McMullan, Jason" <jason.mcmullan@timesys.com>
+Message-ID: <20050516162011.GA8716@kroah.com>
+References: <1116011879.9050.92.camel@jmcmullan.timesys>
+	<20050514072826.GB20021@kroah.com>
+	<1116249602.9050.105.camel@jmcmullan.timesys>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1116249602.9050.105.camel@jmcmullan.timesys>
+Cc: akpm@zip.com.au, Linux Kernel <linux-kernel@vger.kernel.org>,
+	ecashin@coraid.com, PPC_LINUX <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH 2.6.11.7] ATA Over Ethernet Root, Mark 2
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,118 +26,93 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------070109070302080201010104
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Kumar Gala wrote:
-> Sylvain,
+On Mon, May 16, 2005 at 09:14:02AM -0400, McMullan, Jason wrote:
+> [First off: Andrew, I'm sorry I didn't make it more clear that the AOE
+>  root patch was just for review, not for submission. Please remove it
+>  from -mm]
 > 
-> Are you really still using the OCP side of the driver?  Do we need a 
-> similar fix for the platform driver side?
+> 
+> On Sat, 2005-05-14 at 00:28 -0700, Greg KH wrote:
+> > I'm guessing you are only testing this out on devfs?
+> 
+>   Yes. udev takes 5 minutes to complete on my 8mb, 100Mhz board.
 
-/me hits himself with a hammer
+Ouch, that's not good at all.  Care to take this info to the
+linux-hotplug-devel mailing list and we can work on fixing this for you?
+(first a few things to try, use 'udevsend' and build udev using klibc.
+Also do not have any rules that call out to shell scripts, as you are
+using devfs I don't see that you need any special rules at all
+probably.)
 
-Damn I included the wrong diff ... Sorry about that, the good one is
-in attachment.
+> > Why not fix this up properly, and allow root devices on _any_ type of
+> > block device that is not immediately present at "try to mount time"?  The
+> > USB and firewire users of the world will love you...
+> 
+>   Sure. No problem. Where is this patch you speak of?
 
+It can be based on your patch :)
 
-No I don't use the OCP side but I changed both to stay coherent. I don't 
-experience the problem myself, it's Asier who reported it and it 
-apparently mostly shows up on the second i2c bus (where I have nothing 
-on my hardware and anyway my bootloader init I2C beforehand ...).
+Anyway, it's floating around in the lkml archives, sorry, don't have a
+direct link.
 
-But the patch looks correct, when a bus is added, it should be ready to 
-be used.
+> > Also, please CC the aoe maintainer, that's documented in
+> > Documentation/SubmittingPatches :)
+> 
+>   I did to support@coraid.com, in a separate message.
 
+That's not the email address listed in MAINTAINERS, is it?
 
-	Sylvain
+> > > +config ATA_OVER_ETH_ROOT_SHELF
+> > > +	int "Shelf ID"
+> > > +	depends on ATA_OVER_ETH_ROOT
+> > 
+> > Ick.  Why not use a boot parameter if you really want to use something
+> > so icky (hint, we should rely on the name or major/minor, not something
+> > else like this.)
+> 
+>   Because kernel major/minor change dynamically based upon the number of
+> AOE blades on your LAN. As setting them in __setup() - sure, no problem,
+> this patch was just a 15 minute hack job.
+> 
+> 
+> > You do know devfs is going away in 2 months, right?
+> 
+>   Yes, much to my disappointment. udevd is so frick'n bloaty.
 
+with klibc?  Again, take it to linux-hotplug-devel, if we don't get
+reports about problems, we assume that everyone is happy with it.  I
+haven't seen you asking about this there.
 
----
-i2c: Race fix for i2c-mpc.c
+> > Should be in a separate patch, to fix up devfs issues in the driver,
+> > right?  This goes for the other devfs calls in this patch.  That is if
+> > you don't mind me removing them in 2 months :)
+> 
+>   Yeah, I know, I was just being lazy and using the uber-fast devfs.
 
-The problem was that the clock speed and driver data is
-initialized after the i2c adapter was added. This caused
-the i2c bus to start working at a wrong speed. (Mostly
-noticable on the second bus on mpc5200)
+It's just a mirrage, it's not really that fast :)
 
-With this patch we've tried to keep the i2c adapter
-working perfectly all the time it is included in the system.
-Initialize before added, Remove garbage after deleleted.
+> > If so, I suggest one of the two solutions:
+> > 	- do like the rest of the world does for usb and firewire and
+> > 	  other types of slow boot devices and use an initrd/initramfs
+> > 	  that mounts the root partition after it is properly found.
+> > 	  Distros do this all the time, so there are lots of examples to
+> > 	  pull from if you want to do this for yours.
+> 
+>    I only have 8Mb of RAM. No room for initrd.
 
+Even with ash built with klibc and/or busybox?
 
-Submitted-by: Asier Llano Palacios
-Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
----
+> > 	- fix up the patch that is floating around that allows the
+> > 	  kernel to pause and wait and not oops out if the root
+> > 	  partition is not found.  That way all users of all kinds of
+> > 	  slow devices can benefit, and driver specific hacks like this
+> > 	  are not needed.
+> 
+>    Again, this happy patch you speak of... Where can I find this wonder?
 
---------------070109070302080201010104
-Content-Type: text/x-patch;
- name="i2c-mpc-racefix.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="i2c-mpc-racefix.diff"
+lkml archives.  Or base it on your work you have already started to do
+:)
 
---- linux-2.6/drivers/i2c/busses/i2c-mpc.c	2005-05-16 09:47:10.000000000 +0200
-+++ linux-2.6-mpc52xx/drivers/i2c/busses/i2c-mpc.c	2005-05-16 17:50:18.000000000 +0200
-@@ -333,6 +333,9 @@
- 	} else
- 		i2c->irq = 0;
- 
-+	mpc_i2c_setclock(i2c);
-+	ocp_set_drvdata(ocp, i2c);
-+
- 	i2c->adap = mpc_ops;
- 	i2c_set_adapdata(&i2c->adap, i2c);
- 
-@@ -341,8 +344,6 @@
- 		goto fail_add;
- 	}
- 
--	mpc_i2c_setclock(i2c);
--	ocp_set_drvdata(ocp, i2c);
- 	return result;
- 
-       fail_add:
-@@ -358,8 +359,8 @@
- static void __devexit mpc_i2c_remove(struct ocp_device *ocp)
- {
- 	struct mpc_i2c *i2c = ocp_get_drvdata(ocp);
--	ocp_set_drvdata(ocp, NULL);
- 	i2c_del_adapter(&i2c->adap);
-+	ocp_set_drvdata(ocp, NULL);
- 
- 	if (ocp->def->irq != OCP_IRQ_NA)
- 		free_irq(i2c->irq, i2c);
-@@ -430,6 +431,9 @@
- 			goto fail_irq;
- 		}
- 
-+	mpc_i2c_setclock(i2c);
-+	dev_set_drvdata(device, i2c);
-+
- 	i2c->adap = mpc_ops;
- 	i2c_set_adapdata(&i2c->adap, i2c);
- 	i2c->adap.dev.parent = &pdev->dev;
-@@ -438,8 +442,6 @@
- 		goto fail_add;
- 	}
- 
--	mpc_i2c_setclock(i2c);
--	dev_set_drvdata(device, i2c);
- 	return result;
- 
-       fail_add:
-@@ -456,8 +458,8 @@
- {
- 	struct mpc_i2c *i2c = dev_get_drvdata(device);
- 
--	dev_set_drvdata(device, NULL);
- 	i2c_del_adapter(&i2c->adap);
-+	dev_set_drvdata(device, NULL);
- 
- 	if (i2c->irq != 0)
- 		free_irq(i2c->irq, i2c);
+thanks,
 
---------------070109070302080201010104--
+greg k-h
