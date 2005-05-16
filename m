@@ -1,19 +1,25 @@
-Return-Path: <mike@compulab.co.il>
-Received: from alex (62-90-235-247.barak.net.il [62.90.235.247])
-	by ozlabs.org (Postfix) with ESMTP id 22831679F3
+Return-Path: <jason.mcmullan@timesys.com>
+Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
+	by ozlabs.org (Postfix) with ESMTP id 664B8679FE
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 16 May 2005 23:13:33 +1000 (EST)
-Message-ID: <4288AAA7.9050205@compulab.co.il>
-Date: Mon, 16 May 2005 16:13:59 +0200
-From: Mike Rapoport <mike@compulab.co.il>
+	Mon, 16 May 2005 23:20:07 +1000 (EST)
+In-Reply-To: <20050514072826.GB20021@kroah.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-cg8+jxunGCTiXu7nvkFA"
+References: <1116011879.9050.92.camel@jmcmullan.timesys>
+	<20050514072826.GB20021@kroah.com>
+Date: Mon, 16 May 2005 09:20:01 -0400
+Message-ID: <1116249602.9050.105.camel@jmcmullan.timesys>
 MIME-Version: 1.0
-To: Sam Song <samlinuxppc@yahoo.com.cn>
-References: <20050516125932.71078.qmail@web15802.mail.cnb.yahoo.com>
-In-Reply-To: <20050516125932.71078.qmail@web15802.mail.cnb.yahoo.com>
-Content-Type: multipart/alternative;
-	boundary="------------040004000207030906090407"
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: 2.6.x insmod problem on 82xx platform
+Date: Mon, 16 May 2005 09:14:02 -0400
+Message-ID: <1116249602.9050.105.camel@jmcmullan.timesys>
+From: "McMullan, Jason" <jason.mcmullan@timesys.com>
+To: "Greg KH" <greg@kroah.com>,
+	<akpm@zip.com.au>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, ecashin@coraid.com,
+	PPC_LINUX <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH 2.6.11.7] ATA Over Ethernet Root, Mark 2
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,138 +30,100 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------040004000207030906090407
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: 8bit
 
-Sam Song wrote:
+--=-cg8+jxunGCTiXu7nvkFA
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
->Hi all,
->
->I met a strange problem when trying to insmod a 
->extern module in 2.6.12-rc2 on a MPC8241 board.
->Even lsmod didn't work. Following is the error
->message working on ELDK3.0. 
->
->bash-2.05b# insmod mymodule.o
->insmod: QM_MODULES: Function not implemented
->
->bash-2.05b# lsmod
->Module                  Size  Used by
->lsmod: QM_MODULES: Function not implemented
->
->  
->
-I think you use modutils for 2.4 kernel. In order to work with LKM in
-2.6 you need module-init-tools package.
-Take a look at http://www.kernel.org/pub/linux/kernel/people/rusty/modules/
-
->I greped QM_MODULES in the kernel source code
->but found nothing. What's happening to LKM in
->2.6.x? 
->
->Don't tell me that LKM hasn't been supported
->yet in 2.6.x:-)
->
->Thanks in advance,
->
->Sam
->
->_________________________________________________________
->Do You Yahoo!?
->150万曲MP3疯狂搜，带您闯入音乐殿堂
->http://music.yisou.com/
->美女明星应有尽有，搜遍美图、艳图和酷图
->http://image.yisou.com
->1G就是1000兆，雅虎电邮自助扩容！
->http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
->_______________________________________________
->Linuxppc-embedded mailing list
->Linuxppc-embedded@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
->
->
->  
->
--- 
-
-Sincerely yours,
-Mike
+[First off: Andrew, I'm sorry I didn't make it more clear that the AOE
+ root patch was just for review, not for submission. Please remove it
+ from -mm]
 
 
---------------040004000207030906090407
-Content-Type: text/html; charset=GB2312
-Content-Transfer-Encoding: 8bit
+On Sat, 2005-05-14 at 00:28 -0700, Greg KH wrote:
+> I'm guessing you are only testing this out on devfs?
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html;charset=GB2312" http-equiv="Content-Type">
-</head>
-<body bgcolor="#ffffff" text="#000000">
-Sam Song wrote:
-<blockquote
- cite="mid20050516125932.71078.qmail@web15802.mail.cnb.yahoo.com"
- type="cite">
-  <pre wrap="">Hi all,
+  Yes. udev takes 5 minutes to complete on my 8mb, 100Mhz board.
 
-I met a strange problem when trying to insmod a 
-extern module in 2.6.12-rc2 on a MPC8241 board.
-Even lsmod didn't work. Following is the error
-message working on ELDK3.0. 
+> Why not fix this up properly, and allow root devices on _any_ type of
+> block device that is not immediately present at "try to mount time"?  The
+> USB and firewire users of the world will love you...
 
-bash-2.05b# insmod mymodule.o
-insmod: QM_MODULES: Function not implemented
+  Sure. No problem. Where is this patch you speak of?
 
-bash-2.05b# lsmod
-Module                  Size  Used by
-lsmod: QM_MODULES: Function not implemented
+> Also, please CC the aoe maintainer, that's documented in
+> Documentation/SubmittingPatches :)
 
-  </pre>
-</blockquote>
-I think you use modutils for 2.4 kernel. In order to work with LKM in
-2.6&nbsp; you need module-init-tools package.<br>
-Take a look at&nbsp;<a
- href="http://www.kernel.org/pub/linux/kernel/people/rusty/modules/">
-http://www.kernel.org/pub/linux/kernel/people/rusty/modules/</a><br>
-<blockquote
- cite="mid20050516125932.71078.qmail@web15802.mail.cnb.yahoo.com"
- type="cite">
-  <pre wrap="">I greped QM_MODULES in the kernel source code
-but found nothing. What's happening to LKM in
-2.6.x? 
+  I did to support@coraid.com, in a separate message.
 
-Don't tell me that LKM hasn't been supported
-yet in 2.6.x:-)
+> > +config ATA_OVER_ETH_ROOT_SHELF
+> > +	int "Shelf ID"
+> > +	depends on ATA_OVER_ETH_ROOT
+>=20
+> Ick.  Why not use a boot parameter if you really want to use something
+> so icky (hint, we should rely on the name or major/minor, not something
+> else like this.)
 
-Thanks in advance,
-
-Sam
-
-_________________________________________________________
-Do You Yahoo!?
-150万曲MP3疯狂搜，带您闯入音乐殿堂
-<a class="moz-txt-link-freetext" href="http://music.yisou.com/">http://music.yisou.com/</a>
-美女明星应有尽有，搜遍美图、艳图和酷图
-<a class="moz-txt-link-freetext" href="http://image.yisou.com">http://image.yisou.com</a>
-1G就是1000兆，雅虎电邮自助扩容！
-<a class="moz-txt-link-freetext" href="http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/">http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/</a>
-_______________________________________________
-Linuxppc-embedded mailing list
-<a class="moz-txt-link-abbreviated" href="mailto:Linuxppc-embedded@ozlabs.org">Linuxppc-embedded@ozlabs.org</a>
-<a class="moz-txt-link-freetext" href="https://ozlabs.org/mailman/listinfo/linuxppc-embedded">https://ozlabs.org/mailman/listinfo/linuxppc-embedded</a>
+  Because kernel major/minor change dynamically based upon the number of
+AOE blades on your LAN. As setting them in __setup() - sure, no problem,
+this patch was just a 15 minute hack job.
 
 
+> You do know devfs is going away in 2 months, right?
 
-  </pre>
-</blockquote>
--- <br>
-<pre class="moz-signature" cols="72">Sincerely yours,
-Mike
-</pre>
-</body>
-</html>
+  Yes, much to my disappointment. udevd is so frick'n bloaty.
 
---------------040004000207030906090407--
+> Looks like you are mixing up shelf and slot values with major and minor
+> numbers.  I'm confused.
+
+  As was I. The original driver uses the words 'major' and 'minor' to
+mean *both* kernel major/minor numbers and AOE blade slot/shelf IDs,
+depending on context. Took me a bit to wrap my brain around it too.
+
+> Should be in a separate patch, to fix up devfs issues in the driver,
+> right?  This goes for the other devfs calls in this patch.  That is if
+> you don't mind me removing them in 2 months :)
+
+  Yeah, I know, I was just being lazy and using the uber-fast devfs.
+
+> So, my main question is, why is this patch needed?  Is it because aoe
+> devices aren't quite present and found quick enough during the boot
+> process?
+
+  Yep.
+
+> If so, I suggest one of the two solutions:
+> 	- do like the rest of the world does for usb and firewire and
+> 	  other types of slow boot devices and use an initrd/initramfs
+> 	  that mounts the root partition after it is properly found.
+> 	  Distros do this all the time, so there are lots of examples to
+> 	  pull from if you want to do this for yours.
+
+   I only have 8Mb of RAM. No room for initrd.
+
+> 	- fix up the patch that is floating around that allows the
+> 	  kernel to pause and wait and not oops out if the root
+> 	  partition is not found.  That way all users of all kinds of
+> 	  slow devices can benefit, and driver specific hacks like this
+> 	  are not needed.
+
+   Again, this happy patch you speak of... Where can I find this wonder?
+
+--=20
+Jason McMullan <jason.mcmullan@timesys.com>
+TimeSys Corporation
+
+
+--=-cg8+jxunGCTiXu7nvkFA
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.0 (GNU/Linux)
+
+iD8DBQBCiJ4B8/0vJ5szK6kRAg4OAJ9XJXTyrcC5Hje/Ph3XuNwAjOUP0gCcDqP6
+J33zlnLk8kiLS54nWxoLnwY=
+=6U2Z
+-----END PGP SIGNATURE-----
+
+--=-cg8+jxunGCTiXu7nvkFA--
