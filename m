@@ -1,22 +1,19 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5701F67B17
+Return-Path: <wd@denx.de>
+Received: from mailout11.sul.t-online.com (mailout11.sul.t-online.com
+	[194.25.134.85]) by ozlabs.org (Postfix) with ESMTP id 1C94767A06
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 17 May 2005 08:52:37 +1000 (EST)
-In-Reply-To: <61cc712d050516153941bc3b26@mail.gmail.com>
-References: <61cc712d05051614507b688c6e@mail.gmail.com>
-	<20050516220330.6D4E3C1512@atlas.denx.de>
-	<61cc712d050516153941bc3b26@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <0d07fbd5d90d129227b4f579067f2d16@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Mon, 16 May 2005 18:52:41 -0400
+	Tue, 17 May 2005 09:27:58 +1000 (EST)
 To: Kylo Ginsberg <kylo.ginsberg@gmail.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 16 May 2005 15:39:07 PDT."
+	<61cc712d050516153941bc3b26@mail.gmail.com>
+Date: Tue, 17 May 2005 01:27:39 +0200
+Sender: wd@denx.de
+Message-Id: <20050516232744.F106DC1512@atlas.denx.de>
 Cc: PPC_LINUX <linuxppc-embedded@ozlabs.org>
-Subject: Re: MPC885 - USB HCI drivers.
+Subject: Re: MPC885 - USB HCI drivers. 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,24 +24,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+In message <61cc712d050516153941bc3b26@mail.gmail.com> you wrote:
+>
+> > My advice: use a _real_ USB controller.
+> 
+> Are there known problems with CPM-based USB controllers?  I'm
 
-On May 16, 2005, at 6:39 PM, Kylo Ginsberg wrote:
+Ummmm... yes, there are. Especially if you want to use it as  a  host
+comtroller  (which  is  never  was designed for). Even more, if there
+might be other periopherals in your system that might need  a  bit  a
+CPM performance. Or ...
 
-> Are there known problems with CPM-based USB controllers?
+No, I better stop here. Please ask your  Freecale  sales  representa-
+tive. He may know better. [Or not, maybe.]
 
-The original CPM USB controller was only supposed to be
-a device side controller.  With some software hacks, CPM
-microcode downloads, and even some hardware modifications,
-you can often get it to work as a host in some static situations.
-It doesn't have a built in root hub, you usually concentrate
-on making it work with one specific device for a particular
-product.  You may find some application notes on the
-Freescale web site, but I haven't seem them lately.
+> completely new to the subject, but we are designing a board assuming
+> we can use the USB controller on an MPC8555E.
 
-Take Wolfgang's advice, it's easier to find a way to
-attach a real USB controller than to make this one
-work as you probably expect.
+You can do that. Anything can be done. But in this case I don't  know
+of an efficient way to do it. But my knowledge is limited, obviously.
 
-Thanks.
+Best regards,
 
-	-- Dan
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Man did not weave the web of life; he  is  merely  a  strand  in  it.
+Whatever he does to the web, he does to himself.     - Seattle [1854]
