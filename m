@@ -1,17 +1,18 @@
-Return-Path: <przemyslaw.fafara@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.193])
-	by ozlabs.org (Postfix) with ESMTP id D32F2679F3
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 May 2005 06:16:31 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 57so1577773wri
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 May 2005 13:16:29 -0700 (PDT)
-Message-ID: <4288FE12.5060907@gmail.com>
-Date: Mon, 16 May 2005 22:09:54 +0200
-MIME-Version: 1.0
-To: linuxppc <linuxppc-dev@ozlabs.org>
-Content-Type: multipart/signed; protocol="application/x-pkcs7-signature";
-	micalg=sha1; boundary="------------ms000907080502090007050803"
-From: =?ISO-8859-2?Q?Przemys=B3aw_F=B1fara?= <przemyslaw.fafara@gmail.com>
-Subject: building gcc for ppc platform
+Return-Path: <wd@denx.de>
+Received: from mailout05.sul.t-online.com (mailout05.sul.t-online.com
+	[194.25.134.82]) by ozlabs.org (Postfix) with ESMTP id 342C2679FC
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 May 2005 06:26:25 +1000 (EST)
+To: =?ISO-8859-2?Q?Przemys=B3aw_F=B1fara?= <przemyslaw.fafara@gmail.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 16 May 2005 22:09:54 +0200."
+	<4288FE12.5060907@gmail.com>
+Date: Mon, 16 May 2005 22:26:05 +0200
+Sender: wd@denx.de
+Message-Id: <20050516202610.3E1FDC1512@atlas.denx.de>
+Cc: linuxppc <linuxppc-dev@ozlabs.org>
+Subject: Re: building gcc for ppc platform 
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,88 +22,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a cryptographically signed message in MIME format.
+In message <4288FE12.5060907@gmail.com> you wrote:
+> 
+> I have a problem with building ggc for ppc platform. I would like to 
+> build it and use it on my xilinx ml310 board. A'm using a montavista 
+> linux preview kit, but it doesn't have a gcc. Could you help me?
 
---------------ms000907080502090007050803
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 7bit
+Use the ELDK - it's more complete, and free.
+See http://www.denx.de/ELDK.html
 
-hi
+Best regards,
 
-I have a problem with building ggc for ppc platform. I would like to 
-build it and use it on my xilinx ml310 board. A'm using a montavista 
-linux preview kit, but it doesn't have a gcc. Could you help me?
+Wolfgang Denk
 
 -- 
-Przemyslaw Fafara
-Institute of Electronic Systems
-Warsaw University of Technology
-POLAND
-
---------------ms000907080502090007050803
-Content-Type: application/x-pkcs7-signature; name="smime.p7s"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="smime.p7s"
-Content-Description: S/MIME Cryptographic Signature
-
-MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIJETCC
-AuMwggJMoAMCAQICAw6TijANBgkqhkiG9w0BAQQFADBiMQswCQYDVQQGEwJaQTElMCMGA1UE
-ChMcVGhhd3RlIENvbnN1bHRpbmcgKFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBlcnNv
-bmFsIEZyZWVtYWlsIElzc3VpbmcgQ0EwHhcNMDUwNDI2MjIxMjE1WhcNMDYwNDI2MjIxMjE1
-WjBNMR8wHQYDVQQDExZUaGF3dGUgRnJlZW1haWwgTWVtYmVyMSowKAYJKoZIhvcNAQkBFhtQ
-cnplbXlzbGF3LkZhZmFyYUBnbWFpbC5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
-AoIBAQC41/ENIc/2/beNneBU7ZqMdbXwGN2LPYbuoiY+JcGT3HOMo0pDOA2XKe0vx+v66CPW
-T+4egspmKGPArAIBTo7F/Wb1dKsA/QVDQ/G7KtNfCM8emp/6dE3LA4/ZHCdOeDaKjwqsGLhY
-u6VKrbShLvut9LkZ5b2q6KX9y5mb87Q6UORi2o4aVja2PUEX4K+0GtEheCcSYbbfMpwnOo+t
-SjgUcHByjCtX88FUnFLcmq3KOahw9Rcg943mpwWGAYNClYDwKYOyxmQVdtv/GnRGa7B8gBC2
-tKEdl4Sc6C/1VR2CiHjvDuJGE/+5m8ekMbI1klxr9t7KsXCUXLw5yWmLraetAgMBAAGjODA2
-MCYGA1UdEQQfMB2BG1ByemVteXNsYXcuRmFmYXJhQGdtYWlsLmNvbTAMBgNVHRMBAf8EAjAA
-MA0GCSqGSIb3DQEBBAUAA4GBAFY2wqwKjkOoCfUv+7UiKvrRfqPsBQOW0dyQJ9eOOn5JYUu8
-9XWWzhyJI+z8Ltr1Ll4/IWgdQp6RZmgGpBIwROAW7t5zoBZZdNkSPGsg5o5cyYU85ZOFS6fU
-iyUxdQVo5iHmY1kelgxgXio8fX1xLyHrfZw4Bh4UbIGBkaDIVY1hMIIC4zCCAkygAwIBAgID
-DpOKMA0GCSqGSIb3DQEBBAUAMGIxCzAJBgNVBAYTAlpBMSUwIwYDVQQKExxUaGF3dGUgQ29u
-c3VsdGluZyAoUHR5KSBMdGQuMSwwKgYDVQQDEyNUaGF3dGUgUGVyc29uYWwgRnJlZW1haWwg
-SXNzdWluZyBDQTAeFw0wNTA0MjYyMjEyMTVaFw0wNjA0MjYyMjEyMTVaME0xHzAdBgNVBAMT
-FlRoYXd0ZSBGcmVlbWFpbCBNZW1iZXIxKjAoBgkqhkiG9w0BCQEWG1ByemVteXNsYXcuRmFm
-YXJhQGdtYWlsLmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALjX8Q0hz/b9
-t42d4FTtmox1tfAY3Ys9hu6iJj4lwZPcc4yjSkM4DZcp7S/H6/roI9ZP7h6CymYoY8CsAgFO
-jsX9ZvV0qwD9BUND8bsq018Izx6an/p0TcsDj9kcJ054NoqPCqwYuFi7pUqttKEu+630uRnl
-varopf3LmZvztDpQ5GLajhpWNrY9QRfgr7Qa0SF4JxJhtt8ynCc6j61KOBRwcHKMK1fzwVSc
-Utyarco5qHD1FyD3jeanBYYBg0KVgPApg7LGZBV22/8adEZrsHyAELa0oR2XhJzoL/VVHYKI
-eO8O4kYT/7mbx6QxsjWSXGv23sqxcJRcvDnJaYutp60CAwEAAaM4MDYwJgYDVR0RBB8wHYEb
-UHJ6ZW15c2xhdy5GYWZhcmFAZ21haWwuY29tMAwGA1UdEwEB/wQCMAAwDQYJKoZIhvcNAQEE
-BQADgYEAVjbCrAqOQ6gJ9S/7tSIq+tF+o+wFA5bR3JAn1446fklhS7z1dZbOHIkj7Pwu2vUu
-Xj8haB1CnpFmaAakEjBE4Bbu3nOgFll02RI8ayDmjlzJhTzlk4VLp9SLJTF1BWjmIeZjWR6W
-DGBeKjx9fXEvIet9nDgGHhRsgYGRoMhVjWEwggM/MIICqKADAgECAgENMA0GCSqGSIb3DQEB
-BQUAMIHRMQswCQYDVQQGEwJaQTEVMBMGA1UECBMMV2VzdGVybiBDYXBlMRIwEAYDVQQHEwlD
-YXBlIFRvd24xGjAYBgNVBAoTEVRoYXd0ZSBDb25zdWx0aW5nMSgwJgYDVQQLEx9DZXJ0aWZp
-Y2F0aW9uIFNlcnZpY2VzIERpdmlzaW9uMSQwIgYDVQQDExtUaGF3dGUgUGVyc29uYWwgRnJl
-ZW1haWwgQ0ExKzApBgkqhkiG9w0BCQEWHHBlcnNvbmFsLWZyZWVtYWlsQHRoYXd0ZS5jb20w
-HhcNMDMwNzE3MDAwMDAwWhcNMTMwNzE2MjM1OTU5WjBiMQswCQYDVQQGEwJaQTElMCMGA1UE
-ChMcVGhhd3RlIENvbnN1bHRpbmcgKFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBlcnNv
-bmFsIEZyZWVtYWlsIElzc3VpbmcgQ0EwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMSm
-PFVzVftOucqZWh5owHUEcJ3f6f+jHuy9zfVb8hp2vX8MOmHyv1HOAdTlUAow1wJjWiyJFXCO
-3cnwK4Vaqj9xVsuvPAsH5/EfkTYkKhPPK9Xzgnc9A74r/rsYPge/QIACZNenprufZdHFKlSF
-D0gEf6e20TxhBEAeZBlyYLf7AgMBAAGjgZQwgZEwEgYDVR0TAQH/BAgwBgEB/wIBADBDBgNV
-HR8EPDA6MDigNqA0hjJodHRwOi8vY3JsLnRoYXd0ZS5jb20vVGhhd3RlUGVyc29uYWxGcmVl
-bWFpbENBLmNybDALBgNVHQ8EBAMCAQYwKQYDVR0RBCIwIKQeMBwxGjAYBgNVBAMTEVByaXZh
-dGVMYWJlbDItMTM4MA0GCSqGSIb3DQEBBQUAA4GBAEiM0VCD6gsuzA2jZqxnD3+vrL7CF6FD
-lpSdf0whuPg2H6otnzYvwPQcUCCTcDz9reFhYsPZOhl+hLGZGwDFGguCdJ4lUJRix9sncVcl
-jd2pnDmOjCBPZV+V2vf3h9bGCE6u9uo05RAaWzVNd+NWIXiC3CEZNd4ksdMdRv9dX2VPMYID
-OzCCAzcCAQEwaTBiMQswCQYDVQQGEwJaQTElMCMGA1UEChMcVGhhd3RlIENvbnN1bHRpbmcg
-KFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBlcnNvbmFsIEZyZWVtYWlsIElzc3Vpbmcg
-Q0ECAw6TijAJBgUrDgMCGgUAoIIBpzAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqG
-SIb3DQEJBTEPFw0wNTA1MTYyMDA5NTRaMCMGCSqGSIb3DQEJBDEWBBQMd+3XbkhIsxjn2lND
-XEHCsV6bnjBSBgkqhkiG9w0BCQ8xRTBDMAoGCCqGSIb3DQMHMA4GCCqGSIb3DQMCAgIAgDAN
-BggqhkiG9w0DAgIBQDAHBgUrDgMCBzANBggqhkiG9w0DAgIBKDB4BgkrBgEEAYI3EAQxazBp
-MGIxCzAJBgNVBAYTAlpBMSUwIwYDVQQKExxUaGF3dGUgQ29uc3VsdGluZyAoUHR5KSBMdGQu
-MSwwKgYDVQQDEyNUaGF3dGUgUGVyc29uYWwgRnJlZW1haWwgSXNzdWluZyBDQQIDDpOKMHoG
-CyqGSIb3DQEJEAILMWugaTBiMQswCQYDVQQGEwJaQTElMCMGA1UEChMcVGhhd3RlIENvbnN1
-bHRpbmcgKFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBlcnNvbmFsIEZyZWVtYWlsIElz
-c3VpbmcgQ0ECAw6TijANBgkqhkiG9w0BAQEFAASCAQCuhLD7CBJWEItheNsQcOhyO0K2LgSw
-bFMkP1WBBx+KpRxqyWIc1boJ1pO7LtYKJ6T/dq/hThIpgr1WxGeGde/KxUI83n0wnviCMaa4
-H9K8JYXERlmp6IM+VgXZsbYKjcJ4jW3lSIfMIbLoRbwZfsgigyrTApK8/SMKrE3JXaAssIkG
-59CTZMOS95mtOPRCqbK3EJrjnpVXXj5lglmExRB47RVeRyimk2Ixqf5xu+I8QVKkJMNi5szy
-2R7b0dtXAW9rW4xcwHLdg0hIf7irYuByLsMTIc39qbE0yQcvJir2sLzBTYprO/cEaztMzIY5
-GR872qlXKmDxrn8ehYqbfwUKAAAAAAAA
---------------ms000907080502090007050803--
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+People seldom know what they want until you give them what  they  ask
+for.
