@@ -1,21 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8D00D679F8
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 May 2005 02:45:06 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Dan Malek <dan@embeddededge.com>
-In-Reply-To: <fe487e7a8a89e65cfefd4f5dd39a982d@embeddededge.com>
+	by ozlabs.org (Postfix) with ESMTP id 82F6A679EF
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 May 2005 03:11:19 +1000 (EST)
+In-Reply-To: <1116261725.5095.139.camel@gaston>
 References: <1116222720.5095.86.camel@gaston>
 	<7d5cfed0ee1edade8050d2c4da94b3f1@freescale.com>
 	<c58d28ab50872f95d4c4a751d1768513@embeddededge.com>
 	<1116255938.5095.133.camel@gaston>
 	<fe487e7a8a89e65cfefd4f5dd39a982d@embeddededge.com>
-Content-Type: text/plain
-Date: Tue, 17 May 2005 02:42:05 +1000
-Message-Id: <1116261725.5095.139.camel@gaston>
-Mime-Version: 1.0
+	<1116261725.5095.139.camel@gaston>
+Mime-Version: 1.0 (Apple Message framework v622)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <22b73f109d1c4a95b565f1007d76b8bf@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Mon, 16 May 2005 13:11:21 -0400
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org, John Reiser <jreiser@BitWagon.com>
 Subject: Re: 2GB address space limit on 32-bit PowerPC Macintosh
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -28,41 +29,58 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> The PMac is only one "board" out of many we support, and I don't think
-> it should be considered the default or generic configuration any more
-> than any other board.  The PMac is the easiest to update because it's
-> a single configuration file. 
+On May 16, 2005, at 12:42 PM, Benjamin Herrenschmidt wrote:
 
-Single ? Hrm... not so sure :) It's also the biggest (in terms of line
-of code) subarch of the ppc32 architecture :) Besides, pmac is also chrp
-& prep as I'm really talking about CONFIG_PPC_MULTIPLATFORM (too bad no
-embedded vendor ever tried to be part of the common kernel... heh)
+> On the other hands, how many embedded boards care about getting the
+> latest "linus" tree ?
 
->  If you want that to have a 3G default task
-> space, then update that one configuration file.  
+Why are you PMac guys always treating the embedded boards
+as second class citizens?  Don't any of you remember that all of
+initial PowerPC work was done on an embedded board and the PMac
+was a beneficiary of that work? :-)
 
-Hrm... you mean the defconfig then ? Ok, right, well, I suppose we could
-update pmac, prep and chrp defconfigs. It's still not the default as per
-Kconfig which I find a little bit annoying. 
+Of course we care the "linus" tree is up to date.  We use that
+all of the time for new product development.  If it wasn't for so few
+of us having permission to write updates, we would probably register
+many more than you do.
 
-> As we have time we
-> will update all of the others, and when we get to the point where most
-> boards are of that configuration, we'll make it the default and the
-> minority of boards become the special cases.
+> ...  Embedded code has been rather frozen in
+> the rock, I don't think it's much to ask from the appropriate 
+> maintainer
+> to have a quick look at possibly upgrading their board support as well.
 
-On the other hands, how many embedded boards care about getting the
-latest "linus" tree ? I mean, I do have to update pmac support regulary
-as new developpement occurs, and you know as well as I do that 2.6.x
-series are by no mean stable. Embedded code has been rather frozen in
-the rock, I don't think it's much to ask from the appropriate maintainer
-to have a quick look at possibly upgrading their board support as well.
-And it isn't a difficult change for most 6xx/7xx/7xxx based boards
-anyway. What I'm worried about is that without some "pressure" (like
-breaking them), it will simply never be fixed...
+It's not frozen, it's just more tedious because we are trying to find
+solutions that are commonly good for everyone, not demanding
+changes and forcing everyone else to adapt.
 
-The whole io_block_mapping() was a bad idea in the first place. We
-introduced that API to replace an even worse one which was to set BATs
-directly in the early days of the kernel, but I for one think we should
-just have killed the whole thing in the first place.
+> And it isn't a difficult change for most 6xx/7xx/7xxx based boards
+> anyway. What I'm worried about is that without some "pressure" (like
+> breaking them), it will simply never be fixed...
 
-Ben.
+Who cares?  We have the ability to support the memory map flexibility
+for everyone.  If you need it, use it, and fix it if necessary.  There 
+are
+too many other things that need attention.  Again, you are taking one
+of the features we added for embedded boards a long time ago, and
+demanding everyone support it.  That's not necessary.   If you want
+to use this feature on a PMac, then use it, but please don't demand
+everyone else do so.  We didn't do that when the feature was added.
+
+> The whole io_block_mapping() was a bad idea in the first place.
+
+All of the ideas in 2.6 are going to look like bad ideas in the future 
+:-)
+It's what worked and was necessary given the lack of any other
+APIs at the time.  We are working on removing these in the embedded
+boards, and it has to be done on the PMac as well if you want to
+take advantage of something other than a 2G task space.
+
+As time permits, I will make whatever changes to the board ports
+I'm aware of so they will accommodate a 3G task space, or fix up
+the configuration files so the default is 2G.  At some point, we can
+make it the configuration default.
+
+Thanks.
+
+
+	-- Dan
