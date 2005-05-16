@@ -1,15 +1,18 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 366CE679F0
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 May 2005 16:21:20 +1000 (EST)
-In-Reply-To: <1116222720.5095.86.camel@gaston>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 08C05679F0
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 May 2005 16:25:35 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <7d5cfed0ee1edade8050d2c4da94b3f1@freescale.com>
 References: <1116222720.5095.86.camel@gaston>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <7d5cfed0ee1edade8050d2c4da94b3f1@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Mon, 16 May 2005 01:21:13 -0500
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+	<7d5cfed0ee1edade8050d2c4da94b3f1@freescale.com>
+Content-Type: text/plain
+Date: Mon, 16 May 2005 16:22:48 +1000
+Message-Id: <1116224569.5095.90.camel@gaston>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, John Reiser <jreiser@BitWagon.com>
 Subject: Re: 2GB address space limit on 32-bit PowerPC Macintosh
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -22,48 +25,34 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On May 16, 2005, at 12:52 AM, Benjamin Herrenschmidt wrote:
+> I'm interested to see if Paul is aware of any other embedded port 
+> issues, since he mentioned the problem there.
 
->
->
-> > >
->  > > We need to fix that too :) Though I suppose we can just switch=20
-> that to
->  > >=A0 page tables, I don't really see the point of using a BAT =
-here...
->  >
-> > Are the embedded board ports broken because of similar
-> > io_block_mapping() calls or for some other reason?
->  =A0
->  Mostly because of the above, though some embedded ports may do even=20=
+Well, we need to dig out from the part of our memory containing things
+we don't want to have to deal with anymore things details about the
+booke, 4xx, 8xx, ... memory management :)
+ 
+> Agreed, the other problem that comes up from time to time due to 
+> io_block_mapping() that I've see is problem with modules not working 
+> because the kernel doesn't think it has any vmalloc() space left.
 
-> more
->  horrible things for what i know :) The problem with =
-io_block_mapping()
-> is that 1) it lets you put those BARs or mappings where you want, and=20=
+How so ? Because we ioremap too much ? Well, that's an ooooold problem.
+ppc32 PCI code for example goes at length trying to minimize the amount
+of IO space mapped by PCI bridges (since IO space, unlike memory space,
+on our current PCI implementation is permanently mapped in). With a
+standard setup, we can only ioremap/vmalloc what is left between top of
+memory and 1Gb ... Unless you force your lowmem limit to something lower
+than the current limit which I think is 768Mb.
 
-> 2)
->  you end up with plenty of code hard-coding this virtual address here=20=
-
-> or
->  there that need to be fixed.
-
-I'm interested to see if Paul is aware of any other embedded port=20
-issues, since he mentioned the problem there.
-
-Agreed, the other problem that comes up from time to time due to=20
-io_block_mapping() that I've see is problem with modules not working=20
-because the kernel doesn't think it has any vmalloc() space left.
-
-> > I'm in agreement that we should bump TASK_SIZE to 3GB and fix =
-things,
-> > how about after 2.6.12 is out?
->
-> Agreed. I'll fix PReP/CHRP/pmac & defconfig. Every embedded board
->  vendor/maintainer will be responsible for fixing his/her boards=20
-> support.
-
-Agreed.  We should probably send an email to linuxppc-embedded with a=20
-more proper subject line to let people know.
-
-- kumar
+> > > I'm in agreement that we should bump TASK_SIZE to 3GB and fix things,
+> > > how about after 2.6.12 is out?
+> >
+> > Agreed. I'll fix PReP/CHRP/pmac & defconfig. Every embedded board
+> >  vendor/maintainer will be responsible for fixing his/her boards 
+> > support.
+> 
+> Agreed.  We should probably send an email to linuxppc-embedded with a 
+> more proper subject line to let people know.
+> 
+> - kumar
+> 
