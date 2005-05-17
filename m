@@ -1,17 +1,17 @@
 Return-Path: <gautran@mrv.com>
 Received: from mailman.xyplex.com (mailman.xyplex.com [140.179.176.116])
-	by ozlabs.org (Postfix) with ESMTP id 8277D679F5
+	by ozlabs.org (Postfix) with ESMTP id 9D550679F5
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 17 May 2005 22:10:10 +1000 (EST)
-Message-ID: <4289DF4F.4060301@mrv.com>
-Date: Tue, 17 May 2005 08:10:55 -0400
+	Tue, 17 May 2005 22:12:35 +1000 (EST)
+Message-ID: <4289DFDE.1080402@mrv.com>
+Date: Tue, 17 May 2005 08:13:18 -0400
 From: Guillaume Autran <gautran@mrv.com>
 MIME-Version: 1.0
-To: Pantelis Antoniou <panto@intracom.gr>
-References: <20050517081558.74BA0C1512@atlas.denx.de>
-	<4289A635.5000509@intracom.gr>
-In-Reply-To: <4289A635.5000509@intracom.gr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Mike Rapoport <mike@compulab.co.il>
+References: <20050517081558.74BA0C1512@atlas.denx.de>	<4289A635.5000509@intracom.gr>	<4434E283.3000201@eircom.net>
+	<4289BD01.5080805@intracom.gr> <4289D685.4070406@compulab.co.il>
+In-Reply-To: <4289D685.4070406@compulab.co.il>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: MPC885 - USB HCI drivers.
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -24,67 +24,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Pantelis,
-
-Are your drivers compatible with linux kernel 2.6.x ?
-I'll be interested to have a look at them if you don't mind.
-
-Also, do you think an USB bus analyzer is a *must have* in order to work 
-on the drivers ?
-
-Regards,
-Guillaume.
 
 
-Pantelis Antoniou wrote:
+Mike Rapoport wrote:
 
-> Wolfgang Denk wrote:
+> Pantelis Antoniou wrote:
 >
->> Dear Mike,
+>> Also they're 2.4 only :)
 >>
->> in message <428995CB.4050301@compulab.co.il> you wrote:
+>> I'll try to clean them up and post them sometime this week.
 >>
->>> Do you know if the same is applicable to CPM2 USB controllers 
->>> present for example on mpc8247?
+>> But I don't have time left to hack them for 2.6. I'll need
+>> vict^H^H^Holunteers to do it...
 >>
+>> Regards
 >>
+>> Pantelis
 >>
->> Sorry, I don't know from personal experience. But from what  I  heard
->> there might be some "surprises", too.
->>
->>
->>> The Freescale sales representative we work with actually says that 
->>> CPM2 USB host controller is working well.
->>
->>
->>
->> Of course they do. They say the same for the 850 and 823 :-(
->>
->> Best regards,
->>
->> Wolfgang Denk
->>
+> I think you've found one _vict^H^H^Holunteer_  :)
+> I've started to port the m82xxhci to 2.6. For now it is get compiled 
+> (mostly). :))
 >
-> Well I have USB host drivers for both 8xx & 82xx working.
->
-> It was not a piece of cake exactly to get them to work
-> but they seem to work fine even under heavy traffic.
->
-> However I use them connected to a specific peripheral
-> so I don't know how well they fare when used as a PC
-> style USB host controller.
->
-> YMMV
->
-> Regards
->
-> Pantelis
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
+Add me to the list !
 
 -- 
 =======================================
