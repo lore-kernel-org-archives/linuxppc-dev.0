@@ -1,18 +1,25 @@
-Return-Path: <mike@compulab.co.il>
-Received: from alex (62-90-235-247.barak.net.il [62.90.235.247])
-	by ozlabs.org (Postfix) with ESMTP id 1670F679F1
+Return-Path: <Heinz.Wrobel@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id ADEDB679F4
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 17 May 2005 15:56:50 +1000 (EST)
-Message-ID: <428995CB.4050301@compulab.co.il>
-Date: Tue, 17 May 2005 08:57:15 +0200
-From: Mike Rapoport <mike@compulab.co.il>
+	Tue, 17 May 2005 16:41:16 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	j4H6k1LS029267 for <linuxppc-embedded@ozlabs.org>;
+	Mon, 16 May 2005 23:46:02 -0700 (MST)
+Received: from zwg18exm01.ea.freescale.net (zwg18exm01.ea.freescale.net
+	[10.170.73.30])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id j4H6i2jg025924
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 17 May 2005 01:44:03 -0500 (CDT)
+Message-ID: <DF02D66C37C26B4C8018BF84F0E37FEC087B51F3@zwg18exm01.ea.freescale.net>
+From: Wrobel Heinz-r39252 <Heinz.Wrobel@freescale.com>
+To: "Martin, Tim" <tim.martin@viasat.com>,
+	"'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
+Date: Tue, 17 May 2005 08:41:12 +0200
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-References: <20050516232744.F106DC1512@atlas.denx.de>
-In-Reply-To: <20050516232744.F106DC1512@atlas.denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC885 - USB HCI drivers.
+Content-Type: text/plain
+Subject: RE: MPC860 CP / CPM Misbehaving
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,41 +30,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Wolfgang Denk wrote:
+ 
 
->In message <61cc712d050516153941bc3b26@mail.gmail.com> you wrote:
->  
->
->>>My advice: use a _real_ USB controller.
->>>      
->>>
->>Are there known problems with CPM-based USB controllers?  I'm
->>    
->>
->
->Ummmm... yes, there are. Especially if you want to use it as  a  host
->comtroller  (which  is  never  was designed for). Even more, if there
->might be other periopherals in your system that might need  a  bit  a
->CPM performance. Or ...
->
->  
->
-Do you know if the same is applicable to CPM2 USB controllers present 
-for example on mpc8247?
+> descriptors (BDs) from the CPM with the OV bit set (bit 14 of the RxBD
+> status/control field, "Overrun. Set when a receiver overrun 
+> occurs during
+> reception").
 
->No, I better stop here. Please ask your  Freecale  sales  representa-
->tive. He may know better. [Or not, maybe.]
->  
->
+Check the following:
 
-The Freescale sales representative we work with actually says that CPM2 
-USB host controller is working well.
+- SDRAM setup. If ORx(BIH)=1 makes the problem go away, your burst setup or the /TA pullup is broken. NB: Neither the SCC nor the SMC do bursts.
+- Check pullups as per UM recommendation. I tend to recommend 1k.
+- Did you by accident happen to enable any IDMA lines?
+- Did you happen to misconfigure RCCR(DRxM)?
+- Did you happen to misconfigure the SDCR?
 
->Best regards,
->
->Wolfgang Denk
->  
->
--- 
-Sincerely yours,
-Mike
+One other thing. If you have an old BDM debugger *and* if the problem occurs *only* with the BDM debugger hooked up, you may want to check for an update or replacement. Old debuggers sometimes used a method to do BDM which could stall the DMAs in the machine and cause this kind of overrun/underrun effect.
+
+Heinz
