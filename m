@@ -1,18 +1,19 @@
-Return-Path: <galak@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 403A4679FA
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id D74B0679F8
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 18 May 2005 02:59:53 +1000 (EST)
-Date: Tue, 17 May 2005 11:59:33 -0500 (CDT)
-From: Kumar Gala <galak@freescale.com>
-To: Andrew Morton <akpm@osdl.org>
-Message-ID: <Pine.LNX.4.61.0505171158460.26903@nylon.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] ppc32: Fix some minor issues related to FSL Book-E KGDB
- support
+	Wed, 18 May 2005 03:00:15 +1000 (EST)
+In-Reply-To: <428A040D.40604@ybb.ne.jp>
+References: <428A040D.40604@ybb.ne.jp>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <fb7df67f9dda2794b4af2dfa9b4754ca@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Tue, 17 May 2005 12:00:04 -0500
+To: "Takeharu KATO" <takeharu1219@ybb.ne.jp>
+Cc: Glenn Burkhardt <glenn@aoi-industries.com>,
+	"Gala Kumar K.-galak" <galak@freescale.com>, linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] BOOKE_WDT Part 1/2 (Re: PPC 44x Watchdog timer)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,98 +24,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Some debug registers needed to be initialized early on to allow
-proper support for KGDB.  Additionally, we need to setup the
-ppc.md_early_serial_map function pointer on boards that have
-serial support for KGDB.
 
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+On May 17, 2005, at 9:47 AM, Takeharu KATO wrote:
 
----
-commit 704da4a5c793087584fa5d0ed73440dd4ac44294
-tree 1702b9dd418707a930969079b460df0ace2f1c1a
-parent f772a90e948f019c3111a94394b3a649874417c7
-author Kumar K. Gala <kumar.gala@freescale.com> Mon, 16 May 2005 11:12:35 -0500
-committer Kumar K. Gala <kumar.gala@freescale.com> Mon, 16 May 2005 11:12:35 -0500
+> Hi Kumar:
+>
+> >> No problem, can you replace all the cmd line parsing with
+> >> early_param() code in arch/ppc/kernel/setup.c.=A0 Take a look at
+> >> arch/ppc64/kernel/setup.c for an example.=A0 We still need to add a=20=
 
- ppc/kernel/head_fsl_booke.S             |   15 ++++++++++++++-
- ppc/platforms/85xx/mpc8540_ads.c        |    3 +++
- ppc/platforms/85xx/mpc85xx_cds_common.c |    3 +++
- ppc/platforms/85xx/sbc8560.c            |    3 +++
- 4 files changed, 23 insertions(+), 1 deletion(-)
+> call
+> >> to parse_early_param() in setup_arch().
+>  >>
+>  > Sorry, I can not figure out what you want.
+> > As far as I look the source tree,arch/ppc/kernel/setup.c does not=20
+> have
+>  > the function called early_param.
+>  > Would you give me a more precise explanation?
+>  >
+> On second thought, I make sense what you said.
+> You asked me that I make some kind of cleanups, didn't you?
+>  If it is true, I'll try to clean up these setups, but it may be
+>  take the time.
 
-Index: arch/ppc/kernel/head_fsl_booke.S
-===================================================================
---- c9d59c269792db4933039da49b3b3836ac5b01f5/arch/ppc/kernel/head_fsl_booke.S  (mode:100644)
-+++ 1702b9dd418707a930969079b460df0ace2f1c1a/arch/ppc/kernel/head_fsl_booke.S  (mode:100644)
-@@ -232,7 +232,8 @@
- 	tlbwe
- 
- /* 7. Jump to KERNELBASE mapping */
--	li	r7,0
-+	lis	r7,MSR_KERNEL@h
-+	ori	r7,r7,MSR_KERNEL@l
- 	bl	1f			/* Find our address */
- 1:	mflr	r9
- 	rlwimi	r6,r9,0,20,31
-@@ -291,6 +292,18 @@
- 	mfspr	r2,SPRN_HID0
- 	oris	r2,r2,HID0_DOZE@h
- 	mtspr	SPRN_HID0, r2
-+#endif
-+
-+#if !defined(CONFIG_BDI_SWITCH)
-+	/*
-+	 * The Abatron BDI JTAG debugger does not tolerate others
-+	 * mucking with the debug registers.
-+	 */
-+	lis	r2,DBCR0_IDM@h
-+	mtspr	SPRN_DBCR0,r2
-+	/* clear any residual debug events */
-+	li	r2,-1
-+	mtspr	SPRN_DBSR,r2
- #endif
- 
- 	/*
-Index: arch/ppc/platforms/85xx/mpc8540_ads.c
-===================================================================
---- c9d59c269792db4933039da49b3b3836ac5b01f5/arch/ppc/platforms/85xx/mpc8540_ads.c  (mode:100644)
-+++ 1702b9dd418707a930969079b460df0ace2f1c1a/arch/ppc/platforms/85xx/mpc8540_ads.c  (mode:100644)
-@@ -210,6 +210,9 @@
- #if defined(CONFIG_SERIAL_8250) && defined(CONFIG_SERIAL_TEXT_DEBUG)
- 	ppc_md.progress = gen550_progress;
- #endif	/* CONFIG_SERIAL_8250 && CONFIG_SERIAL_TEXT_DEBUG */
-+#if defined(CONFIG_SERIAL_8250) && defined(CONFIG_KGDB)
-+	ppc_md.early_serial_map = mpc85xx_early_serial_map;
-+#endif	/* CONFIG_SERIAL_8250 && CONFIG_KGDB */
- 
- 	if (ppc_md.progress)
- 		ppc_md.progress("mpc8540ads_init(): exit", 0);
-Index: arch/ppc/platforms/85xx/mpc85xx_cds_common.c
-===================================================================
---- c9d59c269792db4933039da49b3b3836ac5b01f5/arch/ppc/platforms/85xx/mpc85xx_cds_common.c  (mode:100644)
-+++ 1702b9dd418707a930969079b460df0ace2f1c1a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c  (mode:100644)
-@@ -459,6 +459,9 @@
- #if defined(CONFIG_SERIAL_8250) && defined(CONFIG_SERIAL_TEXT_DEBUG)
- 	ppc_md.progress = gen550_progress;
- #endif /* CONFIG_SERIAL_8250 && CONFIG_SERIAL_TEXT_DEBUG */
-+#if defined(CONFIG_SERIAL_8250) && defined(CONFIG_KGDB)
-+	ppc_md.early_serial_map = mpc85xx_early_serial_map;
-+#endif	/* CONFIG_SERIAL_8250 && CONFIG_KGDB */
- 
- 	if (ppc_md.progress)
- 		ppc_md.progress("mpc85xx_cds_init(): exit", 0);
-Index: arch/ppc/platforms/85xx/sbc8560.c
-===================================================================
---- c9d59c269792db4933039da49b3b3836ac5b01f5/arch/ppc/platforms/85xx/sbc8560.c  (mode:100644)
-+++ 1702b9dd418707a930969079b460df0ace2f1c1a/arch/ppc/platforms/85xx/sbc8560.c  (mode:100644)
-@@ -221,6 +221,9 @@
- #if defined(CONFIG_SERIAL_8250) && defined(CONFIG_SERIAL_TEXT_DEBUG)
- 	ppc_md.progress = gen550_progress;
- #endif	/* CONFIG_SERIAL_8250 && CONFIG_SERIAL_TEXT_DEBUG */
-+#if defined(CONFIG_SERIAL_8250) && defined(CONFIG_KGDB)
-+	ppc_md.early_serial_map = sbc8560_early_serial_map;
-+#endif	/* CONFIG_SERIAL_8250 && CONFIG_KGDB */
- 
- 	if (ppc_md.progress)
- 		ppc_md.progress("sbc8560_init(): exit", 0);
+Yes, I think with these changes to us early_param() for command line=20
+parsing in a single place will make the first patch look good.
+
+I'm still not sure what suggestions I have for the second patch, I was=20=
+
+more just letting you know my thinking about the fact that it concerned=20=
+
+me that the exception handler code was not in arch/ppc/kernel.  Not to=20=
+
+say this is wrong, it just doesn't feel write.
+
+- kumar
