@@ -1,20 +1,23 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A774D679F5
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 May 2005 07:02:38 +1000 (EST)
-In-Reply-To: <428905F8.4030204@mvista.com>
-References: <1116222720.5095.86.camel@gaston>	<7d5cfed0ee1edade8050d2c4da94b3f1@freescale.com>	<c58d28ab50872f95d4c4a751d1768513@embeddededge.com>	<1116255938.5095.133.camel@gaston>	<fe487e7a8a89e65cfefd4f5dd39a982d@embeddededge.com>	<1116261725.5095.139.camel@gaston>
-	<4288DFCB.2080208@mvista.com> <4288E10A.9030408@mvista.com>
-	<2dd506f0a6d4b03e771c0bc9d80735e6@embeddededge.com>
-	<428905F8.4030204@mvista.com>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <751dc096bc613d131421683f6ba4c68a@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Mon, 16 May 2005 17:02:27 -0400
-To: "Mark A. Greer" <mgreer@mvista.com>
+	by ozlabs.org (Postfix) with ESMTP id ED9B4679FC
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 May 2005 10:57:50 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Dan Malek <dan@embeddededge.com>
+In-Reply-To: <22b73f109d1c4a95b565f1007d76b8bf@embeddededge.com>
+References: <1116222720.5095.86.camel@gaston>
+	<7d5cfed0ee1edade8050d2c4da94b3f1@freescale.com>
+	<c58d28ab50872f95d4c4a751d1768513@embeddededge.com>
+	<1116255938.5095.133.camel@gaston>
+	<fe487e7a8a89e65cfefd4f5dd39a982d@embeddededge.com>
+	<1116261725.5095.139.camel@gaston>
+	<22b73f109d1c4a95b565f1007d76b8bf@embeddededge.com>
+Content-Type: text/plain
+Date: Tue, 17 May 2005 10:54:47 +1000
+Message-Id: <1116291287.5095.147.camel@gaston>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, John Reiser <jreiser@BitWagon.com>
 Subject: Re: 2GB address space limit on 32-bit PowerPC Macintosh
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -27,24 +30,56 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On May 16, 2005, at 4:43 PM, Mark A. Greer wrote:
+> Who cares?  We have the ability to support the memory map flexibility
+> for everyone.  If you need it, use it, and fix it if necessary.  There 
+> are
+> too many other things that need attention.  Again, you are taking one
+> of the features we added for embedded boards a long time ago, and
+> demanding everyone support it.
 
-> I think I understand all of that.  I wasn't clear in my email.  I was 
-> talking about "fixing" such that 3GB works (i.e., io_block_mapping are 
-> above 3GB virt, if possible) not "fixing" such that we can get rid of 
-> io_block_mapping altogether.  We still need io_block_mapping for 
-> exactly the reasons you state.
+Gack ? None of this was 'added for embedded boards'. The initial 2G/2G
+split was Cort's decision afaik for the PReP port, and it was PReP and
+pmac that introduced the use of BATs for IO mappings, which then got
+turned into io_block_mapping() for clarity. Those platorms predate by
+far any embedded involvement in the ppc kernel.
 
-I think I've seen hacks from you that temporarily set up BATs for 
-serial console
-access until the BAT is forcefully re-used later :-)  I just wanted to 
-document the
-issue for everyone, that breaking this is more than just a five minute 
-fix and
-test exercise (which may only further obfuscate a hack than actually 
-change
-anything) :-)
+>   That's not necessary.   If you want
+> to use this feature on a PMac, then use it, but please don't demand
+> everyone else do so.  We didn't do that when the feature was added.
 
-Thanks.
+It's more than a "feature", it's the way it should have been done in the
+first place on 6xx/7xx/7xxx CPUs and wasn't done because of a cheap hack
+for IO mapping. I have no problem with other CPU family maintainers
+deciding to restrict TASK_SIZE for the sake of saving a couple of
+instructions (on 4xx, it's really replacing andis.;beq with
+rlwinm;cmpl;bne or something like that, so one instruction, to support
+any TASK_SIZE).
 
-	-- Dan
+> > The whole io_block_mapping() was a bad idea in the first place.
+> 
+> All of the ideas in 2.6 are going to look like bad ideas in the future 
+> :-)
+
+Hrm... If you say so ...
+
+> It's what worked and was necessary given the lack of any other
+> APIs at the time. 
+
+ioremap and variants was available at this time and has always been.
+
+>  We are working on removing these in the embedded
+> boards, and it has to be done on the PMac as well if you want to
+> take advantage of something other than a 2G task space.
+
+Well, you know what ? I've removed them from pmac a long time ago :) And
+you know what also ? what you just stated above is _exactly_ what this
+thread is all about ... so what are you complaining about ? :)
+
+> As time permits, I will make whatever changes to the board ports
+> I'm aware of so they will accommodate a 3G task space, or fix up
+> the configuration files so the default is 2G.  At some point, we can
+> make it the configuration default.
+
+Good, I'm not asking for anything else here.
+
+Ben.
