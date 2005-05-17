@@ -1,22 +1,23 @@
-Return-Path: <panto@intracom.gr>
-Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
-	by ozlabs.org (Postfix) with ESMTP id AA35B679FC
+Return-Path: <Atit_Shah@satyam.com>
+Received: from VVAMAIL1.satyam.com (vvamail1.satyam.com [208.220.247.18])
+	by ozlabs.org (Postfix) with ESMTP id 87F80679F5
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 17 May 2005 18:24:44 +1000 (EST)
-Received: from mailserv.intranet.gr (localhost [127.0.0.1])
-	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id j4H8TRll007575
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 17 May 2005 11:29:28 +0300 (EEST)
-Message-ID: <4289A635.5000509@intracom.gr>
-Date: Tue, 17 May 2005 11:07:17 +0300
-From: Pantelis Antoniou <panto@intracom.gr>
+	Tue, 17 May 2005 19:40:49 +1000 (EST)
+Received: from VVAMAIL1.satyam.com (us.satyam.com [127.0.0.1])
+	by us.satyam.com (8.11.2/8.11.2) with ESMTP id j4H9XiE32498
+	for <linuxppc-embedded@ozlabs.org>; Tue, 17 May 2005 05:33:44 -0400
+Received: from Disclaimerbng.corp.satyam.ad
+	(IDENT:sDyAvJtYFDtXpR+uJalZTD6s4pk2igax@localhost [127.0.0.1])
+	by blr.satyam.com (8.11.6/8.11.6) with ESMTP id j4H9Tqv26427
+	for <linuxppc-embedded@ozlabs.org>; Tue, 17 May 2005 14:59:52 +0530
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-References: <20050517081558.74BA0C1512@atlas.denx.de>
-In-Reply-To: <20050517081558.74BA0C1512@atlas.denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC885 - USB HCI drivers.
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Tue, 17 May 2005 15:05:37 +0530
+Message-ID: <D8595042F3765A4285B848A78A2C2ED10277CE@bsdmsg002.corp.satyam.ad>
+From: "Atit_Shah" <Atit_Shah@satyam.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Starting UDHCP server at startup
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,41 +28,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Wolfgang Denk wrote:
-> Dear Mike,
-> 
-> in message <428995CB.4050301@compulab.co.il> you wrote:
-> 
->>Do you know if the same is applicable to CPM2 USB controllers present 
->>for example on mpc8247?
-> 
-> 
-> Sorry, I don't know from personal experience. But from what  I  heard
-> there might be some "surprises", too.
-> 
-> 
->>The Freescale sales representative we work with actually says that CPM2 
->>USB host controller is working well.
-> 
-> 
-> Of course they do. They say the same for the 850 and 823 :-(
-> 
-> Best regards,
-> 
-> Wolfgang Denk
-> 
+Hi All,
+	I wish to start the udhcp server at boot up through the start up
+script. I create a file S47udhcpd in /etc/init.d/ with the following
+contents:
 
-Well I have USB host drivers for both 8xx & 82xx working.
+#!/bin/sh
 
-It was not a piece of cake exactly to get them to work
-but they seem to work fine even under heavy traffic.
+PKG=3D"udhcp server"
+STARTCMD=3D"/usr/sbin/udhcpd"
+STOPCMD=3D"killall udhcpd"
 
-However I use them connected to a specific peripheral
-so I don't know how well they fare when used as a PC
-style USB host controller.
+. /etc/init.d/common
 
-YMMV
+This is the last commond to be executed ie just before the linux prompt
+ask for the login and password.
+
+When I boot the system I get the following error message "SIOCGIFADDR
+failed, is the interface up and configured?: Cannot assign requested
+address."
+
+If I give the command "udhcpd" in my /etc/profile file the server
+starts. Why does this happen?=20
+
+If I am having this for a router I will need to run udhcpd the moment it
+comes...how will I do this?
 
 Regards
+Atit
 
-Pantelis
+
+DISCLAIMER:
+This email (including any attachments) is intended for the sole use of =
+the intended recipient/s and may contain material that is CONFIDENTIAL =
+AND PRIVATE COMPANY INFORMATION. Any review or reliance by others or =
+copying or distribution or forwarding of any or all of the contents in =
+this message is STRICTLY PROHIBITED. If you are not the intended =
+recipient, please contact the sender by email and delete all copies; =
+your cooperation in this regard is appreciated.
