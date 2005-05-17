@@ -1,16 +1,23 @@
-Return-Path: <tim.martin@viasat.com>
-Received: from annex.viasat.com (eagle.viasat.com [199.106.52.54])
-	by ozlabs.org (Postfix) with ESMTP id A29A9679FE
+Return-Path: <kylo.ginsberg@gmail.com>
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.195])
+	by ozlabs.org (Postfix) with ESMTP id 01E1967A06
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 18 May 2005 04:01:11 +1000 (EST)
-Message-ID: <846BA3AF7C8A2048937F1801FD3129C902DB594D@messenger.viasat.com>
-From: "Martin, Tim" <tim.martin@viasat.com>
-To: 'Wrobel Heinz-r39252' <Heinz.Wrobel@freescale.com>,
-	"'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-Date: Tue, 17 May 2005 11:01:04 -0700
-MIME-Version: 1.0
-Content-Type: text/plain
-Subject: RE: MPC860 CP / CPM Misbehaving
+	Wed, 18 May 2005 04:05:25 +1000 (EST)
+Received: by rproxy.gmail.com with SMTP id g11so1643105rne
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 17 May 2005 11:05:24 -0700 (PDT)
+Message-ID: <61cc712d05051711057f89b7d4@mail.gmail.com>
+Date: Tue, 17 May 2005 11:05:24 -0700
+From: Kylo Ginsberg <kylo.ginsberg@gmail.com>
+To: Wolfgang Denk <wd@denx.de>
+In-Reply-To: <20050517081558.74BA0C1512@atlas.denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <428995CB.4050301@compulab.co.il>
+	<20050517081558.74BA0C1512@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: MPC885 - USB HCI drivers.
+Reply-To: Kylo Ginsberg <kylo.ginsberg@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,54 +28,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> descriptors (BDs) from the CPM with the OV bit set (bit 14 of the RxBD
-> status/control field, "Overrun. Set when a receiver overrun 
-> occurs during
-> reception").
+On 5/17/05, Wolfgang Denk <wd@denx.de> wrote:
+> Dear Mike,
+>=20
+> in message <428995CB.4050301@compulab.co.il> you wrote:
+> >
+> > Do you know if the same is applicable to CPM2 USB controllers present
+> > for example on mpc8247?
+>=20
+> Sorry, I don't know from personal experience. But from what  I  heard
+> there might be some "surprises", too.
 
-> - SDRAM setup. If ORx(BIH)=1 makes the problem go away, your burst setup
-or the /TA pullup is broken. NB: Neither the SCC 
-> nor the SMC do bursts.
+Thanks for all the feedback.  If we set our sights lower and only aim
+to use the CPM USB as a device (specifically an alternative serial
+console), similar warnings of "surprises"?  Any source out there for
+this purpose?  (I'm inclined to just use a 232-usb converter off a
+uart and make it transparent to the target s/w.)
 
-I checked my SDRAM setup.  SDRAM is the only device configured with UPMA and
-it's on cs1, so I checked UPMA, OR1, BR1, MAMR configuration along with
-MCR/MAR process for issuing precharge, refresh, and SDRAM mode register
-config per the datasheet for the parts.  This board is a few years old, so I
-wasn't able to find the datasheet the original timings were made from -
-instead I looked at the datasheet for the parts we're using now, and (since
-the parts we're using now are faster) our memory timings are somewhat
-conservative.
+Also, I failed to find app notes or usb-specific errata on the
+freescale site.  Perhaps they're tucked away under a specific
+processor without a suggestive title?
 
-I did try disabling bursts, with no luck.  Not sure what "NB" means. 
-
-> - Did you by accident happen to enable any IDMA lines?
-
-No
-
-> - Did you happen to misconfigure RCCR(DRxM)?
-
-RCCR is all zero's except RCCR[ERAM]=b11 since I have the SCC/SMC microcode
-patch.  Even though IDMA is disabled, I have tried setting RCCR[DRPQ]=b10 to
-make IDMA requests have the lowest priority (didn't help/hurt).  The DRxM
-bits are edge sensitive.
-
-> - Did you happen to misconfigure the SDCR?
-SDCR[FRZ] = 0 (ignore the freeze signal)
-SDCR[FAID] = 0 (highest priority default, although I'm not using FEC).
-SDCR[RAID] = b01 (priority level 5)
-
->One other thing. If you have an old BDM debugger *and* if the problem
-occurs *only* with the BDM debugger hooked up, you may 
->want to check for an update or replacement. Old debuggers sometimes used a
-method to do BDM which could stall the DMAs in 
->the machine and cause this kind of overrun/underrun effect.
-
-Hmm...interesting.  How old?  Does this happen when actively debugging
-(setting breakpoints, etc) or just running with no breakpoints set?  I have
-two different debuggers, a OCD raven wiggler and a BDM module for my
-HP16702A logic analyzer.  I have to run different debugger software on each
-for licensing reasons (SingleStep 7.5 on the raven and GHS MULTI4.0.5 on the
-HP).  The problem occurs on both.
-
-Heinz
- 
+Kylo
