@@ -1,19 +1,18 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 7B591679F8
+Return-Path: <galak@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 403A4679FA
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 18 May 2005 02:47:01 +1000 (EST)
-Message-ID: <428A1F8C.10903@anagramm.de>
-Date: Tue, 17 May 2005 18:45:00 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
+	Wed, 18 May 2005 02:59:53 +1000 (EST)
+Date: Tue, 17 May 2005 11:59:33 -0500 (CDT)
+From: Kumar Gala <galak@freescale.com>
+To: Andrew Morton <akpm@osdl.org>
+Message-ID: <Pine.LNX.4.61.0505171158460.26903@nylon.am.freescale.net>
 MIME-Version: 1.0
-To: Kumar Gala <kumar.gala@freescale.com>,  linuxppc-embedded@ozlabs.org
-References: <4289DBE9.9080002@anagramm.de>
-	<a659357b80a843e5eb3db2ebd5ec3c53@freescale.com>
-In-Reply-To: <a659357b80a843e5eb3db2ebd5ec3c53@freescale.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Subject: Re: What ethernet driver to use in 2.6.8.1 instead of gianfar in
- 2.6.11.x?
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH] ppc32: Fix some minor issues related to FSL Book-E KGDB
+ support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,50 +23,98 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello, Kumar!
+Some debug registers needed to be initialized early on to allow
+proper support for KGDB.  Additionally, we need to setup the
+ppc.md_early_serial_map function pointer on boards that have
+serial support for KGDB.
 
- >> for some tests and glibc-builds I want to work with a 2.6.8.1 kernel
- >>  temporarily on a freescale mpc8540.
- >
- > Out of interest, what issues did you have with 2.6.11.x?
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
-I want to see if I can get more details out of failing glibc-2.3.{4,5} ntpl
-tests on a running system. That's not related to anything mpc85xx specific.
+---
+commit 704da4a5c793087584fa5d0ed73440dd4ac44294
+tree 1702b9dd418707a930969079b460df0ace2f1c1a
+parent f772a90e948f019c3111a94394b3a649874417c7
+author Kumar K. Gala <kumar.gala@freescale.com> Mon, 16 May 2005 11:12:35 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> Mon, 16 May 2005 11:12:35 -0500
 
-I'll take the gianfar if necessary.
-(Or I just plug a rtl8139 into pci... and go with that)
-The .config is not an issue, then. Thanks!
+ ppc/kernel/head_fsl_booke.S             |   15 ++++++++++++++-
+ ppc/platforms/85xx/mpc8540_ads.c        |    3 +++
+ ppc/platforms/85xx/mpc85xx_cds_common.c |    3 +++
+ ppc/platforms/85xx/sbc8560.c            |    3 +++
+ 4 files changed, 23 insertions(+), 1 deletion(-)
 
-Greets,
-
-Clemens Koller
-_______________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Str. 45/1
-81379 Muenchen
-Germany
-
-http://www.anagramm.de
-Phone: +49-89-741518-50
-Fax: +49-89-741518-19
-
-
-Kumar Gala wrote:
->> In 2.6.8.1 there was no gianfar ethernet driver. Is it okay to use the
->>  fec drivers instead of the gianfar or is it better to put the gianfar
->>  drivers back into 2.6.8.1? (100Mbps are okay for that testing)
-> 
-> 
-> I doubt fec drivers would ever work for the TSECs.  You should be able 
-> to pull the driver code out of 2.6.11.x for gianfar back into 2.6.8.1 
-> w/o any real issue.
-> 
->> Maybe somebody can get me a working .config for 2.6.8.1 and mpc8540ads?
-> 
-> 
-> Can you start with the .config file that exists in the 2.6.11 ?
-> 
-> - kumar
-> 
-> 
+Index: arch/ppc/kernel/head_fsl_booke.S
+===================================================================
+--- c9d59c269792db4933039da49b3b3836ac5b01f5/arch/ppc/kernel/head_fsl_booke.S  (mode:100644)
++++ 1702b9dd418707a930969079b460df0ace2f1c1a/arch/ppc/kernel/head_fsl_booke.S  (mode:100644)
+@@ -232,7 +232,8 @@
+ 	tlbwe
+ 
+ /* 7. Jump to KERNELBASE mapping */
+-	li	r7,0
++	lis	r7,MSR_KERNEL@h
++	ori	r7,r7,MSR_KERNEL@l
+ 	bl	1f			/* Find our address */
+ 1:	mflr	r9
+ 	rlwimi	r6,r9,0,20,31
+@@ -291,6 +292,18 @@
+ 	mfspr	r2,SPRN_HID0
+ 	oris	r2,r2,HID0_DOZE@h
+ 	mtspr	SPRN_HID0, r2
++#endif
++
++#if !defined(CONFIG_BDI_SWITCH)
++	/*
++	 * The Abatron BDI JTAG debugger does not tolerate others
++	 * mucking with the debug registers.
++	 */
++	lis	r2,DBCR0_IDM@h
++	mtspr	SPRN_DBCR0,r2
++	/* clear any residual debug events */
++	li	r2,-1
++	mtspr	SPRN_DBSR,r2
+ #endif
+ 
+ 	/*
+Index: arch/ppc/platforms/85xx/mpc8540_ads.c
+===================================================================
+--- c9d59c269792db4933039da49b3b3836ac5b01f5/arch/ppc/platforms/85xx/mpc8540_ads.c  (mode:100644)
++++ 1702b9dd418707a930969079b460df0ace2f1c1a/arch/ppc/platforms/85xx/mpc8540_ads.c  (mode:100644)
+@@ -210,6 +210,9 @@
+ #if defined(CONFIG_SERIAL_8250) && defined(CONFIG_SERIAL_TEXT_DEBUG)
+ 	ppc_md.progress = gen550_progress;
+ #endif	/* CONFIG_SERIAL_8250 && CONFIG_SERIAL_TEXT_DEBUG */
++#if defined(CONFIG_SERIAL_8250) && defined(CONFIG_KGDB)
++	ppc_md.early_serial_map = mpc85xx_early_serial_map;
++#endif	/* CONFIG_SERIAL_8250 && CONFIG_KGDB */
+ 
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("mpc8540ads_init(): exit", 0);
+Index: arch/ppc/platforms/85xx/mpc85xx_cds_common.c
+===================================================================
+--- c9d59c269792db4933039da49b3b3836ac5b01f5/arch/ppc/platforms/85xx/mpc85xx_cds_common.c  (mode:100644)
++++ 1702b9dd418707a930969079b460df0ace2f1c1a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c  (mode:100644)
+@@ -459,6 +459,9 @@
+ #if defined(CONFIG_SERIAL_8250) && defined(CONFIG_SERIAL_TEXT_DEBUG)
+ 	ppc_md.progress = gen550_progress;
+ #endif /* CONFIG_SERIAL_8250 && CONFIG_SERIAL_TEXT_DEBUG */
++#if defined(CONFIG_SERIAL_8250) && defined(CONFIG_KGDB)
++	ppc_md.early_serial_map = mpc85xx_early_serial_map;
++#endif	/* CONFIG_SERIAL_8250 && CONFIG_KGDB */
+ 
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("mpc85xx_cds_init(): exit", 0);
+Index: arch/ppc/platforms/85xx/sbc8560.c
+===================================================================
+--- c9d59c269792db4933039da49b3b3836ac5b01f5/arch/ppc/platforms/85xx/sbc8560.c  (mode:100644)
++++ 1702b9dd418707a930969079b460df0ace2f1c1a/arch/ppc/platforms/85xx/sbc8560.c  (mode:100644)
+@@ -221,6 +221,9 @@
+ #if defined(CONFIG_SERIAL_8250) && defined(CONFIG_SERIAL_TEXT_DEBUG)
+ 	ppc_md.progress = gen550_progress;
+ #endif	/* CONFIG_SERIAL_8250 && CONFIG_SERIAL_TEXT_DEBUG */
++#if defined(CONFIG_SERIAL_8250) && defined(CONFIG_KGDB)
++	ppc_md.early_serial_map = sbc8560_early_serial_map;
++#endif	/* CONFIG_SERIAL_8250 && CONFIG_KGDB */
+ 
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("sbc8560_init(): exit", 0);
