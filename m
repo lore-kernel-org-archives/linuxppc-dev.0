@@ -1,20 +1,16 @@
-Return-Path: <takeharu1219@ybb.ne.jp>
-Received: from ybbsmtp10.mail.mci.yahoo.co.jp (ybbsmtp10.mail.mci.yahoo.co.jp
-	[210.80.241.184]) by ozlabs.org (Postfix) with SMTP id 5FD2867A06
+Return-Path: <tim.martin@viasat.com>
+Received: from annex.viasat.com (eagle.viasat.com [199.106.52.54])
+	by ozlabs.org (Postfix) with ESMTP id A29A9679FE
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 18 May 2005 03:36:15 +1000 (EST)
-Message-ID: <428A2CCD.5070704@ybb.ne.jp>
-Date: Wed, 18 May 2005 02:41:33 +0900
-From: Takeharu KATO <takeharu1219@ybb.ne.jp>
+	Wed, 18 May 2005 04:01:11 +1000 (EST)
+Message-ID: <846BA3AF7C8A2048937F1801FD3129C902DB594D@messenger.viasat.com>
+From: "Martin, Tim" <tim.martin@viasat.com>
+To: 'Wrobel Heinz-r39252' <Heinz.Wrobel@freescale.com>,
+	"'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
+Date: Tue, 17 May 2005 11:01:04 -0700
 MIME-Version: 1.0
-To: Kumar Gala <kumar.gala@freescale.com>
-References: <428A040D.40604@ybb.ne.jp>
-	<fb7df67f9dda2794b4af2dfa9b4754ca@freescale.com>
-In-Reply-To: <fb7df67f9dda2794b4af2dfa9b4754ca@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Glenn Burkhardt <glenn@aoi-industries.com>,
-	"Gala Kumar K.-galak" <galak@freescale.com>, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] BOOKE_WDT Part 1/2 (Re: PPC 44x Watchdog timer)
+Content-Type: text/plain
+Subject: RE: MPC860 CP / CPM Misbehaving
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,20 +21,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Kumar:
+> descriptors (BDs) from the CPM with the OV bit set (bit 14 of the RxBD
+> status/control field, "Overrun. Set when a receiver overrun 
+> occurs during
+> reception").
 
-> 
-> Yes, I think with these changes to us early_param() for command line 
-> parsing in a single place will make the first patch look good.
->
-OK, I'll perform this fix in this week.
+> - SDRAM setup. If ORx(BIH)=1 makes the problem go away, your burst setup
+or the /TA pullup is broken. NB: Neither the SCC 
+> nor the SMC do bursts.
 
-> I'm still not sure what suggestions I have for the second patch, I was 
-> more just letting you know my thinking about the fact that it concerned 
-> me that the exception handler code was not in arch/ppc/kernel.  Not to 
-> say this is wrong, it just doesn't feel write.
-> 
-Hum, I agree this thing, I'll move the WDT exception handler to 
-arch/ppc/kernel for the moment.
-If someone disagree with this decision in the future, I'll move this 
-into driver code again.
+I checked my SDRAM setup.  SDRAM is the only device configured with UPMA and
+it's on cs1, so I checked UPMA, OR1, BR1, MAMR configuration along with
+MCR/MAR process for issuing precharge, refresh, and SDRAM mode register
+config per the datasheet for the parts.  This board is a few years old, so I
+wasn't able to find the datasheet the original timings were made from -
+instead I looked at the datasheet for the parts we're using now, and (since
+the parts we're using now are faster) our memory timings are somewhat
+conservative.
+
+I did try disabling bursts, with no luck.  Not sure what "NB" means. 
+
+> - Did you by accident happen to enable any IDMA lines?
+
+No
+
+> - Did you happen to misconfigure RCCR(DRxM)?
+
+RCCR is all zero's except RCCR[ERAM]=b11 since I have the SCC/SMC microcode
+patch.  Even though IDMA is disabled, I have tried setting RCCR[DRPQ]=b10 to
+make IDMA requests have the lowest priority (didn't help/hurt).  The DRxM
+bits are edge sensitive.
+
+> - Did you happen to misconfigure the SDCR?
+SDCR[FRZ] = 0 (ignore the freeze signal)
+SDCR[FAID] = 0 (highest priority default, although I'm not using FEC).
+SDCR[RAID] = b01 (priority level 5)
+
+>One other thing. If you have an old BDM debugger *and* if the problem
+occurs *only* with the BDM debugger hooked up, you may 
+>want to check for an update or replacement. Old debuggers sometimes used a
+method to do BDM which could stall the DMAs in 
+>the machine and cause this kind of overrun/underrun effect.
+
+Hmm...interesting.  How old?  Does this happen when actively debugging
+(setting breakpoints, etc) or just running with no breakpoints set?  I have
+two different debuggers, a OCD raven wiggler and a BDM module for my
+HP16702A logic analyzer.  I have to run different debugger software on each
+for licensing reasons (SingleStep 7.5 on the raven and GHS MULTI4.0.5 on the
+HP).  The problem occurs on both.
+
+Heinz
+ 
