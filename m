@@ -1,24 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0222567A39
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 May 2005 10:59:29 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Mark A. Greer" <mgreer@mvista.com>
-In-Reply-To: <4288DFCB.2080208@mvista.com>
-References: <1116222720.5095.86.camel@gaston>
-	<7d5cfed0ee1edade8050d2c4da94b3f1@freescale.com>
-	<c58d28ab50872f95d4c4a751d1768513@embeddededge.com>
-	<1116255938.5095.133.camel@gaston>
-	<fe487e7a8a89e65cfefd4f5dd39a982d@embeddededge.com>
-	<1116261725.5095.139.camel@gaston>  <4288DFCB.2080208@mvista.com>
-Content-Type: text/plain
-Date: Tue, 17 May 2005 10:56:17 +1000
-Message-Id: <1116291377.5095.150.camel@gaston>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, John Reiser <jreiser@BitWagon.com>
-Subject: Re: 2GB address space limit on 32-bit PowerPC Macintosh
+Return-Path: <galak@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id E2C32679FD
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 May 2005 11:32:00 +1000 (EST)
+Date: Mon, 16 May 2005 20:31:54 -0500 (CDT)
+From: Kumar Gala <galak@freescale.com>
+To: Paul Mackerras <paulus@samba.org>
+Message-ID: <Pine.LNX.4.61.0505162031190.24582@nylon.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
+Subject: [PATCH] ppc32: enable use of early_param
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,27 +19,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2005-05-16 at 11:00 -0700, Mark A. Greer wrote:
-> Benjamin Herrenschmidt wrote:
-> 
-> >
-> >series are by no mean stable. Embedded code has been rather frozen in
-> >the rock, I don't think it's much to ask from the appropriate maintainer
-> >to have a quick look at possibly upgrading their board support as well.
-> >
-> 
-> Seems reasonable to me.
-> 
-> >And it isn't a difficult change for most 6xx/7xx/7xxx based boards
-> >anyway.
-> >
-> 
->  From a quick grep, it looks like apus, gemini, k2, lopec, pplus, prep, 
-> and prpmc800 are the offenders in the 6xx/7xx/74xx world.  Does anyone 
-> even care about the lopec and k2 anymore?
+We need to call parse_early_param() early on to allow usage of
+early_param() for command line parsing.
 
-Note that there is only a problem if those io_block_mapping calls are
-done to map things in the virtual region between 2G and 3G. If they are
-done to map things "high" (like 0xf*) they are still fine.
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
-Ben.
+---
+commit d9aa16f3736be7e3ff97ead1a710b8061e9990f8
+tree ad05fc7300bdd058ecfb5cbbf022c4c19f4e13c5
+parent 704da4a5c793087584fa5d0ed73440dd4ac44294
+author Kumar K. Gala <kumar.gala@freescale.com> Mon, 16 May 2005 20:29:56 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> Mon, 16 May 2005 20:29:56 -0500
+
+ ppc/kernel/setup.c |    2 ++
+ 1 files changed, 2 insertions(+)
+
+Index: arch/ppc/kernel/setup.c
+===================================================================
+--- 1702b9dd418707a930969079b460df0ace2f1c1a/arch/ppc/kernel/setup.c  (mode:100644)
++++ ad05fc7300bdd058ecfb5cbbf022c4c19f4e13c5/arch/ppc/kernel/setup.c  (mode:100644)
+@@ -753,6 +753,8 @@
+ 	strlcpy(saved_command_line, cmd_line, COMMAND_LINE_SIZE);
+ 	*cmdline_p = cmd_line;
+ 
++	parse_early_param();
++
+ 	/* set up the bootmem stuff with available memory */
+ 	do_init_bootmem();
+ 	if ( ppc_md.progress ) ppc_md.progress("setup_arch: bootmem", 0x3eab);
