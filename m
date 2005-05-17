@@ -1,20 +1,18 @@
-Return-Path: <takeharu1219@ybb.ne.jp>
-Received: from ybbsmtp08.mail.mci.yahoo.co.jp (ybbsmtp08.mail.mci.yahoo.co.jp
-	[210.80.241.157]) by ozlabs.org (Postfix) with SMTP id 19D31679F1
+Return-Path: <mike@compulab.co.il>
+Received: from alex (62-90-235-247.barak.net.il [62.90.235.247])
+	by ozlabs.org (Postfix) with ESMTP id 1670F679F1
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 17 May 2005 15:53:46 +1000 (EST)
-Message-ID: <42898825.3000803@ybb.ne.jp>
-Date: Tue, 17 May 2005 14:59:01 +0900
-From: Takeharu KATO <takeharu1219@ybb.ne.jp>
+	Tue, 17 May 2005 15:56:50 +1000 (EST)
+Message-ID: <428995CB.4050301@compulab.co.il>
+Date: Tue, 17 May 2005 08:57:15 +0200
+From: Mike Rapoport <mike@compulab.co.il>
 MIME-Version: 1.0
-To: Kumar Gala <kumar.gala@freescale.com>
-References: <42884448.6040505@ybb.ne.jp>
-	<63792af268f18c480d5ecf218a4e61af@freescale.com>
-In-Reply-To: <63792af268f18c480d5ecf218a4e61af@freescale.com>
+To: Wolfgang Denk <wd@denx.de>
+References: <20050516232744.F106DC1512@atlas.denx.de>
+In-Reply-To: <20050516232744.F106DC1512@atlas.denx.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Glenn Burkhardt <glenn@aoi-industries.com>,
-	"Gala Kumar K.-galak" <galak@freescale.com>, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] BOOKE_WDT Part 1/2 (Re: PPC 44x Watchdog timer)
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: MPC885 - USB HCI drivers.
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,34 +23,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Kumar:
+Wolfgang Denk wrote:
 
-Kumar Gala wrote:
-> No problem, can you replace all the cmd line parsing with early_param() 
-> code in arch/ppc/kernel/setup.c.  Take a look at 
-> arch/ppc64/kernel/setup.c for an example.  We still need to add a call 
-> to parse_early_param() in setup_arch().
+>In message <61cc712d050516153941bc3b26@mail.gmail.com> you wrote:
+>  
 >
-Sorry, I can not figure out what you want.
-As far as I look the source tree,arch/ppc/kernel/setup.c does not have 
-the function called early_param.
-Would you give me a more precise explanation?
+>>>My advice: use a _real_ USB controller.
+>>>      
+>>>
+>>Are there known problems with CPM-based USB controllers?  I'm
+>>    
+>>
+>
+>Ummmm... yes, there are. Especially if you want to use it as  a  host
+>comtroller  (which  is  never  was designed for). Even more, if there
+>might be other periopherals in your system that might need  a  bit  a
+>CPM performance. Or ...
+>
+>  
+>
+Do you know if the same is applicable to CPM2 USB controllers present 
+for example on mpc8247?
 
-> Matt & I need to talk about the driver patch.  Once I have more feedback 
-> on that I'll let you know.  The major issue I have is having the 
-> interrupt handler in drivers/char/watchdog/.. instead of 
-> arch/ppc/kernel/traps.c.  However, I dont have a good idea how to 
-> structure the changes.
+>No, I better stop here. Please ask your  Freecale  sales  representa-
+>tive. He may know better. [Or not, maybe.]
+>  
 >
 
-Certainly, moving the interrupt handler from 
-drivers/char/watchdog/booke_wdt.c to arch/ppc/kernel/traps.c
-is easy, but I can not tell whether it is good or not.
+The Freescale sales representative we work with actually says that CPM2 
+USB host controller is working well.
 
-But the handler is not used by the core kernel.
- From this point of view, the handler should not be placed
-in arch/ppc/kernel/traps.c. This is the reason why I locate
-the exception handler in the driver part.
-
-Anyway, I'll try to move this handler into arch/ppc/kernel/traps.c
-for the moment.
+>Best regards,
+>
+>Wolfgang Denk
+>  
+>
+-- 
+Sincerely yours,
+Mike
