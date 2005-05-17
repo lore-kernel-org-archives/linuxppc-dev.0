@@ -1,25 +1,21 @@
-Return-Path: <Heinz.Wrobel@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id ADEDB679F4
+Return-Path: <jmasel@arabellasw.com>
+Received: from gold.webfusion.co.uk (gold.webfusion.co.uk [212.67.202.159])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id F09E1679E2
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 17 May 2005 16:41:16 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	j4H6k1LS029267 for <linuxppc-embedded@ozlabs.org>;
-	Mon, 16 May 2005 23:46:02 -0700 (MST)
-Received: from zwg18exm01.ea.freescale.net (zwg18exm01.ea.freescale.net
-	[10.170.73.30])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id j4H6i2jg025924
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 17 May 2005 01:44:03 -0500 (CDT)
-Message-ID: <DF02D66C37C26B4C8018BF84F0E37FEC087B51F3@zwg18exm01.ea.freescale.net>
-From: Wrobel Heinz-r39252 <Heinz.Wrobel@freescale.com>
-To: "Martin, Tim" <tim.martin@viasat.com>,
-	"'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-Date: Tue, 17 May 2005 08:41:12 +0200
+	Tue, 17 May 2005 17:28:35 +1000 (EST)
+From: "Jonathan Masel" <jmasel@arabellasw.com>
+To: "'Kylo Ginsberg'" <kylo.ginsberg@gmail.com>
+Date: Tue, 17 May 2005 10:28:00 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
-Subject: RE: MPC860 CP / CPM Misbehaving
+Content-Type: text/plain;
+	charset="us-ascii"
+In-reply-to: <0d07fbd5d90d129227b4f579067f2d16@embeddededge.com>
+Message-Id: <E1DXwV3-0001Yd-00@gold.webfusion.co.uk>
+Cc: 'PPC_LINUX' <linuxppc-embedded@ozlabs.org>
+Subject: RE: MPC885 - USB HCI drivers.
+Reply-To: jmasel@arabellasw.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,21 +26,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
- 
+CPM USB controllers have their quirks and erratas, but they do work. Most
+erratas are documented but I'm not sure all are - we identified a couple and
+reported them back to Freescale, but I don't know if they've updated their
+web site in this regard.
 
-> descriptors (BDs) from the CPM with the OV bit set (bit 14 of the RxBD
-> status/control field, "Overrun. Set when a receiver overrun 
-> occurs during
-> reception").
+I'm not sure what "software hacks" means but they don't require CPM
+downloads or hardware modifications to work. It is also not true that they
+can only support one device at a time (though yes, you do need an external
+hub).
 
-Check the following:
+Bottom line: it's not easy getting them to work, but I can assure you that
+there are software packages that do so (we have one). They're not free - but
+neither are the USB controllers. Your choice!
 
-- SDRAM setup. If ORx(BIH)=1 makes the problem go away, your burst setup or the /TA pullup is broken. NB: Neither the SCC nor the SMC do bursts.
-- Check pullups as per UM recommendation. I tend to recommend 1k.
-- Did you by accident happen to enable any IDMA lines?
-- Did you happen to misconfigure RCCR(DRxM)?
-- Did you happen to misconfigure the SDCR?
+Jonathan Masel
 
-One other thing. If you have an old BDM debugger *and* if the problem occurs *only* with the BDM debugger hooked up, you may want to check for an update or replacement. Old debuggers sometimes used a method to do BDM which could stall the DMAs in the machine and cause this kind of overrun/underrun effect.
 
-Heinz
+On May 16, 2005, at 6:39 PM, Kylo Ginsberg wrote:
+
+> Are there known problems with CPM-based USB controllers?
+
+The original CPM USB controller was only supposed to be
+a device side controller.  With some software hacks, CPM
+microcode downloads, and even some hardware modifications,
+you can often get it to work as a host in some static situations.
+It doesn't have a built in root hub, you usually concentrate
+on making it work with one specific device for a particular
+product.  You may find some application notes on the
+Freescale web site, but I haven't seem them lately.
+
+Take Wolfgang's advice, it's easier to find a way to
+attach a real USB controller than to make this one
+work as you probably expect.
+
+Thanks.
+
+	-- Dan
