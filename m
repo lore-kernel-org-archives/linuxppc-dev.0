@@ -1,20 +1,19 @@
-Return-Path: <takeharu1219@ybb.ne.jp>
-Received: from ybbsmtp05.mail.mci.yahoo.co.jp (ybbsmtp05.mail.mci.yahoo.co.jp
-	[210.80.241.154]) by ozlabs.org (Postfix) with SMTP id 61220679F5
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 6C18C679EB
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 18 May 2005 00:42:24 +1000 (EST)
-Message-ID: <428A040D.40604@ybb.ne.jp>
-Date: Tue, 17 May 2005 23:47:41 +0900
-From: Takeharu KATO <takeharu1219@ybb.ne.jp>
-MIME-Version: 1.0
-To: Takeharu KATO <takeharu1219@ybb.ne.jp>
-References: <42884448.6040505@ybb.ne.jp>	<63792af268f18c480d5ecf218a4e61af@freescale.com>
-	<42898825.3000803@ybb.ne.jp>
-In-Reply-To: <42898825.3000803@ybb.ne.jp>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Glenn Burkhardt <glenn@aoi-industries.com>,
-	"Gala Kumar K.-galak" <galak@freescale.com>, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] BOOKE_WDT Part 1/2 (Re: PPC 44x Watchdog timer)
+	Wed, 18 May 2005 01:41:30 +1000 (EST)
+In-Reply-To: <4289DBE9.9080002@anagramm.de>
+References: <4289DBE9.9080002@anagramm.de>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <a659357b80a843e5eb3db2ebd5ec3c53@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Tue, 17 May 2005 10:41:22 -0500
+To: "Clemens Koller" <clemens.koller@anagramm.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: What ethernet driver to use in 2.6.8.1 instead of gianfar in
+	2.6.11.x?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,19 +24,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Kumar:
 
->> No problem, can you replace all the cmd line parsing with 
->> early_param() code in arch/ppc/kernel/setup.c.  Take a look at 
->> arch/ppc64/kernel/setup.c for an example.  We still need to add a call 
->> to parse_early_param() in setup_arch().
->>
-> Sorry, I can not figure out what you want.
-> As far as I look the source tree,arch/ppc/kernel/setup.c does not have 
-> the function called early_param.
-> Would you give me a more precise explanation?
-> 
-On second thought, I make sense what you said.
-You asked me that I make some kind of cleanups, didn't you?
-If it is true, I'll try to clean up these setups, but it may be
-take the time.
+On May 17, 2005, at 6:56 AM, Clemens Koller wrote:
+
+> Hello, again,
+>
+> for some tests and glibc-builds I want to work with a 2.6.8.1 kernel
+>  temporarily on a freescale mpc8540.
+
+Out of interest, what issues did you have with 2.6.11.x?
+
+> In 2.6.8.1 there was no gianfar ethernet driver. Is it okay to use the
+>  fec drivers instead of the gianfar or is it better to put the gianfar
+>  drivers back into 2.6.8.1? (100Mbps are okay for that testing)
+
+I doubt fec drivers would ever work for the TSECs.  You should be able 
+to pull the driver code out of 2.6.11.x for gianfar back into 2.6.8.1 
+w/o any real issue.
+
+> Maybe somebody can get me a working .config for 2.6.8.1 and mpc8540ads?
+
+Can you start with the .config file that exists in the 2.6.11 ?
+
+- kumar
