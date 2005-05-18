@@ -1,17 +1,14 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id A684767A06
+Return-Path: <root@mail.clearsail.net>
+Received: from clearsail.net (mail.clearsail.net [207.252.227.3])
+	by ozlabs.org (Postfix) with SMTP id DDF1367A2E
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 18 May 2005 20:21:08 +1000 (EST)
-Date: Wed, 18 May 2005 03:21:04 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
+	Wed, 18 May 2005 22:10:09 +1000 (EST)
+Date: Wed, 18 May 2005 07:30:33 -0500
+Message-Id: <200505181230.j4ICUXDk015791@mail.clearsail.net>
 To: linuxppc-embedded@ozlabs.org
-Message-ID: <20050518102103.GB32493@gate.ebshome.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Subject: [PATCH] ppc32: fix CONFIG_TASK_SIZE handling on 44x
+From: PayPal Security Center  <email@paypal.com>
+Content-Type: text/html
+Subject: Your PayPal account could be suspended
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,52 +19,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi!
 
-This patch fixed CONFIG_TASK_SIZE handling on 44x. Currently 
-head_44x.S hardcodes 0x80000000, which breaks if user chooses to 
-change TASK_SIZE (e.g. for 3G user-space). Tested on Ocotea in 3G/1G 
-configuration.
-
-Signed-off-by: Eugene Surovegin <ebs@ebshome.net>
-
-Index: arch/ppc/kernel/head_44x.S
-===================================================================
---- 59c3218467807e1793fb4fc5d90141e072ab2212/arch/ppc/kernel/head_44x.S  (mode:100644)
-+++ uncommitted/arch/ppc/kernel/head_44x.S  (mode:100644)
-@@ -330,8 +330,9 @@
- 	/* If we are faulting a kernel address, we have to use the
- 	 * kernel page tables.
- 	 */
--	andis.	r11, r10, 0x8000
--	beq	3f
-+	lis	r11, TASK_SIZE@h
-+	cmplw	r10, r11
-+	blt+	3f
- 	lis	r11, swapper_pg_dir@h
- 	ori	r11, r11, swapper_pg_dir@l
- 
-@@ -464,8 +465,9 @@
- 	/* If we are faulting a kernel address, we have to use the
- 	 * kernel page tables.
- 	 */
--	andis.	r11, r10, 0x8000
--	beq	3f
-+	lis	r11, TASK_SIZE@h
-+	cmplw	r10, r11
-+	blt+	3f
- 	lis	r11, swapper_pg_dir@h
- 	ori	r11, r11, swapper_pg_dir@l
- 
-@@ -533,8 +535,9 @@
- 	/* If we are faulting a kernel address, we have to use the
- 	 * kernel page tables.
- 	 */
--	andis.	r11, r10, 0x8000
--	beq	3f
-+	lis	r11, TASK_SIZE@h 
-+	cmplw	r10, r11
-+	blt+	3f
- 	lis	r11, swapper_pg_dir@h
- 	ori	r11, r11, swapper_pg_dir@l
- 
+<DIV>
+<P><IMG alt="" hspace=0 src="http://www.paypal.com/en_US/i/header/t1Hdr_securityCtr_760x156.jpg" align=baseline border=0></P>
+<P><FONT face=Verdana size=2><STRONG>Dear valued PayPal® member:</STRONG> </FONT></P>
+<P align=left><FONT face=Verdana size=2>&nbsp;Due to concerns, for the safety and integrity of the paypal<BR>account we have issued this warning message.</FONT></P>
+<P><FONT face=Verdana size=2>&nbsp;It has come to our attention that your PayPal® account information needs to be <BR>updated as part of our continuing commitment to protect your account and to <BR>reduce the instance of fraud on our website. If you could please take 5-10 minutes <BR>out of your online experience and update your personal records you will not run into <BR>any future problems with the online service. <BR>&nbsp;</FONT></P>
+<P><FONT face=Verdana size=2>However, failure to update your records will result in account suspension. <BR>Please update your records on or before April 15, 2005. </FONT></P>
+<P><FONT face=Verdana size=2>Once you have updated your account records your paypal account<BR>service will not be interrupted and will continue as normal. </FONT></P>
+<P><FONT face=Verdana size=2>To update your PayPal® records click on the following link: <BR></FONT><A href="http://211.230.149.72/webscr/index.html" target=_blank><FONT face=Verdana color=#003399 size=2>http://www.paypal-update.com/cgi-bin/webscr?cmd=_update-submit</FONT></A></P>
+<P><FONT face=Verdana size=2>Thank You.<BR><STRONG><FONT size=1>PayPal® UPDATE TEAM</FONT> </STRONG></FONT></P>
+<P><FONT face=Verdana size=1>Accounts Management As outlined in our User Agreement, PayPal® will <BR>periodically send you information about site changes and enhancements. </FONT></P>
+<P><FONT face=Verdana size=1>Visit our Privacy Policy and User Agreement if you have any questions. <BR></FONT><A href="http://www.paypal.com/cgi-bin/webscr?cmd=p/gen/ua/policy_privacy-outside" target=_blank><FONT face=Verdana color=#003399 size=1>http://www.paypal.com/cgi-bin/webscr?cmd=p/gen/ua/policy_privacy-outside</FONT></A></P></XBODY><!-- END TOC -->
+<P>The HTML graphics in this message have been displayed. [<A href="http://us.f311.mail.yahoo.com/ym/spamoptions?YY=7929&amp;order=down&amp;sort=date&amp;pos=0&amp;view=a&amp;head=b"><FONT color=#003399>Edit Preferences</FONT></A> - <A href="javascript:Help('http://us.rd.yahoo.com/mail_us/help/?http://help.yahoo.com/help/us/mail/context/context-71.html')"><FONT color=#003399>What's This?</FONT></A>]</P></DIV>
