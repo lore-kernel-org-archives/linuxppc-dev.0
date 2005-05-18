@@ -1,19 +1,21 @@
-Return-Path: <mike@compulab.co.il>
-Received: from alex (62-90-235-247.barak.net.il [62.90.235.247])
-	by ozlabs.org (Postfix) with ESMTP id 5F03C679FE
+Return-Path: <ajz@cambridgebroadband.com>
+Received: from cambridgebroadband.com (unknown [217.204.121.83])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0F72B67A03
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 18 May 2005 17:19:42 +1000 (EST)
-Message-ID: <428AFAB7.4040005@compulab.co.il>
-Date: Wed, 18 May 2005 10:20:07 +0200
-From: Mike Rapoport <mike@compulab.co.il>
-MIME-Version: 1.0
-To: Sam Song <samlinuxppc@yahoo.com.cn>
-References: <20050518033817.57657.qmail@web15807.mail.cnb.yahoo.com>
-In-Reply-To: <20050518033817.57657.qmail@web15807.mail.cnb.yahoo.com>
-Content-Type: multipart/alternative;
-	boundary="------------040103060901030503060300"
+	Wed, 18 May 2005 19:28:34 +1000 (EST)
+Date: Wed, 18 May 2005 10:28:14 +0100
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
+To: Alex Zeffertt <ajz@cambridgebroadband.com>
+Message-Id: <20050518102814.4f8dc376.ajz@cambridgebroadband.com>
+In-Reply-To: <20050516161503.0081b1b0.ajz@cambridgebroadband.com>
+References: <20050516161503.0081b1b0.ajz@cambridgebroadband.com>
+Mime-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="Multipart_Wed__18_May_2005_10:28:14_+0100_08334cd0"
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: 2.6.x insmod problem on 82xx platform
+Subject: Re: Missing m8260_cpm_dpfree()
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,120 +27,186 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------040103060901030503060300
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: 8bit
 
-Sam Song wrote:
+--Multipart_Wed__18_May_2005_10:28:14_+0100_08334cd0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
->Mike Rapoport <mike@compulab.co.il> wrote:
->[snip]
->  
->
->>I think you use modutils for 2.4 kernel. In order to
->>work with LKM in 2.6 you need module-init-tools 
->>package.Take a look at
->>
->>    
->>
->http://www.kernel.org/pub/linux/kernel/people/rusty/modules/
->
->Thanks. I downloaded the newest package. Then where 
->should I apply it? For kernel source or ELDK? I read 
->FAQ but no clear clue on it!
->
->  
->
-I'm not familiar with ELDK, but I suppose it creates filesystem for the
-target. The module-init-tools package should be installed on this
-filesystem.
+Hi,
 
->Thanks again,
->
->Sam
->
->_________________________________________________________
->Do You Yahoo!?
->150ÕÚ«˙MP3∑ËøÒÀ—£¨¥¯ƒ˙¥≥»Î“Ù¿÷µÓÃ√
->http://music.yisou.com/
->√¿≈Æ√˜–«”¶”–æ°”–£¨À—±È√¿Õº°¢—ﬁÕº∫Õø·Õº
->http://image.yisou.com
->1GæÕ «1000’◊£¨—≈ª¢µÁ” ◊‘÷˙¿©»›£°
->http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
->
->
->
->  
->
+I'm replying to my own message.  I've got around to porting the 8xx
+version of ...cpm_dpfree() to the 8260 now.  I've attached the patch
+on the off chance anyone else might want it.  The patch is against the
+2005-03-06 version of denx's linuxppc_2_4_devel, which is a 2.4.25
+kernel.
 
+Alex
 
--- 
-Sincerely yours,
-Mike 
+On Mon, 16 May 2005 16:15:03 +0100
+Alex Zeffertt <ajz@cambridgebroadband.com> wrote:
 
+> Hi all,
+> 
+> I have a question about the MPC8260 dual port RAM allocation routines.
+> 
+> In arch/ppc/8260_io/commproc.c this is a  m8260_cpm_dpalloc() routine,
+> but the m8260_cpm_dpfree() routine is missing.  Does anybody know
+> where I can find this?
+> 
+> I am using denx's linuxppc_2_4_devel tree from 2005-03-06.
+> 
+> TIA,
+> 
+> Alex
 
---------------040103060901030503060300
-Content-Type: text/html; charset=GB2312
-Content-Transfer-Encoding: 8bit
+--Multipart_Wed__18_May_2005_10:28:14_+0100_08334cd0
+Content-Type: application/octet-stream;
+ name="linux-m8260_cpm_dpfree.patch"
+Content-Disposition: attachment;
+ filename="linux-m8260_cpm_dpfree.patch"
+Content-Transfer-Encoding: base64
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html;charset=GB2312" http-equiv="Content-Type">
-</head>
-<body bgcolor="#ffffff" text="#000000">
-Sam Song wrote:
-<blockquote
- cite="mid20050518033817.57657.qmail@web15807.mail.cnb.yahoo.com"
- type="cite">
-  <pre wrap="">Mike Rapoport <a class="moz-txt-link-rfc2396E" href="mailto:mike@compulab.co.il">&lt;mike@compulab.co.il&gt;</a> wrote:
-[snip]
-  </pre>
-  <blockquote type="cite">
-    <pre wrap="">I think you use modutils for 2.4 kernel. In order to
-work with LKM in 2.6 you need module-init-tools 
-package.Take a look at
+LS0tIGxpbnV4LTIuNC4yNS5vcmlnL2luY2x1ZGUvYXNtLXBwYy9jcG1fODI2MC5oCTIwMDMtMTAt
+MzAgMDA6MzQ6MDUuMDAwMDAwMDAwICswMDAwCisrKyBsaW51eC0yLjQuMjUvaW5jbHVkZS9hc20t
+cHBjL2NwbV84MjYwLmgJMjAwNS0wNS0xNyAxMjoxMjowNS4wMDAwMDAwMDAgKzAxMDAKQEAgLTEw
+MSw2ICsxMDEsNyBAQAogICovCiBleHRlcm4JY3BtODI2MF90CSpjcG1wOwkJLyogUG9pbnRlciB0
+byBjb21tIHByb2Nlc3NvciAqLwogdWludAkJbTgyNjBfY3BtX2RwYWxsb2ModWludCBzaXplLCB1
+aW50IGFsaWduKTsKK2ludCAJCW04MjYwX2NwbV9kcGZyZWUodWludCBzdGFydF9hZGRyKTsKIHVp
+bnQJCW04MjYwX2NwbV9ob3N0YWxsb2ModWludCBzaXplLCB1aW50IGFsaWduKTsKIHZvaWQJCW04
+MjYwX2NwbV9zZXRicmcodWludCBicmcsIHVpbnQgcmF0ZSk7CiB2b2lkCQltODI2MF9jcG1fZmFz
+dGJyZyh1aW50IGJyZywgdWludCByYXRlLCBpbnQgZGl2MTYpOwotLS0gbGludXgtMi40LjI1Lm9y
+aWcvYXJjaC9wcGMva2VybmVsL3BwY19rc3ltcy5jCTIwMDQtMDYtMDkgMTg6MDA6NDUuMDAwMDAw
+MDAwICswMTAwCisrKyBsaW51eC0yLjQuMjUvYXJjaC9wcGMva2VybmVsL3BwY19rc3ltcy5jCTIw
+MDUtMDUtMTcgMTI6MTA6MDEuMDAwMDAwMDAwICswMTAwCkBAIC0zODEsNiArMzgxLDcgQEAKICNp
+ZmRlZiBDT05GSUdfODI2MAogRVhQT1JUX1NZTUJPTChjcG1wKTsKIEVYUE9SVF9TWU1CT0wobTgy
+NjBfY3BtX2RwYWxsb2MpOworRVhQT1JUX1NZTUJPTChtODI2MF9jcG1fZHBmcmVlKTsKIEVYUE9S
+VF9TWU1CT0wobTgyNjBfY3BtX2hvc3RhbGxvYyk7CiAjZW5kaWYgLyogQ09ORklHXzgyNjAgKi8K
+IAotLS0gbGludXgtMi40LjI1Lm9yaWcvYXJjaC9wcGMvODI2MF9pby9jb21tcHJvYy5jCTIwMDMt
+MTAtMzAgMDA6MzI6MDkuMDAwMDAwMDAwICswMDAwCisrKyBsaW51eC0yLjQuMjUvYXJjaC9wcGMv
+ODI2MF9pby9jb21tcHJvYy5jCTIwMDUtMDUtMTggMTA6MDg6MzYuMDAwMDAwMDAwICswMTAwCkBA
+IC0yOSwxMiArMjksMjYzIEBACiAjaW5jbHVkZSA8YXNtL2ltbWFwXzgyNjAuaD4KICNpbmNsdWRl
+IDxhc20vY3BtXzgyNjAuaD4KIAorI2RlZmluZSBEUEZSRUUKKworI2lmZGVmIERQRlJFRQordHlw
+ZWRlZiBzdHJ1Y3QJY3BtX2RwYWxsb2NfZW50cnlfcyB7CisJdV9zaG9ydAkJCQlzdGFydF9hZGRy
+OworICAgIHVfc2hvcnQgICAgICAgICAgICAgcmV0bG9jOyAgICAvKiBUaGlzIGlzIHN0YXJ0X2Fk
+ZHIgKyBhbGlnbm1lbnQgb2Zmc2V0OiBvbmx5IHZhbGlkIGluIGFsbG9jIGxpc3QgKi8KKwl1X3No
+b3J0CQkJCXNpemU7CisJc3RydWN0CWNwbV9kcGFsbG9jX2VudHJ5X3MgKgluZXh0X2VudHI7Cit9
+IGNwbV9kcGFsbG9jX2VudHJ5X3Q7CisKK3N0YXRpYwl2b2lkCWNwbV9kcGFsbG9jX2luaXQodm9p
+ZCk7CitzdGF0aWMJdm9pZAljcG1fZHBhbGxvY19kYXRhX2luaXQoY3BtX2RwYWxsb2NfZW50cnlf
+dCAgKik7CitzdGF0aWMJaW50CSAgICBjcG1fZHBhbGxvY19jbChjcG1fZHBhbGxvY19lbnRyeV90
+ICopOworc3RhdGljCWludCAgCWNwbV9kcGFsbG9jX3JlbShjcG1fZHBhbGxvY19lbnRyeV90ICoq
+LCBjcG1fZHBhbGxvY19lbnRyeV90ICopOworc3RhdGljCXZvaWQJY3BtX2RwYWxsb2NfaW5zKGNw
+bV9kcGFsbG9jX2VudHJ5X3QgKiosIGNwbV9kcGFsbG9jX2VudHJ5X3QgKik7CisjIGRlZmluZSBD
+UE1fRFBBTExPQ19DT1VOVCAoQ1BNX0RBVEFPTkxZX1NJWkUgLyBzaXplb2YoY2JkX3QpICsgMSkg
+IAorLyogRHluYW1pYyBsaXN0cyBvZiBhbGxvY2F0ZWQgYW5kIGZyZWUgRFBSQU0gKi8KK3N0YXRp
+YwljcG1fZHBhbGxvY19lbnRyeV90ICAqY3BtX2RwYWxsb2NfZnJlZTsKK3N0YXRpYwljcG1fZHBh
+bGxvY19lbnRyeV90ICAqY3BtX2RwYWxsb2NfYWxsb2M7CitzdGF0aWMJY3BtX2RwYWxsb2NfZW50
+cnlfdAljcG1fZHBhbGxvY19saXN0W0NQTV9EUEFMTE9DX0NPVU5UXTsKKyNlbHNlCiBzdGF0aWMJ
+dWludAlkcF9hbGxvY19iYXNlOwkvKiBTdGFydGluZyBvZmZzZXQgaW4gRFAgcmFtICovCiBzdGF0
+aWMJdWludAlkcF9hbGxvY190b3A7CS8qIE1heCBvZmZzZXQgKyAxICovCisjZW5kaWYKIHN0YXRp
+Ywl1aW50CWhvc3RfYnVmZmVyOwkvKiBPbmUgcGFnZSBvZiBob3N0IGJ1ZmZlciAqLwogc3RhdGlj
+CXVpbnQJaG9zdF9lbmQ7CS8qIGVuZCArIDEgKi8KIGNwbTgyNjBfdAkqY3BtcDsJCS8qIFBvaW50
+ZXIgdG8gY29tbSBwcm9jZXNzb3Igc3BhY2UgKi8KIAorI2lmZGVmIERQRlJFRQorLyogSW5pdGlh
+bGl6ZSBkeW5hbWljIGxpc3RzCisgKi8KK3N0YXRpYyB2b2lkIGNwbV9kcGFsbG9jX2luaXQodm9p
+ZCkKK3sKKwlpbnQgaTsKKworCWNwbV9kcGFsbG9jX2ZyZWUgPSBjcG1fZHBhbGxvY19saXN0Owor
+CWNwbV9kcGFsbG9jX2ZyZWUtPnN0YXJ0X2FkZHIgPSBDUE1fREFUQU9OTFlfQkFTRTsKKwljcG1f
+ZHBhbGxvY19mcmVlLT5zaXplID0gQ1BNX0RBVEFPTkxZX1NJWkU7CisJY3BtX2RwYWxsb2NfZnJl
+ZS0+bmV4dF9lbnRyID0gTlVMTDsKKwljcG1fZHBhbGxvY19hbGxvYyA9IE5VTEw7CisKKwlmb3Io
+aSA9IDE7IGkgPD0gQ1BNX0RQQUxMT0NfQ09VTlQ7IGkrKykgeworCQljcG1fZHBhbGxvY19kYXRh
+X2luaXQgKGNwbV9kcGFsbG9jX2xpc3QgKyBpKTsKKwl9Cit9CisKKy8qIEluaXRpYWxpemUgZWxl
+bWVudCBpbiBsaXN0IG9mIERQUkFNCisgKi8KK3N0YXRpYyB2b2lkIGNwbV9kcGFsbG9jX2RhdGFf
+aW5pdChjcG1fZHBhbGxvY19lbnRyeV90ICogcHRyKQoreworCXB0ci0+cmV0bG9jID0gcHRyLT5z
+dGFydF9hZGRyID0gMDsKKwlwdHItPnNpemUgPSAwOworCXB0ci0+bmV4dF9lbnRyID0gTlVMTDsK
+K30KKworc3RhdGljIGludCBjcG1fZHBhbGxvY19jbChjcG1fZHBhbGxvY19lbnRyeV90ICogaGVh
+ZCkKK3sKKwljcG1fZHBhbGxvY19lbnRyeV90CSogY3VycjsKKwljcG1fZHBhbGxvY19lbnRyeV90
+CSogbmV4dDsKKwlpbnQJCQkgIHJldGxvYzsKKworCWN1cnIgPSBoZWFkOworCXJldGxvYyA9IC0x
+OworCisJaWYgKGN1cnIpIHsKKwkJcmV0bG9jID0gMDsKKworCQl3aGlsZSAoKG5leHQgPSBjdXJy
+LT5uZXh0X2VudHIpKSB7CisJCQlpZiAoY3Vyci0+c3RhcnRfYWRkciArIGN1cnItPnNpemUgPT0g
+bmV4dC0+c3RhcnRfYWRkcikgeworCQkJCWN1cnItPnNpemUgPSBjdXJyLT5zaXplICsgbmV4dC0+
+c2l6ZTsKKwkJCQljdXJyLT5uZXh0X2VudHIgPSBuZXh0LT5uZXh0X2VudHI7CisJCQkJY3BtX2Rw
+YWxsb2NfZGF0YV9pbml0KG5leHQpOworCQkJfSBlbHNlIHsKKwkJCQljdXJyID0gbmV4dDsKKwkJ
+CX0KKwkJIH0KKwl9CisKKwlyZXR1cm4gcmV0bG9jOworfQorCisvKiBSZW1vdmUgZWxlbWVudCBm
+cm9tIGR5bmFtaWMgbGlzdCBvZiBEUFJBTQorICovCitzdGF0aWMgaW50IGNwbV9kcGFsbG9jX3Jl
+bShjcG1fZHBhbGxvY19lbnRyeV90ICoqIGhlYWQsIGNwbV9kcGFsbG9jX2VudHJ5X3QgKiBwdHIp
+Cit7CisJY3BtX2RwYWxsb2NfZW50cnlfdAkqIHByZXY7CisJY3BtX2RwYWxsb2NfZW50cnlfdAkq
+IGN1cnI7CisJaW50CQkJICByZXRsb2M7CisKKwlyZXRsb2MgPSAtMTsKKwlmb3IgKHByZXYgPSBO
+VUxMICwgY3VyciA9ICpoZWFkOworCSAgICAgY3VyciAhPSBOVUxMICYmIHB0ciAhPSBjdXJyOwor
+CSAgICAgcHJldiA9IGN1cnIgLCBjdXJyID0gY3Vyci0+bmV4dF9lbnRyKQorCQkvKiBFTVBUWSAq
+LyA7CisKKwlpZiAoY3VycikgeworCQlpZiAocHJldikgeworCQkJcHJldi0+bmV4dF9lbnRyID0g
+Y3Vyci0+bmV4dF9lbnRyOworCQl9IGVsc2UgeworCQkJKmhlYWQgPSBjdXJyLT5uZXh0X2VudHI7
+CisJCX0KKwkJcmV0bG9jID0gMDsKKwl9CisKKwlyZXR1cm4gcmV0bG9jOworfQorCisvKiBJbnNl
+cnQgZWxlbWVudCBpbiBkeW5hbWljIGxpc3Qgb2YgRFBSQU0KKyAqLworc3RhdGljIHZvaWQgY3Bt
+X2RwYWxsb2NfaW5zKGNwbV9kcGFsbG9jX2VudHJ5X3QgKiogaGVhZCwgY3BtX2RwYWxsb2NfZW50
+cnlfdCAqIHB0cikKK3sKKwljcG1fZHBhbGxvY19lbnRyeV90CSogcHJldjsKKwljcG1fZHBhbGxv
+Y19lbnRyeV90CSogY3VycjsKKworCWZvciAocHJldiA9IE5VTEwgLCBjdXJyID0gKmhlYWQ7CisJ
+ICAgICBjdXJyICE9IE5VTEwgJiYgcHRyLT5zdGFydF9hZGRyID49IGN1cnItPnN0YXJ0X2FkZHI7
+CisJICAgICBwcmV2ID0gY3VyciAsIGN1cnIgPSBjdXJyLT5uZXh0X2VudHIpCisJCS8qIEVNUFRZ
+ICovIDsKKworCXB0ci0+bmV4dF9lbnRyID0gY3VycjsKKworCWlmIChwcmV2KSB7CisJCXByZXYt
+Pm5leHRfZW50ciA9IHB0cjsKKwl9IGVsc2UgeworCQkqaGVhZCA9IHB0cjsKKwl9Cit9CisvKiBB
+bGxvY2F0ZSBzb21lIG1lbW9yeSBmcm9tIHRoZSBkdWFsIHBvcnRlZCByYW0uICBXZSBtYXkgd2Fu
+dCB0bworICogZW5mb3JjZSBhbGlnbm1lbnQgcmVzdHJpY3Rpb25zLCBidXQgcmlnaHQgbm93IGV2
+ZXJ5b25lIGlzIGEgZ29vZAorICogY2l0aXplbi4KKyAqLwordWludCBtODI2MF9jcG1fZHBhbGxv
+Yyh1aW50IHNpemUsIHVpbnQgYWxpZ24pCit7CisJY3BtX2RwYWxsb2NfZW50cnlfdCAgICogbmV3
+X2VsOworCWNwbV9kcGFsbG9jX2VudHJ5X3QgICAqIHA7CisJY3BtX2RwYWxsb2NfZW50cnlfdCAg
+ICogcDE7CisJdWludAkJCXJldGxvYzsKKwl1X3Nob3J0CQkJbWF4OworCXVuc2lnbmVkIGxvbmcJ
+CWZsYWdzOworCWludAkJCWk7CisgICAgdWludCBhbGlnbl9tYXNrOworICAgIHVpbnQgb2ZmOwor
+CisJc2l6ZSA9IChzaXplICsgNykgJiB+NzsKKyAgICBhbGlnbl9tYXNrID0gYWxpZ24gLSAxOwor
+CW1heCA9IENQTV9EQVRBT05MWV9TSVpFOworCXJldGxvYyA9IDA7CisJbmV3X2VsID0gTlVMTDsK
+KworCWlmIChzaXplID09IDApIGdvdG8gRE9ORTsKKworCXNhdmVfZmxhZ3MoZmxhZ3MpOworCWNs
+aSgpOworCisJLyogRmluZCBmcmVlIGFyZWEgaW4gRFBSQU0KKwkqLworCWZvciAocCA9IGNwbV9k
+cGFsbG9jX2ZyZWU7IHAgIT0gTlVMTDsgcCA9IHAtPm5leHRfZW50cikgeworCQlpZiAocC0+c2l6
+ZSA8PSBtYXgpIHsKKyAgICAgICAgICAgIG9mZiA9ICgocC0+c3RhcnRfYWRkciArIGFsaWduX21h
+c2spICYgKH5hbGlnbl9tYXNrKSkgLSBwLT5zdGFydF9hZGRyOworICAgICAgICAgICAgaWYgKHAt
+PnNpemUgPj0gc2l6ZSArIG9mZikgeworICAgICAgICAgICAgICAgIG5ld19lbCA9IHA7CisgICAg
+ICAgICAgICAgICAgbWF4ID0gcC0+c2l6ZTsKKyAgICAgICAgICAgICAgICByZXRsb2MgPSBwLT5z
+dGFydF9hZGRyICsgb2ZmOworICAgICAgICAgICAgfQorCQl9CisJfQorCisJaWYgKG5ld19lbCA9
+PSBOVUxMKSBnb3RvIERPTkUxOworCisJLyogSW5zZXJ0IG5ldyBlbGVtZW50IGluIHRoZSBsaXN0
+IG9mIGFsbG9jYXRlZCBEUFJBTQorCSovCisJcDEgPSBjcG1fZHBhbGxvY19saXN0OworCXAgPSBO
+VUxMOworCWkgPSAwOworCXdoaWxlIChpIDwgQ1BNX0RQQUxMT0NfQ09VTlQpIHsKKwkJaWYgKHAx
+LT5zdGFydF9hZGRyID09IDAgJiYgIXAxLT5zaXplICYmICFwMS0+bmV4dF9lbnRyKSB7CisJCQlw
+ID0gcDE7CisJCQlicmVhazsKKwkJfQorCQlpICsrOworCQlwMSArKzsKKwl9CisKKwlpZiAocCA9
+PSBOVUxMKSB7CisJCXBhbmljICgibTh4eF9jcG1fZHBhbGxvYzogSU5URVJOQUwgRVJST1JcbiIp
+OworCX0KKworCXAtPnN0YXJ0X2FkZHIgPSBuZXdfZWwtPnN0YXJ0X2FkZHI7CisJcC0+cmV0bG9j
+ID0gcmV0bG9jOworCXAtPnNpemUgPSBzaXplOworCisgICAgb2ZmID0gcmV0bG9jIC0gbmV3X2Vs
+LT5zdGFydF9hZGRyOworCWlmIChuZXdfZWwtPnNpemUgPiAgKHNpemUrb2ZmKSkgeworCQluZXdf
+ZWwtPnNpemUgLT0gKHNpemUrb2ZmKTsKKwkJbmV3X2VsLT5zdGFydF9hZGRyICs9IChzaXplK29m
+Zik7CisJCWNwbV9kcGFsbG9jX2lucygmY3BtX2RwYWxsb2NfYWxsb2MsIHApOworCX0gZWxzZSB7
+CisJCWNwbV9kcGFsbG9jX2lucygmY3BtX2RwYWxsb2NfYWxsb2MsIHApOworCQlpID0gY3BtX2Rw
+YWxsb2NfcmVtKCZjcG1fZHBhbGxvY19mcmVlLCBuZXdfZWwpOworCisJCWlmICggaSA9PSAtMSkg
+eworCQkJcGFuaWMgKCJtOHh4X2NwbV9kcGFsbG9jOiBJTlRFUk5BTCBFUlJPUlxuIik7CisJCX0K
+KworCQljcG1fZHBhbGxvY19kYXRhX2luaXQobmV3X2VsKTsKKwl9CisKK0RPTkUxOgorCXJlc3Rv
+cmVfZmxhZ3MoZmxhZ3MpOworRE9ORToKKyAgICBpZiAoamlmZmllcyA+IDEwKkhaKQorICAgICAg
+ICBwcmludGsoIiVzKCV1LCV1KSA9IDB4JXhcbiIsX19GVU5DVElPTl9fLHNpemUsYWxpZ24scmV0
+bG9jKTsKKwlyZXR1cm4gcmV0bG9jOworfQorCitpbnQgbTgyNjBfY3BtX2RwZnJlZSh1aW50IHJl
+dGxvYykKK3sKKwljcG1fZHBhbGxvY19lbnRyeV90ICAgKiByOworCWludAkJCXJldHZhbDsKKwl1
+bnNpZ25lZCBsb25nCQlmbGFnczsKKworCXJldHZhbCA9IC0xOworCisJaWYgKChyZXRsb2MgPCBD
+UE1fREFUQU9OTFlfQkFTRSkgfHwKKwkgICAgKHJldGxvYyA+IENQTV9EQVRBT05MWV9TSVpFICsg
+Q1BNX0RBVEFPTkxZX0JBU0UpKSB7CisJCWdvdG8gRE9ORTsKKwl9CisKKwlzYXZlX2ZsYWdzKGZs
+YWdzKTsKKwljbGkoKTsKKworCWZvciAociA9IGNwbV9kcGFsbG9jX2FsbG9jOworCSAgICAgKHIg
+IT0gTlVMTCkgJiYgKHItPnJldGxvYyAhPSByZXRsb2MpOworCSAgICAgciA9IHItPm5leHRfZW50
+cikKKwkJLyogRU1QVFkgKi8gOworCisJaWYgKHIpIHsKKwkJcmV0dmFsID0gY3BtX2RwYWxsb2Nf
+cmVtKCZjcG1fZHBhbGxvY19hbGxvYywgcik7CisKKwkJaWYgKHJldHZhbCA9PSAtMSkgeworCQkJ
+cGFuaWMoIm04eHhfY3BtX2RwZnJlZTogSU5URVJOQUwgRVJST1JcbiIpOworCQl9CisJCWNwbV9k
+cGFsbG9jX2lucygmY3BtX2RwYWxsb2NfZnJlZSwgcik7CisJCXJldHZhbCA9IGNwbV9kcGFsbG9j
+X2NsKGNwbV9kcGFsbG9jX2ZyZWUpOworCisJCWlmIChyZXR2YWwgPT0gLTEpIHsKKwkJCXBhbmlj
+KCJtOHh4X2NwbV9kcGZyZWU6IElOVEVSTkFMIEVSUk9SXG4iKTsKKwkJfQorCQlyZXR2YWwgPSAw
+OworCX0KKworCXJlc3RvcmVfZmxhZ3MoZmxhZ3MpOworRE9ORToKKwlyZXR1cm4gcmV0dmFsOwor
+fQorI2VuZGlmIC8qIERQRlJFRSAqLworCiAvKiBXZSBhbGxvY2F0ZSB0aGlzIGhlcmUgYmVjYXVz
+ZSBpdCBpcyB1c2VkIGFsbW9zdCBleGNsdXNpdmVseSBmb3IKICAqIHRoZSBjb21tdW5pY2F0aW9u
+IHByb2Nlc3NvciBkZXZpY2VzLgogICovCkBAIC01MCwxMSArMzAxLDE0IEBACiAJaW1tciA9IGlt
+cCA9ICh2b2xhdGlsZSBpbW1hcF90ICopSU1BUF9BRERSOwogCWNvbW1wcm9jID0gJmltcC0+aW1f
+Y3BtOwogCisjaWZkZWYgRFBGUkVFCisJY3BtX2RwYWxsb2NfaW5pdCgpOworI2Vsc2UKIAkvKiBS
+ZWNsYWltIHRoZSBEUCBtZW1vcnkgZm9yIG91ciB1c2UuCiAJKi8KIAlkcF9hbGxvY19iYXNlID0g
+Q1BNX0RBVEFPTkxZX0JBU0U7CiAJZHBfYWxsb2NfdG9wID0gZHBfYWxsb2NfYmFzZSArIENQTV9E
+QVRBT05MWV9TSVpFOwotCisjZW5kaWYKIAkvKiBTZXQgdGhlIGhvc3QgcGFnZSBmb3IgYWxsb2Nh
+dGlvbi4KIAkqLwogCWhvc3RfYnVmZmVyID0KQEAgLTY4LDYgKzMyMiw3IEBACiAJY3BtcCA9IChj
+cG04MjYwX3QgKiljb21tcHJvYzsKIH0KIAorI2lmbmRlZiBEUEZSRUUKIC8qIEFsbG9jYXRlIHNv
+bWUgbWVtb3J5IGZyb20gdGhlIGR1YWwgcG9ydGVkIHJhbS4KICAqIFRvIGhlbHAgcHJvdG9jb2xz
+IHdpdGggb2JqZWN0IGFsaWdubWVudCByZXN0cmljdGlvbnMsIHdlIGRvIHRoYXQKICAqIGlmIHRo
+ZXkgYXNrLgpAQCAtOTUsNiArMzUwLDEyIEBACiAKIAlyZXR1cm4ocmV0bG9jKTsKIH0KK2ludCBt
+ODI2MF9jcG1fZHBmcmVlKHVpbnQgc3RhcnRfYWRkcikKK3sKKyAgICBwcmludGsoS0VSTl9FUlIg
+IiVzKCkgbm90IGltcGxlbWVudGVkXG4iLCBfX0ZVTkNUSU9OX18pOworICAgIHJldHVybiAtMTsK
+K30KKyNlbmRpZiAvKmlmbmRlZiBEUEZSRUUqLwogCiAvKiBXZSBhbHNvIG93biBvbmUgcGFnZSBv
+ZiBob3N0IGJ1ZmZlciBzcGFjZSBmb3IgdGhlIGFsbG9jYXRpb24gb2YKICAqIFVBUlQgImZpZm9z
+IiBhbmQgdGhlIGxpa2UuCg==
 
-    </pre>
-  </blockquote>
-  <pre wrap=""><!----><a class="moz-txt-link-freetext" href="http://www.kernel.org/pub/linux/kernel/people/rusty/modules/">http://www.kernel.org/pub/linux/kernel/people/rusty/modules/</a>
-
-Thanks. I downloaded the newest package. Then where 
-should I apply it? For kernel source or ELDK? I read 
-FAQ but no clear clue on it!
-
-  </pre>
-</blockquote>
-I'm not familiar with ELDK, but I suppose it creates filesystem for the
-target. The module-init-tools package should be installed on this
-filesystem.<br>
-<blockquote
- cite="mid20050518033817.57657.qmail@web15807.mail.cnb.yahoo.com"
- type="cite">
-  <pre wrap="">Thanks again,
-
-Sam
-
-_________________________________________________________
-Do You Yahoo!?
-150ÕÚ«˙MP3∑ËøÒÀ—£¨¥¯ƒ˙¥≥»Î“Ù¿÷µÓÃ√
-<a class="moz-txt-link-freetext" href="http://music.yisou.com/">http://music.yisou.com/</a>
-√¿≈Æ√˜–«”¶”–æ°”–£¨À—±È√¿Õº°¢—ﬁÕº∫Õø·Õº
-<a class="moz-txt-link-freetext" href="http://image.yisou.com">http://image.yisou.com</a>
-1GæÕ «1000’◊£¨—≈ª¢µÁ” ◊‘÷˙¿©»›£°
-<a class="moz-txt-link-freetext" href="http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/">http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/</a>
-
-
-
-  </pre>
-</blockquote>
-<br>
-<br>
-<pre class="moz-signature" cols="72">-- 
-Sincerely yours,
-Mike 
-</pre>
-</body>
-</html>
-
---------------040103060901030503060300--
+--Multipart_Wed__18_May_2005_10:28:14_+0100_08334cd0--
