@@ -1,17 +1,23 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 8DD5C67A3A
+Return-Path: <tnt@246tNt.com>
+Received: from outmx002.isp.belgacom.be (outmx002.isp.belgacom.be
+	[195.238.3.52]) by ozlabs.org (Postfix) with ESMTP id 14F2967A3E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 19 May 2005 03:09:52 +1000 (EST)
-Date: Wed, 18 May 2005 10:09:49 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: linuxppc-embedded@ozlabs.org
-Message-ID: <20050518170949.GA6766@gate.ebshome.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Subject: [PATCH] ppc32: fix CONFIG_TASK_SIZE handling on 40x
+	Thu, 19 May 2005 04:30:43 +1000 (EST)
+Received: from outmx002.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx002.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
+	ESMTP id j4IIUWs1023915
+	for <linuxppc-embedded@ozlabs.org>; Wed, 18 May 2005 20:30:33 +0200
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <428B8A0A.4040204@246tNt.com>
+Date: Wed, 18 May 2005 20:31:38 +0200
+From: Sylvain Munaut <tnt@246tNt.com>
+MIME-Version: 1.0
+To: Steven Blakeslee <BlakesleeS@embeddedplanet.com>
+References: <1628E43D99629C46988BE46087A3FBB9247587@ep-01.EmbeddedPlanet.local>
+In-Reply-To: <1628E43D99629C46988BE46087A3FBB9247587@ep-01.EmbeddedPlanet.local>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: USB-host driver for 440ep (bamboo)?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,53 +28,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi!
 
-This patch is virtually identical to my previous 44x one. It removes 
-0x8000'0000 TASK_SIZE hardcoded assumption from head_4xx.S.
+> U-boot 1.1.3 has a usb_ohci.c driver for the MPC5200.  That driver with just a few changes worked like a champ on the 440EP.
 
-I don't have any 40x board which runs 2.6, so this one is untested, 
-bit it compiles :).
+If it's just a big endian OHCI, ohci-ppc.c that's currently in the 
+mainstream tree should work, just add the proper definition in the 
+platform devices.
 
-Signed-off-by: Eugene Surovegin <ebs@ebshome.net>
 
-Index: arch/ppc/kernel/head_4xx.S
-===================================================================
---- 59c3218467807e1793fb4fc5d90141e072ab2212/arch/ppc/kernel/head_4xx.S  (mode:100644)
-+++ uncommitted/arch/ppc/kernel/head_4xx.S  (mode:100644)
-@@ -291,8 +291,9 @@
- 	/* If we are faulting a kernel address, we have to use the
- 	 * kernel page tables.
- 	 */
--	andis.	r11, r10, 0x8000
--	beq	3f
-+	lis	r11, TASK_SIZE@h 
-+	cmplw	r10, r11
-+	blt+	3f
- 	lis	r11, swapper_pg_dir@h
- 	ori	r11, r11, swapper_pg_dir@l
- 	li	r9, 0
-@@ -479,8 +480,9 @@
- 	/* If we are faulting a kernel address, we have to use the
- 	 * kernel page tables.
- 	 */
--	andis.	r11, r10, 0x8000
--	beq	3f
-+	lis	r11, TASK_SIZE@h 
-+	cmplw	r10, r11
-+	blt+	3f
- 	lis	r11, swapper_pg_dir@h
- 	ori	r11, r11, swapper_pg_dir@l
- 	li	r9, 0
-@@ -578,8 +580,9 @@
- 	/* If we are faulting a kernel address, we have to use the
- 	 * kernel page tables.
- 	 */
--	andis.	r11, r10, 0x8000
--	beq	3f
-+	lis	r11, TASK_SIZE@h 
-+	cmplw	r10, r11
-+	blt+	3f
- 	lis	r11, swapper_pg_dir@h
- 	ori	r11, r11, swapper_pg_dir@l
- 	li	r9, 0
+Sylvain
