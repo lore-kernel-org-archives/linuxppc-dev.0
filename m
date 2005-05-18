@@ -1,18 +1,18 @@
-Return-Path: <akonovalov@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
-	by ozlabs.org (Postfix) with SMTP id 0882C679E8
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 9DAFC679F4
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 19 May 2005 02:04:17 +1000 (EST)
-Message-ID: <428B6948.8050202@ru.mvista.com>
-Date: Wed, 18 May 2005 20:11:52 +0400
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
-MIME-Version: 1.0
-To: andreas_schmidt@ifm-electronic.com
-References: <OFA7B343F9.F5611A71-ONC1257005.00521FFA-C1257005.00541DF8@ifm-electronic.com>
-In-Reply-To: <OFA7B343F9.F5611A71-ONC1257005.00521FFA-C1257005.00541DF8@ifm-electronic.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Thu, 19 May 2005 02:19:22 +1000 (EST)
+In-Reply-To: <55497ec3de50301c9f568be24ed3edac@embeddededge.com>
+References: <55497ec3de50301c9f568be24ed3edac@embeddededge.com>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <96c735b4d1269864b56c84c72a8a4ac3@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Wed, 18 May 2005 11:19:15 -0500
+To: "Dan Malek" <dan@embeddededge.com>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: linux hangs after uncompressing on memec board with virtex2p
+Subject: Re: [PATCH] ppc32: fix CONFIG_TASK_SIZE handling on 44x
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,58 +23,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Andreas,
 
-I've never tried using u-boot with the virtex2p boards,
-but there is the AppNote describing how to use u-boot
-with ML300 (it seems your port is based on ML300):
+On May 18, 2005, at 9:14 AM, Dan Malek wrote:
 
-http://direct.xilinx.com/bvdocs/appnotes/xapp542.pdf
+>
+>
+> On May 18, 2005, at 6:21 AM, Eugene Surovegin wrote:
+>
+> > This patch fixed CONFIG_TASK_SIZE handling on 44x.
+>
+> Paul suggested to me and I've been contemplating changing
+>  the page table management on PowerPC to something similar
+>  to other platforms.=A0 At first, I was only going to do this on 8xx,
+>  but I think I'll do it for PowerPC in general so all boards can
+>  take advantage if they choose to do so.
+>
+> Other ports populate the user page tables with the kernel pmd
+>  entries upon kernel faults, then we don't have to distinguish
+>  among page tables during the TLB exceptions.=A0 I'm hoping we
+>  can populate the init page table entries at boot time, and then
+>  everyone will inherit them, eliminating all faults unless the kernel
+>  vmalloc space grows to need a new pmd entry.
 
-This appnote mentions the small patch needed by the linux kernel.
-Are you sure you have applied this patch, or this patch is in the
-kernel tree you are using already?
-I mean the ml300.uboot.patch from xapp542.zip.
+I'm a bit concerned about this in the future.  On Book-E parts we may=20
+end up actually utilizing the address space bit to provide a true 4G/4G=20=
 
-Best regards,
-Andrei
+split.  I understand the current pain in doing this today.  I just want=20=
 
+you to be aware of what the future might bring.
 
-andreas_schmidt@ifm-electronic.com wrote:
-> Hi at all
-> 
-> 
-> Since one week I have this Problem and can't solve it. I allready read DULG and search in
-> Mailinglists but I can't run linux. Perhaps had the same problem and can help me.
-> My Problem:
-> After I load the uImage and initrd in Ram (uImage at 0x00400000 and initrd 0x00600000)
-> from server, I try to run in with command bootm.
-> => bootm 00400000 00600000
-> 
-> the outpu what I get is
-> 
-> ## Booting image at 00400000 ...
->    Image Name:   Linux-2.4.24-pre2
->    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
->    Data Size:    609180 Bytes = 594.9 kB
->    Load Address: 00000000
->    Entry Point:  00000000
->    Verifying Checksum ... OK
->    Uncompressing Kernel Image ... OK
-> ## Loading RAMDisk Image at 00600000 ...
->    Image Name:   Simple Embedded Linux Framework
->    Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
->    Data Size:    1476478 Bytes =  1.4 MB
->    Load Address: 00000000
->    Entry Point:  00000000
->    Verifying Checksum ... OK
->    Loading Ramdisk to 00697000, end 007ff77e ... OK
-> 
-> and than hangs it.
-> I debug until the u-boot gives parameter on kernel (*kernel) (kbd, initrd_start,
-> initrd_end, cmd_start, cmd_end); and all works fine.
-> Than it can be only the kernel who hangs?
-> 
-> Some additional information to u-boot.
+>  This would be a generic solution to selecting task size, among
+>  other advanced memory mapping options.
+>
+> I'll keep you posted.
 
-...
+While we wait on this I think getting Eugene's patch is worth while.
+
+- kumar
