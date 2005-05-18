@@ -1,17 +1,18 @@
-Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15807.mail.cnb.yahoo.com (web15807.mail.cnb.yahoo.com
-	[202.165.102.87]) by ozlabs.org (Postfix) with SMTP id 29BF0679FE
+Return-Path: <galak@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id C6D4D679F8
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 18 May 2005 13:38:20 +1000 (EST)
-Message-ID: <20050518033817.57657.qmail@web15807.mail.cnb.yahoo.com>
-Date: Wed, 18 May 2005 11:38:17 +0800 (CST)
-From: Sam Song <samlinuxppc@yahoo.com.cn>
-To: Mike Rapoport <mike@compulab.co.il>
-In-Reply-To: 6667
+	Wed, 18 May 2005 14:53:52 +1000 (EST)
+Date: Tue, 17 May 2005 23:53:41 -0500 (CDT)
+From: Kumar Gala <galak@freescale.com>
+To: Andrew Morton <akpm@osdl.org>
+Message-ID: <Pine.LNX.4.61.0505172352170.28134@nylon.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: 2.6.x insmod problem on 82xx platform
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH] ppc32: Fix platform device initialization of 8250 serial
+ ports
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,27 +23,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Mike Rapoport <mike@compulab.co.il> wrote:
-[snip]
-> I think you use modutils for 2.4 kernel. In order to
-> work with LKM in 2.6 you need module-init-tools 
-> package.Take a look at
->
-http://www.kernel.org/pub/linux/kernel/people/rusty/modules/
+Andrew,
 
-Thanks. I downloaded the newest package. Then where 
-should I apply it? For kernel source or ELDK? I read 
-FAQ but no clear clue on it!
+(This fixes a bug and should go into 2.6.12 if possible.)
 
-Thanks again,
+Initialization of 8250 serial ports that are platform devices require that
+at empty entry exists in the array of plat_serial8250_port.  With out an
+empty entry we can get some pretty random behavior.
 
-Sam
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
-_________________________________________________________
-Do You Yahoo!?
-150万曲MP3疯狂搜，带您闯入音乐殿堂
-http://music.yisou.com/
-美女明星应有尽有，搜遍美图、艳图和酷图
-http://image.yisou.com
-1G就是1000兆，雅虎电邮自助扩容！
-http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/event/mail_1g/
+
+---
+commit 775d12402657efa10a3c76da6c764237afeca462
+tree ab87cb0c7a06314683657598ac6f011a7cc38884
+parent 995cccaa4c17395172a88369a7eda90ab98f9971
+author Kumar K. Gala <kumar.gala@freescale.com> Tue, 17 May 2005 23:51:13 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> Tue, 17 May 2005 23:51:13 -0500
+
+ ppc/syslib/mpc83xx_devices.c |    1 +
+ ppc/syslib/mpc85xx_devices.c |    1 +
+ 2 files changed, 2 insertions(+)
+
+Index: arch/ppc/syslib/mpc83xx_devices.c
+===================================================================
+--- afaee9b3b47f4d48902232740857f7b7d66e356f/arch/ppc/syslib/mpc83xx_devices.c  (mode:100644)
++++ ab87cb0c7a06314683657598ac6f011a7cc38884/arch/ppc/syslib/mpc83xx_devices.c  (mode:100644)
+@@ -61,6 +61,7 @@
+ 		.iotype		= UPIO_MEM,
+ 		.flags		= UPF_BOOT_AUTOCONF | UPF_SKIP_TEST,
+ 	},
++	{ },
+ };
+ 
+ struct platform_device ppc_sys_platform_devices[] = {
+Index: arch/ppc/syslib/mpc85xx_devices.c
+===================================================================
+--- afaee9b3b47f4d48902232740857f7b7d66e356f/arch/ppc/syslib/mpc85xx_devices.c  (mode:100644)
++++ ab87cb0c7a06314683657598ac6f011a7cc38884/arch/ppc/syslib/mpc85xx_devices.c  (mode:100644)
+@@ -61,6 +61,7 @@
+ 		.iotype		= UPIO_MEM,
+ 		.flags		= UPF_BOOT_AUTOCONF | UPF_SKIP_TEST | UPF_SHARE_IRQ,
+ 	},
++	{ },
+ };
+ 
+ struct platform_device ppc_sys_platform_devices[] = {
