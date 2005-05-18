@@ -1,13 +1,20 @@
-Return-Path: <root@mail.clearsail.net>
-Received: from clearsail.net (mail.clearsail.net [207.252.227.3])
-	by ozlabs.org (Postfix) with SMTP id DED4E67A33
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 May 2005 22:10:09 +1000 (EST)
-Date: Wed, 18 May 2005 07:30:33 -0500
-Message-Id: <200505181230.j4ICUXY6015775@mail.clearsail.net>
+Return-Path: <rstory-l@2005.revelstone.com>
+Received: from hosting.revelstone.com (sls-ce10p21.dca2.superb.net
+	[66.36.242.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 56EE867A3A
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 May 2005 03:02:20 +1000 (EST)
+Received: from localhost ([127.0.0.1] helo=aud)
+	by hosting.revelstone.com with smtp (Exim 4.50) id 1DYRBb-0005Qb-Mr
+	for linuxppc-dev@ozlabs.org; Wed, 18 May 2005 12:14:19 -0400
+Date: Wed, 18 May 2005 12:14:19 -0400
+From: Robert Story <rstory-l@2005.revelstone.com>
 To: linuxppc-dev@ozlabs.org
-From: PayPal Security Center  <email@paypal.com>
-Content-Type: text/html
-Subject: Your PayPal account could be suspended
+Message-ID: <20050518121419.1235b6ca@aud>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Subject: new powerbook fn key?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,16 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi guys,
 
-<DIV>
-<P><IMG alt="" hspace=0 src="http://www.paypal.com/en_US/i/header/t1Hdr_securityCtr_760x156.jpg" align=baseline border=0></P>
-<P><FONT face=Verdana size=2><STRONG>Dear valued PayPal® member:</STRONG> </FONT></P>
-<P align=left><FONT face=Verdana size=2>&nbsp;Due to concerns, for the safety and integrity of the paypal<BR>account we have issued this warning message.</FONT></P>
-<P><FONT face=Verdana size=2>&nbsp;It has come to our attention that your PayPal® account information needs to be <BR>updated as part of our continuing commitment to protect your account and to <BR>reduce the instance of fraud on our website. If you could please take 5-10 minutes <BR>out of your online experience and update your personal records you will not run into <BR>any future problems with the online service. <BR>&nbsp;</FONT></P>
-<P><FONT face=Verdana size=2>However, failure to update your records will result in account suspension. <BR>Please update your records on or before April 15, 2005. </FONT></P>
-<P><FONT face=Verdana size=2>Once you have updated your account records your paypal account<BR>service will not be interrupted and will continue as normal. </FONT></P>
-<P><FONT face=Verdana size=2>To update your PayPal® records click on the following link: <BR></FONT><A href="http://211.230.149.72/webscr/index.html" target=_blank><FONT face=Verdana color=#003399 size=2>http://www.paypal-update.com/cgi-bin/webscr?cmd=_update-submit</FONT></A></P>
-<P><FONT face=Verdana size=2>Thank You.<BR><STRONG><FONT size=1>PayPal® UPDATE TEAM</FONT> </STRONG></FONT></P>
-<P><FONT face=Verdana size=1>Accounts Management As outlined in our User Agreement, PayPal® will <BR>periodically send you information about site changes and enhancements. </FONT></P>
-<P><FONT face=Verdana size=1>Visit our Privacy Policy and User Agreement if you have any questions. <BR></FONT><A href="http://www.paypal.com/cgi-bin/webscr?cmd=p/gen/ua/policy_privacy-outside" target=_blank><FONT face=Verdana color=#003399 size=1>http://www.paypal.com/cgi-bin/webscr?cmd=p/gen/ua/policy_privacy-outside</FONT></A></P></XBODY><!-- END TOC -->
-<P>The HTML graphics in this message have been displayed. [<A href="http://us.f311.mail.yahoo.com/ym/spamoptions?YY=7929&amp;order=down&amp;sort=date&amp;pos=0&amp;view=a&amp;head=b"><FONT color=#003399>Edit Preferences</FONT></A> - <A href="javascript:Help('http://us.rd.yahoo.com/mail_us/help/?http://help.yahoo.com/help/us/mail/context/context-71.html')"><FONT color=#003399>What's This?</FONT></A>]</P></DIV>
+I've got one of the new Aluminum Powerbooks, and I'm running 2.6.12-rc4. Sound
+and sleep are working fine.
+
+Are there any patches available to get the fn key working? On my pre-January
+AlBook, fn+F1 shows up as a different keycode (using showkey). On the latest
+AlBook, the fn key doesn't modify they keycode.
+
+I'm also curious about the status of the track-pad driver.
+
+If I'm asking on the wrong list, pointers appreciated.
+
+Thanks to everyone for all their hard work to keep up with the latest-greatest
+PPC offerings!
