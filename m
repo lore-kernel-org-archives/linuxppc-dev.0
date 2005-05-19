@@ -1,16 +1,16 @@
-Return-Path: <jakob.viketoft@bitsim.se>
-Received: from amsfep19-int.chello.nl (amsfep19-int.chello.nl [213.46.243.20])
-	by ozlabs.org (Postfix) with ESMTP id 01577679FE
+Return-Path: <kamnpap@21cn.com>
+Received: from 21cn.com (send.forptr.21cn.com [202.105.45.48])
+	by ozlabs.org (Postfix) with SMTP id A9594679FB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 19 May 2005 16:41:46 +1000 (EST)
-Message-ID: <428C352E.1050002@bitsim.se>
-Date: Thu, 19 May 2005 08:41:50 +0200
-From: Jakob Viketoft <jakob.viketoft@bitsim.se>
+	Thu, 19 May 2005 21:36:04 +1000 (EST)
+Content-Type: text/plain
 MIME-Version: 1.0
-To: Jon Loeliger <jdl@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>
-Subject: OF flat device tree for ppc32...
+Message-ID: <FC949480806954.06795@webmail3.inner-21cn.com>
+Date: Thu, 19 May 2005 19:30:45 +0800 (CST)
+From: "LIU.ANDY"<kamnpap@21cn.com>
+To: linuxppc-embedded@ozlabs.org
+Cc: 
+Subject: QMC HDLC driver
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,14 +21,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Jon!
+Hello,
 
-Any news on the port of the OF-layer to ppc32? I'd love to hear some 
-more and it would be great be able to help out, even though I have some 
-heavy deadlines hanging over me for the next 2 months. From what I can 
-see on the list, there wasn't many comments on your first preparatory 
-code, but I for one thinks it's time to move it forward anyway.
+We need to use the MPC8247 QMC for multiple HDLC channels. Could anybody give me the related code or a reference? I have two HDLC driver, one for 8260 MCC, and the other for 850 of SCC3. Both are not the QMC hdlc driver.
+Any help would be appreciated.
 
-What do you say?
+Best Regards
+Kamn
 
-	/Jakob
+----------------------------------------------
+21CN邮箱全面升G 
+http://mail.21cn.com/huodong/0504/mail/ 
+彩屏手机白送啦!赶快来拿! 
+http://qipai.g.21cn.com 
+智慧大挑战就在低价夺宝 
+http://super.21cn.com/ 
+体验另类约会，感受别样浪漫 
+http://y.21cn.com/club/ 
+小灵通短信中心，短信魅力无极 
+http://pas.21cn.com/ 
+全能聊2005版闪亮登场！ 
+http://callme.21cn.com 
