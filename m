@@ -1,17 +1,16 @@
-Return-Path: <wd@denx.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 20 May 2005 08:20:29 +1000."
-	<1116541230.5153.8.camel@gaston>
-Date: Fri, 20 May 2005 01:14:41 +0200
-Sender: wd@denx.de
-Message-Id: <20050519231446.29487C1512@atlas.denx.de>
+Return-Path: <benh@kernel.crashing.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Wolfgang Denk <wd@denx.de>
+In-Reply-To: <20050519231446.29487C1512@atlas.denx.de>
+References: <20050519231446.29487C1512@atlas.denx.de>
+Content-Type: text/plain
+Date: Fri, 20 May 2005 09:28:29 +1000
+Message-Id: <1116545309.5153.58.camel@gaston>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org,
 	linuxppc-embedded@ozlabs.org, u-boot-users@lists.sourceforge.net
-Subject: Re: [U-Boot-Users] RFC: Booting the Linux/ppc64 kernel without Open
-	Firmware HOWTO (#2)
+Subject: Re: [U-Boot-Users] RFC: Booting the Linux/ppc64 kernel without
+	Open Firmware HOWTO (#2)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,123 +20,108 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dear Ben,
 
-in message <1116541230.5153.8.camel@gaston> you wrote:
->
-> > I have some concerns about the memory foot print and  increased  boot
-> > time  that  will  result  from  the proposed solution. 
+> I am aware that you think so, and I try to raise  your  awareness  of
+> the fact that there is a huge number of small machines out there.
 > 
-> Like everybody it seems, which is funny in a way as I expect pretty much
-> none (or a few Kb maybe). The kernel side code for managing a
-> device-tree may represent more, but heh, have you seen the size of a
+> Please keep in mind that the same interface will be forced sooner  or
+> later  on small 8xx systems with maybe just 4 MB flash and 8 or 16 MB
+> RAM.
 
-I am not so narrow-minded to think only about U-Boot. I try to  think
-about  the  whole system, including boot loader, kernel, and any data
-that might need to get passed between these two.
+I will not force it, but others may find it a good idea to do so :)
 
-And please believe me, there are many, many systems out  there  where
-"a few Kb" really matter.
+> It is IMHO wrong to have only the boot loader side in mind. We should
+> consider the whole system.
 
-> ppc64 kernel anyways ? I don't think that is very relevant. On the
+I do have the kernel in mind as well. The fact is the ppc64 kernel
+relies on an Open Firmware device tree and we do not want at any cost to
+get into the mess that is ppc32. We decided to define this flattened
+format for that purpose, and to allow kexec functionality. I did my best
+to keep the format as compact as possible (maybe a little bit more could
+be saved by changing the way the full path are layed out, maybe we could
+even do a new version which gzip's the while blob, but overall, it's
+fairly small).
 
-I am aware that you think so, and I try to raise  your  awareness  of
-the fact that there is a huge number of small machines out there.
-
-Please keep in mind that the same interface will be forced sooner  or
-later  on small 8xx systems with maybe just 4 MB flash and 8 or 16 MB
-RAM.
-
-And when you sell 100,000 of these units per year then "a few Kb" may
-cost a lot of money. Or may cause that other, prorietary OS get used.
-
-> bootloader side, I don't expect any significant impact. The device-tree
-> can be very small, and the code required on the bootloader side ranges
-> from nothing for a pre-built one, to a little bit if the bootloader has
-> to be able to change/add properties/nodes.
-
-It is IMHO wrong to have only the boot loader side in mind. We should
-consider the whole system.
-
-> > There are many embedded systems where resources are tight and requirements
-> > are  aven tighter.  
+On the kernel side, as I wrote as well, the code for dealing with the
+device-tree isn't that big, and will get smaller as I remove the
+post-processing of nodes in prom.c that we still have here. And as I
+wrote, if other platforms want to re-use that mecanism, they may want to
+just use the compact/flattened format directly. The function for
+scanning nodes in the flattened tree is about 40 lines of C and the
+function for accessing a property in a flattened node is about as much. 
+ 
 > 
-> Amen. (Though heh, this is ppc64, you can't be _that_ tight :)
+> I think you are aware that there are several people out there working
+> on a similar boot interface for the "small" PPC systems, too.
 
-I think you are aware that there are several people out there working
-on a similar boot interface for the "small" PPC systems, too.
+I know, and I was at the origin of the bi_rec proposal, a few years ago.
+I've simply never seen anything actually happening.
 
-
-> >It  would  be probably a good idea to also ask for feedback
-> > from these folks - for example by posting your RFC on the celinux-dev
-> > mailing list.
+> > No other solution will be accepted on the kernel side. At least for
+> > ppc64
 > 
-> I will do when I have a little bit more mature proposal.
-
-Thanks in advance.
-
-
-> > But my biggest concern is that we  should  try  to  come  up  with  a
-> > solution  that  has  a  wider  acceptance.
+> This is not exactly a constructive position. When  each  architecture
+> comes  up with it's own solution for the same problem and then claims
+> that no other solution will be accepted we will stick  with  what  we
+> have now: a mess.
 > 
-> No other solution will be accepted on the kernel side. At least for
-> ppc64
+> If this is really your position we may as well stop here.
 
-This is not exactly a constructive position. When  each  architecture
-comes  up with it's own solution for the same problem and then claims
-that no other solution will be accepted we will stick  with  what  we
-have now: a mess.
+The ppc64 kernel relies on an open firmware style device tree. That will
+not change any time soon. This proposal is a way to define a subset of
+this device-tree along with a compact & flattened format so that one
+don't have to do a full Open Firmware implementation and so that mimal
+trees can be used.
 
-If this is really your position we may as well stop here.
-
-> > As is, your proposal will add just another incompatible way of  doing
-> > the  same  thing  (of course we will have to stay backward compatible
-> > with U-Boot to allow booting older kernels, too).
+> Yes, of course. And using ATAGS is the only supported way to boot  an
+> ARM kernel, and so on.
 > 
-> My proposal is the only supported way to boot a ppc64 kernel. There are
+> If everybody claims that his way of doing things is the only accepted
+> solution we can really save all the time we are  wasting  on  such  a
+> discussion.
 
-Yes, of course. And using ATAGS is the only supported way to boot  an
-ARM kernel, and so on.
+Maybe. I'd rather have this proposal completed and have actual comments
+about the _content_ of it rather than such a debate at this point. Once
+we have that working, we can talk about extending it.
 
-If everybody claims that his way of doing things is the only accepted
-solution we can really save all the time we are  wasting  on  such  a
-discussion.
-
-
-> talks about backporting support for that to ppc32 as well. Other
-> architectures are welcome to use it too though :) The device-tree in the
-
-Ummm.. Ben, I have really high respect for you, but such  a  position
-is  simply  arrogant.  With the same right the ARM folks can say that
-ATAGS is the way to go and other architectures are welcome to use it.
-Actually they might have older rights.
-
-> > Why don't we try to come up with a solution that is acceptable to the
-> > other architectures as well? 
+> > talks about backporting support for that to ppc32 as well. Other
+> > architectures are welcome to use it too though :) The device-tree in the
 > 
-> This has been discussed over and over again, that is the best way to
-> never come up with a solution as everybody will want something different
-> and nobody will ever agree.
+> Ummm.. Ben, I have really high respect for you, but such  a  position
+> is  simply  arrogant.  With the same right the ARM folks can say that
+> ATAGS is the way to go and other architectures are welcome to use it.
+> Actually they might have older rights.
 
-With such a position I really wonder why you ever asked?
+May well be. But that out of topic. The decision has been made already.
 
-> The present proposal is implemented today on the ppc64 kernel already,
-> and we have decided to not go backward on this requirement. 
+> > > Why don't we try to come up with a solution that is acceptable to the
+> > > other architectures as well? 
+> > 
+> > This has been discussed over and over again, that is the best way to
+> > never come up with a solution as everybody will want something different
+> > and nobody will ever agree.
+> 
+> With such a position I really wonder why you ever asked?
 
-The why the heck do you call this a RFC or a proposal? To me it seems
-that you don't propose but dictate a  solution  -  a  solution  which
-pretty   much  ignores  everything  but  your  own  requirements.  If
-everything has been decided already I can as well shut up.
+I'm asking for comments about the content of the proposal and posting to
+inform people of what's going on. You are the one wanting to extend it
+to other architectures :)
 
-But please never claim that this has been _discusssed_.
+> > The present proposal is implemented today on the ppc64 kernel already,
+> > and we have decided to not go backward on this requirement. 
+> 
+> The why the heck do you call this a RFC or a proposal? To me it seems
+> that you don't propose but dictate a  solution  -  a  solution  which
+> pretty   much  ignores  everything  but  your  own  requirements.  If
+> everything has been decided already I can as well shut up.
 
+I'm asking for comments about the actual details of it, if something was
+overlooked in the format (though that actually works today), if my
+wording is wrong in parts, if we should define in more details some
+aspect of it.
 
-Best regards,
+> But please never claim that this has been _discusssed_.
 
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-I have made mistakes, but have never made the mistake of  claiming  I
-never made one.                                     - James G. Bennet
+No, what I meant earlier is that trying to come up with something like
+that, as you stated earlier, has been discussed again and again and
+again without any useful result.
