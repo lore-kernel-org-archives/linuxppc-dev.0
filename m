@@ -1,23 +1,23 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.200])
-	by ozlabs.org (Postfix) with ESMTP id 853A1679F0
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 1288867A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 19 May 2005 11:52:53 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 37so375322wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 18 May 2005 18:52:52 -0700 (PDT)
-Message-ID: <c3d0340b05051818524c647e61@mail.gmail.com>
-Date: Wed, 18 May 2005 18:52:52 -0700
-From: Shawn Jin <shawnxjin@gmail.com>
-To: Shawn Jin <shawnxjin@gmail.com>, ppcembed <linuxppc-embedded@ozlabs.org>
-In-Reply-To: <20050519012404.GA11587@gate.ebshome.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 19 May 2005 12:09:55 +1000 (EST)
+Date: Wed, 18 May 2005 19:09:53 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Shawn Jin <shawnxjin@gmail.com>
+Message-ID: <20050519020953.GB11587@gate.ebshome.net>
 References: <c3d0340b050518175411c484e3@mail.gmail.com>
 	<20050519012404.GA11587@gate.ebshome.net>
+	<c3d0340b05051818524c647e61@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <c3d0340b05051818524c647e61@mail.gmail.com>
+Cc: ppcembed <linuxppc-embedded@ozlabs.org>
 Subject: Re: DMA consistent allocation is limited to 2MB on 2.6.11 for
 	ppc440?
-Reply-To: Shawn Jin <shawnxjin@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,19 +28,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> No, _all_ physical memory is available for DMA. "consistent" pool is
-> used for small non-cached allocations, e.g. buffer descriptors, etc.
-> Don't use it for actual data buffers.
+On Wed, May 18, 2005 at 06:52:52PM -0700, Shawn Jin wrote:
+> Then what's your recommendation to allocate a big chunk of memory for
+> pci device? 
 
-We used to pci_alloc_consistent() to allocate DMA buffers on 2.4.
-There was no problem to allocate more than 2MB buffer. The
-implementation of pci_alloc_consistent() on 2.6 differs from that on
-2.4, which calls dma_alloc_coherent(). Following this, I traced down
-to 'consistent_pte', which is the root cause of 2MB limitation.
+My recommendation - don't do this. Why do you need to allocate this 
+big chunk of consistent memory in the first place? You can do DMA 
+_without_ allocating "consistent" memory. In fact, this is how 
+virtually all devices work in Linux. For more info about DMA API - 
+look at Documentation/DMA-API.txt.
 
-Then what's your recommendation to allocate a big chunk of memory for
-pci device? From this perspective, 2.6 is not compatible with 2.4,
-which I think, is pretty bad.
+Technically, you can make consistent pool bigger, if you really insist 
+on using this approach.
 
-Thanks,
--Shawn.
+-- 
+Eugene
