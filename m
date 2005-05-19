@@ -1,21 +1,21 @@
-Return-Path: <jason.mcmullan@timesys.com>
-Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
-	by ozlabs.org (Postfix) with ESMTP id B21D2679FE
+Return-Path: <panto@intracom.gr>
+Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
+	by ozlabs.org (Postfix) with ESMTP id EB909679F0
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 19 May 2005 23:32:50 +1000 (EST)
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-mxZW+qiwBP8tegXQfJ3I"
-In-Reply-To: <E1DYPVW-0000vS-00@gold.webfusion.co.uk>
-Date: Thu, 19 May 2005 09:32:32 -0400
-References: <E1DYPVW-0000vS-00@gold.webfusion.co.uk>
-Message-ID: <1116509554.9050.127.camel@jmcmullan.timesys>
+	Thu, 19 May 2005 23:47:26 +1000 (EST)
+Received: from mailserv.intranet.gr (localhost [127.0.0.1])
+	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id j4JDq9wR001197
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 19 May 2005 16:52:17 +0300 (EEST)
+Message-ID: <428C9338.9040403@intracom.gr>
+Date: Thu, 19 May 2005 16:23:04 +0300
+From: Pantelis Antoniou <panto@intracom.gr>
 MIME-Version: 1.0
-Date: Thu, 19 May 2005 09:26:25 -0400
-Message-ID: <1116509554.9050.127.camel@jmcmullan.timesys>
-From: "McMullan, Jason" <jason.mcmullan@timesys.com>
-To: <jmasel@arabellasw.com>
-Cc: PPC_LINUX <linuxppc-embedded@ozlabs.org>
+To: jmasel@arabellasw.com
+References: <E1DYPVW-0000vS-00@gold.webfusion.co.uk>
+In-Reply-To: <E1DYPVW-0000vS-00@gold.webfusion.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: 'PPC_LINUX' <linuxppc-embedded@ozlabs.org>
 Subject: Re: Arabella Resource Manager
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,83 +27,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Jonathan Masel wrote:
+> Hi all,
+> Several people have expressed an interest in seeing some more of our
+> Resource Manager - a kernel library for allocating/releasing on-chip
+> resources of all PQ processors. We currently have PQ1, PQ2 and PQ3 for 2.4
+> and 2.6 kernels.
+> 
+[snip]
+> 
+> 
 
---=-mxZW+qiwBP8tegXQfJ3I
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Jonathan, I see that you use a proc interface for status.
+You could use the seq_file abstraction and clean up the code there.
 
-Interesting code, but not generic enough.
-What would be nicer would be an API like the following, that can be
-easily extended, and work for more than just PQ (and ppc, for that
-matter)
+Also could you just list the categories of the thing you manage
+on the list so that we can comment per category?
 
-enum bres_type {
-	BRES_TYPE_CLOCK =3D 0,
-	BRES_TYPE_PIN,
-	BRES_TYPE_CPM_SRAM,
-	...
-	BRES_TYPE_MAX,
-}
+Regards
 
-struct bres_pool {
-	struct resource *pool;
-	int (*set)(int id, ...);
-	int (*clear)(int id);
-};
-
-/* Board setup will set up the available regions
- * into this array, similar as to how the PCI=20
- * system sets up the iomem areas.
- */
-struct bres_pool *board_resource[BRES_TYPE_MAX];
-
-/* Request a resource out of the available pools
- */
-int bres_request(enum bres_type type, const struct resource *req);
-
-/* Free a requested resource=20
- * This also calls the 'clear' function of the pool.
- */
-int bres_release(enum bres_type type, const struct resource *res);
-
-
-/* After request completes, you can 'instance'
- * the resource.
- */
-
-/* Wire a pin
- * pin is the same as you requested in the resource
- * pin type is defined in either the board or SoC CPU headers
- *  (ie CPM_PB17_SDL)
- */
-static inline int bres_pin_wire_as(int pin, int pin_type)
-{  return board_resource[BRES_TYPE_PIN].instance(pin, pin_type); }
-
-/* Wire a clock
- */
-static inline int bres_clock_wire_as(int clock, int clock_target,
-			int multiplier, int divider)
-{  return board_resource[BRES_TYPE_CLOCK].instance(pin, pin_type); }
-
-...etc....
-
-
-
---=20
-Jason McMullan <jason.mcmullan@timesys.com>
-TimeSys Corporation
-
-
---=-mxZW+qiwBP8tegXQfJ3I
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.0 (GNU/Linux)
-
-iD8DBQBCjJVw8/0vJ5szK6kRAtDaAKC9WFofAOh6m6J/rtlzYyoWYwfkywCcDTGy
-KWVnaCb6hInCiW0aTKMmVbQ=
-=5+mz
------END PGP SIGNATURE-----
-
---=-mxZW+qiwBP8tegXQfJ3I--
+Pantelis
