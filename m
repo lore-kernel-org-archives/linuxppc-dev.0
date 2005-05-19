@@ -1,22 +1,18 @@
-Return-Path: <panto@intracom.gr>
-Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
-	by ozlabs.org (Postfix) with ESMTP id EB909679F0
+Return-Path: <jdl@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id DF7CA679F0
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 19 May 2005 23:47:26 +1000 (EST)
-Received: from mailserv.intranet.gr (localhost [127.0.0.1])
-	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id j4JDq9wR001197
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 19 May 2005 16:52:17 +0300 (EEST)
-Message-ID: <428C9338.9040403@intracom.gr>
-Date: Thu, 19 May 2005 16:23:04 +0300
-From: Pantelis Antoniou <panto@intracom.gr>
-MIME-Version: 1.0
-To: jmasel@arabellasw.com
-References: <E1DYPVW-0000vS-00@gold.webfusion.co.uk>
-In-Reply-To: <E1DYPVW-0000vS-00@gold.webfusion.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: 'PPC_LINUX' <linuxppc-embedded@ozlabs.org>
-Subject: Re: Arabella Resource Manager
+	Fri, 20 May 2005 01:37:45 +1000 (EST)
+From: Jon Loeliger <jdl@freescale.com>
+To: Jakob Viketoft <jakob.viketoft@bitsim.se>
+In-Reply-To: <428C352E.1050002@bitsim.se>
+References: <428C352E.1050002@bitsim.se>
+Content-Type: text/plain
+Message-Id: <1116517058.24754.10.camel@gleep>
+Mime-Version: 1.0
+Date: Thu, 19 May 2005 10:37:38 -0500
+Cc: Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: OF flat device tree for ppc32...
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,23 +23,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Jonathan Masel wrote:
-> Hi all,
-> Several people have expressed an interest in seeing some more of our
-> Resource Manager - a kernel library for allocating/releasing on-chip
-> resources of all PQ processors. We currently have PQ1, PQ2 and PQ3 for 2.4
-> and 2.6 kernels.
+On Thu, 2005-05-19 at 01:41, Jakob Viketoft wrote:
+> Hello Jon!
 > 
-[snip]
+> Any news on the port of the OF-layer to ppc32? I'd love to hear some 
+> more and it would be great be able to help out, even though I have some 
+> heavy deadlines hanging over me for the next 2 months. From what I can 
+> see on the list, there wasn't many comments on your first preparatory 
+> code, but I for one thinks it's time to move it forward anyway.
 > 
+> What do you say?
 > 
+> 	/Jakob
 
-Jonathan, I see that you use a proc interface for status.
-You could use the seq_file abstraction and clean up the code there.
+So, there were two positive comments that I received
+as feedback on my initial suggestion, and no negative
+comments.  (Minor patch deltas not withstanding.)
 
-Also could you just list the categories of the thing you manage
-on the list so that we can comment per category?
+I am _almost_ actively back to working on this issue.
 
-Regards
+Right now, I am in the process of re-grabbing a new
+tree from GIT-land and reconstructing my tree and patch
+based on current top-of-GIT.
 
-Pantelis
+My desire will then be to re-submit the patch for real
+and have it applied to the tree in an effort to isolate
+the __res and friends to one localized area with a
+well-defined interface.
+
+I will then read Ben's proposal in detail and move
+forward from there.
+
+HTH!
+jdl
