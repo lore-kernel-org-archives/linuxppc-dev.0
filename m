@@ -1,18 +1,18 @@
-Return-Path: <jdl@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 13D8B679F0
+Return-Path: <akonovalov@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
+	by ozlabs.org (Postfix) with SMTP id 4C171679EB
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 21 May 2005 02:40:43 +1000 (EST)
-From: Jon Loeliger <jdl@freescale.com>
-To: Jakob Viketoft <jakob.viketoft@bitsim.se>
-In-Reply-To: <428C352E.1050002@bitsim.se>
-References: <428C352E.1050002@bitsim.se>
-Content-Type: text/plain
-Message-Id: <1116607235.29111.20.camel@gleep>
-Mime-Version: 1.0
-Date: Fri, 20 May 2005 11:40:36 -0500
-Cc: Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: OF flat device tree for ppc32...
+	Sat, 21 May 2005 03:29:34 +1000 (EST)
+Message-ID: <428E2049.4010907@ru.mvista.com>
+Date: Fri, 20 May 2005 21:37:13 +0400
+From: Andrei Konovalov <akonovalov@ru.mvista.com>
+MIME-Version: 1.0
+To: Jason McMullan <jason.mcmullan@timesys.com>
+References: <1114609634.30649.14.camel@ad.doubleclick.net>
+In-Reply-To: <1114609634.30649.14.camel@ad.doubleclick.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: PPC_LINUX <linuxppc-embedded@ozlabs.org>
+Subject: Re: MPC8xx Platformization
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,44 +23,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2005-05-19 at 01:41, Jakob Viketoft wrote:
-> Hello Jon!
+Hi Jason,
+
+Jason McMullan wrote:
+> The following is a rough skeleton of platformization for the mpc8xx
+> series, in the same technique as Kumar's 85xx platformization.
 > 
-> Any news on the port of the OF-layer to ppc32? I'd love to hear some 
-> more and it would be great be able to help out, even though I have some 
-> heavy deadlines hanging over me for the next 2 months. From what I can 
-> see on the list, there wasn't many comments on your first preparatory 
-> code, but I for one thinks it's time to move it forward anyway.
+> This rough cut will be followed up later with specific
+> driver platformization fixes.
+
+How is the progress on the 8xx platformization?
+We are working (in the same direction) on a couple 8xx boards,
+and there is an issue which is not addressed by your patch:
+
+> ------------------------------------------------------------------------
 > 
-> What do you say?
+> Date:        Wed, 20 Apr 2005 11:11:23 -0400
+> Signed-Off-By:  Jason McMullan <jason.mcmullan@timesys.com>
+> Description: MPC8xx platformization
 > 
-> 	/Jakob
+...
+> --- /dev/null
+> +++ linux/arch/ppc/platforms/8xx/mpc8xx_sys.c
+...
+> +struct ppc_sys_spec ppc_sys_specs[] = {
+> +	{
+> +		.ppc_sys_name	= "MPC885",
+> +		.mask 		= 0xFFFF0000,
+> +		.value 		= 0x00500000,
+...
+> --- linux-orig/arch/ppc/syslib/m8xx_setup.c
+> +++ linux/arch/ppc/syslib/m8xx_setup.c
+...
+>  
+> +	identify_ppc_sys_by_id(mfspr(PVR));
+> +
 
-Folks,
+All the MPC8xx'es have 0x0050 in the upper half of PVR.
+So checking the value of PVR with .mask = 0xFFFF0000 makes no sense.
 
-I have updated my tree and patch to the latest GIT
-as of last night.  The new patch is available here:
+I've looked at how U-Boot detects the CPU, and the procedure is much more
+complicated than just checking PVR and IMMR. U-Boot even probes (writes the
+pattern to the register and reads it back) to check if the CPU has FEC.
+But it still doesn't distinguish between e.g. MPC885, MPC880, MPC875, and MPC870
+- though the set of on-chip devices is different for the four.
 
-   http://www.jdl.com/bdt_cleanup_git.patch.gz
+Anyone having an idea on what to pass to identify_ppc_sys_by_id() in case of MPC8xx?
 
-Signed-off-by: Jon Loeliger <jdl@freescale.com>
 
-Please let me know if there are difficulties retrieving it.
-
-This patch has a few caveats associated with it.
-In particular, it does not address the entire
-
-    arch/ppc/boot/simple
-
-issue at all.  And for that reason, this patch does
-not yet actually remove the to-be-obsoleted ppcboot.h
-that is otherwise unreferenced.  I am hopeful that
-someone who is muchm ore familiar with that code can
-pick up from this patch and Do The Right Thing there.
-
-This patch in no-way eliminates the U-Boot-to-Kernel
-interface yet.  It merely isolates it all to one location
-and provides a functional interface to it.
-
-Enjoy,
-jdl
+Thanks,
+Andrei
