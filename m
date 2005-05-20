@@ -2,16 +2,17 @@ Return-Path: <dan@embeddededge.com>
 Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3256E67A39
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 May 2005 00:27:57 +1000 (EST)
-In-Reply-To: <17037.32285.607543.859030@cargo.ozlabs.ibm.com>
+	by ozlabs.org (Postfix) with ESMTP id 578CC679EF
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 May 2005 00:30:24 +1000 (EST)
+In-Reply-To: <1116575115.5153.115.camel@gaston>
 References: <17037.32285.607543.859030@cargo.ozlabs.ibm.com>
+	<1116575115.5153.115.camel@gaston>
 Mime-Version: 1.0 (Apple Message framework v622)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <0b53908f87096525543bc4f660c613b6@embeddededge.com>
+Message-Id: <e9d0cf12aef70d985053ec7eafb0a9db@embeddededge.com>
 From: Dan Malek <dan@embeddededge.com>
-Date: Fri, 20 May 2005 10:28:05 -0400
-To: Paul Mackerras <paulus@samba.org>
+Date: Fri, 20 May 2005 10:30:30 -0400
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 Subject: Re: [PATCH] Set cpu type explicitly, take 2
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,15 +25,14 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On May 20, 2005, at 2:05 AM, Paul Mackerras wrote:
+On May 20, 2005, at 3:45 AM, Benjamin Herrenschmidt wrote:
 
-> Any further comments?  Are -mcpu=860 and -mcpu=8540 reasonable for 8xx
-> and 85xx respectively?
+> The problem is the same as ppc64 isn't it ?, -maltivec doesn't work 
+> with
+> -mcpu=power4 on gcc 3.4 does it ? That would mean no RAID6...
 
-Yes.
-
-Is there now some minimum gcc version that is required for
-using these flags?
+I don't understand "doesn't work."  Does power4 imply altivec?
+Do we need to add -maltivec based on the configuration option?
 
 Thanks.
 
