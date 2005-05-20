@@ -1,15 +1,22 @@
-Return-Path: <iasx40@yahoo.com>
-Received: from web30511.mail.mud.yahoo.com (web30511.mail.mud.yahoo.com
-	[68.142.201.239]) by ozlabs.org (Postfix) with SMTP id F0AA867A07
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 454BA679EF
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 20 May 2005 22:09:12 +1000 (EST)
-Message-ID: <20050520120231.94106.qmail@web30511.mail.mud.yahoo.com>
-Date: Fri, 20 May 2005 05:02:31 -0700 (PDT)
-From: kiran kumar <iasx40@yahoo.com>
-To: linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Subject: schedule_task
+	Sat, 21 May 2005 00:19:23 +1000 (EST)
+In-Reply-To: <428CF8D3.2070006@mrv.com>
+References: <20050518170949.GA6766@gate.ebshome.net>
+	<428CD40C.201@mrv.com>	<2376d87e3df664106a6cf626f9575d90@embeddededge.com>	<428CEA55.1040904@mrv.com>	<5e493590088edcf959e30390363e798d@embeddededge.com>
+	<428CF693.5030100@mrv.com> <428CF8D3.2070006@mrv.com>
+Mime-Version: 1.0 (Apple Message framework v622)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <f751960e7a7299d7f28c54b53417ac57@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Fri, 20 May 2005 10:19:28 -0400
+To: Guillaume Autran <gautran@mrv.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] ppc32: fix cpm_uart_int() missing interrupts
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,21 +27,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-hi,
-  In my module I am using schedule_task()
-and passing tq_struct. 'ps -xa' reports
-the status of the task. When module removed from 
-kernel, still 'ps -xa' reports final task is sleeping.
-I called flush_scheduled_tasks(), when unloading
-module. No progress. Kindly, explain how remove
-process.
+
+On May 19, 2005, at 4:36 PM, Guillaume Autran wrote:
+
+>  One thought though, if the event register is cleared _before_=A0 the=20=
+
+> event is processed (clearing the cause),
+
+The cause of the event is it set completion flags on the buffer=20
+descriptors.
+
+>  will the cpm set the bit again (before we have time to clear the=20
+> cause) ? That would generate 2 interrupts for the same event ? Am I=20
+> right ?
+
+No, it will work fine.
 
 Thanks.
--kiran
 
 
-		
-__________________________________ 
-Do you Yahoo!? 
-Yahoo! Mail - Helps protect you from nasty viruses. 
-http://promotions.yahoo.com/new_mail
+	-- Dan
