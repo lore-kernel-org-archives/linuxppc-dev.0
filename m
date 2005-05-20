@@ -1,22 +1,18 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 454BA679EF
+Return-Path: <jdl@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 13D8B679F0
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 21 May 2005 00:19:23 +1000 (EST)
-In-Reply-To: <428CF8D3.2070006@mrv.com>
-References: <20050518170949.GA6766@gate.ebshome.net>
-	<428CD40C.201@mrv.com>	<2376d87e3df664106a6cf626f9575d90@embeddededge.com>	<428CEA55.1040904@mrv.com>	<5e493590088edcf959e30390363e798d@embeddededge.com>
-	<428CF693.5030100@mrv.com> <428CF8D3.2070006@mrv.com>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <f751960e7a7299d7f28c54b53417ac57@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Fri, 20 May 2005 10:19:28 -0400
-To: Guillaume Autran <gautran@mrv.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] ppc32: fix cpm_uart_int() missing interrupts
+	Sat, 21 May 2005 02:40:43 +1000 (EST)
+From: Jon Loeliger <jdl@freescale.com>
+To: Jakob Viketoft <jakob.viketoft@bitsim.se>
+In-Reply-To: <428C352E.1050002@bitsim.se>
+References: <428C352E.1050002@bitsim.se>
+Content-Type: text/plain
+Message-Id: <1116607235.29111.20.camel@gleep>
+Mime-Version: 1.0
+Date: Fri, 20 May 2005 11:40:36 -0500
+Cc: Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: OF flat device tree for ppc32...
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,23 +23,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Thu, 2005-05-19 at 01:41, Jakob Viketoft wrote:
+> Hello Jon!
+> 
+> Any news on the port of the OF-layer to ppc32? I'd love to hear some 
+> more and it would be great be able to help out, even though I have some 
+> heavy deadlines hanging over me for the next 2 months. From what I can 
+> see on the list, there wasn't many comments on your first preparatory 
+> code, but I for one thinks it's time to move it forward anyway.
+> 
+> What do you say?
+> 
+> 	/Jakob
 
-On May 19, 2005, at 4:36 PM, Guillaume Autran wrote:
+Folks,
 
->  One thought though, if the event register is cleared _before_=A0 the=20=
+I have updated my tree and patch to the latest GIT
+as of last night.  The new patch is available here:
 
-> event is processed (clearing the cause),
+   http://www.jdl.com/bdt_cleanup_git.patch.gz
 
-The cause of the event is it set completion flags on the buffer=20
-descriptors.
+Signed-off-by: Jon Loeliger <jdl@freescale.com>
 
->  will the cpm set the bit again (before we have time to clear the=20
-> cause) ? That would generate 2 interrupts for the same event ? Am I=20
-> right ?
+Please let me know if there are difficulties retrieving it.
 
-No, it will work fine.
+This patch has a few caveats associated with it.
+In particular, it does not address the entire
 
-Thanks.
+    arch/ppc/boot/simple
 
+issue at all.  And for that reason, this patch does
+not yet actually remove the to-be-obsoleted ppcboot.h
+that is otherwise unreferenced.  I am hopeful that
+someone who is muchm ore familiar with that code can
+pick up from this patch and Do The Right Thing there.
 
-	-- Dan
+This patch in no-way eliminates the U-Boot-to-Kernel
+interface yet.  It merely isolates it all to one location
+and provides a functional interface to it.
+
+Enjoy,
+jdl
