@@ -1,15 +1,19 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 8808D679FB
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 May 2005 01:00:02 +1000 (EST)
-In-Reply-To: <17037.32285.607543.859030@cargo.ozlabs.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BBB2D679F8
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 May 2005 08:29:13 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Dan Malek <dan@embeddededge.com>
+In-Reply-To: <e9d0cf12aef70d985053ec7eafb0a9db@embeddededge.com>
 References: <17037.32285.607543.859030@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <d711f981871bb288a61b7244c0f6d428@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Fri, 20 May 2005 09:59:54 -0500
-To: "Paul Mackerras" <paulus@samba.org>
+	<1116575115.5153.115.camel@gaston>
+	<e9d0cf12aef70d985053ec7eafb0a9db@embeddededge.com>
+Content-Type: text/plain
+Date: Sat, 21 May 2005 08:27:32 +1000
+Message-Id: <1116628052.5153.123.camel@gaston>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 Subject: Re: [PATCH] Set cpu type explicitly, take 2
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -21,20 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 2005-05-20 at 10:30 -0400, Dan Malek wrote:
+> On May 20, 2005, at 3:45 AM, Benjamin Herrenschmidt wrote:
+> 
+> > The problem is the same as ppc64 isn't it ?, -maltivec doesn't work 
+> > with
+> > -mcpu=power4 on gcc 3.4 does it ? That would mean no RAID6...
+> 
+> I don't understand "doesn't work."  Does power4 imply altivec?
+> Do we need to add -maltivec based on the configuration option?
 
-On May 20, 2005, at 1:05 AM, Paul Mackerras wrote:
+No, -mcpu=970 is equivalent in a way to -mcpu=power4 and -maltivec,
+howevever, there is a bug in gcc 3.4 which makes -maltivec cause an
+error if you have -mcpu=power4. The RAID6 code needs -maltivec. So on
+gcc 3.4, we need to use -mcpu=970 instead of -mcpu=power4. However, we
+must _NOT_ do that on gcc-4.0 as that causes it to implicitely generate
+altivec code all over the place. (Fortunately, the bug is also fixed
+there, so with gcc-4.0, we just need -mcpu=power4 and -maltivec only on
+the RAID6 code)
 
-> Here is a revised version of my patch to set the cpu type explicitly
-> for gcc when compiling the kernel.  Setting the cpu type is a good
-> idea in any case, and particularly if you have a biarch gcc.  This
-> sets the type for all of the ppc cpu families we support.
->
-> Any further comments?  Are -mcpu=860 and -mcpu=8540 reasonable for 8xx
-> and 85xx respectively?  I used -mcpu=power4 rather than -mcpu=970
-> because the former works with gcc-3.6.6 as in debian and the latter
-> doesn't.  Unfortunately -mcpu=440 doesn't work either in gcc 3.3,
-> though it does in gcc 3.4 (as does -mcpu=970).
+Messy ? Yeah !
 
-Yes, -mcpu=8540 is reasonable for 85xx.
-
-- kumar
+Ben.
