@@ -1,16 +1,17 @@
-Return-Path: <stefan.nickl@kontron.com>
-From: Stefan Nickl <Stefan.Nickl@kontron.com>
-To: Wolfgang Denk <wd@denx.de>
-In-Reply-To: <20050519231446.29487C1512@atlas.denx.de>
-References: <20050519231446.29487C1512@atlas.denx.de>
-Content-Type: text/plain
-Date: Fri, 20 May 2005 08:44:37 +0200
-Message-Id: <1116571478.12823.20.camel@lucy.pep-kaufbeuren.de>
-Mime-Version: 1.0
-Cc: linuxppc64-dev@ozlabs.org, linuxppc-embedded <linuxppc-embedded@ozlabs.org>,
-	u-boot-users@lists.sourceforge.net, linuxppc-dev@ozlabs.org
-Subject: Re: [U-Boot-Users] RFC: Booting the Linux/ppc64 kernel without
-	Open Firmware HOWTO (#2)
+Return-Path: <wd@denx.de>
+To: Hollis Blanchard <hollis@penguinppc.org>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 19 May 2005 22:51:56 CDT."
+	<6fcc07be88e5091ac1428e9bbde6d92f@penguinppc.org>
+Date: Fri, 20 May 2005 08:59:31 +0200
+Sender: wd@denx.de
+Message-Id: <20050520065936.1B51EC1512@atlas.denx.de>
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org,
+	u-boot-users@lists.sourceforge.net, linuxppc-embedded@ozlabs.org
+Subject: Re: [U-Boot-Users] RFC: Booting the Linux/ppc64 kernel without Open
+	Firmware HOWTO (#2)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,27 +21,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2005-05-20 at 01:14 +0200, Wolfgang Denk wrote:
-> > ppc64 kernel anyways ? I don't think that is very relevant. On the
+In message <6fcc07be88e5091ac1428e9bbde6d92f@penguinppc.org> you wrote:
+>
+> > Maybe you want  to  post  the  RFC  to  lkml,  or  at  least  to  the
+> > linux-arm-kernel and linux-mips mailing lists?
 > 
-> I am aware that you think so, and I try to raise  your  awareness  of
-> the fact that there is a huge number of small machines out there.
-> 
-> Please keep in mind that the same interface will be forced sooner  or
-> later  on small 8xx systems with maybe just 4 MB flash and 8 or 16 MB
-> RAM.
+> As you observe, having multiple incompatible communication mechanisms 
+> is an issue of u-boot code maintenance. Since you are the most affected 
 
-I don't seem to be getting the point: As you proved conclusively on your
-website, 2.6 (and IMHO very likely anything that will come after it)
-does not scale down well to small systems like the 8xx any more anyways.
+No, it's vice versa. U-Boot has always been  just  implementing  what
+the  kernel  does.  There are many other boot loaders around that all
+have to adhere to the interface(s) imposed on them by the kernel.
 
-And I don't think such a major change will be "forced" upon the mostly
-frozen 2.4 tree.
+> In the meantime, it sounds like this device tree stuff solves ppc64's 
+> problem in a way the maintainers are happy with, so it's hard to ask 
+> them to come up with a solution to a problem they don't have.
 
-So why try to stop the folks that want to unite the current "mess" in a
-proven superset datastructure that seems to suit quite fine with all
-chips that came into production for (at least) the last five years?
+Well, actually nobody has problems:  the  ARM  and  MIPS  folks  have
+working  solutions,  too.  The  next  architecture will implement yet
+another way of passing information to the kernel,  implement  it  and
+state that they will not accept any other solution, and so on.
+
+Best regards,
+
+Wolfgang Denk
 
 -- 
-Stefan Nickl
-Kontron Modular Computers
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Where people stand is not as important as which way they face.
+        - Terry Pratchett & Stephen Briggs, _The Discworld Companion_
