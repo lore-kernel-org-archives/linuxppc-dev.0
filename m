@@ -1,24 +1,21 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao02.cox.net (fed1rmmtao02.cox.net [68.230.241.37])
-	by ozlabs.org (Postfix) with ESMTP id 949E3679FB
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4F49F679F0
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 21 May 2005 06:16:32 +1000 (EST)
-Date: Fri, 20 May 2005 13:16:20 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Shawn Jin <shawnxjin@gmail.com>
-Message-ID: <20050520131620.B881@cox.net>
-References: <c3d0340b050518175411c484e3@mail.gmail.com>
-	<20050519012404.GA11587@gate.ebshome.net>
-	<c3d0340b05051818524c647e61@mail.gmail.com>
-	<20050519020953.GB11587@gate.ebshome.net>
-	<c3d0340b050520111228a6f4cd@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <c3d0340b050520111228a6f4cd@mail.gmail.com>;
-	from shawnxjin@gmail.com on Fri, May 20, 2005 at 11:12:54AM -0700
-Cc: ppcembed <linuxppc-embedded@ozlabs.org>
-Subject: Re: DMA consistent allocation is limited to 2MB on 2.6.11 for
-	ppc440?
+	Sat, 21 May 2005 07:04:05 +1000 (EST)
+In-Reply-To: <20050520141244.GD24923@logos.cnet>
+References: <20050520141244.GD24923@logos.cnet>
+Mime-Version: 1.0 (Apple Message framework v622)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <e503cf4ab6d2d389b29474561048f2f2@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Fri, 20 May 2005 17:03:59 -0400
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] allow coherent DMA API to work before main page
+	allocator is set up
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,44 +26,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 20, 2005 at 11:12:54AM -0700, Shawn Jin wrote:
-> > My recommendation - don't do this. Why do you need to allocate this
-> > big chunk of consistent memory in the first place? You can do DMA
-> > _without_ allocating "consistent" memory. In fact, this is how
-> > virtually all devices work in Linux. For more info about DMA API -
-> > look at Documentation/DMA-API.txt.
-> 
-> The driver stack we've been developing (already 4.0) uses consistent
-> memory a lot for DMA. The stack is for many kinds of high performance
-> storage IO e.g. iSCSI, FC. It works fine on 2.4.x because there is no
-> such 2MB consistent pool limitation.
 
-Why are you using consistent memory for your DMA buffers?
- 
-> > Technically, you can make consistent pool bigger, if you really insist
-> > on using this approach.
-> 
-> I want to understand the motivation and the rationale of choosing
-> 'consistent_pte' on 2.6.x, what impact there would be to increase the
-> consistent pool, and so on. Some pointers to articles, posts are more
-> helpful.
- 
-The rationale on moving to the new implementation in 2.6 was to fix a
-critical bug.  The bug could not be fixed with a band-aid solution, but
-required an allocation system with different semantics. After considering
-a few possibilities the basic framework from ARM was selected.
+On May 20, 2005, at 10:12 AM, Marcelo Tosatti wrote:
 
-The bug that was fixed was the inability to allocate consistent memory
-from an interrupt context. This is allowed by the PCI DMA API and the
-more general DMA API and is used by many drivers.  In 2.4, these drivers
-would simply BUG() on PPC4xx/8xx.
+> The following patch changes dma_alloc_coherent() to, in case the
+> main page allocator is not yet up and running, use the bootmem
+> allocator instead.
 
-The difference with this implementation is that it doesn't allow for
-arbitrarily huge consistent allocations by default.  However, I carefully
-placed a comment at the top to point people to the advanced setup
-menu where they can tune the consistent pool to be larger than the
-2MB default.  You simply have to understand the memory map of your
-board port when setting this option.  You can break things as with
-other advanced setup menu options.
+I'm concerned about this ...  Why did the drivers change in 2.6
+such that they now call dma_alloc_coherent() prior to the VM set up?
 
--Matt
+> It also adds a new parameter to m8xx_cpm_hostalloc() to send back
+> the physical address to its caller.
+
+Anyone calling m8xx_cpm_hostalloc() is likely to be immediately
+calling dma_alloc_coherent().  There is some design problem here
+if we can't properly use these interfaces and get the mapping we
+need.  The TLB pinning option won't work if we can't do this.
+
+
+>  ..... Special casing such as
+> drivers/serial/cpm_uart/cpm_uart_cpm1.c's cpm_uart_allocbuf() can be
+> removed:
+>
+>         if (is_con) {
+>                 mem_addr = (u8 *) m8xx_cpm_hostalloc(memsz);
+>                 dma_addr = 0;
+>         } else
+>                 mem_addr = dma_alloc_coherent(NULL, memsz, &dma_addr,
+>                                               GFP_KERNEL);
+
+This is bogus and should not be necessary.  The original serial
+driver was able to work without doing this, I spent lots of time so
+stuff like this wasn't necessary, and it's sad to see us take such
+a step backward.
+
+> What is your opinion on this approach?
+
+As you can tell, I don't like it and we shouldn't need it :-)
+The first call to m8xx_cpm_hostalloc() should be able to call
+dma_consistent_alloc() to get a consistent page.  If this isn't the
+case, we have to fix the drivers so they can do this.  The only
+change that should be necessary is to return the physical address
+from m8xx_cpm_hostalloc(), if for some reason we see some
+need to get rid of the immensely useful iopa() function.
+
+Thanks.
+
+
+	-- Dan
