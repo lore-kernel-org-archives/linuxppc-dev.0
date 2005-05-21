@@ -1,28 +1,18 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.193])
-	by ozlabs.org (Postfix) with ESMTP id 3B44C679F0
+Return-Path: <rvinson@mvista.com>
+Received: from zipcode.az.mvista.com (rav-az.mvista.com [65.200.49.157])
+	by ozlabs.org (Postfix) with ESMTP id 505F6679F4
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 21 May 2005 09:51:23 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 37so1061443wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 20 May 2005 16:51:22 -0700 (PDT)
-Message-ID: <c3d0340b0505201651163b35cb@mail.gmail.com>
-Date: Fri, 20 May 2005 16:51:22 -0700
-From: Shawn Jin <shawnxjin@gmail.com>
-To: Matt Porter <mporter@kernel.crashing.org>
-In-Reply-To: <20050520131620.B881@cox.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <c3d0340b050518175411c484e3@mail.gmail.com>
-	<20050519012404.GA11587@gate.ebshome.net>
-	<c3d0340b05051818524c647e61@mail.gmail.com>
-	<20050519020953.GB11587@gate.ebshome.net>
-	<c3d0340b050520111228a6f4cd@mail.gmail.com>
-	<20050520131620.B881@cox.net>
-Cc: ppcembed <linuxppc-embedded@ozlabs.org>
-Subject: Re: DMA consistent allocation is limited to 2MB on 2.6.11 for
-	ppc440?
-Reply-To: Shawn Jin <shawnxjin@gmail.com>
+	Sat, 21 May 2005 11:27:02 +1000 (EST)
+Received: from [10.50.1.144] (rvinson@linuxbox.az.mvista.com [10.50.1.144])
+	by zipcode.az.mvista.com (8.9.3/8.9.3) with ESMTP id SAA08292
+	for <linuxppc-embedded@ozlabs.org>; Fri, 20 May 2005 18:08:20 -0700
+Message-ID: <428E8369.50500@mvista.com>
+Date: Fri, 20 May 2005 17:40:09 -0700
+From: Randy Vinson <rvinson@mvista.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: [PATCH][PPC32] Fix an Off-By-One Error in arch/ppc/syslib/ipic.c
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,37 +23,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-First of all thanks for your attention. :)
+Fix an off-by-one error in ipic_init.
 
-> Why are you using consistent memory for your DMA buffers?
+There is an off-by-one error in the IPIC code that configures the
+external interrupts (Edge or Level Sensitive).
 
-Both CPU and IO controller (e.g. FC controller) have to be aware of
-changes the other party makes on the data buffer. Some architectures
-guarantee this coherence through bus snooping, which ppc440 is
-unfortunately lack of. The simplest solution is to use consistent
-memory.. On 2.4.x to some extent we don't need worry about how much
-consistent memory is available. So the developers used consistent
-mappings a lot instead of streaming DMA mappings. We would have been
-more conservative to use consistent mappings had we known the
-limitation earlier.
+Signed-off-by Randy Vinson <rvinson@mvista.com>
 
-> The difference with this implementation is that it doesn't allow for
-> arbitrarily huge consistent allocations by default.  However, I carefully
-> placed a comment at the top to point people to the advanced setup
-> menu where they can tune the consistent pool to be larger than the
-> 2MB default.  You simply have to understand the memory map of your
+---
+commit 0c92b569e09b94a1580cc5bae6efbdd749fec28a
+tree 9c1e83adcec1bee0a700888546385444ef5f4000
+parent 66e60f92518268f4d2a702a1c4ffbe1caacd6290
+author Randy Vinson <rvinson@linuxbox.(none)> Fri, 20 May 2005 15:58:02 -0700
+committer Randy Vinson <rvinson@linuxbox.(none)> Fri, 20 May 2005 15:58:02 -0700
 
-I noticed your comment about the advanced settings:
-CONFIG_CONSISTENT_SIZE and _START. However simply increasing the value
-of CONSISTENT_SIZE won't get rid of the limiation. Right? The root
-cause is in consistent_pte, which is only one page. It may be good to
-have consistent_pte have more than one pages according to the
-CONSISTENT_SIZE. Is it a useful fix?
+arch/ppc/syslib/ipic.c |    2 +-
+1 files changed, 1 insertion(+), 1 deletion(-)
 
-> board port when setting this option.  You can break things as with
-> other advanced setup menu options.
-
-OK. Have to be very careful here.
-
-Best regards,
--Shawn.
+Index: arch/ppc/syslib/ipic.c
+===================================================================
+--- 889a1e2919ac50253be8136a1b0855fde27fcb36/arch/ppc/syslib/ipic.c  (mode:100644)
++++ 9c1e83adcec1bee0a700888546385444ef5f4000/arch/ppc/syslib/ipic.c  (mode:100644)
+@@ -479,7 +479,7 @@
+    temp = 0;
+    for (i = 0 ; i < senses_count ; i++) {
+        if ((senses[i] & IRQ_SENSE_MASK) == IRQ_SENSE_EDGE) {
+-            temp |= 1 << (16 - i);
++            temp |= 1 << (15 - i);
+            if (i != 0)
+                irq_desc[i + irq_offset + MPC83xx_IRQ_EXT1 - 1].status = 0;
+            else
