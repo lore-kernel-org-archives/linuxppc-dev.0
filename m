@@ -1,16 +1,25 @@
-Return-Path: <security@paypal.com>
-Received: from 62.193.235.119 (unknown [62.193.235.119])
-	by ozlabs.org (Postfix) with SMTP id 3FE1F679F4
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from parcelfarce.linux.theplanet.co.uk
+	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id ADAFE679F4
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 22 May 2005 10:18:44 +1000 (EST)
-Message-ID: <MHSSREUCLWQINWRZCUGPGAJ@hotmail.com>
-From: "PayPal Security Service" <security@paypal.com>
-To: linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="--0694825148969864185"
-Subject: *** PayPal Security Issues ***
-Reply-To: PayPal Security Service <security@paypal.com>
+	Sun, 22 May 2005 13:51:15 +1000 (EST)
+Date: Sat, 21 May 2005 19:27:13 -0300
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Dan Malek <dan@embeddededge.com>
+Message-ID: <20050521222713.GA28813@logos.cnet>
+References: <20050520141244.GD24923@logos.cnet>
+	<e503cf4ab6d2d389b29474561048f2f2@embeddededge.com>
+	<20050520175152.GB26221@logos.cnet>
+	<5d184282e7d324fb009b8dcf6e6f967d@embeddededge.com>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="Kj7319i9nmIyA2yE"
+In-Reply-To: <5d184282e7d324fb009b8dcf6e6f967d@embeddededge.com>
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: [RFT] 8xx cpm_hostalloc patch was: allow coherent DMA API to work
+	before main page allocator is set up
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,167 +29,139 @@ List-Post: <mailto:linuxppc-embedded@ozlabs.org>
 List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
-Date: Sun, 22 May 2005 00:18:46 -0000
 
-----0694825148969864185
-Content-Type: text/html;
-Content-Transfer-Encoding: quoted-printable
 
-<html>
+--Kj7319i9nmIyA2yE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-<head>
-<meta http-equiv=3D"Content-Language" content=3D"en-us">
-<meta name=3D"GENERATOR" content=3D"Microsoft FrontPage 5.0">
-<meta name=3D"ProgId" content=3D"FrontPage.Editor.Document">
-<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dwindows-=
-1252">
-<title>Dear PayPal</title>
-</head>
 
-<body>
+Can someone with 8xx using the cpm_uart driver please test 
+the attached patch? It should avoid corruption of the pinned
+8Mbyte CONFIG_PIN_TLB entry, as noted by Dan. 
 
-<p align=3D"center">
-<a href=3D"http://vds-351816.amen-pro.com/paypal/index.php">
-<img border=3D"0" src=3D"https://www.paypal.com/en_US/i/header/t1Hdr_hpGra=
-phic_563x115.jpg" width=3D"563" height=3D"115" 
+On Sat, May 21, 2005 at 05:21:47PM -0400, Dan Malek wrote:
+> 
+> On May 20, 2005, at 1:51 PM, Marcelo Tosatti wrote:
+> 
+> >I must be missing something very obvious here, can you explain how
+> >did you arrange things in v2.4 such that the console's ->setup
+> >method is called _after_ mem_init() ?
+> 
+> The driver used to use the serial port configuration as left by the
+> boot rom until very late into the initialization.  As I have said many
+> times in the past, the serial driver went through three different
+> levels of configuration.  There was an early configuration that was
+> used for kgdb, a later one used by the serial kernel printk, and
+> finally a full configuration by the serial driver. 
 
-align=3D"left"></a></p>
-<p align=3D"center">&nbsp;</p>
-<p 
+I have missed your statements about that in the past.
 
-align=3D"justify">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&
+OK, the v2.4 driver is using the dual port RAM: 
 
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
-<p align=3D"justify">&nbsp;</p>
-<p align=3D"justify">&nbsp;</p>
-<p 
+        /* Allocate space for two FIFOs.  We can't allocate from host
+         * memory yet because vm allocator isn't initialized
+         * during this early console init.
+         */
+        dp_addr = m8xx_cpm_dpalloc(2*EARLY_BUF_SIZE);
+        mem_addr = (uint)(&cpmp->cp_dpmem[dp_addr]);
 
-align=3D"justify">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&
+> It's sad that "moving forward" is done at a cost of throwing away
+> features that were important. 
 
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;
-<b>Dear PayPal =AE valued member</b>,</p>
-<p align=3D"justify">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Is has come to 
+Now that I think of it, no v2.6 driver should be calling
+dma_alloc_coherent() before mem_init(). I was seeing the problem
+because we're still using the old uart driver, which does that, and 
+our timer setup routine also.
 
-our attention that your PayPal Billing 
-Information records are out of date. That requires you to update the Billi=
-ng 
-Information. <br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Failure to 
+> is a quick fix, but this further ensures features like pinned TLB
+> entries won't work. 
 
-update your records will result in account termination. Please update your=
- records in maximum 72 hours. Once you have updated 
+Actually, the quick fix to use bootmem allocator ensures that the 
+pinned TLB is _preserved_ (by using a pagetableentry from the consistent 
+DMA address space to mark as uncached and invalidate, instead of a pte 
+from the kernel direct mapped virtual space which blows away the 8Mbyte
+entry - current v2.6 state).
 
-them, your 
-PayPal session will not be interrupted and will continue as normal. Failur=
-e to 
-update them will result in cancellation of service, Terms of Service (TOS)=
+Why do you say that "further ensures that features like pinned TLB 
+entries won't work" ? 
+
+If there is really a problem with using the bootmem allocator for 
+noncacheable purposes (which I can't see), it should be pretty easy 
+to modify cpm_uart to use dpram instead of host bootmem RAM, right?
+
+
+--Kj7319i9nmIyA2yE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="8xx.patch"
+
+--- linux-2.6.11.orig/arch/ppc/syslib/m8xx_setup.c	2005-05-20 13:53:17.000000000 -0300
++++ linux-2.6.11/arch/ppc/syslib/m8xx_setup.c	2005-05-20 15:59:24.000000000 -0300
+@@ -57,7 +57,7 @@
+ extern void m8xx_ide_init(void);
  
-violations or future billing problems. Please follow the link below and up=
-date 
-your account information:</p>
-<p align=3D"left">
-<a onmouseover=3D"status=3D'https://www.paypal.com/cgi-bin/webscr?cmd=3D_l=
-ogin-run'; return true" onmouseout=3D"status=3D'';return 
-
-true" href=3D"http://vds-351816.amen-pro.com/paypal/index.php">https://www=
-paypal.com/cgi-bin/webscr?cmd=3D_login-run</a></p>
-<p align=3D"left">
-.........................................................................=
-..................................................
-
-......................................................................</p=
->
-<p align=3D"left">
-<b><font size=3D"2">Thank you for using PayPal!<br> The PayPal Team</font>=
-</b></p>
-<p align=3D"left">
-<font size=3D"2">Your monthly account statement is available anytime; just=
- log in 
-into your account at
-<a href=3D"http://vds-351816.amen-pro.com/paypal/index.php">
-https://www.paypal.com/us/HISTORY</a>. To correct any errors, please conta=
-ct us 
-through our Help Center at
-<a href=3D"http://vds-351816.amen-pro.com/paypal/index.php">https://www.pa=
-ypal.com/us/HELP</a>.</font></p>
-<p align=3D"left">
-<font 
-
-color=3D"#C0C0C0">--------------------------------------------------------=
------------------------------------------------------
-
-------------------------------------------------------<font size=3D"1"><br=
->FOR INTERNATIONAL PAYMENTS ONLY:<br>Commissions and 
-
-Fees incurred by sender: $0.00</font></font></p>
-<p align=3D"left">
-<font size=3D"1" color=3D"#C0C0C0">Rate of exchange: If and when the Recei=
-pt chooses to withdraw 
-these funds from the PayPal System, and if the withdrawal involves a curre=
-ncy 
-conversion, the Recipient will convert the funds at the aplicable currency=
+ extern unsigned long find_available_memory(void);
+-extern void m8xx_cpm_reset(uint cpm_page);
++extern void m8xx_cpm_reset();
+ extern void m8xx_wdt_handler_install(bd_t *bp);
+ extern void rpxfb_alloc_pages(void);
+ extern void cpm_interrupt_init(void);
+@@ -70,13 +70,9 @@
+ void __init
+ m8xx_setup_arch(void)
+ {
+-	int	cpm_page;
+-
+-	cpm_page = (int) alloc_bootmem_pages(PAGE_SIZE);
+-
+ 	/* Reset the Communication Processor Module.
+ 	*/
+-	m8xx_cpm_reset(cpm_page);
++	m8xx_cpm_reset();
  
-exchange rate at the time of the withdrawal, and the Recipient may incur a=
+ #ifdef CONFIG_FB_RPX
+ 	rpxfb_alloc_pages();
+--- linux-2.6.11.orig/arch/ppc/8xx_io/commproc.c	2005-05-20 13:53:17.000000000 -0300
++++ linux-2.6.11/arch/ppc/8xx_io/commproc.c	2005-05-22 00:29:42.000000000 -0300
+@@ -39,8 +39,6 @@
+ #include <asm/tlbflush.h>
+ #include <asm/rheap.h>
  
-transaction fee.</font></p>
-<p align=3D"left">
-<font size=3D"1" color=3D"#C0C0C0">RIGHT TO REFUND <br>You, the customer, =
-are entitled to a refund of 
-the money to be transmitted as a result of this agreement if PayPal does n=
-ot 
-forward the money received from you in 10 days of the date of its receipt,=
- or 
-does not give instructions commiting an equivalent amount of money to the =
-person 
-designated by you within 10 days of the date of the receipt of the funds f=
-rom 
-you unless otherwise instructed by you.</font></p>
-<p align=3D"left">
-<font color=3D"#C0C0C0">
-<font size=3D"1">If you want a refund, you must mail or deliver your writt=
-en 
-request to PayPal at P.O. Box 45950, Omaha, NE 68145-0950. If you do not r=
-eceive 
-your refund, you may be entitled to your money back plus penalty of up to =
+-extern int get_pteptr(struct mm_struct *mm, unsigned long addr, pte_t **ptep);
+-
+ static void m8xx_cpm_dpinit(void);
+ static	uint	host_buffer;	/* One page of host buffer */
+ static	uint	host_end;	/* end + 1 */
+@@ -111,11 +109,10 @@
+ extern void flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr);
+ 
+ void
+-m8xx_cpm_reset(uint bootpage)
++m8xx_cpm_reset(void)
+ {
+ 	volatile immap_t	 *imp;
+ 	volatile cpm8xx_t	*commproc;
+-	pte_t *pte;
+ 
+ 	imp = (immap_t *)IMAP_ADDR;
+ 	commproc = (cpm8xx_t *)&imp->im_cpm;
+@@ -143,17 +140,6 @@
+ 	/* Reclaim the DP memory for our use. */
+ 	m8xx_cpm_dpinit();
+ 
+-	/* get the PTE for the bootpage */
+-	if (!get_pteptr(&init_mm, bootpage, &pte))
+-	       panic("get_pteptr failed\n");
+-																							
+-	/* and make it uncachable */
+-	pte_val(*pte) |= _PAGE_NO_CACHE;
+-	_tlbie(bootpage);
+-
+-	host_buffer = bootpage;
+-	host_end = host_buffer + PAGE_SIZE;
+-
+ 	/* Tell everyone where the comm processor resides.
+ 	*/
+ 	cpmp = (cpm8xx_t *)commproc;
 
-$1.000,00 USD and attorney's fee pursuant to Section 1810.5 of the Califor=
-nia 
-Financial 
-
-Code.<br></font>----------------------------------------------------------=
----------------------------------------------------
-
-------------------------------------------------------</font><font size=3D=
-"1"><font color=3D"#C0C0C0"><br>Please do not reply to 
-
-this email. This mailbox is not monitored 
-and you will not receive a response. For assistance, </font> 
-<a href=3D"http://vds-351816.amen-pro.com/paypal/index.php">log in</a><fon=
-t color=3D"#C0C0C0"> to 
-your PayPal account and choose the Help link located in the top right corn=
-er of 
-any PayPal page.</font></font></p>
-<p align=3D"left">
-<font size=3D"1"><font color=3D"#C0C0C0">To receive email notifications in=
- plain text instead of HTML, 
-update your preferences </font> <a href=3D"http://vds-351816.amen-pro.com/=
-paypal/index.php">here</a><font 
-
-color=3D"#C0C0C0">.</font></font></p>
-<p align=3D"left">
-&nbsp;</p>
-<p align=3D"left">
-<font size=3D"1" color=3D"#C0C0C0">PayPal Email ID PP120</font></p>
-<p align=3D"left">
-&nbsp;</p>
-<p>&nbsp;</p>
-
-</body>
-
-</html>
-
-----0694825148969864185--
+--Kj7319i9nmIyA2yE--
