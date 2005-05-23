@@ -1,20 +1,19 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 3E443679E6
+Return-Path: <wd@denx.de>
+Received: from mailout08.sul.t-online.com (mailout08.sul.t-online.com
+	[194.25.134.20]) by ozlabs.org (Postfix) with ESMTP id E4EA8679E2
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 May 2005 06:04:09 +1000 (EST)
-Date: Mon, 23 May 2005 13:04:06 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Sanjay Bajaj <sbajaj@tsi-telsys.com>
-Message-ID: <20050523200406.GA10295@gate.ebshome.net>
-References: <0007F077BB3476449151699150E8FEA21A7BA0@exchange.tsi-telsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <0007F077BB3476449151699150E8FEA21A7BA0@exchange.tsi-telsys.com>
+	Tue, 24 May 2005 06:30:35 +1000 (EST)
+To: "Vladimir A. Gurevich" <vag@paulidav.org>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 23 May 2005 06:46:23 PDT."
+	<4291DEAF.1080705@paulidav.org>
+Date: Mon, 23 May 2005 22:30:16 +0200
+Sender: wd@denx.de
+Message-Id: <20050523203021.D5033C1512@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: tah reset?
+Subject: Re: Microcode patches for mpc8xx 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,25 +24,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 23, 2005 at 03:17:26PM -0400, Sanjay Bajaj wrote:
-> I did find the source of the reset tah issue. The physical address 
-> of TAH 0 and TAH 1 was ending in B00h and D00h respectively. But in 
-> the UM, it ends in B50 and D50. the file affected is ibm440gx.c in 
-> arch/ppc/platforms.
+Dear Vladimir,
 
-Linux 2.6 has correct values for TAH base address, 2.4 doesn't have 
-any support for TAH at all.
+in message <4291DEAF.1080705@paulidav.org> you wrote:
+> 
+> >In our CVS tree? See the old linux-2.4 tree. We don't see  many  uses of 8xx systems recently with ucode requirements.
+> >  
+> >
+> I am completely puzzled now.  It looks like your stable, but old 
+> linux-2.4 tree has a much better selection of 8xx drivers compared to 
+> the linuxppc_2_4_devel. Why is that? What do you recommend for a new 
 
-Where did you get this incorrect code?
+This is because we  have  limited  resources,  and  do  those  things
+(first)  where a customer is waiting (and paying) for. Not all of the
+work that went into the old 2.4.4 tree was adapted  for  more  recent
+versions  of  2.4  yet;  and  most  of  the 2.4 stuff got lost in 2.6
+anyway.
 
-You see, you should have used supported sources (2.6) or the one I 
-recommended to you (my 2.4 backport) but you have ignored this  
-suggestion and wasted your time and time of people on this mail list.
+> MPC852T-based development? Can the drivers be dropped into the newer 
+> tree or more serious backporting effort is needed?
 
-Please, next time if you use some stuff which isn't in kernel.org's 
-tree, direct you questions to the person who made those patches, 
-because we cannot help you as we don't have the source code you are 
-using.
+It depends. Most should work fine with minimal changes, but obviously
+some effort for a code review and especially testing will be needed.
+
+Best regards,
+
+Wolfgang Denk
 
 -- 
-Eugene
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+core error - bus dumped
