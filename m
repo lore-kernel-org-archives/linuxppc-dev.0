@@ -2,18 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 189EB679E6
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 May 2005 09:42:17 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 648C6679E7
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 May 2005 09:54:20 +1000 (EST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tom Parker <palfrey@tevp.net>
-In-Reply-To: <429237EC.4010104@tevp.net>
-References: <429237EC.4010104@tevp.net>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+In-Reply-To: <42926A07.20706@am.sony.com>
+References: <42926A07.20706@am.sony.com>
 Content-Type: text/plain
-Date: Tue, 24 May 2005 09:41:33 +1000
-Message-Id: <1116891693.30513.3.camel@gaston>
+Date: Tue, 24 May 2005 09:53:35 +1000
+Message-Id: <1116892416.30513.10.camel@gaston>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
-Subject: Re: Reading DVDs on a Mac mini
+Subject: Re: [PATCH] add machine state register support
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,33 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2005-05-23 at 22:07 +0200, Tom Parker wrote:
+On Mon, 2005-05-23 at 16:40 -0700, Geoff Levand wrote:
+> This patch adds routines to get and set the machine state register.  These 
+> are needed by power management code on some platforms.
+> 
+> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com> for CELF
 
-> 
-> The version of libdvdread in use is 0.9.4 (the Debian 0.9.4-5 
-> libdvdread3 package).
-> 
-> hdparm settings for /dev/hdb (the DVD/CD-ROM drive):
-> 
->   IO_support   =  0 (default 16-bit)
->   unmaskirq    =  1 (on)
->   using_dma    =  0 (off)
->   keepsettings =  0 (off)
->   readonly     =  0 (off)
->   readahead    = 256 (on)
->   HDIO_GETGEO failed: Invalid argument
-> 
-> hdparm -i says the drive is a "MATSHITACD-RW CW-8124".
-> 
-> Any ideas? Because I'm all out of ideas, and I hope someone on here can 
-> help.
+Hi Geoff !
 
-Does the debian package of libdvdread contains the CSS stuff ? Also, the
-lack of "using_dma" is annoying... It looks like our CD/DVD kernel
-driver is still dumb and still switches DMA off on any stupid error...
+Can you tell me more about this power management code ? I tend to think
+that code that wants to do more than just using the existing accessors
+should be written in assembly... 
 
-Have you tried booting OS X and playing the DVD once ? Maybe the drive
-wants a zone to be set at least once, which MacOS does the first time
-you play a DVD
+Also, there is already
 
+void _nmask_and_or_msr(unsigned long nmask, unsigned long or_val);
+
+That you can use for manipulating MSR bits.
+
+Finally, I tend to prefer such small register accessors to be written as
+inline assembly in some headers. But then, I don't think you actually
+need to add anything here.
+
+Regards,
 Ben.
