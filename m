@@ -1,20 +1,14 @@
-Return-Path: <SRS0+7112437059cd471be2ea+638+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DFC04679E2
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 May 2005 19:00:36 +1000 (EST)
-From: David Woodhouse <dwmw2@infradead.org>
-To: Arjan van de Ven <arjanv@redhat.com>
-In-Reply-To: <20050519095631.GA18966@devserv.devel.redhat.com>
-References: <20050519095631.GA18966@devserv.devel.redhat.com>
-Content-Type: text/plain
-Date: Mon, 23 May 2005 09:57:14 +0100
-Message-Id: <1116838635.19183.142.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: experimental kernel patch for FORTIFY_SOURCE in kernel space
+Return-Path: <palfrey@tevp.net>
+Received: from smtp1.versatel.nl (smtp1.versatel.nl [62.58.50.88])
+	by ozlabs.org (Postfix) with ESMTP id 6EEBE679E8
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 May 2005 06:13:12 +1000 (EST)
+Message-ID: <429237EC.4010104@tevp.net>
+Date: Mon, 23 May 2005 22:07:08 +0200
+From: Tom Parker <palfrey@tevp.net>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Content-Type: multipart/mixed; boundary="------------020303020607030207070905"
+Subject: Reading DVDs on a Mac mini
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,125 +18,283 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2005-05-19 at 11:56 +0200, Arjan van de Ven wrote:
-> There is somewhat of an architecture impact so before submitting it on
-> lkml I'd want to ask feedback from more arches than just x86... 
+This is a multi-part message in MIME format.
+--------------020303020607030207070905
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-As discussed in IRC: Put the config option in lib/Kconfig.debug instead
-of in arch/i386, and we need to do something about the string functions.
-I just made the versions in lib/string.c weak; I doubt that's the best
-answer.
+I recently bought a Mac mini to try out a few things, but have been 
+having some problems trying to get it to read DVDs. I was using the 
+2.6.10 kernel (the Ubuntu linux-image-2.6.10-5-powerpc package) and I 
+get the same results with 2.6.12-rc4 (kernel config for that is 
+attached). Whenever I try to read a DVD-ROM (my test app is lsdvd, but 
+same results with mplayer) I get the following error message:
 
-Seems to work for me on PPC. Would certainly be nice to make it know
-about kmalloc() though. I also made __chk_fail use BUG() instead of
-panic().
+libdvdread: Invalid title IFO (VTS_02_0.IFO).
+Can't open ifo 2!
 
---- linux-2.6.11/arch/i386/Kconfig.debug.fortifyppc	2005-05-19 13:18:08.000000000 +0100
-+++ linux-2.6.11/arch/i386/Kconfig.debug	2005-05-19 13:18:24.000000000 +0100
-@@ -59,14 +59,6 @@ config 4KSTACKS
- 	  on the VM subsystem for higher order allocations. This option
- 	  will also use IRQ stacks to compensate for the reduced stackspace.
- 
--config FORTIFY_SOURCE
--	bool "Enable limited buffer overflow checking"
--	help
--	  If you say Y here the kernel will use a recent gcc feature that
--	  allows several key kernel primitives to check for buffer overflows
--	  when dealing with static buffers. Do not enable this feature unless
--	  you have a very recent gcc (version 4.1 or gccs from FC3, FC4, RHEL4) 
--
- config X86_FIND_SMP_CONFIG
- 	bool
- 	depends on X86_LOCAL_APIC || X86_VOYAGER
---- linux-2.6.11/include/asm-ppc/uaccess.h.fortifyppc	2005-05-19 12:09:40.000000000 +0100
-+++ linux-2.6.11/include/asm-ppc/uaccess.h	2005-05-19 13:14:18.000000000 +0100
-@@ -330,8 +330,18 @@ copy_to_user(void __user *to, const void
- 	return n;
- }
- 
-+extern void __chk_fail(void);
-+
- static inline unsigned long __copy_from_user(void *to, const void __user *from, unsigned long size)
- {
-+#ifdef CONFIG_FORTIFY_SOURCE
-+	/* 
-+	 * if we know the size of "to" then we can validate that we don't overrun the buffer.
-+	 * note that if __nbytes is known at compiletime this check is nicely optimized out
-+         */
-+	if (__bos0 (to) != (size_t) -1 && size > __bos0 (to))
-+		__chk_fail();
-+#endif
- 	return __copy_tofrom_user((__force void __user *)to, from, size);
- }
- 
---- linux-2.6.11/lib/fortify.c.fortifyppc	2005-05-19 13:18:56.000000000 +0100
-+++ linux-2.6.11/lib/fortify.c	2005-05-19 12:22:22.000000000 +0100
-@@ -29,7 +29,7 @@
- void __chk_fail(void) 
- {
- 	printk("** kernel buffer overflow detected via application %s ***\n", current->comm);
--	panic("Aborting!\n");
-+	BUG();
- }
- EXPORT_SYMBOL_GPL(__chk_fail);
- 
---- linux-2.6.11/lib/Kconfig.debug.fortifyppc	2005-05-19 13:17:36.000000000 +0100
-+++ linux-2.6.11/lib/Kconfig.debug	2005-05-19 13:11:33.000000000 +0100
-@@ -168,6 +168,16 @@ config DEBUG_FS
- 
- 	  If unsure, say N.
- 
-+config FORTIFY_SOURCE
-+	bool "Enable limited buffer overflow checking"
-+	depends on DEBUG_KERNEL
-+	help
-+	  If you say Y here the kernel will use a recent gcc feature that
-+	  allows several key kernel primitives to check for buffer overflows
-+	  when dealing with static buffers. Do not enable this feature unless
-+	  you have a very recent gcc (version 4.1 or gccs from FC3, FC4, RHEL4)
-+
-+
- config FRAME_POINTER
- 	bool "Compile the kernel with frame pointers"
- 	depends on DEBUG_KERNEL && ((X86 && !X86_64) || CRIS || M68K || M68KNOMMU || FRV)
---- linux-2.6.11/lib/string.c.fortifyppc	2005-05-19 12:06:49.000000000 +0100
-+++ linux-2.6.11/lib/string.c	2005-05-23 09:51:27.000000000 +0100
-@@ -66,7 +66,7 @@ EXPORT_SYMBOL(strnicmp);
-  * @src: Where to copy the string from
-  */
- #undef strcpy
--char * strcpy(char * dest,const char *src)
-+char *  __attribute__((weak)) strcpy(char * dest,const char *src)
- {
- 	char *tmp = dest;
- 
-@@ -92,7 +92,7 @@ EXPORT_SYMBOL(strcpy);
-  *
-  */
- #undef strncpy
--char * strncpy(char * dest,const char *src,size_t count)
-+char * __attribute__((weak)) strncpy(char * dest,const char *src,size_t count)
- {
- 	char *tmp = dest;
- 
-@@ -139,7 +139,7 @@ EXPORT_SYMBOL(strlcpy);
-  * @src: The string to append to it
-  */
- #undef strcat
--char * strcat(char * dest, const char * src)
-+char * __attribute__((weak)) strcat(char * dest, const char * src)
- {
- 	char *tmp = dest;
- 
-@@ -164,7 +164,7 @@ EXPORT_SYMBOL(strcat);
-  * terminated.
-  */
- #undef strncat
--char * strncat(char *dest, const char *src, size_t count)
-+char * __attribute__((weak)) strncat(char *dest, const char *src, size_t count)
- {
- 	char *tmp = dest;
- 
+Varying the DVD sometimes gets ifo 3/VTS_03_0.IFO, but the result is the 
+same. Looking at dmesg shows the following:
 
--- 
-dwmw2
+hdb: command error: status=0x51 { DriveReady SeekComplete Error }
+hdb: command error: error=0x54 { AbortedCommand LastFailedSense=0x05 }
+ide: failed opcode was: unknown
+end_request: I/O error, dev hdb, sector 42872
+
+Repeat lots and lots of times with values of sector jumping by 8 each 
+time. I'm not sure where it starts, because my entire dmesg output is 
+filled with these messages. Trying to play/copy stuff from burnt off 
+DVD-Rs works fine, but store bought DVDs don't like the drive (region 2 
+discs, the mini was bought in the Netherlands, a region 2 country). I 
+have occasionally *rarely* managed to persuade some discs to 
+occasionally read, but repeating the attempt then generally fails. 
+Failure always happens within two or 3 reads.
+
+The version of libdvdread in use is 0.9.4 (the Debian 0.9.4-5 
+libdvdread3 package).
+
+hdparm settings for /dev/hdb (the DVD/CD-ROM drive):
+
+  IO_support   =  0 (default 16-bit)
+  unmaskirq    =  1 (on)
+  using_dma    =  0 (off)
+  keepsettings =  0 (off)
+  readonly     =  0 (off)
+  readahead    = 256 (on)
+  HDIO_GETGEO failed: Invalid argument
+
+hdparm -i says the drive is a "MATSHITACD-RW CW-8124".
+
+Any ideas? Because I'm all out of ideas, and I hope someone on here can 
+help.
+
+Thanks,
+
+Tom Parker
+
+--------------020303020607030207070905
+Content-Type: application/octet-stream;
+ name="config-2.6.12-rc4.gz"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="config-2.6.12-rc4.gz"
+
+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
+eH/1Hg5HGr08yUk9Vog38w+WwBW5AqgAAA==
+--------------020303020607030207070905--
