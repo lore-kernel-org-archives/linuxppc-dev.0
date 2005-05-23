@@ -1,18 +1,25 @@
-Return-Path: <ajz@cambridgebroadband.com>
-Received: from cambridgebroadband.com (unknown [217.204.121.83])
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EA7F8679E7
+	by ozlabs.org (Postfix) with ESMTP id EF2C8679E6
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 May 2005 00:00:10 +1000 (EST)
-Date: Mon, 23 May 2005 14:59:53 +0100
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
-To: linuxppc-embedded@ozlabs.org, "linux-atm-general@lists.sourceforge.net"
-	<linux-atm-general@lists.sourceforge.net>
-Message-Id: <20050523145953.3a2044ef.ajz@cambridgebroadband.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Subject: Memory mapping the PHY on CR826
+	Tue, 24 May 2005 01:19:20 +1000 (EST)
+In-Reply-To: <429177E8.5070701@intracom.gr>
+References: <20050520141244.GD24923@logos.cnet>
+	<e503cf4ab6d2d389b29474561048f2f2@embeddededge.com>
+	<20050520175152.GB26221@logos.cnet>
+	<5d184282e7d324fb009b8dcf6e6f967d@embeddededge.com>
+	<20050521222713.GA28813@logos.cnet> <429177E8.5070701@intracom.gr>
+Mime-Version: 1.0 (Apple Message framework v622)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <c0a2512e4b2f07a4d1cef926026db281@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Mon, 23 May 2005 11:19:26 -0400
+To: Pantelis Antoniou <panto@intracom.gr>
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [RFT] 8xx cpm_hostalloc patch was: allow coherent DMA API to
+	work before main page allocator is set up
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,22 +30,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
 
-Does anyone here have *any* code for memory mapping the PM5350 ATM phy
-on the Microsys CR826 board?
+On May 23, 2005, at 2:27 AM, Pantelis Antoniou wrote:
 
-I've just purchased this board from Microsys and I'm trying to get the
-atm8260 ATM device driver to work on it - unfortunately I cannot seem to
-memory map the phy.  My current settings are:
+> You shouldn't have these discussions on the weekend :)
+
+Sorry.  I try not to, but then people think I'm not interested :-)
+I was working on my race car data acquisition telemetry
+project, anyway.
+
+> I'm the culprit of the code in question.
+
+I'm not trying to blame anyone.  The new driver is better in
+many ways, we just have to fix up this one little thing so
+it works in all possible VM configurations.
+
+I also have to look at the new consistent mapping functions,
+as those also seem to have changed.  Maybe this will
+work fine, or can be made to work with minor changes.
+
+Thanks.
 
 
-  memctl->memc_or8 = 0xe0400ef4; // base 0xe0400000; default timings
-  memctl->memc_br8 = 0xffff8821; // min banksize; 8bit port; GPCM local;
-                                 //  bank valid
-
-Has anybody done this already?
-
-TIA,
-
-Alex
+	-- Dan
