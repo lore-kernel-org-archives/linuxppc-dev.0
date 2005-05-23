@@ -1,19 +1,19 @@
-Return-Path: <wd@denx.de>
-Received: from mailout08.sul.t-online.com (mailout08.sul.t-online.com
-	[194.25.134.20]) by ozlabs.org (Postfix) with ESMTP id E4EA8679E2
+Return-Path: <atm@cellink.net>
+Received: from sc-outsmtp2.homechoice.co.uk (sc-outsmtp2.homechoice.co.uk
+	[81.1.65.36]) by ozlabs.org (Postfix) with SMTP id 60D53679E1
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 May 2005 06:30:35 +1000 (EST)
-To: "Vladimir A. Gurevich" <vag@paulidav.org>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 23 May 2005 06:46:23 PDT."
-	<4291DEAF.1080705@paulidav.org>
-Date: Mon, 23 May 2005 22:30:16 +0200
-Sender: wd@denx.de
-Message-Id: <20050523203021.D5033C1512@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Microcode patches for mpc8xx 
+	Tue, 24 May 2005 06:50:02 +1000 (EST)
+Message-ID: <42924071.7010804@cellink.net>
+Date: Mon, 23 May 2005 22:43:29 +0200
+From: Koen Peeters <atm@cellink.net>
+MIME-Version: 1.0
+To: Alex Zeffertt <ajz@cambridgebroadband.com>
+References: <20050523145953.3a2044ef.ajz@cambridgebroadband.com>
+In-Reply-To: <20050523145953.3a2044ef.ajz@cambridgebroadband.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linux-atm-general@lists.sourceforge.net"
+	<linux-atm-general@lists.sourceforge.net>, linuxppc-embedded@ozlabs.org
+Subject: Re: [Linux-ATM-General] Memory mapping the PHY on CR826
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,34 +24,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Vladimir,
+Hi Alex,
 
-in message <4291DEAF.1080705@paulidav.org> you wrote:
+I have got the Microsys board but I believe
+you sort of mixed up the 2 registers :
+
+try :
+
+    memctl->memc_br8 = 0xe0400821; // base 0xe0400000; default timings;
+                                   //  bank valid; 8bit port; GPCM local;
+    memctl->memc_or8 = 0xffff8820; // min banksize; addressline config
+
+Please verify the or8 setting with the actual board configuration.
+
+
+Alex Zeffertt wrote:
+> Hi all,
 > 
-> >In our CVS tree? See the old linux-2.4 tree. We don't see  many  uses of 8xx systems recently with ucode requirements.
-> >  
-> >
-> I am completely puzzled now.  It looks like your stable, but old 
-> linux-2.4 tree has a much better selection of 8xx drivers compared to 
-> the linuxppc_2_4_devel. Why is that? What do you recommend for a new 
+> Does anyone here have *any* code for memory mapping the PM5350 ATM phy
+> on the Microsys CR826 board?
+> 
+> I've just purchased this board from Microsys and I'm trying to get the
+> atm8260 ATM device driver to work on it - unfortunately I cannot seem to
+> memory map the phy.  My current settings are:
+> 
+> 
+>   memctl->memc_or8 = 0xe0400ef4; // base 0xe0400000; default timings
+>   memctl->memc_br8 = 0xffff8821; // min banksize; 8bit port; GPCM local;
+>                                  //  bank valid
+> 
+> Has anybody done this already?
+> 
+> TIA,
+> 
+> Alex
+> 
+> 
+> -------------------------------------------------------
+> This SF.Net email is sponsored by Oracle Space Sweepstakes
+> Want to be the first software developer in space?
+> Enter now for the Oracle Space Sweepstakes!
+> http://ads.osdn.com/?ad_id=7412&alloc_id=16344&op=click
+> _______________________________________________
+> Linux-atm-general mailing list
+> Linux-atm-general@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/linux-atm-general
 
-This is because we  have  limited  resources,  and  do  those  things
-(first)  where a customer is waiting (and paying) for. Not all of the
-work that went into the old 2.4.4 tree was adapted  for  more  recent
-versions  of  2.4  yet;  and  most  of  the 2.4 stuff got lost in 2.6
-anyway.
-
-> MPC852T-based development? Can the drivers be dropped into the newer 
-> tree or more serious backporting effort is needed?
-
-It depends. Most should work fine with minimal changes, but obviously
-some effort for a code review and especially testing will be needed.
-
-Best regards,
-
-Wolfgang Denk
 
 -- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-core error - bus dumped
+-------------------------------------------------
+Koen Peeters
+Cellink bvba
+Catherinalaan 37, 3110 Rotselaar, Belgium
+web : http://www.cellink.net/
