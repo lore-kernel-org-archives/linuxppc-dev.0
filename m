@@ -1,25 +1,17 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EF2C8679E6
+Return-Path: <galak@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 550AD679A6
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 May 2005 01:19:20 +1000 (EST)
-In-Reply-To: <429177E8.5070701@intracom.gr>
-References: <20050520141244.GD24923@logos.cnet>
-	<e503cf4ab6d2d389b29474561048f2f2@embeddededge.com>
-	<20050520175152.GB26221@logos.cnet>
-	<5d184282e7d324fb009b8dcf6e6f967d@embeddededge.com>
-	<20050521222713.GA28813@logos.cnet> <429177E8.5070701@intracom.gr>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <c0a2512e4b2f07a4d1cef926026db281@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Mon, 23 May 2005 11:19:26 -0400
-To: Pantelis Antoniou <panto@intracom.gr>
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [RFT] 8xx cpm_hostalloc patch was: allow coherent DMA API to
-	work before main page allocator is set up
+	Tue, 24 May 2005 03:30:35 +1000 (EST)
+Date: Mon, 23 May 2005 12:29:56 -0500 (CDT)
+From: Kumar Gala <galak@freescale.com>
+To: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>
+Message-ID: <Pine.LNX.4.61.0505231228070.5309@nylon.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH] ppc32: Fix an off-by-one error in ipic_init
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,26 +22,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+(This fixes a bug and should go into 2.6.12 if possible.)
 
-On May 23, 2005, at 2:27 AM, Pantelis Antoniou wrote:
+There is an off-by-one error in the IPIC code that configures the
+external interrupts (Edge or Level Sensitive).
 
-> You shouldn't have these discussions on the weekend :)
+Signed-off-by: Randy Vinson <rvinson@mvista.com>
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
-Sorry.  I try not to, but then people think I'm not interested :-)
-I was working on my race car data acquisition telemetry
-project, anyway.
+---
+commit e8366420067384e3443e5ed95c151198e5ca6d22
+tree 6aeff44236e7890cce085e65661884e4622785a7
+parent 57bf2ca5c599f50428bf3f8ff9707411b2dfbae8
+author Kumar K. Gala <kumar.gala@freescale.com> Mon, 23 May 2005 12:27:15 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> Mon, 23 May 2005 12:27:15 -0500
 
-> I'm the culprit of the code in question.
+ ppc/syslib/ipic.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
-I'm not trying to blame anyone.  The new driver is better in
-many ways, we just have to fix up this one little thing so
-it works in all possible VM configurations.
-
-I also have to look at the new consistent mapping functions,
-as those also seem to have changed.  Maybe this will
-work fine, or can be made to work with minor changes.
-
-Thanks.
-
-
-	-- Dan
+Index: arch/ppc/syslib/ipic.c
+===================================================================
+--- 55631465fc89fa1f96bdadaa7026113780db1c8a/arch/ppc/syslib/ipic.c  (mode:100644)
++++ 6aeff44236e7890cce085e65661884e4622785a7/arch/ppc/syslib/ipic.c  (mode:100644)
+@@ -479,7 +479,7 @@
+ 	temp = 0;
+ 	for (i = 0 ; i < senses_count ; i++) {
+ 		if ((senses[i] & IRQ_SENSE_MASK) == IRQ_SENSE_EDGE) {
+-			temp |= 1 << (16 - i);
++			temp |= 1 << (15 - i);
+ 			if (i != 0)
+ 				irq_desc[i + irq_offset + MPC83xx_IRQ_EXT1 - 1].status = 0;
+ 			else
