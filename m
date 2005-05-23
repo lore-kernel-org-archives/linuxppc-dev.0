@@ -1,19 +1,17 @@
-Return-Path: <atm@cellink.net>
-Received: from sc-outsmtp2.homechoice.co.uk (sc-outsmtp2.homechoice.co.uk
-	[81.1.65.36]) by ozlabs.org (Postfix) with SMTP id 60D53679E1
+Return-Path: <sbajaj@tsi-telsys.com>
+Received: from exchange.tsi-telsys.com (exchange.tsi-telsys.com
+	[205.230.130.11]) by ozlabs.org (Postfix) with ESMTP id 9A1C0679EF
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 May 2005 06:50:02 +1000 (EST)
-Message-ID: <42924071.7010804@cellink.net>
-Date: Mon, 23 May 2005 22:43:29 +0200
-From: Koen Peeters <atm@cellink.net>
+	Tue, 24 May 2005 06:56:32 +1000 (EST)
 MIME-Version: 1.0
-To: Alex Zeffertt <ajz@cambridgebroadband.com>
-References: <20050523145953.3a2044ef.ajz@cambridgebroadband.com>
-In-Reply-To: <20050523145953.3a2044ef.ajz@cambridgebroadband.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linux-atm-general@lists.sourceforge.net"
-	<linux-atm-general@lists.sourceforge.net>, linuxppc-embedded@ozlabs.org
-Subject: Re: [Linux-ATM-General] Memory mapping the PHY on CR826
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Mon, 23 May 2005 16:56:31 -0400
+Message-ID: <0007F077BB3476449151699150E8FEA21A7BA1@exchange.tsi-telsys.com>
+From: "Sanjay Bajaj" <sbajaj@tsi-telsys.com>
+To: "Eugene Surovegin" <ebs@ebshome.net>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: tah reset?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,56 +22,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Alex,
+My intention is not to waste anybody's time and I think, I did not. As I =
+mentioned to you earlier that I am working on the vendor provided =
+version of Linux Kernel 2.4.27-pre3, which looks clearly from =
+kernel.org. The value of PPC440GX_TAH0_ADDR and PPC440GX_TAH1_ADDR in =
+arch/ppc/platforms/ibm440gx.h is 0x0000000140000b00 & 0x0000000140000d00 =
+respectively. I verified this value in lk 2.4.30 also, these values are =
+the same.
 
-I have got the Microsys board but I believe
-you sort of mixed up the 2 registers :
+Though in lk 2.6.x, the values have been hardcoded in the =
+arch/ppc/platforms/ibm440gx.c to 0x0000000140000b50 and =
+0x0000000140000d50. Therefore, the confusion.
 
-try :
+I hope this clears your misunderstanding. I did not see your suggestion =
+for using your version of 2.4.x backported driver of ibm_emac. I could =
+use it, if you send it again.
 
-    memctl->memc_br8 = 0xe0400821; // base 0xe0400000; default timings;
-                                   //  bank valid; 8bit port; GPCM local;
-    memctl->memc_or8 = 0xffff8820; // min banksize; addressline config
+Thanks,
+Sanjay
 
-Please verify the or8 setting with the actual board configuration.
-
-
-Alex Zeffertt wrote:
-> Hi all,
-> 
-> Does anyone here have *any* code for memory mapping the PM5350 ATM phy
-> on the Microsys CR826 board?
-> 
-> I've just purchased this board from Microsys and I'm trying to get the
-> atm8260 ATM device driver to work on it - unfortunately I cannot seem to
-> memory map the phy.  My current settings are:
-> 
-> 
->   memctl->memc_or8 = 0xe0400ef4; // base 0xe0400000; default timings
->   memctl->memc_br8 = 0xffff8821; // min banksize; 8bit port; GPCM local;
->                                  //  bank valid
-> 
-> Has anybody done this already?
-> 
-> TIA,
-> 
-> Alex
-> 
-> 
-> -------------------------------------------------------
-> This SF.Net email is sponsored by Oracle Space Sweepstakes
-> Want to be the first software developer in space?
-> Enter now for the Oracle Space Sweepstakes!
-> http://ads.osdn.com/?ad_id=7412&alloc_id=16344&op=click
-> _______________________________________________
-> Linux-atm-general mailing list
-> Linux-atm-general@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-atm-general
+-----Original Message-----
+From: Eugene Surovegin [mailto:ebs@ebshome.net]
+Sent: Monday, May 23, 2005 4:04 PM
+To: Sanjay Bajaj
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: tah reset?
 
 
--- 
--------------------------------------------------
-Koen Peeters
-Cellink bvba
-Catherinalaan 37, 3110 Rotselaar, Belgium
-web : http://www.cellink.net/
+On Mon, May 23, 2005 at 03:17:26PM -0400, Sanjay Bajaj wrote:
+> I did find the source of the reset tah issue. The physical address=20
+> of TAH 0 and TAH 1 was ending in B00h and D00h respectively. But in=20
+> the UM, it ends in B50 and D50. the file affected is ibm440gx.c in=20
+> arch/ppc/platforms.
+
+Linux 2.6 has correct values for TAH base address, 2.4 doesn't have=20
+any support for TAH at all.
+
+Where did you get this incorrect code?
+
+You see, you should have used supported sources (2.6) or the one I=20
+recommended to you (my 2.4 backport) but you have ignored this =20
+suggestion and wasted your time and time of people on this mail list.
+
+Please, next time if you use some stuff which isn't in kernel.org's=20
+tree, direct you questions to the person who made those patches,=20
+because we cannot help you as we don't have the source code you are=20
+using.
+
+--=20
+Eugene
