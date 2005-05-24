@@ -1,19 +1,21 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao06.cox.net (fed1rmmtao06.cox.net [68.230.241.33])
-	by ozlabs.org (Postfix) with ESMTP id CC97B679E8
+Return-Path: <youngchul@gmail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.197])
+	by ozlabs.org (Postfix) with ESMTP id EA39C679E8
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 May 2005 08:03:36 +1000 (EST)
-Date: Mon, 23 May 2005 15:03:22 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: ming lei <mlei30@yahoo.com>
-Message-ID: <20050523150322.A17066@cox.net>
-References: <20050523205558.28957.qmail@web61022.mail.yahoo.com>
+	Tue, 24 May 2005 12:26:47 +1000 (EST)
+Received: by zproxy.gmail.com with SMTP id 18so1916501nzp
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 23 May 2005 19:26:46 -0700 (PDT)
+Message-ID: <ae4314c505052319206a37c6ed@mail.gmail.com>
+Date: Tue, 24 May 2005 11:20:06 +0900
+From: =?EUC-KR?Q?Youngchul_Bang_=28=B9=E6=BF=B5=C3=B6=29?=
+	<youngchul@gmail.com>
+To: linuxppc-embedded@ozlabs.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050523205558.28957.qmail@web61022.mail.yahoo.com>;
-	from mlei30@yahoo.com on Mon, May 23, 2005 at 01:55:58PM -0700
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MMUCR on ppc440 GP/GX
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: swapon swapfile on Bamboo board
+Reply-To: =?EUC-KR?Q?Youngchul_Bang_=28=B9=E6=BF=B5=C3=B6=29?=
+	<youngchul@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,46 +26,62 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 23, 2005 at 01:55:58PM -0700, ming lei wrote:
-> Hi,
-> 
-> I have problem on running system with linuxppc
-> 2.4.19(ppc440GP/GX) regarding MMU Control
-> Register(MMUCR).
-> 
-> I checked the code in arch/ppc/ there is no code
-> setting or unsetting bit 12(DULXE) or bit 13(IULXE),
-> but somehow these two bits got changed during boot
-> process.
-> 
-> Question 1:
-> Does CPU or other hardware change these two bits? If
-> linux code doesnt set these two bits initiallt, what's
-> the default value?  Or I miss something in the code
-> that may change these two bits?
-> 
-> Question 2:
-> For current 2.4.19 PPC440 implementation, there is no
-> special handling for this kind of DataStorage
-> exception, is it possible for the user code to stuck
-> in this exception forever if these two bits got set in
-> MMUCR and the user code calls icbi instruction?
-> 
-> I did a simple test on head_440.S so whenever the
-> DataStorage exception happens, in DataStorage assmbly
-> code, I clear these two bits in MMUCR, but somehow
-> these two bits got set mysteriourly in next exception
-> with error_code 0x200000(got from ESR DLK bits).
-> What's happening here?
+Hi,
 
-Your kernel revision is very ancient. The problem here is that
-you are trying to use _very_ early PPC440 core code I released.
-It's filled with critical bugs that were fixed over time. The MMUCR
-issue was fixed almost 3 years ago, in fact.
+I'm tring to use a swapfile on Bamboo reference board.  I got some of
+messages.  Is it a kernel BUG?
 
-Your best solution is to run a more recent kernel.  If that's
-not possible, then I suggest you backport all the PPC440
-related code from a more recent kernel into your old kernel
-base.
+I'm using kernel 2.6.11.8, which patched [1]"PPC440EP SoC and Bamboo
+board support".
+[1] http://ozlabs.org/pipermail/linuxppc-embedded/2005-April/017648.html
 
--Matt
+Commands to use a swapfile are following:
+/# dd if=3D/dev/zero of=3Dswapfile bs=3D1024 count=3D65536
+65536+0 records in
+65536+0 records out
+67108864 bytes transferred in 82.371510 seconds (814710 bytes/sec)
+/# mkswap swapfile                                               =20
+Setting up swapspace version 1, size =3D 67104 kB                          =
+      =20
+no label, UUID=3Ddaed5412-feb7-42ed-a925-f80e1c7782fb                      =
+      =20
+/# swapon swapfile                                               =20
+kernel BUG in swp_entry_to_pte at include/linux/swapops.h:67!              =
+    =20
+Oops: Exception in kernel mode, sig: 5 [#1]                                =
+    =20
+PREEMPT                                                                    =
+    =20
+NIP: C00562A0 LR: C0056284 SP: C0D59EE0 REGS: c0d59e30 TRAP: 0700    Not ta=
+inted
+MSR: 00029000 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 00                            =
+    =20
+TASK =3D c1c30430[928] 'swapon' THREAD: c0d58000                           =
+      =20
+Last syscall: 87                                                           =
+    =20
+GPR00: 00000400 C0D59EE0 C1C30430 00000000 00000001 0000000A C021B875 C033A=
+C10 =20
+GPR08: 00000001 010B6000 C1087258 C02D0000 00004000 1001BAA4 100C0000 100A0=
+000 =20
+GPR16: 00000000 100DC368 C02E0000 00000000 00000001 C1882000 C0C8EC20 00000=
+000 =20
+GPR24: C10871B4 C030A7C0 00004000 04000000 FFFFFFEA C10B6000 C02D8ABC C10B6=
+FF6 =20
+NIP [c00562a0] sys_swapon+0x588/0xa04                                      =
+    =20
+LR [c0056284] sys_swapon+0x56c/0xa04                                       =
+    =20
+Call trace:                                                                =
+    =20
+ [c0001a88] ret_from_syscall+0x0/0x48                                      =
+    =20
+Trace/breakpoint trap                                                      =
+    =20
+/# =20
+
+Let me know what problem is.
+
+Thanks in advice,
+
+Youngchul.
