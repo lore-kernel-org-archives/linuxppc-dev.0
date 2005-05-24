@@ -1,18 +1,17 @@
-Return-Path: <geoffrey.levand@am.sony.com>
-Received: from mail8.fw-bc.sony.com (mail8.fw-bc.sony.com [160.33.98.75])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D2E9A679E8
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 May 2005 03:39:55 +1000 (EST)
-Message-ID: <429366DA.4000702@am.sony.com>
-Date: Tue, 24 May 2005 10:39:38 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <geert@linux-m68k.org>
+Received: from witte.sonytel.be (witte.sonytel.be [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 8CB2B679F6
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 May 2005 04:48:20 +1000 (EST)
+Date: Tue, 24 May 2005 19:05:36 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@sonycom.com
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+In-Reply-To: <42926A07.20706@am.sony.com>
+Message-ID: <Pine.LNX.4.62.0505241905020.3229@numbat.sonytel.be>
+References: <42926A07.20706@am.sony.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <42926A07.20706@am.sony.com> <1116892416.30513.10.camel@gaston>
-In-Reply-To: <1116892416.30513.10.camel@gaston>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
 Subject: Re: [PATCH] add machine state register support
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,34 +22,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Mon, 2005-05-23 at 16:40 -0700, Geoff Levand wrote:
+On Mon, 23 May 2005, Geoff Levand wrote:
+> This patch adds routines to get and set the machine state register.  These 
+> are needed by power management code on some platforms.
 > 
->>This patch adds routines to get and set the machine state register.  These 
->>are needed by power management code on some platforms.
->>
->>Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com> for CELF
+> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com> for CELF
 > 
+> --
 > 
-> Hi Geoff !
+> Index:linux-2.6.11/arch/ppc/kernel/misc.S
+> ===================================================================
+> --- linux-2.6.11.orig/arch/ppc/kernel/misc.S	2005-04-15 14:59:12.408518820 -0700
+> +++ linux-2.6.11/arch/ppc/kernel/misc.S	2005-04-15 14:59:34.005586781 -0700
 > 
-> Can you tell me more about this power management code ? I tend to think
-> that code that wants to do more than just using the existing accessors
-> should be written in assembly... 
-> 
-> Also, there is already
-> 
-> void _nmask_and_or_msr(unsigned long nmask, unsigned long or_val);
-> 
-> That you can use for manipulating MSR bits.
-> 
-> Finally, I tend to prefer such small register accessors to be written as
-> inline assembly in some headers. But then, I don't think you actually
-> need to add anything here.
-> 
+> @@ -1160,6 +1159,14 @@
+>  	addi	r1,r1,16
+>  	blr
+>  
+> +_GLOBAL(_get_msr)
+> +	mfmsr   r3
+> +	blr
+> +
+> +_GLOBAL(_set_msr)
+> +	mtmsr   r3
+> +	blr
+> +
 
-Sorry for the trouble, Geert is right, there are already mfmsr() and 
-mtmsr() in <ppc-asm/reg.h>.  I found get_msr in ppc64 and assumed they 
-were missing for ppc.  I should have looked more carefully.
+Please check m[ft]msr() in <asm/reg.h>.
 
--Geoff
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
