@@ -1,17 +1,22 @@
-Return-Path: <mlei30@yahoo.com>
-Received: from web61025.mail.yahoo.com (web61025.mail.yahoo.com
-	[209.73.179.19]) by ozlabs.org (Postfix) with SMTP id 2B859679FD
+Return-Path: <roger.larsson@norran.net>
+Received: from ns.skekraft.net (ns.skekraft.net [213.199.96.131])
+	by ozlabs.org (Postfix) with ESMTP id 06B13679F7
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 25 May 2005 08:30:05 +1000 (EST)
-Message-ID: <20050524223004.64081.qmail@web61025.mail.yahoo.com>
-Date: Tue, 24 May 2005 15:30:03 -0700 (PDT)
-From: ming lei <mlei30@yahoo.com>
-To: Matt Porter <mporter@kernel.crashing.org>
-In-Reply-To: 6667
+	Wed, 25 May 2005 09:58:30 +1000 (EST)
+Received: from icd.localnet (131.net95.skekraft.net [213.199.95.131])
+	by ns.skekraft.net (Postfix) with ESMTP id E5F0FA4025
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 25 May 2005 01:58:27 +0200 (CEST)
+From: Roger Larsson <roger.larsson@norran.net>
+To: linuxppc-embedded@ozlabs.org
+Date: Wed, 25 May 2005 01:58:33 +0200
+References: <200505242119.29197.niklaus.giger@member.fsf.org>
+In-Reply-To: <200505242119.29197.niklaus.giger@member.fsf.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MMUCR on ppc440 GP/GX
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200505250158.33459.roger.larsson@norran.net>
+Subject: Re: Newbie question about accessing memory in kernel space
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,72 +27,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Matt,
+On Tuesday 24 May 2005 21.19, Niklaus Giger wrote:
+> Hi
+>
+> I am working on a custom PPC405 board where I have a 2.6.10 kernel with
+> RTAI patches (fusion) running.
+>
+> I am trying to access some custom CPLD chip hanging at 0x7D000000. In my
+> intial board (hcu3_map_io) I added a corresponding io_block_mapping.
+>
+> I can see the CPLD when I access the address via my Abatron BDI debugger.
+>
+> In a user space test program I did a
+>     map_base = mmap((void *)target, nSize, PROT_READ | PROT_WRITE,
+> MAP_SHARED, fd, target);
+> and was able to access the CPLD, too.
 
-At your suggestion, I downloaded the latest
-linuxppc_2_4_devel source code and also checked the
-online code repository, and found this link:
+Via 'map_base' I guess?
 
-http://ppc.bkbits.net:8080/linuxppc_2_4_devel/diffs/arch/ppc/kernel/head_440.S@1.4?nav=index.html|src/.|src/arch|src/arch/ppc|src/arch/ppc/kernel|hist/arch/ppc/kernel/head_440.S
+For kernel try
+virt_base=ioremap(target, nSize)
 
-which was submitted 4 years ago with comments as "Fix
-MMUCR/tlbsx handling and set TS corrently in TLB
-entries".
+>
+> In user and kernel space the procedure looks like this:
+> void sys_set_tick_control_register_value(uint16 value)
+> {
+>     static uint16    *tickControlRegister       = (uint16*)
+> 					HCU_TICK_CONTROL_REGISTER_ADDRESS;
 
-If this is the one you talked about the fix three
-years ago, fortunately my ppc440 code already has the
-fix, I compared it with latest linuxppc_2_4_devel
-source code and it's the same.
+This indicates that you tries to read directly from an adress (no virt_base?)
+You might want to use __raw_readl instead (depending on bus endianess).
 
-I think the problem I have now is different, it's the
-icbi call from user space code that caused DataStorage
-exception if the corresponding bit in MMUCR is set,
-however, ppc440 code doesnt handle it.
-
-Any thought, or correction?
-
-Thanks
-Ming
-
-
---- Matt Porter <mporter@kernel.crashing.org> wrote:
-> On Tue, May 24, 2005 at 11:36:50AM -0700, ming lei
-> wrote:
-> > 
-> > what's the latest ppc440 linux code that I can
-> take
-> > look at?
-> 
-> Grab the current kernel.org 2.6 release. I suggest
-> you use
-> dirdiff another recent 2.4 kernel and then analyze
-> the 2.6 stuff
-> as it is different yet.  There are countless bug
-> fixes that have
-> gone in over the last 3 years.  I sincerely hope you
-> aren't
-> trying to use that old kernel with experimental
-> PPC440 support
-> for production work.
->  
-> > BTW, what's the problem three years ago prompted
-> to
-> > change the code regarding mmucr handling?
-> 
-> The problem was that the initial code would crash
-> apps regularly. I
-> put the code out in our development tree at the time
-> since it was
-> taking a long time to find the bug...and you could
-> mostly run a
-> system.  The MMUCR was not having the TID set
-> properly during
-> a tlbie() and a couple other spots in head_440.S.
-> 
-> -Matt
-> 
-
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+/RogerL
