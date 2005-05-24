@@ -1,17 +1,15 @@
-Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <1116921302.6395.6.camel@gaston>
-References: <1116909286.4992.17.camel@gaston> <1116909351.4992.19.camel@gaston>
-	<78325f65fc807da213be423c20ce6dcd@kernel.crashing.org>
-	<1116921302.6395.6.camel@gaston>
-Mime-Version: 1.0 (Apple Message framework v622)
-Message-Id: <c7e35bb102646dae463a41a5110d5dfa@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Date: Tue, 24 May 2005 10:01:32 +0200
+Return-Path: <jdl@freescale.com>
+From: Jon Loeliger <jdl@freescale.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Tzachi Perelstein <tzachi@marvell.com>,
-	u-boot-users@lists.sourceforge.net, linuxppc64-dev@ozlabs.org
+In-Reply-To: <1116909286.4992.17.camel@gaston>
+References: <1116909286.4992.17.camel@gaston>
+Content-Type: text/plain
+Message-Id: <1116947474.4720.3.camel@cashmere.sps.mot.com>
+Mime-Version: 1.0
+Date: Tue, 24 May 2005 10:11:15 -0500
+Cc: linuxppc64-dev@ozlabs.org, Tzachi Perelstein <tzachi@marvell.com>,
+	u-boot-users <u-boot-users@lists.sourceforge.net>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 Subject: Re: Booting the Linux/ppc64 kernel without Open Firmware HOWTO (v3)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,24 +20,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Yes, we meant names, and yes, there is a limit of 31 characters + 0,
+On Mon, 2005-05-23 at 23:34, Benjamin Herrenschmidt wrote:
+> Hi !
 
-Nah, it's thirty-one chars, not 31.  Sorry for missing this.
+> David and I are still working on sample code & tools. We have a
+> prototype of a device-tree "compiler" that can build the flattened blob
+> from a textual representation. We'll release that soon, hopefully this
+> week.
 
-> that is 32 bytes (see "3.2.2.1.1 Property names" in 1275. BTW. Do you
-> have a useable version of this document ? mine is a totally broken PDF
-> made from a crappy .ps :)
+Hi Ben,
 
-Mine is a perfectly working PDF from a perfectly working PS.  I'll send
-it to you.
+This is most excellent.  In particular, I won't start to
+do just that step too... :-)  So, can you put me on the
+beta tester list for those tools?  Or are you just going
+to post it all here?
 
-> IBM firmware broke that limit in a couple of places though...
-
-That's what happens if there isn't a testsuite anywhere.
-
-> Yes, I know all that.
-
-Good :-)
-
-
-Segher
+Thanks,
+jdl
