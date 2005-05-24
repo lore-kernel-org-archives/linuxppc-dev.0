@@ -1,21 +1,19 @@
-Return-Path: <ajz@cambridgebroadband.com>
-Received: from cambridgebroadband.com (unknown [217.204.121.83])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 04C7F679F3
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutvdomng.kundenserver.de (moutvdom.kundenserver.de
+	[212.227.126.249]) by ozlabs.org (Postfix) with ESMTP id B25E6679F7
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 May 2005 18:46:44 +1000 (EST)
-Date: Tue, 24 May 2005 09:46:20 +0100
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
-To: Koen Peeters <atm@cellink.net>
-Message-Id: <20050524094620.0630e177.ajz@cambridgebroadband.com>
-In-Reply-To: <42924071.7010804@cellink.net>
+	Tue, 24 May 2005 19:01:27 +1000 (EST)
+Message-ID: <4292ED43.8060607@anagramm.de>
+Date: Tue, 24 May 2005 11:00:51 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
+MIME-Version: 1.0
+To: Alex Zeffertt <ajz@cambridgebroadband.com>
 References: <20050523145953.3a2044ef.ajz@cambridgebroadband.com>
-	<42924071.7010804@cellink.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-atm-general@lists.sourceforge.net, linuxppc-embedded@ozlabs.org
-Subject: Re: [Linux-ATM-General] Memory mapping the PHY on CR826
+In-Reply-To: <20050523145953.3a2044ef.ajz@cambridgebroadband.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "linux-atm-general@lists.sourceforge.net"
+	<linux-atm-general@lists.sourceforge.net>, linuxppc-embedded@ozlabs.org
+Subject: Re: Memory mapping the PHY on CR826
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,86 +24,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Koen,
+Hello,
 
-Well spotted!  Unfortunately this is not the problem.  I got the base
-address and mask the wrong way round in my email but they are the right
-way round in my code.  Oops.
+FYI: This is a board based on the Freescale MPC8260 processor.
 
-I tried your OR8 settings but they didn't work either.  I think there
-may be a problem with the addressing on the CR826 board as the PM5350
-address line 0 doesn't seem to go anywhere on the schematics!
+Greets,
+Clemens
 
-Alex
-
-On Mon, 23 May 2005 22:43:29 +0200
-Koen Peeters <atm@cellink.net> wrote:
-
-> Hi Alex,
+Alex Zeffertt wrote:
+> Hi all,
 > 
-> I have got the Microsys board but I believe
-> you sort of mixed up the 2 registers :
+> Does anyone here have *any* code for memory mapping the PM5350 ATM phy
+> on the Microsys CR826 board?
 > 
-> try :
-> 
->     memctl->memc_br8 = 0xe0400821; // base 0xe0400000; default
->     timings;
->                                    //  bank valid; 8bit port; GPCM
->                                    local;
->     memctl->memc_or8 = 0xffff8820; // min banksize; addressline config
-> 
-> Please verify the or8 setting with the actual board configuration.
+> I've just purchased this board from Microsys and I'm trying to get the
+> atm8260 ATM device driver to work on it - unfortunately I cannot seem to
+> memory map the phy.  My current settings are:
 > 
 > 
-> Alex Zeffertt wrote:
-> > Hi all,
-> > 
-> > Does anyone here have *any* code for memory mapping the PM5350 ATM
-> > phy on the Microsys CR826 board?
-> > 
-> > I've just purchased this board from Microsys and I'm trying to get
-> > the atm8260 ATM device driver to work on it - unfortunately I cannot
-> > seem to memory map the phy.  My current settings are:
-> > 
-> > 
-> >   memctl->memc_or8 = 0xe0400ef4; // base 0xe0400000; default timings
-> >   memctl->memc_br8 = 0xffff8821; // min banksize; 8bit port; GPCM
-> >   local;
-> >                                  //  bank valid
-> > 
-> > Has anybody done this already?
-> > 
-> > TIA,
-> > 
-> > Alex
-> > 
-> > 
-> > -------------------------------------------------------
-> > This SF.Net email is sponsored by Oracle Space Sweepstakes
-> > Want to be the first software developer in space?
-> > Enter now for the Oracle Space Sweepstakes!
-> > http://ads.osdn.com/?ad_id=7412&alloc_id=16344&op=click
-> > _______________________________________________
-> > Linux-atm-general mailing list
-> > Linux-atm-general@lists.sourceforge.net
-> > https://lists.sourceforge.net/lists/listinfo/linux-atm-general
+>   memctl->memc_or8 = 0xe0400ef4; // base 0xe0400000; default timings
+>   memctl->memc_br8 = 0xffff8821; // min banksize; 8bit port; GPCM local;
+>                                  //  bank valid
 > 
+> Has anybody done this already?
 > 
-> -- 
-> -------------------------------------------------
-> Koen Peeters
-> Cellink bvba
-> Catherinalaan 37, 3110 Rotselaar, Belgium
-> web : http://www.cellink.net/
+> TIA,
 > 
-> 
-> 
-> -------------------------------------------------------
-> This SF.Net email is sponsored by Oracle Space Sweepstakes
-> Want to be the first software developer in space?
-> Enter now for the Oracle Space Sweepstakes!
-> http://ads.osdn.com/?ad_id=7412&alloc_id=16344&op=click
+> Alex
 > _______________________________________________
-> Linux-atm-general mailing list
-> Linux-atm-general@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-atm-general
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
