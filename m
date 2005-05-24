@@ -1,21 +1,21 @@
-Return-Path: <youngchul@gmail.com>
-Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.197])
-	by ozlabs.org (Postfix) with ESMTP id EA39C679E8
+Return-Path: <ajz@cambridgebroadband.com>
+Received: from cambridgebroadband.com (unknown [217.204.121.83])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 04C7F679F3
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 May 2005 12:26:47 +1000 (EST)
-Received: by zproxy.gmail.com with SMTP id 18so1916501nzp
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 23 May 2005 19:26:46 -0700 (PDT)
-Message-ID: <ae4314c505052319206a37c6ed@mail.gmail.com>
-Date: Tue, 24 May 2005 11:20:06 +0900
-From: =?EUC-KR?Q?Youngchul_Bang_=28=B9=E6=BF=B5=C3=B6=29?=
-	<youngchul@gmail.com>
-To: linuxppc-embedded@ozlabs.org
+	Tue, 24 May 2005 18:46:44 +1000 (EST)
+Date: Tue, 24 May 2005 09:46:20 +0100
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
+To: Koen Peeters <atm@cellink.net>
+Message-Id: <20050524094620.0630e177.ajz@cambridgebroadband.com>
+In-Reply-To: <42924071.7010804@cellink.net>
+References: <20050523145953.3a2044ef.ajz@cambridgebroadband.com>
+	<42924071.7010804@cellink.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: swapon swapfile on Bamboo board
-Reply-To: =?EUC-KR?Q?Youngchul_Bang_=28=B9=E6=BF=B5=C3=B6=29?=
-	<youngchul@gmail.com>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-atm-general@lists.sourceforge.net, linuxppc-embedded@ozlabs.org
+Subject: Re: [Linux-ATM-General] Memory mapping the PHY on CR826
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,62 +26,86 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Hi Koen,
 
-I'm tring to use a swapfile on Bamboo reference board.  I got some of
-messages.  Is it a kernel BUG?
+Well spotted!  Unfortunately this is not the problem.  I got the base
+address and mask the wrong way round in my email but they are the right
+way round in my code.  Oops.
 
-I'm using kernel 2.6.11.8, which patched [1]"PPC440EP SoC and Bamboo
-board support".
-[1] http://ozlabs.org/pipermail/linuxppc-embedded/2005-April/017648.html
+I tried your OR8 settings but they didn't work either.  I think there
+may be a problem with the addressing on the CR826 board as the PM5350
+address line 0 doesn't seem to go anywhere on the schematics!
 
-Commands to use a swapfile are following:
-/# dd if=3D/dev/zero of=3Dswapfile bs=3D1024 count=3D65536
-65536+0 records in
-65536+0 records out
-67108864 bytes transferred in 82.371510 seconds (814710 bytes/sec)
-/# mkswap swapfile                                               =20
-Setting up swapspace version 1, size =3D 67104 kB                          =
-      =20
-no label, UUID=3Ddaed5412-feb7-42ed-a925-f80e1c7782fb                      =
-      =20
-/# swapon swapfile                                               =20
-kernel BUG in swp_entry_to_pte at include/linux/swapops.h:67!              =
-    =20
-Oops: Exception in kernel mode, sig: 5 [#1]                                =
-    =20
-PREEMPT                                                                    =
-    =20
-NIP: C00562A0 LR: C0056284 SP: C0D59EE0 REGS: c0d59e30 TRAP: 0700    Not ta=
-inted
-MSR: 00029000 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 00                            =
-    =20
-TASK =3D c1c30430[928] 'swapon' THREAD: c0d58000                           =
-      =20
-Last syscall: 87                                                           =
-    =20
-GPR00: 00000400 C0D59EE0 C1C30430 00000000 00000001 0000000A C021B875 C033A=
-C10 =20
-GPR08: 00000001 010B6000 C1087258 C02D0000 00004000 1001BAA4 100C0000 100A0=
-000 =20
-GPR16: 00000000 100DC368 C02E0000 00000000 00000001 C1882000 C0C8EC20 00000=
-000 =20
-GPR24: C10871B4 C030A7C0 00004000 04000000 FFFFFFEA C10B6000 C02D8ABC C10B6=
-FF6 =20
-NIP [c00562a0] sys_swapon+0x588/0xa04                                      =
-    =20
-LR [c0056284] sys_swapon+0x56c/0xa04                                       =
-    =20
-Call trace:                                                                =
-    =20
- [c0001a88] ret_from_syscall+0x0/0x48                                      =
-    =20
-Trace/breakpoint trap                                                      =
-    =20
-/# =20
+Alex
 
-Let me know what problem is.
+On Mon, 23 May 2005 22:43:29 +0200
+Koen Peeters <atm@cellink.net> wrote:
 
-Thanks in advice,
-
-Youngchul.
+> Hi Alex,
+> 
+> I have got the Microsys board but I believe
+> you sort of mixed up the 2 registers :
+> 
+> try :
+> 
+>     memctl->memc_br8 = 0xe0400821; // base 0xe0400000; default
+>     timings;
+>                                    //  bank valid; 8bit port; GPCM
+>                                    local;
+>     memctl->memc_or8 = 0xffff8820; // min banksize; addressline config
+> 
+> Please verify the or8 setting with the actual board configuration.
+> 
+> 
+> Alex Zeffertt wrote:
+> > Hi all,
+> > 
+> > Does anyone here have *any* code for memory mapping the PM5350 ATM
+> > phy on the Microsys CR826 board?
+> > 
+> > I've just purchased this board from Microsys and I'm trying to get
+> > the atm8260 ATM device driver to work on it - unfortunately I cannot
+> > seem to memory map the phy.  My current settings are:
+> > 
+> > 
+> >   memctl->memc_or8 = 0xe0400ef4; // base 0xe0400000; default timings
+> >   memctl->memc_br8 = 0xffff8821; // min banksize; 8bit port; GPCM
+> >   local;
+> >                                  //  bank valid
+> > 
+> > Has anybody done this already?
+> > 
+> > TIA,
+> > 
+> > Alex
+> > 
+> > 
+> > -------------------------------------------------------
+> > This SF.Net email is sponsored by Oracle Space Sweepstakes
+> > Want to be the first software developer in space?
+> > Enter now for the Oracle Space Sweepstakes!
+> > http://ads.osdn.com/?ad_id=7412&alloc_id=16344&op=click
+> > _______________________________________________
+> > Linux-atm-general mailing list
+> > Linux-atm-general@lists.sourceforge.net
+> > https://lists.sourceforge.net/lists/listinfo/linux-atm-general
+> 
+> 
+> -- 
+> -------------------------------------------------
+> Koen Peeters
+> Cellink bvba
+> Catherinalaan 37, 3110 Rotselaar, Belgium
+> web : http://www.cellink.net/
+> 
+> 
+> 
+> -------------------------------------------------------
+> This SF.Net email is sponsored by Oracle Space Sweepstakes
+> Want to be the first software developer in space?
+> Enter now for the Oracle Space Sweepstakes!
+> http://ads.osdn.com/?ad_id=7412&alloc_id=16344&op=click
+> _______________________________________________
+> Linux-atm-general mailing list
+> Linux-atm-general@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/linux-atm-general
