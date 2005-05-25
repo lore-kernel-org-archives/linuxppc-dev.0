@@ -1,16 +1,23 @@
-Return-Path: <88888@msa.hinet.net>
-Received: from asys1.ad.logicworks.net (asys1.client.logicworks.net
-	[206.252.132.32]) by ozlabs.org (Postfix) with ESMTP id 53B47679E6
+Return-Path: <shawnxjin@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.196])
+	by ozlabs.org (Postfix) with ESMTP id C45FC679E7
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 26 May 2005 03:25:35 +1000 (EST)
-From: "霍宗翰" <霍宗翰@>
-To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
-Date: Thu, 26 May 05 01:04:24 台北標準時間
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary= "----=_NextPart_000_00EA_8BD6BAC.CA256540"
-Message-ID: <ASYS1EnAYwHikqvbMcg000000bb@asys1.ad.logicworks.net>
-Subject: =?iso-8859-1?q?=AA=A9=A5D=AA=BA=B8=DC?=
+	Thu, 26 May 2005 03:48:47 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id 37so958167wra
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 25 May 2005 10:48:45 -0700 (PDT)
+Message-ID: <c3d0340b05052510483145039e@mail.gmail.com>
+Date: Wed, 25 May 2005 10:48:45 -0700
+From: Shawn Jin <shawnxjin@gmail.com>
+To: John Otken <jotken@softadvances.com>,
+	ppcembed <linuxppc-embedded@ozlabs.org>
+In-Reply-To: <4292A441.4080708@softadvances.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <c3d0340b0504251517589940b8@mail.gmail.com>
+	<4292A441.4080708@softadvances.com>
+Subject: Re: 2.6.10 unable to mount a root fs on ramdisk
+Reply-To: Shawn Jin <shawnxjin@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,19 +28,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_NextPart_000_00EA_8BD6BAC.CA256540
-Content-Type: text/html; charset= "big5"
-Content-Transfer-Encoding: base64
+Hi John,
 
-PGh0bWw+DQoNCjxoZWFkPg0KPG1ldGEgaHR0cC1lcXVpdj0iQ29udGVudC1UeXBlIiBjb250
-ZW50PSJ0ZXh0L2h0bWw7IGNoYXJzZXQ9YmlnNSI+DQo8bWV0YSBuYW1lPSJHRU5FUkFUT1Ii
-IGNvbnRlbnQ9Ik1pY3Jvc29mdCBGcm9udFBhZ2UgNC4wIj4NCjxtZXRhIG5hbWU9IlByb2dJ
-ZCIgY29udGVudD0iRnJvbnRQYWdlLkVkaXRvci5Eb2N1bWVudCI+DQo8dGl0bGU+rN2ko6js
-uc+k+b3Qq/amuTwvdGl0bGU+DQo8YmFzZSB0YXJnZXQ9Il9ibGFuayI+DQo8L2hlYWQ+DQoN
-Cjxib2R5Pg0KDQo8cCBhbGlnbj0iY2VudGVyIj48YSBocmVmPSJodHRwOi8vbmV3czk4Lm9y
-Zy8xMjUvIiB0YXJnZXQ9Il9ibGFuayI+rN2ko6jsuc+k+b3Qq/amuTwvYT48L3A+DQo8cCBh
-bGlnbj0iY2VudGVyIj48YSBocmVmPSJodHRwOi8vbmV3czk4Lm9yZy8xMjUvIj48aW1nIGJv
-cmRlcj0iMCIgc3JjPSJodHRwOi8vbmV3czk4Lm9yZy8xMjUvYS5HSUYiIHdpZHRoPSI2OTgi
-IGhlaWdodD0iNDIwIj48L2E+PGJyPg0KPC9wPg0KDQo8L2JvZHk+DQoNCjwvaHRtbD4NCiAg
-ICA=
-------=_NextPart_000_00EA_8BD6BAC.CA256540--
+Thanks for your answer.
+
+I did add these lines to the code. Actually it turned out that I was
+so stupid that I didn't enable EXT2 filesystem support in the kernel.
+That's why the kernel always complained unknown block.
+
+-Shawn.
+
+On 5/23/05, John Otken <jotken@softadvances.com> wrote:
+> I had this problem with MV code on a Bamboo board.  Look at
+> platform_init() in ebony.c.  Before the call to ibm44x_platform_init() ad=
+d:
+>=20
+>        /*
+>         * If we were passed in a board information, copy it into the
+>         * residual data area.
+>         */
+>        if (r3)
+>                __res =3D *(bd_t *)(r3 + KERNELBASE);
+>=20
+>        /*
+>         * If the init RAM disk has been configured in, and there's a vali=
+d
+>         * starting address for it, set it up.
+>         */
+>        if (r4) {
+>            initrd_start =3D r4 + KERNELBASE;
+>            initrd_end =3D r5 + KERNELBASE;
+>        }
+>=20
+>        /* Copy the kernel command line arguments to a safe place. */
+>=20
+>        if (r6) {
+>            *(char *) (r7 + KERNELBASE) =3D 0;
+>            strcpy(cmd_line, (char *) (r6 + KERNELBASE));
+>        }
