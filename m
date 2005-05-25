@@ -1,23 +1,26 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.196])
-	by ozlabs.org (Postfix) with ESMTP id C45FC679E7
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id C4AAA679E2
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 26 May 2005 03:48:47 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 37so958167wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 25 May 2005 10:48:45 -0700 (PDT)
-Message-ID: <c3d0340b05052510483145039e@mail.gmail.com>
-Date: Wed, 25 May 2005 10:48:45 -0700
-From: Shawn Jin <shawnxjin@gmail.com>
-To: John Otken <jotken@softadvances.com>,
-	ppcembed <linuxppc-embedded@ozlabs.org>
-In-Reply-To: <4292A441.4080708@softadvances.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <c3d0340b0504251517589940b8@mail.gmail.com>
-	<4292A441.4080708@softadvances.com>
-Subject: Re: 2.6.10 unable to mount a root fs on ramdisk
-Reply-To: Shawn Jin <shawnxjin@gmail.com>
+	Thu, 26 May 2005 09:00:45 +1000 (EST)
+In-Reply-To: <30d87aabd768216ef8bee800f3e09b9e@freescale.com>
+References: <1107b64b01fb8e9a6c84359bb56881a6@freescale.com>	<1110334456.32556.21.camel@gaston>	<20050308194229.41c23707.davem@davemloft.net>	<1110340214.32524.32.camel@gaston>
+	<57a429f8eb807987d88b06129861d507@freescale.com>
+	<4230D1AC.5070506@katalix.com>
+	<ba5d844255b5ba76b2685f9397faf689@freescale.com>
+	<423734FB.40101@katalix.com>
+	<96c50184a02557c88dee0e6d17f3a539@freescale.com>
+	<42625DDB.4090600@katalix.com>
+	<30d87aabd768216ef8bee800f3e09b9e@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <6ad9943e3e0399b677519ad3653847bc@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Wed, 25 May 2005 18:00:33 -0500
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: Netdev <netdev@oss.sgi.com>, "David S. Miller" <davem@davemloft.net>,
+	ML linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: RFC: PHY Abstraction Layer II
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,41 +31,65 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi John,
+Jeff,
 
-Thanks for your answer.
+Where do we stand on this.  Are there changes you feel need to be made?=20=
 
-I did add these lines to the code. Actually it turned out that I was
-so stupid that I didn't enable EXT2 filesystem support in the kernel.
-That's why the kernel always complained unknown block.
+  Some other issue?  It would like to know what we need to do to get=20
+this in post 2.6.12.
 
--Shawn.
+thanks
 
-On 5/23/05, John Otken <jotken@softadvances.com> wrote:
-> I had this problem with MV code on a Bamboo board.  Look at
-> platform_init() in ebony.c.  Before the call to ibm44x_platform_init() ad=
-d:
->=20
->        /*
->         * If we were passed in a board information, copy it into the
->         * residual data area.
->         */
->        if (r3)
->                __res =3D *(bd_t *)(r3 + KERNELBASE);
->=20
->        /*
->         * If the init RAM disk has been configured in, and there's a vali=
-d
->         * starting address for it, set it up.
->         */
->        if (r4) {
->            initrd_start =3D r4 + KERNELBASE;
->            initrd_end =3D r5 + KERNELBASE;
->        }
->=20
->        /* Copy the kernel command line arguments to a safe place. */
->=20
->        if (r6) {
->            *(char *) (r7 + KERNELBASE) =3D 0;
->            strcpy(cmd_line, (char *) (r6 + KERNELBASE));
->        }
+- kumar
+
+On May 10, 2005, at 12:04 PM, Fleming Andy-afleming wrote:
+
+>
+>
+> On Apr 17, 2005, at 08:00, James Chapman wrote:
+>
+> > Andy Fleming wrote:
+> >> Ok, here's the new patch with changes suggested by James Chapman:
+>  >
+>  > I guess I still have questions about the way interrupts are used.
+>  >
+>  > Using an interrupt to schedule a work queue which then sets a=20
+> variable
+> > that is used by a timer seems odd. Why not do all the work in the=20
+> work
+>  > queue and schedule it from the interrupt handler or timer?
+>
+> Ok, I've set up a new system for handling interrupts.=A0 There are now
+>  two "special" interrupt values, PHY_POLL, and PHY_IGNORE_INTERRUPT.=A0
+>  The first one is used to indicate that the PHY layer will poll the =
+PHY
+> for state changes, and won't enable interrupts.=A0 The second =
+indicates
+> that the PHY layer will neither poll, nor enable interrupts, and thus
+> will allow the driver to handle interrupts.=A0 The PHY layer will =
+still
+> operate its state machine, though.
+>
+> The driver must insure a couple things:
+>
+> 1) It must set phydev->state to PHY_CHANGELINK
+> 2) It must do that in a work queue (or other non-interrupt time)
+>
+> The first one tells the PHY layer that the link state changed (it has
+> to grab a lock to do this).=A0 The second one is required in order to
+> properly take the lock.
+>
+> >
+>  > Also, did you mean to leave the #if 0 code in davicom.c?
+>
+> For now.=A0 It worked around a problem some people were reporting, so =
+I'd
+> like to see if they report it again now that the code's out.=A0 If so,
+> they have a fairly easy fix, and I can reinsert it (or at least
+> reevaluate it) in the future.
+>
+> >
+>  > /james
+>
+> Andy
+> <phy_05_09_2005.patch><ATT191442.txt>=
