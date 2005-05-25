@@ -1,16 +1,22 @@
-Return-Path: <dan@embeddededge.com>
-In-Reply-To: <1117004659.6395.103.camel@gaston>
-References: <1117000809.6395.92.camel@gaston>
-	<0015d371e12596fecdefd971b4fb1e5a@freescale.com>
-	<1117004659.6395.103.camel@gaston>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <b9ca52306a8b84cc1e03ac72c65316cf@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Wed, 25 May 2005 12:36:30 -0400
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, linuxppc-embedded@ozlabs.org
-Subject: Re: RFC: Deprecating io_block_mapping
+Return-Path: <olh@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de",
+	Issuer "SuSE Linux AG internal IMAP-Server CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 4D2F6679E1
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 May 2005 07:34:38 +1000 (EST)
+Date: Wed, 25 May 2005 23:34:33 +0200
+From: Olaf Hering <olh@suse.de>
+To: Tom Rini <trini@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
+	Sam Ravnborg <sam@ravnborg.org>
+Message-ID: <20050525213433.GA20585@suse.de>
+References: <20050206124014.GA5880@suse.de>
+	<20050206215131.GF7686@smtp.west.cox.net>
+	<20050206225323.GA16821@mars.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20050206225323.GA16821@mars.ravnborg.org>
+Subject: Re: make -j12 all fails in uImage target
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,95 +26,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+ On Sun, Feb 06, Sam Ravnborg wrote:
 
-On May 25, 2005, at 3:04 AM, Benjamin Herrenschmidt wrote:
+> On Sun, Feb 06, 2005 at 02:51:31PM -0700, Tom Rini wrote:
+> > On Sun, Feb 06, 2005 at 01:40:14PM +0100, Olaf Hering wrote:
 
->> Can one of you explain why this is necessary.  I believe it I just 
->> dont
->> understand.  I think this is one of the abuses of io_block_mapping().
->> People, myself included, realize some of the caveats implied by 
->> calling
->> io_block_mapping().
->
-> Well, there are 2 different things here. io_block_mapping "moving"
-> ioremap_bot, and my idea of having io_block_mapping "using" it...
+> > >   GZIP    arch/ppc/boot/images/vmlinux.gz
+> > > /bin/sh: line 1: arch/ppc/boot/images/vmlinux.bin: No such file or directory
+> > > make[2]: *** [arch/ppc/boot/images/vmlinux.gz] Error 1
+> > > make[1]: *** [uImage] Error 2
+> > > make[1]: *** Waiting for unfinished jobs....
+> > > 
+> > > also, one time that zImage.chrp was only 570K instead of the expected
+> > > 1.4M, so netboot failed. But I got no build error.
+> > > Any idea what dependency is missing?
+> > 
+> > That is kinda odd.  My thought is that arch/ppc/boot/ just isn't fully
+> > safe for -j'ing.  Sam, any ideas on how to debug this kinda problem?
+> 
+> The problem is that the images/ sub directory is visited before the
+> prerequisites are finished.
+> I have no good way to debug this - I can see it based on the Makefile and
+> the output Olaf included.
+> 
+> Also the problem Olaf describe is just a cp of a half finished file.
+> 
+> 
+> So the fix is to let the images/ directory depends on the rest of the
+> directories.
+> 
+> Something like this may do the trick:
+> 
+> $(obj)/images: $(addprefix $(obj)/,$(subdir-y) $(bootdir-y))
+> 	$(Q)$(MAKE) $(build)=$@
+> 
+> And then delete the assignment of images to subdir-y
+> 
+> 
+> Another solution would be to get rid on the images/ drectory and place
+> outputfiles where they are being built.
 
-It's more complicated than that.  The basic Linux kernel VM map is
-kernel_base (usually 0xc0000000), kernel text, kernel data, VM guard,
-VM alloc space, then ioremap space.
+I did it this way:
 
-However, there are "holes" in the VM space that are completely
-unused, and this is a precious resource.  The io_block_mapping()
-gives us the ability to stick things into those holes.  Usually, we
-would configure a system with a 2G user space, then use 
-io_block_mapping()
-to allocate the space between 0x80000000 and 0xc0000000.
-The ioremap() isn't going to do this, unless we really make this
-smarter.  On many systems, this was also the mapping for the
-PCI space, so things like virt_to_xxx() were based on the assumptions
-of this mapping.  So, if a board port wanted to use the option of
-user task space configuration, it would have to also manage these
-fixed address spaces accordingly.
-
-This is not as simple as making io_block_mapping() use ioremap VM
-space.  We have to find a way of managing all of the free kernel VM
-space and ensuring all of the mapping APIs for IO know about and
-utilize all of this space.
-
-> Now, my idea is that I dislike the io_block_mapping() interface because
-> we have to provide the virtual address. Which means, it forces us to
-> create hard coded v->p mappings, and I consider hard coding virtual
-> addresses a bad thing (for lots of reasons, including the TASK_SIZE
-> one).
-
-Then, you better get in line behind me for arguing for much better
-VM space management in general :-)  Linux is horrible in this regard,
-and the replies I get are " ...  for efficiency you have to know the use
-of the spaces and the proper APIs to manage them ..."
-
-
-> Thus, I think we could "extend" io_block_mapping() to be able to take
-> "0" for virt, and return a virtual address.
-
-But, no one would use that because it doesn't have the proper effect.
-If this could be done, we would already be using ioremap().
-
-> Dan's point about io_block_mapping() supposedly "initializing"
-> ioremap_bot is bogus, unless I misunderstood him.
-
-I never said that, but if you look at the code, it's exactly what it 
-does :-)
-Any mappings done between the top of user space and bottom of
-the kernel are simply forced and ignored by any Linux VM.  The
-io_block_mapping() is used to allocate BATs and CAMs and make
-them available for ioremap() of devices.  It allows us to map various
-devices into the ioremap space, take advantage of the efficiency of
-BATs or large page mappings, and still have devices use the ioremap()
-to find them.
-
-As I keep saying, somehow you have to lay out the virtual to physical
-mapping of devices using the efficiency of BATs and CAMs, and still
-make the ioremap() interface work.  The device driver just calls 
-ioremap(),
-but if you have a smart board set up function, it can set up an 
-efficient
-mapping using BATs or CAMs rather than 4k pages requiring TLB
-exceptions.
-
-We can either make ioremap() really complex with knowledge of all of
-these board configuration options so it can set up the BATs and CAMs,
-or we set it all up using some functions (like io_block_mapping) in the
-board set up and keep ioremap() a simple function.
-
-The current implementation of io_block_mapping does two very important
-functions.  One is this set up of efficient mapping for ioremap(), and 
-the
-other is to utilize the kernel VM space that isn't managed by Linux.
-We are currently moving lots of the code to make use of ioremap() rather
-than assuming prior mapping, which is a nice thing, but it's costing us
-in terms of performance and resource utilization.
-
-Thanks.
+...
+  AS      arch/ppc/boot/common/util.o
+  CC      arch/ppc/boot/of1275/write.o
+  AR      arch/ppc/boot/common/lib.a
+  AR      arch/ppc/boot/of1275/lib.a
+`arch/ppc/boot/images/vmlinux.gz.27631' -> `arch/ppc/boot/images/vmlinux.gz'
+  AR      arch/ppc/boot/lib/lib.a
+  UIMAGE  arch/ppc/boot/images/uImage
+"mkimage" command not found - U-Boot images will not be built
+  Image: arch/ppc/boot/images/uImage not made
+`arch/ppc/boot/images/vmlinux.gz.27676' -> `arch/ppc/boot/images/vmlinux.gz'
+  CC      arch/ppc/boot/openfirmware/dummy.o
+  AS      arch/ppc/boot/simple/head.o
+  AS      arch/ppc/boot/simple/relocate.o
+...
 
 
-	-- Dan
+Index: linux-2.6.12-rc5-olh/scripts/Makefile.lib
+===================================================================
+--- linux-2.6.12-rc5-olh.orig/scripts/Makefile.lib
++++ linux-2.6.12-rc5-olh/scripts/Makefile.lib
+@@ -1,3 +1,4 @@
++# vim: syntax=sh
+ # ===========================================================================
+ # kbuild: Generic definitions
+ # ===========================================================================
+@@ -177,7 +178,7 @@ cmd_objcopy = $(OBJCOPY) $(OBJCOPYFLAGS)
+ # ---------------------------------------------------------------------------
+
+ quiet_cmd_gzip = GZIP    $@
+-cmd_gzip = gzip -f -9 < $< > $@
++cmd_gzip = gzip -f -9 < $< > $@.$$$$ ; mv -v $@.$$$$ $@
+
+ # ===========================================================================
+ # Generic stuff
