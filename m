@@ -1,12 +1,13 @@
-Return-Path: <kumar.gala@freescale.com>
-In-Reply-To: <1117000809.6395.92.camel@gaston>
-References: <1117000809.6395.92.camel@gaston>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <0015d371e12596fecdefd971b4fb1e5a@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Wed, 25 May 2005 01:08:06 -0500
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Return-Path: <panto@intracom.gr>
+Message-ID: <42941629.8020101@intracom.gr>
+Date: Wed, 25 May 2005 09:07:37 +0300
+From: Pantelis Antoniou <panto@intracom.gr>
+MIME-Version: 1.0
+To: Dan Malek <dan@embeddededge.com>
+References: <1116987700.6395.64.camel@gaston>	<362472e35e6672011614c2710183e778@freescale.com>
+	<8818d51720e46592f49178f803ed2f0b@embeddededge.com>
+In-Reply-To: <8818d51720e46592f49178f803ed2f0b@embeddededge.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, linuxppc-embedded@ozlabs.org
 Subject: Re: RFC: Deprecating io_block_mapping
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -18,26 +19,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Somewhere, at some point, prior to VM setup, we need to forcibly map
->> virtual to physical addresses.  These are going to be "hard coded"
->> mappings, that's exactly how ioremap_bot is set.  This is why
->> io_block_mapping was created in the first place.  Somehow you have
->> to specify this mapping before you have a VM allocator to give it to
->> you. :-)
->
-> No, you just need to have ioremap_bot (which is in fact "top" not
-> "bottom", bad naming) initialized to something sane. This is currently
-> done in MMU_init() but could probably be initialized statically 
-> instead.
-> I do just that on ppc64 and thus can ioremap at any time without 
-> needing
-> to allocate vmalloc space. The vmalloc space is automatically "cap'd" 
-> by
-> ioremap_bot anyway.
+Dan Malek wrote:
+> 
+> On May 24, 2005, at 10:30 PM, Kumar Gala wrote:
+> 
+>> I know what I've done in the past is either steal a BAT (83xx) or CAM 
+>> (85xx) entry and then free it up when a proper ioremap can be done later.
+> 
+> 
+> This is even more of a hack than io_block_mapping() because it is often
+> obscure and not documented.  Several boards have done this in the past
+> as well.  It's "magic" that occurs, what seems to be minor code changes
+> often cause this to break and makes debugging more complex :-)
+> 
+>> No, as far as a can tell doing a quick glance if we drop 
+>> io_block_mapping than we can drop setup_io_mappings().
+> 
+> 
+> We've got to have something to address the board unique requirements
+> that are currently satisfied by this.
+> 
+> There is a real problem that we have to solve.  Some boards just need
+> access to mapped hardware before the VM is set up.  You can't just
+> remove a feature or tell them their design is wrong.  I don't think obscure
+> mapping tricks are the solution, either.
+> 
+> The only solution is to make ioremap() smart enough to properly use
+> BATs and CAMs that are available to a processor.   I suspect this is going
+> to lead to a bunch of also undesirable configuration options to address
+> the customizations necessary.
 
-Can one of you explain why this is necessary.  I believe it I just dont 
-understand.  I think this is one of the abuses of io_block_mapping().  
-People, myself included, realize some of the caveats implied by calling 
-io_block_mapping().
+/me nods
 
-- kumar
+> 
+> Thanks.
+> 
+> 
+>     -- Dan
+> 
+
+Regards
+
+Pantelis
