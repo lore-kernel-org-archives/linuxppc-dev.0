@@ -1,17 +1,16 @@
-Return-Path: <galak@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 58086679E2
+Return-Path: <88888@msa.hinet.net>
+Received: from asys1.ad.logicworks.net (asys1.client.logicworks.net
+	[206.252.132.32]) by ozlabs.org (Postfix) with ESMTP id 53B47679E6
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 26 May 2005 01:36:46 +1000 (EST)
-Date: Wed, 25 May 2005 10:36:24 -0500 (CDT)
-From: Kumar Gala <galak@freescale.com>
-To: Andrew Morton <akpm@osdl.org>
-Message-ID: <Pine.LNX.4.61.0505251035320.13355@nylon.am.freescale.net>
+	Thu, 26 May 2005 03:25:35 +1000 (EST)
+From: "霍宗翰" <霍宗翰@>
+To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
+Date: Thu, 26 May 05 01:04:24 台北標準時間
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: shall@mvista.com, linux-kernel@vger.kernel.org,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] ppc32: Fix building MPC8555 CDS when CONFIG_PCI is disabled
+Content-Type: multipart/mixed;
+	boundary= "----=_NextPart_000_00EA_8BD6BAC.CA256540"
+Message-ID: <ASYS1EnAYwHikqvbMcg000000bb@asys1.ad.logicworks.net>
+Subject: =?iso-8859-1?q?=AA=A9=A5D=AA=BA=B8=DC?=
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,42 +21,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-The patch that introduced support for the VIA chipset broke building if
-CONFIG_PCI is disabled.
+------=_NextPart_000_00EA_8BD6BAC.CA256540
+Content-Type: text/html; charset= "big5"
+Content-Transfer-Encoding: base64
 
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
-
----
-commit 84a069e46b6b866b338e44529f505fddd7d31fbb
-tree 362fd343e5b2c022b654da36742ce08b6a5ddca9
-parent 7289356a6b3c0218f9ad6e85280c4f9cc121e371
-author Kumar K. Gala <kumar.gala@freescale.com> Wed, 25 May 2005 10:32:53 -0500
-committer Kumar K. Gala <kumar.gala@freescale.com> Wed, 25 May 2005 10:32:53 -0500
-
- ppc/platforms/85xx/mpc85xx_cds_common.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-Index: arch/ppc/platforms/85xx/mpc85xx_cds_common.c
-===================================================================
---- 12a426fa6a66d581ca2c5fca42457b3f3505af09/arch/ppc/platforms/85xx/mpc85xx_cds_common.c  (mode:100644)
-+++ 362fd343e5b2c022b654da36742ce08b6a5ddca9/arch/ppc/platforms/85xx/mpc85xx_cds_common.c  (mode:100644)
-@@ -439,9 +439,6 @@
- 
- 	printk("mpc85xx_cds_setup_arch\n");
- 
--	/* VIA IDE configuration */
--        ppc_md.pcibios_fixup = mpc85xx_cds_pcibios_fixup;
--
- #ifdef CONFIG_CPM2
- 	cpm2_reset();
- #endif
-@@ -462,6 +459,9 @@
- 	loops_per_jiffy = freq / HZ;
- 
- #ifdef CONFIG_PCI
-+	/* VIA IDE configuration */
-+        ppc_md.pcibios_fixup = mpc85xx_cds_pcibios_fixup;
-+
- 	/* setup PCI host bridges */
- 	mpc85xx_setup_hose();
- #endif
+PGh0bWw+DQoNCjxoZWFkPg0KPG1ldGEgaHR0cC1lcXVpdj0iQ29udGVudC1UeXBlIiBjb250
+ZW50PSJ0ZXh0L2h0bWw7IGNoYXJzZXQ9YmlnNSI+DQo8bWV0YSBuYW1lPSJHRU5FUkFUT1Ii
+IGNvbnRlbnQ9Ik1pY3Jvc29mdCBGcm9udFBhZ2UgNC4wIj4NCjxtZXRhIG5hbWU9IlByb2dJ
+ZCIgY29udGVudD0iRnJvbnRQYWdlLkVkaXRvci5Eb2N1bWVudCI+DQo8dGl0bGU+rN2ko6js
+uc+k+b3Qq/amuTwvdGl0bGU+DQo8YmFzZSB0YXJnZXQ9Il9ibGFuayI+DQo8L2hlYWQ+DQoN
+Cjxib2R5Pg0KDQo8cCBhbGlnbj0iY2VudGVyIj48YSBocmVmPSJodHRwOi8vbmV3czk4Lm9y
+Zy8xMjUvIiB0YXJnZXQ9Il9ibGFuayI+rN2ko6jsuc+k+b3Qq/amuTwvYT48L3A+DQo8cCBh
+bGlnbj0iY2VudGVyIj48YSBocmVmPSJodHRwOi8vbmV3czk4Lm9yZy8xMjUvIj48aW1nIGJv
+cmRlcj0iMCIgc3JjPSJodHRwOi8vbmV3czk4Lm9yZy8xMjUvYS5HSUYiIHdpZHRoPSI2OTgi
+IGhlaWdodD0iNDIwIj48L2E+PGJyPg0KPC9wPg0KDQo8L2JvZHk+DQoNCjwvaHRtbD4NCiAg
+ICA=
+------=_NextPart_000_00EA_8BD6BAC.CA256540--
