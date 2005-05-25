@@ -1,13 +1,13 @@
-Return-Path: <panto@intracom.gr>
-Message-ID: <42941629.8020101@intracom.gr>
-Date: Wed, 25 May 2005 09:07:37 +0300
-From: Pantelis Antoniou <panto@intracom.gr>
-MIME-Version: 1.0
-To: Dan Malek <dan@embeddededge.com>
-References: <1116987700.6395.64.camel@gaston>	<362472e35e6672011614c2710183e778@freescale.com>
-	<8818d51720e46592f49178f803ed2f0b@embeddededge.com>
-In-Reply-To: <8818d51720e46592f49178f803ed2f0b@embeddededge.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <benh@kernel.crashing.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <0015d371e12596fecdefd971b4fb1e5a@freescale.com>
+References: <1117000809.6395.92.camel@gaston>
+	<0015d371e12596fecdefd971b4fb1e5a@freescale.com>
+Content-Type: text/plain
+Date: Wed, 25 May 2005 17:04:19 +1000
+Message-Id: <1117004659.6395.103.camel@gaston>
+Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, linuxppc-embedded@ozlabs.org
 Subject: Re: RFC: Deprecating io_block_mapping
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -19,45 +19,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dan Malek wrote:
-> 
-> On May 24, 2005, at 10:30 PM, Kumar Gala wrote:
-> 
->> I know what I've done in the past is either steal a BAT (83xx) or CAM 
->> (85xx) entry and then free it up when a proper ioremap can be done later.
-> 
-> 
-> This is even more of a hack than io_block_mapping() because it is often
-> obscure and not documented.  Several boards have done this in the past
-> as well.  It's "magic" that occurs, what seems to be minor code changes
-> often cause this to break and makes debugging more complex :-)
-> 
->> No, as far as a can tell doing a quick glance if we drop 
->> io_block_mapping than we can drop setup_io_mappings().
-> 
-> 
-> We've got to have something to address the board unique requirements
-> that are currently satisfied by this.
-> 
-> There is a real problem that we have to solve.  Some boards just need
-> access to mapped hardware before the VM is set up.  You can't just
-> remove a feature or tell them their design is wrong.  I don't think obscure
-> mapping tricks are the solution, either.
-> 
-> The only solution is to make ioremap() smart enough to properly use
-> BATs and CAMs that are available to a processor.   I suspect this is going
-> to lead to a bunch of also undesirable configuration options to address
-> the customizations necessary.
 
-/me nods
+> Can one of you explain why this is necessary.  I believe it I just dont 
+> understand.  I think this is one of the abuses of io_block_mapping().  
+> People, myself included, realize some of the caveats implied by calling 
+> io_block_mapping().
 
-> 
-> Thanks.
-> 
-> 
->     -- Dan
-> 
+Well, there are 2 different things here. io_block_mapping "moving"
+ioremap_bot, and my idea of having io_block_mapping "using" it...
 
-Regards
+So basically, the vmalloc/ioremap space starts at the end of the memory
+linear mapping, and ends at ... ioremap_bot :)
 
-Pantelis
+This value is initially set to the "top" of the space useable for
+vmalloc/ioremap. It's possible however to do "early" ioremap's (that is
+before the vmalloc subsystem is initialized, and thus before we can
+dynamically allocate virtual regions). In this case, ioremap just moves
+ioremap_bot down and uses the space between the new and the previous
+value.
+
+In order to avoid having "block" mappings done by io_block_mapping()
+collide with ioremap/vmalloc space, io_block_mapping() also has this bit
+of code:
+
+	if (virt > KERNELBASE && virt < ioremap_bot)
+		ioremap_bot = ioremap_base = virt;
+
+Which will "move down" ioremap_bot as well if a block mapping ends up in
+the kernel area.
+
+Now, my idea is that I dislike the io_block_mapping() interface because
+we have to provide the virtual address. Which means, it forces us to
+create hard coded v->p mappings, and I consider hard coding virtual
+addresses a bad thing (for lots of reasons, including the TASK_SIZE
+one).
+
+Thus, I think we could "extend" io_block_mapping() to be able to take
+"0" for virt, and return a virtual address. That would be 100%
+compatible with existing code. When taking "0" for virt,
+io_block_mapping would just allocate virtual space like early
+ioremap_bot does, by moving ioremap_bot downward (with appropriate
+aligment restrictions). By returning the actual virtual address used, it
+makes possible for the caller to know it :)
+
+That way, io_block_mapping() _can_ be used without hard coding virtual
+addresses, which would then be documented as the "preferred" thing to
+do, and would avoid some of the headaches.
+
+Now, there may be a slight issue with when is ioremap_bot initialized...
+
+It is in bss, so it is 0 by default (which isn't really suitable). It's
+only initialized in MMU_init(). Thus there is a problem using it before
+MMU_init(). Does that ever happen ? If it does, things are broken, since
+the test "virt < ioremap_bot" will always be false anyway, and thus
+io_block_mapping() will "fail" to move down ioremap_bot, thus
+potentially letting the kernel allocate vmalloc/ioremap space that
+overlap the block mapping.
+
+Dan's point about io_block_mapping() supposedly "initializing"
+ioremap_bot is bogus, unless I misunderstood him.
+
+Ben.
