@@ -1,12 +1,12 @@
-Return-Path: <kumar.gala@freescale.com>
-In-Reply-To: <1116987700.6395.64.camel@gaston>
-References: <1116987700.6395.64.camel@gaston>
-Mime-Version: 1.0 (Apple Message framework v619.2)
+Return-Path: <dan@embeddededge.com>
+In-Reply-To: <1116984651.6395.60.camel@gaston>
+References: <1116984651.6395.60.camel@gaston>
+Mime-Version: 1.0 (Apple Message framework v622)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <362472e35e6672011614c2710183e778@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Tue, 24 May 2005 21:30:32 -0500
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Message-Id: <99151309fed9dc6d9649e5e9a1299d6e@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Wed, 25 May 2005 00:45:09 -0400
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, linuxppc-embedded@ozlabs.org
 Subject: Re: RFC: Deprecating io_block_mapping
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -19,59 +19,36 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On May 24, 2005, at 9:21 PM, Benjamin Herrenschmidt wrote:
+On May 24, 2005, at 9:30 PM, Benjamin Herrenschmidt wrote:
 
-> On Tue, 2005-05-24 at 21:17 -0500, Kumar Gala wrote:
->> On May 24, 2005, at 8:30 PM, Benjamin Herrenschmidt wrote:
->>
->>> As the subject says ... it's the source of endless headaches, is
-> used
->>> in
->>> a way that often prevents moving TASK_SIZE freely, etc etc etc...
->>>
->>> What are the good and unavoidable uses of it currently that cannot
-> be
->>> replaced by some sort of ioremap ?
->>
->> Do you propose to fixup ioremap to allocate large page resources (BATs
+> As the subject says ... it's the source of endless headaches, is used 
+> in
+> a way that often prevents moving TASK_SIZE freely, etc etc etc...
+
+Why are you so obsessed about this? :-)  We all know what it does
+and the limitations.  If someone wants to use it in addition to other
+kernel configuration options, their particular start up code will have
+to be modified to accept this.
+
+> What are the good and unavoidable uses of it currently that cannot be
+> replaced by some sort of ioremap ?
 >
->> and CAMs) going forward?
->
-> Do we really ever need them for anything but RAM mapping ?
+> (Note that if the answer to the above is: page tables exist too late,
 
-The only case I could thing of are embedded frame buffers across some 
-bus like PCI.  An example would be a image buffer that a printing 
-application may use.
+That's one reason.  The other is to pin BATs or large page table entries
+for more efficient access.
 
->>> (Note that if the answer to the above is: page tables exist too
-> late, I
->>> already have a reply: our initialisations happen too early, let's
-> move
->>> things around so that ioremap is useable... pretty much everything
->>> needed to setup kernel page tables & have working ioremap can be
-> done
->>> without any HW device access so ...)
->>
->> Do you have any proposed solution for early console access?  I'm
->> guessing that most of the need for early access is for some sort of
->> console (serial) for early debug output.
->
-> How do we implement io_block_mapping() on CPUs without a hash table ? 
-> We
-> need page tables for these so we can have ioremap working. On CPUs with
-> a hash, we could just shove entries in the hash... though we may need a
-> mecanism to bolt them or convert those mappings to page tables once
-> those are available.
+> ....  I
+> already have a reply: our initialisations happen too early, let's move
+> things around so that ioremap is useable
 
-I know what I've done in the past is either steal a BAT (83xx) or CAM 
-(85xx) entry and then free it up when a proper ioremap can be done 
-later.
+In most cases you can't do this.  There are boards that have to map
+serial ports for kgdb or early console debugging.  There are also
+boards that need access to local hardware registers to set up that
+early.  You may need to map a rom or some other non-volatile storage
+to get some system parameters.
 
->> Also does this mean we would drop ppc_md.setup_io_mappings() complete?
->
-> Does it really make sense ? I always disliked it.
+Thanks.
 
-No, as far as a can tell doing a quick glance if we drop 
-io_block_mapping than we can drop setup_io_mappings().
 
-- kumar
+	-- Dan
