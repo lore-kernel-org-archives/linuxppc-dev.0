@@ -1,22 +1,15 @@
-Return-Path: <niklaus.giger@member.fsf.org>
-Received: from smtp.hispeed.ch (mxout.hispeed.ch [62.2.95.247])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D06EC679E2
+Return-Path: <Gehirnmann@gmx.de>
+Received: from mail.gmx.net (pop.gmx.de [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 579C9679E7
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 25 May 2005 21:35:31 +1000 (EST)
-From: Niklaus Giger <niklaus.giger@member.fsf.org>
+	Wed, 25 May 2005 21:59:10 +1000 (EST)
+Date: Wed, 25 May 2005 13:59:08 +0200 (MEST)
+From: "Peter Gehirnforce" <Gehirnmann@gmx.de>
 To: linuxppc-embedded@ozlabs.org
-Date: Wed, 25 May 2005 13:35:23 +0200
-References: <200505242119.29197.niklaus.giger@member.fsf.org>
-	<200505250158.33459.roger.larsson@norran.net>
-In-Reply-To: <200505250158.33459.roger.larsson@norran.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200505251335.23940.niklaus.giger@member.fsf.org>
-Subject: Re: Newbie question about accessing memory in kernel space
-Reply-To: niklaus.giger@member.fsf.org
+Message-ID: <16216.1117022348@www12.gmx.net>
+Content-Type: text/plain; charset="us-ascii"
+Subject: depmod.pl fails with "base directory does not match" (2_4_devel)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,41 +20,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Am Mittwoch, 25. Mai 2005 01.58 schrieb Roger Larsson:
-> On Tuesday 24 May 2005 21.19, Niklaus Giger wrote:
-> > Hi
-> >
-> > I am working on a custom PPC405 board where I have a 2.6.10 kernel with
-> > RTAI patches (fusion) running.
-> >
-> > I am trying to access some custom CPLD chip hanging at 0x7D000000. In my
-> > intial board (hcu3_map_io) I added a corresponding io_block_mapping.
-> >
-> > I can see the CPLD when I access the address via my Abatron BDI debugger.
-> >
-> > In a user space test program I did a
-> >     map_base = mmap((void *)target, nSize, PROT_READ | PROT_WRITE,
-> > MAP_SHARED, fd, target);
-> > and was able to access the CPLD, too.
->
-> Via 'map_base' I guess?
->
-> For kernel try
-> virt_base=ioremap(target, nSize)
-Thanks this fixed my problem.
-> > In user and kernel space the procedure looks like this:
-> > void sys_set_tick_control_register_value(uint16 value)
-> > {
-> >     static uint16    *tickControlRegister       = (uint16*)
-> > 					HCU_TICK_CONTROL_REGISTER_ADDRESS;
->
-> This indicates that you tries to read directly from an adress (no
-> virt_base?) You might want to use __raw_readl instead (depending on bus
-> endianess).
-__raw_readl  was not necessary.
+Hi all,
 
-Thanks for your help.
+since now I used modules compiled into the kernel for ppc_6xx.
+for debugging I'd like to use dynamic loading, but when doing:
+make modules_install
+the depmod.pl fails with "base directory does not match ..../lib/modules"
+As far as I could find out, the modules get copied to the base /lib path,
+even with $PATH and $CROSS_COMPILE set correctly (I used compiled modules
+successfully).
+Whats wrong with my attempt? is there some cross-compile tool to do the job
+of depmod.pl?
 
-Best regards
+GM
 
-Niklaus 
+-- 
+5 GB Mailbox, 50 FreeSMS http://www.gmx.net/de/go/promail
++++ GMX - die erste Adresse für Mail, Message, More +++
