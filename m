@@ -1,13 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <0015d371e12596fecdefd971b4fb1e5a@freescale.com>
+Return-Path: <dan@embeddededge.com>
+In-Reply-To: <1117004659.6395.103.camel@gaston>
 References: <1117000809.6395.92.camel@gaston>
 	<0015d371e12596fecdefd971b4fb1e5a@freescale.com>
-Content-Type: text/plain
-Date: Wed, 25 May 2005 17:04:19 +1000
-Message-Id: <1117004659.6395.103.camel@gaston>
-Mime-Version: 1.0
+	<1117004659.6395.103.camel@gaston>
+Mime-Version: 1.0 (Apple Message framework v622)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <b9ca52306a8b84cc1e03ac72c65316cf@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Wed, 25 May 2005 12:36:30 -0400
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, linuxppc-embedded@ozlabs.org
 Subject: Re: RFC: Deprecating io_block_mapping
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -20,63 +21,94 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> Can one of you explain why this is necessary.  I believe it I just dont 
-> understand.  I think this is one of the abuses of io_block_mapping().  
-> People, myself included, realize some of the caveats implied by calling 
-> io_block_mapping().
+On May 25, 2005, at 3:04 AM, Benjamin Herrenschmidt wrote:
 
-Well, there are 2 different things here. io_block_mapping "moving"
-ioremap_bot, and my idea of having io_block_mapping "using" it...
+>> Can one of you explain why this is necessary.  I believe it I just 
+>> dont
+>> understand.  I think this is one of the abuses of io_block_mapping().
+>> People, myself included, realize some of the caveats implied by 
+>> calling
+>> io_block_mapping().
+>
+> Well, there are 2 different things here. io_block_mapping "moving"
+> ioremap_bot, and my idea of having io_block_mapping "using" it...
 
-So basically, the vmalloc/ioremap space starts at the end of the memory
-linear mapping, and ends at ... ioremap_bot :)
+It's more complicated than that.  The basic Linux kernel VM map is
+kernel_base (usually 0xc0000000), kernel text, kernel data, VM guard,
+VM alloc space, then ioremap space.
 
-This value is initially set to the "top" of the space useable for
-vmalloc/ioremap. It's possible however to do "early" ioremap's (that is
-before the vmalloc subsystem is initialized, and thus before we can
-dynamically allocate virtual regions). In this case, ioremap just moves
-ioremap_bot down and uses the space between the new and the previous
-value.
+However, there are "holes" in the VM space that are completely
+unused, and this is a precious resource.  The io_block_mapping()
+gives us the ability to stick things into those holes.  Usually, we
+would configure a system with a 2G user space, then use 
+io_block_mapping()
+to allocate the space between 0x80000000 and 0xc0000000.
+The ioremap() isn't going to do this, unless we really make this
+smarter.  On many systems, this was also the mapping for the
+PCI space, so things like virt_to_xxx() were based on the assumptions
+of this mapping.  So, if a board port wanted to use the option of
+user task space configuration, it would have to also manage these
+fixed address spaces accordingly.
 
-In order to avoid having "block" mappings done by io_block_mapping()
-collide with ioremap/vmalloc space, io_block_mapping() also has this bit
-of code:
+This is not as simple as making io_block_mapping() use ioremap VM
+space.  We have to find a way of managing all of the free kernel VM
+space and ensuring all of the mapping APIs for IO know about and
+utilize all of this space.
 
-	if (virt > KERNELBASE && virt < ioremap_bot)
-		ioremap_bot = ioremap_base = virt;
+> Now, my idea is that I dislike the io_block_mapping() interface because
+> we have to provide the virtual address. Which means, it forces us to
+> create hard coded v->p mappings, and I consider hard coding virtual
+> addresses a bad thing (for lots of reasons, including the TASK_SIZE
+> one).
 
-Which will "move down" ioremap_bot as well if a block mapping ends up in
-the kernel area.
+Then, you better get in line behind me for arguing for much better
+VM space management in general :-)  Linux is horrible in this regard,
+and the replies I get are " ...  for efficiency you have to know the use
+of the spaces and the proper APIs to manage them ..."
 
-Now, my idea is that I dislike the io_block_mapping() interface because
-we have to provide the virtual address. Which means, it forces us to
-create hard coded v->p mappings, and I consider hard coding virtual
-addresses a bad thing (for lots of reasons, including the TASK_SIZE
-one).
 
-Thus, I think we could "extend" io_block_mapping() to be able to take
-"0" for virt, and return a virtual address. That would be 100%
-compatible with existing code. When taking "0" for virt,
-io_block_mapping would just allocate virtual space like early
-ioremap_bot does, by moving ioremap_bot downward (with appropriate
-aligment restrictions). By returning the actual virtual address used, it
-makes possible for the caller to know it :)
+> Thus, I think we could "extend" io_block_mapping() to be able to take
+> "0" for virt, and return a virtual address.
 
-That way, io_block_mapping() _can_ be used without hard coding virtual
-addresses, which would then be documented as the "preferred" thing to
-do, and would avoid some of the headaches.
+But, no one would use that because it doesn't have the proper effect.
+If this could be done, we would already be using ioremap().
 
-Now, there may be a slight issue with when is ioremap_bot initialized...
+> Dan's point about io_block_mapping() supposedly "initializing"
+> ioremap_bot is bogus, unless I misunderstood him.
 
-It is in bss, so it is 0 by default (which isn't really suitable). It's
-only initialized in MMU_init(). Thus there is a problem using it before
-MMU_init(). Does that ever happen ? If it does, things are broken, since
-the test "virt < ioremap_bot" will always be false anyway, and thus
-io_block_mapping() will "fail" to move down ioremap_bot, thus
-potentially letting the kernel allocate vmalloc/ioremap space that
-overlap the block mapping.
+I never said that, but if you look at the code, it's exactly what it 
+does :-)
+Any mappings done between the top of user space and bottom of
+the kernel are simply forced and ignored by any Linux VM.  The
+io_block_mapping() is used to allocate BATs and CAMs and make
+them available for ioremap() of devices.  It allows us to map various
+devices into the ioremap space, take advantage of the efficiency of
+BATs or large page mappings, and still have devices use the ioremap()
+to find them.
 
-Dan's point about io_block_mapping() supposedly "initializing"
-ioremap_bot is bogus, unless I misunderstood him.
+As I keep saying, somehow you have to lay out the virtual to physical
+mapping of devices using the efficiency of BATs and CAMs, and still
+make the ioremap() interface work.  The device driver just calls 
+ioremap(),
+but if you have a smart board set up function, it can set up an 
+efficient
+mapping using BATs or CAMs rather than 4k pages requiring TLB
+exceptions.
 
-Ben.
+We can either make ioremap() really complex with knowledge of all of
+these board configuration options so it can set up the BATs and CAMs,
+or we set it all up using some functions (like io_block_mapping) in the
+board set up and keep ioremap() a simple function.
+
+The current implementation of io_block_mapping does two very important
+functions.  One is this set up of efficient mapping for ioremap(), and 
+the
+other is to utilize the kernel VM space that isn't managed by Linux.
+We are currently moving lots of the code to make use of ioremap() rather
+than assuming prior mapping, which is a nice thing, but it's costing us
+in terms of performance and resource utilization.
+
+Thanks.
+
+
+	-- Dan
