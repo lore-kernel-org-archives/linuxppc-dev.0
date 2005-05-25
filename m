@@ -2,20 +2,19 @@ Return-Path: <niklaus.giger@member.fsf.org>
 Received: from smtp.hispeed.ch (mxout.hispeed.ch [62.2.95.247])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 21D4F679A6
+	by ozlabs.org (Postfix) with ESMTP id D06EC679E2
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 25 May 2005 21:31:32 +1000 (EST)
+	Wed, 25 May 2005 21:35:31 +1000 (EST)
 From: Niklaus Giger <niklaus.giger@member.fsf.org>
-To: Matt Porter <mporter@kernel.crashing.org>
-Date: Wed, 25 May 2005 13:31:22 +0200
+To: linuxppc-embedded@ozlabs.org
+Date: Wed, 25 May 2005 13:35:23 +0200
 References: <200505242119.29197.niklaus.giger@member.fsf.org>
-	<20050524133123.A23084@cox.net>
-In-Reply-To: <20050524133123.A23084@cox.net>
+	<200505250158.33459.roger.larsson@norran.net>
+In-Reply-To: <200505250158.33459.roger.larsson@norran.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200505251331.22597.niklaus.giger@member.fsf.org>
-Cc: rtai@rtai.org, linuxppc-embedded@ozlabs.org
+Message-Id: <200505251335.23940.niklaus.giger@member.fsf.org>
 Subject: Re: Newbie question about accessing memory in kernel space
 Reply-To: niklaus.giger@member.fsf.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -28,27 +27,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Am Dienstag, 24. Mai 2005 22.31 schrieb Matt Porter:
-> On Tue, May 24, 2005 at 09:19:28PM +0200, Niklaus Giger wrote:
+Am Mittwoch, 25. Mai 2005 01.58 schrieb Roger Larsson:
+> On Tuesday 24 May 2005 21.19, Niklaus Giger wrote:
 > > Hi
+> >
+> > I am working on a custom PPC405 board where I have a 2.6.10 kernel with
+> > RTAI patches (fusion) running.
+> >
+> > I am trying to access some custom CPLD chip hanging at 0x7D000000. In my
+> > intial board (hcu3_map_io) I added a corresponding io_block_mapping.
+> >
+> > I can see the CPLD when I access the address via my Abatron BDI debugger.
+> >
+> > In a user space test program I did a
+> >     map_base = mmap((void *)target, nSize, PROT_READ | PROT_WRITE,
+> > MAP_SHARED, fd, target);
+> > and was able to access the CPLD, too.
+>
+> Via 'map_base' I guess?
+>
+> For kernel try
+> virt_base=ioremap(target, nSize)
+Thanks this fixed my problem.
+> > In user and kernel space the procedure looks like this:
+> > void sys_set_tick_control_register_value(uint16 value)
+> > {
+> >     static uint16    *tickControlRegister       = (uint16*)
+> > 					HCU_TICK_CONTROL_REGISTER_ADDRESS;
+>
+> This indicates that you tries to read directly from an adress (no
+> virt_base?) You might want to use __raw_readl instead (depending on bus
+> endianess).
+__raw_readl  was not necessary.
 
-> > Oops: kernel access of bad area, sig: 11 [#1]
->
-> <snip>
->
-> > What is wrong with my code?
->
-> You mapped the device into user virtual address space.  The TLB
-> replacement code is unable to load a TLB entry for a page outside
-> of kernel space...so you crash.
->
-> Don't use io_block_map()...it allows you to shoot yourself in the
-> foot very easily (as you just witnessed). Use ioremap() to map
-> your device.
-ioremap() fixed my problem.
-
-Thanks a lot for your help.
+Thanks for your help.
 
 Best regards
 
-Niklaus
+Niklaus 
