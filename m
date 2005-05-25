@@ -1,17 +1,12 @@
 Return-Path: <benh@kernel.crashing.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jon Loeliger <jdl@freescale.com>
-In-Reply-To: <1116947474.4720.3.camel@cashmere.sps.mot.com>
-References: <1116909286.4992.17.camel@gaston>
-	<1116947474.4720.3.camel@cashmere.sps.mot.com>
+To: linuxppc-embedded@ozlabs.org
 Content-Type: text/plain
-Date: Wed, 25 May 2005 07:48:29 +1000
-Message-Id: <1116971310.6395.13.camel@gaston>
+Date: Wed, 25 May 2005 11:30:51 +1000
+Message-Id: <1116984651.6395.60.camel@gaston>
 Mime-Version: 1.0
-Cc: linuxppc64-dev@ozlabs.org, Tzachi Perelstein <tzachi@marvell.com>,
-	u-boot-users <u-boot-users@lists.sourceforge.net>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: Booting the Linux/ppc64 kernel without Open Firmware HOWTO (v3)
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: RFC: Deprecating io_block_mapping
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,22 +16,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2005-05-24 at 10:11 -0500, Jon Loeliger wrote:
-> On Mon, 2005-05-23 at 23:34, Benjamin Herrenschmidt wrote:
-> > Hi !
-> 
-> > David and I are still working on sample code & tools. We have a
-> > prototype of a device-tree "compiler" that can build the flattened blob
-> > from a textual representation. We'll release that soon, hopefully this
-> > week.
-> 
-> Hi Ben,
-> 
-> This is most excellent.  In particular, I won't start to
-> do just that step too... :-)  So, can you put me on the
-> beta tester list for those tools?  Or are you just going
-> to post it all here?
+As the subject says ... it's the source of endless headaches, is used in
+a way that often prevents moving TASK_SIZE freely, etc etc etc...
 
-We'll post it all here :)
+What are the good and unavoidable uses of it currently that cannot be
+replaced by some sort of ioremap ?
+
+(Note that if the answer to the above is: page tables exist too late, I
+already have a reply: our initialisations happen too early, let's move
+things around so that ioremap is useable... pretty much everything
+needed to setup kernel page tables & have working ioremap can be done
+without any HW device access so ...)
 
 Ben.
