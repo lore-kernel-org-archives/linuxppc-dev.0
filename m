@@ -1,12 +1,12 @@
 Return-Path: <dan@embeddededge.com>
-In-Reply-To: <2d61cb60140e879d0c8d46e7f51a9f56@freescale.com>
-References: <1116984651.6395.60.camel@gaston>
-	<2d61cb60140e879d0c8d46e7f51a9f56@freescale.com>
+In-Reply-To: <362472e35e6672011614c2710183e778@freescale.com>
+References: <1116987700.6395.64.camel@gaston>
+	<362472e35e6672011614c2710183e778@freescale.com>
 Mime-Version: 1.0 (Apple Message framework v622)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <30276b84ee1e5e35bd8a9980a55296fe@embeddededge.com>
+Message-Id: <8818d51720e46592f49178f803ed2f0b@embeddededge.com>
 From: Dan Malek <dan@embeddededge.com>
-Date: Wed, 25 May 2005 00:48:53 -0400
+Date: Wed, 25 May 2005 01:00:10 -0400
 To: Kumar Gala <kumar.gala@freescale.com>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, linuxppc-embedded@ozlabs.org
 Subject: Re: RFC: Deprecating io_block_mapping
@@ -20,16 +20,34 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On May 24, 2005, at 10:17 PM, Kumar Gala wrote:
+On May 24, 2005, at 10:30 PM, Kumar Gala wrote:
 
-> Do you propose to fixup ioremap to allocate large page resources (BATs 
-> and CAMs) going forward?
+> I know what I've done in the past is either steal a BAT (83xx) or CAM 
+> (85xx) entry and then free it up when a proper ioremap can be done 
+> later.
 
-That would have to be absolutely necessary, plus we need to ensure we
-accommodate the processor cores with more or less BATs (or also variable
-number of CAMs).  We can't afford to continue to work with the least 
-common
-denominator configurations and waste those resources.
+This is even more of a hack than io_block_mapping() because it is often
+obscure and not documented.  Several boards have done this in the past
+as well.  It's "magic" that occurs, what seems to be minor code changes
+often cause this to break and makes debugging more complex :-)
+
+> No, as far as a can tell doing a quick glance if we drop 
+> io_block_mapping than we can drop setup_io_mappings().
+
+We've got to have something to address the board unique requirements
+that are currently satisfied by this.
+
+There is a real problem that we have to solve.  Some boards just need
+access to mapped hardware before the VM is set up.  You can't just
+remove a feature or tell them their design is wrong.  I don't think 
+obscure
+mapping tricks are the solution, either.
+
+The only solution is to make ioremap() smart enough to properly use
+BATs and CAMs that are available to a processor.   I suspect this is 
+going
+to lead to a bunch of also undesirable configuration options to address
+the customizations necessary.
 
 Thanks.
 
