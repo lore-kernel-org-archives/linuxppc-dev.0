@@ -1,26 +1,16 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id C4AAA679E2
+Return-Path: <rvinson@mvista.com>
+Received: from zipcode.az.mvista.com (rav-az.mvista.com [65.200.49.157])
+	by ozlabs.org (Postfix) with ESMTP id 00341679E7
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 26 May 2005 09:00:45 +1000 (EST)
-In-Reply-To: <30d87aabd768216ef8bee800f3e09b9e@freescale.com>
-References: <1107b64b01fb8e9a6c84359bb56881a6@freescale.com>	<1110334456.32556.21.camel@gaston>	<20050308194229.41c23707.davem@davemloft.net>	<1110340214.32524.32.camel@gaston>
-	<57a429f8eb807987d88b06129861d507@freescale.com>
-	<4230D1AC.5070506@katalix.com>
-	<ba5d844255b5ba76b2685f9397faf689@freescale.com>
-	<423734FB.40101@katalix.com>
-	<96c50184a02557c88dee0e6d17f3a539@freescale.com>
-	<42625DDB.4090600@katalix.com>
-	<30d87aabd768216ef8bee800f3e09b9e@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <6ad9943e3e0399b677519ad3653847bc@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Wed, 25 May 2005 18:00:33 -0500
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: Netdev <netdev@oss.sgi.com>, "David S. Miller" <davem@davemloft.net>,
-	ML linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: RFC: PHY Abstraction Layer II
+	Thu, 26 May 2005 09:55:18 +1000 (EST)
+Message-ID: <429511C8.1010205@mvista.com>
+Date: Wed, 25 May 2005 17:01:12 -0700
+From: Randy Vinson <rvinson@mvista.com>
+MIME-Version: 1.0
+To: Kumar Gala <kumar.gala@freescale.com>
+Content-Type: multipart/mixed; boundary="------------030002000008030602090105"
+Cc: linuxppc-embedded@ozlabs.org
+Subject: [PATCH][PPC32] MPC834x BCSR_SIZE too small for use in a BAT
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,65 +21,72 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Jeff,
+This is a multi-part message in MIME format.
+--------------030002000008030602090105
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Where do we stand on this.  Are there changes you feel need to be made?=20=
+Greetings,
+   The value of BCSR_SIZE (32K) in arch/ppc/platforms/83xx/mpc834x_sys.h 
+is too small for a BAT (min 128K). The size is used in an 
+io_block_mapping call to map the Board Control and Status Registers. 
+Since there are no current dependencies on the result of the 
+io_block_mapping call, it was removed as a solution to the problem 
+rather than increasing the value of BCSR_SIZE. If access to the BCSR 
+block is needed, it can easily be mapped via ioremap at the point of use.
 
-  Some other issue?  It would like to know what we need to do to get=20
-this in post 2.6.12.
+             Randy Vinson
 
-thanks
+--------------030002000008030602090105
+Content-Type: text/plain;
+ name="bcsr.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="bcsr.patch"
 
-- kumar
+MPC834x BCSR_SIZE too small for use in a BAT.
 
-On May 10, 2005, at 12:04 PM, Fleming Andy-afleming wrote:
+The call to io_block_mapping was creating an invalid BAT entry because
+the value of BCSR_SIZE (32K) is too small to be used in a BAT (128K min).
+This change removes the io_block_mapping call since these registers can
+easily be mapped using ioremap at the point of use.
 
->
->
-> On Apr 17, 2005, at 08:00, James Chapman wrote:
->
-> > Andy Fleming wrote:
-> >> Ok, here's the new patch with changes suggested by James Chapman:
->  >
->  > I guess I still have questions about the way interrupts are used.
->  >
->  > Using an interrupt to schedule a work queue which then sets a=20
-> variable
-> > that is used by a timer seems odd. Why not do all the work in the=20
-> work
->  > queue and schedule it from the interrupt handler or timer?
->
-> Ok, I've set up a new system for handling interrupts.=A0 There are now
->  two "special" interrupt values, PHY_POLL, and PHY_IGNORE_INTERRUPT.=A0
->  The first one is used to indicate that the PHY layer will poll the =
-PHY
-> for state changes, and won't enable interrupts.=A0 The second =
-indicates
-> that the PHY layer will neither poll, nor enable interrupts, and thus
-> will allow the driver to handle interrupts.=A0 The PHY layer will =
-still
-> operate its state machine, though.
->
-> The driver must insure a couple things:
->
-> 1) It must set phydev->state to PHY_CHANGELINK
-> 2) It must do that in a work queue (or other non-interrupt time)
->
-> The first one tells the PHY layer that the link state changed (it has
-> to grab a lock to do this).=A0 The second one is required in order to
-> properly take the lock.
->
-> >
->  > Also, did you mean to leave the #if 0 code in davicom.c?
->
-> For now.=A0 It worked around a problem some people were reporting, so =
-I'd
-> like to see if they report it again now that the code's out.=A0 If so,
-> they have a fairly easy fix, and I can reinsert it (or at least
-> reevaluate it) in the future.
->
-> >
->  > /james
->
-> Andy
-> <phy_05_09_2005.patch><ATT191442.txt>=
+Signed-off-by: Randy Vinson <rvinson@mvista.com>
+
+---
+commit 269bcdbf0a9f000400052b2da38348733dbfe88f
+tree d10f5c31c29228a00a1a7551e3e825b439bfc741
+parent 1b981021e88c8c28dc6a22cb1a327d8dc9296473
+author Randy Vinson <rvinson@linuxbox.(none)> Wed, 25 May 2005 16:14:40 -0700
+committer Randy Vinson <rvinson@linuxbox.(none)> Wed, 25 May 2005 16:14:40 -0700
+
+ arch/ppc/platforms/83xx/mpc834x_sys.c |    1 -
+ arch/ppc/platforms/83xx/mpc834x_sys.h |    1 -
+ 2 files changed, 2 deletions(-)
+
+Index: arch/ppc/platforms/83xx/mpc834x_sys.c
+===================================================================
+--- 5eeefa658d7f9c13cd352994805ac3ead628b7e9/arch/ppc/platforms/83xx/mpc834x_sys.c  (mode:100644)
++++ d10f5c31c29228a00a1a7551e3e825b439bfc741/arch/ppc/platforms/83xx/mpc834x_sys.c  (mode:100644)
+@@ -127,7 +127,6 @@
+ {
+ 	/* we steal the lowest ioremap addr for virt space */
+ 	io_block_mapping(VIRT_IMMRBAR, immrbar, 1024*1024, _PAGE_IO);
+-	io_block_mapping(BCSR_VIRT_ADDR, BCSR_PHYS_ADDR, BCSR_SIZE, _PAGE_IO);
+ }
+ 
+ int
+Index: arch/ppc/platforms/83xx/mpc834x_sys.h
+===================================================================
+--- 5eeefa658d7f9c13cd352994805ac3ead628b7e9/arch/ppc/platforms/83xx/mpc834x_sys.h  (mode:100644)
++++ d10f5c31c29228a00a1a7551e3e825b439bfc741/arch/ppc/platforms/83xx/mpc834x_sys.h  (mode:100644)
+@@ -26,7 +26,6 @@
+ #define VIRT_IMMRBAR		((uint)0xfe000000)
+ 
+ #define BCSR_PHYS_ADDR		((uint)0xf8000000)
+-#define BCSR_VIRT_ADDR		((uint)0xfe100000)
+ #define BCSR_SIZE		((uint)(32 * 1024))
+ 
+ #ifdef CONFIG_PCI
+
+--------------030002000008030602090105--
