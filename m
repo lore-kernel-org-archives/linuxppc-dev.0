@@ -1,20 +1,19 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 2ADA1679E2
+Return-Path: <gjalt007@chello.nl>
+Received: from amsfep15-int.chello.nl (amsfep15-int.chello.nl [213.46.243.27])
+	by ozlabs.org (Postfix) with ESMTP id 5FF5367A01
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 May 2005 04:45:31 +1000 (EST)
-In-Reply-To: <20050526113218.23e44164@dxpl.pdx.osdl.net>
-References: <1107b64b01fb8e9a6c84359bb56881a6@freescale.com>
-	<20050526113218.23e44164@dxpl.pdx.osdl.net>
-Mime-Version: 1.0 (Apple Message framework v730)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <615E3662-7F4F-4277-A5F0-83086150F0FE@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Date: Thu, 26 May 2005 13:45:20 -0500
-To: Stephen Hemminger <shemminger@osdl.org>
-Cc: Netdev <netdev@oss.sgi.com>,
-	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: Re: RFC: PHY Abstraction Layer II
+	Fri, 27 May 2005 07:04:25 +1000 (EST)
+Received: from [192.168.1.10] (really [80.57.11.99]) by amsfep15-int.chello.nl
+	(InterMail vM.6.01.04.04 201-2131-118-104-20050224) with ESMTP
+	id <20050526210421.SDTR1936.amsfep15-int.chello.nl@[192.168.1.10]>
+	for <linuxppc-embedded@ozlabs.org>; Thu, 26 May 2005 23:04:21 +0200
+Message-ID: <429639D5.20609@chello.nl>
+Date: Thu, 26 May 2005 23:04:21 +0200
+From: Theo Gjaltema <gjalt007@chello.nl>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Dynamic libraries do not work
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,35 +24,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hello,
 
-On May 26, 2005, at 13:32, Stephen Hemminger wrote:
+I have a linux 2.4.20 kernel running, but the files in the ramdisk fail 
+to execute if they are dynamically build.
+The whole system stops (debuggers shows that it crashed while in an erea 
+where no flash/ram is present.
+Anyone an idea?
+There is nog difference between the use of a ramdisk or an nfs mounted 
+root filesystem.
 
-> I finally got around to looking at this for the new skge driver.
-> The Marvell phy code has several issues:
->     * hard coded hex values rather than constants
-
-These are hard-coded because it's errata.  The errata doesn't name  
-the registers, nor the bits being set, so the best I could do is  
-something like:
-
-phy_write(phydev, M88E1101_ERRATA_REGISTER1,  
-M88E1101_ERRATA_REG1_VALUE1);
-
-I'm not sure that's more useful.
-
-
->     * doesn't handle restricted autonegotiation
-
-I'm not quite sure what you mean by this one.  ALL the PHYs support  
-restricting auto-negotiation to certain values.  See drivers/net/phy/ 
-phy_device.c:genphy_config_advert(), which is called by marvell's  
-config_aneg function (eventually).
-
->     * it doesn't really help the driver that much there are too
->       many other warts in the hardware.
-
-Err...  the skge hardware, or the Marvell hardware?  Could you  
-specify some warts, so I can look into what changes might need to be  
-made?
-
-Andy
+Greetings,
+    Theo.
