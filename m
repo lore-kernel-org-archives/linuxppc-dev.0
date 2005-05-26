@@ -2,19 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3A1D4679E2
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 May 2005 12:50:59 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id A86F8679FD
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 May 2005 13:29:56 +1000 (EST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tom Parker <palfrey@tevp.net>
-In-Reply-To: <429517FF.2030400@tevp.net>
-References: <429237EC.4010104@tevp.net> <1116891693.30513.3.camel@gaston>
-	<429517FF.2030400@tevp.net>
+To: Andrew Morton <akpm@osdl.org>
 Content-Type: text/plain
-Date: Thu, 26 May 2005 12:50:46 +1000
-Message-Id: <1117075847.9076.9.camel@gaston>
+Date: Thu, 26 May 2005 13:29:31 +1000
+Message-Id: <1117078171.9076.16.camel@gaston>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: Reading DVDs on a Mac mini
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Linus Torvalds <torvalds@osdl.org>
+Subject: [PATCH] ppc32: Fix cpufreq vs. sleep issue
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,41 +22,97 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2005-05-26 at 02:27 +0200, Tom Parker wrote:
-> Benjamin Herrenschmidt wrote:
-> > On Mon, 2005-05-23 at 22:07 +0200, Tom Parker wrote:
-> >>The version of libdvdread in use is 0.9.4 (the Debian 0.9.4-5 
-> >>libdvdread3 package).
-> 
-> > Does the debian package of libdvdread contains the CSS stuff ?
-> 
-> No it doesn't, but it does include a shell script to download it if 
-> you're living somewhere where libdvdcss is ok, and libdvdread will 
-> dynamically load libdvdcss if it exists. I'm using libdvdcss 1.2.8 (latest).
-> 
-> > Have you tried booting OS X and playing the DVD once ? Maybe the drive
-> > wants a zone to be set at least once, which MacOS does the first time
-> > you play a DVD
-> 
-> Had to reinstall OS X to test this, and yup, it wants a zone to be set. 
-> Returning back to Linux, some fiddling with regionset and some region 1 
-> and 2 DVDs lets me come to the following conclusions:
-> 
-> 1) It's an RPC-2 DVD drive (i.e. evil, CSS-in-hardware drive), with the 
-> whole "5 changes and then it locks" policy.
-> 2) It appears to be a really evil variant of RPC-2, in that if you've 
-> got a CSS-locked DVD in the drive, and you're set on a different region 
-> to the disk, you can't even get at the encrypted contents. The 
-> aforementioned read errors keep turning up, making libdvdcss useless. 
-> Or, this may just be an ide-cd bug with this drive...
-> 3) If drive region == disc region, it plays DVDs fine.
-> 
->  >>hdparm -i says the drive is a "MATSHITACD-RW CW-8124".
-> 
-> If anyone happens to have an RPC-1 firmware for this drive, or fixes to 
-> ide-cd, I'd be most grateful! Some googling for the former is currently 
-> unhelpful.
+Hi !
 
-Yah, I googled too and ended up with the same conclusion =P
+Recent kernel occasionally trigger a PMU timeout on some mac laptops,
+typically on wakeup from sleep. This seem to be caused by either a too
+big latency caused by the cpufreq switch on wakeup from sleep or by an
+interrupt beeing lost due to the reset of the interrupt controller done
+during wakeup.
 
-Ben.
+This patch makes that code more robust by stopping PMU auto poll
+activity around cpufreq changes on machines that use the PMU for such
+changes (long latency switching involving a CPU hard reset and flush of
+all caches) and by removing the reset of the open pic interrupt
+controller on wakeup (that can cause the loss of an interrupt and Darwin
+doesn't do it, so it must not be necessary).
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+Index: linux-work/arch/ppc/platforms/pmac_cpufreq.c
+===================================================================
+--- linux-work.orig/arch/ppc/platforms/pmac_cpufreq.c	2005-05-18 12:00:28.000000000 +1000
++++ linux-work/arch/ppc/platforms/pmac_cpufreq.c	2005-05-26 10:35:03.000000000 +1000
+@@ -271,6 +271,8 @@
+ #ifdef DEBUG_FREQ
+ 	printk(KERN_DEBUG "HID1, before: %x\n", mfspr(SPRN_HID1));
+ #endif
++	pmu_suspend();
++
+ 	/* Disable all interrupt sources on openpic */
+  	pic_prio = openpic_get_priority();
+ 	openpic_set_priority(0xf);
+@@ -345,6 +347,8 @@
+ 	debug_calc_bogomips();
+ #endif
+ 
++	pmu_resume();
++
+ 	preempt_enable();
+ 
+ 	return 0;
+Index: linux-work/drivers/macintosh/via-pmu.c
+===================================================================
+--- linux-work.orig/drivers/macintosh/via-pmu.c	2005-05-18 12:00:28.000000000 +1000
++++ linux-work/drivers/macintosh/via-pmu.c	2005-05-26 10:38:04.000000000 +1000
+@@ -2431,7 +2431,7 @@
+ 
+ 	/* Re-enable local CPU interrupts */
+ 	local_irq_enable();
+-	mdelay(100);
++	mdelay(10);
+ 	preempt_enable();
+ 
+ 	/* Re-enable clock spreading on some machines */
+@@ -2559,7 +2559,9 @@
+ 		return ret;
+ 	}
+ 
+-	printk(KERN_DEBUG "HID1, before: %x\n", mfspr(SPRN_HID1));
++	/* Stop environment and ADB interrupts */
++	pmu_request(&req, NULL, 2, PMU_SET_INTR_MASK, 0);
++	pmu_wait_complete(&req);
+ 
+ 	/* Tell PMU what events will wake us up */
+ 	pmu_request(&req, NULL, 4, PMU_POWER_EVENTS, PMU_PWR_CLR_WAKEUP_EVENTS,
+@@ -2621,8 +2623,6 @@
+ 	pmu_request(&req, NULL, 2, PMU_SET_INTR_MASK, pmu_intr_mask);
+ 	pmu_wait_complete(&req);
+ 
+-	printk(KERN_DEBUG "HID1, after: %x\n", mfspr(SPRN_HID1));
+-
+ 	pmac_wakeup_devices();
+ 
+ 	return 0;
+Index: linux-work/arch/ppc/syslib/open_pic.c
+===================================================================
+--- linux-work.orig/arch/ppc/syslib/open_pic.c	2005-05-18 12:00:28.000000000 +1000
++++ linux-work/arch/ppc/syslib/open_pic.c	2005-05-26 10:42:24.000000000 +1000
+@@ -275,7 +275,7 @@
+ }
+ #endif
+ 
+-#if defined(CONFIG_EPIC_SERIAL_MODE) || defined(CONFIG_PM)
++#if defined(CONFIG_EPIC_SERIAL_MODE)
+ static void openpic_reset(void)
+ {
+ 	openpic_setfield(&OpenPIC->Global.Global_Configuration0,
+@@ -1007,8 +1007,6 @@
+ 		return 0;
+ 	}
+ 
+-	openpic_reset();
+-
+ 	/* OpenPIC sometimes seem to need some time to be fully back up... */
+ 	do {
+ 		openpic_set_spurious(OPENPIC_VEC_SPURIOUS);
