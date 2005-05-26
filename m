@@ -1,19 +1,16 @@
-Return-Path: <gjalt007@chello.nl>
-Received: from amsfep15-int.chello.nl (amsfep15-int.chello.nl [213.46.243.27])
-	by ozlabs.org (Postfix) with ESMTP id 5FF5367A01
+Return-Path: <rvinson@mvista.com>
+Received: from zipcode.az.mvista.com (rav-az.mvista.com [65.200.49.157])
+	by ozlabs.org (Postfix) with ESMTP id 87089679F0
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 May 2005 07:04:25 +1000 (EST)
-Received: from [192.168.1.10] (really [80.57.11.99]) by amsfep15-int.chello.nl
-	(InterMail vM.6.01.04.04 201-2131-118-104-20050224) with ESMTP
-	id <20050526210421.SDTR1936.amsfep15-int.chello.nl@[192.168.1.10]>
-	for <linuxppc-embedded@ozlabs.org>; Thu, 26 May 2005 23:04:21 +0200
-Message-ID: <429639D5.20609@chello.nl>
-Date: Thu, 26 May 2005 23:04:21 +0200
-From: Theo Gjaltema <gjalt007@chello.nl>
+	Fri, 27 May 2005 07:09:01 +1000 (EST)
+Message-ID: <42963C54.2090300@mvista.com>
+Date: Thu, 26 May 2005 14:15:00 -0700
+From: Randy Vinson <rvinson@mvista.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: Dynamic libraries do not work
+To: Kumar Gala <kumar.gala@freescale.com>
+Content-Type: multipart/mixed; boundary="------------090006070708060208070602"
+Cc: linuxppc-embedded@ozlabs.org
+Subject: [PATCH][PPC32] Add Soft-Reset to MPC834x.
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,15 +21,105 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
-
-I have a linux 2.4.20 kernel running, but the files in the ramdisk fail 
-to execute if they are dynamically build.
-The whole system stops (debuggers shows that it crashed while in an erea 
-where no flash/ram is present.
-Anyone an idea?
-There is nog difference between the use of a ramdisk or an nfs mounted 
-root filesystem.
+This is a multi-part message in MIME format.
+--------------090006070708060208070602
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
 Greetings,
-    Theo.
+   The attached patch adds soft reset to the MPC834x platform. With this 
+patch the "reboot" command will cause a shutdown and restart sequence.
+
+
+		Randy Vinson
+
+--------------090006070708060208070602
+Content-Type: text/plain;
+ name="reset.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="reset.patch"
+
+Add soft reset to MPC834x
+
+This change allows mpc83xx_restart to issue a software reset.
+
+Signed-off-by: Randy Vinson <rvinson@mvista.com>
+
+---
+commit 6d63102a8653755f40a5714020f375e297c0bfae
+tree 8471abaacd09aaa62ea479c926f13cbbf8906e49
+parent 269bcdbf0a9f000400052b2da38348733dbfe88f
+author Randy Vinson <rvinson@linuxbox.(none)> Wed, 25 May 2005 17:37:16 -0700
+committer Randy Vinson <rvinson@linuxbox.(none)> Wed, 25 May 2005 17:37:16 -0700
+
+ arch/ppc/platforms/83xx/mpc834x_sys.h |    6 ++++++
+ arch/ppc/syslib/ppc83xx_setup.c       |   28 ++++++++++++++++++++++++++++
+ 2 files changed, 34 insertions(+)
+
+Index: arch/ppc/platforms/83xx/mpc834x_sys.h
+===================================================================
+--- d10f5c31c29228a00a1a7551e3e825b439bfc741/arch/ppc/platforms/83xx/mpc834x_sys.h  (mode:100644)
++++ 8471abaacd09aaa62ea479c926f13cbbf8906e49/arch/ppc/platforms/83xx/mpc834x_sys.h  (mode:100644)
+@@ -28,6 +28,12 @@
+ #define BCSR_PHYS_ADDR		((uint)0xf8000000)
+ #define BCSR_SIZE		((uint)(32 * 1024))
+ 
++#define BCSR_MISC_REG2_OFF	0x07
++#define BCSR_MISC_REG2_PORESET	0x01
++
++#define BCSR_MISC_REG3_OFF	0x08
++#define BCSR_MISC_REG3_CNFLOCK	0x80
++
+ #ifdef CONFIG_PCI
+ /* PCI interrupt controller */
+ #define PIRQA        MPC83xx_IRQ_IRQ4
+Index: arch/ppc/syslib/ppc83xx_setup.c
+===================================================================
+--- d10f5c31c29228a00a1a7551e3e825b439bfc741/arch/ppc/syslib/ppc83xx_setup.c  (mode:100644)
++++ 8471abaacd09aaa62ea479c926f13cbbf8906e49/arch/ppc/syslib/ppc83xx_setup.c  (mode:100644)
+@@ -29,6 +29,7 @@
+ #include <asm/mmu.h>
+ #include <asm/ppc_sys.h>
+ #include <asm/kgdb.h>
++#include <asm/delay.h>
+ 
+ #include <syslib/ppc83xx_setup.h>
+ 
+@@ -117,7 +118,34 @@
+ void
+ mpc83xx_restart(char *cmd)
+ {
++	volatile unsigned char __iomem *reg;
++	unsigned char tmp;
++
++	reg = ioremap(BCSR_PHYS_ADDR, BCSR_SIZE);
++
+ 	local_irq_disable();
++
++	/*
++	 * Unlock the BCSR bits so a PRST will update the contents.
++	 * Otherwise the reset asserts but doesn't clear.
++	 */
++	tmp = in_8(reg + BCSR_MISC_REG3_OFF);
++	tmp |= BCSR_MISC_REG3_CNFLOCK; /* low true, high false */
++	out_8(reg + BCSR_MISC_REG3_OFF, tmp);
++
++	/*
++	 * Trigger a reset via a low->high transition of the
++	 * PORESET bit.
++	 */
++	tmp = in_8(reg + BCSR_MISC_REG2_OFF);
++	tmp &= ~BCSR_MISC_REG2_PORESET;
++	out_8(reg + BCSR_MISC_REG2_OFF, tmp);
++
++	udelay(1);
++
++	tmp |= BCSR_MISC_REG2_PORESET;
++	out_8(reg + BCSR_MISC_REG2_OFF, tmp);
++
+ 	for(;;);
+ }
+ 
+
+--------------090006070708060208070602--
