@@ -1,16 +1,15 @@
-Return-Path: <rvinson@mvista.com>
-Received: from zipcode.az.mvista.com (rav-az.mvista.com [65.200.49.157])
-	by ozlabs.org (Postfix) with ESMTP id 00341679E7
+Return-Path: <tim.martin@viasat.com>
+Received: from annex.viasat.com (eagle.viasat.com [199.106.52.54])
+	by ozlabs.org (Postfix) with ESMTP id 8ACD2679F0
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 26 May 2005 09:55:18 +1000 (EST)
-Message-ID: <429511C8.1010205@mvista.com>
-Date: Wed, 25 May 2005 17:01:12 -0700
-From: Randy Vinson <rvinson@mvista.com>
+	Thu, 26 May 2005 10:32:54 +1000 (EST)
+Message-ID: <846BA3AF7C8A2048937F1801FD3129C902DB596D@messenger.viasat.com>
+From: "Martin, Tim" <tim.martin@viasat.com>
+To: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
+Date: Wed, 25 May 2005 17:32:51 -0700
 MIME-Version: 1.0
-To: Kumar Gala <kumar.gala@freescale.com>
-Content-Type: multipart/mixed; boundary="------------030002000008030602090105"
-Cc: linuxppc-embedded@ozlabs.org
-Subject: [PATCH][PPC32] MPC834x BCSR_SIZE too small for use in a BAT
+Content-Type: text/plain
+Subject: RE: MPC860 CP / CPM Misbehaving
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,72 +20,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------030002000008030602090105
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+An update (and solution) to the problem I was having...Thanks to everyone
+who sent me suggestions!
 
-Greetings,
-   The value of BCSR_SIZE (32K) in arch/ppc/platforms/83xx/mpc834x_sys.h 
-is too small for a BAT (min 128K). The size is used in an 
-io_block_mapping call to map the Board Control and Status Registers. 
-Since there are no current dependencies on the result of the 
-io_block_mapping call, it was removed as a solution to the problem 
-rather than increasing the value of BCSR_SIZE. If access to the BCSR 
-block is needed, it can easily be mapped via ioremap at the point of use.
+> I'm using a custom MPC860 based embedded board and having problems with
+SCC1
+> and SMC1 reception.  I have SCC1 setup in ethernet mode, and SMC1 setup in
+> UART mode.  The general problem manifests itself as getting receive buffer
+> descriptors (BDs) from the CPM with the OV bit set (bit 14 of the RxBD
+> status/control field, "Overrun. Set when a receiver overrun occurs during
+> reception").
 
-             Randy Vinson
+I was apparently the victim of errata in the MPC860, possibly related to a
+published errata CPU5 - Instruction MMU bug at page boundaries in show-all
+mode.
 
---------------030002000008030602090105
-Content-Type: text/plain;
- name="bcsr.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="bcsr.patch"
+Either one of the following fixed the problem, but I chose to stick with Fix
+#2 since Fix #1 has some other errata associated with it for various MPC860
+silicon versions.
 
-MPC834x BCSR_SIZE too small for use in a BAT.
+Fix #1) Enable SIUMCR[DSHW] - Show address and data of all internal data
+cycles.  Not entirely clear why this would have helped, and there's errata
+saying NOT to do this (e.g. SIU2)
 
-The call to io_block_mapping was creating an invalid BAT entry because
-the value of BCSR_SIZE (32K) is too small to be used in a BAT (128K min).
-This change removes the io_block_mapping call since these registers can
-easily be mapped using ioremap at the point of use.
+Fix #2) Disable show all mode (per CPU5), in my case set ICTRL[ISCT_SER]=011
+Core is fully serialized/no show cycles is performed for fetched
+instructions.
 
-Signed-off-by: Randy Vinson <rvinson@mvista.com>
-
----
-commit 269bcdbf0a9f000400052b2da38348733dbfe88f
-tree d10f5c31c29228a00a1a7551e3e825b439bfc741
-parent 1b981021e88c8c28dc6a22cb1a327d8dc9296473
-author Randy Vinson <rvinson@linuxbox.(none)> Wed, 25 May 2005 16:14:40 -0700
-committer Randy Vinson <rvinson@linuxbox.(none)> Wed, 25 May 2005 16:14:40 -0700
-
- arch/ppc/platforms/83xx/mpc834x_sys.c |    1 -
- arch/ppc/platforms/83xx/mpc834x_sys.h |    1 -
- 2 files changed, 2 deletions(-)
-
-Index: arch/ppc/platforms/83xx/mpc834x_sys.c
-===================================================================
---- 5eeefa658d7f9c13cd352994805ac3ead628b7e9/arch/ppc/platforms/83xx/mpc834x_sys.c  (mode:100644)
-+++ d10f5c31c29228a00a1a7551e3e825b439bfc741/arch/ppc/platforms/83xx/mpc834x_sys.c  (mode:100644)
-@@ -127,7 +127,6 @@
- {
- 	/* we steal the lowest ioremap addr for virt space */
- 	io_block_mapping(VIRT_IMMRBAR, immrbar, 1024*1024, _PAGE_IO);
--	io_block_mapping(BCSR_VIRT_ADDR, BCSR_PHYS_ADDR, BCSR_SIZE, _PAGE_IO);
- }
- 
- int
-Index: arch/ppc/platforms/83xx/mpc834x_sys.h
-===================================================================
---- 5eeefa658d7f9c13cd352994805ac3ead628b7e9/arch/ppc/platforms/83xx/mpc834x_sys.h  (mode:100644)
-+++ d10f5c31c29228a00a1a7551e3e825b439bfc741/arch/ppc/platforms/83xx/mpc834x_sys.h  (mode:100644)
-@@ -26,7 +26,6 @@
- #define VIRT_IMMRBAR		((uint)0xfe000000)
- 
- #define BCSR_PHYS_ADDR		((uint)0xf8000000)
--#define BCSR_VIRT_ADDR		((uint)0xfe100000)
- #define BCSR_SIZE		((uint)(32 * 1024))
- 
- #ifdef CONFIG_PCI
-
---------------030002000008030602090105--
+Tim
