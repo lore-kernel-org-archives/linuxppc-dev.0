@@ -1,18 +1,29 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A86F8679FD
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 May 2005 13:29:56 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andrew Morton <akpm@osdl.org>
-Content-Type: text/plain
-Date: Thu, 26 May 2005 13:29:31 +1000
-Message-Id: <1117078171.9076.16.camel@gaston>
+Return-Path: <fugalh@falcon.fugal.net>
+Received: from mgr2.xmission.com (mgr2.xmission.com [198.60.22.202])
+	by ozlabs.org (Postfix) with ESMTP id 53AD1679E9
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 May 2005 14:53:14 +1000 (EST)
+Received: from [198.60.22.207] (helo=mgr7.xmission.com)
+	by mgr2.xmission.com with esmtp (Exim 4.50) id 1Db98F-00050m-Sk
+	for linuxppc-dev@ozlabs.org; Wed, 25 May 2005 21:34:03 -0600
+Received: from [166.70.27.96] (helo=falcon.fugal.net)
+	by mgr7.xmission.com with esmtp (Exim 4.50) id 1Db98E-0001CX-P1
+	for linuxppc-dev@ozlabs.org; Wed, 25 May 2005 21:34:03 -0600
+Received: from localhost (falcon [127.0.0.1])
+	by falcon.fugal.net (Postfix) with ESMTP id 6EA801C6EC
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 May 2005 21:34:02 -0600 (MDT)
+Received: from falcon.fugal.net ([127.0.0.1])
+	by localhost (falcon [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 31069-05 for <linuxppc-dev@ozlabs.org>;
+	Wed, 25 May 2005 21:34:02 -0600 (MDT)
+Date: Wed, 25 May 2005 21:34:02 -0600
+From: Hans Fugal <hans@fugal.net>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <20050526033402.GA2294@falcon.fugal.net>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linus Torvalds <torvalds@osdl.org>
-Subject: [PATCH] ppc32: Fix cpufreq vs. sleep issue
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="EVF5PPMfhYS0aIcm"
+Subject: adb caps patch
+Reply-To: hans@fugal.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,97 +33,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi !
 
-Recent kernel occasionally trigger a PMU timeout on some mac laptops,
-typically on wakeup from sleep. This seem to be caused by either a too
-big latency caused by the cpufreq switch on wakeup from sleep or by an
-interrupt beeing lost due to the reset of the interrupt controller done
-during wakeup.
+--EVF5PPMfhYS0aIcm
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This patch makes that code more robust by stopping PMU auto poll
-activity around cpufreq changes on machines that use the PMU for such
-changes (long latency switching involving a CPU hard reset and flush of
-all caches) and by removing the reset of the open pic interrupt
-controller on wakeup (that can cause the loss of an interrupt and Darwin
-doesn't do it, so it must not be necessary).
+I've revived a caps lock patch by Gregorio Gervas, and adapted it for
+2.6. It works for me, hopefully it works for you too. I welcome
+feedback.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+http://www.xmission.com/~fugalh/capslock/
 
-Index: linux-work/arch/ppc/platforms/pmac_cpufreq.c
-===================================================================
---- linux-work.orig/arch/ppc/platforms/pmac_cpufreq.c	2005-05-18 12:00:28.000000000 +1000
-+++ linux-work/arch/ppc/platforms/pmac_cpufreq.c	2005-05-26 10:35:03.000000000 +1000
-@@ -271,6 +271,8 @@
- #ifdef DEBUG_FREQ
- 	printk(KERN_DEBUG "HID1, before: %x\n", mfspr(SPRN_HID1));
- #endif
-+	pmu_suspend();
-+
- 	/* Disable all interrupt sources on openpic */
-  	pic_prio = openpic_get_priority();
- 	openpic_set_priority(0xf);
-@@ -345,6 +347,8 @@
- 	debug_calc_bogomips();
- #endif
- 
-+	pmu_resume();
-+
- 	preempt_enable();
- 
- 	return 0;
-Index: linux-work/drivers/macintosh/via-pmu.c
-===================================================================
---- linux-work.orig/drivers/macintosh/via-pmu.c	2005-05-18 12:00:28.000000000 +1000
-+++ linux-work/drivers/macintosh/via-pmu.c	2005-05-26 10:38:04.000000000 +1000
-@@ -2431,7 +2431,7 @@
- 
- 	/* Re-enable local CPU interrupts */
- 	local_irq_enable();
--	mdelay(100);
-+	mdelay(10);
- 	preempt_enable();
- 
- 	/* Re-enable clock spreading on some machines */
-@@ -2559,7 +2559,9 @@
- 		return ret;
- 	}
- 
--	printk(KERN_DEBUG "HID1, before: %x\n", mfspr(SPRN_HID1));
-+	/* Stop environment and ADB interrupts */
-+	pmu_request(&req, NULL, 2, PMU_SET_INTR_MASK, 0);
-+	pmu_wait_complete(&req);
- 
- 	/* Tell PMU what events will wake us up */
- 	pmu_request(&req, NULL, 4, PMU_POWER_EVENTS, PMU_PWR_CLR_WAKEUP_EVENTS,
-@@ -2621,8 +2623,6 @@
- 	pmu_request(&req, NULL, 2, PMU_SET_INTR_MASK, pmu_intr_mask);
- 	pmu_wait_complete(&req);
- 
--	printk(KERN_DEBUG "HID1, after: %x\n", mfspr(SPRN_HID1));
--
- 	pmac_wakeup_devices();
- 
- 	return 0;
-Index: linux-work/arch/ppc/syslib/open_pic.c
-===================================================================
---- linux-work.orig/arch/ppc/syslib/open_pic.c	2005-05-18 12:00:28.000000000 +1000
-+++ linux-work/arch/ppc/syslib/open_pic.c	2005-05-26 10:42:24.000000000 +1000
-@@ -275,7 +275,7 @@
- }
- #endif
- 
--#if defined(CONFIG_EPIC_SERIAL_MODE) || defined(CONFIG_PM)
-+#if defined(CONFIG_EPIC_SERIAL_MODE)
- static void openpic_reset(void)
- {
- 	openpic_setfield(&OpenPIC->Global.Global_Configuration0,
-@@ -1007,8 +1007,6 @@
- 		return 0;
- 	}
- 
--	openpic_reset();
--
- 	/* OpenPIC sometimes seem to need some time to be fully back up... */
- 	do {
- 		openpic_set_spurious(OPENPIC_VEC_SPURIOUS);
+--=20
+ .O.  Hans Fugal            | De gustibus non disputandum est.
+ ..O  http://hans.fugal.net | Debian, vim, mutt, ruby, text, gpg
+ OOO                        | WindowMaker, gaim, UTF-8, RISC, JS Bach
+---------------------------------------------------------------------
+GnuPG Fingerprint: 6940 87C5 6610 567F 1E95  CB5E FC98 E8CD E0AA D460
+
+--EVF5PPMfhYS0aIcm
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.5 (GNU/Linux)
+
+iD8DBQFClUOq/JjozeCq1GARAh/XAJ0bohhD43Ad7Derx4SOZbOE/VMfrQCfWlJ3
+771hhEpd2r1Lr35h5fz3R/E=
+=Kbzo
+-----END PGP SIGNATURE-----
+
+--EVF5PPMfhYS0aIcm--
