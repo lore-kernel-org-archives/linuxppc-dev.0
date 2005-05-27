@@ -1,26 +1,26 @@
 Return-Path: <jdl@freescale.com>
 Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id E52F4679EB
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id B169C679F1
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 28 May 2005 05:18:58 +1000 (EST)
+	Sat, 28 May 2005 05:20:44 +1000 (EST)
 Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
 	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	j4RJOAeF011357 for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 May 2005 12:24:10 -0700 (MST)
+	j4RJPuIC011642 for <linuxppc-embedded@ozlabs.org>;
+	Fri, 27 May 2005 12:25:56 -0700 (MST)
 Received: from [10.82.19.2] (cashmere.am.freescale.net [10.82.19.2])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id j4RJKKww016212
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id j4RJM6ue016585
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 May 2005 14:20:20 -0500 (CDT)
+	Fri, 27 May 2005 14:22:06 -0500 (CDT)
 From: Jon Loeliger <jdl@freescale.com>
 To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
 In-Reply-To: <f003613a0526b7b6a00a0bd477cd5ac3@freescale.com>
 References: <1116607235.29111.20.camel@gleep>
 	<f003613a0526b7b6a00a0bd477cd5ac3@freescale.com>
 Content-Type: text/plain
-Message-Id: <1117221536.26114.99.camel@cashmere.sps.mot.com>
+Message-Id: <1117221642.26114.102.camel@cashmere.sps.mot.com>
 Mime-Version: 1.0
-Date: Fri, 27 May 2005 14:18:56 -0500
-Subject: bd_t Cleaning: Driver Bits
+Date: Fri, 27 May 2005 14:20:42 -0500
+Subject: bd_t Cleaning: System Parts
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -43,628 +43,846 @@ On Thu, 2005-05-26 at 18:08, Kumar Gala wrote:
 > a better list below)
 > 3. System changes (files in arch/ppc/syslib and include/asm-ppc)
 
-And Part 3 of 4 is the Driver Bits:
+And the final quarter, the System Bits:
 
+ ppc/syslib/cpm2_common.c                |    3 
+ ppc/syslib/m8260_pci.h                  |    6 
+ ppc/syslib/m8260_setup.c                |   31 -
+ ppc/syslib/m8xx_setup.c                 |   27 -
+ ppc/syslib/m8xx_wdt.c                   |    8 
+ ppc/syslib/m8xx_wdt.h                   |    2 
+ ppc/syslib/mpc52xx_setup.c              |   15 
+ ppc/syslib/ppc4xx_setup.c               |   18 
+ ppc/syslib/ppc83xx_setup.c              |   28 -
+ ppc/syslib/ppc83xx_setup.h              |    1 
+ ppc/syslib/ppc85xx_setup.c              |   56 +-
+ ppc/syslib/ppc85xx_setup.h              |    1 
+ asm-ppc/bseip.h                         |   13 
+ asm-ppc/ibm4xx.h                        |   17 
+ asm-ppc/ibm_ocp.h                       |    3 
+ asm-ppc/mpc52xx.h                       |    4 
+ asm-ppc/mpc8260.h                       |    7 
+ asm-ppc/mpc83xx.h                       |    5 
+ asm-ppc/mpc85xx.h                       |    5 
+ asm-ppc/mpc8xx.h                        |    7 
 
- ppc/8260_io/enet.c                      |    9 
- ppc/8260_io/fcc_enet.c                  |   15 
- ppc/8xx_io/commproc.c                   |    3 
- ppc/8xx_io/enet.c                       |   10 
- ppc/8xx_io/fec.c                        |    8 
- ide/ppc/mpc8xx.c                        |   14 
- mtd/maps/tqm8xxl.c                      |    7 
- net/fec.c                               |    6 
- net/fec_8xx/fec_8xx-netta.c             |    5 
- net/oaknet.c                            |    6 
- serial/68360serial.c                    |    3 
- serial/cpm_uart/cpm_uart_core.c         |    8 
- serial/cpm_uart/cpm_uart_cpm1.c         |   13 
- serial/cpm_uart/cpm_uart_cpm2.c         |   13 
- serial/mpc52xx_uart.c                   |   11 
-
-Index: arch/ppc/8260_io/enet.c
+Index: arch/ppc/syslib/cpm2_common.c
 ===================================================================
---- c7d7a187a2125518e655dfeadffd38156239ffc3/arch/ppc/8260_io/enet.c  (mode:100644)
-+++ eb4292a8874abcc926f536de90af0bdb001cf12e/arch/ppc/8260_io/enet.c  (mode:100644)
-@@ -47,6 +47,7 @@
- #include <asm/uaccess.h>
+--- c7d7a187a2125518e655dfeadffd38156239ffc3/arch/ppc/syslib/cpm2_common.c  (mode:100644)
++++ eb4292a8874abcc926f536de90af0bdb001cf12e/arch/ppc/syslib/cpm2_common.c  (mode:100644)
+@@ -30,6 +30,7 @@
+ #include <asm/immap_cpm2.h>
  #include <asm/cpm2.h>
- #include <asm/irq.h>
-+#include <asm/firmware.h>
- 
- /*
-  *				Theory of Operation
-@@ -614,9 +615,8 @@
- 	struct scc_enet_private *cep;
- 	int i, j, err;
- 	uint dp_offset;
--	unsigned char	*eap;
-+	unsigned char	*eap, *p_addr;
- 	unsigned long	mem_addr;
--	bd_t		*bd;
- 	volatile	cbd_t		*bdp;
- 	volatile	cpm_cpm2_t	*cp;
- 	volatile	scc_t		*sccp;
-@@ -629,8 +629,6 @@
- 	immap = (cpm2_map_t *)CPM_MAP_ADDR;	/* and to internal registers */
- 	io = &immap->im_ioport;
- 
--	bd = (bd_t *)__res;
--
- 	/* Create an Ethernet device instance.
- 	*/
- 	dev = alloc_etherdev(sizeof(*cep));
-@@ -735,9 +733,10 @@
- 	 * This is supplied in the board information structure, so we
- 	 * copy that into the controller.
- 	 */
-+	p_addr = fw_get_enetaddr(0);
- 	eap = (unsigned char *)&(ep->sen_paddrh);
- 	for (i=5; i>=0; i--)
--		*eap++ = dev->dev_addr[i] = bd->bi_enetaddr[i];
-+		*eap++ = dev->dev_addr[i] = p_addr[i];
- 
- 	ep->sen_pper = 0;	/* 'cause the book says so */
- 	ep->sen_taddrl = 0;	/* temp address (LSB) */
-Index: arch/ppc/8260_io/fcc_enet.c
-===================================================================
---- c7d7a187a2125518e655dfeadffd38156239ffc3/arch/ppc/8260_io/fcc_enet.c  (mode:100644)
-+++ eb4292a8874abcc926f536de90af0bdb001cf12e/arch/ppc/8260_io/fcc_enet.c  (mode:100644)
-@@ -47,6 +47,7 @@
- #include <asm/irq.h>
- #include <asm/uaccess.h>
- #include <asm/signal.h>
-+#include <asm/firmware.h>
- 
- /* We can't use the PHY interrupt if we aren't using MDIO. */
- #if !defined(CONFIG_USE_MDIO)
-@@ -1866,9 +1867,8 @@
- init_fcc_param(fcc_info_t *fip, struct net_device *dev,
- 						volatile cpm2_map_t *immap)
- {
--	unsigned char	*eap;
-+	unsigned char	*eap, *p_addr;
- 	unsigned long	mem_addr;
--	bd_t		*bd;
- 	int		i, j;
- 	struct		fcc_enet_private *cep;
- 	volatile	fcc_enet_t	*ep;
-@@ -1879,8 +1879,6 @@
- 	ep = cep->ep;
- 	cp = cpmp;
- 
--	bd = (bd_t *)__res;
--
- 	/* Zero the whole thing.....I must have missed some individually.
- 	 * It works when I do this.
- 	 */
-@@ -1962,6 +1960,7 @@
- 	 * it unique by setting a few bits in the upper byte of the
- 	 * non-static part of the address.
- 	 */
-+	p_addr = fw_get_enetaddr(0);
- 	eap = (unsigned char *)&(ep->fen_paddrh);
- 	for (i=5; i>=0; i--) {
- 
-@@ -1971,22 +1970,22 @@
-  */
- #ifdef CONFIG_SBC82xx
- 		if (i == 5) {
--			/* bd->bi_enetaddr holds the SCC0 address; the FCC
-+			/* p_addr holds the SCC0 address; the FCC
- 			   devices count up from there */
--			dev->dev_addr[i] = bd->bi_enetaddr[i] & ~3;
-+			dev->dev_addr[i] = p_addr[i] & ~3;
- 			dev->dev_addr[i] += 1 + fip->fc_fccnum;
- 			*eap++ = dev->dev_addr[i];
- 		}
- #else
- #ifndef CONFIG_RPX8260
- 		if (i == 3) {
--			dev->dev_addr[i] = bd->bi_enetaddr[i];
-+			dev->dev_addr[i] = p_addr[i];
- 			dev->dev_addr[i] |= (1 << (7 - fip->fc_fccnum));
- 			*eap++ = dev->dev_addr[i];
- 		} else
- #endif
- 		{
--			*eap++ = dev->dev_addr[i] = bd->bi_enetaddr[i];
-+			*eap++ = dev->dev_addr[i] = p_addr[i];
- 		}
- #endif
- 	}
-Index: arch/ppc/8xx_io/commproc.c
-===================================================================
---- c7d7a187a2125518e655dfeadffd38156239ffc3/arch/ppc/8xx_io/commproc.c  (mode:100644)
-+++ eb4292a8874abcc926f536de90af0bdb001cf12e/arch/ppc/8xx_io/commproc.c  (mode:100644)
-@@ -38,6 +38,7 @@
- #include <asm/io.h>
- #include <asm/tlbflush.h>
  #include <asm/rheap.h>
 +#include <asm/firmware.h>
  
- extern int get_pteptr(struct mm_struct *mm, unsigned long addr, pte_t **ptep);
- 
-@@ -346,7 +347,7 @@
-  * The internal baud rate clock is the system clock divided by 16.
-  * This assumes the baudrate is 16x oversampled by the uart.
+ static void cpm2_dpinit(void);
+ cpm_cpm2_t	*cpmp;		/* Pointer to comm processor space */
+@@ -67,7 +68,7 @@
+  * Baud rate clocks are zero-based in the driver code (as that maps
+  * to port numbers).  Documentation uses 1-based numbering.
   */
--#define BRG_INT_CLK		(((bd_t *)__res)->bi_intfreq)
-+#define BRG_INT_CLK		(fw_get_intfreq())
- #define BRG_UART_CLK		(BRG_INT_CLK/16)
- #define BRG_UART_CLK_DIV16	(BRG_UART_CLK/16)
+-#define BRG_INT_CLK	(((bd_t *)__res)->bi_brgfreq)
++#define BRG_INT_CLK	(fw_get_brgfreq())
+ #define BRG_UART_CLK	(BRG_INT_CLK/16)
  
-Index: arch/ppc/8xx_io/enet.c
+ /* This function is used by UARTS, or anything else that uses a 16x
+Index: arch/ppc/syslib/m8260_pci.h
 ===================================================================
---- c7d7a187a2125518e655dfeadffd38156239ffc3/arch/ppc/8xx_io/enet.c  (mode:100644)
-+++ eb4292a8874abcc926f536de90af0bdb001cf12e/arch/ppc/8xx_io/enet.c  (mode:100644)
-@@ -46,6 +46,8 @@
- #include <asm/mpc8xx.h>
- #include <asm/uaccess.h>
- #include <asm/commproc.h>
-+#include <asm/firmware.h>
-+
+--- c7d7a187a2125518e655dfeadffd38156239ffc3/arch/ppc/syslib/m8260_pci.h  (mode:100644)
++++ eb4292a8874abcc926f536de90af0bdb001cf12e/arch/ppc/syslib/m8260_pci.h  (mode:100644)
+@@ -26,9 +26,9 @@
+  */
  
- /*
-  *				Theory of Operation
-@@ -646,9 +648,8 @@
- 	struct scc_enet_private *cep;
- 	int i, j, k, err;
- 	uint dp_offset;
--	unsigned char	*eap, *ba;
-+	unsigned char	*eap, *ba, *p_addr;
- 	dma_addr_t	mem_addr;
--	bd_t		*bd;
- 	volatile	cbd_t		*bdp;
- 	volatile	cpm8xx_t	*cp;
- 	volatile	scc_t		*sccp;
-@@ -659,8 +660,6 @@
- 
- 	immap = (immap_t *)(mfspr(SPRN_IMMR) & 0xFFFF0000);	/* and to internal registers */
- 
--	bd = (bd_t *)__res;
--
- 	dev = alloc_etherdev(sizeof(*cep));
- 	if (!dev)
- 		return -ENOMEM;
-@@ -803,9 +802,10 @@
- 
- 	/* Set Ethernet station address.
- 	 */
-+	p_addr = fw_get_enetaddr(0);
- 	eap = (unsigned char *)&(ep->sen_paddrh);
- 	for (i=5; i>=0; i--)
--		*eap++ = dev->dev_addr[i] = bd->bi_enetaddr[i];
-+		*eap++ = dev->dev_addr[i] = p_addr[i];
- 
- 	ep->sen_pper = 0;	/* 'cause the book says so */
- 	ep->sen_taddrl = 0;	/* temp address (LSB) */
-Index: arch/ppc/8xx_io/fec.c
-===================================================================
---- c7d7a187a2125518e655dfeadffd38156239ffc3/arch/ppc/8xx_io/fec.c  (mode:100644)
-+++ eb4292a8874abcc926f536de90af0bdb001cf12e/arch/ppc/8xx_io/fec.c  (mode:100644)
-@@ -55,6 +55,7 @@
- #include <asm/irq.h>
- #include <asm/uaccess.h>
- #include <asm/commproc.h>
-+#include <asm/firmware.h>
- 
- #ifdef	CONFIG_USE_MDIO
- /* Forward declarations of some structures to support different PHYs
-@@ -1580,15 +1581,12 @@
- 	cbd_t		*cbd_base;
- 	volatile	immap_t	*immap;
- 	volatile	fec_t	*fecp;
--	bd_t		*bd;
- #ifdef CONFIG_SCC_ENET
- 	unsigned char	tmpaddr[6];
+ #ifndef MPC826x_PCI_SLAVE_MEM_LOCAL
+-#define MPC826x_PCI_SLAVE_MEM_LOCAL	(((struct bd_info *)__res)->bi_memstart)
+-#define MPC826x_PCI_SLAVE_MEM_BUS	(((struct bd_info *)__res)->bi_memstart)
+-#define MPC826x_PCI_SLAVE_MEM_SIZE	(((struct bd_info *)__res)->bi_memsize)
++#define MPC826x_PCI_SLAVE_MEM_LOCAL	(fw_get_memory_start())
++#define MPC826x_PCI_SLAVE_MEM_BUS	(fw_get_memory_start())
++#define MPC826x_PCI_SLAVE_MEM_SIZE	(fw_get_memory_size())
  #endif
  
- 	immap = (immap_t *)IMAP_ADDR;	/* pointer to internal registers */
- 
--	bd = (bd_t *)__res;
--
- 	dev = alloc_etherdev(sizeof(*fep));
- 	if (!dev)
- 		return -ENOMEM;
-@@ -1613,7 +1611,7 @@
- 	 * this needs some work to get unique addresses.
- 	 */
- 	eap = (unsigned char *)my_enet_addr;
--	iap = bd->bi_enetaddr;
-+	iap = fw_get_enetaddr(0);
- 
- #ifdef CONFIG_SCC_ENET
- 	/*
-@@ -1744,7 +1742,7 @@
- 	/* Set MII speed to 2.5 MHz
- 	*/
- 	fecp->fec_mii_speed = fep->phy_speed =
--		(( (bd->bi_intfreq + 500000) / 2500000 / 2 ) & 0x3F ) << 1;
-+		(( (fw_get_intfreq() + 500000) / 2500000 / 2 ) & 0x3F ) << 1;
- #else
- 	fecp->fec_mii_speed = 0;	/* turn off MDIO */
- #endif	/* CONFIG_USE_MDIO */
-Index: drivers/ide/ppc/mpc8xx.c
+ /* 
+Index: arch/ppc/syslib/m8260_setup.c
 ===================================================================
---- c7d7a187a2125518e655dfeadffd38156239ffc3/drivers/ide/ppc/mpc8xx.c  (mode:100644)
-+++ eb4292a8874abcc926f536de90af0bdb001cf12e/drivers/ide/ppc/mpc8xx.c  (mode:100644)
-@@ -41,6 +41,7 @@
- #include <asm/8xx_immap.h>
+--- c7d7a187a2125518e655dfeadffd38156239ffc3/arch/ppc/syslib/m8260_setup.c  (mode:100644)
++++ eb4292a8874abcc926f536de90af0bdb001cf12e/arch/ppc/syslib/m8260_setup.c  (mode:100644)
+@@ -28,11 +28,10 @@
  #include <asm/machdep.h>
- #include <asm/irq.h>
+ #include <asm/bootinfo.h>
+ #include <asm/time.h>
 +#include <asm/firmware.h>
  
- static int identify  (volatile u8 *p);
- static void print_fixed (volatile u8 *p);
-@@ -177,6 +178,7 @@
- 	u32 pcmcia_phy_end;
- 	static unsigned long pcmcia_base = 0;
- 	unsigned long base;
-+	unsigned int busfreq;
+ #include "cpm2_pic.h"
  
- 	*p = 0;
- 	if (irq)
-@@ -224,21 +226,19 @@
- 		printk ("PCMCIA virt base: %08lx\n", pcmcia_base);
- #endif
- 		/* Compute clock cycles for PIO timings */
-+		busfreq = fw_get_busfreq();
- 		for (i=0; i<6; ++i) {
--			bd_t	*binfo = (bd_t *)__res;
+-unsigned char __res[sizeof(bd_t)];
 -
- 			hold_time[i]   =
--				PCMCIA_MK_CLKS (hold_time[i],
--						binfo->bi_busfreq);
-+				PCMCIA_MK_CLKS (hold_time[i], busfreq);
- 			ide_pio_clocks[i].setup_time  =
- 				PCMCIA_MK_CLKS (ide_pio_timings[i].setup_time,
--						binfo->bi_busfreq);
-+						busfreq);
- 			ide_pio_clocks[i].active_time =
- 				PCMCIA_MK_CLKS (ide_pio_timings[i].active_time,
--						binfo->bi_busfreq);
-+						busfreq);
- 			ide_pio_clocks[i].cycle_time  =
- 				PCMCIA_MK_CLKS (ide_pio_timings[i].cycle_time,
--						binfo->bi_busfreq);
-+						busfreq);
- #if 0
- 			printk ("PIO mode %d timings: %d/%d/%d => %d/%d/%d\n",
- 				i,
-Index: drivers/mtd/maps/tqm8xxl.c
-===================================================================
---- c7d7a187a2125518e655dfeadffd38156239ffc3/drivers/mtd/maps/tqm8xxl.c  (mode:100644)
-+++ eb4292a8874abcc926f536de90af0bdb001cf12e/drivers/mtd/maps/tqm8xxl.c  (mode:100644)
-@@ -33,6 +33,8 @@
- #include <linux/mtd/map.h>
- #include <linux/mtd/partitions.h>
- 
-+#include <asm/firmware.h>
-+
- #define FLASH_ADDR 0x40000000
- #define FLASH_SIZE 0x00800000
- #define FLASH_BANK_MAX 4
-@@ -115,10 +117,9 @@
- 	int idx = 0, ret = 0;
- 	unsigned long flash_addr, flash_size, mtd_size = 0;
- 	/* pointer to TQM8xxL board info data */
--	bd_t *bd = (bd_t *)__res;
- 
--	flash_addr = bd->bi_flashstart;
--	flash_size = bd->bi_flashsize;
-+	flash_addr = fw_get_flashstart();
-+	flash_size = fw_get_flashsize();
- 
- 	//request maximum flash size address space
- 	start_scan_addr = ioremap(flash_addr, flash_size);
-Index: drivers/net/fec.c
-===================================================================
---- c7d7a187a2125518e655dfeadffd38156239ffc3/drivers/net/fec.c  (mode:100644)
-+++ eb4292a8874abcc926f536de90af0bdb001cf12e/drivers/net/fec.c  (mode:100644)
-@@ -1426,11 +1426,9 @@
+ extern void cpm2_reset(void);
+ extern void m8260_find_bridges(void);
+ extern void idma_pci9_init(void);
+@@ -71,10 +70,9 @@
+ static void __init
+ m8260_calibrate_decr(void)
  {
- 	struct fec_enet_private *fep = netdev_priv(dev);
- 	unsigned char *iap, tmpaddr[6];
--	bd_t *bd;
- 	int i;
+-	bd_t *binfo = (bd_t *)__res;
+ 	int freq, divisor;
  
--	iap = bd->bi_enetaddr;
--	bd = (bd_t *)__res;
-+	iap = fw_get_enetaddr(0);
+-	freq = binfo->bi_busfreq;
++	freq = fw_get_busfreq();
+         divisor = 4;
+         tb_ticks_per_jiffy = freq / HZ / divisor;
+ 	tb_to_us = mulhwu_scale_factor(freq / divisor, 1000000);
+@@ -109,7 +107,7 @@
+ static void
+ m8260_restart(char *cmd)
+ {
+-	extern void m8260_gorom(bd_t *bi, uint addr);
++	extern void m8260_gorom(void *bi, uint addr);
+ 	uint	startaddr;
  
- #ifdef CONFIG_RPXCLASSIC
- 	/* The Embedded Planet boards have only one MAC address in
-@@ -1472,7 +1470,7 @@
- 	/* Set MII speed to 2.5 MHz
- 	*/
- 	fecp->fec_mii_speed = fep->phy_speed = 
--		((bd->bi_busfreq * 1000000) / 2500000) & 0x7e;
-+		((fw_get_busfreq() * 1000000) / 2500000) & 0x7e;
+ 	/* Most boot roms have a warmstart as the second instruction
+@@ -122,7 +120,7 @@
+ 			startaddr = simple_strtoul(&cmd[10], NULL, 0);
+ 	}
+ 
+-	m8260_gorom((void*)__pa(__res), startaddr);
++	m8260_gorom((void*)__pa(fw_get_init_data()), startaddr);
  }
  
- static void __inline__ fec_enable_phy_intr(void)
-Index: drivers/net/fec_8xx/fec_8xx-netta.c
-===================================================================
---- c7d7a187a2125518e655dfeadffd38156239ffc3/drivers/net/fec_8xx/fec_8xx-netta.c  (mode:100644)
-+++ eb4292a8874abcc926f536de90af0bdb001cf12e/drivers/net/fec_8xx/fec_8xx-netta.c  (mode:100644)
-@@ -29,6 +29,7 @@
- #include <asm/irq.h>
- #include <asm/uaccess.h>
- #include <asm/commproc.h>
-+#include <asm/firmware.h>
- 
- #include "fec_8xx.h"
- 
-@@ -76,7 +77,6 @@
- int fec_8xx_platform_init(void)
+ static void
+@@ -141,9 +139,8 @@
+ static int
+ m8260_show_cpuinfo(struct seq_file *m)
  {
- 	immap_t *immap = (immap_t *)IMAP_ADDR;
--	bd_t *bd = (bd_t *) __res;
- 	const char *s;
- 	char *e;
- 	int i;
-@@ -116,8 +116,7 @@
- 	setbits16(immap->im_ioport.iop_pcint, 0x0200);
- 
- 	/* fill up */
--	fec1_info.sys_clk = bd->bi_intfreq;
--	fec2_info.sys_clk = bd->bi_intfreq;
-+	fec1_info.sys_clk = fec2_info.sys_clk = fw_get_intfreq();
- 
- 	s = __fw_getenv("ethaddr");
- 	if (s != NULL) {
-Index: drivers/net/oaknet.c
-===================================================================
---- c7d7a187a2125518e655dfeadffd38156239ffc3/drivers/net/oaknet.c  (mode:100644)
-+++ eb4292a8874abcc926f536de90af0bdb001cf12e/drivers/net/oaknet.c  (mode:100644)
-@@ -23,6 +23,7 @@
- 
- #include <asm/board.h>
- #include <asm/io.h>
-+#include <asm/firmware.h>
- 
- #include "8390.h"
- 
-@@ -101,7 +102,7 @@
- #else
- 	unsigned long ioaddr = ioremap(OAKNET_IO_BASE, OAKNET_IO_SIZE);
- #endif
--	bd_t *bip = (bd_t *)__res;
-+	unsigned char *p_addr;
- 
- 	if (!ioaddr)
- 		return -ENOMEM;
-@@ -170,9 +171,10 @@
- 
- 	/* Tell the world about what and where we've found. */
- 
-+	p_addr = fw_get_enetaddr(0);
- 	printk("%s: %s at", dev->name, name);
- 	for (i = 0; i < ETHER_ADDR_LEN; ++i) {
--		dev->dev_addr[i] = bip->bi_enetaddr[i];
-+		dev->dev_addr[i] = p_addr[i];
- 		printk("%c%.2x", (i ? ':' : ' '), dev->dev_addr[i]);
- 	}
- 	printk(", found at %#lx, using IRQ %d.\n", dev->base_addr, dev->irq);
-Index: drivers/serial/68360serial.c
-===================================================================
---- c7d7a187a2125518e655dfeadffd38156239ffc3/drivers/serial/68360serial.c  (mode:100644)
-+++ eb4292a8874abcc926f536de90af0bdb001cf12e/drivers/serial/68360serial.c  (mode:100644)
-@@ -2852,9 +2852,6 @@
- /* mleslie TODO:
-  * add something to the 68k bootloader to store a desired initial console baud rate */
- 
--/* 	bd_t						*bd; */ /* a board info struct used by EPPC-bug */
--/* 	bd = (bd_t *)__res; */
+-	bd_t *bp = (bd_t *)__res;
 -
-  	for (bidx = 0; bidx < (sizeof(baud_table) / sizeof(int)); bidx++)
- 	 /* if (bd->bi_baudrate == baud_table[bidx]) */
-  		if (CONSOLE_BAUDRATE == baud_table[bidx])
-Index: drivers/serial/cpm_uart/cpm_uart_core.c
-===================================================================
---- c7d7a187a2125518e655dfeadffd38156239ffc3/drivers/serial/cpm_uart/cpm_uart_core.c  (mode:100644)
-+++ eb4292a8874abcc926f536de90af0bdb001cf12e/drivers/serial/cpm_uart/cpm_uart_core.c  (mode:100644)
-@@ -44,6 +44,7 @@
- #include <asm/io.h>
- #include <asm/irq.h>
- #include <asm/delay.h>
-+#include <asm/firmware.h>
- 
- #if defined(CONFIG_SERIAL_CPM_CONSOLE) && defined(CONFIG_MAGIC_SYSRQ)
- #define SUPPORT_SYSRQ
-@@ -1051,10 +1052,9 @@
- 	if (options) {
- 		uart_parse_options(options, &baud, &parity, &bits, &flow);
- 	} else {
--		bd_t *bd = (bd_t *) __res;
--
--		if (bd->bi_baudrate)
--			baud = bd->bi_baudrate;
-+		int rate = fw_get_baudrate();
-+		if (rate)
-+			baud = rate;
- 		else
- 			baud = 9600;
- 	}
-Index: drivers/serial/cpm_uart/cpm_uart_cpm1.c
-===================================================================
---- c7d7a187a2125518e655dfeadffd38156239ffc3/drivers/serial/cpm_uart/cpm_uart_cpm1.c  (mode:100644)
-+++ eb4292a8874abcc926f536de90af0bdb001cf12e/drivers/serial/cpm_uart/cpm_uart_cpm1.c  (mode:100644)
-@@ -39,6 +39,7 @@
- 
- #include <asm/io.h>
- #include <asm/irq.h>
-+#include <asm/firmware.h>
- 
- #include <linux/serial_core.h>
- #include <linux/kernel.h>
-@@ -215,7 +216,7 @@
- 	    (unsigned long)&cpmp->cp_smc[0];
- 	cpm_uart_ports[UART_SMC1].smcp->smc_smcm |= (SMCM_RX | SMCM_TX);
- 	cpm_uart_ports[UART_SMC1].smcp->smc_smcmr &= ~(SMCMR_REN | SMCMR_TEN);
--	cpm_uart_ports[UART_SMC1].port.uartclk = (((bd_t *) __res)->bi_intfreq);
-+	cpm_uart_ports[UART_SMC1].port.uartclk = fw_get_intfreq();
- 	cpm_uart_port_map[cpm_uart_nr++] = UART_SMC1;
- #endif
- 
-@@ -227,7 +228,7 @@
- 	    (unsigned long)&cpmp->cp_smc[1];
- 	cpm_uart_ports[UART_SMC2].smcp->smc_smcm |= (SMCM_RX | SMCM_TX);
- 	cpm_uart_ports[UART_SMC2].smcp->smc_smcmr &= ~(SMCMR_REN | SMCMR_TEN);
--	cpm_uart_ports[UART_SMC2].port.uartclk = (((bd_t *) __res)->bi_intfreq);
-+	cpm_uart_ports[UART_SMC2].port.uartclk = fw_get_intfreq();
- 	cpm_uart_port_map[cpm_uart_nr++] = UART_SMC2;
- #endif
- 
-@@ -241,7 +242,7 @@
- 	    ~(UART_SCCM_TX | UART_SCCM_RX);
- 	cpm_uart_ports[UART_SCC1].sccp->scc_gsmrl &=
- 	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
--	cpm_uart_ports[UART_SCC1].port.uartclk = (((bd_t *) __res)->bi_intfreq);
-+	cpm_uart_ports[UART_SCC1].port.uartclk = fw_get_intfreq();
- 	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC1;
- #endif
- 
-@@ -255,7 +256,7 @@
- 	    ~(UART_SCCM_TX | UART_SCCM_RX);
- 	cpm_uart_ports[UART_SCC2].sccp->scc_gsmrl &=
- 	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
--	cpm_uart_ports[UART_SCC2].port.uartclk = (((bd_t *) __res)->bi_intfreq);
-+	cpm_uart_ports[UART_SCC2].port.uartclk = fw_get_intfreq();
- 	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC2;
- #endif
- 
-@@ -269,7 +270,7 @@
- 	    ~(UART_SCCM_TX | UART_SCCM_RX);
- 	cpm_uart_ports[UART_SCC3].sccp->scc_gsmrl &=
- 	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
--	cpm_uart_ports[UART_SCC3].port.uartclk = (((bd_t *) __res)->bi_intfreq);
-+	cpm_uart_ports[UART_SCC3].port.uartclk = fw_get_intfreq();
- 	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC3;
- #endif
- 
-@@ -283,7 +284,7 @@
- 	    ~(UART_SCCM_TX | UART_SCCM_RX);
- 	cpm_uart_ports[UART_SCC4].sccp->scc_gsmrl &=
- 	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
--	cpm_uart_ports[UART_SCC4].port.uartclk = (((bd_t *) __res)->bi_intfreq);
-+	cpm_uart_ports[UART_SCC4].port.uartclk = fw_get_intfreq();
- 	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC4;
- #endif
+-	seq_printf(m, "vendor\t\t: %s\n"
++	seq_printf(m,
++		   "vendor\t\t: %s\n"
+ 		   "machine\t\t: %s\n"
+ 		   "\n"
+ 		   "mem size\t\t: 0x%08x\n"
+@@ -152,9 +149,13 @@
+ 		   "core clock\t: %u MHz\n"
+ 		   "CPM  clock\t: %u MHz\n"
+ 		   "bus  clock\t: %u MHz\n",
+-		   CPUINFO_VENDOR, CPUINFO_MACHINE, bp->bi_memsize,
+-		   bp->bi_baudrate, bp->bi_intfreq / 1000000,
+-		   bp->bi_cpmfreq / 1000000, bp->bi_busfreq / 1000000);
++		   CPUINFO_VENDOR,
++		   CPUINFO_MACHINE,
++		   fw_get_memory_size(),
++		   fw_get_baudrate(),
++		   fw_get_intfreq() / 1000000,
++		   fw_get_cpmfreq() / 1000000,
++		   fw_get_busfreq() / 1000000);
  	return 0;
-Index: drivers/serial/cpm_uart/cpm_uart_cpm2.c
-===================================================================
---- c7d7a187a2125518e655dfeadffd38156239ffc3/drivers/serial/cpm_uart/cpm_uart_cpm2.c  (mode:100644)
-+++ eb4292a8874abcc926f536de90af0bdb001cf12e/drivers/serial/cpm_uart/cpm_uart_cpm2.c  (mode:100644)
-@@ -39,6 +39,7 @@
+ }
  
- #include <asm/io.h>
- #include <asm/irq.h>
+@@ -181,9 +182,7 @@
+ static unsigned long __init
+ m8260_find_end_of_memory(void)
+ {
+-	bd_t *binfo = (bd_t *)__res;
+-
+-	return binfo->bi_memsize;
++	return fw_get_memory_size();
+ }
+ 
+ /* Map the IMMR, plus anything else we can cover
+@@ -228,7 +227,7 @@
+ 	parse_bootinfo(find_bootinfo());
+ 
+ 	if ( r3 )
+-		memcpy( (void *)__res,(void *)(r3+KERNELBASE), sizeof(bd_t) );
++		fw_initialize(r3);
+ 
+ #ifdef CONFIG_BLK_DEV_INITRD
+ 	/* take care of initrd if we have one */
+Index: arch/ppc/syslib/m8xx_setup.c
+===================================================================
+--- c7d7a187a2125518e655dfeadffd38156239ffc3/arch/ppc/syslib/m8xx_setup.c  (mode:100644)
++++ eb4292a8874abcc926f536de90af0bdb001cf12e/arch/ppc/syslib/m8xx_setup.c  (mode:100644)
+@@ -45,6 +45,7 @@
+ #include <asm/bootinfo.h>
+ #include <asm/time.h>
+ #include <asm/xmon.h>
 +#include <asm/firmware.h>
  
- #include <linux/serial_core.h>
- #include <linux/kernel.h>
-@@ -252,7 +253,7 @@
- 	    (unsigned long)&cpm2_immr->im_smc[0];
- 	cpm_uart_ports[UART_SMC1].smcp->smc_smcm |= (SMCM_RX | SMCM_TX);
- 	cpm_uart_ports[UART_SMC1].smcp->smc_smcmr &= ~(SMCMR_REN | SMCMR_TEN);
--	cpm_uart_ports[UART_SMC1].port.uartclk = (((bd_t *) __res)->bi_intfreq);
-+	cpm_uart_ports[UART_SMC1].port.uartclk = fw_get_intfreq();
- 	cpm_uart_port_map[cpm_uart_nr++] = UART_SMC1;
- #endif
+ #include "ppc8xx_pic.h"
  
-@@ -264,7 +265,7 @@
- 	    (unsigned long)&cpm2_immr->im_smc[1];
- 	cpm_uart_ports[UART_SMC2].smcp->smc_smcm |= (SMCM_RX | SMCM_TX);
- 	cpm_uart_ports[UART_SMC2].smcp->smc_smcmr &= ~(SMCMR_REN | SMCMR_TEN);
--	cpm_uart_ports[UART_SMC2].port.uartclk = (((bd_t *) __res)->bi_intfreq);
-+	cpm_uart_ports[UART_SMC2].port.uartclk = fw_get_intfreq();
- 	cpm_uart_port_map[cpm_uart_nr++] = UART_SMC2;
- #endif
+@@ -52,13 +53,11 @@
+ static unsigned long m8xx_get_rtc_time(void);
+ void m8xx_calibrate_decr(void);
  
-@@ -278,7 +279,7 @@
- 	    ~(UART_SCCM_TX | UART_SCCM_RX);
- 	cpm_uart_ports[UART_SCC1].sccp->scc_gsmrl &=
- 	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
--	cpm_uart_ports[UART_SCC1].port.uartclk = (((bd_t *) __res)->bi_intfreq);
-+	cpm_uart_ports[UART_SCC1].port.uartclk = fw_get_intfreq();
- 	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC1;
- #endif
+-unsigned char __res[sizeof(bd_t)];
+-
+ extern void m8xx_ide_init(void);
  
-@@ -292,7 +293,7 @@
- 	    ~(UART_SCCM_TX | UART_SCCM_RX);
- 	cpm_uart_ports[UART_SCC2].sccp->scc_gsmrl &=
- 	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
--	cpm_uart_ports[UART_SCC2].port.uartclk = (((bd_t *) __res)->bi_intfreq);
-+	cpm_uart_ports[UART_SCC2].port.uartclk = fw_get_intfreq();
- 	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC2;
- #endif
+ extern unsigned long find_available_memory(void);
+ extern void m8xx_cpm_reset(uint cpm_page);
+-extern void m8xx_wdt_handler_install(bd_t *bp);
++extern void m8xx_wdt_handler_install(void);
+ extern void rpxfb_alloc_pages(void);
+ extern void cpm_interrupt_init(void);
  
-@@ -306,7 +307,7 @@
- 	    ~(UART_SCCM_TX | UART_SCCM_RX);
- 	cpm_uart_ports[UART_SCC3].sccp->scc_gsmrl &=
- 	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
--	cpm_uart_ports[UART_SCC3].port.uartclk = (((bd_t *) __res)->bi_intfreq);
-+	cpm_uart_ports[UART_SCC3].port.uartclk = fw_get_intfreq();
- 	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC3;
- #endif
+@@ -144,7 +143,6 @@
+  */
+ void __init m8xx_calibrate_decr(void)
+ {
+-	bd_t	*binfo = (bd_t *)__res;
+ 	int freq, fp, divisor;
  
-@@ -320,7 +321,7 @@
- 	    ~(UART_SCCM_TX | UART_SCCM_RX);
- 	cpm_uart_ports[UART_SCC4].sccp->scc_gsmrl &=
- 	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
--	cpm_uart_ports[UART_SCC4].port.uartclk = (((bd_t *) __res)->bi_intfreq);
-+	cpm_uart_ports[UART_SCC4].port.uartclk = fw_get_intfreq();
- 	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC4;
+ 	/* Unlock the SCCR. */
+@@ -157,7 +155,7 @@
+ 	/* Processor frequency is MHz.
+ 	 * The value 'fp' is the number of decrementer ticks per second.
+ 	 */
+-	fp = binfo->bi_intfreq / 16;
++	fp = fw_get_intfreq() / 16;
+ 	freq = fp*60;	/* try to make freq/1e6 an integer */
+         divisor = 60;
+         printk("Decrementer Frequency = %d/%d\n", freq, divisor);
+@@ -209,7 +207,7 @@
+ 	/* Install watchdog timer handler early because it might be
+ 	 * already enabled by the bootloader
+ 	 */
+-	m8xx_wdt_handler_install(binfo);
++	m8xx_wdt_handler_install();
  #endif
+ }
  
-Index: drivers/serial/mpc52xx_uart.c
+@@ -266,14 +264,10 @@
+ static int
+ m8xx_show_percpuinfo(struct seq_file *m, int i)
+ {
+-	bd_t	*bp;
+-
+-	bp = (bd_t *)__res;
+-
+ 	seq_printf(m, "clock\t\t: %ldMHz\n"
+ 		   "bus clock\t: %ldMHz\n",
+-		   bp->bi_intfreq / 1000000,
+-		   bp->bi_busfreq / 1000000);
++		   fw_get_intfreq() / 1000000,
++		   fw_get_busfreq() / 1000000);
+ 
+ 	return 0;
+ }
+@@ -332,12 +326,7 @@
+ static unsigned long __init
+ m8xx_find_end_of_memory(void)
+ {
+-	bd_t	*binfo;
+-	extern unsigned char __res[];
+-
+-	binfo = (bd_t *)__res;
+-
+-	return binfo->bi_memsize;
++	return fw_get_memory_size();
+ }
+ 
+ /*
+@@ -387,7 +376,7 @@
+ 	parse_bootinfo(find_bootinfo());
+ 
+ 	if ( r3 )
+-		memcpy( (void *)__res,(void *)(r3+KERNELBASE), sizeof(bd_t) );
++		fw_initialize(r3);
+ 
+ #ifdef CONFIG_PCI
+ 	m8xx_setup_pci_ptrs();
+Index: arch/ppc/syslib/m8xx_wdt.c
 ===================================================================
---- c7d7a187a2125518e655dfeadffd38156239ffc3/drivers/serial/mpc52xx_uart.c  (mode:100644)
-+++ eb4292a8874abcc926f536de90af0bdb001cf12e/drivers/serial/mpc52xx_uart.c  (mode:100644)
-@@ -54,6 +54,7 @@
+--- c7d7a187a2125518e655dfeadffd38156239ffc3/arch/ppc/syslib/m8xx_wdt.c  (mode:100644)
++++ eb4292a8874abcc926f536de90af0bdb001cf12e/arch/ppc/syslib/m8xx_wdt.c  (mode:100644)
+@@ -44,7 +44,7 @@
+ 	return IRQ_HANDLED;
+ }
  
- #include <asm/delay.h>
- #include <asm/io.h>
-+#include <asm/firmware.h>
+-void __init m8xx_wdt_handler_install(bd_t * binfo)
++void __init m8xx_wdt_handler_install(void)
+ {
+ 	volatile immap_t *imap = (volatile immap_t *)IMAP_ADDR;
+ 	u32 pitc;
+@@ -83,9 +83,9 @@
+ 		pitrtclk = 8192;
  
+ 	if ((wdt_timeout) > (UINT_MAX / pitrtclk))
+-		pitc = wdt_timeout / binfo->bi_intfreq * pitrtclk / 2;
++		pitc = wdt_timeout / fw_get_intfreq() * pitrtclk / 2;
+ 	else
+-		pitc = pitrtclk * wdt_timeout / binfo->bi_intfreq / 2;
++		pitc = pitrtclk * wdt_timeout / fw_get_intfreq() / 2;
+ 
+ 	imap->im_sit.sit_pitc = pitc << 16;
+ 	imap->im_sit.sit_piscr =
+@@ -97,7 +97,7 @@
+ 	printk(KERN_NOTICE
+ 	       "m8xx_wdt: keep-alive trigger installed (PITC: 0x%04X)\n", pitc);
+ 
+-	wdt_timeout /= binfo->bi_intfreq;
++	wdt_timeout /= fw_get_intfreq();
+ }
+ 
+ int m8xx_wdt_get_timeout(void)
+Index: arch/ppc/syslib/m8xx_wdt.h
+===================================================================
+--- c7d7a187a2125518e655dfeadffd38156239ffc3/arch/ppc/syslib/m8xx_wdt.h  (mode:100644)
++++ eb4292a8874abcc926f536de90af0bdb001cf12e/arch/ppc/syslib/m8xx_wdt.h  (mode:100644)
+@@ -9,7 +9,7 @@
+ #ifndef _PPC_SYSLIB_M8XX_WDT_H
+ #define _PPC_SYSLIB_M8XX_WDT_H
+ 
+-extern void m8xx_wdt_handler_install(bd_t * binfo);
++extern void m8xx_wdt_handler_install(void);
+ extern int m8xx_wdt_get_timeout(void);
+ extern void m8xx_wdt_reset(void);
+ 
+Index: arch/ppc/syslib/mpc52xx_setup.c
+===================================================================
+--- c7d7a187a2125518e655dfeadffd38156239ffc3/arch/ppc/syslib/mpc52xx_setup.c  (mode:100644)
++++ eb4292a8874abcc926f536de90af0bdb001cf12e/arch/ppc/syslib/mpc52xx_setup.c  (mode:100644)
+@@ -24,9 +24,8 @@
  #include <asm/mpc52xx.h>
  #include <asm/mpc52xx_psc.h>
-@@ -572,14 +573,16 @@
+ #include <asm/pgtable.h>
+-#include <asm/ppcboot.h>
++#include <asm/firmware.h>
+ 
+-extern bd_t __res;
+ 
+ static int core_mult[] = {		/* CPU Frequency multiplier, taken    */
+ 	0,  0,  0,  10, 20, 20, 25, 45,	/* from the datasheet used to compute */
+@@ -127,7 +126,7 @@
+ unsigned long __init
+ mpc52xx_find_end_of_memory(void)
  {
- 	struct mpc52xx_psc __iomem *psc = PSC(port);
- 	unsigned char mr1;
-+	unsigned int fw_baud;
+-	u32 ramsize = __res.bi_memsize;
++	u32 ramsize = fw_get_memory_size();
  
- 	/* Read the mode registers */
- 	out_8(&psc->command,MPC52xx_PSC_SEL_MODE_REG_1);
- 	mr1 = in_8(&psc->mode);
- 	
- 	/* CT{U,L}R are write-only ! */
--	*baud = __res.bi_baudrate ?
--		__res.bi_baudrate : CONFIG_SERIAL_MPC52xx_CONSOLE_BAUD;
-+	fw_baud = fw_get_baudrate();
-+	*baud = fw_baud ?
-+		fw_baud : CONFIG_SERIAL_MPC52xx_CONSOLE_BAUD;
+ 	/*
+ 	 * if bootloader passed a memsize, just use it
+@@ -161,7 +160,7 @@
+ 	int tbl_start, tbl_end;
+ 	unsigned int xlbfreq, cpufreq, ipbfreq, pcifreq, divisor;
  
- 	/* Parse them */
- 	switch (mr1 & MPC52xx_PSC_MODE_BITS_MASK) {
-@@ -649,7 +652,7 @@
- 	/* Basic port init. Needed since we use some uart_??? func before
- 	 * real init for early access */
- 	spin_lock_init(&port->lock);
--	port->uartclk	= __res.bi_ipbfreq / 2; /* Look at CTLR doc */
-+	port->uartclk	= fw_get_ipbfreq() / 2; /* Look at CTLR doc */
- 	port->ops	= &mpc52xx_uart_ops;
- 	port->mapbase	= MPC52xx_PA(MPC52xx_PSCx_OFFSET(co->index+1));
+-	xlbfreq = __res.bi_busfreq;
++	xlbfreq = fw_get_busfreq();
+ 	/* if bootloader didn't pass bus frequencies, calculate them */
+ 	if (xlbfreq == 0) {
+ 		/* Get RTC & Clock manager modules */
+@@ -200,10 +199,10 @@
+ 			pcifreq = xlbfreq / 4;
+ 			break;
+ 		}
+-		__res.bi_busfreq = xlbfreq;
+-		__res.bi_intfreq = cpufreq;
+-		__res.bi_ipbfreq = ipbfreq;
+-		__res.bi_pcifreq = pcifreq;
++		fw_set_busfreq(xlbfreq);
++		fw_set_intfreq(cpufreq);
++		fw_set_ipbfreq(ipbfreq);
++		fw_set_pcifreq(pcifreq);
  
-@@ -739,7 +742,7 @@
- 	memset(port, 0x00, sizeof(struct uart_port));
+ 		/* Release mapping */
+ 		iounmap(rtc);
+Index: arch/ppc/syslib/ppc4xx_setup.c
+===================================================================
+--- c7d7a187a2125518e655dfeadffd38156239ffc3/arch/ppc/syslib/ppc4xx_setup.c  (mode:100644)
++++ eb4292a8874abcc926f536de90af0bdb001cf12e/arch/ppc/syslib/ppc4xx_setup.c  (mode:100644)
+@@ -41,6 +41,7 @@
+ #include <asm/ppc4xx_pic.h>
+ #include <asm/pci-bridge.h>
+ #include <asm/bootinfo.h>
++#include <asm/firmware.h>
  
- 	spin_lock_init(&port->lock);
--	port->uartclk	= __res.bi_ipbfreq / 2; /* Look at CTLR doc */
-+	port->uartclk	= fw_get_ipbfreq() / 2; /* Look at CTLR doc */
- 	port->fifosize	= 255; /* Should be 512 ! But it can't be */
- 	                       /* stored in a unsigned char       */
- 	port->iotype	= UPIO_MEM;
+ #include <syslib/gen550.h>
+ 
+@@ -52,8 +53,6 @@
+ extern int wdt_enable;
+ extern unsigned long wdt_period;
+ 
+-/* Global Variables */
+-bd_t __res;
+ 
+ void __init
+ ppc4xx_setup_arch(void)
+@@ -81,7 +80,7 @@
+ static int
+ ppc4xx_show_percpuinfo(struct seq_file *m, int i)
+ {
+-	seq_printf(m, "clock\t\t: %ldMHz\n", (long)__res.bi_intfreq / 1000000);
++	seq_printf(m, "clock\t\t: %ldMHz\n", fw_get_intfreq() / 1000000);
+ 
+ 	return 0;
+ }
+@@ -93,14 +92,12 @@
+ static int
+ ppc4xx_show_cpuinfo(struct seq_file *m)
+ {
+-	bd_t *bip = &__res;
+-
+ 	seq_printf(m, "machine\t\t: %s\n", PPC4xx_MACHINE_NAME);
+ 	seq_printf(m, "plb bus clock\t: %ldMHz\n",
+-		   (long) bip->bi_busfreq / 1000000);
++		   (long) fw_get_busfreq() / 1000000);
+ #ifdef CONFIG_PCI
+ 	seq_printf(m, "pci bus clock\t: %dMHz\n",
+-		   bip->bi_pci_busfreq / 1000000);
++		   fw_get_pci_busfreq() / 1000000);
+ #endif
+ 
+ 	return 0;
+@@ -112,7 +109,7 @@
+ static unsigned long __init
+ ppc4xx_find_end_of_memory(void)
+ {
+-	return ((unsigned long) __res.bi_memsize);
++	return fw_get_memory_size();
+ }
+ 
+ void __init
+@@ -169,13 +166,12 @@
+ ppc4xx_calibrate_decr(void)
+ {
+ 	unsigned int freq;
+-	bd_t *bip = &__res;
+ 
+ #if defined(CONFIG_WALNUT) || defined(CONFIG_ASH) || defined(CONFIG_SYCAMORE)
+ 	/* Walnut boot rom sets DCR CHCR1 (aka CPC0_CR1) bit CETE to 1 */
+ 	mtdcr(DCRN_CHCR1, mfdcr(DCRN_CHCR1) & ~CHR1_CETE);
+ #endif
+-	freq = bip->bi_tbfreq;
++	freq = fw_get_tbfreq();
+ 	tb_ticks_per_jiffy = freq / HZ;
+ 	tb_to_us = mulhwu_scale_factor(freq, 1000000);
+ 
+@@ -238,7 +234,7 @@
+ 	 * residual data area.
+ 	 */
+ 	if (r3)
+-		__res = *(bd_t *)(r3 + KERNELBASE);
++		fw_initialize(r3);
+ 
+ #if defined(CONFIG_BLK_DEV_INITRD)
+ 	/*
+Index: arch/ppc/syslib/ppc83xx_setup.c
+===================================================================
+--- c7d7a187a2125518e655dfeadffd38156239ffc3/arch/ppc/syslib/ppc83xx_setup.c  (mode:100644)
++++ eb4292a8874abcc926f536de90af0bdb001cf12e/arch/ppc/syslib/ppc83xx_setup.c  (mode:100644)
+@@ -29,20 +29,18 @@
+ #include <asm/mmu.h>
+ #include <asm/ppc_sys.h>
+ #include <asm/kgdb.h>
++#include <asm/firmware.h>
+ 
+ #include <syslib/ppc83xx_setup.h>
+ 
+ phys_addr_t immrbar;
+ 
+ /* Return the amount of memory */
++/* FIXME: ppc_md.find_of_memory() could use fw_get_memory_size() directly */
+ unsigned long __init
+ mpc83xx_find_end_of_memory(void)
+ {
+-        bd_t *binfo;
+-
+-        binfo = (bd_t *) __res;
+-
+-        return binfo->bi_memsize;
++        return fw_get_memory_size();
+ }
+ 
+ long __init
+@@ -51,8 +49,7 @@
+ #define SPCR_OFFS   0x00000110
+ #define SPCR_TBEN   0x00400000
+ 
+-	bd_t *binfo = (bd_t *)__res;
+-	u32 *spcr = ioremap(binfo->bi_immr_base + SPCR_OFFS, 4);
++	u32 *spcr = ioremap(fw_get_immr_base() + SPCR_OFFS, 4);
+ 
+ 	*spcr |= SPCR_TBEN;
+ 
+@@ -65,10 +62,10 @@
+ void __init
+ mpc83xx_calibrate_decr(void)
+ {
+-        bd_t *binfo = (bd_t *) __res;
+         unsigned int freq, divisor;
+ 
+-	freq = binfo->bi_busfreq;
++	freq = fw_get_busfreq();
++
+ 	divisor = 4;
+ 	tb_ticks_per_jiffy = freq / HZ / divisor;
+ 	tb_to_us = mulhwu_scale_factor(freq / divisor, 1000000);
+@@ -82,12 +79,15 @@
+ 	struct uart_port serial_req;
+ #endif
+ 	struct plat_serial8250_port *pdata;
+-	bd_t *binfo = (bd_t *) __res;
++	unsigned int freq, immr_base;
++
+ 	pdata = (struct plat_serial8250_port *) ppc_sys_get_pdata(MPC83xx_DUART);
++	freq = fw_get_busfreq();
++	immr_base = fw_get_immr_base();
+ 
+ 	/* Setup serial port access */
+-	pdata[0].uartclk = binfo->bi_busfreq;
+-	pdata[0].mapbase += binfo->bi_immr_base;
++	pdata[0].uartclk = freq;
++	pdata[0].mapbase += immr_base;
+ 	pdata[0].membase = ioremap(pdata[0].mapbase, 0x100);
+ 
+ #if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
+@@ -100,8 +100,8 @@
+ 	gen550_init(0, &serial_req);
+ #endif
+ 
+-	pdata[1].uartclk = binfo->bi_busfreq;
+-	pdata[1].mapbase += binfo->bi_immr_base;
++	pdata[1].uartclk = freq;
++	pdata[1].mapbase += immr_base;
+ 	pdata[1].membase = ioremap(pdata[1].mapbase, 0x100);
+ 
+ #if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
+Index: arch/ppc/syslib/ppc83xx_setup.h
+===================================================================
+--- c7d7a187a2125518e655dfeadffd38156239ffc3/arch/ppc/syslib/ppc83xx_setup.h  (mode:100644)
++++ eb4292a8874abcc926f536de90af0bdb001cf12e/arch/ppc/syslib/ppc83xx_setup.h  (mode:100644)
+@@ -19,7 +19,6 @@
+ 
+ #include <linux/config.h>
+ #include <linux/init.h>
+-#include <asm/ppcboot.h>
+ 
+ extern unsigned long mpc83xx_find_end_of_memory(void) __init;
+ extern long mpc83xx_time_init(void) __init;
+Index: arch/ppc/syslib/ppc85xx_setup.c
+===================================================================
+--- c7d7a187a2125518e655dfeadffd38156239ffc3/arch/ppc/syslib/ppc85xx_setup.c  (mode:100644)
++++ eb4292a8874abcc926f536de90af0bdb001cf12e/arch/ppc/syslib/ppc85xx_setup.c  (mode:100644)
+@@ -30,29 +30,26 @@
+ #include <asm/mmu.h>
+ #include <asm/ppc_sys.h>
+ #include <asm/kgdb.h>
++#include <asm/firmware.h>
+ 
+ #include <syslib/ppc85xx_setup.h>
+ 
+ /* Return the amount of memory */
++/* FIXME: ppc_md.find_of_memory() could use fw_get_memory_size() directly */
+ unsigned long __init
+ mpc85xx_find_end_of_memory(void)
+ {
+-        bd_t *binfo;
+-
+-        binfo = (bd_t *) __res;
+-
+-        return binfo->bi_memsize;
++        return fw_get_memory_size();
+ }
+ 
+ /* The decrementer counts at the system (internal) clock freq divided by 8 */
+ void __init
+ mpc85xx_calibrate_decr(void)
+ {
+-        bd_t *binfo = (bd_t *) __res;
+         unsigned int freq, divisor;
+ 
+-        /* get the core frequency */
+-        freq = binfo->bi_busfreq;
++        /* get the bus frequency */
++        freq = fw_get_busfreq();
+ 
+         /* The timebase is updated every 8 bus clocks, HID0[SEL_TBCLK] = 0 */
+         divisor = 8;
+@@ -78,12 +75,15 @@
+ 	struct uart_port serial_req;
+ #endif
+ 	struct plat_serial8250_port *pdata;
+-	bd_t *binfo = (bd_t *) __res;
++	unsigned int freq, immr_base;
++
+ 	pdata = (struct plat_serial8250_port *) ppc_sys_get_pdata(MPC85xx_DUART);
++	freq = fw_get_busfreq();
++	immr_base = fw_get_immr_base();
+ 
+ 	/* Setup serial port access */
+-	pdata[0].uartclk = binfo->bi_busfreq;
+-	pdata[0].mapbase += binfo->bi_immr_base;
++	pdata[0].uartclk = freq;
++	pdata[0].mapbase += immr_base;
+ 	pdata[0].membase = ioremap(pdata[0].mapbase, MPC85xx_UART0_SIZE);
+ 
+ #if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
+@@ -96,8 +96,8 @@
+ 	gen550_init(0, &serial_req);
+ #endif
+ 
+-	pdata[1].uartclk = binfo->bi_busfreq;
+-	pdata[1].mapbase += binfo->bi_immr_base;
++	pdata[1].uartclk = freq;
++	pdata[1].mapbase += immr_base;
+ 	pdata[1].membase = ioremap(pdata[1].mapbase, MPC85xx_UART0_SIZE);
+ 
+ #if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
+@@ -138,13 +138,12 @@
+ 	volatile struct ccsr_pci *pci;
+ 	volatile struct ccsr_guts *guts;
+ 	unsigned short temps;
+-	bd_t *binfo = (bd_t *) __res;
++	unsigned int immr_base;
+ 
+-	pci = ioremap(binfo->bi_immr_base + MPC85xx_PCI1_OFFSET,
+-		    MPC85xx_PCI1_SIZE);
++	immr_base = fw_get_immr_base();
+ 
+-	guts = ioremap(binfo->bi_immr_base + MPC85xx_GUTS_OFFSET,
+-		    MPC85xx_GUTS_SIZE);
++	pci = ioremap(immr_base + MPC85xx_PCI1_OFFSET, MPC85xx_PCI1_SIZE);
++	guts = ioremap(immr_base + MPC85xx_GUTS_OFFSET, MPC85xx_GUTS_SIZE);
+ 
+ 	early_read_config_word(hose, 0, 0, PCI_COMMAND, &temps);
+ 	temps |= PCI_COMMAND_SERR | PCI_COMMAND_MASTER | PCI_COMMAND_MEMORY;
+@@ -201,10 +200,11 @@
+ {
+ 	volatile struct ccsr_pci *pci;
+ 	unsigned short temps;
+-	bd_t *binfo = (bd_t *) __res;
++	unsigned int immr_base;
+ 
+-	pci = ioremap(binfo->bi_immr_base + MPC85xx_PCI2_OFFSET,
+-		    MPC85xx_PCI2_SIZE);
++	immr_base = fw_get_immr_base();
++
++	pci = ioremap(immr_base + MPC85xx_PCI2_OFFSET, MPC85xx_PCI2_SIZE);
+ 
+ 	early_read_config_word(hose, hose->bus_offset, 0, PCI_COMMAND, &temps);
+ 	temps |= PCI_COMMAND_SERR | PCI_COMMAND_MASTER | PCI_COMMAND_MEMORY;
+@@ -248,11 +248,13 @@
+ void __init
+ mpc85xx_setup_hose(void)
+ {
++	unsigned int immr_base;
+ 	struct pci_controller *hose_a;
+ #ifdef CONFIG_85xx_PCI2
+ 	struct pci_controller *hose_b;
+ #endif
+-	bd_t *binfo = (bd_t *) __res;
++
++	immr_base = fw_get_immr_base();
+ 
+ 	hose_a = pcibios_alloc_controller();
+ 
+@@ -266,8 +268,9 @@
+ 	hose_a->bus_offset = 0;
+ 	hose_a->last_busno = 0xff;
+ 
+-	setup_indirect_pci(hose_a, binfo->bi_immr_base + PCI1_CFG_ADDR_OFFSET,
+-			   binfo->bi_immr_base + PCI1_CFG_DATA_OFFSET);
++	setup_indirect_pci(hose_a,
++			   immr_base + PCI1_CFG_ADDR_OFFSET,
++			   immr_base + PCI1_CFG_DATA_OFFSET);
+ 	hose_a->set_cfg_type = 1;
+ 
+ 	mpc85xx_setup_pci1(hose_a);
+@@ -314,8 +317,9 @@
+ 	hose_b->first_busno = hose_a->last_busno + 1;
+ 	hose_b->last_busno = 0xff;
+ 
+-	setup_indirect_pci(hose_b, binfo->bi_immr_base + PCI2_CFG_ADDR_OFFSET,
+-			   binfo->bi_immr_base + PCI2_CFG_DATA_OFFSET);
++	setup_indirect_pci(hose_b,
++			   immr_base + PCI2_CFG_ADDR_OFFSET,
++			   immr_base + PCI2_CFG_DATA_OFFSET);
+ 	hose_b->set_cfg_type = 1;
+ 
+ 	mpc85xx_setup_pci2(hose_b);
+Index: arch/ppc/syslib/ppc85xx_setup.h
+===================================================================
+--- c7d7a187a2125518e655dfeadffd38156239ffc3/arch/ppc/syslib/ppc85xx_setup.h  (mode:100644)
++++ eb4292a8874abcc926f536de90af0bdb001cf12e/arch/ppc/syslib/ppc85xx_setup.h  (mode:100644)
+@@ -19,7 +19,6 @@
+ 
+ #include <linux/config.h>
+ #include <linux/init.h>
+-#include <asm/ppcboot.h>
+ 
+ extern unsigned long mpc85xx_find_end_of_memory(void) __init;
+ extern void mpc85xx_calibrate_decr(void) __init;
+Index: include/asm-ppc/bseip.h
+===================================================================
+--- c7d7a187a2125518e655dfeadffd38156239ffc3/include/asm-ppc/bseip.h  (mode:100644)
++++ eb4292a8874abcc926f536de90af0bdb001cf12e/include/asm-ppc/bseip.h  (mode:100644)
+@@ -8,19 +8,6 @@
+ #define __MACH_BSEIP_DEFS
+ 
+ #ifndef __ASSEMBLY__
+-/* A Board Information structure that is given to a program when
+- * prom starts it up.
+- */
+-typedef struct bd_info {
+-	unsigned int	bi_memstart;	/* Memory start address */
+-	unsigned int	bi_memsize;	/* Memory (end) size in bytes */
+-	unsigned int	bi_intfreq;	/* Internal Freq, in Hz */
+-	unsigned int	bi_busfreq;	/* Bus Freq, in Hz */
+-	unsigned char	bi_enetaddr[6];
+-	unsigned int	bi_baudrate;
+-} bd_t;
+-
+-extern bd_t m8xx_board_info;
+ 
+ /* Memory map is configured by the PROM startup.
+  * All we need to get started is the IMMR.
+Index: include/asm-ppc/ibm4xx.h
+===================================================================
+--- c7d7a187a2125518e655dfeadffd38156239ffc3/include/asm-ppc/ibm4xx.h  (mode:100644)
++++ eb4292a8874abcc926f536de90af0bdb001cf12e/include/asm-ppc/ibm4xx.h  (mode:100644)
+@@ -65,14 +65,6 @@
+ 
+ #ifndef __ASSEMBLY__
+ 
+-#ifdef CONFIG_40x
+-/*
+- * The "residual" board information structure the boot loader passes
+- * into the kernel.
+- */
+-extern bd_t __res;
+-#endif
+-
+ void ppc4xx_setup_arch(void);
+ void ppc4xx_map_io(void);
+ void ppc4xx_init_IRQ(void);
+@@ -109,15 +101,6 @@
+ #include <platforms/4xx/ocotea.h>
+ #endif
+ 
+-#ifndef __ASSEMBLY__
+-#ifdef CONFIG_40x
+-/*
+- * The "residual" board information structure the boot loader passes
+- * into the kernel.
+- */
+-extern bd_t __res;
+-#endif
+-#endif
+ #endif /* CONFIG_40x */
+ 
+ #endif /* __ASM_IBM4XX_H__ */
+Index: include/asm-ppc/ibm_ocp.h
+===================================================================
+--- c7d7a187a2125518e655dfeadffd38156239ffc3/include/asm-ppc/ibm_ocp.h  (mode:100644)
++++ eb4292a8874abcc926f536de90af0bdb001cf12e/include/asm-ppc/ibm_ocp.h  (mode:100644)
+@@ -91,6 +91,7 @@
+ }
+ 
+ #ifdef CONFIG_40x
++#include "asm/firmware.h"
+ /*
+  * Helper function to copy MAC addresses from the bd_t to OCP EMAC
+  * additions.
+@@ -106,7 +107,7 @@
+ 	for (i=start; i<=end; i++) {
+ 		def = ocp_get_one_device(OCP_VENDOR_IBM, OCP_FUNC_EMAC, i);
+ 		memcpy(((struct ocp_func_emac_data *)def->additions)->mac_addr,
+-				&__res.bi_enetaddr[i],
++				fw_get_enetaddr(i),
+ 				6);
+ 	}
+ }
+Index: include/asm-ppc/mpc52xx.h
+===================================================================
+--- c7d7a187a2125518e655dfeadffd38156239ffc3/include/asm-ppc/mpc52xx.h  (mode:100644)
++++ eb4292a8874abcc926f536de90af0bdb001cf12e/include/asm-ppc/mpc52xx.h  (mode:100644)
+@@ -22,7 +22,6 @@
+ #define __ASM_MPC52xx_H__
+ 
+ #ifndef __ASSEMBLY__
+-#include <asm/ppcboot.h>
+ #include <asm/types.h>
+ 
+ struct pt_regs;
+@@ -433,9 +432,6 @@
+ /* Platform configuration                                                    */
+ /* ========================================================================= */
+ 
+-/* The U-Boot platform information struct */
+-extern bd_t __res;
+-
+ /* Platform options */
+ #if defined(CONFIG_LITE5200)
+ #include <platforms/lite5200.h>
+Index: include/asm-ppc/mpc8260.h
+===================================================================
+--- c7d7a187a2125518e655dfeadffd38156239ffc3/include/asm-ppc/mpc8260.h  (mode:100644)
++++ eb4292a8874abcc926f536de90af0bdb001cf12e/include/asm-ppc/mpc8260.h  (mode:100644)
+@@ -67,13 +67,6 @@
+ #define IO_VIRT_ADDR	IO_PHYS_ADDR
+ #endif
+ 
+-#ifndef __ASSEMBLY__
+-/* The "residual" data board information structure the boot loader
+- * hands to us.
+- */
+-extern unsigned char __res[];
+-#endif
+-
+ #endif /* CONFIG_8260 */
+ #endif /* !__ASM_PPC_MPC8260_H__ */
+ #endif /* __KERNEL__ */
+Index: include/asm-ppc/mpc83xx.h
+===================================================================
+--- c7d7a187a2125518e655dfeadffd38156239ffc3/include/asm-ppc/mpc83xx.h  (mode:100644)
++++ eb4292a8874abcc926f536de90af0bdb001cf12e/include/asm-ppc/mpc83xx.h  (mode:100644)
+@@ -34,11 +34,6 @@
+ #define PCI_DRAM_OFFSET 0
+ #endif
+ 
+-/*
+- * The "residual" board information structure the boot loader passes
+- * into the kernel.
+- */
+-extern unsigned char __res[];
+ 
+ /* Internal IRQs on MPC83xx OpenPIC */
+ /* Not all of these exist on all MPC83xx implementations */
+Index: include/asm-ppc/mpc85xx.h
+===================================================================
+--- c7d7a187a2125518e655dfeadffd38156239ffc3/include/asm-ppc/mpc85xx.h  (mode:100644)
++++ eb4292a8874abcc926f536de90af0bdb001cf12e/include/asm-ppc/mpc85xx.h  (mode:100644)
+@@ -46,11 +46,6 @@
+ #define PCI_DRAM_OFFSET 0
+ #endif
+ 
+-/*
+- * The "residual" board information structure the boot loader passes
+- * into the kernel.
+- */
+-extern unsigned char __res[];
+ 
+ /* Offset from CCSRBAR */
+ #define MPC85xx_CPM_OFFSET	(0x80000)
+Index: include/asm-ppc/mpc8xx.h
+===================================================================
+--- c7d7a187a2125518e655dfeadffd38156239ffc3/include/asm-ppc/mpc8xx.h  (mode:100644)
++++ eb4292a8874abcc926f536de90af0bdb001cf12e/include/asm-ppc/mpc8xx.h  (mode:100644)
+@@ -90,14 +90,9 @@
+ #endif
+ 
+ #ifndef __ASSEMBLY__
+-/* The "residual" data board information structure the boot loader
+- * hands to us.
+- */
+-extern unsigned char __res[];
+-
+ struct pt_regs;
+-
+ #endif /* !__ASSEMBLY__ */
++
+ #endif /* CONFIG_8xx */
+ #endif /* __CONFIG_8xx_DEFS */
+ #endif /* __KERNEL__ */
