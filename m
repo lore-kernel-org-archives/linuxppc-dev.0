@@ -1,16 +1,22 @@
-Return-Path: <ini_autumn@163.com>
-Received: from 163.com (unknown [202.108.44.217])
-	by ozlabs.org (Postfix) with SMTP id B0E4367B28
+Return-Path: <gjalt007@chello.nl>
+Received: from amsfep18-int.chello.nl (amsfep18-int.chello.nl [213.46.243.13])
+	by ozlabs.org (Postfix) with ESMTP id 2715B67B1A
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 May 2005 14:24:27 +1000 (EST)
+	Fri, 27 May 2005 15:37:04 +1000 (EST)
+Received: from [192.168.1.10] (really [80.57.11.99]) by amsfep18-int.chello.nl
+	(InterMail vM.6.01.04.04 201-2131-118-104-20050224) with ESMTP
+	id <20050527053658.LOG1513.amsfep18-int.chello.nl@[192.168.1.10]>
+	for <linuxppc-embedded@ozlabs.org>; Fri, 27 May 2005 07:36:58 +0200
+Message-ID: <4296B1D2.5090409@chello.nl>
+Date: Fri, 27 May 2005 07:36:18 +0200
+From: Theo Gjaltema <gjalt007@chello.nl>
 MIME-Version: 1.0
-Message-ID: <42969D3A.000005.25949@m217.163.com>
-Date: Fri, 27 May 2005 12:08:26 +0800 (CST)
-From: "=?gb2312?B?Q2hlbmZlbmcgWmhvdQ==?=" <ini_autumn@163.com>
 To: linuxppc-embedded@ozlabs.org
-Content-Type: Multipart/Alternative;
-	boundary="Boundary-=_ZBpwmksnRIprERfwCMUXYsveDSuL"
-Subject: [ppc44x-patch] Is this a bug?
+References: <429639D5.20609@chello.nl>
+	<528646bc05052615304d896b94@mail.gmail.com>
+In-Reply-To: <528646bc05052615304d896b94@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: Dynamic libraries do not work
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,74 +27,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Grant Likely schreef:
 
---Boundary-=_ZBpwmksnRIprERfwCMUXYsveDSuL
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
+>On 5/26/05, Theo Gjaltema <gjalt007@chello.nl> wrote:
+>  
+>
+>>Hello,
+>>
+>>I have a linux 2.4.20 kernel running, but the files in the ramdisk fail
+>>to execute if they are dynamically build.
+>>The whole system stops (debuggers shows that it crashed while in an erea
+>>where no flash/ram is present.
+>>Anyone an idea?
+>>There is nog difference between the use of a ramdisk or an nfs mounted
+>>root filesystem.
+>>
+>>    
+>>
+>More data please;  Make sure you attach actual output when asking for help.
+>
+>  
+>
+You are right, this gives too little info. Since the system stops 
+without giving any data, I don't know what to attach
+maybe:
+RAM: 64 Mbyte
 
-SW4gbGludXgtMi40LjI1IHNvdXJjZSB0cmVlLCBtYXliZSB0aGVyZSdzIHNvbWV0aGluZyB3
-cm9uZyB3aXRoIHRoZSBib290IHByb2Nlc3Mgb2YgDQpwcGM0NHggY3B1Lg0KDQpJbiBhcmNo
-L3BwYy9ib290L2NvbW1vbi9yZWxvY2F0ZS5TLCB3ZSBkZWNvbXByZXNzIHRoZSBrZXJuZWwg
-dG8gYWRkcmVzcyAwLCB0aGVuIGp1bXANCnRoZXJlIHRvIGRvIHJlYWwgYm9vdCBqb2IgKGFy
-Y2gvcHBjL2tlcm5lbC9oZWFkXzQ0eC5TKS4gQnV0IHRoZSBsYXN0IGV4cHJlc3Npb24gaXMg
-YGJhIDB4MDAwYycuDQoNCkFjdHVhbGx5IHRoZXJlJ3Mgb25seSBvbmUgbm9wIGF0IHRoZSBi
-ZWdpbmluZyBvZiBoZWFkXzQ0eC5TLCBzbyB0aGUgZXhwcmVzc2lvbiBzaG91bGQNCmJlIGBi
-YSAweDAwMDQnIGZvciBwcGMtNDR4LiBCdXQgZm9yIGNvbXBhdGliaWxpdHksIGkgdGhpbmsg
-aXQgc2hvdWxkIGJlIGBiYSAweDAnLA0KYmVjYXVzZSB0aGVyZSdzIGRpZmZlcmVudCBudW1i
-ZXIgb2YgJ25vcHMnIGluIGhlYWQuUyBmb3IgZGlmZmVyZW50IGNwdXMuDQoNCkFjdHVhbGx5
-LCBpbiBsaW51eC0yLjQuMjYsIGxpbnV4LTIuNC4zMCwgaSBhbHNvIGZvdW5kIHRoZSBzYW1l
-IHByb2JsZW0uDQpidXQgaW4gbGludXgtMi42LCBpdCBzZWVtcyBzb2x2ZWQgYWxyZWFkeS4N
-Cg0KVGhhbmsgeW91Lg0KDQpwYXRjaCBiZWxvdzoNCg0KZGlmZiAtck51IGxpbnV4LTIuNC4y
-NS9hcmNoL3BwYy9ib290L2NvbW1vbi9yZWxvY2F0ZS5TIGxpbnV4LTIuNC4yNS5tZS9hcmNo
-L3BwYy9ib290L2NvbW1vbi9yZWxvY2F0ZS5TDQotLS0gbGludXgtMi40LjI1L2FyY2gvcHBj
-L2Jvb3QvY29tbW9uL3JlbG9jYXRlLlMgICAgICAgIDIwMDMtMDgtMjUgMTk6NDQ6NDAuMDAw
-MDAwMDAwICswODAwDQorKysgbGludXgtMi40LjI1Lm1lL2FyY2gvcHBjL2Jvb3QvY29tbW9u
-L3JlbG9jYXRlLlMgICAgIDIwMDUtMDUtMjcgMTI6MDc6MDUuMDAwMDAwMDAwICswODAwDQpA
-QCAtMjAzLDYgKzIwMyw3IEBADQogICAgICAgICAqIHRocmVlIGluc3RydWN0aW9ucyBhcmUg
-J25vcCcgc2luY2Ugd2UNCiAgICAgICAgICogc29tZXRpbWVzIG92ZXJ3cml0ZSB0aGVtKS4N
-CiAgICAgICAgICovDQotICAgICAgIGJhICAgICAgMHgwMDBjDQorICAgICAgICNiYSAgICAg
-MHgwMDBjDQorICAgICAgIGJhIDB4MA0KDQogICAgICAgIC5jb21tICAgLnN0YWNrLDQwOTYq
-Miw0DQoNCg0K
---Boundary-=_ZBpwmksnRIprERfwCMUXYsveDSuL
-Content-Type: text/html; charset="gb2312"
-Content-Transfer-Encoding: base64
+(using a static linked busybox: activating a sh (=busybox) b 
+::sysinit:/bin/sh)
+sh: /lib/ld.so.1
+< help page of ld.so.1>
+sh: /lib/ld.so.1 --verify /bin/xxx (or just any dynamic linked library)
+<here the system has crahed>
 
-SW4gbGludXgtMi40LjI1IHNvdXJjZSB0cmVlLCBtYXliZSB0aGVyZSdzIHNvbWV0aGluZyB3
-cm9uZyB3aXRoIHRoZSBib290IHByb2Nlc3Mgb2YgPGJyPnBwYzQ0eCBjcHUuPGJyPjxicj5J
-biBhcmNoL3BwYy9ib290L2NvbW1vbi9yZWxvY2F0ZS5TLCB3ZSBkZWNvbXByZXNzIHRoZSBr
-ZXJuZWwgdG8gYWRkcmVzcyAwLCB0aGVuIGp1bXA8YnI+dGhlcmUgdG8gZG8gcmVhbCBib290
-IGpvYiAoYXJjaC9wcGMva2VybmVsL2hlYWRfNDR4LlMpLiBCdXQgdGhlIGxhc3QgZXhwcmVz
-c2lvbiBpcyBgYmEgMHgwMDBjJy48YnI+PGJyPkFjdHVhbGx5IHRoZXJlJ3Mgb25seSBvbmUg
-bm9wIGF0IHRoZSBiZWdpbmluZyBvZiBoZWFkXzQ0eC5TLCBzbyB0aGUgZXhwcmVzc2lvbiBz
-aG91bGQ8YnI+YmUgYGJhIDB4MDAwNCcgZm9yIHBwYy00NHguIEJ1dCBmb3IgY29tcGF0aWJp
-bGl0eSwgaSB0aGluayBpdCBzaG91bGQgYmUgYGJhIDB4MCcsPGJyPmJlY2F1c2UgdGhlcmUn
-cyBkaWZmZXJlbnQgbnVtYmVyIG9mICdub3BzJyBpbiBoZWFkLlMgZm9yIGRpZmZlcmVudCBj
-cHVzLjxicj48YnI+QWN0dWFsbHksIGluIGxpbnV4LTIuNC4yNiwgbGludXgtMi40LjMwLCBp
-IGFsc28gZm91bmQgdGhlIHNhbWUgcHJvYmxlbS48YnI+YnV0IGluIGxpbnV4LTIuNiwgaXQg
-c2VlbXMgc29sdmVkIGFscmVhZHkuPGJyPjxicj5UaGFuayB5b3UuPGJyPjxicj5wYXRjaCBi
-ZWxvdzo8YnI+PGJyPmRpZmYgLXJOdSBsaW51eC0yLjQuMjUvYXJjaC9wcGMvYm9vdC9jb21t
-b24vcmVsb2NhdGUuUyBsaW51eC0yLjQuMjUubWUvYXJjaC9wcGMvYm9vdC9jb21tb24vcmVs
-b2NhdGUuUzxicj4tLS0gbGludXgtMi40LjI1L2FyY2gvcHBjL2Jvb3QvY29tbW9uL3JlbG9j
-YXRlLlMgICAgICAgIDIwMDMtMDgtMjUgMTk6NDQ6NDAuMDAwMDAwMDAwICswODAwPGJyPisr
-KyBsaW51eC0yLjQuMjUubWUvYXJjaC9wcGMvYm9vdC9jb21tb24vcmVsb2NhdGUuUyAgICAg
-MjAwNS0wNS0yNyAxMjowNzowNS4wMDAwMDAwMDAgKzA4MDA8YnI+QEAgLTIwMyw2ICsyMDMs
-NyBAQDxicj4gICAgICAgICAqIHRocmVlIGluc3RydWN0aW9ucyBhcmUgJ25vcCcgc2luY2Ug
-d2U8YnI+ICAgICAgICAgKiBzb21ldGltZXMgb3ZlcndyaXRlIHRoZW0pLjxicj4gICAgICAg
-ICAqLzxicj4tICAgICAgIGJhICAgICAgMHgwMDBjPGJyPisgICAgICAgI2JhICAgICAweDAw
-MGM8YnI+KyAgICAgICBiYSAweDA8YnI+PGJyPiAgICAgICAgLmNvbW0gICAuc3RhY2ssNDA5
-NioyLDQ8YnI+PGJyPjxicj48YnI+PCEtLSBmb290ZXIgLS0+PGJyPjxicj48YnI+DQo8Zm9u
-dCBzdHlsZT0iZm9udC1zaXplOjE0LjhweCI+DQo8IS0tueO45mZvb3RlciC/qsq8LS0+DQo8
-IS0tueO45mZvb3RlciC94cr4LS0+DQoNCjwhLS3E2rK/Zm9vdGVyv6rKvC0tPg0KPGJyPg0K
-PGJyPjxwIHN0eWxlPSJsaW5lLWhlaWdodDoyMjAlOyI+DQo8Yj4mbmJzcDsmbmJzcDvS0dPQ
-MdLa08O7p9Gh1PHBy8340tfTys/ko6w8c3BhbiBzdHlsZT0iY29sb3I6cmVkIj7E48TYo788
-L2I+PC9zcGFuPjxicj4NCiZuYnNwOyZuYnNwOzxhIGhyZWY9Imh0dHA6Ly9tYWlsLjE2My5j
-b20vIiB0YXJnZXQ9Il9ibGFuayI+PGZvbnQgY29sb3I9Ymx1ZT7N+NLXMTYzw+K30dPK0tHI
-q8Pmyf28ttbBMjAwMNXXs6y087/VvOSjrNans9bK1beiMzDV17OstPO4vbz+o6E8L2ZvbnQ+
-PGJyPg0KPC9hPg0KJm5ic3A7Jm5ic3A7PGEgaHJlZj0iaHR0cDovL21haWwuMTYzLmNvbS9l
-dmVudC9kYW5nZGFuZy9kZXRhaWwuaHRtIiB0YXJnZXQ9Il9ibGFuayI+PGZvbnQgY29sb3I9
-Ymx1ZT7XorLhtcfCvM340tfTys/ko6zDv9bctrzT0L6qz7KjrDUw1KrP1r3wyK/N6sirsNfL
-zaOsteO797Lpv7S77ravz+rH6aOhDQo8L2ZvbnQ+DQo8L2E+DQoNCjxpbWcgc3JjPSJodHRw
-Oi8vbWFpbC4xMjYuY29tL2Zhdmljb24uaWNvIiB3aWR0aD0xNiBoZWlnaHQ9MTYgYm9yZGVy
-PTAgYWxpZ249YWJzbWlkZGxlPg0KPC9wPg0KPCEtLcTasr9mb290ZXK94cr4LS0+DQo8L2Zv
-bnQ+
---Boundary-=_ZBpwmksnRIprERfwCMUXYsveDSuL--
+or
+sh: /bin/xxx
+<here the system has crashed>
+
+I have tried to step through the dynamic linking, but did not succeed 
+til after the creation of a thread.
+With a dynamic linked busybox the system stops after a message such as
+"freeing xxx kbytes" (I don't know the actual number by head)
+When init is then called, which is a part of the busybox which is dyn. 
+liked, it crashes.
+
+
+Greetings,
+   Theo
