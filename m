@@ -1,19 +1,17 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 8314A67B20
+Return-Path: <galak@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id B55C867A2C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 May 2005 09:09:00 +1000 (EST)
-In-Reply-To: <1116607235.29111.20.camel@gleep>
-References: <1116607235.29111.20.camel@gleep>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <f003613a0526b7b6a00a0bd477cd5ac3@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Thu, 26 May 2005 18:08:54 -0500
-To: "Loeliger Jon-LOELIGER" <jdl@freescale.com>
-Cc: Jakob Viketoft <jakob.viketoft@bitsim.se>,
-	Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: OF flat device tree for ppc32...
+	Fri, 27 May 2005 10:02:28 +1000 (EST)
+Date: Thu, 26 May 2005 19:02:11 -0500 (CDT)
+From: Kumar Gala <galak@freescale.com>
+To: Andrew Morton <akpm@osdl.org>
+Message-ID: <Pine.LNX.4.61.0505261858180.17674@nylon.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Kim.Phillips@freescale.com, linux-kernel@vger.kernel.org,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH] ppc32: Simplified load string emulation error checking
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,89 +22,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Jon,
+The error checking for emulation of load string instructions was overly
+generous and would cause certain valid forms of the instructions to be
+treated as illegal.  We drop the range checking since the architecture
+allows this to be boundedly undefined.  Tests on CPUs that support these
+instructions appear not do cause illegal instruction traps on range
+errors and just allow the execution to occur.
 
-Can you break the patch up into a few pieces, it will be easier to 
-review that way.  Here are the following pieces that make sense to me:
+Thanks to Kim Phillips for debugging this and figuring out what real HW 
+was doing.
 
-0. New firmware interface (fw_bdt*, Kconfig, ...)
-1. board code changes (everything in arch/ppc/platforms/*)
-2. driver changes (things in *_io, ide, net, serial dirs -- try to give 
-a better list below)
-3. System changes (files in arch/ppc/syslib and include/asm-ppc)
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
-Let me know if you feel these are reasonable, they suck, or otherwise.
+---
+commit 219d058f65dbd666964b1e951b8d491e4b19dc0c
+tree 109a4648d2cc627d17c129bc1ca102a736c817aa
+parent 4b1b1ed3400c905819fc4668838dbec4099f2d8d
+author Kumar K. Gala <kumar.gala@freescale.com> Thu, 26 May 2005 18:55:56 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> Thu, 26 May 2005 18:55:56 -0500
 
-Let's handle the removal in arch/m68knommu/platform/68360/commproc.c 
-outside of all of this (thus isolating ourselves to PPC).
+ ppc/kernel/traps.c |    7 +------
+ 1 files changed, 1 insertion(+), 6 deletions(-)
 
-2. DRIVER CHANGES:
-  ppc/8260_io/enet.c                      |    9
-  ppc/8260_io/fcc_enet.c                  |   15
-  ppc/8xx_io/commproc.c                   |    3
-  ppc/8xx_io/enet.c                       |   10
-  ppc/8xx_io/fec.c                        |    8
-  ide/ppc/mpc8xx.c                        |   14
-  mtd/maps/tqm8xxl.c                      |    7
-  net/fec.c                               |    6
-  net/fec_8xx/fec_8xx-netta.c             |    5
-  net/oaknet.c                            |    6
-  serial/68360serial.c                    |    3
-  serial/cpm_uart/cpm_uart_core.c         |    8
-  serial/cpm_uart/cpm_uart_cpm1.c         |   13
-  serial/cpm_uart/cpm_uart_cpm2.c         |   13
-  serial/mpc52xx_uart.c                   |   11
-
-- kumar
-
-On May 20, 2005, at 11:40 AM, Loeliger Jon-LOELIGER wrote:
-
-> On Thu, 2005-05-19 at 01:41, Jakob Viketoft wrote:
->> Hello Jon!
->>
->> Any news on the port of the OF-layer to ppc32? I'd love to hear some
->> more and it would be great be able to help out, even though I have
-> some
->> heavy deadlines hanging over me for the next 2 months. From what I can
->
->> see on the list, there wasn't many comments on your first preparatory
->> code, but I for one thinks it's time to move it forward anyway.
->>
->> What do you say?
->>
->> 	/Jakob
->
-> Folks,
->
-> I have updated my tree and patch to the latest GIT
-> as of last night.  The new patch is available here:
->
->    http://www.jdl.com/bdt_cleanup_git.patch.gz
->
-> Signed-off-by: Jon Loeliger <jdl@freescale.com>
->
-> Please let me know if there are difficulties retrieving it.
->
-> This patch has a few caveats associated with it.
-> In particular, it does not address the entire
->
->     arch/ppc/boot/simple
->
-> issue at all.  And for that reason, this patch does
-> not yet actually remove the to-be-obsoleted ppcboot.h
-> that is otherwise unreferenced.  I am hopeful that
-> someone who is muchm ore familiar with that code can
-> pick up from this patch and Do The Right Thing there.
->
-> This patch in no-way eliminates the U-Boot-to-Kernel
-> interface yet.  It merely isolates it all to one location
-> and provides a functional interface to it.
->
-> Enjoy,
-> jdl
->
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Index: arch/ppc/kernel/traps.c
+===================================================================
+--- 94fc6c9507563e89a75b0838824003b2301b4321/arch/ppc/kernel/traps.c  (mode:100644)
++++ 109a4648d2cc627d17c129bc1ca102a736c817aa/arch/ppc/kernel/traps.c  (mode:100644)
+@@ -408,12 +408,7 @@
+ 
+ 	/* Early out if we are an invalid form of lswx */
+ 	if ((instword & INST_STRING_MASK) == INST_LSWX)
+-		if ((rA >= rT) || (NB_RB >= rT) || (rT == rA) || (rT == NB_RB))
+-			return -EINVAL;
+-
+-	/* Early out if we are an invalid form of lswi */
+-	if ((instword & INST_STRING_MASK) == INST_LSWI)
+-		if ((rA >= rT) || (rT == rA))
++		if ((rT == rA) || (rT == NB_RB))
+ 			return -EINVAL;
+ 
+ 	EA = (rA == 0) ? 0 : regs->gpr[rA];
