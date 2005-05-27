@@ -1,16 +1,16 @@
-Return-Path: <mcnernbm@notes.udayton.edu>
-Received: from student03.udayton.edu (student03.udayton.edu [131.238.75.43])
-	by ozlabs.org (Postfix) with ESMTP id E7FD1679F7
+Return-Path: <ini_autumn@163.com>
+Received: from 163.com (unknown [202.108.44.217])
+	by ozlabs.org (Postfix) with SMTP id B0E4367B28
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 May 2005 12:45:22 +1000 (EST)
-To: linuxppc-embedded@ozlabs.org
+	Fri, 27 May 2005 14:24:27 +1000 (EST)
 MIME-Version: 1.0
-Message-ID: <OF51B36924.7EF29E2C-ON8525700E.000EEB35-8525700E.000F1DC6@notes.udayton.edu>
-From: mcnernbm@notes.udayton.edu
-Date: Thu, 26 May 2005 22:45:08 -0400
-Content-Type: multipart/alternative;
-	boundary="=_alternative 000F1DC38525700E_="
-Subject: memec virtex 2 Pro
+Message-ID: <42969D3A.000005.25949@m217.163.com>
+Date: Fri, 27 May 2005 12:08:26 +0800 (CST)
+From: "=?gb2312?B?Q2hlbmZlbmcgWmhvdQ==?=" <ini_autumn@163.com>
+To: linuxppc-embedded@ozlabs.org
+Content-Type: Multipart/Alternative;
+	boundary="Boundary-=_ZBpwmksnRIprERfwCMUXYsveDSuL"
+Subject: [ppc44x-patch] Is this a bug?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,28 +21,74 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 000F1DC38525700E_=
-Content-Type: text/plain; charset="US-ASCII"
 
-Has anyone had any success getting linux to boot on a memc viretx 2 board? 
- I am trying to replicate the steps to get the kernel built for the ml300 
-but run error after error in doing so.  The make zImage is borken and 
-fails all the time. Anybody that has success with the memec virtex 2 pro 
-or the xilinx ml300 board it would be greatly appreciated if you could 
-explain how you did so. 
-Thanks
-Brett 
---=_alternative 000F1DC38525700E_=
-Content-Type: text/html; charset="US-ASCII"
+--Boundary-=_ZBpwmksnRIprERfwCMUXYsveDSuL
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 
+SW4gbGludXgtMi40LjI1IHNvdXJjZSB0cmVlLCBtYXliZSB0aGVyZSdzIHNvbWV0aGluZyB3
+cm9uZyB3aXRoIHRoZSBib290IHByb2Nlc3Mgb2YgDQpwcGM0NHggY3B1Lg0KDQpJbiBhcmNo
+L3BwYy9ib290L2NvbW1vbi9yZWxvY2F0ZS5TLCB3ZSBkZWNvbXByZXNzIHRoZSBrZXJuZWwg
+dG8gYWRkcmVzcyAwLCB0aGVuIGp1bXANCnRoZXJlIHRvIGRvIHJlYWwgYm9vdCBqb2IgKGFy
+Y2gvcHBjL2tlcm5lbC9oZWFkXzQ0eC5TKS4gQnV0IHRoZSBsYXN0IGV4cHJlc3Npb24gaXMg
+YGJhIDB4MDAwYycuDQoNCkFjdHVhbGx5IHRoZXJlJ3Mgb25seSBvbmUgbm9wIGF0IHRoZSBi
+ZWdpbmluZyBvZiBoZWFkXzQ0eC5TLCBzbyB0aGUgZXhwcmVzc2lvbiBzaG91bGQNCmJlIGBi
+YSAweDAwMDQnIGZvciBwcGMtNDR4LiBCdXQgZm9yIGNvbXBhdGliaWxpdHksIGkgdGhpbmsg
+aXQgc2hvdWxkIGJlIGBiYSAweDAnLA0KYmVjYXVzZSB0aGVyZSdzIGRpZmZlcmVudCBudW1i
+ZXIgb2YgJ25vcHMnIGluIGhlYWQuUyBmb3IgZGlmZmVyZW50IGNwdXMuDQoNCkFjdHVhbGx5
+LCBpbiBsaW51eC0yLjQuMjYsIGxpbnV4LTIuNC4zMCwgaSBhbHNvIGZvdW5kIHRoZSBzYW1l
+IHByb2JsZW0uDQpidXQgaW4gbGludXgtMi42LCBpdCBzZWVtcyBzb2x2ZWQgYWxyZWFkeS4N
+Cg0KVGhhbmsgeW91Lg0KDQpwYXRjaCBiZWxvdzoNCg0KZGlmZiAtck51IGxpbnV4LTIuNC4y
+NS9hcmNoL3BwYy9ib290L2NvbW1vbi9yZWxvY2F0ZS5TIGxpbnV4LTIuNC4yNS5tZS9hcmNo
+L3BwYy9ib290L2NvbW1vbi9yZWxvY2F0ZS5TDQotLS0gbGludXgtMi40LjI1L2FyY2gvcHBj
+L2Jvb3QvY29tbW9uL3JlbG9jYXRlLlMgICAgICAgIDIwMDMtMDgtMjUgMTk6NDQ6NDAuMDAw
+MDAwMDAwICswODAwDQorKysgbGludXgtMi40LjI1Lm1lL2FyY2gvcHBjL2Jvb3QvY29tbW9u
+L3JlbG9jYXRlLlMgICAgIDIwMDUtMDUtMjcgMTI6MDc6MDUuMDAwMDAwMDAwICswODAwDQpA
+QCAtMjAzLDYgKzIwMyw3IEBADQogICAgICAgICAqIHRocmVlIGluc3RydWN0aW9ucyBhcmUg
+J25vcCcgc2luY2Ugd2UNCiAgICAgICAgICogc29tZXRpbWVzIG92ZXJ3cml0ZSB0aGVtKS4N
+CiAgICAgICAgICovDQotICAgICAgIGJhICAgICAgMHgwMDBjDQorICAgICAgICNiYSAgICAg
+MHgwMDBjDQorICAgICAgIGJhIDB4MA0KDQogICAgICAgIC5jb21tICAgLnN0YWNrLDQwOTYq
+Miw0DQoNCg0K
+--Boundary-=_ZBpwmksnRIprERfwCMUXYsveDSuL
+Content-Type: text/html; charset="gb2312"
+Content-Transfer-Encoding: base64
 
-<br><font size=2 face="sans-serif">Has anyone had any success getting linux
-to boot on a memc viretx 2 board? &nbsp;I am trying to replicate the steps
-to get the kernel built for the ml300 but run error after error in doing
-so. &nbsp;The make zImage is borken and fails all the time. Anybody that
-has success with the memec virtex 2 pro or the xilinx ml300 board it would
-be greatly appreciated if you could explain how you did so. &nbsp;</font>
-<br><font size=2 face="sans-serif">Thanks</font>
-<br><font size=2 face="sans-serif">Brett </font>
---=_alternative 000F1DC38525700E_=--
+SW4gbGludXgtMi40LjI1IHNvdXJjZSB0cmVlLCBtYXliZSB0aGVyZSdzIHNvbWV0aGluZyB3
+cm9uZyB3aXRoIHRoZSBib290IHByb2Nlc3Mgb2YgPGJyPnBwYzQ0eCBjcHUuPGJyPjxicj5J
+biBhcmNoL3BwYy9ib290L2NvbW1vbi9yZWxvY2F0ZS5TLCB3ZSBkZWNvbXByZXNzIHRoZSBr
+ZXJuZWwgdG8gYWRkcmVzcyAwLCB0aGVuIGp1bXA8YnI+dGhlcmUgdG8gZG8gcmVhbCBib290
+IGpvYiAoYXJjaC9wcGMva2VybmVsL2hlYWRfNDR4LlMpLiBCdXQgdGhlIGxhc3QgZXhwcmVz
+c2lvbiBpcyBgYmEgMHgwMDBjJy48YnI+PGJyPkFjdHVhbGx5IHRoZXJlJ3Mgb25seSBvbmUg
+bm9wIGF0IHRoZSBiZWdpbmluZyBvZiBoZWFkXzQ0eC5TLCBzbyB0aGUgZXhwcmVzc2lvbiBz
+aG91bGQ8YnI+YmUgYGJhIDB4MDAwNCcgZm9yIHBwYy00NHguIEJ1dCBmb3IgY29tcGF0aWJp
+bGl0eSwgaSB0aGluayBpdCBzaG91bGQgYmUgYGJhIDB4MCcsPGJyPmJlY2F1c2UgdGhlcmUn
+cyBkaWZmZXJlbnQgbnVtYmVyIG9mICdub3BzJyBpbiBoZWFkLlMgZm9yIGRpZmZlcmVudCBj
+cHVzLjxicj48YnI+QWN0dWFsbHksIGluIGxpbnV4LTIuNC4yNiwgbGludXgtMi40LjMwLCBp
+IGFsc28gZm91bmQgdGhlIHNhbWUgcHJvYmxlbS48YnI+YnV0IGluIGxpbnV4LTIuNiwgaXQg
+c2VlbXMgc29sdmVkIGFscmVhZHkuPGJyPjxicj5UaGFuayB5b3UuPGJyPjxicj5wYXRjaCBi
+ZWxvdzo8YnI+PGJyPmRpZmYgLXJOdSBsaW51eC0yLjQuMjUvYXJjaC9wcGMvYm9vdC9jb21t
+b24vcmVsb2NhdGUuUyBsaW51eC0yLjQuMjUubWUvYXJjaC9wcGMvYm9vdC9jb21tb24vcmVs
+b2NhdGUuUzxicj4tLS0gbGludXgtMi40LjI1L2FyY2gvcHBjL2Jvb3QvY29tbW9uL3JlbG9j
+YXRlLlMgICAgICAgIDIwMDMtMDgtMjUgMTk6NDQ6NDAuMDAwMDAwMDAwICswODAwPGJyPisr
+KyBsaW51eC0yLjQuMjUubWUvYXJjaC9wcGMvYm9vdC9jb21tb24vcmVsb2NhdGUuUyAgICAg
+MjAwNS0wNS0yNyAxMjowNzowNS4wMDAwMDAwMDAgKzA4MDA8YnI+QEAgLTIwMyw2ICsyMDMs
+NyBAQDxicj4gICAgICAgICAqIHRocmVlIGluc3RydWN0aW9ucyBhcmUgJ25vcCcgc2luY2Ug
+d2U8YnI+ICAgICAgICAgKiBzb21ldGltZXMgb3ZlcndyaXRlIHRoZW0pLjxicj4gICAgICAg
+ICAqLzxicj4tICAgICAgIGJhICAgICAgMHgwMDBjPGJyPisgICAgICAgI2JhICAgICAweDAw
+MGM8YnI+KyAgICAgICBiYSAweDA8YnI+PGJyPiAgICAgICAgLmNvbW0gICAuc3RhY2ssNDA5
+NioyLDQ8YnI+PGJyPjxicj48YnI+PCEtLSBmb290ZXIgLS0+PGJyPjxicj48YnI+DQo8Zm9u
+dCBzdHlsZT0iZm9udC1zaXplOjE0LjhweCI+DQo8IS0tueO45mZvb3RlciC/qsq8LS0+DQo8
+IS0tueO45mZvb3RlciC94cr4LS0+DQoNCjwhLS3E2rK/Zm9vdGVyv6rKvC0tPg0KPGJyPg0K
+PGJyPjxwIHN0eWxlPSJsaW5lLWhlaWdodDoyMjAlOyI+DQo8Yj4mbmJzcDsmbmJzcDvS0dPQ
+MdLa08O7p9Gh1PHBy8340tfTys/ko6w8c3BhbiBzdHlsZT0iY29sb3I6cmVkIj7E48TYo788
+L2I+PC9zcGFuPjxicj4NCiZuYnNwOyZuYnNwOzxhIGhyZWY9Imh0dHA6Ly9tYWlsLjE2My5j
+b20vIiB0YXJnZXQ9Il9ibGFuayI+PGZvbnQgY29sb3I9Ymx1ZT7N+NLXMTYzw+K30dPK0tHI
+q8Pmyf28ttbBMjAwMNXXs6y087/VvOSjrNans9bK1beiMzDV17OstPO4vbz+o6E8L2ZvbnQ+
+PGJyPg0KPC9hPg0KJm5ic3A7Jm5ic3A7PGEgaHJlZj0iaHR0cDovL21haWwuMTYzLmNvbS9l
+dmVudC9kYW5nZGFuZy9kZXRhaWwuaHRtIiB0YXJnZXQ9Il9ibGFuayI+PGZvbnQgY29sb3I9
+Ymx1ZT7XorLhtcfCvM340tfTys/ko6zDv9bctrzT0L6qz7KjrDUw1KrP1r3wyK/N6sirsNfL
+zaOsteO797Lpv7S77ravz+rH6aOhDQo8L2ZvbnQ+DQo8L2E+DQoNCjxpbWcgc3JjPSJodHRw
+Oi8vbWFpbC4xMjYuY29tL2Zhdmljb24uaWNvIiB3aWR0aD0xNiBoZWlnaHQ9MTYgYm9yZGVy
+PTAgYWxpZ249YWJzbWlkZGxlPg0KPC9wPg0KPCEtLcTasr9mb290ZXK94cr4LS0+DQo8L2Zv
+bnQ+
+--Boundary-=_ZBpwmksnRIprERfwCMUXYsveDSuL--
