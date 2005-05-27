@@ -1,17 +1,18 @@
 Return-Path: <galak@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 7B18E679F3
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 4E728679F2
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 28 May 2005 08:09:45 +1000 (EST)
-Date: Fri, 27 May 2005 17:09:19 -0500 (CDT)
+	Sat, 28 May 2005 08:10:37 +1000 (EST)
+Date: Fri, 27 May 2005 17:10:19 -0500 (CDT)
 From: Kumar Gala <galak@freescale.com>
 To: Andrew Morton <akpm@osdl.org>
-Message-ID: <Pine.LNX.4.61.0505271708380.25368@nylon.am.freescale.net>
+Message-ID: <Pine.LNX.4.61.0505271709220.25368@nylon.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org,
+Cc: shall@mvista.com, linux-kernel@vger.kernel.org,
 	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] ppc32: Add soft reset to MPC834x
+Subject: [PATCH] ppc32: i8259 PIC should not be initialized if PCI is not
+ configured
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,83 +23,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This change allows mpc83xx_restart to issue a software reset.
+Trying to initialize the i8259 PIC will not work if CONFIG_PCI is
+not enabled.  The kernel hangs if the initialization is tried.
 
-Signed-off-by: Randy Vinson <rvinson@mvista.com>
 Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
 ---
-commit 1a0a26adb3ef9323ac3e17e14af6c2b138f1656a
-tree ec5c9971711cdd5ce074c2798a16cc12d35318ee
-parent 2c6dd281d28694239de9e453541ed3b937d11e25
-author Kumar K. Gala <kumar.gala@freescale.com> Fri, 27 May 2005 09:35:28 -0500
-committer Kumar K. Gala <kumar.gala@freescale.com> Fri, 27 May 2005 09:35:28 -0500
+commit 947c0e2c89c4e5cda2093bcfca7c13e097641e3b
+tree 12a3e07d44c69f110708c359da5132439c2527c5
+parent 219d058f65dbd666964b1e951b8d491e4b19dc0c
+author Kumar K. Gala <kumar.gala@freescale.com> Fri, 27 May 2005 16:57:41 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> Fri, 27 May 2005 16:57:41 -0500
 
- ppc/platforms/83xx/mpc834x_sys.h |    6 ++++++
- ppc/syslib/ppc83xx_setup.c       |   28 ++++++++++++++++++++++++++++
- 2 files changed, 34 insertions(+)
+ ppc/platforms/85xx/mpc85xx_cds_common.c |    2 ++
+ 1 files changed, 2 insertions(+)
 
-Index: arch/ppc/platforms/83xx/mpc834x_sys.h
+Index: arch/ppc/platforms/85xx/mpc85xx_cds_common.c
 ===================================================================
---- 0d93680a000f9dafe78831ee00573c1bb544bcf6/arch/ppc/platforms/83xx/mpc834x_sys.h  (mode:100644)
-+++ ec5c9971711cdd5ce074c2798a16cc12d35318ee/arch/ppc/platforms/83xx/mpc834x_sys.h  (mode:100644)
-@@ -28,6 +28,12 @@
- #define BCSR_PHYS_ADDR		((uint)0xf8000000)
- #define BCSR_SIZE		((uint)(32 * 1024))
+--- 109a4648d2cc627d17c129bc1ca102a736c817aa/arch/ppc/platforms/85xx/mpc85xx_cds_common.c  (mode:100644)
++++ 12a3e07d44c69f110708c359da5132439c2527c5/arch/ppc/platforms/85xx/mpc85xx_cds_common.c  (mode:100644)
+@@ -200,12 +200,14 @@
+ 	 */
+ 	openpic_init(MPC85xx_OPENPIC_IRQ_OFFSET);
  
-+#define BCSR_MISC_REG2_OFF	0x07
-+#define BCSR_MISC_REG2_PORESET	0x01
-+
-+#define BCSR_MISC_REG3_OFF	0x08
-+#define BCSR_MISC_REG3_CNFLOCK	0x80
-+
- #ifdef CONFIG_PCI
- /* PCI interrupt controller */
- #define PIRQA        MPC83xx_IRQ_IRQ4
-Index: arch/ppc/syslib/ppc83xx_setup.c
-===================================================================
---- 0d93680a000f9dafe78831ee00573c1bb544bcf6/arch/ppc/syslib/ppc83xx_setup.c  (mode:100644)
-+++ ec5c9971711cdd5ce074c2798a16cc12d35318ee/arch/ppc/syslib/ppc83xx_setup.c  (mode:100644)
-@@ -29,6 +29,7 @@
- #include <asm/mmu.h>
- #include <asm/ppc_sys.h>
- #include <asm/kgdb.h>
-+#include <asm/delay.h>
++#ifdef CONFIG_PCI
+ 	openpic_hookup_cascade(PIRQ0A, "82c59 cascade", i8259_irq);
  
- #include <syslib/ppc83xx_setup.h>
+ 	for (i = 0; i < NUM_8259_INTERRUPTS; i++)
+ 		irq_desc[i].handler = &i8259_pic;
  
-@@ -117,7 +118,34 @@
- void
- mpc83xx_restart(char *cmd)
- {
-+	volatile unsigned char __iomem *reg;
-+	unsigned char tmp;
-+
-+	reg = ioremap(BCSR_PHYS_ADDR, BCSR_SIZE);
-+
- 	local_irq_disable();
-+
-+	/*
-+	 * Unlock the BCSR bits so a PRST will update the contents.
-+	 * Otherwise the reset asserts but doesn't clear.
-+	 */
-+	tmp = in_8(reg + BCSR_MISC_REG3_OFF);
-+	tmp |= BCSR_MISC_REG3_CNFLOCK; /* low true, high false */
-+	out_8(reg + BCSR_MISC_REG3_OFF, tmp);
-+
-+	/*
-+	 * Trigger a reset via a low->high transition of the
-+	 * PORESET bit.
-+	 */
-+	tmp = in_8(reg + BCSR_MISC_REG2_OFF);
-+	tmp &= ~BCSR_MISC_REG2_PORESET;
-+	out_8(reg + BCSR_MISC_REG2_OFF, tmp);
-+
-+	udelay(1);
-+
-+	tmp |= BCSR_MISC_REG2_PORESET;
-+	out_8(reg + BCSR_MISC_REG2_OFF, tmp);
-+
- 	for(;;);
- }
+ 	i8259_init(0);
++#endif
  
+ #ifdef CONFIG_CPM2
+ 	/* Setup CPM2 PIC */
