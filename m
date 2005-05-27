@@ -1,17 +1,16 @@
-Return-Path: <galak@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id B55C867A2C
+Return-Path: <mcnernbm@notes.udayton.edu>
+Received: from student03.udayton.edu (student03.udayton.edu [131.238.75.43])
+	by ozlabs.org (Postfix) with ESMTP id E7FD1679F7
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 May 2005 10:02:28 +1000 (EST)
-Date: Thu, 26 May 2005 19:02:11 -0500 (CDT)
-From: Kumar Gala <galak@freescale.com>
-To: Andrew Morton <akpm@osdl.org>
-Message-ID: <Pine.LNX.4.61.0505261858180.17674@nylon.am.freescale.net>
+	Fri, 27 May 2005 12:45:22 +1000 (EST)
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Kim.Phillips@freescale.com, linux-kernel@vger.kernel.org,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] ppc32: Simplified load string emulation error checking
+Message-ID: <OF51B36924.7EF29E2C-ON8525700E.000EEB35-8525700E.000F1DC6@notes.udayton.edu>
+From: mcnernbm@notes.udayton.edu
+Date: Thu, 26 May 2005 22:45:08 -0400
+Content-Type: multipart/alternative;
+	boundary="=_alternative 000F1DC38525700E_="
+Subject: memec virtex 2 Pro
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,43 +21,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-The error checking for emulation of load string instructions was overly
-generous and would cause certain valid forms of the instructions to be
-treated as illegal.  We drop the range checking since the architecture
-allows this to be boundedly undefined.  Tests on CPUs that support these
-instructions appear not do cause illegal instruction traps on range
-errors and just allow the execution to occur.
+This is a multipart message in MIME format.
+--=_alternative 000F1DC38525700E_=
+Content-Type: text/plain; charset="US-ASCII"
 
-Thanks to Kim Phillips for debugging this and figuring out what real HW 
-was doing.
+Has anyone had any success getting linux to boot on a memc viretx 2 board? 
+ I am trying to replicate the steps to get the kernel built for the ml300 
+but run error after error in doing so.  The make zImage is borken and 
+fails all the time. Anybody that has success with the memec virtex 2 pro 
+or the xilinx ml300 board it would be greatly appreciated if you could 
+explain how you did so. 
+Thanks
+Brett 
+--=_alternative 000F1DC38525700E_=
+Content-Type: text/html; charset="US-ASCII"
 
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
----
-commit 219d058f65dbd666964b1e951b8d491e4b19dc0c
-tree 109a4648d2cc627d17c129bc1ca102a736c817aa
-parent 4b1b1ed3400c905819fc4668838dbec4099f2d8d
-author Kumar K. Gala <kumar.gala@freescale.com> Thu, 26 May 2005 18:55:56 -0500
-committer Kumar K. Gala <kumar.gala@freescale.com> Thu, 26 May 2005 18:55:56 -0500
-
- ppc/kernel/traps.c |    7 +------
- 1 files changed, 1 insertion(+), 6 deletions(-)
-
-Index: arch/ppc/kernel/traps.c
-===================================================================
---- 94fc6c9507563e89a75b0838824003b2301b4321/arch/ppc/kernel/traps.c  (mode:100644)
-+++ 109a4648d2cc627d17c129bc1ca102a736c817aa/arch/ppc/kernel/traps.c  (mode:100644)
-@@ -408,12 +408,7 @@
- 
- 	/* Early out if we are an invalid form of lswx */
- 	if ((instword & INST_STRING_MASK) == INST_LSWX)
--		if ((rA >= rT) || (NB_RB >= rT) || (rT == rA) || (rT == NB_RB))
--			return -EINVAL;
--
--	/* Early out if we are an invalid form of lswi */
--	if ((instword & INST_STRING_MASK) == INST_LSWI)
--		if ((rA >= rT) || (rT == rA))
-+		if ((rT == rA) || (rT == NB_RB))
- 			return -EINVAL;
- 
- 	EA = (rA == 0) ? 0 : regs->gpr[rA];
+<br><font size=2 face="sans-serif">Has anyone had any success getting linux
+to boot on a memc viretx 2 board? &nbsp;I am trying to replicate the steps
+to get the kernel built for the ml300 but run error after error in doing
+so. &nbsp;The make zImage is borken and fails all the time. Anybody that
+has success with the memec virtex 2 pro or the xilinx ml300 board it would
+be greatly appreciated if you could explain how you did so. &nbsp;</font>
+<br><font size=2 face="sans-serif">Thanks</font>
+<br><font size=2 face="sans-serif">Brett </font>
+--=_alternative 000F1DC38525700E_=--
