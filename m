@@ -2,17 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8604B67A64
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 May 2005 16:58:47 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id ACD3A679F0
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 May 2005 12:20:12 +1000 (EST)
+Received: from gaston (localhost [127.0.0.1])
+	by gate.crashing.org (8.12.8/8.12.8) with ESMTP id j4S2CTZn020474
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 May 2005 21:12:30 -0500
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain
-Date: Fri, 27 May 2005 16:57:34 +1000
-Message-Id: <1117177055.9076.191.camel@gaston>
+Date: Sat, 28 May 2005 12:15:19 +1000
+Message-Id: <1117246520.5228.5.camel@gaston>
 Mime-Version: 1.0
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: [PATCH] EXPERIMENTAL: global suspend cleanup
+Subject: [PATCH] ppc32: PowerMac PM rework
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,61 +25,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Hi !
 
-(This is not to be merged upstream or anywhere else yet)
+This new version of my PM rework fixes bits & pieces, most
+significantly, improves suspend to disk by properly saving/restoring
+MacIO ASIC state, and fixes issues with suspend to disk vs. AGP/DRI.
 
-This patch applies on top of my previous ones. It moves all of the
-PowerMac PM code away from drivers/macintosh/via-pmu.c to a new
-arch/ppc/platforms/pmac_pm.c file, and "merges" the code for supporting
-suspend to RAM and suspend to disk in a more consistent way. It also
-fixes issues with suspend to disk. Currently, the refrigerator is still
-used for suspend to RAM _and_ suspend to disk, I may consider keeping it
-if it gets fast & reliable enough in 2.6.13 as it does work around
-issues with misbehaved userland processes vs. kernel driver races,
-though i'd rather have the kernel fixed :)
+Also, the previous patch had the backward compatible ioctl backward, it
+would suspend to disk instead of to RAM :)
 
-Note to linux-pm citizens: This merges the pmac PM code into the "core"
-PM infrastructure. In order to do that properly, I had to add a
-significant amount of callbacks to pm_ops, in fact, I need basically a
-hook between every step for various reasons. There is also some
-significant discrepancy between the hooks used by "generic" stuffs and
-the ones used by swsusp. The later doesn't call all the normal hooks in
-all cases but then has it's own support functions
-(arch_prepare_suspend(), save/restore_cpu_state()) that are not in
-pm_ops... this is rather a mess, though I got it all together for pmac.
+Applies on top of current git plus:
 
-Please comment on those changes.
+http://gate.crashing.org/~benh/ppc32-pmac-cpufreq-upd.diff
+http://gate.crashing.org/~benh/ppc32-pmac-pmu-irq-pri.diff
+http://gate.crashing.org/~benh/ppc32-pmu-wakeup.diff
 
-I also fixed what I think is a possible bug in device_suspend() if it
-fails, it can leave some stuffs in the dpm_irq_off list forever.
-
-I've also had to remove the sysdev I used for the interrupt controllers.
-I have an ordering problems here. I absolutely need the interrupt
-controller suspend code to be run after cpufreq and the resume one
-before cpufreq, which is simply not possible right now with a sysdev
-(unless I hook on the cpu class itself suspend/resume routines but
-that's ugly). cpufreq is a driver of class cpu, which is first
-registered, and thus is always the first in the list.
-
-For now, the PIC suspend/resume code is back into arch specific realm.
-
-I'm still having some problems with the refrigerator. It tends to
-regulary fail to freeze pmud for some reason I haven't yet explained. I
-need to add more debugging to it. But I may not bother if Nigel's new
-implementation gets in 2.6.13.
-
-I did some tests of both suspend to ram and to disk on an old tipb model
-and it appears to work fine, but I haven't stressed it nor tested on any
-other machine yet.
-
-Note that with this patch, you can use echo "mem" /sys/power/state to
-trigger suspend-to-RAM. The old ioctl on /dev/pmu still works, and will
-trigger suspend-to-RAM on machiens where it's supported and will
-fallback to suspend-to-disk when not.
+Please test and report any issue.
 
 Index: linux-work/arch/ppc/platforms/Makefile
 ===================================================================
---- linux-work.orig/arch/ppc/platforms/Makefile	2005-05-27 16:06:59.000000000 +1000
-+++ linux-work/arch/ppc/platforms/Makefile	2005-05-27 16:07:24.000000000 +1000
+--- linux-work.orig/arch/ppc/platforms/Makefile	2005-05-02 10:48:08.000000000 +1000
++++ linux-work/arch/ppc/platforms/Makefile	2005-05-28 10:30:21.000000000 +1000
 @@ -10,8 +10,9 @@
  obj-$(CONFIG_PCI)		+= apus_pci.o
  endif
@@ -94,8 +59,8 @@ Index: linux-work/arch/ppc/platforms/Makefile
 Index: linux-work/arch/ppc/platforms/pmac_pm.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-work/arch/ppc/platforms/pmac_pm.c	2005-05-27 16:07:24.000000000 +1000
-@@ -0,0 +1,782 @@
++++ linux-work/arch/ppc/platforms/pmac_pm.c	2005-05-28 11:58:16.000000000 +1000
+@@ -0,0 +1,802 @@
 +/*
 + * PowerMac Power Management core
 + *
@@ -130,6 +95,7 @@ Index: linux-work/arch/ppc/platforms/pmac_pm.c
 +#include <linux/cpu.h>
 +#include <linux/syscalls.h>
 +#include <linux/reboot.h>
++#include <linux/timer.h>
 +
 +#include <asm/prom.h>
 +#include <asm/machdep.h>
@@ -624,7 +590,6 @@ Index: linux-work/arch/ppc/platforms/pmac_pm.c
 +}
 +
 +
-+
 +/*************************************************************************
 + *
 + * Here are the callbacks interfacing with the common code.
@@ -633,11 +598,11 @@ Index: linux-work/arch/ppc/platforms/pmac_pm.c
 +
 +static inline void wakeup_decrementer(void)
 +{
-+	set_dec(tb_ticks_per_jiffy);
 +	/* No currently-supported powerbook has a 601,
 +	 * so use get_tbl, not native
 +	 */
-+	last_jiffy_stamp(0) = tb_last_stamp = get_tbl();
++	last_jiffy_stamp(0) = tb_last_stamp = get_native_tbl();
++	set_dec(1);
 +}
 +
 +static int __pmac pmac_pm_pre_freeze(suspend_state_t state)
@@ -684,7 +649,6 @@ Index: linux-work/arch/ppc/platforms/pmac_pm.c
 +	int ret;
 +
 +	DBG("%s(%d)\n", __FUNCTION__, state);
-+
 +
 +	/* Sleep can fail now. May not be very robust but useful for
 +	 * debugging
@@ -737,7 +701,7 @@ Index: linux-work/arch/ppc/platforms/pmac_pm.c
 +	return 0;
 +}
 +
-+static void __pmac pmac_pm_pre_suspend(void)
++static void __pmac pmac_pm_pre_suspend(suspend_state_t state)
 +{
 +	DBG("%s\n", __FUNCTION__);
 +
@@ -759,11 +723,24 @@ Index: linux-work/arch/ppc/platforms/pmac_pm.c
 +	if (cur_cpu_spec[0]->cpu_features & CPU_FTR_ALTIVEC)
 +		enable_kernel_altivec();
 +#endif /* CONFIG_ALTIVEC */
++
++	/* save ASIC state on suspend to disk */
++	if (state == PM_SUSPEND_DISK)
++		pmac_call_feature(PMAC_FTR_SLEEP_STATE,NULL,0,2);
 +}
 +
-+static void __pmac pmac_pm_post_suspend(void)
++static void __pmac pmac_pmdisk_save_state(void)
++{
++	pmac_pm_pre_suspend(PM_SUSPEND_DISK);
++}
++
++static void __pmac pmac_pm_post_suspend(suspend_state_t state)
 +{
 +	DBG("%s\n", __FUNCTION__);
++
++	/* Restore ASIC state on suspend to disk */
++	if (state == PM_SUSPEND_DISK)
++		pmac_call_feature(PMAC_FTR_SLEEP_STATE,NULL,0,0);
 +
 +	/* Restore the state of PCI config space for some slots */
 +	pbook_pci_restore();
@@ -778,6 +755,11 @@ Index: linux-work/arch/ppc/platforms/pmac_pm.c
 +	set_context(current->active_mm->context, current->active_mm->pgd);
 +}
 +
++static void __pmac pmac_pmdisk_restore_state(void)
++{
++	pmac_pm_post_suspend(PM_SUSPEND_DISK);
++}
++
 +static int __pmac pmac_pm_enter(suspend_state_t state)
 +{
 +	int rc = 0;
@@ -785,9 +767,9 @@ Index: linux-work/arch/ppc/platforms/pmac_pm.c
 +	DBG("%s(%d)\n", __FUNCTION__, state);
 +
 +	if (state == PM_SUSPEND_MEM) {
-+		pmac_pm_pre_suspend();
++		pmac_pm_pre_suspend(state);
 +		rc = pmac_pm_low_suspend();
-+		pmac_pm_post_suspend();
++		pmac_pm_post_suspend(state);
 +		
 +	} else if (state == PM_SUSPEND_DISK) {
 +		device_shutdown();
@@ -804,6 +786,9 @@ Index: linux-work/arch/ppc/platforms/pmac_pm.c
 +	/* That state only applies to suspend to RAM */
 +	if (state != PM_SUSPEND_MEM)
 +		return;
++
++	/* Force a fetch from the PIC on the first DEC interrupt. */
++	ppc_force_interrupt = 1;
 +
 +	/* Restart jiffies & scheduling */
 +	wakeup_decrementer();
@@ -868,8 +853,8 @@ Index: linux-work/arch/ppc/platforms/pmac_pm.c
 +	}
 +
 +#ifdef CONFIG_SOFTWARE_SUSPEND
-+	ppc_md.save_processor_state = pmac_pm_pre_suspend;
-+	ppc_md.restore_processor_state = pmac_pm_post_suspend;
++	ppc_md.save_processor_state = pmac_pmdisk_save_state;
++	ppc_md.restore_processor_state = pmac_pmdisk_restore_state;
 +#endif
 +
 +	pm_set_ops(&pmac_pm_ops);
@@ -880,8 +865,8 @@ Index: linux-work/arch/ppc/platforms/pmac_pm.c
 +late_initcall(pmac_pm_init);
 Index: linux-work/arch/ppc/platforms/pmac_setup.c
 ===================================================================
---- linux-work.orig/arch/ppc/platforms/pmac_setup.c	2005-05-27 16:06:59.000000000 +1000
-+++ linux-work/arch/ppc/platforms/pmac_setup.c	2005-05-27 16:07:24.000000000 +1000
+--- linux-work.orig/arch/ppc/platforms/pmac_setup.c	2005-05-02 10:48:08.000000000 +1000
++++ linux-work/arch/ppc/platforms/pmac_setup.c	2005-05-28 10:30:21.000000000 +1000
 @@ -423,68 +423,6 @@
  #endif
  }
@@ -962,9 +947,9 @@ Index: linux-work/arch/ppc/platforms/pmac_setup.c
  	    ROOT_DEV != DEFAULT_ROOT_DEVICE)
 Index: linux-work/drivers/base/power/suspend.c
 ===================================================================
---- linux-work.orig/drivers/base/power/suspend.c	2005-05-27 16:06:59.000000000 +1000
-+++ linux-work/drivers/base/power/suspend.c	2005-05-27 16:07:24.000000000 +1000
-@@ -100,8 +100,19 @@
+--- linux-work.orig/drivers/base/power/suspend.c	2005-05-26 13:27:08.000000000 +1000
++++ linux-work/drivers/base/power/suspend.c	2005-05-28 10:30:21.000000000 +1000
+@@ -113,8 +113,19 @@
  		put_device(dev);
  	}
  	up(&dpm_list_sem);
@@ -987,8 +972,8 @@ Index: linux-work/drivers/base/power/suspend.c
  }
 Index: linux-work/drivers/macintosh/via-pmu.c
 ===================================================================
---- linux-work.orig/drivers/macintosh/via-pmu.c	2005-05-27 16:06:59.000000000 +1000
-+++ linux-work/drivers/macintosh/via-pmu.c	2005-05-27 16:42:57.000000000 +1000
+--- linux-work.orig/drivers/macintosh/via-pmu.c	2005-05-28 10:30:17.000000000 +1000
++++ linux-work/drivers/macintosh/via-pmu.c	2005-05-28 10:30:21.000000000 +1000
 @@ -14,10 +14,7 @@
   * THIS DRIVER IS BECOMING A TOTAL MESS !
   *  - Cleanup atomically disabling reply to PMU events after
@@ -1918,9 +1903,9 @@ Index: linux-work/drivers/macintosh/via-pmu.c
 -		}
 -		sleep_in_progress = 0;
 +		if (pmac_call_feature(PMAC_FTR_SLEEP_STATE,NULL,0,-1) < 0)
-+			error = pm_suspend(PM_SUSPEND_MEM);		
-+		else
 +			error = pm_suspend(PM_SUSPEND_DISK);		
++		else
++			error = pm_suspend(PM_SUSPEND_MEM);		
  		return error;
  	case PMU_IOC_CAN_SLEEP:
  		if (pmac_call_feature(PMAC_FTR_SLEEP_STATE,NULL,0,-1) < 0)
@@ -2017,8 +2002,8 @@ Index: linux-work/drivers/macintosh/via-pmu.c
  
 Index: linux-work/include/asm-ppc/machdep.h
 ===================================================================
---- linux-work.orig/include/asm-ppc/machdep.h	2005-05-27 16:06:59.000000000 +1000
-+++ linux-work/include/asm-ppc/machdep.h	2005-05-27 16:07:24.000000000 +1000
+--- linux-work.orig/include/asm-ppc/machdep.h	2005-05-02 10:49:57.000000000 +1000
++++ linux-work/include/asm-ppc/machdep.h	2005-05-28 10:30:21.000000000 +1000
 @@ -110,6 +110,12 @@
  	 */
  	long (*feature_call)(unsigned int feature, ...);
@@ -2034,8 +2019,8 @@ Index: linux-work/include/asm-ppc/machdep.h
  	struct smp_ops_t *smp_ops;
 Index: linux-work/include/asm-ppc/suspend.h
 ===================================================================
---- linux-work.orig/include/asm-ppc/suspend.h	2005-05-27 16:06:59.000000000 +1000
-+++ linux-work/include/asm-ppc/suspend.h	2005-05-27 16:07:24.000000000 +1000
+--- linux-work.orig/include/asm-ppc/suspend.h	2005-05-02 10:49:59.000000000 +1000
++++ linux-work/include/asm-ppc/suspend.h	2005-05-28 10:30:21.000000000 +1000
 @@ -1,12 +1,44 @@
 +#ifndef __PPC_SUSPEND_H
 +#define __PPC_SUSPEND_H
@@ -2083,8 +2068,8 @@ Index: linux-work/include/asm-ppc/suspend.h
 +#endif /* __PPC_SUSPEND_H */
 Index: linux-work/include/linux/pm.h
 ===================================================================
---- linux-work.orig/include/linux/pm.h	2005-05-27 16:06:59.000000000 +1000
-+++ linux-work/include/linux/pm.h	2005-05-27 16:07:24.000000000 +1000
+--- linux-work.orig/include/linux/pm.h	2005-05-02 10:50:24.000000000 +1000
++++ linux-work/include/linux/pm.h	2005-05-28 10:30:21.000000000 +1000
 @@ -169,9 +169,38 @@
  
  struct pm_ops {
@@ -2127,8 +2112,8 @@ Index: linux-work/include/linux/pm.h
  extern void pm_set_ops(struct pm_ops *);
 Index: linux-work/include/linux/pmu.h
 ===================================================================
---- linux-work.orig/include/linux/pmu.h	2005-05-27 16:06:59.000000000 +1000
-+++ linux-work/include/linux/pmu.h	2005-05-27 16:07:24.000000000 +1000
+--- linux-work.orig/include/linux/pmu.h	2005-05-02 10:50:24.000000000 +1000
++++ linux-work/include/linux/pmu.h	2005-05-28 10:30:21.000000000 +1000
 @@ -151,6 +151,9 @@
  extern void pmu_suspend(void);
  extern void pmu_resume(void);
@@ -2141,8 +2126,8 @@ Index: linux-work/include/linux/pmu.h
  extern void pmu_restart(void);
 Index: linux-work/kernel/power/main.c
 ===================================================================
---- linux-work.orig/kernel/power/main.c	2005-05-27 16:06:59.000000000 +1000
-+++ linux-work/kernel/power/main.c	2005-05-27 16:09:28.000000000 +1000
+--- linux-work.orig/kernel/power/main.c	2005-05-26 13:27:08.000000000 +1000
++++ linux-work/kernel/power/main.c	2005-05-28 10:30:21.000000000 +1000
 @@ -23,6 +23,7 @@
  
  struct pm_ops * pm_ops = NULL;
@@ -2230,8 +2215,8 @@ Index: linux-work/kernel/power/main.c
  
 Index: linux-work/arch/ppc/platforms/pmac_pic.c
 ===================================================================
---- linux-work.orig/arch/ppc/platforms/pmac_pic.c	2005-05-27 16:06:59.000000000 +1000
-+++ linux-work/arch/ppc/platforms/pmac_pic.c	2005-05-27 16:07:24.000000000 +1000
+--- linux-work.orig/arch/ppc/platforms/pmac_pic.c	2005-05-02 10:48:08.000000000 +1000
++++ linux-work/arch/ppc/platforms/pmac_pic.c	2005-05-28 10:30:21.000000000 +1000
 @@ -619,7 +619,7 @@
  	return viaint;
  }
@@ -2276,9 +2261,9 @@ Index: linux-work/arch/ppc/platforms/pmac_pic.c
 +#endif
 Index: linux-work/arch/ppc/syslib/open_pic.c
 ===================================================================
---- linux-work.orig/arch/ppc/syslib/open_pic.c	2005-05-27 16:06:59.000000000 +1000
-+++ linux-work/arch/ppc/syslib/open_pic.c	2005-05-27 16:07:24.000000000 +1000
-@@ -948,11 +948,7 @@
+--- linux-work.orig/arch/ppc/syslib/open_pic.c	2005-05-28 10:30:17.000000000 +1000
++++ linux-work/arch/ppc/syslib/open_pic.c	2005-05-28 10:30:21.000000000 +1000
+@@ -946,11 +946,7 @@
  	save_irq_src_vp[irq - open_pic_irq_offset] |= OPENPIC_MASK;
  }
  
@@ -2291,7 +2276,7 @@ Index: linux-work/arch/ppc/syslib/open_pic.c
  {
  	int	i;
  	unsigned long flags;
-@@ -961,11 +957,9 @@
+@@ -959,11 +955,9 @@
  
  	if (openpic_suspend_count++ > 0) {
  		spin_unlock_irqrestore(&openpic_setup_lock, flags);
@@ -2304,7 +2289,7 @@ Index: linux-work/arch/ppc/syslib/open_pic.c
  	open_pic.enable = openpic_cached_enable_irq;
  	open_pic.disable = openpic_cached_disable_irq;
  
-@@ -975,6 +969,8 @@
+@@ -973,6 +967,8 @@
  				   OPENPIC_CURRENT_TASK_PRIORITY_MASK, 0xf);
  	}
  
@@ -2313,7 +2298,7 @@ Index: linux-work/arch/ppc/syslib/open_pic.c
  	for (i=0; i<OPENPIC_NUM_IPI; i++)
  		save_ipi_vp[i] = openpic_read(&OpenPIC->Global.IPI_Vector_Priority(i));
  	for (i=0; i<NumSources; i++) {
-@@ -985,15 +981,13 @@
+@@ -983,15 +979,13 @@
  	}
  
  	spin_unlock_irqrestore(&openpic_setup_lock, flags);
@@ -2330,7 +2315,7 @@ Index: linux-work/arch/ppc/syslib/open_pic.c
  {
  	int		i;
  	unsigned long	flags;
-@@ -1005,9 +999,11 @@
+@@ -1003,9 +997,11 @@
  
  	if ((--openpic_suspend_count) > 0) {
  		spin_unlock_irqrestore(&openpic_setup_lock, flags);
@@ -2343,7 +2328,7 @@ Index: linux-work/arch/ppc/syslib/open_pic.c
  	/* OpenPIC sometimes seem to need some time to be fully back up... */
  	do {
  		openpic_set_spurious(OPENPIC_VEC_SPURIOUS);
-@@ -1030,22 +1026,19 @@
+@@ -1028,22 +1024,19 @@
  		} while (openpic_readfield(&ISR[i]->Vector_Priority, vppmask)
  			 != (save_irq_src_vp[i] & vppmask));
  	}
@@ -2370,15 +2355,15 @@ Index: linux-work/arch/ppc/syslib/open_pic.c
  static struct sysdev_class openpic_sysclass = {
  	set_kset_name("openpic"),
  };
-@@ -1089,3 +1082,4 @@
+@@ -1087,3 +1080,4 @@
  
  subsys_initcall(init_openpic_sysfs);
  
 +#endif
 Index: linux-work/include/asm-ppc/open_pic.h
 ===================================================================
---- linux-work.orig/include/asm-ppc/open_pic.h	2005-05-27 16:06:59.000000000 +1000
-+++ linux-work/include/asm-ppc/open_pic.h	2005-05-27 16:08:12.000000000 +1000
+--- linux-work.orig/include/asm-ppc/open_pic.h	2005-05-28 10:29:53.000000000 +1000
++++ linux-work/include/asm-ppc/open_pic.h	2005-05-28 10:30:21.000000000 +1000
 @@ -64,6 +64,9 @@
  extern void openpic_set_priority(u_int pri);
  extern u_int openpic_get_priority(void);
@@ -2389,3 +2374,389 @@ Index: linux-work/include/asm-ppc/open_pic.h
  extern inline int openpic_to_irq(int irq)
  {
  	/* IRQ 0 usually means 'disabled'.. don't mess with it
+Index: linux-work/arch/ppc/kernel/time.c
+===================================================================
+--- linux-work.orig/arch/ppc/kernel/time.c	2005-05-02 10:48:08.000000000 +1000
++++ linux-work/arch/ppc/kernel/time.c	2005-05-28 10:30:21.000000000 +1000
+@@ -86,6 +86,7 @@
+ unsigned tb_to_us;
+ unsigned tb_last_stamp;
+ unsigned long tb_to_ns_scale;
++int ppc_force_interrupt;
+ 
+ extern unsigned long wall_jiffies;
+ 
+@@ -131,8 +132,11 @@
+ 	unsigned jiffy_stamp = last_jiffy_stamp(cpu);
+ 	extern void do_IRQ(struct pt_regs *);
+ 
+-	if (atomic_read(&ppc_n_lost_interrupts) != 0)
++	if ((atomic_read(&ppc_n_lost_interrupts) != 0) ||
++	    ppc_force_interrupt) {
++		ppc_force_interrupt = 0;
+ 		do_IRQ(regs);
++	}
+ 
+ 	irq_enter();
+ 
+Index: linux-work/arch/ppc/platforms/pmac_cpufreq.c
+===================================================================
+--- linux-work.orig/arch/ppc/platforms/pmac_cpufreq.c	2005-05-28 10:30:17.000000000 +1000
++++ linux-work/arch/ppc/platforms/pmac_cpufreq.c	2005-05-28 10:30:21.000000000 +1000
+@@ -112,11 +112,11 @@
+ 
+ static inline void wakeup_decrementer(void)
+ {
+-	set_dec(tb_ticks_per_jiffy);
+ 	/* No currently-supported powerbook has a 601,
+ 	 * so use get_tbl, not native
+ 	 */
+ 	last_jiffy_stamp(0) = tb_last_stamp = get_tbl();
++	set_dec(1);
+ }
+ 
+ #ifdef DEBUG_FREQ
+@@ -340,6 +340,9 @@
+ 	/* Restore interrupts */
+  	openpic_set_priority(pic_prio);
+ 
++	/* Force a fetch from the PIC on the first DEC interrupt. */
++	ppc_force_interrupt = 1;
++
+ 	/* Let interrupts flow again ... */
+ 	local_irq_restore(flags);
+ 
+Index: linux-work/arch/ppc/platforms/pmac_feature.c
+===================================================================
+--- linux-work.orig/arch/ppc/platforms/pmac_feature.c	2005-05-03 13:51:57.000000000 +1000
++++ linux-work/arch/ppc/platforms/pmac_feature.c	2005-05-28 10:30:21.000000000 +1000
+@@ -548,7 +548,7 @@
+ }
+ 
+ static void __pmac
+-heathrow_sleep(struct macio_chip* macio, int secondary)
++heathrow_sleep(struct macio_chip* macio, int secondary, int turnoff)
+ {
+ 	if (secondary) {
+ 		dbdma_save(macio, save_alt_dbdma);
+@@ -559,17 +559,22 @@
+ 		save_fcr[0] = MACIO_IN32(0x38);
+ 		save_fcr[1] = MACIO_IN32(0x3c);
+ 		save_mbcr = MACIO_IN32(0x34);
+-		/* Make sure sound is shut down */
+-		MACIO_BIS(HEATHROW_FCR, HRW_SOUND_POWER_N);
+-		MACIO_BIC(HEATHROW_FCR, HRW_SOUND_CLK_ENABLE);
+-		/* This seems to be necessary as well or the fan
+-		 * keeps coming up and battery drains fast */
+-		MACIO_BIC(HEATHROW_FCR, HRW_IOBUS_ENABLE);
+-		MACIO_BIC(HEATHROW_FCR, HRW_IDE0_RESET_N);
+-		/* Make sure eth is down even if module or sleep
+-		 * won't work properly */
+-		MACIO_BIC(HEATHROW_FCR, HRW_BMAC_IO_ENABLE | HRW_BMAC_RESET);
++		if (turnoff) {
++			/* Make sure sound is shut down */
++			MACIO_BIS(HEATHROW_FCR, HRW_SOUND_POWER_N);
++			MACIO_BIC(HEATHROW_FCR, HRW_SOUND_CLK_ENABLE);
++			/* This seems to be necessary as well or the fan
++			 * keeps coming up and battery drains fast */
++			MACIO_BIC(HEATHROW_FCR, HRW_IOBUS_ENABLE);
++			MACIO_BIC(HEATHROW_FCR, HRW_IDE0_RESET_N);
++			/* Make sure eth is down even if module or sleep
++			 * won't work properly */
++			MACIO_BIC(HEATHROW_FCR,
++				  HRW_BMAC_IO_ENABLE | HRW_BMAC_RESET);
++		}
+ 	}
++	if (!turnoff)
++		return;
+ 	/* Make sure modem is shut down */
+ 	MACIO_OUT8(HRW_GPIO_MODEM_RESET,
+ 		MACIO_IN8(HRW_GPIO_MODEM_RESET) & ~1);
+@@ -612,12 +617,16 @@
+ 		return -EPERM;
+ 	if (value == 1) {
+ 		if (macio_chips[1].type == macio_gatwick)
+-			heathrow_sleep(&macio_chips[0], 1);
+-		heathrow_sleep(&macio_chips[0], 0);
++			heathrow_sleep(&macio_chips[1], 1, 1);
++		heathrow_sleep(&macio_chips[0], 0, 1);
++	} else if (value == 2) {
++		if (macio_chips[1].type == macio_gatwick)
++			heathrow_sleep(&macio_chips[1], 1, 0);
++		heathrow_sleep(&macio_chips[0], 0, 0);
+ 	} else if (value == 0) {
+ 		heathrow_wakeup(&macio_chips[0], 0);
+ 		if (macio_chips[1].type == macio_gatwick)
+-			heathrow_wakeup(&macio_chips[0], 1);
++			heathrow_wakeup(&macio_chips[1], 1);
+ 	}
+ 	return 0;
+ }
+@@ -1699,7 +1708,7 @@
+ 
+ 
+ static int __pmac
+-core99_sleep(void)
++core99_sleep(int turnoff)
+ {
+ 	struct macio_chip* macio;
+ 	int i;
+@@ -1709,26 +1718,28 @@
+ 	    macio->type != macio_intrepid)
+ 		return -ENODEV;
+ 
+-	/* We power off the wireless slot in case it was not done
+-	 * by the driver. We don't power it on automatically however
+-	 */
+-	if (macio->flags & MACIO_FLAG_AIRPORT_ON)
+-		core99_airport_enable(macio->of_node, 0, 0);
++	if (turnoff) {
++		/* We power off the wireless slot in case it was not done
++		 * by the driver. We don't power it on automatically however
++		 */
++		if (macio->flags & MACIO_FLAG_AIRPORT_ON)
++			core99_airport_enable(macio->of_node, 0, 0);
+ 
+-	/* We power off the FW cable. Should be done by the driver... */
+-	if (macio->flags & MACIO_FLAG_FW_SUPPORTED) {
+-		core99_firewire_enable(NULL, 0, 0);
+-		core99_firewire_cable_power(NULL, 0, 0);
+-	}
++		/* We power off the FW cable.Should be done by the driver... */
++		if (macio->flags & MACIO_FLAG_FW_SUPPORTED) {
++			core99_firewire_enable(NULL, 0, 0);
++			core99_firewire_cable_power(NULL, 0, 0);
++		}
+ 
+-	/* We make sure int. modem is off (in case driver lost it) */
+-	if (macio->type == macio_keylargo)
+-		core99_modem_enable(macio->of_node, 0, 0);
+-	else
+-		pangea_modem_enable(macio->of_node, 0, 0);
++		/* We make sure int. modem is off (in case driver lost it) */
++		if (macio->type == macio_keylargo)
++			core99_modem_enable(macio->of_node, 0, 0);
++		else
++			pangea_modem_enable(macio->of_node, 0, 0);
+ 
+-	/* We make sure the sound is off as well */
+-	core99_sound_chip_enable(macio->of_node, 0, 0);
++		/* We make sure the sound is off as well */
++		core99_sound_chip_enable(macio->of_node, 0, 0);
++	}
+ 
+ 	/*
+ 	 * Save various bits of KeyLargo
+@@ -1756,26 +1767,32 @@
+ 	/* Save state & config of DBDMA channels */
+ 	dbdma_save(macio, save_dbdma);
+ 
+-	/*
+-	 * Turn off as much as we can
+-	 */
+-	if (macio->type == macio_pangea)
+-		pangea_shutdown(macio, 1);
+-	else if (macio->type == macio_intrepid)
+-		intrepid_shutdown(macio, 1);
+-	else if (macio->type == macio_keylargo)
+-		keylargo_shutdown(macio, 1);
++	if (turnoff) {
++		/*
++		 * Turn off as much as we can
++		 */
++		if (macio->type == macio_pangea)
++			pangea_shutdown(macio, 1);
++		else if (macio->type == macio_intrepid)
++			intrepid_shutdown(macio, 1);
++		else if (macio->type == macio_keylargo)
++			keylargo_shutdown(macio, 1);
++	}
+ 
+ 	/*
+-	 * Put the host bridge to sleep
++	 * Save host bridge state and put to sleep
+ 	 */
+ 
+ 	save_unin_clock_ctl = UN_IN(UNI_N_CLOCK_CNTL);
+-	/* Note: do not switch GMAC off, driver does it when necessary, WOL must keep it
+-	 * enabled !
++
++	if (!turnoff)
++		return 0;
++
++	/* Note: do not switch GMAC off, driver does it when necessary,
++	 * WOL must keep it  enabled !
+ 	 */
+ 	UN_OUT(UNI_N_CLOCK_CNTL, save_unin_clock_ctl &
+-	       ~(/*UNI_N_CLOCK_CNTL_GMAC|*/UNI_N_CLOCK_CNTL_FW/*|UNI_N_CLOCK_CNTL_PCI*/));
++	       ~(UNI_N_CLOCK_CNTL_FW));
+ 	udelay(100);
+ 	UN_OUT(UNI_N_HWINIT_STATE, UNI_N_HWINIT_STATE_SLEEPING);
+ 	UN_OUT(UNI_N_POWER_MGT, UNI_N_POWER_MGT_SLEEP);
+@@ -1876,7 +1893,9 @@
+ 		return -EPERM;
+ 
+ 	if (value == 1)
+-		return core99_sleep();
++		return core99_sleep(1);
++	else if (value == 2)
++		return core99_sleep(0);
+ 	else if (value == 0)
+ 		return core99_wake_up();
+ 	return 0;
+Index: linux-work/include/asm-ppc/pmac_feature.h
+===================================================================
+--- linux-work.orig/include/asm-ppc/pmac_feature.h	2005-05-03 13:51:57.000000000 +1000
++++ linux-work/include/asm-ppc/pmac_feature.h	2005-05-28 10:30:21.000000000 +1000
+@@ -245,6 +245,7 @@
+  * set the sleep state of the motherboard.
+  *
+  * Pass -1 as value to query for sleep capability
++ * Pass 2 to save state & not sleep
+  * Pass 1 to set IOs to sleep
+  * Pass 0 to set IOs to wake
+  */
+Index: linux-work/include/asm-ppc/irq.h
+===================================================================
+--- linux-work.orig/include/asm-ppc/irq.h	2005-05-02 10:49:57.000000000 +1000
++++ linux-work/include/asm-ppc/irq.h	2005-05-28 10:30:21.000000000 +1000
+@@ -391,6 +391,7 @@
+ extern unsigned long ppc_cached_irq_mask[NR_MASK_WORDS];
+ extern unsigned long ppc_lost_interrupts[NR_MASK_WORDS];
+ extern atomic_t ppc_n_lost_interrupts;
++extern int ppc_force_interrupt;
+ 
+ struct irqaction;
+ struct pt_regs;
+Index: linux-work/drivers/ide/ide-io.c
+===================================================================
+--- linux-work.orig/drivers/ide/ide-io.c	2005-05-02 10:48:09.000000000 +1000
++++ linux-work/drivers/ide/ide-io.c	2005-05-28 10:30:21.000000000 +1000
+@@ -150,7 +150,7 @@
+ 
+ 	switch (rq->pm->pm_step) {
+ 	case ide_pm_flush_cache:	/* Suspend step 1 (flush cache) complete */
+-		if (rq->pm->pm_state == 4)
++		if (rq->pm->pm_state == PM_SUSPEND_DISK)
+ 			rq->pm->pm_step = ide_pm_state_completed;
+ 		else
+ 			rq->pm->pm_step = idedisk_pm_standby;
+Index: linux-work/drivers/video/aty/aty128fb.c
+===================================================================
+--- linux-work.orig/drivers/video/aty/aty128fb.c	2005-05-02 10:48:53.000000000 +1000
++++ linux-work/drivers/video/aty/aty128fb.c	2005-05-28 10:30:21.000000000 +1000
+@@ -2337,21 +2337,15 @@
+ 	 * can properly take care of D3 ? Also, with swsusp, we
+ 	 * know we'll be rebooted, ...
+ 	 */
+-#ifdef CONFIG_PPC_PMAC
+-	/* HACK ALERT ! Once I find a proper way to say to each driver
+-	 * individually what will happen with it's PCI slot, I'll change
+-	 * that. On laptops, the AGP slot is just unclocked, so D2 is
+-	 * expected, while on desktops, the card is powered off
+-	 */
+-	if (state >= 3)
+-		state = 2;
+-#endif /* CONFIG_PPC_PMAC */
+ 	 
+-	if (state != 2 || state == pdev->dev.power.power_state)
++	if (pdev->dev.power.power_state)
+ 		return 0;
+ 
+ 	printk(KERN_DEBUG "aty128fb: suspending...\n");
+ 	
++	if (state == PM_SUSPEND_DISK)
++		goto skip;
++
+ 	acquire_console_sem();
+ 
+ 	fb_set_suspend(info, 1);
+@@ -2381,12 +2375,11 @@
+ 	 * used dummy fb ops, 2.5 need proper support for this at the
+ 	 * fbdev level
+ 	 */
+-	if (state == 2)
+-		aty128_set_suspend(par, 1);
++	aty128_set_suspend(par, 1);
+ 
+ 	release_console_sem();
+-
+-	pdev->dev.power.power_state = state;
++ skip:
++	pdev->dev.power.power_state = 1;
+ 
+ 	return 0;
+ }
+@@ -2400,8 +2393,7 @@
+ 		return 0;
+ 
+ 	/* Wakeup chip */
+-	if (pdev->dev.power.power_state == 2)
+-		aty128_set_suspend(par, 0);
++	aty128_set_suspend(par, 0);
+ 	par->asleep = 0;
+ 
+ 	/* Restore display & engine */
+Index: linux-work/drivers/char/agp/uninorth-agp.c
+===================================================================
+--- linux-work.orig/drivers/char/agp/uninorth-agp.c	2005-05-02 10:48:09.000000000 +1000
++++ linux-work/drivers/char/agp/uninorth-agp.c	2005-05-28 11:37:38.000000000 +1000
+@@ -347,6 +347,8 @@
+ 	struct agp_bridge_data *bridge;
+ 	u32 command;
+ 
++	uninorth_configure();
++
+ 	bridge = agp_find_bridge(pdev);
+ 	if (bridge == NULL)
+ 		return -ENODEV;
+Index: linux-work/drivers/video/aty/radeon_base.c
+===================================================================
+--- linux-work.orig/drivers/video/aty/radeon_base.c	2005-05-28 11:25:03.000000000 +1000
++++ linux-work/drivers/video/aty/radeon_base.c	2005-05-28 11:31:14.000000000 +1000
+@@ -2036,7 +2036,7 @@
+  */
+ #ifdef CONFIG_PPC_OF
+ #undef SET_MC_FB_FROM_APERTURE
+-static void fixup_memory_mappings(struct radeonfb_info *rinfo)
++void radeon_fixup_memory_mappings(struct radeonfb_info *rinfo)
+ {
+ 	u32 save_crtc_gen_cntl, save_crtc2_gen_cntl = 0;
+ 	u32 save_crtc_ext_cntl;
+@@ -2360,7 +2360,7 @@
+ 	 * to cause lockups when enabling the engine. We reconfigure
+ 	 * the card internal memory mappings properly
+ 	 */
+-	fixup_memory_mappings(rinfo);
++	radeon_fixup_memory_mappings(rinfo);
+ #endif /* CONFIG_PPC_OF */
+ 
+ 	/* Get VRAM size and type */
+Index: linux-work/drivers/video/aty/radeon_pm.c
+===================================================================
+--- linux-work.orig/drivers/video/aty/radeon_pm.c	2005-05-28 11:25:03.000000000 +1000
++++ linux-work/drivers/video/aty/radeon_pm.c	2005-05-28 11:26:41.000000000 +1000
+@@ -2659,8 +2659,10 @@
+ 			radeon_set_suspend(rinfo, 0);
+ 
+ 		rinfo->asleep = 0;
+-	} else
++	} else {
++		radeon_fixup_memory_mappings(rinfo);
+ 		radeon_engine_idle();
++	}
+ 
+ 	/* Restore display & engine */
+ 	radeon_write_mode (rinfo, &rinfo->state, 1);
+Index: linux-work/drivers/video/aty/radeonfb.h
+===================================================================
+--- linux-work.orig/drivers/video/aty/radeonfb.h	2005-05-02 10:48:53.000000000 +1000
++++ linux-work/drivers/video/aty/radeonfb.h	2005-05-28 11:25:54.000000000 +1000
+@@ -618,6 +618,7 @@
+ extern void radeonfb_engine_reset(struct radeonfb_info *rinfo);
+ 
+ /* Other functions */
++extern void radeon_fixup_memory_mappings(struct radeonfb_info *rinfo);
+ extern int radeon_screen_blank(struct radeonfb_info *rinfo, int blank, int mode_switch);
+ extern void radeon_write_mode (struct radeonfb_info *rinfo, struct radeon_regs *mode,
+ 			       int reg_only);
