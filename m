@@ -1,19 +1,22 @@
-Return-Path: <wd@denx.de>
-Received: from mailout09.sul.t-online.com (mailout09.sul.t-online.com
-	[194.25.134.84]) by ozlabs.org (Postfix) with ESMTP id 4C658679F0
+Return-Path: <lagrange@fr.oleane.com>
+Received: from relay02s.clb.oleane.net (relay02s.clb.oleane.net
+	[213.56.31.143]) by ozlabs.org (Postfix) with ESMTP id 63CB1679F0
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 30 May 2005 17:55:15 +1000 (EST)
-To: "tuotuo wang" <dvdstar@hotmail.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 30 May 2005 01:07:05 -0000."
-	<BAY24-F40F8F31EEE582D1E998CFEAD030@phx.gbl>
-Date: Mon, 30 May 2005 09:54:44 +0200
-Sender: wd@denx.de
-Message-Id: <20050530075449.2F141C1512@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: FW: Re: load u-boot.bin failure with BDI2000 
+	Mon, 30 May 2005 20:13:41 +1000 (EST)
+Received: from smtp10.clb.oleane.net (smtp10.clb.oleane.net [213.56.31.32])
+	by relay02s.clb.oleane.net with ESMTP id j4UADRqP027069
+	for <linuxppc-embedded@ozlabs.org>; Mon, 30 May 2005 12:13:39 +0200
+Received: from GEG2400 ([62.160.30.216]) (authenticated)
+	by smtp10.clb.oleane.net with ESMTP id j4U9sfrw023882
+	for <linuxppc-embedded@ozlabs.org>; Mon, 30 May 2005 11:54:45 +0200
+From: "Laurent Lagrange" <lagrange@fr.oleane.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Mon, 30 May 2005 11:55:00 +0200
+Message-ID: <000001c564fd$aa5aad60$5201a8c0@GEG2400>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Embedded PowerPC with more than 2Go of RAM.
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,27 +27,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <BAY24-F40F8F31EEE582D1E998CFEAD030@phx.gbl> you wrote:
-> 
-> You know,my config file of BDI2000 is download from www.denx.de,because 
-> there have the sbc8260's.My board run the ppcboot at first,and i can use my 
-> BDI2000 properly with this config file.
 
-Most probably you erased the flash  (including  the  HRCW)  and  then
-power-cycled  the  board.  Now your board cannot find a valid HRCW at
-poweron which leaves the CPU in a unusable state in  which  not  even
-JTAG access is working.
+Hi all,
 
-There should be a jumper or  switch  on  your  board  to  enable  the
-default  configuration  - search for RSTCONF or so. Note that you may
-have  to  adjust  the  config  file  for  the  default  configuration
-(BOOTADDR and maybe others, too).
+We want to design a PCI host embedded PowerPC board with a 3Go local RAM
+memory.
+This processor is a MPC74xx with an internal 32 bits and an external 36 bits
+address bus.
 
-Best regards,
+Usually, the mapping is :
+0x00000000-0x80000000 : physical RAM
+0x80000000-0xc0000000 : PCI memory access
+0xc0000000-0xf0000000 : kernel virtual memory
+0xf0000000-0xffffffff : IO area access
 
-Wolfgang Denk
+1) On this board, the physical memory will be :
+0x00000000-0xc0000000 : physical RAM
+Where could we map PCI memory space ?
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-You can observe a lot just by watchin'.                  - Yogi Berra
+2) The kernel virtual memory usually has the same size as the physical RAM
+(two memory footprint for the same physical space ! ).
+The kernel virtual memory will be :
+0xc0000000-0x180000000 : kernel virtual memory
+Where could we map IO space ?
+
+3) Usually, all the host memory is mapped on pci bus. For a 32bits pci bus,
+we could not do this.
+Is it possible to only map on pci, the DMA memory area which is managed with
+the kmalloc(size, GFP_DMA)
+and kfree functions ? How can we set the DMA memory parameters (base address
+and size) ?
+
+Thanks for any idea
+
+Laurent
