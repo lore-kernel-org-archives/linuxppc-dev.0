@@ -1,17 +1,23 @@
-Return-Path: <dvdstar@hotmail.com>
-Received: from hotmail.com (bay24-f13.bay24.hotmail.com [64.4.18.63])
-	by ozlabs.org (Postfix) with ESMTP id D784F679FF
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutvdomng.kundenserver.de (moutvdom.kundenserver.de
+	[212.227.126.249]) by ozlabs.org (Postfix) with ESMTP id 07477679E9
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 30 May 2005 23:53:48 +1000 (EST)
-Message-ID: <BAY24-F13C488DFC6E58694D59ED0AD030@phx.gbl>
-In-Reply-To: <20050530110550.44528.qmail@web15810.mail.cnb.yahoo.com>
-From: "tuotuo wang" <dvdstar@hotmail.com>
-To: samlinuxppc@yahoo.com.cn
-Date: Mon, 30 May 2005 13:53:46 +0000
-Mime-Version: 1.0
-Content-Type: text/plain; charset=gb2312; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: FW: Re: load u-boot.bin failure with BDI2000
+	Tue, 31 May 2005 01:04:17 +1000 (EST)
+Received: from [212.227.126.221] (helo=mrvdomng.kundenserver.de)
+	by moutvdomng.kundenserver.de with esmtp (Exim 3.35 #1)
+	id 1DcloN-0004Wo-00
+	for linuxppc-embedded@ozlabs.org; Mon, 30 May 2005 17:04:15 +0200
+Received: from [84.154.92.251] (helo=[192.168.1.10])
+	by mrvdomng.kundenserver.de with esmtp (Exim 3.35 #1)
+	id 1DcloN-0005io-00
+	for linuxppc-embedded@ozlabs.org; Mon, 30 May 2005 17:04:15 +0200
+Message-ID: <429B2B54.1060504@anagramm.de>
+Date: Mon, 30 May 2005 17:03:48 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Complete ccsr map for mpc8540 available?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,40 +28,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-hello,sam song:
-   I have try my best to do this.I haven't another equipment,even the 
-additional memory bank.
+Hi, There!
 
-Mr.denk:
-      I konw i must change the DIP switch,the actual problem to me is i 
-don't konw how to deal with the config file.Could you give me some clear 
-help.
+I want to access the local bus controller (LBC) registers
+of the mpc8540 from within a module.
+Therefore I want to use similar structures as for the 8560's cpm2_immr
+or the 8xx. However, I was not able to find a complete ccsr map for the 
+mpc8540 in the 2.6.11.x kernels. (immap_85xx.h, 8xx_immr.h, ...)
 
->From: Sam Song <samlinuxppc@yahoo.com.cn>
->To: tuotuo wang <dvdstar@hotmail.com>
->CC: linuxppc-embedded@ozlabs.org
->Subject: Re: FW: Re: load u-boot.bin failure with BDI2000 
->Date: Mon, 30 May 2005 19:05:49 +0800 (CST)
->
->---"tuotuo wang" <dvdstar@hotmail.com> wrote:
-> > > You know,my config file of BDI2000 is download
-> > > from www.denx.de,because
-> > > there have the sbc8260's.My board run the ppcboot
-> > > at first,and i can use my
-> > > BDI2000 properly with this config file.
->
->I perfer u to try again before taking a more
->complicated action. Just leave target itself and
->BDI2000, remove any other peripheral equipment.
->Perhaps it could recover from such a failure.
->
->I had the similar experience on 8xx board. Don't
->know whether it works for 82xx.
->
->Best regards,
->
->Sam
->
+Can someone point me to get the memc_brx / orx and friends for mpc8540?
+(the complete CCSR map.) Or some code to recycle?
+Or do I need to patch more into immap_85xx.h on my own? I just want to
+avoid to do duplicate work.
 
-_________________________________________________________________
-与联机的朋友进行交流，请使用 MSN Messenger:  http://messenger.msn.com/cn  
+Or is it better to extend the fsl_ocp or the platform device structures?
+
+Thanks,
+
+Clemens Koller
+_______________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Str. 45/1
+81379 Muenchen
+Germany
+
+http://www.anagramm.de
+Phone: +49-89-741518-50
+Fax: +49-89-741518-19
