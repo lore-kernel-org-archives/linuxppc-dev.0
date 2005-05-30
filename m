@@ -1,18 +1,17 @@
-Return-Path: <g.jaeger@sysgo.com>
-Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
-	by ozlabs.org (Postfix) with ESMTP id 24CE467A07
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15801.mail.cnb.yahoo.com (web15801.mail.cnb.yahoo.com
+	[202.165.102.81]) by ozlabs.org (Postfix) with SMTP id 3F534679F9
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 30 May 2005 20:23:49 +1000 (EST)
-From: Gerhard Jaeger <g.jaeger@sysgo.com>
-To: linuxppc-embedded@ozlabs.org
-Date: Mon, 30 May 2005 12:23:35 +0200
-References: <DCEAAC0833DD314AB0B58112AD99B93B8593A1@ismail.innsys.innovsys.com>
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B8593A1@ismail.innsys.innovsys.com>
+	Mon, 30 May 2005 20:56:31 +1000 (EST)
+Message-ID: <20050530105629.68312.qmail@web15801.mail.cnb.yahoo.com>
+Date: Mon, 30 May 2005 18:56:29 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: lonelobo <lonelobo@163.com>
+In-Reply-To: <429AE4A8.000013.14311@m150.163.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200505301223.35968.g.jaeger@sysgo.com>
-Subject: Re: Cross compiler
+Content-Type: text/plain; charset=gb2312
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: I cant stop at the break point !
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,32 +22,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+--- lonelobo <lonelobo@163.com> wrote:
 
-On Thursday 26 May 2005 17:33, Rune Torgersen wrote:
-> Anybody know how to set up a cross compiler for nptl support?
-> 
-> I'm trying to use crosstools to compile a gcc-3.4.3/glibc-2.3.4 for
-> ppc-604 (actually for mpc826x) on i686.
+> hello every one! when I debug the u-boot with
+> bdi2000 ,I set the break point at the 
+> board_init_r but it cannot stop there. I do this as
 
-which version of crosstools?
+Two things you need to take care.
+First, you sent your message to a wrong maillist. 
+Questions related u-boot pls go to u-boot maillist.
+Second, send your message in plain text to maillist.
+HTML is not welcome. Pls adjust your mail preference.
 
-> It works if I make it with linuxthreads.
-> If I do GLIBC_ADDON_OPTIONS==nptl ./my-ppc604_new.sh
-> Then glibc configure fails with an error about needing a gcc with forced
-> unwind support.
-> 
-> If I try to set up gcc options to enable threading, then GCC core
-> compile fails with error that it cannot find pthread.h
-> 
-> Anybody know of a solution?
+Thanks,
 
-have you checked out:
-http://www.wwwdotorg.org/writings/code/nptl_tool/nptl_tool.html
+Sam
 
-Gerhard
-
--- 
-Gerhard Jaeger <gjaeger@sysgo.com>            
-SYSGO AG                      Embedded and Real-Time Software
-www.sysgo.com | www.elinos.com | www.pikeos.com | www.osek.de 
+_________________________________________________________
+Do You Yahoo!?
+注册世界一流品质的雅虎免费电邮
+http://cn.rd.yahoo.com/mail_cn/tag/1g/*http://cn.mail.yahoo.com/
