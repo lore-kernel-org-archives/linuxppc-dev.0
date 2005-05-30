@@ -1,24 +1,17 @@
-Return-Path: <Ennio.Turconi@italtel.it>
-Received: from ns.italtel.it (ns.italtel.it [138.132.53.3])
-	by ozlabs.org (Postfix) with ESMTP id 67C4567A05
+Return-Path: <dvdstar@hotmail.com>
+Received: from hotmail.com (bay24-f13.bay24.hotmail.com [64.4.18.63])
+	by ozlabs.org (Postfix) with ESMTP id D784F679FF
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 30 May 2005 23:22:16 +1000 (EST)
-Received: from ns.italtel.it (localhost [127.0.0.1])
-	by ns.italtel.it (8.12.11/8.12.11) with ESMTP id j4UDMDiw006014
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 30 May 2005 15:22:14 +0200 (MEST)
-Received: from ICSSW035.corp.dom (icssw035.settimo.italtel.it [138.132.90.72])
-	by ns.italtel.it (8.12.11/8.12.11) with ESMTP id j4UDMCNc005993
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 30 May 2005 15:22:13 +0200 (MEST)
-Date: Mon, 30 May 2005 15:22:07 +0200
-Message-ID: <E8C53B167EBC9045BD1861C36916BD2D7C2832@BESTWO.corp.dom>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-From: "Turconi Ennio Angelo" <Ennio.Turconi@italtel.it>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Error in fcc_enet driver in 2.6.10 version
+	Mon, 30 May 2005 23:53:48 +1000 (EST)
+Message-ID: <BAY24-F13C488DFC6E58694D59ED0AD030@phx.gbl>
+In-Reply-To: <20050530110550.44528.qmail@web15810.mail.cnb.yahoo.com>
+From: "tuotuo wang" <dvdstar@hotmail.com>
+To: samlinuxppc@yahoo.com.cn
+Date: Mon, 30 May 2005 13:53:46 +0000
+Mime-Version: 1.0
+Content-Type: text/plain; charset=gb2312; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: FW: Re: load u-boot.bin failure with BDI2000
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,39 +22,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi everybody.
-I think I found out an error in arch/ppc/8260io/fcc_enet.c source =
-(kernel version Vanilla 2.6.10).
-When obtaining the pointer to the CPM DPRAM, ioremap() is not used.
-In 85xx architecture, it causes a bus error each time the driver =
-attempts to access
-a location in the CCSRBAR region.
+hello,sam song:
+   I have try my best to do this.I haven't another equipment,even the 
+additional memory bank.
 
-I used the follwing patch (valid only for 85xx devices)
+Mr.denk:
+      I konw i must change the DIP switch,the actual problem to me is i 
+don't konw how to deal with the config file.Could you give me some clear 
+help.
 
---- fcc_enet.c  2004-12-24 22:34:44.000000000 +0100
-+++ fcc_enet_new.c      2005-05-30 15:00:38.000000000 +0200
-@@ -1450,7 +1450,7 @@
-        volatile        cpm2_map_t              *immap;
-        volatile        iop_cpm2_t      *io;
+>From: Sam Song <samlinuxppc@yahoo.com.cn>
+>To: tuotuo wang <dvdstar@hotmail.com>
+>CC: linuxppc-embedded@ozlabs.org
+>Subject: Re: FW: Re: load u-boot.bin failure with BDI2000 
+>Date: Mon, 30 May 2005 19:05:49 +0800 (CST)
+>
+>---"tuotuo wang" <dvdstar@hotmail.com> wrote:
+> > > You know,my config file of BDI2000 is download
+> > > from www.denx.de,because
+> > > there have the sbc8260's.My board run the ppcboot
+> > > at first,and i can use my
+> > > BDI2000 properly with this config file.
+>
+>I perfer u to try again before taking a more
+>complicated action. Just leave target itself and
+>BDI2000, remove any other peripheral equipment.
+>Perhaps it could recover from such a failure.
+>
+>I had the similar experience on 8xx board. Don't
+>know whether it works for 82xx.
+>
+>Best regards,
+>
+>Sam
+>
 
--       immap =3D (cpm2_map_t *)CPM_MAP_ADDR;     /* and to internal =
-registers */
-+       immap =3D (cpm2_map_t *)ioremap(CPM_MAP_ADDR,MPC85xx_CPM_SIZE);  =
- /* and to i
-nternal registers */
-        io =3D &immap->im_ioport;
-
-        np =3D sizeof(fcc_ports) / sizeof(fcc_info_t);
-
-
-Can anyone tell me why a 1 to 1 logical to physical mapping was assumed?
-
-Ennio Turconi
-Senior Fw Designer
-Gateway Products
-ITALTEL SpA
-Settimo Mil., Italy
-
-
-=20
+_________________________________________________________________
+与联机的朋友进行交流，请使用 MSN Messenger:  http://messenger.msn.com/cn  
