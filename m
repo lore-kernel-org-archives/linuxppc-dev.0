@@ -1,16 +1,18 @@
-Return-Path: <lonelobo@163.com>
-Received: from 163.com (unknown [202.108.44.150])
-	by ozlabs.org (Postfix) with SMTP id D2042679FB
+Return-Path: <g.jaeger@sysgo.com>
+Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
+	by ozlabs.org (Postfix) with ESMTP id 24CE467A07
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 30 May 2005 20:17:54 +1000 (EST)
-MIME-Version: 1.0
-Message-ID: <429AE4A8.000013.14311@m150.163.com>
-Date: Mon, 30 May 2005 18:02:16 +0800 (CST)
-From: "=?gb2312?B?bG9uZWxvYm8=?=" <lonelobo@163.com>
+	Mon, 30 May 2005 20:23:49 +1000 (EST)
+From: Gerhard Jaeger <g.jaeger@sysgo.com>
 To: linuxppc-embedded@ozlabs.org
-Content-Type: Multipart/Alternative;
-	boundary="Boundary-=_RiWISvJBvKihMQFlvFNQlVUqZWaa"
-Subject: I cant stop at the break point !
+Date: Mon, 30 May 2005 12:23:35 +0200
+References: <DCEAAC0833DD314AB0B58112AD99B93B8593A1@ismail.innsys.innovsys.com>
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B8593A1@ismail.innsys.innovsys.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200505301223.35968.g.jaeger@sysgo.com>
+Subject: Re: Cross compiler
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,43 +23,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
---Boundary-=_RiWISvJBvKihMQFlvFNQlVUqZWaa
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
+On Thursday 26 May 2005 17:33, Rune Torgersen wrote:
+> Anybody know how to set up a cross compiler for nptl support?
+> 
+> I'm trying to use crosstools to compile a gcc-3.4.3/glibc-2.3.4 for
+> ppc-604 (actually for mpc826x) on i686.
 
-aGVsbG8gZXZlcnkgb25lISB3aGVuIEkgZGVidWcgdGhlIHUtYm9vdCB3aXRoIGJkaTIwMDAg
-LEkgc2V0IHRoZSBicmVhayBwb2ludCBhdCB0aGUgDQpib2FyZF9pbml0X3IgYnV0IGl0IGNh
-bm5vdCBzdG9wIHRoZXJlLiBJIGRvIHRoaXMgYXMgZmVsbG93OiAxLnN5bWJvbC1maWxlIA0K
-Mi5hZGQtc3ltYm9sLWZpbGUgdS1ib290IGFkZHJlc3MgMy5iIGJvYXJkX2luaXRfciA0LiBj
-ICBUaGUgYWRkcmVzcyBpcyB3aGljaCB1LWJvb3QgcmVsb2FkZWQgaXRzZWxmIHRvLkkgZ2V0
-IHRoZSBhZGRyZWVzIGJ5IHByaW50aW5nIGJlZm9yZSB1LWJvb3QgcmVsb2NhdGVkLiB3aGF0
-J3MgbW9yZSxJVCBjYW4gc3RvcCB3aGVuIEkgc2V0IHRoZSBoYXJkIGJyZWFrIHBvaW50IHRo
-ZXJlISBwbGVhc2UgaGVscCBtZSAhdGhhbmtzIQ==
---Boundary-=_RiWISvJBvKihMQFlvFNQlVUqZWaa
-Content-Type: text/html; charset="gb2312"
-Content-Transfer-Encoding: base64
+which version of crosstools?
 
-aGVsbG8gZXZlcnkgb25lISB3aGVuIEkgZGVidWcgdGhlIHUtYm9vdCB3aXRoIGJkaTIwMDAg
-LEkgc2V0IHRoZSBicmVhayBwb2ludCBhdCB0aGUgPGJyPmJvYXJkX2luaXRfciBidXQgaXQg
-Y2Fubm90IHN0b3AgdGhlcmUuIEkgZG8gdGhpcyBhcyBmZWxsb3c6IDEuc3ltYm9sLWZpbGUg
-PGJyPjIuYWRkLXN5bWJvbC1maWxlIHUtYm9vdCBhZGRyZXNzIDMuYiBib2FyZF9pbml0X3Ig
-NC4gYyAgVGhlIGFkZHJlc3MgaXMgd2hpY2ggdS1ib290IHJlbG9hZGVkIGl0c2VsZiB0by5J
-IGdldCB0aGUgYWRkcmVlcyBieSBwcmludGluZyBiZWZvcmUgdS1ib290IHJlbG9jYXRlZC4g
-d2hhdCdzIG1vcmUsSVQgY2FuIHN0b3Agd2hlbiBJIHNldCB0aGUgaGFyZCBicmVhayBwb2lu
-dCB0aGVyZSEgcGxlYXNlIGhlbHAgbWUgIXRoYW5rcyE8YnI+PCEtLSBmb290ZXIgLS0+PGJy
-Pjxicj48YnI+DQo8Zm9udCBzdHlsZT0iZm9udC1zaXplOjE0LjhweCI+DQo8IS0tueO45mZv
-b3RlciC/qsq8LS0+DQo8IS0tueO45mZvb3RlciC94cr4LS0+DQoNCjwhLS3E2rK/Zm9vdGVy
-v6rKvC0tPg0KPGJyPg0KPGJyPjxwIHN0eWxlPSJsaW5lLWhlaWdodDoyMjAlOyI+DQo8Yj4m
-bmJzcDsmbmJzcDvS0dPQMdLa08O7p9Gh1PHBy8340tfTys/ko6w8c3BhbiBzdHlsZT0iY29s
-b3I6cmVkIj7E48TYo788L2I+PC9zcGFuPjxicj4NCiZuYnNwOyZuYnNwOzxhIGhyZWY9Imh0
-dHA6Ly9tYWlsLjE2My5jb20vIiB0YXJnZXQ9Il9ibGFuayI+PGZvbnQgY29sb3I9Ymx1ZT7N
-+NLXMTYzw+K30dPK0tHIq8Pmyf28ttbBMjAwMNXXs6y087/VvOSjrNans9bK1beiMzDV17Os
-tPO4vbz+o6E8L2ZvbnQ+PGJyPg0KPC9hPg0KJm5ic3A7Jm5ic3A7PGEgaHJlZj0iaHR0cDov
-L21haWwuMTYzLmNvbS9ldmVudC9kYW5nZGFuZy9kZXRhaWwuaHRtIiB0YXJnZXQ9Il9ibGFu
-ayI+PGZvbnQgY29sb3I9Ymx1ZT7XorLhtcfCvM340tfTys/ko6zDv9bctrzT0L6qz7KjrDUw
-1KrP1r3wyK/N6sirsNfLzaOsteO797Lpv7S77ravz+rH6aOhDQo8L2ZvbnQ+DQo8L2E+DQoN
-CjxpbWcgc3JjPSJodHRwOi8vbWFpbC4xMjYuY29tL2Zhdmljb24uaWNvIiB3aWR0aD0xNiBo
-ZWlnaHQ9MTYgYm9yZGVyPTAgYWxpZ249YWJzbWlkZGxlPg0KPC9wPg0KPCEtLcTasr9mb290
-ZXK94cr4LS0+DQo8L2ZvbnQ+
---Boundary-=_RiWISvJBvKihMQFlvFNQlVUqZWaa--
+> It works if I make it with linuxthreads.
+> If I do GLIBC_ADDON_OPTIONS==nptl ./my-ppc604_new.sh
+> Then glibc configure fails with an error about needing a gcc with forced
+> unwind support.
+> 
+> If I try to set up gcc options to enable threading, then GCC core
+> compile fails with error that it cannot find pthread.h
+> 
+> Anybody know of a solution?
+
+have you checked out:
+http://www.wwwdotorg.org/writings/code/nptl_tool/nptl_tool.html
+
+Gerhard
+
+-- 
+Gerhard Jaeger <gjaeger@sysgo.com>            
+SYSGO AG                      Embedded and Real-Time Software
+www.sysgo.com | www.elinos.com | www.pikeos.com | www.osek.de 
