@@ -1,21 +1,26 @@
-Return-Path: <ajz@cambridgebroadband.com>
-Received: from cambridgebroadband.com (unknown [217.204.121.83])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5C798679FA
+Return-Path: <benjamin.dapon-pigatto@odyssee-systemes.fr>
+Received: from smtp8.wanadoo.fr (smtp8.wanadoo.fr [193.252.22.23])
+	by ozlabs.org (Postfix) with ESMTP id 05B3D67A00
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 31 May 2005 19:23:29 +1000 (EST)
-Received: from zambia.cambridgebroadband.com (cbluk-gw0.cambridgebroadband.com
-	[217.204.121.82])
-	by cambridgebroadband.com (8.12.8/8.12.8) with SMTP id j4V9NNU7011132
-	for <linuxppc-embedded@ozlabs.org>; Tue, 31 May 2005 10:23:24 +0100
-Date: Tue, 31 May 2005 10:23:23 +0100
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
-To: linuxppc-embedded@ozlabs.org
-Message-Id: <20050531102323.0fbc2b5e.ajz@cambridgebroadband.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Subject: set_multicast_list() commented out in fcc_enet.c
+	Tue, 31 May 2005 19:56:29 +1000 (EST)
+Received: from smtp8.wanadoo.fr (mwinf0801 [172.22.139.23])
+	by mwinf0805.wanadoo.fr (SMTP Server) with ESMTP id 9385A1DC0
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 31 May 2005 11:38:23 +0200 (CEST)
+Received: from me-wanadoo.net (unknown [127.0.0.1])
+	by mwinf0801.wanadoo.fr (SMTP Server) with ESMTP id C69DE18000BC
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 31 May 2005 11:38:19 +0200 (CEST)
+From: "Benjamin Dapon-Pigatto" <benjamin.dapon-pigatto@odyssee-systemes.fr>
+To: "'Alex Zeffertt'" <ajz@cambridgebroadband.com>,
+	<linuxppc-embedded@ozlabs.org>
+Date: Tue, 31 May 2005 11:38:21 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <20050531102323.0fbc2b5e.ajz@cambridgebroadband.com>
+Message-Id: <20050531093819.73F7D18000BB@mwinf0801.wanadoo.fr>
+Subject: RE: set_multicast_list() commented out in fcc_enet.c
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,6 +30,25 @@ List-Post: <mailto:linuxppc-embedded@ozlabs.org>
 List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+
+Hi Alex,
+
+I had the same problem few months ago with arch/ppc/cpm2_io/fcc_enet.c.=20
+It should be the same driver.
+I suppose that multicast is not correctly implemented. I have commented =
+this
+return and promiscuous mode works fine but I have never tried with
+multicast.
+
+Benjamin
+
+-----Message d'origine-----
+De=A0: linuxppc-embedded-bounces@ozlabs.org
+[mailto:linuxppc-embedded-bounces@ozlabs.org] De la part de Alex =
+Zeffertt
+Envoy=E9=A0: mardi 31 mai 2005 11:23
+=C0=A0: linuxppc-embedded@ozlabs.org
+Objet=A0: set_multicast_list() commented out in fcc_enet.c
 
 Hi all,
 
@@ -44,3 +68,7 @@ Alex
 
 PS I'm using denx's linuxppc_devel tagged 2005-03-06, which is based
 on linux-2.4.25.
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
