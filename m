@@ -1,21 +1,18 @@
-Return-Path: <jdl@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id C732A679E1
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 17F86679A6
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  1 Jun 2005 00:59:07 +1000 (EST)
-From: Jon Loeliger <jdl@freescale.com>
-To: Clemens Koller <clemens.koller@anagramm.de>
-In-Reply-To: <429AE74F.6090509@anagramm.de>
-References: <1116607235.29111.20.camel@gleep>
-	<f003613a0526b7b6a00a0bd477cd5ac3@freescale.com>
-	<1117221259.26114.91.camel@cashmere.sps.mot.com>
-	<429AE74F.6090509@anagramm.de>
-Content-Type: text/plain
-Message-Id: <1117551540.31497.3.camel@cashmere.sps.mot.com>
-Mime-Version: 1.0
-Date: Tue, 31 May 2005 09:59:01 -0500
-Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
-Subject: Re: bd_t Cleaning: Interface Part
+	Wed,  1 Jun 2005 01:17:34 +1000 (EST)
+In-Reply-To: <429B2B54.1060504@anagramm.de>
+References: <429B2B54.1060504@anagramm.de>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <5be2f8f42a2cfaea381a88c5de9cbb4e@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Tue, 31 May 2005 10:17:25 -0500
+To: "Clemens Koller" <clemens.koller@anagramm.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Complete ccsr map for mpc8540 available?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,14 +23,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2005-05-30 at 05:13, Clemens Koller wrote:
-> Hello, Jon!
-> 
-> I guess there is a little typo:
-> spped -> speed?
 
-Rats.
+On May 30, 2005, at 10:03 AM, Clemens Koller wrote:
 
-Thanks for looking into the mess, and catching that!
+> Hi, There!
+>
+> I want to access the local bus controller (LBC) registers
+> of the mpc8540 from within a module.
+> Therefore I want to use similar structures as for the 8560's cpm2_immr
+> or the 8xx. However, I was not able to find a complete ccsr map for the
+> mpc8540 in the 2.6.11.x kernels. (immap_85xx.h, 8xx_immr.h, ...)
+>
+> Can someone point me to get the memc_brx / orx and friends for mpc8540?
+> (the complete CCSR map.) Or some code to recycle?
+> Or do I need to patch more into immap_85xx.h on my own? I just want to
+> avoid to do duplicate work.
+>
+> Or is it better to extend the fsl_ocp or the platform device 
+> structures?
 
-jdl
+What do you plan on doing with the local bus controller in the kernel?  
+If this is only configuration of the controller for a given chip select 
+that I would suggest doing something similar to how we handle PCI.  You 
+can probably find a description of the localbus registers in the u-boot 
+source tree.
+
+Is this a change you want to get back into the mainline kernel tree?
+
+- kumar
