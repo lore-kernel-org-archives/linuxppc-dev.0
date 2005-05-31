@@ -1,16 +1,17 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id EFBCF679F7
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutvdomng.kundenserver.de (moutvdom.kundenserver.de
+	[212.227.126.249]) by ozlabs.org (Postfix) with ESMTP id 68A3A679E9
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  1 Jun 2005 02:08:52 +1000 (EST)
-In-Reply-To: <429C8AC4.9000801@anagramm.de>
+	Wed,  1 Jun 2005 02:18:02 +1000 (EST)
+Message-ID: <429C8E23.2040208@anagramm.de>
+Date: Tue, 31 May 2005 18:17:39 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
+MIME-Version: 1.0
+To: Kumar Gala <kumar.gala@freescale.com>
 References: <429C8AC4.9000801@anagramm.de>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <bb83727d8d949477f261e00351c091f2@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Tue, 31 May 2005 11:08:47 -0500
-To: "Clemens Koller" <clemens.koller@anagramm.de>
+	<bb83727d8d949477f261e00351c091f2@freescale.com>
+In-Reply-To: <bb83727d8d949477f261e00351c091f2@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: Complete ccsr map for mpc8540 available?
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -23,49 +24,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hello, Kumar!
 
-On May 31, 2005, at 11:03 AM, Clemens Koller wrote:
+ > > [...]
+> Yes, that was my thinking.  You can grab just the lbc bits and put them 
+> in immap_85xx.h and do the same ioremap thing we do for pci in 
+> arch/ppc/syslib/ppc85xx_setup.c.
 
-> Hello, Kumar!
->
-> Yes, I want to add another Local Bus Address Range for our FPGA on
-> an extra CS line. I've tried to do that in U-Boot as the Code is 
-> already there.
-> But my modified (some old 1.1.2 (not the official release) version) 
-> U-Boot
-> didn't work (I guess compiling issues) and rendered my Board 
-> non-bootable, which
-> was really no fun!
-> I also want to play around with the bus-timing and GPCM/UPM 
-> configurations.
-> So, changing U-Boot for every little waitstate and re-booting just to 
-> get
-> a register changed is a showstopper for me. (Yes, I know, a BDI2000 
-> would be fun).
-> So I decided to do all my stuff first in linux in a module to shorten 
-> the design
-> cycle by a factor of 1E+3 which works fine now, as I started this 
-> immr_t thingy
-> for mpc8540 on my own...
->
-> Now it seems that u-boot's immap_85xx.h is pretty much what I was 
-> looking
-> for, I will try to merge my stuff with it and get a immap_8540.h out 
-> of it.
-> So, you answered my question indirectly (get back to mainline) that 
-> there
-> is no code available on the linux side yet, right?
+Yes, ioremap() and ioremap_nocache() works fine.
+I just try to get the maximum speed out of the Local Bus Mapped dual port
+SRAM in our FPGA.
 
-Yes, that was my thinking.  You can grab just the lbc bits and put them 
-in immap_85xx.h and do the same ioremap thing we do for pci in 
-arch/ppc/syslib/ppc85xx_setup.c.
+>> I can release my stuff, if anybody is interested... no problem.
+>> The LBC part is verified (some others are dummys and untested) and in
+>> a /works for me/ state.
+> 
+> It sounds like this is custom to your board so I wouldn't bother 
+> releasing it out unless it something you want to get into the standard 
+> kernel tree.
 
-> I can release my stuff, if anybody is interested... no problem.
-> The LBC part is verified (some others are dummys and untested) and in
-> a /works for me/ state.
+Well, the immr is good for every mpc8540 and the other friends you know.
+(more than me)
 
-It sounds like this is custom to your board so I wouldn't bother 
-releasing it out unless it something you want to get into the standard 
-kernel tree.
+Greets,
 
-- kumar
+Clemens Koller
+_______________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Str. 45/1
+81379 Muenchen
+Germany
+
+http://www.anagramm.de
+Phone: +49-89-741518-50
+Fax: +49-89-741518-19
