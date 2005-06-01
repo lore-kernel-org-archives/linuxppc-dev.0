@@ -1,19 +1,18 @@
-Return-Path: <wd@denx.de>
-Received: from mailout05.sul.t-online.com (mailout05.sul.t-online.com
-	[194.25.134.82]) by ozlabs.org (Postfix) with ESMTP id D0EC3679E8
+Return-Path: <colui77@virgilio.it>
+Received: from vsmtp14.tin.it (vsmtp14.tin.it [212.216.176.118])
+	by ozlabs.org (Postfix) with ESMTP id 610D6679E6
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  1 Jun 2005 18:06:32 +1000 (EST)
-To: Srivatsan CR <Srivatsan.CR@in.flextronics.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 01 Jun 2005 11:08:41 +0530."
-	<3B58B875DBDE504F94D2A1A1C9DF6F1FD00500@bglnt005.asia.ad.flextronics.com>
-Date: Wed, 01 Jun 2005 10:05:45 +0200
-Sender: wd@denx.de
-Message-Id: <20050601080550.C98C3C1512@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Newbie question on Linux-PPC 
+	Wed,  1 Jun 2005 20:21:18 +1000 (EST)
+Received: from ims2a.cp.tin.it (192.168.70.102) by vsmtp14.tin.it (7.0.027)
+	id 429D6F260000D80F for linuxppc-embedded@ozlabs.org;
+	Wed, 1 Jun 2005 12:21:15 +0200
+Date: Wed, 1 Jun 2005 12:21:14 +0200
+Message-ID: <4293EE1500015698@ims2a.cp.tin.it>
+From: colui77@virgilio.it
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-15"
+Subject: ML300-gpio
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,37 +23,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <3B58B875DBDE504F94D2A1A1C9DF6F1FD00500@bglnt005.asia.ad.flextronics.com> you wrote:
-> I am having a MPC8260 based board with the following memory map.
->       
-> Device      Start address     End address
-> EPROM       0x00000000        0x03FFFFFF
-> SDRAM       0x04000000        0x13FFFFFF
->  
-> I have a doubt regarding Linux Port onto this board. I have read on the web
-> that Linux usually expects the SDRAM at 0x0, is it that the porting of linux
-> onto this board is totally impossible? If the porting is possible can anyone
+hi all,
+I'm working with the ML300 platform running the shipped Montavista Linux
+(and hw configuration). I need to use the onboard gpio and I found a driv=
+er,
+the xilinx_gpio, that I have loaded (insmod xilinx_gpio). After insmoding=
 
-No, proting is still possible, it involves just one additional  step:
-fixong your boot loader to provide a different memory map.
+the driver it is registered in /dev/xgpio (why is not it loaded in /proc/=
 
-> help me out where to change the memory mapping of Linux for MPC8260?
+before?) I have tried to use the GPIOs...
 
-In your boot loader.
+cat "111111000000" > /dev/xgpio
 
-> ------_=_NextPart_001_01C5666C.2B0053B0
-> Content-Type: text/html
-> Content-Transfer-Encoding: quoted-printable
-> 
-> <html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-
-Please don't poost HTML to mailing lists.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-If you hear an onion ring, answer it.
+I was expecting some leds lighting but nothing at all...
+Is there someone experienced with the ml300 gpios? 
+Please I need help
+Luigi
