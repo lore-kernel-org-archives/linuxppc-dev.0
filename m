@@ -1,24 +1,16 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.207])
-	by ozlabs.org (Postfix) with ESMTP id 9D721679F6
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  2 Jun 2005 07:55:05 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 37so17709wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 01 Jun 2005 14:55:03 -0700 (PDT)
-Message-ID: <c3d0340b0506011455317d79f6@mail.gmail.com>
-Date: Wed, 1 Jun 2005 14:55:03 -0700
-From: Shawn Jin <shawnxjin@gmail.com>
-To: ppcembed <linuxppc-embedded@ozlabs.org>,
-	"Ahamed K, Rafiq (HP)" <rafiq.ahamed@hp.com>
-In-Reply-To: <1B5A11557D6A86458B1AD15DBBDB6CE2066D8CF4@tayexc13.americas.cpqcorp.net>
+Return-Path: <benh@kernel.crashing.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jon Loeliger <jdl@freescale.com>
+In-Reply-To: <1117645131.6517.31.camel@cashmere.sps.mot.com>
+References: <1117614390.19020.24.camel@gaston>
+	<1117645131.6517.31.camel@cashmere.sps.mot.com>
+Content-Type: text/plain
+Date: Thu, 02 Jun 2005 07:56:48 +1000
+Message-Id: <1117663009.19020.61.camel@gaston>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_Part_1877_30599474.1117662903775"
-References: <1B5A11557D6A86458B1AD15DBBDB6CE2066D8CF4@tayexc13.americas.cpqcorp.net>
-Subject: [PATCH] [RFC] ppc32 (linux-2.6.11.4): remove the limitation of 2MB
-	consistent DMA memory on ppc440
-Reply-To: Shawn Jin <shawnxjin@gmail.com>
+Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>,
+	David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: Booting the linux-ppc64 kernel & flattened device tree v0.4
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,111 +21,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_1877_30599474.1117662903775
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Wed, 2005-06-01 at 11:58 -0500, Jon Loeliger wrote:
+> On Wed, 2005-06-01 at 03:26, Benjamin Herrenschmidt wrote:
+> > Here's the fourth version of my document along with new kernel patches
+> > for the new improved flattened format, and the first release of the
+> > device-tree "compiler" tool. The patches will be posted as a reply to
+> > this email. The compiler, dtc, can be downloaded, the URL is in the
+> > document.
+> 
+> Ben,
+> 
+> Does it make sense to do this as well?
 
-Hi,
+You mean include lsprop ? Well, I have another version of lsprop hacked
+here that can generate a "source", but dtc can do it too now ... I think
+we may just make dtc able to output in "lsprop" format too :) But I'll
+talk to david (CC'd, he's the author of dtc).
 
-This patch removes the limitation of 2MB consistent DMA memory on
-ppc440. Originally consistent_pte was allocated only one page no
-matter what value of CONFIG_CONSISTENT_SIZE is set. By default
-CONFIG_CONSISTENT_SIZE is 0x200000. This causes some troubles on high
-performance I/O applications which may require more than 2MB
-consistent DMA memory.
-
-The modifications allocate multiple pages for consistent pte table
-according to CONFIG_CONSISTENT_SIZE. For example if
-CONFIG_CONSISTENT_SIZE is set to 4MB, 2 pages are allocated for
-consistent pte table. Please note that CONFIG_CONSISTENT_SIZE cannot
-be any value. You have to find a free continuous memory space on your
-system memory mapping.
-
-The patch was tested successfully on Ocotea board. But I'm not sure if
-it works on other systems. Use it at your own risk. However feedback
-is more than welcome. :)
-
-Regards,
--Shawn.
-
-------=_Part_1877_30599474.1117662903775
-Content-Type: application/octet-stream; name="dma-mapping.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="dma-mapping.patch"
-
-LS0tIG9yaWcvbGludXgtMi42LjExLjQvYXJjaC9wcGMva2VybmVsL2RtYS1tYXBwaW5nLmMJMjAw
-NS0wMy0xNSAxNjowODo1OC4wMDAwMDAwMDAgLTA4MDAKKysrIGxpbnV4LTIuNi4xMS40L2FyY2gv
-cHBjL2tlcm5lbC9kbWEtbWFwcGluZy5jCTIwMDUtMDUtMjcgMTk6MDY6MjcuOTU2OTM3MDAwIC0w
-NzAwCkBAIC0xNyw2ICsxNywxMSBAQAogICogaW1wbGVtZW50YXRpb24uIFRoaXMgaXMgcHVsbGVk
-IHN0cmFpZ2h0IGZyb20gQVJNIGFuZCBiYXJlbHkKICAqIG1vZGlmaWVkLiAtTWF0dAogICoKKyAq
-IENoYW5nZWQgY29uc2lzdGVudF9wdGUgdG8gY29uc2lzdGVudF9wdGVzLCBpbiBvcmRlciB0byBy
-ZW1vdmUgdGhlIAorICogbGltaXRhdGlvbiBvZiAyTUIgY29uc2lzdGVudCBETUEgbWVtb3J5LiBO
-b3cgdGhlIHNpemUgaXMgY29uZmluZWQgYnkKKyAqIENPTkZJR19DT05TSVNURU5UX1NJWkUuIEFu
-ZCB0aGVyZSBhcmUgbXVsdGlwbGUgcGFnZXMgY29udGFpbmluZyBQVEUuCisgKiAtIFhpYW9nZW5n
-IChTaGF3bikgSmluIChBZ2lsZW50IFRlY2hub2xvZ2llcyksIDIwMDUKKyAqCiAgKiBUaGlzIHBy
-b2dyYW0gaXMgZnJlZSBzb2Z0d2FyZTsgeW91IGNhbiByZWRpc3RyaWJ1dGUgaXQgYW5kL29yIG1v
-ZGlmeQogICogaXQgdW5kZXIgdGhlIHRlcm1zIG9mIHRoZSBHTlUgR2VuZXJhbCBQdWJsaWMgTGlj
-ZW5zZSB2ZXJzaW9uIDIgYXMKICAqIHB1Ymxpc2hlZCBieSB0aGUgRnJlZSBTb2Z0d2FyZSBGb3Vu
-ZGF0aW9uLgpAQCAtNjYsMTEgKzcxLDE0IEBACiAjZGVmaW5lIENPTlNJU1RFTlRfQkFTRQkoQ09O
-RklHX0NPTlNJU1RFTlRfU1RBUlQpCiAjZGVmaW5lIENPTlNJU1RFTlRfRU5ECShDT05GSUdfQ09O
-U0lTVEVOVF9TVEFSVCArIENPTkZJR19DT05TSVNURU5UX1NJWkUpCiAjZGVmaW5lIENPTlNJU1RF
-TlRfT0ZGU0VUKHgpCSgoKHVuc2lnbmVkIGxvbmcpKHgpIC0gQ09OU0lTVEVOVF9CQVNFKSA+PiBQ
-QUdFX1NISUZUKQorI2RlZmluZQlDT05TSVNURU5UX1BURV9QQUdFTlIJKChDT05GSUdfQ09OU0lT
-VEVOVF9TSVpFID4+IFBBR0VfU0hJRlQpID4+IFBURV9TSElGVCkKKyNkZWZpbmUgQ09OU0lTVEVO
-VF9TSVpFX1BFUl9QVEVQQUdFCSgxVUwgPDwgKFBBR0VfU0hJRlQgKyBQVEVfU0hJRlQpKQogCiAv
-KgotICogVGhpcyBpcyB0aGUgcGFnZSB0YWJsZSAoMk1CKSBjb3ZlcmluZyB1bmNhY2hlZCwgRE1B
-IGNvbnNpc3RlbnQgYWxsb2NhdGlvbnMKKyAqIFRoaXMgaXMgcGFnZSB0YWJsZXMgY292ZXJpbmcg
-dW5jYWNoZWQsIERNQSBjb25zaXN0ZW50IGFsbG9jYXRpb25zLAorICogd2l0aCB0aGUgc2l6ZSBv
-ZiBDT05GSUdfQ09OU0lTVEVOVF9TSVpFCiAgKi8KLXN0YXRpYyBwdGVfdCAqY29uc2lzdGVudF9w
-dGU7CitwdGVfdCAqKmNvbnNpc3RlbnRfcHRlcyA9IE5VTEw7CiBzdGF0aWMgREVGSU5FX1NQSU5M
-T0NLKGNvbnNpc3RlbnRfbG9jayk7CiAKIC8qCkBAIC0xODAsNyArMTg4LDcgQEAKIAl1bnNpZ25l
-ZCBsb25nIG9yZGVyOwogCXU2NCBtYXNrID0gMHgwMGZmZmZmZiwgbGltaXQ7IC8qIElTQSBkZWZh
-dWx0ICovCiAKLQlpZiAoIWNvbnNpc3RlbnRfcHRlKSB7CisJaWYgKCFjb25zaXN0ZW50X3B0ZXMp
-IHsKIAkJcHJpbnRrKEtFUk5fRVJSICIlczogbm90IGluaXRpYWxpc2VkXG4iLCBfX2Z1bmNfXyk7
-CiAJCWR1bXBfc3RhY2soKTsKIAkJcmV0dXJuIE5VTEw7CkBAIC0yMTksOSArMjI3LDE0IEBACiAJ
-YyA9IHZtX3JlZ2lvbl9hbGxvYygmY29uc2lzdGVudF9oZWFkLCBzaXplLAogCQkJICAgIGdmcCAm
-IH4oX19HRlBfRE1BIHwgX19HRlBfSElHSE1FTSkpOwogCWlmIChjKSB7Ci0JCXB0ZV90ICpwdGUg
-PSBjb25zaXN0ZW50X3B0ZSArIENPTlNJU1RFTlRfT0ZGU0VUKGMtPnZtX3N0YXJ0KTsKKwkJcHRl
-X3QgKnB0ZTsKKwkJaW50IG9mZnNldCA9IENPTlNJU1RFTlRfT0ZGU0VUKGMtPnZtX3N0YXJ0KTsK
-KwkJaW50IGlkeCA9IG9mZnNldCA+PiBQVEVfU0hJRlQ7CiAJCXN0cnVjdCBwYWdlICplbmQgPSBw
-YWdlICsgKDEgPDwgb3JkZXIpOwogCisJCW9mZnNldCAmPSAoMSA8PCBQVEVfU0hJRlQpIC0gMTsK
-KwkJcHRlID0gY29uc2lzdGVudF9wdGVzW2lkeF0gKyBvZmZzZXQ7CisKIAkJLyoKIAkJICogU2V0
-IHRoZSAiZG1hIGhhbmRsZSIKIAkJICovCkBAIC0yMzUsNiArMjQ4LDExIEBACiAJCQlzZXRfcHRl
-KHB0ZSwgbWtfcHRlKHBhZ2UsIHBncHJvdF9ub25jYWNoZWQoUEFHRV9LRVJORUwpKSk7CiAJCQlw
-YWdlKys7CiAJCQlwdGUrKzsKKwkJCW9mZnNldCsrOworCQkJaWYgKG9mZnNldCA+ICgoMSA8PCBQ
-VEVfU0hJRlQpIC0gMSkpIHsKKwkJCQlwdGUgPSBjb25zaXN0ZW50X3B0ZXNbKytpZHhdOworCQkJ
-CW9mZnNldCA9IDA7CisJCQl9CiAJCX0gd2hpbGUgKHNpemUgLT0gUEFHRV9TSVpFKTsKIAogCQkv
-KgpAQCAtMjY0LDYgKzI4Miw3IEBACiAJc3RydWN0IHZtX3JlZ2lvbiAqYzsKIAl1bnNpZ25lZCBs
-b25nIGZsYWdzOwogCXB0ZV90ICpwdGVwOworCWludCBvZmZzZXQsIGlkeDsKIAogCXNpemUgPSBQ
-QUdFX0FMSUdOKHNpemUpOwogCkBAIC0yODAsMTIgKzI5OSwyMSBAQAogCQlzaXplID0gYy0+dm1f
-ZW5kIC0gYy0+dm1fc3RhcnQ7CiAJfQogCi0JcHRlcCA9IGNvbnNpc3RlbnRfcHRlICsgQ09OU0lT
-VEVOVF9PRkZTRVQoYy0+dm1fc3RhcnQpOworCW9mZnNldCA9IENPTlNJU1RFTlRfT0ZGU0VUKGMt
-PnZtX3N0YXJ0KTsKKwlpZHggPSBvZmZzZXQgPj4gUFRFX1NISUZUOworCW9mZnNldCAmPSAoMSA8
-PCBQVEVfU0hJRlQpIC0gMTsKKwlwdGVwID0gY29uc2lzdGVudF9wdGVzW2lkeF0gKyBvZmZzZXQ7
-CisKIAlkbyB7CiAJCXB0ZV90IHB0ZSA9IHB0ZXBfZ2V0X2FuZF9jbGVhcihwdGVwKTsKIAkJdW5z
-aWduZWQgbG9uZyBwZm47CiAKIAkJcHRlcCsrOworCQlvZmZzZXQrKzsKKwkJaWYgKG9mZnNldCA+
-ICgoMSA8PCBQVEVfU0hJRlQpIC0gMSkpIHsKKwkJCXB0ZXAgPSBjb25zaXN0ZW50X3B0ZXNbKytp
-ZHhdOworCQkJb2Zmc2V0ID0gMDsKKwkJfQogCiAJCWlmICghcHRlX25vbmUocHRlKSAmJiBwdGVf
-cHJlc2VudChwdGUpKSB7CiAJCQlwZm4gPSBwdGVfcGZuKHB0ZSk7CkBAIC0zMjgsMTMgKzM1Niwy
-MiBAQAogCXBnZF90ICpwZ2Q7CiAJcG1kX3QgKnBtZDsKIAlwdGVfdCAqcHRlOwotCWludCByZXQg
-PSAwOworCWludCByZXQgPSAwLCBpOworCXVuc2lnbmVkIGxvbmcgYWRkcmVzczsKIAogCXNwaW5f
-bG9jaygmaW5pdF9tbS5wYWdlX3RhYmxlX2xvY2spOwogCi0JZG8gewotCQlwZ2QgPSBwZ2Rfb2Zm
-c2V0KCZpbml0X21tLCBDT05TSVNURU5UX0JBU0UpOwotCQlwbWQgPSBwbWRfYWxsb2MoJmluaXRf
-bW0sIHBnZCwgQ09OU0lTVEVOVF9CQVNFKTsKKwljb25zaXN0ZW50X3B0ZXMgPSAocHRlX3QgKiop
-a21hbGxvYyhzaXplb2YocHRlX3QgKiopICogCisJCQkJCUNPTlNJU1RFTlRfUFRFX1BBR0VOUiwg
-R0ZQX0tFUk5FTCk7CisJaWYgKCFjb25zaXN0ZW50X3B0ZXMpIHsKKwkJcmV0ID0gLUVOT01FTTsK
-KwkJZ290byBvdXQ7CisJfQorCisJCisJZm9yIChpID0gMCwgYWRkcmVzcyA9IENPTlNJU1RFTlRf
-QkFTRTsgaSA8IENPTlNJU1RFTlRfUFRFX1BBR0VOUjsgaSsrKSB7CisJCXBnZCA9IHBnZF9vZmZz
-ZXQoJmluaXRfbW0sIGFkZHJlc3MpOworCQlwbWQgPSBwbWRfYWxsb2MoJmluaXRfbW0sIHBnZCwg
-YWRkcmVzcyk7CiAJCWlmICghcG1kKSB7CiAJCQlwcmludGsoS0VSTl9FUlIgIiVzOiBubyBwbWQg
-dGFibGVzXG4iLCBfX2Z1bmNfXyk7CiAJCQlyZXQgPSAtRU5PTUVNOwpAQCAtMzQyLDE2ICszNzks
-MTkgQEAKIAkJfQogCQlXQVJOX09OKCFwbWRfbm9uZSgqcG1kKSk7CiAKLQkJcHRlID0gcHRlX2Fs
-bG9jX2tlcm5lbCgmaW5pdF9tbSwgcG1kLCBDT05TSVNURU5UX0JBU0UpOworCQlwdGUgPSBwdGVf
-YWxsb2Nfa2VybmVsKCZpbml0X21tLCBwbWQsIGFkZHJlc3MpOwogCQlpZiAoIXB0ZSkgewogCQkJ
-cHJpbnRrKEtFUk5fRVJSICIlczogbm8gcHRlIHRhYmxlc1xuIiwgX19mdW5jX18pOwogCQkJcmV0
-ID0gLUVOT01FTTsKIAkJCWJyZWFrOwogCQl9CiAKLQkJY29uc2lzdGVudF9wdGUgPSBwdGU7Ci0J
-fSB3aGlsZSAoMCk7CisJCWNvbnNpc3RlbnRfcHRlc1tpXSA9IHB0ZTsKKworCQlhZGRyZXNzICs9
-IENPTlNJU1RFTlRfU0laRV9QRVJfUFRFUEFHRTsKKwl9CiAKK291dDoKIAlzcGluX3VubG9jaygm
-aW5pdF9tbS5wYWdlX3RhYmxlX2xvY2spOwogCiAJcmV0dXJuIHJldDsK
-------=_Part_1877_30599474.1117662903775--
+Ben.
