@@ -1,18 +1,21 @@
-Return-Path: <akonovalov@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
-	by ozlabs.org (Postfix) with SMTP id 664DC679EA
+Return-Path: <ajz@cambridgebroadband.com>
+Received: from cambridgebroadband.com (unknown [217.204.121.83])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 32F97679F8
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  1 Jun 2005 20:34:24 +1000 (EST)
-Message-ID: <429D9115.9040806@ru.mvista.com>
-Date: Wed, 01 Jun 2005 14:42:29 +0400
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
-MIME-Version: 1.0
-To: colui77@virgilio.it
-References: <4293EE1500015698@ims2a.cp.tin.it>
-In-Reply-To: <4293EE1500015698@ims2a.cp.tin.it>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: ML300-gpio
+	Wed,  1 Jun 2005 20:53:49 +1000 (EST)
+Received: from zambia.cambridgebroadband.com (cbluk-gw0.cambridgebroadband.com
+	[217.204.121.82])
+	by cambridgebroadband.com (8.12.8/8.12.8) with SMTP id j51AriBk025809
+	for <linuxppc-embedded@ozlabs.org>; Wed, 1 Jun 2005 11:53:44 +0100
+Date: Wed, 1 Jun 2005 11:53:44 +0100
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
+To: linuxppc-embedded@ozlabs.org
+Message-Id: <20050601115344.6eda3d19.ajz@cambridgebroadband.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Subject: How to allocate uncached memory on 82xx?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,31 +26,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-colui77@virgilio.it wrote:
-> hi all,
-> I'm working with the ML300 platform running the shipped Montavista Linux
-> (and hw configuration). I need to use the onboard gpio and I found a driver,
-> the xilinx_gpio, that I have loaded (insmod xilinx_gpio). After insmoding
-> the driver it is registered in /dev/xgpio (why is not it loaded in /proc/
-> before?) I have tried to use the GPIOs...
-> 
-> cat "111111000000" > /dev/xgpio
+Hi all,
 
-You must use ioctl's.
-This driver has the same API as IBM OCP GPIO driver.
-Please check include/linux/ibm_ocp_gpio.h.
+Can anybody tell me how to make uncached a region of memory on the
+PowerQUICCII (MPC8280).  The region is allocated with
 
-Thanks,
-Andrei
+	kmalloc(size,GFP_KERNEL | GFP_DMA);
 
-> I was expecting some leds lighting but nothing at all...
-> Is there someone experienced with the ml300 gpios? 
-> Please I need help
-> Luigi
-> 
-> 
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+TIA,
+
+Alex
