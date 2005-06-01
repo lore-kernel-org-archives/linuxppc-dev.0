@@ -1,16 +1,23 @@
-Return-Path: <mlei30@yahoo.com>
-Received: from web61016.mail.yahoo.com (web61016.mail.yahoo.com
-	[209.73.179.10]) by ozlabs.org (Postfix) with SMTP id 8E463679EF
+Return-Path: <shemminger@osdl.org>
+Received: from smtp.osdl.org (fire.osdl.org [65.172.181.4])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 65767679EF
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  2 Jun 2005 07:32:09 +1000 (EST)
-Message-ID: <20050601213207.68971.qmail@web61016.mail.yahoo.com>
-Date: Wed, 1 Jun 2005 14:32:07 -0700 (PDT)
-From: ming lei <mlei30@yahoo.com>
-To: linuxppc-embedded@ozlabs.org
-In-Reply-To: <20050524133819.B23084@cox.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Subject: Does linuxppc_2_4_devel still accept patch?
+	Thu,  2 Jun 2005 07:41:32 +1000 (EST)
+Date: Wed, 1 Jun 2005 14:41:23 -0700
+From: Stephen Hemminger <shemminger@osdl.org>
+To: Andy Fleming <afleming@freescale.com>
+Message-ID: <20050601144123.2bc11c06@dxpl.pdx.osdl.net>
+In-Reply-To: <92F1428A-0B26-428B-8C06-35C7E5B9EEE3@freescale.com>
+References: <1107b64b01fb8e9a6c84359bb56881a6@freescale.com>
+	<20050531105939.7486e071@dxpl.pdx.osdl.net>
+	<92F1428A-0B26-428B-8C06-35C7E5B9EEE3@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Netdev <netdev@oss.sgi.com>,
+	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: Re: RFC: PHY Abstraction Layer II
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,20 +28,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Wed, 1 Jun 2005 15:45:26 -0500
+Andy Fleming <afleming@freescale.com> wrote:
 
-I found there is a serious problem in head_440.S
-regarding the handling of mmucr in DataTLBmiss and
-InstructionTLBmiss exceptions in 2.4 linux ppc branch.
-Where should I submit the changes?
+> 
+> On May 31, 2005, at 12:59, Stephen Hemminger wrote:
+> 
+> > Here are some patches:
+> >     * allow phy's to be modules
+> >     * use driver owner for ref count
+> >     * make local functions static where ever possible
+> 
+> I agree with all these.
+> 
+> >     * get rid of bus read may sleep implication in comment.
+> >       since you are holding phy spin lock it better not!!
+> 
 
-Which branch right now is active for ppc44x
-development? Have we moved to linux kernel 2.6
-official development already?
+On a different note, I am not sure that using sysfs/kobject bus object
+is the right thing for this object.  Isn't the phy instance really just
+an kobject whose parent is the network device?  I can't see a 1 to N
+relationship between phy bus and phy objects existing. 
 
-Ming
-
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+The main use I can see for being a driver object is to catch suspend/resume,
+and wouldn't you want that to be tied to the network device.
