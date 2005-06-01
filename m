@@ -1,22 +1,19 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id EC46267A04
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao05.cox.net (fed1rmmtao05.cox.net [68.230.241.34])
+	by ozlabs.org (Postfix) with ESMTP id 10BD8679E8
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  2 Jun 2005 08:43:03 +1000 (EST)
-In-Reply-To: <429E2653.6010101@osdl.org>
-References: <1107b64b01fb8e9a6c84359bb56881a6@freescale.com>
-	<20050531105939.7486e071@dxpl.pdx.osdl.net>
-	<92F1428A-0B26-428B-8C06-35C7E5B9EEE3@freescale.com>
-	<429E2653.6010101@osdl.org>
-Mime-Version: 1.0 (Apple Message framework v730)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <A07C472D-BA2E-4C29-9DA2-F983DC9CDEDB@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Date: Wed, 1 Jun 2005 17:42:56 -0500
-To: Stephen Hemminger <shemminger@osdl.org>
-Cc: Netdev <netdev@oss.sgi.com>,
-	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: Re: RFC: PHY Abstraction Layer II
+	Thu,  2 Jun 2005 08:58:11 +1000 (EST)
+Date: Wed, 1 Jun 2005 15:58:09 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
+Message-ID: <20050601155809.A19099@cox.net>
+References: <20050601110836.A16559@cox.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050601110836.A16559@cox.net>;
+	from mporter@kernel.crashing.org on Wed, Jun 01, 2005 at
+	11:08:36AM -0700
+Subject: Re: [PATCH][1/3] RapidIO support: core
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,41 +24,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Wed, Jun 01, 2005 at 11:08:36AM -0700, Matt Porter wrote:
+> Adds a RapidIO subsystem to the kernel. RIO is a switched
+> fabric interconnect used in higher-end embedded applications.
+> The curious can look at the specs over at http://www.rapidio.org
+> 
+> The core code implements enumeration/discovery, management of
+> devices/resources, and interfaces for RIO drivers.
 
-On Jun 1, 2005, at 16:19, Stephen Hemminger wrote:
+I'm also hacking on a rioutils package (derived from pciutils)
+that has a lsrio that works pretty much like the familiar
+lspci tool.  The initial release can be grabbed from:
+ftp://source.mvista.com/pub/rio/rioutils-0.10.tar.bz2
 
-> Andy Fleming wrote:
->>
->> But not this one.  The phy_read and phy_write functions are  
->> reading  from and writing to a bus.  It is a reasonable  
->> implementation to have  the operation block in the bus driver, and  
->> be awoken when an  interrupt signals the operation is done.  All  
->> of the phydev spinlocks  have been arranged so as to prevent the  
->> lock being taken during  interrupt time.
->>
->> Unless I've misunderstood spinlocks (it wouldn't be the first  
->> time),  as long as the lock is never taken in interrupt time, it  
->> should be ok  to hold the lock, and wait for an interrupt before  
->> clearing the lock.
->>
->
->
-> The problem is that sleeping is defined in the linux kernel as  
-> meaning waiting on a mutual exclusion
-> primitive (like semaphore) that puts the current thread to sleep.  
-> It is not legal to sleep with a spinlock held.
-> In the phy_read code you do:
->     spin_lock_bh(&bus->mdio_lock);
->    retval = bus->read(bus, phydev->addr, regnum);
->    spin_unlock_bh(&bus->mdio_lock);
->
-> If the bus->read function were to do something like start a request  
-> and wait on a semaphore, then
-> you would be sleeping with a spin lock held.  So bus->read can not  
-> sleep! (as sleep is defined in the
-> linux kernel).
-
-Hmm...  I understand this reasoning, but I still need a way for a bus  
-read to wait for an interrupt before returning.  I suppose I can just  
-have the code spin while it waits, but that seems wrong, somehow.   
-I'm open to any suggestions.
+-Matt
