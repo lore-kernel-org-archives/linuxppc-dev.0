@@ -1,22 +1,16 @@
-Return-Path: <gjalt007@chello.nl>
-Received: from amsfep15-int.chello.nl (amsfep15-int.chello.nl [213.46.243.27])
-	by ozlabs.org (Postfix) with ESMTP id 0AA95679F1
+Return-Path: <Srivatsan.CR@in.flextronics.com>
+Received: from SGPMX1.asia.ad.flextronics.com (unknown [203.208.243.76])
+	by ozlabs.org (Postfix) with ESMTP id CEE8D679EB
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  1 Jun 2005 06:30:48 +1000 (EST)
-Received: from [192.168.1.10] (really [80.57.11.99]) by amsfep15-int.chello.nl
-	(InterMail vM.6.01.04.04 201-2131-118-104-20050224) with ESMTP
-	id <20050531203042.SJMU6651.amsfep15-int.chello.nl@[192.168.1.10]>
-	for <linuxppc-embedded@ozlabs.org>; Tue, 31 May 2005 22:30:42 +0200
-Message-ID: <429CC929.5060405@chello.nl>
-Date: Tue, 31 May 2005 22:29:29 +0200
-From: Theo Gjaltema <gjalt007@chello.nl>
-MIME-Version: 1.0
+	Wed,  1 Jun 2005 15:54:00 +1000 (EST)
+Message-ID: <3B58B875DBDE504F94D2A1A1C9DF6F1FD00500@bglnt005.asia.ad.flextronics.com>
+From: Srivatsan CR <Srivatsan.CR@in.flextronics.com>
 To: linuxppc-embedded@ozlabs.org
-References: <429639D5.20609@chello.nl>
-	<E6CEFEB5-1F03-45DA-8BA3-C1F1511950EA@aimsys.nl>
-In-Reply-To: <E6CEFEB5-1F03-45DA-8BA3-C1F1511950EA@aimsys.nl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: Re: Dynamic libraries do not work
+Date: Wed, 1 Jun 2005 11:08:41 +0530 
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C5666C.2B0053B0"
+Subject: Newbie question on Linux-PPC
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,54 +21,287 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I 've found the problem, the ramdisk used contained executables as well 
-as dyn. libs from the mpc8260 instead of the mpc862.
-I don't know why the whole system came to a halt without any message but 
-replacing the dyn. libs and executables with the correct ones solved the 
-problem of crashing.
+This message is in MIME format. Since your mail reader does not understand
+this format, some or all of this message may not be legible.
 
-Many thanks for your responses,
-   Theo.
+------_=_NextPart_001_01C5666C.2B0053B0
+Content-Type: text/plain
+
+ 
+Dear all,
+ 
+I am having a MPC8260 based board with the following memory map.
+      
+Device      Start address     End address
+EPROM       0x00000000        0x03FFFFFF
+SDRAM       0x04000000        0x13FFFFFF
+ 
+I have a doubt regarding Linux Port onto this board. I have read on the web
+that Linux usually expects the SDRAM at 0x0, is it that the porting of linux
+onto this board is totally impossible? If the porting is possible can anyone
+help me out where to change the memory mapping of Linux for MPC8260?
+ 
+Thanking you all for your time. Kindly help me out to solve this issue.
+ 
+With Regards,
+C.R.Srivatsan
+ 
+
+------_=_NextPart_001_01C5666C.2B0053B0
+Content-Type: text/html
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:st1=3D"urn:schemas-microsoft-com:office:smarttags" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
 
 
+<meta name=3DProgId content=3DWord.Document>
+<meta name=3DGenerator content=3D"Microsoft Word 10">
+<meta name=3DOriginator content=3D"Microsoft Word 10">
+<link rel=3DFile-List href=3D"cid:filelist.xml@01C5669A.4271FB10">
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"place" downloadurl=3D"http://www.5iantlavalamp.com/"/>
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"PlaceType"/>
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"PlaceName"/>
+<!--[if gte mso 9]><xml>
+ <o:OfficeDocumentSettings>
+  <o:DoNotRelyOnCSS/>
+ </o:OfficeDocumentSettings>
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <w:WordDocument>
+  <w:View>Normal</w:View>
+  <w:SpellingState>Clean</w:SpellingState>
+  <w:GrammarState>Clean</w:GrammarState>
+  <w:DocumentKind>DocumentEmail</w:DocumentKind>
+  <w:EnvelopeVis/>
+  <w:Compatibility>
+   <w:BreakWrappedTables/>
+   <w:SnapToGridInCell/>
+   <w:WrapTextWithPunct/>
+   <w:UseAsianBreakRules/>
+  </w:Compatibility>
+  <w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel>
+ </w:WordDocument>
+</xml><![endif]--><!--[if !mso]>
+<style>
+st1\:*{behavior:url(#default#ieooui) }
+</style>
+<![endif]-->
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{mso-style-parent:"";
+	margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	font-weight:bold;}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;
+	text-underline:single;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;
+	text-underline:single;}
+p.MsoPlainText, li.MsoPlainText, div.MsoPlainText
+	{margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Courier New";
+	mso-fareast-font-family:"Times New Roman";
+	font-weight:bold;}
+p.bodytext, li.bodytext, div.bodytext
+	{mso-style-name:bodytext;
+	margin:0in;
+	margin-bottom:.0001pt;
+	text-align:justify;
+	mso-pagination:widow-orphan;
+	tab-stops:list .25in;
+	font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";}
+span.GramE
+	{mso-style-name:"";
+	mso-gram-e:yes;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 77.95pt 1.0in 77.95pt;
+	mso-header-margin:.5in;
+	mso-footer-margin:.5in;
+	mso-paper-source:0;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+<!--[if gte mso 10]>
+<style>
+ /* Style Definitions */=20
+ table.MsoNormalTable
+	{mso-style-name:"Table Normal";
+	mso-tstyle-rowband-size:0;
+	mso-tstyle-colband-size:0;
+	mso-style-noshow:yes;
+	mso-style-parent:"";
+	mso-padding-alt:0in 5.4pt 0in 5.4pt;
+	mso-para-margin:0in;
+	mso-para-margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Times New Roman";}
+</style>
+<![endif]-->
+</head>
 
-Jaap-Jan Boor schreef:
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple =
+style=3D'tab-interval:.5in'>
 
-> Theo,
->
-> What type of processor are you using? 8xx?
-> Did you build a tool-chain yourself and are
-> you perhaps using floating point?
->
-> Jaap-Jan
->
-> On 26-mei-2005, at 23:04, Theo Gjaltema wrote:
->
->> Hello,
->>
->> I have a linux 2.4.20 kernel running, but the files in the ramdisk  
->> fail to execute if they are dynamically build.
->> The whole system stops (debuggers shows that it crashed while in an  
->> erea where no flash/ram is present.
->> Anyone an idea?
->> There is nog difference between the use of a ramdisk or an nfs  
->> mounted root filesystem.
->>
->> Greetings,
->>    Theo.
->>
->>
->> _______________________________________________
->> Linuxppc-embedded mailing list
->> Linuxppc-embedded@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->>
->
-> ____
-> J.G.J. Boor                       Anton Philipsweg 1
-> Software Engineer                 1223 KZ Hilversum
-> AimSys bv                         tel. +31 35 689 1941
-> Postbus 2194, 1200 CD Hilversum   jjboor at aimsys dot nl
->
->
->
+<div class=3DSection1>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
+bold'><o:p>&nbsp;</o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
+bold'>Dear all,<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
+bold'><o:p>&nbsp;</o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
+bold'>I am having a MPC8260 based board with the following memory =
+map.<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
+bold'><span style=3D'mso-spacerun:yes'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+</span><o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
+bold'>Device<span =
+style=3D'mso-spacerun:yes'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span>Start address<span =
+style=3D'mso-spacerun:yes'>&nbsp;&nbsp;&nbsp;&nbsp;
+</span>End address<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
+bold'>EPROM<span =
+style=3D'mso-spacerun:yes'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span>0x00000000<span
+style=3D'mso-spacerun:yes'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span>0x03FFFFFF<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
+bold'>SDRAM<span =
+style=3D'mso-spacerun:yes'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span>0x04000000<span
+style=3D'mso-spacerun:yes'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+</span>0x13FFFFFF<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
+bold'><o:p>&nbsp;</o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
+bold'>I have a doubt regarding =
+</span></font></b><st1:place><st1:PlaceName><span
+  =
+style=3D'font-weight:normal;mso-bidi-font-weight:bold'>Linux</span></st1=
+:PlaceName><span
+ style=3D'font-weight:normal;mso-bidi-font-weight:bold'> =
+</span><st1:PlaceType><span
+  =
+style=3D'font-weight:normal;mso-bidi-font-weight:bold'>Port</span></st1:=
+PlaceType></st1:place><span
+style=3D'font-weight:normal;mso-bidi-font-weight:bold'> onto this =
+board. I have
+read on the web that Linux usually expects the SDRAM at 0x0, is it that =
+the porting
+of linux onto this board is totally impossible? If the porting is =
+possible can
+anyone help me out where to change the memory mapping of Linux for =
+MPC8260?<o:p></o:p></span></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
+bold'><o:p>&nbsp;</o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
+bold'>Thanking you all for your time. Kindly help me out to solve this =
+issue.<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
+bold'><o:p>&nbsp;</o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
+bold'>With Regards,<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
+size=3D2
+face=3D"Courier New"><span =
+style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
+bold'>C.R.Srivatsan<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b><font size=3D2 face=3D"Courier New"><span
+style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></b></p>
+
+</div>
+
+</body>
+
+</html>
+
+------_=_NextPart_001_01C5666C.2B0053B0--
