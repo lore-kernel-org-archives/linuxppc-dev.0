@@ -1,15 +1,18 @@
-Return-Path: <andreas_schmidt@ifm-electronic.com>
-Received: from mail1.ifm-electronic.com (mail1.ifm-electronic.com
-	[62.180.229.59]) by ozlabs.org (Postfix) with ESMTP id DD201679E1
+Return-Path: <jdl@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 9383F679E1
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  2 Jun 2005 01:35:41 +1000 (EST)
-To: linuxppc-embedded@ozlabs.org
-Message-ID: <OF544D6698.91FE4535-ONC1257013.005459BC-C1257013.00558BDF@ifm-electronic.com>
-From: andreas_schmidt@ifm-electronic.com
-Date: Wed, 1 Jun 2005 17:34:23 +0200
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Subject: linux2.4.24 on Memec EVB no output on console
+	Thu,  2 Jun 2005 02:58:57 +1000 (EST)
+From: Jon Loeliger <jdl@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1117614390.19020.24.camel@gaston>
+References: <1117614390.19020.24.camel@gaston>
+Content-Type: text/plain
+Message-Id: <1117645131.6517.31.camel@cashmere.sps.mot.com>
+Mime-Version: 1.0
+Date: Wed, 01 Jun 2005 11:58:51 -0500
+Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+Subject: Re: Booting the linux-ppc64 kernel & flattened device tree v0.4
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,40 +23,272 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi at all
+On Wed, 2005-06-01 at 03:26, Benjamin Herrenschmidt wrote:
+> Here's the fourth version of my document along with new kernel patches
+> for the new improved flattened format, and the first release of the
+> device-tree "compiler" tool. The patches will be posted as a reply to
+> this email. The compiler, dtc, can be downloaded, the URL is in the
+> document.
 
-I have already postet this problem there but i want make some adds there.
+Ben,
 
-Configs:
-I use Memec EVB with Virtex2Pro
-u-boot 1.1.2
-linux2.4.24 with modify ml300 config
+Does it make sense to do this as well?
 
-I ported u-boot on this board and can download the uImage from the ethernet.
+Thanks,
+jdl
 
-Problem:
-Atfer uncompressing the kernel I get no output on console
 
-=> bootm
-## Booting image at 00400000 ...
-   Image Name:   Linux-2.4.24-pre2
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    720036 Bytes = 703.2 kB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-
-I have oportunity to debug the kernel and I can see that the kernel runs!
-It write something in buffer and init the serial driver. But somewhere it get illegal
-kernel access and thhe kernel call exeption handler. On which point  the problem is I
-can't say because I can't find the start address from kernel, to set a breakpoint there
-and debug. I can only stop the processor and then debug.
-
-Perhaps had someone the same problems and can help me.
-
-Many thangs for any help!
-
-best regards,
-
-Andreas
+diff -Nur dtc.orig/lsprop.c dtc/lsprop.c
+--- dtc.orig/lsprop.c	1969-12-31 18:00:00.000000000 -0600
++++ dtc/lsprop.c	2005-06-01 11:43:01.000002000 -0500
+@@ -0,0 +1,221 @@
++#include <stdio.h>
++#include <stdlib.h>
++#include <unistd.h>
++#include <sys/stat.h>
++#include <sys/types.h>
++#include <dirent.h>
++
++int recurse;
++int maxbytes = 128;
++int words_per_line = 0;
++char *buf;
++
++void lsprop(FILE *f, char *name);
++void lsdir(char *name);
++
++main(int ac, char **av)
++{
++    FILE *f;
++    int i;
++    struct stat sb;
++    char *endp;
++
++    while ((i = getopt(ac, av, "Rm:w:")) != EOF) {
++	switch (i) {
++	case 'R':
++	    recurse = 1;
++	    break;
++	case 'm':
++	    maxbytes = strtol(optarg, &endp, 0);
++	    if (endp == optarg) {
++		fprintf(stderr, "%s: bad argument (%s) to -m option\n", av[0],
++			optarg);
++		exit(1);
++	    }
++	    maxbytes = (maxbytes + 15) & -16;
++	    break;
++	case 'w':
++	    words_per_line = strtol(optarg, &endp, 0);
++	    if (endp == optarg) {
++		fprintf(stderr, "%s: bad argument (%s) to -w option\n",
++			av[0], optarg);
++		exit(1);
++	    }
++	    break;
++	}
++    }
++
++    buf = malloc(maxbytes);
++    if (buf == 0) {
++	fprintf(stderr, "%s: virtual memory exhausted\n", av[0]);
++	exit(1);
++    }
++
++    if (optind == ac)
++	lsdir(".");
++    else
++	for (i = optind; i < ac; ++i) {
++	    if (stat(av[i], &sb) < 0) {
++		perror(av[i]);
++		continue;
++	    }
++	    if (S_ISREG(sb.st_mode)) {
++		f = fopen(av[i], "r");
++		if (f == NULL) {
++		    perror(av[i]);
++		    continue;
++		}
++		lsprop(f, av[i]);
++		fclose(f);
++	    } else if (S_ISDIR(sb.st_mode)) {
++		lsdir(av[i]);
++	    }
++	}
++    exit(0);
++}
++
++void lsdir(char *name)
++{
++    DIR *d;
++    struct dirent *de;
++    char *p, *q;
++    struct stat sb;
++    FILE *f;
++    int np = 0;
++
++    d = opendir(name);
++    if (d == NULL) {
++	perror(name);
++	return;
++    }
++
++    p = malloc(strlen(name) + 520);
++    if (p == 0) {
++	fprintf(stderr, "%s: virtual memory exhausted\n", name);
++	closedir(d);
++	return;
++    }
++    strcpy(p, name);
++    q = p + strlen(p);
++    while (q > p && q[-1] == '/')
++	--q;
++    if (q == p + 1 && p[0] == '.')
++	q = p;
++    else
++	*q++ = '/';
++
++    while ((de = readdir(d)) != NULL) {
++	if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0)
++	    continue;
++	strcpy(q, de->d_name);
++	if (stat(p, &sb) < 0) {
++	    perror(p);
++	    continue;
++	}
++	if (S_ISREG(sb.st_mode)) {
++	    f = fopen(p, "r");
++	    if (f == NULL) {
++		perror(p);
++	    } else {
++		lsprop(f, de->d_name);
++		fclose(f);
++		++np;
++	    }
++	}
++    }
++    rewinddir(d);
++    while ((de = readdir(d)) != NULL) {
++	if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0)
++	    continue;
++	strcpy(q, de->d_name);
++	if (lstat(p, &sb) < 0) {
++	    perror(p);
++	    continue;
++	}
++	if (S_ISDIR(sb.st_mode)) {
++	    if (np)
++		printf("\n");
++	    printf("%s:\n", p);
++	    lsdir(p);
++	    ++np;
++	}
++    }
++    free(p);
++    closedir(d);
++}
++
++void lsprop(FILE *f, char *name)
++{
++    int n, nw, npl, i, j;
++
++    n = fread(buf, 1, maxbytes, f);
++    if (n < 0) {
++	printf("%s: read error\n", name);
++	return;
++    }
++    printf("%-16s", name);
++    if (strlen(name) > 16)
++	printf("\n\t\t");
++    for (i = 0; i < n; ++i)
++	if (buf[i] >= 0x7f ||
++	    (buf[i] < 0x20 && buf[i] != '\r' && buf[i] != '\n'
++	     && buf[i] != '\t' && buf[i] != 0))
++	    break;
++    if (i == n && n != 0 && (n == 1 || buf[0] != 0) && buf[n-1] == 0) {
++	printf(" \"");
++	for (i = 0; i < n - 1; ++i)
++	    if (buf[i] == 0)
++		printf("\"\n\t\t \"");
++	    else if (buf[i] == '\r' || buf[i] == '\n')
++		printf("\n\t\t ");
++	    else
++		putchar(buf[i]);
++	putchar('"');
++    } else if ((n & 3) == 0) {
++	nw = n >> 2;
++	if (nw == 1) {
++	    i = *(int *)buf;
++	    printf(" %.8x", i);
++	    if (i > -0x10000 && !(i >= 0 && i <= 9))
++		printf(" (%d)", i);
++	} else {
++	    npl = words_per_line;
++	    if (npl <= 0) {
++		if ((nw % 6) == 0)
++		    npl = 6;
++		else if ((nw % 5) == 0)
++		    npl = 5;
++		else
++		    npl = 4;
++	    }
++	    for (i = 0; i < nw; i += npl) {
++		if (i != 0)
++		    printf("\n\t\t");
++		for (j = 0; j < npl && i + j < nw; ++j)
++		    printf(" %.8x", ((unsigned int *)buf)[i+j]);
++	    }
++	}
++    } else {
++	for (i = 0; i < n; i += 16) {
++	    if (i != 0)
++		printf("\n\t\t");
++	    for (j = 0; j < 16 && i + j < n; ++j)
++		printf(" %.2x", buf[i+j]);
++	    for (; j < 16; ++j)
++		printf("   ");
++	    for (j = 0; j < 16 && i + j < n; ++j)
++		if (buf[i+j] > 0x20 && buf[i+j] <= 0x7e)
++		    putchar(buf[i+j]);
++		else
++		    putchar('.');
++	}
++    }
++    printf("\n");
++    if (n == maxbytes) {
++	while ((i = fread(buf, 1, maxbytes, f)) > 0)
++	    n += i;
++	if (n > maxbytes)
++	    printf("\t\t [%d bytes total]\n", n);
++    }
++}
++
+diff -Nur dtc.orig/Makefile dtc/Makefile
+--- dtc.orig/Makefile	2005-06-01 11:44:29.000002000 -0500
++++ dtc/Makefile	2005-06-01 11:46:26.000002000 -0500
+@@ -1,15 +1,21 @@
+-TARGETS = dtc
++TARGETS = dtc lsprop
+ CFLAGS = -Wall -g
+ 
+-OBJS = dtc.o livetree.o flattree.o data.o treesource.o fstree.o \
++OBJS-dtc = dtc.o livetree.o flattree.o data.o treesource.o fstree.o \
+ 	y.tab.o lex.yy.o
+ 
++OBJS-lsprop = lsprop.o
++
++
+ default: $(TARGETS)
+ 
+-dtc:	$(OBJS)
++dtc:	$(OBJS-dtc)
++	$(LINK.c) -o $@ $^
++
++lsprop: $(OBJS-lsprop)
+ 	$(LINK.c) -o $@ $^
+ 
+-$(OBJS): dtc.h
++$(OBJS-dtc): dtc.h
+ 
+ y.tab.c y.tab.h: dtc-parser.y
+ 	$(YACC) -d $<
