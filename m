@@ -1,35 +1,25 @@
-Return-Path: <hollis@penguinppc.org>
-Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 64745679E1
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Jun 2005 01:33:09 +1000 (EST)
-Received: from e35.co.us.ibm.com (e35.esmtp.ibm.com [9.14.4.133])
-	by pokfb.esmtp.ibm.com (8.12.11/8.12.11) with ESMTP id j51FV4uS004908
-	(version=TLSv1/SSLv3 cipher=EDH-RSA-DES-CBC3-SHA bits=168 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Wed, 1 Jun 2005 11:31:05 -0400
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.12.10/8.12.9) with ESMTP id j51FUwMK566182
-	for <linuxppc-dev@ozlabs.org>; Wed, 1 Jun 2005 11:30:59 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.12.10/NCO/VER6.6) with ESMTP id
-	j51FUwMM127794
-	for <linuxppc-dev@ozlabs.org>; Wed, 1 Jun 2005 09:30:58 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
-	j51FUvgR016464
-	for <linuxppc-dev@ozlabs.org>; Wed, 1 Jun 2005 09:30:58 -0600
-In-Reply-To: <D4FDDD1349B5AC46B68FC26AD8AF42D6226B2D@exnet.3il.fr>
-References: <D4FDDD1349B5AC46B68FC26AD8AF42D6226B2D@exnet.3il.fr>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <df1a94db40adc6c8e7e0d4baa12be9c4@penguinppc.org>
-From: Hollis Blanchard <hollis@penguinppc.org>
-Date: Wed, 1 Jun 2005 10:31:09 -0500
-To: =?ISO-8859-1?Q?Garcia_J=E9r=E9mie?= <GARCIAJ@3il.fr>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: copy_from_user( ) problem...help
+Return-Path: <nd@bplan-gmbh.de>
+Received: from smtp8.wanadoo.fr (smtp8.wanadoo.fr [193.252.22.23])
+	by ozlabs.org (Postfix) with ESMTP id 1AA30679E1
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Jun 2005 03:35:54 +1000 (EST)
+Received: from smtp8.wanadoo.fr (mwinf0808 [172.22.139.38])
+	by mwinf0810.wanadoo.fr (SMTP Server) with ESMTP id 51A211000570
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Jun 2005 19:16:01 +0200 (CEST)
+Received: from me-wanadoo.net (localhost [127.0.0.1])
+	by mwinf0808.wanadoo.fr (SMTP Server) with ESMTP id CC6261C00272
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Jun 2005 19:15:57 +0200 (CEST)
+Received: from bplan-gmbh.de (ALyon-253-1-28-11.w83-205.abo.wanadoo.fr
+	[83.205.155.11])
+	by mwinf0808.wanadoo.fr (SMTP Server) with ESMTP id 9E86B1C00209
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Jun 2005 19:15:55 +0200 (CEST)
+From: Nicolas DET <nd@bplan-gmbh.de>
+To: linuxppc-dev@ozlabs.org
+Date: 01 Jun 2005 19:14:13 +0100
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="--==bound210540b8135----"
+Message-Id: <20050601171555.9E86B1C00209@mwinf0808.wanadoo.fr>
+Subject: Tiny patch for arch/ppc/kernel/cputable.c to properly support the IBM
+ PowerPC 750CXe rev 3.1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,38 +29,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Jun 1, 2005, at 9:00 AM, Garcia J=E9r=E9mie wrote:
+Warning: This is a message in MIME format. Your mail reader does not
+support MIME. Some parts of this message will be readable as plain text.
+To see the rest, you will need to upgrade your mail reader. Following are
+some URLs where you can find MIME-capable mail programs for common
+platforms:
 
-> Hi everybody,
-> I'm tryin to write some device drivers modules in order to manage some=20=
+  Amiga............: SimpleMail   http://simplemail.sourceforge.net/
+  Unix.............: Metamail     ftp://ftp.bellcore.com/nsb/
+  Windows/Macintosh: Eudora       http://www.qualcomm.com/
 
-> of our devices of our ppc405EP based board.
-> I read the Allessandro Rubini book (Linux Kernel device drivers) in=20
-> order to help me.
-> Before going on difficult stuff, I'd like to make some basic training=20=
+General info about MIME can be found at:
 
-> and experiments.
-> What I want to do seems to be very easy (but...):
->  - a user space programm has a global structure and contains an=20
-> integer and a char
->  - the user space programm loads the module with a parameter: the=20
-> structure address
->  - during the init_module(),I check that the address can be accessed=20=
+http://www.cis.ohio-state.edu/hypertext/faq/usenet/mail/mime-faq/top.html
 
-> in R/W mode with the access_ok()
->  - the module copies the user structure in its own context and prints=20=
+----==bound210540b8135----
 
-> the values retreived
+Hello,
 
-When you do your copy_from_user, what guarantee do you have that the=20
-user process is your test application? If anything, I would expect it=20
-to be insmod (you can printk current->comm to see). Instead you could=20
-implement a write method and create a device node for the user app to=20
-open and write to.
+You can find enclosed a small patch to properly support the 750 CXe rev
+3.1. Indeed, the current kernel (2.6.11.11) only supports rev 2.1 and
+ignores 3.1
 
-However, for this specific example that's not in good style. If all you=20=
+It's a tiny patch: it only add an entry in the table with the correct PVR
+and name. Others values has been copied from 750CXe rev 2.1.
 
-really want to do is communicate settings to a kernel module, have a=20
-look at sysfs.
+I succesfully patched & compiled a vanila 2.6.11.11 from kernel.org.
 
--Hollis=
+Your sincerly,
+-- 
+Nicolas DET
+MorphOS & Linux developer
+----==bound210540b8135----
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename=patch_750CXe_2.6.11
+Content-transfer-encoding: base64
+
+LS0tIGxpbnV4LTIuNi4xMS5vcmlnL2FyY2gvcHBjL2tlcm5lbC9jcHV0YWJsZS5jCTIwMDUtMDMt
+MDIgMDg6Mzg6MDkuMDAwMDAwMDAwICswMTAwCisrKyBsaW51eC0yLjYuMTFfbmljby9hcmNoL3Bw
+Yy9rZXJuZWwvY3B1dGFibGUuYwkyMDA1LTAzLTA0IDE1OjM5OjExLjAzMjk3NTA4OCArMDEwMApA
+QCAtMTk4LDIwICsxOTgsNiBAQAogCQkubnVtX3BtY3MJCT0gNCwKIAkJLmNwdV9zZXR1cAkJPSBf
+X3NldHVwX2NwdV83NTAKIAl9LAotCXsJLyogNzQ1Lzc1NSAqLwotCQkucHZyX21hc2sJCT0gMHhm
+ZmZmZjAwMCwKLQkJLnB2cl92YWx1ZQkJPSAweDAwMDgzMDAwLAotCQkuY3B1X25hbWUJCT0gIjc0
+NS83NTUiLAotCQkuY3B1X2ZlYXR1cmVzCQk9IENQVV9GVFJfQ09NTU9OIHwKLQkJCUNQVV9GVFJf
+U1BMSVRfSURfQ0FDSEUgfCBDUFVfRlRSX01BWUJFX0NBTl9ET1pFIHwKLQkJCUNQVV9GVFJfVVNF
+X1RCIHwgQ1BVX0ZUUl9MMkNSIHwgQ1BVX0ZUUl9UQVUgfAotCQkJQ1BVX0ZUUl9IUFRFX1RBQkxF
+IHwgQ1BVX0ZUUl9NQVlCRV9DQU5fTkFQLAotCQkuY3B1X3VzZXJfZmVhdHVyZXMJPSBDT01NT05f
+UFBDLAotCQkuaWNhY2hlX2JzaXplCQk9IDMyLAotCQkuZGNhY2hlX2JzaXplCQk9IDMyLAotCQku
+bnVtX3BtY3MJCT0gNCwKLQkJLmNwdV9zZXR1cAkJPSBfX3NldHVwX2NwdV83NTAKLQl9LAogCXsJ
+LyogNzUwQ1ggKDgwMTAwIGFuZCA4MDEweD8pICovCiAJCS5wdnJfbWFzawkJPSAweGZmZmZmZmYw
+LAogCQkucHZyX3ZhbHVlCQk9IDB4MDAwODAxMDAsCkBAIC0yNTQsNiArMjQwLDM0IEBACiAJCS5u
+dW1fcG1jcwkJPSA0LAogCQkuY3B1X3NldHVwCQk9IF9fc2V0dXBfY3B1Xzc1MGN4CiAJfSwKKwl7
+CS8qIDc1MENYZSAoMDAwODIzMTEgb3IgMDAwODMzMTEpIHJldmlzaW9uIDMuMSAvIDMuMSBwcmVf
+R0EgKi8KKwkJLnB2cl9tYXNrCQk9IDB4ZmZmZjBmZmYsCisJCS5wdnJfdmFsdWUJCT0gMHgwMDA4
+MDMxMSwKKwkJLmNwdV9uYW1lCQk9ICI3NTBDWGUgcmV2IDMuMSIsCisJCS5jcHVfZmVhdHVyZXMJ
+CT0gQ1BVX0ZUUl9DT01NT04gfAorCQkJQ1BVX0ZUUl9TUExJVF9JRF9DQUNIRSB8IENQVV9GVFJf
+TUFZQkVfQ0FOX0RPWkUgfAorCQkJQ1BVX0ZUUl9VU0VfVEIgfCBDUFVfRlRSX0wyQ1IgfCBDUFVf
+RlRSX1RBVSB8CisJCQlDUFVfRlRSX0hQVEVfVEFCTEUgfCBDUFVfRlRSX01BWUJFX0NBTl9OQVAs
+CisJCS5jcHVfdXNlcl9mZWF0dXJlcwk9IENPTU1PTl9QUEMsCisJCS5pY2FjaGVfYnNpemUJCT0g
+MzIsCisJCS5kY2FjaGVfYnNpemUJCT0gMzIsCisJCS5udW1fcG1jcwkJPSA0LAorCQkuY3B1X3Nl
+dHVwCQk9IF9fc2V0dXBfY3B1Xzc1MGN4CisJfSwKKwl7CS8qIDc0NS83NTUgKi8KKwkJLnB2cl9t
+YXNrCQk9IDB4ZmZmZmYwMDAsCisJCS5wdnJfdmFsdWUJCT0gMHgwMDA4MzAwMCwKKwkJLmNwdV9u
+YW1lCQk9ICI3NDUvNzU1IiwKKwkJLmNwdV9mZWF0dXJlcwkJPSBDUFVfRlRSX0NPTU1PTiB8CisJ
+CQlDUFVfRlRSX1NQTElUX0lEX0NBQ0hFIHwgQ1BVX0ZUUl9NQVlCRV9DQU5fRE9aRSB8CisJCQlD
+UFVfRlRSX1VTRV9UQiB8IENQVV9GVFJfTDJDUiB8IENQVV9GVFJfVEFVIHwKKwkJCUNQVV9GVFJf
+SFBURV9UQUJMRSB8IENQVV9GVFJfTUFZQkVfQ0FOX05BUCwKKwkJLmNwdV91c2VyX2ZlYXR1cmVz
+CT0gQ09NTU9OX1BQQywKKwkJLmljYWNoZV9ic2l6ZQkJPSAzMiwKKwkJLmRjYWNoZV9ic2l6ZQkJ
+PSAzMiwKKwkJLm51bV9wbWNzCQk9IDQsCisJCS5jcHVfc2V0dXAJCT0gX19zZXR1cF9jcHVfNzUw
+CisJfSwKIAl7CS8qIDc1MEZYIHJldiAxLnggKi8KIAkJLnB2cl9tYXNrCQk9IDB4ZmZmZmZmMDAs
+CiAJCS5wdnJfdmFsdWUJCT0gMHg3MDAwMDEwMCwK
+
+----==bound210540b8135------
