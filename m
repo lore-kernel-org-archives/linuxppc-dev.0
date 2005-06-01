@@ -1,17 +1,20 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id E9095679A6
+Return-Path: <shemminger@osdl.org>
+Received: from smtp.osdl.org (fire.osdl.org [65.172.181.4])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 428C1679A6
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  2 Jun 2005 06:45:41 +1000 (EST)
-In-Reply-To: <20050531105939.7486e071@dxpl.pdx.osdl.net>
+	Thu,  2 Jun 2005 07:19:27 +1000 (EST)
+Message-ID: <429E2653.6010101@osdl.org>
+Date: Wed, 01 Jun 2005 14:19:15 -0700
+From: Stephen Hemminger <shemminger@osdl.org>
+MIME-Version: 1.0
+To: Andy Fleming <afleming@freescale.com>
 References: <1107b64b01fb8e9a6c84359bb56881a6@freescale.com>
 	<20050531105939.7486e071@dxpl.pdx.osdl.net>
-Mime-Version: 1.0 (Apple Message framework v730)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <92F1428A-0B26-428B-8C06-35C7E5B9EEE3@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Date: Wed, 1 Jun 2005 15:45:26 -0500
-To: Stephen Hemminger <shemminger@osdl.org>
+	<92F1428A-0B26-428B-8C06-35C7E5B9EEE3@freescale.com>
+In-Reply-To: <92F1428A-0B26-428B-8C06-35C7E5B9EEE3@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: Netdev <netdev@oss.sgi.com>,
 	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
 Subject: Re: RFC: PHY Abstraction Layer II
@@ -25,28 +28,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Andy Fleming wrote:
 
-On May 31, 2005, at 12:59, Stephen Hemminger wrote:
+>
+> On May 31, 2005, at 12:59, Stephen Hemminger wrote:
+>
+>> Here are some patches:
+>>     * allow phy's to be modules
+>>     * use driver owner for ref count
+>>     * make local functions static where ever possible
+>
+>
+> I agree with all these.
+>
+>>     * get rid of bus read may sleep implication in comment.
+>>       since you are holding phy spin lock it better not!!
+>
+>
+> But not this one.  The phy_read and phy_write functions are reading  
+> from and writing to a bus.  It is a reasonable implementation to have  
+> the operation block in the bus driver, and be awoken when an  
+> interrupt signals the operation is done.  All of the phydev spinlocks  
+> have been arranged so as to prevent the lock being taken during  
+> interrupt time.
+>
+> Unless I've misunderstood spinlocks (it wouldn't be the first time),  
+> as long as the lock is never taken in interrupt time, it should be ok  
+> to hold the lock, and wait for an interrupt before clearing the lock.
 
-> Here are some patches:
->     * allow phy's to be modules
->     * use driver owner for ref count
->     * make local functions static where ever possible
 
-I agree with all these.
+The problem is that sleeping is defined in the linux kernel as meaning 
+waiting on a mutual exclusion
+primitive (like semaphore) that puts the current thread to sleep. It is 
+not legal to sleep with a spinlock held.
+In the phy_read code you do:
+   
+   spin_lock_bh(&bus->mdio_lock);
+    retval = bus->read(bus, phydev->addr, regnum);
+    spin_unlock_bh(&bus->mdio_lock);
 
->     * get rid of bus read may sleep implication in comment.
->       since you are holding phy spin lock it better not!!
+If the bus->read function were to do something like start a request and 
+wait on a semaphore, then
+you would be sleeping with a spin lock held.  So bus->read can not 
+sleep! (as sleep is defined in the
+linux kernel).
 
-But not this one.  The phy_read and phy_write functions are reading  
-from and writing to a bus.  It is a reasonable implementation to have  
-the operation block in the bus driver, and be awoken when an  
-interrupt signals the operation is done.  All of the phydev spinlocks  
-have been arranged so as to prevent the lock being taken during  
-interrupt time.
-
-Unless I've misunderstood spinlocks (it wouldn't be the first time),  
-as long as the lock is never taken in interrupt time, it should be ok  
-to hold the lock, and wait for an interrupt before clearing the lock.
-
-Andy Fleming
+   
