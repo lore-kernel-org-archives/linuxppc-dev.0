@@ -1,15 +1,35 @@
-Return-Path: <GARCIAJ@3il.fr>
-Received: from email.3il.fr (email.3il.fr [195.25.243.230])
-	by ozlabs.org (Postfix) with ESMTP id 6DF2F679E2
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Jun 2005 00:00:27 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Wed, 1 Jun 2005 16:00:25 +0200
-Message-ID: <D4FDDD1349B5AC46B68FC26AD8AF42D6226B2D@exnet.3il.fr>
-From: =?iso-8859-1?Q?Garcia_J=E9r=E9mie?= <GARCIAJ@3il.fr>
-To: <linuxppc-dev@ozlabs.org>
-Subject: copy_from_user( ) problem...help
+Return-Path: <hollis@penguinppc.org>
+Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 64745679E1
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Jun 2005 01:33:09 +1000 (EST)
+Received: from e35.co.us.ibm.com (e35.esmtp.ibm.com [9.14.4.133])
+	by pokfb.esmtp.ibm.com (8.12.11/8.12.11) with ESMTP id j51FV4uS004908
+	(version=TLSv1/SSLv3 cipher=EDH-RSA-DES-CBC3-SHA bits=168 verify=OK)
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Jun 2005 11:31:05 -0400
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.12.10/8.12.9) with ESMTP id j51FUwMK566182
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Jun 2005 11:30:59 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.12.10/NCO/VER6.6) with ESMTP id
+	j51FUwMM127794
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Jun 2005 09:30:58 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
+	j51FUvgR016464
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Jun 2005 09:30:58 -0600
+In-Reply-To: <D4FDDD1349B5AC46B68FC26AD8AF42D6226B2D@exnet.3il.fr>
+References: <D4FDDD1349B5AC46B68FC26AD8AF42D6226B2D@exnet.3il.fr>
+Mime-Version: 1.0 (Apple Message framework v622)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <df1a94db40adc6c8e7e0d4baa12be9c4@penguinppc.org>
+From: Hollis Blanchard <hollis@penguinppc.org>
+Date: Wed, 1 Jun 2005 10:31:09 -0500
+To: =?ISO-8859-1?Q?Garcia_J=E9r=E9mie?= <GARCIAJ@3il.fr>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: copy_from_user( ) problem...help
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,173 +39,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi everybody,
-I'm tryin to write some device drivers modules in order to manage some =
-of our devices of our ppc405EP based board.
-I read the Allessandro Rubini book (Linux Kernel device drivers) in =
-order to help me.
-Before going on difficult stuff, I'd like to make some basic training =
-and experiments.
-What I want to do seems to be very easy (but...):
- - a user space programm has a global structure and contains an integer =
-and a char
- - the user space programm loads the module with a parameter: the =
-structure address
- - during the init_module(),I check that the address can be accessed in =
-R/W mode with the access_ok()
- - the module copies the user structure in its own context and prints =
-the values retreived
+On Jun 1, 2005, at 9:00 AM, Garcia J=E9r=E9mie wrote:
 
-So, it's supposed to be a very easy operation, but something goes wrong. =
-Could someone give me a clue cause
-I read it again and again and I don't get what's the matter. Here is the =
-code:
+> Hi everybody,
+> I'm tryin to write some device drivers modules in order to manage some=20=
 
-/************************************************************************=
-******/
-/*                           USER SPACE PROG                             =
-     */
-/************************************************************************=
-******/
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
- =20
-typedef struct une_structure
-{
-    int un_entier;
-    char un_char;
-}UNE_STRUCTURE;
+> of our devices of our ppc405EP based board.
+> I read the Allessandro Rubini book (Linux Kernel device drivers) in=20
+> order to help me.
+> Before going on difficult stuff, I'd like to make some basic training=20=
 
-UNE_STRUCTURE my_structure;
+> and experiments.
+> What I want to do seems to be very easy (but...):
+>  - a user space programm has a global structure and contains an=20
+> integer and a char
+>  - the user space programm loads the module with a parameter: the=20
+> structure address
+>  - during the init_module(),I check that the address can be accessed=20=
 
-void main(void)
-{
-    char buff[100];
+> in R/W mode with the access_ok()
+>  - the module copies the user structure in its own context and prints=20=
 
-    /* Init of the structure */
-    my_structure.un_entier =3D 5;
-    my_structure.un_char =3D 'a';
-   =20
-    /* Build the shell command to load the module */
-    sprintf(buff,"insmod -q ./un_module.o addr=3D%p",&my_structure);
+> the values retreived
 
-    /* Print the shell command that loads the module */
-    printf("\nCommmande : ");
-    puts(buff);
-   =20
-    /* Load the module*/
-    system(buff);
+When you do your copy_from_user, what guarantee do you have that the=20
+user process is your test application? If anything, I would expect it=20
+to be insmod (you can printk current->comm to see). Instead you could=20
+implement a write method and create a device node for the user app to=20
+open and write to.
 
-    sleep(2);
+However, for this specific example that's not in good style. If all you=20=
 
-    /* Remove the module */
-    system("rmmod un_module"); =20
-}
+really want to do is communicate settings to a kernel module, have a=20
+look at sysfs.
 
-
-/************************************************************************=
-/
-/*                      KERNEL MODULE                                   =
-*/
-/************************************************************************=
-/
-[...]
-typedef struct une_structure
-{
-    int un_entier;
-    char un_char;
-}UNE_STRUCTURE;
-
-UNE_STRUCTURE *addr =3D 0x0;  /* default value */
-
-MODULE_PARM(addr,"l");      /* get the address of the user space =
-structure=20
-                               given in argument at insmod()             =
-  */
-
-
-int init_module(void)
-{
-  int rc;
-  UNE_STRUCTURE * my_structure;
- =20
-  printk("Address of the user structure : %d\n",(int)addr);
-
-  /* Alloc space for ou structure */
-  my_structure =3D kmalloc(sizeof(UNE_STRUCTURE),GFP_DMA);
-  if(my_structure=3D=3DNULL)
-  {
-    printk("Kernel memory allocation failed!\n");
-    return -1;
-  }
-  else
-    printk("Kernel memory allocation succeeded!\n");
-
-  rc =3D access_ok(VERIFY_READ,(void *)addr,sizeof(UNE_STRUCTURE));
-  if(rc !=3D 0)
-  {      =20
-     rc =3D access_ok(VERIFY_WRITE,(void *)addr,sizeof(UNE_STRUCTURE));
-     if(rc !=3D 0)
-     {
-          rc =3D copy_from_user(my_structure,(void =
-*)addr,sizeof(UNE_STRUCTURE));
-          if(rc)
-              printk("Error in copy_from_user, rc=3D%d\n",rc);
-          else
-          { =20
-            printk("Values of the retreived user-space structure 's =
-fields:\n");
-            printk("\t -> un_entier =3D %d \n",my_structure->un_entier);
-            printk("\t -> un_unsigned_char =3D %c =
-\n",my_structure->un_char);
-          }
-            =20
-      }
-      else
-      {
-          printk("Erreur in accessing addr in WRITE mode\n");
-          return -1;
-      }=20
-    }
-    else
-    {
-      printk("Erreur in accessing addr in READ mode\n");
-      return -1;
-    }
-    return 0;
-}
-
-/************************************************************************=
-***/
-/*                         EXECUTION RESULTS                             =
-  */
-/************************************************************************=
-***/
-root@10.16.9.232:/home/testDir# ./une_appli.exe
-
-[USER-SPACE]Commmande : insmod -q ./un_module.o addr=3D0x10010a74
-[KERN-SPACE]Address of the user structure : 268503668               // =
-is the same if converted in hexa=20
-[KERN-SPACE]Kernel memory allocation succeeded!
-[KERN-SPACE]Values of the retreived user-space structure 's fields:
-               -> un_entier =3D -1857486844                           // =
-weird result and !=3D 5
-               -> un_unsigned_char =3D .                              // =
-weird result and !=3D 'a'
-
-[KERN-SPACE]Now releasing the module...
-
-
-As you can see, I don't really retreived the user-space structure in the =
-kernel. Is it an address problem?
-If I understood well, no ioremap is needded here cause the address given =
-in argument of insmod is from MMU.
-So what's the problem ; I really think that I'm dealing with a wrong =
-address.=20
-
-Please help a newbie that would like to understand... Tks for your =
-precious help.
-Jeremie
-=20
+-Hollis=
