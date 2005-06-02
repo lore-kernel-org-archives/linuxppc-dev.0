@@ -1,12 +1,12 @@
 Return-Path: <greg@kroah.com>
 Received: from perch.kroah.org (mail.kroah.org [69.55.234.183])
-	by ozlabs.org (Postfix) with ESMTP id 41A92679E1
+	by ozlabs.org (Postfix) with ESMTP id 32094679E1
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  2 Jun 2005 09:50:32 +1000 (EST)
-Date: Wed, 1 Jun 2005 17:00:50 -0700
+	Thu,  2 Jun 2005 09:52:11 +1000 (EST)
+Date: Wed, 1 Jun 2005 17:02:28 -0700
 From: Greg KH <greg@kroah.com>
 To: Matt Porter <mporter@kernel.crashing.org>
-Message-ID: <20050602000050.GA5678@kroah.com>
+Message-ID: <20050602000228.GB5678@kroah.com>
 References: <20050601110836.A16559@cox.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -25,24 +25,15 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 On Wed, Jun 01, 2005 at 11:08:36AM -0700, Matt Porter wrote:
-> Adds a RapidIO subsystem to the kernel. RIO is a switched
-> fabric interconnect used in higher-end embedded applications.
-> The curious can look at the specs over at http://www.rapidio.org
-> 
-> The core code implements enumeration/discovery, management of
-> devices/resources, and interfaces for RIO drivers.
-> 
-> There's a lot more to do to take advantages of all the hardware
-> features. However, this should provide a good base for folks
-> with RIO hardware to start contributing.
-> 
-> Signed-off-by: Matt Porter <mporter@kernel.crashing.org>
-> 
 > Patch is 108KB and can be found here:
 > ftp://source.mvista.com/pub/rio/l26_rio_core.patch
 
-Care to split it up into logical sections and post it?  It should be
-small enough to do so that way.
+register_driver() does not return the number of devices bound to the
+driver.  So your comment in rio_register_driver() is incorrect.  Just
+return count.
+
+Hm, if the patch was inline it would be easier to comment on stuff like
+this, I'll wait till then for the rest :)
 
 thanks,
 
