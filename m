@@ -1,25 +1,20 @@
-Return-Path: <wolfi@mittelerde.physik.uni-konstanz.de>
-Received: from honk1.physik.uni-konstanz.de (honk1.physik.uni-konstanz.de
-	[134.34.140.224])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+Return-Path: <geoffrey.levand@am.sony.com>
+Received: from mail8.fw-sd.sony.com (mail8.fw-sd.sony.com [160.33.66.75])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4E012679EA
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Jun 2005 19:33:31 +1000 (EST)
-Date: Fri, 3 Jun 2005 11:33:18 +0200
-From: Wolfram Quester <wolfi@mittelerde.physik.uni-konstanz.de>
+	by ozlabs.org (Postfix) with ESMTP id 673EF679F4
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Jun 2005 21:23:41 +1000 (EST)
+Message-ID: <429F892C.7030603@am.sony.com>
+Date: Thu, 02 Jun 2005 15:33:16 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <20050603093316.GA4777@halley.zuhause>
 References: <1117424155.5228.28.camel@gaston>
-	<3db27390050530145939d260e4@mail.gmail.com>
-	<20050602130502.GA6151@halley.zuhause>
-	<1117750504.31082.76.camel@gaston>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="FL5UXtIhxfXey3p5"
-In-Reply-To: <1117750504.31082.76.camel@gaston>
+In-Reply-To: <1117424155.5228.28.camel@gaston>
+Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
-Subject: Re: ppc32: Rework power management take #3
+Subject: Re: [PATCH] ppc32: Rework power management take #3
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,54 +24,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I had a problem when building for ppc440 (gcc -m405).  I wonder if we 
+need some conditionals on the DSSALL statement as below, or is DSSALL 
+intended to be a perprocessor macro that would expand to a blank line
+in this case?
 
---FL5UXtIhxfXey3p5
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, Jun 03, 2005 at 08:15:03AM +1000, Benjamin Herrenschmidt wrote:
->=20
-> > Today I applied the two mentioned patches to rc5-git6. There were quite
-> > a lot of offsets and one time fuzz 2 (hunk 10 in via-pm.c). But still I
-> > get a freeze on my PowerBook6,2 (12", 1Ghz from Dec. 2004) when I
-> > suspend to disk from X. If I suspend from tty1 the first time, the
-> > following suspends work well even from X.
-> >=20
-> > Thanks for your work,
->=20
-> Bizarre... The kernel is normally first opens a new tty and switches to
-> it before suspend. It seems that this opening of a new tty is
-> conflicting in some way with X "nv" driver and causing that freeze. Are
-> you also using an fbdev like rivafb or nvidiafb or are you defaulting to
-> offb ? If you do, Can you try booting with video=3Dofonly and tell me if
-> it helps ?
->=20
-> Ben.
-Normally I use rivafb, but I tried video=3Dofonly and did not get a
-freeze. I tried it three times and I hope that this is good statistics.
-With 2.6.12-rc2 and riva fb I got the freeze in about 80% of all initial
-suspends, with rc{4,5-git6} and riva fb I had it everytime. But it may
-still well be that there is a random component since I learned to
-workaround the problem by switching to tty1 and thus don't trigger the
-freeze condition that often.
+-Geoff
 
 
-Thanks,
+dssall-fix.patch:
 
-Wolfi
+Index: linux-2.6.12-bhpm/arch/ppc/kernel/swsusp.S
+===================================================================
+--- linux-2.6.12-bhpm.orig/arch/ppc/kernel/swsusp.S	2005-06-02 15:09:22.000000000 -0700
++++ linux-2.6.12-bhpm/arch/ppc/kernel/swsusp.S	2005-06-02 15:29:56.000000000 -0700
+@@ -134,11 +134,13 @@
+ /* Resume code */
+ _GLOBAL(swsusp_arch_resume)
+ 
++#ifdef CONFIG_ALTIVEC
+ 	/* Stop pending alitvec streams and memory accesses */
+ BEGIN_FTR_SECTION
+ 	DSSALL
+ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+- 	sync
++#endif
++	sync
+ 
+ 	/* Disable MSR:DR to make sure we don't take a TLB or
+ 	 * hash miss during the copy, as our hash table will
 
---FL5UXtIhxfXey3p5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQFCoCPcH0o2mefAfsQRAlBVAJ4+fv4SRawcbQyshdsSKxWKDM9VXgCeLurX
-tYad/iC6Ku3mWE6KFioKciE=
-=/Xv/
------END PGP SIGNATURE-----
-
---FL5UXtIhxfXey3p5--
+Benjamin Herrenschmidt wrote:
+> Ok, the patch is now getting "good enough" for wider testing. It applies
+> on current "git" tree (or 2.6.12-rc6 when/if that is ever released). It
+> requires one other patch to be applied first:
+> 
+> http://gate.crashing.org/~benh/ppc32-remove-macserial.diff
+> 
+> The PM patch itself can be found at:
+> 
+> http://gate.crashing.org/~benh/ppc32-rework-pm.diff
+> 
+> This patch completely reworks both suspend-to-ram and suspend-to-disk
+> support on PowerMac:
+> 
+>  - suspend-to-ram code is moved away from the via-pmu.c driver
+>  - both suspend-to-disk & to-ram consolidated to use the same
+> infrastructure and code base in a new pmac_pm.c file
+>  - significants fixes & improvements to suspend-to-disk
+>  - for now (may change), use the "refrigerator" with suspend-to-ram as
+> well as suspend-to-disk. This may help make it a bit more robust vs.
+> userland activity during the sleep process
+>  - CONFIG_PMAC_PBOOK is gone. CONFIG_PMAC_MEDIABAY is new and controls
+> wether the powerbook hostwap bay driver is included. The rest of bits
+> formerly under CONFIG_PMAC_PBOOK control are now either always on
+> (like /dev/pmu interface on PMU based machines) or dependent on other
+> config options (like CONFIG_PM, CONFIG_PPC_PMAC, ...)
+> 
+> The patch will not be in 2.6.12 (though will probably apply on top of
+> it). I aim for a 2.6.13 release, knowing that the patch changes a bunch
+> of non-ppc-specific power management bits, and thus may need some time
+> to be fully merged upstream.
+> 
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
