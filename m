@@ -1,27 +1,18 @@
-Return-Path: <wojciech.kromer@dgt.com.pl>
-Received: from dgt.com.pl (mail.dgt.com.pl [195.117.141.2])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+Return-Path: <geoffrey.levand@am.sony.com>
+Received: from mail8.fw-sd.sony.com (mail8.fw-sd.sony.com [160.33.66.75])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id ED722679F9
+	by ozlabs.org (Postfix) with ESMTP id 66C5D67B1E
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  3 Jun 2005 16:39:55 +1000 (EST)
-Received: from mail.dgt.com.pl (localhost [127.0.0.1])
-	by dgt.com.pl (Postfix) with SMTP id C9CF95795F
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  3 Jun 2005 08:39:46 +0200 (CEST)
-Received: from [192.168.7.66] (proxy.dgt.com.pl [::ffff:195.117.141.11])
-	by dgt.com.pl (Postfix) with ESMTP id 9705B57731
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  3 Jun 2005 08:39:46 +0200 (CEST)
-Message-ID: <429FFB53.2040106@dgt.com.pl>
-Date: Fri, 03 Jun 2005 08:40:19 +0200
-From: Wojciech Kromer <wojciech.kromer@dgt.com.pl>
+	Fri,  3 Jun 2005 18:43:14 +1000 (EST)
+Message-ID: <429F8F86.1040308@am.sony.com>
+Date: Thu, 02 Jun 2005 16:00:22 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-To: undisclosed-recipients: ;
-References: <bf0d9d49e4c115e67aa5df39e33017a1@freescale.com>
-In-Reply-To: <bf0d9d49e4c115e67aa5df39e33017a1@freescale.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Subject: Re: Getting ownership for various boards/platforms configs
+To: Matt Porter <mporter@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-embedded@ozlabs.org
+Subject: [PATCH] Fix PPC440 pagetable attributes
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,21 +23,84 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dnia 2005-06-03 01:19, Użytkownik Kumar Gala napisał:
+This patch fixes a bug in the PPC440 pagetable attributes that breaks  
+swap support.  It also adds some notes on the PPC440 attribute fields.
 
-> One issue that comes up from time to time is knowing who to contact 
-> about some of the various boards that are supported for PPC. I've 
-> suggested in the past that we create a MAINTAINERS file in 
-> arch/ppc/platforms. I've started with a list of all the _defconfigs 
-> that we have and would like to see if we can get contacts for the 
-> boards. All this list is meant to be is a contact point.
->
->
-There is another issue..
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com> for CELF
 
-May I suggest to add one full-custom board?
-There are a lot of changes to do inside uart,fec,fcc drivers with a lot
-of #ifdefs,
-just because different use of mpc resources on different boards.
-Why it's not configured via menuconfig?
-Another nice example is inside status_led.h...
+--
+
+Index: linux-2.6.12-bhpm/include/asm-ppc/pgtable.h
+===================================================================
+--- linux-2.6.12-bhpm.orig/include/asm-ppc/pgtable.h	2005-06-02 15:09:24.000000000 -0700
++++ linux-2.6.12-bhpm/include/asm-ppc/pgtable.h	2005-06-02 15:47:53.000000000 -0700
+@@ -202,18 +202,64 @@
+  *
+  * Note that these bits preclude future use of a page size
+  * less than 4KB.
++ *
++ *
++ * PPC 440 core has following TLB attribute fields;
++ *
++ *   TLB1:
++ *   0  1  2  3  4  ... 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
++ *   RPN.................................  -  -  -  -  -  - ERPN.......
++ *
++ *   TLB2:
++ *   0  1  2  3  4  ... 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
++ *   -  -  -  -  -    - U0 U1 U2 U3 W  I  M  G  E   - UX UW UR SX SW SR
++ *
++ * There are some constrains and options, to decide mapping software bits
++ * into TLB entry.
++ *
++ *   - PRESENT *must* be in the bottom three bits because swap cache
++ *     entries use the top 29 bits for TLB2.
++ *
++ *   - FILE *must* be in the bottom three bits because swap cache
++ *     entries use the top 29 bits for TLB2.
++ *
++ *   - CACHE COHERENT bit (M) has no effect on PPC440 core, because it
++ *     doesn't support SMP. So we can use this as software bit, like
++ *     DIRTY.
++ *
++ * PPC Book-E Linux implementation uses PPC HW PTE bit field definition, 
++ * even it doesn't have HW PTE. 0-11th LSB of PTE stand for memory 
++ * protection-related function. (See PTE structure in include/asm-ppc/mmu.h) 
++ * Definition of _PAGE_XXX in "include/asm-ppc/pagetable.h" stands for 
++ * above bits. Note that those bits values are CPU dependent, not 
++ * architecture.
++ * 
++ * Kernel PTE entry holds arch-dependent swp_entry structure under certain 
++ * situation. In other words, in such situation, some portion of PTE bits 
++ * are used as swp_entry. In PPC implementation, 3-24th LSB are shared with 
++ * swp_entry, however 0-2nd three LSB still hold protection values. 
++ * That means three protection bits are reserved for both PTE and SWAP 
++ * entry at the most three LSBs.
++ *
++ * There are three protection bits available for SWAP entry;
++ *	_PAGE_PRESENT
++ *	_PAGE_FILE
++ *	_PAGE_HASHPTE (if HW has)
++ *
++ * So those three bits have to be inside of 0-2nd LSB of PTE.
++ *
+  */
++
+ #define _PAGE_PRESENT	0x00000001		/* S: PTE valid */
+ #define	_PAGE_RW	0x00000002		/* S: Write permission */
+-#define	_PAGE_DIRTY	0x00000004		/* S: Page dirty */
++#define _PAGE_FILE	0x00000004		/* S: nonlinear file mapping */
+ #define _PAGE_ACCESSED	0x00000008		/* S: Page referenced */
+ #define _PAGE_HWWRITE	0x00000010		/* H: Dirty & RW */
+ #define _PAGE_HWEXEC	0x00000020		/* H: Execute permission */
+ #define	_PAGE_USER	0x00000040		/* S: User page */
+ #define	_PAGE_ENDIAN	0x00000080		/* H: E bit */
+ #define	_PAGE_GUARDED	0x00000100		/* H: G bit */
+-#define	_PAGE_COHERENT	0x00000200		/* H: M bit */
+-#define _PAGE_FILE	0x00000400		/* S: nonlinear file mapping */
++#define	_PAGE_DIRTY	0x00000200		/* S: Page dirty */
+ #define	_PAGE_NO_CACHE	0x00000400		/* H: I bit */
+ #define	_PAGE_WRITETHRU	0x00000800		/* H: W bit */
+ 
+
+-EOF
