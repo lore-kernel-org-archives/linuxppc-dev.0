@@ -1,22 +1,23 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao06.cox.net (fed1rmmtao06.cox.net [68.230.241.33])
-	by ozlabs.org (Postfix) with ESMTP id 1CEE2679EA
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from parcelfarce.linux.theplanet.co.uk
+	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D8EFC679E1
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  3 Jun 2005 07:34:06 +1000 (EST)
-Date: Thu, 2 Jun 2005 14:34:04 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: torvalds@osdl.org, akpm@osdl.org, jgarzik@pobox.com
-Message-ID: <20050602143404.F24818@cox.net>
-References: <20050602140359.B24818@cox.net> <20050602141247.C24818@cox.net>
-	<20050602141946.D24818@cox.net> <20050602142509.E24818@cox.net>
+	Fri,  3 Jun 2005 07:49:53 +1000 (EST)
+Date: Thu, 2 Jun 2005 14:02:45 -0300
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <20050602170245.GA7456@logos.cnet>
+References: <20050601165054.GA2607@logos.cnet>
+	<1117680392.31082.16.camel@gaston>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050602142509.E24818@cox.net>;
-	from mporter@kernel.crashing.org on Thu, Jun 02, 2005 at
-	02:25:10PM -0700
-Cc: netdev@oss.sgi.com, linux-kernel@vger.kernel.org,
-	linuxppc-embedded@ozlabs.org
-Subject: [PATCH][5/5] RapidIO support: net driver over messaging
+In-Reply-To: <1117680392.31082.16.camel@gaston>
+Cc: Paul Mackerras <paulus@samba.org>,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [RFC] handle access to non-present IO ports on 8xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,673 +28,88 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Adds an "Ethernet" driver which sends Ethernet packets over the
-standard RapidIO messaging. This depends on the core RIO
-patch for mailbox/doorbell access.
+Hi Ben,
 
-Signed-off-by: Matt Porter <mporter@kernel.crashing.org>
+On Thu, Jun 02, 2005 at 12:46:32PM +1000, Benjamin Herrenschmidt wrote:
+> On Wed, 2005-06-01 at 13:50 -0300, Marcelo Tosatti wrote:
+> 
+> Hrm... removing a PCMCIA card triggers mchecks ? that is bad... With
+> "proper" PCMCIA controllers, those are swallowed properly when the card
+> is removed. The eating of the machine check is a bit too hackish to my
+> taste... Better is to "not do that" by making sure the legacy crap isn't
+> trying  to tap unexisting ports, but then, if PCMCIA is also a
+> problem... 
 
-Index: drivers/net/Kconfig
-===================================================================
---- 711ec47634f5d5ded866eaa965a0f7dadcbc65f4/drivers/net/Kconfig  (mode:100644)
-+++ 8bdd37ff79724c95795ed39c28588a94e1f13e60/drivers/net/Kconfig  (mode:100644)
-@@ -2185,6 +2185,20 @@
- 	tristate "iSeries Virtual Ethernet driver support"
- 	depends on NETDEVICES && PPC_ISERIES
- 
-+config RIONET
-+	tristate "RapidIO Ethernet over messaging driver support"
-+	depends on NETDEVICES && RAPIDIO
-+
-+config RIONET_TX_SIZE
-+	int "Number of outbound queue entries"
-+	depends on RIONET
-+	default "128"
-+
-+config RIONET_RX_SIZE
-+	int "Number of inbound queue entries"
-+	depends on RIONET
-+	default "128"
-+
- config FDDI
- 	bool "FDDI driver support"
- 	depends on NETDEVICES && (PCI || EISA)
-Index: drivers/net/Makefile
-===================================================================
---- 711ec47634f5d5ded866eaa965a0f7dadcbc65f4/drivers/net/Makefile  (mode:100644)
-+++ 8bdd37ff79724c95795ed39c28588a94e1f13e60/drivers/net/Makefile  (mode:100644)
-@@ -58,6 +58,7 @@
- obj-$(CONFIG_VIA_RHINE) += via-rhine.o
- obj-$(CONFIG_VIA_VELOCITY) += via-velocity.o
- obj-$(CONFIG_ADAPTEC_STARFIRE) += starfire.o
-+obj-$(CONFIG_RIONET) += rionet.o
- 
- #
- # end link order section
-Index: drivers/net/rionet.c
-===================================================================
---- /dev/null  (tree:711ec47634f5d5ded866eaa965a0f7dadcbc65f4)
-+++ 8bdd37ff79724c95795ed39c28588a94e1f13e60/drivers/net/rionet.c  (mode:100644)
-@@ -0,0 +1,622 @@
-+/*
-+ * rionet - Ethernet driver over RapidIO messaging services
-+ *
-+ * Copyright 2005 MontaVista Software, Inc.
-+ * Matt Porter <mporter@kernel.crashing.org>
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/delay.h>
-+#include <linux/rio.h>
-+#include <linux/rio_drv.h>
-+#include <linux/rio_ids.h>
-+
-+#include <linux/netdevice.h>
-+#include <linux/etherdevice.h>
-+#include <linux/skbuff.h>
-+#include <linux/crc32.h>
-+#include <linux/ethtool.h>
-+
-+#define DRV_NAME        "rionet"
-+#define DRV_VERSION     "0.1"
-+#define DRV_AUTHOR      "Matt Porter <mporter@kernel.crashing.org>"
-+#define DRV_DESC        "Ethernet over RapidIO"
-+
-+MODULE_AUTHOR(DRV_AUTHOR);
-+MODULE_DESCRIPTION(DRV_DESC);
-+MODULE_LICENSE("GPL");
-+
-+#define RIONET_DEFAULT_MSGLEVEL	0
-+#define RIONET_DOORBELL_JOIN	0x1000
-+#define RIONET_DOORBELL_LEAVE	0x1001
-+
-+#define RIONET_MAILBOX		0
-+
-+#define RIONET_TX_RING_SIZE	CONFIG_RIONET_TX_SIZE
-+#define RIONET_RX_RING_SIZE	CONFIG_RIONET_RX_SIZE
-+
-+LIST_HEAD(rionet_peers);
-+
-+struct rionet_private {
-+	struct rio_mport *mport;
-+	struct sk_buff *rx_skb[RIONET_RX_RING_SIZE];
-+	struct sk_buff *tx_skb[RIONET_TX_RING_SIZE];
-+	struct net_device_stats stats;
-+	int rx_slot;
-+	int tx_slot;
-+	int tx_cnt;
-+	int ack_slot;
-+	spinlock_t lock;
-+	u32 msg_enable;
-+};
-+
-+struct rionet_peer {
-+	struct list_head node;
-+	struct rio_dev *rdev;
-+	struct resource *res;
-+};
-+
-+static int rionet_check = 0;
-+static int rionet_capable = 1;
-+static struct net_device *sndev = NULL;
-+
-+/*
-+ * This is a fast lookup table for for translating TX
-+ * Ethernet packets into a destination RIO device. It
-+ * could be made into a hash table to save memory depending
-+ * on system trade-offs.
-+ */
-+static struct rio_dev *rionet_active[RIO_MAX_ROUTE_ENTRIES];
-+
-+#define is_rionet_capable(pef, src_ops, dst_ops)		\
-+			((pef & RIO_PEF_INB_MBOX) &&		\
-+			 (pef & RIO_PEF_INB_DOORBELL) &&	\
-+			 (src_ops & RIO_SRC_OPS_DOORBELL) &&	\
-+			 (dst_ops & RIO_DST_OPS_DOORBELL))
-+#define dev_rionet_capable(dev) \
-+	is_rionet_capable(dev->pef, dev->src_ops, dev->dst_ops)
-+
-+#define RIONET_MAC_MATCH(x)	(*(u32 *)x == 0x00010001)
-+#define RIONET_GET_DESTID(x)	(*(u16 *)(x + 4))
-+
-+static struct net_device_stats *rionet_stats(struct net_device *ndev)
-+{
-+	struct rionet_private *rnet = ndev->priv;
-+	return &rnet->stats;
-+}
-+
-+static int rionet_rx_clean(struct net_device *ndev)
-+{
-+	int i;
-+	int error = 0;
-+	struct rionet_private *rnet = ndev->priv;
-+	void *data;
-+
-+	i = rnet->rx_slot;
-+
-+	do {
-+		if (!rnet->rx_skb[i]) {
-+			rnet->stats.rx_dropped++;
-+			continue;
-+		}
-+
-+		if (!(data = rio_get_inb_message(rnet->mport, RIONET_MAILBOX)))
-+			break;
-+
-+		rnet->rx_skb[i]->data = data;
-+		skb_put(rnet->rx_skb[i], RIO_MAX_MSG_SIZE);
-+		rnet->rx_skb[i]->dev = sndev;
-+		rnet->rx_skb[i]->protocol =
-+		    eth_type_trans(rnet->rx_skb[i], sndev);
-+		error = netif_rx(rnet->rx_skb[i]);
-+
-+		if (error == NET_RX_DROP) {
-+			rnet->stats.rx_dropped++;
-+		} else if (error == NET_RX_BAD) {
-+			if (netif_msg_rx_err(rnet))
-+				printk(KERN_WARNING "%s: bad rx packet\n",
-+				       DRV_NAME);
-+			rnet->stats.rx_errors++;
-+		} else {
-+			rnet->stats.rx_packets++;
-+			rnet->stats.rx_bytes += RIO_MAX_MSG_SIZE;
-+		}
-+
-+	} while ((i = (i + 1) % RIONET_RX_RING_SIZE) != rnet->rx_slot);
-+
-+	return i;
-+}
-+
-+static void rionet_rx_fill(struct net_device *ndev, int end)
-+{
-+	int i;
-+	struct rionet_private *rnet = ndev->priv;
-+
-+	i = rnet->rx_slot;
-+	do {
-+		rnet->rx_skb[i] = dev_alloc_skb(RIO_MAX_MSG_SIZE);
-+
-+		if (!rnet->rx_skb[i])
-+			break;
-+
-+		rio_add_inb_buffer(rnet->mport, RIONET_MAILBOX,
-+				   rnet->rx_skb[i]->data);
-+	} while ((i = (i + 1) % RIONET_RX_RING_SIZE) != end);
-+
-+	rnet->rx_slot = i;
-+}
-+
-+static int rionet_queue_tx_msg(struct sk_buff *skb, struct net_device *ndev,
-+			       struct rio_dev *rdev)
-+{
-+	struct rionet_private *rnet = ndev->priv;
-+
-+	rio_add_outb_message(rnet->mport, rdev, 0, skb->data, skb->len);
-+	rnet->tx_skb[rnet->tx_slot] = skb;
-+
-+	rnet->stats.tx_packets++;
-+	rnet->stats.tx_bytes += skb->len;
-+
-+	if (++rnet->tx_cnt == RIONET_TX_RING_SIZE)
-+		netif_stop_queue(ndev);
-+
-+	if (++rnet->tx_slot == RIONET_TX_RING_SIZE)
-+		rnet->tx_slot = 0;
-+
-+	if (netif_msg_tx_queued(rnet))
-+		printk(KERN_INFO "%s: queued skb %8.8x len %8.8x\n", DRV_NAME,
-+		       (u32) skb, skb->len);
-+
-+	return 0;
-+}
-+
-+static int rionet_start_xmit(struct sk_buff *skb, struct net_device *ndev)
-+{
-+	int i;
-+	struct rionet_private *rnet = ndev->priv;
-+	struct ethhdr *eth = (struct ethhdr *)skb->data;
-+	u16 destid;
-+
-+	spin_lock_irq(&rnet->lock);
-+
-+	if ((rnet->tx_cnt + 1) > RIONET_TX_RING_SIZE) {
-+		netif_stop_queue(ndev);
-+		spin_unlock_irq(&rnet->lock);
-+		return -EBUSY;
-+	}
-+
-+	if (eth->h_dest[0] & 0x01) {
-+		/*
-+		 * XXX Need to delay queuing if ring max is reached,
-+		 * flush additional packets in tx_event() before
-+		 * awakening the queue. We can easily exceed ring
-+		 * size with a large number of nodes or even a
-+		 * small number where the ring is relatively full
-+		 * on entrance to hard_start_xmit.
-+		 */
-+		for (i = 0; i < RIO_MAX_ROUTE_ENTRIES; i++)
-+			if (rionet_active[i])
-+				rionet_queue_tx_msg(skb, ndev,
-+						    rionet_active[i]);
-+	} else if (RIONET_MAC_MATCH(eth->h_dest)) {
-+		destid = RIONET_GET_DESTID(eth->h_dest);
-+		if (rionet_active[destid])
-+			rionet_queue_tx_msg(skb, ndev, rionet_active[destid]);
-+	}
-+
-+	spin_unlock_irq(&rnet->lock);
-+
-+	return 0;
-+}
-+
-+static int rionet_set_mac_address(struct net_device *ndev, void *p)
-+{
-+	struct sockaddr *addr = p;
-+
-+	if (!is_valid_ether_addr(addr->sa_data))
-+		return -EADDRNOTAVAIL;
-+
-+	memcpy(ndev->dev_addr, addr->sa_data, ndev->addr_len);
-+
-+	return 0;
-+}
-+
-+static int rionet_change_mtu(struct net_device *ndev, int new_mtu)
-+{
-+	struct rionet_private *rnet = ndev->priv;
-+
-+	if (netif_msg_drv(rnet))
-+		printk(KERN_WARNING
-+		       "%s: rionet_change_mtu(): not implemented\n", DRV_NAME);
-+
-+	return 0;
-+}
-+
-+static void rionet_set_multicast_list(struct net_device *ndev)
-+{
-+	struct rionet_private *rnet = ndev->priv;
-+
-+	if (netif_msg_drv(rnet))
-+		printk(KERN_WARNING
-+		       "%s: rionet_set_multicast_list(): not implemented\n",
-+		       DRV_NAME);
-+}
-+
-+static void rionet_dbell_event(struct rio_mport *mport, u16 sid, u16 tid,
-+			       u16 info)
-+{
-+	struct net_device *ndev = sndev;
-+	struct rionet_private *rnet = ndev->priv;
-+	struct rionet_peer *peer;
-+
-+	if (netif_msg_intr(rnet))
-+		printk(KERN_INFO "%s: doorbell sid %4.4x tid %4.4x info %4.4x",
-+		       DRV_NAME, sid, tid, info);
-+	if (info == RIONET_DOORBELL_JOIN) {
-+		if (!rionet_active[sid]) {
-+			list_for_each_entry(peer, &rionet_peers, node) {
-+				if (peer->rdev->destid == sid)
-+					rionet_active[sid] = peer->rdev;
-+			}
-+			rio_mport_send_doorbell(mport, sid,
-+						RIONET_DOORBELL_JOIN);
-+		}
-+	} else if (info == RIONET_DOORBELL_LEAVE) {
-+		rionet_active[sid] = NULL;
-+	} else {
-+		if (netif_msg_intr(rnet))
-+			printk(KERN_WARNING "%s: unhandled doorbell\n",
-+			       DRV_NAME);
-+	}
-+}
-+
-+static void rionet_inb_msg_event(struct rio_mport *mport, int mbox, int slot)
-+{
-+	int n;
-+	struct net_device *ndev = sndev;
-+	struct rionet_private *rnet = (struct rionet_private *)ndev->priv;
-+
-+	if (netif_msg_intr(rnet))
-+		printk(KERN_INFO "%s: inbound message event, mbox %d slot %d\n",
-+		       DRV_NAME, mbox, slot);
-+
-+	spin_lock(&rnet->lock);
-+	if ((n = rionet_rx_clean(ndev)) != rnet->rx_slot)
-+		rionet_rx_fill(ndev, n);
-+	spin_unlock(&rnet->lock);
-+}
-+
-+static void rionet_outb_msg_event(struct rio_mport *mport, int mbox, int slot)
-+{
-+	struct net_device *ndev = sndev;
-+	struct rionet_private *rnet = ndev->priv;
-+
-+	spin_lock(&rnet->lock);
-+
-+	if (netif_msg_intr(rnet))
-+		printk(KERN_INFO
-+		       "%s: outbound message event, mbox %d slot %d\n",
-+		       DRV_NAME, mbox, slot);
-+
-+	while (rnet->tx_cnt && (rnet->ack_slot != slot)) {
-+		/* dma unmap single */
-+		dev_kfree_skb_irq(rnet->tx_skb[rnet->ack_slot]);
-+		rnet->tx_skb[rnet->ack_slot] = NULL;
-+		if (++rnet->ack_slot == RIONET_TX_RING_SIZE)
-+			rnet->ack_slot = 0;
-+		rnet->tx_cnt--;
-+	}
-+
-+	if (rnet->tx_cnt < RIONET_TX_RING_SIZE)
-+		netif_wake_queue(ndev);
-+
-+	spin_unlock(&rnet->lock);
-+}
-+
-+static int rionet_open(struct net_device *ndev)
-+{
-+	int i, rc = 0;
-+	struct rionet_peer *peer, *tmp;
-+	u32 pwdcsr;
-+	struct rionet_private *rnet = ndev->priv;
-+
-+	if (netif_msg_ifup(rnet))
-+		printk(KERN_INFO "%s: open\n", DRV_NAME);
-+
-+	if ((rc = rio_request_inb_dbell(rnet->mport,
-+					RIONET_DOORBELL_JOIN,
-+					RIONET_DOORBELL_LEAVE,
-+					rionet_dbell_event)) < 0)
-+		goto out;
-+
-+	if ((rc = rio_request_inb_mbox(rnet->mport,
-+				       RIONET_MAILBOX,
-+				       RIONET_RX_RING_SIZE,
-+				       rionet_inb_msg_event)) < 0)
-+		goto out;
-+
-+	if ((rc = rio_request_outb_mbox(rnet->mport,
-+					RIONET_MAILBOX,
-+					RIONET_TX_RING_SIZE,
-+					rionet_outb_msg_event)) < 0)
-+		goto out;
-+
-+	/* Initialize inbound message ring */
-+	for (i = 0; i < RIONET_RX_RING_SIZE; i++)
-+		rnet->rx_skb[i] = NULL;
-+	rnet->rx_slot = 0;
-+	rionet_rx_fill(ndev, 0);
-+
-+	rnet->tx_slot = 0;
-+	rnet->tx_cnt = 0;
-+	rnet->ack_slot = 0;
-+
-+	spin_lock_init(&rnet->lock);
-+
-+	rnet->msg_enable = RIONET_DEFAULT_MSGLEVEL;
-+
-+	netif_carrier_on(ndev);
-+	netif_start_queue(ndev);
-+
-+	list_for_each_entry_safe(peer, tmp, &rionet_peers, node) {
-+		if (!(peer->res = rio_request_outb_dbell(peer->rdev,
-+							 RIONET_DOORBELL_JOIN,
-+							 RIONET_DOORBELL_LEAVE)))
-+		{
-+			printk(KERN_ERR "%s: error requesting doorbells\n",
-+			       DRV_NAME);
-+			continue;
-+		}
-+
-+		/*
-+		 * If device has initialized inbound doorbells,
-+		 * send a join message
-+		 */
-+		rio_read_config_32(peer->rdev, RIO_WRITE_PORT_CSR, &pwdcsr);
-+		if (pwdcsr & RIO_DOORBELL_AVAIL)
-+			rio_send_doorbell(peer->rdev, RIONET_DOORBELL_JOIN);
-+	}
-+
-+      out:
-+	return rc;
-+}
-+
-+static int rionet_close(struct net_device *ndev)
-+{
-+	struct rionet_private *rnet = (struct rionet_private *)ndev->priv;
-+	struct rionet_peer *peer, *tmp;
-+	int i;
-+
-+	if (netif_msg_ifup(rnet))
-+		printk(KERN_INFO "%s: close\n", DRV_NAME);
-+
-+	netif_stop_queue(ndev);
-+	netif_carrier_off(ndev);
-+
-+	for (i = 0; i < RIONET_RX_RING_SIZE; i++)
-+		if (rnet->rx_skb[i])
-+			kfree_skb(rnet->rx_skb[i]);
-+
-+	list_for_each_entry_safe(peer, tmp, &rionet_peers, node) {
-+		if (rionet_active[peer->rdev->destid]) {
-+			rio_send_doorbell(peer->rdev, RIONET_DOORBELL_LEAVE);
-+			rionet_active[peer->rdev->destid] = NULL;
-+		}
-+		rio_release_outb_dbell(peer->rdev, peer->res);
-+	}
-+
-+	rio_release_inb_dbell(rnet->mport, RIONET_DOORBELL_JOIN,
-+			      RIONET_DOORBELL_LEAVE);
-+	rio_release_inb_mbox(rnet->mport, RIONET_MAILBOX);
-+	rio_release_outb_mbox(rnet->mport, RIONET_MAILBOX);
-+
-+	return 0;
-+}
-+
-+static void rionet_remove(struct rio_dev *rdev)
-+{
-+	struct net_device *ndev = NULL;
-+	struct rionet_peer *peer, *tmp;
-+
-+	unregister_netdev(ndev);
-+	kfree(ndev);
-+
-+	list_for_each_entry_safe(peer, tmp, &rionet_peers, node) {
-+		list_del(&peer->node);
-+		kfree(peer);
-+	}
-+}
-+
-+static int rionet_ioctl(struct net_device *ndev, struct ifreq *rq, int cmd)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
-+static void rionet_get_drvinfo(struct net_device *ndev,
-+			       struct ethtool_drvinfo *info)
-+{
-+	struct rionet_private *rnet = ndev->priv;
-+
-+	strcpy(info->driver, DRV_NAME);
-+	strcpy(info->version, DRV_VERSION);
-+	strcpy(info->fw_version, "n/a");
-+	sprintf(info->bus_info, "RIO master port %d", rnet->mport->id);
-+}
-+
-+static u32 rionet_get_msglevel(struct net_device *ndev)
-+{
-+	struct rionet_private *rnet = ndev->priv;
-+
-+	return rnet->msg_enable;
-+}
-+
-+static void rionet_set_msglevel(struct net_device *ndev, u32 value)
-+{
-+	struct rionet_private *rnet = ndev->priv;
-+
-+	rnet->msg_enable = value;
-+}
-+
-+static u32 rionet_get_link(struct net_device *ndev)
-+{
-+	return netif_carrier_ok(ndev);
-+}
-+
-+static struct ethtool_ops rionet_ethtool_ops = {
-+	.get_drvinfo = rionet_get_drvinfo,
-+	.get_msglevel = rionet_get_msglevel,
-+	.set_msglevel = rionet_set_msglevel,
-+	.get_link = rionet_get_link,
-+};
-+
-+static int rionet_setup_netdev(struct rio_mport *mport)
-+{
-+	int rc = 0;
-+	struct net_device *ndev = NULL;
-+	struct rionet_private *rnet;
-+	u16 device_id;
-+
-+	/* Allocate our net_device structure */
-+	ndev = alloc_etherdev(sizeof(struct rionet_private));
-+	if (ndev == NULL) {
-+		printk(KERN_INFO "%s: could not allocate ethernet device.\n",
-+		       DRV_NAME);
-+		rc = -ENOMEM;
-+		goto out;
-+	}
-+
-+	/*
-+	 * XXX hack, store point a static at ndev so we can get it...
-+	 * Perhaps need an array of these that the handler can
-+	 * index via the mbox number.
-+	 */
-+	sndev = ndev;
-+
-+	/* Set up private area */
-+	rnet = (struct rionet_private *)ndev->priv;
-+	rnet->mport = mport;
-+
-+	/* Set the default MAC address */
-+	device_id = rio_local_get_device_id(mport);
-+	ndev->dev_addr[0] = 0x00;
-+	ndev->dev_addr[1] = 0x01;
-+	ndev->dev_addr[2] = 0x00;
-+	ndev->dev_addr[3] = 0x01;
-+	ndev->dev_addr[4] = device_id >> 8;
-+	ndev->dev_addr[5] = device_id & 0xff;
-+
-+	/* Fill in the driver function table */
-+	ndev->open = &rionet_open;
-+	ndev->hard_start_xmit = &rionet_start_xmit;
-+	ndev->stop = &rionet_close;
-+	ndev->get_stats = &rionet_stats;
-+	ndev->change_mtu = &rionet_change_mtu;
-+	ndev->set_mac_address = &rionet_set_mac_address;
-+	ndev->set_multicast_list = &rionet_set_multicast_list;
-+	ndev->do_ioctl = &rionet_ioctl;
-+	SET_ETHTOOL_OPS(ndev, &rionet_ethtool_ops);
-+
-+	ndev->mtu = RIO_MAX_MSG_SIZE - 14;
-+
-+	SET_MODULE_OWNER(ndev);
-+
-+	rc = register_netdev(ndev);
-+	if (rc != 0)
-+		goto out;
-+
-+	printk("%s: %s %s Version %s, MAC %02x:%02x:%02x:%02x:%02x:%02x\n",
-+	       ndev->name,
-+	       DRV_NAME,
-+	       DRV_DESC,
-+	       DRV_VERSION,
-+	       ndev->dev_addr[0], ndev->dev_addr[1], ndev->dev_addr[2],
-+	       ndev->dev_addr[3], ndev->dev_addr[4], ndev->dev_addr[5]);
-+
-+      out:
-+	return rc;
-+}
-+
-+/*
-+ * XXX Make multi-net safe
-+ */
-+static int rionet_probe(struct rio_dev *rdev, const struct rio_device_id *id)
-+{
-+	int rc = -ENODEV;
-+	u32 lpef, lsrc_ops, ldst_ops;
-+	struct rionet_peer *peer;
-+
-+	/* If local device is not rionet capable, give up quickly */
-+	if (!rionet_capable)
-+		goto out;
-+
-+	/*
-+	 * First time through, make sure local device is rionet
-+	 * capable, setup netdev,  and set flags so this is skipped
-+	 * on later probes
-+	 */
-+	if (!rionet_check) {
-+		rio_local_read_config_32(rdev->net->hport, RIO_PEF_CAR, &lpef);
-+		rio_local_read_config_32(rdev->net->hport, RIO_SRC_OPS_CAR,
-+					 &lsrc_ops);
-+		rio_local_read_config_32(rdev->net->hport, RIO_DST_OPS_CAR,
-+					 &ldst_ops);
-+		if (!is_rionet_capable(lpef, lsrc_ops, ldst_ops)) {
-+			printk(KERN_ERR
-+			       "%s: local device is not network capable\n",
-+			       DRV_NAME);
-+			rionet_check = 1;
-+			rionet_capable = 0;
-+			goto out;
-+		}
-+
-+		rc = rionet_setup_netdev(rdev->net->hport);
-+		rionet_check = 1;
-+	}
-+
-+	/*
-+	 * If the remote device has mailbox/doorbell capabilities,
-+	 * add it to the peer list.
-+	 */
-+	if (dev_rionet_capable(rdev)) {
-+		if (!(peer = kmalloc(sizeof(struct rionet_peer), GFP_KERNEL))) {
-+			rc = -ENOMEM;
-+			goto out;
-+		}
-+		peer->rdev = rdev;
-+		list_add_tail(&peer->node, &rionet_peers);
-+	}
-+
-+      out:
-+	return rc;
-+}
-+
-+static struct rio_device_id rionet_id_table[] = {
-+	{RIO_DEVICE(RIO_ANY_ID, RIO_ANY_ID)}
-+};
-+
-+static struct rio_driver rionet_driver = {
-+	.name = "rionet",
-+	.id_table = rionet_id_table,
-+	.probe = rionet_probe,
-+	.remove = rionet_remove,
-+};
-+
-+static int __init rionet_init(void)
-+{
-+	return rio_register_driver(&rionet_driver);
-+}
-+
-+static void __exit rionet_exit(void)
-+{
-+	rio_unregister_driver(&rionet_driver);
-+}
-+
-+module_init(rionet_init);
-+module_exit(rionet_exit);
+Well, cardmgr calls the driver's shutdown/close routine as soon as 
+the card is removed. Some of those methods write to IO registers in
+the process (eg net/pcmcia/pcnet_cs.c). 
+
+I dont see any elegant change that could be done in PCMCIA.
+
+One possibility that comes to mind would be to enforce the rule 
+that drivers should not writeout in case of a removal event, 
+but that does not sound feasible to me: It just looks too messy, 
+however I have no good argument against it.
+
+Well, its restricted to 8xx (maybe 32-bit PPC) with PCMCIA, so its
+just not worth the trouble?
+
+> > 1) why does the current PowerMac version covers only inb() and not outb() ?  
+> > I had to add outb() exception table entries for 8xx.
+> 
+> Not sure, maybe historical loss ? :) You should CC paulus
+> 
+> > 2) Is the same wanted for other embedded PPC's? 
+> 
+> It's up to you. It slows down those IOs, but on the other hand, inX/outX
+> aren't supposed to be very common anymore, at least not with "fast"
+> devices, and the IO itself is usually an order of magnitude slower than
+> doing those syncs...
+> 
+> > 3) How to make the misc.S exception entries and additional instructions 
+> > selectable only on the platform who need it? #ifdef does not sound 
+> > a good idea. 
+> > 
+> > Nevermind the "#ifdef CONFIG_ALL_PPC" crap - that needs to be done
+> > properly.
+> > 
+> > 
+> > Index: arch/ppc/kernel/misc.S
+> > ===================================================================
+> > RCS file: /mnt/test1/tslinux_mv21/linux-216/arch/ppc/kernel/misc.S,v
+> > retrieving revision 1.2
+> > diff -u -r1.2 misc.S
+> > --- arch/ppc/kernel/misc.S	22 Oct 2003 19:34:30 -0000	1.2
+> > +++ arch/ppc/kernel/misc.S	1 Jun 2005 17:59:30 -0000
+> > @@ -736,8 +736,23 @@
+> >  	subi	r4,r4,1
+> >  	blelr-
+> >  00:	lbz	r5,0(r3)
+> > -	eieio
+> > -	stbu	r5,1(r4)
+> > +01:	eieio
+> > +02:	stbu	r5,1(r4)
+> > +03:	twi 0, r5, 0
+> > +04:	isync
+> > +05:	nop
+> 
+> Hrm... the "twi/isync" stuff is not valid for a store. The reason for
+> doing twi here is to trigger a data dependency on the result of the load
+> (to make sure the load actually happens) and the isync to make sure that
+> twi has actually completed. For stores, you are stuffed... either your
+> HW don't do machine checks on stores, 
+
+Does not sound a like a good idea :)
+
+> or you put a sync here and "hope"
+> you don't have write posting along the IO chain that would cause your
+> machine check to arrive too late...
+
+Hmmm... I'll look that up. My limited testing on HW in question does not 
+exhibit longer MCE delays than "twi/isync/nop" sequence - actually, it is 
+always triggered during the IO access instruction itself. 
+
+Where can I find information about write posting on 8xx? Is there a
+term for it used in PPC documentation? I can't find anything...
+
+Thanks!
