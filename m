@@ -1,16 +1,25 @@
-Return-Path: <Srivatsan.CR@in.flextronics.com>
-Received: from SGPMX1.asia.ad.flextronics.com (unknown [203.208.243.76])
-	by ozlabs.org (Postfix) with ESMTP id 5C11E679E7
+Return-Path: <ajz@cambridgebroadband.com>
+Received: from cambridgebroadband.com (unknown [217.204.121.83])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1DA38679E2
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  2 Jun 2005 17:41:31 +1000 (EST)
-Message-ID: <3B58B875DBDE504F94D2A1A1C9DF6F1FD61A69@bglnt005.asia.ad.flextronics.com>
-From: Srivatsan CR <Srivatsan.CR@in.flextronics.com>
+	Thu,  2 Jun 2005 23:56:17 +1000 (EST)
+Received: from zambia.cambridgebroadband.com (cbluk-gw0.cambridgebroadband.com
+	[217.204.121.82])
+	by cambridgebroadband.com (8.12.8/8.12.8) with SMTP id j52DuDBk000715
+	for <linuxppc-embedded@ozlabs.org>; Thu, 2 Jun 2005 14:56:13 +0100
+Date: Thu, 2 Jun 2005 14:56:12 +0100
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
 To: linuxppc-embedded@ozlabs.org
-Date: Thu, 2 Jun 2005 13:11:26 +0530 
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C56746.7B9DFBD0"
-Subject: RE: Newbie question on Linux-PPC 
+Message-Id: <20050602145612.14fdabd5.ajz@cambridgebroadband.com>
+In-Reply-To: <20050518102814.4f8dc376.ajz@cambridgebroadband.com>
+References: <20050516161503.0081b1b0.ajz@cambridgebroadband.com>
+	<20050518102814.4f8dc376.ajz@cambridgebroadband.com>
+Mime-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="Multipart_Thu__2_Jun_2005_14:56:12_+0100_08676ab0"
+Subject: Re: Missing m8260_cpm_dpfree()
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,274 +30,188 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This message is in MIME format. Since your mail reader does not understand
-this format, some or all of this message may not be legible.
+This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C56746.7B9DFBD0
-Content-Type: text/plain
+--Multipart_Thu__2_Jun_2005_14:56:12_+0100_08676ab0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
- 
-Hi all,
- 
-   Thanks everyone for the time. It's done and I have it working.
- 
-   I have another question regarding MAC address in Linux. I had ported
-U-boot onto our customized board (MPC8280 based). It is working fine. I am
-also able to boot a Linux Kernel. The Kernel version is Linux-2.4.20 . 
- 
-We set the MAC address for the board in U-boot as 00:FD:11:01:01:01. But
-when the Linux Kernel boots it takes the MAC as 00:FD:81:01:01:01. 
- 
-I have confirmed that the U-boot passes the MAC address properly to the
-Linux Kernel properly. Can anyone guide me to where to look out for the
-issue stated above in the Linux code? 
- 
-Thanks everyone for the time. 
- 
-With Regards,
-C.R.Srivatsan
- 
- 
- 
+Hi,
 
-------_=_NextPart_001_01C56746.7B9DFBD0
-Content-Type: text/html
-Content-Transfer-Encoding: quoted-printable
+A while ago I posted a patch which added the m8260_cpm_dpfree()
+function.  I've just noticed a bug in this which is fixed in the
+attached patch.
 
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns:st1=3D"urn:schemas-microsoft-com:office:smarttags" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
+Alex
 
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
+On Wed, 18 May 2005 10:28:14 +0100
+Alex Zeffertt <ajz@cambridgebroadband.com> wrote:
 
+> Hi,
+> 
+> I'm replying to my own message.  I've got around to porting the 8xx
+> version of ...cpm_dpfree() to the 8260 now.  I've attached the patch
+> on the off chance anyone else might want it.  The patch is against the
+> 2005-03-06 version of denx's linuxppc_2_4_devel, which is a 2.4.25
+> kernel.
+> 
+> Alex
+> 
+> On Mon, 16 May 2005 16:15:03 +0100
+> Alex Zeffertt <ajz@cambridgebroadband.com> wrote:
+> 
+> > Hi all,
+> > 
+> > I have a question about the MPC8260 dual port RAM allocation
+> > routines.
+> > 
+> > In arch/ppc/8260_io/commproc.c this is a  m8260_cpm_dpalloc()
+> > routine, but the m8260_cpm_dpfree() routine is missing.  Does
+> > anybody know where I can find this?
+> > 
+> > I am using denx's linuxppc_2_4_devel tree from 2005-03-06.
+> > 
+> > TIA,
+> > 
+> > Alex
+> 
 
-<meta name=3DProgId content=3DWord.Document>
-<meta name=3DGenerator content=3D"Microsoft Word 10">
-<meta name=3DOriginator content=3D"Microsoft Word 10">
-<link rel=3DFile-List href=3D"cid:filelist.xml@01C56774.92477130">
-<o:SmartTagType =
-namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
- name=3D"time"/>
-<!--[if gte mso 9]><xml>
- <o:OfficeDocumentSettings>
-  <o:DoNotRelyOnCSS/>
- </o:OfficeDocumentSettings>
-</xml><![endif]--><!--[if gte mso 9]><xml>
- <w:WordDocument>
-  <w:View>Normal</w:View>
-  <w:SpellingState>Clean</w:SpellingState>
-  <w:GrammarState>Clean</w:GrammarState>
-  <w:DocumentKind>DocumentEmail</w:DocumentKind>
-  <w:EnvelopeVis/>
-  <w:Compatibility>
-   <w:BreakWrappedTables/>
-   <w:SnapToGridInCell/>
-   <w:WrapTextWithPunct/>
-   <w:UseAsianBreakRules/>
-  </w:Compatibility>
-  <w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel>
- </w:WordDocument>
-</xml><![endif]--><!--[if !mso]>
-<style>
-st1\:*{behavior:url(#default#ieooui) }
-</style>
-<![endif]-->
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{mso-style-parent:"";
-	margin:0in;
-	margin-bottom:.0001pt;
-	mso-pagination:widow-orphan;
-	font-size:10.0pt;
-	font-family:Arial;
-	mso-fareast-font-family:"Times New Roman";
-	font-weight:bold;}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;
-	text-underline:single;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;
-	text-underline:single;}
-p.MsoPlainText, li.MsoPlainText, div.MsoPlainText
-	{margin:0in;
-	margin-bottom:.0001pt;
-	mso-pagination:widow-orphan;
-	font-size:10.0pt;
-	font-family:"Courier New";
-	mso-fareast-font-family:"Times New Roman";
-	font-weight:bold;}
-span.GramE
-	{mso-style-name:"";
-	mso-gram-e:yes;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 77.95pt 1.0in 77.95pt;
-	mso-header-margin:.5in;
-	mso-footer-margin:.5in;
-	mso-paper-source:0;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-<!--[if gte mso 10]>
-<style>
- /* Style Definitions */=20
- table.MsoNormalTable
-	{mso-style-name:"Table Normal";
-	mso-tstyle-rowband-size:0;
-	mso-tstyle-colband-size:0;
-	mso-style-noshow:yes;
-	mso-style-parent:"";
-	mso-padding-alt:0in 5.4pt 0in 5.4pt;
-	mso-para-margin:0in;
-	mso-para-margin-bottom:.0001pt;
-	mso-pagination:widow-orphan;
-	font-size:10.0pt;
-	font-family:"Times New Roman";}
-</style>
-<![endif]-->
-</head>
+--Multipart_Thu__2_Jun_2005_14:56:12_+0100_08676ab0
+Content-Type: application/octet-stream; name="linux-m8260_cpm_dpfree.patch-2"
+Content-Disposition: attachment;
+ filename="linux-m8260_cpm_dpfree.patch-2"
+Content-Transfer-Encoding: base64
 
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple =
-style=3D'tab-interval:.5in'>
+LS0tIGxpbnV4LTIuNC4yNS5vcmlnL2FyY2gvcHBjLzgyNjBfaW8vY29tbXByb2MuYwkyMDAzLTEw
+LTMwIDAwOjMyOjA5LjAwMDAwMDAwMCArMDAwMAorKysgbGludXgtMi40LjI1L2FyY2gvcHBjLzgy
+NjBfaW8vY29tbXByb2MuYwkyMDA1LTA2LTAyIDE0OjQ3OjE2LjAwMDAwMDAwMCArMDEwMApAQCAt
+MjksMTIgKzI5LDI2NCBAQAogI2luY2x1ZGUgPGFzbS9pbW1hcF84MjYwLmg+CiAjaW5jbHVkZSA8
+YXNtL2NwbV84MjYwLmg+CiAKKyNkZWZpbmUgRFBGUkVFCisKKyNpZmRlZiBEUEZSRUUKK3R5cGVk
+ZWYgc3RydWN0CWNwbV9kcGFsbG9jX2VudHJ5X3MgeworCXVfc2hvcnQJCQkJc3RhcnRfYWRkcjsK
+KyAgICB1X3Nob3J0ICAgICAgICAgICAgIHJldGxvYzsgICAgLyogVGhpcyBpcyBzdGFydF9hZGRy
+ICsgYWxpZ25tZW50IG9mZnNldDogb25seSB2YWxpZCBpbiBhbGxvYyBsaXN0ICovCisJdV9zaG9y
+dAkJCQlzaXplOworCXN0cnVjdAljcG1fZHBhbGxvY19lbnRyeV9zICoJbmV4dF9lbnRyOworfSBj
+cG1fZHBhbGxvY19lbnRyeV90OworCitzdGF0aWMJdm9pZAljcG1fZHBhbGxvY19pbml0KHZvaWQp
+Oworc3RhdGljCXZvaWQJY3BtX2RwYWxsb2NfZGF0YV9pbml0KGNwbV9kcGFsbG9jX2VudHJ5X3Qg
+ICopOworc3RhdGljCWludAkgICAgY3BtX2RwYWxsb2NfY2woY3BtX2RwYWxsb2NfZW50cnlfdCAq
+KTsKK3N0YXRpYwlpbnQgIAljcG1fZHBhbGxvY19yZW0oY3BtX2RwYWxsb2NfZW50cnlfdCAqKiwg
+Y3BtX2RwYWxsb2NfZW50cnlfdCAqKTsKK3N0YXRpYwl2b2lkCWNwbV9kcGFsbG9jX2lucyhjcG1f
+ZHBhbGxvY19lbnRyeV90ICoqLCBjcG1fZHBhbGxvY19lbnRyeV90ICopOworIyBkZWZpbmUgQ1BN
+X0RQQUxMT0NfQ09VTlQgKENQTV9EQVRBT05MWV9TSVpFIC8gc2l6ZW9mKGNiZF90KSArIDEpICAK
+Ky8qIER5bmFtaWMgbGlzdHMgb2YgYWxsb2NhdGVkIGFuZCBmcmVlIERQUkFNICovCitzdGF0aWMJ
+Y3BtX2RwYWxsb2NfZW50cnlfdCAgKmNwbV9kcGFsbG9jX2ZyZWU7CitzdGF0aWMJY3BtX2RwYWxs
+b2NfZW50cnlfdCAgKmNwbV9kcGFsbG9jX2FsbG9jOworc3RhdGljCWNwbV9kcGFsbG9jX2VudHJ5
+X3QJY3BtX2RwYWxsb2NfbGlzdFtDUE1fRFBBTExPQ19DT1VOVF07CisjZWxzZQogc3RhdGljCXVp
+bnQJZHBfYWxsb2NfYmFzZTsJLyogU3RhcnRpbmcgb2Zmc2V0IGluIERQIHJhbSAqLwogc3RhdGlj
+CXVpbnQJZHBfYWxsb2NfdG9wOwkvKiBNYXggb2Zmc2V0ICsgMSAqLworI2VuZGlmCiBzdGF0aWMJ
+dWludAlob3N0X2J1ZmZlcjsJLyogT25lIHBhZ2Ugb2YgaG9zdCBidWZmZXIgKi8KIHN0YXRpYwl1
+aW50CWhvc3RfZW5kOwkvKiBlbmQgKyAxICovCiBjcG04MjYwX3QJKmNwbXA7CQkvKiBQb2ludGVy
+IHRvIGNvbW0gcHJvY2Vzc29yIHNwYWNlICovCiAKKyNpZmRlZiBEUEZSRUUKKy8qIEluaXRpYWxp
+emUgZHluYW1pYyBsaXN0cworICovCitzdGF0aWMgdm9pZCBjcG1fZHBhbGxvY19pbml0KHZvaWQp
+Cit7CisJaW50IGk7CisKKwljcG1fZHBhbGxvY19mcmVlID0gY3BtX2RwYWxsb2NfbGlzdDsKKwlj
+cG1fZHBhbGxvY19mcmVlLT5zdGFydF9hZGRyID0gQ1BNX0RBVEFPTkxZX0JBU0U7CisJY3BtX2Rw
+YWxsb2NfZnJlZS0+c2l6ZSA9IENQTV9EQVRBT05MWV9TSVpFOworCWNwbV9kcGFsbG9jX2ZyZWUt
+Pm5leHRfZW50ciA9IE5VTEw7CisJY3BtX2RwYWxsb2NfYWxsb2MgPSBOVUxMOworCisJZm9yKGkg
+PSAxOyBpIDw9IENQTV9EUEFMTE9DX0NPVU5UOyBpKyspIHsKKwkJY3BtX2RwYWxsb2NfZGF0YV9p
+bml0IChjcG1fZHBhbGxvY19saXN0ICsgaSk7CisJfQorfQorCisvKiBJbml0aWFsaXplIGVsZW1l
+bnQgaW4gbGlzdCBvZiBEUFJBTQorICovCitzdGF0aWMgdm9pZCBjcG1fZHBhbGxvY19kYXRhX2lu
+aXQoY3BtX2RwYWxsb2NfZW50cnlfdCAqIHB0cikKK3sKKwlwdHItPnJldGxvYyA9IHB0ci0+c3Rh
+cnRfYWRkciA9IDA7CisJcHRyLT5zaXplID0gMDsKKwlwdHItPm5leHRfZW50ciA9IE5VTEw7Cit9
+CisKK3N0YXRpYyBpbnQgY3BtX2RwYWxsb2NfY2woY3BtX2RwYWxsb2NfZW50cnlfdCAqIGhlYWQp
+Cit7CisJY3BtX2RwYWxsb2NfZW50cnlfdAkqIGN1cnI7CisJY3BtX2RwYWxsb2NfZW50cnlfdAkq
+IG5leHQ7CisJaW50CQkJICByZXRsb2M7CisKKwljdXJyID0gaGVhZDsKKwlyZXRsb2MgPSAtMTsK
+KworCWlmIChjdXJyKSB7CisJCXJldGxvYyA9IDA7CisKKwkJd2hpbGUgKChuZXh0ID0gY3Vyci0+
+bmV4dF9lbnRyKSkgeworCQkJaWYgKGN1cnItPnN0YXJ0X2FkZHIgKyBjdXJyLT5zaXplID09IG5l
+eHQtPnN0YXJ0X2FkZHIpIHsKKwkJCQljdXJyLT5zaXplID0gY3Vyci0+c2l6ZSArIG5leHQtPnNp
+emU7CisJCQkJY3Vyci0+bmV4dF9lbnRyID0gbmV4dC0+bmV4dF9lbnRyOworCQkJCWNwbV9kcGFs
+bG9jX2RhdGFfaW5pdChuZXh0KTsKKwkJCX0gZWxzZSB7CisJCQkJY3VyciA9IG5leHQ7CisJCQl9
+CisJCSB9CisJfQorCisJcmV0dXJuIHJldGxvYzsKK30KKworLyogUmVtb3ZlIGVsZW1lbnQgZnJv
+bSBkeW5hbWljIGxpc3Qgb2YgRFBSQU0KKyAqLworc3RhdGljIGludCBjcG1fZHBhbGxvY19yZW0o
+Y3BtX2RwYWxsb2NfZW50cnlfdCAqKiBoZWFkLCBjcG1fZHBhbGxvY19lbnRyeV90ICogcHRyKQor
+eworCWNwbV9kcGFsbG9jX2VudHJ5X3QJKiBwcmV2OworCWNwbV9kcGFsbG9jX2VudHJ5X3QJKiBj
+dXJyOworCWludAkJCSAgcmV0bG9jOworCisJcmV0bG9jID0gLTE7CisJZm9yIChwcmV2ID0gTlVM
+TCAsIGN1cnIgPSAqaGVhZDsKKwkgICAgIGN1cnIgIT0gTlVMTCAmJiBwdHIgIT0gY3VycjsKKwkg
+ICAgIHByZXYgPSBjdXJyICwgY3VyciA9IGN1cnItPm5leHRfZW50cikKKwkJLyogRU1QVFkgKi8g
+OworCisJaWYgKGN1cnIpIHsKKwkJaWYgKHByZXYpIHsKKwkJCXByZXYtPm5leHRfZW50ciA9IGN1
+cnItPm5leHRfZW50cjsKKwkJfSBlbHNlIHsKKwkJCSpoZWFkID0gY3Vyci0+bmV4dF9lbnRyOwor
+CQl9CisJCXJldGxvYyA9IDA7CisJfQorCisJcmV0dXJuIHJldGxvYzsKK30KKworLyogSW5zZXJ0
+IGVsZW1lbnQgaW4gZHluYW1pYyBsaXN0IG9mIERQUkFNCisgKi8KK3N0YXRpYyB2b2lkIGNwbV9k
+cGFsbG9jX2lucyhjcG1fZHBhbGxvY19lbnRyeV90ICoqIGhlYWQsIGNwbV9kcGFsbG9jX2VudHJ5
+X3QgKiBwdHIpCit7CisJY3BtX2RwYWxsb2NfZW50cnlfdAkqIHByZXY7CisJY3BtX2RwYWxsb2Nf
+ZW50cnlfdAkqIGN1cnI7CisKKwlmb3IgKHByZXYgPSBOVUxMICwgY3VyciA9ICpoZWFkOworCSAg
+ICAgY3VyciAhPSBOVUxMICYmIHB0ci0+c3RhcnRfYWRkciA+PSBjdXJyLT5zdGFydF9hZGRyOwor
+CSAgICAgcHJldiA9IGN1cnIgLCBjdXJyID0gY3Vyci0+bmV4dF9lbnRyKQorCQkvKiBFTVBUWSAq
+LyA7CisKKwlwdHItPm5leHRfZW50ciA9IGN1cnI7CisKKwlpZiAocHJldikgeworCQlwcmV2LT5u
+ZXh0X2VudHIgPSBwdHI7CisJfSBlbHNlIHsKKwkJKmhlYWQgPSBwdHI7CisJfQorfQorLyogQWxs
+b2NhdGUgc29tZSBtZW1vcnkgZnJvbSB0aGUgZHVhbCBwb3J0ZWQgcmFtLiAgV2UgbWF5IHdhbnQg
+dG8KKyAqIGVuZm9yY2UgYWxpZ25tZW50IHJlc3RyaWN0aW9ucywgYnV0IHJpZ2h0IG5vdyBldmVy
+eW9uZSBpcyBhIGdvb2QKKyAqIGNpdGl6ZW4uCisgKi8KK3VpbnQgbTgyNjBfY3BtX2RwYWxsb2Mo
+dWludCBzaXplLCB1aW50IGFsaWduKQoreworICAgIGNwbV9kcGFsbG9jX2VudHJ5X3QgICAqIG5l
+d19lbDsKKyAgICBjcG1fZHBhbGxvY19lbnRyeV90ICAgKiBwOworICAgIGNwbV9kcGFsbG9jX2Vu
+dHJ5X3QgICAqIHAxOworICAgIHVpbnQJCQlyZXRsb2M7CisgICAgdV9zaG9ydAkJCW1heDsKKyAg
+ICB1bnNpZ25lZCBsb25nCQlmbGFnczsKKyAgICBpbnQJCQlpOworICAgIHVpbnQgYWxpZ25fbWFz
+azsKKyAgICB1aW50IG9mZjsKKworICAgIHNpemUgPSAoc2l6ZSArIDcpICYgfjc7CisgICAgYWxp
+Z25fbWFzayA9IGFsaWduIC0gMTsKKyAgICBtYXggPSBDUE1fREFUQU9OTFlfU0laRTsKKyAgICBy
+ZXRsb2MgPSAwOworICAgIG5ld19lbCA9IE5VTEw7CisKKyAgICBpZiAoc2l6ZSA9PSAwKSBnb3Rv
+IERPTkU7CisKKyAgICBzYXZlX2ZsYWdzKGZsYWdzKTsKKyAgICBjbGkoKTsKKworICAgIC8qIEZp
+bmQgZnJlZSBhcmVhIGluIERQUkFNCisgICAgICovCisgICAgZm9yIChwID0gY3BtX2RwYWxsb2Nf
+ZnJlZTsgcCAhPSBOVUxMOyBwID0gcC0+bmV4dF9lbnRyKSB7CisgICAgICAgIGlmIChwLT5zaXpl
+IDw9IG1heCkgeworICAgICAgICAgICAgb2ZmID0gKChwLT5zdGFydF9hZGRyICsgYWxpZ25fbWFz
+aykgJiAofmFsaWduX21hc2spKSAtIHAtPnN0YXJ0X2FkZHI7CisgICAgICAgICAgICBpZiAocC0+
+c2l6ZSA+PSBzaXplICsgb2ZmKSB7CisgICAgICAgICAgICAgICAgbmV3X2VsID0gcDsKKyAgICAg
+ICAgICAgICAgICBtYXggPSBwLT5zaXplOworICAgICAgICAgICAgICAgIHJldGxvYyA9IHAtPnN0
+YXJ0X2FkZHIgKyBvZmY7CisgICAgICAgICAgICB9CisgICAgICAgIH0KKyAgICB9CisKKyAgICBp
+ZiAobmV3X2VsID09IE5VTEwpIGdvdG8gRE9ORTE7CisKKyAgICAvKiBJbnNlcnQgbmV3IGVsZW1l
+bnQgaW4gdGhlIGxpc3Qgb2YgYWxsb2NhdGVkIERQUkFNCisgICAgICovCisgICAgcDEgPSBjcG1f
+ZHBhbGxvY19saXN0OworICAgIHAgPSBOVUxMOworICAgIGkgPSAwOworICAgIHdoaWxlIChpIDwg
+Q1BNX0RQQUxMT0NfQ09VTlQpIHsKKyAgICAgICAgaWYgKHAxLT5zdGFydF9hZGRyID09IDAgJiYg
+IXAxLT5zaXplICYmICFwMS0+bmV4dF9lbnRyKSB7CisgICAgICAgICAgICBwID0gcDE7CisgICAg
+ICAgICAgICBicmVhazsKKyAgICAgICAgfQorICAgICAgICBpICsrOworICAgICAgICBwMSArKzsK
+KyAgICB9CisKKyAgICBpZiAocCA9PSBOVUxMKSB7CisgICAgICAgIHBhbmljICgibTh4eF9jcG1f
+ZHBhbGxvYzogSU5URVJOQUwgRVJST1JcbiIpOworICAgIH0KKworICAgIG9mZiA9IHJldGxvYyAt
+IG5ld19lbC0+c3RhcnRfYWRkcjsKKworICAgIHAtPnN0YXJ0X2FkZHIgPSBuZXdfZWwtPnN0YXJ0
+X2FkZHI7CisgICAgcC0+cmV0bG9jID0gcmV0bG9jOworICAgIHAtPnNpemUgPSBzaXplICsgb2Zm
+OworCisgICAgaWYgKG5ld19lbC0+c2l6ZSA+ICAoc2l6ZStvZmYpKSB7CisgICAgICAgIG5ld19l
+bC0+c2l6ZSAtPSAoc2l6ZStvZmYpOworICAgICAgICBuZXdfZWwtPnN0YXJ0X2FkZHIgKz0gKHNp
+emUrb2ZmKTsKKyAgICAgICAgY3BtX2RwYWxsb2NfaW5zKCZjcG1fZHBhbGxvY19hbGxvYywgcCk7
+CisgICAgfSBlbHNlIHsKKyAgICAgICAgY3BtX2RwYWxsb2NfaW5zKCZjcG1fZHBhbGxvY19hbGxv
+YywgcCk7CisgICAgICAgIGkgPSBjcG1fZHBhbGxvY19yZW0oJmNwbV9kcGFsbG9jX2ZyZWUsIG5l
+d19lbCk7CisKKyAgICAgICAgaWYgKCBpID09IC0xKSB7CisgICAgICAgICAgICBwYW5pYyAoIm04
+eHhfY3BtX2RwYWxsb2M6IElOVEVSTkFMIEVSUk9SXG4iKTsKKyAgICAgICAgfQorCisgICAgICAg
+IGNwbV9kcGFsbG9jX2RhdGFfaW5pdChuZXdfZWwpOworICAgIH0KKworIERPTkUxOgorICAgIHJl
+c3RvcmVfZmxhZ3MoZmxhZ3MpOworIERPTkU6CisgICAgcmV0dXJuIHJldGxvYzsKK30KKworaW50
+IG04MjYwX2NwbV9kcGZyZWUodWludCByZXRsb2MpCit7CisJY3BtX2RwYWxsb2NfZW50cnlfdCAg
+ICogcjsKKwlpbnQJCQlyZXR2YWw7CisJdW5zaWduZWQgbG9uZwkJZmxhZ3M7CisKKwlyZXR2YWwg
+PSAtMTsKKworCWlmICgocmV0bG9jIDwgQ1BNX0RBVEFPTkxZX0JBU0UpIHx8CisJICAgIChyZXRs
+b2MgPiBDUE1fREFUQU9OTFlfU0laRSArIENQTV9EQVRBT05MWV9CQVNFKSkgeworCQlnb3RvIERP
+TkU7CisJfQorCisJc2F2ZV9mbGFncyhmbGFncyk7CisJY2xpKCk7CisKKwlmb3IgKHIgPSBjcG1f
+ZHBhbGxvY19hbGxvYzsKKwkgICAgIChyICE9IE5VTEwpICYmIChyLT5yZXRsb2MgIT0gcmV0bG9j
+KTsKKwkgICAgIHIgPSByLT5uZXh0X2VudHIpCisJCS8qIEVNUFRZICovIDsKKworCWlmIChyKSB7
+CisJCXJldHZhbCA9IGNwbV9kcGFsbG9jX3JlbSgmY3BtX2RwYWxsb2NfYWxsb2MsIHIpOworCisJ
+CWlmIChyZXR2YWwgPT0gLTEpIHsKKwkJCXBhbmljKCJtOHh4X2NwbV9kcGZyZWU6IElOVEVSTkFM
+IEVSUk9SXG4iKTsKKwkJfQorCQljcG1fZHBhbGxvY19pbnMoJmNwbV9kcGFsbG9jX2ZyZWUsIHIp
+OworCQlyZXR2YWwgPSBjcG1fZHBhbGxvY19jbChjcG1fZHBhbGxvY19mcmVlKTsKKworCQlpZiAo
+cmV0dmFsID09IC0xKSB7CisJCQlwYW5pYygibTh4eF9jcG1fZHBmcmVlOiBJTlRFUk5BTCBFUlJP
+UlxuIik7CisJCX0KKwkJcmV0dmFsID0gMDsKKwl9IGVsc2UgeworCSAgcHJpbnRrKEtFUk5fRVJS
+ICJtOHh4X2NwbV9kcGZyZWU6IGFkZHJlc3Mgbm90IGZvdW5kIGluIGFsbG9jIGxpc3RcbiIpOwor
+CX0KKworCXJlc3RvcmVfZmxhZ3MoZmxhZ3MpOworRE9ORToKKwlyZXR1cm4gcmV0dmFsOworfQor
+I2VuZGlmIC8qIERQRlJFRSAqLworCiAvKiBXZSBhbGxvY2F0ZSB0aGlzIGhlcmUgYmVjYXVzZSBp
+dCBpcyB1c2VkIGFsbW9zdCBleGNsdXNpdmVseSBmb3IKICAqIHRoZSBjb21tdW5pY2F0aW9uIHBy
+b2Nlc3NvciBkZXZpY2VzLgogICovCkBAIC01MCwxMSArMzAyLDE0IEBACiAJaW1tciA9IGltcCA9
+ICh2b2xhdGlsZSBpbW1hcF90ICopSU1BUF9BRERSOwogCWNvbW1wcm9jID0gJmltcC0+aW1fY3Bt
+OwogCisjaWZkZWYgRFBGUkVFCisJY3BtX2RwYWxsb2NfaW5pdCgpOworI2Vsc2UKIAkvKiBSZWNs
+YWltIHRoZSBEUCBtZW1vcnkgZm9yIG91ciB1c2UuCiAJKi8KIAlkcF9hbGxvY19iYXNlID0gQ1BN
+X0RBVEFPTkxZX0JBU0U7CiAJZHBfYWxsb2NfdG9wID0gZHBfYWxsb2NfYmFzZSArIENQTV9EQVRB
+T05MWV9TSVpFOwotCisjZW5kaWYKIAkvKiBTZXQgdGhlIGhvc3QgcGFnZSBmb3IgYWxsb2NhdGlv
+bi4KIAkqLwogCWhvc3RfYnVmZmVyID0KQEAgLTY4LDYgKzMyMyw3IEBACiAJY3BtcCA9IChjcG04
+MjYwX3QgKiljb21tcHJvYzsKIH0KIAorI2lmbmRlZiBEUEZSRUUKIC8qIEFsbG9jYXRlIHNvbWUg
+bWVtb3J5IGZyb20gdGhlIGR1YWwgcG9ydGVkIHJhbS4KICAqIFRvIGhlbHAgcHJvdG9jb2xzIHdp
+dGggb2JqZWN0IGFsaWdubWVudCByZXN0cmljdGlvbnMsIHdlIGRvIHRoYXQKICAqIGlmIHRoZXkg
+YXNrLgpAQCAtOTUsNiArMzUxLDEyIEBACiAKIAlyZXR1cm4ocmV0bG9jKTsKIH0KK2ludCBtODI2
+MF9jcG1fZHBmcmVlKHVpbnQgc3RhcnRfYWRkcikKK3sKKyAgICBwcmludGsoS0VSTl9FUlIgIiVz
+KCkgbm90IGltcGxlbWVudGVkXG4iLCBfX0ZVTkNUSU9OX18pOworICAgIHJldHVybiAtMTsKK30K
+KyNlbmRpZiAvKmlmbmRlZiBEUEZSRUUqLwogCiAvKiBXZSBhbHNvIG93biBvbmUgcGFnZSBvZiBo
+b3N0IGJ1ZmZlciBzcGFjZSBmb3IgdGhlIGFsbG9jYXRpb24gb2YKICAqIFVBUlQgImZpZm9zIiBh
+bmQgdGhlIGxpa2UuCg==
 
-<div class=3DSection1>
-
-<p class=3DMsoPlainText><b><font size=3D2 face=3D"Courier New"><span
-style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'>Hi all,<o:p></o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'><o:p>&nbsp;</o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'><span style=3D'mso-spacerun:yes'>&nbsp;&nbsp; </span>Thanks =
-everyone for
-the time. It's done and I have it =
-working.<o:p></o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'><o:p>&nbsp;</o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'><span style=3D'mso-spacerun:yes'>&nbsp;&nbsp; </span>I have =
-another
-question regarding MAC address in Linux. I had ported U-boot onto our =
-customized
-board (MPC8280 based). It is working fine. I am also able to boot a =
-Linux
-Kernel. The Kernel version is Linux-2.4.20 . =
-<o:p></o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'><o:p>&nbsp;</o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'>We set the MAC address for the board in U-boot as =
-00:FD:</span></font></b><st1:time
-Hour=3D"11" Minute=3D"1"><span =
-style=3D'font-weight:normal;mso-bidi-font-weight:bold'>11:01:01:01</span=
-></st1:time><span
-style=3D'font-weight:normal;mso-bidi-font-weight:bold'>. But when the =
-Linux
-Kernel boots it takes the MAC as 00:FD:81:</span><st1:time Hour=3D"13" =
-Minute=3D"1"><span
- =
-style=3D'font-weight:normal;mso-bidi-font-weight:bold'>01:01:01</span></=
-st1:time><span
-style=3D'font-weight:normal;mso-bidi-font-weight:bold'>. =
-<o:p></o:p></span></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'><o:p>&nbsp;</o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'>I have confirmed that the U-boot passes the MAC address properly =
-to the
-Linux Kernel properly. Can anyone guide me to where to look out for the =
-issue
-stated above in the Linux code? <o:p></o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'><o:p>&nbsp;</o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'>Thanks everyone for the time. <o:p></o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'><o:p>&nbsp;</o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'>With Regards,<o:p></o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b style=3D'mso-ansi-font-weight:normal'><font =
-size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-weight:normal;mso-bidi-font-weight:
-bold'>C.R.Srivatsan<o:p></o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b><font size=3D2 face=3D"Courier New"><span
-style=3D'font-size:10.0pt;mso-no-proof:yes'><o:p>&nbsp;</o:p></span></fo=
-nt></b></p>
-
-<p class=3DMsoPlainText><b><font size=3D2 face=3D"Courier New"><span
-style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></b></p>
-
-<p class=3DMsoPlainText><b><font size=3D2 face=3D"Courier New"><span
-style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></b></p>
-
-</div>
-
-</body>
-
-</html>
-
-------_=_NextPart_001_01C56746.7B9DFBD0--
+--Multipart_Thu__2_Jun_2005_14:56:12_+0100_08676ab0--
