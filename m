@@ -1,18 +1,18 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao05.cox.net (fed1rmmtao05.cox.net [68.230.241.34])
-	by ozlabs.org (Postfix) with ESMTP id 10BD8679E8
+Return-Path: <greg@kroah.com>
+Received: from perch.kroah.org (mail.kroah.org [69.55.234.183])
+	by ozlabs.org (Postfix) with ESMTP id 41A92679E1
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  2 Jun 2005 08:58:11 +1000 (EST)
-Date: Wed, 1 Jun 2005 15:58:09 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
-Message-ID: <20050601155809.A19099@cox.net>
+	Thu,  2 Jun 2005 09:50:32 +1000 (EST)
+Date: Wed, 1 Jun 2005 17:00:50 -0700
+From: Greg KH <greg@kroah.com>
+To: Matt Porter <mporter@kernel.crashing.org>
+Message-ID: <20050602000050.GA5678@kroah.com>
 References: <20050601110836.A16559@cox.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050601110836.A16559@cox.net>;
-	from mporter@kernel.crashing.org on Wed, Jun 01, 2005 at
-	11:08:36AM -0700
+In-Reply-To: <20050601110836.A16559@cox.net>
+Cc: akpm@osdl.org, torvalds@osdl.org, linux-kernel@vger.kernel.org,
+	linuxppc-embedded@ozlabs.org
 Subject: Re: [PATCH][1/3] RapidIO support: core
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -31,10 +31,19 @@ On Wed, Jun 01, 2005 at 11:08:36AM -0700, Matt Porter wrote:
 > 
 > The core code implements enumeration/discovery, management of
 > devices/resources, and interfaces for RIO drivers.
+> 
+> There's a lot more to do to take advantages of all the hardware
+> features. However, this should provide a good base for folks
+> with RIO hardware to start contributing.
+> 
+> Signed-off-by: Matt Porter <mporter@kernel.crashing.org>
+> 
+> Patch is 108KB and can be found here:
+> ftp://source.mvista.com/pub/rio/l26_rio_core.patch
 
-I'm also hacking on a rioutils package (derived from pciutils)
-that has a lsrio that works pretty much like the familiar
-lspci tool.  The initial release can be grabbed from:
-ftp://source.mvista.com/pub/rio/rioutils-0.10.tar.bz2
+Care to split it up into logical sections and post it?  It should be
+small enough to do so that way.
 
--Matt
+thanks,
+
+greg k-h
