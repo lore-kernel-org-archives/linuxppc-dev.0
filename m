@@ -1,20 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B7D23679E2
-	for <linuxppc-dev@ozlabs.org>; Thu,  2 Jun 2005 15:42:26 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nicolas DET <nd@bplan-gmbh.de>
-In-Reply-To: <20050602053107.111887000086@mwinf0701.wanadoo.fr>
-References: <20050602053107.111887000086@mwinf0701.wanadoo.fr>
-Content-Type: text/plain
-Date: Thu, 02 Jun 2005 15:41:49 +1000
-Message-Id: <1117690909.31082.43.camel@gaston>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 2 Jun 2005 17:09:18 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <20050602070918.GI4748@localhost.localdomain>
+References: <1117614390.19020.24.camel@gaston>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: Tiny patch for arch/ppc/kernel/cputable.c to properly support
-	the IBM PowerPC 750CXe rev 3.1
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1117614390.19020.24.camel@gaston>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	u-boot-users <u-boot-users@lists.sourceforge.net>,
+	linuxppc64-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Subject: Re: Booting the linux-ppc64 kernel & flattened device tree v0.4
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,35 +20,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2005-06-02 at 07:29 +0100, Nicolas DET wrote:
-> Hello Benjamin,
+On Wed, Jun 01, 2005 at 06:26:30PM +1000, Benjamin Herrenschmidt wrote:
+> DO NOT REPLY TO ALL LISTS PLEASE ! (and CC me on replies).
 > 
-> On 01/06/2005, you wrote:
-> > On Wed, 2005-06-01 at 19:14 +0100, Nicolas DET wrote:
-> >> Hello,
-> >> 
-> >> You can find enclosed a small patch to properly support the 750 CXe rev
-> >> 3.1. Indeed, the current kernel (2.6.11.11) only supports rev 2.1 and
-> >> ignores 3.1
-> >> 
-> >> It's a tiny patch: it only add an entry in the table with the correct
-> >> PVR and name. Others values has been copied from 750CXe rev 2.1.
-> >> 
-> >> I succesfully patched & compiled a vanila 2.6.11.11 from kernel.org.
-> 
-> > Is it needed ? I have it in my local tree and never actuall remembered
-> > to actually send it :) In general, that kind of entries are really only
-> > needed when there is a feature change...
-> 
-> .cpu_features is exactly the same compare to 745/755 (750CXe 3.1, PVR 0008
-> 3311, was probed as 745/755). However, there is a small difference: It now
-> calls __setup_cpu_750cx instead of __setup_cpu_750.
-> This end up calling setup_750cx which looks like to disable NAP.
+> Here's the fourth version of my document along with new kernel patches
+> for the new improved flattened format, and the first release of the
+> device-tree "compiler" tool. The patches will be posted as a reply to
+> this email. The compiler, dtc, can be downloaded, the URL is in the
+> document.
 
-Ah, yes, for some PLL configurations... if the CXe is not affected by
-this bug, it should probably avoid that "fixup" then...
+[snip]
 
-> Well, I did not notice anything before and after the patch. It's more
-> 'comsetic': cpuinfo shows the correct cpu name. :-)
+> IV - "dtc", the device tree compiler
+> ====================================
+
 > 
-> Regards
+> dtc source code can be found at
+> <http://ozlabs.org/~dgibson/dtc/dtc.tar.gz>
+
+I've just updated the dtc tarball with a new version.  Notable
+changes:
+	- Corrected comment parsing
+	- Corrected handling of #address-cells, #size-cells properties
+	- Input from device tree blobs should actually work now
+	- Corrected autogeneration of "name" properties in blob/asm
+	  output version < 0x10
+	- Added a TODO list
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/people/dgibson
