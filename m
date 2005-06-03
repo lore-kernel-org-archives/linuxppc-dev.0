@@ -1,21 +1,15 @@
-Return-Path: <geoffrey.levand@am.sony.com>
-Received: from mail8.fw-sd.sony.com (mail8.fw-sd.sony.com [160.33.66.75])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B5945679F3
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  4 Jun 2005 02:30:43 +1000 (EST)
-Message-ID: <42A085AD.3070005@am.sony.com>
-Date: Fri, 03 Jun 2005 09:30:37 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Kumar Gala <kumar.gala@freescale.com>
-References: <429F8F86.1040308@am.sony.com>
-	<134a0b6339320a60ba2a868931a3aed4@freescale.com>
-In-Reply-To: <134a0b6339320a60ba2a868931a3aed4@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] Fix PPC440 pagetable attributes
+Return-Path: <jdl@freescale.com>
+From: Jon Loeliger <jdl@freescale.com>
+To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>,
+	linuxppc64-dev@ozlabs.org
+In-Reply-To: <1117783104.31082.151.camel@gaston>
+References: <1117614390.19020.24.camel@gaston>
+	<1117614484.19020.27.camel@gaston> <1117783104.31082.151.camel@gaston>
+Content-Type: text/plain
+Message-Id: <1117819176.6517.290.camel@cashmere.sps.mot.com>
+Mime-Version: 1.0
+Date: Fri, 03 Jun 2005 12:19:36 -0500
+Subject: Discuss: Adding OF Flat Dev Tree to ppc32
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,67 +20,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> On Jun 2, 2005, at 6:00 PM, Geoff Levand wrote:
-> 
-> 
->>This patch fixes a bug in the PPC440 pagetable attributes that breaks
->>swap support.  It also adds some notes on the PPC440 attribute fields.
->>
->>  *
->>  * Note that these bits preclude future use of a page size
->>  * less than 4KB.
->>+ *
->>+ *
->>+ * PPC 440 core has following TLB attribute fields;
->>+ *
->>+ *   TLB1:
->>+ *   0  1  2  3  4  ... 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 
->>31
->>+ *   RPN.................................  -  -  -  -  -  - 
->>ERPN.......
->>+ *
->>+ *   TLB2:
->>+ *   0  1  2  3  4  ... 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 
->>31
->>+ *   -  -  -  -  -    - U0 U1 U2 U3 W  I  M  G  E   - UX UW UR SX SW 
->>SR
->>+ *
->>+ * There are some constrains and options, to decide mapping software 
->>bits
->>+ * into TLB entry.
->>+ *
->>+ *   - PRESENT *must* be in the bottom three bits because swap cache
->>+ *     entries use the top 29 bits for TLB2.
->>+ *
->>+ *   - FILE *must* be in the bottom three bits because swap cache
->>+ *     entries use the top 29 bits for TLB2.
->>+ *
->>+ *   - CACHE COHERENT bit (M) has no effect on PPC440 core, because it
->>+ *     doesn't support SMP. So we can use this as software bit, like
->>+ *     DIRTY.
->>+ *
->>+ * PPC Book-E Linux implementation uses PPC HW PTE bit field 
->>definition,
->>+ * even it doesn't have HW PTE. 0-11th LSB of PTE stand for memory
->>+ * protection-related function. (See PTE structure in 
->>include/asm-ppc/mmu.h)
->>+ * Definition of _PAGE_XXX in "include/asm-ppc/pagetable.h" stands for
->>+ * above bits. Note that those bits values are CPU dependent, not
->>+ * architecture.
->>+ *
-> 
-> I disagree with this comment.  PPC Book-E PTE format has nothing to do 
-> with PPC HW PTE format.
-> 
+Ben and Folks,
 
-OK, is this more agreeable?
+I've read through ppc64/kernel/prom.c and done some minor
+call-chain analysis rooted at the two functions:
+    early_init_devtree()
+    unflatten_device_tree()
+as they are apparently the only two referenced in the
+initial early boot up process.
 
-* With the PPC Book-E Linux implementation, 0-11th LSB of PTE stand for memory 
-* protection-related function. (See PTE structure in include/asm-ppc/mmu.h) 
-* Definition of _PAGE_XXX here stands for above bits. Note that those bits 
-* values are CPU dependent, not architecture.
+My notion was to take the portion of prom.c rooted at
+these two functions and add them to the ppc32 line.
 
-If not, could you be more specific.
+First, what portions of pp64/kernel/prom.c are obsolete?
+Anything?  You alluded to cleaning this up some, but I
+am not too familiar with it to know where that was headed.
 
--Geoff
+Second, there is already a fairly similar prom.c file
+hanging out over in ppc32 land.  I _think_ it houses
+roughly the complementary code out of ppc64's prom.c
+that is NOT derived from the call chain derived from
+the above two functions.
+
+Which leads me to the questions:  Is there, or should
+we create, a plan to factor the flat-dev-tree handling
+code into common or shared ppc code?  I am reluctant
+to just outright clone and copy that code if it will
+ultimately "be the same" or even "mostly the same".
+It seems that the early_init_devtree() might then need
+to be refactored or duplicated for ppc32-land.
+
+Are you anticipating the same r3,r4,r5 interface outlined
+in your 0.4 rev of the ppc4 OF spec to be used by the
+ppc32 world as well?  Seems like it just might...
+
+Naturally, I'm willing to jump in here, just looking
+for a bit of global-direction from you. :-)
+
+jdl
