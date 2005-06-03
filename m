@@ -1,19 +1,27 @@
-Return-Path: <greg@kroah.com>
-Received: from perch.kroah.org (mail.kroah.org [69.55.234.183])
-	by ozlabs.org (Postfix) with ESMTP id 9D01367A05
+Return-Path: <wojciech.kromer@dgt.com.pl>
+Received: from dgt.com.pl (mail.dgt.com.pl [195.117.141.2])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id ED722679F9
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  3 Jun 2005 17:10:14 +1000 (EST)
-Date: Fri, 3 Jun 2005 00:20:27 -0700
-From: Greg KH <greg@kroah.com>
-To: Matt Porter <mporter@kernel.crashing.org>
-Message-ID: <20050603072027.GD30292@kroah.com>
-References: <20050602140359.B24818@cox.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050602140359.B24818@cox.net>
-Cc: akpm@osdl.org, torvalds@osdl.org, linux-kernel@vger.kernel.org,
-	linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH][1/5] RapidIO support: core
+	Fri,  3 Jun 2005 16:39:55 +1000 (EST)
+Received: from mail.dgt.com.pl (localhost [127.0.0.1])
+	by dgt.com.pl (Postfix) with SMTP id C9CF95795F
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  3 Jun 2005 08:39:46 +0200 (CEST)
+Received: from [192.168.7.66] (proxy.dgt.com.pl [::ffff:195.117.141.11])
+	by dgt.com.pl (Postfix) with ESMTP id 9705B57731
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  3 Jun 2005 08:39:46 +0200 (CEST)
+Message-ID: <429FFB53.2040106@dgt.com.pl>
+Date: Fri, 03 Jun 2005 08:40:19 +0200
+From: Wojciech Kromer <wojciech.kromer@dgt.com.pl>
+MIME-Version: 1.0
+To: undisclosed-recipients: ;
+References: <bf0d9d49e4c115e67aa5df39e33017a1@freescale.com>
+In-Reply-To: <bf0d9d49e4c115e67aa5df39e33017a1@freescale.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Subject: Re: Getting ownership for various boards/platforms configs
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,20 +32,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 02, 2005 at 02:03:59PM -0700, Matt Porter wrote:
-> +static struct device rio_bus = {
-> +	.bus_id = "rapidio",
-> +};
+Dnia 2005-06-03 01:19, Użytkownik Kumar Gala napisał:
 
-Why do you need this device?  You shouldn't have a static struct device
-to start with.  Or you just don't like having your root rio device
-showing up in /sys/devices/ ?
-If so, just create a kobject and put it there, and then base your
-devices off of it, no need for a real device.
+> One issue that comes up from time to time is knowing who to contact 
+> about some of the various boards that are supported for PPC. I've 
+> suggested in the past that we create a MAINTAINERS file in 
+> arch/ppc/platforms. I've started with a list of all the _defconfigs 
+> that we have and would like to see if we can get contacts for the 
+> boards. All this list is meant to be is a contact point.
+>
+>
+There is another issue..
 
-Oh wait, that's what the platform and system code does.  bah,
-nevermind...
-
-thanks,
-
-greg k-h
+May I suggest to add one full-custom board?
+There are a lot of changes to do inside uart,fec,fcc drivers with a lot
+of #ifdefs,
+just because different use of mpc resources on different boards.
+Why it's not configured via menuconfig?
+Another nice example is inside status_led.h...
