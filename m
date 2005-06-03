@@ -1,17 +1,14 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 3 Jun 2005 18:19:41 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-embedded@ozlabs.org,
-	u-boot-users <u-boot-users@lists.sourceforge.net>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>, linuxppc64-dev@ozlabs.org
-Message-ID: <20050603081941.GA1458@localhost.localdomain>
-References: <1117614390.19020.24.camel@gaston>
-	<20050602070918.GI4748@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050602070918.GI4748@localhost.localdomain>
-Subject: Re: Booting the linux-ppc64 kernel & flattened device tree v0.4
+Return-Path: <rbaxter@CURTISSWRIGHT.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Fri, 3 Jun 2005 11:43:32 -0700
+Message-ID: <2A059D6F07F8054294EFC0BD7808FC6D3BE3E1@sdgexch01>
+From: "Baxter, Robert" <rbaxter@CURTISSWRIGHT.com>
+To: "Kumar Gala" <kumar.gala@freescale.com>,
+	"Linux PPC Embedded list" <linuxppc-embedded@ozlabs.org>,
+	"linuxppc-dev list" <linuxppc-dev@ozlabs.org>
+Subject: RE: Getting ownership for various boards/platforms configs
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,44 +18,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 02, 2005 at 05:09:18PM +1000, David Gibson wrote:
-> On Wed, Jun 01, 2005 at 06:26:30PM +1000, Benjamin Herrenschmidt wrote:
-> > DO NOT REPLY TO ALL LISTS PLEASE ! (and CC me on replies).
-> > 
-> > Here's the fourth version of my document along with new kernel patches
-> > for the new improved flattened format, and the first release of the
-> > device-tree "compiler" tool. The patches will be posted as a reply to
-> > this email. The compiler, dtc, can be downloaded, the URL is in the
-> > document.
-> 
-> [snip]
-> 
-> > IV - "dtc", the device tree compiler
-> > ====================================
-> 
-> > 
-> > dtc source code can be found at
-> > <http://ozlabs.org/~dgibson/dtc/dtc.tar.gz>
-> 
-> I've just updated the dtc tarball with a new version.  Notable
-> changes:
-> 	- Corrected comment parsing
-> 	- Corrected handling of #address-cells, #size-cells properties
-> 	- Input from device tree blobs should actually work now
-> 	- Corrected autogeneration of "name" properties in blob/asm
-> 	  output version < 0x10
-> 	- Added a TODO list
+> -----Original Message-----
+> From: linuxppc-dev-bounces@ozlabs.org=20
+> [mailto:linuxppc-dev-bounces@ozlabs.org] On Behalf Of Kumar Gala
+> Sent: Thursday, June 02, 2005 4:19 PM
+> To: Linux PPC Embedded list; linuxppc-dev list
+> Subject: Getting ownership for various boards/platforms configs
+>=20
+> One issue that comes up from time to time is knowing who to contact=20
+> about some of the various boards that are supported for PPC.  I've=20
+> suggested in the past that we create a MAINTAINERS file in=20
+> arch/ppc/platforms.  I've started with a list of all the _defconfigs=20
+> that we have and would like to see if we can get contacts for the=20
+> boards.  All this list is meant to be is a contact point.
+>=20
+> The following is the list, I'll keep a live copy at=20
+> http://gate.crashing.org/~galak/platform-owners.  Once it=20
+> gets flushed=20
+> out I'll turn it into file that looks more like the toplevel=20
+> MAINTAINERS file.  If we dont have any owners for a board we can=20
+> discuss if support for it should be removed.  Please email me if you=20
+> feel you are the owner of any board/config.
+>=20
+> thanks
+>=20
+> - kumar
+>=20
 
-And yet another.  Notable changes:
-	- Basic generation of the reserve map in blob output, use -R
-	  command line option to leave space for a number of reserve
-	  map entries to be filled in by bootloader.
-	- Rewrite blob and assembler output to better share code, and
-	  produce more readable assembler output.
+> gemini
 
+I'll take this one.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/people/dgibson
+rbaxter@curtisswright.com
+
+Rob Baxter
+Curtiss-Wright Controls, Embedded Computing
