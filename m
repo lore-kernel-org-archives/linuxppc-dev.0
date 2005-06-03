@@ -1,22 +1,18 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id BDB0567B3D
+Return-Path: <rsiemsen@rossvideo.com>
+Received: from server06.rossvideo.com (gw-rossvideo.storm.ca [209.87.241.202])
+	by ozlabs.org (Postfix) with ESMTP id 2867367B42
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  4 Jun 2005 07:46:57 +1000 (EST)
-Date: Fri, 3 Jun 2005 14:46:54 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Randy Vinson <rvinson@mvista.com>
-Message-ID: <20050603214653.GA15314@gate.ebshome.net>
-References: <42A0CD46.60300@mvista.com>
-Mime-Version: 1.0
+	Sat,  4 Jun 2005 07:49:19 +1000 (EST)
+Message-ID: <42A0CD87.9070703@rossvideo.com>
+Date: Fri, 03 Jun 2005 17:37:11 -0400
+From: Ralph Siemsen <rsiemsen@rossvideo.com>
+MIME-Version: 1.0
+To: peng gu <penggu@hotmail.com>
+References: <BAY14-F221B4CA9C143B0241EEF01C1070@phx.gbl>
+In-Reply-To: <BAY14-F221B4CA9C143B0241EEF01C1070@phx.gbl>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <42A0CD46.60300@mvista.com>
-Cc: Greg KH <greg@kroah.com>, sensors@stimpy.netroedge.com,
-	linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH 1/2] Add support for Maxim/Dallas DS1374 Real-Time Clock
-	Chip
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: RTnet broadcast
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,33 +23,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jun 03, 2005 at 02:36:06PM -0700, Randy Vinson wrote:
-> Greetings,
->  I've put together a small I2C client for the Maxim/Dallas DS1374 RTC
-> chip and tested it on a Freescale MPC8349ADS board that uses the chip.
-> The attached patch adds support for the chip itself and a follow-up patch
-> will add support to the Freescale board.
+peng gu wrote:
+> hello
+>  I am a postgraduate.  I only want to use RT-net to generate UDP-packets 
+> every 10 millisecond(broadcast).
+> I had post my question to the RTnet mailing list to find someone to help 
+> ,but no one answer me. may be it is too simple and funny to answer for 
+> them,. but it is hard to me . If I use RTnet only for a packet generator 
+> not for building real-time Ethernet , whether there are something 
+> different from the socket programming to generate UDP packets on a 
+> "normal" network? (for example ,a local network that have one switch, 
+> and only one station broadcasting message to itself,) , If yes, Would 
+> you kind to tell me, and to list the functions of RTnet and RTAI that I 
+> must used to do this work. and tell me where I can find the similar 
+> application would someone give me a hand.
 
-[snip]
+Have you tried looking at the examples that come with RTnet?
+http://www.rts.uni-hannover.de/rtnet/lxr/source/addons/examples
+in particular the "raw-packets" example should show you how to do what
+you want.
 
-> +	down(&ds1374_mutex);
-> +
-> +	/*
-> +	 * Since the reads are being performed one byte at a time using
-> +	 * the SMBus vs a 4-byte i2c transfer, there is a chance that a
-> +	 * carry will occur during the read. To detect this, 2 reads are
-> +	 * performed and compared.
-> +	 */
-> +	do {
-> +		t1 = ds1374_read_rtc();
-> +		t2 = ds1374_read_rtc();
-> +	} while (t1 != t2 && limit--);
-
-I wonder, why you chose to use those 1-byte SMBus transfers instead of 
-i2c transfer.
-
-I wrote similar DS1374 driver some time ago which used those transfers 
-and they worked just fine.
-
--- 
-Eugene
+-R
