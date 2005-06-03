@@ -1,34 +1,19 @@
-Return-Path: <markc@mail.com>
-Received: from relay03.roc.ny.frontiernet.net (relay03.roc.ny.frontiernet.net
-	[66.133.182.166]) by ozlabs.org (Postfix) with ESMTP id 66493679F2
+Return-Path: <wd@denx.de>
+Received: from mailout05.sul.t-online.com (mailout05.sul.t-online.com
+	[194.25.134.82]) by ozlabs.org (Postfix) with ESMTP id 560CD67A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  3 Jun 2005 22:07:44 +1000 (EST)
-Received: from filter03.roc.ny.frontiernet.net
-	(filter03.roc.ny.frontiernet.net [66.133.183.70])
-	by relay03.roc.ny.frontiernet.net (Postfix) with ESMTP id E9A1E3580D2
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  3 Jun 2005 12:07:41 +0000 (UTC)
-Received: from relay03.roc.ny.frontiernet.net ([66.133.182.166])
-	by filter03.roc.ny.frontiernet.net (filter03.roc.ny.frontiernet.net
-	[66.133.183.70]) (amavisd-new, port 10024)
-	with LMTP id 22691-02-13 for <linuxppc-embedded@ozlabs.org>;
-	Fri, 3 Jun 2005 12:07:41 +0000 (UTC)
-Received: from chuck2 (170-215-150-213.br1.rmn.wv.frontiernet.net
-	[170.215.150.213])
-	by relay03.roc.ny.frontiernet.net (Postfix) with ESMTP id 5FB41358398
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  3 Jun 2005 12:07:34 +0000 (UTC)
-Message-ID: <002901c56834$ef358f60$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-To: "linux-ppc-embedded" <linuxppc-embedded@ozlabs.org>
-References: <20050601165054.GA2607@logos.cnet><1117680392.31082.16.camel@gaston>
-	<20050602170245.GA7456@logos.cnet>
-	<1117750262.31082.73.camel@gaston>
-Date: Fri, 3 Jun 2005 08:08:13 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: Re: [RFC] handle access to non-present IO ports on 8xx
+	Sat,  4 Jun 2005 00:14:40 +1000 (EST)
+To: scarayol@assystembrime.com
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 03 Jun 2005 11:03:51 +0200."
+	<OFED9D0639.75930571-ONC1257015.0031274C@brime.fr>
+Date: Fri, 03 Jun 2005 16:14:26 +0200
+Sender: wd@denx.de
+Message-Id: <20050603141431.2EC3CC1512@atlas.denx.de>
+Cc: ctrichet@assystembrime.com, linuxppc-embedded@ozlabs.org
+Subject: Re: starting RAM adress for linux kernel 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -39,36 +24,77 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> > >
-> > > Hrm... removing a PCMCIA card triggers mchecks ? that is bad... With
-> > > "proper" PCMCIA controllers, those are swallowed properly when the
-card
-> > > is removed. The eating of the machine check is a bit too hackish to my
-> > > taste... Better is to "not do that" by making sure the legacy crap
-isn't
-> > > trying  to tap unexisting ports, but then, if PCMCIA is also a
-> > > problem...
-> >
-> > Well, cardmgr calls the driver's shutdown/close routine as soon as
-> > the card is removed. Some of those methods write to IO registers in
-> > the process (eg net/pcmcia/pcnet_cs.c).
-> >
-> > I dont see any elegant change that could be done in PCMCIA.
->
-> I know, the thing is, on platforms with a "classical" PCI<->PCMCIA
-> bridge, the bridge will not issue machine checks when the card is
-> removed. I don't know if that is possible with your HW setup, I suppose
-> you are hooking PCMCIA directly to the CPU IO bus ...
->
+Dear Sophie,
 
-I forget if I pointed this out already or not, but there's a good chance the
-mchecks you are seeing are from a bad PCMCIA implementation, not
-the 8xx itself.  PCMCIA uses WAIT, which is a negative ACK really,
-and that must be pulled up externally, so if you remove the card any
-active WAIT goes away.  I'd be glad to take a look at the schematics
-if available and tell you if I think there might be a problem there.
+in message <OFED9D0639.75930571-ONC1257015.0031274C@brime.fr> you wrote:
+> 
+> We have a platform similar to MPC885ADS (xith Kernel version 2.4.26) except
+> that :
+> - the RAM is at 0x0300 0000 (size 0x10000000)
+> - the flash is at 0x0280 0000 (size  0x00200000)
+> - IMMR = 0x0220 0000
 
-Then again, maybe it doesn't matter where the mchecks are coming
-from, you just need to handle them...
+Ummm - just to avoid any misunderstandings:  there  is  no  technical
+reason for such a memory map, and no other good reason either as such
+a configuration will not be able to run Linux.
 
-Mark Chambers
+> After u-boot on MPC885ADS, we get the following platform information :
+> - RAM at 0 size 0x0080 0000
+> - FLASH at 0xFE00 0000  size 0x00200000
+> - IMMR at 0xFF00 0000
+> 
+> This information is different from the documentation of MPC885ADS :
+> - FLASH at 0x0280 0000  size 0x00800000
+> - IMMR at 0x0220 0000
+
+So what is your problem? The memory map ist just something you define
+as it fits your project. The values in the MPC885ADS are  not  really
+useful  for  any  practical  purposes,  so  U-Boot  choses  to define
+different, more useful values. This is perfectly fine.
+
+> 1) in fads.h of u-boot, it is specified that RAM __must_ start at 0 : it
+> isn't true on our board :
+
+This applies for your board, too.
+
+> - can linux work with RAM not beginning at 0 on this board ?
+
+You can make it work, but there is no good reason to  do  this.  Juts
+change your memory map to use a more sensible configuration.
+
+> - what modifications should we make in the kernel to accept RAM at 0x03000000 ?
+
+Please forget this idea.
+
+> 2) is brd_info the only structure given to kernel by u-boot ?
+> That is to say is it the only way for the kernel to have information about
+> the boad  ?
+
+It also gets passed the kernel commandline and  some  other  data  in
+registers.
+
+> 4) are the following values important if  CONFIG_HIGHMEM is not defined
+
+You don't want to play with these data unless you know  exactly  what
+you are doing.
+
+> (they are automatically generated by our Metrowerks PCS tool in autoconf.h ) ?
+
+Then please ask Metrowerks support who provided such a tool which  is
+unknown to me.
+
+> 5) is the base value of IMMR very important (real value in u-boot different
+> from documentation) ?
+
+Yes, it is very important. Your current memory map cannot  work  with
+Linux.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Fascinating is a word I use for the unexpected.
+	-- Spock, "The Squire of Gothos", stardate 2124.5
