@@ -1,14 +1,16 @@
-Return-Path: <kumar.gala@freescale.com>
-In-Reply-To: <1117758135.31082.104.camel@gaston>
-References: <1117758135.31082.104.camel@gaston>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <6ca5635ce6adc80d53d57f702e0a8fc0@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Fri, 3 Jun 2005 00:41:18 -0500
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>
+Return-Path: <sonic_amiga@rambler.ru>
+Received: from mxb.rambler.ru (mxb.rambler.ru [81.19.66.30])
+	by ozlabs.org (Postfix) with ESMTP id 965BF67A3E
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Jun 2005 17:18:56 +1000 (EST)
+Message-ID: <42A06E8C.5020705@rambler.ru>
+Date: Fri, 03 Jun 2005 10:51:56 -0400
+From: Pavel Fedin <sonic_amiga@rambler.ru>
+MIME-Version: 1.0
+To: Kumar Gala <kumar.gala@freescale.com>
+References: <bf0d9d49e4c115e67aa5df39e33017a1@freescale.com>
+In-Reply-To: <bf0d9d49e4c115e67aa5df39e33017a1@freescale.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 Subject: Re: Getting ownership for various boards/platforms configs
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,24 +21,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ben,
+Kumar Gala wrote:
+> One issue that comes up from time to time is knowing who to contact 
+> about some of the various boards that are supported for PPC.  I've 
+> suggested in the past that we create a MAINTAINERS file in 
+> arch/ppc/platforms.
 
-Can I put you do for maintainer of pmac and common?  any others?
+  I am an owner of PegasosII board. You didn't mention it here.
 
-- kumar
-
-On Jun 2, 2005, at 7:22 PM, Benjamin Herrenschmidt wrote:
-
-> On Thu, 2005-06-02 at 19:09 -0500, Kumar Gala wrote:
->> On Jun 2, 2005, at 7:00 PM, Mark A. Greer wrote:
->>
->>> Two things:
->>>
->>> 1) What is "common" in your list?
->>
->> Good question, hopefully Paul knows.  I just did an ls in
->> arch/ppc/configs/ to create the list.
->
-> it's pmac+chrp+prep in a single image
->
-> Ben.
+-- 
+  Kind regards, Pavel Fedin
