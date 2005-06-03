@@ -1,17 +1,17 @@
 Return-Path: <rvinson@mvista.com>
 Received: from zipcode.az.mvista.com (rav-az.mvista.com [65.200.49.157])
-	by ozlabs.org (Postfix) with ESMTP id 0A6A267B2F
+	by ozlabs.org (Postfix) with ESMTP id C849167B2F
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  4 Jun 2005 07:58:34 +1000 (EST)
-Message-ID: <42A0D41E.6000608@mvista.com>
-Date: Fri, 03 Jun 2005 15:05:18 -0700
+	Sat,  4 Jun 2005 08:11:12 +1000 (EST)
+Message-ID: <42A0D714.1050601@mvista.com>
+Date: Fri, 03 Jun 2005 15:17:56 -0700
 From: Randy Vinson <rvinson@mvista.com>
 MIME-Version: 1.0
-To: Kumar Gala <kumar.gala@freescale.com>
+To: Eugene Surovegin <ebs@ebshome.net>
 References: <42A0CD46.60300@mvista.com>
-	<5e2620f079e946d884175372dbf7e37e@freescale.com>
-In-Reply-To: <5e2620f079e946d884175372dbf7e37e@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+	<20050603214653.GA15314@gate.ebshome.net>
+In-Reply-To: <20050603214653.GA15314@gate.ebshome.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: Greg KH <greg@kroah.com>, sensors@stimpy.netroedge.com,
 	linuxppc-embedded@ozlabs.org
 Subject: Re: [PATCH 1/2] Add support for Maxim/Dallas DS1374 Real-Time Clock
@@ -26,32 +26,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> Randy,
+Eugene Surovegin wrote:
+[snip]
 > 
-> I was planning on cloning the DS1337 driver once all of the latest  
-> patches for it got into Linus's tree. 
+> I wonder, why you chose to use those 1-byte SMBus transfers instead of 
+> i2c transfer.
 
-I haven't seen any patches for the DS1337, but I admit that I wasn't 
-looking very hard.
-
-  Not sure if you looked at it,
-> but when I was looking at RTC on 8349 the DS1337 seemed similar.  Not  
-> sure if we can unify the DS1337 driver such that can also support the  
-> DS1374.
-
-I looked at the DS1337 driver, but that chip uses individual registers 
-for the various time bits, whereas the DS1374 uses a 32-bit seconds 
-count spread across 4 registers. I wasn't convinced that I could find a 
-reliable way to differenciate between the 2 types at run time since they 
-use the same I2C address (0x68). So, I choose to create a new driver to 
-keep it simple. If there is a reliable way to handle both types in the 
-same driver, I'll drop my DS1374-specific driver.
+I was simply following the guidelines in 
+Documentation/i2c/writing-clients as noted in the driver header. This 
+note was in the driver I used as my base, so I just followed along.
 
 > 
-> (Also, I'll wait on acceptance of the driver before pushing the board  
-> code).
+> I wrote similar DS1374 driver some time ago which used those transfers 
+> and they worked just fine.
 
-Agreed.
+I checked http://secure.netroedge.com/~lm78/supported.html, 
+http://secure.netroedge.com/~lm78/newdrivers.html and looked in the 
+lm_sensors-2.9.1 tarball before I started and didn't see a driver for 
+the DS1374 listed. That's why I threw mine together. Maybe I missed it.
+
+I would have used I2C transfers myself, but was simply following what I 
+thought were current practices. Since this is my first I2C client, I 
+just blindly followed the documentation :) Oh well, wouldn't be the 
+first time I wandered down the wrong path.
 
 		Randy Vinson
