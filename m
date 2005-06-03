@@ -1,19 +1,18 @@
-Return-Path: <wd@denx.de>
-Received: from mailout05.sul.t-online.com (mailout05.sul.t-online.com
-	[194.25.134.82]) by ozlabs.org (Postfix) with ESMTP id 560CD67A64
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 294A367B1C
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  4 Jun 2005 00:14:40 +1000 (EST)
-To: scarayol@assystembrime.com
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 03 Jun 2005 11:03:51 +0200."
-	<OFED9D0639.75930571-ONC1257015.0031274C@brime.fr>
-Date: Fri, 03 Jun 2005 16:14:26 +0200
-Sender: wd@denx.de
-Message-Id: <20050603141431.2EC3CC1512@atlas.denx.de>
-Cc: ctrichet@assystembrime.com, linuxppc-embedded@ozlabs.org
-Subject: Re: starting RAM adress for linux kernel 
+	Sat,  4 Jun 2005 00:43:07 +1000 (EST)
+In-Reply-To: <429F8F86.1040308@am.sony.com>
+References: <429F8F86.1040308@am.sony.com>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <134a0b6339320a60ba2a868931a3aed4@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Fri, 3 Jun 2005 09:42:52 -0500
+To: "Geoff Levand" <geoffrey.levand@am.sony.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] Fix PPC440 pagetable attributes
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,77 +23,102 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Sophie,
 
-in message <OFED9D0639.75930571-ONC1257015.0031274C@brime.fr> you wrote:
-> 
-> We have a platform similar to MPC885ADS (xith Kernel version 2.4.26) except
-> that :
-> - the RAM is at 0x0300 0000 (size 0x10000000)
-> - the flash is at 0x0280 0000 (size  0x00200000)
-> - IMMR = 0x0220 0000
+On Jun 2, 2005, at 6:00 PM, Geoff Levand wrote:
 
-Ummm - just to avoid any misunderstandings:  there  is  no  technical
-reason for such a memory map, and no other good reason either as such
-a configuration will not be able to run Linux.
+> This patch fixes a bug in the PPC440 pagetable attributes that breaks
+> swap support.  It also adds some notes on the PPC440 attribute fields.
+>
+> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com> for CELF
+>
+> --
+>
+> Index: linux-2.6.12-bhpm/include/asm-ppc/pgtable.h
+> ===================================================================
+> --- linux-2.6.12-bhpm.orig/include/asm-ppc/pgtable.h	2005-06-02 
+> 15:09:24.000000000 -0700
+> +++ linux-2.6.12-bhpm/include/asm-ppc/pgtable.h	2005-06-02 
+> 15:47:53.000000000 -0700
+> @@ -202,18 +202,64 @@
+>   *
+>   * Note that these bits preclude future use of a page size
+>   * less than 4KB.
+> + *
+> + *
+> + * PPC 440 core has following TLB attribute fields;
+> + *
+> + *   TLB1:
+> + *   0  1  2  3  4  ... 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 
+> 31
+> + *   RPN.................................  -  -  -  -  -  - 
+> ERPN.......
+> + *
+> + *   TLB2:
+> + *   0  1  2  3  4  ... 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 
+> 31
+> + *   -  -  -  -  -    - U0 U1 U2 U3 W  I  M  G  E   - UX UW UR SX SW 
+> SR
+> + *
+> + * There are some constrains and options, to decide mapping software 
+> bits
+> + * into TLB entry.
+> + *
+> + *   - PRESENT *must* be in the bottom three bits because swap cache
+> + *     entries use the top 29 bits for TLB2.
+> + *
+> + *   - FILE *must* be in the bottom three bits because swap cache
+> + *     entries use the top 29 bits for TLB2.
+> + *
+> + *   - CACHE COHERENT bit (M) has no effect on PPC440 core, because it
+> + *     doesn't support SMP. So we can use this as software bit, like
+> + *     DIRTY.
+> + *
+> + * PPC Book-E Linux implementation uses PPC HW PTE bit field 
+> definition,
+> + * even it doesn't have HW PTE. 0-11th LSB of PTE stand for memory
+> + * protection-related function. (See PTE structure in 
+> include/asm-ppc/mmu.h)
+> + * Definition of _PAGE_XXX in "include/asm-ppc/pagetable.h" stands for
+> + * above bits. Note that those bits values are CPU dependent, not
+> + * architecture.
+> + *
 
-> After u-boot on MPC885ADS, we get the following platform information :
-> - RAM at 0 size 0x0080 0000
-> - FLASH at 0xFE00 0000  size 0x00200000
-> - IMMR at 0xFF00 0000
-> 
-> This information is different from the documentation of MPC885ADS :
-> - FLASH at 0x0280 0000  size 0x00800000
-> - IMMR at 0x0220 0000
+I disagree with this comment.  PPC Book-E PTE format has nothing to do 
+with PPC HW PTE format.
 
-So what is your problem? The memory map ist just something you define
-as it fits your project. The values in the MPC885ADS are  not  really
-useful  for  any  practical  purposes,  so  U-Boot  choses  to define
-different, more useful values. This is perfectly fine.
+> + * Kernel PTE entry holds arch-dependent swp_entry structure under 
+> certain
+> + * situation. In other words, in such situation, some portion of PTE 
+> bits
+> + * are used as swp_entry. In PPC implementation, 3-24th LSB are 
+> shared with
+> + * swp_entry, however 0-2nd three LSB still hold protection values.
+> + * That means three protection bits are reserved for both PTE and SWAP
+> + * entry at the most three LSBs.
+> + *
+> + * There are three protection bits available for SWAP entry;
+> + *	_PAGE_PRESENT
+> + *	_PAGE_FILE
+> + *	_PAGE_HASHPTE (if HW has)
+> + *
+> + * So those three bits have to be inside of 0-2nd LSB of PTE.
+> + *
+>   */
+> +
+>  #define _PAGE_PRESENT	0x00000001		/* S: PTE valid */
+>  #define	_PAGE_RW	0x00000002		/* S: Write permission */
+> -#define	_PAGE_DIRTY	0x00000004		/* S: Page dirty */
+> +#define _PAGE_FILE	0x00000004		/* S: nonlinear file mapping */
+>  #define _PAGE_ACCESSED	0x00000008		/* S: Page referenced */
+>  #define _PAGE_HWWRITE	0x00000010		/* H: Dirty & RW */
+>  #define _PAGE_HWEXEC	0x00000020		/* H: Execute permission */
+>  #define	_PAGE_USER	0x00000040		/* S: User page */
+>  #define	_PAGE_ENDIAN	0x00000080		/* H: E bit */
+>  #define	_PAGE_GUARDED	0x00000100		/* H: G bit */
+> -#define	_PAGE_COHERENT	0x00000200		/* H: M bit */
+> -#define _PAGE_FILE	0x00000400		/* S: nonlinear file mapping */
+> +#define	_PAGE_DIRTY	0x00000200		/* S: Page dirty */
+>  #define	_PAGE_NO_CACHE	0x00000400		/* H: I bit */
+>  #define	_PAGE_WRITETHRU	0x00000800		/* H: W bit */
 
-> 1) in fads.h of u-boot, it is specified that RAM __must_ start at 0 : it
-> isn't true on our board :
-
-This applies for your board, too.
-
-> - can linux work with RAM not beginning at 0 on this board ?
-
-You can make it work, but there is no good reason to  do  this.  Juts
-change your memory map to use a more sensible configuration.
-
-> - what modifications should we make in the kernel to accept RAM at 0x03000000 ?
-
-Please forget this idea.
-
-> 2) is brd_info the only structure given to kernel by u-boot ?
-> That is to say is it the only way for the kernel to have information about
-> the boad  ?
-
-It also gets passed the kernel commandline and  some  other  data  in
-registers.
-
-> 4) are the following values important if  CONFIG_HIGHMEM is not defined
-
-You don't want to play with these data unless you know  exactly  what
-you are doing.
-
-> (they are automatically generated by our Metrowerks PCS tool in autoconf.h ) ?
-
-Then please ask Metrowerks support who provided such a tool which  is
-unknown to me.
-
-> 5) is the base value of IMMR very important (real value in u-boot different
-> from documentation) ?
-
-Yes, it is very important. Your current memory map cannot  work  with
-Linux.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Fascinating is a word I use for the unexpected.
-	-- Spock, "The Squire of Gothos", stardate 2124.5
+- kumar
