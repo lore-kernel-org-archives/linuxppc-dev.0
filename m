@@ -1,14 +1,24 @@
-Return-Path: <rbaxter@CURTISSWRIGHT.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Fri, 3 Jun 2005 11:43:32 -0700
-Message-ID: <2A059D6F07F8054294EFC0BD7808FC6D3BE3E1@sdgexch01>
-From: "Baxter, Robert" <rbaxter@CURTISSWRIGHT.com>
-To: "Kumar Gala" <kumar.gala@freescale.com>,
-	"Linux PPC Embedded list" <linuxppc-embedded@ozlabs.org>,
-	"linuxppc-dev list" <linuxppc-dev@ozlabs.org>
-Subject: RE: Getting ownership for various boards/platforms configs
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E818867B45
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Jun 2005 08:45:06 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Wolfram Quester <wolfi@mittelerde.physik.uni-konstanz.de>
+In-Reply-To: <20050603093316.GA4777@halley.zuhause>
+References: <1117424155.5228.28.camel@gaston>
+	<3db27390050530145939d260e4@mail.gmail.com>
+	<20050602130502.GA6151@halley.zuhause>
+	<1117750504.31082.76.camel@gaston>
+	<20050603093316.GA4777@halley.zuhause>
+Content-Type: text/plain
+Date: Sat, 04 Jun 2005 08:43:57 +1000
+Message-Id: <1117838638.31082.173.camel@gaston>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
+Subject: Re: ppc32: Rework power management take #3
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,38 +28,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: linuxppc-dev-bounces@ozlabs.org=20
-> [mailto:linuxppc-dev-bounces@ozlabs.org] On Behalf Of Kumar Gala
-> Sent: Thursday, June 02, 2005 4:19 PM
-> To: Linux PPC Embedded list; linuxppc-dev list
-> Subject: Getting ownership for various boards/platforms configs
->=20
-> One issue that comes up from time to time is knowing who to contact=20
-> about some of the various boards that are supported for PPC.  I've=20
-> suggested in the past that we create a MAINTAINERS file in=20
-> arch/ppc/platforms.  I've started with a list of all the _defconfigs=20
-> that we have and would like to see if we can get contacts for the=20
-> boards.  All this list is meant to be is a contact point.
->=20
-> The following is the list, I'll keep a live copy at=20
-> http://gate.crashing.org/~galak/platform-owners.  Once it=20
-> gets flushed=20
-> out I'll turn it into file that looks more like the toplevel=20
-> MAINTAINERS file.  If we dont have any owners for a board we can=20
-> discuss if support for it should be removed.  Please email me if you=20
-> feel you are the owner of any board/config.
->=20
-> thanks
->=20
-> - kumar
->=20
 
-> gemini
+> Normally I use rivafb, but I tried video=ofonly and did not get a
+> freeze. I tried it three times and I hope that this is good statistics.
+> With 2.6.12-rc2 and riva fb I got the freeze in about 80% of all initial
+> suspends, with rc{4,5-git6} and riva fb I had it everytime. But it may
+> still well be that there is a random component since I learned to
+> workaround the problem by switching to tty1 and thus don't trigger the
+> freeze condition that often.
 
-I'll take this one.
+Ok, what happens if you run rivafb, ssh into the box, and open a new tty
+(that is leave the box on X, but do something like echo "toto"
+>/dev/tty8) to create a new tty in the background.
 
-rbaxter@curtisswright.com
+Does that trigger the freeze ?
 
-Rob Baxter
-Curtiss-Wright Controls, Embedded Computing
+Ben.
