@@ -1,18 +1,20 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 390DF67B1C
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao01.cox.net (fed1rmmtao01.cox.net [68.230.241.38])
+	by ozlabs.org (Postfix) with ESMTP id A6D4667B2E
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  4 Jun 2005 06:42:52 +1000 (EST)
-In-Reply-To: <42A085AD.3070005@am.sony.com>
-References: <42A085AD.3070005@am.sony.com>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <b69ad095ef9d42a1e25079a3dcf28be8@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Fri, 3 Jun 2005 15:42:46 -0500
-To: "Geoff Levand" <geoffrey.levand@am.sony.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] Fix PPC440 pagetable attributes
+	Sat,  4 Jun 2005 07:24:14 +1000 (EST)
+Date: Fri, 3 Jun 2005 14:24:11 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Greg KH <greg@kroah.com>
+Message-ID: <20050603142411.A32392@cox.net>
+References: <20050602140359.B24818@cox.net> <20050603071133.GB30292@kroah.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050603071133.GB30292@kroah.com>;
+	from greg@kroah.com on Fri, Jun 03, 2005 at 12:11:33AM -0700
+Cc: akpm@osdl.org, torvalds@osdl.org, linux-kernel@vger.kernel.org,
+	linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH][1/5] RapidIO support: core
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,78 +25,82 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Fri, Jun 03, 2005 at 12:11:33AM -0700, Greg KH wrote:
+> On Thu, Jun 02, 2005 at 02:03:59PM -0700, Matt Porter wrote:
+> > +RIO_LOP_READ(8, u8, 1)
+> > +    RIO_LOP_READ(16, u16, 2)
+> > +    RIO_LOP_READ(32, u32, 4)
+> > +    RIO_LOP_WRITE(8, u8, 1)
+> > +    RIO_LOP_WRITE(16, u16, 2)
+> > +    RIO_LOP_WRITE(32, u32, 4)
+> > +
+> > +    EXPORT_SYMBOL(__rio_local_read_config_8);
+> > +EXPORT_SYMBOL(__rio_local_read_config_16);
+> > +EXPORT_SYMBOL(__rio_local_read_config_32);
+> > +EXPORT_SYMBOL(__rio_local_write_config_8);
+> > +EXPORT_SYMBOL(__rio_local_write_config_16);
+> > +EXPORT_SYMBOL(__rio_local_write_config_32);
+> 
+> Odd indenting here.
 
-On Jun 3, 2005, at 11:30 AM, Geoff Levand wrote:
+Lindent got me here. I didn't doublecheck its munging on this file.
+Updated that.
 
-> Kumar Gala wrote:
->> On Jun 2, 2005, at 6:00 PM, Geoff Levand wrote:
->>
->>
->>> This patch fixes a bug in the PPC440 pagetable attributes that breaks
->>> swap support.  It also adds some notes on the PPC440 attribute 
->>> fields.
->>>
->>>  *
->>>  * Note that these bits preclude future use of a page size
->>>  * less than 4KB.
->>> + *
->>> + *
->>> + * PPC 440 core has following TLB attribute fields;
->>> + *
->>> + *   TLB1:
->>> + *   0  1  2  3  4  ... 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30
->>> 31
->>> + *   RPN.................................  -  -  -  -  -  -
->>> ERPN.......
->>> + *
->>> + *   TLB2:
->>> + *   0  1  2  3  4  ... 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30
->>> 31
->>> + *   -  -  -  -  -    - U0 U1 U2 U3 W  I  M  G  E   - UX UW UR SX SW
->>> SR
->>> + *
->>> + * There are some constrains and options, to decide mapping software
->>> bits
->>> + * into TLB entry.
->>> + *
->>> + *   - PRESENT *must* be in the bottom three bits because swap cache
->>> + *     entries use the top 29 bits for TLB2.
->>> + *
->>> + *   - FILE *must* be in the bottom three bits because swap cache
->>> + *     entries use the top 29 bits for TLB2.
->>> + *
->>> + *   - CACHE COHERENT bit (M) has no effect on PPC440 core, because 
->>> it
->>> + *     doesn't support SMP. So we can use this as software bit, like
->>> + *     DIRTY.
->>> + *
->>> + * PPC Book-E Linux implementation uses PPC HW PTE bit field
->>> definition,
->>> + * even it doesn't have HW PTE. 0-11th LSB of PTE stand for memory
->>> + * protection-related function. (See PTE structure in
->>> include/asm-ppc/mmu.h)
->>> + * Definition of _PAGE_XXX in "include/asm-ppc/pagetable.h" stands 
->>> for
->>> + * above bits. Note that those bits values are CPU dependent, not
->>> + * architecture.
->>> + *
->>
->> I disagree with this comment.  PPC Book-E PTE format has nothing to do
->> with PPC HW PTE format.
->>
->
-> OK, is this more agreeable?
->
-> * With the PPC Book-E Linux implementation, 0-11th LSB of PTE stand 
-> for memory
-> * protection-related function. (See PTE structure in 
-> include/asm-ppc/mmu.h)
-> * Definition of _PAGE_XXX here stands for above bits. Note that those 
-> bits
-> * values are CPU dependent, not architecture.
+> And why the __rio* stuff for public functions?  You should drop the "__"
+> part.
 
-That's more reasonable, however I would make it say PPC 44x ... instead 
-of Book-E, the e500 is also a Book-E processor and if you notice if we 
-use a 64-bit PTE we end up using more than the 12 LSBs for PTE flags.
+This may seem silly but I was trying to have the automagic DocBook
+stuff pick up the complete set of kernel interfaces without have
+to duplicate anything in the DocBook template.  Since these functions
+are macro-generated I could have a comment block for each one that
+the docs stuff would pick up.  So, I put rio_local_*() up in
+include/linux/rio_drv.h as inline wrappers around these implementations.
 
-- kumar
+Too ugly to live? Maybe there's a better way to make this work, it
+would nice to have it autogenerate the docs.
+
+<snip>
+
+> > +EXPORT_SYMBOL(rio_mport_send_doorbell);
+> 
+> Just a question, should these be EXPORT_SYMBOL_GPL() as this is GPL
+> code?  Just to be explicit that is.
+
+Good point. I'm going to go through and make all RIO interfaces
+EXPORT_SYMBOL_GPL(). Embedded folks need the extra encouragement
+to do the right thing when writing drivers.
+
+> > +static ssize_t
+> > +rio_read_config(struct kobject *kobj, char *buf, loff_t off, size_t count)
+> 
+> <snip>
+> 
+> You might want to compare this to the recent changes in the 2.6.12-rc
+> kernels in the pci sysfs config code.  There were some 64 and endian
+> issues fixed up there that you might want to make sure are also done
+> properly here.
+
+I see that in the current git tree.  I think some of it applies (note
+that RIO is a big-endian system, not surprising since it originates
+from Motorola/Fscale), I'll look more closely and add the appropriate
+fixes into the next patch.  Since Andrew took these into -mm I will
+just post patches against -mm.
+
+> > +static struct bin_attribute rio_config_attr = {
+> > +	.attr = {
+> > +		 .name = "config",
+> > +		 .mode = S_IRUGO | S_IWUSR,
+> > +		 .owner = THIS_MODULE,
+> > +		 },
+> > +	.size = 0x200000,
+> > +	.read = rio_read_config,
+> > +	.write = rio_write_config,
+> > +};
+> 
+> Wow, that's a huge config space (just a comment, not an issue...)
+
+Heh, yes.  The "maintenance packets" that are used to access config
+space on RIO devices have a 21-bit offset field.  I guess the
+spec guys didn't want to run out of config space too quickly. :)
+
+-Matt
