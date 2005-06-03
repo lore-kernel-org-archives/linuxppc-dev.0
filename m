@@ -1,20 +1,19 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao07.cox.net (fed1rmmtao07.cox.net [68.230.241.32])
-	by ozlabs.org (Postfix) with ESMTP id 7130E67B32
+Return-Path: <rvinson@mvista.com>
+Received: from zipcode.az.mvista.com (rav-az.mvista.com [65.200.49.157])
+	by ozlabs.org (Postfix) with ESMTP id D34EE67B3A
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  4 Jun 2005 07:35:51 +1000 (EST)
-Date: Fri, 3 Jun 2005 14:35:48 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Greg KH <greg@kroah.com>
-Message-ID: <20050603143548.B32392@cox.net>
-References: <20050602140359.B24818@cox.net> <20050603072027.GD30292@kroah.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050603072027.GD30292@kroah.com>;
-	from greg@kroah.com on Fri, Jun 03, 2005 at 12:20:27AM -0700
-Cc: akpm@osdl.org, torvalds@osdl.org, linux-kernel@vger.kernel.org,
+	Sat,  4 Jun 2005 07:37:11 +1000 (EST)
+Message-ID: <42A0CF1C.6000900@mvista.com>
+Date: Fri, 03 Jun 2005 14:43:56 -0700
+From: Randy Vinson <rvinson@mvista.com>
+MIME-Version: 1.0
+To: Kumar Gala <kumar.gala@freescale.com>
+References: <42A0CD46.60300@mvista.com>
+In-Reply-To: <42A0CD46.60300@mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Greg KH <greg@kroah.com>, sensors@stimpy.netroedge.com,
 	linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH][1/5] RapidIO support: core
+Subject: [PATCH 2/2] Add support for Maxim/Dallas DS1374 Real-Time Clock Chip
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,36 +24,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jun 03, 2005 at 12:20:27AM -0700, Greg KH wrote:
-> On Thu, Jun 02, 2005 at 02:03:59PM -0700, Matt Porter wrote:
-> > +static struct device rio_bus = {
-> > +	.bus_id = "rapidio",
-> > +};
-> 
-> Why do you need this device?  You shouldn't have a static struct device
-> to start with.  Or you just don't like having your root rio device
-> showing up in /sys/devices/ ?
+Greetings,
+  This is part 2 of the patch to add support for the DS1374 I2C RTC chip
+from Maxim/Dallas.
 
-Exactly. There's no hierarchy in this interconnect. So it seemed
-that having a static rio_bus device made the most sense. Everything
-exists as peers since it works more like a network than a hierarchical
-bus like PCI. Right now, you can't see the endpoint which actually
-implements your port into the switch fabric...there's no device
-created for it. I'm still trying to determine if that should change
-but it's not critical to usability with the current generation
-hardware.
 
-One argument I have _for_ it is that it would be easy to show
-and manipulate a network from userspace if all nodes had a device
-associated with them.  That's not a real world problem yet so
-I decided not to complicate things yet.
+		Randy Vinson
 
-> If so, just create a kobject and put it there, and then base your
-> devices off of it, no need for a real device.
-> 
-> Oh wait, that's what the platform and system code does.  bah,
-> nevermind...
 
-Ok. I did pull this part right from the platform code, in fact.
 
--Matt
+Add support for the I2C Real-Time Clock on the MPC8349ADS board.
+
+This change provides support for the DS1374 Real-Time Clock chip present
+on the MPC8349ADS board. It depends on a previous patch which adds I2C
+support for the DS1374.
+
+Signed-off-by: Randy Vinson <rvinson@mvista.com>
+
+---
+commit 07fb1bd27347f7f0df1309c40d09a2f1a9a98731
+tree b3ac3ac93679372aa5111268b623c5dda4a5039e
+parent f95cc4d276cc332225bd823a2ae3be553c119990
+author Randy Vinson <rvinson@linuxbox.(none)> Fri, 03 Jun 2005 13:57:46 -0700
+committer Randy Vinson <rvinson@linuxbox.(none)> Fri, 03 Jun 2005 13:57:46 -0700
+
+ arch/ppc/platforms/83xx/mpc834x_sys.c |   20 ++++++++++++++++++++
+ 1 files changed, 20 insertions(+), 0 deletions(-)
+
+diff --git a/arch/ppc/platforms/83xx/mpc834x_sys.c b/arch/ppc/platforms/83xx/mpc834x_sys.c
+--- a/arch/ppc/platforms/83xx/mpc834x_sys.c
++++ b/arch/ppc/platforms/83xx/mpc834x_sys.c
+@@ -227,6 +227,26 @@ mpc834x_sys_init_IRQ(void)
+ 	ipic_set_default_priority();
+ }
+ 
++#if defined(CONFIG_I2C_MPC) && defined(CONFIG_SENSORS_DS1374)
++extern ulong	ds1374_get_rtc_time(void);
++extern int	ds1374_set_rtc_time(ulong);
++
++static int __init
++mpc834x_rtc_hookup(void)
++{
++	struct timespec	tv;
++
++	ppc_md.get_rtc_time = ds1374_get_rtc_time;
++	ppc_md.set_rtc_time = ds1374_set_rtc_time;
++
++	tv.tv_nsec = 0;
++	tv.tv_sec = (ppc_md.get_rtc_time)();
++	do_settimeofday(&tv);
++
++	return 0;
++}
++late_initcall(mpc834x_rtc_hookup);
++#endif
+ static __inline__ void
+ mpc834x_sys_set_bat(void)
+ {
