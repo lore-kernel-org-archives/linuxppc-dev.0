@@ -1,13 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Mark A. Greer" <mgreer@mvista.com>
+Return-Path: <kumar.gala@freescale.com>
 In-Reply-To: <429F9D97.8030601@mvista.com>
-References: <bf0d9d49e4c115e67aa5df39e33017a1@freescale.com>
-	<429F9D97.8030601@mvista.com>
-Content-Type: text/plain
-Date: Fri, 03 Jun 2005 10:07:05 +1000
-Message-Id: <1117757225.31082.102.camel@gaston>
-Mime-Version: 1.0
+References: <429F9D97.8030601@mvista.com>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <98cd161b47ff0934e79941aa6028fcc5@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Thu, 2 Jun 2005 19:09:05 -0500
+To: "Mark A. Greer" <mgreer@mvista.com>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>
 Subject: Re: Getting ownership for various boards/platforms configs
@@ -20,22 +19,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2005-06-02 at 17:00 -0700, Mark A. Greer wrote:
+
+On Jun 2, 2005, at 7:00 PM, Mark A. Greer wrote:
+
 > Two things:
-> 
+>
 > 1) What is "common" in your list?
-> 
-> 2) On a slightly different note...if no one volunteers to look after the 
-> following ones, I vote to remove them:
-> 
-> > k2
-> > lopec
-> > mcpn765
-> > menf1            Dead (Matt Porter) 
-> 
->  > pmac  :)
 
+Good question, hopefully Paul knows.  I just did an ls in 
+arch/ppc/configs/ to create the list.
 
-What is pmac here ? PowerMac or some other board ? :)
-
-Ben.
+- kumar
