@@ -1,24 +1,24 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx001.isp.belgacom.be (outmx001.isp.belgacom.be
-	[195.238.3.51]) by ozlabs.org (Postfix) with ESMTP id 1E3AA679EB
+Return-Path: <edward.qin.hong@gmail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.203])
+	by ozlabs.org (Postfix) with ESMTP id 5403C67B19
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  5 Jun 2005 04:13:28 +1000 (EST)
-Received: from outmx001.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx001.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id j54IDOn0026053
-	for <linuxppc-embedded@ozlabs.org>; Sat, 4 Jun 2005 20:13:24 +0200
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <42A1EF45.9030400@246tNt.com>
-Date: Sat, 04 Jun 2005 20:13:25 +0200
-From: Sylvain Munaut <tnt@246tNt.com>
-MIME-Version: 1.0
-To: Jon Loeliger <jdl@freescale.com>
-References: <1116607235.29111.20.camel@gleep>	<f003613a0526b7b6a00a0bd477cd5ac3@freescale.com>
-	<1117221259.26114.91.camel@cashmere.sps.mot.com>
-In-Reply-To: <1117221259.26114.91.camel@cashmere.sps.mot.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
-Subject: Re: bd_t Cleaning: Interface Part
+	Sun,  5 Jun 2005 09:40:44 +1000 (EST)
+Received: by zproxy.gmail.com with SMTP id 16so1231876nzp
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 04 Jun 2005 16:40:42 -0700 (PDT)
+Message-ID: <21fb73bc0506041640736e3020@mail.gmail.com>
+Date: Sat, 4 Jun 2005 17:40:42 -0600
+From: Edward Hong <edward.qin.hong@gmail.com>
+To: Wolfgang Denk <wd@denx.de>
+In-Reply-To: <20050604011736.B199EC1512@atlas.denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <21fb73bc05060316102325f94d@mail.gmail.com>
+	<20050604011736.B199EC1512@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: kernel ported from ELDK 3.0 hangs (loops in idled()) on my
+	custom MPC870 Board
+Reply-To: Edward Hong <edward.qin.hong@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,26 +29,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Jon Loeliger wrote:
-> On Thu, 2005-05-26 at 18:08, Kumar Gala wrote:
-> 
->>Jon,
->>
->>Can you break the patch up into a few pieces, it will be easier to 
->>review that way.  Here are the following pieces that make sense to me:
->>
->>0. New firmware interface (fw_bdt*, Kconfig, ...)
->>1. board code changes (everything in arch/ppc/platforms/*)
->>2. driver changes (things in *_io, ide, net, serial dirs -- try to give 
->>a better list below)
->>3. System changes (files in arch/ppc/syslib and include/asm-ppc)
+On 6/3/05, Wolfgang Denk <wd@denx.de> wrote:
+> In message <21fb73bc05060316102325f94d@mail.gmail.com> you wrote:
+> > I am trying to bring up Linux on a custom MPC870 Board using ELDK 3.0.
+>=20
+> Why are you using old (not to say ancient) tools?
+>=20
+I had the tool ready for a while. After porting u-boot, I realized
+that there had been several new tool releases.
 
-FWIW, tested on 5200 and works fine. Looks good to me.
+> > The ported kernel from ELDK 3.0 hangs (loops in idled()) and the kernel=
+_thread
+> > init never gets started!???
+>=20
+> How do you know that init didn't  run?  Runningthe  idle  loop  is  a
+> perfectly normal situation.
+>=20
+My debug lines at the beginning of init never get printed on the
+console or in the log_buf.
 
-Just a remark : I see a CONFIG_FW_OF option that activates
-fw_of.o but there is no fw_of.c and I don't see what the flattened
-OF tree does in this set of patch ?
+>=20
+> Are you sure that your kernel configuration is sensible? For example,
+> did you configure a console port that matches your hardware? Did  you
+> configure the serial ports (SMC / SCC) at all?
+>=20
+I am positive about the kernel configuration. SMC1 was configured as my=20
+console.
 
+Any suggestions for debugging?
 
+> Best regards,
+>=20
+> Wolfgang Denk
+>=20
+> --
+> Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+> Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+> I read part of it all the way through.
+>=20
 
-	Sylvain
+Thank you!
+
+Edward
