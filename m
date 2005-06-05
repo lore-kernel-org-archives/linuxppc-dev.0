@@ -1,20 +1,17 @@
-Return-Path: <wd@denx.de>
-Received: from mailout08.sul.t-online.com (mailout08.sul.t-online.com
-	[194.25.134.20]) by ozlabs.org (Postfix) with ESMTP id E396B67B1A
+Return-Path: <fpslic@sina.com>
+Received: from sina.com (unknown [202.106.187.156])
+	by ozlabs.org (Postfix) with SMTP id 7B9CA679E6
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  5 Jun 2005 10:28:49 +1000 (EST)
-To: Edward Hong <edward.qin.hong@gmail.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sat, 04 Jun 2005 17:40:42 MDT."
-	<21fb73bc0506041640736e3020@mail.gmail.com>
-Date: Sun, 05 Jun 2005 02:28:27 +0200
-Sender: wd@denx.de
-Message-Id: <20050605002832.6311AC1512@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: kernel ported from ELDK 3.0 hangs (loops in idled()) on my
-	custom MPC870 Board
+	Mon,  6 Jun 2005 00:15:56 +1000 (EST)
+Received: from(fpslic@sina.com) to(linuxppc-embedded@ozlabs.org)
+Date: Sun, 5 Jun 2005 22:09:13 +0800
+From: "xuetao" <fpslic@sina.com>
+To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain;
+	charset="gb2312"
+Message-Id: <20050605141556.7B9CA679E6@ozlabs.org>
+Subject: Help on the data rate on MPC5200 ethernet
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,26 +22,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <21fb73bc0506041640736e3020@mail.gmail.com> you wrote:
->
-> My debug lines at the beginning of init never get printed on the
-> console or in the log_buf.
+Dear All:
 
-With "beginning of init" you mean init() in "init/main.c", right?
-So gets rest_init() called?
-Did you add a few printk's to start_kernel()?
-How far does it get?
+I am testing the tcp/ip data communication data rate on MPC5200. The UDP data 
+rate is up to 80Mbps and TCP data rate is only 10Mbps? I test the TCP data rate
+with FTP file traslation. Any body know the problem on this?
 
-> Any suggestions for debugging?
+So thanks.
 
-Attach a BDI2000 and start GDB...
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-If something is different, it's either better or worse,  and  usually
-both.                                                    - Larry Wall
+Best Regards,
+Tom
