@@ -1,17 +1,18 @@
-Return-Path: <Roberto.Waltman@rflelect.com>
-Received: from noteshub.teal.com
-	(ip67-155-213-211.z213-155-67.customer.algx.net [67.155.213.211])
-	by ozlabs.org (Postfix) with ESMTP id 00280679E9
+Return-Path: <colui77@virgilio.it>
+Received: from vsmtp14.tin.it (vsmtp14.tin.it [212.216.176.118])
+	by ozlabs.org (Postfix) with ESMTP id EBC8B679E9
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  6 Jun 2005 23:49:32 +1000 (EST)
+	Tue,  7 Jun 2005 00:15:31 +1000 (EST)
+Received: from ims2a.cp.tin.it (192.168.70.102) by vsmtp14.tin.it (7.0.027)
+	id 429D6F26001DED31 for linuxppc-embedded@ozlabs.org;
+	Mon, 6 Jun 2005 16:15:28 +0200
+Date: Mon, 6 Jun 2005 16:15:28 +0200
+Message-ID: <4293EE1500020957@ims2a.cp.tin.it>
+From: colui77@virgilio.it
 To: linuxppc-embedded@ozlabs.org
-Message-ID: <OF40F57800.1E17AD05-ON85257018.004A3502@teal.com>
-From: Roberto.Waltman@rflelect.com
-Date: Mon, 6 Jun 2005 09:33:23 -0400
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Udi Rasiuk <udira@matrix-defense.co.il>
-Subject: Re: Subject: PPC8272 - FCC2 transmitter underrun
+Content-Type: text/plain; charset="ISO-8859-15"
+Subject: help with ML300
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,11 +23,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-Udi,
-
-You need to switch your Hebrew email program to Left-to-Right mode if you
-expect anyone other than Leonardo DaVinci to read your post. ;-)
-
-Roberto Waltman
-RFL Electronics Inc.
+hi,
+I'm working with the xilinxs ML300,. My board runs the montavista linux
+2.4.21 shipped with the board. Here the xilinx_gpio.o moeule maps only th=
+e
+GPIO 1. I have downloaded the montavista linux 2.4.30 and I'd like rebuil=
+ding
+the xilinx_gpio module cause I need the GPIO2. I have substituted the xil=
+inx_gpio.o
+module on the board with the builded one...but when insmod-ing it I have
+the following errors:
+unresolved symbol misc_register_R30927432
+unresolved symbol misc_deregister_Re3fc4e19
+I have no idea about what to do ....
+please help me :-(
+Luigi
