@@ -1,17 +1,17 @@
 Return-Path: <mporter@kernel.crashing.org>
 Received: from zipcode.az.mvista.com (rav-az.mvista.com [65.200.49.157])
-	by ozlabs.org (Postfix) with ESMTP id 76F4167A05
+	by ozlabs.org (Postfix) with ESMTP id B4D7967A2C
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Jun 2005 09:12:40 +1000 (EST)
-In-Reply-To: mporter@kernel.crashing.org
-Date: Mon, 6 Jun 2005 15:40:06 -0700
-Message-Id: <11180976062000@foobar.com>
+	Tue,  7 Jun 2005 09:12:56 +1000 (EST)
+In-Reply-To: <11180976151080@foobar.com>
+Date: Mon, 6 Jun 2005 15:40:15 -0700
+Message-Id: <1118097615222@foobar.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 To: linux-kernel@vger.kernel.org
 From: Matt Porter <mporter@kernel.crashing.org>
-Cc: greg@kroah.com, linuxppc-embedded@ozlabs.org
-Subject: [PATCH][1/5] RapidIO support: core base
+Cc: netdev@oss.sgi.com, shemminger@osdl.org, linuxppc-embedded@ozlabs.org
+Subject: [PATCH][5/5] RapidIO support: net driver
 Reply-To: Matt Porter <mporter@kernel.crashing.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,257 +23,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-[Updated with latest comments]
-
-Adds a RapidIO subsystem to the kernel. RIO is a switched
-fabric interconnect used in higher-end embedded applications.
-The curious can look at the specs over at http://www.rapidio.org
-
-The core code implements enumeration/discovery, management of
-devices/resources, and interfaces for RIO drivers.
-
-There's a lot more to do to take advantages of all the hardware
-features. However, this should provide a good base for folks
-with RIO hardware to start contributing.
+Adds an "Ethernet" driver which sends Ethernet packets over the
+standard RapidIO messaging. This depends on the core RIO
+patch for mailbox/doorbell access.
 
 Signed-off-by: Matt Porter <mporter@kernel.crashing.org>
 
-diff --git a/Documentation/DocBook/Makefile b/Documentation/DocBook/Makefile
---- a/Documentation/DocBook/Makefile
-+++ b/Documentation/DocBook/Makefile
-@@ -10,7 +10,7 @@ DOCBOOKS :=3D wanbook.xml z8530book.xml mc
- 	    kernel-hacking.xml kernel-locking.xml deviceiobook.xml \
- 	    procfs-guide.xml writing_usb_driver.xml scsidrivers.xml \
- 	    sis900.xml kernel-api.xml journal-api.xml lsm.xml usb.xml \
--	    gadget.xml libata.xml mtdnand.xml librs.xml
-+	    gadget.xml libata.xml mtdnand.xml librs.xml rapidio.xml
+diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -2185,6 +2185,20 @@ config ISERIES_VETH
+ 	tristate "iSeries Virtual Ethernet driver support"
+ 	depends on NETDEVICES && PPC_ISERIES
 =20
- ###
- # The build process is as follows (targets):
-diff --git a/Documentation/DocBook/rapidio.tmpl b/Documentation/DocBook/rap=
-idio.tmpl
-new file mode 100644
---- /dev/null
-+++ b/Documentation/DocBook/rapidio.tmpl
-@@ -0,0 +1,160 @@
-+<?xml version=3D"1.0" encoding=3D"UTF-8"?>
-+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
-+        "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
-+	<!ENTITY rapidio SYSTEM "rapidio.xml">
-+	]>
++config RIONET
++	tristate "RapidIO Ethernet over messaging driver support"
++	depends on NETDEVICES && RAPIDIO
 +
-+<book id=3D"RapidIO-Guide">
-+ <bookinfo>
-+  <title>RapidIO Subsystem Guide</title>
-+=20=20
-+  <authorgroup>
-+   <author>
-+    <firstname>Matt</firstname>
-+    <surname>Porter</surname>
-+    <affiliation>
-+     <address>
-+      <email>mporter@kernel.crashing.org</email>
-+      <email>mporter@mvista.com</email>
-+     </address>
-+    </affiliation>
-+   </author>
-+  </authorgroup>
++config RIONET_TX_SIZE
++	int "Number of outbound queue entries"
++	depends on RIONET
++	default "128"
 +
-+  <copyright>
-+   <year>2005</year>
-+   <holder>MontaVista Software, Inc.</holder>
-+  </copyright>
++config RIONET_RX_SIZE
++	int "Number of inbound queue entries"
++	depends on RIONET
++	default "128"
 +
-+  <legalnotice>
-+   <para>
-+     This documentation is free software; you can redistribute
-+     it and/or modify it under the terms of the GNU General Public
-+     License version 2 as published by the Free Software Foundation.
-+   </para>
-+=20=20=20=20=20=20
-+   <para>
-+     This program is distributed in the hope that it will be
-+     useful, but WITHOUT ANY WARRANTY; without even the implied
-+     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-+     See the GNU General Public License for more details.
-+   </para>
-+=20=20=20=20=20=20
-+   <para>
-+     You should have received a copy of the GNU General Public
-+     License along with this program; if not, write to the Free
-+     Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-+     MA 02111-1307 USA
-+   </para>
-+=20=20=20=20=20=20
-+   <para>
-+     For more details see the file COPYING in the source
-+     distribution of Linux.
-+   </para>
-+  </legalnotice>
-+ </bookinfo>
-+
-+<toc></toc>
-+
-+  <chapter id=3D"intro">
-+      <title>Introduction</title>
-+  <para>
-+	RapidIO is a high speed switched fabric interconnect with
-+	features aimed at the embedded market.  RapidIO provides
-+	support for memory-mapped I/O as well as message-based
-+	transactions over the switched fabric network. RapidIO has
-+	a standardized discovery mechanism not unlike the PCI bus
-+	standard that allows simple detection of devices in a
-+	network.
-+  </para>
-+  <para>
-+  	This documentation is provided for developers intending
-+	to support RapidIO on new architectures, write new drivers,
-+	or to understand the subsystem internals.
-+  </para>
-+  </chapter>
-+=20=20
-+  <chapter id=3D"bugs">
-+     <title>Known Bugs and Limitations</title>
-+
-+     <sect1>
-+     	<title>Bugs</title>
-+	  <para>None. ;)</para>
-+     </sect1>
-+     <sect1>
-+     	<title>Limitations</title>
-+	  <para>
-+	    <orderedlist>
-+	      <listitem><para>Access/management of RapidIO memory regions is not =
-supported</para></listitem>
-+	      <listitem><para>Multiple host enumeration is not supported</para></=
-listitem>
-+	    </orderedlist>
-+	 </para>
-+     </sect1>
-+  </chapter>
-+
-+  <chapter id=3D"drivers">
-+     	<title>RapidIO driver interface</title>
-+	<para>
-+		Drivers are provided a set of calls in order
-+		to interface with the subsystem to gather info
-+		on devices, request/map memory region resources,
-+		and manage mailboxes/doorbells.
-+	</para>
-+	<sect1>
-+		<title>Functions</title>
-+!Iinclude/linux/rio_drv.h
-+!Edrivers/rio/rio-driver.c
-+!Edrivers/rio/rio.c
-+	</sect1>
-+  </chapter>=09
-+
-+  <chapter id=3D"internals">
-+     <title>Internals</title>
-+
-+     <para>
-+     This chapter contains the autogenerated documentation of the RapidIO
-+     subsystem.
-+     </para>
-+
-+     <sect1><title>Structures</title>
-+!Iinclude/linux/rio.h
-+     </sect1>
-+     <sect1><title>Enumeration and Discovery</title>
-+!Idrivers/rio/rio-scan.c
-+     </sect1>
-+     <sect1><title>Driver functionality</title>
-+!Idrivers/rio/rio.c
-+!Idrivers/rio/rio-access.c
-+     </sect1>
-+     <sect1><title>Device model support</title>
-+!Idrivers/rio/rio-driver.c
-+     </sect1>
-+     <sect1><title>Sysfs support</title>
-+!Idrivers/rio/rio-sysfs.c
-+     </sect1>
-+     <sect1><title>PPC32 support</title>
-+!Iarch/ppc/kernel/rio.c
-+!Earch/ppc/syslib/ppc85xx_rio.c
-+!Iarch/ppc/syslib/ppc85xx_rio.c
-+     </sect1>
-+  </chapter>
-+
-+  <chapter id=3D"credits">
-+     <title>Credits</title>
-+	<para>
-+		The following people have contributed to the RapidIO
-+		subsystem directly or indirectly:
-+		<orderedlist>
-+			<listitem><para>Matt Porter<email>mporter@kernel.crashing.org</email></=
-para></listitem>
-+			<listitem><para>Randy Vinson<email>rvinson@mvista.com</email></para></l=
-istitem>
-+			<listitem><para>Dan Malek<email>dan@embeddedalley.com</email></para></l=
-istitem>
-+		</orderedlist>
-+	</para>
-+	<para>
-+		The following people have contributed to this document:
-+		<orderedlist>
-+			<listitem><para>Matt Porter<email>mporter@kernel.crashing.org</email></=
-para></listitem>
-+		</orderedlist>
-+	</para>
-+  </chapter>
-+</book>
-diff --git a/drivers/Makefile b/drivers/Makefile
---- a/drivers/Makefile
-+++ b/drivers/Makefile
-@@ -7,6 +7,7 @@
+ config FDDI
+ 	bool "FDDI driver support"
+ 	depends on NETDEVICES && (PCI || EISA)
+diff --git a/drivers/net/Makefile b/drivers/net/Makefile
+--- a/drivers/net/Makefile
++++ b/drivers/net/Makefile
+@@ -58,6 +58,7 @@ obj-$(CONFIG_SKFP) +=3D skfp/
+ obj-$(CONFIG_VIA_RHINE) +=3D via-rhine.o
+ obj-$(CONFIG_VIA_VELOCITY) +=3D via-velocity.o
+ obj-$(CONFIG_ADAPTEC_STARFIRE) +=3D starfire.o
++obj-$(CONFIG_RIONET) +=3D rionet.o
 =20
- obj-$(CONFIG_PCI)		+=3D pci/
- obj-$(CONFIG_PARISC)		+=3D parisc/
-+obj-$(CONFIG_RAPIDIO)		+=3D rio/
- obj-y				+=3D video/
- obj-$(CONFIG_ACPI_BOOT)		+=3D acpi/
- # PnP must come after ACPI since it will eventually need to check if acpi
-diff --git a/drivers/rio/Kconfig b/drivers/rio/Kconfig
+ #
+ # end link order section
+diff --git a/drivers/net/rionet.c b/drivers/net/rionet.c
 new file mode 100644
 --- /dev/null
-+++ b/drivers/rio/Kconfig
-@@ -0,0 +1,18 @@
-+#
-+# RapidIO configuration
-+#
-+config RAPIDIO_8_BIT_TRANSPORT
-+	bool "8-bit transport addressing"
-+	depends on RAPIDIO
-+	---help---
-+	  By default, the kernel assumes a 16-bit addressed RapidIO
-+	  network. By selecting this option, the kernel will support
-+	  an 8-bit addressed network.
-+
-+config RAPIDIO_DISC_TIMEOUT
-+	int "Discovery timeout duration (seconds)"
-+	depends on RAPIDIO
-+	default "30"
-+	---help---
-+	  Amount of time a discovery node waits for a host to complete
-+	  enumeration beforing giving up.
-diff --git a/drivers/rio/Makefile b/drivers/rio/Makefile
-new file mode 100644
---- /dev/null
-+++ b/drivers/rio/Makefile
-@@ -0,0 +1,6 @@
-+#
-+# Makefile for RapidIO interconnect services
-+#
-+obj-y +=3D rio.o rio-access.o rio-driver.o rio-scan.o rio-sysfs.o
-+
-+obj-$(CONFIG_RAPIDIO)		+=3D switches/
-diff --git a/drivers/rio/rio-access.c b/drivers/rio/rio-access.c
-new file mode 100644
---- /dev/null
-+++ b/drivers/rio/rio-access.c
-@@ -0,0 +1,175 @@
++++ b/drivers/net/rionet.c
+@@ -0,0 +1,597 @@
 +/*
-+ * RapidIO configuration space access support
++ * rionet - Ethernet driver over RapidIO messaging services
 + *
 + * Copyright 2005 MontaVista Software, Inc.
 + * Matt Porter <mporter@kernel.crashing.org>
@@ -284,1232 +81,592 @@ new file mode 100644
 + * option) any later version.
 + */
 +
-+#include <linux/rio.h>
 +#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/dma-mapping.h>
++#include <linux/delay.h>
++#include <linux/rio.h>
++#include <linux/rio_drv.h>
++#include <linux/rio_ids.h>
++
++#include <linux/netdevice.h>
++#include <linux/etherdevice.h>
++#include <linux/skbuff.h>
++#include <linux/crc32.h>
++#include <linux/ethtool.h>
++
++#define DRV_NAME        "rionet"
++#define DRV_VERSION     "0.1"
++#define DRV_AUTHOR      "Matt Porter <mporter@kernel.crashing.org>"
++#define DRV_DESC        "Ethernet over RapidIO"
++
++MODULE_AUTHOR(DRV_AUTHOR);
++MODULE_DESCRIPTION(DRV_DESC);
++MODULE_LICENSE("GPL");
++
++#define RIONET_DEFAULT_MSGLEVEL	0
++#define RIONET_DOORBELL_JOIN	0x1000
++#define RIONET_DOORBELL_LEAVE	0x1001
++
++#define RIONET_MAILBOX		0
++
++#define RIONET_TX_RING_SIZE	CONFIG_RIONET_TX_SIZE
++#define RIONET_RX_RING_SIZE	CONFIG_RIONET_RX_SIZE
++
++static LIST_HEAD(rionet_peers);
++
++struct rionet_private {
++	struct rio_mport *mport;
++	struct sk_buff *rx_skb[RIONET_RX_RING_SIZE];
++	struct sk_buff *tx_skb[RIONET_TX_RING_SIZE];
++	struct net_device_stats stats;
++	int rx_slot;
++	int tx_slot;
++	int tx_cnt;
++	int ack_slot;
++	spinlock_t lock;
++	spinlock_t tx_lock;
++	u32 msg_enable;
++};
++
++struct rionet_peer {
++	struct list_head node;
++	struct rio_dev *rdev;
++	struct resource *res;
++};
++
++static int rionet_check =3D 0;
++static int rionet_capable =3D 1;
++static struct net_device *sndev =3D NULL;
 +
 +/*
-+ * These interrupt-safe spinlocks protect all accesses to RIO
-+ * configuration space and doorbell access.
++ * This is a fast lookup table for for translating TX
++ * Ethernet packets into a destination RIO device. It
++ * could be made into a hash table to save memory depending
++ * on system trade-offs.
 + */
-+static spinlock_t rio_config_lock =3D SPIN_LOCK_UNLOCKED;
-+static spinlock_t rio_doorbell_lock =3D SPIN_LOCK_UNLOCKED;
++static struct rio_dev *rionet_active[RIO_MAX_ROUTE_ENTRIES];
 +
-+/*
-+ *  Wrappers for all RIO configuration access functions.  They just check
-+ *  alignment, do locking and call the low-level functions pointed to
-+ *  by rio_mport->ops.
-+ */
++#define is_rionet_capable(pef, src_ops, dst_ops)		\
++			((pef & RIO_PEF_INB_MBOX) &&		\
++			 (pef & RIO_PEF_INB_DOORBELL) &&	\
++			 (src_ops & RIO_SRC_OPS_DOORBELL) &&	\
++			 (dst_ops & RIO_DST_OPS_DOORBELL))
++#define dev_rionet_capable(dev) \
++	is_rionet_capable(dev->pef, dev->src_ops, dev->dst_ops)
 +
-+#define RIO_8_BAD 0
-+#define RIO_16_BAD (offset & 1)
-+#define RIO_32_BAD (offset & 3)
++#define RIONET_MAC_MATCH(x)	(*(u32 *)x =3D=3D 0x00010001)
++#define RIONET_GET_DESTID(x)	(*(u16 *)(x + 4))
 +
-+/**
-+ * RIO_LOP_READ - Generate rio_local_read_config_* functions
-+ * @size: Size of configuration space read (8, 16, 32 bits)
-+ * @type: C type of value argument
-+ * @len: Length of configuration space read (1, 2, 4 bytes)
-+ *
-+ * Generates rio_local_read_config_* functions used to access
-+ * configuration space registers on the local device.
-+ */
-+#define RIO_LOP_READ(size,type,len) \
-+int __rio_local_read_config_##size \
-+	(struct rio_mport *mport, u32 offset, type *value)		\
-+{									\
-+	int res;							\
-+	unsigned long flags;						\
-+	u32 data =3D 0;							\
-+	if (RIO_##size##_BAD) return RIO_BAD_SIZE;			\
-+	spin_lock_irqsave(&rio_config_lock, flags);			\
-+	res =3D mport->ops->lcread(mport->id, offset, len, &data);	\
-+	*value =3D (type)data;						\
-+	spin_unlock_irqrestore(&rio_config_lock, flags);		\
-+	return res;							\
-+}
-+
-+/**
-+ * RIO_LOP_WRITE - Generate rio_local_write_config_* functions
-+ * @size: Size of configuration space write (8, 16, 32 bits)
-+ * @type: C type of value argument
-+ * @len: Length of configuration space write (1, 2, 4 bytes)
-+ *
-+ * Generates rio_local_write_config_* functions used to access
-+ * configuration space registers on the local device.
-+ */
-+#define RIO_LOP_WRITE(size,type,len) \
-+int __rio_local_write_config_##size \
-+	(struct rio_mport *mport, u32 offset, type value)		\
-+{									\
-+	int res;							\
-+	unsigned long flags;						\
-+	if (RIO_##size##_BAD) return RIO_BAD_SIZE;			\
-+	spin_lock_irqsave(&rio_config_lock, flags);			\
-+	res =3D mport->ops->lcwrite(mport->id, offset, len, value);	\
-+	spin_unlock_irqrestore(&rio_config_lock, flags);		\
-+	return res;							\
-+}
-+
-+RIO_LOP_READ(8, u8, 1)
-+RIO_LOP_READ(16, u16, 2)
-+RIO_LOP_READ(32, u32, 4)
-+RIO_LOP_WRITE(8, u8, 1)
-+RIO_LOP_WRITE(16, u16, 2)
-+RIO_LOP_WRITE(32, u32, 4)
-+
-+EXPORT_SYMBOL_GPL(__rio_local_read_config_8);
-+EXPORT_SYMBOL_GPL(__rio_local_read_config_16);
-+EXPORT_SYMBOL_GPL(__rio_local_read_config_32);
-+EXPORT_SYMBOL_GPL(__rio_local_write_config_8);
-+EXPORT_SYMBOL_GPL(__rio_local_write_config_16);
-+EXPORT_SYMBOL_GPL(__rio_local_write_config_32);
-+
-+/**
-+ * RIO_OP_READ - Generate rio_mport_read_config_* functions
-+ * @size: Size of configuration space read (8, 16, 32 bits)
-+ * @type: C type of value argument
-+ * @len: Length of configuration space read (1, 2, 4 bytes)
-+ *
-+ * Generates rio_mport_read_config_* functions used to access
-+ * configuration space registers on the local device.
-+ */
-+#define RIO_OP_READ(size,type,len) \
-+int rio_mport_read_config_##size \
-+	(struct rio_mport *mport, u16 destid, u8 hopcount, u32 offset, type *valu=
-e)	\
-+{									\
-+	int res;							\
-+	unsigned long flags;						\
-+	u32 data =3D 0;							\
-+	if (RIO_##size##_BAD) return RIO_BAD_SIZE;			\
-+	spin_lock_irqsave(&rio_config_lock, flags);			\
-+	res =3D mport->ops->cread(mport->id, destid, hopcount, offset, len, &data=
-); \
-+	*value =3D (type)data;						\
-+	spin_unlock_irqrestore(&rio_config_lock, flags);		\
-+	return res;							\
-+}
-+
-+/**
-+ * RIO_OP_WRITE - Generate rio_mport_write_config_* functions
-+ * @size: Size of configuration space write (8, 16, 32 bits)
-+ * @type: C type of value argument
-+ * @len: Length of configuration space write (1, 2, 4 bytes)
-+ *
-+ * Generates rio_mport_write_config_* functions used to access
-+ * configuration space registers on the local device.
-+ */
-+#define RIO_OP_WRITE(size,type,len) \
-+int rio_mport_write_config_##size \
-+	(struct rio_mport *mport, u16 destid, u8 hopcount, u32 offset, type value=
-)	\
-+{									\
-+	int res;							\
-+	unsigned long flags;						\
-+	if (RIO_##size##_BAD) return RIO_BAD_SIZE;			\
-+	spin_lock_irqsave(&rio_config_lock, flags);			\
-+	res =3D mport->ops->cwrite(mport->id, destid, hopcount, offset, len, valu=
-e); \
-+	spin_unlock_irqrestore(&rio_config_lock, flags);		\
-+	return res;							\
-+}
-+
-+RIO_OP_READ(8, u8, 1)
-+RIO_OP_READ(16, u16, 2)
-+RIO_OP_READ(32, u32, 4)
-+RIO_OP_WRITE(8, u8, 1)
-+RIO_OP_WRITE(16, u16, 2)
-+RIO_OP_WRITE(32, u32, 4)
-+
-+EXPORT_SYMBOL_GPL(rio_mport_read_config_8);
-+EXPORT_SYMBOL_GPL(rio_mport_read_config_16);
-+EXPORT_SYMBOL_GPL(rio_mport_read_config_32);
-+EXPORT_SYMBOL_GPL(rio_mport_write_config_8);
-+EXPORT_SYMBOL_GPL(rio_mport_write_config_16);
-+EXPORT_SYMBOL_GPL(rio_mport_write_config_32);
-+
-+/**
-+ * rio_mport_send_doorbell - Send a doorbell message
-+ *
-+ * @mport: RIO master port
-+ * @destid: RIO device destination ID
-+ * @data: Doorbell message data
-+ *
-+ * Send a doorbell message to a RIO device. The doorbell message
-+ * has a 16-bit info field provided by the data argument.
-+ */
-+int rio_mport_send_doorbell(struct rio_mport *mport, u16 destid, u16 data)
++static struct net_device_stats *rionet_stats(struct net_device *ndev)
 +{
-+	int res;
++	struct rionet_private *rnet =3D ndev->priv;
++	return &rnet->stats;
++}
++
++static int rionet_rx_clean(struct net_device *ndev)
++{
++	int i;
++	int error =3D 0;
++	struct rionet_private *rnet =3D ndev->priv;
++	void *data;
++
++	i =3D rnet->rx_slot;
++
++	do {
++		if (!rnet->rx_skb[i]) {
++			rnet->stats.rx_dropped++;
++			continue;
++		}
++
++		if (!(data =3D rio_get_inb_message(rnet->mport, RIONET_MAILBOX)))
++			break;
++
++		rnet->rx_skb[i]->data =3D data;
++		skb_put(rnet->rx_skb[i], RIO_MAX_MSG_SIZE);
++		rnet->rx_skb[i]->dev =3D ndev;
++		rnet->rx_skb[i]->protocol =3D
++		    eth_type_trans(rnet->rx_skb[i], ndev);
++		error =3D netif_rx(rnet->rx_skb[i]);
++
++		if (error =3D=3D NET_RX_DROP) {
++			rnet->stats.rx_dropped++;
++		} else if (error =3D=3D NET_RX_BAD) {
++			if (netif_msg_rx_err(rnet))
++				printk(KERN_WARNING "%s: bad rx packet\n",
++				       DRV_NAME);
++			rnet->stats.rx_errors++;
++		} else {
++			rnet->stats.rx_packets++;
++			rnet->stats.rx_bytes +=3D RIO_MAX_MSG_SIZE;
++		}
++
++	} while ((i =3D (i + 1) % RIONET_RX_RING_SIZE) !=3D rnet->rx_slot);
++
++	return i;
++}
++
++static void rionet_rx_fill(struct net_device *ndev, int end)
++{
++	int i;
++	struct rionet_private *rnet =3D ndev->priv;
++
++	i =3D rnet->rx_slot;
++	do {
++		rnet->rx_skb[i] =3D dev_alloc_skb(RIO_MAX_MSG_SIZE);
++
++		if (!rnet->rx_skb[i])
++			break;
++
++		rio_add_inb_buffer(rnet->mport, RIONET_MAILBOX,
++				   rnet->rx_skb[i]->data);
++	} while ((i =3D (i + 1) % RIONET_RX_RING_SIZE) !=3D end);
++
++	rnet->rx_slot =3D i;
++}
++
++static int rionet_queue_tx_msg(struct sk_buff *skb, struct net_device *nde=
+v,
++			       struct rio_dev *rdev)
++{
++	struct rionet_private *rnet =3D ndev->priv;
++
++	rio_add_outb_message(rnet->mport, rdev, 0, skb->data, skb->len);
++	rnet->tx_skb[rnet->tx_slot] =3D skb;
++
++	rnet->stats.tx_packets++;
++	rnet->stats.tx_bytes +=3D skb->len;
++
++	if (++rnet->tx_cnt =3D=3D RIONET_TX_RING_SIZE)
++		netif_stop_queue(ndev);
++
++	if (++rnet->tx_slot =3D=3D RIONET_TX_RING_SIZE)
++		rnet->tx_slot =3D 0;
++
++	if (netif_msg_tx_queued(rnet))
++		printk(KERN_INFO "%s: queued skb %8.8x len %8.8x\n", DRV_NAME,
++		       (u32) skb, skb->len);
++
++	return 0;
++}
++
++static int rionet_start_xmit(struct sk_buff *skb, struct net_device *ndev)
++{
++	int i;
++	struct rionet_private *rnet =3D ndev->priv;
++	struct ethhdr *eth =3D (struct ethhdr *)skb->data;
++	u16 destid;
 +	unsigned long flags;
 +
-+	spin_lock_irqsave(&rio_doorbell_lock, flags);
-+	res =3D mport->ops->dsend(mport->id, destid, data);
-+	spin_unlock_irqrestore(&rio_doorbell_lock, flags);
-+
-+	return res;
-+}
-+
-+EXPORT_SYMBOL_GPL(rio_mport_send_doorbell);
-diff --git a/drivers/rio/rio-driver.c b/drivers/rio/rio-driver.c
-new file mode 100644
---- /dev/null
-+++ b/drivers/rio/rio-driver.c
-@@ -0,0 +1,229 @@
-+/*
-+ * RapidIO driver support
-+ *
-+ * Copyright 2005 MontaVista Software, Inc.
-+ * Matt Porter <mporter@kernel.crashing.org>
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/rio.h>
-+#include <linux/rio_ids.h>
-+
-+#include "rio.h"
-+
-+/**
-+ *  rio_match_device - Tell if a RIO device has a matching RIO device id s=
-tructure
-+ *  @id: the RIO device id structure to match against
-+ *  @rdev: the RIO device structure to match against
-+ *
-+ *  Used from driver probe and bus matching to check whether a RIO device
-+ *  matches a device id structure provided by a RIO driver. Returns the
-+ *  matching &struct rio_device_id or %NULL if there is no match.
-+ */
-+static const struct rio_device_id *rio_match_device(const struct rio_devic=
-e_id
-+						    *id,
-+						    const struct rio_dev *rdev)
-+{
-+	while (id->vid || id->asm_vid) {
-+		if (((id->vid =3D=3D RIO_ANY_ID) || (id->vid =3D=3D rdev->vid)) &&
-+		    ((id->did =3D=3D RIO_ANY_ID) || (id->did =3D=3D rdev->did)) &&
-+		    ((id->asm_vid =3D=3D RIO_ANY_ID)
-+		     || (id->asm_vid =3D=3D rdev->asm_vid))
-+		    && ((id->asm_did =3D=3D RIO_ANY_ID)
-+			|| (id->asm_did =3D=3D rdev->asm_did)))
-+			return id;
-+		id++;
++	local_irq_save(flags);
++	if (!spin_trylock(&rnet->tx_lock)) {
++		local_irq_restore(flags);
++		return NETDEV_TX_LOCKED;
 +	}
-+	return NULL;
-+}
-+
-+/**
-+ * rio_dev_get - Increments the reference count of the RIO device structure
-+ *
-+ * @rdev: RIO device being referenced
-+ *
-+ * Each live reference to a device should be refcounted.
-+ *
-+ * Drivers for RIO devices should normally record such references in
-+ * their probe() methods, when they bind to a device, and release
-+ * them by calling rio_dev_put(), in their disconnect() methods.
-+ */
-+struct rio_dev *rio_dev_get(struct rio_dev *rdev)
-+{
-+	if (rdev)
-+		get_device(&rdev->dev);
-+
-+	return rdev;
-+}
-+
-+/**
-+ * rio_dev_put - Release a use of the RIO device structure
-+ *
-+ * @rdev: RIO device being disconnected
-+ *
-+ * Must be called when a user of a device is finished with it.
-+ * When the last user of the device calls this function, the
-+ * memory of the device is freed.
-+ */
-+void rio_dev_put(struct rio_dev *rdev)
-+{
-+	if (rdev)
-+		put_device(&rdev->dev);
-+}
-+
-+/**
-+ *  rio_device_probe - Tell if a RIO device structure has a matching RIO
-+ *                     device id structure
-+ *  @id: the RIO device id structure to match against
-+ *  @dev: the RIO device structure to match against
-+ *
-+ * return 0 and set rio_dev->driver when drv claims rio_dev, else error
-+ */
-+static int rio_device_probe(struct device *dev)
-+{
-+	struct rio_driver *rdrv =3D to_rio_driver(dev->driver);
-+	struct rio_dev *rdev =3D to_rio_dev(dev);
-+	int error =3D -ENODEV;
-+	const struct rio_device_id *id;
-+
-+	if (!rdev->driver && rdrv->probe) {
-+		if (!rdrv->id_table)
-+			return error;
-+		id =3D rio_match_device(rdrv->id_table, rdev);
-+		rio_dev_get(rdev);
-+		if (id)
-+			error =3D rdrv->probe(rdev, id);
-+		if (error >=3D 0) {
-+			rdev->driver =3D rdrv;
-+			error =3D 0;
-+			rio_dev_put(rdev);
-+		}
-+	}
-+	return error;
-+}
-+
-+/**
-+ *  rio_device_remove - Remove a RIO device from the system
-+ *
-+ *  @dev: the RIO device structure to match against
-+ *
-+ * Remove a RIO device from the system. If it has an associated
-+ * driver, then run the driver remove() method.  Then update
-+ * the reference count.
-+ */
-+static int rio_device_remove(struct device *dev)
-+{
-+	struct rio_dev *rdev =3D to_rio_dev(dev);
-+	struct rio_driver *rdrv =3D rdev->driver;
-+
-+	if (rdrv) {
-+		if (rdrv->remove)
-+			rdrv->remove(rdev);
-+		rdev->driver =3D NULL;
++=09
++	if ((rnet->tx_cnt + 1) > RIONET_TX_RING_SIZE) {
++		netif_stop_queue(ndev);
++		spin_unlock_irqrestore(&rnet->tx_lock, flags);
++		printk(KERN_ERR "%s: BUG! Tx Ring full when queue awake!\n",
++		       ndev->name);
++		return NETDEV_TX_BUSY;
 +	}
 +
-+	rio_dev_put(rdev);
++	if (eth->h_dest[0] & 0x01) {
++		/*
++		 * XXX Need to delay queuing if ring max is reached,
++		 * flush additional packets in tx_event() before
++		 * awakening the queue. We can easily exceed ring
++		 * size with a large number of nodes or even a
++		 * small number where the ring is relatively full
++		 * on entrance to hard_start_xmit.
++		 */
++		for (i =3D 0; i < RIO_MAX_ROUTE_ENTRIES; i++)
++			if (rionet_active[i])
++				rionet_queue_tx_msg(skb, ndev,
++						    rionet_active[i]);
++	} else if (RIONET_MAC_MATCH(eth->h_dest)) {
++		destid =3D RIONET_GET_DESTID(eth->h_dest);
++		if (rionet_active[destid])
++			rionet_queue_tx_msg(skb, ndev, rionet_active[destid]);
++	}
++
++	spin_unlock_irqrestore(&rnet->tx_lock, flags);
 +
 +	return 0;
 +}
 +
-+/**
-+ *  rio_register_driver - register a new RIO driver
-+ *  @rdrv: the RIO driver structure to register
-+ *
-+ *  Adds a &struct rio_driver to the list of registered drivers
-+ *  Returns a negative value on error, otherwise 0. If no error
-+ *  occurred, the driver remains registered even if no device
-+ *  was claimed during registration.
-+ */
-+int rio_register_driver(struct rio_driver *rdrv)
++static int rionet_set_mac_address(struct net_device *ndev, void *p)
 +{
-+	/* initialize common driver fields */
-+	rdrv->driver.name =3D rdrv->name;
-+	rdrv->driver.bus =3D &rio_bus_type;
-+	rdrv->driver.probe =3D rio_device_probe;
-+	rdrv->driver.remove =3D rio_device_remove;
++	struct sockaddr *addr =3D p;
 +
-+	/* register with core */
-+	return driver_register(&rdrv->driver);
++	if (!is_valid_ether_addr(addr->sa_data))
++		return -EADDRNOTAVAIL;
++
++	memcpy(ndev->dev_addr, addr->sa_data, ndev->addr_len);
++
++	return 0;
 +}
 +
-+/**
-+ *  rio_unregister_driver - unregister a RIO driver
-+ *  @rdrv: the RIO driver structure to unregister
-+ *
-+ *  Deletes the &struct rio_driver from the list of registered RIO
-+ *  drivers, gives it a chance to clean up by calling its remove()
-+ *  function for each device it was responsible for, and marks those
-+ *  devices as driverless.
-+ */
-+void rio_unregister_driver(struct rio_driver *rdrv)
++static void rionet_dbell_event(struct rio_mport *mport, u16 sid, u16 tid,
++			       u16 info)
 +{
-+	driver_unregister(&rdrv->driver);
++	struct net_device *ndev =3D sndev;
++	struct rionet_private *rnet =3D ndev->priv;
++	struct rionet_peer *peer;
++
++	if (netif_msg_intr(rnet))
++		printk(KERN_INFO "%s: doorbell sid %4.4x tid %4.4x info %4.4x",
++		       DRV_NAME, sid, tid, info);
++	if (info =3D=3D RIONET_DOORBELL_JOIN) {
++		if (!rionet_active[sid]) {
++			list_for_each_entry(peer, &rionet_peers, node) {
++				if (peer->rdev->destid =3D=3D sid)
++					rionet_active[sid] =3D peer->rdev;
++			}
++			rio_mport_send_doorbell(mport, sid,
++						RIONET_DOORBELL_JOIN);
++		}
++	} else if (info =3D=3D RIONET_DOORBELL_LEAVE) {
++		rionet_active[sid] =3D NULL;
++	} else {
++		if (netif_msg_intr(rnet))
++			printk(KERN_WARNING "%s: unhandled doorbell\n",
++			       DRV_NAME);
++	}
 +}
 +
-+/**
-+ *  rio_match_bus - Tell if a RIO device structure has a matching RIO
-+ *                  driver device id structure
-+ *  @dev: the standard device structure to match against
-+ *  @drv: the standard driver structure containing the ids to match against
-+ *
-+ *  Used by a driver to check whether a RIO device present in the
-+ *  system is in its list of supported devices. Returns 1 if
-+ *  there is a matching &struct rio_device_id or 0 if there is
-+ *  no match.
-+ */
-+static int rio_match_bus(struct device *dev, struct device_driver *drv)
++static void rionet_inb_msg_event(struct rio_mport *mport, int mbox, int sl=
+ot)
 +{
-+	struct rio_dev *rdev =3D to_rio_dev(dev);
-+	struct rio_driver *rdrv =3D to_rio_driver(drv);
-+	const struct rio_device_id *id =3D rdrv->id_table;
-+	const struct rio_device_id *found_id;
++	int n;
++	struct net_device *ndev =3D sndev;
++	struct rionet_private *rnet =3D (struct rionet_private *)ndev->priv;
 +
-+	if (!id)
++	if (netif_msg_intr(rnet))
++		printk(KERN_INFO "%s: inbound message event, mbox %d slot %d\n",
++		       DRV_NAME, mbox, slot);
++
++	spin_lock(&rnet->lock);
++	if ((n =3D rionet_rx_clean(ndev)) !=3D rnet->rx_slot)
++		rionet_rx_fill(ndev, n);
++	spin_unlock(&rnet->lock);
++}
++
++static void rionet_outb_msg_event(struct rio_mport *mport, int mbox, int s=
+lot)
++{
++	struct net_device *ndev =3D sndev;
++	struct rionet_private *rnet =3D ndev->priv;
++
++	spin_lock(&rnet->lock);
++
++	if (netif_msg_intr(rnet))
++		printk(KERN_INFO
++		       "%s: outbound message event, mbox %d slot %d\n",
++		       DRV_NAME, mbox, slot);
++
++	while (rnet->tx_cnt && (rnet->ack_slot !=3D slot)) {
++		/* dma unmap single */
++		dev_kfree_skb_irq(rnet->tx_skb[rnet->ack_slot]);
++		rnet->tx_skb[rnet->ack_slot] =3D NULL;
++		if (++rnet->ack_slot =3D=3D RIONET_TX_RING_SIZE)
++			rnet->ack_slot =3D 0;
++		rnet->tx_cnt--;
++	}
++
++	if (rnet->tx_cnt < RIONET_TX_RING_SIZE)
++		netif_wake_queue(ndev);
++
++	spin_unlock(&rnet->lock);
++}
++
++static int rionet_open(struct net_device *ndev)
++{
++	int i, rc =3D 0;
++	struct rionet_peer *peer, *tmp;
++	u32 pwdcsr;
++	struct rionet_private *rnet =3D ndev->priv;
++
++	if (netif_msg_ifup(rnet))
++		printk(KERN_INFO "%s: open\n", DRV_NAME);
++
++	if ((rc =3D rio_request_inb_dbell(rnet->mport,
++					RIONET_DOORBELL_JOIN,
++					RIONET_DOORBELL_LEAVE,
++					rionet_dbell_event)) < 0)
 +		goto out;
 +
-+	found_id =3D rio_match_device(id, rdev);
++	if ((rc =3D rio_request_inb_mbox(rnet->mport,
++				       RIONET_MAILBOX,
++				       RIONET_RX_RING_SIZE,
++				       rionet_inb_msg_event)) < 0)
++		goto out;
 +
-+	if (found_id)
-+		return 1;
++	if ((rc =3D rio_request_outb_mbox(rnet->mport,
++					RIONET_MAILBOX,
++					RIONET_TX_RING_SIZE,
++					rionet_outb_msg_event)) < 0)
++		goto out;
 +
-+      out:return 0;
++	/* Initialize inbound message ring */
++	for (i =3D 0; i < RIONET_RX_RING_SIZE; i++)
++		rnet->rx_skb[i] =3D NULL;
++	rnet->rx_slot =3D 0;
++	rionet_rx_fill(ndev, 0);
++
++	rnet->tx_slot =3D 0;
++	rnet->tx_cnt =3D 0;
++	rnet->ack_slot =3D 0;
++
++	netif_carrier_on(ndev);
++	netif_start_queue(ndev);
++
++	list_for_each_entry_safe(peer, tmp, &rionet_peers, node) {
++		if (!(peer->res =3D rio_request_outb_dbell(peer->rdev,
++							 RIONET_DOORBELL_JOIN,
++							 RIONET_DOORBELL_LEAVE)))
++		{
++			printk(KERN_ERR "%s: error requesting doorbells\n",
++			       DRV_NAME);
++			continue;
++		}
++
++		/*
++		 * If device has initialized inbound doorbells,
++		 * send a join message
++		 */
++		rio_read_config_32(peer->rdev, RIO_WRITE_PORT_CSR, &pwdcsr);
++		if (pwdcsr & RIO_DOORBELL_AVAIL)
++			rio_send_doorbell(peer->rdev, RIONET_DOORBELL_JOIN);
++	}
++
++      out:
++	return rc;
 +}
 +
-+static struct device rio_bus =3D {
-+	.bus_id =3D "rapidio",
-+};
-+
-+struct bus_type rio_bus_type =3D {
-+	.name =3D "rapidio",
-+	.match =3D rio_match_bus,
-+	.dev_attrs =3D rio_dev_attrs
-+};
-+
-+/**
-+ *  rio_bus_init - Register the RapidIO bus with the device model
-+ *
-+ *  Registers the RIO bus device and RIO bus type with the Linux
-+ *  device model.
-+ */
-+static int __init rio_bus_init(void)
++static int rionet_close(struct net_device *ndev)
 +{
-+	if (device_register(&rio_bus) < 0)
-+		printk("RIO: failed to register RIO bus device\n");
-+	return bus_register(&rio_bus_type);
-+}
-+
-+postcore_initcall(rio_bus_init);
-+
-+EXPORT_SYMBOL_GPL(rio_register_driver);
-+EXPORT_SYMBOL_GPL(rio_unregister_driver);
-+EXPORT_SYMBOL_GPL(rio_bus_type);
-+EXPORT_SYMBOL_GPL(rio_dev_get);
-+EXPORT_SYMBOL_GPL(rio_dev_put);
-diff --git a/drivers/rio/rio-sysfs.c b/drivers/rio/rio-sysfs.c
-new file mode 100644
---- /dev/null
-+++ b/drivers/rio/rio-sysfs.c
-@@ -0,0 +1,230 @@
-+/*
-+ * RapidIO sysfs attributes and support
-+ *
-+ * Copyright 2005 MontaVista Software, Inc.
-+ * Matt Porter <mporter@kernel.crashing.org>
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/config.h>
-+#include <linux/kernel.h>
-+#include <linux/rio.h>
-+#include <linux/rio_drv.h>
-+#include <linux/stat.h>
-+
-+#include "rio.h"
-+
-+/* Sysfs support */
-+#define rio_config_attr(field, format_string)					\
-+static ssize_t								\
-+	field##_show(struct device *dev, char *buf)			\
-+{									\
-+	struct rio_dev *rdev =3D to_rio_dev(dev);				\
-+									\
-+	return sprintf(buf, format_string, rdev->field);		\
-+}									\
-+
-+rio_config_attr(did, "0x%04x\n");
-+rio_config_attr(vid, "0x%04x\n");
-+rio_config_attr(device_rev, "0x%08x\n");
-+rio_config_attr(asm_did, "0x%04x\n");
-+rio_config_attr(asm_vid, "0x%04x\n");
-+rio_config_attr(asm_rev, "0x%04x\n");
-+
-+static ssize_t routes_show(struct device *dev, char *buf)
-+{
-+	struct rio_dev *rdev =3D to_rio_dev(dev);
-+	char *str =3D buf;
++	struct rionet_private *rnet =3D (struct rionet_private *)ndev->priv;
++	struct rionet_peer *peer, *tmp;
 +	int i;
 +
-+	if (!rdev->rswitch)
-+		goto out;
++	if (netif_msg_ifup(rnet))
++		printk(KERN_INFO "%s: close\n", DRV_NAME);
 +
-+	for (i =3D 0; i < RIO_MAX_ROUTE_ENTRIES; i++) {
-+		if (rdev->rswitch->route_table[i] =3D=3D RIO_INVALID_ROUTE)
-+			continue;
-+		str +=3D
-+		    sprintf(str, "%04x %02x\n", i,
-+			    rdev->rswitch->route_table[i]);
++	netif_stop_queue(ndev);
++	netif_carrier_off(ndev);
++
++	for (i =3D 0; i < RIONET_RX_RING_SIZE; i++)
++		if (rnet->rx_skb[i])
++			kfree_skb(rnet->rx_skb[i]);
++
++	list_for_each_entry_safe(peer, tmp, &rionet_peers, node) {
++		if (rionet_active[peer->rdev->destid]) {
++			rio_send_doorbell(peer->rdev, RIONET_DOORBELL_LEAVE);
++			rionet_active[peer->rdev->destid] =3D NULL;
++		}
++		rio_release_outb_dbell(peer->rdev, peer->res);
 +	}
 +
-+      out:
-+	return (str - buf);
-+}
-+
-+struct device_attribute rio_dev_attrs[] =3D {
-+	__ATTR_RO(did),
-+	__ATTR_RO(vid),
-+	__ATTR_RO(device_rev),
-+	__ATTR_RO(asm_did),
-+	__ATTR_RO(asm_vid),
-+	__ATTR_RO(asm_rev),
-+	__ATTR_RO(routes),
-+	__ATTR_NULL,
-+};
-+
-+static ssize_t
-+rio_read_config(struct kobject *kobj, char *buf, loff_t off, size_t count)
-+{
-+	struct rio_dev *dev =3D
-+	    to_rio_dev(container_of(kobj, struct device, kobj));
-+	unsigned int size =3D 0x100;
-+	loff_t init_off =3D off;
-+	u8 *data =3D (u8 *) buf;
-+
-+	/* Several chips lock up trying to read undefined config space */
-+	if (capable(CAP_SYS_ADMIN))
-+		size =3D 0x200000;
-+
-+	if (off > size)
-+		return 0;
-+	if (off + count > size) {
-+		size -=3D off;
-+		count =3D size;
-+	} else {
-+		size =3D count;
-+	}
-+
-+	if ((off & 1) && size) {
-+		u8 val;
-+		rio_read_config_8(dev, off, &val);
-+		data[off - init_off] =3D val;
-+		off++;
-+		size--;
-+	}
-+
-+	if ((off & 3) && size > 2) {
-+		u16 val;
-+		rio_read_config_16(dev, off, &val);
-+		data[off - init_off] =3D (val >> 8) & 0xff;
-+		data[off - init_off + 1] =3D val & 0xff;
-+		off +=3D 2;
-+		size -=3D 2;
-+	}
-+
-+	while (size > 3) {
-+		u32 val;
-+		rio_read_config_32(dev, off, &val);
-+		data[off - init_off] =3D (val >> 24) & 0xff;
-+		data[off - init_off + 1] =3D (val >> 16) & 0xff;
-+		data[off - init_off + 2] =3D (val >> 8) & 0xff;
-+		data[off - init_off + 3] =3D val & 0xff;
-+		off +=3D 4;
-+		size -=3D 4;
-+	}
-+
-+	if (size >=3D 2) {
-+		u16 val;
-+		rio_read_config_16(dev, off, &val);
-+		data[off - init_off] =3D (val >> 8) & 0xff;
-+		data[off - init_off + 1] =3D val & 0xff;
-+		off +=3D 2;
-+		size -=3D 2;
-+	}
-+
-+	if (size > 0) {
-+		u8 val;
-+		rio_read_config_8(dev, off, &val);
-+		data[off - init_off] =3D val;
-+		off++;
-+		--size;
-+	}
-+
-+	return count;
-+}
-+
-+static ssize_t
-+rio_write_config(struct kobject *kobj, char *buf, loff_t off, size_t count)
-+{
-+	struct rio_dev *dev =3D
-+	    to_rio_dev(container_of(kobj, struct device, kobj));
-+	unsigned int size =3D count;
-+	loff_t init_off =3D off;
-+	u8 *data =3D (u8 *) buf;
-+
-+	if (off > 0x200000)
-+		return 0;
-+	if (off + count > 0x200000) {
-+		size =3D 0x200000 - off;
-+		count =3D size;
-+	}
-+
-+	if ((off & 1) && size) {
-+		rio_write_config_8(dev, off, data[off - init_off]);
-+		off++;
-+		size--;
-+	}
-+
-+	if ((off & 3) && (size > 2)) {
-+		u16 val =3D data[off - init_off + 1];
-+		val |=3D (u16) data[off - init_off] << 8;
-+		rio_write_config_16(dev, off, val);
-+		off +=3D 2;
-+		size -=3D 2;
-+	}
-+
-+	while (size > 3) {
-+		u32 val =3D data[off - init_off + 3];
-+		val |=3D (u32) data[off - init_off + 2] << 8;
-+		val |=3D (u32) data[off - init_off + 1] << 16;
-+		val |=3D (u32) data[off - init_off] << 24;
-+		rio_write_config_32(dev, off, val);
-+		off +=3D 4;
-+		size -=3D 4;
-+	}
-+
-+	if (size >=3D 2) {
-+		u16 val =3D data[off - init_off + 1];
-+		val |=3D (u16) data[off - init_off] << 8;
-+		rio_write_config_16(dev, off, val);
-+		off +=3D 2;
-+		size -=3D 2;
-+	}
-+
-+	if (size) {
-+		rio_write_config_8(dev, off, data[off - init_off]);
-+		off++;
-+		--size;
-+	}
-+
-+	return count;
-+}
-+
-+static struct bin_attribute rio_config_attr =3D {
-+	.attr =3D {
-+		 .name =3D "config",
-+		 .mode =3D S_IRUGO | S_IWUSR,
-+		 .owner =3D THIS_MODULE,
-+		 },
-+	.size =3D 0x200000,
-+	.read =3D rio_read_config,
-+	.write =3D rio_write_config,
-+};
-+
-+/**
-+ * rio_create_sysfs_dev_files - create RIO specific sysfs files
-+ * @rdev: device whose entries should be created
-+ *
-+ * Create files when @rdev is added to sysfs.
-+ */
-+int rio_create_sysfs_dev_files(struct rio_dev *rdev)
-+{
-+	sysfs_create_bin_file(&rdev->dev.kobj, &rio_config_attr);
++	rio_release_inb_dbell(rnet->mport, RIONET_DOORBELL_JOIN,
++			      RIONET_DOORBELL_LEAVE);
++	rio_release_inb_mbox(rnet->mport, RIONET_MAILBOX);
++	rio_release_outb_mbox(rnet->mport, RIONET_MAILBOX);
 +
 +	return 0;
 +}
 +
-+/**
-+ * rio_remove_sysfs_dev_files - cleanup RIO specific sysfs files
-+ * @rdev: device whose entries we should free
-+ *
-+ * Cleanup when @rdev is removed from sysfs.
-+ */
-+void rio_remove_sysfs_dev_files(struct rio_dev *rdev)
++static void rionet_remove(struct rio_dev *rdev)
 +{
-+	sysfs_remove_bin_file(&rdev->dev.kobj, &rio_config_attr);
++	struct net_device *ndev =3D NULL;
++	struct rionet_peer *peer, *tmp;
++
++	unregister_netdev(ndev);
++	kfree(ndev);
++
++	list_for_each_entry_safe(peer, tmp, &rionet_peers, node) {
++		list_del(&peer->node);
++		kfree(peer);
++	}
 +}
-diff --git a/drivers/rio/rio.c b/drivers/rio/rio.c
-new file mode 100644
---- /dev/null
-+++ b/drivers/rio/rio.c
-@@ -0,0 +1,503 @@
++
++static void rionet_get_drvinfo(struct net_device *ndev,
++			       struct ethtool_drvinfo *info)
++{
++	struct rionet_private *rnet =3D ndev->priv;
++
++	strcpy(info->driver, DRV_NAME);
++	strcpy(info->version, DRV_VERSION);
++	strcpy(info->fw_version, "n/a");
++	sprintf(info->bus_info, "RIO master port %d", rnet->mport->id);
++}
++
++static u32 rionet_get_msglevel(struct net_device *ndev)
++{
++	struct rionet_private *rnet =3D ndev->priv;
++
++	return rnet->msg_enable;
++}
++
++static void rionet_set_msglevel(struct net_device *ndev, u32 value)
++{
++	struct rionet_private *rnet =3D ndev->priv;
++
++	rnet->msg_enable =3D value;
++}
++
++static struct ethtool_ops rionet_ethtool_ops =3D {
++	.get_drvinfo =3D rionet_get_drvinfo,
++	.get_msglevel =3D rionet_get_msglevel,
++	.set_msglevel =3D rionet_set_msglevel,
++	.get_link =3D ethtool_op_get_link,
++};
++
++static int rionet_setup_netdev(struct rio_mport *mport)
++{
++	int rc =3D 0;
++	struct net_device *ndev =3D NULL;
++	struct rionet_private *rnet;
++	u16 device_id;
++
++	/* Allocate our net_device structure */
++	ndev =3D alloc_etherdev(sizeof(struct rionet_private));
++	if (ndev =3D=3D NULL) {
++		printk(KERN_INFO "%s: could not allocate ethernet device.\n",
++		       DRV_NAME);
++		rc =3D -ENOMEM;
++		goto out;
++	}
++
++	/*
++	 * XXX hack, store point a static at ndev so we can get it...
++	 * Perhaps need an array of these that the handler can
++	 * index via the mbox number.
++	 */
++	sndev =3D ndev;
++
++	/* Set up private area */
++	rnet =3D (struct rionet_private *)ndev->priv;
++	rnet->mport =3D mport;
++
++	/* Set the default MAC address */
++	device_id =3D rio_local_get_device_id(mport);
++	ndev->dev_addr[0] =3D 0x00;
++	ndev->dev_addr[1] =3D 0x01;
++	ndev->dev_addr[2] =3D 0x00;
++	ndev->dev_addr[3] =3D 0x01;
++	ndev->dev_addr[4] =3D device_id >> 8;
++	ndev->dev_addr[5] =3D device_id & 0xff;
++
++	/* Fill in the driver function table */
++	ndev->open =3D &rionet_open;
++	ndev->hard_start_xmit =3D &rionet_start_xmit;
++	ndev->stop =3D &rionet_close;
++	ndev->get_stats =3D &rionet_stats;
++	ndev->set_mac_address =3D &rionet_set_mac_address;
++	ndev->mtu =3D RIO_MAX_MSG_SIZE - 14;
++	ndev->features =3D NETIF_F_LLTX;
++	SET_ETHTOOL_OPS(ndev, &rionet_ethtool_ops);
++
++	SET_MODULE_OWNER(ndev);
++
++	spin_lock_init(&rnet->lock);
++	spin_lock_init(&rnet->tx_lock);
++
++	rnet->msg_enable =3D RIONET_DEFAULT_MSGLEVEL;
++
++	rc =3D register_netdev(ndev);
++	if (rc !=3D 0)
++		goto out;
++
++	printk("%s: %s %s Version %s, MAC %02x:%02x:%02x:%02x:%02x:%02x\n",
++	       ndev->name,
++	       DRV_NAME,
++	       DRV_DESC,
++	       DRV_VERSION,
++	       ndev->dev_addr[0], ndev->dev_addr[1], ndev->dev_addr[2],
++	       ndev->dev_addr[3], ndev->dev_addr[4], ndev->dev_addr[5]);
++
++      out:
++	return rc;
++}
++
 +/*
-+ * RapidIO interconnect services
-+ * (RapidIO Interconnect Specification, http://www.rapidio.org)
-+ *
-+ * Copyright 2005 MontaVista Software, Inc.
-+ * Matt Porter <mporter@kernel.crashing.org>
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
++ * XXX Make multi-net safe
 + */
-+
-+#include <linux/config.h>
-+#include <linux/types.h>
-+#include <linux/kernel.h>
-+
-+#include <linux/delay.h>
-+#include <linux/init.h>
-+#include <linux/rio.h>
-+#include <linux/rio_drv.h>
-+#include <linux/rio_ids.h>
-+#include <linux/rio_regs.h>
-+#include <linux/module.h>
-+#include <linux/spinlock.h>
-+
-+#include "rio.h"
-+
-+static LIST_HEAD(rio_mports);
-+
-+/**
-+ * rio_local_get_device_id - Get the base/extended device id for a port
-+ * @port: RIO master port from which to get the deviceid
-+ *
-+ * Reads the base/extended device id from the local device
-+ * implementing the master port. Returns the 8/16-bit device
-+ * id.
-+ */
-+u16 rio_local_get_device_id(struct rio_mport *port)
++static int rionet_probe(struct rio_dev *rdev, const struct rio_device_id *=
+id)
 +{
-+	u32 result;
++	int rc =3D -ENODEV;
++	u32 lpef, lsrc_ops, ldst_ops;
++	struct rionet_peer *peer;
 +
-+	rio_local_read_config_32(port, RIO_DID_CSR, &result);
-+
-+	return (RIO_GET_DID(result));
-+}
-+
-+/**
-+ * rio_request_inb_mbox - request inbound mailbox service
-+ * @mport: RIO master port from which to allocate the mailbox resource
-+ * @mbox: Mailbox number to claim
-+ * @entries: Number of entries in inbound mailbox queue=20
-+ * @minb: Callback to execute when inbound message is received
-+ *
-+ * Requests ownership of an inbound mailbox resource and binds
-+ * a callback function to the resource. Returns %0 on success.
-+ */
-+int rio_request_inb_mbox(struct rio_mport *mport,
-+			 int mbox,
-+			 int entries,
-+			 void (*minb) (struct rio_mport * mport, int mbox,
-+				       int slot))
-+{
-+	int rc =3D 0;
-+
-+	struct resource *res =3D kmalloc(sizeof(struct resource), GFP_KERNEL);
-+
-+	if (res) {
-+		rio_init_mbox_res(res, mbox, mbox);
-+
-+		/* Make sure this mailbox isn't in use */
-+		if ((rc =3D
-+		     request_resource(&mport->riores[RIO_INB_MBOX_RESOURCE],
-+				      res)) < 0) {
-+			kfree(res);
-+			goto out;
-+		}
-+
-+		mport->inb_msg[mbox].res =3D res;
-+
-+		/* Hook the inbound message callback */
-+		mport->inb_msg[mbox].mcback =3D minb;
-+
-+		rc =3D rio_open_inb_mbox(mport, mbox, entries);
-+	} else
-+		rc =3D -ENOMEM;
-+
-+      out:
-+	return rc;
-+}
-+
-+/**
-+ * rio_release_inb_mbox - release inbound mailbox message service
-+ * @mport: RIO master port from which to release the mailbox resource
-+ * @mbox: Mailbox number to release
-+ *
-+ * Releases ownership of an inbound mailbox resource. Returns 0
-+ * if the request has been satisfied.
-+ */
-+int rio_release_inb_mbox(struct rio_mport *mport, int mbox)
-+{
-+	rio_close_inb_mbox(mport, mbox);
-+
-+	/* Release the mailbox resource */
-+	return release_resource(mport->inb_msg[mbox].res);
-+}
-+
-+/**
-+ * rio_request_outb_mbox - request outbound mailbox service
-+ * @mport: RIO master port from which to allocate the mailbox resource
-+ * @mbox: Mailbox number to claim
-+ * @entries: Number of entries in outbound mailbox queue=20
-+ * @moutb: Callback to execute when outbound message is sent
-+ *
-+ * Requests ownership of an outbound mailbox resource and binds
-+ * a callback function to the resource. Returns 0 on success.
-+ */
-+int rio_request_outb_mbox(struct rio_mport *mport,
-+			  int mbox,
-+			  int entries,
-+			  void (*moutb) (struct rio_mport * mport, int mbox,
-+					 int slot))
-+{
-+	int rc =3D 0;
-+
-+	struct resource *res =3D kmalloc(sizeof(struct resource), GFP_KERNEL);
-+
-+	if (res) {
-+		rio_init_mbox_res(res, mbox, mbox);
-+
-+		/* Make sure this outbound mailbox isn't in use */
-+		if ((rc =3D
-+		     request_resource(&mport->riores[RIO_OUTB_MBOX_RESOURCE],
-+				      res)) < 0) {
-+			kfree(res);
-+			goto out;
-+		}
-+
-+		mport->outb_msg[mbox].res =3D res;
-+
-+		/* Hook the inbound message callback */
-+		mport->outb_msg[mbox].mcback =3D moutb;
-+
-+		rc =3D rio_open_outb_mbox(mport, mbox, entries);
-+	} else
-+		rc =3D -ENOMEM;
-+
-+      out:
-+	return rc;
-+}
-+
-+/**
-+ * rio_release_outb_mbox - release outbound mailbox message service
-+ * @mport: RIO master port from which to release the mailbox resource
-+ * @mbox: Mailbox number to release
-+ *
-+ * Releases ownership of an inbound mailbox resource. Returns 0
-+ * if the request has been satisfied.
-+ */
-+int rio_release_outb_mbox(struct rio_mport *mport, int mbox)
-+{
-+	rio_close_outb_mbox(mport, mbox);
-+
-+	/* Release the mailbox resource */
-+	return release_resource(mport->outb_msg[mbox].res);
-+}
-+
-+/**
-+ * rio_setup_inb_dbell - bind inbound doorbell callback
-+ * @mport: RIO master port to bind the doorbell callback
-+ * @res: Doorbell message resource
-+ * @dinb: Callback to execute when doorbell is received
-+ *
-+ * Adds a doorbell resource/callback pair into a port's
-+ * doorbell event list. Returns 0 if the request has been
-+ * satisfied.
-+ */
-+static int
-+rio_setup_inb_dbell(struct rio_mport *mport, struct resource *res,
-+		    void (*dinb) (struct rio_mport * mport, u16 src, u16 dst,
-+				  u16 info))
-+{
-+	int rc =3D 0;
-+	struct rio_dbell *dbell;
-+
-+	if (!(dbell =3D kmalloc(sizeof(struct rio_dbell), GFP_KERNEL))) {
-+		rc =3D -ENOMEM;
++	/* If local device is not rionet capable, give up quickly */
++	if (!rionet_capable)
 +		goto out;
-+	}
 +
-+	dbell->res =3D res;
-+	dbell->dinb =3D dinb;
-+
-+	list_add_tail(&dbell->node, &mport->dbells);
-+
-+      out:
-+	return rc;
-+}
-+
-+/**
-+ * rio_request_inb_dbell - request inbound doorbell message service
-+ * @mport: RIO master port from which to allocate the doorbell resource
-+ * @start: Doorbell info range start
-+ * @end: Doorbell info range end
-+ * @dinb: Callback to execute when doorbell is received
-+ *
-+ * Requests ownership of an inbound doorbell resource and binds
-+ * a callback function to the resource. Returns 0 if the request
-+ * has been satisfied.
-+ */
-+int rio_request_inb_dbell(struct rio_mport *mport,
-+			  u16 start,
-+			  u16 end,
-+			  void (*dinb) (struct rio_mport * mport, u16 src,
-+					u16 dst, u16 info))
-+{
-+	int rc =3D 0;
-+
-+	struct resource *res =3D kmalloc(sizeof(struct resource), GFP_KERNEL);
-+
-+	if (res) {
-+		rio_init_dbell_res(res, start, end);
-+
-+		/* Make sure these doorbells aren't in use */
-+		if ((rc =3D
-+		     request_resource(&mport->riores[RIO_DOORBELL_RESOURCE],
-+				      res)) < 0) {
-+			kfree(res);
-+			goto out;
-+		}
-+
-+		/* Hook the doorbell callback */
-+		rc =3D rio_setup_inb_dbell(mport, res, dinb);
-+	} else
-+		rc =3D -ENOMEM;
-+
-+      out:
-+	return rc;
-+}
-+
-+/**
-+ * rio_release_inb_dbell - release inbound doorbell message service
-+ * @mport: RIO master port from which to release the doorbell resource
-+ * @start: Doorbell info range start
-+ * @end: Doorbell info range end
-+ *
-+ * Releases ownership of an inbound doorbell resource and removes
-+ * callback from the doorbell event list. Returns 0 if the request
-+ * has been satisfied.
-+ */
-+int rio_release_inb_dbell(struct rio_mport *mport, u16 start, u16 end)
-+{
-+	int rc =3D 0, found =3D 0;
-+	struct rio_dbell *dbell;
-+
-+	list_for_each_entry(dbell, &mport->dbells, node) {
-+		if ((dbell->res->start =3D=3D start) && (dbell->res->end =3D=3D end)) {
-+			found =3D 1;
-+			break;
-+		}
-+	}
-+
-+	/* If we can't find an exact match, fail */
-+	if (!found) {
-+		rc =3D -EINVAL;
-+		goto out;
-+	}
-+
-+	/* Delete from list */
-+	list_del(&dbell->node);
-+
-+	/* Release the doorbell resource */
-+	rc =3D release_resource(dbell->res);
-+
-+	/* Free the doorbell event */
-+	kfree(dbell);
-+
-+      out:
-+	return rc;
-+}
-+
-+/**
-+ * rio_request_outb_dbell - request outbound doorbell message range
-+ * @rdev: RIO device from which to allocate the doorbell resource
-+ * @start: Doorbell message range start
-+ * @end: Doorbell message range end
-+ *
-+ * Requests ownership of a doorbell message range. Returns a resource
-+ * if the request has been satisfied or %NULL on failure.
-+ */
-+struct resource *rio_request_outb_dbell(struct rio_dev *rdev, u16 start,
-+					u16 end)
-+{
-+	struct resource *res =3D kmalloc(sizeof(struct resource), GFP_KERNEL);
-+
-+	if (res) {
-+		rio_init_dbell_res(res, start, end);
-+
-+		/* Make sure these doorbells aren't in use */
-+		if (request_resource(&rdev->riores[RIO_DOORBELL_RESOURCE], res)
-+		    < 0) {
-+			kfree(res);
-+			res =3D NULL;
-+		}
-+	}
-+
-+	return res;
-+}
-+
-+/**
-+ * rio_release_outb_dbell - release outbound doorbell message range
-+ * @rdev: RIO device from which to release the doorbell resource
-+ * @res: Doorbell resource to be freed
-+ *
-+ * Releases ownership of a doorbell message range. Returns 0 if the
-+ * request has been satisfied.
-+ */
-+int rio_release_outb_dbell(struct rio_dev *rdev, struct resource *res)
-+{
-+	int rc =3D release_resource(res);
-+
-+	kfree(res);
-+
-+	return rc;
-+}
-+
-+/**
-+ * rio_mport_get_feature - query for devices' extended features
-+ * @port: Master port to issue transaction
-+ * @local: Indicate a local master port or remote device access
-+ * @destid: Destination ID of the device
-+ * @hopcount: Number of switch hops to the device
-+ * @ftr: Extended feature code
-+ *
-+ * Tell if a device supports a given RapidIO capability.
-+ * Returns the offset of the requested extended feature
-+ * block within the device's RIO configuration space or
-+ * 0 in case the device does not support it.  Possible
-+ * values for @ftr:
-+ *
-+ * %RIO_EFB_PAR_EP_ID		LP/LVDS EP Devices
-+ *
-+ * %RIO_EFB_PAR_EP_REC_ID	LP/LVDS EP Recovery Devices
-+ *
-+ * %RIO_EFB_PAR_EP_FREE_ID	LP/LVDS EP Free Devices
-+ *
-+ * %RIO_EFB_SER_EP_ID		LP/Serial EP Devices
-+ *
-+ * %RIO_EFB_SER_EP_REC_ID	LP/Serial EP Recovery Devices
-+ *
-+ * %RIO_EFB_SER_EP_FREE_ID	LP/Serial EP Free Devices
-+ */
-+u32
-+rio_mport_get_feature(struct rio_mport * port, int local, u16 destid,
-+		      u8 hopcount, int ftr)
-+{
-+	u32 asm_info, ext_ftr_ptr, ftr_header;
-+
-+	if (local)
-+		rio_local_read_config_32(port, RIO_ASM_INFO_CAR, &asm_info);
-+	else
-+		rio_mport_read_config_32(port, destid, hopcount,
-+					 RIO_ASM_INFO_CAR, &asm_info);
-+
-+	ext_ftr_ptr =3D asm_info & RIO_EXT_FTR_PTR_MASK;
-+
-+	while (ext_ftr_ptr) {
-+		if (local)
-+			rio_local_read_config_32(port, ext_ftr_ptr,
-+						 &ftr_header);
-+		else
-+			rio_mport_read_config_32(port, destid, hopcount,
-+						 ext_ftr_ptr, &ftr_header);
-+		if (RIO_GET_BLOCK_ID(ftr_header) =3D=3D ftr)
-+			return ext_ftr_ptr;
-+		if (!(ext_ftr_ptr =3D RIO_GET_BLOCK_PTR(ftr_header)))
-+			break;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * rio_get_asm - Begin or continue searching for a RIO device by vid/did/a=
-sm_vid/asm_did
-+ * @vid: RIO vid to match or %RIO_ANY_ID to match all vids
-+ * @did: RIO did to match or %RIO_ANY_ID to match all dids
-+ * @asm_vid: RIO asm_vid to match or %RIO_ANY_ID to match all asm_vids
-+ * @asm_did: RIO asm_did to match or %RIO_ANY_ID to match all asm_dids
-+ * @from: Previous RIO device found in search, or %NULL for new search
-+ *
-+ * Iterates through the list of known RIO devices. If a RIO device is
-+ * found with a matching @vid, @did, @asm_vid, @asm_did, the reference
-+ * count to the device is incrememted and a pointer to its device
-+ * structure is returned. Otherwise, %NULL is returned. A new search
-+ * is initiated by passing %NULL to the @from argument. Otherwise, if
-+ * @from is not %NULL, searches continue from next device on the global
-+ * list. The reference count for @from is always decremented if it is
-+ * not %NULL.
-+ */
-+struct rio_dev *rio_get_asm(u16 vid, u16 did,
-+			    u16 asm_vid, u16 asm_did, struct rio_dev *from)
-+{
-+	struct list_head *n;
-+	struct rio_dev *rdev;
-+
-+	WARN_ON(in_interrupt());
-+	spin_lock(&rio_global_list_lock);
-+	n =3D from ? from->global_list.next : rio_devices.next;
-+
-+	while (n && (n !=3D &rio_devices)) {
-+		rdev =3D rio_dev_g(n);
-+		if ((vid =3D=3D RIO_ANY_ID || rdev->vid =3D=3D vid) &&
-+		    (did =3D=3D RIO_ANY_ID || rdev->did =3D=3D did) &&
-+		    (asm_vid =3D=3D RIO_ANY_ID || rdev->asm_vid =3D=3D asm_vid) &&
-+		    (asm_did =3D=3D RIO_ANY_ID || rdev->asm_did =3D=3D asm_did))
-+			goto exit;
-+		n =3D n->next;
-+	}
-+	rdev =3D NULL;
-+      exit:
-+	rio_dev_put(from);
-+	rdev =3D rio_dev_get(rdev);
-+	spin_unlock(&rio_global_list_lock);
-+	return rdev;
-+}
-+
-+/**
-+ * rio_get_device - Begin or continue searching for a RIO device by vid/did
-+ * @vid: RIO vid to match or %RIO_ANY_ID to match all vids
-+ * @did: RIO did to match or %RIO_ANY_ID to match all dids
-+ * @from: Previous RIO device found in search, or %NULL for new search
-+ *
-+ * Iterates through the list of known RIO devices. If a RIO device is
-+ * found with a matching @vid and @did, the reference count to the
-+ * device is incrememted and a pointer to its device structure is returned.
-+ * Otherwise, %NULL is returned. A new search is initiated by passing %NULL
-+ * to the @from argument. Otherwise, if @from is not %NULL, searches
-+ * continue from next device on the global list. The reference count for
-+ * @from is always decremented if it is not %NULL.
-+ */
-+struct rio_dev *rio_get_device(u16 vid, u16 did, struct rio_dev *from)
-+{
-+	return rio_get_asm(vid, did, RIO_ANY_ID, RIO_ANY_ID, from);
-+}
-+
-+static void rio_fixup_device(struct rio_dev *dev)
-+{
-+}
-+
-+static int __devinit rio_init(void)
-+{
-+	struct rio_dev *dev =3D NULL;
-+
-+	while ((dev =3D rio_get_device(RIO_ANY_ID, RIO_ANY_ID, dev)) !=3D NULL) {
-+		rio_fixup_device(dev);
-+	}
-+	return 0;
-+}
-+
-+device_initcall(rio_init);
-+
-+int rio_init_mports(void)
-+{
-+	int rc =3D 0;
-+	struct rio_mport *port;
-+
-+	list_for_each_entry(port, &rio_mports, node) {
-+		if (!request_mem_region(port->iores.start,
-+					port->iores.end - port->iores.start,
-+					port->name)) {
++	/*
++	 * First time through, make sure local device is rionet
++	 * capable, setup netdev,  and set flags so this is skipped
++	 * on later probes
++	 */
++	if (!rionet_check) {
++		rio_local_read_config_32(rdev->net->hport, RIO_PEF_CAR, &lpef);
++		rio_local_read_config_32(rdev->net->hport, RIO_SRC_OPS_CAR,
++					 &lsrc_ops);
++		rio_local_read_config_32(rdev->net->hport, RIO_DST_OPS_CAR,
++					 &ldst_ops);
++		if (!is_rionet_capable(lpef, lsrc_ops, ldst_ops)) {
 +			printk(KERN_ERR
-+			       "RIO: Error requesting master port region %8.8lx-%8.8lx\n",
-+			       port->iores.start, port->iores.end - 1);
++			       "%s: local device is not network capable\n",
++			       DRV_NAME);
++			rionet_check =3D 1;
++			rionet_capable =3D 0;
++			goto out;
++		}
++
++		rc =3D rionet_setup_netdev(rdev->net->hport);
++		rionet_check =3D 1;
++	}
++
++	/*
++	 * If the remote device has mailbox/doorbell capabilities,
++	 * add it to the peer list.
++	 */
++	if (dev_rionet_capable(rdev)) {
++		if (!(peer =3D kmalloc(sizeof(struct rionet_peer), GFP_KERNEL))) {
 +			rc =3D -ENOMEM;
 +			goto out;
 +		}
-+
-+		if (port->host_deviceid >=3D 0)
-+			rio_enum_mport(port);
-+		else
-+			rio_disc_mport(port);
++		peer->rdev =3D rdev;
++		list_add_tail(&peer->node, &rionet_peers);
 +	}
 +
 +      out:
 +	return rc;
 +}
 +
-+void rio_register_mport(struct rio_mport *port)
++static struct rio_device_id rionet_id_table[] =3D {
++	{RIO_DEVICE(RIO_ANY_ID, RIO_ANY_ID)}
++};
++
++static struct rio_driver rionet_driver =3D {
++	.name =3D "rionet",
++	.id_table =3D rionet_id_table,
++	.probe =3D rionet_probe,
++	.remove =3D rionet_remove,
++};
++
++static int __init rionet_init(void)
 +{
-+	list_add_tail(&port->node, &rio_mports);
++	return rio_register_driver(&rionet_driver);
 +}
 +
-+EXPORT_SYMBOL_GPL(rio_local_get_device_id);
-+EXPORT_SYMBOL_GPL(rio_get_device);
-+EXPORT_SYMBOL_GPL(rio_get_asm);
-+EXPORT_SYMBOL_GPL(rio_request_inb_dbell);
-+EXPORT_SYMBOL_GPL(rio_release_inb_dbell);
-+EXPORT_SYMBOL_GPL(rio_request_outb_dbell);
-+EXPORT_SYMBOL_GPL(rio_release_outb_dbell);
-+EXPORT_SYMBOL_GPL(rio_request_inb_mbox);
-+EXPORT_SYMBOL_GPL(rio_release_inb_mbox);
-+EXPORT_SYMBOL_GPL(rio_request_outb_mbox);
-+EXPORT_SYMBOL_GPL(rio_release_outb_mbox);
-diff --git a/drivers/rio/rio.h b/drivers/rio/rio.h
-new file mode 100644
---- /dev/null
-+++ b/drivers/rio/rio.h
-@@ -0,0 +1,57 @@
-+/*
-+ * RapidIO interconnect services
-+ *
-+ * Copyright 2005 MontaVista Software, Inc.
-+ * Matt Porter <mporter@kernel.crashing.org>
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
++static void __exit rionet_exit(void)
++{
++	rio_unregister_driver(&rionet_driver);
++}
 +
-+#include <linux/device.h>
-+#include <linux/list.h>
-+#include <linux/rio.h>
-+
-+/* Functions internal to the RIO core code */
-+
-+extern u32 rio_mport_get_feature(struct rio_mport *mport, int local, u16 d=
-estid,
-+				 u8 hopcount, int ftr);
-+extern int rio_create_sysfs_dev_files(struct rio_dev *rdev);
-+extern int rio_enum_mport(struct rio_mport *mport);
-+extern int rio_disc_mport(struct rio_mport *mport);
-+
-+/* Structures internal to the RIO core code */
-+extern struct device_attribute rio_dev_attrs[];
-+extern spinlock_t rio_global_list_lock;
-+
-+/* Helpers internal to the RIO core code */
-+#define DECLARE_RIO_ROUTE_SECTION(section, vid, did, add_hook, get_hook)  \
-+        static struct rio_route_ops __rio_route_ops __attribute_used__   \
-+	        __attribute__((__section__(#section))) =3D { vid, did, add_hook, =
-get_hook };
-+
-+/**
-+ * DECLARE_RIO_ROUTE_OPS - Registers switch routing operations
-+ * @vid: RIO vendor ID
-+ * @did: RIO device ID
-+ * @add_hook: Callback that adds a route entry
-+ * @get_hook: Callback that gets a route entry
-+ *
-+ * Manipulating switch route tables in RIO is switch specific. This
-+ * registers a switch by vendor and device ID with two callbacks for
-+ * modifying and retrieving route entries in a switch. A &struct
-+ * rio_route_ops is initialized with the ops and placed into a
-+ * RIO-specific kernel section.
-+ */
-+#define DECLARE_RIO_ROUTE_OPS(vid, did, add_hook, get_hook)		\
-+	DECLARE_RIO_ROUTE_SECTION(.rio_route_ops,			\
-+			vid, did, add_hook, get_hook)
-+
-+#ifdef CONFIG_RAPIDIO_8_BIT_TRANSPORT
-+#define RIO_GET_DID(x)	((x & 0x00ff0000) >> 16)
-+#define RIO_SET_DID(x)	((x & 0x000000ff) << 16)
-+#else
-+#define RIO_GET_DID(x)	(x & 0xffff)
-+#define RIO_SET_DID(x)	(x & 0xffff)
-+#endif
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinu=
-x.lds.h
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -32,6 +32,13 @@
- 		VMLINUX_SYMBOL(__end_pci_fixups_enable) =3D .;		\
- 	}								\
- 									\
-+	/* RapidIO route ops */						\
-+	.rio_route        : AT(ADDR(.rio_route) - LOAD_OFFSET) {	\
-+		VMLINUX_SYMBOL(__start_rio_route_ops) =3D .;		\
-+		*(.rio_route_ops)					\
-+		VMLINUX_SYMBOL(__end_rio_route_ops) =3D .;		\
-+	}								\
-+									\
- 	/* Kernel symbol table: Normal symbols */			\
- 	__ksymtab         : AT(ADDR(__ksymtab) - LOAD_OFFSET) {		\
- 		VMLINUX_SYMBOL(__start___ksymtab) =3D .;			\
++module_init(rionet_init);
++module_exit(rionet_exit);
