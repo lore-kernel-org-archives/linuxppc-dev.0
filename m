@@ -1,26 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D2FCF679F2
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Jun 2005 21:40:13 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Wolfram Quester <wolfi@mittelerde.physik.uni-konstanz.de>
-In-Reply-To: <20050606093411.GB3478@halley.zuhause>
-References: <1117424155.5228.28.camel@gaston>
-	<3db27390050530145939d260e4@mail.gmail.com>
-	<20050602130502.GA6151@halley.zuhause>
-	<1117750504.31082.76.camel@gaston>
-	<20050603093316.GA4777@halley.zuhause>
-	<1117838638.31082.173.camel@gaston>
-	<20050606093411.GB3478@halley.zuhause>
-Content-Type: text/plain
-Date: Mon, 06 Jun 2005 21:38:18 +1000
-Message-Id: <1118057899.31082.293.camel@gaston>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
-Subject: Re: ppc32: Rework power management take #3
+Return-Path: <kumar.gala@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+In-Reply-To: <1117843012.31082.201.camel@gaston>
+References: <1117843012.31082.201.camel@gaston>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <24c844aff108eaf7605d6d7ae1fa8ce3@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Mon, 6 Jun 2005 10:11:54 -0500
+To: Tom Rini <trini@kernel.crashing.org>, Dan Malek <dan@embeddededge.com>,
+	Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: [UPDATE] Getting ownership for various boards/platforms configs
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,12 +19,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The following list of boards/platforms still need some ownership.  The 
+full list is at http://gate.crashing.org/~galak/platform-owners for 
+review.
 
-> This looks to me as if it fails to switch to a tty which was not
-> allocated before.
+adir
+bseip
+cpci405
+ep405
+est8260
+FADS
+hdpu
+mbx
+mvme5100
+pcore
+radstone_ppc7d
+rpx8260
+rpxcllf
+rpxlite
 
-There is a known issue with "creating" a new tty vs. X that I though was
-fixed, but may be still lurking around with nvidia stuff, I'll be
-looking at it. Thanks.
-
-Ben.
+- kumar
