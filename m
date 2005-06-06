@@ -1,22 +1,26 @@
-Return-Path: <geoffrey.levand@am.sony.com>
-Received: from mail8.fw-sd.sony.com (mail8.fw-sd.sony.com [160.33.66.75])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AD6B8679E7
+Return-Path: <edward.qin.hong@gmail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.204])
+	by ozlabs.org (Postfix) with ESMTP id 177E3679FC
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Jun 2005 04:59:37 +1000 (EST)
-Message-ID: <42A49D13.6020605@am.sony.com>
-Date: Mon, 06 Jun 2005 11:59:31 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Eugene Surovegin <ebs@ebshome.net>
-References: <20050604005106.GB12513@gate.ebshome.net>
-	<42A49084.3070002@am.sony.com>
-	<20050606182501.GA10988@gate.ebshome.net>
-In-Reply-To: <20050606182501.GA10988@gate.ebshome.net>
-Content-Type: text/plain; charset=UTF-8
+	Tue,  7 Jun 2005 06:00:11 +1000 (EST)
+Received: by zproxy.gmail.com with SMTP id 16so1847238nzp
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 06 Jun 2005 13:00:09 -0700 (PDT)
+Message-ID: <21fb73bc0506061300126b1c43@mail.gmail.com>
+Date: Mon, 6 Jun 2005 14:00:09 -0600
+From: Edward Hong <edward.qin.hong@gmail.com>
+To: Randy Vinson <rvinson@mvista.com>
+In-Reply-To: <42A49A80.9000405@mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <21fb73bc0506041640736e3020@mail.gmail.com>
+	<20050605002832.6311AC1512@atlas.denx.de>
+	<21fb73bc050605223311af6408@mail.gmail.com>
+	<42A49A80.9000405@mvista.com>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] [1/2] PM support for Ebony
+Subject: Re: kernel ported from ELDK 3.0 hangs (loops in idled()) on my
+	custom MPC870 Board
+Reply-To: Edward Hong <edward.qin.hong@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,33 +31,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Eugene Surovegin wrote:
-> On Mon, Jun 06, 2005 at 11:05:56AM -0700, Geoff Levand wrote:
-> 
->>I was thinking to add a static variable in ppc4xx_pic.c to hold the 
->>state, that way the arch pm code doesn't need to take care of it, 
->>which will make suspend to disk easier since the value will be 
->>saved in the system image.  I'm not sure which way to go.  Any 
->>comments?
-> 
-> 
-> I don't have a problem with having static variables for PM in 
-> ppc4xx_pic.c. However, why only one for UIC0? What about UIC1? What 
-> about UIC2 (for 440GX) ?
-> 
-> Also, function, you just added, uses resume_bits are for UIC0, it's 
-> not clear from the function prototype why just UIC0. Shouldn't it be 
-> more generic?
+On 6/6/05, Randy Vinson <rvinson@mvista.com> wrote:
+>=20
+> Hi Edward,
+>   I've seen these symptoms before. The problem was traced to external
+> interrupts being disabled (MSR[EE] not set). Without external
+> interrupts, there is no decrementer interrupt (at least on 7xx
+> processors). Without the decrementer, there in no system clock tick and
+> without the clock tick, the scheduler won't run which means that the
+> init task won't start. To verify that this is the problem, use mfmsr()
+> to get the MSR and print it. I'd suggest that you add something like:
+>=20
+>     printk("MSR =3D %x\n", mfmsr());
+>
+I got  MSR =3D 9032 just before cpu_idle which means EE (the most
+significant bit) was enabled.
 
-Well, I guess I was originally only interested in waking up from 
-things connected to UIC0...  I'll look at the other interrupts. 
+Thank you!
 
-> 
-> Another note, code in ebony_pm_enter doesn't look very Ebony specific, 
-> maybe it's would be a good idea to move most of it into ibm440gp_sleep.
-> 
-
-My thoughts also, but I'll wait until I see BenH's new design before 
-deciding what to do.
-
--Geoff
+Edward
