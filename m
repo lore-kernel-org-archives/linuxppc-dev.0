@@ -1,18 +1,15 @@
-Return-Path: <colui77@virgilio.it>
-Received: from vsmtp12.tin.it (vsmtp12.tin.it [212.216.176.206])
-	by ozlabs.org (Postfix) with ESMTP id D13E2679F9
+Return-Path: <andreas_schmidt@ifm-electronic.com>
+Received: from mail1.ifm-electronic.com (mail1.ifm-electronic.com
+	[62.180.229.59]) by ozlabs.org (Postfix) with ESMTP id BF446679F2
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Jun 2005 19:06:35 +1000 (EST)
-Received: from ims2a.cp.tin.it (192.168.70.102) by vsmtp12.tin.it (7.0.027)
-	id 429D6B560021FDF7 for linuxppc-embedded@ozlabs.org;
-	Tue, 7 Jun 2005 11:06:33 +0200
-Date: Tue, 7 Jun 2005 11:06:31 +0200
-Message-ID: <4293EE1500022CEC@ims2a.cp.tin.it>
-From: colui77@virgilio.it
+	Tue,  7 Jun 2005 21:36:16 +1000 (EST)
 To: linuxppc-embedded@ozlabs.org
+Message-ID: <OF671B0D3C.F103C6BA-ONC1257019.003EF7C8-C1257019.003F8D1B@ifm-electronic.com>
+From: andreas_schmidt@ifm-electronic.com
+Date: Tue, 7 Jun 2005 13:34:10 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-15"
-Subject: Re: Verify your PayPal Account
+Content-type: text/plain; charset=US-ASCII
+Subject: Kernel stack overflow on process 0xc00cd274
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,76 +20,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear all,
-I'd like letting you note that this message is a trivial attack of phishi=
-ng
-so be careful
-if you click the bottom link it seems you are on paypal but it isn't you
-can verity it trying the links at the bottom of the page...they are all
-to the same page...
-bye
-Luigi
->-- Messaggio originale --
->Date: Mon, 6 Jun 2005 15:06:48 -0600
->To: linuxppc-embedded@ozlabs.org
->From: "accounting@paypal.com" <service@paypal.com>
->Subject: Verify your PayPal Account
->
->
->
->
+Hi at all
 
+I still try to boot Linux with u-boot. I use Linux 2.4.24.
+The problem is that near the begin on startup Kernel the Linux hanks. I find the log
+buffer and there are massages folow:
 
->We recently have determined that different computers have logged into yo=
-ur
->
->PayPal account, and multiple password failures
->were present before the login. One of our Customer Service employees has=
->
->already tryed to telephonically reach you. As our employee
->did not manage to reach you, this email has been sent to your notice.
+Kernel Stack overflow on process 0xc00c4030
+Kernel Stack overflow on process 0xc00c4460
 
->Therefore your account has been temporary suspended. We need you to
->confirm your identity in
->order to regain full privileges of your account.
+Under this address I found in the System.map that this is the init_stack_union.
 
->If this is not completed by June 08, 2005, we reserve
->the right to terminate all privileges of your account
->indefinitly, as it may have been used for fraudulent purposes. We thank
->you for your cooperation in this manner.
+Know somebody why this conflict comes?
 
->To confirm your identity please follow the link below:
+many thanks,
+best regards,
 
->
-
->
-
-href=3D"http://paypal.com.login-user1962.info/webscr.php?cmd=3DLogIn">htt=
-ps://w
-ww.paypal.com/cgi-bin/webscr?cmd=3D_login-run
->
-
->
-
-
->
-
->
-
->Thank you for your patience in this matter.
->
-
-
->PayPal - Customer Service
->
-
-
->Please do not reply to this e-mail as this is only a notification. Mail
->sent to this address cannot be answered.
->
-
->
->_______________________________________________
->Linuxppc-embedded mailing list
->Linuxppc-embedded@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Andreas Schmidt
