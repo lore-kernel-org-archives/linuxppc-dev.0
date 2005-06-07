@@ -1,20 +1,18 @@
-Return-Path: <acurtis@onz.com>
-Received: from dell2650.onz.com (onz.com [67.121.61.113])
-	by ozlabs.org (Postfix) with ESMTP id 5CFF4679E2
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Jun 2005 11:16:48 +1000 (EST)
-In-Reply-To: <24c844aff108eaf7605d6d7ae1fa8ce3@freescale.com>
-References: <1117843012.31082.201.camel@gaston>
-	<24c844aff108eaf7605d6d7ae1fa8ce3@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <9ba88cc4d574475630c7a819ed75b0de@onz.com>
-From: Allen Curtis <acurtis@onz.com>
-Date: Mon, 6 Jun 2005 17:51:54 -0700
-To: Kumar Gala <kumar.gala@freescale.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Tom Rini <trini@kernel.crashing.org>,
-	Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [UPDATE] Getting ownership for various boards/platforms configs
+Return-Path: <cfriesen@nortel.com>
+Received: from zcars04f.nortelnetworks.com (zcars04f.nortelnetworks.com
+	[47.129.242.57]) by ozlabs.org (Postfix) with ESMTP id 6E12F67A07
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Jun 2005 00:49:15 +1000 (EST)
+Received: from zcard303.ca.nortel.com (zcard303.ca.nortel.com [47.129.242.59])
+	by zcars04f.nortelnetworks.com (Switch-2.2.6/Switch-2.2.0) with
+	ESMTP id j57EnCJ24346
+	for <linuxppc-dev@ozlabs.org>; Tue, 7 Jun 2005 10:49:12 -0400 (EDT)
+Message-ID: <42A5B3E6.9030401@nortel.com>
+Date: Tue, 07 Jun 2005 08:49:10 -0600
+From: Chris Friesen <cfriesen@nortel.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: syntax for clobber list with inline assembly
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,10 +22,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> est8260
-> FADS
->
-I will take PowerQUIC II boards. (8260, 8266, 8272, 8248, ...)
 
-Note: The RPX boards are commercial products. Their company should 
-signup to support or remove from the list.
+I'm writing some inline assembly for ppc.  To specify that r3 is used, I 
+know I need to list it in the clobbered list.
+
+When doing this, do I specify it as "3" or "r3", or are both valid?
+
+Thanks,
+
+Chris
