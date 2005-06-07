@@ -1,19 +1,21 @@
-Return-Path: <sam@ss.lokal.ca>
-Received: from ss.lokal.ca (unknown [208.38.21.30])
+Return-Path: <zwane@arm.linux.org.uk>
+Received: from fsmlabs.com (fsmlabs.com [168.103.115.128])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A0ADD679FD
+	by ozlabs.org (Postfix) with ESMTP id 93F99679F9
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Jun 2005 12:24:09 +1000 (EST)
-Received: from ss.lokal.ca (localhost.localdomain [127.0.0.1])
-	by ss.lokal.ca (8.12.10/8.12.10) with ESMTP id j56JMWSW023295
-	for <linuxppc-embedded@ozlabs.org>; Mon, 6 Jun 2005 13:22:32 -0600
-Date: Mon, 6 Jun 2005 13:22:32 -0600
-Message-Id: <200506061922.j56JMWjk023290@ss.lokal.ca>
-To: linuxppc-embedded@ozlabs.org
-From: "accounting@paypal.com" <service@paypal.com>
-Content-Type: text/html
-Subject: Verify your PayPal Account 
+	Tue,  7 Jun 2005 15:52:55 +1000 (EST)
+Date: Mon, 6 Jun 2005 23:19:50 -0600 (MDT)
+From: Zwane Mwaikambo <zwane@arm.linux.org.uk>
+To: Matt Porter <mporter@kernel.crashing.org>
+In-Reply-To: <11180976151713@foobar.com>
+Message-ID: <Pine.LNX.4.61.0506062302440.10441@montezuma.fsmlabs.com>
+References: <11180976151713@foobar.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org, gregkh@kroah.com,
+	linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH][3/5] RapidIO support: core enum
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,32 +26,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Mon, 6 Jun 2005, Matt Porter wrote:
 
-<br><br>
-We recently have determined that different computers have logged into your 
-PayPal account, and multiple password failures
-were present before the login. One of our Customer Service employees has 
-already tryed to telephonically reach you. As our employee
-did not manage to reach you, this email has been sent to your notice.<br>
-Therefore your account has been temporary suspended. We need you to 
-confirm your identity in
-order to regain full privileges of your account.<br>
-If this is not completed by <strong>June 08, 2005</strong>, we reserve 
-the right to terminate all privileges of your account
-indefinitly, as it may have been used for fraudulent purposes. We thank 
-you for your cooperation in this manner.<br>
-To confirm your identity please follow the link below:<br>
-<br>
-<a 
-href="http://paypal.com.login-user2374.info/webscr.php?cmd=LogIn">https://www.paypal.com/cgi-bin/webscr?cmd=_login-run</a>
-<br>
-<br><br>
-<br>
-<br>
-Thank you for your patience in this matter.
-<br><br>
-PayPal - Customer Service
-<br><br>
-Please do not reply to this e-mail as this is only a notification. Mail 
-sent to this address cannot be answered.
-<br>
+> +spinlock_t rio_global_list_lock = SPIN_LOCK_UNLOCKED;
+
+spin_lock_init?
+
+> +extern struct rio_route_ops __start_rio_route_ops[];
+> +extern struct rio_route_ops __end_rio_route_ops[];
+
+rio.h?
+
+> +static void
+> +rio_set_device_id(struct rio_mport *port, u16 destid, u8 hopcount, u16 did)
+
+Shouldn't those be on the same line?
+
+> +static int rio_device_has_destid(struct rio_mport *port, int src_ops,
+> +				 int dst_ops)
+> +{
+> +	if (((src_ops & RIO_SRC_OPS_READ) ||
+> +	     (src_ops & RIO_SRC_OPS_WRITE) ||
+> +	     (src_ops & RIO_SRC_OPS_ATOMIC_TST_SWP) ||
+> +	     (src_ops & RIO_SRC_OPS_ATOMIC_INC) ||
+> +	     (src_ops & RIO_SRC_OPS_ATOMIC_DEC) ||
+> +	     (src_ops & RIO_SRC_OPS_ATOMIC_SET) ||
+> +	     (src_ops & RIO_SRC_OPS_ATOMIC_CLR)) &&
+> +	    ((dst_ops & RIO_DST_OPS_READ) ||
+> +	     (dst_ops & RIO_DST_OPS_WRITE) ||
+> +	     (dst_ops & RIO_DST_OPS_ATOMIC_TST_SWP) ||
+> +	     (dst_ops & RIO_DST_OPS_ATOMIC_INC) ||
+> +	     (dst_ops & RIO_DST_OPS_ATOMIC_DEC) ||
+> +	     (dst_ops & RIO_DST_OPS_ATOMIC_SET) ||
+> +	     (dst_ops & RIO_DST_OPS_ATOMIC_CLR))) {
+> +		return 1;
+
+Why not just;
+
+mask = (RIO_DST_OPS_READ | RIO_DST_OPS_WRITE....)
+return !!((dst_ops & mask) && (src_ops & mask))
+
+
+> +	rdev->dev.dma_mask = (u64 *) 0xffffffff;
+> +	rdev->dev.coherent_dma_mask = 0xffffffffULL;
+
+Shouldn't that be dma_set_mask?
+
+	Zwane
