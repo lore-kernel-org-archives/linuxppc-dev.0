@@ -1,17 +1,22 @@
-Return-Path: <sbajaj@tsi-telsys.com>
-Received: from exchange.tsi-telsys.com (exchange.tsi-telsys.com
-	[205.230.130.11]) by ozlabs.org (Postfix) with ESMTP id 5C7D767A0E
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao12.cox.net (fed1rmmtao12.cox.net [68.230.241.27])
+	by ozlabs.org (Postfix) with ESMTP id 8AE5567A04
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Jun 2005 03:02:35 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Tue, 7 Jun 2005 13:02:34 -0400
-Message-ID: <0007F077BB3476449151699150E8FEA2059310@exchange.tsi-telsys.com>
-From: "Sanjay Bajaj" <sbajaj@tsi-telsys.com>
-To: "Mark Chambers" <markc@mail.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: root fs mount issue: Xilinx System ACE on PCI bus
+	Wed,  8 Jun 2005 07:14:32 +1000 (EST)
+Date: Tue, 7 Jun 2005 14:14:29 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Zwane Mwaikambo <zwane@arm.linux.org.uk>
+Message-ID: <20050607141428.A26258@cox.net>
+References: <11180976151713@foobar.com>
+	<Pine.LNX.4.61.0506062302440.10441@montezuma.fsmlabs.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.61.0506062302440.10441@montezuma.fsmlabs.com>;
+	from zwane@arm.linux.org.uk on Mon, Jun 06, 2005 at 11:19:50PM
+	-0600
+Cc: linux-kernel@vger.kernel.org, gregkh@kroah.com,
+	linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH][3/5] RapidIO support: core enum
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,80 +27,71 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi! Mark,
+On Mon, Jun 06, 2005 at 11:19:50PM -0600, Zwane Mwaikambo wrote:
+> On Mon, 6 Jun 2005, Matt Porter wrote:
+> 
+> > +spinlock_t rio_global_list_lock = SPIN_LOCK_UNLOCKED;
+> 
+> spin_lock_init?
 
-I did put in "rootfs=3Dext3", but, the result is still the same.
+How about DEFINE_SPINLOCK() as they do the same thing (except the 
+difference in amount of babble)? This is what PCI is doing, for
+example. I use the same init method in the static locks found
+in rio-access.c, FWIW.
 
-Sanjay
+> > +extern struct rio_route_ops __start_rio_route_ops[];
+> > +extern struct rio_route_ops __end_rio_route_ops[];
+> 
+> rio.h?
 
------Original Message-----
-From: Mark Chambers [mailto:markc@mail.com]
-Sent: Tuesday, June 07, 2005 11:51 AM
-To: Sanjay Bajaj
-Subject: Re: root fs mount issue: Xilinx System ACE on PCI bus
+Yep, will move.
 
+> > +static void
+> > +rio_set_device_id(struct rio_mport *port, u16 destid, u8 hopcount, u16 did)
+> 
+> Shouldn't those be on the same line?
 
-Well, I'm no guru, but you could try adding a 'rootfs=3D" option to your
-kernel command line (rootfs=3Djffs2, for instance, or ext2).  Perhaps =
-the
-kernel is not able to automatically determine the filesystem.  When you
-'mount' you explicitly tell the kernel what kind of file system is on =
-the
-device.
+Yes, will fix.
+ 
+> > +static int rio_device_has_destid(struct rio_mport *port, int src_ops,
+> > +				 int dst_ops)
+> > +{
+> > +	if (((src_ops & RIO_SRC_OPS_READ) ||
+> > +	     (src_ops & RIO_SRC_OPS_WRITE) ||
+> > +	     (src_ops & RIO_SRC_OPS_ATOMIC_TST_SWP) ||
+> > +	     (src_ops & RIO_SRC_OPS_ATOMIC_INC) ||
+> > +	     (src_ops & RIO_SRC_OPS_ATOMIC_DEC) ||
+> > +	     (src_ops & RIO_SRC_OPS_ATOMIC_SET) ||
+> > +	     (src_ops & RIO_SRC_OPS_ATOMIC_CLR)) &&
+> > +	    ((dst_ops & RIO_DST_OPS_READ) ||
+> > +	     (dst_ops & RIO_DST_OPS_WRITE) ||
+> > +	     (dst_ops & RIO_DST_OPS_ATOMIC_TST_SWP) ||
+> > +	     (dst_ops & RIO_DST_OPS_ATOMIC_INC) ||
+> > +	     (dst_ops & RIO_DST_OPS_ATOMIC_DEC) ||
+> > +	     (dst_ops & RIO_DST_OPS_ATOMIC_SET) ||
+> > +	     (dst_ops & RIO_DST_OPS_ATOMIC_CLR))) {
+> > +		return 1;
+> 
+> Why not just;
+> 
+> mask = (RIO_DST_OPS_READ | RIO_DST_OPS_WRITE....)
+> return !!((dst_ops & mask) && (src_ops & mask))
 
-Mark Chambers
+Yes, that's good. I already had that comment from an IRC discussion
+and neglected to address it in the last updates. Will do.
 
------ Original Message -----=20
-From: "Sanjay Bajaj" <sbajaj@tsi-telsys.com>
-To: <linuxppc-embedded@ozlabs.org>
-Sent: Tuesday, June 07, 2005 11:05 AM
-Subject: root fs mount issue: Xilinx System ACE on PCI bus
+> > +	rdev->dev.dma_mask = (u64 *) 0xffffffff;
+> > +	rdev->dev.coherent_dma_mask = 0xffffffffULL;
+> 
+> Shouldn't that be dma_set_mask?
 
+There is a problem there, yes, but it shouldn't use dma_set_mask().
+dma_set_mask() needs [struct device]->dma_mask to be non-zero
+(initialized to something) to do anything in all the copied
+implementations I've seen.  I need to do something like the
+following to initialize the struct device dma_mask properly:
 
-Hi! Gurus,
+	rdev->dma_mask = 0xffffffffULL;
+	rdev->dev.dma_mask = &rdev->dma_mask;
 
-Need some help in understanding root fs mounting. The setup we have here =
-is
-our hardware has Xilinx Virtex II pro chip that has System ACE hardware
-connected to a compact flash. The Virtex II Pro is connected to Local =
-PCI
-bus which is run by PPC 440GX processor. I have ported the driver for
-xsysace from ml300 config to our hardware (From OPB to PCI). When I boot
-over nfs, I can easily mount the partictions on the compact flash. The =
-nodes
-in /dev directory are:
-
-brw-r--r--    1 root     root     254,   0 Jun  3 13:04 xsysacea
-brw-r--r--    1 root     root     254,   1 Jun  3 13:04 xsysacea1
-brw-r--r--    1 root     root     254,   2 Jun  3 13:04 xsysacea2
-
-When I try to boot from the commpact flash, the kernel panics. The =
-edited
-boot listing is as follows:
-
-=3D> bootm
-...
-...
-Kernel command line: root=3D/dev/xsysacea2 rw console=3DttyS0,9600 =
-mem=3D128M
-...
-...
-Partition check:
- xsysacea: xsysacea1 xsysacea2
-System ACE at 0xFFFC1000 mapped to 0xD2070000, irq=3D26, 500472KB
-...
-...
-VFS: Cannot open root device "xsysacea2" or 00:00
-Please append a correct "root=3D" boot option
-Kernel panic: VFS: Unable to mount root fs on 00:00
- <0>Rebooting in 180 seconds..
-
--------
-
-What am I missing here? Any help is appreciated.
-Thanks,
-Sanjay
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+-Matt
