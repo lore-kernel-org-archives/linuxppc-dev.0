@@ -1,21 +1,21 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao04.cox.net (fed1rmmtao04.cox.net [68.230.241.35])
-	by ozlabs.org (Postfix) with ESMTP id B1FA0679E2
+Return-Path: <ajz@cambridgebroadband.com>
+Received: from cambridgebroadband.com (unknown [217.204.121.83])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1EDFA679F1
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Jun 2005 15:52:16 +1000 (EST)
-Date: Tue, 7 Jun 2005 22:52:10 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Kumar Gala <kumar.gala@freescale.com>
-Message-ID: <20050607225210.A28898@cox.net>
-References: <11180976151080@foobar.com>
-	<3648449bcd3a154bcf9b92930f74f3d9@freescale.com>
+	Wed,  8 Jun 2005 19:29:43 +1000 (EST)
+Received: from zambia.cambridgebroadband.com (cbluk-gw0.cambridgebroadband.com
+	[217.204.121.82])
+	by cambridgebroadband.com (8.12.8/8.12.8) with SMTP id j589TcBk014378
+	for <linuxppc-embedded@ozlabs.org>; Wed, 8 Jun 2005 10:29:38 +0100
+Date: Wed, 8 Jun 2005 10:29:38 +0100
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
+To: linuxppc-embedded@ozlabs.org
+Message-Id: <20050608102938.023f271f.ajz@cambridgebroadband.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3648449bcd3a154bcf9b92930f74f3d9@freescale.com>;
-	from kumar.gala@freescale.com on Tue, Jun 07, 2005 at 11:43:26PM
-	-0500
-Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH][4/5] RapidIO support: ppc32
+Content-Type: text/plain; charset=US-ASCII
+Subject: consistent_alloc() on 82xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,49 +26,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jun 07, 2005 at 11:43:26PM -0500, Kumar Gala wrote:
-> Two questions:
-> 1. how well does will all of this handle > 32-bit phys addr?
+Hi,
 
-It does and it doesn't handle > 32-bit phys addr. It depends on which
-configuration you are talking about.  If you are talking about I/O
->32-bit, it's no problem.  If you are talking about handling DMA >32-bit,
-then we need to handle a 64-bit DMA addr in the ppc32 implementations and
-also extend the arch messaging interface to let callers know when an
-implementation can handle high DMA (system memory >4GB). This is all
-pretty easy to handle once we need to support such a processor. So
-far, nothing is available publicly. :)
+I need to allocate un-cached memory on an 82xx and consistent_alloc() in
+arch/ppc/mm/cachemap.c appears to be the thing I need.  However, this
+code only seems to be built for 8xx and 4xx platforms, and not 6xx
+platforms. Specifically, it is built if CONFIG_NOT_COHERENT_CACHE is
+defined, which is the case if
 
-For RIO MMIO purposes (which is functionality I'm working on now),
-it has the similar issues that PCI memory space has on processors with
-I/O above 4GB.  However, on RIO our resources hold a bus address since
-a physical address doesn't make sense since address spaces our per-device.
-If we ever support a 66-bit address space device on 32-bit processor, we
-might need a u64 resource.
+	CONFIG_8xx = y, or
+	CONFIG_4xx = y, but not if
+	CONFIG_6xx = y
 
-> 2. can we make any of this a platform driver?
+Does anybody know why it isn't built for 6xx cores?
 
-Hrm, so you would rather see RIO host bridges look like a driver
-on another "bus"?  I have seen them as a component just like PCI
-host bridges.  That is, they are instantiated by arch-code and
-then initialized by a subsys initcall. This does mean that we
-will be enumerating much later (during driver initcalls), but
-it might be a better model if we ever see a rumored PCIE->RIO
-bridge. Supporting that as a RIO master port would require driver
-time init of the RIO fabric. There's some ordering issues that we'd
-have to see about working out. None of this is needed right now,
-though.
- 
-> I would prefer if we could have the memory offsets and irq's not be 
-> straight from the #define's
+I'm working on the ATM driver and it seems that certain external memory
+areas accessed by the PQII CPM by-pass the cache.  So it would seem to
+me that CONFIG_NOT_COHERENT_CACHE would actually be applicable for these
+processors too....
 
-I think this and #2 are separate issues. We can pass the mpc85xx
-rio init code some parameters to abstract things to different
-parts. This is similar to how we init different SoC's PCI host
-bridges with some common code on PPC32 (marvell, 85xx, etc). 
-
-I was just looking at doing this to support RIO on the 8548. At
-the time I wrote this 85xx support there wasn't any info on the
-8548 available, but it's an easy thing to extend.
-
--Matt
+Alex
