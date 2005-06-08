@@ -1,25 +1,21 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from parcelfarce.linux.theplanet.co.uk
-	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4E07167B17
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao03.cox.net (fed1rmmtao03.cox.net [68.230.241.36])
+	by ozlabs.org (Postfix) with ESMTP id 897B867B1E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Jun 2005 01:59:09 +1000 (EST)
-Date: Wed, 8 Jun 2005 06:01:36 -0300
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <20050608090136.GA2593@logos.cnet>
-References: <20050601165054.GA2607@logos.cnet>
-	<1117680392.31082.16.camel@gaston>
-	<20050602170245.GA7456@logos.cnet>
-	<1117750262.31082.73.camel@gaston>
+	Thu,  9 Jun 2005 02:01:06 +1000 (EST)
+Date: Wed, 8 Jun 2005 09:01:03 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Kumar Gala <kumar.gala@freescale.com>
+Message-ID: <20050608090103.A32468@cox.net>
+References: <20050607225210.A28898@cox.net>
+	<609b05dd2d9806d7d1cd68696b1f49e2@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1117750262.31082.73.camel@gaston>
-Cc: Paul Mackerras <paulus@samba.org>,
-	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [RFC] handle access to non-present IO ports on 8xx
+In-Reply-To: <609b05dd2d9806d7d1cd68696b1f49e2@freescale.com>;
+	from kumar.gala@freescale.com on Wed, Jun 08, 2005 at 10:34:03AM
+	-0500
+Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH][4/5] RapidIO support: ppc32
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,71 +26,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jun 03, 2005 at 08:11:01AM +1000, Benjamin Herrenschmidt wrote:
-> On Thu, 2005-06-02 at 14:02 -0300, Marcelo Tosatti wrote:
-> > Hi Ben,
-> > 
-> > On Thu, Jun 02, 2005 at 12:46:32PM +1000, Benjamin Herrenschmidt wrote:
-> > > On Wed, 2005-06-01 at 13:50 -0300, Marcelo Tosatti wrote:
-> > > 
-> > > Hrm... removing a PCMCIA card triggers mchecks ? that is bad... With
-> > > "proper" PCMCIA controllers, those are swallowed properly when the card
-> > > is removed. The eating of the machine check is a bit too hackish to my
-> > > taste... Better is to "not do that" by making sure the legacy crap isn't
-> > > trying  to tap unexisting ports, but then, if PCMCIA is also a
-> > > problem... 
-> > 
-> > Well, cardmgr calls the driver's shutdown/close routine as soon as 
-> > the card is removed. Some of those methods write to IO registers in
-> > the process (eg net/pcmcia/pcnet_cs.c). 
-> > 
-> > I dont see any elegant change that could be done in PCMCIA.
+On Wed, Jun 08, 2005 at 10:34:03AM -0500, Kumar Gala wrote:
 > 
-> I know, the thing is, on platforms with a "classical" PCI<->PCMCIA
-> bridge, the bridge will not issue machine checks when the card is
-> removed. I don't know if that is possible with your HW setup, I suppose
-> you are hooking PCMCIA directly to the CPU IO bus ...
+> On Jun 8, 2005, at 12:52 AM, Matt Porter wrote:
+> 
+> > On Tue, Jun 07, 2005 at 11:43:26PM -0500, Kumar Gala wrote:
+> >> Two questions:
+> >> 1. how well does will all of this handle > 32-bit phys addr?
+> >
+> > It does and it doesn't handle > 32-bit phys addr. It depends on which
+> > configuration you are talking about.  If you are talking about I/O
+> >> 32-bit, it's no problem.  If you are talking about handling DMA
+> >> 32-bit,
+> > then we need to handle a 64-bit DMA addr in the ppc32 implementations
+> > and
+> > also extend the arch messaging interface to let callers know when an
+> > implementation can handle high DMA (system memory >4GB). This is all
+> > pretty easy to handle once we need to support such a processor. So
+> > far, nothing is available publicly. :)
+> 
+> Well 8548 is semi-public :)
 
-I think the PCMCIA bus is hooked directly to the CPU, yes.
+Heh, well my definition is when Fscale has the reference manual
+downloadable from the main website...as of last night that wasn't
+the case for 8548. :)
 
-> > One possibility that comes to mind would be to enforce the rule 
-> > that drivers should not writeout in case of a removal event,
-> 
-> They can't know, they get the removal even too late. The driver may be
-> in the middle of writing when you remove the card. If there is no HW way
-> to prevent the machine check, then you'll need software recovery.
-> 
-> > but that does not sound feasible to me: It just looks too messy, 
-> > however I have no good argument against it.
-> > 
-> > Well, its restricted to 8xx (maybe 32-bit PPC) with PCMCIA, so its
-> > just not worth the trouble?
-> 
-> Hehe... dunno.
-> 
-> > Hmmm... I'll look that up. My limited testing on HW in question does not 
-> > exhibit longer MCE delays than "twi/isync/nop" sequence - actually, it is 
-> > always triggered during the IO access instruction itself. 
-> 
-> I suppose the 8xx may actually be quite synchronous on IOs then...
-> 
-> > Where can I find information about write posting on 8xx? Is there a
-> > term for it used in PPC documentation? I can't find anything...
-> 
-> Well, do you have a store queue ? What does the 8xx manual says about
-> ordering & queueing of non cacheable loads & stores ? Maybe the chip is
-> fully synchronous on IOs ?
+<snip>
 
-It seems so, yes.
+> >> I would prefer if we could have the memory offsets and irq's not be
+> >> straight from the #define's
+> >
+> > I think this and #2 are separate issues. We can pass the mpc85xx
+> > rio init code some parameters to abstract things to different
+> > parts. This is similar to how we init different SoC's PCI host
+> > bridges with some common code on PPC32 (marvell, 85xx, etc).
+> >
+> > I was just looking at doing this to support RIO on the 8548. At
+> > the time I wrote this 85xx support there wasn't any info on the
+> > 8548 available, but it's an easy thing to extend.
+> 
+> Agreed, they are separate issues, I'm cool on waiting to see what 
+> happens with RIO <-> PCIE bridges in the future.  For now if you can 
+> look at abstracting the offset, irq info that would be good (especially 
+> since 8548 does msg'g a bit differently).
 
-Section 6.1 of MPC860UM.pdf:
+No problem. The first "ppc85xx_rio.c" was only intended to work on
+the 8540/8560 stuff where I had hardware. From my look at 8548, it
+shouldn't take much work.
 
-"All exceptions associated with memory are implemented as precise, which
-means that a load/store instruction is not complete until all possible
-error indications are sampled from the load/store bus.
-This also imples that a store or nonspeculative load instruction is 
-not issued to the load/store bus until all previous instructions have
-completed."
-
-I'll prepare a new patch reflecting this information, thanks again 
-Ben.
+-Matt
