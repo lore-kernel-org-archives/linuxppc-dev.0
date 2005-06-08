@@ -1,18 +1,18 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 1C42067B22
+Return-Path: <sbajaj@tsi-telsys.com>
+Received: from exchange.tsi-telsys.com (exchange.tsi-telsys.com
+	[205.230.130.11]) by ozlabs.org (Postfix) with ESMTP id 22BEE67B21
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Jun 2005 01:34:07 +1000 (EST)
-In-Reply-To: <20050607225210.A28898@cox.net>
-References: <20050607225210.A28898@cox.net>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <609b05dd2d9806d7d1cd68696b1f49e2@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Wed, 8 Jun 2005 10:34:03 -0500
-To: "Matt Porter" <mporter@kernel.crashing.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH][4/5] RapidIO support: ppc32
+	Thu,  9 Jun 2005 01:36:29 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Wed, 8 Jun 2005 11:36:27 -0400
+Message-ID: <0007F077BB3476449151699150E8FEA21A7BA5@exchange.tsi-telsys.com>
+From: "Sanjay Bajaj" <sbajaj@tsi-telsys.com>
+To: "Mark Chambers" <markc@mail.com>,
+	"Peter Ryser" <peter.ryser@xilinx.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: root fs mount issue: Xilinx System ACE on PCI bus
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,65 +23,118 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Thanks Mark and Peter for your responses.
 
-On Jun 8, 2005, at 12:52 AM, Matt Porter wrote:
+I was not using devfs filesystem earlier. I included that in the kernel =
+build and set the "root=3D" in the bootargs to "/dev/xsysace/disc0/part2 =
+rw". A similar string I found in Xilinx ML300 documentation. It worked !
 
-> On Tue, Jun 07, 2005 at 11:43:26PM -0500, Kumar Gala wrote:
->> Two questions:
->> 1. how well does will all of this handle > 32-bit phys addr?
->
-> It does and it doesn't handle > 32-bit phys addr. It depends on which
-> configuration you are talking about.  If you are talking about I/O
->> 32-bit, it's no problem.  If you are talking about handling DMA
->> 32-bit,
-> then we need to handle a 64-bit DMA addr in the ppc32 implementations
-> and
-> also extend the arch messaging interface to let callers know when an
-> implementation can handle high DMA (system memory >4GB). This is all
-> pretty easy to handle once we need to support such a processor. So
-> far, nothing is available publicly. :)
+Thanks Again.
+Sanjay
 
-Well 8548 is semi-public :)
 
-> For RIO MMIO purposes (which is functionality I'm working on now),
-> it has the similar issues that PCI memory space has on processors with
-> I/O above 4GB.  However, on RIO our resources hold a bus address since
-> a physical address doesn't make sense since address spaces our
-> per-device.
-> If we ever support a 66-bit address space device on 32-bit processor, 
-> we
-> might need a u64 resource.
 
-I assume you mean 36-bit, what would one do with 66-bit addresses :)
+-----Original Message-----
+From: Mark Chambers [mailto:markc@mail.com]
+Sent: Tuesday, June 07, 2005 8:48 PM
+To: Sanjay Bajaj
+Subject: Re: root fs mount issue: Xilinx System ACE on PCI bus
 
->> 2. can we make any of this a platform driver?
->
-> Hrm, so you would rather see RIO host bridges look like a driver
-> on another "bus"?  I have seen them as a component just like PCI
-> host bridges.  That is, they are instantiated by arch-code and
-> then initialized by a subsys initcall. This does mean that we
-> will be enumerating much later (during driver initcalls), but
-> it might be a better model if we ever see a rumored PCIE->RIO
-> bridge. Supporting that as a RIO master port would require driver
-> time init of the RIO fabric. There's some ordering issues that we'd
-> have to see about working out. None of this is needed right now,
-> though.
->
->> I would prefer if we could have the memory offsets and irq's not be
->> straight from the #define's
->
-> I think this and #2 are separate issues. We can pass the mpc85xx
-> rio init code some parameters to abstract things to different
-> parts. This is similar to how we init different SoC's PCI host
-> bridges with some common code on PPC32 (marvell, 85xx, etc).
->
-> I was just looking at doing this to support RIO on the 8548. At
-> the time I wrote this 85xx support there wasn't any info on the
-> 8548 available, but it's an easy thing to extend.
 
-Agreed, they are separate issues, I'm cool on waiting to see what 
-happens with RIO <-> PCIE bridges in the future.  For now if you can 
-look at abstracting the offset, irq info that would be good (especially 
-since 8548 does msg'g a bit differently).
+Arggh, sorry, I told you wrong.  It's "rootfstype=3D".  Also, I see that =
+the
+command list I use (which came from u-boot) also has "noinitrd" in it.  =
+The
+whole line is (just for a reference):
 
-- kumar
+root=3D/dev/mtdblock0 rw noinitrd rootfstype=3Djffs2
+ip=3D192.168.1.4:192.168.1.6:192.168.1.1:255.255.255.0:iView:eth0:off =
+panic=3D1
+
+I'm using devfs - are you?
+
+----- Original Message -----=20
+From: "Sanjay Bajaj" <sbajaj@tsi-telsys.com>
+To: "Mark Chambers" <markc@mail.com>
+Cc: <linuxppc-embedded@ozlabs.org>
+Sent: Tuesday, June 07, 2005 1:02 PM
+Subject: RE: root fs mount issue: Xilinx System ACE on PCI bus
+
+
+Hi! Mark,
+
+I did put in "rootfs=3Dext3", but, the result is still the same.
+
+Sanjay
+
+-----Original Message-----
+From: Mark Chambers [mailto:markc@mail.com]
+Sent: Tuesday, June 07, 2005 11:51 AM
+To: Sanjay Bajaj
+Subject: Re: root fs mount issue: Xilinx System ACE on PCI bus
+
+
+Well, I'm no guru, but you could try adding a 'rootfs=3D" option to your
+kernel command line (rootfs=3Djffs2, for instance, or ext2).  Perhaps =
+the
+kernel is not able to automatically determine the filesystem.  When you
+'mount' you explicitly tell the kernel what kind of file system is on =
+the
+device.
+
+Mark Chambers
+
+----- Original Message -----=20
+From: "Sanjay Bajaj" <sbajaj@tsi-telsys.com>
+To: <linuxppc-embedded@ozlabs.org>
+Sent: Tuesday, June 07, 2005 11:05 AM
+Subject: root fs mount issue: Xilinx System ACE on PCI bus
+
+
+Hi! Gurus,
+
+Need some help in understanding root fs mounting. The setup we have here =
+is
+our hardware has Xilinx Virtex II pro chip that has System ACE hardware
+connected to a compact flash. The Virtex II Pro is connected to Local =
+PCI
+bus which is run by PPC 440GX processor. I have ported the driver for
+xsysace from ml300 config to our hardware (From OPB to PCI). When I boot
+over nfs, I can easily mount the partictions on the compact flash. The =
+nodes
+in /dev directory are:
+
+brw-r--r--    1 root     root     254,   0 Jun  3 13:04 xsysacea
+brw-r--r--    1 root     root     254,   1 Jun  3 13:04 xsysacea1
+brw-r--r--    1 root     root     254,   2 Jun  3 13:04 xsysacea2
+
+When I try to boot from the commpact flash, the kernel panics. The =
+edited
+boot listing is as follows:
+
+=3D> bootm
+...
+...
+Kernel command line: root=3D/dev/xsysacea2 rw console=3DttyS0,9600 =
+mem=3D128M
+...
+...
+Partition check:
+ xsysacea: xsysacea1 xsysacea2
+System ACE at 0xFFFC1000 mapped to 0xD2070000, irq=3D26, 500472KB
+...
+...
+VFS: Cannot open root device "xsysacea2" or 00:00
+Please append a correct "root=3D" boot option
+Kernel panic: VFS: Unable to mount root fs on 00:00
+ <0>Rebooting in 180 seconds..
+
+-------
+
+What am I missing here? Any help is appreciated.
+Thanks,
+Sanjay
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
