@@ -1,14 +1,15 @@
-Return-Path: <rbaxter@CURTISSWRIGHT.com>
+Return-Path: <GARCIAJ@3il.fr>
+Received: from email.3il.fr (email.3il.fr [195.25.243.230])
+	by ozlabs.org (Postfix) with ESMTP id 43BA867A06
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Jun 2005 00:29:41 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Date: Wed, 8 Jun 2005 06:45:31 -0700
-Message-ID: <2A059D6F07F8054294EFC0BD7808FC6D3BE3F5@sdgexch01>
-From: "Baxter, Robert" <rbaxter@CURTISSWRIGHT.com>
-To: "Paul Mackerras" <paulus@samba.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>
-Subject: RE: Getting ownership for various boards/platforms configs
+	charset="iso-8859-1"
+Date: Wed, 8 Jun 2005 16:29:38 +0200
+Message-ID: <D4FDDD1349B5AC46B68FC26AD8AF42D6226B31@exnet.3il.fr>
+From: =?iso-8859-1?Q?Garcia_J=E9r=E9mie?= <GARCIAJ@3il.fr>
+To: <linuxppc-dev@ozlabs.org>
+Subject: PPC arch and spinlocks
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,32 +19,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Paul Mackerras [mailto:paulus@samba.org]=20
-> Sent: Tuesday, June 07, 2005 9:43 PM
-> To: Baxter, Robert
-> Cc: Linux PPC Embedded list; linuxppc-dev list
-> Subject: RE: Getting ownership for various boards/platforms configs
->=20
-> Baxter, Robert writes:
->=20
-> > > gemini
-> >=20
-> > I'll take this one.
->=20
-> Great!  There are some changes to head.S that I have been wanting to
-> make for a while: specifically I want to remove the special case for
-> starting the second processor on gemini and the call to
-> gemini_prom_init.
->=20
-> Does current 2.6 work on gemini?
->=20
-> Paul.
->=20
+Hi everybody, I need your help one more time.
+I'm new to kernel device driver (linux newbie) and I'd like to control =
+concurrent access
+to our hardware resources. (I'm working on a ppc405EP platform =
+uniprocessor)
+Reading the Allessandro Rubini book (Linux device drivers) and many =
+lists and guides on the web,
+I concluded that spinlocks were very adapted to my expectations.
+So, I decided to declare a spinlock in my module and offer, via ioctl, =
+the possibilty to user
+space programs to handle it with spin_trylock(), spin_lock() and =
+spin_unlock().
+Unfortunately I saw that was not working properly and so, I wanted to =
+debug the "spinlock-process"
+printing the value of it after calling one of the above routine:=20
 
-Yes, you may remove the special case for starting the second processor
-and the call to gemini_prom_init.  I'm currenting in the middle of
-getting our stuff over to 2.6, so the current answer would be no.
+spinlock_t my_spinlock =3D SPIN_UNLOCKED;
+[...]
+spin_try_lock(&my_spinlock);
+printk("value: %d\n",my_spinlock.lock);
+[...]
 
---
--Rob
+At compile time, I had an error that told me no "lock" member for this =
+type of structure.
+And it was write, cause I investigated and noticed that the definition =
+used for "spinlock_t"=20
+structure was the following in <linux/spinlock.h>:
+
+#if (__GNUC__ > 2 || __GNUC_MINOR__ > 95) =20
+  typedef struct { } spinlock_t;
+  #define SPIN_LOCK_UNLOCKED (spinlock_t) { }   //  empty structure...
+[...]
+
+I don't understand cause I thought that spinlocks were recommended for =
+SMP platforms but could be
+safely used in uni-processor platforms too.=20
+So did I miss something to be able to use them (in config?? is it =
+specific to PPC arch??)?
+If not, is there a way to get a similar behavior with others technics =
+(mutex??). I saw Posix mutex? Are they
+usable in kernel mode?
+I really need to have an equivalent of the spin_trylock() routine in =
+order not to have the processus waiting till
+the semaphore is available when tryin to get it. (ask and take if =
+available, but not sleep).
+
+Please give me some tips.
+Tks a lot for your precious help!!
+Jeremie
