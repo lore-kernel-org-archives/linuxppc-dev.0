@@ -1,20 +1,20 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3FE8C679E1
+	by ozlabs.org (Postfix) with ESMTP id E0DD067A5B
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Jun 2005 02:12:07 +1000 (EST)
-In-Reply-To: <20050608102938.023f271f.ajz@cambridgebroadband.com>
-References: <20050608102938.023f271f.ajz@cambridgebroadband.com>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <d32482ab845e745a00426671eff86b9e@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Wed, 8 Jun 2005 12:12:01 -0400
-To: Alex Zeffertt <ajz@cambridgebroadband.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: consistent_alloc() on 82xx
+	Thu,  9 Jun 2005 09:07:31 +1000 (EST)
+Received: from gaston (localhost [127.0.0.1])
+	by gate.crashing.org (8.12.8/8.12.8) with ESMTP id j58Mx0Zn009146
+	for <linuxppc-embedded@ozlabs.org>; Wed, 8 Jun 2005 17:59:01 -0500
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Date: Thu, 09 Jun 2005 09:04:58 +1000
+Message-Id: <1118271898.6850.138.camel@gaston>
+Mime-Version: 1.0
+Subject: Slim open firmware implementation
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,20 +25,8 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+IBM just released:
 
-On Jun 8, 2005, at 5:29 AM, Alex Zeffertt wrote:
+http://www-128.ibm.com/developerworks/power/library/pa-dw-slof.html?S_TACT=105AGX16&S_CMP=HP
 
-> Does anybody know why it isn't built for 6xx cores?
-
-Because 6xx cores are cache coherent and there shouldn't
-be any need for "uncached" memory regions.
-
-> I'm working on the ATM driver and it seems that certain external memory
-> areas accessed by the PQII CPM by-pass the cache.
-
-That's news to me, and I've written lots of CPM drivers, including ATM.
-Do you have a specific example?
-
-Thanks.
-
-	-- Dan
+Ben.
