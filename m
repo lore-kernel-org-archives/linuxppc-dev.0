@@ -1,18 +1,25 @@
-Return-Path: <sbajaj@tsi-telsys.com>
-Received: from exchange.tsi-telsys.com (exchange.tsi-telsys.com
-	[205.230.130.11]) by ozlabs.org (Postfix) with ESMTP id 22BEE67B21
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from parcelfarce.linux.theplanet.co.uk
+	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4E07167B17
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Jun 2005 01:36:29 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Wed, 8 Jun 2005 11:36:27 -0400
-Message-ID: <0007F077BB3476449151699150E8FEA21A7BA5@exchange.tsi-telsys.com>
-From: "Sanjay Bajaj" <sbajaj@tsi-telsys.com>
-To: "Mark Chambers" <markc@mail.com>,
-	"Peter Ryser" <peter.ryser@xilinx.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: root fs mount issue: Xilinx System ACE on PCI bus
+	Thu,  9 Jun 2005 01:59:09 +1000 (EST)
+Date: Wed, 8 Jun 2005 06:01:36 -0300
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <20050608090136.GA2593@logos.cnet>
+References: <20050601165054.GA2607@logos.cnet>
+	<1117680392.31082.16.camel@gaston>
+	<20050602170245.GA7456@logos.cnet>
+	<1117750262.31082.73.camel@gaston>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1117750262.31082.73.camel@gaston>
+Cc: Paul Mackerras <paulus@samba.org>,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [RFC] handle access to non-present IO ports on 8xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,118 +30,71 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thanks Mark and Peter for your responses.
+On Fri, Jun 03, 2005 at 08:11:01AM +1000, Benjamin Herrenschmidt wrote:
+> On Thu, 2005-06-02 at 14:02 -0300, Marcelo Tosatti wrote:
+> > Hi Ben,
+> > 
+> > On Thu, Jun 02, 2005 at 12:46:32PM +1000, Benjamin Herrenschmidt wrote:
+> > > On Wed, 2005-06-01 at 13:50 -0300, Marcelo Tosatti wrote:
+> > > 
+> > > Hrm... removing a PCMCIA card triggers mchecks ? that is bad... With
+> > > "proper" PCMCIA controllers, those are swallowed properly when the card
+> > > is removed. The eating of the machine check is a bit too hackish to my
+> > > taste... Better is to "not do that" by making sure the legacy crap isn't
+> > > trying  to tap unexisting ports, but then, if PCMCIA is also a
+> > > problem... 
+> > 
+> > Well, cardmgr calls the driver's shutdown/close routine as soon as 
+> > the card is removed. Some of those methods write to IO registers in
+> > the process (eg net/pcmcia/pcnet_cs.c). 
+> > 
+> > I dont see any elegant change that could be done in PCMCIA.
+> 
+> I know, the thing is, on platforms with a "classical" PCI<->PCMCIA
+> bridge, the bridge will not issue machine checks when the card is
+> removed. I don't know if that is possible with your HW setup, I suppose
+> you are hooking PCMCIA directly to the CPU IO bus ...
 
-I was not using devfs filesystem earlier. I included that in the kernel =
-build and set the "root=3D" in the bootargs to "/dev/xsysace/disc0/part2 =
-rw". A similar string I found in Xilinx ML300 documentation. It worked !
+I think the PCMCIA bus is hooked directly to the CPU, yes.
 
-Thanks Again.
-Sanjay
+> > One possibility that comes to mind would be to enforce the rule 
+> > that drivers should not writeout in case of a removal event,
+> 
+> They can't know, they get the removal even too late. The driver may be
+> in the middle of writing when you remove the card. If there is no HW way
+> to prevent the machine check, then you'll need software recovery.
+> 
+> > but that does not sound feasible to me: It just looks too messy, 
+> > however I have no good argument against it.
+> > 
+> > Well, its restricted to 8xx (maybe 32-bit PPC) with PCMCIA, so its
+> > just not worth the trouble?
+> 
+> Hehe... dunno.
+> 
+> > Hmmm... I'll look that up. My limited testing on HW in question does not 
+> > exhibit longer MCE delays than "twi/isync/nop" sequence - actually, it is 
+> > always triggered during the IO access instruction itself. 
+> 
+> I suppose the 8xx may actually be quite synchronous on IOs then...
+> 
+> > Where can I find information about write posting on 8xx? Is there a
+> > term for it used in PPC documentation? I can't find anything...
+> 
+> Well, do you have a store queue ? What does the 8xx manual says about
+> ordering & queueing of non cacheable loads & stores ? Maybe the chip is
+> fully synchronous on IOs ?
 
+It seems so, yes.
 
+Section 6.1 of MPC860UM.pdf:
 
------Original Message-----
-From: Mark Chambers [mailto:markc@mail.com]
-Sent: Tuesday, June 07, 2005 8:48 PM
-To: Sanjay Bajaj
-Subject: Re: root fs mount issue: Xilinx System ACE on PCI bus
+"All exceptions associated with memory are implemented as precise, which
+means that a load/store instruction is not complete until all possible
+error indications are sampled from the load/store bus.
+This also imples that a store or nonspeculative load instruction is 
+not issued to the load/store bus until all previous instructions have
+completed."
 
-
-Arggh, sorry, I told you wrong.  It's "rootfstype=3D".  Also, I see that =
-the
-command list I use (which came from u-boot) also has "noinitrd" in it.  =
-The
-whole line is (just for a reference):
-
-root=3D/dev/mtdblock0 rw noinitrd rootfstype=3Djffs2
-ip=3D192.168.1.4:192.168.1.6:192.168.1.1:255.255.255.0:iView:eth0:off =
-panic=3D1
-
-I'm using devfs - are you?
-
------ Original Message -----=20
-From: "Sanjay Bajaj" <sbajaj@tsi-telsys.com>
-To: "Mark Chambers" <markc@mail.com>
-Cc: <linuxppc-embedded@ozlabs.org>
-Sent: Tuesday, June 07, 2005 1:02 PM
-Subject: RE: root fs mount issue: Xilinx System ACE on PCI bus
-
-
-Hi! Mark,
-
-I did put in "rootfs=3Dext3", but, the result is still the same.
-
-Sanjay
-
------Original Message-----
-From: Mark Chambers [mailto:markc@mail.com]
-Sent: Tuesday, June 07, 2005 11:51 AM
-To: Sanjay Bajaj
-Subject: Re: root fs mount issue: Xilinx System ACE on PCI bus
-
-
-Well, I'm no guru, but you could try adding a 'rootfs=3D" option to your
-kernel command line (rootfs=3Djffs2, for instance, or ext2).  Perhaps =
-the
-kernel is not able to automatically determine the filesystem.  When you
-'mount' you explicitly tell the kernel what kind of file system is on =
-the
-device.
-
-Mark Chambers
-
------ Original Message -----=20
-From: "Sanjay Bajaj" <sbajaj@tsi-telsys.com>
-To: <linuxppc-embedded@ozlabs.org>
-Sent: Tuesday, June 07, 2005 11:05 AM
-Subject: root fs mount issue: Xilinx System ACE on PCI bus
-
-
-Hi! Gurus,
-
-Need some help in understanding root fs mounting. The setup we have here =
-is
-our hardware has Xilinx Virtex II pro chip that has System ACE hardware
-connected to a compact flash. The Virtex II Pro is connected to Local =
-PCI
-bus which is run by PPC 440GX processor. I have ported the driver for
-xsysace from ml300 config to our hardware (From OPB to PCI). When I boot
-over nfs, I can easily mount the partictions on the compact flash. The =
-nodes
-in /dev directory are:
-
-brw-r--r--    1 root     root     254,   0 Jun  3 13:04 xsysacea
-brw-r--r--    1 root     root     254,   1 Jun  3 13:04 xsysacea1
-brw-r--r--    1 root     root     254,   2 Jun  3 13:04 xsysacea2
-
-When I try to boot from the commpact flash, the kernel panics. The =
-edited
-boot listing is as follows:
-
-=3D> bootm
-...
-...
-Kernel command line: root=3D/dev/xsysacea2 rw console=3DttyS0,9600 =
-mem=3D128M
-...
-...
-Partition check:
- xsysacea: xsysacea1 xsysacea2
-System ACE at 0xFFFC1000 mapped to 0xD2070000, irq=3D26, 500472KB
-...
-...
-VFS: Cannot open root device "xsysacea2" or 00:00
-Please append a correct "root=3D" boot option
-Kernel panic: VFS: Unable to mount root fs on 00:00
- <0>Rebooting in 180 seconds..
-
--------
-
-What am I missing here? Any help is appreciated.
-Thanks,
-Sanjay
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+I'll prepare a new patch reflecting this information, thanks again 
+Ben.
