@@ -1,15 +1,16 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
+Return-Path: <paubert@iram.es>
+From: Gabriel Paubert <paubert@iram.es>
+Date: Wed, 8 Jun 2005 11:24:53 +0200
+To: Kumar Gala <kumar.gala@freescale.com>
+Message-ID: <20050608092453.GA11455@iram.es>
+References: <9ba88cc4d574475630c7a819ed75b0de@onz.com>
+	<d0e588f233a722f3175a48a7fe146c0f@freescale.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17062.30520.173041.102963@cargo.ozlabs.ibm.com>
-Date: Wed, 8 Jun 2005 14:42:32 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Baxter, Robert" <rbaxter@CURTISSWRIGHT.com>
-In-Reply-To: <2A059D6F07F8054294EFC0BD7808FC6D3BE3E1@sdgexch01>
-References: <2A059D6F07F8054294EFC0BD7808FC6D3BE3E1@sdgexch01>
+In-Reply-To: <d0e588f233a722f3175a48a7fe146c0f@freescale.com>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>
-Subject: RE: Getting ownership for various boards/platforms configs
+Subject: Re: [UPDATE] Getting ownership for various boards/platforms configs
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,17 +20,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Baxter, Robert writes:
-
-> > gemini
+On Tue, Jun 07, 2005 at 04:47:35PM -0500, Kumar Gala wrote:
+> The following boards have no owners and if they dont get one the plan 
+> is to kill them:
 > 
-> I'll take this one.
+> ep405
+> mvme5100
+> pcore
 
-Great!  There are some changes to head.S that I have been wanting to
-make for a while: specifically I want to remove the special case for
-starting the second processor on gemini and the call to
-gemini_prom_init.
+Actually mvme5100 and pplus could easily be merged with generic
+PreP IIRC. At least I wrote a bootloader that remapped my
+MVME2400/2600/2700 to look like an MVME5100 (CHRP memory map
+but residual data and no OF). This allows much larger
+windows to map to the VME bus (which is often very
+sparsely populated).
 
-Does current 2.6 work on gemini?
+The only real difference at boot between MVME5100 and
+pplus is the mapping of physical addresses to PCI
+I/O and memory space, and perhaps also the way to access
+the console device. But I don't have any MVME5100 nor
+do I plan do buy one (perhaps an MVME6100 but the host
+bridge is completely different).
 
-Paul.
+The question is whether we want a residual data to 
+pseudo OF device-tree translator in the bootloader
+or another way of passing board data to the kernel.
+ 
+	Gabriel
