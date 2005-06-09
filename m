@@ -1,18 +1,19 @@
-Return-Path: <gautran@mrv.com>
-Received: from mailman.xyplex.com (mailman.xyplex.com [140.179.176.116])
-	by ozlabs.org (Postfix) with ESMTP id A3DF467B3B
+Return-Path: <kylo.ginsberg@gmail.com>
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.194])
+	by ozlabs.org (Postfix) with ESMTP id 4460667B52
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Jun 2005 07:18:35 +1000 (EST)
-Message-ID: <42A8B272.6010206@mrv.com>
-Date: Thu, 09 Jun 2005 17:19:46 -0400
-From: Guillaume Autran <gautran@mrv.com>
-MIME-Version: 1.0
+	Fri, 10 Jun 2005 08:09:33 +1000 (EST)
+Received: by rproxy.gmail.com with SMTP id g11so173761rne
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 09 Jun 2005 15:09:32 -0700 (PDT)
+Message-ID: <61cc712d0506091509527ee680@mail.gmail.com>
+Date: Thu, 9 Jun 2005 15:09:32 -0700
+From: Kylo Ginsberg <kylo.ginsberg@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-References: <20050517081558.74BA0C1512@atlas.denx.de>	<4289A635.5000509@intracom.gr>
-	<4434E283.3000201@eircom.net>
-In-Reply-To: <4434E283.3000201@eircom.net>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Subject: linux/drivers/net/fec_8xx/* vs. linux/arch/ppc/8xx_io/fec.c
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: Mapping full 1 GB of memory on a Freescale Book E part
+Reply-To: Kylo Ginsberg <kylo.ginsberg@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,22 +24,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+I'm running 2.6.11 on a Freescale 8555 with 1GB of DDR memory. =20
+Looking in arch/ppc/mm/fsl_booke_mmu.c, I see that at most 3 TLB
+entries will be used to map memory.  Since the max tlb size on
+Freescale Book E is 256 MB, this caps mapped in memory at 768 MB.
 
-Can anyone tell me what is the difference between:
-    linux/arch/ppc/8xx_io/fec.c
-and
-    linux/drivers/net/fec_8xx/fec_*
+I've modified fsl_booke_mmu.c to use a 4th TLB, thus mapping the full
+1 GB of memory.  However, I'm new to linux memory management, so I'd
+appreciate any comments as to whether there are tradeoffs or dangers
+here that I am missing.
 
-They both seem to be mpc8xx fec drivers....
-
-Thanks.
-Guillaume.
-
--- 
-=======================================
-Guillaume Autran
-Senior Software Engineer
-MRV Communications, Inc.
-Tel: (978) 952-4932 office
-E-mail: gautran@mrv.com
-======================================= 
+Thanks,
+Kylo
