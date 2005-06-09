@@ -1,20 +1,18 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao12.cox.net (fed1rmmtao12.cox.net [68.230.241.27])
-	by ozlabs.org (Postfix) with ESMTP id 5CC7467B39
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 6160767B42
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Jun 2005 00:58:31 +1000 (EST)
-Date: Thu, 9 Jun 2005 07:58:28 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: scarayol@assystembrime.com
-Message-ID: <20050609075828.A7242@cox.net>
-References: <OFD05D82FF.63484065-ONC125701B.00332983@brime.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <OFD05D82FF.63484065-ONC125701B.00332983@brime.fr>;
-	from scarayol@assystembrime.com on Thu, Jun 09, 2005 at
-	11:30:53AM +0200
+	Fri, 10 Jun 2005 01:20:38 +1000 (EST)
+In-Reply-To: <528646bc05060907544d58da41@mail.gmail.com>
+References: <528646bc05060907544d58da41@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <02ea73261175dc6bfb99047e73395fb1@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Thu, 9 Jun 2005 10:20:32 -0500
+To: "Grant Likely" <glikely@gmail.com>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: R?f. : Re: Read in /dev/port with Segmentation Fault
+Subject: Re: MPC52xx: sysfs failure on adding new device driver
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,25 +23,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 09, 2005 at 11:30:53AM +0200, scarayol@assystembrime.com wrote:
-> 
-> Matt,
-> 
-> then what is the use of /dev/port driver file ? When i do "cat /dev/port"
-> on the standard console, i have also a segmentation fault.
 
-Well, it's of no use on PPC.  It's an x86-specific driver.  It is simply
-an alternative method to access x86 I/O ports. This is a hardware
-construct that simply does not exist on PPC.
+>> That changes the semantic of the driver names for the platform bus
+>> however, making the dot a "special" char.
+> Who needs to be asked about this?  Should I take this discussion over
+> the the LKML?
 
-> Another question, if i use mmap to map physical addresses of I/O registers,
-> could i dereference the pointer on virtual adresse to access data or should
-> i use read/write on the file descriptor ?
+GregKH would be the person to talk to about the driver core and taking 
+this to LKML would be useful.  We probably have a similar issue with 
+CPM comm channels.
 
-Yes you can dereference, that's the point of mmaping I/O into userspace.
-You may want to read Linux Device Drivers (either hardcopy or free
-version online) for more details. If you google around you'll find
-countless examples of people doing simple userspace driver work via
-mmaped regs...those might help as a guideline.
+I always assumed multiple drivers would get probed and the drivers 
+would fail in probe if they were not suppose to bind to the given 
+channel/psc, etc..
 
--Matt
+- kumar
