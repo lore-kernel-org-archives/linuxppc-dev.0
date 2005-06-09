@@ -1,20 +1,21 @@
 Return-Path: <tnt@246tNt.com>
-Received: from outmx011.isp.belgacom.be (outmx011.isp.belgacom.be
-	[195.238.3.3]) by ozlabs.org (Postfix) with ESMTP id A317A679F2
+Received: from outmx018.isp.belgacom.be (outmx018.isp.belgacom.be
+	[195.238.2.117]) by ozlabs.org (Postfix) with ESMTP id 0D59167B2A
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Jun 2005 21:28:24 +1000 (EST)
-Received: from outmx011.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx011.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id j59BSIJ4008853
-	for <linuxppc-embedded@ozlabs.org>; Thu, 9 Jun 2005 13:28:18 +0200
+	Thu,  9 Jun 2005 21:31:58 +1000 (EST)
+Received: from outmx018.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx018.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
+	ESMTP id j59BVr0S018918
+	for <linuxppc-embedded@ozlabs.org>; Thu, 9 Jun 2005 13:31:54 +0200
 	(envelope-from <tnt@246tNt.com>)
-Message-ID: <42A827DC.8000803@246tNt.com>
-Date: Thu, 09 Jun 2005 13:28:28 +0200
+Message-ID: <42A828B7.4030305@246tNt.com>
+Date: Thu, 09 Jun 2005 13:32:07 +0200
 From: Sylvain Munaut <tnt@246tNt.com>
 MIME-Version: 1.0
-To: Grant Likely <glikely@gmail.com>
+To: Mark Chambers <markc@mail.com>
 References: <528646bc05060816514c2d5860@mail.gmail.com>
-In-Reply-To: <528646bc05060816514c2d5860@mail.gmail.com>
+	<002201c56ce5$561a6c50$0301a8c0@chuck2>
+In-Reply-To: <002201c56ce5$561a6c50$0301a8c0@chuck2>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: MPC52xx: sysfs failure on adding new device driver
@@ -28,46 +29,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi Mark
 
-Grant Likely wrote:
-> I'm working on an MPC52xx SPI device driver using one of the PSC. 
-> However, when I call driver_register() I get a failure (-17, EEXISTS)
-> with a traceback (posted below).
+Mark Chambers wrote:
+>>I'm working on an MPC52xx SPI device driver using one of the PSC. 
+>>However, when I call driver_register() I get a failure (-17, EEXISTS)
+>>with a traceback (posted below).
 > 
-> I've tracked it down to failing when trying to create a sysfs entry
-> for the driver.  It fails because sysfs tries to create a directory
-> that already exists (mpc52xx_psc).  The directory was already created
-> when the psc serial port device driver was registered.
 > 
->>From what I can tell, I should be able to register more than one
-> driver for a particular device name (mpc52xx_psc).
+> Hey Grant,
+> 
+> This sounds exactly like a problem I had with PSC with devfs.  I posted
+> a patch here on 5/27, I bet you'll find it's a similar problem.  
+> 
+> (Let me know if you don't have access to that patch, I'll forward you my
+> copy)
 
-I always assumed that yes.
-But now looking more closely, I'm not sure what I based that assumption 
-on ... And if not the case that's indeed a problem because that's what's 
-used to support the different function supported by the PSCs.
+Don't think so. Your patch applies to the 2.4 while Grant problem is 
+specific to the way the different functions of PSCs are handled to work 
+the 2.6 ppc_sys model.
 
-> Otherwise I would
-> need to change arch/ppc/syslib/mpc52xx_devices.c to have a different
-> name for each psc.
-
-No you shouldn't have to touch that. The
-mpc52xx_match_psc_function(idx, "spi") is there to know which driver 
-should be used for what PSC and you're using it correctly so it _should_ 
-work.
-
-> If I change the sysfs code to ignore the failure
-> to create a directory then the driver seems to register fine.
-
-A "better" quick-fix would be to change the platform_match 
-(drivers/platform.c) to support "sub-fonctions". For example when using
-mpc52xx_psc.spi it only matches what's before the dot (if any) with the 
-device name.
-
-That changes the semantic of the driver names for the platform bus 
-however, making the dot a "special" char.
-
-
+btw, if not yet integrated you should send your patch to Wolfang, he's 
+the one maintaining that tree.
 
 
 	Sylvain
