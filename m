@@ -1,16 +1,18 @@
-Return-Path: <scarayol@assystembrime.com>
-Received: from srv_courtaboeuf.brime.fr (unknown [81.255.87.178])
-	by ozlabs.org (Postfix) with ESMTP id 4805A67B25
+Return-Path: <markc@mail.com>
+Received: from relay03.roc.ny.frontiernet.net (relay03.roc.ny.frontiernet.net
+	[66.133.182.166]) by ozlabs.org (Postfix) with ESMTP id 29244679F2
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Jun 2005 20:04:17 +1000 (EST)
-To: "Fillod Stephane" <stephane.fillod@thomson.net>
-Message-ID: <OFEC58341E.E377A0F3-ONC125701B.00354E89@brime.fr>
-From: scarayol@assystembrime.com
-Date: Thu, 9 Jun 2005 12:05:51 +0200
+	Thu,  9 Jun 2005 21:20:26 +1000 (EST)
+Message-ID: <002201c56ce5$561a6c50$0301a8c0@chuck2>
+From: "Mark Chambers" <markc@mail.com>
+To: "Grant Likely" <glikely@gmail.com>,
+	<linuxppc-embedded@ozlabs.org>
+References: <528646bc05060816514c2d5860@mail.gmail.com>
+Date: Thu, 9 Jun 2005 07:21:06 -0400
 MIME-Version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Read in /dev/port with Segmentation  Fault
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Re: MPC52xx: sysfs failure on adding new device driver
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,84 +23,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+>I'm working on an MPC52xx SPI device driver using one of the PSC. 
+>However, when I call driver_register() I get a failure (-17, EEXISTS)
+>with a traceback (posted below).
 
-Dear St=E9phane,
+Hey Grant,
 
-Yes i remember your mail about /dev/mem access. But, I never succeed to=
+This sounds exactly like a problem I had with PSC with devfs.  I posted
+a patch here on 5/27, I bet you'll find it's a similar problem.  
 
-read or write physical memory with reliability so i wrote a driver and =
-use
-ioremap inside  intead of mmap (before i put all the needed memory on I=
-O
-memory with the boot command "mem=3DxM" and then it works. So, i think =
-i have
-some problems with "mmap"  :-).
-I think my .../char/mem.c is OK for mmap support.
-Why is it necessary to use size+ofs_addr for size and page_addr instead=
- of
-physaddr, i thought mmap( ) do it itself ?
+(Let me know if you don't have access to that patch, I'll forward you my
+copy)
 
-Thank you for your help.
-
-Kenavo.
-
-Sophie.
-
-
-
-
-                                                                       =
-                                                                       =
-     =20
-                    "Fillod Stephane"                                  =
-                                                                       =
-     =20
-                    <stephane.fillod@th        Pour :  <scarayol@assyst=
-embrime.com>                                                           =
-     =20
-                    omson.net>                 cc :    <linuxppc-embedd=
-ed@ozlabs.org>                                                         =
-     =20
-                                               Objet :      RE: R=E9f. =
-: Re: Read in /dev/port with Segmentation  Fault                       =
-       =20
-                    09/06/05 11:35                                     =
-                                                                       =
-     =20
-                                                                       =
-                                                                       =
-     =20
-                                                                       =
-                                                                       =
-     =20
-
-
-
-Sophie CARAYOL wrote:
->Another question, if i use mmap to map physical addresses of I/O
-registers,
->could i dereference the pointer on virtual adresse to access data or
-should
->i use read/write on the file descriptor ?
-
-Yes, you can dereference the pointer.
-Don't you remember my past mail?
-
->From the Denx's FAQ (TFQ hits the list monthly) for accessing memory bu=
-s:
-
-http://www.denx.de/twiki/bin/view/PPCEmbedded/DeviceDrivers#Section_Acc=
-essingPeripheralsFromUserSpace
-
-or shorter: http://tinyurl.com/6c7th
-
-See linux/drivers/char/mem.c to check if mmap support is ok on your arc=
-h.
-
-Kenavo
---
-St=E9phane
-
-
-
-=
+Mark Chambers
