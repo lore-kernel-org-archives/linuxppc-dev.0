@@ -1,17 +1,18 @@
-Return-Path: <scarayol@assystembrime.com>
-Received: from srv_courtaboeuf.brime.fr (unknown [81.255.87.178])
-	by ozlabs.org (Postfix) with ESMTP id F311B679A6
+Return-Path: <stephane.fillod@thomson.net>
+Received: from dmzraw2.extranet.tce.com (dmzraw2.extranet.tce.com
+	[157.254.234.138]) by ozlabs.org (Postfix) with ESMTP id A650467B25
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Jun 2005 19:29:21 +1000 (EST)
-To: Matt Porter <mporter@kernel.crashing.org>
-Message-ID: <OFD05D82FF.63484065-ONC125701B.00332983@brime.fr>
-From: scarayol@assystembrime.com
-Date: Thu, 9 Jun 2005 11:30:53 +0200
+	Thu,  9 Jun 2005 19:56:22 +1000 (EST)
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Thu, 9 Jun 2005 11:35:24 +0200
+Message-ID: <1CFEB358338412458B21FAA0D78FE86D4F0D77@rennsmail02.eu.thmulti.com>
+From: "Fillod Stephane" <stephane.fillod@thomson.net>
+To: <scarayol@assystembrime.com>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: =?iso-8859-1?q?R=E9f=2E_=3A_Re=3A_Read_in_/dev/port_with_Segment?=
- =?iso-8859-1?q?ation?=  Fault
+Subject: =?iso-8859-1?q?RE=3A_R=E9f=2E_=3A_Re=3A_Read_in_/dev/port_with_S?=
+	=?iso-8859-1?q?egmentation__Fault?=
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,49 +23,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Sophie CARAYOL wrote:
+>Another question, if i use mmap to map physical addresses of I/O =
+registers,
+>could i dereference the pointer on virtual adresse to access data or =
+should
+>i use read/write on the file descriptor ?
 
-Matt,
+Yes, you can dereference the pointer.
+Don't you remember my past mail?
 
-then what is the use of /dev/port driver file ? When i do "cat /dev/port"
-on the standard console, i have also a segmentation fault.
+>From the Denx's FAQ (TFQ hits the list monthly) for accessing memory =
+bus:
 
-Another question, if i use mmap to map physical addresses of I/O registers,
-could i dereference the pointer on virtual adresse to access data or should
-i use read/write on the file descriptor ?
+http://www.denx.de/twiki/bin/view/PPCEmbedded/DeviceDrivers#Section_Acces=
+singPeripheralsFromUserSpace
+or shorter: http://tinyurl.com/6c7th
 
-Best regards.
+See linux/drivers/char/mem.c to check if mmap support is ok on your =
+arch.
 
-Sophie CARAYOL
-
-
-
-
-                                                                                                                                                    
-                    Matt Porter                                                                                                                     
-                    <mporter@kernel.cra        Pour :  scarayol@assystembrime.com                                                                   
-                    shing.org>                 cc :    linuxppc-embedded@ozlabs.org                                                                 
-                                               Objet :      Re: Read in /dev/port with Segmentation Fault                                           
-                    09/06/05 11:12                                                                                                                  
-                                                                                                                                                    
-                                                                                                                                                    
-
-
-
-On Thu, Jun 09, 2005 at 09:30:43AM +0200, scarayol@assystembrime.com wrote:
-> Hi all,
->
-> I want to access to IO ports on a MPC885. The iopl() is not implemented,
-in
-> my distribution, to use inw() outw().
-> So I use /dev/port. It works for open("/dev/port",..) and lseek() but
-when
-> i do a read()  i have a segmentation fault. I gave all the right to
-> /dev/port
-> Does anybody have an idea ?
-
-You are trying to use x86-specific interfaces to x86-specific IO space.
-By "IO ports" you must mean memory mapped I/O registers since you are
-on PPC. From userspace, use mmap() to map physical address space to a
-user virtual address range.
-
--Matt
+Kenavo
+--=20
+St=E9phane
