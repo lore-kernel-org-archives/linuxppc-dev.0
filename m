@@ -1,22 +1,21 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E638067B3D
+Return-Path: <mgreer@mvista.com>
+Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
+	by ozlabs.org (Postfix) with ESMTP id 7CD0A67B3C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Jun 2005 05:05:58 +1000 (EST)
-In-Reply-To: <20050609100437.7cdef573.ajz@cambridgebroadband.com>
-References: <20050608102938.023f271f.ajz@cambridgebroadband.com>
-	<d32482ab845e745a00426671eff86b9e@embeddededge.com>
-	<20050609100437.7cdef573.ajz@cambridgebroadband.com>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <fca77c4d1cd82ed8cfec528acdb6c2cb@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Thu, 9 Jun 2005 15:05:51 -0400
-To: Alex Zeffertt <ajz@cambridgebroadband.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: consistent_alloc() on 82xx
+	Fri, 10 Jun 2005 05:06:55 +1000 (EST)
+Message-ID: <42A89338.209@mvista.com>
+Date: Thu, 09 Jun 2005 12:06:32 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+MIME-Version: 1.0
+To: Jean Delvare <khali@linux-fr.org>
+References: <42A0CD46.60300@mvista.com>	<20050603214653.GA15314@gate.ebshome.net>	<42A0D714.1050601@mvista.com>
+	<20050609192551.76b103ea.khali@linux-fr.org>
+In-Reply-To: <20050609192551.76b103ea.khali@linux-fr.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: LM@ozlabs.org, linuxppc-embedded@ozlabs.org,
+	Sensors <lm-sensors@lm-sensors.org>
+Subject: Re: [lm-sensors] Re: [PATCH 1/2] Add support for Maxim/Dallas DS1374
+ Real-Time Clock Chip
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,62 +26,63 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi Jean,
 
-On Jun 9, 2005, at 5:04 AM, Alex Zeffertt wrote:
+Jean Delvare wrote:
 
-> An example of non-cache coherency in the CPM2: In the ATM chapter of
-> the 8260 UM it says that the CPM will only assert GBL and "snoop"
-> buffers, Buffer Descriptors, and interrupt queues if you set TCT[GBL]
-> and RCT[GBL].
+>Hi Randy and all,
+>
+>Sorry for the delay.
+>
+>[Eugene Surovegin]
+>  
+>
+>>I wonder, why you chose to use those 1-byte SMBus transfers instead
+>>of  i2c transfer.
+>>    
+>>
+>
+>[Randy Vinson]
+>  
+>
+>>I was simply following the guidelines in 
+>>Documentation/i2c/writing-clients as noted in the driver header. This 
+>>note was in the driver I used as my base, so I just followed along.
+>>    
+>>
+>
+>The document file says:
+>
+>"If you can choose between plain i2c communication and SMBus level
+>communication, please use the last. All adapters understand SMBus level
+>commands, but only some of them understand plain i2c!"
+>
+>The "if you can choose" is important. It doesn't suggest that you should
+>use a less efficient way, but that you use the SMBus API when the I2C
+>transfer you want to use happens to exist in the SMBus API.
+>
+>Even when sticking to SMBus commands, it is quite frequent that there
+>are different ways to retrieve the same information, of varying
+>availability and speed. One good example of this are EEPROMs. EEPROMs
+>are I2C devices which can be accessed using SMBus commands. You can read
+>bytes one by one (SMBus Read Byte Data command), or continuously as
+>different reads (first one SMBus Write Byte, then many SMBus Read Byte),
+>or continuously as a single read (I2C Block Read, supported by some
+>SMBus controllers). If you look at the eeprom.c drivers, you'll see that
+>the second and the third method are both implemented. The advantage is
+>that:
+>
 
-Right.
+I interpreted the doc the same way Randy did when I did the m41t00 chip 
+code.  Also, Mark Studebaker seemed to support that interpretation in 
+this email: http://archives.andrew.net.au/lm-sensors/msg29325.html
 
-> ... Presumably this means that it *does not* by-pass the
-> cache if this flag is not set.
+I suppose the best thing to do is check if the adapter is a true i2c 
+ctlr (something like: i2c_check_functionality(adapter, I2C_FUNC_I2C)) 
+and base the cmds used on that.
 
-It means just what it says.  If this flag is set, CPM DMA will
-snoop the cache.  If you choose not to do this, you have to
-maintain cache coherency through software.
+We can do something similar with I2C_FUNC_SMBUS_READ_I2C_BLOCK & 
+I2C_FUNC_SMBUS_WRITE_BLOCK_DATA to check if we can use the smbus block 
+cmds too, correct?
 
->  ..... More seriously, for address compression
-> tables, and external connection tables there is no way of specifying
-> that it *should* snoop - (which I assume means "use the cache").
-
-You need to be more clear with your terms.  Only the 60x core
-"uses" the cache.  The CPM is a DMA device that can utilize
-cache coherency protocols if you enable that with the GBL flags.
-
-> I have seen this causing problems.  When I map a VPI/VCI to a 
-> connection
-> table using the address compression table,
-
-Where are you placing the VP-level and VC-level tables?  I assume
-you are properly configuring the GMODE to indicate their locations?
-Does it work properly if the tables are in DP RAM?
-
-> With external connection tables the problem is more severe.
-
-There are some very subtle assumptions made by the ATM
-controller regarding all channel data structures.  There aren't
-configuration location flags for every level of table, and assumptions
-are made that tables for a connection are either internal or
-external.  Be careful with that.  I either entirely use DP RAM for
-everything or external memory for everything, which seemed
-to work for me in the past.  Maybe I was just lucky :-)
-
-> ....  During
-> frame transmission, the core is constantly having to read and write to
-> the Transmit Connection Table in order to use Auto-VC-ofF.  I couldn't
-> get this to work until I added lots of "invalidate_dcache_range" and
-> "flush_dcache_range" calls.
-
-Are you sure this is really a cache problem and not a race condition
-with CPM access to the CTs?  The CPM does atomic burst read/write
-of the RCT/TCT entries, and buy doing cache flush operations, the
-60x core does the same.
-
-
-Thanks.
-
-
-	-- Dan
+Mark
