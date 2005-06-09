@@ -1,32 +1,25 @@
-Return-Path: <markc@mail.com>
-Received: from relay02.roc.ny.frontiernet.net (relay02.roc.ny.frontiernet.net
-	[66.133.182.165]) by ozlabs.org (Postfix) with ESMTP id 7D8B667A5B
+Return-Path: <khali@linux-fr.org>
+Received: from kellthuzad.dmz.nerim.net (smtp-dmz-234-thursday.dmz.nerim.net
+	[195.5.254.234]) by ozlabs.org (Postfix) with ESMTP id 65A7B67B2B
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Jun 2005 01:27:46 +1000 (EST)
-Received: from filter07.roc.ny.frontiernet.net
-	(filter07.roc.ny.frontiernet.net [66.133.183.74])
-	by relay02.roc.ny.frontiernet.net (Postfix) with ESMTP id 1FA48372A71
+	Fri, 10 Jun 2005 03:53:20 +1000 (EST)
+Received: from kraid.nerim.net (smtp-104-thursday.nerim.net [62.4.16.104])
+	by kellthuzad.dmz.nerim.net (Postfix) with ESMTP id EC08FC9C
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Jun 2005 15:27:45 +0000 (UTC)
-Received: from relay02.roc.ny.frontiernet.net ([66.133.182.165])
-	by filter07.roc.ny.frontiernet.net (filter07.roc.ny.frontiernet.net
-	[66.133.183.74]) (amavisd-new, port 10024)
-	with LMTP id 21394-02-92 for <linuxppc-embedded@ozlabs.org>;
-	Thu, 9 Jun 2005 15:27:45 +0000 (UTC)
-Received: from chuck2 (170-215-146-234.br1.rmn.wv.frontiernet.net
-	[170.215.146.234])
-	by relay02.roc.ny.frontiernet.net (Postfix) with ESMTP id B87A8372A3E
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Jun 2005 15:27:43 +0000 (UTC)
-Message-ID: <00b701c56d07$e3b166a0$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-Cc: <linuxppc-embedded@ozlabs.org>
-References: <20050609135509.AD5C2C1512@atlas.denx.de>
-Date: Thu, 9 Jun 2005 11:28:28 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: Re: MPC52xx: sysfs failure on adding new device driver 
+	Thu,  9 Jun 2005 19:25:47 +0200 (CEST)
+Date: Thu, 9 Jun 2005 19:25:51 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Randy Vinson <rvinson@mvista.com>
+Message-Id: <20050609192551.76b103ea.khali@linux-fr.org>
+In-Reply-To: <42A0D714.1050601@mvista.com>
+References: <42A0CD46.60300@mvista.com>
+	<20050603214653.GA15314@gate.ebshome.net>
+	<42A0D714.1050601@mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: LM, Sensors <lm-sensors@lm-sensors.org>, linuxppc-embedded@ozlabs.org
+Subject: Re: [lm-sensors] Re: [PATCH 1/2] Add support for Maxim/Dallas
+ DS1374 Real-Time Clock Chip
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -37,22 +30,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Sylvain:
-> btw, if not yet integrated you should send your patch to Wolfang, he's 
-> the one maintaining that tree.
+Hi Randy and all,
 
-Wolfgang:
-> I've seen the patch, but did not decide yet what to do with it.  Many
-> drivers  don't  support  devfs  anyway, and in my opinion devfs makes
-> little sense in embedded systems anyway. Not to mention that it  will
-> officially  be removed from the kernel tree in less than 4 weeks from
-> now (see Documentation/feature-removal-schedule.txt).
+Sorry for the delay.
 
-This is nonsense.  You know, when I made this patch I said 
-to myself, "Self, you're wasting your time, these guys won't take patches 
-from somebody they don't know"  But I thought it was enough of a 
-no-brainer that it might go through.
+[Eugene Surovegin]
+> I wonder, why you chose to use those 1-byte SMBus transfers instead
+> of  i2c transfer.
 
-Seems I was wrong.
+[Randy Vinson]
+> I was simply following the guidelines in 
+> Documentation/i2c/writing-clients as noted in the driver header. This 
+> note was in the driver I used as my base, so I just followed along.
 
-Mark Chambers
+The document file says:
+
+"If you can choose between plain i2c communication and SMBus level
+communication, please use the last. All adapters understand SMBus level
+commands, but only some of them understand plain i2c!"
+
+The "if you can choose" is important. It doesn't suggest that you should
+use a less efficient way, but that you use the SMBus API when the I2C
+transfer you want to use happens to exist in the SMBus API.
+
+Even when sticking to SMBus commands, it is quite frequent that there
+are different ways to retrieve the same information, of varying
+availability and speed. One good example of this are EEPROMs. EEPROMs
+are I2C devices which can be accessed using SMBus commands. You can read
+bytes one by one (SMBus Read Byte Data command), or continuously as
+different reads (first one SMBus Write Byte, then many SMBus Read Byte),
+or continuously as a single read (I2C Block Read, supported by some
+SMBus controllers). If you look at the eeprom.c drivers, you'll see that
+the second and the third method are both implemented. The advantage is
+that:
+
+1* The SMBus Write/Read Byte method is supported by almost all SMBus and
+all I2C masters.
+
+2* The I2C Block Read method is twice as fast, and works on all true I2C
+masters and a few SMBus masters.
+
+So we get the best from each hardware configuration.
+
+ As I read the DS1374 datasheet, it appears to support all three modes
+(it's a true I2C device) so you should be able to do something similar
+to what is done in the eeprom driver.
+
+> I checked http://secure.netroedge.com/~lm78/supported.html, 
+> http://secure.netroedge.com/~lm78/newdrivers.html and looked in the 
+> lm_sensors-2.9.1 tarball before I started and didn't see a driver for 
+> the DS1374 listed. That's why I threw mine together. Maybe I missed
+> it.
+
+The DS1374 isn't a hardware monitoring driver, so it doesn't have to be
+listed here (although we happen to list a few miscellaneous drivers).
+
+-- 
+Jean Delvare
