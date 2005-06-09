@@ -1,18 +1,21 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id B971767B5E
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from parcelfarce.linux.theplanet.co.uk
+	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C3BAE67B63
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Jun 2005 09:07:08 +1000 (EST)
-In-Reply-To: <61cc712d0506091509527ee680@mail.gmail.com>
-References: <61cc712d0506091509527ee680@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <815f92995891b6f6e5333d0658637788@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Thu, 9 Jun 2005 18:07:04 -0500
-To: "Kylo Ginsberg" <kylo.ginsberg@gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Mapping full 1 GB of memory on a Freescale Book E part
+	Fri, 10 Jun 2005 09:13:08 +1000 (EST)
+Date: Thu, 9 Jun 2005 15:24:52 -0300
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Message-ID: <20050609182452.GC8125@logos.cnet>
+References: <20050609162650.GA8125@logos.cnet>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050609162650.GA8125@logos.cnet>
+Cc: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
+Subject: Re: 8xx fixes GIT tree
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,29 +26,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Thu, Jun 09, 2005 at 01:26:50PM -0300, Marcelo Tosatti wrote:
+> Hi, 
+> 
+> I've put up a GIT tree with some 8xx fixes. 
+> 
+> I plan to continue collecting fixes there - I encourage other folks 
+> working with v2.6 on 8xx to join in and contribute.
+> 
+> Its about time to setup a "TODO" list for v2.6 8xx, a few which I 
+> remember from the top of my head:
+> 
+> - merge CPU15 workaround
+> - merge PCMCIA driver
+> - merge arch/ppc/8xx_io/fec.c v2.6 update
+> - Remove misc-embedded.c
+> 
+> It should live somewhere in the web (wiki would be ideal).
+> 
+> It contains the following changes at the moment:
 
-On Jun 9, 2005, at 5:09 PM, Kylo Ginsberg wrote:
+Oh, I forgot to mention the URL - its at:
 
-> I'm running 2.6.11 on a Freescale 8555 with 1GB of DDR memory.
-> Looking in arch/ppc/mm/fsl_booke_mmu.c, I see that at most 3 TLB
-> entries will be used to map memory.  Since the max tlb size on
-> Freescale Book E is 256 MB, this caps mapped in memory at 768 MB.
->
-> I've modified fsl_booke_mmu.c to use a 4th TLB, thus mapping the full
-> 1 GB of memory.  However, I'm new to linux memory management, so I'd
-> appreciate any comments as to whether there are tradeoffs or dangers
-> here that I am missing.
+http://www.kernel.org/pub/scm/linux/kernel/git/marcelo/8xx-fixes/
 
-There is a danger here in that you have left no virtual address space 
-for the kernel.  Since KERNEL_BASE is normally 0xc000_0000 + 1G ends up 
-a the end of memory.  There for any devices that need virtual memory 
-space would not have any to map out of.  I'm kinda amazed this works at 
-all.  I'd be interested in seeing what a boot log looks like for this 
-config.
+Web interface at:
 
-The way to handle this is by enabling HIGHMEM support in the kernel or 
-dropping the KERNEL_START in the config.  I'm haven't ever tried to 
-drop KERNEL_START so your milage may very on what if anything that will 
-break.
-
-- kumar
+http://www.kernel.org/git/?p=linux/kernel/git/marcelo/8xx-fixes;a=summary
