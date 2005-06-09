@@ -1,22 +1,20 @@
-Return-Path: <ajz@cambridgebroadband.com>
-Received: from cambridgebroadband.com (unknown [217.204.121.83])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3233B67B1D
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao12.cox.net (fed1rmmtao12.cox.net [68.230.241.27])
+	by ozlabs.org (Postfix) with ESMTP id 2D36C67B2A
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Jun 2005 19:06:59 +1000 (EST)
-Date: Thu, 9 Jun 2005 10:06:40 +0100
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
-To: Pantelis Antoniou <panto@intracom.gr>
-Message-Id: <20050609100640.1e79900d.ajz@cambridgebroadband.com>
-In-Reply-To: <42A7DE75.8040205@intracom.gr>
-References: <20050608102938.023f271f.ajz@cambridgebroadband.com>
-	<d32482ab845e745a00426671eff86b9e@embeddededge.com>
-	<42A7DE75.8040205@intracom.gr>
+	Thu,  9 Jun 2005 19:12:53 +1000 (EST)
+Date: Thu, 9 Jun 2005 02:12:51 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: scarayol@assystembrime.com
+Message-ID: <20050609021250.A5659@cox.net>
+References: <OF76EEFE38.5001E643-ONC125701B.00283639@brime.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <OF76EEFE38.5001E643-ONC125701B.00283639@brime.fr>;
+	from scarayol@assystembrime.com on Thu, Jun 09, 2005 at
+	09:30:43AM +0200
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: consistent_alloc() on 82xx
+Subject: Re: Read in /dev/port with Segmentation Fault
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,41 +25,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 09 Jun 2005 09:15:17 +0300
-Pantelis Antoniou <panto@intracom.gr> wrote:
-
-> Dan Malek wrote:
-> > 
-> > On Jun 8, 2005, at 5:29 AM, Alex Zeffertt wrote:
-> > 
-> >> Does anybody know why it isn't built for 6xx cores?
-> > 
-> > 
-> > Because 6xx cores are cache coherent and there shouldn't
-> > be any need for "uncached" memory regions.
-> > 
-> >> I'm working on the ATM driver and it seems that certain external
-> >memory> areas accessed by the PQII CPM by-pass the cache.
-> > 
-> > 
-> > That's news to me, and I've written lots of CPM drivers, including
-> > ATM. Do you have a specific example?
-> > 
+On Thu, Jun 09, 2005 at 09:30:43AM +0200, scarayol@assystembrime.com wrote:
+> Hi all,
 > 
-> I may also need consistent_alloc for some testing reasons Dan. :)
-> 
-> > Thanks.
-> > 
-> >     -- Dan
-> > 
-> 
-> If I build arch/ppc/mm/cachemap.c will it work for 82xx? Any reason
-> not to?
-> 
+> I want to access to IO ports on a MPC885. The iopl() is not implemented, in
+> my distribution, to use inw() outw().
+> So I use /dev/port. It works for open("/dev/port",..) and lseek() but when
+> i do a read()  i have a segmentation fault. I gave all the right to
+> /dev/port
+> Does anybody have an idea ?
 
-Hi Pantelis,
+You are trying to use x86-specific interfaces to x86-specific IO space.
+By "IO ports" you must mean memory mapped I/O registers since you are
+on PPC. From userspace, use mmap() to map physical address space to a
+user virtual address range.
 
-I tried this in an attempt to work around my problem of the CPM
-bypassing the cache but it didn't work for me....
-
-Alex
+-Matt
