@@ -1,20 +1,17 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao12.cox.net (fed1rmmtao12.cox.net [68.230.241.27])
-	by ozlabs.org (Postfix) with ESMTP id 2D36C67B2A
+Return-Path: <scarayol@assystembrime.com>
+Received: from srv_courtaboeuf.brime.fr (unknown [81.255.87.178])
+	by ozlabs.org (Postfix) with ESMTP id F311B679A6
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Jun 2005 19:12:53 +1000 (EST)
-Date: Thu, 9 Jun 2005 02:12:51 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: scarayol@assystembrime.com
-Message-ID: <20050609021250.A5659@cox.net>
-References: <OF76EEFE38.5001E643-ONC125701B.00283639@brime.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <OF76EEFE38.5001E643-ONC125701B.00283639@brime.fr>;
-	from scarayol@assystembrime.com on Thu, Jun 09, 2005 at
-	09:30:43AM +0200
+	Thu,  9 Jun 2005 19:29:21 +1000 (EST)
+To: Matt Porter <mporter@kernel.crashing.org>
+Message-ID: <OFD05D82FF.63484065-ONC125701B.00332983@brime.fr>
+From: scarayol@assystembrime.com
+Date: Thu, 9 Jun 2005 11:30:53 +0200
+MIME-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Read in /dev/port with Segmentation Fault
+Subject: =?iso-8859-1?q?R=E9f=2E_=3A_Re=3A_Read_in_/dev/port_with_Segment?=
+ =?iso-8859-1?q?ation?=  Fault
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,12 +22,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+
+Matt,
+
+then what is the use of /dev/port driver file ? When i do "cat /dev/port"
+on the standard console, i have also a segmentation fault.
+
+Another question, if i use mmap to map physical addresses of I/O registers,
+could i dereference the pointer on virtual adresse to access data or should
+i use read/write on the file descriptor ?
+
+Best regards.
+
+Sophie CARAYOL
+
+
+
+
+                                                                                                                                                    
+                    Matt Porter                                                                                                                     
+                    <mporter@kernel.cra        Pour :  scarayol@assystembrime.com                                                                   
+                    shing.org>                 cc :    linuxppc-embedded@ozlabs.org                                                                 
+                                               Objet :      Re: Read in /dev/port with Segmentation Fault                                           
+                    09/06/05 11:12                                                                                                                  
+                                                                                                                                                    
+                                                                                                                                                    
+
+
+
 On Thu, Jun 09, 2005 at 09:30:43AM +0200, scarayol@assystembrime.com wrote:
 > Hi all,
-> 
-> I want to access to IO ports on a MPC885. The iopl() is not implemented, in
+>
+> I want to access to IO ports on a MPC885. The iopl() is not implemented,
+in
 > my distribution, to use inw() outw().
-> So I use /dev/port. It works for open("/dev/port",..) and lseek() but when
+> So I use /dev/port. It works for open("/dev/port",..) and lseek() but
+when
 > i do a read()  i have a segmentation fault. I gave all the right to
 > /dev/port
 > Does anybody have an idea ?
