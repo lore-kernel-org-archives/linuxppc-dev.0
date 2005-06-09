@@ -1,16 +1,18 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao05.cox.net (fed1rmmtao05.cox.net [68.230.241.34])
-	by ozlabs.org (Postfix) with ESMTP id 3B05167A04
+Return-Path: <galak@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 2903667A04
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Jun 2005 14:09:46 +1000 (EST)
-Date: Wed, 8 Jun 2005 21:09:43 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: akpm@osdl.org
-Message-ID: <20050608210943.A4183@cox.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: akonovalov@ru.mvista.com, linuxppc-embedded@ozlabs.org
-Subject: [PATCH] ppc32: remove orphaned ppc4xx_kgdb.c
+	Thu,  9 Jun 2005 15:11:43 +1000 (EST)
+Date: Thu, 9 Jun 2005 00:11:26 -0500 (CDT)
+From: Kumar Gala <galak@freescale.com>
+To: Andrew Morton <akpm@osdl.org>
+Message-ID: <Pine.LNX.4.61.0506090010260.21964@nylon.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH] ppc32: Add support for MPC8245 8250 serial ports on
+	Sandpoint
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,137 +23,121 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Removes ppc4xx_kgdb.c which is no longer being used. Pointed
-out by Andrei Konovalov.
+Added platform device initialization for the two 8250 style UARTs
+that exist on the MPC8245.  Additionally, updated the Sandpoint
+code to enable one of these UARTs if an MPC8245 is connected to
+it.
 
-Signed-off-by: Matt Porter <mporter@kernel.crashing.org>
+Signed-off-by: Matt McClintock <msm@freescale.com>
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
-diff --git a/arch/ppc/syslib/ppc4xx_kgdb.c b/arch/ppc/syslib/ppc4xx_kgdb.c
-deleted file mode 100644
---- a/arch/ppc/syslib/ppc4xx_kgdb.c
-+++ /dev/null
-@@ -1,124 +0,0 @@
--#include <linux/config.h>
--#include <linux/types.h>
--#include <asm/ibm4xx.h>
--#include <linux/kernel.h>
--
--
--
--#define LSR_DR		0x01 /* Data ready */
--#define LSR_OE		0x02 /* Overrun */
--#define LSR_PE		0x04 /* Parity error */
--#define LSR_FE		0x08 /* Framing error */
--#define LSR_BI		0x10 /* Break */
--#define LSR_THRE	0x20 /* Xmit holding register empty */
--#define LSR_TEMT	0x40 /* Xmitter empty */
--#define LSR_ERR		0x80 /* Error */
--
--#include <platforms/4xx/ibm_ocp.h>
--
--extern struct NS16550* COM_PORTS[];
--#ifndef NULL
--#define NULL 0x00
--#endif
--
--static volatile struct NS16550 *kgdb_debugport = NULL;
--
--volatile struct NS16550 *
--NS16550_init(int chan)
--{
--	volatile struct NS16550 *com_port;
--	int quot;
--#ifdef BASE_BAUD
--	quot = BASE_BAUD / 9600;
--#else
--	quot = 0x000c; /* 0xc = 9600 baud (on a pc) */
--#endif
--
--	com_port = (struct NS16550 *) COM_PORTS[chan];
--
--	com_port->lcr = 0x00;
--	com_port->ier = 0xFF;
--	com_port->ier = 0x00;
--	com_port->lcr = com_port->lcr | 0x80; /* Access baud rate */
--	com_port->dll = ( quot & 0x00ff ); /* 0xc = 9600 baud */
--	com_port->dlm = ( quot & 0xff00 ) >> 8;
--	com_port->lcr = 0x03; /* 8 data, 1 stop, no parity */
--	com_port->mcr = 0x00; /* RTS/DTR */
--	com_port->fcr = 0x07; /* Clear & enable FIFOs */
--
--	return( com_port );
--}
--
--
--void
--NS16550_putc(volatile struct NS16550 *com_port, unsigned char c)
--{
--	while ((com_port->lsr & LSR_THRE) == 0)
--		;
--	com_port->thr = c;
--	return;
--}
--
--unsigned char
--NS16550_getc(volatile struct NS16550 *com_port)
--{
--	while ((com_port->lsr & LSR_DR) == 0)
--		;
--	return (com_port->rbr);
--}
--
--unsigned char
--NS16550_tstc(volatile struct NS16550 *com_port)
--{
--	return ((com_port->lsr & LSR_DR) != 0);
--}
--
--
--#if defined(CONFIG_KGDB_TTYS0)
--#define KGDB_PORT 0
--#elif defined(CONFIG_KGDB_TTYS1)
--#define KGDB_PORT 1
--#elif defined(CONFIG_KGDB_TTYS2)
--#define KGDB_PORT 2
--#elif defined(CONFIG_KGDB_TTYS3)
--#define KGDB_PORT 3
--#else
--#error "invalid kgdb_tty port"
--#endif
--
--void putDebugChar( unsigned char c )
--{
--	if ( kgdb_debugport == NULL )
--		kgdb_debugport = NS16550_init(KGDB_PORT);
--	NS16550_putc( kgdb_debugport, c );
--}
--
--int getDebugChar( void )
--{
--	if (kgdb_debugport == NULL)
--		kgdb_debugport = NS16550_init(KGDB_PORT);
--
--	return(NS16550_getc(kgdb_debugport));
--}
--
--void kgdb_interruptible(int enable)
--{
--	return;
--}
--
--void putDebugString(char* str)
--{
--	while (*str != '\0') {
--		putDebugChar(*str);
--		str++;
--	}
--	putDebugChar('\r');
--	return;
--}
--
--void
--kgdb_map_scc(void)
--{
--	printk("kgdb init \n");
--	kgdb_debugport = NS16550_init(KGDB_PORT);
--}
+---
+commit 55d8b4cb4e140c5070b49dbda9798ae41901f8f9
+tree 5cd65f7fffed04ddca7788510b1d24ba0a5e5a70
+parent a50a1bad037d7c6621ce360310ae810e7bc822c7
+author Matt McClintock <msm@freescale.com> Thu, 09 Jun 2005 00:08:26 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> Thu, 09 Jun 2005 00:08:26 -0500
+
+ arch/ppc/platforms/sandpoint.c  |   20 ++++++++++++++++++++
+ arch/ppc/syslib/mpc10x_common.c |   20 ++++++++++++++++++++
+ 2 files changed, 40 insertions(+), 0 deletions(-)
+
+diff --git a/arch/ppc/platforms/sandpoint.c b/arch/ppc/platforms/sandpoint.c
+--- a/arch/ppc/platforms/sandpoint.c
++++ b/arch/ppc/platforms/sandpoint.c
+@@ -81,6 +81,7 @@
+ #include <linux/serial.h>
+ #include <linux/tty.h>	/* for linux/serial_core.h */
+ #include <linux/serial_core.h>
++#include <linux/serial_8250.h>
+ 
+ #include <asm/system.h>
+ #include <asm/pgtable.h>
+@@ -99,6 +100,7 @@
+ #include <asm/mpc10x.h>
+ #include <asm/pci-bridge.h>
+ #include <asm/kgdb.h>
++#include <asm/ppc_sys.h>
+ 
+ #include "sandpoint.h"
+ 
+@@ -304,6 +306,24 @@ sandpoint_setup_arch(void)
+ 
+ 	/* Lookup PCI host bridges */
+ 	sandpoint_find_bridges();
++
++	if (strncmp (cur_ppc_sys_spec->ppc_sys_name, "8245", 4) == 0)
++	{
++		bd_t *bp = (bd_t *)__res;
++		struct plat_serial8250_port *pdata;
++		pdata = (struct plat_serial8250_port *) ppc_sys_get_pdata(MPC10X_DUART);
++
++		if (pdata)
++		{
++			pdata[0].uartclk = bp->bi_busfreq;
++			pdata[0].membase = ioremap(pdata[0].mapbase, 0x100);
++
++			/* this disables the 2nd serial port on the DUART
++			 * since the sandpoint does not have it connected */
++			pdata[1].uartclk = 0;
++			pdata[1].irq = 0;
++			pdata[1].mapbase = 0;
++		}
+ 
+ 	printk(KERN_INFO "Motorola SPS Sandpoint Test Platform\n");
+ 	printk(KERN_INFO "Port by MontaVista Software, Inc. (source@mvista.com)\n");
+diff --git a/arch/ppc/syslib/mpc10x_common.c b/arch/ppc/syslib/mpc10x_common.c
+--- a/arch/ppc/syslib/mpc10x_common.c
++++ b/arch/ppc/syslib/mpc10x_common.c
+@@ -44,10 +44,12 @@
+ #define MPC10X_I2C_IRQ (EPIC_IRQ_BASE + NUM_8259_INTERRUPTS)
+ #define MPC10X_DMA0_IRQ (EPIC_IRQ_BASE + 1 + NUM_8259_INTERRUPTS)
+ #define MPC10X_DMA1_IRQ (EPIC_IRQ_BASE + 2 + NUM_8259_INTERRUPTS)
++#define MPC10X_UART0_IRQ (EPIC_IRQ_BASE + 4 + NUM_8259_INTERRUPTS)
+ #else
+ #define MPC10X_I2C_IRQ -1
+ #define MPC10X_DMA0_IRQ -1
+ #define MPC10X_DMA1_IRQ -1
++#define MPC10X_UART0_IRQ -1
+ #endif
+ 
+ static struct fsl_i2c_platform_data mpc10x_i2c_pdata = {
+@@ -55,6 +57,16 @@ static struct fsl_i2c_platform_data mpc1
+ };
+ 
+ static struct plat_serial8250_port serial_platform_data[] = {
++	[0] = {
++		.mapbase	= 0x4500,
++		.iotype		= UPIO_MEM,
++		.flags		= UPF_BOOT_AUTOCONF | UPF_SKIP_TEST,
++	},
++	[1] = {
++		.mapbase	= 0x4600,
++		.iotype		= UPIO_MEM,
++		.flags		= UPF_BOOT_AUTOCONF | UPF_SKIP_TEST,
++	},
+ 	{ },
+ };
+ 
+@@ -399,6 +411,12 @@ mpc10x_bridge_init(struct pci_controller
+ 	ppc_sys_platform_devices[MPC10X_DMA1].resource[1].start = MPC10X_DMA1_IRQ;
+ 	ppc_sys_platform_devices[MPC10X_DMA1].resource[1].end = MPC10X_DMA1_IRQ;
+ 
++	serial_platform_data[0].mapbase += phys_eumb_base;
++	serial_platform_data[0].irq = MPC10X_UART0_IRQ;
++
++	serial_platform_data[1].mapbase += phys_eumb_base;
++	serial_platform_data[1].irq = MPC10X_UART0_IRQ + 1;
++
+ 	/*
+ 	 * 8240 erratum 26, 8241/8245 erratum 29, 107 erratum 23: speculative
+ 	 * PCI reads may return stale data so turn off.
+@@ -597,6 +615,8 @@ void __init mpc10x_set_openpic(void)
+ 	openpic_set_sources(EPIC_IRQ_BASE, 3, OpenPIC_Addr + 0x11020);
+ 	/* Skip reserved space and map Message Unit Interrupt (I2O) */
+ 	openpic_set_sources(EPIC_IRQ_BASE + 3, 1, OpenPIC_Addr + 0x110C0);
++	/* Skip reserved space and map Serial Interupts */
++	openpic_set_sources(EPIC_IRQ_BASE + 4, 2, OpenPIC_Addr + 0x11120);
+ 
+ 	openpic_init(NUM_8259_INTERRUPTS);
+ }
