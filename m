@@ -1,18 +1,32 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 6160767B42
+Return-Path: <markc@mail.com>
+Received: from relay02.roc.ny.frontiernet.net (relay02.roc.ny.frontiernet.net
+	[66.133.182.165]) by ozlabs.org (Postfix) with ESMTP id 7D8B667A5B
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Jun 2005 01:20:38 +1000 (EST)
-In-Reply-To: <528646bc05060907544d58da41@mail.gmail.com>
-References: <528646bc05060907544d58da41@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <02ea73261175dc6bfb99047e73395fb1@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Thu, 9 Jun 2005 10:20:32 -0500
-To: "Grant Likely" <glikely@gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC52xx: sysfs failure on adding new device driver
+	Fri, 10 Jun 2005 01:27:46 +1000 (EST)
+Received: from filter07.roc.ny.frontiernet.net
+	(filter07.roc.ny.frontiernet.net [66.133.183.74])
+	by relay02.roc.ny.frontiernet.net (Postfix) with ESMTP id 1FA48372A71
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu,  9 Jun 2005 15:27:45 +0000 (UTC)
+Received: from relay02.roc.ny.frontiernet.net ([66.133.182.165])
+	by filter07.roc.ny.frontiernet.net (filter07.roc.ny.frontiernet.net
+	[66.133.183.74]) (amavisd-new, port 10024)
+	with LMTP id 21394-02-92 for <linuxppc-embedded@ozlabs.org>;
+	Thu, 9 Jun 2005 15:27:45 +0000 (UTC)
+Received: from chuck2 (170-215-146-234.br1.rmn.wv.frontiernet.net
+	[170.215.146.234])
+	by relay02.roc.ny.frontiernet.net (Postfix) with ESMTP id B87A8372A3E
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu,  9 Jun 2005 15:27:43 +0000 (UTC)
+Message-ID: <00b701c56d07$e3b166a0$0301a8c0@chuck2>
+From: "Mark Chambers" <markc@mail.com>
+Cc: <linuxppc-embedded@ozlabs.org>
+References: <20050609135509.AD5C2C1512@atlas.denx.de>
+Date: Thu, 9 Jun 2005 11:28:28 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Re: MPC52xx: sysfs failure on adding new device driver 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,18 +37,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Sylvain:
+> btw, if not yet integrated you should send your patch to Wolfang, he's 
+> the one maintaining that tree.
 
->> That changes the semantic of the driver names for the platform bus
->> however, making the dot a "special" char.
-> Who needs to be asked about this?  Should I take this discussion over
-> the the LKML?
+Wolfgang:
+> I've seen the patch, but did not decide yet what to do with it.  Many
+> drivers  don't  support  devfs  anyway, and in my opinion devfs makes
+> little sense in embedded systems anyway. Not to mention that it  will
+> officially  be removed from the kernel tree in less than 4 weeks from
+> now (see Documentation/feature-removal-schedule.txt).
 
-GregKH would be the person to talk to about the driver core and taking 
-this to LKML would be useful.  We probably have a similar issue with 
-CPM comm channels.
+This is nonsense.  You know, when I made this patch I said 
+to myself, "Self, you're wasting your time, these guys won't take patches 
+from somebody they don't know"  But I thought it was enough of a 
+no-brainer that it might go through.
 
-I always assumed multiple drivers would get probed and the drivers 
-would fail in probe if they were not suppose to bind to the given 
-channel/psc, etc..
+Seems I was wrong.
 
-- kumar
+Mark Chambers
