@@ -1,23 +1,15 @@
-Return-Path: <panto@intracom.gr>
-Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
-	by ozlabs.org (Postfix) with ESMTP id E8BDE67B28
+Return-Path: <scarayol@assystembrime.com>
+Received: from srv_courtaboeuf.brime.fr (unknown [81.255.87.178])
+	by ozlabs.org (Postfix) with ESMTP id 47BF567B26
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Jun 2005 16:36:07 +1000 (EST)
-Received: from mailserv.intranet.gr (localhost [127.0.0.1])
-	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id j596fJEr006179
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 9 Jun 2005 09:41:20 +0300 (EEST)
-Message-ID: <42A7DE75.8040205@intracom.gr>
-Date: Thu, 09 Jun 2005 09:15:17 +0300
-From: Pantelis Antoniou <panto@intracom.gr>
+	Thu,  9 Jun 2005 17:29:10 +1000 (EST)
+To: linuxppc-embedded@ozlabs.org
+Message-ID: <OF76EEFE38.5001E643-ONC125701B.00283639@brime.fr>
+From: scarayol@assystembrime.com
+Date: Thu, 9 Jun 2005 09:30:43 +0200
 MIME-Version: 1.0
-To: Dan Malek <dan@embeddededge.com>
-References: <20050608102938.023f271f.ajz@cambridgebroadband.com>
-	<d32482ab845e745a00426671eff86b9e@embeddededge.com>
-In-Reply-To: <d32482ab845e745a00426671eff86b9e@embeddededge.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: consistent_alloc() on 82xx
+Content-type: text/plain; charset=us-ascii
+Subject: Read in /dev/port with Segmentation Fault
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,33 +20,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dan Malek wrote:
-> 
-> On Jun 8, 2005, at 5:29 AM, Alex Zeffertt wrote:
-> 
->> Does anybody know why it isn't built for 6xx cores?
-> 
-> 
-> Because 6xx cores are cache coherent and there shouldn't
-> be any need for "uncached" memory regions.
-> 
->> I'm working on the ATM driver and it seems that certain external memory
->> areas accessed by the PQII CPM by-pass the cache.
-> 
-> 
-> That's news to me, and I've written lots of CPM drivers, including ATM.
-> Do you have a specific example?
-> 
+Hi all,
 
-I may also need consistent_alloc for some testing reasons Dan. :)
+I want to access to IO ports on a MPC885. The iopl() is not implemented, in
+my distribution, to use inw() outw().
+So I use /dev/port. It works for open("/dev/port",..) and lseek() but when
+i do a read()  i have a segmentation fault. I gave all the right to
+/dev/port
+Does anybody have an idea ?
+Thanks a lot.
 
-> Thanks.
-> 
->     -- Dan
-> 
-
-If I build arch/ppc/mm/cachemap.c will it work for 82xx? Any reason not to?
-
-Regards
-
-Pantelis
+Sophie CARAYOL
