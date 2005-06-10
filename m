@@ -1,19 +1,25 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 7B966679F1
+Return-Path: <glikely@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.195])
+	by ozlabs.org (Postfix) with ESMTP id A4BC0679F1
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 11 Jun 2005 01:24:44 +1000 (EST)
-In-Reply-To: <20050607012009.GB16387@gate.ebshome.net>
-References: <20050607012009.GB16387@gate.ebshome.net>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <27777aec8e616a79f994dca2935e26a7@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Fri, 10 Jun 2005 10:24:33 -0500
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: Andrew Morton <akpm@osdl.org>,
-	Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] ppc32: add 405EP cpu_spec entry
+	Sat, 11 Jun 2005 02:06:34 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id 57so703702wri
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 10 Jun 2005 09:06:32 -0700 (PDT)
+Message-ID: <528646bc050610090654d01bbe@mail.gmail.com>
+Date: Fri, 10 Jun 2005 10:06:32 -0600
+From: Grant Likely <glikely@gmail.com>
+To: Sylvain Munaut <tnt@246tnt.com>
+In-Reply-To: <42A99F1C.50104@246tNt.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <528646bc05060907544d58da41@mail.gmail.com>
+	<02ea73261175dc6bfb99047e73395fb1@freescale.com>
+	<528646bc050609114857191ca7@mail.gmail.com>
+	<42A99F1C.50104@246tNt.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: MPC52xx: sysfs failure on adding new device driver
+Reply-To: Grant Likely <glikely@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,50 +30,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Linus,
+On 6/10/05, Sylvain Munaut <tnt@246tnt.com> wrote:
+> Hi Grant
+>=20
+> > +     /* Assign driver names to PSC devices */
+> > +     ppc_sys_platform_devices[MPC52xx_PSC1].name =3D "mpc52xx-psc.uart=
+";
+> > +     ppc_sys_platform_devices[MPC52xx_PSC2].name =3D "mpc52xx-psc.uart=
+";
+> > +     ppc_sys_platform_devices[MPC52xx_PSC3].name =3D "mpc52xx-psc.spi"=
+;
+>=20
+> Yes, I kinda like that. That maybe the cleanest way, just 1 line of code
+> per device and when no subfn is assigned, nothing is loaded.
+>=20
+> I don't really like messing manually with the ppc_sys_platform
+> "internals" outside of the ppc_sys code, but maybe creating a call like
+>=20
+> ppc_sys_assign_subfn(MPC52xx_PSC1,"uart");
+>=20
+>=20
+> and place it in the ppc_sys code so that other platforms havin such
+> "multi usage" device all have an uniform way of handling that. Galak ?
+Hmm, yes...  I like this better.  I was also uncomfortable with
+messing with the table directly.  A function like that can make sure
+that the table is not modified after it is registered with the
+platform bus; or if it is, make sure that a driver has not yet been
+assigned and that sysfs is properly updated.  It would protect against
+doing something stupid like:
 
-You have applied this patch twice now.
+ppc_sys_platform_devices[MPC52xx_MSCAN1].name =3D "mpc52xx-psc.uart";
 
-- kumar
-
-On Jun 6, 2005, at 8:20 PM, Eugene Surovegin wrote:
-
-> Andrew,
->
-> the following patch adds definition for PPC 405EP which was lost
-> somehow during 2.4 -> 2.6 transition.
->
-> Recent change to arch/ppc/kernel/misc.S ("Fix incorrect CPU_FTR fixup
-> usage for unified caches") triggered this bug and 405EP boards don't
-> boot anymore.
->
-> Please, consider applying this patch before 2.6.12 release.
->
-> Signed-off-by: Eugene Surovegin <ebs@ebshome.net>
->
-> diff --git a/arch/ppc/kernel/cputable.c b/arch/ppc/kernel/cputable.c
-> --- a/arch/ppc/kernel/cputable.c
-> +++ b/arch/ppc/kernel/cputable.c
-> @@ -838,6 +838,17 @@ struct cpu_spec	cpu_specs[] = {
->  		.icache_bsize		= 32,
->  		.dcache_bsize		= 32,
->  	},
-> +	{	/* 405EP */
-> +		.pvr_mask		= 0xffff0000,
-> +		.pvr_value		= 0x51210000,
-> +		.cpu_name		= "405EP",
-> +		.cpu_features		= CPU_FTR_SPLIT_ID_CACHE |
-> +			CPU_FTR_USE_TB,
-> +		.cpu_user_features	= PPC_FEATURE_32 |
-> +			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
-> +		.icache_bsize		= 32,
-> +		.dcache_bsize		= 32,
-> +	},
->
->  #endif /* CONFIG_40x */
->  #ifdef CONFIG_44x
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+g.
