@@ -1,23 +1,27 @@
-Return-Path: <torvalds@osdl.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 85C1C67B1C
+Return-Path: <edward.qin.hong@gmail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.206])
+	by ozlabs.org (Postfix) with ESMTP id 6853F67B28
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 11 Jun 2005 04:52:36 +1000 (EST)
-Date: Fri, 10 Jun 2005 11:54:33 -0700 (PDT)
-From: Linus Torvalds <torvalds@osdl.org>
-To: Andrew Morton <akpm@osdl.org>
-In-Reply-To: <20050610112907.7b566c91.akpm@osdl.org>
-Message-ID: <Pine.LNX.4.58.0506101149370.2286@ppc970.osdl.org>
-References: <20050607012009.GB16387@gate.ebshome.net>
-	<27777aec8e616a79f994dca2935e26a7@freescale.com>
-	<Pine.LNX.4.58.0506100932240.2286@ppc970.osdl.org>
-	<20050610112907.7b566c91.akpm@osdl.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 11 Jun 2005 07:43:58 +1000 (EST)
+Received: by zproxy.gmail.com with SMTP id 18so395965nzp
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 10 Jun 2005 14:43:56 -0700 (PDT)
+Message-ID: <21fb73bc0506101443414d99a2@mail.gmail.com>
+Date: Fri, 10 Jun 2005 15:43:56 -0600
+From: Edward Hong <edward.qin.hong@gmail.com>
+To: Randy Vinson <rvinson@mvista.com>
+In-Reply-To: <21fb73bc0506061300126b1c43@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <21fb73bc0506041640736e3020@mail.gmail.com>
+	<20050605002832.6311AC1512@atlas.denx.de>
+	<21fb73bc050605223311af6408@mail.gmail.com>
+	<42A49A80.9000405@mvista.com>
+	<21fb73bc0506061300126b1c43@mail.gmail.com>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] ppc32: add 405EP cpu_spec entry
+Subject: Re: kernel ported from ELDK 3.0 hangs (loops in idled()) on my
+	custom MPC870 Board
+Reply-To: Edward Hong <edward.qin.hong@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,30 +32,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+It looks like the BDI2000 debugger caused the problem. The kernel
+boots fine after removing the debugger.
 
+Thank you very much for all your replies!
 
-On Fri, 10 Jun 2005, Andrew Morton wrote:
-> 
-> >  I think Andrew continually thinks it is dropped, because the patch ends up 
-> >  applying again, even though it got applied. So he keeps on re-sending it 
-> >  over and over again ;)
-> 
-> Fault-tolerance!
+Edward
 
-Indeed.
-
-However, I'm sure there's a better way. For example, something like "try
-if the patch applied reversed" might be a good idea to at least mark it
-for questioning.
-
-Something like
-
-	patch -spfR  --dry-run --fuzz=0 < patch
-	if [ $? -eq 0 ]; then
-		echo Hmm.. patch might be applied already
-		exit 1
-	fi
-
-might be a starting point...
-
-		Linus
+On 6/6/05, Edward Hong <edward.qin.hong@gmail.com> wrote:
+> On 6/6/05, Randy Vinson <rvinson@mvista.com> wrote:
+> >
+> > Hi Edward,
+> >   I've seen these symptoms before. The problem was traced to external
+> > interrupts being disabled (MSR[EE] not set). Without external
+> > interrupts, there is no decrementer interrupt (at least on 7xx
+> > processors). Without the decrementer, there in no system clock tick and
+> > without the clock tick, the scheduler won't run which means that the
+> > init task won't start. To verify that this is the problem, use mfmsr()
+> > to get the MSR and print it. I'd suggest that you add something like:
+> >
+> >     printk("MSR =3D %x\n", mfmsr());
+> >
+> I got  MSR =3D 9032 just before cpu_idle which means EE (the most
+> significant bit) was enabled.
+>=20
+> Thank you!
+>=20
+> Edward
+>
