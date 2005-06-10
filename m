@@ -1,25 +1,22 @@
-Return-Path: <glikely@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.195])
-	by ozlabs.org (Postfix) with ESMTP id A4BC0679F1
+Return-Path: <torvalds@osdl.org>
+Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id E598967AC6
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 11 Jun 2005 02:06:34 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 57so703702wri
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Jun 2005 09:06:32 -0700 (PDT)
-Message-ID: <528646bc050610090654d01bbe@mail.gmail.com>
-Date: Fri, 10 Jun 2005 10:06:32 -0600
-From: Grant Likely <glikely@gmail.com>
-To: Sylvain Munaut <tnt@246tnt.com>
-In-Reply-To: <42A99F1C.50104@246tNt.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <528646bc05060907544d58da41@mail.gmail.com>
-	<02ea73261175dc6bfb99047e73395fb1@freescale.com>
-	<528646bc050609114857191ca7@mail.gmail.com>
-	<42A99F1C.50104@246tNt.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC52xx: sysfs failure on adding new device driver
-Reply-To: Grant Likely <glikely@gmail.com>
+	Sat, 11 Jun 2005 02:32:15 +1000 (EST)
+Date: Fri, 10 Jun 2005 09:34:07 -0700 (PDT)
+From: Linus Torvalds <torvalds@osdl.org>
+To: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <27777aec8e616a79f994dca2935e26a7@freescale.com>
+Message-ID: <Pine.LNX.4.58.0506100932240.2286@ppc970.osdl.org>
+References: <20050607012009.GB16387@gate.ebshome.net>
+	<27777aec8e616a79f994dca2935e26a7@freescale.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Andrew Morton <akpm@osdl.org>,
+	Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] ppc32: add 405EP cpu_spec entry
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,35 +27,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 6/10/05, Sylvain Munaut <tnt@246tnt.com> wrote:
-> Hi Grant
->=20
-> > +     /* Assign driver names to PSC devices */
-> > +     ppc_sys_platform_devices[MPC52xx_PSC1].name =3D "mpc52xx-psc.uart=
-";
-> > +     ppc_sys_platform_devices[MPC52xx_PSC2].name =3D "mpc52xx-psc.uart=
-";
-> > +     ppc_sys_platform_devices[MPC52xx_PSC3].name =3D "mpc52xx-psc.spi"=
-;
->=20
-> Yes, I kinda like that. That maybe the cleanest way, just 1 line of code
-> per device and when no subfn is assigned, nothing is loaded.
->=20
-> I don't really like messing manually with the ppc_sys_platform
-> "internals" outside of the ppc_sys code, but maybe creating a call like
->=20
-> ppc_sys_assign_subfn(MPC52xx_PSC1,"uart");
->=20
->=20
-> and place it in the ppc_sys code so that other platforms havin such
-> "multi usage" device all have an uniform way of handling that. Galak ?
-Hmm, yes...  I like this better.  I was also uncomfortable with
-messing with the table directly.  A function like that can make sure
-that the table is not modified after it is registered with the
-platform bus; or if it is, make sure that a driver has not yet been
-assigned and that sysfs is properly updated.  It would protect against
-doing something stupid like:
 
-ppc_sys_platform_devices[MPC52xx_MSCAN1].name =3D "mpc52xx-psc.uart";
 
-g.
+On Fri, 10 Jun 2005, Kumar Gala wrote:
+> 
+> You have applied this patch twice now.
+
+Actually, looks like three times ;)
+
+I think Andrew continually thinks it is dropped, because the patch ends up 
+applying again, even though it got applied. So he keeps on re-sending it 
+over and over again ;)
+
+Andrew, I'll remove two extra copies. You please remove that patch from 
+your queue..
+
+		Linus
