@@ -1,16 +1,18 @@
-Return-Path: <Consultants9@cgt-consult.com>
-Received: from mail.cgt-consult.com (unknown [63.200.10.188])
-	by ozlabs.org (Postfix) with ESMTP id B0EA367B6E
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id BBF1D67B7B
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Jun 2005 10:52:27 +1000 (EST)
-Message-ID: <D907845967FCD7118A2C000C6EC0B8ED04F97C6B@h91s5a32n192.user.nortelnetworks.com>
-From: Consultants <Consultants9@cgt-consult.com>
-To: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-Date: Thu, 9 Jun 2005 16:36:40 -0700 
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C56D4C.1622D210"
-Subject: IT Services
+	Fri, 10 Jun 2005 11:08:35 +1000 (EST)
+In-Reply-To: <61cc712d050609162565d8bbfd@mail.gmail.com>
+References: <61cc712d050609162565d8bbfd@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <f9515cd0efd9087f985eaa2462d0c06e@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Thu, 9 Jun 2005 20:08:31 -0500
+To: "Kylo Ginsberg" <kylo.ginsberg@gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Mapping full 1 GB of memory on a Freescale Book E part
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,154 +23,64 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This message is in MIME format. Since your mail reader does not understand
-this format, some or all of this message may not be legible.
 
-------_=_NextPart_001_01C56D4C.1622D210
-Content-Type: text/plain
+On Jun 9, 2005, at 6:25 PM, Kylo Ginsberg wrote:
 
+> On 6/9/05, Kumar Gala <kumar.gala@freescale.com> wrote:
+>>
+>> On Jun 9, 2005, at 5:09 PM, Kylo Ginsberg wrote:
+>>> I've modified fsl_booke_mmu.c to use a 4th TLB, thus mapping the full
+>>> 1 GB of memory.  However, I'm new to linux memory management, so I'd
+>>> appreciate any comments as to whether there are tradeoffs or dangers
+>>> here that I am missing.
+>>
+>> There is a danger here in that you have left no virtual address space
+>> for the kernel.  Since KERNEL_BASE is normally 0xc000_0000 + 1G ends 
+>> up
+>> a the end of memory.  There for any devices that need virtual memory
+>> space would not have any to map out of.  I'm kinda amazed this works 
+>> at
+>> all.  I'd be interested in seeing what a boot log looks like for this
+>> config.
+>
+> Sorry, should have mentioned this in the first post.  I dropped
+> KERNEL_BASE to 0xa0000000 and upped LOWMEM_SIZE to 0x40000000.  So the
+> Advanced Setup portion of my .config reads:
+>
+> #
+> # Advanced setup
+> #
+> CONFIG_ADVANCED_OPTIONS=y
+> CONFIG_HIGHMEM_START=0xfe000000
+> CONFIG_LOWMEM_SIZE_BOOL=y
+> CONFIG_LOWMEM_SIZE=0x40000000
+> CONFIG_KERNEL_START_BOOL=y
+> CONFIG_KERNEL_START=0xa0000000
+> # CONFIG_TASK_SIZE_BOOL is not set
+> CONFIG_TASK_SIZE=0x80000000
+> # CONFIG_BOOT_LOAD_BOOL is not set
+> CONFIG_BOOT_LOAD=0x00800000
+>
+> and under Platform Options:
+>
+> # CONFIG_HIGHMEM is not set
+>
+>> The way to handle this is by enabling HIGHMEM support in the kernel or
+>> dropping the KERNEL_START in the config.  I'm haven't ever tried to
+>> drop KERNEL_START so your milage may very on what if anything that 
+>> will
+>> break.
+>
+> So, an alternative would be to leave fsl_booke_mmu.c untouched, revert
+> my KERNEL_START/LOWMEM mods, and instead enable HIGHMEM?  Setting
+> HIGHMEM_START to ...? Will that entail more TLB thrashing?
 
-.Hi ,
+You have to set HIGHMEM_START to something. I think the default is 
+fine.  It only means more TLB thrasing if the kernel has to touch one 
+of the pages in HIGHMEM.  If its only application code that is using 
+memory > 768M then you shouldn't really see any performance impact.
 
-I hope things are going well at your company! 
+either solution should work, it just depends on what you want to 
+accomplish at the end.
 
-We have built our reputation by giving our clients 1 or 2 resumes, whereby
-both candidates are a 100% PERFECT matching candidates, based on the skills
-required. The candidates we present are technically screened in-depth and
-qualified by our internal recruiters (who are also technical). We may
-interview 50 - 100 candidates before we have the confidence that the
-candidate is a 100% match, for our client. We can also further qualify the
-candidate through an online technical test from www.proveit.com. We go the
-extra mile to service our clients!!
-
-I am conducting my monthly check with you, for your needs for:
-1)	IT Contractors
-2)	Full-time employee staffing needs
-3)	Off-site Projects
-4)	Off-shore projects
-
-How can I be of service to you, at your company? As an example, we have
-Consultants in the area of Project Managers, Analysts, Developers, QA
-Testers, Network technicians, .NET, Oracle and Java Developers ... etc. 
-
-We also offer Projects services such as offshore in web development, as well
-as database development. We will be happy to give you a FREE prototype
-design, with no obligation, for any offshore projects and all our projects
-come with a guarantee. For offshore, our hourly rates are very reasonable,
-in $15/hr - $30/hr range.
-
-How can I be of service?
-Ipiipconfigfig-
-
-Thank you. 
-
-Nick
-CGT Consulting
-Tel: (714) 572-0454
-
-
-Emailed to: linuxppc-embedded@ozlabs.org
-
-Anti-SPAM Policy Disclaimer: Under Bill s.1618 Title III passed by the 105th
-U. S. Congress, mail cannot be considered Spam as long as we include contact
-information and a remove link for removal from our mailing list. If this
-e-mail is unsolicited, please accept our apologies and click on the
-following removal link:
-mailto:Consultants9@cgt-consult.com?subject=Remove-IT-Services or reply back
-with REMOVE in the SUBJECT with this email address:
-linuxppc-embedded@ozlabs.org
-
-
-CGT Consulting Privacy Policy: www.cgt-consult.com/privacy Can Spam
-Compliant
-
-
-------_=_NextPart_001_01C56D4C.1622D210
-Content-Type: text/html
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-5.5.2653.12">
-<TITLE>IT Services</TITLE>
-</HEAD>
-<BODY>
-<BR>
-
-<P><FONT SIZE=3D2>.Hi ,</FONT>
-</P>
-
-<P><FONT SIZE=3D2>I hope things are going well at your company! </FONT>
-</P>
-
-<P><FONT SIZE=3D2>We have built our reputation by giving our clients 1 =
-or 2 resumes, whereby both candidates are a 100% PERFECT matching =
-candidates, based on the skills required. The candidates we present are =
-technically screened in-depth and qualified by our internal recruiters =
-(who are also technical). We may interview 50 - 100 candidates before =
-we have the confidence that the candidate is a 100% match, for our =
-client. We can also further qualify the candidate through an online =
-technical test from www.proveit.com. We go the extra mile to service =
-our clients!!</FONT></P>
-
-<P><FONT SIZE=3D2>I am conducting my monthly check with you, for your =
-needs for:</FONT>
-<BR><FONT SIZE=3D2>1)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; IT =
-Contractors</FONT>
-<BR><FONT SIZE=3D2>2)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Full-time employee =
-staffing needs</FONT>
-<BR><FONT SIZE=3D2>3)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Off-site =
-Projects</FONT>
-<BR><FONT SIZE=3D2>4)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Off-shore =
-projects</FONT>
-</P>
-
-<P><FONT SIZE=3D2>How can I be of service to you, at your company? As =
-an example, we have Consultants in the area of Project Managers, =
-Analysts, Developers, QA Testers, Network technicians, .NET, Oracle and =
-Java Developers ... etc. </FONT></P>
-
-<P><FONT SIZE=3D2>We also offer Projects services such as offshore in =
-web development, as well as database development. We will be happy to =
-give you a FREE prototype design, with no obligation, for any offshore =
-projects and all our projects come with a guarantee. For offshore, our =
-hourly rates are very reasonable, in $15/hr - $30/hr range.</FONT></P>
-
-<P><FONT SIZE=3D2>How can I be of service?</FONT>
-<BR><FONT SIZE=3D2>Ipiipconfigfig-</FONT>
-</P>
-
-<P><FONT SIZE=3D2>Thank you. </FONT>
-</P>
-
-<P><FONT SIZE=3D2>Nick</FONT>
-<BR><FONT SIZE=3D2>CGT Consulting</FONT>
-<BR><FONT SIZE=3D2>Tel: (714) 572-0454</FONT>
-</P>
-<BR>
-
-<P><FONT SIZE=3D2>Emailed to: linuxppc-embedded@ozlabs.org</FONT>
-</P>
-
-<P><FONT SIZE=3D2>Anti-SPAM Policy Disclaimer: Under Bill s.1618 Title =
-III passed by the 105th U. S. Congress, mail cannot be considered Spam =
-as long as we include contact information and a remove link for removal =
-from our mailing list. If this e-mail is unsolicited, please accept our =
-apologies and click on the following removal link: <A =
-HREF=3D"mailto:Consultants9@cgt-consult.com?subject=3DRemove-IT-Services=
-">mailto:Consultants9@cgt-consult.com?subject=3DRemove-IT-Services</A> =
-or reply back with REMOVE in the SUBJECT with this email address: =
-linuxppc-embedded@ozlabs.org</FONT></P>
-<BR>
-
-<P><FONT SIZE=3D2>CGT Consulting Privacy Policy: =
-www.cgt-consult.com/privacy Can Spam Compliant</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C56D4C.1622D210--
+- kumar
