@@ -1,20 +1,22 @@
-Return-Path: <geoffrey.levand@am.sony.com>
-Received: from mail8.fw-bc.sony.com (mail8.fw-bc.sony.com [160.33.98.75])
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from parcelfarce.linux.theplanet.co.uk
+	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9511C679F1
+	by ozlabs.org (Postfix) with ESMTP id 18D3A679F0
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Jun 2005 02:40:24 +1000 (EST)
-Message-ID: <42ADB6EE.30205@am.sony.com>
-Date: Mon, 13 Jun 2005 09:40:14 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Prosun Niyogi <pniyogi@us.ibm.com>
-References: <OF6BE916AF.4D6A65C4-ON8625701F.004ACEBA-8625701F.004B9D77@us.ibm.com>
-In-Reply-To: <OF6BE916AF.4D6A65C4-ON8625701F.004ACEBA-8625701F.004B9D77@us.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: KGDB on BookE
+	Tue, 14 Jun 2005 02:47:04 +1000 (EST)
+Date: Mon, 13 Jun 2005 08:50:13 -0300
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Message-ID: <20050613115013.GA22652@logos.cnet>
+References: <20050609162650.GA8125@logos.cnet>
+	<20050609182452.GC8125@logos.cnet>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050609182452.GC8125@logos.cnet>
+Cc: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
+Subject: Re: 8xx fixes GIT tree
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,27 +27,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Prosun Niyogi wrote:
+
+Hi,
+
+On Thu, Jun 09, 2005 at 03:24:52PM -0300, Marcelo Tosatti wrote:
+> On Thu, Jun 09, 2005 at 01:26:50PM -0300, Marcelo Tosatti wrote:
+> > Hi, 
+> > 
+> > I've put up a GIT tree with some 8xx fixes. 
+> > 
+> > I plan to continue collecting fixes there - I encourage other folks 
+> > working with v2.6 on 8xx to join in and contribute.
+> > 
+> > Its about time to setup a "TODO" list for v2.6 8xx, a few which I 
+> > remember from the top of my head:
+> > 
+> > - merge CPU15 workaround
+> > - merge PCMCIA driver
+> > - merge arch/ppc/8xx_io/fec.c v2.6 update
+> > - Remove misc-embedded.c
+> > 
+> > It should live somewhere in the web (wiki would be ideal).
+> > 
+> > It contains the following changes at the moment:
 > 
-> I've grabbed latest kernel.org kernel (2.6.11.11) to attempt to get a
-> working kgdb on my ebony setup. Checking the mailing list archives, it
-> seems as if all the 4xx specific kgdb patches have been merged with
-> kernel.org. Is this the case? If so, I have a problem single stepping
-> using kgdb. The debugger_sstep(regs) function is never called from
-> traps.c. So, as of right now.. I can only set/hit an arbitrary
-> breakpoint (for my testing, I've been setting a breakpoint at sys_sync).
-> After setting the breakpoint and continuing from the initial kgdb entry
-> point, gdb successfully catches the breakpoint at sys_sync, but when I
-> attempt to step, the kernel continues normal operation, and subsequent
-> attempts at breaking into gdb control by issuing a "sync" command on the
-> ebony terminal in minicom do not hit the breakpoint. Any
-> pointers/suggestions as to where I can obtain a working kgdb-enabled
-> kernel for the ebony board? Any assistance would be helpful.
+> Oh, I forgot to mention the URL - its at:
 > 
+> http://www.kernel.org/pub/scm/linux/kernel/git/marcelo/8xx-fixes/
+> 
+> Web interface at:
+> 
+> http://www.kernel.org/git/?p=linux/kernel/git/marcelo/8xx-fixes;a=summary
 
-Apply the patches in CVS from http://sourceforge.net/projects/kgdb
+Wolfgang setup a "TODO list" at
 
-This works with 2.6.11.11 and Ebony with both serial and Ether connections, 
-but I found the kernel hangs with CONFIG_PREEMPT=y.
+http://www.denx.de/twiki/bin/view/Todo8xx/WebHome
 
--Geoff
+It currently contains:
+
+- merge CPU15 workaround 
+- merge PCMCIA driver
+- merge arch/ppc/8xx_io/fec.c v2.6 update
+- Remove misc-embedded.c
+- Fix BDI2000 support
