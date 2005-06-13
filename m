@@ -1,16 +1,29 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao07.cox.net (fed1rmmtao07.cox.net [68.230.241.32])
-	by ozlabs.org (Postfix) with ESMTP id 572A767B31
+Return-Path: <acurtis@onz.com>
+Received: from dell2650.onz.com (onz.com [67.121.61.113])
+	by ozlabs.org (Postfix) with ESMTP id 7BDDC679E7
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 11 Jun 2005 10:18:08 +1000 (EST)
-Date: Fri, 10 Jun 2005 17:18:03 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: akpm@osdl.org
-Message-ID: <20050610171802.B15999@cox.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
-Subject: [PATCH][MM] ppc32: enable rapidio on mpc85xx ads boards
+	Mon, 13 Jun 2005 10:29:20 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by dell2650.onz.com (Postfix) with ESMTP id E0D502B415D
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 12 Jun 2005 17:29:16 -0700 (PDT)
+Received: from dell2650.onz.com ([127.0.0.1])
+	by localhost (dell2650.onz.com [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 08738-02 for <linuxppc-embedded@ozlabs.org>;
+	Sun, 12 Jun 2005 17:29:16 -0700 (PDT)
+Received: from [192.168.1.101] (unknown [192.168.1.1])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(No client certificate requested)
+	by dell2650.onz.com (Postfix) with ESMTP id 5FE9F2B4155
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 12 Jun 2005 17:29:16 -0700 (PDT)
+Mime-Version: 1.0 (Apple Message framework v622)
+Message-Id: <cd9d527ad15c64842229a54e1ed3d6b0@onz.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: Ppc Embedded <linuxppc-embedded@ozlabs.org>
+From: Allen Curtis <acurtis@onz.com>
+Date: Sun, 12 Jun 2005 17:29:21 -0700
+Subject: mpc82xx FCC patches
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,32 +34,7 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Enables RIO on the MPC8540/8560 ADS ref boards.  RIO can be used
-with a crossover cable between two of them.
+Can someone tell me if this is the latest FCC patch?
+http://ozlabs.org/pipermail/linuxppc-embedded/2005-May/018124.html
 
-Signed-off-by: Matt Porter <mporter@kernel.crashing.org>
-
-diff --git a/arch/ppc/platforms/85xx/mpc85xx_ads_common.c b/arch/ppc/platforms/85xx/mpc85xx_ads_common.c
---- a/arch/ppc/platforms/85xx/mpc85xx_ads_common.c
-+++ b/arch/ppc/platforms/85xx/mpc85xx_ads_common.c
-@@ -47,6 +47,8 @@
- 
- #include <mm/mmu_decl.h>
- 
-+#include <syslib/ppc85xx_rio.h>
-+
- #include <platforms/85xx/mpc85xx_ads_common.h>
- 
- #ifndef CONFIG_PCI
-@@ -223,3 +225,11 @@ mpc85xx_exclude_device(u_char bus, u_cha
- }
- 
- #endif /* CONFIG_PCI */
-+
-+#ifdef CONFIG_RAPIDIO
-+void platform_rio_init(void)
-+{
-+	/* 512MB RIO LAW at 0xc0000000 */
-+	mpc85xx_rio_setup(0xc0000000, 0x20000000);
-+}
-+#endif /* CONFIG_RAPIDIO */
+It appears from the comments that there are a few RFCs outstanding.
