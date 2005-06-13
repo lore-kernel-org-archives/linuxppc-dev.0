@@ -1,22 +1,20 @@
-Return-Path: <davidkwho@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.194])
-	by ozlabs.org (Postfix) with ESMTP id 82356679EA
+Return-Path: <achim.machura@berghof.com>
+Received: from pegasus.berghof.com (unknown [145.253.135.72])
+	by ozlabs.org (Postfix) with ESMTP id 6516B679EA
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 13 Jun 2005 23:31:22 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 37so528251wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 13 Jun 2005 06:31:20 -0700 (PDT)
-Message-ID: <4dd15d18050613063124ebd58f@mail.gmail.com>
-Date: Mon, 13 Jun 2005 09:31:20 -0400
-From: David Ho <davidkwho@gmail.com>
-To: "colui77@virgilio.it" <colui77@virgilio.it>
-In-Reply-To: <4293EE1500034F4D@ims2a.cp.tin.it>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <4293EE1500034F4D@ims2a.cp.tin.it>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: JVM for PPC405
-Reply-To: David Ho <davidkwho@gmail.com>
+	Mon, 13 Jun 2005 23:44:08 +1000 (EST)
+Received: from BATEEE52 (batee-e52.be-int [10.255.241.52])
+	by pegasus.berghof.com (8.12.10/8.12.10) with SMTP id j5DDSk6O025319
+	for <linuxppc-embedded@ozlabs.org>; Mon, 13 Jun 2005 15:28:46 +0200
+From: "Achim Machura" <achim.machura@berghof.com>
+To: "Linuxppc-Embedded \(E-Mail\)" <linuxppc-embedded@ozlabs.org>
+Date: Mon, 13 Jun 2005 15:28:40 +0200
+Message-ID: <000d01c5701b$d08210e0$34f1ff0a@beint.local>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: UART TL 16C550C on custom mpc5200 board
+Reply-To: achim.machura@berghof.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,26 +25,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-At nanometrics, we have tried numerous different JVMs but we ended up
-using GCJ instead, it gives us the speed to run applications on a tiny
-66MHz MPC8xx so if you are evaluating JVM options, I suggest you try
-GCJ included in GCC 4.0.
+Hello,
 
-David
+i'm working on a custom 5200 board with kernel 2.4.25.
+I have to integrate an UART 16C550C in /dev/ttyXX.
+Does everyone knows an existing driver i can modify for use with this chip?
 
-On 6/13/05, colui77@virgilio.it <colui77@virgilio.it> wrote:
-> Hi all,
-> I need to installa a JVM on montavista linux for ML300 (PPC405).
-> I tried the Blackdown 1.3.1 for PPC but it doesn't seems to work
-> (at the command
-> $ java
-> I received
-> illegal istruction)
-> Any suggestion? Please I need help...
-> Luigi
->=20
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
+thanks
+
+Achim
+____________________________________________
+Achim Machura Softwareentwicklung
+Berghof Automationstechnik GmbH
+Harretstrasse 1, D-72800 Eningen u.A.
+Tel: +49-7121-894-131, Fax: +49-7121-894-100
+email: machura@berghof.com
+Internet: http://www.berghof.com
