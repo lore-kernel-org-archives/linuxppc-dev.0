@@ -1,17 +1,18 @@
-Return-Path: <takeharu1219@ybb.ne.jp>
-Received: from ybbsmtp16.mail.mci.yahoo.co.jp (ybbsmtp16.mail.mci.yahoo.co.jp
-	[210.80.241.190]) by ozlabs.org (Postfix) with SMTP id 94BA3679E6
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Jun 2005 22:47:49 +1000 (EST)
-Message-ID: <42AED064.2090305@ybb.ne.jp>
-Date: Tue, 14 Jun 2005 21:41:08 +0900
-From: Takeharu KATO <takeharu1219@ybb.ne.jp>
-MIME-Version: 1.0
-To: Rune Torgersen <runet@innovsys.com>
-References: <DCEAAC0833DD314AB0B58112AD99B93B8593BC@ismail.innsys.innovsys.com>
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B8593BC@ismail.innsys.innovsys.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: boot time scheduling hile atomic
+Return-Path: <qboosh@pld-linux.org>
+Received: from cne142.neoplus.adsl.tpnet.pl (cms101.neoplus.adsl.tpnet.pl
+	[83.31.146.101])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 64431679E7
+	for <linuxppc-dev@ozlabs.org>; Wed, 15 Jun 2005 05:54:56 +1000 (EST)
+Date: Tue, 14 Jun 2005 21:38:26 +0200
+From: Jakub Bogusz <qboosh@pld-linux.org>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Message-ID: <20050614193826.GE13702@fngna.oyu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Subject: [PATCH 2.6][PPC32] RESEND: don't recursively crash in die() on
+	CHRP/PReP machines
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,59 +22,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi
+This patch avoids recursive crash (leading to kernel stack overflow) in
+die() on CHRP/PReP machines when CONFIG_PMAC_BACKLIGHT=y.
+set_backlight_* functions are placed in pmac section, which is discarded
+when _machine != _MACH_Pmac.
 
-IMHO, it is more preferable to change kernel thread creation mechanism adapting to
-other architecture(in stead of tweaking exception handling) to solve the issue at least.
-Of course, cleaning up the exception codes to adapt to ppc64  is also preferable from
-code maintenance view.
+I already posted this patch to LKML few months ago:
+http://www.ussg.iu.edu/hypermail/linux/kernel/0412.0/0300.html
+and it has been applied to linux-2.4 tree, but still not 2.6.
+(patch was made against 2.4.27, but still applies cleanly against
+kernels up to 2.6.11.12)
 
-Anyway, please try to apply the patch as follow:
-http://ozlabs.org/ppc32-patches/patch.pl?id=318
+Signed-off-by: Jakub Bogusz <qboosh@pld-linux.org>
 
-Rune Torgersen wrote:
-> Any patch forthcomming soon? 
-> 
-> 
->>-----Original Message-----
->>From: linuxppc-dev-bounces@ozlabs.org 
->>[mailto:linuxppc-dev-bounces@ozlabs.org] On Behalf Of 
->>Benjamin Herrenschmidt
->>Sent: Wednesday, March 16, 2005 16:29
->>To: Takeharu KATO
->>Cc: linuxppc-dev list
->>Subject: Re: boot time scheduling hile atomic
->>
->>On Wed, 2005-03-16 at 23:07 +0900, Takeharu KATO wrote:
->>
->>>Hi Benjamin:
->>>
->>>I can not figure out why my previous patch is more preferable than
->>>later one.
->>>Could you explain the reason of that please.
->>
->>There may be other kernel bits calling syscall, it sounds saner to
->>always make sure we don't reschedule when in atomic (though 
->>it's dubious
->>that it's allowed to do syscalls in atomic regions, let's be safe
->>there).
->>
->>In fact, we are thinking about consolidating the syscall 
->>return path and
->>the normal irq return path like we did on ppc64.
->>
->>Ben.
->>
->>
->>_______________________________________________
->>Linuxppc-dev mailing list
->>Linuxppc-dev@ozlabs.org
->>https://ozlabs.org/mailman/listinfo/linuxppc-dev
->>
->>
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
+--- linux-2.4.27/arch/ppc/kernel/traps.c.orig	Wed Apr 14 15:05:27 2004
++++ linux-2.4.27/arch/ppc/kernel/traps.c	Mon Nov 29 19:05:28 2004
+@@ -88,8 +88,10 @@
+ 	console_verbose();
+ 	spin_lock_irq(&die_lock);
+ #ifdef CONFIG_PMAC_BACKLIGHT
+-	set_backlight_enable(1);
+-	set_backlight_level(BACKLIGHT_MAX);
++	if (_machine == _MACH_Pmac) {
++		set_backlight_enable(1);
++		set_backlight_level(BACKLIGHT_MAX);
++	}
+ #endif
+ 	printk("Oops: %s, sig: %ld\n", str, err);
+ 	show_regs(fp);
+
+
+-- 
+Jakub Bogusz    http://qboosh.cs.net.pl/
