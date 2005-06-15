@@ -1,19 +1,17 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
-	by ozlabs.org (Postfix) with SMTP id BEC9267A06
+Return-Path: <Martin.Krause@tqs.de>
+Received: from mail.tqs.de (mail.tqs.de [213.68.230.225])
+	by ozlabs.org (Postfix) with ESMTP id 3C9CD679E6
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Jun 2005 01:31:43 +1000 (EST)
-Message-ID: <42B049DC.7040703@ru.mvista.com>
-Date: Wed, 15 Jun 2005 19:31:40 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
+	Thu, 16 Jun 2005 01:38:37 +1000 (EST)
 MIME-Version: 1.0
-To: Kumar Gala <kumar.gala@freescale.com>
-References: <42AFDEFE.2040508@ru.mvista.com>
-	<2731d19a2e3b9413db32be59726a4c82@freescale.com>
-In-Reply-To: <2731d19a2e3b9413db32be59726a4c82@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: RFC: cpm2_devices.c
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Wed, 15 Jun 2005 17:12:14 +0200
+Message-ID: <47F3F98010FF784EBEE6526EAAB078D119EC27@tq-mailsrv.tq-net.de>
+From: "Martin Krause" <Martin.Krause@tqs.de>
+To: "Schaefer-Hutter, Peter" <Peter.Schaefer-Hutter@tfk-racoms.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: AW: 2.4.26 and MPC885 context switching time
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,25 +22,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
+Hi Peter,
 
->
-> On Jun 15, 2005, at 2:55 AM, Vitaly Bordug wrote:
->
->> Kumar,
->> I assume this as a IMMR enumerating you promised to help with. Is it in
->> the final state? And what was the reason of fcc_regs_c removal?
->> I'm also going to change the files name to cpm2_.. .
->
->
-> Yes, I removed the fcc_regs_c since its not always true.  Please don't 
-> rename the file to cpm2_.  I think I'm going to end up renaming them 
-> to pq2_ since that is the most appropriate name.  I'd say we are about 
-> 80% the way to a final patch.
->
-Great. Apart of naming issue - what else remaining to do?
-I mean how can I contribute to speed-up this?
+linuxppc-embedded-bounces@ozlabs.org wrote on :
+> i'm evaluating IPC on the MPC885ADS and discovered
+> that the context switching times seem to be quite
+> disappointing (up to 1ms). As we need to do a lot
+..=20
+> Or is this the expected context switching time for
+> CPU @ 100 MHz (RAM @ 50 MHz)? Suggestions for a
+> benchmark program?
 
--- 
-Sincerely, 
-Vitaly
+Denx has done some detailed performance measurements=20
+(including context switching). You could find the report=20
+here: http://www.denx.de/twiki/bin/view/Know/Linux24vs26.
+Hope that is of some help.
+
+Regards,
+Martin
