@@ -1,19 +1,15 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
-	by ozlabs.org (Postfix) with SMTP id 75761679E1
+Return-Path: <scarayol@assystembrime.com>
+Received: from srv_courtaboeuf.brime.fr (unknown [81.255.87.178])
+	by ozlabs.org (Postfix) with ESMTP id 4D9B267A6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Jun 2005 17:55:44 +1000 (EST)
-Message-ID: <42AFDEFE.2040508@ru.mvista.com>
-Date: Wed, 15 Jun 2005 11:55:42 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
+	Wed, 15 Jun 2005 18:34:06 +1000 (EST)
+To: linuxppc-embedded@ozlabs.org
+Message-ID: <OF5286B922.38B1A4B5-ONC1257020.002FEFD0@brime.fr>
+From: scarayol@assystembrime.com
+Date: Wed, 15 Jun 2005 10:35:41 +0200
 MIME-Version: 1.0
-To: Kumar Gala <galak@freescale.com>
-References: <1118773086.29515.10.camel@dell2650.onz.com>
-	<Pine.LNX.4.61.0506142231040.2447@nylon.am.freescale.net>
-In-Reply-To: <Pine.LNX.4.61.0506142231040.2447@nylon.am.freescale.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: RFC: cpm2_devices.c
+Content-type: text/plain; charset=us-ascii
+Subject: MPC885 interruptions  : help !
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,16 +20,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Kumar,
-I assume this as a IMMR enumerating you promised to help with. Is it in 
-the final state? And what was the reason of fcc_regs_c removal?
-I'm also going to change the files name to cpm2_.. .
-Allen,
-I'll provide a patch containing these platform stuff together with 
-platform-specific device structures which is utilized in the fs_enet 
-driver. As now it's clear that fcc_mem dpram offset should be passed 
-over platform_info, these structures at least regarding fs_enet probably 
-will not change.
+Hi all,
 
---
-Sincerely, Vitaly
+I wrote a module driver to manage interruptions. I have an interruption on
+MPC885 IRQ7 activated by a push button that provides a negative pulse of
+200 ns width.
+When the device is open, i call request_irq() to install the interrupt
+handler:
+
+int ret = request_irq(SIU_IRQ7, fpgadriver_irq_save_handler, SA_INTERRUPT,
+FPGA_ID, NULL);
+
+void fpgadriver_irq_save_handler(int irq, void *dev_id, struct pt_regs
+*regs)
+{
+  fpga_it_source=FPGA_IRQ_SAVE;
+  printk( "fpgadriver: fpgadriver_irq_save_handler for device \n");
+  /* Prepare a task */
+  PREPARE_TQUEUE(&fpgadriver_bh_task, fpgadriver_bh_handler, dev_id);
+  /* Add a task to the immediate bottom half and mark it for schedule */
+  queue_task(&fpgadriver_bh_task, &tq_immediate);
+   mark_bh(IMMEDIATE_BH);
+}
+
+my read() is like that :
+
+static ssize_t fpgadriver_read(struct file *file, char *buf, size_t count,
+loff_t *ppos)
+{
+  //mise a jour de l'indicateur d'etat d'endormissement
+  wakeups++;
+  interruptible_sleep_on(&readq);
+  buf[0]=fpga_it_source;
+  printk("fpgadriver_read  \n");
+  return 0;
+}
+
+I have the wake_up_interruptible(&reaq) in fpgadriver_bh_handler(). My
+problem is that fpgadriver_irq_save_handler() is never called as if there
+is no interruption.
+Is there something else to modify to validate the interruption ? Is
+SIU_IRQ7 the right value for my interruption ? What have i to check ?
+
+Thanks for your reply.
+
+Sophie CARAYOL
