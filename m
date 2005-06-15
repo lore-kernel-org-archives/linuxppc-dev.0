@@ -1,17 +1,18 @@
-Return-Path: <galak@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id DCCF967B2D
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 31543679E1
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Jun 2005 14:03:14 +1000 (EST)
-Date: Tue, 14 Jun 2005 23:03:07 -0500 (CDT)
-From: Kumar Gala <galak@freescale.com>
-To: Andrew Morton <akpm@osdl.org>
-Message-ID: <Pine.LNX.4.61.0506142302180.3023@nylon.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] ppc32: remove some unnecessary includes of prom.h
+	Wed, 15 Jun 2005 14:13:10 +1000 (EST)
+In-Reply-To: <42eb0bacadb197b42502ac1828450843@onz.com>
+References: <42eb0bacadb197b42502ac1828450843@onz.com>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <a38c1fefe53947c6b80ec3d6b4ffd09e@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Tue, 14 Jun 2005 23:13:03 -0500
+To: "Allen Curtis" <acurtis@onz.com>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: RFC: cpm2_devices.c
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,170 +23,62 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Fight the Good Fight: Limit prom.h header creep.
 
-Signed-off-by: Jon Loeliger <jdl@freescale.com>
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+On Jun 14, 2005, at 10:57 PM, Allen Curtis wrote:
 
----
-commit 4d829d08c1ae5ca5322435c71ffc45bc77917522
-tree 0eeda2c7a188898bc484e3bb123e32e51e16cd4f
-parent e970cbc91ac4e86f613e64c44010bcf76f6a2acc
-author Kumar K. Gala <kumar.gala@freescale.com> Wed, 15 Jun 2005 00:41:23 -0500
-committer Kumar K. Gala <kumar.gala@freescale.com> Wed, 15 Jun 2005 00:41:23 -0500
+>> I've also included our version of this patch for commentary. Did you
+>> see a
+>> need for the following to actually be devices? (DMA, CPM, SI1, SIC2).
+>>
+> The good thing about them actually being devices is that you can find
+> them and the IO resources had already been remapped. You don't need a
+> device driver for them but they are resources used by other device
+> drivers.
 
- arch/ppc/platforms/83xx/mpc834x_sys.c        |    1 -
- arch/ppc/platforms/85xx/mpc8540_ads.c        |    1 -
- arch/ppc/platforms/85xx/mpc8560_ads.c        |    1 -
- arch/ppc/platforms/85xx/mpc85xx_ads_common.c |    1 -
- arch/ppc/platforms/85xx/mpc85xx_cds_common.c |    1 -
- arch/ppc/platforms/85xx/sbc8560.c            |    1 -
- arch/ppc/platforms/85xx/sbc85xx.c            |    1 -
- arch/ppc/platforms/85xx/stx_gp3.c            |    1 -
- arch/ppc/syslib/open_pic.c                   |    1 -
- arch/ppc/syslib/open_pic2.c                  |    1 -
- arch/ppc/syslib/ppc83xx_setup.c              |    1 -
- arch/ppc/syslib/ppc85xx_setup.c              |    3 ++-
- 12 files changed, 2 insertions(+), 12 deletions(-)
+Not sure I follow.  The IO resources are not mapped by anything until 
+some piece of code does an explicit ioremap().  How do you plan on 
+finding them?  I've got now issue adding them, I just want to 
+understand how you see us using them.  A simple code example might be 
+helpful.
 
-diff --git a/arch/ppc/platforms/83xx/mpc834x_sys.c b/arch/ppc/platforms/83xx/mpc834x_sys.c
---- a/arch/ppc/platforms/83xx/mpc834x_sys.c
-+++ b/arch/ppc/platforms/83xx/mpc834x_sys.c
-@@ -41,7 +41,6 @@
- #include <asm/time.h>
- #include <asm/io.h>
- #include <asm/machdep.h>
--#include <asm/prom.h>
- #include <asm/ipic.h>
- #include <asm/bootinfo.h>
- #include <asm/pci-bridge.h>
-diff --git a/arch/ppc/platforms/85xx/mpc8540_ads.c b/arch/ppc/platforms/85xx/mpc8540_ads.c
---- a/arch/ppc/platforms/85xx/mpc8540_ads.c
-+++ b/arch/ppc/platforms/85xx/mpc8540_ads.c
-@@ -41,7 +41,6 @@
- #include <asm/time.h>
- #include <asm/io.h>
- #include <asm/machdep.h>
--#include <asm/prom.h>
- #include <asm/open_pic.h>
- #include <asm/bootinfo.h>
- #include <asm/pci-bridge.h>
-diff --git a/arch/ppc/platforms/85xx/mpc8560_ads.c b/arch/ppc/platforms/85xx/mpc8560_ads.c
---- a/arch/ppc/platforms/85xx/mpc8560_ads.c
-+++ b/arch/ppc/platforms/85xx/mpc8560_ads.c
-@@ -41,7 +41,6 @@
- #include <asm/time.h>
- #include <asm/io.h>
- #include <asm/machdep.h>
--#include <asm/prom.h>
- #include <asm/open_pic.h>
- #include <asm/bootinfo.h>
- #include <asm/pci-bridge.h>
-diff --git a/arch/ppc/platforms/85xx/mpc85xx_ads_common.c b/arch/ppc/platforms/85xx/mpc85xx_ads_common.c
---- a/arch/ppc/platforms/85xx/mpc85xx_ads_common.c
-+++ b/arch/ppc/platforms/85xx/mpc85xx_ads_common.c
-@@ -36,7 +36,6 @@
- #include <asm/time.h>
- #include <asm/io.h>
- #include <asm/machdep.h>
--#include <asm/prom.h>
- #include <asm/open_pic.h>
- #include <asm/bootinfo.h>
- #include <asm/pci-bridge.h>
-diff --git a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c b/arch/ppc/platforms/85xx/mpc85xx_cds_common.c
---- a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c
-+++ b/arch/ppc/platforms/85xx/mpc85xx_cds_common.c
-@@ -42,7 +42,6 @@
- #include <asm/todc.h>
- #include <asm/io.h>
- #include <asm/machdep.h>
--#include <asm/prom.h>
- #include <asm/open_pic.h>
- #include <asm/i8259.h>
- #include <asm/bootinfo.h>
-diff --git a/arch/ppc/platforms/85xx/sbc8560.c b/arch/ppc/platforms/85xx/sbc8560.c
---- a/arch/ppc/platforms/85xx/sbc8560.c
-+++ b/arch/ppc/platforms/85xx/sbc8560.c
-@@ -41,7 +41,6 @@
- #include <asm/time.h>
- #include <asm/io.h>
- #include <asm/machdep.h>
--#include <asm/prom.h>
- #include <asm/open_pic.h>
- #include <asm/bootinfo.h>
- #include <asm/pci-bridge.h>
-diff --git a/arch/ppc/platforms/85xx/sbc85xx.c b/arch/ppc/platforms/85xx/sbc85xx.c
---- a/arch/ppc/platforms/85xx/sbc85xx.c
-+++ b/arch/ppc/platforms/85xx/sbc85xx.c
-@@ -35,7 +35,6 @@
- #include <asm/time.h>
- #include <asm/io.h>
- #include <asm/machdep.h>
--#include <asm/prom.h>
- #include <asm/open_pic.h>
- #include <asm/bootinfo.h>
- #include <asm/pci-bridge.h>
-diff --git a/arch/ppc/platforms/85xx/stx_gp3.c b/arch/ppc/platforms/85xx/stx_gp3.c
---- a/arch/ppc/platforms/85xx/stx_gp3.c
-+++ b/arch/ppc/platforms/85xx/stx_gp3.c
-@@ -46,7 +46,6 @@
- #include <asm/time.h>
- #include <asm/io.h>
- #include <asm/machdep.h>
--#include <asm/prom.h>
- #include <asm/open_pic.h>
- #include <asm/bootinfo.h>
- #include <asm/pci-bridge.h>
-diff --git a/arch/ppc/syslib/open_pic.c b/arch/ppc/syslib/open_pic.c
---- a/arch/ppc/syslib/open_pic.c
-+++ b/arch/ppc/syslib/open_pic.c
-@@ -21,7 +21,6 @@
- #include <asm/signal.h>
- #include <asm/io.h>
- #include <asm/irq.h>
--#include <asm/prom.h>
- #include <asm/sections.h>
- #include <asm/open_pic.h>
- #include <asm/i8259.h>
-diff --git a/arch/ppc/syslib/open_pic2.c b/arch/ppc/syslib/open_pic2.c
---- a/arch/ppc/syslib/open_pic2.c
-+++ b/arch/ppc/syslib/open_pic2.c
-@@ -25,7 +25,6 @@
- #include <asm/signal.h>
- #include <asm/io.h>
- #include <asm/irq.h>
--#include <asm/prom.h>
- #include <asm/sections.h>
- #include <asm/open_pic.h>
- #include <asm/i8259.h>
-diff --git a/arch/ppc/syslib/ppc83xx_setup.c b/arch/ppc/syslib/ppc83xx_setup.c
---- a/arch/ppc/syslib/ppc83xx_setup.c
-+++ b/arch/ppc/syslib/ppc83xx_setup.c
-@@ -23,7 +23,6 @@
- #include <linux/serial_core.h>
- #include <linux/serial_8250.h>
- 
--#include <asm/prom.h>
- #include <asm/time.h>
- #include <asm/mpc83xx.h>
- #include <asm/mmu.h>
-diff --git a/arch/ppc/syslib/ppc85xx_setup.c b/arch/ppc/syslib/ppc85xx_setup.c
---- a/arch/ppc/syslib/ppc85xx_setup.c
-+++ b/arch/ppc/syslib/ppc85xx_setup.c
-@@ -23,7 +23,6 @@
- #include <linux/serial_core.h>
- #include <linux/serial_8250.h>
- 
--#include <asm/prom.h>
- #include <asm/time.h>
- #include <asm/mpc85xx.h>
- #include <asm/immap_85xx.h>
-@@ -32,6 +31,8 @@
- #include <asm/kgdb.h>
- 
- #include <syslib/ppc85xx_setup.h>
-+
-+extern void abort(void);
- 
- /* Return the amount of memory */
- unsigned long __init
+>> I can provide feedback on all the issues I had with you patch, but
+>> would
+>> prefer to start with ours (let me know).
+>>
+> Comments:
+> 1. You removed the other PRAM definition from this FCC definition, this
+> is good.
+>
+> 2. I am torn about using numeric IMMR offsets vs. the structure member
+> approach. The good thing is that you can create all the devices in a
+> single table even if they overlay depending on processor. The question
+> is, will the IMMAP structure become obsolete? If not, then you will
+> still need the conditional compiles in immap_cpm2.h.
+
+I'm trying to stay away from basing things on the structure.  Since the 
+offsets are truly fixed I see not reason to try to make sure that the 
+immap structure is always correct for all cases.  Hopefully this will 
+end up removing the need to ifdef the immap structure as we go forward.
+
+> 3. Naming convention, are all these devices just in the MPC82xx family?
+> If the CPM is a general FSL co-processor, used across many processor
+> families, then I like the CPM2 naming convention.
+
+The key there is the driver name not the enum name.  If you look the 
+driver name field matches 85xx.  These files might be better of called 
+pq2_* instead of mpc82xx_ (8240/1/5 is not handled here) or cpm2_ (85xx 
+has cpm2).
+
+> 4. What about PCI?
+
+What about it, none of the busses have specific drivers at this point 
+so they haven't been added.
+
+> 5. This patch does not address the platform specific device structures.
+> How do you want to handle these?
+
+I want to do that as a second pass every we close on this.  Since the 
+platform specific device structs are going to be based on what is 
+needed for the drivers.
+
+- kumar
