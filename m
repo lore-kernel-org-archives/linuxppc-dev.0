@@ -1,16 +1,23 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 86A40679E6
+Return-Path: <jason.mcmullan@gmail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.203])
+	by ozlabs.org (Postfix) with ESMTP id 8519B67B35
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Jun 2005 00:30:17 +1000 (EST)
+	Thu, 16 Jun 2005 00:30:54 +1000 (EST)
+Received: by zproxy.gmail.com with SMTP id 13so39278nzp
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 15 Jun 2005 07:30:52 -0700 (PDT)
+From: Jason McMullan <jason.mcmullan@gmail.com>
+To: Allen Curtis <acurtis@onz.com>
 In-Reply-To: <c2628642aad8b8107d0e9db84535ea0c@onz.com>
-References: <c2628642aad8b8107d0e9db84535ea0c@onz.com>
-Mime-Version: 1.0 (Apple Message framework v619.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <282db6371fad3a0321c673a6b0b524ef@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Wed, 15 Jun 2005 09:30:09 -0500
-To: "Allen Curtis" <acurtis@onz.com>
+References: <42eb0bacadb197b42502ac1828450843@onz.com>
+	<a38c1fefe53947c6b80ec3d6b4ffd09e@freescale.com>
+	<c2628642aad8b8107d0e9db84535ea0c@onz.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-vfltKPApOsT74DkyfZT1"
+Date: Wed, 15 Jun 2005 10:24:10 -0400
+Message-Id: <1118845450.7564.111.camel@jmcmullan.timesys>
+Mime-Version: 1.0
 Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 Subject: Re: RFC: cpm2_devices.c
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -24,24 +31,35 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Jun 14, 2005, at 11:41 PM, Allen Curtis wrote:
+--=-vfltKPApOsT74DkyfZT1
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
->>>> I've also included our version of this patch for commentary. Did you
->>>> see a
->>>> need for the following to actually be devices? (DMA, CPM, SI1,
-> SIC2).
->>>>
->>> The good thing about them actually being devices is that you can find
->>> them and the IO resources had already been remapped. You don't need a
->>> device driver for them but they are resources used by other device
->>> drivers.
->>
->> Not sure I follow.  The IO resources are not mapped by anything until
->> some piece of code does an explicit ioremap().  How do you plan on
->> finding them?  I've got now issue adding them, I just want to
->> understand how you see us using them.  A simple code example might be
->> helpful.
+My personal opinions:
 
-Allen, you haven't addressed my question.
+	* Use macro-offsets into a cpm2_map_t struct
+	* Put fcc_c regs back in
+	* dpram[PROFF_*] should be in the resources list
+	* cpm2_* is a better name than MPC82xx_* or MPC85xx_*
+	* Keep CPM2_DMA, etc, as these *should* be showing up in
+	  /proc/iomem, since, IIRC, the platform layer does
+	  reserve them upon registration. (And I *do* have a DMA
+	  layer then uses CPM2_DMA as a driver-ish thing)
 
-- kumar
+--=20
+Jason McMullan <jason.mcmullan@gmail.com>
+"Sure, send me the latest Knoppix DVD as an attachment..."
+
+--=-vfltKPApOsT74DkyfZT1
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.0 (GNU/Linux)
+
+iD8DBQBCsDoK8/0vJ5szK6kRAs97AJ9YR9QGe61AkoIaHv2eyMtp1l3mMQCgrOap
+zsixkuWy+WbtJ1aOTqqs8G4=
+=QwbE
+-----END PGP SIGNATURE-----
+
+--=-vfltKPApOsT74DkyfZT1--
