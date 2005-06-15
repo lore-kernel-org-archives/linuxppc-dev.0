@@ -1,24 +1,24 @@
 Return-Path: <jason.mcmullan@gmail.com>
-Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.203])
-	by ozlabs.org (Postfix) with ESMTP id 8519B67B35
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.194])
+	by ozlabs.org (Postfix) with ESMTP id 5994967B4A
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Jun 2005 00:30:54 +1000 (EST)
-Received: by zproxy.gmail.com with SMTP id 13so39278nzp
+	Thu, 16 Jun 2005 00:33:56 +1000 (EST)
+Received: by zproxy.gmail.com with SMTP id 13so41513nzp
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Jun 2005 07:30:52 -0700 (PDT)
+	Wed, 15 Jun 2005 07:33:55 -0700 (PDT)
 From: Jason McMullan <jason.mcmullan@gmail.com>
-To: Allen Curtis <acurtis@onz.com>
-In-Reply-To: <c2628642aad8b8107d0e9db84535ea0c@onz.com>
-References: <42eb0bacadb197b42502ac1828450843@onz.com>
-	<a38c1fefe53947c6b80ec3d6b4ffd09e@freescale.com>
-	<c2628642aad8b8107d0e9db84535ea0c@onz.com>
+To: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <2731d19a2e3b9413db32be59726a4c82@freescale.com>
+References: <42AFDEFE.2040508@ru.mvista.com>
+	<2731d19a2e3b9413db32be59726a4c82@freescale.com>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-vfltKPApOsT74DkyfZT1"
-Date: Wed, 15 Jun 2005 10:24:10 -0400
-Message-Id: <1118845450.7564.111.camel@jmcmullan.timesys>
+	boundary="=-qKpMdJsFBFNQdA8GoRJj"
+Date: Wed, 15 Jun 2005 10:33:53 -0400
+Message-Id: <1118846034.7564.113.camel@jmcmullan.timesys>
 Mime-Version: 1.0
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Cc: "Gala Kumar K.-galak" <galak@freescale.com>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 Subject: Re: RFC: cpm2_devices.c
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -31,35 +31,31 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
---=-vfltKPApOsT74DkyfZT1
+--=-qKpMdJsFBFNQdA8GoRJj
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-My personal opinions:
+On Wed, 2005-06-15 at 09:25 -0500, Kumar Gala wrote:
+> Yes, I removed the fcc_regs_c since its not always true.  Please don't=20
+> rename the file to cpm2_.  I think I'm going to end up renaming them to=20
+> pq2_ since that is the most appropriate name.  I'd say we are about 80%=20
 
-	* Use macro-offsets into a cpm2_map_t struct
-	* Put fcc_c regs back in
-	* dpram[PROFF_*] should be in the resources list
-	* cpm2_* is a better name than MPC82xx_* or MPC85xx_*
-	* Keep CPM2_DMA, etc, as these *should* be showing up in
-	  /proc/iomem, since, IIRC, the platform layer does
-	  reserve them upon registration. (And I *do* have a DMA
-	  layer then uses CPM2_DMA as a driver-ish thing)
+ PQ2_? But all these devices are on PQ3 also!
 
 --=20
 Jason McMullan <jason.mcmullan@gmail.com>
 "Sure, send me the latest Knoppix DVD as an attachment..."
 
---=-vfltKPApOsT74DkyfZT1
+--=-qKpMdJsFBFNQdA8GoRJj
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.0 (GNU/Linux)
 
-iD8DBQBCsDoK8/0vJ5szK6kRAs97AJ9YR9QGe61AkoIaHv2eyMtp1l3mMQCgrOap
-zsixkuWy+WbtJ1aOTqqs8G4=
-=QwbE
+iD8DBQBCsDxR8/0vJ5szK6kRArmVAJ4rLj7ocuoDPUjfPCdI3wmFpO0sPACgkWvc
+sZBVaI9e037z0Fs4oloZv80=
+=qjwF
 -----END PGP SIGNATURE-----
 
---=-vfltKPApOsT74DkyfZT1--
+--=-qKpMdJsFBFNQdA8GoRJj--
