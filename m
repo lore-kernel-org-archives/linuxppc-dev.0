@@ -1,20 +1,19 @@
-Return-Path: <jason.mcmullan@gmail.com>
-Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.194])
-	by ozlabs.org (Postfix) with ESMTP id A0A0C67B33
+Return-Path: <vbordug@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
+	by ozlabs.org (Postfix) with SMTP id BEC9267A06
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Jun 2005 01:19:00 +1000 (EST)
-Received: by zproxy.gmail.com with SMTP id 18so469478nzp
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Jun 2005 08:18:59 -0700 (PDT)
-From: Jason McMullan <jason.mcmullan@gmail.com>
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-QPI0wvaSl0WXcCocywU3"
-Date: Wed, 15 Jun 2005 11:18:56 -0400
-Message-Id: <1118848737.7564.130.camel@jmcmullan.timesys>
-Mime-Version: 1.0
-Subject: CPM2 vs PQ2: The Naming Issue
+	Thu, 16 Jun 2005 01:31:43 +1000 (EST)
+Message-ID: <42B049DC.7040703@ru.mvista.com>
+Date: Wed, 15 Jun 2005 19:31:40 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+MIME-Version: 1.0
+To: Kumar Gala <kumar.gala@freescale.com>
+References: <42AFDEFE.2040508@ru.mvista.com>
+	<2731d19a2e3b9413db32be59726a4c82@freescale.com>
+In-Reply-To: <2731d19a2e3b9413db32be59726a4c82@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: RFC: cpm2_devices.c
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,37 +24,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Kumar Gala wrote:
 
---=-QPI0wvaSl0WXcCocywU3
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+>
+> On Jun 15, 2005, at 2:55 AM, Vitaly Bordug wrote:
+>
+>> Kumar,
+>> I assume this as a IMMR enumerating you promised to help with. Is it in
+>> the final state? And what was the reason of fcc_regs_c removal?
+>> I'm also going to change the files name to cpm2_.. .
+>
+>
+> Yes, I removed the fcc_regs_c since its not always true.  Please don't 
+> rename the file to cpm2_.  I think I'm going to end up renaming them 
+> to pq2_ since that is the most appropriate name.  I'd say we are about 
+> 80% the way to a final patch.
+>
+Great. Apart of naming issue - what else remaining to do?
+I mean how can I contribute to speed-up this?
 
-I think the issue with naming is that there are people that consider the
-'part name' to be CPM2 (the macrocell), and other consider the=20
-'part name' to be the whole SoC.
-
-Both are valid concepts, I just tend to go towards the macrocell
-side of the fence.
-
-If we consider the CPM2 to be a 'part' that dispenses other 'parts',
-we could actually consider the CPM2 to be a bus-type object.
-
-Hmm. I kinda like that, actually. (But then, I'm a crazy nutball)
-
---=20
-Jason McMullan <jason.mcmullan@gmail.com>
-"Sure, send me the latest Knoppix DVD as an attachment..."
-
---=-QPI0wvaSl0WXcCocywU3
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.0 (GNU/Linux)
-
-iD8DBQBCsEbg8/0vJ5szK6kRAlYIAJ9t3V+BLeQ8NUrLf9+FoBf/eUBVpwCfVBqZ
-fm3toY2b6dzzQmmIHbB5Oa8=
-=1TaK
------END PGP SIGNATURE-----
-
---=-QPI0wvaSl0WXcCocywU3--
+-- 
+Sincerely, 
+Vitaly
