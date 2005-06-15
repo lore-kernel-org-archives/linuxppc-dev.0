@@ -1,30 +1,18 @@
-Return-Path: <acurtis@onz.com>
-Received: from dell2650.onz.com (onz.com [67.121.61.113])
-	by ozlabs.org (Postfix) with ESMTP id 2E7A6679E1
+Return-Path: <galak@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 64ECA67B28
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Jun 2005 04:19:03 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by dell2650.onz.com (Postfix) with ESMTP id D918F2B4157
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Jun 2005 11:18:59 -0700 (PDT)
-Received: from dell2650.onz.com ([127.0.0.1])
-	by localhost (dell2650.onz.com [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 29696-01 for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Jun 2005 11:18:58 -0700 (PDT)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by dell2650.onz.com (Postfix) with ESMTP id AA9242B413C
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Jun 2005 11:18:58 -0700 (PDT)
-From: Allen Curtis <acurtis@onz.com>
-To: linuxppc-embedded@ozlabs.org
-Content-Type: multipart/mixed; boundary="=-6bcmCxSNMjtTbDwF5FUA"
-Message-Id: <1118773086.29515.10.camel@dell2650.onz.com>
-Mime-Version: 1.0
-Date: Tue, 14 Jun 2005 11:18:06 -0700
-Subject: RFC: cpm2_devices.c
-Reply-To: acurtis@onz.com
+	Wed, 15 Jun 2005 13:35:38 +1000 (EST)
+Date: Tue, 14 Jun 2005 22:35:25 -0500 (CDT)
+From: Kumar Gala <galak@freescale.com>
+To: Allen Curtis <acurtis@onz.com>
+In-Reply-To: <1118773086.29515.10.camel@dell2650.onz.com>
+Message-ID: <Pine.LNX.4.61.0506142231040.2447@nylon.am.freescale.net>
+References: <1118773086.29515.10.camel@dell2650.onz.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: RFC: cpm2_devices.c
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,567 +23,689 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Allen,
 
---=-6bcmCxSNMjtTbDwF5FUA
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+I've also included our version of this patch for commentary. Did you see a 
+need for the following to actually be devices? (DMA, CPM, SI1, SIC2).
 
-Please review and comment on the following.
+I can provide feedback on all the issues I had with you patch, but would 
+prefer to start with ours (let me know).
 
-My comments regarding the implementation:
-1. This implementation uses the cpm_map_t structure definition to derive
-the IORESOURCE_MEM regions. This seems to be more adaptible to CPM
-address differences but it assumes that there are unique structures for
-each processor type.
-
-2. ppc_sys_spec appears to identify the CPM elements which are
-applicable to a particular processor. So this structure, not the
-cpm_map_t structure identifies the CPM resources. This implementation
-addresses the the CPU differences but assumes that a CPM resource is
-always at the same IMMAP address. The FCC, DPRAM usage is an example of
-an exception to this rule.
-
-Note: The attachment was generated via cg-diff, please let me know if
-there is a preferred format.
-
-Thanks
+- kumar
 
 
---=-6bcmCxSNMjtTbDwF5FUA
-Content-Disposition: attachment; filename=cpm2_devices.patch
-Content-Type: text/x-patch; name=cpm2_devices.patch; charset=
-Content-Transfer-Encoding: 7bit
-
-diff --git a/arch/ppc/syslib/cpm2_devices.c b/arch/ppc/syslib/cpm2_devices.c
+diff --git a/arch/ppc/syslib/Makefile b/arch/ppc/syslib/Makefile
+--- a/arch/ppc/syslib/Makefile
++++ b/arch/ppc/syslib/Makefile
+@@ -80,7 +80,8 @@ obj-$(CONFIG_SANDPOINT)		+= i8259.o pci_
+ obj-$(CONFIG_SBC82xx)		+= todc_time.o
+ obj-$(CONFIG_SPRUCE)		+= cpc700_pic.o indirect_pci.o pci_auto.o \
+ 				   todc_time.o
+-obj-$(CONFIG_8260)		+= m8260_setup.o
++obj-$(CONFIG_8260)		+= m8260_setup.o mpc82xx_devices.o mpc82xx_sys.o \
++				   ppc_sys.o
+ obj-$(CONFIG_PCI_8260)		+= m82xx_pci.o indirect_pci.o pci_auto.o
+ obj-$(CONFIG_8260_PCI9)		+= m8260_pci_erratum9.o
+ obj-$(CONFIG_CPM2)		+= cpm2_common.o cpm2_pic.o
+diff --git a/arch/ppc/syslib/mpc82xx_devices.c b/arch/ppc/syslib/mpc82xx_devices.c
 new file mode 100644
 --- /dev/null
-+++ b/arch/ppc/syslib/cpm2_devices.c
-@@ -0,0 +1,460 @@
++++ b/arch/ppc/syslib/mpc82xx_devices.c
+@@ -0,0 +1,389 @@
 +/*
-+ * arch/ppc/platforms/cpm2_devices.c
++ * arch/ppc/syslib/mpc82xx_devices.c
 + *
-+ * General CPM2 Device descriptions
++ * MPC82xx Device descriptions
 + *
-+ * Maintainer: Allen Curtis <acurtis@onz.com>
-+ * Derived from mpc83xx_devices.c by Kumar Gala
++ * Maintainer: Kumar Gala <kumar.gala@freescale.com>
 + *
-+ * Copyright 2005 Ones and Zeros Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
++ * This file is licensed under the terms of the GNU General Public License 
++ * version 2. This program is licensed "as is" without any warranty of any 
++ * kind, whether express or implied.
 + */
++
 +
 +#include <linux/init.h>
 +#include <linux/module.h>
 +#include <linux/device.h>
-+#include <linux/fsl_devices.h>
++#include <linux/ioport.h>
 +#include <asm/cpm2.h>
 +#include <asm/irq.h>
 +#include <asm/ppc_sys.h>
 +
-+/* We use offsets for IORESOURCE_MEM since we do not know at compile time
-+ * what IMMRBAR is, will get fixed up by mach_mpc83xx_fixup
-+ */
-+
-+#define CPM2_STARTOF(m)		(offsetof(cpm2_map_t,(m)))
-+#define CCPM2_ENDOF(m)		(CPM_STARTOF(m)+sizeof(m)-1)
-+
-+/* Define the CPM2 platform devices
-+ */
 +struct platform_device ppc_sys_platform_devices[] = {
-+	[CPM2_FCC1] = {
++	[MPC82xx_CPM_FCC1] = {
 +		.name = "fsl-cpm-fcc",
 +		.id	= 1,
-+		.dev.platform_data = ,
-+		.num_resources	 = 5,
++		.num_resources	 = 3,
 +		.resource = (struct resource[]) {
 +			{
 +				.name	= "fcc_regs",
-+				.start	= CPM2_STARTOF(im_fcc[0]),
-+				.end	= CPM2_ENDOF(im_fcc[0]),
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name	= "fcc_regs_c",
-+				.start	= CPM2_STARTOF(im_fcc_c[0]),
-+				.end	= CPM2_ENDOF(im_fcc_c[0]),
++				.start	= 0x11300,
++				.end	= 0x1131f,
 +				.flags	= IORESOURCE_MEM,
 +			},
 +			{
 +				.name	= "fcc_pram",
-+				.start	= PROFF_FCC1,
-+				.end	= PROFF_FCC1 + PROFF_FCC_SIZE - 1,
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			/* fcc_mem
-+			 * This should be allocated from DPRAM, not part
-+			 * of this structure definition.
-+			 */
-+			{
-+				.name	= "fcc_mem",
-+				.start	= PROFF_FCC1_MEM_BASE,
-+				.end	= PROFF_FCC1_MEM_BASE + PROFF_FCC_MEM_SIZE - 1,
++				.start	= 0x8400,
++				.end	= 0x84ff,
 +				.flags	= IORESOURCE_MEM,
 +			},
 +			{
-+				.name	= "interrupt",
 +				.start	= SIU_INT_FCC1,
 +				.end	= SIU_INT_FCC1,
 +				.flags	= IORESOURCE_IRQ,
 +			},
 +		},
 +	},
-+	[CPM2_FCC2] = {
++	[MPC82xx_CPM_FCC2] = {
 +		.name = "fsl-cpm-fcc",
 +		.id	= 2,
-+		.dev.platform_data = ,
-+		.num_resources	 = 5,
++		.num_resources	 = 3,
 +		.resource = (struct resource[]) {
 +			{
 +				.name	= "fcc_regs",
-+				.start	= CPM2_STARTOF(im_fcc[1]),
-+				.end	= CPM2_ENDOF(im_fcc[1]),
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name	= "fcc_regs_c",
-+				.start	= CPM2_STARTOF(im_fcc_c[1]),
-+				.end	= CPM2_ENDOF(im_fcc_c[1]),
++				.start	= 0x11320,
++				.end	= 0x1133f,
 +				.flags	= IORESOURCE_MEM,
 +			},
 +			{
 +				.name	= "fcc_pram",
-+				.start	= PROFF_FCC2,
-+				.end	= PROFF_FCC2 + PROFF_FCC_SIZE - 1,
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			/* fcc_mem
-+			 * This should be allocated from DPRAM, not part
-+			 * of this structure definition.
-+			 */
-+			{
-+				.name	= "fcc_mem",
-+				.start	= PROFF_FCC2_MEM_BASE,
-+				.end	= PROFF_FCC2_MEM_BASE + PROFF_FCC_MEM_SIZE - 1,
++				.start	= 0x8500,
++				.end	= 0x85ff,
 +				.flags	= IORESOURCE_MEM,
 +			},
 +			{
-+				.name	= "interrupt",
 +				.start	= SIU_INT_FCC2,
 +				.end	= SIU_INT_FCC2,
 +				.flags	= IORESOURCE_IRQ,
 +			},
 +		},
 +	},
-+	[CPM2_FCC3] = {
++	[MPC82xx_CPM_FCC3] = {
 +		.name = "fsl-cpm-fcc",
 +		.id	= 3,
-+		.dev.platform_data = ,
-+		.num_resources	 = 5,
++		.num_resources	 = 3,
 +		.resource = (struct resource[]) {
 +			{
 +				.name	= "fcc_regs",
-+				.start	= CPM2_STARTOF(im_fcc[2]),
-+				.end	= CPM2_ENDOF(im_fcc[2]),
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name	= "fcc_regs_c",
-+				.start	= CPM2_STARTOF(im_fcc_c[2]),
-+				.end	= CPM2_ENDOF(im_fcc_c[2]),
++				.start	= 0x11340,
++				.end	= 0x1135f,
 +				.flags	= IORESOURCE_MEM,
 +			},
 +			{
 +				.name	= "fcc_pram",
-+				.start	= PROFF_FCC3,
-+				.end	= PROFF_FCC3 + PROFF_FCC_SIZE - 1,
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			/* fcc_mem
-+			 * This should be allocated from DPRAM, not part
-+			 * of this structure definition.
-+			 */
-+			{
-+				.name	= "fcc_mem",
-+				.start	= PROFF_FCC3_MEM_BASE,
-+				.end	= PROFF_FCC3_MEM_BASE + PROFF_FCC_MEM_SIZE - 1,
++				.start	= 0x8600,
++				.end	= 0x86ff,
 +				.flags	= IORESOURCE_MEM,
 +			},
 +			{
-+				.name	= "interrupt",
 +				.start	= SIU_INT_FCC3,
 +				.end	= SIU_INT_FCC3,
 +				.flags	= IORESOURCE_IRQ,
 +			},
 +		},
 +	},
-+	[CPM2_SCC1] = {
-+		.name = "fsl-cpm-scc",
-+		.id	= 1,
-+		.dev.platform_data = ,
-+		.num_resources	 = 3,
-+		.resource = (struct resource[]) {
-+			{
-+				.name	= "scc_regs",
-+				.start	= CPM2_STARTOF(im_scc[0]),
-+				.end	= CPM2_ENDOF(im_scc[0]),
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name	= "scc_pram",
-+				.start	= PROFF_SCC1,
-+				.end	= PROFF_SCC1 + PROFF_SCC_SIZE - 1,
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name	= "interrupt",
-+				.start	= SIU_INT_SCC1,
-+				.end	= SIU_INT_SCC1,
-+				.flags	= IORESOURCE_IRQ,
-+			},
-+		},
-+	},
-+	[CPM2_SCC2] = {
-+		.name = "fsl-cpm-scc",
-+		.id	= 2,
-+		.dev.platform_data = ,
-+		.num_resources	 = 3,
-+		.resource = (struct resource[]) {
-+			{
-+				.name	= "scc_regs",
-+				.start	= CPM2_STARTOF(im_scc[1]),
-+				.end	= CPM2_ENDOF(im_scc[1]),
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name	= "scc_pram",
-+				.start	= PROFF_SCC2,
-+				.end	= PROFF_SCC2 + PROFF_SCC_SIZE - 1,
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name	= "interrupt",
-+				.start	= SIU_INT_SCC2,
-+				.end	= SIU_INT_SCC2,
-+				.flags	= IORESOURCE_IRQ,
-+			},
-+		},
-+	},
-+	[CPM2_SCC3] = {
-+		.name = "fsl-cpm-scc",
-+		.id	= 3,
-+		.dev.platform_data = ,
-+		.num_resources	 = 3,
-+		.resource = (struct resource[]) {
-+			{
-+				.name	= "scc_regs",
-+				.start	= CPM2_STARTOF(im_scc[2]),
-+				.end	= CPM2_ENDOF(im_scc[2]),
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name	= "scc_pram",
-+				.start	= PROFF_SCC3,
-+				.end	= PROFF_SCC3 + PROFF_SCC_SIZE - 1,
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name	= "interrupt",
-+				.start	= SIU_INT_SCC3,
-+				.end	= SIU_INT_SCC3,
-+				.flags	= IORESOURCE_IRQ,
-+			},
-+		},
-+	},
-+	[CPM2_SCC4] = {
-+		.name = "fsl-cpm-scc",
-+		.id	= 4,
-+		.dev.platform_data = ,
-+		.num_resources	 = 3,
-+		.resource = (struct resource[]) {
-+			{
-+				.name	= "scc_regs",
-+				.start	= CPM2_STARTOF(im_scc[3]),
-+				.end	= CPM2_ENDOF(im_scc[3]),
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name	= "scc_pram",
-+				.start	= PROFF_SCC4,
-+				.end	= PROFF_SCC4 + PROFF_SCC_SIZE - 1,
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name	= "interrupt",
-+				.start	= SIU_INT_SCC4,
-+				.end	= SIU_INT_SCC4,
-+				.flags	= IORESOURCE_IRQ,
-+			},
-+		},
-+	},
-+	[CPM2_SMC1] = {
-+		.name = "fsl-cpm-smc",
-+		.id	= 1,
-+		.dev.platform_data = ,
-+		.num_resources	 = 3,
-+		.resource = (struct resource[]) {
-+			{
-+				.name	= "smc_regs",
-+				.start	= CPM2_STARTOF(im_smc[0]),
-+				.end	= CPM2_ENDOF(im_smc[0]),
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name	= "smc_pram",
-+				.start	= PROFF_SMC1_BASE,
-+				.end	= PROFF_SMC1_BASE + PROFF_SMC_SIZE - 1,
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name	= "interrupt",
-+				.start	= SIU_INT_SMC1,
-+				.end	= SIU_INT_SMC1,
-+				.flags	= IORESOURCE_IRQ,
-+			},
-+		},
-+	},
-+	[CPM2_SMC2] = {
-+		.name = "fsl-cpm-smc",
-+		.id	= 2,
-+		.dev.platform_data = ,
-+		.num_resources	 = 3,
-+		.resource = (struct resource[]) {
-+			{
-+				.name	= "smc_regs",
-+				.start	= CPM2_STARTOF(im_smc[1]),
-+				.end	= CPM2_ENDOF(im_smc[1]),
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name	= "smc_pram",
-+				.start	= PROFF_SMC2_BASE,
-+				.end	= PROFF_SMC2_BASE + PROFF_SMC_SIZE - 1,
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name	= "interrupt",
-+				.start	= SIU_INT_SMC2,
-+				.end	= SIU_INT_SMC2,
-+				.flags	= IORESOURCE_IRQ,
-+			},
-+		},
-+	},
-+	[CPM2_I2C] = {
++	[MPC82xx_CPM_I2C] = {
 +		.name = "fsl-cpm-i2c",
 +		.id	= 1,
-+		.dev.platform_data = ,
 +		.num_resources	 = 3,
 +		.resource = (struct resource[]) {
 +			{
-+				.name	= "i2c_regs",
-+				.start	= CPM2_STARTOF(im_i2c),
-+				.end	= CPM2_ENDOF(im_i2c),
++				.name	= "i2c_mem",
++				.start	= 0x11860,
++				.end	= 0x118BF,
 +				.flags	= IORESOURCE_MEM,
 +			},
 +			{
 +				.name	= "i2c_pram",
-+				.start	= PROFF_I2C_BASE,
-+				.end	= PROFF_I2C_BASE + PROFF_I2C_SIZE - 1,
++				.start 	= 0x8afc,
++				.end	= 0x8afd,
 +				.flags	= IORESOURCE_MEM,
 +			},
 +			{
-+				.name	= "interrupt",
 +				.start	= SIU_INT_I2C,
 +				.end	= SIU_INT_I2C,
 +				.flags	= IORESOURCE_IRQ,
 +			},
 +		},
 +	},
-+	[CPM2_SPI] = {
-+		.name = "fsl-cpm-spi",
++	[MPC82xx_CPM_SCC1] = {
++		.name = "fsl-cpm-scc",
 +		.id	= 1,
-+		.dev.platform_data = ,
 +		.num_resources	 = 3,
 +		.resource = (struct resource[]) {
 +			{
-+				.name	= "spi_regs",
-+				.start	= CPM2_STARTOF(im_spi),
-+				.end	= CPM2_ENDOF(im_spi),
++				.name	= "scc_mem",
++				.start	= 0x11A00,
++				.end	= 0x11A1F,
++				.flags	= IORESOURCE_MEM,
++			},
++			{
++				.name	= "scc_pram",
++				.start	= 0x8000,
++				.end	= 0x80ff,
++				.flags	= IORESOURCE_MEM,
++			},
++			{
++				.start	= SIU_INT_SCC1,
++				.end	= SIU_INT_SCC1,
++				.flags	= IORESOURCE_IRQ,
++			},
++		},
++	},
++	[MPC82xx_CPM_SCC2] = {
++		.name = "fsl-cpm-scc",
++		.id	= 2,
++		.num_resources	 = 3,
++		.resource = (struct resource[]) {
++			{
++				.name	= "scc_mem",
++				.start	= 0x11A20,
++				.end	= 0x11A3F,
++				.flags	= IORESOURCE_MEM,
++			},
++			{
++				.name	= "scc_pram",
++				.start	= 0x8100,
++				.end	= 0x81ff,
++				.flags	= IORESOURCE_MEM,
++			},
++			{
++				.start	= SIU_INT_SCC2,
++				.end	= SIU_INT_SCC2,
++				.flags	= IORESOURCE_IRQ,
++			},
++		},
++	},
++	[MPC82xx_CPM_SCC3] = {
++		.name = "fsl-cpm-scc",
++		.id	= 3,
++		.num_resources	 = 3,
++		.resource = (struct resource[]) {
++			{
++				.name 	= "scc_mem",
++				.start	= 0x11A40,
++				.end	= 0x11A5F,
++				.flags	= IORESOURCE_MEM,
++			},
++			{
++				.name	= "scc_pram",
++				.start	= 0x8200,
++				.end	= 0x82ff,
++				.flags	= IORESOURCE_MEM,
++			},
++			{
++				.start	= SIU_INT_SCC3,
++				.end	= SIU_INT_SCC3,
++				.flags	= IORESOURCE_IRQ,
++			},
++		},
++	},
++	[MPC82xx_CPM_SCC4] = {
++		.name = "fsl-cpm-scc",
++		.id	= 4,
++		.num_resources	 = 3,
++		.resource = (struct resource[]) {
++			{
++				.name	= "scc_mem",
++				.start	= 0x11A60,
++				.end	= 0x11A7F,
++				.flags	= IORESOURCE_MEM,
++			},
++			{
++				.name	= "scc_pram",
++				.start	= 0x8300,
++				.end	= 0x83ff,
++				.flags	= IORESOURCE_MEM,
++			},
++			{
++				.start	= SIU_INT_SCC4,
++				.end	= SIU_INT_SCC4,
++				.flags	= IORESOURCE_IRQ,
++			},
++		},
++	},
++	[MPC82xx_CPM_SPI] = {
++		.name = "fsl-cpm-spi",
++		.id	= 1,
++		.num_resources	 = 3,
++		.resource = (struct resource[]) {
++			{
++				.name	= "spi_mem",
++				.start	= 0x11AA0,
++				.end	= 0x11AFF,
 +				.flags	= IORESOURCE_MEM,
 +			},
 +			{
 +				.name	= "spi_pram",
-+				.start	= PROFF_SPI_BASE,
-+				.end	= PROFF_SPI_BASE + PROFF_SPI_SIZE - 1,
++				.start	= 0x89fc,
++				.end	= 0x89fd,
 +				.flags	= IORESOURCE_MEM,
 +			},
 +			{
-+				.name	= "interrupt",
 +				.start	= SIU_INT_SPI,
 +				.end	= SIU_INT_SPI,
 +				.flags	= IORESOURCE_IRQ,
 +			},
 +		},
 +	},
-+	[CPM2_CPM] = {
-+		.name = "fsl-cpm-cpm",
++	[MPC82xx_CPM_MCC1] = {
++		.name = "fsl-cpm-mcc",
 +		.id	= 1,
-+		.dev.platform_data = ,
-+		.num_resources	 = 2,
-+		.resource = (struct resource[]) {
-+			{
-+				.name	= "cpm_regs",
-+				.start	= CPM2_STARTOF(im_cpm),
-+				.end	= CPM2_ENDOF(im_cpm),
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name	= "cpm_mux",
-+				.start	= CPM2_STARTOF(im_cpmux),
-+				.end	= CPM2_ENDOF(im_cpmux),
-+				.flags	= IORESOURCE_MEM,
-+			},
-+		},
-+	},
-+#if !defined(CONFIG_8272) && !defined(CONFIG_MPC8555)
-+	[CPM2_MMC1] = {
-+		.name = "fsl-cpm-mmc",
-+		.id	= 1,
-+		.dev.platform_data = ,
 +		.num_resources	 = 3,
 +		.resource = (struct resource[]) {
 +			{
-+				.name	= "mmc_regs",
-+				.start	= CPM2_STARTOF(im_mmc1),
-+				.end	= CPM2_ENDOF(im_mmc1),
++				.name	= "mcc_mem",
++				.start	= 0x11B30,
++				.end	= 0x11B3F,
 +				.flags	= IORESOURCE_MEM,
 +			},
 +			{
-+				.name	= "mmc_pram",
-+				.start	= PROFF_MMC1,
-+				.end	= PROFF_MMC1 + PROFF_MMC_SIZE - 1,
++				.name	= "mcc_pram",
++				.start	= 0x8700,
++				.end	= 0x877f,
 +				.flags	= IORESOURCE_MEM,
 +			},
 +			{
-+				.name	= "interrupt",
-+				.start	= SIU_INT_MMC1,
-+				.end	= SIU_INT_MMC1,
++				.start	= SIU_INT_MCC1,
++				.end	= SIU_INT_MCC1,
 +				.flags	= IORESOURCE_IRQ,
 +			},
 +		},
 +	},
-+	[CPM2_MMC2] = {
-+		.name = "fsl-cpm-mmc",
++	[MPC82xx_CPM_MCC2] = {
++		.name = "fsl-cpm-mcc",
 +		.id	= 2,
-+		.dev.platform_data = ,
 +		.num_resources	 = 3,
 +		.resource = (struct resource[]) {
 +			{
-+				.name	= "mmc_regs",
-+				.start	= CPM2_STARTOF(im_mmc2),
-+				.end	= CPM2_ENDOF(im_mmc2),
++				.name	= "mcc_mem",
++				.start	= 0x11B50,
++				.end	= 0x11B5F,
 +				.flags	= IORESOURCE_MEM,
 +			},
 +			{
-+				.name	= "mmc_pram",
-+				.start	= PROFF_MMC2,
-+				.end	= PROFF_MMC2 + PROFF_MMC_SIZE - 1,
++				.name	= "mcc_pram",
++				.start	= 0x8800,
++				.end	= 0x887f,
 +				.flags	= IORESOURCE_MEM,
-+			},
++			},		
 +			{
-+				.name	= "interrupt",
-+				.start	= SIU_INT_MMC2,
-+				.end	= SIU_INT_MMC2,
++				.start	= SIU_INT_MCC2,
++				.end	= SIU_INT_MCC2,
 +				.flags	= IORESOURCE_IRQ,
 +			},
 +		},
 +	},
-+#endif
++	[MPC82xx_CPM_SMC1] = {
++		.name = "fsl-cpm-smc",
++		.id	= 1,
++		.num_resources	 = 3,
++		.resource = (struct resource[]) {
++			{
++				.name	= "smc_mem",
++				.start	= 0x11A80,
++				.end	= 0x11A8F,
++				.flags	= IORESOURCE_MEM,
++			},
++			{
++				.name	= "smc_pram",
++				.start	= 0x87fc,
++				.end	= 0x87fd,
++				.flags	= IORESOURCE_MEM,
++			},
++			{
++				.start	= SIU_INT_SMC1,
++				.end	= SIU_INT_SMC1,
++				.flags	= IORESOURCE_IRQ,
++			},
++		},
++	},
++	[MPC82xx_CPM_SMC2] = {
++		.name = "fsl-cpm-smc",
++		.id	= 2,
++		.num_resources	 = 3,
++		.resource = (struct resource[]) {
++			{
++				.name	= "smc_mem",
++				.start	= 0x11A90,
++				.end	= 0x11A9F,
++				.flags	= IORESOURCE_MEM,
++			},
++			{
++				.name	= "smc_pram",
++				.start	= 0x88fc,
++				.end	= 0x88fd,
++				.flags	= IORESOURCE_MEM,
++			},
++			{
++				.start	= SIU_INT_SMC2,
++				.end	= SIU_INT_SMC2,
++				.flags	= IORESOURCE_IRQ,
++			},
++		},
++	},
++	[MPC82xx_CPM_USB] = {
++		.name = "fsl-cpm-usb",
++		.id	= 1,
++		.num_resources	= 3,
++		.resource = (struct resource[]) {
++			{
++				.name	= "usb_mem",
++				.start	= 0x11b60,
++				.end	= 0x11b78,
++				.flags	= IORESOURCE_MEM,
++			},
++			{
++				.name	= "usb_pram",
++				.start	= 0x8b00,
++				.end	= 0x8bff,
++				.flags 	= IORESOURCE_MEM,
++			},
++			{
++				.start	= SIU_INT_USB,
++				.end	= SIU_INT_USB,
++				.flags	= IORESOURCE_IRQ,
++			},
 +
-+	
-+static int __init mach_cpm2_fixup(struct platform_device *pdev)
++		},
++	},
++	[MPC82xx_SEC1] = {
++		.name = "fsl-sec",
++		.id = 1,
++		.num_resources = 1,
++		.resource = (struct resource[]) {
++			{
++				.name	= "sec_mem",
++				.start	= 0x40000,
++				.end	= 0x52fff,
++				.flags	= IORESOURCE_MEM,
++			},
++		},
++	},
++};
++
++static int __init mach_mpc82xx_fixup(struct platform_device *pdev)
 +{
 +	ppc_sys_fixup_mem_resource(pdev, CPM_MAP_ADDR);
 +	return 0;
 +}
 +
-+static int __init mach_cpm2_init(void)
++static int __init mach_mpc82xx_init(void)
 +{
 +	if (ppc_md.progress)
-+		ppc_md.progress("mach_cpm2_init:enter", 0);
-+	ppc_sys_device_fixup = mach_cpm2_fixup;
++		ppc_md.progress("mach_mpc82xx_init:enter", 0);
++	ppc_sys_device_fixup = mach_mpc82xx_fixup;
 +	return 0;
 +}
 +
-+postcore_initcall(mach_cpm2_init);
-+	
-\ No newline at end of file
-diff --git a/include/asm-ppc/cpm2.h b/include/asm-ppc/cpm2.h
---- a/include/asm-ppc/cpm2.h
-+++ b/include/asm-ppc/cpm2.h
-@@ -170,6 +170,20 @@ typedef struct cpm_buf_desc {
- #define PROFF_I2C_BASE		((uint)0x8afc)
- #define PROFF_IDMA4_BASE	((uint)0x8afe)
- 
-+#define PROFF_FCC_SIZE		((uint))256)
-+#define PROFF_SCC_SIZE		((uint))256)
-+#define PROFF_SMC_SIZE		((uint)2)
-+#define PROFF_IDMA_SIZE		((uint)2)
-+#define PROFF_SPI_SIZE		((uint)2)
-+#define PROFF_I2C_SIZE		((uint)2)
-+#define PROFF_MMC_SIZE		((uint)124)
-+#define PROFF_USB_SIZE		((uint)256)
-+
-+#define PROFF_FCC_MEM_SIZE	((uint)128)
-+#define PROFF_FCC1_MEM_BASE	(CPM_FCC_SPECIAL_BASE+(PROFF_FCC_MEM_SIZE*0))
-+#define PROFF_FCC2_MEM_BASE	(CPM_FCC_SPECIAL_BASE+(PROFF_FCC_MEM_SIZE*1))
-+#define PROFF_FCC3_MEM_BASE	(CPM_FCC_SPECIAL_BASE+(PROFF_FCC_MEM_SIZE*2))
-+
- /* The SMCs are relocated to any of the first eight DPRAM pages.
-  * We will fix these at the first locations of DPRAM, until we
-  * get some microcode patches :-).
-@@ -1084,6 +1098,40 @@ typedef struct im_idma {
- #define SCCR_PCIDF_MSK	0x00000078	/* PCI division factor	*/
- #define SCCR_PCIDF_SHIFT 3
- 
-+/*-----------------------------------------------------------------------
-+ * Enumeration of PPC/CPM2 devices for platform initialization
-+ */
-+
-+/* It says this should be an enumeration. If it was #defines then the
-+ * cpm2_devices array definition could be conditionally compiled.
++postcore_initcall(mach_mpc82xx_init);
+diff --git a/arch/ppc/syslib/mpc82xx_sys.c b/arch/ppc/syslib/mpc82xx_sys.c
+new file mode 100644
+--- /dev/null
++++ b/arch/ppc/syslib/mpc82xx_sys.c
+@@ -0,0 +1,200 @@
++/*
++ * arch/ppc/syslib/mpc82xx_devices.c
 + *
-+ * Another approach would be to add all devices and have a flags field
-+ * for the different CPM configuration options.
++ * MPC82xx System descriptions
++ *
++ * Maintainer: Kumar Gala <kumar.gala@freescale.com>
++ *
++ * This file is licensed under the terms of the GNU General Public License 
++ * version 2. This program is licensed "as is" without any warranty of any 
++ * kind, whether express or implied.
 + */
-+enum ppc_sys_devices {
-+	CPM2_FCC1,
-+	CPM2_FCC2,
-+	CPM2_FCC3,
-+	CPM2_SCC1,
-+	CPM2_SCC2,
-+	CPM2_SCC3,
-+	CPM2_SCC4,
-+	CPM2_SMC1,
-+	CPM2_SMC2,
-+	CPM2_I2C,
-+	CPM2_SPI,
-+/*	CPM2_DMA,	think about this more, separate SDMA and IDMA? */
-+	CPM2_CPM,
-+/*	CPM2_SI2,	*/
-+#if !defined(CONFIG_8272) && !defined(CONFIG_MPC8555)
-+	CPM2_SI1,
-+	CPM2_MMC1,
-+	CPM2_MMC2,
-+#else
-+	CPM2_USB,
-+#endf	
-+};
 +
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/device.h>
++
++#include <asm/ppc_sys.h>
++
++struct ppc_sys_spec *cur_ppc_sys_spec;
++struct ppc_sys_spec ppc_sys_specs[] = {
++	/* below is a list of the 8260 family of processors */
++	{
++		.ppc_sys_name	= "8250",
++		.mask		= 0x0000ff00,
++		.value		= 0x00000000,
++		.num_devices	= 12,
++		.device_list = (enum ppc_sys_devices[])
++		{
++			MPC82xx_CPM_FCC1, MPC82xx_CPM_FCC2, MPC82xx_CPM_FCC3,
++			MPC82xx_CPM_SCC1, MPC82xx_CPM_SCC2, MPC82xx_CPM_SCC3,
++			MPC82xx_CPM_SCC4, MPC82xx_CPM_MCC1, MPC82xx_CPM_SMC1,
++			MPC82xx_CPM_SMC2, MPC82xx_CPM_SPI, MPC82xx_CPM_I2C,
++		}
++	},
++	{
++		.ppc_sys_name	= "8255",
++		.mask		= 0x0000ff00,
++		.value		= 0x00000000,
++		.num_devices	= 11,
++		.device_list = (enum ppc_sys_devices[])
++		{
++			MPC82xx_CPM_FCC1, MPC82xx_CPM_FCC2, MPC82xx_CPM_SCC1,
++			MPC82xx_CPM_SCC2, MPC82xx_CPM_SCC3, MPC82xx_CPM_SCC4,
++			MPC82xx_CPM_MCC1, MPC82xx_CPM_SMC1, MPC82xx_CPM_SMC2,
++			MPC82xx_CPM_SPI, MPC82xx_CPM_I2C,
++		}
++	},
++	{
++		.ppc_sys_name	= "8260",
++		.mask		= 0x0000ff00,
++		.value		= 0x00000000,
++		.num_devices	= 12,
++		.device_list = (enum ppc_sys_devices[])
++		{
++			MPC82xx_CPM_FCC1, MPC82xx_CPM_FCC2, MPC82xx_CPM_FCC3,
++			MPC82xx_CPM_SCC1, MPC82xx_CPM_SCC2, MPC82xx_CPM_SCC3,
++			MPC82xx_CPM_SCC4, MPC82xx_CPM_MCC1, MPC82xx_CPM_SMC1,
++			MPC82xx_CPM_SMC2, MPC82xx_CPM_SPI, MPC82xx_CPM_I2C,
++		}
++	},
++	{
++		.ppc_sys_name	= "8264",
++		.mask		= 0x0000ff00,
++		.value		= 0x00000000,
++		.num_devices	= 12,
++		.device_list = (enum ppc_sys_devices[])
++		{
++			MPC82xx_CPM_FCC1, MPC82xx_CPM_FCC2, MPC82xx_CPM_FCC3,
++			MPC82xx_CPM_SCC1, MPC82xx_CPM_SCC2, MPC82xx_CPM_SCC3,
++			MPC82xx_CPM_SCC4, MPC82xx_CPM_MCC1, MPC82xx_CPM_SMC1,
++			MPC82xx_CPM_SMC2, MPC82xx_CPM_SPI, MPC82xx_CPM_I2C,
++		}
++	},
++	{
++		.ppc_sys_name	= "8265",
++		.mask		= 0x0000ff00,
++		.value		= 0x00000000,
++		.num_devices	= 12,
++		.device_list = (enum ppc_sys_devices[])
++		{
++			MPC82xx_CPM_FCC1, MPC82xx_CPM_FCC2, MPC82xx_CPM_FCC3,
++			MPC82xx_CPM_SCC1, MPC82xx_CPM_SCC2, MPC82xx_CPM_SCC3,
++			MPC82xx_CPM_SCC4, MPC82xx_CPM_MCC1, MPC82xx_CPM_SMC1,
++			MPC82xx_CPM_SMC2, MPC82xx_CPM_SPI, MPC82xx_CPM_I2C,
++		}
++	},
++	{
++		.ppc_sys_name	= "8266",
++		.mask		= 0x0000ff00,
++		.value		= 0x00000000,
++		.num_devices	= 12,
++		.device_list = (enum ppc_sys_devices[])
++		{
++			MPC82xx_CPM_FCC1, MPC82xx_CPM_FCC2, MPC82xx_CPM_FCC3,
++			MPC82xx_CPM_SCC1, MPC82xx_CPM_SCC2, MPC82xx_CPM_SCC3,
++			MPC82xx_CPM_SCC4, MPC82xx_CPM_MCC1, MPC82xx_CPM_SMC1,
++			MPC82xx_CPM_SMC2, MPC82xx_CPM_SPI, MPC82xx_CPM_I2C,
++		}
++	},
++	/* below is a list of the 8272 family of processors */
++	{
++		.ppc_sys_name	= "8247",
++		.mask		= 0x000fe000,
++		.value		= 0x0000c000,
++		.num_devices	= 10,
++		.device_list = (enum ppc_sys_devices[])
++		{
++			MPC82xx_CPM_FCC1, MPC82xx_CPM_FCC2, MPC82xx_CPM_SCC1,
++			MPC82xx_CPM_SCC2, MPC82xx_CPM_SCC3, MPC82xx_CPM_SMC1,
++			MPC82xx_CPM_SMC2, MPC82xx_CPM_SPI, MPC82xx_CPM_I2C,
++			MPC82xx_CPM_USB,
++		},
++	},
++	{
++		.ppc_sys_name	= "8248",
++		.mask		= 0x000fe000,
++		.value		= 0x0000c000,
++		.num_devices	= 11,
++		.device_list = (enum ppc_sys_devices[])
++		{
++			MPC82xx_CPM_FCC1, MPC82xx_CPM_FCC2, MPC82xx_CPM_SCC1,
++			MPC82xx_CPM_SCC2, MPC82xx_CPM_SCC3, MPC82xx_CPM_SMC1,
++			MPC82xx_CPM_SMC2, MPC82xx_CPM_SPI, MPC82xx_CPM_I2C,
++			MPC82xx_CPM_USB, MPC82xx_SEC1,
++		},
++	},
++	{
++		.ppc_sys_name	= "8271",
++		.mask		= 0x000fe000,
++		.value		= 0x0000c000,
++		.num_devices	= 10,
++		.device_list = (enum ppc_sys_devices[])
++		{
++			MPC82xx_CPM_FCC1, MPC82xx_CPM_FCC2, MPC82xx_CPM_SCC1,
++			MPC82xx_CPM_SCC2, MPC82xx_CPM_SCC3, MPC82xx_CPM_SMC1,
++			MPC82xx_CPM_SMC2, MPC82xx_CPM_SPI, MPC82xx_CPM_I2C,
++			MPC82xx_CPM_USB,
++		},
++	},
++	{
++		.ppc_sys_name	= "8272",
++		.mask		= 0x000fe000,
++		.value		= 0x0000c000,
++		.num_devices	= 11,
++		.device_list = (enum ppc_sys_devices[])
++		{
++			MPC82xx_CPM_FCC1, MPC82xx_CPM_FCC2, MPC82xx_CPM_SCC1,
++			MPC82xx_CPM_SCC2, MPC82xx_CPM_SCC3, MPC82xx_CPM_SMC1,
++			MPC82xx_CPM_SMC2, MPC82xx_CPM_SPI, MPC82xx_CPM_I2C,
++			MPC82xx_CPM_USB, MPC82xx_SEC1,
++		},
++	},
++	/* below is a list of the 8280 family of processors */
++	{	
++		.ppc_sys_name	= "8270",
++		.mask 		= 0x0000ff00,
++		.value 		= 0x00000a00,
++		.num_devices 	= 12,
++		.device_list = (enum ppc_sys_devices[])
++		{
++			MPC82xx_CPM_FCC1, MPC82xx_CPM_FCC2, MPC82xx_CPM_FCC3,
++			MPC82xx_CPM_SCC1, MPC82xx_CPM_SCC2, MPC82xx_CPM_SCC3,
++			MPC82xx_CPM_SCC4, MPC82xx_CPM_MCC1, MPC82xx_CPM_SMC1,
++			MPC82xx_CPM_SMC2, MPC82xx_CPM_SPI, MPC82xx_CPM_I2C,
++		},
++	},
++	{	
++		.ppc_sys_name	= "8275",
++		.mask 		= 0x0000ff00,
++		.value 		= 0x00000a00,
++		.num_devices 	= 12,
++		.device_list = (enum ppc_sys_devices[])
++		{
++			MPC82xx_CPM_FCC1, MPC82xx_CPM_FCC2, MPC82xx_CPM_FCC3,
++			MPC82xx_CPM_SCC1, MPC82xx_CPM_SCC2, MPC82xx_CPM_SCC3,
++			MPC82xx_CPM_SCC4, MPC82xx_CPM_MCC1, MPC82xx_CPM_SMC1,
++			MPC82xx_CPM_SMC2, MPC82xx_CPM_SPI, MPC82xx_CPM_I2C,
++		},
++	},
++	{	
++		.ppc_sys_name	= "8280",
++		.mask 		= 0x0000ff00,
++		.value 		= 0x00000a00,
++		.num_devices 	= 13,
++		.device_list = (enum ppc_sys_devices[])
++		{
++			MPC82xx_CPM_FCC1, MPC82xx_CPM_FCC2, MPC82xx_CPM_FCC3,
++			MPC82xx_CPM_SCC1, MPC82xx_CPM_SCC2, MPC82xx_CPM_SCC3,
++			MPC82xx_CPM_SCC4, MPC82xx_CPM_MCC1, MPC82xx_CPM_MCC2,
++			MPC82xx_CPM_SMC1, MPC82xx_CPM_SMC2, MPC82xx_CPM_SPI,
++			MPC82xx_CPM_I2C,
++		},
++	},
++	{
++		/* default match */
++		.ppc_sys_name	= "",
++		.mask 		= 0x00000000,
++		.value 		= 0x00000000,
++	},
++};
+diff --git a/include/asm-ppc/irq.h b/include/asm-ppc/irq.h
+--- a/include/asm-ppc/irq.h
++++ b/include/asm-ppc/irq.h
+@@ -331,6 +331,7 @@ static __inline__ int irq_canonicalize(i
+ #define	SIU_INT_IDMA3		((uint)0x08 + CPM_IRQ_OFFSET)
+ #define	SIU_INT_IDMA4		((uint)0x09 + CPM_IRQ_OFFSET)
+ #define	SIU_INT_SDMA		((uint)0x0a + CPM_IRQ_OFFSET)
++#define	SIU_INT_USB		((uint)0x0b + CPM_IRQ_OFFSET)
+ #define	SIU_INT_TIMER1		((uint)0x0c + CPM_IRQ_OFFSET)
+ #define	SIU_INT_TIMER2		((uint)0x0d + CPM_IRQ_OFFSET)
+ #define	SIU_INT_TIMER3		((uint)0x0e + CPM_IRQ_OFFSET)
+diff --git a/include/asm-ppc/mpc8260.h b/include/asm-ppc/mpc8260.h
+--- a/include/asm-ppc/mpc8260.h
++++ b/include/asm-ppc/mpc8260.h
+@@ -34,8 +34,7 @@
  
- #endif /* __CPM2__ */
- #endif /* __KERNEL__ */
-
---=-6bcmCxSNMjtTbDwF5FUA--
+ #ifdef CONFIG_TQM8260
+ #include <platforms/tqm8260.h>
+-#endif
+-
++#endif 
+ #if defined(CONFIG_PQ2ADS) || defined (CONFIG_PQ2FADS)
+ #include <platforms/pq2ads.h>
+ #endif
+@@ -66,6 +65,24 @@
+ #ifndef IO_VIRT_ADDR
+ #define IO_VIRT_ADDR	IO_PHYS_ADDR
+ #endif
++
++enum ppc_sys_devices {
++	MPC82xx_CPM_FCC1,
++	MPC82xx_CPM_FCC2,
++	MPC82xx_CPM_FCC3,
++	MPC82xx_CPM_I2C,
++	MPC82xx_CPM_SCC1,
++	MPC82xx_CPM_SCC2,
++	MPC82xx_CPM_SCC3,
++	MPC82xx_CPM_SCC4,
++	MPC82xx_CPM_SPI,
++	MPC82xx_CPM_MCC1,
++	MPC82xx_CPM_MCC2,
++	MPC82xx_CPM_SMC1,
++	MPC82xx_CPM_SMC2,
++	MPC82xx_CPM_USB,
++	MPC82xx_SEC1,
++};
+ 
+ #ifndef __ASSEMBLY__
+ /* The "residual" data board information structure the boot loader
+diff --git a/include/asm-ppc/ppc_sys.h b/include/asm-ppc/ppc_sys.h
+--- a/include/asm-ppc/ppc_sys.h
++++ b/include/asm-ppc/ppc_sys.h
+@@ -21,7 +21,9 @@
+ #include <linux/device.h>
+ #include <linux/types.h>
+ 
+-#if defined(CONFIG_83xx)
++#if defined(CONFIG_8260)
++#include <asm/mpc8260.h>
++#elif defined(CONFIG_83xx)
+ #include <asm/mpc83xx.h>
+ #elif defined(CONFIG_85xx)
+ #include <asm/mpc85xx.h>
