@@ -1,18 +1,17 @@
 Return-Path: <markc@mail.com>
 Received: from relay02.roc.ny.frontiernet.net (relay02.roc.ny.frontiernet.net
-	[66.133.182.165]) by ozlabs.org (Postfix) with ESMTP id 91AD6679F2
+	[66.133.182.165]) by ozlabs.org (Postfix) with ESMTP id 3550967B17
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Jun 2005 22:42:26 +1000 (EST)
-Message-ID: <003a01c571a7$cb45bef0$0301a8c0@chuck2>
+	Wed, 15 Jun 2005 22:51:34 +1000 (EST)
+Message-ID: <004d01c571a9$12dafb80$0301a8c0@chuck2>
 From: "Mark Chambers" <markc@mail.com>
-To: "Jason Chen" <jason_chen@usish.com>,
-	"linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
-References: <200506150531.j5F5VMPK006235@ms.usish.com>
-Date: Wed, 15 Jun 2005 08:43:02 -0400
+To: "Rober Hsu" <rober@opnet.com.tw>, <linuxppc-embedded@ozlabs.org>
+References: <1118830434.4813.10.camel@orange.opnet.com.tw>
+Date: Wed, 15 Jun 2005 08:52:04 -0400
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="gb2312"
-Subject: Re: change the SDRAM address
+	charset="iso-8859-1"
+Subject: Re: How to change SDRAM from HYNIX to AMIC
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,27 +24,24 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 
 
-> hi,all,
-> I am a newer.I worked on a platform based on MPC8248.
-> The 64M SDRAM use CS2,and it's base address is
-0x00000000,BR2=0x00000041,OR2=fc002cd0.
-> It's just a simple issue,I want to change the base address of the SDRAM
-from 0x00000000 to 0x03000000,I thought change the BR2 register to
-0x03000041 was ok,but the real thing is that you can read/write the area of
-0x03000000 to 0x03ffffff,but the area above the 0x04000000 can not be
-written and all be read as 0x0.
-> I want to know am I right to change the base address just by change the
-BR2?
-> Is there some other should be change? Or it may connect with a hardware
-change?
+> Hi:
+>
+>     I used HY57641620 * 2 at my MPC852T, the ram size is 16M, Now i want
+> to change to AMIC A43L3616-6 * 2 32M.
+>
+>     I modify my ppboot's as follow, but i don't know how to modfiy my
+> sdram_table, anybody know what's the meaning of sdram_table?
 >
 
-That base address just won't work right for 64MB.  The target address AND'd
-with
-the mask in the upper part of the OR must equal the BR.  Typically a 2^n
-sized
-area must be placed on a 2^n boundary (00xx xxxx, 04xx xxxx, and so on in
-your
-case)
+The sdram_table is used to load the UPM, which drives the signals to SDRAM
+on a clock by clock basis.  This is not simple, and getting it wrong can
+cause
+intermittent problems that are very hard to diagnose.  On the other hand,
+the
+changes required are probably minimal, but you'll need someone who knows
+what they're doing to review the spec sheets for the new SDRAM and the UPM
+table and make sure timing requirements are met.
+
+Freescale has tools for free download that help with configuring the UPMs.
 
 Mark Chambers
