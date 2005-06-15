@@ -1,19 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jon Loeliger <jdl@freescale.com>
-In-Reply-To: <1118862046.25372.49.camel@cashmere.sps.mot.com>
-References: <1117614390.19020.24.camel@gaston>
-	<1117614484.19020.27.camel@gaston> <1117783104.31082.151.camel@gaston>
-	<1117819176.6517.290.camel@cashmere.sps.mot.com>
-	<1118199997.6850.106.camel@gaston>
-	<1118862046.25372.49.camel@cashmere.sps.mot.com>
-Content-Type: text/plain
-Date: Thu, 16 Jun 2005 07:52:53 +1000
-Message-Id: <1118872373.5986.242.camel@gaston>
-Mime-Version: 1.0
-Cc: linuxppc64-dev@ozlabs.org,
-	"linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
-Subject: Re: Discuss: Adding OF Flat Dev Tree to ppc32
+Return-Path: <wd@denx.de>
+Received: from mailout03.sul.t-online.com (mailout03.sul.t-online.com
+	[194.25.134.81]) by ozlabs.org (Postfix) with ESMTP id 6F89A67B7A
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 16 Jun 2005 09:39:11 +1000 (EST)
+To: Jaap-Jan Boor <jjboor@aimsys.nl>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 15 Jun 2005 22:04:46 +0200."
+	<187119B8-515D-4903-AAB5-05BF80215A4D@aimsys.nl>
+Date: Thu, 16 Jun 2005 01:38:45 +0200
+Sender: wd@denx.de
+Message-Id: <20050615233850.D7240C1510@atlas.denx.de>
+Cc: "Schaefer-Hutter, Peter" <Peter.Schaefer-Hutter@tfk-racoms.com>,
+	linuxppc-embedded@ozlabs.org
+Subject: Re: 2.4.26 and MPC885 context switching time 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,57 +25,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2005-06-15 at 14:00 -0500, Jon Loeliger wrote:
-> On Tue, 2005-06-07 at 22:06, Benjamin Herrenschmidt wrote:
+In message <187119B8-515D-4903-AAB5-05BF80215A4D@aimsys.nl> you wrote:
+> I did once ran lmbench on a proprietry 850 based board running at  
+> 62/31 Mhz using 1 16-bit dram:
 > 
-> > It's basically used to extract some infos directly from the flattened
-> > tree in order to construct the LMB list (list of memory blocks,
-> > equivalent of ppc32's mem_pieces), 
+> Context switching - times in microseconds - smaller is better
+> -------------------------------------------------------------
+> Host                 OS 2p/0K 2p/16K 2p/64K 8p/16K 8p/64K 16p/16K 16p/ 
+> 64K
+>                          ctxsw  ctxsw  ctxsw ctxsw  ctxsw   ctxsw    
+> ctxsw
+> --------- ------------- ----- ------ ------ ------ ------ -------  
+> -------
+> test    Linux 2.4.25- 259.2  234.2         302.6          304.7
 > 
-> 
-> OK.  So the unflattenting process requires a small amount
-> of memory allocation which is currently implemented using
-> the lmb mechanism in PPC64 land.
+> This is ~ 3x faster then your 100Mhz 885...
 
-Not only the unflattening process. The full MMU initialisation (ability
-to map things etc...) needs mem_pieces too. The ppc32 kernel runs with a
-very limited memory setup until that happens.
+I just ran lmbench on a MPC866 system (CPU at 132 MHz, bus at 66 MHz):
 
-> As you indicate, there is also the mem_pieces implementation
-> over in ppc32 land.  I think it is currently only used by
-> arch/ppc/platforms/pmac_setup.c.
+Context switching - times in microseconds - smaller is better
+-------------------------------------------------------------------------
+Host                 OS  2p/0K 2p/16K 2p/64K 8p/16K 8p/64K 16p/16K 16p/64K
+                         ctxsw  ctxsw  ctxsw ctxsw  ctxsw   ctxsw   ctxsw
+--------- ------------- ------ ------ ------ ------ ------ ------- -------
+tqm8xx     Linux 2.4.25 5.4500   27.5   30.3   39.0   36.0    37.7    33.5
 
-mem_pieces is used in several places in the early mmu setup too
-in arch/ppc/mm/*
 
-> In porting this code over to PPC32 land, there are roughly
-> three choices:
-> 
->    1) Copy the LMB implementation from ppc64 over to PPC32 land,
+There is definitely something wrong with Peter's measurements.
 
-No, we can stick to mem_pieces
+Best regards,
 
->    2) Change the unflattening code in PPC32 to use mem_pieces,
->       or rewrite it to allow a configurable choice between
->       LMB and mem_pieces,
+Wolfgang Denk
 
-mem_pieces is fine
-
->    3) Make up something new, yet very similar to LMB and
->       mem_pieces.
-> 
-> Does anyone have suggestions or advice on route 1) or 2)?
-> Anyone?  Kumar?  Ben?  Bueller?
-
-The main issues is not really there. The problem is that we will have to
-scan the flattened tree at boot in order to setup the MMU and that will
-have to be done with a very limited access to memory, possibly only the
-low 32Mb of RAM for example (though we may manage something better
-running in real mode with some CPUs).
-
-That means maybe imposing some restrictions on where the flattened
-device-tree block can be when passed to the kernel (unless we can run
-that C code in real mode) and other niceties that will have to be dealt
-per CPU family.
-
-Ben.
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Quantum particles: The dreams that stuff is made of.
