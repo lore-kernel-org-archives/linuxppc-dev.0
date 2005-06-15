@@ -1,22 +1,17 @@
-Return-Path: <rober@opnet.com.tw>
-Received: from opnet2.opnet.com.tw (unknown [210.243.240.244])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0947167A06
+Return-Path: <scarayol@assystembrime.com>
+Received: from srv_courtaboeuf.brime.fr (unknown [81.255.87.178])
+	by ozlabs.org (Postfix) with ESMTP id 80AE1679E6
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Jun 2005 20:43:03 +1000 (EST)
-Received: from [10.0.14.26] (h248-210-243-240.opnet.com.tw [210.243.240.248]
-	(may be forged))
-	by opnet2.opnet.com.tw (8.13.3/8.13.1) with ESMTP id j5FIJ4C4020647
-	for <linuxppc-embedded@ozlabs.org>; Wed, 15 Jun 2005 18:19:04 GMT
-	(envelope-from rober@opnet.com.tw)
-From: Rober Hsu <rober@opnet.com.tw>
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain
-Message-Id: <1118830434.4813.10.camel@orange.opnet.com.tw>
-Mime-Version: 1.0
-Date: Wed, 15 Jun 2005 18:13:54 +0800
-Subject: How to change SDRAM from HYNIX to AMIC
+	Wed, 15 Jun 2005 21:34:48 +1000 (EST)
+To: Alex Zeffertt <ajz@cambridgebroadband.com>
+Message-ID: <OFF7502093.7CED40CA-ONC1257021.003F0EB2@brime.fr>
+From: scarayol@assystembrime.com
+Date: Wed, 15 Jun 2005 13:36:19 +0200
+MIME-Version: 1.0
+Content-type: text/plain; charset=us-ascii
+Cc: linuxppc-embedded@ozlabs.org
+Subject: =?iso-8859-1?q?R=E9f=2E_=3A_Re=3A_MPC885_interruptions_=3A_help_?=
+	=?iso-8859-1?q?!?=
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,131 +22,70 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi:
 
-    I used HY57641620 * 2 at my MPC852T, the ram size is 16M, Now i want
-to change to AMIC A43L3616-6 * 2 32M.
+Thank you,
 
-    I modify my ppboot's as follow, but i don't know how to modfiy my
-sdram_table, anybody know what's the meaning of sdram_table?
+but on the MPC885 IRQ7 is the only one function for this pin. On the other
+hand, we have a problem in the kernel that calibrate the delay loop because
+it found 2.17 BogoMIPS (instead of 50 or 80 BogoMIPS).
+Could it explain the problem for the interruption ? (even if the
+application work fine).
 
-PS:I system hold at ## Starting linux kernel at 0x00580000 ...
+Sophie CARAYOL
 
-Boot Loader v1.0.0 (Jun 15 2005 - 15:38:51)
- 
-CPU:   MPC852T (0x08010004) at 100.00 MHz: 4 kB I-Cache 4 kB D-Cache FEC
-presentDRAM:  32 MB
-Not load linux now? (enter anykey):
-Kernel file size :3d7832(hex)
-Loading kernel ... ...
-## Starting linux kernel at 0x00580000 ...
-     
-       
-#include <ppcboot.h>
-#include "mpc8xx.h"
+Pins on the 8xx are highly configurable.  I recommend that you check
+that the pin has not been configured for another  function.  For example
+on the 862 the SIU_IRQ7 pin doubles as the MII tx clock.
 
-/*
-------------------------------------------------------------------------- */
+Alex
 
-static long int dram_size (long int, long int *, long int);
+On Wed, 15 Jun 2005 10:35:41 +0200
+scarayol@assystembrime.com wrote:
 
-/*
-------------------------------------------------------------------------- */
-
-#define	_NOT_USED_	0xFFFFFFFF
-
-const uint sdram_table[] =
-{
-	/* Single Read. (offset 0x0-0x4 in UPM RAM)     */
-	/* Precharge and MRS(offset 0x5-0x7 in UPM RAM) */
-	0x1F07FC04, 0xEEAEFC04, 0x11ADFC04, 0xEFBBBC00,
-	0x1FF77C47, 0x1FF77C35, 0xEFEABC34, 0x1FB57C35,
-
-	/* Burst Read. (offset 0x8-0xf in UPM RAM) */
-	0x1F07FC04, 0xEEAEFC04, 0x10ADFC04, 0xF0AFFC00,
-	0xF0AFFC00, 0xF1AFFC00, 0xEFBBBC00, 0x1FF77C47,
-	_NOT_USED_, _NOT_USED_, _NOT_USED_, _NOT_USED_,
-	_NOT_USED_, _NOT_USED_, _NOT_USED_, _NOT_USED_,
-
-	/* Single Write. (offset 0x18-0x1F in UPM RAM) */
-	0x1F27FC04, 0xEEAEBC00, 0x01B93C04, 0x1FF77C47,
-	_NOT_USED_, _NOT_USED_, _NOT_USED_, _NOT_USED_,
-
-	/* Burst Write. (offset 20-2F in UPM RAM) */
-	0x1F07FC04, 0xEEAEBC00, 0x10AD7C00, 0xF0AFFC00,
-	0xF0AFFC00, 0xE1BBBC04, 0x1FF77C47, _NOT_USED_, 
-	_NOT_USED_, _NOT_USED_, _NOT_USED_, _NOT_USED_,
-	_NOT_USED_, _NOT_USED_, _NOT_USED_, _NOT_USED_,
-
-	/* Refresh timer expired (offset 30-3B in UPM RAM) */
-	0x1FF5FC84, 0xFFFFFC04, 0xFFFFFC04, 0xFFFFFC04,
-	0xFFFFFC84, 0xFFFFFC07, 0xffffffff, _NOT_USED_, 
-	_NOT_USED_, _NOT_USED_, _NOT_USED_, _NOT_USED_,
-
-	/* Exception. (offset 3c-3f in UPM RAM) */
-	0x7FFFFC07, _NOT_USED_, _NOT_USED_, _NOT_USED_ 
-};
-
-/*
-------------------------------------------------------------------------- */
-
-
-/*
- * Check Board Identity:
- *
- * Test TQ ID string (TQM8xx...)
- * If present, check for "L" type (no second DRAM bank),
- * otherwise "L" type is assumed as default.
- *
- * Return 1 for "L" type, 0 else.
- */
-
-int checkboard (void)
-{
-    return 0;
-}
-
-/*
-------------------------------------------------------------------------- */
-
-long int initdram(int board_type)
-{
-	volatile immap_t     *immap = (immap_t *)CFG_IMMR;
-	volatile memctl8xx_t *memctl = &immap->im_memctl;
-
-	upmconfig(UPMA, (uint *)sdram_table, sizeof(sdram_table)/sizeof(uint));
-  
-	memctl->memc_mptpr = 0x0400;
-
-	/*
-	 * Configure the refresh (mostly).  This needs to be
-	 * based upon processor clock speed and optimized to provide
-	 * the highest level of performance.  For multiple banks,
-	 * this time has to be divided by the number of banks.
-	 * Although it is not clear anywhere, it appears the
-	 * refresh steps through the chip selects for this UPM
-	 * on each refresh cycle.
-	 * We have to be careful changing
-	 * UPM registers after we ask it to run these commands.
-	 */
-
-	memctl->memc_mamr = 0xD0904114;
-	memctl->memc_mar = 0x00000088;
-	udelay(200);
-
-	memctl->memc_mcr = 0x80004105;     /* precharge */
-	udelay(200);
-
-	memctl->memc_mamr = 0xD0904114;
-	memctl->memc_mcr = 0x80004830;     /* refresh */
-	udelay(200);
-
-	memctl->memc_mamr = 0xD0904114;
-	memctl->memc_mcr = 0x80004106; 
-	udelay(200);
-
-	memctl->memc_or2 = 0xFE000A00;
-	memctl->memc_br2 = 0x00000081;
-
-	return (32 * 1024 *1024);
-}	/* end of initdram */
+> Hi all,
+>
+> I wrote a module driver to manage interruptions. I have an
+> interruption on MPC885 IRQ7 activated by a push button that provides a
+> negative pulse of 200 ns width.
+> When the device is open, i call request_irq() to install the interrupt
+> handler:
+>
+> int ret = request_irq(SIU_IRQ7, fpgadriver_irq_save_handler,
+> SA_INTERRUPT, FPGA_ID, NULL);
+>
+> void fpgadriver_irq_save_handler(int irq, void *dev_id, struct pt_regs
+> *regs)
+> {
+>   fpga_it_source=FPGA_IRQ_SAVE;
+>   printk( "fpgadriver: fpgadriver_irq_save_handler for device \n");
+>   /* Prepare a task */
+>   PREPARE_TQUEUE(&fpgadriver_bh_task, fpgadriver_bh_handler, dev_id);
+>   /* Add a task to the immediate bottom half and mark it for schedule
+>   */ queue_task(&fpgadriver_bh_task, &tq_immediate);
+>    mark_bh(IMMEDIATE_BH);
+> }
+>
+> my read() is like that :
+>
+> static ssize_t fpgadriver_read(struct file *file, char *buf, size_t
+> count, loff_t *ppos)
+> {
+>   //mise a jour de l'indicateur d'etat d'endormissement
+>   wakeups++;
+>   interruptible_sleep_on(&readq);
+>   buf[0]=fpga_it_source;
+>   printk("fpgadriver_read  \n");
+>   return 0;
+> }
+>
+> I have the wake_up_interruptible(&reaq) in fpgadriver_bh_handler(). My
+> problem is that fpgadriver_irq_save_handler() is never called as if
+> there is no interruption.
+> Is there something else to modify to validate the interruption ? Is
+> SIU_IRQ7 the right value for my interruption ? What have i to check ?
+>
+> Thanks for your reply.
+>
+> Sophie CARAYOL
+>
+>
