@@ -1,20 +1,14 @@
-Return-Path: <dalang@cs.ubc.ca>
-Received: from badenpowell.cs.ubc.ca (badenpowell.cs.ubc.ca [142.103.6.71])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3891867B55
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2005 05:46:44 +1000 (EST)
-Date: Wed, 15 Jun 2005 11:16:41 -0700 (PDT)
-From: Dustin Lang <dalang@cs.ubc.ca>
-To: Eugene Surovegin <ebs@ebshome.net>
-In-Reply-To: <20050615180011.GB21165@gate.ebshome.net>
-Message-ID: <Pine.LNX.4.60.0506151114280.28342@tin.icics.ubc.ca>
-References: <D4FDDD1349B5AC46B68FC26AD8AF42D6226B36@exnet.3il.fr>
-	<20050615180011.GB21165@gate.ebshome.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Garcia J?r?mie <GARCIAJ@3il.fr>
-Subject: Re: RE : Error while opennig device file
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 16 Jun 2005 17:08:16 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-embedded@ozlabs.org,
+	u-boot-users <u-boot-users@lists.sourceforge.net>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>, linuxppc64-dev@ozlabs.org
+Message-ID: <20050616070816.GE31347@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Subject: More dtc changes
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,20 +18,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I now have a git tree for the device tree compiler up at
+http://www.ozlabs.org/~dgibson/dtc/dtc.git
 
-Also - does it work from the command line?  Do both mknod commands work? 
-When you "ls -l /dev/test{1,2}" , what do you get?  What happens when you 
-"cat /dev/test1" or "echo > /dev/test1" ?
+Notable changes since the last tarball release:
+	- Elementary support for labels.  Labels can go on nodes or
+properties in the source tree and are exported to assembler output as
+usable symbols
+	- phandle reference support.  Cell data (< .. >) can include
+references of the form &/path/to/some/node and will be replaced in the
+output tree with the output node's phandle.  A phandle will be
+generated for the target node if it doesn't already have one.
 
-Cheers,
-dstn.
+There's a tarball release as well
+http://www.ozlabs.org/~dgibson/dtc/dtc.tar.gz
 
-
->> I'm sorry but this is a "copy to mail" error.
->> Here is the right code:
->>
->> ret_val = system("mknod -m 777 /dev/test1 c 122 1");
->> ret_val = system("mknod -m 777 /dev/test2 c 122 2");
->>
->> file_desc1 = open("/dev/test1", O_RDWR);
->> file_desc2 = open("/dev/test2", O_RDWR);
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/people/dgibson
