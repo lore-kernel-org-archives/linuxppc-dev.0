@@ -1,22 +1,19 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 696C767B19
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao03.cox.net (fed1rmmtao03.cox.net [68.230.241.36])
+	by ozlabs.org (Postfix) with ESMTP id 3F9E5679E7
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 17 Jun 2005 08:17:29 +1000 (EST)
-In-Reply-To: <20050616164717.GA1915@logos.cnet>
-References: <20050616144739.GA1559@logos.cnet>
-	<8efaee2824f500e906c2c05526ea3214@embeddededge.com>
-	<20050616164717.GA1915@logos.cnet>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <02dc0da971179e034a4ff9f539bc1d8e@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Thu, 16 Jun 2005 18:17:21 -0400
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: map_page() and pinned TLB entries
+	Fri, 17 Jun 2005 08:55:28 +1000 (EST)
+Date: Thu, 16 Jun 2005 15:55:25 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Ed Goforth <egoforth@gmail.com>
+Message-ID: <20050616155525.A4541@cox.net>
+References: <75b39f0105061614333199ec37@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <75b39f0105061614333199ec37@mail.gmail.com>;
+	from egoforth@gmail.com on Thu, Jun 16, 2005 at 05:33:44PM -0400
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: mmap on 440gx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,47 +24,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Thu, Jun 16, 2005 at 05:33:44PM -0400, Ed Goforth wrote:
+> I've been struggling with implementing mmap on a 440gx-based custom
+> board.  I have been able to use ioremap(), but we really need a mmap()
+> for our software.  The kernel is 2.4.18 (TimeSys 4.0).
 
-On Jun 16, 2005, at 12:47 PM, Marcelo Tosatti wrote:
+There are some special things done for handling [io]_remap_page/pfn_range
+on other vendor kernels and the current mainline kernel.  I'm not sure
+if your vendor kernel addressed them since it would be a vendor-specific
+patch in that timeframe.  The special things are due to 36-bit
+addressing.
 
-> Well it is expected that mapin_ram() flushes the va for the
-> PTE's being created.
->
-> That is the only well known occurence of _tlbie() on
-> a possibly pinned region.
+> I'm trying to access one of our FPGA's located at 0x50000000.  Offsets
 
-Crap ... no, it's not.  It's map_page() that does the flush,
-which happens on ioremap() as well.  When we pin
-entries, we also pin some IO space as well.  We need
-to update ioremap() to be smart about pinned entries
-like it does BATs and CAMs.  I wonder if we can just
-make this a generic test in ioremap().  It doesn't have
-to know how the spaces are "pinned", just that they are
-and how they are mapped.
+Let's start at the beginning.  How do you have FPGA's at 0x50000000?
+that address falls with the fix DDR SDRAM area on the 440GX memory
+map. All peripheral and EBC space is mapped by 4GB. You lost me
+right here. Oh wait, are you referring to the least significant 32-bits
+of the physical mapping. It's not really at 0x50000000.
 
-> What does MOL stand for?
+You need something like the bigphys_remap patch for 2.4 that can be
+found at ftp://source.mvista.com/pub/linuxppc/
 
-MacOS on Linux.  I don't think 8xx will run this any
-time soon :-)
+It does the same fixup for remap_page_range() that happens for
+ioremap().  In 2.6 this stuff is all in the mainline kernel but
+you use io_rename_[page|pfn]_range() there.
 
-> If b) is chosen alone, which is what you seem to suggest, we
-> will get tons of warnings (or traps) anyway from mapin_ram().
-
-It's from more than just mapin_ram().  As I said, we also
-use some of the entries to pin IO space.  We used to pin only
-8M of instructions, which is more than sufficient, then various
-8M windows of data space.  I think we used to pin 24M of
-data and 8M of IMMR (plus anything above that, which could
-be flash or other IO).
-
-> So having that said, isnt the correct way out of this to change
-> both a) and b)?
-
-We certainly have to implement b) to catch all pinned spaces,
-then update accordingly to ensure none of the wired entries
-get evicted.
-
-Thanks.
-
-
-	-- Dan
+-Matt
