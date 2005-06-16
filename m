@@ -1,21 +1,17 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D8BBD67A6C
+Return-Path: <simlo@phys.au.dk>
+Received: from lirs02.phys.au.dk (lirs02.phys.au.dk [130.225.28.43])
+	by ozlabs.org (Postfix) with ESMTP id 96F93679E7
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 17 Jun 2005 01:12:41 +1000 (EST)
-In-Reply-To: <a38c1fefe53947c6b80ec3d6b4ffd09e@freescale.com>
-References: <42eb0bacadb197b42502ac1828450843@onz.com>
-	<a38c1fefe53947c6b80ec3d6b4ffd09e@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <0fc7d3f2fe1266cdd0beaf44a71bc27c@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Thu, 16 Jun 2005 11:12:24 -0400
-To: Kumar Gala <kumar.gala@freescale.com>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: RFC: cpm2_devices.c
+	Fri, 17 Jun 2005 01:24:22 +1000 (EST)
+Date: Thu, 16 Jun 2005 17:24:19 +0200 (METDST)
+From: Esben Nielsen <simlo@phys.au.dk>
+To: Andrey Volkov <avolkov@varma-el.com>
+In-Reply-To: <42B181F3.2090901@varma-el.com>
+Message-Id: <Pine.OSF.4.05.10506161721010.24601-100000@da410.phys.au.dk>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: MPC5200/Lite5200 and ethernet
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,33 +22,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Thu, 16 Jun 2005, Andrey Volkov wrote:
 
-On Jun 15, 2005, at 12:13 AM, Kumar Gala wrote:
+> Hi Esben
+> 
+> Esben Nielsen wrote:
+> > How do I turn on the in chip FEC ethernet controller in MPC5200 in the
+> > stock 2.6.12-rc6 kernel? Do I need an extra patch?
+> > 
+> take patch here:
+> http://ozlabs.org/pipermail/linuxppc-embedded/2005-April/017591.html
+> 
+> But, since bestcomm still not converted to platform_bus/ppc_sys model,
+> it will not be included in vanilla 2.6.12 kernel.
+> 
 
->> 2. I am torn about using numeric IMMR offsets vs. the structure member
->> approach. The good thing is that you can create all the devices in a
->> single table even if they overlay depending on processor. The question
->> is, will the IMMAP structure become obsolete? If not, then you will
->> still need the conditional compiles in immap_cpm2.h.
->
-> I'm trying to stay away from basing things on the structure.  Since 
-> the offsets are truly fixed I see not reason to try to make sure that 
-> the immap structure is always correct for all cases.
+I managed to get something out of the bitkeeper tree referred to from
+http://www.246tnt.com/mpc52xx/
+It seems to be based on 2.6.10-rc2 right now - good enough for now.
 
-Having just converted an different SoC part from using offsets to data
-structures, I have to say that tables/defines of offsets are more of a 
-mess
-than a data structure.  We don't have to define the whole of the IMMAP, 
-but
-using the data structures for the individual device spaces is quite 
-effective.
-The advantage of using the data structure is it also conveys the data 
-type
-size, adding a level error checking.  I also dislike io accessor 
-functions/macros,
-especially on these processor specific devices.
+Is that really the latest version now?
+What happens when bitkeeper is gone (very soon now, right?)
 
+To whom do I submit patches?
 
-Thanks.
+Esben
 
-	-- Dan
+> -- 
+> Regards
+> Andrey Volkov
+> 
