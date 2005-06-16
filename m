@@ -1,17 +1,18 @@
-Return-Path: <simlo@phys.au.dk>
-Received: from lirs02.phys.au.dk (lirs02.phys.au.dk [130.225.28.43])
-	by ozlabs.org (Postfix) with ESMTP id 96F93679E7
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 16684679E7
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 17 Jun 2005 01:24:22 +1000 (EST)
-Date: Thu, 16 Jun 2005 17:24:19 +0200 (METDST)
-From: Esben Nielsen <simlo@phys.au.dk>
-To: Andrey Volkov <avolkov@varma-el.com>
-In-Reply-To: <42B181F3.2090901@varma-el.com>
-Message-Id: <Pine.OSF.4.05.10506161721010.24601-100000@da410.phys.au.dk>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC5200/Lite5200 and ethernet
+	Fri, 17 Jun 2005 01:33:28 +1000 (EST)
+In-Reply-To: <0fc7d3f2fe1266cdd0beaf44a71bc27c@embeddededge.com>
+References: <0fc7d3f2fe1266cdd0beaf44a71bc27c@embeddededge.com>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <678305db5ee1488bb48a26a4a89c121a@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Thu, 16 Jun 2005 10:33:23 -0500
+To: "Dan Malek" <dan@embeddededge.com>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: RFC: cpm2_devices.c
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,33 +23,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 16 Jun 2005, Andrey Volkov wrote:
+Dan,
 
-> Hi Esben
-> 
-> Esben Nielsen wrote:
-> > How do I turn on the in chip FEC ethernet controller in MPC5200 in the
-> > stock 2.6.12-rc6 kernel? Do I need an extra patch?
-> > 
-> take patch here:
-> http://ozlabs.org/pipermail/linuxppc-embedded/2005-April/017591.html
-> 
-> But, since bestcomm still not converted to platform_bus/ppc_sys model,
-> it will not be included in vanilla 2.6.12 kernel.
-> 
+If I understand you correctly this is not any different than how we 
+handle the TSEC (gianfar) on 85xx.  The platform device structure just 
+gives us physical address (start & end) and IRQs and we use a structure 
+in the driver that maps to the start address.
 
-I managed to get something out of the bitkeeper tree referred to from
-http://www.246tnt.com/mpc52xx/
-It seems to be based on 2.6.10-rc2 right now - good enough for now.
+- kumar
 
-Is that really the latest version now?
-What happens when bitkeeper is gone (very soon now, right?)
-
-To whom do I submit patches?
-
-Esben
-
-> -- 
-> Regards
-> Andrey Volkov
-> 
+> Having just converted an different SoC part from using offsets to data
+> structures, I have to say that tables/defines of offsets are more of a
+> mess
+> than a data structure.  We don't have to define the whole of the IMMAP,
+> but
+> using the data structures for the individual device spaces is quite
+> effective.
+> The advantage of using the data structure is it also conveys the data
+> type
+> size, adding a level error checking.  I also dislike io accessor
+> functions/macros,
+> especially on these processor specific devices.
+>
+>
+> Thanks.
+>
+> 	-- Dan
