@@ -1,19 +1,20 @@
-Return-Path: <acurtis@onz.com>
-Received: from dell2650.onz.com (onz.com [67.121.61.113])
-	by ozlabs.org (Postfix) with ESMTP id 30DE8679E7
+Return-Path: <avolkov@varma-el.com>
+Received: from amanaus.varma-el.com (unknown [195.144.244.147])
+	by ozlabs.org (Postfix) with ESMTP id C951B679E6
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 17 Jun 2005 04:08:58 +1000 (EST)
-In-Reply-To: <1278c2c53202b80080519cca60bb438f@freescale.com>
-References: <ecc06b51023e6ebd23d075aa3948749e@onz.com>
-	<1278c2c53202b80080519cca60bb438f@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <b7db6a3e19a7cb5aa613c6fc25510e1c@onz.com>
-From: Allen Curtis <acurtis@onz.com>
-Date: Thu, 16 Jun 2005 11:08:55 -0700
-To: Kumar Gala <kumar.gala@freescale.com>
-Cc: Ppc Embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: RFC cpm2_devices DPRAM resource
+	Fri, 17 Jun 2005 04:55:24 +1000 (EST)
+Message-ID: <42B1CB13.3060107@varma-el.com>
+Date: Thu, 16 Jun 2005 22:55:15 +0400
+From: Andrey Volkov <avolkov@varma-el.com>
+MIME-Version: 1.0
+To: Grant Likely <glikely@gmail.com>
+References: <Pine.OSF.4.05.10506161721010.24601-100000@da410.phys.au.dk>	
+	<42B1A214.404@varma-el.com>
+	<528646bc05061610352d56cd49@mail.gmail.com>
+In-Reply-To: <528646bc05061610352d56cd49@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: MPC5200/Lite5200 and ethernet
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,26 +25,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->> Slightly different question than the current thread:
->>
->> Should the DPRAM appear as it's own platform_device?
->> Option 1) Specify the portion of the DPRAM used by each device with
->> that platform_device definition. (current)
->>
->> Option 2) Define the whole DPRAM region as its own platform_device
->> entry. Move the device DPRAM information to the device specific
->> platform structure.
->>
->> Would this help with a general dpalloc() implementation? It would
->> reduce the number of ioremap() regions.
->
-> Well, we already have an allocator for general dpram memory.  I'm not 
-> really sure how this would help beyond reducing the fact that we may 
-> ioremap() regions more than once.  I think the better solution there 
-> is to look at the patches that have been made to ioremap() to return 
-> the same virtual addresses if you are remapping a region of physical 
-> memory that already has a mapping.
->
-I guess my thought regarding the dpalloc() statement is that those 
-functions could query the platform_device structure to find the region 
-they are managing. Make them a little more general.
+
+
+Grant Likely wrote:
+> On 6/16/05, Andrey Volkov <avolkov@varma-el.com> wrote:
+> 
+>>AFAIK almost all patches from http://www.246tnt.com/mpc52xx/ now in
+>>vanilla kernel. Except, bestcomm, certainly :(.
+> 
+> FEC is missing too.
+> 
+> Is anybody even working on bestcomm at the moment?
+It may be Dale Farnsworth or smb. quietly in Freescale.
+
+> 
+> Cheers,
+> g.
+> 
+
+-- 
+Regards
+Andrey Volkov
