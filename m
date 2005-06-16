@@ -1,19 +1,18 @@
-Return-Path: <avolkov@varma-el.com>
-Received: from amanaus.varma-el.com (unknown [195.144.244.147])
-	by ozlabs.org (Postfix) with ESMTP id 47F6367A6D
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id E4B6567A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 17 Jun 2005 00:15:50 +1000 (EST)
-Message-ID: <42B181F3.2090901@varma-el.com>
-Date: Thu, 16 Jun 2005 17:43:15 +0400
-From: Andrey Volkov <avolkov@varma-el.com>
-MIME-Version: 1.0
-To: Esben Nielsen <simlo@phys.au.dk>
-References: <Pine.OSF.4.05.10506160040020.28990-100000@da410.phys.au.dk>
-In-Reply-To: <Pine.OSF.4.05.10506160040020.28990-100000@da410.phys.au.dk>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC5200/Lite5200 and ethernet
-Reply-To: avolkov@varma-el.com
+	Fri, 17 Jun 2005 01:02:11 +1000 (EST)
+In-Reply-To: <42B11F5B.2050706@intracom.gr>
+References: <42B11F5B.2050706@intracom.gr>
+Mime-Version: 1.0 (Apple Message framework v619.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <bf22963c817dc3a1dc62a682c30c5a4a@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Thu, 16 Jun 2005 10:02:03 -0500
+To: "Pantelis Antoniou" <panto@intracom.gr>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: RFC: cpm2_devices.c
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,18 +23,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Esben
+I'm not sure I follow on what you want done.  I done see the 
+pq2_device.c file changing much once we put it in place.  If there is a 
+little duplication between pq1_device.c, pq2_device.c and 
+mpc85xx_device.c I'm not to concerned about it since the only 
+information in there is memory offsets and IRQs.
 
-Esben Nielsen wrote:
-> How do I turn on the in chip FEC ethernet controller in MPC5200 in the
-> stock 2.6.12-rc6 kernel? Do I need an extra patch?
-> 
-take patch here:
-http://ozlabs.org/pipermail/linuxppc-embedded/2005-April/017591.html
+If the structures for an SCC uart driver are the same for PQ1 and PQ2 
+then I would expect the SCC uart driver to handle that fact going 
+forward.
 
-But, since bestcomm still not converted to platform_bus/ppc_sys model,
-it will not be included in vanilla 2.6.12 kernel.
+- kumar
 
--- 
-Regards
-Andrey Volkov
+On Jun 16, 2005, at 1:42 AM, Pantelis Antoniou wrote:
+
+> Let me hop in here...
+>
+> Have you thought about breaking up the structures per
+> cpm peripheral?
+>
+> Some registers are unique for each processor family, but
+> others are (almost) common to all.
+>
+> For example SCC parameters & stuff are the same on 8xx/82xx ...
+>
+> IMHO keeping one definition in the tree for these will make
+> keeping them in sync easier.
+>
+> Then the main header file will be the definitions of the
+> unique registers, a number of defines for the structures offsets
+> and a list of included files for the common peripherals...
+>
+> Regards
+>
+> Pantelis
