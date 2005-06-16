@@ -2,19 +2,19 @@ Return-Path: <dan@embeddededge.com>
 Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 64DDD679E7
+	by ozlabs.org (Postfix) with ESMTP id 1C2C5679E7
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Jun 2005 11:03:38 +1000 (EST)
-In-Reply-To: <s2b045ef.027@scms1.sc.signaal.nl>
-References: <s2b045ef.027@scms1.sc.signaal.nl>
+	Thu, 16 Jun 2005 11:22:04 +1000 (EST)
+In-Reply-To: <8E342283C2100540AAC5D1030970547766F7B1@rcexc.racoms.loc>
+References: <8E342283C2100540AAC5D1030970547766F7B1@rcexc.racoms.loc>
 Mime-Version: 1.0 (Apple Message framework v622)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <5359e8b72ccab672f101490b84a1f1c0@embeddededge.com>
+Message-Id: <6b2464f619ef5e336557fea3db91d42a@embeddededge.com>
 From: Dan Malek <dan@embeddededge.com>
-Date: Wed, 15 Jun 2005 21:03:25 -0400
-To: "Samuel Osorio Calvo" <samuel.osorio@nl.thalesgroup.com>
+Date: Wed, 15 Jun 2005 21:21:56 -0400
+To: "Schaefer-Hutter, Peter" <Peter.Schaefer-Hutter@tfk-racoms.com>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: multicast disabled on 8260_io/fcc_enet.c
+Subject: Re: 2.4.26 and MPC885 context switching time
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,32 +26,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Jun 15, 2005, at 9:14 AM, Samuel Osorio Calvo wrote:
+On Jun 15, 2005, at 11:43 AM, Schaefer-Hutter, Peter wrote:
 
-> Currently I have multicast working just be moving the return 
-> statement. It seems to work but I guess I did not face yet the 
-> problems that caused the code to be commented.
-> Let's say it works in an unreliable way....
+> I basically used the two programs from
+> http://www.ibm.com/developerworks/linux/library/l-rt9/
 
-When I wrote the original code I copied the old SCC driver and didn't 
-have
-a function for computing CRCs, so I just placed the return early in the 
-function.
-I believe there is a patch floating around that wrote a CRC function 
-(or used some
-existing one), to compute the filter mask.  If the code has a CRC 
-function call,
-then it will likely work.  If it doesn't have one, then you are running 
-on luck.  Either
-the proper filter bit is set by some random reset bits, or you somehow 
-get the
-right one set.  By default, the multicast filter may just catch 
-everything, forcing
-the Linux IP stack to do the filtering at a higher level, not exactly 
-what you want. :-)
+That's a fine test, if you run it on various systems and
+compare the _relative_ results.  There is more than
+context switching going on here.
 
-This has been discussed many times in the past.
+.... there aren't any MMU "problems" with the 8xx, it's
+likely to be the most efficient implementation of all
+systems that use software to support the MMU.  The
+processor in general is very sensitive to many system
+architecture decisions, especially the system bus
+and DRAM configuration.  Make certain you really
+understand what you have configured and how the
+tests you run are affected by that.
 
 Thanks.
+
 
 	-- Dan
