@@ -1,19 +1,22 @@
-Return-Path: <egoforth@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.205])
-	by ozlabs.org (Postfix) with ESMTP id 70F5D67A6F
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from parcelfarce.linux.theplanet.co.uk
+	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 438F267AC6
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 17 Jun 2005 07:40:25 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 37so647739wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Jun 2005 14:40:24 -0700 (PDT)
-Message-ID: <75b39f0105061614333199ec37@mail.gmail.com>
-Date: Thu, 16 Jun 2005 17:33:44 -0400
-From: Ed Goforth <egoforth@gmail.com>
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+	Fri, 17 Jun 2005 07:55:49 +1000 (EST)
+Date: Thu, 16 Jun 2005 13:47:17 -0300
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Dan Malek <dan@embeddededge.com>
+Message-ID: <20050616164717.GA1915@logos.cnet>
+References: <20050616144739.GA1559@logos.cnet>
+	<8efaee2824f500e906c2c05526ea3214@embeddededge.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: mmap on 440gx
-Reply-To: Ed Goforth <egoforth@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <8efaee2824f500e906c2c05526ea3214@embeddededge.com>
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: map_page() and pinned TLB entries
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,52 +27,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I've been struggling with implementing mmap on a 440gx-based custom
-board.  I have been able to use ioremap(), but we really need a mmap()
-for our software.  The kernel is 2.4.18 (TimeSys 4.0).
+On Thu, Jun 16, 2005 at 05:13:19PM -0400, Dan Malek wrote:
+> 
+> On Jun 16, 2005, at 10:47 AM, Marcelo Tosatti wrote:
+> 
+> >What would be an elegant way of dealing with this? We can insert
+> >a conditional there such that only addresses not covered
+> >by other mappings (in this case the 8Mbyte entry) get flushed.
+> 
+> I'd like to make _tlbie() a macro on 8xx that simply tests the VA
+> and doesn't invalidate anything in the pinned space.  Of course,
+> the code shouldn't be doing this anyway, and I think this
+> should be treated as a bug if it happens. 
 
-I'm trying to access one of our FPGA's located at 0x50000000.  Offsets
-0x00000000 thru
-0x000FFFFF are control and status registers.  Offsets 0x01000000 thru
-0x017FFFFF are the QDR SRAM on the FPGA.
+Well it is expected that mapin_ram() flushes the va for the 
+PTE's being created.
 
-Using ioremap_nocache(0x50000000, bytes_to_map) works (so long as
-bytes_to_map isn't too large).  I can then use in_be32() and
-out_be32() to read/write the registers and the SRAM.  However, trying
-to implement mmap() causes the board to lock up hard.  I have tried
-iterations both where the driver first does an ioremap(), and where it
-doesn't do the ioremap().  Some bits:
+That is the only well known occurence of _tlbie() on 
+a possibly pinned region. 
 
-In driver module:
-static struct file_operations test_mmap_fops =3D {
-  read : test_mmap_read,
-  mmap : test_mmap_mmap,
-  open : test_mmap_open,
-  release : test_mmap_release,
-};
+I agree that adding a debugging check on _tlbie() to 
+catch invalidations in pinned space is a good thing.
 
-static int test_mmap_mmap (struct file *filp, struct vm_area_struct *vma) {
-  vma->vm_flags |=3D (VM_SHM | VM_LOCKED | VM_IO | VM_RESERVED);
+> If the Linux VM thinks it needs to be doing this, pinned space 
+> isn't going to work. 
 
-  if (remap_page_range(vma->vm_start, 0x50000000, 4096, vma->vm_page_prot))
-    return(-EAGAIN);
+Well the VM does that now, but it can be changed to skip the
+pinned region. 
 
-  return(0);
+>The _tlbie() is an exported symbol, I suspect for MOL, so
+> we have to accommodate that.
 
-} /* test_mmap_mmap() */
+What does MOL stand for? 
 
+> Thanks.
 
-When the test code calls mmap():
-  unsigned long *mmap_region;
-  unsigned long data;
-  mmap_region =3D mmap(0, 4096, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-it seems to work.  However, dereferencing mmap_region, either thru
-  data =3D *mmap_region;
-or
-  data =3D mmap_region[0];
-causes the board to lock hard.
+There are two separate approaches:
 
-I would appreciate any suggestions or hints.
+a) Fix mapin_ram() to skip pinned regions
+b) Fix _tlbie() to skip pinned regions and warn about such
+misusage.
 
-Thanks,
-Ed
+If b) is chosen alone, which is what you seem to suggest, we
+will get tons of warnings (or traps) anyway from mapin_ram(). 
+
+So having that said, isnt the correct way out of this to change
+both a) and b)?
