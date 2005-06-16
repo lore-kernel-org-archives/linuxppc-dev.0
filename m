@@ -1,12 +1,12 @@
 Return-Path: <GARCIAJ@3il.fr>
 Received: from email.3il.fr (email.3il.fr [195.25.243.230])
-	by ozlabs.org (Postfix) with ESMTP id 8A2AD67A6F
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2005 18:37:01 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 7503C67B86
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2005 19:25:02 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-Date: Thu, 16 Jun 2005 10:35:13 +0200
-Message-ID: <D4FDDD1349B5AC46B68FC26AD8AF42D6226B38@exnet.3il.fr>
+Date: Thu, 16 Jun 2005 11:20:26 +0200
+Message-ID: <D4FDDD1349B5AC46B68FC26AD8AF42D6226B3A@exnet.3il.fr>
 From: =?iso-8859-1?Q?Garcia_J=E9r=E9mie?= <GARCIAJ@3il.fr>
 To: "Dustin Lang" <dalang@cs.ubc.ca>,
 	"Eugene Surovegin" <ebs@ebshome.net>
@@ -21,62 +21,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi everybody! I'm gonna give you all the info you asked me:
+Ok here we go, I'm sorry for that but it's always the most enormous =
+thing that are missed.
+Indeed, I do return a EBUSY when more that one process has opened the =
+device driver.
+So I'm really sorry for disturbing you for that since I had many other =
+real hard problems in Linux
+before.=20
+I think I'm getting Linux-parano=EF...
+Tks again and have a nice day
 
-[Dustin]
->> does it work from the command line?  Do both mknod commands work?
---> Yes both mknod seem to work from the command line since they are =
-both created
-    root@10.16.9.232:~# mknod -m 777 /dev/test1 c 122 1
-    root@10.16.9.232:~# mknod -m 777 /dev/test2 c 122 2           =20
-That looks good
-
->> When you "ls -l /dev/test{1,2}" , what do you get?=20
---> root@10.16.9.232:~# ls -l /dev/test{1,2}
-    crwxrwxrwx    1 root     root     122,   1 Jun 16  2005 /dev/test1
-    crwxrwxrwx    1 root     root     122,   2 Jun 16  2005 /dev/test2
-That looks good
-
->> What happens when you "cat /dev/test1" ?
---> root@10.16.9.232:~# cat /dev/test1
-    cat: /dev/test1: No such device
-That is ok, isn't it?
-
->> What happens when you "echo > /dev/test1" ?   =20
---> root@10.16.9.232:~# echo > /dev/test1
-    bash: /dev/test1: No such device
-That is ok, isn't it?
-
-[Eugene]
->> How does open routine for your device look like?
--->
-static int test_open(struct inode *inode , struct file *file)
-{
-  int ret_val =3D 0;
- =20
-  if (Device_open !=3D 0)
-    return -EBUSY;
- =20
-  Device_open++;
-  printk("%d minor number!\n",MINOR(inode->i_rdev)); =20
-  MOD_INC_USE_COUNT;
-
-  return ret_val;
-}
-
-Very traditionnal...
-
->> What error do you get on second open?
---> I trace the execution of my programm and get the following :
-First opened succeeded, open() return code : 3    =20
-Can't open second file, open() return code : -1 , errno =3D 16
-
-Looking in the errno.h, we have :
-#define	EBUSY		16	/* Device or resource busy */
-
-
-If tou need more tell me.
-Tks again for your help guys!
 
 
 -------- Message d'origine--------
