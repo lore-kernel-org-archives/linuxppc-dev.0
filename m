@@ -1,16 +1,19 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id E4B6567A6C
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D8BBD67A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 17 Jun 2005 01:02:11 +1000 (EST)
-In-Reply-To: <42B11F5B.2050706@intracom.gr>
-References: <42B11F5B.2050706@intracom.gr>
-Mime-Version: 1.0 (Apple Message framework v619.2)
+	Fri, 17 Jun 2005 01:12:41 +1000 (EST)
+In-Reply-To: <a38c1fefe53947c6b80ec3d6b4ffd09e@freescale.com>
+References: <42eb0bacadb197b42502ac1828450843@onz.com>
+	<a38c1fefe53947c6b80ec3d6b4ffd09e@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v622)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <bf22963c817dc3a1dc62a682c30c5a4a@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Thu, 16 Jun 2005 10:02:03 -0500
-To: "Pantelis Antoniou" <panto@intracom.gr>
+Message-Id: <0fc7d3f2fe1266cdd0beaf44a71bc27c@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Thu, 16 Jun 2005 11:12:24 -0400
+To: Kumar Gala <kumar.gala@freescale.com>
 Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 Subject: Re: RFC: cpm2_devices.c
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -23,37 +26,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I'm not sure I follow on what you want done.  I done see the 
-pq2_device.c file changing much once we put it in place.  If there is a 
-little duplication between pq1_device.c, pq2_device.c and 
-mpc85xx_device.c I'm not to concerned about it since the only 
-information in there is memory offsets and IRQs.
 
-If the structures for an SCC uart driver are the same for PQ1 and PQ2 
-then I would expect the SCC uart driver to handle that fact going 
-forward.
+On Jun 15, 2005, at 12:13 AM, Kumar Gala wrote:
 
-- kumar
+>> 2. I am torn about using numeric IMMR offsets vs. the structure member
+>> approach. The good thing is that you can create all the devices in a
+>> single table even if they overlay depending on processor. The question
+>> is, will the IMMAP structure become obsolete? If not, then you will
+>> still need the conditional compiles in immap_cpm2.h.
+>
+> I'm trying to stay away from basing things on the structure.  Since 
+> the offsets are truly fixed I see not reason to try to make sure that 
+> the immap structure is always correct for all cases.
 
-On Jun 16, 2005, at 1:42 AM, Pantelis Antoniou wrote:
+Having just converted an different SoC part from using offsets to data
+structures, I have to say that tables/defines of offsets are more of a 
+mess
+than a data structure.  We don't have to define the whole of the IMMAP, 
+but
+using the data structures for the individual device spaces is quite 
+effective.
+The advantage of using the data structure is it also conveys the data 
+type
+size, adding a level error checking.  I also dislike io accessor 
+functions/macros,
+especially on these processor specific devices.
 
-> Let me hop in here...
->
-> Have you thought about breaking up the structures per
-> cpm peripheral?
->
-> Some registers are unique for each processor family, but
-> others are (almost) common to all.
->
-> For example SCC parameters & stuff are the same on 8xx/82xx ...
->
-> IMHO keeping one definition in the tree for these will make
-> keeping them in sync easier.
->
-> Then the main header file will be the definitions of the
-> unique registers, a number of defines for the structures offsets
-> and a list of included files for the common peripherals...
->
-> Regards
->
-> Pantelis
+
+Thanks.
+
+	-- Dan
