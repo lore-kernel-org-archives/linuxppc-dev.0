@@ -1,23 +1,29 @@
-Return-Path: <glikely@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.206])
-	by ozlabs.org (Postfix) with ESMTP id 980C1679E6
+Return-Path: <acurtis@onz.com>
+Received: from dell2650.onz.com (onz.com [67.121.61.113])
+	by ozlabs.org (Postfix) with ESMTP id 82B51679E6
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 17 Jun 2005 03:35:54 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 57so619774wri
+	Fri, 17 Jun 2005 03:45:31 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by dell2650.onz.com (Postfix) with ESMTP id 83ABB2B4160
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Jun 2005 10:35:51 -0700 (PDT)
-Message-ID: <528646bc05061610352d56cd49@mail.gmail.com>
-Date: Thu, 16 Jun 2005 11:35:22 -0600
-From: Grant Likely <glikely@gmail.com>
-To: avolkov@varma-el.com
-In-Reply-To: <42B1A214.404@varma-el.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <Pine.OSF.4.05.10506161721010.24601-100000@da410.phys.au.dk>
-	<42B1A214.404@varma-el.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC5200/Lite5200 and ethernet
-Reply-To: Grant Likely <glikely@gmail.com>
+	Thu, 16 Jun 2005 10:45:28 -0700 (PDT)
+Received: from dell2650.onz.com ([127.0.0.1])
+	by localhost (dell2650.onz.com [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 21094-03 for <linuxppc-embedded@ozlabs.org>;
+	Thu, 16 Jun 2005 10:45:28 -0700 (PDT)
+Received: from [192.168.1.101] (unknown [192.168.1.1])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(No client certificate requested)
+	by dell2650.onz.com (Postfix) with ESMTP id 0E1B82B413C
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 16 Jun 2005 10:45:28 -0700 (PDT)
+Mime-Version: 1.0 (Apple Message framework v622)
+Message-Id: <ecc06b51023e6ebd23d075aa3948749e@onz.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: Ppc Embedded <linuxppc-embedded@ozlabs.org>
+From: Allen Curtis <acurtis@onz.com>
+Date: Thu, 16 Jun 2005 10:45:28 -0700
+Subject: RFC cpm2_devices DPRAM resource
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,12 +34,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 6/16/05, Andrey Volkov <avolkov@varma-el.com> wrote:
-> AFAIK almost all patches from http://www.246tnt.com/mpc52xx/ now in
-> vanilla kernel. Except, bestcomm, certainly :(.
-FEC is missing too.
+Slightly different question than the current thread:
 
-Is anybody even working on bestcomm at the moment?
+Should the DPRAM appear as it's own platform_device?
+Option 1) Specify the portion of the DPRAM used by each device with 
+that platform_device definition. (current)
 
-Cheers,
-g.
+Option 2) Define the whole DPRAM region as its own platform_device 
+entry. Move the device DPRAM information to the device specific 
+platform structure.
+
+Would this help with a general dpalloc() implementation? It would 
+reduce the number of ioremap() regions.
+
+Another thought.
