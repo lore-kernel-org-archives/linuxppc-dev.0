@@ -1,26 +1,20 @@
-Return-Path: <hillel.avni@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id B845B67B7D
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id 2152767B86
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Jun 2005 20:44:55 +1000 (EST)
-Received: from de01smr01.am.mot.com (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	j5GAm1Ff001062 for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Jun 2005 03:48:01 -0700 (MST)
-Received: from zil05exm01.ea.freescale.net (zil05exm01.ea.freescale.net
-	[216.3.95.200])
-	by de01smr01.am.mot.com (8.13.1/8.13.0) with ESMTP id j5GAnaQF029360
+	Thu, 16 Jun 2005 22:56:51 +1000 (EST)
+Received: from linux.local (linux.prtnl [192.168.1.97])
+	by protonic.prtnl (Postfix) with ESMTP id D4ED04044
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Jun 2005 05:49:38 -0500 (CDT)
-Message-ID: <D39C8B3D64A0D511A61E00D0B7828EEA0C076452@zil05exm01.ea.freescale.net>
-From: Avni Hillel-R58467 <hillel.avni@freescale.com>
+	Thu, 16 Jun 2005 14:57:00 +0200 (CEST)
+From: David Jander <david.jander@protonic.nl>
 To: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-Date: Thu, 16 Jun 2005 13:44:48 +0300
+Date: Thu, 16 Jun 2005 14:56:43 +0200
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C5725F.9DCAA450"
-Cc: Kardonik Michael-R58108 <Michael.Kardonik@freescale.com>
-Subject: Adding RapidIO to Linux
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200506161456.44420.david.jander@protonic.nl>
+Subject: jffs2 freezing in gc for long time...
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,63 +25,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This message is in MIME format. Since your mail reader does not understand
-this format, some or all of this message may not be legible.
 
-------_=_NextPart_001_01C5725F.9DCAA450
-Content-Type: text/plain
+Hi list,
 
-Hi Matt,
- 
-I want to install:
- 
-[PATCH][1/3] RapidIO support: core
-[PATCH][2/3] RapidIO support: ppc32
-[PATCH][3/3] RapidIO support: net driver over messaging
- 
-1. What specific version of Linux should I start from?
- 
-2. Are there any more patches that are relevant to RIO?
- 
-Thanks,
- 
-Hillel
+I have the following situation:
 
-------_=_NextPart_001_01C5725F.9DCAA450
-Content-Type: text/html
-Content-Transfer-Encoding: base64
+CPU: MPC852T-100MHz
+Flash: 32Mbyte mirror-bit, 15Mbyte jffs2 partition rw-mouted
+Kernel: 2.4.25 (linuxppc_2_4_devel CVS from denx from a month ago or so, with 
+custom patches not concerning MTD at all). For completeness, it contains the 
+file fs/jffs2/gc.c version: gc.c,v 1.145 2005/02/09 09:09:01
 
-PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUcmFuc2l0aW9uYWwv
-L0VOIj4NCjxIVE1MPjxIRUFEPg0KPE1FVEEgSFRUUC1FUVVJVj0iQ29udGVudC1UeXBlIiBDT05U
-RU5UPSJ0ZXh0L2h0bWw7IGNoYXJzZXQ9dXMtYXNjaWkiPg0KDQoNCjxNRVRBIGNvbnRlbnQ9Ik1T
-SFRNTCA2LjAwLjI5MDAuMjYwNCIgbmFtZT1HRU5FUkFUT1I+PC9IRUFEPg0KPEJPRFk+DQo8RElW
-PjxGT05UIGZhY2U9QXJpYWwgc2l6ZT0yPjxTUEFOIGNsYXNzPTEwODAzMzkxMC0xNjA2MjAwNT5I
-aSANCk1hdHQsPC9TUEFOPjwvRk9OVD48L0RJVj4NCjxESVY+PEZPTlQgZmFjZT1BcmlhbCBzaXpl
-PTI+PFNQQU4gDQpjbGFzcz0xMDgwMzM5MTAtMTYwNjIwMDU+PC9TUEFOPjwvRk9OVD4mbmJzcDs8
-L0RJVj4NCjxESVY+PEZPTlQgZmFjZT1BcmlhbCBzaXplPTI+PFNQQU4gY2xhc3M9MTA4MDMzOTEw
-LTE2MDYyMDA1Pkkgd2FudCB0byANCmluc3RhbGw6PC9TUEFOPjwvRk9OVD48L0RJVj4NCjxESVY+
-PEZPTlQgZmFjZT1BcmlhbCBzaXplPTI+PFNQQU4gDQpjbGFzcz0xMDgwMzM5MTAtMTYwNjIwMDU+
-PC9TUEFOPjwvRk9OVD4mbmJzcDs8L0RJVj4NCjxESVY+PEZPTlQgZmFjZT1BcmlhbCBzaXplPTI+
-PFNQQU4gY2xhc3M9MTA4MDMzOTEwLTE2MDYyMDA1PltQQVRDSF1bMS8zXSBSYXBpZElPIA0Kc3Vw
-cG9ydDogY29yZTwvU1BBTj48L0ZPTlQ+PC9ESVY+DQo8RElWPjxGT05UIGZhY2U9QXJpYWwgc2l6
-ZT0yPjxTUEFOIGNsYXNzPTEwODAzMzkxMC0xNjA2MjAwNT5bUEFUQ0hdWzIvM10gUmFwaWRJTyAN
-CnN1cHBvcnQ6IHBwYzMyPC9TUEFOPjwvRk9OVD48L0RJVj4NCjxESVY+PEZPTlQgZmFjZT1Bcmlh
-bCBzaXplPTI+PFNQQU4gY2xhc3M9MTA4MDMzOTEwLTE2MDYyMDA1PltQQVRDSF1bMy8zXSBSYXBp
-ZElPIA0Kc3VwcG9ydDogbmV0IGRyaXZlciBvdmVyIG1lc3NhZ2luZzwvU1BBTj48L0ZPTlQ+PC9E
-SVY+DQo8RElWPjxGT05UIGZhY2U9QXJpYWwgc2l6ZT0yPjxTUEFOIA0KY2xhc3M9MTA4MDMzOTEw
-LTE2MDYyMDA1PjwvU1BBTj48L0ZPTlQ+Jm5ic3A7PC9ESVY+DQo8RElWPjxGT05UIGZhY2U9QXJp
-YWwgc2l6ZT0yPjxTUEFOIGNsYXNzPTEwODAzMzkxMC0xNjA2MjAwNT4xLiBXaGF0IHNwZWNpZmlj
-IA0KdmVyc2lvbiBvZiBMaW51eCBzaG91bGQgSSBzdGFydCBmcm9tPzwvU1BBTj48L0ZPTlQ+PC9E
-SVY+DQo8RElWPjxGT05UIGZhY2U9QXJpYWwgc2l6ZT0yPjxTUEFOIA0KY2xhc3M9MTA4MDMzOTEw
-LTE2MDYyMDA1PjwvU1BBTj48L0ZPTlQ+Jm5ic3A7PC9ESVY+DQo8RElWPjxGT05UIGZhY2U9QXJp
-YWwgc2l6ZT0yPjxTUEFOIGNsYXNzPTEwODAzMzkxMC0xNjA2MjAwNT4yLiBBcmUgdGhlcmUgYW55
-IA0KbW9yZSBwYXRjaGVzIHRoYXQgYXJlIHJlbGV2YW50IHRvIFJJTz88L1NQQU4+PC9GT05UPjwv
-RElWPg0KPERJVj48Rk9OVCBmYWNlPUFyaWFsIHNpemU9Mj48U1BBTiANCmNsYXNzPTEwODAzMzkx
-MC0xNjA2MjAwNT48L1NQQU4+PC9GT05UPiZuYnNwOzwvRElWPg0KPERJVj48Rk9OVCBmYWNlPUFy
-aWFsIHNpemU9Mj48U1BBTiANCmNsYXNzPTEwODAzMzkxMC0xNjA2MjAwNT5UaGFua3MsPC9TUEFO
-PjwvRk9OVD48L0RJVj4NCjxESVY+PEZPTlQgZmFjZT1BcmlhbCBzaXplPTI+PFNQQU4gDQpjbGFz
-cz0xMDgwMzM5MTAtMTYwNjIwMDU+PC9TUEFOPjwvRk9OVD4mbmJzcDs8L0RJVj4NCjxESVY+PEZP
-TlQgZmFjZT1BcmlhbCBzaXplPTI+PFNQQU4gDQpjbGFzcz0xMDgwMzM5MTAtMTYwNjIwMDU+SGls
-bGVsPC9TUEFOPjwvRk9OVD48L0RJVj48L0JPRFk+PC9IVE1MPg0K
+Sometimes, I get this:
+During boot, mounting is quick, but when starting syslogd, it freezes for some 
+20 minutes, then syslogd returns an error (exit!=0) but the daemon keeps 
+running in background, as well as the garbage collection thread from jffs2 
+for some additional minutes. During that time, everything like "ls -l" on a 
+certain directory of the flash partition freezes (status D is ps aux) until 
+the GC thread has finished.
 
-------_=_NextPart_001_01C5725F.9DCAA450--
+I can understand that GC has to occur at some time, but is it normal that it 
+takes THAT long???
+
+Is there a newer version of the MTD driver that does not present these 
+symptoms?
+
+If this is supposed to work like that, I would say jffs2 is pretty useless for 
+any embedded system, so it is not supposed to be like that, right? RIGHT??
+
+What am I doing wrong? Is the flash partition too big? Shouldn't I be using 
+jffs2?
+
+Any advice is appreciated...
+
+Greetings,
+
+-- 
+David Jander
