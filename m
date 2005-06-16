@@ -1,19 +1,19 @@
-Return-Path: <BlakesleeS@embeddedplanet.com>
-Received: from tag-03.ashton-group.com (tag-03.ashton-group.com [66.94.86.90])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7BE8767B21
+Return-Path: <avolkov@varma-el.com>
+Received: from amanaus.varma-el.com (unknown [195.144.244.147])
+	by ozlabs.org (Postfix) with ESMTP id 47F6367A6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 17 Jun 2005 00:03:59 +1000 (EST)
+	Fri, 17 Jun 2005 00:15:50 +1000 (EST)
+Message-ID: <42B181F3.2090901@varma-el.com>
+Date: Thu, 16 Jun 2005 17:43:15 +0400
+From: Andrey Volkov <avolkov@varma-el.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Thu, 16 Jun 2005 10:03:53 -0400
-Message-ID: <1628E43D99629C46988BE46087A3FBB92859E1@ep-01.EmbeddedPlanet.local>
-From: "Steven Blakeslee" <BlakesleeS@embeddedplanet.com>
-To: "Schaefer-Hutter, Peter" <Peter.Schaefer-Hutter@tfk-racoms.com>,
-	<linuxppc-embedded@ozlabs.org>
-Subject: RE: 2.4.26 and MPC885 context switching time
+To: Esben Nielsen <simlo@phys.au.dk>
+References: <Pine.OSF.4.05.10506160040020.28990-100000@da410.phys.au.dk>
+In-Reply-To: <Pine.OSF.4.05.10506160040020.28990-100000@da410.phys.au.dk>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: MPC5200/Lite5200 and ethernet
+Reply-To: avolkov@varma-el.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,15 +24,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> Therefore i wonder, if there are any known problems with the=20
-> MMU on 8xx and 2.4.2x which might explain that?=20
->=20
+Hi Esben
 
-I did some work on an 885 with Linux 2.4.22.  I found that when the
-processor was running at 100MHz or higher Linux would die when
-decompressing the ramdisk.  Below 100MHz it would run fine.  I came up
-with a hacky fix because I mis-read an errata notice.  What I did was
-set the ICTRL register to 0x00000001, this fixed the problem.  Basically
-all this does is slow the processor down considerable.  The Linux you
-have may be doing the same thing.  This could explain the performance
-hit you are seeing.
+Esben Nielsen wrote:
+> How do I turn on the in chip FEC ethernet controller in MPC5200 in the
+> stock 2.6.12-rc6 kernel? Do I need an extra patch?
+> 
+take patch here:
+http://ozlabs.org/pipermail/linuxppc-embedded/2005-April/017591.html
+
+But, since bestcomm still not converted to platform_bus/ppc_sys model,
+it will not be included in vanilla 2.6.12 kernel.
+
+-- 
+Regards
+Andrey Volkov
