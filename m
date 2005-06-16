@@ -1,19 +1,22 @@
-Return-Path: <per.hallsmark@t2data.com>
-Received: from t2data.se (unknown [212.247.174.226])
-	by ozlabs.org (Postfix) with ESMTP id 3959867B84
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id C29C8679F2
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Jun 2005 23:20:39 +1000 (EST)
-Received: from WorldClient by t2data.se (MDaemon.PRO.v8.0.3.R)
-	with ESMTP id md50000164348.msg
-	for <linuxppc-embedded@ozlabs.org>; Thu, 16 Jun 2005 15:12:19 +0200
-Date: Thu, 16 Jun 2005 15:12:15 +0200
-From: "Per Hallsmark" <per.hallsmark@t2data.com>
-To: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain
-Message-ID: <WorldClient-F200506161512.AA12150000@t2data.se>
-In-Reply-To: <200506161456.44420.david.jander@protonic.nl>
+	Thu, 16 Jun 2005 23:46:59 +1000 (EST)
+Received: from linux.local (linux.prtnl [192.168.1.97])
+	by protonic.prtnl (Postfix) with ESMTP id 45DAF4044
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 16 Jun 2005 15:47:10 +0200 (CEST)
+From: David Jander <david.jander@protonic.nl>
+To: linuxppc-embedded@ozlabs.org
+Date: Thu, 16 Jun 2005 15:46:53 +0200
 References: <200506161456.44420.david.jander@protonic.nl>
+	<WorldClient-F200506161512.AA12150000@t2data.se>
+In-Reply-To: <WorldClient-F200506161512.AA12150000@t2data.se>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200506161546.54301.david.jander@protonic.nl>
 Subject: Re: jffs2 freezing in gc for long time...
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,77 +28,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi David,
+On Thursday 16 June 2005 15:12, Per Hallsmark wrote:
+> A hot tip would be to configure either syslog to log to a logserver
+> or at least mount a tmpfs filesystem on /var/log.
 
-A hot tip would be to configure either syslog to log to a logserver
-or at least mount a tmpfs filesystem on /var/log.
-Running a syslog could wear out the flash quite quickly, especially
-during the development phases...
+We do this already.... the old way, with a ramdisk mounted on /var, and the 
+rw-jffs2 partition mounted on /flash, then /var/log/xxx is a link to a 
+directory in /flash/log/, where I place "persistent" log files.
+/var/log/messages and friends reside on the ramdisk only.
+/tmp is a symlink to /var/tmp.
+Well, the use of tmpfs is indeed easier, so thanks anyway for the tip.
 
-While you are at it, mount tmpfs's on /tmp and /var as well.
+> Running a syslog could wear out the flash quite quickly, especially
+> during the development phases...
 
-I believe JFFS2 suits very well in a embedded device, the system
-just need to be configured for a such, since a "standard" linux
-installation are more outlined for server/desktop usage ;-)
+That's true, but we need some logfiles (logged via syslogd) to be persistent 
+and survive reboots at any moment, but we can't afford a system freeze just 
+because the GC-routine needs to run.
+I still need to study syslogd, to see what it does when writing becomes 
+blocked for a long time. Does syslogd buffer? For how much data? Will I loose 
+data in the end or will the calling process hang?
+If someone has experience with this, and knows the answer to some of these 
+questions, I'd be glad to hear it.
 
-Regards,
-Per
+Greetings,
 
------Original Message-----
-From: David Jander <david.jander@protonic.nl>
-To: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-Date: Thu, 16 Jun 2005 14:56:43 +0200
-Subject: jffs2 freezing in gc for long time...
-
-> 
-> Hi list,
-> 
-> I have the following situation:
-> 
-> CPU: MPC852T-100MHz
-> Flash: 32Mbyte mirror-bit, 15Mbyte jffs2 partition rw-mouted
-> Kernel: 2.4.25 (linuxppc_2_4_devel CVS from denx from a month ago or
-> so, with 
-> custom patches not concerning MTD at all). For completeness, it
-> contains the 
-> file fs/jffs2/gc.c version: gc.c,v 1.145 2005/02/09 09:09:01
-> 
-> Sometimes, I get this:
-> During boot, mounting is quick, but when starting syslogd, it freezes
-> for some 
-> 20 minutes, then syslogd returns an error (exit!=0) but the daemon
-> keeps 
-> running in background, as well as the garbage collection thread from
-> jffs2 
-> for some additional minutes. During that time, everything like "ls -l"
-> on a 
-> certain directory of the flash partition freezes (status D is ps aux)
-> until 
-> the GC thread has finished.
-> 
-> I can understand that GC has to occur at some time, but is it normal
-> that it 
-> takes THAT long???
-> 
-> Is there a newer version of the MTD driver that does not present these 
-> symptoms?
-> 
-> If this is supposed to work like that, I would say jffs2 is pretty
-> useless for 
-> any embedded system, so it is not supposed to be like that, right?
-> RIGHT??
-> 
-> What am I doing wrong? Is the flash partition too big? Shouldn't I be
-> using 
-> jffs2?
-> 
-> Any advice is appreciated...
-> 
-> Greetings,
-> 
-> -- 
-> David Jander
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+-- 
+David Jander
