@@ -1,19 +1,19 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutvdomng.kundenserver.de (moutvdom.kundenserver.de
-	[212.227.126.249]) by ozlabs.org (Postfix) with ESMTP id 3A26267A6F
+Return-Path: <wd@denx.de>
+Received: from mailout10.sul.t-online.com (mailout10.sul.t-online.com
+	[194.25.134.21]) by ozlabs.org (Postfix) with ESMTP id 2FD90679E7
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Jun 2005 18:47:27 +1000 (EST)
-Message-ID: <42B13C9B.1080403@anagramm.de>
-Date: Thu, 16 Jun 2005 10:47:23 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
-MIME-Version: 1.0
-To: Alex Zeffertt <ajz@cambridgebroadband.com>
-References: <20050614104749.387910e0.ajz@cambridgebroadband.com>	<42B02AAD.6050805@anagramm.de>
-	<20050615145434.315a4b94.ajz@cambridgebroadband.com>
-In-Reply-To: <20050615145434.315a4b94.ajz@cambridgebroadband.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-mtd@lists.infradead.org, linuxppc-embedded@ozlabs.org
-Subject: Re: sub-module loading (was: Anyone got drivers/mtd/maps/pm828.c?)
+	Thu, 16 Jun 2005 19:34:15 +1000 (EST)
+To: Pantelis Antoniou <panto@intracom.gr>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 16 Jun 2005 09:42:35 +0300."
+	<42B11F5B.2050706@intracom.gr>
+Date: Thu, 16 Jun 2005 11:33:48 +0200
+Sender: wd@denx.de
+Message-Id: <20050616093353.8C0ECC1510@atlas.denx.de>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: RFC: cpm2_devices.c 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,113 +24,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi, Alex...
-good to know, that you made good progress. :-)
+In message <42B11F5B.2050706@intracom.gr> you wrote:
+> Let me hop in here...
+> 
+> Have you thought about breaking up the structures per
+> cpm peripheral?
 
-I just X-post this to linux-mtd so maybe somebody can have a look
-at your issue, too.
+I complained about this a long time ago (when  Kumar's  patches  were
+checked  in for 2.4.26 which broke compatibility between 8xx and 8260
+systems).
 
-I also experienced "problems" with sub-module-loading. Or maybe
-I just missed something:
-I need to load mtdchar and map_ram separately in order to be
-able to probe my mminfo.ko module to access/mess some
-SRAM in my FPGA on a MPC8540. I didn't care about that yet,
-but maybe there are missing dependencies which can be solved
-automagically here. Or is the sub-module loading supposed to
-work like this (well, manual) as somebody might want to choose
-in between i.e. mtdblock and/or mtdchar?
+> Some registers are unique for each processor family, but
+> others are (almost) common to all.
 
-I'm talking about the Kernel 2.6.11.11 mtd subsystem.
+It would indeed be beneficial if common parts used common definitions
+and names.
 
-Best greets,
+Best regards,
 
-Clemens Koller
-_______________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Str. 45/1
-81379 Muenchen
-Germany
+Wolfgang Denk
 
-http://www.anagramm.de
-Phone: +49-89-741518-50
-Fax: +49-89-741518-19
-
-Alex Zeffertt wrote:
-> Hi Clemens,
-> 
-> Thanks for your help.  I've done it now (see attached).  The
-> partitioning is specific to our application but it is easily modified.
-> 
-> I noticed a buggette in the mtd code while doing this.  If you build
-> everything as a module then the sub-module loading doesn't work
-> properly.  For example in gen_probe.c it says
-> 
-> #ifdef CONFIG_MTD_CFI_INTELEXT
-> 	case 0x0001:
-> 	case 0x0003:
-> 		return cfi_cmdset_0001(map, primary);
-> #endif
-> 
-> where it should really say
-> 
-> #if defined(CONFIG_MTD_CFI_INTELEXT) ||
->     defined(CONFIG_MTD_CFI_INTELEXT_MODULE)
-> 	case 0x0001:
-> 	case 0x0003:
-> 		return cfi_cmdset_0001(map, primary);
-> #endif
-> 
-> There are several problems like this.  In the end I gave up and just
-> built everything except the actual mapping driver as kernel resident.
-> 
-> Alex
-> 
-> 
-> On Wed, 15 Jun 2005 15:18:37 +0200
-> Clemens Koller <clemens.koller@anagramm.de> wrote:
-> 
-> 
->>Hi, Alex!
->>
->>Hmm, I don't know the PM828 much in detail, but have you
->>tried the "generic" physmap driver which is in the kernel?
->>Just give it the base address and the size, and it should
->>probe the cfi and you are done (well, it was working fine
->>for me on my PM854).
->>Of course, you need to make sure, that your hardware / memory
->>mapping is initialized properly (which happens usually in the
->>boot loader). If it's not, let me know and I can give you
->>some code to mess around with the registers in a kernel module.
->>
->>Best greets,
->>
->>Clemens Koller
->>_______________________________
->>R&D Imaging Devices
->>Anagramm GmbH
->>Rupert-Mayer-Str. 45/1
->>81379 Muenchen
->>Germany
->>
->>http://www.anagramm.de
->>Phone: +49-89-741518-50
->>Fax: +49-89-741518-19
->>
->>
->>Alex Zeffertt wrote:
->>
->>>Hi there,
->>>
->>>I need to get flash partitions working on my PM828 development
->>>board. Has anybody already written a pm828.c?  If so I'd appreciate
->>>a look at it.
->>>
->>>TIA,
->>>
->>>Alex
->>>_______________________________________________
->>>Linuxppc-embedded mailing list
->>>Linuxppc-embedded@ozlabs.org
->>>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->>>
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+When you die, the first thing you lose is your life. The  next  thing
+is the illusions.                       - Terry Pratchett, _Pyramids_
