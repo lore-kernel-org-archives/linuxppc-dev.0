@@ -1,25 +1,23 @@
-Return-Path: <egoforth@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.207])
-	by ozlabs.org (Postfix) with ESMTP id 82D38679E7
+Return-Path: <panto@intracom.gr>
+Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
+	by ozlabs.org (Postfix) with ESMTP id 6C7E3679E1
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 17 Jun 2005 15:42:09 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 68so159994wra
+	Fri, 17 Jun 2005 16:53:52 +1000 (EST)
+Received: from mailserv.intranet.gr (localhost [127.0.0.1])
+	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id j5H6xAEY025689
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Jun 2005 22:42:08 -0700 (PDT)
-Message-ID: <75b39f0105061622421d81bc92@mail.gmail.com>
-Date: Fri, 17 Jun 2005 01:42:07 -0400
-From: Ed Goforth <egoforth@gmail.com>
-To: Matt Porter <mporter@kernel.crashing.org>
-In-Reply-To: <20050616214155.A7062@cox.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <75b39f0105061614333199ec37@mail.gmail.com>
-	<20050616155525.A4541@cox.net>
-	<75b39f010506162047236fec19@mail.gmail.com>
-	<20050616214155.A7062@cox.net>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: mmap on 440gx
-Reply-To: Ed Goforth <egoforth@gmail.com>
+	Fri, 17 Jun 2005 09:59:12 +0300 (EEST)
+Message-ID: <42B27223.3040808@intracom.gr>
+Date: Fri, 17 Jun 2005 09:48:03 +0300
+From: Pantelis Antoniou <panto@intracom.gr>
+MIME-Version: 1.0
+To: Allen Curtis <acurtis@onz.com>
+References: <ecc06b51023e6ebd23d075aa3948749e@onz.com>	<33f285d9677314c043e77908198a3e0e@embeddededge.com>
+	<b2f31907a6e9a9180a96318ceeacb468@onz.com>
+In-Reply-To: <b2f31907a6e9a9180a96318ceeacb468@onz.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Ppc Embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: RFC cpm2_devices DPRAM resource
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,60 +28,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 6/17/05, Matt Porter <mporter@kernel.crashing.org> wrote:
-> On Thu, Jun 16, 2005 at 11:47:22PM -0400, Ed Goforth wrote:
-> > On 6/16/05, Matt Porter <mporter@kernel.crashing.org> wrote:
-> > > On Thu, Jun 16, 2005 at 05:33:44PM -0400, Ed Goforth wrote:
-> >
-> > Thanks for taking the time to reply.
-> >
-> > > > I've been struggling with implementing mmap on a 440gx-based custom
-> > > > board.  I have been able to use ioremap(), but we really need a mma=
-p()
-> > > > for our software.  The kernel is 2.4.18 (TimeSys 4.0).
-> > >
->=20
->=20
-> > For what it's worth, __pa(0x5000_0000) returns 0x9000_0000.
->=20
-> Sure, you just asked it to subtract KERNELBASE from a physical address.
-> Don't use __pa() in drivers. That's expected behavior. Why are
-> you doing that?
+Allen Curtis wrote:
+>>> Should the DPRAM appear as it's own platform_device?
+>>
+>>
+>> No.
+>>
+>>> Option 1) Specify the portion of the DPRAM used by each device with 
+>>> that platform_device definition. (current)
+>>
+>>
+>> You mean the parameter space?  That's different from DPRAM.
+>>
+>>> Option 2) Define the whole DPRAM region as its own platform_device 
+>>> entry. Move the device DPRAM information to the device specific 
+>>> platform structure.
+>>
+>>
+>> How is this any different from using the dpalloc() as it is today?
+>>
+>> The problem is that for the few standard devices we publicly support in
+>> Linux it is easy to think of DPRAM as a "general" resource.  However, for
+>> more challenging devices and implementation, there are sometimes specific
+>> regions of DPRAM that must be used with various additional restrictions.
+>> For many of the "real world" devices I have done, drivers would manage
+>> their own, well known, DPRAM areas.  It isn't something that is easy
+>> to generalize or configure in advance.
+>>
+> Time for code.
+> 
+> - Allen
+> 
 
-Desperation.
+FWIW the current dpalloc implementation supports "carving out" the usable
+dpram out of the whole. I mean you could conceivably not "give" the driver
+specific dpram areas to the generic allocator. This should be a per platform
+configuration item.
 
->=20
-> > > You need something like the bigphys_remap patch for 2.4 that can be
-> > > found at ftp://source.mvista.com/pub/linuxppc/
-> >
-> > I just checked the source, and that patch has indeed been applied.
->=20
-> Ok, assuming it's all correct then I don't know why it does work
-> for you in your vendor tree. Have you asked Timesys for help?
+The current code just doesn't bother...
 
-Not yet.  I wanted to get some confidence that I was using the correct
-APIs appropriately.
+Regards
 
->=20
-> Put some debug statements throughout fixup_bigphys_addr() to see
-> what's going on.
-
-My include/asm/mmu.h has it defined as:
-#ifndef CONFIG_440
-#include <asm-generic/mmu.h>
-#else
-typedef unsigned long long phys_addr_t;
-#define fixup_bigphys_addr(addr, size)   (addr)
-#endif
-
-I see that in later 2.4 kernels and in mainline 2.6 it is implemented
-as an actual working routine.  Perhaps that explains it all.  The
-ioremap() in my tree implements the fixup code inline, which would
-explain why it works, right?
-
->=20
-> -Matt
->=20
-
-Thanks again.
-Ed
+Pantelis
