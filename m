@@ -1,18 +1,19 @@
-Return-Path: <steve@icarus.com>
-Received: from icarus.com (icarus.icarus.com [64.105.89.2])
-	by ozlabs.org (Postfix) with ESMTP id 1964F67A6C
+Return-Path: <wd@denx.de>
+Received: from mailout07.sul.t-online.com (mailout07.sul.t-online.com
+	[194.25.134.83]) by ozlabs.org (Postfix) with ESMTP id 5DFED67A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 18 Jun 2005 04:22:40 +1000 (EST)
-Received: from [192.168.1.7] (wing [192.168.1.7]) (authenticated)
-	by icarus.com (8.11.6/8.11.6) with ESMTP id j5HHkcP23191
-	for <linuxppc-embedded@ozlabs.org>; Fri, 17 Jun 2005 10:46:38 -0700
-Message-ID: <42B30C7E.7040007@icarus.com>
-Date: Fri, 17 Jun 2005 10:46:38 -0700
-From: Stephen Williams <steve@icarus.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Subject: Active 2.4 kernel repositories
+	Sat, 18 Jun 2005 05:12:46 +1000 (EST)
+To: j.lu@tiesse.com
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 17 Jun 2005 16:15:29 +0200."
+	<000001c57347$04a45d00$07070a0a@luj>
+Date: Fri, 17 Jun 2005 21:12:26 +0200
+Sender: wd@denx.de
+Message-Id: <20050617191231.B23C0C1510@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: problems on isp1362 driver 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,33 +24,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Dear Jianliang Lu,
 
-I have a 405GPr based custom board that is running Linux 2.4,
-and we want to stay there for the while. I've been keeping up
-to date (more or less) with the linuxppc-2.4 BitKeeper tree
-but that tree is done now and I would like to point at a managed
-tree (CVS, git, whatever) that I can use to keep my board support
-patches up to date against.
+in message <000001c57347$04a45d00$07070a0a@luj> you wrote:
+> 
+> We are using Philips ISP1362 usb controller on our ppc-embedded system. We
+> have ported the phlips's driver, PHCI, to ppc. The Philips linux driver is
+> that of  2002.
 
-I can of course go to kernel.org and get the latest kernel
-trees from there, but I really would rather follow an actively
-maintained tree.
+You cannot do that. The  Philips  driver  comes  uner  a  proprietary
+license  which  is  incompatible with the GPL. You must not use their
+driver in the context of a Linux kernel or any other GPLed  software.
+You  are  either  violating  the  GPL,  or  the  Philips  license. Be
+careful!!!
 
-So what's the story? Maybe there is a community managed tree
-where I can submit my board support patches?
+> >From the list I've seen that Wolfgang Denk  has worked for that driver and
 
-- --
-Steve Williams                "The woods are lovely, dark and deep.
-steve at icarus.com           But I have promises to keep,
-http://www.icarus.com         and lines to code before I sleep,
-http://www.picturel.com       And lines to code before I sleep."
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.5 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+No!!! We never had any access to the Philips drivers. We are proud of
+using Free Software exclusively and will not accepts such a license.
 
-iD8DBQFCswx9rPt1Sc2b3ikRApGwAJ9W+t/cPY1mGuy3qses8e0QuLV4NACcDYlI
-KUwD6QsYb1N40vqH8WhdhDQ=
-=VWMT
------END PGP SIGNATURE-----
+> test is for a lot of devices. I'd like to know from Wolfgang which driver is
+> used? Is the driver that you are using is open source? Where can we get it?
+
+Our version of the driver is Free Software under GPL. It is included
+in the linuxppc_2_4_devel module on our CVS server, see
+http://www.denx.de/re/linux.html
+
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+       There is enough for the need of everyone in this world,
+       but not for the greed of everyone.     - Mahatma Gandhi
