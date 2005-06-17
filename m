@@ -1,17 +1,18 @@
-Return-Path: <j.lu@tiesse.com>
-Received: from eponet.it (gianonet.org [193.76.202.5])
-	by ozlabs.org (Postfix) with ESMTP id 421FF67A6B
+Return-Path: <steve@icarus.com>
+Received: from icarus.com (icarus.icarus.com [64.105.89.2])
+	by ozlabs.org (Postfix) with ESMTP id 1964F67A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 18 Jun 2005 02:59:13 +1000 (EST)
-From: "lu" <j.lu@tiesse.com>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Fri, 17 Jun 2005 16:15:29 +0200
-Message-ID: <000001c57347$04a45d00$07070a0a@luj>
+	Sat, 18 Jun 2005 04:22:40 +1000 (EST)
+Received: from [192.168.1.7] (wing [192.168.1.7]) (authenticated)
+	by icarus.com (8.11.6/8.11.6) with ESMTP id j5HHkcP23191
+	for <linuxppc-embedded@ozlabs.org>; Fri, 17 Jun 2005 10:46:38 -0700
+Message-ID: <42B30C7E.7040007@icarus.com>
+Date: Fri, 17 Jun 2005 10:46:38 -0700
+From: Stephen Williams <steve@icarus.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: problems on isp1362 driver
-Reply-To: j.lu@tiesse.com
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Active 2.4 kernel repositories
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,27 +23,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-We are using Philips ISP1362 usb controller on our ppc-embedded system. We
-have ported the phlips's driver, PHCI, to ppc. The Philips linux driver is
-that of  2002.
+I have a 405GPr based custom board that is running Linux 2.4,
+and we want to stay there for the while. I've been keeping up
+to date (more or less) with the linuxppc-2.4 BitKeeper tree
+but that tree is done now and I would like to point at a managed
+tree (CVS, git, whatever) that I can use to keep my board support
+patches up to date against.
 
-Following are problems tha we've found in our  test:
+I can of course go to kernel.org and get the latest kernel
+trees from there, but I really would rather follow an actively
+maintained tree.
 
-1) ATL Interrupt doesn't work correctly. We have to use
-ATL_THRESHOLD_TIMEOUT, that has the minimun resolution 1 msec, to bypass it.
+So what's the story? Maybe there is a community managed tree
+where I can submit my board support patches?
 
-2) The latency from PTD completion. From a usb frame analyzer we have seen
-that the controller has gaps between every 4 64-bytes frames for 265 bytes
-PTD configured in bulk transmission. The limit of 265 byte for PTD is due to
-the end-point number.
+- --
+Steve Williams                "The woods are lovely, dark and deep.
+steve at icarus.com           But I have promises to keep,
+http://www.icarus.com         and lines to code before I sleep,
+http://www.picturel.com       And lines to code before I sleep."
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.5 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-3) The isochronous mode doesn' t work. That we've seen was we were loop on
-frame number, so the machine went to hang!
-
->From the list I've seen that Wolfgang Denk  has worked for that driver and
-test is for a lot of devices. I'd like to know from Wolfgang which driver is
-used? Is the driver that you are using is open source? Where can we get it?
-Thanks in advance!
-Jianliang Lu
+iD8DBQFCswx9rPt1Sc2b3ikRApGwAJ9W+t/cPY1mGuy3qses8e0QuLV4NACcDYlI
+KUwD6QsYb1N40vqH8WhdhDQ=
+=VWMT
+-----END PGP SIGNATURE-----
