@@ -1,19 +1,20 @@
 Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao03.cox.net (fed1rmmtao03.cox.net [68.230.241.36])
-	by ozlabs.org (Postfix) with ESMTP id 3F9E5679E7
+Received: from fed1rmmtao07.cox.net (fed1rmmtao07.cox.net [68.230.241.32])
+	by ozlabs.org (Postfix) with ESMTP id 36395679E1
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 17 Jun 2005 08:55:28 +1000 (EST)
-Date: Thu, 16 Jun 2005 15:55:25 -0700
+	Fri, 17 Jun 2005 10:20:52 +1000 (EST)
+Date: Thu, 16 Jun 2005 17:20:49 -0700
 From: Matt Porter <mporter@kernel.crashing.org>
-To: Ed Goforth <egoforth@gmail.com>
-Message-ID: <20050616155525.A4541@cox.net>
-References: <75b39f0105061614333199ec37@mail.gmail.com>
+To: Avni Hillel-R58467 <hillel.avni@freescale.com>
+Message-ID: <20050616172049.B4541@cox.net>
+References: <D39C8B3D64A0D511A61E00D0B7828EEA0C076452@zil05exm01.ea.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <75b39f0105061614333199ec37@mail.gmail.com>;
-	from egoforth@gmail.com on Thu, Jun 16, 2005 at 05:33:44PM -0400
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: mmap on 440gx
+In-Reply-To: <D39C8B3D64A0D511A61E00D0B7828EEA0C076452@zil05exm01.ea.freescale.net>;
+	from hillel.avni@freescale.com on Thu, Jun 16, 2005 at 01:44:48PM +0300
+Cc: Kardonik Michael-R58108 <Michael.Kardonik@freescale.com>,
+	"'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
+Subject: Re: Adding RapidIO to Linux
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,30 +25,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 16, 2005 at 05:33:44PM -0400, Ed Goforth wrote:
-> I've been struggling with implementing mmap on a 440gx-based custom
-> board.  I have been able to use ioremap(), but we really need a mmap()
-> for our software.  The kernel is 2.4.18 (TimeSys 4.0).
+On Thu, Jun 16, 2005 at 01:44:48PM +0300, Avni Hillel-R58467 wrote:
+> Hi Matt,
+>  
+> I want to install:
+>  
+> [PATCH][1/3] RapidIO support: core
+> [PATCH][2/3] RapidIO support: ppc32
+> [PATCH][3/3] RapidIO support: net driver over messaging
+>  
+> 1. What specific version of Linux should I start from?
 
-There are some special things done for handling [io]_remap_page/pfn_range
-on other vendor kernels and the current mainline kernel.  I'm not sure
-if your vendor kernel addressed them since it would be a vendor-specific
-patch in that timeframe.  The special things are due to 36-bit
-addressing.
+2.6.12-rc6 is the latest release that you can apply these against.
+Or they can go against the linux-2.6 git tree.
+  
+> 2. Are there any more patches that are relevant to RIO?
+  
+Several sets of patches were posted after this set, and then
+there were several additions posted against the -mm tree.
+Check the list archives, I cced this list on everything.
 
-> I'm trying to access one of our FPGA's located at 0x50000000.  Offsets
-
-Let's start at the beginning.  How do you have FPGA's at 0x50000000?
-that address falls with the fix DDR SDRAM area on the 440GX memory
-map. All peripheral and EBC space is mapped by 4GB. You lost me
-right here. Oh wait, are you referring to the least significant 32-bits
-of the physical mapping. It's not really at 0x50000000.
-
-You need something like the bigphys_remap patch for 2.4 that can be
-found at ftp://source.mvista.com/pub/linuxppc/
-
-It does the same fixup for remap_page_range() that happens for
-ioremap().  In 2.6 this stuff is all in the mainline kernel but
-you use io_rename_[page|pfn]_range() there.
+You could get the 2.6.12-rc6-mm1 patch which has a later version
+of these patches.  There are additional changes in the -mm tree
+but there isn't a unified patch of them until another -mm patch
+is released.
 
 -Matt
