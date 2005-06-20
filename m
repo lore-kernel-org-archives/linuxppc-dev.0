@@ -1,19 +1,14 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 9956B67B26
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Jun 2005 04:22:44 +1000 (EST)
-Date: Mon, 20 Jun 2005 11:22:40 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Garcia J?r?mie <GARCIAJ@3il.fr>
-Message-ID: <20050620182240.GB32412@gate.ebshome.net>
-References: <D4FDDD1349B5AC46B68FC26AD8AF42D6226B3B@exnet.3il.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <D4FDDD1349B5AC46B68FC26AD8AF42D6226B3B@exnet.3il.fr>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: Disable task rescheduling
+Return-Path: <domen@nd47.coderock.org>
+Received: from trashy.coderock.org (coderock.org [193.77.147.115])
+	by ozlabs.org (Postfix) with ESMTP id A4C4867B26
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Jun 2005 07:57:11 +1000 (EST)
+Message-Id: <20050620215246.859337000@nd47.coderock.org>
+Date: Mon, 20 Jun 2005 23:52:47 +0200
+From: domen@coderock.org
+To: benh@kernel.crashing.org
+Cc: linuxppc-dev@ozlabs.org, domen@coderock.org
+Subject: [patch 1/1] [Fwd: [patch 1/3] list_for_each_entry:
+	drivers-macintosh-via-pmu.c]
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,37 +18,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jun 20, 2005 at 03:12:03PM +0200, Garcia J?r?mie wrote:
-> Hi everybody, as teh object of this mail tells, I'd like to know if there is an easy way
-> to disable task rescheduling in the kernel.
-> I explain: I'm writing a device driver and so, I use the ioctl.
-> In one of my ioctl's, I'd like to have a non-interruptible part processed.
-> 
-> int Hscx_ioctl(        struct inode *inode,
->                        struct file *file,
->                        unsigned int ioctl_num,     /* Number of the ioctl to call    */
->                        unsigned long argP)         /* Paramater to pass to the ioctl */
-> {
->    [...]
->    switch(ioctl_num)
->    {
->          case GET_LIST:
->          
->              disable_task_rescheduling();  // what to use???
->              disable_interrupt();          // spin_lock_irqsave should be enough isn't it?
-> 
->              execute_critical_code();
-> 
->              enable_task_rescheduling();   // what to use???
->              enable_interrupt();           // spin_unlock_irqrestore should be enough isn't it?
->              break;
->    }
-> }
+From: Domen Puncer <domen@coderock.org>
 
-Disabling interrupts (with spin_lock_irq) also disables kernel 
-preemption (if enabled, if not - kernel won't preempt current task 
-anyway when in the driver), so explicitly disable 
-(disable_task_rescheduling) isn't needed.
 
--- 
-Eugene
+Replace for loops with nice list_for_each* macros.
+
+Signed-off-by: Domen Puncer <domen@coderock.org>
+---
+ via-pmu.c |   16 ++++------------
+ 1 files changed, 4 insertions(+), 12 deletions(-)
+
+Index: quilt/drivers/macintosh/via-pmu.c
+===================================================================
+--- quilt.orig/drivers/macintosh/via-pmu.c
++++ quilt/drivers/macintosh/via-pmu.c
+@@ -2062,8 +2062,7 @@ pmu_register_sleep_notifier(struct pmu_s
+ 	struct list_head *list;
+ 	struct pmu_sleep_notifier *notifier;
+ 
+-	for (list = sleep_notifiers.next; list != &sleep_notifiers;
+-	     list = list->next) {
++	list_for_each(list, &sleep_notifiers) {
+ 		notifier = list_entry(list, struct pmu_sleep_notifier, list);
+ 		if (n->priority > notifier->priority)
+ 			break;
+@@ -2090,8 +2089,7 @@ broadcast_sleep(int when, int fallback)
+ 	struct list_head *list;
+ 	struct pmu_sleep_notifier *notifier;
+ 
+-	for (list = sleep_notifiers.prev; list != &sleep_notifiers;
+-	     list = list->prev) {
++	list_for_each_prev(list, &sleep_notifiers) {
+ 		notifier = list_entry(list, struct pmu_sleep_notifier, list);
+ 		ret = notifier->notifier_call(notifier, when);
+ 		if (ret != PBOOK_SLEEP_OK) {
+@@ -2112,14 +2110,10 @@ static int __pmac
+ broadcast_wake(void)
+ {
+ 	int ret = PBOOK_SLEEP_OK;
+-	struct list_head *list;
+ 	struct pmu_sleep_notifier *notifier;
+ 
+-	for (list = sleep_notifiers.next; list != &sleep_notifiers;
+-	     list = list->next) {
+-		notifier = list_entry(list, struct pmu_sleep_notifier, list);
++	list_for_each_entry(notifier, &sleep_notifiers, list)
+ 		notifier->notifier_call(notifier, PBOOK_WAKE);
+-	}
+ 	return ret;
+ }
+ 
+@@ -2731,15 +2725,13 @@ static void __pmac
+ pmu_pass_intr(unsigned char *data, int len)
+ {
+ 	struct pmu_private *pp;
+-	struct list_head *list;
+ 	int i;
+ 	unsigned long flags;
+ 
+ 	if (len > sizeof(pp->rb_buf[0].data))
+ 		len = sizeof(pp->rb_buf[0].data);
+ 	spin_lock_irqsave(&all_pvt_lock, flags);
+-	for (list = &all_pmu_pvt; (list = list->next) != &all_pmu_pvt; ) {
+-		pp = list_entry(list, struct pmu_private, list);
++	list_for_each_entry(pp, &all_pmu_pvt, list) {
+ 		spin_lock(&pp->lock);
+ 		i = pp->rb_put + 1;
+ 		if (i >= RB_SIZE)
+
+--
