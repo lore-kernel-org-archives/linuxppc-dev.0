@@ -1,18 +1,15 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 17 Jun 2005 10:45:54 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Message-ID: <20050617004554.GA31491@localhost.localdomain>
-References: <20050616070816.GE31347@localhost.localdomain>
-	<1118954956.25372.71.camel@cashmere.sps.mot.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1118954956.25372.71.camel@cashmere.sps.mot.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	u-boot-users <u-boot-users@lists.sourceforge.net>,
-	linuxppc64-dev@ozlabs.org,
-	"linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
-Subject: Re: More dtc changes
+Return-Path: <GARCIAJ@3il.fr>
+Received: from email.3il.fr (email.3il.fr [195.25.243.230])
+	by ozlabs.org (Postfix) with ESMTP id B49CD67B1A
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Jun 2005 23:12:06 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Mon, 20 Jun 2005 15:12:03 +0200
+Message-ID: <D4FDDD1349B5AC46B68FC26AD8AF42D6226B3B@exnet.3il.fr>
+From: =?iso-8859-1?Q?Garcia_J=E9r=E9mie?= <GARCIAJ@3il.fr>
+To: <linuxppc-dev@ozlabs.org>
+Subject: Disable task rescheduling
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,30 +19,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 16, 2005 at 03:49:16PM -0500, Jon Loeliger wrote:
-> On Thu, 2005-06-16 at 02:08, David Gibson wrote:
-> > I now have a git tree for the device tree compiler up at
-> > http://www.ozlabs.org/~dgibson/dtc/dtc.git
-> 
-> Very Cool!
-> 
-> And, um, rats.  So, I'm the victim of an aggressive
-> and anti-social IT Firewall poo-poolicy....  Or maybe I
-> am just being dumb and haven't Googled up the Right Magic.
-> 
-> Is there a way to set an HTTP Proxy definition, flag,
-> parameter, environment variable, or other doo-dad that
-> will help me cg-pull/git-http-pull through my firewall?
-> 
-> Alternatively, any chance we can convert it to, or add,
-> an rsync tree?
+Hi everybody, as teh object of this mail tells, I'd like to know if =
+there is an easy way
+to disable task rescheduling in the kernel.
+I explain: I'm writing a device driver and so, I use the ioctl.
+In one of my ioctl's, I'd like to have a non-interruptible part =
+processed.
 
-Oh, oops, I meant to set up an rsync tree, but forgot.  It's now done,
-and you can also pull it from:
-	ozlabs.org::dtc/dtc.git
+int Hscx_ioctl(        struct inode *inode,
+                       struct file *file,
+                       unsigned int ioctl_num,     /* Number of the =
+ioctl to call    */
+                       unsigned long argP)         /* Paramater to pass =
+to the ioctl */
+{
+   [...]
+   switch(ioctl_num)
+   {
+         case GET_LIST:
+        =20
+             disable_task_rescheduling();  // what to use???
+             disable_interrupt();          // spin_lock_irqsave should =
+be enough isn't it?
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/people/dgibson
+             execute_critical_code();
+
+             enable_task_rescheduling();   // what to use???
+             enable_interrupt();           // spin_unlock_irqrestore =
+should be enough isn't it?
+             break;
+   }
+}
+
+Could you give me a tip cause I've browsed the web and technical books =
+and I can't find a solution.
+Tks a lot
