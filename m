@@ -1,16 +1,23 @@
-Return-Path: <Maynard.Cabiente@raritan.com>
-Received: from plum.raritan.com (plum.raritan.com [12.144.63.132])
-	by ozlabs.org (Postfix) with ESMTP id F13D967B34
+Return-Path: <tnt@246tNt.com>
+Received: from outmx004.isp.belgacom.be (outmx004.isp.belgacom.be
+	[195.238.2.101]) by ozlabs.org (Postfix) with ESMTP id 0C55067B35
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 21 Jun 2005 08:00:56 +1000 (EST)
+	Tue, 21 Jun 2005 17:09:49 +1000 (EST)
+Received: from outmx004.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx004.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
+	ESMTP id j5L79kGZ006619
+	for <linuxppc-embedded@ozlabs.org>; Tue, 21 Jun 2005 09:09:46 +0200
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <42B7BD49.2000205@246tNt.com>
+Date: Tue, 21 Jun 2005 09:10:01 +0200
+From: Sylvain Munaut <tnt@246tNt.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C575E1.D6F15A2C"
-Date: Mon, 20 Jun 2005 17:48:48 -0400
-Message-ID: <38948EB93E24844E9911E0E932C0466470B1A9@plum.raritan.com>
-From: "Maynard Cabiente" <Maynard.Cabiente@raritan.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: MPC8270 USB Host Linux driver?
+To: roger blofeld <blofeldus@yahoo.com>
+References: <20050620193210.42378.qmail@web53505.mail.yahoo.com>
+In-Reply-To: <20050620193210.42378.qmail@web53505.mail.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] GCC4 compile fixes for mpc52xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,65 +28,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+roger blofeld wrote:
+> Sylvain,
+>  A quick patch to fix your tree for gcc4
+> -rb
+> 
+> drivers/net/fec_mpc52xx/fec.c: In function 'fec_reinit':
+> drivers/net/fec_mpc52xx/fec.c:525: error: invalid storage class for
+> function 'fec_update_stat'
+> 
+> drivers/serial/mpc52xx_uart.c:707: error: static declaration of
+> 'mpc52xx_uart_driver' follows non-static declaration
+> drivers/serial/mpc52xx_uart.c:675: error: previous declaration of
+> 'mpc52xx_uart_driver' was here
+> 
+> Signed off by Roger Blofeld <blofeldus@yahoo.com>
+> 
 
-------_=_NextPart_001_01C575E1.D6F15A2C
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Hi Roger,
 
-Hi All,
-=20
-I know this was ask a long time ago but I just like to know the current =
-status.  Does anybody have a USB Host controller Linux driver support =
-for the MPC8270/MPC8280?
-=20
-I know that Arabella Software did something for the PQ2FADS board but =
-I'm not certain if it is free.  I did download this BSP but some of the =
-files are missing.  But, as I said, I'm not certain if it can be used =
-anyway without paying for it.
-=20
-There are some USB driver for the MPC8272 that Metrowerks provided but =
-it is only a USB-to-serial driver and not a Host Controller.
-=20
-Any help is appreciated.
-=20
-thanks,
-Maynard
-=20
+Applied to my tree (with slight modification, I don't even see why
+fec_update was declared there so I just removed it.)
 
-------_=_NextPart_001_01C575E1.D6F15A2C
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+The relevant part to the UART driver will be pushed along my next
+set of update.
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"><HTML =
-DIR=3Dltr><HEAD><META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1"></HEAD><BODY><DIV><FONT face=3D'Arial' =
-color=3D#000000 size=3D2>Hi All,</FONT></DIV>=0A=
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV><FONT face=3DArial size=3D2>I know this was ask a long time ago but =
-I just like =0A=
-to know the current status.&nbsp; Does anybody have a USB Host =
-controller Linux =0A=
-driver support for the MPC8270/MPC8280?</FONT></DIV>=0A=
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV><FONT face=3DArial size=3D2>I know that Arabella Software did =
-something for the =0A=
-PQ2FADS board but I'm not certain if it is free.&nbsp; I did download =
-this BSP =0A=
-but some of the files are missing.&nbsp; But, as I said, I'm not certain =
-if it =0A=
-can be used anyway without paying for it.</FONT></DIV>=0A=
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV><FONT face=3DArial size=3D2>There are some USB driver&nbsp;for the =
-MPC8272 that =0A=
-Metrowerks provided but it is only a USB-to-serial driver and not a Host =0A=
-Controller.</FONT></DIV>=0A=
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV><FONT face=3DArial size=3D2>Any help is appreciated.</FONT></DIV>=0A=
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV><FONT face=3DArial size=3D2>thanks,</FONT></DIV>=0A=
-<DIV><FONT face=3DArial size=3D2>Maynard</FONT></DIV>=0A=
-<DIV>&nbsp;</DIV></BODY></HTML>
-------_=_NextPart_001_01C575E1.D6F15A2C--
+
+	Sylvain
