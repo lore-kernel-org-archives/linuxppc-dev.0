@@ -1,17 +1,17 @@
 Return-Path: <galak@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id B1A0E679E6
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id B7C8767B56
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 23 Jun 2005 07:07:33 +1000 (EST)
-Date: Wed, 22 Jun 2005 16:07:28 -0500 (CDT)
+	Thu, 23 Jun 2005 07:09:07 +1000 (EST)
+Date: Wed, 22 Jun 2005 16:09:02 -0500 (CDT)
 From: Kumar Gala <galak@freescale.com>
-To: Andrew Morton <akpm@osdl.org>
-Message-ID: <Pine.LNX.4.61.0506221606590.3291@nylon.am.freescale.net>
+To: Greg KH <greg@kroah.com>
+Message-ID: <Pine.LNX.4.61.0506221607500.3291@nylon.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org,
+Cc: sensors@stimpy.netroedge.com, linux-kernel@vger.kernel.org,
 	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] ppc32: Remove FSL OCP support
+Subject: [PATCH] I2C-MPC: Remove OCP device model support  
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,106 +22,242 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Support for the OCP device model on Freescale (FSL) PPC's is no
-longer used.  All FSL PPC's that were using OCP have be converted
-to using the platform device model.
+All consumers of the driver MPC10x, MPC52xx, MPC824x, MPC83xx,
+and MPC85xx are all using platform devices.  We can get ride of
+the dead code to support using this driver with the old OCP based
+model
 
 Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
 ---
-commit 0db0912993b08ae4870aa370db5e5e6f83f2c5a3
-tree 43ce59fdb048f1cfdc13972d4524d8378e2d73b3
-parent 8589d0b1ac6dc3ab9aaee30eb943c2d231e28685
-author Kumar K. Gala <kumar.gala@freescale.com> Wed, 22 Jun 2005 17:45:05 -0500
-committer Kumar K. Gala <kumar.gala@freescale.com> Wed, 22 Jun 2005 17:45:05 -0500
+commit 8589d0b1ac6dc3ab9aaee30eb943c2d231e28685
+tree 1b9b8e9193c4118d652e70138bf389f9d771ff03
+parent 96590616b248746bfc06dad1cb5b956b006f8926
+author Kumar K. Gala <kumar.gala@freescale.com> Wed, 22 Jun 2005 17:35:30 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> Wed, 22 Jun 2005 17:35:30 -0500
 
- arch/ppc/Kconfig.debug    |    2 +-
- include/asm-ppc/fsl_ocp.h |   54 ---------------------------------------------
- include/asm-ppc/ocp.h     |    4 ---
- 3 files changed, 1 insertions(+), 59 deletions(-)
+ drivers/i2c/busses/i2c-mpc.c |  204 ------------------------------------------
+ 1 files changed, 0 insertions(+), 204 deletions(-)
 
-diff --git a/arch/ppc/Kconfig.debug b/arch/ppc/Kconfig.debug
---- a/arch/ppc/Kconfig.debug
-+++ b/arch/ppc/Kconfig.debug
-@@ -66,7 +66,7 @@ config SERIAL_TEXT_DEBUG
- 
- config PPC_OCP
- 	bool
--	depends on IBM_OCP || FSL_OCP || XILINX_OCP
-+	depends on IBM_OCP || XILINX_OCP
- 	default y
- 
- endmenu
-diff --git a/include/asm-ppc/fsl_ocp.h b/include/asm-ppc/fsl_ocp.h
-deleted file mode 100644
---- a/include/asm-ppc/fsl_ocp.h
-+++ /dev/null
-@@ -1,54 +0,0 @@
--/*
-- * include/asm-ppc/fsl_ocp.h
-- *
-- * Definitions for the on-chip peripherals on Freescale PPC processors
-- *
-- * Maintainer: Kumar Gala (kumar.gala@freescale.com)
-- *
-- * Copyright 2004 Freescale Semiconductor, Inc
-- *
-- * This program is free software; you can redistribute  it and/or modify it
-- * under  the terms of  the GNU General  Public License as published by the
-- * Free Software Foundation;  either version 2 of the  License, or (at your
-- * option) any later version.
-- */
--
--#ifdef __KERNEL__
--#ifndef __ASM_FS_OCP_H__
--#define __ASM_FS_OCP_H__
--
--/* A table of information for supporting the Gianfar Ethernet Controller
-- * This helps identify which enet controller we are dealing with,
-- * and what type of enet controller it is
-- */
--struct ocp_gfar_data {
--	uint interruptTransmit;
--	uint interruptError;
--	uint interruptReceive;
--	uint interruptPHY;
--	uint flags;
--	uint phyid;
--	uint phyregidx;
--	unsigned char mac_addr[6];
--};
--
--/* Flags in the flags field */
--#define GFAR_HAS_COALESCE		0x20
--#define GFAR_HAS_RMON			0x10
--#define GFAR_HAS_MULTI_INTR		0x08
--#define GFAR_FIRM_SET_MACADDR		0x04
--#define GFAR_HAS_PHY_INTR		0x02	/* if not set use a timer */
--#define GFAR_HAS_GIGABIT		0x01
--
--/* Data structure for I2C support.  Just contains a couple flags
-- * to distinguish various I2C implementations*/
--struct ocp_fs_i2c_data {
--	uint flags;
--};
--
--/* Flags for I2C */
--#define FS_I2C_SEPARATE_DFSRR	0x02
--#define FS_I2C_CLOCK_5200	0x01
--
--#endif	/* __ASM_FS_OCP_H__ */
--#endif	/* __KERNEL__ */
-diff --git a/include/asm-ppc/ocp.h b/include/asm-ppc/ocp.h
---- a/include/asm-ppc/ocp.h
-+++ b/include/asm-ppc/ocp.h
-@@ -202,10 +202,6 @@ static DEVICE_ATTR(name##_##field, S_IRU
- #include <asm/ibm_ocp.h>
- #endif
- 
+diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+--- a/drivers/i2c/busses/i2c-mpc.c
++++ b/drivers/i2c/busses/i2c-mpc.c
+@@ -20,13 +20,7 @@
+ #include <linux/init.h>
+ #include <linux/pci.h>
+ #include <asm/io.h>
 -#ifdef CONFIG_FSL_OCP
--#include <asm/fsl_ocp.h>
+-#include <asm/ocp.h>
+-#define FSL_I2C_DEV_SEPARATE_DFSRR FS_I2C_SEPARATE_DFSRR
+-#define FSL_I2C_DEV_CLOCK_5200 FS_I2C_CLOCK_5200
+-#else
+ #include <linux/fsl_devices.h>
 -#endif
+ #include <linux/i2c.h>
+ #include <linux/interrupt.h>
+ #include <linux/delay.h>
+@@ -293,204 +287,6 @@ static struct i2c_adapter mpc_ops = {
+ 	.timeout = 1,
+ 	.retries = 1
+ };
 -
- #endif				/* CONFIG_PPC_OCP */
- #endif				/* __OCP_H__ */
- #endif				/* __KERNEL__ */
+-#ifdef CONFIG_FSL_OCP
+-static int __devinit mpc_i2c_probe(struct ocp_device *ocp)
+-{
+-	int result = 0;
+-	struct mpc_i2c *i2c;
+-
+-	if (!(i2c = kmalloc(sizeof(*i2c), GFP_KERNEL))) {
+-		return -ENOMEM;
+-	}
+-	memset(i2c, 0, sizeof(*i2c));
+-
+-	i2c->irq = ocp->def->irq;
+-	i2c->flags = ((struct ocp_fs_i2c_data *)ocp->def->additions)->flags;
+-	init_waitqueue_head(&i2c->queue);
+-
+-	if (!request_mem_region(ocp->def->paddr, MPC_I2C_REGION, "i2c-mpc")) {
+-		printk(KERN_ERR "i2c-mpc - resource unavailable\n");
+-		return -ENODEV;
+-	}
+-
+-	i2c->base = ioremap(ocp->def->paddr, MPC_I2C_REGION);
+-
+-	if (!i2c->base) {
+-		printk(KERN_ERR "i2c-mpc - failed to map controller\n");
+-		result = -ENOMEM;
+-		goto fail_map;
+-	}
+-
+-	if (i2c->irq != OCP_IRQ_NA)
+-	{
+-		if ((result = request_irq(ocp->def->irq, mpc_i2c_isr,
+-					  SA_SHIRQ, "i2c-mpc", i2c)) < 0) {
+-			printk(KERN_ERR
+-			       "i2c-mpc - failed to attach interrupt\n");
+-			goto fail_irq;
+-		}
+-	} else
+-		i2c->irq = 0;
+-
+-	mpc_i2c_setclock(i2c);
+-	ocp_set_drvdata(ocp, i2c);
+-
+-	i2c->adap = mpc_ops;
+-	i2c_set_adapdata(&i2c->adap, i2c);
+-
+-	if ((result = i2c_add_adapter(&i2c->adap)) < 0) {
+-		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
+-		goto fail_add;
+-	}
+-
+-	return result;
+-
+-      fail_add:
+-	if (ocp->def->irq != OCP_IRQ_NA)
+-		free_irq(ocp->def->irq, 0);
+-      fail_irq:
+-	iounmap(i2c->base);
+-      fail_map:
+-	release_mem_region(ocp->def->paddr, MPC_I2C_REGION);
+-	kfree(i2c);
+-	return result;
+-}
+-static void __devexit mpc_i2c_remove(struct ocp_device *ocp)
+-{
+-	struct mpc_i2c *i2c = ocp_get_drvdata(ocp);
+-	i2c_del_adapter(&i2c->adap);
+-	ocp_set_drvdata(ocp, NULL);
+-
+-	if (ocp->def->irq != OCP_IRQ_NA)
+-		free_irq(i2c->irq, i2c);
+-	iounmap(i2c->base);
+-	release_mem_region(ocp->def->paddr, MPC_I2C_REGION);
+-	kfree(i2c);
+-}
+-
+-static struct ocp_device_id mpc_iic_ids[] __devinitdata = {
+-	{.vendor = OCP_VENDOR_FREESCALE,.function = OCP_FUNC_IIC},
+-	{.vendor = OCP_VENDOR_INVALID}
+-};
+-
+-MODULE_DEVICE_TABLE(ocp, mpc_iic_ids);
+-
+-static struct ocp_driver mpc_iic_driver = {
+-	.name = "iic",
+-	.id_table = mpc_iic_ids,
+-	.probe = mpc_i2c_probe,
+-	.remove = __devexit_p(mpc_i2c_remove)
+-};
+-
+-static int __init iic_init(void)
+-{
+-	return ocp_register_driver(&mpc_iic_driver);
+-}
+-
+-static void __exit iic_exit(void)
+-{
+-	ocp_unregister_driver(&mpc_iic_driver);
+-}
+-
+-module_init(iic_init);
+-module_exit(iic_exit);
+-#else
+-static int fsl_i2c_probe(struct device *device)
+-{
+-	int result = 0;
+-	struct mpc_i2c *i2c;
+-	struct platform_device *pdev = to_platform_device(device);
+-	struct fsl_i2c_platform_data *pdata;
+-	struct resource *r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-
+-	pdata = (struct fsl_i2c_platform_data *) pdev->dev.platform_data;
+-
+-	if (!(i2c = kmalloc(sizeof(*i2c), GFP_KERNEL))) {
+-		return -ENOMEM;
+-	}
+-	memset(i2c, 0, sizeof(*i2c));
+-
+-	i2c->irq = platform_get_irq(pdev, 0);
+-	i2c->flags = pdata->device_flags;
+-	init_waitqueue_head(&i2c->queue);
+-
+-	i2c->base = ioremap((phys_addr_t)r->start, MPC_I2C_REGION);
+-
+-	if (!i2c->base) {
+-		printk(KERN_ERR "i2c-mpc - failed to map controller\n");
+-		result = -ENOMEM;
+-		goto fail_map;
+-	}
+-
+-	if (i2c->irq != 0)
+-		if ((result = request_irq(i2c->irq, mpc_i2c_isr,
+-					  SA_SHIRQ, "i2c-mpc", i2c)) < 0) {
+-			printk(KERN_ERR
+-			       "i2c-mpc - failed to attach interrupt\n");
+-			goto fail_irq;
+-		}
+-
+-	mpc_i2c_setclock(i2c);
+-	dev_set_drvdata(device, i2c);
+-
+-	i2c->adap = mpc_ops;
+-	i2c_set_adapdata(&i2c->adap, i2c);
+-	i2c->adap.dev.parent = &pdev->dev;
+-	if ((result = i2c_add_adapter(&i2c->adap)) < 0) {
+-		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
+-		goto fail_add;
+-	}
+-
+-	return result;
+-
+-      fail_add:
+-	if (i2c->irq != 0)
+-		free_irq(i2c->irq, NULL);
+-      fail_irq:
+-	iounmap(i2c->base);
+-      fail_map:
+-	kfree(i2c);
+-	return result;
+-};
+-
+-static int fsl_i2c_remove(struct device *device)
+-{
+-	struct mpc_i2c *i2c = dev_get_drvdata(device);
+-
+-	i2c_del_adapter(&i2c->adap);
+-	dev_set_drvdata(device, NULL);
+-
+-	if (i2c->irq != 0)
+-		free_irq(i2c->irq, i2c);
+-
+-	iounmap(i2c->base);
+-	kfree(i2c);
+-	return 0;
+-};
+-
+-/* Structure for a device driver */
+-static struct device_driver fsl_i2c_driver = {
+-	.name = "fsl-i2c",
+-	.bus = &platform_bus_type,
+-	.probe = fsl_i2c_probe,
+-	.remove = fsl_i2c_remove,
+-};
+-
+-static int __init fsl_i2c_init(void)
+-{
+-	return driver_register(&fsl_i2c_driver);
+-}
+-
+-static void __exit fsl_i2c_exit(void)
+-{
+-	driver_unregister(&fsl_i2c_driver);
+-}
+-
+-module_init(fsl_i2c_init);
+-module_exit(fsl_i2c_exit);
+-
+-#endif /* CONFIG_FSL_OCP */
+ 
+ MODULE_AUTHOR("Adrian Cox <adrian@humboldt.co.uk>");
+ MODULE_DESCRIPTION
