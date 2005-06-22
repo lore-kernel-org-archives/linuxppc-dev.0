@@ -1,18 +1,17 @@
-Return-Path: <j.lu@tiesse.com>
-Received: from tiesse.com (studiogesan.it [193.76.202.5])
-	by ozlabs.org (Postfix) with ESMTP id C98B167B36
+Return-Path: <kylej@aiinet.com>
+Received: from aiexchange.ai.aiinet.com (ai181-151.aiinet.com
+	[205.245.181.151]) by ozlabs.org (Postfix) with ESMTP id B75DC67AA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 22 Jun 2005 16:56:56 +1000 (EST)
-Date: Wed, 22 Jun 2005 09:00:27 +0200
-Message-Id: <200506220900.AA129434516@tiesse.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: "Jianliang Lu" <j.lu@tiesse.com>
-To: <j.lu@tiesse.com>,
-    Wolfgang Denk  <wd@denx.de>
+	Wed, 22 Jun 2005 21:53:00 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Wed, 22 Jun 2005 07:40:44 -0400
+Message-ID: <C0170D0AF1277849A4B4518034F855DD0F918D@aiexchange.ai.aiinet.com>
+From: "Jordan, Kyle" <kylej@aiinet.com>
+To: <j.lu@tiesse.com>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: isp1362 usb driver 
-Reply-To: j.lu@tiesse.com
+Subject: RE: isp1362 usb driver 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,60 +22,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
-the device is a adsl modem, it works correctly in other linux 
-systems with kernel 2.4.2x. The problem is that the isp1362 driver 
-seems that supports only isochronous endpoints. We are 
-implementing the code to support also control/bulk/interrupt 
-endpoints.
+Jianliang Lu,
 
-Regards,
-Jianliang Lu
+> the device is a adsl modem, it works correctly in other linux=20
+> systems with kernel 2.4.2x. The problem is that the isp1362 driver=20
+> seems that supports only isochronous endpoints. We are=20
+> implementing the code to support also control/bulk/interrupt=20
+> endpoints.
 
----------- Original Message ----------------------------------
-From: Wolfgang Denk <wd@denx.de>
-Date: Tue, 21 Jun 2005 22:18:34 +0200
+	I had similar issues with control/bulk/interrupt endpoints with
+the ISP1362 host controller driver from DENX.  I went ahead and added
+better support for control/bulk/interrupt endpoints.  I could send you a
+copy of the source if you like.  The driver is being used on an MPC880,
+with the 2.4.21 kernel.  Also, what ADSL modem are using?  We are
+looking into a solution requiring an ADSL modem and the one you are
+using may be a good solution for us also.
 
->Hello,
->
->in message <200506211648.AA102695630@tiesse.com> you wrote:
->>
->> sorry for my persistence, now I try to go to more detail:
->
->I'm afraid I can't help much. The only board with a  ISP1362  I  
-have
->access  to at the moment has just the device interface equipped, 
-so I
->cannot run any real tests on the host port.
->
->> Jan  1 01:01:30 IMOLA kernel: hub.c: USB new device connect on 
->> bus2/2, assigned device number 2
->> Jan  1 01:01:33 IMOLA kernel: usb_control/bulk_msg: timeout
->> Jan  1 01:01:45 IMOLA last message repeated 4 times
->> Jan  1 01:01:45 IMOLA kernel: usb.c: couldn't get all of config 
->> descriptors
->> Jan  1 01:01:45 IMOLA kernel: usb.c: unable to get device 2 
->> configuration (error=-110)
->
->Which sort of device is it what you connected? Are  you  sure  
-it  is
->working  under  Linux at all? Did you test it on a standard x86 
-Linux
->PC with a 2.4.2x kernel?
->
->
->Best regards,
->
->Wolfgang Denk
->
->-- 
->Software Engineering:  Embedded and Realtime Systems,  Embedded 
-Linux
->Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: 
-wd@denx.de
->A fanatic is a person who can't change his mind and won't change  
-the
->subject.                                          - Winston 
-Churchill
->
-                   
+- Kyle
