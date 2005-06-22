@@ -1,21 +1,17 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0ABAC67B4C
+Return-Path: <rpjday@mindspring.com>
+Received: from mailhost.rdmcorp.com (world.rdmcorp.com [204.225.180.10])
+	by ozlabs.org (Postfix) with ESMTP id 50ED567B5F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 23 Jun 2005 07:58:21 +1000 (EST)
-Date: Wed, 22 Jun 2005 14:58:18 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Kumar Gala <galak@freescale.com>
-Message-ID: <20050622215818.GA15176@gate.ebshome.net>
-References: <Pine.LNX.4.61.0506221539470.3206@nylon.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.61.0506221539470.3206@nylon.am.freescale.net>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] ppc32: Add support for Freescale e200 (Book-E) core
+	Thu, 23 Jun 2005 08:36:45 +1000 (EST)
+Received: from [10.1.1.113] (10.1.2.1) by mailhost.rdmcorp.com (Worldmail
+	1.3.167) for linuxppc-embedded@ozlabs.org; 22 Jun 2005 18:11:23 -0400
+Date: Wed, 22 Jun 2005 18:11:21 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Message-ID: <Pine.LNX.4.61.0506221810260.12659@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: [OT?] recommendations for a small footprint DB for PPC system?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,31 +22,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jun 22, 2005 at 03:41:09PM -0500, Kumar Gala wrote:
 
-[snip]
+  any recommendations for a small, relational database that can be
+cross-compiled with ELDK 3.1.1 for a PPC system?  it's not going to be
+holding a lot of records (about 1000, more or less), and will be
+initialized and loaded at system boot time, at which point the
+majority of operations will be read, with only occasional writes.
 
-> +#ifdef CONFIG_E200
-> +#define DEBUG_EXCEPTION							      \
-> +	START_EXCEPTION(Debug);						      \
-> +	DEBUG_EXCEPTION_PROLOG;						      \
-> +									      \
-> +	/*								      \
-> +	 * If there is a single step or branch-taken exception in an	      \
-> +	 * exception entry sequence, it was probably meant to apply to	      \
-> +	 * the code where the exception occurred (since exception entry	      \
-> +	 * doesn't turn off DE automatically).  We simulate the effect	      \
-> +	 * of turning off DE on entry to an exception handler by turning      \
-> +	 * off DE in the CSRR1 value and clearing the debug status.	      \
-> +	 */								      \
-> +	mfspr	r10,SPRN_DBSR;		/* check single-step/branch taken */  \
-> +	andis.	r10,r10,DBSR_IC@h;					      \
-> +	beq+	2f;							      \
-> +									      \
-> +	lis	r10,KERNELBASE@h;	/* check if exception in vectors */   \
-> +	ori	r10,r10,KERNELBASE@l;					      \
+  thoughts?
 
-I think we can get rid of one instruction here :)
-
--- 
-Eugene
+rday
