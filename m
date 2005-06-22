@@ -1,17 +1,21 @@
-Return-Path: <galak@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 5E13467B58
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 0ABAC67B4C
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 23 Jun 2005 07:28:09 +1000 (EST)
-Date: Wed, 22 Jun 2005 16:27:53 -0500 (CDT)
-From: Kumar Gala <galak@freescale.com>
-To: Andrew Morton <akpm@osdl.org>
-Message-ID: <Pine.LNX.4.61.0506221626280.3350@nylon.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org,
+	Thu, 23 Jun 2005 07:58:21 +1000 (EST)
+Date: Wed, 22 Jun 2005 14:58:18 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Kumar Gala <galak@freescale.com>
+Message-ID: <20050622215818.GA15176@gate.ebshome.net>
+References: <Pine.LNX.4.61.0506221539470.3206@nylon.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.61.0506221539470.3206@nylon.am.freescale.net>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
 	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] ppc32: remove some unnecessary includes of bootmem.h
+Subject: Re: [PATCH] ppc32: Add support for Freescale e200 (Book-E) core
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,145 +26,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Continue the Good Fight:  Limit bootmem.h include creep.
+On Wed, Jun 22, 2005 at 03:41:09PM -0500, Kumar Gala wrote:
 
-Signed-off-by: Jon Loeliger <jdl@freescale.com>
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+[snip]
 
----
-commit abb3b231caa4b32fbd41dc5d59e09754854b786f
-tree ec2bfdad42d1227f3aabee400a6a6c6e277a756f
-parent 0db0912993b08ae4870aa370db5e5e6f83f2c5a3
-author Kumar K. Gala <kumar.gala@freescale.com> Wed, 22 Jun 2005 18:05:00 -0500
-committer Kumar K. Gala <kumar.gala@freescale.com> Wed, 22 Jun 2005 18:05:00 -0500
+> +#ifdef CONFIG_E200
+> +#define DEBUG_EXCEPTION							      \
+> +	START_EXCEPTION(Debug);						      \
+> +	DEBUG_EXCEPTION_PROLOG;						      \
+> +									      \
+> +	/*								      \
+> +	 * If there is a single step or branch-taken exception in an	      \
+> +	 * exception entry sequence, it was probably meant to apply to	      \
+> +	 * the code where the exception occurred (since exception entry	      \
+> +	 * doesn't turn off DE automatically).  We simulate the effect	      \
+> +	 * of turning off DE on entry to an exception handler by turning      \
+> +	 * off DE in the CSRR1 value and clearing the debug status.	      \
+> +	 */								      \
+> +	mfspr	r10,SPRN_DBSR;		/* check single-step/branch taken */  \
+> +	andis.	r10,r10,DBSR_IC@h;					      \
+> +	beq+	2f;							      \
+> +									      \
+> +	lis	r10,KERNELBASE@h;	/* check if exception in vectors */   \
+> +	ori	r10,r10,KERNELBASE@l;					      \
 
- arch/ppc/mm/44x_mmu.c          |    1 -
- arch/ppc/mm/4xx_mmu.c          |    1 -
- arch/ppc/mm/fsl_booke_mmu.c    |    1 -
- arch/ppc/platforms/chrp_pci.c  |    1 -
- arch/ppc/platforms/katana.c    |    2 +-
- arch/ppc/platforms/pmac_pci.c  |    1 -
- arch/ppc/syslib/cpm2_common.c  |    2 +-
- arch/ppc/syslib/indirect_pci.c |    1 -
- arch/ppc/syslib/mv64x60.c      |    1 -
- arch/ppc/syslib/mv64x60_win.c  |    1 -
- 10 files changed, 2 insertions(+), 10 deletions(-)
+I think we can get rid of one instruction here :)
 
-diff --git a/arch/ppc/mm/44x_mmu.c b/arch/ppc/mm/44x_mmu.c
---- a/arch/ppc/mm/44x_mmu.c
-+++ b/arch/ppc/mm/44x_mmu.c
-@@ -39,7 +39,6 @@
- #include <linux/vmalloc.h>
- #include <linux/init.h>
- #include <linux/delay.h>
--#include <linux/bootmem.h>
- #include <linux/highmem.h>
- 
- #include <asm/pgalloc.h>
-diff --git a/arch/ppc/mm/4xx_mmu.c b/arch/ppc/mm/4xx_mmu.c
---- a/arch/ppc/mm/4xx_mmu.c
-+++ b/arch/ppc/mm/4xx_mmu.c
-@@ -36,7 +36,6 @@
- #include <linux/vmalloc.h>
- #include <linux/init.h>
- #include <linux/delay.h>
--#include <linux/bootmem.h>
- #include <linux/highmem.h>
- 
- #include <asm/pgalloc.h>
-diff --git a/arch/ppc/mm/fsl_booke_mmu.c b/arch/ppc/mm/fsl_booke_mmu.c
---- a/arch/ppc/mm/fsl_booke_mmu.c
-+++ b/arch/ppc/mm/fsl_booke_mmu.c
-@@ -41,7 +41,6 @@
- #include <linux/vmalloc.h>
- #include <linux/init.h>
- #include <linux/delay.h>
--#include <linux/bootmem.h>
- #include <linux/highmem.h>
- 
- #include <asm/pgalloc.h>
-diff --git a/arch/ppc/platforms/chrp_pci.c b/arch/ppc/platforms/chrp_pci.c
---- a/arch/ppc/platforms/chrp_pci.c
-+++ b/arch/ppc/platforms/chrp_pci.c
-@@ -9,7 +9,6 @@
- #include <linux/string.h>
- #include <linux/init.h>
- #include <linux/ide.h>
--#include <linux/bootmem.h>
- 
- #include <asm/io.h>
- #include <asm/pgtable.h>
-diff --git a/arch/ppc/platforms/katana.c b/arch/ppc/platforms/katana.c
---- a/arch/ppc/platforms/katana.c
-+++ b/arch/ppc/platforms/katana.c
-@@ -27,12 +27,12 @@
- #include <linux/root_dev.h>
- #include <linux/delay.h>
- #include <linux/seq_file.h>
--#include <linux/bootmem.h>
- #include <linux/mtd/physmap.h>
- #include <linux/mv643xx.h>
- #ifdef CONFIG_BOOTIMG
- #include <linux/bootimg.h>
- #endif
-+#include <asm/io.h>
- #include <asm/page.h>
- #include <asm/time.h>
- #include <asm/smp.h>
-diff --git a/arch/ppc/platforms/pmac_pci.c b/arch/ppc/platforms/pmac_pci.c
---- a/arch/ppc/platforms/pmac_pci.c
-+++ b/arch/ppc/platforms/pmac_pci.c
-@@ -17,7 +17,6 @@
- #include <linux/delay.h>
- #include <linux/string.h>
- #include <linux/init.h>
--#include <linux/bootmem.h>
- 
- #include <asm/sections.h>
- #include <asm/io.h>
-diff --git a/arch/ppc/syslib/cpm2_common.c b/arch/ppc/syslib/cpm2_common.c
---- a/arch/ppc/syslib/cpm2_common.c
-+++ b/arch/ppc/syslib/cpm2_common.c
-@@ -21,8 +21,8 @@
- #include <linux/string.h>
- #include <linux/mm.h>
- #include <linux/interrupt.h>
--#include <linux/bootmem.h>
- #include <linux/module.h>
-+#include <asm/io.h>
- #include <asm/irq.h>
- #include <asm/mpc8260.h>
- #include <asm/page.h>
-diff --git a/arch/ppc/syslib/indirect_pci.c b/arch/ppc/syslib/indirect_pci.c
---- a/arch/ppc/syslib/indirect_pci.c
-+++ b/arch/ppc/syslib/indirect_pci.c
-@@ -14,7 +14,6 @@
- #include <linux/delay.h>
- #include <linux/string.h>
- #include <linux/init.h>
--#include <linux/bootmem.h>
- 
- #include <asm/io.h>
- #include <asm/prom.h>
-diff --git a/arch/ppc/syslib/mv64x60.c b/arch/ppc/syslib/mv64x60.c
---- a/arch/ppc/syslib/mv64x60.c
-+++ b/arch/ppc/syslib/mv64x60.c
-@@ -17,7 +17,6 @@
- #include <linux/slab.h>
- #include <linux/module.h>
- #include <linux/string.h>
--#include <linux/bootmem.h>
- #include <linux/spinlock.h>
- #include <linux/mv643xx.h>
- 
-diff --git a/arch/ppc/syslib/mv64x60_win.c b/arch/ppc/syslib/mv64x60_win.c
---- a/arch/ppc/syslib/mv64x60_win.c
-+++ b/arch/ppc/syslib/mv64x60_win.c
-@@ -17,7 +17,6 @@
- #include <linux/slab.h>
- #include <linux/module.h>
- #include <linux/string.h>
--#include <linux/bootmem.h>
- #include <linux/mv643xx.h>
- 
- #include <asm/byteorder.h>
+-- 
+Eugene
