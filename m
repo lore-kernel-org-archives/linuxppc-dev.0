@@ -1,15 +1,17 @@
-Return-Path: <scarayol@assystembrime.com>
-Received: from srv_courtaboeuf.brime.fr (unknown [81.255.87.178])
-	by ozlabs.org (Postfix) with ESMTP id 2B8CA67A6D
+Return-Path: <stephane.fillod@thomson.net>
+Received: from dmzraw4.extranet.tce.com (dmzraw4.extranet.tce.com
+	[157.254.234.139]) by ozlabs.org (Postfix) with ESMTP id 86A5367B32
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 23 Jun 2005 19:07:32 +1000 (EST)
-To: linuxppc-embedded@ozlabs.org
-Message-ID: <OFD72AE9CC.023B6AC3-ONC1257029.0030219E@brime.fr>
-From: scarayol@assystembrime.com
-Date: Thu, 23 Jun 2005 11:09:20 +0200
+	Thu, 23 Jun 2005 19:10:07 +1000 (EST)
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
-Subject: Fast Ethernet device driver for MPC885
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Thu, 23 Jun 2005 11:10:01 +0200
+Message-ID: <1CFEB358338412458B21FAA0D78FE86D4F0D93@rennsmail02.eu.thmulti.com>
+From: "Fillod Stephane" <stephane.fillod@thomson.net>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: RE: [OT?] recommendations for a small footprint DB for PPC system?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,18 +22,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all.
+Robert P. J. Day wrote:
+>  any recommendations for a small, relational database that can be
+>cross-compiled with ELDK 3.1.1 for a PPC system?  it's not going to be
+>holding a lot of records (about 1000, more or less), and will be
+>initialized and loaded at system boot time, at which point the
+>majority of operations will be read, with only occasional writes.
 
-I use a custom board with a MPC885 microprocessor. I want to test the
-Ethernet chain on my board so i made an external loopback on the Ethernet
-port. I want to transmit datas and read the received datas.
+For a simple database, what about libdb ?
+Otherwise there's http://freshmeat.net/projects/sqlite/
 
-Which driver have i to use and which name to open it. I don' see any driver
-that seems to be the fec one in /dev/..  I think i have to use the routines
-in pqfec.c instead of fec.c. But I don't know how the driver works.
-Which kind of driver is it and how access to the routines from user space
-in order to do my tests ?
-
-Thank you really for your help.
-
-Sophie CARAYOL
+Regards,
+--=20
+Stephane
