@@ -1,17 +1,16 @@
-Return-Path: <stephane.fillod@thomson.net>
-Received: from dmzraw4.extranet.tce.com (dmzraw4.extranet.tce.com
-	[157.254.234.139]) by ozlabs.org (Postfix) with ESMTP id 86A5367B32
+Return-Path: <andreas_schmidt@ifm-electronic.com>
+Received: from mail1.ifm-electronic.com (mail1.ifm-electronic.com
+	[62.180.229.59]) by ozlabs.org (Postfix) with ESMTP id 16B7F67B55
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 23 Jun 2005 19:10:07 +1000 (EST)
+	Thu, 23 Jun 2005 19:14:17 +1000 (EST)
+To: bvinodsmail@gmail.com
+Message-ID: <OF5955D62C.E0C0A558-ONC1257029.00328497-C1257029.0032B7AF@ifm-electronic.com>
+From: andreas_schmidt@ifm-electronic.com
+Date: Thu, 23 Jun 2005 11:13:57 +0200
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Thu, 23 Jun 2005 11:10:01 +0200
-Message-ID: <1CFEB358338412458B21FAA0D78FE86D4F0D93@rennsmail02.eu.thmulti.com>
-From: "Fillod Stephane" <stephane.fillod@thomson.net>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: RE: [OT?] recommendations for a small footprint DB for PPC system?
+Content-type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Re: booting linux on powerpc 405
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,16 +21,9 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Robert P. J. Day wrote:
->  any recommendations for a small, relational database that can be
->cross-compiled with ELDK 3.1.1 for a PPC system?  it's not going to be
->holding a lot of records (about 1000, more or less), and will be
->initialized and loaded at system boot time, at which point the
->majority of operations will be read, with only occasional writes.
+ Hi
+ I have the same problem.
+But when I starting the kernel again, twice times, the error massage go away.
+For info: I use nfsroot.
 
-For a simple database, what about libdb ?
-Otherwise there's http://freshmeat.net/projects/sqlite/
-
-Regards,
---=20
-Stephane
+best regards
