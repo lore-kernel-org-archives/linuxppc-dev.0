@@ -1,22 +1,22 @@
-Return-Path: <scop@digitel.com.br>
-Received: from hermes.digitel.com.br (hermes.digitel.com.br [200.198.105.36])
-	by ozlabs.org (Postfix) with ESMTP id 1361C67B45
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from parcelfarce.linux.theplanet.co.uk
+	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 236AE67B54
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 24 Jun 2005 04:49:04 +1000 (EST)
-Received: from [10.10.10.4] by hermes.digitel.com.br (GMS
-	10.03.3304/NU1492.00.9f6ce814) with ESMTP id gvvopbaa for
-	linuxppc-embedded@ozlabs.org; Thu, 23 Jun 2005 15:53:32 -0300
-Content-Type: text/plain;
-  charset="iso-8859-1"
-From: Ricardo Scop <scop@digitel.com.br>
-To: scarayol@assystembrime.com,
- linuxppc-embedded@ozlabs.org
-Date: Thu, 23 Jun 2005 15:53:54 -0300
-References: <OFD72AE9CC.023B6AC3-ONC1257029.0030219E@brime.fr>
-In-Reply-To: <OFD72AE9CC.023B6AC3-ONC1257029.0030219E@brime.fr>
-MIME-Version: 1.0
-Message-Id: <200506231553.54283.scop@digitel.com.br>
-Subject: Re: Fast Ethernet device driver for MPC885
+	Fri, 24 Jun 2005 05:34:09 +1000 (EST)
+Date: Thu, 23 Jun 2005 11:05:22 -0300
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Andrei Konovalov <akonovalov@ru.mvista.com>
+Message-ID: <20050623140522.GA25724@logos.cnet>
+References: <42BAD78E.1020801@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <42BAD78E.1020801@ru.mvista.com>
+Cc: akpm@osdl.org, trini@kernel.crashing.org, linux-kernel@vger.kernel.org,
+	yshpilevsky@ru.mvista.com, linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] ppc32: add Freescale MPC885ADS board support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,47 +27,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Sophie,
 
-On Thursday 23 June 2005 06:09, scarayol@assystembrime.com wrote:
-> Hi all.
->
-> I use a custom board with a MPC885 microprocessor. I want to test the
-> Ethernet chain on my board so i made an external loopback on the Ethern=
-et
-> port. I want to transmit datas and read the received datas.
->
-> Which driver have i to use and which name to open it. I don' see any dr=
-iver
-> that seems to be the fec one in /dev/.. =20
-Well, fec registers as a network device, so you should use the sockets AP=
-I to=20
-access it.
+Hi Andrei,
 
->I think i have to use the routines
-> in pqfec.c instead of fec.c.=20
-Don't know about them, sorry.
+On Thu, Jun 23, 2005 at 07:38:54PM +0400, Andrei Konovalov wrote:
+<snip>
 
-> But I don't know how the driver works.
-> Which kind of driver is it and how access to the routines from user spa=
-ce
-> in order to do my tests ?
-Read above. "man socket" is a good start.
+> diff --git a/arch/ppc/syslib/m8xx_setup.c b/arch/ppc/syslib/m8xx_setup.c
+> --- a/arch/ppc/syslib/m8xx_setup.c
+> +++ b/arch/ppc/syslib/m8xx_setup.c
+> @@ -369,7 +369,7 @@ m8xx_map_io(void)
+>  #if defined(CONFIG_HTDMSOUND) || defined(CONFIG_RPXTOUCH) || defined(CONFIG_FB_RPX)
+>  	io_block_mapping(HIOX_CSR_ADDR, HIOX_CSR_ADDR, HIOX_CSR_SIZE, _PAGE_IO);
+>  #endif
+> -#ifdef CONFIG_FADS
+> +#if defined(CONFIG_FADS) || defined(CONFIG_MPC885ADS)
+>  	io_block_mapping(BCSR_ADDR, BCSR_ADDR, BCSR_SIZE, _PAGE_IO);
+>  #endif
+>  #ifdef CONFIG_PCI
 
-HTH,
-
---=20
-Ricardo Scop.
-
-        \|/
-    ___ -*-
-   (@ @)/|\
-  /  V  \|  R SCOP Consult.
- /(     )\  Linux-based communications
---^^---^^+------------------------------
-rscop@matrix.com.br
-+55 51 999-36-777
-Porto Alegre, RS - BRazil
---
-P. S.: "If you don't have time to do it right, when will you have time
-to do it over?"  -- Penny Hines =20
+I suppose you also want to include CONFIG_MPC885ADS in the io_block_mapping(IO_BASE) 
+here?
