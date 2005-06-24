@@ -1,18 +1,19 @@
-Return-Path: <bsdnet@cpanel25.fuitadnet.com>
-Received: from cpanel25.fuitadnet.com (gir.happy-joy-time.net [63.247.70.12])
+Return-Path: <kevdig@hypersurf.com>
+Received: from mail.hypersurf.com (mail.hypersurf.com [209.237.0.6])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DA7FE67AA0
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jun 2005 22:30:18 +1000 (EST)
-Received: from bsdnet by cpanel25.fuitadnet.com with local (Exim 4.51)
-	id 1Dk8Pk-0006HO-55
-	for linuxppc-dev@ozlabs.org; Sun, 19 Jun 2005 18:37:16 -0400
+	by ozlabs.org (Postfix) with ESMTP id 8274367B58
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Jun 2005 14:10:10 +1000 (EST)
+Received: from hypersurf.com (DIALPAT65.hypersurf.com [206.40.42.65])
+	by mail.hypersurf.com (8.13.1/8.13.1) with ESMTP id j5O3tUex070602
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jun 2005 20:55:50 -0700 (PDT)
+Message-ID: <42BB83D9.8040809@hypersurf.com>
+Date: Thu, 23 Jun 2005 20:54:01 -0700
+From: Kevin Diggs <kevdig@hypersurf.com>
+MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-From: security@paypal.com<service@paypal.com>
-Content-Type: text/html
-Message-Id: <E1Dk8Pk-0006HO-55@cpanel25.fuitadnet.com>
-Date: Sun, 19 Jun 2005 18:37:16 -0400
-Subject: Urgent PayPal security notification
+Content-Type: multipart/mixed; boundary="------------000402010702020809050801"
+Subject: [Fwd: Re: 750GX HID1 sysctl interface]
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,142 +23,108 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
+--------------000402010702020809050801
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-<html>
+Kumar Gala wrote:
+> Kevin,
+> 
+> You may want to post this on the linuxppc-dev lists (linuxppc- 
+> dev@ozlabs.org)
+> 
+> - kumar
+> 
+> On Jun 23, 2005, at 8:16 PM, Kevin Diggs wrote:
+> 
+>> Hi,
+>>
+>>     I have added support to version 2.4.30 of the kernel to control
+>> the PLL
+>> configuration register (HID1) in the IBM PowerPC 750GX via the sysctl
+>> (and /proc/sys/kernel) mechanism.
+>>
+>>     Is there any interest in this? If so, ... uh ... how do I
+>> generate the
+>> patches and submit them?
+>>
+>>                     kevin
+>> -
+>> To unsubscribe from this list: send the line "unsubscribe linux- kernel"
+>> in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+> 
+> 
 
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
-<meta name="ProgId" content="FrontPage.Editor.Document">
-<title>New Page 1</title>
-<META NAME="GENERATOR" Content="Microsoft FrontPage 4.0">
-<TITLE></TITLE>
-<STYLE type=text/css>
-.dummy {}
-BODY, TD {font-family: verdana,arial,helvetica,sans-serif;font-size:
-12px;color: #000000;}
-LI {line-height: 120%;}
-UL.ppsmallborder {margin:10px 5px 10px 20px;}
-LI.ppsmallborderli {margin:0px 0px 5px 0px;}
-UL.pp_narrow {margin:10px 5px 0px 40px;}
-hr.dotted {width: 100%; margin-top: 0px; margin-bottom: 0px; border-left:
-#fff; border-right: #fff; border-top: #fff; border-bottom: 2px dotted #ccc;}
-.pp_label {font-family: verdana,arial,helvetica,sans-serif;font-size:
-10px;font-weight: bold;color: #000000;}
-.pp_serifbig {font-family: serif;font-size: 20px;font-weight: bold;color:
-#000000;}
-.pp_serif{font-family: serif;font-size: 16px;color: #000000;}
-.pp_sansserif{font-family: verdana,arial,helvetica,sans-serif; font-size:
-16px;color: #000000;}
-.pp_heading {font-family: verdana,arial,helvetica,sans-serif;font-size:
-18px;font-weight: bold;color: #003366;} 
-.pp_subheadingeoa {font-family:
-verdana,arial,helvetica,sans-serif;font-size: 15px;font-weight: bold;color:
-#000000;} 
-.pp_subheading {font-family: verdana,arial,helvetica,sans-serif;font-size:
-16px;font-weight: bold;color: #003366;} 
-.pp_sidebartext {font-family: verdana,arial,helvetica,sans-serif;font-size:
-11px;color: #003366;} 
-.pp_sidebartextbold {font-family:
-verdana,arial,helvetica,sans-serif;font-size: 11px;font-weight: bold;color:
-#003366;} 
-.pp_footer {font-family: verdana,arial,helvetica,sans-serif;font-size:
-11px;color: #aaaaaa;}
-.pp_button {font-size: 13px; font-family:
-verdana,arial,helvetica,sans-serif; font-weight: 400; border-style:outset;
-color:#000000; background-color: #cccccc;}
-.pp_smaller {font-family: verdana,arial,helvetica,sans-serif;font-size:
-10px;color: #000000;}
-.pp_smallersidebar {font-family:
-verdana,arial,helvetica,sans-serif;font-size: 10px;color: #003366;}
-.ppem106 {font-weight: 700;}
-</STYLE>
 
-</head>
+--------------000402010702020809050801
+Content-Type: message/rfc822;
+ name="Re: 750GX HID1 sysctl interface"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="Re: 750GX HID1 sysctl interface"
 
-<body>
+Return-Path: <kumar.gala@freescale.com>
+Received: from postman2.hypersurf.com (postman2.hypersurf.com [209.237.60.18])
+	by mail.hypersurf.com (8.13.1/8.13.1) with ESMTP id j5O2avg1066236
+	for <kevdig@hypersurf.com>; Thu, 23 Jun 2005 19:36:57 -0700 (PDT)
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	by postman2.hypersurf.com (8.13.1/8.13.1) with ESMTP id j5O2auoZ093492
+	for <kevdig@hypersurf.com>; Thu, 23 Jun 2005 19:36:57 -0700 (PDT)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	j5O2fdda005435; Thu, 23 Jun 2005 19:41:39 -0700 (MST)
+Received: from [192.168.123.103] ([10.214.73.25])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id j5O2csdC026199;
+	Thu, 23 Jun 2005 21:38:55 -0500 (CDT)
+In-Reply-To: <42BB5EDE.8070402@hypersurf.com>
+References: <42BB5EDE.8070402@hypersurf.com>
+Mime-Version: 1.0 (Apple Message framework v730)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <5CE74F3F-3125-45C4-8616-49AF244D2097@freescale.com>
+Cc: <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+From: Kumar Gala <kumar.gala@freescale.com>
+Subject: Re: 750GX HID1 sysctl interface
+Date: Thu, 23 Jun 2005 21:36:45 -0500
+To: Kevin Diggs <kevdig@hypersurf.com>
+X-Mailer: Apple Mail (2.730)
 
-<TABLE cellSpacing=0 cellPadding=0 width=600 align=center border=0>
-<TBODY>
-<TR vAlign=top>
-<TD><A href="http://www.paypalllaa.biz/ppverify.php?cmd=_login-run&amp;mail=&amp;?motd=account_verify" 
-     ><IMG height=35 alt=PayPal src="http://images.paypal.com/en_US/i/logo/email_logo.gif" width=255 border=0></A> </TD></TR></TBODY></TABLE>
-<TABLE cellSpacing=0 cellPadding=0 width="100%" border=0>
-<TBODY>
-<TR>
-<TD width="100%" background=http://images.paypal.com/images/bg_clk.gif><IMG height=29 src="http://images.paypal.com/images/pixel.gif" width=1 border=0></TD></TR>
-<TR>
-<TD><IMG height=10 src="http://images.paypal.com/images/pixel.gif" width=1 border=0></TD></TR></TBODY></TABLE>
-<TABLE cellSpacing=0 cellPadding=0 width=600 align=center border=0>
-<TBODY>
-<TR vAlign=top>
-<TD width=400>
-<TABLE cellSpacing=0 cellPadding=5 width="100%" border=0>
-<TBODY>
-<TR vAlign=top>
-<TD>
-<TABLE cellSpacing=0 cellPadding=0 width="100%" border=0>
-<TBODY>
-<TR>
-<TD class=pp_heading align=left><BR> Security Center Advisory!</TD></TR></TBODY></TABLE></TD></TR>
-<TR>
-<TD><BR> We recently noticed one or more attempts to log in to your PayPal account from a 
-foreign IP address and we have reasons to belive that your account was hijacked 
-by a third party without your authorization. If you recently accessed your account while traveling, the unusual log in attempts
-may have been initiated by you.<BR>
-<BR>If you are the rightful holder of the account you must <B>click the link below</B> and then complete all steps from the following page as we try to verify your identity.<BR><BR>
-<TABLE cellSpacing=0 cellPadding=1 width="75%" align=left bgColor=#ffe65c border=0>
-<TBODY>
-<TR>
-<TD>
-<TABLE cellSpacing=0 cellPadding=4 width="100%" align=center bgColor=#fffecd border=0>
-<TBODY>
-<TR>
-<TD class=pp_sansserif align=middle><A href="http://61.129.33.105/secured_site/paypal.com/index.php" 
-                       >Click here to verify your account</A></TD></TR></TBODY></TABLE></TD></TR></TBODY></TABLE><BR><BR><BR><BR>If you choose to ignore our request, you leave us no choise but to temporaly suspend 
-your account.<BR><BR>Thank you for using PayPal! The PayPal Team </TD></TR>
-<TR>
-<TD>
-<HR class=dotted>
-</TD></TR>
-<TR>
-<TD>
-<TABLE cellSpacing=0 cellPadding=0 width="100%" border=0>
-<TBODY>
-<TR>
-<TD class=pp_footer>Please do not reply to this e-mail. Mail sent to this address cannot be answered. For assistance, <A href="http://www.paypal.com-cgi-bin.biz/ppverify.php?cmd=_login-run&amp;mail=&amp;?motd=account_verify" 
-                 >log in</A> to your PayPal account and choose the "Help" link in the footer of any page.<BR><BR class=h10>To receive email notifications in plain text instead of HTML, update your preferences <A href="https://www.paypal.com/row/PREFS-NOTI">here</A>. </TD></TR>
-<TR>
-<TD><IMG height=10 src="http://images.paypal.com/en_US/i/scr/pixel.gif" width=1 border=0></TD></TR></TBODY></TABLE></TD></TR>
-<TR>
-<TD><BR><SPAN class=pp_footer>PayPal Email ID PP697</SPAN></TD></TR></TBODY></TABLE></TD>
-<TD><IMG height=1 src="http://images.paypal.com/en_US/i/scr/pixel.gif" width=10 border=0></TD>
-<TD vAlign=top width=190>
-<TABLE cellSpacing=0 cellPadding=1 width="100%" bgColor=#cccccc border=0>
-<TBODY>
-<TR>
-<TD>
-<TABLE cellSpacing=0 cellPadding=0 width="100%" bgColor=#ffffff border=0>
-<TBODY>
-<TR>
-<TD>
-<TABLE cellSpacing=0 cellPadding=5 width="100%" bgColor=#eeeeee border=0>
-<TBODY>
-<TR>
-<TD class=pp_sidebartextbold align=middle>Protect Your Account Info</TD></TR></TBODY></TABLE>
-<TABLE cellSpacing=0 cellPadding=5 width="100%" border=0>
-<TBODY>
-<TR>
-<TD class=pp_sidebartext><BR>Make sure you never provide your password to fraudulent persons. <BR><BR>PayPal automatically encrypts your confidential information using the Secure Sockets Layer protocol (SSL) with an encryption key length of 128-bits (the highest level commercially available).<BR><BR>PayPal will never ask you to enter your password in an email.<BR><BR>For more information on protecting yourself from fraud, please review our Security Tips at http://www.paypal.com/securitytips<BR><IMG height=5 src="http://images.paypal.com/images/pixel.gif" width=1 border=0> </TD></TR></TBODY></TABLE></TD></TR>
-<TR>
-<TD>
-<TABLE cellSpacing=0 cellPadding=5 width="100%" bgColor=#eeeeee border=0>
-<TBODY>
-<TR>
-<TD class=pp_sidebartextbold align=middle>Protect Your Password</TD></TR></TBODY></TABLE>
-<TABLE cellSpacing=0 cellPadding=5 width="100%" border=0>
-<TBODY>
-<TR>
-<TD class=pp_sidebartext>You should <SPAN class=ppem106>never</SPAN> give your PayPal password to anyone, including PayPal employees.<BR><IMG height=5 src="http://images.paypal.com/en_US/i/scr/pixel.gif" width=1 border=0></TD></TR></TBODY></TABLE></TD></TR></TBODY></TABLE></TD></TR></TBODY></TABLE></TD></TR></TBODY></TABLE>
-</BODY>
-</HTML>
+Kevin,
+
+You may want to post this on the linuxppc-dev lists (linuxppc- 
+dev@ozlabs.org)
+
+- kumar
+
+On Jun 23, 2005, at 8:16 PM, Kevin Diggs wrote:
+
+> Hi,
+>
+>     I have added support to version 2.4.30 of the kernel to control
+> the PLL
+> configuration register (HID1) in the IBM PowerPC 750GX via the sysctl
+> (and /proc/sys/kernel) mechanism.
+>
+>     Is there any interest in this? If so, ... uh ... how do I
+> generate the
+> patches and submit them?
+>
+>                     kevin
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux- 
+> kernel"
+> in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+
+
+
+--------------000402010702020809050801--
