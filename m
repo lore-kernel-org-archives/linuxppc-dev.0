@@ -1,23 +1,23 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao12.cox.net (fed1rmmtao12.cox.net [68.230.241.27])
-	by ozlabs.org (Postfix) with ESMTP id 90BA067B58
+Return-Path: <jason.mcmullan@gmail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.197])
+	by ozlabs.org (Postfix) with ESMTP id E3759679E7
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 25 Jun 2005 02:58:44 +1000 (EST)
-Date: Fri, 24 Jun 2005 09:58:42 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Andrei Konovalov <akonovalov@ru.mvista.com>
-Message-ID: <20050624165841.GD3628@smtp.west.cox.net>
-References: <42BAD78E.1020801@ru.mvista.com>
-	<20050623140522.GA25724@logos.cnet>
-	<42BC2501.5090101@ru.mvista.com>
-	<20050624154311.GB3628@smtp.west.cox.net>
-	<42BC34CE.603@ru.mvista.com>
+	Sat, 25 Jun 2005 05:20:47 +1000 (EST)
+Received: by zproxy.gmail.com with SMTP id 13so283602nzp
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 24 Jun 2005 12:20:45 -0700 (PDT)
+From: Jason McMullan <jason.mcmullan@gmail.com>
+To: vbordug@ru.mvista.com
+In-Reply-To: <1119627190.28058.39.camel@jmcmullan.timesys>
+References: <1119627190.28058.39.camel@jmcmullan.timesys>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-vcq2mea7rsf+cFfFzZHK"
+Date: Fri, 24 Jun 2005 15:20:42 -0400
+Message-Id: <1119640843.28058.50.camel@jmcmullan.timesys>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <42BC34CE.603@ru.mvista.com>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, yshpilevsky@ru.mvista.com,
-	linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] ppc32: add Freescale MPC885ADS board support
+Cc: PPC_LINUX <linuxppc-embedded@ozlabs.org>
+Subject: Re: PQ2FADS PCI Interrupts
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,18 +28,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jun 24, 2005 at 08:29:02PM +0400, Andrei Konovalov wrote:
-> Tom Rini wrote:
-[snip]
-> >Lets just drop that hunk then..
-> 
-> Do you mean not to use
->   io_block_mapping(BCSR_ADDR, BCSR_ADDR, BCSR_SIZE, _PAGE_IO);
 
-So I had myself slightly confused as first, but yes, what Eugene said at
-first is right, as shouldn't add more io_block_mappings, we should use
-ioremap() and fix drivers.
+--=-vcq2mea7rsf+cFfFzZHK
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+On Fri, 2005-06-24 at 11:25 -0400, McMullan, Jason wrote:
+> Given your latest MPC82xx PCI patches to the list, PCI support
+> is *better*, but interrupts are *not* delivered on the PQ2FADS
+
+Solved my own problem:
+
+	Clear SIUMCR_DPPC11 in immap->im_siu_conf.siu_82xx.sc_siumcr
+
+Otherwise, IRQ6 is not routed to the SIU.
+
+--=20
+Jason McMullan <jason.mcmullan@gmail.com>
+"Sure, send me the latest Knoppix DVD as an attachment..."
+
+--=-vcq2mea7rsf+cFfFzZHK
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.0 (GNU/Linux)
+
+iD8DBQBCvF0K8/0vJ5szK6kRAp9gAJ4mt6K6rEH8ElADkSKmrUpzH3hLWQCfZanZ
+OcUyIgHXMBSpst+AJ+rbn/s=
+=nWzE
+-----END PGP SIGNATURE-----
+
+--=-vcq2mea7rsf+cFfFzZHK--
