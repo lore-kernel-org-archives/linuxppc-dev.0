@@ -1,17 +1,17 @@
-Return-Path: <j.lu@tiesse.com>
-Received: from tiesse.com (studiogesan.it [193.76.202.5])
-	by ozlabs.org (Postfix) with ESMTP id 899C867B45
+Return-Path: <kylej@aiinet.com>
+Received: from aiexchange.ai.aiinet.com (ai181-229.aiinet.com
+	[205.245.181.229]) by ozlabs.org (Postfix) with ESMTP id AA76B67A6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 24 Jun 2005 17:39:04 +1000 (EST)
-Date: Fri, 24 Jun 2005 09:42:36 +0200
-Message-Id: <200506240942.AA145163224@tiesse.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: "Jianliang Lu" <j.lu@tiesse.com>
-To: "Jordan, Kyle"  <kylej@aiinet.com>
+	Fri, 24 Jun 2005 22:44:48 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Fri, 24 Jun 2005 08:32:37 -0400
+Message-ID: <C0170D0AF1277849A4B4518034F855DD0F9190@aiexchange.ai.aiinet.com>
+From: "Jordan, Kyle" <kylej@aiinet.com>
+To: <j.lu@tiesse.com>
 Cc: linuxppc-embedded@ozlabs.org
 Subject: RE: isp1362 usb driver 
-Reply-To: j.lu@tiesse.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,51 +22,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thank you Jordan.
-The driver works quite good for control/bulk/interrupts, but we 
-can't make it work with our eagle-usb driver for isochronous. We 
-are still debugging it. If you have some informations about 
-isochronous that may help us we'll be grateful for it.
 
-Best regards,
+> The driver works quite good for control/bulk/interrupts, but we=20
+> can't make it work with our eagle-usb driver for isochronous. We=20
+> are still debugging it. If you have some informations about=20
+> isochronous that may help us we'll be grateful for it.
 
-Jianliang Lu
 
----------- Original Message ----------------------------------
-From: "Jordan, Kyle" <kylej@aiinet.com>
-Date: Wed, 22 Jun 2005 08:54:35 -0400
-
->> yes I would be really, really gratefully if you could send me 
-the 
->> source.
->
->Ok, I've attached the source.  We have never tested isochronous
->endpoints though.  However I don't think I modified the section 
-that
->controls isochronous data, so hopefully it still works.  I did 
-change
->the names of the files, but they still go in drivers/usb/hcd or
->drivers/usb/host, depending on the version of the kernel.  I did 
-have
->some statistics on some throughput tests I ran, but I can't seem 
-to find
->those now.  If I come across them, I'll send them to you.  Let me 
-know
->how this works.
->
->> The adsl modem we are using is a eagle chipset modem, based on 
->> eagle-usb project. The modem could be Sagem or aethra on ADI 
-eagle 
->> chipset.
->
->Thanks, I think we are looking at the same chipset.  However we 
-plan on
->using the ethernet option instead of the USB option because it 
-will be
->slightly cheaper for us to do (at this time).
->
->
->- Kyle
->
->
-                   
+The function fnvProcessSofItlInt is called every 1 ms.  It handles the
+scheduling of isochronous data.  This is where you should start looking
+(if you haven't already).  This is the same function that schedules
+isochronous data in the driver from Denx, however it also schedules
+control/bulk/interrupt endpoints in that driver.  My intent was to rip
+out the way control/bulk/interrupt endpoints were handled in that driver
+and have them handled differently.  I was hoping I did not affect the
+way isochronous endpoints were handled, but I must have.  Take a look at
+the fnvProcessSofItlInt function in the driver from Denx.  The driver I
+modified should be very similar in the way the driver from Denx handles
+isochronous endpoints, but I obviously changed something.  Could you let
+me know if you get it working?
+=20
+Thanks,
+  Kyle Jordan
