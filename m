@@ -1,17 +1,20 @@
-Return-Path: <kylej@aiinet.com>
-Received: from aiexchange.ai.aiinet.com (ai181-229.aiinet.com
-	[205.245.181.229]) by ozlabs.org (Postfix) with ESMTP id AA76B67A6D
+Return-Path: <akonovalov@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
+	by ozlabs.org (Postfix) with SMTP id 129F867A6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 24 Jun 2005 22:44:48 +1000 (EST)
+	Sat, 25 Jun 2005 01:12:41 +1000 (EST)
+Message-ID: <42BC2501.5090101@ru.mvista.com>
+Date: Fri, 24 Jun 2005 19:21:37 +0400
+From: Andrei Konovalov <akonovalov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Fri, 24 Jun 2005 08:32:37 -0400
-Message-ID: <C0170D0AF1277849A4B4518034F855DD0F9190@aiexchange.ai.aiinet.com>
-From: "Jordan, Kyle" <kylej@aiinet.com>
-To: <j.lu@tiesse.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: isp1362 usb driver 
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+References: <42BAD78E.1020801@ru.mvista.com>
+	<20050623140522.GA25724@logos.cnet>
+In-Reply-To: <20050623140522.GA25724@logos.cnet>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: akpm@osdl.org, trini@kernel.crashing.org, linux-kernel@vger.kernel.org,
+	yshpilevsky@ru.mvista.com, linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] ppc32: add Freescale MPC885ADS board support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,25 +25,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi Marcelo,
 
-> The driver works quite good for control/bulk/interrupts, but we=20
-> can't make it work with our eagle-usb driver for isochronous. We=20
-> are still debugging it. If you have some informations about=20
-> isochronous that may help us we'll be grateful for it.
+Marcelo Tosatti wrote:
+> Hi Andrei,
+> 
+> On Thu, Jun 23, 2005 at 07:38:54PM +0400, Andrei Konovalov wrote:
+> <snip>
+> 
+>>diff --git a/arch/ppc/syslib/m8xx_setup.c b/arch/ppc/syslib/m8xx_setup.c
+>>--- a/arch/ppc/syslib/m8xx_setup.c
+>>+++ b/arch/ppc/syslib/m8xx_setup.c
+>>@@ -369,7 +369,7 @@ m8xx_map_io(void)
+>> #if defined(CONFIG_HTDMSOUND) || defined(CONFIG_RPXTOUCH) || defined(CONFIG_FB_RPX)
+>> 	io_block_mapping(HIOX_CSR_ADDR, HIOX_CSR_ADDR, HIOX_CSR_SIZE, _PAGE_IO);
+>> #endif
+>>-#ifdef CONFIG_FADS
+>>+#if defined(CONFIG_FADS) || defined(CONFIG_MPC885ADS)
+>> 	io_block_mapping(BCSR_ADDR, BCSR_ADDR, BCSR_SIZE, _PAGE_IO);
+>> #endif
+>> #ifdef CONFIG_PCI
+> 
+> 
+> I suppose you also want to include CONFIG_MPC885ADS in the io_block_mapping(IO_BASE) 
+> here?
+
+No, not at the moment at least.
+Actually, the patch doesn't even #define IO_BASE.
+In 2.4 that io_block_mapping(IO_BASE) was needed for PCMCIA / CF cards to work.
+We haven't got to PCMCIA support in 2.6 yet, and PCMCIA is unlikely to work
+as is in case of MPC885ADS, as drivers/pcmcia/m8xx_pcmcia.c is just missing.
+We plan to address PCMCIA later.
 
 
-The function fnvProcessSofItlInt is called every 1 ms.  It handles the
-scheduling of isochronous data.  This is where you should start looking
-(if you haven't already).  This is the same function that schedules
-isochronous data in the driver from Denx, however it also schedules
-control/bulk/interrupt endpoints in that driver.  My intent was to rip
-out the way control/bulk/interrupt endpoints were handled in that driver
-and have them handled differently.  I was hoping I did not affect the
-way isochronous endpoints were handled, but I must have.  Take a look at
-the fnvProcessSofItlInt function in the driver from Denx.  The driver I
-modified should be very similar in the way the driver from Denx handles
-isochronous endpoints, but I obviously changed something.  Could you let
-me know if you get it working?
-=20
 Thanks,
-  Kyle Jordan
+Andrei
