@@ -1,23 +1,20 @@
-Return-Path: <jason.mcmullan@gmail.com>
-Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.197])
-	by ozlabs.org (Postfix) with ESMTP id E3759679E7
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from parcelfarce.linux.theplanet.co.uk
+	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D1E1267A5D
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 25 Jun 2005 05:20:47 +1000 (EST)
-Received: by zproxy.gmail.com with SMTP id 13so283602nzp
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 24 Jun 2005 12:20:45 -0700 (PDT)
-From: Jason McMullan <jason.mcmullan@gmail.com>
-To: vbordug@ru.mvista.com
-In-Reply-To: <1119627190.28058.39.camel@jmcmullan.timesys>
-References: <1119627190.28058.39.camel@jmcmullan.timesys>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-vcq2mea7rsf+cFfFzZHK"
-Date: Fri, 24 Jun 2005 15:20:42 -0400
-Message-Id: <1119640843.28058.50.camel@jmcmullan.timesys>
+	Sun, 26 Jun 2005 07:16:47 +1000 (EST)
+Date: Sat, 25 Jun 2005 12:11:05 -0300
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Dan Malek <dan@embeddededge.com>
+Message-ID: <20050625151105.GB32117@logos.cnet>
 Mime-Version: 1.0
-Cc: PPC_LINUX <linuxppc-embedded@ozlabs.org>
-Subject: Re: PQ2FADS PCI Interrupts
+Content-Type: text/plain; charset=us-ascii
+Cc: Tom Rini <trini@kernel.crashing.org>, Kumar Gala <galak@freescale.com>,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: merge 8xx longstanding MM bug workaround
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,34 +26,47 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
---=-vcq2mea7rsf+cFfFzZHK
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
 
-On Fri, 2005-06-24 at 11:25 -0400, McMullan, Jason wrote:
-> Given your latest MPC82xx PCI patches to the list, PCI support
-> is *better*, but interrupts are *not* delivered on the PQ2FADS
+Lets agree on something and merge please
 
-Solved my own problem:
+The proposed _tlbie call at update_mmu_cache() is safe because:
 
-	Clear SIUMCR_DPPC11 in immap->im_siu_conf.siu_82xx.sc_siumcr
+Addresses for which update_mmu_cache() gets invocated are never inside the 
+static kernel virtual mapping, meaning that there is no risk for the _tlbie()
+here to be thrashing the pinned entry, as Dan suspected.
 
-Otherwise, IRQ6 is not routed to the SIU.
+The intermediate TLB state in which this bug can be triggered is not visible
+by userspace or any other contexts, except the page fault handling path. 
+So there is no need to worry about userspace dcbxxx users.
 
---=20
-Jason McMullan <jason.mcmullan@gmail.com>
-"Sure, send me the latest Knoppix DVD as an attachment..."
+The other solution to this is to avoid dcbst misbehaviour in the first place, 
+which  involves changing in-kernel "dcbst" callers to use 8xx specific SPR's 
+instead, as noted by Dan. 
+What are the arguments in favour of it? Is it worth doing that?
 
---=-vcq2mea7rsf+cFfFzZHK
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.0 (GNU/Linux)
+    [PATCH] 8xx: avoid "dcbst" misbehaviour with unpopulated TLB
 
-iD8DBQBCvF0K8/0vJ5szK6kRAp9gAJ4mt6K6rEH8ElADkSKmrUpzH3hLWQCfZanZ
-OcUyIgHXMBSpst+AJ+rbn/s=
-=nWzE
------END PGP SIGNATURE-----
+     On 8xx, cache control instructions (particularly "dcbst" from
+     flush_dcache_icache) fault as write operation if there is an
+     unpopulated TLB entry for the address in question. To workaround
+     that, we invalidate the TLB here, thus avoiding dcbst misbehaviour.
 
---=-vcq2mea7rsf+cFfFzZHK--
+diff --git a/arch/ppc/mm/init.c b/arch/ppc/mm/init.c
+--- a/arch/ppc/mm/init.c
++++ b/arch/ppc/mm/init.c
+@@ -622,6 +622,14 @@ void update_mmu_cache(struct vm_area_str
+ 		if (!PageReserved(page)
+ 		    && !test_bit(PG_arch_1, &page->flags)) {
+ 			if (vma->vm_mm == current->active_mm)
++#ifdef CONFIG_8xx
++/* On 8xx, cache control instructions (particularly "dcbst" from
++ * flush_dcache_icache) fault as write operation if there is an
++ * unpopulated TLB entry for the address in question. To workaround
++ * that, we invalidate the TLB here, thus avoiding dcbst misbehaviour.
++ */
++			_tlbie(address);
++#endif
+ 				__flush_dcache_icache((void *) address);
+ 			else
+ 				flush_dcache_icache_page(page);
