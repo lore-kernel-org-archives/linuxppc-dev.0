@@ -1,21 +1,19 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0CF1967A45
+Return-Path: <galak@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 3862867A62
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 26 Jun 2005 08:27:51 +1000 (EST)
-In-Reply-To: <20050625151105.GB32117@logos.cnet>
-References: <20050625151105.GB32117@logos.cnet>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <08634a569d62eb8cd1de1858cd58ab43@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Sat, 25 Jun 2005 18:27:35 -0400
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-Cc: Tom Rini <trini@kernel.crashing.org>, Kumar Gala <galak@freescale.com>,
-	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: merge 8xx longstanding MM bug workaround
+	Mon, 27 Jun 2005 00:14:11 +1000 (EST)
+Date: Sun, 26 Jun 2005 09:14:01 -0500 (CDT)
+From: Kumar Gala <galak@freescale.com>
+To: Andrew Morton <akpm@osdl.org>
+Message-ID: <Pine.LNX.4.61.0506260912530.9741@nylon.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Linus Torvalds <torvalds@osdl.org>, tony.Li@freescale.com,
+	linux-kernel@vger.kernel.org,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: [RESEND][PATCH] ppc32: Fix MPC83xx IPIC external interrupt pending
+ register offset
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,27 +24,87 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+(I think this got lost by linus in the shuffle)
 
-On Jun 25, 2005, at 11:11 AM, Marcelo Tosatti wrote:
+The pending registers for IRQ1-IRQ7 were pointing to the interrupt pending
+register instead of the external one.
 
->  		if (!PageReserved(page)
->  		    && !test_bit(PG_arch_1, &page->flags)) {
->  			if (vma->vm_mm == current->active_mm)
-> +#ifdef CONFIG_8xx
-> +/* On 8xx, cache control instructions (particularly "dcbst" from
-> + * flush_dcache_icache) fault as write operation if there is an
-> + * unpopulated TLB entry for the address in question. To workaround
-> + * that, we invalidate the TLB here, thus avoiding dcbst misbehaviour.
-> + */
-> +			_tlbie(address);
-> +#endif
->  				__flush_dcache_icache((void *) address);
->  			else
->  				flush_dcache_icache_page(page);
+Signed-off-by: Tony Li <Tony.Li@freescale.com>
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
-You need some { } and proper indenting here :-)
+---
+commit 7ada9b1e61d5af4c75f32bfc1f7aabca435024ed
+tree 44de45c386a0f22584344494bfe1eb453dffa16c
+parent e3f1d172ca1cfd1ac2dd907c31fb2521bfe21689
+author Kumar K. Gala <kumar.gala@freescale.com> Thu, 23 Jun 2005 22:49:39 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> Thu, 23 Jun 2005 22:49:39 -0500
 
-Thanks.
+ arch/ppc/syslib/ipic.c |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
 
-
-	-- Dan
+diff --git a/arch/ppc/syslib/ipic.c b/arch/ppc/syslib/ipic.c
+--- a/arch/ppc/syslib/ipic.c
++++ b/arch/ppc/syslib/ipic.c
+@@ -79,7 +79,7 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 7,
+ 	},
+ 	[17] = {
+-		.pend	= IPIC_SIPNR_H,
++		.pend	= IPIC_SEPNR,
+ 		.mask	= IPIC_SEMSR,
+ 		.prio	= IPIC_SMPRR_A,
+ 		.force	= IPIC_SEFCR,
+@@ -87,7 +87,7 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 5,
+ 	},
+ 	[18] = {
+-		.pend	= IPIC_SIPNR_H,
++		.pend	= IPIC_SEPNR,
+ 		.mask	= IPIC_SEMSR,
+ 		.prio	= IPIC_SMPRR_A,
+ 		.force	= IPIC_SEFCR,
+@@ -95,7 +95,7 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 6,
+ 	},
+ 	[19] = {
+-		.pend	= IPIC_SIPNR_H,
++		.pend	= IPIC_SEPNR,
+ 		.mask	= IPIC_SEMSR,
+ 		.prio	= IPIC_SMPRR_A,
+ 		.force	= IPIC_SEFCR,
+@@ -103,7 +103,7 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 7,
+ 	},
+ 	[20] = {
+-		.pend	= IPIC_SIPNR_H,
++		.pend	= IPIC_SEPNR,
+ 		.mask	= IPIC_SEMSR,
+ 		.prio	= IPIC_SMPRR_B,
+ 		.force	= IPIC_SEFCR,
+@@ -111,7 +111,7 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 4,
+ 	},
+ 	[21] = {
+-		.pend	= IPIC_SIPNR_H,
++		.pend	= IPIC_SEPNR,
+ 		.mask	= IPIC_SEMSR,
+ 		.prio	= IPIC_SMPRR_B,
+ 		.force	= IPIC_SEFCR,
+@@ -119,7 +119,7 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 5,
+ 	},
+ 	[22] = {
+-		.pend	= IPIC_SIPNR_H,
++		.pend	= IPIC_SEPNR,
+ 		.mask	= IPIC_SEMSR,
+ 		.prio	= IPIC_SMPRR_B,
+ 		.force	= IPIC_SEFCR,
+@@ -127,7 +127,7 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 6,
+ 	},
+ 	[23] = {
+-		.pend	= IPIC_SIPNR_H,
++		.pend	= IPIC_SEPNR,
+ 		.mask	= IPIC_SEMSR,
+ 		.prio	= IPIC_SMPRR_B,
+ 		.force	= IPIC_SEFCR,
