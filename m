@@ -1,23 +1,22 @@
-Return-Path: <jdl@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 9E32367A5D
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from parcelfarce.linux.theplanet.co.uk
+	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id F0111679E7
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Jun 2005 02:28:56 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	j5RGXogW020699 for <linuxppc-embedded@ozlabs.org>;
-	Mon, 27 Jun 2005 09:33:50 -0700 (MST)
-Received: from [10.82.19.2] (cashmere.am.freescale.net [10.82.19.2])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id j5RGWdQP003469
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 27 Jun 2005 11:32:40 -0500 (CDT)
-From: Jon Loeliger <jdl@freescale.com>
-To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
-Content-Type: multipart/mixed; boundary="=-zOZIY0sbBvx72iV1hNFH"
-Message-Id: <1119889730.25557.19.camel@cashmere.sps.mot.com>
+	Tue, 28 Jun 2005 06:06:21 +1000 (EST)
+Date: Mon, 27 Jun 2005 11:28:03 -0300
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Dan Malek <dan@embeddededge.com>
+Message-ID: <20050627142803.GA9810@logos.cnet>
+References: <20050625145318.GA32117@logos.cnet>
+	<f14f5f5aebd45879c39c6ce69f29c004@embeddededge.com>
 Mime-Version: 1.0
-Date: Mon, 27 Jun 2005 11:28:50 -0500
-Subject: [PATCH] PPC32 mem_pieces interface cleanup
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <f14f5f5aebd45879c39c6ce69f29c004@embeddededge.com>
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH] 8xx: tlbie debugging aid (try #2)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,404 +27,161 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Sat, Jun 25, 2005 at 06:24:47PM -0400, Dan Malek wrote:
 
---=-zOZIY0sbBvx72iV1hNFH
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-
-Guys,
-
-As an initial step towards getting the OF Flat Dev tree
-handled in the PPC32 tree, this patch cleans up some of
-the interface parts of the very early mem_pieces manager
-and adds some PPC64-LMB-like routines as well.
-
-It has been built and booted on 85xx and pmac boards.
-
-Thanks,
-jdl
+> We really want to see this generate an error.  We shouldn't be
+> calling this on any of the pinned spaces.  In the case of initially
+> mapping the kernel space, we should set up the page tables but
+> not call this far down that we get here.
 
 
-Signed-off-by: Jon Loeliger <jdl@freescale.com>
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+How about the  following addressing your comments: 
+
+1) handles more than a single contiguous region by having a list_head (I thought of a
+binary tree for storing the ranges but sounds like overkill at first given the
+small amount of pinned regions).
+
+2) implement as C code.
+
+it yields
+
+_tlbie on pinned range: c0000000-c1800000
+Badness in _tlbie at arch/ppc/mm/pgtable.c:527
+Call trace:
+ [c0005530] dump_stack+0x18/0x28
+ [c0003628] check_bug_trap+0x84/0xac
+ [c00037b0] ProgramCheckException+0x160/0x1a0
+ [c0002d50] ret_from_except_full+0x0/0x4c
+ [c000a91c] _tlbie+0x94/0xa0
+ [c902f018] alloc_init_module+0x18/0x40 [alloc]
+ [c002c4ac] sys_init_module+0x224/0x324
+ [c00026f0] ret_from_syscall+0x0/0x44
 
 
-
---=-zOZIY0sbBvx72iV1hNFH
-Content-Disposition: attachment; filename=mem_pieces_cleanup.patch
-Content-Type: text/x-patch; name=mem_pieces_cleanup.patch; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
-
-Index: arch/ppc/mm/init.c
-===================================================================
---- 413e8c09a51b5e4ee6850da2b7a65f9a9af0be9c/arch/ppc/mm/init.c  (mode:100644)
-+++ uncommitted/arch/ppc/mm/init.c  (mode:100644)
-@@ -316,7 +316,7 @@
- 	if (init_bootmem_done) {
- 		p = alloc_bootmem_pages(PAGE_SIZE);
- 	} else {
--		p = mem_pieces_find(PAGE_SIZE, PAGE_SIZE);
-+		p = mem_pieces_find(&phys_avail, PAGE_SIZE, PAGE_SIZE);
- 	}
- 	return p;
- }
-@@ -495,10 +495,8 @@
- 	 * Initially, available physical memory is equivalent to all
- 	 * physical memory.
- 	 */
--
--	phys_avail.regions[0].address = PPC_MEMSTART;
--	phys_avail.regions[0].size = total_memory;
--	phys_avail.n_regions = 1;
-+	mem_pieces_reset(&phys_avail);
-+	mem_pieces_add(&phys_avail, PPC_MEMSTART, total_memory);
+diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
+--- a/arch/ppc/Kconfig
++++ b/arch/ppc/Kconfig
+@@ -1296,6 +1296,11 @@ config BOOT_LOAD
+ config PIN_TLB
+ 	bool "Pinned Kernel TLBs (860 ONLY)"
+ 	depends on ADVANCED_OPTIONS && 8xx
++
++config DEBUG_PIN_TLBIE
++	bool "Check for overlapping TLB invalidates inside the pinned area"
++	depends on ADVANCED_OPTIONS && 8xx && PIN_TLB
++
+ endmenu
  
- 	/*
- 	 * Map out the kernel text/data/bss from the available physical
-Index: arch/ppc/mm/mem_pieces.c
-===================================================================
---- 413e8c09a51b5e4ee6850da2b7a65f9a9af0be9c/arch/ppc/mm/mem_pieces.c  (mode:100644)
-+++ uncommitted/arch/ppc/mm/mem_pieces.c  (mode:100644)
-@@ -22,19 +22,105 @@
- 
- #include "mem_pieces.h"
- 
--extern struct mem_pieces phys_avail;
- 
--static void mem_pieces_print(struct mem_pieces *);
-+static unsigned int __init mem_pieces_addrs_adjacent(unsigned int base1,
-+						    unsigned int size1,
-+						    unsigned int base2,
-+						     unsigned int size2);
-+static int __init mem_pieces_regions_adjacent(struct mem_pieces *mp,
-+					      unsigned int r1,
-+					      unsigned int r2);
-+static void __init mem_pieces_coalesce_regions(struct mem_pieces *mp,
-+					       unsigned int r1,
-+					       unsigned int r2);
-+
-+
-+void __init
-+mem_pieces_reset(struct mem_pieces *mp)
-+{
-+	/*
-+	 * Create a dummy zero size block which will get coalesced
-+	 * away later.  This simplifies the mem_pieces_add() code below.
-+	 */
-+	mp->regions[0].address = 0;
-+	mp->regions[0].size = 0;
-+	mp->n_regions = 1;
-+}
-+
-+
-+/*
-+ * mem_pieces_add() -- Add a memory block to a sorted region table,
-+ *	merging adjacent blocks if possible.
-+ *	Returns 0 on straight add, >0 on coallsced, -1 on failure.
-+ */
-+
-+int __init
-+mem_pieces_add(struct mem_pieces *mp, unsigned int base, unsigned int size)
-+{
-+	unsigned int i;
-+	unsigned int coalesced;
-+
-+	/*
-+	 * First try and coalesce this mem_piece with another.
-+	 */
-+	coalesced = 0;
-+	for (i = 0; i < mp->n_regions; i++) {
-+		unsigned int rgnbase = mp->regions[i].address;
-+		unsigned int rgnsize = mp->regions[i].size;
-+		int adjacent = mem_pieces_addrs_adjacent(base, size,
-+							 rgnbase, rgnsize);
-+		if (adjacent > 0) {
-+			mp->regions[i].address -= size;
-+			mp->regions[i].size += size;
-+			coalesced++;
-+			break;
-+		} else if (adjacent < 0) {
-+			mp->regions[i].size += size;
-+			coalesced++;
-+			break;
-+		}
-+	}
-+
-+	if ((i < mp->n_regions-1) && mem_pieces_regions_adjacent(mp, i, i+1)) {
-+		mem_pieces_coalesce_regions(mp, i, i+1);
-+		coalesced++;
-+	}
-+
-+	if (coalesced) {
-+		return coalesced;
-+	} else if (mp->n_regions >= MEM_PIECES_MAX ) {
-+		return -1;
-+	}
-+
-+	/*
-+	 * Couldn't coalesce the new mem_piece, so add it to the sorted table.
-+	 */
-+	for (i = mp->n_regions-1; i >= 0; i--) {
-+		if (base < mp->regions[i].address) {
-+			/* Shift up a slot. */
-+			mp->regions[i+1].address = mp->regions[i].address;
-+			mp->regions[i+1].size = mp->regions[i].size;
-+		}  else {
-+			/* Insert in newly opened slot. */
-+			mp->regions[i+1].address = base;
-+			mp->regions[i+1].size = size;
-+			break;
-+		}
-+	}
-+	++mp->n_regions;
-+
-+	return 0;
-+}
-+
- 
+ source "drivers/Kconfig"
+diff --git a/arch/ppc/kernel/misc.S b/arch/ppc/kernel/misc.S
+--- a/arch/ppc/kernel/misc.S
++++ b/arch/ppc/kernel/misc.S
+@@ -494,7 +494,7 @@ _GLOBAL(_tlbia)
  /*
-  * Scan a region for a piece of a given size with the required alignment.
+  * Flush MMU TLB for a particular address
   */
- void __init *
--mem_pieces_find(unsigned int size, unsigned int align)
-+mem_pieces_find(struct mem_pieces *mp, unsigned int size, unsigned int align)
- {
- 	int i;
- 	unsigned a, e;
--	struct mem_pieces *mp = &phys_avail;
+-_GLOBAL(_tlbie)
++_GLOBAL(__tlbie)
+ #if defined(CONFIG_40x)
+ 	tlbsx.	r3, 0, r3
+ 	bne	10f
+diff --git a/arch/ppc/mm/pgtable.c b/arch/ppc/mm/pgtable.c
+--- a/arch/ppc/mm/pgtable.c
++++ b/arch/ppc/mm/pgtable.c
+@@ -32,6 +32,7 @@
+ #include <asm/pgtable.h>
+ #include <asm/pgalloc.h>
+ #include <asm/io.h>
++#include <asm/tlb.h>
  
- 	for (i = 0; i < mp->n_regions; ++i) {
- 		a = mp->regions[i].address;
-@@ -50,6 +136,7 @@
- 	return NULL;
+ #include "mmu_decl.h"
+ 
+@@ -469,3 +470,48 @@ exit:
+ 	return ret;
  }
  
++#ifndef CONFIG_DEBUG_PIN_TLBIE
 +
- /*
-  * Remove some memory from an array of pieces
-  */
-@@ -59,7 +146,7 @@
- {
- 	int i, j;
- 	unsigned int end, rs, re;
--	struct reg_property *rp;
-+	struct mem_pieces_property *rp;
- 
- 	end = start + size;
- 	for (i = 0, rp = mp->regions; i < mp->n_regions; ++i, ++rp) {
-@@ -109,17 +196,20 @@
- 	}
- }
- 
--static void __init
-+
-+void __init
- mem_pieces_print(struct mem_pieces *mp)
- {
- 	int i;
- 
--	for (i = 0; i < mp->n_regions; ++i)
-+	for (i = 0; i < mp->n_regions; ++i) {
- 		printk(" [%x, %x)", mp->regions[i].address,
- 		       mp->regions[i].address + mp->regions[i].size);
-+	}
- 	printk("\n");
- }
- 
-+
- void __init
- mem_pieces_sort(struct mem_pieces *mp)
- {
-@@ -139,6 +229,7 @@
- 	}
- }
- 
-+
- void __init
- mem_pieces_coalesce(struct mem_pieces *mp)
- {
-@@ -161,3 +252,66 @@
- 	}
- 	mp->n_regions = d;
- }
-+
-+
-+unsigned int __init
-+mem_pieces_get_phys_mem_size(struct mem_pieces *mp)
++void _tlbie(unsigned long address)
 +{
-+	int i;
-+	unsigned int total = 0;
-+
-+	for (i = 0; i < mp->n_regions; i++) {
-+		total += mp->regions[i].size;
-+	}
-+	return total;
++	__tlbie(address);
 +}
 +
++#else
++LIST_HEAD(pin_range_root);
 +
-+static unsigned int __init
-+mem_pieces_addrs_adjacent(unsigned int base1, unsigned int size1,
-+			 unsigned int base2, unsigned int size2)
-+{
-+	if (base2 == base1 + size1) {
-+		return 1;
-+	} else if (base1 == base2 + size2) {
-+		return -1;
-+	}
-+
-+	return 0;
-+}
-+
-+
-+static int __init
-+mem_pieces_regions_adjacent(struct mem_pieces *mp,
-+			    unsigned int r1,
-+			    unsigned int r2)
-+{
-+	unsigned int base1 = mp->regions[r1].address;
-+	unsigned int size1 = mp->regions[r1].size;
-+	unsigned int base2 = mp->regions[r2].address;
-+	unsigned int size2 = mp->regions[r2].size;
-+
-+	return mem_pieces_addrs_adjacent(base1, size1, base2, size2);
-+}
-+
-+
-+/*
-+ * Coalesce block r2 into block r1.
-+ * Assumes base addr of region 1 < base addr of region 2
-+ */
-+
-+static void __init
-+mem_pieces_coalesce_regions(struct mem_pieces *mp,
-+			    unsigned int r1,
-+			    unsigned int r2)
-+{
-+	unsigned int i;
-+
-+	mp->regions[r1].size += mp->regions[r2].size;
-+	for (i = r2; i < mp->n_regions-1; i++) {
-+		mp->regions[i].address = mp->regions[i+1].address;
-+		mp->regions[i].size = mp->regions[i+1].size;
-+	}
-+	--mp->n_regions;
-+
-+}
-Index: arch/ppc/mm/mem_pieces.h
-===================================================================
---- 413e8c09a51b5e4ee6850da2b7a65f9a9af0be9c/arch/ppc/mm/mem_pieces.h  (mode:100644)
-+++ uncommitted/arch/ppc/mm/mem_pieces.h  (mode:100644)
-@@ -17,8 +17,6 @@
- #ifndef __MEM_PIECES_H__
- #define	__MEM_PIECES_H__
- 
--#include <asm/prom.h>
--
- #ifdef __cplusplus
- extern "C" {
- #endif
-@@ -26,20 +24,34 @@
- 
- /* Type Definitions */
- 
-+struct mem_pieces_property {
-+	unsigned int address;
-+	unsigned int size;
++static struct pinned_range kernelbase = { 
++		start:	KERNELBASE,
++		end:	KERNELBASE+0x1800000,
 +};
 +
++static struct pinned_range immr = { 
++		start:	IMMR,
++		end:	IMMR+0x800000,
++};
 +
- #define	MEM_PIECES_MAX	32
- 
- struct mem_pieces {
-     int n_regions;
--    struct reg_property regions[MEM_PIECES_MAX];
-+    struct mem_pieces_property regions[MEM_PIECES_MAX];
- };
- 
- /* Function Prototypes */
- 
--extern void	*mem_pieces_find(unsigned int size, unsigned int align);
--extern void	 mem_pieces_remove(struct mem_pieces *mp, unsigned int start,
-+extern void	 mem_pieces_reset(struct mem_pieces *mp);
-+extern int	 mem_pieces_add(struct mem_pieces *mp,
-+				unsigned int base, unsigned int size);
-+extern void	*mem_pieces_find(struct mem_pieces *mp,
-+				 unsigned int size, unsigned int align);
-+extern void	 mem_pieces_remove(struct mem_pieces *mp,
-+				   unsigned int start,
- 				   unsigned int size, int must_exist);
- extern void	 mem_pieces_coalesce(struct mem_pieces *mp);
- extern void	 mem_pieces_sort(struct mem_pieces *mp);
-+extern unsigned int mem_pieces_get_phys_mem_size(struct mem_pieces *mp);
-+extern void	 mem_pieces_print(struct mem_pieces *);
++inline void register_pinned_entries(void)
++{
++	list_add(&kernelbase.pin_list, &pin_range_root);
++	list_add(&immr.pin_list, &pin_range_root);
++}
 +
- 
- #ifdef __cplusplus
- }
-Index: arch/ppc/mm/ppc_mmu.c
-===================================================================
---- 413e8c09a51b5e4ee6850da2b7a65f9a9af0be9c/arch/ppc/mm/ppc_mmu.c  (mode:100644)
-+++ uncommitted/arch/ppc/mm/ppc_mmu.c  (mode:100644)
-@@ -186,6 +186,7 @@
- 	unsigned int hmask, mb, mb2;
- 	unsigned int n_hpteg, lg_n_hpteg;
- 
-+	extern struct mem_pieces phys_avail;
- 	extern unsigned int hash_page_patch_A[];
- 	extern unsigned int hash_page_patch_B[], hash_page_patch_C[];
- 	extern unsigned int hash_page[];
-@@ -245,7 +246,7 @@
- 	 * Find some memory for the hash table.
- 	 */
- 	if ( ppc_md.progress ) ppc_md.progress("hash:find piece", 0x322);
--	Hash = mem_pieces_find(Hash_size, Hash_size);
-+	Hash = mem_pieces_find(&phys_avail, Hash_size, Hash_size);
- 	cacheable_memzero(Hash, Hash_size);
- 	_SDR1 = __pa(Hash) | SDR1_LOW_BITS;
- #endif /* CONFIG_POWER4 */
-Index: arch/ppc/platforms/pmac_setup.c
-===================================================================
---- 413e8c09a51b5e4ee6850da2b7a65f9a9af0be9c/arch/ppc/platforms/pmac_setup.c  (mode:100644)
-+++ uncommitted/arch/ppc/platforms/pmac_setup.c  (mode:100644)
-@@ -575,7 +575,6 @@
- static int __init
- get_mem_prop(char *name, struct mem_pieces *mp)
- {
--	struct reg_property *rp;
- 	int i, s;
- 	unsigned int *ip;
- 	int nac = prom_n_addr_cells(memory_node);
-@@ -588,18 +587,16 @@
- 		return 0;
- 	}
- 	s /= (nsc + nac) * 4;
--	rp = mp->regions;
- 	for (i = 0; i < s; ++i, ip += nac+nsc) {
-+		unsigned int size;
- 		if (nac >= 2 && ip[nac-2] != 0)
- 			continue;
--		rp->address = ip[nac-1];
- 		if (nsc >= 2 && ip[nac+nsc-2] != 0)
--			rp->size = ~0U;
-+			size = ~0U;
- 		else
--			rp->size = ip[nac+nsc-1];
--		++rp;
-+			size = ip[nac+nsc-1];
-+		mem_pieces_add(mp, ip[nac-1], size);
- 	}
--	mp->n_regions = rp - mp->regions;
- 
- 	/* Make sure the pieces are sorted. */
- 	mem_pieces_sort(mp);
-@@ -620,6 +617,8 @@
- 	unsigned long a, total;
- 	struct mem_pieces phys_mem;
- 
-+	mem_pieces_reset(&phys_mem);
++void _tlbie(unsigned long address)
++{
++        struct list_head *l;
++        struct pinned_range *r;
 +
- 	/*
- 	 * Find out where physical memory is, and check that it
- 	 * starts at 0 and is contiguous.  It seems that RAM is
-
---=-zOZIY0sbBvx72iV1hNFH--
++        list_for_each(l, &pin_range_root) {
++                r = list_entry(l, struct pinned_range, pin_list);
++
++                if (address < r->start)
++                        continue;
++                if (address >= r->end)
++                        continue;
++                printk("_tlbie on pinned range: %lx-%lx\n", r->start, r->end);
++                WARN_ON(1);
++        }
++
++	__tlbie(address);
++}
++#endif
+diff --git a/include/asm-ppc/tlb.h b/include/asm-ppc/tlb.h
+--- a/include/asm-ppc/tlb.h
++++ b/include/asm-ppc/tlb.h
+@@ -18,6 +18,18 @@
+ #include <asm/page.h>
+ #include <asm/mmu.h>
+ 
++#ifdef CONFIG_DEBUG_PIN_TLBIE
++struct pinned_range {
++	unsigned long start, end;
++	struct list_head pin_list;
++};
++inline void register_pinned_entries(void);
++#else
++inline void register_pinned_entries(void)
++{
++	return;
++}
++#endif
+ #ifdef CONFIG_PPC_STD_MMU
+ /* Classic PPC with hash-table based MMU... */
+ 
+diff --git a/include/asm-ppc/tlbflush.h b/include/asm-ppc/tlbflush.h
+--- a/include/asm-ppc/tlbflush.h
++++ b/include/asm-ppc/tlbflush.h
+@@ -13,9 +13,14 @@
+ #include <linux/config.h>
+ #include <linux/mm.h>
+ 
++extern void __tlbie(unsigned long address);
+ extern void _tlbie(unsigned long address);
+ extern void _tlbia(void);
+ 
++#ifdef CONFIG_DEBUG_PIN_TLBIE
++extern struct list_head pin_range_root;
++#endif
++
+ #if defined(CONFIG_4xx)
+ 
+ #ifndef CONFIG_44x
