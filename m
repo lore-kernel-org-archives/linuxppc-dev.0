@@ -1,19 +1,17 @@
-Return-Path: <kevdig@hypersurf.com>
-Received: from mail.hypersurf.com (mail.hypersurf.com [209.237.0.6])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8274367B58
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Jun 2005 14:10:10 +1000 (EST)
-Received: from hypersurf.com (DIALPAT65.hypersurf.com [206.40.42.65])
-	by mail.hypersurf.com (8.13.1/8.13.1) with ESMTP id j5O3tUex070602
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jun 2005 20:55:50 -0700 (PDT)
-Message-ID: <42BB83D9.8040809@hypersurf.com>
-Date: Thu, 23 Jun 2005 20:54:01 -0700
-From: Kevin Diggs <kevdig@hypersurf.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Content-Type: multipart/mixed; boundary="------------000402010702020809050801"
-Subject: [Fwd: Re: 750GX HID1 sysctl interface]
+	by ozlabs.org (Postfix) with ESMTP id EAB8067A66
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Jun 2005 11:46:50 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andrew Morton <akpm@osdl.org>
+Content-Type: text/plain
+Date: Mon, 27 Jun 2005 11:42:10 +1000
+Message-Id: <1119836530.5133.66.camel@gaston>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] ppc32: Bump PMU interrupt priority
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,108 +21,133 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------000402010702020809050801
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi !
 
-Kumar Gala wrote:
-> Kevin,
-> 
-> You may want to post this on the linuxppc-dev lists (linuxppc- 
-> dev@ozlabs.org)
-> 
-> - kumar
-> 
-> On Jun 23, 2005, at 8:16 PM, Kevin Diggs wrote:
-> 
->> Hi,
->>
->>     I have added support to version 2.4.30 of the kernel to control
->> the PLL
->> configuration register (HID1) in the IBM PowerPC 750GX via the sysctl
->> (and /proc/sys/kernel) mechanism.
->>
->>     Is there any interest in this? If so, ... uh ... how do I
->> generate the
->> patches and submit them?
->>
->>                     kevin
->> -
->> To unsubscribe from this list: send the line "unsubscribe linux- kernel"
->> in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
-> 
-> 
+The Power Management Unit on PowerMacs is very sensitive to timeouts
+during async message exchanges. It uses rather crude protocol based on a
+shift register with an interrupt and is almost continuously exchanging
+messages with the host CPU on laptops.
 
+This patch adds a routine to the open_pic driver to be able to select a
+different priority for an interrupt line, and adds use for this to the
+PMU driver so that it bumps it's interrupt priority to above the normal
+level.
 
---------------000402010702020809050801
-Content-Type: message/rfc822;
- name="Re: 750GX HID1 sysctl interface"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="Re: 750GX HID1 sysctl interface"
+This will allow PMU interrupts to occur while another interrupt is
+pending, and thus reduce the risk of machine beeing abruptly shutdown by
+the PMU due to a timeout in PMU communication caused by excessive
+interrupt latency. The problem is very rare, and usually just doesn't
+happen, but it is still useful to make things even more robust.
 
-Return-Path: <kumar.gala@freescale.com>
-Received: from postman2.hypersurf.com (postman2.hypersurf.com [209.237.60.18])
-	by mail.hypersurf.com (8.13.1/8.13.1) with ESMTP id j5O2avg1066236
-	for <kevdig@hypersurf.com>; Thu, 23 Jun 2005 19:36:57 -0700 (PDT)
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	by postman2.hypersurf.com (8.13.1/8.13.1) with ESMTP id j5O2auoZ093492
-	for <kevdig@hypersurf.com>; Thu, 23 Jun 2005 19:36:57 -0700 (PDT)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	j5O2fdda005435; Thu, 23 Jun 2005 19:41:39 -0700 (MST)
-Received: from [192.168.123.103] ([10.214.73.25])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id j5O2csdC026199;
-	Thu, 23 Jun 2005 21:38:55 -0500 (CDT)
-In-Reply-To: <42BB5EDE.8070402@hypersurf.com>
-References: <42BB5EDE.8070402@hypersurf.com>
-Mime-Version: 1.0 (Apple Message framework v730)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <5CE74F3F-3125-45C4-8616-49AF244D2097@freescale.com>
-Cc: <linux-kernel@vger.kernel.org>
-Content-Transfer-Encoding: 7bit
-From: Kumar Gala <kumar.gala@freescale.com>
-Subject: Re: 750GX HID1 sysctl interface
-Date: Thu, 23 Jun 2005 21:36:45 -0500
-To: Kevin Diggs <kevdig@hypersurf.com>
-X-Mailer: Apple Mail (2.730)
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Kevin,
-
-You may want to post this on the linuxppc-dev lists (linuxppc- 
-dev@ozlabs.org)
-
-- kumar
-
-On Jun 23, 2005, at 8:16 PM, Kevin Diggs wrote:
-
-> Hi,
->
->     I have added support to version 2.4.30 of the kernel to control
-> the PLL
-> configuration register (HID1) in the IBM PowerPC 750GX via the sysctl
-> (and /proc/sys/kernel) mechanism.
->
->     Is there any interest in this? If so, ... uh ... how do I
-> generate the
-> patches and submit them?
->
->                     kevin
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux- 
-> kernel"
-> in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
-
-
-
---------------000402010702020809050801--
+Index: linux-work/include/asm-ppc/open_pic.h
+===================================================================
+--- linux-work.orig/include/asm-ppc/open_pic.h	2005-05-02 10:49:57.000000000 +1000
++++ linux-work/include/asm-ppc/open_pic.h	2005-06-25 09:48:05.000000000 +1000
+@@ -25,6 +25,11 @@
+ #define OPENPIC_VEC_IPI		118	/* and up */
+ #define OPENPIC_VEC_SPURIOUS	255
+ 
++/* Priorities */
++#define OPENPIC_PRIORITY_IPI_BASE	10
++#define OPENPIC_PRIORITY_DEFAULT	4
++#define OPENPIC_PRIORITY_NMI		9	
++
+ /* OpenPIC IRQ controller structure */
+ extern struct hw_interrupt_type open_pic;
+ 
+@@ -42,6 +47,7 @@
+ extern void openpic_set_sources(int first_irq, int num_irqs, void __iomem *isr);
+ extern void openpic_init(int linux_irq_offset);
+ extern void openpic_init_nmi_irq(u_int irq);
++extern void openpic_set_irq_priority(u_int irq, u_int pri);
+ extern void openpic_hookup_cascade(u_int irq, char *name,
+ 				   int (*cascade_fn)(struct pt_regs *));
+ extern u_int openpic_irq(void);
+Index: linux-work/arch/ppc/syslib/open_pic.c
+===================================================================
+--- linux-work.orig/arch/ppc/syslib/open_pic.c	2005-06-25 09:22:56.000000000 +1000
++++ linux-work/arch/ppc/syslib/open_pic.c	2005-06-25 09:48:05.000000000 +1000
+@@ -370,8 +370,9 @@
+ 	/* Initialize IPI interrupts */
+ 	if ( ppc_md.progress ) ppc_md.progress("openpic: ipi",0x3bb);
+ 	for (i = 0; i < OPENPIC_NUM_IPI; i++) {
+-		/* Disabled, Priority 10..13 */
+-		openpic_initipi(i, 10+i, OPENPIC_VEC_IPI+i+offset);
++		/* Disabled, increased priorities 10..13 */
++		openpic_initipi(i, OPENPIC_PRIORITY_IPI_BASE+i,
++				OPENPIC_VEC_IPI+i+offset);
+ 		/* IPIs are per-CPU */
+ 		irq_desc[OPENPIC_VEC_IPI+i+offset].status |= IRQ_PER_CPU;
+ 		irq_desc[OPENPIC_VEC_IPI+i+offset].handler = &open_pic_ipi;
+@@ -399,8 +400,9 @@
+ 		if (sense & IRQ_SENSE_MASK)
+ 			irq_desc[i+offset].status = IRQ_LEVEL;
+ 
+-		/* Enabled, Priority 8 */
+-		openpic_initirq(i, 8, i+offset, (sense & IRQ_POLARITY_MASK),
++		/* Enabled, Default priority */
++		openpic_initirq(i, OPENPIC_PRIORITY_DEFAULT, i+offset,
++				(sense & IRQ_POLARITY_MASK),
+ 				(sense & IRQ_SENSE_MASK));
+ 		/* Processor 0 */
+ 		openpic_mapirq(i, CPU_MASK_CPU0, CPU_MASK_NONE);
+@@ -656,6 +658,18 @@
+ }
+ 
+ /*
++ * Change the priority of an interrupt
++ */
++void __init
++openpic_set_irq_priority(u_int irq, u_int pri)
++{
++	check_arg_irq(irq);
++	openpic_safe_writefield(&ISR[irq - open_pic_irq_offset]->Vector_Priority,
++				OPENPIC_PRIORITY_MASK,
++				pri << OPENPIC_PRIORITY_SHIFT);
++}
++
++/*
+  * Initalize the interrupt source which will generate an NMI.
+  * This raises the interrupt's priority from 8 to 9.
+  *
+@@ -665,9 +679,7 @@
+ openpic_init_nmi_irq(u_int irq)
+ {
+ 	check_arg_irq(irq);
+-	openpic_safe_writefield(&ISR[irq - open_pic_irq_offset]->Vector_Priority,
+-				OPENPIC_PRIORITY_MASK,
+-				9 << OPENPIC_PRIORITY_SHIFT);
++	openpic_set_irq_priority(irq, OPENPIC_PRIORITY_NMI);
+ }
+ 
+ /*
+Index: linux-work/drivers/macintosh/via-pmu.c
+===================================================================
+--- linux-work.orig/drivers/macintosh/via-pmu.c	2005-06-25 09:22:57.000000000 +1000
++++ linux-work/drivers/macintosh/via-pmu.c	2005-06-25 09:48:05.000000000 +1000
+@@ -63,6 +63,10 @@
+ #include <asm/backlight.h>
+ #endif
+ 
++#ifdef CONFIG_PPC32
++#include <asm/open_pic.h>
++#endif
++
+ /* Some compile options */
+ #undef SUSPEND_USES_PMU
+ #define DEBUG_SLEEP
+@@ -407,6 +411,12 @@
+ 	batt_req.complete = 1;
+ #endif
+ 
++#ifdef CONFIG_PPC32
++	if (pmu_kind == PMU_KEYLARGO_BASED)
++		openpic_set_irq_priority(vias->intrs[0].line,
++					 OPENPIC_PRIORITY_DEFAULT + 1);
++#endif
++
+ 	if (request_irq(vias->intrs[0].line, via_pmu_interrupt, 0, "VIA-PMU",
+ 			(void *)0)) {
+ 		printk(KERN_ERR "VIA-PMU: can't get irq %d\n",
