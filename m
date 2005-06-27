@@ -1,24 +1,24 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from parcelfarce.linux.theplanet.co.uk
-	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 67C0767A45
+	by ozlabs.org (Postfix) with ESMTP id 9544667A79
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Jun 2005 06:34:21 +1000 (EST)
-Date: Mon, 27 Jun 2005 11:56:03 -0300
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Dan Malek <dan@embeddededge.com>
-Message-ID: <20050627145603.GB9810@logos.cnet>
+	Tue, 28 Jun 2005 06:46:47 +1000 (EST)
+In-Reply-To: <20050627133930.GA9109@logos.cnet>
 References: <20050625145318.GA32117@logos.cnet>
 	<f14f5f5aebd45879c39c6ce69f29c004@embeddededge.com>
-	<20050627142803.GA9810@logos.cnet>
-	<014331894c585b85c6bb419d72110125@embeddededge.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <014331894c585b85c6bb419d72110125@embeddededge.com>
+	<20050626143004.GA5198@logos.cnet>
+	<20050627133930.GA9109@logos.cnet>
+Mime-Version: 1.0 (Apple Message framework v622)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <f5d1cb54913dd31385d15fe1f2e5b12d@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Mon, 27 Jun 2005 16:46:44 -0400
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
 Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] 8xx: tlbie debugging aid (try #2)
+Subject: Re: [PATCH] 8xx: map_page() skip pinned region and tlbie debugging
+	aid
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,54 +30,46 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Hi Dan,
+On Jun 27, 2005, at 9:39 AM, Marcelo Tosatti wrote:
 
-On Mon, Jun 27, 2005 at 04:18:14PM -0400, Dan Malek wrote:
-> 
-> On Jun 27, 2005, at 10:28 AM, Marcelo Tosatti wrote:
-> 
-> >it yields
-> >
-> >_tlbie on pinned range: c0000000-c1800000
-> >Badness in _tlbie at arch/ppc/mm/pgtable.c:527
-> >Call trace:
-> > [c0005530] dump_stack+0x18/0x28
-> > [c0003628] check_bug_trap+0x84/0xac
-> > [c00037b0] ProgramCheckException+0x160/0x1a0
-> > [c0002d50] ret_from_except_full+0x0/0x4c
-> > [c000a91c] _tlbie+0x94/0xa0
-> > [c902f018] alloc_init_module+0x18/0x40 [alloc]
-> > [c002c4ac] sys_init_module+0x224/0x324
-> > [c00026f0] ret_from_syscall+0x0/0x44
+> Bullshit, map_page()'s call for flush_HPTE() is conditioned by 
+> "mem_init_done",
+> and mapin_ram() is called before mem_init_done is set.
 
-Note: this was just a test module doing tlbie(0xc0000100)... 
-Hum, it should also print out the address in question...
+Excuse me?
 
-> How much real memory on your board?
+>> The IMMR space is a 16kB window (correct?), so I wonder if it might
+>> be better to the use occupied pinned slot for another more accessed
+>> region (an 8MB one preferably!).
+>
+> Thats still some food for thought...
 
-128M
+Actually, most 8xx systems map the IMMR, plus other external
+devices (including flash memory), into a packed space at the top
+of the address range.  The 8M mapping catches the IMMR space,
+but also many of these other devices subject to ioremap().  In
+some systems, they trade off mapping the IMMR, or data pages,
+to get an additional 8M of peripheral IO space.
 
-> We need to ensure VMALLOC_START is beyond
-> the pinned entries. 
+The data space pinning is the big trade off right now.  You can
+pin 4 entries, or 32M of space.  If you only have 16M of real
+memory, the other two 8M entries can be used to cover IO space.
+This is one (of a a few) advantages of using dynamic large
+pages instead of pinned entries.  You could map more 8M
+spaces for IO.  The problem is all of these have been custom
+initialization and mapping code.
 
-Right now VMALLOC_START is before the IMMR pinned space.
+You see, this just keeps growing in features and complexity :-)
+It would be nice for ioremap() to consider multiple, dynamic 8M
+pages on 8xx like it does BATs on traditional PPC.  It will do
+this .... someday soon.
 
-> We should make all of the code
-> much smarter to pin on the real space that is on
-> the board.  
+Perhaps I should go back and push some of this dynamic 8M
+page stuff.  It would eliminate the tlbie() problems, give us
+more flexibility.  Damn, not enough hours in a day ....
 
-Oh! What are the side effects of such pinning as the 
-code is today?
 
-The only issue I see with pinning virtual address translations
-farther the the physical addresses (real space) is that we lose
-some virtual space, but nothing more than that.
+Thanks.
 
-Is it only that?
 
-> For testing now, just make VMALLOC_OFFSET
-> 32M, which will push the start to the 32M boundary
-> after the kernel.
-
-For what purpose? Sorry I don't get you, please be more
-verbose.
+	-- Dan
