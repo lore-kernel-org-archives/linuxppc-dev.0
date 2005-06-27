@@ -1,15 +1,24 @@
-Return-Path: <GARCIAJ@3il.fr>
-Received: from email.3il.fr (email.3il.fr [195.25.243.230])
-	by ozlabs.org (Postfix) with ESMTP id DB15267A62
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Jun 2005 23:59:03 +1000 (EST)
+Return-Path: <d.flament@sofrel.com>
+Received: from relay01s.clb.oleane.net (relay01s.clb.oleane.net
+	[213.56.31.148]) by ozlabs.org (Postfix) with ESMTP id CA09667A62
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Jun 2005 00:28:18 +1000 (EST)
+Received: from smtp4.clb.oleane.net (smtp4.clb.oleane.net [213.56.31.20])
+	by relay01s.clb.oleane.net with ESMTP id j5RERi64003659
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Jun 2005 16:28:16 +0200
+Received: from smtp4.clb.oleane.net (localhost [127.0.0.1])
+	by smtp4.clb.oleane.net (antivirus) with ESMTP id j5RCNrr0003511
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Jun 2005 14:23:54 +0200
+Received: from sof_msg.sofrel.local ([81.80.115.55])
+	by smtp4.clb.oleane.net with ESMTP id j5RCNrYB003494
+	for <linuxppc-dev@ozlabs.org>; Mon, 27 Jun 2005 14:23:53 +0200
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Mon, 27 Jun 2005 15:59:01 +0200
-Message-ID: <D4FDDD1349B5AC46B68FC26AD8AF42D6226B3F@exnet.3il.fr>
-From: =?iso-8859-1?Q?Garcia_J=E9r=E9mie?= <GARCIAJ@3il.fr>
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C57B13.52619229"
+Date: Mon, 27 Jun 2005 14:25:36 +0200
+Message-ID: <892C3EC180087B4498C69413FCCBB732014E5B39@sof_msg>
+From: "FLAMENT David" <d.flament@sofrel.com>
 To: <linuxppc-dev@ozlabs.org>
-Subject: How to awake a process waiting for a semaphore?
+Subject: (no subject)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,55 +28,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi everybody,
-as the subject of this mpail tells, I'd like to be able to interrupt a =
-task that
-is waiting for a semaphore to be free.
-Indeed I use "down_interruptible()" and I'd like to be able to tell to =
-the task
-after a period of time : "give up, awake and do something else".
-I tried this piece of code in a kernel module to test this, but =
-obviously that=20
-doesn't work (I tried 2 ways but both failed)  :=20
+This is a multi-part message in MIME format.
 
-struct semaphore * testSem;
+------_=_NextPart_001_01C57B13.52619229
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-void myAlert(unsigned long data)
-{
-  char *msg =3D "TIMEOUT!\n";
-  task_t * myTask =3D (task_t *)data;
+hello,=20
+=20
+I use a EP8248 and I search a Kernel 2.6 for this board because I use a =
+kernel 2.4.26 of arabella and the usb isn't supported in this version.
+When I compile with USB option ( uhci, scsi + usb mastorage), there is =
+this message "usb-ohci currently requires PCI-based controllers".
+If you have a sugget, thank you.
+=20
+=20
+--------------------------------
+Flament David
+d.flament@sofrel.com
+Lacroix Sofrel, 1 rue plessis, 35770 Vern sur seiche (France)
+(+33)2.99.04.84.23
+=20
+=20
 
-  printk("Current task state : %d",myTask->state);
-  printk("%s",msg);
+------_=_NextPart_001_01C57B13.52619229
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-  // First Test
-  wake_up_process((task_t *)data);
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
 
-  // Second Test
-  //myTask->state =3D TASK_RUNNING
 
-int test(void)
-{
-  int ret_val,state,timeout=3D500;
-  struct timer_list myTimer;
-  =20
-  testSem =3D (struct semaphore *)kmalloc(sizeof(struct =
-semaphore),GFP_ATOMIC);
-  sema_init(testSem,0);
- =20
-  state =3D current->state;
-  printk("Current task state: %d\n",state);
+<META content=3D"MSHTML 6.00.2900.2180" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D169052012-27062005>hello, =
 
-  init_timer(&myTimer); =20
-  myTimer.expires =3D jiffies + timeout;
-  myTimer.data =3D (unsigned long) current;
-  myTimer.function =3D myAlert;
-  myTimer.data =3D (unsigned long) current;
-  add_timer(&myTimer);
+</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D169052012-27062005></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D169052012-27062005>I use =
+a EP8248 and I=20
+search a Kernel 2.6 for this board because I use a kernel 2.4.26 of =
+arabella and=20
+the usb isn't supported in this version.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D169052012-27062005>When I =
+compile with=20
+USB option ( uhci, scsi + usb mastorage), there is this message =
+"usb-ohci=20
+currently requires PCI-based controllers".</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D169052012-27062005>If you =
+have a=20
+sugget, thank you.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D169052012-27062005></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D169052012-27062005></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial =
+size=3D2>--------------------------------</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>Flament David</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><A=20
+href=3D"mailto:d.flament@sofrel.com">d.flament@sofrel.com</A></FONT></DIV=
+>
+<DIV><FONT face=3DArial size=3D2>Lacroix Sofrel, </FONT><FONT =
+face=3DArial size=3D2>1=20
+rue plessis, 35770 Vern sur seiche (France)</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>(+33)2.99.04.84.23</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV>&nbsp;</DIV></BODY></HTML>
 
-  // That will get the task to sleep for sure
-  down_interruptible(testSem);
-
-  del_timer_sync(&myTimer);=20
-  return 0;
-}
+------_=_NextPart_001_01C57B13.52619229--
