@@ -1,20 +1,24 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from parcelfarce.linux.theplanet.co.uk
-	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BEFEE67A77
+	by ozlabs.org (Postfix) with ESMTP id 7540267A77
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Jun 2005 07:07:53 +1000 (EST)
-Date: Mon, 27 Jun 2005 12:28:57 -0300
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Kumar Gala <galak@freescale.com>, Pantelis Antoniou <panto@intracom.gr>,
-	Dan Malek <dan@embeddededge.com>
-Message-ID: <20050627152857.GA10005@logos.cnet>
+	Tue, 28 Jun 2005 16:35:26 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Dan Malek <dan@embeddededge.com>
+In-Reply-To: <f5d1cb54913dd31385d15fe1f2e5b12d@embeddededge.com>
+References: <20050625145318.GA32117@logos.cnet>
+	<f14f5f5aebd45879c39c6ce69f29c004@embeddededge.com>
+	<20050626143004.GA5198@logos.cnet> <20050627133930.GA9109@logos.cnet>
+	<f5d1cb54913dd31385d15fe1f2e5b12d@embeddededge.com>
+Content-Type: text/plain
+Date: Tue, 28 Jun 2005 16:30:07 +1000
+Message-Id: <1119940208.5133.204.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: cpm_uart: use dpram for early console
+Subject: Re: [PATCH] 8xx: map_page() skip pinned region and tlbie debugging
+	aid
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,24 +30,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Panto, Kumar,
+> 
+> You see, this just keeps growing in features and complexity :-)
+> It would be nice for ioremap() to consider multiple, dynamic 8M
+> pages on 8xx like it does BATs on traditional PPC.  It will do
+> this .... someday soon.
 
-Can something semantically equivalent to this be merged please.
+You should consider 8Mb pages the way we do BATs yes, that is have
+something like an array of those or use 2 PMD entries to represent them,
+and then, have ioremap treat them like it does with BATs. Such 8Mb pages
+could then be setup using io_block_mapping().
 
-m8xx_cpm_hostalloc() can't rely on using the coherent DMA allocator
-early on boot because the VM is not fully up yet.
+Note that I'll soon send the patch I told you about that makes the
+virtual address picked by io_block_mapping() dynamic, so we no longer
+have to do crappy assumptions all over the place :)
 
-The current code relies on the "bootmem_page" allocated by 
-m8xx_cpm_reset(), which must be killed.
+> Perhaps I should go back and push some of this dynamic 8M
+> page stuff.  It would eliminate the tlbie() problems, give us
+> more flexibility.  Damn, not enough hours in a day ....
 
---- cpm_uart_cpm1.c.orig        2005-06-27 17:51:53.000000000 -0300
-+++ cpm_uart_cpm1.c     2005-06-27 17:55:45.000000000 -0300
-@@ -155,7 +155,7 @@
-        memsz = L1_CACHE_ALIGN(pinfo->rx_nrfifos * pinfo->rx_fifosize) +
-            L1_CACHE_ALIGN(pinfo->tx_nrfifos * pinfo->tx_fifosize);
-        if (is_con) {
--               mem_addr = (u8 *) m8xx_cpm_hostalloc(memsz);
-+               mem_addr = (u8 *) cpm_dpram_addr(cpm_dpalloc(memsz, 8));
-                dma_addr = 0;
-        } else
-                mem_addr = dma_alloc_coherent(NULL, memsz, &dma_addr,
+Looks like a good idea though :)
+
+Ben.
