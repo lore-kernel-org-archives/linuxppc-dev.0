@@ -1,21 +1,20 @@
-Return-Path: <d.flament@sofrel.com>
-Received: from smtp8.clb.oleane.net (smtp8.clb.oleane.net [213.56.31.28])
-	by ozlabs.org (Postfix) with ESMTP id 5BE6667B58
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Jun 2005 17:50:26 +1000 (EST)
-Received: from smtp8.clb.oleane.net (localhost [127.0.0.1])
-	by smtp8.clb.oleane.net (antivirus) with ESMTP id j5S7oOub003432
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Jun 2005 09:50:24 +0200
-Received: from sof_msg.sofrel.local ([81.80.115.55])
-	by smtp8.clb.oleane.net with ESMTP id j5S7oLJb003366
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Jun 2005 09:50:23 +0200
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C57BB6.45009089"
-Date: Tue, 28 Jun 2005 09:52:02 +0200
-Message-ID: <892C3EC180087B4498C69413FCCBB732014E5BB7@sof_msg>
-From: "FLAMENT David" <d.flament@sofrel.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: pb USB, EP8248
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9483B67A79
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Jun 2005 19:08:51 +1000 (EST)
+Date: Tue, 28 Jun 2005 10:57:01 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <20050628085701.GA31218@lst.de>
+References: <1119847159.5133.106.camel@gaston>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1119847159.5133.106.camel@gaston>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ppc32: Remove CONFIG_PMAC_PBOOK
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,64 +24,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Mon, Jun 27, 2005 at 02:39:16PM +1000, Benjamin Herrenschmidt wrote:
+> This patch removes CONFIG_PMAC_PBOOK (PowerBook support). This is now
+> split into CONFIG_PMAC_MEDIABAY for the actual hotswap bay that some
+> powerbooks have, CONFIG_PM for power management related code, and just
+> left out of any CONFIG_* option for some generally useful stuff that can
+> be used on non-laptops as well.
 
-------_=_NextPart_001_01C57BB6.45009089
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-Hello all,
-=20
-I use a EP8248 and I need USB connection. When I compile with USB option =
-in kernel, there is this message "usb-ohci currently requires PCI-bases =
-controllers". (I use a 2.4.26 kernel Linux)
-=20
-If you are a suggest or a idea, thank's for your answer .
-=20
-David Flament
-=20
-=20
-=20
-
-------_=_NextPart_001_01C57BB6.45009089
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-
-
-<META content=3D"MSHTML 6.00.2900.2180" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D788124707-28062005>Hello=20
-all,</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D788124707-28062005></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D788124707-28062005>I use =
-a EP8248 and I=20
-need USB connection. When I compile with USB option in kernel, there is =
-this=20
-message "usb-ohci currently requires PCI-bases controllers". (I use a =
-2.4.26=20
-kernel Linux)</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D788124707-28062005></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D788124707-28062005>If you =
-are a suggest=20
-or a idea, thank's for your answer .</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D788124707-28062005></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D788124707-28062005>David=20
-Flament</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV>
-<DIV><FONT face=3DArial size=3D2></FONT></DIV><FONT face=3DArial =
-size=3D2></FONT></DIV>
-<DIV>&nbsp;</DIV></BODY></HTML>
-
-------_=_NextPart_001_01C57BB6.45009089--
+Can you clarify the CONFIG_PMAC_MEDIABAY for which powerbooks this
+is needed exactly?  AFAIK up to one of the G3 models, but you probably
+know better :)
