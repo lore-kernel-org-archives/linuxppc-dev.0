@@ -1,20 +1,19 @@
-Return-Path: <hch@lst.de>
-Received: from mail.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9483B67A79
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Jun 2005 19:08:51 +1000 (EST)
-Date: Tue, 28 Jun 2005 10:57:01 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <20050628085701.GA31218@lst.de>
-References: <1119847159.5133.106.camel@gaston>
+Return-Path: <grave@ipno.in2p3.fr>
+Received: from ipnmail.in2p3.fr (ipnmail.in2p3.fr [134.158.92.208])
+	by ozlabs.org (Postfix) with ESMTP id C007667A45
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Jun 2005 23:10:29 +1000 (EST)
+Received: from ipnnarval.in2p3.fr (ipnnarval.in2p3.fr [134.158.92.7])
+	by ipnmail.in2p3.fr (8.13.4/8.13.4/IN2P3.FR) with ESMTP id
+	j5SDARrN001248
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Jun 2005 15:10:27 +0200
+From: Xavier Grave <grave@ipno.in2p3.fr>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Tue, 28 Jun 2005 15:10:26 +0200
+Message-Id: <1119964226.28013.35.camel@ipnnarval>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1119847159.5133.106.camel@gaston>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ppc32: Remove CONFIG_PMAC_PBOOK
+Subject: porting linux ppc on custom board, stuck in timer loop ?
+Reply-To: grave@ipno.in2p3.fr
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,13 +23,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jun 27, 2005 at 02:39:16PM +1000, Benjamin Herrenschmidt wrote:
-> This patch removes CONFIG_PMAC_PBOOK (PowerBook support). This is now
-> split into CONFIG_PMAC_MEDIABAY for the actual hotswap bay that some
-> powerbooks have, CONFIG_PM for power management related code, and just
-> left out of any CONFIG_* option for some generally useful stuff that can
-> be used on non-laptops as well.
+Hi !
 
-Can you clarify the CONFIG_PMAC_MEDIABAY for which powerbooks this
-is needed exactly?  AFAIK up to one of the G3 models, but you probably
-know better :)
+I still try to port linux ppc on our ppc405 based hardware, after a look
+at xilinx_ml300.c file that gives the list of function calls I wait for
+a call to start_kernel but I found that start_kernel is never reached...
+In fact the code in head_4xx.S jumps to 0x00001000 which is Decrementer
+exception :
+
+	bl	machine_init
+	bl	MMU_init
+	/* Go back to running unmapped so we can load up new values
+ * and change to using our exception vectors.
+ * On the 4xx, all we have to do is invalidate the TLB to clear
+ * the old 16M byte TLB mappings.
+ */
+	lis	r4,2f@h
+	ori	r4,r4,2f@l
+	tophys(r4,r4) /* r4 seems to hold 0x00001000 */
+	lis	r3,(MSR_KERNEL & ~(MSR_IR|MSR_DR))@h
+	ori	r3,r3,(MSR_KERNEL & ~(MSR_IR|MSR_DR))@l
+	mtspr	SPRN_SRR0,r4
+	mtspr	SPRN_SRR1,r3
+	rfi
+	b	.	/*	 prevent prefetch past rfi */
+
+the previous code jump to decrementer and the code after is never
+reached... And so start_kernel also...
+
+/* Load up the kernel context */
+2:
+	sync			/* Flush to memory before changing TLB */
+	tlbia
+	isync			/* Flush shadow TLBs */
+	/* set up the PTE pointers for the Abatron bdiGDB.
+	*/
+	lis	r6, swapper_pg_dir@h
+	ori	r6, r6, swapper_pg_dir@l
+	lis	r5, abatron_pteptrs@h
+	ori	r5, r5, abatron_pteptrs@l
+	stw	r5, 0xf0(r0)	/* Must match your Abatron config file */
+	tophys(r5,r5)
+	stw	r6, 0(r5)
+/* Now turn on the MMU for real! */
+	lis	r4,MSR_KERNEL@h
+	ori	r4,r4,MSR_KERNEL@l
+	lis	r3,start_kernel@h
+	ori	r3,r3,start_kernel@l
+	mtspr	SPRN_SRR0,r3
+	mtspr	SPRN_SRR1,r4
+	rfi			/* enable MMU and jump to start_kernel */
+	b	.		/* prevent prefetch past rfi */
+
+Is this my hardware implementation that is incorrect ? Or I missed
+something in my kernel configuration ?
+
+Thanks in advance for any answer...
+
+xavier
