@@ -1,20 +1,28 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 2910C67B82
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from parcelfarce.linux.theplanet.co.uk
+	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3922B67B59
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Jun 2005 02:54:10 +1000 (EST)
-Date: Wed, 29 Jun 2005 09:54:08 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Chunlei Dong <cldong@gmail.com>
-Message-ID: <20050629165408.GB17313@gate.ebshome.net>
-References: <b8fbdd1e05062909398f091c1@mail.gmail.com>
+	Thu, 30 Jun 2005 06:57:53 +1000 (EST)
+Date: Wed, 29 Jun 2005 12:54:45 -0300
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Guillaume Autran <gautran@mrv.com>, '@logos.cnet
+Message-ID: <20050629155445.GA3560@logos.cnet>
+References: <20050625145318.GA32117@logos.cnet>
+	<f14f5f5aebd45879c39c6ce69f29c004@embeddededge.com>
+	<20050626143004.GA5198@logos.cnet>
+	<20050627133930.GA9109@logos.cnet>
+	<f5d1cb54913dd31385d15fe1f2e5b12d@embeddededge.com>
+	<1119940208.5133.204.camel@gaston> <42C153E1.3060004@mrv.com>
+	<1120018530.5133.241.camel@gaston> <42C2BF03.9000402@mrv.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <b8fbdd1e05062909398f091c1@mail.gmail.com>
+In-Reply-To: <42C2BF03.9000402@mrv.com>
 Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: /sbin/init is not beeing scheduled to run
+Subject: Re: [PATCH] 8xx: get_mmu_context() for (very) FEW_CONTEXTS
+	and	KERNEL_PREEMPT race/starvation issue
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,25 +33,64 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jun 29, 2005 at 09:39:55AM -0700, Chunlei Dong wrote:
-> Hi, 
+Hi Guillaume,
+
+On Wed, Jun 29, 2005 at 11:32:19AM -0400, Guillaume Autran wrote:
 > 
-> I am trying to boot the linux 2.6.11.5 in high memory, that means the
-> phys memory does not start from 0, but 0x04000000, on ppc440gp ebony
-> board.  I changed the TLB setting and register settings for bdinfo,
-> cmdline. Now it seems ok to run to the end of the process 0. After the
-> start_thread() in load_elf_binary(), which loaded the "/sbin/init",
-> the cpu becomes idle state, the /sbin/init process(the process 1) is
-> never been scheduled to run.
-> Anybody encountered this problem or give a hint?
+> Benjamin Herrenschmidt wrote:
+> 
+> >On Tue, 2005-06-28 at 09:42 -0400, Guillaume Autran wrote:
+> > 
+> >
+> >>Hi,
+> >>
+> >>I happen to notice a race condition in the mmu_context code for the 8xx 
+> >>with very few context (16 MMU contexts) and kernel preemption enable. It 
+> >>is hard to reproduce has it shows only when many processes are 
+> >>created/destroy and the system is doing a lot of IRQ processing.
+> >>
+> >>In short, one process is trying to steal a context that is in the 
+> >>process of being freed (mm->context == NO_CONTEXT) but not completely 
+> >>freed (nr_free_contexts == 0).
+> >>The steal_context() function does not do anything and the process stays 
+> >>in the loop forever.
+> >>
+> >>Anyway, I got a patch that fixes this part. Does not seem to affect 
+> >>scheduling latency at all.
+> >>
+> >>Comments are appreciated.
+> >>   
+> >>
+> >
+> >Your patch seems to do a hell lot more than fixing this race ... What
+> >about just calling preempt_disable() in destroy_context() instead ?
+> > 
+> >
+> I'm still a bit confused with "kernel preemption". One thing for sure is 
+> that disabling kernel preemption does indeed fix my problem.
+> So, my question is, what if a task in the middle of being schedule gets 
+> preempted by an IRQ handler, where will this task restart execution ? 
+> Back at the beginning of schedule or where it left of ?
 
-Well, my suggestion is NOT to use such strange configuration and put 
-memory at 0, you'll save yourself a lot of time.
+Execution is resumed exactly where it has been interrupted.
 
-Theoretically, it should be possible to make Linux work when RAM 
-isn't at 0 address, but you have to fix many places and this requires 
-quite deep understanding of Linux and PPC 44x memory management, and, 
-frankly, you're on your own in this quest :).
+> The idea behind my patch was to get rid of that nr_free_contexts counter 
+> that is (I thing) redundant with the context_map.
 
--- 
-Eugene
+Apparently its there to avoid the spinlock exactly on !FEW_CONTEXTS machines.
+
+I suppose that what happens is that get_mmu_context() gets preempted after stealing
+a context (so nr_free_contexts = 0), but before setting next_mmu_context to the 
+next entry
+
+next_mmu_context = (ctx + 1) & LAST_CONTEXT;
+
+So if the now running higher prio tasks calls switch_mm() (which is likely to happen)
+it loops forever on atomic_dec_if_positive(&nr_free_contexts), while steal_context()
+sees "mm->context == CONTEXT".
+
+I think that you should try "preempt_disable()/preempt_enable" pair at entry and 
+exit of get_mmu_context() - I suppose around destroy_context() is not enough (you 
+can try that also).
+
+spinlock ends up calling preempt_disable().
