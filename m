@@ -1,21 +1,17 @@
-Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0F92A67B85
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jun 2005 02:15:02 +1000 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Frank van Maarseveen <frankvm@frankvm.com>
-References: <20050629145013.GA21494@janus>
-Date: Wed, 29 Jun 2005 18:14:52 +0200
-In-Reply-To: <20050629145013.GA21494@janus> (Frank van Maarseveen's message of
-	"Wed, 29 Jun 2005 16:50:13 +0200")
-Message-ID: <jehdfhnnr7.fsf@sykes.suse.de>
+Return-Path: <evilninja@gmx.net>
+Received: from mail.gmx.net (imap.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id A6CBC67B86
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jun 2005 02:22:50 +1000 (EST)
+Message-ID: <42C2CAD7.2010204@gmx.net>
+Date: Wed, 29 Jun 2005 18:22:47 +0200
+From: evilninja <evilninja@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+To: =?UTF-8?B?6JGj5pmT5Yeh?= <softtonedxf@tom.com>
+References: <20050629065224.E933C67A77@ozlabs.org>
+In-Reply-To: <20050629065224.E933C67A77@ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@ozlabs.org
-Subject: Re: include/asm-ppc/atomic.h: fluff in inline assembly code?
+Subject: Re: (no subject)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,16 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Frank van Maarseveen <frankvm@frankvm.com> writes:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> What is the point of all those v->counter arguments?
+董晓凡 schrieb:
+>  
+> 
+> Hi，everybody.Recently,I focus on kernel 2.6.10,I want to migrate it to
+> mpc8260.
+> 
+> But,I can not compile it successfully when I choose fcc .And it seems some
+> wrong with cpm2_immap.h.
 
-It tells the compiler that v->counter is changed by the asm.
+mind to show us the compile errors?
 
-Andreas.
+Christian.
+PS: and *please* don't send HTML only messages.
+- --
+BOFH excuse #147:
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstra�e 5, 90409 N�rnberg, Germany
-Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Party-bug in the Aloha protocol.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.5 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://enigmail.mozdev.org
+
+iD8DBQFCwsrXC/PVm5+NVoYRApx4AKDmCtqASeh3uRzoC1nO94k4LFlTmgCeKOc2
+vbEH4lwXt/zZV+JhA0zwOxc=
+=pk9/
+-----END PGP SIGNATURE-----
