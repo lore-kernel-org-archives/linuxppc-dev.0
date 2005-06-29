@@ -1,16 +1,26 @@
-Return-Path: <scott.coulter@cyclone.com>
-Received: from CYBORG3.cyclone.com (69.37.28.78.adsl.snet.net [69.37.28.78])
-	by ozlabs.org (Postfix) with ESMTP id 07A4867B68
+Return-Path: <gautran@mrv.com>
+Received: from mailman.xyplex.com (mailman.xyplex.com [140.179.176.116])
+	by ozlabs.org (Postfix) with ESMTP id 5B15467B5D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 29 Jun 2005 23:52:40 +1000 (EST)
+	Thu, 30 Jun 2005 01:30:58 +1000 (EST)
+Message-ID: <42C2BF03.9000402@mrv.com>
+Date: Wed, 29 Jun 2005 11:32:19 -0400
+From: Guillaume Autran <gautran@mrv.com>
 MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <20050625145318.GA32117@logos.cnet>	
+	<f14f5f5aebd45879c39c6ce69f29c004@embeddededge.com>	
+	<20050626143004.GA5198@logos.cnet>
+	<20050627133930.GA9109@logos.cnet>	
+	<f5d1cb54913dd31385d15fe1f2e5b12d@embeddededge.com>	
+	<1119940208.5133.204.camel@gaston> <42C153E1.3060004@mrv.com>
+	<1120018530.5133.241.camel@gaston>
+In-Reply-To: <1120018530.5133.241.camel@gaston>
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C57CB0.206AD40C"
-Date: Wed, 29 Jun 2005 09:40:34 -0400
-Message-ID: <43EB80E07C42E1408726E4905FB96B044402F5@CYBORG3.cyclone.com>
-From: "Scott Coulter" <scott.coulter@cyclone.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: 440GX EMAC driver hang?
+	boundary="------------010701080805040006030305"
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] 8xx: get_mmu_context() for (very) FEW_CONTEXTS
+ and	KERNEL_PREEMPT race/starvation issue
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,161 +32,126 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
-
-------_=_NextPart_001_01C57CB0.206AD40C
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-I am doing a Linux 2.6.11.11 port for a CPCI board with a 440GX
-processor on it.  Previously, I had successfully ported 2.6.11.11 to the
-board's predecessor running on a 440GP processor.  Due to limitations in
-this version of the PCB, EMAC ports 2 and 3 are not connected.  The
-standalone kernel comes up and gets into a BusyBox shell.  When I try to
-ifconfig the eth0 interface, the messages "eth0: Link is Up" and "eth0:
-Speed: 100, Full duplex." are displayed and then the target hangs.  I
-used the OCOTEA port as a pattern for my 440GP->440GX conversion.  The
-PHYs which are connected to EMAC ports 0 and 1 are the same PHYs as on
-the 440GP board (running in RMII mode).  I have tried to use the
-function "ocp_remove_one_device" to whack EMAC2 and EMAC3.  I am pretty
-sure that the removal worked as I no longer see init messages for those
-EMACs (previously I saw all four devices get initialized).  The MAL
-reports that it has "Initialized, 4 tx channels, 4 rx channels."  I used
-the function "ibm440gx_set_eth_grp" to force the Ethernets to both group
-0 and group 1 configurations.  So far, nothing has worked.  Can anyone
-think of anything obvious that I am missing?  I know that the Ethernet
-ports are functional as I used TFTP with our ROM monitor package to
-download the zImage file.
+--------------010701080805040006030305
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
 
-Thanks,
 
-Scott
+Benjamin Herrenschmidt wrote:
+
+>On Tue, 2005-06-28 at 09:42 -0400, Guillaume Autran wrote:
+>  
+>
+>>Hi,
+>>
+>>I happen to notice a race condition in the mmu_context code for the 8xx 
+>>with very few context (16 MMU contexts) and kernel preemption enable. It 
+>>is hard to reproduce has it shows only when many processes are 
+>>created/destroy and the system is doing a lot of IRQ processing.
+>>
+>>In short, one process is trying to steal a context that is in the 
+>>process of being freed (mm->context == NO_CONTEXT) but not completely 
+>>freed (nr_free_contexts == 0).
+>>The steal_context() function does not do anything and the process stays 
+>>in the loop forever.
+>>
+>>Anyway, I got a patch that fixes this part. Does not seem to affect 
+>>scheduling latency at all.
+>>
+>>Comments are appreciated.
+>>    
+>>
+>
+>Your patch seems to do a hell lot more than fixing this race ... What
+>about just calling preempt_disable() in destroy_context() instead ?
+>  
+>
+I'm still a bit confused with "kernel preemption". One thing for sure is 
+that disabling kernel preemption does indeed fix my problem.
+So, my question is, what if a task in the middle of being schedule gets 
+preempted by an IRQ handler, where will this task restart execution ? 
+Back at the beginning of schedule or where it left of ?
+
+The idea behind my patch was to get rid of that nr_free_contexts counter 
+that is (I thing) redundant with the context_map.
+
+Regards,
+Guillaume.
+
+-- 
+=======================================
+Guillaume Autran
+Senior Software Engineer
+MRV Communications, Inc.
+Tel: (978) 952-4932 office
+E-mail: gautran@mrv.com
+======================================= 
 
 
-___________________________________________________________________
+--------------010701080805040006030305
+Content-Type: text/html; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-  Scott N. Coulter
-  Senior Software Engineer
- =20
-  Cyclone Microsystems         =20
-  370 James Street              Phone:  203.786.5536 ext. 118
-  New Haven, CT 06513-3051      Email:  scott.coulter@cyclone.com
-  U.S.A.                        Web:    http://www.cyclone.com
-___________________________________________________________________
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=ISO-8859-1">
+  <title></title>
+</head>
+<body text="#000000" bgcolor="#ffffff">
+<br>
+<br>
+Benjamin Herrenschmidt wrote:<br>
+<blockquote type="cite" cite="mid1120018530.5133.241.camel@gaston">
+  <pre wrap="">On Tue, 2005-06-28 at 09:42 -0400, Guillaume Autran wrote:
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">Hi,
 
+I happen to notice a race condition in the mmu_context code for the 8xx 
+with very few context (16 MMU contexts) and kernel preemption enable. It 
+is hard to reproduce has it shows only when many processes are 
+created/destroy and the system is doing a lot of IRQ processing.
 
-------_=_NextPart_001_01C57CB0.206AD40C
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+In short, one process is trying to steal a context that is in the 
+process of being freed (mm-&gt;context == NO_CONTEXT) but not completely 
+freed (nr_free_contexts == 0).
+The steal_context() function does not do anything and the process stays 
+in the loop forever.
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7232.36">
-<TITLE>440GX EMAC driver hang?</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
+Anyway, I got a patch that fixes this part. Does not seem to affect 
+scheduling latency at all.
 
-<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
-New">Hi,</FONT></SPAN></P>
+Comments are appreciated.
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+Your patch seems to do a hell lot more than fixing this race ... What
+about just calling preempt_disable() in destroy_context() instead ?
+  </pre>
+</blockquote>
+I'm still a bit confused with "kernel preemption". One thing for sure
+is that disabling kernel preemption does indeed fix my problem.<br>
+So, my question is, what if a task in the middle of being schedule gets
+preempted by an IRQ handler, where will this task restart execution ?
+Back at the beginning of schedule or where it left of ?<br>
+<br>
+The idea behind my patch was to get rid of that nr_free_contexts
+counter that is (I thing) redundant with the context_map.<br>
+<br>
+Regards,<br>
+Guillaume.<br>
+<br>
+<pre class="moz-signature" cols="72">-- 
+=======================================
+Guillaume Autran
+Senior Software Engineer
+MRV Communications, Inc.
+Tel: (978) 952-4932 office
+E-mail: <a class="moz-txt-link-abbreviated" href="mailto:gautran@mrv.com">gautran@mrv.com</a>
+======================================= </pre>
+</body>
+</html>
 
-<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
-New">I am doing a Linux 2.6.11.11 port for a CPCI board with a 440GX =
-processor on it.&nbsp; Previously, I had successfully ported 2.6.11.11 =
-to the board&#8217;s predecessor running on a 440GP processor.&nbsp; Due =
-to limitations in this version of the PCB, EMAC ports 2 and 3 are not =
-connected.&nbsp; The standalone kernel comes up and gets into a BusyBox =
-shell.&nbsp; When I try to ifconfig the eth0 interface, the messages =
-&#8220;eth0: Link is Up&#8221; and &#8220;eth0: Speed: 100, Full =
-duplex.&#8221; are displayed and then the target hangs.&nbsp; I used the =
-OCOTEA port as a pattern for my 440GP-&gt;440GX conversion.&nbsp; The =
-PHYs which are connected to EMAC ports 0 and 1 are the same PHYs as on =
-the 440GP board (running in RMII mode).&nbsp; I have tried to use the =
-function &#8220;ocp_remove_one_device&#8221; to whack EMAC2 and =
-EMAC3.&nbsp; I am pretty sure that the removal worked as I no longer see =
-init messages for those EMACs (previously I saw all four devices get =
-initialized).&nbsp;</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"> <FONT SIZE=3D2 FACE=3D"Courier New">The MAL reports that =
-it has</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"> =
-<FONT SIZE=3D2 FACE=3D"Courier New">&#8220;</FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
-FACE=3D"Courier New">Initialized, 4 tx channels, 4 rx =
-channels.</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
-New">&#8221;</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
-New">&nbsp;</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"> <FONT SIZE=3D2 FACE=3D"Courier New">I used the function =
-&#8220;ibm440gx_set_eth_grp&#8221; to force the Ethernets to both group =
-0 and group 1 configurations.&nbsp; So far, nothing has worked.&nbsp; =
-Can</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"> <FONT =
-SIZE=3D2 FACE=3D"Courier New">anyone</FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
-FACE=3D"Courier New"> think of anything obvious that I am missing?&nbsp; =
-I know that the Ethernet ports are functional as I used TFTP with our =
-ROM monitor package to download the zImage file.</FONT></SPAN></P>
-
-<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"></SPAN><A NAME=3D""><SPAN =
-LANG=3D"en-us"></SPAN></A></P>
-
-<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
-New">Thanks,</FONT></SPAN></P>
-
-<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
-New">Scott</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"></SPAN></P>
-<BR>
-
-<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
-New">___________________________________________________________________<=
-/FONT></SPAN></P>
-
-<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
-New">&nbsp; Scott N. Coulter</FONT></SPAN></P>
-
-<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
-New">&nbsp; Senior Software Engineer</FONT></SPAN></P>
-
-<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
-New">&nbsp; </FONT></SPAN></P>
-
-<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
-New">&nbsp; Cyclone =
-Microsystems&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-</FONT></SPAN></P>
-
-<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
-New">&nbsp; 370 James =
-Street&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp; Phone:&nbsp; 203.786.5536 ext. 118</FONT></SPAN></P>
-
-<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
-New">&nbsp; New Haven, CT 06513-3051&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-Email:&nbsp; scott.coulter@cyclone.com</FONT></SPAN></P>
-
-<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
-New">&nbsp; =
-U.S.A.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-Web:&nbsp;&nbsp;&nbsp; <A =
-HREF=3D"http://www.cyclone.com">http://www.cyclone.com</A></FONT></SPAN><=
-/P>
-
-<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
-New">___________________________________________________________________<=
-/FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"></SPAN></P>
-
-<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"></SPAN></P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C57CB0.206AD40C--
+--------------010701080805040006030305--
