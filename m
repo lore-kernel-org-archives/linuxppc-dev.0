@@ -1,22 +1,22 @@
-Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id AB81767A79
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jun 2005 08:34:15 +1000 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Frank van Maarseveen <frankvm@frankvm.com>
-References: <20050629145013.GA21494@janus> <jehdfhnnr7.fsf@sykes.suse.de>
-	<20050629183628.GA23185@janus>
-Date: Thu, 30 Jun 2005 00:34:09 +0200
-In-Reply-To: <20050629183628.GA23185@janus> (Frank van Maarseveen's message of
-	"Wed, 29 Jun 2005 20:36:28 +0200")
-Message-ID: <jek6kcu71a.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: include/asm-ppc/atomic.h: fluff in inline assembly code?
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7EF4067B69
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jun 2005 10:00:23 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <20750c905c7c0f2eccc3eba6dc1421db@kernel.crashing.org>
+References: <20050629130113.GA30972@suse.de>
+	<20750c905c7c0f2eccc3eba6dc1421db@kernel.crashing.org>
+Content-Type: text/plain
+Date: Thu, 30 Jun 2005 09:54:44 +1000
+Message-Id: <1120089284.31924.33.camel@gaston>
+Mime-Version: 1.0
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	Eric Biederman <ebiederm@xmission.com>, Olaf Hering <olh@suse.de>
+Subject: Re: [PATCH] use correct register names in
+	arch/ppc/kernel/relocate_kernel.S
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,20 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Frank van Maarseveen <frankvm@frankvm.com> writes:
+On Wed, 2005-06-29 at 20:08 +0200, Segher Boessenkool wrote:
+> > --- linux-2.6.13-rc1.orig/arch/ppc/kernel/relocate_kernel.S
+> > +++ linux-2.6.13-rc1/arch/ppc/kernel/relocate_kernel.S
+> > @@ -34,9 +34,9 @@ relocate_new_kernel:
+> >
+> >  	mr	r8, r0
+> >  	ori     r8, r8, MSR_RI|MSR_ME
+> > -	mtspr	SRR1, r8
+> > +	mtspr	SPRN_SRR1, r8
+> >  	addi	r8, r4, 1f - relocate_new_kernel
+> > -	mtspr	SRR0, r8
+> > +	mtspr	SPRN_SRR0, r8
+> >  	sync
+> >  	rfi
+> 
+> Or just mtsrr0 c.q. mtsrr1
 
-> But v->counter is not supposed to be accessed directly by the
-> compiler (i.e. by C code) at all, is it? so it shouldn't matter.
->
-> Even if it would be: the counter itself is declared "volatile int"
-> which basically tells the compiler not to cache it in a register.
+They are lovely but shits me when I grep for SPRN_SRR0 :) I tend to
+prefer consistency here and so if we start using mtsrr0/1, then we
+should change the whole kernel at once and not have a mix of SPRN_* and
+mt*
 
-Never lie to the compiler, or it gets its revenge, sooner or later.
-
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Ben.
