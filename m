@@ -1,19 +1,14 @@
-Return-Path: <olh@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "SuSE Linux AG internal IMAP-Server CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 5F1DF67B6A
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Jun 2005 23:01:18 +1000 (EST)
-Date: Wed, 29 Jun 2005 15:01:13 +0200
-From: Olaf Hering <olh@suse.de>
-To: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org
-Message-ID: <20050629130113.GA30972@suse.de>
+Return-Path: <frankvm@frankvm.com>
+Received: from janus.localdomain (frankvm.xs4all.nl [80.126.170.174])
+	by ozlabs.org (Postfix) with ESMTP id DDE0B67B58
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jun 2005 02:01:28 +1000 (EST)
+Date: Wed, 29 Jun 2005 16:50:13 +0200
+From: Frank van Maarseveen <frankvm@frankvm.com>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <20050629145013.GA21494@janus>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: Eric Biederman <ebiederm@xmission.com>
-Subject: [PATCH] use correct register names in
-	arch/ppc/kernel/relocate_kernel.S
+Content-Type: text/plain; charset=us-ascii
+Subject: include/asm-ppc/atomic.h: fluff in inline assembly code?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,27 +18,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Does anyone know why there are often excess arguments in asm() here?
 
-CONFIG_KEXEC=y doesnt work:
+For example,
 
-arch/ppc/kernel/relocate_kernel.S:37: Error: unsupported relocation against SRR1
-arch/ppc/kernel/relocate_kernel.S:39: Error: unsupported relocation against SRR0
+	static __inline__ void atomic_add(int a, atomic_t *v)
+	{
+		int t;
 
-Signed-off-by: Olaf Hering <olh@suse.de>
+		__asm__ __volatile__(
+	"1:     lwarx   %0,0,%3         # atomic_add\n\
+		add     %0,%2,%0\n"
+		PPC405_ERR77(0,%3)
+	"       stwcx.  %0,0,%3 \n\
+		bne-    1b"
+		: "=&r" (t), "=m" (v->counter)
+		: "r" (a), "r" (&v->counter), "m" (v->counter)
+		: "cc");
+	}
 
-Index: linux-2.6.13-rc1/arch/ppc/kernel/relocate_kernel.S
-===================================================================
---- linux-2.6.13-rc1.orig/arch/ppc/kernel/relocate_kernel.S
-+++ linux-2.6.13-rc1/arch/ppc/kernel/relocate_kernel.S
-@@ -34,9 +34,9 @@ relocate_new_kernel:
- 
- 	mr	r8, r0
- 	ori     r8, r8, MSR_RI|MSR_ME
--	mtspr	SRR1, r8
-+	mtspr	SPRN_SRR1, r8
- 	addi	r8, r4, 1f - relocate_new_kernel
--	mtspr	SRR0, r8
-+	mtspr	SPRN_SRR0, r8
- 	sync
- 	rfi
- 
+seems equivalent to 
+
+	static __inline__ void atomic_add(int a, atomic_t *v)
+	{
+		int t;
+
+		__asm__ __volatile__(
+	"1:     lwarx   %0,0,%2         # atomic_add\n\
+		add     %0,%1,%0\n"
+		PPC405_ERR77(0,%2)
+	"       stwcx.  %0,0,%2 \n\
+		bne-    1b"
+		: "=&r" (t)
+		: "r" (a), "r" (&v->counter)
+		: "cc");
+	}
+
+What is the point of all those v->counter arguments?
+
+-- 
+Frank
