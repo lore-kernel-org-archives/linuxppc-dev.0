@@ -1,17 +1,21 @@
-Return-Path: <frankvm@frankvm.com>
-Received: from janus.localdomain (frankvm.xs4all.nl [80.126.170.174])
-	by ozlabs.org (Postfix) with ESMTP id D21CA67B69
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jun 2005 04:36:29 +1000 (EST)
-Date: Wed, 29 Jun 2005 20:36:28 +0200
-From: Frank van Maarseveen <frankvm@frankvm.com>
-To: Andreas Schwab <schwab@suse.de>
-Message-ID: <20050629183628.GA23185@janus>
-References: <20050629145013.GA21494@janus> <jehdfhnnr7.fsf@sykes.suse.de>
+Return-Path: <jdl@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 79BE167B58
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jun 2005 07:14:31 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	j5TLL2sJ006139
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Jun 2005 14:21:02 -0700 (MST)
+Received: from [10.82.19.2] (cashmere.am.freescale.net [10.82.19.2])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id j5TLIL4d020172
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Jun 2005 16:18:22 -0500 (CDT)
+From: Jon Loeliger <jdl@freescale.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Message-Id: <1120079668.1798.98.camel@cashmere.sps.mot.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <jehdfhnnr7.fsf@sykes.suse.de>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: include/asm-ppc/atomic.h: fluff in inline assembly code?
+Date: Wed, 29 Jun 2005 16:14:28 -0500
+Subject: set_phys_avail() futures question
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,21 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jun 29, 2005 at 06:14:52PM +0200, Andreas Schwab wrote:
-> Frank van Maarseveen <frankvm@frankvm.com> writes:
-> 
-> > What is the point of all those v->counter arguments?
-> 
-> It tells the compiler that v->counter is changed by the asm.
+Ben (primarily),
 
-So it's an optimized alternative for "memory" in the clobber list?
-ok, I couldn't find that anywhere in the doc.
+I'd like to get your opinion on what the future of
+arch/ppc/mm/init.c/set_phys_avail() looks like.
+Currently, its job is to traverse the mem_pieces data
+and remove a whole series of #ifdef'ed regions of
+memory based on configuration options.  These regions
+are the initrd, the RTAS data, and the AGP special page.
 
-But v->counter is not supposed to be accessed directly by the
-compiler (i.e. by C code) at all, is it? so it shouldn't matter.
+Do you see these regions as being explicitly listed in 
+the proposed  "reserved memory blocks" area of the Flat
+Dev Tree header structure?
 
-Even if it would be: the counter itself is declared "volatile int"
-which basically tells the compiler not to cache it in a register.
+If so, then they would follow the same conceptual flow
+as the ppc64 reservations in the LMB.  They would then
+be SetPagReserved() and removed from the do_init_bootmem()
+regions of memory as well.
 
--- 
-Frank
+Thanks,
+jdl
