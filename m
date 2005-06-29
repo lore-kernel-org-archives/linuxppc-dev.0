@@ -3,26 +3,26 @@ Received: from parcelfarce.linux.theplanet.co.uk
 	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 20AB467B67
+	by ozlabs.org (Postfix) with ESMTP id BE69F67B91
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Jun 2005 07:46:54 +1000 (EST)
-Date: Wed, 29 Jun 2005 14:00:20 -0300
+	Thu, 30 Jun 2005 08:04:40 +1000 (EST)
+Date: Wed, 29 Jun 2005 14:19:06 -0300
 From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Guillaume Autran <gautran@mrv.com>
-Message-ID: <20050629170020.GC4262@logos.cnet>
-References: <f14f5f5aebd45879c39c6ce69f29c004@embeddededge.com>
+To: Dan Malek <dan@embeddededge.com>
+Message-ID: <20050629171906.GD4262@logos.cnet>
+References: <20050625145318.GA32117@logos.cnet>
+	<f14f5f5aebd45879c39c6ce69f29c004@embeddededge.com>
 	<20050626143004.GA5198@logos.cnet>
 	<20050627133930.GA9109@logos.cnet>
 	<f5d1cb54913dd31385d15fe1f2e5b12d@embeddededge.com>
-	<1119940208.5133.204.camel@gaston> <42C153E1.3060004@mrv.com>
-	<1120018530.5133.241.camel@gaston> <42C2BF03.9000402@mrv.com>
-	<20050629155445.GA3560@logos.cnet> <42C311CD.1040405@mrv.com>
+	<1119940208.5133.204.camel@gaston>
+	<3e7207cd8e98080f2f469a668e37a20f@embeddededge.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <42C311CD.1040405@mrv.com>
+In-Reply-To: <3e7207cd8e98080f2f469a668e37a20f@embeddededge.com>
 Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] 8xx: get_mmu_context() for (very) FEW_CONTEXTS
-	and	KERNEL_PREEMPT race/starvation issue
+Subject: Re: [PATCH] 8xx: map_page() skip pinned region and tlbie debugging
+	aid
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,32 +33,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-Hi!
-
-On Wed, Jun 29, 2005 at 05:25:33PM -0400, Guillaume Autran wrote:
-> In that case, what happen when a higher priority task steal the context 
-> of the lower priority task after get_mmu_context() but before 
-> set_mmu_context() ?
-> Then when the lower priority task resumes, its context may no longer be 
-> valid...
-> Do I get this right ?
-
-Yep... but its OK and expected for the "lower prio task" in question to have
-its context invalidated: In this case it will call get_mmu_context() again
-and reserve the next one available before executing.
-
-> I'm going to do like this instead of my previous attempt:
+On Tue, Jun 28, 2005 at 09:53:26AM -0400, Dan Malek wrote:
 > 
->        /* Setup new userspace context */
->        preempt_disable();
->        get_mmu_context(next);
->        set_context(next->context, next->pgd);
->        preempt_enable();
+> On Jun 28, 2005, at 2:30 AM, Benjamin Herrenschmidt wrote:
 > 
-> To make sure we don't loose our context in between.
+> >You should consider 8Mb pages the way we do BATs yes,
+> 
+> It's always been considered, just never fully implemented :-)
+> 
+> >Note that I'll soon send the patch I told you about that makes the
+> >virtual address picked by io_block_mapping() dynamic, so we no longer
+> >have to do crappy assumptions all over the place :)
+> 
+> Whatever, I'll never use it that way and no one else should either.
 
-There should be no need - the window for the race is inside
-get_mmu_context().
+Why not? AFAICS the idea is to have the virtual mappings dynamic 
+and not static - this is the _whole_ point of ioremap() instead
+of io_block_mapping(), isnt it?
 
-ie. It should be safe to preempt after setting "next_mm_context". 
+I fail to see any practical arguments against it...
+
+> All of the io_block_mapping() calls should be used to set these 8M
+> mapped IO spaces, everyone should use ioremap() to map them,
+> and ioremap() has to be modified to find them for the 8xx.
+
+What do you mean "everyone should use ioremap() to map them"? 
+
+Once the physical->virtual mapping for device IO space are set
+with io_block_mapping() (or with ioremap() for dynamic virtual 
+addresses), why would you want to ioremap() the physical address
+again??? 
+
+PS: I've had a quick try at converting the IMMAP to use
+ioremap instead (and have that dynamic virtual address stored
+in a pointer), changed drivers to use that pointer instead of 
+hardcoded "IMMAP". Didnt work immediately :) Its not that the 
+idea?
