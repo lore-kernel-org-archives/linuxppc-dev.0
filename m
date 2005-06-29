@@ -1,14 +1,21 @@
-Return-Path: <frankvm@frankvm.com>
-Received: from janus.localdomain (frankvm.xs4all.nl [80.126.170.174])
-	by ozlabs.org (Postfix) with ESMTP id DDE0B67B58
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jun 2005 02:01:28 +1000 (EST)
-Date: Wed, 29 Jun 2005 16:50:13 +0200
-From: Frank van Maarseveen <frankvm@frankvm.com>
-To: linuxppc-dev@ozlabs.org
-Message-ID: <20050629145013.GA21494@janus>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Subject: include/asm-ppc/atomic.h: fluff in inline assembly code?
+Return-Path: <schwab@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0F92A67B85
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Jun 2005 02:15:02 +1000 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Frank van Maarseveen <frankvm@frankvm.com>
+References: <20050629145013.GA21494@janus>
+Date: Wed, 29 Jun 2005 18:14:52 +0200
+In-Reply-To: <20050629145013.GA21494@janus> (Frank van Maarseveen's message of
+	"Wed, 29 Jun 2005 16:50:13 +0200")
+Message-ID: <jehdfhnnr7.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: include/asm-ppc/atomic.h: fluff in inline assembly code?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,43 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Does anyone know why there are often excess arguments in asm() here?
+Frank van Maarseveen <frankvm@frankvm.com> writes:
 
-For example,
+> What is the point of all those v->counter arguments?
 
-	static __inline__ void atomic_add(int a, atomic_t *v)
-	{
-		int t;
+It tells the compiler that v->counter is changed by the asm.
 
-		__asm__ __volatile__(
-	"1:     lwarx   %0,0,%3         # atomic_add\n\
-		add     %0,%2,%0\n"
-		PPC405_ERR77(0,%3)
-	"       stwcx.  %0,0,%3 \n\
-		bne-    1b"
-		: "=&r" (t), "=m" (v->counter)
-		: "r" (a), "r" (&v->counter), "m" (v->counter)
-		: "cc");
-	}
-
-seems equivalent to 
-
-	static __inline__ void atomic_add(int a, atomic_t *v)
-	{
-		int t;
-
-		__asm__ __volatile__(
-	"1:     lwarx   %0,0,%2         # atomic_add\n\
-		add     %0,%1,%0\n"
-		PPC405_ERR77(0,%2)
-	"       stwcx.  %0,0,%2 \n\
-		bne-    1b"
-		: "=&r" (t)
-		: "r" (a), "r" (&v->counter)
-		: "cc");
-	}
-
-What is the point of all those v->counter arguments?
+Andreas.
 
 -- 
-Frank
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
