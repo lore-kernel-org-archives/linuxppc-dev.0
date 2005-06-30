@@ -1,22 +1,28 @@
-Return-Path: <Murray.Jensen@csiro.au>
-Received: from vic-ironport-ext-out2.csiro.au (vic-ironport-ext-out2.csiro.au
-	[150.229.64.38]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "*.csiro.au",
-	Issuer "Comodo Class 3 Security Services CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 3E5A267B99
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 38CA967BBC
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Jul 2005 03:07:30 +1000 (EST)
-From: Murray.Jensen@csiro.au
-To: Clemens Koller <clemens.koller@anagramm.de>
-In-reply-to: Your message of "Thu, 30 Jun 2005 17:56:30 +0200"
-	<42C4162E.4030602@anagramm.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Fri, 01 Jul 2005 02:57:46 +1000
-Message-ID: <931.1120150666@gerd>
-Sender: Murray.Jensen@csiro.au
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC85xx DMA support for Kernel 2.6? 
+	Fri,  1 Jul 2005 03:49:30 +1000 (EST)
+In-Reply-To: <20050629171906.GD4262@logos.cnet>
+References: <20050625145318.GA32117@logos.cnet>
+	<f14f5f5aebd45879c39c6ce69f29c004@embeddededge.com>
+	<20050626143004.GA5198@logos.cnet>
+	<20050627133930.GA9109@logos.cnet>
+	<f5d1cb54913dd31385d15fe1f2e5b12d@embeddededge.com>
+	<1119940208.5133.204.camel@gaston>
+	<3e7207cd8e98080f2f469a668e37a20f@embeddededge.com>
+	<20050629171906.GD4262@logos.cnet>
+Mime-Version: 1.0 (Apple Message framework v622)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <dfea8d3dcdd8ed3d89ec2445e39bfe88@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Thu, 30 Jun 2005 13:49:19 -0400
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] 8xx: map_page() skip pinned region and tlbie debugging
+	aid
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,25 +33,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 30 Jun 2005 17:56:30 +0200, Clemens Koller writes:
->But is there any code available for recycling?
 
-Jason McMullan has some code for mpc85xx dma here:
+On Jun 29, 2005, at 1:19 PM, Marcelo Tosatti wrote:
 
-	http://www.evillabs.net/~gus/patches/mpc85xx_dma.patch
+> What do you mean "everyone should use ioremap() to map them"?
 
-Looks like it wouldn't take much to get it working. Cheers!
-								Murray...
---
-Murray Jensen, CSIRO Manufacturing & Infra. Tech.      Phone: +61 3 9662 7763
-Locked Bag No. 9, Preston, Vic, 3072, Australia.         Fax: +61 3 9662 7853
-Internet: Murray.Jensen@csiro.au
+All software needs to invoke some kind of mapping function such
+as ioremap() in the case of drivers or functions that access 
+peripherals.
+You should not assume someone has done the mapping for you,
+as we did in the past for some optimizations.
 
-To the extent permitted by law, CSIRO does not represent, warrant and/or
-guarantee that the integrity of this communication has been maintained or
-that the communication is free of errors, virus, interception or interference.
+> Once the physical->virtual mapping for device IO space are set
+> with io_block_mapping() (or with ioremap() for dynamic virtual
+> addresses), why would you want to ioremap() the physical address
+> again???
 
-The information contained in this e-mail may be confidential or privileged.
-Any unauthorised use or disclosure is prohibited. If you have received this
-e-mail in error, please delete it immediately and notify Murray Jensen on
-+61 3 9662 7763. Thank you.
+You shouldn't know that io_block_mapping() has done anything
+for you.  It is intended to be used as an optimization, not as a
+replacement for ioremap().  The ioremap() function needs to be smart
+enough to detect these optimizations and return efficient mappings
+if that was done.  If a platform decides to not use these optimizations
+(which is sometimes beneficial for debugging), your software using
+ioremap() should still work just fine.
+
+> PS: I've had a quick try at converting the IMMAP to use
+> ioremap instead (and have that dynamic virtual address stored
+> in a pointer), changed drivers to use that pointer instead of
+> hardcoded "IMMAP". Didnt work immediately :) Its not that the
+> idea?
+
+Yes, and we have done lots of this in the 82xx/83xx/85xx cpm2
+drivers in 2.6.  In fact, in 2.6 it has to be done.
+
+Thanks.
+
+	-- Dan
