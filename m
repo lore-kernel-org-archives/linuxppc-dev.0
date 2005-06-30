@@ -1,19 +1,21 @@
-Return-Path: <jan.damborsky@devcom.cz>
-Received: from miranda.dexus.net (miranda.dexus.net [217.11.237.218])
-	by ozlabs.org (Postfix) with ESMTP id 4033167A79
+Return-Path: <d.grab@hima.com>
+Received: from mail.hima.com (mail.hima.com [80.146.244.10])
+	by ozlabs.org (Postfix) with ESMTP id 862BA67B66
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Jun 2005 18:42:52 +1000 (EST)
-Message-ID: <42C3ABAE.10801@devcom.cz>
-Date: Thu, 30 Jun 2005 10:22:06 +0200
-From: Jan Damborsky <jan.damborsky@devcom.cz>
+	Thu, 30 Jun 2005 21:38:13 +1000 (EST)
+Received: from SN7606 ([192.168.100.10])
+	by mail.hima.com (8.11.3/8.11.3) with SMTP id j5UBR0524159
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 30 Jun 2005 13:27:01 +0200 (CEST)
+	(envelope-from d.grab@hima.com)
+From: "David Grab" <d.grab@hima.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Thu, 30 Jun 2005 13:26:52 +0200
+Message-ID: <003101c57d66$9de20a20$f201a8c0@SN7606>
 MIME-Version: 1.0
-To: Pantelis Antoniou <panto@intracom.gr>
-References: <C0170D0AF1277849A4B4518034F855DD09A9ED@aiexchange.ai.aiinet.com>	<41ED478A.6020303@europlex.ie>
-	<41EE03FF.3040609@intracom.gr>
-In-Reply-To: <41EE03FF.3040609@intracom.gr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-usb-devel@lists.sourceforge.net, linuxppc-embedded@ozlabs.org
-Subject: Re: [linux-usb-devel] USB host on Freescale MPC880
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: PCC440GX custom board configuration
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,16 +26,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Pantelis Antoniou wrote:
+Hello,
 
->
-> I have a fairly hacked over version of the original USB host driver that
-> works for 87x/88x.
->
-We have developed our board with MPC880 and we would like
-to try to use 8xx USB host interface with kernel version 2.4.25.
-I would like to ask you, if we could use your USB host driver
-and if yes where it is possible to get it.
+i have a custom PPC 440 GX board which should run linux 2.6.11.6 kernel. I
+initialized the board with u-boot getting boot console on UART1 to start the
+kernel with bootm command.
 
-                        Best regards
-                                  Jan Damborsky
+Hardware details:
+PPC 440 GX CPU
+2 * 256 MB RAM
+2 * 8 MB Flash
+EM Marvin RTC V3020 (seems not supported by linux?)
+
+Now i want to configure Linux to match my custom board. I ported my board
+based on ocotea board configuration files and excluded all the stuff i don´t
+need. My kernel seems to load but get stuck on calibrating delay loop and
+loops between update_proces_times and __delay (at address 0xC0003400) until
+it reboots. Seems like i didn´t match the BogoMips calculation. Actually i
+don´t use the RTC (i comment out all TODC functions). I think this cause the
+problem. So what i have to do to boot without RTC or has someone my RTC
+running with linux?
+
+Thanks for advice,
+
+David
