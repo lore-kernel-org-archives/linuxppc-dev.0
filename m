@@ -1,15 +1,14 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from parcelfarce.linux.theplanet.co.uk
-	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1275D67BAC
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 8E3E767BA1
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Jun 2005 10:24:57 +1000 (EST)
-Date: Wed, 29 Jun 2005 16:38:46 -0300
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+	Thu, 30 Jun 2005 10:35:02 +1000 (EST)
+Date: Wed, 29 Jun 2005 17:34:59 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <20050629193846.GA4748@logos.cnet>
+Message-ID: <20050630003459.GA1265@gate.ebshome.net>
 References: <f14f5f5aebd45879c39c6ce69f29c004@embeddededge.com>
 	<20050626143004.GA5198@logos.cnet>
 	<20050627133930.GA9109@logos.cnet>
@@ -52,18 +51,7 @@ On Thu, Jun 30, 2005 at 09:26:07AM +1000, Benjamin Herrenschmidt wrote:
 > Ugh ? Can switch_mm() be preempted at all ? Did I miss yet another
 > "let's open 10 gazillion races for gun" Ingo patch ?
 
-Doh nope it can't - my bad.
+No, it can't. schedule() disables preemption at the very beginning.
 
-> > So if the now running higher prio tasks calls switch_mm() (which is likely to happen)
-> > it loops forever on atomic_dec_if_positive(&nr_free_contexts), while steal_context()
-> > sees "mm->context == CONTEXT".
-> 
-> I think the race is only when destroy_context() is preempted, but maybe
-> I missed something.
-
-Nope, I think you are right. My "theory" is obviously flawed now. 
-
-There seem to be several contexts where destroy_context() could be called
-with preempt enabled - I should have been shutup in the first place :)
-
-Lets wait for Guillaume to test...
+-- 
+Eugene
