@@ -1,18 +1,14 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtai13.cox.net (fed1rmmtai13.cox.net [68.230.241.46])
-	by ozlabs.org (Postfix) with ESMTP id D9F8867BCE
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Jul 2005 04:31:44 +1000 (EST)
-Date: Thu, 30 Jun 2005 10:41:44 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: john stultz <johnstul@us.ibm.com>
-Message-ID: <20050630174144.GG13179@smtp.west.cox.net>
-References: <1120082751.24889.120.camel@cog.beaverton.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1120082751.24889.120.camel@cog.beaverton.ibm.com>
-Cc: Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org
-Subject: Re: [RFC][PATCH] ppc misusing NTP's time_offset value
+Return-Path: <domen@coderock.org>
+Received: from trashy.coderock.org (coderock.org [193.77.147.115])
+	by ozlabs.org (Postfix) with ESMTP id 28EB067BBE
+	for <linuxppc-dev@ozlabs.org>; Fri,  1 Jul 2005 08:57:16 +1000 (EST)
+Message-Id: <20050630220349.966609000@>
+Date: Fri, 01 Jul 2005 00:03:50 +0200
+From: domen@coderock.org
+To: benh@kernel.crashing.org
+Cc: linuxppc-dev@ozlabs.org, domen@coderock.org,
+	Christophe Lucas <clucas@rotomalug.org>
+Subject: [patch 1/1] Audit return code : drivers/macintosh/apm_emu.c
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,26 +18,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jun 29, 2005 at 03:05:51PM -0700, john stultz wrote:
-> Hey everyone,
-> 
-> 	As part of my timeofday rework, I've been looking at the NTP code and I
-> noticed that the PPC architecture is apparently misusing the NTP's
-> time_offset (it is a terrible name!) value as some form of timezone
-> offset. This could cause problems when time_offset changed by the NTP
-> code.
-> 	
-> 	This patch changes the PPC code so it uses a more clear local variable:
-> timezone_offset.
-> 
-> Could a PPC maintainer verify this is correct?
+From: Christophe Lucas <clucas@rotomalug.org>
 
-As mentioned by Mikael, it's odd that this problem came up, since i
-guess the wrong patch made it in.  Andrew, please grab this if you
-haven't already.  Thanks.
 
-Acked-by: Tom Rini <trini@kernel.crashing.org>
+Audit return codes (and handle failure correctly) for misc_register.
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+Signed-off-by: Christophe Lucas <clucas@rotomalug.org>
+Signed-off-by: Domen Puncer <domen@coderock.org>
+
+
+---
+ apm_emu.c |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
+
+Index: quilt/drivers/macintosh/apm_emu.c
+===================================================================
+--- quilt.orig/drivers/macintosh/apm_emu.c
++++ quilt/drivers/macintosh/apm_emu.c
+@@ -515,19 +515,24 @@ static struct miscdevice apm_device = {
+ 
+ static int __init apm_emu_init(void)
+ {
++	int ret;
+ 	struct proc_dir_entry *apm_proc;
+ 
+ 	if (sys_ctrler != SYS_CTRLER_PMU) {
+ 		printk(KERN_INFO "apm_emu: Requires a machine with a PMU.\n");
+ 		return -ENODEV;
+ 	}
+-		
++
++	ret = misc_register(&apm_device);
++	if (ret) {
++		printk(KERN_WARNING "apm_emu: Unable to register misc device.\n");
++		return ret;
++	}
++
+ 	apm_proc = create_proc_info_entry("apm", 0, NULL, apm_emu_get_info);
+ 	if (apm_proc)
+ 		apm_proc->owner = THIS_MODULE;
+ 
+-	misc_register(&apm_device);
+-
+ 	pmu_register_sleep_notifier(&apm_sleep_notifier);
+ 
+ 	printk(KERN_INFO "apm_emu: APM Emulation %s initialized.\n", driver_version);
+
+--
