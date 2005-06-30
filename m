@@ -1,17 +1,19 @@
-Return-Path: <galak@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 320C367B9E
+Return-Path: <jan.damborsky@devcom.cz>
+Received: from miranda.dexus.net (miranda.dexus.net [217.11.237.218])
+	by ozlabs.org (Postfix) with ESMTP id 4033167A79
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Jun 2005 15:01:36 +1000 (EST)
-Date: Thu, 30 Jun 2005 00:01:28 -0500 (CDT)
-From: Kumar Gala <galak@freescale.com>
-To: Andrew Morton <akpm@osdl.org>
-Message-ID: <Pine.LNX.4.61.0506300000580.19735@nylon.am.freescale.net>
+	Thu, 30 Jun 2005 18:42:52 +1000 (EST)
+Message-ID: <42C3ABAE.10801@devcom.cz>
+Date: Thu, 30 Jun 2005 10:22:06 +0200
+From: Jan Damborsky <jan.damborsky@devcom.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] ppc32: Fix pointer check for MPC8540 ADS device
+To: Pantelis Antoniou <panto@intracom.gr>
+References: <C0170D0AF1277849A4B4518034F855DD09A9ED@aiexchange.ai.aiinet.com>	<41ED478A.6020303@europlex.ie>
+	<41EE03FF.3040609@intracom.gr>
+In-Reply-To: <41EE03FF.3040609@intracom.gr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-usb-devel@lists.sourceforge.net, linuxppc-embedded@ozlabs.org
+Subject: Re: [linux-usb-devel] USB host on Freescale MPC880
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,31 +24,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Editor snafu in which the call to ppc_sys_get_pdata got inside the if
-check instead of before it.  Oops.
+Pantelis Antoniou wrote:
 
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+>
+> I have a fairly hacked over version of the original USB host driver that
+> works for 87x/88x.
+>
+We have developed our board with MPC880 and we would like
+to try to use 8xx USB host interface with kernel version 2.4.25.
+I would like to ask you, if we could use your USB host driver
+and if yes where it is possible to get it.
 
----
-commit e82df07a507588f1f0cc9da544934b4a737e2e84
-tree 2e9642efcb34f846444bc288d3c4d7c384c00348
-parent 6bd7d9f21de5992db4851f9be88c2e20b967f3d2
-author Kumar K. Gala <kumar.gala@freescale.com> Thu, 30 Jun 2005 01:35:53 -0500
-committer Kumar K. Gala <kumar.gala@freescale.com> Thu, 30 Jun 2005 01:35:53 -0500
-
- arch/ppc/platforms/85xx/mpc8540_ads.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/ppc/platforms/85xx/mpc8540_ads.c b/arch/ppc/platforms/85xx/mpc8540_ads.c
---- a/arch/ppc/platforms/85xx/mpc8540_ads.c
-+++ b/arch/ppc/platforms/85xx/mpc8540_ads.c
-@@ -111,8 +111,8 @@ mpc8540ads_setup_arch(void)
- 		memcpy(pdata->mac_addr, binfo->bi_enet1addr, 6);
- 	}
- 
-+	pdata = (struct gianfar_platform_data *) ppc_sys_get_pdata(MPC85xx_FEC);
- 	if (pdata) {
--		pdata = (struct gianfar_platform_data *) ppc_sys_get_pdata(MPC85xx_FEC);
- 		pdata->board_flags = 0;
- 		pdata->interruptPHY = MPC85xx_IRQ_EXT5;
- 		pdata->phyid = 3;
+                        Best regards
+                                  Jan Damborsky
