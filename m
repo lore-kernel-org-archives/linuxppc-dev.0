@@ -1,27 +1,20 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from parcelfarce.linux.theplanet.co.uk
-	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D01CD67B91
+Return-Path: <tjernlund@tjernlund.se>
+Received: from csmtp.b-one.net (csmtp.b-one.net [195.47.247.21])
+	by ozlabs.org (Postfix) with ESMTP id 5DFAC67C04
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  2 Jul 2005 05:36:08 +1000 (EST)
-Date: Fri, 1 Jul 2005 11:42:23 -0300
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Jason McMullan <jason.mcmullan@gmail.com>
-Message-ID: <20050701144223.GB11975@logos.cnet>
-References: <42C1AAC1.4060702@gmail.com> <20050629085913.GA2153@logos.cnet>
-	<faba7798050630071347d4ad63@mail.gmail.com>
-	<20050701094438.GA11121@logos.cnet>
-	<1120229717.21507.9.camel@jmcmullan.timesys>
-	<20050701101713.GC11121@logos.cnet>
-	<1120244191.18872.3.camel@jmcmullan.timesys>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1120244191.18872.3.camel@jmcmullan.timesys>
-Cc: Anton =?iso-8859-1?Q?W=F6llert?= <a.woellert@gmail.com>,
-	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: mpc8xx and ld.so problem
+	Sat,  2 Jul 2005 05:43:03 +1000 (EST)
+Received: from Jocke (unknown [84.217.1.193])
+	by csmtp.b-one.net (Postfix) with ESMTP id CD5641A008531
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  1 Jul 2005 20:40:33 +0200 (CEST)
+From: "Tjernlund" <tjernlund@tjernlund.se>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Fri, 1 Jul 2005 20:40:32 +0200
+Message-ID: <BCEFJBPJCGFCNMMMIDBHKEEICMAA.tjernlund@tjernlund.se>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: mpc8xx and ld.so problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,39 +25,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jul 01, 2005 at 02:56:30PM -0400, Jason McMullan wrote:
-> On Fri, 2005-07-01 at 07:17 -0300, Marcelo Tosatti wrote:
-> > That was a quick response - thanks.
-> > 
-> > Two questions:
-> > 
-> > - Do you happen to know about details of dcbz's (mis)behaviour on 8xx? 
-> > 
-> > I ask that mainly because I worry about in-kernel dcbz users.
+> > The PPC32 dbcz semantics don't seem to work properly on 8xx
+> > in all cases. Removing the '.S' file makes glibc fall back on
+> > the .c implementation. 
 > 
->     IIRC, it isn't used in any 8xx code paths.
-
-OK!
-
-> > - Shouldnt upstream glibc have that fixed for 8xx by now?
+> Hi Jason, 
 > 
->     Ha. Funny. The glibc powerpc maintainer doesn't want any embedded
-> fixes in the mainline. 
-
-Who is that?
-
-> Last I checked, that was for 'the tools vendors' to fix.
-
-Silly - so embedded developers are supposed rely on "embedded vendors"
-and not on the mainstream software distributions? 
-
->     "We won't work around processor bugs" is their philosophy.
->
->     I went through a similar (unsuccessful) battle with the
-> amcc 440ep's "blrl" errata and gcc/glibc.
+> That was a quick response - thanks.
 > 
->     It would be nice if the politics there have changed
-> (maybe they just didn't like me personally), but I don't have
-> much hope.
+> Two questions:
+> 
+> - Do you happen to know about details of dcbz's (mis)behaviour on 8xx? 
 
-If enough people complain they will, hopefully, listen.
+This is the famus dcbX bug on 8xx CPUs. 8xx dcbX instructions don't update the
+DAR register when they cause a TLB Miss/Error. This bug is undocumented but
+Motorola/Freescale has verified that it is there.
+
+   Jocke (going on vacation now, won't read email for a week)
