@@ -1,26 +1,21 @@
-Return-Path: <panto@intracom.gr>
-Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
-	by ozlabs.org (Postfix) with ESMTP id EC99167BD4
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutvdomng.kundenserver.de (moutvdom.kundenserver.de
+	[212.227.126.249]) by ozlabs.org (Postfix) with ESMTP id 323C967BF2
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Jul 2005 17:07:51 +1000 (EST)
-Received: from mailserv.intranet.gr (localhost [127.0.0.1])
-	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id j617DScU011441
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 1 Jul 2005 10:13:29 +0300 (EEST)
-Message-ID: <42C4EA67.4070601@intracom.gr>
-Date: Fri, 01 Jul 2005 10:01:59 +0300
-From: Pantelis Antoniou <panto@intracom.gr>
+	Fri,  1 Jul 2005 17:47:28 +1000 (EST)
+Message-ID: <42C4F50D.3050405@anagramm.de>
+Date: Fri, 01 Jul 2005 09:47:25 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <20050625145318.GA32117@logos.cnet>	<f14f5f5aebd45879c39c6ce69f29c004@embeddededge.com>	<20050626143004.GA5198@logos.cnet>
-	<20050627133930.GA9109@logos.cnet>	<f5d1cb54913dd31385d15fe1f2e5b12d@embeddededge.com>	<1119940208.5133.204.camel@gaston>	<3e7207cd8e98080f2f469a668e37a20f@embeddededge.com>	<20050629171906.GD4262@logos.cnet>
-	<1120087888.31924.19.camel@gaston>	<f39d04caf822fc8e66fa3bb25606f08f@embeddededge.com>
-	<1120174169.31924.55.camel@gaston>
-In-Reply-To: <1120174169.31924.55.camel@gaston>
+To: Dan Malek <dan@embeddededge.com>
+References: <42C40BD0.8040408@anagramm.de>
+	<658739DB-540F-4AFC-80DC-BBF0C2AD70F4@freescale.com>
+	<42C4162E.4030602@anagramm.de>
+	<427c70958bb995dad4fbad2e6ff121bc@embeddededge.com>
+In-Reply-To: <427c70958bb995dad4fbad2e6ff121bc@embeddededge.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] 8xx: map_page() skip pinned region and tlbie debugging
- aid
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: MPC85xx DMA support for Kernel 2.6?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,60 +26,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Thu, 2005-06-30 at 14:05 -0400, Dan Malek wrote:
-> 
->>On Jun 29, 2005, at 7:31 PM, Benjamin Herrenschmidt wrote:
->>
->>
->>> - The debate between Dan and me here is about the semantics of
->>>io_block_mapping().
->>
->>My point of discussion is this function needs to be much smarter than
->>simply allocating a virtual address space.  We need to track the calls
->>so that we can "grow" previous spaces.  A single io_block_mapping()
->>should not always allocate a new BAT, CAM or otherwise wired entry.
->>It has to know the alignment, size and amount of resource available.
->>For example, if an io_block_mapping() requests a 4M space, and it
->>isn't possible to wire such a size, we still need to keep track of that
->>such that a subsequent 4M request is combined into a space that
->>can be wired with an 8M entry.  We need to make it smart enough
->>to coalesce the spaces to maximize the use of the available and
->>minimal mapping resources.  If io_block_mapping() is just a simple
->>functions that decrements a pointer and sets a value in a register,
->>then you have already required the caller to know everything about
->>the mapping details, so why bother performing "hidden" arithmetic
->>that is likely to be known by the caller?  If we are going to change 
->>this
-> 
-> 
-> Everyting ... but the virtual address, which is quite a bit :) My
-> problem is really with virtual addresses beeing hard coded, which makes
-> things complicated every time we try to do something with the kenrel
-> virtual space. But ....
-> 
-> 
->>let's make it tru
->>y useful, so it understands the capabilities of the
->>processor, optimizes the resources, and keeps generic mapping
->>information so ioremap() doesn't care if it is mapped by BATs, CAMs,
->>or large pages.
-> 
-> 
->  ... I do agree that making it even smarter so it can coalesce block
-> mappings with the same attributes would be "interesting".
-> 
-> Ben.
-> 
-> 
+Hi, Dan!
 
-Let me pop in here.
+Dan Malek wrote:
+> Before you start, just make sure such a thing is really a performance
+> enhancement.  Yes, the DMA does run in parallel with the core, but often
+> the overhead of the set up and clean up interrupt is more code and time
+> that if you just copied the data in a loop.  If possible, integrate the DMA
+> processing into other driver work, clean up a previous DMA the next time
+> the driver needs to use it, not with a separate completion handler.
 
-My remote heap allocator has these properties, i.e. it can
-coalesce adjucent areas if they are of the same "key".
+Well... thanks. But the CPU is intended to do image processing while
+data comes in. And currently, when I access (memcopy) the SRAM on my
+Local Bus via UPM I cannot get it to generate bursts yet, so I hope the
+DMA will speed up those things, too.
 
-Back to the depths which I now reside...
+Greets,
 
-Regards
+Clemens Koller
+_______________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Str. 45/1
+81379 Muenchen
+Germany
 
-Pantelis
+http://www.anagramm.de
+Phone: +49-89-741518-50
+Fax: +49-89-741518-19
