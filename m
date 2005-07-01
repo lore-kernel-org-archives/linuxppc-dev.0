@@ -1,18 +1,15 @@
 Return-Path: <clemens.koller@anagramm.de>
 Received: from moutvdomng.kundenserver.de (moutvdom.kundenserver.de
-	[212.227.126.249]) by ozlabs.org (Postfix) with ESMTP id 323C967BF2
+	[212.227.126.249]) by ozlabs.org (Postfix) with ESMTP id E120067BD5
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  1 Jul 2005 17:47:28 +1000 (EST)
-Message-ID: <42C4F50D.3050405@anagramm.de>
-Date: Fri, 01 Jul 2005 09:47:25 +0200
+	Fri,  1 Jul 2005 17:54:48 +1000 (EST)
+Message-ID: <42C4F6C4.1070908@anagramm.de>
+Date: Fri, 01 Jul 2005 09:54:44 +0200
 From: Clemens Koller <clemens.koller@anagramm.de>
 MIME-Version: 1.0
-To: Dan Malek <dan@embeddededge.com>
-References: <42C40BD0.8040408@anagramm.de>
-	<658739DB-540F-4AFC-80DC-BBF0C2AD70F4@freescale.com>
-	<42C4162E.4030602@anagramm.de>
-	<427c70958bb995dad4fbad2e6ff121bc@embeddededge.com>
-In-Reply-To: <427c70958bb995dad4fbad2e6ff121bc@embeddededge.com>
+To: Murray.Jensen@csiro.au
+References: <931.1120150666@gerd>
+In-Reply-To: <931.1120150666@gerd>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: MPC85xx DMA support for Kernel 2.6?
@@ -26,22 +23,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi, Dan!
+Hi, Murray!
+Hello, Jason!
 
-Dan Malek wrote:
-> Before you start, just make sure such a thing is really a performance
-> enhancement.  Yes, the DMA does run in parallel with the core, but often
-> the overhead of the set up and clean up interrupt is more code and time
-> that if you just copied the data in a loop.  If possible, integrate the DMA
-> processing into other driver work, clean up a previous DMA the next time
-> the driver needs to use it, not with a separate completion handler.
+Thank you very much! It seems like you saved my holiday! :-)))
+I will have a look and see what I can find there.
+Is there any interest to publish this and the other patches
+and get it into 2.6 if not already planned?
 
-Well... thanks. But the CPU is intended to do image processing while
-data comes in. And currently, when I access (memcopy) the SRAM on my
-Local Bus via UPM I cannot get it to generate bursts yet, so I hope the
-DMA will speed up those things, too.
-
-Greets,
+Best regards,
 
 Clemens Koller
 _______________________________
@@ -54,3 +44,30 @@ Germany
 http://www.anagramm.de
 Phone: +49-89-741518-50
 Fax: +49-89-741518-19
+
+Murray.Jensen@csiro.au wrote:
+> On Thu, 30 Jun 2005 17:56:30 +0200, Clemens Koller writes:
+> 
+>>But is there any code available for recycling?
+> 
+> 
+> Jason McMullan has some code for mpc85xx dma here:
+> 
+> 	http://www.evillabs.net/~gus/patches/mpc85xx_dma.patch
+> 
+> Looks like it wouldn't take much to get it working. Cheers!
+> 								Murray...
+> --
+> Murray Jensen, CSIRO Manufacturing & Infra. Tech.      Phone: +61 3 9662 7763
+> Locked Bag No. 9, Preston, Vic, 3072, Australia.         Fax: +61 3 9662 7853
+> Internet: Murray.Jensen@csiro.au
+> 
+> To the extent permitted by law, CSIRO does not represent, warrant and/or
+> guarantee that the integrity of this communication has been maintained or
+> that the communication is free of errors, virus, interception or interference.
+> 
+> The information contained in this e-mail may be confidential or privileged.
+> Any unauthorised use or disclosure is prohibited. If you have received this
+> e-mail in error, please delete it immediately and notify Murray Jensen on
+> +61 3 9662 7763. Thank you.
+> 
