@@ -1,20 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <olh@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BFAAE67BCC
-	for <linuxppc-dev@ozlabs.org>; Fri,  1 Jul 2005 10:58:09 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20050701102741.50361e86.sfr@canb.auug.org.au>
-References: <20050630220349.966609000@>
-	<20050701102741.50361e86.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Fri, 01 Jul 2005 10:51:57 +1000
-Message-Id: <1120179117.31924.66.camel@gaston>
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id F040A67C1C
+	for <linuxppc-dev@ozlabs.org>; Mon,  4 Jul 2005 03:30:01 +1000 (EST)
+Date: Sun, 3 Jul 2005 19:29:55 +0200
+From: Olaf Hering <olh@suse.de>
+To: Paul Mackerras <paulus@samba.org>
+Message-ID: <20050703172955.GA25976@suse.de>
+References: <17016.29775.224816.691409@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, domen@coderock.org, clucas@rotomalug.org
-Subject: Re: [patch 1/1] Audit return code : drivers/macintosh/apm_emu.c
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <17016.29775.224816.691409@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, trini@kernel.crashing.org
+Subject: Re: [PATCH] Set cpu explicitly in kernel compiles
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,18 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2005-07-01 at 10:27 +1000, Stephen Rothwell wrote:
-> On Fri, 01 Jul 2005 00:03:50 +0200 domen@coderock.org wrote:
-> >
-> > From: Christophe Lucas <clucas@rotomalug.org>
-> > 
-> > 
-> > Audit return codes (and handle failure correctly) for misc_register.
+ On Wed, May 04, Paul Mackeras wrote:
+
+> What do people think of this patch?  The motivation for it is that a
+> biarch gcc-4.0 will by default tune for POWER4, even for a 32-bit
+> compile, meaning that we end up with a lot of nops we don't need.
+> This also takes out -mstring.
 > 
-> This patch was rejected against arch/i386/kernel/apm.c since the driver
-> can still do useful things even if the misc_register fails.  (I don't know
-> if this is true for the ppc emulation, just a note).
+> With this, the text size reduces by about 120k for my normal config
+> when compiling with a biarch gcc-4.0.  The text size also reduces
+> slightly when compiling with the Debian gcc-3.3.5 (32-bit only, not
+> biarch).
+> 
+> If there are no objections I'll send this to Andrew and Linus.
 
-Yes same for ppc, we still have the /proc entry which is useful.
+What will be done about this patch? -mcpu=750 reduces .text by 70k.
 
-Ben.
+
+   text    data     bss     dec     hex filename
+3397801  579544  519704 4497049  449e99 ../O-ppc-cpu601/vmlinux
+3397502  579544  519704 4496750  449d6e ../O-ppc-cpu604/vmlinux
+3397953  579544  519704 4497201  449f31 ../O-ppc-cpu750/vmlinux
+3469857  579544  519704 4569105  45b811 ../O-ppc-default/vmlinux
