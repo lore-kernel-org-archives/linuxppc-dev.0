@@ -1,21 +1,23 @@
-Return-Path: <zwddwhaebuzxt@yahoo.com>
-Received: from xr42.internetdsl.tpnet.pl (giszowiec.pl [80.55.225.42])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4F76B67BD0
+Return-Path: <a.woellert@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.193])
+	by ozlabs.org (Postfix) with ESMTP id 3288967C18
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  3 Jul 2005 14:49:01 +1000 (EST)
-Message-ID: <QQYRNFRUJQRETQBZEBWXTXJU@yahoo.com>
-From: "德冠網路" <zwddwhaebuzxt@yahoo.com>
-To: linuxer@openfind.com.tw, linuxppc-embedded@ozlabs.org, linxda@oucc.com.tw,
-	linz@ool-4356f32e.dyn.optonline.net, lin-chih@pcmail.com.tw, lin.tm@pg.com
-Date: Sun, 03 Jul 2005 03:13:27 -0200
+	Mon,  4 Jul 2005 02:02:00 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id i24so564859wra
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 03 Jul 2005 09:01:58 -0700 (PDT)
+Message-ID: <42C80BF6.6030508@gmail.com>
+Date: Sun, 03 Jul 2005 18:01:58 +0200
+From: =?ISO-8859-1?Q?Anton_W=F6llert?= <a.woellert@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="--6773362293408085960"
-Subject: =?iso-8859-1?q?=BA=F4=B8=F4=B6=7D=A9=B1=C0u=B4f=A4=E8=AE=D7=A1I_?=
-	=?iso-8859-1?q?=A6n=C2=A7=B7m=A5=FD=B3=F8=A1I?=
-Reply-To: 德冠網路 <zwddwhaebuzxt@yahoo.com>
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>,
+	linuxppc-embedded@ozlabs.org
+References: <42C1AAC1.4060702@gmail.com> <20050629085913.GA2153@logos.cnet>
+	<faba7798050630071347d4ad63@mail.gmail.com>
+	<20050701094438.GA11121@logos.cnet>
+In-Reply-To: <20050701094438.GA11121@logos.cnet>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: mpc8xx and ld.so problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,82 +28,62 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-----6773362293408085960
-Content-Type: text/html;
-Content-Transfer-Encoding: base64
+Marcelo Tosatti wrote:
+> Hi Anton,
+> 
+> 
+> (moving to ppc-embedded since it might be of interesting for other 
+> 8xx users)
+> 
+> On Thu, Jun 30, 2005 at 04:13:30PM +0200, Anton W闤lert wrote:
+> 
+> 
+> Can you please examine in more detail what is going on here? 
+> 
+> What are the contents of the r0 and r6 registers, where exactly is the
+> task stopped.
 
-PEhUTUw+DQo8SEVBRD4NCjxUSVRMRT68d6thuOqwVKrRpfems62tpL2lcV9lZG08L1RJVExF
-Pg0KPE1FVEEgSFRUUC1FUVVJVj0iQ29udGVudC1UeXBlIiBDT05URU5UPSJ0ZXh0L2h0bWw7
-IGNoYXJzZXQ9YmlnNSI+DQo8L0hFQUQ+DQo8Qk9EWSBCR0NPTE9SPSNDMEMwQzAgTEVGVE1B
-UkdJTj0wIFRPUE1BUkdJTj0wIE1BUkdJTldJRFRIPTAgTUFSR0lOSEVJR0hUPTA+DQo8ZGl2
-IGFsaWduPSJjZW50ZXIiPg0KPFRBQkxFIFdJRFRIPTY1MCBCT1JERVI9MCBDRUxMUEFERElO
-Rz0wIENFTExTUEFDSU5HPTA+DQoJPFRSPg0KCQk8VEQ+DQoJCQk8SU1HIFNSQz0iaHR0cDov
-L3BvJTczdC4xMDElNGUlNDUlNzclNzMuJTQyJTQ5JTVhL2ltYWdlcy90ZWtjYW1wL2VkbV8x
-LmdpZiIgV0lEVEg9MjA5IEhFSUdIVD0yNDggQUxUPSIiPjwvVEQ+DQoJCTxURD4NCgkJCTxJ
-TUcgU1JDPSJodHRwOi8vcG8lNzN0LjEwMSU0ZSU0NSU3NyU3My4lNDIlNDklNWEvaW1hZ2Vz
-L3Rla2NhbXAvZWRtXzIuZ2lmIiBXSURUSD0yMDAgSEVJR0hUPTI0OCBBTFQ9IiI+PC9URD4N
-CgkJPFREPg0KCQkJPElNRyBTUkM9Imh0dHA6Ly9wbyU3M3QuMTAxJTRlJTQ1JTc3JTczLiU0
-MiU0OSU1YS9pbWFnZXMvdGVrY2FtcC9lZG1fMy5naWYiIFdJRFRIPTI0MSBIRUlHSFQ9MjQ4
-IEFMVD0iIj48L1REPg0KCTwvVFI+DQoJPFRSPg0KCQk8VEQ+DQoJCQk8bWFwIG5hbWU9IkZQ
-TWFwMiI+DQoJCQk8YXJlYSB0YXJnZXQ9Il9ibGFuayIgaHJlZj0iaHR0cDovL3d3dy50ZWtj
-YW1wLmNvbSIgc2hhcGU9InJlY3QiIGNvb3Jkcz0iMTA2LCAxMTksIDIwOCwgMTMzIj4NCgkJ
-CTwvbWFwPg0KCQkJPElNRyBTUkM9Imh0dHA6Ly9wbyU3M3QuMTAxJTRlJTQ1JTc3JTczLiU0
-MiU0OSU1YS9pbWFnZXMvdGVrY2FtcC9lZG1fNC5naWYiIFdJRFRIPTIwOSBIRUlHSFQ9MjA3
-IEFMVD0iIiB1c2VtYXA9IiNGUE1hcDIiIGJvcmRlcj0iMCI+PC9URD4NCgkJPFREPg0KCQkJ
-PG1hcCBuYW1lPSJGUE1hcDMiPg0KCQkJPGFyZWEgdGFyZ2V0PSJfYmxhbmsiIGhyZWY9Imh0
-dHA6Ly93d3cudGVrY2FtcC5jb20iIHNoYXBlPSJyZWN0IiBjb29yZHM9IjAsIDEyMiwgNjMs
-IDEzMyI+DQoJCQk8L21hcD4NCgkJCTxJTUcgU1JDPSJodHRwOi8vcG8lNzN0LjEwMSU0ZSU0
-NSU3NyU3My4lNDIlNDklNWEvaW1hZ2VzL3Rla2NhbXAvZWRtXzUuZ2lmIiBXSURUSD0yMDAg
-SEVJR0hUPTIwNyBBTFQ9IiIgdXNlbWFwPSIjRlBNYXAzIiBib3JkZXI9IjAiPjwvVEQ+DQoJ
-CTxURD4NCgkJCTxJTUcgU1JDPSJodHRwOi8vcG8lNzN0LjEwMSU0ZSU0NSU3NyU3My4lNDIl
-NDklNWEvaW1hZ2VzL3Rla2NhbXAvZWRtXzYuZ2lmIiBXSURUSD0yNDEgSEVJR0hUPTIwNyBB
-TFQ9IiI+PC9URD4NCgk8L1RSPg0KCTxUUj4NCgkJPFREPg0KCQkJPG1hcCBuYW1lPSJGUE1h
-cDAxIj4NCgkJCTxhcmVhIHRhcmdldD0iX2JsYW5rIiBocmVmPSJodHRwOi8vd3d3LnRla2Nh
-bXAuY29tIiBzaGFwZT0icmVjdCIgY29vcmRzPSI2NSwgMTE5LCAxNTksIDEzMiI+DQoJCQk8
-SU1HIFNSQz0iaHR0cDovL3BvJTczdC4xMDElNGUlNDUlNzclNzMuJTQyJTQ5JTVhL2ltYWdl
-cy90ZWtjYW1wL2VkbV83LmdpZiIgV0lEVEg9MjA5IEhFSUdIVD0yMjggQUxUPSIiIHVzZW1h
-cD0iI0ZQTWFwMDEiIGJvcmRlcj0iMCI+PC9URD4NCiAgICAgICAgICAgICAgICAgICAgICAg
-IDwvbWFwPg0KCQk8VEQ+DQoJCQk8bWFwIG5hbWU9IkZQTWFwMCI+DQoJCQk8YXJlYSB0YXJn
-ZXQ9Il9ibGFuayIgaHJlZj0iaHR0cDovL3d3dy5zb25nYmVhbS5jb20udHciIHNoYXBlPSJy
-ZWN0IiBjb29yZHM9IjEwLCAxNjYsIDU3LCAxODEiPg0KCQkJPGFyZWEgdGFyZ2V0PSJfYmxh
-bmsiIGhyZWY9Imh0dHA6Ly93d3cucHJlbWllcnRlLmNvbSIgc2hhcGU9InJlY3QiIGNvb3Jk
-cz0iNjMsIDE2NywgMTA5LCAxODEiPg0KCQkJPGFyZWEgdGFyZ2V0PSJfYmxhbmsiIGhyZWY9
-Imh0dHA6Ly93d3cuaW1wbGFudC5jb20udHciIHNoYXBlPSJyZWN0IiBjb29yZHM9IjExOCwg
-MTY3LCAxOTksIDE4MSI+DQoJCQk8YXJlYSB0YXJnZXQ9Il9ibGFuayIgaHJlZj0iaHR0cDov
-L3d3dy5jb29sc3RvcmUuY29tLnR3IiBzaGFwZT0icmVjdCIgY29vcmRzPSIxLCAyMiwgMTg5
-LCAzMyI+DQoJCQk8L21hcD4NCgkJCTxJTUcgU1JDPSJodHRwOi8vcG8lNzN0LjEwMSU0ZSU0
-NSU3NyU3My4lNDIlNDklNWEvaW1hZ2VzL3Rla2NhbXAvZWRtXzguZ2lmIiBXSURUSD0yMDAg
-SEVJR0hUPTIyOCBBTFQ9IiIgdXNlbWFwPSIjRlBNYXAwIiBib3JkZXI9IjAiPjwvVEQ+DQoJ
-CTxURD4NCgkJCTxtYXAgbmFtZT0iRlBNYXAxIj4NCgkJCTxhcmVhIHRhcmdldD0iX2JsYW5r
-IiBocmVmPSJodHRwOi8vd3d3LmNoZWVybGl2aW5nLmNvbS50dyIgc2hhcGU9InJlY3QiIGNv
-b3Jkcz0iNiwgMTY3LCA2OCwgMTgyIj4NCgkJCTwvbWFwPg0KCQkJPElNRyBTUkM9Imh0dHA6
-Ly9wbyU3M3QuMTAxJTRlJTQ1JTc3JTczLiU0MiU0OSU1YS9pbWFnZXMvdGVrY2FtcC9lZG1f
-OS5naWYiIFdJRFRIPTI0MSBIRUlHSFQ9MjI4IEFMVD0iIiB1c2VtYXA9IiNGUE1hcDEiIGJv
-cmRlcj0iMCI+PC9URD4NCgk8L1RSPg0KCTxUUj4NCgkJPFREPg0KCQkJPElNRyBTUkM9Imh0
-dHA6Ly9wbyU3M3QuMTAxJTRlJTQ1JTc3JTczLiU0MiU0OSU1YS9pbWFnZXMvdGVrY2FtcC9l
-ZG1fMTAuZ2lmIiBXSURUSD0yMDkgSEVJR0hUPTIxNyBBTFQ9IiI+PC9URD4NCgkJPFREPg0K
-CQkJPElNRyBTUkM9Imh0dHA6Ly9wbyU3M3QuMTAxJTRlJTQ1JTc3JTczLiU0MiU0OSU1YS9p
-bWFnZXMvdGVrY2FtcC9lZG1fMTEuZ2lmIiBXSURUSD0yMDAgSEVJR0hUPTIxNyBBTFQ9IiI+
-PC9URD4NCgkJPFREPg0KCQkJPElNRyBTUkM9Imh0dHA6Ly9wbyU3M3QuMTAxJTRlJTQ1JTc3
-JTczLiU0MiU0OSU1YS9pbWFnZXMvdGVrY2FtcC9lZG1fMTIuZ2lmIiBXSURUSD0yNDEgSEVJ
-R0hUPTIxNyBBTFQ9IiI+PC9URD4NCgk8L1RSPg0KCTxUUj4NCgkJPFREPg0KCQkJPElNRyBT
-UkM9Imh0dHA6Ly9wbyU3M3QuMTAxJTRlJTQ1JTc3JTczLiU0MiU0OSU1YS9pbWFnZXMvdGVr
-Y2FtcC9lZG1fMTMuZ2lmIiBXSURUSD0yMDkgSEVJR0hUPTI1NyBBTFQ9IiI+PC9URD4NCgkJ
-PFREPg0KCQkJPElNRyBTUkM9Imh0dHA6Ly9wbyU3M3QuMTAxJTRlJTQ1JTc3JTczLiU0MiU0
-OSU1YS9pbWFnZXMvdGVrY2FtcC9lZG1fMTQuZ2lmIiBXSURUSD0yMDAgSEVJR0hUPTI1NyBB
-TFQ9IiI+PC9URD4NCgkJPFREPg0KCQkJPElNRyBTUkM9Imh0dHA6Ly9wbyU3M3QuMTAxJTRl
-JTQ1JTc3JTczLiU0MiU0OSU1YS9pbWFnZXMvdGVrY2FtcC9lZG1fMTUuZ2lmIiBXSURUSD0y
-NDEgSEVJR0hUPTI1NyBBTFQ9IiI+PC9URD4NCgk8L1RSPg0KCTxUUj4NCgkJPFREPg0KCQkJ
-PElNRyBTUkM9Imh0dHA6Ly9wbyU3M3QuMTAxJTRlJTQ1JTc3JTczLiU0MiU0OSU1YS9pbWFn
-ZXMvdGVrY2FtcC9lZG1fMTYuZ2lmIiBXSURUSD0yMDkgSEVJR0hUPTI0MyBBTFQ9IiI+PC9U
-RD4NCgkJPFREPg0KCQkJPElNRyBTUkM9Imh0dHA6Ly9wbyU3M3QuMTAxJTRlJTQ1JTc3JTcz
-LiU0MiU0OSU1YS9pbWFnZXMvdGVrY2FtcC9lZG1fMTcuZ2lmIiBXSURUSD0yMDAgSEVJR0hU
-PTI0MyBBTFQ9IiI+PC9URD4NCgkJPFREPg0KCQkJPElNRyBTUkM9Imh0dHA6Ly9wbyU3M3Qu
-MTAxJTRlJTQ1JTc3JTczLiU0MiU0OSU1YS9pbWFnZXMvdGVrY2FtcC9lZG1fMTguZ2lmIiBX
-SURUSD0yNDEgSEVJR0hUPTI0MyBBTFQ9IiI+PC9URD4NCgk8L1RSPg0KPC9UQUJMRT4NCjwv
-ZGl2Pg0KPGltZyBzcmM9Imh0dHA6Ly8lNjMlNGYlNzVuJTc0JTY1ci4xMDElNGUlNDUlNzcl
-NzMuJTQyJTQ5JTVhL25hbG9nZC5waHA/Y291bnRlcj10ZWtjYW1wJnVybD08Pz0kSFRUUF9T
-RVJWRVJfVkFSU1tIVFRQX1JFRkVSRVJdPz4iIHdpZHRoPTAgaGVpZ2h0PTA+DQo8L0JPRFk+
-DQo8L0hUTUw+
+with backtrace in gdb i found out, that memset() (which is exactly the 
+routine at sysdeps/powerpc/powerpc32/memset.S) called by 
+_dl_allocate_tls_storage (sysdeps/generic/dl-tls.c). btw. memset is 
+called 3 times before and there it works fine.
+well, _dl_allocate_tls_storage invokes __libc_memalign 
+(elf/dl-minimal.c). __libc_memalign should return an aligned area of 
+memory for the tls-stuff (which later then will be memset'd with zero).
+__libc_memalign now allocates an aligned memory block, but first looks 
+if there is unused space in the previous page of its data-segment. if 
+there is some, it will use that. if more than this is needed, it will 
+call mmap with MAP_ANON|MAP_PRIVATE and PROT_READ|PROT_WRITE. it then 
+looks, if the returned address lies at the end of the old page, if not, 
+the old one will not be used (because then it wouldn't return an 
+continuegous area of memory). will gdb, i saw, that mmap returns a 
+address right after the previous page and so the block continuegous.
+this block is now returned and given to memset.
+memset now zeros out a part of the returned block. as long, as dcbz 
+zeros out the memory, that lies in the old page (before 0x30001000) it 
+works, but when it steps over that address (the page boundary), stepi in 
+gdb just hangs and doesn't return anything ( except i press ctrl-c ).
+i think, dcbz should cause a page fault, because the new page was 
+allocated with PROT_READ|PROT_WRITE. i expect, that there is no handling 
+for dcbz's in the page fault handler (which should be do_page_fault in 
+arch/ppc/kernel/fault.c if i'm right).
+other possibilities, like false cache_line_size etc should explain that, 
+  because they are all set right (with gdb i inspected nearly 
+everything, and memset should work as expected, and it does so in other 
+scenarios).
 
-----6773362293408085960--
+sorry for not delivering the registers and so on, but actually i have no 
+access to the board for one week :). i will post them later, if really 
+needed, but throug my gdb-sessions, they seemed all to be right.
+
+> 
+> I _guess_ it might be some form of "dcbz" misbehaviour, in such case I 
+> imagine that either the task would loop forever or execute an invalid
+> exception/instruction.
+> 
+
+so what should be the real solution, deleting memset.S because the use 
+of dcbz is not allowed or eventually fix the page-fault handler, because 
+he didn't recognize dcbz's (if i'm right).
+
+thanks for your help, anton
