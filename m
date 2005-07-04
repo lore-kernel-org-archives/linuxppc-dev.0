@@ -1,25 +1,21 @@
-Return-Path: <yuli@arabellasw.com>
-Received: from gold.webfusion.co.uk (gold.webfusion.co.uk [212.67.202.159])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EB23967C2A
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutvdomng.kundenserver.de (moutvdom.kundenserver.de
+	[212.227.126.249]) by ozlabs.org (Postfix) with ESMTP id 3703A67C27
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  4 Jul 2005 18:37:13 +1000 (EST)
-From: Yuli Barcohen <yuli@arabellasw.com>
+	Mon,  4 Jul 2005 19:03:39 +1000 (EST)
+Message-ID: <42C8FB65.1030309@anagramm.de>
+Date: Mon, 04 Jul 2005 11:03:33 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17096.61878.43282.752343@astp0002.localdomain>
-Date: Mon, 4 Jul 2005 11:22:14 +0300
-To: Jason McMullan <jason.mcmullan@gmail.com>
-In-Reply-To: <1120244191.18872.3.camel@jmcmullan.timesys>
-References: <42C1AAC1.4060702@gmail.com> <20050629085913.GA2153@logos.cnet>
-	<faba7798050630071347d4ad63@mail.gmail.com>
-	<20050701094438.GA11121@logos.cnet>
-	<1120229717.21507.9.camel@jmcmullan.timesys>
-	<20050701101713.GC11121@logos.cnet>
-	<1120244191.18872.3.camel@jmcmullan.timesys>
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: mpc8xx and ld.so problem
+To: Dan Malek <dan@embeddededge.com>
+References: <42C40BD0.8040408@anagramm.de><658739DB-540F-4AFC-80DC-BBF0C2AD70F4@freescale.com><42C4162E.4030602@anagramm.de><427c70958bb995dad4fbad2e6ff121bc@embeddededge.com><42C4F50D.3050405@anagramm.de>
+	<d946affc11510f7116710026d2a8d1f3@embeddededge.com>
+	<004001c57e47$5cae9410$0301a8c0@chuck2>
+	<d67d2bddad7bf2be742b8d53768482bf@embeddededge.com>
+In-Reply-To: <d67d2bddad7bf2be742b8d53768482bf@embeddededge.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: MPC85xx DMA support for Kernel 2.6?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,28 +26,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> Jason McMullan writes:
+Hi, Dan and Mark!
 
-[...deleted...]
+Dan Malek wrote:
+> On Jul 1, 2005, at 10:15 AM, Mark Chambers wrote:
+> 
+>> Is the SRAM being cached?  I don't think the CPU will generate bursts
+>> unless it's cached, right?
+> 
+> I don't really remember :-)  I know the 8xx will not burst if the line 
+> isn't
+> cached, and I know the 7xxx will.  I thought the 82xx and 85xx would
+> also burst if you had sufficient sequential operations queued.  On
+> 83/85xx you have to further qualify the discussion based upon the DDR2
+> or the local bus interface :-)  The CPM and DMA will burst on all
+> buses for 8xx/82xx/83xx/85xx if the memory controller is configured
+> to do so.
 
-    Jason> Ha. Funny. The glibc powerpc maintainer doesn't want any
-    Jason> embedded fixes in the mainline. Last I checked, that was for
-    Jason> 'the tools vendors' to fix.
+Thanks, for your comments! I'll have a look at it during the
+next days and let you know about my mileage :-)
 
-    Jason> "We won't work around processor bugs" is their philosophy.
+Greets,
 
-[...deleted...]
+Clemens Koller
+_______________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Str. 45/1
+81379 Muenchen
+Germany
 
-I investigated the problem a bit when I had trouble with a self-compiled
-glibc a year or so ago. IIRC, I found bug in the memset code, not in the
-chip. The code was just wrong for cache line sizes not equal to 32. So
-memset.S is good for 60x series (PQII included) but for 8xx it fails. We
-use dcbX instructions in some kernel drivers and since we never had any
-problems with those drivers I'm a bit surprised to hear that all 8xx
-chips have got that bug.
-
--- 
-========================================================================
- Yuli Barcohen       | Phone +972-9-765-1788 |  Software Project Leader
- yuli@arabellasw.com | Fax   +972-9-765-7494 | Arabella Software, Israel
-========================================================================
+http://www.anagramm.de
+Phone: +49-89-741518-50
+Fax: +49-89-741518-19
