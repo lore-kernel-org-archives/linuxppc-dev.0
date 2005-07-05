@@ -1,22 +1,21 @@
-Return-Path: <d.grab@hima.com>
-Received: from hima.com (mail.hima.com [80.146.244.10])
-	by ozlabs.org (Postfix) with ESMTP id 2450267C71
+Return-Path: <gautran@mrv.com>
+Received: from mailman.xyplex.com (mailman.xyplex.com [140.179.176.116])
+	by ozlabs.org (Postfix) with ESMTP id E985F67C6F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  5 Jul 2005 21:20:25 +1000 (EST)
-Received: from SN7606 ([192.168.100.10])
-	by hima.com (mail.hima.com [212.116.4.129]) (MDaemon.PRO.v8.0.3.R)
-	with ESMTP id md50000032377.msg
-	for <linuxppc-embedded@ozlabs.org>; Tue, 05 Jul 2005 13:20:35 +0200
-From: "David Grab" <d.grab@hima.com>
-To: <wd@denx.de>
-Date: Tue, 5 Jul 2005 13:18:54 +0200
-Message-ID: <000801c58153$54af2400$f201a8c0@SN7606>
+	Tue,  5 Jul 2005 23:10:41 +1000 (EST)
+Message-ID: <42CA8727.8060504@mrv.com>
+Date: Tue, 05 Jul 2005 09:12:07 -0400
+From: Guillaume Autran <gautran@mrv.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <20050705081854.8096B353A4A@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: AW: initrd rootfs ramdisk
+To: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+References: <f14f5f5aebd45879c39c6ce69f29c004@embeddededge.com>	<20050626143004.GA5198@logos.cnet>	<20050627133930.GA9109@logos.cnet>	<f5d1cb54913dd31385d15fe1f2e5b12d@embeddededge.com>	<1119940208.5133.204.camel@gaston>
+	<42C153E1.3060004@mrv.com>	<1120018530.5133.241.camel@gaston>
+	<42C2BF03.9000402@mrv.com>	<20050629155445.GA3560@logos.cnet>	<1120087568.31924.14.camel@gaston>	<20050629193846.GA4748@logos.cnet>
+	<42C3F978.2070305@mrv.com>
+In-Reply-To: <42C3F978.2070305@mrv.com>
+Content-Type: multipart/mixed; boundary="------------040603080000030706090803"
+Subject: Re: [PATCH] 8xx: get_mmu_context() for (very) FEW_CONTEXTS
+ and	KERNEL_PREEMPT race/starvation issue
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,93 +26,255 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
+--------------040603080000030706090803
+Content-Type: multipart/alternative;
+	boundary="------------030805030209040904050803"
 
->> i solved my problem last problem and now i get console output. :) So next
->> step is to setup the root file system. I want to use an image loaded into
->> ramdisk, but seems i´m missing something. I´m using u-boot to load the
->> ramdisk and linux kernel. Actually i don´t know how the kernel gets the
->> location of the loaded ramdisk. I only added the support (see Kernel
 
->It gets passed in registers r4 (start address) and r5 (end address).
+--------------030805030209040904050803
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
->> configuration) and the command line parameter root=/dev/ram rw. But the
-boot
->> command arguments from u-boot seems not recognized from the linux kernel.
+Sorry for the late reply. I was away for the long weekend. However, my 
+validation test ran all the way through the long weekend ! So, we can 
+consider this a fix.
+See the patch attached.
 
->But the kernel prints the boot parameters just fine.
+Thanks,
+Guillaume.
 
-Maybe because i defined it in kernel configuration! But from u-boot i don´t
-get any arguments.
 
-CONFIG_CMDLINE="initrd=0x1fe0f000 root=/dev/ram rw ip=on
-console=ttyS1,115200"
+Guillaume Autran wrote:
 
-I thougt i can give the linux kernel position from u-boot where initrd is
-located, but i have the same problem.
+> Well, disabling preemption in the get_mmu_context() does not help much...
+> I'm trying to disable preemption only inside destroy_mmu_context() as 
+> suggested.
+> Will keep you posted.
+>
+> Guillaume.
+>
+>
+>
+> Marcelo Tosatti wrote:
+>
+>>On Thu, Jun 30, 2005 at 09:26:07AM +1000, Benjamin Herrenschmidt wrote:
+>>  
+>>
+>>>>Execution is resumed exactly where it has been interrupted.
+>>>>
+>>>>      
+>>>>
+>>>>>The idea behind my patch was to get rid of that nr_free_contexts counter 
+>>>>>that is (I thing) redundant with the context_map.
+>>>>>        
+>>>>>
+>>>>Apparently its there to avoid the spinlock exactly on !FEW_CONTEXTS machines.
+>>>>
+>>>>I suppose that what happens is that get_mmu_context() gets preempted after stealing
+>>>>a context (so nr_free_contexts = 0), but before setting next_mmu_context to the 
+>>>>next entry
+>>>>
+>>>>next_mmu_context = (ctx + 1) & LAST_CONTEXT;
+>>>>      
+>>>>
+>>>Ugh ? Can switch_mm() be preempted at all ? Did I miss yet another
+>>>"let's open 10 gazillion races for gun" Ingo patch ?
+>>>    
+>>>
+>>
+>>Doh nope it can't - my bad.
+>>
+>>  
+>>
+>>>>So if the now running higher prio tasks calls switch_mm() (which is likely to happen)
+>>>>it loops forever on atomic_dec_if_positive(&nr_free_contexts), while steal_context()
+>>>>sees "mm->context == CONTEXT".
+>>>>      
+>>>>
+>>>I think the race is only when destroy_context() is preempted, but maybe
+>>>I missed something.
+>>>    
+>>>
+>>
+>>Nope, I think you are right. My "theory" is obviously flawed now. 
+>>
+>>There seem to be several contexts where destroy_context() could be called
+>>with preempt enabled - I should have been shutup in the first place :)
+>>
+>>Lets wait for Guillaume to test...
+>>
+>>  
+>>
+>
+>-- 
+>=======================================
+>Guillaume Autran
+>Senior Software Engineer
+>MRV Communications, Inc.
+>Tel: (978) 952-4932 office
+>E-mail: gautran@mrv.com
+>======================================= 
+>
+>------------------------------------------------------------------------
+>
+>_______________________________________________
+>Linuxppc-embedded mailing list
+>Linuxppc-embedded@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
 
-u-boot starts well, and the declarations for boot arguments are defined:
+-- 
+=======================================
+Guillaume Autran
+Senior Software Engineer
+MRV Communications, Inc.
+Tel: (978) 952-4932 office
+E-mail: gautran@mrv.com
+======================================= 
 
-#define CONFIG_BOOTARGS		"root=/dev/ram rw"
-#define CONFIG_BOOTCOMMAND	"bootm ff000000 ff800000"    /* autoboot command
-*/
 
-But the linux kernel seems not get them. With CONFIG_CMDLINE="ip=on
-console=ttyS1,115200" in the kernel settings to see if the kernel gets the
-command line parameters from u-boot as mentioned above, i got this error:
+--------------030805030209040904050803
+Content-Type: text/html; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
-loop: loaded (max 8 devices)
-VFS: Cannot open root device "<NULL>" or unknown-block(3,1)
-Please append a correct "root=" boot option
-Kernel panic - not syncing: VFS: Unable to mount root fs on
-unknown-block(3,1)
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=ISO-8859-1">
+  <title></title>
+</head>
+<body text="#000000" bgcolor="#ffffff">
+Sorry for the late reply. I was away for the long weekend. However, my
+validation test ran all the way through the long weekend ! So, we can
+consider this a fix.<br>
+See the patch attached.<br>
+<br>
+Thanks,<br>
+Guillaume.<br>
+<br>
+<br>
+Guillaume Autran wrote:<br>
+<blockquote type="cite" cite="mid42C3F978.2070305@mrv.com">
+  <title></title>
+Well, disabling preemption in the get_mmu_context() does not help
+much... <br>
+I'm trying to disable preemption only inside destroy_mmu_context() as
+suggested.<br>
+Will keep you posted.<br>
+  <br>
+Guillaume.<br>
+  <br>
+  <br>
+  <br>
+Marcelo Tosatti wrote:<br>
+  <blockquote type="cite" cite="mid20050629193846.GA4748@logos.cnet">
+    <pre wrap="">On Thu, Jun 30, 2005 at 09:26:07AM +1000, Benjamin Herrenschmidt wrote:
+  </pre>
+    <blockquote type="cite">
+      <blockquote type="cite">
+        <pre wrap="">Execution is resumed exactly where it has been interrupted.
 
-I also read the FAQ
-http://www.denx.de/twiki/bin/view/DULG/LinuxHangsAfterUncompressingKernel,
-but there are even no CFG_IMMR declaration for any ppc440 board. And i also
-don´t know what address to define there to hit my board, so i left them out.
-The bd_info strucure in linux-2.6.11.6\include\asm-ppc\ppcboot.h and
-u-boot-1.1.2\include\asm-ppc\u-boot.h is the same.
+      </pre>
+        <blockquote type="cite">
+          <pre wrap="">The idea behind my patch was to get rid of that nr_free_contexts counter 
+that is (I thing) redundant with the context_map.
+        </pre>
+        </blockquote>
+        <pre wrap="">Apparently its there to avoid the spinlock exactly on !FEW_CONTEXTS machines.
 
->> Should the option CONFIG_BOOT_LOAD point on the address of the ramdisk? I
+I suppose that what happens is that get_mmu_context() gets preempted after stealing
+a context (so nr_free_contexts = 0), but before setting next_mmu_context to the 
+next entry
 
->No.
+next_mmu_context = (ctx + 1) &amp; LAST_CONTEXT;
+      </pre>
+      </blockquote>
+      <pre wrap="">Ugh ? Can switch_mm() be preempted at all ? Did I miss yet another
+"let's open 10 gazillion races for gun" Ingo patch ?
+    </pre>
+    </blockquote>
+    <pre wrap=""><!---->
+Doh nope it can't - my bad.
 
-ok
+  </pre>
+    <blockquote type="cite">
+      <blockquote type="cite">
+        <pre wrap="">So if the now running higher prio tasks calls switch_mm() (which is likely to happen)
+it loops forever on atomic_dec_if_positive(&amp;nr_free_contexts), while steal_context()
+sees "mm-&gt;context == CONTEXT".
+      </pre>
+      </blockquote>
+      <pre wrap="">I think the race is only when destroy_context() is preempted, but maybe
+I missed something.
+    </pre>
+    </blockquote>
+    <pre wrap=""><!---->
+Nope, I think you are right. My "theory" is obviously flawed now. 
 
->> hope someone could help me to trigger out my problem.
+There seem to be several contexts where destroy_context() could be called
+with preempt enabled - I should have been shutup in the first place :)
 
->Are you sure that you have ext2 filesystem support  enabled  in  your
->kernel configuration?
+Lets wait for Guillaume to test...
 
-Yes it´s selected as mentioned in kernel configuration parameters in my
-first mail.
+  </pre>
+  </blockquote>
+  <br>
+  <pre class="moz-signature" cols="72">-- 
+=======================================
+Guillaume Autran
+Senior Software Engineer
+MRV Communications, Inc.
+Tel: (978) 952-4932 office
+E-mail: <a class="moz-txt-link-abbreviated"
+ href="mailto:gautran@mrv.com">gautran@mrv.com</a>
+======================================= </pre>
+  <pre wrap="">
+<hr width="90%" size="4">
+_______________________________________________
+Linuxppc-embedded mailing list
+<a class="moz-txt-link-abbreviated" href="mailto:Linuxppc-embedded@ozlabs.org">Linuxppc-embedded@ozlabs.org</a>
+<a class="moz-txt-link-freetext" href="https://ozlabs.org/mailman/listinfo/linuxppc-embedded">https://ozlabs.org/mailman/listinfo/linuxppc-embedded</a></pre>
+</blockquote>
+<br>
+<pre class="moz-signature" cols="72">-- 
+=======================================
+Guillaume Autran
+Senior Software Engineer
+MRV Communications, Inc.
+Tel: (978) 952-4932 office
+E-mail: <a class="moz-txt-link-abbreviated" href="mailto:gautran@mrv.com">gautran@mrv.com</a>
+======================================= </pre>
+</body>
+</html>
 
-#
-# File systems
-#
-CONFIG_EXT2_FS=y
-CONFIG_EXT3_FS=y
-CONFIG_EXT3_FS_XATTR=y
-CONFIG_JBD=y
-CONFIG_FS_MBCACHE=y
+--------------030805030209040904050803--
 
-also declared:
+--------------040603080000030706090803
+Content-Type: text/plain;
+ name="preempt.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="preempt.patch"
 
-#
-# Block devices
-#
-CONFIG_BLK_DEV_LOOP=y
-CONFIG_BLK_DEV_RAM=y
-CONFIG_BLK_DEV_RAM_SIZE=4096
-CONFIG_BLK_DEV_INITRD=y
+diff -Nru linux-2.6.12/include/asm-ppc/mmu_context.h linux-2.6.12.new/include/asm-ppc/mmu_context.h
+--- linux-2.6.12/include/asm-ppc/mmu_context.h	2005-06-17 15:48:29.000000000 -0400
++++ linux-2.6.12.new/include/asm-ppc/mmu_context.h	2005-07-05 08:58:46.000000000 -0400
+@@ -149,6 +149,7 @@
+  */
+ static inline void destroy_context(struct mm_struct *mm)
+ {
++	preempt_disable();
+ 	if (mm->context != NO_CONTEXT) {
+ 		clear_bit(mm->context, context_map);
+ 		mm->context = NO_CONTEXT;
+@@ -156,6 +157,7 @@
+ 		atomic_inc(&nr_free_contexts);
+ #endif
+ 	}
++	preempt_enable();
+ }
+ 
+ static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
 
-and:
-
-#
-# Pseudo filesystems
-#
-CONFIG_PROC_FS=y
-CONFIG_PROC_KCORE=y
-CONFIG_SYSFS=y
-CONFIG_RAMFS=y
+--------------040603080000030706090803--
