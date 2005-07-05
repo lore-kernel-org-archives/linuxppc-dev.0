@@ -1,24 +1,25 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao10.cox.net (fed1rmmtao10.cox.net [68.230.241.29])
-	by ozlabs.org (Postfix) with ESMTP id A7D9067C7D
+Return-Path: <davidkwho@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.197])
+	by ozlabs.org (Postfix) with ESMTP id 82DD467C86
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Jul 2005 05:53:30 +1000 (EST)
-Date: Tue, 5 Jul 2005 12:53:28 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Yuli Barcohen <yuli@arabellasw.com>
-Message-ID: <20050705195328.GC6878@smtp.west.cox.net>
-References: <42C1AAC1.4060702@gmail.com> <20050629085913.GA2153@logos.cnet>
-	<faba7798050630071347d4ad63@mail.gmail.com>
-	<20050701094438.GA11121@logos.cnet>
-	<1120229717.21507.9.camel@jmcmullan.timesys>
-	<20050701101713.GC11121@logos.cnet>
-	<1120244191.18872.3.camel@jmcmullan.timesys>
-	<17096.61878.43282.752343@astp0002.localdomain>
+	Wed,  6 Jul 2005 06:21:12 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id i8so1713238wra
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 05 Jul 2005 13:21:10 -0700 (PDT)
+Message-ID: <4dd15d18050705132178b5fd92@mail.gmail.com>
+Date: Tue, 5 Jul 2005 16:21:10 -0400
+From: David Ho <davidkwho@gmail.com>
+To: appro@fy.chalmers.se, linuxppc-embedded@ozlabs.org, openssl-dev@openssl.org
+In-Reply-To: <4dd15d1805070510015cdaac04@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17096.61878.43282.752343@astp0002.localdomain>
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: mpc8xx and ld.so problem
+Content-Type: text/plain; charset=ISO-8859-1
+References: <19EE6EC66973A5408FBE4CB7772F6F0A02C8770E@ltnmail.xyplex.com>
+	<4dd15d1805070508312427a0ba@mail.gmail.com>
+	<4dd15d1805070508451b76afae@mail.gmail.com>
+	<4dd15d1805070509361339d08e@mail.gmail.com>
+	<4dd15d1805070510015cdaac04@mail.gmail.com>
+Subject: Re: PPC bn_div_words routine rewrite
+Reply-To: David Ho <davidkwho@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,31 +30,274 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jul 04, 2005 at 11:22:14AM +0300, Yuli Barcohen wrote:
-> >>>>> Jason McMullan writes:
-> 
-> [...deleted...]
-> 
->     Jason> Ha. Funny. The glibc powerpc maintainer doesn't want any
->     Jason> embedded fixes in the mainline. Last I checked, that was for
->     Jason> 'the tools vendors' to fix.
-> 
->     Jason> "We won't work around processor bugs" is their philosophy.
-> 
-> [...deleted...]
-> 
-> I investigated the problem a bit when I had trouble with a self-compiled
-> glibc a year or so ago. IIRC, I found bug in the memset code, not in the
-> chip. The code was just wrong for cache line sizes not equal to 32. So
-> memset.S is good for 60x series (PQII included) but for 8xx it fails. We
-> use dcbX instructions in some kernel drivers and since we never had any
-> problems with those drivers I'm a bit surprised to hear that all 8xx
-> chips have got that bug.
+Let's take first call to BN_div_word for example from BN_bn2dec, the
+parameter being passed to BN_div_word is (a=3D35, w=3D1000000000) (decimal
+numbers).  It then calls the bn_div_words with (h=3D0, l=3D35,
+d=3D1000000000)  if you examine the code in linux_ppc32.s it will exit
+early on because h is 0.  the routine returns a divide by 0, which is
+undefined according to the manual.  In the case of ppc8xx the result
+is 0x80000000.  So this is the return value from bn_div_words, as seen
+in register R3.
 
-It's also OK on a multiple of 32, iirc, but not smaller.  And using the
-information the kernel does export would be too slow.  Or at least no
-one figured out a good way to do it, userspace side.
+So what happens next is BN_div_word modifies "a" (1st parameter) with
+the result (0x80000000) and returns 23 as the remainder of the
+division. So "a" is never zero as a result and hence the test for
+BN_is_zero is always false.  The problem fails the very first time it
+uses bn_div_words.
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+The next thing I did naturally was to fix the case when you have h=3D0,
+which you can quite easy do it with the native divwu instruction.  Lo
+and behold I was once again disappointed when h is not equal to 0.
+
+More to come...
+
+
+On 7/5/05, David Ho <davidkwho@gmail.com> wrote:
+> I can tell you with certainty, with reference to the function
+> BN_bn2dec, that since lp is a pointer, and within the while loop
+> around bn_print.c:136 lp is being incremented.  Because the test
+> BN_is_zero(t) is always false, you have a pointer that is going off
+> into the stratosphere, hence the segfault on ppc8xx.
+>=20
+> More analysis to come.
+>=20
+> On 7/5/05, David Ho <davidkwho@gmail.com> wrote:
+> > First pass debugging results from gdb on ppc8xx.  Executing ssh-keygen
+> > with following arguments.
+> >
+> > (gdb) show args
+> > Argument list to give program being debugged when it is started is
+> >     "-t rsa1 -f /etc/ssh/ssh_host_key -N """.
+> >
+> > Program received signal SIGSEGV, Segmentation fault.
+> > BN_bn2dec (a=3D0x1002d9f0) at bn_print.c:136
+> > 136                             *lp=3DBN_div_word(t,BN_DEC_CONV);
+> >
+> > (gdb) i r
+> > r0             0x0      0
+> > r1             0x7fffd580       2147472768
+> > r2             0x30012868       805382248
+> > r3             0x80000000       2147483648
+> > r4             0xfef33fc        267334652
+> > r5             0x25     37
+> > r6             0xfccdef8        265084664
+> > r7             0x7fffd4c0       2147472576
+> > r8             0xfbad2887       4222429319
+> > r9             0x84044022       2214871074
+> > r10            0x0      0
+> > r11            0x2      2
+> > r12            0xfef2054        267329620
+> > r13            0x10030bc8       268635080
+> > r14            0x0      0
+> > r15            0x0      0
+> > r16            0x0      0
+> > r17            0x0      0
+> > r18            0x0      0
+> > r19            0x0      0
+> > r20            0x0      0
+> > r21            0x0      0
+> > r22            0x0      0
+> > r23            0x64     100
+> > r24            0x5      5
+> > r25            0x1002d438       268620856
+> > r26            0x1002d9f0       268622320
+> > r27            0x1002c578       268617080
+> > r28            0x1      1
+> > r29            0x10031000       268636160
+> > r30            0xffbf7d0        268171216
+> > r31            0x1002d9f0       268622320
+> > pc             0xfef2058        267329624
+> > ps             0xd032   53298
+> > cr             0x24044022       604258338
+> > lr             0xfef2054        267329620
+> > ctr            0xfccefa0        265088928
+> > xer            0x20000000       536870912
+> > fpscr          0x0      0
+> > vscr           0x0      0
+> > vrsave         0x0      0
+> >
+> > (gdb) p/x $pc
+> > $1 =3D 0xfef2058
+> >
+> > 0x0fef2058 <BN_bn2dec+472>:     stw     r3,0(r29)
+> >
+> > (gdb) x 0x10031000
+> > 0x10031000:     Cannot access memory at address 0x10031000
+> >
+> >
+> >
+> >
+> >
+> >
+> >
+> >
+> >
+> >
+> > On 7/5/05, David Ho <davidkwho@gmail.com> wrote:
+> > > This is the second confirmed report of the same problem on the ppc8xx=
+.
+> > >
+> > > After reading my email.  I must say I was the unfriendly one, I
+> > > apologize for that.
+> > >
+> > > More debugging evidence to come.
+> > >
+> > > ---------- Forwarded message ----------
+> > > From: Murch, Christopher <cmurch@mrv.com>
+> > > Date: Jul 1, 2005 9:46 AM
+> > > Subject: RE: PPC bn_div_words routine rewrite
+> > > To: David Ho <davidkwho@gmail.com>
+> > >
+> > >
+> > > David,
+> > > I had observed the same issue on ppc 8xx machines after upgrading to =
+the asm
+> > > version of the BN routines.  Thank you very much for your work for th=
+e fix.
+> > > My question is, do you have high confidence in the other new asm ppc =
+BN
+> > > routines after observing this issue or do you think they might have s=
+imiliar
+> > > problems?
+> > > Thanks.
+> > > Chris
+> > >
+> > > -----Original Message-----
+> > > From: David Ho [mailto:davidkwho@gmail.com]
+> > > Sent: Thursday, June 30, 2005 6:22 PM
+> > > To: openssl-dev@openssl.org; linuxppc-embedded@ozlabs.org
+> > > Subject: Re: PPC bn_div_words routine rewrite
+> > >
+> > >
+> > > The reason I had to redo this routine, in case anyone is wondering, i=
+s
+> > > because ssh-keygen  segfaults when this assembly routine returns junk
+> > > to the BN_div_word function. On a ppc, if you issue the command
+> > >
+> > > ssh-keygen -t rsa1 -f /etc/ssh/ssh_host_key -N ""
+> > >
+> > > The program craps out when it tries to write the public key in ascii
+> > > decimal.
+> > >
+> > > Regards,
+> > > David
+> > >
+> > > On 6/30/05, David Ho <davidkwho@gmail.com> wrote:
+> > > > Hi all,
+> > > >
+> > > > This is a rewrite of the bn_div_words routine for the PowerPC arch,
+> > > > tested on a MPC8xx processor.
+> > > > I initially thought there is maybe a small mistake in the code that
+> > > > requires a one-liner change but it turns out I have to redo the
+> > > > routine.
+> > > > I guess this routine is not called very often as I see that most ot=
+her
+> > > > routines are hand-crafted, whereas this routine is compiled from a =
+C
+> > > > function that apparently has not gone through a whole lot of testin=
+g.
+> > > >
+> > > > I wrote a C function to confirm correctness of the code.
+> > > >
+> > > > unsigned long div_words (unsigned long h,
+> > > >                          unsigned long l,
+> > > >                          unsigned long d)
+> > > > {
+> > > >   unsigned long i_h; /* intermediate dividend */
+> > > >   unsigned long i_q; /* quotient of i_h/d */
+> > > >   unsigned long i_r; /* remainder of i_h/d */
+> > > >
+> > > >   unsigned long i_cntr;
+> > > >   unsigned long i_carry;
+> > > >
+> > > >   unsigned long ret_q; /* return quotient */
+> > > >
+> > > >   /* cannot divide by zero */
+> > > >   if (d =3D=3D 0) return 0xffffffff;
+> > > >
+> > > >   /* do simple 32-bit divide */
+> > > >   if (h =3D=3D 0) return l/d;
+> > > >
+> > > >   i_q =3D h/d;
+> > > >   i_r =3D h - (i_q*d);
+> > > >   ret_q =3D i_q;
+> > > >
+> > > >   i_cntr =3D 32;
+> > > >
+> > > >   while (i_cntr--)
+> > > >   {
+> > > >     i_carry =3D (l & 0x80000000) ? 1:0;
+> > > >     l =3D l << 1;
+> > > >
+> > > >     i_h =3D (i_r << 1) | i_carry;
+> > > >     i_q =3D i_h/d;
+> > > >     i_r =3D i_h - (i_q*d);
+> > > >
+> > > >     ret_q =3D (ret_q << 1) | i_q;
+> > > >   }
+> > > >
+> > > >   return ret_q;
+> > > > }
+> > > >
+> > > >
+> > > > Then I handcrafted the routine in PPC assembly.
+> > > > The result is a 26 line assembly that is easy to understand and
+> > > > predictable as opposed to a 81liner that I am still trying to
+> > > > decipher...
+> > > > If anyone is interested in incorporating this routine to the openss=
+l
+> > > > code I'll be happy to assist.
+> > > > At this point I think I will be taking a bit of a break from this 3
+> > > > day debugging/fixing marathon.
+> > > >
+> > > > Regards,
+> > > > David Ho
+> > > >
+> > > >
+> > > > #
+> > > > #       Handcrafted version of bn_div_words
+> > > > #
+> > > > #       r3 =3D h
+> > > > #       r4 =3D l
+> > > > #       r5 =3D d
+> > > >
+> > > >         cmplwi  0,r5,0                  # compare r5 and 0
+> > > >         bc      BO_IF_NOT,CR0_EQ,.Lppcasm_div1  # proceed if d!=3D0
+> > > >         li      r3,-1                   # d=3D0 return -1
+> > > >         bclr    BO_ALWAYS,CR0_LT
+> > > > .Lppcasm_div1:
+> > > >         cmplwi  0,r3,0                  # compare r3 and 0
+> > > >         bc      BO_IF_NOT,CR0_EQ,.Lppcasm_div2  # proceed if h !=3D=
+ 0
+> > > >         divwu   r3,r4,r5                # ret_q =3D l/d
+> > > >         bclr    BO_ALWAYS,CR0_LT        # return result in r3
+> > > > .Lppcasm_div2:
+> > > >         divwu   r9,r3,r5                # i_q =3D h/d
+> > > >         mullw   r10,r9,r5               # i_r =3D h - (i_q*d)
+> > > >         subf    r10,r10,r3
+> > > >         mr      r3,r9                   # req_q =3D i_q
+> > > > .Lppcasm_set_ctr:
+> > > >         li      r12,32                  # ctr =3D bitsizeof(d)
+> > > >         mtctr   r12
+> > > > .Lppcasm_div_loop:
+> > > >         addc    r4,r4,r4                # l =3D l << 1 -> i_carry
+> > > >         adde    r11,r10,r10             # i_h =3D (i_r << 1) | i_ca=
+rry
+> > > >         divwu   r9,r11,r5               # i_q =3D i_h/d
+> > > >         mullw   r10,r9,r5               # i_r =3D i_h - (i_q*d)
+> > > >         subf    r10,r10,r11
+> > > >         add     r3,r3,r3                # ret_q =3D ret_q << 1 | i_=
+q
+> > > >         add     r3,r3,r9
+> > > >         bc      BO_dCTR_NZERO,CR0_EQ,.Lppcasm_div_loop
+> > > > .Lppc_div_end:
+> > > >         bclr    BO_ALWAYS,CR0_LT        # return result in r3
+> > > >         .long   0x00000000
+> > > >
+> > > _______________________________________________
+> > > Linuxppc-embedded mailing list
+> > > Linuxppc-embedded@ozlabs.org
+> > > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> > >
+> >
+>
