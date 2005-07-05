@@ -1,15 +1,21 @@
-Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15803.mail.cnb.yahoo.com (web15803.mail.cnb.yahoo.com
-	[202.165.102.83]) by ozlabs.org (Postfix) with SMTP id AA49267C80
+Return-Path: <appro@fy.chalmers.se>
+Received: from anubis.medic.chalmers.se (anubis.medic.chalmers.se
+	[129.16.30.218]) by ozlabs.org (Postfix) with ESMTP id AE2E467C7A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  5 Jul 2005 23:55:18 +1000 (EST)
-Message-ID: <20050705135513.94638.qmail@web15803.mail.cnb.yahoo.com>
-Date: Tue, 5 Jul 2005 21:55:13 +0800 (CST)
-From: Sam Song <samlinuxppc@yahoo.com.cn>
-To: linuxppc-embedded@ozlabs.org
+	Wed,  6 Jul 2005 01:01:11 +1000 (EST)
+Message-ID: <42CAA0AB.4040501@fy.chalmers.se>
+Date: Tue, 05 Jul 2005 17:00:59 +0200
+From: Andy Polyakov <appro@fy.chalmers.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
-Subject: 2.6.12-rc2 netconsole problem
+To: openssl-dev@openssl.org
+References: <4dd15d1805063003587276af7e@mail.gmail.com>	
+	<4dd15d1805063015226379a52c@mail.gmail.com>	
+	<42C57F30.902@fy.chalmers.se>
+	<4dd15d1805070407352bd5120e@mail.gmail.com>
+In-Reply-To: <4dd15d1805070407352bd5120e@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: PPC bn_div_words routine rewrite
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,80 +26,83 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+> Let's start the week off with less hostility and more productive
+> criticism on this topic.
 
-I tried netconsole on a 8241 board with RealTek 8110S 
-Gb Ethernet.It seemed nice so far but still one step 
-to make it. Did I miss sth or what?
+If you want productivity, then provide real evidence in form of stack 
+backtrace at segmentation violation point, disassemble output in the 
+vicinity of segmentation violation point and 'info registers' output at 
+the same point. As for hostility I leave it without comment, as you're 
+apparently can outrank anybody in that area:-)
 
-Linux version 2.6.12-rc2 (root@sam.shu.org) (gcc
-version 3.2.2 20030217 (Yellow Dog Linux 3.0
-3.2.2-2a_1)) #3 Mon Jul 4 12:33:23 CST 2005
-......
-Kernel command line:
-netconsole=@192.168.57.243/eth0,@192.168.57.200/ 
-root=/dev/ram0 rw
-ip=192.168.57.243:192.168.57.200:::TOPAZ:eth0:off 
-panic=1
-netconsole: local port 6665
-netconsole: local IP 192.168.57.243
-netconsole: interface eth0
-netconsole: remote port 6666
-netconsole: remote IP 192.168.57.200
-netconsole: remote ethernet address ff:ff:ff:ff:ff:ff
-......
-RAMDISK driver initialized: 16 RAM disks of 200000K 
-size 1024 blocksize
-eth0: RTL8169s/8110s Gigabit Ethernet driver 2.2 at 
-0xfe00, 00:d0:b8:00:c3:52, IRQ 0
-eth0: Auto-negotiation Enabled.
-eth0: 100Mbps Full-duplex operation.
-netconsole: device eth0 not up yet, forcing it
-netconsole: carrier detect appears untrustworthy,
-waiting 4 seconds
-netconsole: network logging started
-Uniform Multi-Platform E-IDE driver Revision:
-7.00alpha2
-ide: Assuming 33MHz system bus speed for PIO modes;
-override with idebus=xx
-......
-NET: Registered protocol family 2
-IP: routing cache hash table of 512 buckets, 4Kbytes
-TCP established hash table entries: 4096 (order: 3,
-32768 bytes)
-TCP bind hash table entries: 4096 (order: 2, 16384
-bytes)
-TCP: Hash tables configured (established 4096 bind
-4096)
-NET: Registered protocol family 1
-NET: Registered protocol family 17
-IP-Config: Guessing netmask 255.255.255.0
-IP-Config: Complete:
-      device=eth0, addr=192.168.57.243,
-mask=255.255.255.0, gw=255.255.255.255,
-     host=192, domain=, nis-domain=(none),
-     bootserver=192.168.57.200,
-rootserver=192.168.57.200, rootpath=
-RAMDISK: Compressed image found at block 0
-EXT2-fs warning: mounting unchecked fs, running e2fsck
-is recommended
-VFS: Mounted root (ext2 filesystem).
-Mounted devfs on /dev
-Freeing unused kernel memory: 120k init
+>>But you're apparently right about a bug being present in PPC assembler.
+> 
+> 
+> So you are saying there is a bug in the GCC assembler? How confident
+> are you in that?  Is the first correct step to examine the assembly
+> code for errors before jumping to any conclusion that the GCC
+> assembler is bad?
 
-OK, it just stoped before init process. Is there any
-necessary to fix sth on RAMDISK like add netconsole
-device node?
+Did I say GCC assembler? I said PPC assembler, which refers to 
+crypto/bn/asm/ppc.pl.
 
-Thanks in advance,
+>>>>This is a rewrite of the bn_div_words routine for the PowerPC arch,
+>>>>tested on a MPC8xx processor.
+>>
+>>Well, suggested routine apparently sends ssh-keygen on the PPC-based
+>>32-bit system I have access to to an end-less loop... 
+> 
+> 
+> If you care to read the c function I supplied or if you don't believe
+> it:  If you understand ppc 32-bit instructions, as specified in the
+> PowerPC Microprocessor Family: Programming Environments for 32-Bit
+> Microprocessors.  My routine would not be able to find a condition
+> that will make it go into an end-less loop,unless you messed up bad
+> somewhere.
 
-Sam
+I didn't say that suggested routine goes into an end-less loop, but that 
+it "*apparently* sends ssh-keygen into end-less loop." I made no claims 
+about which routine exactly loops, and I even admit that I don't know 
+for sure if it was in fact end-less loop, because I've chosen to kill 
+the process after couple of minutes. Note that normally it takes just 
+few seconds on the machine I've tested on, so that couple of minutes is 
+essentially unacceptable and by all means *appears* as end-less loop.
 
+> In summary, what I am trying to provide the community is an
+> alternative to ... the current implementation of which is
+> very questionable.
 
-	
+crypto/bn/asm/ppc.pl distributed with OpenSSL was designed for and 
+explicitly tested by IBM under 32- and 64-bit PPC Linux, 32- and 64-bit 
+AIX, as well as 32-bit MacOS X. Special care was taken to make sure that 
+neither of ABIs/calling conventions used by above listed platforms are 
+violated, so that module can be safely invoked by compiler-generated 
+code for above mentioned OSes. Afterwards there were reports that it was 
+successfully used on unspecified [in report] embedded PPC-based 
+platform. Despite this on Friday I could personally confirm on 32-bit 
+MacOS X that there admittedly was a bug in ppc.pl, which manifests as 
+failure to generate sane decimal ASCII presentation of a BIGNUM, which 
+is exactly the kind of operation taking place when you run ssh-keygen -t 
+rsa1 [it should be noted decimal ASCII is unfortunately not covered by 
+'make test_bn' suite]. But under no circumstances segmentation violation 
+was observed. At the same time I could personally confirm that if pasted 
+into osx32_ppc.s, suggested implementation induces 'make test_bn' 
+failure on 32-bit MacOS X. In particular test/bntest terminates with
 
-	
-		
-___________________________________________________________ 
-—≈ª¢√‚∑—G” œ‰£≠÷–π˙µ⁄“ªæ¯Œﬁ¿¨ª¯” º˛…ß»≈≥¨¥Û” œ‰
-http://cn.mail.yahoo.com/?id=77071
+print "test BN_sqr\n"
+-FF554CAEAE * -FF554CAEAE - FEAB0B30019BBA80FE44
+Square test failed!
+1
+
+while test/exptest:
+
+BN_mod_exp_recp() problems
+14482:error:03082065:bignum routines:BN_div_recp:bad 
+reciprocal:bn_recp.c:194:
+
+For me it's enough reasons to become sceptical to submission and conduct 
+trouble-shooting of my own. Currently available ppc.pl was verified to 
+pass 'make test_bn' on 32-bit MacOS X, 32- and 64-bit AIX [tested by 
+IBM], as well as to generate correct decimal ASCII presentation on the 
+mentioned platforms. If it doesn't work for you, then submit information 
+listed in the beginning of the letter. A.
