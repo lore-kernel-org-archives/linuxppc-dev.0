@@ -1,14 +1,14 @@
 Return-Path: <olh@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
+	(Client CN "mx2.suse.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 07E0867C86
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jul 2005 06:17:05 +1000 (EST)
-Date: Tue, 5 Jul 2005 22:17:00 +0200
+	by ozlabs.org (Postfix) with ESMTP id 9FF9C67C8F
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jul 2005 06:27:21 +1000 (EST)
+Date: Tue, 5 Jul 2005 22:27:17 +0200
 From: Olaf Hering <olh@suse.de>
 To: Tom Rini <trini@kernel.crashing.org>
-Message-ID: <20050705201700.GA23607@suse.de>
+Message-ID: <20050705202717.GA26014@suse.de>
 References: <17016.29775.224816.691409@cargo.ozlabs.ibm.com>
 	<20050703172955.GA25976@suse.de>
 	<20050703183237.GC16764@smtp.west.cox.net>
@@ -42,9 +42,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 > 
 > It does, and that's the code bloat you're trying to get rid of :)
 
-Yeah, leads to fun like that:
+3397494  579544  519704 4496742  449d66 ../O-ppc-cpucommon/vmlinux
+3469857  579544  519704 4569105  45b811 ../O-ppc-default/vmlinux
 
-init/built-in.o: In function `calibrate_delay':
-: undefined reference to `__quous'
-
-need to grep harder.
+-mcpu=powerpc reduces text size still more than -mcpu=750
