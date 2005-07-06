@@ -1,17 +1,19 @@
-Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15804.mail.cnb.yahoo.com (web15804.mail.cnb.yahoo.com
-	[202.165.102.84]) by ozlabs.org (Postfix) with SMTP id 822A367BE3
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao07.cox.net (fed1rmmtao07.cox.net [68.230.241.32])
+	by ozlabs.org (Postfix) with ESMTP id EA22067BD7
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Jul 2005 22:27:20 +1000 (EST)
-Message-ID: <20050706122717.75352.qmail@web15804.mail.cnb.yahoo.com>
-Date: Wed, 6 Jul 2005 20:27:17 +0800 (CST)
-From: Sam Song <samlinuxppc@yahoo.com.cn>
+	Thu,  7 Jul 2005 02:30:36 +1000 (EST)
+Date: Wed, 6 Jul 2005 09:30:30 -0700
+From: Tom Rini <trini@kernel.crashing.org>
 To: Wolfgang Denk <wd@denx.de>
-In-Reply-To: <20050706090448.A91BC353A6A@atlas.denx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
-Cc: Tom Rini <trini@kernel.crashing.org>, linuxppc-embedded@ozlabs.org
-Subject: Re: 2.6.12-rc2 netconsole problem 
+Message-ID: <20050706163029.GC8358@smtp.west.cox.net>
+References: <20050706051139.GB8358@smtp.west.cox.net>
+	<20050706091200.5E060353A6A@atlas.denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050706091200.5E060353A6A@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: 2.6.12-rc2 netconsole problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,40 +24,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Wolfgang Denk <wd@denx.de> wrote:
-[snip]
-> It seems you failed to read the
-> doc/README.NetConsole fle that  comes
-> with  the  U-Boot sources. This explains clearly
-> that while in U-Boot the netconsole implementation 
-> is bidirectional, the Linux  coede  is
-> unidirectional only.
-
-Oops, I read README.NetConsole again and found the 
-line in the last part. Sorry for that. I tend to 
-make a mistake to do sth in the first time:-)
-
-> > netconsole to get a net console in Linux? Sound a 
-> > little bit complicated than what I thought:-)
+On Wed, Jul 06, 2005 at 11:12:00AM +0200, Wolfgang Denk wrote:
+> In message <20050706051139.GB8358@smtp.west.cox.net> you wrote:
+> >
+> > may want to look into a syslogd that does network.  I don't know how
+> > netconsole support in u-boot works, but it sounds like it's a network
+> > aware application that you can telnet into, rather than Linux's
+> > netconsole.
 > 
-> You should not use telnet for  obvious  security 
-> problems.  Use  ssh instead.  But  from  the 
-> technical side it is perfectly fine to use a
-> remote login through telnet or rsh or ssh...
+> It's an implementation which is compatible with  (and  derived  from)
+> Linux'  netconsole,  but  with  an  added  input  channel so you have
+> interactive control over ethernet.
 
-OK, good idea to try. 
+That's quite cool.  Any chance that could be ported back to Linux (I
+know netpoll supports it, kgdboe works in the kernel).
 
-Thanks very much indeed,
-
-Sam
-
-
-
-
-	
-
-	
-		
-___________________________________________________________ 
-雅虎免费G邮箱－中国第一绝无垃圾邮件骚扰超大邮箱
-http://cn.mail.yahoo.com/?id=77071
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
