@@ -1,27 +1,17 @@
-Return-Path: <roland@digitalvampire.org>
-Received: from sccrmhc13.comcast.net (sccrmhc13.comcast.net [204.127.202.64])
-	by ozlabs.org (Postfix) with ESMTP id 4262A67C8E
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15810.mail.cnb.yahoo.com (web15810.mail.cnb.yahoo.com
+	[202.165.102.90]) by ozlabs.org (Postfix) with SMTP id B0DFB67C8E
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Jul 2005 13:57:19 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by hellmouth.digitalvampire.org (Postfix) with ESMTP id E157065C05
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  5 Jul 2005 20:52:01 -0700 (PDT)
-Received: from hellmouth.digitalvampire.org ([127.0.0.1])
-	by localhost (hellmouth.attbi.com [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 03360-01 for <linuxppc-embedded@ozlabs.org>;
-	Tue,  5 Jul 2005 20:51:33 -0700 (PDT)
-Received: from localhost.localdomain (unknown [10.1.0.8])
-	by hellmouth.digitalvampire.org (Postfix) with ESMTP id 7F41065C02
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  5 Jul 2005 20:51:28 -0700 (PDT)
-To: linuxppc-embedded@ozlabs.org
-From: Roland Dreier <roland@digitalvampire.org>
-Date: Tue, 05 Jul 2005 20:51:27 -0700
-Message-ID: <873bqsbni8.fsf@love-shack.home.digitalvampire.org>
+	Wed,  6 Jul 2005 14:10:42 +1000 (EST)
+Message-ID: <20050706041038.70258.qmail@web15810.mail.cnb.yahoo.com>
+Date: Wed, 6 Jul 2005 12:10:38 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: Tom Rini <trini@kernel.crashing.org>
+In-Reply-To: <20050705194532.GA6878@smtp.west.cox.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Subject: AMCC 440SPe support?
+Content-Type: text/plain; charset=gb2312
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: 2.6.12-rc2 netconsole problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,14 +22,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Are patches to support the AMCC PowerPC 440SPe processor available?
-Mainline 2.6 apparently does not contain anything related to the
-440SPe.  We're planning on using the 440SPe in a project, and I'm
-wondering if I'll have to do the bringup myself.
+Tom Rini <trini@kernel.crashing.org> wrote:
+> [snip]
+> > OK, it just stoped before init process. Is there
+> > any necessary to fix sth on RAMDISK like add
+> > netconsole device node?
+> 
+> Nope, that's how netconsole works, it's not
+> interactive (like console is
+> after init is spawned).
 
-If no one has released this yet, I'll be happy to start posting
-patches once my eval boards arrive.  I just don't want to duplicate
-effort if someone has already brought up Linux on the 440SPe.
+Not interactive? I meant to use netconsole to repalce
+the mointor serial console. Meanwhile, I implemented 
+netconsole on the target in u-boot and it did get a
+interactive console. Maybe I can try telnet after 
+netconsole to get a net console in Linux? Sound a 
+little bit complicated than what I thought:-)
 
-Thanks,
-  Roland
+Uh, is this the real reason that netconsole in Linux
+_must_ disable ethernet interrupt whereas network 
+does need it?
+
+Thanks a lot,
+
+Sam
+
+
+		
+___________________________________________________________ 
+—≈ª¢√‚∑—G” œ‰£≠No.1µƒ∑¿∂æ∑¿¿¨ª¯≥¨¥Û” œ‰ 
+http://cn.mail.yahoo.com/?id=77072
