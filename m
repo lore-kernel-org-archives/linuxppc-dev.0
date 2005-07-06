@@ -1,19 +1,20 @@
-Return-Path: <wd@denx.de>
-Received: from mailout11.sul.t-online.com (mailout11.sul.t-online.com
-	[194.25.134.85]) by ozlabs.org (Postfix) with ESMTP id E543967C3D
+Return-Path: <postmaster@246tNt.com>
+Received: from ns30619.ovh.net (ns30619.ovh.net [213.186.47.155])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 53C0A67C3D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Jul 2005 20:18:47 +1000 (EST)
-To: Sam Song <samlinuxppc@yahoo.com.cn>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 06 Jul 2005 12:10:38 +0800."
-	<20050706041038.70258.qmail@web15810.mail.cnb.yahoo.com>
-Date: Wed, 06 Jul 2005 11:04:48 +0200
-Sender: wd@denx.de
-Message-Id: <20050706090448.A91BC353A6A@atlas.denx.de>
-Cc: Tom Rini <trini@kernel.crashing.org>, linuxppc-embedded@ozlabs.org
-Subject: Re: 2.6.12-rc2 netconsole problem 
+	Wed,  6 Jul 2005 20:30:56 +1000 (EST)
+Message-ID: <1120645451.42cbb14b63b9c@webmail.ecat.be>
+Date: Wed, 06 Jul 2005 12:24:11 +0200
+From: postmaster@246tNt.com
+To: Frederic Janot <f.janot@ateme.fr>
+References: <00aa01c5807d$192ca230$b31010ac@pc179>
+In-Reply-To: <00aa01c5807d$192ca230$b31010ac@pc179>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: mpc5200 i2c bus problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,34 +25,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <20050706041038.70258.qmail@web15810.mail.cnb.yahoo.com> you wrote:
->
-> > Nope, that's how netconsole works, it's not
-> > interactive (like console is
-> > after init is spawned).
+Hi
+
+> I send a message here to indicate an hardware problem with mpc5200 i2c
+> module. This bug is not describe in the mpc5200 errata document.
+> I can reproduce it on revA and revB of the silicium. After contacting
+> Freescale, they recognize the problem.
 > 
-> Not interactive? I meant to use netconsole to repalce
-> the mointor serial console. Meanwhile, I implemented 
-> netconsole on the target in u-boot and it did get a
-> interactive console. Maybe I can try telnet after 
+> The problem is that, sometime, the 9th pulse clock on SCL is missing !!!!
+> I can send a scope screen capture which shows that if someone wants.
 
-It seems you failed to read the doc/README.NetConsole fle that  comes
-with  the  U-Boot sources. This explains clearly that while in U-Boot
-the netconsole implementation is bidirectional, the  Linux  coede  is
-unidirectional only.
 
-> netconsole to get a net console in Linux? Sound a 
-> little bit complicated than what I thought:-)
+Well, at the end of the day, you might be better by using two GPIO to do I2C
+bit-banging ... Thanks for sharing the info, that might spare us long hours of
+searching were the problem lies.
 
-You should not use telnet for  obvious  security  problems.  Use  ssh
-instead.  But  from  the technical side it is perfectly fine to use a
-remote login through telnet or rsh or ssh...
+Unfortunatly the I2C port on the 5200 can't be turned to GPIO so that requires
+some hardware modification ;(
 
-Best regards,
 
-Wolfgang Denk
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-                  Nail here --X-- for new monitor.
+    Sylvain
+
+
+
+
+----------------------------------------------------------------
+This message was sent using IMP, the Internet Messaging Program.
