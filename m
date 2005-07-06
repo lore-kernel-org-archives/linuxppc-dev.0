@@ -1,21 +1,16 @@
-Return-Path: <d.grab@hima.com>
-Received: from hima.com (mail.hima.com [80.146.244.10])
-	by ozlabs.org (Postfix) with SMTP id 60E0967B82
+Return-Path: <mcnernbm@notes.udayton.edu>
+Received: from student03.udayton.edu (student03.udayton.edu [131.238.75.43])
+	by ozlabs.org (Postfix) with ESMTP id 6C98E67B84
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Jul 2005 20:31:41 +1000 (EST)
-Received: from SN7606 ([192.168.100.10])
-	by hima.com (mail.hima.com [212.116.4.129]) (MDaemon.PRO.v8.0.3.R)
-	with ESMTP id md50000034832.msg
-	for <linuxppc-embedded@ozlabs.org>; Wed, 06 Jul 2005 12:31:18 +0200
-From: "David Grab" <d.grab@hima.com>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Wed, 6 Jul 2005 12:30:10 +0200
-Message-ID: <000d01c58215$b0766380$f201a8c0@SN7606>
+	Wed,  6 Jul 2005 22:04:42 +1000 (EST)
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <000c01c5820a$19fc5be0$f201a8c0@SN7606>
-Subject: AW: AW: initrd rootfs ramdisk
+Message-ID: <OF34628865.FCDF1CA7-ON85257036.0040D81D-85257036.0040EDA6@notes.udayton.edu>
+From: mcnernbm@notes.udayton.edu
+Date: Wed, 6 Jul 2005 07:49:12 -0400
+Content-Type: multipart/alternative;
+	boundary="=_alternative 0040EDA485257036_="
+Subject: bitkeeper issues
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,25 +21,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-i solved my problem with u-boot and linux. Now i have my rootfs ramdisk
-mounted and functioning. But one output is weird.
+This is a multipart message in MIME format.
+--=_alternative 0040EDA485257036_=
+Content-Type: text/plain; charset="US-ASCII"
 
-RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
-loop: loaded (max 8 devices)
-RAMDISK: Compressed image found at block 0
-RAMDISK: incomplete write (-28 != 1024) 4194304
-VFS: Mounted root (ext2 filesystem).
-Freeing unused kernel memory: 96k init
-ifconfig: socket: Function not implemented
-### Application running ...
-BusyBox v0.60.5 (2004.11.10-15:02+0000) Built-in shell (msh)
-Enter 'help' for a list of built-in commands.
-# ls
-bin   dev   etc   ftp   home  lib   proc  sbin  tmp   usr   var
-#
+I have tried to download the latest 2.4 develpement kernel using 
+bitkeeper.  I am using he following to do so: 
+bk clone bk://source.mvista.com/linuxppc_2_4_devel 
+But when it finishes downloading them all I get a message complaing 
+bitkeeper is not free after july 5th 2005.  So I can not do a bk -r edit 
+to unlokck the files and everything.  I am tryong to access this one cause 
+it contains all the xilinx drivers and ppc405 patches already.  Is there 
+another location I can download a kernel with the xilinx drivers and 
+ppc405 patches applied?  I am trying to get ppc linux running on a xilinx 
+ml403 board.
+Thanks
+Brett
+--=_alternative 0040EDA485257036_=
+Content-Type: text/html; charset="US-ASCII"
 
-why incomplete write? RAMDISK: incomplete write (-28 != 1024) 4194304
 
-Thx for help,
-
-David
+<br><font size=2 face="sans-serif">I have tried to download the latest
+2.4 develpement kernel using bitkeeper. &nbsp;I am using he following to
+do so: </font>
+<table border width=100%>
+<tr>
+<td width=100% bgcolor=white><font size=3><tt>bk clone bk://source.mvista.com/linuxppc_2_4_devel
+</tt></font></table>
+<br><font size=2 face="sans-serif">But when it finishes downloading them
+all I get a message complaing bitkeeper is not free after july 5th 2005.
+&nbsp;So I can not do a bk -r edit to unlokck the files and everything.
+&nbsp;I am tryong to access this one cause it contains all the xilinx drivers
+and ppc405 patches already. &nbsp;Is there another location I can download
+a kernel with the xilinx drivers and ppc405 patches applied? &nbsp;I am
+trying to get ppc linux running on a xilinx ml403 board.</font>
+<br><font size=2 face="sans-serif">Thanks</font>
+<br><font size=2 face="sans-serif">Brett</font>
+--=_alternative 0040EDA485257036_=--
