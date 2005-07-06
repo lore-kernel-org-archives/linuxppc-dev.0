@@ -1,16 +1,17 @@
-Return-Path: <mcnernbm@notes.udayton.edu>
-Received: from student03.udayton.edu (student03.udayton.edu [131.238.75.43])
-	by ozlabs.org (Postfix) with ESMTP id 6C98E67B84
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15804.mail.cnb.yahoo.com (web15804.mail.cnb.yahoo.com
+	[202.165.102.84]) by ozlabs.org (Postfix) with SMTP id 822A367BE3
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Jul 2005 22:04:42 +1000 (EST)
-To: linuxppc-embedded@ozlabs.org
+	Wed,  6 Jul 2005 22:27:20 +1000 (EST)
+Message-ID: <20050706122717.75352.qmail@web15804.mail.cnb.yahoo.com>
+Date: Wed, 6 Jul 2005 20:27:17 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: Wolfgang Denk <wd@denx.de>
+In-Reply-To: <20050706090448.A91BC353A6A@atlas.denx.de>
 MIME-Version: 1.0
-Message-ID: <OF34628865.FCDF1CA7-ON85257036.0040D81D-85257036.0040EDA6@notes.udayton.edu>
-From: mcnernbm@notes.udayton.edu
-Date: Wed, 6 Jul 2005 07:49:12 -0400
-Content-Type: multipart/alternative;
-	boundary="=_alternative 0040EDA485257036_="
-Subject: bitkeeper issues
+Content-Type: text/plain; charset=gb2312
+Cc: Tom Rini <trini@kernel.crashing.org>, linuxppc-embedded@ozlabs.org
+Subject: Re: 2.6.12-rc2 netconsole problem 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,40 +22,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 0040EDA485257036_=
-Content-Type: text/plain; charset="US-ASCII"
+Wolfgang Denk <wd@denx.de> wrote:
+[snip]
+> It seems you failed to read the
+> doc/README.NetConsole fle that  comes
+> with  the  U-Boot sources. This explains clearly
+> that while in U-Boot the netconsole implementation 
+> is bidirectional, the Linux  coede  is
+> unidirectional only.
 
-I have tried to download the latest 2.4 develpement kernel using 
-bitkeeper.  I am using he following to do so: 
-bk clone bk://source.mvista.com/linuxppc_2_4_devel 
-But when it finishes downloading them all I get a message complaing 
-bitkeeper is not free after july 5th 2005.  So I can not do a bk -r edit 
-to unlokck the files and everything.  I am tryong to access this one cause 
-it contains all the xilinx drivers and ppc405 patches already.  Is there 
-another location I can download a kernel with the xilinx drivers and 
-ppc405 patches applied?  I am trying to get ppc linux running on a xilinx 
-ml403 board.
-Thanks
-Brett
---=_alternative 0040EDA485257036_=
-Content-Type: text/html; charset="US-ASCII"
+Oops, I read README.NetConsole again and found the 
+line in the last part. Sorry for that. I tend to 
+make a mistake to do sth in the first time:-)
+
+> > netconsole to get a net console in Linux? Sound a 
+> > little bit complicated than what I thought:-)
+> 
+> You should not use telnet for  obvious  security 
+> problems.  Use  ssh instead.  But  from  the 
+> technical side it is perfectly fine to use a
+> remote login through telnet or rsh or ssh...
+
+OK, good idea to try. 
+
+Thanks very much indeed,
+
+Sam
 
 
-<br><font size=2 face="sans-serif">I have tried to download the latest
-2.4 develpement kernel using bitkeeper. &nbsp;I am using he following to
-do so: </font>
-<table border width=100%>
-<tr>
-<td width=100% bgcolor=white><font size=3><tt>bk clone bk://source.mvista.com/linuxppc_2_4_devel
-</tt></font></table>
-<br><font size=2 face="sans-serif">But when it finishes downloading them
-all I get a message complaing bitkeeper is not free after july 5th 2005.
-&nbsp;So I can not do a bk -r edit to unlokck the files and everything.
-&nbsp;I am tryong to access this one cause it contains all the xilinx drivers
-and ppc405 patches already. &nbsp;Is there another location I can download
-a kernel with the xilinx drivers and ppc405 patches applied? &nbsp;I am
-trying to get ppc linux running on a xilinx ml403 board.</font>
-<br><font size=2 face="sans-serif">Thanks</font>
-<br><font size=2 face="sans-serif">Brett</font>
---=_alternative 0040EDA485257036_=--
+
+
+	
+
+	
+		
+___________________________________________________________ 
+—≈ª¢√‚∑—G” œ‰£≠÷–π˙µ⁄“ªæ¯Œﬁ¿¨ª¯” º˛…ß»≈≥¨¥Û” œ‰
+http://cn.mail.yahoo.com/?id=77071
