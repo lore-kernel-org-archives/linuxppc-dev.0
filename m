@@ -1,22 +1,19 @@
-Return-Path: <d.grab@hima.com>
-Received: from hima.com (mail.hima.com [80.146.244.10])
-	by ozlabs.org (Postfix) with SMTP id 1953667BC9
+Return-Path: <wd@denx.de>
+Received: from mailout06.sul.t-online.com (mailout06.sul.t-online.com
+	[194.25.134.19]) by ozlabs.org (Postfix) with ESMTP id B421167C3A
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Jul 2005 19:08:47 +1000 (EST)
-Received: from SN7606 ([192.168.100.10])
-	by hima.com (mail.hima.com [212.116.4.129]) (MDaemon.PRO.v8.0.3.R)
-	with ESMTP id md50000034534.msg
-	for <linuxppc-embedded@ozlabs.org>; Wed, 06 Jul 2005 11:08:25 +0200
-From: "David Grab" <d.grab@hima.com>
-To: <wd@denx.de>
-Date: Wed, 6 Jul 2005 11:07:13 +0200
-Message-ID: <000c01c5820a$19fc5be0$f201a8c0@SN7606>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <20050705160149.3BDF7353A5E@atlas.denx.de>
+	Wed,  6 Jul 2005 19:12:38 +1000 (EST)
+To: "Russell McGuire" <rmcguire@uwbt.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 05 Jul 2005 21:41:04 PDT."
+	<20050706004122.GA42545@mail19d.g19.rapidsite.net>
+Date: Wed, 06 Jul 2005 11:10:07 +0200
+Sender: wd@denx.de
+Message-Id: <20050706091007.E6CDF353A6A@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: AW: AW: initrd rootfs ramdisk
+Subject: Re: Linux 2.4.25 problems after initrd detected 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,80 +24,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->> >But the kernel prints the boot parameters just fine.
->>
->> Maybe because i defined it in kernel configuration! But from u-boot i
-don´t
->> get any arguments.
+In message <20050706004122.GA42545@mail19d.g19.rapidsite.net> you wrote:
+> 
+> Two questions: 
+> 1) Does the "Warning: Real time clock stuck" pose any problem to getting the
+> initrd loaded? Or perhaps interrupts?
 
->Then you must be using a wrong image type. Are you sure you use "make
->uImage" to build your kernel image for U-Boot?
+It should not affect thte opration of the ramdisk, but it's obviously
+something you should fix.
 
-No, i´m using kernel 2.6.11.6 from kernel.org. It´s compiled with the actual
-ELDK and made with "make uImage".
+> 2) Does the MTD physical mapping driver have to be enabled for the initrd to
+> work, I haven't been able to get my driver to successfully complete a
+> ioremap if I enable it. I am using AMD 32MB flash mapped physically at
+> 0xE0000000 at least in Uboot.
 
->> I thougt i can give the linux kernel position from u-boot where initrd is
->> located, but i have the same problem.
+Ramdisk and MTD have nothingin common. You don;t need MTD to use a ramdisk
 
->You don;t. U-Boot passes this information automatically.
+> I know the kernel is still marginally alive as I can step into the kernel
+> debugger over the serial port at this point, if I press control C, its in
+> the interrupt routines waiting for UART interrupts.
+> 
+> I apologize in advance if I have not provided enough info, as its my first
+> post.
 
->> RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
->> loop: loaded (max 8 devices)
->> VFS: Cannot open root device "<NULL>" or unknown-block(3,1)
->> Please append a correct "root=" boot option
->> Kernel panic - not syncing: VFS: Unable to mount root fs on
->> unknown-block(3,1)
+Well, the most important thing you missed to tell us is what  exactly
+your problem is.
 
->Block device 3, 1 is /dev/hda1 - is your ramdisk known to be working?
+> Here is the output, from Uboot.
+....
+> Kernel command line: root=/dev/ram rw
+...
+> VFS: Mounted root (ext2 filesystem).
+> Freeing unused kernel memory: 56k init
+> 
+> <-- No more output, unless control C is pressed and "sometimes" it will
 
-Ramdisk is from ELDK build with mkimage like mentioned in FAQ.
+So what? You did not pass any "console=ttyS0,$(baudrate)" or  somilar
+boot argument, so where is your console expected to show up?
 
+Can you ping the system? Our standard ramdisk images have telnet  and
+FTP enabled. Can you telnet into the system?
 
-I debugged to see what happens. First of all machine init in
-\arch\ppc\kernel\setup.c is called. In this function a call to platform_init
-is made. But the platform init of my own board files are called not the
-implementation of setup.c which is only available if
-CONFIG_PPC_MULTIPLATFORM is set. In my own platform_init is only a call to
-find_bootinfo which is resulting in NULL because rec->tag is 0. That´s the
-reason why parse_bootinfo don´t set the CMD_LINE, etc..
+Did you try booting with root file system mounted over NFS?  This  is
+MUCH easier to debug.
 
-struct bi_record *find_bootinfo(void)
-{
-	struct bi_record *rec;
+Best regards,
 
-	rec = (struct bi_record *)_ALIGN((ulong)__bss_start+(1<<20)-1,(1<<20));
-	if ( rec->tag != BI_FIRST ) {
-		/*
-		 * This 0x10000 offset is a terrible hack but it will go away when
-		 * we have the bootloader handle all the relocation and
-		 * prom calls -- Cort
-		 */
-		rec = (struct bi_record
-*)_ALIGN((ulong)__bss_start+0x10000+(1<<20)-1,(1<<20));
-		if ( rec->tag != BI_FIRST )
-			return NULL;
-	}
-	return rec;
-}
+Wolfgang Denk
 
-In this line rec is set to 0xc0300000
-rec = (struct bi_record *)_ALIGN((ulong)__bss_start+(1<<20)-1,(1<<20));
-
-if definitions are in both lines true because rec->tag is 0
-
-in this line rec address is also 0xc0300000
-rec = (struct bi_record
-*)_ALIGN((ulong)__bss_start+0x10000+(1<<20)-1,(1<<20));
-
-
-The following line in my own board.c platform_init gets the board
-information. So u-boot pass the informations quite well.
-
-	if (r3)
-		__res = *(bd_t *)(r3 + KERNELBASE);
-
-So what is wrong with my find_bootinfo function? Why is rec->tag zero?
-
-Thx for advice,
-
-David
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+I wish Captain Vimes were here. He wouldn't have  known  what  to  do
+either, but he's got a much better vocabulary to be baffled in.
+                                 - Terry Pratchett, _Guards! Guards!_
