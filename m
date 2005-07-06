@@ -1,20 +1,21 @@
-Return-Path: <postmaster@246tNt.com>
-Received: from ns30619.ovh.net (ns30619.ovh.net [213.186.47.155])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 53C0A67C3D
+Return-Path: <d.grab@hima.com>
+Received: from hima.com (mail.hima.com [80.146.244.10])
+	by ozlabs.org (Postfix) with SMTP id 60E0967B82
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  6 Jul 2005 20:30:56 +1000 (EST)
-Message-ID: <1120645451.42cbb14b63b9c@webmail.ecat.be>
-Date: Wed, 06 Jul 2005 12:24:11 +0200
-From: postmaster@246tNt.com
-To: Frederic Janot <f.janot@ateme.fr>
-References: <00aa01c5807d$192ca230$b31010ac@pc179>
-In-Reply-To: <00aa01c5807d$192ca230$b31010ac@pc179>
+	Wed,  6 Jul 2005 20:31:41 +1000 (EST)
+Received: from SN7606 ([192.168.100.10])
+	by hima.com (mail.hima.com [212.116.4.129]) (MDaemon.PRO.v8.0.3.R)
+	with ESMTP id md50000034832.msg
+	for <linuxppc-embedded@ozlabs.org>; Wed, 06 Jul 2005 12:31:18 +0200
+From: "David Grab" <d.grab@hima.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Wed, 6 Jul 2005 12:30:10 +0200
+Message-ID: <000d01c58215$b0766380$f201a8c0@SN7606>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: mpc5200 i2c bus problem
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <000c01c5820a$19fc5be0$f201a8c0@SN7606>
+Subject: AW: AW: initrd rootfs ramdisk
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,30 +26,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi
+i solved my problem with u-boot and linux. Now i have my rootfs ramdisk
+mounted and functioning. But one output is weird.
 
-> I send a message here to indicate an hardware problem with mpc5200 i2c
-> module. This bug is not describe in the mpc5200 errata document.
-> I can reproduce it on revA and revB of the silicium. After contacting
-> Freescale, they recognize the problem.
-> 
-> The problem is that, sometime, the 9th pulse clock on SCL is missing !!!!
-> I can send a scope screen capture which shows that if someone wants.
+RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
+loop: loaded (max 8 devices)
+RAMDISK: Compressed image found at block 0
+RAMDISK: incomplete write (-28 != 1024) 4194304
+VFS: Mounted root (ext2 filesystem).
+Freeing unused kernel memory: 96k init
+ifconfig: socket: Function not implemented
+### Application running ...
+BusyBox v0.60.5 (2004.11.10-15:02+0000) Built-in shell (msh)
+Enter 'help' for a list of built-in commands.
+# ls
+bin   dev   etc   ftp   home  lib   proc  sbin  tmp   usr   var
+#
 
+why incomplete write? RAMDISK: incomplete write (-28 != 1024) 4194304
 
-Well, at the end of the day, you might be better by using two GPIO to do I2C
-bit-banging ... Thanks for sharing the info, that might spare us long hours of
-searching were the problem lies.
+Thx for help,
 
-Unfortunatly the I2C port on the 5200 can't be turned to GPIO so that requires
-some hardware modification ;(
-
-
-
-    Sylvain
-
-
-
-
-----------------------------------------------------------------
-This message was sent using IMP, the Internet Messaging Program.
+David
