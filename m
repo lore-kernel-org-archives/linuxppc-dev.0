@@ -1,23 +1,18 @@
-Return-Path: <glikely@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.199])
-	by ozlabs.org (Postfix) with ESMTP id ACB2967BDD
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 858CD67BD8
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Jul 2005 03:49:51 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 71so5669wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 06 Jul 2005 10:49:49 -0700 (PDT)
-Message-ID: <528646bc0507061049739157cf@mail.gmail.com>
-Date: Wed, 6 Jul 2005 11:49:49 -0600
-From: Grant Likely <glikely@gmail.com>
-To: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <caa74808cb385f021bedcf5769502e1d@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20050427112218.E11404@cox.net>
-	<caa74808cb385f021bedcf5769502e1d@freescale.com>
+	Thu,  7 Jul 2005 04:20:56 +1000 (EST)
+In-Reply-To: <528646bc0507061049739157cf@mail.gmail.com>
+References: <528646bc0507061049739157cf@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v730)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <18C1CAA6-F980-4F8C-8FDD-E5D676D084ED@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Wed, 6 Jul 2005 13:20:59 -0500
+To: "Grant Likely" <glikely@gmail.com>
 Cc: David Ho <DavidHo@nanometrics.ca>, linuxppc-embedded@ozlabs.org
 Subject: Re: OLS 2005
-Reply-To: Grant Likely <glikely@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,20 +23,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 4/27/05, Kumar Gala <kumar.gala@freescale.com> wrote:
-> I wondering if we can get a PPC BoF together, however not sure exactly
-> what we would talk about.  Any ideas?
->=20
-> - kumar
-I'd like to discuss the platform bus a bit.  As was discussed a month
-or so ago, there is no clean way of matching multiple device drivers
-to a single device type, like with PSCs on the MPC5200.
+We should try to see if we can find GregKH to discuss what changes  
+would need to be made to the driver core to allow this.
 
-g.
+- kumar
 
---=20
-"Why do musicians compose symphonies and poets write poems? They do it
-because life wouldn't have any meaning for them if they didn't.
-That's why I draw cartoons. It's my life."
+On Jul 6, 2005, at 12:49 PM, Grant Likely wrote:
 
--- Charles Shultz
+> On 4/27/05, Kumar Gala <kumar.gala@freescale.com> wrote:
+>
+>> I wondering if we can get a PPC BoF together, however not sure  
+>> exactly
+>> what we would talk about.  Any ideas?
+>>
+>> - kumar
+>>
+> I'd like to discuss the platform bus a bit.  As was discussed a month
+> or so ago, there is no clean way of matching multiple device drivers
+> to a single device type, like with PSCs on the MPC5200.
+>
+> g.
+>
+> -- 
+> "Why do musicians compose symphonies and poets write poems? They do it
+> because life wouldn't have any meaning for them if they didn't.
+> That's why I draw cartoons. It's my life."
+>
+> -- Charles Shultz
+>
