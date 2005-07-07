@@ -1,28 +1,14 @@
-Return-Path: <olh@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E9D2D67C89
-	for <linuxppc-dev@ozlabs.org>; Wed,  6 Jul 2005 16:38:35 +1000 (EST)
-Date: Wed, 6 Jul 2005 08:38:30 +0200
-From: Olaf Hering <olh@suse.de>
-To: Tom Rini <trini@kernel.crashing.org>
-Message-ID: <20050706063830.GA1968@suse.de>
-References: <17016.29775.224816.691409@cargo.ozlabs.ibm.com>
-	<20050703172955.GA25976@suse.de>
-	<20050703183237.GC16764@smtp.west.cox.net>
-	<20050705181448.GA28142@suse.de>
-	<20050705194724.GB6878@smtp.west.cox.net>
-	<20050705195441.GA15455@suse.de>
-	<20050705195819.GD6878@smtp.west.cox.net>
-	<20050705202717.GA26014@suse.de>
-	<20050705212213.GA8358@smtp.west.cox.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20050705212213.GA8358@smtp.west.cox.net>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] Set cpu explicitly in kernel compiles
+Return-Path: <domen@homer.coderock.org>
+Received: from trashy.coderock.org (coderock.org [193.77.147.115])
+	by ozlabs.org (Postfix) with ESMTP id BC76E67B9B
+	for <linuxppc-dev@ozlabs.org>; Fri,  8 Jul 2005 07:28:49 +1000 (EST)
+Message-Id: <20050707212838.156820000@homer>
+Date: Thu, 07 Jul 2005 23:28:38 +0200
+From: domen@coderock.org
+To: paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org, domen@coderock.org,
+	Nishanth Aravamudan <nacc@us.ibm.com>
+Subject: [patch 1/1] ppc/fcc_enet: replace schedule_timeout() with ssleep()
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,21 +18,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- On Tue, Jul 05, Tom Rini wrote:
+From: Nishanth Aravamudan <nacc@us.ibm.com>
 
-> That's very wierd.  What is the default then?  Thinking back to May, I
-> thought it was 'common', and that was why Paul wanted to change things.
 
-This is an odd biarch compiler, the one that Paul talked about:
+Use ssleep() instead of schedule_timeout() to guarantee the task delays
+as expected.
 
-Target: powerpc64-suse-linux
-Configured with: ../configure --enable-threads=posix --prefix=/usr
---with-local-prefix=/usr/local --infodir=/usr/share/info
---mandir=/usr/share/man --libdir=/usr/lib --libexecdir=/usr/lib
---enable-languages=c,c++,objc,f95,java,ada --enable-checking
---with-gxx-include-dir=/usr/include/c++/4.0.1 --with-slibdir=/lib
---with-system-zlib --enable-shared --enable-__cxa_atexit
---without-system-libunwind --with-cpu=default32
---host=powerpc64-suse-linux
-Thread model: posix
-gcc version 4.0.1 20050701 (prerelease) (SUSE Linux)
+Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
+Signed-off-by: Domen Puncer <domen@coderock.org>
+
+---
+ fcc_enet.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
+
+Index: quilt/arch/ppc/8260_io/fcc_enet.c
+===================================================================
+--- quilt.orig/arch/ppc/8260_io/fcc_enet.c
++++ quilt/arch/ppc/8260_io/fcc_enet.c
+@@ -1305,12 +1305,11 @@ static void mii_parse_dm9161_scsr(uint m
+ 
+ static void mii_dm9161_wait(uint mii_reg, struct net_device *dev)
+ {
+-	int timeout = HZ;
++	int timeout_secs = 1;
+ 
+ 	/* Davicom takes a bit to come up after a reset,
+ 	 * so wait here for a bit */
+-	set_current_state(TASK_UNINTERRUPTIBLE);
+-	schedule_timeout(timeout);
++	ssleep(timeout_secs);
+ }
+ 
+ static phy_info_t phy_info_dm9161 = {
+
+--
