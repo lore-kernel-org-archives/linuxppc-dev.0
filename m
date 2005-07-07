@@ -1,21 +1,20 @@
-Return-Path: <ajz@cambridgebroadband.com>
-Received: from cambridgebroadband.com (unknown [217.204.121.83])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id ED58867BBC
+Return-Path: <d.grab@hima.com>
+Received: from hima.com (mail.hima.com [80.146.244.10])
+	by ozlabs.org (Postfix) with SMTP id 2E12767BC5
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  7 Jul 2005 19:12:50 +1000 (EST)
-Date: Thu, 7 Jul 2005 10:12:39 +0100
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
-To: apoorv sangal <apoorvsangal@gmail.com>
-Message-Id: <20050707101239.1389b917.ajz@cambridgebroadband.com>
-In-Reply-To: <a796693605070621187c9394d5@mail.gmail.com>
-References: <a796693605070621187c9394d5@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: vikrant_basotra@satyam.com, nishant_galange@satyam.com,
-	apoorv_sangal@satyam.com, linuxppc-embedded@ozlabs.org
-Subject: Re: Porting Linux On MPC8266 custom board
+	Fri,  8 Jul 2005 00:30:29 +1000 (EST)
+Received: from SN7606 ([192.168.100.10])
+	by hima.com (mail.hima.com [212.116.4.129]) (MDaemon.PRO.v8.0.3.R)
+	with ESMTP id md50000037795.msg
+	for <linuxppc-embedded@ozlabs.org>; Thu, 07 Jul 2005 16:30:28 +0200
+From: "David Grab" <d.grab@hima.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Thu, 7 Jul 2005 16:28:57 +0200
+Message-ID: <001401c58300$3643f870$f201a8c0@SN7606>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: PPC440GX IBM EMAC2/3 RGMII mode selection
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,131 +25,116 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Apoorv,
+Hello,
 
-You need to look in two places:
+i have some problems to configure emac2, emac3 support of my ibm ppc440gx
+for linux kernel 2.6.11.6. I have two RGMII Phy´s connected to the ppc an no
+other PHY´s are connected. PPC Strapping is selected for Group4 (SMII, SMII,
+RGMII/RTBI, RGMII/RTBI). I only want to configure the RGMII support of emac2
+and emac3. But it seems like the PHY´s are used for eth0 (emac1) and eth1
+(emac2) which are configured as SMII. Could someone tell me, what i have to
+configure to select only emac2 and emac3 in RGMII mode?
 
-1.	linux/init/main.c
+Thx for help,
 
-(which contains the following code
-	#endif
-#ifdef CONFIG_MTD
-	{ "mtdblock", 0x1f00 },
-#endif
-	{ NULL, 0 }
-};
-)
+David
 
-and 
+console output:
 
-2.	http://www.denx.de/twiki/bin/view/DULG/LinuxKernelArgs
+=> bootd
+## Booting image at ff000000 ...
+   Image Name:   Linux-2.6.11.6
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    890881 Bytes = 870 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+## Current stack ends at 0x1FF9D898 => set upper limit to 0x00800000
+## cmdline at 0x007FFF00 ... 0x007FFF25
+bd address  = 0x1FF9DF54
+memstart    = 0x00000000
+memsize     = 0x20000000
+flashstart  = 0xFF000000
+flashsize   = 0x01000000
+flashoffset = 0x00000000
+sramstart   = 0x00000000
+sramsize    = 0x00000000
+bootflags   = 0xC01D2D00
+intfreq     =    500 MHz
+busfreq     = 166.666 MHz
+ethaddr     = 00:04:AC:E3:28:8A
+eth1addr    = 00:04:AC:E3:28:8B
+eth2addr    = 00:04:AC:E3:28:8C
+eth3addr    = 00:04:AC:E3:28:8D
+IP addr     = 192.168.0.116
+baudrate    = 115200 bps
+## Loading RAMDisk Image at ff800000 ...
+   Image Name:   Test Ramdisk
+   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
+   Data Size:    1629365 Bytes =  1.6 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+## initrd at 0xFF800040 ... 0xFF98DCF4 (len=1629365=0x18DCB5)
+   Loading Ramdisk to 1fe0f000, end 1ff9ccb5 ... OK
+Linux version 2.6.11.6 (david@FedoraDG) (gcc-Version 3.3.3 (DENX ELDK 3.1
+3.3.3-8)) #2 Thu Jul 7 01:33:11 CEST 2005
+IBM
+Built 1 zonelists
+Kernel command line: console=ttyS1,115200 root=/dev/ram rw
+PID hash table entries: 4096 (order: 12, 65536 bytes)
+Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
+Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
+Memory: 515712k available (1372k kernel code, 464k data, 108k init, 0k
+highmem)
+Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
+checking if image is initramfs...it isn't (no cpio magic); looks like an
+initrd
+Freeing initrd memory: 1591k freed
+NET: Registered protocol family 16
+PCI: Probing PCI hardware
+PCI: bridge rsrc 0..ffff (100), parent c0195018
+PCI: bridge rsrc 80000000..ffffefff (200), parent c0195034
+SCSI subsystem initialized
+Serial: 8250/16550 driver $Revision: 1.90 $ 6 ports, IRQ sharing enabled
+ttyS0 at MMIO 0x0 (irq = 0) is a 16550A
+ttyS1 at MMIO 0x0 (irq = 1) is a 16550A
+io scheduler noop registered
+io scheduler anticipatory registered
+io scheduler deadline registered
+io scheduler cfq registered
+RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
+loop: loaded (max 8 devices)
+mal0: Initialized, 4 tx channels, 4 rx channels
+emac: IBM EMAC Ethernet driver, version 2.0
+Maintained by Benjamin Herrenschmidt <benh@kernel.crashing.org>
+zmii0: input 0 in SMII mode
+eth0: IBM emac, MAC 00:04:ac:e3:28:8a
+eth0: Found Generic MII PHY (0x05)
+zmii0: input 1 in SMII mode
+eth1: IBM emac, MAC 00:04:ac:e3:28:8b
+eth1: Found Generic MII PHY (0x06)
+zmii0: input 2 in SMII mode
+rgmii0: input 0 in RGMII mode
+emac2: Can't find PHY.
+zmii0: input 3 in SMII mode
+rgmii0: input 1 in RGMII mode
+emac3: Can't find PHY.
+NET: Registered protocol family 2
+IP: routing cache hash table of 4096 buckets, 32Kbytes
+TCP established hash table entries: 131072 (order: 8, 1048576 bytes)
+TCP bind hash table entries: 65536 (order: 6, 262144 bytes)
+TCP: Hash tables configured (established 131072 bind 65536)
+NET: Registered protocol family 1
+NET: Registered protocol family 17
+RAMDISK: Compressed image found at block 0
+RAMDISK: incomplete write (-28 != 1024) 4194304
+VFS: Mounted root (ext2 filesystem).
+Freeing unused kernel memory: 108k init
+eth0: Link is Up
+eth0: Cannot reset EMAC
+### Application running ...
 
-It looks to me that you're trying to use an mtdblock device for your root
-filesystem.  For this to work you need CONFIG_MTD defined and - obviously - a
-root file system image in the appropriate place in your flash.
-
-It also appears that you are losing output shortly after the ttyS0 drivers are
-created.  Maybe the problem is that your serial console program (e.g. minicom)
-is not configured for 11520 .. or for some reason the driver is selecting
-another rate.  Strangely, on my 82xx board I don't need the console argument on
-the kernel command line, it just automatically uses ttyS0@9600.  Probably this
-is because it detects u-boot is also using this, but I don't know.
-
-Alex
-
-
-On Thu, 7 Jul 2005 09:48:53 +0530
-apoorv sangal <apoorvsangal@gmail.com> wrote:
-
-> Hi All,
-> 		I am porting Linux on MPC8266 custom board, after getting in to
-> Linux the system seems to be struck at a point.
-> Saved Environment variable:-
->       bootargs console=ttyS0,11520 root=1f00 and downloaded the Kernel
-> image at address 0x02000000 in the RAM.
-> From the u-boot prompt the bootm command is invoked as:- 
-> 	bootm 0x02000000
-> 
-> After that what I get on the terminal is pasted below for your reference.
-> I couldn't make out any thing from the output, can any body tell me
-> where I am doing wrong, and also I don't have any idea about the
-> bootargs argument "root". Can any body give the precise description of
-> this argument?
-> 
-> 
-> ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-> => bootm 02000000 ## Booting image at 02000000...
->    Image Name:   2.4.24 MPC8260ADS
->    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
->    Data Size:    725838 Bytes = 708.8 kB
->    Load Address: 00000000
->    Entry Point:  00000000
->    Verifying Checksum ... OK
->    Uncompressing Kernel Image ... OK
-> Memory BAT mapping: BAT2=128Mb, BAT3=0Mb, residual: 0Mb
-> 
-> Linux version 2.4.24-pre2 (root@pmcserver) (gcc version 3.3.4) #2 Tue
-> Jul 5 15:05:10 IST 2005
-> 
-> On node 0 totalpages: 32768
-> 
-> zone(0): 32768 pages.
-> 
-> zone(1): 0 pages.
-> 
-> zone(2): 0 pages.
-> 
-> Kernel command line: console=ttyS0,115200 root=1f00
-> 
-> Warning: real time clock seems stuck!
-> 
-> Calibrating delay loop... 131.89 BogoMIPS
-> 
-> Memory: 127812k available (1232k kernel code, 412k data, 64k init, 0k highmem)
-> 
-> Dentry cache hash table entries: 16384 (order: 5, 131072 bytes)
-> 
-> Inode cache hash table entries: 8192 (order: 4, 65536 bytes)
-> 
-> Mount cache hash table entries: 512 (order: 0, 4096 bytes)
-> 
-> Buffer cache hash table entries: 8192 (order: 3, 32768 bytes)
-> 
-> Page-cache hash table entries: 32768 (order: 5, 131072 bytes)
-> 
-> POSIX conformance testing by UNIFIX
-> 
-> Linux NET4.0 for Linux 2.4
-> 
-> Based upon Swansea University Computer Society NET3.039
-> 
-> Initializing RT netlink socket
-> 
-> Starting kswapd
-> 
-> JFFS2 version 2.1. (C) 2001 Red Hat, Inc., designed by Axis Communications AB.
-> 
-> i2c-core.o: i2c core module version 2.6.1 (20010830)
-> 
-> i2c-dev.o: i2c /dev entries driver module version 2.6.1 (20010830)
-> 
-> CPM UART driver version 0.01
-> 
-> ttyS0 on SMC1 at 0x0000, BRG7
-> 
-> ttyS1 on SMC2 at 0x0040, BRG8
-> 
-> ttyS2 on SCC1 at 0x8000, BRG1
-> 
-> ttyS3 on SCC2 at 0x8100, BRG2
-> 
-> pty: 256 Unix98 ptys configured
-> ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-> 	
-> Waiting eagerly,
-> Regards,
-> VB
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+BusyBox v0.60.5 (2004.11.10-15:02+0000) Built-in shell (msh)
+Enter 'help' for a list of built-in commands.
