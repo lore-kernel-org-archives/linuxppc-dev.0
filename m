@@ -1,15 +1,19 @@
-Return-Path: <ALEBAS@televes.com>
-Received: from televes.com (unknown [212.163.42.137])
-	by ozlabs.org (Postfix) with SMTP id 30E6267B66
+Return-Path: <wd@denx.de>
+Received: from mailout03.sul.t-online.com (mailout03.sul.t-online.com
+	[194.25.134.81]) by ozlabs.org (Postfix) with ESMTP id C70DF67B7A
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  8 Jul 2005 16:38:02 +1000 (EST)
-Message-ID: <51DB8827D393D411BB69003048003F4601B1C217@tvesntr>
-From: Bastos Fernandez  Alexandre <ALEBAS@televes.com>
-To: linuxppc-embedded@ozlabs.org
-Date: Fri, 8 Jul 2005 08:37:52 +0200 
-MIME-Version: 1.0
-Content-Type: text/plain
-Subject: RE: CPM2 reports CRC errors in FCC2 for good packets
+	Fri,  8 Jul 2005 18:24:01 +1000 (EST)
+To: "Russell McGuire" <rmcguire@uwbt.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 07 Jul 2005 20:42:06 PDT."
+	<20050707234210.GA24326@mail19d.g19.rapidsite.net>
+Date: Fri, 08 Jul 2005 10:20:53 +0200
+Sender: wd@denx.de
+Message-Id: <20050708082053.C79E9353A62@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: MPC8280 Support for Linux 2.4.25 and up? 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,59 +24,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
-Finally I got the problem solved. It was a hardware issue,
-due mainly to my unknowledge.
+In message <20050707234210.GA24326@mail19d.g19.rapidsite.net> you wrote:
+> 
+> Are there any known issues with Linux 2.4.25 and supporting the MPC8280 CPU?
 
-For future archives searches ... the RX_ER line is reported
-by CPM2 as a CRC error. And floating RX_ER is detected
-as active.
+No.
+
+> I have seen some posts in the past, and tried Google'ing for a patch for CPU
+> support, but have only seen tidbits... Seen some support issues for the 5200
+> as it also runs the G2_LE core.
+
+We also support the MPC8220 in our source  tree  (U-Boot  and  Linux)
+which is the same family.
+
+> So I guess, I am asking if there are patches, perhaps where?
+
+On our CVS server?
+
+> Or should I consider moving up in kernel revisions, to get support for the
+> newer CPM_2 drivers.
+
+What for?
+
 
 Best regards,
 
-Alex Bastos
+Wolfgang Denk
 
-> -----Original Message-----
-> Hi guys,
-> 
-> I am working with a MPC8248 custom board. On this, we have mixed
-> interfaces, with Ethernet on FCC1 working in Full Duplex 100Mbps,
-> and MII-generic on FCC2, working in Half-Duplex 100Mbps.
-> 
-> On FCC2, CPM2 reports CRC error for each received packet, but
-> ignoring it, packets arrive correctly. We have tested it with
-> a known packet (ARP broadcast) through both interfaces, and this
-> packet reports and CRC error on FCC2, but not in FCC1 ... but the
-> received packet is the same in both cases !!! (taken from buffer
-> pointed by RxBD):
-> 
-> # FCC2 : Generic-mii Half Duplex
-> # ARP Broadcast Packet received on board!!!
-> FF FF FF FF FF FF 00 10 5A A7 8A F3 08 06 00 01 08 00 06 04 00 01
-> 00 10 5A A7 8A F3 0A 00 00 03 00 00 00 00 00 00 0A 00 00 01 00 00
-> 00 00 00 00 00 00 00 00 00 0000 00 00 00 00 00 E7 E0 E9 46
-> ... len: 64
-> CBD_SC = 1C84 (crc_error)
-> 
-> 
-> # FCC1 : ETHERNET Full Duplex
-> # ARP Broadcast Packet received on board!!!
-> FF FF FF FF FF FF 00 10 5A A7 8A F3 08 06 00 01 08 00 06 04 00 01
-> 00 10 5A A7 8A F3 0A 00 00 03 00 00 00 00 00 00 0A 00 00 01 00 00
-> 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 E7 E0 E9 46
-> ... len: 64
-> 
-> 
-> So, packet is received ok, but CRC error is reported.
-> Any idea? May it be a Hardware problem, even if packets are received
-> OK by the driver?
-> 
-> 
-> Thanks,
-> 
-> Alexandre BASTOS
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+A UNIX saleslady, Lenore,
+Enjoys work, but she likes the beach more.
+        She found a good way
+        To combine work and play:
+She sells C shells by the seashore.
