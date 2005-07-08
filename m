@@ -1,19 +1,16 @@
-Return-Path: <SRS0+6a8d017d3a9d31aec255+683+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6E11767B96
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 6364867B92
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  8 Jul 2005 08:10:44 +1000 (EST)
-From: David Woodhouse <dwmw2@infradead.org>
-To: "Bizhan Gholikhamseh (bgholikh)" <bgholikh@cisco.com>
+	Fri,  8 Jul 2005 12:04:46 +1000 (EST)
 In-Reply-To: <F795765B112E7344AF36AA91127964151EC368@xmb-sjc-212.amer.cisco.com>
 References: <F795765B112E7344AF36AA91127964151EC368@xmb-sjc-212.amer.cisco.com>
-Content-Type: text/plain
-Date: Thu, 07 Jul 2005 23:09:18 +0100
-Message-Id: <1120774159.3890.294.camel@localhost.localdomain>
-Mime-Version: 1.0
+Mime-Version: 1.0 (Apple Message framework v730)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <354AB8A8-1BE5-4BC0-8252-D51D1CEF6B51@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Thu, 7 Jul 2005 21:04:52 -0500
+To: "Bizhan Gholikhamseh \\\(bgholikh\\\)" <bgholikh@cisco.com>
 Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: remap_page_range not resolved
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -26,19 +23,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2005-07-07 at 14:58 -0700, Bizhan Gholikhamseh (bgholikh) wrote:
-> I am porting a Linux PCI driver originally developed for X86 platform to
-> MPC8540ADS reference  board by Freescale running 2.6 Linux. 
+This is probably due to the change of remap_page_range to  
+remap_pfn_range.  I forget the exact kernel version this was changed in.
+
+- kumar
+
+On Jul 7, 2005, at 4:58 PM, Bizhan Gholikhamseh \\((bgholikh\\)) wrote:
+
+> Hi All,
+> I am porting a Linux PCI driver originally developed for X86  
+> platform to
+> MPC8540ADS reference  board by Freescale running 2.6 Linux.
 > The "insmod" command fails when I am trying to load the module. The
-> failure is because the reference to a function name can not be resolved:
+> failure is because the reference to a function name can not be  
+> resolved:
 > "remap_page_range"
 > Could someone help me please to find out what I am missing from my
 > kernel image?
-
-You forgot to include a reference to the source code of the driver
-you're having trouble with.
-
-Don't post HTML mail to public fora.
-
--- 
-dwmw2
+>
+> Regards,
+> Bizhan
+>
+> <ATT507020.txt>
+>
