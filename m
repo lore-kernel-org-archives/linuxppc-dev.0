@@ -1,19 +1,16 @@
-Return-Path: <olh@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 11B4C67A79
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Jul 2005 05:35:20 +1000 (EST)
-Date: Sun, 10 Jul 2005 19:35:14 +0000
-From: Olaf Hering <olh@suse.de>
-To: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-Message-ID: <20050710193514.6.ltcoQv2417.2247.olh@nectarine.suse.de> 
+Return-Path: <bunk@stusta.de>
+Received: from mailout.stusta.mhn.de (emailhub.stusta.mhn.de [141.84.69.5])
+	by ozlabs.org (Postfix) with SMTP id 77DBB67C18
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Jul 2005 05:37:31 +1000 (EST)
+Date: Sun, 10 Jul 2005 17:37:23 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: paulus@samba.org
+Message-ID: <20050710153722.GM28243@stusta.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20050710193508.0.PmFpst2252.2247.olh@nectarine.suse.de>  
-Cc: linuxppc-dev@ozlabs.org
-Subject: [PATCH 6/82] remove linux/version.h include from arch/ppc
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] arch/ppc/kernel/ppc_ksyms.c: remove unused #define
+	EXPORT_SYMTAB_STROPS
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,63 +20,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This #define is only used on sparc.
 
-changing CONFIG_LOCALVERSION rebuilds too much, for no appearent reason.
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-use system_utsname for CONFIG_BOOTX_TEXT welcome message
-
-Signed-off-by: Olaf Hering <olh@suse.de>
-
-arch/ppc/syslib/btext.c     |    6 ++++--
-arch/ppc/syslib/prom.c      |    1 -
-arch/ppc/syslib/prom_init.c |    1 -
-3 files changed, 4 insertions(+), 4 deletions(-)
-
-Index: linux-2.6.13-rc2-mm1/arch/ppc/syslib/btext.c
-===================================================================
---- linux-2.6.13-rc2-mm1.orig/arch/ppc/syslib/btext.c
-+++ linux-2.6.13-rc2-mm1/arch/ppc/syslib/btext.c
-@@ -7,7 +7,7 @@
-#include <linux/kernel.h>
-#include <linux/string.h>
-#include <linux/init.h>
--#include <linux/version.h>
-+#include <linux/utsname.h>
-
-#include <asm/sections.h>
-#include <asm/bootx.h>
-@@ -81,7 +81,9 @@ btext_welcome(void)
-unsigned long pvr;
-boot_infos_t* bi = &disp_bi;
-
--	btext_drawstring("Welcome to Linux, kernel " UTS_RELEASE "n");
-+	btext_drawstring("Welcome to Linux, kernel ");
-+	btext_drawstring(system_utsname.version);
-+	btext_drawstring("n");
-btext_drawstring("nlinked at        : 0x");
-btext_drawhex(KERNELBASE);
-btext_drawstring("nframe buffer at  : 0x");
-Index: linux-2.6.13-rc2-mm1/arch/ppc/syslib/prom.c
-===================================================================
---- linux-2.6.13-rc2-mm1.orig/arch/ppc/syslib/prom.c
-+++ linux-2.6.13-rc2-mm1/arch/ppc/syslib/prom.c
-@@ -13,7 +13,6 @@
-#include <linux/kernel.h>
-#include <linux/string.h>
-#include <linux/init.h>
--#include <linux/version.h>
-#include <linux/threads.h>
-#include <linux/spinlock.h>
-#include <linux/ioport.h>
-Index: linux-2.6.13-rc2-mm1/arch/ppc/syslib/prom_init.c
-===================================================================
---- linux-2.6.13-rc2-mm1.orig/arch/ppc/syslib/prom_init.c
-+++ linux-2.6.13-rc2-mm1/arch/ppc/syslib/prom_init.c
-@@ -9,7 +9,6 @@
-#include <linux/kernel.h>
-#include <linux/string.h>
-#include <linux/init.h>
--#include <linux/version.h>
-#include <linux/threads.h>
-#include <linux/spinlock.h>
-#include <linux/ioport.h>
+--- linux-2.6.13-rc2-mm1-full/arch/ppc/kernel/ppc_ksyms.c.old	2005-07-10 17:35:05.000000000 +0200
++++ linux-2.6.13-rc2-mm1-full/arch/ppc/kernel/ppc_ksyms.c	2005-07-10 17:35:12.000000000 +0200
+@@ -51,9 +51,6 @@
+ #include <asm/commproc.h>
+ #endif
+ 
+-/* Tell string.h we don't want memcpy etc. as cpp defines */
+-#define EXPORT_SYMTAB_STROPS
+-
+ extern void transfer_to_handler(void);
+ extern void do_IRQ(struct pt_regs *regs);
+ extern void MachineCheckException(struct pt_regs *regs);
