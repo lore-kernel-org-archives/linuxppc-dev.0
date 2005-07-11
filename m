@@ -3,16 +3,16 @@ Received: from pike.sandelman.ca (pike.sandelman.ca [205.150.200.164])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client CN "pike.sandelman.ca",
 	Issuer "Michael Richardson" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id C2FB4679E7
+	by ozlabs.org (Postfix) with ESMTP id DCE5F67C1C
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 12 Jul 2005 00:34:31 +1000 (EST)
+	Tue, 12 Jul 2005 00:39:23 +1000 (EST)
 To: "Absolut Hunter" <absoluthunter@comcast.net>
 In-Reply-To: Message from "Absolut Hunter" <absoluthunter@comcast.net>
 	of "Mon,
-	11 Jul 2005 06:38:11 PDT." <20050711134713.D767067C13@ozlabs.org>
-References: <20050711134713.D767067C13@ozlabs.org> 
-Date: Mon, 11 Jul 2005 10:01:48 -0400
-Message-ID: <6071.1121090508@marajade.sandelman.ottawa.on.ca>
+	11 Jul 2005 07:02:14 PDT." <20050711140714.C743F67C23@ozlabs.org>
+References: <20050711140714.C743F67C23@ozlabs.org> 
+Date: Mon, 11 Jul 2005 10:39:15 -0400
+Message-ID: <12069.1121092755@marajade.sandelman.ottawa.on.ca>
 From: Michael Richardson <mcr@sandelman.ottawa.on.ca>
 Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: Linux 2.4.25 / MPC8280 / ram config vs Linux instability? 
@@ -30,20 +30,31 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 
 >>>>> "Absolut" == Absolut Hunter <absoluthunter@comcast.net> writes:
-    Absolut> If I leave the SRAM mapped at higher addresses 0x10000000
-    Absolut> and SDRAM at 0x00000000, like U-boot defaults to Linux
-    Absolut> works great. However, my goal is to map SRAM <8ns speeds>
-    Absolut> down to the address 0x00000000, to map the vector table, so
-    Absolut> I can achieve a very fast interrupt response time.
+    Absolut> A useful piece to this might be that I am attempting to map
+    Absolut> these two memory regions contiguously, so that Linux
+    Absolut> doesn't see any memory holes.
 
-  Are you mapping the SRAM *OVER* the lower 2MB of address space?
+    Absolut> 0-2MB SRAM 2MB-34MB SDRAM
 
-  If so, then you won't have 34Mb of ram, you'll have 32Mb, and Linux
-may well be running off the end under stress.
+  Likely you can't do that, because you must map the blocks at a
+multiple of their address. (I'm not an expert at PPC mappings, but this
+is typically the case)
 
-  My memory is that you can move the vector table to another address.
-Wouldn't that be easier?
+  So you can do:
+	 0x000000000	   SRAM		(has a hole from 2MB->32Mb)
+	 0x002000000	   SDRAM
 
+  or:
+	 0x000000000	   SDRAM
+	 0x002000000	   SRAM
+
+    Absolut> I would be open to any other ways that SRAM / SDRAM might
+    Absolut> be mapped to work, and still provide a performance increase
+    Absolut> for the kernel.
+
+  I think that you would be better to lock the relevant interrupt code
+into the cache, if that is possible.
+   
 - -- 
 ] Michael Richardson          Xelerance Corporation, Ottawa, ON |  firewalls  [
 ] mcr @ xelerance.com           Now doing IPsec training, see   |net architect[
@@ -53,9 +64,9 @@ Wouldn't that be easier?
 Version: GnuPG v1.2.2 (GNU/Linux)
 Comment: Finger me for keys
 
-iQCVAwUBQtJ7yoqHRg3pndX9AQF+eQQA0QBhaZAjq3vDQm8glqV0j+jmzO9+7U0m
-aZvOt5FsXu2mv3lS/2FySIQf3UuRcl0lIR5zaNfyn+I11K0YlfZvXgY97U2TMcmu
-1K5sod0j3DpaIrK/a+VyWa+tQFe9zoPktazinVoQm4+geNRlTZf9P5XyYwXE7knn
-+TOTFRzLq7c=
-=iPOS
+iQCVAwUBQtKEkYqHRg3pndX9AQFm6wP8C6xu9Wwbbv/eCr3UaZDcn4mEx35F28s1
+eAdYxTqKREhewSJZH1QGn2QGBXxHKMlnBWttgmSYb814aXDeEzEKm3pLg45cB9nj
+kU49kcDuyJ8Ug62/dFg9iZn4udfuJJHeaDNGITEwj2ov0RCENdJLsnCO33tZOjEs
+Mz9qUutzG4g=
+=DGvh
 -----END PGP SIGNATURE-----
