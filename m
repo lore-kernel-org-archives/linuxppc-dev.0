@@ -1,20 +1,19 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 193E167C3B
+Return-Path: <wd@denx.de>
+Received: from mailout11.sul.t-online.com (mailout11.sul.t-online.com
+	[194.25.134.85]) by ozlabs.org (Postfix) with ESMTP id 33C2167A79
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 12 Jul 2005 04:39:26 +1000 (EST)
-In-Reply-To: <20050711134713.D767067C13@ozlabs.org>
-References: <20050711134713.D767067C13@ozlabs.org>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <bd3bf2b4d8489c491b4c3cee2d38a4b2@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Mon, 11 Jul 2005 11:39:05 -0700
-To: "Absolut Hunter" <absoluthunter@comcast.net>
+	Tue, 12 Jul 2005 05:50:44 +1000 (EST)
+To: Nick Barendt <nbarendt@vxitech.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 11 Jul 2005 13:41:26 EDT."
+	<42D2AF46.9000200@vxitech.com>
+Date: Mon, 11 Jul 2005 21:46:31 +0200
+Sender: wd@denx.de
+Message-Id: <20050711194631.C30EB3539FE@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Linux 2.4.25 / MPC8280 / ram config vs Linux instability?
+Subject: Re: MPC5200 Rev. B 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,36 +24,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+In message <42D2AF46.9000200@vxitech.com> you wrote:
+>
+> I can confirm that there are engineering samples of at least the first 
+> mask set of the Rev. B part floating around.  A friend sent me one:
+...
+> We have had very limited success with the Rev B engineering part, 
 
-On Jul 11, 2005, at 6:38 AM, Absolut Hunter wrote:
+We, too, have some problems with hardware which  uses  the  currently
+available negineering samples. It's not completely clear if these are
+board or processor or software issues yet.
 
-> ..... However, my goal is
-> to map SRAM <8ns speeds> down to the address 0x00000000, to map the 
-> vector
-> table, so I can achieve a very fast interrupt response time.
+> We do know that there are still errata on the first mask rev and that a 
+> second mask rev is in process.
+> 
+> Anyone else have anything to report?
 
-The things Linux does to cause interrupt latencies are going to ensure
-you aren't going to see any differences to the "interrupt response 
-time." :-)
- From a system perspective, you are going to be much better off using
-your SRAM for CPM data buffering than for any general software use.
+If you got samples, you should also have access to the updated errata
+sheet (MPC5200B_Customer_Info_addendum_errata). Read  it.  Also  note
+that you have to use BAPI v2.2 with Rev. B processors.
 
-> Does anyone have any idea what would cause this instability?
+Best regards,
 
-Yeah, I can't find a way to actually map the memory as you have
-described.  You actually have the SRAM and SDRAM multiply mapped
-on top of one another, and depending upon which chip selects
-are used and the values in their registers, you are selecting between
-the two memories.  Several cases exist.  You are either mapping the
-SRAM on top of the SDRAM, or vice versa.  You really have only 32M
-of memory available, so any access to the "upper" 2M is wrapping
-around to the lower memory.  Basically, you have a big mess ;-)
+Wolfgang Denk
 
-You need to map these memories to modulo their size, so to put
-the 2M at low memory, you are going to have a hole up to a 32M
-boundary before you can map the SDRAM.  It's possible to do
-this, but not without some custom Linux modifications.
-
-Thanks.
-
-	-- Dan
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Every program has at least one bug and can be shortened by  at  least
+one  instruction  --  from  which,  by induction, one can deduce that
+every program can be reduced to one instruction which doesn't work.
