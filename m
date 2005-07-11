@@ -3,13 +3,13 @@ Received: from aton.bb-consulting.de (62-99-195-46.sdsl-line.inode.at
 	[62.99.195.46])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0B26267B7A
-	for <linuxppc-dev@ozlabs.org>; Mon, 11 Jul 2005 22:59:09 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 83C8B679E7
+	for <linuxppc-dev@ozlabs.org>; Mon, 11 Jul 2005 23:21:01 +1000 (EST)
 To: linuxppc-dev@ozlabs.org
 From: PayPal <service@paypal.com>
 Content-Type: text/html
-Message-Id: <20050711130138.EAA3B9E17@aton.bb-consulting.de>
-Date: Mon, 11 Jul 2005 15:01:38 +0200 (CEST)
+Message-Id: <20050711134259.02F5BB3A3@aton.bb-consulting.de>
+Date: Mon, 11 Jul 2005 15:42:59 +0200 (CEST)
 Subject: This email confirms that you sent $67.00 USD to
 	north_pools@yahoo.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
