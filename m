@@ -1,21 +1,19 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 581D267A79
+Return-Path: <wd@denx.de>
+Received: from mailout10.sul.t-online.com (mailout10.sul.t-online.com
+	[194.25.134.21]) by ozlabs.org (Postfix) with ESMTP id 703C667BE5
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Jul 2005 04:45:17 +1000 (EST)
-Date: Tue, 12 Jul 2005 11:45:15 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Guillaume Autran <gautran@mrv.com>
-Message-ID: <20050712184514.GB3324@gate.ebshome.net>
-References: <42D3D277.106@mrv.com> <20050712163921.GE25918@gate.ebshome.net>
-	<42D40BF0.6040605@mrv.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <42D40BF0.6040605@mrv.com>
-Cc: akpm@osdl.org, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] ppc32: fix destroy_context() race condition
+	Wed, 13 Jul 2005 06:42:16 +1000 (EST)
+To: Matt_Berry@mksinst.com
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 12 Jul 2005 08:25:31 CDT."
+	<OF8B3EB35C.277E5E38-ON8525703C.0049B16F-8625703C.0049BF25@mksinst.com>
+Date: Tue, 12 Jul 2005 22:37:45 +0200
+Sender: wd@denx.de
+Message-Id: <20050712203745.015CD353AB6@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: MPC5200 Rev. B 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,13 +24,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 12, 2005 at 02:29:04PM -0400, Guillaume Autran wrote:
-> Eugene, destroy_context(..) can be called from other place outside of 
-> the scheduler and switch_mm(...). See mmdrop(...) for example.
-> In many of those cases, the task will run with preemption enable.
+In message <OF8B3EB35C.277E5E38-ON8525703C.0049B16F-8625703C.0049BF25@mksinst.com> you wrote:
+> When you refer to BAPI, are you referring to the BestComm?
 
-Ahh, OK, you're right. Maybe it's worth mentioning in the patch 
-description :).
+Yes.
+
+Best regards,
+
+Wolfgang Denk
 
 -- 
-Eugene
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+I am an atheist, thank God!
