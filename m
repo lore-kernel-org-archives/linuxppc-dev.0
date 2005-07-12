@@ -1,19 +1,23 @@
-Return-Path: <wd@denx.de>
-Received: from mailout11.sul.t-online.com (mailout11.sul.t-online.com
-	[194.25.134.85]) by ozlabs.org (Postfix) with ESMTP id 33C2167A79
+Return-Path: <glikely@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.207])
+	by ozlabs.org (Postfix) with ESMTP id 75D1467BD0
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 12 Jul 2005 05:50:44 +1000 (EST)
-To: Nick Barendt <nbarendt@vxitech.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 11 Jul 2005 13:41:26 EDT."
-	<42D2AF46.9000200@vxitech.com>
-Date: Mon, 11 Jul 2005 21:46:31 +0200
-Sender: wd@denx.de
-Message-Id: <20050711194631.C30EB3539FE@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC5200 Rev. B 
+	Tue, 12 Jul 2005 14:05:25 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id i27so965744wra
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 11 Jul 2005 21:05:24 -0700 (PDT)
+Message-ID: <528646bc050711210430374802@mail.gmail.com>
+Date: Mon, 11 Jul 2005 22:04:30 -0600
+From: Grant Likely <glikely@gmail.com>
+To: Kumar Gala <kumar.gala@freescale.com>, greg@kroah.com
+In-Reply-To: <18C1CAA6-F980-4F8C-8FDD-E5D676D084ED@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <528646bc0507061049739157cf@mail.gmail.com>
+	<18C1CAA6-F980-4F8C-8FDD-E5D676D084ED@freescale.com>
+Cc: David Ho <DavidHo@nanometrics.ca>, linuxppc-embedded@ozlabs.org
+Subject: Re: OLS 2005
+Reply-To: Grant Likely <glikely@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,33 +28,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <42D2AF46.9000200@vxitech.com> you wrote:
->
-> I can confirm that there are engineering samples of at least the first 
-> mask set of the Rev. B part floating around.  A friend sent me one:
-...
-> We have had very limited success with the Rev B engineering part, 
+On 7/6/05, Kumar Gala <kumar.gala@freescale.com> wrote:
+> On Jul 6, 2005, at 12:49 PM, Grant Likely wrote:
+> > On 4/27/05, Kumar Gala <kumar.gala@freescale.com> wrote:
+> >
+> >> I wondering if we can get a PPC BoF together, ...
+The schedule is now posted on the OLS website.  Thursday and Friday
+evenings are set for scheduled BOFs.  Why don't we tentatively plan an
+unoffical PPCembedded BOF Thursday evening?
 
-We, too, have some problems with hardware which  uses  the  currently
-available negineering samples. It's not completely clear if these are
-board or processor or software issues yet.
+We should try to meet each other during the day Wednesday and choose a
+good time.
 
-> We do know that there are still errata on the first mask rev and that a 
-> second mask rev is in process.
-> 
-> Anyone else have anything to report?
+> > I'd like to discuss the platform bus a bit.  As was discussed a month
+> > or so ago, there is no clean way of matching multiple device drivers
+> > to a single device type, like with PSCs on the MPC5200.
+> >
+> We should try to see if we can find GregKH to discuss what changes
+> would need to be made to the driver core to allow this.
+>=20
+How 'bout it Greg?  Can we get some of your time?
 
-If you got samples, you should also have access to the updated errata
-sheet (MPC5200B_Customer_Info_addendum_errata). Read  it.  Also  note
-that you have to use BAPI v2.2 with Rev. B processors.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Every program has at least one bug and can be shortened by  at  least
-one  instruction  --  from  which,  by induction, one can deduce that
-every program can be reduced to one instruction which doesn't work.
+Cheers,
+g.
