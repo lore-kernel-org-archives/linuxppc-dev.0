@@ -1,20 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8486B67C1E
+Return-Path: <gqbenjamin@21cn.com>
+Received: from 21cn.com (send.forptr.21cn.com [202.105.45.49])
+	by ozlabs.org (Postfix) with SMTP id B57C767BD0
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Jul 2005 10:11:38 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Guillaume Autran <gautran@mrv.com>
-In-Reply-To: <42D3D277.106@mrv.com>
-References: <42D3D277.106@mrv.com>
+	Wed, 13 Jul 2005 12:51:25 +1000 (EST)
 Content-Type: text/plain
-Date: Wed, 13 Jul 2005 10:09:52 +1000
-Message-Id: <1121213392.31924.399.camel@gaston>
-Mime-Version: 1.0
-Cc: akpm@osdl.org, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] ppc32: fix destroy_context() race condition
+MIME-Version: 1.0
+Message-ID: <Q6949286895747.26323@webmail1.inner-21cn.com>
+Date: Wed, 13 Jul 2005 10:42:52 +0800 (CST)
+From: gqbenjamin@21cn.com
+To: linuxppc-embedded@ozlabs.org 
+Cc: 
+Subject: help: FCC_ENET OF MPC8250?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,42 +21,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2005-07-12 at 10:23 -0400, Guillaume Autran wrote:
-> Fix for a race condition when a task gets preempted by another task
-> while executing the destroy_context(...) in a FEW_CONTEXTS environment.
-> mm->context == NO_CONTEXT but the context_map may indicate all contexts
-> are in use.
-> The solution to this problem is to disable kernel preemption while
-> destroying a MMU context.
-> 
-> Signed-off-by: Guillaume Autran <gautran@mrv.com>
+Hi,
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+I use a device, like SMARTBITS, to test the Ethernet rate of mpc8250. The kernel is linux-2.4.20 with CONFIG_FCC_LXT971 and CONFIG_USE_MDIO, and do 'cat "1">/proc/sys/net/ipv4/ip_forward'.
 
-> 
-> ---
-> 
-> diff -Nru a/include/asm-ppc/mmu_context.h b/include/asm-ppc/mmu_context.h
-> --- a/include/asm-ppc/mmu_context.h	2005-06-17 15:48:29.000000000 -0400
-> +++ b/include/asm-ppc/mmu_context.h	2005-07-05 08:58:46.000000000 -0400
-> @@ -149,6 +149,7 @@
->  */
-> static inline void destroy_context(struct mm_struct *mm)
-> {
-> +	preempt_disable();
-> 	if (mm->context != NO_CONTEXT) {
-> 		clear_bit(mm->context, context_map);
-> 		mm->context = NO_CONTEXT;
-> @@ -156,6 +157,7 @@
-> 		atomic_inc(&nr_free_contexts);
-> #endif
-> 	}
-> +	preempt_enable();
-> }
-> 
-> static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
-> 
-> 
-> 
-> 
-> 
+If the rate of sending IP packet been set too high, for example 100 Mbps Full Duplex and each packet is 1514 Bytes. Later, the kernel print '... Memory squeeze, dropping packet' on uart. Stop sending IP packet and do 'cat /proc/meminfo', the *MemFree* become small.
+
+Try again, the *MemFree* become smaller, just look like some allocated memory (skbuf) do not be free.
+
+Final, the kernel break down, because all memory have been used.
+
+Q. How can I do to let kernel do not break down? Is it a kernel promblem?
+
+PS: 
+I use linux-2.6.5 on mpc8250 for the same test, and get the same result.
+I change some code in file skbuff.c, use a memory pool that I created instead of allocating *skb* from *MemFree*, and do the same test. Final, the kernel can not transmit any IP packet, beacuse all space in the pool been used, but do not break down. 
+
+Thanks for your reading.
+
+e-mail: gqben@sina.com gqbenjamin@163.com gqbenjamin@21cn.com
+
+----------------------------------------------
+vgo体验桌面快感，享受宽频乐趣！ 
+http://vgo.21cn.com 
+点这里免费体验发送4G大附件 
+http://mail.21cn.com/huodong/0504/mail/ 
+彩屏手机白送啦!赶快来拿! 
+http://qipai.g.21cn.com 
+智慧大挑战就在低价夺宝 
+http://super.21cn.com/ 
+体验另类约会，感受别样浪漫 
+http://y.21cn.com/club/ 
+小灵通短信中心，短信魅力无极 
+http://pas.21cn.com/ 
+全能聊2005版闪亮登场！ 
+http://callme.21cn.com 
