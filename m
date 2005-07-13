@@ -1,20 +1,15 @@
-Return-Path: <rmcguire@uwbt.com>
-Received: from mail19d.g19.rapidsite.net (mail19d.dulles19-verio.com
-	[204.202.242.120]) by ozlabs.org (Postfix) with SMTP id 7EF8067C1F
+Return-Path: <mlei30@yahoo.com>
+Received: from web61023.mail.yahoo.com (web61023.mail.yahoo.com
+	[209.73.179.17]) by ozlabs.org (Postfix) with SMTP id 5DE1F67A79
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Jul 2005 05:32:33 +1000 (EST)
-Received: from mx35.stngva01.us.mxservers.net (204.202.242.106)
-	by mail19d.g19.rapidsite.net (RS ver 1.0.95vs) with SMTP id
-	4-0175343149 for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Jul 2005 15:32:31 -0400 (EDT)
-From: "Russell McGuire" <rmcguire@uwbt.com>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Wed, 13 Jul 2005 12:32:28 -0700
+	Thu, 14 Jul 2005 06:17:03 +1000 (EST)
+Message-ID: <20050713201022.69351.qmail@web61023.mail.yahoo.com>
+Date: Wed, 13 Jul 2005 13:10:21 -0700 (PDT)
+From: ming lei <mlei30@yahoo.com>
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Message-ID: <20050713153231.GA17534@mail19d.g19.rapidsite.net>
-Subject: linux and sram
+Content-Type: text/plain; charset=iso-8859-1
+Subject: double kernel page table entry for the same physical page?!
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,17 +20,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Everyone,
 
+1. In PPC MMU_init sets up kernel page table for all
+the physical pages available(say size is A) to the
+virt address starting from PAGE_OFFSET to
+(PAGE_OFFSET+A).
 
-If we are using U-boot and populate the CFG_SRAM_SIZE and CFG_SRAM_BASE
-values, and makes sure this is passed into the kernel.
+Question: does the linux ever touch this section of
+page table(virt address from PAGE_OFFSET to
+PAGE_OFFSET+A) again? like remove or modify one of the
+entry?
 
-Does Linux 2.4.2x+ have any direct support for this? Is it just added into
-the regular memory pool? Does it get used for specific tasks?
+2. In VMALLOC, say we have virt address
+B(B>PAGE_OFFSET+A), sets up the page table entry for
+this B to any one of the physical pages.
 
-Or is this set aside for custom drivers?
+Question: For every physical page, it should already
+be mapped in #1, but vmalloc maps it again to a virt
+address higher. Does it mean in kernel page table, we
+may have two PTE entries pointing to the same physical
+page, even their virt addresses are different?
+
+Last question:
+If this is true, is this platform implemention
+specific? Does i386 implemention have same situation?
 
 Thanks,
+Ming
 
-Russell McGuire
+
+
+		
+____________________________________________________
+Start your day with Yahoo! - make it your home page
+http://www.yahoo.com/r/hs
+ 
