@@ -1,20 +1,18 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C248B67A79
+Return-Path: <gjalt007@chello.nl>
+Received: from amsfep13-int.chello.nl (amsfep13-int.chello.nl [213.46.243.23])
+	by ozlabs.org (Postfix) with ESMTP id 87FB967C3D
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Jul 2005 07:27:20 +1000 (EST)
-In-Reply-To: <20050713201022.69351.qmail@web61023.mail.yahoo.com>
-References: <20050713201022.69351.qmail@web61023.mail.yahoo.com>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <2c008f2a8b3ef3ba33ec3d0f8a5c3390@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Wed, 13 Jul 2005 14:27:08 -0700
-To: ming lei <mlei30@yahoo.com>
+	Thu, 14 Jul 2005 07:33:03 +1000 (EST)
+Message-ID: <42D58861.5040900@chello.nl>
+Date: Wed, 13 Jul 2005 23:32:17 +0200
+From: Theo Gjaltema <gjalt007@chello.nl>
+MIME-Version: 1.0
+To: Wolfgang Denk <wd@denx.de>
+References: <20050713203204.7F711353A37@atlas.denx.de>
+In-Reply-To: <20050713203204.7F711353A37@atlas.denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: double kernel page table entry for the same physical page?!
+Subject: Re: mpc8xx and ld.so problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,46 +23,70 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Wolfgang Denk schreef:
 
-On Jul 13, 2005, at 1:10 PM, ming lei wrote:
+>In message <42D5361B.2070402@chello.nl> you wrote:
+>  
+>
+>>It appeard that on my mpc862 target I had also this problem. I am using
+>>ELDK3.1.1 which includes a 2.4.25 kernel.
+>>    
+>>
+>
+>No, most definitely not.
+>
+>  
+>
+I don't understand this, on
+/pub/Linux/distributions/eldk/3.1.1/ppc-linux-x86/distribution/common
+there are the sources of a 2.4.25 kernel.
 
-> Question: does the linux ever touch this section of
-> page table(virt address from PAGE_OFFSET to
-> PAGE_OFFSET+A) again? like remove or modify one of the
-> entry?
+>>    Large application (20MB c++, mostly shared-libs) crashes (sigseg) at
+>>startup BEFORE main() is called.
+>>    Attempts to debug the application also fail: the debugger crashes
+>>also (sigseg).
+>>    
+>>
+>
+>I bet that this is a FAQ. Your SDRAM initialization is broken.
+>  
+>
+This was one of my guesses also. Since this is beyond my knowledge, I 
+had the parametes initialisation parameters compared to an other 
+platform which did not had the problems (rtos based), the same 
+parameters were used. I did not investigate it any further.
 
-Not usually.  We used to do it on 8xx for mapping
-uncached pages for coherent DMA.
+>  
+>
+>>I didn't change the C-lib, I took the 2.4.30/arch/ppc/kernel/head_8xx.S
+>>file and copied this over the 2.4.25 head_8xx.S file.
+>>In the 2.4.30 version there is a piece of code mentioning the dcbX
+>>instruction problems.
+>>    
+>>
+>
+>And did this fix the problem completely? I would be a bit surprised.
+>
+>  
+>
+No problem since.
 
-> Question: For every physical page, it should already
-> be mapped in #1, but vmalloc maps it again to a virt
-> address higher. Does it mean in kernel page table, we
-> may have two PTE entries pointing to the same physical
-> page, even their virt addresses are different?
+>>This driver causes the CPM sometimes to hang when performing a memset,
+>>can this be caused by the same problem?
+>>    
+>>
+>
+>Yes. When your SDRAM init is broken, strange things will happen.
+>
+>  
+>
+I'll try the kernel with the original atm/utopia to see what happens.
 
-Yep.
-
-> Last question:
-> If this is true, is this platform implemention
-> specific? Does i386 implemention have same situation?
-
-Other architectures will do the same, yes.  The
-level to which they do this will vary depending upon
-architectural features we have to hide/expose to
-other functions.
-
-One potential problem that arises is you have to be
-careful about the virtual address access path to these
-pages.  All processors will behave errantly if you
-access the same physical page, but with different
-attributes, through the different VAs.  How they behave
-will depend upon the attributes.  If the PTEs have
-different cache modes or page sizes, it's usually
-a big problem.  If they just share different write
-permissions, it's usually OK.  These problems usually
-arise when device driver writers either don't understand
-the mapping issues or try something that may work
-on one architecture but not on another.
-
-
-	-- Dan
+>Best regards,
+>
+>Wolfgang Denk
+>
+>  
+>
+Thanks,
+    Theo Gjaltema.
