@@ -1,20 +1,19 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 34D6467A79
+Return-Path: <wd@denx.de>
+Received: from mailout01.sul.t-online.com (mailout01.sul.t-online.com
+	[194.25.134.80]) by ozlabs.org (Postfix) with ESMTP id 5825B67C42
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Jul 2005 06:19:24 +1000 (EST)
-Date: Wed, 13 Jul 2005 13:19:21 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Message-ID: <20050713201920.GA23573@gate.ebshome.net>
-References: <42D557E3.9060503@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <42D557E3.9060503@ru.mvista.com>
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: UART problem on MPC8272ADS
+	Thu, 14 Jul 2005 06:37:02 +1000 (EST)
+To: Theo Gjaltema <gjalt007@chello.nl>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 13 Jul 2005 17:41:15 +0200."
+	<42D5361B.2070402@chello.nl>
+Date: Wed, 13 Jul 2005 22:32:04 +0200
+Sender: wd@denx.de
+Message-Id: <20050713203204.7F711353A37@atlas.denx.de>
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: mpc8xx and ld.so problem 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,29 +24,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jul 13, 2005 at 10:05:23PM +0400, Vitaly Bordug wrote:
-> Hi!
-> Do anyone have 2-nd UART port working on MPC8272ADS?
+In message <42D5361B.2070402@chello.nl> you wrote:
 > 
-> The target boots OK via both UARTs as console, but any attempt to 
-> transmit/receive data via the other port have failed.
-> A quick lookup results that ...init_scc is called only in `console` 
-> case. After addition of this call to the cpm_uart_startup (just for 
-> instance) transmit from the target occur, but with only half of data. I 
-> tried various pin settings including working combinations from the old 
-> uart driver but with the same result.
-> 
-> I guess that 8xx that are also handled by this driver may behave 
-> likewise, so any information whether cpm_uart driver works well  (or 
-> not)  on 8xx is also valuable.
-> 
-> Any ideas how to solve this or concerning possible reasons of such 
-> behavior are greatly appreciated.
+> It appeard that on my mpc862 target I had also this problem. I am using
+> ELDK3.1.1 which includes a 2.4.25 kernel.
 
-I had some problems with multiple UARTs (SMC and SCC) on 8248-based 
-custom board. It was due to completely brain-damaged BRG allocation in 
-cpm2_io/uart.c. I had to hack it to make SCC UART working along with 
-SMC one.
+No, most definitely not.
+
+>     Large application (20MB c++, mostly shared-libs) crashes (sigseg) at
+> startup BEFORE main() is called.
+>     Attempts to debug the application also fail: the debugger crashes
+> also (sigseg).
+
+I bet that this is a FAQ. Your SDRAM initialization is broken.
+
+> I didn't change the C-lib, I took the 2.4.30/arch/ppc/kernel/head_8xx.S
+> file and copied this over the 2.4.25 head_8xx.S file.
+> In the 2.4.30 version there is a piece of code mentioning the dcbX
+> instruction problems.
+
+And did this fix the problem completely? I would be a bit surprised.
+
+> This driver causes the CPM sometimes to hang when performing a memset,
+> can this be caused by the same problem?
+
+Yes. When your SDRAM init is broken, strange things will happen.
+
+
+Best regards,
+
+Wolfgang Denk
 
 -- 
-Eugene
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Work 8 hours, sleep 8 hours; but not the same 8 hours.
