@@ -1,19 +1,20 @@
-Return-Path: <wd@denx.de>
-Received: from mailout09.sul.t-online.com (mailout09.sul.t-online.com
-	[194.25.134.84]) by ozlabs.org (Postfix) with ESMTP id BD3DD67C4B
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C248B67A79
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Jul 2005 06:38:59 +1000 (EST)
-To: "Russell McGuire" <rmcguire@uwbt.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 13 Jul 2005 12:32:28 PDT."
-	<20050713153231.GA17534@mail19d.g19.rapidsite.net>
-Date: Wed, 13 Jul 2005 22:34:09 +0200
-Sender: wd@denx.de
-Message-Id: <20050713203409.B6B0C353A37@atlas.denx.de>
+	Thu, 14 Jul 2005 07:27:20 +1000 (EST)
+In-Reply-To: <20050713201022.69351.qmail@web61023.mail.yahoo.com>
+References: <20050713201022.69351.qmail@web61023.mail.yahoo.com>
+Mime-Version: 1.0 (Apple Message framework v622)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <2c008f2a8b3ef3ba33ec3d0f8a5c3390@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Wed, 13 Jul 2005 14:27:08 -0700
+To: ming lei <mlei30@yahoo.com>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: linux and sram 
+Subject: Re: double kernel page table entry for the same physical page?!
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,26 +25,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <20050713153231.GA17534@mail19d.g19.rapidsite.net> you wrote:
-> 
-> If we are using U-boot and populate the CFG_SRAM_SIZE and CFG_SRAM_BASE
-> values, and makes sure this is passed into the kernel.
-> 
-> Does Linux 2.4.2x+ have any direct support for this? Is it just added into
-> the regular memory pool? Does it get used for specific tasks?
 
-The standard Linux kernel knows nothing about SRAM.
+On Jul 13, 2005, at 1:10 PM, ming lei wrote:
 
-> Or is this set aside for custom drivers?
+> Question: does the linux ever touch this section of
+> page table(virt address from PAGE_OFFSET to
+> PAGE_OFFSET+A) again? like remove or modify one of the
+> entry?
 
-Indeed. You need a driver to support SRAM.
+Not usually.  We used to do it on 8xx for mapping
+uncached pages for coherent DMA.
 
-Best regards,
+> Question: For every physical page, it should already
+> be mapped in #1, but vmalloc maps it again to a virt
+> address higher. Does it mean in kernel page table, we
+> may have two PTE entries pointing to the same physical
+> page, even their virt addresses are different?
 
-Wolfgang Denk
+Yep.
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Microsoft Multimedia:
-You have nice graphics, sound and animations when the system crashes.
+> Last question:
+> If this is true, is this platform implemention
+> specific? Does i386 implemention have same situation?
+
+Other architectures will do the same, yes.  The
+level to which they do this will vary depending upon
+architectural features we have to hide/expose to
+other functions.
+
+One potential problem that arises is you have to be
+careful about the virtual address access path to these
+pages.  All processors will behave errantly if you
+access the same physical page, but with different
+attributes, through the different VAs.  How they behave
+will depend upon the attributes.  If the PTEs have
+different cache modes or page sizes, it's usually
+a big problem.  If they just share different write
+permissions, it's usually OK.  These problems usually
+arise when device driver writers either don't understand
+the mapping issues or try something that may work
+on one architecture but not on another.
+
+
+	-- Dan
