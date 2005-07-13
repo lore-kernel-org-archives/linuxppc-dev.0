@@ -1,12 +1,21 @@
-Return-Path: <jdl@freescale.com>
-From: Jon Loeliger <jdl@freescale.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Content-Type: text/plain
-Message-Id: <1121271391.21013.4.camel@cashmere.sps.mot.com>
+Return-Path: <olh@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4396667B9A
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jul 2005 03:03:56 +1000 (EST)
+Date: Wed, 13 Jul 2005 19:03:51 +0200
+From: Olaf Hering <olh@suse.de>
+To: Tom Rini <trini@kernel.crashing.org>
+Message-ID: <20050713170351.GA19133@suse.de>
+References: <20050713135525.GA18144@suse.de> <20050713135626.GB18144@suse.de>
+	<20050713160405.GK7741@smtp.west.cox.net>
 Mime-Version: 1.0
-Date: Wed, 13 Jul 2005 11:16:32 -0500
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: DTC: write_dt_blob() question
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20050713160405.GK7741@smtp.west.cox.net>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] update ppc defconfigs
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,35 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David,
+ On Wed, Jul 13, Tom Rini wrote:
 
-Over in flattree.c's write_dt_blob() there is this code:
+> > -CONFIG_LOCALVERSION=""
+> > +CONFIG_LOCALVERSION="common_defconfig"
+> 
+> Please don't do that.  $WHOMEVERs mass-compile-scripts should be setting
+> this to $WHATEVER.
 
-	make_bph(&bph, vi, reservenum, dtbuf.len, strbuf.len);
+Will send updated patch.
 
-	/* Align the reserve map to an 8 byte boundary */
-	for (i = vi->hdr_size; i < be32_to_cpu(bph.off_mem_rsvmap); i++)
-		fputc(0, f);
+> > -CONFIG_MODULE_FORCE_UNLOAD=y
+> > +# CONFIG_MODULE_FORCE_UNLOAD is not set
+> 
+> Why?  It looks like you're doing more than running oldconfig here..
 
-	fwrite(&bph, vi->hdr_size, 1, f);
-	for (i = 0; i < reservenum+1; i++)
-		fwrite(&re, sizeof(re), 1, f);
-
-However, I think the boot_param_header should be emitted
-first, before the alignment:
-
-	make_bph(&bph, vi, reservenum, dtbuf.len, strbuf.len);
-
-	fwrite(&bph, vi->hdr_size, 1, f);
-
-	/* Align the reserve map to an 8 byte boundary */
-	for (i = vi->hdr_size; i < be32_to_cpu(bph.off_mem_rsvmap); i++)
-		fputc(0, f);
-
-	for (i = 0; i < reservenum+1; i++)
-		fwrite(&re, sizeof(re), 1, f);
-
-Thoughts?
-
-Thanks,
-jdl
+That doesnt belong to a default kernel, anyone who wants that can just
+enable it.
