@@ -1,19 +1,20 @@
-Return-Path: <wd@denx.de>
-Received: from mailout10.sul.t-online.com (mailout10.sul.t-online.com
-	[194.25.134.21]) by ozlabs.org (Postfix) with ESMTP id 703C667BE5
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8486B67C1E
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 13 Jul 2005 06:42:16 +1000 (EST)
-To: Matt_Berry@mksinst.com
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 12 Jul 2005 08:25:31 CDT."
-	<OF8B3EB35C.277E5E38-ON8525703C.0049B16F-8625703C.0049BF25@mksinst.com>
-Date: Tue, 12 Jul 2005 22:37:45 +0200
-Sender: wd@denx.de
-Message-Id: <20050712203745.015CD353AB6@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC5200 Rev. B 
+	Wed, 13 Jul 2005 10:11:38 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Guillaume Autran <gautran@mrv.com>
+In-Reply-To: <42D3D277.106@mrv.com>
+References: <42D3D277.106@mrv.com>
+Content-Type: text/plain
+Date: Wed, 13 Jul 2005 10:09:52 +1000
+Message-Id: <1121213392.31924.399.camel@gaston>
+Mime-Version: 1.0
+Cc: akpm@osdl.org, linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] ppc32: fix destroy_context() race condition
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,16 +25,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <OF8B3EB35C.277E5E38-ON8525703C.0049B16F-8625703C.0049BF25@mksinst.com> you wrote:
-> When you refer to BAPI, are you referring to the BestComm?
+On Tue, 2005-07-12 at 10:23 -0400, Guillaume Autran wrote:
+> Fix for a race condition when a task gets preempted by another task
+> while executing the destroy_context(...) in a FEW_CONTEXTS environment.
+> mm->context == NO_CONTEXT but the context_map may indicate all contexts
+> are in use.
+> The solution to this problem is to disable kernel preemption while
+> destroying a MMU context.
+> 
+> Signed-off-by: Guillaume Autran <gautran@mrv.com>
 
-Yes.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-I am an atheist, thank God!
+> 
+> ---
+> 
+> diff -Nru a/include/asm-ppc/mmu_context.h b/include/asm-ppc/mmu_context.h
+> --- a/include/asm-ppc/mmu_context.h	2005-06-17 15:48:29.000000000 -0400
+> +++ b/include/asm-ppc/mmu_context.h	2005-07-05 08:58:46.000000000 -0400
+> @@ -149,6 +149,7 @@
+>  */
+> static inline void destroy_context(struct mm_struct *mm)
+> {
+> +	preempt_disable();
+> 	if (mm->context != NO_CONTEXT) {
+> 		clear_bit(mm->context, context_map);
+> 		mm->context = NO_CONTEXT;
+> @@ -156,6 +157,7 @@
+> 		atomic_inc(&nr_free_contexts);
+> #endif
+> 	}
+> +	preempt_enable();
+> }
+> 
+> static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
+> 
+> 
+> 
+> 
+> 
