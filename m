@@ -1,21 +1,19 @@
-Return-Path: <joern@wohnheim.fh-wedel.de>
-Received: from moskovskaya.fh-wedel.de (mail.fh-wedel.de [213.39.232.198])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D865667C52
+Return-Path: <wd@denx.de>
+Received: from mailout07.sul.t-online.com (mailout07.sul.t-online.com
+	[194.25.134.83]) by ozlabs.org (Postfix) with ESMTP id C3FD067C36
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Jul 2005 08:51:17 +1000 (EST)
-Date: Thu, 14 Jul 2005 00:20:22 +0200
-From: =?iso-8859-1?Q?J=F6rn?= Engel <joern@wohnheim.fh-wedel.de>
-To: Wolfgang Denk <wd@denx.de>
-Message-ID: <20050713222022.GB9546@wohnheim.fh-wedel.de>
-References: <20050713153231.GA17534@mail19d.g19.rapidsite.net>
-	<20050713203409.B6B0C353A37@atlas.denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20050713203409.B6B0C353A37@atlas.denx.de>
-Cc: Russell McGuire <rmcguire@uwbt.com>, linuxppc-embedded@ozlabs.org
-Subject: Re: linux and sram
+	Thu, 14 Jul 2005 09:15:58 +1000 (EST)
+To: Theo Gjaltema <gjalt007@chello.nl>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 13 Jul 2005 23:32:17 +0200."
+	<42D58861.5040900@chello.nl>
+Date: Thu, 14 Jul 2005 01:11:06 +0200
+Sender: wd@denx.de
+Message-Id: <20050713231106.387D7353B06@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: mpc8xx and ld.so problem 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,29 +24,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, 13 July 2005 22:34:09 +0200, Wolfgang Denk wrote:
-> In message <20050713153231.GA17534@mail19d.g19.rapidsite.net> you wrote:
-> > 
-> > If we are using U-boot and populate the CFG_SRAM_SIZE and CFG_SRAM_BASE
-> > values, and makes sure this is passed into the kernel.
-> > 
-> > Does Linux 2.4.2x+ have any direct support for this? Is it just added into
-> > the regular memory pool? Does it get used for specific tasks?
+In message <42D58861.5040900@chello.nl> you wrote:
 > 
-> The standard Linux kernel knows nothing about SRAM.
-> 
-> > Or is this set aside for custom drivers?
-> 
-> Indeed. You need a driver to support SRAM.
+> >>It appeard that on my mpc862 target I had also this problem. I am using
+> >>ELDK3.1.1 which includes a 2.4.25 kernel.
+> >
+> >No, most definitely not.
+> >
+> I don't understand this, on
+> /pub/Linux/distributions/eldk/3.1.1/ppc-linux-x86/distribution/common
+> there are the sources of a 2.4.25 kernel.
 
-Some people use slram/phram for that purpose.  It creates an mtd
-(memory technology device) which can be translated into either a block
-or a char device.  Quite sufficient for most uses.
+Yes, sure. But most definitely you did not have *this* problem.
+You have a *different* one.
 
-Jörn
+> >I bet that this is a FAQ. Your SDRAM initialization is broken.
+> >
+> This was one of my guesses also. Since this is beyond my knowledge, I 
+> had the parametes initialisation parameters compared to an other 
+> platform which did not had the problems (rtos based), the same 
+> parameters were used. I did not investigate it any further.
+
+This *is* a FAQ. Please go and read the documentation.
+See http://www.denx.de/twiki/bin/view/DULG/UBootCrashAfterRelocation
+
+Best regards,
+
+Wolfgang Denk
 
 -- 
-To announce that there must be no criticism of the President, or that we
-are to stand by the President, right or wrong, is not only unpatriotic
-and servile, but is morally treasonable to the American public.
--- Theodore Roosevelt, Kansas City Star, 1918
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+"Obviously, a major malfunction has occurred."
+              -- Steve Nesbitt, voice of Mission Control, January 28,
+                 1986, as the shuttle Challenger exploded within view
+                 of the grandstands.
