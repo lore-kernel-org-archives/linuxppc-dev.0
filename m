@@ -1,17 +1,21 @@
-Return-Path: <mlei30@yahoo.com>
-Received: from web61015.mail.yahoo.com (web61015.mail.yahoo.com
-	[209.73.179.24]) by ozlabs.org (Postfix) with SMTP id 9B1CC67B9A
+Return-Path: <a.woellert@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.196])
+	by ozlabs.org (Postfix) with ESMTP id 3EC0F67C5A
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Jul 2005 11:57:05 +1000 (EST)
-Message-ID: <20050714015703.34280.qmail@web61015.mail.yahoo.com>
-Date: Wed, 13 Jul 2005 18:57:03 -0700 (PDT)
-From: ming lei <mlei30@yahoo.com>
-To: Dan Malek <dan@embeddededge.com>
-In-Reply-To: <17068cbdcbb1e2de531d33eb07f768e5@embeddededge.com>
+	Thu, 14 Jul 2005 15:45:36 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id i13so347835wra
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 13 Jul 2005 22:45:35 -0700 (PDT)
+Message-ID: <42D5FBBF.8030302@gmail.com>
+Date: Thu, 14 Jul 2005 07:44:31 +0200
+From: =?ISO-8859-1?Q?Anton_W=F6llert?= <a.woellert@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: double kernel page table entry for the same physical page?!
+To: Theo Gjaltema <gjalt007@chello.nl>,  linuxppc-embedded@ozlabs.org
+References: <42C1AAC1.4060702@gmail.com>	<20050629085913.GA2153@logos.cnet>	<faba7798050630071347d4ad63@mail.gmail.com>	<20050701094438.GA11121@logos.cnet>	<1120229717.21507.9.camel@jmcmullan.timesys>	<20050701101713.GC11121@logos.cnet>	<1120244191.18872.3.camel@jmcmullan.timesys>	<17096.61878.43282.752343@astp0002.localdomain>	<20050708003639.GA5174@dmt.cnet>	<17104.52971.2458.935609@astp0002.localdomain>
+	<42D5361B.2070402@chello.nl>
+In-Reply-To: <42D5361B.2070402@chello.nl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: mpc8xx and ld.so problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,56 +26,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dan,
+Theo Gjaltema wrote:
 
-No one intents to make memory corruption in kernel
-space but it happens sometimes.
+ > Has anyone an idea why only this large application failed? busybox_1.0
+ > and more applications work fine.
+ > system is a: mcp862/32Mb SDRAM started from u-boot 0.4.1,
+ > kernel enhanced with atm/utopia driver.
+ >
+ > This driver causes the CPM sometimes to hang when performing a memset,
+ > can this be caused by the same problem?
+ > (CPM stops responding, console buffers are not flused anymore and
+ > kernel stops waiting for buffers)
+ >
+ > Greetings,
+ >   Theo Gjaltema
+ >
 
-Say I have a global var in my kernel module which
-called test-mod, it picks up a physical page allocated
-by some code with  kmalloc and later kfreed(suppose
-when it does, the whole page gets freed). But then
-this code forgets a pointer(which maped to this
-physical page) already freed and modifies the pointer,
-the write gets thru since that virt address's PTE
-still valid and points to the physical page currently
-used by test-mod. So the memory corruption happens.
+the problem ( so i think ) is, that larger applications will need more 
+space, which in turn is satisfied by malloc (or mmap with fd = -1). 
+these allocated pages are not real initialized after malloc ( they will 
+be initialized completely, if a write on it is done, which will cause 
+the page fault handler, that does the hardware mmu-stuff, so that a 
+write can be done). so they will cause a page fault on a first access. 
+no problem so long, but when the memset.S routine in libc tries to set 
+all to zero, it uses the dcbz instructions. this instruction then causes 
+a page fault or better a TLB miss (if i'm right). after the exception is 
+raised, the address where the write to was done is looked up in the DAR 
+(data address register), which could be bogus on the dcb* instruction 
+(on 8xx, where is the errata for that?).
+to sum up, the chance, that a memset( .., '\0', ..) with dcbz is done on 
+a page (that has just registered structures in the kernel, and not 
+cached in the tlb or even marked as writeable) is bigger :)
 
-Maybe I miss something in the linux kernel code that
-prevents this double PTE thing.
+that's my opinion. if someone has more knowledge about that, or if i'm 
+wrong - please! correct me.
 
-Ming
-
---- Dan Malek <dan@embeddededge.com> wrote:
-
-> 
-> On Jul 13, 2005, at 2:48 PM, ming lei wrote:
-> 
-> > Why linux kernel does such thing and no one
-> consider
-> > it's a problem?
-> 
-> Because we don't write software that accesses the
-> memory
-> from both of those locations, unless it is very
-> intentional
-> and necessary.  If you are just fishing for ways
-> software
-> _could_ do bad things, there are tons of them.  It's
-> our
-> job to write it so it doesn't :-)
-> 
-> Thanks.
-> 
-> 
-> 	-- Dan
-> 
-> 
-
-
-
-		
-__________________________________ 
-Yahoo! Mail 
-Stay connected, organized, and protected. Take the tour: 
-http://tour.mail.yahoo.com/mailtour.html 
+anton
