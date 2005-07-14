@@ -1,23 +1,25 @@
-Return-Path: <sipcop009@gmail.com>
-Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.195])
-	by ozlabs.org (Postfix) with ESMTP id 910A367C25
+Return-Path: <aris@conectiva.com.br>
+Received: from orion.netbank.com.br (orion.netbank.com.br [200.203.199.90])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9931B67CA4
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 15 Jul 2005 05:05:38 +1000 (EST)
-Received: by zproxy.gmail.com with SMTP id 13so261822nzp
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Jul 2005 12:05:37 -0700 (PDT)
-Message-ID: <5a4792c0050714120571fff071@mail.gmail.com>
-Date: Thu, 14 Jul 2005 12:05:36 -0700
-From: SIP COP 009 <sipcop009@gmail.com>
-To: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <E65A8A95-7352-40A3-9A86-EF437F0132D0@freescale.com>
+	Fri, 15 Jul 2005 06:27:30 +1000 (EST)
+Date: Thu, 14 Jul 2005 17:27:15 -0300
+From: aris@conectiva.com.br
+To: Anton =?iso-8859-1?Q?W=F6llert?= <a.woellert@gmail.com>
+Message-ID: <20050714202715.GS19321@oops.ghostprotocols.net>
+References: <42C1AAC1.4060702@gmail.com> <20050629085913.GA2153@logos.cnet>
+	<faba7798050630071347d4ad63@mail.gmail.com>
+	<20050701094438.GA11121@logos.cnet>
+	<1120229717.21507.9.camel@jmcmullan.timesys>
+	<20050701101713.GC11121@logos.cnet>
+	<faba7798050714012370af5e74@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <5a4792c0050713235574522cfb@mail.gmail.com>
-	<E65A8A95-7352-40A3-9A86-EF437F0132D0@freescale.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: 8272ADS and Linux 2.6.12
-Reply-To: SIP COP 009 <sipcop009@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <faba7798050714012370af5e74@mail.gmail.com>
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: ptrace on linux 2.6.12 causes oops
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,81 +30,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Kumar,
+> when i try to run strace or gdbserver on a program, the following comes:
+> 
+> NIP [c000543c] __flush_dcache_icache_phys+0x38/0x54
+> LR [c000b060] flush_dcache_icache_page+0x20/0x30
+> Call trace:
+> [c000b154] update_mmu_cache+0x7c/0xa4
+> [c005ae98] do_wp_page+0x460/0x5ec
+> [c005c8a0] handle_mm_fault+0x7cc/0x91c
+> [c005ccec] get_user_pages+0x2fc/0x65c
+> [c0027104] access_process_vm+0x9c/0x1d4
+> [c00076e0] sys_ptrace+0x240/0x4a4
+> [c0002bd0] ret_from_syscall+0x0/0x44
+> mm/memory.c:2054: spin_lock(kernel/fork.c:c0ea1618) already locked by 
+> mm/memory.c/1306
+please try to reproduce with 2.6.13-rc2. seems much like the problem Marcelo
+fixed recently (dcbst misbehaviour with unpopulated TLB entries)
 
-Thanks for u'r reply. I tried it but it does not seem to work.
-
-Here's my uboot info...
-U-Boot 1.1.1 (Oct 29 2004 - 18:28:57)
-
-MPC8272 Reset Status: External Soft, External Hard
-
-MPC8272 Clock Configuration
- - Bus-to-Core Mult 4x, VCO Div 2, 60x Bus Freq  25-75 , Core Freq 100-300
- - dfbrg 1, corecnf 0x0a, busdf 3, cpmdf 1, plldf 0, pllmf 3
- - vco_out  400000000, scc_clk  100000000, brg_clk   25000000
- - cpu_clk  400000000, cpm_clk  200000000, bus_clk  100000000
- - pci_clk   66666666
-
-CPU:   MPC8272 (HiP7 Rev 13, Mask 0.0 0K50M) at 400 MHz
-Board: Motorola MPC8272ADS
-DRAM:  64 MB
-Now running in RAM - U-Boot at: 03fc4000
-FLASH:  8 MB
-In:    serial
-Out:   serial
-Err:   serial
-Net:   FCC1 ETHERNET
-Hit any key to stop autoboot:  0=20
-
-
-
-
-
-=3D> setenv bootargs console=3DttyCPM0,115200  root=3D/dev/ram
-=3D> bootm fe600000
-## Booting image at fe600000 ...
-   Image Name:   2.6.12 for 8272
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    875845 Bytes =3D 855.3 kB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-
-Hang here...
-
-Anymore thots and pointers ?
-
-Thanks!
-ashutosh
-
-
-
-On 7/14/05, Kumar Gala <kumar.gala@freescale.com> wrote:
-> You may need to check the bootargs to insure that console=3DttyCPM0
->=20
-> - kumar
->=20
-> On Jul 14, 2005, at 1:55 AM, SIP COP 009 wrote:
->=20
-> > Hello,
-> >
-> > We have a MPC8272 Eval Board which came with Linux 2.4 and U-boot. We
-> > wanted to move to 2.6. I downloaded the latest 2.6.12 sources and
-> > compiled the sources for this platform. The kernel is built, have run
-> > the mkimage tool, but the kernel wont boot.  It just hangs after
-> > decompressing the image.
-> >
-> > Any ideas  ? Anything different that needs to be done for 2.6 ? Or any
-> > known issues ?
-> >
-> > Thanks!
-> > ashutosh
-> > _______________________________________________
-> > Linuxppc-embedded mailing list
-> > Linuxppc-embedded@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> >
->=20
->
+-- 
+Aristeu
