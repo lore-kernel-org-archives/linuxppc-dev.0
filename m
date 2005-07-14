@@ -1,15 +1,20 @@
-Return-Path: <susheel_nuguru@yahoo.co.in>
-Received: from web8508.mail.in.yahoo.com (web8508.mail.in.yahoo.com
-	[202.43.219.170]) by ozlabs.org (Postfix) with SMTP id B3C5367C7A
+Return-Path: <smiling_23@nerdshack.com>
+Received: from karen.nerdshack.com (karen.nerdshack.com [209.189.235.41])
+	by ozlabs.org (Postfix) with ESMTP id 92F2267C69
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Jul 2005 18:34:29 +1000 (EST)
-Message-ID: <20050714083427.64168.qmail@web8508.mail.in.yahoo.com>
-Date: Thu, 14 Jul 2005 01:34:27 -0700 (PDT)
-From: Susheel Raj <susheel_nuguru@yahoo.co.in>
+	Thu, 14 Jul 2005 22:18:04 +1000 (EST)
+Received: from dispatchd.nerdshack.com (jean.nerdshack.com [209.189.235.38])
+	by karen.nerdshack.com (Postfix) with SMTP id 106031E318A
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 14 Jul 2005 07:15:06 -0500 (CDT)
+From: smiling_23 <smiling_23@nerdshack.com>
 To: linuxppc-embedded@ozlabs.org
+Date: Thu, 14 Jul 2005 17:52:59 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Subject: MPC5200 Rev B Deep Sleep Mode
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200507141752.59449.smiling_23@nerdshack.com>
+Subject: Porting Linux on radstone ppc7a board
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,24 +25,11 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+HI to all,
+            I am studying  the Manuals related ppc7a,I have to write board 
+setup code . How to write board setup code, What are the basic things i have 
+to consider for writing it. If there are any articles related to this topic 
+please give me the links.
 
-  I am new to my job and needs help from you. I have
-to make this new core into Deep Sleep Mode where all
-the periperals and most of the clock oscilaltors are
-shut down for power saving and the core can be waked
-using one asyncronous external interrupt. 
-
- Does anyone have any idea if the previous version of
-this core (MPC5200) has this service. Any sort of
-suggetions, guidelines or redirections would be of
-great help and would be appreciated.
-
-I hope atleast few of them kind enough to reply me back.
-
-
-		
-____________________________________________________
-Start your day with Yahoo! - make it your home page 
-http://www.yahoo.com/r/hs 
- 
+With thnks and regards,
+cjag  
