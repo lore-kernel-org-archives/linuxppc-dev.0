@@ -1,17 +1,37 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 83D6C67C25
-	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jul 2005 23:24:57 +1000 (EST)
-In-Reply-To: <20050714125232.GA13456@janus>
-References: <20050714125232.GA13456@janus>
-Mime-Version: 1.0 (Apple Message framework v733)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <E6D8678E-33FD-492F-A773-12B0F87C2EBB@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Thu, 14 Jul 2005 08:24:55 -0500
-To: "Frank van Maarseveen" <frankvm@frankvm.com>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: Using lswi/stswi inside the kernel
+Return-Path: <segher@kernel.crashing.org>
+Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.29.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de.ibm.com", Issuer "Equifax" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 5DFA467C92
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jul 2005 23:28:42 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate4.de.ibm.com (8.12.10/8.12.10) with ESMTP id j6EDSYYR202558
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jul 2005 13:28:34 GMT
+Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
+	[9.149.165.228])
+	by d12nrmr1607.megacenter.de.ibm.com (8.12.10/NCO/VER6.6) with ESMTP id
+	j6EDSYW9181538
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jul 2005 15:28:34 +0200
+Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av02.megacenter.de.ibm.com (8.12.11/8.13.3) with ESMTP id
+	j6EDSX5U006457
+	for <linuxppc-dev@ozlabs.org>; Thu, 14 Jul 2005 15:28:34 +0200
+In-Reply-To: <20050714010246.GC15769@sneetch.ozlabs.ibm.com>
+References: <1120859097.8609.15.camel@cashmere.sps.mot.com>
+	<20050711045532.GC32545@localhost.localdomain>
+	<1121116950.15394.14.camel@cashmere.sps.mot.com>
+	<20050712020126.GE3945@localhost.localdomain>
+	<597c90908e1aae7e7917be736d8901a3@kernel.crashing.org>
+	<20050714010246.GC15769@sneetch.ozlabs.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v622)
+Message-Id: <222f5734355eba22f7662b47f46355b2@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Date: Thu, 14 Jul 2005 15:29:30 +0200
+To: David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: Re: PATCH: Add memreserve to DTC
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,23 +41,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Yes, not all PowerPC implementations actually implement this  
-instructions.  Also, on a number of them there is no performance  
-improvement when using the instructions.
+> My mistake, I misunderstood the terminology.  But the basic point is
+> that lots of things in the kernel already assume a cell is 32-bits, so
+> it would be silly to try and change that here.  This is not true for
+> the memreserve values.
 
-- kumar
+Of course you should use 32-bit values; but please just don't call it
+a cell, there's nothing more confusing than messing up terminology.
 
-On Jul 14, 2005, at 7:52 AM, Frank van Maarseveen wrote:
+>> Btw -- beware of the fact that such an "int" does _not_ have any
+>> alignment restrictions -- so you better read it byte by byte...
+>
+> Erm.. in what context.  dtc never reads ints from the blob format as
+> ints - properties are just byte strings to it.  At present you can't
+> mix cell input format with other sorts, which means the ints must, in
+> fact, be aligned, since properties are.
 
-> Are there any issues I should be aware of?
->
-> I think most SAVE_GPR* and REST_GPR* macros could be replaced by a
-> single lswi/stswi instruction.
->
-> -- 
-> Frank
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
+When reading integers from properties that have been created by an OF
+implementation.  Whether this is a problem for DTC or not, I don't know;
+I just thought I'd mention the problem to you, people fall in that trap
+again and again.
+
+
+Segher
