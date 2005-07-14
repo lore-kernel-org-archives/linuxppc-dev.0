@@ -1,19 +1,17 @@
-Return-Path: <wd@denx.de>
-Received: from mailout07.sul.t-online.com (mailout07.sul.t-online.com
-	[194.25.134.83]) by ozlabs.org (Postfix) with ESMTP id C3FD067C36
+Return-Path: <mlei30@yahoo.com>
+Received: from web61015.mail.yahoo.com (web61015.mail.yahoo.com
+	[209.73.179.24]) by ozlabs.org (Postfix) with SMTP id 9B1CC67B9A
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Jul 2005 09:15:58 +1000 (EST)
-To: Theo Gjaltema <gjalt007@chello.nl>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 13 Jul 2005 23:32:17 +0200."
-	<42D58861.5040900@chello.nl>
-Date: Thu, 14 Jul 2005 01:11:06 +0200
-Sender: wd@denx.de
-Message-Id: <20050713231106.387D7353B06@atlas.denx.de>
+	Thu, 14 Jul 2005 11:57:05 +1000 (EST)
+Message-ID: <20050714015703.34280.qmail@web61015.mail.yahoo.com>
+Date: Wed, 13 Jul 2005 18:57:03 -0700 (PDT)
+From: ming lei <mlei30@yahoo.com>
+To: Dan Malek <dan@embeddededge.com>
+In-Reply-To: <17068cbdcbb1e2de531d33eb07f768e5@embeddededge.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: mpc8xx and ld.so problem 
+Subject: Re: double kernel page table entry for the same physical page?!
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,38 +22,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <42D58861.5040900@chello.nl> you wrote:
+Dan,
+
+No one intents to make memory corruption in kernel
+space but it happens sometimes.
+
+Say I have a global var in my kernel module which
+called test-mod, it picks up a physical page allocated
+by some code with  kmalloc and later kfreed(suppose
+when it does, the whole page gets freed). But then
+this code forgets a pointer(which maped to this
+physical page) already freed and modifies the pointer,
+the write gets thru since that virt address's PTE
+still valid and points to the physical page currently
+used by test-mod. So the memory corruption happens.
+
+Maybe I miss something in the linux kernel code that
+prevents this double PTE thing.
+
+Ming
+
+--- Dan Malek <dan@embeddededge.com> wrote:
+
 > 
-> >>It appeard that on my mpc862 target I had also this problem. I am using
-> >>ELDK3.1.1 which includes a 2.4.25 kernel.
-> >
-> >No, most definitely not.
-> >
-> I don't understand this, on
-> /pub/Linux/distributions/eldk/3.1.1/ppc-linux-x86/distribution/common
-> there are the sources of a 2.4.25 kernel.
+> On Jul 13, 2005, at 2:48 PM, ming lei wrote:
+> 
+> > Why linux kernel does such thing and no one
+> consider
+> > it's a problem?
+> 
+> Because we don't write software that accesses the
+> memory
+> from both of those locations, unless it is very
+> intentional
+> and necessary.  If you are just fishing for ways
+> software
+> _could_ do bad things, there are tons of them.  It's
+> our
+> job to write it so it doesn't :-)
+> 
+> Thanks.
+> 
+> 
+> 	-- Dan
+> 
+> 
 
-Yes, sure. But most definitely you did not have *this* problem.
-You have a *different* one.
 
-> >I bet that this is a FAQ. Your SDRAM initialization is broken.
-> >
-> This was one of my guesses also. Since this is beyond my knowledge, I 
-> had the parametes initialisation parameters compared to an other 
-> platform which did not had the problems (rtos based), the same 
-> parameters were used. I did not investigate it any further.
 
-This *is* a FAQ. Please go and read the documentation.
-See http://www.denx.de/twiki/bin/view/DULG/UBootCrashAfterRelocation
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"Obviously, a major malfunction has occurred."
-              -- Steve Nesbitt, voice of Mission Control, January 28,
-                 1986, as the shuttle Challenger exploded within view
-                 of the grandstands.
+		
+__________________________________ 
+Yahoo! Mail 
+Stay connected, organized, and protected. Take the tour: 
+http://tour.mail.yahoo.com/mailtour.html 
