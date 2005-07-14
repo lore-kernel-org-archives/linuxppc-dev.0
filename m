@@ -1,19 +1,22 @@
-Return-Path: <sipcop009@gmail.com>
-Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.198])
-	by ozlabs.org (Postfix) with ESMTP id 60D1567C59
+Return-Path: <panto@intracom.gr>
+Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
+	by ozlabs.org (Postfix) with ESMTP id C993D67C3B
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Jul 2005 17:02:39 +1000 (EST)
-Received: by zproxy.gmail.com with SMTP id l1so190035nzf
+	Thu, 14 Jul 2005 17:21:42 +1000 (EST)
+Received: from mailserv.intranet.gr (localhost [127.0.0.1])
+	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id j6E7RY9l000033
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 14 Jul 2005 00:02:38 -0700 (PDT)
-Message-ID: <5a4792c0050713235574522cfb@mail.gmail.com>
-Date: Wed, 13 Jul 2005 23:55:49 -0700
-From: SIP COP 009 <sipcop009@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Mime-Version: 1.0
+	Thu, 14 Jul 2005 10:27:35 +0300 (EEST)
+Message-ID: <42D6110C.1090309@intracom.gr>
+Date: Thu, 14 Jul 2005 10:15:24 +0300
+From: Pantelis Antoniou <panto@intracom.gr>
+MIME-Version: 1.0
+To: ming lei <mlei30@yahoo.com>
+References: <20050714015703.34280.qmail@web61015.mail.yahoo.com>
+In-Reply-To: <20050714015703.34280.qmail@web61015.mail.yahoo.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Subject: 8272ADS and Linux 2.6.12
-Reply-To: SIP COP 009 <sipcop009@gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: double kernel page table entry for the same physical page?!
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,16 +27,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+ming lei wrote:
+> Dan,
+> 
+> No one intents to make memory corruption in kernel
+> space but it happens sometimes.
+> 
+> Say I have a global var in my kernel module which
+> called test-mod, it picks up a physical page allocated
+> by some code with  kmalloc and later kfreed(suppose
+> when it does, the whole page gets freed). But then
+> this code forgets a pointer(which maped to this
+> physical page) already freed and modifies the pointer,
+> the write gets thru since that virt address's PTE
+> still valid and points to the physical page currently
+> used by test-mod. So the memory corruption happens.
+> 
+> Maybe I miss something in the linux kernel code that
+> prevents this double PTE thing.
+> 
+> Ming
+> 
 
-We have a MPC8272 Eval Board which came with Linux 2.4 and U-boot. We
-wanted to move to 2.6. I downloaded the latest 2.6.12 sources and
-compiled the sources for this platform. The kernel is built, have run
-the mkimage tool, but the kernel wont boot.  It just hangs after
-decompressing the image.
+If you want to guard against stuff like this you have
+some options...
 
-Any ideas  ? Anything different that needs to be done for 2.6 ? Or any
-known issues ?
+1) Run different services on the same cpu on a a hypervisor
+   like Xen.
 
-Thanks!
-ashutosh
+2) Run most of the module's code in user space, and keep
+   kernel space code to a minimum.
+
+3) Use QNX.
+
+Regards
+
+Pantelis
