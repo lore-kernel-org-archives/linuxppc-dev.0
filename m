@@ -1,21 +1,21 @@
 Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
+	(Client CN "mx2.suse.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9305D67CB1
-	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jul 2005 04:12:06 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id F3E4F67CB1
+	for <linuxppc-dev@ozlabs.org>; Sat, 16 Jul 2005 04:22:58 +1000 (EST)
 From: Andreas Schwab <schwab@suse.de>
 To: Frank van Maarseveen <frankvm@frankvm.com>
-References: <20050715162741.GA23228@janus>
-Date: Fri, 15 Jul 2005 20:11:57 +0200
-In-Reply-To: <20050715162741.GA23228@janus> (Frank van Maarseveen's message of
-	"Fri, 15 Jul 2005 18:27:41 +0200")
-Message-ID: <je3bqg6is2.fsf@sykes.suse.de>
+References: <20050715160115.GA22990@janus>
+Date: Fri, 15 Jul 2005 20:22:53 +0200
+In-Reply-To: <20050715160115.GA22990@janus> (Frank van Maarseveen's message of
+	"Fri, 15 Jul 2005 18:01:15 +0200")
+Message-ID: <jey88853pe.fsf@sykes.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Cc: linuxppc-dev@ozlabs.org
-Subject: Re: arch/ppc/kernel/misc.S: .align 5?
+Subject: Re: bug in arch/ppc/kernel/misc.S: __ashrdi3?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,13 +27,20 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Frank van Maarseveen <frankvm@frankvm.com> writes:
 
-> At least in 2.6.12.2 I see this in arch/ppc/kernel/misc.S:
+> I don't really grok the code but an operand seems to be missing and the
+> assembler makes something out of it I don't trust:
 >
-> 	.text
->
-> 	.align  5
+> _GLOBAL(__ashrdi3)
+> 	...
+> 	rlwinm  r8,r7,0,32      # t3 = (count < 32) ? 32 : 0
 
-.align == .p2align on ppc.
+32 == 0x80000000 >> 26
+
+> 00000000 <f>:
+> f():
+>    0:   54 e8 06 b4     rlwinm  r8,r7,0,26,26
+
+The mask begins at bit 26 and ends at bit 26 (counted from the left).
 
 Andreas.
 
