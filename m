@@ -1,26 +1,22 @@
-Return-Path: <davidw@orthanc.am.freescale.net>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 3310967CB8
+Return-Path: <acurtis@onz.com>
+Received: from dell2650.onz.com (onz.com [67.121.61.113])
+	by ozlabs.org (Postfix) with ESMTP id A559B67C36
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 16 Jul 2005 01:17:59 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	j6FFNYM6026971 for <linuxppc-embedded@ozlabs.org>;
-	Fri, 15 Jul 2005 08:23:34 -0700 (MST)
-Received: from orthanc.am.freescale.net (orthanc.am.freescale.net
-	[10.81.111.105])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id j6FFMDUS003188
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 15 Jul 2005 10:22:14 -0500 (CDT)
-Date: Fri, 15 Jul 2005 10:17:56 -0500
-From: David Wolfe <david.wolfe@freescale.com>
-To: linuxppc-embedded@ozlabs.org
-Message-ID: <20050715151756.GA16256@orthanc.am.freescale.net>
-References: <20050715122030.13663.qmail@web8506.mail.in.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050715122030.13663.qmail@web8506.mail.in.yahoo.com>
-Subject: Re: MPC5200B boot failure help needed
+	Sat, 16 Jul 2005 01:29:08 +1000 (EST)
+In-Reply-To: <5a4792c00507150714243238da@mail.gmail.com>
+References: <5a4792c0050713235574522cfb@mail.gmail.com>
+	<E65A8A95-7352-40A3-9A86-EF437F0132D0@freescale.com>
+	<5a4792c0050714120571fff071@mail.gmail.com>
+	<ef81e8ced15bf8004ec0cd927d7cff8e@onz.com>
+	<5a4792c00507150714243238da@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v622)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <db98e55b7ed3784ba6bc2bf1d9d81c50@onz.com>
+From: Allen Curtis <acurtis@onz.com>
+Date: Fri, 15 Jul 2005 08:29:07 -0700
+To: SIP COP 009 <sipcop009@gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: 8272ADS and Linux 2.6.12
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,27 +27,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-[ Susheel Raj writes: ]
-> now the problem is that if i use MPC5200 Rev A then
-> the kernel boots without any problem and gets into the
-> command 
-> 
-> but when i am using MPC5200 Rev B it shows like this
+> Here's my serial config..., also these dont show up if i just
+> run "make ads8272_defconfig". I have to explicitly go and enable the
+> serial options.
+>
+> #
+> # Serial drivers
+> #
+> CONFIG_SERIAL_8250=y
+> CONFIG_SERIAL_8250_CONSOLE=y
+> CONFIG_SERIAL_8250_NR_UARTS=4
+> # CONFIG_SERIAL_8250_EXTENDED is not set
+>
+> #
+> # Non-8250 serial port support
+> #
+> CONFIG_SERIAL_CORE=y
+> CONFIG_SERIAL_CORE_CONSOLE=y
+> # CONFIG_SERIAL_CPM is not set
+> # CONFIG_SERIAL_JSM is not set
+> CONFIG_UNIX98_PTYS=y
+> CONFIG_LEGACY_PTYS=y
+> CONFIG_LEGACY_PTY_COUNT=256
 
-If you're using rev.B1 silicon (mask M08A), you'll need to set the as
-of yet undocumented TXW_MASK bit (13 in PPC bit ordering) in the Rx
-FIFO control register (MBAR + 0x318c). Thus, set &fec->rfifo_cntrl to
-0x0f040000 in mpc5xxx_fec_setup().
+Unless something has changed recently, the 8272 is configured like a 
+8260 and uses arch/ppc/8260_io/uart.c. CONFIG_SERIAL_CONSOLE should be 
+defined. By default, SMC1 will be your console port. I will very later 
+but you may want to have a look for yourself.
 
-Rev.B2 (mask M62C) forces TXW_MASK to zero, but also masks the TXW
-interrupt (0x40000000) in the status register resulting in no change
-from rev.A (L25R) silicon.
-
-If you're still having problems with Ethernet, I would suggest debugging
-it with a root file system on something other than NFS. E.g. ramdisk,
-MTD or ATA.
-
--- 
-David Wolfe
-Infotainment, Multimedia and Telematics Division
-Freescale Semiconductor
+Regards
