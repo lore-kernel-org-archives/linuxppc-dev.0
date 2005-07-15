@@ -1,25 +1,18 @@
-Return-Path: <sipcop009@gmail.com>
-Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.195])
-	by ozlabs.org (Postfix) with ESMTP id BEE6167C44
+Return-Path: <klemen.porenta@siol.net>
+Received: from mta2.siol.net (mta2.siol.net [193.189.160.131])
+	by ozlabs.org (Postfix) with ESMTP id 6853867CB1
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 16 Jul 2005 00:14:34 +1000 (EST)
-Received: by zproxy.gmail.com with SMTP id m22so348892nzf
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 15 Jul 2005 07:14:33 -0700 (PDT)
-Message-ID: <5a4792c00507150714243238da@mail.gmail.com>
-Date: Fri, 15 Jul 2005 07:14:32 -0700
-From: SIP COP 009 <sipcop009@gmail.com>
-To: Allen Curtis <acurtis@onz.com>
-In-Reply-To: <ef81e8ced15bf8004ec0cd927d7cff8e@onz.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <5a4792c0050713235574522cfb@mail.gmail.com>
-	<E65A8A95-7352-40A3-9A86-EF437F0132D0@freescale.com>
-	<5a4792c0050714120571fff071@mail.gmail.com>
-	<ef81e8ced15bf8004ec0cd927d7cff8e@onz.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: 8272ADS and Linux 2.6.12
-Reply-To: SIP COP 009 <sipcop009@gmail.com>
+	Sat, 16 Jul 2005 00:58:38 +1000 (EST)
+Received: from [10.10.10.170] (really [10.10.10.180]) by mta1.siol.net
+	with SMTP id <20050715133409.GTCT2352.mta1.siol.net@[10.10.10.170]>
+	for <linuxppc-embedded@ozlabs.org>; Fri, 15 Jul 2005 15:34:09 +0200
+From: Klemen Porenta <klemen.porenta@siol.net>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Fri, 15 Jul 2005 15:34:09 +0200
+MIME-Version: 1.0
+Content-Type: text/plain; charset=8859_2
+Message-Id: <20050715133409.GTCT2352.mta1.siol.net@[10.10.10.170]>
+Subject: ELDK 3.1.1 and E500
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,58 +23,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Here's my serial config..., also these dont show up if i just=20
-run "make ads8272_defconfig". I have to explicitly go and enable the
-serial options.
+Hi folks,I have one problem regarding gcc compiler for e500. 
 
+I have compiled u-boot 1.1.2 for my target board ADS8560 with ELDK 3.1.1. If I am correct it is using gcc version 3.3.3.
 
-#
-# Serial drivers
-#
-CONFIG_SERIAL_8250=3Dy
-CONFIG_SERIAL_8250_CONSOLE=3Dy
-CONFIG_SERIAL_8250_NR_UARTS=3D4
-# CONFIG_SERIAL_8250_EXTENDED is not set
+Everything is compiled ok and if I start u-boot on my target I get program exception (illegal instruction) on stswi instruction. This instruction is defined in Book E bot not implemented in e500 as I read in Freescale documentation. 
 
-#
-# Non-8250 serial port support
-#
-CONFIG_SERIAL_CORE=3Dy
-CONFIG_SERIAL_CORE_CONSOLE=3Dy
-# CONFIG_SERIAL_CPM is not set
-# CONFIG_SERIAL_JSM is not set
-CONFIG_UNIX98_PTYS=3Dy
-CONFIG_LEGACY_PTYS=3Dy
-CONFIG_LEGACY_PTY_COUNT=3D256
+This is my gcc call for compiling console.c where I get illegal instruction:
+ppc_85xx-gcc -g  -Os   -fPIC -ffixed-r14 -meabi -D__KERNEL__ -DTEXT_BASE=0xfff80000 -I/users/rdhw/kpor/sw/linux/u-boot-1.1.2/include -fno-builtin -ffreestanding -nostdinc -isystem /opt/eldk3.1.1/usr/bin/../lib/gcc-lib/ppc-linux/3.3.3/include -pipe  -DCONFIG_PPC -D__powerpc__ -DCONFIG_MPC85xx -DCONFIG_E500 -ffixed-r2 -ffixed-r29 -Wa,-me500 -msoft-float -DCONFIG_MPC85xx=1 -DCONFIG_MPC8560=1 -DCONFIG_E500=1 -Wall -Wstrict-prototypes -c -o console.o console.c
 
-Thanks!
-ashutosh
+What am I doing wrong or is this gcc problem?
 
-On 7/14/05, Allen Curtis <acurtis@onz.com> wrote:
-> > =3D> setenv bootargs console=3DttyCPM0,115200  root=3D/dev/ram
-> > =3D> bootm fe600000
-> > ## Booting image at fe600000 ...
-> >    Image Name:   2.6.12 for 8272
-> >    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-> >    Data Size:    875845 Bytes =3D 855.3 kB
-> >    Load Address: 00000000
-> >    Entry Point:  00000000
-> >    Verifying Checksum ... OK
-> >    Uncompressing Kernel Image ... OK
-> >
->=20
-> Can you provide your kernel configuration information regarding the
-> serial ports. Which serial port is your console port? Check the
-> following configuration options:
->   CONFIG_SERIAL_CONSOLE
->   CONFIG_SCC_CONSOLE
->   CONFIG_SERIAL_CORE
->   CONFIG_SERIAL_CORE_CONSOLE
->=20
-> Another observation is that you are trying to boot with a RAM disk but
-> you have not provided the RAM disk address to the bootm command. This
-> is not your current problem since you don't get that far.
->=20
-> - Allen
->=20
->
+Thanks in advance, Klemen
