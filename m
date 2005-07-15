@@ -1,30 +1,15 @@
-Return-Path: <a.woellert@gmail.com>
-Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.207])
-	by ozlabs.org (Postfix) with ESMTP id 8FF4167A79
+Return-Path: <susheel_nuguru@yahoo.co.in>
+Received: from web8506.mail.in.yahoo.com (web8506.mail.in.yahoo.com
+	[202.43.219.168]) by ozlabs.org (Postfix) with SMTP id 6F3BD67C25
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 15 Jul 2005 19:42:28 +1000 (EST)
-Received: by zproxy.gmail.com with SMTP id 9so335409nzo
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 15 Jul 2005 02:42:27 -0700 (PDT)
-Message-ID: <faba779805071502425552aefc@mail.gmail.com>
-Date: Fri, 15 Jul 2005 11:42:27 +0200
-From: =?ISO-8859-1?Q?Anton_W=F6llert?= <a.woellert@gmail.com>
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-In-Reply-To: <20050714111941.GC5179@dmt.cnet>
-Mime-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_278_26635838.1121420547509"
-References: <42C1AAC1.4060702@gmail.com> <20050629085913.GA2153@logos.cnet>
-	<faba7798050630071347d4ad63@mail.gmail.com>
-	<20050701094438.GA11121@logos.cnet>
-	<1120229717.21507.9.camel@jmcmullan.timesys>
-	<20050701101713.GC11121@logos.cnet>
-	<faba7798050714012370af5e74@mail.gmail.com>
-	<20050714202715.GS19321@oops.ghostprotocols.net>
-	<20050714111941.GC5179@dmt.cnet>
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: ptrace on linux 2.6.12 causes oops
-Reply-To: =?ISO-8859-1?Q?Anton_W=F6llert?= <a.woellert@gmail.com>
+	Fri, 15 Jul 2005 22:20:32 +1000 (EST)
+Message-ID: <20050715122030.13663.qmail@web8506.mail.in.yahoo.com>
+Date: Fri, 15 Jul 2005 05:20:29 -0700 (PDT)
+From: Susheel Raj <susheel_nuguru@yahoo.co.in>
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Subject: boot failure help needed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,105 +20,233 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_278_26635838.1121420547509
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hi all,
 
->=20
-> Yep, just that now its the ptraceing process which is faulting in the=20
-> page,
-> instead of the (ptraced) process itself.
->=20
-> So Anton, can you move the _tlbie() call up to
->=20
-> && !test_bit(PG_arch_1, &page->flags)) {
-> <---------- HERE
-> if (vma->vm_mm =3D=3D current->active_mm)
-> __flush_dcache_icache((void *) address);
-> else
-> flush_dcache_icache_page(page);
-> set_bit(PG_arch_1, &page->flags);
->=20
-> So that it covers both cases instead of just (vma->vm_mm =3D=3D=20
-> current->active_mm) ?
->=20
-> Its safe to do it because the address space ID is ignored by tlbie=20
-> accordingly
-> to the manual page:
->=20
-> The ASID value in the entry is ignored for the purpose of
-> matching an invalidate address, thus multiple entries can be invalidated
-> if they have the same effective address and different ASID values.
+ I am using freescale mpc5200B on the board. I have a
+tftp-server on my machine and connect to the board
+through this server. 
+  the Kernel and the root file system are ion my
+desktop PC in the directory /tftpboot/
+  kernel --->  /tftpboot/pImage
+  root fs ---> /tftpboot/rootfs/
+
+We have U_Boot for booting system and it fetches the
+kernel from the server (that is my esktop PC) through
+the ETHERNET connection. rootfile systems stays here
+in the server ,
+
+ls command shows  like this in /tftpboot/rootfs/
+[root@localhost rootfs]# ls
+
+bin  build_dir  deep_sleep  dev  etc  lib  mnt  opt 
+proc  sbin  tmp  usr  var
+
+console interface is console=ttyS0 on to the board
+
+now the problem is that if i use MPC5200 Rev A then
+the kernel boots without any problem and gets into the
+command 
+
+but when i am using MPC5200 Rev B it shows like this
 
 
+U-Boot 1.1.1 (Jul  8 2005 - 16:18:22)
 
-Well, unfortunately, that doesn't work :(. If i'm right, the=20
-__flush_dcache_icache((void *) address) should avoid that the cache says=20
-faulting address again.
-The flush_dcache_icache_page(page) should flush the cache, where stands,=20
-page not mapped. but the flush_dcache_icache_page(page) oopses on my system=
-.=20
-but instead of this call, the call __flush_dcache_icache(page_address(page)=
-)=20
-works. for me, that also makes more sence. and also, the=20
-flush_dcache_icache_page(page) calls the flush_dcache_icache_phys, which=20
-turns off the data virtual address mapping. i found that a bit strange. any=
-=20
-comments?
+CPU:   MPC5200 (JTAG ID 1001101d) at 396 MHz
+       Bus 132 MHz, IPB 66 MHz, PCI 33 MHz
+Board: Mitron MCT3
+DRAM:  64 MB
+FLASH:  4 MB
+FPGA:  OK
+SPI:   MPC5200_spi,mki_ad initialised
+Backlight: (channel 2, dutycycle 50, freq 500)
+initialised
+Video: SMI720 @ 640x480x8 28kHz 53Hz
+In:    serial
+Out:   serial
+Err:   serial
+NAND:     Flash chip found:
+          Manufacturer ID: 0x20, Chip ID: 0x79 (NAND
+128MiB 3,3V 8-bit)
+          1 flash chips found. Total nand_chip size:
+128 MB
+ 128 MB at 0x28001000
+Net:   FEC ETHERNET
+IDE:   no card
 
-------=_Part_278_26635838.1121420547509
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+## Booting image at 00800000 ...
+   Image Name:   Linux-2.4.21-rc1
+   Image Type:   PowerPC Linux Kernel Image (gzip
+compressed)
+   Data Size:    1004081 Bytes = 980.5 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+Mitron CVS tag: mct3_moto1_update
+Memory BAT mapping: BAT2=64Mb, BAT3=0Mb, residual: 0Mb
+Linux version 2.4.21-rc1 (nuguru@SW-server) (gcc
+version 2.95.4 20010319 (prerelease/franzo/20011204))
+#67 Fri Jul 15 14:16:36 EEST 2005
+Mitron SGVT port (C) 2003 Mitron Oy (mitron@mitron.fi)
+On node 0 totalpages: 16384
+zone(0): 16384 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line: root=/dev/nfs console=ttyS0
+nfsroot=192.168.1.61:/tftpboot/rootfs
+ip=192.168.30.130:192.168.1.61:192.168.1.1:255.255.0.0:SGVT_180::off
+mgt5100_pic.c/mgt5100_init_irq: using configuration
+from FPGA binary file
+mgt5100_init_irq: external FPGA interrupt controller
+(by Mitron Oy) initialized
+Calibrating delay loop... 263.78 BogoMIPS
+Memory: 61828k available (1768k kernel code, 576k
+data, 76k init, 0k highmem)
+Dentry cache hash table entries: 8192 (order: 4, 65536
+bytes)
+Inode cache hash table entries: 4096 (order: 3, 32768
+bytes)
+Mount cache hash table entries: 512 (order: 0, 4096
+bytes)
+Buffer-cache hash table entries: 4096 (order: 2, 16384
+bytes)
+Page-cache hash table entries: 16384 (order: 4, 65536
+bytes)
+POSIX conformance testing by UNIFIX
+PCI: Probing PCI hardware
+Memory resource not set for host bridge 0
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society
+NET3.039
+Initializing RT netlink socket
+Starting kswapd
+JFFS2 version 2.2. (NAND) (C) 2001-2003 Red
+H&#65533;erial.c->init_chipsels: mfdev->count !=
+SGVT_RS_TABLE_SIZE
+Serial driver version 5.05c (2001-07-08) with
+MANY_PORTS SHARE_IRQ SERIAL_PCI enabled
+uart00 at 0xc5078000 (irq = 92) is a TI16750
+uart01 at 0xc507a008 (irq = 92) is a TI16750
+uart02 at 0xc507c010 (irq = 92) is a TI16750
+RAMDISK driver initialized: 16 RAM disks of 4096K size
+1024 blocksize
+PPP generic driver version 2.4.2
+PPP Deflate Compression module registered
+Uniform Multi-Platform E-IDE driver Revision:
+7.00beta-2.4
+ide: Assuming 33MHz system bus speed for PIO modes;
+override with idebus=xx
+SCSI subsystem driver Revision: 1.00
+usb.c: registered new driver usbdevfs
+usb.c: registered new driver hub
+usb-ohci-embedded.c: USB OHCI at membase 0xf0001000,
+IRQ 44
+usb.c: new USB bus registered, assigned bus number 1
+hub.c: USB hub found
+hub.c: 2 ports detected
+usb.c: registered new driver hiddev
+usb.c: registered new driver hid
+hid-core.c: v1.8.1 Andreas Gal, Vojtech Pavlik
+<vojtech@suse.cz>
+hid-core.c: USB HID support drivers
+usb.c: registered new driver usblp
+printer.c: v0.11: USB Printer Device Class driver
+pegasus.c: v0.4.26 (2002/03/21):Pegasus/Pegasus II USB
+Ethernet driver
+usb.c: registered new driver pegasus
+Initializing USB Mass Storage driver...
+usb.c: registered new driver usb-storage
+USB Mass Storage support registered.
+eth0: Phy @ 0x0, type LXT971 (0x001378e2)
+Mitron multi chip CAN driver 0.4 inited
+Mitron SPI core functionality initialized
+spi-core.o: adapter SGVT SPI host registered as
+adapter 0.
+spi_add_driver: driver MKI driver registered.
+kb_probe_func: MKI keyboard 0 found. Versions: hw:3.1
+sw:2.2
+spi_attach_client: client [SGVT SPI keyboard]
+registered to adapter [SGVT SPI host](pos. 0).
+MKI initialized succesfully
+SGVT_WDT: Software Watchdog Timer version 0.1, timeout
+60 sec.
+SGVT Bank 0: Found 1 x16 devices at 0x0 in 8-bit bank
+ Amd/Fujitsu Extended Query Table at 0x0040
+SGVT Bank 0: Swapping erase regions for broken CFI
+table.
+number of CFI chips: 1
+cfi_cmdset_0002: Disabling erase-suspend-program due
+to code brokenness.
+Creating 3 MTD partitions on "SGVT Bank 0":
+0x00000000-0x00200000 : "kernel"
+0x00200000-0x00280000 : "logo1"
+0x00280000-0x00300000 : "logo2"
+No NAND device found!!!
+sgvt_nand_init: unable to find NAND device
+Initialised PWM buzzer, v. 0.1
+Nov. I/O 0.1 succesfully initialized
+spi_add_driver: driver A/D driver registered.
+spi_attach_client: client [SGVT SPI A/D converter]
+registered to adapter [SGVT SPI host](pos. 5).
+SPI A/D initialized succesfully
+ppcpmw 0.8 initialized
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP, IGMP
+IP: routing cache hash table of 512 buckets, 4Kbytes
+TCP: Hash tables configured (established 4096 bind
+4096)
+eth0: config: auto-negotiation off, 100HDX, 10HDX.
+IP-Config: Complete:
+      device=eth0, addr=192.168.30.130,
+mask=255.255.0.0, gw=192.168.1.1,
+     host=SGVT_180, domain=, nis-domain=(none),
+     bootserver=192.168.1.61, rootserver=192.168.1.61,
+rootpath=
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+Looking up port of RPC 100003/2 on 192.168.1.61
+Looking up port of RPC 100005/1 on 192.168.1.61
+VFS: Mounted root (nfs filesystem).
+Freeing unused kernel memory: 76k init
 
-<div><blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(=
-204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">Yep, just th=
-at now its the ptraceing process which is faulting in the page,<br>instead =
-of the (ptraced) process itself.
-<br><br>So Anton, can you move the _tlbie() call up to<br><br>&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&amp;&amp;
-!test_bit(PG_arch_1, &amp;page-&gt;flags)) {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;----------
-HERE<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;if
-(vma-&gt;vm_mm =3D=3D current-&gt;active_mm)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;__flush_dcache_icache((void
-*) address);<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;else<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;flush_dcache_ic=
-ache_page(page);<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp;set_bit(PG_arch_1,
-&amp;page-&gt;flags);<br><br>So that it covers both cases instead of just (=
-vma-&gt;vm_mm =3D=3D current-&gt;active_mm) ?<br><br>Its safe to do it beca=
-use the address space ID is ignored by tlbie accordingly<br>to the manual p=
-age:
-<br><br>The ASID value in the entry is ignored for the purpose of<br>matchi=
-ng an invalidate address, thus multiple entries can be invalidated<br>if th=
-ey have the same effective address and different ASID values.</blockquote>
-<div><br>
-<br>
-Well, unfortunately, that doesn't work :(. If i'm right, the
-__flush_dcache_icache((void *) address) should avoid that the cache
-says faulting address again.<br>
-The flush_dcache_icache_page(page) should flush the cache, where
-stands, page not mapped. but the flush_dcache_icache_page(page) oopses
-on my system. but instead of this call, the call
-__flush_dcache_icache(page_address(page)) works. for me, that also
-makes more sence. and also, the flush_dcache_icache_page(page) calls
-the flush_dcache_icache_phys, which turns off the data virtual address
-mapping. i found that a bit strange. any comments? <br>
-</div></div><br>
 
-------=_Part_278_26635838.1121420547509--
+U-Boot 1.1.1 (Jul  8 2005 - 16:18:22)
+
+CPU:   MPC5200 (JTAG ID 1001101d) at 396 MHz
+       Bus 132 MHz, IPB 66 MHz, PCI 33 MHz
+Board: Mitron MCT3
+DRAM:  64 MB
+FLASH:  4 MB
+FPGA:  OK
+SPI:   MPC5200_spi,mki_ad initialised
+Backlight: (channel 2, dutycycle 50, freq 500)
+initialised
+Video: SMI720 @ 640x480x8 28kHz 53Hz
+In:    serial
+Out:   serial
+Err:   serial
+NAND:     Flash chip found:
+          Manufacturer ID: 0x20, Chip ID: 0x79 (NAND
+128MiB 3,3V 8-bit)
+          1 flash chips found. Total nand_chip size:
+128 MB
+
+ 
+and it gooooooes on ...
+
+i think it is not able to search for the INIT task ..
+what could be the problem .. please help
+
+
+Susheel
+
+                    More Smiles Per Hour
+
+
+
+
+		
+____________________________________________________
+Start your day with Yahoo! - make it your home page 
+http://www.yahoo.com/r/hs 
+ 
