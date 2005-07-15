@@ -1,11 +1,11 @@
 Return-Path: <hollis@penguinppc.org>
 Mime-Version: 1.0 (Apple Message framework v622)
-Message-Id: <6d05c36b7a666bf9c04c9125d028e2b9@penguinppc.org>
+Message-Id: <52642f46a4231ff4111424b0565ddcde@penguinppc.org>
 Content-Type: text/plain; charset=US-ASCII; format=flowed
 To: PPC64-dev List <linuxppc64-dev@ozlabs.org>,
 	Linux PPC Dev <linuxppc-dev@ozlabs.org>, linuxppc-embedded@ozlabs.org
 From: Hollis Blanchard <hollis@penguinppc.org>
-Date: Fri, 15 Jul 2005 14:42:16 -0400
+Date: Fri, 15 Jul 2005 14:43:37 -0400
 Subject: OLS 2005 attendees
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
