@@ -1,26 +1,26 @@
 Return-Path: <machida@sm.sony.co.jp>
-Received: from ns5.sony.co.jp (NS5.Sony.CO.JP [137.153.0.45])
-	by ozlabs.org (Postfix) with ESMTP id 6E09967C6B
+Received: from ns8.sony.co.jp (NS8.Sony.CO.JP [137.153.0.33])
+	by ozlabs.org (Postfix) with ESMTP id B15C967C6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 17 Jul 2005 17:24:50 +1000 (EST)
-Received: from mail6.sony.co.jp (localhost [127.0.0.1])
-	by mail6.sony.co.jp (R8/Sony) with ESMTP id j6H7Bqrc021087
+	Sun, 17 Jul 2005 17:28:36 +1000 (EST)
+Received: from mail7.sony.co.jp (localhost [127.0.0.1])
+	by mail7.sony.co.jp (R8/Sony) with ESMTP id j6H7GHZe017273
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 17 Jul 2005 16:11:52 +0900 (JST)
+	Sun, 17 Jul 2005 16:16:17 +0900 (JST)
 Received: from smail1.sm.sony.co.jp (smail1.sm.sony.co.jp [43.11.253.1])
-	by mail6.sony.co.jp (R8/Sony) with ESMTP id j6H7Bq2u021083
+	by mail7.sony.co.jp (R8/Sony) with ESMTP id j6H7GH12017270
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 17 Jul 2005 16:11:52 +0900 (JST)
+	Sun, 17 Jul 2005 16:16:17 +0900 (JST)
 Received: from imail.sm.sony.co.jp (imail.sm.sony.co.jp [43.4.191.32]) by
 	smail1.sm.sony.co.jp (8.11.6p2/8.11.6) with ESMTP id
-	j6H7Bpt28367 for <linuxppc-embedded@ozlabs.org>;
-	Sun, 17 Jul 2005 16:11:51 +0900 (JST)
+	j6H7GHt28428 for <linuxppc-embedded@ozlabs.org>;
+	Sun, 17 Jul 2005 16:16:17 +0900 (JST)
 Received: from mach0.sm.sony.co.jp (mach0.sm.sony.co.jp [43.4.196.128])
-	by imail.sm.sony.co.jp (8.12.11/3.7W) with ESMTP id j6H7Bp4L009106
+	by imail.sm.sony.co.jp (8.12.11/3.7W) with ESMTP id j6H7GHjp002762
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 17 Jul 2005 16:11:51 +0900 (JST)
-Message-ID: <42DA04B4.5090108@sm.sony.co.jp>
-Date: Sun, 17 Jul 2005 16:11:48 +0900
+	Sun, 17 Jul 2005 16:16:17 +0900 (JST)
+Message-ID: <42DA05BD.3050403@sm.sony.co.jp>
+Date: Sun, 17 Jul 2005 16:16:13 +0900
 From: Hiroyuki Machida <machida@sm.sony.co.jp>
 MIME-Version: 1.0
 To: linuxppc-embedded@ozlabs.org
@@ -37,10 +37,11 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Today I worked for enabling swsusp for ppc440, at 2.6.12.
-I wrote changes for arch/ppc/kernel/swsusp.S, however
-kernel is stopped, before hibernation is taken place
-with following messages.
+Today I worked for enabling swsusp for ppc440, again
+on kernel 2.6.12.
+I wrote some changes for arch/ppc/kernel/swsusp.S, however 
+kernel was stopped, before hibernation is taken place with
+following messages.
 
 	# echo disk > state
 	PM: prepare: Attempting to freeze processes.
