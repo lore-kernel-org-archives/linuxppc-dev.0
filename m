@@ -1,31 +1,15 @@
-Return-Path: <machida@sm.sony.co.jp>
-Received: from ns8.sony.co.jp (NS8.Sony.CO.JP [137.153.0.33])
-	by ozlabs.org (Postfix) with ESMTP id B15C967C6B
+Return-Path: <zzqg@yahoo.com.cn>
+Received: from web15101.mail.cnb.yahoo.com (web15101.mail.cnb.yahoo.com
+	[202.165.103.70]) by ozlabs.org (Postfix) with SMTP id 5422E67C80
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 17 Jul 2005 17:28:36 +1000 (EST)
-Received: from mail7.sony.co.jp (localhost [127.0.0.1])
-	by mail7.sony.co.jp (R8/Sony) with ESMTP id j6H7GHZe017273
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 17 Jul 2005 16:16:17 +0900 (JST)
-Received: from smail1.sm.sony.co.jp (smail1.sm.sony.co.jp [43.11.253.1])
-	by mail7.sony.co.jp (R8/Sony) with ESMTP id j6H7GH12017270
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 17 Jul 2005 16:16:17 +0900 (JST)
-Received: from imail.sm.sony.co.jp (imail.sm.sony.co.jp [43.4.191.32]) by
-	smail1.sm.sony.co.jp (8.11.6p2/8.11.6) with ESMTP id
-	j6H7GHt28428 for <linuxppc-embedded@ozlabs.org>;
-	Sun, 17 Jul 2005 16:16:17 +0900 (JST)
-Received: from mach0.sm.sony.co.jp (mach0.sm.sony.co.jp [43.4.196.128])
-	by imail.sm.sony.co.jp (8.12.11/3.7W) with ESMTP id j6H7GHjp002762
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 17 Jul 2005 16:16:17 +0900 (JST)
-Message-ID: <42DA05BD.3050403@sm.sony.co.jp>
-Date: Sun, 17 Jul 2005 16:16:13 +0900
-From: Hiroyuki Machida <machida@sm.sony.co.jp>
-MIME-Version: 1.0
+	Sun, 17 Jul 2005 18:30:47 +1000 (EST)
+Message-ID: <20050717082402.719.qmail@web15101.mail.cnb.yahoo.com>
+Date: Sun, 17 Jul 2005 16:24:02 +0800 (CST)
+From: zqg zqg <zzqg@yahoo.com.cn>
 To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain; charset=ISO-2022-JP
-Subject: swsusp for ppc440
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-1975205716-1121588642=:717"
+Subject: Help: How can I port uCLinux to my PowerPC based FPGA
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -36,27 +20,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+--0-1975205716-1121588642=:717
+Content-Type: text/plain; charset=gb2312
+Content-Transfer-Encoding: 8bit
 
-Today I worked for enabling swsusp for ppc440, again
-on kernel 2.6.12.
-I wrote some changes for arch/ppc/kernel/swsusp.S, however 
-kernel was stopped, before hibernation is taken place with
-following messages.
+Experts:
+ 
+Hello.  I want to immigrate a kind of Linux OS such as uCLinux onto my PowerPC based FPGA (Vertex 2 p50).  I expect there are experts could give me some advise.  I think I need a bootloader, is the Yaboot OK?  Do I need to change it and which part I must change? Help!!
+ 
+Thanks for reading.
+ 
+Zhang Qiang Gong
 
-	# echo disk > state
-	PM: prepare: Attempting to freeze processes.
-	Stopping tasks: ===|
-	Freeing memory... done (0 pages freed)
-	PM: prepare: OK.
-	ide-disk 0.0: suspending
-	serial8250 serial8250: suspending
-	
-	 .. nothing happen
-	
-It seems to be stopped at console device.
-Do anyone point out where and how to exclude system devices
-like console and swap from device suspend procedure as 
-preparation of swsusp?
 
-Thanks,
-Hiroyuki Machida
+
+		
+---------------------------------
+DO YOU YAHOO!?
+  雅虎免费G邮箱－中国第一绝无垃圾邮件骚扰超大邮箱 
+--0-1975205716-1121588642=:717
+Content-Type: text/html; charset=gb2312
+Content-Transfer-Encoding: 8bit
+
+<DIV>Experts:</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>Hello.&nbsp; I want to immigrate a kind of Linux OS such as uCLinux onto my PowerPC based FPGA (Vertex 2 p50).&nbsp; I expect there are experts&nbsp;could give me some advise.&nbsp; I think I need a bootloader, is the Yaboot OK?&nbsp; Do I need to change it and which part I must change? Help!!</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>Thanks for reading.</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>Zhang Qiang Gong</DIV><BR><BR><p>
+		<hr size=1>DO YOU YAHOO!?<br> 
+<a href="http://cn.mail.yahoo.com/?id=77071" target=blank> 
+雅虎免费G邮箱－中国第一绝无垃圾邮件骚扰超大邮箱</a> 
+--0-1975205716-1121588642=:717--
