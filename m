@@ -1,15 +1,15 @@
 Return-Path: <susheel.nuguru@mitron.fi>
 Received: from mitron.mitron.fi (mail.mitron.fi [82.116.252.3])
-	by ozlabs.org (Postfix) with ESMTP id 3E77167C25
+	by ozlabs.org (Postfix) with ESMTP id 22D6567C42
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 18 Jul 2005 19:02:19 +1000 (EST)
+	Mon, 18 Jul 2005 19:02:22 +1000 (EST)
 From: Nuguru Susheel <susheel.nuguru@mitron.fi>
 To: linuxppc-embedded@ozlabs.org
 Content-Type: text/plain; charset=UTF-8
-Date: Mon, 18 Jul 2005 11:47:02 +0000
-Message-Id: <1121687222.3288.22.camel@localhost.localdomain>
+Date: Mon, 18 Jul 2005 11:50:19 +0000
+Message-Id: <1121687419.3288.27.camel@localhost.localdomain>
 Mime-Version: 1.0
-Subject: "Wolfgang Denk" <wd@denx.de>
+Subject: RE:boot failure help needed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,9 +29,8 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 >You need BAPI v2.2 for the Rev. B processors.
 
 Hi Denk,
-  Sorry to ask but what is BAPI ??? (I hope people wont mind answering for =
-newbie questions)
-
+  Sorry to ask but what is BAPI ??? (I hope people wont mind answering
+for newbie questions)=20
 
 --=20
 
