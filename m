@@ -1,20 +1,18 @@
-Return-Path: <mcr@sandelman.ottawa.on.ca>
-Received: from pike.sandelman.ca (pike.sandelman.ca [205.150.200.164])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "pike.sandelman.ca",
-	Issuer "Michael Richardson" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 04EC167BFB
+Return-Path: <kumar.gala@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id EA93A67C7F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Jul 2005 05:32:57 +1000 (EST)
-To: David Ho <davidkwho@gmail.com>
-In-Reply-To: Message from David Ho <davidkwho@gmail.com> of "Mon,
-	18 Jul 2005 12:39:09 EDT." <4dd15d18050718093979750163@mail.gmail.com>
-References: <4dd15d18050718093979750163@mail.gmail.com> 
-Date: Mon, 18 Jul 2005 15:30:24 -0400
-Message-ID: <7387.1121715024@marajade.sandelman.ottawa.on.ca>
-From: Michael Richardson <mcr@sandelman.ottawa.on.ca>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [OLS 2005] Ottawa pub ideas 
+	Tue, 19 Jul 2005 09:26:36 +1000 (EST)
+In-Reply-To: <42DBCE60.8090300@anagramm.de>
+References: <42DBCE60.8090300@anagramm.de>
+Mime-Version: 1.0 (Apple Message framework v733)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <550C0481-4DD8-4AFC-AFA2-13AAEBD055E5@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Mon, 18 Jul 2005 11:17:21 -0500
+To: Clemens Koller <clemens.koller@anagramm.de>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: MPC8540 DMA routines (channel 0 broken?)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,57 +23,73 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
------BEGIN PGP SIGNED MESSAGE-----
+Glad to see that the issue was software.  If there is something going  
+on in u-boot during init that isn't leaving the DMA channel in a  
+clean state let me know.
 
+Also, it looks like there maybe some proposal for a general DMA  
+engine API.  If your interested take a look at the Linux Sympoisum  
+2005 papers (Accelerating Network Receive Processing).  I'm hoping to  
+talk to the guys doing this to see what their thoughts are.  If you  
+have some feedback on what they are proposing let me know.
 
->>>>> "David" == David Ho <davidkwho@gmail.com> writes:
-    David> --------------------------------------- D'arcy McGee's Irish
-    David> Pub 44 Sparks Street Ottawa, ON Tel:(613)230-4433
+- kumar
 
-  Loud, and often hard to get a seat.
+On Jul 18, 2005, at 10:44 AM, Clemens Koller wrote:
 
-    David> Parliament Pub 101 Sparks Street Ottawa , ON Tel:(613)
-    David> 563-0636 www.parliamentpub.com
-
-  More of a restaurant/Tourist trap.
-
-    David> Heart and Crown Irish Pub 67 Clarence Street Ottawa , ON
-
-  Louder, lots of music.
-
-    David> The Fox and Feather Pub 283 Elgin Street Ottawa, ON (613)
-    David> 233-2219
-
-    David> http://www.foxandfeather.ca
-
-  Quieter, easier to sit at, but harder to find a place with 8 seats.
-
-    David> Pub Italia 434 Preston Street Ottawa, ON
-
-  Great place, busy. A restaurant as much as a pub.
-
-    David> Other notables --------------------- Honest Lawyer 141 George
-    David> Street Ottawa, ON K1N 5W5 http://www.honestlawyer.com/
-
-    David> Newly opened Restaurant/Lounge
-    David> ------------------------------------------------ Milestone's
-    David> Restaurant 700 Susses Drive Ottawa, ON
-    David> http://www.milestonesrestaurants.com/
-
-  I haven't been to either of these places.
-
-- -- 
-] Michael Richardson          Xelerance Corporation, Ottawa, ON |  firewalls  [
-] mcr @ xelerance.com           Now doing IPsec training, see   |net architect[
-] http://www.sandelman.ca/mcr/    www.xelerance.com/training/   |device driver[
-]                    I'm a dad: http://www.sandelman.ca/lrmr/                 [
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.2 (GNU/Linux)
-Comment: Finger me for keys
-
-iQCVAwUBQtwDToqHRg3pndX9AQH8zgP+OERBw//r10k0hTa6VdIRiSDjUc8agX3+
-kh6avZnMv59vgW+jE0RGuQmYnyfrWr7+fDdw37JfBlNuxl6GMvCazKjGwWw6qF/q
-/OSvGX8uWrlf5wexqcMwjmNWxgrQs9eJCt6mac/Xrz4cQOPxdOJcjb5A9db8abZL
-UrRnYh2XfHo=
-=LUca
------END PGP SIGNATURE-----
+> Hello, Stephane!
+>
+>
+>>> In the meanwhile, I got channel 0 working. It seems
+>>> that the DMA#0 machine got stuck in some configuration from any
+>>> previous (u-boot?) operation which didn't clean up things
+>>> properly. I had to explicitly abort a (continously running?)
+>>> transfer to be able to re-program it in the way I need.
+>>>
+>>
+>> Are you using a BDI2000?
+>>
+>
+> Nope.
+>
+>
+>> Some init mode uses the DMA#0 for memory zeroing (see your .cfg  
+>> file).
+>> Also the DDR ECC U-boot code may use the DMA#0.
+>> Isn't it possible to reset the DMA#0 from Linux?
+>>
+>
+> Thank you! Yes, that's true! <ACK>
+>
+> I've checked the U-Boot code, today. The problem comes up when
+> U-Boot is built with CONFIG_DDR_ECC.
+> The DMA #0 is used to initialize the DDR prior enabling ECC.
+> Maybe the DMA doesn't get cleaned up properly.
+> (I'll have to re-check the registers).
+>
+> But I can get my mpc85xx_dma "driver" working now.
+> However I cannot disable ECC when I am in Linux for testing
+> yet. :-]
+> I'll need to customize U-Boot without ECC because I don't want
+> to use it due to performance issues anyway.
+> But that's getting OT here.
+>
+> Greets,
+>
+> Clemens Koller
+> _______________________________
+> R&D Imaging Devices
+> Anagramm GmbH
+> Rupert-Mayer-Str. 45/1
+> 81379 Muenchen
+> Germany
+>
+> http://www.anagramm.de
+> Phone: +49-89-741518-50
+> Fax: +49-89-741518-19
+>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
