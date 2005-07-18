@@ -1,18 +1,19 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutvdomng.kundenserver.de (moutvdom.kundenserver.de
-	[212.227.126.249]) by ozlabs.org (Postfix) with ESMTP id 2B2BC67C51
+Return-Path: <davidkwho@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.201])
+	by ozlabs.org (Postfix) with ESMTP id 77A9167C39
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Jul 2005 01:44:33 +1000 (EST)
-Message-ID: <42DBCE60.8090300@anagramm.de>
-Date: Mon, 18 Jul 2005 17:44:32 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
-MIME-Version: 1.0
-To: Fillod Stephane <stephane.fillod@thomson.net>
-References: <1CFEB358338412458B21FAA0D78FE86D02CABBE4@rennsmail02.eu.thmulti.com>
-In-Reply-To: <1CFEB358338412458B21FAA0D78FE86D02CABBE4@rennsmail02.eu.thmulti.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: MPC8540 DMA routines (channel 0 broken?)
+	Tue, 19 Jul 2005 02:39:11 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id 68so1048017wra
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 18 Jul 2005 09:39:10 -0700 (PDT)
+Message-ID: <4dd15d18050718093979750163@mail.gmail.com>
+Date: Mon, 18 Jul 2005 12:39:09 -0400
+From: David Ho <davidkwho@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [OLS 2005] Ottawa pub ideas
+Reply-To: David Ho <davidkwho@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,47 +24,90 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello, Stephane!
+Sorry for the wait, and I hope everyone has access to their email in Ottawa=
+.
 
->>In the meanwhile, I got channel 0 working. It seems
->>that the DMA#0 machine got stuck in some configuration from any
->>previous (u-boot?) operation which didn't clean up things
->>properly. I had to explicitly abort a (continously running?)
->>transfer to be able to re-program it in the way I need.
-> 
-> Are you using a BDI2000? 
+David
 
-Nope.
+---------------------------------------
+D'arcy McGee's Irish Pub
+44 Sparks Street
+Ottawa, ON
+Tel:(613)230-4433
 
-> Some init mode uses the DMA#0 for memory zeroing (see your .cfg file).
-> Also the DDR ECC U-boot code may use the DMA#0.
-> Isn't it possible to reset the DMA#0 from Linux?
+http://www.heartandcrown.com/
 
-Thank you! Yes, that's true! <ACK>
+It's Ottawa's authentic Irish Pub, designed and built in Ireland. A
+large selection of Irish Whiskeys, Single Malt Scotches, Bourbons,
+Cognacs, and Ports awaits those with discerning tastes. Darcy's offers
+live entertainment four nights a week (from Wednesday to Saturday
+night) featuring Celtic, Maritime, Irish and a mix of contemporary
+songs.
 
-I've checked the U-Boot code, today. The problem comes up when
-U-Boot is built with CONFIG_DDR_ECC.
-The DMA #0 is used to initialize the DDR prior enabling ECC.
-Maybe the DMA doesn't get cleaned up properly.
-(I'll have to re-check the registers).
 
-But I can get my mpc85xx_dma "driver" working now.
-However I cannot disable ECC when I am in Linux for testing
-yet. :-]
-I'll need to customize U-Boot without ECC because I don't want
-to use it due to performance issues anyway.
-But that's getting OT here.
+Parliament Pub
+101 Sparks Street
+Ottawa , ON
+Tel:(613) 563-0636
+www.parliamentpub.com
 
-Greets,
+The Parliament Pub combines Dining and Political Fun.  It is directly
+across the street from Parliament Hill. It's an inviting spot for
+lunch and dinner where excellent food and beverages can be enjoyed
+against a political backdrop. The Parliament Pub serves great
+sandwiches and wraps and creative salads. A fine selection of beers
+(with no political agenda) is on tap.
 
-Clemens Koller
-_______________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Str. 45/1
-81379 Muenchen
-Germany
 
-http://www.anagramm.de
-Phone: +49-89-741518-50
-Fax: +49-89-741518-19
+Heart and Crown Irish Pub
+67 Clarence Street
+Ottawa , ON
+
+(613) 562-0674
+
+http://www.heartandcrown.com/
+
+Live entertainment Wednesday to Saturday night with the finest bands,
+offering a wide range of Popular, Traditional, Scottish and Irish
+music.
+
+
+The Fox and Feather Pub
+283 Elgin Street
+Ottawa, ON
+(613) 233-2219
+
+http://www.foxandfeather.ca
+
+The Fox and Feather Pub is a great place to have a quiet pint, throw a
+party or share an evening of fun with friends. They have got a
+complimentary pool table, dartboards and board games to add to the
+entertainment, and their large selection of beers on-tap covers
+everything from Irish brews to Canadian microbreweries.
+
+Pub Italia
+434 Preston Street
+Ottawa, ON
+
+http://www.pubitalia.ca/welcome.html
+
+Fine Italian food doubles as pub fare, and Wednesdays to Saturdays you
+can order dishes after midnight .  Pub Italia represents the perfect
+marriage between an Italian trattoria and an Irish pub with its
+combination of wonderful pizza and pasta dishes, and an incredible
+selection of over 200 beers.
+
+Other notables
+---------------------
+Honest Lawyer=20
+141 George Street
+Ottawa, ON
+K1N 5W5
+http://www.honestlawyer.com/
+
+Newly opened Restaurant/Lounge
+------------------------------------------------
+Milestone's Restaurant
+700 Susses Drive
+Ottawa, ON
+http://www.milestonesrestaurants.com/
