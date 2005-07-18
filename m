@@ -1,15 +1,19 @@
-Return-Path: <susheel.nuguru@mitron.fi>
-Received: from mitron.mitron.fi (mail.mitron.fi [82.116.252.3])
-	by ozlabs.org (Postfix) with ESMTP id 22D6567C42
+Return-Path: <wd@denx.de>
+Received: from mailout02.sul.t-online.com (mailout02.sul.t-online.com
+	[194.25.134.17]) by ozlabs.org (Postfix) with ESMTP id 18C5067C25
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 18 Jul 2005 19:02:22 +1000 (EST)
-From: Nuguru Susheel <susheel.nuguru@mitron.fi>
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 18 Jul 2005 11:50:19 +0000
-Message-Id: <1121687419.3288.27.camel@localhost.localdomain>
-Mime-Version: 1.0
-Subject: RE:boot failure help needed
+	Mon, 18 Jul 2005 20:55:12 +1000 (EST)
+To: Nuguru Susheel <susheel.nuguru@mitron.fi>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 18 Jul 2005 11:50:19 -0000."
+	<1121687419.3288.27.camel@localhost.localdomain>
+Date: Mon, 18 Jul 2005 12:53:18 +0200
+Sender: wd@denx.de
+Message-Id: <20050718105318.CADBE352586@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: boot failure help needed 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,40 +24,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->> now the problem is that if i use MPC5200 Rev A then
->> the kernel boots without any problem and gets into the
->> command=20
->>=20
->> but when i am using MPC5200 Rev B it shows like this
+In message <1121687419.3288.27.camel@localhost.localdomain> you wrote:
+>
+>   Sorry to ask but what is BAPI ??? (I hope people wont mind answering
+> for newbie questions) 
 
->You need BAPI v2.2 for the Rev. B processors.
+BAPI = BestComm Application Programming Interface, i. e. the code in
+arch/ppc/5xxx_io/bestcomm/
 
-Hi Denk,
-  Sorry to ask but what is BAPI ??? (I hope people wont mind answering
-for newbie questions)=20
+Best regards,
 
---=20
+Wolfgang Denk
 
-                 /\ =20
-  =C2=B0 =C2=B0    =C2=B0      //\\
-   =C2=B0 ' =C2=B0   =C2=B0   //
- ------Cheers-//--   -- Software Engineering:  Embedded and Realtime System=
-s,  Embedded Linux
- \ =C2=B0  =C2=B0 nSr  // '/
-  \---------//--/   .'-----------------------------------------------------=
----------------'.
-   \ .,=C2=B0.. //  /   (  Every program has at least one bug and can be sh=
-ortened by  at  least )
-    \   .=C2=B0,  ./    (  one  instruction  --  from  which,  by induction=
-, one can deduce that )
-     \ .  .  /     (  every program can be reduced to one instruction which=
- doesn't work.   )
-      \  .  /       '._____________________________________________________=
-_______________ .'
-       \=3D=3D=3D/
-        | |
-        | |
-        | |
-        | |
-        | |
-      =3D=3D=3D=3D=3D=3D=3D
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+There are three ways to get something done:
+        (1) Do it yourself.
+        (2) Hire someone to do it for you.
+        (3) Forbid your kids to do it.
