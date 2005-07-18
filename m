@@ -1,21 +1,20 @@
-Return-Path: <davidkwho@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.199])
-	by ozlabs.org (Postfix) with ESMTP id 12B4F67C4A
+Return-Path: <mcr@sandelman.ottawa.on.ca>
+Received: from pike.sandelman.ca (pike.sandelman.ca [205.150.200.164])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "pike.sandelman.ca",
+	Issuer "Michael Richardson" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 04EC167BFB
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Jul 2005 03:13:53 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id i3so1051384wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 18 Jul 2005 10:13:51 -0700 (PDT)
-Message-ID: <4dd15d18050718101360bc0bdd@mail.gmail.com>
-Date: Mon, 18 Jul 2005 13:13:08 -0400
-From: David Ho <davidkwho@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-In-Reply-To: <4dd15d18050718093979750163@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <4dd15d18050718093979750163@mail.gmail.com>
-Subject: Re: [OLS 2005] Ottawa pub ideas - V 2.0
-Reply-To: David Ho <davidkwho@gmail.com>
+	Tue, 19 Jul 2005 05:32:57 +1000 (EST)
+To: David Ho <davidkwho@gmail.com>
+In-Reply-To: Message from David Ho <davidkwho@gmail.com> of "Mon,
+	18 Jul 2005 12:39:09 EDT." <4dd15d18050718093979750163@mail.gmail.com>
+References: <4dd15d18050718093979750163@mail.gmail.com> 
+Date: Mon, 18 Jul 2005 15:30:24 -0400
+Message-ID: <7387.1121715024@marajade.sandelman.ottawa.on.ca>
+From: Michael Richardson <mcr@sandelman.ottawa.on.ca>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [OLS 2005] Ottawa pub ideas 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,89 +25,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Minor update.  Some links were broken.
-=09
-David
-
----------------------------------------
-D'arcy McGee's Irish Pub
-44 Sparks Street
-Ottawa, ON
-Tel:(613)230-4433
-
-http://www.darcymcgees.ca/ottawa/
-
-It's Ottawa's authentic Irish Pub, designed and built in Ireland. A
-large selection of Irish Whiskeys, Single Malt Scotches, Bourbons,
-Cognacs, and Ports awaits those with discerning tastes. Darcy's offers
-live entertainment four nights a week (from Wednesday to Saturday
-night) featuring Celtic, Maritime, Irish and a mix of contemporary
-songs.
+-----BEGIN PGP SIGNED MESSAGE-----
 
 
-Parliament Pub
-101 Sparks Street
-Ottawa , ON
-Tel:(613) 563-0636
-www.parliamentpub.com
+>>>>> "David" == David Ho <davidkwho@gmail.com> writes:
+    David> --------------------------------------- D'arcy McGee's Irish
+    David> Pub 44 Sparks Street Ottawa, ON Tel:(613)230-4433
 
-The Parliament Pub combines Dining and Political Fun.  It is directly
-across the street from Parliament Hill. It's an inviting spot for
-lunch and dinner where excellent food and beverages can be enjoyed
-against a political backdrop. The Parliament Pub serves great
-sandwiches and wraps and creative salads. A fine selection of beers
-(with no political agenda) is on tap.
+  Loud, and often hard to get a seat.
 
+    David> Parliament Pub 101 Sparks Street Ottawa , ON Tel:(613)
+    David> 563-0636 www.parliamentpub.com
 
-Heart and Crown Irish Pub
-67 Clarence Street
-Ottawa , ON
+  More of a restaurant/Tourist trap.
 
-(613) 562-0674
+    David> Heart and Crown Irish Pub 67 Clarence Street Ottawa , ON
 
-http://www.irishvillage.ca/
+  Louder, lots of music.
 
-Live entertainment Wednesday to Saturday night with the finest bands,
-offering a wide range of Popular, Traditional, Scottish and Irish
-music.
+    David> The Fox and Feather Pub 283 Elgin Street Ottawa, ON (613)
+    David> 233-2219
 
+    David> http://www.foxandfeather.ca
 
-The Fox and Feather Pub
-283 Elgin Street
-Ottawa, ON
-(613) 233-2219
+  Quieter, easier to sit at, but harder to find a place with 8 seats.
 
-http://www.foxandfeather.ca
+    David> Pub Italia 434 Preston Street Ottawa, ON
 
-The Fox and Feather Pub is a great place to have a quiet pint, throw a
-party or share an evening of fun with friends. They have got a
-complimentary pool table, dartboards and board games to add to the
-entertainment, and their large selection of beers on-tap covers
-everything from Irish brews to Canadian microbreweries.
+  Great place, busy. A restaurant as much as a pub.
 
-Pub Italia
-434 Preston Street
-Ottawa, ON
+    David> Other notables --------------------- Honest Lawyer 141 George
+    David> Street Ottawa, ON K1N 5W5 http://www.honestlawyer.com/
 
-http://www.pubitalia.ca/welcome.html
+    David> Newly opened Restaurant/Lounge
+    David> ------------------------------------------------ Milestone's
+    David> Restaurant 700 Susses Drive Ottawa, ON
+    David> http://www.milestonesrestaurants.com/
 
-Fine Italian food doubles as pub fare, and Wednesdays to Saturdays you
-can order dishes after midnight .  Pub Italia represents the perfect
-marriage between an Italian trattoria and an Irish pub with its
-combination of wonderful pizza and pasta dishes, and an incredible
-selection of over 200 beers.
+  I haven't been to either of these places.
 
-Other notables
----------------------
-Honest Lawyer
-141 George Street
-Ottawa, ON
-K1N 5W5
-http://www.honestlawyer.com/
+- -- 
+] Michael Richardson          Xelerance Corporation, Ottawa, ON |  firewalls  [
+] mcr @ xelerance.com           Now doing IPsec training, see   |net architect[
+] http://www.sandelman.ca/mcr/    www.xelerance.com/training/   |device driver[
+]                    I'm a dad: http://www.sandelman.ca/lrmr/                 [
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.2 (GNU/Linux)
+Comment: Finger me for keys
 
-Newly opened Restaurant/Lounge
-------------------------------------------------
-Milestone's Restaurant
-700 Susses Drive
-Ottawa, ON
-http://www.milestonesrestaurants.com/
+iQCVAwUBQtwDToqHRg3pndX9AQH8zgP+OERBw//r10k0hTa6VdIRiSDjUc8agX3+
+kh6avZnMv59vgW+jE0RGuQmYnyfrWr7+fDdw37JfBlNuxl6GMvCazKjGwWw6qF/q
+/OSvGX8uWrlf5wexqcMwjmNWxgrQs9eJCt6mac/Xrz4cQOPxdOJcjb5A9db8abZL
+UrRnYh2XfHo=
+=LUca
+-----END PGP SIGNATURE-----
