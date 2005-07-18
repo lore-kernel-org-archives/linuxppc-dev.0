@@ -1,18 +1,21 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao11.cox.net (fed1rmmtao11.cox.net [68.230.241.28])
-	by ozlabs.org (Postfix) with ESMTP id 3D39E67C4A
+Return-Path: <davidkwho@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.199])
+	by ozlabs.org (Postfix) with ESMTP id 12B4F67C4A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Jul 2005 02:57:26 +1000 (EST)
-Date: Mon, 18 Jul 2005 09:57:24 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Grant Likely <glikely@gmail.com>
-Message-ID: <20050718165724.GE4370@smtp.west.cox.net>
-References: <528646bc0507170006540ac67a@mail.gmail.com>
+	Tue, 19 Jul 2005 03:13:53 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id i3so1051384wra
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 18 Jul 2005 10:13:51 -0700 (PDT)
+Message-ID: <4dd15d18050718101360bc0bdd@mail.gmail.com>
+Date: Mon, 18 Jul 2005 13:13:08 -0400
+From: David Ho <davidkwho@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+In-Reply-To: <4dd15d18050718093979750163@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <528646bc0507170006540ac67a@mail.gmail.com>
-Cc: Sylvain Munaut <tnt@246tnt.com>, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] ppc32: Register definition for MPC52xx
+Content-Type: text/plain; charset=ISO-8859-1
+References: <4dd15d18050718093979750163@mail.gmail.com>
+Subject: Re: [OLS 2005] Ottawa pub ideas - V 2.0
+Reply-To: David Ho <davidkwho@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,21 +26,89 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sun, Jul 17, 2005 at 01:06:03AM -0600, Grant Likely wrote:
-> Here are additional register definitions for the MPC52xx.  CDM clock
-> enables and port config bit settings in mpc52xx.h.  Registers needed
-> to support non-UART PSC modes in mpc52xx_psc.h.  Drivers which use
-> these regs/bits are to follow once I'm happy with them, but I thought
-> that others may be interested in them now.
-> 
-> Cheers,
-> g.
-> 
-> Signed-off-by: Grant Likely <grant.likely@gdcanada.com>
+Minor update.  Some links were broken.
+=09
+David
 
-These should be held off until the drivers are ready (and really only
-what the drivers need).  Thanks!
+---------------------------------------
+D'arcy McGee's Irish Pub
+44 Sparks Street
+Ottawa, ON
+Tel:(613)230-4433
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+http://www.darcymcgees.ca/ottawa/
+
+It's Ottawa's authentic Irish Pub, designed and built in Ireland. A
+large selection of Irish Whiskeys, Single Malt Scotches, Bourbons,
+Cognacs, and Ports awaits those with discerning tastes. Darcy's offers
+live entertainment four nights a week (from Wednesday to Saturday
+night) featuring Celtic, Maritime, Irish and a mix of contemporary
+songs.
+
+
+Parliament Pub
+101 Sparks Street
+Ottawa , ON
+Tel:(613) 563-0636
+www.parliamentpub.com
+
+The Parliament Pub combines Dining and Political Fun.  It is directly
+across the street from Parliament Hill. It's an inviting spot for
+lunch and dinner where excellent food and beverages can be enjoyed
+against a political backdrop. The Parliament Pub serves great
+sandwiches and wraps and creative salads. A fine selection of beers
+(with no political agenda) is on tap.
+
+
+Heart and Crown Irish Pub
+67 Clarence Street
+Ottawa , ON
+
+(613) 562-0674
+
+http://www.irishvillage.ca/
+
+Live entertainment Wednesday to Saturday night with the finest bands,
+offering a wide range of Popular, Traditional, Scottish and Irish
+music.
+
+
+The Fox and Feather Pub
+283 Elgin Street
+Ottawa, ON
+(613) 233-2219
+
+http://www.foxandfeather.ca
+
+The Fox and Feather Pub is a great place to have a quiet pint, throw a
+party or share an evening of fun with friends. They have got a
+complimentary pool table, dartboards and board games to add to the
+entertainment, and their large selection of beers on-tap covers
+everything from Irish brews to Canadian microbreweries.
+
+Pub Italia
+434 Preston Street
+Ottawa, ON
+
+http://www.pubitalia.ca/welcome.html
+
+Fine Italian food doubles as pub fare, and Wednesdays to Saturdays you
+can order dishes after midnight .  Pub Italia represents the perfect
+marriage between an Italian trattoria and an Irish pub with its
+combination of wonderful pizza and pasta dishes, and an incredible
+selection of over 200 beers.
+
+Other notables
+---------------------
+Honest Lawyer
+141 George Street
+Ottawa, ON
+K1N 5W5
+http://www.honestlawyer.com/
+
+Newly opened Restaurant/Lounge
+------------------------------------------------
+Milestone's Restaurant
+700 Susses Drive
+Ottawa, ON
+http://www.milestonesrestaurants.com/
