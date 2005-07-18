@@ -1,15 +1,15 @@
-Return-Path: <zzqg@yahoo.com.cn>
-Received: from web15101.mail.cnb.yahoo.com (web15101.mail.cnb.yahoo.com
-	[202.165.103.70]) by ozlabs.org (Postfix) with SMTP id 5422E67C80
+Return-Path: <susheel.nuguru@mitron.fi>
+Received: from mitron.mitron.fi (mail.mitron.fi [82.116.252.3])
+	by ozlabs.org (Postfix) with ESMTP id 3E77167C25
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 17 Jul 2005 18:30:47 +1000 (EST)
-Message-ID: <20050717082402.719.qmail@web15101.mail.cnb.yahoo.com>
-Date: Sun, 17 Jul 2005 16:24:02 +0800 (CST)
-From: zqg zqg <zzqg@yahoo.com.cn>
+	Mon, 18 Jul 2005 19:02:19 +1000 (EST)
+From: Nuguru Susheel <susheel.nuguru@mitron.fi>
 To: linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1975205716-1121588642=:717"
-Subject: Help: How can I port uCLinux to my PowerPC based FPGA
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 18 Jul 2005 11:47:02 +0000
+Message-Id: <1121687222.3288.22.camel@localhost.localdomain>
+Mime-Version: 1.0
+Subject: "Wolfgang Denk" <wd@denx.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,36 +20,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-1975205716-1121588642=:717
-Content-Type: text/plain; charset=gb2312
-Content-Transfer-Encoding: 8bit
+>> now the problem is that if i use MPC5200 Rev A then
+>> the kernel boots without any problem and gets into the
+>> command=20
+>>=20
+>> but when i am using MPC5200 Rev B it shows like this
 
-Experts:
- 
-Hello.  I want to immigrate a kind of Linux OS such as uCLinux onto my PowerPC based FPGA (Vertex 2 p50).  I expect there are experts could give me some advise.  I think I need a bootloader, is the Yaboot OK?  Do I need to change it and which part I must change? Help!!
- 
-Thanks for reading.
- 
-Zhang Qiang Gong
+>You need BAPI v2.2 for the Rev. B processors.
+
+Hi Denk,
+  Sorry to ask but what is BAPI ??? (I hope people wont mind answering for =
+newbie questions)
 
 
+--=20
 
-		
----------------------------------
-DO YOU YAHOO!?
-  雅虎免费G邮箱－中国第一绝无垃圾邮件骚扰超大邮箱 
---0-1975205716-1121588642=:717
-Content-Type: text/html; charset=gb2312
-Content-Transfer-Encoding: 8bit
-
-<DIV>Experts:</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>Hello.&nbsp; I want to immigrate a kind of Linux OS such as uCLinux onto my PowerPC based FPGA (Vertex 2 p50).&nbsp; I expect there are experts&nbsp;could give me some advise.&nbsp; I think I need a bootloader, is the Yaboot OK?&nbsp; Do I need to change it and which part I must change? Help!!</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>Thanks for reading.</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>Zhang Qiang Gong</DIV><BR><BR><p>
-		<hr size=1>DO YOU YAHOO!?<br> 
-<a href="http://cn.mail.yahoo.com/?id=77071" target=blank> 
-雅虎免费G邮箱－中国第一绝无垃圾邮件骚扰超大邮箱</a> 
---0-1975205716-1121588642=:717--
+                 /\ =20
+  =C2=B0 =C2=B0    =C2=B0      //\\
+   =C2=B0 ' =C2=B0   =C2=B0   //
+ ------Cheers-//--   -- Software Engineering:  Embedded and Realtime System=
+s,  Embedded Linux
+ \ =C2=B0  =C2=B0 nSr  // '/
+  \---------//--/   .'-----------------------------------------------------=
+---------------'.
+   \ .,=C2=B0.. //  /   (  Every program has at least one bug and can be sh=
+ortened by  at  least )
+    \   .=C2=B0,  ./    (  one  instruction  --  from  which,  by induction=
+, one can deduce that )
+     \ .  .  /     (  every program can be reduced to one instruction which=
+ doesn't work.   )
+      \  .  /       '._____________________________________________________=
+_______________ .'
+       \=3D=3D=3D/
+        | |
+        | |
+        | |
+        | |
+        | |
+      =3D=3D=3D=3D=3D=3D=3D
