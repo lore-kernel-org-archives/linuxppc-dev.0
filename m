@@ -1,20 +1,16 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id 3907867C61
+Return-Path: <susheel_nuguru@yahoo.co.in>
+Received: from web8502.mail.in.yahoo.com (web8502.mail.in.yahoo.com
+	[202.43.219.164]) by ozlabs.org (Postfix) with SMTP id 255D867C5A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Jul 2005 18:21:57 +1000 (EST)
-Received: from linux.local (linux.prtnl [192.168.1.97])
-	by protonic.prtnl (Postfix) with ESMTP id C4EE94052
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Jul 2005 10:22:02 +0200 (CEST)
-From: David Jander <david.jander@protonic.nl>
-To: linuxppc-embedded@ozlabs.org
-Date: Tue, 19 Jul 2005 10:21:51 +0200
+	Tue, 19 Jul 2005 18:48:41 +1000 (EST)
+Message-ID: <20050719084838.3909.qmail@web8502.mail.in.yahoo.com>
+Date: Tue, 19 Jul 2005 01:48:38 -0700 (PDT)
+From: Susheel Raj <susheel_nuguru@yahoo.co.in>
+To: david.wolfe@freescale.com
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200507191021.52063.david.jander@protonic.nl>
-Subject: How reliable is jffs2 really (denx cvs devel kernel)?
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: boot failure help needed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,35 +21,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+> If you're using rev.B1 silicon (mask M08A), you'll
+need 
+> to set the as of yet undocumented TXW_MASK bit (13
+in 
+> PPC bit ordering) in the Rx FIFO control register 
+> (MBAR + 0x318c). Thus, set &fec->rfifo_cntrl to
+> 0x0f040000 in mpc5xxx_fec_setup().
 
-Hi,
+yes David i am using rev.B1 and I tried setting the
+TXW_MASK bit but nothing changed ...
 
-I have seen some strange problems with jffs2. I have been victim of the BUG() 
-in fs/jffs2/gc.c, line 139. I have been battling with kgdb to see what 
-happens there. Here are my findings until now (I am still working on this):
+> If you're still having problems with Ethernet, I
+would 
+> suggest debugging it with a root file system on 
+> something other than NFS.E.g. ramdisk, MTD or ATA.
 
-c->checked_ino starts counting from 0
-c->highest_ino is 92 (????)
+I tried also ur second suggestion trying to boot
+through ramdisk, with rootfilesystem in
+ramdisk.image.gz and building kernel in pImage both in
+Compact Flash.
 
-Isn't this a little low?
+It is working fine ( I have no idea of the
+configuration and what args are passed by U_BOOt to
+kernel) .. does this mean that there is problem with
+root filesystem on my remote computer or does this
+mean there could be a problem connecting to the remote
+computer (Probably problem with BESTCOM as pointed by
+Wolfgang Denk) ?????
 
-Flash partition size is 15Mbyte, it probably has been mistreated by writing 
-large files (logfiles) line by line, wasting a lot of space until it gets 
-almost full.
-When debugging the for(;;) loop, used size starts from a few kb counting up, 
-dirty size is around 5 Mb and unchecked size is about 9.9Mb, so when it gets 
-past inode 92 it most probably has still a lot of unchecked space.===> BUG().
+I want to have the root filesystem on the remote
+computer instead on ramdisk because i need to add
+applications into the root filesystem in runtime.
 
-Googleing for this bug, I have found discouraging e-mails (luckily most of 
-them from 2003 or older) saying that this is common and nobody (back then) 
-seemed to know where it came from. Bugs in fjjs2 code, etc....
 
-This is scaring me.
 
-Anybody knows more about this problem, why it is caused, and hopefully how to 
-prevent this?
 
-Thanks,
-
--- 
-David Jander
+		
+____________________________________________________
+Start your day with Yahoo! - make it your home page 
+http://www.yahoo.com/r/hs 
+ 
