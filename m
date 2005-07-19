@@ -1,22 +1,19 @@
-Return-Path: <davidkwho@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.196])
-	by ozlabs.org (Postfix) with ESMTP id 4ED5A67C39
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutvdomng.kundenserver.de (moutvdom.kundenserver.de
+	[212.227.126.249]) by ozlabs.org (Postfix) with ESMTP id EA3EF67C4A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Jul 2005 22:58:13 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id i6so1213050wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Jul 2005 05:58:12 -0700 (PDT)
-Message-ID: <4dd15d1805071905573ebcba61@mail.gmail.com>
-Date: Tue, 19 Jul 2005 08:57:20 -0400
-From: David Ho <davidkwho@gmail.com>
-To: David Jander <david.jander@protonic.nl>
-In-Reply-To: <200507191021.52063.david.jander@protonic.nl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <200507191021.52063.david.jander@protonic.nl>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: How reliable is jffs2 really (denx cvs devel kernel)?
-Reply-To: David Ho <davidkwho@gmail.com>
+	Tue, 19 Jul 2005 23:27:25 +1000 (EST)
+Message-ID: <42DCFFB9.3050109@anagramm.de>
+Date: Tue, 19 Jul 2005 15:27:21 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
+MIME-Version: 1.0
+To: Kumar Gala <kumar.gala@freescale.com>
+References: <42DBCE60.8090300@anagramm.de>
+	<550C0481-4DD8-4AFC-AFA2-13AAEBD055E5@freescale.com>
+In-Reply-To: <550C0481-4DD8-4AFC-AFA2-13AAEBD055E5@freescale.com>
+Content-Type: multipart/mixed; boundary="------------030509020005050808080203"
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: MPC8540 DMA routines (channel 0 broken?)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,77 +24,75 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I ran into similar problems, I had talked to David Woodhouse about a
-number of issues with JFFS2.  But he has no plans to support 2.4
-kernels.
+This is a multi-part message in MIME format.
+--------------030509020005050808080203
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-There are a bunch of people that back ports the latest JFFS2 code from
-2.6 and snapshots are found here
-ftp://ftp.uk.linux.org/pub/people/dwmw2/mtd/cvs/.
+Hello, Kumar!
 
-I updated the JFFS2 portion of the Denx devel kernel with the latest
-from CVS and it solved the initial mount time problem.  But it was a
-while a ago when I did this.  Both the devel kernel and the CVS head
-has changed quite a bit since then.
+> Glad to see that the issue was software.  If there is something going  
+> on in u-boot during init that isn't leaving the DMA channel in a  clean 
+> state let me know.
 
-But some people on the mailing list seem to indicate timing resolution
-in the 2.4 leading to race condition, or some other deficiency from
-what I recall.
+The MPC8540RM.pdf says: 15.4.1.1.1:
+4. _Clear_and_then_set_ the mode register channel start bit, MRn[CS],
+   to start the DMA transfer
 
-The people in the mailing list were not interested in fixing these so
-called kernel bugs.  And since JFFS2 code is too complex for my spare
-time and it does not cause the kernel to hang, I have yet to figure
-out a fix for it.
+The exact problem was that Jason's original code cleared
+the DMA.MR0 register to 0x00000000 in the interrupt service handler
+_after_ each transaction.
+Then the MR can get re-programmed along with the CS bit (Channel Start)
+set at once and everything is fine.
+But if MR0 didn't get cleared before that, the DMA won't start.
 
-I like to know other's experience with JFFS2 on 2.4 as well.
+So, u-boot just didn't clear MR0[CS] _after_ a transaction, too.
+The attached patch for u-boot would put in more safety to avoid
+things like that in the future. It's optional, as my driver
+explicitly clears the MRn[CS] now, _before_ it starts it's work.
 
-David
+> Also, it looks like there maybe some proposal for a general DMA  engine 
+> API.  If your interested take a look at the Linux Sympoisum  2005 papers 
+> (Accelerating Network Receive Processing).  I'm hoping to  talk to the 
+> guys doing this to see what their thoughts are.  If you  have some 
+> feedback on what they are proposing let me know.
 
+I've had a look at the proposal. Thanks! I guess it shouldn't be too
+difficult to implement an API like that.
 
-On 7/19/05, David Jander <david.jander@protonic.nl> wrote:
->=20
-> Hi,
->=20
-> I have seen some strange problems with jffs2. I have been victim of the B=
-UG()
-> in fs/jffs2/gc.c, line 139. I have been battling with kgdb to see what
-> happens there. Here are my findings until now (I am still working on this=
-):
->=20
-> c->checked_ino starts counting from 0
-> c->highest_ino is 92 (????)
->=20
-> Isn't this a little low?
->=20
-> Flash partition size is 15Mbyte, it probably has been mistreated by writi=
-ng
-> large files (logfiles) line by line, wasting a lot of space until it gets
-> almost full.
-> When debugging the for(;;) loop, used size starts from a few kb counting =
-up,
-> dirty size is around 5 Mb and unchecked size is about 9.9Mb, so when it g=
-ets
-> past inode 92 it most probably has still a lot of unchecked space.=3D=3D=
-=3D> BUG().
->=20
-> Googleing for this bug, I have found discouraging e-mails (luckily most o=
-f
-> them from 2003 or older) saying that this is common and nobody (back then=
-)
-> seemed to know where it came from. Bugs in fjjs2 code, etc....
->=20
-> This is scaring me.
->=20
-> Anybody knows more about this problem, why it is caused, and hopefully ho=
-w to
-> prevent this?
->=20
-> Thanks,
->=20
-> --
-> David Jander
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
+Best greets,
+
+Clemens Koller
+_______________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Str. 45/1
+81379 Muenchen
+Germany
+
+http://www.anagramm.de
+Phone: +49-89-741518-50
+Fax: +49-89-741518-19
+
+--------------030509020005050808080203
+Content-Type: text/plain;
+ name="u-boot_mpc85xx_dma_cleanup.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="u-boot_mpc85xx_dma_cleanup.patch"
+
+diff -Nur u-boot/cpu/mpc85xx/cpu.c u-boot-local/cpu/mpc85xx/cpu.c
+--- u-boot/cpu/mpc85xx/cpu.c	2005-07-19 14:48:37.000000000 +0200
++++ u-boot-local/cpu/mpc85xx/cpu.c	2005-07-19 14:50:46.000000000 +0200
+@@ -191,6 +191,9 @@
+ 	while((status & 4) == 4) {
+ 		status = dma->sr0;
+ 	}
++	/* clear MR0[CS] channel start bit */
++	dma->mr0 &= ~0x00000001;
++	asm("sync;isync;msync");
+ 
+ 	if (status != 0) {
+ 		printf ("DMA Error: status = %x\n", status);
+
+--------------030509020005050808080203--
