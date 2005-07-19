@@ -1,18 +1,22 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 75A1067C96
+Return-Path: <davidkwho@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.196])
+	by ozlabs.org (Postfix) with ESMTP id 4ED5A67C39
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Jul 2005 22:27:50 +1000 (EST)
-In-Reply-To: <42DCCF89.8040803@anagramm.de>
-References: <42DCCF89.8040803@anagramm.de>
-Mime-Version: 1.0 (Apple Message framework v733)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <B6B4D7F0-2E8B-4779-95C5-6F8993C6D6A9@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Tue, 19 Jul 2005 07:27:54 -0500
-To: Clemens Koller <clemens.koller@anagramm.de>
-Cc: ppcembed Mailing List <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] ppc32: Register definition for MPC85xx
+	Tue, 19 Jul 2005 22:58:13 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id i6so1213050wra
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 19 Jul 2005 05:58:12 -0700 (PDT)
+Message-ID: <4dd15d1805071905573ebcba61@mail.gmail.com>
+Date: Tue, 19 Jul 2005 08:57:20 -0400
+From: David Ho <davidkwho@gmail.com>
+To: David Jander <david.jander@protonic.nl>
+In-Reply-To: <200507191021.52063.david.jander@protonic.nl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <200507191021.52063.david.jander@protonic.nl>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: How reliable is jffs2 really (denx cvs devel kernel)?
+Reply-To: David Ho <davidkwho@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,40 +27,77 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Clemens,
+I ran into similar problems, I had talked to David Woodhouse about a
+number of issues with JFFS2.  But he has no plans to support 2.4
+kernels.
 
-This isn't going to get into the kernel tree.  I'm against putting  
-full register definitions in like this because they are too difficult  
-to maintain properly.  We currently have some 14 different 85xx  
-devices today and the number is only going to grow larger.
+There are a bunch of people that back ports the latest JFFS2 code from
+2.6 and snapshots are found here
+ftp://ftp.uk.linux.org/pub/people/dwmw2/mtd/cvs/.
 
-If and when you need something specific in the immap_85xx please  
-provide it as a patch along with the driver that you want in.  For  
-certain devices like PCI, LBC, etc I've got no issue adding info into  
-immap_85xx.  However, for devices like DUART, I2C, TSEC, etc I'm  
-completely against the idea of having their register definitions in  
-immap_85xx.
+I updated the JFFS2 portion of the Denx devel kernel with the latest
+from CVS and it solved the initial mount time problem.  But it was a
+while a ago when I did this.  Both the devel kernel and the CVS head
+has changed quite a bit since then.
 
-- kumar
+But some people on the mailing list seem to indicate timing resolution
+in the 2.4 leading to race condition, or some other deficiency from
+what I recall.
 
-On Jul 19, 2005, at 5:01 AM, Clemens Koller wrote:
+The people in the mailing list were not interested in fixing these so
+called kernel bugs.  And since JFFS2 code is too complex for my spare
+time and it does not cause the kernel to hang, I have yet to figure
+out a fix for it.
 
-> Hello!
->
-> I suggest to put the register definitions into the Kernel _before_
-> more driver writers start using their own / different maps.
->
-> Greets,
->
-> Clemens Koller
->
-> ---
-> Almost complete and verified register map for the MPC85xx.
-> Based on sources from Jason McMullan and the MPC8540 Reference Manual.
->
-> Signed-off-by: Clemens Koller <clemens.koller@anagramm.de>
->
->
-> <immap_85xx-register-update.patch>
-> <ATT1082226.txt>
+I like to know other's experience with JFFS2 on 2.4 as well.
+
+David
+
+
+On 7/19/05, David Jander <david.jander@protonic.nl> wrote:
+>=20
+> Hi,
+>=20
+> I have seen some strange problems with jffs2. I have been victim of the B=
+UG()
+> in fs/jffs2/gc.c, line 139. I have been battling with kgdb to see what
+> happens there. Here are my findings until now (I am still working on this=
+):
+>=20
+> c->checked_ino starts counting from 0
+> c->highest_ino is 92 (????)
+>=20
+> Isn't this a little low?
+>=20
+> Flash partition size is 15Mbyte, it probably has been mistreated by writi=
+ng
+> large files (logfiles) line by line, wasting a lot of space until it gets
+> almost full.
+> When debugging the for(;;) loop, used size starts from a few kb counting =
+up,
+> dirty size is around 5 Mb and unchecked size is about 9.9Mb, so when it g=
+ets
+> past inode 92 it most probably has still a lot of unchecked space.=3D=3D=
+=3D> BUG().
+>=20
+> Googleing for this bug, I have found discouraging e-mails (luckily most o=
+f
+> them from 2003 or older) saying that this is common and nobody (back then=
+)
+> seemed to know where it came from. Bugs in fjjs2 code, etc....
+>=20
+> This is scaring me.
+>=20
+> Anybody knows more about this problem, why it is caused, and hopefully ho=
+w to
+> prevent this?
+>=20
+> Thanks,
+>=20
+> --
+> David Jander
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 >
