@@ -1,21 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 19 Jul 2005 11:17:17 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D921067C4A
+	for <linuxppc-dev@ozlabs.org>; Tue, 19 Jul 2005 12:09:03 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Jon Loeliger <jdl@freescale.com>
-Message-ID: <20050719011717.GG24609@localhost.localdomain>
-References: <1120859097.8609.15.camel@cashmere.sps.mot.com>
-	<20050711045532.GC32545@localhost.localdomain>
-	<1121116950.15394.14.camel@cashmere.sps.mot.com>
-	<20050712040623.GG3945@localhost.localdomain>
-	<1121371427.24467.34.camel@cashmere.sps.mot.com>
-	<20050715071924.GA16797@localhost.localdomain>
-	<1121437857.24864.12.camel@cashmere.sps.mot.com>
+In-Reply-To: <1121718331.2400.24.camel@cashmere.sps.mot.com>
+References: <1121718331.2400.24.camel@cashmere.sps.mot.com>
+Content-Type: text/plain
+Date: Tue, 19 Jul 2005 12:08:24 +1000
+Message-Id: <1121738905.14393.43.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1121437857.24864.12.camel@cashmere.sps.mot.com>
-Cc: linuxppc64-dev@ozlabs.org,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: Re: PATCH: Add memreserve to DTC
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: Re: DTC memory reserve question
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,57 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jul 15, 2005 at 09:30:58AM -0500, Jon Loeliger wrote:
-> On Fri, 2005-07-15 at 02:19, David Gibson wrote:
+On Mon, 2005-07-18 at 15:25 -0500, Jon Loeliger wrote:
+> So, when the Device Tree Compiler lays down a memory
+> reserve table into an assembly file, it always adds
+> a reserved region covering the whole DT blob itself.
+> That is, it does this:
 > 
-> > 
-> > Ok, I've merged this, 
+>         .balign 8
+>         .globl  dt_reserve_map
+> dt_reserve_map:
+> _dt_reserve_map:
+>         .long   0, _dt_blob_start
+>         .long   0, _dt_blob_end - _dt_blob_start
+>         .llong  0
+>         .llong  0
 > 
-> Excellent, thanks!
+> Naturally, that yields System.map entries like this:
 > 
-> > although I've tweaked things substantially in the process.
+> c0013988 t _dt_blob_start
+> c0013988 T dt_blob_start
+> c0013988 t _dt_header
+> c0013988 T dt_header
+> c00139b0 t _dt_reserve_map
+> c00139b0 T dt_reserve_map
+> c00139d0 t _dt_struct_start
+> c00139d0 T dt_struct_start
+> c0013df0 t _dt_strings_start
+> c0013df0 T dt_strings_start
+> c0013df0 t _dt_struct_end
+> c0013df0 T dt_struct_end
+> c0013f05 t _dt_blob_end
+> c0013f05 T dt_blob_end
 > 
-> No problem.
-> 
-> >   I did rename "header_tree" to "boot_info", moved some
-> 
-> Oh, good!
-> 
-> > things around, and changed the syntax.  Reserve ranges can now be
-> > specified either as an address and length:
-> > 
-> > 	/memreserve/	10000000 00002000;
-> > 
-> > or as an (inclusive) address range:
-> > 
-> > 	/memreserve/	10000000-10001fff;
-> > 
-> > I am a bit worried that those two forms may be hard to distinguish at
-> > a glance.  Any sugggestions for changes to the syntax soon please, I'd
-> > really like to keep the source syntax as stable as possible.
-> 
-> Oh man.  With syntax you can demystify those in any number
-> of ways.  Just a matter of what you are wanting.  You can
-> always add sugar:
-> 
->     /memreserve_block/    10000000 00002000;
->     /memreserve_range/    10000000 10001fff;
-> 
->     /memreserve/    10000000 /for/     2000;        //  or /size/ ?
->     /memreserve/    10000000 /through/ 10001fff;
-> 
->     /memreserve/    10000000 00002000;
->     /memreserve/   [10000000, 10001fff];     // or [10000000, 10002000)?
-> 
-> Stuff like that maybe?
+> Notice that these are 0xC-gazillion addresses.
 
-Hrm.. don't really like any of those better than what I have already,
-I'm afraid.  It does occur to me that size > base is going to be a
-very rare situation, so the value of the numbers themselves will act
-as a reasonable hint as to which form is in use.
+How are you getting these addresses ? You are trying to link the output
+of dtc with the kernel directly ? Hrm...  That will not work for that
+(and maybe a couple of other things). Might be better to link it with
+the zImage wrapper...
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/people/dgibson
+Ben.
