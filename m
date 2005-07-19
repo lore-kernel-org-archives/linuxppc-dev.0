@@ -1,18 +1,20 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id EA93A67C7F
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id 3907867C61
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Jul 2005 09:26:36 +1000 (EST)
-In-Reply-To: <42DBCE60.8090300@anagramm.de>
-References: <42DBCE60.8090300@anagramm.de>
-Mime-Version: 1.0 (Apple Message framework v733)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <550C0481-4DD8-4AFC-AFA2-13AAEBD055E5@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Mon, 18 Jul 2005 11:17:21 -0500
-To: Clemens Koller <clemens.koller@anagramm.de>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: MPC8540 DMA routines (channel 0 broken?)
+	Tue, 19 Jul 2005 18:21:57 +1000 (EST)
+Received: from linux.local (linux.prtnl [192.168.1.97])
+	by protonic.prtnl (Postfix) with ESMTP id C4EE94052
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 19 Jul 2005 10:22:02 +0200 (CEST)
+From: David Jander <david.jander@protonic.nl>
+To: linuxppc-embedded@ozlabs.org
+Date: Tue, 19 Jul 2005 10:21:51 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200507191021.52063.david.jander@protonic.nl>
+Subject: How reliable is jffs2 really (denx cvs devel kernel)?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,73 +25,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Glad to see that the issue was software.  If there is something going  
-on in u-boot during init that isn't leaving the DMA channel in a  
-clean state let me know.
 
-Also, it looks like there maybe some proposal for a general DMA  
-engine API.  If your interested take a look at the Linux Sympoisum  
-2005 papers (Accelerating Network Receive Processing).  I'm hoping to  
-talk to the guys doing this to see what their thoughts are.  If you  
-have some feedback on what they are proposing let me know.
+Hi,
 
-- kumar
+I have seen some strange problems with jffs2. I have been victim of the BUG() 
+in fs/jffs2/gc.c, line 139. I have been battling with kgdb to see what 
+happens there. Here are my findings until now (I am still working on this):
 
-On Jul 18, 2005, at 10:44 AM, Clemens Koller wrote:
+c->checked_ino starts counting from 0
+c->highest_ino is 92 (????)
 
-> Hello, Stephane!
->
->
->>> In the meanwhile, I got channel 0 working. It seems
->>> that the DMA#0 machine got stuck in some configuration from any
->>> previous (u-boot?) operation which didn't clean up things
->>> properly. I had to explicitly abort a (continously running?)
->>> transfer to be able to re-program it in the way I need.
->>>
->>
->> Are you using a BDI2000?
->>
->
-> Nope.
->
->
->> Some init mode uses the DMA#0 for memory zeroing (see your .cfg  
->> file).
->> Also the DDR ECC U-boot code may use the DMA#0.
->> Isn't it possible to reset the DMA#0 from Linux?
->>
->
-> Thank you! Yes, that's true! <ACK>
->
-> I've checked the U-Boot code, today. The problem comes up when
-> U-Boot is built with CONFIG_DDR_ECC.
-> The DMA #0 is used to initialize the DDR prior enabling ECC.
-> Maybe the DMA doesn't get cleaned up properly.
-> (I'll have to re-check the registers).
->
-> But I can get my mpc85xx_dma "driver" working now.
-> However I cannot disable ECC when I am in Linux for testing
-> yet. :-]
-> I'll need to customize U-Boot without ECC because I don't want
-> to use it due to performance issues anyway.
-> But that's getting OT here.
->
-> Greets,
->
-> Clemens Koller
-> _______________________________
-> R&D Imaging Devices
-> Anagramm GmbH
-> Rupert-Mayer-Str. 45/1
-> 81379 Muenchen
-> Germany
->
-> http://www.anagramm.de
-> Phone: +49-89-741518-50
-> Fax: +49-89-741518-19
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
+Isn't this a little low?
+
+Flash partition size is 15Mbyte, it probably has been mistreated by writing 
+large files (logfiles) line by line, wasting a lot of space until it gets 
+almost full.
+When debugging the for(;;) loop, used size starts from a few kb counting up, 
+dirty size is around 5 Mb and unchecked size is about 9.9Mb, so when it gets 
+past inode 92 it most probably has still a lot of unchecked space.===> BUG().
+
+Googleing for this bug, I have found discouraging e-mails (luckily most of 
+them from 2003 or older) saying that this is common and nobody (back then) 
+seemed to know where it came from. Bugs in fjjs2 code, etc....
+
+This is scaring me.
+
+Anybody knows more about this problem, why it is caused, and hopefully how to 
+prevent this?
+
+Thanks,
+
+-- 
+David Jander
