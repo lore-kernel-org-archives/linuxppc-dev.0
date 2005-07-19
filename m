@@ -1,19 +1,23 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutvdomng.kundenserver.de (moutvdom.kundenserver.de
-	[212.227.126.249]) by ozlabs.org (Postfix) with ESMTP id 64AC767C39
+Return-Path: <sipcop009@gmail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.193])
+	by ozlabs.org (Postfix) with ESMTP id C442167C39
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 19 Jul 2005 23:40:09 +1000 (EST)
-Message-ID: <42DD02B5.4090604@anagramm.de>
-Date: Tue, 19 Jul 2005 15:40:05 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
-MIME-Version: 1.0
-To: Kumar Gala <kumar.gala@freescale.com>
-References: <42DCCF89.8040803@anagramm.de>
-	<B6B4D7F0-2E8B-4779-95C5-6F8993C6D6A9@freescale.com>
-In-Reply-To: <B6B4D7F0-2E8B-4779-95C5-6F8993C6D6A9@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: ppcembed Mailing List <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] ppc32: Register definition for MPC85xx
+	Wed, 20 Jul 2005 03:18:39 +1000 (EST)
+Received: by zproxy.gmail.com with SMTP id j25so1184432nzf
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 19 Jul 2005 10:18:37 -0700 (PDT)
+Message-ID: <5a4792c005071910184f41c699@mail.gmail.com>
+Date: Tue, 19 Jul 2005 10:18:14 -0700
+From: SIP COP 009 <sipcop009@gmail.com>
+To: Mike Rapoport <mike@compulab.co.il>
+In-Reply-To: <42DA0024.3050005@compulab.co.il>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <5a4792c0050713235574522cfb@mail.gmail.com>
+	<42DA0024.3050005@compulab.co.il>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: 8272ADS and Linux 2.6.12
+Reply-To: SIP COP 009 <sipcop009@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,64 +28,61 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello, Kumar,
+Thanks all for the replies and help. I have the 2.6 Kernel running
+now. Here are few of the things that i did to make it happen:
 
-> This isn't going to get into the kernel tree.  I'm against putting  full 
-> register definitions in like this because they are too difficult  to 
-> maintain properly.  We currently have some 14 different 85xx  devices 
-> today and the number is only going to grow larger.
+1: make ads8272_defconfig
+2: edit .config to add the follow:
+CONFIG_SERIAL_CORE=3Dy
+CONFIG_SERIAL_CORE_CONSOLE=3Dy
+CONFIG_SERIAL_CPM=3Dy
+CONFIG_SERIAL_CPM_CONSOLE=3Dy
+CONFIG_SERIAL_CPM_SCC1=3Dy
+CONFIG_SERIAL_CPM_SCC2=3Dy
 
-Okay, no problem.
+3. In u-boot, set the bootargs to
+bootargs=3Droot=3D/dev/ram rw console=3DttyCPM0,115200
 
-I experienced that it is definitely difficult to maintain if there are lot of
-changes/patches which can corrupt the whole set if only one register
-is misaligned. Once a set it's completed for a device, it could be nailed down
-to a specific device by specifying a filename like immap_mpc8540.h
+4.Modify the file arch/ppc/platforms/pq2ads.h,
+// #define BCSR_ADDR            ((uint)0xf4500000)
+#define BCSR_ADDR ((uint)0xff080000)
 
-And... it doesn't necessarily stay within the kernel tree... maybe Freescale
-can put out those files on their website for reference?
+Thanks!
+ashutosh
 
-Best greets,
 
-Clemens Koller
 
-Kumar Gala wrote:
-> Clemens,
-> 
-> This isn't going to get into the kernel tree.  I'm against putting  full 
-> register definitions in like this because they are too difficult  to 
-> maintain properly.  We currently have some 14 different 85xx  devices 
-> today and the number is only going to grow larger.
-> 
-> If and when you need something specific in the immap_85xx please  
-> provide it as a patch along with the driver that you want in.  For  
-> certain devices like PCI, LBC, etc I've got no issue adding info into  
-> immap_85xx.  However, for devices like DUART, I2C, TSEC, etc I'm  
-> completely against the idea of having their register definitions in  
-> immap_85xx.
-> 
-> - kumar
-> 
-> On Jul 19, 2005, at 5:01 AM, Clemens Koller wrote:
-> 
->> Hello!
->>
->> I suggest to put the register definitions into the Kernel _before_
->> more driver writers start using their own / different maps.
->>
->> Greets,
->>
->> Clemens Koller
->>
->> ---
->> Almost complete and verified register map for the MPC85xx.
->> Based on sources from Jason McMullan and the MPC8540 Reference Manual.
->>
->> Signed-off-by: Clemens Koller <clemens.koller@anagramm.de>
->>
->>
->> <immap_85xx-register-update.patch>
->> <ATT1082226.txt>
->>
-> 
-> 
+On 7/16/05, Mike Rapoport <mike@compulab.co.il> wrote:
+> SIP COP 009 wrote:
+>=20
+> >Hello,
+> >
+> >We have a MPC8272 Eval Board which came with Linux 2.4 and U-boot. We
+> >wanted to move to 2.6. I downloaded the latest 2.6.12 sources and
+> >compiled the sources for this platform. The kernel is built, have run
+> >the mkimage tool, but the kernel wont boot.  It just hangs after
+> >decompressing the image.
+> >
+> >
+> >
+>=20
+> >Any ideas  ? Anything different that needs to be done for 2.6 ? Or any
+> >known issues ?
+> >
+> >
+> >
+> If you're using the u-boot that came with MPC8272 Eval board it may
+> happen that BCSR is mapped differently in u-boot and the kernel 2.6.
+> That's what happened when I tried to boot linux 2.6 on MPC8272ADS. Check
+> the value of CFG_BCSR in u-boot/include/configs/MPC8260ADS.h and
+> BCSR_ADDR in linux/arch/ppc/platforms/pq2ads.h
+>=20
+> >Thanks!
+> >ashutosh
+> >
+> >
+> --
+> Sincerely yours,
+> Mike
+>=20
+>
