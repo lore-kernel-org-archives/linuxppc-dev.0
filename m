@@ -1,33 +1,19 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from parcelfarce.linux.theplanet.co.uk
-	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DFDE267C64
+Return-Path: <wd@denx.de>
+Received: from mailout03.sul.t-online.com (mailout03.sul.t-online.com
+	[194.25.134.81]) by ozlabs.org (Postfix) with ESMTP id 9AB0967C39
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 20 Jul 2005 03:42:59 +1000 (EST)
-Received: from [127.0.0.1] (helo=dmt.cnet)
-	by parcelfarce.linux.theplanet.co.uk with esmtp (Exim 4.43)
-	id 1Duw8Z-0003ba-I7
-	for linuxppc-embedded@ozlabs.org; Tue, 19 Jul 2005 18:44:53 +0100
-Date: Fri, 15 Jul 2005 02:03:12 -0300
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Anton =?iso-8859-1?Q?W=F6llert?= <a.woellert@gmail.com>
-Message-ID: <20050715050312.GA6585@dmt.cnet>
-References: <42C1AAC1.4060702@gmail.com> <20050629085913.GA2153@logos.cnet>
-	<faba7798050630071347d4ad63@mail.gmail.com>
-	<20050701094438.GA11121@logos.cnet>
-	<1120229717.21507.9.camel@jmcmullan.timesys>
-	<20050701101713.GC11121@logos.cnet>
-	<faba7798050714012370af5e74@mail.gmail.com>
-	<20050714202715.GS19321@oops.ghostprotocols.net>
-	<20050714111941.GC5179@dmt.cnet>
-	<faba779805071502425552aefc@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <faba779805071502425552aefc@mail.gmail.com>
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: ptrace on linux 2.6.12 causes oops
+	Wed, 20 Jul 2005 04:40:00 +1000 (EST)
+To: David Jander <david.jander@protonic.nl>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 19 Jul 2005 10:21:51 +0200."
+	<200507191021.52063.david.jander@protonic.nl>
+Date: Tue, 19 Jul 2005 20:37:45 +0200
+Sender: wd@denx.de
+Message-Id: <20050719183745.AD52A352671@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: How reliable is jffs2 really (denx cvs devel kernel)? 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -38,110 +24,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+In message <200507191021.52063.david.jander@protonic.nl> you wrote:
+> 
+> I have seen some strange problems with jffs2. I have been victim of the BUG() 
+> in fs/jffs2/gc.c, line 139. I have been battling with kgdb to see what 
+> happens there. Here are my findings until now (I am still working on this):
 
-Hi Anton,
+You probably want to ask this on the MTD mailing list;  don't  forget
+to  mention  the  exact  version of the MTD / JFFS2 code you're using
+(see CVS history).
 
-On Fri, Jul 15, 2005 at 11:42:27AM +0200, Anton W=F6llert wrote:
-> >=20
-> > Yep, just that now its the ptraceing process which is faulting in the=
-=20
-> > page,
-> > instead of the (ptraced) process itself.
-> >=20
-> > So Anton, can you move the _tlbie() call up to
-> >=20
-> > && !test_bit(PG_arch_1, &page->flags)) {
-> > <---------- HERE
-> > if (vma->vm_mm =3D=3D current->active_mm)
-> > __flush_dcache_icache((void *) address);
-> > else
-> > flush_dcache_icache_page(page);
-> > set_bit(PG_arch_1, &page->flags);
-> >=20
-> > So that it covers both cases instead of just (vma->vm_mm =3D=3D=20
-> > current->active_mm) ?
-> >=20
-> > Its safe to do it because the address space ID is ignored by tlbie=20
-> > accordingly
-> > to the manual page:
-> >=20
-> > The ASID value in the entry is ignored for the purpose of
-> > matching an invalidate address, thus multiple entries can be invalida=
-ted
-> > if they have the same effective address and different ASID values.
->=20
->=20
->=20
-> Well, unfortunately, that doesn't work :(.=20
+Best regards,
 
-Oh doh, on the case where the process faulting in the page is not the own=
-er of the
-vma (which is the case with ptrace here), the flushing is done via the ph=
-ysical address.
+Wolfgang Denk
 
-So its expected that the _tlbie() on the process virtual address will not=
- change=20
-a thing, since flush_dcache_icache_page() is working on the physical addr=
-ess.
-
-> If i'm right, the=20
-> __flush_dcache_icache((void *) address) should avoid that the cache say=
-s=20
-> faulting address again.
-> The flush_dcache_icache_page(page) should flush the cache, where stands=
-,=20
-> page not mapped. but the flush_dcache_icache_page(page) oopses on my sy=
-stem.=20
-> but instead of this call, the call __flush_dcache_icache(page_address(p=
-age))=20
-> works. for me, that also makes more sence.=20
-
-Well, you end up flushing the page through its kernel virtual address map=
-ping (returned
-by page_address()).=20
-
-It will be necessary for the kernel virtual map to be faulted in the TLB,=
- which is=20
-certainly slower than doing the direct physical address flush (requires u=
-pdating=20
-the MSR twice (+isync) to turn the MMU on/off).
-
-But other than that I see no problem with your suggestion really, as to w=
-orkaround the=20
-oops.
-
-Still, we should try to understand what is going on...
-
-> and also, the flush_dcache_icache_page(page) calls the flush_dcache_ica=
-che_phys, which=20
-> turns off the data virtual address mapping. i found that a bit strange.=
- any=20
-> comments?=20
-
-It seems that the instruction at "__flush_dcache_icache_phys+0x38" is icb=
-i - can you send=20
-the disassembly of __flush_dcache_icache_phys? =20
-
-We should figure out what is causing the oops.=20
-
-What is causing DAR to be set to "00000010"? ie why the hell is it trying=
- to access=20
-the 00000010 address.
-
-Oops: kernel access of bad area, sig: 11 [#2]
-NIP: C000543C LR: C000B060 SP: C0F35DF0 REGS: c0f35d40 TRAP: 0300 Not tai=
-nted
-MSR: 00009022 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 10
-DAR: 00000010, DSISR: C2000000
-TASK =3D c0ea8430[761] 'gdbserver' THREAD: c0f34000
-Last syscall: 26
-GPR00: 00009022 C0F35DF0 C0EA8430 00F59000 00000100 FFFFFFFF 00F58000
-00000001
-GPR08: C021DAEF C0270000 00009032 C0270000 22044024 10025428 01000800
-00000001
-GPR16: 007FFF3F 00000001 00000000 7FBC6AC0 00F61022 00000001 C0839300
-C01E0000
-GPR24: 00CD0889 C082F568 3000AC18 C02A7A00 C0EA15C8 00F588A9 C02ACB00
-C02ACB00
-NIP [c000543c] __flush_dcache_icache_phys+0x38/0x54
-LR [c000b060] flush_dcache_icache_page+0x20/0x30
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Success in marriage is not so much finding the right person as it  is
+being the right person.
