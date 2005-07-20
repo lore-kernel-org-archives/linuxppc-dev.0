@@ -1,18 +1,18 @@
-Return-Path: <jotken@softadvances.com>
-Received: from smtpauth01.mail.atl.earthlink.net
-	(smtpauth01.mail.atl.earthlink.net [209.86.89.61])
-	by ozlabs.org (Postfix) with ESMTP id 6604367CBB
+Return-Path: <takeharu1219@ybb.ne.jp>
+Received: from ybbsmtp10.mail.mci.yahoo.co.jp (ybbsmtp10.mail.mci.yahoo.co.jp
+	[210.80.241.184]) by ozlabs.org (Postfix) with SMTP id 8E29B67CA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 20 Jul 2005 20:54:45 +1000 (EST)
-Message-ID: <42DE2BA1.1080703@softadvances.com>
-Date: Wed, 20 Jul 2005 05:46:57 -0500
-From: John Otken <jotken@softadvances.com>
+	Wed, 20 Jul 2005 23:56:53 +1000 (EST)
+Message-ID: <42DE5695.50102@ybb.ne.jp>
+Date: Wed, 20 Jul 2005 22:50:13 +0900
+From: Takeharu KATO <takeharu1219@ybb.ne.jp>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
+To: Hiroyuki Machida <machida@sm.sony.co.jp>
+References: <42DA05BD.3050403@sm.sony.co.jp>
+In-Reply-To: <42DA05BD.3050403@sm.sony.co.jp>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: weissg@vienna.at
-Subject: [PATCH] USBcore: fix invalid function name usb_hcd_put in
-	ohci-ppc-soc.c
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: swsusp for ppc440
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,23 +23,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This patch corrects an invalid function name in 
-drivers/usb/host/ohci-ppc-soc.c.  The correct 
-function name is usb_put_hcd() not usb_hcd_put().
+Hi
 
-This patch works against 2.6.12 or 2.6.13.
+ > It seems to be stopped at console device.
+ > Do anyone point out where and how to exclude system devices
+ > like console and swap from device suspend procedure as
+ > preparation of swsusp?
+ >
 
-Signed-off-by: John Otken <jotken@softadvances.com>
+As long as I think, what you want may be realized by changing the condition
+to suspend serial device(this is written in serial8250_suspend function
+in drivers/serial/8250.c, line: 2334).
 
-diff -up a/drivers/usb/host/ohci-ppc-soc.c b/drivers/usb/host/ohci-ppc-soc.c
---- a/drivers/usb/host/ohci-ppc-soc.c	2005-07-14 09:48:19.000000000 -0500
-+++ b/drivers/usb/host/ohci-ppc-soc.c	2005-06-19 10:18:05.000000000 -0500
-@@ -123,7 +123,7 @@ static void usb_hcd_ppc_soc_remove(struc
- 
- 	iounmap(hcd->regs);
- 	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
--	usb_hcd_put(hcd);
-+	usb_put_hcd(hcd);
- }
- 
- static int __devinit
+Following trivial patch may help you(But I've not tried this patch on PowerPC actually, sorry).
+
+Regards,
+
+
+diff -Nupr linux-2.6.orig/drivers/serial/8250.c linux-2.6/drivers/serial/8250.c
+--- linux-2.6.orig/drivers/serial/8250.c        2005-07-20 05:37:20.000000000 +0900
++++ linux-2.6/drivers/serial/8250.c     2005-07-20 22:07:36.000000000 +0900
+@@ -2331,7 +2331,7 @@ static int serial8250_suspend(struct dev
+  {
+         int i;
+
+-       if (level != SUSPEND_DISABLE)
++       if ( (level != SUSPEND_DISABLE) || (state == PMSG_FREEZE) )
+                 return 0;
+
+         for (i = 0; i < UART_NR; i++) {
