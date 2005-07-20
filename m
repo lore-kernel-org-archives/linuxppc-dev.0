@@ -1,18 +1,15 @@
-Return-Path: <takeharu1219@ybb.ne.jp>
-Received: from ybbsmtp10.mail.mci.yahoo.co.jp (ybbsmtp10.mail.mci.yahoo.co.jp
-	[210.80.241.184]) by ozlabs.org (Postfix) with SMTP id 8E29B67CA0
+Return-Path: <osingla@Integrian.com>
+Received: from mail.Integrian.com (nsc64.16.143-89.newsouth.net [64.16.143.89])
+	by ozlabs.org (Postfix) with ESMTP id 945F067CD5
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 20 Jul 2005 23:56:53 +1000 (EST)
-Message-ID: <42DE5695.50102@ybb.ne.jp>
-Date: Wed, 20 Jul 2005 22:50:13 +0900
-From: Takeharu KATO <takeharu1219@ybb.ne.jp>
+	Thu, 21 Jul 2005 03:41:31 +1000 (EST)
+Message-ID: <42DE89B1.1030400@integrian.com>
+Date: Wed, 20 Jul 2005 13:28:17 -0400
+From: Olivier Singla <osingla@integrian.com>
 MIME-Version: 1.0
-To: Hiroyuki Machida <machida@sm.sony.co.jp>
-References: <42DA05BD.3050403@sm.sony.co.jp>
-In-Reply-To: <42DA05BD.3050403@sm.sony.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: swsusp for ppc440
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: LITE5200 2.6.x kernel support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,32 +20,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi
+Hi,
 
- > It seems to be stopped at console device.
- > Do anyone point out where and how to exclude system devices
- > like console and swap from device suspend procedure as
- > preparation of swsusp?
- >
+I am currently using 2.4.25 on the Lite5200 board, but I'd really like to
+switch to 2.6.x. The only 5200 specific support I need are the integrated
+uart and the PCI. I tried both 2.6.11 and 2.6.12 without luck: the kernel
+start, but then is stuck (seems into the init sequence). I use the
+configuration
+file from arch/ppc/configs/lite5200_defconfig. I cross-compiled the
+kernel with gcc-3.4.1.
 
-As long as I think, what you want may be realized by changing the condition
-to suspend serial device(this is written in serial8250_suspend function
-in drivers/serial/8250.c, line: 2334).
+I was wondering if somebody could give me some help, maybe by telling
+be what I am doing wrong.
 
-Following trivial patch may help you(But I've not tried this patch on PowerPC actually, sorry).
+Thanks,
+Olivier
 
-Regards,
-
-
-diff -Nupr linux-2.6.orig/drivers/serial/8250.c linux-2.6/drivers/serial/8250.c
---- linux-2.6.orig/drivers/serial/8250.c        2005-07-20 05:37:20.000000000 +0900
-+++ linux-2.6/drivers/serial/8250.c     2005-07-20 22:07:36.000000000 +0900
-@@ -2331,7 +2331,7 @@ static int serial8250_suspend(struct dev
-  {
-         int i;
-
--       if (level != SUSPEND_DISABLE)
-+       if ( (level != SUSPEND_DISABLE) || (state == PMSG_FREEZE) )
-                 return 0;
-
-         for (i = 0; i < UART_NR; i++) {
+BTW, I tried also 2.6.13-rc3, but I can't even compile for the Lite5200,
+there are some syntax error when compile the pci module...
