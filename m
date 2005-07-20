@@ -1,15 +1,19 @@
-Return-Path: <samlinuxppc@yahoo.com.cn>
-Message-ID: <20050720061106.20592.qmail@web15810.mail.cnb.yahoo.com>
-Date: Wed, 20 Jul 2005 14:11:06 +0800 (CST)
-From: Sam Song <samlinuxppc@yahoo.com.cn>
-To: apoorv sangal <apoorvsangal@gmail.com>, Linuxppc-embedded@ozlabs.org
-In-Reply-To: <a7966936050719034139ed2c60@mail.gmail.com>
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id 1E39A67C96
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 20 Jul 2005 16:30:32 +1000 (EST)
+From: David Jander <david.jander@protonic.nl>
+To: Wolfgang Denk <wd@denx.de>
+Date: Wed, 20 Jul 2005 08:30:26 +0200
+References: <20050719183745.AD52A352671@atlas.denx.de>
+In-Reply-To: <20050719183745.AD52A352671@atlas.denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
-Cc: vikrant_basotra@satyam.com, nishant_galange@satyam.com,
-	apoorv_sangal@satyam.com
-Subject: Re:Problem in locating the file system while Linux bootup in 8260
-	based board.
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200507200830.27141.david.jander@protonic.nl>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: How reliable is jffs2 really (denx cvs devel kernel)?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,18 +24,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-apoorv sangal <apoorvsangal@gmail.com> wrote:
-> Kernel command line: console=ttyS0,115200 root=1f00
+On Tuesday 19 July 2005 20:37, you wrote:
+>[...]
+> You probably want to ask this on the MTD mailing list;  don't  forget
+> to  mention  the  exact  version of the MTD / JFFS2 code you're using
+> (see CVS history).
 
-Pls have a look how to mount a jffs2 root-fs in 
-kernel cmdline.
+I already thought it might be a good idea to subscribe to that list.
+Any hint about how I can figure out exactly which version of MTD code I have?
+The version of linuxppc_2_4_devel I have is about 2 months old, do I have to 
+expect important changes concerning MTD since then?
 
-http://www.denx.de/twiki/bin/view/DULG/RootFileSystemOnAJFFS2FileSystem
+While we are there, what other solution would you suggest for this problem: We 
+need to log data into flash. Right now I use an oversized jffs2 partition, 
+log via syslogd and logrotate on size. I am getting the impression that this 
+is not workable for mission critical things. At least not with the kernel and 
+MTD code I have. Others must have the same problem, so here's my question: 
+Which way to do such a thing? Write my own filesystem?
 
-Best regards,
+Greetings,
 
-Sam
-
-__________________________________________________
-∏œøÏ◊¢≤·—≈ª¢≥¨¥Û»›¡ø√‚∑—” œ‰?
-http://cn.mail.yahoo.com
+-- 
+David Jander
