@@ -1,12 +1,16 @@
 Return-Path: <bantonovici@priority.mb.ca>
-From: bogdan antonovici <bantonovici@priority.mb.ca>
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain
-Message-Id: <1121959795.800.18.camel@rd-lab>
-Mime-Version: 1.0
-Date: 21 Jul 2005 10:29:56 -0500
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, ppckernel <ppckernel@ppckernel.org>
-Subject: swap_dup: Bad swap file entry 00480020
+Message-ID: <00ca01c58e1f$fef44980$cd01a8c0@DESIGNLAB>
+From: "Bogdan Antonovici" <bantonovici@priority.mb.ca>
+To: "Dan Malek" <dan@embeddededge.com>
+References: <1121959795.800.18.camel@rd-lab>
+	<1a928a85f53f5dcd972161356611a312@embeddededge.com>
+Date: Thu, 21 Jul 2005 13:14:12 -0500
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_00C7_01C58DF6.15FF47D0"
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, ppckernel <ppckernel@ppckernel.org>,
+	linuxppc-embedded@ozlabs.org
+Subject: Re: swap_dup: Bad swap file entry 00480020
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,69 +20,125 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+This is a multi-part message in MIME format.
 
-I have an MPC860 system, 16M flash, 16M SDRAM, no disk, just kernel
-support for ramdisk. root fs is nfs mounted.
-I get messages like the one bellow:
+------=_NextPart_000_00C7_01C58DF6.15FF47D0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-swap_dup: Bad swap file entry 00480020
-VM: killing process chat
-swap_free: Bad swap file entry 00480020
+I wasn't so worry about the driver because the same driver worked with a =
+different application without seeing these kind of messages or oopses.
+Dan, from your answer i understand that the swap code discovers a =
+corruption in tables but why is swap code run when swap wasn't =
+activated?
+I will try to have a look on the driver code.
 
-and after a while a get an oops:
-
-Oops: kernel access of bad area, sig: 11
-NIP: C0045154 XER: 20000000 LR: C0045464 SP: C0CBBE60 REGS: c0cbbdb0
-TRAP: 0300    Not tainted
-MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-DAR: 00E9A01C, DSISR: C0000000
-TASK = c0cba000[36] 'pppd' Last syscall: 142
-last math 00000000 last altivec 00000000
-GPR00: C0045464 C0CBBE60 C0CBA000 C0CBBE88 C01DE8C0 00000000 C010E2B8
-0000001F
-GPR08: C0CBA000 00000000 C0C4E03C 00000001 84444448 100B0C5C 10040000
-10040000
-GPR16: 10040000 10040000 10040000 10040000 C0CBBEF8 00000000 00000001
-7FFFFFFF
-GPR24: 00000004 00000001 00000145 C0CBBED8 00000004 C0E9A000 C0E9A008
-00E9A008
-Call backtrace:
-C0087D84 C0045464 C0045858 C0009448 C00041DC 1001DB84 10006F24
-10006A8C 0FE4BDA0 00000000
-
-At the time of swap messages i was running a proprietary driver, my
-application and few daemons.
-
-ps
-  PID  Uid     VmSize Stat Command
-    1 root        584 S   init
-    2 root            SW  [keventd]
-    3 root            SWN [ksoftirqd_CPU0]
-    4 root            SW  [kswapd]
-    5 root            SW  [bdflush]
-    6 root            SW  [kupdated]
-    7 root            SW  [rpciod]
-    9 root        760 S   -ash
-   21 root        616 S   sectionmond
-   22 root        608 S   sectionmond
-   23 root        608 S   sectionmond
-   24 root        608 S   sectionmond
-   25 root        612 S   sectionmond
-   26 root        608 S   sectionmond
-   30 root       1304 S   /ppcnetsnmp/sbin/snmpd
-   39 root        916 S   pppd /dev/ttyS1 19200 defaultroute demand idle
-5 192.
-  109 root        680 R   ps
-
-
-I look on the net for some clues but it's quite confusing, i noticed
-many emails on swap_dup/swap_free error messages but i couldn't figure
-out what should i search for.
-I tested the ram with mtest from pppboot2.0.
-
-
-Has any of you an idea what is all about? 
-
-Thank you
 Bogdan
+  ----- Original Message -----=20
+  From: Dan Malek=20
+  To: bogdan antonovici=20
+  Cc: linuxppc-dev ; linuxppc-embedded@ozlabs.org ; ppckernel=20
+  Sent: Thursday, July 21, 2005 12:59 PM
+  Subject: Re: swap_dup: Bad swap file entry 00480020
+
+
+
+  On Jul 21, 2005, at 11:29 AM, bogdan antonovici wrote:
+
+  > At the time of swap messages i was running a proprietary driver, my
+  > application and few daemons.
+
+  Looks like your driver may have written over some of the page
+  tables in the kernel space.
+
+  > I look on the net for some clues but it's quite confusing, i noticed
+  > many emails on swap_dup/swap_free error messages but i couldn't =
+figure
+  > out what should i search for.
+
+  Those messages are likely due to a bug with swapping to disk
+  that has been in some 2.4 kernels, but I don't believe that is
+  the case here, since you don't have a disk or swapping enabled.
+
+
+  -- Dan
+
+
+------=_NextPart_000_00C7_01C58DF6.15FF47D0
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.2745.2800" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV><FONT face=3DArial size=3D2>I wasn't so worry about the driver =
+because the same=20
+driver worked with a different application without seeing these kind of =
+messages=20
+or oopses.</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>Dan, from your answer i understand that =
+the swap=20
+code discovers a corruption in tables but why is swap code run when swap =
+wasn't=20
+activated?</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>I will try to have a look on the driver =
+
+code.</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>Bogdan</FONT></DIV>
+<BLOCKQUOTE=20
+style=3D"PADDING-RIGHT: 0px; PADDING-LEFT: 5px; MARGIN-LEFT: 5px; =
+BORDER-LEFT: #000000 2px solid; MARGIN-RIGHT: 0px">
+  <DIV style=3D"FONT: 10pt arial">----- Original Message ----- </DIV>
+  <DIV=20
+  style=3D"BACKGROUND: #e4e4e4; FONT: 10pt arial; font-color: =
+black"><B>From:</B>=20
+  <A title=3Ddan@embeddededge.com =
+href=3D"mailto:dan@embeddededge.com">Dan Malek</A>=20
+  </DIV>
+  <DIV style=3D"FONT: 10pt arial"><B>To:</B> <A =
+title=3Dbantonovici@priority.mb.ca=20
+  href=3D"mailto:bantonovici@priority.mb.ca">bogdan antonovici</A> =
+</DIV>
+  <DIV style=3D"FONT: 10pt arial"><B>Cc:</B> <A =
+title=3Dlinuxppc-dev@ozlabs.org=20
+  href=3D"mailto:linuxppc-dev@ozlabs.org">linuxppc-dev</A> ; <A=20
+  title=3Dlinuxppc-embedded@ozlabs.org=20
+  =
+href=3D"mailto:linuxppc-embedded@ozlabs.org">linuxppc-embedded@ozlabs.org=
+</A> ;=20
+  <A title=3Dppckernel@ppckernel.org=20
+  href=3D"mailto:ppckernel@ppckernel.org">ppckernel</A> </DIV>
+  <DIV style=3D"FONT: 10pt arial"><B>Sent:</B> Thursday, July 21, 2005 =
+12:59=20
+  PM</DIV>
+  <DIV style=3D"FONT: 10pt arial"><B>Subject:</B> Re: swap_dup: Bad swap =
+file=20
+  entry 00480020</DIV>
+  <DIV><BR></DIV><BR>On Jul 21, 2005, at 11:29 AM, bogdan antonovici=20
+  wrote:<BR><BR>&gt; At the time of swap messages i was running a =
+proprietary=20
+  driver, my<BR>&gt; application and few daemons.<BR><BR>Looks like your =
+driver=20
+  may have written over some of the page<BR>tables in the kernel=20
+  space.<BR><BR>&gt; I look on the net for some clues but it's quite =
+confusing,=20
+  i noticed<BR>&gt; many emails on swap_dup/swap_free error messages but =
+i=20
+  couldn't figure<BR>&gt; out what should i search for.<BR><BR>Those =
+messages=20
+  are likely due to a bug with swapping to disk<BR>that has been in some =
+2.4=20
+  kernels, but I don't believe that is<BR>the case here, since you don't =
+have a=20
+  disk or swapping enabled.<BR><BR><BR>-- =
+Dan<BR></BLOCKQUOTE></BODY></HTML>
+
+------=_NextPart_000_00C7_01C58DF6.15FF47D0--
