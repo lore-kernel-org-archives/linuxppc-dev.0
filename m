@@ -1,17 +1,20 @@
-Return-Path: <kylej@aiinet.com>
-Received: from aiexchange.ai.aiinet.com (ai181-184.aiinet.com
-	[205.245.181.184]) by ozlabs.org (Postfix) with ESMTP id 5E93E67CBB
+Return-Path: <wd@denx.de>
+Received: from mailout06.sul.t-online.com (mailout06.sul.t-online.com
+	[194.25.134.19]) by ozlabs.org (Postfix) with ESMTP id ED94A67CB2
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Jul 2005 21:51:42 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Thu, 21 Jul 2005 07:39:36 -0400
-Message-ID: <C0170D0AF1277849A4B4518034F855DD0F91AA@aiexchange.ai.aiinet.com>
-From: "Jordan, Kyle" <kylej@aiinet.com>
-To: "???" <daihonggang@utpower.com.cn>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: help
+	Thu, 21 Jul 2005 22:46:56 +1000 (EST)
+To: =?iso-8859-1?Q?=22H=E4pe=2C_Sebastian=2C_HRD/AB=22?=
+	<sebastian.haepe@eads.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 20 Jul 2005 12:35:16 +0200."
+	<2D9AB865A49FD511914700105A0EF6790252BDCE@morse.smart.lfk.eads.net>
+Date: Thu, 21 Jul 2005 14:46:38 +0200
+Sender: wd@denx.de
+Message-Id: <20050721124638.21ACA3525B2@atlas.denx.de>
+Cc: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
+Subject: Re: Problem mounting ramdisk image 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,15 +25,63 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->=20
->=20
-> can you give me the driver of isp1362, thanks a lot.
->=20
+In message <2D9AB865A49FD511914700105A0EF6790252BDCE@morse.smart.lfk.eads.net> you wrote:
+> 
+> I have a litte problem with an initrd-image on a custom board:
+
+It is considered a good idea to search a  bit  in  the  mailing  list
+archives  before  posting.  If you had done so, you should have found
+several similar requests before (even within the last few  days)  and
+saved us all the effort to reiterate the whole thing again.
+
+> Now the following effects occur:
+> 
+>  -  if i do not tell the kernel which filesystem I have in my image (only
+> entering: 'root=/dev/ram rw init=/bin/busybox')
+
+You do not tell it to the kernel, and you don't tell us. This is  not
+really helpful. So what is it? ext2?
+
+>     RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 > blocksize
+>     RAMDISK: Compressed image found at block 0
+
+Good.
+
+>     Freeing initrd memory: 709k freed
+>     Kernel panic: VFS: Unable to mount root fs on 01:00
+
+Did you enable ext2 support in your kernel configuration?
 
 
-I have a driver for the isp1362 in host controller mode for a 2.4.x
-kernel.  However, isochronous endpoints are not working with it.  I
-think there is another driver for the 2.6.x kernel out there.  Which
-kernel are you using?
+>  -  if I tell the kernel to use TMPFS or RAMFS (rootfs=tmpfs or
+> rootfs=ramfs), the error is
 
-- Kyle
+You get what you ask for: garbage in, garbage out.
+
+> My distribution (ELinOS) creates two files, 'Image.gz' and > 'Image.initrd'.
+> If I extract Image.gz, the full filesystem is extracted. 
+> How can I check wheather the 'Image.initrd' file is correct?
+
+How should we know which commands your  distribution  uses  to  build
+these images? They can contain anything.
+
+> (U-Boot tells me it is correct if I enter 'imi [address of image]')
+
+Grrrghh.. I wich you had posted complete information at least  for  a
+single of your questions. And which sort of image type is reported by
+U-Boot?
+
+> Or does anyone did have the same problem? Have I forgotten any kernel
+> options?
+
+Yes, many people have asked the same before. It's all in the archives.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+When in doubt, mumble;   when in trouble, delegate;  when in  charge,
+ponder.                                             -- James H. Boren
