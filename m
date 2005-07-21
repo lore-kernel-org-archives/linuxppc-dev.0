@@ -1,20 +1,16 @@
-Return-Path: <wd@denx.de>
-Received: from mailout06.sul.t-online.com (mailout06.sul.t-online.com
-	[194.25.134.19]) by ozlabs.org (Postfix) with ESMTP id ED94A67CB2
+Return-Path: <nhennenfent@egtinc.com>
+Received: from mail.egtinc.com (vpn.egtinc.com [65.182.45.194])
+	by ozlabs.org (Postfix) with ESMTP id 4117167CA2
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 21 Jul 2005 22:46:56 +1000 (EST)
-To: =?iso-8859-1?Q?=22H=E4pe=2C_Sebastian=2C_HRD/AB=22?=
-	<sebastian.haepe@eads.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 20 Jul 2005 12:35:16 +0200."
-	<2D9AB865A49FD511914700105A0EF6790252BDCE@morse.smart.lfk.eads.net>
-Date: Thu, 21 Jul 2005 14:46:38 +0200
-Sender: wd@denx.de
-Message-Id: <20050721124638.21ACA3525B2@atlas.denx.de>
-Cc: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-Subject: Re: Problem mounting ramdisk image 
+	Thu, 21 Jul 2005 22:56:56 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C58DF1.F9DD2720"
+Date: Thu, 21 Jul 2005 08:44:46 -0400
+Message-ID: <A3008858EC44C34382A7E3935C24615E01074D3B@egtf001.egt.intra>
+From: "Nick Hennenfent" <nhennenfent@egtinc.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: I need help with L2 cache on 440GX rev C
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,63 +21,66 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <2D9AB865A49FD511914700105A0EF6790252BDCE@morse.smart.lfk.eads.net> you wrote:
-> 
-> I have a litte problem with an initrd-image on a custom board:
+This is a multi-part message in MIME format.
 
-It is considered a good idea to search a  bit  in  the  mailing  list
-archives  before  posting.  If you had done so, you should have found
-several similar requests before (even within the last few  days)  and
-saved us all the effort to reiterate the whole thing again.
-
-> Now the following effects occur:
-> 
->  -  if i do not tell the kernel which filesystem I have in my image (only
-> entering: 'root=/dev/ram rw init=/bin/busybox')
-
-You do not tell it to the kernel, and you don't tell us. This is  not
-really helpful. So what is it? ext2?
-
->     RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 > blocksize
->     RAMDISK: Compressed image found at block 0
-
-Good.
-
->     Freeing initrd memory: 709k freed
->     Kernel panic: VFS: Unable to mount root fs on 01:00
-
-Did you enable ext2 support in your kernel configuration?
+------_=_NextPart_001_01C58DF1.F9DD2720
+Content-Type: text/plain;
+	charset="Windows-1252"
+Content-Transfer-Encoding: quoted-printable
 
 
->  -  if I tell the kernel to use TMPFS or RAMFS (rootfs=tmpfs or
-> rootfs=ramfs), the error is
+I have an embedded 440GX rev C runnng at about 500Mhz.
+I am using a 2.4.20 linux kernel.
+I borrowed Matt Porter's code from the 2.6 kernels in
+order to enable the L2 cache. The code compiles and
+runs ok, but the cache does not seem to be enabled!!!
+I ran some tests with/without the L2 cache code and=20
+there is no difference.
+(A qsort of 1 million random integers takes 2 seconds).
+Is there some other magic trick to enable that cache????
+Any help is much appreciated.
+Thanks,
+Nick Hennenfent
 
-You get what you ask for: garbage in, garbage out.
 
-> My distribution (ELinOS) creates two files, 'Image.gz' and > 'Image.initrd'.
-> If I extract Image.gz, the full filesystem is extracted. 
-> How can I check wheather the 'Image.initrd' file is correct?
 
-How should we know which commands your  distribution  uses  to  build
-these images? They can contain anything.
 
-> (U-Boot tells me it is correct if I enter 'imi [address of image]')
+------_=_NextPart_001_01C58DF1.F9DD2720
+Content-Type: text/html;
+	charset="Windows-1252"
+Content-Transfer-Encoding: quoted-printable
 
-Grrrghh.. I wich you had posted complete information at least  for  a
-single of your questions. And which sort of image type is reported by
-U-Boot?
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3DWindows-1252">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.0.6487.1">
+<TITLE>I need help with L2 cache on 440GX rev C</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
+<BR>
 
-> Or does anyone did have the same problem? Have I forgotten any kernel
-> options?
+<P><FONT SIZE=3D2>I have an embedded 440GX rev C runnng at about =
+500Mhz.<BR>
+I am using a 2.4.20 linux kernel.<BR>
+I borrowed Matt Porter's code from the 2.6 kernels in<BR>
+order to enable the L2 cache. The code compiles and<BR>
+runs ok, but the cache does not seem to be enabled!!!<BR>
+I ran some tests with/without the L2 cache code and<BR>
+there is no difference.<BR>
+(A qsort of 1 million random integers takes 2 seconds).<BR>
+Is there some other magic trick to enable that cache????<BR>
+Any help is much appreciated.<BR>
+Thanks,<BR>
+Nick Hennenfent<BR>
+<BR>
+<BR>
+</FONT>
+</P>
 
-Yes, many people have asked the same before. It's all in the archives.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-When in doubt, mumble;   when in trouble, delegate;  when in  charge,
-ponder.                                             -- James H. Boren
+</BODY>
+</HTML>
+------_=_NextPart_001_01C58DF1.F9DD2720--
