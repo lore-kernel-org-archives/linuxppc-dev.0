@@ -1,21 +1,12 @@
-Return-Path: <glikely@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.204])
-	by ozlabs.org (Postfix) with ESMTP id 5D46A67CF3
-	for <linuxppc-dev@ozlabs.org>; Thu, 21 Jul 2005 07:52:03 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 68so1582242wri
-	for <linuxppc-dev@ozlabs.org>; Wed, 20 Jul 2005 14:52:02 -0700 (PDT)
-Message-ID: <528646bc0507201451271b68d5@mail.gmail.com>
-Date: Wed, 20 Jul 2005 17:51:21 -0400
-From: Grant Likely <glikely@gmail.com>
-To: PPC64-dev List <linuxppc64-dev@ozlabs.org>,
-	Linux PPC Dev <linuxppc-dev@ozlabs.org>, linuxppc-embedded@ozlabs.org
-In-Reply-To: <528646bc050720122361ec0551@mail.gmail.com>
+Return-Path: <bantonovici@priority.mb.ca>
+From: bogdan antonovici <bantonovici@priority.mb.ca>
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Message-Id: <1121959795.800.18.camel@rd-lab>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <52642f46a4231ff4111424b0565ddcde@penguinppc.org>
-	<528646bc050720122361ec0551@mail.gmail.com>
-Subject: Re: OLS 2005 attendees
-Reply-To: Grant Likely <glikely@gmail.com>
+Date: 21 Jul 2005 10:29:56 -0500
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, ppckernel <ppckernel@ppckernel.org>
+Subject: swap_dup: Bad swap file entry 00480020
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,28 +16,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Change of plans; we are going to meet 1/2 hour earlier so we can
-decide as a group whether or not to just head over to the CELinux
-forum or just meet amongst ourselves.
+Hi,
 
-The CElinux forum is holding their BOF at Les Suites at 7:00
+I have an MPC860 system, 16M flash, 16M SDRAM, no disk, just kernel
+support for ramdisk. root fs is nfs mounted.
+I get messages like the one bellow:
 
-g.
+swap_dup: Bad swap file entry 00480020
+VM: killing process chat
+swap_free: Bad swap file entry 00480020
 
-On 7/20/05, Grant Likely <glikely@gmail.com> wrote:
-> For OLS2005 attendees:
->=20
-> We are planning to hold a BOF for embedded PPC tomorrow for all who
-> are interested.  (Thursday July 21).  Meet in the downstairs at 7:00pm
->=20
-> Cheers,
-> g.
->=20
+and after a while a get an oops:
+
+Oops: kernel access of bad area, sig: 11
+NIP: C0045154 XER: 20000000 LR: C0045464 SP: C0CBBE60 REGS: c0cbbdb0
+TRAP: 0300    Not tainted
+MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+DAR: 00E9A01C, DSISR: C0000000
+TASK = c0cba000[36] 'pppd' Last syscall: 142
+last math 00000000 last altivec 00000000
+GPR00: C0045464 C0CBBE60 C0CBA000 C0CBBE88 C01DE8C0 00000000 C010E2B8
+0000001F
+GPR08: C0CBA000 00000000 C0C4E03C 00000001 84444448 100B0C5C 10040000
+10040000
+GPR16: 10040000 10040000 10040000 10040000 C0CBBEF8 00000000 00000001
+7FFFFFFF
+GPR24: 00000004 00000001 00000145 C0CBBED8 00000004 C0E9A000 C0E9A008
+00E9A008
+Call backtrace:
+C0087D84 C0045464 C0045858 C0009448 C00041DC 1001DB84 10006F24
+10006A8C 0FE4BDA0 00000000
+
+At the time of swap messages i was running a proprietary driver, my
+application and few daemons.
+
+ps
+  PID  Uid     VmSize Stat Command
+    1 root        584 S   init
+    2 root            SW  [keventd]
+    3 root            SWN [ksoftirqd_CPU0]
+    4 root            SW  [kswapd]
+    5 root            SW  [bdflush]
+    6 root            SW  [kupdated]
+    7 root            SW  [rpciod]
+    9 root        760 S   -ash
+   21 root        616 S   sectionmond
+   22 root        608 S   sectionmond
+   23 root        608 S   sectionmond
+   24 root        608 S   sectionmond
+   25 root        612 S   sectionmond
+   26 root        608 S   sectionmond
+   30 root       1304 S   /ppcnetsnmp/sbin/snmpd
+   39 root        916 S   pppd /dev/ttyS1 19200 defaultroute demand idle
+5 192.
+  109 root        680 R   ps
 
 
---=20
-"Why do musicians compose symphonies and poets write poems? They do it
-because life wouldn't have any meaning for them if they didn't.
-That's why I draw cartoons. It's my life."
+I look on the net for some clues but it's quite confusing, i noticed
+many emails on swap_dup/swap_free error messages but i couldn't figure
+out what should i search for.
+I tested the ram with mtest from pppboot2.0.
 
--- Charles Shultz
+
+Has any of you an idea what is all about? 
+
+Thank you
+Bogdan
