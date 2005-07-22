@@ -1,18 +1,17 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 2DA3A67D35
+Return-Path: <galak@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 9664267D35
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 23 Jul 2005 02:16:53 +1000 (EST)
-In-Reply-To: <1D6EDDB3E43F3B40BC089CCFEE99DB7D14D056@exnanycmbx1.corp.root.ipc.com>
-References: <1D6EDDB3E43F3B40BC089CCFEE99DB7D14D056@exnanycmbx1.corp.root.ipc.com>
-Mime-Version: 1.0 (Apple Message framework v733)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <AE1B0170-7A23-4C8A-BDD4-C30255DD2A20@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Fri, 22 Jul 2005 11:16:45 -0500
-To: "Downing, Thomas" <Thomas.Downing@ipc.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] 2.6.12.3 Compilation error when CONFIG_PQ2FADS=y
+	Sat, 23 Jul 2005 02:18:49 +1000 (EST)
+Date: Fri, 22 Jul 2005 11:18:41 -0500 (CDT)
+From: Kumar Gala <galak@freescale.com>
+To: Andrew Morton <akpm@osdl.org>
+Message-ID: <Pine.LNX.4.61.0507221118070.25550@nylon.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH] ppc32: Fix typo in setup of 2nd PCI bus on 85xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,49 +22,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thanks for the patch, I'll send it upstream.  In the future can you  
-follow the patch submission details described in Documentation/ 
-SubmittingPatches.
+Typo bug that was using PCI1 defines instead of PCI2 when setting up the
+second PCI bus controller on 85xx based systems.  This hasn't been a real
+issue since currently the PCI2 sizes are the same as the PCI1 sizes for
+currently supported boards.
 
-- kumar
+Thanks to Andrew Klossner @ Xerox for point this out.
 
-On Jul 22, 2005, at 8:46 AM, Downing, Thomas wrote:
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
-> Compilation fails for arch/ppc/syslib/m82xx_pci.c in version
-> 2.6.12.3 when CONFIG_PQ2FADS=y.  The following patch fixes the
-> problems, which are just typographical.
->
-> The patch has been tested on PQ2FADS-ZU and -VR boards on 8280
-> and 8275 devices.
->
-> --- linux-2.6.12.3/arch/ppc/syslib/m82xx_pci.c    2005-07-15  
-> 17:18:57.000000000 -0400
-> +++ linux-musrum/arch/ppc/syslib/m82xx_pci.c    2005-07-20  
-> 08:42:41.000000000 -0400
-> @@ -238,9 +238,9 @@ pq2ads_setup_pci(struct pci_controller *
->       * Setting required to enable IRQ1-IRQ7 (SIUMCR [DPPC]),
->       * and local bus for PCI (SIUMCR [LBPC]).
->       */
-> -    immap->im_siu_conf.siu_82xx.sc_siumcr = (immap- 
-> >im_siu_conf.sc_siumcr &
-> -                ~(SIUMCR_L2PC11 | SIUMCR_LBPC11 | SIUMCR_CS10PC11  
-> | SIUMCR_APPC11) |
-> -                SIUMCR_BBD | SIUMCR_LBPC01 | SIUMCR_DPPC11 |  
-> SIUMCR_APPC10;
-> +    immap->im_siu_conf.siu_82xx.sc_siumcr = (immap- 
-> >im_siu_conf.siu_82xx.sc_siumcr &
-> +                ~(SIUMCR_L2CPC11 | SIUMCR_LBPC11 | SIUMCR_CS10PC11  
-> | SIUMCR_APPC11) |
-> +                SIUMCR_BBD | SIUMCR_LBPC01 | SIUMCR_DPPC11 |  
-> SIUMCR_APPC10);
->  #endif
->      /* Enable PCI  */
->      immap->im_pci.pci_gcr = cpu_to_le32(PCIGCR_PCI_BUS_EN);
->
-> Thomas Downing
-> IPC Information Systems, LLC
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
+---
+commit 9ec8020999ffebb9524ca88e86c15923bf744b55
+tree 4f7ac5a96c639ea33a2cec481357a76cfbbeffb3
+parent d2a144648ecfe8652d19dd9019141e88a3a2a974
+author Kumar K. Gala <kumar.gala@freescale.com> Fri, 22 Jul 2005 09:58:23 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> Fri, 22 Jul 2005 09:58:23 -0500
+
+ arch/ppc/syslib/ppc85xx_setup.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/ppc/syslib/ppc85xx_setup.c b/arch/ppc/syslib/ppc85xx_setup.c
+--- a/arch/ppc/syslib/ppc85xx_setup.c
++++ b/arch/ppc/syslib/ppc85xx_setup.c
+@@ -233,14 +233,14 @@ mpc85xx_setup_pci2(struct pci_controller
+ 	pci->powbar1 = (MPC85XX_PCI2_LOWER_MEM >> 12) & 0x000fffff;
+ 	/* Enable, Mem R/W */
+ 	pci->powar1 = 0x80044000 |
+-	   (__ilog2(MPC85XX_PCI1_UPPER_MEM - MPC85XX_PCI1_LOWER_MEM + 1) - 1);
++	   (__ilog2(MPC85XX_PCI2_UPPER_MEM - MPC85XX_PCI2_LOWER_MEM + 1) - 1);
+ 
+ 	/* Setup outboud IO windows @ MPC85XX_PCI2_IO_BASE */
+ 	pci->potar2 = 0x00000000;
+ 	pci->potear2 = 0x00000000;
+ 	pci->powbar2 = (MPC85XX_PCI2_IO_BASE >> 12) & 0x000fffff;
+ 	/* Enable, IO R/W */
+-	pci->powar2 = 0x80088000 | (__ilog2(MPC85XX_PCI1_IO_SIZE) - 1);
++	pci->powar2 = 0x80088000 | (__ilog2(MPC85XX_PCI2_IO_SIZE) - 1);
+ 
+ 	/* Setup 2G inbound Memory Window @ 0 */
+ 	pci->pitar1 = 0x00000000;
