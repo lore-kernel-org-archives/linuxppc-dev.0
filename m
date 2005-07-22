@@ -1,20 +1,16 @@
-Return-Path: <jwboyer@jdub.homelinux.org>
-Received: from jdub.homelinux.org (67-41-69-68.roch.qwest.net [67.41.69.68])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AEBBD67D1B
+Return-Path: <Thomas.Downing@ipc.com>
+Received: from stsnycon1.corp.root.ipc.com (ipcny.ipc.com [65.244.37.61])
+	by ozlabs.org (Postfix) with ESMTP id 7214E67D1B
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Jul 2005 22:15:03 +1000 (EST)
-From: Josh Boyer <jwboyer@jdub.homelinux.org>
-To: Gerhard Jaeger <g.jaeger@sysgo.com>
-In-Reply-To: <200507221202.33820.g.jaeger@sysgo.com>
-References: <42E0C0BE.6010807@gmx.de> <200507221202.33820.g.jaeger@sysgo.com>
-Content-Type: text/plain
-Date: Fri, 22 Jul 2005 06:17:25 -0500
-Message-Id: <1122031045.20742.0.camel@yoda.jdub.homelinux.org>
-Mime-Version: 1.0
-Cc: Frank Lautenbach <frank.lautenbach@gmx.de>, linuxppc-embedded@ozlabs.org
-Subject: Re: AMCC 440EP (Bamboo board) support?
+	Fri, 22 Jul 2005 23:59:21 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Fri, 22 Jul 2005 09:46:03 -0400
+Message-ID: <1D6EDDB3E43F3B40BC089CCFEE99DB7D14D056@exnanycmbx1.corp.root.ipc.com>
+From: "Downing, Thomas" <Thomas.Downing@ipc.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH] 2.6.12.3 Compilation error when CONFIG_PQ2FADS=y
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,18 +21,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2005-07-22 at 12:02 +0200, Gerhard Jaeger wrote:
-> On Friday 22 July 2005 11:47, Frank Lautenbach wrote:
-> > Did anyone bring up linux already on this kind of board? If yes, please 
-> > let me know. If not, any hints how to start from scratch
-> > starting with a kernel tree are higly welcome!
-> > 
-> > Regards,
-> >     Frank
-> 
-> Yes, works for me here - Kernel 2.6.12 + Wade Farnsworth patches.
-> and our own toolchain (see my sig ;)
+Compilation fails for arch/ppc/syslib/m82xx_pci.c in version
+2.6.12.3 when CONFIG_PQ2FADS=3Dy.  The following patch fixes the
+problems, which are just typographical.
 
-Speaking of which...  when will those patches go upstream?  Wade?
+The patch has been tested on PQ2FADS-ZU and -VR boards on 8280
+and 8275 devices.
 
-josh
+--- linux-2.6.12.3/arch/ppc/syslib/m82xx_pci.c	2005-07-15 =
+17:18:57.000000000 -0400
++++ linux-musrum/arch/ppc/syslib/m82xx_pci.c	2005-07-20 =
+08:42:41.000000000 -0400
+@@ -238,9 +238,9 @@ pq2ads_setup_pci(struct pci_controller *
+ 	 * Setting required to enable IRQ1-IRQ7 (SIUMCR [DPPC]),
+ 	 * and local bus for PCI (SIUMCR [LBPC]).
+ 	 */
+-	immap->im_siu_conf.siu_82xx.sc_siumcr =3D =
+(immap->im_siu_conf.sc_siumcr &
+-				~(SIUMCR_L2PC11 | SIUMCR_LBPC11 | SIUMCR_CS10PC11 | SIUMCR_APPC11) =
+|
+-				SIUMCR_BBD | SIUMCR_LBPC01 | SIUMCR_DPPC11 | SIUMCR_APPC10;
++	immap->im_siu_conf.siu_82xx.sc_siumcr =3D =
+(immap->im_siu_conf.siu_82xx.sc_siumcr &
++				~(SIUMCR_L2CPC11 | SIUMCR_LBPC11 | SIUMCR_CS10PC11 | SIUMCR_APPC11) =
+|
++				SIUMCR_BBD | SIUMCR_LBPC01 | SIUMCR_DPPC11 | SIUMCR_APPC10);
+ #endif
+ 	/* Enable PCI  */
+ 	immap->im_pci.pci_gcr =3D cpu_to_le32(PCIGCR_PCI_BUS_EN);
+
+Thomas Downing
+IPC Information Systems, LLC
