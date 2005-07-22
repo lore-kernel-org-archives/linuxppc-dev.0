@@ -1,20 +1,16 @@
-Return-Path: <dogoil@etinsys.com>
-Received: from jupiter.etinsys.com (unknown [220.76.45.3])
-	by ozlabs.org (Postfix) with ESMTP id B520967D10
+Return-Path: <lonelobo@163.com>
+Received: from 163.com (unknown [220.181.13.45])
+	by ozlabs.org (Postfix) with SMTP id 8118E67D12
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Jul 2005 12:45:34 +1000 (EST)
-Received: from smkim (dogoil.etinsys.com [220.76.45.33])
-	by jupiter.etinsys.com (8.11.6/8.11.6) with SMTP id j6M2d5v08833
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 22 Jul 2005 11:39:05 +0900 (KST)
-Message-ID: <007301c58e66$10df1170$212d4cdc@smkim>
-From: "Sangmoon Kim" <dogoil@etinsys.com>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Fri, 22 Jul 2005 11:35:41 +0900
+	Fri, 22 Jul 2005 19:16:06 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="Windows-1252";
-	reply-type=original
-Subject: MPC860 Linux-2.6.12.2 wu-ftpd error
+Message-ID: <42E0B5B9.000170.23031@m118.163.com>
+Date: Fri, 22 Jul 2005 17:00:41 +0800 (CST)
+From: "=?gb2312?B?bG9uZWxvYm8=?=" <lonelobo@163.com>
+To: linuxppc-embedded@ozlabs.org
+Content-Type: Multipart/Alternative;
+	boundary="Boundary-=_kDDaTwJgineOuDCKRRdVCyXIihvx"
+Subject: please help me !about the idedisk driver!
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,33 +21,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
-I'm porting linux-2.6.12.2 on a custom MPC860 board.
-It boots okay, but whenever I connect to it through ftp,
-I get the following error.
 
-[dogoil@genesis ~]$ ftp 192.168.0.3
-Connected to 192.168.0.3.
-220 kvme316 FTP server (Version wu-2.6.1(1) Mon Mar 7 07:50:41 MET 2005) 
-ready.
-530 Please login with USER and PASS.
-530 Please login with USER and PASS.
-KERBEROS_V4 rejected as an authentication type
-Name (192.168.0.3:dogoil): dogoil
-331 Password required for dogoil.
-Password:
-421 Service not available, remote server has closed connection
-Login failed.
-No control connection for command: No such file or directory
-ftp>
+--Boundary-=_kDDaTwJgineOuDCKRRdVCyXIihvx
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 
-It goes well with linuxppc_2_4_devel (gotten from denx few days ago)
-and the same disk image.
-On a custom MPC8245 board there is no such problem.
+d2UgaGF2ZSBhIGVtYmVkZWQgc3lzdGVtIC5UaGUgYWNoaXRlY3R1cmUgaXMgTVBDODI0NStp
+bnRlbDgyMzcxc291dGhicmlnZStpZGUgaGFyZCBkaXNrLk5vdyB0aGUgcXVlc3Rpb24gaXMg
+YXMgZm9sbG93OlRoZSBpZGUgaGFyZCBkaXNrIGNhbiB3b3JrIHdlbGwgaW50IHRoZSBwaW8g
+bW9kZSxidXQNCmluIERNQSBtb2RlIGl0IGNhbiBub3Qgd29yayAhIFRoZSBkZWJ1Z2UgaW5m
+b3JtYXRpb24gcHJpbnRlZCBpcyAiRE1BIHRpbWUgb3V0ISIgd2hlbiB0aGUgZHJpdmVyIHN0
+YXJ0IHRoZSBETUEgdHJhbnNlIHByb2Nlc3MsVGhlIGhhcmQgZGlzayBkaWQgbm90IGdlbmVy
+YXRlIHRoZSBpbnRlcnJ1cHRpb24uVGhlIGhhcmQgZGlzayBoYWQgdGVzdGVkIHRvIHN1cHBv
+cnQgRE1BISA=
+--Boundary-=_kDDaTwJgineOuDCKRRdVCyXIihvx
+Content-Type: text/html; charset="gb2312"
+Content-Transfer-Encoding: base64
 
-Is it the problem of linux-2.6.12.2?
-Did I get something wrong?
-
-Best regards,
-
-Sangmoon Kim 
+d2UgaGF2ZSBhIGVtYmVkZWQgc3lzdGVtIC5UaGUgYWNoaXRlY3R1cmUgaXMgTVBDODI0NStp
+bnRlbDgyMzcxc291dGhicmlnZStpZGUgaGFyZCBkaXNrLk5vdyB0aGUgcXVlc3Rpb24gaXMg
+YXMgZm9sbG93OlRoZSBpZGUgaGFyZCBkaXNrIGNhbiB3b3JrIHdlbGwgaW50IHRoZSBwaW8g
+bW9kZSxidXQ8YnI+aW4gRE1BIG1vZGUgaXQgY2FuIG5vdCB3b3JrICEgVGhlIGRlYnVnZSBp
+bmZvcm1hdGlvbiBwcmludGVkIGlzICZxdW90O0RNQSB0aW1lIG91dCEmcXVvdDsgd2hlbiB0
+aGUgZHJpdmVyIHN0YXJ0IHRoZSBETUEgdHJhbnNlIHByb2Nlc3MsVGhlIGhhcmQgZGlzayBk
+aWQgbm90IGdlbmVyYXRlIHRoZSBpbnRlcnJ1cHRpb24uVGhlIGhhcmQgZGlzayBoYWQgdGVz
+dGVkIHRvIHN1cHBvcnQgRE1BISA8YnI+PCEtLSBmb290ZXIgLS0+PGJyPjxicj48YnI+DQo8
+Zm9udCBzdHlsZT0iZm9udC1zaXplOjE0LjhweCI+DQo8IS0tueO45mZvb3RlciC/qsq8LS0+
+DQo8IS0tueO45mZvb3RlciC94cr4LS0+DQoNCjwhLS3E2rK/Zm9vdGVyv6rKvC0tPg0KPGJy
+Pg0KPGJyPjxwIHN0eWxlPSJsaW5lLWhlaWdodDoxNjAlOyI+DQo8YSBocmVmPSJodHRwOi8v
+bWFpbC4xNjMuY29tIiB0YXJnZXQ9Il9ibGFuayI+DQo8Zm9udCBjb2xvcj1ibHVlPtDo0qrS
+u7j2PHNwYW4gc3R5bGU9ImNvbG9yOnJlZCI+MjAwMNXXtcTD4rfRPC9zcGFuPtPKz+TC8KO/
+PGJyPs340tfD4rfR08rP5MrHPHNwYW4gc3R5bGU9ImNvbG9yOnJlZCI+1tC5+tfutuDIy8q5
+08M8L3NwYW4+tcS159fT08rP5KGjPC9hPg0KPC9wPg0KPCEtLcTasr9mb290ZXK94cr4LS0+
+DQo8L2ZvbnQ+
+--Boundary-=_kDDaTwJgineOuDCKRRdVCyXIihvx--
