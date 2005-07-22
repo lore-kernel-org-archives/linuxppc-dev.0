@@ -1,17 +1,20 @@
-Return-Path: <galak@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id EBFE467D35
+Return-Path: <yuli@arabellasw.com>
+Received: from gold.webfusion.co.uk (gold.webfusion.co.uk [212.67.202.159])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7E72767CF9
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 23 Jul 2005 02:19:33 +1000 (EST)
-Date: Fri, 22 Jul 2005 11:19:28 -0500 (CDT)
-From: Kumar Gala <galak@freescale.com>
-To: Andrew Morton <akpm@osdl.org>
-Message-ID: <Pine.LNX.4.61.0507221118440.25550@nylon.am.freescale.net>
+	Sat, 23 Jul 2005 04:14:19 +1000 (EST)
+From: Yuli Barcohen <yuli@arabellasw.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Thomas.Downing@ipc.com, linux-kernel@vger.kernel.org,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] ppc32: Fix building of PQ2FADS with PCI enabled
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17121.14182.92600.906359@home1.localdomain>
+Date: Fri, 22 Jul 2005 21:13:58 +0300
+To: Raphael Bossek <raphael.bossek@gmx.de>
+In-Reply-To: <42E0B826.2070800@gmx.de>
+References: <42E0B826.2070800@gmx.de>
+Cc: debian-embedded@lists.debian.org, linuxppc-embedded@ozlabs.org
+Subject: Re: Experiences with Debian Sarge on MPC8xx ?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,36 +25,10 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Compilation fails for arch/ppc/syslib/m82xx_pci.c in version
-2.6.12.3 when CONFIG_PQ2FADS=y.  The following patch fixes the
-problems, which are just typographical.
+Try to change cache line size to zero in arch/ppc/kernel/cputable.c
 
-Signed-off-by: Thomas Downing <Thomas.Downing@ipc.com>
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
-
----
-commit 4bc715f73b35eea5c58a9124f31b05f1fbb3b6c4
-tree fb2f9683a7260795ef5ff2d7488f7d19de1b5ffa
-parent 9ec8020999ffebb9524ca88e86c15923bf744b55
-author Kumar K. Gala <kumar.gala@freescale.com> Fri, 22 Jul 2005 10:40:33 -0500
-committer Kumar K. Gala <kumar.gala@freescale.com> Fri, 22 Jul 2005 10:40:33 -0500
-
- arch/ppc/syslib/m82xx_pci.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/arch/ppc/syslib/m82xx_pci.c b/arch/ppc/syslib/m82xx_pci.c
---- a/arch/ppc/syslib/m82xx_pci.c
-+++ b/arch/ppc/syslib/m82xx_pci.c
-@@ -238,9 +238,9 @@ pq2ads_setup_pci(struct pci_controller *
- 	 * Setting required to enable IRQ1-IRQ7 (SIUMCR [DPPC]),
- 	 * and local bus for PCI (SIUMCR [LBPC]).
- 	 */
--	immap->im_siu_conf.siu_82xx.sc_siumcr = (immap->im_siu_conf.sc_siumcr &
--				~(SIUMCR_L2PC11 | SIUMCR_LBPC11 | SIUMCR_CS10PC11 | SIUMCR_APPC11) |
--				SIUMCR_BBD | SIUMCR_LBPC01 | SIUMCR_DPPC11 | SIUMCR_APPC10;
-+	immap->im_siu_conf.siu_82xx.sc_siumcr = (immap->im_siu_conf.siu_82xx.sc_siumcr &
-+				~(SIUMCR_L2CPC11 | SIUMCR_LBPC11 | SIUMCR_CS10PC11 | SIUMCR_APPC11) |
-+				SIUMCR_BBD | SIUMCR_LBPC01 | SIUMCR_DPPC11 | SIUMCR_APPC10);
- #endif
- 	/* Enable PCI  */
- 	immap->im_pci.pci_gcr = cpu_to_le32(PCIGCR_PCI_BUS_EN);
+-- 
+========================================================================
+ Yuli Barcohen       | Phone +972-9-765-1788 |  Software Project Leader
+ yuli@arabellasw.com | Fax   +972-9-765-7494 | Arabella Software, Israel
+========================================================================
