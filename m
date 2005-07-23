@@ -1,22 +1,21 @@
-Return-Path: <va824363@albany.edu>
-Received: from smtp.albany.edu (mail1.its.albany.edu [169.226.1.105])
-	by ozlabs.org (Postfix) with ESMTP id 9F2C967D16
+Return-Path: <romieu@fr.zoreil.com>
+Received: from fr.zoreil.com (electric-eye.fr.zoreil.com [213.41.134.224])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 314EF67CBE
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 24 Jul 2005 05:01:35 +1000 (EST)
-Received: from webmail.albany.edu (localhost [127.0.0.1])
-	by smtp.albany.edu (8.13.0/8.13.0) with ESMTP id j6NIYGhi024676
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 23 Jul 2005 14:34:16 -0400 (EDT)
-Message-ID: <2365.24.92.61.26.1122143656.squirrel@24.92.61.26>
-In-Reply-To: <528646bc05072310039fb536d@mail.gmail.com>
-References: <87hdeuosmq.wl@mail2.atmark-techno.com>
-	<528646bc05072310039fb536d@mail.gmail.com>
-Date: Sat, 23 Jul 2005 14:34:16 -0400 (EDT)
-From: "Vikas Aggarwal" <va824363@albany.edu>
-To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Subject: Need SEC   1.0   Descriptor   programmer's guide
+	Sun, 24 Jul 2005 08:12:38 +1000 (EST)
+Date: Sat, 23 Jul 2005 23:59:13 +0200
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Andy Fleming <afleming@freescale.com>
+Message-ID: <20050723215913.GA777@electric-eye.fr.zoreil.com>
+References: <23F9076F-9FBB-43C8-83CD-F630E694203D@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <23F9076F-9FBB-43C8-83CD-F630E694203D@freescale.com>
+Cc: netdev@vger.kernel.org,
+	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH RFC]: PHY Abstraction Layer III
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,16 +26,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi All,
-  I am porting a driver for SEC 1.0 on mpc8248(kernel 2.6.10 denx linux)
-  Can anyone share with me the link/document on "SEC 1.0 Descriptor's
-Programmer guide".
+Andy Fleming <afleming@freescale.com> :
+> Here's the latest version of the patch, done against a cogito  
+> linux-2.6 branch.
 
-  On freescale's website, I could "ONLY" find the "SEC 2.0 Descriptor's
-  programmer guide" at this URL.
-  http://www.freescale.com/files/32bit/doc/app_note/AN2755.pdf
+The patch includes a diff against drivers/net/phy/phy.c which does not
+seem to exist in my -rc3-git4 local tree. Where can it be found ?
 
-
--vikas
-MS CS Student
-SUNY Albany
+--
+Ueimor
