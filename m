@@ -1,21 +1,19 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A774167D8B
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao08.cox.net (fed1rmmtao08.cox.net [68.230.241.31])
+	by ozlabs.org (Postfix) with ESMTP id 4D93667D9B
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 24 Jul 2005 01:11:57 +1000 (EST)
-In-Reply-To: <20050723142210.GA24313@gate.ebshome.net>
-References: <528646bc05072307074e8fce3e@mail.gmail.com>
-	<20050723142210.GA24313@gate.ebshome.net>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <f9aee3d7921497b1309fb9c67caa914c@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Sat, 23 Jul 2005 11:11:57 -0400
-To: Eugene Surovegin <ebs@ebshome.net>
+	Sun, 24 Jul 2005 01:13:58 +1000 (EST)
+Date: Sat, 23 Jul 2005 07:30:22 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Grant Likely <glikely@gmail.com>
+Message-ID: <20050723073022.A5431@cox.net>
+References: <528646bc050723070419b8f914@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <528646bc050723070419b8f914@mail.gmail.com>;
+	from glikely@gmail.com on Sat, Jul 23, 2005 at 10:04:07AM -0400
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH 1/3] SPI bus core infrastructure
+Subject: Re: [PATCH 0/3] Support for SPI busses and devices
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,31 +24,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Sat, Jul 23, 2005 at 10:04:07AM -0400, Grant Likely wrote:
+> Request for Comment:
+> 
+> Here is a set of patches that adds SPI support to linux.  I'm looking
+> for feedback on these and I'd like to eventually get the SPI
+> infrastructure into mainline
 
-On Jul 23, 2005, at 10:22 AM, Eugene Surovegin wrote:
+There is also another attempt at an SPI subsystem (not based on the RMK
+code) that was posted to lkml.  You might want to check out
+http://lkml.org/lkml/2005/5/31/162 for the original posting and
+then an updated version at http://lkml.org/lkml/2005/6/23/161
 
-> This isn't enough.
->
-> You must have a way to specify clock frequency, data order (which bit
-> goes first, char length.
-
-...  and there is more.  Some devices, even when not selected, still
-use the SPI clock for clocking internal logic.  You have to ensure with
-such devices you don't ever run the SPI faster than their spec.  This
-is application specific, but something that has to be considered when
-there are multiple devices on the SPI bus.
-
-Also, many boards use external logic for the assertion of the
-device select, which is necessary if there is more than one device
-on the bus.  Sometimes it's a multiplexer that routes the controller
-SPI select, other times the multiplexer drives the selects directly.
-In my review of the patch, I didn't see anything that would provide
-for this.
-
-I think the SPI driver is a great idea, I hope we can find a way
-to make it work at least as well as the I2C.
-
-Thanks!
-
-
-	-- Dan
+-Matt
