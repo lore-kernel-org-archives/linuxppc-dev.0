@@ -1,20 +1,21 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao03.cox.net (fed1rmmtao03.cox.net [68.230.241.36])
-	by ozlabs.org (Postfix) with ESMTP id 076BA67D81
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A774167D8B
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 24 Jul 2005 00:48:44 +1000 (EST)
-Date: Sat, 23 Jul 2005 07:48:42 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Yasushi SHOJI <yashi@atmark-techno.com>
-Message-ID: <20050723074842.C5431@cox.net>
-References: <87hdeuosmq.wl@mail2.atmark-techno.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87hdeuosmq.wl@mail2.atmark-techno.com>;
-	from yashi@atmark-techno.com on Sun, Jul 17, 2005 at 03:26:21PM
-	+0900
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: ppc_sys.c with platform device model or create opb bus?
+	Sun, 24 Jul 2005 01:11:57 +1000 (EST)
+In-Reply-To: <20050723142210.GA24313@gate.ebshome.net>
+References: <528646bc05072307074e8fce3e@mail.gmail.com>
+	<20050723142210.GA24313@gate.ebshome.net>
+Mime-Version: 1.0 (Apple Message framework v622)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <f9aee3d7921497b1309fb9c67caa914c@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Sat, 23 Jul 2005 11:11:57 -0400
+To: Eugene Surovegin <ebs@ebshome.net>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH 1/3] SPI bus core infrastructure
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,32 +26,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sun, Jul 17, 2005 at 03:26:21PM +0900, Yasushi SHOJI wrote:
-> Hi all,
-> 
-> I've been reading some posts regarding to the transition of OCP to
-> platform device mode while searching for a good way to implement a
-> device driver for our fpga base platform. And now I have one question
-> regarding to ppc_sys.c
-> 
->   should I use ppc_sys_*() for platform like fpga?
-> 
-> since I'm working on FPGA base platform, ppc_sys_spec seems to be too
-> static. that is, IMHO, having static array of device list isn't ideal
-> for a dynamic system like fpga.
-> 
-> I feel that the ppc_sys_spec is for SoC, which doesn't dynamically
-> change the peripherals it has.  otoh, fpga based platform can have
-> arbitrary number of devices if you configured so.
-> 
-> I usually implement a device with PLB or OPB.  for those bus, should I
-> use platform device model or create new buses for each?
 
-Use the platform model.  When you run into a case that can't be
-handled properly then the platform model should be expanded to handle
-it. If you instantiate a "platform device" by configuring the FPGA
-from userspace then that's a hotplug event.  The platform model
-should be extended to handle hotplug for these kind of cases since
-they are pretty common.
+On Jul 23, 2005, at 10:22 AM, Eugene Surovegin wrote:
 
--Matt
+> This isn't enough.
+>
+> You must have a way to specify clock frequency, data order (which bit
+> goes first, char length.
+
+...  and there is more.  Some devices, even when not selected, still
+use the SPI clock for clocking internal logic.  You have to ensure with
+such devices you don't ever run the SPI faster than their spec.  This
+is application specific, but something that has to be considered when
+there are multiple devices on the SPI bus.
+
+Also, many boards use external logic for the assertion of the
+device select, which is necessary if there is more than one device
+on the bus.  Sometimes it's a multiplexer that routes the controller
+SPI select, other times the multiplexer drives the selects directly.
+In my review of the patch, I didn't see anything that would provide
+for this.
+
+I think the SPI driver is a great idea, I hope we can find a way
+to make it work at least as well as the I2C.
+
+Thanks!
+
+
+	-- Dan
