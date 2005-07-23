@@ -1,20 +1,21 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id E231F67D60
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao12.cox.net (fed1rmmtao12.cox.net [68.230.241.27])
+	by ozlabs.org (Postfix) with ESMTP id 9658867D81
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 24 Jul 2005 00:22:14 +1000 (EST)
-Date: Sat, 23 Jul 2005 07:22:10 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Grant Likely <glikely@gmail.com>
-Message-ID: <20050723142210.GA24313@gate.ebshome.net>
-References: <528646bc05072307074e8fce3e@mail.gmail.com>
+	Sun, 24 Jul 2005 00:38:27 +1000 (EST)
+Date: Sat, 23 Jul 2005 07:38:24 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Josh Boyer <jwboyer@jdub.homelinux.org>
+Message-ID: <20050723073824.B5431@cox.net>
+References: <42E0C0BE.6010807@gmx.de> <200507221202.33820.g.jaeger@sysgo.com>
+	<1122031045.20742.0.camel@yoda.jdub.homelinux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <528646bc05072307074e8fce3e@mail.gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH 1/3] SPI bus core infrastructure
+In-Reply-To: <1122031045.20742.0.camel@yoda.jdub.homelinux.org>;
+	from jwboyer@jdub.homelinux.org on Fri, Jul 22, 2005 at
+	06:17:25AM -0500
+Cc: Frank Lautenbach <frank.lautenbach@gmx.de>, linuxppc-embedded@ozlabs.org
+Subject: Re: AMCC 440EP (Bamboo board) support?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,40 +26,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sat, Jul 23, 2005 at 10:07:38AM -0400, Grant Likely wrote:
-> Patch to add support for SPI busses.  SPI bus master drivers and SPI
-> slave drivers register with the SPI infrastructure.
+On Fri, Jul 22, 2005 at 06:17:25AM -0500, Josh Boyer wrote:
+> On Fri, 2005-07-22 at 12:02 +0200, Gerhard Jaeger wrote:
+> > On Friday 22 July 2005 11:47, Frank Lautenbach wrote:
+> > > Did anyone bring up linux already on this kind of board? If yes, please 
+> > > let me know. If not, any hints how to start from scratch
+> > > starting with a kernel tree are higly welcome!
+> > > 
+> > > Regards,
+> > >     Frank
+> > 
+> > Yes, works for me here - Kernel 2.6.12 + Wade Farnsworth patches.
+> > and our own toolchain (see my sig ;)
 > 
-> +#define SPI_CLKEDGE_RISING	0
-> +#define SPI_CLKEDGE_FALLING	1
-> +struct spi_bus_ops {
-> +	int (*transfer) (struct spi_bus *bus, int id, int clkedge,
-> +	                 uint8_t *in, const uint8_t *out, size_t count);
-> +};
+> Speaking of which...  when will those patches go upstream?  Wade?
 
-This isn't enough.
+I've only been waiting on updated patches that use the fpu.S code.
+If you'll recall, that was the major hold-up when they were posted
+before. I talked to Wade recently and he was busy with some other
+things but is planning on posting an update...at which point it
+will go upstream.
 
-You must have a way to specify clock frequency, data order (which bit 
-goes first, char length.
-
-Take a look at how PowerQUICC defines SPI peripheral, to get an idea 
-on what should be made configurable.
-
-This is what I use on PowerQUICC as SPI interface:
-
-/* SPI parameters for a specific client.
- * Most of them have the same meaning as in SPMODE register
- */
-struct pq2_spi_client {
-    unsigned int clock_invert : 1;
-    unsigned int clock_phase : 1;
-    unsigned int reverse_data : 1;
-
-    int char_length;
-    int clock;  /* in Hz */
-    const char *name;
-
-    void (*cs_control)(int assert);
-};
-
-int pq2_spi_xfer(struct pq2_spi_client*, const u8 *tx_buf, u8 *rx_buf, int len);
+-Matt
