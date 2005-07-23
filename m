@@ -1,22 +1,22 @@
-Return-Path: <glikely@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.201])
-	by ozlabs.org (Postfix) with ESMTP id 1677367DA3
+Return-Path: <va824363@albany.edu>
+Received: from smtp.albany.edu (mail1.its.albany.edu [169.226.1.105])
+	by ozlabs.org (Postfix) with ESMTP id 9F2C967D16
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 24 Jul 2005 03:03:46 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id i25so646565wra
+	Sun, 24 Jul 2005 05:01:35 +1000 (EST)
+Received: from webmail.albany.edu (localhost [127.0.0.1])
+	by smtp.albany.edu (8.13.0/8.13.0) with ESMTP id j6NIYGhi024676
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 23 Jul 2005 10:03:45 -0700 (PDT)
-Message-ID: <528646bc05072310039fb536d@mail.gmail.com>
-Date: Sat, 23 Jul 2005 13:03:45 -0400
-From: Grant Likely <glikely@gmail.com>
-To: Yasushi SHOJI <yashi@atmark-techno.com>
-In-Reply-To: <87hdeuosmq.wl@mail2.atmark-techno.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 23 Jul 2005 14:34:16 -0400 (EDT)
+Message-ID: <2365.24.92.61.26.1122143656.squirrel@24.92.61.26>
+In-Reply-To: <528646bc05072310039fb536d@mail.gmail.com>
 References: <87hdeuosmq.wl@mail2.atmark-techno.com>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: ppc_sys.c with platform device model or create opb bus?
-Reply-To: Grant Likely <glikely@gmail.com>
+	<528646bc05072310039fb536d@mail.gmail.com>
+Date: Sat, 23 Jul 2005 14:34:16 -0400 (EDT)
+From: "Vikas Aggarwal" <va824363@albany.edu>
+To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
+Subject: Need SEC   1.0   Descriptor   programmer's guide
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,20 +27,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 7/17/05, Yasushi SHOJI <yashi@atmark-techno.com> wrote:
-> I feel that the ppc_sys_spec is for SoC, which doesn't dynamically
-> change the peripherals it has.  otoh, fpga based platform can have
-> arbitrary number of devices if you configured so.
->=20
-> I usually implement a device with PLB or OPB.  for those bus, should I
-> use platform device model or create new buses for each?
-ppc_sys is just a convenient wrapper around the platform device model.
- You can safely ignore ppc_sys if your board setup code calls
-platform_device_register() for all of your devices directly.
+Hi All,
+  I am porting a driver for SEC 1.0 on mpc8248(kernel 2.6.10 denx linux)
+  Can anyone share with me the link/document on "SEC 1.0 Descriptor's
+Programmer guide".
 
-Besides, as ppc moves to the flattened device tree for initializing
-the platform bus, the whole ppc_sys stuff will be going away and the
-device tree parsing code will call platform_device_* directly.
+  On freescale's website, I could "ONLY" find the "SEC 2.0 Descriptor's
+  programmer guide" at this URL.
+  http://www.freescale.com/files/32bit/doc/app_note/AN2755.pdf
 
-Cheers,
-g.
+
+-vikas
+MS CS Student
+SUNY Albany
