@@ -1,19 +1,22 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao08.cox.net (fed1rmmtao08.cox.net [68.230.241.31])
-	by ozlabs.org (Postfix) with ESMTP id 4D93667D9B
+Return-Path: <glikely@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.201])
+	by ozlabs.org (Postfix) with ESMTP id 1677367DA3
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 24 Jul 2005 01:13:58 +1000 (EST)
-Date: Sat, 23 Jul 2005 07:30:22 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Grant Likely <glikely@gmail.com>
-Message-ID: <20050723073022.A5431@cox.net>
-References: <528646bc050723070419b8f914@mail.gmail.com>
+	Sun, 24 Jul 2005 03:03:46 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id i25so646565wra
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 23 Jul 2005 10:03:45 -0700 (PDT)
+Message-ID: <528646bc05072310039fb536d@mail.gmail.com>
+Date: Sat, 23 Jul 2005 13:03:45 -0400
+From: Grant Likely <glikely@gmail.com>
+To: Yasushi SHOJI <yashi@atmark-techno.com>
+In-Reply-To: <87hdeuosmq.wl@mail2.atmark-techno.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <528646bc050723070419b8f914@mail.gmail.com>;
-	from glikely@gmail.com on Sat, Jul 23, 2005 at 10:04:07AM -0400
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH 0/3] Support for SPI busses and devices
+Content-Type: text/plain; charset=ISO-8859-1
+References: <87hdeuosmq.wl@mail2.atmark-techno.com>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: ppc_sys.c with platform device model or create opb bus?
+Reply-To: Grant Likely <glikely@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,16 +27,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sat, Jul 23, 2005 at 10:04:07AM -0400, Grant Likely wrote:
-> Request for Comment:
-> 
-> Here is a set of patches that adds SPI support to linux.  I'm looking
-> for feedback on these and I'd like to eventually get the SPI
-> infrastructure into mainline
+On 7/17/05, Yasushi SHOJI <yashi@atmark-techno.com> wrote:
+> I feel that the ppc_sys_spec is for SoC, which doesn't dynamically
+> change the peripherals it has.  otoh, fpga based platform can have
+> arbitrary number of devices if you configured so.
+>=20
+> I usually implement a device with PLB or OPB.  for those bus, should I
+> use platform device model or create new buses for each?
+ppc_sys is just a convenient wrapper around the platform device model.
+ You can safely ignore ppc_sys if your board setup code calls
+platform_device_register() for all of your devices directly.
 
-There is also another attempt at an SPI subsystem (not based on the RMK
-code) that was posted to lkml.  You might want to check out
-http://lkml.org/lkml/2005/5/31/162 for the original posting and
-then an updated version at http://lkml.org/lkml/2005/6/23/161
+Besides, as ppc moves to the flattened device tree for initializing
+the platform bus, the whole ppc_sys stuff will be going away and the
+device tree parsing code will call platform_device_* directly.
 
--Matt
+Cheers,
+g.
