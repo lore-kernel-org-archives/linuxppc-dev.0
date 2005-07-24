@@ -1,19 +1,20 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id ED22167C5A
+Return-Path: <avolkov@varma-el.com>
+Received: from amanaus.varma-el.com (unknown [195.144.244.147])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5A7DD67D00
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 25 Jul 2005 00:29:50 +1000 (EST)
-In-Reply-To: <20050723215913.GA777@electric-eye.fr.zoreil.com>
-References: <20050723215913.GA777@electric-eye.fr.zoreil.com>
-Mime-Version: 1.0 (Apple Message framework v733)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <2A1209AF-773C-4F35-8A85-887257A2EA64@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Sun, 24 Jul 2005 09:20:50 -0500
-To: Francois Romieu <romieu@fr.zoreil.com>
-Cc: netdev@vger.kernel.org,
-	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH RFC]: PHY Abstraction Layer III
+	Mon, 25 Jul 2005 04:43:44 +1000 (EST)
+Message-ID: <42E3DD39.8040104@varma-el.com>
+Date: Sun, 24 Jul 2005 22:26:01 +0400
+From: Andrey Volkov <avolkov@varma-el.com>
+MIME-Version: 1.0
+To: Olivier Singla <osingla@integrian.com>
+References: <42DE89B1.1030400@integrian.com>
+In-Reply-To: <42DE89B1.1030400@integrian.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: LITE5200 2.6.x kernel support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,26 +25,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Because the patch is all new code.  drivers/net/phy/phy.c doesn't  
-exist in any kernel tree.  The patch is adding it.
+Oliver,
 
-- kumar
+Could you send boot log?
+And, at this time, vanilla 2.6.xx kernel couldn't boot from nfs (and use
+eth too), since fec (ethernet) driver still not ready.
 
-On Jul 23, 2005, at 4:59 PM, Francois Romieu wrote:
+-- 
+Regards
+Andrey Volkov
 
-> Andy Fleming <afleming@freescale.com> :
->
->> Here's the latest version of the patch, done against a cogito
->> linux-2.6 branch.
->>
->
-> The patch includes a diff against drivers/net/phy/phy.c which does not
-> seem to exist in my -rc3-git4 local tree. Where can it be found ?
->
-> --
-> Ueimor
-> -
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+Olivier Singla wrote:
+> Hi,
+> 
+> I am currently using 2.4.25 on the Lite5200 board, but I'd really like to
+> switch to 2.6.x. The only 5200 specific support I need are the integrated
+> uart and the PCI. I tried both 2.6.11 and 2.6.12 without luck: the kernel
+> start, but then is stuck (seems into the init sequence). I use the
+> configuration
+> file from arch/ppc/configs/lite5200_defconfig. I cross-compiled the
+> kernel with gcc-3.4.1.
+> 
+> I was wondering if somebody could give me some help, maybe by telling
+> be what I am doing wrong.
+> 
+> Thanks,
+> Olivier
+> 
+> BTW, I tried also 2.6.13-rc3, but I can't even compile for the Lite5200,
+> there are some syntax error when compile the pci module...
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
