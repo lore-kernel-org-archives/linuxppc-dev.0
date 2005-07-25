@@ -1,22 +1,14 @@
-Return-Path: <yuli@arabellasw.com>
-Received: from gold.webfusion.co.uk (gold.webfusion.co.uk [212.67.202.159])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8EFD667D29
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 25 Jul 2005 23:55:18 +1000 (EST)
-From: Yuli Barcohen <yuli@arabellasw.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17124.61231.988084.399036@astp0002.localdomain>
-Date: Mon, 25 Jul 2005 16:54:55 +0300
-To: kate@katix.org
-In-Reply-To: <63137.192.100.124.219.1122287941.squirrel@www.iti.fi>
-References: <528646bc050723070419b8f914@mail.gmail.com>
-	<17124.46441.807442.139506@astp0002.localdomain>
-	<63137.192.100.124.219.1122287941.squirrel@www.iti.fi>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH 0/3] Support for SPI busses and devices
+Return-Path: <ajz@cambridgebroadband.com>
+Date: Mon, 25 Jul 2005 14:58:49 +0100
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
+To: "KylongMu" <mqy@263.net.cn>
+Message-Id: <20050725145849.5caef7a9.ajz@cambridgebroadband.com>
+In-Reply-To: <20050725111654.6A5A1C34A8@smtp.263.net>
+References: <20050725111654.6A5A1C34A8@smtp.263.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Linuxppc-embedded@ozlabs.org
+Subject: Re: mpc8540 SK board FEC not work!
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,52 +19,59 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> Kate Alhola writes:
+I think there are two possibilities:
 
-    Yuli> SPI is very similar to I2C IMHO. I'm not sure separate
-    Yuli> infrastructure is needed. We support SPI on MPC8xx/82xx/85xx
-    Yuli> using the standard I2C infrastructure. I only had to add a
-    Yuli> couple of IOCTLs to control clock frequency and polarity. Due
-    Yuli> to such an implementation, lm-sensors work OK with SPI
-    Yuli> temperature sensors, for example.
+i)	You are probing the wrong phy address.  Since the MDIO line is pulled high you get a phyID of
+0xffffffff.  Try changing the phy address probed.  From the source it looks like this is done in the
+BIOS.  If this fails scope the MDIO/MDC bus.
 
-    Kate> SPI IS wery similar than I2C and for this reason it looks a
-    Kate> like that all SPI subsystems implementations are based on I2C
-    Kate> code.
+ii)	The phy id has changed between the 88E1101 and the 88E1111.  If this is the case you may get
+away with just modifying phy_info_marvell.name and phy_info_marvell.phy_id_mask.  But you may have
+to add a new phy_info struct to deal with the new phy if there are any incompatibilities between
+the new and old phys, or if the phy_ids differ in more than just their lower bits.
 
-    Kate> The Clock frequency and polarity is not enough, as mentioned
-    Kate> also then addressing target chip is completelly diferent. It
-    Kate> is done with separate PIO lines instead address send in serial
-    Kate> line.  The CS handling is also in HW level completelly
-    Kate> independent to the srerial line driver but of cource need to
-    Kate> me synchronized with it.  This means that there should be
-    Kate> logic to handle this CS stuff as addition of serial code.
 
-    Kate> I2C subsystem does not have any kind of support of CS
-    Kate> handlinng and for this reason i chosen to make modified
-    Kate> version of I2C subsystem with additions needed for SPI.
+Or maybe both....
 
-As you understand, CS is handled in our code: otherwise nothing would
-work. Since CS handling is board-specific, only board-specific files
-(platforms/xxx for PPC) can provide appropriate functions. I wanted to
-preserve interfaces (otherwise I would have to rewrite all relevant
-user-space applications, like lm-sensors), so SPI controllers drivers
-(master_xfer method) simply call function
+Alex
 
-  int spi_cs(struct i2c_adapter *adap, u16 slave, int assert_cs)
 
-before and after each transaction. The function is implemented for each
-SPI-enabled board in that board's specific file. Slave address,
-meaningless for SPI, is used to identify the peripheral. The function
-asserts or negates the selected slave's chip select. Slave address is
-just a unique ID, assigned by the programmer with the sole purpose of
-telling the spi_cs function which peripheral is to be
-selected/deselected. The function, since it's board-specific, "knows"
-how to do this i.e. how to access parallel ports, FPGAs, or whatever is
-necessary on that specific board to activate chip select.
+On Mon, 25 Jul 2005 19:16:50 +0800
+"KylongMu" <mqy@263.net.cn> wrote:
 
--- 
-========================================================================
- Yuli Barcohen       | Phone +972-9-765-1788 |  Software Project Leader
- yuli@arabellasw.com | Fax   +972-9-765-7494 | Arabella Software, Israel
-========================================================================
+> Hello, team
+>         I'm testing the 2.6.13-rc3 kernel on my board, all is work well
+> except
+> the FEC.
+> Board type:  PQ3SK REVB
+> Kernel       :  2.6.13-rc3
+> toolchain    : ELDK 3.1.1
+> PHY type  : Marvell 88E1111S
+> 
+>         Compile with "make mpc8540ads_defconfig", change with nothing.
+> download uImage file into my board and boot with it, all is ok ! But when
+> I config the eth0 , it can't work , same with eth1, both of them are
+> Giga-eth,
+> but eth2 is work well, and eth2 is a 10/100-eth.
+>         I checked the 8540ADS's hardware message , it's use 88E1011 PHY
+> not 88E1111 PHY . And I checked the kernel code " driver/net/gianfar_phy.c"
+> it takes 88E1011 and 88E1111 as same PHY , so I think this is not a hardware
+> problem, and my board work well with a 2.4.18 DEMO kernel.
+>         Here is the output message of  2.6.13-rc3 kernel:
+> 
+> PuffLinux:root$ifconfig eth0 192.168.1.77
+> eth0: PHY is Generic MII (ffffffff)
+> 
+>         If the PHY config is correct it will recognize my PHY ID, but here
+> is a
+>  wrong ID number ffffffff .
+> 
+>         Please help me solve this problem!
+> 
+> Thanks a lot!
+> 
+>                         KylongMu
+> 
+> 
+> 
+> 
