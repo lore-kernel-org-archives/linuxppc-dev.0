@@ -1,17 +1,15 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Date: Fri, 22 Jul 2005 09:57:50 -0300
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: bogdan antonovici <bantonovici@priority.mb.ca>
-Message-ID: <20050722125750.GA5950@dmt.cnet>
-References: <1121959795.800.18.camel@rd-lab>
-	<1a928a85f53f5dcd972161356611a312@embeddededge.com>
-	<1122047198.6726.13.camel@rd-lab>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1122047198.6726.13.camel@rd-lab>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, linuxppc-embedded@ozlabs.org,
-	ppckernel <ppckernel@ppckernel.org>
-Subject: Re: swap_dup: Bad swap file entry 00480020
+Return-Path: <GARCIAJ@3il.fr>
+Received: from email.3il.fr (email.3il.fr [195.25.243.230])
+	by ozlabs.org (Postfix) with ESMTP id 0024667D3B
+	for <linuxppc-dev@ozlabs.org>; Mon, 25 Jul 2005 19:35:25 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Mon, 25 Jul 2005 11:35:22 +0200
+Message-ID: <D4FDDD1349B5AC46B68FC26AD8AF42D6226B45@exnet.3il.fr>
+From: =?iso-8859-1?Q?Garcia_J=E9r=E9mie?= <GARCIAJ@3il.fr>
+To: <linuxppc-dev@ozlabs.org>
+Subject: Add my own Makefile 
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,31 +19,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jul 22, 2005 at 10:46:38AM -0500, bogdan antonovici wrote:
-> Hi Dan,
-> 
-> I checked the driver code. I found a pointer that was in my opinion
-> initialized too late and i corrected that but other than that i haven't
-> found anything.
-> I ran the driver alone, enabling the interrupts and the interrupt
-> routine doesn't cause any trouble.
-> I started my application and i haven't seen any sign of trouble.
-> But once i started also the snmpd after few interrupts i got the
-> message:
-> 
-> __alloc_pages: 0-order allocation failed (gfp=0x1d2/0)
-> VM: killing process sectionmond
+Hi everybody,
+I'm developping both new system calls and modules, in order to achieve a =
+project.
+In order to group all those new files, I created new directories:
 
-Thats a different problem: you ran out of memory and the VM can't swap
-out any data.
+arch/ppc/myproj
+arch/ppc/myproj/syscalls/
+arch/ppc/myproj/modules/
 
-So its likely that the pagetable corruption is gone (it was indeed a bug
-in the driver as Dan suspected).
+Under the "syscalls" dir, I made a "Makefile" to compile all those =
+files.
+In this Makefile I want to compile a module "mymodule1". This module =
+needs 3 files:
+modShiDma.c + modShiDma.S + modShiDma.h
+So looking at the other Makefiles of the linux tree, I wrote this one:
 
-> sectionmond being my application.
-> My read and write driver operation are requesting a page for a buffer
-> but they also release it. Should i declare the buffer pointer with
-> volatile attribute?
-> Do you know what may cause that message?
+/************************************************************************=
+********/
+O_TARGET	:=3D my_environment.o
 
-Out of memory condition. 
+obj-y	    :=3D
+obj-m	    :=3D
+obj-n       :=3D
+
+# Compile system calls
+obj-$(CONFIG_MY_SOFT)	+=3D  my_sysmemutils.o
+obj-$(CONFIG_MY_SOFT)	+=3D  my_sysclkutils.o
+obj-$(CONFIG_MY_SOFT)	+=3D  my_sysuicutils.o
+obj-$(CONFIG_MY_SOFT)	+=3D  my_syscardregutils.o
+# Compile modules
+obj-m +=3D ../modules/modDisplay.o
+obj-m +=3D ../modules/modShiDma.o
+obj-m +=3D ../modules/modHscx.o
+
+include $(TOPDIR)/Rules.make
+
+modShiDma.o: modShiDma.S modShiDma.c modShiDma.h
+
+/************************************************************************=
+**********/
+
+When I execute the "make modules", only the "modShiDma.c" is compiled =
+while the "modShiDma.S"
+is ignored.=20
+
+ppc_405-gcc -D__KERNEL__ -I/myWorks/en-cours/linux-2.4.20_mvl31/include =
+-gdwarf-2 -Wall -Wstrict-prototypes -Wno-trigraphs -O2 =
+-fno-strict-aliasing -fno-common -fomit-frame-pointer =
+-I/myWorks/en-cours/linux-2.4.20_mvl31/arch/ppc -fsigned-char =
+-msoft-float -pipe -ffixed-r2 -Wno-uninitialized -mmultiple -mstring =
+-Wa,-m405 -DMODULE -DMODVERSIONS -include =
+/myWorks/en-cours/linux-2.4.20_mvl31/include/linux/modversions.h  =
+-nostdinc -iwithprefix include -DKBUILD_BASENAME=3DmodShiDma  -c -o =
+../modules/modShiDma.o ../modules/modShiDma.c
+
+How to get a "modShiDma.o" object made from the three source files =
+please??
