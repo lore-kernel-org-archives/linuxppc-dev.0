@@ -1,18 +1,15 @@
-Return-Path: <va824363@albany.edu>
-Received: from smtp.albany.edu (mail1.its.albany.edu [169.226.1.105])
-	by ozlabs.org (Postfix) with ESMTP id 5FFA167D25
+Return-Path: <frank.lautenbach@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 1D33067D40
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Jul 2005 01:32:15 +1000 (EST)
-Message-ID: <13434.198.22.236.230.1122305525.squirrel@198.22.236.230>
-In-Reply-To: <20050725071638.67632.qmail@web8503.mail.in.yahoo.com>
-References: <20050725071638.67632.qmail@web8503.mail.in.yahoo.com>
-Date: Mon, 25 Jul 2005 11:32:05 -0400 (EDT)
-From: "Vikas Aggarwal" <va824363@albany.edu>
-To: kernelnewbies@nl.linux.org
+	Tue, 26 Jul 2005 02:52:58 +1000 (EST)
+Message-ID: <42E51849.7050800@gmx.de>
+Date: Mon, 25 Jul 2005 18:50:17 +0200
+From: Frank Lautenbach <frank.lautenbach@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Cc: linuxppc-embedded@ozlabs.org
-Subject: porting a  mm specific macro  from 2.4 to 2.6
+To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Getting a kernel to run on AMCC 440EP (Bamboo)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,26 +20,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Hi folks,
 
-I am porting a linux driver written for 2.4.28 to kernel 2.6.10. Have
-question regarding a MACRO in my old driver.
+I want to bring up a linux kernel on the AMCC 440EP board (Bamboo). 
+(still!  ;-) )
 
-#define __vpa(va)
-((pte_val(*pte_offset(pmd_offset(pgd_offset_k(va),(va)),(va))) &
-PAGE_MASK) + (va & ~PAGE_MASK))
-Will the above MACRO work as is for 2.6.10 kernel? If not can someone help
-me in making 2.6.10 compatible.
+I managed to compile the kernel sources from kernel.org (2.6.12.3) with 
+a cross tool chain created with
+this great script from kegel.com (using demo-ppc440.sh). I set ARCH=ppc 
+and CROSS_COMPILE=powerpc-440-linux-gnu-
+during the configuration procedure (using xconfig) as well as for the 
+actual buil process. Of course, I also
+added the path to the ppc-crosstools to my PATH variable. Seems I did 
+all that right, because the build process succeeded.
 
-I saw in 2.6.10 pte_offset_kernel is introduced and also googling around
-showed the pte_offset should be replaced by pte_offset_kernel.
+Finally I got an zImage.elf file (among some other variants) after the 
+make process in .../arch/ppc/boot/images which I tried to load
+via TFTP of the PIBS ROM Monitor. After the image has been loaded into 
+RAM I get
+a lapidar "error: can not process ELF program header, status: command 
+rc=-1" and that's it...
 
-Also my compilation fails when that MACRO expanded complaining
- "invalid type argument of `unary *'
+When I examine the image file with readelf everything seems to be all 
+right. All data seems to be plausible
+and it is in fact a binary for PPC.
 
-The Linux kernel runs on Freescale's  MPC8248(ppc arch).
+Anyhow seems to be wrong with the header format... Has anyone a guess 
+what's the problem? Is PIBS
+not able to load kernel images at all? Or do I have to create another 
+kind of image format?
 
-thanks in advance.
--vikas aggarwal
-MS CS
-SUNY, albany
+By the way:
+
+Do I have to rearrange the default memory mapping of this board to get 
+at least some success with the linux kernel?
+
+
+Thanks for your help and sorry for my lame questioning... I am just new 
+to this domain...
+
+Bests,
+    Frank
