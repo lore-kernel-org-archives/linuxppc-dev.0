@@ -1,14 +1,18 @@
-Return-Path: <ajz@cambridgebroadband.com>
-Date: Mon, 25 Jul 2005 14:58:49 +0100
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
-To: "KylongMu" <mqy@263.net.cn>
-Message-Id: <20050725145849.5caef7a9.ajz@cambridgebroadband.com>
-In-Reply-To: <20050725111654.6A5A1C34A8@smtp.263.net>
-References: <20050725111654.6A5A1C34A8@smtp.263.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Linuxppc-embedded@ozlabs.org
-Subject: Re: mpc8540 SK board FEC not work!
+Return-Path: <va824363@albany.edu>
+Received: from smtp.albany.edu (mail1.its.albany.edu [169.226.1.105])
+	by ozlabs.org (Postfix) with ESMTP id 5FFA167D25
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 26 Jul 2005 01:32:15 +1000 (EST)
+Message-ID: <13434.198.22.236.230.1122305525.squirrel@198.22.236.230>
+In-Reply-To: <20050725071638.67632.qmail@web8503.mail.in.yahoo.com>
+References: <20050725071638.67632.qmail@web8503.mail.in.yahoo.com>
+Date: Mon, 25 Jul 2005 11:32:05 -0400 (EDT)
+From: "Vikas Aggarwal" <va824363@albany.edu>
+To: kernelnewbies@nl.linux.org
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
+Cc: linuxppc-embedded@ozlabs.org
+Subject: porting a  mm specific macro  from 2.4 to 2.6
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,59 +23,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I think there are two possibilities:
+Hi,
 
-i)	You are probing the wrong phy address.  Since the MDIO line is pulled high you get a phyID of
-0xffffffff.  Try changing the phy address probed.  From the source it looks like this is done in the
-BIOS.  If this fails scope the MDIO/MDC bus.
+I am porting a linux driver written for 2.4.28 to kernel 2.6.10. Have
+question regarding a MACRO in my old driver.
 
-ii)	The phy id has changed between the 88E1101 and the 88E1111.  If this is the case you may get
-away with just modifying phy_info_marvell.name and phy_info_marvell.phy_id_mask.  But you may have
-to add a new phy_info struct to deal with the new phy if there are any incompatibilities between
-the new and old phys, or if the phy_ids differ in more than just their lower bits.
+#define __vpa(va)
+((pte_val(*pte_offset(pmd_offset(pgd_offset_k(va),(va)),(va))) &
+PAGE_MASK) + (va & ~PAGE_MASK))
+Will the above MACRO work as is for 2.6.10 kernel? If not can someone help
+me in making 2.6.10 compatible.
 
+I saw in 2.6.10 pte_offset_kernel is introduced and also googling around
+showed the pte_offset should be replaced by pte_offset_kernel.
 
-Or maybe both....
+Also my compilation fails when that MACRO expanded complaining
+ "invalid type argument of `unary *'
 
-Alex
+The Linux kernel runs on Freescale's  MPC8248(ppc arch).
 
-
-On Mon, 25 Jul 2005 19:16:50 +0800
-"KylongMu" <mqy@263.net.cn> wrote:
-
-> Hello, team
->         I'm testing the 2.6.13-rc3 kernel on my board, all is work well
-> except
-> the FEC.
-> Board type:  PQ3SK REVB
-> Kernel       :  2.6.13-rc3
-> toolchain    : ELDK 3.1.1
-> PHY type  : Marvell 88E1111S
-> 
->         Compile with "make mpc8540ads_defconfig", change with nothing.
-> download uImage file into my board and boot with it, all is ok ! But when
-> I config the eth0 , it can't work , same with eth1, both of them are
-> Giga-eth,
-> but eth2 is work well, and eth2 is a 10/100-eth.
->         I checked the 8540ADS's hardware message , it's use 88E1011 PHY
-> not 88E1111 PHY . And I checked the kernel code " driver/net/gianfar_phy.c"
-> it takes 88E1011 and 88E1111 as same PHY , so I think this is not a hardware
-> problem, and my board work well with a 2.4.18 DEMO kernel.
->         Here is the output message of  2.6.13-rc3 kernel:
-> 
-> PuffLinux:root$ifconfig eth0 192.168.1.77
-> eth0: PHY is Generic MII (ffffffff)
-> 
->         If the PHY config is correct it will recognize my PHY ID, but here
-> is a
->  wrong ID number ffffffff .
-> 
->         Please help me solve this problem!
-> 
-> Thanks a lot!
-> 
->                         KylongMu
-> 
-> 
-> 
-> 
+thanks in advance.
+-vikas aggarwal
+MS CS
+SUNY, albany
