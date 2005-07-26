@@ -1,18 +1,15 @@
-Return-Path: <daihonggang@utpower.com.cn>
-Received: from utpower.com.cn (unknown [218.13.182.98])
-	by ozlabs.org (Postfix) with ESMTP id E302267D3C
+Return-Path: <frank.lautenbach@gmx.de>
+Received: from mail.gmx.net (pop.gmx.de [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 35D9367D22
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Jul 2005 19:21:10 +1000 (EST)
-Received: from WorldClient ([127.0.0.1])
-	(authenticated user daihonggang@utpower.com.cn)
-	by utpower.com.cn (utpower.com.cn [192.100.200.98])
-	(MDaemon.PRO.v6.8.5.R) with ESMTP id 15-md50000000027.tmp
-	for <linuxppc-embedded@ozlabs.org>; Tue, 26 Jul 2005 17:21:08 +0800
-Date: Tue, 26 Jul 2005 17:21:08 +0800
-From: "=?gb2312?B?tPe67LjV?=" <daihonggang@utpower.com.cn>
-To: linuxppc-embedded@ozlabs.org
-Message-ID: <WorldClient-F200507261721.AA21080094@utpower.com.cn>
-Subject: help
+	Tue, 26 Jul 2005 20:44:54 +1000 (EST)
+Message-ID: <42E6137F.6040605@gmx.de>
+Date: Tue, 26 Jul 2005 12:42:07 +0200
+From: Frank Lautenbach <frank.lautenbach@gmx.de>
+MIME-Version: 1.0
+To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Linux on Bamboo
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,5 +20,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-thanks for your answer, my kernel is vxworks 5.5, can you give any help 
-or advice?
+Hey folks,
+
+thanks for your hint with mktree, the converted image at least started 
+somehow up, I can see
+"TUX!" (btw: can anybody tell the code snipet where this output is 
+generated?) on the onboard
+display but the kernel seems to crash very early without any output to 
+the terminal...
+
+I think the next hurdle is now to configure the kernel suitable for the 
+Bamboo hardware environment...
+
+I suppose some of you did this before already so I want to ask if 
+somebody is so kind and
+posts me the according .config file?
+
+Bests,
+
+Frank
