@@ -1,25 +1,17 @@
-Return-Path: <R00020C@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 290F067D62
+Return-Path: <galak@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 63ABA67C5A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Jul 2005 08:42:08 +1000 (EST)
-Received: from de01smr01.am.mot.com (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	j6PGYf7p023497 for <linuxppc-embedded@ozlabs.org>;
-	Mon, 25 Jul 2005 10:34:41 -0600 (MDT)
-Received: from [10.13.64.191] (D3SWHK71-010013064191.am.freescale.net
-	[10.13.64.191])
-	by de01smr01.am.mot.com (8.13.1/8.13.0) with ESMTP id j6PFYcdK003947
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 25 Jul 2005 10:34:39 -0500 (CDT)
-From: Steve Snyder <R00020C@freescale.com>
-To: linuxppc-embedded@ozlabs.org
-Date: Mon, 25 Jul 2005 11:28:35 -0400
+	Tue, 26 Jul 2005 15:17:14 +1000 (EST)
+Date: Tue, 26 Jul 2005 00:17:08 -0500 (CDT)
+From: Kumar Gala <galak@freescale.com>
+To: Andrew Morton <akpm@osdl.org>
+Message-ID: <Pine.LNX.4.61.0507260016250.7138@nylon.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200507251128.35720.R00020C@freescale.com>
-Subject: Seeking HOW-TO on bring up EP MPC8245 board
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH] ppc32: Fix building of prpmc750
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,21 +22,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-My company has just purchased a couple of MPC8245 boards from Embedded 
-Planet.  The boards come with just the boot loader (PlanetCore v1.03) 
-installed.  Now I'm trying to get the boards to boot a Linux kernel.
+Updated prpmc750 platform code to include serial_reg.h to fix building.
 
-I downloaded the software ISO image (ppc-2005-03-07.iso) from EP's 
-website.  No problems seen when building the kernel with their 
-default config file.  Before taking the step on burning the kernel 
-image to flash, I'm loading the image into RAM (via TFTP) and running 
-it.  
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
-When I attempt to run the kernel image nothing happens. No error 
-message, or serial output of any find.
+---
+commit c6d47b85a4f5743a0328ab6388a085744e00ac48
+tree 41a83749e10e4dc70feefcd75396c8c5385b8fb1
+parent dc5a25603c1f8984f10f9e93d91b4d95b2ce6d9d
+author Kumar K. Gala <kumar.gala@freescale.com> Tue, 26 Jul 2005 00:12:37 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> Tue, 26 Jul 2005 00:12:37 -0500
 
-The EP documentation is pretty generic since the board can be used to 
-run just about any OS.  Is there a HOW-TO on how to get this, or a 
-similar, board up and running with Linux?
+ arch/ppc/platforms/prpmc750.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Thanks.
+diff --git a/arch/ppc/platforms/prpmc750.c b/arch/ppc/platforms/prpmc750.c
+--- a/arch/ppc/platforms/prpmc750.c
++++ b/arch/ppc/platforms/prpmc750.c
+@@ -29,6 +29,7 @@
+ #include <linux/ide.h>
+ #include <linux/root_dev.h>
+ #include <linux/slab.h>
++#include <linux/serial_reg.h>
+ 
+ #include <asm/byteorder.h>
+ #include <asm/system.h>
