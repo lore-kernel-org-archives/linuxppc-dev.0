@@ -1,20 +1,15 @@
-Return-Path: <jotken@softadvances.com>
-Received: from smtpauth07.mail.atl.earthlink.net
-	(smtpauth07.mail.atl.earthlink.net [209.86.89.67])
-	by ozlabs.org (Postfix) with ESMTP id BDE8367CDD
+Return-Path: <gregkh@suse.de>
+Received: from perch.kroah.org (mail.kroah.org [69.55.234.183])
+	by ozlabs.org (Postfix) with ESMTP id 43C3767CDD
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Jul 2005 07:41:41 +1000 (EST)
-Received: from [63.246.179.23] (helo=[192.168.8.100])
-	by smtpauth07.mail.atl.earthlink.net with asmtp (Exim 4.34)
-	id 1DxXBE-0003EB-CR
-	for linuxppc-embedded@ozlabs.org; Tue, 26 Jul 2005 17:41:40 -0400
-Message-ID: <42E6AE14.9000206@softadvances.com>
-Date: Tue, 26 Jul 2005 16:41:40 -0500
-From: John Otken <jotken@softadvances.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: [PATCH] Support 440EP On-Chip OHCI USB Host Controller
+	Wed, 27 Jul 2005 07:48:21 +1000 (EST)
+To: galak@freescale.com, greg@kroah.com, gregkh@suse.de,
+	kumar.gala@freescale.com, linuxppc-embedded@ozlabs.org
+From: <gregkh@suse.de>
+Date: Tue, 26 Jul 2005 14:48:48 -0700
+In-Reply-To: <Pine.LNX.4.61.0507142157350.14920@nylon.am.freescale.net>
+Message-ID: <1DxXI9-2sG-00@press.kroah.org>
+Subject: patch i2c-mpc-restore-code-removed.patch added to gregkh-2.6 tree
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,114 +20,142 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This patch adds support for the AMCC 440EP on-chip OHCI USB host controller.  I tested it on the Bamboo and Yosemite boards using the 2.6.12 kernel.
 
-This patch depends on Wade Farnsworth's "PPC440EP SoC and Bamboo board support" patch from 2005-04-07 and my "fix invalid function name usb_hcd_put in ohci-ppc-soc.c" patch from 2005-07-20:
+This is a note to let you know that I've just added the patch titled
 
-http://patchwork.ozlabs.org/linuxppc/patch?id=1311
-http://patchwork.ozlabs.org/linuxppc/patch?id=1803
+     Subject: I2C-MPC: Restore code removed
 
-Comments are welcome.
+to my gregkh-2.6 tree.  Its filename is
 
-(This is a repost.  My email host has had problems.)
+     i2c-mpc-restore-code-removed.patch
 
-Signed-off-by: John Otken <jotken@softadvances.com>
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+
+Patches currently in gregkh-2.6 which might be from galak@freescale.com are
+
+i2c-mpc-restore-code-removed.patch
 
 
-diff -uprN b/arch/ppc/platforms/4xx/bamboo.c c/arch/ppc/platforms/4xx/bamboo.c
---- b/arch/ppc/platforms/4xx/bamboo.c	2005-07-24 16:14:36.000000000 -0500
-+++ c/arch/ppc/platforms/4xx/bamboo.c	2005-07-25 06:34:52.498441038 -0500
-@@ -431,5 +431,7 @@ void __init platform_init(unsigned long 
- #ifdef CONFIG_KGDB
- 	ppc_md.early_serial_map = bamboo_early_serial_map;
- #endif
-+
-+	SDR_WRITE( 0x320, 1 );		/* little endian usb (SDR0_USB0) */
- }
- 
-diff -uprN b/arch/ppc/platforms/4xx/ibm440ep.c c/arch/ppc/platforms/4xx/ibm440ep.c
---- b/arch/ppc/platforms/4xx/ibm440ep.c	2005-07-24 16:14:36.000000000 -0500
-+++ c/arch/ppc/platforms/4xx/ibm440ep.c	2005-07-24 18:00:38.000000000 -0500
-@@ -187,3 +187,44 @@ struct ppc4xx_uic_settings ppc4xx_core_u
- 	},
+>From galak@freescale.com Thu Jul 14 20:02:54 2005
+Date: Thu, 14 Jul 2005 21:58:46 -0500 (CDT)
+From: Kumar Gala <galak@freescale.com>
+To: Greg KH <greg@kroah.com>
+cc: linux-kernel@vger.kernel.org,
+        linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: I2C-MPC: Restore code removed
+Message-ID: <Pine.LNX.4.61.0507142157350.14920@nylon.am.freescale.net>
+
+
+I2C-MPC: Restore code removed
+
+A previous patch to remove support for the OCP device model was way
+to generious and moved some of the platform device model code, oops.
+
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+--- a/drivers/i2c/busses/i2c-mpc.c
++++ b/drivers/i2c/busses/i2c-mpc.c
+@@ -288,6 +288,100 @@ static struct i2c_adapter mpc_ops = {
+ 	.retries = 1
  };
  
-+static struct resource ohci_usb_resources[] = {
-+	[0] = {
-+	    .start	= 0x0EF601000,
-+	    .end	= 0x0EF601000 + 0x80 - 1,
-+	    .flags	= IORESOURCE_MEM,
-+	},
-+	[1] = {
-+	    .start	= 40,
-+	    .end	= 40,
-+	    .flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+static u64 dma_mask = 0xffffffffULL;
-+
-+#include <asm/usb.h>
-+
-+static struct usb_hcd_platform_data platform_data;
-+
-+static struct platform_device ohci_usb_device = {
-+	.name		= "ppc-soc-ohci",
-+	.id		= 0,
-+	.num_resources	= ARRAY_SIZE(ohci_usb_resources),
-+	.resource	= ohci_usb_resources,
-+	.dev		= {
-+	    .dma_mask = &dma_mask,
-+	    .coherent_dma_mask = 0xffffffffULL,
-+	    .platform_data = &platform_data,
-+    }
-+};
-+
-+static struct platform_device *ibm440ep_devs[] __initdata = {
-+	&ohci_usb_device,
-+};
-+
-+static int __init
-+   ibm440ep_platform_add_devices(void)
++static int fsl_i2c_probe(struct device *device)
 +{
-+	return platform_add_devices(ibm440ep_devs, ARRAY_SIZE(ibm440ep_devs));
-+}
-+arch_initcall(ibm440ep_platform_add_devices);
-diff -uprN b/drivers/usb/host/Kconfig c/drivers/usb/host/Kconfig
---- b/drivers/usb/host/Kconfig	2005-07-14 09:48:19.000000000 -0500
-+++ c/drivers/usb/host/Kconfig	2005-07-24 18:00:38.000000000 -0500
-@@ -68,7 +68,7 @@ config USB_OHCI_HCD
- 
- config USB_OHCI_HCD_PPC_SOC
- 	bool "OHCI support for on-chip PPC USB controller"
--	depends on USB_OHCI_HCD && (STB03xxx || PPC_MPC52xx)
-+	depends on USB_OHCI_HCD && (STB03xxx || PPC_MPC52xx || 440EP)
- 	default y
- 	select USB_OHCI_BIG_ENDIAN
- 	---help---
-@@ -92,7 +92,7 @@ config USB_OHCI_BIG_ENDIAN
- config USB_OHCI_LITTLE_ENDIAN
- 	bool
- 	depends on USB_OHCI_HCD
--	default n if STB03xxx || PPC_MPC52xx
-+	default n if STB03xxx || PPC_MPC52xx || 440EP
- 	default y
- 
- config USB_UHCI_HCD
-diff -uprN b/include/asm-ppc/usb.h c/include/asm-ppc/usb.h
---- b/include/asm-ppc/usb.h	1969-12-31 17:00:00.000000000 -0700
-+++ c/include/asm-ppc/usb.h	2005-07-24 18:00:38.000000000 -0500
-@@ -0,0 +1,13 @@
-+/*
-+ * ppc/usb.h:
-+ *
-+ */
-+#ifndef _PPC_USB_H
-+#define _PPC_USB_H
++	int result = 0;
++	struct mpc_i2c *i2c;
++	struct platform_device *pdev = to_platform_device(device);
++	struct fsl_i2c_platform_data *pdata;
++	struct resource *r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 +
-+struct usb_hcd_platform_data {
-+	int (*start) (struct platform_device *pdev);
-+	void (*stop) (struct platform_device *pdev);
++	pdata = (struct fsl_i2c_platform_data *) pdev->dev.platform_data;
++
++	if (!(i2c = kmalloc(sizeof(*i2c), GFP_KERNEL))) {
++		return -ENOMEM;
++	}
++	memset(i2c, 0, sizeof(*i2c));
++
++	i2c->irq = platform_get_irq(pdev, 0);
++	i2c->flags = pdata->device_flags;
++	init_waitqueue_head(&i2c->queue);
++
++	i2c->base = ioremap((phys_addr_t)r->start, MPC_I2C_REGION);
++
++	if (!i2c->base) {
++		printk(KERN_ERR "i2c-mpc - failed to map controller\n");
++		result = -ENOMEM;
++		goto fail_map;
++	}
++
++	if (i2c->irq != 0)
++		if ((result = request_irq(i2c->irq, mpc_i2c_isr,
++					  SA_SHIRQ, "i2c-mpc", i2c)) < 0) {
++			printk(KERN_ERR
++			       "i2c-mpc - failed to attach interrupt\n");
++			goto fail_irq;
++		}
++
++	mpc_i2c_setclock(i2c);
++	dev_set_drvdata(device, i2c);
++
++	i2c->adap = mpc_ops;
++	i2c_set_adapdata(&i2c->adap, i2c);
++	i2c->adap.dev.parent = &pdev->dev;
++	if ((result = i2c_add_adapter(&i2c->adap)) < 0) {
++		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
++		goto fail_add;
++	}
++
++	return result;
++
++      fail_add:
++	if (i2c->irq != 0)
++		free_irq(i2c->irq, NULL);
++      fail_irq:
++	iounmap(i2c->base);
++      fail_map:
++	kfree(i2c);
++	return result;
 +};
 +
-+#endif /* !(_PPC_USB_H) */
++static int fsl_i2c_remove(struct device *device)
++{
++	struct mpc_i2c *i2c = dev_get_drvdata(device);
++
++	i2c_del_adapter(&i2c->adap);
++	dev_set_drvdata(device, NULL);
++
++	if (i2c->irq != 0)
++		free_irq(i2c->irq, i2c);
++
++	iounmap(i2c->base);
++	kfree(i2c);
++	return 0;
++};
++
++/* Structure for a device driver */
++static struct device_driver fsl_i2c_driver = {
++	.name = "fsl-i2c",
++	.bus = &platform_bus_type,
++	.probe = fsl_i2c_probe,
++	.remove = fsl_i2c_remove,
++};
++
++static int __init fsl_i2c_init(void)
++{
++	return driver_register(&fsl_i2c_driver);
++}
++
++static void __exit fsl_i2c_exit(void)
++{
++	driver_unregister(&fsl_i2c_driver);
++}
++
++module_init(fsl_i2c_init);
++module_exit(fsl_i2c_exit);
++
+ MODULE_AUTHOR("Adrian Cox <adrian@humboldt.co.uk>");
+ MODULE_DESCRIPTION
+     ("I2C-Bus adapter for MPC107 bridge and MPC824x/85xx/52xx processors");
