@@ -1,16 +1,17 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 3BDEB67C5A
-	for <linuxppc-dev@ozlabs.org>; Wed, 27 Jul 2005 05:56:56 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Tue, 26 Jul 2005 14:44:48 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B8593EE@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Leitner, Kip" <Kip.Leitner@ipc.com>,
-	<linuxppc-dev@ozlabs.org>
-Subject: RE: 8260 FCC Ethernet problem
+Return-Path: <marcelo.tosatti@cyclades.com>
+Date: Tue, 26 Jul 2005 07:05:00 -0300
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Kumar Gala <kumar.gala@freescale.com>,
+	"'Aristeu Sergio Rozanski Filho'" <aris@cathedrallabs.org>
+Message-ID: <20050726100500.GB28003@dmt.cnet>
+References: <855be1bf81cc3629e58e6a23ebb50300@embeddededge.com>
+	<CBF42A67-D022-4218-8624-8E40400F7C0D@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CBF42A67-D022-4218-8624-8E40400F7C0D@freescale.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: Re: platform/board removal update
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,17 +21,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=20
+On Tue, Jul 26, 2005 at 09:43:43AM -0500, Kumar Gala wrote:
+> 
+> On Jul 26, 2005, at 9:35 AM, Dan Malek wrote:
+> 
+> >
+> >On Jul 26, 2005, at 9:01 AM, Kumar Gala wrote:
+> >
+> >
+> >>All the other systems (apus, gemini, rpxcllf) were more effort than I
+> >>was wanting to deal with.
+> >>
+> >
+> >Why?  The rpxcllf worked not long ago.  What happened to the  
+> >courtesy of
+> >the past when such updates were applied to all platforms such they
+> >would at least build?  After such changes, if there is still a  
+> >problem,
+> >the
+> >person should at least contact the maintainer to get it resolved.  I
+> >don't
+> >appreciate being demanded to fix something within a short period of
+> >time that someone else broke or else everything I've done in the past
+> >will be discarded.
+> 
+> Well, I think its reasonable amount of time.  We are talking about  
+> 4-6 months between now and when a 2.6.15 is likely to get released.   
+> I'm not 100% sure who broken rpxcllf, but the issue seems to be with  
+> the 8xx_io/fec.c driver so it should be resolved with panto's updated  
+> driver.
 
-> -----Original Message-----
-> From: linuxppc-dev-bounces@ozlabs.org=20
-> [mailto:linuxppc-dev-bounces@ozlabs.org] On Behalf Of Leitner, Kip
-> Sent: Tuesday, July 26, 2005 14:15
-> We are wondering if we apply your patch to 2.4.18 fcc_enet.c,=20
-> will this fix our late collision problem, as 2.4.18=20
-> fcc_enet.c has the uncorrected part of the code in our Linux=20
-> distribution that your patch fixes.
+8xx_io/fec.c is still using v2.4's workqueue infrastructure but other than
+that its working fine. 
 
-Try and see.
-I have some doubts, as this only fixes a problem in full duplex mode,
-and you are running in half duplex.
+The fix will be pushed upstream ASAP.
+
+BTW, we should schedule 8xx_io/fec.c for removal, but before that we ought to 
+test all supported PHY's on the new driver.
+
+Aris was talking to me about this on OLS. Aris, what are the PHY's not supported
+by Panto's driver again? We should build a list of those and ask around for
+testers.
+
+> I'm just trying to get us back into a sane state and hopefully we  
+> will regress building of all our defconfigs more often to catch  
+> things sooner.
