@@ -1,19 +1,18 @@
-Return-Path: <gjaeger@sysgo.com>
-Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
-	by ozlabs.org (Postfix) with ESMTP id 1A26F67D25
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 7437667D49
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 26 Jul 2005 21:58:53 +1000 (EST)
-From: Gerhard Jaeger <gjaeger@sysgo.com>
-To: linuxppc-embedded@ozlabs.org
-Date: Tue, 26 Jul 2005 13:55:40 +0200
-References: <42E6137F.6040605@gmx.de>
-In-Reply-To: <42E6137F.6040605@gmx.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200507261355.40327.gjaeger@sysgo.com>
-Cc: Frank Lautenbach <frank.lautenbach@gmx.de>
-Subject: Re: Linux on Bamboo
+	Tue, 26 Jul 2005 23:02:29 +1000 (EST)
+In-Reply-To: <42E3DD39.8040104@varma-el.com>
+References: <42E3DD39.8040104@varma-el.com>
+Mime-Version: 1.0 (Apple Message framework v733)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <B5950CF1-3667-4FAE-8F80-11F4C223BAA2@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Tue, 26 Jul 2005 08:02:25 -0500
+To: Andrey Volkov <avolkov@varma-el.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: LITE5200 2.6.x kernel support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,30 +23,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+>> I am currently using 2.4.25 on the Lite5200 board, but I'd really  
+>> like to
+>> switch to 2.6.x. The only 5200 specific support I need are the  
+>> integrated
+>> uart and the PCI. I tried both 2.6.11 and 2.6.12 without luck: the  
+>> kernel
+>> start, but then is stuck (seems into the init sequence). I use the
+>> configuration
+>> file from arch/ppc/configs/lite5200_defconfig. I cross-compiled the
+>> kernel with gcc-3.4.1.
+>>
+>> I was wondering if somebody could give me some help, maybe by telling
+>> be what I am doing wrong.
+>>
+>> Thanks,
+>> Olivier
+>>
+>> BTW, I tried also 2.6.13-rc3, but I can't even compile for the  
+>> Lite5200,
+>> there are some syntax error when compile the pci module...
 
-On Dienstag 26 Juli 2005 12:42, Frank Lautenbach wrote:
-> Hey folks,
->
-> thanks for your hint with mktree, the converted image at least started
-> somehow up, I can see
-> "TUX!" (btw: can anybody tell the code snipet where this output is
-> generated?) on the onboard
+I think I've address the build issue and posted a patch to lkml for  
+it.  Look for
 
---> this is done by PIBS, before starting the kernel img...
+http://www.ussg.iu.edu/hypermail/linux/kernel/0507.3/0365.html
 
-> display but the kernel seems to crash very early without any output to
-> the terminal...
->
-> I think the next hurdle is now to configure the kernel suitable for the
-> Bamboo hardware environment...
-
-hmmm, for what platform have you configured the kernel?
-
-> I suppose some of you did this before already so I want to ask if
-> somebody is so kind and
-> posts me the according .config file?
--- 
-Gerhard Jaeger <gjaeger@sysgo.com>
-SYSGO AG                      Embedded and Real-Time Software
-www.sysgo.com | www.elinos.com | www.osek.de | www.pikeos.com
+- kumar
