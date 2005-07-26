@@ -1,21 +1,16 @@
-Return-Path: <jpl@xiphos.ca>
-Received: from mail.net (custpop.ca.mci.com [142.77.1.111])
-	by ozlabs.org (Postfix) with ESMTP id 54B7B67C92
+Return-Path: <Srivatsan.CR@in.flextronics.com>
+Received: from bglnt005.asia.ad.flextronics.com (unknown [203.145.155.1])
+	by ozlabs.org (Postfix) with ESMTP id BFE8C67C64
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Jul 2005 01:47:29 +1000 (EST)
-Received: from [216.95.199.148] (account jpl@xiphos.ca HELO [192.168.1.169])
-	by mail.net (CommuniGate Pro SMTP 4.2.8)
-	with ESMTP-TLS id 70653659 for linuxppc-embedded@ozlabs.org;
-	Tue, 26 Jul 2005 11:47:27 -0400
-Message-ID: <42E65ADE.50209@xiphos.ca>
-Date: Tue, 26 Jul 2005 11:46:38 -0400
-From: Joshua Lamorie <jpl@xiphos.ca>
-MIME-Version: 1.0
+	Wed, 27 Jul 2005 01:50:14 +1000 (EST)
+Message-ID: <3B58B875DBDE504F94D2A1A1C9DF6F1F01A74186@bglnt005.asia.ad.flextronics.com>
+From: Srivatsan CR <Srivatsan.CR@in.flextronics.com>
 To: linuxppc-embedded@ozlabs.org
-References: <42E555B4.7030904@xiphos.ca>
-In-Reply-To: <42E555B4.7030904@xiphos.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: Re: Virtex-II Pro - PCI Host
+Date: Tue, 26 Jul 2005 21:04:45 +0530
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C591F7.8CBB6C50"
+Subject: [Newbie] Linux Warm Reboot question
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,48 +21,92 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Gidday there,
+This message is in MIME format. Since your mail reader does not understand
+this format, some or all of this message may not be legible.
 
-I think I've found the answer.  The ml310 has a Xilinx EDK project that 
-is available online.  Within this project is a collection of files for a 
-linux bsp, including many files that would go in the arch/ppc hierarchy. 
+------_=_NextPart_001_01C591F7.8CBB6C50
+Content-Type: text/plain
 
-I haven't built this for my own board yet, but I will soon and let 
-anyone know who is interested how it goes and if there are any patches 
-that may be useful.
+Dear all,
 
-Joshua
+     We are trying to perform a warm reboot on a MPC8260 based target but we
+are unable to make the kernel jump to the correct location. Can anyone give
+a brief on the RAM memory map Linux in use for these kind of processors ? 
 
-Joshua Lamorie wrote:
+What I got from going thro' the code in head.S (exception vector is mapped
+from 0x0, then Linux Kernel starts. But not able to find the physical start
+address of the Linux Kernel code).
 
-> Gidday there,
->
-> We are trying to put a PCI host into a Virtex-II Pro.  We have seen 
-> that the latest development board from Xilinx (ml310, link at end of 
-> email) has PCI host and MontaVista has some form of Linux support.  
-> However, I can't seem to find any kernel source around with any of 
-> this code.  I could easily have missed it.
->
-> Anyone know where I might find this code?
->
-> Thanks.
->
-> Joshua
->
-> p.s. The skinny on the ml310...
-> http://www.xilinx.com/products/boards/ml310/current/#pci
->
+Thanks for all the time.
 
--- 
+With Regards,
+C.R.Srivatsan
 
-Xiphos Technologies
-(514) 848-9640 x227
-(514) 848-9644 fax
+    
 
-www.xiplink.com
-_______________________________________________
-The information transmitted is intended only for the
-person or entity to which it is addressed and may contain
-confidential and/or privileged material.  If you have
-received this in error, please contact the sender and delete
-this communication and any copy immediately. Thank you.
+    
+    
+
+      
+
+    
+     
+
+       
+
+
+------_=_NextPart_001_01C591F7.8CBB6C50
+Content-Type: text/html
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3DUS-ASCII">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+5.5.2653.12">
+<TITLE>[Newbie] Linux Warm Reboot question</TITLE>
+</HEAD>
+<BODY>
+
+<P><FONT SIZE=3D2>Dear all,</FONT>
+</P>
+
+<P><FONT SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp; We are trying to perform a =
+warm reboot on a MPC8260 based target but we are unable to make the =
+kernel jump to the correct location. Can anyone give a brief on the RAM =
+memory map Linux in use for these kind of processors ? </FONT></P>
+
+<P><FONT SIZE=3D2>What I got from going thro' the code in head.S =
+(exception vector is mapped from 0x0, then Linux Kernel starts. But not =
+able to find the physical start address of the Linux Kernel =
+code).</FONT></P>
+
+<P><FONT SIZE=3D2>Thanks for all the time.</FONT>
+</P>
+
+<P><FONT SIZE=3D2>With Regards,</FONT>
+<BR><FONT SIZE=3D2>C.R.Srivatsan</FONT>
+</P>
+
+<P><FONT SIZE=3D2>&nbsp;&nbsp;&nbsp; </FONT>
+</P>
+
+<P><FONT SIZE=3D2>&nbsp;&nbsp;&nbsp; </FONT>
+<BR><FONT SIZE=3D2>&nbsp;&nbsp;&nbsp; </FONT>
+</P>
+
+<P><FONT SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </FONT>
+</P>
+
+<P><FONT SIZE=3D2>&nbsp;&nbsp;&nbsp; </FONT>
+<BR><FONT SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp; </FONT>
+</P>
+
+<P><FONT SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C591F7.8CBB6C50--
