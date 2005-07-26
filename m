@@ -1,12 +1,13 @@
-Return-Path: <kumar.gala@freescale.com>
-In-Reply-To: <CF36C2B8-267D-421C-AA4E-7AE83DCF5172@freescale.com>
+Return-Path: <dan@embeddededge.com>
+In-Reply-To: <F4AA78A2-3370-406A-83B1-362250AEEC4A@freescale.com>
 References: <CF36C2B8-267D-421C-AA4E-7AE83DCF5172@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v733)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <F4AA78A2-3370-406A-83B1-362250AEEC4A@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Tue, 26 Jul 2005 08:01:36 -0500
-To: "Gala Kumar K.-galak" <kumar.gala@freescale.com>
+	<F4AA78A2-3370-406A-83B1-362250AEEC4A@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v622)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <855be1bf81cc3629e58e6a23ebb50300@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Tue, 26 Jul 2005 10:35:56 -0400
+To: Kumar Gala <kumar.gala@freescale.com>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
 Subject: Re: platform/board removal update
@@ -19,29 +20,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> The following board/platforms are currently not building:
-> apus
-> gemini
-> lite5200
 
-lite5200 seems to be running into a pci.h issue between asm-ppc and  
-linux.  Sent patch to akpm and gregkh to look at.
+On Jul 26, 2005, at 9:01 AM, Kumar Gala wrote:
 
-> prpmc750
-> radstone_ppc7d
+> All the other systems (apus, gemini, rpxcllf) were more effort than I 
+> was wanting to deal with.
 
-I've fixed up prpmc750 (include issue) and radstone_ppc7d (defconfig  
-update)
+Why?  The rpxcllf worked not long ago.  What happened to the courtesy of
+the past when such updates were applied to all platforms such they
+would at least build?  After such changes, if there is still a problem, 
+the
+person should at least contact the maintainer to get it resolved.  I 
+don't
+appreciate being demanded to fix something within a short period of
+time that someone else broke or else everything I've done in the past
+will be discarded.
 
-> rpxcllf
-> TQM8260
+Thanks.
 
-the TQM8260 needs a slightly reorder of includes.  I'll push this  
-change today.
 
-All the other systems (apus, gemini, rpxcllf) were more effort than I  
-was wanting to deal with.  I'll be sending a patch to list them as  
-CONFIG_BROKEN and let the various board maintainers look at fixing  
-them up.
-
-- kumar
+	-- Dan
