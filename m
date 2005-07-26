@@ -1,18 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bogdan Antonovici <bantonovici@priority.mb.ca>
-In-Reply-To: <000d01c5911b$0f049430$cd01a8c0@DESIGNLAB>
-References: <1121959795.800.18.camel@rd-lab>
-	<1a928a85f53f5dcd972161356611a312@embeddededge.com>
-	<1122047198.6726.13.camel@rd-lab> <20050722125750.GA5950@dmt.cnet>
-	<000d01c5911b$0f049430$cd01a8c0@DESIGNLAB>
-Content-Type: text/plain
-Date: Mon, 25 Jul 2005 13:36:34 -0400
-Message-Id: <1122312994.14393.176.camel@gaston>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, ppckernel <ppckernel@ppckernel.org>,
-	linuxppc-embedded@ozlabs.org
-Subject: Re: swap_dup: Bad swap file entry 00480020
+Return-Path: <kumar.gala@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v733)
+Message-Id: <CF36C2B8-267D-421C-AA4E-7AE83DCF5172@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+To: Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Mon, 25 Jul 2005 23:18:12 -0500
+Subject: platform/board removal update
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,14 +16,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2005-07-25 at 08:16 -0500, Bogdan Antonovici wrote:
-> Yes, it was. After some research on the previous message i realized
-> that it run out of memory so i did mem=8M and it hasn't been crashed
-> since then.
-> I still would like to understand why that swap code was run when the
-> swapping wasn't activated at all.
+All,
 
-The "swap" code also kicks in for things like mmap of a file, this is
-the same code path.
+I'm going to be sending a series of patches to remove the following  
+board/platforms (as discussed earlier):
 
-Ben.
+adir
+ash
+beech
+cedar
+ep405
+k2
+mcpn765
+menf1
+oak
+pcore
+rainier
+redwood
+sm850
+spd823ts
+
+The following board/platforms are currently not building:
+apus
+gemini
+lite5200
+prpmc750
+radstone_ppc7d
+rpxcllf
+TQM8260
+
+At OLS, Paul and the various sub-arch maintainers (in attendance)  
+discussed that if the set of board/platforms that are not building  
+are not fixed by the release of 2.6.15 we will be removing support  
+for them.  Some of the build issues are trivial and I may look at  
+fixing them myself.  For all of the systems that I dont fix I'll be  
+sending a patch marking them BROKEN in the Kconfig file.  If these  
+systems are still BROKEN after 2.6.15 we will be removing them.
+
+- kumar
