@@ -1,18 +1,20 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id E9A5267CA0
+Return-Path: <jotken@softadvances.com>
+Received: from smtpauth07.mail.atl.earthlink.net
+	(smtpauth07.mail.atl.earthlink.net [209.86.89.67])
+	by ozlabs.org (Postfix) with ESMTP id BDE8367CDD
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Jul 2005 07:32:18 +1000 (EST)
-Date: Tue, 26 Jul 2005 14:32:15 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Andrew Morton <akpm@osdl.org>
-Message-ID: <20050726213215.GB22717@gate.ebshome.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-embedded@ozlabs.org
-Subject: [PATCH] ppc32: fix 440SP MAL channels count
+	Wed, 27 Jul 2005 07:41:41 +1000 (EST)
+Received: from [63.246.179.23] (helo=[192.168.8.100])
+	by smtpauth07.mail.atl.earthlink.net with asmtp (Exim 4.34)
+	id 1DxXBE-0003EB-CR
+	for linuxppc-embedded@ozlabs.org; Tue, 26 Jul 2005 17:41:40 -0400
+Message-ID: <42E6AE14.9000206@softadvances.com>
+Date: Tue, 26 Jul 2005 16:41:40 -0500
+From: John Otken <jotken@softadvances.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: [PATCH] Support 440EP On-Chip OHCI USB Host Controller
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,24 +25,114 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Andrew,
+This patch adds support for the AMCC 440EP on-chip OHCI USB host controller.  I tested it on the Bamboo and Yosemite boards using the 2.6.12 kernel.
 
-the following patch fixes MAL channels count in PPC 440SP OCP 
-definition. PPC 440SP has only 1 EMAC attached to MAL.
+This patch depends on Wade Farnsworth's "PPC440EP SoC and Bamboo board support" patch from 2005-04-07 and my "fix invalid function name usb_hcd_put in ohci-ppc-soc.c" patch from 2005-07-20:
 
-Signed-off-by: Eugene Surovegin <ebs@ebshome.net>
+http://patchwork.ozlabs.org/linuxppc/patch?id=1311
+http://patchwork.ozlabs.org/linuxppc/patch?id=1803
 
-diff --git a/arch/ppc/platforms/4xx/ibm440sp.c b/arch/ppc/platforms/4xx/ibm440sp.c
---- a/arch/ppc/platforms/4xx/ibm440sp.c
-+++ b/arch/ppc/platforms/4xx/ibm440sp.c
-@@ -36,8 +36,8 @@ static struct ocp_func_emac_data ibm440s
- OCP_SYSFS_EMAC_DATA()
+Comments are welcome.
+
+(This is a repost.  My email host has had problems.)
+
+Signed-off-by: John Otken <jotken@softadvances.com>
+
+
+diff -uprN b/arch/ppc/platforms/4xx/bamboo.c c/arch/ppc/platforms/4xx/bamboo.c
+--- b/arch/ppc/platforms/4xx/bamboo.c	2005-07-24 16:14:36.000000000 -0500
++++ c/arch/ppc/platforms/4xx/bamboo.c	2005-07-25 06:34:52.498441038 -0500
+@@ -431,5 +431,7 @@ void __init platform_init(unsigned long 
+ #ifdef CONFIG_KGDB
+ 	ppc_md.early_serial_map = bamboo_early_serial_map;
+ #endif
++
++	SDR_WRITE( 0x320, 1 );		/* little endian usb (SDR0_USB0) */
+ }
  
- static struct ocp_func_mal_data ibm440sp_mal0_def = {
--	.num_tx_chans   = 4,    	/* Number of TX channels */
--	.num_rx_chans   = 4,    	/* Number of RX channels */
-+	.num_tx_chans   = 1,    	/* Number of TX channels */
-+	.num_rx_chans   = 1,    	/* Number of RX channels */
- 	.txeob_irq	= 38,		/* TX End Of Buffer IRQ  */
- 	.rxeob_irq	= 39,		/* RX End Of Buffer IRQ  */
- 	.txde_irq	= 34,		/* TX Descriptor Error IRQ */
+diff -uprN b/arch/ppc/platforms/4xx/ibm440ep.c c/arch/ppc/platforms/4xx/ibm440ep.c
+--- b/arch/ppc/platforms/4xx/ibm440ep.c	2005-07-24 16:14:36.000000000 -0500
++++ c/arch/ppc/platforms/4xx/ibm440ep.c	2005-07-24 18:00:38.000000000 -0500
+@@ -187,3 +187,44 @@ struct ppc4xx_uic_settings ppc4xx_core_u
+ 	},
+ };
+ 
++static struct resource ohci_usb_resources[] = {
++	[0] = {
++	    .start	= 0x0EF601000,
++	    .end	= 0x0EF601000 + 0x80 - 1,
++	    .flags	= IORESOURCE_MEM,
++	},
++	[1] = {
++	    .start	= 40,
++	    .end	= 40,
++	    .flags	= IORESOURCE_IRQ,
++	},
++};
++
++static u64 dma_mask = 0xffffffffULL;
++
++#include <asm/usb.h>
++
++static struct usb_hcd_platform_data platform_data;
++
++static struct platform_device ohci_usb_device = {
++	.name		= "ppc-soc-ohci",
++	.id		= 0,
++	.num_resources	= ARRAY_SIZE(ohci_usb_resources),
++	.resource	= ohci_usb_resources,
++	.dev		= {
++	    .dma_mask = &dma_mask,
++	    .coherent_dma_mask = 0xffffffffULL,
++	    .platform_data = &platform_data,
++    }
++};
++
++static struct platform_device *ibm440ep_devs[] __initdata = {
++	&ohci_usb_device,
++};
++
++static int __init
++   ibm440ep_platform_add_devices(void)
++{
++	return platform_add_devices(ibm440ep_devs, ARRAY_SIZE(ibm440ep_devs));
++}
++arch_initcall(ibm440ep_platform_add_devices);
+diff -uprN b/drivers/usb/host/Kconfig c/drivers/usb/host/Kconfig
+--- b/drivers/usb/host/Kconfig	2005-07-14 09:48:19.000000000 -0500
++++ c/drivers/usb/host/Kconfig	2005-07-24 18:00:38.000000000 -0500
+@@ -68,7 +68,7 @@ config USB_OHCI_HCD
+ 
+ config USB_OHCI_HCD_PPC_SOC
+ 	bool "OHCI support for on-chip PPC USB controller"
+-	depends on USB_OHCI_HCD && (STB03xxx || PPC_MPC52xx)
++	depends on USB_OHCI_HCD && (STB03xxx || PPC_MPC52xx || 440EP)
+ 	default y
+ 	select USB_OHCI_BIG_ENDIAN
+ 	---help---
+@@ -92,7 +92,7 @@ config USB_OHCI_BIG_ENDIAN
+ config USB_OHCI_LITTLE_ENDIAN
+ 	bool
+ 	depends on USB_OHCI_HCD
+-	default n if STB03xxx || PPC_MPC52xx
++	default n if STB03xxx || PPC_MPC52xx || 440EP
+ 	default y
+ 
+ config USB_UHCI_HCD
+diff -uprN b/include/asm-ppc/usb.h c/include/asm-ppc/usb.h
+--- b/include/asm-ppc/usb.h	1969-12-31 17:00:00.000000000 -0700
++++ c/include/asm-ppc/usb.h	2005-07-24 18:00:38.000000000 -0500
+@@ -0,0 +1,13 @@
++/*
++ * ppc/usb.h:
++ *
++ */
++#ifndef _PPC_USB_H
++#define _PPC_USB_H
++
++struct usb_hcd_platform_data {
++	int (*start) (struct platform_device *pdev);
++	void (*stop) (struct platform_device *pdev);
++};
++
++#endif /* !(_PPC_USB_H) */
