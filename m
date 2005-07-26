@@ -1,16 +1,14 @@
-Return-Path: <lzorlov@DIRECTV.com>
-Received: from dorado.CORP.FRD.DIRECTV.COM (mail01.directv.com [206.17.88.90])
-	by ozlabs.org (Postfix) with ESMTP id B993667D3E
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 27 Jul 2005 03:10:54 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C59202.98005106"
-Date: Tue, 26 Jul 2005 09:53:48 -0700
-Message-ID: <AE35A89453D12D4CA67E62C54F54BFAD02FDC52D@castor.directv.com>
-From: "Orlov, Leonid" <lzorlov@DIRECTV.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Reducing glibc with mklibs.sh
+Return-Path: <afleming@freescale.com>
+In-Reply-To: <20050726060304.AF08EC372E@smtp.263.net>
+References: <20050726060304.AF08EC372E@smtp.263.net>
+Mime-Version: 1.0 (Apple Message framework v733)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <8F2178E8-C29F-412E-9F07-F81F5E40153F@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Date: Tue, 26 Jul 2005 13:26:19 -0500
+To: KylongMu <mqy@263.net.cn>
+Cc: Linuxppc-embedded@ozlabs.org
+Subject: Re: mpc8540 SK board FEC not work! (second message)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,52 +19,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C59202.98005106
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: quoted-printable
+On Jul 26, 2005, at 01:02, KylongMu wrote:
+>
+> eth0 and eth1 not work, they are giga ethernet , but eth2 work  
+> well , I know
+> all of them are drived under same driver " drivers/net/gianfar* ",
+> and I checked the 8540 datasheet , because the MAC is integrated ,  
+> the only
+> deferent is the PHY , the 2.4.18 kernel come with my board
+> is work well at all eth port , so I'm sure the hardware is OK
 
-Do you have an example of library reduction experience using mklibs.
-I created a library with 3 functions and use only 2 in main.
-I have hard time to make it work in this simple environment.
-I must be missing something.
-Thanks for your help.
-Leonid Orlov
-Los Angeles
+The manual says the PHY addresses for TSEC 1 and TSEC 2 are:
 
-------_=_NextPart_001_01C59202.98005106
-Content-Type: text/html;
-	charset="US-ASCII"
-Content-Transfer-Encoding: quoted-printable
+TSEC1: 4
+TSEC2: 5
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.2900.2523" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D703184316-26072005>Do =
-you&nbsp;have an=20
-example of library reduction experience using =
-mklibs.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D703184316-26072005>I =
-created a library=20
-with 3 functions and use only 2 in main.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D703184316-26072005>I have =
-hard time to=20
-make it work in this simple environment.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D703184316-26072005>I must =
-be missing=20
-something.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D703184316-26072005>Thanks =
-for your=20
-help.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D703184316-26072005>Leonid =
+The 8540 ADS has this configuration:
 
-Orlov</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D703184316-26072005>Los=20
-Angeles</SPAN></FONT></DIV></BODY></HTML>
+TSEC1: 0
+TSEC2: 1
 
-------_=_NextPart_001_01C59202.98005106--
+The correct solution would be to make a new board file for the SK  
+board, and properly configure everything.  However, if you insist on  
+using the 8540 ADS config for this, you will need to change arch/ppc/ 
+platforms/85xx/mpc8540_ads.c so that TSEC1 and TSEC2 have their phyid  
+platform data fields assigned to be:
+
+TSEC1: 4
+TSEC2: 5
