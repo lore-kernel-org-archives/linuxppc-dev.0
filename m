@@ -1,21 +1,21 @@
-Return-Path: <akpm@osdl.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 5243067DE5
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 70F9B67DB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Jul 2005 09:04:50 +1000 (EST)
-Date: Wed, 27 Jul 2005 16:03:15 -0700
-From: Andrew Morton <akpm@osdl.org>
-To: Paul Mackerras <paulus@samba.org>
-Message-Id: <20050727160315.02df6a75.akpm@osdl.org>
-In-Reply-To: <17128.4407.838024.111955@cargo.ozlabs.ibm.com>
-References: <11224856623638@foobar.com> <20050727131857.78a56972.akpm@osdl.org>
-	<17128.4407.838024.111955@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH][1/3] ppc32: add 440ep support
+	Thu, 28 Jul 2005 09:34:29 +1000 (EST)
+In-Reply-To: <20050727101502.B1114@cox.net>
+References: <20050727101502.B1114@cox.net>
+Mime-Version: 1.0 (Apple Message framework v733)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <3965D4DD-1628-4463-890F-106DB5BC6931@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Wed, 27 Jul 2005 18:34:23 -0500
+To: Matt Porter <mporter@kernel.crashing.org>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+	"Gala Kumar K.-galak" <galak@freescale.com>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH 00/14] ppc32: Remove board ports that are no longer
+	maintained
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,21 +26,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@samba.org> wrote:
->
-> Andrew Morton writes:
-> 
-> > Matt Porter <mporter@kernel.crashing.org> wrote:
-> > >
-> > > +static u64 dma_mask = 0xffffffffULL;
-> > 
-> > I'm sure you're totally uninterested in this, but the above will probably
-> > generate warnings on (say) ppc64, where u64 is implemented as unsigned
-> > long.
-> > 
-> > I usually chuck a simple `-1' in there and the compiler always gets it
-> > right, regardless of signedness and size and architecture.
-> 
-> Umm, I think we actually want 2^32-1 not -1, don't we?
+On Jul 27, 2005, at 12:15 PM, Matt Porter wrote:
 
-Doh.  Cant coun't.
+> On Wed, Jul 27, 2005 at 09:27:41AM -0700, Eugene Surovegin wrote:
+>
+>> On Wed, Jul 27, 2005 at 12:13:23PM -0400, Michael Richardson wrote:
+>>
+>>> Kumar, I thought that we had some volunteers to take care of some of
+>>> those. I know that I still care about ep405, and I'm willing to
+>>>
+> maintain
+>
+>>> the code.
+>>>
+>>
+>> Well, it has been almost two months since Kumar asked about
+>>
+> maintenance
+>
+>> for this board. Nothing happened since then.
+>>
+>> Why is it not fixed yet? Please, send a patch which fixes it. This is
+>> the _best_ way to keep this board in the tree, not some empty
+>> maintenance _promises_.
+>>
+>
+> When we recover our history from the linuxppc-2.4/2.5 trees we can
+> show exactly how long it's been since anybody touched ep405.
+>
+> Quick googling shows that it's been almost 2 years since the last
+> mention of ep405 (exluding removal discussions) on linuxppc-embedded.
+> Last ep405-related commits are more than 2 years ago.
+
+So we are ok with it being removed.  This seems to be the only board  
+port that I removed that has caused any noise.
+
+- kumar
