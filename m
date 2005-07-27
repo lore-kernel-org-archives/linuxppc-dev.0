@@ -1,17 +1,17 @@
 Return-Path: <galak@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 8E1FF67DAA
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 7CEA867DB1
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Jul 2005 01:37:02 +1000 (EST)
-Date: Wed, 27 Jul 2005 10:36:47 -0500 (CDT)
+	Thu, 28 Jul 2005 01:37:25 +1000 (EST)
+Date: Wed, 27 Jul 2005 10:37:15 -0500 (CDT)
 From: Kumar Gala <galak@freescale.com>
 To: Andrew Morton <akpm@osdl.org>
-Message-ID: <Pine.LNX.4.61.0507271036210.12237@nylon.am.freescale.net>
+Message-ID: <Pine.LNX.4.61.0507271036480.12237@nylon.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linux-kernel@vger.kernel.org,
 	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH 05/14] ppc32: Remove board support for K2
+Subject: [PATCH 06/14] ppc32: Remove board support for MCPN765
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,78 +22,66 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Support for the K2 board is no longer maintained and thus being removed
+Support for the MCPN765 board is no longer maintained and thus being removed
 
 Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
 ---
-commit 5171febe851e0c969b72cee66eb717563a2e8084
-tree 8fa61d2c6308b3966b8fc4c4a5e2123effe2d988
-parent e5e908e00ead5df5ff84495b79601a2519ed35bd
-author Kumar K. Gala <kumar.gala@freescale.com> Mon, 25 Jul 2005 15:35:19 -0500
-committer Kumar K. Gala <kumar.gala@freescale.com> Mon, 25 Jul 2005 15:35:19 -0500
+commit f53cc898e2223283215cdcccb8d7218ebf51d2fa
+tree b5665c25b3f9074e8f69a825baec5b0c7c77e447
+parent 5171febe851e0c969b72cee66eb717563a2e8084
+author Kumar K. Gala <kumar.gala@freescale.com> Mon, 25 Jul 2005 15:38:49 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> Mon, 25 Jul 2005 15:38:49 -0500
 
- arch/ppc/Kconfig              |    9 -
- arch/ppc/boot/simple/Makefile |    4 
- arch/ppc/configs/k2_defconfig |  680 -----------------------------------------
- arch/ppc/platforms/Makefile   |    1 
- arch/ppc/platforms/k2.c       |  613 -------------------------------------
- arch/ppc/platforms/k2.h       |   82 -----
- arch/ppc/syslib/Makefile      |    2 
- 7 files changed, 1 insertions(+), 1390 deletions(-)
+ arch/ppc/Kconfig                   |    5 
+ arch/ppc/boot/simple/Makefile      |    2 
+ arch/ppc/configs/mcpn765_defconfig |  579 ------------------------------------
+ arch/ppc/platforms/Makefile        |    1 
+ arch/ppc/platforms/mcpn765.c       |  527 ---------------------------------
+ arch/ppc/platforms/mcpn765.h       |  122 --------
+ arch/ppc/syslib/Makefile           |    2 
+ include/asm-ppc/serial.h           |    2 
+ 8 files changed, 2 insertions(+), 1238 deletions(-)
 
 diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
 --- a/arch/ppc/Kconfig
 +++ b/arch/ppc/Kconfig
-@@ -637,9 +637,6 @@ config SANDPOINT
- config RADSTONE_PPC7D
- 	bool "Radstone Technology PPC7D board"
+@@ -613,9 +613,6 @@ config EV64260
+ config LOPEC
+ 	bool "Motorola-LoPEC"
  
--config K2
--	bool "SBS-K2"
+-config MCPN765
+-	bool "Motorola-MCPN765"
 -
- config PAL4
- 	bool "SBS-Palomar4"
+ config MVME5100
+ 	bool "Motorola-MVME5100"
  
-@@ -793,7 +790,7 @@ config PPC_OF
+@@ -789,7 +786,7 @@ config PPC_OF
+ 
  config PPC_GEN550
  	bool
- 	depends on SANDPOINT || MCPN765 || SPRUCE || PPLUS || PCORE || \
--		PRPMC750 || K2 || PRPMC800 || LOPEC || \
-+		PRPMC750 || PRPMC800 || LOPEC || \
+-	depends on SANDPOINT || MCPN765 || SPRUCE || PPLUS || PCORE || \
++	depends on SANDPOINT || SPRUCE || PPLUS || PCORE || \
+ 		PRPMC750 || PRPMC800 || LOPEC || \
  		(EV64260 && !SERIAL_MPSC) || CHESTNUT || RADSTONE_PPC7D || \
  		83xx
- 	default y
-@@ -874,10 +871,6 @@ config MPC10X_OPENPIC
- config MPC10X_STORE_GATHERING
- 	bool "Enable MPC10x store gathering"
- 	depends on MPC10X_BRIDGE
--
--config CPC710_DATA_GATHERING
--	bool "Enable CPC710 data gathering"
--	depends on K2
- 
- config HARRIER_STORE_GATHERING
- 	bool "Enable Harrier store gathering"
 diff --git a/arch/ppc/boot/simple/Makefile b/arch/ppc/boot/simple/Makefile
 --- a/arch/ppc/boot/simple/Makefile
 +++ b/arch/ppc/boot/simple/Makefile
-@@ -90,10 +90,6 @@ zimageinitrd-$(CONFIG_OCOTEA)		:= zImage
- zimageinitrd-$(CONFIG_GEMINI)		:= zImage.initrd-STRIPELF
-          end-$(CONFIG_GEMINI)		:= gemini
+@@ -100,7 +100,7 @@ zimageinitrd-$(CONFIG_GEMINI)		:= zImage
  
--     extra.o-$(CONFIG_K2)		:= prepmap.o
--         end-$(CONFIG_K2)		:= k2
--   cacheflag-$(CONFIG_K2)		:= -include $(clear_L2_L3)
--
-      extra.o-$(CONFIG_KATANA)		:= misc-katana.o
-          end-$(CONFIG_KATANA)		:= katana
-    cacheflag-$(CONFIG_KATANA)		:= -include $(clear_L2_L3)
-diff --git a/arch/ppc/configs/k2_defconfig b/arch/ppc/configs/k2_defconfig
+ # kconfig 'feature', only one of these will ever be 'y' at a time.
+ # The rest will be unset.
+-motorola := $(CONFIG_MCPN765)$(CONFIG_MVME5100)$(CONFIG_PRPMC750) \
++motorola := $(CONFIG_MVME5100)$(CONFIG_PRPMC750) \
+ $(CONFIG_PRPMC800)$(CONFIG_LOPEC)$(CONFIG_PPLUS)
+ motorola := $(strip $(motorola))
+ pcore := $(CONFIG_PCORE)$(CONFIG_POWERPMC250)
+diff --git a/arch/ppc/configs/mcpn765_defconfig b/arch/ppc/configs/mcpn765_defconfig
 deleted file mode 100644
---- a/arch/ppc/configs/k2_defconfig
+--- a/arch/ppc/configs/mcpn765_defconfig
 +++ /dev/null
-@@ -1,680 +0,0 @@
+@@ -1,579 +0,0 @@
 -#
 -# Automatically generated make config: don't edit
 -#
@@ -107,7 +95,7 @@ deleted file mode 100644
 -#
 -# Code maturity level options
 -#
--CONFIG_EXPERIMENTAL=y
+-# CONFIG_EXPERIMENTAL is not set
 -CONFIG_CLEAN_COMPILE=y
 -CONFIG_STANDALONE=y
 -CONFIG_BROKEN_ON_SMP=y
@@ -115,12 +103,10 @@ deleted file mode 100644
 -#
 -# General setup
 -#
--CONFIG_SWAP=y
+-# CONFIG_SWAP is not set
 -CONFIG_SYSVIPC=y
--# CONFIG_POSIX_MQUEUE is not set
 -# CONFIG_BSD_PROCESS_ACCT is not set
 -CONFIG_SYSCTL=y
--# CONFIG_AUDIT is not set
 -CONFIG_LOG_BUF_SHIFT=14
 -# CONFIG_HOTPLUG is not set
 -# CONFIG_IKCONFIG is not set
@@ -131,18 +117,15 @@ deleted file mode 100644
 -CONFIG_IOSCHED_NOOP=y
 -CONFIG_IOSCHED_AS=y
 -CONFIG_IOSCHED_DEADLINE=y
--CONFIG_IOSCHED_CFQ=y
 -# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
 -
 -#
 -# Loadable module support
 -#
 -CONFIG_MODULES=y
--CONFIG_MODULE_UNLOAD=y
--# CONFIG_MODULE_FORCE_UNLOAD is not set
+-# CONFIG_MODULE_UNLOAD is not set
 -CONFIG_OBSOLETE_MODPARM=y
--# CONFIG_MODVERSIONS is not set
--CONFIG_KMOD=y
+-# CONFIG_KMOD is not set
 -
 -#
 -# Processor
@@ -153,7 +136,7 @@ deleted file mode 100644
 -# CONFIG_POWER3 is not set
 -# CONFIG_POWER4 is not set
 -# CONFIG_8xx is not set
--# CONFIG_ALTIVEC is not set
+-CONFIG_ALTIVEC=y
 -# CONFIG_TAU is not set
 -# CONFIG_CPU_FREQ is not set
 -CONFIG_PPC_STD_MMU=y
@@ -169,14 +152,14 @@ deleted file mode 100644
 -# CONFIG_EV64260 is not set
 -# CONFIG_SPRUCE is not set
 -# CONFIG_LOPEC is not set
--# CONFIG_MCPN765 is not set
+-CONFIG_MCPN765=y
 -# CONFIG_MVME5100 is not set
 -# CONFIG_PPLUS is not set
 -# CONFIG_PRPMC750 is not set
 -# CONFIG_PRPMC800 is not set
 -# CONFIG_SANDPOINT is not set
 -# CONFIG_ADIR is not set
--CONFIG_K2=y
+-# CONFIG_K2 is not set
 -# CONFIG_PAL4 is not set
 -# CONFIG_GEMINI is not set
 -# CONFIG_EST8260 is not set
@@ -184,10 +167,9 @@ deleted file mode 100644
 -# CONFIG_RPX6 is not set
 -# CONFIG_TQM8260 is not set
 -CONFIG_PPC_GEN550=y
--# CONFIG_CPC710_DATA_GATHERING is not set
 -# CONFIG_SMP is not set
 -# CONFIG_PREEMPT is not set
--# CONFIG_HIGHMEM is not set
+-CONFIG_HIGHMEM=y
 -CONFIG_KERNEL_ELF=y
 -CONFIG_BINFMT_ELF=y
 -# CONFIG_BINFMT_MISC is not set
@@ -246,7 +228,6 @@ deleted file mode 100644
 -# CONFIG_BLK_CPQ_DA is not set
 -# CONFIG_BLK_CPQ_CISS_DA is not set
 -# CONFIG_BLK_DEV_DAC960 is not set
--# CONFIG_BLK_DEV_UMEM is not set
 -CONFIG_BLK_DEV_LOOP=y
 -# CONFIG_BLK_DEV_CRYPTOLOOP is not set
 -# CONFIG_BLK_DEV_NBD is not set
@@ -269,10 +250,8 @@ deleted file mode 100644
 -# CONFIG_IDEDISK_MULTI_MODE is not set
 -# CONFIG_IDEDISK_STROKE is not set
 -# CONFIG_BLK_DEV_IDECD is not set
--# CONFIG_BLK_DEV_IDETAPE is not set
 -# CONFIG_BLK_DEV_IDEFLOPPY is not set
 -# CONFIG_IDE_TASK_IOCTL is not set
--# CONFIG_IDE_TASKFILE_IO is not set
 -
 -#
 -# IDE chipset support/bugfixes
@@ -282,20 +261,17 @@ deleted file mode 100644
 -# CONFIG_IDEPCI_SHARE_IRQ is not set
 -# CONFIG_BLK_DEV_OFFBOARD is not set
 -# CONFIG_BLK_DEV_GENERIC is not set
--# CONFIG_BLK_DEV_OPTI621 is not set
 -# CONFIG_BLK_DEV_SL82C105 is not set
 -CONFIG_BLK_DEV_IDEDMA_PCI=y
 -# CONFIG_BLK_DEV_IDEDMA_FORCED is not set
 -# CONFIG_IDEDMA_PCI_AUTO is not set
 -CONFIG_BLK_DEV_ADMA=y
 -# CONFIG_BLK_DEV_AEC62XX is not set
--CONFIG_BLK_DEV_ALI15X3=y
--# CONFIG_WDC_ALI15X3 is not set
+-# CONFIG_BLK_DEV_ALI15X3 is not set
 -# CONFIG_BLK_DEV_AMD74XX is not set
 -# CONFIG_BLK_DEV_CMD64X is not set
 -# CONFIG_BLK_DEV_TRIFLEX is not set
 -# CONFIG_BLK_DEV_CY82C693 is not set
--# CONFIG_BLK_DEV_CS5520 is not set
 -# CONFIG_BLK_DEV_CS5530 is not set
 -# CONFIG_BLK_DEV_HPT34X is not set
 -# CONFIG_BLK_DEV_HPT366 is not set
@@ -308,7 +284,7 @@ deleted file mode 100644
 -# CONFIG_BLK_DEV_SIIMAGE is not set
 -# CONFIG_BLK_DEV_SLC90E66 is not set
 -# CONFIG_BLK_DEV_TRM290 is not set
--# CONFIG_BLK_DEV_VIA82CXXX is not set
+-CONFIG_BLK_DEV_VIA82CXXX=y
 -CONFIG_BLK_DEV_IDEDMA=y
 -# CONFIG_IDEDMA_IVB is not set
 -# CONFIG_IDEDMA_AUTO is not set
@@ -365,86 +341,17 @@ deleted file mode 100644
 -# CONFIG_IP_PNP_RARP is not set
 -# CONFIG_NET_IPIP is not set
 -# CONFIG_NET_IPGRE is not set
--# CONFIG_ARPD is not set
 -# CONFIG_SYN_COOKIES is not set
 -# CONFIG_INET_AH is not set
 -# CONFIG_INET_ESP is not set
 -# CONFIG_INET_IPCOMP is not set
--
--#
--# IP: Virtual Server Configuration
--#
--# CONFIG_IP_VS is not set
--# CONFIG_IPV6 is not set
--CONFIG_NETFILTER=y
--# CONFIG_NETFILTER_DEBUG is not set
--
--#
--# IP: Netfilter Configuration
--#
--CONFIG_IP_NF_CONNTRACK=m
--CONFIG_IP_NF_FTP=m
--# CONFIG_IP_NF_IRC is not set
--# CONFIG_IP_NF_TFTP is not set
--# CONFIG_IP_NF_AMANDA is not set
--# CONFIG_IP_NF_QUEUE is not set
--CONFIG_IP_NF_IPTABLES=m
--CONFIG_IP_NF_MATCH_LIMIT=m
--# CONFIG_IP_NF_MATCH_IPRANGE is not set
--CONFIG_IP_NF_MATCH_MAC=m
--CONFIG_IP_NF_MATCH_PKTTYPE=m
--CONFIG_IP_NF_MATCH_MARK=m
--CONFIG_IP_NF_MATCH_MULTIPORT=m
--CONFIG_IP_NF_MATCH_TOS=m
--# CONFIG_IP_NF_MATCH_RECENT is not set
--CONFIG_IP_NF_MATCH_ECN=m
--CONFIG_IP_NF_MATCH_DSCP=m
--CONFIG_IP_NF_MATCH_AH_ESP=m
--# CONFIG_IP_NF_MATCH_LENGTH is not set
--# CONFIG_IP_NF_MATCH_TTL is not set
--CONFIG_IP_NF_MATCH_TCPMSS=m
--CONFIG_IP_NF_MATCH_HELPER=m
--CONFIG_IP_NF_MATCH_STATE=m
--CONFIG_IP_NF_MATCH_CONNTRACK=m
--CONFIG_IP_NF_MATCH_OWNER=m
--CONFIG_IP_NF_FILTER=m
--CONFIG_IP_NF_TARGET_REJECT=m
--CONFIG_IP_NF_NAT=m
--CONFIG_IP_NF_NAT_NEEDED=y
--CONFIG_IP_NF_TARGET_MASQUERADE=m
--CONFIG_IP_NF_TARGET_REDIRECT=m
--# CONFIG_IP_NF_TARGET_NETMAP is not set
--# CONFIG_IP_NF_TARGET_SAME is not set
--# CONFIG_IP_NF_NAT_SNMP_BASIC is not set
--CONFIG_IP_NF_NAT_FTP=m
--# CONFIG_IP_NF_MANGLE is not set
--# CONFIG_IP_NF_TARGET_LOG is not set
--CONFIG_IP_NF_TARGET_ULOG=m
--CONFIG_IP_NF_TARGET_TCPMSS=m
--CONFIG_IP_NF_ARPTABLES=m
--CONFIG_IP_NF_ARPFILTER=m
--# CONFIG_IP_NF_ARP_MANGLE is not set
--CONFIG_IP_NF_COMPAT_IPCHAINS=m
--# CONFIG_IP_NF_COMPAT_IPFWADM is not set
--# CONFIG_IP_NF_RAW is not set
--
--#
--# SCTP Configuration (EXPERIMENTAL)
--#
--# CONFIG_IP_SCTP is not set
--# CONFIG_ATM is not set
--# CONFIG_BRIDGE is not set
--# CONFIG_VLAN_8021Q is not set
 -# CONFIG_DECNET is not set
+-# CONFIG_BRIDGE is not set
+-# CONFIG_NETFILTER is not set
+-# CONFIG_VLAN_8021Q is not set
 -# CONFIG_LLC2 is not set
 -# CONFIG_IPX is not set
 -# CONFIG_ATALK is not set
--# CONFIG_X25 is not set
--# CONFIG_LAPB is not set
--# CONFIG_NET_DIVERT is not set
--# CONFIG_ECONET is not set
--# CONFIG_WAN_ROUTER is not set
--# CONFIG_NET_HW_FLOWCONTROL is not set
 -
 -#
 -# QoS and/or fair queueing
@@ -455,21 +362,16 @@ deleted file mode 100644
 -# Network testing
 -#
 -# CONFIG_NET_PKTGEN is not set
--# CONFIG_NETPOLL is not set
--# CONFIG_NET_POLL_CONTROLLER is not set
--# CONFIG_HAMRADIO is not set
--# CONFIG_IRDA is not set
--# CONFIG_BT is not set
 -CONFIG_NETDEVICES=y
--# CONFIG_DUMMY is not set
--# CONFIG_BONDING is not set
--# CONFIG_EQUALIZER is not set
--# CONFIG_TUN is not set
 -
 -#
 -# ARCnet devices
 -#
 -# CONFIG_ARCNET is not set
+-# CONFIG_DUMMY is not set
+-# CONFIG_BONDING is not set
+-# CONFIG_EQUALIZER is not set
+-# CONFIG_TUN is not set
 -
 -#
 -# Ethernet (10 or 100Mbit)
@@ -484,28 +386,15 @@ deleted file mode 100644
 -#
 -# Tulip family network device support
 -#
--# CONFIG_NET_TULIP is not set
+-CONFIG_NET_TULIP=y
+-CONFIG_TULIP=y
+-# CONFIG_TULIP_MMIO is not set
+-# CONFIG_TULIP_NAPI is not set
+-# CONFIG_DE4X5 is not set
+-# CONFIG_WINBOND_840 is not set
+-# CONFIG_DM9102 is not set
 -# CONFIG_HP100 is not set
--CONFIG_NET_PCI=y
--# CONFIG_PCNET32 is not set
--# CONFIG_AMD8111_ETH is not set
--# CONFIG_ADAPTEC_STARFIRE is not set
--# CONFIG_B44 is not set
--# CONFIG_FORCEDETH is not set
--# CONFIG_DGRS is not set
--CONFIG_EEPRO100=y
--# CONFIG_EEPRO100_PIO is not set
--# CONFIG_E100 is not set
--# CONFIG_FEALNX is not set
--# CONFIG_NATSEMI is not set
--# CONFIG_NE2K_PCI is not set
--# CONFIG_8139CP is not set
--# CONFIG_8139TOO is not set
--# CONFIG_SIS900 is not set
--# CONFIG_EPIC100 is not set
--# CONFIG_SUNDANCE is not set
--# CONFIG_TLAN is not set
--# CONFIG_VIA_RHINE is not set
+-# CONFIG_NET_PCI is not set
 -
 -#
 -# Ethernet (1000 Mbit)
@@ -515,7 +404,6 @@ deleted file mode 100644
 -# CONFIG_E1000 is not set
 -# CONFIG_NS83820 is not set
 -# CONFIG_HAMACHI is not set
--# CONFIG_YELLOWFIN is not set
 -# CONFIG_R8169 is not set
 -# CONFIG_SK98LIN is not set
 -# CONFIG_TIGON3 is not set
@@ -524,12 +412,9 @@ deleted file mode 100644
 -# Ethernet (10000 Mbit)
 -#
 -# CONFIG_IXGB is not set
--# CONFIG_S2IO is not set
--
--#
--# Token Ring devices
--#
--# CONFIG_TR is not set
+-# CONFIG_FDDI is not set
+-# CONFIG_PPP is not set
+-# CONFIG_SLIP is not set
 -
 -#
 -# Wireless LAN (non-hamradio)
@@ -537,16 +422,31 @@ deleted file mode 100644
 -# CONFIG_NET_RADIO is not set
 -
 -#
+-# Token Ring devices
+-#
+-# CONFIG_TR is not set
+-
+-#
 -# Wan interfaces
 -#
 -# CONFIG_WAN is not set
--# CONFIG_FDDI is not set
--# CONFIG_HIPPI is not set
--# CONFIG_PPP is not set
--# CONFIG_SLIP is not set
--# CONFIG_RCPCI is not set
--# CONFIG_SHAPER is not set
--# CONFIG_NETCONSOLE is not set
+-
+-#
+-# Amateur Radio support
+-#
+-# CONFIG_HAMRADIO is not set
+-
+-#
+-# IrDA (infrared) support
+-#
+-# CONFIG_IRDA is not set
+-
+-#
+-# Bluetooth support
+-#
+-# CONFIG_BT is not set
+-# CONFIG_NETPOLL is not set
+-# CONFIG_NET_POLL_CONTROLLER is not set
 -
 -#
 -# ISDN subsystem
@@ -590,7 +490,7 @@ deleted file mode 100644
 -#
 -CONFIG_SERIAL_8250=y
 -CONFIG_SERIAL_8250_CONSOLE=y
--CONFIG_SERIAL_8250_NR_UARTS=2
+-CONFIG_SERIAL_8250_NR_UARTS=4
 -# CONFIG_SERIAL_8250_EXTENDED is not set
 -
 -#
@@ -699,8 +599,6 @@ deleted file mode 100644
 -#
 -CONFIG_PROC_FS=y
 -CONFIG_PROC_KCORE=y
--CONFIG_SYSFS=y
--# CONFIG_DEVFS_FS is not set
 -# CONFIG_DEVPTS_FS_XATTR is not set
 -CONFIG_TMPFS=y
 -# CONFIG_HUGETLB_PAGE is not set
@@ -709,13 +607,7 @@ deleted file mode 100644
 -#
 -# Miscellaneous filesystems
 -#
--# CONFIG_ADFS_FS is not set
--# CONFIG_AFFS_FS is not set
--# CONFIG_HFS_FS is not set
 -# CONFIG_HFSPLUS_FS is not set
--# CONFIG_BEFS_FS is not set
--# CONFIG_BFS_FS is not set
--# CONFIG_EFS_FS is not set
 -# CONFIG_CRAMFS is not set
 -# CONFIG_VXFS_FS is not set
 -# CONFIG_HPFS_FS is not set
@@ -728,20 +620,15 @@ deleted file mode 100644
 -#
 -CONFIG_NFS_FS=y
 -# CONFIG_NFS_V3 is not set
--# CONFIG_NFS_V4 is not set
--# CONFIG_NFS_DIRECTIO is not set
 -# CONFIG_NFSD is not set
 -CONFIG_ROOT_NFS=y
 -CONFIG_LOCKD=y
 -# CONFIG_EXPORTFS is not set
 -CONFIG_SUNRPC=y
--# CONFIG_RPCSEC_GSS_KRB5 is not set
 -# CONFIG_SMB_FS is not set
 -# CONFIG_CIFS is not set
 -# CONFIG_NCP_FS is not set
 -# CONFIG_CODA_FS is not set
--# CONFIG_INTERMEZZO_FS is not set
--# CONFIG_AFS_FS is not set
 -
 -#
 -# Partition Types
@@ -757,7 +644,7 @@ deleted file mode 100644
 -#
 -# Library routines
 -#
--# CONFIG_CRC32 is not set
+-CONFIG_CRC32=y
 -
 -#
 -# Kernel hacking
@@ -777,34 +664,38 @@ deleted file mode 100644
 diff --git a/arch/ppc/platforms/Makefile b/arch/ppc/platforms/Makefile
 --- a/arch/ppc/platforms/Makefile
 +++ b/arch/ppc/platforms/Makefile
-@@ -27,7 +27,6 @@ obj-$(CONFIG_CPCI690)		+= cpci690.o
- obj-$(CONFIG_EV64260)		+= ev64260.o
- obj-$(CONFIG_CHESTNUT)		+= chestnut.o
- obj-$(CONFIG_GEMINI)		+= gemini_pci.o gemini_setup.o gemini_prom.o
--obj-$(CONFIG_K2)		+= k2.o
+@@ -30,7 +30,6 @@ obj-$(CONFIG_GEMINI)		+= gemini_pci.o ge
  obj-$(CONFIG_LOPEC)		+= lopec.o
  obj-$(CONFIG_KATANA)		+= katana.o
  obj-$(CONFIG_HDPU)		+= hdpu.o
-diff --git a/arch/ppc/platforms/k2.c b/arch/ppc/platforms/k2.c
+-obj-$(CONFIG_MCPN765)		+= mcpn765.o
+ obj-$(CONFIG_MENF1)		+= menf1_setup.o menf1_pci.o
+ obj-$(CONFIG_MVME5100)		+= mvme5100.o
+ obj-$(CONFIG_PAL4)		+= pal4_setup.o pal4_pci.o
+diff --git a/arch/ppc/platforms/mcpn765.c b/arch/ppc/platforms/mcpn765.c
 deleted file mode 100644
---- a/arch/ppc/platforms/k2.c
+--- a/arch/ppc/platforms/mcpn765.c
 +++ /dev/null
-@@ -1,613 +0,0 @@
+@@ -1,527 +0,0 @@
 -/*
-- * arch/ppc/platforms/k2.c
+- * arch/ppc/platforms/mcpn765.c
 - *
-- * Board setup routines for SBS K2
+- * Board setup routines for the Motorola MCG MCPN765 cPCI Board.
 - *
-- * Author: Matt Porter <mporter@mvista.com>
+- * Author: Mark A. Greer
+- *         mgreer@mvista.com
 - *
-- * Updated by: Randy Vinson <rvinson@mvista.com.
+- * Modified by Randy Vinson (rvinson@mvista.com)
 - *
-- * 2001-2004 (c) MontaVista, Software, Inc.  This file is licensed under
+- * 2001-2002 (c) MontaVista, Software, Inc.  This file is licensed under
 - * the terms of the GNU General Public License version 2.  This program
 - * is licensed "as is" without any warranty of any kind, whether express
 - * or implied.
 - */
 -
+-/*
+- * This file adds support for the Motorola MCG MCPN765.
+- */
 -#include <linux/config.h>
 -#include <linux/stddef.h>
 -#include <linux/kernel.h>
@@ -813,692 +704,654 @@ deleted file mode 100644
 -#include <linux/reboot.h>
 -#include <linux/pci.h>
 -#include <linux/kdev_t.h>
--#include <linux/types.h>
 -#include <linux/major.h>
 -#include <linux/initrd.h>
 -#include <linux/console.h>
 -#include <linux/delay.h>
--#include <linux/ide.h>
 -#include <linux/irq.h>
 -#include <linux/seq_file.h>
 -#include <linux/root_dev.h>
+-#include <linux/serial.h>
+-#include <linux/tty.h>	/* for linux/serial_core.h */
+-#include <linux/serial_core.h>
+-#include <linux/slab.h>
 -
 -#include <asm/system.h>
 -#include <asm/pgtable.h>
 -#include <asm/page.h>
+-#include <asm/time.h>
 -#include <asm/dma.h>
+-#include <asm/byteorder.h>
 -#include <asm/io.h>
 -#include <asm/machdep.h>
--#include <asm/time.h>
+-#include <asm/prom.h>
+-#include <asm/smp.h>
+-#include <asm/open_pic.h>
 -#include <asm/i8259.h>
 -#include <asm/todc.h>
+-#include <asm/pci-bridge.h>
+-#include <asm/irq.h>
+-#include <asm/uaccess.h>
 -#include <asm/bootinfo.h>
+-#include <asm/hawk.h>
+-#include <asm/kgdb.h>
 -
--#include <syslib/cpc710.h>
--#include "k2.h"
+-#include "mcpn765.h"
 -
--extern unsigned long loops_per_jiffy;
+-static u_char mcpn765_openpic_initsenses[] __initdata = {
+-	(IRQ_SENSE_EDGE  | IRQ_POLARITY_POSITIVE),/* 16: i8259 cascade */
+-	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 17: COM1,2,3,4 */
+-	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 18: Enet 1 (front) */
+-	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 19: HAWK WDT XXXX */
+-	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 20: 21554 bridge */
+-	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 21: cPCI INTA# */
+-	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 22: cPCI INTB# */
+-	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 23: cPCI INTC# */
+-	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 24: cPCI INTD# */
+-	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 25: PMC1 INTA#,PMC2 INTB#*/
+-	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 26: PMC1 INTB#,PMC2 INTC#*/
+-	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 27: PMC1 INTC#,PMC2 INTD#*/
+-	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 28: PMC1 INTD#,PMC2 INTA#*/
+-	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 29: Enet 2 (J3) */
+-	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 30: Abort Switch */
+-	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 31: RTC Alarm */
+-};
+-
+-extern void mcpn765_set_VIA_IDE_native(void);
+-
+-extern u_int openpic_irq(void);
+-extern char cmd_line[];
+-
 -extern void gen550_progress(char *, unsigned short);
+-extern void gen550_init(int, struct uart_port *);
 -
--static unsigned int cpu_7xx[16] = {
--	0, 15, 14, 0, 0, 13, 5, 9, 6, 11, 8, 10, 16, 12, 7, 0
--};
--static unsigned int cpu_6xx[16] = {
--	0, 0, 14, 0, 0, 13, 5, 9, 6, 11, 8, 10, 0, 12, 7, 0
--};
+-int use_of_interrupt_tree = 0;
 -
--static inline int __init
--k2_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
--{
--	struct pci_controller *hose = pci_bus_to_hose(dev->bus->number);
--	/*
--	 * Check our hose index.  If we are zero then we are on the
--	 * local PCI hose, otherwise we are on the cPCI hose.
--	 */
--	if (!hose->index) {
--		static char pci_irq_table[][4] =
--			/*
--			 * 	PCI IDSEL/INTPIN->INTLINE
--			 * 	A	B	C	D
--			 */
--		{
--			{1, 	0,	0,	0},	/* Ethernet */
--			{5,	5,	5,	5},	/* PMC Site 1 */
--			{6,	6,	6,	6},	/* PMC Site 2 */
--			{0,     0,      0,      0},     /* unused */
--			{0,     0,      0,      0},     /* unused */
--			{0,     0,      0,      0},     /* PCI-ISA Bridge */
--			{0,     0,      0,      0},     /* unused */
--			{0,     0,      0,      0},     /* unused */
--			{0,     0,      0,      0},     /* unused */
--			{0,     0,      0,      0},     /* unused */
--			{0,     0,      0,      0},     /* unused */
--			{0,     0,      0,      0},     /* unused */
--			{0,     0,      0,      0},     /* unused */
--			{0,     0,      0,      0},     /* unused */
--			{15,	0,	0,	0},	/* M5229 IDE */
--		};
--		const long min_idsel = 3, max_idsel = 17, irqs_per_slot = 4;
--		return PCI_IRQ_TABLE_LOOKUP;
--	} else {
--		static char pci_irq_table[][4] =
--		/*
--		 * 	PCI IDSEL/INTPIN->INTLINE
--		 * 	A	B	C	D
--		 */
--		{
--			{10, 	11,	12,	9},	/* cPCI slot 8 */
--			{11, 	12,	9,	10},	/* cPCI slot 7 */
--			{12, 	9,	10,	11},	/* cPCI slot 6 */
--			{9, 	10,	11,	12},	/* cPCI slot 5 */
--			{10, 	11,	12,	9},	/* cPCI slot 4 */
--			{11, 	12,	9,	10},	/* cPCI slot 3 */
--			{12, 	9,	10,	11},	/* cPCI slot 2 */
--		};
--		const long min_idsel = 15, max_idsel = 21, irqs_per_slot = 4;
--		return PCI_IRQ_TABLE_LOOKUP;
--	}
--}
--
--void k2_pcibios_fixup(void)
--{
--#if defined(CONFIG_BLK_DEV_IDE) || defined(CONFIG_BLK_DEV_IDE_MODULE)
--	struct pci_dev *ide_dev;
--
--	/*
--	 * Enable DMA support on hdc
--	 */
--	ide_dev = pci_get_device(PCI_VENDOR_ID_AL,
--				  PCI_DEVICE_ID_AL_M5229, NULL);
--
--	if (ide_dev) {
--
--		unsigned long ide_dma_base;
--
--		ide_dma_base = pci_resource_start(ide_dev, 4);
--		outb(0x00, ide_dma_base + 0x2);
--		outb(0x20, ide_dma_base + 0xa);
--		pci_dev_put(ide_dev);
--	}
--#endif
--}
--
--void k2_pcibios_fixup_resources(struct pci_dev *dev)
--{
--	int i;
--
--	if ((dev->vendor == PCI_VENDOR_ID_IBM) &&
--	    (dev->device == PCI_DEVICE_ID_IBM_CPC710_PCI64)) {
--		pr_debug("Fixup CPC710 resources\n");
--		for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
--			dev->resource[i].start = 0;
--			dev->resource[i].end = 0;
--		}
--	}
--}
--
--void k2_setup_hoses(void)
--{
--	struct pci_controller *hose_a, *hose_b;
--
--	/*
--	 * Reconfigure CPC710 memory map so
--	 * we have some more PCI memory space.
--	 */
--
--	/* Set FPHB mode */
--	__raw_writel(0x808000e0, PGCHP);	/* Set FPHB mode */
--
--	/* PCI32 mappings */
--	__raw_writel(0x00000000, K2_PCI32_BAR + PIBAR);	/* PCI I/O base */
--	__raw_writel(0x00000000, K2_PCI32_BAR + PMBAR);	/* PCI Mem base */
--	__raw_writel(0xf0000000, K2_PCI32_BAR + MSIZE);	/* 256MB */
--	__raw_writel(0xfff00000, K2_PCI32_BAR + IOSIZE); /* 1MB */
--	__raw_writel(0xc0000000, K2_PCI32_BAR + SMBAR);	/* Base@0xc0000000 */
--	__raw_writel(0x80000000, K2_PCI32_BAR + SIBAR);	/* Base@0x80000000 */
--	__raw_writel(0x000000c0, K2_PCI32_BAR + PSSIZE); /* 1GB space */
--	__raw_writel(0x000000c0, K2_PCI32_BAR + PPSIZE); /* 1GB space */
--	__raw_writel(0x00000000, K2_PCI32_BAR + BARPS);	/* Base@0x00000000 */
--	__raw_writel(0x00000000, K2_PCI32_BAR + BARPP);	/* Base@0x00000000 */
--	__raw_writel(0x00000080, K2_PCI32_BAR + PSBAR);	/* Base@0x80 */
--	__raw_writel(0x00000000, K2_PCI32_BAR + PPBAR);
--
--	__raw_writel(0xc0000000, K2_PCI32_BAR + BPMDLK);
--	__raw_writel(0xd0000000, K2_PCI32_BAR + TPMDLK);
--	__raw_writel(0x80000000, K2_PCI32_BAR + BIODLK);
--	__raw_writel(0x80100000, K2_PCI32_BAR + TIODLK);
--	__raw_writel(0xe0008000, K2_PCI32_BAR + DLKCTRL);
--	__raw_writel(0xffffffff, K2_PCI32_BAR + DLKDEV);
--
--	/* PCI64 mappings */
--	__raw_writel(0x00100000, K2_PCI64_BAR + PIBAR);	/* PCI I/O base */
--	__raw_writel(0x10000000, K2_PCI64_BAR + PMBAR);	/* PCI Mem base */
--	__raw_writel(0xf0000000, K2_PCI64_BAR + MSIZE);	/* 256MB */
--	__raw_writel(0xfff00000, K2_PCI64_BAR + IOSIZE); /* 1MB */
--	__raw_writel(0xd0000000, K2_PCI64_BAR + SMBAR);	/* Base@0xd0000000 */
--	__raw_writel(0x80100000, K2_PCI64_BAR + SIBAR);	/* Base@0x80100000 */
--	__raw_writel(0x000000c0, K2_PCI64_BAR + PSSIZE); /* 1GB space */
--	__raw_writel(0x000000c0, K2_PCI64_BAR + PPSIZE); /* 1GB space */
--	__raw_writel(0x00000000, K2_PCI64_BAR + BARPS);	/* Base@0x00000000 */
--	__raw_writel(0x00000000, K2_PCI64_BAR + BARPP);	/* Base@0x00000000 */
--
--	/* Setup PCI32 hose */
--	hose_a = pcibios_alloc_controller();
--	if (!hose_a)
--		return;
--
--	hose_a->first_busno = 0;
--	hose_a->last_busno = 0xff;
--	hose_a->pci_mem_offset = K2_PCI32_MEM_BASE;
--
--	pci_init_resource(&hose_a->io_resource,
--			  K2_PCI32_LOWER_IO,
--			  K2_PCI32_UPPER_IO,
--			  IORESOURCE_IO, "PCI32 host bridge");
--
--	pci_init_resource(&hose_a->mem_resources[0],
--			  K2_PCI32_LOWER_MEM + K2_PCI32_MEM_BASE,
--			  K2_PCI32_UPPER_MEM + K2_PCI32_MEM_BASE,
--			  IORESOURCE_MEM, "PCI32 host bridge");
--
--	hose_a->io_space.start = K2_PCI32_LOWER_IO;
--	hose_a->io_space.end = K2_PCI32_UPPER_IO;
--	hose_a->mem_space.start = K2_PCI32_LOWER_MEM;
--	hose_a->mem_space.end = K2_PCI32_UPPER_MEM;
--	hose_a->io_base_virt = (void *)K2_ISA_IO_BASE;
--
--	setup_indirect_pci(hose_a, K2_PCI32_CONFIG_ADDR, K2_PCI32_CONFIG_DATA);
--
--	/* Initialize PCI32 bus registers */
--	early_write_config_byte(hose_a,
--				hose_a->first_busno,
--				PCI_DEVFN(0, 0),
--				CPC710_BUS_NUMBER, hose_a->first_busno);
--
--	early_write_config_byte(hose_a,
--				hose_a->first_busno,
--				PCI_DEVFN(0, 0),
--				CPC710_SUB_BUS_NUMBER, hose_a->last_busno);
--
--	/* Enable PCI interrupt polling */
--	early_write_config_byte(hose_a,
--				hose_a->first_busno,
--				PCI_DEVFN(8, 0), 0x45, 0x80);
--
--	/* Route polled PCI interrupts */
--	early_write_config_byte(hose_a,
--				hose_a->first_busno,
--				PCI_DEVFN(8, 0), 0x48, 0x58);
--
--	early_write_config_byte(hose_a,
--				hose_a->first_busno,
--				PCI_DEVFN(8, 0), 0x49, 0x07);
--
--	early_write_config_byte(hose_a,
--				hose_a->first_busno,
--				PCI_DEVFN(8, 0), 0x4a, 0x31);
--
--	early_write_config_byte(hose_a,
--				hose_a->first_busno,
--				PCI_DEVFN(8, 0), 0x4b, 0xb9);
--
--	/* route secondary IDE channel interrupt to IRQ 15 */
--	early_write_config_byte(hose_a,
--				hose_a->first_busno,
--				PCI_DEVFN(8, 0), 0x75, 0x0f);
--
--	/* enable IDE controller IDSEL */
--	early_write_config_byte(hose_a,
--				hose_a->first_busno,
--				PCI_DEVFN(8, 0), 0x58, 0x48);
--
--	/* Enable IDE function */
--	early_write_config_byte(hose_a,
--				hose_a->first_busno,
--				PCI_DEVFN(17, 0), 0x50, 0x03);
--
--	/* Set M5229 IDE controller to native mode */
--	early_write_config_byte(hose_a,
--				hose_a->first_busno,
--				PCI_DEVFN(17, 0), PCI_CLASS_PROG, 0xdf);
--
--	hose_a->last_busno = pciauto_bus_scan(hose_a, hose_a->first_busno);
--
--	/* Write out correct max subordinate bus number for hose A */
--	early_write_config_byte(hose_a,
--				hose_a->first_busno,
--				PCI_DEVFN(0, 0),
--				CPC710_SUB_BUS_NUMBER, hose_a->last_busno);
--
--	/* Only setup PCI64 hose if we are in the system slot */
--	if (!(readb(K2_MISC_REG) & K2_SYS_SLOT_MASK)) {
--		/* Setup PCI64 hose */
--		hose_b = pcibios_alloc_controller();
--		if (!hose_b)
--			return;
--
--		hose_b->first_busno = hose_a->last_busno + 1;
--		hose_b->last_busno = 0xff;
--
--		/* Reminder: quit changing the following, it is correct. */
--		hose_b->pci_mem_offset = K2_PCI32_MEM_BASE;
--
--		pci_init_resource(&hose_b->io_resource,
--				  K2_PCI64_LOWER_IO,
--				  K2_PCI64_UPPER_IO,
--				  IORESOURCE_IO, "PCI64 host bridge");
--
--		pci_init_resource(&hose_b->mem_resources[0],
--				  K2_PCI64_LOWER_MEM + K2_PCI32_MEM_BASE,
--				  K2_PCI64_UPPER_MEM + K2_PCI32_MEM_BASE,
--				  IORESOURCE_MEM, "PCI64 host bridge");
--
--		hose_b->io_space.start = K2_PCI64_LOWER_IO;
--		hose_b->io_space.end = K2_PCI64_UPPER_IO;
--		hose_b->mem_space.start = K2_PCI64_LOWER_MEM;
--		hose_b->mem_space.end = K2_PCI64_UPPER_MEM;
--		hose_b->io_base_virt = (void *)K2_ISA_IO_BASE;
--
--		setup_indirect_pci(hose_b,
--				   K2_PCI64_CONFIG_ADDR, K2_PCI64_CONFIG_DATA);
--
--		/* Initialize PCI64 bus registers */
--		early_write_config_byte(hose_b,
--					0,
--					PCI_DEVFN(0, 0),
--					CPC710_SUB_BUS_NUMBER, 0xff);
--
--		early_write_config_byte(hose_b,
--					0,
--					PCI_DEVFN(0, 0),
--					CPC710_BUS_NUMBER, hose_b->first_busno);
--
--		hose_b->last_busno = pciauto_bus_scan(hose_b,
--						      hose_b->first_busno);
--
--		/* Write out correct max subordinate bus number for hose B */
--		early_write_config_byte(hose_b,
--					hose_b->first_busno,
--					PCI_DEVFN(0, 0),
--					CPC710_SUB_BUS_NUMBER,
--					hose_b->last_busno);
--
--		/* Configure PCI64 PSBAR */
--		early_write_config_dword(hose_b,
--					 hose_b->first_busno,
--					 PCI_DEVFN(0, 0),
--					 PCI_BASE_ADDRESS_0,
--					 K2_PCI64_SYS_MEM_BASE);
--	}
--
--	/* Configure i8259 level/edge settings */
--	outb(0x62, 0x4d0);
--	outb(0xde, 0x4d1);
--
--#ifdef CONFIG_CPC710_DATA_GATHERING
--	{
--		unsigned int tmp;
--		tmp = __raw_readl(ABCNTL);
--		/* Enable data gathering on both PCI interfaces */
--		__raw_writel(tmp | 0x05000000, ABCNTL);
--	}
--#endif
--
--	ppc_md.pcibios_fixup = k2_pcibios_fixup;
--	ppc_md.pcibios_fixup_resources = k2_pcibios_fixup_resources;
--	ppc_md.pci_swizzle = common_swizzle;
--	ppc_md.pci_map_irq = k2_map_irq;
--}
--
--static int k2_get_bus_speed(void)
--{
--	int bus_speed;
--	unsigned char board_id;
--
--	board_id = *(unsigned char *)K2_BOARD_ID_REG;
--
--	switch (K2_BUS_SPD(board_id)) {
--
--	case 0:
--	default:
--		bus_speed = 100000000;
--		break;
--
--	case 1:
--		bus_speed = 83333333;
--		break;
--
--	case 2:
--		bus_speed = 75000000;
--		break;
--
--	case 3:
--		bus_speed = 66666666;
--		break;
--	}
--	return bus_speed;
--}
--
--static int k2_get_cpu_speed(void)
--{
--	unsigned long hid1;
--	int cpu_speed;
--
--	hid1 = mfspr(SPRN_HID1) >> 28;
--
--	if ((mfspr(SPRN_PVR) >> 16) == 8)
--		hid1 = cpu_7xx[hid1];
--	else
--		hid1 = cpu_6xx[hid1];
--
--	cpu_speed = k2_get_bus_speed() * hid1 / 2;
--	return cpu_speed;
--}
--
--static void __init k2_calibrate_decr(void)
--{
--	int freq, divisor = 4;
--
--	/* determine processor bus speed */
--	freq = k2_get_bus_speed();
--	tb_ticks_per_jiffy = freq / HZ / divisor;
--	tb_to_us = mulhwu_scale_factor(freq / divisor, 1000000);
--}
--
--static int k2_show_cpuinfo(struct seq_file *m)
--{
--	unsigned char k2_geo_bits, k2_system_slot;
--
--	seq_printf(m, "vendor\t\t: SBS\n");
--	seq_printf(m, "machine\t\t: K2\n");
--	seq_printf(m, "cpu speed\t: %dMhz\n", k2_get_cpu_speed() / 1000000);
--	seq_printf(m, "bus speed\t: %dMhz\n", k2_get_bus_speed() / 1000000);
--	seq_printf(m, "memory type\t: SDRAM\n");
--
--	k2_geo_bits = readb(K2_MSIZ_GEO_REG) & K2_GEO_ADR_MASK;
--	k2_system_slot = !(readb(K2_MISC_REG) & K2_SYS_SLOT_MASK);
--	seq_printf(m, "backplane\t: %s slot board",
--		   k2_system_slot ? "System" : "Non system");
--	seq_printf(m, "with geographical address %x\n", k2_geo_bits);
--
--	return 0;
--}
+-static void mcpn765_halt(void);
 -
 -TODC_ALLOC();
 -
--static void __init k2_setup_arch(void)
+-/*
+- * Motorola MCG MCPN765 interrupt routing.
+- */
+-static inline int
+-mcpn765_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
 -{
--	unsigned int cpu;
+-	static char pci_irq_table[][4] =
+-	/*
+-	 *	PCI IDSEL/INTPIN->INTLINE
+-	 * 	   A   B   C   D
+-	 */
+-	{
+-		{ 14,  0,  0,  0 },	/* IDSEL 11 - have to manually set */
+-		{  0,  0,  0,  0 },	/* IDSEL 12 - unused */
+-		{  0,  0,  0,  0 },	/* IDSEL 13 - unused */
+-		{ 18,  0,  0,  0 },	/* IDSEL 14 - Enet 0 */
+-		{  0,  0,  0,  0 },	/* IDSEL 15 - unused */
+-		{ 25, 26, 27, 28 },	/* IDSEL 16 - PMC Slot 1 */
+-		{ 28, 25, 26, 27 },	/* IDSEL 17 - PMC Slot 2 */
+-		{  0,  0,  0,  0 },	/* IDSEL 18 - PMC 2B Connector XXXX */
+-		{ 29,  0,  0,  0 },	/* IDSEL 19 - Enet 1 */
+-		{ 20,  0,  0,  0 },	/* IDSEL 20 - 21554 cPCI bridge */
+-	};
 -
--	/* Setup TODC access */
--	TODC_INIT(TODC_TYPE_MK48T37, 0, 0,
--		  ioremap(K2_RTC_BASE_ADDRESS, K2_RTC_SIZE), 8);
+-	const long min_idsel = 11, max_idsel = 20, irqs_per_slot = 4;
+-	return PCI_IRQ_TABLE_LOOKUP;
+-}
 -
--	/* init to some ~sane value until calibrate_delay() runs */
+-void __init
+-mcpn765_set_VIA_IDE_legacy(void)
+-{
+-	unsigned short vend, dev;
+-
+-	early_read_config_word(0, 0, PCI_DEVFN(0xb, 1), PCI_VENDOR_ID, &vend);
+-	early_read_config_word(0, 0, PCI_DEVFN(0xb, 1), PCI_DEVICE_ID, &dev);
+-
+-	if ((vend == PCI_VENDOR_ID_VIA) &&
+-	    (dev == PCI_DEVICE_ID_VIA_82C586_1)) {
+-
+-		unsigned char temp;
+-
+-		/* put back original "standard" port base addresses */
+-		early_write_config_dword(0, 0, PCI_DEVFN(0xb, 1),
+-				         PCI_BASE_ADDRESS_0, 0x1f1);
+-		early_write_config_dword(0, 0, PCI_DEVFN(0xb, 1),
+-				         PCI_BASE_ADDRESS_1, 0x3f5);
+-		early_write_config_dword(0, 0, PCI_DEVFN(0xb, 1),
+-				         PCI_BASE_ADDRESS_2, 0x171);
+-		early_write_config_dword(0, 0, PCI_DEVFN(0xb, 1),
+-				         PCI_BASE_ADDRESS_3, 0x375);
+-		early_write_config_dword(0, 0, PCI_DEVFN(0xb, 1),
+-				         PCI_BASE_ADDRESS_4, 0xcc01);
+-
+-		/* put into legacy mode */
+-		early_read_config_byte(0, 0, PCI_DEVFN(0xb, 1), PCI_CLASS_PROG,
+-				       &temp);
+-		temp &= ~0x05;
+-		early_write_config_byte(0, 0, PCI_DEVFN(0xb, 1), PCI_CLASS_PROG,
+-					temp);
+-	}
+-}
+-
+-void
+-mcpn765_set_VIA_IDE_native(void)
+-{
+-	unsigned short vend, dev;
+-
+-	early_read_config_word(0, 0, PCI_DEVFN(0xb, 1), PCI_VENDOR_ID, &vend);
+-	early_read_config_word(0, 0, PCI_DEVFN(0xb, 1), PCI_DEVICE_ID, &dev);
+-
+-	if ((vend == PCI_VENDOR_ID_VIA) &&
+-	    (dev == PCI_DEVICE_ID_VIA_82C586_1)) {
+-
+-		unsigned char temp;
+-
+-		/* put into native mode */
+-		early_read_config_byte(0, 0, PCI_DEVFN(0xb, 1), PCI_CLASS_PROG,
+-				       &temp);
+-		temp |= 0x05;
+-		early_write_config_byte(0, 0, PCI_DEVFN(0xb, 1), PCI_CLASS_PROG,
+-					temp);
+-	}
+-}
+-
+-/*
+- * Initialize the VIA 82c586b.
+- */
+-static void __init
+-mcpn765_setup_via_82c586b(void)
+-{
+-	struct pci_dev	*dev;
+-	u_char		c;
+-
+-	if ((dev = pci_get_device(PCI_VENDOR_ID_VIA,
+-				   PCI_DEVICE_ID_VIA_82C586_0,
+-				   NULL)) == NULL) {
+-		printk("No VIA ISA bridge found\n");
+-		mcpn765_halt();
+-		/* NOTREACHED */
+-	}
+-
+-	/*
+-	 * If the firmware left the EISA 4d0/4d1 ports enabled, make sure
+-	 * IRQ 14 is set for edge.
+-	 */
+-	pci_read_config_byte(dev, 0x47, &c);
+-
+-	if (c & (1<<5)) {
+-		c = inb(0x4d1);
+-		c &= ~(1<<6);
+-		outb(c, 0x4d1);
+-	}
+-
+-	/* Disable PNP IRQ routing since we use the Hawk's MPIC */
+-	pci_write_config_dword(dev, 0x54, 0);
+-	pci_write_config_byte(dev, 0x58, 0);
+-
+-	pci_dev_put(dev);
+-	if ((dev = pci_get_device(PCI_VENDOR_ID_VIA,
+-				   PCI_DEVICE_ID_VIA_82C586_1,
+-				   NULL)) == NULL) {
+-		printk("No VIA ISA bridge found\n");
+-		mcpn765_halt();
+-		/* NOTREACHED */
+-	}
+-
+-	/*
+-	 * PPCBug doesn't set the enable bits for the IDE device.
+-	 * Turn them on now.
+-	 */
+-	pci_read_config_byte(dev, 0x40, &c);
+-	c |= 0x03;
+-	pci_write_config_byte(dev, 0x40, c);
+-	pci_dev_put(dev);
+-
+-	return;
+-}
+-
+-void __init
+-mcpn765_pcibios_fixup(void)
+-{
+-	/* Do MCPN765 board specific initialization.  */
+-	mcpn765_setup_via_82c586b();
+-}
+-
+-void __init
+-mcpn765_find_bridges(void)
+-{
+-	struct pci_controller	*hose;
+-
+-	hose = pcibios_alloc_controller();
+-
+-	if (!hose)
+-		return;
+-
+-	hose->first_busno = 0;
+-	hose->last_busno = 0xff;
+-	hose->pci_mem_offset = MCPN765_PCI_PHY_MEM_OFFSET;
+-
+-	pci_init_resource(&hose->io_resource,
+-			MCPN765_PCI_IO_START,
+-			MCPN765_PCI_IO_END,
+-			IORESOURCE_IO,
+-			"PCI host bridge");
+-
+-	pci_init_resource(&hose->mem_resources[0],
+-			MCPN765_PCI_MEM_START,
+-			MCPN765_PCI_MEM_END,
+-			IORESOURCE_MEM,
+-			"PCI host bridge");
+-
+-	hose->io_space.start = MCPN765_PCI_IO_START;
+-	hose->io_space.end = MCPN765_PCI_IO_END;
+-	hose->mem_space.start = MCPN765_PCI_MEM_START;
+-	hose->mem_space.end = MCPN765_PCI_MEM_END - HAWK_MPIC_SIZE;
+-
+-	if (hawk_init(hose,
+-		       MCPN765_HAWK_PPC_REG_BASE,
+-		       MCPN765_PROC_PCI_MEM_START,
+-		       MCPN765_PROC_PCI_MEM_END - HAWK_MPIC_SIZE,
+-		       MCPN765_PROC_PCI_IO_START,
+-		       MCPN765_PROC_PCI_IO_END,
+-		       MCPN765_PCI_MEM_END - HAWK_MPIC_SIZE + 1) != 0) {
+-		printk("Could not initialize HAWK bridge\n");
+-	}
+-
+-	/* VIA IDE BAR decoders are only 16-bits wide. PCI Auto Config
+-	 * will reassign the bars outside of 16-bit I/O space, which will 
+-	 * "break" things. To prevent this, we'll set the IDE chip into
+-	 * legacy mode and seed the bars with their legacy addresses (in 16-bit
+-	 * I/O space). The Auto Config code will skip the IDE contoller in 
+-	 * legacy mode, so our bar values will stick.
+-	 */
+-	mcpn765_set_VIA_IDE_legacy();
+-
+-	hose->last_busno = pciauto_bus_scan(hose, hose->first_busno);
+-
+-	/* Now that we've got 16-bit addresses in the bars, we can switch the
+-	 * IDE controller back into native mode so we can do "modern" resource
+-	 * and interrupt management.
+-	 */
+-	mcpn765_set_VIA_IDE_native();
+-
+-	ppc_md.pcibios_fixup = mcpn765_pcibios_fixup;
+-	ppc_md.pcibios_fixup_bus = NULL;
+-	ppc_md.pci_swizzle = common_swizzle;
+-	ppc_md.pci_map_irq = mcpn765_map_irq;
+-
+-	return;
+-}
+-static void __init
+-mcpn765_setup_arch(void)
+-{
+-	struct pci_controller *hose;
+-
+-	if ( ppc_md.progress )
+-		ppc_md.progress("mcpn765_setup_arch: enter", 0);
+-
 -	loops_per_jiffy = 50000000 / HZ;
--
--	/* make FLASH transactions higher priority than PCI to avoid deadlock */
--	__raw_writel(__raw_readl(SIOC1) | 0x80000000, SIOC1);
--
--	/* Set hardware to access FLASH page 2 */
--	__raw_writel(1 << 29, GPOUT);
--
--	/* Setup PCI host bridges */
--	k2_setup_hoses();
 -
 -#ifdef CONFIG_BLK_DEV_INITRD
 -	if (initrd_start)
 -		ROOT_DEV = Root_RAM0;
 -	else
 -#endif
--#ifdef CONFIG_ROOT_NFS
+-#ifdef	CONFIG_ROOT_NFS
 -		ROOT_DEV = Root_NFS;
 -#else
--		ROOT_DEV = Root_HDC1;
+-		ROOT_DEV = Root_SDA2;
 -#endif
 -
--	/* Identify the system */
--	printk(KERN_INFO "System Identification: SBS K2 - PowerPC 750 @ "
--			"%d Mhz\n", k2_get_cpu_speed() / 1000000);
--	printk(KERN_INFO "Port by MontaVista Software, Inc. "
--			"(source@mvista.com)\n");
+-	if ( ppc_md.progress )
+-		ppc_md.progress("mcpn765_setup_arch: find_bridges", 0);
 -
--	/* Identify the CPU manufacturer */
--	cpu = PVR_REV(mfspr(SPRN_PVR));
--	printk(KERN_INFO "CPU manufacturer: %s [rev=%04x]\n",
--			(cpu & (1 << 15)) ? "IBM" : "Motorola", cpu);
+-	/* Lookup PCI host bridges */
+-	mcpn765_find_bridges();
+-
+-	hose = pci_bus_to_hose(0);
+-	isa_io_base = (ulong)hose->io_base_virt;
+-
+-	TODC_INIT(TODC_TYPE_MK48T37,
+-		  (MCPN765_PHYS_NVRAM_AS0 - isa_io_base),
+-		  (MCPN765_PHYS_NVRAM_AS1 - isa_io_base),
+-		  (MCPN765_PHYS_NVRAM_DATA - isa_io_base),
+-		  8);
+-
+-	OpenPIC_InitSenses = mcpn765_openpic_initsenses;
+-	OpenPIC_NumInitSenses = sizeof(mcpn765_openpic_initsenses);
+-
+-	printk("Motorola MCG MCPN765 cPCI Non-System Board\n");
+-	printk("MCPN765 port (MontaVista Software, Inc. (source@mvista.com))\n");
+-
+-	if ( ppc_md.progress )
+-		ppc_md.progress("mcpn765_setup_arch: exit", 0);
+-
+-	return;
 -}
 -
--static void k2_restart(char *cmd)
+-static void __init
+-mcpn765_init2(void)
 -{
--	local_irq_disable();
 -
--	/* Flip FLASH back to page 1 to access firmware image */
--	__raw_writel(0, GPOUT);
+-	request_region(0x00,0x20,"dma1");
+-	request_region(0x20,0x20,"pic1");
+-	request_region(0x40,0x20,"timer");
+-	request_region(0x80,0x10,"dma page reg");
+-	request_region(0xa0,0x20,"pic2");
+-	request_region(0xc0,0x20,"dma2");
 -
--	/* SRR0 has system reset vector, SRR1 has default MSR value */
--	/* rfi restores MSR from SRR1 and sets the PC to the SRR0 value */
--	mtspr(SPRN_SRR0, 0xfff00100);
--	mtspr(SPRN_SRR1, 0);
--	__asm__ __volatile__("rfi\n\t");
--
--	/* not reached */
--	for (;;) ;
--}
--
--static void k2_power_off(void)
--{
--	for (;;) ;
--}
--
--static void k2_halt(void)
--{
--	k2_restart(NULL);
+-	return;
 -}
 -
 -/*
-- * Set BAT 3 to map PCI32 I/O space.
+- * Interrupt setup and service.
+- * Have MPIC on HAWK and cascaded 8259s on VIA 82586 cascaded to MPIC.
 - */
--static __inline__ void k2_set_bat(void)
--{
--	/* wait for all outstanding memory accesses to complete */
--	mb();
--
--	/* setup DBATs */
--	mtspr(SPRN_DBAT2U, 0x80001ffe);
--	mtspr(SPRN_DBAT2L, 0x8000002a);
--	mtspr(SPRN_DBAT3U, 0xf0001ffe);
--	mtspr(SPRN_DBAT3L, 0xf000002a);
--
--	/* wait for updates */
--	mb();
--}
--
--static unsigned long __init k2_find_end_of_memory(void)
--{
--	unsigned long total;
--	unsigned char msize = 7;	/* Default to 128MB */
--
--	msize = K2_MEM_SIZE(readb(K2_MSIZ_GEO_REG));
--
--	switch (msize) {
--	case 2:
--		/*
--		 * This will break without a lowered
--		 * KERNELBASE or CONFIG_HIGHMEM on.
--		 * It seems non 1GB builds exist yet,
--		 * though.
--		 */
--		total = K2_MEM_SIZE_1GB;
--		break;
--	case 3:
--	case 4:
--		total = K2_MEM_SIZE_512MB;
--		break;
--	case 5:
--	case 6:
--		total = K2_MEM_SIZE_256MB;
--		break;
--	case 7:
--		total = K2_MEM_SIZE_128MB;
--		break;
--	default:
--		printk
--		    ("K2: Invalid memory size detected, defaulting to 128MB\n");
--		total = K2_MEM_SIZE_128MB;
--		break;
--	}
--	return total;
--}
--
--static void __init k2_map_io(void)
--{
--	io_block_mapping(K2_PCI32_IO_BASE,
--			 K2_PCI32_IO_BASE, 0x00200000, _PAGE_IO);
--	io_block_mapping(0xff000000, 0xff000000, 0x01000000, _PAGE_IO);
--}
--
--static void __init k2_init_irq(void)
+-static void __init
+-mcpn765_init_IRQ(void)
 -{
 -	int i;
 -
--	for (i = 0; i < 16; i++)
+-	if ( ppc_md.progress )
+-		ppc_md.progress("init_irq: enter", 0);
+-
+-	openpic_init(NUM_8259_INTERRUPTS);
+-	openpic_hookup_cascade(NUM_8259_INTERRUPTS, "82c59 cascade",
+-			i8259_irq);
+-
+-	for(i=0; i < NUM_8259_INTERRUPTS; i++)
 -		irq_desc[i].handler = &i8259_pic;
 -
 -	i8259_init(0);
+-
+-	if ( ppc_md.progress )
+-		ppc_md.progress("init_irq: exit", 0);
+-
+-	return;
 -}
 -
--void __init platform_init(unsigned long r3, unsigned long r4,
--			  unsigned long r5, unsigned long r6, unsigned long r7)
+-static u32
+-mcpn765_irq_canonicalize(u32 irq)
 -{
--	parse_bootinfo((struct bi_record *)(r3 + KERNELBASE));
+-	if (irq == 2)
+-		return 9;
+-	else
+-		return irq;
+-}
 -
--	k2_set_bat();
+-static unsigned long __init
+-mcpn765_find_end_of_memory(void)
+-{
+-	return hawk_get_mem_size(MCPN765_HAWK_SMC_BASE);
+-}
 -
--	isa_io_base = K2_ISA_IO_BASE;
--	isa_mem_base = K2_ISA_MEM_BASE;
--	pci_dram_offset = K2_PCI32_SYS_MEM_BASE;
+-static void __init
+-mcpn765_map_io(void)
+-{
+-	io_block_mapping(0xfe800000, 0xfe800000, 0x00800000, _PAGE_IO);
+-}
 -
--	ppc_md.setup_arch = k2_setup_arch;
--	ppc_md.show_cpuinfo = k2_show_cpuinfo;
--	ppc_md.init_IRQ = k2_init_irq;
--	ppc_md.get_irq = i8259_irq;
+-static void
+-mcpn765_reset_board(void)
+-{
+-	local_irq_disable();
 -
--	ppc_md.find_end_of_memory = k2_find_end_of_memory;
--	ppc_md.setup_io_mappings = k2_map_io;
+-	/* set VIA IDE controller into native mode */
+-	mcpn765_set_VIA_IDE_native();
 -
--	ppc_md.restart = k2_restart;
--	ppc_md.power_off = k2_power_off;
--	ppc_md.halt = k2_halt;
+-	/* Set exception prefix high - to the firmware */
+-	_nmask_and_or_msr(0, MSR_IP);
+-
+-	out_8((u_char *)MCPN765_BOARD_MODRST_REG, 0x01);
+-
+-	return;
+-}
+-
+-static void
+-mcpn765_restart(char *cmd)
+-{
+-	volatile ulong	i = 10000000;
+-
+-	mcpn765_reset_board();
+-
+-	while (i-- > 0);
+-	panic("restart failed\n");
+-}
+-
+-static void
+-mcpn765_power_off(void)
+-{
+-	mcpn765_halt();
+-	/* NOTREACHED */
+-}
+-
+-static void
+-mcpn765_halt(void)
+-{
+-	local_irq_disable();
+-	while (1);
+-	/* NOTREACHED */
+-}
+-
+-static int
+-mcpn765_show_cpuinfo(struct seq_file *m)
+-{
+-	seq_printf(m, "vendor\t\t: Motorola MCG\n");
+-	seq_printf(m, "machine\t\t: MCPN765\n");
+-
+-	return 0;
+-}
+-
+-/*
+- * Set BAT 3 to map 0xf0000000 to end of physical memory space.
+- */
+-static __inline__ void
+-mcpn765_set_bat(void)
+-{
+-	mb();
+-	mtspr(SPRN_DBAT1U, 0xfe8000fe);
+-	mtspr(SPRN_DBAT1L, 0xfe80002a);
+-	mb();
+-}
+-
+-void __init
+-platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
+-		unsigned long r6, unsigned long r7)
+-{
+-	parse_bootinfo(find_bootinfo());
+-
+-	/* Map in board regs, etc. */
+-	mcpn765_set_bat();
+-
+-	isa_mem_base = MCPN765_ISA_MEM_BASE;
+-	pci_dram_offset = MCPN765_PCI_DRAM_OFFSET;
+-	ISA_DMA_THRESHOLD = 0x00ffffff;
+-	DMA_MODE_READ = 0x44;
+-	DMA_MODE_WRITE = 0x48;
+-
+-	ppc_md.setup_arch = mcpn765_setup_arch;
+-	ppc_md.show_cpuinfo = mcpn765_show_cpuinfo;
+-	ppc_md.irq_canonicalize = mcpn765_irq_canonicalize;
+-	ppc_md.init_IRQ = mcpn765_init_IRQ;
+-	ppc_md.get_irq = openpic_get_irq;
+-	ppc_md.init = mcpn765_init2;
+-
+-	ppc_md.restart = mcpn765_restart;
+-	ppc_md.power_off = mcpn765_power_off;
+-	ppc_md.halt = mcpn765_halt;
+-
+-	ppc_md.find_end_of_memory = mcpn765_find_end_of_memory;
+-	ppc_md.setup_io_mappings = mcpn765_map_io;
 -
 -	ppc_md.time_init = todc_time_init;
 -	ppc_md.set_rtc_time = todc_set_rtc_time;
 -	ppc_md.get_rtc_time = todc_get_rtc_time;
--	ppc_md.calibrate_decr = k2_calibrate_decr;
+-	ppc_md.calibrate_decr = todc_calibrate_decr;
 -
--	ppc_md.nvram_read_val = todc_direct_read_val;
--	ppc_md.nvram_write_val = todc_direct_write_val;
+-	ppc_md.nvram_read_val = todc_m48txx_read_val;
+-	ppc_md.nvram_write_val = todc_m48txx_write_val;
+-
+-	ppc_md.heartbeat = NULL;
+-	ppc_md.heartbeat_reset = 0;
+-	ppc_md.heartbeat_count = 0;
 -
 -#ifdef CONFIG_SERIAL_TEXT_DEBUG
 -	ppc_md.progress = gen550_progress;
 -#endif
+-#ifdef CONFIG_KGDB
+-	ppc_md.kgdb_map_scc = gen550_kgdb_map_scc;
+-#endif
+-
+-	return;
 -}
-diff --git a/arch/ppc/platforms/k2.h b/arch/ppc/platforms/k2.h
+diff --git a/arch/ppc/platforms/mcpn765.h b/arch/ppc/platforms/mcpn765.h
 deleted file mode 100644
---- a/arch/ppc/platforms/k2.h
+--- a/arch/ppc/platforms/mcpn765.h
 +++ /dev/null
-@@ -1,82 +0,0 @@
+@@ -1,122 +0,0 @@
 -/*
-- * arch/ppc/platforms/k2.h
+- * arch/ppc/platforms/mcpn765.h
 - *
-- * Definitions for SBS K2 board support
+- * Definitions for Motorola MCG MCPN765 cPCI Board.
 - *
-- * Author: Matt Porter <mporter@mvista.com>
+- * Author: Mark A. Greer
+- *         mgreer@mvista.com
 - *
-- * 2001 (c) MontaVista, Software, Inc.  This file is licensed under
+- * 2001-2004 (c) MontaVista, Software, Inc.  This file is licensed under
 - * the terms of the GNU General Public License version 2.  This program
 - * is licensed "as is" without any warranty of any kind, whether express
 - * or implied.
 - */
 -
--#ifndef __PPC_PLATFORMS_K2_H
--#define __PPC_PLATFORMS_K2_H
--
 -/*
-- * SBS K2 definitions
+- * From Processor to PCI:
+- *   PCI Mem Space: 0x80000000 - 0xc0000000 -> 0x80000000 - 0xc0000000 (1 GB)
+- *   PCI I/O Space: 0xfd800000 - 0xfe000000 -> 0x00000000 - 0x00800000 (8 MB)
+- *	Note: Must skip 0xfe000000-0xfe400000 for CONFIG_HIGHMEM/PKMAP area
+- *   MPIC in PCI Mem Space: 0xfe800000 - 0xfe830000 (not all used by MPIC)
+- *
+- * From PCI to Processor:
+- *   System Memory: 0x00000000 -> 0x00000000
 - */
 -
--#define	K2_PCI64_BAR		0xff400000
--#define	K2_PCI32_BAR		0xff500000
+-#ifndef __PPC_PLATFORMS_MCPN765_H
+-#define __PPC_PLATFORMS_MCPN765_H
+-#include <linux/config.h>
 -
--#define K2_PCI64_CONFIG_ADDR	(K2_PCI64_BAR + 0x000f8000)
--#define K2_PCI64_CONFIG_DATA	(K2_PCI64_BAR + 0x000f8010)
+-/* PCI Memory space mapping info */
+-#define	MCPN765_PCI_MEM_SIZE		0x40000000U
+-#define MCPN765_PROC_PCI_MEM_START	0x80000000U
+-#define MCPN765_PROC_PCI_MEM_END	(MCPN765_PROC_PCI_MEM_START +	\
+-					 MCPN765_PCI_MEM_SIZE - 1)
+-#define MCPN765_PCI_MEM_START		0x80000000U
+-#define MCPN765_PCI_MEM_END		(MCPN765_PCI_MEM_START +	\
+-					 MCPN765_PCI_MEM_SIZE - 1)
 -
--#define K2_PCI32_CONFIG_ADDR	(K2_PCI32_BAR + 0x000f8000)
--#define K2_PCI32_CONFIG_DATA	(K2_PCI32_BAR + 0x000f8010)
+-/* PCI I/O space mapping info */
+-#define	MCPN765_PCI_IO_SIZE		0x00800000U
+-#define MCPN765_PROC_PCI_IO_START	0xfd800000U
+-#define MCPN765_PROC_PCI_IO_END		(MCPN765_PROC_PCI_IO_START +	\
+-					 MCPN765_PCI_IO_SIZE - 1)
+-#define MCPN765_PCI_IO_START		0x00000000U
+-#define MCPN765_PCI_IO_END		(MCPN765_PCI_IO_START + 	\
+-					 MCPN765_PCI_IO_SIZE - 1)
 -
--#define K2_PCI64_MEM_BASE	0xd0000000
--#define K2_PCI64_IO_BASE	0x80100000
+-/* System memory mapping info */
+-#define MCPN765_PCI_DRAM_OFFSET		0x00000000U
+-#define MCPN765_PCI_PHY_MEM_OFFSET	0x00000000U
 -
--#define K2_PCI32_MEM_BASE	0xc0000000
--#define K2_PCI32_IO_BASE	0x80000000
+-#define MCPN765_ISA_MEM_BASE		0x00000000U
+-#define MCPN765_ISA_IO_BASE		MCPN765_PROC_PCI_IO_START
 -
--#define K2_PCI32_SYS_MEM_BASE	0x80000000
--#define K2_PCI64_SYS_MEM_BASE	K2_PCI32_SYS_MEM_BASE
+-/* Define base addresses for important sets of registers */
+-#define MCPN765_HAWK_MPIC_BASE		0xfe800000U
+-#define MCPN765_HAWK_SMC_BASE		0xfef80000U
+-#define	MCPN765_HAWK_PPC_REG_BASE	0xfeff0000U
 -
--#define K2_PCI32_LOWER_MEM	0x00000000
--#define K2_PCI32_UPPER_MEM	0x0fffffff
--#define K2_PCI32_LOWER_IO	0x00000000
--#define K2_PCI32_UPPER_IO	0x000fffff
+-/* Define MCPN765 board register addresses. */
+-#define	MCPN765_BOARD_STATUS_REG	0xfef88080U
+-#define	MCPN765_BOARD_MODFAIL_REG	0xfef88090U
+-#define	MCPN765_BOARD_MODRST_REG	0xfef880a0U
+-#define	MCPN765_BOARD_TBEN_REG		0xfef880c0U
+-#define	MCPN765_BOARD_GEOGRAPHICAL_REG	0xfef880e8U
+-#define	MCPN765_BOARD_EXT_FEATURE_REG	0xfef880f0U
+-#define	MCPN765_BOARD_LAST_RESET_REG	0xfef880f8U
 -
--#define K2_PCI64_LOWER_MEM	0x10000000
--#define K2_PCI64_UPPER_MEM	0x1fffffff
--#define K2_PCI64_LOWER_IO	0x00100000
--#define	K2_PCI64_UPPER_IO	0x001fffff
+-/* Defines for UART */
 -
--#define K2_ISA_IO_BASE		K2_PCI32_IO_BASE
--#define K2_ISA_MEM_BASE		K2_PCI32_MEM_BASE
+-/* Define the UART base addresses */
+-#define	MCPN765_SERIAL_1		0xfef88000
+-#define	MCPN765_SERIAL_2		0xfef88200
+-#define	MCPN765_SERIAL_3		0xfef88400
+-#define	MCPN765_SERIAL_4		0xfef88600
 -
--#define K2_BOARD_ID_REG		(K2_ISA_IO_BASE + 0x800)
--#define K2_MISC_REG		(K2_ISA_IO_BASE + 0x804)
--#define K2_MSIZ_GEO_REG		(K2_ISA_IO_BASE + 0x808)
--#define K2_HOT_SWAP_REG		(K2_ISA_IO_BASE + 0x80c)
--#define K2_PLD2_REG		(K2_ISA_IO_BASE + 0x80e)
--#define K2_PLD3_REG		(K2_ISA_IO_BASE + 0x80f)
+-#ifdef CONFIG_SERIAL_MANY_PORTS
+-#define RS_TABLE_SIZE  64
+-#else
+-#define RS_TABLE_SIZE  4
+-#endif
 -
--#define K2_BUS_SPD(board_id)	(board_id >> 2) & 3
+-/* Rate for the 1.8432 Mhz clock for the onboard serial chip */
+-#define BASE_BAUD	( 1843200 / 16 )
+-#define UART_CLK	1843200
 -
--#define K2_RTC_BASE_OFFSET	0x90000
--#define K2_RTC_BASE_ADDRESS	(K2_PCI32_MEM_BASE + K2_RTC_BASE_OFFSET)
--#define K2_RTC_SIZE		0x8000
+-#ifdef CONFIG_SERIAL_DETECT_IRQ
+-#define STD_COM_FLAGS (ASYNC_BOOT_AUTOCONF|ASYNC_SKIP_TEST|ASYNC_AUTO_IRQ)
+-#else
+-#define STD_COM_FLAGS (ASYNC_BOOT_AUTOCONF|ASYNC_SKIP_TEST)
+-#endif
 -
--#define K2_MEM_SIZE_MASK	0xe0
--#define K2_MEM_SIZE(size_reg)	(size_reg & K2_MEM_SIZE_MASK) >> 5
--#define	K2_MEM_SIZE_1GB		0x40000000
--#define K2_MEM_SIZE_512MB	0x20000000
--#define K2_MEM_SIZE_256MB	0x10000000
--#define K2_MEM_SIZE_128MB	0x08000000
+-/* All UART IRQ's are wire-OR'd to IRQ 17 */
+-#define STD_SERIAL_PORT_DFNS \
+-        { 0, BASE_BAUD, MCPN765_SERIAL_1, 17, STD_COM_FLAGS, /* ttyS0 */\
+-		iomem_base: (u8 *)MCPN765_SERIAL_1,			\
+-		iomem_reg_shift: 4,					\
+-		io_type: SERIAL_IO_MEM },				\
+-        { 0, BASE_BAUD, MCPN765_SERIAL_2, 17, STD_COM_FLAGS, /* ttyS1 */\
+-		iomem_base: (u8 *)MCPN765_SERIAL_2,			\
+-		iomem_reg_shift: 4,					\
+-		io_type: SERIAL_IO_MEM },				\
+-        { 0, BASE_BAUD, MCPN765_SERIAL_3, 17, STD_COM_FLAGS, /* ttyS2 */\
+-		iomem_base: (u8 *)MCPN765_SERIAL_3,			\
+-		iomem_reg_shift: 4,					\
+-		io_type: SERIAL_IO_MEM },				\
+-        { 0, BASE_BAUD, MCPN765_SERIAL_4, 17, STD_COM_FLAGS, /* ttyS3 */\
+-		iomem_base: (u8 *)MCPN765_SERIAL_4,			\
+-		iomem_reg_shift: 4,					\
+-		io_type: SERIAL_IO_MEM },
 -
--#define K2_L2CACHE_MASK		0x03	/* Mask for 2 L2 Cache bits */
--#define K2_L2CACHE_512KB	0x00	/* 512KB */
--#define K2_L2CACHE_256KB	0x01	/* 256KB */
--#define K2_L2CACHE_1MB		0x02	/* 1MB */
--#define K2_L2CACHE_NONE		0x03	/* None */
+-#define SERIAL_PORT_DFNS \
+-        STD_SERIAL_PORT_DFNS
 -
--#define K2_GEO_ADR_MASK		0x1f
+-/* Define the NVRAM/RTC address strobe & data registers */
+-#define MCPN765_PHYS_NVRAM_AS0          0xfef880c8U
+-#define MCPN765_PHYS_NVRAM_AS1          0xfef880d0U
+-#define MCPN765_PHYS_NVRAM_DATA         0xfef880d8U
 -
--#define K2_SYS_SLOT_MASK	0x08
+-extern void mcpn765_find_bridges(void);
 -
--#endif /* __PPC_PLATFORMS_K2_H */
+-#endif /* __PPC_PLATFORMS_MCPN765_H */
 diff --git a/arch/ppc/syslib/Makefile b/arch/ppc/syslib/Makefile
 --- a/arch/ppc/syslib/Makefile
 +++ b/arch/ppc/syslib/Makefile
-@@ -48,8 +48,6 @@ obj-$(CONFIG_EV64260)		+= todc_time.o pc
- obj-$(CONFIG_CHESTNUT)		+= mv64360_pic.o pci_auto.o
- obj-$(CONFIG_GEMINI)		+= open_pic.o indirect_pci.o
- obj-$(CONFIG_GT64260)		+= gt64260_pic.o
--obj-$(CONFIG_K2)		+= i8259.o indirect_pci.o todc_time.o \
--					pci_auto.o
- obj-$(CONFIG_LOPEC)		+= i8259.o pci_auto.o todc_time.o
+@@ -52,8 +52,6 @@ obj-$(CONFIG_LOPEC)		+= i8259.o pci_auto
  obj-$(CONFIG_HDPU)		+= pci_auto.o
  obj-$(CONFIG_LUAN)		+= indirect_pci.o pci_auto.o todc_time.o
+ obj-$(CONFIG_KATANA)		+= pci_auto.o
+-obj-$(CONFIG_MCPN765)		+= todc_time.o indirect_pci.o pci_auto.o \
+-					open_pic.o i8259.o hawk_common.o
+ obj-$(CONFIG_MENF1)		+= todc_time.o i8259.o mpc10x_common.o \
+ 					pci_auto.o indirect_pci.o
+ obj-$(CONFIG_MV64360)		+= mv64360_pic.o
+diff --git a/include/asm-ppc/serial.h b/include/asm-ppc/serial.h
+--- a/include/asm-ppc/serial.h
++++ b/include/asm-ppc/serial.h
+@@ -18,8 +18,6 @@
+ #include <platforms/powerpmc250.h>
+ #elif defined(CONFIG_LOPEC)
+ #include <platforms/lopec.h>
+-#elif defined(CONFIG_MCPN765)
+-#include <platforms/mcpn765.h>
+ #elif defined(CONFIG_MVME5100)
+ #include <platforms/mvme5100.h>
+ #elif defined(CONFIG_PAL4)
