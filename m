@@ -1,17 +1,17 @@
 Return-Path: <galak@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 7CEA867DB1
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id EEE9467D9A
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Jul 2005 01:37:25 +1000 (EST)
-Date: Wed, 27 Jul 2005 10:37:15 -0500 (CDT)
+	Thu, 28 Jul 2005 01:37:54 +1000 (EST)
+Date: Wed, 27 Jul 2005 10:37:43 -0500 (CDT)
 From: Kumar Gala <galak@freescale.com>
 To: Andrew Morton <akpm@osdl.org>
-Message-ID: <Pine.LNX.4.61.0507271036480.12237@nylon.am.freescale.net>
+Message-ID: <Pine.LNX.4.61.0507271037160.12237@nylon.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linux-kernel@vger.kernel.org,
 	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH 06/14] ppc32: Remove board support for MCPN765
+Subject: [PATCH 07/14] ppc32: Remove board support for MENF1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,137 +22,87 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Support for the MCPN765 board is no longer maintained and thus being removed
+Support for the MENF1 board is no longer maintained and thus being removed
 
 Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
 ---
-commit f53cc898e2223283215cdcccb8d7218ebf51d2fa
-tree b5665c25b3f9074e8f69a825baec5b0c7c77e447
-parent 5171febe851e0c969b72cee66eb717563a2e8084
-author Kumar K. Gala <kumar.gala@freescale.com> Mon, 25 Jul 2005 15:38:49 -0500
-committer Kumar K. Gala <kumar.gala@freescale.com> Mon, 25 Jul 2005 15:38:49 -0500
+commit 9762d809e90f09f4507b7415fe1853c0fcc92ccb
+tree 0989867e7a6ae6f89ebbe57cc73318aa03c23433
+parent f53cc898e2223283215cdcccb8d7218ebf51d2fa
+author Kumar K. Gala <kumar.gala@freescale.com> Mon, 25 Jul 2005 15:41:25 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> Mon, 25 Jul 2005 15:41:25 -0500
 
- arch/ppc/Kconfig                   |    5 
- arch/ppc/boot/simple/Makefile      |    2 
- arch/ppc/configs/mcpn765_defconfig |  579 ------------------------------------
- arch/ppc/platforms/Makefile        |    1 
- arch/ppc/platforms/mcpn765.c       |  527 ---------------------------------
- arch/ppc/platforms/mcpn765.h       |  122 --------
- arch/ppc/syslib/Makefile           |    2 
- include/asm-ppc/serial.h           |    2 
- 8 files changed, 2 insertions(+), 1238 deletions(-)
+ arch/ppc/configs/menf1_defconfig |  621 --------------------------------------
+ arch/ppc/platforms/Makefile      |    1 
+ arch/ppc/syslib/Makefile         |    2 
+ 3 files changed, 0 insertions(+), 624 deletions(-)
 
-diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
---- a/arch/ppc/Kconfig
-+++ b/arch/ppc/Kconfig
-@@ -613,9 +613,6 @@ config EV64260
- config LOPEC
- 	bool "Motorola-LoPEC"
- 
--config MCPN765
--	bool "Motorola-MCPN765"
--
- config MVME5100
- 	bool "Motorola-MVME5100"
- 
-@@ -789,7 +786,7 @@ config PPC_OF
- 
- config PPC_GEN550
- 	bool
--	depends on SANDPOINT || MCPN765 || SPRUCE || PPLUS || PCORE || \
-+	depends on SANDPOINT || SPRUCE || PPLUS || PCORE || \
- 		PRPMC750 || PRPMC800 || LOPEC || \
- 		(EV64260 && !SERIAL_MPSC) || CHESTNUT || RADSTONE_PPC7D || \
- 		83xx
-diff --git a/arch/ppc/boot/simple/Makefile b/arch/ppc/boot/simple/Makefile
---- a/arch/ppc/boot/simple/Makefile
-+++ b/arch/ppc/boot/simple/Makefile
-@@ -100,7 +100,7 @@ zimageinitrd-$(CONFIG_GEMINI)		:= zImage
- 
- # kconfig 'feature', only one of these will ever be 'y' at a time.
- # The rest will be unset.
--motorola := $(CONFIG_MCPN765)$(CONFIG_MVME5100)$(CONFIG_PRPMC750) \
-+motorola := $(CONFIG_MVME5100)$(CONFIG_PRPMC750) \
- $(CONFIG_PRPMC800)$(CONFIG_LOPEC)$(CONFIG_PPLUS)
- motorola := $(strip $(motorola))
- pcore := $(CONFIG_PCORE)$(CONFIG_POWERPMC250)
-diff --git a/arch/ppc/configs/mcpn765_defconfig b/arch/ppc/configs/mcpn765_defconfig
+diff --git a/arch/ppc/configs/menf1_defconfig b/arch/ppc/configs/menf1_defconfig
 deleted file mode 100644
---- a/arch/ppc/configs/mcpn765_defconfig
+--- a/arch/ppc/configs/menf1_defconfig
 +++ /dev/null
-@@ -1,579 +0,0 @@
+@@ -1,621 +0,0 @@
 -#
 -# Automatically generated make config: don't edit
 -#
 -CONFIG_MMU=y
 -CONFIG_RWSEM_XCHGADD_ALGORITHM=y
 -CONFIG_HAVE_DEC_LOCK=y
--CONFIG_PPC=y
--CONFIG_PPC32=y
--CONFIG_GENERIC_NVRAM=y
 -
 -#
 -# Code maturity level options
 -#
--# CONFIG_EXPERIMENTAL is not set
--CONFIG_CLEAN_COMPILE=y
--CONFIG_STANDALONE=y
--CONFIG_BROKEN_ON_SMP=y
+-CONFIG_EXPERIMENTAL=y
 -
 -#
 -# General setup
 -#
--# CONFIG_SWAP is not set
+-CONFIG_SWAP=y
 -CONFIG_SYSVIPC=y
 -# CONFIG_BSD_PROCESS_ACCT is not set
 -CONFIG_SYSCTL=y
 -CONFIG_LOG_BUF_SHIFT=14
--# CONFIG_HOTPLUG is not set
--# CONFIG_IKCONFIG is not set
--CONFIG_EMBEDDED=y
--CONFIG_KALLSYMS=y
+-# CONFIG_EMBEDDED is not set
 -CONFIG_FUTEX=y
 -CONFIG_EPOLL=y
--CONFIG_IOSCHED_NOOP=y
--CONFIG_IOSCHED_AS=y
--CONFIG_IOSCHED_DEADLINE=y
--# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
 -
 -#
 -# Loadable module support
 -#
 -CONFIG_MODULES=y
--# CONFIG_MODULE_UNLOAD is not set
+-CONFIG_MODULE_UNLOAD=y
+-# CONFIG_MODULE_FORCE_UNLOAD is not set
 -CONFIG_OBSOLETE_MODPARM=y
--# CONFIG_KMOD is not set
+-# CONFIG_MODVERSIONS is not set
+-CONFIG_KMOD=y
 -
 -#
--# Processor
+-# Platform support
 -#
+-CONFIG_PPC=y
+-CONFIG_PPC32=y
 -CONFIG_6xx=y
 -# CONFIG_40x is not set
--# CONFIG_44x is not set
 -# CONFIG_POWER3 is not set
--# CONFIG_POWER4 is not set
 -# CONFIG_8xx is not set
--CONFIG_ALTIVEC=y
--# CONFIG_TAU is not set
--# CONFIG_CPU_FREQ is not set
--CONFIG_PPC_STD_MMU=y
 -
 -#
--# Platform options
+-# IBM 4xx options
 -#
+-# CONFIG_8260 is not set
+-CONFIG_GENERIC_ISA_DMA=y
+-CONFIG_PPC_STD_MMU=y
 -# CONFIG_PPC_MULTIPLATFORM is not set
 -# CONFIG_APUS is not set
--# CONFIG_WILLOW is not set
+-# CONFIG_WILLOW_2 is not set
 -# CONFIG_PCORE is not set
 -# CONFIG_POWERPMC250 is not set
 -# CONFIG_EV64260 is not set
 -# CONFIG_SPRUCE is not set
+-CONFIG_MENF1=y
 -# CONFIG_LOPEC is not set
--CONFIG_MCPN765=y
+-# CONFIG_MCPN765 is not set
 -# CONFIG_MVME5100 is not set
 -# CONFIG_PPLUS is not set
 -# CONFIG_PRPMC750 is not set
@@ -162,28 +112,34 @@ deleted file mode 100644
 -# CONFIG_K2 is not set
 -# CONFIG_PAL4 is not set
 -# CONFIG_GEMINI is not set
--# CONFIG_EST8260 is not set
--# CONFIG_SBS8260 is not set
--# CONFIG_RPX6 is not set
--# CONFIG_TQM8260 is not set
--CONFIG_PPC_GEN550=y
+-CONFIG_MPC10X_STORE_GATHERING=y
 -# CONFIG_SMP is not set
 -# CONFIG_PREEMPT is not set
--CONFIG_HIGHMEM=y
--CONFIG_KERNEL_ELF=y
--CONFIG_BINFMT_ELF=y
--# CONFIG_BINFMT_MISC is not set
--CONFIG_CMDLINE_BOOL=y
--CONFIG_CMDLINE="ip=on"
+-# CONFIG_ALTIVEC is not set
+-# CONFIG_TAU is not set
+-# CONFIG_CPU_FREQ is not set
 -
 -#
--# Bus options
+-# General setup
 -#
--CONFIG_GENERIC_ISA_DMA=y
+-# CONFIG_HIGHMEM is not set
 -CONFIG_PCI=y
 -CONFIG_PCI_DOMAINS=y
+-CONFIG_KCORE_ELF=y
+-CONFIG_BINFMT_ELF=y
+-CONFIG_KERNEL_ELF=y
+-# CONFIG_BINFMT_MISC is not set
 -# CONFIG_PCI_LEGACY_PROC is not set
 -# CONFIG_PCI_NAMES is not set
+-# CONFIG_HOTPLUG is not set
+-
+-#
+-# Parallel port support
+-#
+-# CONFIG_PARPORT is not set
+-# CONFIG_PPC601_SYNC_FIX is not set
+-CONFIG_CMDLINE_BOOL=y
+-CONFIG_CMDLINE="ip=on"
 -
 -#
 -# Advanced setup
@@ -200,26 +156,14 @@ deleted file mode 100644
 -CONFIG_BOOT_LOAD=0x00800000
 -
 -#
--# Device Drivers
--#
--
--#
--# Generic Driver Options
--#
--
--#
 -# Memory Technology Devices (MTD)
 -#
 -# CONFIG_MTD is not set
 -
 -#
--# Parallel port support
--#
--# CONFIG_PARPORT is not set
--
--#
 -# Plug and Play support
 -#
+-# CONFIG_PNP is not set
 -
 -#
 -# Block devices
@@ -228,72 +172,11 @@ deleted file mode 100644
 -# CONFIG_BLK_CPQ_DA is not set
 -# CONFIG_BLK_CPQ_CISS_DA is not set
 -# CONFIG_BLK_DEV_DAC960 is not set
--CONFIG_BLK_DEV_LOOP=y
--# CONFIG_BLK_DEV_CRYPTOLOOP is not set
+-# CONFIG_BLK_DEV_UMEM is not set
+-# CONFIG_BLK_DEV_LOOP is not set
 -# CONFIG_BLK_DEV_NBD is not set
--# CONFIG_BLK_DEV_CARMEL is not set
--CONFIG_BLK_DEV_RAM=y
--CONFIG_BLK_DEV_RAM_SIZE=4096
--CONFIG_BLK_DEV_INITRD=y
--# CONFIG_LBD is not set
--
--#
--# ATA/ATAPI/MFM/RLL support
--#
--CONFIG_IDE=y
--CONFIG_BLK_DEV_IDE=y
--
--#
--# Please see Documentation/ide.txt for help/info on IDE drives
--#
--CONFIG_BLK_DEV_IDEDISK=y
--# CONFIG_IDEDISK_MULTI_MODE is not set
--# CONFIG_IDEDISK_STROKE is not set
--# CONFIG_BLK_DEV_IDECD is not set
--# CONFIG_BLK_DEV_IDEFLOPPY is not set
--# CONFIG_IDE_TASK_IOCTL is not set
--
--#
--# IDE chipset support/bugfixes
--#
--# CONFIG_IDE_GENERIC is not set
--CONFIG_BLK_DEV_IDEPCI=y
--# CONFIG_IDEPCI_SHARE_IRQ is not set
--# CONFIG_BLK_DEV_OFFBOARD is not set
--# CONFIG_BLK_DEV_GENERIC is not set
--# CONFIG_BLK_DEV_SL82C105 is not set
--CONFIG_BLK_DEV_IDEDMA_PCI=y
--# CONFIG_BLK_DEV_IDEDMA_FORCED is not set
--# CONFIG_IDEDMA_PCI_AUTO is not set
--CONFIG_BLK_DEV_ADMA=y
--# CONFIG_BLK_DEV_AEC62XX is not set
--# CONFIG_BLK_DEV_ALI15X3 is not set
--# CONFIG_BLK_DEV_AMD74XX is not set
--# CONFIG_BLK_DEV_CMD64X is not set
--# CONFIG_BLK_DEV_TRIFLEX is not set
--# CONFIG_BLK_DEV_CY82C693 is not set
--# CONFIG_BLK_DEV_CS5530 is not set
--# CONFIG_BLK_DEV_HPT34X is not set
--# CONFIG_BLK_DEV_HPT366 is not set
--# CONFIG_BLK_DEV_SC1200 is not set
--# CONFIG_BLK_DEV_PIIX is not set
--# CONFIG_BLK_DEV_NS87415 is not set
--# CONFIG_BLK_DEV_PDC202XX_OLD is not set
--# CONFIG_BLK_DEV_PDC202XX_NEW is not set
--# CONFIG_BLK_DEV_SVWKS is not set
--# CONFIG_BLK_DEV_SIIMAGE is not set
--# CONFIG_BLK_DEV_SLC90E66 is not set
--# CONFIG_BLK_DEV_TRM290 is not set
--CONFIG_BLK_DEV_VIA82CXXX=y
--CONFIG_BLK_DEV_IDEDMA=y
--# CONFIG_IDEDMA_IVB is not set
--# CONFIG_IDEDMA_AUTO is not set
--# CONFIG_BLK_DEV_HD is not set
--
--#
--# SCSI device support
--#
--# CONFIG_SCSI is not set
+-# CONFIG_BLK_DEV_RAM is not set
+-# CONFIG_BLK_DEV_INITRD is not set
 -
 -#
 -# Multi-device support (RAID and LVM)
@@ -301,12 +184,42 @@ deleted file mode 100644
 -# CONFIG_MD is not set
 -
 -#
--# Fusion MPT device support
+-# ATA/IDE/MFM/RLL support
 -#
--# CONFIG_FUSION is not set
+-CONFIG_IDE=y
 -
 -#
--# IEEE 1394 (FireWire) support
+-# IDE, ATA and ATAPI Block devices
+-#
+-CONFIG_BLK_DEV_IDE=y
+-
+-#
+-# Please see Documentation/ide.txt for help/info on IDE drives
+-#
+-# CONFIG_BLK_DEV_HD is not set
+-CONFIG_BLK_DEV_IDEDISK=y
+-# CONFIG_IDEDISK_MULTI_MODE is not set
+-# CONFIG_IDEDISK_STROKE is not set
+-CONFIG_BLK_DEV_IDECD=y
+-# CONFIG_BLK_DEV_IDEFLOPPY is not set
+-# CONFIG_IDE_TASK_IOCTL is not set
+-
+-#
+-# IDE chipset support/bugfixes
+-#
+-# CONFIG_BLK_DEV_IDEPCI is not set
+-
+-#
+-# SCSI support
+-#
+-# CONFIG_SCSI is not set
+-
+-#
+-# Fusion MPT device support
+-#
+-
+-#
+-# IEEE 1394 (FireWire) support (EXPERIMENTAL)
 -#
 -# CONFIG_IEEE1394 is not set
 -
@@ -314,10 +227,6 @@ deleted file mode 100644
 -# I2O device support
 -#
 -# CONFIG_I2O is not set
--
--#
--# Macintosh device drivers
--#
 -
 -#
 -# Networking support
@@ -330,10 +239,12 @@ deleted file mode 100644
 -CONFIG_PACKET=y
 -# CONFIG_PACKET_MMAP is not set
 -# CONFIG_NETLINK_DEV is not set
+-CONFIG_NETFILTER=y
+-# CONFIG_NETFILTER_DEBUG is not set
 -CONFIG_UNIX=y
 -# CONFIG_NET_KEY is not set
 -CONFIG_INET=y
--# CONFIG_IP_MULTICAST is not set
+-CONFIG_IP_MULTICAST=y
 -# CONFIG_IP_ADVANCED_ROUTER is not set
 -CONFIG_IP_PNP=y
 -CONFIG_IP_PNP_DHCP=y
@@ -341,17 +252,78 @@ deleted file mode 100644
 -# CONFIG_IP_PNP_RARP is not set
 -# CONFIG_NET_IPIP is not set
 -# CONFIG_NET_IPGRE is not set
+-# CONFIG_IP_MROUTE is not set
+-# CONFIG_ARPD is not set
+-# CONFIG_INET_ECN is not set
 -# CONFIG_SYN_COOKIES is not set
 -# CONFIG_INET_AH is not set
 -# CONFIG_INET_ESP is not set
 -# CONFIG_INET_IPCOMP is not set
+-
+-#
+-# IP: Netfilter Configuration
+-#
+-CONFIG_IP_NF_CONNTRACK=m
+-CONFIG_IP_NF_FTP=m
+-CONFIG_IP_NF_IRC=m
+-# CONFIG_IP_NF_TFTP is not set
+-# CONFIG_IP_NF_AMANDA is not set
+-# CONFIG_IP_NF_QUEUE is not set
+-CONFIG_IP_NF_IPTABLES=m
+-CONFIG_IP_NF_MATCH_LIMIT=m
+-CONFIG_IP_NF_MATCH_MAC=m
+-CONFIG_IP_NF_MATCH_PKTTYPE=m
+-CONFIG_IP_NF_MATCH_MARK=m
+-CONFIG_IP_NF_MATCH_MULTIPORT=m
+-CONFIG_IP_NF_MATCH_TOS=m
+-CONFIG_IP_NF_MATCH_ECN=m
+-CONFIG_IP_NF_MATCH_DSCP=m
+-CONFIG_IP_NF_MATCH_AH_ESP=m
+-CONFIG_IP_NF_MATCH_LENGTH=m
+-CONFIG_IP_NF_MATCH_TTL=m
+-CONFIG_IP_NF_MATCH_TCPMSS=m
+-CONFIG_IP_NF_MATCH_HELPER=m
+-CONFIG_IP_NF_MATCH_STATE=m
+-CONFIG_IP_NF_MATCH_CONNTRACK=m
+-CONFIG_IP_NF_MATCH_UNCLEAN=m
+-CONFIG_IP_NF_MATCH_OWNER=m
+-CONFIG_IP_NF_FILTER=m
+-CONFIG_IP_NF_TARGET_REJECT=m
+-CONFIG_IP_NF_TARGET_MIRROR=m
+-CONFIG_IP_NF_NAT=m
+-CONFIG_IP_NF_NAT_NEEDED=y
+-CONFIG_IP_NF_TARGET_MASQUERADE=m
+-CONFIG_IP_NF_TARGET_REDIRECT=m
+-# CONFIG_IP_NF_NAT_SNMP_BASIC is not set
+-CONFIG_IP_NF_NAT_IRC=m
+-CONFIG_IP_NF_NAT_FTP=m
+-# CONFIG_IP_NF_MANGLE is not set
+-# CONFIG_IP_NF_TARGET_LOG is not set
+-CONFIG_IP_NF_TARGET_ULOG=m
+-CONFIG_IP_NF_TARGET_TCPMSS=m
+-CONFIG_IP_NF_ARPTABLES=m
+-CONFIG_IP_NF_ARPFILTER=m
+-CONFIG_IP_NF_COMPAT_IPCHAINS=m
+-# CONFIG_IP_NF_COMPAT_IPFWADM is not set
+-# CONFIG_IPV6 is not set
+-# CONFIG_XFRM_USER is not set
+-
+-#
+-# SCTP Configuration (EXPERIMENTAL)
+-#
+-CONFIG_IPV6_SCTP__=y
+-# CONFIG_IP_SCTP is not set
+-# CONFIG_ATM is not set
+-# CONFIG_VLAN_8021Q is not set
+-# CONFIG_LLC is not set
 -# CONFIG_DECNET is not set
 -# CONFIG_BRIDGE is not set
--# CONFIG_NETFILTER is not set
--# CONFIG_VLAN_8021Q is not set
--# CONFIG_LLC2 is not set
--# CONFIG_IPX is not set
--# CONFIG_ATALK is not set
+-# CONFIG_X25 is not set
+-# CONFIG_LAPB is not set
+-# CONFIG_NET_DIVERT is not set
+-# CONFIG_ECONET is not set
+-# CONFIG_WAN_ROUTER is not set
+-# CONFIG_NET_HW_FLOWCONTROL is not set
 -
 -#
 -# QoS and/or fair queueing
@@ -372,6 +344,7 @@ deleted file mode 100644
 -# CONFIG_BONDING is not set
 -# CONFIG_EQUALIZER is not set
 -# CONFIG_TUN is not set
+-# CONFIG_ETHERTAP is not set
 -
 -#
 -# Ethernet (10 or 100Mbit)
@@ -386,15 +359,26 @@ deleted file mode 100644
 -#
 -# Tulip family network device support
 -#
--CONFIG_NET_TULIP=y
--CONFIG_TULIP=y
--# CONFIG_TULIP_MMIO is not set
--# CONFIG_TULIP_NAPI is not set
--# CONFIG_DE4X5 is not set
--# CONFIG_WINBOND_840 is not set
--# CONFIG_DM9102 is not set
+-# CONFIG_NET_TULIP is not set
 -# CONFIG_HP100 is not set
--# CONFIG_NET_PCI is not set
+-CONFIG_NET_PCI=y
+-# CONFIG_PCNET32 is not set
+-# CONFIG_AMD8111_ETH is not set
+-# CONFIG_ADAPTEC_STARFIRE is not set
+-# CONFIG_B44 is not set
+-# CONFIG_DGRS is not set
+-# CONFIG_EEPRO100 is not set
+-# CONFIG_E100 is not set
+-# CONFIG_FEALNX is not set
+-# CONFIG_NATSEMI is not set
+-# CONFIG_NE2K_PCI is not set
+-# CONFIG_8139CP is not set
+-# CONFIG_8139TOO is not set
+-# CONFIG_SIS900 is not set
+-# CONFIG_EPIC100 is not set
+-# CONFIG_SUNDANCE is not set
+-# CONFIG_TLAN is not set
+-# CONFIG_VIA_RHINE is not set
 -
 -#
 -# Ethernet (1000 Mbit)
@@ -404,6 +388,7 @@ deleted file mode 100644
 -# CONFIG_E1000 is not set
 -# CONFIG_NS83820 is not set
 -# CONFIG_HAMACHI is not set
+-# CONFIG_YELLOWFIN is not set
 -# CONFIG_R8169 is not set
 -# CONFIG_SK98LIN is not set
 -# CONFIG_TIGON3 is not set
@@ -413,6 +398,7 @@ deleted file mode 100644
 -#
 -# CONFIG_IXGB is not set
 -# CONFIG_FDDI is not set
+-# CONFIG_HIPPI is not set
 -# CONFIG_PPP is not set
 -# CONFIG_SLIP is not set
 -
@@ -422,9 +408,10 @@ deleted file mode 100644
 -# CONFIG_NET_RADIO is not set
 -
 -#
--# Token Ring devices
+-# Token Ring devices (depends on LLC=y)
 -#
--# CONFIG_TR is not set
+-# CONFIG_RCPCI is not set
+-# CONFIG_SHAPER is not set
 -
 -#
 -# Wan interfaces
@@ -442,21 +429,19 @@ deleted file mode 100644
 -# CONFIG_IRDA is not set
 -
 -#
--# Bluetooth support
--#
--# CONFIG_BT is not set
--# CONFIG_NETPOLL is not set
--# CONFIG_NET_POLL_CONTROLLER is not set
--
--#
 -# ISDN subsystem
 -#
--# CONFIG_ISDN is not set
+-# CONFIG_ISDN_BOOL is not set
 -
 -#
--# Telephony Support
+-# Graphics support
 -#
--# CONFIG_PHONE is not set
+-# CONFIG_FB is not set
+-
+-#
+-# Old CD-ROM drivers (not SCSI, not IDE)
+-#
+-# CONFIG_CD_NO_IDESCSI is not set
 -
 -#
 -# Input device support
@@ -473,16 +458,18 @@ deleted file mode 100644
 -# CONFIG_GAMEPORT is not set
 -CONFIG_SOUND_GAMEPORT=y
 -# CONFIG_SERIO is not set
--# CONFIG_SERIO_I8042 is not set
 -
 -#
 -# Input Device Drivers
 -#
 -
 -#
+-# Macintosh device drivers
+-#
+-
+-#
 -# Character devices
 -#
--# CONFIG_VT is not set
 -# CONFIG_SERIAL_NONSTANDARD is not set
 -
 -#
@@ -490,7 +477,6 @@ deleted file mode 100644
 -#
 -CONFIG_SERIAL_8250=y
 -CONFIG_SERIAL_8250_CONSOLE=y
--CONFIG_SERIAL_8250_NR_UARTS=4
 -# CONFIG_SERIAL_8250_EXTENDED is not set
 -
 -#
@@ -499,8 +485,26 @@ deleted file mode 100644
 -CONFIG_SERIAL_CORE=y
 -CONFIG_SERIAL_CORE_CONSOLE=y
 -CONFIG_UNIX98_PTYS=y
--CONFIG_LEGACY_PTYS=y
--CONFIG_LEGACY_PTY_COUNT=256
+-CONFIG_UNIX98_PTY_COUNT=256
+-
+-#
+-# I2C support
+-#
+-# CONFIG_I2C is not set
+-
+-#
+-# I2C Hardware Sensors Mainboard support
+-#
+-
+-#
+-# I2C Hardware Sensors Chip support
+-#
+-# CONFIG_I2C_SENSOR is not set
+-
+-#
+-# Mice
+-#
+-# CONFIG_BUSMOUSE is not set
 -# CONFIG_QIC02_TAPE is not set
 -
 -#
@@ -526,15 +530,7 @@ deleted file mode 100644
 -# CONFIG_AGP is not set
 -# CONFIG_DRM is not set
 -# CONFIG_RAW_DRIVER is not set
--
--#
--# I2C support
--#
--# CONFIG_I2C is not set
--
--#
--# Misc devices
--#
+-# CONFIG_HANGCHECK_TIMER is not set
 -
 -#
 -# Multimedia devices
@@ -547,32 +543,17 @@ deleted file mode 100644
 -# CONFIG_DVB is not set
 -
 -#
--# Graphics support
--#
--# CONFIG_FB is not set
--
--#
--# Sound
--#
--# CONFIG_SOUND is not set
--
--#
--# USB support
--#
--# CONFIG_USB is not set
--
--#
--# USB Gadget Support
--#
--# CONFIG_USB_GADGET is not set
--
--#
 -# File systems
 -#
 -CONFIG_EXT2_FS=y
 -# CONFIG_EXT2_FS_XATTR is not set
--# CONFIG_EXT3_FS is not set
--# CONFIG_JBD is not set
+-CONFIG_EXT3_FS=y
+-CONFIG_EXT3_FS_XATTR=y
+-# CONFIG_EXT3_FS_POSIX_ACL is not set
+-# CONFIG_EXT3_FS_SECURITY is not set
+-CONFIG_JBD=y
+-# CONFIG_JBD_DEBUG is not set
+-CONFIG_FS_MBCACHE=y
 -# CONFIG_REISERFS_FS is not set
 -# CONFIG_JFS_FS is not set
 -# CONFIG_XFS_FS is not set
@@ -585,7 +566,9 @@ deleted file mode 100644
 -#
 -# CD-ROM/DVD Filesystems
 -#
--# CONFIG_ISO9660_FS is not set
+-CONFIG_ISO9660_FS=y
+-# CONFIG_JOLIET is not set
+-# CONFIG_ZISOFS is not set
 -# CONFIG_UDF_FS is not set
 -
 -#
@@ -598,16 +581,21 @@ deleted file mode 100644
 -# Pseudo filesystems
 -#
 -CONFIG_PROC_FS=y
--CONFIG_PROC_KCORE=y
+-# CONFIG_DEVFS_FS is not set
+-CONFIG_DEVPTS_FS=y
 -# CONFIG_DEVPTS_FS_XATTR is not set
 -CONFIG_TMPFS=y
--# CONFIG_HUGETLB_PAGE is not set
 -CONFIG_RAMFS=y
 -
 -#
 -# Miscellaneous filesystems
 -#
--# CONFIG_HFSPLUS_FS is not set
+-# CONFIG_ADFS_FS is not set
+-# CONFIG_AFFS_FS is not set
+-# CONFIG_HFS_FS is not set
+-# CONFIG_BEFS_FS is not set
+-# CONFIG_BFS_FS is not set
+-# CONFIG_EFS_FS is not set
 -# CONFIG_CRAMFS is not set
 -# CONFIG_VXFS_FS is not set
 -# CONFIG_HPFS_FS is not set
@@ -620,15 +608,19 @@ deleted file mode 100644
 -#
 -CONFIG_NFS_FS=y
 -# CONFIG_NFS_V3 is not set
+-# CONFIG_NFS_V4 is not set
 -# CONFIG_NFSD is not set
 -CONFIG_ROOT_NFS=y
 -CONFIG_LOCKD=y
 -# CONFIG_EXPORTFS is not set
 -CONFIG_SUNRPC=y
+-# CONFIG_SUNRPC_GSS is not set
 -# CONFIG_SMB_FS is not set
 -# CONFIG_CIFS is not set
 -# CONFIG_NCP_FS is not set
 -# CONFIG_CODA_FS is not set
+-# CONFIG_INTERMEZZO_FS is not set
+-# CONFIG_AFS_FS is not set
 -
 -#
 -# Partition Types
@@ -637,20 +629,31 @@ deleted file mode 100644
 -CONFIG_MSDOS_PARTITION=y
 -
 -#
--# Native Language Support
+-# Sound
 -#
--# CONFIG_NLS is not set
+-# CONFIG_SOUND is not set
+-
+-#
+-# USB support
+-#
+-# CONFIG_USB is not set
+-# CONFIG_USB_GADGET is not set
+-
+-#
+-# Bluetooth support
+-#
+-# CONFIG_BT is not set
 -
 -#
 -# Library routines
 -#
--CONFIG_CRC32=y
+-# CONFIG_CRC32 is not set
 -
 -#
 -# Kernel hacking
 -#
 -# CONFIG_DEBUG_KERNEL is not set
--# CONFIG_SERIAL_TEXT_DEBUG is not set
+-# CONFIG_KALLSYMS is not set
 -
 -#
 -# Security options
@@ -668,669 +671,10 @@ diff --git a/arch/ppc/platforms/Makefile b/arch/ppc/platforms/Makefile
  obj-$(CONFIG_LOPEC)		+= lopec.o
  obj-$(CONFIG_KATANA)		+= katana.o
  obj-$(CONFIG_HDPU)		+= hdpu.o
--obj-$(CONFIG_MCPN765)		+= mcpn765.o
- obj-$(CONFIG_MENF1)		+= menf1_setup.o menf1_pci.o
+-obj-$(CONFIG_MENF1)		+= menf1_setup.o menf1_pci.o
  obj-$(CONFIG_MVME5100)		+= mvme5100.o
  obj-$(CONFIG_PAL4)		+= pal4_setup.o pal4_pci.o
-diff --git a/arch/ppc/platforms/mcpn765.c b/arch/ppc/platforms/mcpn765.c
-deleted file mode 100644
---- a/arch/ppc/platforms/mcpn765.c
-+++ /dev/null
-@@ -1,527 +0,0 @@
--/*
-- * arch/ppc/platforms/mcpn765.c
-- *
-- * Board setup routines for the Motorola MCG MCPN765 cPCI Board.
-- *
-- * Author: Mark A. Greer
-- *         mgreer@mvista.com
-- *
-- * Modified by Randy Vinson (rvinson@mvista.com)
-- *
-- * 2001-2002 (c) MontaVista, Software, Inc.  This file is licensed under
-- * the terms of the GNU General Public License version 2.  This program
-- * is licensed "as is" without any warranty of any kind, whether express
-- * or implied.
-- */
--
--/*
-- * This file adds support for the Motorola MCG MCPN765.
-- */
--#include <linux/config.h>
--#include <linux/stddef.h>
--#include <linux/kernel.h>
--#include <linux/init.h>
--#include <linux/errno.h>
--#include <linux/reboot.h>
--#include <linux/pci.h>
--#include <linux/kdev_t.h>
--#include <linux/major.h>
--#include <linux/initrd.h>
--#include <linux/console.h>
--#include <linux/delay.h>
--#include <linux/irq.h>
--#include <linux/seq_file.h>
--#include <linux/root_dev.h>
--#include <linux/serial.h>
--#include <linux/tty.h>	/* for linux/serial_core.h */
--#include <linux/serial_core.h>
--#include <linux/slab.h>
--
--#include <asm/system.h>
--#include <asm/pgtable.h>
--#include <asm/page.h>
--#include <asm/time.h>
--#include <asm/dma.h>
--#include <asm/byteorder.h>
--#include <asm/io.h>
--#include <asm/machdep.h>
--#include <asm/prom.h>
--#include <asm/smp.h>
--#include <asm/open_pic.h>
--#include <asm/i8259.h>
--#include <asm/todc.h>
--#include <asm/pci-bridge.h>
--#include <asm/irq.h>
--#include <asm/uaccess.h>
--#include <asm/bootinfo.h>
--#include <asm/hawk.h>
--#include <asm/kgdb.h>
--
--#include "mcpn765.h"
--
--static u_char mcpn765_openpic_initsenses[] __initdata = {
--	(IRQ_SENSE_EDGE  | IRQ_POLARITY_POSITIVE),/* 16: i8259 cascade */
--	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 17: COM1,2,3,4 */
--	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 18: Enet 1 (front) */
--	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 19: HAWK WDT XXXX */
--	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 20: 21554 bridge */
--	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 21: cPCI INTA# */
--	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 22: cPCI INTB# */
--	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 23: cPCI INTC# */
--	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 24: cPCI INTD# */
--	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 25: PMC1 INTA#,PMC2 INTB#*/
--	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 26: PMC1 INTB#,PMC2 INTC#*/
--	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 27: PMC1 INTC#,PMC2 INTD#*/
--	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 28: PMC1 INTD#,PMC2 INTA#*/
--	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 29: Enet 2 (J3) */
--	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 30: Abort Switch */
--	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),/* 31: RTC Alarm */
--};
--
--extern void mcpn765_set_VIA_IDE_native(void);
--
--extern u_int openpic_irq(void);
--extern char cmd_line[];
--
--extern void gen550_progress(char *, unsigned short);
--extern void gen550_init(int, struct uart_port *);
--
--int use_of_interrupt_tree = 0;
--
--static void mcpn765_halt(void);
--
--TODC_ALLOC();
--
--/*
-- * Motorola MCG MCPN765 interrupt routing.
-- */
--static inline int
--mcpn765_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
--{
--	static char pci_irq_table[][4] =
--	/*
--	 *	PCI IDSEL/INTPIN->INTLINE
--	 * 	   A   B   C   D
--	 */
--	{
--		{ 14,  0,  0,  0 },	/* IDSEL 11 - have to manually set */
--		{  0,  0,  0,  0 },	/* IDSEL 12 - unused */
--		{  0,  0,  0,  0 },	/* IDSEL 13 - unused */
--		{ 18,  0,  0,  0 },	/* IDSEL 14 - Enet 0 */
--		{  0,  0,  0,  0 },	/* IDSEL 15 - unused */
--		{ 25, 26, 27, 28 },	/* IDSEL 16 - PMC Slot 1 */
--		{ 28, 25, 26, 27 },	/* IDSEL 17 - PMC Slot 2 */
--		{  0,  0,  0,  0 },	/* IDSEL 18 - PMC 2B Connector XXXX */
--		{ 29,  0,  0,  0 },	/* IDSEL 19 - Enet 1 */
--		{ 20,  0,  0,  0 },	/* IDSEL 20 - 21554 cPCI bridge */
--	};
--
--	const long min_idsel = 11, max_idsel = 20, irqs_per_slot = 4;
--	return PCI_IRQ_TABLE_LOOKUP;
--}
--
--void __init
--mcpn765_set_VIA_IDE_legacy(void)
--{
--	unsigned short vend, dev;
--
--	early_read_config_word(0, 0, PCI_DEVFN(0xb, 1), PCI_VENDOR_ID, &vend);
--	early_read_config_word(0, 0, PCI_DEVFN(0xb, 1), PCI_DEVICE_ID, &dev);
--
--	if ((vend == PCI_VENDOR_ID_VIA) &&
--	    (dev == PCI_DEVICE_ID_VIA_82C586_1)) {
--
--		unsigned char temp;
--
--		/* put back original "standard" port base addresses */
--		early_write_config_dword(0, 0, PCI_DEVFN(0xb, 1),
--				         PCI_BASE_ADDRESS_0, 0x1f1);
--		early_write_config_dword(0, 0, PCI_DEVFN(0xb, 1),
--				         PCI_BASE_ADDRESS_1, 0x3f5);
--		early_write_config_dword(0, 0, PCI_DEVFN(0xb, 1),
--				         PCI_BASE_ADDRESS_2, 0x171);
--		early_write_config_dword(0, 0, PCI_DEVFN(0xb, 1),
--				         PCI_BASE_ADDRESS_3, 0x375);
--		early_write_config_dword(0, 0, PCI_DEVFN(0xb, 1),
--				         PCI_BASE_ADDRESS_4, 0xcc01);
--
--		/* put into legacy mode */
--		early_read_config_byte(0, 0, PCI_DEVFN(0xb, 1), PCI_CLASS_PROG,
--				       &temp);
--		temp &= ~0x05;
--		early_write_config_byte(0, 0, PCI_DEVFN(0xb, 1), PCI_CLASS_PROG,
--					temp);
--	}
--}
--
--void
--mcpn765_set_VIA_IDE_native(void)
--{
--	unsigned short vend, dev;
--
--	early_read_config_word(0, 0, PCI_DEVFN(0xb, 1), PCI_VENDOR_ID, &vend);
--	early_read_config_word(0, 0, PCI_DEVFN(0xb, 1), PCI_DEVICE_ID, &dev);
--
--	if ((vend == PCI_VENDOR_ID_VIA) &&
--	    (dev == PCI_DEVICE_ID_VIA_82C586_1)) {
--
--		unsigned char temp;
--
--		/* put into native mode */
--		early_read_config_byte(0, 0, PCI_DEVFN(0xb, 1), PCI_CLASS_PROG,
--				       &temp);
--		temp |= 0x05;
--		early_write_config_byte(0, 0, PCI_DEVFN(0xb, 1), PCI_CLASS_PROG,
--					temp);
--	}
--}
--
--/*
-- * Initialize the VIA 82c586b.
-- */
--static void __init
--mcpn765_setup_via_82c586b(void)
--{
--	struct pci_dev	*dev;
--	u_char		c;
--
--	if ((dev = pci_get_device(PCI_VENDOR_ID_VIA,
--				   PCI_DEVICE_ID_VIA_82C586_0,
--				   NULL)) == NULL) {
--		printk("No VIA ISA bridge found\n");
--		mcpn765_halt();
--		/* NOTREACHED */
--	}
--
--	/*
--	 * If the firmware left the EISA 4d0/4d1 ports enabled, make sure
--	 * IRQ 14 is set for edge.
--	 */
--	pci_read_config_byte(dev, 0x47, &c);
--
--	if (c & (1<<5)) {
--		c = inb(0x4d1);
--		c &= ~(1<<6);
--		outb(c, 0x4d1);
--	}
--
--	/* Disable PNP IRQ routing since we use the Hawk's MPIC */
--	pci_write_config_dword(dev, 0x54, 0);
--	pci_write_config_byte(dev, 0x58, 0);
--
--	pci_dev_put(dev);
--	if ((dev = pci_get_device(PCI_VENDOR_ID_VIA,
--				   PCI_DEVICE_ID_VIA_82C586_1,
--				   NULL)) == NULL) {
--		printk("No VIA ISA bridge found\n");
--		mcpn765_halt();
--		/* NOTREACHED */
--	}
--
--	/*
--	 * PPCBug doesn't set the enable bits for the IDE device.
--	 * Turn them on now.
--	 */
--	pci_read_config_byte(dev, 0x40, &c);
--	c |= 0x03;
--	pci_write_config_byte(dev, 0x40, c);
--	pci_dev_put(dev);
--
--	return;
--}
--
--void __init
--mcpn765_pcibios_fixup(void)
--{
--	/* Do MCPN765 board specific initialization.  */
--	mcpn765_setup_via_82c586b();
--}
--
--void __init
--mcpn765_find_bridges(void)
--{
--	struct pci_controller	*hose;
--
--	hose = pcibios_alloc_controller();
--
--	if (!hose)
--		return;
--
--	hose->first_busno = 0;
--	hose->last_busno = 0xff;
--	hose->pci_mem_offset = MCPN765_PCI_PHY_MEM_OFFSET;
--
--	pci_init_resource(&hose->io_resource,
--			MCPN765_PCI_IO_START,
--			MCPN765_PCI_IO_END,
--			IORESOURCE_IO,
--			"PCI host bridge");
--
--	pci_init_resource(&hose->mem_resources[0],
--			MCPN765_PCI_MEM_START,
--			MCPN765_PCI_MEM_END,
--			IORESOURCE_MEM,
--			"PCI host bridge");
--
--	hose->io_space.start = MCPN765_PCI_IO_START;
--	hose->io_space.end = MCPN765_PCI_IO_END;
--	hose->mem_space.start = MCPN765_PCI_MEM_START;
--	hose->mem_space.end = MCPN765_PCI_MEM_END - HAWK_MPIC_SIZE;
--
--	if (hawk_init(hose,
--		       MCPN765_HAWK_PPC_REG_BASE,
--		       MCPN765_PROC_PCI_MEM_START,
--		       MCPN765_PROC_PCI_MEM_END - HAWK_MPIC_SIZE,
--		       MCPN765_PROC_PCI_IO_START,
--		       MCPN765_PROC_PCI_IO_END,
--		       MCPN765_PCI_MEM_END - HAWK_MPIC_SIZE + 1) != 0) {
--		printk("Could not initialize HAWK bridge\n");
--	}
--
--	/* VIA IDE BAR decoders are only 16-bits wide. PCI Auto Config
--	 * will reassign the bars outside of 16-bit I/O space, which will 
--	 * "break" things. To prevent this, we'll set the IDE chip into
--	 * legacy mode and seed the bars with their legacy addresses (in 16-bit
--	 * I/O space). The Auto Config code will skip the IDE contoller in 
--	 * legacy mode, so our bar values will stick.
--	 */
--	mcpn765_set_VIA_IDE_legacy();
--
--	hose->last_busno = pciauto_bus_scan(hose, hose->first_busno);
--
--	/* Now that we've got 16-bit addresses in the bars, we can switch the
--	 * IDE controller back into native mode so we can do "modern" resource
--	 * and interrupt management.
--	 */
--	mcpn765_set_VIA_IDE_native();
--
--	ppc_md.pcibios_fixup = mcpn765_pcibios_fixup;
--	ppc_md.pcibios_fixup_bus = NULL;
--	ppc_md.pci_swizzle = common_swizzle;
--	ppc_md.pci_map_irq = mcpn765_map_irq;
--
--	return;
--}
--static void __init
--mcpn765_setup_arch(void)
--{
--	struct pci_controller *hose;
--
--	if ( ppc_md.progress )
--		ppc_md.progress("mcpn765_setup_arch: enter", 0);
--
--	loops_per_jiffy = 50000000 / HZ;
--
--#ifdef CONFIG_BLK_DEV_INITRD
--	if (initrd_start)
--		ROOT_DEV = Root_RAM0;
--	else
--#endif
--#ifdef	CONFIG_ROOT_NFS
--		ROOT_DEV = Root_NFS;
--#else
--		ROOT_DEV = Root_SDA2;
--#endif
--
--	if ( ppc_md.progress )
--		ppc_md.progress("mcpn765_setup_arch: find_bridges", 0);
--
--	/* Lookup PCI host bridges */
--	mcpn765_find_bridges();
--
--	hose = pci_bus_to_hose(0);
--	isa_io_base = (ulong)hose->io_base_virt;
--
--	TODC_INIT(TODC_TYPE_MK48T37,
--		  (MCPN765_PHYS_NVRAM_AS0 - isa_io_base),
--		  (MCPN765_PHYS_NVRAM_AS1 - isa_io_base),
--		  (MCPN765_PHYS_NVRAM_DATA - isa_io_base),
--		  8);
--
--	OpenPIC_InitSenses = mcpn765_openpic_initsenses;
--	OpenPIC_NumInitSenses = sizeof(mcpn765_openpic_initsenses);
--
--	printk("Motorola MCG MCPN765 cPCI Non-System Board\n");
--	printk("MCPN765 port (MontaVista Software, Inc. (source@mvista.com))\n");
--
--	if ( ppc_md.progress )
--		ppc_md.progress("mcpn765_setup_arch: exit", 0);
--
--	return;
--}
--
--static void __init
--mcpn765_init2(void)
--{
--
--	request_region(0x00,0x20,"dma1");
--	request_region(0x20,0x20,"pic1");
--	request_region(0x40,0x20,"timer");
--	request_region(0x80,0x10,"dma page reg");
--	request_region(0xa0,0x20,"pic2");
--	request_region(0xc0,0x20,"dma2");
--
--	return;
--}
--
--/*
-- * Interrupt setup and service.
-- * Have MPIC on HAWK and cascaded 8259s on VIA 82586 cascaded to MPIC.
-- */
--static void __init
--mcpn765_init_IRQ(void)
--{
--	int i;
--
--	if ( ppc_md.progress )
--		ppc_md.progress("init_irq: enter", 0);
--
--	openpic_init(NUM_8259_INTERRUPTS);
--	openpic_hookup_cascade(NUM_8259_INTERRUPTS, "82c59 cascade",
--			i8259_irq);
--
--	for(i=0; i < NUM_8259_INTERRUPTS; i++)
--		irq_desc[i].handler = &i8259_pic;
--
--	i8259_init(0);
--
--	if ( ppc_md.progress )
--		ppc_md.progress("init_irq: exit", 0);
--
--	return;
--}
--
--static u32
--mcpn765_irq_canonicalize(u32 irq)
--{
--	if (irq == 2)
--		return 9;
--	else
--		return irq;
--}
--
--static unsigned long __init
--mcpn765_find_end_of_memory(void)
--{
--	return hawk_get_mem_size(MCPN765_HAWK_SMC_BASE);
--}
--
--static void __init
--mcpn765_map_io(void)
--{
--	io_block_mapping(0xfe800000, 0xfe800000, 0x00800000, _PAGE_IO);
--}
--
--static void
--mcpn765_reset_board(void)
--{
--	local_irq_disable();
--
--	/* set VIA IDE controller into native mode */
--	mcpn765_set_VIA_IDE_native();
--
--	/* Set exception prefix high - to the firmware */
--	_nmask_and_or_msr(0, MSR_IP);
--
--	out_8((u_char *)MCPN765_BOARD_MODRST_REG, 0x01);
--
--	return;
--}
--
--static void
--mcpn765_restart(char *cmd)
--{
--	volatile ulong	i = 10000000;
--
--	mcpn765_reset_board();
--
--	while (i-- > 0);
--	panic("restart failed\n");
--}
--
--static void
--mcpn765_power_off(void)
--{
--	mcpn765_halt();
--	/* NOTREACHED */
--}
--
--static void
--mcpn765_halt(void)
--{
--	local_irq_disable();
--	while (1);
--	/* NOTREACHED */
--}
--
--static int
--mcpn765_show_cpuinfo(struct seq_file *m)
--{
--	seq_printf(m, "vendor\t\t: Motorola MCG\n");
--	seq_printf(m, "machine\t\t: MCPN765\n");
--
--	return 0;
--}
--
--/*
-- * Set BAT 3 to map 0xf0000000 to end of physical memory space.
-- */
--static __inline__ void
--mcpn765_set_bat(void)
--{
--	mb();
--	mtspr(SPRN_DBAT1U, 0xfe8000fe);
--	mtspr(SPRN_DBAT1L, 0xfe80002a);
--	mb();
--}
--
--void __init
--platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
--		unsigned long r6, unsigned long r7)
--{
--	parse_bootinfo(find_bootinfo());
--
--	/* Map in board regs, etc. */
--	mcpn765_set_bat();
--
--	isa_mem_base = MCPN765_ISA_MEM_BASE;
--	pci_dram_offset = MCPN765_PCI_DRAM_OFFSET;
--	ISA_DMA_THRESHOLD = 0x00ffffff;
--	DMA_MODE_READ = 0x44;
--	DMA_MODE_WRITE = 0x48;
--
--	ppc_md.setup_arch = mcpn765_setup_arch;
--	ppc_md.show_cpuinfo = mcpn765_show_cpuinfo;
--	ppc_md.irq_canonicalize = mcpn765_irq_canonicalize;
--	ppc_md.init_IRQ = mcpn765_init_IRQ;
--	ppc_md.get_irq = openpic_get_irq;
--	ppc_md.init = mcpn765_init2;
--
--	ppc_md.restart = mcpn765_restart;
--	ppc_md.power_off = mcpn765_power_off;
--	ppc_md.halt = mcpn765_halt;
--
--	ppc_md.find_end_of_memory = mcpn765_find_end_of_memory;
--	ppc_md.setup_io_mappings = mcpn765_map_io;
--
--	ppc_md.time_init = todc_time_init;
--	ppc_md.set_rtc_time = todc_set_rtc_time;
--	ppc_md.get_rtc_time = todc_get_rtc_time;
--	ppc_md.calibrate_decr = todc_calibrate_decr;
--
--	ppc_md.nvram_read_val = todc_m48txx_read_val;
--	ppc_md.nvram_write_val = todc_m48txx_write_val;
--
--	ppc_md.heartbeat = NULL;
--	ppc_md.heartbeat_reset = 0;
--	ppc_md.heartbeat_count = 0;
--
--#ifdef CONFIG_SERIAL_TEXT_DEBUG
--	ppc_md.progress = gen550_progress;
--#endif
--#ifdef CONFIG_KGDB
--	ppc_md.kgdb_map_scc = gen550_kgdb_map_scc;
--#endif
--
--	return;
--}
-diff --git a/arch/ppc/platforms/mcpn765.h b/arch/ppc/platforms/mcpn765.h
-deleted file mode 100644
---- a/arch/ppc/platforms/mcpn765.h
-+++ /dev/null
-@@ -1,122 +0,0 @@
--/*
-- * arch/ppc/platforms/mcpn765.h
-- *
-- * Definitions for Motorola MCG MCPN765 cPCI Board.
-- *
-- * Author: Mark A. Greer
-- *         mgreer@mvista.com
-- *
-- * 2001-2004 (c) MontaVista, Software, Inc.  This file is licensed under
-- * the terms of the GNU General Public License version 2.  This program
-- * is licensed "as is" without any warranty of any kind, whether express
-- * or implied.
-- */
--
--/*
-- * From Processor to PCI:
-- *   PCI Mem Space: 0x80000000 - 0xc0000000 -> 0x80000000 - 0xc0000000 (1 GB)
-- *   PCI I/O Space: 0xfd800000 - 0xfe000000 -> 0x00000000 - 0x00800000 (8 MB)
-- *	Note: Must skip 0xfe000000-0xfe400000 for CONFIG_HIGHMEM/PKMAP area
-- *   MPIC in PCI Mem Space: 0xfe800000 - 0xfe830000 (not all used by MPIC)
-- *
-- * From PCI to Processor:
-- *   System Memory: 0x00000000 -> 0x00000000
-- */
--
--#ifndef __PPC_PLATFORMS_MCPN765_H
--#define __PPC_PLATFORMS_MCPN765_H
--#include <linux/config.h>
--
--/* PCI Memory space mapping info */
--#define	MCPN765_PCI_MEM_SIZE		0x40000000U
--#define MCPN765_PROC_PCI_MEM_START	0x80000000U
--#define MCPN765_PROC_PCI_MEM_END	(MCPN765_PROC_PCI_MEM_START +	\
--					 MCPN765_PCI_MEM_SIZE - 1)
--#define MCPN765_PCI_MEM_START		0x80000000U
--#define MCPN765_PCI_MEM_END		(MCPN765_PCI_MEM_START +	\
--					 MCPN765_PCI_MEM_SIZE - 1)
--
--/* PCI I/O space mapping info */
--#define	MCPN765_PCI_IO_SIZE		0x00800000U
--#define MCPN765_PROC_PCI_IO_START	0xfd800000U
--#define MCPN765_PROC_PCI_IO_END		(MCPN765_PROC_PCI_IO_START +	\
--					 MCPN765_PCI_IO_SIZE - 1)
--#define MCPN765_PCI_IO_START		0x00000000U
--#define MCPN765_PCI_IO_END		(MCPN765_PCI_IO_START + 	\
--					 MCPN765_PCI_IO_SIZE - 1)
--
--/* System memory mapping info */
--#define MCPN765_PCI_DRAM_OFFSET		0x00000000U
--#define MCPN765_PCI_PHY_MEM_OFFSET	0x00000000U
--
--#define MCPN765_ISA_MEM_BASE		0x00000000U
--#define MCPN765_ISA_IO_BASE		MCPN765_PROC_PCI_IO_START
--
--/* Define base addresses for important sets of registers */
--#define MCPN765_HAWK_MPIC_BASE		0xfe800000U
--#define MCPN765_HAWK_SMC_BASE		0xfef80000U
--#define	MCPN765_HAWK_PPC_REG_BASE	0xfeff0000U
--
--/* Define MCPN765 board register addresses. */
--#define	MCPN765_BOARD_STATUS_REG	0xfef88080U
--#define	MCPN765_BOARD_MODFAIL_REG	0xfef88090U
--#define	MCPN765_BOARD_MODRST_REG	0xfef880a0U
--#define	MCPN765_BOARD_TBEN_REG		0xfef880c0U
--#define	MCPN765_BOARD_GEOGRAPHICAL_REG	0xfef880e8U
--#define	MCPN765_BOARD_EXT_FEATURE_REG	0xfef880f0U
--#define	MCPN765_BOARD_LAST_RESET_REG	0xfef880f8U
--
--/* Defines for UART */
--
--/* Define the UART base addresses */
--#define	MCPN765_SERIAL_1		0xfef88000
--#define	MCPN765_SERIAL_2		0xfef88200
--#define	MCPN765_SERIAL_3		0xfef88400
--#define	MCPN765_SERIAL_4		0xfef88600
--
--#ifdef CONFIG_SERIAL_MANY_PORTS
--#define RS_TABLE_SIZE  64
--#else
--#define RS_TABLE_SIZE  4
--#endif
--
--/* Rate for the 1.8432 Mhz clock for the onboard serial chip */
--#define BASE_BAUD	( 1843200 / 16 )
--#define UART_CLK	1843200
--
--#ifdef CONFIG_SERIAL_DETECT_IRQ
--#define STD_COM_FLAGS (ASYNC_BOOT_AUTOCONF|ASYNC_SKIP_TEST|ASYNC_AUTO_IRQ)
--#else
--#define STD_COM_FLAGS (ASYNC_BOOT_AUTOCONF|ASYNC_SKIP_TEST)
--#endif
--
--/* All UART IRQ's are wire-OR'd to IRQ 17 */
--#define STD_SERIAL_PORT_DFNS \
--        { 0, BASE_BAUD, MCPN765_SERIAL_1, 17, STD_COM_FLAGS, /* ttyS0 */\
--		iomem_base: (u8 *)MCPN765_SERIAL_1,			\
--		iomem_reg_shift: 4,					\
--		io_type: SERIAL_IO_MEM },				\
--        { 0, BASE_BAUD, MCPN765_SERIAL_2, 17, STD_COM_FLAGS, /* ttyS1 */\
--		iomem_base: (u8 *)MCPN765_SERIAL_2,			\
--		iomem_reg_shift: 4,					\
--		io_type: SERIAL_IO_MEM },				\
--        { 0, BASE_BAUD, MCPN765_SERIAL_3, 17, STD_COM_FLAGS, /* ttyS2 */\
--		iomem_base: (u8 *)MCPN765_SERIAL_3,			\
--		iomem_reg_shift: 4,					\
--		io_type: SERIAL_IO_MEM },				\
--        { 0, BASE_BAUD, MCPN765_SERIAL_4, 17, STD_COM_FLAGS, /* ttyS3 */\
--		iomem_base: (u8 *)MCPN765_SERIAL_4,			\
--		iomem_reg_shift: 4,					\
--		io_type: SERIAL_IO_MEM },
--
--#define SERIAL_PORT_DFNS \
--        STD_SERIAL_PORT_DFNS
--
--/* Define the NVRAM/RTC address strobe & data registers */
--#define MCPN765_PHYS_NVRAM_AS0          0xfef880c8U
--#define MCPN765_PHYS_NVRAM_AS1          0xfef880d0U
--#define MCPN765_PHYS_NVRAM_DATA         0xfef880d8U
--
--extern void mcpn765_find_bridges(void);
--
--#endif /* __PPC_PLATFORMS_MCPN765_H */
+ obj-$(CONFIG_PCORE)		+= pcore.o
 diff --git a/arch/ppc/syslib/Makefile b/arch/ppc/syslib/Makefile
 --- a/arch/ppc/syslib/Makefile
 +++ b/arch/ppc/syslib/Makefile
@@ -1338,20 +682,8 @@ diff --git a/arch/ppc/syslib/Makefile b/arch/ppc/syslib/Makefile
  obj-$(CONFIG_HDPU)		+= pci_auto.o
  obj-$(CONFIG_LUAN)		+= indirect_pci.o pci_auto.o todc_time.o
  obj-$(CONFIG_KATANA)		+= pci_auto.o
--obj-$(CONFIG_MCPN765)		+= todc_time.o indirect_pci.o pci_auto.o \
--					open_pic.o i8259.o hawk_common.o
- obj-$(CONFIG_MENF1)		+= todc_time.o i8259.o mpc10x_common.o \
- 					pci_auto.o indirect_pci.o
+-obj-$(CONFIG_MENF1)		+= todc_time.o i8259.o mpc10x_common.o \
+-					pci_auto.o indirect_pci.o
  obj-$(CONFIG_MV64360)		+= mv64360_pic.o
-diff --git a/include/asm-ppc/serial.h b/include/asm-ppc/serial.h
---- a/include/asm-ppc/serial.h
-+++ b/include/asm-ppc/serial.h
-@@ -18,8 +18,6 @@
- #include <platforms/powerpmc250.h>
- #elif defined(CONFIG_LOPEC)
- #include <platforms/lopec.h>
--#elif defined(CONFIG_MCPN765)
--#include <platforms/mcpn765.h>
- #elif defined(CONFIG_MVME5100)
- #include <platforms/mvme5100.h>
- #elif defined(CONFIG_PAL4)
+ obj-$(CONFIG_MV64X60)		+= mv64x60.o mv64x60_win.o indirect_pci.o
+ obj-$(CONFIG_MVME5100)		+= open_pic.o todc_time.o indirect_pci.o \
