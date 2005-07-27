@@ -1,17 +1,17 @@
 Return-Path: <galak@freescale.com>
 Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 7B36467DCF
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 49D6167DCB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Jul 2005 01:40:31 +1000 (EST)
-Date: Wed, 27 Jul 2005 10:40:20 -0500 (CDT)
+	Thu, 28 Jul 2005 01:40:58 +1000 (EST)
+Date: Wed, 27 Jul 2005 10:40:46 -0500 (CDT)
 From: Kumar Gala <galak@freescale.com>
 To: Andrew Morton <akpm@osdl.org>
-Message-ID: <Pine.LNX.4.61.0507271039460.12237@nylon.am.freescale.net>
+Message-ID: <Pine.LNX.4.61.0507271040210.12237@nylon.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linux-kernel@vger.kernel.org,
 	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH 11/14] ppc32: Remove board support for SM850
+Subject: [PATCH 12/14] ppc32: Remove board support for SPD823TS
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,68 +22,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Support for the SM850 board is no longer maintained and thus being removed
+Support for the SPD823TS board is no longer maintained and thus being removed
 
 Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
 ---
-commit b20e13cbb1c931860275b37d9bf7934974be6309
-tree 17ece4e6a04e48ac5e976ed7e63691b6fd8c97ac
-parent 7dbed1f92ee7eeaee439e82f7dae6e43c410ef22
-author Kumar K. Gala <kumar.gala@freescale.com> Mon, 25 Jul 2005 16:02:49 -0500
-committer Kumar K. Gala <kumar.gala@freescale.com> Mon, 25 Jul 2005 16:02:49 -0500
+commit 16f6a37ad9d92a4dbb9ac12dfc5e713480a7c9d0
+tree 1b6b9cdd190c8eb590596c7b0decc5c00f5dfe9b
+parent b20e13cbb1c931860275b37d9bf7934974be6309
+author Kumar K. Gala <kumar.gala@freescale.com> Mon, 25 Jul 2005 16:06:08 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> Mon, 25 Jul 2005 16:06:08 -0500
 
- arch/ppc/Kconfig                 |   17 -
- arch/ppc/configs/SM850_defconfig |  522 --------------------------------------
- arch/ppc/platforms/tqm8xx.h      |   23 --
- 3 files changed, 1 insertions(+), 561 deletions(-)
+ arch/ppc/Kconfig                    |   15 -
+ arch/ppc/configs/SPD823TS_defconfig |  520 -----------------------------------
+ arch/ppc/platforms/spd8xx.h         |   92 ------
+ include/asm-ppc/mpc8xx.h            |    4 
+ 4 files changed, 0 insertions(+), 631 deletions(-)
 
 diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
 --- a/arch/ppc/Kconfig
 +++ b/arch/ppc/Kconfig
-@@ -355,13 +355,6 @@ config RPXLITE
- 	  End of life: -
- 	  URL: <http://www.speech-design.de/>
+@@ -331,14 +331,6 @@ config RPXLITE
+ 	  End of life: end 2000 ?
+ 	  URL: see TQM850L
  
--	  SM850:
--	  Service Module (based on TQM850L)
--	  Manufacturer: Dependable Computer Systems, <http://www.decomsys.com/>
--	  Date of Release: end 2000 (?)
--	  End of life: mid 2001 (?)
--	  URL: <http://www.tz-mikroelektronik.de/ServiceModule/index.html>
+-	  SPD823TS:
+-	  MPC823 based board used in the "Tele Server" product
+-	  Manufacturer: Speech Design, <http://www.speech-design.de/>
+-	  Date of Release: Mid 2000 (?)
+-	  End of life: -
+-	  URL: <http://www.speech-design.de/>
+-	  select "English", then "Teleteam Solutions", then "TeleServer"
 -
- 	  HERMES:
- 	  Hermes-Pro ISDN/LAN router with integrated 8 x hub
- 	  Manufacturer: Multidata Gesellschaft fur Datentechnik und Informatik
-@@ -486,14 +479,6 @@ config IVML24
- 	  from Speech Design, released March 2001.  The manufacturer's website
- 	  is at <http://www.speech-design.de/>.
+ 	  IVMS8:
+ 	  MPC860 based board used in the "Integrated Voice Mail System",
+ 	  Small Version (8 voice channels)
+@@ -457,13 +449,6 @@ config TQM860L
  
--config SM850
--	bool "SM850"
+ config FPS850L
+ 	bool "FPS850L"
+-
+-config SPD823TS
+-	bool "SPD823TS"
 -	help
--	  Say Y here to support the Service Module 850 from Dependable
--	  Computer Systems, an SBC based on the TQM850L module by TQ
--	  Components.  This board is no longer in production.  The
--	  manufacturer's website is at <http://www.decomsys.com/>.
--
- config HERMES_PRO
- 	bool "HERMES"
+-	  Say Y here to support the Speech Design 823 Tele-Server from Speech
+-	  Design, released in 2000.  The manufacturer's website is at
+-	  <http://www.speech-design.de/>.
  
-@@ -712,7 +697,7 @@ config PQ2ADS
- 
- config TQM8xxL
- 	bool
--	depends on 8xx && (TQM823L || TQM850L || FPS850L || TQM855L || TQM860L || SM850)
-+	depends on 8xx && (TQM823L || TQM850L || FPS850L || TQM855L || TQM860L)
- 	default y
- 
- config EMBEDDEDBOOT
-diff --git a/arch/ppc/configs/SM850_defconfig b/arch/ppc/configs/SM850_defconfig
+ config IVMS8
+ 	bool "IVMS8"
+diff --git a/arch/ppc/configs/SPD823TS_defconfig b/arch/ppc/configs/SPD823TS_defconfig
 deleted file mode 100644
---- a/arch/ppc/configs/SM850_defconfig
+--- a/arch/ppc/configs/SPD823TS_defconfig
 +++ /dev/null
-@@ -1,522 +0,0 @@
+@@ -1,520 +0,0 @@
 -#
 -# Automatically generated make config: don't edit
 -#
@@ -143,10 +135,10 @@ deleted file mode 100644
 -# CONFIG_TQM855L is not set
 -# CONFIG_TQM860L is not set
 -# CONFIG_FPS850L is not set
--# CONFIG_SPD823TS is not set
+-CONFIG_SPD823TS=y
 -# CONFIG_IVMS8 is not set
 -# CONFIG_IVML24 is not set
--CONFIG_SM850=y
+-# CONFIG_SM850 is not set
 -# CONFIG_HERMES_PRO is not set
 -# CONFIG_IP860 is not set
 -# CONFIG_LWMON is not set
@@ -155,7 +147,6 @@ deleted file mode 100644
 -# CONFIG_LANTEC is not set
 -# CONFIG_MBX is not set
 -# CONFIG_WINCEPT is not set
--CONFIG_TQM8xxL=y
 -# CONFIG_SMP is not set
 -# CONFIG_PREEMPT is not set
 -CONFIG_MATH_EMULATION=y
@@ -178,8 +169,7 @@ deleted file mode 100644
 -# Parallel port support
 -#
 -# CONFIG_PARPORT is not set
--CONFIG_CMDLINE_BOOL=y
--CONFIG_CMDLINE="console=ttyCPM1"
+-# CONFIG_CMDLINE_BOOL is not set
 -
 -#
 -# Advanced setup
@@ -400,7 +390,7 @@ deleted file mode 100644
 -# CONFIG_SERIAL_CPM_SCC3 is not set
 -# CONFIG_SERIAL_CPM_SCC4 is not set
 -CONFIG_SERIAL_CPM_SMC1=y
--CONFIG_SERIAL_CPM_SMC2=y
+-# CONFIG_SERIAL_CPM_SMC2 is not set
 -CONFIG_SERIAL_CPM_ALT_SMC2=y
 -CONFIG_UNIX98_PTYS=y
 -# CONFIG_LEGACY_PTYS is not set
@@ -564,8 +554,8 @@ deleted file mode 100644
 -#
 -CONFIG_SCC_ENET=y
 -# CONFIG_SCC1_ENET is not set
--# CONFIG_SCC2_ENET is not set
--CONFIG_SCC3_ENET=y
+-CONFIG_SCC2_ENET=y
+-# CONFIG_SCC3_ENET is not set
 -# CONFIG_FEC_ENET is not set
 -CONFIG_ENET_BIG_BUFFERS=y
 -
@@ -573,7 +563,7 @@ deleted file mode 100644
 -# Generic MPC8xx Options
 -#
 -CONFIG_8xx_COPYBACK=y
--CONFIG_8xx_CPU6=y
+-# CONFIG_8xx_CPU6 is not set
 -# CONFIG_UCODE_PATCH is not set
 -
 -#
@@ -606,36 +596,114 @@ deleted file mode 100644
 -# Cryptographic options
 -#
 -# CONFIG_CRYPTO is not set
-diff --git a/arch/ppc/platforms/tqm8xx.h b/arch/ppc/platforms/tqm8xx.h
---- a/arch/ppc/platforms/tqm8xx.h
-+++ b/arch/ppc/platforms/tqm8xx.h
-@@ -147,29 +147,6 @@ static __inline__ void ide_led(int on)
- #define SICR_ENET_CLKRT	((uint)0x00002600)
- #endif	/* CONFIG_FPS850L */
- 
--/***  SM850  *********************************************************/
+diff --git a/arch/ppc/platforms/spd8xx.h b/arch/ppc/platforms/spd8xx.h
+deleted file mode 100644
+--- a/arch/ppc/platforms/spd8xx.h
++++ /dev/null
+@@ -1,92 +0,0 @@
+-/*
+- * Speech Design SPD8xxTS board specific definitions
+- *
+- * Copyright (c) 2000,2001 Wolfgang Denk (wd@denx.de)
+- */
 -
--/* The SM850 Service Module uses SCC2 for IrDA and SCC3 for Ethernet */
+-#ifdef __KERNEL__
+-#ifndef __ASM_SPD8XX_H__
+-#define __ASM_SPD8XX_H__
 -
--#ifdef CONFIG_SM850
--#define PB_ENET_RXD	((uint)0x00000004)	/* PB 29 */
--#define PB_ENET_TXD	((uint)0x00000002)	/* PB 30 */
--#define PA_ENET_RCLK	((ushort)0x0100)	/* PA  7 */
+-#include <linux/config.h>
+-
+-#include <asm/ppcboot.h>
+-
+-#ifndef __ASSEMBLY__
+-#define SPD_IMMR_BASE	0xFFF00000	/* phys. addr of IMMR */
+-#define SPD_IMAP_SIZE	(64 * 1024)	/* size of mapped area */
+-
+-#define IMAP_ADDR	SPD_IMMR_BASE	/* physical base address of IMMR area */
+-#define IMAP_SIZE	SPD_IMAP_SIZE	/* mapped size of IMMR area */
+-
+-#define PCMCIA_MEM_ADDR	((uint)0xFE100000)
+-#define PCMCIA_MEM_SIZE	((uint)(64 * 1024))
+-
+-#define IDE0_INTERRUPT	10		/* = IRQ5 */
+-#define IDE1_INTERRUPT	12		/* = IRQ6 */
+-#define CPM_INTERRUPT	13		/* = SIU_LEVEL6 (was: SIU_LEVEL2) */
+-
+-/* override the default number of IDE hardware interfaces */
+-#define MAX_HWIFS	2
+-
+-/*
+- * Definitions for IDE0 Interface
+- */
+-#define IDE0_BASE_OFFSET		0x0000	/* Offset in PCMCIA memory */
+-#define IDE0_DATA_REG_OFFSET		0x0000
+-#define IDE0_ERROR_REG_OFFSET		0x0081
+-#define IDE0_NSECTOR_REG_OFFSET		0x0082
+-#define IDE0_SECTOR_REG_OFFSET		0x0083
+-#define IDE0_LCYL_REG_OFFSET		0x0084
+-#define IDE0_HCYL_REG_OFFSET		0x0085
+-#define IDE0_SELECT_REG_OFFSET		0x0086
+-#define IDE0_STATUS_REG_OFFSET		0x0087
+-#define IDE0_CONTROL_REG_OFFSET		0x0106
+-#define IDE0_IRQ_REG_OFFSET		0x000A	/* not used */
+-
+-/*
+- * Definitions for IDE1 Interface
+- */
+-#define IDE1_BASE_OFFSET		0x0C00	/* Offset in PCMCIA memory */
+-#define IDE1_DATA_REG_OFFSET		0x0000
+-#define IDE1_ERROR_REG_OFFSET		0x0081
+-#define IDE1_NSECTOR_REG_OFFSET		0x0082
+-#define IDE1_SECTOR_REG_OFFSET		0x0083
+-#define IDE1_LCYL_REG_OFFSET		0x0084
+-#define IDE1_HCYL_REG_OFFSET		0x0085
+-#define IDE1_SELECT_REG_OFFSET		0x0086
+-#define IDE1_STATUS_REG_OFFSET		0x0087
+-#define IDE1_CONTROL_REG_OFFSET		0x0106
+-#define IDE1_IRQ_REG_OFFSET		0x000A	/* not used */
+-
+-/* CPM Ethernet through SCCx.
+- *
+- * Bits in parallel I/O port registers that have to be set/cleared
+- * to configure the pins for SCC2 use.
+- */
+-#define PA_ENET_MDC	((ushort)0x0001)	/* PA 15 !!! */
+-#define PA_ENET_MDIO	((ushort)0x0002)	/* PA 14 !!! */
+-#define PA_ENET_RXD	((ushort)0x0004)	/* PA 13 */
+-#define PA_ENET_TXD	((ushort)0x0008)	/* PA 12 */
+-#define PA_ENET_RCLK	((ushort)0x0200)	/* PA  6 */
 -#define PA_ENET_TCLK	((ushort)0x0400)	/* PA  5 */
 -
--#define PC_ENET_LBK	((ushort)0x0008)	/* PC 12 */
--#define PC_ENET_TENA	((ushort)0x0004)	/* PC 13 */
+-#define PB_ENET_TENA	((uint)0x00002000)	/* PB 18 */
 -
--#define PC_ENET_RENA	((ushort)0x0800)	/* PC  4 */
--#define PC_ENET_CLSN	((ushort)0x0400)	/* PC  5 */
+-#define PC_ENET_CLSN	((ushort)0x0040)	/* PC  9 */
+-#define PC_ENET_RENA	((ushort)0x0080)	/* PC  8 */
+-#define PC_ENET_RESET	((ushort)0x0100)	/* PC  7 !!! */
 -
--/* Control bits in the SICR to route TCLK (CLK3) and RCLK (CLK1) to
-- * SCC3.  Also, make sure GR3 (bit 8) and SC3 (bit 9) are zero.
+-/* Control bits in the SICR to route TCLK (CLK3) and RCLK (CLK2) to
+- * SCC2.  Also, make sure GR2 (bit 16) and SC2 (bit 17) are zero.
 - */
--#define SICR_ENET_MASK	((uint)0x00FF0000)
--#define SICR_ENET_CLKRT	((uint)0x00260000)
--#endif	/* CONFIG_SM850 */
+-#define SICR_ENET_MASK	((uint)0x0000ff00)
+-#define SICR_ENET_CLKRT	((uint)0x00002E00)
 -
- /* We don't use the 8259.
- */
- #define NR_8259_INTS	0
+-/* We don't use the 8259.
+-*/
+-#define NR_8259_INTS	0
+-
+-#endif /* !__ASSEMBLY__ */
+-#endif /* __ASM_SPD8XX_H__ */
+-#endif /* __KERNEL__ */
+diff --git a/include/asm-ppc/mpc8xx.h b/include/asm-ppc/mpc8xx.h
+--- a/include/asm-ppc/mpc8xx.h
++++ b/include/asm-ppc/mpc8xx.h
+@@ -36,10 +36,6 @@
+ #include <platforms/tqm8xx.h>
+ #endif
+ 
+-#if defined(CONFIG_SPD823TS)
+-#include <platforms/spd8xx.h>
+-#endif
+-
+ #if defined(CONFIG_IVMS8) || defined(CONFIG_IVML24)
+ #include <platforms/ivms8.h>
+ #endif
