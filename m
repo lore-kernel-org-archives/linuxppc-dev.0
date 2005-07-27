@@ -1,17 +1,17 @@
 Return-Path: <mporter@kernel.crashing.org>
 Received: from zipcode.az.mvista.com (rav-az.mvista.com [65.200.49.157])
-	by ozlabs.org (Postfix) with ESMTP id BE86367DAF
+	by ozlabs.org (Postfix) with ESMTP id 2A0D867DAF
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Jul 2005 03:48:21 +1000 (EST)
-In-Reply-To: <11224856623638@foobar.com>
+	Thu, 28 Jul 2005 03:48:22 +1000 (EST)
+In-Reply-To: <11224856632322@foobar.com>
 Date: Wed, 27 Jul 2005 10:34:23 -0700
-Message-Id: <11224856632322@foobar.com>
+Message-Id: <11224856633546@foobar.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 To: akpm@osdl.org
 From: Matt Porter <mporter@kernel.crashing.org>
 Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
-Subject: [PATCH][2/3] ppc32: add bamboo platform
+Subject: [PATCH][3/3] ppc32: add bamboo defconfig
 Reply-To: Matt Porter <mporter@kernel.crashing.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,587 +24,958 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Add Bamboo platform support. This is an AMCC 440EP-based
-reference platform.
+Add Bamboo platform defconfig
 
 Signed-off-by: Wade Farnsworth <wfarnsworth@mvista.com>
 Signed-off-by: Matt Porter <mporter@kernel.crashing.org>
 
-diff --git a/arch/ppc/platforms/4xx/bamboo.c b/arch/ppc/platforms/4xx/bambo=
-o.c
+diff --git a/arch/ppc/configs/bamboo_defconfig b/arch/ppc/configs/bamboo_de=
+fconfig
 new file mode 100644
 --- /dev/null
-+++ b/arch/ppc/platforms/4xx/bamboo.c
-@@ -0,0 +1,427 @@
-+/*
-+ * arch/ppc/platforms/4xx/bamboo.c
-+ *
-+ * Bamboo board specific routines
-+ *
-+ * Wade Farnsworth <wfarnsworth@mvista.com>
-+ * Copyright 2004 MontaVista Software Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/config.h>
-+#include <linux/stddef.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/errno.h>
-+#include <linux/reboot.h>
-+#include <linux/pci.h>
-+#include <linux/kdev_t.h>
-+#include <linux/types.h>
-+#include <linux/major.h>
-+#include <linux/blkdev.h>
-+#include <linux/console.h>
-+#include <linux/delay.h>
-+#include <linux/ide.h>
-+#include <linux/initrd.h>
-+#include <linux/irq.h>
-+#include <linux/seq_file.h>
-+#include <linux/root_dev.h>
-+#include <linux/tty.h>
-+#include <linux/serial.h>
-+#include <linux/serial_core.h>
-+#include <linux/ethtool.h>
-+
-+#include <asm/system.h>
-+#include <asm/pgtable.h>
-+#include <asm/page.h>
-+#include <asm/dma.h>
-+#include <asm/io.h>
-+#include <asm/machdep.h>
-+#include <asm/ocp.h>
-+#include <asm/pci-bridge.h>
-+#include <asm/time.h>
-+#include <asm/todc.h>
-+#include <asm/bootinfo.h>
-+#include <asm/ppc4xx_pic.h>
-+#include <asm/ppcboot.h>
-+
-+#include <syslib/gen550.h>
-+#include <syslib/ibm440gx_common.h>
-+
-+/*
-+ * This is a horrible kludge, we eventually need to abstract this
-+ * generic PHY stuff, so the  standard phy mode defines can be
-+ * easily used from arch code.
-+ */
-+#include "../../../../drivers/net/ibm_emac/ibm_emac_phy.h"
-+
-+bd_t __res;
-+
-+static struct ibm44x_clocks clocks __initdata;
-+
-+/*
-+ * Bamboo external IRQ triggering/polarity settings
-+ */
-+unsigned char ppc4xx_uic_ext_irq_cfg[] __initdata =3D {
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ0: Ethernet transceiver =
-*/
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE), /* IRQ1: Expansion connector */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ2: PCI slot 0 */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ3: PCI slot 1 */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ4: PCI slot 2 */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ5: PCI slot 3 */
-+	(IRQ_SENSE_EDGE  | IRQ_POLARITY_NEGATIVE), /* IRQ6: SMI pushbutton */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ7: EXT */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ8: EXT */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ9: EXT */
-+};
-+
-+static void __init
-+bamboo_calibrate_decr(void)
-+{
-+	unsigned int freq;
-+
-+	if (mfspr(SPRN_CCR1) & CCR1_TCS)
-+		freq =3D BAMBOO_TMRCLK;
-+	else
-+		freq =3D clocks.cpu;
-+
-+	ibm44x_calibrate_decr(freq);
-+=09
-+}
-+
-+static int
-+bamboo_show_cpuinfo(struct seq_file *m)
-+{
-+	seq_printf(m, "vendor\t\t: IBM\n");
-+	seq_printf(m, "machine\t\t: PPC440EP EVB (Bamboo)\n");
-+
-+	return 0;
-+}
-+
-+static inline int
-+bamboo_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
-+{
-+	static char pci_irq_table[][4] =3D
-+	/*
-+	 *	PCI IDSEL/INTPIN->INTLINE
-+	 * 	   A   B   C   D
-+	 */
-+	{
-+		{ 28, 28, 28, 28 },	/* IDSEL 1 - PCI Slot 0 */
-+		{ 27, 27, 27, 27 },	/* IDSEL 2 - PCI Slot 1 */
-+		{ 26, 26, 26, 26 },	/* IDSEL 3 - PCI Slot 2 */
-+		{ 25, 25, 25, 25 },	/* IDSEL 4 - PCI Slot 3 */
-+	};
-+
-+	const long min_idsel =3D 1, max_idsel =3D 4, irqs_per_slot =3D 4;
-+	return PCI_IRQ_TABLE_LOOKUP;
-+}
-+
-+static void __init bamboo_set_emacdata(void)
-+{
-+	unsigned char * selection1_base;
-+	struct ocp_def *def;
-+	struct ocp_func_emac_data *emacdata;
-+	u8 selection1_val;
-+	int mode;
-+=09
-+	selection1_base =3D ioremap64(BAMBOO_FPGA_SELECTION1_REG_ADDR, 16);
-+	selection1_val =3D readb(selection1_base);
-+	iounmap((void *) selection1_base);
-+	if (BAMBOO_SEL_MII(selection1_val))
-+		mode =3D PHY_MODE_MII;
-+	else if (BAMBOO_SEL_RMII(selection1_val))
-+		mode =3D PHY_MODE_RMII;
-+	else=20
-+		mode =3D PHY_MODE_SMII;
-+=09
-+	/* Set mac_addr and phy mode for each EMAC */
-+
-+	def =3D ocp_get_one_device(OCP_VENDOR_IBM, OCP_FUNC_EMAC, 0);
-+	emacdata =3D def->additions;
-+	memcpy(emacdata->mac_addr, __res.bi_enetaddr, 6);
-+	emacdata->phy_mode =3D mode;
-+
-+	def =3D ocp_get_one_device(OCP_VENDOR_IBM, OCP_FUNC_EMAC, 1);
-+	emacdata =3D def->additions;
-+	memcpy(emacdata->mac_addr, __res.bi_enet1addr, 6);
-+	emacdata->phy_mode =3D mode;
-+}
-+
-+static int
-+bamboo_exclude_device(unsigned char bus, unsigned char devfn)
-+{
-+	return (bus =3D=3D 0 && devfn =3D=3D 0);
-+}
-+
-+#define PCI_READW(offset) \
-+        (readw((void *)((u32)pci_reg_base+offset)))
-+
-+#define PCI_WRITEW(value, offset) \
-+	(writew(value, (void *)((u32)pci_reg_base+offset)))
-+=09
-+#define PCI_WRITEL(value, offset) \
-+	(writel(value, (void *)((u32)pci_reg_base+offset)))
-+
-+static void __init
-+bamboo_setup_pci(void)
-+{
-+	void *pci_reg_base;
-+	unsigned long memory_size;
-+	memory_size =3D ppc_md.find_end_of_memory();
-+
-+	pci_reg_base =3D ioremap64(BAMBOO_PCIL0_BASE, BAMBOO_PCIL0_SIZE);
-+
-+	/* Enable PCI I/O, Mem, and Busmaster cycles */
-+	PCI_WRITEW(PCI_READW(PCI_COMMAND) |=20
-+		   PCI_COMMAND_MEMORY |=20
-+		   PCI_COMMAND_MASTER, PCI_COMMAND);
-+
-+	/* Disable region first */
-+	PCI_WRITEL(0, BAMBOO_PCIL0_PMM0MA);
-+
-+	/* PLB starting addr: 0x00000000A0000000 */
-+	PCI_WRITEL(BAMBOO_PCI_PHY_MEM_BASE, BAMBOO_PCIL0_PMM0LA);
-+
-+	/* PCI start addr, 0xA0000000 (PCI Address) */
-+	PCI_WRITEL(BAMBOO_PCI_MEM_BASE, BAMBOO_PCIL0_PMM0PCILA);
-+	PCI_WRITEL(0, BAMBOO_PCIL0_PMM0PCIHA);
-+
-+	/* Enable no pre-fetch, enable region */
-+	PCI_WRITEL(((0xffffffff -=20
-+		     (BAMBOO_PCI_UPPER_MEM - BAMBOO_PCI_MEM_BASE)) | 0x01),=20
-+		      BAMBOO_PCIL0_PMM0MA);
-+=09
-+	/* Disable region one */
-+	PCI_WRITEL(0, BAMBOO_PCIL0_PMM1MA);
-+	PCI_WRITEL(0, BAMBOO_PCIL0_PMM1LA);
-+	PCI_WRITEL(0, BAMBOO_PCIL0_PMM1PCILA);
-+	PCI_WRITEL(0, BAMBOO_PCIL0_PMM1PCIHA);
-+	PCI_WRITEL(0, BAMBOO_PCIL0_PMM1MA);
-+=09
-+	/* Disable region two */
-+	PCI_WRITEL(0, BAMBOO_PCIL0_PMM2MA);
-+	PCI_WRITEL(0, BAMBOO_PCIL0_PMM2LA);
-+	PCI_WRITEL(0, BAMBOO_PCIL0_PMM2PCILA);
-+	PCI_WRITEL(0, BAMBOO_PCIL0_PMM2PCIHA);
-+	PCI_WRITEL(0, BAMBOO_PCIL0_PMM2MA);
-+=09
-+	/* Now configure the PCI->PLB windows, we only use PTM1
-+	 *
-+	 * For Inbound flow, set the window size to all available memory
-+	 * This is required because if size is smaller,
-+	 * then Eth/PCI DD would fail as PCI card not able to access
-+	 * the memory allocated by DD.
-+	 */
-+=09
-+	PCI_WRITEL(0, BAMBOO_PCIL0_PTM1MS);	/* disabled region 1 */
-+	PCI_WRITEL(0, BAMBOO_PCIL0_PTM1LA);	/* begin of address map */
-+
-+	memory_size =3D 1 << fls(memory_size - 1);
-+
-+	/* Size low + Enabled */
-+	PCI_WRITEL((0xffffffff - (memory_size - 1)) | 0x1, BAMBOO_PCIL0_PTM1MS);
-+=09
-+	eieio();
-+	iounmap(pci_reg_base);
-+}
-+
-+static void __init
-+bamboo_setup_hose(void)
-+{
-+	unsigned int bar_response, bar;
-+	struct pci_controller *hose;
-+
-+	bamboo_setup_pci();
-+
-+	hose =3D pcibios_alloc_controller();
-+
-+	if (!hose)
-+		return;
-+
-+	hose->first_busno =3D 0;
-+	hose->last_busno =3D 0xff;
-+
-+	hose->pci_mem_offset =3D BAMBOO_PCI_MEM_OFFSET;
-+
-+	pci_init_resource(&hose->io_resource,
-+			BAMBOO_PCI_LOWER_IO,
-+			BAMBOO_PCI_UPPER_IO,
-+			IORESOURCE_IO,
-+			"PCI host bridge");
-+
-+	pci_init_resource(&hose->mem_resources[0],
-+			BAMBOO_PCI_LOWER_MEM,
-+			BAMBOO_PCI_UPPER_MEM,
-+			IORESOURCE_MEM,
-+			"PCI host bridge");
-+
-+	ppc_md.pci_exclude_device =3D bamboo_exclude_device;
-+
-+	hose->io_space.start =3D BAMBOO_PCI_LOWER_IO;
-+	hose->io_space.end =3D BAMBOO_PCI_UPPER_IO;
-+	hose->mem_space.start =3D BAMBOO_PCI_LOWER_MEM;
-+	hose->mem_space.end =3D BAMBOO_PCI_UPPER_MEM;
-+	isa_io_base =3D
-+		(unsigned long)ioremap64(BAMBOO_PCI_IO_BASE, BAMBOO_PCI_IO_SIZE);
-+	hose->io_base_virt =3D (void *)isa_io_base;
-+
-+	setup_indirect_pci(hose,
-+			BAMBOO_PCI_CFGA_PLB32,
-+			BAMBOO_PCI_CFGD_PLB32);
-+	hose->set_cfg_type =3D 1;
-+
-+	/* Zero config bars */
-+	for (bar =3D PCI_BASE_ADDRESS_1; bar <=3D PCI_BASE_ADDRESS_2; bar +=3D 4)=
- {
-+		early_write_config_dword(hose, hose->first_busno,
-+					 PCI_FUNC(hose->first_busno), bar,
-+					 0x00000000);
-+		early_read_config_dword(hose, hose->first_busno,
-+					PCI_FUNC(hose->first_busno), bar,
-+					&bar_response);
-+	}
-+
-+	hose->last_busno =3D pciauto_bus_scan(hose, hose->first_busno);
-+
-+	ppc_md.pci_swizzle =3D common_swizzle;
-+	ppc_md.pci_map_irq =3D bamboo_map_irq;
-+}
-+
-+TODC_ALLOC();
-+
-+static void __init
-+bamboo_early_serial_map(void)
-+{
-+	struct uart_port port;
-+
-+	/* Setup ioremapped serial port access */
-+	memset(&port, 0, sizeof(port));
-+	port.membase =3D ioremap64(PPC440EP_UART0_ADDR, 8);
-+	port.irq =3D 0;
-+	port.uartclk =3D clocks.uart0;
-+	port.regshift =3D 0;
-+	port.iotype =3D SERIAL_IO_MEM;
-+	port.flags =3D ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST;
-+	port.line =3D 0;
-+
-+	if (early_serial_setup(&port) !=3D 0) {
-+		printk("Early serial init of port 0 failed\n");
-+	}
-+
-+#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
-+	/* Configure debug serial access */
-+	gen550_init(0, &port);
-+#endif
-+
-+	port.membase =3D ioremap64(PPC440EP_UART1_ADDR, 8);
-+	port.irq =3D 1;
-+	port.uartclk =3D clocks.uart1;
-+	port.line =3D 1;
-+
-+	if (early_serial_setup(&port) !=3D 0) {
-+		printk("Early serial init of port 1 failed\n");
-+	}
-+
-+#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
-+	/* Configure debug serial access */
-+	gen550_init(1, &port);
-+#endif
-+
-+	port.membase =3D ioremap64(PPC440EP_UART2_ADDR, 8);
-+	port.irq =3D 3;
-+	port.uartclk =3D clocks.uart2;
-+	port.line =3D 2;
-+
-+	if (early_serial_setup(&port) !=3D 0) {
-+		printk("Early serial init of port 2 failed\n");
-+	}
-+
-+#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
-+	/* Configure debug serial access */
-+	gen550_init(2, &port);
-+#endif
-+
-+	port.membase =3D ioremap64(PPC440EP_UART3_ADDR, 8);
-+	port.irq =3D 4;
-+	port.uartclk =3D clocks.uart3;
-+	port.line =3D 3;
-+
-+	if (early_serial_setup(&port) !=3D 0) {
-+		printk("Early serial init of port 3 failed\n");
-+	}
-+}
-+
-+static void __init
-+bamboo_setup_arch(void)
-+{
-+
-+	bamboo_set_emacdata();
-+
-+	ibm440gx_get_clocks(&clocks, 33333333, 6 * 1843200);
-+	ocp_sys_info.opb_bus_freq =3D clocks.opb;
-+
-+	/* Setup TODC access */
-+	TODC_INIT(TODC_TYPE_DS1743,
-+			0,
-+			0,
-+			ioremap64(BAMBOO_RTC_ADDR, BAMBOO_RTC_SIZE),
-+			8);
-+
-+	/* init to some ~sane value until calibrate_delay() runs */
-+        loops_per_jiffy =3D 50000000/HZ;
-+
-+	/* Setup PCI host bridge */
-+	bamboo_setup_hose();
-+
-+#ifdef CONFIG_BLK_DEV_INITRD
-+	if (initrd_start)
-+		ROOT_DEV =3D Root_RAM0;
-+	else
-+#endif
-+#ifdef CONFIG_ROOT_NFS
-+		ROOT_DEV =3D Root_NFS;
-+#else
-+		ROOT_DEV =3D Root_HDA1;
-+#endif
-+
-+	bamboo_early_serial_map();
-+
-+	/* Identify the system */
-+	printk("IBM Bamboo port (MontaVista Software, Inc. (source@mvista.com))\n=
-");
-+}
-+
-+void __init platform_init(unsigned long r3, unsigned long r4,
-+		unsigned long r5, unsigned long r6, unsigned long r7)
-+{
-+	parse_bootinfo(find_bootinfo());
-+
-+	/*
-+	 * If we were passed in a board information, copy it into the
-+	 * residual data area.
-+	 */
-+	if (r3)
-+		__res =3D *(bd_t *)(r3 + KERNELBASE);
-+
-+
-+	ibm44x_platform_init();
-+
-+	ppc_md.setup_arch =3D bamboo_setup_arch;
-+	ppc_md.show_cpuinfo =3D bamboo_show_cpuinfo;
-+	ppc_md.get_irq =3D NULL;		/* Set in ppc4xx_pic_init() */
-+
-+	ppc_md.calibrate_decr =3D bamboo_calibrate_decr;
-+	ppc_md.time_init =3D todc_time_init;
-+	ppc_md.set_rtc_time =3D todc_set_rtc_time;
-+	ppc_md.get_rtc_time =3D todc_get_rtc_time;
-+
-+	ppc_md.nvram_read_val =3D todc_direct_read_val;
-+	ppc_md.nvram_write_val =3D todc_direct_write_val;
-+#ifdef CONFIG_KGDB
-+	ppc_md.early_serial_map =3D bamboo_early_serial_map;
-+#endif
-+}
-+
-diff --git a/arch/ppc/platforms/4xx/bamboo.h b/arch/ppc/platforms/4xx/bambo=
-o.h
-new file mode 100644
---- /dev/null
-+++ b/arch/ppc/platforms/4xx/bamboo.h
-@@ -0,0 +1,136 @@
-+/*
-+ * arch/ppc/platforms/bamboo.h
-+ *
-+ * Bamboo board definitions
-+ *
-+ * Wade Farnsworth <wfarnsworth@mvista.com>
-+ *
-+ * Copyright 2004 MontaVista Software Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#ifdef __KERNEL__
-+#ifndef __ASM_BAMBOO_H__
-+#define __ASM_BAMBOO_H__
-+
-+#include <linux/config.h>
-+#include <platforms/4xx/ibm440ep.h>
-+
-+/* F/W TLB mapping used in bootloader glue to reset EMAC */
-+#define PPC44x_EMAC0_MR0		0x0EF600E00
-+
-+/* Location of MAC addresses in PIBS image */
-+#define PIBS_FLASH_BASE			0xfff00000
-+#define PIBS_MAC_BASE			(PIBS_FLASH_BASE+0xc0400)
-+#define PIBS_MAC_SIZE			0x200
-+#define PIBS_MAC_OFFSET			0x100
-+
-+/* Default clock rate */
-+#define BAMBOO_TMRCLK			25000000
-+
-+/* RTC/NVRAM location */
-+#define BAMBOO_RTC_ADDR			0x080000000ULL
-+#define BAMBOO_RTC_SIZE			0x2000
-+
-+/* FPGA Registers */
-+#define BAMBOO_FPGA_ADDR		0x080002000ULL
-+
-+#define BAMBOO_FPGA_CONFIG2_REG_ADDR	(BAMBOO_FPGA_ADDR + 0x1)
-+#define BAMBOO_FULL_DUPLEX_EN(x)	(x & 0x08)
-+#define BAMBOO_FORCE_100Mbps(x)		(x & 0x04)
-+#define BAMBOO_AUTONEGOTIATE(x)		(x & 0x02)
-+
-+#define BAMBOO_FPGA_SETTING_REG_ADDR	(BAMBOO_FPGA_ADDR + 0x3)
-+#define BAMBOO_BOOT_SMALL_FLASH(x)	(!(x & 0x80))
-+#define BAMBOO_LARGE_FLASH_EN(x)	(!(x & 0x40))
-+#define BAMBOO_BOOT_NAND_FLASH(x)	(!(x & 0x20))
-+
-+#define BAMBOO_FPGA_SELECTION1_REG_ADDR (BAMBOO_FPGA_ADDR + 0x4)
-+#define BAMBOO_SEL_MII(x)		(x & 0x80)
-+#define BAMBOO_SEL_RMII(x)		(x & 0x40)
-+#define BAMBOO_SEL_SMII(x)		(x & 0x20)
-+
-+/* Flash */
-+#define BAMBOO_SMALL_FLASH_LOW		0x087f00000ULL
-+#define BAMBOO_SMALL_FLASH_HIGH		0x0fff00000ULL
-+#define BAMBOO_SMALL_FLASH_SIZE		0x100000
-+#define BAMBOO_LARGE_FLASH_LOW		0x087800000ULL
-+#define BAMBOO_LARGE_FLASH_HIGH1	0x0ff800000ULL
-+#define BAMBOO_LARGE_FLASH_HIGH2	0x0ffc00000ULL
-+#define BAMBOO_LARGE_FLASH_SIZE		0x400000
-+#define BAMBOO_SRAM_LOW			0x087f00000ULL
-+#define BAMBOO_SRAM_HIGH1		0x0fff00000ULL
-+#define BAMBOO_SRAM_HIGH2		0x0ff800000ULL
-+#define BAMBOO_SRAM_SIZE		0x100000
-+#define BAMBOO_NAND_FLASH_REG_ADDR	0x090000000ULL
-+#define BAMBOO_NAND_FLASH_REG_SIZE	0x2000
-+
-+/*
-+ * Serial port defines
-+ */
-+#define RS_TABLE_SIZE			4
-+
-+#define UART0_IO_BASE			0xEF600300
-+#define UART1_IO_BASE			0xEF600400
-+#define UART2_IO_BASE			0xEF600500
-+#define UART3_IO_BASE			0xEF600600
-+
-+#define BASE_BAUD			33177600/3/16
-+#define UART0_INT			0
-+#define UART1_INT			1
-+#define UART2_INT			3
-+#define UART3_INT			4
-+
-+#define STD_UART_OP(num)					\
-+	{ 0, BASE_BAUD, 0, UART##num##_INT,			\
-+		(ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST),	\
-+		iomem_base: UART##num##_IO_BASE,		\
-+		io_type: SERIAL_IO_MEM},
-+
-+#define SERIAL_PORT_DFNS	\
-+	STD_UART_OP(0)		\
-+	STD_UART_OP(1)		\
-+	STD_UART_OP(2)		\
-+	STD_UART_OP(3)
-+
-+/* PCI support */
-+#define BAMBOO_PCI_CFGA_PLB32		0xeec00000
-+#define BAMBOO_PCI_CFGD_PLB32		0xeec00004
-+
-+#define BAMBOO_PCI_IO_BASE		0x00000000e8000000ULL
-+#define BAMBOO_PCI_IO_SIZE		0x00010000
-+#define BAMBOO_PCI_MEM_OFFSET		0x00000000
-+#define BAMBOO_PCI_PHY_MEM_BASE		0x00000000a0000000ULL
-+
-+#define BAMBOO_PCI_LOWER_IO		0x00000000
-+#define BAMBOO_PCI_UPPER_IO		0x0000ffff
-+#define BAMBOO_PCI_LOWER_MEM		0xa0000000
-+#define BAMBOO_PCI_UPPER_MEM		0xafffffff
-+#define BAMBOO_PCI_MEM_BASE		0xa0000000
-+
-+#define BAMBOO_PCIL0_BASE		0x00000000ef400000ULL
-+#define BAMBOO_PCIL0_SIZE		0x40
-+
-+#define BAMBOO_PCIL0_PMM0LA		0x000
-+#define BAMBOO_PCIL0_PMM0MA		0x004
-+#define BAMBOO_PCIL0_PMM0PCILA		0x008
-+#define BAMBOO_PCIL0_PMM0PCIHA		0x00C
-+#define BAMBOO_PCIL0_PMM1LA		0x010
-+#define BAMBOO_PCIL0_PMM1MA		0x014
-+#define BAMBOO_PCIL0_PMM1PCILA		0x018
-+#define BAMBOO_PCIL0_PMM1PCIHA		0x01C
-+#define BAMBOO_PCIL0_PMM2LA		0x020
-+#define BAMBOO_PCIL0_PMM2MA		0x024
-+#define BAMBOO_PCIL0_PMM2PCILA		0x028
-+#define BAMBOO_PCIL0_PMM2PCIHA		0x02C
-+#define BAMBOO_PCIL0_PTM1MS		0x030
-+#define BAMBOO_PCIL0_PTM1LA		0x034
-+#define BAMBOO_PCIL0_PTM2MS		0x038
-+#define BAMBOO_PCIL0_PTM2LA		0x03C
-+=09
-+#endif                          /* __ASM_BAMBOO_H__ */
-+#endif                          /* __KERNEL__ */
++++ b/arch/ppc/configs/bamboo_defconfig
+@@ -0,0 +1,943 @@
++#
++# Automatically generated make config: don't edit
++# Linux kernel version: 2.6.12
++# Tue Jun 28 15:24:25 2005
++#
++CONFIG_MMU=3Dy
++CONFIG_GENERIC_HARDIRQS=3Dy
++CONFIG_RWSEM_XCHGADD_ALGORITHM=3Dy
++CONFIG_GENERIC_CALIBRATE_DELAY=3Dy
++CONFIG_HAVE_DEC_LOCK=3Dy
++CONFIG_PPC=3Dy
++CONFIG_PPC32=3Dy
++CONFIG_GENERIC_NVRAM=3Dy
++CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=3Dy
++
++#
++# Code maturity level options
++#
++CONFIG_EXPERIMENTAL=3Dy
++CONFIG_CLEAN_COMPILE=3Dy
++CONFIG_BROKEN_ON_SMP=3Dy
++CONFIG_INIT_ENV_ARG_LIMIT=3D32
++
++#
++# General setup
++#
++CONFIG_LOCALVERSION=3D""
++CONFIG_SWAP=3Dy
++CONFIG_SYSVIPC=3Dy
++# CONFIG_POSIX_MQUEUE is not set
++# CONFIG_BSD_PROCESS_ACCT is not set
++CONFIG_SYSCTL=3Dy
++# CONFIG_AUDIT is not set
++# CONFIG_HOTPLUG is not set
++CONFIG_KOBJECT_UEVENT=3Dy
++# CONFIG_IKCONFIG is not set
++CONFIG_EMBEDDED=3Dy
++CONFIG_KALLSYMS=3Dy
++# CONFIG_KALLSYMS_ALL is not set
++# CONFIG_KALLSYMS_EXTRA_PASS is not set
++CONFIG_PRINTK=3Dy
++CONFIG_BUG=3Dy
++CONFIG_BASE_FULL=3Dy
++CONFIG_FUTEX=3Dy
++CONFIG_EPOLL=3Dy
++# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
++CONFIG_SHMEM=3Dy
++CONFIG_CC_ALIGN_FUNCTIONS=3D0
++CONFIG_CC_ALIGN_LABELS=3D0
++CONFIG_CC_ALIGN_LOOPS=3D0
++CONFIG_CC_ALIGN_JUMPS=3D0
++# CONFIG_TINY_SHMEM is not set
++CONFIG_BASE_SMALL=3D0
++
++#
++# Loadable module support
++#
++CONFIG_MODULES=3Dy
++CONFIG_MODULE_UNLOAD=3Dy
++# CONFIG_MODULE_FORCE_UNLOAD is not set
++CONFIG_OBSOLETE_MODPARM=3Dy
++# CONFIG_MODVERSIONS is not set
++# CONFIG_MODULE_SRCVERSION_ALL is not set
++CONFIG_KMOD=3Dy
++
++#
++# Processor
++#
++# CONFIG_6xx is not set
++# CONFIG_40x is not set
++CONFIG_44x=3Dy
++# CONFIG_POWER3 is not set
++# CONFIG_POWER4 is not set
++# CONFIG_8xx is not set
++# CONFIG_E200 is not set
++# CONFIG_E500 is not set
++CONFIG_PPC_FPU=3Dy
++CONFIG_BOOKE=3Dy
++CONFIG_PTE_64BIT=3Dy
++CONFIG_PHYS_64BIT=3Dy
++# CONFIG_MATH_EMULATION is not set
++# CONFIG_KEXEC is not set
++# CONFIG_CPU_FREQ is not set
++CONFIG_4xx=3Dy
++
++#
++# IBM 4xx options
++#
++CONFIG_BAMBOO=3Dy
++# CONFIG_EBONY is not set
++# CONFIG_LUAN is not set
++# CONFIG_OCOTEA is not set
++CONFIG_440EP=3Dy
++CONFIG_440=3Dy
++CONFIG_IBM440EP_ERR42=3Dy
++CONFIG_IBM_OCP=3Dy
++# CONFIG_PPC4xx_DMA is not set
++CONFIG_PPC_GEN550=3Dy
++# CONFIG_PM is not set
++CONFIG_NOT_COHERENT_CACHE=3Dy
++
++#
++# Platform options
++#
++# CONFIG_PC_KEYBOARD is not set
++# CONFIG_SMP is not set
++# CONFIG_PREEMPT is not set
++# CONFIG_HIGHMEM is not set
++CONFIG_SELECT_MEMORY_MODEL=3Dy
++CONFIG_FLATMEM_MANUAL=3Dy
++# CONFIG_DISCONTIGMEM_MANUAL is not set
++# CONFIG_SPARSEMEM_MANUAL is not set
++CONFIG_FLATMEM=3Dy
++CONFIG_FLAT_NODE_MEM_MAP=3Dy
++CONFIG_BINFMT_ELF=3Dy
++# CONFIG_BINFMT_MISC is not set
++CONFIG_CMDLINE_BOOL=3Dy
++CONFIG_CMDLINE=3D"ip=3Don"
++CONFIG_SECCOMP=3Dy
++CONFIG_ISA_DMA_API=3Dy
++
++#
++# Bus options
++#
++CONFIG_PCI=3Dy
++CONFIG_PCI_DOMAINS=3Dy
++# CONFIG_PCI_LEGACY_PROC is not set
++# CONFIG_PCI_NAMES is not set
++# CONFIG_PCI_DEBUG is not set
++
++#
++# PCCARD (PCMCIA/CardBus) support
++#
++# CONFIG_PCCARD is not set
++
++#
++# Advanced setup
++#
++# CONFIG_ADVANCED_OPTIONS is not set
++
++#
++# Default settings for advanced configuration options are used
++#
++CONFIG_HIGHMEM_START=3D0xfe000000
++CONFIG_LOWMEM_SIZE=3D0x30000000
++CONFIG_KERNEL_START=3D0xc0000000
++CONFIG_TASK_SIZE=3D0x80000000
++CONFIG_CONSISTENT_START=3D0xff100000
++CONFIG_CONSISTENT_SIZE=3D0x00200000
++CONFIG_BOOT_LOAD=3D0x01000000
++
++#
++# Device Drivers
++#
++
++#
++# Generic Driver Options
++#
++# CONFIG_STANDALONE is not set
++CONFIG_PREVENT_FIRMWARE_BUILD=3Dy
++# CONFIG_FW_LOADER is not set
++# CONFIG_DEBUG_DRIVER is not set
++
++#
++# Memory Technology Devices (MTD)
++#
++# CONFIG_MTD is not set
++
++#
++# Parallel port support
++#
++# CONFIG_PARPORT is not set
++
++#
++# Plug and Play support
++#
++
++#
++# Block devices
++#
++# CONFIG_BLK_DEV_FD is not set
++# CONFIG_BLK_CPQ_DA is not set
++# CONFIG_BLK_CPQ_CISS_DA is not set
++# CONFIG_BLK_DEV_DAC960 is not set
++# CONFIG_BLK_DEV_UMEM is not set
++# CONFIG_BLK_DEV_COW_COMMON is not set
++# CONFIG_BLK_DEV_LOOP is not set
++# CONFIG_BLK_DEV_NBD is not set
++# CONFIG_BLK_DEV_SX8 is not set
++# CONFIG_BLK_DEV_UB is not set
++# CONFIG_BLK_DEV_RAM is not set
++CONFIG_BLK_DEV_RAM_COUNT=3D16
++CONFIG_INITRAMFS_SOURCE=3D""
++# CONFIG_LBD is not set
++# CONFIG_CDROM_PKTCDVD is not set
++
++#
++# IO Schedulers
++#
++CONFIG_IOSCHED_NOOP=3Dy
++CONFIG_IOSCHED_AS=3Dy
++CONFIG_IOSCHED_DEADLINE=3Dy
++CONFIG_IOSCHED_CFQ=3Dy
++# CONFIG_ATA_OVER_ETH is not set
++
++#
++# ATA/ATAPI/MFM/RLL support
++#
++CONFIG_IDE=3Dy
++CONFIG_BLK_DEV_IDE=3Dy
++
++#
++# Please see Documentation/ide.txt for help/info on IDE drives
++#
++# CONFIG_BLK_DEV_IDE_SATA is not set
++CONFIG_BLK_DEV_IDEDISK=3Dy
++# CONFIG_IDEDISK_MULTI_MODE is not set
++# CONFIG_BLK_DEV_IDECD is not set
++# CONFIG_BLK_DEV_IDETAPE is not set
++# CONFIG_BLK_DEV_IDEFLOPPY is not set
++# CONFIG_BLK_DEV_IDESCSI is not set
++# CONFIG_IDE_TASK_IOCTL is not set
++
++#
++# IDE chipset support/bugfixes
++#
++CONFIG_IDE_GENERIC=3Dy
++CONFIG_BLK_DEV_IDEPCI=3Dy
++# CONFIG_IDEPCI_SHARE_IRQ is not set
++# CONFIG_BLK_DEV_OFFBOARD is not set
++# CONFIG_BLK_DEV_GENERIC is not set
++# CONFIG_BLK_DEV_OPTI621 is not set
++# CONFIG_BLK_DEV_SL82C105 is not set
++CONFIG_BLK_DEV_IDEDMA_PCI=3Dy
++# CONFIG_BLK_DEV_IDEDMA_FORCED is not set
++# CONFIG_IDEDMA_PCI_AUTO is not set
++# CONFIG_BLK_DEV_AEC62XX is not set
++# CONFIG_BLK_DEV_ALI15X3 is not set
++# CONFIG_BLK_DEV_AMD74XX is not set
++CONFIG_BLK_DEV_CMD64X=3Dy
++# CONFIG_BLK_DEV_TRIFLEX is not set
++# CONFIG_BLK_DEV_CY82C693 is not set
++# CONFIG_BLK_DEV_CS5520 is not set
++# CONFIG_BLK_DEV_CS5530 is not set
++# CONFIG_BLK_DEV_HPT34X is not set
++# CONFIG_BLK_DEV_HPT366 is not set
++# CONFIG_BLK_DEV_SC1200 is not set
++# CONFIG_BLK_DEV_PIIX is not set
++# CONFIG_BLK_DEV_IT821X is not set
++# CONFIG_BLK_DEV_NS87415 is not set
++# CONFIG_BLK_DEV_PDC202XX_OLD is not set
++# CONFIG_BLK_DEV_PDC202XX_NEW is not set
++# CONFIG_BLK_DEV_SVWKS is not set
++# CONFIG_BLK_DEV_SIIMAGE is not set
++# CONFIG_BLK_DEV_SLC90E66 is not set
++# CONFIG_BLK_DEV_TRM290 is not set
++# CONFIG_BLK_DEV_VIA82CXXX is not set
++# CONFIG_IDE_ARM is not set
++CONFIG_BLK_DEV_IDEDMA=3Dy
++# CONFIG_IDEDMA_IVB is not set
++# CONFIG_IDEDMA_AUTO is not set
++# CONFIG_BLK_DEV_HD is not set
++
++#
++# SCSI device support
++#
++CONFIG_SCSI=3Dy
++CONFIG_SCSI_PROC_FS=3Dy
++
++#
++# SCSI support type (disk, tape, CD-ROM)
++#
++# CONFIG_BLK_DEV_SD is not set
++CONFIG_CHR_DEV_ST=3Dy
++# CONFIG_CHR_DEV_OSST is not set
++# CONFIG_BLK_DEV_SR is not set
++# CONFIG_CHR_DEV_SG is not set
++# CONFIG_CHR_DEV_SCH is not set
++
++#
++# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
++#
++# CONFIG_SCSI_MULTI_LUN is not set
++# CONFIG_SCSI_CONSTANTS is not set
++# CONFIG_SCSI_LOGGING is not set
++
++#
++# SCSI Transport Attributes
++#
++CONFIG_SCSI_SPI_ATTRS=3Dy
++# CONFIG_SCSI_FC_ATTRS is not set
++# CONFIG_SCSI_ISCSI_ATTRS is not set
++
++#
++# SCSI low-level drivers
++#
++# CONFIG_BLK_DEV_3W_XXXX_RAID is not set
++# CONFIG_SCSI_3W_9XXX is not set
++# CONFIG_SCSI_ACARD is not set
++# CONFIG_SCSI_AACRAID is not set
++# CONFIG_SCSI_AIC7XXX is not set
++# CONFIG_SCSI_AIC7XXX_OLD is not set
++# CONFIG_SCSI_AIC79XX is not set
++# CONFIG_SCSI_DPT_I2O is not set
++# CONFIG_MEGARAID_NEWGEN is not set
++# CONFIG_MEGARAID_LEGACY is not set
++# CONFIG_SCSI_SATA is not set
++# CONFIG_SCSI_BUSLOGIC is not set
++# CONFIG_SCSI_DMX3191D is not set
++# CONFIG_SCSI_EATA is not set
++# CONFIG_SCSI_FUTURE_DOMAIN is not set
++# CONFIG_SCSI_GDTH is not set
++# CONFIG_SCSI_IPS is not set
++# CONFIG_SCSI_INITIO is not set
++# CONFIG_SCSI_INIA100 is not set
++CONFIG_SCSI_SYM53C8XX_2=3Dy
++CONFIG_SCSI_SYM53C8XX_DMA_ADDRESSING_MODE=3D1
++CONFIG_SCSI_SYM53C8XX_DEFAULT_TAGS=3D16
++CONFIG_SCSI_SYM53C8XX_MAX_TAGS=3D64
++# CONFIG_SCSI_SYM53C8XX_IOMAPPED is not set
++# CONFIG_SCSI_IPR is not set
++# CONFIG_SCSI_QLOGIC_FC is not set
++# CONFIG_SCSI_QLOGIC_1280 is not set
++CONFIG_SCSI_QLA2XXX=3Dy
++# CONFIG_SCSI_QLA21XX is not set
++# CONFIG_SCSI_QLA22XX is not set
++# CONFIG_SCSI_QLA2300 is not set
++# CONFIG_SCSI_QLA2322 is not set
++# CONFIG_SCSI_QLA6312 is not set
++# CONFIG_SCSI_LPFC is not set
++# CONFIG_SCSI_DC395x is not set
++# CONFIG_SCSI_DC390T is not set
++# CONFIG_SCSI_NSP32 is not set
++# CONFIG_SCSI_DEBUG is not set
++
++#
++# Multi-device support (RAID and LVM)
++#
++# CONFIG_MD is not set
++
++#
++# Fusion MPT device support
++#
++# CONFIG_FUSION is not set
++# CONFIG_FUSION_SPI is not set
++# CONFIG_FUSION_FC is not set
++
++#
++# IEEE 1394 (FireWire) support
++#
++# CONFIG_IEEE1394 is not set
++
++#
++# I2O device support
++#
++# CONFIG_I2O is not set
++
++#
++# Macintosh device drivers
++#
++
++#
++# Networking support
++#
++CONFIG_NET=3Dy
++
++#
++# Networking options
++#
++CONFIG_PACKET=3Dy
++# CONFIG_PACKET_MMAP is not set
++CONFIG_UNIX=3Dy
++# CONFIG_NET_KEY is not set
++CONFIG_INET=3Dy
++# CONFIG_IP_MULTICAST is not set
++# CONFIG_IP_ADVANCED_ROUTER is not set
++CONFIG_IP_FIB_HASH=3Dy
++CONFIG_IP_PNP=3Dy
++# CONFIG_IP_PNP_DHCP is not set
++CONFIG_IP_PNP_BOOTP=3Dy
++# CONFIG_IP_PNP_RARP is not set
++# CONFIG_NET_IPIP is not set
++# CONFIG_NET_IPGRE is not set
++# CONFIG_ARPD is not set
++# CONFIG_SYN_COOKIES is not set
++# CONFIG_INET_AH is not set
++# CONFIG_INET_ESP is not set
++# CONFIG_INET_IPCOMP is not set
++# CONFIG_INET_TUNNEL is not set
++CONFIG_IP_TCPDIAG=3Dy
++# CONFIG_IP_TCPDIAG_IPV6 is not set
++# CONFIG_TCP_CONG_ADVANCED is not set
++CONFIG_TCP_CONG_BIC=3Dy
++
++#
++# IP: Virtual Server Configuration
++#
++# CONFIG_IP_VS is not set
++# CONFIG_IPV6 is not set
++CONFIG_NETFILTER=3Dy
++# CONFIG_NETFILTER_DEBUG is not set
++
++#
++# IP: Netfilter Configuration
++#
++# CONFIG_IP_NF_CONNTRACK is not set
++# CONFIG_IP_NF_CONNTRACK_MARK is not set
++# CONFIG_IP_NF_QUEUE is not set
++# CONFIG_IP_NF_IPTABLES is not set
++# CONFIG_IP_NF_ARPTABLES is not set
++
++#
++# SCTP Configuration (EXPERIMENTAL)
++#
++# CONFIG_IP_SCTP is not set
++# CONFIG_ATM is not set
++# CONFIG_BRIDGE is not set
++# CONFIG_VLAN_8021Q is not set
++# CONFIG_DECNET is not set
++# CONFIG_LLC2 is not set
++# CONFIG_IPX is not set
++# CONFIG_ATALK is not set
++# CONFIG_X25 is not set
++# CONFIG_LAPB is not set
++# CONFIG_NET_DIVERT is not set
++# CONFIG_ECONET is not set
++# CONFIG_WAN_ROUTER is not set
++
++#
++# QoS and/or fair queueing
++#
++# CONFIG_NET_SCHED is not set
++# CONFIG_NET_CLS_ROUTE is not set
++
++#
++# Network testing
++#
++# CONFIG_NET_PKTGEN is not set
++# CONFIG_NETPOLL is not set
++# CONFIG_NET_POLL_CONTROLLER is not set
++# CONFIG_HAMRADIO is not set
++# CONFIG_IRDA is not set
++# CONFIG_BT is not set
++CONFIG_NETDEVICES=3Dy
++# CONFIG_DUMMY is not set
++# CONFIG_BONDING is not set
++# CONFIG_EQUALIZER is not set
++# CONFIG_TUN is not set
++
++#
++# ARCnet devices
++#
++# CONFIG_ARCNET is not set
++
++#
++# Ethernet (10 or 100Mbit)
++#
++CONFIG_NET_ETHERNET=3Dy
++CONFIG_MII=3Dy
++# CONFIG_HAPPYMEAL is not set
++# CONFIG_SUNGEM is not set
++# CONFIG_NET_VENDOR_3COM is not set
++
++#
++# Tulip family network device support
++#
++# CONFIG_NET_TULIP is not set
++# CONFIG_HP100 is not set
++CONFIG_IBM_EMAC=3Dy
++# CONFIG_IBM_EMAC_ERRMSG is not set
++CONFIG_IBM_EMAC_RXB=3D64
++CONFIG_IBM_EMAC_TXB=3D8
++CONFIG_IBM_EMAC_FGAP=3D8
++CONFIG_IBM_EMAC_SKBRES=3D0
++CONFIG_NET_PCI=3Dy
++# CONFIG_PCNET32 is not set
++# CONFIG_AMD8111_ETH is not set
++# CONFIG_ADAPTEC_STARFIRE is not set
++# CONFIG_B44 is not set
++# CONFIG_FORCEDETH is not set
++# CONFIG_DGRS is not set
++CONFIG_EEPRO100=3Dy
++# CONFIG_E100 is not set
++# CONFIG_FEALNX is not set
++CONFIG_NATSEMI=3Dy
++# CONFIG_NE2K_PCI is not set
++# CONFIG_8139CP is not set
++# CONFIG_8139TOO is not set
++# CONFIG_SIS900 is not set
++# CONFIG_EPIC100 is not set
++# CONFIG_SUNDANCE is not set
++# CONFIG_TLAN is not set
++# CONFIG_VIA_RHINE is not set
++
++#
++# Ethernet (1000 Mbit)
++#
++# CONFIG_ACENIC is not set
++# CONFIG_DL2K is not set
++CONFIG_E1000=3Dy
++# CONFIG_E1000_NAPI is not set
++# CONFIG_NS83820 is not set
++# CONFIG_HAMACHI is not set
++# CONFIG_YELLOWFIN is not set
++# CONFIG_R8169 is not set
++# CONFIG_SKGE is not set
++# CONFIG_SK98LIN is not set
++# CONFIG_VIA_VELOCITY is not set
++# CONFIG_TIGON3 is not set
++# CONFIG_BNX2 is not set
++
++#
++# Ethernet (10000 Mbit)
++#
++# CONFIG_IXGB is not set
++# CONFIG_S2IO is not set
++
++#
++# Token Ring devices
++#
++# CONFIG_TR is not set
++
++#
++# Wireless LAN (non-hamradio)
++#
++# CONFIG_NET_RADIO is not set
++
++#
++# Wan interfaces
++#
++# CONFIG_WAN is not set
++# CONFIG_FDDI is not set
++# CONFIG_HIPPI is not set
++# CONFIG_PPP is not set
++# CONFIG_SLIP is not set
++# CONFIG_NET_FC is not set
++# CONFIG_SHAPER is not set
++# CONFIG_NETCONSOLE is not set
++
++#
++# ISDN subsystem
++#
++# CONFIG_ISDN is not set
++
++#
++# Telephony Support
++#
++# CONFIG_PHONE is not set
++
++#
++# Input device support
++#
++CONFIG_INPUT=3Dy
++
++#
++# Userland interfaces
++#
++CONFIG_INPUT_MOUSEDEV=3Dy
++CONFIG_INPUT_MOUSEDEV_PSAUX=3Dy
++CONFIG_INPUT_MOUSEDEV_SCREEN_X=3D1024
++CONFIG_INPUT_MOUSEDEV_SCREEN_Y=3D768
++# CONFIG_INPUT_JOYDEV is not set
++# CONFIG_INPUT_TSDEV is not set
++# CONFIG_INPUT_EVDEV is not set
++# CONFIG_INPUT_EVBUG is not set
++
++#
++# Input Device Drivers
++#
++# CONFIG_INPUT_KEYBOARD is not set
++# CONFIG_INPUT_MOUSE is not set
++# CONFIG_INPUT_JOYSTICK is not set
++# CONFIG_INPUT_TOUCHSCREEN is not set
++# CONFIG_INPUT_MISC is not set
++
++#
++# Hardware I/O ports
++#
++CONFIG_SERIO=3Dy
++# CONFIG_SERIO_I8042 is not set
++# CONFIG_SERIO_SERPORT is not set
++# CONFIG_SERIO_PCIPS2 is not set
++# CONFIG_SERIO_LIBPS2 is not set
++# CONFIG_SERIO_RAW is not set
++# CONFIG_GAMEPORT is not set
++
++#
++# Character devices
++#
++# CONFIG_VT is not set
++# CONFIG_SERIAL_NONSTANDARD is not set
++
++#
++# Serial drivers
++#
++CONFIG_SERIAL_8250=3Dy
++CONFIG_SERIAL_8250_CONSOLE=3Dy
++CONFIG_SERIAL_8250_NR_UARTS=3D4
++CONFIG_SERIAL_8250_EXTENDED=3Dy
++# CONFIG_SERIAL_8250_MANY_PORTS is not set
++CONFIG_SERIAL_8250_SHARE_IRQ=3Dy
++# CONFIG_SERIAL_8250_DETECT_IRQ is not set
++# CONFIG_SERIAL_8250_RSA is not set
++
++#
++# Non-8250 serial port support
++#
++CONFIG_SERIAL_CORE=3Dy
++CONFIG_SERIAL_CORE_CONSOLE=3Dy
++# CONFIG_SERIAL_JSM is not set
++CONFIG_UNIX98_PTYS=3Dy
++CONFIG_LEGACY_PTYS=3Dy
++CONFIG_LEGACY_PTY_COUNT=3D256
++
++#
++# IPMI
++#
++# CONFIG_IPMI_HANDLER is not set
++
++#
++# Watchdog Cards
++#
++# CONFIG_WATCHDOG is not set
++# CONFIG_NVRAM is not set
++# CONFIG_GEN_RTC is not set
++# CONFIG_DTLK is not set
++# CONFIG_R3964 is not set
++# CONFIG_APPLICOM is not set
++
++#
++# Ftape, the floppy tape device driver
++#
++# CONFIG_AGP is not set
++# CONFIG_DRM is not set
++# CONFIG_RAW_DRIVER is not set
++
++#
++# TPM devices
++#
++# CONFIG_TCG_TPM is not set
++
++#
++# I2C support
++#
++# CONFIG_I2C is not set
++
++#
++# Dallas's 1-wire bus
++#
++# CONFIG_W1 is not set
++
++#
++# Misc devices
++#
++
++#
++# Multimedia devices
++#
++# CONFIG_VIDEO_DEV is not set
++
++#
++# Digital Video Broadcasting Devices
++#
++# CONFIG_DVB is not set
++
++#
++# Graphics support
++#
++# CONFIG_FB is not set
++
++#
++# Sound
++#
++# CONFIG_SOUND is not set
++
++#
++# USB support
++#
++CONFIG_USB_ARCH_HAS_HCD=3Dy
++CONFIG_USB_ARCH_HAS_OHCI=3Dy
++CONFIG_USB=3Dy
++CONFIG_USB_DEBUG=3Dy
++
++#
++# Miscellaneous USB options
++#
++# CONFIG_USB_DEVICEFS is not set
++# CONFIG_USB_BANDWIDTH is not set
++# CONFIG_USB_DYNAMIC_MINORS is not set
++# CONFIG_USB_OTG is not set
++
++#
++# USB Host Controller Drivers
++#
++# CONFIG_USB_EHCI_HCD is not set
++# CONFIG_USB_ISP116X_HCD is not set
++# CONFIG_USB_OHCI_HCD is not set
++# CONFIG_USB_UHCI_HCD is not set
++# CONFIG_USB_SL811_HCD is not set
++
++#
++# USB Device Class drivers
++#
++# CONFIG_USB_BLUETOOTH_TTY is not set
++# CONFIG_USB_ACM is not set
++# CONFIG_USB_PRINTER is not set
++
++#
++# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support' may also be need=
+ed; see USB_STORAGE Help for more information
++#
++# CONFIG_USB_STORAGE is not set
++
++#
++# USB Input Devices
++#
++# CONFIG_USB_HID is not set
++
++#
++# USB HID Boot Protocol drivers
++#
++# CONFIG_USB_KBD is not set
++# CONFIG_USB_MOUSE is not set
++# CONFIG_USB_AIPTEK is not set
++# CONFIG_USB_WACOM is not set
++# CONFIG_USB_ACECAD is not set
++# CONFIG_USB_KBTAB is not set
++# CONFIG_USB_POWERMATE is not set
++# CONFIG_USB_MTOUCH is not set
++# CONFIG_USB_ITMTOUCH is not set
++# CONFIG_USB_EGALAX is not set
++# CONFIG_USB_XPAD is not set
++# CONFIG_USB_ATI_REMOTE is not set
++
++#
++# USB Imaging devices
++#
++# CONFIG_USB_MDC800 is not set
++# CONFIG_USB_MICROTEK is not set
++
++#
++# USB Multimedia devices
++#
++# CONFIG_USB_DABUSB is not set
++
++#
++# Video4Linux support is needed for USB Multimedia device support
++#
++
++#
++# USB Network Adapters
++#
++# CONFIG_USB_CATC is not set
++# CONFIG_USB_KAWETH is not set
++CONFIG_USB_PEGASUS=3Dy
++# CONFIG_USB_RTL8150 is not set
++# CONFIG_USB_USBNET is not set
++CONFIG_USB_MON=3Dy
++
++#
++# USB port drivers
++#
++
++#
++# USB Serial Converter support
++#
++# CONFIG_USB_SERIAL is not set
++
++#
++# USB Miscellaneous drivers
++#
++# CONFIG_USB_EMI62 is not set
++# CONFIG_USB_EMI26 is not set
++# CONFIG_USB_AUERSWALD is not set
++# CONFIG_USB_RIO500 is not set
++# CONFIG_USB_LEGOTOWER is not set
++# CONFIG_USB_LCD is not set
++# CONFIG_USB_LED is not set
++# CONFIG_USB_CYTHERM is not set
++# CONFIG_USB_PHIDGETKIT is not set
++# CONFIG_USB_PHIDGETSERVO is not set
++# CONFIG_USB_IDMOUSE is not set
++
++#
++# USB DSL modem support
++#
++
++#
++# USB Gadget Support
++#
++# CONFIG_USB_GADGET is not set
++
++#
++# MMC/SD Card support
++#
++# CONFIG_MMC is not set
++
++#
++# InfiniBand support
++#
++# CONFIG_INFINIBAND is not set
++
++#
++# SN Devices
++#
++
++#
++# File systems
++#
++# CONFIG_EXT2_FS is not set
++# CONFIG_EXT3_FS is not set
++# CONFIG_JBD is not set
++# CONFIG_REISERFS_FS is not set
++# CONFIG_JFS_FS is not set
++
++#
++# XFS support
++#
++# CONFIG_XFS_FS is not set
++# CONFIG_MINIX_FS is not set
++# CONFIG_ROMFS_FS is not set
++# CONFIG_QUOTA is not set
++CONFIG_DNOTIFY=3Dy
++# CONFIG_AUTOFS_FS is not set
++# CONFIG_AUTOFS4_FS is not set
++
++#
++# CD-ROM/DVD Filesystems
++#
++# CONFIG_ISO9660_FS is not set
++# CONFIG_UDF_FS is not set
++
++#
++# DOS/FAT/NT Filesystems
++#
++# CONFIG_MSDOS_FS is not set
++# CONFIG_VFAT_FS is not set
++# CONFIG_NTFS_FS is not set
++
++#
++# Pseudo filesystems
++#
++CONFIG_PROC_FS=3Dy
++CONFIG_PROC_KCORE=3Dy
++CONFIG_SYSFS=3Dy
++# CONFIG_DEVPTS_FS_XATTR is not set
++# CONFIG_TMPFS is not set
++# CONFIG_HUGETLB_PAGE is not set
++CONFIG_RAMFS=3Dy
++
++#
++# Miscellaneous filesystems
++#
++# CONFIG_ADFS_FS is not set
++# CONFIG_AFFS_FS is not set
++# CONFIG_HFS_FS is not set
++# CONFIG_HFSPLUS_FS is not set
++# CONFIG_BEFS_FS is not set
++# CONFIG_BFS_FS is not set
++# CONFIG_EFS_FS is not set
++# CONFIG_CRAMFS is not set
++# CONFIG_VXFS_FS is not set
++# CONFIG_HPFS_FS is not set
++# CONFIG_QNX4FS_FS is not set
++# CONFIG_SYSV_FS is not set
++# CONFIG_UFS_FS is not set
++
++#
++# Network File Systems
++#
++CONFIG_NFS_FS=3Dy
++# CONFIG_NFS_V3 is not set
++# CONFIG_NFS_V4 is not set
++# CONFIG_NFS_DIRECTIO is not set
++# CONFIG_NFSD is not set
++CONFIG_ROOT_NFS=3Dy
++CONFIG_LOCKD=3Dy
++CONFIG_NFS_COMMON=3Dy
++CONFIG_SUNRPC=3Dy
++# CONFIG_RPCSEC_GSS_KRB5 is not set
++# CONFIG_RPCSEC_GSS_SPKM3 is not set
++# CONFIG_SMB_FS is not set
++# CONFIG_CIFS is not set
++# CONFIG_NCP_FS is not set
++# CONFIG_CODA_FS is not set
++# CONFIG_AFS_FS is not set
++
++#
++# Partition Types
++#
++# CONFIG_PARTITION_ADVANCED is not set
++CONFIG_MSDOS_PARTITION=3Dy
++
++#
++# Native Language Support
++#
++# CONFIG_NLS is not set
++
++#
++# Library routines
++#
++# CONFIG_CRC_CCITT is not set
++CONFIG_CRC32=3Dy
++# CONFIG_LIBCRC32C is not set
++
++#
++# Profiling support
++#
++# CONFIG_PROFILING is not set
++
++#
++# Kernel hacking
++#
++# CONFIG_PRINTK_TIME is not set
++CONFIG_DEBUG_KERNEL=3Dy
++CONFIG_MAGIC_SYSRQ=3Dy
++CONFIG_LOG_BUF_SHIFT=3D14
++# CONFIG_SCHEDSTATS is not set
++# CONFIG_DEBUG_SLAB is not set
++# CONFIG_DEBUG_SPINLOCK is not set
++# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
++# CONFIG_DEBUG_KOBJECT is not set
++CONFIG_DEBUG_INFO=3Dy
++# CONFIG_DEBUG_FS is not set
++# CONFIG_KGDB is not set
++# CONFIG_XMON is not set
++CONFIG_BDI_SWITCH=3Dy
++# CONFIG_SERIAL_TEXT_DEBUG is not set
++CONFIG_PPC_OCP=3Dy
++
++#
++# Security options
++#
++# CONFIG_KEYS is not set
++# CONFIG_SECURITY is not set
++
++#
++# Cryptographic options
++#
++# CONFIG_CRYPTO is not set
++
++#
++# Hardware crypto devices
++#
