@@ -2,20 +2,19 @@ Return-Path: <akpm@osdl.org>
 Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id C811267DA7
+	by ozlabs.org (Postfix) with ESMTP id 756A067D7F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Jul 2005 05:58:54 +1000 (EST)
-Date: Wed, 27 Jul 2005 12:57:46 -0700
+	Thu, 28 Jul 2005 06:20:20 +1000 (EST)
+Date: Wed, 27 Jul 2005 13:18:57 -0700
 From: Andrew Morton <akpm@osdl.org>
-To: Kumar Gala <galak@freescale.com>
-Message-Id: <20050727125746.54329281.akpm@osdl.org>
-In-Reply-To: <Pine.LNX.4.61.0507271029480.12237@nylon.am.freescale.net>
-References: <Pine.LNX.4.61.0507271029480.12237@nylon.am.freescale.net>
+To: Matt Porter <mporter@kernel.crashing.org>
+Message-Id: <20050727131857.78a56972.akpm@osdl.org>
+In-Reply-To: <11224856623638@foobar.com>
+References: <11224856623638@foobar.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH 00/14] ppc32: Remove board ports that are no longer
- maintained
+Subject: Re: [PATCH][1/3] ppc32: add 440ep support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,28 +25,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala <galak@freescale.com> wrote:
+Matt Porter <mporter@kernel.crashing.org> wrote:
 >
-> The following board ports are no longer maintained or have become 
->  obsolete:
-> 
->  adir
->  ash
->  beech
->  cedar
->  ep405
->  k2
->  mcpn765
->  menf1
->  oak
->  pcore
->  rainier
->  redwood
->  sm850
->  spd823ts
-> 
->  We are there for removing support for them.
+> +static u64 dma_mask = 0xffffffffULL;
 
-I'll merge all these into -mm for now, but will hold off sending any of
-them upstream pending confirmation of which patches we really want to
-proceed with.
+I'm sure you're totally uninterested in this, but the above will probably
+generate warnings on (say) ppc64, where u64 is implemented as unsigned
+long.
+
+I usually chuck a simple `-1' in there and the compiler always gets it
+right, regardless of signedness and size and architecture.
