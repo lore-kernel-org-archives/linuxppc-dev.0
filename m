@@ -1,17 +1,17 @@
 Return-Path: <galak@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 82D7A67D87
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id B13B267D93
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Jul 2005 01:35:29 +1000 (EST)
-Date: Wed, 27 Jul 2005 10:35:18 -0500 (CDT)
+	Thu, 28 Jul 2005 01:36:30 +1000 (EST)
+Date: Wed, 27 Jul 2005 10:36:20 -0500 (CDT)
 From: Kumar Gala <galak@freescale.com>
 To: Andrew Morton <akpm@osdl.org>
-Message-ID: <Pine.LNX.4.61.0507271034470.12237@nylon.am.freescale.net>
+Message-ID: <Pine.LNX.4.61.0507271035190.12237@nylon.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linux-kernel@vger.kernel.org,
 	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH 03/14] ppc32: Remove board support for BEECH
+Subject: [PATCH 04/14] ppc32: Remove defconfig for CEDAR
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,100 +22,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Support for the BEECH board is no longer maintained and thus being removed
+Support for the CEDAR board no longer exists, removing the defconfig for it
 
 Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
 ---
-commit d705b7bbc49cc238c742ce9a89fbece65e0ab9c2
-tree 1444a20ce48fcefae3267a93ec90701f7704de84
-parent 7bf377b671252a945486325f3b3fdb7b53d19272
-author Kumar K. Gala <kumar.gala@freescale.com> Mon, 25 Jul 2005 14:51:48 -0500
-committer Kumar K. Gala <kumar.gala@freescale.com> Mon, 25 Jul 2005 14:51:48 -0500
+commit e5e908e00ead5df5ff84495b79601a2519ed35bd
+tree d994f4efffa0fe4e3bfeae2529c9b90a790ffee1
+parent d705b7bbc49cc238c742ce9a89fbece65e0ab9c2
+author Kumar K. Gala <kumar.gala@freescale.com> Mon, 25 Jul 2005 14:53:19 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> Mon, 25 Jul 2005 14:53:19 -0500
 
- arch/ppc/boot/simple/embed_config.c |   19 -
- arch/ppc/configs/beech_defconfig    |  615 -----------------------------------
- 2 files changed, 1 insertions(+), 633 deletions(-)
+ arch/ppc/configs/cedar_defconfig |  534 --------------------------------------
+ 1 files changed, 0 insertions(+), 534 deletions(-)
 
-diff --git a/arch/ppc/boot/simple/embed_config.c b/arch/ppc/boot/simple/embed_config.c
---- a/arch/ppc/boot/simple/embed_config.c
-+++ b/arch/ppc/boot/simple/embed_config.c
-@@ -784,28 +784,12 @@ embed_config(bd_t ** bdp)
- #ifdef CONFIG_IBM_OPENBIOS
- /* This could possibly work for all treeboot roms.
- */
--#if defined(CONFIG_BEECH) || defined(CONFIG_BUBINGA)
-+#if defined(CONFIG_BUBINGA)
- #define BOARD_INFO_VECTOR       0xFFF80B50 /* openbios 1.19 moved this vector down  - armin */
- #else
- #define BOARD_INFO_VECTOR	0xFFFE0B50
- #endif
- 
--#ifdef CONFIG_BEECH
--static void
--get_board_info(bd_t **bdp)
--{
--	typedef void (*PFV)(bd_t *bd);
--	((PFV)(*(unsigned long *)BOARD_INFO_VECTOR))(*bdp);
--	return;
--}
--
--void
--embed_config(bd_t **bdp)
--{
--        *bdp = &bdinfo;
--	get_board_info(bdp);
--}
--#else /* !CONFIG_BEECH */
- void
- embed_config(bd_t **bdp)
- {
-@@ -860,7 +844,6 @@ embed_config(bd_t **bdp)
- #endif
- 	timebase_period_ns = 1000000000 / bd->bi_tbfreq;
- }
--#endif /* CONFIG_BEECH */
- #endif /* CONFIG_IBM_OPENBIOS */
- 
- #ifdef CONFIG_EP405
-diff --git a/arch/ppc/configs/beech_defconfig b/arch/ppc/configs/beech_defconfig
+diff --git a/arch/ppc/configs/cedar_defconfig b/arch/ppc/configs/cedar_defconfig
 deleted file mode 100644
---- a/arch/ppc/configs/beech_defconfig
+--- a/arch/ppc/configs/cedar_defconfig
 +++ /dev/null
-@@ -1,615 +0,0 @@
+@@ -1,534 +0,0 @@
 -#
 -# Automatically generated make config: don't edit
 -#
 -CONFIG_MMU=y
 -CONFIG_RWSEM_XCHGADD_ALGORITHM=y
 -CONFIG_HAVE_DEC_LOCK=y
--CONFIG_PPC=y
--CONFIG_PPC32=y
 -
 -#
 -# Code maturity level options
 -#
 -CONFIG_EXPERIMENTAL=y
--CONFIG_CLEAN_COMPILE=y
--# CONFIG_STANDALONE is not set
--CONFIG_BROKEN_ON_SMP=y
 -
 -#
 -# General setup
 -#
--# CONFIG_SWAP is not set
+-CONFIG_SWAP=y
 -CONFIG_SYSVIPC=y
 -# CONFIG_BSD_PROCESS_ACCT is not set
 -CONFIG_SYSCTL=y
 -CONFIG_LOG_BUF_SHIFT=14
--# CONFIG_IKCONFIG is not set
 -CONFIG_EMBEDDED=y
--# CONFIG_KALLSYMS is not set
 -CONFIG_FUTEX=y
 -# CONFIG_EPOLL is not set
--CONFIG_IOSCHED_NOOP=y
--CONFIG_IOSCHED_AS=y
--CONFIG_IOSCHED_DEADLINE=y
 -
 -#
 -# Loadable module support
@@ -124,28 +72,26 @@ deleted file mode 100644
 -CONFIG_MODULE_UNLOAD=y
 -# CONFIG_MODULE_FORCE_UNLOAD is not set
 -CONFIG_OBSOLETE_MODPARM=y
--CONFIG_MODVERSIONS=y
+-# CONFIG_MODVERSIONS is not set
 -CONFIG_KMOD=y
 -
 -#
--# Processor
+-# Platform support
 -#
+-CONFIG_PPC=y
+-CONFIG_PPC32=y
 -# CONFIG_6xx is not set
 -CONFIG_40x=y
--# CONFIG_44x is not set
 -# CONFIG_POWER3 is not set
--# CONFIG_POWER4 is not set
 -# CONFIG_8xx is not set
--# CONFIG_MATH_EMULATION is not set
--# CONFIG_CPU_FREQ is not set
 -CONFIG_4xx=y
 -
 -#
 -# IBM 4xx options
 -#
 -# CONFIG_ASH is not set
--CONFIG_BEECH=y
--# CONFIG_CEDAR is not set
+-# CONFIG_BEECH is not set
+-CONFIG_CEDAR=y
 -# CONFIG_CPCI405 is not set
 -# CONFIG_EP405 is not set
 -# CONFIG_OAK is not set
@@ -158,36 +104,37 @@ deleted file mode 100644
 -CONFIG_IBM405_ERR77=y
 -CONFIG_IBM405_ERR51=y
 -CONFIG_IBM_OCP=y
+-CONFIG_NP405L=y
+-CONFIG_BIOS_FIXUP=y
 -CONFIG_IBM_OPENBIOS=y
--CONFIG_405_DMA=y
+-# CONFIG_405_DMA is not set
 -# CONFIG_PM is not set
 -CONFIG_UART0_TTYS0=y
 -# CONFIG_UART0_TTYS1 is not set
 -CONFIG_NOT_COHERENT_CACHE=y
--
--#
--# Platform options
--#
--# CONFIG_PC_KEYBOARD is not set
 -# CONFIG_SMP is not set
 -# CONFIG_PREEMPT is not set
--# CONFIG_HIGHMEM is not set
--CONFIG_KERNEL_ELF=y
--CONFIG_BINFMT_ELF=y
--# CONFIG_BINFMT_MISC is not set
--# CONFIG_CMDLINE_BOOL is not set
+-# CONFIG_MATH_EMULATION is not set
+-# CONFIG_CPU_FREQ is not set
 -
 -#
--# Bus options
+-# General setup
 -#
+-# CONFIG_HIGHMEM is not set
 -# CONFIG_PCI is not set
 -# CONFIG_PCI_DOMAINS is not set
+-# CONFIG_PC_KEYBOARD is not set
+-CONFIG_KCORE_ELF=y
+-CONFIG_BINFMT_ELF=y
+-CONFIG_KERNEL_ELF=y
+-# CONFIG_BINFMT_MISC is not set
 -# CONFIG_HOTPLUG is not set
 -
 -#
 -# Parallel port support
 -#
 -# CONFIG_PARPORT is not set
+-# CONFIG_CMDLINE_BOOL is not set
 -
 -#
 -# Advanced setup
@@ -204,68 +151,9 @@ deleted file mode 100644
 -CONFIG_BOOT_LOAD=0x00400000
 -
 -#
--# Generic Driver Options
--#
--
--#
 -# Memory Technology Devices (MTD)
 -#
--CONFIG_MTD=y
--# CONFIG_MTD_DEBUG is not set
--CONFIG_MTD_PARTITIONS=y
--# CONFIG_MTD_CONCAT is not set
--# CONFIG_MTD_REDBOOT_PARTS is not set
--# CONFIG_MTD_CMDLINE_PARTS is not set
--
--#
--# User Modules And Translation Layers
--#
--CONFIG_MTD_CHAR=y
--CONFIG_MTD_BLOCK=y
--# CONFIG_FTL is not set
--# CONFIG_NFTL is not set
--# CONFIG_INFTL is not set
--
--#
--# RAM/ROM/Flash chip drivers
--#
--CONFIG_MTD_CFI=y
--CONFIG_MTD_JEDECPROBE=y
--CONFIG_MTD_GEN_PROBE=y
--# CONFIG_MTD_CFI_ADV_OPTIONS is not set
--# CONFIG_MTD_CFI_INTELEXT is not set
--CONFIG_MTD_CFI_AMDSTD=y
--# CONFIG_MTD_CFI_STAA is not set
--# CONFIG_MTD_RAM is not set
--# CONFIG_MTD_ROM is not set
--# CONFIG_MTD_ABSENT is not set
--# CONFIG_MTD_OBSOLETE_CHIPS is not set
--
--#
--# Mapping drivers for chip access
--#
--# CONFIG_MTD_COMPLEX_MAPPINGS is not set
--# CONFIG_MTD_PHYSMAP is not set
--CONFIG_MTD_BEECH=y
--
--#
--# Self-contained MTD device drivers
--#
--# CONFIG_MTD_SLRAM is not set
--# CONFIG_MTD_MTDRAM is not set
--# CONFIG_MTD_BLKMTD is not set
--
--#
--# Disk-On-Chip Device Drivers
--#
--# CONFIG_MTD_DOC2000 is not set
--# CONFIG_MTD_DOC2001 is not set
--# CONFIG_MTD_DOC2001PLUS is not set
--
--#
--# NAND Flash Device Drivers
--#
--# CONFIG_MTD_NAND is not set
+-# CONFIG_MTD is not set
 -
 -#
 -# Plug and Play support
@@ -275,13 +163,12 @@ deleted file mode 100644
 -#
 -# Block devices
 -#
+-# CONFIG_BLK_DEV_FD is not set
 -CONFIG_BLK_DEV_LOOP=y
--# CONFIG_BLK_DEV_CRYPTOLOOP is not set
 -# CONFIG_BLK_DEV_NBD is not set
 -CONFIG_BLK_DEV_RAM=y
 -CONFIG_BLK_DEV_RAM_SIZE=4096
 -CONFIG_BLK_DEV_INITRD=y
--# CONFIG_LBD is not set
 -
 -#
 -# Multi-device support (RAID and LVM)
@@ -289,12 +176,12 @@ deleted file mode 100644
 -# CONFIG_MD is not set
 -
 -#
--# ATA/ATAPI/MFM/RLL support
+-# ATA/IDE/MFM/RLL support
 -#
 -# CONFIG_IDE is not set
 -
 -#
--# SCSI device support
+-# SCSI support
 -#
 -# CONFIG_SCSI is not set
 -
@@ -316,13 +203,14 @@ deleted file mode 100644
 -#
 -# CONFIG_PACKET is not set
 -# CONFIG_NETLINK_DEV is not set
+-# CONFIG_NETFILTER is not set
 -CONFIG_UNIX=y
 -# CONFIG_NET_KEY is not set
 -CONFIG_INET=y
 -CONFIG_IP_MULTICAST=y
 -# CONFIG_IP_ADVANCED_ROUTER is not set
 -CONFIG_IP_PNP=y
--# CONFIG_IP_PNP_DHCP is not set
+-CONFIG_IP_PNP_DHCP=y
 -CONFIG_IP_PNP_BOOTP=y
 -CONFIG_IP_PNP_RARP=y
 -# CONFIG_NET_IPIP is not set
@@ -335,9 +223,7 @@ deleted file mode 100644
 -# CONFIG_INET_ESP is not set
 -# CONFIG_INET_IPCOMP is not set
 -# CONFIG_IPV6 is not set
--# CONFIG_DECNET is not set
--# CONFIG_BRIDGE is not set
--# CONFIG_NETFILTER is not set
+-# CONFIG_XFRM_USER is not set
 -
 -#
 -# SCTP Configuration (EXPERIMENTAL)
@@ -346,9 +232,9 @@ deleted file mode 100644
 -# CONFIG_IP_SCTP is not set
 -# CONFIG_ATM is not set
 -# CONFIG_VLAN_8021Q is not set
--# CONFIG_LLC2 is not set
--# CONFIG_IPX is not set
--# CONFIG_ATALK is not set
+-# CONFIG_LLC is not set
+-# CONFIG_DECNET is not set
+-# CONFIG_BRIDGE is not set
 -# CONFIG_X25 is not set
 -# CONFIG_LAPB is not set
 -# CONFIG_NET_DIVERT is not set
@@ -370,13 +256,12 @@ deleted file mode 100644
 -# CONFIG_BONDING is not set
 -# CONFIG_EQUALIZER is not set
 -# CONFIG_TUN is not set
+-# CONFIG_ETHERTAP is not set
 -
 -#
 -# Ethernet (10 or 100Mbit)
 -#
--CONFIG_NET_ETHERNET=y
--# CONFIG_MII is not set
--# CONFIG_OAKNET is not set
+-# CONFIG_NET_ETHERNET is not set
 -
 -#
 -# Ethernet (1000 Mbit)
@@ -394,7 +279,7 @@ deleted file mode 100644
 -# CONFIG_NET_RADIO is not set
 -
 -#
--# Token Ring devices
+-# Token Ring devices (depends on LLC=y)
 -#
 -# CONFIG_SHAPER is not set
 -
@@ -414,11 +299,6 @@ deleted file mode 100644
 -# CONFIG_IRDA is not set
 -
 -#
--# Bluetooth support
--#
--# CONFIG_BT is not set
--
--#
 -# ISDN subsystem
 -#
 -# CONFIG_ISDN_BOOL is not set
@@ -426,49 +306,32 @@ deleted file mode 100644
 -#
 -# Graphics support
 -#
--CONFIG_FB=y
--# CONFIG_FB_CT65550 is not set
--# CONFIG_FB_S3TRIO is not set
--# CONFIG_FB_VGA16 is not set
--# CONFIG_FB_VIRTUAL is not set
+-# CONFIG_FB is not set
 -
 -#
--# Logo configuration
+-# Old CD-ROM drivers (not SCSI, not IDE)
 -#
--# CONFIG_LOGO is not set
+-# CONFIG_CD_NO_IDESCSI is not set
 -
 -#
 -# Input device support
 -#
--CONFIG_INPUT=y
+-# CONFIG_INPUT is not set
 -
 -#
 -# Userland interfaces
 -#
--# CONFIG_INPUT_MOUSEDEV is not set
--# CONFIG_INPUT_JOYDEV is not set
--# CONFIG_INPUT_TSDEV is not set
--# CONFIG_INPUT_EVDEV is not set
--# CONFIG_INPUT_EVBUG is not set
 -
 -#
 -# Input I/O drivers
 -#
 -# CONFIG_GAMEPORT is not set
 -CONFIG_SOUND_GAMEPORT=y
--CONFIG_SERIO=y
--# CONFIG_SERIO_I8042 is not set
--# CONFIG_SERIO_SERPORT is not set
--# CONFIG_SERIO_CT82C710 is not set
+-# CONFIG_SERIO is not set
 -
 -#
 -# Input Device Drivers
 -#
--# CONFIG_INPUT_KEYBOARD is not set
--# CONFIG_INPUT_MOUSE is not set
--# CONFIG_INPUT_JOYSTICK is not set
--# CONFIG_INPUT_TOUCHSCREEN is not set
--# CONFIG_INPUT_MISC is not set
 -
 -#
 -# Macintosh device drivers
@@ -477,7 +340,6 @@ deleted file mode 100644
 -#
 -# Character devices
 -#
--# CONFIG_VT is not set
 -# CONFIG_SERIAL_NONSTANDARD is not set
 -
 -#
@@ -485,7 +347,6 @@ deleted file mode 100644
 -#
 -CONFIG_SERIAL_8250=y
 -CONFIG_SERIAL_8250_CONSOLE=y
--CONFIG_SERIAL_8250_NR_UARTS=4
 -# CONFIG_SERIAL_8250_EXTENDED is not set
 -
 -#
@@ -500,33 +361,28 @@ deleted file mode 100644
 -# I2C support
 -#
 -CONFIG_I2C=y
+-# CONFIG_I2C_ALGOBIT is not set
+-# CONFIG_I2C_ALGOPCF is not set
+-CONFIG_I2C_IBM_OCP_ALGO=y
+-CONFIG_I2C_IBM_OCP_ADAP=y
 -# CONFIG_I2C_CHARDEV is not set
 -
 -#
--# I2C Algorithms
--#
--# CONFIG_I2C_ALGOBIT is not set
--# CONFIG_I2C_ALGOPCF is not set
--
--#
--# I2C Hardware Bus support
+-# I2C Hardware Sensors Mainboard support
 -#
 -# CONFIG_I2C_AMD756 is not set
 -# CONFIG_I2C_AMD8111 is not set
--CONFIG_I2C_IBM_IIC=y
 -
 -#
 -# I2C Hardware Sensors Chip support
 -#
--# CONFIG_I2C_SENSOR is not set
 -# CONFIG_SENSORS_ADM1021 is not set
--# CONFIG_SENSORS_EEPROM is not set
 -# CONFIG_SENSORS_IT87 is not set
 -# CONFIG_SENSORS_LM75 is not set
--# CONFIG_SENSORS_LM78 is not set
 -# CONFIG_SENSORS_LM85 is not set
 -# CONFIG_SENSORS_VIA686A is not set
 -# CONFIG_SENSORS_W83781D is not set
+-# CONFIG_I2C_SENSOR is not set
 -
 -#
 -# Mice
@@ -542,10 +398,29 @@ deleted file mode 100644
 -#
 -# Watchdog Cards
 -#
--# CONFIG_WATCHDOG is not set
+-CONFIG_WATCHDOG=y
+-# CONFIG_WATCHDOG_NOWAYOUT is not set
+-# CONFIG_SOFT_WATCHDOG is not set
+-# CONFIG_WDT is not set
+-# CONFIG_WDTPCI is not set
+-# CONFIG_PCWATCHDOG is not set
+-# CONFIG_ACQUIRE_WDT is not set
+-# CONFIG_ADVANTECH_WDT is not set
+-# CONFIG_EUROTECH_WDT is not set
+-# CONFIG_IB700_WDT is not set
+-# CONFIG_MIXCOMWD is not set
+-# CONFIG_SCx200_WDT is not set
+-# CONFIG_60XX_WDT is not set
+-# CONFIG_W83877F_WDT is not set
+-# CONFIG_MACHZ_WDT is not set
+-# CONFIG_SC520_WDT is not set
+-# CONFIG_AMD7XX_TCO is not set
+-# CONFIG_ALIM7101_WDT is not set
+-# CONFIG_SC1200_WDT is not set
+-# CONFIG_WAFER_WDT is not set
+-# CONFIG_CPU5_WDT is not set
 -# CONFIG_NVRAM is not set
--CONFIG_GEN_RTC=y
--# CONFIG_GEN_RTC_X is not set
+-# CONFIG_GEN_RTC is not set
 -# CONFIG_DTLK is not set
 -# CONFIG_R3964 is not set
 -# CONFIG_APPLICOM is not set
@@ -557,6 +432,7 @@ deleted file mode 100644
 -# CONFIG_AGP is not set
 -# CONFIG_DRM is not set
 -# CONFIG_RAW_DRIVER is not set
+-# CONFIG_HANGCHECK_TIMER is not set
 -
 -#
 -# Multimedia devices
@@ -600,14 +476,10 @@ deleted file mode 100644
 -# Pseudo filesystems
 -#
 -CONFIG_PROC_FS=y
--CONFIG_PROC_KCORE=y
--CONFIG_DEVFS_FS=y
--# CONFIG_DEVFS_MOUNT is not set
--# CONFIG_DEVFS_DEBUG is not set
+-# CONFIG_DEVFS_FS is not set
 -CONFIG_DEVPTS_FS=y
 -# CONFIG_DEVPTS_FS_XATTR is not set
 -CONFIG_TMPFS=y
--# CONFIG_HUGETLB_PAGE is not set
 -CONFIG_RAMFS=y
 -
 -#
@@ -619,8 +491,6 @@ deleted file mode 100644
 -# CONFIG_BEFS_FS is not set
 -# CONFIG_BFS_FS is not set
 -# CONFIG_EFS_FS is not set
--# CONFIG_JFFS_FS is not set
--# CONFIG_JFFS2_FS is not set
 -# CONFIG_CRAMFS is not set
 -# CONFIG_VXFS_FS is not set
 -# CONFIG_HPFS_FS is not set
@@ -650,23 +520,24 @@ deleted file mode 100644
 -#
 -# Partition Types
 -#
--# CONFIG_PARTITION_ADVANCED is not set
--CONFIG_MSDOS_PARTITION=y
+-CONFIG_PARTITION_ADVANCED=y
+-# CONFIG_ACORN_PARTITION is not set
+-# CONFIG_OSF_PARTITION is not set
+-# CONFIG_AMIGA_PARTITION is not set
+-# CONFIG_ATARI_PARTITION is not set
+-# CONFIG_MAC_PARTITION is not set
+-# CONFIG_MSDOS_PARTITION is not set
+-# CONFIG_LDM_PARTITION is not set
+-# CONFIG_NEC98_PARTITION is not set
+-# CONFIG_SGI_PARTITION is not set
+-# CONFIG_ULTRIX_PARTITION is not set
+-# CONFIG_SUN_PARTITION is not set
+-# CONFIG_EFI_PARTITION is not set
 -
 -#
 -# Sound
 -#
--CONFIG_SOUND=y
--
--#
--# Advanced Linux Sound Architecture
--#
--# CONFIG_SND is not set
--
--#
--# Open Sound System
--#
--# CONFIG_SOUND_PRIME is not set
+-# CONFIG_SOUND is not set
 -
 -#
 -# IBM 40x options
@@ -678,14 +549,20 @@ deleted file mode 100644
 -# CONFIG_USB_GADGET is not set
 -
 -#
+-# Bluetooth support
+-#
+-# CONFIG_BT is not set
+-
+-#
 -# Library routines
 -#
--# CONFIG_CRC32 is not set
+-CONFIG_CRC32=y
 -
 -#
 -# Kernel hacking
 -#
 -# CONFIG_DEBUG_KERNEL is not set
+-# CONFIG_KALLSYMS is not set
 -# CONFIG_SERIAL_TEXT_DEBUG is not set
 -CONFIG_OCP=y
 -
