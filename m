@@ -1,17 +1,17 @@
 Return-Path: <galak@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id BF99F67DBA
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id D94B667DCF
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Jul 2005 01:41:29 +1000 (EST)
-Date: Wed, 27 Jul 2005 10:41:13 -0500 (CDT)
+	Thu, 28 Jul 2005 01:41:46 +1000 (EST)
+Date: Wed, 27 Jul 2005 10:41:39 -0500 (CDT)
 From: Kumar Gala <galak@freescale.com>
 To: Andrew Morton <akpm@osdl.org>
-Message-ID: <Pine.LNX.4.61.0507271040470.12237@nylon.am.freescale.net>
+Message-ID: <Pine.LNX.4.61.0507271041140.12237@nylon.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linux-kernel@vger.kernel.org,
 	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH 13/14] ppc32: Remove board support for EP405
+Subject: [PATCH 14/14] ppc32: Remove board support for PCORE
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,164 +22,95 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Support for the EP405 board is no longer maintained and thus being removed
+Support for the PCORE board is no longer maintained and thus being removed
 
 Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
 ---
-commit 715aa4926267a11452ddd3f3abffc19bdefdcb88
-tree 6c3d041e5bc4058993dcd2707eb2c5657acfaa41
-parent 13046e6e40e2f14b30e9a159791eb330f7204bf4
-author Kumar K. Gala <kumar.gala@freescale.com> Mon, 25 Jul 2005 22:19:05 -0500
-committer Kumar K. Gala <kumar.gala@freescale.com> Mon, 25 Jul 2005 22:19:05 -0500
+commit a287e1a2f397c7c4aeba88169b413500bd642fcc
+tree 5fce3a854f01aa7889bc684d9e6a81386ce1e293
+parent 715aa4926267a11452ddd3f3abffc19bdefdcb88
+author Kumar K. Gala <kumar.gala@freescale.com> Mon, 25 Jul 2005 22:23:47 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> Mon, 25 Jul 2005 22:23:47 -0500
 
- arch/ppc/boot/simple/embed_config.c |  105 ------
- arch/ppc/configs/ep405_defconfig    |  572 -----------------------------------
- arch/ppc/platforms/4xx/Kconfig      |   17 -
- arch/ppc/platforms/4xx/Makefile     |    1 
- arch/ppc/platforms/4xx/ep405.c      |  197 ------------
- arch/ppc/platforms/4xx/ep405.h      |   54 ---
- include/asm-ppc/ibm4xx.h            |    4 
- 7 files changed, 7 insertions(+), 943 deletions(-)
+ arch/ppc/Kconfig                 |    9 
+ arch/ppc/boot/simple/Makefile    |    7 
+ arch/ppc/configs/pcore_defconfig |  716 --------------------------------------
+ arch/ppc/platforms/Makefile      |    1 
+ arch/ppc/platforms/pcore.c       |  352 -------------------
+ arch/ppc/platforms/pcore.h       |   39 --
+ arch/ppc/syslib/Makefile         |    1 
+ 7 files changed, 3 insertions(+), 1122 deletions(-)
 
-diff --git a/arch/ppc/boot/simple/embed_config.c b/arch/ppc/boot/simple/embed_config.c
---- a/arch/ppc/boot/simple/embed_config.c
-+++ b/arch/ppc/boot/simple/embed_config.c
-@@ -97,7 +97,7 @@ embed_config(bd_t **bdp)
- #endif /* CONFIG_MBX */
+diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
+--- a/arch/ppc/Kconfig
++++ b/arch/ppc/Kconfig
+@@ -548,9 +548,6 @@ config CPCI690
+ 	help
+ 	  Select CPCI690 if configuring a Force CPCI690 cPCI board.
  
- #if defined(CONFIG_RPXLITE) || defined(CONFIG_RPXCLASSIC) || \
--	defined(CONFIG_RPX8260) || defined(CONFIG_EP405)
-+	defined(CONFIG_RPX8260)
- /* Helper functions for Embedded Planet boards.
- */
- /* Because I didn't find anything that would do this.......
-@@ -217,7 +217,7 @@ rpx_cpuspeed(bd_t *bd, u_char *cp)
- }
- #endif
+-config PCORE
+-	bool "Force-PowerCore"
+-
+ config POWERPMC250
+ 	bool "Force-PowerPMC250"
  
--#if defined(CONFIG_RPXLITE) || defined(CONFIG_RPXCLASSIC) || defined(CONFIG_EP405)
-+#if defined(CONFIG_RPXLITE) || defined(CONFIG_RPXCLASSIC)
- static void
- rpx_memsize(bd_t *bd, u_char *cp)
- {
-@@ -233,25 +233,7 @@ rpx_memsize(bd_t *bd, u_char *cp)
+@@ -756,7 +753,7 @@ config PPC_OF
  
- 	bd->bi_memsize = size * 1024 * 1024;
- }
--#endif /* LITE || CLASSIC || EP405 */
--#if defined(CONFIG_EP405)
--static void
--rpx_nvramsize(bd_t *bd, u_char *cp)
--{
--	uint	size;
--
--	size = 0;
--
--	while (*cp != '\n') {
--		size *= 10;
--		size += (*cp) - '0';
--		cp++;
--	}
--
--	bd->bi_nvramsize = size * 1024;
--}
--#endif /* CONFIG_EP405 */
--
-+#endif /* LITE || CLASSIC */
- #endif	/* Embedded Planet boards */
+ config PPC_GEN550
+ 	bool
+-	depends on SANDPOINT || SPRUCE || PPLUS || PCORE || \
++	depends on SANDPOINT || SPRUCE || PPLUS || \
+ 		PRPMC750 || PRPMC800 || LOPEC || \
+ 		(EV64260 && !SERIAL_MPSC) || CHESTNUT || RADSTONE_PPC7D || \
+ 		83xx
+@@ -764,7 +761,7 @@ config PPC_GEN550
  
- #if defined(CONFIG_RPXLITE) || defined(CONFIG_RPXCLASSIC)
-@@ -845,84 +827,3 @@ embed_config(bd_t **bdp)
- 	timebase_period_ns = 1000000000 / bd->bi_tbfreq;
- }
- #endif /* CONFIG_IBM_OPENBIOS */
+ config FORCE
+ 	bool
+-	depends on 6xx && (PCORE || POWERPMC250)
++	depends on 6xx && POWERPMC250
+ 	default y
+ 
+ config GT64260
+@@ -827,7 +824,7 @@ config EPIC_SERIAL_MODE
+ 
+ config MPC10X_BRIDGE
+ 	bool
+-	depends on PCORE || POWERPMC250 || LOPEC || SANDPOINT
++	depends on POWERPMC250 || LOPEC || SANDPOINT
+ 	default y
+ 
+ config MPC10X_OPENPIC
+diff --git a/arch/ppc/boot/simple/Makefile b/arch/ppc/boot/simple/Makefile
+--- a/arch/ppc/boot/simple/Makefile
++++ b/arch/ppc/boot/simple/Makefile
+@@ -103,7 +103,6 @@ zimageinitrd-$(CONFIG_GEMINI)		:= zImage
+ motorola := $(CONFIG_MVME5100)$(CONFIG_PRPMC750) \
+ $(CONFIG_PRPMC800)$(CONFIG_LOPEC)$(CONFIG_PPLUS)
+ motorola := $(strip $(motorola))
+-pcore := $(CONFIG_PCORE)$(CONFIG_POWERPMC250)
+ 
+       zimage-$(motorola)		:= zImage-PPLUS
+ zimageinitrd-$(motorola)		:= zImage.initrd-PPLUS
+@@ -112,12 +111,6 @@ zimageinitrd-$(motorola)		:= zImage.init
+ # Overrides previous assingment
+      extra.o-$(CONFIG_PPLUS)		:= prepmap.o
+      extra.o-$(CONFIG_LOPEC)		:= mpc10x_memory.o
 -
--#ifdef CONFIG_EP405
--#include <linux/serial_reg.h>
--
--void
--embed_config(bd_t **bdp)
--{
--	u32 chcr0;
--	u_char *cp;
--	bd_t	*bd;
--
--	/* Different versions of the PlanetCore firmware vary in how
--	   they set up the serial port - in particular whether they
--	   use the internal or external serial clock for UART0.  Make
--	   sure the UART is in a known state. */
--	/* FIXME: We should use the board's 11.0592MHz external serial
--	   clock - it will be more accurate for serial rates.  For
--	   now, however the baud rates in ep405.h are for the internal
--	   clock. */
--	chcr0 = mfdcr(DCRN_CHCR0);
--	if ( (chcr0 & 0x1fff) != 0x103e ) {
--		mtdcr(DCRN_CHCR0, (chcr0 & 0xffffe000) | 0x103e);
--		/* The following tricks serial_init() into resetting the baud rate */
--		writeb(0, UART0_IO_BASE + UART_LCR);
--	}
--
--	/* We haven't seen actual problems with the EP405 leaving the
--	 * EMAC running (as we have on Walnut).  But the registers
--	 * suggest it may not be left completely quiescent.  Reset it
--	 * just to be sure. */
--	mtdcr(DCRN_MALCR(DCRN_MAL_BASE), MALCR_MMSR);     /* 1st reset MAL */
--	while (mfdcr(DCRN_MALCR(DCRN_MAL_BASE)) & MALCR_MMSR) {}; /* wait for the reset */	
--	out_be32((unsigned *)EMAC0_BASE,0x20000000);        /* then reset EMAC */
--
--	bd = &bdinfo;
--	*bdp = bd;
--#if 1
--	        cp = (u_char *)0xF0000EE0;
--	        for (;;) {
--	                if (*cp == 'E') {
--	                        cp++;
--	                        if (*cp == 'A') {
--                                  cp += 2;
--                                  rpx_eth(bd, cp);
--	                        }
--		         }
--
--	         	if (*cp == 'D') {
--	                        	cp++;
--	                        	if (*cp == '1') {
--		                                cp += 2;
--		                                rpx_memsize(bd, cp);
--	        	                }
--                	}
--
--			if (*cp == 'N') {
--				cp++;
--				if (*cp == 'V') {
--					cp += 2;
--					rpx_nvramsize(bd, cp);
--				}
--			}
--			while ((*cp != '\n') && (*cp != 0xff))
--			      cp++;
--
--	                cp++;
--	                if ((*cp == 0) || (*cp == 0xff))
--	                   break;
--	       }
--	bd->bi_intfreq   = 200000000;
--	bd->bi_busfreq   = 100000000;
--	bd->bi_pci_busfreq= 33000000 ;
--#else
--
--	bd->bi_memsize   = 64000000;
--	bd->bi_intfreq   = 200000000;
--	bd->bi_busfreq   = 100000000;
--	bd->bi_pci_busfreq= 33000000 ;
--#endif
--}
--#endif
-diff --git a/arch/ppc/configs/ep405_defconfig b/arch/ppc/configs/ep405_defconfig
+-      zimage-$(pcore)			:= zImage-STRIPELF
+-zimageinitrd-$(pcore)			:= zImage.initrd-STRIPELF
+-     extra.o-$(pcore)			:= chrpmap.o
+-         end-$(pcore)			:= pcore
+-   cacheflag-$(pcore)			:= -include $(clear_L2_L3)
+ 
+ # Really only valid if CONFIG_6xx=y
+       zimage-$(CONFIG_PPC_PREP)		:= zImage-PPLUS
+diff --git a/arch/ppc/configs/pcore_defconfig b/arch/ppc/configs/pcore_defconfig
 deleted file mode 100644
---- a/arch/ppc/configs/ep405_defconfig
+--- a/arch/ppc/configs/pcore_defconfig
 +++ /dev/null
-@@ -1,572 +0,0 @@
+@@ -1,716 +0,0 @@
 -#
 -# Automatically generated make config: don't edit
 -#
@@ -195,7 +126,7 @@ deleted file mode 100644
 -#
 -CONFIG_EXPERIMENTAL=y
 -CONFIG_CLEAN_COMPILE=y
--# CONFIG_STANDALONE is not set
+-CONFIG_STANDALONE=y
 -CONFIG_BROKEN_ON_SMP=y
 -
 -#
@@ -203,10 +134,8 @@ deleted file mode 100644
 -#
 -CONFIG_SWAP=y
 -CONFIG_SYSVIPC=y
--CONFIG_POSIX_MQUEUE=y
 -# CONFIG_BSD_PROCESS_ACCT is not set
 -CONFIG_SYSCTL=y
--# CONFIG_AUDIT is not set
 -CONFIG_LOG_BUF_SHIFT=14
 -# CONFIG_HOTPLUG is not set
 -# CONFIG_IKCONFIG is not set
@@ -217,7 +146,6 @@ deleted file mode 100644
 -CONFIG_IOSCHED_NOOP=y
 -CONFIG_IOSCHED_AS=y
 -CONFIG_IOSCHED_DEADLINE=y
--CONFIG_IOSCHED_CFQ=y
 -# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
 -
 -#
@@ -233,44 +161,45 @@ deleted file mode 100644
 -#
 -# Processor
 -#
--# CONFIG_6xx is not set
--CONFIG_40x=y
+-CONFIG_6xx=y
+-# CONFIG_40x is not set
 -# CONFIG_44x is not set
 -# CONFIG_POWER3 is not set
 -# CONFIG_POWER4 is not set
 -# CONFIG_8xx is not set
--# CONFIG_MATH_EMULATION is not set
+-CONFIG_ALTIVEC=y
+-# CONFIG_TAU is not set
 -# CONFIG_CPU_FREQ is not set
--CONFIG_4xx=y
--
--#
--# IBM 4xx options
--#
--# CONFIG_ASH is not set
--# CONFIG_BUBINGA is not set
--# CONFIG_CPCI405 is not set
--CONFIG_EP405=y
--# CONFIG_OAK is not set
--# CONFIG_REDWOOD_5 is not set
--# CONFIG_REDWOOD_6 is not set
--# CONFIG_SYCAMORE is not set
--# CONFIG_WALNUT is not set
--# CONFIG_EP405PC is not set
--CONFIG_IBM405_ERR77=y
--CONFIG_IBM405_ERR51=y
--CONFIG_IBM_OCP=y
--CONFIG_BIOS_FIXUP=y
--CONFIG_405GP=y
--CONFIG_EMBEDDEDBOOT=y
--# CONFIG_PM is not set
--CONFIG_UART0_TTYS0=y
--# CONFIG_UART0_TTYS1 is not set
--CONFIG_NOT_COHERENT_CACHE=y
+-CONFIG_PPC_STD_MMU=y
 -
 -#
 -# Platform options
 -#
--# CONFIG_PC_KEYBOARD is not set
+-# CONFIG_PPC_MULTIPLATFORM is not set
+-# CONFIG_APUS is not set
+-# CONFIG_WILLOW is not set
+-CONFIG_PCORE=y
+-# CONFIG_POWERPMC250 is not set
+-# CONFIG_EV64260 is not set
+-# CONFIG_SPRUCE is not set
+-# CONFIG_LOPEC is not set
+-# CONFIG_MCPN765 is not set
+-# CONFIG_MVME5100 is not set
+-# CONFIG_PPLUS is not set
+-# CONFIG_PRPMC750 is not set
+-# CONFIG_PRPMC800 is not set
+-# CONFIG_SANDPOINT is not set
+-# CONFIG_ADIR is not set
+-# CONFIG_K2 is not set
+-# CONFIG_PAL4 is not set
+-# CONFIG_GEMINI is not set
+-# CONFIG_EST8260 is not set
+-# CONFIG_SBS8260 is not set
+-# CONFIG_RPX6 is not set
+-# CONFIG_TQM8260 is not set
+-CONFIG_PPC_GEN550=y
+-CONFIG_FORCE=y
+-# CONFIG_MPC10X_STORE_GATHERING is not set
 -# CONFIG_SMP is not set
 -# CONFIG_PREEMPT is not set
 -# CONFIG_HIGHMEM is not set
@@ -283,6 +212,7 @@ deleted file mode 100644
 -#
 -# Bus options
 -#
+-CONFIG_GENERIC_ISA_DMA=y
 -CONFIG_PCI=y
 -CONFIG_PCI_DOMAINS=y
 -# CONFIG_PCI_LEGACY_PROC is not set
@@ -300,7 +230,7 @@ deleted file mode 100644
 -CONFIG_LOWMEM_SIZE=0x30000000
 -CONFIG_KERNEL_START=0xc0000000
 -CONFIG_TASK_SIZE=0x80000000
--CONFIG_BOOT_LOAD=0x00400000
+-CONFIG_BOOT_LOAD=0x00800000
 -
 -#
 -# Device Drivers
@@ -332,8 +262,7 @@ deleted file mode 100644
 -# CONFIG_BLK_CPQ_CISS_DA is not set
 -# CONFIG_BLK_DEV_DAC960 is not set
 -# CONFIG_BLK_DEV_UMEM is not set
--CONFIG_BLK_DEV_LOOP=y
--# CONFIG_BLK_DEV_CRYPTOLOOP is not set
+-# CONFIG_BLK_DEV_LOOP is not set
 -# CONFIG_BLK_DEV_NBD is not set
 -# CONFIG_BLK_DEV_CARMEL is not set
 -CONFIG_BLK_DEV_RAM=y
@@ -349,7 +278,73 @@ deleted file mode 100644
 -#
 -# SCSI device support
 -#
--# CONFIG_SCSI is not set
+-CONFIG_SCSI=y
+-CONFIG_SCSI_PROC_FS=y
+-
+-#
+-# SCSI support type (disk, tape, CD-ROM)
+-#
+-CONFIG_BLK_DEV_SD=y
+-# CONFIG_CHR_DEV_ST is not set
+-# CONFIG_CHR_DEV_OSST is not set
+-CONFIG_BLK_DEV_SR=y
+-# CONFIG_BLK_DEV_SR_VENDOR is not set
+-# CONFIG_CHR_DEV_SG is not set
+-
+-#
+-# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
+-#
+-# CONFIG_SCSI_MULTI_LUN is not set
+-# CONFIG_SCSI_REPORT_LUNS is not set
+-# CONFIG_SCSI_CONSTANTS is not set
+-# CONFIG_SCSI_LOGGING is not set
+-
+-#
+-# SCSI Transport Attributes
+-#
+-# CONFIG_SCSI_SPI_ATTRS is not set
+-# CONFIG_SCSI_FC_ATTRS is not set
+-
+-#
+-# SCSI low-level drivers
+-#
+-# CONFIG_BLK_DEV_3W_XXXX_RAID is not set
+-# CONFIG_SCSI_ACARD is not set
+-# CONFIG_SCSI_AACRAID is not set
+-# CONFIG_SCSI_AIC7XXX is not set
+-# CONFIG_SCSI_AIC7XXX_OLD is not set
+-# CONFIG_SCSI_AIC79XX is not set
+-# CONFIG_SCSI_ADVANSYS is not set
+-# CONFIG_SCSI_MEGARAID is not set
+-# CONFIG_SCSI_SATA is not set
+-# CONFIG_SCSI_BUSLOGIC is not set
+-# CONFIG_SCSI_CPQFCTS is not set
+-# CONFIG_SCSI_DMX3191D is not set
+-# CONFIG_SCSI_EATA is not set
+-# CONFIG_SCSI_EATA_PIO is not set
+-# CONFIG_SCSI_FUTURE_DOMAIN is not set
+-# CONFIG_SCSI_GDTH is not set
+-# CONFIG_SCSI_IPS is not set
+-# CONFIG_SCSI_INIA100 is not set
+-CONFIG_SCSI_SYM53C8XX_2=y
+-CONFIG_SCSI_SYM53C8XX_DMA_ADDRESSING_MODE=1
+-CONFIG_SCSI_SYM53C8XX_DEFAULT_TAGS=16
+-CONFIG_SCSI_SYM53C8XX_MAX_TAGS=64
+-# CONFIG_SCSI_SYM53C8XX_IOMAPPED is not set
+-# CONFIG_SCSI_QLOGIC_ISP is not set
+-# CONFIG_SCSI_QLOGIC_FC is not set
+-# CONFIG_SCSI_QLOGIC_1280 is not set
+-CONFIG_SCSI_QLA2XXX=y
+-# CONFIG_SCSI_QLA21XX is not set
+-# CONFIG_SCSI_QLA22XX is not set
+-# CONFIG_SCSI_QLA2300 is not set
+-# CONFIG_SCSI_QLA2322 is not set
+-# CONFIG_SCSI_QLA6312 is not set
+-# CONFIG_SCSI_QLA6322 is not set
+-# CONFIG_SCSI_DC395x is not set
+-# CONFIG_SCSI_DC390T is not set
+-# CONFIG_SCSI_NSP32 is not set
+-# CONFIG_SCSI_DEBUG is not set
 -
 -#
 -# Multi-device support (RAID and LVM)
@@ -359,6 +354,7 @@ deleted file mode 100644
 -#
 -# Fusion MPT device support
 -#
+-# CONFIG_FUSION is not set
 -
 -#
 -# IEEE 1394 (FireWire) support
@@ -382,7 +378,8 @@ deleted file mode 100644
 -#
 -# Networking options
 -#
--# CONFIG_PACKET is not set
+-CONFIG_PACKET=y
+-# CONFIG_PACKET_MMAP is not set
 -# CONFIG_NETLINK_DEV is not set
 -CONFIG_UNIX=y
 -# CONFIG_NET_KEY is not set
@@ -390,28 +387,83 @@ deleted file mode 100644
 -CONFIG_IP_MULTICAST=y
 -# CONFIG_IP_ADVANCED_ROUTER is not set
 -CONFIG_IP_PNP=y
--# CONFIG_IP_PNP_DHCP is not set
--CONFIG_IP_PNP_BOOTP=y
+-CONFIG_IP_PNP_DHCP=y
+-# CONFIG_IP_PNP_BOOTP is not set
 -# CONFIG_IP_PNP_RARP is not set
 -# CONFIG_NET_IPIP is not set
 -# CONFIG_NET_IPGRE is not set
 -# CONFIG_IP_MROUTE is not set
 -# CONFIG_ARPD is not set
--CONFIG_SYN_COOKIES=y
+-# CONFIG_SYN_COOKIES is not set
 -# CONFIG_INET_AH is not set
 -# CONFIG_INET_ESP is not set
 -# CONFIG_INET_IPCOMP is not set
+-
+-#
+-# IP: Virtual Server Configuration
+-#
+-# CONFIG_IP_VS is not set
 -# CONFIG_IPV6 is not set
--# CONFIG_NETFILTER is not set
+-# CONFIG_DECNET is not set
+-# CONFIG_BRIDGE is not set
+-CONFIG_NETFILTER=y
+-# CONFIG_NETFILTER_DEBUG is not set
+-
+-#
+-# IP: Netfilter Configuration
+-#
+-CONFIG_IP_NF_CONNTRACK=m
+-CONFIG_IP_NF_FTP=m
+-CONFIG_IP_NF_IRC=m
+-# CONFIG_IP_NF_TFTP is not set
+-# CONFIG_IP_NF_AMANDA is not set
+-# CONFIG_IP_NF_QUEUE is not set
+-CONFIG_IP_NF_IPTABLES=m
+-CONFIG_IP_NF_MATCH_LIMIT=m
+-# CONFIG_IP_NF_MATCH_IPRANGE is not set
+-CONFIG_IP_NF_MATCH_MAC=m
+-CONFIG_IP_NF_MATCH_PKTTYPE=m
+-CONFIG_IP_NF_MATCH_MARK=m
+-CONFIG_IP_NF_MATCH_MULTIPORT=m
+-CONFIG_IP_NF_MATCH_TOS=m
+-# CONFIG_IP_NF_MATCH_RECENT is not set
+-CONFIG_IP_NF_MATCH_ECN=m
+-CONFIG_IP_NF_MATCH_DSCP=m
+-CONFIG_IP_NF_MATCH_AH_ESP=m
+-CONFIG_IP_NF_MATCH_LENGTH=m
+-CONFIG_IP_NF_MATCH_TTL=m
+-CONFIG_IP_NF_MATCH_TCPMSS=m
+-CONFIG_IP_NF_MATCH_HELPER=m
+-CONFIG_IP_NF_MATCH_STATE=m
+-CONFIG_IP_NF_MATCH_CONNTRACK=m
+-CONFIG_IP_NF_MATCH_OWNER=m
+-CONFIG_IP_NF_FILTER=m
+-CONFIG_IP_NF_TARGET_REJECT=m
+-CONFIG_IP_NF_NAT=m
+-CONFIG_IP_NF_NAT_NEEDED=y
+-CONFIG_IP_NF_TARGET_MASQUERADE=m
+-CONFIG_IP_NF_TARGET_REDIRECT=m
+-# CONFIG_IP_NF_TARGET_NETMAP is not set
+-# CONFIG_IP_NF_TARGET_SAME is not set
+-# CONFIG_IP_NF_NAT_SNMP_BASIC is not set
+-CONFIG_IP_NF_NAT_IRC=m
+-CONFIG_IP_NF_NAT_FTP=m
+-# CONFIG_IP_NF_MANGLE is not set
+-# CONFIG_IP_NF_TARGET_LOG is not set
+-CONFIG_IP_NF_TARGET_ULOG=m
+-CONFIG_IP_NF_TARGET_TCPMSS=m
+-CONFIG_IP_NF_ARPTABLES=m
+-CONFIG_IP_NF_ARPFILTER=m
+-# CONFIG_IP_NF_ARP_MANGLE is not set
+-CONFIG_IP_NF_COMPAT_IPCHAINS=m
+-# CONFIG_IP_NF_COMPAT_IPFWADM is not set
 -
 -#
 -# SCTP Configuration (EXPERIMENTAL)
 -#
 -# CONFIG_IP_SCTP is not set
 -# CONFIG_ATM is not set
--# CONFIG_BRIDGE is not set
 -# CONFIG_VLAN_8021Q is not set
--# CONFIG_DECNET is not set
 -# CONFIG_LLC2 is not set
 -# CONFIG_IPX is not set
 -# CONFIG_ATALK is not set
@@ -431,27 +483,22 @@ deleted file mode 100644
 -# Network testing
 -#
 -# CONFIG_NET_PKTGEN is not set
--# CONFIG_NETPOLL is not set
--# CONFIG_NET_POLL_CONTROLLER is not set
--# CONFIG_HAMRADIO is not set
--# CONFIG_IRDA is not set
--# CONFIG_BT is not set
 -CONFIG_NETDEVICES=y
+-
+-#
+-# ARCnet devices
+-#
+-# CONFIG_ARCNET is not set
 -# CONFIG_DUMMY is not set
 -# CONFIG_BONDING is not set
 -# CONFIG_EQUALIZER is not set
 -# CONFIG_TUN is not set
 -
 -#
--# ARCnet devices
--#
--# CONFIG_ARCNET is not set
--
--#
 -# Ethernet (10 or 100Mbit)
 -#
 -CONFIG_NET_ETHERNET=y
--# CONFIG_MII is not set
+-CONFIG_MII=y
 -# CONFIG_OAKNET is not set
 -# CONFIG_HAPPYMEAL is not set
 -# CONFIG_SUNGEM is not set
@@ -460,9 +507,36 @@ deleted file mode 100644
 -#
 -# Tulip family network device support
 -#
--# CONFIG_NET_TULIP is not set
+-CONFIG_NET_TULIP=y
+-# CONFIG_DE2104X is not set
+-CONFIG_TULIP=y
+-# CONFIG_TULIP_MWI is not set
+-# CONFIG_TULIP_MMIO is not set
+-# CONFIG_TULIP_NAPI is not set
+-# CONFIG_DE4X5 is not set
+-# CONFIG_WINBOND_840 is not set
+-# CONFIG_DM9102 is not set
 -# CONFIG_HP100 is not set
--# CONFIG_NET_PCI is not set
+-CONFIG_NET_PCI=y
+-# CONFIG_PCNET32 is not set
+-# CONFIG_AMD8111_ETH is not set
+-# CONFIG_ADAPTEC_STARFIRE is not set
+-# CONFIG_B44 is not set
+-# CONFIG_FORCEDETH is not set
+-# CONFIG_DGRS is not set
+-CONFIG_EEPRO100=y
+-# CONFIG_EEPRO100_PIO is not set
+-# CONFIG_E100 is not set
+-# CONFIG_FEALNX is not set
+-# CONFIG_NATSEMI is not set
+-# CONFIG_NE2K_PCI is not set
+-# CONFIG_8139CP is not set
+-# CONFIG_8139TOO is not set
+-# CONFIG_SIS900 is not set
+-# CONFIG_EPIC100 is not set
+-# CONFIG_SUNDANCE is not set
+-# CONFIG_TLAN is not set
+-# CONFIG_VIA_RHINE is not set
 -
 -#
 -# Ethernet (1000 Mbit)
@@ -474,6 +548,7 @@ deleted file mode 100644
 -# CONFIG_HAMACHI is not set
 -# CONFIG_YELLOWFIN is not set
 -# CONFIG_R8169 is not set
+-# CONFIG_SIS190 is not set
 -# CONFIG_SK98LIN is not set
 -# CONFIG_TIGON3 is not set
 -
@@ -481,12 +556,10 @@ deleted file mode 100644
 -# Ethernet (10000 Mbit)
 -#
 -# CONFIG_IXGB is not set
--# CONFIG_S2IO is not set
--
--#
--# Token Ring devices
--#
--# CONFIG_TR is not set
+-# CONFIG_FDDI is not set
+-# CONFIG_HIPPI is not set
+-# CONFIG_PPP is not set
+-# CONFIG_SLIP is not set
 -
 -#
 -# Wireless LAN (non-hamradio)
@@ -494,16 +567,35 @@ deleted file mode 100644
 -# CONFIG_NET_RADIO is not set
 -
 -#
--# Wan interfaces
+-# Token Ring devices
 -#
--# CONFIG_WAN is not set
--# CONFIG_FDDI is not set
--# CONFIG_HIPPI is not set
--# CONFIG_PPP is not set
--# CONFIG_SLIP is not set
+-# CONFIG_TR is not set
+-# CONFIG_NET_FC is not set
 -# CONFIG_RCPCI is not set
 -# CONFIG_SHAPER is not set
 -# CONFIG_NETCONSOLE is not set
+-
+-#
+-# Wan interfaces
+-#
+-# CONFIG_WAN is not set
+-
+-#
+-# Amateur Radio support
+-#
+-# CONFIG_HAMRADIO is not set
+-
+-#
+-# IrDA (infrared) support
+-#
+-# CONFIG_IRDA is not set
+-
+-#
+-# Bluetooth support
+-#
+-# CONFIG_BT is not set
+-# CONFIG_NETPOLL is not set
+-# CONFIG_NET_POLL_CONTROLLER is not set
 -
 -#
 -# ISDN subsystem
@@ -518,39 +610,23 @@ deleted file mode 100644
 -#
 -# Input device support
 -#
--CONFIG_INPUT=y
+-# CONFIG_INPUT is not set
 -
 -#
 -# Userland interfaces
 -#
--CONFIG_INPUT_MOUSEDEV=y
--CONFIG_INPUT_MOUSEDEV_PSAUX=y
--CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
--CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
--# CONFIG_INPUT_JOYDEV is not set
--# CONFIG_INPUT_TSDEV is not set
--# CONFIG_INPUT_EVDEV is not set
--# CONFIG_INPUT_EVBUG is not set
 -
 -#
 -# Input I/O drivers
 -#
 -# CONFIG_GAMEPORT is not set
 -CONFIG_SOUND_GAMEPORT=y
--CONFIG_SERIO=y
+-# CONFIG_SERIO is not set
 -# CONFIG_SERIO_I8042 is not set
--CONFIG_SERIO_SERPORT=y
--# CONFIG_SERIO_CT82C710 is not set
--# CONFIG_SERIO_PCIPS2 is not set
 -
 -#
 -# Input Device Drivers
 -#
--# CONFIG_INPUT_KEYBOARD is not set
--# CONFIG_INPUT_MOUSE is not set
--# CONFIG_INPUT_JOYSTICK is not set
--# CONFIG_INPUT_TOUCHSCREEN is not set
--# CONFIG_INPUT_MISC is not set
 -
 -#
 -# Character devices
@@ -563,7 +639,7 @@ deleted file mode 100644
 -#
 -CONFIG_SERIAL_8250=y
 -CONFIG_SERIAL_8250_CONSOLE=y
--CONFIG_SERIAL_8250_NR_UARTS=4
+-CONFIG_SERIAL_8250_NR_UARTS=2
 -# CONFIG_SERIAL_8250_EXTENDED is not set
 -
 -#
@@ -644,8 +720,13 @@ deleted file mode 100644
 -#
 -CONFIG_EXT2_FS=y
 -# CONFIG_EXT2_FS_XATTR is not set
--# CONFIG_EXT3_FS is not set
--# CONFIG_JBD is not set
+-CONFIG_EXT3_FS=y
+-CONFIG_EXT3_FS_XATTR=y
+-# CONFIG_EXT3_FS_POSIX_ACL is not set
+-# CONFIG_EXT3_FS_SECURITY is not set
+-CONFIG_JBD=y
+-# CONFIG_JBD_DEBUG is not set
+-CONFIG_FS_MBCACHE=y
 -# CONFIG_REISERFS_FS is not set
 -# CONFIG_JFS_FS is not set
 -# CONFIG_XFS_FS is not set
@@ -672,7 +753,6 @@ deleted file mode 100644
 -#
 -CONFIG_PROC_FS=y
 -CONFIG_PROC_KCORE=y
--CONFIG_SYSFS=y
 -# CONFIG_DEVFS_FS is not set
 -# CONFIG_DEVPTS_FS_XATTR is not set
 -CONFIG_TMPFS=y
@@ -713,6 +793,7 @@ deleted file mode 100644
 -# CONFIG_CIFS is not set
 -# CONFIG_NCP_FS is not set
 -# CONFIG_CODA_FS is not set
+-# CONFIG_INTERMEZZO_FS is not set
 -# CONFIG_AFS_FS is not set
 -
 -#
@@ -727,21 +808,15 @@ deleted file mode 100644
 -# CONFIG_NLS is not set
 -
 -#
--# IBM 40x options
--#
--
--#
 -# Library routines
 -#
 -CONFIG_CRC32=y
--# CONFIG_LIBCRC32C is not set
 -
 -#
 -# Kernel hacking
 -#
 -# CONFIG_DEBUG_KERNEL is not set
 -# CONFIG_SERIAL_TEXT_DEBUG is not set
--CONFIG_PPC_OCP=y
 -
 -#
 -# Security options
@@ -752,351 +827,426 @@ deleted file mode 100644
 -# Cryptographic options
 -#
 -# CONFIG_CRYPTO is not set
-diff --git a/arch/ppc/platforms/4xx/Kconfig b/arch/ppc/platforms/4xx/Kconfig
---- a/arch/ppc/platforms/4xx/Kconfig
-+++ b/arch/ppc/platforms/4xx/Kconfig
-@@ -21,11 +21,6 @@ config CPCI405
- 	help
- 	  This option enables support for the CPCI405 board.
- 
--config EP405
--	bool "EP405/EP405PC"
--	help
--	  This option enables support for the EP405/EP405PC boards.
--
- config REDWOOD_5
- 	bool "Redwood-5"
- 	help
-@@ -75,10 +70,6 @@ config OCOTEA
- 
- endchoice
- 
--config EP405PC
--	bool "EP405PC Support"
--	depends on EP405
--
- 
- # It's often necessary to know the specific 4xx processor type.
- # Fortunately, it is impled (so far) from the board type, so we
-@@ -132,7 +123,7 @@ config BOOKE
- 
- config IBM_OCP
- 	bool
--	depends on ASH || BUBINGA || CPCI405 || EBONY || EP405 || LUAN || OCOTEA || REDWOOD_5 || REDWOOD_6 || SYCAMORE || WALNUT
-+	depends on ASH || BUBINGA || CPCI405 || EBONY || LUAN || OCOTEA || REDWOOD_5 || REDWOOD_6 || SYCAMORE || WALNUT
- 	default y
- 
- config XILINX_OCP
-@@ -147,7 +138,7 @@ config IBM_EMAC4
- 
- config BIOS_FIXUP
- 	bool
--	depends on BUBINGA || EP405 || SYCAMORE || WALNUT
-+	depends on BUBINGA || SYCAMORE || WALNUT
- 	default y
- 
- # OAK doesn't exist but wanted to keep this around for any future 403GCX boards
-@@ -163,7 +154,7 @@ config 405EP
- 
- config 405GP
- 	bool
--	depends on CPCI405 || EP405 || WALNUT
-+	depends on CPCI405 || WALNUT
- 	default y
- 
- config 405GPR
-@@ -183,7 +174,7 @@ config STB03xxx
- 
- config EMBEDDEDBOOT
- 	bool
--	depends on EP405 || XILINX_ML300
-+	depends on XILINX_ML300
- 	default y
- 
- config IBM_OPENBIOS
-diff --git a/arch/ppc/platforms/4xx/Makefile b/arch/ppc/platforms/4xx/Makefile
---- a/arch/ppc/platforms/4xx/Makefile
-+++ b/arch/ppc/platforms/4xx/Makefile
-@@ -3,7 +3,6 @@
- 
- obj-$(CONFIG_CPCI405)		+= cpci405.o
- obj-$(CONFIG_EBONY)		+= ebony.o
--obj-$(CONFIG_EP405)		+= ep405.o
- obj-$(CONFIG_BUBINGA)		+= bubinga.o
- obj-$(CONFIG_LUAN)		+= luan.o
- obj-$(CONFIG_OCOTEA)		+= ocotea.o
-diff --git a/arch/ppc/platforms/4xx/ep405.c b/arch/ppc/platforms/4xx/ep405.c
+diff --git a/arch/ppc/platforms/Makefile b/arch/ppc/platforms/Makefile
+--- a/arch/ppc/platforms/Makefile
++++ b/arch/ppc/platforms/Makefile
+@@ -32,7 +32,6 @@ obj-$(CONFIG_KATANA)		+= katana.o
+ obj-$(CONFIG_HDPU)		+= hdpu.o
+ obj-$(CONFIG_MVME5100)		+= mvme5100.o
+ obj-$(CONFIG_PAL4)		+= pal4_setup.o pal4_pci.o
+-obj-$(CONFIG_PCORE)		+= pcore.o
+ obj-$(CONFIG_POWERPMC250)	+= powerpmc250.o
+ obj-$(CONFIG_PPLUS)		+= pplus.o
+ obj-$(CONFIG_PRPMC750)		+= prpmc750.o
+diff --git a/arch/ppc/platforms/pcore.c b/arch/ppc/platforms/pcore.c
 deleted file mode 100644
---- a/arch/ppc/platforms/4xx/ep405.c
+--- a/arch/ppc/platforms/pcore.c
 +++ /dev/null
-@@ -1,197 +0,0 @@
+@@ -1,352 +0,0 @@
 -/*
-- * arch/ppc/platforms/4xx/ep405.c
+- * arch/ppc/platforms/pcore_setup.c
 - *
-- * Embedded Planet 405GP board
-- * http://www.embeddedplanet.com
+- * Setup routines for Force PCORE boards
 - *
-- * Author: Matthew Locke <mlocke@mvista.com>
+- * Author: Matt Porter <mporter@mvista.com>
 - *
 - * 2001 (c) MontaVista, Software, Inc.  This file is licensed under
 - * the terms of the GNU General Public License version 2.  This program
 - * is licensed "as is" without any warranty of any kind, whether express
 - * or implied.
 - */
+-
 -#include <linux/config.h>
+-#include <linux/stddef.h>
+-#include <linux/kernel.h>
 -#include <linux/init.h>
+-#include <linux/errno.h>
+-#include <linux/reboot.h>
 -#include <linux/pci.h>
--#include <asm/system.h>
--#include <asm/pci-bridge.h>
+-#include <linux/kdev_t.h>
+-#include <linux/types.h>
+-#include <linux/major.h>
+-#include <linux/initrd.h>
+-#include <linux/console.h>
+-#include <linux/irq.h>
+-#include <linux/seq_file.h>
+-#include <linux/root_dev.h>
+-
+-#include <asm/io.h>
 -#include <asm/machdep.h>
+-#include <asm/time.h>
+-#include <asm/i8259.h>
+-#include <asm/mpc10x.h>
 -#include <asm/todc.h>
--#include <asm/ocp.h>
--#include <asm/ibm_ocp_pci.h>
+-#include <asm/bootinfo.h>
+-#include <asm/kgdb.h>
 -
--#undef DEBUG
--#ifdef DEBUG
--#define DBG(x...) printk(x)
--#else
--#define DBG(x...)
--#endif
+-#include "pcore.h"
 -
--u8 *ep405_bcsr;
--u8 *ep405_nvram;
+-extern unsigned long loops_per_jiffy;
 -
--static struct {
--	u8 cpld_xirq_select;
--	int pci_idsel;
--	int irq;
--} ep405_devtable[] = {
--#ifdef CONFIG_EP405PC
--	{0x07, 0x0E, 25},		/* EP405PC: USB */
--#endif
+-static int board_type;
+-
+-static inline int __init
+-pcore_6750_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
+-{
+-	static char pci_irq_table[][4] =
+-	/*
+-	 *      PCI IDSEL/INTPIN->INTLINE
+-	 *      A       B       C       D
+-	 */
+-	{
+-		{9,	10,	11,	12},	/* IDSEL 24 - DEC 21554 */
+-		{10,	0,	0,	0},	/* IDSEL 25 - DEC 21143 */
+-		{11,	12,	9,	10},	/* IDSEL 26 - PMC I */
+-		{12,	9,	10,	11},	/* IDSEL 27 - PMC II */
+-		{0,	0,	0,	0},	/* IDSEL 28 - unused */
+-		{0,	0,	9,	0},	/* IDSEL 29 - unused */
+-		{0,	0,	0,	0},	/* IDSEL 30 - Winbond */
+-		};
+-	const long min_idsel = 24, max_idsel = 30, irqs_per_slot = 4;
+-	return PCI_IRQ_TABLE_LOOKUP;
 -};
+-
+-static inline int __init
+-pcore_680_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
+-{
+-	static char pci_irq_table[][4] =
+-	/*
+-	 *      PCI IDSEL/INTPIN->INTLINE
+-	 *      A       B       C       D
+-	 */
+-	{
+-		{9,	10,	11,	12},	/* IDSEL 24 - Sentinel */
+-		{10,	0,	0,	0},	/* IDSEL 25 - i82559 #1 */
+-		{11,	12,	9,	10},	/* IDSEL 26 - PMC I */
+-		{12,	9,	10,	11},	/* IDSEL 27 - PMC II */
+-		{9,	0,	0,	0},	/* IDSEL 28 - i82559 #2 */
+-		{0,	0,	0,	0},	/* IDSEL 29 - unused */
+-		{0,	0,	0,	0},	/* IDSEL 30 - Winbond */
+-		};
+-	const long min_idsel = 24, max_idsel = 30, irqs_per_slot = 4;
+-	return PCI_IRQ_TABLE_LOOKUP;
+-};
+-
+-void __init
+-pcore_pcibios_fixup(void)
+-{
+-	struct pci_dev *dev;
+-
+-	if ((dev = pci_get_device(PCI_VENDOR_ID_WINBOND,
+-				PCI_DEVICE_ID_WINBOND_83C553,
+-				0)))
+-	{
+-		/* Reroute interrupts both IDE channels to 15 */
+-		pci_write_config_byte(dev,
+-				PCORE_WINBOND_IDE_INT,
+-				0xff);
+-
+-		/* Route INTA-D to IRQ9-12, respectively */
+-		pci_write_config_word(dev,
+-				PCORE_WINBOND_PCI_INT,
+-				0x9abc);
+-
+-		/*
+-		 * Set up 8259 edge/level triggering
+-		 */
+- 		outb(0x00, PCORE_WINBOND_PRI_EDG_LVL);
+-		outb(0x1e, PCORE_WINBOND_SEC_EDG_LVL);
+-		pci_dev_put(dev);
+-	}
+-}
 -
 -int __init
--ppc405_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
+-pcore_find_bridges(void)
 -{
--	int i;
+-	struct pci_controller* hose;
+-	int host_bridge, board_type;
 -
--	/* AFAICT this is only called a few times during PCI setup, so
--	   performance is not critical */
--	for (i = 0; i < ARRAY_SIZE(ep405_devtable); i++) {
--		if (idsel == ep405_devtable[i].pci_idsel)
--			return ep405_devtable[i].irq;
--	}
--	return -1;
--};
+-	hose = pcibios_alloc_controller();
+-	if (!hose)
+-		return 0;
 -
--void __init
--ep405_setup_arch(void)
--{
--	ppc4xx_setup_arch();
+-	mpc10x_bridge_init(hose,
+-			MPC10X_MEM_MAP_B,
+-			MPC10X_MEM_MAP_B,
+-			MPC10X_MAPB_EUMB_BASE);
 -
--	ibm_ocp_set_emac(0, 0);
+-	/* Determine board type */
+-	early_read_config_dword(hose,
+-			0,
+-			PCI_DEVFN(0,0),
+-			PCI_VENDOR_ID,
+-			&host_bridge);
+-	if (host_bridge == MPC10X_BRIDGE_106)
+-		board_type = PCORE_TYPE_6750;
+-	else /* MPC10X_BRIDGE_107 */
+-		board_type = PCORE_TYPE_680;
 -
--	if (__res.bi_nvramsize == 512*1024) {
--		/* FIXME: we should properly handle NVRTCs of different sizes */
--		TODC_INIT(TODC_TYPE_DS1557, ep405_nvram, ep405_nvram, ep405_nvram, 8);
--	}
+-	hose->last_busno = pciauto_bus_scan(hose, hose->first_busno);
+-
+-	ppc_md.pcibios_fixup = pcore_pcibios_fixup;
+-	ppc_md.pci_swizzle = common_swizzle;
+-
+-	if (board_type == PCORE_TYPE_6750)
+-		ppc_md.pci_map_irq = pcore_6750_map_irq;
+-	else /* PCORE_TYPE_680 */
+-		ppc_md.pci_map_irq = pcore_680_map_irq;
+-
+-	return board_type;
 -}
 -
--void __init
--bios_fixup(struct pci_controller *hose, struct pcil0_regs *pcip)
+-/* Dummy variable to satisfy mpc10x_common.o */
+-void *OpenPIC_Addr;
+-
+-static int
+-pcore_show_cpuinfo(struct seq_file *m)
 -{
--	unsigned int bar_response, bar;
--	/*
--	 * Expected PCI mapping:
--	 *
--	 *  PLB addr             PCI memory addr
--	 *  ---------------------       ---------------------
--	 *  0000'0000 - 7fff'ffff <---  0000'0000 - 7fff'ffff
--	 *  8000'0000 - Bfff'ffff --->  8000'0000 - Bfff'ffff
--	 *
--	 *  PLB addr             PCI io addr
--	 *  ---------------------       ---------------------
--	 *  e800'0000 - e800'ffff --->  0000'0000 - 0001'0000
--	 *
--	 */
+-	seq_printf(m, "vendor\t\t: Force Computers\n");
 -
--	/* Disable region zero first */
--	out_le32((void *) &(pcip->pmm[0].ma), 0x00000000);
--	/* PLB starting addr, PCI: 0x80000000 */
--	out_le32((void *) &(pcip->pmm[0].la), 0x80000000);
--	/* PCI start addr, 0x80000000 */
--	out_le32((void *) &(pcip->pmm[0].pcila), PPC405_PCI_MEM_BASE);
--	/* 512MB range of PLB to PCI */
--	out_le32((void *) &(pcip->pmm[0].pciha), 0x00000000);
--	/* Enable no pre-fetch, enable region */
--	out_le32((void *) &(pcip->pmm[0].ma), ((0xffffffff -
--						(PPC405_PCI_UPPER_MEM -
--						 PPC405_PCI_MEM_BASE)) | 0x01));
+-	if (board_type == PCORE_TYPE_6750)
+-		seq_printf(m, "machine\t\t: PowerCore 6750\n");
+-	else /* PCORE_TYPE_680 */
+-		seq_printf(m, "machine\t\t: PowerCore 680\n");
 -
--	/* Disable region one */
--	out_le32((void *) &(pcip->pmm[1].ma), 0x00000000);
--	out_le32((void *) &(pcip->pmm[1].la), 0x00000000);
--	out_le32((void *) &(pcip->pmm[1].pcila), 0x00000000);
--	out_le32((void *) &(pcip->pmm[1].pciha), 0x00000000);
--	out_le32((void *) &(pcip->pmm[1].ma), 0x00000000);
--	out_le32((void *) &(pcip->ptm1ms), 0x00000000);
--
--	/* Disable region two */
--	out_le32((void *) &(pcip->pmm[2].ma), 0x00000000);
--	out_le32((void *) &(pcip->pmm[2].la), 0x00000000);
--	out_le32((void *) &(pcip->pmm[2].pcila), 0x00000000);
--	out_le32((void *) &(pcip->pmm[2].pciha), 0x00000000);
--	out_le32((void *) &(pcip->pmm[2].ma), 0x00000000);
--	out_le32((void *) &(pcip->ptm2ms), 0x00000000);
--
--	/* Configure PTM (PCI->PLB) region 1 */
--	out_le32((void *) &(pcip->ptm1la), 0x00000000); /* PLB base address */
--	/* Disable PTM region 2 */
--	out_le32((void *) &(pcip->ptm2ms), 0x00000000);
--
--	/* Zero config bars */
--	for (bar = PCI_BASE_ADDRESS_1; bar <= PCI_BASE_ADDRESS_2; bar += 4) {
--		early_write_config_dword(hose, hose->first_busno,
--					 PCI_FUNC(hose->first_busno), bar,
--					 0x00000000);
--		early_read_config_dword(hose, hose->first_busno,
--					PCI_FUNC(hose->first_busno), bar,
--					&bar_response);
--		DBG("BUS %d, device %d, Function %d bar 0x%8.8x is 0x%8.8x\n",
--		    hose->first_busno, PCI_SLOT(hose->first_busno),
--		    PCI_FUNC(hose->first_busno), bar, bar_response);
--	}
--	/* end work arround */
--}
--
--void __init
--ep405_map_io(void)
--{
--	bd_t *bip = &__res;
--
--	ppc4xx_map_io();
--
--	ep405_bcsr = ioremap(EP405_BCSR_PADDR, EP405_BCSR_SIZE);
--
--	if (bip->bi_nvramsize > 0) {
--		ep405_nvram = ioremap(EP405_NVRAM_PADDR, bip->bi_nvramsize);
--	}
--}
--
--void __init
--ep405_init_IRQ(void)
--{
--	int i;
--
--	ppc4xx_init_IRQ();
--
--	/* Workaround for a bug in the firmware it incorrectly sets
--	   the IRQ polarities for XIRQ0 and XIRQ1 */
--	mtdcr(DCRN_UIC_PR(DCRN_UIC0_BASE), 0xffffff80); /* set the polarity */
--	mtdcr(DCRN_UIC_SR(DCRN_UIC0_BASE), 0x00000060); /* clear bogus interrupts */
--
--	/* Activate the XIRQs from the CPLD */
--	writeb(0xf0, ep405_bcsr+10);
--
--	/* Set up IRQ routing */
--	for (i = 0; i < ARRAY_SIZE(ep405_devtable); i++) {
--		if ( (ep405_devtable[i].irq >= 25)
--		     && (ep405_devtable[i].irq) <= 31) {
--			writeb(ep405_devtable[i].cpld_xirq_select, ep405_bcsr+5);
--			writeb(ep405_devtable[i].irq - 25, ep405_bcsr+6);
+-	seq_printf(m, "L2\t\t: " );
+-	if (board_type == PCORE_TYPE_6750)
+-		switch (readb(PCORE_DCCR_REG) & PCORE_DCCR_L2_MASK)
+-		{
+-			case PCORE_DCCR_L2_0KB:
+-				seq_printf(m, "nocache");
+-				break;
+-			case PCORE_DCCR_L2_256KB:
+-				seq_printf(m, "256KB");
+-				break;
+-			case PCORE_DCCR_L2_1MB:
+-				seq_printf(m, "1MB");
+-				break;
+-			case PCORE_DCCR_L2_512KB:
+-				seq_printf(m, "512KB");
+-				break;
+-			default:
+-				seq_printf(m, "error");
+-				break;
 -		}
--	}
+-	else /* PCORE_TYPE_680 */
+-		switch (readb(PCORE_DCCR_REG) & PCORE_DCCR_L2_MASK)
+-		{
+-			case PCORE_DCCR_L2_2MB:
+-				seq_printf(m, "2MB");
+-				break;
+-			case PCORE_DCCR_L2_256KB:
+-				seq_printf(m, "reserved");
+-				break;
+-			case PCORE_DCCR_L2_1MB:
+-				seq_printf(m, "1MB");
+-				break;
+-			case PCORE_DCCR_L2_512KB:
+-				seq_printf(m, "512KB");
+-				break;
+-			default:
+-				seq_printf(m, "error");
+-				break;
+-		}
+-
+-	seq_printf(m, "\n");
+-
+-	return 0;
 -}
+-
+-static void __init
+-pcore_setup_arch(void)
+-{
+-	/* init to some ~sane value until calibrate_delay() runs */
+-	loops_per_jiffy = 50000000/HZ;
+-
+-	/* Lookup PCI host bridges */
+-	board_type = pcore_find_bridges();
+-
+-#ifdef CONFIG_BLK_DEV_INITRD
+-	if (initrd_start)
+-		ROOT_DEV = Root_RAM0;
+-        else
+-#endif
+-#ifdef CONFIG_ROOT_NFS
+-		ROOT_DEV = Root_NFS;
+-#else
+-		ROOT_DEV = Root_SDA2;
+-#endif
+-
+- 	printk(KERN_INFO "Force PowerCore ");
+-	if (board_type == PCORE_TYPE_6750)
+-		printk("6750\n");
+-	else
+-		printk("680\n");
+-	printk(KERN_INFO "Port by MontaVista Software, Inc. (source@mvista.com)\n");
+-	_set_L2CR(L2CR_L2E | _get_L2CR());
+-
+-}
+-
+-static void
+-pcore_restart(char *cmd)
+-{
+-	local_irq_disable();
+-	/* Hard reset */
+-	writeb(0x11, 0xfe000332);
+-	while(1);
+-}
+-
+-static void
+-pcore_halt(void)
+-{
+-	local_irq_disable();
+-	/* Turn off user LEDs */
+-	writeb(0x00, 0xfe000300);
+-	while (1);
+-}
+-
+-static void
+-pcore_power_off(void)
+-{
+-	pcore_halt();
+-}
+-
+-
+-static void __init
+-pcore_init_IRQ(void)
+-{
+-	int i;
+-
+-	for ( i = 0 ; i < 16 ; i++ )
+-		irq_desc[i].handler = &i8259_pic;
+-
+-	i8259_init(0);
+-}
+-
+-/*
+- * Set BAT 3 to map 0xf0000000 to end of physical memory space.
+- */
+-static __inline__ void
+-pcore_set_bat(void)
+-{
+-	mb();
+-	mtspr(SPRN_DBAT3U, 0xf0001ffe);
+-	mtspr(SPRN_DBAT3L, 0xfe80002a);
+-	mb();
+-
+-}
+-
+-static unsigned long __init
+-pcore_find_end_of_memory(void)
+-{
+-
+-	return mpc10x_get_mem_size(MPC10X_MEM_MAP_B);
+-}
+-
+-static void __init
+-pcore_map_io(void)
+-{
+-	io_block_mapping(0xfe000000, 0xfe000000, 0x02000000, _PAGE_IO);
+-}
+-
+-TODC_ALLOC();
 -
 -void __init
 -platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
--	      unsigned long r6, unsigned long r7)
+-		unsigned long r6, unsigned long r7)
 -{
--	ppc4xx_init(r3, r4, r5, r6, r7);
+-	parse_bootinfo(find_bootinfo());
 -
--	ppc_md.setup_arch = ep405_setup_arch;
--	ppc_md.setup_io_mappings = ep405_map_io;
--	ppc_md.init_IRQ = ep405_init_IRQ;
+-	/* Cover I/O space with a BAT */
+-	/* yuck, better hope your ram size is a power of 2  -- paulus */
+-	pcore_set_bat();
 -
--	ppc_md.nvram_read_val = todc_direct_read_val;
--	ppc_md.nvram_write_val = todc_direct_write_val;
+-	isa_io_base = MPC10X_MAPB_ISA_IO_BASE;
+-	isa_mem_base = MPC10X_MAPB_ISA_MEM_BASE;
+-	pci_dram_offset = MPC10X_MAPB_DRAM_OFFSET;
 -
--	if (__res.bi_nvramsize == 512*1024) {
--		ppc_md.time_init = todc_time_init;
--		ppc_md.set_rtc_time = todc_set_rtc_time;
--		ppc_md.get_rtc_time = todc_get_rtc_time;
--	} else {
--		printk("EP405: NVRTC size is not 512k (not a DS1557).  Not sure what to do with it\n");
--	}
+-	ppc_md.setup_arch	= pcore_setup_arch;
+-	ppc_md.show_cpuinfo	= pcore_show_cpuinfo;
+-	ppc_md.init_IRQ		= pcore_init_IRQ;
+-	ppc_md.get_irq		= i8259_irq;
+-
+-	ppc_md.find_end_of_memory = pcore_find_end_of_memory;
+-	ppc_md.setup_io_mappings = pcore_map_io;
+-
+-	ppc_md.restart		= pcore_restart;
+-	ppc_md.power_off	= pcore_power_off;
+-	ppc_md.halt		= pcore_halt;
+-
+-	TODC_INIT(TODC_TYPE_MK48T59,
+-		  PCORE_NVRAM_AS0,
+-		  PCORE_NVRAM_AS1,
+-		  PCORE_NVRAM_DATA,
+-		  8);
+-
+-	ppc_md.time_init	= todc_time_init;
+-	ppc_md.get_rtc_time	= todc_get_rtc_time;
+-	ppc_md.set_rtc_time	= todc_set_rtc_time;
+-	ppc_md.calibrate_decr	= todc_calibrate_decr;
+-
+-	ppc_md.nvram_read_val	= todc_m48txx_read_val;
+-	ppc_md.nvram_write_val	= todc_m48txx_write_val;
+-
+-#ifdef CONFIG_SERIAL_TEXT_DEBUG
+-	ppc_md.progress = gen550_progress;
+-#endif
+-#ifdef CONFIG_KGDB
+-	ppc_md.kgdb_map_scc = gen550_kgdb_map_scc;
+-#endif
 -}
-diff --git a/arch/ppc/platforms/4xx/ep405.h b/arch/ppc/platforms/4xx/ep405.h
+diff --git a/arch/ppc/platforms/pcore.h b/arch/ppc/platforms/pcore.h
 deleted file mode 100644
---- a/arch/ppc/platforms/4xx/ep405.h
+--- a/arch/ppc/platforms/pcore.h
 +++ /dev/null
-@@ -1,54 +0,0 @@
+@@ -1,39 +0,0 @@
 -/*
-- * arch/ppc/platforms/4xx/ep405.h
+- * arch/ppc/platforms/pcore.h
 - *
-- * Embedded Planet 405GP board
-- * http://www.embeddedplanet.com
+- * Definitions for Force PowerCore board support
 - *
-- * Author: Matthew Locke <mlocke@mvista.com>
+- * Author: Matt Porter <mporter@mvista.com>
 - *
-- * 2000 (c) MontaVista, Software, Inc.  This file is licensed under
+- * 2001 (c) MontaVista, Software, Inc.  This file is licensed under
 - * the terms of the GNU General Public License version 2.  This program
 - * is licensed "as is" without any warranty of any kind, whether express
 - * or implied.
 - */
 -
--#ifdef __KERNEL__
--#ifndef __ASM_EP405_H__
--#define __ASM_EP405_H__
+-#ifndef __PPC_PLATFORMS_PCORE_H
+-#define __PPC_PLATFORMS_PCORE_H
 -
--/* We have a 405GP core */
--#include <platforms/4xx/ibm405gp.h>
+-#include <asm/mpc10x.h>
 -
--#ifndef __ASSEMBLY__
+-#define PCORE_TYPE_6750			1
+-#define PCORE_TYPE_680			2
 -
--#include <linux/types.h>
+-#define PCORE_NVRAM_AS0			0x73
+-#define PCORE_NVRAM_AS1			0x75
+-#define PCORE_NVRAM_DATA		0x77
 -
--typedef struct board_info {
--	unsigned int	 bi_memsize;		/* DRAM installed, in bytes */
--	unsigned char	 bi_enetaddr[6];	/* Local Ethernet MAC address */
--	unsigned int	 bi_intfreq;		/* Processor speed, in Hz */
--	unsigned int	 bi_busfreq;		/* PLB Bus speed, in Hz */
--	unsigned int	 bi_pci_busfreq;	/* PCI Bus speed, in Hz */
--	unsigned int	 bi_nvramsize;		/* Size of the NVRAM/RTC */
--} bd_t;
+-#define PCORE_DCCR_REG			(MPC10X_MAPB_ISA_IO_BASE + 0x308)
+-#define PCORE_DCCR_L2_MASK		0xc0
+-#define PCORE_DCCR_L2_0KB		0x00
+-#define PCORE_DCCR_L2_256KB		0x40
+-#define PCORE_DCCR_L2_512KB		0xc0
+-#define PCORE_DCCR_L2_1MB		0x80
+-#define PCORE_DCCR_L2_2MB		0x00
 -
--/* Some 4xx parts use a different timebase frequency from the internal clock.
--*/
--#define bi_tbfreq bi_intfreq
+-#define PCORE_WINBOND_IDE_INT		0x43
+-#define PCORE_WINBOND_PCI_INT		0x44
+-#define PCORE_WINBOND_PRI_EDG_LVL	0x4d0
+-#define PCORE_WINBOND_SEC_EDG_LVL	0x4d1
 -
--extern u8 *ep405_bcsr;
--extern u8 *ep405_nvram;
--
--/* Map for the BCSR and NVRAM space */
--#define EP405_BCSR_PADDR	((uint)0xf4000000)
--#define EP405_BCSR_SIZE		((uint)16)
--#define EP405_NVRAM_PADDR	((uint)0xf4200000)
--
--/* serial defines */
--#define BASE_BAUD		399193
--
--#define PPC4xx_MACHINE_NAME "Embedded Planet 405GP"
--
--#endif /* !__ASSEMBLY__ */
--#endif /* __ASM_EP405_H__ */
--#endif /* __KERNEL__ */
-diff --git a/include/asm-ppc/ibm4xx.h b/include/asm-ppc/ibm4xx.h
---- a/include/asm-ppc/ibm4xx.h
-+++ b/include/asm-ppc/ibm4xx.h
-@@ -27,10 +27,6 @@
- #include <platforms/4xx/cpci405.h>
- #endif
- 
--#if defined(CONFIG_EP405)
--#include <platforms/4xx/ep405.h>
--#endif
--
- #if defined(CONFIG_REDWOOD_5)
- #include <platforms/4xx/redwood5.h>
- #endif
+-#endif /* __PPC_PLATFORMS_PCORE_H */
+diff --git a/arch/ppc/syslib/Makefile b/arch/ppc/syslib/Makefile
+--- a/arch/ppc/syslib/Makefile
++++ b/arch/ppc/syslib/Makefile
+@@ -59,7 +59,6 @@ obj-$(CONFIG_MVME5100)		+= open_pic.o to
+ obj-$(CONFIG_MVME5100_IPMC761_PRESENT)	+= i8259.o
+ obj-$(CONFIG_OCOTEA)		+= indirect_pci.o pci_auto.o todc_time.o
+ obj-$(CONFIG_PAL4)		+= cpc700_pic.o
+-obj-$(CONFIG_PCORE)		+= todc_time.o i8259.o pci_auto.o
+ obj-$(CONFIG_POWERPMC250)	+= pci_auto.o
+ obj-$(CONFIG_PPLUS)		+= hawk_common.o open_pic.o i8259.o \
+ 				   indirect_pci.o todc_time.o pci_auto.o
