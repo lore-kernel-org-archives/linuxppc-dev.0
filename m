@@ -1,16 +1,23 @@
-Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15805.mail.cnb.yahoo.com (web15805.mail.cnb.yahoo.com
-	[202.165.102.85]) by ozlabs.org (Postfix) with SMTP id 3679767D9D
+Return-Path: <joern@wohnheim.fh-wedel.de>
+Received: from moskovskaya.fh-wedel.de (mail.fh-wedel.de [213.39.232.198])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id F307467D40
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Jul 2005 18:57:14 +1000 (EST)
-Message-ID: <20050728085706.74550.qmail@web15805.mail.cnb.yahoo.com>
-Date: Thu, 28 Jul 2005 16:57:06 +0800 (CST)
-From: Sam Song <samlinuxppc@yahoo.com.cn>
-To: linuxppc-embedded@ozlabs.org
-In-Reply-To: <20050727135233.7367.qmail@web15803.mail.cnb.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
-Subject: Re : custom ads8272 board PCI interrupt no response
+	Thu, 28 Jul 2005 19:19:13 +1000 (EST)
+Date: Thu, 28 Jul 2005 11:18:37 +0200
+From: =?iso-8859-1?Q?J=F6rn?= Engel <joern@wohnheim.fh-wedel.de>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Message-ID: <20050728091837.GC25033@wohnheim.fh-wedel.de>
+References: <1122500059.28777@shark.he.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1122500059.28777@shark.he.net>
+Cc: Netdev <netdev@vger.kernel.org>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>,
+	Francois Romieu <romieu@fr.zoreil.com>
+Subject: Re: [RFC PATCH 1/4] PHY Abstraction Layer III (now with more
+	splitiness)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,66 +28,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Sam Song <samlinuxppc@yahoo.com.cn> wrote:
-> Hi all,
+On Wed, 27 July 2005 14:34:19 -0700, Randy Dunlap wrote:
+> > 
+> > Ok, here I won't agree to disagree with you.  !foo as a check for  
+> > NULL is a reasonable idea, but not my style.  If that's the preferred  
+> > style for the kernel, I will do that.
+> > 
+> > But (var == constant) is a style that asks for errors.  By putting  
+> > the constant first in these checks, you never run the risk of leaving  
+> > a bug like this:
+> > 
+> > if (dev = NULL)
+> >      ...
+> > 
+> > This kind of error is quite frustrating to detect, and the eye will  
+> > often miss it when scanning for errors.  If you follow constant ==  
+> > var, though, then the bug looks like this:
+> > 
+> > if (NULL = dev)
+> > 
+> > which is instantly caught by the compiler.
+> > 
+> > Just my 32 cents
 > 
-> A PCI interrupt probelm confused me when porting
-> 2.6.13-rc3 on a custom 8248 board. There was a 
-> Gb ethernet RTL8110S on board with IDSEL AD25 and
-> IRQ3. So I made some changes as follows:
-> 
-> --- linux-2.6.13-rc3/arch/ppc/platforms/pq2ads.h
-> +++ linux-2.6.13-rc3-sam/arch/ppc/platforms/pq2ads.h
-> @@ -74,11 +78,11 @@
-> -#define PCI_INT_TO_SIU 	SIU_INT_IRQ2
-> +#define PCI_INT_TO_SIU 	SIU_INT_IRQ3
+> Yes, we know about that argument.  :)
 
-Ummm, not the case. ADS8272 uses a CPLD PCI interrupt
-controller which takes up IRQ2. No need to me:-)
+The counter-argument basically goes like this:
 
-> --- linux-2.6.13-rc3/arch/ppc/syslib/m82xx_pci.c
-> +++ linux-2.6.13-rc3-sam/arch/ppc/syslib/m82xx_pci.c
-> @@ -60,12 +60,20 @@
->       * 	  A      B      C      D
->       */
->       {
-> +#if 0
->     { PIRQA, PIRQB, PIRQC, PIRQD },/* IDSEL 22 - PCI
-> 
-> slot 0 */
->     { PIRQD, PIRQA, PIRQB, PIRQC }, /* IDSEL 23 -
-> PCI 
-> slot 1 */
->     { PIRQC, PIRQD, PIRQA, PIRQB }, /* IDSEL 24 -
-> PCI 
-> slot 2 */
-> +#else  
-> + {22, 22, 22, 22},/* IDSEL 22/IRQ4-PCI slot 0-USB
-> */
-> + {23, 23, 23, 23},/* IDSEL 23/IRQ5-PCI slot 1-IDE
-> */
-> + {24, 24, 0,   0},/* IDSEL 24 - PCI slot # - NULL
-> */
-> + {25, 25, 25, 25},/* IDSEL 25/IRQ3-PCI slot 2- Gb
-> */
+1. All relevant compilers (GCC) warn on "if (dev = NULL)", so you will
+only miss the bug if you ignore compiler warnings.  Ignoring compiler
+warnings is not generally endorsed by the kernel crowd.
 
-Set IRQ3 in the last line as 21 to assign the IRQ3
-to Gb ethernet.
+2. Very hard to read, "if (NULL = dev)" is.  Reversing the order is a
+fun thing to do for small green characters in fantasy and scifi
+stories and fairly popular in peotry as well.  But understanding the
+meaning of reverse order sentences takes more time.  In the kernel,
+peer review is an important aspect and making the code hard to read
+hurts peer review.
 
-> Gb interrupt remained unchangable in the whole test
-> process. I could ping target itself but not for 
-> outside machine. So I suspect this result was due to
-> PCI interrupt setting but don't know where the
-> probelm is. Any idea?
+And maybe you can add another one:
 
-Well, I finally masked pq2ads interrupt irq init and
-adjusted SIUMCR IRQ3 setting correctly. Then 
-everything went as smoothly as clockwork.
+3. Im my personal experience, reverse order comparisons were a good
+indicator of buggy code.
 
-Sorry to bother here:-)
+Jörn
 
-Sam
-
-__________________________________________________
-¸Ï¿ì×¢²áÑÅ»¢³¬´óÈÝÁ¿Ãâ·ÑÓÊÏä?
-http://cn.mail.yahoo.com
+-- 
+Schrödinger's cat is <BLINK>not</BLINK> dead.
+-- Illiad
