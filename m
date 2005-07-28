@@ -1,23 +1,21 @@
-Return-Path: <joern@wohnheim.fh-wedel.de>
-Received: from moskovskaya.fh-wedel.de (mail.fh-wedel.de [213.39.232.198])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <ajz@cambridgebroadband.com>
+Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
+	[217.204.121.83])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F307467D40
+	by ozlabs.org (Postfix) with ESMTP id 6CADC67D91
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Jul 2005 19:19:13 +1000 (EST)
-Date: Thu, 28 Jul 2005 11:18:37 +0200
-From: =?iso-8859-1?Q?J=F6rn?= Engel <joern@wohnheim.fh-wedel.de>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Message-ID: <20050728091837.GC25033@wohnheim.fh-wedel.de>
-References: <1122500059.28777@shark.he.net>
+	Thu, 28 Jul 2005 19:41:37 +1000 (EST)
+Date: Thu, 28 Jul 2005 10:41:27 +0100
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
+To: bbosch@iphase.com
+Message-Id: <20050728104127.4dfce3ec.ajz@cambridgebroadband.com>
+In-Reply-To: <17127.49093.492554.638213@waldo.lisle.iphase.com>
+References: <17127.49093.492554.638213@waldo.lisle.iphase.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1122500059.28777@shark.he.net>
-Cc: Netdev <netdev@vger.kernel.org>,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>,
-	Francois Romieu <romieu@fr.zoreil.com>
-Subject: Re: [RFC PATCH 1/4] PHY Abstraction Layer III (now with more
-	splitiness)
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: CPM MCC sample driver?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,51 +26,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, 27 July 2005 14:34:19 -0700, Randy Dunlap wrote:
-> > 
-> > Ok, here I won't agree to disagree with you.  !foo as a check for  
-> > NULL is a reasonable idea, but not my style.  If that's the preferred  
-> > style for the kernel, I will do that.
-> > 
-> > But (var == constant) is a style that asks for errors.  By putting  
-> > the constant first in these checks, you never run the risk of leaving  
-> > a bug like this:
-> > 
-> > if (dev = NULL)
-> >      ...
-> > 
-> > This kind of error is quite frustrating to detect, and the eye will  
-> > often miss it when scanning for errors.  If you follow constant ==  
-> > var, though, then the bug looks like this:
-> > 
-> > if (NULL = dev)
-> > 
-> > which is instantly caught by the compiler.
-> > 
-> > Just my 32 cents
+On Wed, 27 Jul 2005 12:09:25 -0500
+bbosch@iphase.com wrote:
+
+> A couple of years ago, Adam Kaczynski announced a sample MCC HDLC and
+> Transparent mode driver.  Both the URL Adam posted and Adam's email
+> address are no longer valid.  Is this code or any other Linux MCC
+> driver available anywhere?  I need to develop an MCC driver for a
+> project I am working on and it would be very helpful to have an
+> example to start with.
 > 
-> Yes, we know about that argument.  :)
 
-The counter-argument basically goes like this:
+I'm not sure what you mean by MCC.  I've got an PQI SCC tranparent mode driver which implements a
+character device for reading from/writing to a PCM bus.  I wrote it a couple of years ago and tested
+it using an external loopback - but I've never used it in anger.  Would this be useful to you?
 
-1. All relevant compilers (GCC) warn on "if (dev = NULL)", so you will
-only miss the bug if you ignore compiler warnings.  Ignoring compiler
-warnings is not generally endorsed by the kernel crowd.
-
-2. Very hard to read, "if (NULL = dev)" is.  Reversing the order is a
-fun thing to do for small green characters in fantasy and scifi
-stories and fairly popular in peotry as well.  But understanding the
-meaning of reverse order sentences takes more time.  In the kernel,
-peer review is an important aspect and making the code hard to read
-hurts peer review.
-
-And maybe you can add another one:
-
-3. Im my personal experience, reverse order comparisons were a good
-indicator of buggy code.
-
-Jörn
-
--- 
-Schrödinger's cat is <BLINK>not</BLINK> dead.
--- Illiad
+Alex
