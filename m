@@ -1,18 +1,19 @@
-Return-Path: <Baohua.WANG@alcatel-sbell.com.cn>
-Received: from mail.alcatel-sbell.com.cn (nat1.alcatel-sbell.com.cn
-	[202.96.203.177]) by ozlabs.org (Postfix) with ESMTP id CC58A67D87
+Return-Path: <simlo@phys.au.dk>
+Received: from lirs02.phys.au.dk (lirs02.phys.au.dk [130.225.28.43])
+	by ozlabs.org (Postfix) with ESMTP id EFC3F67D8E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Jul 2005 15:17:52 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=UTF-8
-Date: Thu, 28 Jul 2005 13:12:36 +0800
-Message-ID: <A9DE2BAF233E444FA9C5E77A5825A01E8652D9@ydmail.sbell.com.cn>
-From: "FCG WANG Baohua" <Baohua.WANG@alcatel-sbell.com.cn>
-To: "Frank" <frannk_m1@yahoo.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: =?utf-8?b?562U5aSNOiA/LT/CpDogSG93IHRvIGxvYWQgYSBsaW51eCBrZXJu?=
-	=?utf-8?q?el_under_vxworks_bootloader_=28PPC860_board=29?=
+	Thu, 28 Jul 2005 18:47:36 +1000 (EST)
+Date: Thu, 28 Jul 2005 09:47:26 +0200 (METDST)
+From: Esben Nielsen <simlo@phys.au.dk>
+To: Frank <frannk_m1@yahoo.com>
+In-Reply-To: <20050728042840.36296.qmail@web32203.mail.mud.yahoo.com>
+Message-Id: <Pine.OSF.4.05.10507280943410.17491-100000@da410.phys.au.dk>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: FCG WANG Baohua <Baohua.WANG@alcatel-sbell.com.cn>,
+	linuxppc-embedded@ozlabs.org
+Subject: Re: How to load a linux kernel under vxworks bootloader (PPC860
+ board)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,53 +24,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-RGVhciBGcmFuazoNCiAgSG93IGNhbiBJIHJldmlzZSB0aGUgYWRkcmVzcyBvZiBsaW5rZWQgdG8g
-Ym9vdCBpbiBVLUJvb3QgTWFrZWZpbGUgb3IgY29uZmlnIGZpbGUgPyBUaGFua3MgIQ0KICBJIHVz
-ZSB0aGUgbWtpbWFnZSB1dGlsaXR5IG9mIFBQQ0Jvb3QgdG8gcmVsb2NhdGUgdGhlIGVudHJ5IHBv
-aW50IHRvIDB4MTAwMCwgYnV0IEkgc3RpbGwgZ2V0IHRoZSANCiAic3RhcnRpbmcgYXQgMHgyODAw
-MDAuLi4uLiIuIEhvdyB0byBtYWtlIGl0IGVmZmVjdD8gVGhhbmtzICENCg0KDQotLS0tLeWOn+Wn
-i+mCruS7ti0tLS0tDQrlj5Hku7bkuro6IEZyYW5rIFttYWlsdG86ZnJhbm5rX20xQHlhaG9vLmNv
-bV0NCuWPkemAgeaXtumXtDogMjAwNeW5tDfmnIgyOOaXpSAxMjo1Nw0K5pS25Lu25Lq6OiBGQ0cg
-V0FORyBCYW9odWENCuS4u+mimDogUmU6ID8tP8KkOiBIb3cgdG8gbG9hZCBhIGxpbnV4IGtlcm5l
-bCB1bmRlciB2eHdvcmtzIGJvb3Rsb2FkZXIgKFBQQzg2MCBib2FyZCkNCg0KDQpTb3JyeSwNCkJ1
-dCB5b3Ugd2lsbCBoYXZlIHRvIHJlY29tcGlsZSB1LWJvb3QgYXQgdGhhdCBhZGRyZXNzLiBJdCdz
-DQpvcmlnaW5hbGx5IGNvbXBpbGVkIGFuZCBsaW5rZWQgdG8gYm9vdCBhdCAweGZmZjAwMTAwLiBJ
-IGRvbid0DQprbm93IHdoYXQgeW91IGhhdmUgdG8gZG8gd2l0aCB2eFdvcmtzIHJvbS4uLg0KDQot
-LS0gRkNHIFdBTkcgQmFvaHVhIDxCYW9odWEuV0FOR0BhbGNhdGVsLXNiZWxsLmNvbS5jbj4gd3Jv
-dGU6DQoNCj4gRGVhciBGcmFuazoNCj4gIEkgY2Fubm90IHJlcGxhY2UgdGhlIHZ4V29ya3MgYm9v
-dHJvbSBiZWNhdXNlIEkgaGF2ZSBubyBzb3VyY2UNCj4gYW5kIGJpbiBmaWxlcyBvZiB2eHdvcmtz
-IGJvb3Rsb2FkZXIsIEkgaGF2ZSBldmVuIG5vIHRoZSANCj4gIGhhcmR3YXJlIGRpYWdyYW0gcmVz
-b3VyY2Ugb2YgbXkgUFBDIDg2MCBib2FyZC4gIElmIEkgd3JpdGUNCj4gdGhlIFUtQm9vdCBpbnRv
-IHRoZSByb20sIEkgbW9zdCBwb3NzaWJsZSBjYW5ub3QgYm9vdHVwIHRoZQ0KPiBib2FyZC4NCj4g
-IEhvdyB0byBkb3dubG9hZCB0aGUgVS1Cb290IGludG8gUkFNIGRpcmVjdGx5IHVzaW5nIHRoZQ0K
-PiB2eFdvcmtzIGJvb3Rsb2FkZXIsIEkgdHJpZWQgdG8gbG9hZCB0aGUgVS1Cb290IEVMRiBpbWFn
-ZSBidXQNCj4gZ2V0IHRoZSBzYW1lIA0KPiAgcmVzdWx0ICJzdGFydGluZyBhdCAweDI4MDAwMCAu
-Li4iIHRoZW4gbm8gcmVzcG9uc2UgZnJvbSB0aGUNCj4gc2VyaWFsIGNvbnNvbGUuDQo+ICBUaGUg
-b25seSB0aGluZyBJIGNhbiBkbyBpcyB1c2UgdnhXb3JrcyBURlRQIHRvIGRvd25sb2FkIHRoZQ0K
-PiBFTEYgaW1hZ2UgZm9yIGxpbnV4IGtlcm5lbCBvciBVLUJvb3QgaW50byBSQU0uIA0KPiAgIENh
-biB5b3UgdGVsbCBtZSBob3cgdG8gc2xvdmUgdGhlICBVLUJvb3QgInN0YXJ0aW5nIGF0DQo+IDB4
-MjgwMDAwIC4uLiIgIHByb2JsZW0gPyB0aGFua3MhDQo+ICAgDQo+IA0KPiAtLS0tLcOlxb3FuMOl
-wqfigLnDqeKAmsKuw6TCu8K2LS0tLS0NCj4gw6XCj+KAmMOkwrvCtsOkwrrCujogRnJhbmsgW21h
-aWx0bzpmcmFubmtfbTFAeWFob28uY29tXQ0KPiDDpcKP4oCYw6nigqzCgcOm4oCUwrbDqeKAlOKA
-sjogMjAwNcOlwrnigLI3w6bFk8uGMjjDpuKAlO+/pSAxMjoyOQ0KPiDDpuKAncK2w6TCu8K2w6TC
-usK6OiBGQ0cgV0FORyBCYW9odWE7IGxpbnV4cHBjLWVtYmVkZGVkQG96bGFicy5vcmcNCj4gw6TC
-uMK7w6nvv6DLnDogUmU6IEhvdyB0byBsb2FkIGEgbGludXgga2VybmVsIHVuZGVyIHZ4d29ya3MN
-Cj4gYm9vdGxvYWRlciAoUFBDODYwIGJvYXJkKQ0KPiANCj4gDQo+IA0KPiANCj4gLS0tIEZDRyBX
-QU5HIEJhb2h1YSA8QmFvaHVhLldBTkdAYWxjYXRlbC1zYmVsbC5jb20uY24+IHdyb3RlOg0KPiAN
-Cj4gPiBEZWFyIEFsbDoNCj4gPiAgIEkgd2FudCB0byBib290IGEgbGludXggMi40LjI1IGtlcm5l
-bCB1bmRlciB2eHdvcmtzDQo+ID4gYm9vdGxvYWRlci4gV2hlbiBJIHVzaW5nIGZsYXQgbW9kZSgw
-eDIwMDAwMCAtLT4gIDB4MTAwMDApDQo+ID4ga2VybmVsICB1bmNvbXByZXNzZWQgRUxGIGZvcm1h
-dCAoIHZtbGludXggKSwNCj4gPiAgYW5kIGRvd25sb2FkIGl0IHVzaW5nIFRGVFAgb2Ygdnh3b3Jr
-cywgaXQgcHJpbnQgdGhlDQo+ICJzdGFydGluZw0KPiA+IGF0IDB4MTAwMCAuLi4uIiBhbmQgIGZy
-ZWV6ZS4gIE5vIGlucHV0IG9yIG91dHB1dCBvbiBzZXJpYWwNCj4gPiBwb3J0Lg0KPiA+ICBUaGUg
-dmVyc2lvbiBvZiB2eHdvcmtzIGlzIDUuMy4xLiANCj4gPiAgY2FuIHlvdSBnaXZlIG1lIHNvbWUg
-ZGV0YWlsIGFkdmljZSBvciBnaXZlIG1lIGEgdG9vbCB0bw0KPiBzbG92ZQ0KPiA+IGl0PyB0aGFu
-a3MgIQ0KPiANCj4gRG8gd2hhdCBJIGRpZDoNCj4gUmVwbGFjZSB0aGUgdnhXb3JrcyByb20gd2l0
-aCB5b3UgdS1ib290IGFuZCB5b3UgY2FuIGJvb3QgTGludXgNCj4gb3IgdnhXb3JrcyB3aXRoIHRo
-ZSBzYW1lIGJvb3Rsb2FkZXIuDQo+IA0KPiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fXw0KPiBEbyBZb3UgWWFob28hPw0KPiBUaXJlZCBvZiBzcGFtPyAg
-WWFob28hIE1haWwgaGFzIHRoZSBiZXN0IHNwYW0gcHJvdGVjdGlvbg0KPiBhcm91bmQgDQo+IGh0
-dHA6Ly9tYWlsLnlhaG9vLmNvbSANCj4gDQoNCg0KX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX18NCkRvIFlvdSBZYWhvbyE/DQpUaXJlZCBvZiBzcGFtPyAg
-WWFob28hIE1haWwgaGFzIHRoZSBiZXN0IHNwYW0gcHJvdGVjdGlvbiBhcm91bmQgDQpodHRwOi8v
-bWFpbC55YWhvby5jb20gDQo=
+On Wed, 27 Jul 2005, Frank wrote:
+
+> 
+> 
+> --- FCG WANG Baohua <Baohua.WANG@alcatel-sbell.com.cn> wrote:
+> 
+> > Dear All:
+> >   I want to boot a linux 2.4.25 kernel under vxworks
+> > bootloader. When I using flat mode(0x200000 -->  0x10000)
+> > kernel  uncompressed ELF format ( vmlinux ),
+> >  and download it using TFTP of vxworks, it print the "starting
+> > at 0x1000 ...." and  freeze.  No input or output on serial
+> > port.
+> >  The version of vxworks is 5.3.1. 
+> >  can you give me some detail advice or give me a tool to slove
+> > it? thanks !
+
+I have done it on a MPC5200 with a vxWorks 5.5 bootsector with ethernet
+support: I just boot over FTP.  Give it the Linux kernel in elf-format, 
+the bootsector doesn't care, _what_ the code actually is, it just loads
+and run it. 
+
+For vxWorks <= 5.4 I believe coff is used instead of elf - at least on
+some architectures. Then you have a problem, because the kernel isn't
+compiled to coff :-(
+
+Esben
+
+
+> 
+> Do what I did:
+> Replace the vxWorks rom with you u-boot and you can boot Linux
+> or vxWorks with the same bootloader.
+> 
+> __________________________________________________
+> Do You Yahoo!?
+> Tired of spam?  Yahoo! Mail has the best spam protection around 
+> http://mail.yahoo.com 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
