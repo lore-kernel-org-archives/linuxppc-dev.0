@@ -1,19 +1,20 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from parcelfarce.linux.theplanet.co.uk
-	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E1C0167DDE
+Return-Path: <wd@denx.de>
+Received: from mailout08.sul.t-online.com (mailout08.sul.t-online.com
+	[194.25.134.20]) by ozlabs.org (Postfix) with ESMTP id 7B68867DB7
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 29 Jul 2005 07:57:10 +1000 (EST)
-Date: Thu, 28 Jul 2005 06:14:39 -0300
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: akpm@osdl.org
-Message-ID: <20050728091439.GC6101@dmt.cnet>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] 8xx: using dma_alloc_coherent() instead consistent_alloc()
+	Fri, 29 Jul 2005 09:08:59 +1000 (EST)
+To: Igor Marnat <marny@rambler.ru>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 28 Jul 2005 20:18:17 +0400."
+	<200507282018.17849.marny@rambler.ru>
+Date: Fri, 29 Jul 2005 01:08:53 +0200
+Sender: wd@denx.de
+Message-Id: <20050728230853.B4C29352675@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: eth1 on linux 2.4.25 from ELDK 3.1.1 becomes slowly when is
+	pinged by great packets
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,46 +25,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+In message <200507282018.17849.marny@rambler.ru> you wrote:
+>
+> Wolfgang, thank you! 
 
-From: Aristeu Sergio Rozanski Filho <aris@conectiva.com.br>
+You are welcome.
 
-8xx: using dma_alloc_coherent() instead consistent_alloc()
+> I've renewed the kernel from CVS and it works much better now. 
 
-Signed-off-by: Aristeu Sergio Rozanski Filho <aris@conectiva.com.br>
-Signed-off-by: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Fine.
 
-Index: 2.6-8xx/arch/ppc/8xx_io/fec.c
-===================================================================
---- 2.6-8xx.orig/arch/ppc/8xx_io/fec.c	2005-07-04 11:45:57.000000000 -0300
-+++ 2.6-8xx/arch/ppc/8xx_io/fec.c	2005-07-04 11:45:58.000000000 -0300
-@@ -1580,7 +1580,7 @@
- 	struct fec_enet_private *fep;
- 	int i, j, k, err;
- 	unsigned char	*eap, *iap, *ba;
--	unsigned long	mem_addr;
-+	dma_addr_t	mem_addr;
- 	volatile	cbd_t	*bdp;
- 	cbd_t		*cbd_base;
- 	volatile	immap_t	*immap;
-@@ -1645,7 +1645,8 @@
- 		printk("FEC initialization failed.\n");
- 		return 1;
- 	}
--	cbd_base = (cbd_t *)consistent_alloc(GFP_KERNEL, PAGE_SIZE, &mem_addr);
-+	cbd_base = (cbd_t *)dma_alloc_coherent(dev->class_dev.dev, PAGE_SIZE,
-+					       &mem_addr, GFP_KERNEL);
- 
- 	/* Set receive and transmit descriptor base.
- 	*/
-@@ -1662,7 +1663,10 @@
- 
- 		/* Allocate a page.
- 		*/
--		ba = (unsigned char *)consistent_alloc(GFP_KERNEL, PAGE_SIZE, &mem_addr);
-+		ba = (unsigned char *)dma_alloc_coherent(dev->class_dev.dev,
-+							 PAGE_SIZE,
-+							 &mem_addr,
-+							 GFP_KERNEL);
- 		/* BUG: no check for failure */
- 
- 		/* Initialize the BD for every fragment in the page.
+> By the way, the driver for PPChameleonEVB is presented in linuxppc_2_4_devel 
+> module only and is not presented in linux-2.4 module of CVS (there miss the
+
+Yes, this is intentional. The linux-2.4 module  is  a  more  or  less
+frozen  version  of  linux  kernel  version 2.4.4 which we keep alife
+because some of our customers continue to use this in their projects.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+"In Christianity neither morality nor religion come into contact with
+reality at any point."                          - Friedrich Nietzsche
