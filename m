@@ -1,15 +1,13 @@
-Return-Path: <mjoshi_blr@yahoo.com>
-Received: from web40709.mail.yahoo.com (web40709.mail.yahoo.com
-	[66.218.78.166]) by ozlabs.org (Postfix) with SMTP id DC90067D99
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 29 Jul 2005 03:29:41 +1000 (EST)
-Message-ID: <20050728172251.66107.qmail@web40709.mail.yahoo.com>
-Date: Thu, 28 Jul 2005 10:22:39 -0700 (PDT)
-From: Manish Joshi <mjoshi_blr@yahoo.com>
-To: linuxppc-embedded@ozlabs.org
+Return-Path: <bgoodman@empirix.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1966596383-1122571359=:65120"
-Subject: Regarding LAPD on MPC8260/70 Boards.
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Thu, 28 Jul 2005 13:29:13 -0400
+Message-ID: <BD261180E6D35F4D9D32F3E44FD3D901011B00CC@EMPBEDEX.empirix.com>
+From: "Goodman, Brad" <bgoodman@empirix.com>
+To: "Prashant Alange" <prashant.alange@gmail.com>,
+	<Linuxppc-embedded@ozlabs.org>
+Subject: RE: Problem allocating large meory using m8260_cpm_hostalloc
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,39 +18,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-1966596383-1122571359=:65120
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+I think you have to increase MAX_ORDER in linux/mmzone.h
 
-Hi,
- 
-I am working on a project with the objective of bringing up ISDN Layer 2 on MPC8270 boards.
-Is there somebody who has done it before on this list ? If yes, please let me know the things I would have to do to accomplish this.
- 
-As I understand it today, I wil have to write a MCC Driver for MCC and then link the MCC channels to TDM ( 4 ports for me) using SI. My Q.921 layer in turn will receive the HDLC frames from MCC for processing Q.921 state m/c. 
-This is from a very high level and I understand that I will have to do lot of peripheral stuff for this.
-If somebody can throw more light on this, it will be of great help.
- 
-TIA,
-Manish
+This number means you can allocate a maximum of 2^(MAX_ORDER-1)
+contiguous pages.
 
-		
----------------------------------
- Start your day with Yahoo! - make it your home page 
---0-1966596383-1122571359=:65120
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Brad Goodman
 
-<DIV>Hi,</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>I am working on a project with the objective of bringing up ISDN Layer 2 on MPC8270 boards.</DIV>
-<DIV>Is there somebody who has done it before on this list ? If yes, please let me know the things I would have to do to accomplish this.</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>As I understand it today, I wil have to write a MCC Driver for MCC and then link the MCC channels to TDM ( 4 ports for me) using SI. My Q.921 layer in turn will receive the HDLC frames from MCC for processing Q.921 state m/c. </DIV>
-<DIV>This is from a very high level and I understand that I will have to do lot of peripheral stuff for this.</DIV>
-<DIV>If somebody can throw more light on this, it will be of great help.</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>TIA,</DIV>
-<DIV>Manish</DIV><p>
-		<hr size=1> <a href="http://us.rd.yahoo.com/evt=34442/*http://www.yahoo.com/r/hs">Start your day with Yahoo! - make it your home page </a>
---0-1966596383-1122571359=:65120--
+
+-----Original Message-----
+From: linuxppc-embedded-bounces@ozlabs.org
+[mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of Prashant
+Alange
+Sent: Thursday, July 28, 2005 12:50 PM
+To: Linuxppc-embedded@ozlabs.org
+Subject: Problem allocating large meory using m8260_cpm_hostalloc
+
+Hi everyone,
+I am having problem in allocating large memory using=20
+m8260_cpm_hostalloc function in my driver. (Approx 256 Kbytes). I
+tried increaing the NUM_CPM_HOST_PAGES macro in cpm_8260.h file to 64
+but still it fails for 200K of memory request. This macro is used by
+alloc_bootmem_pages() function. I have read that we should use this
+function if we intend to have consecutive memory pages allocated.
+
+Could anyone tell what I am missing here?
+How can I allocate large memory in my driver using this hostalloc
+function?
+
+Thanks for your time.
+
+Prashant
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
