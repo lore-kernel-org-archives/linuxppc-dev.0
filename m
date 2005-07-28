@@ -1,18 +1,17 @@
-Return-Path: <frannk_m1@yahoo.com>
-Received: from web32203.mail.mud.yahoo.com (web32203.mail.mud.yahoo.com
-	[68.142.207.134]) by ozlabs.org (Postfix) with SMTP id 091DB67D75
+Return-Path: <Baohua.WANG@alcatel-sbell.com.cn>
+Received: from mail.alcatel-sbell.com.cn (nat1.alcatel-sbell.com.cn
+	[202.96.203.177]) by ozlabs.org (Postfix) with ESMTP id 8673967CFD
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Jul 2005 14:35:22 +1000 (EST)
-Message-ID: <20050728042840.36296.qmail@web32203.mail.mud.yahoo.com>
-Date: Wed, 27 Jul 2005 21:28:40 -0700 (PDT)
-From: Frank <frannk_m1@yahoo.com>
-To: FCG WANG Baohua <Baohua.WANG@alcatel-sbell.com.cn>,
-	linuxppc-embedded@ozlabs.org
-In-Reply-To: <A9DE2BAF233E444FA9C5E77A5825A01E8652D4@ydmail.sbell.com.cn>
+	Thu, 28 Jul 2005 14:52:45 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Subject: Re: How to load a linux kernel under vxworks bootloader (PPC860
-	board)
+Content-Type: text/plain;
+	charset=UTF-8
+Date: Thu, 28 Jul 2005 12:49:33 +0800
+Message-ID: <A9DE2BAF233E444FA9C5E77A5825A01E8652D6@ydmail.sbell.com.cn>
+From: "FCG WANG Baohua" <Baohua.WANG@alcatel-sbell.com.cn>
+To: "Frank" <frannk_m1@yahoo.com>, <linuxppc-embedded@ozlabs.org>
+Subject: =?utf-8?q?=E7=AD=94=E5=A4=8D=3A_How_to_load_a_linux_kernel_under?=
+	=?utf-8?q?_vxworks_bootloader_=28PPC860_board=29?=
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,26 +22,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-
---- FCG WANG Baohua <Baohua.WANG@alcatel-sbell.com.cn> wrote:
-
-> Dear All:
->   I want to boot a linux 2.4.25 kernel under vxworks
-> bootloader. When I using flat mode(0x200000 -->  0x10000)
-> kernel  uncompressed ELF format ( vmlinux ),
->  and download it using TFTP of vxworks, it print the "starting
-> at 0x1000 ...." and  freeze.  No input or output on serial
-> port.
->  The version of vxworks is 5.3.1. 
->  can you give me some detail advice or give me a tool to slove
-> it? thanks !
-
-Do what I did:
-Replace the vxWorks rom with you u-boot and you can boot Linux
-or vxWorks with the same bootloader.
-
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+RGVhciBGcmFuazoNCiBJIGNhbm5vdCByZXBsYWNlIHRoZSB2eFdvcmtzIGJvb3Ryb20gYmVjYXVz
+ZSBJIGhhdmUgbm8gc291cmNlIGFuZCBiaW4gZmlsZXMgb2Ygdnh3b3JrcyBib290bG9hZGVyLCBJ
+IGhhdmUgZXZlbiBubyB0aGUgDQogaGFyZHdhcmUgZGlhZ3JhbSByZXNvdXJjZSBvZiBteSBQUEMg
+ODYwIGJvYXJkLiAgSWYgSSB3cml0ZSB0aGUgVS1Cb290IGludG8gdGhlIHJvbSwgSSBtb3N0IHBv
+c3NpYmxlIGNhbm5vdCBib290dXAgdGhlIGJvYXJkLg0KIEhvdyB0byBkb3dubG9hZCB0aGUgVS1C
+b290IGludG8gUkFNIGRpcmVjdGx5IHVzaW5nIHRoZSB2eFdvcmtzIGJvb3Rsb2FkZXIsIEkgdHJp
+ZWQgdG8gbG9hZCB0aGUgVS1Cb290IEVMRiBpbWFnZSBidXQgZ2V0IHRoZSBzYW1lIA0KIHJlc3Vs
+dCAic3RhcnRpbmcgYXQgMHgyODAwMDAgLi4uIiB0aGVuIG5vIHJlc3BvbnNlIGZyb20gdGhlIHNl
+cmlhbCBjb25zb2xlLg0KIFRoZSBvbmx5IHRoaW5nIEkgY2FuIGRvIGlzIHVzZSB2eFdvcmtzIFRG
+VFAgdG8gZG93bmxvYWQgdGhlIEVMRiBpbWFnZSBmb3IgbGludXgga2VybmVsIG9yIFUtQm9vdCBp
+bnRvIFJBTS4gDQogIENhbiB5b3UgdGVsbCBtZSBob3cgdG8gc2xvdmUgdGhlICBVLUJvb3QgInN0
+YXJ0aW5nIGF0IDB4MjgwMDAwIC4uLiIgIHByb2JsZW0gPyB0aGFua3MhDQogIA0KDQotLS0tLeWO
+n+Wni+mCruS7ti0tLS0tDQrlj5Hku7bkuro6IEZyYW5rIFttYWlsdG86ZnJhbm5rX20xQHlhaG9v
+LmNvbV0NCuWPkemAgeaXtumXtDogMjAwNeW5tDfmnIgyOOaXpSAxMjoyOQ0K5pS25Lu25Lq6OiBG
+Q0cgV0FORyBCYW9odWE7IGxpbnV4cHBjLWVtYmVkZGVkQG96bGFicy5vcmcNCuS4u+mimDogUmU6
+IEhvdyB0byBsb2FkIGEgbGludXgga2VybmVsIHVuZGVyIHZ4d29ya3MgYm9vdGxvYWRlciAoUFBD
+ODYwIGJvYXJkKQ0KDQoNCg0KDQotLS0gRkNHIFdBTkcgQmFvaHVhIDxCYW9odWEuV0FOR0BhbGNh
+dGVsLXNiZWxsLmNvbS5jbj4gd3JvdGU6DQoNCj4gRGVhciBBbGw6DQo+ICAgSSB3YW50IHRvIGJv
+b3QgYSBsaW51eCAyLjQuMjUga2VybmVsIHVuZGVyIHZ4d29ya3MNCj4gYm9vdGxvYWRlci4gV2hl
+biBJIHVzaW5nIGZsYXQgbW9kZSgweDIwMDAwMCAtLT4gIDB4MTAwMDApDQo+IGtlcm5lbCAgdW5j
+b21wcmVzc2VkIEVMRiBmb3JtYXQgKCB2bWxpbnV4ICksDQo+ICBhbmQgZG93bmxvYWQgaXQgdXNp
+bmcgVEZUUCBvZiB2eHdvcmtzLCBpdCBwcmludCB0aGUgInN0YXJ0aW5nDQo+IGF0IDB4MTAwMCAu
+Li4uIiBhbmQgIGZyZWV6ZS4gIE5vIGlucHV0IG9yIG91dHB1dCBvbiBzZXJpYWwNCj4gcG9ydC4N
+Cj4gIFRoZSB2ZXJzaW9uIG9mIHZ4d29ya3MgaXMgNS4zLjEuIA0KPiAgY2FuIHlvdSBnaXZlIG1l
+IHNvbWUgZGV0YWlsIGFkdmljZSBvciBnaXZlIG1lIGEgdG9vbCB0byBzbG92ZQ0KPiBpdD8gdGhh
+bmtzICENCg0KRG8gd2hhdCBJIGRpZDoNClJlcGxhY2UgdGhlIHZ4V29ya3Mgcm9tIHdpdGggeW91
+IHUtYm9vdCBhbmQgeW91IGNhbiBib290IExpbnV4DQpvciB2eFdvcmtzIHdpdGggdGhlIHNhbWUg
+Ym9vdGxvYWRlci4NCg0KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX18NCkRvIFlvdSBZYWhvbyE/DQpUaXJlZCBvZiBzcGFtPyAgWWFob28hIE1haWwgaGFz
+IHRoZSBiZXN0IHNwYW0gcHJvdGVjdGlvbiBhcm91bmQgDQpodHRwOi8vbWFpbC55YWhvby5jb20g
+DQo=
