@@ -1,16 +1,18 @@
-Return-Path: <prashant.alange@gmail.com>
-Message-ID: <6d145b42050728112919ab22b@mail.gmail.com>
-Date: Thu, 28 Jul 2005 11:29:54 -0700
-From: Prashant Alange <prashant.alange@gmail.com>
-To: Dan Malek <dan@embeddededge.com>
-In-Reply-To: <5367eda3a78096bb46168292371e9530@embeddededge.com>
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id F323767DBC
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 29 Jul 2005 04:32:20 +1000 (EST)
+Date: Thu, 28 Jul 2005 11:32:17 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Andrew Morton <akpm@osdl.org>
+Message-ID: <20050728183217.GA28126@gate.ebshome.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <6d145b4205072809505b101b48@mail.gmail.com>
-	<5367eda3a78096bb46168292371e9530@embeddededge.com>
-Cc: Linuxppc-embedded@ozlabs.org
-Subject: Re: Problem allocating large meory using m8260_cpm_hostalloc
-Reply-To: Prashant Alange <prashant.alange@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-embedded@ozlabs.org
+Subject: [PATCH] ppc32: add missing 4xx EMAC sysfs nodes
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,40 +23,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Could you pls tell me what function I should be using for larger
-memories. I do not know much about the memory management in linux.  It
-would be heleful if you can throw some light on this in terms of
-functions I should use. I could not find the file DMA-API.txt file but
-I did get DMA-mapping.txt. Is this the file you were referring to?
+Add missing 4xx EMAC data sysfs nodes.
 
-Thanks,
-Prashant
+Sugned-off-by: Eugene Surovegin <ebs@ebshome.net>
 
-
-On 7/28/05, Dan Malek <dan@embeddededge.com> wrote:
->=20
-> On Jul 28, 2005, at 12:50 PM, Prashant Alange wrote:
->=20
-> > Could anyone tell what I am missing here?
->=20
-> You are not supposed to be using this function for such memory
-> allocations.
->=20
-> > How can I allocate large memory in my driver using this hostalloc
-> > function?
->=20
-> You don't.  If you look at the existing drivers and comments, you'll
-> see it's
-> intended to only allocate small objects that are too inefficient to
-> manage
-> with the usual Linux DMA allocation functions.  You must use the
-> standard
-> Linux DMA for large allocations.  Read Documentation/DMA-API.txt, and
-> in particular the non-PCI functions.
->=20
-> Thanks.
->=20
->=20
->        -- Dan
->=20
->
+diff --git a/include/asm-ppc/ibm_ocp.h b/include/asm-ppc/ibm_ocp.h
+--- a/include/asm-ppc/ibm_ocp.h
++++ b/include/asm-ppc/ibm_ocp.h
+@@ -71,6 +71,8 @@ struct ocp_func_emac_data {
+ 
+ /* Sysfs support */
+ #define OCP_SYSFS_EMAC_DATA()						\
++OCP_SYSFS_ADDTL(struct ocp_func_emac_data, "%d\n", emac, rgmii_idx)	\
++OCP_SYSFS_ADDTL(struct ocp_func_emac_data, "%d\n", emac, rgmii_mux)	\
+ OCP_SYSFS_ADDTL(struct ocp_func_emac_data, "%d\n", emac, zmii_idx)	\
+ OCP_SYSFS_ADDTL(struct ocp_func_emac_data, "%d\n", emac, zmii_mux)	\
+ OCP_SYSFS_ADDTL(struct ocp_func_emac_data, "%d\n", emac, mal_idx)	\
+@@ -78,9 +80,14 @@ OCP_SYSFS_ADDTL(struct ocp_func_emac_dat
+ OCP_SYSFS_ADDTL(struct ocp_func_emac_data, "%d\n", emac, mal_tx_chan)	\
+ OCP_SYSFS_ADDTL(struct ocp_func_emac_data, "%d\n", emac, wol_irq)	\
+ OCP_SYSFS_ADDTL(struct ocp_func_emac_data, "%d\n", emac, mdio_idx)	\
++OCP_SYSFS_ADDTL(struct ocp_func_emac_data, "%d\n", emac, tah_idx)	\
++OCP_SYSFS_ADDTL(struct ocp_func_emac_data, "%d\n", emac, phy_mode)	\
++OCP_SYSFS_ADDTL(struct ocp_func_emac_data, "0x%08x\n", emac, phy_map)	\
+ 									\
+ void ocp_show_emac_data(struct device *dev)				\
+ {									\
++	device_create_file(dev, &dev_attr_emac_rgmii_idx);		\
++	device_create_file(dev, &dev_attr_emac_rgmii_mux);		\
+ 	device_create_file(dev, &dev_attr_emac_zmii_idx);		\
+ 	device_create_file(dev, &dev_attr_emac_zmii_mux);		\
+ 	device_create_file(dev, &dev_attr_emac_mal_idx);		\
+@@ -88,6 +95,9 @@ void ocp_show_emac_data(struct device *d
+ 	device_create_file(dev, &dev_attr_emac_mal_tx_chan);		\
+ 	device_create_file(dev, &dev_attr_emac_wol_irq);		\
+ 	device_create_file(dev, &dev_attr_emac_mdio_idx);		\
++	device_create_file(dev, &dev_attr_emac_tah_idx);		\
++	device_create_file(dev, &dev_attr_emac_phy_mode);		\
++	device_create_file(dev, &dev_attr_emac_phy_map);		\
+ }
+ 
+ #ifdef CONFIG_40x
+@@ -157,7 +167,7 @@ OCP_SYSFS_ADDTL(struct ocp_func_iic_data
+ 									\
+ void ocp_show_iic_data(struct device *dev)				\
+ {									\
+-	device_create_file(dev, &dev_attr_iic_fast_mode);			\
++	device_create_file(dev, &dev_attr_iic_fast_mode);		\
+ }
+ #endif /* __IBM_OCP_H__ */
+ #endif /* __KERNEL__ */
