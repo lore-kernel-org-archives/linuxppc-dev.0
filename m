@@ -1,16 +1,12 @@
-Return-Path: <bunk@stusta.de>
-Received: from mailout.stusta.mhn.de (emailhub.stusta.mhn.de [141.84.69.5])
-	by ozlabs.org (Postfix) with SMTP id 95E4467D83
-	for <linuxppc-dev@ozlabs.org>; Fri, 29 Jul 2005 00:47:08 +1000 (EST)
-Date: Thu, 28 Jul 2005 16:47:05 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@osdl.org>
-Message-ID: <20050728144705.GK3528@stusta.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] arch/ppc/kernel/ppc_ksyms.c: remove unused #define
-	EXPORT_SYMTAB_STROPS
+Return-Path: <bgoodman@empirix.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="ISO-2022-JP"
+Date: Thu, 28 Jul 2005 17:11:01 -0400
+Message-ID: <BD261180E6D35F4D9D32F3E44FD3D901011B0310@EMPBEDEX.empirix.com>
+From: "Goodman, Brad" <bgoodman@empirix.com>
+To: <Linuxppc-dev@ozlabs.org>
+Subject: Linux 2.6.12.1 PowerPC 750FX Initialization Failures (Caching & MMU)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,24 +16,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This #define is only used on sparc.
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+I am running the 2.6.12.1 Kernel with a Force CPCI-695 board.
 
----
+(This board has a PPC 750FX, with a Marvell Disco II (MV64360) - although it uses a 8250, instead of the Disco II UART.)
 
-This patch was already sent on:
-- 10 Jul 2005
+Anyway…
 
---- linux-2.6.13-rc2-mm1-full/arch/ppc/kernel/ppc_ksyms.c.old	2005-07-10 17:35:05.000000000 +0200
-+++ linux-2.6.13-rc2-mm1-full/arch/ppc/kernel/ppc_ksyms.c	2005-07-10 17:35:12.000000000 +0200
-@@ -51,9 +51,6 @@
- #include <asm/commproc.h>
- #endif
- 
--/* Tell string.h we don't want memcpy etc. as cpp defines */
--#define EXPORT_SYMTAB_STROPS
--
- extern void transfer_to_handler(void);
- extern void do_IRQ(struct pt_regs *regs);
- extern void MachineCheckException(struct pt_regs *regs);
+This thing is hanging like a buffalo on bootup - in early Kernel initialization:
+
+I setup_common_caches it gets to here:
+
+  mfspr r11,SPRN_HID0				← HID0 is 0x800200a4
+  andi. r0,r11,HID0_DCE
+  ori r11,r11,HID0_ICE|HID0_DCE
+  ori r8,r11,HID0_ICFI
+  bne 1f      /* don't invalidate the D-cache */
+  ori r8,r8,HID0_DCI    /* unless it wasn't enabled */
+1:  sync
+  mtspr SPRN_HID0,r8    /* enable and invalidate caches */     ← r8 is now 0x8002cca4
+  ### NEVER GETS HERE
+  sync
+  mtspr SPRN_HID0,r11   /* enable caches */  
+  mr r3,r11
+
+So it's hanging trying to enable and invalidate the caches.
+
+So - trying to ditch that problem until later - I had it leave the caches off and continuing.
+
+Now, it gets to the point where it tries to enable the MMU, and in the turn_on_mmu function it appears to go unresponsive right after the return-from-interrupt:
+
+turn_on_mmu:
+  mfmsr r0
+  ori r0,r0,MSR_DR|MSR_IR
+  mtspr SPRN_SRR1,r0
+  lis r0,start_here@h
+  ori r0,r0,start_here@l
+  mtspr SPRN_SRR0,r0
+  SYNC
+  ## GETS HERE
+  RFI       /* enables MMU */
+
+I put a check in start_here - and it never reaches it. The BATs should all be set up per-normal initialization, and I verified that it was mapping Physical address 0 to Effective Address 0xc0000000 - but still no luck.
+
+BTW - I am loading my znetboot image (zImage with no ELF header) at 0x800000 - so it's not relocating on startup (and verified that this was happening correctly.)
+
+I don't know if the caching issue is related to the MMU issue - or they are two totally separate things.
+
+Any ideas????
+
+Brad Goodman
+Empirix, Inc.
+bgoodman -et- empirix -dut- com
