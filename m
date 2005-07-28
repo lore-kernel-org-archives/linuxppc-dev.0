@@ -1,16 +1,20 @@
-Return-Path: <zhonglei@rcs-9000.com>
-Received: from RCS-9000.COM (unknown [218.94.131.104])
-	by ozlabs.org (Postfix) with ESMTP id 2E67867CDB
+Return-Path: <Baohua.WANG@alcatel-sbell.com.cn>
+Received: from mail.alcatel-sbell.com.cn (nat1.alcatel-sbell.com.cn
+	[202.96.203.177]) by ozlabs.org (Postfix) with ESMTP id F3D9267D19
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Jul 2005 13:40:45 +1000 (EST)
-Message-ID: <003f01c59325$0546db90$7a6657c6@rcs9000.com>
-From: =?gb2312?B?1tPA2g==?= <zhonglei@rcs-9000.com>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Thu, 28 Jul 2005 11:32:46 +0800
+	Thu, 28 Jul 2005 14:21:59 +1000 (EST)
+Received: from asbmail4.sbell.com.cn (localhost [127.0.0.1])
+	by mail.alcatel-sbell.com.cn (8.12.11/8.12.11/Alcanet1.0) with ESMTP id
+	j6S4FxcD016454
+	for <linuxppc-embedded@ozlabs.org>; Thu, 28 Jul 2005 12:15:59 +0800
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_003C_01C59368.135952B0"
-Subject: using bestcomm
+	boundary="----_=_NextPart_001_01C5932B.304A4165"
+Date: Thu, 28 Jul 2005 12:16:55 +0800
+Message-ID: <A9DE2BAF233E444FA9C5E77A5825A01E8652D4@ydmail.sbell.com.cn>
+From: "FCG WANG Baohua" <Baohua.WANG@alcatel-sbell.com.cn>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: How to load a linux kernel under vxworks bootloader (PPC860 board)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,41 +27,60 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------=_NextPart_000_003C_01C59368.135952B0
+------_=_NextPart_001_01C5932B.304A4165
 Content-Type: text/plain;
 	charset="gb2312"
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: quoted-printable
 
-SGkgYWxsOg0KICAgIEluIG15IGVtYmVkZWQgbGludXggZGlyZWN0b3J5ICwgSSBmb3VuZCB0aGUg
-YmVzdGNvbW0gQVBJIChFTERLXHBwY184Mnh4XHVzclxzcmNcbGludXhwcGNfMl80X2RldmVsDQpc
-YXJjaFxwcGNcNXh4eF9pb1xiZXN0Y29tbVxjYXBpKQ0KICAgIEJ1dCBJIGRvbid0IGtub3cgaG93
-IHRvIHVzZSB0aGUgQVBJIHRvIGhhbmRsZSBteSB0YXNrIHdoaWNoIGlzIHRvIHRyYW5zZmVyIGEg
-YmxvY2sgb2YgZGF0YSBmcm9tIHRoZSBGUEdBJ3MgaW50ZXJuYWwgUkFNIHRvIHRoZSBQb3dlclBD
-IE1QQzUyMDAuIA0KICAgIFBscyBnaXZlIG1lIGEgc2ltcGxlIGV4YW1wbGUgb2YgaG93IHRvIHVz
-ZSB0aGUgYmVzdGNvbW0gdG8gdHJhbnNmZXIgZGF0YSBmcm9tIEZQR0ENClRoYW5rcw0Kemhvbmds
-ZWk=
+Dear All:
+  I want to boot a linux 2.4.25 kernel under vxworks bootloader. When I =
+using flat mode(0x200000 -->  0x10000) kernel  uncompressed ELF format ( =
+vmlinux ),
+ and download it using TFTP of vxworks, it print the "starting at 0x1000 =
+...." and  freeze.  No input or output on serial port.
+ The version of vxworks is 5.3.1.=20
+ can you give me some detail advice or give me a tool to slove it? =
+thanks !
 
-------=_NextPart_000_003C_01C59368.135952B0
+------_=_NextPart_001_01C5932B.304A4165
 Content-Type: text/html;
 	charset="gb2312"
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: quoted-printable
 
-PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUcmFuc2l0aW9uYWwv
-L0VOIj4NCjxIVE1MPjxIRUFEPg0KPE1FVEEgaHR0cC1lcXVpdj1Db250ZW50LVR5cGUgY29udGVu
-dD0idGV4dC9odG1sOyBjaGFyc2V0PWdiMjMxMiI+DQo8TUVUQSBjb250ZW50PSJNU0hUTUwgNi4w
-MC4yODAwLjE1MDUiIG5hbWU9R0VORVJBVE9SPg0KPFNUWUxFPjwvU1RZTEU+DQo8L0hFQUQ+DQo8
-Qk9EWSBiZ0NvbG9yPSNmZmZmZmY+DQo8RElWPjxGT05UIHNpemU9Mj5IaSBhbGw6PC9GT05UPjwv
-RElWPg0KPERJVj48Rk9OVCBzaXplPTI+Jm5ic3A7Jm5ic3A7Jm5ic3A7IEluIG15IGVtYmVkZWQg
-bGludXggZGlyZWN0b3J5ICwgSSBmb3VuZCB0aGUgDQpiZXN0Y29tbSBBUEkgKEVMREtccHBjXzgy
-eHhcdXNyXHNyY1xsaW51eHBwY18yXzRfZGV2ZWw8L0ZPTlQ+PC9ESVY+DQo8RElWPjxGT05UIHNp
-emU9Mj5cYXJjaFxwcGNcNXh4eF9pb1xiZXN0Y29tbVxjYXBpKTwvRk9OVD48L0RJVj4NCjxESVY+
-PEZPTlQgc2l6ZT0yPiZuYnNwOyZuYnNwOyZuYnNwOyBCdXQgSSBkb24ndCBrbm93IGhvdyB0byB1
-c2UgdGhlIEFQSSB0byANCmhhbmRsZSBteSB0YXNrIHdoaWNoIGlzIHRvIHRyYW5zZmVyIGEgYmxv
-Y2sgb2YgZGF0YSBmcm9tIHRoZSBGUEdBJ3MgaW50ZXJuYWwgUkFNIA0KdG8gdGhlIFBvd2VyUEMg
-TVBDNTIwMC4gPC9GT05UPjwvRElWPg0KPERJVj48Rk9OVCBzaXplPTI+Jm5ic3A7Jm5ic3A7Jm5i
-c3A7IFBscyBnaXZlIG1lIGEgc2ltcGxlIGV4YW1wbGUgb2YgaG93IHRvIHVzZSANCnRoZSBiZXN0
-Y29tbSB0byB0cmFuc2ZlciBkYXRhIGZyb20gRlBHQTwvRk9OVD48L0RJVj4NCjxESVY+PEZPTlQg
-c2l6ZT0yPlRoYW5rczwvRk9OVD48L0RJVj4NCjxESVY+PEZPTlQgc2l6ZT0yPnpob25nbGVpPC9G
-T05UPjwvRElWPjwvQk9EWT48L0hUTUw+DQo=
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dgb2312">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.0.6603.0">
+<TITLE>How to load a linux kernel under vxworks bootloader (PPC860 =
+board)</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/rtf format -->
 
-------=_NextPart_000_003C_01C59368.135952B0--
+<P><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">Dear =
+All:</FONT></SPAN>
+
+<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; I want to =
+boot a linux 2.4.25 kernel under vxworks bootloader. When I using flat =
+mode(0x200000 --&gt;&nbsp; 0x10000) kernel&nbsp; uncompressed ELF format =
+( vmlinux ),</FONT></SPAN></P>
+
+<P><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;and download =
+it using TFTP of vxworks, it print the &quot;starting at 0x1000 =
+....&quot; and&nbsp; freeze.&nbsp; No input or output on serial =
+port.</FONT></SPAN></P>
+
+<P><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;The version =
+of vxworks is 5.3.1. </FONT></SPAN>
+
+<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;can you =
+give me some detail advice or give me a tool to slove it? thanks =
+!</FONT></SPAN>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C5932B.304A4165--
