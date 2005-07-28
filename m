@@ -1,20 +1,21 @@
-Return-Path: <domen@coderock.org>
-Received: from trashy.coderock.org (coderock.org [193.77.147.115])
-	by ozlabs.org (Postfix) with ESMTP id DB85467DB0
+Return-Path: <streeter@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id F116B67D74
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Jul 2005 23:02:21 +1000 (EST)
-Date: Thu, 28 Jul 2005 15:02:19 +0200
-From: Domen Puncer <domen@coderock.org>
-To: Paul Mackerras <paulus@samba.org>
-Message-ID: <20050728130219.GB2249@homer.coderock.org>
-References: <11224856623638@foobar.com> <20050727131857.78a56972.akpm@osdl.org>
-	<17128.4407.838024.111955@cargo.ozlabs.ibm.com>
+	Fri, 29 Jul 2005 01:01:44 +1000 (EST)
+From: Guy Streeter <streeter@redhat.com>
+To: FCG WANG Baohua <Baohua.WANG@alcatel-sbell.com.cn>
+In-Reply-To: <A9DE2BAF233E444FA9C5E77A5825A01E8652D4@ydmail.sbell.com.cn>
+References: <A9DE2BAF233E444FA9C5E77A5825A01E8652D4@ydmail.sbell.com.cn>
+Content-Type: text/plain
+Date: Thu, 28 Jul 2005 10:01:30 -0500
+Message-Id: <1122562890.18454.8.camel@mentos.hsv.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17128.4407.838024.111955@cargo.ozlabs.ibm.com>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-	linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH][1/3] ppc32: add 440ep support
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: How to load a linux kernel under vxworks bootloader (PPC860
+	board)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,26 +26,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 27/07/05 18:56 -0400, Paul Mackerras wrote:
-> Andrew Morton writes:
+On Thu, 2005-07-28 at 12:16 +0800, FCG WANG Baohua wrote:
+> Dear All: 
+>   I want to boot a linux 2.4.25 kernel under vxworks bootloader. When
+> I using flat mode(0x200000 -->  0x10000) kernel  uncompressed ELF
+> format ( vmlinux ),
 > 
-> > Matt Porter <mporter@kernel.crashing.org> wrote:
-> > >
-> > > +static u64 dma_mask = 0xffffffffULL;
+>  and download it using TFTP of vxworks, it print the "starting at
+> 0x1000 ...." and  freeze.  No input or output on serial port.
+> 
+>  The version of vxworks is 5.3.1.  
+>  can you give me some detail advice or give me a tool to slove it?
+> thanks !
 
-How about just DMA_32BIT_MASK from dma-mapping.h, that one has to be
-correct. ;-)
+Most ppc kernels depend on the bootloader to configure some devices and
+to leave some configuration data in a known memory location so that the
+kernel (or the kernel's boot wrapper) can use the devices and data
+during startup.
+None of the board-specific startup code in kernel supports booting from
+a VxWorks bootloader. Code I have written to do that for some boards
+doesn't appear to be in the kernel anywhere.
+You will need to look at the startup code your board is using and figure
+out how to do without the device and data setup normally provided by the
+bootloader. I addition, you will need to make sure the kernel is trying
+to use the console port at the same baud rate as VxWorks.
 
-> > 
-> > I'm sure you're totally uninterested in this, but the above will probably
-> > generate warnings on (say) ppc64, where u64 is implemented as unsigned
-> > long.
-> > 
-> > I usually chuck a simple `-1' in there and the compiler always gets it
-> > right, regardless of signedness and size and architecture.
-> 
-> Umm, I think we actually want 2^32-1 not -1, don't we?  In which case
-> I think Matt's code is what we have to have.
-> 
-> I tried a little test compile with gcc 4.0 with -m64 -Wall and it
-> didn't generate a warning with the 0xffffffffULL constant.
+--Guy Streeter
