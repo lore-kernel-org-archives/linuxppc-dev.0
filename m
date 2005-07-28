@@ -1,20 +1,20 @@
-Return-Path: <wd@denx.de>
-Received: from mailout07.sul.t-online.com (mailout07.sul.t-online.com
-	[194.25.134.83]) by ozlabs.org (Postfix) with ESMTP id 2B96867D71
+Return-Path: <domen@coderock.org>
+Received: from trashy.coderock.org (coderock.org [193.77.147.115])
+	by ozlabs.org (Postfix) with ESMTP id DB85467DB0
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 28 Jul 2005 22:51:48 +1000 (EST)
-To: Igor Marnat <marny@rambler.ru>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 28 Jul 2005 16:03:22 +0400."
-	<200507281603.22332.marny@rambler.ru>
-Date: Thu, 28 Jul 2005 14:51:32 +0200
-Sender: wd@denx.de
-Message-Id: <20050728125132.7B8FD352584@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: eth1 on linux 2.4.25 from ELDK 3.1.1 becomes slowly when is
-	pinged by great packets
+	Thu, 28 Jul 2005 23:02:21 +1000 (EST)
+Date: Thu, 28 Jul 2005 15:02:19 +0200
+From: Domen Puncer <domen@coderock.org>
+To: Paul Mackerras <paulus@samba.org>
+Message-ID: <20050728130219.GB2249@homer.coderock.org>
+References: <11224856623638@foobar.com> <20050727131857.78a56972.akpm@osdl.org>
+	<17128.4407.838024.111955@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17128.4407.838024.111955@cargo.ozlabs.ibm.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+	linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH][1/3] ppc32: add 440ep support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,22 +25,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Igor,
+On 27/07/05 18:56 -0400, Paul Mackerras wrote:
+> Andrew Morton writes:
+> 
+> > Matt Porter <mporter@kernel.crashing.org> wrote:
+> > >
+> > > +static u64 dma_mask = 0xffffffffULL;
 
-in message <200507281603.22332.marny@rambler.ru> you wrote:
->
-> I tried to work with kernel 2.4.25 from ELDK 3.1.1 from Denx. My board is 
-> PPChameleon EVB (PPC 405 EP). First, the kernel even didn't compile as is for 
+How about just DMA_32BIT_MASK from dma-mapping.h, that one has to be
+correct. ;-)
 
-You must be using old code (probably the version that came with  ELDK
-3.1.1?).  Please  fetch  the  current  code from CVS; see commit "Fix
-problems with second ethernet interface on 405EP".
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Any technology distinguishable from magic is insufficiently advanced.
+> > 
+> > I'm sure you're totally uninterested in this, but the above will probably
+> > generate warnings on (say) ppc64, where u64 is implemented as unsigned
+> > long.
+> > 
+> > I usually chuck a simple `-1' in there and the compiler always gets it
+> > right, regardless of signedness and size and architecture.
+> 
+> Umm, I think we actually want 2^32-1 not -1, don't we?  In which case
+> I think Matt's code is what we have to have.
+> 
+> I tried a little test compile with gcc 4.0 with -m64 -Wall and it
+> didn't generate a warning with the 0xffffffffULL constant.
