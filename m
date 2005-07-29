@@ -1,21 +1,18 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id C39E167DEF
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 7D96767DEA
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 30 Jul 2005 04:10:31 +1000 (EST)
-In-Reply-To: <Pine.OSF.4.05.10507291900320.26224-100000@da410.phys.au.dk>
-References: <Pine.OSF.4.05.10507291900320.26224-100000@da410.phys.au.dk>
-Mime-Version: 1.0 (Apple Message framework v733)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <B8CF930D-1C47-40AD-B936-D68AE007FE07@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Fri, 29 Jul 2005 13:10:23 -0500
-To: Esben Nielsen <simlo@phys.au.dk>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-	"Gala Kumar K.-galak" <galak@freescale.com>,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH 00/14] ppc32: Remove board ports that are no longer
-	maintained
+	Sat, 30 Jul 2005 06:33:34 +1000 (EST)
+Date: Fri, 29 Jul 2005 15:33:23 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: "Vikas Aggarwal" <va824363@albany.edu>
+Message-Id: <20050729153323.3f2c62ad.kim.phillips@freescale.com>
+In-Reply-To: <32704.198.22.236.230.1122651627.squirrel@198.22.236.230>
+References: <32704.198.22.236.230.1122651627.squirrel@198.22.236.230>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: mpc8248  SEC -- interrupt handler not invoked
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,82 +23,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Fri, 29 Jul 2005 11:40:27 -0400 (EDT)
+"Vikas Aggarwal" <va824363@albany.edu> wrote:
 
-On Jul 29, 2005, at 12:03 PM, Esben Nielsen wrote:
+> Hi All,
+>   Will  appreciate if someone can guide me how to debug this inside SEC
+> (security co-processor) core.
+> 
+>  The linux driver is writing descriptor into the FETCH-Register(0x2048) 
+> for Random Number generation execution unit(RNG-EU). The request came
+> through a test program from user space. The RNG generation request never
+> seems to complete as my ISR is not invoked.
+>  I checked the CCPSR(Crypto Channel Pointer Status register = 0x2010) and
+> it has value=0:7(0-31 : 32-63 bits). 7 means "channel_error". But its
+> always there even before I write the RNG descriptor to Fetch-register.
 
->
->
-> On Wed, 27 Jul 2005, Matt Porter wrote:
->
->
->> On Wed, Jul 27, 2005 at 09:27:41AM -0700, Eugene Surovegin wrote:
->>
->>> On Wed, Jul 27, 2005 at 12:13:23PM -0400, Michael Richardson wrote:
->>>
->>>> Kumar, I thought that we had some volunteers to take care of some
->>>>
-> of
->
->>>> those. I know that I still care about ep405, and I'm willing to
->>>>
-> maintain
->
->>>> the code.
->>>>
->>>
->>> Well, it has been almost two months since Kumar asked about
->>>
-> maintenance
->
->>> for this board. Nothing happened since then.
->>>
->>> Why is it not fixed yet? Please, send a patch which fixes it. This
->>>
-> is
->
->>> the _best_ way to keep this board in the tree, not some empty
->>> maintenance _promises_.
->>>
->>
->> When we recover our history from the linuxppc-2.4/2.5 trees we can
->> show exactly how long it's been since anybody touched ep405.
->>
->> Quick googling shows that it's been almost 2 years since the last
->> mention of ep405 (exluding removal discussions) on linuxppc-embedded.
->> Last ep405-related commits are more than 2 years ago.
->>
->>
-> I don't follow that reasoning. Even broken drivers(board support  
-> files,
-> whateever) are better than non.
->
-> Take ArcNet support forinstance. Clearly it hadn't been used in any  
-> 2.6
-> kernel up until around 2.6.10. It was highly broken (call to
-> uninitialized function pointer). But I needed it. I fixed it and send
-> the
-> patch so it works from 2.6.11 and up.  If the driver had been  
-> dropped in
-> the 2.6 series because nobody actively maintained it, I  wouldn't have
-> got
-> around to fix it at all and was probably forced to use another OS  
-> for my
-> perpose.
->
-> But because the driver was still in there and somebody had made  
-> sure it
-> was updated along the changes to the API in the 2.6 kernel, it was  
-> easy
-> for me to fix it although I didn't know so much about the kernel
-> internals
-> at that time.
+a value of 7 in bits 56-63 (PAIR_PTR) can suggest processing has not begun.
 
-The code will still exist in older kernel releases so if someone  
-needs to bring it up to date they can.  We are more than willing to  
-take patches to fix any issues.
+can you verify you are writing the upper bits of the FR (i.e. 0x204c)?
 
-Let's be clear.  I posted a request several weeks ago in which anyone  
-was free to comment on the various board ports that existed and their  
-maintainership.
-
-- kumar
+Kim
