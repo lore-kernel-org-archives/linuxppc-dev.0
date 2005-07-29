@@ -1,13 +1,13 @@
 Return-Path: <Baohua.WANG@alcatel-sbell.com.cn>
 Received: from mail.alcatel-sbell.com.cn (nat1.alcatel-sbell.com.cn
-	[202.96.203.177]) by ozlabs.org (Postfix) with ESMTP id 5FE6C67DC7
+	[202.96.203.177]) by ozlabs.org (Postfix) with ESMTP id 71A2D67DC7
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 29 Jul 2005 12:13:27 +1000 (EST)
+	Fri, 29 Jul 2005 18:28:14 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset=gb2312
-Date: Fri, 29 Jul 2005 10:13:23 +0800
-Message-ID: <A9DE2BAF233E444FA9C5E77A5825A01E86504C@ydmail.sbell.com.cn>
+Date: Fri, 29 Jul 2005 16:27:06 +0800
+Message-ID: <A9DE2BAF233E444FA9C5E77A5825A01E86504E@ydmail.sbell.com.cn>
 From: "FCG WANG Baohua" <Baohua.WANG@alcatel-sbell.com.cn>
 To: "John W. Linville" <linville@tuxdriver.com>
 Cc: linuxppc-embedded@ozlabs.org
@@ -23,33 +23,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Linville:
-  I use the zImage to download  to RAM from the vmlinux TFTP. The =
-strange thins happened :=20
- The serial console print the following message and halted :
- "Starting at 0x380000... "
-   I want to ask:
-  I. I saw the System.map is starting at the address 0x00000, but why =
-the zImage is starting at 0x380000 ?=20
-  2.  "Thankfully, I recall that later kernel versions did not have that =
-problem."
-    I use the ELDK3.1.1,  kernel 2.4.25.tar.bz2, Which version had you =
-revised the kernel ? 2.6.x ?
-       If I need the 2.4.25 (for its config file fits the PPC860 ADS), =
-What can I do ?=20
-  3.  In the vxworks BSP Makefile :
-      ROM_TEXT_ADRS    =3D 02800100 # ROM entry address
-      ROM_SIZE         =3D 00200000 # number of bytes of ROM space
-
-      RAM_LOW_ADRS     =3D 00010000 # RAM text/data address
-     RAM_HIGH_ADRS    =3D 00200000 # RAM text/data address
-   =20
-    How can I relocate to the right address if I download the linux =
-kernel and excute it in RAM?=20
-    =20
-   Thanks a lot !
-
-
+Dear linville:
+  I found that the vxWorks bootrom is load to RAM 0x2800100 address, but =
+different address with the different kernel file downloading to the RAM.
+   For example: the ppcboot ELF file is downloaded to the 0x2800000 and =
+only 150256 bytes is downloaded (total file size is 989064 bytes)
+                           the zImage kernel file  is downloaded to the =
+0x380000 and only 533004 bytes is downloaded (total file size is 591899 =
+bytes)
+  What's the reason for explain it? Does the vxWorks bootloader =
+uncompressed the file with its own algorithm?=20
+  How to download the U-Boot ELF file correctly? Thanks!=20
+  The right way is to find the right entry points of U-Boot, but =
+whatever I change the configure of U-Boot, it doesn't work at all. That =
+is, the entry point is=20
+  forever 0x2800000 for U-Boot and 0x380000  for zImage.=20
+ =20
 
 -----=D4=AD=CA=BC=D3=CA=BC=FE-----
 =B7=A2=BC=FE=C8=CB: John W. Linville [mailto:linville@tuxdriver.com]
