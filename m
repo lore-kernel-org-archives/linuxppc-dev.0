@@ -1,22 +1,21 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 05C2B67D71
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id C39E167DEF
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 30 Jul 2005 03:42:59 +1000 (EST)
-In-Reply-To: <42EA60E1.7040804@parks.com.br>
-References: <20050729013303.33814.qmail@web40712.mail.yahoo.com>	<42EA2A2E.5040708@parks.com.br>	<20050729144015.09fec9fe.ajz@cambridgebroadband.com>	<42EA34A1.7060600@parks.com.br>
-	<20050729154359.1ac8f488.ajz@cambridgebroadband.com>
-	<42EA60E1.7040804@parks.com.br>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <b50c9dbfb13d8e2f5a82c2a299e46240@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Fri, 29 Jul 2005 13:43:09 -0400
-To: "Tiago Dall'Agnol" <tdallagnol@parks.com.br>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: request_8xxirq
+	Sat, 30 Jul 2005 04:10:31 +1000 (EST)
+In-Reply-To: <Pine.OSF.4.05.10507291900320.26224-100000@da410.phys.au.dk>
+References: <Pine.OSF.4.05.10507291900320.26224-100000@da410.phys.au.dk>
+Mime-Version: 1.0 (Apple Message framework v733)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <B8CF930D-1C47-40AD-B936-D68AE007FE07@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Fri, 29 Jul 2005 13:10:23 -0500
+To: Esben Nielsen <simlo@phys.au.dk>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+	"Gala Kumar K.-galak" <galak@freescale.com>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH 00/14] ppc32: Remove board ports that are no longer
+	maintained
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,18 +27,81 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Jul 29, 2005, at 1:01 PM, Tiago Dall'Agnol wrote:
+On Jul 29, 2005, at 12:03 PM, Esben Nielsen wrote:
 
-> Am I wrong? I didn't understand when that function request_irq is used.
+>
+>
+> On Wed, 27 Jul 2005, Matt Porter wrote:
+>
+>
+>> On Wed, Jul 27, 2005 at 09:27:41AM -0700, Eugene Surovegin wrote:
+>>
+>>> On Wed, Jul 27, 2005 at 12:13:23PM -0400, Michael Richardson wrote:
+>>>
+>>>> Kumar, I thought that we had some volunteers to take care of some
+>>>>
+> of
+>
+>>>> those. I know that I still care about ep405, and I'm willing to
+>>>>
+> maintain
+>
+>>>> the code.
+>>>>
+>>>
+>>> Well, it has been almost two months since Kumar asked about
+>>>
+> maintenance
+>
+>>> for this board. Nothing happened since then.
+>>>
+>>> Why is it not fixed yet? Please, send a patch which fixes it. This
+>>>
+> is
+>
+>>> the _best_ way to keep this board in the tree, not some empty
+>>> maintenance _promises_.
+>>>
+>>
+>> When we recover our history from the linuxppc-2.4/2.5 trees we can
+>> show exactly how long it's been since anybody touched ep405.
+>>
+>> Quick googling shows that it's been almost 2 years since the last
+>> mention of ep405 (exluding removal discussions) on linuxppc-embedded.
+>> Last ep405-related commits are more than 2 years ago.
+>>
+>>
+> I don't follow that reasoning. Even broken drivers(board support  
+> files,
+> whateever) are better than non.
+>
+> Take ArcNet support forinstance. Clearly it hadn't been used in any  
+> 2.6
+> kernel up until around 2.6.10. It was highly broken (call to
+> uninitialized function pointer). But I needed it. I fixed it and send
+> the
+> patch so it works from 2.6.11 and up.  If the driver had been  
+> dropped in
+> the 2.6 series because nobody actively maintained it, I  wouldn't have
+> got
+> around to fix it at all and was probably forced to use another OS  
+> for my
+> perpose.
+>
+> But because the driver was still in there and somebody had made  
+> sure it
+> was updated along the changes to the API in the 2.6 kernel, it was  
+> easy
+> for me to fix it although I didn't know so much about the kernel
+> internals
+> at that time.
 
-At some point I don't remember and against all of my wishes, the code
-was changed from using request_8xxirq to using request_irq using
-an ugly hack to add some offset to the 8xx interrupt vector number.
-I didn't see any bug that needed fixing, but people with the power to
-ignore my maintainer status decided to change it anyway.  So, now you
-have to modify your drivers to call request_irq() with some nonsensical
-interrupt number.  No value added, just confusion.
+The code will still exist in older kernel releases so if someone  
+needs to bring it up to date they can.  We are more than willing to  
+take patches to fix any issues.
 
-Thanks.
+Let's be clear.  I posted a request several weeks ago in which anyone  
+was free to comment on the various board ports that existed and their  
+maintainership.
 
-	-- Dan
+- kumar
