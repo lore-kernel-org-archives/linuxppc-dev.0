@@ -1,24 +1,19 @@
-Return-Path: <ajz@cambridgebroadband.com>
-Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
-	[217.204.121.83])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EA59E67D82
+Return-Path: <wd@denx.de>
+Received: from mailout06.sul.t-online.com (mailout06.sul.t-online.com
+	[194.25.134.19]) by ozlabs.org (Postfix) with ESMTP id 4D5D667DEF
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 30 Jul 2005 00:44:05 +1000 (EST)
-Date: Fri, 29 Jul 2005 15:43:59 +0100
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
-To: "Tiago Dall'Agnol" <tdallagnol@parks.com.br>
-Message-Id: <20050729154359.1ac8f488.ajz@cambridgebroadband.com>
-In-Reply-To: <42EA34A1.7060600@parks.com.br>
-References: <20050729013303.33814.qmail@web40712.mail.yahoo.com>
-	<42EA2A2E.5040708@parks.com.br>
-	<20050729144015.09fec9fe.ajz@cambridgebroadband.com>
-	<42EA34A1.7060600@parks.com.br>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 30 Jul 2005 01:11:05 +1000 (EST)
+To: "David Grab" <d.grab@hima.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 29 Jul 2005 10:32:01 +0200."
+	<001f01c59417$fe81b840$f201a8c0@SN7606>
+Date: Fri, 29 Jul 2005 17:10:40 +0200
+Sender: wd@denx.de
+Message-Id: <20050729151040.9DE58352BD9@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: request_8xxirq
+Subject: Re: ATI Radeon with PPC 440 GX and kernel 2.6.12 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,137 +24,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Maybe you're using a really old kernel.  In linux-2.4.4 it's in
-arch/ppc/kernel/irq.c:
+In message <001f01c59417$fe81b840$f201a8c0@SN7606> you wrote:
+> 
+> i´m using on my custom board a ATI M6 Mobility Radeon with kernel 2.6.12.
+> Now i have to initialize the ati and configure the kernel to support it. Did
+> someone use this combination (ppc + ati radeon)? It would be appreciating to
+> get some help or tipps in configuring to get the ati functioning. Especially
+> the BIOS of the ATI chip, because i have actually found only x86 binaries.
+> Is it also possible to set up the bios settings for the ati chip without an
+> bios eeprom attached via the radeon driver?
 
--- snip --
-#if (defined(CONFIG_8xx) || defined(CONFIG_8260))
-/* Name change so we can catch standard drivers that potentially mess up
- * the internal interrupt controller on 8xx and 8260.  Just bear with me,
- * I don't like this either and I am searching a better solution.  For
- * now, this is what I need. -- Dan
- */
-#define request_irq	request_8xxirq
+If you use U-Boot as boot loader you  can  enable  and  use  the  x86
+emulator  taht  comes included with it. But don't expect to much help
+with that - except for the Amiga  One  (where  I  was  told  this  is
+working) I don't know of any other board using this feature.
 
-...
-...
-...
+Best regards,
 
-int request_irq(unsigned int irq, void (*handler)(int, void *, struct pt_regs *),
-	unsigned long irqflags, const char * devname, void *dev_id)
-{
---/snip --
+Wolfgang Denk
 
-
-I don't know why it was done like this....
-
-Alex
-
-
-On Fri, 29 Jul 2005 10:52:33 -0300
-"Tiago Dall'Agnol" <tdallagnol@parks.com.br> wrote:
-
-> Thank you Alex.
-> 
-> But in my linux, this is different.
-> What I have in that file is just
-> 
-> extern int request_8xxirq(unsigned int irq,
->                void (*handler)(int, void *, struct pt_regs *),
->                unsigned long flags,
->                const char *device,
->                void *dev_id);
-> 
-> And the request_8xxirq is declared as a
-> 
-> EXPORT_SYMBOL(request_8xxirq);
-> 
-> in arch/ppc/kernel/ppc_ksyms.c.
-> 
-> I already tried to find out where the code that implements the function 
-> is located, but it seems that it doesn't exist in my distribuction. 
-> Maybe is it a "binary version"?
-> 
-> Any other information will be apreciated ;-)
-> 
-> Best Regards,
-> Tiago
-> 
-> Alex Zeffertt wrote:
-> 
-> >In linux-2.4 it's in 
-> >
-> >	include/asm-ppc/mpc8xx.h
-> >
-> >-- snip --
-> >#define request_8xxirq request_irq
-> >--/snip --
-> >
-> >And request_irq is in arch/ppc/kernel/irq.c
-> >
-> >Alex
-> >
-> >On Fri, 29 Jul 2005 10:07:58 -0300
-> >"Tiago Dall'Agnol" <tdallagnol@parks.com.br> wrote:
-> >
-> >  
-> >
-> >>Hi,
-> >>
-> >>I had some problems with irq in my embedded system. I'm interested in 
-> >>this function source code, but I didn't find it in my linux distribuction?
-> >>
-> >>Does anyone know where I can find it?
-> >>
-> >>Thanks a lot
-> >>Tiago
-> >>
-> >>Manish Joshi wrote:
-> >>
-> >>    
-> >>
-> >>>Hi,
-> >>> 
-> >>>I am working on an old code which uses  request_8xxirq() call which I 
-> >>>can't find in latest kernel.
-> >>>Has this been replaced by something else ?
-> >>> 
-> >>>I see the references on net about replacing request_8xxirq()  with 
-> >>>request_irq(). Can I do it ?
-> >>> 
-> >>>TIA,
-> >>>Manish
-> >>> 
-> >>>
-> >>>------------------------------------------------------------------------
-> >>>Start your day with Yahoo! - make it your home page 
-> >>><http://us.rd.yahoo.com/evt=34442/*http://www.yahoo.com/r/hs>
-> >>>
-> >>>------------------------------------------------------------------------
-> >>>
-> >>>_______________________________________________
-> >>>Linuxppc-embedded mailing list
-> >>>Linuxppc-embedded@ozlabs.org
-> >>>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> >>>
-> >>>      
-> >>>
-> >>-- 
-> >>Tiago Dall'Agnol
-> >>Pesquisa e Desenvolvimento
-> >>Tel.: +55.51.470.05.64
-> >>Fax.: +55.51.470.05.70
-> >>e-mail: tdallagnol@parks.com.br
-> >>www.parks.com.br
-> >>
-> >>_______________________________________________
-> >>Linuxppc-embedded mailing list
-> >>Linuxppc-embedded@ozlabs.org
-> >>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> >>    
-> >>
-> >
-> >  
-> >
-> 
-> -- 
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Two wrongs don't make a right, but three rights make a left.
