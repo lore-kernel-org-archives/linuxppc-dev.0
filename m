@@ -1,19 +1,20 @@
-Return-Path: <tdallagnol@parks.com.br>
-Received: from PKMAIL.parks.local (mail.parks.com.br [200.248.200.133])
-	by ozlabs.org (Postfix) with ESMTP id DE93A67DE9
+Return-Path: <simlo@phys.au.dk>
+Received: from lirs02.phys.au.dk (lirs02.phys.au.dk [130.225.28.43])
+	by ozlabs.org (Postfix) with ESMTP id E0B4C67DEA
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 30 Jul 2005 02:59:55 +1000 (EST)
-Message-ID: <42EA60E1.7040804@parks.com.br>
-Date: Fri, 29 Jul 2005 14:01:21 -0300
-From: Tiago Dall'Agnol <tdallagnol@parks.com.br>
-MIME-Version: 1.0
-To: Alex Zeffertt <ajz@cambridgebroadband.com>
-References: <20050729013303.33814.qmail@web40712.mail.yahoo.com>	<42EA2A2E.5040708@parks.com.br>	<20050729144015.09fec9fe.ajz@cambridgebroadband.com>	<42EA34A1.7060600@parks.com.br>
-	<20050729154359.1ac8f488.ajz@cambridgebroadband.com>
-In-Reply-To: <20050729154359.1ac8f488.ajz@cambridgebroadband.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: request_8xxirq
+	Sat, 30 Jul 2005 03:03:32 +1000 (EST)
+Date: Fri, 29 Jul 2005 19:03:14 +0200 (METDST)
+From: Esben Nielsen <simlo@phys.au.dk>
+To: Matt Porter <mporter@kernel.crashing.org>
+In-Reply-To: <20050727101502.B1114@cox.net>
+Message-Id: <Pine.OSF.4.05.10507291900320.26224-100000@da410.phys.au.dk>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+	Kumar Gala <galak@freescale.com>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH 00/14] ppc32: Remove board ports that are no longer
+ maintained
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,177 +25,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I'm using kernel 2.4.18, and I can see the code you posted.
 
-But this code doesn't help to find request_8xxirq. It just do the 
-opposite. This code defines request_irq to be request_8xxirq when 
-CONFIG_8xx is defined. But where is located the implementation of 
-request_8xxirq?
 
-Am I wrong? I didn't understand when that function request_irq is used.
+On Wed, 27 Jul 2005, Matt Porter wrote:
 
-Thanks
-Tiago
+> On Wed, Jul 27, 2005 at 09:27:41AM -0700, Eugene Surovegin wrote:
+> > On Wed, Jul 27, 2005 at 12:13:23PM -0400, Michael Richardson wrote:
+> > > Kumar, I thought that we had some volunteers to take care of some of
+> > > those. I know that I still care about ep405, and I'm willing to maintain
+> > > the code.
+> > 
+> > Well, it has been almost two months since Kumar asked about maintenance 
+> > for this board. Nothing happened since then.
+> > 
+> > Why is it not fixed yet? Please, send a patch which fixes it. This is 
+> > the _best_ way to keep this board in the tree, not some empty 
+> > maintenance _promises_.
+> 
+> When we recover our history from the linuxppc-2.4/2.5 trees we can
+> show exactly how long it's been since anybody touched ep405.
+> 
+> Quick googling shows that it's been almost 2 years since the last
+> mention of ep405 (exluding removal discussions) on linuxppc-embedded.
+> Last ep405-related commits are more than 2 years ago.
+> 
+I don't follow that reasoning. Even broken drivers(board support files,
+whateever) are better than non.
 
-Alex Zeffertt wrote:
+Take ArcNet support forinstance. Clearly it hadn't been used in any 2.6
+kernel up until around 2.6.10. It was highly broken (call to
+uninitialized function pointer). But I needed it. I fixed it and send the
+patch so it works from 2.6.11 and up.  If the driver had been dropped in
+the 2.6 series because nobody actively maintained it, I  wouldn't have got
+around to fix it at all and was probably forced to use another OS for my
+perpose.  
 
->Maybe you're using a really old kernel.  In linux-2.4.4 it's in
->arch/ppc/kernel/irq.c:
->
->-- snip --
->#if (defined(CONFIG_8xx) || defined(CONFIG_8260))
->/* Name change so we can catch standard drivers that potentially mess up
-> * the internal interrupt controller on 8xx and 8260.  Just bear with me,
-> * I don't like this either and I am searching a better solution.  For
-> * now, this is what I need. -- Dan
-> */
->#define request_irq	request_8xxirq
->
->...
->...
->...
->
->int request_irq(unsigned int irq, void (*handler)(int, void *, struct pt_regs *),
->	unsigned long irqflags, const char * devname, void *dev_id)
->{
->--/snip --
->
->
->I don't know why it was done like this....
->
->Alex
->
->
->On Fri, 29 Jul 2005 10:52:33 -0300
->"Tiago Dall'Agnol" <tdallagnol@parks.com.br> wrote:
->
->  
->
->>Thank you Alex.
->>
->>But in my linux, this is different.
->>What I have in that file is just
->>
->>extern int request_8xxirq(unsigned int irq,
->>               void (*handler)(int, void *, struct pt_regs *),
->>               unsigned long flags,
->>               const char *device,
->>               void *dev_id);
->>
->>And the request_8xxirq is declared as a
->>
->>EXPORT_SYMBOL(request_8xxirq);
->>
->>in arch/ppc/kernel/ppc_ksyms.c.
->>
->>I already tried to find out where the code that implements the function 
->>is located, but it seems that it doesn't exist in my distribuction. 
->>Maybe is it a "binary version"?
->>
->>Any other information will be apreciated ;-)
->>
->>Best Regards,
->>Tiago
->>
->>Alex Zeffertt wrote:
->>
->>    
->>
->>>In linux-2.4 it's in 
->>>
->>>	include/asm-ppc/mpc8xx.h
->>>
->>>-- snip --
->>>#define request_8xxirq request_irq
->>>--/snip --
->>>
->>>And request_irq is in arch/ppc/kernel/irq.c
->>>
->>>Alex
->>>
->>>On Fri, 29 Jul 2005 10:07:58 -0300
->>>"Tiago Dall'Agnol" <tdallagnol@parks.com.br> wrote:
->>>
->>> 
->>>
->>>      
->>>
->>>>Hi,
->>>>
->>>>I had some problems with irq in my embedded system. I'm interested in 
->>>>this function source code, but I didn't find it in my linux distribuction?
->>>>
->>>>Does anyone know where I can find it?
->>>>
->>>>Thanks a lot
->>>>Tiago
->>>>
->>>>Manish Joshi wrote:
->>>>
->>>>   
->>>>
->>>>        
->>>>
->>>>>Hi,
->>>>>
->>>>>I am working on an old code which uses  request_8xxirq() call which I 
->>>>>can't find in latest kernel.
->>>>>Has this been replaced by something else ?
->>>>>
->>>>>I see the references on net about replacing request_8xxirq()  with 
->>>>>request_irq(). Can I do it ?
->>>>>
->>>>>TIA,
->>>>>Manish
->>>>>
->>>>>
->>>>>------------------------------------------------------------------------
->>>>>Start your day with Yahoo! - make it your home page 
->>>>><http://us.rd.yahoo.com/evt=34442/*http://www.yahoo.com/r/hs>
->>>>>
->>>>>------------------------------------------------------------------------
->>>>>
->>>>>_______________________________________________
->>>>>Linuxppc-embedded mailing list
->>>>>Linuxppc-embedded@ozlabs.org
->>>>>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->>>>>
->>>>>     
->>>>>
->>>>>          
->>>>>
->>>>-- 
->>>>Tiago Dall'Agnol
->>>>Pesquisa e Desenvolvimento
->>>>Tel.: +55.51.470.05.64
->>>>Fax.: +55.51.470.05.70
->>>>e-mail: tdallagnol@parks.com.br
->>>>www.parks.com.br
->>>>
->>>>_______________________________________________
->>>>Linuxppc-embedded mailing list
->>>>Linuxppc-embedded@ozlabs.org
->>>>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->>>>   
->>>>
->>>>        
->>>>
->>> 
->>>
->>>      
->>>
->>-- 
->>    
->>
->
->  
->
+But because the driver was still in there and somebody had made sure it
+was updated along the changes to the API in the 2.6 kernel, it was easy
+for me to fix it although I didn't know so much about the kernel internals
+at that time.
 
--- 
-Tiago Dall'Agnol
-Pesquisa e Desenvolvimento
-Tel.: +55.51.470.05.64
-Fax.: +55.51.470.05.70
-e-mail: tdallagnol@parks.com.br
-Parks S.A. Comunicações Digitais
-www.parks.com.br
+Esben
