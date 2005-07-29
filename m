@@ -1,18 +1,21 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 7D96767DEA
+Return-Path: <jgarzik@pobox.com>
+Received: from mail.dvmed.net (mail.dvmed.net [216.237.124.58])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1CA5467D93
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 30 Jul 2005 06:33:34 +1000 (EST)
-Date: Fri, 29 Jul 2005 15:33:23 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: "Vikas Aggarwal" <va824363@albany.edu>
-Message-Id: <20050729153323.3f2c62ad.kim.phillips@freescale.com>
-In-Reply-To: <32704.198.22.236.230.1122651627.squirrel@198.22.236.230>
-References: <32704.198.22.236.230.1122651627.squirrel@198.22.236.230>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: mpc8248  SEC -- interrupt handler not invoked
+	Sat, 30 Jul 2005 07:46:37 +1000 (EST)
+Message-ID: <42EAA3B5.70902@pobox.com>
+Date: Fri, 29 Jul 2005 17:46:29 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+MIME-Version: 1.0
+To: Andy Fleming <afleming@freescale.com>
+References: <23F9076F-9FBB-43C8-83CD-F630E694203D@freescale.com>
+In-Reply-To: <23F9076F-9FBB-43C8-83CD-F630E694203D@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: netdev@vger.kernel.org,
+	Embedded PPC Linux list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH RFC]: PHY Abstraction Layer III
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,23 +26,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 29 Jul 2005 11:40:27 -0400 (EDT)
-"Vikas Aggarwal" <va824363@albany.edu> wrote:
-
-> Hi All,
->   Will  appreciate if someone can guide me how to debug this inside SEC
-> (security co-processor) core.
+Andy Fleming wrote:
+> Here's the latest version of the patch, done against a cogito  linux-2.6 
+> branch.  It has a handful of small changes, which I hope  will speed 
+> acceptance:
 > 
->  The linux driver is writing descriptor into the FETCH-Register(0x2048) 
-> for Random Number generation execution unit(RNG-EU). The request came
-> through a test program from user space. The RNG generation request never
-> seems to complete as my ISR is not invoked.
->  I checked the CCPSR(Crypto Channel Pointer Status register = 0x2010) and
-> it has value=0:7(0-31 : 32-63 bits). 7 means "channel_error". But its
-> always there even before I write the RNG descriptor to Fetch-register.
+> * Interrupts are no longer requested at interrupt time
+> * There is a function to print out PHY status
+> * The PHY drivers' probe function now serves only to initialize  driver 
+> state
+> * A new config_init functor has been created to configure PHY state  
+> just after reset (so that the PHYs will be returned to a sane state  if 
+> they don't start up that way)
+> * Stephen Hemminger's patch to allow better module support in the  
+> drivers has been included
 
-a value of 7 in bits 56-63 (PAIR_PTR) can suggest processing has not begun.
+OK, DaveM and I are OK with merging this.
 
-can you verify you are writing the upper bits of the FR (i.e. 0x204c)?
+Send me a single One Big Patch which adds all the new files and such, 
+I'll give it a final review, and queue it for 2.6.14.
 
-Kim
+	Jeff
