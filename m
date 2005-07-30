@@ -1,20 +1,20 @@
 Return-Path: <ktdann@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.197])
-	by ozlabs.org (Postfix) with ESMTP id 514C367E09
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.200])
+	by ozlabs.org (Postfix) with ESMTP id E430D67DF7
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 30 Jul 2005 11:34:24 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id i24so707534wra
+	Sat, 30 Jul 2005 11:36:45 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id i25so763339wra
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 29 Jul 2005 18:34:23 -0700 (PDT)
-Message-ID: <9b7ca657050729183410394f8d@mail.gmail.com>
-Date: Sat, 30 Jul 2005 10:34:23 +0900
+	Fri, 29 Jul 2005 18:36:44 -0700 (PDT)
+Message-ID: <9b7ca6570507291836ac62600@mail.gmail.com>
+Date: Sat, 30 Jul 2005 10:36:44 +0900
 From: Daniel Ann <ktdann@gmail.com>
-To: Ricardo Scop <scop@digitel.com.br>
-In-Reply-To: <200507292227.45626.scop@digitel.com.br>
+To: Josh Boyer <jwboyer@jdub.homelinux.org>
+In-Reply-To: <1122686376.4755.2.camel@yoda.jdub.homelinux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 References: <9b7ca65705072918062249e41f@mail.gmail.com>
-	<200507292227.45626.scop@digitel.com.br>
+	<1122686376.4755.2.camel@yoda.jdub.homelinux.org>
 Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: Serial console
 Reply-To: Daniel Ann <ktdann@gmail.com>
@@ -28,20 +28,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Looks like I have /dev/console
-0 crw-------  1 root root 5, 1 Sep 26  2002 console
-0 crw-rw-rw-  1 root root 4, 64 Jun 17  2004 ttyS0
+I too have /dev/null
+0 crw-rw-rw-  1 root root 1, 3 Aug 31  2001 null
 
-I havent yet figured out how I should go about seeing if init is
-correctly accessing it tho. Let me take a look at busybox init part.
-BTW, any more reasons why this problem might exist ?
+However, Im not using initrd. null, and console devices are in my RAMDISK t=
+ho.
 
-
-
-On 7/30/05, Ricardo Scop <scop@digitel.com.br> wrote:
-> Hi Daniel,
->=20
-> On Friday 29 July 2005 22:06, Daniel Ann wrote:
+On 7/30/05, Josh Boyer <jwboyer@jdub.homelinux.org> wrote:
+> On Sat, 2005-07-30 at 10:06 +0900, Daniel Ann wrote:
 > > Hi folks,
 > >
 > > Just wondering if anyone could lend a hand with this problem I have
@@ -62,24 +56,13 @@ On 7/30/05, Ricardo Scop <scop@digitel.com.br> wrote:
 > > part right. But why am I not getting anything from the user processes
 > > on the console screen ?
 > >
-> Please verify that you have a /dev/console in your rootfs, and that it's =
-being
-> correctly acessed by the init process.
+> > Is there anything I need to do on the kernel config ?
 >=20
-> HTH,
+> Do you have a /dev/console device node in your initrd?  If not, that is
+> one of the reasons you could be seeing that problem.  Make
+> sure /dev/null is there too.
 >=20
-> --
-> Ricardo Scop.
->=20
->        \|/
->    ___ -*-
->   (@ @)/|\
->  /  V  \|  R SCOP Consult.
->  /(     )\  Linux-based communications
-> --^^---^^+------------------------------
-> rscop@matrix.com.br
-> +55 51 999-36-777
-> Porto Alegre, RS - BRazil
+> josh
 >=20
 >=20
 
