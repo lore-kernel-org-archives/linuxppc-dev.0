@@ -1,19 +1,23 @@
-Return-Path: <va824363@albany.edu>
-Received: from smtp.albany.edu (mail1.its.albany.edu [169.226.1.105])
-	by ozlabs.org (Postfix) with ESMTP id 0534267E0A
+Return-Path: <ktdann@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.205])
+	by ozlabs.org (Postfix) with ESMTP id 7474367E0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 30 Jul 2005 13:39:35 +1000 (EST)
-Message-ID: <32798.24.92.61.26.1122694772.squirrel@24.92.61.26>
-In-Reply-To: <20050729153323.3f2c62ad.kim.phillips@freescale.com>
-References: <32704.198.22.236.230.1122651627.squirrel@198.22.236.230>
-	<20050729153323.3f2c62ad.kim.phillips@freescale.com>
-Date: Fri, 29 Jul 2005 23:39:32 -0400 (EDT)
-From: "Vikas Aggarwal" <va824363@albany.edu>
-To: "Kim Phillips" <kim.phillips@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: mpc8248  SEC -- interrupt handler not invoked
+	Sat, 30 Jul 2005 15:46:28 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id i24so732159wra
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 29 Jul 2005 22:46:27 -0700 (PDT)
+Message-ID: <9b7ca657050729224620d67bfc@mail.gmail.com>
+Date: Sat, 30 Jul 2005 14:46:27 +0900
+From: Daniel Ann <ktdann@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+In-Reply-To: <9b7ca6570507291836ac62600@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <9b7ca65705072918062249e41f@mail.gmail.com>
+	<1122686376.4755.2.camel@yoda.jdub.homelinux.org>
+	<9b7ca6570507291836ac62600@mail.gmail.com>
+Subject: Re: Serial console
+Reply-To: Daniel Ann <ktdann@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,55 +28,70 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Kim,
- Thanks for helping out.
- Yes i verified , i am writing to upper bits of FR.
+I've got a feeling that this has alot to do with IRQ.
+Would I be correct to assume printk doesnt require interrupt to work
+but printf does ?
 
- Now my ISR does get invoked and InterruptStatus(0x1010) has 4 in upper
-bits.  That means TEA (Transfer Error Acknowledge). Next thing i did is i
-dumped the lower bits of master-error-address-register MEAR(0x1038) and
-it has 0x011af4d0. As per definition of this register my data phase was
-terminated .  Was it due to bad address being written into FR.
+After doing some testing, I've found my network interface ping-able
+when I got printf working in 2.4.31. But if I alter the openpic source
+to not initialize the interrupt, it also stop displaying at the same
+point and network interface isnt pingable.
 
- I am using virt_to_phys()  to convert the DPD's address and then writing
-this into FR.
+I guess my next problem would be then, why isnt my openpic working. :(
+I've done exactly the same as what I did with 2.4.31 and that works.
+Hmmm. Something must have changed in 2.6.12.3.
 
- Also u may be thinking what did i change that ISR gets invoked now.
-Earlier i was using __vpa instead of virt_to_phys().  __vpa came from the
-original SEC driver(for mpc8555 and kernel 2.4) which i downloaded from
-freescale.  After i replaced __vpa with kernel's virt_to_phys() gets
-invoked.
+I dont think this is has anything to do with serial console, so I'm
+gonna end the thread here.
 
-#define __vpa(va) ((pte_val(*(unsigned long
-*)pte_offset_kernel(pmd_offset(pgd_offset_k(va), (va)), (va))) &
-PAGE_MASK) + (va & ~PAGE_MASK))
+Thanks.
 
-But i still think that may be virt_to_phys() is not doing what FR expects.
+On 7/30/05, Daniel Ann <ktdann@gmail.com> wrote:
+> I too have /dev/null
+> 0 crw-rw-rw-  1 root root 1, 3 Aug 31  2001 null
+>=20
+> However, Im not using initrd. null, and console devices are in my RAMDISK=
+ tho.
+>=20
+> On 7/30/05, Josh Boyer <jwboyer@jdub.homelinux.org> wrote:
+> > On Sat, 2005-07-30 at 10:06 +0900, Daniel Ann wrote:
+> > > Hi folks,
+> > >
+> > > Just wondering if anyone could lend a hand with this problem I have
+> > > with serial console. I'm trying to boot up my board (very similar to
+> > > sandpoint using MPC8245) with kernel 2.6.12.3, and most of it is
+> > > working but console will display up to,
+> > > [snip]
+> > > RAMDISK: Compressed image found at block 0
+> > > VFS: Mounted root (ext2 filesystem) readonly.
+> > > Freeing unused kernel memory: 112k init
+> > >
+> > > I've done series of printk in sys_execve() to see if /sbin/init is
+> > > working, and found out it went thru the whole rcS file okay. Mind you=
+,
+> > > printk is successfully displaying the output on the console while I'm
+> > > still not getting anything from the user processes.
+> > >
+> > > Having all the kernel boot up log on console means that I've done som=
+e
+> > > part right. But why am I not getting anything from the user processes
+> > > on the console screen ?
+> > >
+> > > Is there anything I need to do on the kernel config ?
+> >
+> > Do you have a /dev/console device node in your initrd?  If not, that is
+> > one of the reasons you could be seeing that problem.  Make
+> > sure /dev/null is there too.
+> >
+> > josh
+> >
+> >
+>=20
+>=20
+> --
+> Daniel
+>=20
 
-Thanks for your patience  with detailed mail.
-Please help
--vikas aggarwal
 
-> On Fri, 29 Jul 2005 11:40:27 -0400 (EDT)
-> "Vikas Aggarwal" <va824363@albany.edu> wrote:
->
->> Hi All,
->>   Will  appreciate if someone can guide me how to debug this inside SEC
->> (security co-processor) core.
->>
->>  The linux driver is writing descriptor into the FETCH-Register(0x2048)
->> for Random Number generation execution unit(RNG-EU). The request came
->> through a test program from user space. The RNG generation request never
->> seems to complete as my ISR is not invoked.
->>  I checked the CCPSR(Crypto Channel Pointer Status register = 0x2010)
->> and
->> it has value=0:7(0-31 : 32-63 bits). 7 means "channel_error". But its
->> always there even before I write the RNG descriptor to Fetch-register.
->
-> a value of 7 in bits 56-63 (PAIR_PTR) can suggest processing has not
-> begun.
->
-> can you verify you are writing the upper bits of the FR (i.e. 0x204c)?
->
-> Kim
->
+--=20
+Daniel
