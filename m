@@ -1,20 +1,20 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 4981367D93
+Return-Path: <Baohua.WANG@alcatel-sbell.com.cn>
+Received: from mail.alcatel-sbell.com.cn (nat1.alcatel-sbell.com.cn
+	[202.96.203.177]) by ozlabs.org (Postfix) with ESMTP id 2803E67E11
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  1 Aug 2005 13:44:31 +1000 (EST)
-Date: Sun, 31 Jul 2005 20:44:28 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Daniel Ann <ktdann@gmail.com>
-Message-ID: <20050801034428.GA1713@gate.ebshome.net>
-References: <9b7ca6570507311900212f0179@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9b7ca6570507311900212f0179@mail.gmail.com>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: openpic_init() functionality
+	Mon,  1 Aug 2005 14:53:55 +1000 (EST)
+Received: from asbmail4.sbell.com.cn (localhost [127.0.0.1])
+	by mail.alcatel-sbell.com.cn (8.12.11/8.12.11/Alcanet1.0) with ESMTP id
+	j714qmWN029040
+	for <linuxppc-embedded@ozlabs.org>; Mon, 1 Aug 2005 12:52:48 +0800
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C59655.021382FB"
+Date: Mon, 1 Aug 2005 12:53:50 +0800
+Message-ID: <A9DE2BAF233E444FA9C5E77A5825A01E86504F@ydmail.sbell.com.cn>
+From: "FCG WANG Baohua" <Baohua.WANG@alcatel-sbell.com.cn>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: How to config the  linux kernel under PPC860 board
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,43 +25,67 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Aug 01, 2005 at 11:00:29AM +0900, Daniel Ann wrote:
-> Hi folks,
-> 
-> Just been reading openpic_init() function and found something weird,
-> so I thought I might turn to pro.
-> It's a part where it initialises all external sources. Code goes
-> something like this,
-> [begin]
->     /* Init all external sources, including possibly the cascade. */
->     for (i = 0; i < NumSources; i++) {
->         int sense;
-> 
->         if (ISR[i] == 0)
->             continue;
-> [snip]
->       openpic_initirq(i, 8, i+offset, (sense & IRQ_POLARITY_MASK),
->               (sense & IRQ_SENSE_MASK));
-> [end]
-> 
-> I can see what openpic_initirq does. But what I dont see is enable
-> part. openpic_initirq only configures interrupt but does not enable
-> it. And going thru the rest of the code, nothing calls
-> openpic_enable_irq().
-> Can somebody tell me how should these interrupts get enabled ?
-> 
-> Reason is, if I dont force openpic_enable_irq() after
-> openpic_initirq(), then at the end of booting, I see none of my
-> interrupts enabled. Im sure somewhere down the line it should get
-> enabled, but where ?
+This is a multi-part message in MIME format.
 
-It's enabled when somebody calls request_irq, for example.
+------_=_NextPart_001_01C59655.021382FB
+Content-Type: text/plain;
+	charset="gb2312"
+Content-Transfer-Encoding: quoted-printable
 
-Generic IRQ code is linked to OpenPIC implementation through 
-'struct hw_interrupt_type open_pic'.
+Dear All
+  When I load the kernel 2.4.25 in PPC860 board's RAM , the emulator =
+display A "software error at 0x100 ", I think the "reset" function error =
 
-Next time, try adding printk to a function at question and you'll 
-easily see that it's being called.
+  when booting.  So how to config the kernel to avoid the problem ?=20
+  I use VisionClICK to emulate the PPC860 board, if direct download to =
+RAM with TFTP, there is nothing on serial port after printing=20
+ "starting at 0x10000" and the serial port is no input or output after =
+serval seconds. But during the few seconds, I can input any characters =
+on it.
+  How to slove it? thanks !
 
--- 
-Eugene
+------_=_NextPart_001_01C59655.021382FB
+Content-Type: text/html;
+	charset="gb2312"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dgb2312">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.0.6603.0">
+<TITLE>How to config the  linux kernel under PPC860 board</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/rtf format -->
+
+<P><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">Dear =
+All</FONT></SPAN>
+
+<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; When I =
+load the kernel 2.4.25 in PPC860 board's RAM , the emulator display A =
+&quot;software error at 0x100 &quot;, I think the &quot;reset&quot; =
+function error </FONT></SPAN></P>
+
+<P><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; when =
+booting.&nbsp; So how to config the kernel to avoid the problem ? =
+</FONT></SPAN>
+
+<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; I use =
+VisionClICK to emulate the PPC860 board, if direct download to RAM with =
+TFTP, there is nothing on serial port after printing </FONT></SPAN></P>
+
+<P><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 =
+FACE=3D"Arial">&nbsp;&quot;starting at 0x10000&quot; and the serial port =
+is no input or output after serval seconds. But during the few seconds, =
+I can input any characters on it.</FONT></SPAN></P>
+
+<P><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; How to =
+slove it? thanks !</FONT></SPAN>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C59655.021382FB--
