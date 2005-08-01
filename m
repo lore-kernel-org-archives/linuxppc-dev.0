@@ -1,20 +1,21 @@
-Return-Path: <Baohua.WANG@alcatel-sbell.com.cn>
-Received: from mail.alcatel-sbell.com.cn (nat1.alcatel-sbell.com.cn
-	[202.96.203.177]) by ozlabs.org (Postfix) with ESMTP id 2803E67E11
+Return-Path: <tdallagnol@parks.com.br>
+Received: from PKMAIL.parks.local (mail.parks.com.br [200.248.200.133])
+	by ozlabs.org (Postfix) with ESMTP id ED63467E35
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  1 Aug 2005 14:53:55 +1000 (EST)
-Received: from asbmail4.sbell.com.cn (localhost [127.0.0.1])
-	by mail.alcatel-sbell.com.cn (8.12.11/8.12.11/Alcanet1.0) with ESMTP id
-	j714qmWN029040
-	for <linuxppc-embedded@ozlabs.org>; Mon, 1 Aug 2005 12:52:48 +0800
+	Mon,  1 Aug 2005 22:54:19 +1000 (EST)
+Message-ID: <42EE1BDE.6050009@parks.com.br>
+Date: Mon, 01 Aug 2005 09:55:58 -0300
+From: Tiago Dall'Agnol <tdallagnol@parks.com.br>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C59655.021382FB"
-Date: Mon, 1 Aug 2005 12:53:50 +0800
-Message-ID: <A9DE2BAF233E444FA9C5E77A5825A01E86504F@ydmail.sbell.com.cn>
-From: "FCG WANG Baohua" <Baohua.WANG@alcatel-sbell.com.cn>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: How to config the  linux kernel under PPC860 board
+To: Dan Malek <dan@embeddededge.com>
+References: <20050729013303.33814.qmail@web40712.mail.yahoo.com>	<42EA2A2E.5040708@parks.com.br>	<20050729144015.09fec9fe.ajz@cambridgebroadband.com>	<42EA34A1.7060600@parks.com.br>
+	<20050729154359.1ac8f488.ajz@cambridgebroadband.com>
+	<42EA60E1.7040804@parks.com.br>
+	<b50c9dbfb13d8e2f5a82c2a299e46240@embeddededge.com>
+In-Reply-To: <b50c9dbfb13d8e2f5a82c2a299e46240@embeddededge.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: request_8xxirq
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,67 +26,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hi Dan
 
-------_=_NextPart_001_01C59655.021382FB
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: quoted-printable
+Thanks for your attention. I believe that I'm doing some confusion about 
+what is "request_8xxirq". I have this function (or some alias?) in my 
+system, and I guess that there isn't any problem with it. But the 
+problem I had was a pretty strange, and I decided to take a look at that 
+function. And I hadn't find its implementation. I tried to grep 
+request_8xxirq in the whole code, but I just found a 
+EXPORT_SYMBOL(request_8xxirq).
 
-Dear All
-  When I load the kernel 2.4.25 in PPC860 board's RAM , the emulator =
-display A "software error at 0x100 ", I think the "reset" function error =
+Anyway, my problem was related to the SEC Lite module. In my Linux, what 
+I had in source files originally was the use of SEC Lite interruption as 
+a LEVEL4 (number 9). In some boards (I mean, the same models, just other 
+boards), the interrupt handler was not called when it should be, i.e., 
+when the SEC Lite module ends its processing and signals that the packed 
+is ready for me. That's the way my system works, with interruption to 
+signal that the packet was already processed.
 
-  when booting.  So how to config the kernel to avoid the problem ?=20
-  I use VisionClICK to emulate the PPC860 board, if direct download to =
-RAM with TFTP, there is nothing on serial port after printing=20
- "starting at 0x10000" and the serial port is no input or output after =
-serval seconds. But during the few seconds, I can input any characters =
-on it.
-  How to slove it? thanks !
+So, after identifying that problem, I tried to change interrupt to 
+LEVEL3 (number 7), and for my surprise... now it works, for all boards. 
+But why?
 
-------_=_NextPart_001_01C59655.021382FB
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: quoted-printable
+Isn't it strange?
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dgb2312">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.0.6603.0">
-<TITLE>How to config the  linux kernel under PPC860 board</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
+Best Regards,
+Tiago
 
-<P><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">Dear =
-All</FONT></SPAN>
+Dan Malek wrote:
 
-<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; When I =
-load the kernel 2.4.25 in PPC860 board's RAM , the emulator display A =
-&quot;software error at 0x100 &quot;, I think the &quot;reset&quot; =
-function error </FONT></SPAN></P>
-
-<P><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; when =
-booting.&nbsp; So how to config the kernel to avoid the problem ? =
-</FONT></SPAN>
-
-<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; I use =
-VisionClICK to emulate the PPC860 board, if direct download to RAM with =
-TFTP, there is nothing on serial port after printing </FONT></SPAN></P>
-
-<P><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 =
-FACE=3D"Arial">&nbsp;&quot;starting at 0x10000&quot; and the serial port =
-is no input or output after serval seconds. But during the few seconds, =
-I can input any characters on it.</FONT></SPAN></P>
-
-<P><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; How to =
-slove it? thanks !</FONT></SPAN>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C59655.021382FB--
+>
+> On Jul 29, 2005, at 1:01 PM, Tiago Dall'Agnol wrote:
+>
+>> Am I wrong? I didn't understand when that function request_irq is used.
+>
+>
+> At some point I don't remember and against all of my wishes, the code
+> was changed from using request_8xxirq to using request_irq using
+> an ugly hack to add some offset to the 8xx interrupt vector number.
+> I didn't see any bug that needed fixing, but people with the power to
+> ignore my maintainer status decided to change it anyway.  So, now you
+> have to modify your drivers to call request_irq() with some nonsensical
+> interrupt number.  No value added, just confusion.
+>
+> Thanks.
+>
+>     -- Dan
+>
