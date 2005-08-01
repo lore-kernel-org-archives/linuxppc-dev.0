@@ -1,21 +1,23 @@
-Return-Path: <va824363@albany.edu>
-Received: from smtp.albany.edu (mail1.its.albany.edu [169.226.1.105])
-	by ozlabs.org (Postfix) with ESMTP id 793CA67D88
+Return-Path: <ktdann@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.200])
+	by ozlabs.org (Postfix) with ESMTP id 721D967D88
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  1 Aug 2005 10:48:19 +1000 (EST)
-Message-ID: <33216.24.92.61.26.1122857296.squirrel@24.92.61.26>
-In-Reply-To: <20050730183217.3310585b.kim.phillips@freescale.com>
-References: <32704.198.22.236.230.1122651627.squirrel@198.22.236.230>
-	<20050729153323.3f2c62ad.kim.phillips@freescale.com>
-	<32798.24.92.61.26.1122694772.squirrel@24.92.61.26>
-	<20050730183217.3310585b.kim.phillips@freescale.com>
-Date: Sun, 31 Jul 2005 20:48:16 -0400 (EDT)
-From: "Vikas Aggarwal" <va824363@albany.edu>
-To: "Kim Phillips" <kim.phillips@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
+	Mon,  1 Aug 2005 11:27:01 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id i28so923108wra
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 31 Jul 2005 18:27:00 -0700 (PDT)
+Message-ID: <9b7ca65705073118276e89b29@mail.gmail.com>
+Date: Mon, 1 Aug 2005 10:27:00 +0900
+From: Daniel Ann <ktdann@gmail.com>
+To: =?ISO-8859-1?Q?Anton_W=F6llert?= <a.woellert@gmail.com>
+In-Reply-To: <42EB587D.80403@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <9b7ca65705072918062249e41f@mail.gmail.com>
+	<42EB587D.80403@gmail.com>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: mpc8248  SEC -- interrupt handler "is" invoked
+Subject: Re: Serial console
+Reply-To: Daniel Ann <ktdann@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,30 +28,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Tried it as u said . No luck :(
-But something more i noted now in CPSR(channel pointer status
-register=0x2040)  that before ISR invoked it has 0x0:0x7.
+Thanks for your input Anton.
+I'm not all that certain about sandpoint platform has its own serial
+driver so I've worked with 8250.c. Anyway, I've got it working now. It
+was problem with interrupt. As soon as I changed interrupt from EGDE
+to LEVEL it began working. Altho I'm faced with yet another problem
+with openpic but I'm digging thru it at the moment.
 
-After ISR invoked it has 0x7:0x2007 .  The 7 in low bits means
-channel_error and 2 is at "reserved" bits as per documentation, don't know
-what that means.
+BTW, I have no idea why EDGE didnt work and LEVEL does.
 
-I also tried kmalloc with GFP_DMA, for the memory where i create the
-Descriptor.
-Please keep giving ideas for debugging this as this is what driving me
-right now.
-regards
--vikas
+Cheers,
+Daniel
+
+On 7/30/05, Anton W=F6llert <a.woellert@gmail.com> wrote:
+> Daniel Ann wrote:
+> > Hi folks,
+> >
+> > Having all the kernel boot up log on console means that I've done some
+> > part right. But why am I not getting anything from the user processes
+> > on the console screen ?
+> >
+> > Is there anything I need to do on the kernel config ?
+> >
+>=20
+> Hi, we've had the same problem some time ago on a tqm850l (mpc850). Our
+> problem was, that we had registered two serial consoles in the kernel
+> config or something like that. we had to disable all serial-driver stuff
+> and enable just the platform-specific serial-console driver. we tracked
+> this down with inserting a printk(buf) into the tty_write fs-op of the
+> serial-port driver in drivers/char/tty_io.c. the ttyS0 was used but has
+> taken another serial-driver than the platform specific.
+>=20
+> may this help you :)
+>=20
+>=20
+> anton
+>=20
 
 
-> On Fri, 29 Jul 2005 23:39:32 -0400 (EDT)
-> "Vikas Aggarwal" <va824363@albany.edu> wrote:
->
->>
->> But i still think that may be virt_to_phys() is not doing what FR
->> expects.
->>
-> try dma_map_single().  See drivers/net/gianfar.c
->
-> Kim
->
+--=20
+Daniel
