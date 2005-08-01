@@ -1,36 +1,36 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 97D6467D88
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 31 Jul 2005 09:32:28 +1000 (EST)
-Date: Sat, 30 Jul 2005 18:32:17 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: "Vikas Aggarwal" <va824363@albany.edu>
-Message-Id: <20050730183217.3310585b.kim.phillips@freescale.com>
-In-Reply-To: <32798.24.92.61.26.1122694772.squirrel@24.92.61.26>
-References: <32704.198.22.236.230.1122651627.squirrel@198.22.236.230>
-	<20050729153323.3f2c62ad.kim.phillips@freescale.com>
-	<32798.24.92.61.26.1122694772.squirrel@24.92.61.26>
+Return-Path: <gsslist+linuxppc@anthropohedron.net>
+Received: from sccrmhc13.comcast.net (sccrmhc13.comcast.net [63.240.76.28])
+	by ozlabs.org (Postfix) with ESMTP id 0E20967D69
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Aug 2005 03:58:55 +1000 (EST)
+Received: from gss by roadkill with local (Exim 4.52) id 1DzeJD-0008E3-Qa
+	for linuxppc-dev@ozlabs.org; Mon, 01 Aug 2005 13:42:39 -0400
+Date: Mon, 1 Aug 2005 13:42:39 -0400
+From: Gregory Seidman <gsslist+linuxppc@anthropohedron.net>
+To: LinuxPPC dev list <linuxppc-dev@ozlabs.org>
+Message-ID: <20050801174238.GA31016@anthropohedron.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: mpc8248  SEC -- interrupt handler not invoked
-List-Id: Linux on Embedded PowerPC Developers Mail List
-	<linuxppc-embedded.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
-List-Post: <mailto:linuxppc-embedded@ozlabs.org>
-List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+Content-Type: text/plain; charset=us-ascii
+Subject: endianness of Linux kernel RAID
+Reply-To: gsslist+linuxppc@anthropohedron.net
+List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 29 Jul 2005 23:39:32 -0400 (EDT)
-"Vikas Aggarwal" <va824363@albany.edu> wrote:
+It turns out that if one uses the kernel (2.4.x-2.6.x) RAID support (RAID5,
+anyway, since that's all I've tested), the RAID'd disks cannot be moved to
+another system with a different endianness. I don't know how hard that
+would be to fix, but it did mean that when my ancient Mac clone I was using
+as a server died I couldn't bring the RAID over to my spare x86 Linux box;
+I had to dedicate other hardware (my dual G4 that I had been happily using
+with OS X) to the task instead.
 
-> 
-> But i still think that may be virt_to_phys() is not doing what FR expects.
-> 
-try dma_map_single().  See drivers/net/gianfar.c
+Unfortunately, I haven't gotten into kernel development and, therefore, do
+not have the necessary expertise to fix it. Is anyone here interested in
+this issue?
 
-Kim
+--Greg
