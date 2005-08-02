@@ -1,17 +1,23 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
-	by ozlabs.org (Postfix) with SMTP id 41DE667DA5
+Return-Path: <va824363@albany.edu>
+Received: from smtp.albany.edu (mail1.its.albany.edu [169.226.1.105])
+	by ozlabs.org (Postfix) with ESMTP id 2406167D77
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  3 Aug 2005 01:24:21 +1000 (EST)
-Message-ID: <42EF9022.5050707@ru.mvista.com>
-Date: Tue, 02 Aug 2005 19:24:18 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
+	Wed,  3 Aug 2005 01:45:18 +1000 (EST)
+Message-ID: <53547.198.22.236.230.1122997515.squirrel@198.22.236.230>
+In-Reply-To: <20050801123728.62764c7e.kim.phillips@freescale.com>
+References: <32704.198.22.236.230.1122651627.squirrel@198.22.236.230>
+	<20050729153323.3f2c62ad.kim.phillips@freescale.com>
+	<32798.24.92.61.26.1122694772.squirrel@24.92.61.26>
+	<20050730183217.3310585b.kim.phillips@freescale.com>
+	<33216.24.92.61.26.1122857296.squirrel@24.92.61.26>
+	<20050801123728.62764c7e.kim.phillips@freescale.com>
+Date: Tue, 2 Aug 2005 11:45:15 -0400 (EDT)
+From: "Vikas Aggarwal" <va824363@albany.edu>
+To: "Kim Phillips" <kim.phillips@freescale.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@freescale.com>
-Content-Type: multipart/mixed; boundary="------------050606050202010407030805"
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>,
-	Pantelis Antoniou <pantelis.antoniou@gmail.com>
-Subject: [PATCH] cpm_uart: Made non-console uart work
+Content-Type: text/plain;charset=iso-8859-1
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: mpc8248  SEC -- interrupt handler 'is' invoked
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,422 +28,310 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------050606050202010407030805
-Content-Type: text/plain; charset=KOI8-R; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi Kim,
+ Code excerpts are at after the TRACE.
+TRACE Messages from the test ---------
 
-Kumar, Pantelis,
+bash-2.05b# modprobe secmpc8248
+bash-2.05b# [K/lib/modules/2.6.10-rc3/kernel/crypto/mpc8248/test
+SEC1Open() called, inode 0xc0a564cc, file 0xc024e2f4
+ *** Test RNG ***
 
-This patch makes non-console UART work on both 8xx and 82xx. Various 
-issues are resolved:
-- removed unnecessary STOP_TX commands in shutdown - no need to 
-completely stop CPM TX and reinit BDs each time the port is closing;
-- when mem_addr has been allocated via dma_coherent_alloc, virt_to_bus 
-on it will not tell the truth in most cases
-- SCC UART needs to wait several character times even after all the BDs 
-have READY bit cleared
-- adds needed board-specific bits for 86xADS
+First ID=21474820 ChannelPointerStatusRegister[0]=0x0:
+ChannelPointerStatusRegister[0]=0x7
 
-Tested on 8272ADS, 885ADS and 866ADS development boards.
----------------------------------
-Signed-off-by:  Vitaly Bordug <vbordug@ru.mvista.com>
+ ChannelPointerStatusRegister[1]=0x0: ChannelPointerStatusRegister[1]=0x7
 
--- 
-Sincerely, 
-Vitaly
+ ChannelPointerStatusRegister[2]=0x0: ChannelPointerStatusRegister[2]=0x7
+
+ ChannelPointerStatusRegister[3]=0x0: ChannelPointerStatusRegister[3]=0x7
+
+ProcessRequest(): free channel = 0
+
+RequestToDpd(): req @0x7ffff820 ch1
+
+RequestToDpd(): get entry for opId 0x00001000
+
+RequestToDpd(): VerifyRequest(0x7ffff820, 0xc11b9cf0)
+
+RequestToDpd(): clear DPD 0xc11bb910
+
+RequestToDpd(): converting entry4 4->0xc09ffc5c vikas
 
 
---------------050606050202010407030805
-Content-Type: text/x-patch;
- name="cpm_uart_fixes.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="cpm_uart_fixes.patch"
+RequestToDpd(): set length = 160
 
-diff --git a/drivers/serial/cpm_uart/cpm_uart.h b/drivers/serial/cpm_uart/cpm_uart.h
---- a/drivers/serial/cpm_uart/cpm_uart.h
-+++ b/drivers/serial/cpm_uart/cpm_uart.h
-@@ -40,6 +40,8 @@
- #define TX_NUM_FIFO	4
- #define TX_BUF_SIZE	32
- 
-+#define SCC_WAIT_CLOSING 100
-+
- struct uart_cpm_port {
- 	struct uart_port	port;
- 	u16			rx_nrfifos;	
-@@ -67,6 +69,8 @@ struct uart_cpm_port {
- 	int			 bits;
- 	/* Keep track of 'odd' SMC2 wirings */
- 	int			is_portb;
-+	/* wait on close if needed */
-+	int 			wait_closing;
- };
- 
- extern int cpm_uart_port_map[UART_NR];
-diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
---- a/drivers/serial/cpm_uart/cpm_uart_core.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_core.c
-@@ -12,6 +12,7 @@
-  * 
-  *  Copyright (C) 2004 Freescale Semiconductor, Inc.
-  *            (C) 2004 Intracom, S.A.
-+ * 	      (C) 2005 MontaVista Software, Inc. by Vitaly Bordug <vbordug@ru.mvista.com>	
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License as published by
-@@ -143,10 +144,13 @@ static void cpm_uart_start_tx(struct uar
- 	}
- 
- 	if (cpm_uart_tx_pump(port) != 0) {
--		if (IS_SMC(pinfo))
-+		if (IS_SMC(pinfo)) {
- 			smcp->smc_smcm |= SMCM_TX;
--		else
-+			smcp->smc_smcmr |= SMCMR_TEN;
-+		} else {
- 			sccp->scc_sccm |= UART_SCCM_TX;
-+			pinfo->sccp->scc_gsmrl |= SCC_GSMRL_ENT;
-+		}
- 	}
- }
- 
-@@ -265,13 +269,15 @@ static void cpm_uart_int_rx(struct uart_
- 		}		/* End while (i--) */
- 
- 		/* This BD is ready to be used again. Clear status. get next */
--		bdp->cbd_sc &= ~(BD_SC_BR | BD_SC_FR | BD_SC_PR | BD_SC_OV);
-+		bdp->cbd_sc &= ~(BD_SC_BR | BD_SC_FR | BD_SC_PR | BD_SC_OV | BD_SC_ID);
- 		bdp->cbd_sc |= BD_SC_EMPTY;
- 
--		if (bdp->cbd_sc & BD_SC_WRAP)
--			bdp = pinfo->rx_bd_base;
--		else
--			bdp++;
-+		if (bdp->cbd_datlen) {
-+			if (bdp->cbd_sc & BD_SC_WRAP)
-+				bdp = pinfo->rx_bd_base;
-+			else
-+				bdp++;
-+		}
- 	} /* End for (;;) */
- 
- 	/* Write back buffer pointer */
-@@ -336,22 +342,22 @@ static irqreturn_t cpm_uart_int(int irq,
- 
- 	if (IS_SMC(pinfo)) {
- 		events = smcp->smc_smce;
-+		smcp->smc_smce = events;
- 		if (events & SMCM_BRKE)
- 			uart_handle_break(port);
- 		if (events & SMCM_RX)
- 			cpm_uart_int_rx(port, regs);
- 		if (events & SMCM_TX)
- 			cpm_uart_int_tx(port, regs);
--		smcp->smc_smce = events;
- 	} else {
- 		events = sccp->scc_scce;
-+		sccp->scc_scce = events;
- 		if (events & UART_SCCM_BRKE)
- 			uart_handle_break(port);
- 		if (events & UART_SCCM_RX)
- 			cpm_uart_int_rx(port, regs);
- 		if (events & UART_SCCM_TX)
- 			cpm_uart_int_tx(port, regs);
--		sccp->scc_scce = events;
- 	}
- 	return (events) ? IRQ_HANDLED : IRQ_NONE;
- }
-@@ -360,6 +366,7 @@ static int cpm_uart_startup(struct uart_
- {
- 	int retval;
- 	struct uart_cpm_port *pinfo = (struct uart_cpm_port *)port;
-+	int line = pinfo - cpm_uart_ports;
- 
- 	pr_debug("CPM uart[%d]:startup\n", port->line);
- 
-@@ -374,18 +381,30 @@ static int cpm_uart_startup(struct uart_
- 		pinfo->smcp->smc_smcmr |= SMCMR_REN;
- 	} else {
- 		pinfo->sccp->scc_sccm |= UART_SCCM_RX;
-+		pinfo->sccp->scc_gsmrl |= SCC_GSMRL_ENR;
- 	}
- 
-+	cpm_line_cr_cmd(line,CPM_CR_RESTART_TX);
- 	return 0;
- }
- 
-+inline void cpm_uart_wait_until_send(struct uart_cpm_port *pinfo)
-+{
-+	unsigned long orig_jiffies = jiffies;
-+	while(1)
-+	{
-+		schedule_timeout(2);
-+		if(time_after(jiffies, orig_jiffies + pinfo->wait_closing))
-+			break;
-+	}
-+}
-+
- /*
-  * Shutdown the uart
-  */
- static void cpm_uart_shutdown(struct uart_port *port)
- {
- 	struct uart_cpm_port *pinfo = (struct uart_cpm_port *)port;
--	int line = pinfo - cpm_uart_ports;
- 
- 	pr_debug("CPM uart[%d]:shutdown\n", port->line);
- 
-@@ -394,6 +413,12 @@ static void cpm_uart_shutdown(struct uar
- 
- 	/* If the port is not the console, disable Rx and Tx. */
- 	if (!(pinfo->flags & FLAG_CONSOLE)) {
-+		/* Wait for all the BDs marked sent */
-+		while(!cpm_uart_tx_empty(port))
-+			schedule_timeout(2);
-+		if(pinfo->wait_closing)
-+			cpm_uart_wait_until_send(pinfo);
-+
- 		/* Stop uarts */
- 		if (IS_SMC(pinfo)) {
- 			volatile smc_t *smcp = pinfo->smcp;
-@@ -405,9 +430,6 @@ static void cpm_uart_shutdown(struct uar
- 			sccp->scc_sccm &= ~(UART_SCCM_TX | UART_SCCM_RX);
- 		}
- 
--		/* Shut them really down and reinit buffer descriptors */
--		cpm_line_cr_cmd(line, CPM_CR_STOP_TX);
--		cpm_uart_initbd(pinfo);
- 	}
- }
- 
-@@ -569,7 +591,10 @@ static int cpm_uart_tx_pump(struct uart_
- 		/* Pick next descriptor and fill from buffer */
- 		bdp = pinfo->tx_cur;
- 
--		p = bus_to_virt(bdp->cbd_bufaddr);
-+		if (pinfo->dma_addr)
-+			p=(u8*)((ulong)(pinfo->mem_addr) + bdp->cbd_bufaddr - pinfo->dma_addr);
-+		else
-+			p = bus_to_virt(bdp->cbd_bufaddr);
- 		*p++ = xmit->buf[xmit->tail];
- 		bdp->cbd_datlen = 1;
- 		bdp->cbd_sc |= BD_SC_READY;
-@@ -595,7 +620,10 @@ static int cpm_uart_tx_pump(struct uart_
- 
- 	while (!(bdp->cbd_sc & BD_SC_READY) && (xmit->tail != xmit->head)) {
- 		count = 0;
--		p = bus_to_virt(bdp->cbd_bufaddr);
-+		if (pinfo->dma_addr)
-+			p=(u8*)((ulong)(pinfo->mem_addr) + bdp->cbd_bufaddr - pinfo->dma_addr);
-+		else
-+			p = bus_to_virt(bdp->cbd_bufaddr);
- 		while (count < pinfo->tx_fifosize) {
- 			*p++ = xmit->buf[xmit->tail];
- 			xmit->tail = (xmit->tail + 1) & (UART_XMIT_SIZE - 1);
-@@ -606,6 +634,7 @@ static int cpm_uart_tx_pump(struct uart_
- 		}
- 		bdp->cbd_datlen = count;
- 		bdp->cbd_sc |= BD_SC_READY;
-+		__asm__("eieio");
- 		/* Get next BD. */
- 		if (bdp->cbd_sc & BD_SC_WRAP)
- 			bdp = pinfo->tx_bd_base;
-@@ -632,6 +661,7 @@ static void cpm_uart_initbd(struct uart_
- {
- 	int i;
- 	u8 *mem_addr;
-+	u8* dma_addr;
- 	volatile cbd_t *bdp;
- 
- 	pr_debug("CPM uart[%d]:initbd\n", pinfo->port.line);
-@@ -641,14 +671,23 @@ static void cpm_uart_initbd(struct uart_
- 	 * virtual address for us to work with.
- 	 */
- 	mem_addr = pinfo->mem_addr;
-+	dma_addr = (u8*)(pinfo->dma_addr);
- 	bdp = pinfo->rx_cur = pinfo->rx_bd_base;
- 	for (i = 0; i < (pinfo->rx_nrfifos - 1); i++, bdp++) {
--		bdp->cbd_bufaddr = virt_to_bus(mem_addr);
-+		if (pinfo->dma_addr)
-+			bdp->cbd_bufaddr = (ulong)dma_addr;
-+		else
-+			bdp->cbd_bufaddr = virt_to_bus(mem_addr);
- 		bdp->cbd_sc = BD_SC_EMPTY | BD_SC_INTRPT;
-+		bdp->cbd_datlen = 0;
- 		mem_addr += pinfo->rx_fifosize;
-+		dma_addr += pinfo->rx_fifosize;
- 	}
--	
--	bdp->cbd_bufaddr = virt_to_bus(mem_addr);
-+	if (pinfo->dma_addr)
-+		bdp->cbd_bufaddr = (ulong)dma_addr;
-+	else
-+		bdp->cbd_bufaddr = virt_to_bus(mem_addr);
-+	bdp->cbd_datlen = 0;
- 	bdp->cbd_sc = BD_SC_WRAP | BD_SC_EMPTY | BD_SC_INTRPT;
- 
- 	/* Set the physical address of the host memory
-@@ -656,14 +695,21 @@ static void cpm_uart_initbd(struct uart_
- 	 * virtual address for us to work with.
- 	 */
- 	mem_addr = pinfo->mem_addr + L1_CACHE_ALIGN(pinfo->rx_nrfifos * pinfo->rx_fifosize);
-+	dma_addr = (u8*)(pinfo->dma_addr + L1_CACHE_ALIGN(pinfo->rx_nrfifos * pinfo->rx_fifosize));
- 	bdp = pinfo->tx_cur = pinfo->tx_bd_base;
- 	for (i = 0; i < (pinfo->tx_nrfifos - 1); i++, bdp++) {
--		bdp->cbd_bufaddr = virt_to_bus(mem_addr);
-+		if (pinfo->dma_addr)
-+			bdp->cbd_bufaddr = (ulong)dma_addr;
-+		else
-+			bdp->cbd_bufaddr = virt_to_bus(mem_addr);
- 		bdp->cbd_sc = BD_SC_INTRPT;
- 		mem_addr += pinfo->tx_fifosize;
-+		dma_addr += pinfo->tx_fifosize;
- 	}
--	
--	bdp->cbd_bufaddr = virt_to_bus(mem_addr);
-+	if (pinfo->dma_addr)
-+		bdp->cbd_bufaddr = (ulong)dma_addr;
-+	else
-+		bdp->cbd_bufaddr = virt_to_bus(mem_addr);
- 	bdp->cbd_sc = BD_SC_WRAP | BD_SC_INTRPT;
- }
- 
-@@ -763,6 +809,8 @@ static void cpm_uart_init_smc(struct uar
- 	/* Using idle charater time requires some additional tuning.  */
- 	up->smc_mrblr = pinfo->rx_fifosize;
- 	up->smc_maxidl = pinfo->rx_fifosize;
-+	up->smc_brklen = 0;
-+	up->smc_brkec = 0;
- 	up->smc_brkcr = 1;
- 
- 	cpm_line_cr_cmd(line, CPM_CR_INIT_TRX);
-@@ -815,6 +863,10 @@ static int cpm_uart_request_port(struct 
- 		return ret;
- 
- 	cpm_uart_initbd(pinfo);
-+	if (IS_SMC(pinfo))
-+		cpm_uart_init_smc(pinfo);
-+	else
-+		cpm_uart_init_scc(pinfo);
- 
- 	return 0;
- }
-@@ -902,6 +954,7 @@ struct uart_cpm_port cpm_uart_ports[UART
- 		.rx_nrfifos = RX_NUM_FIFO, 
- 		.rx_fifosize = RX_BUF_SIZE,
- 		.set_lineif = scc1_lineif,
-+		.wait_closing = SCC_WAIT_CLOSING,
- 	},
- 	[UART_SCC2] = {
- 		.port = {
-@@ -915,6 +968,7 @@ struct uart_cpm_port cpm_uart_ports[UART
- 		.rx_nrfifos = RX_NUM_FIFO, 
- 		.rx_fifosize = RX_BUF_SIZE,
- 		.set_lineif = scc2_lineif,
-+		.wait_closing = SCC_WAIT_CLOSING,
- 	},
- 	[UART_SCC3] = {
- 		.port = {
-@@ -928,6 +982,7 @@ struct uart_cpm_port cpm_uart_ports[UART
- 		.rx_nrfifos = RX_NUM_FIFO, 
- 		.rx_fifosize = RX_BUF_SIZE,
- 		.set_lineif = scc3_lineif,
-+		.wait_closing = SCC_WAIT_CLOSING,
- 	},
- 	[UART_SCC4] = {
- 		.port = {
-@@ -941,6 +996,7 @@ struct uart_cpm_port cpm_uart_ports[UART
- 		.rx_nrfifos = RX_NUM_FIFO, 
- 		.rx_fifosize = RX_BUF_SIZE,
- 		.set_lineif = scc4_lineif,
-+		.wait_closing = SCC_WAIT_CLOSING,
- 	},
- };
- 
-@@ -1081,6 +1137,7 @@ static int __init cpm_uart_console_setup
- 		return ret;
- 
- 	cpm_uart_initbd(pinfo);
-+	cpm_uart_init_scc(pinfo);
- 
- 	if (IS_SMC(pinfo))
- 		cpm_uart_init_smc(pinfo);
-diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm1.c b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
---- a/drivers/serial/cpm_uart/cpm_uart_cpm1.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
-@@ -82,6 +82,16 @@ void cpm_line_cr_cmd(int line, int cmd)
- void smc1_lineif(struct uart_cpm_port *pinfo)
- {
- 	volatile cpm8xx_t *cp = cpmp;
-+
-+#if defined (CONFIG_MPC885ADS)
-+	/* Enable SMC1 transceivers */
-+	{
-+		cp->cp_pepar |= 0x000000c0;
-+		cp->cp_pedir &= ~0x000000c0;
-+		cp->cp_peso &= ~0x00000040;
-+		cp->cp_peso |= 0x00000080;
-+	}
-+#elif defined (CONFIG_MPC86XADS)
- 	unsigned int iobits = 0x000000c0;
- 
- 	if (!pinfo->is_portb) {
-@@ -93,41 +103,31 @@ void smc1_lineif(struct uart_cpm_port *p
- 		((immap_t *)IMAP_ADDR)->im_ioport.iop_padir &= ~iobits;
- 		((immap_t *)IMAP_ADDR)->im_ioport.iop_paodr &= ~iobits;
- 	}
--
--#ifdef CONFIG_MPC885ADS
--	/* Enable SMC1 transceivers */
--	{
--		volatile uint __iomem *bcsr1 = ioremap(BCSR1, 4);
--		uint tmp;
--
--		tmp = in_be32(bcsr1);
--		tmp &= ~BCSR1_RS232EN_1;
--		out_be32(bcsr1, tmp);
--		iounmap(bcsr1);
--	}
- #endif
--
- 	pinfo->brg = 1;
- }
- 
- void smc2_lineif(struct uart_cpm_port *pinfo)
- {
--#ifdef CONFIG_MPC885ADS
- 	volatile cpm8xx_t *cp = cpmp;
--	volatile uint __iomem *bcsr1;
--	uint tmp;
--
-+#if defined (CONFIG_MPC885ADS)
- 	cp->cp_pepar |= 0x00000c00;
- 	cp->cp_pedir &= ~0x00000c00;
- 	cp->cp_peso &= ~0x00000400;
- 	cp->cp_peso |= 0x00000800;
-+#elif defined (CONFIG_MPC86XADS)
-+	unsigned int iobits = 0x00000c00;
-+
-+	if (!pinfo->is_portb) {
-+		cp->cp_pbpar |= iobits;
-+		cp->cp_pbdir &= ~iobits;
-+		cp->cp_pbodr &= ~iobits;
-+	} else {
-+		((immap_t *)IMAP_ADDR)->im_ioport.iop_papar |= iobits;
-+		((immap_t *)IMAP_ADDR)->im_ioport.iop_padir &= ~iobits;
-+		((immap_t *)IMAP_ADDR)->im_ioport.iop_paodr &= ~iobits;
-+	}
- 
--	/* Enable SMC2 transceivers */
--	bcsr1 = ioremap(BCSR1, 4);
--	tmp = in_be32(bcsr1);
--	tmp &= ~BCSR1_RS232EN_2;
--	out_be32(bcsr1, tmp);
--	iounmap(bcsr1);
- #endif
- 
- 	pinfo->brg = 2;
+DPD header         = 0x40000011
 
---------------050606050202010407030805--
+Primary EU/Mode 0x04:00, Secondary EU/Mode 0x00:00, Desc Type 0x01, Snoop
+Output Data Mode, Done
+
+DPD ptr:len/ext p0 = 0x00000000:00000000
+
+DPD ptr:len/ext p1 = 0x00000000:00000000
+
+DPD ptr:len/ext p2 = 0x00000000:00000000
+
+DPD ptr:len/ext p3 = 0x00000000:00000000
+
+DPD ptr:len/ext p4 = 0x009ffc5c:000000a0
+
+DPD ptr:len/ext p5 = 0x00000000:00000000
+
+DPD ptr:len/ext p6 = 0x00000000:00000000
+
+RequestToDpd() EndOfFunc: req @0x00000000 ch1
+
+ProcessRequest() endOffunc: free channel = 0
+
+
+InterruptServiceRoutine()
+
+ProcessingComplete(): IntStatus - 0x0000000000000040
+
+ProcessingComplete():->Controller_MEAR=0x011bb910
+
+ ChannelPointerStatusRegister[0]=0x7: ChannelPointerStatusRegister[0]=0x2007
+
+ ChannelPointerStatusRegister[1]=0x0: ChannelPointerStatusRegister[1]=0x7
+
+ ChannelPointerStatusRegister[2]=0x0: ChannelPointerStatusRegister[2]=0x7
+
+ ChannelPointerStatusRegister[3]=0x0: ChannelPointerStatusRegister[3]=0x7
+
+Unknown
+
+ProcessingComplete Done
+ ID1
+nfs: server 192.168.2.4 not responding, still trying
+
+nfs: server 192.168.2.4 OK
+
+Request Ti ChannelPointerStatusRegister[0]=0x7:
+ChannelPointerStatusRegister[0]=0x2007
+
+ ChannelPointerStatusRegister[1]=0x0: ChannelPointerStatusRegister[1]=0x7
+
+ ChannelPointerStatusRegister[2]=0x0: ChannelPointerStatusRegister[2]=0x7
+
+ ChannelPointerStatusRegister[3]=0x0: ChannelPointerStatusRegister[3]=0x7
+
+testSEC1Close() called
+
+ReleaseChannel(1, taskID=0x     148, lock=1)
+
+bash-2.05b#
+------------TRACE COMPLETE ------------------------
+
+This is how i write the address of RNG buffer(sec1_dpd.c.
+DPDPTR->fld[i].ptr = virt_to_phys(*(unsigned int *) ((unsigned int)pReq +
+pDesc->fld[i].ptrOffset1st));
+
+This is how i write the length of RNG buffer(sec1_dpd.c.
+DPDPTR->fld[i].len = *(unsigned int *) ((unsigned int)pReq +
+pDesc->fld[i].lenOffset1st);
+DPDPTR->nxt_dpd_ptr = 0;
+
+This is how i write the DPD's address?(sec1_request.c).
+*(ChannelNextDescriptorRegister[freeChannel]+1) =
+dma_map_single(NULL,(volatile void
+*)(ChannelAssignments[freeChannel].Dpds[0]),64,DMA_BIDIRECTIONAL);
+
+DPD_TABLE
+-----------------------------------------------
+/*  DPD_FLD_DETAILS_ENTRY
+    Describes where and how a field in a request goes to a field in a DPD
+*/
+typedef struct
+{
+    char                    *txt;               /* Description of the
+                                                   field within the request
+                                                   a NULL indicates the end
+                                                   of field entries */
+    unsigned int            lenOffset1st;       /* Offset into request
+pointer
+                                                   for the initial length
+field */
+    unsigned int            lenOffsetNxt;       /* Offset into request
+pointer
+                                                   for the next length field
+                                                   Used when input points to
+                                                   output of the previous
+                                                   request */
+    unsigned int            ptrOffset1st;       /* Offset into request
+pointer
+                                                   for the initial data
+area */
+    unsigned int            extOffset;
+    FLD_TYPE                dataType;           /* Data type either:
+                                                   a "Read" or "Write"
+area */
+    BOOLEAN                 (*pFncSize)(unsigned long len); /* Pointer to
+                                                    function that checks
+                                                    whether the length is
+                                                    consistent with the
+request */
+} DPD_FLD_DETAILS_ENTRY;
+
+/*! \struct DPD_DETAILS_ENTRY
+    \brief Describes how a request is broken into a single DPD or a set of
+chained
+    DPDs
+*/
+typedef struct DPD_DETAILS_ENTRY
+{
+    unsigned long           opId;               /* Operation ID for entry */
+    char                    *txt;               /* Description of request
+                                                   a NULL indicates the end
+                                                   of the table */
+    unsigned long           sz;                 /* Size of request */
+    const unsigned long     *hdrDesc;           /* Descriptor Header */
+    unsigned int            lenOffsetBlockLen;  /* Offset into request
+pointer
+                                                   for total length of
+data */
+    DPD_FLD_DETAILS_ENTRY   fld[NUM_DPD_FLDS];
+} DPD_DETAILS_ENTRY;        /* Each request is enumerated here */
+
+#ifndef offsetof
+/*  offsetof(s,m)
+    Macro that identifies the byte offset of a field m within a structure s
+*/
+#define offsetof(s,m)   (size_t)&(((s *)0)->m)
+#endif
+#define STD_OFFSETS(s,l1,l2,p1,p2)  offsetof(s,l1), offsetof(s,l2),\
+                                    offsetof(s,p1), 0
+#define EXT_OFFSETS(s,l1,l2,p1,p2)  offsetof(s,l1), offsetof(s,l2),\
+                                    offsetof(s,p1), offsetof(s,p2)
+#define NULL_PTR_OFFSETS(s,l1,l2)   offsetof(s,l1), offsetof(s,l2), 0, 0
+#define ZERO_LEN_OFFSETS(s,p1,p2)   0, 0, offsetof(s,p1), offsetof(s,p2)
+#define ALL_ZERO_OFFSETS            0, 0, 0, 0
+static char NIL[] = {"NIL"};
+DPD_DETAILS_ENTRY DpdDetails[] =
+{
+
+
+    /* DPD_RNG_GROUP */
+    {
+        DPD_RNG_GROUP, "DPD_RNG_GROUP",
+        sizeof(RNG_REQ), RngDesc,
+        offsetof(RNG_REQ,rngBytes),
+        {
+            {NIL,           ALL_ZERO_OFFSETS, Read, NULL},
+            {NIL,           ALL_ZERO_OFFSETS, Read, NULL},
+            {NIL,           ALL_ZERO_OFFSETS, Read, NULL},
+            {NIL,           ALL_ZERO_OFFSETS, Read, NULL},
+            {"rngData",    
+STD_OFFSETS(RNG_REQ,rngBytes,rngBytes,rngData,rngData), Write,
+NULL},
+            {NULL, ALL_ZERO_OFFSETS, Read, NULL}
+        },
+    },
+    /* DPD_DES_CBC_GROUP */
+    {
+----------------------------------
+testRNG user-space function-----------
+int testRng(int fd)
+{
+    RNG_REQ rngReq;
+    int device=0, status;
+
+
+    /* RNG test */
+    printf("\n*** Test RNG ***\n");
+
+    memset(&rngReq, 0, sizeof(rngReq));
+    memset(rngBuf, 0, RNG_TESTSIZE);
+
+    rngReq.opId     = DPD_RNG_GETRN;
+    rngReq.rngBytes = RNG_TESTSIZE;
+    rngReq.rngData  = rngBuf;
+
+
+    status = putKmem(fd, "vikas\n\0", &rngReq.rngData, RNG_TESTSIZE);
+    if (status)
+        return status;
+
+    armCompletion(&rngReq);
+    {
+        int status1;
+        SEC1_STATUS statusReq;
+        printf("\nFirst ID=%d\n",statusReq.IdRegister);
+        status1 = ioctl(fd, IOCTL_GET_STATUS, (int)&statusReq);
+    }
+    status = ioctl(fd, IOCTL_PROC_REQ, (int)&rngReq);
+    printf("\nID1\n");
+
+    if (status = waitCompletion("testRng(): data extraction test", status,
+&rngReq))
+    {
+        int status1;
+        SEC1_STATUS statusReq;
+        printf("\nID=%d\n",statusReq.IdRegister);
+        status1 = ioctl(fd, IOCTL_GET_STATUS, (int)&statusReq);
+        fflush(stdout);
+
+        freeKmem(fd, &rngReq.rngData);
+        return status;
+    }
+    printf("\nID2\n");
+    fflush(stdout);
+
+    getKmem(fd, rngBuf, &rngReq.rngData, RNG_TESTSIZE);
+
+    freeKmem(fd, &rngReq.rngData);
+
+
+    /* check random buffer content for nonzero */
+    if (rngBuf[0]) {
+        printf("*** Test RNG Data ***\n");
+        status = 0;
+    } else {
+        printf("*** Test RNG Failed ***\n");
+        status = -1;
+    }
+
+    return status;
+}
+------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+> On Sun, 31 Jul 2005 20:48:16 -0400 (EDT)
+> "Vikas Aggarwal" <va824363@albany.edu> wrote:
+>
+>> Tried it as u said . No luck :(
+>> But something more i noted now in CPSR(channel pointer status
+>> register=0x2040)  that before ISR invoked it has 0x0:0x7.
+>>
+>> After ISR invoked it has 0x7:0x2007 .  The 7 in low bits means
+>> channel_error and 2 is at "reserved" bits as per documentation, don't
+>> know
+>> what that means.
+>>
+>> I also tried kmalloc with GFP_DMA, for the memory where i create the
+>> Descriptor.
+>> Please keep giving ideas for debugging this as this is what driving me
+>> right now.
+>> regards
+>> -vikas
+>
+>
+> So you reset the master, then the channel, allocate the RNG descriptor,
+> allocate the random data buffer, fill the descriptor with values for an
+> RNG request the size of your buffer (filling with the physical address of
+> your random data buffer), and submit the descriptor's physical address to
+> the FR..
+>
+> btw, I'm finding it hard to help without seeing sec register transaction
+> data, descriptor data, virtual and physical addresses, etc.
+>
+> Kim
+>
