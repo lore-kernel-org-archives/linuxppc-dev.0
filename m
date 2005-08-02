@@ -1,23 +1,27 @@
-Return-Path: <d.grab@hima.com>
-Received: from hima.com (mail.hima.com [80.146.244.10])
-	by ozlabs.org (Postfix) with SMTP id 6A0CF67E1C
+Return-Path: <carl.ljungmark@sysgo.com>
+Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
+	by ozlabs.org (Postfix) with ESMTP id 5A02167E47
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  2 Aug 2005 18:10:15 +1000 (EST)
-Received: from SN7606 ([192.168.100.10])
-	by hima.com (mail.hima.com [212.116.4.129]) (MDaemon.PRO.v8.1.1.R)
-	with ESMTP id md50000075475.msg
-	for <linuxppc-embedded@ozlabs.org>; Tue, 02 Aug 2005 10:10:16 +0200
-From: "David Grab" <d.grab@hima.com>
-To: "'FCG WANG Baohua'" <Baohua.WANG@alcatel-sbell.com.cn>
-Date: Tue, 2 Aug 2005 10:08:40 +0200
-Message-ID: <001601c59739$65549820$f201a8c0@SN7606>
+	Tue,  2 Aug 2005 18:39:04 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by mail.sysgo.com (Postfix) with ESMTP id C7C7DFB86C
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  2 Aug 2005 10:39:01 +0200 (CEST)
+Received: from donald.sysgo.com (unknown [172.20.1.30])
+	by mail.sysgo.com (Postfix) with ESMTP id B1C1DFB86C
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  2 Aug 2005 10:39:01 +0200 (CEST)
+Received: from clj.sysgo.com (clj.sysgo.com [172.24.1.170])
+	by donald.sysgo.com (Postfix) with ESMTP id 6012D16FE09
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  2 Aug 2005 11:18:01 +0200 (CEST)
+Date: Tue, 02 Aug 2005 10:44:00 +0200
+To: linuxppc-embedded@ozlabs.org
+From: "Carl Ljungmark" <carl.ljungmark@sysgo.com>
+Content-Type: text/plain; format=flowed; delsp=yes; charset=utf-8
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0017_01C5974A.28DFD920"
-In-reply-to: <A9DE2BAF233E444FA9C5E77A5825A01E865051@ydmail.sbell.com.cn>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: AW: Bad Magic Number when boot linux kernel with ppcboot (PPC860
-	board)
+Message-ID: <op.suvg7mug0c7u6q@clj.sysgo.com>
+Subject: MPC8245+2.6.12=oops
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,100 +32,59 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hello everyone!
+Trying to boot linux 2.6.12 on an MPC8245 board from MEN (a12) with MenMo=
+n =20
+firmware. Nothing is printed to the console (ttyS0), but the __log_buf =20
+contains this:
 
-------=_NextPart_000_0017_01C5974A.28DFD920
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+<4>entering platform_init.
+<4>MENMON parameter string: MPAR brd=3DA012a brdrev=3D01.04.00 brdmod=3D0=
+0 =20
+sernbr=3D74 cbr=3D38400 cons=3DCOM1 mem0=3D262144 cpu=3DMPC8245 cpuclk=3D=
+250memclk=3D100 =20
+vmeirqenb=3DFEclun=3D02dlun=3D00 mm=3Dsmm =20
+MMST=3D_00+_12+_1B+_1C+_0C+_17+_1A+_1D+_1E-SPD+RTC+LM75+WDOG+CHKS+ALL+.
+<4>Command line now console=3DttyS0,38400.
+<4>Using memory size from MENMON 0x10000000.
+<3>Non-recoverable exception at PC=3Dc0007af0 MSR=3Db930.
+<4>Oops: nonrecoverable exception,sig: 9 [#1].
+<4>NIP: C0007AF0 LR:C000E474 SP: C00F7F70 REGS: c00f7ec0 TRAP: 0600 Not =20
+tainted.
+<4>MSR: 0000b930 EE: 1 PR: 0 FP:1 ME: 1 IR/DR:11.
+<4>DAR: C0138000, DSISR: 00017C00.
+<4>TASK =3D c00dda10[0] 'swapper' THREAD: c00f6000.
+<4>Last syscall: 0 .
+<6>GPR00: 00000080 C00F7F70 C00DDA10 C0138000 0000000000001000 00000001 =20
+00000001 .
+<6>GPR08: 0000000200000000 00000001 00000000 00000000 00000000 00008081 =20
+2A090A86 .
+<6>GPR16: 10588403 1E21D063 21218986 50022502 3C0185B8 011368CA00FFF010 =20
+00FFF024 .
+<6>GPR24: 00000000 01F8FA68 40000000 C00DC000000005A9 FD000000 FD000000 =20
+C0138000 .
+<4>NIP [c0007af0] clear_pages+0x10/0x1c.
+<4>LR [c000e474] pte_alloc_one_kernel+0x60/0x78.
+<4>Call trace:.
+<4> [c003e948] pte_alloc_kernel+0x54/0x84.
+<4> [c000e5e4] map_page+0x3c/0xdc.
+<4> [c00ff61c] io_block_mapping+0x78/0xdc.
+<4> [c00fe560] men824xali_map_io+0x20/0x44.
+<4> [c00fec38] MMU_init+0x194/0x204.
+<4> [c00032a4]start_here+0x48/0x80.
+0>Kernelpanic - not syncing: Attempted to kill the idletask!.
+<4> ......
 
->Dear Denk:
->  The magic number is right when using vmlinux.UBoot instead of vmlinux or
-zImage, Why?
+adding 'nobats' to the command line changes the boot output slightly (I =20
+then get two oops).
 
-u-boot needs an u-boot image. Wolfgang did already say that vmlinux.UBoot is
-that image. So use this image and nothing else. Also read the manual
-especially this chapter
-http://www.denx.de/twiki/bin/view/DULG/BootingEmbeddedLinux
+In order to get the whole output I had to turn off caching, maybe this ha=
+s =20
+influenced the boot process.. with dcache on, the __log_buf is practicall=
+y =20
+empty.
 
->  Another question puzzle me:
->  The kernel print the "Transferring control to Linux (at address 00000000)
-... "  then halt ,no any response 
-> from serial port.
+Has anyone managed to boot 6.12 on this board successfully?
 
-Seems for me that the serial configuration did not match. Are you sure you
-chosen and cofigured the right UART? If so then debug with BDI2000. 
-
->  I tried ramdiak and nfs, there are the same result.
->  So why not print the 
->  "Linux version 2.4.25 (root at FedoraCore2) (gcc version 3.3.3 (DENX ELDK
-3.1
->3.3.3-8)) #94 Tue Jul 5 18:59:08 PDT 2005" 
-
-The console output has nothing to do with ramdisk or nfs. So check your
-configuration of the active console. An quick check, if your u-boot did not
-pass the console parameters is to set the console parameter in linux. For
-that you have to activate command line to yes and set the command line
-parameter to 'console=ttySx'. x=0 is UART0 and x=1 is UART1. If this not
-help then debug again with BDI.
-
->  How to not print the "Transferring control to Linux (at address 00000000)
-... "  ? Is it right ? 
->  Thanks a lot!
-
-This print might be ok.
-
-Best regards,
-
-David
-
-------=_NextPart_000_0017_01C5974A.28DFD920
-Content-Type: application/ms-tnef;
-	name="winmail.dat"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
-	filename="winmail.dat"
-
-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
-BgAAAAAAwAAAAAAAAEYAAAAAAYUAAAAAAAALABuACCAGAAAAAADAAAAAAAAARgAAAAAOhQAAAAAA
-AAMAHIAIIAYAAAAAAMAAAAAAAABGAAAAABGFAAAAAAAAAwAegAggBgAAAAAAwAAAAAAAAEYAAAAA
-GIUAAAAAAAACAfgPAQAAABAAAACdDkN5VaT5R6CodZGB/tasAgH6DwEAAAAQAAAAnQ5DeVWk+Ueg
-qHWRgf7WrAIB+w8BAAAAVAAAAAAAAAA4obsQBeUQGqG7CAArKlbCAABtc3BzdC5kbGwAAAAAAE5J
-VEH5v7gBAKoAN9luAAAAQzpcT3V0bG9vay1EYXRlaWVuXG1haWxib3gucHN0AAMA/g8FAAAAAwAN
-NP03AAACAX8AAQAAADEAAAAwMDAwMDAwMDlEMEU0Mzc5NTVBNEY5NDdBMEE4NzU5MTgxRkVENkFD
-NjQ4RTBGMDEAAAAAAwAGEMc2FawDAAcQTQQAAAMAEBABAAAAAwAREAAAAAAeAAgQAQAAAGUAAABE
-RUFSREVOSzpUSEVNQUdJQ05VTUJFUklTUklHSFRXSEVOVVNJTkdWTUxJTlVYVUJPT1RJTlNURUFE
-T0ZWTUxJTlVYT1JaSU1BR0UsV0hZP1UtQk9PVE5FRURTQU5VLUJPT1RJAAAAAIo2
-
-------=_NextPart_000_0017_01C5974A.28DFD920--
+Thanks in advance,
+Carl.
