@@ -1,16 +1,21 @@
 Return-Path: <Baohua.WANG@alcatel-sbell.com.cn>
 Received: from mail.alcatel-sbell.com.cn (nat1.alcatel-sbell.com.cn
-	[202.96.203.177]) by ozlabs.org (Postfix) with ESMTP id F411567E06
+	[202.96.203.177]) by ozlabs.org (Postfix) with ESMTP id 092A267D77
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  2 Aug 2005 12:12:54 +1000 (EST)
+	Tue,  2 Aug 2005 12:37:23 +1000 (EST)
+Received: from asbmail4.sbell.com.cn (localhost [127.0.0.1])
+	by mail.alcatel-sbell.com.cn (8.12.11/8.12.11/Alcanet1.0) with ESMTP id
+	j722aC2N010392
+	for <linuxppc-embedded@ozlabs.org>; Tue, 2 Aug 2005 10:36:17 +0800
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C59707.170C75E8"
-Date: Tue, 2 Aug 2005 10:08:35 +0800
-Message-ID: <A9DE2BAF233E444FA9C5E77A5825A01E8652F9@ydmail.sbell.com.cn>
+	boundary="----_=_NextPart_001_01C5970A.5C0C0188"
+Date: Tue, 2 Aug 2005 10:31:59 +0800
+Message-ID: <A9DE2BAF233E444FA9C5E77A5825A01E8652FA@ydmail.sbell.com.cn>
 From: "FCG WANG Baohua" <Baohua.WANG@alcatel-sbell.com.cn>
 To: <linuxppc-embedded@ozlabs.org>
-Subject: Bad Magic Number when boot linux kernel with ppcboot (PPC860 board)
+Subject: Reply: Bad Magic Number when boot linux kernel with ppcboot (PPC860
+	board)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,7 +28,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C59707.170C75E8
+------_=_NextPart_001_01C5970A.5C0C0188
 Content-Type: text/plain;
 	charset="gb2312"
 Content-Transfer-Encoding: quoted-printable
@@ -42,11 +47,16 @@ How to slove it, thanks a lot!
 I use:  zImage,=20
 vmlinux.UBoot,
  vmlinux=20
- it all print the same messages, How can I do?=20
+ it all print the same messages,=20
+ I use "imi 0x180000"
+ is also print the
+ "
+Checking Image at 00000000 ...
+   Bad Magic Number"
 
+How can I do? =20
 
-
-------_=_NextPart_001_01C59707.170C75E8
+------_=_NextPart_001_01C5970A.5C0C0188
 Content-Type: text/html;
 	charset="gb2312"
 Content-Transfer-Encoding: quoted-printable
@@ -58,8 +68,8 @@ Content-Transfer-Encoding: quoted-printable
 charset=3Dgb2312">
 <META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
 6.0.6603.0">
-<TITLE>Bad Magic Number when boot linux kernel with ppcboot (PPC860 =
-board)</TITLE>
+<TITLE>Reply: Bad Magic Number when boot linux kernel with ppcboot =
+(PPC860 board)</TITLE>
 </HEAD>
 <BODY>
 <!-- Converted from text/rtf format -->
@@ -99,10 +109,28 @@ FACE=3D"=CB=CE=CC=E5"></FONT>&nbsp;<FONT SIZE=3D2 FACE=3D"Arial">vmlinux =
 </FONT></SPAN>
 
 <BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;it all =
-print the same messages, How can I do? </FONT></SPAN>
+print the same messages, </FONT></SPAN>
+
+<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;I use =
+&quot;imi 0x180000&quot;</FONT></SPAN>
+
+<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;is also =
+print the</FONT></SPAN>
+
+<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 =
+FACE=3D"Arial">&nbsp;&quot;</FONT></SPAN>
+
+<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">Checking Image at =
+00000000 ...</FONT></SPAN>
+
+<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;&nbsp; Bad =
+Magic Number&quot;</FONT></SPAN>
 </P>
-<BR>
+
+<P><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">How can I =
+do?&nbsp;</FONT> </SPAN>
+</P>
 
 </BODY>
 </HTML>
-------_=_NextPart_001_01C59707.170C75E8--
+------_=_NextPart_001_01C5970A.5C0C0188--
