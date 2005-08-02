@@ -1,14 +1,13 @@
 Return-Path: <Baohua.WANG@alcatel-sbell.com.cn>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=gb2312
-Date: Tue, 2 Aug 2005 11:28:20 +0800
-Message-ID: <A9DE2BAF233E444FA9C5E77A5825A01E8652FC@ydmail.sbell.com.cn>
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C59711.F9875000"
+Date: Tue, 2 Aug 2005 11:26:30 +0800
+Message-ID: <A9DE2BAF233E444FA9C5E77A5825A01E8652FB@ydmail.sbell.com.cn>
 From: "FCG WANG Baohua" <Baohua.WANG@alcatel-sbell.com.cn>
-To: "Debora Liu" <deboralh@fel.com.cn>
-Cc: Linuxppc-embedded <Linuxppc-embedded@ozlabs.org>
-Subject: =?gb2312?b?tPC4tDogQmFkIE1hZ2ljIE51bWJlciB3aGVuIGJvb3QgbGludXgg?=
-	=?gb2312?b?a2VybmVsIHdpdGggcHBjYm9vdCAoUFBDODYwIGJvYXJkKQ==?=
+To: <wd@denx.de>
+Cc: Linuxppc-embedded@ozlabs.org
+Subject: PPC860 board and PPCBoot "verifying Checksum ... Bad Data CRC"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,39 +18,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Mr Liu:
- I have corrected it, Now another question:
- when bootm or imi , it shows the "Verifying Checksum ... Bad Data CRC", =
-But I checked the vmlinux.UBoot on host, it is right,
- I download it using TFTP, How can I slove it? Thanks!
+This is a multi-part message in MIME format.
 
+------_=_NextPart_001_01C59711.F9875000
+Content-Type: text/plain;
+	charset="gb2312"
+Content-Transfer-Encoding: quoted-printable
 
------=D4=AD=CA=BC=D3=CA=BC=FE-----
-=B7=A2=BC=FE=C8=CB: Debora Liu [mailto:deboralh@fel.com.cn]
-=B7=A2=CB=CD=CA=B1=BC=E4: 2005=C4=EA8=D4=C22=C8=D5 11:17
-=CA=D5=BC=FE=C8=CB: FCG WANG Baohua
-=B3=AD=CB=CD: Linuxppc-embedded
-=D6=F7=CC=E2: Re: Bad Magic Number when boot linux kernel with ppcboot =
-(PPC860
-board)
+Dear All:
+ I build the ELDK3.1.1  kernel 2.4.25, When bootm or "imi" it shows the  =
+"verifying Checksum ... Bad Data CRC", then stop.
+  But the vmlinux.UBoot is right in Host, How can I do? I use tftpboot =
+to download it.=20
+ Thanks!
 
+------_=_NextPart_001_01C59711.F9875000
+Content-Type: text/html;
+	charset="gb2312"
+Content-Transfer-Encoding: quoted-printable
 
-Hello, FCG WANG Baohua
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dgb2312">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.0.6603.0">
+<TITLE>PPC860 board and PPCBoot &quot;verifying Checksum ... Bad Data =
+CRC&quot;</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/rtf format -->
 
-In message <2005-08-02 10:08:35 Baohua.WANG@alcatel-sbell.com.cn> you =
-wrote:
+<P><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">Dear =
+All:</FONT></SPAN>
 
->Dear All:
->  I use a PPC860 board and ELDK 3.1.1 (kernel 2.4.25) to boot the linux =
-kernel, after I loaded it print the following messages:
->
->=3D> bootm 0x180000
->## Booting image at 00000000 ...
->Bad Magic Number
->=3D>
-Please check your boot load image address.
+<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;I build the =
+ELDK3.1.1&nbsp; kernel 2.4.25, When bootm or &quot;imi&quot; it shows =
+the&nbsp; &quot;verifying Checksum ... Bad Data CRC&quot;, then =
+stop.</FONT></SPAN></P>
 
-				=20
-=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1Debora Liu
-=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1deboralh@fel.com.cn
-=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A12005-08-02
+<P><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; But the =
+vmlinux.UBoot is right in Host, How can I do? I use tftpboot to download =
+it. </FONT></SPAN>
+
+<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 =
+FACE=3D"Arial">&nbsp;Thanks!</FONT></SPAN>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C59711.F9875000--
