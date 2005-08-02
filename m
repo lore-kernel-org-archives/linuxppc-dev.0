@@ -1,18 +1,22 @@
 Return-Path: <kumar.gala@freescale.com>
 Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id C00E067E74
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 2672067E72
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  2 Aug 2005 23:39:57 +1000 (EST)
-In-Reply-To: <20050802034517.F3D0167E42@ozlabs.org>
-References: <20050802034517.F3D0167E42@ozlabs.org>
+	Tue,  2 Aug 2005 23:44:36 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	j72DomIY018004
+	for <linuxppc-embedded@ozlabs.org>; Tue, 2 Aug 2005 06:50:48 -0700 (MST)
+Received: from [192.168.123.101] ([10.214.72.234])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id j72DlsO2012077
+	for <linuxppc-embedded@ozlabs.org>; Tue, 2 Aug 2005 08:47:54 -0500 (CDT)
 Mime-Version: 1.0 (Apple Message framework v733)
-Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
-Message-Id: <E227A82E-9A6F-449F-9CD9-9FD6D1893082@freescale.com>
+Message-Id: <0901C40A-7BC0-4227-BEE2-195478DF0CD0@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+To: linuxppc-embedded Linux list <linuxppc-embedded@ozlabs.org>
 From: Kumar Gala <kumar.gala@freescale.com>
-Date: Tue, 2 Aug 2005 08:39:56 -0500
-To: JohnsonCheng <johnsoncheng@qnap.com.tw>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Serial console
+Date: Tue, 2 Aug 2005 08:44:39 -0500
+Subject: MPC8245/1 UARTs and linux-2.6.13-rc5
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,88 +27,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+For all people have issues with the UARTs on MPC8245/1.  In the  
+2.6.13 kernel we reworked the support for UARTs to be platform  
+devices.  If you look at the 2.6.13-rc5 release you will see the  
+changes that went in.  Additionally, the sandpoint reference platform  
+code was updated to take advantage of the changes.
 
-On Aug 1, 2005, at 10:38 PM, JohnsonCheng wrote:
+Hopefully, these changes will make some of the issues you might be  
+facing less of a problem.
 
-> Dear Daniel,
->
-> I also meet this problem on MPC8245 with linux-2.6.12.3, and I =20
-> found it uses
-> LEVEL for interrupt in sandpoint.c. Do you have any idea for it?
-
-All internal interrupts on the MPC8245/1 should be LEVEL interrupts.
-
-- kumar
-
-> -----Original Message-----
-> From: linuxppc-embedded-bounces@ozlabs.org
-> [mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of Daniel Ann
-> Sent: Monday, August 01, 2005 9:27 AM
-> To: Anton W=F6llert
-> Cc: linuxppc-embedded@ozlabs.org
-> Subject: Re: Serial console
->
-> Thanks for your input Anton.
-> I'm not all that certain about sandpoint platform has its own serial
-> driver so I've worked with 8250.c. Anyway, I've got it working now. It
-> was problem with interrupt. As soon as I changed interrupt from EGDE
-> to LEVEL it began working. Altho I'm faced with yet another problem
-> with openpic but I'm digging thru it at the moment.
->
-> BTW, I have no idea why EDGE didnt work and LEVEL does.
->
-> Cheers,
-> Daniel
->
-> On 7/30/05, Anton W=F6llert <a.woellert@gmail.com> wrote:
->
->> Daniel Ann wrote:
->>
->>> Hi folks,
->>>
->>> Having all the kernel boot up log on console means that I've done =20=
-
->>> some
->>> part right. But why am I not getting anything from the user =20
->>> processes
->>> on the console screen ?
->>>
->>> Is there anything I need to do on the kernel config ?
->>>
->>>
->>
->> Hi, we've had the same problem some time ago on a tqm850l =20
->> (mpc850). Our
->> problem was, that we had registered two serial consoles in the kernel
->> config or something like that. we had to disable all serial-driver =20=
-
->> stuff
->> and enable just the platform-specific serial-console driver. we =20
->> tracked
->> this down with inserting a printk(buf) into the tty_write fs-op of =20=
-
->> the
->> serial-port driver in drivers/char/tty_io.c. the ttyS0 was used =20
->> but has
->> taken another serial-driver than the platform specific.
->>
->> may this help you :)
->>
->>
->> anton
->>
->>
->
->
-> --=20
-> Daniel
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
+- kumar 
