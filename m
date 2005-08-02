@@ -1,18 +1,17 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id B19ED67E2A
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Aug 2005 04:18:14 +1000 (EST)
-Date: Mon, 1 Aug 2005 11:18:11 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: LinuxPPC dev list <linuxppc-dev@ozlabs.org>
-Message-ID: <20050801181811.GA13627@gate.ebshome.net>
-References: <20050801174238.GA31016@anthropohedron.net>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AA41967E54
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Aug 2005 19:55:21 +1000 (EST)
+Date: Tue, 2 Aug 2005 11:55:09 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: paulus@samba.org, akpm@osdl.org
+Message-ID: <20050802095509.GA32585@lst.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050801174238.GA31016@anthropohedron.net>
-Subject: Re: endianness of Linux kernel RAID
+Cc: linuxppc-dev@ozlabs.org
+Subject: [PATCH] fix gcc4 warning in asm-ppc/time.h
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,22 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Aug 01, 2005 at 01:42:39PM -0400, Gregory Seidman wrote:
-> It turns out that if one uses the kernel (2.4.x-2.6.x) RAID support (RAID5,
-> anyway, since that's all I've tested), the RAID'd disks cannot be moved to
-> another system with a different endianness. I don't know how hard that
-> would be to fix, but it did mean that when my ancient Mac clone I was using
-> as a server died I couldn't bring the RAID over to my spare x86 Linux box;
-> I had to dedicate other hardware (my dual G4 that I had been happily using
-> with OS X) to the task instead.
-> 
-> Unfortunately, I haven't gotten into kernel development and, therefore, do
-> not have the necessary expertise to fix it. Is anyone here interested in
-> this issue?
+A function must not return a const value, instead use
+__attribute_const__.
 
-It's a known Linux sw RAID problem. Please, bug RAID maintainers, not 
-PPC people, as it's not a Linux PPC problem - RAID code is completely 
-generic one.
 
--- 
-Eugene
+Index: linux-2.6/include/asm/time.h
+===================================================================
+--- linux-2.6.orig/include/asm/time.h	2005-04-30 10:17:19.000000000 +0200
++++ linux-2.6/include/asm/time.h	2005-08-01 11:57:12.000000000 +0200
+@@ -10,6 +10,7 @@
+ #define __ASM_TIME_H__
+ 
+ #include <linux/config.h>
++#include <linux/compiler.h>
+ #include <linux/types.h>
+ #include <linux/rtc.h>
+ #include <linux/threads.h>
+@@ -58,7 +59,7 @@
+ /* Accessor functions for the timebase (RTC on 601) registers. */
+ /* If one day CONFIG_POWER is added just define __USE_RTC as 1 */
+ #ifdef CONFIG_6xx
+-extern __inline__ int const __USE_RTC(void) {
++extern __inline__ int __attribute_const__ __USE_RTC(void) {
+ 	return (mfspr(SPRN_PVR)>>16) == 1;
+ }
+ #else
