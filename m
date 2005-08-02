@@ -2,16 +2,17 @@ Return-Path: <dan@embeddededge.com>
 Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4618D67DFA
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Aug 2005 09:10:41 +1000 (EST)
-In-Reply-To: <1123023575.2614.25.camel@cashmere.sps.mot.com>
+	by ozlabs.org (Postfix) with ESMTP id 4B1B967E06
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Aug 2005 09:11:50 +1000 (EST)
+In-Reply-To: <20050802230537.GA9125@gate.ebshome.net>
 References: <1123023575.2614.25.camel@cashmere.sps.mot.com>
+	<20050802230537.GA9125@gate.ebshome.net>
 Mime-Version: 1.0 (Apple Message framework v622)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <688ba2276de281a9473b030a16a514c0@embeddededge.com>
+Message-Id: <f316a2ceff0d79bb6cf9d8530555496b@embeddededge.com>
 From: Dan Malek <dan@embeddededge.com>
-Date: Tue, 2 Aug 2005 19:10:56 -0400
-To: Jon Loeliger <jdl@freescale.com>
+Date: Tue, 2 Aug 2005 19:12:05 -0400
+To: Eugene Surovegin <ebs@ebshome.net>
 Cc: linuxppc64-dev <linuxppc64-dev@ozlabs.org>,
 	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 Subject: Re: Beginning Merger Patch
@@ -25,14 +26,13 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Aug 2, 2005, at 6:59 PM, Jon Loeliger wrote:
+On Aug 2, 2005, at 7:05 PM, Eugene Surovegin wrote:
 
-> ..... A stub is left
-> in asm-ppc and asm-ppc64 pointing to the unified files.
+> Hmm, I got an impression that we wouldn't touch ppc and ppc64 for
+> now and just _copy_ or create clean stuff into powerpc. I think this
+> will be much safer, at least at the beginning.
 
-Why bother?  You may as well change all of the source
-files, too, or else that will never get done :-)
+Shouldn't this be a 2.7 project?
 
-Thanks.
 
 	-- Dan
