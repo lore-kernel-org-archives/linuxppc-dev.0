@@ -1,21 +1,20 @@
-Return-Path: <Baohua.WANG@alcatel-sbell.com.cn>
-Received: from mail.alcatel-sbell.com.cn (nat1.alcatel-sbell.com.cn
-	[202.96.203.177]) by ozlabs.org (Postfix) with ESMTP id 6B85C67D7A
+Return-Path: <wd@denx.de>
+Received: from mailout04.sul.t-online.com (mailout04.sul.t-online.com
+	[194.25.134.18]) by ozlabs.org (Postfix) with ESMTP id 3EF4967E40
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  2 Aug 2005 14:52:09 +1000 (EST)
-Received: from asbmail4.sbell.com.cn (localhost [127.0.0.1])
-	by mail.alcatel-sbell.com.cn (8.12.11/8.12.11/Alcanet1.0) with ESMTP id
-	j724p13J019128
-	for <linuxppc-embedded@ozlabs.org>; Tue, 2 Aug 2005 12:51:01 +0800
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C5971D.ED77D1D9"
-Date: Tue, 2 Aug 2005 12:52:04 +0800
-Message-ID: <A9DE2BAF233E444FA9C5E77A5825A01E8652FD@ydmail.sbell.com.cn>
-From: "FCG WANG Baohua" <Baohua.WANG@alcatel-sbell.com.cn>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: serial console no response after print "Transferring control to
-	Linux (at address 00000000)" on PPC860
+	Tue,  2 Aug 2005 17:13:05 +1000 (EST)
+To: "FCG WANG Baohua" <Baohua.WANG@alcatel-sbell.com.cn>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 02 Aug 2005 10:08:35 +0800."
+	<A9DE2BAF233E444FA9C5E77A5825A01E8652F9@ydmail.sbell.com.cn>
+Date: Tue, 02 Aug 2005 09:12:35 +0200
+Sender: wd@denx.de
+Message-Id: <20050802071235.28CA0353BF9@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Bad Magic Number when boot linux kernel with ppcboot (PPC860
+	board)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,64 +25,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+In message <A9DE2BAF233E444FA9C5E77A5825A01E8652F9@ydmail.sbell.com.cn> you wrote:
+> 
+> kernel, after I loaded it print the following messages:
+> 
+> => bootm 0x180000
+> ## Booting image at 00000000 ...
+> Bad Magic Number
+> =>
 
-------_=_NextPart_001_01C5971D.ED77D1D9
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: quoted-printable
+Which address did you load the image to?
 
-Dear All:
-  I use ppcboot and ELDK 3.1.1 kernel 2.4.25 to boot a PPC860 board, I =
-select the ttyS0, 9600, root=3D/de/ram during config the kernel.
-   I select the SMC1,SMC2 device too.=20
-  But when bootm 180000, it print the "Transferring control to Linux (at =
-address 00000000)"  then halt.=20
-  How can I do? Tell me the detail when config the kernel, thanks!
+> How to slove it, thanks a lot!
+> I use:  zImage, 
+> vmlinux.UBoot,
+>  vmlinux 
+>  it all print the same messages, How can I do? 
 
- =20
+Please read the documentation. Only uImage = vmlinux.UBoot can work.
 
-------_=_NextPart_001_01C5971D.ED77D1D9
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: quoted-printable
+Best regards,
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dgb2312">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.0.6603.0">
-<TITLE>serial console no response after print &quot;Transferring control =
-to Linux (at address 00000000)&quot; on PPC860 </TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
+Wolfgang Denk
 
-<P><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">Dear =
-All:</FONT></SPAN>
-
-<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; I use =
-ppcboot and ELDK 3.1.1 kernel 2.4.25 to boot a PPC860 board, I select =
-the ttyS0, 9600, root=3D/de/ram during config the =
-kernel.</FONT></SPAN></P>
-
-<P><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;&nbsp; I =
-select the SMC1,SMC2 device too. </FONT></SPAN>
-
-<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; But when =
-bootm 180000, it print the &quot;Transferring control to Linux (at =
-address 00000000)&quot;&nbsp; then halt. </FONT></SPAN>
-
-<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; How can I =
-do? Tell me the detail when config the kernel, thanks!</FONT></SPAN>
-</P>
-
-<P><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;</FONT> =
-</SPAN>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C5971D.ED77D1D9--
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+"Confound these ancestors.... They've stolen our best ideas!"
+- Ben Jonson
