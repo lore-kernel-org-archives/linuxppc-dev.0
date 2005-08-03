@@ -1,26 +1,19 @@
-Return-Path: <pantelis.antoniou@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.201])
-	by ozlabs.org (Postfix) with ESMTP id 2AE7867E94
+Return-Path: <vbordug@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
+	by ozlabs.org (Postfix) with SMTP id 4F15267E9C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  3 Aug 2005 23:56:08 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 37so136681wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 03 Aug 2005 06:56:07 -0700 (PDT)
-From: Pantelis Antoniou <pantelis.antoniou@gmail.com>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Date: Wed, 3 Aug 2005 19:14:10 +0300
-References: <42EF9022.5050707@ru.mvista.com>
-	<200508030039.16107.pantelis.antoniou@gmail.com>
-	<42F06F62.6050509@ru.mvista.com>
-In-Reply-To: <42F06F62.6050509@ru.mvista.com>
+	Thu,  4 Aug 2005 00:03:23 +1000 (EST)
+Message-ID: <42F0CEA9.3020505@ru.mvista.com>
+Date: Wed, 03 Aug 2005 18:03:21 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200508031914.10973.pantelis.antoniou@gmail.com>
-Cc: Kumar Gala <galak@freescale.com>,
-	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] cpm_uart: Made non-console uart work
-Reply-To: pantelis.antoniou@gmail.com
+To: "Schaefer-Hutter, Peter" <Peter.Schaefer-Hutter@tfk-racoms.com>
+References: <8E342283C2100540AAC5D103097054776F851C@rcexc.racoms.loc>
+In-Reply-To: <8E342283C2100540AAC5D103097054776F851C@rcexc.racoms.loc>
+Content-Type: multipart/alternative;
+	boundary="------------060304050205030102040200"
+Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: MPC885ADS and 2.6.13-rc5 - nogo ?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,29 +24,110 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 03 August 2005 10:16, you wrote:
-> Panto, Kumar,
+This is a multi-part message in MIME format.
+--------------060304050205030102040200
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+Schaefer-Hutter, Peter wrote:
+
+>Hello Vitaly, 
 >
-> Thank you for review.
+>  
 >
+>>From: Vitaly Bordug [mailto:vbordug@ru.mvista.com] 
+>>
+>>Mentioned support should work `out-of-the box`.
+>>Make sure you have console=ttyCPM0,115200 (or whatever baudrate you 
+>>have) within bootargs in the U-Boot environment. U-Boot modification
+>>    
+>>
+>is 
+>  
+>
+>>needed only if you wish to have both FEC MAC addresses configured via 
+>>U-Boot env as well. Also only the related defconfig should be used.
+>>    
+>>
+>
+>I have the bootargs, but still nogo - even with the mpc885ads_defconfig.
+>
+>Besides, in the mpc885ads_defconfig CONFIG_SCC3_ENET is set but in the
+>patch
+>description it reads as if only SCC1 is supported...
+>
+> Best Regards,
+>
+>  Peter
+>
+>  
+>
+The board does not hang - there's somithing with console since you don't 
+see anything.  Try to change BCSR_ADDR from 0xf4500000 to 0xf80...0 - 
+the newer version of the boards may have this changed.
 
-[major snipage]
 
-> Well, all the stuff works on 8272 even without this and likewise stuff,
-> but don't on 866ADS, where bus_to_virt returns value not equal to where
-> we allocated DMA. I didn't dig too deep to track why this happens, since
-> if we're using DMA, we should remember addresses upon allocation and
-> avoid using bus_to_virt.
+-- 
+Sincerely, 
+Vitaly
 
-Well, this is weird cause I've tested my latest patch on 8xx and had no 
-problems...
 
-I'll try to test your patch, some time later today.
+--------------060304050205030102040200
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-However, what is important now is to get the fs_enet driver posted.
-Please test the latest patch I've send you on a linus tree and report if you
-have any problems...
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
+  <title></title>
+</head>
+<body bgcolor="#ffffff" text="#000000">
+Schaefer-Hutter, Peter wrote:
+<blockquote
+ cite="mid8E342283C2100540AAC5D103097054776F851C@rcexc.racoms.loc"
+ type="cite">
+  <pre wrap="">Hello Vitaly, 
 
-Regards
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">From: Vitaly Bordug [<a class="moz-txt-link-freetext" href="mailto:vbordug@ru.mvista.com">mailto:vbordug@ru.mvista.com</a>] 
 
-Pantelis
+Mentioned support should work `out-of-the box`.
+Make sure you have console=ttyCPM0,115200 (or whatever baudrate you 
+have) within bootargs in the U-Boot environment. U-Boot modification
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->is 
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">needed only if you wish to have both FEC MAC addresses configured via 
+U-Boot env as well. Also only the related defconfig should be used.
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+I have the bootargs, but still nogo - even with the mpc885ads_defconfig.
+
+Besides, in the mpc885ads_defconfig CONFIG_SCC3_ENET is set but in the
+patch
+description it reads as if only SCC1 is supported...
+
+ Best Regards,
+
+  Peter
+
+  </pre>
+</blockquote>
+The board does not hang - there's somithing with console since you
+don't see anything.&nbsp; Try to change BCSR_ADDR from 0xf4500000 to
+0xf80...0 - the newer version of the boards may have this changed.<br>
+<br>
+<br>
+<pre class="moz-signature" cols="72">-- 
+Sincerely, 
+Vitaly
+</pre>
+</body>
+</html>
+
+--------------060304050205030102040200--
