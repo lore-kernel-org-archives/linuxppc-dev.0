@@ -1,18 +1,22 @@
-Return-Path: <matej.kupljen@ultra.si>
-Received: from deliver-1.mx.triera.net (deliver-1.mx.triera.net [213.161.0.31])
-	by ozlabs.org (Postfix) with ESMTP id 1578E67E37
+Return-Path: <ktdann@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.199])
+	by ozlabs.org (Postfix) with ESMTP id 2CDF967E37
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  3 Aug 2005 16:24:02 +1000 (EST)
-From: Matej Kupljen <matej.kupljen@ultra.si>
-To: Daniel Ann <ktdann@gmail.com>
-In-Reply-To: <9b7ca65705080218273146950c@mail.gmail.com>
-References: <9b7ca65705080218273146950c@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 03 Aug 2005 07:55:02 +0200
-Message-Id: <1123048502.10524.1.camel@orionlinux.starfleet.com>
+	Wed,  3 Aug 2005 16:40:19 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id 68so90801wri
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 02 Aug 2005 23:40:18 -0700 (PDT)
+Message-ID: <9b7ca65705080223401a9ce913@mail.gmail.com>
+Date: Wed, 3 Aug 2005 15:40:18 +0900
+From: Daniel Ann <ktdann@gmail.com>
+To: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <61C27372-4ADB-4E3A-8E20-9E811EE61B99@freescale.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <9b7ca6570508022240715ae9cb@mail.gmail.com>
+	<61C27372-4ADB-4E3A-8E20-9E811EE61B99@freescale.com>
 Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: Issue with running depmod after cross compiling
+Subject: Re: MPC8245 reboot
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,15 +27,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi
+Absolutely not. Very much like sandpoint except, we dont use SIO at all.
+FYI, most of sandpoint code from the kernel is function the board very
+well at the moment. Only big issue lies with REBOOT at this stage:(
 
-> What would be considered reasonable if I was to solve this ?
 
-I use depmod.pl, which is i Perl script that do just that.
-It is bundled with the busybox. You can find it in the 
-examples subdirectory.
+On 8/3/05, Kumar Gala <kumar.gala@freescale.com> wrote:
+> Do you have a VIA chipset on your system?  If not what sandpoint is
+> doing is not going to help you much.
+>=20
+> - kumar
+>=20
+> On Aug 3, 2005, at 12:40 AM, Daniel Ann wrote:
+>=20
+> > Hey folks,
+> >
+> > I have a problem with rebooting my box(its pretty much based on
+> > sandpoint).
+> > Looking at sandpoint_restart() function, I have no idea what it's
+> > doing. Can somebody please help me out where I should be looking ?
+> > Would this be pure software problem? or just might be hardware problem
+> > ?
+> >
+> > Always thought rebooting was piece of cake, but.. guess not :P
+> > --
+> > Daniel
+> > _______________________________________________
+> > Linuxppc-embedded mailing list
+> > Linuxppc-embedded@ozlabs.org
+> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> >
+>=20
+>=20
 
-Hope that helps.
 
-BR,
-Matej
+--=20
+Daniel
