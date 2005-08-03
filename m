@@ -1,18 +1,16 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
-	by ozlabs.org (Postfix) with SMTP id 3886167E7B
+Return-Path: <JHughes@Linx.co.uk>
+Received: from stives3.stives.linx.gbr (gateway.linx.co.uk [194.131.232.48])
+	by ozlabs.org (Postfix) with ESMTP id 694F467E96
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  3 Aug 2005 23:03:09 +1000 (EST)
-Message-ID: <42F0C08C.7060801@ru.mvista.com>
-Date: Wed, 03 Aug 2005 17:03:08 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
+	Wed,  3 Aug 2005 23:24:24 +1000 (EST)
+Message-ID: <DB1B6B12D0E2F0469EB35A9586066B6ECE75FB@stivesemail.stives.linx.gbr>
+From: James Hughes <JHughes@Linx.co.uk>
+To: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
+Date: Wed, 3 Aug 2005 14:26:15 +0100 
 MIME-Version: 1.0
-To: "Schaefer-Hutter, Peter" <Peter.Schaefer-Hutter@tfk-racoms.com>
-References: <8E342283C2100540AAC5D103097054776F8500@rcexc.racoms.loc>
-In-Reply-To: <8E342283C2100540AAC5D103097054776F8500@rcexc.racoms.loc>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC885ADS and 2.6.13-rc5 - nogo ?
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: EST MPC823 board
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,41 +21,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Schaefer-Hutter, Peter wrote:
+We already have VXWorks working on the board, so a lot of data can be
+gleaned from the BSP for that. As a beginner to U-Boot - would the
+information from that be sufficient to get to a working build?
 
->Hello!
->
->I gave the MPC885ADS support recently added by Andrei Konovalov 
->a try - but no luck: booting 2.6.13-rc5 with u-boot 1.1.2 
->(tftpboot & bootm) hangs after uncompressing.
->
->Did anybody succeed with this?
->
->Applied were the following patches from patchwork.ozlabs.org:
->
-> * 8xx_cpm_hostalloc
-> * all fixes to fec.c
->
->The board boots an 2.4-Kernel just fine. Did i miss some patches 
->for U-Boot?
->
->Best regards,
->
-> Peter
->_______________________________________________
->Linuxppc-embedded mailing list
->Linuxppc-embedded@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
->
->  
->
-Mentioned support should work `out-of-the box`.
-Make sure you have console=ttyCPM0,115200 (or whatever baudrate you 
-have) within bootargs in the U-Boot environment. U-Boot modification is 
-needed only if you wish to have both FEC MAC addresses configured via 
-U-Boot env as well. Also only the related defconfig should be used.
+EST were taken over by Windriver some time ago - and given the level of
+support we have received from them in the past (hence movement to Linux...)
+I am not optimistic of getting information from them regarding an 8 year old
+board!
+
+for the list : 
+Its difficult to see from the U-Boot tree which boards are based on the
+MPC623 - is there a quick way of finding which are? grep for 623?
+
+James
+
+-----Original Message-----
+From: 'Aristeu Sergio Rozanski Filho' [mailto:aris@cathedrallabs.org]
+Sent: 03 August 2005 14:01
+To: James Hughes
+Subject: Re: EST MPC823 board
+
+
+> Did you start from an existing board definition, or have you started from
+> scratch?
+a good way is to find a similar (supported) board and use it as starting
+point. but for this you need your board's datasheet.
+
+> I wasn't able to find a datasheet from the embedded planet site - do you
+> have a direct link to it?
+please ignore my last post, I didn't read the model correctly
+
+> I am going to email EST to see if they have any information - but since
+the
+> board is pretty ancient, I am not confident.
+if you get the datasheet (you must know things like control registers
+address and meaning) it's possible to do it. google a bit too, maybe
+someone has it.
 
 -- 
-Sincerely, 
-Vitaly
+Aristeu
+
+
+
+The information contained in this e-mail message (and any attachment
+transmitted herewith) is privileged and confidential and is intended for the
+exclusive use of the addressee(s). If you are not an addressee, any
+disclosure, reproduction, distribution or other dissemination or use of this
+communication is strictly prohibited. If you have received this
+communication in error, please contact us immediately so that we can correct
+the error.
