@@ -1,15 +1,18 @@
-Return-Path: <susheel_nuguru@yahoo.co.in>
-Received: from web8508.mail.in.yahoo.com (web8508.mail.in.yahoo.com
-	[202.43.219.170]) by ozlabs.org (Postfix) with SMTP id 2FE0667D69
+Return-Path: <aris@cathedrallabs.org>
+Received: from panda.sul.com.br (panda.sul.com.br [200.219.150.4])
+	by ozlabs.org (Postfix) with ESMTP id C07F367E06
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  3 Aug 2005 20:56:00 +1000 (EST)
-Message-ID: <20050803105556.5187.qmail@web8508.mail.in.yahoo.com>
-Date: Wed, 3 Aug 2005 03:55:56 -0700 (PDT)
-From: Susheel Raj <susheel_nuguru@yahoo.co.in>
-To: linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Subject: Rev B MPC5200 , Hardware related Querry
+	Wed,  3 Aug 2005 22:27:39 +1000 (EST)
+Date: Wed, 3 Aug 2005 09:27:33 -0300
+From: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
+To: James Hughes <JHughes@Linx.co.uk>
+Message-ID: <20050803122733.GG5210@cathedrallabs.org>
+References: <DB1B6B12D0E2F0469EB35A9586066B6ECE75F6@stivesemail.stives.linx.gbr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <DB1B6B12D0E2F0469EB35A9586066B6ECE75F6@stivesemail.stives.linx.gbr>
+Cc: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
+Subject: Re: EST MPC823 board
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,48 +23,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+Hi,
+> I am going to try to port/run Linux on to one of our custom boards here at
+> work, based on the EST MPC823 (ICM823A is the label on the EST board)
+> reference design (quite an old one). I cannot find a reference to this board
+> in the standard U-Boot list of board, does anyone have any
+> information/thoughts on the way to approach this. Is there a board that is
+> similar that I can base things on for example? I would add that our company
+> is new to Linux, having just chosen it as our new O/S for a new range of
+> devices - so please forgive any blatant mistakes. 
+please check if it's close to EP823 (www.embeddedplanet.com for a
+datasheet). I got one of those and I'm working to run u-boot on it.
 
-  I have been spending some time with the MPC5200 Rev
-B processors, mostly concentrating to make it go to
-DEEP SLEEP MODE, also posted many times regarding
-this.
-
- Sylvain has given me his previous work on his attempt
-to make the core to Sleep and i found that when
-asserting bit mode_en in SDRAM control register (MBAR
-+ 0x0104), the core restarts.
-
- Initaially I was thinking that the core restarts bcos
-of some very bad exception or something but when i
-tried to debug Instruction by instruction i found that
-the core just restarts when we try to set mode_en bit
-like below
-
-
-	/* Put SDRAM to self refresh */
-	lwz     r11, 0x0104(r3)
-	oris	r10, r11, 0x8000
-	stw	r10, 0x0104(r3)		/* Enable SDRAM mode register */
-	eieio
- /*  r3 has the address of MBAR */
-
-The above code make the core to restart when i comment
-the stw instruction
-
-	/* Put SDRAM to self refresh */
-	lwz     r11, 0x0104(r3)
-	oris	r10, r11, 0x8000
-  //	stw	r10, 0x0104(r3)			
-        eieio
-
-It doesnt restart now...
-
-Has anyone seen this behaviour with the Rev B ... 
-
-
-		
-__________________________________ 
-Yahoo! Mail 
-Stay connected, organized, and protected. Take the tour: 
-http://tour.mail.yahoo.com/mailtour.html 
+--
+Aristeu
