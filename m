@@ -1,21 +1,17 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id CD21D67E32
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Aug 2005 09:17:11 +1000 (EST)
-Date: Tue, 2 Aug 2005 16:17:09 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Dan Malek <dan@embeddededge.com>
-Message-ID: <20050802231709.GB9125@gate.ebshome.net>
+Return-Path: <ntl@pobox.com>
+Received: from orb.pobox.com (orb.pobox.com [207.8.226.5])
+	by ozlabs.org (Postfix) with ESMTP id 8B40A67E3F
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Aug 2005 12:29:39 +1000 (EST)
+Date: Tue, 2 Aug 2005 21:17:42 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Jon Loeliger <jdl@freescale.com>
+Message-ID: <20050803021742.GB3985@otto>
 References: <1123023575.2614.25.camel@cashmere.sps.mot.com>
-	<20050802230537.GA9125@gate.ebshome.net>
-	<f316a2ceff0d79bb6cf9d8530555496b@embeddededge.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <f316a2ceff0d79bb6cf9d8530555496b@embeddededge.com>
-Cc: linuxppc64-dev <linuxppc64-dev@ozlabs.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+In-Reply-To: <1123023575.2614.25.camel@cashmere.sps.mot.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	linuxppc64-dev <linuxppc64-dev@ozlabs.org>
 Subject: Re: Beginning Merger Patch
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,18 +22,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 02, 2005 at 07:12:05PM -0400, Dan Malek wrote:
+Jon Loeliger wrote:
+> Folks,
 > 
-> On Aug 2, 2005, at 7:05 PM, Eugene Surovegin wrote:
+> I have grabbed my asbestos suit.
 > 
-> >Hmm, I got an impression that we wouldn't touch ppc and ppc64 for
-> >now and just _copy_ or create clean stuff into powerpc. I think this
-> >will be much safer, at least at the beginning.
-> 
-> Shouldn't this be a 2.7 project?
+> Here is a patch to begin the process of merging
+> the PPC32 and PPC64 include directories into a
+> new common "powerpc" arch.
 
-Maybe, I'm still waiting for official announcement from the maintainer 
-:)
+Perhaps you could briefly explain the motivation for this?
 
--- 
-Eugene
+I think I've heard/read that something like this was in the works, but
+I'd like to know what the problem is, and why it should be solved this
+way instead of e.g. x86_64's method of including headers directly from
+asm-i386.
+
+
+Nathan
