@@ -1,18 +1,19 @@
-Return-Path: <johnsoncheng@qnap.com.tw>
-Received: from qnap.com.tw (unknown [211.75.85.25])
-	by ozlabs.org (Postfix) with SMTP id CD3FD67E3F
+Return-Path: <rupeshs@myw.ltindia.com>
+Received: from mywsmtp.ltindia.com (unknown [203.199.60.127])
+	by ozlabs.org (Postfix) with SMTP id 39BC567E6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  3 Aug 2005 13:11:26 +1000 (EST)
-From: "JohnsonCheng" <johnsoncheng@qnap.com.tw>
-To: "'Daniel Ann'" <ktdann@gmail.com>
-Date: Wed, 3 Aug 2005 11:11:16 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <9b7ca6570508021721773d06f0@mail.gmail.com>
-Message-Id: <20050803031126.CD3FD67E3F@ozlabs.org>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: A PPC kernel issue with UART ??
+	Wed,  3 Aug 2005 13:54:39 +1000 (EST)
+Received: (from EMAIL [192.168.172.1])
+	by mywsmtp.ltindia.com (SMSSMTP 4.0.0.59) with SMTP id
+	M2005080309050329705
+	for <linuxppc-embedded@ozlabs.org>; Wed, 03 Aug 2005 09:05:03 +0530
+Message-Id: <s2f08948.039@EMAIL>
+Date: Wed, 03 Aug 2005 09:06:52 +0530
+From: "Rupesh S" <rupeshs@myw.ltindia.com>
+To: <ktdann@gmail.com>,<linuxppc-embedded@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Subject: Re: Issue with running depmod after cross compiling
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,92 +24,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Actually, I had reviews all article about "serial console", just know I have
-to use LEVEL for interrupt, not EDGE. Unfortunately the default interrupt
-setting for kernel is with LEVEL, IRQ_SENSE_LEVEL, I think I don't need to
-modify it.
-But I found I add ASYNC_SKIP_TEST flag to UART in sandpoint.h can fix my
-problem.
+Daniel,
 
-Thanks,
-Johnson Cheng
+Assuming your kernel is 2.6 based, you might want to try module-init-tools =
+version 3.2-pre7. Also, it would be better to have the existing depmod =
+renamed as depmod.old. This is for the new depmod to use in case it fails =
+to execute.
 
------Original Message-----
-From: linuxppc-embedded-bounces@ozlabs.org
-[mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of Daniel Ann
-Sent: Wednesday, August 03, 2005 8:22 AM
-To: JohnsonCheng
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: A PPC kernel issue with UART ??
+--
+Rupesh S
 
-Johnson,
+>>> Daniel Ann <ktdann@gmail.com> 08/03/05 06:57AM >>>
+Hey folks,
 
-You know what? I've had the exact same problem only day or two ago. I
-think the mail subject was "serial console" or something similar. Have
-a read at it.
+For certain, I understand why running make module_install fails if I
+run it after cross compiling the kernel+module.
+What I'm doing now is, I've just commented out the bit in Makefile
+(where it exec's depmod), and everythings cool.
 
-BTW, My problem was with interrupt setting.
-Daniel.
+BUT, problem with this method is, I get none of the module.dep and
+many related files for auto loading of module.
 
-On 8/2/05, JohnsonCheng <johnsoncheng@qnap.com.tw> wrote:
-> 
-> 
-> Dear All,
-> 
->  
-> 
-> I meet a wired UART problem on linux-2.6 with MPC8241 chip.
-> 
->  
-> 
-> My Environment is as following: 
-> 
-> CPU: MPC8241
-> 
-> Linux: 2.6.12.3
-> 
-> COM1 offset: 0x4500, COM2 offset: 0x4600
-> 
->  
-> 
-> When I booting my rootfs, it hangs at following message:
-> 
-> RAMDISK: Compressed image found at block 0
-> 
-> VFS: Mounted root (ext2 filesystem) readonly.
-> 
-> Freeing unused kernel memory: 104k init
-> 
-> EXT2-fs warning: checktime reached, running e2fsck is recommended
-> 
->  
-> 
-> I had add printk in tty_write() of drivers/char/tty_io.c, the message from
-> rootfs have printed.
-> 
-> The conclusion is that message can be printed by printk() in linux kernel,
-> but can't be printed by printf() in user mode. I think it must be
-something
-> wrong for my UART configurations, does anybody know it??
-> 
->  
-> 
->  
-> 
-> Best Regards,
-> 
-> Johnson Cheng
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
+What would be considered reasonable if I was to solve this ?
 
+Thanks for your thought on this in advance.
 
--- 
+--=20
 Daniel
 _______________________________________________
 Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
+Linuxppc-embedded@ozlabs.org=20
 https://ozlabs.org/mailman/listinfo/linuxppc-embedded
