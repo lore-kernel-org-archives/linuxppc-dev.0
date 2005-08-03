@@ -1,19 +1,18 @@
-Return-Path: <wd@denx.de>
-Received: from mailout03.sul.t-online.com (mailout03.sul.t-online.com
-	[194.25.134.81]) by ozlabs.org (Postfix) with ESMTP id B63CC67E45
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id E6EC567E51
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 Aug 2005 02:51:47 +1000 (EST)
-To: =?big5?B?rn2z06vC?= <rober.hsu@gmail.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 04 Aug 2005 00:28:16 +0800."
-	<002701c59848$cb6b6ed0$0e01000a@orange>
-Date: Wed, 03 Aug 2005 18:51:35 +0200
-Sender: wd@denx.de
-Message-Id: <20050803165135.755D5353BF9@atlas.denx.de>
+	Thu,  4 Aug 2005 04:24:15 +1000 (EST)
+In-Reply-To: <F795765B112E7344AF36AA91127964158494B1@xmb-sjc-212.amer.cisco.com>
+References: <F795765B112E7344AF36AA91127964158494B1@xmb-sjc-212.amer.cisco.com>
+Mime-Version: 1.0 (Apple Message framework v733)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <ABAA88EF-CF28-485E-8179-5EB2B8E2501A@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Wed, 3 Aug 2005 13:24:15 -0500
+To: "Bizhan Gholikhamseh \\((bgholikh\\))" <bgholikh@cisco.com>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: about linux 2.4.25 on MPC852T 
+Subject: Re: MPC8541E DMA transfer
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,37 +23,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <002701c59848$cb6b6ed0$0e01000a@orange> you wrote:
-> 
->      I'm porting Linux 2.4.25 at my MPC852T.My first used is 2.4.4, I
-> assign my board info ptr to 0x3400 and pass it to linux 2.4.4.
+I dont see any reason you couldn't use the internal DMA engine on the  
+MPC8541E to do what you need.  You will just need to schedule the  
+work every 10ms.
 
-Ummm... are you sure you know what you are doing?
+- kumar
 
-> It works fine. But 2.4.25's head.S changes much code  I don't know how
-> to porting it. I need help.
+On Aug 3, 2005, at 10:04 AM, Bizhan Gholikhamseh \(((bgholikh\))) wrote:
 
-Just have  a  look  at  the  existing  code.  MPC8xx  is  a  standard
-architecture and has been supported since a long,, long time ago.
-
->     Another question is where can i find older kernel like 2.4.10,
-> 2.4.12,2.4.18 for PowerPC?I know DENX Linux kernel source tree
-
-You can find it for example in our CVS server.
-
-> want and I don't how to used cvs command to get it.If anyone
-
-If you don;t know the tools, and are not willing to try to  learn  to
-use  these,  then  nobody  will  be able to help you. Try and hire an
-expert.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-He had quite a powerful intellect, but it  was  as  powerful  like  a
-locomotive,  and  ran on rails and was therefore almost impossible to
-steer.                          - Terry Pratchett, _Lords and Ladies_
+>
+> Hi all,
+> I am developing a linux driver (2.6.10) for Freescale MPC8541E
+> (customized board) to read and write 8 buffers (each buffer is 960  
+> bytes
+> long) every 10 ms to/from a custom made PCI card with on board DSP  
+> Chip.
+> The chip's internal and external memories are memory mapped to the CPU
+> address space.
+> For reason that is beyond the discussion here, the DMA request line on
+> the PCI card is not connected although the PCI card has DMA
+> capabilities.
+> So what are my options?
+> Could I still do DMA transfer from the Host to the device?
+>
+> Many thanks in advance,
+> Bizhan
+>
+> <ATT293768.txt>
+>
