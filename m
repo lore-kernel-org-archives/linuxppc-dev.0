@@ -1,19 +1,19 @@
 Return-Path: <wd@denx.de>
-Received: from mailout04.sul.t-online.com (mailout04.sul.t-online.com
-	[194.25.134.18]) by ozlabs.org (Postfix) with ESMTP id 67E8667E25
+Received: from mailout03.sul.t-online.com (mailout03.sul.t-online.com
+	[194.25.134.81]) by ozlabs.org (Postfix) with ESMTP id B63CC67E45
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 Aug 2005 02:48:59 +1000 (EST)
-To: James Hughes <JHughes@Linx.co.uk>
+	Thu,  4 Aug 2005 02:51:47 +1000 (EST)
+To: =?big5?B?rn2z06vC?= <rober.hsu@gmail.com>
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 03 Aug 2005 14:26:15 BST."
-	<DB1B6B12D0E2F0469EB35A9586066B6ECE75FB@stivesemail.stives.linx.gbr>
-Date: Wed, 03 Aug 2005 18:48:27 +0200
+In-reply-to: Your message of "Thu, 04 Aug 2005 00:28:16 +0800."
+	<002701c59848$cb6b6ed0$0e01000a@orange>
+Date: Wed, 03 Aug 2005 18:51:35 +0200
 Sender: wd@denx.de
-Message-Id: <20050803164827.68BD9353BF9@atlas.denx.de>
-Cc: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-Subject: Re: EST MPC823 board 
+Message-Id: <20050803165135.755D5353BF9@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: about linux 2.4.25 on MPC852T 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,30 +24,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <DB1B6B12D0E2F0469EB35A9586066B6ECE75FB@stivesemail.stives.linx.gbr> you wrote:
-> We already have VXWorks working on the board, so a lot of data can be
-> gleaned from the BSP for that. As a beginner to U-Boot - would the
-> information from that be sufficient to get to a working build?
+In message <002701c59848$cb6b6ed0$0e01000a@orange> you wrote:
+> 
+>      I'm porting Linux 2.4.25 at my MPC852T.My first used is 2.4.4, I
+> assign my board info ptr to 0x3400 and pass it to linux 2.4.4.
 
-Yes,  assuming  you  have  sufficient  hardware  documentation  (like
-schematics) as well.
+Ummm... are you sure you know what you are doing?
 
-> Its difficult to see from the U-Boot tree which boards are based on the
-> MPC623 - is there a quick way of finding which are? grep for 623?
+> It works fine. But 2.4.25's head.S changes much code  I don't know how
+> to porting it. I need help.
 
-623? I guess you mean 823? Yes, this is easy to find out. But it will
-not help you much. You will still  have  to  port  U-Boot  to  *your*
-board.  Forget  about  the  idea  that  two  boards might be "similar
-enough" to clone one from the other. They aren't.
+Just have  a  look  at  the  existing  code.  MPC8xx  is  a  standard
+architecture and has been supported since a long,, long time ago.
 
-You need to understand both the hardware  and  U-Boot,  or  you  will
-fail.
+>     Another question is where can i find older kernel like 2.4.10,
+> 2.4.12,2.4.18 for PowerPC?I know DENX Linux kernel source tree
 
+You can find it for example in our CVS server.
 
-And BTW: I think your approach suffers from a serious mistake: to  me
-it  makes  little  sense  to  use a MPC8xx based board as model for a
-PXA270 target system; there are *huge* differences between these  two
-architectures.
+> want and I don't how to used cvs command to get it.If anyone
+
+If you don;t know the tools, and are not willing to try to  learn  to
+use  these,  then  nobody  will  be able to help you. Try and hire an
+expert.
 
 Best regards,
 
@@ -56,5 +55,6 @@ Wolfgang Denk
 -- 
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-I've already got a female to worry about. Her name is the Enterprise.
-	-- Kirk, "The Corbomite Maneuver", stardate 1514.0
+He had quite a powerful intellect, but it  was  as  powerful  like  a
+locomotive,  and  ran on rails and was therefore almost impossible to
+steer.                          - Terry Pratchett, _Lords and Ladies_
