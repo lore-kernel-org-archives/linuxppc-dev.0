@@ -1,14 +1,15 @@
-Return-Path: <frankvm@frankvm.com>
-Received: from janus.localdomain (frankvm.xs4all.nl [80.126.170.174])
-	by ozlabs.org (Postfix) with ESMTP id 0BEBA67E94
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Aug 2005 23:18:51 +1000 (EST)
-Date: Wed, 3 Aug 2005 15:18:48 +0200
-From: Frank van Maarseveen <frankvm@frankvm.com>
-To: linuxppc-dev@ozlabs.org
-Message-ID: <20050803131848.GA10954@janus>
+Return-Path: <jdl@freescale.com>
+From: Jon Loeliger <jdl@freescale.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+In-Reply-To: <1123064479.417492.649639846705.qpatch@concordia>
+References: <1123064479.417492.649639846705.qpatch@concordia>
+Content-Type: text/plain
+Message-Id: <1123095705.8638.14.camel@cashmere.sps.mot.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Subject: bug in arch/ppc/boot/common/util.S: cmplwi  cr0,r3,r4 ?
+Date: Wed, 03 Aug 2005 14:01:45 -0500
+Cc: linuxppc64-dev <linuxppc64-dev@ozlabs.org>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH 0/10] Cleanup iSeries msChunks handling, and lmb code.
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,21 +19,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 2005-08-03 at 05:21, Michael Ellerman wrote:
+> This series of patches cleans up the iSeries msChunks structure, and
+> associated macros and functions.
+> 
+> It also removes CONFIG_MSCHUNKS from the lmb code, and eventually removes
+> CONFIG_MSCHUNKS entirely.
+> 
+> The final patch rely's on Stephen's FW_FEATURE_ISERIES patches.
+> 
+> Booted on Power3, G5, Power5 LPAR and iSeries.
 
-I think "cmplwi" expects an immediate vale as last operand
-around line 255 of arch/ppc/boot/common/util.S:
+Excellent.  This patch, especially the LMB simplification
+and removal of the physbase bits, greatly simplifies the
+notion of merging LMB form 64 land and the mem_pieces.
 
-	addi	r4,r4,_etext@l		# r8 = &_etext
-1:	dcbf	r0,r3			# Flush the data cache
-	icbi	r0,r3			# Invalidate the instruction cache
-	addi	r3,r3,0x10		# Increment by one cache line
-	cmplwi	cr0,r3,r4		# Are we at the end yet?
-	               ^^
-	blt	1b			# No, keep flushing and invalidating
+I have previously submitted patches against the ppc32 code
+that enhance the mem_pieces towards the LMB structure as well.
 
-I guess it should have been:
+Given an eventual merger of the two bodies of code, I'd
+like to make the merger of these two structures more complete.
+I'll work towards that goal if that's a Good Idea.
 
-	cmplw	cr0,r3,r4		# Are we at the end yet?
+Advice here?
 
--- 
-Frank
+Thanks,
+jdl
