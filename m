@@ -1,16 +1,15 @@
-Return-Path: <JHughes@Linx.co.uk>
-Received: from stives3.stives.linx.gbr (gateway.linx.co.uk [194.131.232.48])
-	by ozlabs.org (Postfix) with ESMTP id E61B767E7B
+Return-Path: <susheel_nuguru@yahoo.co.in>
+Received: from web8502.mail.in.yahoo.com (web8502.mail.in.yahoo.com
+	[202.43.219.164]) by ozlabs.org (Postfix) with SMTP id E4BA267EBB
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  3 Aug 2005 20:33:27 +1000 (EST)
-Message-ID: <DB1B6B12D0E2F0469EB35A9586066B6ECE75F6@stivesemail.stives.linx.gbr>
-From: James Hughes <JHughes@Linx.co.uk>
-To: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-Date: Wed, 3 Aug 2005 11:19:44 +0100 
+	Wed,  3 Aug 2005 20:54:47 +1000 (EST)
+Message-ID: <20050803105444.76265.qmail@web8502.mail.in.yahoo.com>
+Date: Wed, 3 Aug 2005 03:54:44 -0700 (PDT)
+From: Susheel Raj <susheel_nuguru@yahoo.co.in>
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: EST MPC823 board
+Content-Type: text/plain; charset=iso-8859-1
+Subject: Rev B MPC5200 , Hardware related Querry
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,36 +20,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello all,
+Hi all,
 
-I am going to try to port/run Linux on to one of our custom boards here at
-work, based on the EST MPC823 (ICM823A is the label on the EST board)
-reference design (quite an old one). I cannot find a reference to this board
-in the standard U-Boot list of board, does anyone have any
-information/thoughts on the way to approach this. Is there a board that is
-similar that I can base things on for example? I would add that our company
-is new to Linux, having just chosen it as our new O/S for a new range of
-devices - so please forgive any blatant mistakes. 
+  I have been spending some time with the MPC5200 Rev
+B processors, mostly concentrating to make it go to
+DEEP SLEEP MODE, also posted many times regarding
+this.
 
-This project is a precursor to building new product based on the PXA270, but
-the custom H/W for that is months and months away, so it seem prudent to get
-some practice on the older boards using the MPC823 - the custom hardware
-side is very similar and it gives us some practice at running Linux on
-custom hardware - the application code we write should port to the newer
-hardware when it is ready, and some of the device driver knowledge gained
-will also be useful.
+ Sylvain has given me his previous work on his attempt
+to make the core to Sleep and i found that when
+asserting bit mode_en in SDRAM control register (MBAR
++ 0x0104), the core restarts.
 
-If anything thinks this is a bonkers idea, please let me now!!
-
-Regards
-
-James
+ Initaially I was thinking that the core restarts bcos
+of some very bad exception or something but when i
+tried to debug Instruction by instruction i found that
+the core just restarts when we try to set mode_en bit
+like below
 
 
-The information contained in this e-mail message (and any attachment
-transmitted herewith) is privileged and confidential and is intended for the
-exclusive use of the addressee(s). If you are not an addressee, any
-disclosure, reproduction, distribution or other dissemination or use of this
-communication is strictly prohibited. If you have received this
-communication in error, please contact us immediately so that we can correct
-the error.
+	/* Put SDRAM to self refresh */
+	lwz     r11, 0x0104(r3)
+	oris	r10, r11, 0x8000
+	stw	r10, 0x0104(r3)		/* Enable SDRAM mode register */
+	eieio
+ /*  r3 has the address of MBAR */
+
+The above code make the core to restart when i comment
+the stw instruction
+
+	/* Put SDRAM to self refresh */
+	lwz     r11, 0x0104(r3)
+	oris	r10, r11, 0x8000
+	stw	r10, 0x0104(r3)			
+eieio
+
+
+Susheel
+
+                    More Smiles Per Hour
+
+
+
+
+		
+____________________________________________________
+Start your day with Yahoo! - make it your home page 
+http://www.yahoo.com/r/hs 
+ 
