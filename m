@@ -1,11 +1,16 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17136.13558.773102.465379@cargo.ozlabs.ibm.com>
-Date: Wed, 3 Aug 2005 13:07:34 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
-Subject: Merging ppc32 and ppc64
+Return-Path: <jwboyer@jdub.homelinux.org>
+From: Josh Boyer <jwboyer@jdub.homelinux.org>
+To: Eugene Surovegin <ebs@ebshome.net>
+In-Reply-To: <20050802230537.GA9125@gate.ebshome.net>
+References: <1123023575.2614.25.camel@cashmere.sps.mot.com>
+	<20050802230537.GA9125@gate.ebshome.net>
+Content-Type: text/plain
+Date: Tue, 02 Aug 2005 21:38:15 -0500
+Message-Id: <1123036695.4755.36.camel@yoda.jdub.homelinux.org>
+Mime-Version: 1.0
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	linuxppc64-dev <linuxppc64-dev@ozlabs.org>
+Subject: Re: Beginning Merger Patch
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,28 +20,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-At OLS I discussed the idea of merging the ppc32 and ppc64
-architectures in the Linux kernel with various ppc32 and ppc64 kernel
-hackers and users.  There was broad agreement that this would be a
-good thing to do, so we are going to go ahead and do it.
+On Tue, 2005-08-02 at 16:05 -0700, Eugene Surovegin wrote:
+> On Tue, Aug 02, 2005 at 05:59:35PM -0500, Jon Loeliger wrote:
+> > Here is a patch to begin the process of merging
+> > the PPC32 and PPC64 include directories into a
+> > new common "powerpc" arch.
+> > 
+> > This patch introduces the include/asm-powerpc directory.
+> > It then places into it, all of the files in asm-ppc and
+> > asm-ppc64 that are essentially identical.  A stub is left
+> > in asm-ppc and asm-ppc64 pointing to the unified files.
+> > No real thought went into this set of files; these are
+> > the dead-simple identical files for starters!
+> 
+> Hmm, I got an impression that we wouldn't touch ppc and ppc64 for 
+> now and just _copy_ or create clean stuff into powerpc. I think this 
+> will be much safer, at least at the beginning.
 
-The plan is to create include/asm-powerpc and arch/powerpc directories
-for the merged architecture and move stuff in there as it gets
-merged.  The existing ppc32 and ppc64 directories will stay around
-until they are no longer useful.  The intention is not to break
-anything that currently works; however, we do not plan to move unused
-and unmaintained platforms into the merged architecture.
+Safer, maybe.  But then you have triple maintenance, since all the files
+in question were just duplicates.
 
-The advantage of merging is that it will reduce the maintenance effort
-and reduce the instances where a common bug gets fixed in one
-architecture but not the other.  It will also make it easier to
-support 64-bit embedded systems as they become more common.
+Patches like this don't need to be applied right away.  They take time
+and lots of vetting.  They can live as separate entities until they are
+really ready to be committed.  That being said, I say go whole-hog and
+do it as Jon has done.  Especially considering that he has a git tree
+that can be worked from.
 
-I don't see the merge as changing the actual code that gets executed
-on any given platform very much, except in one respect: we are going
-to standardize on a flattened device tree as the way that information
-about the platform gets passed from the boot loader to the kernel.
-
-Comments? Flames? :)
-
-Paul.
+josh
