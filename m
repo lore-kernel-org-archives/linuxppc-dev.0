@@ -1,19 +1,24 @@
-Return-Path: <rober.hsu@gmail.com>
-Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.197])
-	by ozlabs.org (Postfix) with ESMTP id 0B54F67E3E
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id F18DF67E3F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 Aug 2005 02:35:45 +1000 (EST)
-Received: by rproxy.gmail.com with SMTP id b11so224829rne
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 03 Aug 2005 09:35:44 -0700 (PDT)
-Message-ID: <002701c59848$cb6b6ed0$0e01000a@orange>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Thu, 4 Aug 2005 00:28:16 +0800
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0022_01C5988B.68455EE0"
-From: =?big5?B?rn2z06vC?= <rober.hsu@gmail.com>
-Subject: about linux 2.4.25 on MPC852T
+	Thu,  4 Aug 2005 02:48:01 +1000 (EST)
+Date: Wed, 3 Aug 2005 11:47:49 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: "Vikas Aggarwal" <va824363@albany.edu>
+Message-Id: <20050803114749.739ae51e.kim.phillips@freescale.com>
+In-Reply-To: <53547.198.22.236.230.1122997515.squirrel@198.22.236.230>
+References: <32704.198.22.236.230.1122651627.squirrel@198.22.236.230>
+	<20050729153323.3f2c62ad.kim.phillips@freescale.com>
+	<32798.24.92.61.26.1122694772.squirrel@24.92.61.26>
+	<20050730183217.3310585b.kim.phillips@freescale.com>
+	<33216.24.92.61.26.1122857296.squirrel@24.92.61.26>
+	<20050801123728.62764c7e.kim.phillips@freescale.com>
+	<53547.198.22.236.230.1122997515.squirrel@198.22.236.230>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: mpc8248  SEC -- interrupt handler 'is' invoked
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,81 +29,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Tue, 2 Aug 2005 11:45:15 -0400 (EDT)
+"Vikas Aggarwal" <va824363@albany.edu> wrote:
 
-------=_NextPart_000_0022_01C5988B.68455EE0
-Content-Type: text/plain;
-	charset="big5"
-Content-Transfer-Encoding: quoted-printable
+> 
+> This is how i write the address of RNG buffer(sec1_dpd.c.
+> DPDPTR->fld[i].ptr = virt_to_phys(*(unsigned int *) ((unsigned int)pReq +
+> pDesc->fld[i].ptrOffset1st));
+> 
 
-Hello all,
+everything looks good except I'd try changing the above to something like:
 
-     I'm porting Linux 2.4.25 at my MPC852T.My first used is 2.4.4, I =
-assign my board info ptr to 0x3400 and pass it to linux 2.4.4.
-It works fine. But 2.4.25's head.S changes much code  I don't know how =
-to porting it. I need help.
+DPDPTR->fld[i].ptr = dma_map_single(NULL, ...ptrOffset1st,
+		...lenOffset1st, DMA_TO_DEVICE);
 
-My add code  like this
+and change the DMA_BIDIRECTIONAL to DMA_TO_DEVICE in the DPD's address assignment.
 
-li    r3, 0x3400
-mr r11,r3=20
-(../arch/ppc/mbxboot/head.S)
+btw, a BSP upgrade (based on 2.6.11) for your platform should be available in a couple of weeks.  I'll let you know the status of the SEC driver for it.
 
-to 2.4.4.
-
-    Another question is where can i find older kernel like 2.4.10, =
-2.4.12,2.4.18 for PowerPC?I know DENX Linux kernel source tree
-has the latest version, but i'm not sure there has above version that I =
-want and I don't how to used cvs command to get it.If anyone
-know where to download older kernel, please tell me,thanks.
-
-Best Regards,
-Rober Hsu
-------=_NextPart_000_0022_01C5988B.68455EE0
-Content-Type: text/html;
-	charset="big5"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dbig5">
-<META content=3D"MSHTML 6.00.2900.2668" name=3DGENERATOR>
-<STYLE></STYLE>
-</HEAD>
-<BODY bgColor=3D#ffffff>
-<DIV>Hello all,</DIV>
-<DIV><FONT size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT size=3D2>&nbsp;&nbsp;&nbsp;&nbsp; I'm porting Linux 2.4.25 at =
-my=20
-MPC852T.My first used is 2.4.4,&nbsp;I assign&nbsp;my board info ptr to =
-0x3400=20
-and pass it to linux 2.4.4.</FONT></DIV>
-<DIV><FONT size=3D2>It works fine. But 2.4.25's head.S changes much code =
-&nbsp;I=20
-don't know how to porting it. I need help.</FONT></DIV>
-<DIV><FONT size=3D2></FONT>&nbsp;</DIV>
-<DIV>
-<DIV><FONT size=3D2>My&nbsp;add&nbsp;code&nbsp; like this</FONT></DIV>
-<DIV><FONT size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT size=3D2>li&nbsp;&nbsp;&nbsp; r3, 0x3400</FONT></DIV>
-<DIV><FONT size=3D2>mr&nbsp;r11,r3 </FONT></DIV>
-<DIV><FONT size=3D2>(../arch/ppc/mbxboot/head.S)</FONT></DIV>
-<DIV><FONT size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT size=3D2>to 2.4.4.</FONT></DIV></DIV>
-<DIV><FONT size=3D2></FONT>&nbsp;</DIV>
-<DIV>&nbsp;<FONT size=3D2>&nbsp;&nbsp; Another question is where can i =
-find older=20
-kernel like 2.4.10, 2.4.12,2.4.18 for PowerPC?I know DENX Linux kernel =
-source=20
-tree</FONT></DIV>
-<DIV><FONT size=3D2>has the latest version, but i'm not sure there has =
-above=20
-version that I want and I don't how to used cvs command to get it.If=20
-anyone</FONT></DIV>
-<DIV><FONT size=3D2>know where to download older kernel, please tell=20
-me,thanks.</FONT></DIV>
-<DIV><FONT size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT size=3D2>Best Regards,</FONT></DIV>
-<DIV><FONT size=3D2>Rober Hsu</FONT></DIV></BODY></HTML>
-
-------=_NextPart_000_0022_01C5988B.68455EE0--
+Kim
