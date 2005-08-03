@@ -1,17 +1,25 @@
-Return-Path: <bgholikh@cisco.com>
-Received: from sj-iport-5.cisco.com (sj-iport-5.cisco.com [171.68.10.87])
-	by ozlabs.org (Postfix) with ESMTP id 958FE67DFE
+Return-Path: <va824363@albany.edu>
+Received: from smtp.albany.edu (mail1.its.albany.edu [169.226.1.105])
+	by ozlabs.org (Postfix) with ESMTP id C007767E1D
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 Aug 2005 04:27:20 +1000 (EST)
+	Thu,  4 Aug 2005 04:33:29 +1000 (EST)
+Message-ID: <30177.198.22.236.230.1123094006.squirrel@198.22.236.230>
+In-Reply-To: <20050803114749.739ae51e.kim.phillips@freescale.com>
+References: <32704.198.22.236.230.1122651627.squirrel@198.22.236.230>
+	<20050729153323.3f2c62ad.kim.phillips@freescale.com>
+	<32798.24.92.61.26.1122694772.squirrel@24.92.61.26>
+	<20050730183217.3310585b.kim.phillips@freescale.com>
+	<33216.24.92.61.26.1122857296.squirrel@24.92.61.26>
+	<20050801123728.62764c7e.kim.phillips@freescale.com>
+	<53547.198.22.236.230.1122997515.squirrel@198.22.236.230>
+	<20050803114749.739ae51e.kim.phillips@freescale.com>
+Date: Wed, 3 Aug 2005 14:33:26 -0400 (EDT)
+From: "Vikas Aggarwal" <va824363@albany.edu>
+To: "Kim Phillips" <kim.phillips@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Wed, 3 Aug 2005 11:26:52 -0700
-Message-ID: <F795765B112E7344AF36AA91127964158494B8@xmb-sjc-212.amer.cisco.com>
-From: "Bizhan Gholikhamseh \(bgholikh\)" <bgholikh@cisco.com>
-To: "Kumar Gala" <kumar.gala@freescale.com>
+Content-Type: text/plain;charset=iso-8859-1
 Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: MPC8541E DMA transfer
+Subject: Re: mpc8248  SEC -- interrupt handler 'is' invoked
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,48 +30,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Is there any support in Linux 2.6.X for using this controller, if so,
-are you aware of any test driver I can take a look at?
+I will try the new BSP but meanwhile like to debug my ported driver.
 
-Thanks,
-Bizhan
+Is there a way , like kernel level single-stepping to know why the
+"interrupt status register"  gets a value of "0x0000000000000040" which
+means TEA , transfer error acknowledge.
 
-Many thanks in =20
+I changed and tested ur latest advice but same error in "interrupt status
+register"
 
------Original Message-----
-From: Kumar Gala [mailto:kumar.gala@freescale.com]=20
-Sent: Wednesday, August 03, 2005 11:24 AM
-To: Bizhan Gholikhamseh (bgholikh)
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC8541E DMA transfer
+-vikas
 
-I dont see any reason you couldn't use the internal DMA engine on the
-MPC8541E to do what you need.  You will just need to schedule the work
-every 10ms.
 
-- kumar
-
-On Aug 3, 2005, at 10:04 AM, Bizhan Gholikhamseh \(((bgholikh\))) wrote:
-
+> On Tue, 2 Aug 2005 11:45:15 -0400 (EDT)
+> "Vikas Aggarwal" <va824363@albany.edu> wrote:
 >
-> Hi all,
-> I am developing a linux driver (2.6.10) for Freescale MPC8541E=20
-> (customized board) to read and write 8 buffers (each buffer is 960=20
-> bytes
-> long) every 10 ms to/from a custom made PCI card with on board DSP=20
-> Chip.
-> The chip's internal and external memories are memory mapped to the CPU
-
-> address space.
-> For reason that is beyond the discussion here, the DMA request line on
-
-> the PCI card is not connected although the PCI card has DMA=20
-> capabilities.
-> So what are my options?
-> Could I still do DMA transfer from the Host to the device?
+>>
+>> This is how i write the address of RNG buffer(sec1_dpd.c.
+>> DPDPTR->fld[i].ptr = virt_to_phys(*(unsigned int *) ((unsigned int)pReq
+>> +
+>> pDesc->fld[i].ptrOffset1st));
+>>
 >
-> Many thanks in advance,
-> Bizhan
+> everything looks good except I'd try changing the above to something like:
 >
-> <ATT293768.txt>
+> DPDPTR->fld[i].ptr = dma_map_single(NULL, ...ptrOffset1st,
+> 		...lenOffset1st, DMA_TO_DEVICE);
+>
+> and change the DMA_BIDIRECTIONAL to DMA_TO_DEVICE in the DPD's address
+> assignment.
+>
+> btw, a BSP upgrade (based on 2.6.11) for your platform should be available
+> in a couple of weeks.  I'll let you know the status of the SEC driver for
+> it.
+>
+> Kim
 >
