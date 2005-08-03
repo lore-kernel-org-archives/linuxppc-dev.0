@@ -1,17 +1,26 @@
-Return-Path: <Peter.Schaefer-Hutter@tfk-racoms.com>
-Received: from rcprx1.tfk-racoms.com (rcprx1.tfk-racoms.com [195.245.55.49])
-	by ozlabs.org (Postfix) with SMTP id C574E67E11
+Return-Path: <pantelis.antoniou@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.201])
+	by ozlabs.org (Postfix) with ESMTP id 2AE7867E94
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  3 Aug 2005 23:45:04 +1000 (EST)
+	Wed,  3 Aug 2005 23:56:08 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id 37so136681wra
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 03 Aug 2005 06:56:07 -0700 (PDT)
+From: Pantelis Antoniou <pantelis.antoniou@gmail.com>
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+Date: Wed, 3 Aug 2005 19:14:10 +0300
+References: <42EF9022.5050707@ru.mvista.com>
+	<200508030039.16107.pantelis.antoniou@gmail.com>
+	<42F06F62.6050509@ru.mvista.com>
+In-Reply-To: <42F06F62.6050509@ru.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Date: Wed, 3 Aug 2005 15:45:35 +0200
-Message-ID: <8E342283C2100540AAC5D103097054776F851C@rcexc.racoms.loc>
-From: "Schaefer-Hutter, Peter" <Peter.Schaefer-Hutter@tfk-racoms.com>
-To: "Vitaly Bordug" <vbordug@ru.mvista.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: MPC885ADS and 2.6.13-rc5 - nogo ?
+  charset="utf-8"
+Message-Id: <200508031914.10973.pantelis.antoniou@gmail.com>
+Cc: Kumar Gala <galak@freescale.com>,
+	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] cpm_uart: Made non-console uart work
+Reply-To: pantelis.antoniou@gmail.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,23 +31,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Vitaly,=20
-
-> From: Vitaly Bordug [mailto:vbordug@ru.mvista.com]=20
+On Wednesday 03 August 2005 10:16, you wrote:
+> Panto, Kumar,
 >
-> Mentioned support should work `out-of-the box`.
-> Make sure you have console=3DttyCPM0,115200 (or whatever baudrate you=20
-> have) within bootargs in the U-Boot environment. U-Boot modification
-is=20
-> needed only if you wish to have both FEC MAC addresses configured via=20
-> U-Boot env as well. Also only the related defconfig should be used.
+> Thank you for review.
+>
 
-I have the bootargs, but still nogo - even with the mpc885ads_defconfig.
+[major snipage]
 
-Besides, in the mpc885ads_defconfig CONFIG_SCC3_ENET is set but in the
-patch
-description it reads as if only SCC1 is supported...
+> Well, all the stuff works on 8272 even without this and likewise stuff,
+> but don't on 866ADS, where bus_to_virt returns value not equal to where
+> we allocated DMA. I didn't dig too deep to track why this happens, since
+> if we're using DMA, we should remember addresses upon allocation and
+> avoid using bus_to_virt.
 
- Best Regards,
+Well, this is weird cause I've tested my latest patch on 8xx and had no 
+problems...
 
-  Peter
+I'll try to test your patch, some time later today.
+
+However, what is important now is to get the fs_enet driver posted.
+Please test the latest patch I've send you on a linus tree and report if you
+have any problems...
+
+Regards
+
+Pantelis
