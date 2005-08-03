@@ -1,19 +1,23 @@
 Return-Path: <vbordug@ru.mvista.com>
 Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
-	by ozlabs.org (Postfix) with SMTP id 2E57B67EAD
+	by ozlabs.org (Postfix) with SMTP id D1D9767E34
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 Aug 2005 00:36:00 +1000 (EST)
-Message-ID: <42F0D64F.80600@ru.mvista.com>
-Date: Wed, 03 Aug 2005 18:35:59 +0400
+	Thu,  4 Aug 2005 00:50:23 +1000 (EST)
+Message-ID: <42F0D9AD.70508@ru.mvista.com>
+Date: Wed, 03 Aug 2005 18:50:21 +0400
 From: Vitaly Bordug <vbordug@ru.mvista.com>
 MIME-Version: 1.0
-To: "Schaefer-Hutter, Peter" <Peter.Schaefer-Hutter@tfk-racoms.com>
-References: <8E342283C2100540AAC5D103097054776F8533@rcexc.racoms.loc>
-In-Reply-To: <8E342283C2100540AAC5D103097054776F8533@rcexc.racoms.loc>
+To: pantelis.antoniou@gmail.com
+References: <42EF9022.5050707@ru.mvista.com>
+	<200508030039.16107.pantelis.antoniou@gmail.com>
+	<42F06F62.6050509@ru.mvista.com>
+	<200508031914.10973.pantelis.antoniou@gmail.com>
+In-Reply-To: <200508031914.10973.pantelis.antoniou@gmail.com>
 Content-Type: multipart/alternative;
-	boundary="------------010904070501010007050402"
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: MPC885ADS and 2.6.13-rc5 - nogo ?
+	boundary="------------030904080400070103000702"
+Cc: Kumar Gala <galak@freescale.com>,
+	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] cpm_uart: Made non-console uart work
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,147 +29,118 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------010904070501010007050402
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+--------------030904080400070103000702
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
-Schaefer-Hutter, Peter wrote:
 
->Hello,
->
->  
->
->>From: Vitaly Bordug [mailto:vbordug@ru.mvista.com] 
+>>Well, all the stuff works on 8272 even without this and likewise stuff,
+>>but don't on 866ADS, where bus_to_virt returns value not equal to where
+>>we allocated DMA. I didn't dig too deep to track why this happens, since
+>>if we're using DMA, we should remember addresses upon allocation and
+>>avoid using bus_to_virt.
 >>    
 >>
 >
->  
->
->>The board does not hang - there's somithing with 
->>console since you don't see anything.  Try to change 
->>BCSR_ADDR from 0xf4500000 to 0xf80...0 - the newer 
->>version of the boards may have this changed.
->>    
->>
->
->Hrm... arc/ppc/mpc885ads.h already reads
->
->  /* U-Boot maps BCSR to 0xff080000 */
->  #define BCSR_ADDR   ((uint)0xff080000)
->
->And that's the same setting that my 2.4-Kernel
->uses, so it should work with 0xff080000.
->
->However, BCSR_SIZE looks suspicious in this header:
->
->  #define BCSR_SIZE   ((uint)32)
->
->Shouldn't that read:
->
->  #define BCSR_SIZE   ((uint)32 * 1024)
->
->??!?
->
->Regards,
->
->  Peter
+>Well, this is weird cause I've tested my latest patch on 8xx and had no 
+>problems...
 >
 >  
 >
-<quotation> (This is from 8272 User Guide, but 885 I guess is the same 
-in this part)
+Since currently I have no ability to reproduce this issue, I'm inclined 
+to drop those hunks. BTW, why those bus_to_virt and virt_to_bus are 
+used? Isn't it more clear to use pure addresses if they are dma-allocated?
 
-> Most of the hardware options on the MPC8272ADS are controlled or 
-> monitored by the
-> BCSR, which is a 32 bit wide read / write register file. The BCSR is 
-> accessed via the
-> MPC8272s' memory controller (see Table 5-5) and in fact includes 8 
-> registers: BCSR0 to
-> BCSR7. Since the minimum block size for a CS region is 32KBytes and 
-> only A(27:29)
-> lines are decoded by the BCSR for register selection, BCSR0 - BCSR7 
-> are duplicated inside
-> that region.
+>I'll try to test your patch, some time later today.
+>
+>However, what is important now is to get the fs_enet driver posted.
+>Please test the latest patch I've send you on a linus tree and report if you
+>have any problems...
+>
+>  
+>
+I'll try to test it today/tomorrow as time permits...  But do you think 
+it can proceed with those mii issues? Though they are almost harmless, 
+the driver will complain that no PHY found but all seem to work fine 
+subsequently. As far as Andy's phy will likely to be in rc14, maybe we 
+can try to push this upstream (as what we have currently for 82xx and 
+especially for 8xx is IMO worse than even incomplete implementation). 
+I'll try to  investigate mii troubles, but it's hard to estimate efforts...
 
-<quotation\>
+>Regards
+>
+>Pantelis
+>
+>
+>  
+>
+
 
 -- 
 Sincerely, 
 Vitaly
 
 
---------------010904070501010007050402
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+--------------030904080400070103000702
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
+  <meta content="text/html;charset=UTF-8" http-equiv="Content-Type">
   <title></title>
 </head>
 <body bgcolor="#ffffff" text="#000000">
-Schaefer-Hutter, Peter wrote:
-<blockquote
- cite="mid8E342283C2100540AAC5D103097054776F8533@rcexc.racoms.loc"
+<br>
+<blockquote cite="mid200508031914.10973.pantelis.antoniou@gmail.com"
  type="cite">
-  <pre wrap="">Hello,
-
-  </pre>
   <blockquote type="cite">
-    <pre wrap="">From: Vitaly Bordug [<a class="moz-txt-link-freetext" href="mailto:vbordug@ru.mvista.com">mailto:vbordug@ru.mvista.com</a>] 
+    <pre wrap="">Well, all the stuff works on 8272 even without this and likewise stuff,
+but don't on 866ADS, where bus_to_virt returns value not equal to where
+we allocated DMA. I didn't dig too deep to track why this happens, since
+if we're using DMA, we should remember addresses upon allocation and
+avoid using bus_to_virt.
     </pre>
   </blockquote>
   <pre wrap=""><!---->
-  </pre>
-  <blockquote type="cite">
-    <pre wrap="">The board does not hang - there's somithing with 
-console since you don't see anything.  Try to change 
-BCSR_ADDR from 0xf4500000 to 0xf80...0 - the newer 
-version of the boards may have this changed.
-    </pre>
-  </blockquote>
-  <pre wrap=""><!---->
-Hrm... arc/ppc/mpc885ads.h already reads
-
-  /* U-Boot maps BCSR to 0xff080000 */
-  #define BCSR_ADDR   ((uint)0xff080000)
-
-And that's the same setting that my 2.4-Kernel
-uses, so it should work with 0xff080000.
-
-However, BCSR_SIZE looks suspicious in this header:
-
-  #define BCSR_SIZE   ((uint)32)
-
-Shouldn't that read:
-
-  #define BCSR_SIZE   ((uint)32 * 1024)
-
-??!?
-
-Regards,
-
-  Peter
+Well, this is weird cause I've tested my latest patch on 8xx and had no 
+problems...
 
   </pre>
 </blockquote>
-&lt;quotation&gt; (This is from 8272 User Guide, but 885 I guess is the
-same in this part)<br>
-<blockquote
- cite="mid8E342283C2100540AAC5D103097054776F8533@rcexc.racoms.loc"
- type="cite">Most of the hardware options on the MPC8272ADS are
-controlled or monitored by the<br>
-BCSR, which is a 32 bit wide read / write register file. The BCSR is
-accessed via the<br>
-MPC8272s&#8217; memory controller (see Table 5-5) and in fact includes 8
-registers: BCSR0 to<br>
-BCSR7. Since the minimum block size for a CS region is 32KBytes and
-only A(27:29)<br>
-lines are decoded by the BCSR for register selection, BCSR0 - BCSR7 are
-duplicated inside<br>
-that region.</blockquote>
-&lt;quotation\&gt;<br>
+Since currently I have no ability to reproduce this issue, I'm inclined
+to drop those hunks. BTW, why those bus_to_virt and virt_to_bus are
+used? Isn't it more clear to use pure addresses if they are
+dma-allocated?<br>
+<blockquote cite="mid200508031914.10973.pantelis.antoniou@gmail.com"
+ type="cite">
+  <pre wrap="">I'll try to test your patch, some time later today.
+
+However, what is important now is to get the fs_enet driver posted.
+Please test the latest patch I've send you on a linus tree and report if you
+have any problems...
+
+  </pre>
+</blockquote>
+I'll try to test it today/tomorrow as time permits...  But do you think
+it can proceed with those mii issues? Though they are almost harmless,
+the driver will complain that no PHY found but all seem to work fine
+subsequently. As far as Andy's phy will likely to be in rc14, maybe we
+can try to push this upstream (as what we have currently for 82xx and
+especially for 8xx is IMO worse than even incomplete implementation).
+I'll try to  investigate mii troubles, but it's hard to estimate
+efforts... <br>
+<blockquote cite="mid200508031914.10973.pantelis.antoniou@gmail.com"
+ type="cite">
+  <pre wrap="">Regards
+
+Pantelis
+
+
+  </pre>
+</blockquote>
+<br>
 <br>
 <pre class="moz-signature" cols="72">-- 
 Sincerely, 
@@ -174,4 +149,4 @@ Vitaly
 </body>
 </html>
 
---------------010904070501010007050402--
+--------------030904080400070103000702--
