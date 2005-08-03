@@ -1,10 +1,10 @@
 Return-Path: <susheel_nuguru@yahoo.co.in>
-Received: from web8502.mail.in.yahoo.com (web8502.mail.in.yahoo.com
-	[202.43.219.164]) by ozlabs.org (Postfix) with SMTP id E4BA267EBB
+Received: from web8508.mail.in.yahoo.com (web8508.mail.in.yahoo.com
+	[202.43.219.170]) by ozlabs.org (Postfix) with SMTP id 2FE0667D69
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  3 Aug 2005 20:54:47 +1000 (EST)
-Message-ID: <20050803105444.76265.qmail@web8502.mail.in.yahoo.com>
-Date: Wed, 3 Aug 2005 03:54:44 -0700 (PDT)
+	Wed,  3 Aug 2005 20:56:00 +1000 (EST)
+Message-ID: <20050803105556.5187.qmail@web8508.mail.in.yahoo.com>
+Date: Wed, 3 Aug 2005 03:55:56 -0700 (PDT)
 From: Susheel Raj <susheel_nuguru@yahoo.co.in>
 To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
@@ -52,19 +52,16 @@ the stw instruction
 	/* Put SDRAM to self refresh */
 	lwz     r11, 0x0104(r3)
 	oris	r10, r11, 0x8000
-	stw	r10, 0x0104(r3)			
-eieio
+  //	stw	r10, 0x0104(r3)			
+        eieio
 
+It doesnt restart now...
 
-Susheel
-
-                    More Smiles Per Hour
-
-
+Has anyone seen this behaviour with the Rev B ... 
 
 
 		
-____________________________________________________
-Start your day with Yahoo! - make it your home page 
-http://www.yahoo.com/r/hs 
- 
+__________________________________ 
+Yahoo! Mail 
+Stay connected, organized, and protected. Take the tour: 
+http://tour.mail.yahoo.com/mailtour.html 
