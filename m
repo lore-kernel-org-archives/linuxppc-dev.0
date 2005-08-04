@@ -1,17 +1,17 @@
-Return-Path: <galak@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 5C70667EB8
+Return-Path: <Martin.Krause@tqs.de>
+Received: from mail.tqs.de (mail.tqs.de [62.157.136.17])
+	by ozlabs.org (Postfix) with ESMTP id 1425967E9F
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  5 Aug 2005 00:00:12 +1000 (EST)
-Date: Thu, 4 Aug 2005 08:59:51 -0500 (CDT)
-From: Kumar Gala <galak@freescale.com>
-To: Linus Torvalds <torvalds@osdl.org>
-Message-ID: <Pine.LNX.4.61.0508040858290.13245@nylon.am.freescale.net>
+	Fri,  5 Aug 2005 00:22:05 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Tanya.jiang@freescale.com, linux-kernel@vger.kernel.org,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] ppc32: Fix MPC834x USB memory map offsets
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Thu, 4 Aug 2005 16:03:31 +0200
+Message-ID: <47F3F98010FF784EBEE6526EAAB078D119ED1C@tq-mailsrv.tq-net.de>
+From: "Martin Krause" <Martin.Krause@tqs.de>
+To: "Bob Peterson" <bob@acdstar.com>
+Cc: achim.machura@berghof.com, linuxppc-embedded@ozlabs.org
+Subject: RE: USB + MPC5200 L25R REV 2 OCT0511C
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,44 +22,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-The memory mappings for MPC8349 USB MPH and DR modules were reversed.
+Hi Bob,
 
-Signed-off-by: Li Yang <LeoLi@freescale.com>
-Signed-off-by: Jiang Bo <Tanya.jiang@freescale.com>
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+linuxppc-embedded-bounces@ozlabs.org wrote on Thursday, August 04, 2005
+3:36 PM:=20
+> I've recently been doing some experiments regards USB on our custom
+> icecube-like mpc5200 board using the usb-ohci driver, and here's what
+> I found:=20
+>=20
+> 1. Some devices (high speed?) seem to work fine.  I used a USB jump
+> drive.=20
+> 2. Other devices (low speed?) like USB keyboard and mouse did not.
+> 3. Plugging a USB hub into the board allows the same failing devices
+>      (kbd & mouse) to work properly (when they are plugged into the
+> hub).=20
+> 4. The off-the-shelf icecube board behaves the same way, so it's not
+>      just our board.
 
----
-commit a2227df6ac23000dff7d95411ae5bd8022437ad3
-tree d22a59e837eb881b1292f70e51df561802b279df
-parent 51904043565cdfb348f58ce99377427c5ffe25fd
-author Kumar K. Gala <kumar.gala@freescale.com> Thu, 04 Aug 2005 08:57:58 -0500
-committer Kumar K. Gala <kumar.gala@freescale.com> Thu, 04 Aug 2005 08:57:58 -0500
+This is most probably an issue with the used USB transceivers. The
+Phillips transceivers ISP1106 and ISP1107 are known to not work
+correctly with the MPC5200 (with low speed Devices).
 
- arch/ppc/syslib/mpc83xx_devices.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+The following Transceivers should work:
 
-diff --git a/arch/ppc/syslib/mpc83xx_devices.c b/arch/ppc/syslib/mpc83xx_devices.c
---- a/arch/ppc/syslib/mpc83xx_devices.c
-+++ b/arch/ppc/syslib/mpc83xx_devices.c
-@@ -191,8 +191,8 @@ struct platform_device ppc_sys_platform_
- 		.num_resources	 = 2,
- 		.resource = (struct resource[]) {
- 			{
--				.start	= 0x22000,
--				.end	= 0x22fff,
-+				.start	= 0x23000,
-+				.end	= 0x23fff,
- 				.flags	= IORESOURCE_MEM,
- 			},
- 			{
-@@ -208,8 +208,8 @@ struct platform_device ppc_sys_platform_
- 		.num_resources	 = 2,
- 		.resource = (struct resource[]) {
- 			{
--				.start	= 0x23000,
--				.end	= 0x23fff,
-+				.start	= 0x22000,
-+				.end	= 0x22fff,
- 				.flags	= IORESOURCE_MEM,
- 			},
- 			{
+- Phillips PDIUSBP11
+- Fairchild USB1T11AMTC
+
+Regards,
+Martin
+
+TQ-Systems GmbH
+M=FChlstra=DFe 2, Gut Delling, 82229 Seefeld
+Tel. +49 (8153) 93 08-157, Fax +49 (8153) 93 08-7157
+martin.krause@tqs.de
+www.tq-group.com
