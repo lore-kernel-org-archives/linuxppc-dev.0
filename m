@@ -1,20 +1,19 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-vd1.iram.es (gra-vd1.iram.es [150.214.224.250])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 93BC967E30
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Aug 2005 15:55:13 +1000 (EST)
-From: Gabriel Paubert <paubert@iram.es>
-Date: Thu, 4 Aug 2005 07:54:59 +0200
-To: Andrew Morton <akpm@osdl.org>
-Message-ID: <20050804055459.GA19874@iram.es>
-References: <20050802095509.GA32585@lst.de>
-	<20050803221517.21b54d7e.akpm@osdl.org>
+	by ozlabs.org (Postfix) with ESMTP id B8FA467DFA
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Aug 2005 19:48:25 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Frank van Maarseveen <frankvm@frankvm.com>
+In-Reply-To: <20050803131848.GA10954@janus>
+References: <20050803131848.GA10954@janus>
+Content-Type: text/plain
+Date: Thu, 04 Aug 2005 11:44:08 +0200
+Message-Id: <1123148649.30257.59.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050803221517.21b54d7e.akpm@osdl.org>
 Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] fix gcc4 warning in asm-ppc/time.h
+Subject: Re: bug in arch/ppc/boot/common/util.S: cmplwi  cr0,r3,r4 ?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,57 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 03, 2005 at 10:15:17PM -0700, Andrew Morton wrote:
-> Christoph Hellwig <hch@lst.de> wrote:
-> >
-> > A function must not return a const value, instead use
-> > __attribute_const__.
-> > 
-> > 
-> > Index: linux-2.6/include/asm/time.h
-> > ===================================================================
-> > --- linux-2.6.orig/include/asm/time.h	2005-04-30 10:17:19.000000000 +0200
-> > +++ linux-2.6/include/asm/time.h	2005-08-01 11:57:12.000000000 +0200
-> > @@ -10,6 +10,7 @@
-> >  #define __ASM_TIME_H__
-> >  
-> >  #include <linux/config.h>
-> > +#include <linux/compiler.h>
-> >  #include <linux/types.h>
-> >  #include <linux/rtc.h>
-> >  #include <linux/threads.h>
-> > @@ -58,7 +59,7 @@
-> >  /* Accessor functions for the timebase (RTC on 601) registers. */
-> >  /* If one day CONFIG_POWER is added just define __USE_RTC as 1 */
-> >  #ifdef CONFIG_6xx
-> > -extern __inline__ int const __USE_RTC(void) {
-> > +extern __inline__ int __attribute_const__ __USE_RTC(void) {
-> >  	return (mfspr(SPRN_PVR)>>16) == 1;
-> >  }
-> >  #else
+On Wed, 2005-08-03 at 15:18 +0200, Frank van Maarseveen wrote:
+> I think "cmplwi" expects an immediate vale as last operand
+> around line 255 of arch/ppc/boot/common/util.S:
 > 
-> Do we really want to do this?  The above implies that mfspr(SPRN_PVR) will
-> return the same value across the entire uptime of the kernel.  Is that
-> true?
-
-Yes, it is a read-only register. PVR means processor version register
-and is linked to the revision of the silicon. Besides that it is
-only used in this context to check for processors of the 601 family
-(the very first PPC processors). Nobody expects them to be hotpluggable,
-nor even used in SMP systems for the matter.
-
+> 	addi	r4,r4,_etext@l		# r8 = &_etext
+> 1:	dcbf	r0,r3			# Flush the data cache
+> 	icbi	r0,r3			# Invalidate the instruction cache
+> 	addi	r3,r3,0x10		# Increment by one cache line
+> 	cmplwi	cr0,r3,r4		# Are we at the end yet?
+> 	               ^^
+> 	blt	1b			# No, keep flushing and invalidating
 > 
-> Why is this function paying with const anyway?
+> I guess it should have been:
+> 
+> 	cmplw	cr0,r3,r4		# Are we at the end yet?
 
-I believe that it was originally to tell the compiler to be
-able to cache it across several tests (a good compiler
-on PPC would even cache the result of the test in a condition
-register to allow branch prediction to work optimally).
+Yup, looks like a real bug to me, Tom ?
 
-Otherwise the compiler would never cache it since mfspr
-is a volatile asm.
-
-However this was written in pre gcc2.95 days so my 
-memory may be failing.
-
-	Gabriel
+Ben.
