@@ -1,24 +1,17 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 8E26D67EB3
+Return-Path: <Baohua.WANG@alcatel-sbell.com.cn>
+Received: from mail.alcatel-sbell.com.cn (nat1.alcatel-sbell.com.cn
+	[202.96.203.177]) by ozlabs.org (Postfix) with ESMTP id 9D5E867EB7
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 Aug 2005 18:48:40 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	j748qluM028840
-	for <linuxppc-embedded@ozlabs.org>; Thu, 4 Aug 2005 01:52:47 -0700 (MST)
-Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
-	[10.192.130.11])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id j748sYaa027697
-	for <linuxppc-embedded@ozlabs.org>; Thu, 4 Aug 2005 03:55:05 -0500 (CDT)
-Message-ID: <9FCDBA58F226D911B202000BDBAD467302794005@zch01exm40.ap.freescale.net>
-From: Li Yang-r58472 <LeoLi@freescale.com>
-To: linux-usb-devel@lists.sourceforge.net, linuxppc-embedded@ozlabs.org
-Date: Thu, 4 Aug 2005 16:47:50 +0800 
+	Thu,  4 Aug 2005 18:57:57 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Jiang Bo-r61859 <tanya.jiang@freescale.com>
-Subject: [PATCH] Fix MPC8349 USB memory mapping
+Content-Type: text/plain;
+	charset=iso-8859-1
+Date: Thu, 4 Aug 2005 16:57:12 +0800
+Message-ID: <A9DE2BAF233E444FA9C5E77A5825A01E865053@ydmail.sbell.com.cn>
+From: "FCG WANG Baohua" <Baohua.WANG@alcatel-sbell.com.cn>
+To: "Alex Zeffertt" <ajz@cambridgebroadband.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: ??:  PPC860 board and PPCBoot "verifying Checksum... Bad Data CRC"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,43 +22,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Dear Alex:
+ I had set the mhz, but of no use. I debug the kernel log  found that it =
+is halted on the mount_root()  of init/do_mounts.c
+ What is happened in my kernel ? I have initrd include it when config =
+the kernel.
+=20
+ =20
 
-The memory mappings for MPC8349 USB MPH and DR modules were reversed.
+-----????-----
+???: Alex Zeffertt [mailto:ajz@cambridgebroadband.com]
+????: 2005?8?4? 16:32
+???: FCG WANG Baohua
+??: Re: =3D?ISO-8859-1?B??=3D PPC860 board and PPCBoot "verifying =
+Checksum... Bad Data CRC"
 
-Signed-off-by: Li Yang <LeoLi@freescale.com>
-Signed-off-by: Jiang Bo <Tanya.jiang@freescale.com>
 
----
+This could be down to the clocks_in_mhz uboot environment variable.  Try =
+doing this with
+clocks_in_mhz=3D1, and again with this variable not defined.
 
---- arch/ppc/syslib/mpc83xx_devices.c.orig	2005-08-04 16:37:20.000000000 +0800
-+++ arch/ppc/syslib/mpc83xx_devices.c	2005-08-04 16:38:25.000000000 +0800
-@@ -191,8 +191,8 @@ struct platform_device ppc_sys_platform_
- 		.num_resources	 = 2,
- 		.resource = (struct resource[]) {
- 			{
--				.start	= 0x22000,
--				.end	= 0x22fff,
-+				.start	= 0x23000,
-+				.end	= 0x23fff,
- 				.flags	= IORESOURCE_MEM,
- 			},
- 			{
-@@ -208,8 +208,8 @@ struct platform_device ppc_sys_platform_
- 		.num_resources	 = 2,
- 		.resource = (struct resource[]) {
- 			{
--				.start	= 0x23000,
--				.end	= 0x23fff,
-+				.start	= 0x22000,
-+				.end	= 0x22fff,
- 				.flags	= IORESOURCE_MEM,
- 			},
- 			{
+Alex
 
---
-Leo Li
-Freescale Semiconductor
- 
-LeoLi@freescale.com 
- 
+
+On Wed, 3 Aug 2005 10:06:26 +0800
+"FCG WANG Baohua" <Baohua.WANG@alcatel-sbell.com.cn> wrote:
+
+> Dear Alex :
+>  =20
+> The kernel is halted after printing "Transferring control to Linux (at =
+address 00000000) ...".
+>   I had read all the eldk FAQ and other charpter throughtly. I checked =
+the IMMR_ADDR in kernel
+>   2.4.25 and  memory map.They are all right. The UART configuration is =
+also right. So I think the
+>   FAQ cannot give me any help now. It is the kernel configuration that =
+lead the kernel halt. So I
+>   want to ask for a right kernel configuration for 8xx ADS board. My =
+board type is HD860, there is
+>   no this in kernel, I give you the patch for Montivisa, pls help me =
+to analyze it. I had
+>   configure it with the patch, but there is also no use. So I think I =
+maybe omit a common feature
+>   in kernel configuration. pls take a look at it.
+>    thanks a lot!
+>=20
+>=20
+> -----
