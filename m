@@ -1,18 +1,23 @@
-Return-Path: <bob@acdstar.com>
-Received: from mail.acdstar.com (mail.acdstar.com [209.98.244.9])
-	by ozlabs.org (Postfix) with ESMTP id 6D69D67DFA
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 43CCB67EB3
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 Aug 2005 23:42:08 +1000 (EST)
-Message-Id: <6.2.3.4.1.20050804082815.01ee2e30@mail.int.acdstar.com>
-Date: Thu, 04 Aug 2005 08:35:36 -0500
-To: achim.machura@berghof.com,
-	"Linuxppc-Embedded \(E-Mail\)" <linuxppc-embedded@ozlabs.org>
-From: Bob Peterson <bob@acdstar.com>
-In-Reply-To: <00a501c598e6$b7823130$34f1ff0a@beint.local>
-References: <00a501c598e6$b7823130$34f1ff0a@beint.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
-Subject: Re: USB + MPC5200 L25R REV 2 OCT0511C
+	Thu,  4 Aug 2005 23:51:32 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	j74DxW5i020839
+	for <linuxppc-embedded@ozlabs.org>; Thu, 4 Aug 2005 06:59:32 -0700 (MST)
+In-Reply-To: <9FCDBA58F226D911B202000BDBAD467302794005@zch01exm40.ap.freescale.net>
+References: <9FCDBA58F226D911B202000BDBAD467302794005@zch01exm40.ap.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v733)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <6A6E571F-AD8D-47FC-8AFA-298254340458@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Thu, 4 Aug 2005 08:51:33 -0500
+To: Li Yang-r58472 <LeoLi@freescale.com>
+Cc: Jiang Bo-r61859 <tanya.jiang@freescale.com>,
+	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] Fix MPC8349 USB memory mapping
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,54 +28,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Achim and List,
+Oops, I'll forward this bug fix on.
 
-I've recently been doing some experiments regards USB on our custom
-icecube-like mpc5200 board using the usb-ohci driver, and here's what I found:
+- kumar
 
-1. Some devices (high speed?) seem to work fine.  I used a USB jump drive.
-2. Other devices (low speed?) like USB keyboard and mouse did not.
-3. Plugging a USB hub into the board allows the same failing devices
-     (kbd & mouse) to work properly (when they are plugged into the hub).
-4. The off-the-shelf icecube board behaves the same way, so it's not just our
-     board.
+On Aug 4, 2005, at 3:47 AM, Li Yang-r58472 wrote:
 
-I haven't tried to backtrack this because USB isn't a major aspect of 
-our product
-and I've got higher priorities.
-
-Regards,
-
-Bob Peterson
-Advanced Communication Design
-(952) 854-4000
-
-At 06:21 AM 8/4/2005, Achim Machura wrote:
->Helo list,
+> Hi,
 >
->do everybody know about problems with usb (usb-ohci) and MPC5200 label  L25R
->REV 2 OCT0511C.
+> The memory mappings for MPC8349 USB MPH and DR modules were reversed.
 >
->When i plugg in a usb-device, i see that the kernel will assign an address
->to the device, but it failed by timeout.
+> Signed-off-by: Li Yang <LeoLi@freescale.com>
+> Signed-off-by: Jiang Bo <Tanya.jiang@freescale.com>
 >
->The same kernel an the same usb-device works fine on a board with a cpu
->label 0L25R QAH0410
+> ---
 >
->best regards
+> --- arch/ppc/syslib/mpc83xx_devices.c.orig    2005-08-04
+> 16:37:20.000000000 +0800
+> +++ arch/ppc/syslib/mpc83xx_devices.c    2005-08-04 16:38:25.000000000
+> +0800
+> @@ -191,8 +191,8 @@ struct platform_device ppc_sys_platform_
+>          .num_resources     = 2,
+>          .resource = (struct resource[]) {
+>              {
+> -                .start    = 0x22000,
+> -                .end    = 0x22fff,
+> +                .start    = 0x23000,
+> +                .end    = 0x23fff,
+>                  .flags    = IORESOURCE_MEM,
+>              },
+>              {
+> @@ -208,8 +208,8 @@ struct platform_device ppc_sys_platform_
+>          .num_resources     = 2,
+>          .resource = (struct resource[]) {
+>              {
+> -                .start    = 0x23000,
+> -                .end    = 0x23fff,
+> +                .start    = 0x22000,
+> +                .end    = 0x22fff,
+>                  .flags    = IORESOURCE_MEM,
+>              },
+>              {
 >
->Achim
+> --
+> Leo Li
+> Freescale Semiconductor
 >
->____________________________________________
->Achim Machura Softwareentwicklung
->Berghof Automationstechnik GmbH
->Harretstrasse 1, D-72800 Eningen u.A.
->Tel: +49-7121-894-131, Fax: +49-7121-894-100
->email: machura@berghof.com
->Internet: http://www.berghof.com
+> LeoLi@freescale.com
 >
 >
->_______________________________________________
->Linuxppc-embedded mailing list
->Linuxppc-embedded@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-embedded
