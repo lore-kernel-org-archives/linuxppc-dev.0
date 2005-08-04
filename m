@@ -1,18 +1,18 @@
-Return-Path: <vikrant.basotra@indiatimes.com>
-Received: from WS0005.indiatimes.com (smtp5.indiatimes.com [203.199.93.15])
-	by ozlabs.org (Postfix) with ESMTP id 6E47F67EAA
+Return-Path: <bob@acdstar.com>
+Received: from mail.acdstar.com (mail.acdstar.com [209.98.244.9])
+	by ozlabs.org (Postfix) with ESMTP id 6D69D67DFA
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 Aug 2005 23:27:13 +1000 (EST)
-From: "vikrant.basotra" <vikrant.basotra@indiatimes.com>
-Message-Id: <200508041026.PAA00892@WS0005.indiatimes.com>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Thu, 04 Aug 2005 16:08:02 +0530
-Content-Type: multipart/alternative;
-	boundary="=_MAILER_ATTACH_BOUNDARY1_200584416821287166564"
-MIME-Version: 1.0
-Cc: vikrant_basotra@satyam.com
-Subject: Linux Porting ISSUE
-Reply-To: "vikrant.basotra" <vikrant.basotra@indiatimes.com>
+	Thu,  4 Aug 2005 23:42:08 +1000 (EST)
+Message-Id: <6.2.3.4.1.20050804082815.01ee2e30@mail.int.acdstar.com>
+Date: Thu, 04 Aug 2005 08:35:36 -0500
+To: achim.machura@berghof.com,
+	"Linuxppc-Embedded \(E-Mail\)" <linuxppc-embedded@ozlabs.org>
+From: Bob Peterson <bob@acdstar.com>
+In-Reply-To: <00a501c598e6$b7823130$34f1ff0a@beint.local>
+References: <00a501c598e6$b7823130$34f1ff0a@beint.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
+Subject: Re: USB + MPC5200 L25R REV 2 OCT0511C
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,47 +23,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---=_MAILER_ATTACH_BOUNDARY1_200584416821287166564
-Content-Type: text/plain; charset=us-ascii
+Hi Achim and List,
 
-Hi All,
-	I am porting Linux on the custom board PMC8266 (having MPC8266 microprocessor) based on the ADS8266 board.
-I am using ELDK1.1.1 and Linux2.4.24.
-After executing the make xconfig, while saving the settings a message is displayed:
-	End of Linux kernel configuration. Check the top level make file for additional configuration. Next, you must
-	run make dep
-Now where does this top level make file is. I didn't find any other Make file higher in the hierarchy.
-Do I need to create that particular make file. What extra setting there would be in that make file.
+I've recently been doing some experiments regards USB on our custom
+icecube-like mpc5200 board using the usb-ohci driver, and here's what I found:
 
-Response awaited from the list.
+1. Some devices (high speed?) seem to work fine.  I used a USB jump drive.
+2. Other devices (low speed?) like USB keyboard and mouse did not.
+3. Plugging a USB hub into the board allows the same failing devices
+     (kbd & mouse) to work properly (when they are plugged into the hub).
+4. The off-the-shelf icecube board behaves the same way, so it's not just our
+     board.
 
-Regards,
-Vikrant
-
-
-Indiatimes Email now powered by APIC Advantage. Help! 
-Help
-
-
---=_MAILER_ATTACH_BOUNDARY1_200584416821287166564
-Content-Type: text/html; charset=us-ascii
-
-Hi All,
-	I am porting Linux on the custom board PMC8266 (having MPC8266 microprocessor) based on the ADS8266 board.
-I am using ELDK1.1.1 and Linux2.4.24.
-After executing the make xconfig, while saving the settings a message is displayed:
-	End of Linux kernel configuration. Check the top level make file for additional configuration. Next, you must
-	run make dep
-Now where does this top level make file is. I didn't find any other Make file higher in the hierarchy.
-Do I need to create that particular make file. What extra setting there would be in that make file.
-
-Response awaited from the list.
+I haven't tried to backtrack this because USB isn't a major aspect of 
+our product
+and I've got higher priorities.
 
 Regards,
-Vikrant
 
+Bob Peterson
+Advanced Communication Design
+(952) 854-4000
 
-<hr><font face="Arial" size="2">Indiatimes Email now powered by <b>APIC Advantage</b>. <a href="http://email.indiatimes.com/apic/">Help!</a> </font><br><DIV align=left><a target="_blank" href="http://imaround.indiatimes.com/IMaround/presencefr.mss?userid=vikrant.basotra" ><IMG alt="My Presence" border=0 src="http://203.199.93.51/IMaround/getpresence.mss?userid=vikrant.basotra" ></a><a target="_blank" href="http://email.indiatimes.com/apic/userpage.html"><FONT face="Arial" size=2>Help</font></a></DIV><hr><br><DIV align="left"><object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=5,0,0,0" width="360" height="80"><param name="movie" value="http://203.199.93.12/image/swap.swp"><param name="quality" value="high"><embed src="http://203.199.93.12/image/swap.swp" quality="high" pluginspage="http://www.macromedia.com/shockwave/download/index.cgi?P1_Prod_Version=ShockwaveFlash" type="application!
-/x-shockwave-flash" width="360" height="80"></embed></object></DIV>
-
---=_MAILER_ATTACH_BOUNDARY1_200584416821287166564--
+At 06:21 AM 8/4/2005, Achim Machura wrote:
+>Helo list,
+>
+>do everybody know about problems with usb (usb-ohci) and MPC5200 label  L25R
+>REV 2 OCT0511C.
+>
+>When i plugg in a usb-device, i see that the kernel will assign an address
+>to the device, but it failed by timeout.
+>
+>The same kernel an the same usb-device works fine on a board with a cpu
+>label 0L25R QAH0410
+>
+>best regards
+>
+>Achim
+>
+>____________________________________________
+>Achim Machura Softwareentwicklung
+>Berghof Automationstechnik GmbH
+>Harretstrasse 1, D-72800 Eningen u.A.
+>Tel: +49-7121-894-131, Fax: +49-7121-894-100
+>email: machura@berghof.com
+>Internet: http://www.berghof.com
+>
+>
+>_______________________________________________
+>Linuxppc-embedded mailing list
+>Linuxppc-embedded@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
