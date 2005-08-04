@@ -1,23 +1,17 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 43CCB67EB3
+Return-Path: <galak@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 5C70667EB8
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 Aug 2005 23:51:32 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	j74DxW5i020839
-	for <linuxppc-embedded@ozlabs.org>; Thu, 4 Aug 2005 06:59:32 -0700 (MST)
-In-Reply-To: <9FCDBA58F226D911B202000BDBAD467302794005@zch01exm40.ap.freescale.net>
-References: <9FCDBA58F226D911B202000BDBAD467302794005@zch01exm40.ap.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v733)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <6A6E571F-AD8D-47FC-8AFA-298254340458@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Thu, 4 Aug 2005 08:51:33 -0500
-To: Li Yang-r58472 <LeoLi@freescale.com>
-Cc: Jiang Bo-r61859 <tanya.jiang@freescale.com>,
-	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] Fix MPC8349 USB memory mapping
+	Fri,  5 Aug 2005 00:00:12 +1000 (EST)
+Date: Thu, 4 Aug 2005 08:59:51 -0500 (CDT)
+From: Kumar Gala <galak@freescale.com>
+To: Linus Torvalds <torvalds@osdl.org>
+Message-ID: <Pine.LNX.4.61.0508040858290.13245@nylon.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Tanya.jiang@freescale.com, linux-kernel@vger.kernel.org,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH] ppc32: Fix MPC834x USB memory map offsets
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,52 +22,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Oops, I'll forward this bug fix on.
+The memory mappings for MPC8349 USB MPH and DR modules were reversed.
 
-- kumar
+Signed-off-by: Li Yang <LeoLi@freescale.com>
+Signed-off-by: Jiang Bo <Tanya.jiang@freescale.com>
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
-On Aug 4, 2005, at 3:47 AM, Li Yang-r58472 wrote:
+---
+commit a2227df6ac23000dff7d95411ae5bd8022437ad3
+tree d22a59e837eb881b1292f70e51df561802b279df
+parent 51904043565cdfb348f58ce99377427c5ffe25fd
+author Kumar K. Gala <kumar.gala@freescale.com> Thu, 04 Aug 2005 08:57:58 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> Thu, 04 Aug 2005 08:57:58 -0500
 
-> Hi,
->
-> The memory mappings for MPC8349 USB MPH and DR modules were reversed.
->
-> Signed-off-by: Li Yang <LeoLi@freescale.com>
-> Signed-off-by: Jiang Bo <Tanya.jiang@freescale.com>
->
-> ---
->
-> --- arch/ppc/syslib/mpc83xx_devices.c.orig    2005-08-04
-> 16:37:20.000000000 +0800
-> +++ arch/ppc/syslib/mpc83xx_devices.c    2005-08-04 16:38:25.000000000
-> +0800
-> @@ -191,8 +191,8 @@ struct platform_device ppc_sys_platform_
->          .num_resources     = 2,
->          .resource = (struct resource[]) {
->              {
-> -                .start    = 0x22000,
-> -                .end    = 0x22fff,
-> +                .start    = 0x23000,
-> +                .end    = 0x23fff,
->                  .flags    = IORESOURCE_MEM,
->              },
->              {
-> @@ -208,8 +208,8 @@ struct platform_device ppc_sys_platform_
->          .num_resources     = 2,
->          .resource = (struct resource[]) {
->              {
-> -                .start    = 0x23000,
-> -                .end    = 0x23fff,
-> +                .start    = 0x22000,
-> +                .end    = 0x22fff,
->                  .flags    = IORESOURCE_MEM,
->              },
->              {
->
-> --
-> Leo Li
-> Freescale Semiconductor
->
-> LeoLi@freescale.com
->
->
+ arch/ppc/syslib/mpc83xx_devices.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/ppc/syslib/mpc83xx_devices.c b/arch/ppc/syslib/mpc83xx_devices.c
+--- a/arch/ppc/syslib/mpc83xx_devices.c
++++ b/arch/ppc/syslib/mpc83xx_devices.c
+@@ -191,8 +191,8 @@ struct platform_device ppc_sys_platform_
+ 		.num_resources	 = 2,
+ 		.resource = (struct resource[]) {
+ 			{
+-				.start	= 0x22000,
+-				.end	= 0x22fff,
++				.start	= 0x23000,
++				.end	= 0x23fff,
+ 				.flags	= IORESOURCE_MEM,
+ 			},
+ 			{
+@@ -208,8 +208,8 @@ struct platform_device ppc_sys_platform_
+ 		.num_resources	 = 2,
+ 		.resource = (struct resource[]) {
+ 			{
+-				.start	= 0x23000,
+-				.end	= 0x23fff,
++				.start	= 0x22000,
++				.end	= 0x22fff,
+ 				.flags	= IORESOURCE_MEM,
+ 			},
+ 			{
