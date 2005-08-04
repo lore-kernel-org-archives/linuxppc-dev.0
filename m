@@ -1,24 +1,17 @@
-Return-Path: <pantelis.antoniou@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.194])
-	by ozlabs.org (Postfix) with ESMTP id 1C28F67EC9
+Return-Path: <bgholikh@cisco.com>
+Received: from sj-iport-1.cisco.com (sj-iport-1-in.cisco.com [171.71.176.70])
+	by ozlabs.org (Postfix) with ESMTP id 8448167E25
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  5 Aug 2005 02:45:22 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id i30so436715wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 04 Aug 2005 09:45:21 -0700 (PDT)
-From: Pantelis Antoniou <pantelis.antoniou@gmail.com>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Date: Thu, 4 Aug 2005 22:03:55 +0300
-References: <42F23913.7020905@ru.mvista.com>
-In-Reply-To: <42F23913.7020905@ru.mvista.com>
+	Fri,  5 Aug 2005 02:52:08 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_bam8C1+lUWSuDEH"
-Message-Id: <200508042203.55491.pantelis.antoniou@gmail.com>
-Cc: Kumar Gala <galak@freescale.com>,
-	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] cpm_uart: Make non-console uart work (rev 1)
-Reply-To: pantelis.antoniou@gmail.com
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Thu, 4 Aug 2005 09:52:00 -0700
+Message-ID: <F795765B112E7344AF36AA91127964158494C6@xmb-sjc-212.amer.cisco.com>
+From: "Bizhan Gholikhamseh \(bgholikh\)" <bgholikh@cisco.com>
+To: "Clemens Koller" <clemens.koller@anagramm.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: MPC8541E DMA transfer
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,113 +22,107 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---Boundary-00=_bam8C1+lUWSuDEH
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hi Clemens,
+Thanks for the code, the processor I am using is MPC8541E which I
+believe have the same DMA engine as mpc8540. I will try it and will let
+you know how it worked.
 
-On Thursday 04 August 2005 18:49, Vitaly Bordug wrote:
-> Kumar, Pantelis,
->
-> This patch makes non-console UART work on both 8xx and 82xx. dpram
-> allocation fix by Pantelis included, almost all mentioned issues fixed.
->
-> Tested on 8272ADS development board, but as far as there are no major
-> modifications comparing to previous revision (excluding Pantelis change
-> which has been tested independently), 8xx should work as well.
-> ---------------------------------
-> Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
-> Signed-off-by: Pantelis Antoniou <panto@intracom.gr>
+Thanks,
+Bizhan=20
 
-Hi all,
+-----Original Message-----
+From: Clemens Koller [mailto:clemens.koller@anagramm.de]=20
+Sent: Thursday, August 04, 2005 5:13 AM
+To: Bizhan Gholikhamseh (bgholikh)
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: MPC8541E DMA transfer
 
-Please apply the following patch over the previous one.
+Hello, Bizhan!
+and all the other mpc85xx DMA fans.
 
-It's minor cosmetic & warning fixes.
+I am working on the mpc85xx dma stuff (based on Jason's work) on the
+lastest 2.6.x kernels. My cpu is a mpc8540.
+That's all work in progress, so have a look at the code.
 
-Regards
+Attached you will find some of my test code (a separate kernal module)
+which should compile fine for 2.6 now. Make a symlink ~/linux to the
+latest 2.6 kernel or change the makefile. There is also the latest
+immap_85xx.h (almost complete) included. Some old code is commented
+out...
 
-Pantelis
+Not all code is enabled in the module yet, and the dma_test routine
+copys data from physical memory you might not have in your hardware.
+Please change that according to your setup.
 
---Boundary-00=_bam8C1+lUWSuDEH
-Content-Type: text/x-diff;
-  charset="utf-8";
-  name="cpm-uart-nag.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="cpm-uart-nag.patch"
+Feedback is welcome!
 
---- linux-2.6-panto.git/drivers/serial/cpm_uart/cpm_uart_core.c	2005-08-04 21:59:50.998040784 +0300
-+++ linux-2.6-panto-test.git/drivers/serial/cpm_uart/cpm_uart_core.c	2005-08-04 21:48:19.087227216 +0300
-@@ -261,7 +261,7 @@
- 		}
- 
- 		/* get pointer */
--		cp = (unsigned char *)cpm2cpu_addr(bdp->cbd_bufaddr);
-+		cp = cpm2cpu_addr(bdp->cbd_bufaddr);
- 
- 		/* loop through the buffer */
- 		while (i-- > 0) {
-@@ -606,6 +606,7 @@
- 		bdp = pinfo->tx_cur;
- 
- 		p = cpm2cpu_addr(bdp->cbd_bufaddr);
-+
- 		*p++ = xmit->buf[xmit->tail];
- 		bdp->cbd_datlen = 1;
- 		bdp->cbd_sc |= BD_SC_READY;
-@@ -1030,10 +1031,7 @@
- 		 * If the buffer address is in the CPM DPRAM, don't
- 		 * convert it.
- 		 */
--		if ((uint) (bdp->cbd_bufaddr) > (uint) CPM_ADDR)
--			cp = (unsigned char *) (bdp->cbd_bufaddr);
--		else
--			cp = cpm2cpu_addr(bdp->cbd_bufaddr);
-+		cp = cpm2cpu_addr(bdp->cbd_bufaddr);
- 		
- 		*cp = *s;
- 
-@@ -1050,10 +1048,7 @@
- 			while ((bdp->cbd_sc & BD_SC_READY) != 0)
- 				;
- 
--			if ((uint) (bdp->cbd_bufaddr) > (uint) CPM_ADDR)
--				cp = (unsigned char *) (bdp->cbd_bufaddr);
--			else
--				cp = cpm2cpu_addr(bdp->cbd_bufaddr);
-+			cp = cpm2cpu_addr(bdp->cbd_bufaddr);
- 
- 			*cp = 13;
- 			bdp->cbd_datlen = 1;
---- linux-2.6-panto.git/drivers/serial/cpm_uart/cpm_uart_cpm1.c	2005-08-04 21:59:51.003040024 +0300
-+++ linux-2.6-panto-test.git/drivers/serial/cpm_uart/cpm_uart_cpm1.c	2005-08-04 21:50:24.744124464 +0300
-@@ -83,6 +83,7 @@
- {
- 	volatile cpm8xx_t *cp = cpmp;
- 
-+	(void)cp;	/* fix warning */
- #if defined (CONFIG_MPC885ADS)
- 	/* Enable SMC1 transceivers */
- 	{
-@@ -110,6 +111,8 @@
- void smc2_lineif(struct uart_cpm_port *pinfo)
- {
- 	volatile cpm8xx_t *cp = cpmp;
-+
-+	(void)cp;	/* fix warning */
- #if defined (CONFIG_MPC885ADS)
- 	cp->cp_pepar |= 0x00000c00;
- 	cp->cp_pedir &= ~0x00000c00;
-@@ -185,6 +188,8 @@
- 	memsz = L1_CACHE_ALIGN(pinfo->rx_nrfifos * pinfo->rx_fifosize) +
- 	    L1_CACHE_ALIGN(pinfo->tx_nrfifos * pinfo->tx_fifosize);
- 	if (is_con) {
-+		/* was hostalloc but changed cause it blows away the */
-+		/* large tlb mapping when pinning the kernel area    */
- 		mem_addr = (u8 *) cpm_dpram_addr(cpm_dpalloc(memsz, 8));
- 		dma_addr = 0;
- 	} else
+Enjoy!
 
---Boundary-00=_bam8C1+lUWSuDEH--
+Clemens Koller
+_______________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Str. 45/1
+81379 Muenchen
+Germany
+
+http://www.anagramm.de
+Phone: +49-89-741518-50
+Fax: +49-89-741518-19
+
+
+Bizhan Gholikhamseh (bgholikh) wrote:
+> Is there any support in Linux 2.6.X for using this controller, if so,=20
+> are you aware of any test driver I can take a look at?
+>=20
+> Thanks,
+> Bizhan
+>=20
+> Many thanks in
+>=20
+> -----Original Message-----
+> From: Kumar Gala [mailto:kumar.gala@freescale.com]
+> Sent: Wednesday, August 03, 2005 11:24 AM
+> To: Bizhan Gholikhamseh (bgholikh)
+> Cc: linuxppc-embedded@ozlabs.org
+> Subject: Re: MPC8541E DMA transfer
+>=20
+> I dont see any reason you couldn't use the internal DMA engine on the=20
+> MPC8541E to do what you need.  You will just need to schedule the work
+
+> every 10ms.
+>=20
+> - kumar
+>=20
+> On Aug 3, 2005, at 10:04 AM, Bizhan Gholikhamseh \(((bgholikh\)))
+wrote:
+>=20
+>=20
+>>Hi all,
+>>I am developing a linux driver (2.6.10) for Freescale MPC8541E=20
+>>(customized board) to read and write 8 buffers (each buffer is 960=20
+>>bytes
+>>long) every 10 ms to/from a custom made PCI card with on board DSP=20
+>>Chip.
+>>The chip's internal and external memories are memory mapped to the CPU
+>=20
+>=20
+>>address space.
+>>For reason that is beyond the discussion here, the DMA request line on
+>=20
+>=20
+>>the PCI card is not connected although the PCI card has DMA=20
+>>capabilities.
+>>So what are my options?
+>>Could I still do DMA transfer from the Host to the device?
+>>
+>>Many thanks in advance,
+>>Bizhan
+>>
+>><ATT293768.txt>
+>>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>=20
