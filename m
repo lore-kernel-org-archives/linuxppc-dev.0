@@ -1,18 +1,25 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 546FA67DFE
+Return-Path: <ktdann@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.196])
+	by ozlabs.org (Postfix) with ESMTP id 30B3267E43
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 Aug 2005 07:57:54 +1000 (EST)
-In-Reply-To: <F795765B112E7344AF36AA91127964158494B8@xmb-sjc-212.amer.cisco.com>
-References: <F795765B112E7344AF36AA91127964158494B8@xmb-sjc-212.amer.cisco.com>
-Mime-Version: 1.0 (Apple Message framework v733)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <A7D2D059-C383-4E03-A8FD-368B46788CC7@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Wed, 3 Aug 2005 16:57:54 -0500
-To: "Bizhan Gholikhamseh \\\(bgholikh\\\)" <bgholikh@cisco.com>
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: MPC8541E DMA transfer
+	Thu,  4 Aug 2005 10:16:24 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id 68so295893wri
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 03 Aug 2005 17:16:23 -0700 (PDT)
+Message-ID: <9b7ca6570508031716786e73b0@mail.gmail.com>
+Date: Thu, 4 Aug 2005 09:16:23 +0900
+From: Daniel Ann <ktdann@gmail.com>
+To: "Mark A. Greer" <mgreer@mvista.com>
+In-Reply-To: <20050803183932.GA13789@mag.az.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <9b7ca6570508022240715ae9cb@mail.gmail.com>
+	<61C27372-4ADB-4E3A-8E20-9E811EE61B99@freescale.com>
+	<9b7ca65705080223401a9ce913@mail.gmail.com>
+	<20050803183932.GA13789@mag.az.mvista.com>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: MPC8245 reboot
+Reply-To: Daniel Ann <ktdann@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,65 +30,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-There has been some example code posted in the past to the list.  I  
-suggest searching the archives and looking for something posted by  
-Jason McMullan.
+Mark,
 
-- kumar
+Guess I'll have to walk the uncharted area again :P
+Thanks anyway tho. I'll start by looking at what that port 92
+mechanism is first, and see where in our hw designer have put that in.
 
-On Aug 3, 2005, at 1:26 PM, Bizhan Gholikhamseh \\((bgholikh\\)) wrote:
+On 8/4/05, Mark A. Greer <mgreer@mvista.com> wrote:
+> On Wed, Aug 03, 2005 at 03:40:18PM +0900, Daniel Ann wrote:
+> > Absolutely not. Very much like sandpoint except, we dont use SIO at all=
+.
+> > FYI, most of sandpoint code from the kernel is function the board very
+> > well at the moment. Only big issue lies with REBOOT at this stage:(
+>=20
+> Daniel,
+>=20
+> IIRC, the sandpoint uses the PC style port 92 mechanism to reset the boar=
+d.
+> You need to look at your hardware docs to see how your board can be reset=
+.
+> Don't expect the sandpoint reset code to work for you.
+>=20
+> Mark
+>=20
 
-> Is there any support in Linux 2.6.X for using this controller, if so,
-> are you aware of any test driver I can take a look at?
->
-> Thanks,
-> Bizhan
->
-> Many thanks in
->
-> -----Original Message-----
-> From: Kumar Gala [mailto:kumar.gala@freescale.com]
-> Sent: Wednesday, August 03, 2005 11:24 AM
-> To: Bizhan Gholikhamseh (bgholikh)
-> Cc: linuxppc-embedded@ozlabs.org
-> Subject: Re: MPC8541E DMA transfer
->
-> I dont see any reason you couldn't use the internal DMA engine on the
-> MPC8541E to do what you need.  You will just need to schedule the work
-> every 10ms.
->
-> - kumar
->
-> On Aug 3, 2005, at 10:04 AM, Bizhan Gholikhamseh \(((bgholikh\)))  
-> wrote:
->
->
->>
->> Hi all,
->> I am developing a linux driver (2.6.10) for Freescale MPC8541E
->> (customized board) to read and write 8 buffers (each buffer is 960
->> bytes
->> long) every 10 ms to/from a custom made PCI card with on board DSP
->> Chip.
->> The chip's internal and external memories are memory mapped to the  
->> CPU
->>
->
->
->> address space.
->> For reason that is beyond the discussion here, the DMA request  
->> line on
->>
->
->
->> the PCI card is not connected although the PCI card has DMA
->> capabilities.
->> So what are my options?
->> Could I still do DMA transfer from the Host to the device?
->>
->> Many thanks in advance,
->> Bizhan
->>
->> <ATT293768.txt>
->>
->
+
+--=20
+Daniel
