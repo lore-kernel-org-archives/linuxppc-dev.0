@@ -1,17 +1,14 @@
-Return-Path: <michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-To: linuxppc64-dev@ozlabs.org
-Date: Thu, 4 Aug 2005 10:17:50 +1000
-References: <1123064479.417492.649639846705.qpatch@concordia>
-	<1123095705.8638.14.camel@cashmere.sps.mot.com>
-In-Reply-To: <1123095705.8638.14.camel@cashmere.sps.mot.com>
+Return-Path: <bgoodman@empirix.com>
+Received: from empbedex1.empirix.com (empbedex1.empirix.com [12.38.203.96])
+	by ozlabs.org (Postfix) with ESMTP id 2FD3F67E25
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Aug 2005 12:38:16 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2765443.OdJ5MfRWk2";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200508041017.54208.michael@ellerman.id.au>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH 0/10] Cleanup iSeries msChunks handling, and lmb code.
-Reply-To: michael@ellerman.id.au
+Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C5989D.90247941"
+Date: Wed, 3 Aug 2005 22:37:20 -0400
+Message-ID: <BD261180E6D35F4D9D32F3E44FD3D9010105EE64@EMPBEDEX.empirix.com>
+From: "Goodman, Brad" <bgoodman@empirix.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: RE: Merging ppc32 and ppc64
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,67 +18,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart2765443.OdJ5MfRWk2
+This is a multi-part message in MIME format.
+
+------_=_NextPart_001_01C5989D.90247941
 Content-Type: text/plain;
-  charset="iso-8859-6"
+	charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-On Thu, 4 Aug 2005 05:01, Jon Loeliger wrote:
-> On Wed, 2005-08-03 at 05:21, Michael Ellerman wrote:
-> > This series of patches cleans up the iSeries msChunks structure, and
-> > associated macros and functions.
-> >
-> > It also removes CONFIG_MSCHUNKS from the lmb code, and eventually remov=
-es
-> > CONFIG_MSCHUNKS entirely.
-> >
-> > The final patch rely's on Stephen's FW_FEATURE_ISERIES patches.
-> >
-> > Booted on Power3, G5, Power5 LPAR and iSeries.
->
-> Excellent.  This patch, especially the LMB simplification
-> and removal of the physbase bits, greatly simplifies the
-> notion of merging LMB form 64 land and the mem_pieces.
+As long as you keep the "legacy" directories around for a while - I'm =
+happy.
 
-Cool. I wasn't really thinking of 32 <-> 64 merging when I did the patches,=
-=20
-but it's good to be heading in the right direction.
+Thanks,
 
-> I have previously submitted patches against the ppc32 code
-> that enhance the mem_pieces towards the LMB structure as well.
->
-> Given an eventual merger of the two bodies of code, I'd
-> like to make the merger of these two structures more complete.
-> I'll work towards that goal if that's a Good Idea.
+-BKG
+bgoodman et empirix und com
 
-I don't know the ppc32 code (guess I'll need to soon), so I can't comment o=
-n=20
-specifics, but it sounds like a "Good Idea" to me.
+------_=_NextPart_001_01C5989D.90247941
+Content-Type: application/ms-tnef;
+	name="winmail.dat"
+Content-Transfer-Encoding: base64
 
-cheers
+eJ8+Ig8CAQaQCAAEAAAAAAABAAEAAQeQBgAIAAAA5AQAAAAAAADoAAEIgAcAGAAAAElQTS5NaWNy
+b3NvZnQgTWFpbC5Ob3RlADEIAQ2ABAACAAAAAgACAAEEgAEAHAAAAFJFOiBNZXJnaW5nIHBwYzMy
+IGFuZCBwcGM2NACiCAEFgAMADgAAANUHCAADABYAJQAUAAMAOQEBIIADAA4AAADVBwgAAwAWACYA
+DgADADQBAQmAAQAhAAAARTUzNjFENTU3RTUxREI0NUIyMDY3MjVEQUUzNzBCRjMAKgcBA5AGABQI
+AAA4AAAAAwAmAAAAAAADADYAAAAAAEAAOQDvt6NvnZjFAR4APQABAAAABQAAAFJFOiAAAAAAAgFH
+AAEAAAAyAAAAYz11czthPSA7cD1FbXBpcml4O2w9RU1QQkVERVgtMDUwODA0MDIzODE0Wi00ODU1
+OAAAAB4ASQABAAAAJQAAAExpbnV4cHBjLWRldiBEaWdlc3QsIFZvbCAxMiwgSXNzdWUgNAAAAABA
+AE4AAL2sOZiYxQEeAFoAAQAAACAAAABsaW51eHBwYy1kZXYtYm91bmNlc0BvemxhYnMub3JnAAIB
+WwABAAAAXQAAAAAAAACBKx+kvqMQGZ1uAN0BD1QCAAAAAGxpbnV4cHBjLWRldi1ib3VuY2VzQG96
+bGFicy5vcmcAU01UUABsaW51eHBwYy1kZXYtYm91bmNlc0BvemxhYnMub3JnAAAAAAIBXAABAAAA
+JQAAAFNNVFA6TElOVVhQUEMtREVWLUJPVU5DRVNAT1pMQUJTLk9SRwAAAAAeAF0AAQAAACAAAABs
+aW51eHBwYy1kZXYtcmVxdWVzdEBvemxhYnMub3JnAAIBXgABAAAAXQAAAAAAAACBKx+kvqMQGZ1u
+AN0BD1QCAAAAAGxpbnV4cHBjLWRldi1yZXF1ZXN0QG96bGFicy5vcmcAU01UUABsaW51eHBwYy1k
+ZXYtcmVxdWVzdEBvemxhYnMub3JnAAAAAAIBXwABAAAAJQAAAFNNVFA6TElOVVhQUEMtREVWLVJF
+UVVFU1RAT1pMQUJTLk9SRwAAAAAeAGYAAQAAAAUAAABTTVRQAAAAAB4AZwABAAAAIAAAAGxpbnV4
+cHBjLWRldi1ib3VuY2VzQG96bGFicy5vcmcAHgBoAAEAAAAFAAAAU01UUAAAAAAeAGkAAQAAACAA
+AABsaW51eHBwYy1kZXYtcmVxdWVzdEBvemxhYnMub3JnAB4AcAABAAAAGAAAAE1lcmdpbmcgcHBj
+MzIgYW5kIHBwYzY0AAIBcQABAAAAGwAAAAHFmJhMVHFrp4X1xEJXuxXom/ZGobcAAUjTXAAeAHQA
+AQAAABgAAABsaW51eHBwYy1kZXZAb3psYWJzLm9yZwAeABoMAQAAAA4AAABHb29kbWFuLCBCcmFk
+AAAAHgAdDgEAAAAYAAAATWVyZ2luZyBwcGMzMiBhbmQgcHBjNjQAAgEJEAEAAAAHAQAAAwEAAJcB
+AABMWkZ1Wt6EFAMACgByY3BnMTI14jIDQ3RleAVBAQMB9/8KgAKkA+QHEwKAD/MAUARWPwhVB7IR
+JQ5RAwECAGNo4QrAc2V0MgYABsMRJfYzBEYTtzASLBEzCO8J97Y7GB8OMDURIgxgYwBQ8wsJAWQz
+NhZQC6YQwAQgoRewbmcgYQQgeQhgBCBrCeBwIHRoZSAgImxlZwDQeSLIIGRpGCBjdAWwCJDHBCAK
+wAhgbmQgAhAFwDBhIHdoAxAeUC0gEEknbSAT4HBweS4uCqIKhAqAVBPgbmuEcywhui1CS0chtHhi
+Z28EcAOCFCAkwG1icB8QaXggH/IFoG0FIbR9JmAAHgA1EAEAAABAAAAAPEJEMjYxMTgwRTZEMzVG
+NEQ5RDMyRjNFNDRGRDNEOTAxMDEwNUVFNjRARU1QQkVERVguZW1waXJpeC5jb20+AB4ARxABAAAA
+DwAAAG1lc3NhZ2UvcmZjODIyAAALAPIQAQAAAB8A8xABAAAARAAAAFIARQAlADMAQQAgAE0AZQBy
+AGcAaQBuAGcAIABwAHAAYwAzADIAIABhAG4AZAAgAHAAcABjADYANAAuAEUATQBMAAAACwD2EAAA
+AABAAAcw77ejb52YxQFAAAgw/mQwkJ2YxQEDAN4/r28AAAMA8T8JBAAAHgD4PwEAAAARAAAAR29v
+ZG1hbiwgQnJhZGxleQAAAAACAfk/AQAAAE4AAAAAAAAA3KdAyMBCEBq0uQgAKy/hggEAAAAAAAAA
+L089RU1QSVJJWC9PVT1DT1JQT1JBVEUvQ049UkVDSVBJRU5UUy9DTj1CR09PRE1BTgAAAB4A+j8B
+AAAAFQAAAFN5c3RlbSBBZG1pbmlzdHJhdG9yAAAAAAIB+z8BAAAAHgAAAAAAAADcp0DIwEIQGrS5
+CAArL+GCAQAAAAAAAAAuAAAAAwD9P+QEAAADABlAAAAAAAMAGkAAAAAAAwAdQAAAAAADAB5AAAAA
+AB4AMEABAAAACQAAAEJHT09ETUFOAAAAAB4AMUABAAAACQAAAEJHT09ETUFOAAAAAB4AMkABAAAA
+IAAAAGxpbnV4cHBjLWRldi1ib3VuY2VzQG96bGFicy5vcmcAHgAzQAEAAAAgAAAAbGludXhwcGMt
+ZGV2LXJlcXVlc3RAb3psYWJzLm9yZwAeADhAAQAAAAkAAABCR09PRE1BTgAAAAAeADlAAQAAAAIA
+AAAuAAAAAwB2QP////8LACkAAAAAAAsAIwAAAAAAAwAGEAKY9e4DAAcQXgAAAAMAEBAAAAAAAwAR
+EAAAAAAeAAgQAQAAAF8AAABBU0xPTkdBU1lPVUtFRVBUSEUiTEVHQUNZIkRJUkVDVE9SSUVTQVJP
+VU5ERk9SQVdISUxFLUlNSEFQUFlUSEFOS1MsLUJLR0JHT09ETUFORVRFTVBJUklYVU5EQ09NAAAC
+AX8AAQAAAEAAAAA8QkQyNjExODBFNkQzNUY0RDlEMzJGM0U0NEZEM0Q5MDEwMTA1RUU2NEBFTVBC
+RURFWC5lbXBpcml4LmNvbT4A+Og=
 
-=2D-=20
-Michael Ellerman
-IBM OzLabs
-
-email: michael:ellerman.id.au
-inmsg: mpe:jabber.org
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---nextPart2765443.OdJ5MfRWk2
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQBC8V6ydSjSd0sB4dIRApNMAJ9HVtaaMFaZyPLg93rBB0TTwMAkugCfSDmQ
-E0zBTx2HEJDhYhU1Rg9tmMc=
-=CIJ9
------END PGP SIGNATURE-----
-
---nextPart2765443.OdJ5MfRWk2--
+------_=_NextPart_001_01C5989D.90247941--
