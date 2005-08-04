@@ -1,15 +1,20 @@
-Return-Path: <wd@denx.de>
-To: "Debora Liu" <deboralh@fel.com.cn>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 04 Aug 2005 17:29:09 +0800."
-	<20050804092525.15A4A67EBC@ozlabs.org>
-Date: Thu, 04 Aug 2005 12:18:41 +0200
-Sender: wd@denx.de
-Message-Id: <20050804101841.6E06B352B36@atlas.denx.de>
-Cc: Linuxppc-embedded <Linuxppc-embedded@ozlabs.org>
-Subject: Re: MPC8245 reboot 
+Return-Path: <achim.machura@berghof.com>
+Received: from pegasus.berghof.com (unknown [145.253.135.72])
+	by ozlabs.org (Postfix) with ESMTP id 21BF267EAB
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu,  4 Aug 2005 21:44:26 +1000 (EST)
+Received: from BATEEE52 (batee-e52.be-int [10.255.241.52])
+	by pegasus.berghof.com (8.12.10/8.12.10) with SMTP id j74BLw6O021274
+	for <linuxppc-embedded@ozlabs.org>; Thu, 4 Aug 2005 13:21:58 +0200
+From: "Achim Machura" <achim.machura@berghof.com>
+To: "Linuxppc-Embedded \(E-Mail\)" <linuxppc-embedded@ozlabs.org>
+Date: Thu, 4 Aug 2005 13:21:52 +0200
+Message-ID: <00a501c598e6$b7823130$34f1ff0a@beint.local>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: USB + MPC5200 L25R REV 2 OCT0511C
+Reply-To: achim.machura@berghof.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,26 +25,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <20050804092525.15A4A67EBC@ozlabs.org> you wrote:
-> 
-> If do reboot board by jump address of uboot start address?
+Helo list,
 
-Bad idea. That address may not be mapped at all, or not at the  right
-physical  address.  Also,  just  jumping to a boot loader entry point
-does not cause a hardware reset, so any devices that might  be  stuck
-will remain stuck.
+do everybody know about problems with usb (usb-ohci) and MPC5200 label  L25R
+REV 2 OCT0511C.
 
-You should always try to  cause  a  real  reset;  there  are  several
-methods  in  use  for  this,  like  using a watchdog reset, causing a
-machine check, etc. Just see existing code.
+When i plugg in a usb-device, i see that the kernel will assign an address
+to the device, but it failed by timeout.
 
-Best regards,
+The same kernel an the same usb-device works fine on a board with a cpu
+label 0L25R QAH0410
 
-Wolfgang Denk
+best regards
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-All these theories, diverse as they are, have two things  in  common:
-they explain the observed facts, and they are completeley and utterly
-wrong.                       - Terry Pratchett, _The Light Fantastic_
+Achim
+
+____________________________________________
+Achim Machura Softwareentwicklung
+Berghof Automationstechnik GmbH
+Harretstrasse 1, D-72800 Eningen u.A.
+Tel: +49-7121-894-131, Fax: +49-7121-894-100
+email: machura@berghof.com
+Internet: http://www.berghof.com
