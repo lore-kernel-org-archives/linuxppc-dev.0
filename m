@@ -1,21 +1,19 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from parcelfarce.linux.theplanet.co.uk
-	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1F31967EF3
+Return-Path: <wd@denx.de>
+Received: from mailout10.sul.t-online.com (mailout10.sul.t-online.com
+	[194.25.134.21]) by ozlabs.org (Postfix) with ESMTP id 1B69167F01
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  6 Aug 2005 06:40:37 +1000 (EST)
-Date: Fri, 5 Aug 2005 17:34:56 -0300
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Pantelis Antoniou <pantelis.antoniou@gmail.com>
-Message-ID: <20050805203456.GD14338@dmt.cnet>
-References: <200508021909.45729.pantelis.antoniou@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200508021909.45729.pantelis.antoniou@gmail.com>
+	Sat,  6 Aug 2005 07:20:04 +1000 (EST)
+To: Igor Marnat <marny@rambler.ru>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 05 Aug 2005 15:11:05 +0400."
+	<19013128171.20050805151105@rambler.ru>
+Date: Fri, 05 Aug 2005 23:19:29 +0200
+Sender: wd@denx.de
+Message-Id: <20050805211929.B526E352B73@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] cpm_uart: make dpram allocation actually work
+Subject: Re: what to use to connect to JTAG/BDM port on PPC405EP 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,16 +24,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 02, 2005 at 07:09:45PM +0300, Pantelis Antoniou wrote:
->   Hi Marcelo
-> 
-> While the idea of allocating console buffers from dpram is sound, 
-> the initial implementation didn't actually work :)
-> 
-> The following patch fixes it (tested and booted on 2.6.13-rc4).
+In message <19013128171.20050805151105@rambler.ru> you wrote:
+>
+> I have EVB based on PPC 405 EP (PPChameleon EVB). It has JTAG port.
+> What JTAG device can I use to connect to the board? I've found BDI2000
 
-OK thanks Panto. 
+You found The Right Thing (TM). Use a BDI2000.
 
-Despite my limited knowledge here, Vitaly's merged patch looks fine.
+> device, for example, but it costs as N times as the EVB does
 
-I suppose someone (Kumar?) is going to send it upstream now? 
+It's worth the price.
+
+> (approximately). It seems unreasonable for me. Is it possible to make such a device or to find
+> find the cheaper one? We found several schemes of how to make connector BDM-parallel
+> port. Is it possible to do such a thing for PPC 405EP?
+
+It's simple to rig up the required electrical interface and attach it
+- say - to the parallel port of a standard PC. However, to  make  any
+use  of  it,  you  have  to  understand which data to send and how to
+interpret the results. This requires signing a NDA with IBM / AMCC  /
+Freescale.  Assuming  you get the required information, it then means
+quite a lot of hacking to get some working code that interfaces  with
+a  standard debugger like GDB. And you will not be able to share your
+code  with  others,  as  the  NDA  explicitely  prevents   you   from
+implementing  it  in  any  form  of  open  source  software. You will
+completely on your own there.
+
+In the meantime the BDI user has completed 5 more real projects.
+
+
+Go for a BDI.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+SW engineering is a race between programmers trying  to  make  better
+idiot-proof programs and the universe producing greater idiots.
