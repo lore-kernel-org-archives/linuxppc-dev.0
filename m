@@ -1,17 +1,18 @@
-Return-Path: <wd@denx.de>
-To: "FCG WANG Baohua" <Baohua.WANG@alcatel-sbell.com.cn>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 05 Aug 2005 09:11:25 +0800."
-	<A9DE2BAF233E444FA9C5E77A5825A01E865055@ydmail.sbell.com.cn>
-Date: Fri, 05 Aug 2005 11:16:33 +0200
-Sender: wd@denx.de
-Message-Id: <20050805091633.8EF0E352633@atlas.denx.de>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
-Subject: Re: The kernel halt after "transferring control to
-	linux(0x000000)..." on HD860(MPC860SR) board kernel 2.4.25,
-	and 2.6.12
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc64-dev@ozlabs.org
+Date: Fri, 5 Aug 2005 13:53:22 +0200
+References: <1123023575.2614.25.camel@cashmere.sps.mot.com>
+	<688ba2276de281a9473b030a16a514c0@embeddededge.com>
+	<20050805174705.731ffa05.sfr@canb.auug.org.au>
+In-Reply-To: <20050805174705.731ffa05.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200508051353.23750.arnd@arndb.de>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] 1/2 Start header file merger (Was: Re: Beginning Merger
+	Patch)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,38 +22,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <A9DE2BAF233E444FA9C5E77A5825A01E865055@ydmail.sbell.com.cn> you wrote:
-> 
->   I meet a problem when porting kernel  2.4.25,and 2.6.12 to a HD860
-> board: Whatever your config, or whatever you patch, set ppcboot
-> enviroment, 
->   whether use ramdisk or nfs, the kernel  all display a message then
-> halt.
+On Freedag 05 August 2005 09:47, Stephen Rothwell wrote:
+> cd linux/include
+> mkdir asm-powerpc
+> cd asm-ppc
+> for i in *
+> do
+> =A0=A0=A0=A0=A0=A0=A0=A0[ -e ../asm-ppc64/$i ] || mv $i ../asm-powerpc/$i
+> done
+> cd ../asm-ppc64
+> for i in *
+> do
+> =A0=A0=A0=A0=A0=A0=A0=A0[ -e ../asm-ppc/$i ] || mv $i ../asm-powerpc/$i
+> done
 
-How do you define "halt"? There is no "halt" instruction in the  CPU,
-so it must be doing "something".
+While I really like your approach in general (I've done it the
+same way when merging asm-s390{,x]), I think we should take
+a little care to move only the files that we really want in
+asm/powerpc.
+E.g, most of the files that are in asm-ppc but not in asm-ppc64
+seem so be board-specific or cpu-specific, so I'd not move them
+around before (unless) moving the platform code for those as well.
 
->   The log_buf in Memory display that the kernel has problem at : 
-> 
->   1. /init/main.c  calibrate_delay() ;
->   2. /init/main.c  do_initcalls() do while dead loop!! 
->   3. /init/do_mounts.c mount_root() 
+Also, for everything below include/asm-ppc64/iSeries, it would
+make sense to rename the files to lowercase in the same
+step and change all their users.
 
-Locate the problems and fix them.
+> for i in *
+> do
+> =A0=A0=A0=A0=A0=A0=A0=A0[ -f ../asm-ppc64/$i ] && cmp -s $i ../asm-ppc64/=
+$i &&
+> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0mv $i ../asm-powerpc/$i &=
+& rm ../asm-ppc64/$i
+> done
 
->  Does it need any patches? thanks!
->  The kernel 2.4.25 is from ELDK 3.1.1, 2.6.12.3 is from kernel.org
+Another help for merging further is to do=20
 
-this kernel works fine on many, many  other  boards.  It's  extremely
-likely that the problems are caused by your port only.
+for i in `ls include/asm-ppc` ; do=20
+	if [ -e include/asm-ppc64/$i ] ; then
+		diff --ifdef __powerpc64__ include/asm-{ppc,ppc64}/$i > \
+			include/asm-generic/$i ;
+	fi
+done
 
-Best regards,
+Note that you need to hand-edit practically every file that you get from
+this, but many of them become trivial to merge.
 
-Wolfgang Denk
+Another interesting point about it is which define to use. For s390, we
+decided to '#ifdef __s390x__' rather than '#ifdef CONFIG_ARCH_S390X' or
+'ifdef CONFIG_64BIT', because CONFIG_* does not work when including the
+headers from user space.
+Using CONFIG_64BIT instead of __powerpc64__ only within #ifdef __KERNEL__
+would be correct but less consistant.
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-A person who is more than casually interested in computers should  be
-well  schooled in machine language, since it is a fundamental part of
-a computer.                                           -- Donald Knuth
+	Arnd <><
