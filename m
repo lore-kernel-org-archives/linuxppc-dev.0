@@ -1,18 +1,27 @@
-Return-Path: <sfr@canb.auug.org.au>
-Date: Sat, 6 Aug 2005 00:59:41 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Arnd Bergmann <arnd@arndb.de>
-Message-Id: <20050806005941.5d1fe432.sfr@canb.auug.org.au>
-In-Reply-To: <200508051353.23750.arnd@arndb.de>
+Return-Path: <arnd@arndb.de>
+Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 82A5567E2E
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Aug 2005 04:42:21 +1000 (EST)
+Received: from e6.ny.us.ibm.com ([192.168.1.106])
+	by pokfb.esmtp.ibm.com (8.12.11/8.12.11) with ESMTP id j75GSaF0005400
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+	for <linuxppc-dev@ozlabs.org>; Fri, 5 Aug 2005 12:28:36 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Fri, 5 Aug 2005 18:24:16 +0200
 References: <1123023575.2614.25.camel@cashmere.sps.mot.com>
-	<688ba2276de281a9473b030a16a514c0@embeddededge.com>
-	<20050805174705.731ffa05.sfr@canb.auug.org.au>
 	<200508051353.23750.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	<20050806005941.5d1fe432.sfr@canb.auug.org.au>
+In-Reply-To: <20050806005941.5d1fe432.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200508051824.17947.arnd@arndb.de>
 Cc: linuxppc64-dev@ozlabs.org, linuxppc-dev@ozlabs.org
 Subject: Re: [PATCH] 1/2 Start header file merger (Was: Re: Beginning Merger
- Patch)
+	Patch)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,66 +31,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Arnd,
+On Freedag 05 August 2005 16:59, Stephen Rothwell wrote:
 
-On Fri, 5 Aug 2005 13:53:22 +0200 Arnd Bergmann <arnd@arndb.de> wrote:
->
-> While I really like your approach in general (I've done it the
-> same way when merging asm-s390{,x]), I think we should take
-> a little care to move only the files that we really want in
-> asm/powerpc.
+> Well noone should even include kernel headers from user space :-) and my
+> understanding is that glibc "sanitizes" its version of the kernel headers
+> anyway.
 
-Sure, this was just a first pass - really to demonstrate that we
-can remove header files from their original directories as we go.
+Glibc doesn't change the header files too much, most of that is done in
+the linux-libc-headers package, which is maintained separately from the
+kernel and from glibc. There is some effort being put into keeping the
+difference between that package and the kernel headers small.
 
-> E.g, most of the files that are in asm-ppc but not in asm-ppc64
-> seem so be board-specific or cpu-specific, so I'd not move them
-> around before (unless) moving the platform code for those as well.
+Also, while using kernel headers directly from user space should be
+considered a bug, Linus has stated before that he wants source code
+that is broken in that way to keep working instead of breaking it
+even more.
 
-Indeed.
+There is also klibc, which heavily relies on kernel headers by design.
 
-> Also, for everything below include/asm-ppc64/iSeries, it would
-> make sense to rename the files to lowercase in the same
-> step and change all their users.
+> > Using CONFIG_64BIT instead of __powerpc64__ only within #ifdef __KERNEL=
+__
+> > would be correct but less consistant.
+>=20
+> The advantage of using CONFIG_64BIT as much as possible is that it shows
+> us places that can be consolidated across the various architectures
+> (which is a bit of a passion of mine :-)). =A0And more consolidation shou=
+ld
+> make life easier for the glibc folks in the long run.
 
-That would definitely be a separate set of patches (those include
-files are referenced in 47 different files).
+AFAIK, in linux-libc-headers every usage of CONFIG_* outside of __KERNEL__
+is a bug that needs to be fixed by the maintainer, so we really should not
+do that.
 
-> Another help for merging further is to do 
-> 
-> for i in `ls include/asm-ppc` ; do 
-> 	if [ -e include/asm-ppc64/$i ] ; then
-> 		diff --ifdef __powerpc64__ include/asm-{ppc,ppc64}/$i > \
-> 			include/asm-generic/$i ;
-                                    ^^^^^^^
-(I assume you meant powerpc as we are not the generic architecture, yet :-))
+I think it might be ok to use CONFIG_64BIT for files that are completely
+inside #ifdef __KERNEL__, but I'd like to avoid stuff like:
 
-> 	fi
-> done
-> 
-> Note that you need to hand-edit practically every file that you get from
-> this, but many of them become trivial to merge.
+#ifndef __powerpc64__
+#define __NR_sendfile64=AD=AD		226 /* only for 32 bit */
+#endif /* __powerpc64__ */
+=2E..
+#ifdef __KERNEL__
+#ifndef CONFIG_64BIT
+#define cond_syscall(x) asm(".weak\t" #x "\n\t.set\t" #x ",sys_ni_syscall")
+#else  /* CONFIG_64BIT */
+#define cond_syscall(x) asm(".weak\t." #x "\n\t.set\t." #x ",.sys_ni_syscal=
+l")
+#endif /* CONFIG_64BIT */
+#endif /* __KERNEL__ */
 
-I'll have a go and see what happens.
+in a single file. Using __powerpc64__ consistantly has the advantage that
+the casual reader can easily find all places that rely on 32/64 bit
+definitions without having to understand why there are two different ways
+to do the same thing.
 
-> Another interesting point about it is which define to use. For s390, we
-> decided to '#ifdef __s390x__' rather than '#ifdef CONFIG_ARCH_S390X' or
-> 'ifdef CONFIG_64BIT', because CONFIG_* does not work when including the
-> headers from user space.
+Perhaps it works out better if this is combined with the split into
+include/asm-powerpc/ and include/asm-powerpc/user, as mentioned in the
+thread around http://www.ussg.iu.edu/hypermail/linux/kernel/0411.3/1663.htm=
+l.
+Then we could have CONFIG_64BIT everywhere in the real kernel headers and
+__powerpc64__ in the user interface headers.
 
-Well noone should even include kernel headers from user space :-) and my
-understanding is that glibc "sanitizes" its version of the kernel headers
-anyway.
-
-> Using CONFIG_64BIT instead of __powerpc64__ only within #ifdef __KERNEL__
-> would be correct but less consistant.
-
-The advantage of using CONFIG_64BIT as much as possible is that it shows
-us places that can be consolidated across the various architectures
-(which is a bit of a passion of mine :-)).  And more consolidation should
-make life easier for the glibc folks in the long run.
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+	Arnd <><
