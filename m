@@ -1,17 +1,16 @@
-Return-Path: <Baohua.WANG@alcatel-sbell.com.cn>
-Received: from mail.alcatel-sbell.com.cn (nat1.alcatel-sbell.com.cn
-	[202.96.203.177]) by ozlabs.org (Postfix) with ESMTP id AABF267EE3
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Aug 2005 11:18:12 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C5995A.99CD5326"
-Date: Fri, 5 Aug 2005 09:11:25 +0800
-Message-ID: <A9DE2BAF233E444FA9C5E77A5825A01E865055@ydmail.sbell.com.cn>
-From: "FCG WANG Baohua" <Baohua.WANG@alcatel-sbell.com.cn>
-To: <galak@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
-Subject: The kernel halt after "transferring control to linux(0x000000)..."
-	on HD860(MPC860SR) board kernel 2.4.25,and 2.6.12
+Return-Path: <sfr@canb.auug.org.au>
+Date: Fri, 5 Aug 2005 17:47:05 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linuxppc64-dev@ozlabs.org
+Message-Id: <20050805174705.731ffa05.sfr@canb.auug.org.au>
+In-Reply-To: <688ba2276de281a9473b030a16a514c0@embeddededge.com>
+References: <1123023575.2614.25.camel@cashmere.sps.mot.com>
+	<688ba2276de281a9473b030a16a514c0@embeddededge.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
+Subject: [PATCH] 1/2 Start header file merger (Was: Re: Beginning Merger
+ Patch)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,98 +20,118 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Tue, 2 Aug 2005 19:10:56 -0400 Dan Malek <dan@embeddededge.com> wrote:
+>
+> On Aug 2, 2005, at 6:59 PM, Jon Loeliger wrote:
+> 
+> > ..... A stub is left
+> > in asm-ppc and asm-ppc64 pointing to the unified files.
+> 
+> Why bother?  You may as well change all of the source
+> files, too, or else that will never get done :-)
 
-------_=_NextPart_001_01C5995A.99CD5326
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: quoted-printable
+You actually don't need to modify (m)any source files.
 
-Dear Gala:
-  I meet a problem when porting kernel  2.4.25,and 2.6.12 to a HD860 =
-board: Whatever your config, or whatever you patch, set ppcboot =
-enviroment,=20
-  whether use ramdisk or nfs, the kernel  all display a message then =
-halt.
-  "transferring control to linux (0x000000) ..."
-  The log_buf in Memory display that the kernel has problem at :=20
+Here is an alternative approach.  These patches depend on Olaf's
+boot code cleanup for ppc64 (or similar).  Do the following:
 
-  1. /init/main.c  calibrate_delay() ;
-  2. /init/main.c  do_initcalls() do while dead loop!!=20
-  3. /init/do_mounts.c mount_root()=20
-=20
- Does it need any patches? thanks!
- The kernel 2.4.25 is from ELDK 3.1.1, 2.6.12.3 is from kernel.org
- =20
+cd linux/include
+mkdir asm-powerpc
+cd asm-ppc
+for i in *
+do
+	[ -e ../asm-ppc64/$i ] || mv $i ../asm-powerpc/$i
+done
+cd ../asm-ppc64
+for i in *
+do
+	[ -e ../asm-ppc/$i ] || mv $i ../asm-powerpc/$i
+done
+for i in *
+do
+	[ -f ../asm-ppc64/$i ] && cmp -s $i ../asm-ppc64/$i &&
+		mv $i ../asm-powerpc/$i && rm ../asm-ppc64/$i
+done
 
- =20
+Then apply the patch below and the patch in the following email.
 
+I have built this kernel for ppc (defconfig), ppc64 (iSeries, pSeries and
+pmac).
 
-------_=_NextPart_001_01C5995A.99CD5326
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: quoted-printable
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dgb2312">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.0.6603.0">
-<TITLE>The kernel halt after &quot;transferring control to =
-linux(0x000000)...&quot; on HD860(MPC860SR) board kernel 2.4.25,and =
-2.6.12</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
-
-<P><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">Dear =
-Gala:</FONT></SPAN>
-
-<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; I meet a =
-problem when porting kernel&nbsp; 2.4.25,and 2.6.12 to a HD860 board: =
-Whatever your config, or whatever you patch, set ppcboot enviroment, =
-</FONT></SPAN></P>
-
-<P><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; whether use =
-ramdisk or nfs, the kernel&nbsp; all display a message then =
-halt.</FONT></SPAN>
-
-<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; =
-&quot;transferring control to linux (0x000000) ...&quot;</FONT></SPAN>
-
-<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; The =
-log_buf in Memory display that the kernel has problem at : =
-</FONT></SPAN>
-</P>
-
-<P><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; 1. =
-/init/main.c&nbsp; calibrate_delay() ;</FONT></SPAN>
-
-<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; 2. =
-/init/main.c&nbsp; do_initcalls() do while dead loop!! </FONT></SPAN>
-
-<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; 3. =
-/init/do_mounts.c mount_root() </FONT></SPAN>
-
-<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 =
-FACE=3D"Arial">&nbsp;</FONT></SPAN>
-
-<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;Does it =
-need any patches? thanks!</FONT></SPAN>
-
-<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;The kernel =
-2.4.25 is from ELDK 3.1.1, 2.6.12.3 is from kernel.org</FONT></SPAN>
-
-<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; =
-</FONT></SPAN>
-</P>
-
-<P><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; =
-</FONT></SPAN>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C5995A.99CD5326--
+diff -ruNp linus-powerpc.xx/arch/ppc/Makefile linus-powerpc.1/arch/ppc/Makefile
+--- linus-powerpc.xx/arch/ppc/Makefile	2005-06-27 16:08:00.000000000 +1000
++++ linus-powerpc.1/arch/ppc/Makefile	2005-08-05 11:19:25.000000000 +1000
+@@ -21,11 +21,13 @@ CC		:= $(CC) -m32
+ endif
+ 
+ LDFLAGS_vmlinux	:= -Ttext $(KERNELLOAD) -Bstatic
+-CPPFLAGS	+= -Iarch/$(ARCH)
++CPPFLAGS	+= -Iarch/$(ARCH) -Iinclude3
+ AFLAGS		+= -Iarch/$(ARCH)
+ CFLAGS		+= -Iarch/$(ARCH) -msoft-float -pipe \
+ 		-ffixed-r2 -mmultiple
+ CPP		= $(CC) -E $(CFLAGS)
++# Temporary hack until we have migrated to asm-powerpc
++LINUXINCLUDE	+= -Iinclude3
+ 
+ CHECKFLAGS	+= -D__powerpc__
+ 
+@@ -101,6 +103,7 @@ endef
+ 
+ archclean:
+ 	$(Q)$(MAKE) $(clean)=arch/ppc/boot
++	$(Q)rm -rf include3
+ 
+ prepare: include/asm-$(ARCH)/offsets.h checkbin
+ 
+@@ -110,6 +113,12 @@ arch/$(ARCH)/kernel/asm-offsets.s: inclu
+ include/asm-$(ARCH)/offsets.h: arch/$(ARCH)/kernel/asm-offsets.s
+ 	$(call filechk,gen-asm-offsets)
+ 
++# Temporary hack until we have migrated to asm-powerpc
++include/asm: include3/asm
++include3/asm:
++	$(Q)if [ ! -d include3 ]; then mkdir -p include3; fi;
++	$(Q)ln -fsn $(srctree)/include/asm-powerpc include3/asm
++
+ # Use the file '.tmp_gas_check' for binutils tests, as gas won't output
+ # to stdout and these checks are run even on install targets.
+ TOUT	:= .tmp_gas_check
+diff -ruNp linus-powerpc.xx/arch/ppc64/Makefile linus-powerpc.1/arch/ppc64/Makefile
+--- linus-powerpc.xx/arch/ppc64/Makefile	2005-06-27 16:08:00.000000000 +1000
++++ linus-powerpc.1/arch/ppc64/Makefile	2005-08-05 11:19:50.000000000 +1000
+@@ -55,6 +55,8 @@ LDFLAGS		:= -m elf64ppc
+ LDFLAGS_vmlinux	:= -Bstatic -e $(KERNELLOAD) -Ttext $(KERNELLOAD)
+ CFLAGS		+= -msoft-float -pipe -mminimal-toc -mtraceback=none \
+ 		   -mcall-aixdesc
++# Temporary hack until we have migrated to asm-powerpc
++CPPFLAGS	+= -Iinclude3
+ 
+ GCC_VERSION     := $(call cc-version)
+ GCC_BROKEN_VEC	:= $(shell if [ $(GCC_VERSION) -lt 0400 ] ; then echo "y"; fi ;)
+@@ -112,6 +114,7 @@ all: $(KBUILD_IMAGE)
+ 
+ archclean:
+ 	$(Q)$(MAKE) $(clean)=$(boot)
++	$(Q)rm -rf include3
+ 
+ prepare: include/asm-ppc64/offsets.h
+ 
+@@ -121,6 +124,12 @@ arch/ppc64/kernel/asm-offsets.s: include
+ include/asm-ppc64/offsets.h: arch/ppc64/kernel/asm-offsets.s
+ 	$(call filechk,gen-asm-offsets)
+ 
++# Temporary hack until we have migrated to asm-powerpc
++include/asm:	include3/asm
++include3/asm:
++	$(Q)if [ ! -d include3 ]; then mkdir -p include3; fi;
++	$(Q)ln -fsn $(srctree)/include/asm-powerpc include3/asm
++
+ define archhelp
+   echo  '* zImage       - Compressed kernel image (arch/$(ARCH)/boot/zImage)'
+   echo  '  zImage.initrd- Compressed kernel image with initrd attached,'
