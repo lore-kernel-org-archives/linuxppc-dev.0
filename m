@@ -1,27 +1,16 @@
-Return-Path: <arnd@arndb.de>
-Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 82A5567E2E
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Aug 2005 04:42:21 +1000 (EST)
-Received: from e6.ny.us.ibm.com ([192.168.1.106])
-	by pokfb.esmtp.ibm.com (8.12.11/8.12.11) with ESMTP id j75GSaF0005400
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Fri, 5 Aug 2005 12:28:36 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Fri, 5 Aug 2005 18:24:16 +0200
-References: <1123023575.2614.25.camel@cashmere.sps.mot.com>
-	<200508051353.23750.arnd@arndb.de>
-	<20050806005941.5d1fe432.sfr@canb.auug.org.au>
-In-Reply-To: <20050806005941.5d1fe432.sfr@canb.auug.org.au>
+Return-Path: <bantonovici@priority.mb.ca>
+Message-ID: <00ca01c599f1$a2411730$cd01a8c0@DESIGNLAB>
+From: "Bogdan Antonovici" <bantonovici@priority.mb.ca>
+To: "Dan Malek" <dan@embeddededge.com>
+References: <1121959795.800.18.camel@rd-lab>
+	<1a928a85f53f5dcd972161356611a312@embeddededge.com>
+Date: Fri, 5 Aug 2005 14:12:33 -0500
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200508051824.17947.arnd@arndb.de>
-Cc: linuxppc64-dev@ozlabs.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] 1/2 Start header file merger (Was: Re: Beginning Merger
-	Patch)
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_00C7_01C599C7.B94E8680"
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, ppckernel <ppckernel@ppckernel.org>,
+	linuxppc-embedded@ozlabs.org
+Subject: Re: swap_dup: Bad swap file entry 00480020
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,64 +20,115 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Freedag 05 August 2005 16:59, Stephen Rothwell wrote:
+This is a multi-part message in MIME format.
 
-> Well noone should even include kernel headers from user space :-) and my
-> understanding is that glibc "sanitizes" its version of the kernel headers
-> anyway.
+------=_NextPart_000_00C7_01C599C7.B94E8680
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Glibc doesn't change the header files too much, most of that is done in
-the linux-libc-headers package, which is maintained separately from the
-kernel and from glibc. There is some effort being put into keeping the
-difference between that package and the kernel headers small.
+Dan,
 
-Also, while using kernel headers directly from user space should be
-considered a bug, Linus has stated before that he wants source code
-that is broken in that way to keep working instead of breaking it
-even more.
+It hasn't crashed since i corrected that pointer initialization in =
+driver. You were right.
+Thank you.
+Bogdan
+  ----- Original Message -----=20
+  From: Dan Malek=20
+  To: bogdan antonovici=20
+  Cc: linuxppc-dev ; linuxppc-embedded@ozlabs.org ; ppckernel=20
+  Sent: Thursday, July 21, 2005 12:59 PM
+  Subject: Re: swap_dup: Bad swap file entry 00480020
 
-There is also klibc, which heavily relies on kernel headers by design.
 
-> > Using CONFIG_64BIT instead of __powerpc64__ only within #ifdef __KERNEL=
-__
-> > would be correct but less consistant.
->=20
-> The advantage of using CONFIG_64BIT as much as possible is that it shows
-> us places that can be consolidated across the various architectures
-> (which is a bit of a passion of mine :-)). =A0And more consolidation shou=
-ld
-> make life easier for the glibc folks in the long run.
 
-AFAIK, in linux-libc-headers every usage of CONFIG_* outside of __KERNEL__
-is a bug that needs to be fixed by the maintainer, so we really should not
-do that.
+  On Jul 21, 2005, at 11:29 AM, bogdan antonovici wrote:
 
-I think it might be ok to use CONFIG_64BIT for files that are completely
-inside #ifdef __KERNEL__, but I'd like to avoid stuff like:
+  > At the time of swap messages i was running a proprietary driver, my
+  > application and few daemons.
 
-#ifndef __powerpc64__
-#define __NR_sendfile64=AD=AD		226 /* only for 32 bit */
-#endif /* __powerpc64__ */
-=2E..
-#ifdef __KERNEL__
-#ifndef CONFIG_64BIT
-#define cond_syscall(x) asm(".weak\t" #x "\n\t.set\t" #x ",sys_ni_syscall")
-#else  /* CONFIG_64BIT */
-#define cond_syscall(x) asm(".weak\t." #x "\n\t.set\t." #x ",.sys_ni_syscal=
-l")
-#endif /* CONFIG_64BIT */
-#endif /* __KERNEL__ */
+  Looks like your driver may have written over some of the page
+  tables in the kernel space.
 
-in a single file. Using __powerpc64__ consistantly has the advantage that
-the casual reader can easily find all places that rely on 32/64 bit
-definitions without having to understand why there are two different ways
-to do the same thing.
+  > I look on the net for some clues but it's quite confusing, i noticed
+  > many emails on swap_dup/swap_free error messages but i couldn't =
+figure
+  > out what should i search for.
 
-Perhaps it works out better if this is combined with the split into
-include/asm-powerpc/ and include/asm-powerpc/user, as mentioned in the
-thread around http://www.ussg.iu.edu/hypermail/linux/kernel/0411.3/1663.htm=
-l.
-Then we could have CONFIG_64BIT everywhere in the real kernel headers and
-__powerpc64__ in the user interface headers.
+  Those messages are likely due to a bug with swapping to disk
+  that has been in some 2.4 kernels, but I don't believe that is
+  the case here, since you don't have a disk or swapping enabled.
 
-	Arnd <><
+
+  -- Dan
+
+
+------=_NextPart_000_00C7_01C599C7.B94E8680
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.2745.2800" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV><FONT face=3DArial size=3D2>Dan,</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>It hasn't crashed since i corrected =
+that pointer=20
+initialization in driver. You were right.</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>Thank you.</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>Bogdan</FONT></DIV>
+<BLOCKQUOTE=20
+style=3D"PADDING-RIGHT: 0px; PADDING-LEFT: 5px; MARGIN-LEFT: 5px; =
+BORDER-LEFT: #000000 2px solid; MARGIN-RIGHT: 0px">
+  <DIV style=3D"FONT: 10pt arial">----- Original Message ----- </DIV>
+  <DIV=20
+  style=3D"BACKGROUND: #e4e4e4; FONT: 10pt arial; font-color: =
+black"><B>From:</B>=20
+  <A title=3Ddan@embeddededge.com =
+href=3D"mailto:dan@embeddededge.com">Dan Malek</A>=20
+  </DIV>
+  <DIV style=3D"FONT: 10pt arial"><B>To:</B> <A =
+title=3Dbantonovici@priority.mb.ca=20
+  href=3D"mailto:bantonovici@priority.mb.ca">bogdan antonovici</A> =
+</DIV>
+  <DIV style=3D"FONT: 10pt arial"><B>Cc:</B> <A =
+title=3Dlinuxppc-dev@ozlabs.org=20
+  href=3D"mailto:linuxppc-dev@ozlabs.org">linuxppc-dev</A> ; <A=20
+  title=3Dlinuxppc-embedded@ozlabs.org=20
+  =
+href=3D"mailto:linuxppc-embedded@ozlabs.org">linuxppc-embedded@ozlabs.org=
+</A> ;=20
+  <A title=3Dppckernel@ppckernel.org=20
+  href=3D"mailto:ppckernel@ppckernel.org">ppckernel</A> </DIV>
+  <DIV style=3D"FONT: 10pt arial"><B>Sent:</B> Thursday, July 21, 2005 =
+12:59=20
+  PM</DIV>
+  <DIV style=3D"FONT: 10pt arial"><B>Subject:</B> Re: swap_dup: Bad swap =
+file=20
+  entry 00480020</DIV>
+  <DIV><BR></DIV><BR>On Jul 21, 2005, at 11:29 AM, bogdan antonovici=20
+  wrote:<BR><BR>&gt; At the time of swap messages i was running a =
+proprietary=20
+  driver, my<BR>&gt; application and few daemons.<BR><BR>Looks like your =
+driver=20
+  may have written over some of the page<BR>tables in the kernel=20
+  space.<BR><BR>&gt; I look on the net for some clues but it's quite =
+confusing,=20
+  i noticed<BR>&gt; many emails on swap_dup/swap_free error messages but =
+i=20
+  couldn't figure<BR>&gt; out what should i search for.<BR><BR>Those =
+messages=20
+  are likely due to a bug with swapping to disk<BR>that has been in some =
+2.4=20
+  kernels, but I don't believe that is<BR>the case here, since you don't =
+have a=20
+  disk or swapping enabled.<BR><BR><BR>-- =
+Dan<BR></BLOCKQUOTE></BODY></HTML>
+
+------=_NextPart_000_00C7_01C599C7.B94E8680--
