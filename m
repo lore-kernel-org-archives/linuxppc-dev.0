@@ -1,19 +1,25 @@
-Return-Path: <dieter.schneider@berghof.com>
-Received: from pegasus.berghof.com (unknown [145.253.135.72])
-	by ozlabs.org (Postfix) with ESMTP id 782FF67F14
+Return-Path: <THagen@oslo.westerngeco.slb.com>
+Received: from mail.slb.com (eurmta01.london.eur.slb.com [134.32.26.55])
+	by ozlabs.org (Postfix) with ESMTP id DDA8367F1B
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  5 Aug 2005 21:14:27 +1000 (EST)
-Received: from BATEEE51 (batee-e51.be-int [10.255.241.51])
-	by pegasus.berghof.com (8.12.10/8.12.10) with SMTP id j75B0w6O029948
-	for <linuxppc-embedded@ozlabs.org>; Fri, 5 Aug 2005 13:00:58 +0200
-From: "Dieter Schneider" <dieter.schneider@berghof.com>
-To: "'linux embedded forum'" <linuxppc-embedded@ozlabs.org>
-Date: Fri, 5 Aug 2005 13:00:52 +0200
-Message-ID: <000f01c599ac$f2f36830$33f1ff0a@beint.local>
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0010_01C599BD.B67C3830"
-Subject: FW: Mpc5200 and ISP1106/1107 USB transceivers
+	Fri,  5 Aug 2005 22:03:19 +1000 (EST)
+Received: from pmxchannel_int-daemon.eurmta01.london.eur.slb.com by
+	eurmta01.london.eur.slb.com
+	(iPlanet Messaging Server 5.2 Patch 2 (built Jul 14 2004))
+	id <0IKQ0040ZYW6OL@eurmta01.london.eur.slb.com> for
+	linuxppc-embedded@ozlabs.org; Fri, 05 Aug 2005 11:36:07 +0000 (GMT)
+Date: Fri, 05 Aug 2005 13:35:33 +0200
+From: Tore Martin Hagen <THagen@oslo.westerngeco.slb.com>
+In-reply-to: <a796693605080503383ce43419@mail.gmail.com>
+To: apoorv sangal <apoorvsangal@gmail.com>
+Message-id: <42F34F05.2080508@oslo.westerngeco.slb.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii; format=flowed
+References: <a796693605080503383ce43419@mail.gmail.com>
+Cc: apoorv sangal <apoorv_sangal@satyam.com>, vikrant_basotra@satyam.com,
+	nishant_galange@satyam.com, sibi_mathew@satyam.com,
+	linuxppc-embedded@ozlabs.org
+Subject: Re: Problem related to root filesystem
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,78 +30,143 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hi Apoorv.
 
-------=_NextPart_000_0010_01C599BD.B67C3830
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Is the Flash CFI complient?
 
+The sharp flash that commes with the ADS8260 board is not.
 
+/Tore
 
-Mit freundlichen Grüßen
-Berghof Automationstechnik GmbH
+apoorv sangal wrote:
 
-i.A. Dieter Schneider
-- Entwicklungsingenieur -
-http://www.berghof.com
-mailto:dieter.schneider@berghof.com
-Phone: +49 7121 894-129
-Fax:   +49 7121 894-100
-Adresse:
-Harretstr.1  72800 Eningen
-Deutschland
-
-
-------=_NextPart_000_0010_01C599BD.B67C3830
-Content-Type: message/rfc822
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment
-
-From: "Dieter Schneider" <dieter.schneider@berghof.com>
-To: <Martin.Krause@tqs.de>
-Subject: Mpc5200 and ISP1106/1107 USB transceivers
-Date: Thu, 4 Aug 2005 17:14:44 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook CWS, Build 9.0.6604 (9.0.2911.0)
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2180
-Importance: Normal
-
-Hello Mr.Krause,
-
-i made an investigation with Philips 1106/1107 USB transceivers not working
-with low speed devices and mpc5200:
--usb 1.1 specification gives a rise/fall time for low speed devices in range
-75ns to 300ns.
--"working" devices like Philips PDIUSBP11 have a rise/fall time of aprox.
-120ns
--isp1106 / 1107 are in range of 180ns, that's inside usb 1.1 spec, but not
-working with mpc5200
-
-So its a problem of mpc5200, not philips 1106/1107 transceivers, who are
-inside usb 1.1 spec. Setting transceiver speed pin konstant to High(=high
-speed device) let the isp1106/1107 work also with low speed devices, but of
-course with high speed rise/fall times (7..20ns). By the way, Phillips
-PDIUSBP11 is obsolet. Giving the USB D+/D- an additional capacitive load
-(for example 120pF, thats inside usb 1.1 spec ) makes an working Phillips
-PDIUSBP11 not working.
-
-Mit freundlichen Grüßen
-Berghof Automationstechnik GmbH
-
-i.A. Dieter Schneider
-- Entwicklungsingenieur -
-http://www.berghof.com
-mailto:dieter.schneider@berghof.com
-Phone: +49 7121 894-129
-Fax:   +49 7121 894-100
-Adresse:
-Harretstr.1  72800 Eningen
-Deutschland
-
-------=_NextPart_000_0010_01C599BD.B67C3830--
+>Hi All,
+>	I am porting Linux on the custom board PMC8266 (having MPC8266
+>microprocessor) based on the ADS8260 board.I am using ELDK1.1.1 and
+>Linux2.4.24.
+>
+>I am trying to load JFFS2 filesystem , the JFFS2 filesystem image is
+>at address 0xFC160000 and the flash size is 32mb
+>
+>I am getting the following messages:-
+>physmap flash device: 2000000 at fc160000
+>
+>CFI: Found no Physically mapped flash device at location zero
+>
+>kmod: failed to exec /sbin/modprobe -s -k jedec_probe, errno = 2
+>
+>kmod: failed to exec /sbin/modprobe -s -k map_rom, errno = 2
+>
+>pmc8260 flash map (size->0x2000000 mem->0xFC160000)
+>
+>CFI: Found no pmc8260 flash memory device at location zero
+>
+>Can anyone please tell me what is happening and how can i set it right??
+>
+>*****************************************************************************
+>The whole of captured output is as following:-
+>*****************************************************************************
+>Image Name:   2.4.24 ADS8260
+>   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+>   Data Size:    302270 Bytes = 295.2 kB
+>   Load Address: 00000000
+>   Entry Point:  00000000
+>   Verifying Checksum ... OK
+>   Uncompressing Kernel Image ... 
+>
+>Linux version 2.4.24-pre2 (satyam@pmcserver) (gcc version 3.2.2
+>20030217 (Yellow Dog Linux 3.0 3.2.2-2a_1)) #20 Fri Aug 5 15:22:28 IST
+>2005
+>
+>On node 0 totalpages: 32768
+>
+>zone(0): 32768 pages.
+>
+>zone(1): 0 pages.
+>
+>zone(2): 0 pages.
+>
+>Kernel command line: console=ttyS0,115200 root=FC160000 rw rootfstype=jffs2
+>
+>Warning: real time clock seems stuck!
+>
+>Calibrating delay loop... 131.89 BogoMIPS
+>
+>Memory: 128712k available (512k kernel code, 260k data, 36k init, 0k highmem)
+>
+>Dentry cache hash table entries: 16384 (order: 5, 131072 bytes)
+>
+>Inode cache hash table entries: 8192 (order: 4, 65536 bytes)
+>
+>Mount cache hash table entries: 512 (order: 0, 4096 bytes)
+>
+>Buffer cache hash table entries: 8192 (order: 3, 32768 bytes)
+>
+>Page-cache hash table entries: 32768 (order: 5, 131072 bytes)
+>
+>POSIX conformance testing by UNIFIX
+>
+>Linux NET4.0 for Linux 2.4
+>
+>Based upon Swansea University Computer Society NET3.039
+>
+>Starting kswapd
+>
+>Inside Chr_dev_init
+>
+>CPM UART driver version 0.01
+>
+>ttyS0 on SMC1 at 0x0000, BRG7
+>
+>ttyS1 on SMC2 at 0x0040, BRG8
+>
+>ttyS2 on SCC1 at 0x8000, BRG1
+>
+>ttyS3 on SCC2 at 0x8100, BRG2
+>
+>RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
+>
+>physmap flash device: 2000000 at fc160000
+>
+>CFI: Found no Physically mapped flash device at location zero
+>
+>kmod: failed to exec /sbin/modprobe -s -k jedec_probe, errno = 2
+>
+>kmod: failed to exec /sbin/modprobe -s -k map_rom, errno = 2
+>
+>pmc8260 flash map (size->0x2000000 mem->0xFC160000)
+>
+>CFI: Found no pmc8260 flash memory device at location zero
+>
+>*****
+>
+>VFS:test name = /dev/root
+>
+>VFS:fs_name = jffs2 
+>
+>VFS:root name = 00:00
+>
+> **** 
+>
+>kmod: failed to exec /sbin/modprobe -s -k jffs2, errno = 2
+>
+>VFS:tried fs_name = jffs2 err = -19
+>
+>VFS: Cannot open root device "FC160000" or 00:00
+>
+>Please append a correct "root=" boot option
+>
+>Kernel panic: VFS: Unable to mount root fs on 00:00
+>
+> <0>Rebooting in 180 seconds..
+>
+>Response awaited from the list.
+>
+>Regards,
+>Apoorv Sangal
+>_______________________________________________
+>Linuxppc-embedded mailing list
+>Linuxppc-embedded@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>  
+>
