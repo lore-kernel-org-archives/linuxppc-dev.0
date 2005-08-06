@@ -3,23 +3,19 @@ Received: from parcelfarce.linux.theplanet.co.uk
 	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 25CDA67E43
+	by ozlabs.org (Postfix) with ESMTP id 399D667F36
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  7 Aug 2005 09:25:37 +1000 (EST)
-Received: from [127.0.0.1] (helo=dmt.cnet)
-	by parcelfarce.linux.theplanet.co.uk with esmtp (Exim 4.43)
-	id 1E1Y52-00086B-CI
-	for linuxppc-embedded@ozlabs.org; Sun, 07 Aug 2005 00:27:56 +0100
-Date: Sat, 6 Aug 2005 20:20:22 -0300
+	Sun,  7 Aug 2005 09:32:05 +1000 (EST)
+Date: Sat, 6 Aug 2005 20:27:01 -0300
 From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
 To: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
-Message-ID: <20050806232022.GC1099@dmt.cnet>
-References: <20050806180131.GU5210@cathedrallabs.org>
+Message-ID: <20050806232701.GD1099@dmt.cnet>
+References: <20050806180353.GW5210@cathedrallabs.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050806180131.GU5210@cathedrallabs.org>
+In-Reply-To: <20050806180353.GW5210@cathedrallabs.org>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] 8xx: port i2c-algo-8xx to 2.6
+Subject: Re: [PATCH] 8xx: add cpm_get_cpmp()
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,87 +26,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sat, Aug 06, 2005 at 03:01:31PM -0300, Aristeu Sergio Rozanski Filho wrote:
-> 8xx: port i2c-algo_8xx to 2.6
+
+Aris,
+
+It already is exported, declared as
+
+commproc.h:extern       cpm8xx_t        *cpmp;          /* Pointer to comm processor */
+
+
+and many drivers use the pointer directly.
+
+arch/ppc/8260_io/ drivers also use the same convention.
+
+Not sure I see much advantage in changing it?
+
+On Sat, Aug 06, 2005 at 03:03:53PM -0300, Aristeu Sergio Rozanski Filho wrote:
+> 8xx: add cpm_get_cpmp() to make cpmp visible to modules
 > 
-> Based on Tom Rini's work 
->
-> compile tested 
-
-Would be good to test before submitting? :)
-
 > Signed-off-by: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
 > 
-> Index: 2.6-8xx/drivers/i2c/algos/i2c-algo-8xx.c
+> Index: 2.6-8xx/arch/ppc/8xx_io/commproc.c
 > ===================================================================
-> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> +++ 2.6-8xx/drivers/i2c/algos/i2c-algo-8xx.c	2005-08-05 17:16:08.000000000 -0300
-> @@ -0,0 +1,625 @@
-> +/*
-> + * i2c-algo-8xx.c i2x driver algorithms for MPC8XX CPM
-> + * Copyright (c) 1999 Dan Malek (dmalek@jlc.net).
-> + *
-> +    This program is free software; you can redistribute it and/or modify
-> +    it under the terms of the GNU General Public License as published by
-> +    the Free Software Foundation; either version 2 of the License, or
-> +    (at your option) any later version.
+> --- 2.6-8xx.orig/arch/ppc/8xx_io/commproc.c	2005-08-03 17:26:05.000000000 -0300
+> +++ 2.6-8xx/arch/ppc/8xx_io/commproc.c	2005-08-05 17:13:21.000000000 -0300
+> @@ -462,3 +462,10 @@
+>  	return ((immap_t *)IMAP_ADDR)->im_cpm.cp_dpmem + offset;
+>  }
+>  EXPORT_SYMBOL(cpm_dpram_addr);
 > +
-> +    This program is distributed in the hope that it will be useful,
-> +    but WITHOUT ANY WARRANTY; without even the implied warranty of
-> +    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> +    GNU General Public License for more details.
+> +cpm8xx_t *cpm_get_cpmp(void)
+> +{
+> +	return cpmp;
+> +}
+> +EXPORT_SYMBOL(cpm_get_cpmp);
 > +
-> +    You should have received a copy of the GNU General Public License
-> +    along with this program; if not, write to the Free Software
-> +    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-> + *
-> + * moved into proper i2c interface; separated out platform specific
-> + * parts into i2c-rpx.c
-> + * Brad Parker (brad@heeltoe.com)
-> + */
-> +
-> +// XXX todo
-> +// timeout sleep?
-> +
-> +/* $Id: i2c-algo-8xx.c,v 1.7 2002/08/03 22:48:18 ac9410 Exp $ */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/delay.h>
-> +#include <linux/slab.h>
-> +#include <linux/version.h>
-> +#include <linux/init.h>
-> +#include <asm/uaccess.h>
-> +#include <linux/ioport.h>
-> +#include <linux/errno.h>
-> +#include <linux/sched.h>
-> +
-> +#include <asm/mpc8xx.h>
-> +#include <asm/commproc.h>
-> +
-> +#include <linux/i2c.h>
-> +#include <linux/i2c-algo-8xx.h>
-> +
-> +#define CPM_MAX_READ	513
-> +/* Try uncomment this if you have an older CPU(earlier than rev D4) */
-> +/* #define I2C_CHIP_ERRATA */
-> +
-> +static char *module_name = "i2c_algo_8xx";
-> +#define DEBUGP(level, x, y...) do { \
-> +				if (cpm_debug >= level) \
-> +					printk(KERN_DEBUG "%s: " x, \
-> +					       module_name, ## y); \
-> +				} while(0)
-> +
-> +static wait_queue_head_t iic_wait;
-> +static ushort r_tbase, r_rbase;
-> +
-> +int cpm_scan = 0;
-> +int cpm_debug = 0;
-> +
-> +static  void
-> +cpm_iic_interrupt(void *dev_id, struct pt_regs *regs)
-> + {
-> +	volatile i2c8xx_t *i2c = (i2c8xx_t *)dev_id;
-
-You got an extra space everywhere other than the initial TAB?
+> Index: 2.6-8xx/include/asm/commproc.h
+> ===================================================================
+> --- 2.6-8xx.orig/include/asm/commproc.h	2005-07-28 12:06:51.000000000 -0300
+> +++ 2.6-8xx/include/asm/commproc.h	2005-08-05 17:14:28.000000000 -0300
+> @@ -78,6 +78,7 @@
+>  extern void cpm_dpdump(void);
+>  extern void *cpm_dpram_addr(uint offset);
+>  extern void cpm_setbrg(uint brg, uint rate);
+> +extern cpm8xx_t *cpm_get_cpmp(void);
+>  
+>  extern uint m8xx_cpm_hostalloc(uint size);
+>  extern int  m8xx_cpm_hostfree(uint start);
