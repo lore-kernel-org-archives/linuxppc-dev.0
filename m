@@ -1,16 +1,20 @@
-Return-Path: <hegs1999@21cn.com>
-Received: from 21cn.com (send.forptr.21cn.com [202.105.45.47])
-	by ozlabs.org (Postfix) with SMTP id 81B8C67F1C
+Return-Path: <jwboyer@jdub.homelinux.org>
+Received: from jdub.homelinux.org (67-41-69-68.roch.qwest.net [67.41.69.68])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D817767E9B
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  6 Aug 2005 14:12:17 +1000 (EST)
-From: "hegs" <hegs1999@21cn.com>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Sat, 6 Aug 2005 12:13:44 +0800
-Message-ID: <GDEILMHADIJIGHOKJKDNKEGACAAA.hegs1999@21cn.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: Where can I get manual of `mkimage' tool ?
+	Sun,  7 Aug 2005 02:43:32 +1000 (EST)
+From: Josh Boyer <jwboyer@jdub.homelinux.org>
+To: hegs <hegs1999@21cn.com>
+In-Reply-To: <GDEILMHADIJIGHOKJKDNKEGACAAA.hegs1999@21cn.com>
+References: <GDEILMHADIJIGHOKJKDNKEGACAAA.hegs1999@21cn.com>
+Content-Type: text/plain
+Date: Sat, 06 Aug 2005 11:43:30 -0500
+Message-Id: <1123346610.438.0.camel@yoda.jdub.homelinux.org>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Where can I get manual of `mkimage' tool ?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,6 +25,11 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-IEkgdXNlIGBta2ltYWdlJyB0b29sIHRvICBidWlsZCBVLUJvb3QgaW1hZ2UsIGJ1dCBkb25vdCBr
-bm93biBob3cgdG8gdXNlICJta2ltYWdlIiA/IA0KDQogIHdobyBjYW4gaGVscCBtZSA/DQoNCiBU
-aGFuayB5b3UuDQo=
+On Sat, 2005-08-06 at 12:13 +0800, hegs wrote:
+>  I use `mkimage' tool to  build U-Boot image, but donot known how to use "mkimage" ? 
+> 
+>   who can help me ?
+
+There is example usage in the README file of u-boot.
+
+josh
