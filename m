@@ -1,20 +1,16 @@
-Return-Path: <jwboyer@jdub.homelinux.org>
-Received: from jdub.homelinux.org (67-41-69-68.roch.qwest.net [67.41.69.68])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D817767E9B
+Return-Path: <aris@cathedrallabs.org>
+Received: from panda.sul.com.br (panda.sul.com.br [200.219.150.4])
+	by ozlabs.org (Postfix) with ESMTP id E820067E30
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  7 Aug 2005 02:43:32 +1000 (EST)
-From: Josh Boyer <jwboyer@jdub.homelinux.org>
-To: hegs <hegs1999@21cn.com>
-In-Reply-To: <GDEILMHADIJIGHOKJKDNKEGACAAA.hegs1999@21cn.com>
-References: <GDEILMHADIJIGHOKJKDNKEGACAAA.hegs1999@21cn.com>
-Content-Type: text/plain
-Date: Sat, 06 Aug 2005 11:43:30 -0500
-Message-Id: <1123346610.438.0.camel@yoda.jdub.homelinux.org>
+	Sun,  7 Aug 2005 03:58:57 +1000 (EST)
+Date: Sat, 6 Aug 2005 14:58:50 -0300
+From: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Message-ID: <20050806175850.GS5210@cathedrallabs.org>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Where can I get manual of `mkimage' tool ?
+Subject: [PATCH] 8xx: fix CPM ethernet description
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,11 +21,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2005-08-06 at 12:13 +0800, hegs wrote:
->  I use `mkimage' tool to  build U-Boot image, but donot known how to use "mkimage" ? 
-> 
->   who can help me ?
+8xx: fix CPM Ethernet description
 
-There is example usage in the README file of u-boot.
+Signed-off-by: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
 
-josh
+Index: 8xx/arch/ppc/8xx_io/Kconfig
+===================================================================
+--- 8xx.orig/arch/ppc/8xx_io/Kconfig	2005-07-07 23:42:11.000000000 -0300
++++ 8xx/arch/ppc/8xx_io/Kconfig	2005-08-04 08:38:10.000000000 -0300
+@@ -71,7 +71,7 @@
+ 	bool "Use Big CPM Ethernet Buffers"
+ 	depends on NET_ETHERNET
+ 	help
+-	  Allocate large buffers for MPC8xx Etherenet.  Increases throughput
++	  Allocate large buffers for MPC8xx Ethernet. Increases throughput
+ 	  and decreases the likelihood of dropped packets, but costs memory.
+ 
+ config HTDMSOUND
