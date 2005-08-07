@@ -1,23 +1,16 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from parcelfarce.linux.theplanet.co.uk
-	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8BD2D67F0F
+Return-Path: <johnsoncheng@qnap.com.tw>
+Received: from qnap.com.tw (unknown [211.75.85.25])
+	by ozlabs.org (Postfix) with SMTP id CE57667F29
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  7 Aug 2005 14:36:39 +1000 (EST)
-Date: Sun, 7 Aug 2005 01:31:10 -0300
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Dan Malek <dan@embeddededge.com>
-Message-ID: <20050807043110.GA6316@dmt.cnet>
-References: <20050806180353.GW5210@cathedrallabs.org>
-	<20050806232701.GD1099@dmt.cnet>
-	<e5caa80a2cd721a4f6ee3c74ead906b2@embeddededge.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <e5caa80a2cd721a4f6ee3c74ead906b2@embeddededge.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] 8xx: add cpm_get_cpmp()
+	Sun,  7 Aug 2005 19:16:03 +1000 (EST)
+From: "JohnsonCheng" <johnsoncheng@qnap.com.tw>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Sun, 7 Aug 2005 17:15:55 +0800
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_01A4_01C59B73.AC0748B0"
+Message-Id: <20050807091603.CE57667F29@ozlabs.org>
+Subject: A configure error for samba3 on ppc
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,39 +21,161 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sat, Aug 06, 2005 at 10:40:37PM -0400, Dan Malek wrote:
-> 
-> On Aug 6, 2005, at 7:27 PM, Marcelo Tosatti wrote:
-> 
-> >It already is exported, declared as
-> >
-> >commproc.h:extern       cpm8xx_t        *cpmp;          /* Pointer to 
-> >comm processor */
-> >
-> >
-> >and many drivers use the pointer directly.
-> 
-> We shouldn't be doing this.  All drivers should ioremap() any
-> peripheral spaces they use and not make any assumptions
-> someone else has done that already.  We've been making
-> such changes in the 82xx/83xx/85xx CPM2 drivers.  If it
-> isn't convenient to find the #defines for the ioremap(), we
-> should change that.  When I originally wrote all of this
-> code, it was long ago when we didn't have some of the
-> abstractions and it seemed any shortcuts for performance
-> were desired :-)
+This is a multi-part message in MIME format.
 
-OK makes sense (yep it was even discussed already).
+------=_NextPart_000_01A4_01C59B73.AC0748B0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-Aris, sounds like you should proceed with cpm_get_cpmp() and change all
-other drivers using it also.
+When I configure samba3.0.10 on ppc as following command:
 
-> 
-> 
-> >arch/ppc/8260_io/ drivers also use the same convention.
-> 
-> If there are any drivers in here, they either aren't used or
-> on their way out.  The only things that should remain are
-> common support functions.
+CC=powerpc-linux-gcc AR=powerpc-linux-ar RANLIB=powerpc-linux-ranlib
+./configure -host=powerpc-linux
 
-OK!
+ 
+
+I got a configure error message as following:
+
+Configure: error: cannot run test program while cross compiling
+
+See 'config.log' for more details
+
+ 
+
+I think this is a samba configure bug, do anybody know how to pass it?
+
+ 
+
+Thanks,
+
+Johnson Cheng
+
+
+------=_NextPart_000_01A4_01C59B73.AC0748B0
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:st1=3D"urn:schemas-microsoft-com:office:smarttags" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"chsdate" downloadurl=3D""/>
+<!--[if !mso]>
+<style>
+st1\:*{behavior:url(#default#ieooui) }
+</style>
+<![endif]-->
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:PMingLiU;
+	panose-1:2 2 3 0 0 0 0 0 0 0;}
+@font-face
+	{font-family:PMingLiU;
+	panose-1:2 2 3 0 0 0 0 0 0 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+ /* Page Definitions */
+ @page Section1
+	{size:595.3pt 841.9pt;
+	margin:72.0pt 90.0pt 72.0pt 90.0pt;
+	layout-grid:18.0pt;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DZH-TW link=3Dblue vlink=3Dpurple =
+style=3D'text-justify-trim:punctuation'>
+
+<div class=3DSection1 style=3D'layout-grid:18.0pt'>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>When I configure samba<st1:chsdate =
+IsROCDate=3D"False"
+IsLunarDate=3D"False" Day=3D"30" Month=3D"12" Year=3D"1899" =
+w:st=3D"on">3.0.10</st1:chsdate>
+on ppc as following command:<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>CC=3Dpowerpc-linux-gcc AR=3Dpowerpc-linux-ar
+RANLIB=3Dpowerpc-linux-ranlib ./configure =
+&#8211;host=3Dpowerpc-linux<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>I got a configure error message as =
+following:<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>Configure: error: cannot run test program while =
+cross
+compiling<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>See &#8216;config.log&#8217; for more =
+details<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>I think this is a samba configure bug, do =
+anybody know
+how to pass it?<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>Thanks,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>Johnson Cheng<o:p></o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_01A4_01C59B73.AC0748B0--
