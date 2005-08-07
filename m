@@ -1,20 +1,21 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from parcelfarce.linux.theplanet.co.uk
+	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8E5F067F02
+	by ozlabs.org (Postfix) with ESMTP id 8BD2D67F0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  7 Aug 2005 13:36:01 +1000 (EST)
-In-Reply-To: <20050806234244.GB5210@cathedrallabs.org>
+	Sun,  7 Aug 2005 14:36:39 +1000 (EST)
+Date: Sun, 7 Aug 2005 01:31:10 -0300
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Dan Malek <dan@embeddededge.com>
+Message-ID: <20050807043110.GA6316@dmt.cnet>
 References: <20050806180353.GW5210@cathedrallabs.org>
 	<20050806232701.GD1099@dmt.cnet>
-	<20050806234244.GB5210@cathedrallabs.org>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <d74e24bbf82e4cedd3358465343d28ae@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Sat, 6 Aug 2005 23:36:16 -0400
-To: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
+	<e5caa80a2cd721a4f6ee3c74ead906b2@embeddededge.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <e5caa80a2cd721a4f6ee3c74ead906b2@embeddededge.com>
 Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: [PATCH] 8xx: add cpm_get_cpmp()
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -27,15 +28,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Sat, Aug 06, 2005 at 10:40:37PM -0400, Dan Malek wrote:
+> 
+> On Aug 6, 2005, at 7:27 PM, Marcelo Tosatti wrote:
+> 
+> >It already is exported, declared as
+> >
+> >commproc.h:extern       cpm8xx_t        *cpmp;          /* Pointer to 
+> >comm processor */
+> >
+> >
+> >and many drivers use the pointer directly.
+> 
+> We shouldn't be doing this.  All drivers should ioremap() any
+> peripheral spaces they use and not make any assumptions
+> someone else has done that already.  We've been making
+> such changes in the 82xx/83xx/85xx CPM2 drivers.  If it
+> isn't convenient to find the #defines for the ioremap(), we
+> should change that.  When I originally wrote all of this
+> code, it was long ago when we didn't have some of the
+> abstractions and it seemed any shortcuts for performance
+> were desired :-)
 
-On Aug 6, 2005, at 7:42 PM, Aristeu Sergio Rozanski Filho wrote:
+OK makes sense (yep it was even discussed already).
 
-> but not with EXPORT_SYMBOL(). I noticed this while compiling i2c stuff
-> as module. also, I think it's better add a function to do this instead
-> doing EXPORT_SYMBOL() in a variable.
+Aris, sounds like you should proceed with cpm_get_cpmp() and change all
+other drivers using it also.
 
-Right.  We should just ioremap() :-)
+> 
+> 
+> >arch/ppc/8260_io/ drivers also use the same convention.
+> 
+> If there are any drivers in here, they either aren't used or
+> on their way out.  The only things that should remain are
+> common support functions.
 
-Thanks.
-
-	-- Dan
+OK!
