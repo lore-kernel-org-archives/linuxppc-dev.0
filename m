@@ -1,21 +1,14 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id CD35567F7B
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Aug 2005 06:48:42 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	j78Kt69r002520
-	for <linuxppc-dev@ozlabs.org>; Mon, 8 Aug 2005 13:55:06 -0700 (MST)
-Received: from [10.82.245.178] ([10.82.245.178])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id j78KrVEA015672
-	for <linuxppc-dev@ozlabs.org>; Mon, 8 Aug 2005 15:53:31 -0500 (CDT)
-Mime-Version: 1.0 (Apple Message framework v733)
-Message-Id: <18167A13-B5E6-44B9-894F-8AC451F2DF4B@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Mon, 8 Aug 2005 15:48:46 -0500
-Subject: arch/ppc/kernel/find_name.c??
+Return-Path: <jschopp@austin.ibm.com>
+Message-ID: <42F79D89.3040709@austin.ibm.com>
+Date: Mon, 08 Aug 2005 12:59:37 -0500
+From: Joel Schopp <jschopp@austin.ibm.com>
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
+References: <17136.13558.773102.465379@cargo.ozlabs.ibm.com>
+In-Reply-To: <17136.13558.773102.465379@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Subject: Re: Merging ppc32 and ppc64
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,7 +18,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-anyone know why we have this still around since it doesnt seem to be  
-used by any makefile?
+> I don't see the merge as changing the actual code that gets executed
+> on any given platform very much, except in one respect: we are going
+> to standardize on a flattened device tree as the way that information
+> about the platform gets passed from the boot loader to the kernel.
+> 
+> Comments? Flames? :)
 
-- kumar
+There are several userspace applications that parse the non-flat device 
+tree in /proc/device-tree on pSeries.  While I like the idea of the 
+flattened device tree I think we need to consider how many apps we are 
+going to break with it.
