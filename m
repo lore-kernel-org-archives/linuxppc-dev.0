@@ -1,12 +1,13 @@
-Return-Path: <jschopp@austin.ibm.com>
-Message-ID: <42F79D89.3040709@austin.ibm.com>
-Date: Mon, 08 Aug 2005 12:59:37 -0500
-From: Joel Schopp <jschopp@austin.ibm.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17143.61284.499588.465260@cargo.ozlabs.ibm.com>
+Date: Tue, 9 Aug 2005 09:48:52 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Joel Schopp <jschopp@austin.ibm.com>
+In-Reply-To: <42F79D89.3040709@austin.ibm.com>
 References: <17136.13558.773102.465379@cargo.ozlabs.ibm.com>
-In-Reply-To: <17136.13558.773102.465379@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	<42F79D89.3040709@austin.ibm.com>
 Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
 Subject: Re: Merging ppc32 and ppc64
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -18,14 +19,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> I don't see the merge as changing the actual code that gets executed
-> on any given platform very much, except in one respect: we are going
-> to standardize on a flattened device tree as the way that information
-> about the platform gets passed from the boot loader to the kernel.
-> 
-> Comments? Flames? :)
+Joel Schopp writes:
 
-There are several userspace applications that parse the non-flat device 
-tree in /proc/device-tree on pSeries.  While I like the idea of the 
-flattened device tree I think we need to consider how many apps we are 
-going to break with it.
+> There are several userspace applications that parse the non-flat device 
+> tree in /proc/device-tree on pSeries.  While I like the idea of the 
+> flattened device tree I think we need to consider how many apps we are 
+> going to break with it.
+
+... and standardizing on the flattened device tree will mean that
+every ppc and ppc64 platform has stuff in /proc/device-tree, not just
+those that have OF. :)
+
+Paul.
