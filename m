@@ -1,16 +1,16 @@
-Return-Path: <Peter.Schaefer-Hutter@tfk-racoms.com>
-Received: from rcprx1.tfk-racoms.com (rcprx1.tfk-racoms.com [195.245.55.49])
-	by ozlabs.org (Postfix) with SMTP id D00E967F52
+Return-Path: <lzorlov@DIRECTV.com>
+Received: from PEGASUS.CORP.FRD.DIRECTV.COM (mail02.directv.com [206.17.88.91])
+	by ozlabs.org (Postfix) with ESMTP id 0747C67E36
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  9 Aug 2005 00:34:14 +1000 (EST)
+	Tue,  9 Aug 2005 02:44:22 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Mon, 8 Aug 2005 16:34:51 +0200
-Message-ID: <8E342283C2100540AAC5D10309705477749C6C@rcexc.racoms.loc>
-From: "Schaefer-Hutter, Peter" <Peter.Schaefer-Hutter@tfk-racoms.com>
-To: "linuxppc-embedded list" <linuxppc-embedded@ozlabs.org>
-Subject: RE: MPC885ADS and 2.6.13-rc5 - nogo ?
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C59C38.6C2FF384"
+Date: Mon, 8 Aug 2005 09:44:19 -0700
+Message-ID: <AE35A89453D12D4CA67E62C54F54BFAD0317B09B@castor.directv.com>
+From: "Orlov, Leonid" <lzorlov@DIRECTV.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Reducing glibc with mklibs.sh 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,92 +21,77 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
-Replying to myself: My MPC855ADS-Board has=20
+------_=_NextPart_001_01C59C38.6C2FF384
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: quoted-printable
 
- -> U-Boot 1.1.2 (Jun 27 2005 - 11:50:05)
- -> CPU:   MPC885ZPnn at 120 MHz: 8 kB I-Cache 8 kB D-Cache FEC present
- -> Board: MPC885ADS rev NR
- -> DRAM:  (8 MB SDRAM)  8 MB
+Hi,
+Does anyone has an example of successful use of either libopt or
+mklib.sh in redhat environmet?
+I am having hard time to make it work.
+I created a myLib library with 3 1 statement function and a main that
+use only 2 of the myLib functions.
+I am trying to have either tool to detect that only 2 out of 3 functions
+are used and reduce myLib correspondingly. So far I have hard time to
+have it work.
+BTW does mklib dependent on Debian environment. I am using redhat
+I am also wondering if Lineo released LIPO for public use.
+I called them trying to get a commercial version, they excluded LIPO
+from their offerings.
+Thanks for your help.
+Leonid Orlov
 
-... and 8 MB Flash.
+------_=_NextPart_001_01C59C38.6C2FF384
+Content-Type: text/html;
+	charset="US-ASCII"
+Content-Transfer-Encoding: quoted-printable
 
-AFAIK there were boards with only 2 MB RAM. Which boards do you guys
-have?
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2900.2523" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D810103416-08082005>Hi,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D810103416-08082005>Does =
+anyone has an=20
+example of successful use of either libopt or mklib.sh in redhat=20
+environmet?</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D810103416-08082005>I am =
+having hard=20
+time to make it work.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D810103416-08082005>I =
+created a myLib=20
+library with 3 1 statement function and a main that use only 2 of the =
+myLib=20
+functions.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D810103416-08082005>I am =
+trying to have=20
+either tool to detect that only 2 out of 3 functions are used and reduce =
+myLib=20
+correspondingly. So far I have hard time to have it =
+work.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D810103416-08082005>BTW =
+does mklib=20
+dependent on Debian environment. I am using redhat</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D810103416-08082005><SPAN=20
+class=3D950274116-08082005>I am also wondering if Lineo released LIPO =
+for public=20
+use.</SPAN></SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D810103416-08082005><SPAN=20
+class=3D950274116-08082005>I called them trying to get a commercial =
+version, they=20
+excluded LIPO from their offerings.</SPAN></SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D810103416-08082005>Thanks =
+for your=20
+help.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D810103416-08082005>Leonid =
 
-Best regards,
+Orlov</SPAN></FONT></DIV></DIV></BODY></HTML>
 
- Peter
-
------Original Message-----
-From: linuxppc-embedded-bounces@ozlabs.org
-[mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of
-Schaefer-Hutter, Peter
-Sent: Monday, August 08, 2005 11:38 AM
-To: linuxppc-embedded list
-Subject: RE: MPC885ADS and 2.6.13-rc5 - nogo ?
-
-Hello!
-
-> From: aris@cathedrallabs.org [mailto:aris@cathedrallabs.org]=20
-> Sent: Friday, August 05, 2005 6:26 PM
->
-> >  Badness in dma_alloc_init at arch/ppc/kernel/dma-mapping.c:348
-> >  Call trace:
-> >   [c0005b10] dump_stack+0x18/0x28
-> >   [c0003c60] check_bug_trap+0x84/0xac
-> >   [c0003de8] ProgramCheckException+0x160/0x1a0
-> >   [c0003260] ret_from_except_full+0x0/0x4c
-> >   [c01a9f84] dma_alloc_init+0x44/0xa0
-> >   [c01a66a4] do_initcalls+0x54/0xfc
-> >   [c0002260] init+0x2c/0xf4
-> >   [c000533c] kernel_thread+0x44/0x60
-> >  NET: Registered protocol family 16
-> >  JFFS2 version 2.2. (NAND) (C) 2001-2003 Red Hat, Inc.
-> >  Serial: CPM driver $Revision: 0.01 $
-> >  ttyCPM0 at MMIO 0xff000a80 (irq =3D 20) is a CPM UART
-> >  ttyCPM1 at MMIO 0xff000a90 (irq =3D 19) is a CPM UART
-> just out of curiosity, try changing CONSISTENT_START to 0xe0000000
-
-Well, then the error in dma_alloc_init goes away.
-
-However, i'm still not able to run 2.6.x on the MPC885ADS.
-I'm now using 2.6.13-rc6 with the latest cpm-uart-fixes=20
-applied. I made the defconfig, set CONSISTENT_START to 0xe0000000
-an got:
-
- Linux version 2.6.13-rc6 (root@rcf02) (gcc version 3.3.2) #5 Mon Aug 8
-11:22:18 CEST 2005
- Built 1 zonelists
- Kernel command line: console=3DttyCPM0,38400n8 root=3D/dev/nfs
-nfsroot=3D/home/test/nfs rw
-ip=3D192.168.1.10:192.168.1.1:192.168.1.1:255.255.255.0::eth0:off
- PID hash table entries: 64 (order: 6, 1024 bytes)
- Decrementer Frequency =3D 450000000/60
- Dentry cache hash table entries: 2048 (order: 1, 8192 bytes)
- Inode-cache hash table entries: 1024 (order: 0, 4096 bytes)
- Memory: 6244k available (1432k kernel code, 332k data, 72k init, 0k
-highmem)
- Mount-cache hash table entries: 512
- NET: Registered protocol family 16
- Serial: CPM driver $Revision: 0.01 $
- ttyCPM0 at MMIO 0xff000a80 (irq =3D 20) is a CPM UART
- ttyCPM1 at MMIO 0xff000a90 (irq =3D 19) is a CPM UART
- io scheduler noop registered
- PPP generic driver version 2.4.2
- PPP Deflate Compression module registere
-
-Looks like the console does not start (maybe still UART-issues)...=20
-
-As some people on this list reported success on MPC885ADS - can somebody
-
-please hit me with the cluebat ?
-
-Best regards,=20
-
-  Peter
-
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+------_=_NextPart_001_01C59C38.6C2FF384--
