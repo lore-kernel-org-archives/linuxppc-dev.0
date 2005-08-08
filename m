@@ -1,15 +1,22 @@
-Return-Path: <wd@denx.de>
-To: "Debora Liu" <deboralh@fel.com.cn>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 08 Aug 2005 14:08:33 +0800."
-	<20050808060541.AD39E4299C@denx.de>
-Date: Mon, 08 Aug 2005 10:04:53 +0200
-Sender: wd@denx.de
-Message-Id: <20050808080453.A04D4353A49@atlas.denx.de>
-Cc: Linuxppc-embedded <Linuxppc-embedded@ozlabs.org>
-Subject: Re: mpc 8xx watchdog eldh-3.1.1 
+Return-Path: <joakim.tjernlund@lumentis.se>
+Received: from dmz.lumentis.net (unknown [212.105.56.244])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A262667F51
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon,  8 Aug 2005 18:08:25 +1000 (EST)
+Received: from jockewin (fw [172.31.1.1]) (authenticated bits=0)
+	by dmz.lumentis.net (8.12.8/8.12.8) with ESMTP id j7888KVJ030142
+	(version=TLSv1/SSLv3 cipher=RC4-MD5 bits=128 verify=NO)
+	for <linuxppc-embedded@ozlabs.org>; Mon, 8 Aug 2005 10:08:21 +0200
+From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
+To: "Linuxppc-Embedded@Ozlabs. Org" <linuxppc-embedded@ozlabs.org>
+Date: Mon, 8 Aug 2005 10:08:20 +0200
+Message-ID: <JPEALJAFNGDDLOPNDIEEKEALDFAA.joakim.tjernlund@lumentis.se>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Volunteers to test i2c-algo-8xx on v2.6?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,24 +27,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <20050808060541.AD39E4299C@denx.de> you wrote:
-> 
-> how do I use watchdog with my userspace interface ?
-> 
-> this wdt_mpc8xx.c is different from standard watchdog userspace interface.
+Hi
 
-Yes, I know. The "standard" watchdog UI  is  completely  unsufficient
-for real world applications.
+Had a look at my old driver and it needs a little care.
 
-There is a man page for our driver in Documentation/man4/wdt_mpc8xx.4 
+Basically this block has changed 
 
+> +	if(count > 16){
+> +		/* Chip bug, set enable here */
+> +		local_irq_save(flags);
+> +		i2c->i2c_i2cmr = 0x13;	/* Enable some interupts */
+> +		i2c->i2c_i2cer = 0xff;
+> +		i2c->i2c_i2mod |= 1;	/* Enable */
+> +		i2c->i2c_i2com |= 0x80;	/* Begin transmission */
+> +
+> +		/* Wait for IIC transfer */
+> +		tmo = interruptible_sleep_on_timeout(&iic_wait,1*HZ);
+> +		local_irq_restore(flags);
+> +	} else { /* busy wait for small transfers, its faster */
+> +		i2c->i2c_i2cmr = 0x00;	/* Disable I2C interupts */
+> +		i2c->i2c_i2cer = 0xff;
+> +		i2c->i2c_i2mod |= 1;	/* Enable */
+> +		i2c->i2c_i2com |= 0x80;	/* Begin transmission */
+> +		tmo = jiffies + 1*HZ;
+> +	       	/* Busy wait, with a timeout */
+> +		while(!(i2c->i2c_i2cer & 0x11 || time_after(jiffies, tmo)));
+> +	}
 
-Best regards,
+into
 
-Wolfgang Denk
+> +		/* Chip bug, set enable here */
+> +		local_irq_save(flags);
+> +		i2c->i2c_i2cmr = 0x13;	/* Enable some interupts */
+> +		i2c->i2c_i2cer = 0xff;
+> +		i2c->i2c_i2mod |= 1;	/* Enable */
+> +		i2c->i2c_i2com |= 0x80 | 0x01; /* Begin transmission and force master.
+                                              Some errors(CL) clears the M/S bit */
+> +
+> +		/* Wait for IIC transfer */
+> +		tmo = interruptible_sleep_on_timeout(&iic_wait,1*HZ);
+> +		local_irq_restore(flags);
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-A person with one watch knows what time it  is;  a  person  with  two
-watches is never sure.                                       Proverb
+I have done this for cpm_iic_read, cpm_iic_write and cpm_iic_try_address.
+Also note the the addition of "| 0x01" to i2c->i2c_i2com.
