@@ -1,16 +1,16 @@
 Return-Path: <Peter.Schaefer-Hutter@tfk-racoms.com>
 Received: from rcprx1.tfk-racoms.com (rcprx1.tfk-racoms.com [195.245.55.49])
-	by ozlabs.org (Postfix) with SMTP id 0197D67F52
+	by ozlabs.org (Postfix) with SMTP id D00E967F52
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  8 Aug 2005 23:57:00 +1000 (EST)
+	Tue,  9 Aug 2005 00:34:14 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-Date: Mon, 8 Aug 2005 15:57:37 +0200
-Message-ID: <8E342283C2100540AAC5D10309705477749C5F@rcexc.racoms.loc>
+Date: Mon, 8 Aug 2005 16:34:51 +0200
+Message-ID: <8E342283C2100540AAC5D10309705477749C6C@rcexc.racoms.loc>
 From: "Schaefer-Hutter, Peter" <Peter.Schaefer-Hutter@tfk-racoms.com>
 To: "linuxppc-embedded list" <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] cpm_uart_core.c GCC4.x compilation fix
+Subject: RE: MPC885ADS and 2.6.13-rc5 - nogo ?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,34 +21,92 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-cpm_uart_core.c: needs some love to compile with GCC4.0.1.
 
-Signed-off-by: Peter Schaefer-Hutter
-<peter.schaefer-hutter@tfk-racoms.com>
+Replying to myself: My MPC855ADS-Board has=20
 
---- a/drivers/serial/cpm_uart/cpm_uart_core.c	2005-08-08
-15:49:16.725292392 +0200
-+++ b/drivers/serial/cpm_uart/cpm_uart_core.c	2005-08-08
-15:33:47.691526992 +0200
-@@ -1134,14 +1134,14 @@
- 	return 0;
- }
+ -> U-Boot 1.1.2 (Jun 27 2005 - 11:50:05)
+ -> CPU:   MPC885ZPnn at 120 MHz: 8 kB I-Cache 8 kB D-Cache FEC present
+ -> Board: MPC885ADS rev NR
+ -> DRAM:  (8 MB SDRAM)  8 MB
 
--extern struct uart_driver cpm_reg;
-+static struct uart_driver cpm_reg;
- static struct console cpm_scc_uart_console =3D {
--	.name		"ttyCPM",
--	.write		cpm_uart_console_write,
--	.device		uart_console_device,
--	.setup		cpm_uart_console_setup,
--	.flags		CON_PRINTBUFFER,
--	.index		-1,
-+	.name		=3D "ttyCPM",
-+	.write		=3D cpm_uart_console_write,
-+	.device		=3D uart_console_device,
-+	.setup		=3D cpm_uart_console_setup,
-+	.flags		=3D CON_PRINTBUFFER,
-+	.index		=3D -1,
- 	.data		=3D &cpm_reg,
- };
-=20
+... and 8 MB Flash.
+
+AFAIK there were boards with only 2 MB RAM. Which boards do you guys
+have?
+
+Best regards,
+
+ Peter
+
+-----Original Message-----
+From: linuxppc-embedded-bounces@ozlabs.org
+[mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of
+Schaefer-Hutter, Peter
+Sent: Monday, August 08, 2005 11:38 AM
+To: linuxppc-embedded list
+Subject: RE: MPC885ADS and 2.6.13-rc5 - nogo ?
+
+Hello!
+
+> From: aris@cathedrallabs.org [mailto:aris@cathedrallabs.org]=20
+> Sent: Friday, August 05, 2005 6:26 PM
+>
+> >  Badness in dma_alloc_init at arch/ppc/kernel/dma-mapping.c:348
+> >  Call trace:
+> >   [c0005b10] dump_stack+0x18/0x28
+> >   [c0003c60] check_bug_trap+0x84/0xac
+> >   [c0003de8] ProgramCheckException+0x160/0x1a0
+> >   [c0003260] ret_from_except_full+0x0/0x4c
+> >   [c01a9f84] dma_alloc_init+0x44/0xa0
+> >   [c01a66a4] do_initcalls+0x54/0xfc
+> >   [c0002260] init+0x2c/0xf4
+> >   [c000533c] kernel_thread+0x44/0x60
+> >  NET: Registered protocol family 16
+> >  JFFS2 version 2.2. (NAND) (C) 2001-2003 Red Hat, Inc.
+> >  Serial: CPM driver $Revision: 0.01 $
+> >  ttyCPM0 at MMIO 0xff000a80 (irq =3D 20) is a CPM UART
+> >  ttyCPM1 at MMIO 0xff000a90 (irq =3D 19) is a CPM UART
+> just out of curiosity, try changing CONSISTENT_START to 0xe0000000
+
+Well, then the error in dma_alloc_init goes away.
+
+However, i'm still not able to run 2.6.x on the MPC885ADS.
+I'm now using 2.6.13-rc6 with the latest cpm-uart-fixes=20
+applied. I made the defconfig, set CONSISTENT_START to 0xe0000000
+an got:
+
+ Linux version 2.6.13-rc6 (root@rcf02) (gcc version 3.3.2) #5 Mon Aug 8
+11:22:18 CEST 2005
+ Built 1 zonelists
+ Kernel command line: console=3DttyCPM0,38400n8 root=3D/dev/nfs
+nfsroot=3D/home/test/nfs rw
+ip=3D192.168.1.10:192.168.1.1:192.168.1.1:255.255.255.0::eth0:off
+ PID hash table entries: 64 (order: 6, 1024 bytes)
+ Decrementer Frequency =3D 450000000/60
+ Dentry cache hash table entries: 2048 (order: 1, 8192 bytes)
+ Inode-cache hash table entries: 1024 (order: 0, 4096 bytes)
+ Memory: 6244k available (1432k kernel code, 332k data, 72k init, 0k
+highmem)
+ Mount-cache hash table entries: 512
+ NET: Registered protocol family 16
+ Serial: CPM driver $Revision: 0.01 $
+ ttyCPM0 at MMIO 0xff000a80 (irq =3D 20) is a CPM UART
+ ttyCPM1 at MMIO 0xff000a90 (irq =3D 19) is a CPM UART
+ io scheduler noop registered
+ PPP generic driver version 2.4.2
+ PPP Deflate Compression module registere
+
+Looks like the console does not start (maybe still UART-issues)...=20
+
+As some people on this list reported success on MPC885ADS - can somebody
+
+please hit me with the cluebat ?
+
+Best regards,=20
+
+  Peter
+
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
