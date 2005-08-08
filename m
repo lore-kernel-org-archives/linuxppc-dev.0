@@ -1,18 +1,16 @@
-Return-Path: <aris@cathedrallabs.org>
-Received: from panda.sul.com.br (panda.sul.com.br [200.219.150.4])
-	by ozlabs.org (Postfix) with ESMTP id C71F667E30
+Return-Path: <Srivatsan.CR@in.flextronics.com>
+Received: from bglnt005.asia.ad.flextronics.com (unknown [203.145.155.1])
+	by ozlabs.org (Postfix) with ESMTP id BA2C967F46
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  8 Aug 2005 23:05:31 +1000 (EST)
-Date: Mon, 8 Aug 2005 10:05:23 -0300
-From: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
-To: Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-Message-ID: <20050808130523.GF5210@cathedrallabs.org>
-References: <JPEALJAFNGDDLOPNDIEEKEALDFAA.joakim.tjernlund@lumentis.se>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="C1iGAkRnbeBonpVg"
-In-Reply-To: <JPEALJAFNGDDLOPNDIEEKEALDFAA.joakim.tjernlund@lumentis.se>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Volunteers to test i2c-algo-8xx on v2.6?
+	Mon,  8 Aug 2005 23:18:39 +1000 (EST)
+Message-ID: <3B58B875DBDE504F94D2A1A1C9DF6F1F01DF3F65@bglnt005.asia.ad.flextronics.com>
+From: Srivatsan CR <Srivatsan.CR@in.flextronics.com>
+To: linuxppc-embedded@ozlabs.org
+Date: Mon, 8 Aug 2005 18:48:36 +0530 
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C59C1B.AECD5730"
+Subject: [Newbie] Question on m8260_gorom
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,700 +21,1292 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This message is in MIME format. Since your mail reader does not understand
+this format, some or all of this message may not be legible.
 
---C1iGAkRnbeBonpVg
+------_=_NextPart_001_01C59C1B.AECD5730
+Content-Type: text/plain;
+	charset="iso-8859-1"
+
+Dear all,
+
+      1) I am using a LinuxPPC kernel version 2.4.18 and on a MPC8280
+processor.
+      2) I am assuming that the Linux memory map for PowerPC looks like the
+following:
+
+          
+END_OF_RAM|---------------|
+          |               |
+          |               |
+          |               |
+          |               |
+          |               |
+          |               |
+  0x800000|---------------|
+          |Linux-PPC      |
+          |Kernel         |
+          |               |
+      0x0 |---------------|
+
+    Even at the run-time the kernel code resides in the Ram from address 0x0
+till 8MB. In m8260_gorom the start_addr variable is initialized to 0x0  but
+Kernel is not booting. Actually we are trying to boot the Linux Kernel from
+its RAM copy at the time of exception.
+
+      3) An Kernel stack overflow was generated . So that the control enters
+m8260_gorom. On entering m8260_gorom it executes till RFI after that the
+control gets inside my_console_write. This happens even before we execute
+the mtlr r4 and blr opcodes. So something else is creating the exception
+which is making the code to dump exception on the console. (Not sure what it
+is?)
+
+     4) Questions are :
+
+             a) Is it possible to start from Ram copy of the Linux kernel
+Image at an exception generated restart 
+                mechanism ? 
+             B) Has anyone encountered a situation like the one described
+above and can anyone tell us what is the cause 
+                of the exception. (It's always printing "Bad kernel page
+access")
+
+Thanks for all your time. 
+
+
+With Best Regards,
+C.R.Srivatsan
+             
+
+-----Original Message-----
+From: linuxppc-embedded-request@ozlabs.org
+[mailto:linuxppc-embedded-request@ozlabs.org] 
+Sent: Monday, August 08, 2005 7:19 AM
+To: linuxppc-embedded@ozlabs.org
+Subject: Linuxppc-embedded Digest, Vol 12, Issue 25
+
+Send Linuxppc-embedded mailing list submissions to
+	linuxppc-embedded@ozlabs.org
+
+To subscribe or unsubscribe via the World Wide Web, visit
+	https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+or, via email, send a message with subject or body 'help' to
+	linuxppc-embedded-request@ozlabs.org
+
+You can reach the person managing the list at
+	linuxppc-embedded-owner@ozlabs.org
+
+When replying, please edit your Subject line so it is more specific than
+"Re: Contents of Linuxppc-embedded digest..."
+
+
+Today's Topics:
+
+   1. Re: [PATCH] 8xx: add cpm_get_cpmp() (Dan Malek)
+   2. Re: [PATCH] 8xx: add cpm_get_cpmp() (Dan Malek)
+   3. Re: [PATCH] 8xx: add cpm_get_cpmp() (Marcelo Tosatti)
+   4. A configure error for samba3 on ppc (JohnsonCheng)
+   5. Re: [PATCH] 8xx: add cpm_get_cpmp() (Dan Malek)
+   6. Re: [PATCH] 8xx: add cpm_get_cpmp()
+      (Aristeu Sergio Rozanski Filho)
+   7. Re: [PATCH] 8xx: add cpm_get_cpmp() (Marcelo Tosatti)
+   8. Re: [PATCH] 8xx: add cpm_get_cpmp() (Dan Malek)
+   9. Re: [PATCH] 8xx: add cpm_get_cpmp() (Eugene Surovegin)
+  10. Re: Volunteers to test i2c-algo-8xx on v2.6? (Debora Liu)
+
+
+----------------------------------------------------------------------
+
+Message: 1
+Date: Sat, 6 Aug 2005 22:40:37 -0400
+From: Dan Malek <dan@embeddededge.com>
+Subject: Re: [PATCH] 8xx: add cpm_get_cpmp()
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Cc: linuxppc-embedded@ozlabs.org
+Message-ID: <e5caa80a2cd721a4f6ee3c74ead906b2@embeddededge.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+
+
+On Aug 6, 2005, at 7:27 PM, Marcelo Tosatti wrote:
+
+> It already is exported, declared as
+>
+> commproc.h:extern       cpm8xx_t        *cpmp;          /* Pointer to 
+> comm processor */
+>
+>
+> and many drivers use the pointer directly.
+
+We shouldn't be doing this.  All drivers should ioremap() any peripheral
+spaces they use and not make any assumptions someone else has done that
+already.  We've been making such changes in the 82xx/83xx/85xx CPM2 drivers.
+If it isn't convenient to find the #defines for the ioremap(), we should
+change that.  When I originally wrote all of this code, it was long ago when
+we didn't have some of the abstractions and it seemed any shortcuts for
+performance were desired :-)
+
+
+> arch/ppc/8260_io/ drivers also use the same convention.
+
+If there are any drivers in here, they either aren't used or on their way
+out.  The only things that should remain are common support functions.
+
+
+Thanks.
+
+	-- Dan
+
+
+
+------------------------------
+
+Message: 2
+Date: Sat, 6 Aug 2005 23:36:16 -0400
+From: Dan Malek <dan@embeddededge.com>
+Subject: Re: [PATCH] 8xx: add cpm_get_cpmp()
+To: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
+Cc: linuxppc-embedded@ozlabs.org
+Message-ID: <d74e24bbf82e4cedd3358465343d28ae@embeddededge.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+
+
+On Aug 6, 2005, at 7:42 PM, Aristeu Sergio Rozanski Filho wrote:
+
+> but not with EXPORT_SYMBOL(). I noticed this while compiling i2c stuff 
+> as module. also, I think it's better add a function to do this instead 
+> doing EXPORT_SYMBOL() in a variable.
+
+Right.  We should just ioremap() :-)
+
+Thanks.
+
+	-- Dan
+
+
+
+------------------------------
+
+Message: 3
+Date: Sun, 7 Aug 2005 01:31:10 -0300
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Subject: Re: [PATCH] 8xx: add cpm_get_cpmp()
+To: Dan Malek <dan@embeddededge.com>
+Cc: linuxppc-embedded@ozlabs.org
+Message-ID: <20050807043110.GA6316@dmt.cnet>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 
-Hi,
-> I have done this for cpm_iic_read, cpm_iic_write and cpm_iic_try_address.
-> Also note the the addition of "| 0x01" to i2c->i2c_i2com.
-the updated patch is attached, thanks Joakim.
-seems Debora need this too for 2.4 version. Debora, could you please
-generate a diff against latest Wolfgang's development tree and submit to
-him?
-Thanks
+On Sat, Aug 06, 2005 at 10:40:37PM -0400, Dan Malek wrote:
+> 
+> On Aug 6, 2005, at 7:27 PM, Marcelo Tosatti wrote:
+> 
+> >It already is exported, declared as
+> >
+> >commproc.h:extern       cpm8xx_t        *cpmp;          /* Pointer to 
+> >comm processor */
+> >
+> >
+> >and many drivers use the pointer directly.
+> 
+> We shouldn't be doing this.  All drivers should ioremap() any 
+> peripheral spaces they use and not make any assumptions someone else 
+> has done that already.  We've been making such changes in the 
+> 82xx/83xx/85xx CPM2 drivers.  If it isn't convenient to find the 
+> #defines for the ioremap(), we should change that.  When I originally 
+> wrote all of this code, it was long ago when we didn't have some of 
+> the abstractions and it seemed any shortcuts for performance were 
+> desired :-)
+
+OK makes sense (yep it was even discussed already).
+
+Aris, sounds like you should proceed with cpm_get_cpmp() and change all
+other drivers using it also.
+
+> 
+> 
+> >arch/ppc/8260_io/ drivers also use the same convention.
+> 
+> If there are any drivers in here, they either aren't used or on their 
+> way out.  The only things that should remain are common support 
+> functions.
+
+OK!
+
+
+------------------------------
+
+Message: 4
+Date: Sun, 7 Aug 2005 17:15:55 +0800
+From: "JohnsonCheng" <johnsoncheng@qnap.com.tw>
+Subject: A configure error for samba3 on ppc
+To: <linuxppc-embedded@ozlabs.org>
+Message-ID: <20050807091603.CE57667F29@ozlabs.org>
+Content-Type: text/plain; charset="us-ascii"
+
+When I configure samba3.0.10 on ppc as following command:
+
+CC=powerpc-linux-gcc AR=powerpc-linux-ar RANLIB=powerpc-linux-ranlib
+./configure -host=powerpc-linux
+
+ 
+
+I got a configure error message as following:
+
+Configure: error: cannot run test program while cross compiling
+
+See 'config.log' for more details
+
+ 
+
+I think this is a samba configure bug, do anybody know how to pass it?
+
+ 
+
+Thanks,
+
+Johnson Cheng
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL:
+http://ozlabs.org/pipermail/linuxppc-embedded/attachments/20050807/95f23597/
+attachment-0001.htm
+
+------------------------------
+
+Message: 5
+Date: Sun, 7 Aug 2005 11:39:52 -0400
+From: Dan Malek <dan@embeddededge.com>
+Subject: Re: [PATCH] 8xx: add cpm_get_cpmp()
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Cc: linuxppc-embedded@ozlabs.org
+Message-ID: <09b0792f426f1d5883cf5d437723f075@embeddededge.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+
+
+On Aug 7, 2005, at 12:31 AM, Marcelo Tosatti wrote:
+
+> Aris, sounds like you should proceed with cpm_get_cpmp() and change 
+> all other drivers using it also.
+
+It depends how you define the semantics of this function call.
+Can you call it any (and all of the) time you need it, or does it actually
+perform an ioremap() and you only want to call it once?
+
+I guess implemented properly it doesn't matter.  On the first call it should
+do the ioremap() and on subsequent calls it just returns the mapping.  This
+is one of those common functions that should be in commproc.c.
+
+Thanks.
+
+	-- Dan
+
+
+
+------------------------------
+
+Message: 6
+Date: Sun, 7 Aug 2005 12:44:32 -0300
+From: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
+Subject: Re: [PATCH] 8xx: add cpm_get_cpmp()
+To: Dan Malek <dan@embeddededge.com>
+Cc: linuxppc-embedded@ozlabs.org
+Message-ID: <20050807154432.GE5210@cathedrallabs.org>
+Content-Type: text/plain; charset=us-ascii
+
+> It depends how you define the semantics of this function call.
+> Can you call it any (and all of the) time you need it, or does it 
+> actually perform an ioremap() and you only want to call it once?
+what about don't cache it and call ioremap() from driver? (I guess
+ioremap() already check if an area is already mapped, no?)
 
 --
 Aristeu
 
 
---C1iGAkRnbeBonpVg
+
+------------------------------
+
+Message: 7
+Date: Sun, 7 Aug 2005 12:57:31 -0300
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Subject: Re: [PATCH] 8xx: add cpm_get_cpmp()
+To: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
+Cc: linuxppc-embedded@ozlabs.org
+Message-ID: <20050807155731.GA2715@dmt.cnet>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="i2c_algo_8xx-port_to_2_6.patch"
 
-8xx: port i2c-algo_8xx to 2.6
+On Sun, Aug 07, 2005 at 12:44:32PM -0300, Aristeu Sergio Rozanski Filho
+wrote:
+> > It depends how you define the semantics of this function call.
+> > Can you call it any (and all of the) time you need it, or does it 
+> > actually perform an ioremap() and you only want to call it once?
+> what about don't cache it and call ioremap() from driver? (I guess
+> ioremap() already check if an area is already mapped, no?)
 
-Based on Tom Rini's and Joakim Tjernlund's work
+Yep, ioremap() should be doing virtual address caching already, no?
 
-Signed-off-by: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
 
-Index: 2.6-8xx/drivers/i2c/algos/i2c-algo-8xx.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ 2.6-8xx/drivers/i2c/algos/i2c-algo-8xx.c	2005-08-08 09:55:30.000000000 -0300
-@@ -0,0 +1,617 @@
-+/*
-+ * i2c-algo-8xx.c i2x driver algorithms for MPC8XX CPM
-+ * Copyright (c) 1999 Dan Malek (dmalek@jlc.net).
-+ *
-+    This program is free software; you can redistribute it and/or modify
-+    it under the terms of the GNU General Public License as published by
-+    the Free Software Foundation; either version 2 of the License, or
-+    (at your option) any later version.
-+
-+    This program is distributed in the hope that it will be useful,
-+    but WITHOUT ANY WARRANTY; without even the implied warranty of
-+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+    GNU General Public License for more details.
-+
-+    You should have received a copy of the GNU General Public License
-+    along with this program; if not, write to the Free Software
-+    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ *
-+ * moved into proper i2c interface; separated out platform specific
-+ * parts into i2c-rpx.c
-+ * Brad Parker (brad@heeltoe.com)
-+ */
-+
-+// XXX todo
-+// timeout sleep?
-+
-+/* $Id: i2c-algo-8xx.c,v 1.7 2002/08/03 22:48:18 ac9410 Exp $ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/delay.h>
-+#include <linux/slab.h>
-+#include <linux/version.h>
-+#include <linux/init.h>
-+#include <asm/uaccess.h>
-+#include <linux/ioport.h>
-+#include <linux/errno.h>
-+#include <linux/sched.h>
-+
-+#include <asm/mpc8xx.h>
-+#include <asm/commproc.h>
-+
-+#include <linux/i2c.h>
-+#include <linux/i2c-algo-8xx.h>
-+
-+#define CPM_MAX_READ	513
-+/* Try uncomment this if you have an older CPU(earlier than rev D4) */
-+/* #define I2C_CHIP_ERRATA */
-+
-+static char *module_name = "i2c_algo_8xx";
-+#define DEBUGP(level, x, y...) do { \
-+				if (cpm_debug >= level) \
-+					printk(KERN_DEBUG "%s: " x, \
-+					       module_name, ## y); \
-+				} while(0)
-+
-+static wait_queue_head_t iic_wait;
-+static ushort r_tbase, r_rbase;
-+
-+int cpm_scan = 0;
-+int cpm_debug = 0;
-+
-+static  void
-+cpm_iic_interrupt(void *dev_id, struct pt_regs *regs)
-+{
-+	volatile i2c8xx_t *i2c = (i2c8xx_t *)dev_id;
-+
-+	DEBUGP(2, "cpm_iic_interrupt(dev_id=%p)\n", dev_id);
-+
-+#ifdef I2C_CHIP_ERRATA
-+	/* Chip errata, clear enable.
-+	 * This seems to not be needed on rev D4 or newer CPUs.
-+	 * Someone with an older CPU needs to verify this.
-+	 */
-+	i2c->i2c_i2mod &= ~1;
-+#endif
-+
-+	/* Clear interrupt.
-+	*/
-+	i2c->i2c_i2cer = 0xff;
-+
-+	/* Get 'me going again.
-+	*/
-+	wake_up_interruptible(&iic_wait);
-+}
-+
-+static void
-+cpm_iic_init(struct i2c_algo_8xx_data *cpm_adap)
-+{
-+	volatile iic_t		*iip = cpm_adap->iip;
-+	volatile i2c8xx_t	*i2c = cpm_adap->i2c;
-+	unsigned char brg;
-+	bd_t *bd = (bd_t *)__res;
-+
-+	DEBUGP(1, "cpm_iic_init() - iip=%p\n", iip);
-+
-+	/* Initialize the parameter ram.
-+	 * We need to make sure many things are initialized to zero,
-+	 * especially in the case of a microcode patch.
-+	 */
-+	iip->iic_rstate = 0;
-+	iip->iic_rdp = 0;
-+	iip->iic_rbptr = 0;
-+	iip->iic_rbc = 0;
-+	iip->iic_rxtmp = 0;
-+	iip->iic_tstate = 0;
-+	iip->iic_tdp = 0;
-+	iip->iic_tbptr = 0;
-+	iip->iic_tbc = 0;
-+	iip->iic_txtmp = 0;
-+
-+	/* Set up the IIC parameters in the parameter ram.
-+	*/
-+	iip->iic_tbase = r_tbase = cpm_adap->dp_addr;
-+	iip->iic_rbase = r_rbase = cpm_adap->dp_addr + sizeof(cbd_t) * 2;
-+
-+	iip->iic_tfcr = SMC_EB;
-+	iip->iic_rfcr = SMC_EB;
-+
-+	/* Set maximum receive size.
-+	*/
-+	iip->iic_mrblr = CPM_MAX_READ;
-+
-+	/* Initialize Tx/Rx parameters.
-+	*/
-+	if (cpm_adap->reloc == 0) {
-+		volatile cpm8xx_t *cp = cpm_adap->cp;
-+
-+		cp->cp_cpcr =
-+			mk_cr_cmd(CPM_CR_CH_I2C, CPM_CR_INIT_TRX) | CPM_CR_FLG;
-+		while (cp->cp_cpcr & CPM_CR_FLG);
-+	} else {
-+		iip->iic_rbptr = iip->iic_rbase;
-+		iip->iic_tbptr = iip->iic_tbase;
-+		iip->iic_rstate	= 0;
-+		iip->iic_tstate	= 0;
-+	}
-+
-+	/* Select an arbitrary address.  Just make sure it is unique.
-+	*/
-+	i2c->i2c_i2add = 0xfe;
-+
-+	/* Make clock run at 60 KHz.
-+	*/
-+	brg = (unsigned char) (bd->bi_intfreq/(32*2*60000) -3);
-+	i2c->i2c_i2brg = brg;
-+
-+	i2c->i2c_i2mod = 0x00;
-+	i2c->i2c_i2com = 0x01; /* Master mode */
-+
-+	/* Disable interrupts.
-+	*/
-+	i2c->i2c_i2cmr = 0;
-+	i2c->i2c_i2cer = 0xff;
-+
-+	init_waitqueue_head(&iic_wait);
-+
-+	/* Install interrupt handler.
-+	*/
-+	DEBUGP(1, "Install ISR for IRQ %d\n", CPMVEC_I2C);
-+	cpm_install_handler(CPMVEC_I2C, cpm_iic_interrupt, (void *)i2c);
-+}
-+
-+
-+static int
-+cpm_iic_shutdown(struct i2c_algo_8xx_data *cpm_adap)
-+{
-+	volatile i2c8xx_t *i2c = cpm_adap->i2c;
-+
-+	/* Shut down IIC.
-+	*/
-+	i2c->i2c_i2mod &= ~1;
-+	i2c->i2c_i2cmr = 0;
-+	i2c->i2c_i2cer = 0xff;
-+
-+	return 0;
-+}
-+
-+static void
-+cpm_reset_iic_params(volatile iic_t *iip)
-+{
-+	iip->iic_tbase = r_tbase;
-+	iip->iic_rbase = r_rbase;
-+
-+	iip->iic_tfcr = SMC_EB;
-+	iip->iic_rfcr = SMC_EB;
-+
-+	iip->iic_mrblr = CPM_MAX_READ;
-+
-+	iip->iic_rstate = 0;
-+	iip->iic_rdp = 0;
-+	iip->iic_rbptr = iip->iic_rbase;
-+	iip->iic_rbc = 0;
-+	iip->iic_rxtmp = 0;
-+	iip->iic_tstate = 0;
-+	iip->iic_tdp = 0;
-+	iip->iic_tbptr = iip->iic_tbase;
-+	iip->iic_tbc = 0;
-+	iip->iic_txtmp = 0;
-+}
-+
-+#define BD_SC_NAK		((ushort)0x0004) /* NAK - did not respond */
-+#define BD_SC_OV		((ushort)0x0002) /* OV - receive overrun */
-+#define CPM_CR_CLOSE_RXBD	((ushort)0x0007)
-+
-+static void force_close(struct i2c_algo_8xx_data *cpm)
-+{
-+	volatile i2c8xx_t *i2c = cpm->i2c;
-+	if (cpm->reloc == 0) { /* micro code disabled */
-+		volatile cpm8xx_t *cp = cpm->cp;
-+
-+		DEBUGP(1, "force_close()\n");
-+		cp->cp_cpcr =
-+			mk_cr_cmd(CPM_CR_CH_I2C, CPM_CR_CLOSE_RXBD) |
-+			CPM_CR_FLG;
-+
-+		while (cp->cp_cpcr & CPM_CR_FLG);
-+	}
-+	i2c->i2c_i2cmr = 0x00;	/* Disable all interrupts */
-+	i2c->i2c_i2cer = 0xff;
-+}
-+
-+
-+/* Read from IIC...
-+ * abyte = address byte, with r/w flag already set
-+ */
-+static int
-+cpm_iic_read(struct i2c_algo_8xx_data *cpm, u_char abyte, char *buf, int count)
-+{
-+	volatile iic_t *iip = cpm->iip;
-+	volatile i2c8xx_t *i2c = cpm->i2c;
-+	volatile cpm8xx_t *cp = cpm->cp;
-+	volatile cbd_t	*tbdf, *rbdf;
-+	u_char *tb;
-+	unsigned long flags, tmo;
-+
-+	if (count >= CPM_MAX_READ)
-+		return -EINVAL;
-+
-+	/* check for and use a microcode relocation patch */
-+	if (cpm->reloc)
-+		cpm_reset_iic_params(iip);
-+
-+	tbdf = (cbd_t *)&cp->cp_dpmem[iip->iic_tbase];
-+	rbdf = (cbd_t *)&cp->cp_dpmem[iip->iic_rbase];
-+
-+	/* To read, we need an empty buffer of the proper length.
-+	 * All that is used is the first byte for address, the remainder
-+	 * is just used for timing (and doesn't really have to exist).
-+	 */
-+	tb = cpm->temp;
-+	tb = (u_char *)(((uint)tb + 15) & ~15);
-+	tb[0] = abyte;		/* Device address byte w/rw flag */
-+
-+	flush_dcache_range((unsigned long) tb, (unsigned long) (tb + 1));
-+
-+	DEBUGP(1, "cpm_iic_read(abyte=0x%x)\n", abyte);
-+
-+	tbdf->cbd_bufaddr = __pa(tb);
-+	tbdf->cbd_datlen = count + 1;
-+	tbdf->cbd_sc =
-+		BD_SC_READY | BD_SC_LAST |
-+		BD_SC_WRAP | BD_IIC_START;
-+
-+	iip->iic_mrblr = count + 1; /* prevent excessive read, +1
-+				      is needed otherwise will the
-+				      RXB interrupt come too early */
-+
-+	/* flush will invalidate too. */
-+	flush_dcache_range((unsigned long) buf, (unsigned long) (buf+count));
-+
-+	rbdf->cbd_datlen = 0;
-+	rbdf->cbd_bufaddr = __pa(buf);
-+
-+	rbdf->cbd_sc = BD_SC_EMPTY | BD_SC_WRAP| BD_SC_INTRPT;
-+
-+	/* Chip bug, set enable here */
-+	local_irq_save(flags);
-+	i2c->i2c_i2cmr = 0x13;	/* Enable some interupts */
-+	i2c->i2c_i2cer = 0xff;
-+	i2c->i2c_i2mod |= 1;	/* Enable */
-+	/*
-+	 * Begin transmission and force master.
-+	 * Some errors(CL) clears the M/S bit
-+	 */
-+	i2c->i2c_i2com |= 0x80 | 0x01;
-+
-+	/* Wait for IIC transfer */
-+	tmo = interruptible_sleep_on_timeout(&iic_wait,1*HZ);
-+	local_irq_restore(flags);
-+
-+	if (signal_pending(current) || !tmo){
-+		force_close(cpm);
-+		DEBUGP(1, "IIC read: timeout!\n");
-+		return -EIO;
-+	}
-+#ifdef I2C_CHIP_ERRATA
-+	/* Chip errata, clear enable. This is not needed on rev D4 CPUs.
-+	 Disabling I2C too early may cause too short stop condition */
-+	udelay(4);
-+	i2c->i2c_i2mod &= ~1;
-+#endif
-+
-+	DEBUGP(1, "tx sc %04x, rx sc %04x\n", tbdf->cbd_sc, rbdf->cbd_sc);
-+
-+	if (tbdf->cbd_sc & BD_SC_READY) {
-+		printk(KERN_INFO "IIC read; complete but tbuf ready\n");
-+		force_close(cpm);
-+		printk(KERN_INFO "tx sc %04x, rx sc %04x\n",
-+		       tbdf->cbd_sc, rbdf->cbd_sc);
-+	}
-+
-+	if (tbdf->cbd_sc & BD_SC_NAK) {
-+		DEBUGP(1, "IIC read; no ack\n");
-+		return -EREMOTEIO;
-+	}
-+
-+	if (rbdf->cbd_sc & BD_SC_EMPTY) {
-+		/* force_close(cpm); */
-+		DEBUGP(1, "IIC read; complete but rbuf empty\n");
-+		DEBUGP(1, "tx sc %04x, rx sc %04x\n", tbdf->cbd_sc, rbdf->cbd_sc);
-+		return -EREMOTEIO;
-+	}
-+
-+	if (rbdf->cbd_sc & BD_SC_OV) {
-+		DEBUGP(1, "IIC read; Overrun\n");
-+		return -EREMOTEIO;;
-+	}
-+
-+	DEBUGP(1, "read %d bytes\n", rbdf->cbd_datlen);
-+
-+	if (rbdf->cbd_datlen < count) {
-+		DEBUGP(1, "IIC read; short, wanted %d got %d\n", count,
-+		       rbdf->cbd_datlen);
-+		return 0;
-+	}
-+
-+	return count;
-+}
-+
-+/* Write to IIC...
-+ * addr = address byte, with r/w flag already set
-+ */
-+static int
-+cpm_iic_write(struct i2c_algo_8xx_data *cpm, u_char abyte, char *buf,int count)
-+{
-+	volatile iic_t *iip = cpm->iip;
-+	volatile i2c8xx_t *i2c = cpm->i2c;
-+	volatile cpm8xx_t *cp = cpm->cp;
-+	volatile cbd_t	*tbdf;
-+	u_char *tb;
-+	unsigned long flags, tmo;
-+
-+	/* check for and use a microcode relocation patch */
-+	if (cpm->reloc)
-+		cpm_reset_iic_params(iip);
-+	tb = cpm->temp;
-+	tb = (u_char *)(((uint)tb + 15) & ~15);
-+	*tb = abyte;		/* Device address byte w/rw flag */
-+
-+	flush_dcache_range((unsigned long) tb, (unsigned long) (tb+1));
-+	flush_dcache_range((unsigned long) buf, (unsigned long) (buf+count));
-+
-+	DEBUGP(1, "cpm_iic_write(abyte=0x%x)\n", abyte);
-+
-+	/* set up 2 descriptors */
-+	tbdf = (cbd_t *)&cp->cp_dpmem[iip->iic_tbase];
-+
-+	tbdf[0].cbd_bufaddr = __pa(tb);
-+	tbdf[0].cbd_datlen = 1;
-+	tbdf[0].cbd_sc = BD_SC_READY | BD_IIC_START;
-+
-+	tbdf[1].cbd_bufaddr = __pa(buf);
-+	tbdf[1].cbd_datlen = count;
-+	tbdf[1].cbd_sc = BD_SC_READY | BD_SC_INTRPT | BD_SC_LAST | BD_SC_WRAP;
-+
-+	/* Chip bug, set enable here */
-+	local_irq_save(flags);
-+	i2c->i2c_i2cmr = 0x13;	/* Enable some interupts */
-+	i2c->i2c_i2cer = 0xff;
-+	i2c->i2c_i2mod |= 1;	/* Enable */
-+	/*
-+	 * Begin transmission and force master.
-+	 * Some errors(CL) clears the M/S bit
-+	 */
-+	i2c->i2c_i2com |= 0x80 | 0x01;
-+
-+	/* Wait for IIC transfer */
-+	tmo = interruptible_sleep_on_timeout(&iic_wait,1*HZ);
-+	local_irq_restore(flags);
-+
-+	if (signal_pending(current) || !tmo){
-+		force_close(cpm);
-+		if (!tmo)
-+			DEBUGP(1, "IIC write: timeout!\n");
-+		return -EIO;
-+	}
-+
-+#if I2C_CHIP_ERRATA
-+	/* Chip errata, clear enable. This is not needed on rev D4 CPUs.
-+	 Disabling I2C too early may cause too short stop condition */
-+	udelay(4);
-+	i2c->i2c_i2mod &= ~1;
-+#endif
-+	DEBUGP(1, "tx0 sc %04x, tx1 sc %04x\n", tbdf[0].cbd_sc,
-+	       tbdf[1].cbd_sc);
-+
-+	if ((tbdf[0].cbd_sc | tbdf[1].cbd_sc) & BD_SC_NAK) {
-+		DEBUGP(1, "IIC write; no ack\n");
-+		return 0;
-+	}
-+
-+	if ((tbdf[0].cbd_sc | tbdf[1].cbd_sc) & BD_SC_READY) {
-+		DEBUGP(1, "IIC write; complete but tbuf ready\n");
-+		return 0;
-+	}
-+
-+	return count;
-+}
-+
-+/* See if an IIC address exists..
-+ * addr = 7 bit address, unshifted
-+ */
-+static int
-+cpm_iic_tryaddress(struct i2c_algo_8xx_data *cpm, int addr)
-+{
-+	volatile iic_t *iip = cpm->iip;
-+	volatile i2c8xx_t *i2c = cpm->i2c;
-+	volatile cpm8xx_t *cp = cpm->cp;
-+	volatile cbd_t *tbdf, *rbdf;
-+	u_char *tb;
-+	unsigned long flags, len, tmo;
-+
-+	DEBUGP(2, "cpm_iic_tryaddress(cpm=%p,addr=%d)\n", cpm, addr);
-+
-+	/* check for and use a microcode relocation patch */
-+	if (cpm->reloc)
-+		cpm_reset_iic_params(iip);
-+
-+	if (addr == 0) {
-+		DEBUGP(1, "iip %p, dp_addr 0x%x\n", cpm->iip, cpm->dp_addr);
-+		DEBUGP(1, "iic_tbase %d, r_tbase %d\n", iip->iic_tbase,
-+		       r_tbase);
-+	}
-+
-+	tbdf = (cbd_t *)&cp->cp_dpmem[iip->iic_tbase];
-+	rbdf = (cbd_t *)&cp->cp_dpmem[iip->iic_rbase];
-+
-+	tb = cpm->temp;
-+	tb = (u_char *)(((uint)tb + 15) & ~15);
-+
-+	/* do a simple read */
-+	tb[0] = (addr << 1) | 1;	/* device address (+ read) */
-+	len = 2;
-+
-+	flush_dcache_range((unsigned long) tb, (unsigned long) (tb+1));
-+
-+	tbdf->cbd_bufaddr = __pa(tb);
-+	tbdf->cbd_datlen = len;
-+	tbdf->cbd_sc =
-+		BD_SC_READY | BD_SC_LAST |
-+		BD_SC_WRAP | BD_IIC_START;
-+
-+	rbdf->cbd_datlen = 0;
-+	rbdf->cbd_bufaddr = __pa(tb+2);
-+	rbdf->cbd_sc = BD_SC_EMPTY | BD_SC_WRAP | BD_SC_INTRPT;
-+
-+	/* Chip bug, set enable here */
-+	local_irq_save(flags);
-+	i2c->i2c_i2cmr = 0x13;	/* Enable some interupts */
-+	i2c->i2c_i2cer = 0xff;
-+	i2c->i2c_i2mod |= 1;	/* Enable */
-+	/*
-+	 * Begin transmission and force master.
-+	 * Some errors(CL) clears the M/S bit
-+	 */
-+	i2c->i2c_i2com |= 0x80 | 0x01;
-+
-+	/* Wait for IIC transfer */
-+	tmo = interruptible_sleep_on_timeout(&iic_wait,1*HZ);
-+	local_irq_restore(flags);
-+
-+#ifdef I2C_CHIP_ERRATA
-+	/* Chip errata, clear enable. This is not needed on rev D4 CPUs.
-+	 Disabling I2C too early may cause too short stop condition */
-+	udelay(4);
-+	i2c->i2c_i2mod &= ~1;
-+#endif
-+
-+	if (signal_pending(current) || !tmo){
-+		force_close(cpm);
-+		if (!tmo)
-+			DEBUGP(1, "IIC tryaddress: timeout!\n");
-+		return -EIO;
-+	}
-+
-+	DEBUGP(2, "back from sleep\n");
-+
-+	if (tbdf->cbd_sc & BD_SC_NAK) {
-+		DEBUGP(2, "IIC try; no ack\n");
-+		return 0;
-+	}
-+
-+	if (tbdf->cbd_sc & BD_SC_READY)
-+		printk(KERN_INFO "IIC try; complete but tbuf ready\n");
-+
-+	return 1;
-+}
-+
-+static int cpm_xfer(struct i2c_adapter *i2c_adap,
-+		    struct i2c_msg msgs[],
-+		    int num)
-+{
-+	struct i2c_algo_8xx_data *adap = i2c_adap->algo_data;
-+	struct i2c_msg *pmsg;
-+	int i, ret;
-+	u_char addr;
-+
-+	for (i = 0; i < num; i++) {
-+		pmsg = &msgs[i];
-+
-+		DEBUGP(1, "#%d addr=0x%x flags=0x%x len=%d\n buf=%p\n",
-+		       i, pmsg->addr, pmsg->flags, pmsg->len, pmsg->buf);
-+
-+		addr = pmsg->addr << 1;
-+		if (pmsg->flags & I2C_M_RD)
-+			addr |= 1;
-+		if (pmsg->flags & I2C_M_REV_DIR_ADDR)
-+			addr ^= 1;
-+
-+		if (pmsg->flags & I2C_M_RD) {
-+			/* read bytes into buffer*/
-+			ret = cpm_iic_read(adap, addr, pmsg->buf, pmsg->len);
-+			DEBUGP(1, "read %d bytes\n", ret);
-+			if (ret < pmsg->len)
-+				return (ret < 0)? ret:-EREMOTEIO;
-+		} else {
-+			/* write bytes from buffer */
-+			ret = cpm_iic_write(adap, addr, pmsg->buf, pmsg->len);
-+			DEBUGP(1, "wrote %d\n", ret);
-+			if (ret < pmsg->len)
-+				return (ret < 0)? ret:-EREMOTEIO;
-+		}
-+	}
-+	return num;
-+}
-+
-+static u32 cpm_func(struct i2c_adapter *adap)
-+{
-+	return I2C_FUNC_SMBUS_EMUL | I2C_FUNC_10BIT_ADDR |
-+	       I2C_FUNC_PROTOCOL_MANGLING;
-+}
-+
-+static struct i2c_algorithm i2c_algo_8xx = {
-+	.name = "MPC8xx CPM algorithm",
-+	.id = I2C_ALGO_MPC8XX,
-+	.master_xfer = cpm_xfer,
-+	.functionality = cpm_func,
-+};
-+
-+/*
-+ * registering functions to load algorithms at runtime
-+ */
-+int i2c_8xx_add_bus(struct i2c_adapter *adap)
-+{
-+	int i;
-+	struct i2c_algo_8xx_data *cpm_adap = adap->algo_data;
-+
-+	DEBUGP(1, "hw routines for %s registered.\n", adap->name);
-+
-+	/* register new adapter to i2c module... */
-+
-+	adap->id |= i2c_algo_8xx.id;
-+	adap->algo = &i2c_algo_8xx;
-+
-+	i2c_add_adapter(adap);
-+	cpm_iic_init(cpm_adap);
-+
-+	/* scan bus */
-+	if (cpm_scan) {
-+		printk(KERN_INFO "%s: scanning bus %s...\n", module_name,
-+		       adap->name);
-+		for (i = 0; i < 128; i++)
-+			if (cpm_iic_tryaddress(cpm_adap, i)) {
-+				printk("(%02x)", i << 1);
-+			}
-+		printk("\n");
-+	}
-+	return 0;
-+}
-+
-+int i2c_8xx_del_bus(struct i2c_adapter *adap)
-+{
-+	int res;
-+	struct i2c_algo_8xx_data *cpm_adap = adap->algo_data;
-+
-+	cpm_iic_shutdown(cpm_adap);
-+
-+	if ((res = i2c_del_adapter(adap)) < 0)
-+		return res;
-+
-+	printk(KERN_INFO "%s: adapter unregistered: %s\n", module_name,
-+	       adap->name);
-+
-+	return 0;
-+}
-+
-+module_param(cpm_debug, int, S_IRUGO | S_IWUSR);
-+MODULE_PARM_DESC(cpm_debug, "Sets the debug level. (0 = none, 1 = normal, "
-+		 ">1 = plenty");
-+MODULE_AUTHOR("Brad Parker <brad@heeltoe.com>");
-+MODULE_DESCRIPTION("I2C-Bus MPC8XX algorithm");
-+MODULE_LICENSE("GPL");
-+
-+EXPORT_SYMBOL(i2c_8xx_add_bus);
-+EXPORT_SYMBOL(i2c_8xx_del_bus);
-+
-Index: 2.6-8xx/drivers/i2c/algos/Makefile
-===================================================================
---- 2.6-8xx.orig/drivers/i2c/algos/Makefile	2005-08-08 09:50:57.000000000 -0300
-+++ 2.6-8xx/drivers/i2c/algos/Makefile	2005-08-08 09:50:59.000000000 -0300
-@@ -8,6 +8,7 @@
- obj-$(CONFIG_I2C_ALGOITE)	+= i2c-algo-ite.o
- obj-$(CONFIG_I2C_ALGO_SIBYTE)	+= i2c-algo-sibyte.o
- obj-$(CONFIG_I2C_ALGO_SGI)	+= i2c-algo-sgi.o
-+obj-$(CONFIG_I2C_ALGO8XX)	+= i2c-algo-8xx.o
- 
- ifeq ($(CONFIG_I2C_DEBUG_ALGO),y)
- EXTRA_CFLAGS += -DDEBUG
-Index: 2.6-8xx/include/linux/i2c-algo-8xx.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ 2.6-8xx/include/linux/i2c-algo-8xx.h	2005-08-08 09:50:59.000000000 -0300
-@@ -0,0 +1,28 @@
-+/* ------------------------------------------------------------------------- */
-+/* i2c-algo-8xx.h i2c driver algorithms for MPX8XX CPM			     */
-+/* ------------------------------------------------------------------------- */
-+
-+/* $Id$ */
-+
-+#ifndef I2C_ALGO_8XX_H
-+#define I2C_ALGO_8XX_H
-+
-+#include <linux/i2c.h>
-+#include <asm/8xx_immap.h>
-+#include <asm/commproc.h>
-+
-+struct i2c_algo_8xx_data {
-+	uint dp_addr;
-+	int reloc;
-+	volatile i2c8xx_t *i2c;
-+	volatile iic_t	*iip;
-+	volatile cpm8xx_t *cp;
-+
-+	u_char	temp[513];
-+};
-+
-+int i2c_8xx_add_bus(struct i2c_adapter *);
-+int i2c_8xx_del_bus(struct i2c_adapter *);
-+
-+#endif /* I2C_ALGO_8XX_H */
-+
+------------------------------
 
---C1iGAkRnbeBonpVg--
+Message: 8
+Date: Sun, 7 Aug 2005 13:25:34 -0400
+From: Dan Malek <dan@embeddededge.com>
+Subject: Re: [PATCH] 8xx: add cpm_get_cpmp()
+To: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
+Cc: linuxppc-embedded@ozlabs.org
+Message-ID: <2fcd8a329246b2f2c303e515dd0cb7bf@embeddededge.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+
+
+On Aug 7, 2005, at 11:44 AM, Aristeu Sergio Rozanski Filho wrote:
+
+> what about don't cache it and call ioremap() from driver? (I guess
+> ioremap() already check if an area is already mapped, no?)
+
+Either way.  I'm actually leaning toward these "pointer helper"
+functions. :-)  Something like get_cpmp(), or get_immr(), that will hide the
+details of the mapping, so you don't have to include and know which #defines
+to use as part of an ioremap() call.
+
+It seems to be more clear to me, and I'm thinking about making the same
+changes to the CPM2 drivers.  It also allows a performance versus compact
+code trade off, declaring these as inline functions or as real functions.
+
+Thanks.
+
+	-- Dan
+
+
+
+------------------------------
+
+Message: 9
+Date: Sun, 7 Aug 2005 12:18:29 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+Subject: Re: [PATCH] 8xx: add cpm_get_cpmp()
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Cc: linuxppc-embedded@ozlabs.org
+Message-ID: <20050807191829.GA5375@gate.ebshome.net>
+Content-Type: text/plain; charset=us-ascii
+
+On Sun, Aug 07, 2005 at 12:57:31PM -0300, Marcelo Tosatti wrote:
+> On Sun, Aug 07, 2005 at 12:44:32PM -0300, Aristeu Sergio Rozanski Filho
+wrote:
+> > > It depends how you define the semantics of this function call.
+> > > Can you call it any (and all of the) time you need it, or does it 
+> > > actually perform an ioremap() and you only want to call it once?
+> > what about don't cache it and call ioremap() from driver? (I guess
+> > ioremap() already check if an area is already mapped, no?)
+> 
+> Yep, ioremap() should be doing virtual address caching already, no?
+
+In general, ioremap() doesn't do any caching currently. Some subarchs do
+some limited caching, e.g. if BATs (classic PPC) or CAMs (e500) are
+available and were used previously for ioremap() mappings. 
+
+Some time ago I made a trivial ioremap cache patch (useful on 4xx, which
+doesn't have BATs nor CAMs), although it wass really a hack and it was never
+merged :).
+
+--
+Eugene
+
+
+
+------------------------------
+
+Message: 10
+Date: Mon, 8 Aug 2005 09:53:32 +0800
+From: "Debora Liu" <deboralh@fel.com.cn>
+Subject: Re: Volunteers to test i2c-algo-8xx on v2.6?
+To: "Marcelo Tosatti" <marcelo.tosatti@cyclades.com>
+Cc: Linuxppc-embedded <Linuxppc-embedded@ozlabs.org>
+Message-ID: <20050808014920.0373467F1E@ozlabs.org>
+
+Hello, Marcelo Tosatti
+
+In message <2005-08-07 08:34:52 marcelo.tosatti@cyclades.com> you wrote:
+>
+>Does anyone volunteer to test this 8xx i2c driver?
+>
+>
+I don't have kernel v2.6, but I have test my board with eldk-3.1.1
+linux-2.4.25
+when my board kernel booting, I found one problem.
+eldk-3.1.1 linux-2.4.25 kernel include i2c, i2c-algo-8xx, pcf8563 driver.
+If one pcf8563 chip on my board, there are't problem.
+But if my board don't have pcf8563 chip, kernel stop as blow:
+Linux version 2.4.25 (liu@bighead) (gcc version 3.3.3 (DENX ELDK 3.1.1
+3.3.3-9))
+#4 励 7埖 29 12:19:14 CST 2005
+m8xx_setup.c:Reserved 0x10000 memory at 0xc0190000
+On node 0 totalpages: 8192
+zone(0): 8192 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line: root=/dev/nftla1
+ip=192.168.0.207:192.168.0.82:::sc855t:eth
+0:off
+Decrementer Frequency = 300000000/60
+Warning: real time clock seems stuck!
+Calibrating delay loop... 79.66 BogoMIPS
+========= HZ=100   loops_per_jiffy=398336
+Memory: 30752k available (1144k kernel code, 356k data, 56k init, 0k
+highmem)
+Dentry cache hash table entries: 4096 (order: 3, 32768 bytes)
+Inode cache hash table entries: 2048 (order: 2, 16384 bytes)
+Mount cache hash table entries: 512 (order: 0, 4096 bytes)
+Buffer cache hash table entries: 1024 (order: 0, 4096 bytes)
+Page-cache hash table entries: 8192 (order: 3, 32768 bytes)
+POSIX conformance testing by UNIFIX
+WDT_8xx: SWT not enabled by firmware, SYPCR=0xffffff88
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society NET3.039
+Initializing RT netlink socket
+      Starting kswapd
+Journalled Block Device driver loaded
+i2c-core.o: i2c core module version 2.6.1 (20010830)
+i2c-dev.o: i2c /dev entries driver module version 2.6.1 (20010830)
+i2c-algo-8xx.o: i2c mpc8xx algorithm module version 2.6.1 (20010830)
+i2c-rpx.o: i2c MPC8xx module version 2.6.1 (20010830)
+i2c-proc.o version 2.6.1 (20010830)
+CPM UART driver version 0.04
+ttyS0 at 0x0280 is on SMC1 using BRG1
+ttyS1 at 0x0380 is on SMC2 using BRG2
+pty: 256 Unix98 ptys configured
+PCF8563 Real-Time Clock Driver $Revision: 1.3 $ wd@denx.de
+
+
+
+I modify i2c-algo-8xx.c cpm_iic_write(), then no problem,
+my board defined by CONFIG_SVM8xx
+
+#ifdef CONFIG_SVM8xx
+    while(!(i2c->i2c_i2cer & 0x12))
+      if (time_after(jiffies, tmo)) {
+        tmo = 0;
+        break;
+      }
+#else
+                while(!(i2c->i2c_i2cer & 0x12 || time_after(jiffies, tmo)));
+/* Bus
+#endif
+
+
+
+= = = = = = = = = = = = = = = = = = = =
+				 
+　　　　　　　　Debora Liu
+　　　　　　　　deboralh@fel.com.cn
+　　　　　　　　　　2005-08-08
+
+
+
+
+
+------------------------------
+
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+End of Linuxppc-embedded Digest, Vol 12, Issue 25
+*************************************************
+
+------_=_NextPart_001_01C59C1B.AECD5730
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+5.5.2653.12">
+<TITLE>[Newbie] Question on m8260_gorom</TITLE>
+</HEAD>
+<BODY>
+
+<P><FONT SIZE=3D2>Dear all,</FONT>
+</P>
+
+<P><FONT SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1) I am using a =
+LinuxPPC kernel version 2.4.18 and on a MPC8280 processor.</FONT>
+<BR><FONT SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2) I am assuming that =
+the Linux memory map for PowerPC looks like the following:</FONT>
+</P>
+
+<P><FONT =
+SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </FONT>
+<BR><FONT SIZE=3D2>END_OF_RAM|---------------|</FONT>
+<BR><FONT =
+SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp; |</FONT>
+<BR><FONT =
+SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp; |</FONT>
+<BR><FONT =
+SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp; |</FONT>
+<BR><FONT =
+SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp; |</FONT>
+<BR><FONT =
+SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp; |</FONT>
+<BR><FONT =
+SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp; |</FONT>
+<BR><FONT SIZE=3D2>&nbsp; 0x800000|---------------|</FONT>
+<BR><FONT =
+SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+|Linux-PPC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |</FONT>
+<BR><FONT =
+SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+|Kernel&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |</FONT>
+<BR><FONT =
+SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp; |</FONT>
+<BR><FONT SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0x0 =
+|---------------|</FONT>
+</P>
+
+<P><FONT SIZE=3D2>&nbsp;&nbsp;&nbsp; Even at the run-time the kernel =
+code resides in the Ram from address 0x0 till 8MB. In m8260_gorom the =
+start_addr variable is initialized to 0x0&nbsp; but Kernel is not =
+booting. Actually we are trying to boot the Linux Kernel from its RAM =
+copy at the time of exception.</FONT></P>
+
+<P><FONT SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3) An Kernel stack =
+overflow was generated . So that the control enters m8260_gorom. On =
+entering m8260_gorom it executes till RFI after that the control gets =
+inside my_console_write. This happens even before we execute the mtlr =
+r4 and blr opcodes. So something else is creating the exception which =
+is making the code to dump exception on the console. (Not sure what it =
+is?)</FONT></P>
+
+<P><FONT SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp; 4) Questions are :</FONT>
+</P>
+
+<P><FONT =
+SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp; a) Is it possible to start from Ram copy of the Linux kernel =
+Image at an exception generated restart </FONT>
+<BR><FONT =
+SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp; mechanism ? </FONT>
+<BR><FONT =
+SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp; B) Has anyone encountered a situation like the one described =
+above and can anyone tell us what is the cause </FONT></P>
+
+<P><FONT =
+SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp; of the exception. (It's always printing =
+&quot;Bad kernel page access&quot;)</FONT>
+</P>
+
+<P><FONT SIZE=3D2>Thanks for all your time. </FONT>
+</P>
+<BR>
+
+<P><FONT SIZE=3D2>With Best Regards,</FONT>
+<BR><FONT SIZE=3D2>C.R.Srivatsan</FONT>
+<BR><FONT =
+SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp; </FONT>
+</P>
+
+<P><FONT SIZE=3D2>-----Original Message-----</FONT>
+<BR><FONT SIZE=3D2>From: linuxppc-embedded-request@ozlabs.org [<A =
+HREF=3D"mailto:linuxppc-embedded-request@ozlabs.org">mailto:linuxppc-emb=
+edded-request@ozlabs.org</A>] </FONT>
+<BR><FONT SIZE=3D2>Sent: Monday, August 08, 2005 7:19 AM</FONT>
+<BR><FONT SIZE=3D2>To: linuxppc-embedded@ozlabs.org</FONT>
+<BR><FONT SIZE=3D2>Subject: Linuxppc-embedded Digest, Vol 12, Issue =
+25</FONT>
+</P>
+
+<P><FONT SIZE=3D2>Send Linuxppc-embedded mailing list submissions =
+to</FONT>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <FONT =
+SIZE=3D2>linuxppc-embedded@ozlabs.org</FONT>
+</P>
+
+<P><FONT SIZE=3D2>To subscribe or unsubscribe via the World Wide Web, =
+visit</FONT>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <FONT SIZE=3D2><A =
+HREF=3D"https://ozlabs.org/mailman/listinfo/linuxppc-embedded" =
+TARGET=3D"_blank">https://ozlabs.org/mailman/listinfo/linuxppc-embedded<=
+/A></FONT>
+<BR><FONT SIZE=3D2>or, via email, send a message with subject or body =
+'help' to</FONT>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <FONT =
+SIZE=3D2>linuxppc-embedded-request@ozlabs.org</FONT>
+</P>
+
+<P><FONT SIZE=3D2>You can reach the person managing the list at</FONT>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <FONT =
+SIZE=3D2>linuxppc-embedded-owner@ozlabs.org</FONT>
+</P>
+
+<P><FONT SIZE=3D2>When replying, please edit your Subject line so it is =
+more specific than &quot;Re: Contents of Linuxppc-embedded =
+digest...&quot;</FONT>
+</P>
+<BR>
+
+<P><FONT SIZE=3D2>Today's Topics:</FONT>
+</P>
+
+<P><FONT SIZE=3D2>&nbsp;&nbsp; 1. Re: [PATCH] 8xx: add cpm_get_cpmp() =
+(Dan Malek)</FONT>
+<BR><FONT SIZE=3D2>&nbsp;&nbsp; 2. Re: [PATCH] 8xx: add cpm_get_cpmp() =
+(Dan Malek)</FONT>
+<BR><FONT SIZE=3D2>&nbsp;&nbsp; 3. Re: [PATCH] 8xx: add cpm_get_cpmp() =
+(Marcelo Tosatti)</FONT>
+<BR><FONT SIZE=3D2>&nbsp;&nbsp; 4. A configure error for samba3 on ppc =
+(JohnsonCheng)</FONT>
+<BR><FONT SIZE=3D2>&nbsp;&nbsp; 5. Re: [PATCH] 8xx: add cpm_get_cpmp() =
+(Dan Malek)</FONT>
+<BR><FONT SIZE=3D2>&nbsp;&nbsp; 6. Re: [PATCH] 8xx: add =
+cpm_get_cpmp()</FONT>
+<BR><FONT SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (Aristeu Sergio =
+Rozanski Filho)</FONT>
+<BR><FONT SIZE=3D2>&nbsp;&nbsp; 7. Re: [PATCH] 8xx: add cpm_get_cpmp() =
+(Marcelo Tosatti)</FONT>
+<BR><FONT SIZE=3D2>&nbsp;&nbsp; 8. Re: [PATCH] 8xx: add cpm_get_cpmp() =
+(Dan Malek)</FONT>
+<BR><FONT SIZE=3D2>&nbsp;&nbsp; 9. Re: [PATCH] 8xx: add cpm_get_cpmp() =
+(Eugene Surovegin)</FONT>
+<BR><FONT SIZE=3D2>&nbsp; 10. Re: Volunteers to test i2c-algo-8xx on =
+v2.6? (Debora Liu)</FONT>
+</P>
+<BR>
+
+<P><FONT =
+SIZE=3D2>---------------------------------------------------------------=
+-------</FONT>
+</P>
+
+<P><FONT SIZE=3D2>Message: 1</FONT>
+<BR><FONT SIZE=3D2>Date: Sat, 6 Aug 2005 22:40:37 -0400</FONT>
+<BR><FONT SIZE=3D2>From: Dan Malek &lt;dan@embeddededge.com&gt;</FONT>
+<BR><FONT SIZE=3D2>Subject: Re: [PATCH] 8xx: add cpm_get_cpmp()</FONT>
+<BR><FONT SIZE=3D2>To: Marcelo Tosatti =
+&lt;marcelo.tosatti@cyclades.com&gt;</FONT>
+<BR><FONT SIZE=3D2>Cc: linuxppc-embedded@ozlabs.org</FONT>
+<BR><FONT SIZE=3D2>Message-ID: =
+&lt;e5caa80a2cd721a4f6ee3c74ead906b2@embeddededge.com&gt;</FONT>
+<BR><FONT SIZE=3D2>Content-Type: text/plain; charset=3DUS-ASCII; =
+format=3Dflowed</FONT>
+</P>
+<BR>
+
+<P><FONT SIZE=3D2>On Aug 6, 2005, at 7:27 PM, Marcelo Tosatti =
+wrote:</FONT>
+</P>
+
+<P><FONT SIZE=3D2>&gt; It already is exported, declared as</FONT>
+<BR><FONT SIZE=3D2>&gt;</FONT>
+<BR><FONT SIZE=3D2>&gt; =
+commproc.h:extern&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+cpm8xx_t&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+*cpmp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* Pointer =
+to </FONT>
+<BR><FONT SIZE=3D2>&gt; comm processor */</FONT>
+<BR><FONT SIZE=3D2>&gt;</FONT>
+<BR><FONT SIZE=3D2>&gt;</FONT>
+<BR><FONT SIZE=3D2>&gt; and many drivers use the pointer =
+directly.</FONT>
+</P>
+
+<P><FONT SIZE=3D2>We shouldn't be doing this.&nbsp; All drivers should =
+ioremap() any peripheral spaces they use and not make any assumptions =
+someone else has done that already.&nbsp; We've been making such =
+changes in the 82xx/83xx/85xx CPM2 drivers.&nbsp; If it isn't =
+convenient to find the #defines for the ioremap(), we should change =
+that.&nbsp; When I originally wrote all of this code, it was long ago =
+when we didn't have some of the abstractions and it seemed any =
+shortcuts for performance were desired :-)</FONT></P>
+<BR>
+
+<P><FONT SIZE=3D2>&gt; arch/ppc/8260_io/ drivers also use the same =
+convention.</FONT>
+</P>
+
+<P><FONT SIZE=3D2>If there are any drivers in here, they either aren't =
+used or on their way out.&nbsp; The only things that should remain are =
+common support functions.</FONT></P>
+<BR>
+
+<P><FONT SIZE=3D2>Thanks.</FONT>
+</P>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <FONT SIZE=3D2>-- =
+Dan</FONT>
+</P>
+<BR>
+<BR>
+
+<P><FONT SIZE=3D2>------------------------------</FONT>
+</P>
+
+<P><FONT SIZE=3D2>Message: 2</FONT>
+<BR><FONT SIZE=3D2>Date: Sat, 6 Aug 2005 23:36:16 -0400</FONT>
+<BR><FONT SIZE=3D2>From: Dan Malek &lt;dan@embeddededge.com&gt;</FONT>
+<BR><FONT SIZE=3D2>Subject: Re: [PATCH] 8xx: add cpm_get_cpmp()</FONT>
+<BR><FONT SIZE=3D2>To: Aristeu Sergio Rozanski Filho =
+&lt;aris@cathedrallabs.org&gt;</FONT>
+<BR><FONT SIZE=3D2>Cc: linuxppc-embedded@ozlabs.org</FONT>
+<BR><FONT SIZE=3D2>Message-ID: =
+&lt;d74e24bbf82e4cedd3358465343d28ae@embeddededge.com&gt;</FONT>
+<BR><FONT SIZE=3D2>Content-Type: text/plain; charset=3DUS-ASCII; =
+format=3Dflowed</FONT>
+</P>
+<BR>
+
+<P><FONT SIZE=3D2>On Aug 6, 2005, at 7:42 PM, Aristeu Sergio Rozanski =
+Filho wrote:</FONT>
+</P>
+
+<P><FONT SIZE=3D2>&gt; but not with EXPORT_SYMBOL(). I noticed this =
+while compiling i2c stuff </FONT>
+<BR><FONT SIZE=3D2>&gt; as module. also, I think it's better add a =
+function to do this instead </FONT>
+<BR><FONT SIZE=3D2>&gt; doing EXPORT_SYMBOL() in a variable.</FONT>
+</P>
+
+<P><FONT SIZE=3D2>Right.&nbsp; We should just ioremap() :-)</FONT>
+</P>
+
+<P><FONT SIZE=3D2>Thanks.</FONT>
+</P>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <FONT SIZE=3D2>-- =
+Dan</FONT>
+</P>
+<BR>
+<BR>
+
+<P><FONT SIZE=3D2>------------------------------</FONT>
+</P>
+
+<P><FONT SIZE=3D2>Message: 3</FONT>
+<BR><FONT SIZE=3D2>Date: Sun, 7 Aug 2005 01:31:10 -0300</FONT>
+<BR><FONT SIZE=3D2>From: Marcelo Tosatti =
+&lt;marcelo.tosatti@cyclades.com&gt;</FONT>
+<BR><FONT SIZE=3D2>Subject: Re: [PATCH] 8xx: add cpm_get_cpmp()</FONT>
+<BR><FONT SIZE=3D2>To: Dan Malek &lt;dan@embeddededge.com&gt;</FONT>
+<BR><FONT SIZE=3D2>Cc: linuxppc-embedded@ozlabs.org</FONT>
+<BR><FONT SIZE=3D2>Message-ID: =
+&lt;20050807043110.GA6316@dmt.cnet&gt;</FONT>
+<BR><FONT SIZE=3D2>Content-Type: text/plain; charset=3Dus-ascii</FONT>
+</P>
+
+<P><FONT SIZE=3D2>On Sat, Aug 06, 2005 at 10:40:37PM -0400, Dan Malek =
+wrote:</FONT>
+<BR><FONT SIZE=3D2>&gt; </FONT>
+<BR><FONT SIZE=3D2>&gt; On Aug 6, 2005, at 7:27 PM, Marcelo Tosatti =
+wrote:</FONT>
+<BR><FONT SIZE=3D2>&gt; </FONT>
+<BR><FONT SIZE=3D2>&gt; &gt;It already is exported, declared as</FONT>
+<BR><FONT SIZE=3D2>&gt; &gt;</FONT>
+<BR><FONT SIZE=3D2>&gt; =
+&gt;commproc.h:extern&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+cpm8xx_t&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+*cpmp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* Pointer =
+to </FONT>
+<BR><FONT SIZE=3D2>&gt; &gt;comm processor */</FONT>
+<BR><FONT SIZE=3D2>&gt; &gt;</FONT>
+<BR><FONT SIZE=3D2>&gt; &gt;</FONT>
+<BR><FONT SIZE=3D2>&gt; &gt;and many drivers use the pointer =
+directly.</FONT>
+<BR><FONT SIZE=3D2>&gt; </FONT>
+<BR><FONT SIZE=3D2>&gt; We shouldn't be doing this.&nbsp; All drivers =
+should ioremap() any </FONT>
+<BR><FONT SIZE=3D2>&gt; peripheral spaces they use and not make any =
+assumptions someone else </FONT>
+<BR><FONT SIZE=3D2>&gt; has done that already.&nbsp; We've been making =
+such changes in the </FONT>
+<BR><FONT SIZE=3D2>&gt; 82xx/83xx/85xx CPM2 drivers.&nbsp; If it isn't =
+convenient to find the </FONT>
+<BR><FONT SIZE=3D2>&gt; #defines for the ioremap(), we should change =
+that.&nbsp; When I originally </FONT>
+<BR><FONT SIZE=3D2>&gt; wrote all of this code, it was long ago when we =
+didn't have some of </FONT>
+<BR><FONT SIZE=3D2>&gt; the abstractions and it seemed any shortcuts =
+for performance were </FONT>
+<BR><FONT SIZE=3D2>&gt; desired :-)</FONT>
+</P>
+
+<P><FONT SIZE=3D2>OK makes sense (yep it was even discussed =
+already).</FONT>
+</P>
+
+<P><FONT SIZE=3D2>Aris, sounds like you should proceed with =
+cpm_get_cpmp() and change all other drivers using it also.</FONT>
+</P>
+
+<P><FONT SIZE=3D2>&gt; </FONT>
+<BR><FONT SIZE=3D2>&gt; </FONT>
+<BR><FONT SIZE=3D2>&gt; &gt;arch/ppc/8260_io/ drivers also use the same =
+convention.</FONT>
+<BR><FONT SIZE=3D2>&gt; </FONT>
+<BR><FONT SIZE=3D2>&gt; If there are any drivers in here, they either =
+aren't used or on their </FONT>
+<BR><FONT SIZE=3D2>&gt; way out.&nbsp; The only things that should =
+remain are common support </FONT>
+<BR><FONT SIZE=3D2>&gt; functions.</FONT>
+</P>
+
+<P><FONT SIZE=3D2>OK!</FONT>
+</P>
+<BR>
+
+<P><FONT SIZE=3D2>------------------------------</FONT>
+</P>
+
+<P><FONT SIZE=3D2>Message: 4</FONT>
+<BR><FONT SIZE=3D2>Date: Sun, 7 Aug 2005 17:15:55 +0800</FONT>
+<BR><FONT SIZE=3D2>From: &quot;JohnsonCheng&quot; =
+&lt;johnsoncheng@qnap.com.tw&gt;</FONT>
+<BR><FONT SIZE=3D2>Subject: A configure error for samba3 on ppc</FONT>
+<BR><FONT SIZE=3D2>To: &lt;linuxppc-embedded@ozlabs.org&gt;</FONT>
+<BR><FONT SIZE=3D2>Message-ID: =
+&lt;20050807091603.CE57667F29@ozlabs.org&gt;</FONT>
+<BR><FONT SIZE=3D2>Content-Type: text/plain; =
+charset=3D&quot;us-ascii&quot;</FONT>
+</P>
+
+<P><FONT SIZE=3D2>When I configure samba3.0.10 on ppc as following =
+command:</FONT>
+</P>
+
+<P><FONT SIZE=3D2>CC=3Dpowerpc-linux-gcc AR=3Dpowerpc-linux-ar =
+RANLIB=3Dpowerpc-linux-ranlib ./configure -host=3Dpowerpc-linux</FONT>
+</P>
+
+<P><FONT SIZE=3D2>&nbsp;</FONT>
+</P>
+
+<P><FONT SIZE=3D2>I got a configure error message as following:</FONT>
+</P>
+
+<P><FONT SIZE=3D2>Configure: error: cannot run test program while cross =
+compiling</FONT>
+</P>
+
+<P><FONT SIZE=3D2>See 'config.log' for more details</FONT>
+</P>
+
+<P><FONT SIZE=3D2>&nbsp;</FONT>
+</P>
+
+<P><FONT SIZE=3D2>I think this is a samba configure bug, do anybody =
+know how to pass it?</FONT>
+</P>
+
+<P><FONT SIZE=3D2>&nbsp;</FONT>
+</P>
+
+<P><FONT SIZE=3D2>Thanks,</FONT>
+</P>
+
+<P><FONT SIZE=3D2>Johnson Cheng</FONT>
+</P>
+
+<P><FONT SIZE=3D2>-------------- next part --------------</FONT>
+<BR><FONT SIZE=3D2>An HTML attachment was scrubbed...</FONT>
+<BR><FONT SIZE=3D2>URL: <A =
+HREF=3D"http://ozlabs.org/pipermail/linuxppc-embedded/attachments/200508=
+07/95f23597/attachment-0001.htm" =
+TARGET=3D"_blank">http://ozlabs.org/pipermail/linuxppc-embedded/attachme=
+nts/20050807/95f23597/attachment-0001.htm</A></FONT>
+</P>
+
+<P><FONT SIZE=3D2>------------------------------</FONT>
+</P>
+
+<P><FONT SIZE=3D2>Message: 5</FONT>
+<BR><FONT SIZE=3D2>Date: Sun, 7 Aug 2005 11:39:52 -0400</FONT>
+<BR><FONT SIZE=3D2>From: Dan Malek &lt;dan@embeddededge.com&gt;</FONT>
+<BR><FONT SIZE=3D2>Subject: Re: [PATCH] 8xx: add cpm_get_cpmp()</FONT>
+<BR><FONT SIZE=3D2>To: Marcelo Tosatti =
+&lt;marcelo.tosatti@cyclades.com&gt;</FONT>
+<BR><FONT SIZE=3D2>Cc: linuxppc-embedded@ozlabs.org</FONT>
+<BR><FONT SIZE=3D2>Message-ID: =
+&lt;09b0792f426f1d5883cf5d437723f075@embeddededge.com&gt;</FONT>
+<BR><FONT SIZE=3D2>Content-Type: text/plain; charset=3DUS-ASCII; =
+format=3Dflowed</FONT>
+</P>
+<BR>
+
+<P><FONT SIZE=3D2>On Aug 7, 2005, at 12:31 AM, Marcelo Tosatti =
+wrote:</FONT>
+</P>
+
+<P><FONT SIZE=3D2>&gt; Aris, sounds like you should proceed with =
+cpm_get_cpmp() and change </FONT>
+<BR><FONT SIZE=3D2>&gt; all other drivers using it also.</FONT>
+</P>
+
+<P><FONT SIZE=3D2>It depends how you define the semantics of this =
+function call.</FONT>
+<BR><FONT SIZE=3D2>Can you call it any (and all of the) time you need =
+it, or does it actually perform an ioremap() and you only want to call =
+it once?</FONT></P>
+
+<P><FONT SIZE=3D2>I guess implemented properly it doesn't matter.&nbsp; =
+On the first call it should do the ioremap() and on subsequent calls it =
+just returns the mapping.&nbsp; This is one of those common functions =
+that should be in commproc.c.</FONT></P>
+
+<P><FONT SIZE=3D2>Thanks.</FONT>
+</P>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <FONT SIZE=3D2>-- =
+Dan</FONT>
+</P>
+<BR>
+<BR>
+
+<P><FONT SIZE=3D2>------------------------------</FONT>
+</P>
+
+<P><FONT SIZE=3D2>Message: 6</FONT>
+<BR><FONT SIZE=3D2>Date: Sun, 7 Aug 2005 12:44:32 -0300</FONT>
+<BR><FONT SIZE=3D2>From: Aristeu Sergio Rozanski Filho =
+&lt;aris@cathedrallabs.org&gt;</FONT>
+<BR><FONT SIZE=3D2>Subject: Re: [PATCH] 8xx: add cpm_get_cpmp()</FONT>
+<BR><FONT SIZE=3D2>To: Dan Malek &lt;dan@embeddededge.com&gt;</FONT>
+<BR><FONT SIZE=3D2>Cc: linuxppc-embedded@ozlabs.org</FONT>
+<BR><FONT SIZE=3D2>Message-ID: =
+&lt;20050807154432.GE5210@cathedrallabs.org&gt;</FONT>
+<BR><FONT SIZE=3D2>Content-Type: text/plain; charset=3Dus-ascii</FONT>
+</P>
+
+<P><FONT SIZE=3D2>&gt; It depends how you define the semantics of this =
+function call.</FONT>
+<BR><FONT SIZE=3D2>&gt; Can you call it any (and all of the) time you =
+need it, or does it </FONT>
+<BR><FONT SIZE=3D2>&gt; actually perform an ioremap() and you only want =
+to call it once?</FONT>
+<BR><FONT SIZE=3D2>what about don't cache it and call ioremap() from =
+driver? (I guess</FONT>
+<BR><FONT SIZE=3D2>ioremap() already check if an area is already =
+mapped, no?)</FONT>
+</P>
+
+<P><FONT SIZE=3D2>--</FONT>
+<BR><FONT SIZE=3D2>Aristeu</FONT>
+</P>
+<BR>
+<BR>
+
+<P><FONT SIZE=3D2>------------------------------</FONT>
+</P>
+
+<P><FONT SIZE=3D2>Message: 7</FONT>
+<BR><FONT SIZE=3D2>Date: Sun, 7 Aug 2005 12:57:31 -0300</FONT>
+<BR><FONT SIZE=3D2>From: Marcelo Tosatti =
+&lt;marcelo.tosatti@cyclades.com&gt;</FONT>
+<BR><FONT SIZE=3D2>Subject: Re: [PATCH] 8xx: add cpm_get_cpmp()</FONT>
+<BR><FONT SIZE=3D2>To: Aristeu Sergio Rozanski Filho =
+&lt;aris@cathedrallabs.org&gt;</FONT>
+<BR><FONT SIZE=3D2>Cc: linuxppc-embedded@ozlabs.org</FONT>
+<BR><FONT SIZE=3D2>Message-ID: =
+&lt;20050807155731.GA2715@dmt.cnet&gt;</FONT>
+<BR><FONT SIZE=3D2>Content-Type: text/plain; charset=3Dus-ascii</FONT>
+</P>
+
+<P><FONT SIZE=3D2>On Sun, Aug 07, 2005 at 12:44:32PM -0300, Aristeu =
+Sergio Rozanski Filho wrote:</FONT>
+<BR><FONT SIZE=3D2>&gt; &gt; It depends how you define the semantics of =
+this function call.</FONT>
+<BR><FONT SIZE=3D2>&gt; &gt; Can you call it any (and all of the) time =
+you need it, or does it </FONT>
+<BR><FONT SIZE=3D2>&gt; &gt; actually perform an ioremap() and you only =
+want to call it once?</FONT>
+<BR><FONT SIZE=3D2>&gt; what about don't cache it and call ioremap() =
+from driver? (I guess</FONT>
+<BR><FONT SIZE=3D2>&gt; ioremap() already check if an area is already =
+mapped, no?)</FONT>
+</P>
+
+<P><FONT SIZE=3D2>Yep, ioremap() should be doing virtual address =
+caching already, no?</FONT>
+</P>
+<BR>
+
+<P><FONT SIZE=3D2>------------------------------</FONT>
+</P>
+
+<P><FONT SIZE=3D2>Message: 8</FONT>
+<BR><FONT SIZE=3D2>Date: Sun, 7 Aug 2005 13:25:34 -0400</FONT>
+<BR><FONT SIZE=3D2>From: Dan Malek &lt;dan@embeddededge.com&gt;</FONT>
+<BR><FONT SIZE=3D2>Subject: Re: [PATCH] 8xx: add cpm_get_cpmp()</FONT>
+<BR><FONT SIZE=3D2>To: Aristeu Sergio Rozanski Filho =
+&lt;aris@cathedrallabs.org&gt;</FONT>
+<BR><FONT SIZE=3D2>Cc: linuxppc-embedded@ozlabs.org</FONT>
+<BR><FONT SIZE=3D2>Message-ID: =
+&lt;2fcd8a329246b2f2c303e515dd0cb7bf@embeddededge.com&gt;</FONT>
+<BR><FONT SIZE=3D2>Content-Type: text/plain; charset=3DUS-ASCII; =
+format=3Dflowed</FONT>
+</P>
+<BR>
+
+<P><FONT SIZE=3D2>On Aug 7, 2005, at 11:44 AM, Aristeu Sergio Rozanski =
+Filho wrote:</FONT>
+</P>
+
+<P><FONT SIZE=3D2>&gt; what about don't cache it and call ioremap() =
+from driver? (I guess</FONT>
+<BR><FONT SIZE=3D2>&gt; ioremap() already check if an area is already =
+mapped, no?)</FONT>
+</P>
+
+<P><FONT SIZE=3D2>Either way.&nbsp; I'm actually leaning toward these =
+&quot;pointer helper&quot;</FONT>
+<BR><FONT SIZE=3D2>functions. :-)&nbsp; Something like get_cpmp(), or =
+get_immr(), that will hide the details of the mapping, so you don't =
+have to include and know which #defines to use as part of an ioremap() =
+call.</FONT></P>
+
+<P><FONT SIZE=3D2>It seems to be more clear to me, and I'm thinking =
+about making the same changes to the CPM2 drivers.&nbsp; It also allows =
+a performance versus compact code trade off, declaring these as inline =
+functions or as real functions.</FONT></P>
+
+<P><FONT SIZE=3D2>Thanks.</FONT>
+</P>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <FONT SIZE=3D2>-- =
+Dan</FONT>
+</P>
+<BR>
+<BR>
+
+<P><FONT SIZE=3D2>------------------------------</FONT>
+</P>
+
+<P><FONT SIZE=3D2>Message: 9</FONT>
+<BR><FONT SIZE=3D2>Date: Sun, 7 Aug 2005 12:18:29 -0700</FONT>
+<BR><FONT SIZE=3D2>From: Eugene Surovegin =
+&lt;ebs@ebshome.net&gt;</FONT>
+<BR><FONT SIZE=3D2>Subject: Re: [PATCH] 8xx: add cpm_get_cpmp()</FONT>
+<BR><FONT SIZE=3D2>To: Marcelo Tosatti =
+&lt;marcelo.tosatti@cyclades.com&gt;</FONT>
+<BR><FONT SIZE=3D2>Cc: linuxppc-embedded@ozlabs.org</FONT>
+<BR><FONT SIZE=3D2>Message-ID: =
+&lt;20050807191829.GA5375@gate.ebshome.net&gt;</FONT>
+<BR><FONT SIZE=3D2>Content-Type: text/plain; charset=3Dus-ascii</FONT>
+</P>
+
+<P><FONT SIZE=3D2>On Sun, Aug 07, 2005 at 12:57:31PM -0300, Marcelo =
+Tosatti wrote:</FONT>
+<BR><FONT SIZE=3D2>&gt; On Sun, Aug 07, 2005 at 12:44:32PM -0300, =
+Aristeu Sergio Rozanski Filho wrote:</FONT>
+<BR><FONT SIZE=3D2>&gt; &gt; &gt; It depends how you define the =
+semantics of this function call.</FONT>
+<BR><FONT SIZE=3D2>&gt; &gt; &gt; Can you call it any (and all of the) =
+time you need it, or does it </FONT>
+<BR><FONT SIZE=3D2>&gt; &gt; &gt; actually perform an ioremap() and you =
+only want to call it once?</FONT>
+<BR><FONT SIZE=3D2>&gt; &gt; what about don't cache it and call =
+ioremap() from driver? (I guess</FONT>
+<BR><FONT SIZE=3D2>&gt; &gt; ioremap() already check if an area is =
+already mapped, no?)</FONT>
+<BR><FONT SIZE=3D2>&gt; </FONT>
+<BR><FONT SIZE=3D2>&gt; Yep, ioremap() should be doing virtual address =
+caching already, no?</FONT>
+</P>
+
+<P><FONT SIZE=3D2>In general, ioremap() doesn't do any caching =
+currently. Some subarchs do some limited caching, e.g. if BATs (classic =
+PPC) or CAMs (e500) are available and were used previously for =
+ioremap() mappings. </FONT></P>
+
+<P><FONT SIZE=3D2>Some time ago I made a trivial ioremap cache patch =
+(useful on 4xx, which doesn't have BATs nor CAMs), although it wass =
+really a hack and it was never merged :).</FONT></P>
+
+<P><FONT SIZE=3D2>--</FONT>
+<BR><FONT SIZE=3D2>Eugene</FONT>
+</P>
+<BR>
+<BR>
+
+<P><FONT SIZE=3D2>------------------------------</FONT>
+</P>
+
+<P><FONT SIZE=3D2>Message: 10</FONT>
+<BR><FONT SIZE=3D2>Date: Mon, 8 Aug 2005 09:53:32 +0800</FONT>
+<BR><FONT SIZE=3D2>From: &quot;Debora Liu&quot; =
+&lt;deboralh@fel.com.cn&gt;</FONT>
+<BR><FONT SIZE=3D2>Subject: Re: Volunteers to test i2c-algo-8xx on =
+v2.6?</FONT>
+<BR><FONT SIZE=3D2>To: &quot;Marcelo Tosatti&quot; =
+&lt;marcelo.tosatti@cyclades.com&gt;</FONT>
+<BR><FONT SIZE=3D2>Cc: Linuxppc-embedded =
+&lt;Linuxppc-embedded@ozlabs.org&gt;</FONT>
+<BR><FONT SIZE=3D2>Message-ID: =
+&lt;20050808014920.0373467F1E@ozlabs.org&gt;</FONT>
+</P>
+
+<P><FONT SIZE=3D2>Hello, Marcelo Tosatti</FONT>
+</P>
+
+<P><FONT SIZE=3D2>In message &lt;2005-08-07 08:34:52 =
+marcelo.tosatti@cyclades.com&gt; you wrote:</FONT>
+<BR><FONT SIZE=3D2>&gt;</FONT>
+<BR><FONT SIZE=3D2>&gt;Does anyone volunteer to test this 8xx i2c =
+driver?</FONT>
+<BR><FONT SIZE=3D2>&gt;</FONT>
+<BR><FONT SIZE=3D2>&gt;</FONT>
+<BR><FONT SIZE=3D2>I don't have kernel v2.6, but I have test my board =
+with eldk-3.1.1 linux-2.4.25</FONT>
+<BR><FONT SIZE=3D2>when my board kernel booting, I found one =
+problem.</FONT>
+<BR><FONT SIZE=3D2>eldk-3.1.1 linux-2.4.25 kernel include i2c, =
+i2c-algo-8xx, pcf8563 driver.</FONT>
+<BR><FONT SIZE=3D2>If one pcf8563 chip on my board, there are't =
+problem.</FONT>
+<BR><FONT SIZE=3D2>But if my board don't have pcf8563 chip, kernel stop =
+as blow:</FONT>
+<BR><FONT SIZE=3D2>Linux version 2.4.25 (liu@bighead) (gcc version =
+3.3.3 (DENX ELDK 3.1.1 3.3.3-9))</FONT>
+<BR><FONT SIZE=3D2>#4 =CE=E5 7=D4=C2 29 12:19:14 CST 2005</FONT>
+<BR><FONT SIZE=3D2>m8xx_setup.c:Reserved 0x10000 memory at =
+0xc0190000</FONT>
+<BR><FONT SIZE=3D2>On node 0 totalpages: 8192</FONT>
+<BR><FONT SIZE=3D2>zone(0): 8192 pages.</FONT>
+<BR><FONT SIZE=3D2>zone(1): 0 pages.</FONT>
+<BR><FONT SIZE=3D2>zone(2): 0 pages.</FONT>
+<BR><FONT SIZE=3D2>Kernel command line: root=3D/dev/nftla1 =
+ip=3D192.168.0.207:192.168.0.82:::sc855t:eth</FONT>
+<BR><FONT SIZE=3D2>0:off</FONT>
+<BR><FONT SIZE=3D2>Decrementer Frequency =3D 300000000/60</FONT>
+<BR><FONT SIZE=3D2>Warning: real time clock seems stuck!</FONT>
+<BR><FONT SIZE=3D2>Calibrating delay loop... 79.66 BogoMIPS</FONT>
+<BR><FONT SIZE=3D2>=3D=3D=3D=3D=3D=3D=3D=3D=3D HZ=3D100&nbsp;&nbsp; =
+loops_per_jiffy=3D398336</FONT>
+<BR><FONT SIZE=3D2>Memory: 30752k available (1144k kernel code, 356k =
+data, 56k init, 0k highmem)</FONT>
+<BR><FONT SIZE=3D2>Dentry cache hash table entries: 4096 (order: 3, =
+32768 bytes)</FONT>
+<BR><FONT SIZE=3D2>Inode cache hash table entries: 2048 (order: 2, =
+16384 bytes)</FONT>
+<BR><FONT SIZE=3D2>Mount cache hash table entries: 512 (order: 0, 4096 =
+bytes)</FONT>
+<BR><FONT SIZE=3D2>Buffer cache hash table entries: 1024 (order: 0, =
+4096 bytes)</FONT>
+<BR><FONT SIZE=3D2>Page-cache hash table entries: 8192 (order: 3, 32768 =
+bytes)</FONT>
+<BR><FONT SIZE=3D2>POSIX conformance testing by UNIFIX</FONT>
+<BR><FONT SIZE=3D2>WDT_8xx: SWT not enabled by firmware, =
+SYPCR=3D0xffffff88</FONT>
+<BR><FONT SIZE=3D2>Linux NET4.0 for Linux 2.4</FONT>
+<BR><FONT SIZE=3D2>Based upon Swansea University Computer Society =
+NET3.039</FONT>
+<BR><FONT SIZE=3D2>Initializing RT netlink socket</FONT>
+<BR><FONT SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Starting =
+kswapd</FONT>
+<BR><FONT SIZE=3D2>Journalled Block Device driver loaded</FONT>
+<BR><FONT SIZE=3D2>i2c-core.o: i2c core module version 2.6.1 =
+(20010830)</FONT>
+<BR><FONT SIZE=3D2>i2c-dev.o: i2c /dev entries driver module version =
+2.6.1 (20010830)</FONT>
+<BR><FONT SIZE=3D2>i2c-algo-8xx.o: i2c mpc8xx algorithm module version =
+2.6.1 (20010830)</FONT>
+<BR><FONT SIZE=3D2>i2c-rpx.o: i2c MPC8xx module version 2.6.1 =
+(20010830)</FONT>
+<BR><FONT SIZE=3D2>i2c-proc.o version 2.6.1 (20010830)</FONT>
+<BR><FONT SIZE=3D2>CPM UART driver version 0.04</FONT>
+<BR><FONT SIZE=3D2>ttyS0 at 0x0280 is on SMC1 using BRG1</FONT>
+<BR><FONT SIZE=3D2>ttyS1 at 0x0380 is on SMC2 using BRG2</FONT>
+<BR><FONT SIZE=3D2>pty: 256 Unix98 ptys configured</FONT>
+<BR><FONT SIZE=3D2>PCF8563 Real-Time Clock Driver $Revision: 1.3 $ =
+wd@denx.de</FONT>
+</P>
+<BR>
+<BR>
+
+<P><FONT SIZE=3D2>I modify i2c-algo-8xx.c cpm_iic_write(), then no =
+problem,</FONT>
+<BR><FONT SIZE=3D2>my board defined by CONFIG_SVM8xx</FONT>
+</P>
+
+<P><FONT SIZE=3D2>#ifdef CONFIG_SVM8xx</FONT>
+<BR><FONT SIZE=3D2>&nbsp;&nbsp;&nbsp; while(!(i2c-&gt;i2c_i2cer &amp; =
+0x12))</FONT>
+<BR><FONT SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if =
+(time_after(jiffies, tmo)) {</FONT>
+<BR><FONT SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; tmo =3D =
+0;</FONT>
+<BR><FONT SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+break;</FONT>
+<BR><FONT SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</FONT>
+<BR><FONT SIZE=3D2>#else</FONT>
+<BR><FONT =
+SIZE=3D2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp; while(!(i2c-&gt;i2c_i2cer &amp; 0x12 || =
+time_after(jiffies, tmo))); /* Bus</FONT>
+<BR><FONT SIZE=3D2>#endif</FONT>
+</P>
+<BR>
+<BR>
+
+<P><FONT SIZE=3D2>=3D =3D =3D =3D =3D =3D =3D =3D =3D =3D =3D =3D =3D =
+=3D =3D =3D =3D =3D =3D =3D</FONT>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT SIZE=3D2> </FONT>
+<BR><FONT =
+SIZE=3D2>=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1Debora =
+Liu</FONT>
+<BR><FONT =
+SIZE=3D2>=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1deboralh@fel.co=
+m.cn</FONT>
+<BR><FONT =
+SIZE=3D2>=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1200=
+5-08-08</FONT>
+</P>
+<BR>
+<BR>
+<BR>
+<BR>
+
+<P><FONT SIZE=3D2>------------------------------</FONT>
+</P>
+
+<P><FONT =
+SIZE=3D2>_______________________________________________</FONT>
+<BR><FONT SIZE=3D2>Linuxppc-embedded mailing list</FONT>
+<BR><FONT SIZE=3D2>Linuxppc-embedded@ozlabs.org</FONT>
+<BR><FONT SIZE=3D2><A =
+HREF=3D"https://ozlabs.org/mailman/listinfo/linuxppc-embedded" =
+TARGET=3D"_blank">https://ozlabs.org/mailman/listinfo/linuxppc-embedded<=
+/A></FONT>
+</P>
+
+<P><FONT SIZE=3D2>End of Linuxppc-embedded Digest, Vol 12, Issue =
+25</FONT>
+<BR><FONT =
+SIZE=3D2>*************************************************</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C59C1B.AECD5730--
