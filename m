@@ -1,18 +1,20 @@
 Return-Path: <kumar.gala@freescale.com>
 Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 883EB67E30
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id AD38067F5B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  9 Aug 2005 02:59:16 +1000 (EST)
-In-Reply-To: <8E342283C2100540AAC5D10309705477749C5F@rcexc.racoms.loc>
-References: <8E342283C2100540AAC5D10309705477749C5F@rcexc.racoms.loc>
+	Tue,  9 Aug 2005 03:06:05 +1000 (EST)
+In-Reply-To: <Pine.LNX.4.61.0508040858290.13245@nylon.am.freescale.net>
+References: <Pine.LNX.4.61.0508040858290.13245@nylon.am.freescale.net>
 Mime-Version: 1.0 (Apple Message framework v733)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <99DF4154-7A02-4CE1-8DE7-4BB71570B06D@freescale.com>
+Message-Id: <C9F14415-10D2-4D15-8609-78215B9E2E34@freescale.com>
 From: Kumar Gala <kumar.gala@freescale.com>
-Date: Mon, 8 Aug 2005 11:59:18 -0500
-To: "Schaefer-Hutter, Peter" <Peter.Schaefer-Hutter@tfk-racoms.com>
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] cpm_uart_core.c GCC4.x compilation fix
+Date: Mon, 8 Aug 2005 12:06:01 -0500
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: Andrew Morton <akpm@osdl.org>, Jiang Bo-r61859 <Tanya.jiang@freescale.com>,
+	linux-kernel list <linux-kernel@vger.kernel.org>,
+	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] ppc32: Fix MPC834x USB memory map offsets
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,47 +25,59 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Peter,
+Linus,
 
-Patch looks good.  Can't believe we lost the '=' in the  
-initialization.  Will queue this up with a few other CPM_UART related  
-patches.
+If this can go into 2.6.13 that would be good since is a fairly  
+trivial bug and fix.
 
 - kumar
 
-On Aug 8, 2005, at 8:57 AM, Schaefer-Hutter, Peter wrote:
+On Aug 4, 2005, at 8:59 AM, Gala Kumar K.-galak wrote:
 
-> cpm_uart_core.c: needs some love to compile with GCC4.0.1.
+> The memory mappings for MPC8349 USB MPH and DR modules were reversed.
 >
-> Signed-off-by: Peter Schaefer-Hutter
-> <peter.schaefer-hutter@tfk-racoms.com>
+> Signed-off-by: Li Yang <LeoLi@freescale.com>
+> Signed-off-by: Jiang Bo <Tanya.jiang@freescale.com>
+> Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 >
-> --- a/drivers/serial/cpm_uart/cpm_uart_core.c    2005-08-08
-> 15:49:16.725292392 +0200
-> +++ b/drivers/serial/cpm_uart/cpm_uart_core.c    2005-08-08
-> 15:33:47.691526992 +0200
-> @@ -1134,14 +1134,14 @@
->      return 0;
->  }
+> ---
+> commit a2227df6ac23000dff7d95411ae5bd8022437ad3
+> tree d22a59e837eb881b1292f70e51df561802b279df
+> parent 51904043565cdfb348f58ce99377427c5ffe25fd
+> author Kumar K. Gala <kumar.gala@freescale.com> Thu, 04 Aug 2005
+> 08:57:58 -0500
+> committer Kumar K. Gala <kumar.gala@freescale.com> Thu, 04 Aug 2005
+> 08:57:58 -0500
 >
-> -extern struct uart_driver cpm_reg;
-> +static struct uart_driver cpm_reg;
->  static struct console cpm_scc_uart_console = {
-> -    .name        "ttyCPM",
-> -    .write        cpm_uart_console_write,
-> -    .device        uart_console_device,
-> -    .setup        cpm_uart_console_setup,
-> -    .flags        CON_PRINTBUFFER,
-> -    .index        -1,
-> +    .name        = "ttyCPM",
-> +    .write        = cpm_uart_console_write,
-> +    .device        = uart_console_device,
-> +    .setup        = cpm_uart_console_setup,
-> +    .flags        = CON_PRINTBUFFER,
-> +    .index        = -1,
->      .data        = &cpm_reg,
->  };
+>  arch/ppc/syslib/mpc83xx_devices.c |    8 ++++----
+>  1 files changed, 4 insertions(+), 4 deletions(-)
 >
+> diff --git a/arch/ppc/syslib/mpc83xx_devices.c
+> b/arch/ppc/syslib/mpc83xx_devices.c
+> --- a/arch/ppc/syslib/mpc83xx_devices.c
+> +++ b/arch/ppc/syslib/mpc83xx_devices.c
+> @@ -191,8 +191,8 @@ struct platform_device ppc_sys_platform_
+>          .num_resources     = 2,
+>          .resource = (struct resource[]) {
+>              {
+> -                .start    = 0x22000,
+> -                .end    = 0x22fff,
+> +                .start    = 0x23000,
+> +                .end    = 0x23fff,
+>                  .flags    = IORESOURCE_MEM,
+>              },
+>              {
+> @@ -208,8 +208,8 @@ struct platform_device ppc_sys_platform_
+>          .num_resources     = 2,
+>          .resource = (struct resource[]) {
+>              {
+> -                .start    = 0x23000,
+> -                .end    = 0x23fff,
+> +                .start    = 0x22000,
+> +                .end    = 0x22fff,
+>                  .flags    = IORESOURCE_MEM,
+>              },
+>              {
 > _______________________________________________
 > Linuxppc-embedded mailing list
 > Linuxppc-embedded@ozlabs.org
