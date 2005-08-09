@@ -1,17 +1,18 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id EAB3767FFB
+Return-Path: <dale@farnsworth.org>
+Received: from xyzzy.farnsworth.org (unknown [65.200.49.142])
+	by ozlabs.org (Postfix) with SMTP id 35EA667FB1
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Aug 2005 05:11:35 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Tue, 9 Aug 2005 14:11:33 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B85941D@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Eugene Surovegin" <ebs@ebshome.net>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: Wall clock accuracy
+	Wed, 10 Aug 2005 05:23:27 +1000 (EST)
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Tue, 9 Aug 2005 12:23:25 -0700
+To: Dale Farnsworth <dale@farnsworth.org>, linuxppc-embedded@ozlabs.org
+Message-ID: <20050809192324.GB20480@xyzzy.farnsworth.org>
+References: <20050809185327.GA19340@xyzzy.farnsworth.org>
+	<20050809190319.GC30956@gate.ebshome.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050809190319.GC30956@gate.ebshome.net>
+Subject: Re: [PATCH] ppc32: Add usb support to IBM stb04xxx platforms
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,56 +23,158 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Eugene Surovegin [mailto:ebs@ebshome.net]=20
-> Sent: Tuesday, August 09, 2005 13:57
-> > and it would be much better to just
-> > use the clockrate given to the kernel than have to hardcode=20
-> it into the
-> > kernel.
->=20
-> Nothing prevents you from defining this macro as a function call for=20
-> example. If this is needed for your CPU/board port. Probably common
-> case will be a constant, though.
+On Tue, Aug 09, 2005 at 12:03:19PM -0700, Eugene Surovegin wrote:
+> On Tue, Aug 09, 2005 at 11:53:27AM -0700, Dale Farnsworth wrote:
+> [snip]
+> 
+> > Index: linux-2.5-usb-405/arch/ppc/platforms/4xx/redwood5.c
+> > ===================================================================
+> > --- linux-2.5-usb-405.orig/arch/ppc/platforms/4xx/redwood5.c
+> > +++ linux-2.5-usb-405/arch/ppc/platforms/4xx/redwood5.c
+> > @@ -52,8 +52,18 @@
+> >  void __init
+> >  redwood5_setup_arch(void)
+> >  {
+> > +	u32 mask;
+> > +
+> >  	ppc4xx_setup_arch();
+> >  
+> > +	/*
+> > +	 * Set up USB interrupt as positive polarity and level-sensitive.
+> > +	 * Firmware should do this, but apparently does not.
+> > +	 */
+> > +	mask = 1 << (31 - USB0_IRQ);
+> > +	mtdcr(DCRN_UIC_PR(UIC0), mfdcr(DCRN_UIC_PR(UIC0)) | mask);
+> > +	mtdcr(DCRN_UIC_TR(UIC0), mfdcr(DCRN_UIC_TR(UIC0)) & ~mask);
+> > +
+> 
+> Please, DO NOT DO THIS. 
+> 
+> There is a way to configure UIC settings without messing with UIC 
+> registers directly. Refer to asm-ppc/ppc4xx_pic.h and other 4xx board 
+> ports for more information.
+> 
+> Eugene
 
-Problem is that time_nsec is not directly set to CLOCK_TICK_RATE but
-goes through some calculations I'd rather not have to lots of times in
-runtime (maybe I'm not seeing how it could be done)
-
-Anyways, the #define chain leading to time_nsec is:
-
-unsigned long tick_nsec =3D TICK_NSEC;		/* ACTHZ period (nsec)
-*/	kernel/time.c:562
-
-#define CLOCK_TICK_RATE	1193180 /* Underlying HZ */
-asm-ppc/timex.h:14
-
-Include/linux/jiffies.h:45 and out
-/* LATCH is used in the interval timer and ftape setup. */
-#define LATCH  ((CLOCK_TICK_RATE + HZ/2) / HZ)	/* For divider */
-
-/* Suppose we want to devide two numbers NOM and DEN: NOM/DEN, the we
-can
- * improve accuracy by shifting LSH bits, hence calculating:
- *     (NOM << LSH) / DEN
- * This however means trouble for large NOM, because (NOM << LSH) may no
- * longer fit in 32 bits. The following way of calculating this gives us
- * some slack, under the following conditions:
- *   - (NOM / DEN) fits in (32 - LSH) bits.
- *   - (NOM % DEN) fits in (32 - LSH) bits.
- */
-#define SH_DIV(NOM,DEN,LSH) (   ((NOM / DEN) << LSH)
-\
-                             + (((NOM % DEN) << LSH) + DEN / 2) / DEN)
-
-/* HZ is the requested value. ACTHZ is actual HZ ("<< 8" is for
-accuracy) */
-#define ACTHZ (SH_DIV (CLOCK_TICK_RATE, LATCH, 8))
-
-/* TICK_NSEC is the time between ticks in nsec assuming real ACTHZ */
-#define TICK_NSEC (SH_DIV (1000000UL * 1000, ACTHZ, 8))
+Deja vu all over again, eh Eugene?  I re-submitted the wrong old patch.
+Correct (I hope) patch follows.
 
 
-I cannot se a clean easy way of changing time_nsec or TIME_NSEC runtime
-without messing with code that probably should not be messed with.
-Of course I am probably wrong.
+
+
+Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+
+Index: linux-2.5-usb-405/arch/ppc/platforms/4xx/ibmstb4.c
+===================================================================
+--- linux-2.5-usb-405.orig/arch/ppc/platforms/4xx/ibmstb4.c
++++ linux-2.5-usb-405/arch/ppc/platforms/4xx/ibmstb4.c
+@@ -11,6 +11,7 @@
+ 
+ #include <linux/init.h>
+ #include <asm/ocp.h>
++#include <asm/ppc4xx_pic.h>
+ #include <platforms/4xx/ibmstb4.h>
+ 
+ static struct ocp_func_iic_data ibmstb4_iic0_def = {
+@@ -72,12 +73,51 @@
+ 	  .irq		= IDE0_IRQ,
+ 	  .pm		= OCP_CPM_NA,
+ 	},
+-	{ .vendor	= OCP_VENDOR_IBM,
+-	  .function	= OCP_FUNC_USB,
+-	  .paddr	= USB0_BASE,
+-	  .irq		= USB0_IRQ,
+-	  .pm		= OCP_CPM_NA,
+-	},
+ 	{ .vendor	= OCP_VENDOR_INVALID,
+ 	}
+ };
++
++/* Polarity and triggering settings for internal interrupt sources */
++struct ppc4xx_uic_settings ppc4xx_core_uic_cfg[] __initdata = {
++	{ .polarity 	= 0x7fffff01,
++	  .triggering	= 0x00000000,
++	  .ext_irq_mask	= 0x0000007e,	/* IRQ0 - IRQ5 */
++	}
++};
++
++static struct resource ohci_usb_resources[] = {
++	[0] = {
++		.start	= USB0_BASE,
++		.end	= USB0_BASE + USB0_SIZE - 1,
++		.flags	= IORESOURCE_MEM,
++	},
++	[1] = {
++		.start	= USB0_IRQ,
++		.end	= USB0_IRQ,
++		.flags	= IORESOURCE_IRQ,
++	},
++};
++
++static u64 dma_mask = 0xffffffffULL;
++
++static struct platform_device ohci_usb_device = {
++	.name		= "ppc-soc-ohci",
++	.id		= 0,
++	.num_resources	= ARRAY_SIZE(ohci_usb_resources),
++	.resource	= ohci_usb_resources,
++	.dev		= {
++		.dma_mask = &dma_mask,
++		.coherent_dma_mask = 0xffffffffULL,
++	}
++};
++
++static struct platform_device *ibmstb4_devs[] __initdata = {
++	&ohci_usb_device,
++};
++
++static int __init
++ibmstb4_platform_add_devices(void)
++{
++	return platform_add_devices(ibmstb4_devs, ARRAY_SIZE(ibmstb4_devs));
++}
++arch_initcall(ibmstb4_platform_add_devices);
+Index: linux-2.5-usb-405/arch/ppc/platforms/4xx/ibmstb4.h
+===================================================================
+--- linux-2.5-usb-405.orig/arch/ppc/platforms/4xx/ibmstb4.h
++++ linux-2.5-usb-405/arch/ppc/platforms/4xx/ibmstb4.h
+@@ -73,9 +73,9 @@
+ #define OPB0_BASE	0x40000000
+ #define GPIO0_BASE	0x40060000
+ 
++#define USB0_BASE	0x40010000
++#define USB0_SIZE	0xA0
+ #define USB0_IRQ	18
+-#define USB0_BASE	STB04xxx_MAP_IO_ADDR(0x40010000)
+-#define USB0_EXTENT 4096
+ 
+ #define IIC_NUMS 2
+ #define UART_NUMS	3
+Index: linux-2.5-usb-405/arch/ppc/platforms/4xx/redwood5.c
+===================================================================
+--- linux-2.5-usb-405.orig/arch/ppc/platforms/4xx/redwood5.c
++++ linux-2.5-usb-405/arch/ppc/platforms/4xx/redwood5.c
+@@ -18,6 +18,19 @@
+ #include <linux/ioport.h>
+ #include <asm/io.h>
+ #include <asm/machdep.h>
++#include <asm/ppc4xx_pic.h>
++
++/*
++ * Define external IRQ senses and polarities.
++ */
++unsigned char ppc4xx_uic_ext_irq_cfg[] __initdata = {
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext Int 0 */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext Int 1 */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext Int 2 */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext Int 3 */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext Int 4 */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext Int 5 */
++};
+ 
+ static struct resource smc91x_resources[] = {
+ 	[0] = {
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
