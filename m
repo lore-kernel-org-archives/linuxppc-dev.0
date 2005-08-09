@@ -1,20 +1,17 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0143167FE3
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id EAB3767FFB
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Aug 2005 05:03:21 +1000 (EST)
-Date: Tue, 9 Aug 2005 12:03:19 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Dale Farnsworth <dale@farnsworth.org>
-Message-ID: <20050809190319.GC30956@gate.ebshome.net>
-References: <20050809185327.GA19340@xyzzy.farnsworth.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050809185327.GA19340@xyzzy.farnsworth.org>
+	Wed, 10 Aug 2005 05:11:35 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Tue, 9 Aug 2005 14:11:33 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B85941D@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Eugene Surovegin" <ebs@ebshome.net>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATH] ppc32: Add usb support to IBM stb04xxx platforms
+Subject: RE: Wall clock accuracy
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,35 +22,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 09, 2005 at 11:53:27AM -0700, Dale Farnsworth wrote:
-[snip]
+> -----Original Message-----
+> From: Eugene Surovegin [mailto:ebs@ebshome.net]=20
+> Sent: Tuesday, August 09, 2005 13:57
+> > and it would be much better to just
+> > use the clockrate given to the kernel than have to hardcode=20
+> it into the
+> > kernel.
+>=20
+> Nothing prevents you from defining this macro as a function call for=20
+> example. If this is needed for your CPU/board port. Probably common
+> case will be a constant, though.
 
-> Index: linux-2.5-usb-405/arch/ppc/platforms/4xx/redwood5.c
-> ===================================================================
-> --- linux-2.5-usb-405.orig/arch/ppc/platforms/4xx/redwood5.c
-> +++ linux-2.5-usb-405/arch/ppc/platforms/4xx/redwood5.c
-> @@ -52,8 +52,18 @@
->  void __init
->  redwood5_setup_arch(void)
->  {
-> +	u32 mask;
-> +
->  	ppc4xx_setup_arch();
->  
-> +	/*
-> +	 * Set up USB interrupt as positive polarity and level-sensitive.
-> +	 * Firmware should do this, but apparently does not.
-> +	 */
-> +	mask = 1 << (31 - USB0_IRQ);
-> +	mtdcr(DCRN_UIC_PR(UIC0), mfdcr(DCRN_UIC_PR(UIC0)) | mask);
-> +	mtdcr(DCRN_UIC_TR(UIC0), mfdcr(DCRN_UIC_TR(UIC0)) & ~mask);
-> +
+Problem is that time_nsec is not directly set to CLOCK_TICK_RATE but
+goes through some calculations I'd rather not have to lots of times in
+runtime (maybe I'm not seeing how it could be done)
 
-Please, DO NOT DO THIS. 
+Anyways, the #define chain leading to time_nsec is:
 
-There is a way to configure UIC settings without messing with UIC 
-registers directly. Refer to asm-ppc/ppc4xx_pic.h and other 4xx board 
-ports for more information.
+unsigned long tick_nsec =3D TICK_NSEC;		/* ACTHZ period (nsec)
+*/	kernel/time.c:562
 
--- 
-Eugene
+#define CLOCK_TICK_RATE	1193180 /* Underlying HZ */
+asm-ppc/timex.h:14
+
+Include/linux/jiffies.h:45 and out
+/* LATCH is used in the interval timer and ftape setup. */
+#define LATCH  ((CLOCK_TICK_RATE + HZ/2) / HZ)	/* For divider */
+
+/* Suppose we want to devide two numbers NOM and DEN: NOM/DEN, the we
+can
+ * improve accuracy by shifting LSH bits, hence calculating:
+ *     (NOM << LSH) / DEN
+ * This however means trouble for large NOM, because (NOM << LSH) may no
+ * longer fit in 32 bits. The following way of calculating this gives us
+ * some slack, under the following conditions:
+ *   - (NOM / DEN) fits in (32 - LSH) bits.
+ *   - (NOM % DEN) fits in (32 - LSH) bits.
+ */
+#define SH_DIV(NOM,DEN,LSH) (   ((NOM / DEN) << LSH)
+\
+                             + (((NOM % DEN) << LSH) + DEN / 2) / DEN)
+
+/* HZ is the requested value. ACTHZ is actual HZ ("<< 8" is for
+accuracy) */
+#define ACTHZ (SH_DIV (CLOCK_TICK_RATE, LATCH, 8))
+
+/* TICK_NSEC is the time between ticks in nsec assuming real ACTHZ */
+#define TICK_NSEC (SH_DIV (1000000UL * 1000, ACTHZ, 8))
+
+
+I cannot se a clean easy way of changing time_nsec or TIME_NSEC runtime
+without messing with code that probably should not be messed with.
+Of course I am probably wrong.
