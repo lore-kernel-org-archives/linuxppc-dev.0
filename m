@@ -2,21 +2,19 @@ Return-Path: <ebs@ebshome.net>
 Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 6DB2567FD7
+	by ozlabs.org (Postfix) with ESMTP id 92C1667FF5
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Aug 2005 02:26:52 +1000 (EST)
-Date: Tue, 9 Aug 2005 09:26:49 -0700
+	Wed, 10 Aug 2005 02:30:17 +1000 (EST)
+Date: Tue, 9 Aug 2005 09:30:14 -0700
 From: Eugene Surovegin <ebs@ebshome.net>
-To: Kumar Gala <kumar.gala@freescale.com>
-Message-ID: <20050809162649.GA22053@gate.ebshome.net>
-References: <42F89F49.4000205@softadvances.com>
-	<A9E0A66D-CE6F-4A55-80FD-5D9E57BB6035@freescale.com>
+To: John Otken <jotken@softadvances.com>
+Message-ID: <20050809163014.GB22053@gate.ebshome.net>
+References: <42F89B89.2050000@softadvances.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <A9E0A66D-CE6F-4A55-80FD-5D9E57BB6035@freescale.com>
-Cc: thomas@schnuerer-online.de,
-	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [linuxppc] 2.6.12-3 header <asm/usb.h> missing ?
+In-Reply-To: <42F89B89.2050000@softadvances.com>
+Cc: roffermanns@sysgo.com, linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] Support 440EP On-Chip OHCI USB Host Controller (v2)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,18 +25,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 09, 2005 at 09:50:50AM -0500, Kumar Gala wrote:
-> Why are we bothering with asm-ppc/usb.h anyways?
-> 
-> The structure defn only appears to be used once.  If this is true,  
-> why not just define it in the .c file.
+On Tue, Aug 09, 2005 at 07:03:21AM -0500, John Otken wrote:
+> This updated patch adds support for the AMCC 440EP on-chip
+> OHCI USB host controller.  I tested it on the Bamboo board
+> using the 2.6.13-rc6 kernel.
 > 
 
-Yeah, I think we should stop that unneeded creation of include files 
-which are used only once.
+> @@ -194,8 +194,37 @@ static struct resource usb_gadget_resour
+> 	},
+> };
+> 
+> +static struct resource ohci_usb_resources[] = {
+> +	[0] = {
+> +		.start	= 0x0EF601000,
+> +		.end	= 0x0EF60107F,
+> +		.flags	= IORESOURCE_MEM,
+> +	},
+> +	[1] = {
+> +		.start	= 40,
+> +		.end	= 40,
+> +		.flags	= IORESOURCE_IRQ,
+> +	},
+> +};
+> +
+> static u64 dma_mask = 0xffffffffULL;
+> 
+> +#include <asm/usb.h>
 
-For some strange reason people like doing this, I wonder why. Maybe 
-they were taught this "style" in their CS classes :)?
+Let's place #include directives at the top of the source file.
 
 -- 
 Eugene
