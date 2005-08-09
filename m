@@ -1,19 +1,18 @@
 Return-Path: <kumar.gala@freescale.com>
 Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id CD17068059
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 6E49D6805D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Aug 2005 08:42:32 +1000 (EST)
-In-Reply-To: <20050809150131.7eac43ad.akpm@osdl.org>
-References: <20050809150131.7eac43ad.akpm@osdl.org>
+	Wed, 10 Aug 2005 09:11:09 +1000 (EST)
+In-Reply-To: <F795765B112E7344AF36AA91127964158494FC@xmb-sjc-212.amer.cisco.com>
+References: <F795765B112E7344AF36AA91127964158494FC@xmb-sjc-212.amer.cisco.com>
 Mime-Version: 1.0 (Apple Message framework v733)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <3779A304-7AFC-4476-B0FC-794BD0351270@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <8C5303AF-0D73-45BC-9783-BE58C6BB214F@freescale.com>
 From: Kumar Gala <kumar.gala@freescale.com>
-Date: Tue, 9 Aug 2005 17:42:31 -0500
-To: Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, "Gala Kumar K.-galak" <galak@freescale.com>,
-	linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] ppc32: Added support for the Book-E style Watchdog Timer
+Date: Tue, 9 Aug 2005 18:11:12 -0500
+To: "Bizhan Gholikhamseh \\(((bgholikh\\)))" <bgholikh@cisco.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: pci_enable_device fails on MPC8541
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,79 +23,92 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Do you need support for the VIA IDE controller?  I'm not sure if that  
+is causing you issues.
 
-On Aug 9, 2005, at 5:01 PM, Andrew Morton wrote:
+Also, can you try enabling DEBUG in arch/ppc/kernel/pci.c and send a  
+boot log.  I'm trying to figure out what is causing the resource  
+conflict.  It appears that the memory resource is reasonable, but  
+there could be possible conflict on the IO resource side.
 
-> Kumar Gala <galak@freescale.com> wrote:
->
->>
->> PowerPC 40x and Book-E processors support a watchdog timer at the
->>
-> processor
->
->> core level.  The timer has implementation dependent timeout
->>
-> frequencies
->
->> that can be configured by software.
->>
->> One the first Watchdog timeout we get a critical exception.  It is
->>
-> left
->
->> to board specific code to determine what should happen at this point.
->>
-> If
->
->> nothing is done and another timeout period expires the processor may
->> attempt to reset the machine.
->>
->> Command line parameters:
->>   wdt=0 : disable watchdog (default)
->>   wdt=1 : enable watchdog
->>
->>   wdt_period=N : N sets the value of the Watchdog Timer Period.
->>
->>   The Watchdog Timer Period meaning is implementation specific. Check
->>   User Manual for the processor for more details.
->>
->> This patch is based off of work done by Takeharu Kato.
->>
->> ...
->>
->> +#ifdef CONFIG_BOOKE_WDT
->> +/* Checks wdt=x and wdt_period=xx command-line option */
->> +int __init early_parse_wdt(char *p)
->> +{
->> +    extern u32 wdt_enable;
->> +
->> +    if (p && strncmp(p, "0", 1) != 0)
->> +           wdt_enable = 1;
->> +
->> +    return 0;
->> +}
->> +early_param("wdt", early_parse_wdt);
->> +
->> +int __init early_parse_wdt_period (char *p)
->> +{
->> +    extern u32 wdt_period;
->> +
->> +    if (p)
->> +        wdt_period = simple_strtoul(p, NULL, 0);
->> +
->> +    return 0;
->> +}
->>
->
->
-> Would prefer to see the declaration of wdt_period in a header file,
-> please.
->
-> But beware that wdt_enable() is already a static symbol in a couple of
-> watchdog drivers.  It might be best to rename the ppc global to
-> something
-> less generic-sounding while you're there.
-
-Ok, will make these changes and send an updated patch.
+Also, if you can send logs of the same thing from the working 8540  
+ADS that would be helpful.
 
 - kumar
+
+On Aug 9, 2005, at 12:18 PM, Bizhan Gholikhamseh \(((bgholikh\))) wrote:
+
+> Hi Kumar,
+> I am using Linux 2.6.11, u-boot 1.1.2.
+> I see failure in pci_enable_device with message:
+> "PCI: Device 0000:02:01.0 not available because of resource  
+> collisions"
+>
+> I have attached three files:
+> lspci_output.txt: out put of the "lspci -v"
+> proc_pci.txt: output of the "cat /proc/pci"
+> u-boot.txt: output of the "pci command at u-boot"
+>
+> Any help greatly appreciated,
+> Bizhan
+> -----Original Message-----
+> From: Kumar Gala [mailto:kumar.gala@freescale.com]
+> Sent: Monday, August 08, 2005 1:34 PM
+> To: Bizhan Gholikhamseh (bgholikh)
+> Cc: linuxppc-embedded@ozlabs.org
+> Subject: Re: pci_enable_device fails on MPC8541
+>
+> Bizhan,
+>
+> A few questions:
+>
+> 1. what kernel version are you using on these boards:
+> 2. can you do an lspci -v on the boards
+>
+> - kumar
+>
+> On Aug 8, 2005, at 1:12 PM, Bizhan Gholikhamseh \(((bgholikh\)))  
+> wrote:
+>
+>
+>> Hi All,
+>> I am using two evaluation board from freescale, 8540ADS and MPC8541.
+>> The same PCI driver is being compiled and loaded on both platforms.
+>> The same PCI driver (developed by me) for DSP board compiled and
+>> loaded on both platforms.
+>>
+>> When I type: "insmod C6415.ko" on 8541 board, I get the following
+>> error:
+>> "PCI: Device 0000:02:01.0 not available because of resource
+>> collisions"
+>> This messages is because of the execution of the generic PCI Linux
+>> command:
+>> "pci_enable_device(pdev)"
+>> The same API has no problem on 8540ADS.
+>>
+>>
+>>
+>>> From UBOOT I can see my device is on bus 3:
+>>>
+>>>
+>> => pci 3
+>> Scanning PCI devices on bus 3
+>> BusDev FUN    VendorID    DeviceID    Device Class    Sub-Class
+>> --------------------------------------------------------------------- 
+>> -
+>> --
+>> --------------------
+>> 03.01.00            0x104c    0xa106        .........
+>>
+>> Any idea why the insmod fails on one board and not on the other one?
+>>
+>> Many thanks in advance,
+>> Bizhan
+>>
+>> <ATT2118305.txt>
+>>
+>>
+>> <lspci_output.txt>
+>> <proc_pci.txt>
+>> <u-boot.txt>
+>
