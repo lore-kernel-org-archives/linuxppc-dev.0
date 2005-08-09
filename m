@@ -1,20 +1,18 @@
-Return-Path: <jotken@softadvances.com>
-Received: from smtpauth05.mail.atl.earthlink.net
-	(smtpauth05.mail.atl.earthlink.net [209.86.89.65])
-	by ozlabs.org (Postfix) with ESMTP id 55E5667F20
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutvdomng.kundenserver.de (moutvdom.kundenserver.de
+	[212.227.126.249]) by ozlabs.org (Postfix) with ESMTP id B635767FD0
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  9 Aug 2005 22:19:11 +1000 (EST)
-Message-ID: <42F89F49.4000205@softadvances.com>
-Date: Tue, 09 Aug 2005 07:19:21 -0500
-From: John Otken <jotken@softadvances.com>
+	Tue,  9 Aug 2005 23:31:51 +1000 (EST)
+Message-ID: <42F8B043.5050804@anagramm.de>
+Date: Tue, 09 Aug 2005 15:31:47 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
 MIME-Version: 1.0
-To: thomas@schnuerer-online.de
-References: <42F7D313.4020109@schnuerer-online.de>
-	<B08CDBCC-6A03-464B-A0F3-28EE5A0BCAAF@freescale.com>
-In-Reply-To: <B08CDBCC-6A03-464B-A0F3-28EE5A0BCAAF@freescale.com>
+To: JohnsonCheng <johnsoncheng@qnap.com.tw>
+References: <0MKrQq-1E2Rl01y8u-0004mW@mxeu12.kundenserver.de>
+In-Reply-To: <0MKrQq-1E2Rl01y8u-0004mW@mxeu12.kundenserver.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: Fwd: [linuxppc] 2.6.12-3 header <asm/usb.h> missing ?
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: A configure error for samba3 on ppc
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,63 +23,74 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Google found it for me.  It is in my "Support 440EP
-On-Chip OHCI USB Host Controller" patch:
+Hi, JohnsonCheng!
 
-http://patchwork.ozlabs.org/linuxppc/patch?id=1965
+you wrote:
+> Yes. But how can I pass the testing?
 
+Running it on the target - where it is actually supposed to work.
 
-diff -uprN a/include/asm-ppc/usb.h b/include/asm-ppc/usb.h
---- a/include/asm-ppc/usb.h	1969-12-31 17:00:00.000000000 -0700
-+++ b/include/asm-ppc/usb.h	2005-08-05 06:13:58.000000000 -0500
-@@ -0,0 +1,13 @@
-+/*
-+ * ppc/usb.h:
-+ *
-+ */
-+#ifndef _PPC_USB_H
-+#define _PPC_USB_H
-+
-+struct usb_hcd_platform_data {
-+	int (*start) (struct platform_device *pdev);
-+	void (*stop) (struct platform_device *pdev);
-+};
-+
-+#endif /* !(_PPC_USB_H) */
+> For cross-compile environment, the HOST and the TARGET are almost not the
+> same, so many utility can configure for cross-compile with host setting
+> except samba.
 
+Well, you can tell configure to skip the tests silently if HOST!=TARGET
+or give the message you got. But I wouldn't expect configure to guess
+how it can get the code from the host to the target.
+Yes, it's indeed a bad virus ;-)
 
-Kumar Gala wrote:
+> It seems not sense.
+
+I'd like to see the message.
+For me I prefer to compile things native - if somehow possible.
+
+Greets,
+
+Clemens Koller
+_______________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Str. 45/1
+81379 Muenchen
+Germany
+
+http://www.anagramm.de
+Phone: +49-89-741518-50
+Fax: +49-89-741518-19
+
+> -----Original Message-----
+> From: Clemens Koller [mailto:clemens.koller@anagramm.de] 
+> Sent: Tuesday, August 09, 2005 6:24 PM
+> To: JohnsonCheng
+> Cc: linuxppc-embedded@ozlabs.org
+> Subject: Re: A configure error for samba3 on ppc
+> 
+> Hi, JohnsonCheng!
+> 
+> you wrote:
+> 
+>>When I configure samba3.0.10 on ppc as following command:
+>>
+>>CC=powerpc-linux-gcc AR=powerpc-linux-ar RANLIB=powerpc-linux-ranlib
+>>./configure -host=powerpc-linux
+>>
+>>I got a configure error message as following:
+>>Configure: error: cannot run test program while cross compiling
+>>See 'config.log' for more details
+>>
+>>I think this is a samba configure bug, do anybody know how to pass it?
 > 
 > 
-> Begin forwarded message:
+> No, it's not a bug. It's exactly what the message trys to tell you.
+> Samba wants to do some tests. But as it's not a native build,
+> it doesn't want to execute itself for the tests. Because
+> samba might not run on a different platform as it was built for.
 > 
->> From: "Thomas S." <thomas@schnuerer-online.de>
->> Date: August 8, 2005 4:48:03 PM CDT
->> To: <linux-kernel@vger.kernel.org>
->> Subject: [linuxppc] 2.6.12-3 header <asm/usb.h> missing ?
->>
->>
->> Hello,
->>
->> Im using Kernel PPC on a MPC5200 board and try to use the onChip  USB. In
->> file /drivers/usb/host/ohci-ppc-soc.c a file <asm/usb.h> is included
->> which seems to be missing. I cant find it anywhere , any ideas ?
->>
->> Thomas
->>
->>
->>
->>
->> -
->> To unsubscribe from this list: send the line "unsubscribe linux- kernel"
->> in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
+> If you want to do the tests, you need to let to do it on the
+> target where it was built for and not where it was built on.
 > 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> Samba works fine over here on ppc embedded systems.
 > 
+> Greets,
+> 
+> Clemens Koller
