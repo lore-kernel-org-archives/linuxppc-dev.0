@@ -1,16 +1,24 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao07.cox.net (fed1rmmtao07.cox.net [68.230.241.32])
-	by ozlabs.org (Postfix) with ESMTP id C293F6800A
+Return-Path: <prashant.alange@gmail.com>
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.206])
+	by ozlabs.org (Postfix) with ESMTP id E27E668003
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Aug 2005 07:38:24 +1000 (EST)
-Date: Tue, 9 Aug 2005 14:38:23 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: akpm@osdl.org
-Message-ID: <20050809143822.A17201@cox.net>
+	Wed, 10 Aug 2005 07:50:35 +1000 (EST)
+Received: by rproxy.gmail.com with SMTP id b11so4995rne
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 09 Aug 2005 14:50:34 -0700 (PDT)
+Message-ID: <6d145b4205080914506cbc5e80@mail.gmail.com>
+Date: Tue, 9 Aug 2005 14:50:33 -0700
+From: Prashant Alange <prashant.alange@gmail.com>
+To: Dan Malek <dan@embeddededge.com>
+In-Reply-To: <e0e99d07a5f20187cf45caac1ee9fa10@embeddededge.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+References: <6d145b42050808193058ee05b4@mail.gmail.com>
+	<5c9191bc3e15d90c966735662c28fa5e@embeddededge.com>
+	<6d145b42050809075718c70574@mail.gmail.com>
+	<e0e99d07a5f20187cf45caac1ee9fa10@embeddededge.com>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: [PATCH] ppc32: Add usb support to IBM stb04xxx platforms
+Subject: Re: How to disable dcache on MPC82xx platform
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,118 +29,62 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Support ochi-ppc-soc.c on IBM stb04xxx platforms
+Thanks Dan for your explaination. I am linking multiple BDs only but
+no of BDs are very large in my case so I am allocating the memory and
+updating the BD pointer for all BDs. I am thinking of using mem start
+parameter option. I even tried using __get_free_page instead of using
+cpm_hostalloc() but that also did not help.
+If i use mem=3D option as kernel command line argument then I will have
+to just ioremap() this reserved address in my driver and start
+accessing the memory.  I do not have to worry about cache related
+things.  right?
 
-Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
-Signed-off-by: Matt Porter <mporter@kernel.crashing.org>
+Thanks again,
+Prashant
 
-Index: linux-2.5-usb-405/arch/ppc/platforms/4xx/ibmstb4.c
-===================================================================
---- linux-2.5-usb-405.orig/arch/ppc/platforms/4xx/ibmstb4.c
-+++ linux-2.5-usb-405/arch/ppc/platforms/4xx/ibmstb4.c
-@@ -11,6 +11,7 @@
- 
- #include <linux/init.h>
- #include <asm/ocp.h>
-+#include <asm/ppc4xx_pic.h>
- #include <platforms/4xx/ibmstb4.h>
- 
- static struct ocp_func_iic_data ibmstb4_iic0_def = {
-@@ -72,12 +73,51 @@
- 	  .irq		= IDE0_IRQ,
- 	  .pm		= OCP_CPM_NA,
- 	},
--	{ .vendor	= OCP_VENDOR_IBM,
--	  .function	= OCP_FUNC_USB,
--	  .paddr	= USB0_BASE,
--	  .irq		= USB0_IRQ,
--	  .pm		= OCP_CPM_NA,
--	},
- 	{ .vendor	= OCP_VENDOR_INVALID,
- 	}
- };
-+
-+/* Polarity and triggering settings for internal interrupt sources */
-+struct ppc4xx_uic_settings ppc4xx_core_uic_cfg[] __initdata = {
-+	{ .polarity 	= 0x7fffff01,
-+	  .triggering	= 0x00000000,
-+	  .ext_irq_mask	= 0x0000007e,	/* IRQ0 - IRQ5 */
-+	}
-+};
-+
-+static struct resource ohci_usb_resources[] = {
-+	[0] = {
-+		.start	= USB0_BASE,
-+		.end	= USB0_BASE + USB0_SIZE - 1,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	[1] = {
-+		.start	= USB0_IRQ,
-+		.end	= USB0_IRQ,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+static u64 dma_mask = 0xffffffffULL;
-+
-+static struct platform_device ohci_usb_device = {
-+	.name		= "ppc-soc-ohci",
-+	.id		= 0,
-+	.num_resources	= ARRAY_SIZE(ohci_usb_resources),
-+	.resource	= ohci_usb_resources,
-+	.dev		= {
-+		.dma_mask = &dma_mask,
-+		.coherent_dma_mask = 0xffffffffULL,
-+	}
-+};
-+
-+static struct platform_device *ibmstb4_devs[] __initdata = {
-+	&ohci_usb_device,
-+};
-+
-+static int __init
-+ibmstb4_platform_add_devices(void)
-+{
-+	return platform_add_devices(ibmstb4_devs, ARRAY_SIZE(ibmstb4_devs));
-+}
-+arch_initcall(ibmstb4_platform_add_devices);
-Index: linux-2.5-usb-405/arch/ppc/platforms/4xx/ibmstb4.h
-===================================================================
---- linux-2.5-usb-405.orig/arch/ppc/platforms/4xx/ibmstb4.h
-+++ linux-2.5-usb-405/arch/ppc/platforms/4xx/ibmstb4.h
-@@ -73,9 +73,9 @@
- #define OPB0_BASE	0x40000000
- #define GPIO0_BASE	0x40060000
- 
-+#define USB0_BASE	0x40010000
-+#define USB0_SIZE	0xA0
- #define USB0_IRQ	18
--#define USB0_BASE	STB04xxx_MAP_IO_ADDR(0x40010000)
--#define USB0_EXTENT 4096
- 
- #define IIC_NUMS 2
- #define UART_NUMS	3
-Index: linux-2.5-usb-405/arch/ppc/platforms/4xx/redwood5.c
-===================================================================
---- linux-2.5-usb-405.orig/arch/ppc/platforms/4xx/redwood5.c
-+++ linux-2.5-usb-405/arch/ppc/platforms/4xx/redwood5.c
-@@ -18,6 +18,19 @@
- #include <linux/ioport.h>
- #include <asm/io.h>
- #include <asm/machdep.h>
-+#include <asm/ppc4xx_pic.h>
-+
-+/*
-+ * Define external IRQ senses and polarities.
-+ */
-+unsigned char ppc4xx_uic_ext_irq_cfg[] __initdata = {
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext Int 0 */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext Int 1 */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext Int 2 */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext Int 3 */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext Int 4 */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext Int 5 */
-+};
- 
- static struct resource smc91x_resources[] = {
- 	[0] = {
+
+On 8/9/05, Dan Malek <dan@embeddededge.com> wrote:
+>=20
+> On Aug 9, 2005, at 10:57 AM, Prashant Alange wrote:
+>=20
+> > Since the existing UART/ethernet drivers are using cpm_hostalloc() so
+> > I am also using the same function.
+>=20
+> As I have said too many times before, cpm_hostalloc() is only used
+> to allocate small memory regions that would otherwise be wasteful
+> with the normal Linux memory allocators.  This function does not
+> do anything special with the memory, aside from allowing us have
+> multiple drivers share a page for efficiency.
+>=20
+> >  Then can I use kmalloc() to alloc
+> > such huge memory.
+>=20
+> Yes, and you should.
+>=20
+> >  If at all I have to configure BATx to just test how
+> > it behaves.
+>=20
+> No, that's not all you have to do.  It's not a trivial process
+> easily described here.
+>=20
+> > .....   One more thing is that
+> > totally I am allocating about 1MB memory in a chunk of 200K.
+>=20
+> I can't comprehend a reason why you need to allocate so much
+> space in a driver, especially for CPM devices.  The driver is just
+> a temporary FIFO for data flowing to/from other consumer/producers
+> of the data in the system.  If the software above a driver needs
+> that kind of buffering, it should manage that itself.
+>=20
+> If you do need so much space, use the beauty of the CPM and
+> link multiple BDs with reasonable sized buffers more easily
+> managed by the existing Linux allocators.
+>=20
+> The other alternative is just reserve memory using the 'mem=3D'
+> start parameter so it isn't know to Linux, and manage entirely
+> yourself.
+>=20
+>=20
+>        -- Dan
+>=20
+>
