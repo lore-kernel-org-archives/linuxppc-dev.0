@@ -1,25 +1,17 @@
-Return-Path: <aris@conectiva.com.br>
-Received: from ivoti.terra.com.br (ivoti.terra.com.br [200.154.55.63])
-	by ozlabs.org (Postfix) with ESMTP id 5B86368044
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id 4A06C68011
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Aug 2005 03:24:57 +1000 (EST)
-Received: from itapoa.terra.com.br (itapoa.terra.com.br [200.176.10.194])
-	by ivoti.terra.com.br (Postfix) with ESMTP id 6C7751479275
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  9 Aug 2005 13:28:53 -0300 (BRT)
-Date: Tue, 9 Aug 2005 13:28:41 -0300
-From: aris@conectiva.com.br
-To: Tom Rini <trini@kernel.crashing.org>
-Message-ID: <20050809162841.GA13871@oops.ghostprotocols.net>
-References: <JPEALJAFNGDDLOPNDIEEKEALDFAA.joakim.tjernlund@lumentis.se>
-	<20050808130523.GF5210@cathedrallabs.org>
-	<20050809161801.GK3187@smtp.west.cox.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050809161801.GK3187@smtp.west.cox.net>
-Cc: Joakim Tjernlund <joakim.tjernlund@lumentis.se>,
-	linuxppc-embedded@ozlabs.org
-Subject: Re: Volunteers to test i2c-algo-8xx on v2.6?
+	Wed, 10 Aug 2005 04:21:11 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Tue, 9 Aug 2005 13:21:09 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B85941B@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Eugene Surovegin" <ebs@ebshome.net>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: Wall clock accuracy
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,10 +22,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> I've tested this version with my cheesy sttm reader on an rpxlite, and
-> with the following, things work:
-I already did that in a separate patch, already sent to Marcelo.
-thanks anyway!
+=20
 
--- 
-Aristeu
+> -----Original Message-----
+> From: Eugene Surovegin [mailto:ebs@ebshome.net]=20
+> Sent: Tuesday, August 09, 2005 12:21
+
+> Fair enough, why then instead of fixing the root cause you are making=20
+> ugly workarounds :) ?
+
+Probably because I did not want to fiddle with the code that did the
+original calculation, and I wanted to see if I could get it totally
+accurate (for the case where there is not a whole number of ns in a
+jiffy).
+
+A proper fix would be for platfrom code to have a way to set time_nsec
+instead of having it set by a constant.
+
+I did say in my original email that thencluded code was not a proper
+patch but more something to show on how a fix could look like, and to
+start a discussion about it.
