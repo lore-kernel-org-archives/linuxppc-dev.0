@@ -1,22 +1,18 @@
-Return-Path: <prashant.alange@gmail.com>
+Return-Path: <jayaprakashns@gmail.com>
 Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.193])
-	by ozlabs.org (Postfix) with ESMTP id 0CE4767FDE
+	by ozlabs.org (Postfix) with ESMTP id 494AB67E9E
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Aug 2005 00:57:06 +1000 (EST)
-Received: by rproxy.gmail.com with SMTP id b11so1496510rne
+	Wed, 10 Aug 2005 01:07:23 +1000 (EST)
+Received: by rproxy.gmail.com with SMTP id g11so1159907rne
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 09 Aug 2005 07:57:05 -0700 (PDT)
-Message-ID: <6d145b42050809075718c70574@mail.gmail.com>
-Date: Tue, 9 Aug 2005 07:57:05 -0700
-From: Prashant Alange <prashant.alange@gmail.com>
-To: Dan Malek <dan@embeddededge.com>
-In-Reply-To: <5c9191bc3e15d90c966735662c28fa5e@embeddededge.com>
+	Tue, 09 Aug 2005 08:07:23 -0700 (PDT)
+Message-ID: <17f142e1050809080053187f40@mail.gmail.com>
+Date: Tue, 9 Aug 2005 20:30:27 +0530
+From: Jayaprakash Shanmugam <jayaprakashns@gmail.com>
+To: linuxppc-embedded@ozlabs.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <6d145b42050808193058ee05b4@mail.gmail.com>
-	<5c9191bc3e15d90c966735662c28fa5e@embeddededge.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: How to disable dcache on MPC82xx platform
+Subject: open() returns 0.
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,41 +23,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Since the existing UART/ethernet drivers are using cpm_hostalloc() so
-I am also using the same function. Then can I use kmalloc() to alloc
-such huge memory. If at all I have to configure BATx to just test how
-it behaves. How/where to configure BATx. One more thing is that
-totally I am allocating about 1MB memory in a chunk of 200K. I really
-dont know whether I can do such allocation in driver. But this much is
-very much required for my driver. If you have any other idea of
-achieving this then please point me in that direction. I need to get
-rid of this problme as early as possible to meet my schedule. please
-help.
+Hello All,
 
-Thanks,
-Prashant
+  I have a 8270 based board running Linux 2.6.  I am using the i2c
+available on chip to read / write a i2c mux connected to it.  When I
+open the i2c device, it returns 0 (which shouldnt be) instead of the
+file descriptor.   The /proc/devices shows the i2c driver with major
+89 is installed.
 
-On 8/9/05, Dan Malek <dan@embeddededge.com> wrote:
->=20
-> On Aug 8, 2005, at 10:30 PM, Prashant Alange wrote:
->=20
-> > I am using alloc_bootmem_page() function to allocate memory required
-> > in my custom ethernet driver.
->=20
-> Why?  Just use the normal Linux memory allocators.
->=20
-> >  So I am thinking this could be because of cache since this
-> > driver is working fine on non-os platform. I want to disable the
-> > dcache for this memory region.
->=20
-> This is a fully cache coherent processor, there is no need to
-> disable caching, nor is there any easy way to do this in the
-> current Linux implementation.  This would require a custom
-> kernel, and you couldn't take advantage of the general
-> performance gain using BATs.
->=20
-> Thanks.
->=20
->        -- Dan
->=20
->
+10:~# ls -l /dev/i2c-0
+lrwxrwxrwx  1 root root 5 Jan  1 02:00 /dev/i2c-0 -> i2c/0
+
+10:~# cat /dev/i2c-0
+i2c-dev: i2c-0 reading 4096 bytes.
+I2C xfer: read from 0xFFFF, flags 0x0001, 4096 bytes
+I2C error: 0x3C04
+cat: /dev/i2c-0: Input/output error
+
+Any pointers on what could be wrong ?
+
+Regards,
+Jayaprakash.
