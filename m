@@ -1,21 +1,18 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao06.cox.net (fed1rmmtao06.cox.net [68.230.241.33])
-	by ozlabs.org (Postfix) with ESMTP id F3A3467E9C
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao09.cox.net (fed1rmmtao09.cox.net [68.230.241.30])
+	by ozlabs.org (Postfix) with ESMTP id B39C167E5D
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  9 Aug 2005 09:44:59 +1000 (EST)
-Date: Mon, 8 Aug 2005 16:44:57 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Wade Farnsworth <wfarnsworth@mvista.com>
-Message-ID: <20050808164457.C9951@cox.net>
-References: <1123284390.27734.19.camel@rhino.az.mvista.com>
+	Tue,  9 Aug 2005 10:52:50 +1000 (EST)
+Date: Mon, 8 Aug 2005 17:52:49 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
+Message-ID: <20050809005249.GG3187@smtp.west.cox.net>
+References: <20050806180131.GU5210@cathedrallabs.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1123284390.27734.19.camel@rhino.az.mvista.com>;
-	from wfarnsworth@mvista.com on Fri, Aug 05, 2005 at 04:26:30PM
-	-0700
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] add field to struct ocp_func_emac_data for
-	platform-specific unsupported PHY features
+In-Reply-To: <20050806180131.GU5210@cathedrallabs.org>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] 8xx: port i2c-algo-8xx to 2.6
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,20 +23,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 05, 2005 at 04:26:30PM -0700, Wade Farnsworth wrote:
->  static int
-> --- linux-2.6/include/asm-ppc/ibm_ocp.h	2005-08-03 13:34:08.000000000 -0700
-> +++ linux-2.6-dev/include/asm-ppc/ibm_ocp.h	2005-08-02 10:49:42.000000000 -0700
-> @@ -67,6 +67,7 @@ struct ocp_func_emac_data {
->  	int	phy_mode;	/* PHY type or configurable mode */
->  	u8	mac_addr[6];	/* EMAC mac address */
->  	u32	phy_map;	/* EMAC phy map */
-> +	u32	feat_unsupp;	/* Unsupported phy features */
+On Sat, Aug 06, 2005 at 03:01:31PM -0300, Aristeu Sergio Rozanski Filho wrote:
 
-Could you update this field (and related usages) to be "phy_ftr_exc"?
-For "Excluded phy features".  Eugene and I discussed this on IRC and
-think it's a better name...for one it starts with the phy_ prefix like
-other related phy data. Except for that, it's ready for upstream.
+> 8xx: port i2c-algo_8xx to 2.6
+> 
+> Based on Tom Rini's work
 
-Thanks,
-Matt
+Note that it's not so much my work as my prodding someone else (Aristeu
+has the emails I fwd'd and have since deleted).  They did report, I
+think, some basic functionality.
+
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
