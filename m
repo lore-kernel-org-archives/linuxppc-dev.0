@@ -1,19 +1,22 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 9DE8867FCE
+Return-Path: <prashant.alange@gmail.com>
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.193])
+	by ozlabs.org (Postfix) with ESMTP id 0CE4767FDE
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Aug 2005 00:50:48 +1000 (EST)
-In-Reply-To: <42F89F49.4000205@softadvances.com>
-References: <42F89F49.4000205@softadvances.com>
-Mime-Version: 1.0 (Apple Message framework v733)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <A9E0A66D-CE6F-4A55-80FD-5D9E57BB6035@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Tue, 9 Aug 2005 09:50:50 -0500
-To: John Otken <jotken@softadvances.com>
-Cc: thomas@schnuerer-online.de,
-	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [linuxppc] 2.6.12-3 header <asm/usb.h> missing ?
+	Wed, 10 Aug 2005 00:57:06 +1000 (EST)
+Received: by rproxy.gmail.com with SMTP id b11so1496510rne
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 09 Aug 2005 07:57:05 -0700 (PDT)
+Message-ID: <6d145b42050809075718c70574@mail.gmail.com>
+Date: Tue, 9 Aug 2005 07:57:05 -0700
+From: Prashant Alange <prashant.alange@gmail.com>
+To: Dan Malek <dan@embeddededge.com>
+In-Reply-To: <5c9191bc3e15d90c966735662c28fa5e@embeddededge.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <6d145b42050808193058ee05b4@mail.gmail.com>
+	<5c9191bc3e15d90c966735662c28fa5e@embeddededge.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: How to disable dcache on MPC82xx platform
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,78 +27,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Why are we bothering with asm-ppc/usb.h anyways?
+Since the existing UART/ethernet drivers are using cpm_hostalloc() so
+I am also using the same function. Then can I use kmalloc() to alloc
+such huge memory. If at all I have to configure BATx to just test how
+it behaves. How/where to configure BATx. One more thing is that
+totally I am allocating about 1MB memory in a chunk of 200K. I really
+dont know whether I can do such allocation in driver. But this much is
+very much required for my driver. If you have any other idea of
+achieving this then please point me in that direction. I need to get
+rid of this problme as early as possible to meet my schedule. please
+help.
 
-The structure defn only appears to be used once.  If this is true,  
-why not just define it in the .c file.
+Thanks,
+Prashant
 
-- kumar
-
-On Aug 9, 2005, at 7:19 AM, John Otken wrote:
-
-> Google found it for me.  It is in my "Support 440EP
-> On-Chip OHCI USB Host Controller" patch:
->
-> http://patchwork.ozlabs.org/linuxppc/patch?id=1965
->
->
-> diff -uprN a/include/asm-ppc/usb.h b/include/asm-ppc/usb.h
-> --- a/include/asm-ppc/usb.h    1969-12-31 17:00:00.000000000 -0700
-> +++ b/include/asm-ppc/usb.h    2005-08-05 06:13:58.000000000 -0500
-> @@ -0,0 +1,13 @@
-> +/*
-> + * ppc/usb.h:
-> + *
-> + */
-> +#ifndef _PPC_USB_H
-> +#define _PPC_USB_H
-> +
-> +struct usb_hcd_platform_data {
-> +    int (*start) (struct platform_device *pdev);
-> +    void (*stop) (struct platform_device *pdev);
-> +};
-> +
-> +#endif /* !(_PPC_USB_H) */
->
->
-> Kumar Gala wrote:
->
->>
->>
->> Begin forwarded message:
->>
->>
->>> From: "Thomas S." <thomas@schnuerer-online.de>
->>> Date: August 8, 2005 4:48:03 PM CDT
->>> To: <linux-kernel@vger.kernel.org>
->>> Subject: [linuxppc] 2.6.12-3 header <asm/usb.h> missing ?
->>>
->>>
->>> Hello,
->>>
->>> Im using Kernel PPC on a MPC5200 board and try to use the onChip   
->>> USB. In
->>> file /drivers/usb/host/ohci-ppc-soc.c a file <asm/usb.h> is included
->>> which seems to be missing. I cant find it anywhere , any ideas ?
->>>
->>> Thomas
->>>
->>>
->>>
->>>
->>> -
->>> To unsubscribe from this list: send the line "unsubscribe linux-  
->>> kernel"
->>> in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>> Please read the FAQ at  http://www.tux.org/lkml/
->>>
->>>
->>
->> _______________________________________________
->> Linuxppc-embedded mailing list
->> Linuxppc-embedded@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->>
+On 8/9/05, Dan Malek <dan@embeddededge.com> wrote:
+>=20
+> On Aug 8, 2005, at 10:30 PM, Prashant Alange wrote:
+>=20
+> > I am using alloc_bootmem_page() function to allocate memory required
+> > in my custom ethernet driver.
+>=20
+> Why?  Just use the normal Linux memory allocators.
+>=20
+> >  So I am thinking this could be because of cache since this
+> > driver is working fine on non-os platform. I want to disable the
+> > dcache for this memory region.
+>=20
+> This is a fully cache coherent processor, there is no need to
+> disable caching, nor is there any easy way to do this in the
+> current Linux implementation.  This would require a custom
+> kernel, and you couldn't take advantage of the general
+> performance gain using BATs.
+>=20
+> Thanks.
+>=20
+>        -- Dan
+>=20
 >
