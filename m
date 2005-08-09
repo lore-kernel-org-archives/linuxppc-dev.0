@@ -1,18 +1,19 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.194])
-	by ozlabs.org (Postfix) with ESMTP id 40B4C68060
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id CD17068059
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Aug 2005 08:29:34 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 68so7308wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 09 Aug 2005 15:29:33 -0700 (PDT)
-Message-ID: <c3d0340b050809152338ca9670@mail.gmail.com>
-Date: Tue, 9 Aug 2005 15:23:20 -0700
-From: Shawn Jin <shawnxjin@gmail.com>
-To: ppcembed <linuxppc-embedded@ozlabs.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: gen550_dbg.c cannot handle 16 or 32 bit access to UART registers
+	Wed, 10 Aug 2005 08:42:32 +1000 (EST)
+In-Reply-To: <20050809150131.7eac43ad.akpm@osdl.org>
+References: <20050809150131.7eac43ad.akpm@osdl.org>
+Mime-Version: 1.0 (Apple Message framework v733)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <3779A304-7AFC-4476-B0FC-794BD0351270@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Tue, 9 Aug 2005 17:42:31 -0500
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, "Gala Kumar K.-galak" <galak@freescale.com>,
+	linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] ppc32: Added support for the Book-E style Watchdog Timer
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,32 +24,79 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
 
-The arch/ppc/syslib/gen550_dbg.c assumes UART registers are all
-accessed in bytes. However in some designs the bus connected to UART
-can only be addressed in 32 or 16 bits. So some flexibility is
-desirable. And the change is kinda trivial.
+On Aug 9, 2005, at 5:01 PM, Andrew Morton wrote:
 
-Before making this trivial change, I'm confused about two sets of
-defintions on io_type. In <linux/serial.h>, the following are defined.
-#define SERIAL_IO_PORT=090
-#define SERIAL_IO_HUB6=091
-#define SERIAL_IO_MEM=092
+> Kumar Gala <galak@freescale.com> wrote:
+>
+>>
+>> PowerPC 40x and Book-E processors support a watchdog timer at the
+>>
+> processor
+>
+>> core level.  The timer has implementation dependent timeout
+>>
+> frequencies
+>
+>> that can be configured by software.
+>>
+>> One the first Watchdog timeout we get a critical exception.  It is
+>>
+> left
+>
+>> to board specific code to determine what should happen at this point.
+>>
+> If
+>
+>> nothing is done and another timeout period expires the processor may
+>> attempt to reset the machine.
+>>
+>> Command line parameters:
+>>   wdt=0 : disable watchdog (default)
+>>   wdt=1 : enable watchdog
+>>
+>>   wdt_period=N : N sets the value of the Watchdog Timer Period.
+>>
+>>   The Watchdog Timer Period meaning is implementation specific. Check
+>>   User Manual for the processor for more details.
+>>
+>> This patch is based off of work done by Takeharu Kato.
+>>
+>> ...
+>>
+>> +#ifdef CONFIG_BOOKE_WDT
+>> +/* Checks wdt=x and wdt_period=xx command-line option */
+>> +int __init early_parse_wdt(char *p)
+>> +{
+>> +    extern u32 wdt_enable;
+>> +
+>> +    if (p && strncmp(p, "0", 1) != 0)
+>> +           wdt_enable = 1;
+>> +
+>> +    return 0;
+>> +}
+>> +early_param("wdt", early_parse_wdt);
+>> +
+>> +int __init early_parse_wdt_period (char *p)
+>> +{
+>> +    extern u32 wdt_period;
+>> +
+>> +    if (p)
+>> +        wdt_period = simple_strtoul(p, NULL, 0);
+>> +
+>> +    return 0;
+>> +}
+>>
+>
+>
+> Would prefer to see the declaration of wdt_period in a header file,
+> please.
+>
+> But beware that wdt_enable() is already a static symbol in a couple of
+> watchdog drivers.  It might be best to rename the ppc global to
+> something
+> less generic-sounding while you're there.
 
-However in <linux/serial_core.h>, these are defined.
-#define UPIO_PORT=09=09(0)
-#define UPIO_HUB6=09=09(1)
-#define UPIO_MEM=09=09(2)
-#define UPIO_MEM32=09=09(3)
+Ok, will make these changes and send an updated patch.
 
-Which set of defintion is better to be used in defining
-SERIAL_PORT_DFNS? Currently gen550_gdb.c use SERAIL_IO_XXXX macros.
-Either adding a new macro SERIAL_IO_MEM32 in <linux/serial.h> or just
-use what are already there.
-
-Are these two sets duplicated? If they are, maybe one of them will be
-deprecated soon.
-
-Regards,
--Shawn.
+- kumar
