@@ -1,20 +1,20 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 66C6C67FD7
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao10.cox.net (fed1rmmtao10.cox.net [68.230.241.29])
+	by ozlabs.org (Postfix) with ESMTP id 4E94767F99
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Aug 2005 02:05:07 +1000 (EST)
-Date: Tue, 9 Aug 2005 11:04:59 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Clemens Koller <clemens.koller@anagramm.de>
-Message-Id: <20050809110459.038ffc78.kim.phillips@freescale.com>
-In-Reply-To: <42F8D186.1030209@anagramm.de>
-References: <20050809140428.13450.qmail@web41211.mail.yahoo.com>
-	<200508091615.53736.g.jaeger@sysgo.com>
-	<42F8D186.1030209@anagramm.de>
+	Wed, 10 Aug 2005 02:18:06 +1000 (EST)
+Date: Tue, 9 Aug 2005 09:18:01 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
+Message-ID: <20050809161801.GK3187@smtp.west.cox.net>
+References: <JPEALJAFNGDDLOPNDIEEKEALDFAA.joakim.tjernlund@lumentis.se>
+	<20050808130523.GF5210@cathedrallabs.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org, erickampman@yahoo.com
-Subject: Re: MPC8555CDS & CCSRBAR
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050808130523.GF5210@cathedrallabs.org>
+Cc: Joakim Tjernlund <joakim.tjernlund@lumentis.se>,
+	linuxppc-embedded@ozlabs.org
+Subject: Re: Volunteers to test i2c-algo-8xx on v2.6?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,117 +25,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-or this...
+On Mon, Aug 08, 2005 at 10:05:23AM -0300, Aristeu Sergio Rozanski Filho wrote:
+> Hi,
+> > I have done this for cpm_iic_read, cpm_iic_write and cpm_iic_try_address.
+> > Also note the the addition of "| 0x01" to i2c->i2c_i2com.
+> the updated patch is attached, thanks Joakim.
+> seems Debora need this too for 2.4 version. Debora, could you please
+> generate a diff against latest Wolfgang's development tree and submit to
+> him?
 
-static int sec_probe(struct device *device)
-{
-	struct platform_device *pdev = to_platform_device(device);
-	struct resource *r;
+I've tested this version with my cheesy sttm reader on an rpxlite, and
+with the following, things work:
 
-	sec_irq = platform_get_irq(pdev, 0);
-	rc = request_irq(sc->sc_irq, talitos_intr, 0, "talitos", sc);
-	if (rc) {
-		printk("failed to hook irq %d\n", sec_irq);
-		sec_irq = -1;
-		goto out;
-	}
+Signed-off-by: Tom Rini <trini@kernel.crashing.org>
 
-	/* we read its hardware registers as memory */
-	r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-
-	sec_base_addr = (ocf_iomem_t) ioremap(r->start, (r->end - r->start));
-	if (!sec_base_addr) {
-		printk("failed to ioremap 0x%x-0x%x\n",
-				(u32)r->start, (u32)r->end - (u32)r->start);
-		goto out;
-	}
-...
-}
-
-Kim
-
-On Tue, 09 Aug 2005 17:53:42 +0200
-Clemens Koller <clemens.koller@anagramm.de> wrote:
-
-> Hi!
-> 
-> You might want to try that:
-> 
-> #include <asm/mpc85xx.h>
-> #include <immap_85xx.h>		/* see mail archives for complete mpc8540 version */
-> ...
-> 
-> void foo(void)
-> {
-> 	volatile ccsr_t *immap;
-> 	phys_addr_t ccsrbar;
-> 
-> 	ccsrbar=get_ccsrbar();
->         immap=ioremap(ccsrbar,sizeof(ccsr_t));	/* is ioremap_nochache() the same on mpc85xx? */
->         if (!immap) {
->                 printk(KERN_ALERT "Failed to ioremap CCSRBAR!\n");
->                 err = -EIO;
->                 goto out;
->         }
-> 
-> 	/* examples */
->         printk(KERN_INFO "CCSRBAR addr        %.8lx\n",ccsrbar);
-> 	printk(KERN_INFO "IMMAP addr          %p\n",immap);
-> 	printk(KERN_INFO "BR0        %.8x\n",immap->im_lbc.br0);
-> 	printk(KERN_INFO "OR0        %.8x\n",immap->im_lbc.or0);
-> 
-> 	/* unmap the ccsr*/
-> 	iounmap(immap);
-> out:
-> }
-> 
-> I hope that's all current code.
-> Comments are welcome.
-> 
-> Greets,
-> 
-> Clemens Koller
-> _______________________________
-> R&D Imaging Devices
-> Anagramm GmbH
-> Rupert-Mayer-Str. 45/1
-> 81379 Muenchen
-> Germany
-> 
-> http://www.anagramm.de
-> Phone: +49-89-741518-50
-> Fax: +49-89-741518-19
-> 
-> 
-> Gerhard Jaeger wrote:
-> > On Tuesday 09 August 2005 16:04, Eric Kampman wrote:
-> > 
-> >>Trying to port an SEC driver to Linux/PPC8555. Reading
-> >>the default CCSRBAR @ 0xFF700000 I read 0xFFFFFFFF
-> >>which is wrong. Looking at Metrowerks init files and
-> >>uboot code (1.1.2) I see it's likely been moved to
-> >>0xE0000000, but I get a seg fault when I try to read
-> >>there. 
-> >>
-> >>So, what am I doing wrong, and even better, how do I
-> >>at runtime find out where CCSRBAR is? Thanks in
-> >>advance, and please forgive the likely ignorance, 
-> >>
-> >>Eric
-> >>
-> > 
-> > 
-> > use the get_ccsrbar() function to get the address, then ioremap()
-> > will be your friend ;)
-> > 
-> > HTH
-> > Gerhard
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-
+diff --git a/drivers/i2c/busses/i2c-rpx.c b/drivers/i2c/busses/i2c-rpx.c
+--- a/drivers/i2c/busses/i2c-rpx.c
++++ b/drivers/i2c/busses/i2c-rpx.c
+@@ -55,17 +55,7 @@ rpx_iic_init(struct i2c_algo_8xx_data *d
+ 	data->i2c = (i2c8xx_t *)&(((immap_t *)IMAP_ADDR)->im_i2c);
+ }
+ 
+-static int rpx_install_isr(int irq, void (*func)(void *, void *), void *data)
+-{
+-	/* install interrupt handler */
+-	cpm_install_handler(irq, (void (*)(void *, struct pt_regs *)) func, data);
+-
+-	return 0;
+-}
+-
+-static struct i2c_algo_8xx_data rpx_data = {
+-	.setisr = rpx_install_isr
+-};
++static struct i2c_algo_8xx_data rpx_data;
+ 
+ static struct i2c_adapter rpx_ops = {
+ 	.owner		= THIS_MODULE,
 
 -- 
-Kim
+Tom Rini
+http://gate.crashing.org/~trini/
