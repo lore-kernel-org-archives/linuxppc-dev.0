@@ -1,18 +1,20 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 9960767F9A
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7C75D67F9D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Aug 2005 00:33:25 +1000 (EST)
-In-Reply-To: <200508091615.53736.g.jaeger@sysgo.com>
-References: <200508091615.53736.g.jaeger@sysgo.com>
-Mime-Version: 1.0 (Apple Message framework v733)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <B13EBB66-D911-4008-90D6-69B9EA0BCED5@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Tue, 9 Aug 2005 09:33:25 -0500
-To: Gerhard Jaeger <g.jaeger@sysgo.com>
-Cc: Eric Kampman <erickampman@yahoo.com>, linuxppc-embedded@ozlabs.org
-Subject: Re: MPC8555CDS & CCSRBAR
+	Wed, 10 Aug 2005 00:36:56 +1000 (EST)
+In-Reply-To: <6d145b42050808193058ee05b4@mail.gmail.com>
+References: <6d145b42050808193058ee05b4@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v622)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <5c9191bc3e15d90c966735662c28fa5e@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Tue, 9 Aug 2005 10:37:11 -0400
+To: Prashant Alange <prashant.alange@gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: How to disable dcache on MPC82xx platform
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,32 +26,23 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Aug 9, 2005, at 9:15 AM, Gerhard Jaeger wrote:
+On Aug 8, 2005, at 10:30 PM, Prashant Alange wrote:
 
-> On Tuesday 09 August 2005 16:04, Eric Kampman wrote:
->
->> Trying to port an SEC driver to Linux/PPC8555. Reading
->> the default CCSRBAR @ 0xFF700000 I read 0xFFFFFFFF
->> which is wrong. Looking at Metrowerks init files and
->> uboot code (1.1.2) I see it's likely been moved to
->> 0xE0000000, but I get a seg fault when I try to read
->> there.
->>
->> So, what am I doing wrong, and even better, how do I
->> at runtime find out where CCSRBAR is? Thanks in
->> advance, and please forgive the likely ignorance,
->>
->> Eric
->>
->>
->
-> use the get_ccsrbar() function to get the address, then ioremap()
-> will be your friend ;)
+> I am using alloc_bootmem_page() function to allocate memory required
+> in my custom ethernet driver.
 
-Depending on the kernel version you might want to use the driver  
-model instead.  There is an entry for the security engine which will  
-give you the physical address to ioremap and the interrupt number to  
-use.  Doing this will be more portable.  However, this is only in  
-newer 2.6 kernels.
+Why?  Just use the normal Linux memory allocators.
 
-- kumar
+>  So I am thinking this could be because of cache since this
+> driver is working fine on non-os platform. I want to disable the
+> dcache for this memory region.
+
+This is a fully cache coherent processor, there is no need to
+disable caching, nor is there any easy way to do this in the
+current Linux implementation.  This would require a custom
+kernel, and you couldn't take advantage of the general
+performance gain using BATs.
+
+Thanks.
+
+	-- Dan
