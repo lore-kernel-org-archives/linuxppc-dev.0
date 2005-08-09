@@ -1,18 +1,18 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutvdomng.kundenserver.de (moutvdom.kundenserver.de
-	[212.227.126.249]) by ozlabs.org (Postfix) with ESMTP id C53FE67EB2
+Return-Path: <johnsoncheng@qnap.com.tw>
+Received: from qnap.com.tw (unknown [211.75.85.25])
+	by ozlabs.org (Postfix) with SMTP id CFF4B67FB3
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  9 Aug 2005 20:24:10 +1000 (EST)
-Message-ID: <42F88445.4030001@anagramm.de>
-Date: Tue, 09 Aug 2005 12:24:05 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
+	Tue,  9 Aug 2005 20:54:52 +1000 (EST)
+From: "JohnsonCheng" <johnsoncheng@qnap.com.tw>
+To: "'Clemens Koller'" <clemens.koller@anagramm.de>
+Date: Tue, 9 Aug 2005 18:54:15 +0800
 MIME-Version: 1.0
-To: JohnsonCheng <johnsoncheng@qnap.com.tw>
-References: <20050807091603.CE57667F29@ozlabs.org>
-In-Reply-To: <20050807091603.CE57667F29@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="US-ASCII"
+In-Reply-To: <42F88445.4030001@anagramm.de>
+Message-Id: <20050809105452.CFF4B67FB3@ozlabs.org>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: A configure error for samba3 on ppc
+Subject: RE: A configure error for samba3 on ppc
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,6 +22,22 @@ List-Post: <mailto:linuxppc-embedded@ozlabs.org>
 List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+
+Yes. But how can I pass the testing?
+For cross-compile environment, the HOST and the TARGET are almost not the
+same, so many utility can configure for cross-compile with host setting
+except samba.
+It seems not sense.
+
+Thanks,
+Johnson Cheng
+
+-----Original Message-----
+From: Clemens Koller [mailto:clemens.koller@anagramm.de] 
+Sent: Tuesday, August 09, 2005 6:24 PM
+To: JohnsonCheng
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: A configure error for samba3 on ppc
 
 Hi, JohnsonCheng!
 
