@@ -1,27 +1,15 @@
-Return-Path: <va824363@albany.edu>
-Received: from smtp.albany.edu (mail1.its.albany.edu [169.226.1.105])
-	by ozlabs.org (Postfix) with ESMTP id 31C2567FD7
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Aug 2005 06:52:06 +1000 (EST)
-Message-ID: <53521.198.22.236.230.1123620724.squirrel@198.22.236.230>
-In-Reply-To: <20050803153540.3530e114.kim.phillips@freescale.com>
-References: <32704.198.22.236.230.1122651627.squirrel@198.22.236.230>
-	<20050729153323.3f2c62ad.kim.phillips@freescale.com>
-	<32798.24.92.61.26.1122694772.squirrel@24.92.61.26>
-	<20050730183217.3310585b.kim.phillips@freescale.com>
-	<33216.24.92.61.26.1122857296.squirrel@24.92.61.26>
-	<20050801123728.62764c7e.kim.phillips@freescale.com>
-	<53547.198.22.236.230.1122997515.squirrel@198.22.236.230>
-	<20050803114749.739ae51e.kim.phillips@freescale.com>
-	<30177.198.22.236.230.1123094006.squirrel@198.22.236.230>
-	<20050803153540.3530e114.kim.phillips@freescale.com>
-Date: Tue, 9 Aug 2005 16:52:04 -0400 (EDT)
-From: "Vikas Aggarwal" <va824363@albany.edu>
-To: "Kim Phillips" <kim.phillips@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: mpc8248  SEC -- interrupt handler 'is' invoked
+Return-Path: <wd@denx.de>
+To: "Debora Liu" <deboralh@fel.com.cn>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 09 Aug 2005 13:25:42 +0800."
+	<20050809052142.2C53242C5E@denx.de>
+Date: Tue, 09 Aug 2005 23:18:30 +0200
+Sender: wd@denx.de
+Message-Id: <20050809211830.F214D352BD9@atlas.denx.de>
+Cc: Linuxppc-embedded <Linuxppc-embedded@ozlabs.org>
+Subject: Re: Volunteers to test i2c-algo-8xx on v2.6? 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,37 +20,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-The address returned by kmalloc=0x009ffc5c  is 4 byte aligned.
-Are u advicing that dma_map_single() should return 8 byte aligned ,
-becuase thats what gets written into the Data-Paclet_descriptor later.
+In message <20050809052142.2C53242C5E@denx.de> you wrote:
+> 
+> I'm working with Wolfgang's ELDK-3.1.1,
+> diff against Wolfgang's ELDK-3.1.1 patch is attached.
 
- regards
--vikas
+Ummm... A quick scan showed only reformatting and  style  changes.  I
+think  someone who really understands the controller should perform a
+review of the code. There are most likely problems hidden - like  the
+timeout  of  1  second  which is much too short; we measured nearly 4
+seconds (under heavy load) between starting a  transfer  and  getting
+the interrupt.
 
-> On Wed, 3 Aug 2005 14:33:26 -0400 (EDT)
-> "Vikas Aggarwal" <va824363@albany.edu> wrote:
->
->> I will try the new BSP but meanwhile like to debug my ported driver.
->>
->> Is there a way , like kernel level single-stepping to know why the
->> "interrupt status register"  gets a value of "0x0000000000000040" which
->> means TEA , transfer error acknowledge.
->
-> afaik, TEA usually means memory was unable to be accessed by the sec
-> (somewhat along the same lines as a SIGBUS or SIGSEGV).
->
-> It's a long shot, but you may want to increase the 4-byte alignment of the
-> rng buffer (0x009ffc5c in your trace?) to at least 8-byte.
->
-> as for debugging, you can printk sec status registers every time you write
-> one, e.g. in a sec register write wrapper fn.  Be sure to check the RNG
-> interrupt status register, and the RNG status register, and the RNG
-> interrupt control register.
->
-> and if all else fails, you can bypass the channel infrastructure
-> altogether, and use the RNG EU in slave mode.  Reset the SEC, write the
-> RNG Reset Control Register SR bit, write <anyvalue> to the RNG Data size
-> register, and pull data off the RNG FIFO at will.
->
-> Kim
->
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Work 8 hours, sleep 8 hours; but not the same 8 hours.
