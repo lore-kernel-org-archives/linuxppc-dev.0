@@ -1,18 +1,27 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutvdomng.kundenserver.de (moutvdom.kundenserver.de
-	[212.227.126.249]) by ozlabs.org (Postfix) with ESMTP id B635767FD0
+Return-Path: <va824363@albany.edu>
+Received: from smtp.albany.edu (mail1.its.albany.edu [169.226.1.105])
+	by ozlabs.org (Postfix) with ESMTP id 99EF967F82
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  9 Aug 2005 23:31:51 +1000 (EST)
-Message-ID: <42F8B043.5050804@anagramm.de>
-Date: Tue, 09 Aug 2005 15:31:47 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
+	Tue,  9 Aug 2005 23:38:44 +1000 (EST)
+Message-ID: <24431.198.22.236.230.1123594721.squirrel@198.22.236.230>
+In-Reply-To: <20050803153540.3530e114.kim.phillips@freescale.com>
+References: <32704.198.22.236.230.1122651627.squirrel@198.22.236.230>
+	<20050729153323.3f2c62ad.kim.phillips@freescale.com>
+	<32798.24.92.61.26.1122694772.squirrel@24.92.61.26>
+	<20050730183217.3310585b.kim.phillips@freescale.com>
+	<33216.24.92.61.26.1122857296.squirrel@24.92.61.26>
+	<20050801123728.62764c7e.kim.phillips@freescale.com>
+	<53547.198.22.236.230.1122997515.squirrel@198.22.236.230>
+	<20050803114749.739ae51e.kim.phillips@freescale.com>
+	<30177.198.22.236.230.1123094006.squirrel@198.22.236.230>
+	<20050803153540.3530e114.kim.phillips@freescale.com>
+Date: Tue, 9 Aug 2005 09:38:41 -0400 (EDT)
+From: "Vikas Aggarwal" <va824363@albany.edu>
+To: "Kim Phillips" <kim.phillips@freescale.com>
 MIME-Version: 1.0
-To: JohnsonCheng <johnsoncheng@qnap.com.tw>
-References: <0MKrQq-1E2Rl01y8u-0004mW@mxeu12.kundenserver.de>
-In-Reply-To: <0MKrQq-1E2Rl01y8u-0004mW@mxeu12.kundenserver.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;charset=iso-8859-1
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: A configure error for samba3 on ppc
+Subject: Re: mpc8248  SEC -- interrupt handler 'is' invoked
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,74 +32,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi, JohnsonCheng!
+Does that still use the DMA if i bypass channel infrastructure.?
+Do i have to  implement channel-infrastructure in software driver.
+-vikas
 
-you wrote:
-> Yes. But how can I pass the testing?
-
-Running it on the target - where it is actually supposed to work.
-
-> For cross-compile environment, the HOST and the TARGET are almost not the
-> same, so many utility can configure for cross-compile with host setting
-> except samba.
-
-Well, you can tell configure to skip the tests silently if HOST!=TARGET
-or give the message you got. But I wouldn't expect configure to guess
-how it can get the code from the host to the target.
-Yes, it's indeed a bad virus ;-)
-
-> It seems not sense.
-
-I'd like to see the message.
-For me I prefer to compile things native - if somehow possible.
-
-Greets,
-
-Clemens Koller
-_______________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Str. 45/1
-81379 Muenchen
-Germany
-
-http://www.anagramm.de
-Phone: +49-89-741518-50
-Fax: +49-89-741518-19
-
-> -----Original Message-----
-> From: Clemens Koller [mailto:clemens.koller@anagramm.de] 
-> Sent: Tuesday, August 09, 2005 6:24 PM
-> To: JohnsonCheng
-> Cc: linuxppc-embedded@ozlabs.org
-> Subject: Re: A configure error for samba3 on ppc
-> 
-> Hi, JohnsonCheng!
-> 
-> you wrote:
-> 
->>When I configure samba3.0.10 on ppc as following command:
+> On Wed, 3 Aug 2005 14:33:26 -0400 (EDT)
+> "Vikas Aggarwal" <va824363@albany.edu> wrote:
+>
+>> I will try the new BSP but meanwhile like to debug my ported driver.
 >>
->>CC=powerpc-linux-gcc AR=powerpc-linux-ar RANLIB=powerpc-linux-ranlib
->>./configure -host=powerpc-linux
->>
->>I got a configure error message as following:
->>Configure: error: cannot run test program while cross compiling
->>See 'config.log' for more details
->>
->>I think this is a samba configure bug, do anybody know how to pass it?
-> 
-> 
-> No, it's not a bug. It's exactly what the message trys to tell you.
-> Samba wants to do some tests. But as it's not a native build,
-> it doesn't want to execute itself for the tests. Because
-> samba might not run on a different platform as it was built for.
-> 
-> If you want to do the tests, you need to let to do it on the
-> target where it was built for and not where it was built on.
-> 
-> Samba works fine over here on ppc embedded systems.
-> 
-> Greets,
-> 
-> Clemens Koller
+>> Is there a way , like kernel level single-stepping to know why the
+>> "interrupt status register"  gets a value of "0x0000000000000040" which
+>> means TEA , transfer error acknowledge.
+>
+> afaik, TEA usually means memory was unable to be accessed by the sec
+> (somewhat along the same lines as a SIGBUS or SIGSEGV).
+>
+> It's a long shot, but you may want to increase the 4-byte alignment of the
+> rng buffer (0x009ffc5c in your trace?) to at least 8-byte.
+>
+> as for debugging, you can printk sec status registers every time you write
+> one, e.g. in a sec register write wrapper fn.  Be sure to check the RNG
+> interrupt status register, and the RNG status register, and the RNG
+> interrupt control register.
+>
+> and if all else fails, you can bypass the channel infrastructure
+> altogether, and use the RNG EU in slave mode.  Reset the SEC, write the
+> RNG Reset Control Register SR bit, write <anyvalue> to the RNG Data size
+> register, and pull data off the RNG FIFO at will.
+>
+> Kim
+>
