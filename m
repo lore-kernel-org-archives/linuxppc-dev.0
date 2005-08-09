@@ -1,16 +1,18 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17145.12993.672427.466466@cargo.ozlabs.ibm.com>
-Date: Wed, 10 Aug 2005 08:48:33 +1000
+Message-ID: <17145.13414.996858.522127@cargo.ozlabs.ibm.com>
+Date: Wed, 10 Aug 2005 08:55:34 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <bb9b1e9e1ebdc3ac5b23b3cab327bfd5@kernel.crashing.org>
+In-Reply-To: <dc3d7701e701266ffe852acf4da127ed@kernel.crashing.org>
 References: <17136.13558.773102.465379@cargo.ozlabs.ibm.com>
 	<42F79D89.3040709@austin.ibm.com>
 	<bb9b1e9e1ebdc3ac5b23b3cab327bfd5@kernel.crashing.org>
-Cc: Joel Schopp <jschopp@austin.ibm.com>, linuxppc-dev@ozlabs.org,
-	linuxppc64-dev@ozlabs.org
+	<Pine.LNX.4.62.0508091510400.28068@numbat.sonytel.be>
+	<dc3d7701e701266ffe852acf4da127ed@kernel.crashing.org>
+Cc: linuxppc64-dev@ozlabs.org, Geert Uytterhoeven <geert@linux-m68k.org>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>
 Subject: Re: Merging ppc32 and ppc64
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,30 +25,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Segher Boessenkool writes:
 
-> _Please_ don't throw the real device tree away; I'm happy with
-> the flattened device tree if and only if it is a _minimum_
-> requirement, and having a _real_ device tree (or even real
-> Open Firmware support) is still an option.
+> Yes, and that is exactly what I do not want.  We are not going
+> to require OF implementations that do not need yaboot or similar
+> to pass a flattened device tree to the kernel, eh?  Also, there
+> is no reason why something like yaboot (with an OF still running
+> underneath) should have to care about anything device-tree related
+> at all; the OS can just as easily ask the OF itself.
 
-Aarrgh! <sound of paulus tearing hair out>
+For now the kernel will cope with either having an OF client interface
+entry point or a flattened device tree passed to it.  In the future we
+intend to move all the OF client calls into the zImage wrapper and
+have the zImage wrapper pass the flattened device tree to the kernel
+proper.  That will be much cleaner because we will be able to get rid
+of all of the dodgy RELOC stuff in prom_init.c.
 
-There seems to be a lot of misunderstanding about the flattened device
-tree concept.  The flattened device tree is simply a representation of
-a device tree (i.e., the full, or "real" (whatever that means) device
-tree) that does not contain any pointers and is in a single contiguous
-block of memory.
-
-On systems with open firmware, the boot is separated into two phases.
-In the first phase, OF is still active.  The kernel is not based at
-physical address 0, and can do OF client calls.  In the second phase,
-the kernel is based at physical address 0 and OF's memory has been
-reclaimed by the kernel.  The flattened device tree is the main data
-structure that is passed from the first phase to the second.  One of
-the first things that the second phase does is to expand the flattened
-device tree into the normal in-kernel device tree representation (a
-tree of struct device_node).
-
-Having the flattened device tree doesn't mean that we will be using
-the device tree less, it means we will be using it _more_.
+It is already the case (and has always been the case) that you can't
+boot a vmlinux image directly from OF - there is always either or both
+of yaboot or a zImage wrapper in between anyway.
 
 Paul.
