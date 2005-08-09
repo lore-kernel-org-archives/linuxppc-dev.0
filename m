@@ -1,17 +1,16 @@
-Return-Path: <galak@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id CDAE267F91
+Return-Path: <johnsoncheng@qnap.com.tw>
+Received: from qnap.com.tw (unknown [211.75.85.25])
+	by ozlabs.org (Postfix) with SMTP id C797267F9E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  9 Aug 2005 13:41:41 +1000 (EST)
-Date: Mon, 8 Aug 2005 22:41:17 -0500 (CDT)
-From: Kumar Gala <galak@freescale.com>
-To: Andrew Morton <akpm@osdl.org>
-Message-ID: <Pine.LNX.4.61.0508082240430.5117@nylon.am.freescale.net>
+	Tue,  9 Aug 2005 14:28:36 +1000 (EST)
+From: "JohnsonCheng" <johnsoncheng@qnap.com.tw>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Tue, 9 Aug 2005 12:28:05 +0800
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] cpm_uart: needs some love to compile with GCC4.0.1
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0024_01C59CDD.DB0105F0"
+Message-Id: <20050809042836.C797267F9E@ozlabs.org>
+Subject: A Rootfs problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,43 +21,155 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Fixed problems so we can build with gcc-4.0.1
+This is a multi-part message in MIME format.
 
-Signed-off-by: Peter Schaefer-Hutter <peter.schaefer-hutter@tfk-racoms.com>
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+------=_NextPart_000_0024_01C59CDD.DB0105F0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
 
----
-commit dcc63579f883d388c5b4f69c4adc82423cab1de2
-tree f856b999bdc0182e6299ec0000d4432380af0ac0
-parent 1de80554bcae877dce3b6d878053eb092ef65c72
-author Kumar K. Gala <kumar.gala@freescale.com> Mon, 08 Aug 2005 22:38:28 -0500
-committer Kumar K. Gala <kumar.gala@freescale.com> Mon, 08 Aug 2005 22:38:28 -0500
+When I use mke2fs format a partition, then mount it, cause the following
+error message:
 
- drivers/serial/cpm_uart/cpm_uart_core.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
---- a/drivers/serial/cpm_uart/cpm_uart_core.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_core.c
-@@ -1134,14 +1134,14 @@ static int __init cpm_uart_console_setup
- 	return 0;
- }
  
--extern struct uart_driver cpm_reg;
-+static struct uart_driver cpm_reg;
- static struct console cpm_scc_uart_console = {
--	.name		"ttyCPM",
--	.write		cpm_uart_console_write,
--	.device		uart_console_device,
--	.setup		cpm_uart_console_setup,
--	.flags		CON_PRINTBUFFER,
--	.index		-1,
-+	.name		= "ttyCPM",
-+	.write		= cpm_uart_console_write,
-+	.device		= uart_console_device,
-+	.setup		= cpm_uart_console_setup,
-+	.flags		= CON_PRINTBUFFER,
-+	.index		= -1,
- 	.data		= &cpm_reg,
- };
+
+VFS: Can't find ext3 filesystem on /dev/hda1.
+
+VFS: Can't find an ext2 filesystem on /dev/hda1.
+
+Unable ro identify CD-ROM format.
+
+VFS: Can't find a romfs filesystem on dev hda1.
+
+mount: Mounting /dev/hda1 on /root/map failed: Invalid argument.
+
  
+
+Had I lost something in kernel configuration or RootFS??
+
+ 
+
+Thanks,
+
+JohnsonCheng
+
+
+------=_NextPart_000_0024_01C59CDD.DB0105F0
+Content-Type: text/html;
+	charset="US-ASCII"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:&#26032;&#32048;&#26126;&#39636;;
+	panose-1:2 2 3 0 0 0 0 0 0 0;}
+@font-face
+	{font-family:"\@&#26032;&#32048;&#26126;&#39636;";
+	panose-1:2 2 3 0 0 0 0 0 0 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+ /* Page Definitions */
+ @page Section1
+	{size:595.3pt 841.9pt;
+	margin:72.0pt 90.0pt 72.0pt 90.0pt;
+	layout-grid:18.0pt;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DZH-TW link=3Dblue vlink=3Dpurple =
+style=3D'text-justify-trim:punctuation'>
+
+<div class=3DSection1 style=3D'layout-grid:18.0pt'>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>When I use mke2fs format a partition, then =
+mount it,
+cause the following error message:<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>VFS: Can't find ext3 filesystem on =
+/dev/hda1.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>VFS: Can't find an ext2 filesystem on =
+/dev/hda1.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>Unable ro identify CD-ROM =
+format.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>VFS: Can't find a romfs filesystem on dev =
+hda1.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>mount: Mounting /dev/hda1 on /root/map failed: =
+Invalid
+argument.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>Had I lost something in kernel configuration or =
+RootFS??<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>Thanks,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>JohnsonCheng<o:p></o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_0024_01C59CDD.DB0105F0--
