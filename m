@@ -1,21 +1,28 @@
-Return-Path: <glikely@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.192])
-	by ozlabs.org (Postfix) with ESMTP id 8A19267FE7
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id D258867F05
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 11 Aug 2005 01:07:43 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 68so152893wri
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Aug 2005 08:07:42 -0700 (PDT)
-Message-ID: <528646bc0508100807a3a0a8a@mail.gmail.com>
-Date: Wed, 10 Aug 2005 09:07:42 -0600
-From: Grant Likely <glikely@gmail.com>
-To: Joel Isaacson <joel@ascender.com>,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-In-Reply-To: <42F8C436.7010706@ascender.com>
+	Thu, 11 Aug 2005 01:38:07 +1000 (EST)
+Date: Wed, 10 Aug 2005 10:37:50 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: "Vikas Aggarwal" <va824363@albany.edu>
+Message-Id: <20050810103750.253a2b74.kim.phillips@freescale.com>
+In-Reply-To: <53521.198.22.236.230.1123620724.squirrel@198.22.236.230>
+References: <32704.198.22.236.230.1122651627.squirrel@198.22.236.230>
+	<20050729153323.3f2c62ad.kim.phillips@freescale.com>
+	<32798.24.92.61.26.1122694772.squirrel@24.92.61.26>
+	<20050730183217.3310585b.kim.phillips@freescale.com>
+	<33216.24.92.61.26.1122857296.squirrel@24.92.61.26>
+	<20050801123728.62764c7e.kim.phillips@freescale.com>
+	<53547.198.22.236.230.1122997515.squirrel@198.22.236.230>
+	<20050803114749.739ae51e.kim.phillips@freescale.com>
+	<30177.198.22.236.230.1123094006.squirrel@198.22.236.230>
+	<20050803153540.3530e114.kim.phillips@freescale.com>
+	<53521.198.22.236.230.1123620724.squirrel@198.22.236.230>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <42F8C436.7010706@ascender.com>
-Subject: Re: mpc5200 linux source
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: mpc8248  SEC -- interrupt handler 'is' invoked
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,31 +33,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 8/9/05, Joel Isaacson <joel@ascender.com> wrote:
-> Hi
->=20
-> My name is Joel Isaacson. I'm a consultant working on a Linux mpc5200
-> embedded card. We are working with the 2.4 Denx linux kernel. I saw from
-> a mailing that you are  using the 2.6  kernel with SIP support that you
-> added. What is the status of the 2.6 port? The latest kernel doesn't
-> seem to have the Ethernet (fec, bestcomm) support.
->=20
-Here's a post from Sylvain pointing to his mpc5200 git tree.  The
-Ethernet driver has not yet been rolled into mainline because the
-BestComm DMA engine does not yet conform to the platform bus.  You
-must get the driver from Sylvain's tree if you want to use Ethernet.
+On Tue, 9 Aug 2005 16:52:04 -0400 (EDT)
+"Vikas Aggarwal" <va824363@albany.edu> wrote:
 
-http://ozlabs.org/pipermail/linuxppc-embedded/2005-June/018887.html
+> The address returned by kmalloc=0x009ffc5c  is 4 byte aligned.
+> Are u advicing that dma_map_single() should return 8 byte aligned ,
+> becuase thats what gets written into the Data-Paclet_descriptor later.
+> 
+I wouldn't worry about alignment as much as the register write trace and checking the System Interface Unit and individual eu status registers.
 
-Do you mean SIP or SPI?  I wrote a simple SPI subsystem for my own use
-which is posted to the linuxppc-embedded mailing list.  Unlike most
-SPI subsystems out there, it is NOT based on the I2C subsystem.  There
-are a number of good SPI subsystem implementations out there that you
-can choose from.
-
-BTW, you can subscribe to the linuxppc-embedded mailing list from here:
-
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-
-Cheers,
-g.
+-- 
+Kim
