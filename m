@@ -1,16 +1,18 @@
-Return-Path: <bgholikh@cisco.com>
-Received: from sj-iport-3.cisco.com (sj-iport-3-in.cisco.com [171.71.176.72])
-	by ozlabs.org (Postfix) with ESMTP id 8677468027
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 845EA68032
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 11 Aug 2005 01:59:15 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C59DC4.6A29AE0B"
-Date: Wed, 10 Aug 2005 08:58:57 -0700
-Message-ID: <F795765B112E7344AF36AA9112796415849508@xmb-sjc-212.amer.cisco.com>
-From: "Bizhan Gholikhamseh \(bgholikh\)" <bgholikh@cisco.com>
-To: "Kumar Gala" <kumar.gala@freescale.com>
+	Thu, 11 Aug 2005 02:05:35 +1000 (EST)
+In-Reply-To: <F795765B112E7344AF36AA9112796415849508@xmb-sjc-212.amer.cisco.com>
+References: <F795765B112E7344AF36AA9112796415849508@xmb-sjc-212.amer.cisco.com>
+Mime-Version: 1.0 (Apple Message framework v733)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <3BAC77D9-6508-49B3-94AC-1752116AB1D5@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Wed, 10 Aug 2005 11:05:38 -0500
+To: "Bizhan Gholikhamseh \\\(bgholikh\\\)" <bgholikh@cisco.com>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: pci_enable_device fails on MPC8541
+Subject: Re: pci_enable_device fails on MPC8541
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,307 +23,135 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+It would be extremely helpful to get the output from the work MPC8540  
+for lspci and cat /proc/pci.
 
-------_=_NextPart_001_01C59DC4.6A29AE0B
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Also, I forget if 2.6.11 has CDS VIA support, but if it does you can  
+try disabling it by commenting out the calls to:
+mpc85xx_cds_enable_via() & mpc85xx_cds_fixup_via() in arch/ppc/syslib/ 
+ppc85xx_setup.c and see what happens.
 
- <<pci_boot.pdf>> Kumar,
-We do not support or care about VIA IDE controller. I have enabled the
-DEBUG flag and attached the debug messages during boot. This is for
-8541E.
-Regards,
-Bizhan=20
+- k
 
------Original Message-----
-From: Kumar Gala [mailto:kumar.gala@freescale.com]=20
-Sent: Tuesday, August 09, 2005 4:11 PM
-To: Bizhan Gholikhamseh (bgholikh)
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: pci_enable_device fails on MPC8541
+On Aug 10, 2005, at 10:58 AM, Bizhan Gholikhamseh \\((bgholikh\\))  
+wrote:
 
-Do you need support for the VIA IDE controller?  I'm not sure if that is
-causing you issues.
-
-Also, can you try enabling DEBUG in arch/ppc/kernel/pci.c and send a
-boot log.  I'm trying to figure out what is causing the resource
-conflict.  It appears that the memory resource is reasonable, but there
-could be possible conflict on the IO resource side.
-
-Also, if you can send logs of the same thing from the working 8540 ADS
-that would be helpful.
-
-- kumar
-
-On Aug 9, 2005, at 12:18 PM, Bizhan Gholikhamseh \(((bgholikh\))) wrote:
-
-> Hi Kumar,
-> I am using Linux 2.6.11, u-boot 1.1.2.
-> I see failure in pci_enable_device with message:
-> "PCI: Device 0000:02:01.0 not available because of resource=20
-> collisions"
->
-> I have attached three files:
-> lspci_output.txt: out put of the "lspci -v"
-> proc_pci.txt: output of the "cat /proc/pci"
-> u-boot.txt: output of the "pci command at u-boot"
->
-> Any help greatly appreciated,
+>  <<pci_boot.pdf>> Kumar,
+> We do not support or care about VIA IDE controller. I have enabled the
+> DEBUG flag and attached the debug messages during boot. This is for
+> 8541E.
+> Regards,
 > Bizhan
+>
 > -----Original Message-----
 > From: Kumar Gala [mailto:kumar.gala@freescale.com]
-> Sent: Monday, August 08, 2005 1:34 PM
+> Sent: Tuesday, August 09, 2005 4:11 PM
 > To: Bizhan Gholikhamseh (bgholikh)
 > Cc: linuxppc-embedded@ozlabs.org
 > Subject: Re: pci_enable_device fails on MPC8541
 >
-> Bizhan,
+> Do you need support for the VIA IDE controller?  I'm not sure if  
+> that is
+> causing you issues.
 >
-> A few questions:
+> Also, can you try enabling DEBUG in arch/ppc/kernel/pci.c and send a
+> boot log.  I'm trying to figure out what is causing the resource
+> conflict.  It appears that the memory resource is reasonable, but  
+> there
+> could be possible conflict on the IO resource side.
 >
-> 1. what kernel version are you using on these boards:
-> 2. can you do an lspci -v on the boards
+> Also, if you can send logs of the same thing from the working 8540 ADS
+> that would be helpful.
 >
 > - kumar
 >
-> On Aug 8, 2005, at 1:12 PM, Bizhan Gholikhamseh \(((bgholikh\)))
+> On Aug 9, 2005, at 12:18 PM, Bizhan Gholikhamseh \(((bgholikh\)))  
 > wrote:
 >
 >
->> Hi All,
->> I am using two evaluation board from freescale, 8540ADS and MPC8541.
->> The same PCI driver is being compiled and loaded on both platforms.
->> The same PCI driver (developed by me) for DSP board compiled and
->> loaded on both platforms.
->>
->> When I type: "insmod C6415.ko" on 8541 board, I get the following
->> error:
+>> Hi Kumar,
+>> I am using Linux 2.6.11, u-boot 1.1.2.
+>> I see failure in pci_enable_device with message:
 >> "PCI: Device 0000:02:01.0 not available because of resource
 >> collisions"
->> This messages is because of the execution of the generic PCI Linux
->> command:
->> "pci_enable_device(pdev)"
->> The same API has no problem on 8540ADS.
 >>
+>> I have attached three files:
+>> lspci_output.txt: out put of the "lspci -v"
+>> proc_pci.txt: output of the "cat /proc/pci"
+>> u-boot.txt: output of the "pci command at u-boot"
 >>
->>
->>> From UBOOT I can see my device is on bus 3:
->>>
->>>
->> =3D> pci 3
->> Scanning PCI devices on bus 3
->> BusDev FUN    VendorID    DeviceID    Device Class    Sub-Class
->> ---------------------------------------------------------------------
-
->> -
->> --
->> --------------------
->> 03.01.00            0x104c    0xa106        .........
->>
->> Any idea why the insmod fails on one board and not on the other one?
->>
->> Many thanks in advance,
+>> Any help greatly appreciated,
 >> Bizhan
+>> -----Original Message-----
+>> From: Kumar Gala [mailto:kumar.gala@freescale.com]
+>> Sent: Monday, August 08, 2005 1:34 PM
+>> To: Bizhan Gholikhamseh (bgholikh)
+>> Cc: linuxppc-embedded@ozlabs.org
+>> Subject: Re: pci_enable_device fails on MPC8541
 >>
->> <ATT2118305.txt>
+>> Bizhan,
+>>
+>> A few questions:
+>>
+>> 1. what kernel version are you using on these boards:
+>> 2. can you do an lspci -v on the boards
+>>
+>> - kumar
+>>
+>> On Aug 8, 2005, at 1:12 PM, Bizhan Gholikhamseh \(((bgholikh\)))
+>> wrote:
 >>
 >>
->> <lspci_output.txt>
->> <proc_pci.txt>
->> <u-boot.txt>
+>>
+>>> Hi All,
+>>> I am using two evaluation board from freescale, 8540ADS and MPC8541.
+>>> The same PCI driver is being compiled and loaded on both platforms.
+>>> The same PCI driver (developed by me) for DSP board compiled and
+>>> loaded on both platforms.
+>>>
+>>> When I type: "insmod C6415.ko" on 8541 board, I get the following
+>>> error:
+>>> "PCI: Device 0000:02:01.0 not available because of resource
+>>> collisions"
+>>> This messages is because of the execution of the generic PCI Linux
+>>> command:
+>>> "pci_enable_device(pdev)"
+>>> The same API has no problem on 8540ADS.
+>>>
+>>>
+>>>
+>>>
+>>>> From UBOOT I can see my device is on bus 3:
+>>>>
+>>>>
+>>>>
+>>> => pci 3
+>>> Scanning PCI devices on bus 3
+>>> BusDev FUN    VendorID    DeviceID    Device Class    Sub-Class
+>>> -------------------------------------------------------------------- 
+>>> -
+>>>
 >
-
-------_=_NextPart_001_01C59DC4.6A29AE0B
-Content-Type: text/plain;
-	name="pci_boot.txt"
-Content-Transfer-Encoding: base64
-Content-Description: pci_boot.txt
-Content-Disposition: attachment;
-	filename="pci_boot.txt"
-
-UENJOiBQcm9iaW5nIFBDSSBoYXJkd2FyZQpQQ0k6IGJyaWRnZSByc3JjIDAuLmZmZmZmZiAoMTAw
-KSwgcGFyZW50IGMwMjQ4NTg4ClBDSTogcmVwYXJlbnRlZCA4MjU5IChtYXN0ZXIpIFsyMC4uMjFd
-IHVuZGVyIFBDSTEgaG9zdCBicmlkZ2UKUENJOiByZXBhcmVudGVkIDgyNTkgKHNsYXZlKSBbYTAu
-LmExXSB1bmRlciBQQ0kxIGhvc3QgYnJpZGdlClBDSTogcmVwYXJlbnRlZCA4MjU5IGVkZ2UgY29u
-dHJvbCBbNGQwLi40ZDFdIHVuZGVyIFBDSTEgaG9zdCBicmlkZ2UKUENJOiBicmlkZ2UgcnNyYyA4
-MDAwMDAwMC4uOWZmZmZmZmYgKDIwMCksIHBhcmVudCBjMDI0ODU2YwpQQ0k6IGJyaWRnZSByc3Jj
-IDAuLmZmZmYgKDEwMSksIHBhcmVudCBjMDJlNTAzOApQQ0k6IHJlcGFyZW50ZWQgODI1OSAobWFz
-dGVyKSBbMjAuLjIxXSB1bmRlciBQQ0kgQnVzICMwMQpQQ0k6IHJlcGFyZW50ZWQgODI1OSAoc2xh
-dmUpIFthMC4uYTFdIHVuZGVyIFBDSSBCdXMgIzAxClBDSTogcmVwYXJlbnRlZCA4MjU5IGVkZ2Ug
-Y29udHJvbCBbNGQwLi40ZDFdIHVuZGVyIFBDSSBCdXMgIzAxClBDSTogYnJpZGdlIHJzcmMgOWZl
-MDAwMDAuLjlmZWZmZmZmICgyMDApLCBwYXJlbnQgYzAyZTUwNTQKUENJOiBicmlkZ2UgcnNyYyA5
-ZmQwMDAwMC4uOWZkZmZmZmYgKDEyMDEpLCBwYXJlbnQgYzAyZTUwNTQKUENJOiBicmlkZ2UgcnNy
-YyAwLi5mZmZmICgxMDEpLCBwYXJlbnQgYzAyZTUwMzgKUENJOiByZXBhcmVudGVkIFBDSSBCdXMg
-IzAxIFswLi5mZmZmXSB1bmRlciBQQ0kgQnVzICMwMgpQQ0k6IGJyaWRnZSByc3JjIDlmYzAwMDAw
-Li45ZmNmZmZmZiAoMjAwKSwgcGFyZW50IGMwMmU1MDU0ClBDSTogYnJpZGdlIHJzcmMgOWZiMDAw
-MDAuLjlmYmZmZmZmICgxMjAxKSwgcGFyZW50IGMwMmU1MDU0ClBDSTogYnJpZGdlIHJzcmMgMTAw
-MDAwMC4uMWZmZmZmZiAoMTAwKSwgcGFyZW50IGMwMjQ4NTg4ClBDSTogYnJpZGdlIHJzcmMgYTAw
-MDAwMDAuLmJmZmZmZmZmICgyMDApLCBwYXJlbnQgYzAyNDg1NmMKUENJOjAwMDA6MDA6MTEuMDog
-UmVzb3VyY2UgMDogOWZmZmYwMDAtOWZmZmZmZmYgKGY9MjAwKQpQQ0k6MDAwMDowMTowMi4xOiBS
-ZXNvdXJjZSA0OiAwMDAwY2MwMC0wMDAwY2MwZiAoZj0xMDEpClBDSTowMDAwOjAxOjAyLjI6IFJl
-c291cmNlIDQ6IDAwMDBmZmUwLTAwMDBmZmZmIChmPTEwMSkKUENJOjAwMDA6MDE6MDIuMzogUmVz
-b3VyY2UgNDogMDAwMGZmYzAtMDAwMGZmZGYgKGY9MTAxKQpQQ0k6MDAwMDowMTowMi41OiBSZXNv
-dXJjZSAwOiAwMDAwZmUwMC0wMDAwZmVmZiAoZj0xMDEpClBDSTowMDAwOjAxOjAyLjU6IFJlc291
-cmNlIDE6IDAwMDBmZGZjLTAwMDBmZGZmIChmPTEwMSkKUENJOjAwMDA6MDE6MDIuNTogUmVzb3Vy
-Y2UgMjogMDAwMGZkZjgtMDAwMGZkZmIgKGY9MTAxKQpQQ0k6MDAwMDowMTowMi42OiBSZXNvdXJj
-ZSAwOiAwMDAwZmMwMC0wMDAwZmNmZiAoZj0xMDEpCgo=
-
-------_=_NextPart_001_01C59DC4.6A29AE0B
-Content-Type: application/octet-stream;
-	name="pci_boot.pdf"
-Content-Transfer-Encoding: base64
-Content-Description: pci_boot.pdf
-Content-Disposition: attachment;
-	filename="pci_boot.pdf"
-
-JVBERi0xLjUNJeLjz9MNCjEgMCBvYmo8PC9QYWdlcyAyIDAgUi9PdXRsaW5lcyA2IDAgUi9UeXBl
-L0NhdGFsb2cvTmFtZXMgMjkgMCBSL1N0cnVjdFRyZWVSb290IDcgMCBSL01ldGFkYXRhIDM0IDAg
-Ui9TcGlkZXJJbmZvIDE5IDAgUj4+DWVuZG9iag0yIDAgb2JqPDwvQ291bnQgMS9LaWRzWzExIDAg
-Ul0vVHlwZS9QYWdlcz4+DWVuZG9iag0zIDAgb2JqPDwvTW9kRGF0ZShEOjIwMDUwODEwMDg1NjQ1
-LTA3JzAwJykvQ3JlYXRpb25EYXRlKEQ6MjAwNTA4MTAwODU2MjdaKS9UaXRsZShmaWxlOi8vL1p8
-L3BjaV9ib290LnR4dCkvUHJvZHVjZXIoQWNyb2JhdCBXZWIgQ2FwdHVyZSA2LjApPj4NZW5kb2Jq
-DTUgMCBvYmogbnVsbA1lbmRvYmoNNiAwIG9iajw8L0NvdW50IDIvVHlwZS9PdXRsaW5lcy9GaXJz
-dCAzMiAwIFIvTGFzdCAzMiAwIFI+Pg1lbmRvYmoNNyAwIG9iajw8L1R5cGUvU3RydWN0VHJlZVJv
-b3QvSyA5IDAgUi9DbGFzc01hcCA4IDAgUi9QYXJlbnRUcmVlIDEyIDAgUi9QYXJlbnRUcmVlTmV4
-dEtleSAxPj4NZW5kb2JqDTggMCBvYmo8PC9TcGRyQXJ0PDwvTy9XZWJDYXB0dXJlPj4+Pg1lbmRv
-YmoNOSAwIG9iajw8L0sgMTAgMCBSL1AgNyAwIFIvUy9Eb2N1bWVudD4+DWVuZG9iag0xMCAwIG9i
-ajw8L0sgMC9DL1NwZHJBcnQvUCA5IDAgUi9TL0FydGljbGUvUGcgMTEgMCBSPj4NZW5kb2JqDTEx
-IDAgb2JqPDwvSUQgMjUgMCBSL0NvbnRlbnRzIDE3IDAgUi9UeXBlL1BhZ2UvUGFyZW50IDIgMCBS
-L01lZGlhQm94WzAuMCAwLjAgNjEyLjAgNzkyLjBdL1Jlc291cmNlczw8L0ZvbnQ8PC9UMV8wIDE0
-IDAgUi9UMV8xIDE1IDAgUj4+L1Byb2NTZXRbL1BERi9UZXh0XT4+L1N0cnVjdFBhcmVudHMgMD4+
-DWVuZG9iag0xMiAwIG9iajw8L051bXNbMCAxMyAwIFJdPj4NZW5kb2JqDTEzIDAgb2JqWzEwIDAg
-Ul0NZW5kb2JqDTE0IDAgb2JqPDwvVHlwZS9Gb250L0VuY29kaW5nL1dpbkFuc2lFbmNvZGluZy9C
-YXNlRm9udC9UaW1lcy1Sb21hbi9TdWJ0eXBlL1R5cGUxPj4NZW5kb2JqDTE1IDAgb2JqPDwvVHlw
-ZS9Gb250L0VuY29kaW5nL1dpbkFuc2lFbmNvZGluZy9CYXNlRm9udC9Db3VyaWVyL1N1YnR5cGUv
-VHlwZTE+Pg1lbmRvYmoNMTYgMCBvYmogMjE0Mg1lbmRvYmoNMTcgMCBvYmo8PC9MZW5ndGggMTYg
-MCBSPj5zdHJlYW0NCi9BcnRpZmFjdCA8PC9UeXBlIC9QYWdpbmF0aW9uIC9CQm94IFsxOCA3Nzgg
-NTgyIDc4NyBdL0F0dGFjaGVkIFsvVG9wIF0+PkJEQyAKMCAwIDAgcmcKMCBpIApCVAovVDFfMCAx
-IFRmCjAgVGMgMCBUdyAwICBUcyAxMDAgIFR6IDAgVHIgOSAwIDAgOSAxOCA3ODAuMTcgVG0KKGZp
-bGU6Ly8vWnwvcGNpX2Jvb3QudHh0KVRqCkVUCkVNQyAKL0FydGljbGUgPDwvTUNJRCAwID4+QkRD
-IApxCjAgMTggNjEyIDc1NiByZQpXKiBuCkJUCi9UMV8xIDEgVGYKMTQgMCAwIDE0IDEwIDczNC45
-MDgxNiBUbQooUENJOiBQcm9iaW5nIFBDSSBoYXJkd2FyZSlUagowIC0xLjIgVEQKKFBDSTogYnJp
-ZGdlIHJzcmMgMC4uZmZmZmZmIFwoMTAwXCksIHBhcmVudCBjMDI0ODU4OClUagpUKgooUENJOiBy
-ZXBhcmVudGVkIDgyNTkgXChtYXN0ZXJcKSBbMjAuLjIxXSB1bmRlciBQQ0kxIGhvc3QgYnJpZGdl
-KVRqClQqCihQQ0k6IHJlcGFyZW50ZWQgODI1OSBcKHNsYXZlXCkgW2EwLi5hMV0gdW5kZXIgUENJ
-MSBob3N0IGJyaWRnZSlUagpUKgooUENJOiByZXBhcmVudGVkIDgyNTkgZWRnZSBjb250cm9sIFs0
-ZDAuLjRkMV0gdW5kZXIgUENJMSBob3N0IGJyaWRnZSlUagpUKgooUENJOiBicmlkZ2UgcnNyYyA4
-MDAwMDAwMC4uOWZmZmZmZmYgXCgyMDBcKSwgcGFyZW50IGMwMjQ4NTZjKVRqClQqCihQQ0k6IGJy
-aWRnZSByc3JjIDAuLmZmZmYgXCgxMDFcKSwgcGFyZW50IGMwMmU1MDM4KVRqClQqCihQQ0k6IHJl
-cGFyZW50ZWQgODI1OSBcKG1hc3RlclwpIFsyMC4uMjFdIHVuZGVyIFBDSSBCdXMgIzAxKVRqClQq
-CihQQ0k6IHJlcGFyZW50ZWQgODI1OSBcKHNsYXZlXCkgW2EwLi5hMV0gdW5kZXIgUENJIEJ1cyAj
-MDEpVGoKVCoKKFBDSTogcmVwYXJlbnRlZCA4MjU5IGVkZ2UgY29udHJvbCBbNGQwLi40ZDFdIHVu
-ZGVyIFBDSSBCdXMgIzAxKVRqClQqCihQQ0k6IGJyaWRnZSByc3JjIDlmZTAwMDAwLi45ZmVmZmZm
-ZiBcKDIwMFwpLCBwYXJlbnQgYzAyZTUwNTQpVGoKVCoKKFBDSTogYnJpZGdlIHJzcmMgOWZkMDAw
-MDAuLjlmZGZmZmZmIFwoMTIwMVwpLCBwYXJlbnQgYzAyZTUwNTQpVGoKVCoKKFBDSTogYnJpZGdl
-IHJzcmMgMC4uZmZmZiBcKDEwMVwpLCBwYXJlbnQgYzAyZTUwMzgpVGoKVCoKKFBDSTogcmVwYXJl
-bnRlZCBQQ0kgQnVzICMwMSBbMC4uZmZmZl0gdW5kZXIgUENJIEJ1cyAjMDIpVGoKVCoKKFBDSTog
-YnJpZGdlIHJzcmMgOWZjMDAwMDAuLjlmY2ZmZmZmIFwoMjAwXCksIHBhcmVudCBjMDJlNTA1NClU
-agpUKgooUENJOiBicmlkZ2UgcnNyYyA5ZmIwMDAwMC4uOWZiZmZmZmYgXCgxMjAxXCksIHBhcmVu
-dCBjMDJlNTA1NClUagpUKgooUENJOiBicmlkZ2UgcnNyYyAxMDAwMDAwLi4xZmZmZmZmIFwoMTAw
-XCksIHBhcmVudCBjMDI0ODU4OClUagpUKgooUENJOiBicmlkZ2UgcnNyYyBhMDAwMDAwMC4uYmZm
-ZmZmZmYgXCgyMDBcKSwgcGFyZW50IGMwMjQ4NTZjKVRqClQqCihQQ0k6MDAwMDowMDoxMS4wOiBS
-ZXNvdXJjZSAwOiA5ZmZmZjAwMC05ZmZmZmZmZiBcKGY9MjAwXCkpVGoKVCoKKFBDSTowMDAwOjAx
-OjAyLjE6IFJlc291cmNlIDQ6IDAwMDBjYzAwLTAwMDBjYzBmIFwoZj0xMDFcKSlUagpUKgooUENJ
-OjAwMDA6MDE6MDIuMjogUmVzb3VyY2UgNDogMDAwMGZmZTAtMDAwMGZmZmYgXChmPTEwMVwpKVRq
-ClQqCihQQ0k6MDAwMDowMTowMi4zOiBSZXNvdXJjZSA0OiAwMDAwZmZjMC0wMDAwZmZkZiBcKGY9
-MTAxXCkpVGoKVCoKKFBDSTowMDAwOjAxOjAyLjU6IFJlc291cmNlIDA6IDAwMDBmZTAwLTAwMDBm
-ZWZmIFwoZj0xMDFcKSlUagpUKgooUENJOjAwMDA6MDE6MDIuNTogUmVzb3VyY2UgMTogMDAwMGZk
-ZmMtMDAwMGZkZmYgXChmPTEwMVwpKVRqClQqCihQQ0k6MDAwMDowMTowMi41OiBSZXNvdXJjZSAy
-OiAwMDAwZmRmOC0wMDAwZmRmYiBcKGY9MTAxXCkpVGoKVCoKKFBDSTowMDAwOjAxOjAyLjY6IFJl
-c291cmNlIDA6IDAwMDBmYzAwLTAwMDBmY2ZmIFwoZj0xMDFcKSlUagpFVApFTUMgCi9BcnRpZmFj
-dCA8PC9UeXBlIC9QYWdpbmF0aW9uIC9CQm94IFsxOCA1IDU4MiAxNCBdL0F0dGFjaGVkIFsvQm90
-dG9tIF0+PkJEQyAKUQpCVAovVDFfMCAxIFRmCjkgMCAwIDkgMTggNy4xNyBUbQooZmlsZTovLy9a
-fC9wY2lfYm9vdC50eHQ4LzEwLzIwMDUgMTo1Njo0NCBBTSlUagpFVApFTUMgCg0KZW5kc3RyZWFt
-DWVuZG9iag0xOCAwIG9iaihmaWxlOi8vL1p8L3BjaV9ib290LnR4dCkNZW5kb2JqDTE5IDAgb2Jq
-PDwvQyAyMyAwIFIvViAxLjI1Pj4NZW5kb2JqDTIwIDAgb2JqPDwvUyAyMSAwIFIvVVJMKGZpbGU6
-Ly8vWnwvcGNpX2Jvb3QudHh0KT4+DWVuZG9iag0yMSAwIG9iajw8L0cgMjIgMCBSPj4NZW5kb2Jq
-DTIyIDAgb2JqPDwvUFNbNzkyLjAgNjEyLjBdL01bMTAuMDgwMDAyIDEwLjA4MDAwMiAyNi4wIDM2
-LjBdL1MgMC9BUyAxL1BPIDAvQVQgNzAvQUggMC9BTCAwL0NCIDAvU1UgMT4+DWVuZG9iag0yMyAw
-IG9ialsyMCAwIFJdDWVuZG9iag0yNCAwIG9iaihmaWxlOi8vL1p8L3BjaV9ib290LnR4dCkNZW5k
-b2JqDTI1IDAgb2JqKCaTPsHrS2g6s//MP9xhhHwpDWVuZG9iag0yNiAwIG9iajw8L0lEIDI1IDAg
-Ui9PWzExIDAgUl0vUy9TUFMvVCAxOCAwIFIvQ1QodGV4dC9odG1sKS9TSSAyNyAwIFIvVElEIDI4
-IDAgUi9UUyhEOjIwMDUwODEwMTU1NjQ1KT4+DWVuZG9iag0yNyAwIG9iajw8L0FVIDI0IDAgUi9U
-UyhEOjIwMDUwODEwMTU1NjQ1KT4+DWVuZG9iag0yOCAwIG9iaihT5LmVQrjVuuV+dIe3yK/JKQ1l
-bmRvYmoNMjkgMCBvYmo8PC9JRFMgMzAgMCBSL1VSTFMgMzEgMCBSPj4NZW5kb2JqDTMwIDAgb2Jq
-PDwvTmFtZXNbMjUgMCBSIDI2IDAgUl0+Pg1lbmRvYmoNMzEgMCBvYmo8PC9OYW1lc1syNCAwIFIg
-MjYgMCBSXT4+DWVuZG9iag0zMiAwIG9iajw8L0NvdW50IDEvUGFyZW50IDYgMCBSL0ZpcnN0IDMz
-IDAgUi9MYXN0IDMzIDAgUi9UaXRsZShMb2NhbCBEaXNrKT4+DWVuZG9iag0zMyAwIG9iajw8L1Bh
-cmVudCAzMiAwIFIvRGVzdFsxMSAwIFIvWFlaIDAgNzkyIG51bGxdL1RpdGxlKGZpbGU6Ly8vWnwv
-cGNpX2Jvb3QudHh0KS9TRSAxMCAwIFI+Pg1lbmRvYmoNMzQgMCBvYmo8PC9MZW5ndGggMzI0NS9U
-eXBlL01ldGFkYXRhL1N1YnR5cGUvWE1MPj5zdHJlYW0NCjw/eHBhY2tldCBiZWdpbj0n77u/JyBp
-ZD0nVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkJz8+Cjw/YWRvYmUteGFwLWZpbHRlcnMgZXNjPSJD
-UkxGIj8+DQo8eDp4bXBtZXRhIHhtbG5zOng9J2Fkb2JlOm5zOm1ldGEvJyB4OnhtcHRrPSdYTVAg
-dG9vbGtpdCAyLjkuMS0xMywgZnJhbWV3b3JrIDEuNic+DQo8cmRmOlJERiB4bWxuczpyZGY9J2h0
-dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMnIHhtbG5zOmlYPSdodHRw
-Oi8vbnMuYWRvYmUuY29tL2lYLzEuMC8nPg0KPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9J3V1
-aWQ6NjI1MmQ2MWItZTA2Ny00YjM4LWExNDgtMDBmZGUzZDE0OTdiJyB4bWxuczpwZGY9J2h0dHA6
-Ly9ucy5hZG9iZS5jb20vcGRmLzEuMy8nIHBkZjpQcm9kdWNlcj0nQWNyb2JhdCBXZWIgQ2FwdHVy
-ZSA2LjAnPjwvcmRmOkRlc2NyaXB0aW9uPg0KPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9J3V1
-aWQ6NjI1MmQ2MWItZTA2Ny00YjM4LWExNDgtMDBmZGUzZDE0OTdiJyB4bWxuczp4YXA9J2h0dHA6
-Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8nIHhhcDpNb2RpZnlEYXRlPScyMDA1LTA4LTEwVDA4OjU2
-OjQ1LTA3OjAwJyB4YXA6Q3JlYXRlRGF0ZT0nMjAwNS0wOC0xMFQwODo1NjoyN1onIHhhcDpNZXRh
-ZGF0YURhdGU9JzIwMDUtMDgtMTBUMDg6NTY6NDUtMDc6MDAnPjwvcmRmOkRlc2NyaXB0aW9uPg0K
-PHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9J3V1aWQ6NjI1MmQ2MWItZTA2Ny00YjM4LWExNDgt
-MDBmZGUzZDE0OTdiJyB4bWxuczp4YXBNTT0naHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21t
-LycgeGFwTU06RG9jdW1lbnRJRD0ndXVpZDpkNTYzOGUzYy1lYTQxLTRkZjEtOTQyOS0wZGUwODMw
-NGVkNDcnLz4NCjxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSd1dWlkOjYyNTJkNjFiLWUwNjct
-NGIzOC1hMTQ4LTAwZmRlM2QxNDk3YicgeG1sbnM6ZGM9J2h0dHA6Ly9wdXJsLm9yZy9kYy9lbGVt
-ZW50cy8xLjEvJyBkYzpmb3JtYXQ9J2FwcGxpY2F0aW9uL3BkZic+PGRjOnRpdGxlPjxyZGY6QWx0
-PjxyZGY6bGkgeG1sOmxhbmc9J3gtZGVmYXVsdCc+ZmlsZTovLy9afC9wY2lfYm9vdC50eHQ8L3Jk
-ZjpsaT48L3JkZjpBbHQ+PC9kYzp0aXRsZT48L3JkZjpEZXNjcmlwdGlvbj4NCjwvcmRmOlJERj4N
-CjwveDp4bXBtZXRhPg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-IAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAog
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAg
-ICAgICAgICAgIAo8P3hwYWNrZXQgZW5kPSd3Jz8+DQplbmRzdHJlYW0NZW5kb2JqDXhyZWYNCjAg
-MzUNCjAwMDAwMDAwMDQgNjU1MzUgZg0KMDAwMDAwMDAxNiAwMDAwMCBuDQowMDAwMDAwMTQzIDAw
-MDAwIG4NCjAwMDAwMDAxOTQgMDAwMDAgbg0KMDAwMDAwMDAwMCAwMDAwMSBmDQowMDAwMDAwMzQz
-IDAwMDAwIG4NCjAwMDAwMDAzNjMgMDAwMDAgbg0KMDAwMDAwMDQyOSAwMDAwMCBuDQowMDAwMDAw
-NTI5IDAwMDAwIG4NCjAwMDAwMDA1NzMgMDAwMDAgbg0KMDAwMDAwMDYyMCAwMDAwMCBuDQowMDAw
-MDAwNjgyIDAwMDAwIG4NCjAwMDAwMDA4NjMgMDAwMDAgbg0KMDAwMDAwMDg5OCAwMDAwMCBuDQow
-MDAwMDAwOTIyIDAwMDAwIG4NCjAwMDAwMDEwMTIgMDAwMDAgbg0KMDAwMDAwMTA5OCAwMDAwMCBu
-DQowMDAwMDAxMTE5IDAwMDAwIG4NCjAwMDAwMDMzMTQgMDAwMDAgbg0KMDAwMDAwMzM1NSAwMDAw
-MCBuDQowMDAwMDAzMzkxIDAwMDAwIG4NCjAwMDAwMDM0NDkgMDAwMDAgbg0KMDAwMDAwMzQ3OCAw
-MDAwMCBuDQowMDAwMDAzNTg3IDAwMDAwIG4NCjAwMDAwMDM2MTEgMDAwMDAgbg0KMDAwMDAwMzY1
-MiAwMDAwMCBuDQowMDAwMDAzNjg2IDAwMDAwIG4NCjAwMDAwMDM3OTcgMDAwMDAgbg0KMDAwMDAw
-Mzg0OCAwMDAwMCBuDQowMDAwMDAzODgyIDAwMDAwIG4NCjAwMDAwMDM5MjUgMDAwMDAgbg0KMDAw
-MDAwMzk2NiAwMDAwMCBuDQowMDAwMDA0MDA3IDAwMDAwIG4NCjAwMDAwMDQwOTEgMDAwMDAgbg0K
-MDAwMDAwNDE5NCAwMDAwMCBuDQp0cmFpbGVyDQo8PC9TaXplIDM1L1Jvb3QgMSAwIFIvSW5mbyAz
-IDAgUi9JRFs8ZTYzNzhjYmM2Njc0OTU0MDliNWE4NDE3NDQ1MjhjMmE+PDYzYjM4ZWVhMjhhYjY3
-NGU5ZjZmODMyZjdlN2NiZDhiPl0+Pg0Kc3RhcnR4cmVmDQo3NTE2DQolJUVPRg0K
-
-------_=_NextPart_001_01C59DC4.6A29AE0B--
+>
+>>> -
+>>> --
+>>> --------------------
+>>> 03.01.00            0x104c    0xa106        .........
+>>>
+>>> Any idea why the insmod fails on one board and not on the other one?
+>>>
+>>> Many thanks in advance,
+>>> Bizhan
+>>>
+>>> <ATT2118305.txt>
+>>>
+>>>
+>>> <lspci_output.txt>
+>>> <proc_pci.txt>
+>>> <u-boot.txt>
+>>>
+>>
+>>
+>> <pci_boot.txt>
+>> <pci_boot.pdf>
+>
