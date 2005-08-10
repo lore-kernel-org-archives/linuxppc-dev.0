@@ -1,17 +1,18 @@
-Return-Path: <Baohua.WANG@alcatel-sbell.com.cn>
-Received: from mail.alcatel-sbell.com.cn (nat1.alcatel-sbell.com.cn
-	[202.96.203.177]) by ozlabs.org (Postfix) with ESMTP id A9D8167FF2
+Return-Path: <vbordug@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
+	by ozlabs.org (Postfix) with SMTP id DA70467EBA
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Aug 2005 15:51:04 +1000 (EST)
+	Wed, 10 Aug 2005 17:25:35 +1000 (EST)
+Message-ID: <42F9ABEB.7070304@ru.mvista.com>
+Date: Wed, 10 Aug 2005 11:25:31 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=iso-8859-1
-Date: Wed, 10 Aug 2005 13:50:45 +0800
-Message-ID: <A9DE2BAF233E444FA9C5E77A5825A01E86505D@ydmail.sbell.com.cn>
-From: "FCG WANG Baohua" <Baohua.WANG@alcatel-sbell.com.cn>
-To: <wd@denx.de>
+To: "Schaefer-Hutter, Peter" <Peter.Schaefer-Hutter@tfk-racoms.com>
+References: <8E342283C2100540AAC5D10309705477749D97@rcexc.racoms.loc>
+In-Reply-To: <8E342283C2100540AAC5D10309705477749D97@rcexc.racoms.loc>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
-Subject: ??: Some version different 
+Subject: Re: fs_enet on MPC885ADS
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,95 +23,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Denk:
-  First I many thanks for your quick reply for my every silly question.  =
-The freeze "transferring control to linux" question is sloved.
-  It is the "r3" register data wrong transfer from ppcboot  to kernel. I =
-don't know why. very strange. !!!
-  The CONFIG_HD860 cannot be compiled in kernel. I don't know either.  =
-There is no error or warring during config and make.
-   I add the init code of bdinfo struct in arch/ppc/kernel/m8xx_setup.c =
-platform_init() function. I filled the stuct  __as list by "bdi" =
-command.
-   Then the console can work now.=20
-   But there is another question:
-   It always print the "ttyS0 at 0x0280 is on SMC1 using BRGSerial =
-driver version 5.05c (2001-07-08) with no serial options enabled"
-                                    or "Serial driver version 5.05c =
-(2001-07-08) with no serial options enabled"
- =20
-   Then "Oops: kernel access of bad area, sig: 11" and stopped.
-=20
-  How is the "with no serial options enabled" ? is it need any config =
-with "make menuconfig" ?
- =20
+Hi, Peter
+Schaefer-Hutter, Peter wrote:
+> Hi there,
+> 
+> Are there any boot options needed to enable the fs_enet driver
+> on the MPC885ADS? I replaced CONFIG_DUET with CONFIG_MPC885ADS
+> in drivers/net/fs_enet/mac-fec.c, but only got
+> 
+>   fs_enet.c:v0.1 (May 6, 2005)
+>   NET: Registered protocol family 2
+>   IP route cache hash table entries: 128 (order: -3, 512 bytes)
+>   TCP established hash table entries: 512 (order: 0, 4096 bytes)
+>   TCP bind hash table entries: 512 (order: -1, 2048 bytes)
+>   TCP: Hash tables configured (established 512 bind 512)
+>   TCP reno registered
+>   TCP bic registered
+>   NET: Registered protocol family 1
+>   NET: Registered protocol family 17
+>   IP-Config: Device `eth0' not found.
+> 
+Since this driver is platform-device based, you need to configure the PD 
+structures. I'll try to submit a patch which will cover this...
+> Reason i'm asking is that the current cpm_uart driver doesn't work
+> with the SCC3 ethernet driver included in the MPC885 board support
+> (as soon as ethernet is initialized, console output stops).
+> 
+This is very interesting since AFAIR SCC3 eth will not work with SMC2 on 
+my board, but maybe something is changed. Anyway, oue fs_enet is pretty 
+close to upstream so it would be nice if you will use (and test :)) it.
+> Best regards,
+> 
+>  Peter
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+> 
 
 
------????-----
-???: wd@denx.de [mailto:wd@denx.de]
-????: 2005?8?10? 13:25
-???: FCG WANG Baohua
-??: linuxppc-embedded@ozlabs.org
-??: Re: Some version different=20
-
-
-In message <A9DE2BAF233E444FA9C5E77A5825A01E86505B@ydmail.sbell.com.cn> =
-you wrote:
-> >
->  I want to ask some questions about the different version:
->   1. The linuxppc_2_4_devel   and   the linux-2.4.25.tar.bz2 in ELDK
-> 3.1.1 package
-
-THe traball is a snapshot from the linuxppc_2_4_devel CVS  tree  (for
-ELDK  3.1.1  the  date  of  the  snapshot  is  2005-03-06  or CVS tag
-LABEL_2005_03_06_0100).
-
->   2.  The ppcboot 0.9.2 compiled with mvstia devrock   and    the
-> U-Boot 1.1.2 compiled  with ELDK
-
-PPCBoot 0.9.2 and U-Boot 1.1.2 are about 4 years apart. This is  like
-comparing Linux kernel versions 2.0 with 2.6 ....
-
->   Does the kernel freeze at "transferring control to linux" could be
-> these different versions?=20
-
-Both versions were perfectly  capable  of  booting  a  working  Linux
-kernel. I don't know the MV toolchain, but I guess it's working fine,
-too.  So my guess is that it's your port of the Linux kernel which is
-broken.
-
->   1 why I configed the kernel with CONFIG_HD860 in "make menuconfig" =
-but
-> the code in CONFIG_HD860=20
->      isn't compiled at all ! What's the perhaps reasons? I checked the
-
-Your port of the Linux kernel is broken.  Probably  you  made  errors
-when changing the configure scripts and/or Makefiles.
-
->    2  How to get board info "struct bd_info" in init/main.c ? I want =
-to
-> use printf of bd_t->bi_mon_fnc->printf() to=20
-
-You cannot do that. It does not work.
-
->        print some string on console. Does it possible? But the code is
-> only in head_8xx.S, How to get the bd* data in=20
-
-The _res pointer can be used for that; see the existing driver sources.
-
->        main.c ? Some board use get_board_info(). But how can I use it? =
-
-
-This depends on how your hardware and your port of Linux support such
-a feature. I cannot answer such a question.
-
-Best regards,
-
-Wolfgang Denk
-
---=20
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"The POP3 server service depends on the SMTP  server  service,  which
-failed to start because of the following error: The operation comple-
-ted successfully."                         -- Windows NT Server v3.51
+-- 
+Sincerely,
+Vitaly
