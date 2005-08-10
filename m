@@ -1,18 +1,19 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
-	by ozlabs.org (Postfix) with SMTP id DA70467EBA
+Return-Path: <wd@denx.de>
+Received: from mailout03.sul.t-online.com (mailout03.sul.t-online.com
+	[194.25.134.81]) by ozlabs.org (Postfix) with ESMTP id 8CA9F67EB1
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Aug 2005 17:25:35 +1000 (EST)
-Message-ID: <42F9ABEB.7070304@ru.mvista.com>
-Date: Wed, 10 Aug 2005 11:25:31 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-MIME-Version: 1.0
-To: "Schaefer-Hutter, Peter" <Peter.Schaefer-Hutter@tfk-racoms.com>
-References: <8E342283C2100540AAC5D10309705477749D97@rcexc.racoms.loc>
-In-Reply-To: <8E342283C2100540AAC5D10309705477749D97@rcexc.racoms.loc>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 10 Aug 2005 17:30:34 +1000 (EST)
+To: "FCG WANG Baohua" <Baohua.WANG@alcatel-sbell.com.cn>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 10 Aug 2005 13:50:45 +0800."
+	<A9DE2BAF233E444FA9C5E77A5825A01E86505D@ydmail.sbell.com.cn>
+Date: Wed, 10 Aug 2005 09:30:16 +0200
+Sender: wd@denx.de
+Message-Id: <20050810073016.37BA5353C46@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: fs_enet on MPC885ADS
+Subject: Re: ??: Some version different 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,46 +24,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi, Peter
-Schaefer-Hutter, Peter wrote:
-> Hi there,
-> 
-> Are there any boot options needed to enable the fs_enet driver
-> on the MPC885ADS? I replaced CONFIG_DUET with CONFIG_MPC885ADS
-> in drivers/net/fs_enet/mac-fec.c, but only got
-> 
->   fs_enet.c:v0.1 (May 6, 2005)
->   NET: Registered protocol family 2
->   IP route cache hash table entries: 128 (order: -3, 512 bytes)
->   TCP established hash table entries: 512 (order: 0, 4096 bytes)
->   TCP bind hash table entries: 512 (order: -1, 2048 bytes)
->   TCP: Hash tables configured (established 512 bind 512)
->   TCP reno registered
->   TCP bic registered
->   NET: Registered protocol family 1
->   NET: Registered protocol family 17
->   IP-Config: Device `eth0' not found.
-> 
-Since this driver is platform-device based, you need to configure the PD 
-structures. I'll try to submit a patch which will cover this...
-> Reason i'm asking is that the current cpm_uart driver doesn't work
-> with the SCC3 ethernet driver included in the MPC885 board support
-> (as soon as ethernet is initialized, console output stops).
-> 
-This is very interesting since AFAIR SCC3 eth will not work with SMC2 on 
-my board, but maybe something is changed. Anyway, oue fs_enet is pretty 
-close to upstream so it would be nice if you will use (and test :)) it.
-> Best regards,
-> 
->  Peter
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
+In message <A9DE2BAF233E444FA9C5E77A5825A01E86505D@ydmail.sbell.com.cn> you wrote:
+>
+>   It is the "r3" register data wrong transfer from ppcboot  to kernel. I
+> don't know why. very strange. !!!
 
+I'm sure that PPCBoot passes a valid pointer. If you  don;t  see  the
+expected  data,  then  you  should probably go back to square one and
+read the FAQ: 
+http://www.denx.de/twiki/bin/view/DULG/LinuxHangsAfterUncompressingKernel
+
+>   The CONFIG_HD860 cannot be compiled in kernel. I don't know either.
+> There is no error or warring during config and make.
+
+There is a bug (at least one) n your modifications to the Linux kernel.
+
+>    Then "Oops: kernel access of bad area, sig: 11" and stopped.
+>  
+>   How is the "with no serial options enabled" ? is it need any config
+> with "make menuconfig" ?
+
+I don't know your hardware.
+I don't know why you are using  obsolete  versions  of  the  software
+(like PPCBoot) for any current work.
+I don't know which modifications you made to U-Boot to make it  work
+on your hardware, or if these modifications are working at all.
+I don't know which modifications you made to Linux.
+
+I cannot help you. Hire an expert.
+
+Best regards,
+
+Wolfgang Denk
 
 -- 
-Sincerely,
-Vitaly
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+There is nothing in this world constant but inconstancy.      - Swift
