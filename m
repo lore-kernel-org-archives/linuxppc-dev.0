@@ -1,20 +1,16 @@
-Return-Path: <ostampflee@terrasoftsolutions.com>
-Received: from newhope.terraplex.com (newhope1.terraplex.com [66.7.161.2])
-	by ozlabs.org (Postfix) with ESMTP id 13AE26808C
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Aug 2005 05:31:15 +1000 (EST)
-Received: from [192.168.0.105] (S010600095bdadbc7.gv.shawcable.net
-	[24.68.241.79])
-	by newhope.terraplex.com (Postfix) with ESMTP id 7EA6F358015
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Aug 2005 13:31:09 -0600 (MDT)
-From: Owen Stampflee <ostampflee@terrasoftsolutions.com>
-To: linuxppc-dev@ozlabs.org
-In-Reply-To: <1123689464.3664.10.camel@beast.terraplex.com>
-References: <1123689464.3664.10.camel@beast.terraplex.com>
-Content-Type: text/plain
-Message-Id: <1123702002.5579.1.camel@beast.terraplex.com>
+Return-Path: <linville@tuxdriver.com>
+Date: Wed, 10 Aug 2005 17:35:34 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Dan Malek <dan@embeddededge.com>
+Message-ID: <20050810213533.GA2353@tuxdriver.com>
+References: <c237b7e878e0c32f421209fa37b7a156@freescale.com>
+	<22fac6c20e1ee142606e4295722c2d1d@embeddededge.com>
 Mime-Version: 1.0
-Date: Wed, 10 Aug 2005 12:26:42 -0700
-Subject: Re: PowerBook5,4 sleep w/2.6.12
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <22fac6c20e1ee142606e4295722c2d1d@embeddededge.com>
+Cc: linuxppc-dev@ozlabs.org, Becky Bruce <becky.bruce@freescale.com>,
+	linuxppc64-dev@ozlabs.org
+Subject: Re: RFC: proposed arch/powerpc directory structure
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,7 +20,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Turns out that somehow CPUFREQ was forgotten in the config,enabling it
-fixed the problem.
+On Wed, Aug 10, 2005 at 01:01:34PM -0400, Dan Malek wrote:
 
-Thanks for the input guys.
+> inside of them.  Regardless of the build or management tools we use, I 
+> still find it
+> nice to keep a concise file name that is still descriptive, and take 
+> advantage of
+> the directory structure names to assist with this.
+
+I'll second that, fwiw...
+
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
