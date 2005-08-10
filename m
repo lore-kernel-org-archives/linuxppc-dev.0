@@ -1,24 +1,18 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id A788367EC9
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Aug 2005 00:14:26 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	j7AEMej8013091
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Aug 2005 07:22:40 -0700 (MST)
-Received: from [192.168.123.107] (kochetkov_w2k.telma.nn [10.214.72.251] (may
-	be forged))
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id j7AEJFno028472
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Aug 2005 09:19:16 -0500 (CDT)
-Mime-Version: 1.0 (Apple Message framework v733)
-In-Reply-To: <18167A13-B5E6-44B9-894F-8AC451F2DF4B@freescale.com>
-References: <18167A13-B5E6-44B9-894F-8AC451F2DF4B@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <78C583CE-672A-4E00-BECF-4C7394BD3705@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Wed, 10 Aug 2005 09:14:29 -0500
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: arch/ppc/kernel/find_name.c??
+Return-Path: <ostampflee@terrasoftsolutions.com>
+Received: from newhope.terraplex.com (newhope1.terraplex.com [66.7.161.2])
+	by ozlabs.org (Postfix) with ESMTP id BBD786804E
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Aug 2005 02:19:59 +1000 (EST)
+Received: from [192.168.0.105] (S010600095bdadbc7.gv.shawcable.net
+	[24.68.241.79])
+	by newhope.terraplex.com (Postfix) with ESMTP id 285A43580D0
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Aug 2005 10:02:10 -0600 (MDT)
+From: Owen Stampflee <ostampflee@terrasoftsolutions.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Message-Id: <1123689464.3664.10.camel@beast.terraplex.com>
+Mime-Version: 1.0
+Date: Wed, 10 Aug 2005 08:57:44 -0700
+Subject: PowerBook5,4 sleep w/2.6.12
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,19 +22,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Let me try this again.  Does anyone use this code or will anyone care  
-if I kill it?
+Anyone else having troubles with it? I've tried 2.6.12-rc2 and
+2.6.12.(3|4). Found several success reports on Google about 2.6.12
+sleeping this laptop correctly.
 
-- kumar
+My PowerBook refuses to wake up, the screen stays blank, PCMCIA card
+lights don't turn on, but I do hear the CDROM drive motor kick.
 
-On Aug 8, 2005, at 3:48 PM, Gala Kumar K.-galak wrote:
+Sleep works perfectly using 2.6.10, and 2.6.12 works fine on a
+co-worker's PowerBook5,2.
 
-> anyone know why we have this still around since it doesnt seem to be
-> used by any makefile?
->
-> - kumar
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
+Any input would be greatly appreciated, I seem to remember a tidbit
+about an early wakeup console, but I'm guessing that doesnt even work.
+
+Thanks,
+Owen
