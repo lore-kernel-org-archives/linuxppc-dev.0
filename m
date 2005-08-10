@@ -1,18 +1,11 @@
-Return-Path: <ostampflee@terrasoftsolutions.com>
-Received: from newhope.terraplex.com (newhope1.terraplex.com [66.7.161.2])
-	by ozlabs.org (Postfix) with ESMTP id BBD786804E
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Aug 2005 02:19:59 +1000 (EST)
-Received: from [192.168.0.105] (S010600095bdadbc7.gv.shawcable.net
-	[24.68.241.79])
-	by newhope.terraplex.com (Postfix) with ESMTP id 285A43580D0
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Aug 2005 10:02:10 -0600 (MDT)
-From: Owen Stampflee <ostampflee@terrasoftsolutions.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain
-Message-Id: <1123689464.3664.10.camel@beast.terraplex.com>
-Mime-Version: 1.0
-Date: Wed, 10 Aug 2005 08:57:44 -0700
-Subject: PowerBook5,4 sleep w/2.6.12
+Return-Path: <becky.bruce@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v622)
+Message-Id: <c237b7e878e0c32f421209fa37b7a156@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: linuxppc64-dev@ozlabs.org, linuxppc-dev@ozlabs.org
+From: Becky Bruce <becky.bruce@freescale.com>
+Date: Wed, 10 Aug 2005 11:45:10 -0500
+Subject: RFC: proposed arch/powerpc directory structure
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,18 +15,101 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anyone else having troubles with it? I've tried 2.6.12-rc2 and
-2.6.12.(3|4). Found several success reports on Google about 2.6.12
-sleeping this laptop correctly.
+All,
 
-My PowerBook refuses to wake up, the screen stays blank, PCMCIA card
-lights don't turn on, but I do hear the CDROM drive motor kick.
+In the name of moving the much-anticipated 32/64 ppc merge along, Kumar 
+Gala, Jon Loeliger, and myself have worked out an initial proposal for 
+the directory structure of the new merged arch/powerpc.  Listed below 
+are the proposed directories, along with a description of the logical 
+contents, as well as a description of which existing files will be 
+moved into these directories.
 
-Sleep works perfectly using 2.6.10, and 2.6.12 works fine on a
-co-worker's PowerBook5,2.
+There was some discussion on the list recently about whether or not it 
+might be better to change things around to be laid out more along the 
+lines of functionality with, say, all pci-related code in one place.  
+We've stuck with a more traditional model in this proposal, although 
+the topic is certainly still up for discussion.
 
-Any input would be greatly appreciated, I seem to remember a tidbit
-about an early wakeup console, but I'm guessing that doesnt even work.
+This is just a first pass at a structure - we're really looking for 
+input from this list on the best way to proceed, and that discussion 
+needs to start somewhere.  BTW, this proposal preempts the previous 
+64-bit directory structure reorg proposal that I sent to this list a 
+couple of months ago.
 
-Thanks,
-Owen
+So here it is:
+
+include/powerpc/
+
+arch/powerpc/
+	configs/
+		- Kconfig defaults per buildable board.
+
+	boot/
+		- Pre-kernel execution shims and pre-passes.
+		- Convert firmware reprensentations (bi_recs, OF Dev-Trees,
+		 bootx,bd_t) to flat-dev-trees.
+		- Includes merged files from arch/ppc*/boot/ trees, plus
+		prom_init.c from arch/ppc64/kernel.
+
+	kernel/
+		- CPU-centric core code and generic PPC-specific kernel
+		- Main entry point supports r5=0, r3 = flat-dev-tree, etc.
+		- Includes all cpu core-specific code, kernel initialization code,
+		and other generic kernel foo like smp, ptrace, syscalls, etc from
+		arch/ppc*/kernel.  Files not belonging to one of these categories
+		will be moved to other directories.
+
+
+	platforms/
+		- platform-specific code laid out in the following directories:
+		pSeries/
+		iSeries/
+		pmac/  (both 32 and 64-bit)
+		classic32/  (platforms containing 6xx/7xx/74xx/8240/8241/8245)
+		classic64/  (Maple?)
+		83xx/ (may collapse into classic 32 at some point)
+		86xx/ (may collapse into classic 32 at some point)
+		pq2/ (may collapse into classic 32 at some point)
+		52xx/ (may collapse into classic 32 at some point)
+		85xx/
+		4xx/
+		8xx/
+		- Includes all code from arch/ppc/platforms, all code from
+		arch/ppc64/kernel that is specific to a given platform (where a
+		platform is a whole computer system or board)
+	
+		NOTE: there would be no .[chS] files directly under platforms -
+		all live in subdirs.
+
+	mm/
+		- Memory management, slabs, tlbs, etc.
+		- Unify LMB and mem_pieces for early boot memory.
+		- Includes all code from arch/ppc*/mm
+
+	sysdev/
+		- System Device support and Kitchen Sink
+		- Includes all code currently in arch/ppc/syslib, irq and pci code
+		that currently lives in arch/ppc/kernel, and all code from
+		arch/ppc64/kernel that is generic system code, including pci,
+		irq, interrupt control, bridges, rtas(?)
+
+	lib/
+		- Library code
+		- Includes all code from arch/ppc*/lib
+
+	math-emu/
+		- Math Emulation for FPU-less ppc32s.
+		- this is 32-bit only, so this directory would just move from
+		arch/ppc to arch/powerpc
+
+	oprofile/
+		- Support for oprofile.
+		- Includes all code from arch/ppc*/oprofile
+
+	xmon/
+		- Support for xmon.
+		- Includes all code from arch/ppc*xmon
+
+
+Cheers,
+-Becky
