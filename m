@@ -1,19 +1,16 @@
-Return-Path: <thomas@schnuerer-online.de>
-Received: from natsmtp00.rzone.de (natsmtp00.rzone.de [81.169.145.165])
-	by ozlabs.org (Postfix) with ESMTP id BB8C767F65
+Return-Path: <bgholikh@cisco.com>
+Received: from sj-iport-2.cisco.com (sj-iport-2-in.cisco.com [171.71.176.71])
+	by ozlabs.org (Postfix) with ESMTP id 9867267EE3
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 11 Aug 2005 06:01:23 +1000 (EST)
-Message-ID: <42FA5932.4070002@schnuerer-online.de>
-Date: Wed, 10 Aug 2005 21:44:50 +0200
-From: "Thomas S." <thomas@schnuerer-online.de>
+	Thu, 11 Aug 2005 06:38:19 +1000 (EST)
 MIME-Version: 1.0
-To: Kumar Gala <kumar.gala@freescale.com>
-References: <42F8E0C9.2050505@softadvances.com>
-	<75E0EACF-3C16-45AE-A0D2-CE999AF9AC7B@freescale.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: thomas.schnuerer@men.de,
-	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [linuxppc] 2.6.12-3 header <asm/usb.h> missing ?
+Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C59DEB.6BE7DF11"
+Date: Wed, 10 Aug 2005 13:38:10 -0700
+Message-ID: <F795765B112E7344AF36AA911279641584950C@xmb-sjc-212.amer.cisco.com>
+From: "Bizhan Gholikhamseh \(bgholikh\)" <bgholikh@cisco.com>
+To: "Kumar Gala" <kumar.gala@freescale.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: pci_enable_device fails on MPC8541
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,130 +21,266 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Kumar,
+This is a multi-part message in MIME format.
 
-thanks for the Info, that helps. Do you know if in this kernel Version 
-the MPC5200 USB Bug is already handled?
+------_=_NextPart_001_01C59DEB.6BE7DF11
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-I refer to errata document MPC5200E.pdf (I think rev. 06/2005) in which 
-its stated that the frame_no and pad1 words are swapped in the 
-processors OHCI Area. I saw in some earlier 2.4 kernel that in 
-/drivers/usb/host/ohci.h the members frame_no and pad1 of struct 
-ohci_hcca were swapped. maybe thats not necessary anymore ?
+HI Kumar,
+I have attached the /proc/ioports and /proc/iomem for 8541E.
+Also the CONFIG_ 85XX_PCI2 is set to yes.
 
-Im using this driver to support our embedded system modules equipped 
-with the 5200 (see the EM1 board on www.men.de for specs).
+Freescale does not support 2.6.13 so I am not able to update to that
+version yet.
 
-regards,
-Thomas
+Thanks,
+Bizhan
 
+-----Original Message-----
+From: Kumar Gala [mailto:kumar.gala@freescale.com]=20
+Sent: Wednesday, August 10, 2005 12:11 PM
+To: Bizhan Gholikhamseh (bgholikh)
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: pci_enable_device fails on MPC8541
 
-Kumar Gala wrote:
-> Well for the 5200 Thomas should be using include/linux/fsl_devices.h
-> 
-> If/when 4xx coverts over to platform devices we could have an  
-> equivalent include file if truly needed.
-> 
-> - kumar
-> 
-> On Aug 9, 2005, at 11:58 AM, John Otken wrote:
-> 
->> My patch to add on-chip OHCI support to the 440EP adds
->> an asm/usb.h reference to 4xx/ibm440ep.c.  Thomas may
->> also require it for his MPC5200 mods.
+No problem.  I'm hunting around the problem, but trying to figure out
+exactly where the bug is.  What's a little odd is that in 2.6.11 we =20
+should have excluded all the devices that are on the VIA chipset.  =20
+However, in the logs you sent me we see those devices. Part of the
+problem is that your TI DSP has its own P2P bridge on it.  Therefor the
+bus numbers for the devices start changing around a bit.
+
+What is CONFIG_85xx_PCI2 set to in your .config?
+
+Can you send me the output of the following on the 8555 CDS:
+cat /proc/ioports
+cat /proc/iomem
+
+Also, if you feel daring, grab the latest 2.6.13-rc6 kernel and build it
+for 8555 CDS and see what happens.
+
+Oh, is this card something standard or a custom thing?  The issue of =20
+having a card with P2P bridge on it has come up more than once.  =20
+However, I'm not sure of any standard PC PCI cards do this (at least
+none of the simple cards we have do).  I'd like to see if we can find
+something that we could start testing with.
+
+thanks
+
+- kumar
+
+On Aug 10, 2005, at 1:03 PM, Bizhan Gholikhamseh \(((bgholikh\))) wrote:
+
+> Kumar,
+> Sorry it took a while. I have attached the 8540 PCI boot log and=20
+> /proc/pci. Also I found out the functions you mentioned are not used=20
+> in my environment.
+>
+> Thanks,
+> Bizhan
+>
+> -----Original Message-----
+> From: Kumar Gala [mailto:kumar.gala@freescale.com]
+> Sent: Wednesday, August 10, 2005 9:06 AM
+> To: Bizhan Gholikhamseh (bgholikh)
+> Cc: linuxppc-embedded@ozlabs.org
+> Subject: Re: pci_enable_device fails on MPC8541
+>
+> It would be extremely helpful to get the output from the work MPC8540=20
+> for lspci and cat /proc/pci.
+>
+> Also, I forget if 2.6.11 has CDS VIA support, but if it does you can=20
+> try disabling it by commenting out the calls to:
+> mpc85xx_cds_enable_via() & mpc85xx_cds_fixup_via() in arch/ppc/syslib/
+
+> ppc85xx_setup.c and see what happens.
+>
+> - k
+>
+> On Aug 10, 2005, at 10:58 AM, Bizhan Gholikhamseh \\((bgholikh\\))
+> wrote:
+>
+>
+>>  <<pci_boot.pdf>> Kumar,
+>> We do not support or care about VIA IDE controller. I have enabled=20
+>> the
 >>
->> I don't like small include files either.  Perhaps there
->> is an existing file where struct usb_hcd_platform_data
->> can live.  Any suggestions?
+>
+>
+>> DEBUG flag and attached the debug messages during boot. This is for=20
+>> 8541E.
+>> Regards,
+>> Bizhan
 >>
->> John
+>> -----Original Message-----
+>> From: Kumar Gala [mailto:kumar.gala@freescale.com]
+>> Sent: Tuesday, August 09, 2005 4:11 PM
+>> To: Bizhan Gholikhamseh (bgholikh)
+>> Cc: linuxppc-embedded@ozlabs.org
+>> Subject: Re: pci_enable_device fails on MPC8541
+>>
+>> Do you need support for the VIA IDE controller?  I'm not sure if that
+
+>> is causing you issues.
+>>
+>> Also, can you try enabling DEBUG in arch/ppc/kernel/pci.c and send a=20
+>> boot log.  I'm trying to figure out what is causing the resource=20
+>> conflict.  It appears that the memory resource is reasonable, but=20
+>> there could be possible conflict on the IO resource side.
+>>
+>> Also, if you can send logs of the same thing from the working 8540=20
+>> ADS
+>>
+>
+>
+>> that would be helpful.
+>>
+>> - kumar
+>>
+>> On Aug 9, 2005, at 12:18 PM, Bizhan Gholikhamseh \(((bgholikh\)))
+>> wrote:
 >>
 >>
->> Kumar Gala wrote:
 >>
->>> Why are we bothering with asm-ppc/usb.h anyways?
+>>> Hi Kumar,
+>>> I am using Linux 2.6.11, u-boot 1.1.2.
+>>> I see failure in pci_enable_device with message:
+>>> "PCI: Device 0000:02:01.0 not available because of resource=20
+>>> collisions"
 >>>
->>> The structure defn only appears to be used once.  If this is  true,  why
->>> not just define it in the .c file.
+>>> I have attached three files:
+>>> lspci_output.txt: out put of the "lspci -v"
+>>> proc_pci.txt: output of the "cat /proc/pci"
+>>> u-boot.txt: output of the "pci command at u-boot"
+>>>
+>>> Any help greatly appreciated,
+>>> Bizhan
+>>> -----Original Message-----
+>>> From: Kumar Gala [mailto:kumar.gala@freescale.com]
+>>> Sent: Monday, August 08, 2005 1:34 PM
+>>> To: Bizhan Gholikhamseh (bgholikh)
+>>> Cc: linuxppc-embedded@ozlabs.org
+>>> Subject: Re: pci_enable_device fails on MPC8541
+>>>
+>>> Bizhan,
+>>>
+>>> A few questions:
+>>>
+>>> 1. what kernel version are you using on these boards:
+>>> 2. can you do an lspci -v on the boards
 >>>
 >>> - kumar
 >>>
->>> On Aug 9, 2005, at 7:19 AM, John Otken wrote:
+>>> On Aug 8, 2005, at 1:12 PM, Bizhan Gholikhamseh \(((bgholikh\)))
+>>> wrote:
 >>>
 >>>
->>>> Google found it for me.  It is in my "Support 440EP
->>>> On-Chip OHCI USB Host Controller" patch:
+>>>
+>>>
+>>>> Hi All,
+>>>> I am using two evaluation board from freescale, 8540ADS and=20
+>>>> MPC8541.
+>>>> The same PCI driver is being compiled and loaded on both platforms.
+>>>> The same PCI driver (developed by me) for DSP board compiled and=20
+>>>> loaded on both platforms.
 >>>>
->>>> http://patchwork.ozlabs.org/linuxppc/patch?id=1965
->>>>
->>>>
->>>> diff -uprN a/include/asm-ppc/usb.h b/include/asm-ppc/usb.h
->>>> --- a/include/asm-ppc/usb.h    1969-12-31 17:00:00.000000000 -0700
->>>> +++ b/include/asm-ppc/usb.h    2005-08-05 06:13:58.000000000 -0500
->>>> @@ -0,0 +1,13 @@
->>>> +/*
->>>> + * ppc/usb.h:
->>>> + *
->>>> + */
->>>> +#ifndef _PPC_USB_H
->>>> +#define _PPC_USB_H
->>>> +
->>>> +struct usb_hcd_platform_data {
->>>> +    int (*start) (struct platform_device *pdev);
->>>> +    void (*stop) (struct platform_device *pdev);
->>>> +};
->>>> +
->>>> +#endif /* !(_PPC_USB_H) */
+>>>> When I type: "insmod C6415.ko" on 8541 board, I get the following
+>>>> error:
+>>>> "PCI: Device 0000:02:01.0 not available because of resource=20
+>>>> collisions"
+>>>> This messages is because of the execution of the generic PCI Linux
+>>>> command:
+>>>> "pci_enable_device(pdev)"
+>>>> The same API has no problem on 8540ADS.
 >>>>
 >>>>
->>>> Kumar Gala wrote:
 >>>>
 >>>>
+>>>>
+>>>>> From UBOOT I can see my device is on bus 3:
 >>>>>
 >>>>>
->>>>> Begin forwarded message:
 >>>>>
 >>>>>
->>>>>
->>>>>> From: "Thomas S." <thomas@schnuerer-online.de>
->>>>>> Date: August 8, 2005 4:48:03 PM CDT
->>>>>> To: <linux-kernel@vger.kernel.org>
->>>>>> Subject: [linuxppc] 2.6.12-3 header <asm/usb.h> missing ?
->>>>>>
->>>>>>
->>>>>> Hello,
->>>>>>
->>>>>> Im using Kernel PPC on a MPC5200 board and try to use the onChip
->>>>>> USB. In
->>>>>> file /drivers/usb/host/ohci-ppc-soc.c a file <asm/usb.h> is  included
->>>>>> which seems to be missing. I cant find it anywhere , any ideas ?
->>>>>>
->>>>>> Thomas
->>>>>>
->>>>>>
->>>>>>
->>>>>>
->>>>>> -
->>>>>> To unsubscribe from this list: send the line "unsubscribe linux-
->>>>>> kernel"
->>>>>> in
->>>>>> the body of a message to majordomo@vger.kernel.org
->>>>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>>>>> Please read the FAQ at  http://www.tux.org/lkml/
->>>>>>
->>>>>>
->>>>>>
->>>>>
->>>>> _______________________________________________
->>>>> Linuxppc-embedded mailing list
->>>>> Linuxppc-embedded@ozlabs.org
->>>>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->>>>>
->>>>>
+>>>> =3D> pci 3
+>>>> Scanning PCI devices on bus 3
+>>>> BusDev FUN    VendorID    DeviceID    Device Class    Sub-Class
+>>>> -------------------------------------------------------------------
+>>>> -
+>>>>
+>
+>
+>>>> -
+>>>>
+>>>>
+>>
+>>
+>>
+>>>> -
+>>>> --
+>>>> --------------------
+>>>> 03.01.00            0x104c    0xa106        .........
+>>>>
+>>>> Any idea why the insmod fails on one board and not on the other=20
+>>>> one?
+>>>>
+>>>> Many thanks in advance,
+>>>> Bizhan
+>>>>
+>>>> <ATT2118305.txt>
+>>>>
+>>>>
+>>>> <lspci_output.txt>
+>>>> <proc_pci.txt>
+>>>> <u-boot.txt>
 >>>>
 >>>>
 >>>
+>>>
+>>> <pci_boot.txt>
+>>> <pci_boot.pdf>
 >>>
 >>
-> 
-> 
+>>
+>> <pci_boot_8540.txt>
+>> <proc_pci_8540.txt>
+>
+
+------_=_NextPart_001_01C59DEB.6BE7DF11
+Content-Type: text/plain;
+	name="proc_ioports_iomem.txt"
+Content-Transfer-Encoding: base64
+Content-Description: proc_ioports_iomem.txt
+Content-Disposition: attachment;
+	filename="proc_ioports_iomem.txt"
+
+IyBjYXQgL3Byb2MvaW9wb3J0cwowMDAwMDAwMC0wMGZmZmZmZiA6IFBDSTEgaG9zdCBicmlkZ2UK
+ICAwMDAwMDAwMC0wMDAwZmZmZiA6IFBDSSBCdXMgIzAyCiAgICAwMDAwMDAwMC0wMDAwZmZmZiA6
+IFBDSSBCdXMgIzAxCiAgICAgIDAwMDAwMDIwLTAwMDAwMDIxIDogODI1OSAobWFzdGVyKQogICAg
+ICAwMDAwMDA2MC0wMDAwMDA2ZiA6IGk4MDQyCiAgICAgIDAwMDAwMGEwLTAwMDAwMGExIDogODI1
+OSAoc2xhdmUpCiAgICAgIDAwMDAwNGQwLTAwMDAwNGQxIDogODI1OSBlZGdlIGNvbnRyb2wKICAg
+ICAgMDAwMGNjMDAtMDAwMGNjMGYgOiAwMDAwOjAxOjAyLjEKICAgICAgMDAwMGZjMDAtMDAwMGZj
+ZmYgOiAwMDAwOjAxOjAyLjYKICAgICAgMDAwMGZkZjgtMDAwMGZkZmIgOiAwMDAwOjAxOjAyLjUK
+ICAgICAgMDAwMGZkZmMtMDAwMGZkZmYgOiAwMDAwOjAxOjAyLjUKICAgICAgMDAwMGZlMDAtMDAw
+MGZlZmYgOiAwMDAwOjAxOjAyLjUKICAgICAgMDAwMGZmYzAtMDAwMGZmZGYgOiAwMDAwOjAxOjAy
+LjMKICAgICAgMDAwMGZmZTAtMDAwMGZmZmYgOiAwMDAwOjAxOjAyLjIKMDEwMDAwMDAtMDFmZmZm
+ZmYgOiBQQ0kyIGhvc3QgYnJpZGdlCiMgY2F0IC9wcm9jL2lvbWVtCjgwMDAwMDAwLTlmZmZmZmZm
+IDogUENJMSBob3N0IGJyaWRnZQogIDllZjAwMDAwLTllZmZmZmZmIDogUENJIEJ1cyAjMDIKICA5
+ZjAwMDAwMC05ZmNmZmZmZiA6IFBDSSBCdXMgIzAyCiAgICA5ZjAwMDAwMC05ZjdmZmZmZiA6IDAw
+MDA6MDI6MDEuMAogICAgOWY4MDAwMDAtOWZiZmZmZmYgOiAwMDAwOjAyOjAxLjAKICA5ZmQwMDAw
+MC05ZmRmZmZmZiA6IFBDSSBCdXMgIzAxCiAgOWZlMDAwMDAtOWZlZmZmZmYgOiBQQ0kgQnVzICMw
+MQogIDlmZmZmMDAwLTlmZmZmZmZmIDogMDAwMDowMDoxMS4wCmEwMDAwMDAwLWJmZmZmZmZmIDog
+UENJMiBob3N0IGJyaWRnZQplMDAwMzAwMC1lMDAwM2ZmZiA6IGZzbC1pMmMxCmUwMDA0NTAwLWUw
+MDA0NTA3IDogc2VyaWFsCmUwMDA0NjAwLWUwMDA0NjA3IDogc2VyaWFsCmUwMDIxMTAwLWUwMDIx
+MTdmIDogZnNsLWRtYTAKZTAwMjExODAtZTAwMjExZmYgOiBmc2wtZG1hMQplMDAyMTIwMC1lMDAy
+MTI3ZiA6IGZzbC1kbWEyCmUwMDIxMjgwLWUwMDIxMmZmIDogZnNsLWRtYTMKZTAwMjQwMDAtZTAw
+MjRmZmYgOiBmc2wtZ2lhbmZhcjEKZTAwMjUwMDAtZTAwMjVmZmYgOiBmc2wtZ2lhbmZhcjIKZTAw
+MzAwMDAtZTAwM2ZmZmYgOiBmc2wtc2VjMjEKZTAwOTEzMDAtZTAwOTEzMWYgOiBmc2wtY3BtLWZj
+YzEKZTAwOTEzMjAtZTAwOTEzM2YgOiBmc2wtY3BtLWZjYzIKZTAwOTEzODAtZTAwOTEzOWYgOiBm
+c2wtY3BtLWZjYzEKZTAwOTEzYTAtZTAwOTEzY2YgOiBmc2wtY3BtLWZjYzIKZTAwOTE4NjAtZTAw
+OTE4YmYgOiBmc2wtY3BtLWkyYzEKZTAwOTFhYTAtZTAwOTFhZmYgOiBmc2wtY3BtLXNwaTEKZTAw
+ZTEwMDAtZTAwZTFmZmYgOiBmc2wtcGVyZm1vbjEKCg==
+
+------_=_NextPart_001_01C59DEB.6BE7DF11--
