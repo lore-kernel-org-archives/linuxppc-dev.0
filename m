@@ -1,18 +1,14 @@
 Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao03.cox.net (fed1rmmtao03.cox.net [68.230.241.36])
-	by ozlabs.org (Postfix) with ESMTP id 0477D680B8
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Aug 2005 05:43:09 +1000 (EST)
-Date: Thu, 11 Aug 2005 12:43:07 -0700
+Date: Thu, 11 Aug 2005 12:59:27 -0700
 From: Tom Rini <trini@kernel.crashing.org>
-To: Matt Porter <mporter@kernel.crashing.org>,
-	Leigh Brown <leigh@solinno.co.uk>
-Message-ID: <20050811194307.GW3187@smtp.west.cox.net>
-References: <20050810093735.B22586@cox.net>
+To: Becky Bruce <becky.bruce@freescale.com>
+Message-ID: <20050811195927.GX3187@smtp.west.cox.net>
+References: <c237b7e878e0c32f421209fa37b7a156@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050810093735.B22586@cox.net>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] Use todc on Mot PReP platforms
+In-Reply-To: <c237b7e878e0c32f421209fa37b7a156@freescale.com>
+Cc: linuxppc64-dev@ozlabs.org, linuxppc-dev@ozlabs.org
+Subject: Re: RFC: proposed arch/powerpc directory structure
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,25 +18,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 10, 2005 at 09:37:35AM -0700, Matt Porter wrote:
+On Wed, Aug 10, 2005 at 11:45:10AM -0500, Becky Bruce wrote:
 
-> This restores behavior from 2.4 where PReP platforms identified
-> as Motorola would calibrate the decrementer using the RTC. On
-> real Motorola PReP hardware this isn't needed. However, in order
-> to boot a stock 2.6 PReP kernel on qemu (which emulates a Motorola
-> PReP system) it is necessary to allow it to calibrate the decrementer
-> using an emulated RTC.  If the decrementer rate is read from
-> residual data then timing is screwed since a qemu PReP system typically
-> runs much faster than the original hardware.
-> 
-> If anybody has objections to this as the default, let me know. It
-> still works (as did 2.4) on a couple of my Mot PReP boxes and doesn't
-> affect the IBM PReP paths. My goal with this is to be able to run
-> a stock 2.6 defconfig PReP build on qemu.
+[snip]
+> 	platforms/
+> 		- platform-specific code laid out in the following 
+> 		directories:
+> 		pSeries/
+> 		iSeries/
+> 		pmac/  (both 32 and 64-bit)
+> 		classic32/  (platforms containing 
+> 		6xx/7xx/74xx/8240/8241/8245)
+> 		classic64/  (Maple?)
 
-So, I like this, and not just because I'm playing with qemu as well.
-Leigh, can you run this on any 'interesting' PReP you've got that might
-tickle a bug here?  Thanks.
+I'm a bit ppc64-ignorant, but isn't 'pSeries' just a regular
+OpenFirmware-containing ppc64 box (like Maple) ?  How about just 9xx/
+for all of the ppc64's that have a 9xx in them (Maple), that aren't pmac
+(which is a class of its own).
+
+> 		83xx/ (may collapse into classic 32 at some point)
+> 		86xx/ (may collapse into classic 32 at some point)
+> 		pq2/ (may collapse into classic 32 at some point)
+
+PQ2 is the marketing name for 82xx, lets just call it 82xx.
+
+I don't like the idea of sticking subdirs in classic32/ either, but also
+can't think of a better name for the catchall of 7xx and 74xx boards.
 
 -- 
 Tom Rini
