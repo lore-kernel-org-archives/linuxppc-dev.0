@@ -1,12 +1,13 @@
-Return-Path: <kumar.gala@freescale.com>
-In-Reply-To: <20050811201821.GY3187@smtp.west.cox.net>
+Return-Path: <trini@kernel.crashing.org>
+Date: Thu, 11 Aug 2005 16:19:48 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Kumar Gala <kumar.gala@freescale.com>
+Message-ID: <20050811231948.GA3187@smtp.west.cox.net>
 References: <20050811201821.GY3187@smtp.west.cox.net>
-Mime-Version: 1.0 (Apple Message framework v733)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <DE2CC80C-91A2-4860-B452-6AD171F3588A@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Thu, 11 Aug 2005 18:07:03 -0500
-To: Tom Rini <trini@kernel.crashing.org>
+	<DE2CC80C-91A2-4860-B452-6AD171F3588A@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <DE2CC80C-91A2-4860-B452-6AD171F3588A@freescale.com>
 Cc: linuxppc-dev@ozlabs.org, Gill Becky-BGILL <becky.bruce@freescale.com>,
 	linuxppc64-dev@ozlabs.org
 Subject: Re: RFC: proposed arch/powerpc directory structure
@@ -19,50 +20,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Aug 11, 2005 at 06:07:03PM -0500, Kumar Gala wrote:
+[snip]
+> I think this causes confusion.  the reason we suggested pq2 and  
+> classic32 was to handle things like sandpoint.  Sandpoint would live  
+> in classic32.  The confusion partial comes from the fact that we can  
+> run 8240/1/5 on a Sandpoint.  The thinking was everything that was  
+> 6xx/7xx/74xx + things like 8240/1/5 which can be thought of as 603 +  
+> 10x bridge would be classic32.
 
-On Aug 11, 2005, at 3:18 PM, Tom Rini wrote:
+Thanks for the explanation.  But I think this is overkill for the
+sandpoint or true like a sandpoint (Zynx something, Willow, neither of
+which are in the kernel tree).  I think we can field the "I wanna hack
+on my Sandpoint/8240, but don't see the code under 82xx/!" question. :)
 
-> On Thu, Aug 11, 2005 at 03:13:30PM -0500, Kumar Gala wrote:
->
->>
->> On Aug 11, 2005, at 2:59 PM, Tom Rini wrote:
->>
->>
->>> On Wed, Aug 10, 2005 at 11:45:10AM -0500, Becky Bruce wrote:
->>>
->>> [snip]
->>>
-> [snip]
->
->>>>        83xx/ (may collapse into classic 32 at some point)
->>>>        86xx/ (may collapse into classic 32 at some point)
->>>>        pq2/ (may collapse into classic 32 at some point)
->>>>
->>>>
->>>
->>> PQ2 is the marketing name for 82xx, lets just call it 82xx.
->>>
->>
->> The problem is that PQ2 describes a subset of 82xx (it nots
->> 8240/8241/8245).
->>
->
-> All the more reason imho to stick all 82xx stuff under '82xx', rather
-> than classic32 or 'pq2'.
+> If it was 82xx w/o a CPM it went into classic32.  If it was a 82xx w/ 
+> CPM it went into pq2.  The idea being that we might be able to build  
+> kernels in either directory that supported a large number of boards  
+> with one image.
 
-I think this causes confusion.  the reason we suggested pq2 and  
-classic32 was to handle things like sandpoint.  Sandpoint would live  
-in classic32.  The confusion partial comes from the fact that we can  
-run 8240/1/5 on a Sandpoint.  The thinking was everything that was  
-6xx/7xx/74xx + things like 8240/1/5 which can be thought of as 603 +  
-10x bridge would be classic32.
+We can certainly investigate just how many distinct boards can be
+supported with one image when infos are passed dynamically.  If we can
+simplify things enough, maybe we can break the rule of no .[ch] files in
+arch/powerpc/platforms since it'll just be 82xx.[ch], 83xx.[ch] and so
+on, execept for that damn pmac. ;)
 
-If it was 82xx w/o a CPM it went into classic32.  If it was a 82xx w/ 
-CPM it went into pq2.  The idea being that we might be able to build  
-kernels in either directory that supported a large number of boards  
-with one image.
-
-Anyways, that was the thought process to try and keep things sane.   
-(Which it may not ;)
-
-- kumar
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
