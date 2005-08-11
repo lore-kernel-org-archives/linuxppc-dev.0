@@ -1,12 +1,21 @@
-Return-Path: <hollisb@us.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v622)
-Message-Id: <a22149f6d9cc6f65ae2f8f339d982dd2@us.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-To: PPC64-dev List <linuxppc64-dev@ozlabs.org>,
-	Linux PPC Dev <linuxppc-dev@ozlabs.org>
-From: Hollis Blanchard <hollisb@us.ibm.com>
-Date: Thu, 11 Aug 2005 10:54:37 -0500
-Subject: GDB backtrace and signal trampolines
+Return-Path: <schwab@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id AA9DE67E9B
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Aug 2005 02:14:51 +1000 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: "Rune Torgersen" <runet@innovsys.com>
+References: <DCEAAC0833DD314AB0B58112AD99B93B859421@ismail.innsys.innovsys.com>
+Date: Thu, 11 Aug 2005 18:14:40 +0200
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B859421@ismail.innsys.innovsys.com>
+	(Rune Torgersen's message of "Thu, 11 Aug 2005 10:13:23 -0500")
+Message-ID: <jezmro30y7.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: CLOCK_TICK_RATE
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,40 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-GDB 6.3 contains this code in ppc-linux-tdep.c:
+"Rune Torgersen" <runet@innovsys.com> writes:
 
-static const struct frame_unwind *
-ppc_linux_sigtramp_sniffer (struct frame_info *next_frame)
-{
-   struct gdbarch_tdep *tdep = gdbarch_tdep (get_frame_arch 
-(next_frame));
+> Hi
+>
+> I have found that I need to set CLOCK_TICK_RATE (currently defined in
+> include/asm-ppc/timex.h) to something else.
 
-   if (frame_pc_unwind (next_frame)
-       > frame_unwind_register_unsigned (next_frame, SP_REGNUM))
-     /* Assume anything that is vaguely on the stack is a signal
-        trampoline.  */
-     return &ppc_linux_sigtramp_unwind;
-   else
-     return NULL;
-}
+I can't find any use of CLOCK_TICK_RATE in the kernel that is relevant for
+ppc.
 
-Essentially it says that any time the program counter is above the 
-stack pointer, we must be in a signal trampoline, and so GDB proceeds 
-to grope about for a struct rt_sigframe on the stack.
-
-This is not a good assumption. I'm using a GDB stub to debug Xen, and 
-as it so happens, the Xen stack is below the Xen text. That means that 
-the above test always triggers, but of course there is no rt_sigframe 
-on the stack, and my backtrace runs away.
-
-Would it make sense to limit the test to within a few hundred bytes of 
-the stack pointer? Or some better way to detect that the PC is in a 
-signal trampoline?
-
-(Also, how can I test backtraces within a signal trampoline? I've 
-single-stepped my way into and out of a signal hander, and never saw 
-the PC inside the stack.)
+Andreas.
 
 -- 
-Hollis Blanchard
-IBM Linux Technology Center
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
