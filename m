@@ -1,15 +1,18 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 8C2D5680A8
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Aug 2005 02:19:55 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Thu, 11 Aug 2005 11:19:49 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B859423@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: FW: CLOCK_TICK_RATE
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao03.cox.net (fed1rmmtao03.cox.net [68.230.241.36])
+	by ozlabs.org (Postfix) with ESMTP id 0477D680B8
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Aug 2005 05:43:09 +1000 (EST)
+Date: Thu, 11 Aug 2005 12:43:07 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Matt Porter <mporter@kernel.crashing.org>,
+	Leigh Brown <leigh@solinno.co.uk>
+Message-ID: <20050811194307.GW3187@smtp.west.cox.net>
+References: <20050810093735.B22586@cox.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050810093735.B22586@cox.net>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] Use todc on Mot PReP platforms
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,59 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-CLOCK_TICK_RATE is the basis for TIME_NSEC which is used to update xtime
-on every timer interrupt, so it is very relevant for PPC.
+On Wed, Aug 10, 2005 at 09:37:35AM -0700, Matt Porter wrote:
 
-CLOCK_TICK_RATE is used for LATCH which is used for ACTHZ which in turn
-is used for TIME_NSEC
-=20
+> This restores behavior from 2.4 where PReP platforms identified
+> as Motorola would calibrate the decrementer using the RTC. On
+> real Motorola PReP hardware this isn't needed. However, in order
+> to boot a stock 2.6 PReP kernel on qemu (which emulates a Motorola
+> PReP system) it is necessary to allow it to calibrate the decrementer
+> using an emulated RTC.  If the decrementer rate is read from
+> residual data then timing is screwed since a qemu PReP system typically
+> runs much faster than the original hardware.
+> 
+> If anybody has objections to this as the default, let me know. It
+> still works (as did 2.4) on a couple of my Mot PReP boxes and doesn't
+> affect the IBM PReP paths. My goal with this is to be able to run
+> a stock 2.6 defconfig PReP build on qemu.
 
-> -----Original Message-----
-> From: Andreas Schwab [mailto:schwab@suse.de]=20
-> Sent: Thursday, August 11, 2005 11:15
-> To: Rune Torgersen
-> Cc: linuxppc-dev@ozlabs.org
-> Subject: Re: CLOCK_TICK_RATE
->=20
-> "Rune Torgersen" <runet@innovsys.com> writes:
->=20
-> > Hi
-> >
-> > I have found that I need to set CLOCK_TICK_RATE (currently=20
-> defined in
-> > include/asm-ppc/timex.h) to something else.
->=20
-> I can't find any use of CLOCK_TICK_RATE in the kernel that is=20
-> relevant for
-> ppc.
+So, I like this, and not just because I'm playing with qemu as well.
+Leigh, can you run this on any 'interesting' PReP you've got that might
+tickle a bug here?  Thanks.
 
->From a previous thread in linux-ppc-embedded (Wall clock accuracy)
-> -----Original Message-----
-> From: George Anzinger [mailto:george@mvista.com]=20
-> Sent: Tuesday, August 09, 2005 19:07
->
-> The problem here is that the CLOCK_TICK_RATE is not correctly=20
-> defined.=20
-> This should be the rate at which the decrementer is clocked in hertz.=20
-> If this is properly defined the tick_nsec value will be what=20
-> works to to=20
-> be an integral number of these that gives an nsec value less than or=20
-> equal to what LATCH says you should be using for the number of=20
-> decrementer counts in a jiffie.  It is important that this be=20
-> correctly=20
-> defined so that a) LATCH is right and b) the jiffies to/from=20
-> conversions=20
-> are done right.  These conversions rely on TICK_NSEC to get the right=20
-> answer.  (Also, so you don't step into a computing mess, it=20
-> is important=20
-> that these be defined at compile time so the compiler can do=20
-> the heavy=20
-> lifting.  If defined as variables the conversions will take a=20
-> LOT longer=20
-> (and use more code to boot).)
->=20
-> If you are getting 999848, it would appear that you are using the x86=20
-> value which, I assume, is NOT right for a PPC, but then the=20
-> PPC is NOT=20
-> my strong suit...
->
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
