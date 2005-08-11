@@ -1,16 +1,15 @@
-Return-Path: <nzeitler@osii.com>
-Received: from osiemail.osii.com (mail.osii.com [207.67.97.196])
-	by ozlabs.org (Postfix) with ESMTP id 3673E67EB7
+Return-Path: <susheel.nuguru@mitron.fi>
+Received: from mitron.mitron.fi (mail.mitron.fi [82.116.252.3])
+	by ozlabs.org (Postfix) with ESMTP id 7F3F76807E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 11 Aug 2005 23:39:47 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Date: Thu, 11 Aug 2005 08:27:40 -0500
-Message-ID: <7492B3D3325B424399725C8A03926A3E0250BF@osiemail.osii.com>
-From: "Zeitler, Nathan" <nzeitler@osii.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: RE: Mpc5200 and ISP1106/1107 USB transceivers
+	Fri, 12 Aug 2005 00:27:58 +1000 (EST)
+From: Nuguru Susheel <susheel.nuguru@mitron.fi>
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Date: Thu, 11 Aug 2005 17:30:51 +0000
+Message-Id: <1123781451.17202.45.camel@localhost.localdomain>
+Mime-Version: 1.0
+Subject: where to get new BestComm API
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,30 +20,10 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-IA0KID4gVXJsOiBodHRwOi8vb3psYWJzLm9yZy9waXBlcm1haWwvbGludXhwcGMtZW1iZWRkZWQv
-YXR0YWNobWVudHMvMjAwNTA4MDUvYTJhYTBkNzgvYXR0YWNobWVudC0wMDAxLmVtbA0KDQotLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCg0KU2VlbXMgdGhhdCBQaGlsaXBzIGhhcyBwdXQg
-b3V0IGFuIGVycmF0YSBub3QgdG9vIGxvbmcgYWdvIGZvciB0aGlzIA0KY2hpcCB3aGljaCBpc24n
-dCBpbiBhbnkgcHVibGljIGVycmF0YSBkb2N1bWVudCB0aGF0IHdlIGNvdWxkIGZpbmQuICANCkhl
-cmUncyBob3cgaXQgcmVhZHM6DQoNClByb2JsZW06IA0KV2l0aCB0aGUgSVNQMTEwNS82IHVzZWQg
-YXMgYSBVbml2ZXJzYWwgU2VyaWFsIEJ1cyAoVVNCKSANCnRyYW5zY2VpdmVyIGluIGEgSG9zdCBD
-b250cm9sbGVyIGFwcGxpY2F0aW9uLCB3aGVuIGEgbG93LXNwZWVkIA0KZGV2aWNlIGlzIGNvbm5l
-Y3RlZCwgaXQgZG9lcyBub3QgZ2V0IGVudW1lcmF0ZWQuIEZ1bGwtc3BlZWQgDQpkZXZpY2VzLCBo
-b3dldmVyLCBhcmUgcHJvcGVybHkgZW51bWVyYXRlZC4NCg0KV2hlbiBwaW4gT0VfTiBnb2VzIEhJ
-R0gsIHRoZSBJU1AxMTA1LzYgbXVzdCBiZSBpbiByZWNlaXZlIA0KbW9kZSBhbmQgdGhlIERNIGxp
-bmUgc2hvdWxkIGJlIGRldGVjdGVkIGFzIEhJR0ggYmVjYXVzZSBvZiANCnRoZSBwdWxsLXVwIHJl
-c2lzdG9yIG9uIHRoZSBE4oiSIGxpbmUgaW4gdGhlIGNhc2Ugb2YgdGhlIGxvdy1zcGVlZCANCmRl
-dmljZS4gQnV0IGluIHRoZSBJU1AxMTA1LzYsIHRoZSBE4oiSIGxpbmUgcmlzZXMgdmVyeSBzbG93
-bHksIHRha2luZyANCmFsbW9zdCAzMCBtcy4gVGhpcyBhZmZlY3RzIGVudW1lcmF0aW9uLg0KDQpX
-b3JrYXJvdW5kOg0KSW4gdGhlIElTUDExMDUsIHRoZSBwcm9ibGVtIGNhbiBiZSByZXNvbHZlZCBi
-eSBPUmluZyBWTyB3aXRoIA0KT0VfTiB0byBwcm9kdWNlIFZPIHRvIHRoZSBJU1AxMTA1LiBUaGlz
-IGlzIGFwcGxpY2FibGUgd2hlbiANCnRoZSBNT0RFIHBpbiBpcyBjb25maWd1cmVkIGFzIExPVzsg
-c2luZ2xlLWVuZGVkIGlucHV0IGRhdGEgDQppbnRlcmZhY2UuIA0KDQpUaGlzIGNpcmN1aXQgd2ls
-bCBlbnN1cmUgdGhhdCBWTyBpcyBoZWxkIEhJR0ggdGlsbCBPRV9OIGlzIEhJR0gsIA0KZW5zdXJp
-bmcgdGhhdCB0aGUgY29tcGVuc2F0aW9uIGxvZ2ljIGlzIG5vdCB0dXJuZWQgb24uDQoNCkluIHRo
-ZSBJU1AxMTA2LCB0aGlzIG11c3QgYmUgaW1wbGVtZW50ZWQgYnkgQU5EaW5nIE9FIA0KKGludmVy
-dGVkIE9FX04pIHdpdGggVk1PIHRvIHByb2R1Y2UgVk1PIHRvIHRoZSBJU1AxMTA2Lg0KDQoNCk5h
-dGhhbiBaZWl0bGVyDQpIYXJkd2FyZSBFbmdpbmVlcg0KT3BlbiBTeXN0ZW1zIEludGVybmF0aW9u
-YWwsIEluYy4NCjM2MDAgSG9sbHkgTGFuZSBOb3J0aCwgU3VpdGUgNDANCk1pbm5lYXBvbGlzLCBN
-TiA1NTQ0Ny0xMjg2DQpQaG9uZTogKDc2MykgNTUxLTA1NTkNCkZheDogICAgICg3NjMpNTUxLTA3
-NTANCkVtYWlsOiAgbnplaXRsZXJAb3NpaS5jb20NCg==
+Hi all, 
+
+Why do we need Bestcomm API new version for MPC5200 Rev B processor
+Where can I get it from ???
+
+
+Thanks a lot
