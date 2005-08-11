@@ -1,15 +1,22 @@
-Return-Path: <susheel.nuguru@mitron.fi>
-Received: from mitron.mitron.fi (mail.mitron.fi [82.116.252.3])
-	by ozlabs.org (Postfix) with ESMTP id 7F3F76807E
+Return-Path: <vbordug@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
+	by ozlabs.org (Postfix) with SMTP id 8CD2167EED
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 Aug 2005 00:27:58 +1000 (EST)
-From: Nuguru Susheel <susheel.nuguru@mitron.fi>
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain
-Date: Thu, 11 Aug 2005 17:30:51 +0000
-Message-Id: <1123781451.17202.45.camel@localhost.localdomain>
-Mime-Version: 1.0
-Subject: where to get new BestComm API
+	Fri, 12 Aug 2005 01:25:24 +1000 (EST)
+Message-ID: <42FB6DE0.4070506@ru.mvista.com>
+Date: Thu, 11 Aug 2005 19:25:20 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+MIME-Version: 1.0
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+References: <42FA3636.7010804@ru.mvista.com> <42FA3D7B.8040200@ru.mvista.com>
+	<42FA4108.9090808@ru.mvista.com>
+	<4BA092C9-1517-416E-9C98-90F9D8F41857@freescale.com>
+	<20050811053032.GF5665@dmt.cnet>
+In-Reply-To: <20050811053032.GF5665@dmt.cnet>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] identify_ppc_sys_by_name_and_id function implementation
+ final
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,10 +27,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all, 
+Marcelo Tosatti wrote:
+> On Wed, Aug 10, 2005 at 02:16:57PM -0500, Kumar Gala wrote:
+> 
+>>+static int __init find_chip_by_name_and_id(char *name, u32 id)
+>>+{
+>>+    int ret = -1;
+>>+    unsigned int i = 0;
+>>+    unsigned int j = 0;
+>>+    unsigned int dups = 0;
+>>+
+>>+    unsigned int matched[count_sys_specs()];
+>>
+>>Is is legit in the kernel to use dynamically sized array?
+> 
+> 
+> kmalloc() is certainly safer - why not use it? 
+Practically , version with kmalloc works, but  setup_arch and thus this 
+function is called before mem_init, so I just wonder if kmalloc can 
+handle this case. On the other hand, I don't like to deal with
+alloc_bootmem() if mem_init_done!=1 and kmalloc otherwise (like ocp 
+does) just for the temporary buffer.
 
-Why do we need Bestcomm API new version for MPC5200 Rev B processor
-Where can I get it from ???
+But it's the only _right_ way (or I 've missed something) - sure I'll 
+follow it.
 
-
-Thanks a lot
+-- 
+Sincerely,
+Vitaly
