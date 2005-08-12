@@ -1,19 +1,22 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 4CE7967EE5
+Return-Path: <shawnxjin@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.200])
+	by ozlabs.org (Postfix) with ESMTP id 174A967EE1
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 13 Aug 2005 05:48:53 +1000 (EST)
-In-Reply-To: <42FCCEA4.2030409@ru.mvista.com>
-References: <42FCCEA4.2030409@ru.mvista.com>
-Mime-Version: 1.0 (Apple Message framework v733)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <725685C1-2B6B-4B19-A1E9-D68AB21AFEAF@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Fri, 12 Aug 2005 14:48:49 -0500
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] identify_ppc_sys_by_name_and_id function implementation
-	final
+	Sat, 13 Aug 2005 07:28:32 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id 68so642607wra
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 12 Aug 2005 14:28:31 -0700 (PDT)
+Message-ID: <c3d0340b05081214282adeda4c@mail.gmail.com>
+Date: Fri, 12 Aug 2005 14:28:30 -0700
+From: Shawn Jin <shawnxjin@gmail.com>
+To: ppcembed <linuxppc-embedded@ozlabs.org>
+In-Reply-To: <20050811231710.GB5796@gate.ebshome.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <c3d0340b050811154148164691@mail.gmail.com>
+	<20050811231454.GA5796@gate.ebshome.net>
+	<20050811231710.GB5796@gate.ebshome.net>
+Subject: Re: What's wrong with the serial port?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,37 +27,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Aug 12, 2005, at 11:30 AM, Vitaly Bordug wrote:
+On 8/11/05, Eugene Surovegin <ebs@ebshome.net> wrote:
+> On Thu, Aug 11, 2005 at 04:14:54PM -0700, Eugene Surovegin wrote:
+> > > MMU:exit
+> > > setup_arch: enter
+> > > setup_arch: bootmem
+> > > arch: exit
+> > > ??????
+> >
+> > Try disabling early text debugging (all that "MMU:..." stuff).
+> >
+>=20
+> Also, make sure you pass correct "console=3D..." line to the kernel
+> (with correct device name and baud rate).
 
-> Kumar Gala wrote:
->
->> Can you do a sizeof instead?
->>
->> #define num_ele sizeof(ppc_sys_specs[])/sizeof(struct ppc_sys_spec)
->>
->> Something like matchted[num_ele] ??
->>
->>
->
-> That's what the first I tried actually :)
-> gcc is not happy with it:
->
-> arch/ppc/syslib/ppc_sys.c: In function `find_chip_by_name_and_id':
-> arch/ppc/syslib/ppc_sys.c:54: error: parse error before ']' token
->
-> and if I remove [] from the ppc_sys_specs, it outputs:
->
-> arch/ppc/syslib/ppc_sys.c: In function `find_chip_by_name_and_id':
-> arch/ppc/syslib/ppc_sys.c:54: error: invalid application of  
-> `sizeof' to
-> incomplete type `({anonymous})'
->
-> So I cannot use sizeof this case, I think...
+After early text debugging is disabled and the correct "console=3DttyS0,
+115200" option is passed to kernel, the problem still exists. Also I'm
+sure the divisor set to UART is also correct because they are the same
+values when U-Boot sets up the port.
 
-Realized the same thing.  I'm thinking that your original method is  
-the best solution to just do this on the stack.  In general the  
-number or processors (array size) is going to be less than 100.  So  
-at most this array is going to end up being 100 bytes on the stack.   
-I dont think that's a big deal at the point we are calling this.
+Has the serial port enabled interrupt so far at this stage?
 
-- kumar
+Thanks,
+-Shawn.
