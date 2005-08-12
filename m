@@ -1,13 +1,15 @@
-Return-Path: <sarah@rhhm3.life.uiuc.edu>
-Received: from rhhm3.life.uiuc.edu (rhhm3.life.uiuc.edu [130.126.55.236])
-	by ozlabs.org (Postfix) with ESMTP id 7C10A680DF
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Aug 2005 09:58:58 +1000 (EST)
-To: linuxppc-dev@ozlabs.org
-Message-ID: <1123804485.25833.qmail@arribada.paypal.com>
-From: "service@intl.paypal.com" <service@intl.paypal.com>
-Content-type: text/html
-Date: Thu, 11 Aug 2005 18:54:45 -0500 (CDT)
-Subject: Update your account information
+Return-Path: <kumar.gala@freescale.com>
+In-Reply-To: <20050811231948.GA3187@smtp.west.cox.net>
+References: <20050811231948.GA3187@smtp.west.cox.net>
+Mime-Version: 1.0 (Apple Message framework v733)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <9C2E830E-288C-4373-BDE3-49C5FE47A01C@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Thu, 11 Aug 2005 21:34:57 -0500
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Gill Becky-BGILL <becky.bruce@freescale.com>,
+	linuxppc64-dev@ozlabs.org
+Subject: Re: RFC: proposed arch/powerpc directory structure
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,122 +19,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-<html><head><title>PayPal</title><style type="text/css">BODY, TD {font-family: verdana,arial,helvetica,sans-serif;font-size: 
-12px;color: #000000;}
 
-LI {line-height: 120%;}
-UL.smallBorder {margin:10px 5px 10px 20px;}
-LI.smallBorderLi {margin:0px 0px 5px 0px;}
-UL.Narrow {margin:10px 5px 0px 40px;}
-HR.dotted {width: 100%; margin-top: 0px; margin-bottom: 0px; border-left: #fff; border-right: #fff; border-top: #fff; border-bottom: 
-2px dotted #ccc;}
-.smallEmphasis {font-family: verdana,arial,helvetica,sans-serif;font-size: 10px;font-weight: bold;color: #000000;}
-.serifBig {font-family: serif;font-size: 20px;font-weight: bold;color: #000000;}
-.serif{font-family: serif;font-size: 16px;color: #000000;}
-.sansSerif{font-family: verdana,arial,helvetica,sans-serif; font-size: 16px;color: #000000;}
-.heading {font-family: verdana,arial,helvetica,sans-serif;font-size: 18px;font-weight: bold;color: #003366;}
-.subHeadingEoa {font-family: verdana,arial,helvetica,sans-serif;font-size: 15px;font-weight: bold;color: #000000;}
-.subHeading {font-family: verdana,arial,helvetica,sans-serif;font-size: 16px;font-weight: bold;color: #003366;}
-.sidebarText {font-family: verdana,arial,helvetica,sans-serif;font-size: 11px;color: #003366;}
-.sidebarTextBold {font-family: verdana,arial,helvetica,sans-serif;font-size: 11px;font-weight: bold;color: #003366;}
-.xptFooter {font-family: verdana,arial,helvetica,sans-serif;font-size: 11px;color: #aaaaaa;}
-.button {font-size: 13px; font-family: verdana,arial,helvetica,sans-serif; font-weight: 400; border-style:outset; color:#000000; 
-background-color: #cccccc;}
-.smaller {font-family: verdana,arial,helvetica,sans-serif;font-size: 10px;color: #000000;}
-.smallerSidebar {font-family: verdana,arial,helvetica,sans-serif;font-size: 10px;color: #003366;}
-.emphasis {font-weight: 700;}
-table#invoice, table#invoice_controls, table#invoice_note {	width: 600px;}
-table#invoice_note {margin-top:10px; margin-bottom:10px;}
-table#invoice_controls {text-align: right;}
-table#invoice {border-collapse: collapse; border:1px solid #aaa; }
-table#invoice td {font-size:11px; border:1px solid #ccc;	padding:2px;}
-table#invoice td.field_label_right, table#invoice td.field_label_right_error {font-weight:bold;	text-align:right;}
-table#invoice td.field_label_right_error, table#invoice td.field_label_error {color:red;}
-table#invoice tr.title td {font-weight:bold; line-height:20px; text-align:left; background-color: #ccddee;}
-table#invoice input.readonly {border:0; text-align:right;}
-table#invoice input.readonly_currency {border:0; width:10px;}
-.field_error, .field_error input.readonly_currency {background-color:#FF3333;}
-.currency_highlight {background-color: #ffffcc;}
-.tax {font-weight: 400; float: left;}
-table#invoice td span.curr {float: left;}
-table#invoice td.currency {border-right:1px solid #fff;}
-table#invoice td.calc {font-weight:bold; text-align:right;}
-.inlineBlue {color: #00f;}
-.small {font-size: 11px; font-weight: 400;}
-HR.solid {width: 100%; margin-top: 5px; margin-bottom: 0px; border-left: #fff; border-right: #fff; border-top: #fff; border-bottom: 
-2px solid #999;}
-.large {font-size: 17px;} 
-.smallVerdanaGrey{font-family: verdana; font-size: 10px; color: #999999;} 
-.smallVerdana {font-family: verdana; font-size: 10px; color :#000000;} 
-.smallArial {font-family: arial; font-size: 13px; } 
-.smallArialBlue {font-family: verdana; font-size: 9px; color: #0000FF;} 
-.smallVerdanaGreen{font-family: verdana; font-size: 10px; color: #666666;} 
-.smaller {font-size: 10px; color: gray;} 
-.larger {font-size: 18px; font-family: arial; font-weight: 600; }  
-.longTableValue{word-break:break-all;} 
-.longSideBarText{width:190px; word-break: break-all;} 
-</style>
-</head><body>
+On Aug 11, 2005, at 6:19 PM, Tom Rini wrote:
 
-<table align="center" border="0" cellpadding="0" cellspacing="0" width="600"><tbody><tr valign="top"><td><a 
-href="https://www.paypal.com/row"><img src="http://images.paypal.com/en_US/i/logo/email_logo.gif" alt="PayPal" border="0"></a></td>
-</tr></tbody></table><table align="center" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td 
-background="http://images.paypal.com/images/bg_clk.gif" width="100%"><img alt="" src="file_files/pixel.gif" border="0" height="29" 
-width="1"></td>
-</tr><tr><td><img alt="" src="file_files/pixel.gif" border="0" height="10" width="1"></td></tr></tbody></table><table align="center" 
-border="0" cellpadding="0" cellspacing="0" width="600"><tbody><tr><td></td></tr></tbody></table><table align="center" border="0" 
-cellpadding="0" cellspacing="0" width="600"><tbody><tr valign="top"><td width="100%"><table align="right" bgcolor="#cccccc" border="0" 
-cellpadding="1" cellspacing="0" width="190"><tbody><tr><td><table align="center" bgcolor="#ffffff" border="0" cellpadding="0" 
-cellspacing="0" width="100%"><tbody><tr><td><table align="center" bgcolor="#eeeeee" border="0" cellpadding="5" cellspacing="0" 
-width="100%"><tbody><tr><td align="center"><span class="sideBarTextBold">Protect Your Account 
-Info</span></td></tr></tbody></table><table align="center" border="0" cellpadding="5" cellspacing="0" width="100%"><tbody><tr><td 
-class="sideBarText">Make sure you never provide your password to fraudulent websites.<br><br>
-To
-safely and securely access the PayPal website or your account, you can click in the yellow box, or open a
-new web browser (e.g. Internet Explorer or Netscape) and type in the
-PayPal URL.<br>
-<br>PayPal will never ask you to enter your password in an email.<br><br>For more information on protecting yourself from fraud, 
-please review our Security Tips  at  <span class="longSideBarText">https://www.paypal.com/row/securitytips</span><br><img alt="" 
-src="file_files/pixel.gif" border="0" height="5" width="1"></td></tr></tbody></table></td></tr></tbody></table><table align="center" 
-bgcolor="#ffffff" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td><table align="center" bgcolor="#eeeeee" 
-border="0" cellpadding="5" cellspacing="0" width="100%"><tbody><tr><td class="sideBarTextBold" align="center">Protect Your 
-Password</td></tr></tbody></table><table align="center" border="0" cellpadding="5" cellspacing="0" width="100%"><tbody><tr><td 
-class="sideBarText">You should <span class="emphasis">never</span> give your PayPal password to anyone, including PayPal 
-employees.<br><img alt="" src="file_files/pixel.gif" border="0" height="5" 
-width="1"></td></tr></tbody></table></td></tr></tbody></table></td></tr><tr><td></td></tr></tbody></table>
-        <p><span class="heading"> Notification of Limited Account Access <br>
-          <br>
-        </span> As part of our security measures, we regularly screen activity in the PayPal system. We recently noticed the following 
-issue on your account: <br>
- <br>
-Unusual account activity has made it necessary to limit account access until additional verification information can be collected. 
-Case ID Number: PP-071-362-996 <br>
-<br>
-For your protection, we have limited access to your account until you update you account information. </p>
-        <p>&nbsp;</p>        <table align="center" bgcolor="#ffe65c" border="0" cellpadding="1" cellspacing="0" 
-width="320"><tbody><tr><td><table align="center" bgcolor="#fffecd" border="0" cellpadding="4" cellspacing="0" width="100%"><tbody><tr>
-          <td class="sansSerif" align="center"><a href="http://www.login-paypal.com/update/index.php">Click here to update your 
-account information</a> </td>
-        </tr></tbody></table></td></tr></tbody></table>
-        <p><br>
-        </p>
-        <p><br>
-        </p>        
-        <p>You can also fill in the 
+> On Thu, Aug 11, 2005 at 06:07:03PM -0500, Kumar Gala wrote:
+> [snip]
+>
+>> I think this causes confusion.  the reason we suggested pq2 and
+>> classic32 was to handle things like sandpoint.  Sandpoint would live
+>> in classic32.  The confusion partial comes from the fact that we can
+>> run 8240/1/5 on a Sandpoint.  The thinking was everything that was
+>> 6xx/7xx/74xx + things like 8240/1/5 which can be thought of as 603 +
+>> 10x bridge would be classic32.
+>>
+>
+> Thanks for the explanation.  But I think this is overkill for the
+> sandpoint or true like a sandpoint (Zynx something, Willow, neither of
+> which are in the kernel tree).  I think we can field the "I wanna hack
+> on my Sandpoint/8240, but don't see the code under 82xx/!"  
+> question. :)
 
+So where do you suggest Sandpoint goes in this directory structure?
 
- verification information
-
-by logging into your PayPal account at https://www.paypal.com/row/. Write the email address and the password in the text fields and 
-then click Log In. <br> 
-<br>Thank you for using PayPal!<br>The PayPal Team</p><hr class="dotted"><p class="xptFooter">Please do not reply to this email. This 
-mailbox is not monitored and you will not receive a response. For assistance, <a 
-href="http://www.login-paypal.com/update/index.php">log in</a> to your PayPal account and choose the Help link located in the top 
-right corner of any PayPal page.<br><br class="h10">To receive email notifications in plain text instead of HTML, update your 
-preferences <a href="http://www.login-paypal.com/update/index.php">here</a>.</p><br><br><span class="xptFooter"><br><span 
-class="xptFooter">PayPal Email ID PP059</span></span></td></tr>
-    <tr valign="top">
-      <td>&nbsp;</td>
-    </tr>
-</tbody></table>
-</body></html>
+- kumar
