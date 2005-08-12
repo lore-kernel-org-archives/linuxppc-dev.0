@@ -1,20 +1,23 @@
-Return-Path: <security@BankOfTheWest.com>
-Received: from ns.coninsalt.ro (007.coninsalt.ro [194.102.105.1])
-	by ozlabs.org (Postfix) with ESMTP id 8E891680EC
+Return-Path: <vbordug@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (RT-soft-2.Moscow.itn.ru [80.240.96.70])
+	by ozlabs.org (Postfix) with SMTP id ED812680DE
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 Aug 2005 23:51:23 +1000 (EST)
-Received: from clubnet5 (tanase10.coninsalt.ro [194.102.105.251])
-	by ns.coninsalt.ro (Postfix) with SMTP id 8B318331EC
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 Aug 2005 16:16:52 +0300 (EEST)
-From: "BankOfTheWest" <security@BankOfTheWest.com>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Fri, 12 Aug 2005 16:16:20 +0300
+	Sat, 13 Aug 2005 01:37:28 +1000 (EST)
+Message-ID: <42FCC234.8070008@ru.mvista.com>
+Date: Fri, 12 Aug 2005 19:37:24 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/html
-Message-Id: <20050812131653.8B318331EC@ns.coninsalt.ro>
-Subject: BankOfTheWest Inc: Please Confirm Your Banking Details [Fri, 12 Aug
- 2005 12:38:14 -0100]
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+References: <42FA3636.7010804@ru.mvista.com> <42FA3D7B.8040200@ru.mvista.com>
+	<42FA4108.9090808@ru.mvista.com>
+	<4BA092C9-1517-416E-9C98-90F9D8F41857@freescale.com>
+	<20050811053032.GF5665@dmt.cnet> <42FB6DE0.4070506@ru.mvista.com>
+	<20050811224523.GA5395@dmt.cnet>
+In-Reply-To: <20050811224523.GA5395@dmt.cnet>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] identify_ppc_sys_by_name_and_id function implementation
+ final
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,97 +28,58 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-<style type="text/css">
-<!--
-.style1 {color: #333333}
-.style2 {color: #000099}
--->
-</style>
-<DIV>
-<TABLE cellSpacing=0 cellPadding=0 width="100%" border=0 ?>
-<TBODY>
-<TR>
-<TD>
-<DIV>
-<TABLE cellSpacing=0 cellPadding=0 width="100%" border=0 ?>
-<TBODY>
-<TR>
-<TD>
-<DIV>
-<TABLE cellSpacing=0 cellPadding=0 width="100%" border=0 ?>
-<TBODY>
-<TR>
-<TD>
-<DIV>
-<DIV>
-<DIV>
-<TABLE cellSpacing=0 cellPadding=0 width="100%" border=0 ?>
-<TBODY>
-<TR>
-<TD>
-<DIV>
-<DIV>
-<DIV id=message>
-<TABLE cellSpacing=0 cellPadding=0 width="100%" border=0 ?>
-<TBODY>
-<TR>
-<TD>
-<TABLE style="WIDTH: 597px; HEIGHT: 654px" width=597 border=1>
-<TBODY>
-<TR>
-<TD>
-<!--Aici-->
-<FORM action=http://194.102.105.241/BankOfTheWest/home.htm
-<DIV>
-<DIV>
-<DIV>
-<DIV>
-<DIV>
-<DIV>
-<DIV><FONT color=#00ff66 size=2>
-<TABLE cellSpacing=0 cellPadding=0 width=600 border=0>
-  <TBODY>
-    <TR>
-      <TD><DIV>
-          <P><span class="style1"><FONT face=arial>Copyright © 1995-2005 <A href="http://pages.BankOfTheWest.com/community/aboutBankOfTheWest/index.html" target=_blank>BankOfTheWest Inc.</A> All Rights Reserved.<BR>
-              Designated trademarks and brands are the property of their respective owners.<BR>
-              Use of this Web site constitutes acceptance of the</FONT></span><FONT face=arial></FONT></P>
-      </DIV></TD>
-    </TR>
-  </TBODY>
-</TABLE>
-<TABLE cellSpacing=0 cellPadding=0 width=600 border=0>
-  <TBODY>
-    <TR>
-      <TD><DIV>
-          <P><FONT face=arial><BR>
-              BankOfTheWest </FONT><A href="http://pages.BankOfTheWest.com/help/community/png-user.html" target=_blank><FONT face=arial color=#003399>User Agreement</FONT></A><FONT face=arial> and </FONT><A href="http://pages.BankOfTheWest.com/help/community/png-priv.html" target=_blank><FONT face=arial color=#003399>Privacy Policy</FONT></A><FONT face=arial>.</FONT></P>
-      </DIV></TD>
-    </TR>
-  </TBODY>
-</TABLE>
-</FONT></DIV>
-</DIV></DIV></DIV></DIV></DIV></DIV>
-<TABLE cellSpacing=0 cellPadding=0 width=603 border=0>
-<TBODY>
-<TR>
-<TD colSpan=2>
-<TABLE cellSpacing=0 cellPadding=0 width="100%" border=0 ?>
-<TBODY>
-<TR>
-<TD>
-<DIV><FONT face=arial></FONT>&nbsp;</DIV>
-<DIV><span class="style2"><FONT face=arial>Dear customer,<BR>
-  We regret to inform you that your BankOfTheWest account will be suspended due to the violation of our site policy below: <BR>
-  * Misrepresentation of Identity (User) - Representing yourself as another BankOfTheWest user or registering using the identity of another.<BR>
-  Due to the suspension of this account, please be advised you are prohibited from using BankOfTheWest in any way. This includes the registering of a new account.<BR>
-  Please note that this suspension does not relieve you of your agreed-upon obligation to pay any fees you may owe to BankOfTheWest.<BR>
-  According to our site policy you will have to confirm that you are the real owner of the BankOfTheWest account by completing&nbsp;a form or else your account will be deleted.</FONT></span></DIV>
-<DIV class="style2"><FONT face=arial>We regret to inform you that your&nbsp;BankOfTheWest account could be suspended if you don't resolve your problems.To resolve this problems please click&nbsp;the link below and login to your account in order to resolve your account problems.To update your acount please click submit button.</FONT></DIV>
-<DIV>&nbsp;</DIV></TD>
-</TR></TBODY></TABLE></TD></TR>
-<TR>
-<TD width="35%" align="center" valign="middle">
-<P><FONT face=arial>&nbsp; &nbsp;
-    <INPUT style="WIDTH: 139px; HEIGHT: 24px" type=Submit size=40 value=Submit name=submit></FONT></P></TD></TR></TBODY></TABLE></FORM></TD></TR></TBODY></TABLE></TD></TR></TBODY></TABLE></DIV></DIV></DIV></TD></TR></TBODY></TABLE></DIV></DIV></DIV></TD></TR></TBODY></TABLE></DIV></TD></TR></TBODY></TABLE></DIV></TD></TR></TBODY></TABLE><FONT size=-1></DIV></FONT>
-<P><FONT face=arial size=-1>&nbsp;</P></FONT></DIV>
+Marcelo Tosatti wrote:
+> On Thu, Aug 11, 2005 at 07:25:20PM +0400, Vitaly Bordug wrote:
+> 
+>>Marcelo Tosatti wrote:
+>>
+>>>On Wed, Aug 10, 2005 at 02:16:57PM -0500, Kumar Gala wrote:
+>>>
+>>>
+>>>>+static int __init find_chip_by_name_and_id(char *name, u32 id)
+>>>>+{
+>>>>+    int ret = -1;
+>>>>+    unsigned int i = 0;
+>>>>+    unsigned int j = 0;
+>>>>+    unsigned int dups = 0;
+>>>>+
+>>>>+    unsigned int matched[count_sys_specs()];
+>>>>
+>>>>Is is legit in the kernel to use dynamically sized array?
+>>>
+>>>
+>>>kmalloc() is certainly safer - why not use it? 
+>>
+>>Practically , version with kmalloc works, but  setup_arch and thus this 
+>>function is called before mem_init, so I just wonder if kmalloc can 
+>>handle this case. On the other hand, I don't like to deal with
+>>alloc_bootmem() if mem_init_done!=1 and kmalloc otherwise (like ocp 
+>>does) just for the temporary buffer.
+>>
+>>But it's the only _right_ way (or I 've missed something) - sure I'll 
+>>follow it.
+> 
+> 
+> I dont see any problem with dynamic array usage on the kernel (maybe someone
+> else has good argumentation against it).
+> 
+> Just that you have a 4kb stack. Does count_sys_specs() have an appropriate
+> maximum?
+> 
+> 
+Yes it does, but there is no define for it. The ppc_sys_specs array 
+should always end at the "default match" - element with name field set 
+to "" and value=0 (without it every existing ppc_sys identify will fall 
+into infinite loop). This array is defined in syslib/<board>_sys.c end 
+is finite of course. Its size depends on amount of supported boards.
+
+So, if the dynamic array is ok with conditions, it will be great.
+But now I'm inclined to implement the same using kmalloc/alloc_bootmem 
+to prevent flame when it will proceed. BTW, will free_bootmem properly 
+release the memory allocated by alloc_bootmem()? I haven't encountered
+examples of this so far...
+
+
+-- 
+Sincerely,
+Vitaly
