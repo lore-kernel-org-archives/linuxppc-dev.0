@@ -1,18 +1,19 @@
-Return-Path: <galak@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 2945E67E88
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 4CE7967EE5
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 13 Aug 2005 05:42:14 +1000 (EST)
-Date: Fri, 12 Aug 2005 14:41:53 -0500 (CDT)
-From: Kumar Gala <galak@freescale.com>
-To: Andrew Morton <akpm@osdl.org>
-Message-ID: <Pine.LNX.4.61.0508121441100.18633@nylon.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] ppc32: Cleaned up global namespace of Book-E watchdog
- variables
+	Sat, 13 Aug 2005 05:48:53 +1000 (EST)
+In-Reply-To: <42FCCEA4.2030409@ru.mvista.com>
+References: <42FCCEA4.2030409@ru.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v733)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <725685C1-2B6B-4B19-A1E9-D68AB21AFEAF@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Fri, 12 Aug 2005 14:48:49 -0500
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] identify_ppc_sys_by_name_and_id function implementation
+	final
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,151 +24,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Renamed global variables used to convey if the watchdog is enabled and
-periodicity of the timer and moved the declarations into a header for these
-variables
+On Aug 12, 2005, at 11:30 AM, Vitaly Bordug wrote:
 
-Signed-off-by: Matt McClintock <msm@freescale.com>
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+> Kumar Gala wrote:
+>
+>> Can you do a sizeof instead?
+>>
+>> #define num_ele sizeof(ppc_sys_specs[])/sizeof(struct ppc_sys_spec)
+>>
+>> Something like matchted[num_ele] ??
+>>
+>>
+>
+> That's what the first I tried actually :)
+> gcc is not happy with it:
+>
+> arch/ppc/syslib/ppc_sys.c: In function `find_chip_by_name_and_id':
+> arch/ppc/syslib/ppc_sys.c:54: error: parse error before ']' token
+>
+> and if I remove [] from the ppc_sys_specs, it outputs:
+>
+> arch/ppc/syslib/ppc_sys.c: In function `find_chip_by_name_and_id':
+> arch/ppc/syslib/ppc_sys.c:54: error: invalid application of  
+> `sizeof' to
+> incomplete type `({anonymous})'
+>
+> So I cannot use sizeof this case, I think...
 
----
-commit 9aa56fc06c3b2cbd116fa42c3fee5f227c3ff27c
-tree 331dbfbfda8463f584578ad788411cb0aabcd746
-parent d6dee08c314c1952921adc99e8f5ff6c332341ef
-author Kumar K. Gala <kumar.gala@freescale.com> Fri, 12 Aug 2005 14:39:28 -0500
-committer Kumar K. Gala <kumar.gala@freescale.com> Fri, 12 Aug 2005 14:39:28 -0500
+Realized the same thing.  I'm thinking that your original method is  
+the best solution to just do this on the stack.  In general the  
+number or processors (array size) is going to be less than 100.  So  
+at most this array is going to end up being 100 bytes on the stack.   
+I dont think that's a big deal at the point we are calling this.
 
- arch/ppc/kernel/setup.c           |    8 ++------
- drivers/char/watchdog/Kconfig     |    3 +++
- drivers/char/watchdog/booke_wdt.c |   23 ++++++++++++-----------
- include/asm-ppc/system.h          |    4 ++++
- 4 files changed, 21 insertions(+), 17 deletions(-)
-
-diff --git a/arch/ppc/kernel/setup.c b/arch/ppc/kernel/setup.c
---- a/arch/ppc/kernel/setup.c
-+++ b/arch/ppc/kernel/setup.c
-@@ -619,10 +619,8 @@ machine_init(unsigned long r3, unsigned 
- /* Checks wdt=x and wdt_period=xx command-line option */
- int __init early_parse_wdt(char *p)
- {
--	extern u32 wdt_enable;
--
- 	if (p && strncmp(p, "0", 1) != 0)
--	       wdt_enable = 1;
-+	       booke_wdt_enabled = 1;
- 
- 	return 0;
- }
-@@ -630,10 +628,8 @@ early_param("wdt", early_parse_wdt);
- 
- int __init early_parse_wdt_period (char *p)
- {
--	extern u32 wdt_period;
--
- 	if (p)
--		wdt_period = simple_strtoul(p, NULL, 0);
-+		booke_wdt_period = simple_strtoul(p, NULL, 0);
- 
- 	return 0;
- }
-diff --git a/drivers/char/watchdog/Kconfig b/drivers/char/watchdog/Kconfig
---- a/drivers/char/watchdog/Kconfig
-+++ b/drivers/char/watchdog/Kconfig
-@@ -349,6 +349,9 @@ config 8xx_WDT
- config BOOKE_WDT
- 	tristate "PowerPC Book-E Watchdog Timer"
- 	depends on WATCHDOG && (BOOKE || 4xx)
-+	---help---
-+	  Please see Documentation/watchdog/watchdog-api.txt for
-+	  more information.
- 
- # MIPS Architecture
- 
-diff --git a/drivers/char/watchdog/booke_wdt.c b/drivers/char/watchdog/booke_wdt.c
---- a/drivers/char/watchdog/booke_wdt.c
-+++ b/drivers/char/watchdog/booke_wdt.c
-@@ -23,6 +23,7 @@
- 
- #include <asm/reg_booke.h>
- #include <asm/uaccess.h>
-+#include <asm/system.h>
- 
- /* If the kernel parameter wdt_enable=1, the watchdog will be enabled at boot.
-  * Also, the wdt_period sets the watchdog timer period timeout.
-@@ -38,8 +39,8 @@
- #define WDT_PERIOD_DEFAULT 4	/* Refer to the PPC40x and PPC4xx manuals */
- #endif				/* for timing information */
- 
--u32 wdt_enable = 0;
--u32 wdt_period = WDT_PERIOD_DEFAULT;
-+u32 booke_wdt_enabled = 0;
-+u32 booke_wdt_period = WDT_PERIOD_DEFAULT;
- 
- #ifdef	CONFIG_FSL_BOOKE
- #define WDTP(x)		((((63-x)&0x3)<<30)|(((63-x)&0x3c)<<15))
-@@ -55,7 +56,7 @@ static __inline__ void booke_wdt_enable(
- 	u32 val;
- 
- 	val = mfspr(SPRN_TCR);
--	val |= (TCR_WIE|TCR_WRC(WRC_CHIP)|WDTP(wdt_period));
-+	val |= (TCR_WIE|TCR_WRC(WRC_CHIP)|WDTP(booke_wdt_period));
- 
- 	mtspr(SPRN_TCR, val);
- }
-@@ -108,12 +109,12 @@ static int booke_wdt_ioctl (struct inode
- 		booke_wdt_ping();
- 		return 0;
- 	case WDIOC_SETTIMEOUT:
--		if (get_user(wdt_period, (u32 *) arg))
-+		if (get_user(booke_wdt_period, (u32 *) arg))
- 			return -EFAULT;
--		mtspr(SPRN_TCR, (mfspr(SPRN_TCR)&~WDTP(0))|WDTP(wdt_period));
-+		mtspr(SPRN_TCR, (mfspr(SPRN_TCR)&~WDTP(0))|WDTP(booke_wdt_period));
- 		return 0;
- 	case WDIOC_GETTIMEOUT:
--		return put_user(wdt_period, (u32 *) arg);
-+		return put_user(booke_wdt_period, (u32 *) arg);
- 	case WDIOC_SETOPTIONS:
- 		if (get_user(tmp, (u32 *) arg))
- 			return -EINVAL;
-@@ -134,11 +135,11 @@ static int booke_wdt_ioctl (struct inode
-  */
- static int booke_wdt_open (struct inode *inode, struct file *file)
- {
--	if (wdt_enable == 0) {
--		wdt_enable = 1;
-+	if (booke_wdt_enabled == 0) {
-+		booke_wdt_enabled = 1;
- 		booke_wdt_enable();
- 		printk (KERN_INFO "PowerPC Book-E Watchdog Timer Enabled (wdt_period=%d)\n",
--				wdt_period);
-+				booke_wdt_period);
- 	}
- 
- 	return 0;
-@@ -180,9 +181,9 @@ static int __init booke_wdt_init(void)
- 		return ret;
- 	}
- 
--	if (wdt_enable == 1) {
-+	if (booke_wdt_enabled == 1) {
- 		printk (KERN_INFO "PowerPC Book-E Watchdog Timer Enabled (wdt_period=%d)\n",
--				wdt_period);
-+				booke_wdt_period);
- 		booke_wdt_enable();
- 	}
- 
-diff --git a/include/asm-ppc/system.h b/include/asm-ppc/system.h
---- a/include/asm-ppc/system.h
-+++ b/include/asm-ppc/system.h
-@@ -87,6 +87,10 @@ extern void cacheable_memzero(void *p, u
- extern int do_page_fault(struct pt_regs *, unsigned long, unsigned long);
- extern void bad_page_fault(struct pt_regs *, unsigned long, int);
- extern void die(const char *, struct pt_regs *, long);
-+#ifdef CONFIG_BOOKE_WDT
-+extern u32 booke_wdt_enabled;
-+extern u32 booke_wdt_period;
-+#endif /* CONFIG_BOOKE_WDT */
- 
- struct device_node;
- extern void note_scsi_host(struct device_node *, void *);
+- kumar
