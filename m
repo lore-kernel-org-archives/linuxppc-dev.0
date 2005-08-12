@@ -1,20 +1,18 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 42006680E7
+Return-Path: <solca@guug.org>
+Received: from guug.org (guug.galileo.edu [168.234.203.30])
+	by ozlabs.org (Postfix) with ESMTP id 190BF67F9C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 Aug 2005 09:17:13 +1000 (EST)
-Date: Thu, 11 Aug 2005 16:17:10 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Shawn Jin <shawnxjin@gmail.com>, ppcembed <linuxppc-embedded@ozlabs.org>
-Message-ID: <20050811231710.GB5796@gate.ebshome.net>
-References: <c3d0340b050811154148164691@mail.gmail.com>
-	<20050811231454.GA5796@gate.ebshome.net>
+	Fri, 12 Aug 2005 13:48:38 +1000 (EST)
+Received: from solca by guug.org with local (Exim 3.36 #1 (Debian))
+	id 1E3QDT-0001II-00
+	for <linuxppc-embedded@ozlabs.org>; Thu, 11 Aug 2005 21:28:19 -0600
+Date: Thu, 11 Aug 2005 21:28:19 -0600
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Message-ID: <20050812032819.GA4763@guug.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050811231454.GA5796@gate.ebshome.net>
-Subject: Re: What's wrong with the serial port?
+From: Otto Solares <solca@guug.org>
+Subject: Redwood-6 and 2.6
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,18 +23,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 11, 2005 at 04:14:54PM -0700, Eugene Surovegin wrote:
-> > MMU:exit                                                                        
-> > setup_arch: enter                                                               
-> > setup_arch: bootmem                                                             
-> > arch: exit                                                                      
-> > ??????                                              
-> 
-> Try disabling early text debugging (all that "MMU:..." stuff).
-> 
+Hi!
 
-Also, make sure you pass correct "console=..." line to the kernel 
-(with correct device name and baud rate).
+Redwood-6 support in 2.6 is broken.  I subscribed to this
+list just to know if somebody is working on it?  2.4.30
+works ok.
 
--- 
-Eugene
+If nobody is working on it please just tell me what is wrong
+and I would try to figure out:
+
+---
+CC      arch/ppc/syslib/ppc4xx_dma.o
+arch/ppc/syslib/ppc4xx_dma.c: In function `ppc4xx_enable_burst': arch/ppc/syslib/ppc4xx_dma.c:638: error: `DMA_CTC_BTEN' undeclared (first use in this function)
+arch/ppc/syslib/ppc4xx_dma.c:638: error: (Each undeclared identifier is reported only once arch/ppc/syslib/ppc4xx_dma.c:638: error: for each function it appears in.)
+arch/ppc/syslib/ppc4xx_dma.c: In function `ppc4xx_disable_burst': arch/ppc/syslib/ppc4xx_dma.c:657: error: `DMA_CTC_BTEN' undeclared (first use in this function)
+arch/ppc/syslib/ppc4xx_dma.c: In function `ppc4xx_set_burst_size': arch/ppc/syslib/ppc4xx_dma.c:682: error: `DMA_CTC_BSIZ_MSK' undeclared (first use in this function)
+make[1]: *** [arch/ppc/syslib/ppc4xx_dma.o] Error 1
+make: *** [arch/ppc/syslib] Error 2
+---
+
+In 2.4 'DMA_CTC_BTEN' does not exists.
+
+Thanks.
+
+-otto
