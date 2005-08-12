@@ -1,19 +1,20 @@
 Return-Path: <wd@denx.de>
-Received: from mailout03.sul.t-online.com (mailout03.sul.t-online.com
-	[194.25.134.81]) by ozlabs.org (Postfix) with ESMTP id 70C8267F27
+Received: from mailout11.sul.t-online.com (mailout11.sul.t-online.com
+	[194.25.134.85]) by ozlabs.org (Postfix) with ESMTP id 7D69367F10
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 Aug 2005 17:58:42 +1000 (EST)
-To: "FCG WANG Baohua" <Baohua.WANG@alcatel-sbell.com.cn>
+	Fri, 12 Aug 2005 18:01:27 +1000 (EST)
+To: cajus.hahn@de.abb.com
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 12 Aug 2005 14:03:08 +0800."
-	<A9DE2BAF233E444FA9C5E77A5825A01E86505F@ydmail.sbell.com.cn>
-Date: Fri, 12 Aug 2005 09:58:07 +0200
+In-reply-to: Your message of "Fri, 12 Aug 2005 09:49:05 +0200."
+	<OF29EF0D8D.F0A40A5C-ONC125705B.0028FA70-C125705B.002AF212@de.abb.com>
+Date: Fri, 12 Aug 2005 10:01:13 +0200
 Sender: wd@denx.de
-Message-Id: <20050812075807.E9613352B36@atlas.denx.de>
+Message-Id: <20050812080113.AA881352B36@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: strange things about swap on NFS 
+Subject: Re: 8xx: i2c-algo-8xx - fixed timeout detection and transmission
+	errors
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,30 +25,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <A9DE2BAF233E444FA9C5E77A5825A01E86505F@ydmail.sbell.com.cn> you wrote:
+In message <OF29EF0D8D.F0A40A5C-ONC125705B.0028FA70-C125705B.002AF212@de.abb.com> you wrote:
 > 
->   But I found that the "dd if=/dev/zero of=swapfile bs=1M
-> count=62" is not easy to executed:
+> Then I set the SCL line to ground to simulate a longer bus disturbance.
+> After some timeouts my SPI bus, yes the SPI bus, reportet transmission
+> errors. Both bus-interfaces use the CPM. It looks like the SPI buffer gets
+> garbaged by the I2C interface.
 
-This command alone should just work fine.
-
->   The system is often no response after execute this command. On several
-> time, it add swap successfully.
->    But  when I start to compile package. The system then no response !!
-
->From your subject and this description I understand that you then try
-to use this file as swapfile over NFS, and this causes problems.
-
-There is a known problem with swap over NFS, at least for 2.4 kernels.
-
->    How to slove the problem? Is the reason of my hard disk? I think not,
-
-RTFM. A solution is described in detail at
-http://www.denx.de/twiki/bin/view/DULG/SwappingOverNFS
-
-Note that this is terribly slow, though - but sometimes  it's  better
-to  have  a slow and working system than one which is fast and out of
-memory.
+This is "normal". We see similar problems even with  perfectly  legal
+operations  on  the CPM. The SPI is running at lowest priority on the
+CPM, and anything that  causes  higher  CPM  load  will  starve  SPI.
+Obviously  your  operation  causes  the  CPM  to go into some strange
+state.
 
 Best regards,
 
@@ -56,5 +45,5 @@ Wolfgang Denk
 -- 
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-You can't evaluate a man by logic alone.
-	-- McCoy, "I, Mudd", stardate 4513.3
+There are certain things men must do to remain men.
+	-- Kirk, "The Ultimate Computer", stardate 4929.4
