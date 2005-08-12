@@ -1,19 +1,19 @@
-Return-Path: <cajus.hahn@de.abb.com>
-Received: from nse3.abb.com (nse3.abb.com [129.35.204.69])
-	by ozlabs.org (Postfix) with ESMTP id DBAAA680D9
+Return-Path: <wd@denx.de>
+Received: from mailout03.sul.t-online.com (mailout03.sul.t-online.com
+	[194.25.134.81]) by ozlabs.org (Postfix) with ESMTP id 70C8267F27
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 Aug 2005 17:49:16 +1000 (EST)
-Received: from abb-despk-smtp.de.abb.com (deehn-s-cc1gw54.de.abb.com
-	[10.51.20.40])
-	by nse3.abb.com (8.11.6/8.11.6) with ESMTP id j7C7n8q24285
-	for <linuxppc-embedded@ozlabs.org>; Fri, 12 Aug 2005 09:49:11 +0200
-To: linuxppc-embedded@ozlabs.org
-Message-ID: <OF29EF0D8D.F0A40A5C-ONC125705B.0028FA70-C125705B.002AF212@de.abb.com>
-From: cajus.hahn@de.abb.com
-Date: Fri, 12 Aug 2005 09:49:05 +0200
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Subject: 8xx: i2c-algo-8xx - fixed timeout detection and transmission errors
+	Fri, 12 Aug 2005 17:58:42 +1000 (EST)
+To: "FCG WANG Baohua" <Baohua.WANG@alcatel-sbell.com.cn>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 12 Aug 2005 14:03:08 +0800."
+	<A9DE2BAF233E444FA9C5E77A5825A01E86505F@ydmail.sbell.com.cn>
+Date: Fri, 12 Aug 2005 09:58:07 +0200
+Sender: wd@denx.de
+Message-Id: <20050812075807.E9613352B36@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: strange things about swap on NFS 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,34 +24,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+In message <A9DE2BAF233E444FA9C5E77A5825A01E86505F@ydmail.sbell.com.cn> you wrote:
+> 
+>   But I found that the "dd if=/dev/zero of=swapfile bs=1M
+> count=62" is not easy to executed:
 
+This command alone should just work fine.
 
+>   The system is often no response after execute this command. On several
+> time, it add swap successfully.
+>    But  when I start to compile package. The system then no response !!
 
+>From your subject and this description I understand that you then try
+to use this file as swapfile over NFS, and this causes problems.
 
-Hello Tjernlund, Hello Debora
+There is a known problem with swap over NFS, at least for 2.4 kernels.
 
->Try changing all
->  i2c->i2c_i2com |= 0x80;           /* Begin transmission */
->to
->  i2c->i2c_i2com |= 0x80 | 0x01;          /* Begin transmission */
->
->That should remove the need to do force_reinit(cpm) I hope.
+>    How to slove the problem? Is the reason of my hard disk? I think not,
 
-This is NOT working in every case!
+RTFM. A solution is described in detail at
+http://www.denx.de/twiki/bin/view/DULG/SwappingOverNFS
 
-It will work, on short bus-disturbances on the SCL line.
-I suggest adding the "| 0x01" even this will not help on every transmission
-problem.
+Note that this is terribly slow, though - but sometimes  it's  better
+to  have  a slow and working system than one which is fast and out of
+memory.
 
-If you have longer disturbances on SCL or SDA, something in  the CPM will
-prevent the I2C bus to continue working after the disturbances are gone.
-Perhaps there is a problem with the buffer allocation.
-I changed the i2c-algo-8xx.c to work with your patch and without the
-force_reinit() code.
-Then I set the SCL line to ground to simulate a longer bus disturbance.
-After some timeouts my SPI bus, yes the SPI bus, reportet transmission
-errors. Both bus-interfaces use the CPM. It looks like the SPI buffer gets
-garbaged by the I2C interface.
-With the force_reinit() this problem did not occur.
+Best regards,
 
-Cajus
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+You can't evaluate a man by logic alone.
+	-- McCoy, "I, Mudd", stardate 4513.3
