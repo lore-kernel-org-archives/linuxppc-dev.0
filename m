@@ -1,20 +1,19 @@
-Return-Path: <Baohua.WANG@alcatel-sbell.com.cn>
-Received: from mail.alcatel-sbell.com.cn (nat1.alcatel-sbell.com.cn
-	[202.96.203.177]) by ozlabs.org (Postfix) with ESMTP id ED01A67A5F
+Return-Path: <cajus.hahn@de.abb.com>
+Received: from nse3.abb.com (nse3.abb.com [129.35.204.69])
+	by ozlabs.org (Postfix) with ESMTP id DBAAA680D9
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 Aug 2005 16:03:13 +1000 (EST)
-Received: from asbmail4.sbell.com.cn (localhost [127.0.0.1])
-	by mail.alcatel-sbell.com.cn (8.12.11/8.12.11/Alcanet1.0) with ESMTP id
-	j7C61q6x013067
-	for <linuxppc-embedded@ozlabs.org>; Fri, 12 Aug 2005 14:01:52 +0800
+	Fri, 12 Aug 2005 17:49:16 +1000 (EST)
+Received: from abb-despk-smtp.de.abb.com (deehn-s-cc1gw54.de.abb.com
+	[10.51.20.40])
+	by nse3.abb.com (8.11.6/8.11.6) with ESMTP id j7C7n8q24285
+	for <linuxppc-embedded@ozlabs.org>; Fri, 12 Aug 2005 09:49:11 +0200
+To: linuxppc-embedded@ozlabs.org
+Message-ID: <OF29EF0D8D.F0A40A5C-ONC125705B.0028FA70-C125705B.002AF212@de.abb.com>
+From: cajus.hahn@de.abb.com
+Date: Fri, 12 Aug 2005 09:49:05 +0200
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C59F03.835E7F76"
-Date: Fri, 12 Aug 2005 14:03:08 +0800
-Message-ID: <A9DE2BAF233E444FA9C5E77A5825A01E86505F@ydmail.sbell.com.cn>
-From: "FCG WANG Baohua" <Baohua.WANG@alcatel-sbell.com.cn>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: strange things about swap on NFS
+Content-type: text/plain; charset=US-ASCII
+Subject: 8xx: i2c-algo-8xx - fixed timeout detection and transmission errors
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,77 +24,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C59F03.835E7F76
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: quoted-printable
 
-Dear all:
-  I use ELDK 3.1.1, kernel 2.4.25 on my HD860 board,  using NFS.  I add =
-a "ext2.img" as mentioned in the ELDK doc.
-  But I found that the "dd if=3D/dev/zero of=3Dswapfile bs=3D1M =
-count=3D62" is not easy to executed:
-  The system is often no response after execute this command. On several =
-time, it add swap successfully.
-   But  when I start to compile package. The system then no response !!
- =20
-   How to slove the problem? Is the reason of my hard disk? I think not, =
 
-   thanks!
-=20
 
-------_=_NextPart_001_01C59F03.835E7F76
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: quoted-printable
+Hello Tjernlund, Hello Debora
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dgb2312">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.0.6603.0">
-<TITLE>strange things about swap on NFS</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
+>Try changing all
+>  i2c->i2c_i2com |= 0x80;           /* Begin transmission */
+>to
+>  i2c->i2c_i2com |= 0x80 | 0x01;          /* Begin transmission */
+>
+>That should remove the need to do force_reinit(cpm) I hope.
 
-<P><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">Dear =
-all:</FONT></SPAN>
+This is NOT working in every case!
 
-<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; I use ELDK =
-3.1.1, kernel 2.4.25 on my HD860 board,&nbsp; using NFS.&nbsp; I add a =
-&quot;ext2.img&quot; as mentioned in the ELDK doc.</FONT></SPAN>
+It will work, on short bus-disturbances on the SCL line.
+I suggest adding the "| 0x01" even this will not help on every transmission
+problem.
 
-<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; But I =
-found that the &quot;dd if=3D/dev/zero of=3Dswapfile bs=3D1M =
-count=3D62&quot; is not easy to executed:</FONT></SPAN>
+If you have longer disturbances on SCL or SDA, something in  the CPM will
+prevent the I2C bus to continue working after the disturbances are gone.
+Perhaps there is a problem with the buffer allocation.
+I changed the i2c-algo-8xx.c to work with your patch and without the
+force_reinit() code.
+Then I set the SCL line to ground to simulate a longer bus disturbance.
+After some timeouts my SPI bus, yes the SPI bus, reportet transmission
+errors. Both bus-interfaces use the CPM. It looks like the SPI buffer gets
+garbaged by the I2C interface.
+With the force_reinit() this problem did not occur.
 
-<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; The system =
-is often no response after execute this command. On several time, it add =
-swap successfully.</FONT></SPAN>
-
-<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;&nbsp; =
-But&nbsp; when I start to compile package. The system then no response =
-!!</FONT></SPAN>
-
-<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp; =
-</FONT></SPAN>
-
-<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;&nbsp; How =
-to slove the problem? Is the reason of my hard disk? I think not, =
-</FONT></SPAN>
-
-<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;&nbsp; =
-thanks!</FONT></SPAN>
-
-<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 =
-FACE=3D"Arial"></FONT>&nbsp;</SPAN>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C59F03.835E7F76--
+Cajus
