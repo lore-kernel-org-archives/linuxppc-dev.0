@@ -1,14 +1,14 @@
-Return-Path: <trini@kernel.crashing.org>
-Date: Thu, 11 Aug 2005 20:38:50 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Kumar Gala <kumar.gala@freescale.com>
-Message-ID: <20050812033850.GB3187@smtp.west.cox.net>
-References: <20050811231948.GA3187@smtp.west.cox.net>
-	<9C2E830E-288C-4373-BDE3-49C5FE47A01C@freescale.com>
-Mime-Version: 1.0
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9C2E830E-288C-4373-BDE3-49C5FE47A01C@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Gill Becky-BGILL <becky.bruce@freescale.com>,
+Message-ID: <17148.7234.193140.997481@cargo.ozlabs.ibm.com>
+Date: Fri, 12 Aug 2005 13:49:22 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Tom Rini <trini@kernel.crashing.org>
+In-Reply-To: <20050811195927.GX3187@smtp.west.cox.net>
+References: <c237b7e878e0c32f421209fa37b7a156@freescale.com>
+	<20050811195927.GX3187@smtp.west.cox.net>
+Cc: linuxppc-dev@ozlabs.org, Becky Bruce <becky.bruce@freescale.com>,
 	linuxppc64-dev@ozlabs.org
 Subject: Re: RFC: proposed arch/powerpc directory structure
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -20,31 +20,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 11, 2005 at 09:34:57PM -0500, Kumar Gala wrote:
-> 
-> On Aug 11, 2005, at 6:19 PM, Tom Rini wrote:
-> 
-> >On Thu, Aug 11, 2005 at 06:07:03PM -0500, Kumar Gala wrote:
-> >[snip]
-> >
-> >>I think this causes confusion.  the reason we suggested pq2 and
-> >>classic32 was to handle things like sandpoint.  Sandpoint would live
-> >>in classic32.  The confusion partial comes from the fact that we can
-> >>run 8240/1/5 on a Sandpoint.  The thinking was everything that was
-> >>6xx/7xx/74xx + things like 8240/1/5 which can be thought of as 603 +
-> >>10x bridge would be classic32.
-> >>
-> >
-> >Thanks for the explanation.  But I think this is overkill for the
-> >sandpoint or true like a sandpoint (Zynx something, Willow, neither of
-> >which are in the kernel tree).  I think we can field the "I wanna hack
-> >on my Sandpoint/8240, but don't see the code under 82xx/!"  
-> >question. :)
-> 
-> So where do you suggest Sandpoint goes in this directory structure?
+Tom Rini writes:
 
-classic32/
+> I'm a bit ppc64-ignorant, but isn't 'pSeries' just a regular
+> OpenFirmware-containing ppc64 box (like Maple) ?  How about just 9xx/
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+Ummm, no, not exactly.  The distinctive thing about pSeries is the
+hypervisor interfaces.  And in fact most pSeries boxes aren't
+970-based, rather POWER4/4+/5.  If you want to generalize, we could
+call the directory "papr" (for Power Architecture Platform
+Requirements, the name of the document that describes the pSeries
+platforms) rather than pSeries, but I suspect that would just confuse
+people. :)
+
+Paul.
