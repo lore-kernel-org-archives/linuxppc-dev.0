@@ -1,17 +1,15 @@
-Return-Path: <trini@kernel.crashing.org>
-Date: Thu, 11 Aug 2005 21:14:43 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Message-ID: <20050812041443.GC3187@smtp.west.cox.net>
-References: <c237b7e878e0c32f421209fa37b7a156@freescale.com>
-	<20050811195927.GX3187@smtp.west.cox.net>
-	<17148.7234.193140.997481@cargo.ozlabs.ibm.com>
+Return-Path: <anton@ozlabs.org>
+Date: Fri, 12 Aug 2005 15:06:09 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Hollis Blanchard <hollisb@us.ibm.com>
+Message-ID: <20050812050609.GA7355@krispykreme>
+References: <a22149f6d9cc6f65ae2f8f339d982dd2@us.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17148.7234.193140.997481@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Becky Bruce <becky.bruce@freescale.com>,
-	linuxppc64-dev@ozlabs.org
-Subject: Re: RFC: proposed arch/powerpc directory structure
+In-Reply-To: <a22149f6d9cc6f65ae2f8f339d982dd2@us.ibm.com>
+Cc: PPC64-dev List <linuxppc64-dev@ozlabs.org>,
+	Linux PPC Dev <linuxppc-dev@ozlabs.org>
+Subject: Re: GDB backtrace and signal trampolines
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,22 +19,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 12, 2005 at 01:49:22PM +1000, Paul Mackerras wrote:
-> Tom Rini writes:
-> 
-> > I'm a bit ppc64-ignorant, but isn't 'pSeries' just a regular
-> > OpenFirmware-containing ppc64 box (like Maple) ?  How about just 9xx/
-> 
-> Ummm, no, not exactly.  The distinctive thing about pSeries is the
-> hypervisor interfaces.  And in fact most pSeries boxes aren't
-> 970-based, rather POWER4/4+/5.  If you want to generalize, we could
-> call the directory "papr" (for Power Architecture Platform
-> Requirements, the name of the document that describes the pSeries
-> platforms) rather than pSeries, but I suspect that would just confuse
-> people. :)
 
-Ok.  How about 9xx/ instead of classic64 ?
+Hi,
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+> Would it make sense to limit the test to within a few hundred bytes of 
+> the stack pointer? Or some better way to detect that the PC is in a 
+> signal trampoline?
+
+With recent kernels we should be able to use the dwarf2 unwind
+information in the vdso I think.
+
+Anton
