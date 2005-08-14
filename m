@@ -1,20 +1,19 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id A590767EE4
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao05.cox.net (fed1rmmtao05.cox.net [68.230.241.34])
+	by ozlabs.org (Postfix) with ESMTP id D9DED67E8D
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 14 Aug 2005 14:25:59 +1000 (EST)
-Date: Sat, 13 Aug 2005 21:25:56 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
+	Mon, 15 Aug 2005 02:14:19 +1000 (EST)
+Date: Sun, 14 Aug 2005 09:14:16 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
 To: Shawn Jin <shawnxjin@gmail.com>
-Message-ID: <20050814042556.GB23952@gate.ebshome.net>
+Message-ID: <20050814091416.B20320@cox.net>
 References: <c3d0340b0508121811e7b6fc2@mail.gmail.com>
 	<20050812203335.K30033@cox.net>
 	<c3d0340b0508132056651e8c97@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <c3d0340b0508132056651e8c97@mail.gmail.com>
+In-Reply-To: <c3d0340b0508132056651e8c97@mail.gmail.com>;
+	from shawnxjin@gmail.com on Sat, Aug 13, 2005 at 08:56:50PM -0700
 Cc: ppcembed <linuxppc-embedded@ozlabs.org>
 Subject: Re: writel(), readl() in <asm-ppc/io.h>
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -38,10 +37,13 @@ On Sat, Aug 13, 2005 at 08:56:50PM -0700, Shawn Jin wrote:
 > call read*() and write*() respectively. So what's your recommendation
 > in such a case?
 
-Why do you think this is a problem? Why do you think they are 
-misused? Please explain. 
+Keep misusing them. There's no generic accessors for memory mapped
+I/O.  People just started using them in generic drivers because they
+are convenient. I use the the __raw_read*() for non byte swapped access
+(or in/outbe32() depending on my memory barrier requirements.
 
-FYI, there _are_ serial PCI cards.
+Also, portions of the 8250 serial driver using readl/writel are
+assuming that the serial port in on PCI or other little endian bus.
+readb/writeb usage doesn't matter in that driver.
 
--- 
-Eugene
+-Matt
