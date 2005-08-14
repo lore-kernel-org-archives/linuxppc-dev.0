@@ -1,25 +1,22 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 7A0F267E9B
+Return-Path: <shawnxjin@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.202])
+	by ozlabs.org (Postfix) with ESMTP id D2A8167EB8
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 14 Aug 2005 05:35:19 +1000 (EST)
-Date: Sat, 13 Aug 2005 12:35:17 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Wade Farnsworth <wfarnsworth@mvista.com>,
-	Matt Porter <mporter@kernel.crashing.org>,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Message-ID: <20050813193516.GB19431@gate.ebshome.net>
-References: <1123284390.27734.19.camel@rhino.az.mvista.com>
-	<20050808164457.C9951@cox.net>
-	<1123792927.27880.34.camel@rhino.az.mvista.com>
-	<20050813193220.GA19431@gate.ebshome.net>
+	Sun, 14 Aug 2005 13:56:52 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id i13so850265wra
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 13 Aug 2005 20:56:51 -0700 (PDT)
+Message-ID: <c3d0340b0508132056651e8c97@mail.gmail.com>
+Date: Sat, 13 Aug 2005 20:56:50 -0700
+From: Shawn Jin <shawnxjin@gmail.com>
+To: Matt Porter <mporter@kernel.crashing.org>
+In-Reply-To: <20050812203335.K30033@cox.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050813193220.GA19431@gate.ebshome.net>
-Subject: Re: [PATCH] add field to struct ocp_func_emac_data for
-	platform-specific unsupported PHY features
+Content-Type: text/plain; charset=ISO-8859-1
+References: <c3d0340b0508121811e7b6fc2@mail.gmail.com>
+	<20050812203335.K30033@cox.net>
+Cc: ppcembed <linuxppc-embedded@ozlabs.org>
+Subject: Re: writel(), readl() in <asm-ppc/io.h>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,27 +27,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sat, Aug 13, 2005 at 12:32:21PM -0700, Eugene Surovegin wrote:
-> On Thu, Aug 11, 2005 at 01:42:07PM -0700, Wade Farnsworth wrote:
-> 
-> [snip]
-> 
-> > diff -upr linux-2.6/include/asm-ppc/ibm_ocp.h linux-2.6-dev/include/asm-ppc/ibm_ocp.h
-> > --- linux-2.6/include/asm-ppc/ibm_ocp.h	2005-08-11 13:30:02.000000000 -0700
-> > +++ linux-2.6-dev/include/asm-ppc/ibm_ocp.h	2005-08-11 13:12:34.000000000 -0700
-> > @@ -67,6 +67,7 @@ struct ocp_func_emac_data {
-> >  	int	phy_mode;	/* PHY type or configurable mode */
-> >  	u8	mac_addr[6];	/* EMAC mac address */
-> >  	u32	phy_map;	/* EMAC phy map */
-> > +	u32	phy_feat_exc;	/* Excluded PHY features */
-> >  };
-> >  
-> >  /* Sysfs support */
-> 
-> Please, update OCP_SYSFS_EMAC_DATA() macro as well.
+> read*()/write*() are accessors for PCI and PCI only.  PCI is little
 
-Also, I just noticed, Matt suggested different name for this member 
-two e-mails ago :)
+If read*()/write*() are designed for PCI access only as you claimed,
+that explains why they call in/out_leXX() funcitons.
 
--- 
-Eugene
+The problem is that read*()/write*() are misused in some places, e.g.,
+serial drivers such as serial8250. The serial_in() and serial_out()
+call read*() and write*() respectively. So what's your recommendation
+in such a case?
+
+Regards,
+-Shawn.
