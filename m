@@ -1,19 +1,18 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao05.cox.net (fed1rmmtao05.cox.net [68.230.241.34])
-	by ozlabs.org (Postfix) with ESMTP id D9DED67E8D
+Return-Path: <a.othieno@bluewin.ch>
+Received: from mail15.bluewin.ch (mail15.bluewin.ch [195.186.18.63])
+	by ozlabs.org (Postfix) with ESMTP id A0C1067E8D
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 15 Aug 2005 02:14:19 +1000 (EST)
-Date: Sun, 14 Aug 2005 09:14:16 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
+	Mon, 15 Aug 2005 02:58:29 +1000 (EST)
+Date: Sun, 14 Aug 2005 12:36:16 -0400
 To: Shawn Jin <shawnxjin@gmail.com>
-Message-ID: <20050814091416.B20320@cox.net>
+Message-ID: <20050814163616.GA2726@mars>
 References: <c3d0340b0508121811e7b6fc2@mail.gmail.com>
 	<20050812203335.K30033@cox.net>
 	<c3d0340b0508132056651e8c97@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <c3d0340b0508132056651e8c97@mail.gmail.com>;
-	from shawnxjin@gmail.com on Sat, Aug 13, 2005 at 08:56:50PM -0700
+In-Reply-To: <c3d0340b0508132056651e8c97@mail.gmail.com>
+From: a.othieno@bluewin.ch (Arthur Othieno)
 Cc: ppcembed <linuxppc-embedded@ozlabs.org>
 Subject: Re: writel(), readl() in <asm-ppc/io.h>
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -36,14 +35,10 @@ On Sat, Aug 13, 2005 at 08:56:50PM -0700, Shawn Jin wrote:
 > serial drivers such as serial8250. The serial_in() and serial_out()
 > call read*() and write*() respectively. So what's your recommendation
 > in such a case?
+ 
+See here for the gory details:
 
-Keep misusing them. There's no generic accessors for memory mapped
-I/O.  People just started using them in generic drivers because they
-are convenient. I use the the __raw_read*() for non byte swapped access
-(or in/outbe32() depending on my memory barrier requirements.
+  http://lwn.net/Articles/102232/
+  http://lwn.net/Articles/132804/
 
-Also, portions of the 8250 serial driver using readl/writel are
-assuming that the serial port in on PCI or other little endian bus.
-readb/writeb usage doesn't matter in that driver.
-
--Matt
+	Arthur
