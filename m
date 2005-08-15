@@ -1,20 +1,22 @@
-Return-Path: <joakim.tjernlund@lumentis.se>
-Received: from dmz.lumentis.net (unknown [212.105.56.244])
+Return-Path: <rober@opnet.com.tw>
+Received: from opnet2.opnet.com.tw (unknown [210.243.240.244])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9ED2A67A65
+	by ozlabs.org (Postfix) with ESMTP id E26DA67EB8
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 15 Aug 2005 18:08:23 +1000 (EST)
-From: "Joakim Tjernlund" <joakim.tjernlund@lumentis.se>
-To: <cajus.hahn@de.abb.com>, <linuxppc-embedded@ozlabs.org>
-Date: Mon, 15 Aug 2005 10:08:17 +0200
-Message-ID: <JPEALJAFNGDDLOPNDIEECECDDFAA.joakim.tjernlund@lumentis.se>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-In-Reply-To: <OF22BDEDEA.B9A60886-ONC125705E.001F8E2A-C125705E.0020E27E@de.abb.com>
-Subject: RE: 8xx: i2c-algo-8xx - fixed timeout detection and transmission
-	errors
+	Mon, 15 Aug 2005 18:22:44 +1000 (EST)
+Received: from [10.0.14.26] (h248-210-243-240.opnet.com.tw [210.243.240.248]
+	(may be forged))
+	by opnet2.opnet.com.tw (8.13.3/8.13.1) with ESMTP id j7FGIZMU004291
+	for <linuxppc-embedded@ozlabs.org>; Mon, 15 Aug 2005 16:18:36 GMT
+	(envelope-from rober@opnet.com.tw)
+From: =?UTF-8?Q?=E5=BE=90=E5=B0=8F?= =?UTF-8?Q?=E5=A8=81?= <rober@opnet.com.tw>
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Date: Mon, 15 Aug 2005 16:22:33 +0800
+Message-Id: <1124094153.13556.3.camel@banana>
+Mime-Version: 1.0
+Subject: how to run iptables-1.2.9  at Kernel 2.4.25
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,29 +27,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> 
-> Hi Jocke,
-> 
-> I changed the force_reinit() to
-> 
-> // Disable interrupts.
-> i2c->i2c_i2cmr = 0;
-> i2c->i2c_i2cer = 0xff;
-> // Clear enable
-> i2c->i2c_i2mod &= ~1;
-> // Reset internal state
-> iip->iic_rstate = 0;
-> iip->iic_tstate = 0;
-> 
-> This seems to work and is less code than my old force_reinit().
-> On the other hand: This kind of CPM timeout will only occur on heavy I2C
-> bus conflicts. They should not appear at all. The code will not be executed
-> if a slave device does not answer! The original driver is from the year
-> 2001 and nobody has mentioned problems of this kind before. Without
-> detailed knowledge of the CPM internals I feel much safer using my old
-> force_reinit(), which does a complete re-init.
+Hi all:
 
-Good, however I think we should try to it simple, the code that is, and avoid
-unneded bloat. I would like to see the shorter version in the kernel.
+    I got some problem at compiler iptables 1.2.9 at my 2.4.25 Linux,
+anybody know how to solve it?
 
- Jocke
+PS:I used eldk 3.1.1 and 2.4.25 kernel at my custom MPC852T board.
+
+extensions/libipt_ULOG.c: In function `init':
+extensions/libipt_ULOG.c:58: error: `NFLOG_DEFAULT_NLGROUP' undeclared
+(first use in this function)
+extensions/libipt_ULOG.c:58: error: (Each undeclared identifier is
+reported only once
+extensions/libipt_ULOG.c:58: error: for each function it appears in.)
+extensions/libipt_ULOG.c:59: error: `NFLOG_DEFAULT_QTHRESHOLD'
+undeclared (first use in this function)
+extensions/libipt_ULOG.c: In function `save':
+extensions/libipt_ULOG.c:158: error: `NFLOG_DEFAULT_NLGROUP' undeclared
+(first use in this function)
+extensions/libipt_ULOG.c:165: error: `NFLOG_DEFAULT_QTHRESHOLD'
+undeclared (first use in this function)
+make: *** [extensions/libipt_ULOG.o] Error 1
