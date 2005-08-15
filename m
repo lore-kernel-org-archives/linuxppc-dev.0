@@ -1,18 +1,27 @@
-Return-Path: <dale@farnsworth.org>
-Received: from xyzzy.farnsworth.org (unknown [65.200.49.142])
-	by ozlabs.org (Postfix) with SMTP id E6FCF67EB8
+Return-Path: <msm@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 96FD167F41
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 16 Aug 2005 03:16:40 +1000 (EST)
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Mon, 15 Aug 2005 10:16:37 -0700
-To: Andrey Volkov <avolkov@varma-el.com>, linuxppc-embedded@ozlabs.org
-Message-ID: <20050815171637.GA20943@xyzzy.farnsworth.org>
-References: <43006FD4.6060801@varma-el.com> <43009A8D.1040704@246tNt.com>
-	<4300AF41.9000807@varma-el.com>
+	Tue, 16 Aug 2005 03:20:29 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	j7FHStkK029564 for <linuxppc-embedded@ozlabs.org>;
+	Mon, 15 Aug 2005 10:28:55 -0700 (MST)
+Received: from az33exm43.am.freescale.net (az33exm43.am.freescale.net
+	[10.64.34.249])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id j7FHO8iM016528
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 15 Aug 2005 12:24:08 -0500 (CDT)
+From: Matthew McClintock <msm@freescale.com>
+To: "Maziah Mat @ Mohamad" <mmezique@yahoo.com>
+In-Reply-To: <20050815033633.12423.qmail@web52409.mail.yahoo.com>
+References: <20050815033633.12423.qmail@web52409.mail.yahoo.com>
+Content-Type: text/plain
+Date: Mon, 15 Aug 2005 12:22:00 -0500
+Message-Id: <1124126520.2576.11.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4300AF41.9000807@varma-el.com>
-Subject: Re: [00/02] MPC5200 Bestcomm platform driver
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: error when loading shared library
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,22 +32,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Aug 15, 2005 at 03:05:37PM +0000, Andrey Volkov wrote:
-> Sylvain Munaut wrote:
-> > Obviously I haven't yet had the time to review all the code but the
-> > glance I had looked good ! I'll review it deeper and test it and come
-> > back to you asap.
-> As you could see it was only first step (I hope at not so long way :)):
-> bring Dale's code to the current kernel, and make point from which
-> everyone could start dance.
+First off it is bad idea to post HTML to this list, you are more likely
+to get a response if you post plain text.
 
-Andrey, thanks for keeping this alive.
+On Sun, 2005-08-14 at 20:36 -0700, Maziah Mat @ Mohamad wrote: 
+> Hi,
+>  
+> I working with MPC8560ADS development which loaded with the ppc-linux
+> glibc -3.3.2.
+> 
+You should be a bit more specific about your setup. What version of the
+kernel are you running? Where did you get your root file system?
 
-I agree with Sylvain's other comments.
+> When running the software, faced error which state error while loading
+> shared libraries:/lib/libdb.so.3.. 
 
-The main thing I would like to see happen to this driver (other
-than getting it in mainline :-) is an attempt to replace the
-ugly phy code with calls to the new phy abstraction layer.
-On the other hand, I'm glad to see progress on any front.
+You are missing the db library on your root file system. Berkeley DB can
+provide this library I believe. You need to download it, and compile for
+your target.
 
--Dale
+>  
+> Could you please advise, where is the good link to download the
+> required shared libraries that working for ppc-linux.
+
+Your best bet would be to do a search on google.
+
+-Matthew 
