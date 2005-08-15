@@ -1,22 +1,19 @@
-Return-Path: <rober@opnet.com.tw>
-Received: from opnet2.opnet.com.tw (unknown [210.243.240.244])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E26DA67EB8
+Return-Path: <wd@denx.de>
+Received: from mailout01.sul.t-online.com (mailout01.sul.t-online.com
+	[194.25.134.80]) by ozlabs.org (Postfix) with ESMTP id E3A8167EB8
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 15 Aug 2005 18:22:44 +1000 (EST)
-Received: from [10.0.14.26] (h248-210-243-240.opnet.com.tw [210.243.240.248]
-	(may be forged))
-	by opnet2.opnet.com.tw (8.13.3/8.13.1) with ESMTP id j7FGIZMU004291
-	for <linuxppc-embedded@ozlabs.org>; Mon, 15 Aug 2005 16:18:36 GMT
-	(envelope-from rober@opnet.com.tw)
-From: =?UTF-8?Q?=E5=BE=90=E5=B0=8F?= =?UTF-8?Q?=E5=A8=81?= <rober@opnet.com.tw>
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain
-Date: Mon, 15 Aug 2005 16:22:33 +0800
-Message-Id: <1124094153.13556.3.camel@banana>
-Mime-Version: 1.0
-Subject: how to run iptables-1.2.9  at Kernel 2.4.25
+	Mon, 15 Aug 2005 19:15:43 +1000 (EST)
+To: =?UTF-8?Q?=E5=BE=90=E5=B0=8F?= =?UTF-8?Q?=E5=A8=81?= <rober@opnet.com.tw>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 15 Aug 2005 16:22:33 +0800."
+	<1124094153.13556.3.camel@banana>
+Date: Mon, 15 Aug 2005 11:15:18 +0200
+Sender: wd@denx.de
+Message-Id: <20050815091518.C3339352B73@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: how to run iptables-1.2.9 at Kernel 2.4.25 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,24 +24,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all:
+In message <1124094153.13556.3.camel@banana> you wrote:
+> 
+>     I got some problem at compiler iptables 1.2.9 at my 2.4.25 Linux,
+> anybody know how to solve it?
 
-    I got some problem at compiler iptables 1.2.9 at my 2.4.25 Linux,
-anybody know how to solve it?
+Please provide a correct subject. It seems your problem is  not  with
+running but with building iptables, right?
 
-PS:I used eldk 3.1.1 and 2.4.25 kernel at my custom MPC852T board.
+> PS:I used eldk 3.1.1 and 2.4.25 kernel at my custom MPC852T board.
+> 
+> extensions/libipt_ULOG.c: In function `init':
+> extensions/libipt_ULOG.c:58: error: `NFLOG_DEFAULT_NLGROUP' undeclared
+...
+> extensions/libipt_ULOG.c:59: error: `NFLOG_DEFAULT_QTHRESHOLD'
+...
 
-extensions/libipt_ULOG.c: In function `init':
-extensions/libipt_ULOG.c:58: error: `NFLOG_DEFAULT_NLGROUP' undeclared
-(first use in this function)
-extensions/libipt_ULOG.c:58: error: (Each undeclared identifier is
-reported only once
-extensions/libipt_ULOG.c:58: error: for each function it appears in.)
-extensions/libipt_ULOG.c:59: error: `NFLOG_DEFAULT_QTHRESHOLD'
-undeclared (first use in this function)
-extensions/libipt_ULOG.c: In function `save':
-extensions/libipt_ULOG.c:158: error: `NFLOG_DEFAULT_NLGROUP' undeclared
-(first use in this function)
-extensions/libipt_ULOG.c:165: error: `NFLOG_DEFAULT_QTHRESHOLD'
-undeclared (first use in this function)
-make: *** [extensions/libipt_ULOG.o] Error 1
+Seems you misconfigured it. Check your Makefiles.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+To program is to be.
