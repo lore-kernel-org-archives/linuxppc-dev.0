@@ -1,16 +1,31 @@
-Return-Path: <hollisb@us.ibm.com>
-In-Reply-To: <20050812050609.GA7355@krispykreme>
-References: <a22149f6d9cc6f65ae2f8f339d982dd2@us.ibm.com>
-	<20050812050609.GA7355@krispykreme>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <3b9a91d3eebf79c9cc8a2b67cc5e3f84@us.ibm.com>
-From: Hollis Blanchard <hollisb@us.ibm.com>
-Date: Fri, 12 Aug 2005 08:58:32 -0500
-To: Anton Blanchard <anton@samba.org>
-Cc: PPC64-dev List <linuxppc64-dev@ozlabs.org>,
-	Linux PPC Dev <linuxppc-dev@ozlabs.org>
-Subject: Re: GDB backtrace and signal trampolines
+Return-Path: <nacc@us.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.133])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9F88267F3D
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Aug 2005 04:24:07 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.12.10/8.12.9) with ESMTP id j7FINwn7510818
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Aug 2005 14:24:00 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay04.boulder.ibm.com (8.12.10/NCO/VERS6.7) with ESMTP id
+	j7FIO03q103132
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Aug 2005 12:24:00 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
+	j7FINwKc026903
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Aug 2005 12:23:58 -0600
+Date: Mon, 15 Aug 2005 11:23:57 -0700
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: benh@kernel.crashing.org
+Message-ID: <20050815182357.GZ2854@us.ibm.com>
+References: <20050815180514.GC2854@us.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050815180514.GC2854@us.ibm.com>
+Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org
+Subject: [-mm PATCH 23/32] drivers/macintosh: fix-up schedule_timeout() usage
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,32 +35,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Aug 12, 2005, at 12:06 AM, Anton Blanchard wrote:
->
->> Would it make sense to limit the test to within a few hundred bytes of
->> the stack pointer? Or some better way to detect that the PC is in a
->> signal trampoline?
->
-> With recent kernels we should be able to use the dwarf2 unwind
-> information in the vdso I think.
+Description: Use schedule_timeout_interruptible() instead of
+set_current_state()/schedule_timeout() to reduce kernel size.
 
-I guess compatibility with older kernels will still need to be 
-maintained, though.
+Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
 
-I see this note in arch/ppc64/mm/fault.c:
-         /*
-          * N.B. The POWER/Open ABI allows programs to access up to
-          * 288 bytes below the stack pointer.
-          * The kernel signal delivery code writes up to about 1.5kB
-          * below the stack pointer (r1) before decrementing it.
-          * The exec code can write slightly over 640kB to the stack
-          * before setting the user r1.  Thus we allow the stack to
-          * expand to 1MB without further checks.
-          */
+---
 
-So would 2KB be a reasonable limit to the signal frame check, as I 
-described before?
+ arch/m68k/atari/time.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
--- 
-Hollis Blanchard
-IBM Linux Technology Center
+diff -urpN 2.6.13-rc5-mm1/drivers/macintosh/therm_pm72.c 2.6.13-rc5-mm1-dev/drivers/macintosh/therm_pm72.c
+--- 2.6.13-rc5-mm1/drivers/macintosh/therm_pm72.c	2005-08-07 09:57:58.000000000 -0700
++++ 2.6.13-rc5-mm1-dev/drivers/macintosh/therm_pm72.c	2005-08-08 15:06:08.000000000 -0700
+@@ -1678,10 +1678,9 @@ static int main_control_loop(void *x)
+ 		}
+ 
+ 		// FIXME: Deal with signals
+-		set_current_state(TASK_INTERRUPTIBLE);
+ 		elapsed = jiffies - start;
+ 		if (elapsed < HZ)
+-			schedule_timeout(HZ - elapsed);
++			schedule_timeout_interruptible(HZ - elapsed);
+ 	}
+ 
+  out:
