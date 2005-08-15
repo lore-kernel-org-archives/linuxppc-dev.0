@@ -1,16 +1,33 @@
-Return-Path: <mcnernbm@notes.udayton.edu>
-Received: from student03.udayton.edu (student03.udayton.edu [131.238.75.43])
-	by ozlabs.org (Postfix) with ESMTP id D2CE567F3B
+Return-Path: <kjoutwater@raytheon.com>
+Received: from tus-gate4.raytheon.com (tus-gate4.raytheon.com [199.46.245.233])
+	by ozlabs.org (Postfix) with ESMTP id 4CC0367F41
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 16 Aug 2005 06:36:07 +1000 (EST)
+	Tue, 16 Aug 2005 08:50:01 +1000 (EST)
+Received: from ds02t00.directory.ray.com (ds02t00.directory.ray.com
+	[147.25.154.117])
+	by tus-gate4.raytheon.com (8.12.10/8.12.10) with ESMTP id
+	j7FLu7Lo025523 for <linuxppc-embedded@ozlabs.org>;
+	Mon, 15 Aug 2005 14:56:07 -0700 (MST)
+Received: from ds02t00 (localhost [127.0.0.1])
+	by ds02t00.directory.ray.com (Switch-3.1.7/Switch-3.1.0) with ESMTP id
+	j7FLu1PL024369
+	for <linuxppc-embedded@ozlabs.org>; Mon, 15 Aug 2005 21:56:01 GMT
+Received: from ds02t00.directory.ray.com with LMTP by ds02t00
+	(2.0.6/sieved-2-0-build-559)
+	for <linuxppc-embedded@ozlabs.org>; Mon, 15 Aug 2005 21:56:01 +0000
+Received: from tu2-msg04.rsc.raytheon.com (tu2-msg04.RSC.RAYTHEON.COM
+	[147.24.232.105])
+	by ds02t00.directory.ray.com (Switch-3.1.7/Switch-3.1.0) with ESMTP id
+	j7FLtuiA024275
+	sender kjoutwater@raytheon.com for <linuxppc-embedded@ozlabs.org>;
+	Mon, 15 Aug 2005 21:55:56 GMT
 To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Message-ID: <OF5A9E2D07.B1DC1188-ON8525705E.006F8C2E-8525705E.006FC74C@notes.udayton.edu>
-From: mcnernbm@notes.udayton.edu
-Date: Mon, 15 Aug 2005 16:20:56 -0400
-Content-Type: multipart/alternative;
-	boundary="=_alternative 006FC74B8525705E_="
-Subject: GCJ
+From: Keith J Outwater <kjoutwater@raytheon.com>
+Message-ID: <OF688E8333.A7E991BA-ON0725705E.00780121-0725705E.00787A39@mck.us.ray.com>
+Date: Mon, 15 Aug 2005 14:55:56 -0700
+Content-Type: text/plain; charset="US-ASCII"
+Subject: Best kernel for Xilinx VirtexII Pro/PPC405 ?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,34 +38,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 006FC74B8525705E_=
-Content-Type: text/plain; charset="US-ASCII"
+Hello all - 
+I am designing an embedded system using a Xilinx Virtex II Pro FPGA.
+Can anyone point me to the "best" kernel source tree to use ?
+"Best" in this case means:
+1. A 2.4 series kernel with good support for Xilinx peripheral devices 
+(existing Xilinx ML300 support is fine).
+2. Good stability
 
-I have used crosstools to build a cross compiler that support C,C++, and 
-java code.  I have no problems build my kernel and filesystem and what 
-not.  But when I try to build java code using GCJ everything seems to 
-build with no issues.  But when I copie the compiled code to the target 
-device and execute the code I get an an error stating libjava.so can not 
-be found.  I have copied the libjava.so file from my host machine to the 
-target device but can not get the code to see it.
-Any help on how to get rid of this error would be greatly appreciated.
-Thanks
-Brett
---=_alternative 006FC74B8525705E_=
-Content-Type: text/html; charset="US-ASCII"
+By default I'll use the Montavista linuxppc_2.4 tree unless there is a 
+better choice out there.
 
+Thanks!
 
-<br><font size=2 face="sans-serif">I have used crosstools to build a cross
-compiler that support C,C++, and java code. &nbsp;I have no problems build
-my kernel and filesystem and what not. &nbsp;But when I try to build java
-code using GCJ everything seems to build with no issues. &nbsp;But when
-I copie the compiled code to the target device and execute the code I get
-an an error stating libjava.so can not be found. &nbsp;I have copied the
-libjava.so file from my host machine to the target device but can not get
-the code to see it.</font>
-<br><font size=2 face="sans-serif">Any help on how to get rid of this error
-would be greatly appreciated.</font>
-<br><font size=2 face="sans-serif">Thanks</font>
-<br><font size=2 face="sans-serif">Brett</font>
---=_alternative 006FC74B8525705E_=--
+Keith
