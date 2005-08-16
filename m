@@ -1,20 +1,16 @@
-Return-Path: <peter.ryser@xilinx.com>
-Received: from mail6-kan-R.bigfish.com (mail-kan.bigfish.com [63.161.60.29])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 240BE67F3F
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao03.cox.net (fed1rmmtao03.cox.net [68.230.241.36])
+	by ozlabs.org (Postfix) with ESMTP id A92FB67F5A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 16 Aug 2005 14:36:19 +1000 (EST)
-Message-ID: <4301686E.6020904@xilinx.com>
-Date: Mon, 15 Aug 2005 21:15:42 -0700
-From: Peter Ryser <peter.ryser@xilinx.com>
-MIME-Version: 1.0
-To: Keith J Outwater <kjoutwater@raytheon.com>
-References: <OF688E8333.A7E991BA-ON0725705E.00780121-0725705E.00787A39@mck.us.ray.com>
-In-Reply-To: <OF688E8333.A7E991BA-ON0725705E.00780121-0725705E.00787A39@mck.us.ray.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Tue, 16 Aug 2005 15:21:47 +1000 (EST)
+Date: Mon, 15 Aug 2005 22:21:44 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: akpm@osdl.org
+Message-ID: <20050815222144.B28706@cox.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Best kernel for Xilinx VirtexII Pro/PPC405 ?
+Subject: [PATCH] ppc32: fix ppc4xx stb03xxx dma build
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,35 +21,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-You might want to look at Xilinx Application Note 765 (XAPP765, 
-http://www.xilinx.com/bvdocs/appnotes/xapp765.pdf) for some instructions 
-on how to get started with EDK and Linux. All source is published in 
-linuxppc-2.4.
+Fixes build on 4xx stb03xxx when general purpose dma engine support
+is enabled.
 
-- Peter
+Signed-off-by: Matt Porter <mporter@kernel.crashing.org>
 
-
-Keith J Outwater wrote:
-
->Hello all - 
->I am designing an embedded system using a Xilinx Virtex II Pro FPGA.
->Can anyone point me to the "best" kernel source tree to use ?
->"Best" in this case means:
->1. A 2.4 series kernel with good support for Xilinx peripheral devices 
->(existing Xilinx ML300 support is fine).
->2. Good stability
->
->By default I'll use the Montavista linuxppc_2.4 tree unless there is a 
->better choice out there.
->
->Thanks!
->
->Keith
->_______________________________________________
->Linuxppc-embedded mailing list
->Linuxppc-embedded@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
->
->  
->
+diff --git a/arch/ppc/syslib/ppc4xx_dma.c b/arch/ppc/syslib/ppc4xx_dma.c
+--- a/arch/ppc/syslib/ppc4xx_dma.c
++++ b/arch/ppc/syslib/ppc4xx_dma.c
+@@ -620,6 +620,7 @@ ppc4xx_clr_dma_status(unsigned int dmanr
+ 	return DMA_STATUS_GOOD;
+ }
+ 
++#ifdef CONFIG_PPC4xx_EDMA
+ /*
+  * Enables the burst on the channel (BTEN bit in the control/count register)
+  * Note:
+@@ -685,6 +686,11 @@ ppc4xx_set_burst_size(unsigned int dmanr
+ 	return DMA_STATUS_GOOD;
+ }
+ 
++EXPORT_SYMBOL(ppc4xx_enable_burst);
++EXPORT_SYMBOL(ppc4xx_disable_burst);
++EXPORT_SYMBOL(ppc4xx_set_burst_size);
++#endif /* CONFIG_PPC4xx_EDMA */
++
+ EXPORT_SYMBOL(ppc4xx_init_dma_channel);
+ EXPORT_SYMBOL(ppc4xx_get_channel_config);
+ EXPORT_SYMBOL(ppc4xx_set_channel_priority);
+@@ -703,6 +709,4 @@ EXPORT_SYMBOL(ppc4xx_enable_dma_interrup
+ EXPORT_SYMBOL(ppc4xx_disable_dma_interrupt);
+ EXPORT_SYMBOL(ppc4xx_get_dma_status);
+ EXPORT_SYMBOL(ppc4xx_clr_dma_status);
+-EXPORT_SYMBOL(ppc4xx_enable_burst);
+-EXPORT_SYMBOL(ppc4xx_disable_burst);
+-EXPORT_SYMBOL(ppc4xx_set_burst_size);
++
+diff --git a/include/asm-ppc/ppc4xx_dma.h b/include/asm-ppc/ppc4xx_dma.h
+--- a/include/asm-ppc/ppc4xx_dma.h
++++ b/include/asm-ppc/ppc4xx_dma.h
+@@ -285,7 +285,7 @@ typedef uint32_t sgl_handle_t;
+ 
+ #define GET_DMA_POLARITY(chan) (DMAReq_ActiveLow(chan) | DMAAck_ActiveLow(chan) | EOT_ActiveLow(chan))
+ 
+-#elif defined(CONFIG_STBXXX_DMA)		/* stb03xxx */
++#elif defined(CONFIG_STB03xxx)		/* stb03xxx */
+ 
+ #define DMA_PPC4xx_SIZE	4096
+ 
