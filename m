@@ -1,20 +1,15 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 2A58E67F79
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Aug 2005 15:43:34 +1000 (EST)
-In-Reply-To: <20050816.203312.77701192.davem@davemloft.net>
-References: <20050816.203312.77701192.davem@davemloft.net>
-Mime-Version: 1.0 (Apple Message framework v733)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <032E6AED-9456-4271-9B06-C5DCE5970193@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Wed, 17 Aug 2005 00:43:37 -0500
-To: "David S. Miller" <davem@davemloft.net>
-Cc: Andrew Morton <akpm@osdl.org>, Zachary Amsden <zach@vmware.com>,
-	linux-kernel list <linux-kernel@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	"Gala Kumar K.-galak" <galak@freescale.com>
-Subject: Re: [PATCH] ppc32: removed usage of <asm/segment.h> 
+Return-Path: <galak@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id E355F67F8E
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Aug 2005 16:27:22 +1000 (EST)
+Date: Tue, 16 Aug 2005 17:11:44 -0500 (CDT)
+From: Kumar Gala <galak@freescale.com>
+To: Andrew Morton <akpm@osdl.org>
+Message-ID: <Pine.LNX.4.61.0508161711140.5796@nylon.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
+Subject: [PATCH] ppc32: removed find_name.c
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,50 +19,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+No one uses find_name.c and no one seems to care about either.  So I'm
+removing it.
 
-On Aug 16, 2005, at 10:33 PM, David S. Miller wrote:
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
-> From: Paul Mackerras <paulus@samba.org>
-> Date: Wed, 17 Aug 2005 11:38:20 +1000
->
->
->> Kumar Gala writes:
->>
->>
->>> Made <asm/segment.h> a dummy include like it is in ppc64 and removed
->>>
-> any
->
->>> users if it in arch/ppc.
->>>
->>
->> Why can't we just delete asm-ppc/segment.h (and asm-ppc64/segment.h
->> too, for that matter) entirely?
->>
->
-> I concur, in fact we should really kill that thing off entirely.
+---
+commit eb5d5922d749a74f58416ca1a852651e7323449b
+tree cb2371796401d2a7446134cec8f5deaa397e47ed
+parent f63ab7e926d6c5e96de501ec9eac7f28af188a65
+author Kumar K. Gala <kumar.gala@freescale.com> Tue, 16 Aug 2005 17:10:26 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> Tue, 16 Aug 2005 17:10:26 -0500
 
-I'm all for killing it off entirely but got some feedback that on  
-i386 segment.h can be included by userspace programs.
+ arch/ppc/kernel/find_name.c |   48 -------------------------------------------
+ 1 files changed, 0 insertions(+), 48 deletions(-)
 
-Here is the in kernel consumers that are outside of arch specific  
-directories:
-
-./drivers/char/mxser.c:#include <asm/segment.h>
-./drivers/isdn/hisax/hisax.h:#include <asm/segment.h>
-./drivers/media/video/adv7170.c:#include <asm/segment.h>
-./drivers/media/video/adv7175.c:#include <asm/segment.h>
-./drivers/media/video/bt819.c:#include <asm/segment.h>
-./drivers/media/video/bt856.c:#include <asm/segment.h>
-./drivers/media/video/saa7111.c:#include <asm/segment.h>
-./drivers/media/video/saa7114.c:#include <asm/segment.h>
-./drivers/media/video/saa7185.c:#include <asm/segment.h>
-./drivers/serial/68328serial.c:#include <asm/segment.h>
-./drivers/serial/crisv10.c:#include <asm/segment.h>
-./drivers/serial/icom.c:#include <asm/segment.h>
-./drivers/serial/mcfserial.c:#include <asm/segment.h>
-./drivers/video/q40fb.c:#include <asm/segment.h>
-./include/linux/isdn.h:#include <asm/segment.h>
-./sound/oss/os.h:#include <asm/segment.h>
-
-- kumar
+diff --git a/arch/ppc/kernel/find_name.c b/arch/ppc/kernel/find_name.c
+deleted file mode 100644
+--- a/arch/ppc/kernel/find_name.c
++++ /dev/null
+@@ -1,48 +0,0 @@
+-#include <stdio.h>
+-#include <asm/page.h>
+-#include <sys/mman.h>
+-#include <strings.h>
+-/*
+- * Finds a given address in the System.map and prints it out
+- * with its neighbors.  -- Cort
+- */
+-
+-int main(int argc, char **argv)
+-{
+-	unsigned long addr, cmp, i;
+-	FILE *f;
+-	char s[256], last[256];
+-	
+-	if ( argc < 2 )
+-	{
+-		fprintf(stderr, "Usage: %s <address>\n", argv[0]);
+-		return -1;
+-	}
+-
+-	for ( i = 1 ; argv[i] ; i++ )
+-	{
+-		sscanf( argv[i], "%0lx", &addr );
+-		/* adjust if addr is relative to kernelbase */
+-		if ( addr < PAGE_OFFSET )
+-			addr += PAGE_OFFSET;
+-		
+-		if ( (f = fopen( "System.map", "r" )) == NULL )
+-		{
+-			perror("fopen()\n");
+-			exit(-1);
+-		}
+-		
+-		while ( !feof(f) )
+-		{
+-			fgets(s, 255 , f);
+-			sscanf( s, "%0lx", &cmp );
+-			if ( addr < cmp )
+-				break;
+-			strcpy( last, s);
+-		}
+-		
+-		printf( "%s%s", last, s );
+-	}		
+-	fclose(f);
+-	return 0;
+-}
