@@ -1,18 +1,15 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 8006367F33
+Return-Path: <rolandd@cisco.com>
+Received: from sj-iport-1.cisco.com (sj-iport-1-in.cisco.com [171.71.176.70])
+	by ozlabs.org (Postfix) with ESMTP id AD92567F67
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 17 Aug 2005 03:15:28 +1000 (EST)
-Date: Tue, 16 Aug 2005 10:15:25 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Andrew Morton <akpm@osdl.org>
-Message-ID: <20050816171525.GA32497@gate.ebshome.net>
-Mime-Version: 1.0
+	Wed, 17 Aug 2005 07:06:55 +1000 (EST)
+To: mporter@kernel.crashing.org, linuxppc-embedded@ozlabs.org
+From: Roland Dreier <rolandd@cisco.com>
+Date: Tue, 16 Aug 2005 13:56:49 -0700
+Message-ID: <521x4tha7i.fsf@cisco.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-embedded@ozlabs.org
-Subject: [PATCH] ppc32: add 440GX rev.F cputable entry
+Subject: [PATCH] PPC: Don't sleep in flush_dcache_icache_page()
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,27 +20,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Add PowerPC 440GX rev.F cputable entry.
+flush_dcache_icache_page() will be called on an instruction page
+fault.  We can't sleep in the fault handler, so use kmap_atomic()
+instead of just kmap() for the Book-E case.
 
-Signed-off-by: Eugene Surovegin <ebs@ebshome.net>
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
 
-diff --git a/arch/ppc/kernel/cputable.c b/arch/ppc/kernel/cputable.c
---- a/arch/ppc/kernel/cputable.c
-+++ b/arch/ppc/kernel/cputable.c
-@@ -922,6 +922,16 @@ struct cpu_spec	cpu_specs[] = {
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 	},
-+	{ /* 440GX Rev. F */
-+		.pvr_mask		= 0xf0000fff,
-+		.pvr_value		= 0x50000894,
-+		.cpu_name		= "440GX Rev. F",
-+		.cpu_features		= CPU_FTR_SPLIT_ID_CACHE |
-+			CPU_FTR_USE_TB,
-+		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
-+		.icache_bsize		= 32,
-+		.dcache_bsize		= 32,
-+	},
- #endif /* CONFIG_44x */
- #ifdef CONFIG_FSL_BOOKE
- 	{ 	/* e200z5 */
+diff --git a/arch/ppc/mm/init.c b/arch/ppc/mm/init.c
+--- a/arch/ppc/mm/init.c
++++ b/arch/ppc/mm/init.c
+@@ -560,8 +560,16 @@ void flush_dcache_page(struct page *page
+ void flush_dcache_icache_page(struct page *page)
+ {
+ #ifdef CONFIG_BOOKE
+-	__flush_dcache_icache(kmap(page));
+-	kunmap(page);
++	unsigned long flags;
++	void *start;
++
++	local_irq_save(flags);
++
++	start = kmap_atomic(page, KM_PPC_SYNC_PAGE);
++	__flush_dcache_icache(start);
++	kunmap_atomic(start, KM_PPC_SYNC_PAGE);
++
++	local_irq_restore(flags);
+ #elif CONFIG_8xx
+ 	/* On 8xx there is no need to kmap since highmem is not supported */
+ 	__flush_dcache_icache(page_address(page)); 
