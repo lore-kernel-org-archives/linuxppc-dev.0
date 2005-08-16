@@ -1,16 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <473FD762-FB04-4B63-93E9-11931492AC60@freescale.com>
-References: <17153.8284.3721.188488@cargo.ozlabs.ibm.com>
-	<473FD762-FB04-4B63-93E9-11931492AC60@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v622)
-Message-Id: <62a65a7989df38a7e4b1400150dcb2e5@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Date: Tue, 16 Aug 2005 11:44:33 +0200
-To: Kumar Gala <kumar.gala@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Cc: linuxppc64-dev@ozlabs.org, David Edelsohn <dje@watson.ibm.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: CONFIG_FRAME_POINTER on ppc/ppc64?
+Return-Path: <surendra.yadav@softdel.com>
+Received: from softdel.com (unknown [202.68.143.18])
+	by ozlabs.org (Postfix) with ESMTP id 6F14967F33
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Aug 2005 23:36:18 +1000 (EST)
+Received: from surendraw2k ([192.168.10.91]) by softdel.com ([192.168.10.4])
+	with SMTP (MDaemon.PRO.v6.0.2.R)
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Aug 2005 18:49:57 +0530
+From: "Surendra Yadav" <surendra.yadav@softdel.com>
+To: <linuxppc-dev@ozlabs.org>
+Date: Tue, 16 Aug 2005 19:04:54 +0530
+Message-ID: <BPEMKMADCCCPHPEDDKOOMEHFCFAA.surendra.yadav@softdel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Framebuffer driver using SM501 hardware.
+Reply-To: surendra.yadav@softdel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,17 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Because -fomit-frame-pointer and -fno-omit-frame-pointer have no
->> effect on ppc or ppc64, I assume. :)
->
-> I'm assuming that's a guess.  The reason I ask that is my memory 
-> serves correctly r31 is used as the frame pointer if compiled that 
-> way.  Maybe some GCC expert can chime in.  I'll copy David Edelsohn 
-> and see if I get a response :)
+Hi all,
 
-Yes, GPR31 is used as frame pointer.  All optimization
-levels other than -O0 enable -fomit-frame-pointer.  But
--fno-omit-frame-pointer certainly works.
+I am writing framebuffer driver using SM501. This graphics driver chip can
+drive CRT and TFT panel. I have written two seperate framebuffer driver, one
+for CRT and one for TFT Panel.
 
+But I am not able to test both the devices. Any one of them work at a time.
+I have created two files /dev/fb0 and /dev/fb1. These two can be open
+successfully and mmap is also successful from userspace. If I am trying to
+write on fb0 and  fb1 with different data, they displayed on either CRT or
+TFT panel.
 
-Segher
+Can any one help me How to test two different framebuffer devices?
+
+Thanks.
