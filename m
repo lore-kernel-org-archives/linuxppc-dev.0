@@ -1,15 +1,18 @@
-Return-Path: <rolandd@cisco.com>
-Received: from sj-iport-1.cisco.com (sj-iport-1-in.cisco.com [171.71.176.70])
-	by ozlabs.org (Postfix) with ESMTP id AD92567F67
+Return-Path: <solca@guug.org>
+Received: from guug.org (guug.org [168.234.203.30])
+	by ozlabs.org (Postfix) with ESMTP id B8D4367F67
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 17 Aug 2005 07:06:55 +1000 (EST)
-To: mporter@kernel.crashing.org, linuxppc-embedded@ozlabs.org
-From: Roland Dreier <rolandd@cisco.com>
-Date: Tue, 16 Aug 2005 13:56:49 -0700
-Message-ID: <521x4tha7i.fsf@cisco.com>
-MIME-Version: 1.0
+	Wed, 17 Aug 2005 07:13:12 +1000 (EST)
+Date: Tue, 16 Aug 2005 15:12:59 -0600
+To: Matt Porter <mporter@kernel.crashing.org>
+Message-ID: <20050816211259.GB28419@guug.org>
+References: <20050812032819.GA4763@guug.org> <20050815222510.C28706@cox.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Subject: [PATCH] PPC: Don't sleep in flush_dcache_icache_page()
+In-Reply-To: <20050815222510.C28706@cox.net>
+From: Otto Solares <solca@guug.org>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: Redwood-6 and 2.6
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,31 +23,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-flush_dcache_icache_page() will be called on an instruction page
-fault.  We can't sleep in the fault handler, so use kmap_atomic()
-instead of just kmap() for the Book-E case.
+On Mon, Aug 15, 2005 at 10:25:10PM -0700, Matt Porter wrote:
+> On Thu, Aug 11, 2005 at 09:28:19PM -0600, Otto Solares wrote:
+> > Hi!
+> > 
+> > Redwood-6 support in 2.6 is broken.  I subscribed to this
+> > list just to know if somebody is working on it?  2.4.30
+> > works ok.
+> 
+> I went ahead and fixed this compile issue in the following patch:
+> http://ozlabs.org/pipermail/linuxppc-embedded/2005-August/019782.html
 
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
+Excellent!, it compiles now.
 
-diff --git a/arch/ppc/mm/init.c b/arch/ppc/mm/init.c
---- a/arch/ppc/mm/init.c
-+++ b/arch/ppc/mm/init.c
-@@ -560,8 +560,16 @@ void flush_dcache_page(struct page *page
- void flush_dcache_icache_page(struct page *page)
- {
- #ifdef CONFIG_BOOKE
--	__flush_dcache_icache(kmap(page));
--	kunmap(page);
-+	unsigned long flags;
-+	void *start;
-+
-+	local_irq_save(flags);
-+
-+	start = kmap_atomic(page, KM_PPC_SYNC_PAGE);
-+	__flush_dcache_icache(start);
-+	kunmap_atomic(start, KM_PPC_SYNC_PAGE);
-+
-+	local_irq_restore(flags);
- #elif CONFIG_8xx
- 	/* On 8xx there is no need to kmap since highmem is not supported */
- 	__flush_dcache_icache(page_address(page)); 
+Now, when 'make znetboot' in 2.4 there was a zImage.embedded, is the
+same thing as zImage.treebot that appears now in 2.6?
+
+Thank you.
+
+-otto
