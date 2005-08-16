@@ -1,20 +1,20 @@
-Return-Path: <adam@semicircular.net>
-Received: from mail.semicircular.net (214.20.233.220.exetel.com.au
-	[220.233.20.214]) by ozlabs.org (Postfix) with ESMTP id 691BD67F33
+Return-Path: <peter.ryser@xilinx.com>
+Received: from mail6-kan-R.bigfish.com (mail-kan.bigfish.com [63.161.60.29])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 240BE67F3F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 16 Aug 2005 11:48:07 +1000 (EST)
-Message-ID: <43013FA4.4040206@semicircular.net>
-Date: Tue, 16 Aug 2005 11:21:40 +1000
-From: Adam Kent <adam@semicircular.net>
+	Tue, 16 Aug 2005 14:36:19 +1000 (EST)
+Message-ID: <4301686E.6020904@xilinx.com>
+Date: Mon, 15 Aug 2005 21:15:42 -0700
+From: Peter Ryser <peter.ryser@xilinx.com>
 MIME-Version: 1.0
-To: Bastos Fernandez Alexandre <ALEBAS@televes.com>,
-	Pantelis Antoniou <panto@intracom.gr>,
-	Bryan O'Donoghue <typedef@eircom.net>
-References: <51DB8827D393D411BB69003048003F4601B1C220@tvesntr>
-In-Reply-To: <51DB8827D393D411BB69003048003F4601B1C220@tvesntr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Keith J Outwater <kjoutwater@raytheon.com>
+References: <OF688E8333.A7E991BA-ON0725705E.00780121-0725705E.00787A39@mck.us.ray.com>
+In-Reply-To: <OF688E8333.A7E991BA-ON0725705E.00780121-0725705E.00787A39@mck.us.ray.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC885 - USB HCI drivers.
+Subject: Re: Best kernel for Xilinx VirtexII Pro/PPC405 ?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,23 +25,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Bryan O'Donoghue wrote:
+You might want to look at Xilinx Application Note 765 (XAPP765, 
+http://www.xilinx.com/bvdocs/appnotes/xapp765.pdf) for some instructions 
+on how to get started with EDK and Linux. All source is published in 
+linuxppc-2.4.
 
->Pantelis Antoniou wrote:
+- Peter
+
+
+Keith J Outwater wrote:
+
+>Hello all - 
+>I am designing an embedded system using a Xilinx Virtex II Pro FPGA.
+>Can anyone point me to the "best" kernel source tree to use ?
+>"Best" in this case means:
+>1. A 2.4 series kernel with good support for Xilinx peripheral devices 
+>(existing Xilinx ML300 support is fine).
+>2. Good stability
 >
->>Well I have USB host drivers for both 8xx & 82xx working.
->>    
->>
-Bastos Fernandez Alexandre wrote:
-
->Finally, was the patch submitted to the list?
->I have searched deeply both ozlabs and gmane, but I couldn't
->find it ...
+>By default I'll use the Montavista linuxppc_2.4 tree unless there is a 
+>better choice out there.
 >
-I'd be keen for a look at this code as well, even if it's not in the 
-form of a nice patch or if it's still "too hideous for human eyes".  
-It's been a few months, has anyone got something they can post to the 
-list or stick up on the web somewhere?
-
-Thanks in advance,
-Adam Kent
+>Thanks!
+>
+>Keith
+>_______________________________________________
+>Linuxppc-embedded mailing list
+>Linuxppc-embedded@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+>
+>  
+>
