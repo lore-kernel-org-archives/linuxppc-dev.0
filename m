@@ -1,17 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao06.cox.net (fed1rmmtao06.cox.net [68.230.241.33])
+	by ozlabs.org (Postfix) with ESMTP id 31E7C67F5C
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Aug 2005 15:52:27 +1000 (EST)
+Date: Mon, 15 Aug 2005 22:52:24 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Tom Rini <trini@kernel.crashing.org>
+Message-ID: <20050815225224.F28706@cox.net>
+References: <20050810093735.B22586@cox.net>
+	<20050811194307.GW3187@smtp.west.cox.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17153.30822.529374.24144@cargo.ozlabs.ibm.com>
-Date: Tue, 16 Aug 2005 15:23:50 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <200508160403.j7G43Hd29692@makai.watson.ibm.com>
-References: <17153.8284.3721.188488@cargo.ozlabs.ibm.com>
-	<473FD762-FB04-4B63-93E9-11931492AC60@freescale.com>
-	<200508160403.j7G43Hd29692@makai.watson.ibm.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	David Edelsohn <dje@watson.ibm.com>, linuxppc64-dev@ozlabs.org
-Subject: Re: CONFIG_FRAME_POINTER on ppc/ppc64? 
+In-Reply-To: <20050811194307.GW3187@smtp.west.cox.net>;
+	from trini@kernel.crashing.org on Thu, Aug 11, 2005 at 12:43:07PM
+	-0700
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] Use todc on Mot PReP platforms
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,31 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Edelsohn writes:
-
-> Kumar> I'm assuming that's a guess.  The reason I ask that is my memory  
-> Kumar> serves correctly r31 is used as the frame pointer if compiled that  
-> Kumar> way.  Maybe some GCC expert can chime in.  I'll copy David Edelsohn  
-> Kumar> and see if I get a response :)
+On Thu, Aug 11, 2005 at 12:43:07PM -0700, Tom Rini wrote:
+> On Wed, Aug 10, 2005 at 09:37:35AM -0700, Matt Porter wrote:
 > 
-> 	I am missing some context here.  On both 32-bit PowerPC Linux
-> (PowerPC SVR4) and 64-bit PowerPC Linux, GPR r31 is used as the frame
-> pointer.  PowerPC does not have a dedicated frame pointer and the PowerPC
-> ABI does not require an independent frame pointer in a function at all
-> times, so it can be omitted by default.  If the frame pointer is not
-> referenced for any unique needs, uses of the frame pointer are adjusted to
-> reference the stack pointer.  GCC only retains the PowerPC frame pointer
-> when dynamic stack allocation (alloca) is used within a function.
-> -fomit-frame-pointer has no effect on PowerPC because it is enabled by
-> default.
+> > This restores behavior from 2.4 where PReP platforms identified
+> > as Motorola would calibrate the decrementer using the RTC. On
+> > real Motorola PReP hardware this isn't needed. However, in order
+> > to boot a stock 2.6 PReP kernel on qemu (which emulates a Motorola
+> > PReP system) it is necessary to allow it to calibrate the decrementer
+> > using an emulated RTC.  If the decrementer rate is read from
+> > residual data then timing is screwed since a qemu PReP system typically
+> > runs much faster than the original hardware.
+> > 
+> > If anybody has objections to this as the default, let me know. It
+> > still works (as did 2.4) on a couple of my Mot PReP boxes and doesn't
+> > affect the IBM PReP paths. My goal with this is to be able to run
+> > a stock 2.6 defconfig PReP build on qemu.
+> 
+> So, I like this, and not just because I'm playing with qemu as well.
 
-OK, my memory was at fault then.
+Why? It has no other redeeming quality except that it makes qemu work.
+It's better to use residual data versus todc calibration in real machine
+cases since residual data is accurate for this particular value on these
+machines. I'm just curious why you would like this patch outside of
+its qemu value.
 
-The reason for having the kernel config option is that it is
-impossible to get reliable stack traces on x86 without frame pointers.
-On PPC, because the stack frames are always linked together, even if
-you don't use a frame pointer, the frame pointer doesn't help in
-getting stack traces.  Thus there is no point in having the kernel
-config option.
+BTW, it's _possible_ that we might eventually modify the open
+hackware OF to do a timing loop and dynamically fill in the
+residual data time base freq but that's unfamiliar territory and
+this is an easy workaround.
 
-Paul.
+> Leigh, can you run this on any 'interesting' PReP you've got that might
+> tickle a bug here?  Thanks.
+
+Let me know if there's anything more that needs to be tested. Otherwise,
+I plan to send upstream soon.
+
+Thanks,
+Matt
