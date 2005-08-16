@@ -1,33 +1,20 @@
-Return-Path: <kjoutwater@raytheon.com>
-Received: from tus-gate4.raytheon.com (tus-gate4.raytheon.com [199.46.245.233])
-	by ozlabs.org (Postfix) with ESMTP id 4CC0367F41
+Return-Path: <adam@semicircular.net>
+Received: from mail.semicircular.net (214.20.233.220.exetel.com.au
+	[220.233.20.214]) by ozlabs.org (Postfix) with ESMTP id 691BD67F33
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 16 Aug 2005 08:50:01 +1000 (EST)
-Received: from ds02t00.directory.ray.com (ds02t00.directory.ray.com
-	[147.25.154.117])
-	by tus-gate4.raytheon.com (8.12.10/8.12.10) with ESMTP id
-	j7FLu7Lo025523 for <linuxppc-embedded@ozlabs.org>;
-	Mon, 15 Aug 2005 14:56:07 -0700 (MST)
-Received: from ds02t00 (localhost [127.0.0.1])
-	by ds02t00.directory.ray.com (Switch-3.1.7/Switch-3.1.0) with ESMTP id
-	j7FLu1PL024369
-	for <linuxppc-embedded@ozlabs.org>; Mon, 15 Aug 2005 21:56:01 GMT
-Received: from ds02t00.directory.ray.com with LMTP by ds02t00
-	(2.0.6/sieved-2-0-build-559)
-	for <linuxppc-embedded@ozlabs.org>; Mon, 15 Aug 2005 21:56:01 +0000
-Received: from tu2-msg04.rsc.raytheon.com (tu2-msg04.RSC.RAYTHEON.COM
-	[147.24.232.105])
-	by ds02t00.directory.ray.com (Switch-3.1.7/Switch-3.1.0) with ESMTP id
-	j7FLtuiA024275
-	sender kjoutwater@raytheon.com for <linuxppc-embedded@ozlabs.org>;
-	Mon, 15 Aug 2005 21:55:56 GMT
-To: linuxppc-embedded@ozlabs.org
+	Tue, 16 Aug 2005 11:48:07 +1000 (EST)
+Message-ID: <43013FA4.4040206@semicircular.net>
+Date: Tue, 16 Aug 2005 11:21:40 +1000
+From: Adam Kent <adam@semicircular.net>
 MIME-Version: 1.0
-From: Keith J Outwater <kjoutwater@raytheon.com>
-Message-ID: <OF688E8333.A7E991BA-ON0725705E.00780121-0725705E.00787A39@mck.us.ray.com>
-Date: Mon, 15 Aug 2005 14:55:56 -0700
-Content-Type: text/plain; charset="US-ASCII"
-Subject: Best kernel for Xilinx VirtexII Pro/PPC405 ?
+To: Bastos Fernandez Alexandre <ALEBAS@televes.com>,
+	Pantelis Antoniou <panto@intracom.gr>,
+	Bryan O'Donoghue <typedef@eircom.net>
+References: <51DB8827D393D411BB69003048003F4601B1C220@tvesntr>
+In-Reply-To: <51DB8827D393D411BB69003048003F4601B1C220@tvesntr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: MPC885 - USB HCI drivers.
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -38,17 +25,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello all - 
-I am designing an embedded system using a Xilinx Virtex II Pro FPGA.
-Can anyone point me to the "best" kernel source tree to use ?
-"Best" in this case means:
-1. A 2.4 series kernel with good support for Xilinx peripheral devices 
-(existing Xilinx ML300 support is fine).
-2. Good stability
+Bryan O'Donoghue wrote:
 
-By default I'll use the Montavista linuxppc_2.4 tree unless there is a 
-better choice out there.
+>Pantelis Antoniou wrote:
+>
+>>Well I have USB host drivers for both 8xx & 82xx working.
+>>    
+>>
+Bastos Fernandez Alexandre wrote:
 
-Thanks!
+>Finally, was the patch submitted to the list?
+>I have searched deeply both ozlabs and gmane, but I couldn't
+>find it ...
+>
+I'd be keen for a look at this code as well, even if it's not in the 
+form of a nice patch or if it's still "too hideous for human eyes".  
+It's been a few months, has anyone got something they can post to the 
+list or stick up on the web somewhere?
 
-Keith
+Thanks in advance,
+Adam Kent
