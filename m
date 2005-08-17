@@ -1,23 +1,19 @@
-Return-Path: <miklos@szeredi.hu>
-Received: from dorka.pomaz.szeredi.hu (adsl-266.mirage.euroweb.hu
-	[193.226.239.10]) by ozlabs.org (Postfix) with ESMTP id 5C61A67FC9
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Aug 2005 20:08:49 +1000 (EST)
-To: hch@infradead.org
-In-reply-to: <20050817092041.GA12910@infradead.org> (message from Christoph
-	Hellwig on Wed, 17 Aug 2005 10:20:41 +0100)
-References: <20050816.203312.77701192.davem@davemloft.net>
-	<032E6AED-9456-4271-9B06-C5DCE5970193@freescale.com>
-	<20050817083048.GA11892@infradead.org>
-	<E1E5Jii-0004Yc-00@dorka.pomaz.szeredi.hu>
-	<20050817090920.GA12716@infradead.org>
-	<E1E5K1L-0004bH-00@dorka.pomaz.szeredi.hu>
-	<20050817092041.GA12910@infradead.org>
-Message-Id: <E1E5KpP-0004dy-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 17 Aug 2005 12:07:23 +0200
-Cc: akpm@osdl.org, zach@vmware.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, galak@freescale.com, davem@davemloft.net
-Subject: Re: [PATCH] ppc32: removed usage of <asm/segment.h>
+Return-Path: <avolkov@varma-el.com>
+Received: from amanaus.varma-el.com (unknown [195.144.244.147])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 64DB867FCB
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Aug 2005 20:39:21 +1000 (EST)
+Message-ID: <43030D41.3000508@varma-el.com>
+Date: Wed, 17 Aug 2005 14:11:13 +0400
+From: Andrey Volkov <avolkov@varma-el.com>
+MIME-Version: 1.0
+To: Wolfgang Denk <wd@denx.de>
+References: <20050816194825.A62AC353AB5@atlas.denx.de>
+In-Reply-To: <20050816194825.A62AC353AB5@atlas.denx.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, surendra.yadav@softdel.com
+Subject: Re: [F]Framebuffer driver using SM501 hardware.
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,21 +23,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> > They are provided by _one_ kernel, not necessarily the running kernel.
+I (now :)) working on it too.
+
+Unfortunately, due to terrible SM docos/examples,
+I rewrite/write some parts from scratch :(
+(mainly based on Applied Data Systems drivers for PXA).
+Currently my driver(s) in prerelease stage. It provide:
+
+- PCI/bus infra.
+- CRT or LCD fb (dual head in progress,
+  I hope, on next week it will be done).
+- hwd cursor
+- hwd accel (bitblit/fill rect/color expand)
+- I2C/DDC (software, due to silicon bug in SM501)
+- CI (Command List Interpreter) partially supported
+  (problems in PCI mode: when it work as master with
+   MPC5200, some data are lost, needed investigation).
+
+Todo:
+- 16 bpp colormap (needed reverse endian support in fbcon/fbmem)
+- Alpha (have not ideas how to use it in fb/X)
+- Video (same as above)
+- Platform driver (it will not too hard to write it,
+  but all boards, which I have, are PCI based)
+- USB host (in progress)
+- USB slave
+- Full CI support.
+- UART/SPI/AC97....
+
+To whom it is interesting, I could send my current code
+(not too little). And, if smb will wish fix/expand...,
+I could (temporally) create cvs on sf.net.
+
+Wolfgang Denk wrote:
+> In message <43022F05.3050409@anagramm.de> you wrote:
 > 
-> No, they're provided by packages like glibc-kernheaders or similar
-> that are maintained separately.
+>>I was working with the SM501 framebuffer for a while on
+>>linux-2.6.
+> 
+> 
+> ...and we did in the context of our 2.4 kernel.
+> 
+> 
+>>There is a color-mapping issue left (RGB is swapped on powerpc)
+>>and it needs lots of code cleanup or a complete rewrite.
+> 
+> 
+> I think we fixed some of these problems, and I have a couple of other
+> patches sitting in my queue. Anybody interested can (1) have  a  look
+> at our tree and (2) mail me.
+> 
+> Best regards,
+> 
+> Wolfgang Denk
+----------------
+> 
+> In message <BPEMKMADCCCPHPEDDKOOMEHFCFAA.surendra.yadav@softdel.com> you wrote:
+> 
+>>> 
+>>> I am writing framebuffer driver using SM501. This graphics driver chip can
+> 
+> 
+> Why are you re-inventing the wheel?
+Because I (for ex.) don't use nor QT, nor X :) and I use 2.6 kernel.
+Also I need USB/AC97... support.
 
-Yes.  And "maintenance" I presume means "copy" the kernel headers and
-do some cleanup to be compliant to the relevant standards (which the
-kernel maintainers couldn't be bothered to do).
-
-> They're split from the kernel headers and we don't need to keep
-> obsolete junk around.
-
-I agree about obsolete junk.
-
-However statements like "No kernel headers can be included by userland
-anymore" can be slightly misleading.
-
-Miklos
+-- 
+Regards
+Andrey Volkov
