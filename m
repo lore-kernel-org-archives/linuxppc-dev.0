@@ -1,15 +1,16 @@
-Return-Path: <susheel_nuguru@yahoo.co.in>
-Received: from web8505.mail.in.yahoo.com (web8505.mail.in.yahoo.com
-	[202.43.219.167]) by ozlabs.org (Postfix) with SMTP id 5576A67F81
+Return-Path: <susheel.nuguru@mitron.fi>
+Received: from mitron.mitron.fi (mail.mitron.fi [82.116.252.3])
+	by ozlabs.org (Postfix) with ESMTP id 016BA67F73
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 17 Aug 2005 16:14:26 +1000 (EST)
-Message-ID: <20050817061423.34406.qmail@web8505.mail.in.yahoo.com>
-Date: Tue, 16 Aug 2005 23:14:23 -0700 (PDT)
-From: Susheel Raj <susheel_nuguru@yahoo.co.in>
+	Wed, 17 Aug 2005 22:08:16 +1000 (EST)
+From: Nuguru Susheel <susheel.nuguru@mitron.fi>
 To: linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Subject: SDRAM init
+Content-Type: text/plain
+Date: Wed, 17 Aug 2005 15:11:05 +0000
+Message-Id: <1124291465.13335.62.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Sylvain Munaut <tnt@246tNt.com>
+Subject: Bestcomm and FEC problems in 2.4
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,67 +23,21 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 Hi all,
 
- I have been facing problems while writing to SDRAM
-control regsiter. Somehow the hardware doesnt allow me
-to write to SDRAM control register costing me a reboot
-everytime.
+  I know that very few are now using MPC5200 Rev B, even then i dare
+that someone would answer me :-)...
 
-I took the code from u-boot sdram_init and it works
-fine only while i am executing it from the flash.
+  Root NFS doesnt work for me on this core and i was suggested that I
+should use new Bestcomm drivers from Sylvain's 2.6 kernel (I think I
+would need both Bestcomm and FEC drivers).. I am also aware of Andrey
+Volkov's updates of the Bestcomm drivers but, I am using Denx 2.4
+Version. 
 
-I want to leave the SDRAM control register value to be
-0xd04f0000 at setup instead of 0x504f0000.
+  does anyone tried to use this new drivers into 2.4 kernel. If yes
+please give me a hint how to do so, because of difference in the file
+structure of the these versions the solution is definately not straight
+forward and needs a lot of hacking ...
 
-How should I do it??? 
+any suggestions where to start ???
 
-It seems that the control register has to be
-manipulated with some special care, like, precharging
-all banks  before manipulating or something ...
-
-the below code works fine from flash
-void sdram_init()
-{
-        initdram ();
-        /* unlock mode register */
-        *(int *)MPC5XXX_SDRAM_CTRL = 0xd04f0000 |
-hi_addr_bit;
-        /* precharge all banks */
-        *(int *)MPC5XXX_SDRAM_CTRL = 0xd04f0002 |
-hi_addr_bit;
-        /* set mode register */
-
-        *(int *)MPC5XXX_SDRAM_MODE = 0x00cd0000;
-
-        /* precharge all banks */
-        *(int *)MPC5XXX_SDRAM_CTRL = 0xd04f0004 |
-hi_addr_bit;
-        /* auto refresh */
-        *(int *)MPC5XXX_SDRAM_CTRL = 0xd04f0004 |
-hi_addr_bit;
- /* set mode register */
-        *(int *)MPC5XXX_SDRAM_MODE = 0x00cd0000;
- /* normal operation */
-
-        *(int *)MPC5XXX_SDRAM_CTRL = 0x504f0000 |
-hi_addr_bit;
-            
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-             
-}
-
-but If i want to deave MPC5xxx_SDRAM_CTRL to
-0xd04f0000 it doesnt allow me . By the way just for
-reference the address of this register is (MBAR +
-0x0104)
-
-I tried all trial and errors for understanding how to
-manipulating with this register but in vain.
-
-Please do help me ....
-
-
-		
-____________________________________________________
-Start your day with Yahoo! - make it your home page 
-http://www.yahoo.com/r/hs 
- 
+thanks a lot,
+   nSr
