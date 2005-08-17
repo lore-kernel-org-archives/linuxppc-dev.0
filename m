@@ -1,20 +1,19 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.206])
-	by ozlabs.org (Postfix) with ESMTP id 9A36B67F6E
+Return-Path: <solca@guug.org>
+Received: from guug.org (guug.galileo.edu [168.234.203.30])
+	by ozlabs.org (Postfix) with ESMTP id 72F0D67EEE
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 17 Aug 2005 11:53:54 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id i11so65295wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 16 Aug 2005 18:53:53 -0700 (PDT)
-Message-ID: <c3d0340b05081618535468581e@mail.gmail.com>
-Date: Tue, 16 Aug 2005 18:53:53 -0700
-From: Shawn Jin <shawnxjin@gmail.com>
-To: ppcembed <linuxppc-embedded@ozlabs.org>
-In-Reply-To: <c3d0340b050811154148164691@mail.gmail.com>
+	Wed, 17 Aug 2005 12:47:51 +1000 (EST)
+Date: Tue, 16 Aug 2005 20:47:45 -0600
+To: Matt Porter <mporter@kernel.crashing.org>
+Message-ID: <20050817024745.GA30824@guug.org>
+References: <20050812032819.GA4763@guug.org> <20050815222510.C28706@cox.net>
+	<20050816211259.GB28419@guug.org> <20050816141908.A1053@cox.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <c3d0340b050811154148164691@mail.gmail.com>
-Subject: Re: What's wrong with the serial port?
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050816141908.A1053@cox.net>
+From: Otto Solares <solca@guug.org>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: Redwood-6 and 2.6
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,20 +24,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> When the kernel is booting, it gets to the point where console_init()
-> is called, which calls individual early console initialization
-> functions. In my case it's serial8250_console_init(). Before
-> register_console() is called in serial8250_console_init(), everything
-> seems fine because the debugging logs are printed on the serial port.
-> But once register_console() is called, the serial port continues
-> spitting out =E0. See the following message. What's wrong?
+On Tue, Aug 16, 2005 at 02:19:08PM -0700, Matt Porter wrote:
+> On Tue, Aug 16, 2005 at 03:12:59PM -0600, Otto Solares wrote:
+> > Now, when 'make znetboot' in 2.4 there was a zImage.embedded, is the
+> > same thing as zImage.treebot that appears now in 2.6?
+> 
+> Yes, this is the image that boots on the stock OpenBIOS firmware.
+> It has the standard "tree" header on it.
 
-FYI. The problem was caused by the endianess of io mem access. My
-16550-compatible uart port is on a 32-bit bus. The io mem is big
-endian. The current serial8250 driver always call read*/write*() to
-access uart control registers. These functions are implemented for
-little endian access only. So I have to add some awful #ifdef in the
-driver to call big endian access functions.
+Thank you, just one more thing, do you know if the smc91x driver
+works for PPC?  In 2.4 I had to set:
 
-Regards,
--Shawn.
+CONFIG_SMC91111=y
+CONFIG_SMC91111_ADVANCED=y
+CONFIG_SMC91111_BYTE_SWAP=y
+
+Looking in the driver itself I think it was developed for ARM.
+
+I am unable to netboot, I don't have serial console so my only access
+to this little box (MediaMVP) is the net.  Thank you.
+
+-otto
