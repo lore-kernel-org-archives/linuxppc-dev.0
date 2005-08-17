@@ -1,21 +1,15 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao03.cox.net (fed1rmmtao03.cox.net [68.230.241.36])
-	by ozlabs.org (Postfix) with ESMTP id CE53F67F79
+Return-Path: <susheel_nuguru@yahoo.co.in>
+Received: from web8505.mail.in.yahoo.com (web8505.mail.in.yahoo.com
+	[202.43.219.167]) by ozlabs.org (Postfix) with SMTP id 5576A67F81
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 17 Aug 2005 13:17:47 +1000 (EST)
-Date: Tue, 16 Aug 2005 20:17:45 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Otto Solares <solca@guug.org>
-Message-ID: <20050816201745.C2246@cox.net>
-References: <20050812032819.GA4763@guug.org> <20050815222510.C28706@cox.net>
-	<20050816211259.GB28419@guug.org> <20050816141908.A1053@cox.net>
-	<20050817024745.GA30824@guug.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050817024745.GA30824@guug.org>;
-	from solca@guug.org on Tue, Aug 16, 2005 at 08:47:45PM -0600
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: Redwood-6 and 2.6
+	Wed, 17 Aug 2005 16:14:26 +1000 (EST)
+Message-ID: <20050817061423.34406.qmail@web8505.mail.in.yahoo.com>
+Date: Tue, 16 Aug 2005 23:14:23 -0700 (PDT)
+From: Susheel Raj <susheel_nuguru@yahoo.co.in>
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Subject: SDRAM init
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,42 +20,69 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 16, 2005 at 08:47:45PM -0600, Otto Solares wrote:
-> On Tue, Aug 16, 2005 at 02:19:08PM -0700, Matt Porter wrote:
-> > On Tue, Aug 16, 2005 at 03:12:59PM -0600, Otto Solares wrote:
-> > > Now, when 'make znetboot' in 2.4 there was a zImage.embedded, is the
-> > > same thing as zImage.treebot that appears now in 2.6?
-> > 
-> > Yes, this is the image that boots on the stock OpenBIOS firmware.
-> > It has the standard "tree" header on it.
-> 
-> Thank you, just one more thing, do you know if the smc91x driver
-> works for PPC?  In 2.4 I had to set:
+Hi all,
 
-It should work.
+ I have been facing problems while writing to SDRAM
+control regsiter. Somehow the hardware doesnt allow me
+to write to SDRAM control register costing me a reboot
+everytime.
+
+I took the code from u-boot sdram_init and it works
+fine only while i am executing it from the flash.
+
+I want to leave the SDRAM control register value to be
+0xd04f0000 at setup instead of 0x504f0000.
+
+How should I do it??? 
+
+It seems that the control register has to be
+manipulated with some special care, like, precharging
+all banks  before manipulating or something ...
+
+the below code works fine from flash
+void sdram_init()
+{
+        initdram ();
+        /* unlock mode register */
+        *(int *)MPC5XXX_SDRAM_CTRL = 0xd04f0000 |
+hi_addr_bit;
+        /* precharge all banks */
+        *(int *)MPC5XXX_SDRAM_CTRL = 0xd04f0002 |
+hi_addr_bit;
+        /* set mode register */
+
+        *(int *)MPC5XXX_SDRAM_MODE = 0x00cd0000;
+
+        /* precharge all banks */
+        *(int *)MPC5XXX_SDRAM_CTRL = 0xd04f0004 |
+hi_addr_bit;
+        /* auto refresh */
+        *(int *)MPC5XXX_SDRAM_CTRL = 0xd04f0004 |
+hi_addr_bit;
+ /* set mode register */
+        *(int *)MPC5XXX_SDRAM_MODE = 0x00cd0000;
+ /* normal operation */
+
+        *(int *)MPC5XXX_SDRAM_CTRL = 0x504f0000 |
+hi_addr_bit;
+            
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+             
+}
+
+but If i want to deave MPC5xxx_SDRAM_CTRL to
+0xd04f0000 it doesnt allow me . By the way just for
+reference the address of this register is (MBAR +
+0x0104)
+
+I tried all trial and errors for understanding how to
+manipulating with this register but in vain.
+
+Please do help me ....
+
+
+		
+____________________________________________________
+Start your day with Yahoo! - make it your home page 
+http://www.yahoo.com/r/hs 
  
-> CONFIG_SMC91111=y
-> CONFIG_SMC91111_ADVANCED=y
-> CONFIG_SMC91111_BYTE_SWAP=y
-> 
-> Looking in the driver itself I think it was developed for ARM.
-
-Well, the ARM folks were the earliest users of smc9xxxx glued
-onto their parts. There have been multiple drivers over the years
-and then Nico recently unified them into smc91x.  PPC has always
-had PCI Ethernets or on-chips Ethernet (like the other 4xx parts)
-so having a nasty little smc part glued onto a bus isn't that
-popular. :) 
-
-It should still work.  Dale Farnsworth took the time to add the
-proper redwood specific bits to smc91x.h for accessing the regs
-and add the bits to instantiate an smc91x platform device in the
-redwood kernel ports.
-
-> I am unable to netboot, I don't have serial console so my only access
-> to this little box (MediaMVP) is the net.  Thank you.
- 
-What kernel port are you using?  You're trying boot a Redwood 6
-kernel on the MediaMVP?
-
--Matt
