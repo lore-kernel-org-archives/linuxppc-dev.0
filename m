@@ -1,24 +1,17 @@
-Return-Path: <avolkov@varma-el.com>
-Received: from amanaus.varma-el.com (unknown [195.144.244.147])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BFFFF67FB8
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Aug 2005 00:52:40 +1000 (EST)
-Message-ID: <43034F31.3090002@varma-el.com>
-Date: Wed, 17 Aug 2005 18:52:33 +0400
-From: Andrey Volkov <avolkov@varma-el.com>
-MIME-Version: 1.0
-To: Clemens Koller <clemens.koller@anagramm.de>
-References: <20050816194825.A62AC353AB5@atlas.denx.de>	<43030D41.3000508@varma-el.com>	<Pine.LNX.4.62.0508171317540.6073@numbat.sonytel.be>	<43032A76.6080104@varma-el.com>
-	<Pine.LNX.4.62.0508171439060.6073@numbat.sonytel.be>
-	<43034A59.6000008@anagramm.de>
-In-Reply-To: <43034A59.6000008@anagramm.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Linux Frame Buffer Device Development
-	<linux-fbdev-devel@lists.sourceforge.net>, surendra.yadav@softdel.com
-Subject: Re: [F]Framebuffer driver using SM501 hardware.
+Return-Path: <trini@kernel.crashing.org>
+Date: Wed, 17 Aug 2005 08:05:36 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Message-ID: <20050817150536.GN8214@smtp.west.cox.net>
+References: <1124209292.3869.5.camel@localhost.localdomain>
+	<11F30454-6808-44A3-8F5B-F36ED0028EF4@freescale.com>
+	<1124263872.3869.48.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1124263872.3869.48.camel@localhost.localdomain>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] Use platform device for 8250 registration
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,81 +21,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, Aug 17, 2005 at 08:31:11AM +0100, David Woodhouse wrote:
+> On Wed, 2005-08-17 at 01:30 -0500, Kumar Gala wrote:
+> > > We could probably remove all the rest of the crap from asm/serial.h and
+> > > let platforms register their own serial8250 platform devices...
+> 
+> > Hmm, I wondering if we can provide some standard way of handling this  
+> > for the embedded platforms as well.  It would be nice to drop the old  
+> > style of initialization completely and move to using a platform  
+> > device always.
+> 
+> Yes, that's precisely what I meant. Just remove it from the list in
+> serial.h and as Ben says, instantiating a platform device is easy.
+> 
+> static struct plat_serial8250_port my_serial_ports[] = {
+> 	{
+> 		.uartclk = 115200*16,
+> 		.iobase = 0x2f8,
+> 		.irq = 3,
+> 		.flags = ASYNC_BOOT_AUTOCONF;
+> 	},
+> };
 
+So long as you convert arch/ppc/boot/ to this as well, why not (or at
+least being able to grab the infos from these structs somehow).
 
-Clemens Koller wrote:
-> Hi Geert, Andrey and friends...
-> 
-> I am working on ppc, MPC8540, SM501 on PCI,
-> drivers=voyagerfb-0.2.tar.gz from last post.
-> on linux-2.6
-> 
-> Geert wrote:
-> 
->> Sorry, I cannot follow.
->>
->>  1. If it's a palette issue, your setcolreg() routine doesn't fill in
->> correctly
->>     the pseudo palette,
->>  2. If it's a RGB565 vs. BGR565 issue, you don't fill in correctly the
->> offsets
->>     in the color bitfields in fb_var_screeninfo,
->>  3. If it's an endian issue, it's RRRRRGGGGGGBBBBB vs.GGBBBBBRRRRGGGG,
->> right?
->>     And then there's no much we can do...
-> 
-> 
-> It looks for me like 3. = bytes are flipped = an endian issue:
-> In 32 (RGBAlpha) mode (the one we want to use) the colors appear
-> wrong. I get my /dev/fb0 appear as
-> BB GG RR aa BB GG RR aa BB GG RR aa ...
-> 
-> In the 
-> great 
-You're forget qutation here :)
-
-SM501 Databook Version 1.02, Page 2-39, it says:
-> Configuration 2, Endian Control at MMIO_base+0x00005c:
-> write 0x00000000 for little endian or
-> write 0xffffffff for big endian
-> into this register before touching any other register of the sm501.
-> I've tried that, but it didn't change anything on my system. :-(
-> (Well, we can flip the DAC outputs in our hw design ;-)
-As I understand, but I'm not sure, LE/BE controlled only by some GPIO
-pin (GPIO4 was on rev A/B). I try write to this reg too, with same result.
-
-> 
-> Best greets,
-> 
-> Clemens
-> _______________________________
-> R&D Imaging Devices
-> Anagramm GmbH
-> Rupert-Mayer-Str. 45/1
-> 81379 Muenchen
-> Germany
-> 
-> http://www.anagramm.de
-> Phone: +49-89-741518-50
-> Fax: +49-89-741518-19
-> 
-> ------------------------------------------------
-> details:
-> 
-> $ cp red /dev/fb0 gives me a some red color...
-> $ bvi red
-> 00000000  00 00 FF 00 00 00 FF 00 00 00 FF 00 00 00 FF 00 ................
-> 00000010  00 00 FF 00 00 00 FF 00 00 00 FF 00 00 00 FF 00 ................
-> 00000020  00 00 FF 00 00 00 FF 00 00 00 FF 00 00 00 FF 00 ................
-> ...
-> $ cp green /dev/fb0 gives me a some green color...
-> 00 FF 00 00 00 FF 00 00 00 FF 00 00 00 FF 00 00
-> ...
-> $ cp blue /dev/fb0
-> well... blue
-> FF 00 00 00 FF 00 00 00 FF 00 00 00 FF 00 00 00
-> 
+Once everyone is on a flat tree, I don't object to killing all of the
+old-style uart definitions steaming out of <asm-ppc/serial.h>.
 
 -- 
-Regards
-Andrey Volkov
+Tom Rini
+http://gate.crashing.org/~trini/
