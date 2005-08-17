@@ -1,18 +1,26 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutvdomng.kundenserver.de (moutvdom.kundenserver.de
-	[212.227.126.249]) by ozlabs.org (Postfix) with ESMTP id C3F9667FCB
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Aug 2005 21:04:29 +1000 (EST)
-Message-ID: <430319BB.2020801@anagramm.de>
-Date: Wed, 17 Aug 2005 13:04:27 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
-MIME-Version: 1.0
-To: Andrey Volkov <avolkov@varma-el.com>
-References: <20050816194825.A62AC353AB5@atlas.denx.de>
-	<43030D41.3000508@varma-el.com>
-In-Reply-To: <43030D41.3000508@varma-el.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
+Received: from parcelfarce.linux.theplanet.co.uk
+	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4990367FBD
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Aug 2005 21:15:13 +1000 (EST)
+Received: from [2002:d412:e8ba::1] (helo=caramon.arm.linux.org.uk)
+	by parcelfarce.linux.theplanet.co.uk with esmtpsa
+	(TLSv1:DES-CBC3-SHA:168) (Exim 4.43) id 1E5LvZ-0000ut-GZ
+	for linuxppc-dev@ozlabs.org; Wed, 17 Aug 2005 12:17:54 +0100
+Date: Wed, 17 Aug 2005 12:11:28 +0100
+From: Russell King <rmk@arm.linux.org.uk>
+To: David Woodhouse <dwmw2@infradead.org>
+Message-ID: <20050817121128.A19990@flint.arm.linux.org.uk>
+References: <1124209292.3869.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1124209292.3869.5.camel@localhost.localdomain>;
+	from dwmw2@infradead.org on Wed, Aug 17, 2005 at 11:44:38AM +0100
+Sender: Russell King <rmk@arm.linux.org.uk>
 Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [F]Framebuffer driver using SM501 hardware.
+Subject: Re: [PATCH] Use platform device for 8250 registration
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,102 +30,463 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi, Andrey!
+On Wed, Aug 17, 2005 at 11:44:38AM +0100, David Woodhouse wrote:
+> This patch removes the defaults from asm/pc_serial.h and uses the code
+> which already existed for ppc64 to register any ports which are found in
+> the device tree.
 
-It would be great to have our code collected somewhere in a public
-cvs/git archive.
-There are also some patches to add (accelerated) SM501 support to 
-the latest X somewhere in atmosphere:
+Great.  See comments below - not many of them though, most of them
+trivial.
 
-https://bugs.freedesktop.org/attachment.cgi?id=1775
+> --- linux-2.6.12/drivers/serial/8250_of.c~	2005-08-15 21:14:27.000000000 +0100
+> +++ linux-2.6.12/drivers/serial/8250_of.c	2005-08-15 21:20:59.000000000 +0100
+> @@ -0,0 +1,199 @@
+> +#include <linux/kernel.h>
+> +#include <linux/serial.h>
+> +#include <linux/serial_8250.h>
+> +#include <linux/config.h>
+> +#include <linux/module.h>
+> +#include <linux/init.h>
+> +#include <linux/pci.h>
+> +#include <asm/serial.h>
+> +#include <asm/prom.h>
+> +
+> +#if 0
+> +#define DBG(fmt...) printk(KERN_DEBUG fmt)
+> +#else
+> +#define DBG(fmt...) do { } while (0)
+> +#endif
 
-I will be able to help you with some hacking/testing with the
-SM501 on PCI on ppc/MPC8540 in the future.
+pr_debug() ?
 
-Greets,
+> +
+> +/*
+> + * This function can be used by platforms to "find" legacy serial ports.
+> + * It works for "serial" nodes under an "isa" node, and will try to
+> + * respect the "ibm,aix-loc" property if any. It works with up to 8
+> + * ports.
+> + */
+> +
+> +#define MAX_LEGACY_SERIAL_PORTS	8
+> +static int ports_probed = 0;
+> +
+> +static struct plat_serial8250_port serial_ports[MAX_LEGACY_SERIAL_PORTS+1];
+> +static unsigned int old_serial_count;
+> +
+> +void __init generic_find_legacy_serial_ports(u64 *physport,
+> +		unsigned int *default_speed)
+> +{
+> +	struct device_node *np;
+> +	u32 *sizeprop;
+> +
+> +	struct isa_reg_property {
+> +		u32 space;
+> +		u32 address;
+> +		u32 size;
+> +	};
+> +
+> +	DBG(" -> generic_find_legacy_serial_port()\n");
+> +	ports_probed = 1;
+> +
+> +	*physport = 0;
+> +	if (default_speed)
+> +		*default_speed = 0;
+> +
+> +	np = of_find_node_by_path("/");
+> +	if (!np)
+> +		return;
+> +
+> +	/* First fill our array */
+> +	for (np = NULL; (np = of_find_node_by_type(np, "serial"));) {
+> +		struct device_node *isa, *pci;
+> +		struct isa_reg_property *reg;
+> +		unsigned long phys_size, addr_size;
+> +		u64 io_base;
+> +		u32 *rangesp;
+> +		u32 *interrupts, *clk, *spd;
+> +		char *typep;
+> +		int index, rlen, rentsize;
+> +
+> +		/* Ok, first check if it's under an "isa" parent */
+> +		isa = of_get_parent(np);
+> +		if (!isa || strcmp(isa->name, "isa")) {
+> +			DBG("%s: no isa parent found\n", np->full_name);
+> +			continue;
+> +		}
+> +		
 
-Clemens Koller
-_______________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Str. 45/1
-81379 Muenchen
-Germany
+Extraneous two tabs
 
-http://www.anagramm.de
-Phone: +49-89-741518-50
-Fax: +49-89-741518-19
+> +		/* Now look for an "ibm,aix-loc" property that gives us ordering
+> +		 * if any...
+> +		 */
+> +	 	typep = (char *)get_property(np, "ibm,aix-loc", NULL);
+> +
+> +		/* Get the ISA port number */
+> +		reg = (struct isa_reg_property *)get_property(np, "reg", NULL);	
 
+Extraneous tab at the end of this line
 
+> +		if (reg == NULL)
+> +			goto next_port;
+> +		/* We assume the interrupt number isn't translated ... */
+> +		interrupts = (u32 *)get_property(np, "interrupts", NULL);
+> +		/* get clock freq. if present */
+> +		clk = (u32 *)get_property(np, "clock-frequency", NULL);
+> +		/* get default speed if present */
+> +		spd = (u32 *)get_property(np, "current-speed", NULL);
+> +		/* Default to locate at end of array */
+> +		index = old_serial_count; /* end of the array by default */
+> +
+> +		/* If we have a location index, then use it */
+> +		if (typep && *typep == 'S') {
+> +			index = simple_strtol(typep+1, NULL, 0) - 1;
+> +			/* if index is out of range, use end of array instead */
+> +			if (index >= MAX_LEGACY_SERIAL_PORTS)
+> +				index = old_serial_count;
+> +			/* if our index is still out of range, that mean that
+> +			 * array is full, we could scan for a free slot but that
+> +			 * make little sense to bother, just skip the port
+> +			 */
+> +			if (index >= MAX_LEGACY_SERIAL_PORTS)
+> +				goto next_port;
+> +			if (index >= old_serial_count)
+> +				old_serial_count = index + 1;
+> +			/* Check if there is a port who already claimed our slot */
+> +			if (serial_ports[index].iobase != 0) {
+> +				/* if we still have some room, move it, else override */
+> +				if (old_serial_count < MAX_LEGACY_SERIAL_PORTS) {
+> +					DBG("Moved legacy port %d -> %d\n", index,
+> +					    old_serial_count);
+> +					serial_ports[old_serial_count++] =
+> +						serial_ports[index];
+> +				} else {
+> +					DBG("Replacing legacy port %d\n", index);
+> +				}
+> +			}
+> +		}
+> +		if (index >= MAX_LEGACY_SERIAL_PORTS)
+> +			goto next_port;
+> +		if (index >= old_serial_count)
+> +			old_serial_count = index + 1;
+> +
+> +		/* Now fill the entry */
+> +		memset(&serial_ports[index], 0, sizeof(struct plat_serial8250_port));
+> +		serial_ports[index].uartclk = (clk && *clk) ? *clk : BASE_BAUD * 16;
+> +		serial_ports[index].iobase = reg->address;
+> +		serial_ports[index].irq = interrupts ? interrupts[0] : 0;
 
-Andrey Volkov wrote:
-> I (now :)) working on it too.
+Doesn't PPC64 have NO_IRQ ?
+
+> +		serial_ports[index].flags = ASYNC_BOOT_AUTOCONF;
+> +
+> +		DBG("Added legacy port, index: %d, port: %x, irq: %d, clk: %d\n",
+> +		    index,
+> +		    serial_ports[index].iobase,
+> +		    serial_ports[index].irq,
+> +		    serial_ports[index].uartclk);
+> +
+> +		/* Get phys address of IO reg for port 1 */
+> +		if (index != 0)
+> +			goto next_port;
+> +
+> +		pci = of_get_parent(isa);
+> +		if (!pci) {
+> +			DBG("%s: no pci parent found\n", np->full_name);
+> +			goto next_port;
+> +		}
+> +
+> +		rangesp = (u32 *)get_property(pci, "ranges", &rlen);
+> +		if (rangesp == NULL) {
+> +			of_node_put(pci);
+> +			goto next_port;
+> +		}
+> +		rlen /= 4;
+> +
+> +		/* we need the #size-cells of the PCI bridge node itself */
+> +		phys_size = 1;
+> +		sizeprop = (u32 *)get_property(pci, "#size-cells", NULL);
+> +		if (sizeprop != NULL)
+> +			phys_size = *sizeprop;
+> +		/* we need the parent #addr-cells */
+> +		addr_size = prom_n_addr_cells(pci);
+> +		rentsize = 3 + addr_size + phys_size;
+> +		io_base = 0;
+> +		for (;rlen >= rentsize; rlen -= rentsize,rangesp += rentsize) {
+> +			if (((rangesp[0] >> 24) & 0x3) != 1)
+> +				continue; /* not IO space */
+> +			io_base = rangesp[3];
+> +			if (addr_size == 2)
+> +				io_base = (io_base << 32) | rangesp[4];
+> +		}
+> +		if (io_base != 0) {
+> +			*physport = io_base + reg->address;
+> +			if (default_speed && spd)
+> +				*default_speed = *spd;
+> +		}
+> +		of_node_put(pci);
+> +	next_port:
+> +		of_node_put(isa);
+> +	}
+> +
+> +	DBG(" <- generic_find_legacy_serial_port()\n");
+> +}
+> +
+> +static struct platform_device serial_device = {
+> +	.name	= "serial8250",
+> +	.id	= 0,
+> +	.dev	= {
+> +		.platform_data = serial_ports,
+> +	},
+> +};
+> +
+> +static int __init serial_dev_init(void)
+> +{
+> +	u64 phys;
+> +	unsigned int spd;
+> +
+> +	if (!ports_probed)
+> +		generic_find_legacy_serial_ports(&phys, &spd);
+> +	return platform_device_register(&serial_device);
+> +}
+> +arch_initcall(serial_dev_init);
+> +
+> +
+
+Can we kill the two blank lines please?
+
+> --- linux-2.6.12/drivers/serial/Kconfig~	2005-08-11 13:51:50.000000000 +0100
+> +++ linux-2.6.12/drivers/serial/Kconfig	2005-08-15 21:13:41.000000000 +0100
+> @@ -77,6 +77,11 @@ config SERIAL_8250_CS
+>  
+>  	  If unsure, say N.
+>  
+> +config SERIAL_8250_OF
+> +       bool
+> +       default y
+> +       depends on PPC_OF && SERIAL_8250 != n
+
+Wouldn't "depends on PPC_OF && SERIAL_8250" be sufficient?  iirc "bool"
+treats a dependency result of 'm' as 'y'.
+
+> +
+>  config SERIAL_8250_ACPI
+>  	bool "8250/16550 device discovery via ACPI namespace"
+>  	default y if IA64
+> --- linux-2.6.12/arch/ppc64/kernel/setup.c~	2005-08-11 13:52:04.000000000 +0100
+> +++ linux-2.6.12/arch/ppc64/kernel/setup.c	2005-08-15 20:27:25.000000000 +0100
+> @@ -1147,186 +1147,6 @@ void __init setup_default_decr(void)
+>  	lpaca->next_jiffy_update_tb = get_tb() + tb_ticks_per_jiffy;
+>  }
+>  
+> -#ifndef CONFIG_PPC_ISERIES
+> -/*
+> - * This function can be used by platforms to "find" legacy serial ports.
+> - * It works for "serial" nodes under an "isa" node, and will try to
+> - * respect the "ibm,aix-loc" property if any. It works with up to 8
+> - * ports.
+> - */
+> -
+> -#define MAX_LEGACY_SERIAL_PORTS	8
+> -static struct plat_serial8250_port serial_ports[MAX_LEGACY_SERIAL_PORTS+1];
+> -static unsigned int old_serial_count;
+> -
+> -void __init generic_find_legacy_serial_ports(u64 *physport,
+> -		unsigned int *default_speed)
+> -{
+> -	struct device_node *np;
+> -	u32 *sizeprop;
+> -
+> -	struct isa_reg_property {
+> -		u32 space;
+> -		u32 address;
+> -		u32 size;
+> -	};
+> -	struct pci_reg_property {
+> -		struct pci_address addr;
+> -		u32 size_hi;
+> -		u32 size_lo;
+> -	};                                                                        
+
+Lots a space at the end of this line.
+
+> -
+> -	DBG(" -> generic_find_legacy_serial_port()\n");
+> -
+> -	*physport = 0;
+> -	if (default_speed)
+> -		*default_speed = 0;
+> -
+> -	np = of_find_node_by_path("/");
+> -	if (!np)
+> -		return;
+> -
+> -	/* First fill our array */
+> -	for (np = NULL; (np = of_find_node_by_type(np, "serial"));) {
+> -		struct device_node *isa, *pci;
+> -		struct isa_reg_property *reg;
+> -		unsigned long phys_size, addr_size, io_base;
+> -		u32 *rangesp;
+> -		u32 *interrupts, *clk, *spd;
+> -		char *typep;
+> -		int index, rlen, rentsize;
+> -
+> -		/* Ok, first check if it's under an "isa" parent */
+> -		isa = of_get_parent(np);
+> -		if (!isa || strcmp(isa->name, "isa")) {
+> -			DBG("%s: no isa parent found\n", np->full_name);
+> -			continue;
+> -		}
+> -		
+> -		/* Now look for an "ibm,aix-loc" property that gives us ordering
+> -		 * if any...
+> -		 */
+> -	 	typep = (char *)get_property(np, "ibm,aix-loc", NULL);
+> -
+> -		/* Get the ISA port number */
+> -		reg = (struct isa_reg_property *)get_property(np, "reg", NULL);	
+> -		if (reg == NULL)
+> -			goto next_port;
+> -		/* We assume the interrupt number isn't translated ... */
+> -		interrupts = (u32 *)get_property(np, "interrupts", NULL);
+> -		/* get clock freq. if present */
+> -		clk = (u32 *)get_property(np, "clock-frequency", NULL);
+> -		/* get default speed if present */
+> -		spd = (u32 *)get_property(np, "current-speed", NULL);
+> -		/* Default to locate at end of array */
+> -		index = old_serial_count; /* end of the array by default */
+> -
+> -		/* If we have a location index, then use it */
+> -		if (typep && *typep == 'S') {
+> -			index = simple_strtol(typep+1, NULL, 0) - 1;
+> -			/* if index is out of range, use end of array instead */
+> -			if (index >= MAX_LEGACY_SERIAL_PORTS)
+> -				index = old_serial_count;
+> -			/* if our index is still out of range, that mean that
+> -			 * array is full, we could scan for a free slot but that
+> -			 * make little sense to bother, just skip the port
+> -			 */
+> -			if (index >= MAX_LEGACY_SERIAL_PORTS)
+> -				goto next_port;
+> -			if (index >= old_serial_count)
+> -				old_serial_count = index + 1;
+> -			/* Check if there is a port who already claimed our slot */
+> -			if (serial_ports[index].iobase != 0) {
+> -				/* if we still have some room, move it, else override */
+> -				if (old_serial_count < MAX_LEGACY_SERIAL_PORTS) {
+> -					DBG("Moved legacy port %d -> %d\n", index,
+> -					    old_serial_count);
+> -					serial_ports[old_serial_count++] =
+> -						serial_ports[index];
+> -				} else {
+> -					DBG("Replacing legacy port %d\n", index);
+> -				}
+> -			}
+> -		}
+> -		if (index >= MAX_LEGACY_SERIAL_PORTS)
+> -			goto next_port;
+> -		if (index >= old_serial_count)
+> -			old_serial_count = index + 1;
+> -
+> -		/* Now fill the entry */
+> -		memset(&serial_ports[index], 0, sizeof(struct plat_serial8250_port));
+> -		serial_ports[index].uartclk = clk ? *clk : BASE_BAUD * 16;
+> -		serial_ports[index].iobase = reg->address;
+> -		serial_ports[index].irq = interrupts ? interrupts[0] : 0;
+> -		serial_ports[index].flags = ASYNC_BOOT_AUTOCONF;
+> -
+> -		DBG("Added legacy port, index: %d, port: %x, irq: %d, clk: %d\n",
+> -		    index,
+> -		    serial_ports[index].iobase,
+> -		    serial_ports[index].irq,
+> -		    serial_ports[index].uartclk);
+> -
+> -		/* Get phys address of IO reg for port 1 */
+> -		if (index != 0)
+> -			goto next_port;
+> -
+> -		pci = of_get_parent(isa);
+> -		if (!pci) {
+> -			DBG("%s: no pci parent found\n", np->full_name);
+> -			goto next_port;
+> -		}
+> -
+> -		rangesp = (u32 *)get_property(pci, "ranges", &rlen);
+> -		if (rangesp == NULL) {
+> -			of_node_put(pci);
+> -			goto next_port;
+> -		}
+> -		rlen /= 4;
+> -
+> -		/* we need the #size-cells of the PCI bridge node itself */
+> -		phys_size = 1;
+> -		sizeprop = (u32 *)get_property(pci, "#size-cells", NULL);
+> -		if (sizeprop != NULL)
+> -			phys_size = *sizeprop;
+> -		/* we need the parent #addr-cells */
+> -		addr_size = prom_n_addr_cells(pci);
+> -		rentsize = 3 + addr_size + phys_size;
+> -		io_base = 0;
+> -		for (;rlen >= rentsize; rlen -= rentsize,rangesp += rentsize) {
+> -			if (((rangesp[0] >> 24) & 0x3) != 1)
+> -				continue; /* not IO space */
+> -			io_base = rangesp[3];
+> -			if (addr_size == 2)
+> -				io_base = (io_base << 32) | rangesp[4];
+> -		}
+> -		if (io_base != 0) {
+> -			*physport = io_base + reg->address;
+> -			if (default_speed && spd)
+> -				*default_speed = *spd;
+> -		}
+> -		of_node_put(pci);
+> -	next_port:
+> -		of_node_put(isa);
+> -	}
+> -
+> -	DBG(" <- generic_find_legacy_serial_port()\n");
+> -}
+> -
+> -static struct platform_device serial_device = {
+> -	.name	= "serial8250",
+> -	.id	= 0,
+> -	.dev	= {
+> -		.platform_data = serial_ports,
+> -	},
+> -};
+> -
+> -static int __init serial_dev_init(void)
+> -{
+> -	return platform_device_register(&serial_device);
+> -}
+> -arch_initcall(serial_dev_init);
+> -
+> -#endif /* CONFIG_PPC_ISERIES */
+>  
+>  int check_legacy_ioport(unsigned long base_port)
+>  {
+> --- linux-2.6.12/include/asm-ppc/pc_serial.h~	2005-08-15 21:19:32.000000000 +0100
+> +++ linux-2.6.12/include/asm-ppc/pc_serial.h	2005-08-15 21:20:24.000000000 +0100
+> @@ -26,18 +26,3 @@
+>  #define RS_TABLE_SIZE  4
+>  #endif
+>  
+> -/* Standard COM flags (except for COM4, because of the 8514 problem) */
+> -#ifdef CONFIG_SERIAL_DETECT_IRQ
+> -#define STD_COM_FLAGS (ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST | ASYNC_AUTO_IRQ)
+> -#define STD_COM4_FLAGS (ASYNC_BOOT_AUTOCONF | ASYNC_AUTO_IRQ)
+> -#else
+> -#define STD_COM_FLAGS (ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST)
+> -#define STD_COM4_FLAGS ASYNC_BOOT_AUTOCONF
+> -#endif
+> -
+> -#define SERIAL_PORT_DFNS			\
+> -	/* UART CLK   PORT IRQ     FLAGS        */			\
+> -	{ 0, BASE_BAUD, 0x3F8, 4, STD_COM_FLAGS },	/* ttyS0 */	\
+> -	{ 0, BASE_BAUD, 0x2F8, 3, STD_COM_FLAGS },	/* ttyS1 */	\
+> -	{ 0, BASE_BAUD, 0x3E8, 4, STD_COM_FLAGS },	/* ttyS2 */	\
+> -	{ 0, BASE_BAUD, 0x2E8, 3, STD_COM4_FLAGS },	/* ttyS3 */
 > 
-> Unfortunately, due to terrible SM docos/examples,
-> I rewrite/write some parts from scratch :(
-> (mainly based on Applied Data Systems drivers for PXA).
-> Currently my driver(s) in prerelease stage. It provide:
-> 
-> - PCI/bus infra.
-> - CRT or LCD fb (dual head in progress,
->   I hope, on next week it will be done).
-> - hwd cursor
-> - hwd accel (bitblit/fill rect/color expand)
-> - I2C/DDC (software, due to silicon bug in SM501)
-> - CI (Command List Interpreter) partially supported
->   (problems in PCI mode: when it work as master with
->    MPC5200, some data are lost, needed investigation).
-> 
-> Todo:
-> - 16 bpp colormap (needed reverse endian support in fbcon/fbmem)
-> - Alpha (have not ideas how to use it in fb/X)
-> - Video (same as above)
-> - Platform driver (it will not too hard to write it,
->   but all boards, which I have, are PCI based)
-> - USB host (in progress)
-> - USB slave
-> - Full CI support.
-> - UART/SPI/AC97....
-> 
-> To whom it is interesting, I could send my current code
-> (not too little). And, if smb will wish fix/expand...,
-> I could (temporally) create cvs on sf.net.
-> 
-> Wolfgang Denk wrote:
-> 
->>In message <43022F05.3050409@anagramm.de> you wrote:
->>
->>
->>>I was working with the SM501 framebuffer for a while on
->>>linux-2.6.
->>
->>
->>...and we did in the context of our 2.4 kernel.
->>
->>
->>
->>>There is a color-mapping issue left (RGB is swapped on powerpc)
->>>and it needs lots of code cleanup or a complete rewrite.
->>
->>
->>I think we fixed some of these problems, and I have a couple of other
->>patches sitting in my queue. Anybody interested can (1) have  a  look
->>at our tree and (2) mail me.
->>
->>Best regards,
->>
->>Wolfgang Denk
-> 
-> ----------------
-> 
->>In message <BPEMKMADCCCPHPEDDKOOMEHFCFAA.surendra.yadav@softdel.com> you wrote:
->>
->>
->>>>I am writing framebuffer driver using SM501. This graphics driver chip can
->>
->>
->>Why are you re-inventing the wheel?
-> 
-> Because I (for ex.) don't use nor QT, nor X :) and I use 2.6 kernel.
-> Also I need USB/AC97... support.
-> 
+
+-- 
+Russell King
