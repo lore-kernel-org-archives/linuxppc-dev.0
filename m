@@ -1,20 +1,26 @@
-Return-Path: <miklos@szeredi.hu>
-Received: from dorka.pomaz.szeredi.hu (adsl-266.mirage.euroweb.hu
-	[193.226.239.10]) by ozlabs.org (Postfix) with ESMTP id 4CEAF67FBA
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Aug 2005 19:16:43 +1000 (EST)
-To: hch@infradead.org
-In-reply-to: <20050817090920.GA12716@infradead.org> (message from Christoph
-	Hellwig on Wed, 17 Aug 2005 10:09:20 +0100)
+Return-Path: <SRS0+012e81371fdbb5a82166+724+infradead.org+hch@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5F74C67FC1
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Aug 2005 19:20:49 +1000 (EST)
+Date: Wed, 17 Aug 2005 10:20:41 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Message-ID: <20050817092041.GA12910@infradead.org>
 References: <20050816.203312.77701192.davem@davemloft.net>
 	<032E6AED-9456-4271-9B06-C5DCE5970193@freescale.com>
 	<20050817083048.GA11892@infradead.org>
 	<E1E5Jii-0004Yc-00@dorka.pomaz.szeredi.hu>
 	<20050817090920.GA12716@infradead.org>
-Message-Id: <E1E5K1L-0004bH-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 17 Aug 2005 11:15:39 +0200
+	<E1E5K1L-0004bH-00@dorka.pomaz.szeredi.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <E1E5K1L-0004bH-00@dorka.pomaz.szeredi.hu>
 Cc: akpm@osdl.org, zach@vmware.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, galak@freescale.com, davem@davemloft.net
+	hch@infradead.org, linuxppc-dev@ozlabs.org, galak@freescale.com,
+	davem@davemloft.net
 Subject: Re: [PATCH] ppc32: removed usage of <asm/segment.h>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,24 +31,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> > There are perfectly valid uses of kernel headers from userspace.  For
-> > example if a program uses the netlink interface, it should include
-> > <linux/netlink.h>.  It's the interface definition after all.
-> > 
-> > Glibc headers also include <linux/*> and <asm/*> in quite few places.
-> 
-> But these files in /usr/include/ aren't provided by the kernel anymore.
+On Wed, Aug 17, 2005 at 11:15:39AM +0200, Miklos Szeredi wrote:
+> They are provided by _one_ kernel, not necessarily the running kernel.
 
-They are provided by _one_ kernel, not necessarily the running kernel.
-
-That doesn't make them any less a kernel header.
-
-So if some userspace program depends on header <linux/x.h> to get the
-interface definition for feature x, and you remove <linux/x.h> from
-the current kernel, it _will_ break the userspace program some time
-later, when glibc picks up the new kernel.
-
-Having said that that, <asm/segment.h> may or may not be validly
-exported to userspace.
-
-Miklos
+No, they're provided by packages like glibc-kernheaders or similar
+that are maintained separately.  They're split from the kernel headers
+and we don't need to keep obsolete junk around.
