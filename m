@@ -1,20 +1,11 @@
-Return-Path: <vijesh.vh@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.199])
-	by ozlabs.org (Postfix) with ESMTP id 483BC67FED
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Aug 2005 21:13:14 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id i11so330275wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Aug 2005 04:13:13 -0700 (PDT)
-Message-ID: <8e78982e050818040710e8c316@mail.gmail.com>
-Date: Thu, 18 Aug 2005 16:37:05 +0530
-From: Vijesh VH <vijesh.vh@gmail.com>
-To: rmk@arm.linux.org.uk, greg@censoft.com, linuxppc-embedded@ozlabs.org,
-	Linus.Torvalds@helsinki.fi
+Return-Path: <sanjeevig@gmail.com>
+Message-ID: <37c1be9b050818044671528ae9@mail.gmail.com>
+Date: Thu, 18 Aug 2005 17:16:19 +0530
+From: Sanjeevi Gopal <sanjeevig@gmail.com>
+To: Linuxppc-embedded@ozlabs.org
 Mime-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_5045_33323186.1124363225545"
-Subject: Regarding Keyboard events mapping in different consoles
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: How to implementing CLI using bison and FLEX
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,58 +16,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_5045_33323186.1124363225545
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+HI,
 
-Hi,
-I am currently working on Powerpc405 Processor. Here I have two interfaces=
-=20
-like serial Interface and IR Interface.
-When I boot the kernel using the Serial console what ever i type from the=
-=20
-keyboard(on a PC) using minicom the serial data transfer takes place in=20
-kernel , the kernel decodes the key events of serial console( serial=20
-interface).=20
-Now, I have built the IR Driver which access the handle_scancode function i=
-n=20
-the kernel (keyboard.c) by passing the required scan codes and status of th=
-e=20
-keys.
-The problem here is What ever i type using IR Keyboard appears on my VC=20
-(virtual console or Frame buffer Device) . How do I make IR key=20
-events(handle_scancode) to be handled by the Serial console's keyboard part=
-.
 
-Please do guide me how to proceed.
-
+        I am currenly working on mpc850 processor.I wanted to
+implement a Command Line interface. I like implement it using bison
+and flex tool. If anyone is familar or already implemented plz help me
 
 --=20
-Thanks and Regards,
-Vijesh V H
-
-------=_Part_5045_33323186.1124363225545
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-Hi,<br>
-&nbsp;I am currently working on Powerpc405 Processor. Here I have two inter=
-faces like serial Interface and IR Interface.<br>
-When I boot the kernel using the Serial console what ever i type from
-the keyboard(on a PC) using minicom the serial data transfer takes
-place in kernel , the kernel decodes the key events of serial console(
-serial interface). <br>
-&nbsp;Now, I have built the IR Driver which access the handle_scancode
-function in the kernel (keyboard.c) by passing the required scan codes
-and status of the keys.<br>
-&nbsp;The problem here is What ever i type using IR Keyboard appears on
-my VC (virtual console or&nbsp; Frame buffer Device) . How do I make IR
-key events(handle_scancode) to be handled by the Serial console's
-keyboard part.<br>
-<br>
-Please do guide me how to proceed.<br>
-<br clear=3D"all"><br>-- <br>Thanks and Regards,<br>Vijesh V H=20
-
-------=_Part_5045_33323186.1124363225545--
+With Regards,
+Sanjeevi G
