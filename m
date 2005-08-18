@@ -1,18 +1,16 @@
-Return-Path: <som_kadam1@rediffmail.com>
-Received: from rediffmail.com (unknown [202.54.124.216])
-	by ozlabs.org (Postfix) with SMTP id 6BC9567FC1
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Aug 2005 17:00:48 +1000 (EST)
-Date: 18 Aug 2005 06:54:36 -0000
-Message-ID: <20050818065436.23051.qmail@webmail50.rediffmail.com>
+Return-Path: <g.jaeger@sysgo.com>
+From: Gerhard Jaeger <g.jaeger@sysgo.com>
+To: linuxppc-embedded@ozlabs.org,
+	somshekar chandrashekar kadam <som_kadam1@rediffmail.com>
+Date: Thu, 18 Aug 2005 09:14:22 +0200
+References: <20050818065436.23051.qmail@webmail50.rediffmail.com>
+In-Reply-To: <20050818065436.23051.qmail@webmail50.rediffmail.com>
 MIME-Version: 1.0
-From: "somshekar chandrashekar kadam" <som_kadam1@rediffmail.com>
-To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200508180914.22177.g.jaeger@sysgo.com>
 Cc: linuxppc-embedded-request@ozlabs.org
-Content-type: multipart/alternative;
-	boundary="Next_1124348076---0-202.54.124.216-23048"
-Subject: linux2.6 crosscompiler setup
-Reply-To: somshekar chandrashekar kadam <som_kadam1@rediffmail.com>
+Subject: Re: linux2.6 crosscompiler setup
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,37 +21,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
- This is a multipart mime message
+On Thursday 18 August 2005 08:54, somshekar chandrashekar kadam wrote:
+>  =A0HI ,
 
+hey, there's no need to ask twice if you did not get an answer within 4 min=
+utes!
 
---Next_1124348076---0-202.54.124.216-23048
-Content-type: text/plain;
-	charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> need to set the cross compiler for Linux 2.6 PPC from scratch on X86 host=
+, is there any howto or anyother document ,=20
+> i saw only denx eldk supporting it .=20
 
- =A0HI ,=0A=0Aneed to set the cross compiler for Linux 2.6 PPC from scratch=
- on X86 host  , is there any howto or anyother document , i saw only denx e=
-ldk supporting it . wanted to build entire cross compiler from scratch , pl=
-ease direct me to any good link if it is there , tried to open the link giv=
-en on Embedded PowerPC linux howto , that page doesnt exist anymore ,please=
- suggest guys which one is better  =0A=0AThanks In Advance =0A=0ANeelu =0A
---Next_1124348076---0-202.54.124.216-23048
-Content-type: text/html;
-	charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+guess you didn't search carefully enough ;)
 
-<P>=0A&nbsp; HI ,<BR>=0A<BR>=0Aneed to set the cross compiler for Linux 2.6=
- PPC from scratch on X86 host&nbsp; , is there any howto or anyother docume=
-nt , i saw only denx eldk supporting it . wanted to build entire cross comp=
-iler from scratch , please direct me to any good link if it is there , trie=
-d to open the link given on Embedded PowerPC linux howto , that page doesnt=
- exist anymore ,please suggest guys which one is better&nbsp; <BR>=0A<BR>=
-=0AThanks In Advance <BR>=0A<BR>=0ANeelu <BR>=0A=0A</P>=0A<br><br>=0A<a hre=
-f=3D"http://adworks.rediff.com/cgi-bin/AdWorks/sigclick.cgi/www.rediff.com/=
-signature-home.htm/1507191490@Middle5?PARTNER=3D3"><IMG SRC=3D"http://adwor=
-ks.rediff.com/cgi-bin/AdWorks/sigimpress.cgi/www.rediff.com/signature-home.=
-htm/1963059423@Middle5?OAS_query=3Dnull&PARTNER=3D3" BORDER=3D0 VSPACE=3D0 =
-HSPACE=3D0></a>=0A
---Next_1124348076---0-202.54.124.216-23048--
+> wanted to build entire cross compiler from scratch , please direct me to =
+any good link if it is there ,=20
+> tried to open the link given on Embedded PowerPC linux howto , that page =
+doesnt exist anymore ,please suggest guys which one is better =20
+
+he, what about google?
+http://www.google.de/search?hl=3Dde&ie=3DISO-8859-1&q=3Dcross%2Bcompiler%2B=
+scratch%2Blinux%2Bppc&btnG=3DGoogle-Suche&meta=3D
+
+Anyway, try: http://www.kegel.com/crosstool/
+
+Ciao,
+  Gerhard
+
+=2D-=20
+Gerhard Jaeger <gjaeger@sysgo.com>           =20
+SYSGO AG                      Embedded and Real-Time Software
+www.sysgo.com | www.elinos.com | www.pikeos.com | www.osek.de=20
