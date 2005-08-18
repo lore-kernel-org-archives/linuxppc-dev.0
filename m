@@ -1,20 +1,19 @@
-Return-Path: <glikely@gmail.com>
-Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.204])
-	by ozlabs.org (Postfix) with ESMTP id 8F251680A5
+Return-Path: <smiling_23@nerdshack.com>
+Received: from karen.nerdshack.com (karen.nerdshack.com [209.189.235.41])
+	by ozlabs.org (Postfix) with ESMTP id BFC1E680A6
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 19 Aug 2005 16:18:31 +1000 (EST)
-Received: by zproxy.gmail.com with SMTP id i1so401132nzh
+	Fri, 19 Aug 2005 16:34:53 +1000 (EST)
+Received: from dispatchd.nerdshack.com (julie.nerdshack.com [209.189.235.39])
+	by karen.nerdshack.com (Postfix) with SMTP id E681E1E38C8
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Aug 2005 23:18:29 -0700 (PDT)
-Date: Fri, 19 Aug 2005 00:15:08 -0600
-To: ????????? <rober@opnet.com.tw>, linuxppc-embedded@ozlabs.org
-Message-ID: <20050819061508.GA28537@siegfried.thelikelysolution.ca>
-References: <1124416918.6752.1.camel@banana>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1124416918.6752.1.camel@banana>
-From: Grant Likely <glikely@gmail.com>
-Subject: Re: How to build more than 16M ramdisk for u-boot
+	Fri, 19 Aug 2005 00:59:28 -0500 (CDT)
+Message-ID: <430513DD.1080108@nerdshack.com>
+Date: Thu, 18 Aug 2005 23:03:57 +0000
+From: smiling_23 <smiling_23@nerdshack.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Timer modification
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,17 +24,11 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 19, 2005 at 10:01:58AM +0800, ????????? wrote:
-> Hi all:
-> 
->     I found if i build ramdisk more than 16M, i'll got error at using
-> mke2fs command.
-> 
-> dd if=/dev/zero of=ramdisk bs=1024k count=20
-> 
-> /sbin/mke2fs -F m0 ramdisk
-> mke2fs 1.36 (05-Feb-2005)
-> mke2fs: bad blocks count - ramdisk
-typo?
-
-try: /sbin/mke2fs -F -m0 ramdisk
+Hi all,
+         Can any one know how the "timer_adj" calculation is working in 
+timer.c in linuxkernle2.6.12.5
+If we change the HZ value to more than 1000. What hapens to the wall clock.
+And  i have seen different "time_adj" calculations for HZ 100 and 1000. 
+How to change this calculation for new HZ value.
+Thanks,
+Cjag
