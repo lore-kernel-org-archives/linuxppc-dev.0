@@ -1,20 +1,25 @@
-Return-Path: <peter.ryser@xilinx.com>
-Received: from mail36-res-R.bigfish.com (mail-res.bigfish.com [63.161.60.61])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 58B8B67FEB
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao01.cox.net (fed1rmmtao01.cox.net [68.230.241.38])
+	by ozlabs.org (Postfix) with ESMTP id 56C0567FE1
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 19 Aug 2005 00:45:05 +1000 (EST)
-Message-ID: <43049D99.6090908@xilinx.com>
-Date: Thu, 18 Aug 2005 07:39:21 -0700
-From: Peter Ryser <peter.ryser@xilinx.com>
-MIME-Version: 1.0
-To: Keith J Outwater <kjoutwater@raytheon.com>
-References: <OF420A7A65.554F5D8B-ON0725705F.00572C9A-0725705F.00575400@mck.us.ray.com>
-In-Reply-To: <OF420A7A65.554F5D8B-ON0725705F.00572C9A-0725705F.00575400@mck.us.ray.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Best kernel for Xilinx VirtexII Pro/PPC405 ?
+	Fri, 19 Aug 2005 01:03:02 +1000 (EST)
+Received: from liberty.homelinux.org ([70.190.160.125]) by fed1rmmtao01.cox.net
+	(InterMail vM.6.01.04.00 201-2131-118-20041027) with ESMTP id
+	<20050818150259.KVCJ19627.fed1rmmtao01.cox.net@liberty.homelinux.org>
+	for <linuxppc-embedded@ozlabs.org>; Thu, 18 Aug 2005 11:02:59 -0400
+Received: (from mmporter@localhost)
+	by liberty.homelinux.org (8.9.3/8.9.3/Debian 8.9.3-21) id IAA14781
+	for linuxppc-embedded@ozlabs.org; Thu, 18 Aug 2005 08:03:01 -0700
+Date: Thu, 18 Aug 2005 08:03:01 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: linuxppc-embedded@ozlabs.org
+Message-ID: <20050818080301.F14235@cox.net>
+References: <20050817200547.GA21017@siegfried.thelikelysolution.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050817200547.GA21017@siegfried.thelikelysolution.ca>;
+	from glikely@gmail.com on Wed, Aug 17, 2005 at 02:05:47PM -0600
+Subject: Re: [PATCH] Fix for TLB errata on early Xilinx Virtex-II Pro silicon
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,13 +30,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Wed, Aug 17, 2005 at 02:05:47PM -0600, Grant Likely wrote:
+>  config EMBEDDEDBOOT
+>         bool
+> -       depends on EP405 || XILINX_ML300
+> +       depends on EP405 || VIRTEX_II_PRO
+>         default y
+> 
 
-> I am running all of my development tools (EDK, ISE, ELDK, etc...) under 
->Fedora Core 4, so I am looking for a publicly accessible kernel source 
->tree that best supports the PPC405 in the Virtex II Pro.
->
-Keep in mind that EDK and ISE are not "officially" supported on FC4. 
-Anyway, with EDK, ISE, and ELDK you seem to have all that is needed to 
-get started with Linux on Virtex-II Pro and Virtex-4.
+Grant,
 
-- Peter
+Can you post another patch without this hunk?..as Andrei pointed
+out, it's a board specific feature.
+
+Otherwise, looks good to go upstream.
+
+-Matt
