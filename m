@@ -1,19 +1,19 @@
-Return-Path: <glikely@gmail.com>
-Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.196])
-	by ozlabs.org (Postfix) with ESMTP id A7F8C67F94
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Aug 2005 01:40:52 +1000 (EST)
-Received: by zproxy.gmail.com with SMTP id 12so290585nzp
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Aug 2005 08:40:51 -0700 (PDT)
-Date: Thu, 18 Aug 2005 09:31:02 -0600
-To: somshekar chandrashekar kadam <som_kadam1@rediffmail.com>,
-	linuxppc-dev@ozlabs.org
-Message-ID: <20050818153102.GA21401@siegfried.thelikelysolution.ca>
-References: <20050818065554.28998.qmail@webmail30.rediffmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050818065554.28998.qmail@webmail30.rediffmail.com>
-From: Grant Likely <glikely@gmail.com>
-Subject: Re: linuxppc cross compiler
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 3A38168050
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Aug 2005 02:25:29 +1000 (EST)
+In-Reply-To: <E1E5KpP-0004dy-00@dorka.pomaz.szeredi.hu>
+References: <E1E5KpP-0004dy-00@dorka.pomaz.szeredi.hu>
+Mime-Version: 1.0 (Apple Message framework v734)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <A4C8B92D-B390-4BF8-A6D5-106ACBD0E716@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Thu, 18 Aug 2005 11:25:19 -0500
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@osdl.org, zach@vmware.com, linux-kernel@vger.kernel.org,
+	hch@infradead.org, linuxppc-dev@ozlabs.org,
+	"Gala Kumar K.-galak" <galak@freescale.com>, davem@davemloft.net
+Subject: Re: [PATCH] ppc32: removed usage of <asm/segment.h>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,19 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 18, 2005 at 06:55:54AM -0000, somshekar chandrashekar kadam wrote:
->  HI ,
-> 
-> need to set the cross compiler for Linux 2.6 PPC from scratch on X86 host  , is there any howto or anyother document , i saw only denx eldk supporting it . wanted to build entire cross compiler from scratch , please direct me to any good link if it is there , tried to open the link given on Embedded PowerPC linux howto , that page doesnt exist anymore ,please suggest guys which one is better  
 
-I second te recommendation for crosstool.  You COULD unpack and build
-binutils/gcc/glibc step by step, but you really don't want to unless you
-enjoy beating you head against the wall.
+On Aug 17, 2005, at 5:07 AM, Miklos Szeredi wrote:
 
-http://www.kegel.com/crosstool
+>>> They are provided by _one_ kernel, not necessarily the running
+>>>
+> kernel.
+>
+>>
+>> No, they're provided by packages like glibc-kernheaders or similar
+>> that are maintained separately.
+>>
+>
+> Yes.  And "maintenance" I presume means "copy" the kernel headers and
+> do some cleanup to be compliant to the relevant standards (which the
+> kernel maintainers couldn't be bothered to do).
+>
+>
+>> They're split from the kernel headers and we don't need to keep
+>> obsolete junk around.
+>>
+>
+> I agree about obsolete junk.
+>
+> However statements like "No kernel headers can be included by userland
+> anymore" can be slightly misleading.
 
-Also, subscribe to the crossgcc mailing list:
-http://sources.redhat.com/ml/crossgcc/
+So after all of this its not clear to me if its acceptable to kill  
+all users of <asm/segment.h> in the kernel and to move code that  
+exists in <asm/segment.h> to <asm/uaccess.h> for arch's that need it.
 
-Cheers,
-g.
+- kumar
