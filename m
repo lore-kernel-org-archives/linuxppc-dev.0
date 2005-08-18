@@ -1,22 +1,18 @@
-Return-Path: <nish.aravamudan@gmail.com>
-Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.196])
-	by ozlabs.org (Postfix) with ESMTP id 4E4F467FB5
+Return-Path: <som_kadam1@rediffmail.com>
+Received: from rediffmail.com (unknown [202.54.124.179])
+	by ozlabs.org (Postfix) with SMTP id AAB6267FC3
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Aug 2005 15:48:51 +1000 (EST)
-Received: by zproxy.gmail.com with SMTP id i1so237421nzh
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 17 Aug 2005 22:48:51 -0700 (PDT)
-Message-ID: <29495f1d0508172242734e1c99@mail.gmail.com>
-Date: Wed, 17 Aug 2005 22:42:36 -0700
-From: Nish Aravamudan <nish.aravamudan@gmail.com>
-To: Kumar Gala <galak@freescale.com>
-In-Reply-To: <Pine.LNX.4.61.0508082239180.5117@nylon.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <Pine.LNX.4.61.0508082239180.5117@nylon.am.freescale.net>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] cpm_uart: Fix dpram allocation and non-console uarts
+	Thu, 18 Aug 2005 16:57:10 +1000 (EST)
+Date: 18 Aug 2005 06:50:58 -0000
+Message-ID: <20050818065058.27621.qmail@webmail10.rediffmail.com>
+MIME-Version: 1.0
+From: "somshekar chandrashekar kadam" <som_kadam1@rediffmail.com>
+To: linuxppc-embedded@ozlabs.org
+Cc: linuxppc-embedded-request@ozlabs.org
+Content-type: multipart/alternative;
+	boundary="Next_1124347858---0-202.54.124.179-27328"
+Subject: linux2.6 crosscompiler setup
+Reply-To: somshekar chandrashekar kadam <som_kadam1@rediffmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,74 +23,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 8/8/05, Kumar Gala <galak@freescale.com> wrote:
-> (A believe Marcelo would like to see this in 2.6.13, but I'll let him
-> fight over that ;)
->=20
-> * Makes dpram allocations work
-> * Makes non-console UART work on both 8xx and 82xx
-> * Fixed whitespace in files that were touched
->=20
-> Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
-> Signed-off-by: Pantelis Antoniou <panto@intracom.gr>
-> Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
->=20
-> ---
-> commit 1de80554bcae877dce3b6d878053eb092ef65c72
-> tree aba124824607fea1070e86501ddccc9decce362d
-> parent ad81111fd554c9d3c14c0a50885e076af2f9ac9b
-> author Kumar K. Gala <kumar.gala@freescale.com> Mon, 08 Aug 2005 22:35:39=
- -0500
-> committer Kumar K. Gala <kumar.gala@freescale.com> Mon, 08 Aug 2005 22:35=
-:39 -0500
+ This is a multipart mime message
 
-<snip>
 
-> diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm=
-_uart/cpm_uart_core.c
-> --- a/drivers/serial/cpm_uart/cpm_uart_core.c
-> +++ b/drivers/serial/cpm_uart/cpm_uart_core.c
+--Next_1124347858---0-202.54.124.179-27328
+Content-type: text/plain;
+	charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-<snip>
+ =A0HI ,=0A=0Aneed to set the cross compiler for Linux 2.6 PPC from scratch=
+ on X86 host  , is there any howto or anyother document , i saw only denx e=
+ldk supporting it . wanted to build entire cross compiler from scratch , pl=
+ease direct me to any good link if it is there , tried to open the link giv=
+en on Embedded PowerPC linux howto , that page doesnt exist anymore ,please=
+ suggest guys which one is better  =0A=0AThanks In Advance =0A=0ANeelu =0A
+--Next_1124347858---0-202.54.124.179-27328
+Content-type: text/html;
+	charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> @@ -376,9 +396,19 @@ static int cpm_uart_startup(struct uart_
->                 pinfo->sccp->scc_sccm |=3D UART_SCCM_RX;
->         }
->=20
-> +       if (!(pinfo->flags & FLAG_CONSOLE))
-> +               cpm_line_cr_cmd(line,CPM_CR_INIT_TRX);
->         return 0;
->  }
->=20
-> +inline void cpm_uart_wait_until_send(struct uart_cpm_port *pinfo)
-> +{
-> +       unsigned long target_jiffies =3D jiffies + pinfo->wait_closing;
-> +
-> +       while (!time_after(jiffies, target_jiffies))
-> +               schedule();
-> +}
-
-Not sure about that call here. Does the state need to be set so that
-you won't be run again immediately? In any case, I think direct
-schedule() callers are discouraged? Do you want to call a yield() or
-schedule_timeout({0,1}) instead maybe?
-
->  /*
->   * Shutdown the uart
->   */
-> @@ -394,6 +424,12 @@ static void cpm_uart_shutdown(struct uar
->=20
->         /* If the port is not the console, disable Rx and Tx. */
->         if (!(pinfo->flags & FLAG_CONSOLE)) {
-> +               /* Wait for all the BDs marked sent */
-> +               while(!cpm_uart_tx_empty(port))
-> +                       schedule_timeout(2);
-
-<snip>
-
-I think you are using 2 jiffies to guarantee that at least one jiffy
-elapses, which is fine. But, if you do not set the state beforehand,
-schedule_timeout() returns immediately, so you have a busy-wait here.
-
-Thanks,
-Nish
+<P>=0A&nbsp; HI ,<BR>=0A<BR>=0Aneed to set the cross compiler for Linux 2.6=
+ PPC from scratch on X86 host&nbsp; , is there any howto or anyother docume=
+nt , i saw only denx eldk supporting it . wanted to build entire cross comp=
+iler from scratch , please direct me to any good link if it is there , trie=
+d to open the link given on Embedded PowerPC linux howto , that page doesnt=
+ exist anymore ,please suggest guys which one is better&nbsp; <BR>=0A<BR>=
+=0AThanks In Advance <BR>=0A<BR>=0ANeelu <BR>=0A=0A</P>=0A<br><br>=0A<a hre=
+f=3D"http://adworks.rediff.com/cgi-bin/AdWorks/sigclick.cgi/www.rediff.com/=
+signature-home.htm/1507191490@Middle5?PARTNER=3D3"><IMG SRC=3D"http://adwor=
+ks.rediff.com/cgi-bin/AdWorks/sigimpress.cgi/www.rediff.com/signature-home.=
+htm/1963059423@Middle5?OAS_query=3Dnull&PARTNER=3D3" BORDER=3D0 VSPACE=3D0 =
+HSPACE=3D0></a>=0A
+--Next_1124347858---0-202.54.124.179-27328--
