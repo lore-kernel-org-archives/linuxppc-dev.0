@@ -1,19 +1,21 @@
-Return-Path: <adgospod@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.193])
-	by ozlabs.org (Postfix) with ESMTP id B54DE67F91
+Return-Path: <glikely@gmail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.202])
+	by ozlabs.org (Postfix) with ESMTP id 2E7F867F90
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 20 Aug 2005 05:47:56 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id i11so622961wra
+	Sat, 20 Aug 2005 06:09:25 +1000 (EST)
+Received: by zproxy.gmail.com with SMTP id 12so472963nzp
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 19 Aug 2005 12:47:55 -0700 (PDT)
-Message-ID: <bdfc5d6e05081912406b1a3840@mail.gmail.com>
-Date: Fri, 19 Aug 2005 15:40:42 -0400
-From: "Andy G." <adgospod@gmail.com>
-To: linuxppc-embedded@ozlabs.org
+	Fri, 19 Aug 2005 13:09:24 -0700 (PDT)
+Date: Fri, 19 Aug 2005 14:06:00 -0600
+To: ??? <rober@opnet.com.tw>, linuxppc-embedded@ozlabs.org
+Message-ID: <20050819200600.GB28916@siegfried.thelikelysolution.ca>
+References: <43C18850A2E42CD14825706200226758.0022678048257062@opnet.com.tw>
+	<001401c5a494$ffd659c0$1a0e000a@RoberHsu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: SIGFPE on 8245
-Reply-To: andy@greyhouse.net
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <001401c5a494$ffd659c0$1a0e000a@RoberHsu>
+From: Grant Likely <glikely@gmail.com>
+Subject: Re: How to build more than 16M ramdisk for u-boot
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,33 +26,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I'm working with a rather large multi-threaded application that after
-a several hour run will often produce a floating point exception
-(specifically a divide by zero exception).  I've manged to catch the
-signal and use some home grown code to examine the current state of
-the running thread as well as all of the others, but sadly this debug
-information never provides any valuable information.  It appears as
-though the crash is happening in the pthread library when trying to
-execute a floating point store instruction (0x8114 listed below).
+On Fri, Aug 19, 2005 at 04:07:04PM +0800, ??? wrote:
+> Hi Grant:
+> 
+>    I'm already try it.But it still fail.Why i used so large ramdisk, is
+> because net-snmp 5.x.x
+> are too big, snmpd + snmptrapd almost 10M byte.
+I think you're missunderstanding me.
 
-00008108 <__pthread_timedsuspend_new>:
-8108:       7d 80 00 26     mfcr    r12
-810c:       94 21 fc 90     stwu    r1,-880(r1)
-8110:       7c 08 02 a6     mflr    r0                                     =
-    =20
-8114:       d9 c1 02 e0     stfd    f14,736(r1)  <--- SIGFPE happens here  =
-=20
+"/sbin/mke2fs -F m0 ramdisk" means:
+    create ext2 filesystem on file 'm0' of size 'ramdisk'
+"/sbin/mke2fs -F -m0 ramdisk" means:
+    create ext2 filesystem on file 'ramdisk' with 0% reserved
 
-After looking over the 32-bit PPC Programming Env Manual it seems to
-me that the floating point operations that result in +/- infinity will
-disable the FPU and write the FPECR with the cause.  Next time a
-floating point instruction is attempted we will get an exception since
-the FPU is disabled and then we will throw the exception.
+It looks like your missing a dash (-) for the 'm' option
 
-This information unfortunately tells me that I have to start digging
-through the source code to find the programming error, but I'm hoping
-I'm wrong about this.  Any advice or tips?
-
-Thanks in advance,
-
--andy
+g.
