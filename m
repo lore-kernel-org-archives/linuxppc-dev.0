@@ -1,16 +1,21 @@
-Return-Path: <johnsoncheng@qnap.com.tw>
-Received: from qnap.com.tw (unknown [211.75.85.27])
-	by ozlabs.org (Postfix) with SMTP id DA55167F92
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from parcelfarce.linux.theplanet.co.uk
+	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 072C067FAC
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 21 Aug 2005 18:09:36 +1000 (EST)
-From: "JohnsonCheng" <johnsoncheng@qnap.com.tw>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Sun, 21 Aug 2005 16:02:26 +0800
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_00C4_01C5A669.C931FB00"
-Message-Id: <20050821080936.DA55167F92@ozlabs.org>
-Subject: Linux Kernel MTD question
+	Mon, 22 Aug 2005 05:37:19 +1000 (EST)
+Date: Sun, 21 Aug 2005 16:28:33 -0300
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Studencki Pawel <pawel.studencki@siemens.com>
+Message-ID: <20050821192833.GA6746@dmt.cnet>
+References: <291992F9ECD9AB4F995C7E96B9A30DC008E088@nbgh103a.nbg6.siemens.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <291992F9ECD9AB4F995C7E96B9A30DC008E088@nbgh103a.nbg6.siemens.de>
+Cc: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
+Subject: Re: segmentaion fault with array[4096]'
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,185 +26,81 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Fri, Aug 19, 2005 at 09:17:07AM +0200, Studencki Pawel wrote:
+> hello,
+> 
+> it is very strange, I found that SIGSEGV is generated in function
+> do_page_fault() in arch/ppc/mm/fault.c
+> 
+> ------------------------------------------------------------------
+> int do_page_fault(struct pt_regs *regs, unsigned long address,
+>                   unsigned long error_code)
+> {
+>         struct vm_area_struct * vma;
+>         struct mm_struct *mm = current->mm;
+>         siginfo_t info;
+>         int code = SEGV_MAPERR;
+> #if defined(CONFIG_4xx) || defined (CONFIG_BOOKE)
+>         int is_write = error_code & ESR_DST;
+> #else
+>         int is_write = 0;
+> 
+>         /*
+>          * Fortunately the bit assignments in SRR1 for an instruction
+>          * fault and DSISR for a data fault are mostly the same for the
+>          * bits we are interested in.  But there are some bits which
+>          * indicate errors in DSISR but can validly be set in SRR1.
+>          */
+> //      printk("fault bad_area is_write is NULL %x\n", regs->dsisr);
+>         if (TRAP(regs) == 0x400)
+>                 error_code &= 0x48200000;
+>         else
+>         {
+> //              printk("fault bad_area is_write err = %x %x\n", error_code,
+> TRAP(regs));
+>                 is_write = error_code & 0x02000000;
+>         }
+> #endif /* CONFIG_4xx || CONFIG_BOOKE */
+> ---------------------------------------------------------------
+> 
+> 
+> It is in DSI Exception, so it goes to "else" and sets is_write to value
+> error_code & 0x02000000, where error_code is DSISR.
+> it is better, when is_write != 0, because if it's NULL, a few lines below
+> there
+> is an "goto" to bad_area:
+> 
+>         if (!is_write)
+>         {
+>                goto bad_area;
+>         } 
+> 
+> 
+> and I get exception.
 
-------=_NextPart_000_00C4_01C5A669.C931FB00
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Sometimes is_write is set and sometimes it is not? Can you please be more 
+precise? 
 
-Dear All,
+> At exception error_code is 0x4821, but in User Manual MPC866 in chapter
+> 6.1.2.3
+> in table 6-7, they write that bits 0-14 in DSISR are NULL. I'm confused and
+> I don't know how should I interpret this. 
 
- 
+You're looking at the wrong table, thats alignment exception. You should look
+at data tlb error exception.
 
-Just as I know, we can have many partitions for our flash if we turn on MTD
-in Kernel. For example:
+> Where does value 0x4821 come
+> from??? most of the time it is 0x82000000...
 
-0x00000000-0x00040000:      u-boot
+It probably comes from
 
-0x00040000-0x00100000:      kernel
+	if (TRAP(regs) == 0x400)
+                error_code &= 0x48200000;
 
-0x00100000-0x00200000:      inirid1
+No?
 
-0x00200000-0x00400000:      initrd2
+I think you're just doing something wrong in your app.
 
- 
-
-How could I distribute my RootFS into initrd1 and initrd2?
-
-In U-Boot command, bootcmd, I set it to "bootm 40000 100000". 40000 is
-Kernel address, and 100000 is RootFS1 address. But where to set RootRS2
-address?
-
- 
-
-Thanks,
-
-Johnson Cheng
-
- 
-
-
-------=_NextPart_000_00C4_01C5A669.C931FB00
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns:st1=3D"urn:schemas-microsoft-com:office:smarttags" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<o:SmartTagType =
-namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
- name=3D"chmetcnv" downloadurl=3D""/>
-<!--[if !mso]>
-<style>
-st1\:*{behavior:url(#default#ieooui) }
-</style>
-<![endif]-->
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:&#26032;&#32048;&#26126;&#39636;;
-	panose-1:2 2 3 0 0 0 0 0 0 0;}
-@font-face
-	{font-family:"\@&#26032;&#32048;&#26126;&#39636;";
-	panose-1:2 2 3 0 0 0 0 0 0 0;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0cm;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
- /* Page Definitions */
- @page Section1
-	{size:595.3pt 841.9pt;
-	margin:72.0pt 90.0pt 72.0pt 90.0pt;
-	layout-grid:18.0pt;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DZH-TW link=3Dblue vlink=3Dpurple =
-style=3D'text-justify-trim:punctuation'>
-
-<div class=3DSection1 style=3D'layout-grid:18.0pt'>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>Dear All,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>Just as I know, we can have many partitions for =
-our
-flash if we turn on MTD in Kernel. For =
-example:<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>0x00000000-0x00040000:&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp; u-boot<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>0x00040000-0x00100000:&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp; kernel<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>0x00100000-0x00200000:&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp; inirid1<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>0x00200000-0x00400000:&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp; initrd2<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>How could I distribute my RootFS into initrd1 =
-and
-initrd2?<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>In U-Boot command, bootcmd, I set it to =
-&#8220;bootm 40000 <st1:chmetcnv
-TCSC=3D"0" NumberType=3D"1" Negative=3D"False" HasSpace=3D"False" =
-SourceValue=3D"100000"
-UnitName=3D"&#8221;" w:st=3D"on">100000&#8221;</st1:chmetcnv>. 40000 is =
-Kernel address, and
-100000 is RootFS1 address. But where to set RootRS2 =
-address?<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>Thanks,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>Johnson Cheng<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------=_NextPart_000_00C4_01C5A669.C931FB00--
+Check what instruction resides where the invalid access is done (in your 
+application), which vma its trying to access, and you will figure out 
+what is going on.
