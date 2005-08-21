@@ -1,17 +1,18 @@
-Return-Path: <a.othieno@bluewin.ch>
-Received: from mail13.bluewin.ch (mail13.bluewin.ch [195.186.18.62])
-	by ozlabs.org (Postfix) with ESMTP id 8E7ED67FA5
-	for <linuxppc-dev@ozlabs.org>; Sun, 21 Aug 2005 11:39:09 +1000 (EST)
-Received: from localhost.localdomain (62.202.87.184) by mail13.bluewin.ch
-	(Bluewin 7.2.063) id 42DF674800541D79 for linuxppc-dev@ozlabs.org;
-	Sun, 21 Aug 2005 01:16:33 +0000
-Date: Sat, 20 Aug 2005 21:16:49 -0400
-To: linuxppc-dev@ozlabs.org
-Message-ID: <20050821011649.GA31839@mars>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: a.othieno@bluewin.ch (Arthur Othieno)
-Subject: [PATCH] ppc32: Big-endian I/O memory accessors.
+Return-Path: <steve@icarus.com>
+Received: from icarus.com (icarus.icarus.com [64.105.89.2])
+	by ozlabs.org (Postfix) with ESMTP id 2BB8C67F92
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Aug 2005 01:07:02 +1000 (EST)
+Message-ID: <4308988C.1050804@icarus.com>
+Date: Sun, 21 Aug 2005 08:06:52 -0700
+From: Stephen Williams <steve@icarus.com>
+MIME-Version: 1.0
+To: "John W. Linville" <linville@tuxdriver.com>
+References: <4305F7FE.7040709@icarus.com> <1124499963.5197.99.camel@gaston>
+	<4307536E.4070800@icarus.com> <20050820180825.GG2736@tuxdriver.com>
+In-Reply-To: <20050820180825.GG2736@tuxdriver.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: How to map memory uncached on PPC.
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,66 +22,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+John W. Linville wrote:
+> On Sat, Aug 20, 2005 at 08:59:42AM -0700, Stephen Williams wrote:
 
-I/O memory accessors. Big-endian version. For those busses/devices
-that do export big-endian I/O memory.
+>>I did an even simpler experiment: I commented out the pci_map_single,
+>>which on a PPC only has the effect of calling invalidate_dcache_range
+>>and returning the virt_to_bus of the address. Obviously, the cache
+>>is still enabled for the processor, and the image data may get
+>>corrupted, but this was a performance test, not a solution.
+> 
+> 
+> If your purpose is to evaluate performance, doesn't having the cache
+> enabled limit the usefulness of your test?  For example if your cache
+> uses a write-back policy then your test will probably outperform the
+> actual uncached accesses.  YMMV, I suppose...
 
-Of notable relevance/reference:
+No, it shouldn't. The setup is a driver for a PCI device that masters
+its output to the buffer in question. What I'm measuring is not the
+time to write the buffer (which is being done by the hardware, so
+bypasses the cache anyhow) but the time it takes to *prepare the
+buffer for the device*. The buffer is not written to or read from
+by device or processor during this time, but it is mapped and DMA
+pointers are collected. Also, the pci_map_single invalidates the cache
+by walking through the entire buffer (many megabytes) with this loop
+from invalidate_dcache_range:
 
-   http://lwn.net/Articles/132804/
-   http://ozlabs.org/pipermail/linuxppc-embedded/2005-August/019798.html
-   http://ozlabs.org/pipermail/linuxppc-embedded/2005-August/019752.html
+1:	dcbi	0,r3
+	addi	r3,r3,L1_CACHE_LINE_SIZE
+	bdnz	1b
+	sync				/* wait for dcbi's to get to ram */
 
-Signed-Off-By: Arthur Othieno <a.othieno@bluewin.ch>
+This is what I believe is taking a long time.
 
+Since nothing is touching that buffer during my test, and I'm mostly
+dropping that code, I believe my test is valid.
 
-  io.h |   20 ++++++++++++++++++++
-  1 files changed, 20 insertions(+)
-
-
---- a/include/asm-ppc/io.h	2005-08-20 19:24:40.000000000 -0400
-+++ b/include/asm-ppc/io.h	2005-08-20 20:18:03.000000000 -0400
-@@ -487,11 +487,21 @@
- 	return readw(addr);
- }
- 
-+static inline unsigned int ioread16be(void __iomem *addr)
-+{
-+	return __raw_readw(addr);
-+}
-+
- static inline unsigned int ioread32(void __iomem *addr)
- {
- 	return readl(addr);
- }
- 
-+static inline unsigned int ioread32be(void __iomem *addr)
-+{
-+	return __raw_readl(addr);
-+}
-+
- static inline void iowrite8(u8 val, void __iomem *addr)
- {
- 	writeb(val, addr);
-@@ -502,11 +512,21 @@
- 	writew(val, addr);
- }
- 
-+static inline void iowrite16be(u16 val, void __iomem *addr)
-+{
-+	__raw_writew(val, addr);
-+}
-+
- static inline void iowrite32(u32 val, void __iomem *addr)
- {
- 	writel(val, addr);
- }
- 
-+static inline void iowrite32be(u32 val, void __iomem *addr)
-+{
-+	__raw_writel(val, addr);
-+}
-+
- static inline void ioread8_rep(void __iomem *addr, void *dst, unsigned long count)
- {
- 	_insb(addr, dst, count);
+-- 
+Steve Williams                "The woods are lovely, dark and deep.
+steve at icarus.com           But I have promises to keep,
+http://www.icarus.com         and lines to code before I sleep,
+http://www.picturel.com       And lines to code before I sleep."
