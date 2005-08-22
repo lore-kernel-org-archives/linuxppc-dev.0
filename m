@@ -1,19 +1,18 @@
-Return-Path: <achim.machura@berghof.com>
-Received: from mail123.messagelabs.com (mail123.messagelabs.com [85.158.136.3])
-	by ozlabs.org (Postfix) with SMTP id A13EA6801D
+Return-Path: <steve@icarus.com>
+Received: from icarus.com (icarus.icarus.com [64.105.89.2])
+	by ozlabs.org (Postfix) with ESMTP id 9208268027
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 Aug 2005 00:19:42 +1000 (EST)
-From: "Achim Machura" <achim.machura@berghof.com>
-To: "'Kunkel, Ulrich'" <Ulrich.Kunkel@hbm.com>
-Date: Mon, 22 Aug 2005 16:12:52 +0200
-Message-ID: <002e01c5a723$9669d7a0$34f1ff0a@beint.local>
+	Tue, 23 Aug 2005 00:35:26 +1000 (EST)
+Received: from [192.168.1.7] (wing [192.168.1.7]) (authenticated)
+	by icarus.com (8.11.6/8.11.6) with ESMTP id j7MEZOl15027
+	for <linuxppc-embedded@ozlabs.org>; Mon, 22 Aug 2005 07:35:24 -0700
+Message-ID: <4309E2AC.9080404@icarus.com>
+Date: Mon, 22 Aug 2005 07:35:24 -0700
+From: Stephen Williams <steve@icarus.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <D3524C0FFDC6A54F9D7B6BBEECD341D505618A78@hbmntx0.da.hbm.com>
-Cc: "Linuxppc-Embedded \(E-Mail\)" <linuxppc-embedded@ozlabs.org>
-Subject: AW: MPC5200 mmap, ioremap
-Reply-To: achim.machura@berghof.com
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: mmap nocache on PPC, 2.4
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,41 +23,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Ulrich,
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> mem =12 M
-i think it means the kernel knows about 12 MB
 
-This code below works fine at our board, but we use only a few kb in the
-protected ram.
-I don't Know whats happen if size is bigger as one page.
+In an embedded system, I want a big chunk of virtual memory in the
+user process to be uncached. I've created a virtual device driver that
+has this mmap method:
 
-int asi_common_mmap(struct file *filp, struct vm_area_struct *vma)
+static int heap_mmap(struct file*filp, struct vm_area_struct*vma)
 {
-//	unsigned long off = vma->vm_pgoff << PAGE_SHIFT;
-	unsigned long physical = ASI_IOMEM_BASE;
-	unsigned long vsize = vma->vm_end - vma->vm_start;
-//	unsigned long psize = ASI_IOMEM_SIZE - off;
+	/* Mark this whole region uncached. The setup of this
+	   additional flag, and the VM_RESERVED, are the whole point
+	   of this module. This hopefully will cause all pages mapped
+	   into this vma to be uncached. */
+~      pgprot_val(vma->vm_page_prot) |= _PAGE_NO_CACHE;
+~      vma->vm_flags |= VM_RESERVED;
 
-//	rt_printk("start : 0x%08lX\n", vma->vm_start);
-//	rt_printk("end   : 0x%08lX\n", vma->vm_end);
-//	rt_printk("offset: 0x%08lX\n", off);
-//	rt_printk("phys  : 0x%08lX\n", physical);
-//	rt_printk("vsize : 0x%08lX\n", vsize);
-//	rt_printk("psize : 0x%08lX\n", psize);
-
-	if (filp->f_flags & O_SYNC)
-	{
-//		rt_printk("I/O-Mem");
-		vma->vm_flags |= VM_IO;
-	}
-	vma->vm_flags |= VM_RESERVED;
-	//if (vsize > psize) return -EINVAL; /* spans too high */
-	if(remap_page_range(vma->vm_start, physical, vsize, vma->vm_page_prot))
-	{
-		return -EAGAIN;
-	}
-	return(0);
+~      vma->vm_ops = &heap_vm_ops;
+~      heap_vm_open(vma);
+~      return 0;
 }
 
-Achim
+I then allocate in the nopage from get_free_page as usual. My
+question is, "Is this doing what I think it is doing?"
+
+- --
+Steve Williams                "The woods are lovely, dark and deep.
+steve at icarus.com           But I have promises to keep,
+http://www.icarus.com         and lines to code before I sleep,
+http://www.picturel.com       And lines to code before I sleep."
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.5 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFDCeKrrPt1Sc2b3ikRAlsVAKDD6+O4ihBYkHreyqkNcQuuvKIK8wCg4b6v
+jRBU8FJrOyczJJdPkicf22s=
+=zMkX
+-----END PGP SIGNATURE-----
