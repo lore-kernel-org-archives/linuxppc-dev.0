@@ -1,17 +1,15 @@
 Return-Path: <johnsoncheng@qnap.com.tw>
 Received: from qnap.com.tw (unknown [211.75.85.27])
-	by ozlabs.org (Postfix) with SMTP id E2F9567FED
+	by ozlabs.org (Postfix) with SMTP id 7AE6867FBD
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 22 Aug 2005 20:45:52 +1000 (EST)
+	Mon, 22 Aug 2005 22:26:45 +1000 (EST)
 From: "JohnsonCheng" <johnsoncheng@qnap.com.tw>
-To: "'Wolfgang Denk'" <wd@denx.de>
+To: <linuxppc-embedded@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <20050822081708.74890352B0C@atlas.denx.de>
-Message-Id: <20050822104552.E2F9567FED@ozlabs.org>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: Linux Kernel MTD question 
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0018_01C58EFB.A86E8D00"
+Message-Id: <20050822122645.7AE6867FBD@ozlabs.org>
+Subject: How NEC uPD720101 USB chip work well on linux2.6.12
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,75 +19,185 @@ List-Post: <mailto:linuxppc-embedded@ozlabs.org>
 List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
-Date: Mon, 22 Aug 2005 10:46:03 -0000
+Date: Mon, 22 Aug 2005 12:27:09 -0000
 
-I have browsed the website, http://www.denx.de/twiki/bin/view/DULG/Manual.
-For this example:
-0x00000000-0x00060000 : "U-Boot"
-0x00060000-0x00080000 : "Environment 1"
-0x00080000-0x000A0000 : "Environment 2"
-0x000A0000-0x000C0000 : "ASIC Images"
-0x000C0000-0x001C0000 : "Linux Kernel"
-0x001C0000-0x005C0000 : "Ramdisk Image"
-0x005C0000-0x01000000 : "User Data"
+This is a multi-part message in MIME format.
 
-How can I put the Environment variables or configurations in
-0x00060000-0x00080000, or put User Data in 0x005C0000-0x1000000?
-Use U-boot command? Or....
+------=_NextPart_000_0018_01C58EFB.A86E8D00
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-Best Regards,
+Dear All,
+
+ 
+
+I use NEC uPD720101 USB chip, 2 OHCI and 1 EHCI, I also have turn on the
+following options in kernel menuconfig:
+
+[*] USB Support / support for Host-side USB
+
+[*] USB Support / USB device filesystem
+
+[*] USB Support / EHCI HCD (USB 2.0) support
+
+[*] USB Support / OHCI HCD support
+
+[*] USB Support / USB HID Boot Protocol drivers / USB HIDBP Mouse (simple
+Boot) support
+
+ 
+
+But when I plug-in a USB mouse, then Kernel Oops..
+
+I use MPC8241 CPU, and there are three USB ports sharing the same IRQ on my
+borad.
+
+ 
+
+Thanks,
+
 Johnson Cheng
 
 
------Original Message-----
-From: linuxppc-embedded-bounces@ozlabs.org
-[mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of Wolfgang Denk
-Sent: Monday, August 22, 2005 4:17 PM
-To: JohnsonCheng
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Linux Kernel MTD question 
+------=_NextPart_000_0018_01C58EFB.A86E8D00
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-In message <20050822030032.4917442C7E@denx.de> you wrote:
->
-> Actually, the range of my flash is from 0xFF000000 to 0xFFFFFFFF. My
-> starting address of Kernel is 0xFF000000, and the starting address of
-> ramdisk image is FF200000, so the partitions is as following:
-> 0xFF000000 - 0xFF1FFFFF		Kernel
-> 0xFF200000 - 0xFF9FFFFF		RamDisk Image ( also my Root File
-System )
-> 
-> And I found my RootFS image is so big that waste many time while write it
-to
-> flash.
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
 
-Then avoid writing it that often. Use  a  more  efficient  setup  for
-developoment and test, like root file system mounted over NFS.
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:PMingLiU;
+	panose-1:2 2 3 0 0 0 0 0 0 0;}
+@font-face
+	{font-family:MingLiU;
+	panose-1:2 2 3 9 0 0 0 0 0 0;}
+@font-face
+	{font-family:PMingLiU;
+	panose-1:2 2 3 0 0 0 0 0 0 0;}
+@font-face
+	{font-family:MingLiU;
+	panose-1:2 2 3 9 0 0 0 0 0 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+pre
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:MingLiU;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+ /* Page Definitions */
+ @page Section1
+	{size:595.3pt 841.9pt;
+	margin:72.0pt 90.0pt 72.0pt 90.0pt;
+	layout-grid:18.0pt;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
 
-> I hope I can use MTD to distribute it into two parts, Simple RootFS and
-> libraries, but I don't know how to implement it?
+</head>
 
-You can use MTD to provide an additional file system which  can  then
-be mounted by one of your startup scripts. MTD configuration and file
-system building is documented in the DULG, please see
-http://www.denx.de/twiki/bin/view/DULG/Manual
+<body lang=3DZH-TW link=3Dblue vlink=3Dpurple =
+style=3D'text-justify-trim:punctuation'>
 
-It is not possible to  give  good  advice  how  to  split  data  into
-separate  file  systems,  or  how  exactly  you  can mount it without
-precise knowledge of your system and it's requirements. For  example,
-do you use a SysV init with several run levels, or a simple setup for
-example based on busybox? In the end this is something which you have
-to design yourself.
+<div class=3DSection1 style=3D'layout-grid:18.0pt'>
 
-Best regards,
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>Dear All,<o:p></o:p></span></font></p>
 
-Wolfgang Denk
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Let the programmers be many and the managers few -- then all will  be
-productive.               -- Geoffrey James, "The Tao of Programming"
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>I use NEC uPD720101 USB chip, 2 OHCI and 1 =
+EHCI, I
+also have turn on the following options in kernel =
+menuconfig:<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>[*] USB Support / support for Host-side =
+USB<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>[*] USB Support / USB device =
+filesystem<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>[*] USB Support / EHCI HCD (USB 2.0) =
+support<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>[*] USB Support / OHCI HCD =
+support<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>[*] USB Support / USB HID Boot Protocol drivers =
+/ USB
+HIDBP Mouse (simple Boot) support<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>But when I plug-in a USB mouse, then Kernel =
+Oops&#8230;.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>I use MPC8241 CPU, and there are three USB =
+ports sharing
+the same IRQ on my borad.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>Thanks,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>Johnson Cheng<o:p></o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_0018_01C58EFB.A86E8D00--
