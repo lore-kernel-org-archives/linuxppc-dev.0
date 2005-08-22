@@ -1,18 +1,19 @@
-Return-Path: <stefan.nickl@kontron.com>
-Received: from kom-exchfe.kontron-modular.com (mail.kontron-modular.com
-	[62.159.155.200]) by ozlabs.org (Postfix) with ESMTP id 09F1668008
+Return-Path: <achim.machura@berghof.com>
+Received: from mail123.messagelabs.com (mail123.messagelabs.com [85.158.136.3])
+	by ozlabs.org (Postfix) with SMTP id A13EA6801D
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 Aug 2005 00:06:45 +1000 (EST)
-From: Stefan Nickl <Stefan.Nickl@kontron.com>
-To: JohnsonCheng <johnsoncheng@qnap.com.tw>
-In-Reply-To: <20050822122645.7AE6867FBD@ozlabs.org>
-References: <20050822122645.7AE6867FBD@ozlabs.org>
-Content-Type: text/plain; charset=windows-1251
-Date: Mon, 22 Aug 2005 15:54:37 +0200
-Message-Id: <1124718877.19750.23.camel@lucy.pep-kaufbeuren.de>
-Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: How NEC uPD720101 USB chip work well on linux2.6.12
+	Tue, 23 Aug 2005 00:19:42 +1000 (EST)
+From: "Achim Machura" <achim.machura@berghof.com>
+To: "'Kunkel, Ulrich'" <Ulrich.Kunkel@hbm.com>
+Date: Mon, 22 Aug 2005 16:12:52 +0200
+Message-ID: <002e01c5a723$9669d7a0$34f1ff0a@beint.local>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <D3524C0FFDC6A54F9D7B6BBEECD341D505618A78@hbmntx0.da.hbm.com>
+Cc: "Linuxppc-Embedded \(E-Mail\)" <linuxppc-embedded@ozlabs.org>
+Subject: AW: MPC5200 mmap, ioremap
+Reply-To: achim.machura@berghof.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,44 +24,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2005-07-22 at 20:26 +0800, JohnsonCheng wrote:
-> Dear All,
-> =20
->=20
-> I use NEC uPD720101 USB chip, 2 OHCI and 1 EHCI, I also have turn on
-> the following options in kernel menuconfig:
-[...]
-> [*] USB Support / EHCI HCD (USB 2.0) support
-[...]
-> =20
->=20
-> But when I plug-in a USB mouse, then Kernel Oops=85.
->=20
-> I use MPC8241 CPU, and there are three USB ports sharing the same IRQ
-> on my borad.
+Hello Ulrich,
 
-I recently came across similar trouble with a chip from this series, the
-uPD720113 and another one in a off-the-shelf USB hub which I tried for
-reference.
-It may have been even the 101, but I'm not sure.
+> mem =12 M
+i think it means the kernel knows about 12 MB
 
-Anyways, I've also seen hard resets with 2.6.12 to 2.6.13-rc-something,
-albeit in a x86-environment. The system would reset hard when plugging
-something after the hub or the hub itself, in case of the 113 it crashed
-100% as soon as the hub was attached or detected during bootup. With the
-off-the-shelf hub, it was somewhat more random.
+This code below works fine at our board, but we use only a few kb in the
+protected ram.
+I don't Know whats happen if size is bigger as one page.
 
-In my case, disabling the EHCI controller in the BIOS helped, so you may
-try to disable the USB "2.0" support in the kernel config and see what
-happens.
-No problems running the system with only UHCI for some weeks now.
+int asi_common_mmap(struct file *filp, struct vm_area_struct *vma)
+{
+//	unsigned long off = vma->vm_pgoff << PAGE_SHIFT;
+	unsigned long physical = ASI_IOMEM_BASE;
+	unsigned long vsize = vma->vm_end - vma->vm_start;
+//	unsigned long psize = ASI_IOMEM_SIZE - off;
 
-I've deferred this problem because Hi-Speed is not an issue to me now,
-but I'd be curious to hear and test things if somebody had a take on
-this.
+//	rt_printk("start : 0x%08lX\n", vma->vm_start);
+//	rt_printk("end   : 0x%08lX\n", vma->vm_end);
+//	rt_printk("offset: 0x%08lX\n", off);
+//	rt_printk("phys  : 0x%08lX\n", physical);
+//	rt_printk("vsize : 0x%08lX\n", vsize);
+//	rt_printk("psize : 0x%08lX\n", psize);
 
-Regards,
+	if (filp->f_flags & O_SYNC)
+	{
+//		rt_printk("I/O-Mem");
+		vma->vm_flags |= VM_IO;
+	}
+	vma->vm_flags |= VM_RESERVED;
+	//if (vsize > psize) return -EINVAL; /* spans too high */
+	if(remap_page_range(vma->vm_start, physical, vsize, vma->vm_page_prot))
+	{
+		return -EAGAIN;
+	}
+	return(0);
+}
 
---=20
-Stefan Nickl
-Kontron Modular Computers
+Achim
