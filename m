@@ -1,21 +1,18 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4D30067EEE
+Return-Path: <johnsoncheng@qnap.com.tw>
+Received: from qnap.com.tw (unknown [211.75.85.27])
+	by ozlabs.org (Postfix) with SMTP id B5B1767FBD
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 22 Aug 2005 11:29:07 +1000 (EST)
-In-Reply-To: <20050821235524.GE6746@dmt.cnet>
-References: <43062C9D.5060703@ru.mvista.com> <20050821235524.GE6746@dmt.cnet>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <b3aa1ae4c201e865b6dfbef68253983b@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Sun, 21 Aug 2005 21:28:56 -0400
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-Cc: Kumar Gala <galak@freescale.com>,
-	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] ppc32: 8xx pq platform system descriptions
+	Mon, 22 Aug 2005 12:56:44 +1000 (EST)
+From: "JohnsonCheng" <johnsoncheng@qnap.com.tw>
+To: "'Wolfgang Denk'" <wd@denx.de>
+Date: Mon, 22 Aug 2005 10:56:14 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <20050821205851.66E52353D18@atlas.denx.de>
+Message-Id: <20050822025644.B5B1767FBD@ozlabs.org>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: Linux Kernel MTD question 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,38 +23,76 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Very Thanks for your reply.
+I am sorry that this data is copied from Building Embedded Linux Systems
+book.
+Actually, the range of my flash is from 0xFF000000 to 0xFFFFFFFF. My
+starting address of Kernel is 0xFF000000, and the starting address of
+ramdisk image is FF200000, so the partitions is as following:
+0xFF000000 - 0xFF1FFFFF		Kernel
+0xFF200000 - 0xFF9FFFFF		RamDisk Image ( also my Root File System )
 
-On Aug 21, 2005, at 7:55 PM, Marcelo Tosatti wrote:
+And I found my RootFS image is so big that waste many time while write it to
+flash.
+I hope I can use MTD to distribute it into two parts, Simple RootFS and
+libraries, but I don't know how to implement it?
 
-> - Do you have any plans on actually using device model information by
-> drivers (as was done in the mpc8xxx/gianfar) on m8xx? Its not very 
-> clear
-> to me what are the the practical advantages of that?
+My CPU is MPC8241, and my kernel configure is base on Sandpoint_defconfig.
 
-It may be nice if we can do that.  We have to be careful about sharing
-CPM drivers between the 8xx and CPM2 (82xx/83xx/85xx).  It's tempting,
-but I still believe the differences outweigh the similarities.  The 
-overhead
-of trying to use common drivers would be quite costly on the 8xx.
+Thanks,
+Johnson Cheng  
 
-> - I don't know whether its possible to retrieve 8xx CPUID information
-> (if there is any). Can't find anything in the manual.
+-----Original Message-----
+From: linuxppc-embedded-bounces@ozlabs.org
+[mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of Wolfgang Denk
+Sent: Monday, August 22, 2005 4:59 AM
+To: JohnsonCheng
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Linux Kernel MTD question 
 
-We really can't.  The PVR only represents the processor core 
-information,
-and for the most part they are all the same.  It used to be we could use
-the CPM microcode version, but these are now nearly the same.  Some
-attempts have been made to probe for CPM peripherals that don't exist,
-but it seems on some parts the CPM is the same and the signals just 
-aren't
-bonded out of the chip.
+In message <20050821080936.DA55167F92@ozlabs.org> you wrote:
+> 
+> Just as I know, we can have many partitions for our flash if we turn on
+MTD
+> in Kernel. For example:
 
-For the most part, the person doing the kernel configuration just simply
-has to know what part they are using.  You have to select the proper
-peripherals, and you need the board support for the IO pin routing.
-In an embedded environment where resources still need to be
-carefully managed, I don't think this is unrealistic.
+Right.
 
-Thanks.
+> How could I distribute my RootFS into initrd1 and initrd2?
 
-	-- Dan
+You cannot. The *root* filesystem is always just a single file system.
+
+You can mount  additional  file  systems  on  top  of  the  directory
+hierarchy  provided  by  your root file system, but this is something
+completely different.
+
+> In U-Boot command, bootcmd, I set it to "bootm 40000 100000". 40000 is
+> Kernel address, and 100000 is RootFS1 address. But where to set RootRS2
+> address?
+
+There are several errors in this text.
+
+First, the kernel download address 0x40000 = 256kB is  much  too  low
+and can never work.
+
+Second, the "100000" parameter is not a "RootFS1 address". It  is  the
+start  address  of  a ramdisk image. This may or may not be your root
+file system, and it is usually NOT the address as seen by the kernel.
+And, 100000 = 1 MB is a much too low address and can never work.
+
+
+And finally: all this has absolutely NOTHING to do with MTD partitions.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Documentation is like sex: when it is good, it is  very,  very  good;
+and when it is bad, it is better than nothing.         - Dick Brandon
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
