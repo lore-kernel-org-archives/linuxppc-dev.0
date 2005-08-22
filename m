@@ -1,19 +1,19 @@
 Return-Path: <pantelis.antoniou@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.207])
-	by ozlabs.org (Postfix) with ESMTP id 40E9568029
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.204])
+	by ozlabs.org (Postfix) with ESMTP id D5FCB68044
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 Aug 2005 05:23:58 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 68so1056725wri
+	Tue, 23 Aug 2005 05:23:48 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id 68so1056714wri
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 22 Aug 2005 12:23:51 -0700 (PDT)
+	Mon, 22 Aug 2005 12:23:46 -0700 (PDT)
 From: Pantelis Antoniou <pantelis.antoniou@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Date: Mon, 22 Aug 2005 22:21:52 +0300
+Date: Mon, 22 Aug 2005 22:21:50 +0300
 MIME-Version: 1.0
 Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_QXiCD/Tej3k73Jo"
-Message-Id: <200508222221.52347.pantelis.antoniou@gmail.com>
-Subject: [PATCH 3/3] fs_enet: support
+  boundary="Boundary-00=_OXiCDnyPAOpWIAX"
+Message-Id: <200508222221.50618.pantelis.antoniou@gmail.com>
+Subject: [PATCH 2/3] fs_enet: hardware
 Reply-To: pantelis.antoniou@gmail.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,7 +25,7 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---Boundary-00=_QXiCD/Tej3k73Jo
+--Boundary-00=_OXiCDnyPAOpWIAX
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -40,437 +40,31 @@ SCC/FCC/FEC drivers for the Freescale PQs.
 Don't expect it to work on your board just yet, just take
 a look and comment.
 
-This part contains the support files for it to work 
-(platform devices & the rest).
+This part contains the hardware specific files (MACs & MIIs)
 
 Regards
 
 Pantelis
 
---Boundary-00=_QXiCD/Tej3k73Jo
-Content-Type: text/plain; charset="us-ascii"; name="fs_enet-support.patch"
+--Boundary-00=_OXiCDnyPAOpWIAX
+Content-Type: text/plain;
+  charset="us-ascii";
+  name="fs_enet-hw.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
-	filename="fs_enet-support.patch"
+	filename="fs_enet-hw.patch"
 
-diff --git a/arch/ppc/platforms/Makefile b/arch/ppc/platforms/Makefile
---- a/arch/ppc/platforms/Makefile
-+++ b/arch/ppc/platforms/Makefile
-@@ -46,6 +46,8 @@ obj-$(CONFIG_SANDPOINT)		+= sandpoint.o
- obj-$(CONFIG_SBC82xx)		+= sbc82xx.o
- obj-$(CONFIG_SPRUCE)		+= spruce.o
- obj-$(CONFIG_LITE5200)		+= lite5200.o
-+obj-$(CONFIG_MPC86XADS)		+= mpc866ads_setup.o
-+obj-$(CONFIG_MPC885ADS)		+= mpc885ads_setup.o
- 
- ifeq ($(CONFIG_SMP),y)
- obj-$(CONFIG_PPC_PMAC)		+= pmac_smp.o
-diff --git a/arch/ppc/platforms/mpc866ads_setup.c b/arch/ppc/platforms/mpc866ads_setup.c
-new file mode 100644
 --- /dev/null
-+++ b/arch/ppc/platforms/mpc866ads_setup.c
-@@ -0,0 +1,378 @@
++++ b/drivers/net/fs_enet/mac-fcc.c
+@@ -0,0 +1,572 @@
 +/*
-+ * arch/ppc/platforms/mpc866ads.c  Platform setup for the Freescale mpc86Xads board
++ * FCC driver for Motorola MPC82xx (PQ2).
 + *
-+ * Copyright 2005 MontaVista Software Inc.
-+ */
-+
-+#include <linux/config.h>
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/param.h>
-+#include <linux/string.h>
-+#include <linux/ioport.h>
-+#include <linux/device.h>
-+
-+#include <linux/fs_enet_pd.h>
-+#include <linux/mii.h>
-+
-+#include <asm/delay.h>
-+#include <asm/io.h>
-+#include <asm/machdep.h>
-+#include <asm/page.h>
-+#include <asm/processor.h>
-+#include <asm/system.h>
-+#include <asm/time.h>
-+#include <asm/ppcboot.h>
-+#include <asm/8xx_immap.h>
-+#include <asm/commproc.h>
-+#include <asm/mpc8xx.h>
-+
-+extern unsigned char __res[];
-+
-+/* access ports */
-+#define setbits32(_addr, _v) out_be32(&(_addr), in_be32(&(_addr)) |  (_v))
-+#define clrbits32(_addr, _v) out_be32(&(_addr), in_be32(&(_addr)) & ~(_v))
-+
-+#define setbits16(_addr, _v) out_be16(&(_addr), in_be16(&(_addr)) |  (_v))
-+#define clrbits16(_addr, _v) out_be16(&(_addr), in_be16(&(_addr)) & ~(_v))
-+
-+#define MPC8xx_INT_SCC1		(CPM_IRQ_OFFSET + CPMVEC_SCC1)
-+#define MPC8xx_INT_SCC2		(CPM_IRQ_OFFSET + CPMVEC_SCC2)
-+#define MPC8xx_INT_SCC3		(CPM_IRQ_OFFSET + CPMVEC_SCC3)
-+#define MPC8xx_INT_SCC4		(CPM_IRQ_OFFSET + CPMVEC_SCC4)
-+#define MPC8xx_INT_SMC1		(CPM_IRQ_OFFSET + CPMVEC_SMC1)
-+#define MPC8xx_INT_SMC2		(CPM_IRQ_OFFSET + CPMVEC_SMC2)
-+
-+/* Offset from IMMAP base address */
-+#define MPC8xx_SCC1_OFFSET	(0xa00)
-+#define MPC8xx_SCC1_SIZE	(0x18)
-+#define MPC8xx_SCC2_OFFSET	(0xa20)
-+#define MPC8xx_SCC2_SIZE	(0x18)
-+#define MPC8xx_SCC3_OFFSET	(0xa40)
-+#define MPC8xx_SCC3_SIZE	(0x18)
-+#define MPC8xx_SCC4_OFFSET	(0xa60)
-+#define MPC8xx_SCC4_SIZE	(0x18)
-+#define MPC8xx_SMC1_OFFSET	(0xa82)
-+#define MPC8xx_SMC1_SIZE	(0x0f)
-+#define MPC8xx_SMC2_OFFSET	(0xa92)
-+#define MPC8xx_SMC2_SIZE	(0x0d)
-+#define MPC8xx_FEC1_OFFSET	(0xe00)
-+#define MPC8xx_FEC1_SIZE	(0x88)
-+#define MPC8xx_DPARAM_SCC1_OFFSET	(0x3C00)
-+#define MPC8xx_DPARAM_SCC1_SIZE	(0x80)
-+#define MPC8xx_DPARAM_SCC2_OFFSET	(0x3D00)
-+#define MPC8xx_DPARAM_SCC2_SIZE	(0x80)
-+#define MPC8xx_DPARAM_SCC3_OFFSET	(0x3E00)
-+#define MPC8xx_DPARAM_SCC3_SIZE	(0x80)
-+#define MPC8xx_DPARAM_SCC4_OFFSET	(0x3F00)
-+#define MPC8xx_DPARAM_SCC4_SIZE	(0x80)
-+#define MPC8xx_DPARAM_SMC1_OFFSET	(0x3E80)
-+#define MPC8xx_DPARAM_SMC1_SIZE	(0x40)
-+#define MPC8xx_DPARAM_SMC2_OFFSET	(0x3F80)
-+#define MPC8xx_DPARAM_SMC2_SIZE	(0x40)
-+
-+#ifdef CONFIG_SCC1_ETHERNET
-+
-+void __init mpc866ads_scc_phy_init(void);
-+
-+static struct fs_mii_bus_info scc_mii_bus_info = {
-+	.method = fsmii_fixed,
-+	.id = 0,
-+	.i.fixed.speed = 10,
-+	.i.fixed.duplex = 0,
-+};
-+#endif
-+
-+#if defined (CONFIG_FS_ENET)
-+static struct fs_mii_bus_info fec_mii_bus_info = {
-+	.method = fsmii_fec,
-+	.id = 0,
-+};
-+
-+static struct fs_platform_info mpc8xx_fec_pdata[] = {
-+	{
-+	 .rx_ring = 128,
-+	 .tx_ring = 16,
-+	 .rx_copybreak = 240,
-+
-+	 .use_napi = 1,
-+	 .napi_weight = 17,
-+	 .bus_info = &fec_mii_bus_info,
-+	 },
-+};
-+#endif
-+
-+#ifdef CONFIG_SCC1_ETHERNET
-+static struct fs_platform_info mpc8xx_scc_pdata[] = {
-+	{
-+	 .rx_ring = 64,
-+	 .tx_ring = 8,
-+	 .rx_copybreak = 240,
-+
-+	 .use_napi = 1,
-+	 .napi_weight = 17,
-+	 .bus_info = &scc_mii_bus_info,
-+	 }
-+
-+};
-+#endif
-+
-+#if defined (CONFIG_FS_ENET)
-+
-+static struct platform_device mpc8xx_fec1_device = {
-+	.name = FS_ENET_NAME,
-+	.id = fsid_fec1,
-+	.dev.platform_data = &mpc8xx_fec_pdata[0],
-+	.num_resources = 2,
-+	.resource = (struct resource[]){
-+					{
-+					 .name = "regs",
-+					 .start =
-+					 MPC8xx_FEC1_OFFSET,
-+					 MPC8xx_FEC1_OFFSET + MPC8xx_FEC1_SIZE,
-+					 .flags = IORESOURCE_MEM,
-+					 },
-+					{
-+					 .name = "interrupt",
-+					 .start = FEC_INTERRUPT,
-+					 .end = FEC_INTERRUPT,
-+					 .flags = IORESOURCE_IRQ,
-+					 },
-+					},
-+};
-+#endif
-+
-+#ifdef CONFIG_SCC1_ETHERNET
-+
-+static struct platform_device mpc8xx_scc1_device = {
-+	.name = FS_ENET_NAME,
-+	.id = fsid_scc1,
-+	.dev.platform_data = &mpc8xx_scc_pdata,
-+	.num_resources = 3,
-+	.resource = (struct resource[]){
-+					{
-+					 .name = "regs",
-+					 .start = MPC8xx_SCC1_OFFSET,
-+					 .end = MPC8xx_SCC1_OFFSET + MPC8xx_SCC1_SIZE,
-+					 .flags = IORESOURCE_MEM,
-+					 },
-+					{
-+					 .name = "pram",
-+					 .start = MPC8xx_DPARAM_SCC1_OFFSET,
-+					 .end = MPC8xx_DPARAM_SCC1_OFFSET + MPC8xx_DPARAM_SCC1_SIZE,
-+					 .flags = IORESOURCE_MEM,
-+					 },
-+					{
-+					 .name = "interrupt",
-+					 .start = MPC8xx_INT_SCC1,
-+					 .end = MPC8xx_INT_SCC1,
-+					 .flags = IORESOURCE_IRQ,
-+					 },
-+					},
-+};
-+#endif
-+
-+static void __init mach_mpc86x_fixup(struct platform_device *pdev)
-+{
-+	int i;
-+
-+	for (i = 0; i < pdev->num_resources; i++) {
-+		struct resource *r = &pdev->resource[i];
-+		if ((r->flags & IORESOURCE_MEM) == IORESOURCE_MEM) {
-+			r->start += IMAP_ADDR;
-+			r->end += IMAP_ADDR;
-+		}
-+	}
-+}
-+
-+static void __init
-+mpc86x_nonplatform_device_init (void)
-+{
-+	volatile cpm8xx_t *cp = cpmp;
-+	unsigned long* bcsr_io;
-+
-+	bcsr_io = ioremap(BCSR1, sizeof(unsigned long));
-+#ifdef CONFIG_SERIAL_CPM_SMC1
-+	cp->cp_simode &= ~(0xe0000000>>17);	/* brg1 */
-+	out_be32((volatile unsigned __iomem *)bcsr_io,
-+		in_be32((volatile unsigned __iomem *)bcsr_io) &
-+			~(0x80000000>>7));
-+#else
-+	out_be32((volatile unsigned __iomem *)bcsr_io,
-+		in_be32((volatile unsigned __iomem *)bcsr_io) |
-+			(0x80000000>>7));
-+	cp->cp_pbpar &= ~(0x000000c0);
-+	cp->cp_pbdir |= 0x000000c0;
-+	cp->cp_smc[0].smc_smcmr = 0;
-+	cp->cp_smc[0].smc_smce = 0;
-+#endif
-+
-+#ifdef CONFIG_SERIAL_CPM_SMC2
-+	cp->cp_simode &= ~(0xe0000000>>1);
-+	cp->cp_simode |=  (0x20000000>>1);	/* brg2 */
-+	out_be32((volatile unsigned __iomem *)bcsr_io,
-+		in_be32((volatile unsigned __iomem *)bcsr_io) &
-+			~(0x80000000>>13));
-+#else
-+	out_be32((volatile unsigned __iomem *)bcsr_io,
-+		in_be32((volatile unsigned __iomem *)bcsr_io) | (0x80000000>>13));
-+	cp->cp_pbpar &= ~(0x00000c00);
-+	cp->cp_pbdir |= 0x00000c00;
-+	cp->cp_smc[1].smc_smcmr =0;
-+	cp->cp_smc[1].smc_smce =0;
-+#endif
-+	iounmap (bcsr_io);
-+}
-+
-+static void __init mpc866ads_fixup_enet_pdata(struct platform_device *pdev,
-+					      int idx)
-+{
-+	struct fs_platform_info *fpi = pdev->dev.platform_data;
-+	immap_t *immap = (immap_t *) IMAP_ADDR;
-+	volatile cpm8xx_t *cp;
-+	bd_t *bd = (bd_t *) __res;
-+	char *e;
-+	int i;
-+	unsigned long* bcsr_io;
-+
-+	cp = cpmp;		/* Get pointer to Communication Processor */
-+	/* common settings */
-+	fpi->fs_no = pdev->id;
-+	fpi->use_rmii = 0;
-+
-+		e = (unsigned char *)&bd->bi_enetaddr;
-+		for (i = 0; i < 6; i++)
-+			fpi->macaddr[i] = *e++;
-+		if (idx)
-+			fpi->macaddr[5]++;
-+
-+	switch (idx) {
-+	case fsid_fec1:
-+		mach_mpc86x_fixup(&mpc8xx_fec1_device);
-+		/* configure FEC1 pins 
-+		 */
-+		setbits16(immap->im_ioport.iop_pdpar, 0x1fff);
-+		setbits16(immap->im_ioport.iop_pddir, 0x1fff);
-+		bcsr_io = ioremap (BCSR5, sizeof(unsigned long));
-+		out_be32((volatile void __iomem *)bcsr_io, BCSR5_ETHRST | BCSR5_ETHEN);
-+		iounmap (bcsr_io);
-+
-+		/* setup specific */
-+		fpi->phy_addr = -1;
-+		fpi->phy_irq = PHY_INTERRUPT;
-+
-+		break;
-+
-+	case fsid_scc1:
-+		mach_mpc86x_fixup(&mpc8xx_scc1_device);
-+		/* Enable the PHY.
-+		 */
-+		bcsr_io = ioremap (BCSR1, sizeof(unsigned long));
-+		out_be32((volatile void __iomem *)bcsr_io, 
-+			((in_be32((volatile void __iomem *)bcsr_io) & ~BCSR1_ETHEN)));
-+		iounmap (bcsr_io);
-+
-+		/* Configure port A pins for Txd and Rxd.
-+		 */
-+	        /* Disable receive and transmit in case EPPC-Bug started it.
-+        	*/
-+		setbits16(immap->im_ioport.iop_papar,
-+			  PA_ENET_RXD | PA_ENET_TXD);
-+		clrbits16(immap->im_ioport.iop_padir,
-+			  PA_ENET_RXD | PA_ENET_TXD);
-+		clrbits16(immap->im_ioport.iop_paodr, PA_ENET_TXD);
-+
-+		/* Configure port C pins to enable CLSN and RENA.
-+		 */
-+		clrbits16(immap->im_ioport.iop_pcpar,
-+			  PC_ENET_CLSN | PC_ENET_RENA);
-+		clrbits16(immap->im_ioport.iop_pcdir,
-+			  PC_ENET_CLSN | PC_ENET_RENA);
-+		setbits16(immap->im_ioport.iop_pcso,
-+			  PC_ENET_CLSN | PC_ENET_RENA);
-+		/* Configure port A for TCLK and RCLK.
-+		 */
-+		setbits16(immap->im_ioport.iop_papar, PA_ENET_TCLK | PA_ENET_RCLK);
-+		clrbits16(immap->im_ioport.iop_padir,
-+			  PA_ENET_TCLK | PA_ENET_RCLK);
-+		clrbits32(immap->im_cpm.cp_pbpar, PB_ENET_TENA);
-+		clrbits32(immap->im_cpm.cp_pbdir, PB_ENET_TENA);
-+
-+		/* Configure Serial Interface clock routing.
-+		 * First, clear all SCC bits to zero, then set the ones we want.
-+		 */
-+		clrbits32(immap->im_cpm.cp_sicr, SICR_ENET_MASK);
-+		setbits32(immap->im_cpm.cp_sicr, SICR_ENET_CLKRT);
-+
-+		fpi->phy_addr = -1;
-+		fpi->phy_irq = -1;
-+
-+		/* In the original SCC enet driver the following code is placed at the end of the initialization */
-+		setbits32(immap->im_cpm.cp_pbpar, PB_ENET_TENA);
-+		setbits32(immap->im_cpm.cp_pbdir, PB_ENET_TENA);
-+		break;
-+	}
-+}
-+
-+static int __init mpc866ads_platform_notify(struct device *dev)
-+{
-+	/* devices in the table below usially have bus_id look like __name__ ".__num" when several devices
-+	reside in one bus, this __num will be passed into rtn function as idx. In case of FS_ENET, no need 
-+	to duplicate as we already have "id" field in platform_device. This is just a remembrance where
-+	the respictive fs_no should be pulled from. */
-+	static struct {
-+		const char *drv_id;
-+		int dev_id;
-+		void (*rtn) (struct platform_device * pdev, int idx);
-+	} dev_map [] = {
-+#ifdef CONFIG_FS_ENET
-+		{FS_ENET_NAME, fsid_fec1, mpc866ads_fixup_enet_pdata},
-+#endif
-+#ifdef CONFIG_SCC1_ETHERNET
-+		{FS_ENET_NAME, fsid_scc1, mpc866ads_fixup_enet_pdata},
-+#endif
-+	};
-+
-+	struct platform_device *pdev;
-+	int i, j, idx;
-+	char *s;
-+
-+	if (dev && dev->bus_id)
-+		for (i = 0; i < ARRAY_SIZE(dev_map); i++) {
-+			idx = -1;
-+
-+			if ((s = strrchr(dev->bus_id, '.')) != NULL) {
-+				idx = (int)simple_strtol(s + 1, NULL, 10);
-+			} else
-+				s = dev->bus_id;
-+			j = s - dev->bus_id;
-+
-+			if ((!strncmp(dev->bus_id, dev_map[i].drv_id, j)) &&
-+			    (idx == dev_map[i].dev_id)) {
-+				pdev =
-+				    container_of(dev, struct platform_device,
-+						 dev);
-+				dev_map[i].rtn(pdev, idx);
-+			}
-+		}
-+	return 0;
-+}
-+
-+int __init mpc866ads_init(void)
-+{
-+	printk(KERN_NOTICE "mpc866ads: Init\n");
-+
-+	if (ppc_md.progress)
-+		ppc_md.progress("mpc866ads_init:enter", 0);
-+	mpc86x_nonplatform_device_init();
-+	platform_notify = mpc866ads_platform_notify;
-+#if defined (CONFIG_FS_ENET)
-+	platform_device_register(&mpc8xx_fec1_device);
-+#endif
-+#ifdef CONFIG_SCC1_ETHERNET
-+	platform_device_register(&mpc8xx_scc1_device);
-+#endif
-+	return 0;
-+}
-+
-+arch_initcall(mpc866ads_init);
-diff --git a/arch/ppc/platforms/mpc885ads.h b/arch/ppc/platforms/mpc885ads.h
---- a/arch/ppc/platforms/mpc885ads.h
-+++ b/arch/ppc/platforms/mpc885ads.h
-@@ -88,5 +88,7 @@
- #define SICR_ENET_MASK	((uint)0x00ff0000)
- #define SICR_ENET_CLKRT	((uint)0x002c0000)
- 
-+#define BOARD_NAME "MPC885"
-+
- #endif /* __ASM_MPC885ADS_H__ */
- #endif /* __KERNEL__ */
-diff --git a/arch/ppc/platforms/mpc885ads_setup.c b/arch/ppc/platforms/mpc885ads_setup.c
-new file mode 100644
---- /dev/null
-+++ b/arch/ppc/platforms/mpc885ads_setup.c
-@@ -0,0 +1,399 @@
-+/*arch/ppc/platforms/mpc885ads-setup.c  
++ * Copyright (c) 2003 Intracom S.A. 
++ *  by Pantelis Antoniou <panto@intracom.gr>
 + *
-+ * Platform setup for the Freescale mpc885ads board
-+ *
++ * 2005 (c) MontaVista Software, Inc. 
 + * Vitaly Bordug <vbordug@ru.mvista.com>
-+ *
-+ * Copyright 2005 MontaVista Software Inc.
 + *
 + * This file is licensed under the terms of the GNU General Public License 
 + * version 2. This program is licensed "as is" without any warranty of any 
@@ -478,892 +72,2241 @@ new file mode 100644
 + */
 +
 +#include <linux/config.h>
-+#include <linux/init.h>
 +#include <linux/module.h>
-+#include <linux/param.h>
++#include <linux/kernel.h>
++#include <linux/types.h>
++#include <linux/sched.h>
 +#include <linux/string.h>
++#include <linux/ptrace.h>
++#include <linux/errno.h>
 +#include <linux/ioport.h>
-+#include <linux/device.h>
-+
-+#include <linux/fs_enet_pd.h>
++#include <linux/slab.h>
++#include <linux/interrupt.h>
++#include <linux/pci.h>
++#include <linux/init.h>
++#include <linux/delay.h>
++#include <linux/netdevice.h>
++#include <linux/etherdevice.h>
++#include <linux/skbuff.h>
++#include <linux/spinlock.h>
 +#include <linux/mii.h>
++#include <linux/ethtool.h>
++#include <linux/bitops.h>
++#include <linux/fs.h>
 +
-+#include <asm/delay.h>
-+#include <asm/io.h>
-+#include <asm/machdep.h>
-+#include <asm/page.h>
-+#include <asm/processor.h>
-+#include <asm/system.h>
-+#include <asm/time.h>
-+#include <asm/ppcboot.h>
-+#include <asm/8xx_immap.h>
-+#include <asm/commproc.h>
++#include <asm/immap_cpm2.h>
++#include <asm/mpc8260.h>
++#include <asm/cpm2.h>
 +
-+extern unsigned char __res[];
++#include <asm/pgtable.h>
++#include <asm/irq.h>
++#include <asm/uaccess.h>
 +
-+/* access ports */
-+#define setbits32(_addr, _v) out_be32(&(_addr), in_be32(&(_addr)) |  (_v))
-+#define clrbits32(_addr, _v) out_be32(&(_addr), in_be32(&(_addr)) & ~(_v))
++#include "fs_enet.h"
 +
-+#define setbits16(_addr, _v) out_be16(&(_addr), in_be16(&(_addr)) |  (_v))
-+#define clrbits16(_addr, _v) out_be16(&(_addr), in_be16(&(_addr)) & ~(_v))
++/*************************************************/
 +
-+void __init mpc885ads_scc_phy_init(void);
++/* FCC access macros */
 +
-+static struct fs_mii_bus_info fec_mii_bus_info = {
-+	.method = fsmii_fec,
-+	.id = 0,
-+};
++#define __fcc_out32(addr, x)	out_be32((unsigned *)addr, x)
++#define __fcc_out16(addr, x)	out_be16((unsigned short *)addr, x)
++#define __fcc_out8(addr, x)	out_8((unsigned char *)addr, x)
++#define __fcc_in32(addr)	in_be32((unsigned *)addr)
++#define __fcc_in16(addr)	in_be16((unsigned short *)addr)
++#define __fcc_in8(addr)		in_8((unsigned char *)addr)
 +
-+static struct fs_mii_bus_info scc_mii_bus_info = {
-+#ifdef CONFIG_MPC885ADS_SCC_ENET_FIXED
-+	.method = fsmii_fixed,
-+#else
-+	.method = fsmii_fec,
-+#endif
++/* parameter space */
 +
-+	.id = 0,
-+};
++/* write, read, set bits, clear bits */
++#define W32(_p, _m, _v)	__fcc_out32(&(_p)->_m, (_v))
++#define R32(_p, _m)	__fcc_in32(&(_p)->_m)
++#define S32(_p, _m, _v)	W32(_p, _m, R32(_p, _m) | (_v))
++#define C32(_p, _m, _v)	W32(_p, _m, R32(_p, _m) & ~(_v))
 +
-+static struct fs_platform_info mpc8xx_fec_pdata[] = {
-+	{
-+	 .rx_ring = 128,
-+	 .tx_ring = 16,
-+	 .rx_copybreak = 240,
++#define W16(_p, _m, _v)	__fcc_out16(&(_p)->_m, (_v))
++#define R16(_p, _m)	__fcc_in16(&(_p)->_m)
++#define S16(_p, _m, _v)	W16(_p, _m, R16(_p, _m) | (_v))
++#define C16(_p, _m, _v)	W16(_p, _m, R16(_p, _m) & ~(_v))
 +
-+	 .use_napi = 1,
-+	 .napi_weight = 17,
++#define W8(_p, _m, _v)	__fcc_out8(&(_p)->_m, (_v))
++#define R8(_p, _m)	__fcc_in8(&(_p)->_m)
++#define S8(_p, _m, _v)	W8(_p, _m, R8(_p, _m) | (_v))
++#define C8(_p, _m, _v)	W8(_p, _m, R8(_p, _m) & ~(_v))
 +
-+	 .bus_info = &fec_mii_bus_info,
-+	 }, {
-+	     .rx_ring = 128,
-+	     .tx_ring = 16,
-+	     .rx_copybreak = 240,
++/*************************************************/
 +
-+	     .use_napi = 1,
-+	     .napi_weight = 17,
++#define FCC_MAX_MULTICAST_ADDRS	64
 +
-+	     .bus_info = &fec_mii_bus_info,
-+	     }
-+};
++#define mk_mii_read(REG)	(0x60020000 | ((REG & 0x1f) << 18))
++#define mk_mii_write(REG, VAL)	(0x50020000 | ((REG & 0x1f) << 18) | (VAL & 0xffff))
++#define mk_mii_end		0
 +
-+static struct fs_platform_info mpc8xx_scc_pdata = {
-+	 .rx_ring = 64,
-+	 .tx_ring = 8,
-+	 .rx_copybreak = 240,
++#define MAX_CR_CMD_LOOPS	10000
 +
-+	 .use_napi = 1,
-+	 .napi_weight = 17,
-+	 .bus_info = &scc_mii_bus_info,
-+};
-+
-+static void __init mpc885_nonplatform_device_init(void)
++static inline int fcc_cr_cmd(struct fs_enet_private *fep, u32 mcn, u32 op)
 +{
-+	immap_t *immap = (immap_t *) IMAP_ADDR;
-+	volatile cpm8xx_t *cp = cpmp;
-+	unsigned long *bcsr_io;
-+
-+	bcsr_io = ioremap(BCSR1, sizeof(unsigned long));
-+	BUG_ON(bcsr_io == NULL);	/* check */
-+
-+#ifdef CONFIG_SERIAL_CPM_SMC1
-+	cp->cp_simode &= ~(0xe0000000 >> 17);	/* brg1 */
-+	out_be32((volatile unsigned __iomem *)bcsr_io,
-+		 in_be32((volatile unsigned __iomem *)bcsr_io) &
-+		 ~BCSR1_RS232EN_1);
-+#else
-+	out_be32((volatile unsigned __iomem *)bcsr_io,
-+		 in_be32((volatile unsigned __iomem *)bcsr_io) |
-+		 BCSR1_RS232EN_1);
-+	cp->cp_smc[0].smc_smcmr = 0;
-+	cp->cp_smc[0].smc_smce = 0;
-+#endif
-+
-+#ifdef CONFIG_SERIAL_CPM_SMC2
-+	cp->cp_simode &= ~(0xe0000000 >> 1);
-+	cp->cp_simode |= (0x20000000 >> 1);	/* brg2 */
-+	out_be32((volatile unsigned __iomem *)bcsr_io,
-+		 in_be32((volatile unsigned __iomem *)bcsr_io) &
-+		 ~BCSR1_RS232EN_2);
-+#else
-+	out_be32((volatile unsigned __iomem *)bcsr_io,
-+		 in_be32((volatile unsigned __iomem *)bcsr_io) |
-+		 BCSR1_RS232EN_2);
-+	cp->cp_smc[1].smc_smcmr = 0;
-+	cp->cp_smc[1].smc_smce = 0;
-+#endif
-+	iounmap(bcsr_io);
-+
-+#ifdef CONFIG_FS_ENET
-+	/* use MDC for MII (common) */
-+	setbits16(immap->im_ioport.iop_pdpar, 0x0080);
-+	clrbits16(immap->im_ioport.iop_pddir, 0x0080);
-+#endif
-+}
-+
-+static void setup_fec1_ioports(void)
-+{
-+	immap_t *immap = (immap_t *) IMAP_ADDR;
-+
-+	/* configure FEC1 pins  */
-+	setbits16(immap->im_ioport.iop_papar, 0xf830);
-+	setbits16(immap->im_ioport.iop_padir, 0x0830);
-+	clrbits16(immap->im_ioport.iop_padir, 0xf000);
-+	setbits32(immap->im_cpm.cp_pbpar, 0x00001001);
-+
-+	clrbits32(immap->im_cpm.cp_pbdir, 0x00001001);
-+	setbits16(immap->im_ioport.iop_pcpar, 0x000c);
-+	clrbits16(immap->im_ioport.iop_pcdir, 0x000c);
-+	setbits32(immap->im_cpm.cp_pepar, 0x00000003);
-+
-+	setbits32(immap->im_cpm.cp_pedir, 0x00000003);
-+	clrbits32(immap->im_cpm.cp_peso, 0x00000003);
-+	clrbits32(immap->im_cpm.cp_cptr, 0x00000100);
-+}
-+
-+static void setup_fec2_ioports(void)
-+{
-+	immap_t *immap = (immap_t *) IMAP_ADDR;
-+
-+	/* configure FEC2 pins */
-+	setbits32(immap->im_cpm.cp_pepar, 0x0003fffc);
-+	setbits32(immap->im_cpm.cp_pedir, 0x0003fffc);
-+	setbits32(immap->im_cpm.cp_peso, 0x00037800);
-+	clrbits32(immap->im_cpm.cp_peso, 0x000087fc);
-+	clrbits32(immap->im_cpm.cp_cptr, 0x00000080);
-+}
-+
-+static void setup_scc3_ioports(void)
-+{
-+	immap_t *immap = (immap_t *) IMAP_ADDR;
-+	unsigned long *bcsr_io;
-+
-+	bcsr_io = ioremap(BCSR0, sizeof(unsigned long) * 5);
-+
-+	/* Enable the PHY.
-+	 */
-+	out_be32((volatile void __iomem *)(bcsr_io + 4),
-+		 (in_be32((volatile void __iomem *)(bcsr_io + 4)) |
-+		  BCSR4_ETH10_RST));
++	const struct fs_platform_info *fpi = fep->fpi;
++		
++	cpm2_map_t *immap = fs_enet_immap;
++	cpm_cpm2_t *cpmp = &immap->im_cpm;
++	u32 v;
 +	
-+	/* Configure port A pins for Txd and Rxd.
-+	 */
-+	setbits16(immap->im_ioport.iop_papar, PA_ENET_RXD | PA_ENET_TXD);
-+	clrbits16(immap->im_ioport.iop_padir, PA_ENET_RXD | PA_ENET_TXD);
++	/* Currently I don't know what feature call will look like. But 
++	I guess there'd be something like do_cpm_cmd() which will require page & sblock*/
++	v = mk_cr_cmd(fpi->cp_page,fpi->cp_block , mcn, op);
++	W32(cpmp, cp_cpcr, v | CPM_CR_FLG);
++	while ((R32(cpmp, cp_cpcr) & CPM_CR_FLG) != 0)
++		;
 +
-+	/* Configure port C pins to enable CLSN and RENA.
-+	 */
-+	clrbits16(immap->im_ioport.iop_pcpar, PC_ENET_CLSN | PC_ENET_RENA);
-+	clrbits16(immap->im_ioport.iop_pcdir, PC_ENET_CLSN | PC_ENET_RENA);
-+	setbits16(immap->im_ioport.iop_pcso, PC_ENET_CLSN | PC_ENET_RENA);
-+
-+	/* Configure port E for TCLK and RCLK.
-+	 */
-+	setbits32(immap->im_cpm.cp_pepar, PE_ENET_TCLK | PE_ENET_RCLK);
-+	clrbits32(immap->im_cpm.cp_pepar, PE_ENET_TENA);
-+	clrbits32(immap->im_cpm.cp_pedir,
-+		  PE_ENET_TCLK | PE_ENET_RCLK | PE_ENET_TENA);
-+	clrbits32(immap->im_cpm.cp_peso, PE_ENET_TCLK | PE_ENET_RCLK);
-+	setbits32(immap->im_cpm.cp_peso, PE_ENET_TENA);
-+
-+	/* Configure Serial Interface clock routing.
-+	 * First, clear all SCC bits to zero, then set the ones we want.
-+	 */
-+	clrbits32(immap->im_cpm.cp_sicr, SICR_ENET_MASK);
-+	setbits32(immap->im_cpm.cp_sicr, SICR_ENET_CLKRT);
-+
-+	/* Disable Rx and Tx. SMC1 sshould be stopped if SCC3 eternet are used.
-+	 */
-+	immap->im_cpm.cp_smc[0].smc_smcmr &= ~(SMCMR_REN | SMCMR_TEN);
-+	/* On the MPC885ADS SCC ethernet PHY is initialized in the full duplex mode
-+	 * by H/W setting after reset. SCC ethernet controller support only half duplex.
-+	 * This discrepancy of modes causes a lot of carrier lost errors.
-+	 */
-+	
-+	/* In the original SCC enet driver the following code is placed at the end of the initialization */
-+	setbits32(immap->im_cpm.cp_pepar, PE_ENET_TENA);
-+	clrbits32(immap->im_cpm.cp_pedir, PE_ENET_TENA);
-+	setbits32(immap->im_cpm.cp_peso, PE_ENET_TENA);
-+
-+	out_be32(((volatile void __iomem *)(bcsr_io + 1)),
-+		 (in_be32((volatile void __iomem *)(bcsr_io + 1)) |
-+		  BCSR1_ETHEN));
-+	iounmap(bcsr_io);
-+
++	return 0;
 +}
 +
-+static void __init mpc885ads_fixup_enet_pdata(struct platform_device *pdev,
-+					      int fs_no)
++static int do_pd_setup(struct fs_enet_private *fep)
 +{
-+	struct fs_platform_info *fpi = pdev->dev.platform_data;
++	struct platform_device *pdev = to_platform_device(fep->dev); 
++	struct resource	*r; 
++	
 +
-+	volatile cpm8xx_t *cp;
-+	bd_t *bd = (bd_t *) __res;
-+	char *e;
++	/* Fill out IRQ field */
++	fep->interrupt = platform_get_irq(pdev, 0);
++	
++	/* Attach the memory for the FCC Parameter RAM */
++	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "fcc_pram");
++	fep->fcc.ep = (void*)r->start;
++	
++	if(fep->fcc.ep == NULL)
++		return -EINVAL;
++
++	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "fcc_regs");
++	fep->fcc.fccp =(void*)r->start;
++
++	if(fep->fcc.fccp == NULL)
++		return -EINVAL;
++
++	fep->fcc.fcccp = (void*)fep->fpi->fcc_regs_c;
++
++	if(fep->fcc.fcccp == NULL)
++		return -EINVAL;
++
++	return 0;
++}
++
++#define FCC_NAPI_RX_EVENT_MSK	(FCC_ENET_RXF | FCC_ENET_RXB)
++#define FCC_RX_EVENT		(FCC_ENET_RXF)
++#define FCC_TX_EVENT		(FCC_ENET_TXB)
++#define FCC_ERR_EVENT_MSK	(FCC_ENET_TXE | FCC_ENET_BSY)
++
++static int setup_data(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	const struct fs_platform_info *fpi = fep->fpi;
++
++	fep->fcc.idx = fs_get_fcc_index(fpi->fs_no);
++	if ((unsigned int)fep->fcc.idx >= 3)	/* max 3 FCCs */
++		return -EINVAL;
++	
++	fep->fcc.mem = (void*)fpi->mem_offset;
++	
++	if(do_pd_setup(fep) != 0)
++		return -EINVAL;
++
++	fep->ev_napi_rx = FCC_NAPI_RX_EVENT_MSK;
++	fep->ev_rx = FCC_RX_EVENT;
++	fep->ev_tx = FCC_TX_EVENT;
++	fep->ev_err = FCC_ERR_EVENT_MSK;
++
++	return 0;
++}
++
++static int allocate_bd(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	const struct fs_platform_info *fpi = fep->fpi;
++
++	fep->ring_base = dma_alloc_coherent(fep->dev,
++					    (fpi->tx_ring + fpi->rx_ring) *
++					    sizeof(cbd_t), &fep->ring_mem_addr,
++					    GFP_KERNEL);
++	if (fep->ring_base == NULL) {
++		return -ENOMEM;
++	}
++	return 0;
++}
++
++static void free_bd(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	const struct fs_platform_info *fpi = fep->fpi;
++
++	if(fep->ring_base)
++		dma_free_coherent(fep->dev, (fpi->tx_ring + fpi->rx_ring)
++					* sizeof(cbd_t),
++					fep->ring_base,
++					fep->ring_mem_addr);
++}
++
++static void cleanup_data(struct net_device *dev)
++{
++	/* nothing */
++}
++
++static void set_promiscuous_mode(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	fcc_t *fccp = fep->fcc.fccp;
++
++	S32(fccp, fcc_fpsmr, FCC_PSMR_PRO);
++}
++
++static void set_multicast_start(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	fcc_enet_t *ep = fep->fcc.ep;
++
++	W32(ep, fen_gaddrh, 0);
++	W32(ep, fen_gaddrl, 0);
++}
++
++static void set_multicast_one(struct net_device *dev, const u8 *mac)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	fcc_enet_t *ep = fep->fcc.ep;
++	u16 taddrh, taddrm, taddrl;
++
++	taddrh = ((u16)mac[5] << 8) | mac[4];
++	taddrm = ((u16)mac[3] << 8) | mac[2];
++	taddrl = ((u16)mac[1] << 8) | mac[0];
++
++	W16(ep, fen_taddrh, taddrh);
++	W16(ep, fen_taddrm, taddrm);
++	W16(ep, fen_taddrl, taddrl);
++	fcc_cr_cmd(fep, 0x0C, CPM_CR_SET_GADDR);
++}
++
++static void set_multicast_finish(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	fcc_t *fccp = fep->fcc.fccp;
++	fcc_enet_t *ep = fep->fcc.ep;
++
++	/* clear promiscuous always */
++	C32(fccp, fcc_fpsmr, FCC_PSMR_PRO);
++
++	/* if all multi or too many multicasts; just enable all */
++	if ((dev->flags & IFF_ALLMULTI) != 0 ||
++	    dev->mc_count > FCC_MAX_MULTICAST_ADDRS) {
++
++		W32(ep, fen_gaddrh, 0xffffffff);
++		W32(ep, fen_gaddrl, 0xffffffff);
++	}
++
++	/* read back */
++	fep->fcc.gaddrh = R32(ep, fen_gaddrh);
++	fep->fcc.gaddrl = R32(ep, fen_gaddrl);
++}
++
++static void set_multicast_list(struct net_device *dev)
++{
++	struct dev_mc_list *pmc;
++
++	if ((dev->flags & IFF_PROMISC) == 0) {
++		set_multicast_start(dev);
++		for (pmc = dev->mc_list; pmc != NULL; pmc = pmc->next)
++			set_multicast_one(dev, pmc->dmi_addr);
++		set_multicast_finish(dev);
++	} else
++		set_promiscuous_mode(dev);
++}
++
++static void restart(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	const struct fs_platform_info *fpi = fep->fpi;
++	fcc_t *fccp = fep->fcc.fccp;
++	fcc_c_t *fcccp = fep->fcc.fcccp;
++	fcc_enet_t *ep = fep->fcc.ep;
++	dma_addr_t rx_bd_base_phys, tx_bd_base_phys;
++	u16 paddrh, paddrm, paddrl;
++	u16 mem_addr;
++	const unsigned char *mac;
 +	int i;
 +
-+	/* Get pointer to Communication Processor */
-+	cp = cpmp;
-+	switch (fs_no) {
-+	case fsid_fec1:
-+		fpi = &mpc8xx_fec_pdata[fs_get_fec_index(fs_no)];
-+		fpi->init_ioports = &setup_fec1_ioports;
++	C32(fccp, fcc_gfmr, FCC_GFMR_ENR | FCC_GFMR_ENT);
 +
-+		fpi->phy_addr = 0;
-+		fpi->phy_irq = SIU_IRQ7;
-+		break;
-+	case fsid_fec2:
-+		fpi = &mpc8xx_fec_pdata[fs_get_fec_index(fs_no)];
-+		fpi->init_ioports = &setup_fec2_ioports;
++	/* clear everything (slow & steady does it) */
++	for (i = 0; i < sizeof(*ep); i++)
++		__fcc_out8((char *)ep + i, 0);
 +
-+		fpi->phy_addr = 1;
-+		fpi->phy_irq = SIU_IRQ7;
-+		break;
-+	case fsid_scc3:
-+		fpi = &mpc8xx_scc_pdata;
-+		fpi->init_ioports = &setup_scc3_ioports;
-+		mpc885ads_scc_phy_init();
++	/* get physical address */
++	rx_bd_base_phys = fep->ring_mem_addr;
++	tx_bd_base_phys = rx_bd_base_phys + sizeof(cbd_t) * fpi->rx_ring;
 +
-+		fpi->phy_addr = 2;
++	/* point to bds */
++	W32(ep, fen_genfcc.fcc_rbase, rx_bd_base_phys);
++	W32(ep, fen_genfcc.fcc_tbase, tx_bd_base_phys);
 +
-+#ifdef CONFIG_MPC885ADS_SCC_ENET_FIXED
-+		fpi->phy_irq = -1;
-+#else
-+		fpi->phy_irq = SIU_IRQ7;
-+#endif
-+
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	pdev->dev.platform_data = fpi;
-+	fpi->fs_no = fs_no;
-+	fpi->use_rmii = 0;
-+	e = (unsigned char *)&bd->bi_enetaddr;
-+	for (i = 0; i < 6; i++)
-+		fpi->macaddr[i] = *e++;
-+
-+	fpi->macaddr[5 - pdev->id]++;
-+
-+}
-+
-+static void __init mpc885ads_fixup_fec_enet_pdata(struct platform_device* pdev, int idx)
-+{
-+	int fs_no = fsid_fec1 + pdev->id -1;
-+	mpc885ads_fixup_enet_pdata(pdev, fs_no);
-+}
-+
-+static void __init mpc885ads_fixup_scc_enet_pdata(struct platform_device* pdev, int idx)
-+{
-+	int fs_no = fsid_scc1 + pdev->id -1;
-+	mpc885ads_fixup_enet_pdata(pdev, fs_no);
-+}
-+
-+/* SCC ethernet controller does not have MII management channel. FEC1 MII
-+ * channel is used to communicate with the 10Mbit PHY.
-+ */
-+
-+#define PHY_ADDR            0x2
-+
-+#define MII_ECNTRL_PINMUX        0x4
-+#define FEC_ECNTRL_PINMUX        0x00000004
-+#define FEC_RCNTRL_MII_MODE        0x00000004
-+
-+/* Make MII read/write commands.
-+ */
-+#define mk_mii_write(REG, VAL)    (0x50020000 | (((REG) & 0x1f) << 18) | \
-+                ((VAL) & 0xffff) | (PHY_ADDR << 23))
-+
-+void __init mpc885ads_scc_phy_init(void)
-+{
-+	volatile immap_t *immap;
-+	volatile fec_t *fecp;
-+	bd_t *bd;
-+
-+	bd = (bd_t *) __res;
-+	immap = (immap_t *) IMAP_ADDR;	/* pointer to internal registers */
-+	fecp = &(immap->im_cpm.cp_fec);
-+
-+	/* Enable MII pins of the FEC1
++	/* Set maximum bytes per receive buffer.
++	 * It must be a multiple of 32.
 +	 */
-+	immap->im_ioport.iop_pdpar |= 0x0080;
-+	immap->im_ioport.iop_pddir &= ~0x0080;
-+	/* Set MII speed to 2.5 MHz
++	W16(ep, fen_genfcc.fcc_mrblr, PKT_MAXBLR_SIZE);
++
++	W32(ep, fen_genfcc.fcc_rstate, (CPMFCR_GBL | CPMFCR_EB) << 24);
++	W32(ep, fen_genfcc.fcc_tstate, (CPMFCR_GBL | CPMFCR_EB) << 24);
++
++	/* Allocate space in the reserved FCC area of DPRAM for the
++	 * internal buffers.  No one uses this space (yet), so we
++	 * can do this.  Later, we will add resource management for
++	 * this area.
 +	 */
-+	fecp->fec_mii_speed =
-+	    ((((bd->bi_intfreq + 4999999) / 2500000) / 2) & 0x3F) << 1;
-+
-+	/* Enable FEC pin MUX
-+	 */
-+	fecp->fec_ecntrl |= MII_ECNTRL_PINMUX;
-+	fecp->fec_r_cntrl |= FEC_RCNTRL_MII_MODE;
-+
-+	fecp->fec_mii_data = mk_mii_write(MII_BMCR, BMCR_ISOLATE);
-+	udelay(100);
-+	fecp->fec_mii_data =
-+	    mk_mii_write(MII_ADVERTISE, ADVERTISE_10HALF | ADVERTISE_CSMA);
-+	udelay(100);
-+
-+	/* Disable FEC MII settings
-+	 */
-+	fecp->fec_ecntrl &= ~MII_ECNTRL_PINMUX;
-+	fecp->fec_r_cntrl &= ~FEC_RCNTRL_MII_MODE;
-+	fecp->fec_mii_speed = 0;
-+}
-+
-+static int __init mpc885ads_platform_notify(struct device *dev)
-+{
-+	static struct {
-+		const char *bus_id;
-+		void (*rtn) (struct platform_device * pdev, int idx);
-+	} dev_map[] = {
-+		{"fsl-cpm-fec", mpc885ads_fixup_fec_enet_pdata}, 
-+		{"fsl-cpm-scc", mpc885ads_fixup_scc_enet_pdata},
-+	};
-+	struct platform_device *pdev;
-+	int i, j, idx;
-+	const char *s;
-+	if (dev && dev->bus_id)
-+		for (i = 0; i < ARRAY_SIZE(dev_map); i++) {
-+			idx = -1;
-+
-+			if ((s = strrchr(dev->bus_id, '.')) != NULL)
-+				idx = (int)simple_strtol(s + 1, NULL, 10);
-+			else
-+				s = dev->bus_id;
-+			j = s - dev->bus_id;
-+			if (!strncmp(dev->bus_id, dev_map[i].bus_id, j)) {
-+				pdev =
-+				    container_of(dev, struct platform_device,
-+						 dev);
-+				dev_map[i].rtn(pdev, idx);
-+			}
-+		}
-+	return 0;
-+}
-+
-+int __init mpc885ads_init(void)
-+{
-+	printk(KERN_NOTICE "mpc885ads: Init\n");
-+
-+	mpc885_nonplatform_device_init();
-+	platform_notify = mpc885ads_platform_notify;
-+
-+	identify_ppc_sys_by_name(BOARD_NAME);
-+
-+#ifdef CONFIG_MPC885ADS_SECOND_ETH_SCC
-+	ppc_sys_device_remove(MPC8xx_CPM_FEC2);	
-+#endif
-+#ifdef CONFIG_MPC885ADS_SECOND_ETH_FEC2
-+	ppc_sys_device_remove(MPC8xx_CPM_SCC3);
-+#endif
 +	
++	mem_addr = (u32)fep->fcc.mem; /* de-fixup dpram offset*/
++
++	W16(ep, fen_genfcc.fcc_riptr, (mem_addr & 0xffff));
++	W16(ep, fen_genfcc.fcc_tiptr, ((mem_addr + 32) & 0xffff));
++	W16(ep, fen_padptr, mem_addr + 64);
++	
++	/* fill with special symbol...  */
++	memset(fep->fcc.mem + fpi->dpram_offset + 64, 0x88, 32);
++
++	W32(ep, fen_genfcc.fcc_rbptr, 0);
++	W32(ep, fen_genfcc.fcc_tbptr, 0);
++	W32(ep, fen_genfcc.fcc_rcrc, 0);
++	W32(ep, fen_genfcc.fcc_tcrc, 0);
++	W16(ep, fen_genfcc.fcc_res1, 0);
++	W32(ep, fen_genfcc.fcc_res2, 0);
++
++	/* no CAM */
++	W32(ep, fen_camptr, 0);
++
++	/* Set CRC preset and mask */
++	W32(ep, fen_cmask, 0xdebb20e3);
++	W32(ep, fen_cpres, 0xffffffff);
++
++	W32(ep, fen_crcec, 0);		/* CRC Error counter       */
++	W32(ep, fen_alec, 0);		/* alignment error counter */
++	W32(ep, fen_disfc, 0);		/* discard frame counter   */
++	W16(ep, fen_retlim, 15);	/* Retry limit threshold   */
++	W16(ep, fen_pper, 0);		/* Normal persistence      */
++
++	/* set group address */
++	W32(ep, fen_gaddrh, fep->fcc.gaddrh);
++	W32(ep, fen_gaddrl, fep->fcc.gaddrh);
++
++	/* Clear hash filter tables */
++	W32(ep, fen_iaddrh, 0);
++	W32(ep, fen_iaddrl, 0);
++
++	/* Clear the Out-of-sequence TxBD  */
++	W16(ep, fen_tfcstat, 0);
++	W16(ep ,fen_tfclen, 0);
++	W32(ep, fen_tfcptr, 0);
++
++	W16(ep, fen_mflr, PKT_MAXBUF_SIZE);   /* maximum frame length register */
++	W16(ep, fen_minflr, PKT_MINBUF_SIZE); /* minimum frame length register */
++
++	/* set address */
++	mac = dev->dev_addr;
++	paddrh = ((u16)mac[5] << 8) | mac[4];
++	paddrm = ((u16)mac[3] << 8) | mac[2];
++	paddrl = ((u16)mac[1] << 8) | mac[0];
++
++	W16(ep, fen_paddrh, paddrh);
++	W16(ep, fen_paddrm, paddrm);
++	W16(ep, fen_paddrl, paddrl);
++
++	W16(ep, fen_taddrh, 0);
++	W16(ep, fen_taddrm, 0);
++	W16(ep, fen_taddrl, 0);
++
++	W16(ep, fen_maxd1, 1520);	/* maximum DMA1 length */
++	W16(ep, fen_maxd2, 1520);	/* maximum DMA2 length */
++
++	/* Clear stat counters, in case we ever enable RMON */
++	W32(ep, fen_octc, 0);
++	W32(ep, fen_colc, 0);
++	W32(ep, fen_broc, 0);
++	W32(ep, fen_mulc, 0);
++	W32(ep, fen_uspc, 0);
++	W32(ep, fen_frgc, 0);
++	W32(ep, fen_ospc, 0);
++	W32(ep, fen_jbrc, 0);
++	W32(ep, fen_p64c, 0);
++	W32(ep, fen_p65c, 0);
++	W32(ep, fen_p128c, 0);
++	W32(ep, fen_p256c, 0);
++	W32(ep, fen_p512c, 0);
++	W32(ep, fen_p1024c, 0);
++
++	W16(ep, fen_rfthr, 0);	/* Suggested by manual */
++	W16(ep, fen_rfcnt, 0);
++	W16(ep, fen_cftype, 0);
++
++	fs_init_bds(dev);
++
++	/* adjust to speed (for RMII mode) */
++	if (fpi->use_rmii) {
++		if (fep->speed == 100)
++			C8(fcccp, fcc_gfemr, 0x20);
++		else
++			S8(fcccp, fcc_gfemr, 0x20);
++	}
++
++	fcc_cr_cmd(fep, 0x0c, CPM_CR_INIT_TRX);
++
++	/* clear events */
++	W16(fccp, fcc_fcce, 0xffff);
++
++	/* Enable interrupts we wish to service */
++	W16(fccp, fcc_fccm, FCC_ENET_TXE | FCC_ENET_RXF | FCC_ENET_TXB);
++
++	/* Set GFMR to enable Ethernet operating mode */
++	W32(fccp, fcc_gfmr, FCC_GFMR_TCI | FCC_GFMR_MODE_ENET);
++
++	/* set sync/delimiters */
++	W16(fccp, fcc_fdsr, 0xd555);
++
++	W32(fccp, fcc_fpsmr, FCC_PSMR_ENCRC);
++
++	if (fpi->use_rmii)
++		S32(fccp, fcc_fpsmr, FCC_PSMR_RMII);
++
++	/* adjust to duplex mode */
++	if (fep->duplex)
++		S32(fccp, fcc_fpsmr, FCC_PSMR_FDE | FCC_PSMR_LPB);
++	else
++		C32(fccp, fcc_fpsmr, FCC_PSMR_FDE | FCC_PSMR_LPB);
++
++	S32(fccp, fcc_gfmr, FCC_GFMR_ENR | FCC_GFMR_ENT);
++}
++
++static void stop(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	fcc_t *fccp = fep->fcc.fccp;
++
++	/* stop ethernet */
++	C32(fccp, fcc_gfmr, FCC_GFMR_ENR | FCC_GFMR_ENT);
++
++	/* clear events */
++	W16(fccp, fcc_fcce, 0xffff);
++
++	/* clear interrupt mask */
++	W16(fccp, fcc_fccm, 0);
++
++	fs_cleanup_bds(dev);
++}
++
++static void pre_request_irq(struct net_device *dev, int irq)
++{
++	/* nothing */
++}
++
++static void post_free_irq(struct net_device *dev, int irq)
++{
++	/* nothing */
++}
++
++static void napi_clear_rx_event(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	fcc_t *fccp = fep->fcc.fccp;
++
++	W16(fccp, fcc_fcce, FCC_NAPI_RX_EVENT_MSK);
++}
++
++static void napi_enable_rx(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	fcc_t *fccp = fep->fcc.fccp;
++
++	S16(fccp, fcc_fccm, FCC_NAPI_RX_EVENT_MSK);
++}
++
++static void napi_disable_rx(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	fcc_t *fccp = fep->fcc.fccp;
++
++	C16(fccp, fcc_fccm, FCC_NAPI_RX_EVENT_MSK);
++}
++
++static void rx_bd_done(struct net_device *dev)
++{
++	/* nothing */
++}
++
++static void tx_kickstart(struct net_device *dev)
++{
++	/* nothing */
++}
++
++static u32 get_int_events(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	fcc_t *fccp = fep->fcc.fccp;
++
++	return (u32)R16(fccp, fcc_fcce);
++}
++
++static void clear_int_events(struct net_device *dev, u32 int_events)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	fcc_t *fccp = fep->fcc.fccp;
++
++	W16(fccp, fcc_fcce, int_events & 0xffff);
++}
++
++static void ev_error(struct net_device *dev, u32 int_events)
++{
++	printk(KERN_WARNING DRV_MODULE_NAME
++	       ": %s FS_ENET ERROR(s) 0x%x\n", dev->name, int_events);
++}
++
++int get_regs(struct net_device *dev, void *p, int *sizep)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++
++	if (*sizep < sizeof(fcc_t) + sizeof(fcc_c_t) + sizeof(fcc_enet_t))
++		return -EINVAL;
++
++	memcpy_fromio(p, fep->fcc.fccp, sizeof(fcc_t));
++	p = (char *)p + sizeof(fcc_t);
++
++	memcpy_fromio(p, fep->fcc.fcccp, sizeof(fcc_c_t));
++	p = (char *)p + sizeof(fcc_c_t);
++
++	memcpy_fromio(p, fep->fcc.ep, sizeof(fcc_enet_t));
++
 +	return 0;
 +}
 +
-+arch_initcall(mpc885ads_init);
-diff --git a/arch/ppc/syslib/Makefile b/arch/ppc/syslib/Makefile
---- a/arch/ppc/syslib/Makefile
-+++ b/arch/ppc/syslib/Makefile
-@@ -34,7 +34,8 @@ ifeq ($(CONFIG_40x),y)
- obj-$(CONFIG_PCI)		+= indirect_pci.o pci_auto.o ppc405_pci.o
- endif
- endif
--obj-$(CONFIG_8xx)		+= m8xx_setup.o ppc8xx_pic.o $(wdt-mpc8xx-y)
-+obj-$(CONFIG_8xx)		+= m8xx_setup.o ppc8xx_pic.o $(wdt-mpc8xx-y) \
-+				   ppc_sys.o mpc8xx_devices.o mpc8xx_sys.o
- ifeq ($(CONFIG_8xx),y)
- obj-$(CONFIG_PCI)		+= qspan_pci.o i8259.o
- endif
-diff --git a/arch/ppc/syslib/mpc8xx_devices.c b/arch/ppc/syslib/mpc8xx_devices.c
-new file mode 100644
++int get_regs_len(struct net_device *dev)
++{
++	return sizeof(fcc_t) + sizeof(fcc_c_t) + sizeof(fcc_enet_t);
++}
++
++/* Some transmit errors cause the transmitter to shut
++ * down.  We now issue a restart transmit.  Since the
++ * errors close the BD and update the pointers, the restart
++ * _should_ pick up without having to reset any of our
++ * pointers either.  Also, To workaround 8260 device erratum 
++ * CPM37, we must disable and then re-enable the transmitter
++ * following a Late Collision, Underrun, or Retry Limit error.
++ */
++void tx_restart(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	fcc_t *fccp = fep->fcc.fccp;
++
++	C32(fccp, fcc_gfmr, FCC_GFMR_ENT);
++	udelay(10);
++	S32(fccp, fcc_gfmr, FCC_GFMR_ENT);
++
++	fcc_cr_cmd(fep, 0x0C, CPM_CR_RESTART_TX);
++}
++
++/*************************************************************************/
++
++const struct fs_ops fs_fcc_ops = {
++	.setup_data		= setup_data,
++	.cleanup_data		= cleanup_data,
++	.set_multicast_list	= set_multicast_list,
++	.restart		= restart,
++	.stop			= stop,
++	.pre_request_irq	= pre_request_irq,
++	.post_free_irq		= post_free_irq,
++	.napi_clear_rx_event	= napi_clear_rx_event,
++	.napi_enable_rx		= napi_enable_rx,
++	.napi_disable_rx	= napi_disable_rx,
++	.rx_bd_done		= rx_bd_done,
++	.tx_kickstart		= tx_kickstart,
++	.get_int_events		= get_int_events,
++	.clear_int_events	= clear_int_events,
++	.ev_error		= ev_error,
++	.get_regs		= get_regs,
++	.get_regs_len		= get_regs_len,
++	.tx_restart		= tx_restart,
++	.allocate_bd		= allocate_bd,
++	.free_bd		= free_bd,
++};
 --- /dev/null
-+++ b/arch/ppc/syslib/mpc8xx_devices.c
-@@ -0,0 +1,274 @@
++++ b/drivers/net/fs_enet/mac-fec.c
+@@ -0,0 +1,653 @@
 +/*
-+ * arch/ppc/syslib/mpc8xx_devices.c
++ * Freescale Ethernet controllers
 + *
-+ * MPC8xx Device descriptions
++ * Copyright (c) 2005 Intracom S.A. 
++ *  by Pantelis Antoniou <panto@intracom.gr>
 + *
-+ * Maintainer: Kumar Gala <kumar.gala@freescale.com>
++ * 2005 (c) MontaVista Software, Inc. 
++ * Vitaly Bordug <vbordug@ru.mvista.com>
 + *
-+ * Copyright 2005 MontaVista Software, Inc. by Vitaly Bordug<vbordug@ru.mvista.com>
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
++ * This file is licensed under the terms of the GNU General Public License 
++ * version 2. This program is licensed "as is" without any warranty of any 
++ * kind, whether express or implied.
 + */
 +
-+#include <linux/init.h>
++#include <linux/config.h>
 +#include <linux/module.h>
-+#include <linux/device.h>
-+#include <linux/serial_8250.h>
-+#include <linux/fsl_devices.h>
-+#include <linux/fs_enet_pd.h>
++#include <linux/kernel.h>
++#include <linux/types.h>
++#include <linux/sched.h>
++#include <linux/string.h>
++#include <linux/ptrace.h>
++#include <linux/errno.h>
++#include <linux/ioport.h>
++#include <linux/slab.h>
++#include <linux/interrupt.h>
++#include <linux/pci.h>
++#include <linux/init.h>
++#include <linux/delay.h>
++#include <linux/netdevice.h>
++#include <linux/etherdevice.h>
++#include <linux/skbuff.h>
++#include <linux/spinlock.h>
 +#include <linux/mii.h>
-+#include <asm/commproc.h>
-+#include <asm/mpc8xx.h>
++#include <linux/ethtool.h>
++#include <linux/bitops.h>
++#include <linux/fs.h>
++
 +#include <asm/irq.h>
-+#include <asm/ppc_sys.h>
++#include <asm/uaccess.h>
 +
-+/* access ports */
-+#define setbits32(_addr, _v) out_be32(&(_addr), in_be32(&(_addr)) |  (_v))
-+#define clrbits32(_addr, _v) out_be32(&(_addr), in_be32(&(_addr)) & ~(_v))
++#ifdef CONFIG_8xx
++#include <asm/8xx_immap.h>
++#include <asm/pgtable.h>
++#include <asm/mpc8xx.h>
++#include <asm/commproc.h>
++#endif
 +
-+#define setbits16(_addr, _v) out_be16(&(_addr), in_be16(&(_addr)) |  (_v))
-+#define clrbits16(_addr, _v) out_be16(&(_addr), in_be16(&(_addr)) & ~(_v))
++#include "fs_enet.h"
 +
-+#define MPC8xx_INT_FEC1		SIU_LEVEL1
-+#define MPC8xx_INT_FEC2		SIU_LEVEL3
++/*************************************************/
 +
-+#define MPC8xx_INT_SCC1		(CPM_IRQ_OFFSET + CPMVEC_SCC1)
-+#define MPC8xx_INT_SCC2		(CPM_IRQ_OFFSET + CPMVEC_SCC2)
-+#define MPC8xx_INT_SCC3		(CPM_IRQ_OFFSET + CPMVEC_SCC3)
-+#define MPC8xx_INT_SCC4		(CPM_IRQ_OFFSET + CPMVEC_SCC4)
-+#define MPC8xx_INT_SMC1		(CPM_IRQ_OFFSET + CPMVEC_SMC1)
-+#define MPC8xx_INT_SMC2		(CPM_IRQ_OFFSET + CPMVEC_SMC2)
++#if defined(CONFIG_CPM1)
++/* for a CPM1 __raw_xxx's are sufficient */
++#define __fs_out32(addr, x)	__raw_writel(x, addr)
++#define __fs_out16(addr, x)	__raw_writew(x, addr)
++#define __fs_in32(addr)	__raw_readl(addr)
++#define __fs_in16(addr)	__raw_readw(addr)
++#else
++/* for others play it safe */
++#define __fs_out32(addr, x)	out_be32(addr, x)
++#define __fs_out16(addr, x)	out_be16(addr, x)
++#define __fs_in32(addr)	in_be32(addr)
++#define __fs_in16(addr)	in_be16(addr)
++#endif
 +
-+/* Offset from IMMAP base address */
-+#define MPC8xx_SCC1_OFFSET	(0xa00)
-+#define MPC8xx_SCC1_SIZE	(0x18)
-+#define MPC8xx_SCC2_OFFSET	(0xa20)
-+#define MPC8xx_SCC2_SIZE	(0x18)
-+#define MPC8xx_SCC3_OFFSET	(0xa40)
-+#define MPC8xx_SCC3_SIZE	(0x18)
-+#define MPC8xx_SCC4_OFFSET	(0xa60)
-+#define MPC8xx_SCC4_SIZE	(0x18)
-+#define MPC8xx_SMC1_OFFSET	(0xa82)
-+#define MPC8xx_SMC1_SIZE	(0x0f)
-+#define MPC8xx_SMC2_OFFSET	(0xa92)
-+#define MPC8xx_SMC2_SIZE	(0x0d)
-+#define MPC8xx_FEC1_OFFSET	(0xe00)
-+#define MPC8xx_FEC1_SIZE	(0x88)
-+#define MPC8xx_FEC2_OFFSET	(0x1e00)
-+#define MPC8xx_FEC2_SIZE	(0x88)
++/* write */
++#define FW(_fecp, _reg, _v) __fs_out32(&(_fecp)->fec_ ## _reg, (_v))
 +
-+#define MPC8xx_DPARAM_SCC1_OFFSET	(0x3C00)
-+#define MPC8xx_DPARAM_SCC1_SIZE	(0x80)
-+#define MPC8xx_DPARAM_SCC2_OFFSET	(0x3D00)
-+#define MPC8xx_DPARAM_SCC2_SIZE	(0x80)
-+#define MPC8xx_DPARAM_SCC3_OFFSET	(0x3E00)
-+#define MPC8xx_DPARAM_SCC3_SIZE	(0x80)
-+#define MPC8xx_DPARAM_SCC4_OFFSET	(0x3F00)
-+#define MPC8xx_DPARAM_SCC4_SIZE	(0x80)
-+#define MPC8xx_DPARAM_SMC1_OFFSET	(0x3E80)
-+#define MPC8xx_DPARAM_SMC1_SIZE	(0x40)
-+#define MPC8xx_DPARAM_SMC2_OFFSET	(0x3F80)
-+#define MPC8xx_DPARAM_SMC2_SIZE	(0x40)
++/* read */
++#define FR(_fecp, _reg)	__fs_in32(&(_fecp)->fec_ ## _reg)
 +
-+/* We use offsets for IORESOURCE_MEM to do not set dependences at compile time.
-+ * They will get fixed up by mach_mpc8xx_fixup
-+ */
++/* set bits */
++#define FS(_fecp, _reg, _v) FW(_fecp, _reg, FR(_fecp, _reg) | (_v))
 +
-+struct platform_device ppc_sys_platform_devices[] = {
-+	[MPC8xx_CPM_FEC1] =	{
-+		.name = "fsl-cpm-fec",
-+		.id	= 1,
-+		.num_resources = 2,
-+		.resource = (struct resource[])	{
-+			{
-+				.name 	= "regs",
-+				.start	= MPC8xx_FEC1_OFFSET,
-+				.end	= MPC8xx_FEC1_OFFSET + MPC8xx_FEC1_SIZE,
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name	= "interrupt",
-+				.start	= MPC8xx_INT_FEC1,
-+				.end	= MPC8xx_INT_FEC1,
-+				.flags	= IORESOURCE_IRQ,
-+			},
-+		},
-+	},
-+	[MPC8xx_CPM_FEC2] =	{
-+		.name = "fsl-cpm-fec",
-+		.id	= 2,
-+		.num_resources = 2,
-+		.resource = (struct resource[])	{
-+			{
-+				.name	= "regs",
-+				.start	= MPC8xx_FEC2_OFFSET,
-+				.end	= MPC8xx_FEC2_OFFSET + MPC8xx_FEC2_SIZE,
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name	= "interrupt",
-+				.start	= MPC8xx_INT_FEC2,
-+				.end	= MPC8xx_INT_FEC2,
-+				.flags	= IORESOURCE_IRQ,
-+			},
-+		},
-+	},
-+	[MPC8xx_CPM_SCC1] = {
-+		.name = "fsl-cpm-scc",
-+		.id	= 1,
-+		.num_resources = 3,
-+		.resource = (struct resource[]) {
-+			{
-+				.name	= "regs",
-+				.start	= MPC8xx_SCC1_OFFSET,
-+				.end	= MPC8xx_SCC1_OFFSET + MPC8xx_SCC1_SIZE,
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name 	= "pram",
-+				.start 	= MPC8xx_DPARAM_SCC1_OFFSET,
-+				.end 	= MPC8xx_DPARAM_SCC1_OFFSET + MPC8xx_DPARAM_SCC1_SIZE,
-+				.flags 	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name	= "interrupt",
-+				.start	= MPC8xx_INT_SCC1,
-+				.end	= MPC8xx_INT_SCC1,
-+				.flags	= IORESOURCE_IRQ,
-+			},
-+		},
-+	},
-+	[MPC8xx_CPM_SCC2] = {
-+		.name = "fsl-cpm-scc",
-+		.id	= 2,
-+		.num_resources	= 3,
-+		.resource = (struct resource[]) {
-+			{
-+				.name	= "regs",
-+				.start	= MPC8xx_SCC2_OFFSET,
-+				.end	= MPC8xx_SCC2_OFFSET + MPC8xx_SCC2_SIZE,
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name 	= "pram",
-+				.start 	= MPC8xx_DPARAM_SCC2_OFFSET,
-+				.end 	= MPC8xx_DPARAM_SCC2_OFFSET + MPC8xx_DPARAM_SCC2_SIZE,
-+				.flags 	= IORESOURCE_MEM,
-+			},
++/* clear bits */
++#define FC(_fecp, _reg, _v) FW(_fecp, _reg, FR(_fecp, _reg) & ~(_v))
 +
-+			{
-+				.name	= "interrupt",
-+				.start	= MPC8xx_INT_SCC2,
-+				.end	= MPC8xx_INT_SCC2,
-+				.flags	= IORESOURCE_IRQ,
-+			},
-+		},
-+	},
-+	[MPC8xx_CPM_SCC3] = {
-+		.name = "fsl-cpm-scc",
-+		.id	= 3,
-+		.num_resources	= 3,
-+		.resource = (struct resource[]) {
-+			{
-+				.name	= "regs",
-+				.start	= MPC8xx_SCC3_OFFSET,
-+				.end	= MPC8xx_SCC3_OFFSET + MPC8xx_SCC3_SIZE,
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name 	= "pram",
-+				.start 	= MPC8xx_DPARAM_SCC3_OFFSET,
-+				.end 	= MPC8xx_DPARAM_SCC3_OFFSET + MPC8xx_DPARAM_SCC3_SIZE,
-+				.flags 	= IORESOURCE_MEM,
-+			},
 +
-+			{
-+				.name	= "interrupt",
-+				.start	= MPC8xx_INT_SCC3,
-+				.end	= MPC8xx_INT_SCC3,
-+				.flags	= IORESOURCE_IRQ,
-+			},
-+		},
-+	},
-+	[MPC8xx_CPM_SCC4] = {
-+		.name = "fsl-cpm-scc",
-+		.id	= 4,
-+		.num_resources	= 3,
-+		.resource = (struct resource[]) {
-+			{
-+				.name	= "regs",
-+				.start	= MPC8xx_SCC4_OFFSET,
-+				.end	= MPC8xx_SCC3_OFFSET + MPC8xx_SCC1_SIZE,
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name 	= "pram",
-+				.start 	= MPC8xx_DPARAM_SCC4_OFFSET,
-+				.end 	= MPC8xx_DPARAM_SCC4_OFFSET + MPC8xx_DPARAM_SCC4_SIZE,
-+				.flags 	= IORESOURCE_MEM,
-+			},
++/* CRC polynomium used by the FEC for the multicast group filtering */
++#define FEC_CRC_POLY   0x04C11DB7
 +
-+			{
-+				.name	= "interrupt",
-+				.start	= MPC8xx_INT_SCC4,
-+				.end	= MPC8xx_INT_SCC4,
-+				.flags	= IORESOURCE_IRQ,
-+			},
-+		},
-+	},
-+	[MPC8xx_CPM_SMC1] = {
-+		.name = "fsl-cpm-smc",
-+		.id	= 1,
-+		.num_resources	= 2,
-+		.resource = (struct resource[]) {
-+			{
-+				.name	= "regs",
-+				.start	= MPC8xx_SMC1_OFFSET,
-+				.end	= MPC8xx_SCC3_OFFSET + MPC8xx_SMC1_SIZE,
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name	= "interrupt",
-+				.start	= MPC8xx_INT_SMC1,
-+				.end	= MPC8xx_INT_SMC1,
-+				.flags	= IORESOURCE_IRQ,
-+			},
-+		},
-+	},
-+	[MPC8xx_CPM_SMC2] = {
-+		.name = "fsl-cpm-smc",
-+		.id	= 2,
-+		.num_resources	= 2,
-+		.resource = (struct resource[]) {
-+			{
-+				.name	= "regs",
-+				.start	= MPC8xx_SMC2_OFFSET,
-+				.end	= MPC8xx_SMC2_OFFSET + MPC8xx_SMC2_SIZE,
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name	= "interrupt",
-+				.start	= MPC8xx_INT_SMC2,
-+				.end	= MPC8xx_INT_SMC2,
-+				.flags	= IORESOURCE_IRQ,
-+			},
-+		},
-+	},
-+};
++#define FEC_MAX_MULTICAST_ADDRS	64
 +
-+static int __init mach_mpc8xx_fixup(struct platform_device *pdev)
-+{
-+	ppc_sys_fixup_mem_resource (pdev, IMAP_ADDR);
-+	return 0;
-+}
++/* Interrupt events/masks.
++*/
++#define FEC_ENET_HBERR	0x80000000U	/* Heartbeat error          */
++#define FEC_ENET_BABR	0x40000000U	/* Babbling receiver        */
++#define FEC_ENET_BABT	0x20000000U	/* Babbling transmitter     */
++#define FEC_ENET_GRA	0x10000000U	/* Graceful stop complete   */
++#define FEC_ENET_TXF	0x08000000U	/* Full frame transmitted   */
++#define FEC_ENET_TXB	0x04000000U	/* A buffer was transmitted */
++#define FEC_ENET_RXF	0x02000000U	/* Full frame received      */
++#define FEC_ENET_RXB	0x01000000U	/* A buffer was received    */
++#define FEC_ENET_MII	0x00800000U	/* MII interrupt            */
++#define FEC_ENET_EBERR	0x00400000U	/* SDMA bus error           */
 +
-+static int __init mach_mpc8xx_init(void)
-+{
-+	ppc_sys_device_fixup = mach_mpc8xx_fixup;
-+	return 0;
-+}
++#define FEC_ECNTRL_PINMUX	0x00000004
++#define FEC_ECNTRL_ETHER_EN	0x00000002
++#define FEC_ECNTRL_RESET	0x00000001
 +
-+postcore_initcall(mach_mpc8xx_init);
-diff --git a/arch/ppc/syslib/mpc8xx_sys.c b/arch/ppc/syslib/mpc8xx_sys.c
-new file mode 100644
---- /dev/null
-+++ b/arch/ppc/syslib/mpc8xx_sys.c
-@@ -0,0 +1,51 @@
++#define FEC_RCNTRL_BC_REJ	0x00000010
++#define FEC_RCNTRL_PROM		0x00000008
++#define FEC_RCNTRL_MII_MODE	0x00000004
++#define FEC_RCNTRL_DRT		0x00000002
++#define FEC_RCNTRL_LOOP		0x00000001
++
++#define FEC_TCNTRL_FDEN		0x00000004
++#define FEC_TCNTRL_HBC		0x00000002
++#define FEC_TCNTRL_GTS		0x00000001
++
++
++/* Make MII read/write commands for the FEC.
++*/
++#define mk_mii_read(REG)	(0x60020000 | ((REG & 0x1f) << 18))
++#define mk_mii_write(REG, VAL)	(0x50020000 | ((REG & 0x1f) << 18) | (VAL & 0xffff))
++#define mk_mii_end		0
++
++#define FEC_MII_LOOPS	10000
++
 +/*
-+ * arch/ppc/platforms/mpc8xx_sys.c
-+ *
-+ * MPC8xx System descriptions
-+ *
-+ * Maintainer: Kumar Gala <kumar.gala@freescale.com>
-+ *
-+ * Copyright 2005 MontaVista Software, Inc. by Vitaly Bordug <vbordug@ru.mvista.com>
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
++ * Delay to wait for FEC reset command to complete (in us) 
 + */
++#define FEC_RESET_DELAY		50
 +
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/device.h>
-+#include <asm/ppc_sys.h>
-+
-+struct ppc_sys_spec *cur_ppc_sys_spec; 
-+struct ppc_sys_spec ppc_sys_specs[] = {
-+	{
-+		.ppc_sys_name	= "MPC86X",
-+		.mask 		= 0xFFFFFFFF,
-+		.value 		= 0x00000000,
-+		.num_devices	= 2,
-+		.device_list	= (enum ppc_sys_devices[])
-+		{
-+			MPC8xx_CPM_FEC1,
-+			MPC8xx_CPM_SCC1,
-+		},
-+	},
-+	{
-+		.ppc_sys_name	= "MPC885",
-+		.mask 		= 0xFFFFFFFF,
-+		.value 		= 0x00000000,
-+		.num_devices	= 3,
-+		.device_list	= (enum ppc_sys_devices[])
-+		{
-+			MPC8xx_CPM_FEC1,
-+			MPC8xx_CPM_FEC2,
-+			MPC8xx_CPM_SCC3,
-+		},
-+	},
-+	{	/* default match */
-+		.ppc_sys_name	= "",
-+		.mask 		= 0x00000000,
-+		.value 		= 0x00000000,
-+	},
-+};
-diff --git a/arch/ppc/syslib/ppc_sys.c b/arch/ppc/syslib/ppc_sys.c
---- a/arch/ppc/syslib/ppc_sys.c
-+++ b/arch/ppc/syslib/ppc_sys.c
-@@ -6,6 +6,7 @@
-  * Maintainer: Kumar Gala <kumar.gala@freescale.com>
-  *
-  * Copyright 2005 Freescale Semiconductor Inc.
-+ * Copyright 2005 MontaVista, Inc. by Vitaly Bordug <vbordug@ru.mvista.com>
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -35,10 +36,58 @@ void __init identify_ppc_sys_by_id(u32 i
- 
- void __init identify_ppc_sys_by_name(char *name)
- {
--	/* TODO */
-+	unsigned int i = 0;
-+	while (strcmp(ppc_sys_specs[i].ppc_sys_name, "")) {
-+		if (!strcmp(ppc_sys_specs[i].ppc_sys_name, name))
-+			break;
-+		i++;
-+	}
-+	cur_ppc_sys_spec = &ppc_sys_specs[i];
- 	return;
- }
- 
-+static int __init count_sys_specs(void)
++static int whack_reset(fec_t * fecp)
 +{
-+	int i = 0;
-+	while (ppc_sys_specs[i].ppc_sys_name[0])
-+		i++;
-+	return i;
++	int i;
++
++	FW(fecp, ecntrl, FEC_ECNTRL_PINMUX | FEC_ECNTRL_RESET);
++	for (i = 0; i < FEC_RESET_DELAY; i++) {
++		if ((FR(fecp, ecntrl) & FEC_ECNTRL_RESET) == 0)
++			return 0;	/* OK */
++		udelay(1);
++	}
++
++	return -1;
 +}
 +
-+static int __init find_chip_by_name_and_id(char *name, u32 id)
++static int do_pd_setup(struct fs_enet_private *fep)
 +{
-+	int ret = -1;
-+	unsigned int i = 0;
-+	unsigned int j = 0;
-+	unsigned int dups = 0;
++	struct platform_device *pdev = to_platform_device(fep->dev); 
++	struct resource	*r;
++	
++	/* Fill out IRQ field */
++	fep->interrupt = platform_get_irq_byname(pdev,"interrupt");
++	
++	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
++	fep->fec.fecp =(void*)r->start;
 +
-+	unsigned char matched[count_sys_specs()];
++	if(fep->fec.fecp == NULL)
++		return -EINVAL;
 +
-+	while (ppc_sys_specs[i].ppc_sys_name[0]) {
-+		if (!strcmp(ppc_sys_specs[i].ppc_sys_name, name))
-+			matched[j++] = i;
-+		i++;
-+	}
-+	if (j != 0) {
-+		for (i = 0; i < j; i++) {
-+			if ((ppc_sys_specs[matched[i]].mask & id) ==
-+			    ppc_sys_specs[matched[i]].value) {
-+				ret = matched[i];
-+				dups++;
-+			}
++	return 0;
++	
++}
++
++#define FEC_NAPI_RX_EVENT_MSK	(FEC_ENET_RXF | FEC_ENET_RXB)
++#define FEC_RX_EVENT		(FEC_ENET_RXF)
++#define FEC_TX_EVENT		(FEC_ENET_TXF)
++#define FEC_ERR_EVENT_MSK	(FEC_ENET_HBERR | FEC_ENET_BABR | \
++				 FEC_ENET_BABT | FEC_ENET_EBERR)
++
++static int setup_data(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++
++	if (do_pd_setup(fep) != 0)
++		return -EINVAL;
++
++	fep->fec.hthi = 0;
++	fep->fec.htlo = 0;
++
++	fep->ev_napi_rx = FEC_NAPI_RX_EVENT_MSK;
++	fep->ev_rx = FEC_RX_EVENT;
++	fep->ev_tx = FEC_TX_EVENT;
++	fep->ev_err = FEC_ERR_EVENT_MSK;
++
++	return 0;
++}
++
++static int allocate_bd(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	const struct fs_platform_info *fpi = fep->fpi;
++	
++	fep->ring_base = dma_alloc_coherent(fep->dev,
++					    (fpi->tx_ring + fpi->rx_ring) *
++					    sizeof(cbd_t), &fep->ring_mem_addr,
++					    GFP_KERNEL);
++	if (fep->ring_base == NULL)
++		return -ENOMEM;
++
++	return 0;
++}
++
++static void free_bd(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	const struct fs_platform_info *fpi = fep->fpi;
++
++	if(fep->ring_base)
++		dma_free_coherent(fep->dev, (fpi->tx_ring + fpi->rx_ring)
++					* sizeof(cbd_t),
++					fep->ring_base,
++					fep->ring_mem_addr);
++}
++
++static void cleanup_data(struct net_device *dev)
++{
++	/* nothing */
++}
++
++static void set_promiscuous_mode(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	fec_t *fecp = fep->fec.fecp;
++
++	FS(fecp, r_cntrl, FEC_RCNTRL_PROM);
++}
++
++static void set_multicast_start(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++
++	fep->fec.hthi = 0;
++	fep->fec.htlo = 0;
++}
++
++static void set_multicast_one(struct net_device *dev, const u8 *mac)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	int temp, hash_index, i, j;
++	u32 crc, csrVal;
++	u8 byte, msb;
++
++	crc = 0xffffffff;
++	for (i = 0; i < 6; i++) {
++		byte = mac[i];
++		for (j = 0; j < 8; j++) {
++			msb = crc >> 31;
++			crc <<= 1;
++			if (msb ^ (byte & 0x1))
++				crc ^= FEC_CRC_POLY;
++			byte >>= 1;
 +		}
-+		ret = (dups == 1) ? ret : (-1 * dups);
 +	}
++
++	temp = (crc & 0x3f) >> 1;
++	hash_index = ((temp & 0x01) << 4) |
++		     ((temp & 0x02) << 2) |
++		     ((temp & 0x04)) |
++		     ((temp & 0x08) >> 2) |
++		     ((temp & 0x10) >> 4);
++	csrVal = 1 << hash_index;
++	if (crc & 1)
++		fep->fec.hthi |= csrVal;
++	else
++		fep->fec.htlo |= csrVal;
++}
++
++static void set_multicast_finish(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	fec_t *fecp = fep->fec.fecp;
++
++	/* if all multi or too many multicasts; just enable all */
++	if ((dev->flags & IFF_ALLMULTI) != 0 ||
++	    dev->mc_count > FEC_MAX_MULTICAST_ADDRS) {
++		fep->fec.hthi = 0xffffffffU;
++		fep->fec.htlo = 0xffffffffU;
++	}
++
++	FC(fecp, r_cntrl, FEC_RCNTRL_PROM);
++	FW(fecp, hash_table_high, fep->fec.hthi);
++	FW(fecp, hash_table_low, fep->fec.htlo);
++}
++
++static void set_multicast_list(struct net_device *dev)
++{
++	struct dev_mc_list *pmc;
++
++	if ((dev->flags & IFF_PROMISC) == 0) {
++		set_multicast_start(dev);
++		for (pmc = dev->mc_list; pmc != NULL; pmc = pmc->next)
++			set_multicast_one(dev, pmc->dmi_addr);
++		set_multicast_finish(dev);
++	} else
++		set_promiscuous_mode(dev);
++}
++
++static void restart(struct net_device *dev)
++{
++#ifdef CONFIG_DUET
++	immap_t *immap = fs_enet_immap;
++	u32 cptr;
++#endif
++	struct fs_enet_private *fep = netdev_priv(dev);
++	fec_t *fecp = fep->fec.fecp;
++	const struct fs_platform_info *fpi = fep->fpi;
++	dma_addr_t rx_bd_base_phys, tx_bd_base_phys;
++	int r;
++	u32 addrhi, addrlo;
++
++	r = whack_reset(fep->fec.fecp);
++	if (r != 0)
++		printk(KERN_ERR DRV_MODULE_NAME
++				": %s FEC Reset FAILED!\n", dev->name);
++
++	/*
++	 * Set station address. 
++	 */
++	addrhi = ((u32) dev->dev_addr[0] << 24) |
++		 ((u32) dev->dev_addr[1] << 16) |
++		 ((u32) dev->dev_addr[2] <<  8) |
++		  (u32) dev->dev_addr[3];
++	addrlo = ((u32) dev->dev_addr[4] << 24) |
++		 ((u32) dev->dev_addr[5] << 16);
++	FW(fecp, addr_low, addrhi);
++	FW(fecp, addr_high, addrlo);
++
++	/*
++	 * Reset all multicast. 
++	 */
++	FW(fecp, hash_table_high, fep->fec.hthi);
++	FW(fecp, hash_table_low, fep->fec.htlo);
++
++	/*
++	 * Set maximum receive buffer size. 
++	 */
++	FW(fecp, r_buff_size, PKT_MAXBLR_SIZE);
++	FW(fecp, r_hash, PKT_MAXBUF_SIZE);
++
++	/* get physical address */
++	rx_bd_base_phys = fep->ring_mem_addr;
++	tx_bd_base_phys = rx_bd_base_phys + sizeof(cbd_t) * fpi->rx_ring;
++
++	/*
++	 * Set receive and transmit descriptor base. 
++	 */
++	FW(fecp, r_des_start, rx_bd_base_phys);
++	FW(fecp, x_des_start, tx_bd_base_phys);
++
++	fs_init_bds(dev);
++
++	/*
++	 * Enable big endian and don't care about SDMA FC. 
++	 */
++	FW(fecp, fun_code, 0x78000000);
++
++	/*
++	 * Set MII speed. 
++	 */
++	FW(fecp, mii_speed, fep->mii_bus->fec.mii_speed);
++
++	/*
++	 * Clear any outstanding interrupt. 
++	 */
++	FW(fecp, ievent, 0xffc0);
++	FW(fecp, ivec, (fep->interrupt / 2) << 29);
++	
++
++	/*
++	 * adjust to speed (only for DUET & RMII) 
++	 */
++#ifdef CONFIG_DUET
++	if (fpi->use_rmii) {
++		cptr = in_be32(&immap->im_cpm.cp_cptr);
++		switch (fs_get_fec_index(fpi->fs_no)) {
++		case 0:
++			cptr |= 0x100;
++			if (fep->speed == 10)
++				cptr |= 0x0000010;
++			else if (fep->speed == 100)
++				cptr &= ~0x0000010;
++			break;
++		case 1:
++			cptr |= 0x80;
++			if (fep->speed == 10)
++				cptr |= 0x0000008;
++			else if (fep->speed == 100)
++				cptr &= ~0x0000008;
++			break;
++		default:
++			BUG();	/* should never happen */
++			break;
++		}
++		out_be32(&immap->im_cpm.cp_cptr, cptr);
++	}
++#endif
++
++	FW(fecp, r_cntrl, FEC_RCNTRL_MII_MODE);	/* MII enable */
++	/*
++	 * adjust to duplex mode 
++	 */
++	if (fep->duplex) {
++		FC(fecp, r_cntrl, FEC_RCNTRL_DRT);
++		FS(fecp, x_cntrl, FEC_TCNTRL_FDEN);	/* FD enable */
++	} else {
++		FS(fecp, r_cntrl, FEC_RCNTRL_DRT);
++		FC(fecp, x_cntrl, FEC_TCNTRL_FDEN);	/* FD disable */
++	}
++
++	/*
++	 * Enable interrupts we wish to service. 
++	 */
++	FW(fecp, imask, FEC_ENET_TXF | FEC_ENET_TXB |
++	   FEC_ENET_RXF | FEC_ENET_RXB);
++
++	/*
++	 * And last, enable the transmit and receive processing. 
++	 */
++	FW(fecp, ecntrl, FEC_ECNTRL_PINMUX | FEC_ECNTRL_ETHER_EN);
++	FW(fecp, r_des_active, 0x01000000);
++}
++
++static void stop(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	fec_t *fecp = fep->fec.fecp;
++	struct fs_enet_mii_bus *bus = fep->mii_bus;
++	const struct fs_mii_bus_info *bi = bus->bus_info;
++	int i;
++
++	if ((FR(fecp, ecntrl) & FEC_ECNTRL_ETHER_EN) == 0)
++		return;		/* already down */
++
++	FW(fecp, x_cntrl, 0x01);	/* Graceful transmit stop */
++	for (i = 0; ((FR(fecp, ievent) & 0x10000000) == 0) &&
++	     i < FEC_RESET_DELAY; i++)
++		udelay(1);
++
++	if (i == FEC_RESET_DELAY)
++		printk(KERN_WARNING DRV_MODULE_NAME
++		       ": %s FEC timeout on graceful transmit stop\n",
++		       dev->name);
++	/*
++	 * Disable FEC. Let only MII interrupts. 
++	 */
++	FW(fecp, imask, 0);
++	FC(fecp, ecntrl, FEC_ECNTRL_ETHER_EN);
++
++	fs_cleanup_bds(dev);
++
++	/* shut down FEC1? that's where the mii bus is */
++	if (fep->fec.idx == 0 && bus->refs > 1 && bi->method == fsmii_fec) {
++		FS(fecp, r_cntrl, FEC_RCNTRL_MII_MODE);	/* MII enable */
++		FS(fecp, ecntrl, FEC_ECNTRL_PINMUX | FEC_ECNTRL_ETHER_EN);
++		FW(fecp, ievent, FEC_ENET_MII);
++		FW(fecp, mii_speed, bus->fec.mii_speed);
++	}
++}
++
++static void pre_request_irq(struct net_device *dev, int irq)
++{
++	immap_t *immap = fs_enet_immap;
++	u32 siel;
++
++	/* SIU interrupt */
++	if (irq >= SIU_IRQ0 && irq < SIU_LEVEL7) {
++
++		siel = in_be32(&immap->im_siu_conf.sc_siel);
++		if ((irq & 1) == 0)
++			siel |= (0x80000000 >> irq);
++		else
++			siel &= ~(0x80000000 >> (irq & ~1));
++		out_be32(&immap->im_siu_conf.sc_siel, siel);
++	}
++}
++
++static void post_free_irq(struct net_device *dev, int irq)
++{
++	/* nothing */
++}
++
++static void napi_clear_rx_event(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	fec_t *fecp = fep->fec.fecp;
++
++	FW(fecp, ievent, FEC_NAPI_RX_EVENT_MSK);
++}
++
++static void napi_enable_rx(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	fec_t *fecp = fep->fec.fecp;
++
++	FS(fecp, imask, FEC_NAPI_RX_EVENT_MSK);
++}
++
++static void napi_disable_rx(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	fec_t *fecp = fep->fec.fecp;
++
++	FC(fecp, imask, FEC_NAPI_RX_EVENT_MSK);
++}
++
++static void rx_bd_done(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	fec_t *fecp = fep->fec.fecp;
++
++	FW(fecp, r_des_active, 0x01000000);
++}
++
++static void tx_kickstart(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	fec_t *fecp = fep->fec.fecp;
++
++	FW(fecp, x_des_active, 0x01000000);
++}
++
++static u32 get_int_events(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	fec_t *fecp = fep->fec.fecp;
++
++	return FR(fecp, ievent) & FR(fecp, imask);
++}
++
++static void clear_int_events(struct net_device *dev, u32 int_events)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	fec_t *fecp = fep->fec.fecp;
++
++	FW(fecp, ievent, int_events);
++}
++
++static void ev_error(struct net_device *dev, u32 int_events)
++{
++	printk(KERN_WARNING DRV_MODULE_NAME
++	       ": %s FEC ERROR(s) 0x%x\n", dev->name, int_events);
++}
++
++int get_regs(struct net_device *dev, void *p, int *sizep)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++
++	if (*sizep < sizeof(fec_t))
++		return -EINVAL;
++
++	memcpy_fromio(p, fep->fec.fecp, sizeof(fec_t));
++
++	return 0;
++}
++
++int get_regs_len(struct net_device *dev)
++{
++	return sizeof(fec_t);
++}
++
++void tx_restart(struct net_device *dev)
++{
++	/* nothing */
++}
++
++/*************************************************************************/
++
++const struct fs_ops fs_fec_ops = {
++	.setup_data		= setup_data,
++	.cleanup_data		= cleanup_data,
++	.set_multicast_list	= set_multicast_list,
++	.restart		= restart,
++	.stop			= stop,
++	.pre_request_irq	= pre_request_irq,
++	.post_free_irq		= post_free_irq,
++	.napi_clear_rx_event	= napi_clear_rx_event,
++	.napi_enable_rx		= napi_enable_rx,
++	.napi_disable_rx	= napi_disable_rx,
++	.rx_bd_done		= rx_bd_done,
++	.tx_kickstart		= tx_kickstart,
++	.get_int_events		= get_int_events,
++	.clear_int_events	= clear_int_events,
++	.ev_error		= ev_error,
++	.get_regs		= get_regs,
++	.get_regs_len		= get_regs_len,
++	.tx_restart		= tx_restart,
++	.allocate_bd		= allocate_bd,
++	.free_bd		= free_bd,
++};
++
++/***********************************************************************/
++
++static int mii_read(struct fs_enet_mii_bus *bus, int phy_id, int location)
++{
++	fec_t *fecp = bus->fec.fecp;
++	int i, ret = -1;
++
++	if ((FR(fecp, r_cntrl) & FEC_RCNTRL_MII_MODE) == 0)
++		BUG();
++
++	/* Add PHY address to register command.  */
++	FW(fecp, mii_data, (phy_id << 23) | mk_mii_read(location));
++
++	for (i = 0; i < FEC_MII_LOOPS; i++)
++		if ((FR(fecp, ievent) & FEC_ENET_MII) != 0)
++			break;
++
++	if (i < FEC_MII_LOOPS) {
++		FW(fecp, ievent, FEC_ENET_MII);
++		ret = FR(fecp, mii_data) & 0xffff;
++	}
++
 +	return ret;
 +}
 +
-+void __init identify_ppc_sys_by_name_and_id(char *name, u32 id)
++static void mii_write(struct fs_enet_mii_bus *bus, int phy_id, int location, int value)
 +{
-+	int i = find_chip_by_name_and_id(name, id);
-+	BUG_ON(i < 0);
-+	cur_ppc_sys_spec = &ppc_sys_specs[i];
++	fec_t *fecp = bus->fec.fecp;
++	int i;
++
++	/* this must never happen */
++	if ((FR(fecp, r_cntrl) & FEC_RCNTRL_MII_MODE) == 0)
++		BUG();
++
++	/* Add PHY address to register command.  */
++	FW(fecp, mii_data, (phy_id << 23) | mk_mii_write(location, value));
++
++	for (i = 0; i < FEC_MII_LOOPS; i++)
++		if ((FR(fecp, ievent) & FEC_ENET_MII) != 0)
++			break;
++
++	if (i < FEC_MII_LOOPS)
++		FW(fecp, ievent, FEC_ENET_MII);
 +}
 +
- /* Update all memory resources by paddr, call before platform_device_register */
- void __init
- ppc_sys_fixup_mem_resource(struct platform_device *pdev, phys_addr_t paddr)
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-diff --git a/drivers/net/Makefile b/drivers/net/Makefile
-diff --git a/drivers/net/fs_enet/Kconfig b/drivers/net/fs_enet/Kconfig
-new file mode 100644
-diff --git a/drivers/net/fs_enet/Makefile b/drivers/net/fs_enet/Makefile
-new file mode 100644
-diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
-new file mode 100644
-diff --git a/drivers/net/fs_enet/fs_enet-mii.c b/drivers/net/fs_enet/fs_enet-mii.c
-new file mode 100644
-diff --git a/drivers/net/fs_enet/fs_enet.h b/drivers/net/fs_enet/fs_enet.h
-new file mode 100644
-diff --git a/drivers/net/fs_enet/mac-fcc.c b/drivers/net/fs_enet/mac-fcc.c
-new file mode 100644
-diff --git a/drivers/net/fs_enet/mac-fec.c b/drivers/net/fs_enet/mac-fec.c
-new file mode 100644
-diff --git a/drivers/net/fs_enet/mac-scc.c b/drivers/net/fs_enet/mac-scc.c
-new file mode 100644
-diff --git a/drivers/net/fs_enet/mii-bitbang.c b/drivers/net/fs_enet/mii-bitbang.c
-new file mode 100644
-diff --git a/drivers/net/fs_enet/mii-fixed.c b/drivers/net/fs_enet/mii-fixed.c
-new file mode 100644
-diff --git a/include/asm-ppc/mpc8xx.h b/include/asm-ppc/mpc8xx.h
---- a/include/asm-ppc/mpc8xx.h
-+++ b/include/asm-ppc/mpc8xx.h
-@@ -20,6 +20,10 @@
- #include <platforms/fads.h>
- #endif
- 
-+#ifdef CONFIG_MPC86XADS	
-+#include <platforms/8xx/mpc86xads.h>
++int fs_mii_fec_init(struct fs_enet_mii_bus *bus)
++{
++	bd_t *bd = (bd_t *)__res;
++	const struct fs_mii_bus_info *bi = bus->bus_info;
++	fec_t *fecp;
++
++	if (bi->id != 0)
++		return -1;
++
++	bus->fec.fecp = &((immap_t *)fs_enet_immap)->im_cpm.cp_fec;
++	bus->fec.mii_speed = ((((bd->bi_intfreq + 4999999) / 2500000) / 2)
++				& 0x3F) << 1;
++
++	fecp = bus->fec.fecp;
++
++	FS(fecp, r_cntrl, FEC_RCNTRL_MII_MODE);	/* MII enable */
++	FS(fecp, ecntrl, FEC_ECNTRL_PINMUX | FEC_ECNTRL_ETHER_EN);
++	FW(fecp, ievent, FEC_ENET_MII);
++	FW(fecp, mii_speed, bus->fec.mii_speed);
++
++	bus->mii_read = mii_read;
++	bus->mii_write = mii_write;
++
++	return 0;
++}
+--- /dev/null
++++ b/drivers/net/fs_enet/mac-scc.c
+@@ -0,0 +1,517 @@
++/*
++ * Ethernet on Serial Communications Controller (SCC) driver for Motorola MPC8xx and MPC82xx.
++ *
++ * Copyright (c) 2003 Intracom S.A. 
++ *  by Pantelis Antoniou <panto@intracom.gr>
++ * 
++ * 2005 (c) MontaVista Software, Inc. 
++ * Vitaly Bordug <vbordug@ru.mvista.com>
++ *
++ * This file is licensed under the terms of the GNU General Public License 
++ * version 2. This program is licensed "as is" without any warranty of any 
++ * kind, whether express or implied.
++ */
++
++#include <linux/config.h>
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/types.h>
++#include <linux/sched.h>
++#include <linux/string.h>
++#include <linux/ptrace.h>
++#include <linux/errno.h>
++#include <linux/ioport.h>
++#include <linux/slab.h>
++#include <linux/interrupt.h>
++#include <linux/pci.h>
++#include <linux/init.h>
++#include <linux/delay.h>
++#include <linux/netdevice.h>
++#include <linux/etherdevice.h>
++#include <linux/skbuff.h>
++#include <linux/spinlock.h>
++#include <linux/mii.h>
++#include <linux/ethtool.h>
++#include <linux/bitops.h>
++#include <linux/fs.h>
++
++#include <asm/irq.h>
++#include <asm/uaccess.h>
++
++#ifdef CONFIG_8xx
++#include <asm/8xx_immap.h>
++#include <asm/pgtable.h>
++#include <asm/mpc8xx.h>
++#include <asm/commproc.h>
 +#endif
 +
- #ifdef CONFIG_RPXLITE
- #include <platforms/rpxlite.h>
- #endif
-@@ -101,6 +105,22 @@ extern unsigned char __res[];
- 
- struct pt_regs;
- 
-+enum ppc_sys_devices {
-+	MPC8xx_CPM_FEC1,
-+	MPC8xx_CPM_FEC2,
-+	MPC8xx_CPM_I2C,
-+	MPC8xx_CPM_SCC1,
-+	MPC8xx_CPM_SCC2,
-+	MPC8xx_CPM_SCC3,
-+	MPC8xx_CPM_SCC4,
-+	MPC8xx_CPM_SPI,
-+	MPC8xx_CPM_MCC1,
-+	MPC8xx_CPM_MCC2,
-+	MPC8xx_CPM_SMC1,
-+	MPC8xx_CPM_SMC2,
-+	MPC8xx_CPM_USB,
++#include "fs_enet.h"
++
++/*************************************************/
++
++#if defined(CONFIG_CPM1)
++/* for a 8xx __raw_xxx's are sufficient */
++#define __fs_out32(addr, x)	__raw_writel(x, addr)
++#define __fs_out16(addr, x)	__raw_writew(x, addr)
++#define __fs_out8(addr, x)	__raw_writeb(x, addr)
++#define __fs_in32(addr)	__raw_readl(addr)
++#define __fs_in16(addr)	__raw_readw(addr)
++#define __fs_in8(addr)	__raw_readb(addr)
++#else
++/* for others play it safe */
++#define __fs_out32(addr, x)	out_be32(addr, x)
++#define __fs_out16(addr, x)	out_be16(addr, x)
++#define __fs_in32(addr)	in_be32(addr)
++#define __fs_in16(addr)	in_be16(addr)
++#endif
++
++/* write, read, set bits, clear bits */
++#define W32(_p, _m, _v) __fs_out32(&(_p)->_m, (_v))
++#define R32(_p, _m)     __fs_in32(&(_p)->_m)
++#define S32(_p, _m, _v) W32(_p, _m, R32(_p, _m) | (_v))
++#define C32(_p, _m, _v) W32(_p, _m, R32(_p, _m) & ~(_v))
++
++#define W16(_p, _m, _v) __fs_out16(&(_p)->_m, (_v))
++#define R16(_p, _m)     __fs_in16(&(_p)->_m)
++#define S16(_p, _m, _v) W16(_p, _m, R16(_p, _m) | (_v))
++#define C16(_p, _m, _v) W16(_p, _m, R16(_p, _m) & ~(_v))
++
++#define W8(_p, _m, _v)  __fs_out8(&(_p)->_m, (_v))
++#define R8(_p, _m)      __fs_in8(&(_p)->_m)
++#define S8(_p, _m, _v)  W8(_p, _m, R8(_p, _m) | (_v))
++#define C8(_p, _m, _v)  W8(_p, _m, R8(_p, _m) & ~(_v))
++
++#define SCC_MAX_MULTICAST_ADDRS	64
++
++/*
++ * Delay to wait for SCC reset command to complete (in us) 
++ */
++#define SCC_RESET_DELAY		50
++
++static inline int scc_cr_cmd(struct fs_enet_private *fep, u32 op)
++{
++	cpm8xx_t *cpmp = &((immap_t *)fs_enet_immap)->im_cpm;
++	u32 v, ch;
++
++	ch = fep->scc.idx << 2;
++	v = mk_cr_cmd(ch, op);
++	W16(cpmp, cp_cpcr, v | CPM_CR_FLG);
++	while ((R16(cpmp, cp_cpcr) & CPM_CR_FLG) != 0)
++		udelay(10);
++
++	return 0;
++}
++
++static int do_pd_setup(struct fs_enet_private *fep)
++{
++	struct platform_device *pdev = to_platform_device(fep->dev);
++	struct resource *r;
++
++	/* Fill out IRQ field */
++	fep->interrupt = platform_get_irq_byname(pdev, "interrupt");
++
++	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
++	fep->scc.sccp = (void *)r->start;
++
++	if (fep->scc.sccp == NULL)
++		return -EINVAL;
++
++	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "pram");
++	fep->scc.ep = (void *)r->start;
++
++	if (fep->scc.ep == NULL)
++		return -EINVAL;
++
++	return 0;
++}
++
++#define SCC_NAPI_RX_EVENT_MSK	(SCCE_ENET_RXF | SCCE_ENET_RXB)
++#define SCC_RX_EVENT		(SCCE_ENET_RXF)
++#define SCC_TX_EVENT		(SCCE_ENET_TXB)
++#define SCC_ERR_EVENT_MSK	(SCCE_ENET_TXE | SCCE_ENET_BSY)
++
++static int setup_data(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	const struct fs_platform_info *fpi = fep->fpi;
++
++	fep->scc.idx = fs_get_scc_index(fpi->fs_no);
++	if ((unsigned int)fep->fcc.idx > 4)	/* max 4 SCCs */
++		return -EINVAL;
++
++	do_pd_setup(fep);
++
++	fep->scc.hthi = 0;
++	fep->scc.htlo = 0;
++
++	fep->ev_napi_rx = SCC_NAPI_RX_EVENT_MSK;
++	fep->ev_rx = SCC_RX_EVENT;
++	fep->ev_tx = SCC_TX_EVENT;
++	fep->ev_err = SCC_ERR_EVENT_MSK;
++
++	return 0;
++}
++
++static int allocate_bd(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	const struct fs_platform_info *fpi = fep->fpi;
++
++	fep->ring_mem_addr = cpm_dpalloc((fpi->tx_ring + fpi->rx_ring) *
++					 sizeof(cbd_t), 8);
++	if (IS_DPERR(fep->ring_mem_addr)) {
++		return -ENOMEM;
++	}
++
++	fep->ring_base = cpm_dpram_addr(fep->ring_mem_addr);
++
++	return 0;
++}
++
++static void free_bd(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++
++	if (fep->ring_base)
++		cpm_dpfree(fep->ring_mem_addr);
++}
++
++static void cleanup_data(struct net_device *dev)
++{
++	/* nothing */
++}
++
++static void set_promiscuous_mode(struct net_device *dev)
++{				
++	struct fs_enet_private *fep = netdev_priv(dev);
++	scc_t *sccp = fep->scc.sccp;
++
++	S16(sccp, scc_psmr, SCC_PSMR_PRO);
++}
++
++static void set_multicast_start(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	scc_enet_t *ep = fep->scc.ep;
++
++	W16(ep, sen_gaddr1, 0);
++	W16(ep, sen_gaddr2, 0);
++	W16(ep, sen_gaddr3, 0);
++	W16(ep, sen_gaddr4, 0);
++}
++
++static void set_multicast_one(struct net_device *dev, const u8 * mac)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	scc_enet_t *ep = fep->scc.ep;
++	u16 taddrh, taddrm, taddrl;
++
++	taddrh = ((u16) mac[5] << 8) | mac[4];
++	taddrm = ((u16) mac[3] << 8) | mac[2];
++	taddrl = ((u16) mac[1] << 8) | mac[0];
++
++	W16(ep, sen_taddrh, taddrh);
++	W16(ep, sen_taddrm, taddrm);
++	W16(ep, sen_taddrl, taddrl);
++	scc_cr_cmd(fep, CPM_CR_SET_GADDR);
++}
++
++static void set_multicast_finish(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	scc_t *sccp = fep->scc.sccp;
++	scc_enet_t *ep = fep->scc.ep;
++
++	/* clear promiscuous always */
++	C16(sccp, scc_psmr, SCC_PSMR_PRO);
++
++	/* if all multi or too many multicasts; just enable all */
++	if ((dev->flags & IFF_ALLMULTI) != 0 ||
++	    dev->mc_count > SCC_MAX_MULTICAST_ADDRS) {
++
++		W16(ep, sen_gaddr1, 0xffff);
++		W16(ep, sen_gaddr2, 0xffff);
++		W16(ep, sen_gaddr3, 0xffff);
++		W16(ep, sen_gaddr4, 0xffff);
++	}
++}
++
++static void set_multicast_list(struct net_device *dev)
++{
++	struct dev_mc_list *pmc;
++
++	if ((dev->flags & IFF_PROMISC) == 0) {
++		set_multicast_start(dev);
++		for (pmc = dev->mc_list; pmc != NULL; pmc = pmc->next)
++			set_multicast_one(dev, pmc->dmi_addr);
++		set_multicast_finish(dev);
++	} else
++		set_promiscuous_mode(dev);
++}
++
++/*
++ * This function is called to start or restart the FEC during a link
++ * change.  This only happens when switching between half and full
++ * duplex.
++ */
++static void restart(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	scc_t *sccp = fep->scc.sccp;
++	scc_enet_t *ep = fep->scc.ep;
++	const struct fs_platform_info *fpi = fep->fpi;
++	u16 paddrh, paddrm, paddrl;
++	const unsigned char *mac;
++	int i;
++
++	C32(sccp, scc_gsmrl, SCC_GSMRL_ENR | SCC_GSMRL_ENT);
++
++	/* clear everything (slow & steady does it) */
++	for (i = 0; i < sizeof(*ep); i++)
++		__fs_out8((char *)ep + i, 0);
++
++	/* point to bds */
++	W16(ep, sen_genscc.scc_rbase, fep->ring_mem_addr);
++	W16(ep, sen_genscc.scc_tbase,
++	    fep->ring_mem_addr + sizeof(cbd_t) * fpi->rx_ring);
++
++	/* Initialize function code registers for big-endian.
++	 */
++	W8(ep, sen_genscc.scc_rfcr, SCC_EB);
++	W8(ep, sen_genscc.scc_tfcr, SCC_EB);
++
++	/* Set maximum bytes per receive buffer.
++	 * This appears to be an Ethernet frame size, not the buffer
++	 * fragment size.  It must be a multiple of four.
++	 */
++	W16(ep, sen_genscc.scc_mrblr, 0x5f0);
++
++	/* Set CRC preset and mask.
++	 */
++	W32(ep, sen_cpres, 0xffffffff);
++	W32(ep, sen_cmask, 0xdebb20e3);
++
++	W32(ep, sen_crcec, 0);	/* CRC Error counter */
++	W32(ep, sen_alec, 0);	/* alignment error counter */
++	W32(ep, sen_disfc, 0);	/* discard frame counter */
++
++	W16(ep, sen_pads, 0x8888);	/* Tx short frame pad character */
++	W16(ep, sen_retlim, 15);	/* Retry limit threshold */
++
++	W16(ep, sen_maxflr, 0x5ee);	/* maximum frame length register */
++
++	W16(ep, sen_minflr, PKT_MINBUF_SIZE);	/* minimum frame length register */
++
++	W16(ep, sen_maxd1, 0x000005f0);	/* maximum DMA1 length */
++	W16(ep, sen_maxd2, 0x000005f0);	/* maximum DMA2 length */
++
++	/* Clear hash tables.
++	 */
++	W16(ep, sen_gaddr1, 0);
++	W16(ep, sen_gaddr2, 0);
++	W16(ep, sen_gaddr3, 0);
++	W16(ep, sen_gaddr4, 0);
++	W16(ep, sen_iaddr1, 0);
++	W16(ep, sen_iaddr2, 0);
++	W16(ep, sen_iaddr3, 0);
++	W16(ep, sen_iaddr4, 0);
++
++	/* set address 
++	 */
++	mac = dev->dev_addr;
++	paddrh = ((u16) mac[5] << 8) | mac[4];
++	paddrm = ((u16) mac[3] << 8) | mac[2];
++	paddrl = ((u16) mac[1] << 8) | mac[0];
++
++	W16(ep, sen_paddrh, paddrh);
++	W16(ep, sen_paddrm, paddrm);
++	W16(ep, sen_paddrl, paddrl);
++
++	W16(ep, sen_pper, 0);
++	W16(ep, sen_taddrl, 0);
++	W16(ep, sen_taddrm, 0);
++	W16(ep, sen_taddrh, 0);
++
++	fs_init_bds(dev);
++
++	scc_cr_cmd(fep, CPM_CR_INIT_TRX);
++
++	W16(sccp, scc_scce, 0xffff);
++
++	/* Enable interrupts we wish to service. 
++	 */
++	W16(sccp, scc_sccm, SCCE_ENET_TXE | SCCE_ENET_RXF | SCCE_ENET_TXB);
++
++	/* Set GSMR_H to enable all normal operating modes.
++	 * Set GSMR_L to enable Ethernet to MC68160.
++	 */
++	W32(sccp, scc_gsmrh, 0);
++	W32(sccp, scc_gsmrl,
++	    SCC_GSMRL_TCI | SCC_GSMRL_TPL_48 | SCC_GSMRL_TPP_10 |
++	    SCC_GSMRL_MODE_ENET);
++
++	/* Set sync/delimiters.
++	 */
++	W16(sccp, scc_dsr, 0xd555);
++
++	/* Set processing mode.  Use Ethernet CRC, catch broadcast, and
++	 * start frame search 22 bit times after RENA.
++	 */
++	W16(sccp, scc_psmr, SCC_PSMR_ENCRC | SCC_PSMR_NIB22);
++
++	/* Set full duplex mode if needed */
++	if (fep->duplex)
++		S16(sccp, scc_psmr, SCC_PSMR_LPB | SCC_PSMR_FDE);
++
++	S32(sccp, scc_gsmrl, SCC_GSMRL_ENR | SCC_GSMRL_ENT);
++}
++
++static void stop(struct net_device *dev)	
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	scc_t *sccp = fep->scc.sccp;
++	int i;
++
++	for (i = 0; (R16(sccp, scc_sccm) == 0) && i < SCC_RESET_DELAY; i++)
++		udelay(1);
++
++	if (i == SCC_RESET_DELAY)
++		printk(KERN_WARNING DRV_MODULE_NAME
++		       ": %s SCC timeout on graceful transmit stop\n",
++		       dev->name);
++
++	W16(sccp, scc_sccm, 0);
++	C32(sccp, scc_gsmrl, SCC_GSMRL_ENR | SCC_GSMRL_ENT);
++
++	fs_cleanup_bds(dev);
++}
++
++static void pre_request_irq(struct net_device *dev, int irq)
++{
++	immap_t *immap = fs_enet_immap;
++	u32 siel;
++
++	/* SIU interrupt */
++	if (irq >= SIU_IRQ0 && irq < SIU_LEVEL7) {
++
++		siel = in_be32(&immap->im_siu_conf.sc_siel);
++		if ((irq & 1) == 0)
++			siel |= (0x80000000 >> irq);
++		else
++			siel &= ~(0x80000000 >> (irq & ~1));
++		out_be32(&immap->im_siu_conf.sc_siel, siel);
++	}
++}
++
++static void post_free_irq(struct net_device *dev, int irq)
++{
++	/* nothing */
++}
++
++static void napi_clear_rx_event(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	scc_t *sccp = fep->scc.sccp;
++
++	W16(sccp, scc_scce, SCC_NAPI_RX_EVENT_MSK);
++}
++
++static void napi_enable_rx(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	scc_t *sccp = fep->scc.sccp;
++
++	S16(sccp, scc_sccm, SCC_NAPI_RX_EVENT_MSK);
++}
++
++static void napi_disable_rx(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	scc_t *sccp = fep->scc.sccp;
++
++	C16(sccp, scc_sccm, SCC_NAPI_RX_EVENT_MSK);
++}
++
++static void rx_bd_done(struct net_device *dev)
++{
++	/* nothing */
++}
++
++static void tx_kickstart(struct net_device *dev)
++{
++	/* nothing */
++}
++
++static u32 get_int_events(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	scc_t *sccp = fep->scc.sccp;
++
++	return (u32) R16(sccp, scc_scce);
++}
++
++static void clear_int_events(struct net_device *dev, u32 int_events)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++	scc_t *sccp = fep->scc.sccp;
++
++	W16(sccp, scc_scce, int_events & 0xffff);
++}
++
++static void ev_error(struct net_device *dev, u32 int_events)
++{
++	printk(KERN_WARNING DRV_MODULE_NAME
++	       ": %s SCC ERROR(s) 0x%x\n", dev->name, int_events);
++}
++
++static int get_regs(struct net_device *dev, void *p, int *sizep)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++
++	if (*sizep < sizeof(scc_t) + sizeof(scc_enet_t))
++		return -EINVAL;
++
++	memcpy_fromio(p, fep->scc.sccp, sizeof(scc_t));
++	p = (char *)p + sizeof(scc_t);
++
++	memcpy_fromio(p, fep->scc.ep, sizeof(scc_enet_t));
++
++	return 0;
++}
++
++static int get_regs_len(struct net_device *dev)
++{
++	return sizeof(scc_t) + sizeof(scc_enet_t);
++}
++
++static void tx_restart(struct net_device *dev)
++{
++	struct fs_enet_private *fep = netdev_priv(dev);
++
++	scc_cr_cmd(fep, CPM_CR_RESTART_TX);
++}
++
++/*************************************************************************/
++
++const struct fs_ops fs_scc_ops = {
++	.setup_data		= setup_data,
++	.cleanup_data		= cleanup_data,
++	.set_multicast_list	= set_multicast_list,
++	.restart		= restart,
++	.stop			= stop,
++	.pre_request_irq	= pre_request_irq,
++	.post_free_irq		= post_free_irq,
++	.napi_clear_rx_event	= napi_clear_rx_event,
++	.napi_enable_rx		= napi_enable_rx,
++	.napi_disable_rx	= napi_disable_rx,
++	.rx_bd_done		= rx_bd_done,
++	.tx_kickstart		= tx_kickstart,
++	.get_int_events		= get_int_events,
++	.clear_int_events	= clear_int_events,
++	.ev_error		= ev_error,
++	.get_regs		= get_regs,
++	.get_regs_len		= get_regs_len,
++	.tx_restart		= tx_restart,
++	.allocate_bd		= allocate_bd,
++	.free_bd		= free_bd,
++};
+--- /dev/null
++++ b/drivers/net/fs_enet/mii-bitbang.c
+@@ -0,0 +1,405 @@
++/*
++ * Combined Ethernet driver for Motorola MPC8xx and MPC82xx.
++ *
++ * Copyright (c) 2003 Intracom S.A. 
++ *  by Pantelis Antoniou <panto@intracom.gr>
++ * 
++ * 2005 (c) MontaVista Software, Inc. 
++ * Vitaly Bordug <vbordug@ru.mvista.com>
++ *
++ * This file is licensed under the terms of the GNU General Public License 
++ * version 2. This program is licensed "as is" without any warranty of any 
++ * kind, whether express or implied.
++ */
++
++
++#include <linux/config.h>
++#include <linux/module.h>
++#include <linux/types.h>
++#include <linux/kernel.h>
++#include <linux/sched.h>
++#include <linux/string.h>
++#include <linux/ptrace.h>
++#include <linux/errno.h>
++#include <linux/ioport.h>
++#include <linux/slab.h>
++#include <linux/interrupt.h>
++#include <linux/pci.h>
++#include <linux/init.h>
++#include <linux/delay.h>
++#include <linux/netdevice.h>
++#include <linux/etherdevice.h>
++#include <linux/skbuff.h>
++#include <linux/spinlock.h>
++#include <linux/mii.h>
++#include <linux/ethtool.h>
++#include <linux/bitops.h>
++
++#include <asm/pgtable.h>
++#include <asm/irq.h>
++#include <asm/uaccess.h>
++
++#include "fs_enet.h"
++
++#ifdef CONFIG_8xx
++static int bitbang_prep_bit(u8 **dirp, u8 **datp, u8 *mskp, int port, int bit)
++{
++	immap_t *im = (immap_t *)fs_enet_immap;
++	void *dir, *dat, *ppar;
++	int adv;
++	u8 msk;
++
++	switch (port) {
++		case fsiop_porta:
++			dir = &im->im_ioport.iop_padir;
++			dat = &im->im_ioport.iop_padat;
++			ppar = &im->im_ioport.iop_papar;
++			break;
++
++		case fsiop_portb:
++			dir = &im->im_cpm.cp_pbdir;
++			dat = &im->im_cpm.cp_pbdat;
++			ppar = &im->im_cpm.cp_pbpar;
++			break;
++
++		case fsiop_portc:
++			dir = &im->im_ioport.iop_pcdir;
++			dat = &im->im_ioport.iop_pcdat;
++			ppar = &im->im_ioport.iop_pcpar;
++			break;
++
++		case fsiop_portd:
++			dir = &im->im_ioport.iop_pddir;
++			dat = &im->im_ioport.iop_pddat;
++			ppar = &im->im_ioport.iop_pdpar;
++			break;
++
++		case fsiop_porte:
++			dir = &im->im_cpm.cp_pedir;
++			dat = &im->im_cpm.cp_pedat;
++			ppar = &im->im_cpm.cp_pepar;
++			break;
++
++		default:
++			printk(KERN_ERR DRV_MODULE_NAME
++			       "Illegal port value %d!\n", port);
++			return -EINVAL;
++	}
++
++	adv = bit >> 3;
++	dir = (char *)dir + adv;
++	dat = (char *)dat + adv;
++	ppar = (char *)ppar + adv;
++
++	msk = 1 << (7 - (bit & 7));
++	if ((in_8(ppar) & msk) != 0) {
++		printk(KERN_ERR DRV_MODULE_NAME
++		       "pin %d on port %d is not general purpose!\n", bit, port);
++		return -EINVAL;
++	}
++
++	*dirp = dir;
++	*datp = dat;
++	*mskp = msk;
++
++	return 0;
++}
++#endif
++
++#ifdef CONFIG_8260
++static int bitbang_prep_bit(u8 **dirp, u8 **datp, u8 *mskp, int port, int bit)
++{
++	iop_cpm2_t *io = &((cpm2_map_t *)fs_enet_immap)->im_ioport;
++	void *dir, *dat, *ppar;
++	int adv;
++	u8 msk;
++
++	switch (port) {
++		case fsiop_porta:
++			dir = &io->iop_pdira;
++			dat = &io->iop_pdata;
++			ppar = &io->iop_ppara;
++			break;
++
++		case fsiop_portb:
++			dir = &io->iop_pdirb;
++			dat = &io->iop_pdatb;
++			ppar = &io->iop_pparb;
++			break;
++
++		case fsiop_portc:
++			dir = &io->iop_pdirc;
++			dat = &io->iop_pdatc;
++			ppar = &io->iop_pparc;
++			break;
++
++		case fsiop_portd:
++			dir = &io->iop_pdird;
++			dat = &io->iop_pdatd;
++			ppar = &io->iop_ppard;
++			break;
++
++		default:
++			printk(KERN_ERR DRV_MODULE_NAME
++			       "Illegal port value %d!\n", port);
++			return -EINVAL;
++	}
++
++	adv = bit >> 3;
++	dir = (char *)dir + adv;
++	dat = (char *)dat + adv;
++	ppar = (char *)ppar + adv;
++
++	msk = 1 << (7 - (bit & 7));
++	if ((in_8(ppar) & msk) != 0) {
++		printk(KERN_ERR DRV_MODULE_NAME
++		       "pin %d on port %d is not general purpose!\n", bit, port);
++		return -EINVAL;
++	}
++
++	*dirp = dir;
++	*datp = dat;
++	*mskp = msk;
++
++	return 0;
++}
++#endif
++
++static inline void bb_set(u8 *p, u8 m)
++{
++	out_8(p, in_8(p) | m);
++}
++
++static inline void bb_clr(u8 *p, u8 m)
++{
++	out_8(p, in_8(p) & ~m);
++}
++
++static inline int bb_read(u8 *p, u8 m)
++{
++	return (in_8(p) & m) != 0;
++}
++
++static inline void mdio_active(struct fs_enet_mii_bus *bus)
++{
++	bb_set(bus->bitbang.mdio_dir, bus->bitbang.mdio_msk);
++}
++
++static inline void mdio_tristate(struct fs_enet_mii_bus *bus)
++{
++	bb_clr(bus->bitbang.mdio_dir, bus->bitbang.mdio_msk);
++}
++
++static inline int mdio_read(struct fs_enet_mii_bus *bus)
++{
++	return bb_read(bus->bitbang.mdio_dat, bus->bitbang.mdio_msk);
++}
++
++static inline void mdio(struct fs_enet_mii_bus *bus, int what)
++{
++	if (what)
++		bb_set(bus->bitbang.mdio_dat, bus->bitbang.mdio_msk);
++	else
++		bb_clr(bus->bitbang.mdio_dat, bus->bitbang.mdio_msk);
++}
++
++static inline void mdc(struct fs_enet_mii_bus *bus, int what)
++{
++	if (what)
++		bb_set(bus->bitbang.mdc_dat, bus->bitbang.mdc_msk);
++	else
++		bb_clr(bus->bitbang.mdc_dat, bus->bitbang.mdc_msk);
++}
++
++static inline void mii_delay(struct fs_enet_mii_bus *bus)
++{
++	udelay(bus->bus_info->i.bitbang.delay);
++}
++
++/* Utility to send the preamble, address, and register (common to read and write). */
++static void bitbang_pre(struct fs_enet_mii_bus *bus, int read, u8 addr, u8 reg)
++{
++	int j;
++
++	/*
++	 * Send a 32 bit preamble ('1's) with an extra '1' bit for good measure.
++	 * The IEEE spec says this is a PHY optional requirement.  The AMD
++	 * 79C874 requires one after power up and one after a MII communications
++	 * error.  This means that we are doing more preambles than we need,
++	 * but it is safer and will be much more robust.
++	 */
++
++	mdio_active(bus);
++	mdio(bus, 1);
++	for (j = 0; j < 32; j++) {
++		mdc(bus, 0);
++		mii_delay(bus);
++		mdc(bus, 1);
++		mii_delay(bus);
++	}
++
++	/* send the start bit (01) and the read opcode (10) or write (10) */
++	mdc(bus, 0);
++	mdio(bus, 0);
++	mii_delay(bus);
++	mdc(bus, 1);
++	mii_delay(bus);
++	mdc(bus, 0);
++	mdio(bus, 1);
++	mii_delay(bus);
++	mdc(bus, 1);
++	mii_delay(bus);
++	mdc(bus, 0);
++	mdio(bus, read);
++	mii_delay(bus);
++	mdc(bus, 1);
++	mii_delay(bus);
++	mdc(bus, 0);
++	mdio(bus, !read);
++	mii_delay(bus);
++	mdc(bus, 1);
++	mii_delay(bus);
++
++	/* send the PHY address */
++	for (j = 0; j < 5; j++) {
++		mdc(bus, 0);
++		mdio(bus, (addr & 0x10) != 0);
++		mii_delay(bus);
++		mdc(bus, 1);
++		mii_delay(bus);
++		addr <<= 1;
++	}
++
++	/* send the register address */
++	for (j = 0; j < 5; j++) {
++		mdc(bus, 0);
++		mdio(bus, (reg & 0x10) != 0);
++		mii_delay(bus);
++		mdc(bus, 1);
++		mii_delay(bus);
++		reg <<= 1;
++	}
++}
++
++static int mii_read(struct fs_enet_mii_bus *bus, int phy_id, int location)
++{
++	u16 rdreg;
++	int ret, j;
++	u8 addr = phy_id & 0xff;
++	u8 reg = location & 0xff;
++
++	bitbang_pre(bus, 1, addr, reg);
++
++	/* tri-state our MDIO I/O pin so we can read */
++	mdc(bus, 0);
++	mdio_tristate(bus);
++	mii_delay(bus);
++	mdc(bus, 1);
++	mii_delay(bus);
++
++	/* check the turnaround bit: the PHY should be driving it to zero */
++	if (mdio_read(bus) != 0) {
++		/* PHY didn't drive TA low */
++		for (j = 0; j < 32; j++) {
++			mdc(bus, 0);
++			mii_delay(bus);
++			mdc(bus, 1);
++			mii_delay(bus);
++		}
++		ret = -1;
++		goto out;
++	}
++
++	mdc(bus, 0);
++	mii_delay(bus);
++
++	/* read 16 bits of register data, MSB first */
++	rdreg = 0;
++	for (j = 0; j < 16; j++) {
++		mdc(bus, 1);
++		mii_delay(bus);
++		rdreg <<= 1;
++		rdreg |= mdio_read(bus);
++		mdc(bus, 0);
++		mii_delay(bus);
++	}
++
++	mdc(bus, 1);
++	mii_delay(bus);
++	mdc(bus, 0);
++	mii_delay(bus);
++	mdc(bus, 1);
++	mii_delay(bus);
++
++	ret = rdreg;
++out:
++	return ret;
++}
++
++static void mii_write(struct fs_enet_mii_bus *bus, int phy_id, int location, int val)
++{
++	int j;
++	u8 addr = phy_id & 0xff;
++	u8 reg = location & 0xff;
++	u16 value = val & 0xffff;
++
++	bitbang_pre(bus, 0, addr, reg);
++
++	/* send the turnaround (10) */
++	mdc(bus, 0);
++	mdio(bus, 1);
++	mii_delay(bus);
++	mdc(bus, 1);
++	mii_delay(bus);
++	mdc(bus, 0);
++	mdio(bus, 0);
++	mii_delay(bus);
++	mdc(bus, 1);
++	mii_delay(bus);
++
++	/* write 16 bits of register data, MSB first */
++	for (j = 0; j < 16; j++) {
++		mdc(bus, 0);
++		mdio(bus, (value & 0x8000) != 0);
++		mii_delay(bus);
++		mdc(bus, 1);
++		mii_delay(bus);
++		value <<= 1;
++	}
++
++	/*
++	 * Tri-state the MDIO line.
++	 */
++	mdio_tristate(bus);
++	mdc(bus, 0);
++	mii_delay(bus);
++	mdc(bus, 1);
++	mii_delay(bus);
++}
++
++int fs_mii_bitbang_init(struct fs_enet_mii_bus *bus)
++{
++	const struct fs_mii_bus_info *bi = bus->bus_info;
++	int r;
++
++	r = bitbang_prep_bit(&bus->bitbang.mdio_dir,
++			 &bus->bitbang.mdio_dat,
++			 &bus->bitbang.mdio_msk,
++			 bi->i.bitbang.mdio_port,
++			 bi->i.bitbang.mdio_bit);
++	if (r != 0)
++		return r;
++
++	r = bitbang_prep_bit(&bus->bitbang.mdc_dir,
++			 &bus->bitbang.mdc_dat,
++			 &bus->bitbang.mdc_msk,
++			 bi->i.bitbang.mdc_port,
++			 bi->i.bitbang.mdc_bit);
++	if (r != 0)
++		return r;
++
++	bus->mii_read = mii_read;
++	bus->mii_write = mii_write;
++
++	return 0;
++}
+--- /dev/null
++++ b/drivers/net/fs_enet/mii-fixed.c
+@@ -0,0 +1,92 @@
++/*
++ * Combined Ethernet driver for Motorola MPC8xx and MPC82xx.
++ *
++ * Copyright (c) 2003 Intracom S.A. 
++ *  by Pantelis Antoniou <panto@intracom.gr>
++ * 
++ * 2005 (c) MontaVista Software, Inc. 
++ * Vitaly Bordug <vbordug@ru.mvista.com>
++ *
++ * This file is licensed under the terms of the GNU General Public License 
++ * version 2. This program is licensed "as is" without any warranty of any 
++ * kind, whether express or implied.
++ */
++
++
++#include <linux/config.h>
++#include <linux/module.h>
++#include <linux/types.h>
++#include <linux/kernel.h>
++#include <linux/sched.h>
++#include <linux/string.h>
++#include <linux/ptrace.h>
++#include <linux/errno.h>
++#include <linux/ioport.h>
++#include <linux/slab.h>
++#include <linux/interrupt.h>
++#include <linux/pci.h>
++#include <linux/init.h>
++#include <linux/delay.h>
++#include <linux/netdevice.h>
++#include <linux/etherdevice.h>
++#include <linux/skbuff.h>
++#include <linux/spinlock.h>
++#include <linux/mii.h>
++#include <linux/ethtool.h>
++#include <linux/bitops.h>
++
++#include <asm/pgtable.h>
++#include <asm/irq.h>
++#include <asm/uaccess.h>
++
++#include "fs_enet.h"
++
++static const u16 mii_regs[7] = {
++	0x3100,
++	0x786d,
++	0x0fff,
++	0x0fff,
++	0x01e1,
++	0x45e1,
++	0x0003,
 +};
 +
- #endif /* !__ASSEMBLY__ */
- #endif /* CONFIG_8xx */
- #endif /* __CONFIG_8xx_DEFS */
-diff --git a/include/asm-ppc/ppc_sys.h b/include/asm-ppc/ppc_sys.h
---- a/include/asm-ppc/ppc_sys.h
-+++ b/include/asm-ppc/ppc_sys.h
-@@ -25,6 +25,8 @@
- #include <asm/mpc83xx.h>
- #elif defined(CONFIG_85xx)
- #include <asm/mpc85xx.h>
-+#elif defined(CONFIG_8xx)
-+#include <asm/mpc8xx.h>
- #elif defined(CONFIG_PPC_MPC52xx)
- #include <asm/mpc52xx.h>
- #elif defined(CONFIG_MPC10X_BRIDGE)
-@@ -49,7 +51,8 @@ extern struct ppc_sys_spec *cur_ppc_sys_
- 
- /* determine which specific SOC we are */
- extern void identify_ppc_sys_by_id(u32 id) __init;
--extern void identify_ppc_sys_by_name(char *name) __init;
-+extern void identify_ppc_sys_by_name(char* name) __init;
-+extern void identify_ppc_sys_by_name_and_id(char *name, u32 id) __init;
- 
- /* describes all devices that may exist in a given family of processors */
- extern struct platform_device ppc_sys_platform_devices[];
-diff --git a/include/linux/fs_enet_pd.h b/include/linux/fs_enet_pd.h
-new file mode 100644
++static int mii_read(struct fs_enet_mii_bus *bus, int phy_id, int location)
++{
++	int ret = 0;
++
++	if ((unsigned int)location >= ARRAY_SIZE(mii_regs))
++		return -1;
++
++	if (location != 5)
++		ret = mii_regs[location];
++	else
++		ret = bus->fixed.lpa;
++
++	return ret;
++}
++
++static void mii_write(struct fs_enet_mii_bus *bus, int phy_id, int location, int val)
++{
++	/* do nothing */
++}
++
++int fs_mii_fixed_init(struct fs_enet_mii_bus *bus)
++{
++	const struct fs_mii_bus_info *bi = bus->bus_info;
++
++	bus->fixed.lpa = 0x45e1;	/* default 100Mb, full duplex */
++
++	/* if speed is fixed at 10Mb, remove 100Mb modes */
++	if (bi->i.fixed.speed == 10)
++		bus->fixed.lpa &= ~LPA_100;
++
++	/* if duplex is half, remove full duplex modes */
++	if (bi->i.fixed.duplex == 0)
++		bus->fixed.lpa &= ~LPA_DUPLEX;
++
++	bus->mii_read = mii_read;
++	bus->mii_write = mii_write;
++
++	return 0;
++}
 
---Boundary-00=_QXiCD/Tej3k73Jo--
+--Boundary-00=_OXiCDnyPAOpWIAX--
