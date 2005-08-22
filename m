@@ -1,19 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id EDA9267FC9
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Aug 2005 17:13:01 +1000 (EST)
+Received: from oak (bh02i525f01.au.ibm.com [202.81.18.30])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 50C7667FAC
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Aug 2005 07:23:56 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arthur Othieno <a.othieno@bluewin.ch>
-In-Reply-To: <20050821011649.GA31839@mars>
-References: <20050821011649.GA31839@mars>
-Content-Type: text/plain
-Date: Mon, 22 Aug 2005 07:22:41 +1000
-Message-Id: <1124659361.5197.121.camel@gaston>
+	by smtps.tip.net.au (Postfix) with ESMTP id 988B5368019
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Aug 2005 17:13:01 +1000 (EST)
+Date: Mon, 22 Aug 2005 16:02:54 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: ppc64-dev <linuxppc64-dev@ozlabs.org>
+Message-Id: <20050822160254.2dc59b25.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] ppc32: Big-endian I/O memory accessors.
+Content-Type: text/plain; charset=US-ASCII
+Resent-Message-Id: <20050822165826.2b2b8644.sfr@canb.auug.org.au>
+Subject: [PATCH 1/3] Create include/asm-powerpc
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,20 +24,133 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2005-08-20 at 21:16 -0400, Arthur Othieno wrote:
-> I/O memory accessors. Big-endian version. For those busses/devices
-> that do export big-endian I/O memory.
-> 
-> Of notable relevance/reference:
-> 
->    http://lwn.net/Articles/132804/
->    http://ozlabs.org/pipermail/linuxppc-embedded/2005-August/019798.html
->    http://ozlabs.org/pipermail/linuxppc-embedded/2005-August/019752.html
-> 
-> Signed-Off-By: Arthur Othieno <a.othieno@bluewin.ch>
-> 
+Hopefully, we can gree to start like this ...
 
-No, that's not correct. You need to use the in_be/out_be variants which
-provide proper memory barriers.
+Create include/asm-powerpc (and move linkage.h into it since we don't
+like empty directories).  Modify the Makefiles to cope.
 
-Ben.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+
+---
+
+ arch/ppc/Makefile             |   11 ++++++++++-
+ arch/ppc64/Makefile           |    9 +++++++++
+ include/asm-powerpc/linkage.h |    6 ++++++
+ include/asm-ppc/linkage.h     |    6 ------
+ include/asm-ppc64/linkage.h   |    6 ------
+ 5 files changed, 25 insertions(+), 13 deletions(-)
+ create mode 100644 include/asm-powerpc/linkage.h
+ delete mode 100644 include/asm-ppc/linkage.h
+ delete mode 100644 include/asm-ppc64/linkage.h
+
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+diff --git a/arch/ppc/Makefile b/arch/ppc/Makefile
+--- a/arch/ppc/Makefile
++++ b/arch/ppc/Makefile
+@@ -21,11 +21,13 @@ CC		:= $(CC) -m32
+ endif
+ 
+ LDFLAGS_vmlinux	:= -Ttext $(KERNELLOAD) -Bstatic
+-CPPFLAGS	+= -Iarch/$(ARCH)
++CPPFLAGS	+= -Iarch/$(ARCH) -Iinclude3
+ AFLAGS		+= -Iarch/$(ARCH)
+ CFLAGS		+= -Iarch/$(ARCH) -msoft-float -pipe \
+ 		-ffixed-r2 -mmultiple
+ CPP		= $(CC) -E $(CFLAGS)
++# Temporary hack until we have migrated to asm-powerpc
++LINUXINCLUDE    += -Iinclude3
+ 
+ CHECKFLAGS	+= -D__powerpc__
+ 
+@@ -101,6 +103,7 @@ endef
+ 
+ archclean:
+ 	$(Q)$(MAKE) $(clean)=arch/ppc/boot
++	$(Q)rm -rf include3
+ 
+ prepare: include/asm-$(ARCH)/offsets.h checkbin
+ 
+@@ -110,6 +113,12 @@ arch/$(ARCH)/kernel/asm-offsets.s: inclu
+ include/asm-$(ARCH)/offsets.h: arch/$(ARCH)/kernel/asm-offsets.s
+ 	$(call filechk,gen-asm-offsets)
+ 
++# Temporary hack until we have migrated to asm-powerpc
++include/asm: include3/asm
++include3/asm:
++	$(Q)if [ ! -d include3 ]; then mkdir -p include3; fi
++	$(Q)ln -fsn $(srctree)/include/asm-powerpc include3/asm
++
+ # Use the file '.tmp_gas_check' for binutils tests, as gas won't output
+ # to stdout and these checks are run even on install targets.
+ TOUT	:= .tmp_gas_check
+diff --git a/arch/ppc64/Makefile b/arch/ppc64/Makefile
+--- a/arch/ppc64/Makefile
++++ b/arch/ppc64/Makefile
+@@ -55,6 +55,8 @@ LDFLAGS		:= -m elf64ppc
+ LDFLAGS_vmlinux	:= -Bstatic -e $(KERNELLOAD) -Ttext $(KERNELLOAD)
+ CFLAGS		+= -msoft-float -pipe -mminimal-toc -mtraceback=none \
+ 		   -mcall-aixdesc
++# Temporary hack until we have migrated to asm-powerpc
++CPPFLAGS	+= -Iinclude3
+ 
+ GCC_VERSION     := $(call cc-version)
+ GCC_BROKEN_VEC	:= $(shell if [ $(GCC_VERSION) -lt 0400 ] ; then echo "y"; fi ;)
+@@ -112,6 +114,7 @@ all: $(KBUILD_IMAGE)
+ 
+ archclean:
+ 	$(Q)$(MAKE) $(clean)=$(boot)
++	$(Q)rm -rf include3
+ 
+ prepare: include/asm-ppc64/offsets.h
+ 
+@@ -121,6 +124,12 @@ arch/ppc64/kernel/asm-offsets.s: include
+ include/asm-ppc64/offsets.h: arch/ppc64/kernel/asm-offsets.s
+ 	$(call filechk,gen-asm-offsets)
+ 
++# Temporary hack until we have migrated to asm-powerpc
++include/asm: include3/asm
++include3/asm:
++	$(Q)if [ ! -d include3 ]; then mkdir -p include3; fi;
++	$(Q)ln -fsn $(srctree)/include/asm-powerpc include3/asm
++
+ define archhelp
+   echo  '* zImage       - Compressed kernel image (arch/$(ARCH)/boot/zImage)'
+   echo  '  zImage.initrd- Compressed kernel image with initrd attached,'
+diff --git a/include/asm-powerpc/linkage.h b/include/asm-powerpc/linkage.h
+new file mode 100644
+--- /dev/null
++++ b/include/asm-powerpc/linkage.h
+@@ -0,0 +1,6 @@
++#ifndef __ASM_LINKAGE_H
++#define __ASM_LINKAGE_H
++
++/* Nothing to see here... */
++
++#endif
+diff --git a/include/asm-ppc/linkage.h b/include/asm-ppc/linkage.h
+deleted file mode 100644
+--- a/include/asm-ppc/linkage.h
++++ /dev/null
+@@ -1,6 +0,0 @@
+-#ifndef __ASM_LINKAGE_H
+-#define __ASM_LINKAGE_H
+-
+-/* Nothing to see here... */
+-
+-#endif
+diff --git a/include/asm-ppc64/linkage.h b/include/asm-ppc64/linkage.h
+deleted file mode 100644
+--- a/include/asm-ppc64/linkage.h
++++ /dev/null
+@@ -1,6 +0,0 @@
+-#ifndef __ASM_LINKAGE_H
+-#define __ASM_LINKAGE_H
+-
+-/* Nothing to see here... */
+-
+-#endif
