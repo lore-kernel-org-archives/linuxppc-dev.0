@@ -1,17 +1,18 @@
-Return-Path: <kumar.gala@freescale.com>
-In-Reply-To: <20050823173142.4f620d75.sfr@canb.auug.org.au>
-References: <20050822141235.GA7110@austin.ibm.com>
-	<0F51EC83-8969-4083-B0D7-9343D075B635@freescale.com>
-	<1124775707.5159.92.camel@gaston>
-	<20050823173142.4f620d75.sfr@canb.auug.org.au>
-Mime-Version: 1.0 (Apple Message framework v734)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <E470B224-F0FB-48D7-9A04-E42247B11554@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Tue, 23 Aug 2005 12:05:36 -0500
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: olof@lixom.net, linuxppc64-dev@ozlabs.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 3/3] Move all the very similar files
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from parcelfarce.linux.theplanet.co.uk
+	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A315D68093
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Aug 2005 06:32:42 +1000 (EST)
+Date: Tue, 23 Aug 2005 17:27:08 -0300
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <20050823202708.GE13157@dmt.cnet>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Kumar Gala <galak@freescale.com>
+Subject: [PATCH] ppc32: make perfmon.o CONFIG_E500 specific
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,22 +23,36 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Aug 23, 2005, at 2:31 AM, Stephen Rothwell wrote:
+Subject says it all, there is no need to link perfmon.o on 
+sub-architectures other than CONFIG_E500.
 
-> On Tue, 23 Aug 2005 15:41:47 +1000 Benjamin Herrenschmidt  
-> <benh@kernel.crashing.org> wrote:
->
->>
->> Most of the ones that are in include/asm* are there because drivers
->> outside of arch/* use them.
->>
->
-> Indeed.  Here is the result of grepping for all of the .h files in  
-> patch 3 (minus the
-> obvious noncontentious ones like errno.h ...):
-
-This seems reasonable then to have them in include/asm-powerpc.  I  
-feel that there are a few files in include/asm-ppc that were only  
-used by code in arch/ppc/platforms but I'm probably just crazy.
-
-- kumar
+diff --git a/arch/ppc/kernel/Makefile b/arch/ppc/kernel/Makefile
+--- a/arch/ppc/kernel/Makefile
++++ b/arch/ppc/kernel/Makefile
+@@ -15,8 +15,9 @@ extra-y				+= vmlinux.lds
+ obj-y				:= entry.o traps.o irq.o idle.o time.o misc.o \
+ 					process.o signal.o ptrace.o align.o \
+ 					semaphore.o syscalls.o setup.o \
+-					cputable.o ppc_htab.o perfmon.o
++					cputable.o ppc_htab.o
+ obj-$(CONFIG_6xx)		+= l2cr.o cpu_setup_6xx.o
++obj-$(CONFIG_E500)		+= perfmon.o
+ obj-$(CONFIG_SOFTWARE_SUSPEND)	+= swsusp.o
+ obj-$(CONFIG_POWER4)		+= cpu_setup_power4.o
+ obj-$(CONFIG_MODULES)		+= module.o ppc_ksyms.o
+diff --git a/arch/ppc/kernel/traps.c b/arch/ppc/kernel/traps.c
+--- a/arch/ppc/kernel/traps.c
++++ b/arch/ppc/kernel/traps.c
+@@ -849,10 +849,12 @@ void AltivecAssistException(struct pt_re
+ }
+ #endif /* CONFIG_ALTIVEC */
+ 
++#ifdef CONFIG_E500
+ void PerformanceMonitorException(struct pt_regs *regs)
+ {
+ 	perf_irq(regs);
+ }
++#endif
+ 
+ #ifdef CONFIG_FSL_BOOKE
+ void CacheLockingException(struct pt_regs *regs, unsigned long address,
