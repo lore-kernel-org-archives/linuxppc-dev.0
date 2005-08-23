@@ -3,14 +3,14 @@ Received: from parcelfarce.linux.theplanet.co.uk
 	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5913F680EB
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Aug 2005 07:43:35 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id D7525680FE
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Aug 2005 07:43:39 +1000 (EST)
 To: torvalds@osdl.org
-Message-Id: <E1E7gbH-0007Bo-Oa@parcelfarce.linux.theplanet.co.uk>
+Message-Id: <E1E7gbM-0007By-RK@parcelfarce.linux.theplanet.co.uk>
 From: Al Viro <viro@www.linux.org.uk>
-Date: Tue, 23 Aug 2005 22:46:31 +0100
+Date: Tue, 23 Aug 2005 22:46:36 +0100
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] (21/43) Kconfig fix (IRQ_ALL_CPUS vs. MV64360)
+Subject: [PATCH] (22/43) Kconfig fix (ppc 4xx and early serial)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,19 +20,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-MV64360 does not support IRQ_ALL_CPUS - see arch/ppc/kernel/mv64360_pic.c.
+a bunch of ppc 4xx variants unconditionally calls early_serial_setup() and
+therefore needs SERIAL_8250
 
 Signed-off-by: Al Viro <viro@parcelfarce.linux.theplanet.co.uk>
 ----
-diff -urN RC13-rc6-git13-ppc-SMP/arch/ppc/Kconfig RC13-rc6-git13-mv64360-irq/arch/ppc/Kconfig
---- RC13-rc6-git13-ppc-SMP/arch/ppc/Kconfig	2005-08-21 13:17:03.000000000 -0400
-+++ RC13-rc6-git13-mv64360-irq/arch/ppc/Kconfig	2005-08-21 13:17:04.000000000 -0400
-@@ -935,7 +935,7 @@
+diff -urN RC13-rc6-git13-mv64360-irq/arch/ppc/platforms/4xx/Kconfig RC13-rc6-git13-4xx-early-serial/arch/ppc/platforms/4xx/Kconfig
+--- RC13-rc6-git13-mv64360-irq/arch/ppc/platforms/4xx/Kconfig	2005-08-10 10:37:46.000000000 -0400
++++ RC13-rc6-git13-4xx-early-serial/arch/ppc/platforms/4xx/Kconfig	2005-08-21 13:17:05.000000000 -0400
+@@ -3,6 +3,11 @@
+ 	depends on 40x || 44x
+ 	default y
  
- config IRQ_ALL_CPUS
- 	bool "Distribute interrupts on all CPUs by default"
--	depends on SMP
-+	depends on SMP && !MV64360
++config WANT_EARLY_SERIAL
++	bool
++	select SERIAL_8250
++	default n
++
+ menu "IBM 4xx options"
+ 	depends on 4xx
+ 
+@@ -18,6 +23,7 @@
+ 
+ config BUBINGA
+ 	bool "Bubinga"
++	select WANT_EARLY_SERIAL
  	help
- 	  This option gives the kernel permission to distribute IRQs across
- 	  multiple CPUs.  Saying N here will route all IRQs to the first
+ 	  This option enables support for the IBM 405EP evaluation board.
+ 
+@@ -70,21 +76,25 @@
+ 
+ config BAMBOO
+ 	bool "Bamboo"
++	select WANT_EARLY_SERIAL
+ 	help
+ 	  This option enables support for the IBM PPC440EP evaluation board.
+ 
+ config EBONY
+ 	bool "Ebony"
++	select WANT_EARLY_SERIAL
+ 	help
+ 	  This option enables support for the IBM PPC440GP evaluation board.
+ 
+ config LUAN
+ 	bool "Luan"
++	select WANT_EARLY_SERIAL
+ 	help
+ 	  This option enables support for the IBM PPC440SP evaluation board.
+ 
+ config OCOTEA
+ 	bool "Ocotea"
++	select WANT_EARLY_SERIAL
+ 	help
+ 	  This option enables support for the IBM PPC440GX evaluation board.
+ 
