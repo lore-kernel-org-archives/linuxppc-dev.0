@@ -1,17 +1,18 @@
-Return-Path: <deboralh@fel.com.cn>
-Received: from sina37-40.sina.com.cn (sina37-40.sina.net [202.108.37.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "securemail.sina.net",
-	Issuer "VeriSign Trust Network" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 41B846810D
+Return-Path: <glikely@gmail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.202])
+	by ozlabs.org (Postfix) with ESMTP id 6F89F68179
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 Aug 2005 21:13:45 +1000 (EST)
-Date: Tue, 23 Aug 2005 19:18:29 +0800
-From: "Debora Liu" <deboralh@fel.com.cn>
-To: "linuxppc-embedde" <Linuxppc-embedded@ozlabs.org>
-Message-Id: <20050823111345.41B846810D@ozlabs.org>
-Subject: eldk-3.1.1 8xx FEC bug
-Reply-To: deboralh@fel.com.cn
+	Wed, 24 Aug 2005 03:06:36 +1000 (EST)
+Received: by zproxy.gmail.com with SMTP id i1so907836nzh
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 23 Aug 2005 10:06:35 -0700 (PDT)
+Date: Tue, 23 Aug 2005 11:03:00 -0600
+To: linuxppc-embedded@ozlabs.org, Andrei Konovalov <akonovalov@ru.mvista.com>
+Message-ID: <20050823170300.GA910@siegfried.thelikelysolution.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: Grant Likely <glikely@gmail.com>
+Subject: Source of xparameter_ml300.h
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,27 +23,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi ALL:
-   I find one problem with 8xx FEC driver.
-   After "ifconfig eth0 down", again "ifconfig eth0 up", kernel dead
-   I modify fec.c to fix this bug as below
+Does anyone know the origin of xparameter_ml300.h?  The
+Xilinx EDK generates an xparameters.h file for each design, but the
+structure of the file changes between releases.
 
-   My board use MII
+I want to know if xparameters_ml300.h is the exact output produced by
+EDK or if stuff was changed before it was submitted to the mainline
+tree.  (ie. all the stuff under the "linux redefines" comment block)
 
---- fec.c.org   2005-08-23 19:09:06.000000000 +0800
-+++ fec.c       2005-08-23 19:07:50.000000000 +0800
-@@ -2,6 +2,9 @@
- fec_enet_close(struct net_device *dev)
- {
-        /* Don't know what to do yet.
-+       */
-+       struct fec_enet_private *fep = dev->priv;
-+       del_timer( &fep->phy_timer_list );
-        netif_stop_queue(dev);
-        fec_stop(dev);
+Also, where can I get the bitstream/systemace file that matches
+xparameters_ml300.h?  I've got a custom ml300 image that I'm regression
+testing against, but I'd like to also test against some form of 'stock'
+image. :)
 
-
-
-        Debora Liu
-        deboralh@fel.com.cn
-          2005-08-23
+Thanks,
+g.
