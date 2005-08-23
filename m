@@ -1,17 +1,17 @@
 Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 4CE3B6817A
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Aug 2005 03:04:47 +1000 (EST)
-In-Reply-To: <1124815395.29448.26.camel@hades.cambridge.redhat.com>
-References: <1124815395.29448.26.camel@hades.cambridge.redhat.com>
+In-Reply-To: <20050823173142.4f620d75.sfr@canb.auug.org.au>
+References: <20050822141235.GA7110@austin.ibm.com>
+	<0F51EC83-8969-4083-B0D7-9343D075B635@freescale.com>
+	<1124775707.5159.92.camel@gaston>
+	<20050823173142.4f620d75.sfr@canb.auug.org.au>
 Mime-Version: 1.0 (Apple Message framework v734)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <68765056-7D19-42A4-9E25-22C036AE5E05@freescale.com>
+Message-Id: <E470B224-F0FB-48D7-9A04-E42247B11554@freescale.com>
 From: Kumar Gala <kumar.gala@freescale.com>
-Date: Tue, 23 Aug 2005 12:04:38 -0500
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: When are machine checks suppose to be recoverable?
+Date: Tue, 23 Aug 2005 12:05:36 -0500
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: olof@lixom.net, linuxppc64-dev@ozlabs.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 3/3] Move all the very similar files
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,32 +22,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Aug 23, 2005, at 11:43 AM, David Woodhouse wrote:
+On Aug 23, 2005, at 2:31 AM, Stephen Rothwell wrote:
 
-> On Mon, 2005-08-22 at 23:56 -0300, Marcelo Tosatti wrote:
+> On Tue, 23 Aug 2005 15:41:47 +1000 Benjamin Herrenschmidt  
+> <benh@kernel.crashing.org> wrote:
 >
->> "My dual G4 PowerMac crashes sometimes when it probes for the  
->> (absent)
->> serial ports. Theoretically it's supposed to take a machine check and
->> recover -- but it doesn't always work like that."
 >>
->> Maybe you just need the proper entry in the exception table for IO
->> inb/outb?
->>
->> Is there a stacktrace, David?
+>> Most of the ones that are in include/asm* are there because drivers
+>> outside of arch/* use them.
 >>
 >
-> No, just a silent death when probing for one of the serial ports;
-> usually not the first. It doesn't seem to even make it into the  
-> machine
-> check handler. Adding printks into serial_inb and serial_outb makes it
-> much less likely to happen -- could be something bizarre about  
-> alignment
-> of the instructions which cause the machine check, or time elapsed  
-> from
-> one machine check to the next.
+> Indeed.  Here is the result of grepping for all of the .h files in  
+> patch 3 (minus the
+> obvious noncontentious ones like errno.h ...):
 
-If the machine is locking hard it could be check stopping due to  
-getting a second machine check.
+This seems reasonable then to have them in include/asm-powerpc.  I  
+feel that there are a few files in include/asm-ppc that were only  
+used by code in arch/ppc/platforms but I'm probably just crazy.
 
 - kumar
