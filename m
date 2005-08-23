@@ -1,17 +1,20 @@
-Return-Path: <johnsoncheng@qnap.com.tw>
-Received: from qnap.com.tw (unknown [211.75.85.27])
-	by ozlabs.org (Postfix) with SMTP id 2904C68046
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A202867F88
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 Aug 2005 13:11:36 +1000 (EST)
-From: "JohnsonCheng" <johnsoncheng@qnap.com.tw>
-To: <wd@denx.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <20050822130702.27D5F353D18@atlas.denx.de>
-Message-Id: <20050823031136.2904C68046@ozlabs.org>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: Linux Kernel MTD question 
+	Tue, 23 Aug 2005 14:58:38 +1000 (EST)
+In-Reply-To: <20050823022011.GE9667@dmt.cnet>
+References: <20050823022011.GE9667@dmt.cnet>
+Mime-Version: 1.0 (Apple Message framework v622)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <f45653d49c79423af587cff97181ac74@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Tue, 23 Aug 2005 00:58:21 -0400
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: Enabling 8xx debug mode
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,49 +24,33 @@ List-Post: <mailto:linuxppc-embedded@ozlabs.org>
 List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
-Date: Tue, 23 Aug 2005 03:12:03 -0000
 
-Yes. You are right. It's design by myself.
-But I meet a problem. If I have three configuration files, A.conf, B.conf
-and C.conf, then I hope save them in one of partitions of MTD,
-0x005C0000-0x10000000.
-Two questions:
-1. How to build these configuration files into an image for U-boot with
-mkimage?
-2. In kernel, how to get these data? I use "mount /dev/mtd4 /mnt", but it
-failed by block device required.
 
-Thanks,
-Johnson Cheng
+On Aug 22, 2005, at 10:20 PM, Marcelo Tosatti wrote:
 
------Original Message-----
-From: wd@denx.de [mailto:wd@denx.de] 
-Sent: Monday, August 22, 2005 9:07 PM
-To: JohnsonCheng
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Linux Kernel MTD question 
+> I know now that the BDI automatically enables debug mode by asserting
+> the DSCK signal (available through the JTAG port). Is there any way
+> to enable debugging mode purely via software?
 
-In message <20050822104924.214ED429CB@denx.de> you wrote:
-> 
-> How can I put the Environment variables or configurations in
-> 0x00060000-0x00080000, or put User Data in 0x005C0000-0x1000000?
-> Use U-boot command? Or....
+I'm not sure I really understand the question, but I'll give some
+answers anyway :-)  The 8xx has the development/debug support,
+which is a bunch of registers that allow setting instruction/data
+breakpoints and so on.  These are accessible from software, along
+with other standard PowerPC debug (like single step).
 
-It is up to you to define a memory map for your flash  device(s)  and
-create  appropriate partitions for this map in Linux (and probably in
-U-Boot, too, using the new "mtdparts" command).
+The DSCK is a BDM/JTAG clock signal, and along with the other
+signals allow the clocking of instructions and data through the BDM
+pins.  One of the things you can do is strobe in instructions that will
+set these same breakpoint or other debug registers as are accessible
+from software running on the part.
 
-Then you can use standard commands in U-Boot (erase, cp) and in Linux
-(erase_all, cp) to store any data you likein your flash.
+So, if you have software running on the processor, you can do the
+same things.  Obviously, if you are stuck someplace you need to
+get the attention of the processor.  You can do this with some interrupt
+like kgdb does, then use the debug interface to help.
 
-It is *your* design. *You* must create it.
+Does this make sense?
 
-Best regards,
+Thanks.
 
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-The IQ of the group is the lowest IQ of a member of the group divided
-by the number of people in the group.
+	-- Dan
