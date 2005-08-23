@@ -1,15 +1,22 @@
-Return-Path: <hollis@penguinppc.org>
-In-Reply-To: <a22149f6d9cc6f65ae2f8f339d982dd2@us.ibm.com>
-References: <a22149f6d9cc6f65ae2f8f339d982dd2@us.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <0dac9cb23e9a6db6a80d8d15c4fc5e99@penguinppc.org>
-From: Hollis Blanchard <hollis@penguinppc.org>
-Date: Wed, 24 Aug 2005 08:52:36 -0500
-To: Hollis Blanchard <hollisb@us.ibm.com>
-Cc: PPC64-dev List <linuxppc64-dev@ozlabs.org>,
-	Linux PPC Dev <linuxppc-dev@ozlabs.org>
-Subject: Re: GDB backtrace and signal trampolines
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from parcelfarce.linux.theplanet.co.uk
+	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A8A9368033
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Aug 2005 02:09:01 +1000 (EST)
+Date: Tue, 23 Aug 2005 20:33:18 -0300
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Andy Fleming <afleming@freescale.com>
+Message-ID: <20050823233318.GA16787@dmt.cnet>
+References: <20050823202708.GE13157@dmt.cnet>
+	<1124836787.5189.107.camel@gaston>
+	<29D5FC3D-C2AD-440E-B929-9AA29F7300CF@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <29D5FC3D-C2AD-440E-B929-9AA29F7300CF@freescale.com>
+Cc: Kumar Gala <galak@freescale.com>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] ppc32: make perfmon.o CONFIG_E500 specific
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,35 +26,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Aug 11, 2005, at 10:54 AM, Hollis Blanchard wrote:
+On Tue, Aug 23, 2005 at 05:50:15PM -0500, Andy Fleming wrote:
+> I've got some untested code for 74xx (probably only 7450 for now),  
+> but it's several rungs down my priority list right now.  : 
+> (  Hopefully I will have time for it soon...
 
-> GDB 6.3 contains this code in ppc-linux-tdep.c:
->
-> static const struct frame_unwind *
-> ppc_linux_sigtramp_sniffer (struct frame_info *next_frame)
-> {
->   struct gdbarch_tdep *tdep = gdbarch_tdep (get_frame_arch 
-> (next_frame));
->
->   if (frame_pc_unwind (next_frame)
->       > frame_unwind_register_unsigned (next_frame, SP_REGNUM))
->     /* Assume anything that is vaguely on the stack is a signal
->        trampoline.  */
->     return &ppc_linux_sigtramp_unwind;
->   else
->     return NULL;
-> }
->
-> Essentially it says that any time the program counter is above the 
-> stack pointer, we must be in a signal trampoline, and so GDB proceeds 
-> to grope about for a struct rt_sigframe on the stack.
->
-> This is not a good assumption. I'm using a GDB stub to debug Xen, and 
-> as it so happens, the Xen stack is below the Xen text. That means that 
-> the above test always triggers, but of course there is no rt_sigframe 
-> on the stack, and my backtrace runs away.
+OK - you can then add the proper change for inclusion inside
+the #ifdef ?
 
-FYI: I looked at a GDB snapshot (gdb-6.3.50.20050818) and the problem 
-had been resolved.
-
--Hollis
+Please apply the patch (or some variant of it).
