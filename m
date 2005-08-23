@@ -1,18 +1,18 @@
-Return-Path: <glikely@gmail.com>
-Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.202])
-	by ozlabs.org (Postfix) with ESMTP id 6F89F68179
+Return-Path: <stefan.nickl@kontron.com>
+Received: from kom-exchfe.kontron-modular.com (mail.e2brain.de
+	[62.159.155.200]) by ozlabs.org (Postfix) with ESMTP id 04A3A68182
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 Aug 2005 03:06:36 +1000 (EST)
-Received: by zproxy.gmail.com with SMTP id i1so907836nzh
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 Aug 2005 10:06:35 -0700 (PDT)
-Date: Tue, 23 Aug 2005 11:03:00 -0600
-To: linuxppc-embedded@ozlabs.org, Andrei Konovalov <akonovalov@ru.mvista.com>
-Message-ID: <20050823170300.GA910@siegfried.thelikelysolution.ca>
+	Wed, 24 Aug 2005 03:18:59 +1000 (EST)
+From: Stefan Nickl <Stefan.Nickl@kontron.com>
+To: JohnsonCheng <johnsoncheng@qnap.com.tw>
+In-Reply-To: <20050823023824.9DCB4343AB@x-save.xtro.de>
+References: <20050823023824.9DCB4343AB@x-save.xtro.de>
+Content-Type: text/plain
+Date: Tue, 23 Aug 2005 09:48:21 +0200
+Message-Id: <1124783301.14274.49.camel@lucy.pep-kaufbeuren.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: Grant Likely <glikely@gmail.com>
-Subject: Source of xparameter_ml300.h
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: How NEC uPD720101 USB chip work well on linux2.6.12
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,18 +23,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Does anyone know the origin of xparameter_ml300.h?  The
-Xilinx EDK generates an xparameters.h file for each design, but the
-structure of the file changes between releases.
+On Sat, 2005-07-23 at 10:37 +0800, JohnsonCheng wrote:
+> Correct it. 
+> I only turn on OHCI in kernel configuration, not UHCI.
 
-I want to know if xparameters_ml300.h is the exact output produced by
-EDK or if stuff was changed before it was submitted to the mainline
-tree.  (ie. all the stuff under the "linux redefines" comment block)
+I guess what you have is like this:
 
-Also, where can I get the bitstream/systemace file that matches
-xparameters_ml300.h?  I've got a custom ml300 image that I'm regression
-testing against, but I'd like to also test against some form of 'stock'
-image. :)
+ ---------
+| MPC8241 |
+ ---------
+     |
+     | PCI bus
+     |
+ --------------------------
+| OHCI host controller(s?) |
+ --------------------------
+     |
+     | USB
+     |
+ -----------
+| uPD720101 |
+ -----------
+     |
+  USB mouse
 
-Thanks,
-g.
+So the IRQ is all up to your PCI setup and board wiring.
+
+Please send the output of ksymoops as described in
+linux/Documentation/oops-tracing.txt.
+Note that you need to run it something like this:
+ksymoops -v <vmlinux-of-target> -m <System.map-of-target> -t elf32-big
+-a ppc -K -L
+
+PS: Please check your PC's clock, your emails date back to July...
+
+-- 
+Stefan Nickl
+Kontron Modular Computers
