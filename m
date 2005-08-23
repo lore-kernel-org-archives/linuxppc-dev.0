@@ -1,15 +1,17 @@
-Return-Path: <sainink@yahoo.com>
-Received: from web31003.mail.mud.yahoo.com (web31003.mail.mud.yahoo.com
-	[68.142.200.166]) by ozlabs.org (Postfix) with SMTP id B30D16813D
+Return-Path: <deboralh@fel.com.cn>
+Received: from sina37-40.sina.com.cn (sina37-40.sina.net [202.108.37.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "securemail.sina.net",
+	Issuer "VeriSign Trust Network" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 41B846810D
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 Aug 2005 19:58:38 +1000 (EST)
-Message-ID: <20050823095836.39122.qmail@web31003.mail.mud.yahoo.com>
-Date: Tue, 23 Aug 2005 02:58:36 -0700 (PDT)
-From: Saini Narendra <sainink@yahoo.com>
-To: linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Subject: client and server implementation
+	Tue, 23 Aug 2005 21:13:45 +1000 (EST)
+Date: Tue, 23 Aug 2005 19:18:29 +0800
+From: "Debora Liu" <deboralh@fel.com.cn>
+To: "linuxppc-embedde" <Linuxppc-embedded@ozlabs.org>
+Message-Id: <20050823111345.41B846810D@ozlabs.org>
+Subject: eldk-3.1.1 8xx FEC bug
+Reply-To: deboralh@fel.com.cn
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,24 +22,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi ALL:
+   I find one problem with 8xx FEC driver.
+   After "ifconfig eth0 down", again "ifconfig eth0 up", kernel dead
+   I modify fec.c to fix this bug as below
 
-* (sorry for posting again, it was under a different thread)
+   My board use MII
 
-For one perticular implementation, I need to work on a client
-and server program on 8xx family of ppc. One of the main goal is
-to keep the code size minimum. Has anyone already implemented
-similar things on ppc. Can anyone give me pointers for the same.
+--- fec.c.org   2005-08-23 19:09:06.000000000 +0800
++++ fec.c       2005-08-23 19:07:50.000000000 +0800
+@@ -2,6 +2,9 @@
+ fec_enet_close(struct net_device *dev)
+ {
+        /* Don't know what to do yet.
++       */
++       struct fec_enet_private *fep = dev->priv;
++       del_timer( &fep->phy_timer_list );
+        netif_stop_queue(dev);
+        fec_stop(dev);
 
-Also, is there any trimmed version of pcap and libnet available
-for 8xx ppc?
-
-beste,
--sainink
 
 
-
-
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+        Debora Liu
+        deboralh@fel.com.cn
+          2005-08-23
