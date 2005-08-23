@@ -1,23 +1,18 @@
-Return-Path: <rober@opnet.com.tw>
-Received: from opnet2.opnet.com.tw (unknown [210.243.240.244])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 50BF868085
+Return-Path: <johnsoncheng@qnap.com.tw>
+Received: from qnap.com.tw (unknown [211.75.85.27])
+	by ozlabs.org (Postfix) with SMTP id 58650680A4
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 Aug 2005 15:16:27 +1000 (EST)
-Received: from [10.0.14.26] (h248-210-243-240.opnet.com.tw [210.243.240.248]
-	(may be forged))
-	by opnet2.opnet.com.tw (8.13.3/8.13.1) with ESMTP id j7NDAwJg030198
-	for <linuxppc-embedded@ozlabs.org>; Tue, 23 Aug 2005 13:10:59 GMT
-	(envelope-from rober@opnet.com.tw)
-From: =?UTF-8?Q?=E5=BE=90=E5=B0=8F=E5=A8=81=E7=9A=84EMAIL?=
-	<rober@opnet.com.tw>
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain
-Date: Tue, 23 Aug 2005 13:16:13 +0800
-Message-Id: <1124774174.5945.15.camel@banana>
-Mime-Version: 1.0
-Subject: How to run ELDK 3.1.1 's snmp ?
+	Tue, 23 Aug 2005 15:27:36 +1000 (EST)
+From: "JohnsonCheng" <johnsoncheng@qnap.com.tw>
+To: "'Wolfgang Denk'" <wd@denx.de>
+Date: Tue, 23 Aug 2005 13:26:46 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <20050822130702.27D5F353D18@atlas.denx.de>
+Message-Id: <20050823052736.58650680A4@ozlabs.org>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: Linux Kernel MTD question 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,20 +23,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi All:
+When I want to turn on MTD with TQM8XXL, I can't find it in kernel 2.6.12.3.
+I use "MTD\Mapping drivers for chip access\CFI Flash device in physical
+memory map", it seems only one partition can be used.
 
-     I want to know how to used ELDK 3.1.1's snmpd at ppc_8xx
-environment.I used 2.4.25 Linux  and uRamdisk (from denx's ftp site) at
-my MPC852T custom board. When  I mount /opt/eldk/ppc_88x to my linux and
-run it,
-I got following error message.
 
- # ./snmpd --version
-./snmpd: No such file or directory
+Thanks,
+Johnson Cheng
 
-The found if i compiler snmp source code with LDFLAGS += --static,
-although file is bigger than ELDK's snmpd (almost 3M byte), but it can
-run very well. I want to know what's the different between LDFLAGS+=--
-static and LDFLAGS=
-Best Regards,
-Rober Hsu 
+
+-----Original Message-----
+From: linuxppc-embedded-bounces@ozlabs.org
+[mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of Wolfgang Denk
+Sent: Monday, August 22, 2005 9:07 PM
+To: JohnsonCheng
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Linux Kernel MTD question 
+
+In message <20050822104924.214ED429CB@denx.de> you wrote:
+> 
+> How can I put the Environment variables or configurations in
+> 0x00060000-0x00080000, or put User Data in 0x005C0000-0x1000000?
+> Use U-boot command? Or....
+
+It is up to you to define a memory map for your flash  device(s)  and
+create  appropriate partitions for this map in Linux (and probably in
+U-Boot, too, using the new "mtdparts" command).
+
+Then you can use standard commands in U-Boot (erase, cp) and in Linux
+(erase_all, cp) to store any data you likein your flash.
+
+It is *your* design. *You* must create it.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+The IQ of the group is the lowest IQ of a member of the group divided
+by the number of people in the group.
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
