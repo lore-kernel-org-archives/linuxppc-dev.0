@@ -1,20 +1,18 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A202867F88
+Return-Path: <rpjday@mindspring.com>
+Received: from tomts22-srv.bellnexxia.net (tomts22.bellnexxia.net
+	[209.226.175.184]) by ozlabs.org (Postfix) with ESMTP id 22C2B6805F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 Aug 2005 14:58:38 +1000 (EST)
-In-Reply-To: <20050823022011.GE9667@dmt.cnet>
-References: <20050823022011.GE9667@dmt.cnet>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <f45653d49c79423af587cff97181ac74@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Tue, 23 Aug 2005 00:58:21 -0400
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: Enabling 8xx debug mode
+	Tue, 23 Aug 2005 15:13:27 +1000 (EST)
+Date: Mon, 22 Aug 2005 23:24:22 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: JohnsonCheng <johnsoncheng@qnap.com.tw>
+In-Reply-To: <20050823031136.2904C68046@ozlabs.org>
+Message-ID: <Pine.LNX.4.63.0508222323480.18519@localhost.localdomain>
+References: <20050823031136.2904C68046@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: Linux Kernel MTD question 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,32 +23,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Sat, 23 Jul 2005, JohnsonCheng wrote:
 
-On Aug 22, 2005, at 10:20 PM, Marcelo Tosatti wrote:
+> Yes. You are right. It's design by myself.
+> But I meet a problem. If I have three configuration files, A.conf, B.conf
+> and C.conf, then I hope save them in one of partitions of MTD,
+> 0x005C0000-0x10000000.
+> Two questions:
+> 1. How to build these configuration files into an image for U-boot with
+> mkimage?
+> 2. In kernel, how to get these data? I use "mount /dev/mtd4 /mnt", but it
+> failed by block device required.
 
-> I know now that the BDI automatically enables debug mode by asserting
-> the DSCK signal (available through the JTAG port). Is there any way
-> to enable debugging mode purely via software?
+for this second issue, you might try mounting the block device, which
+is probably called /dev/mtdblock4 or something similar.
 
-I'm not sure I really understand the question, but I'll give some
-answers anyway :-)  The 8xx has the development/debug support,
-which is a bunch of registers that allow setting instruction/data
-breakpoints and so on.  These are accessible from software, along
-with other standard PowerPC debug (like single step).
-
-The DSCK is a BDM/JTAG clock signal, and along with the other
-signals allow the clocking of instructions and data through the BDM
-pins.  One of the things you can do is strobe in instructions that will
-set these same breakpoint or other debug registers as are accessible
-from software running on the part.
-
-So, if you have software running on the processor, you can do the
-same things.  Obviously, if you are stuck someplace you need to
-get the attention of the processor.  You can do this with some interrupt
-like kgdb does, then use the debug interface to help.
-
-Does this make sense?
-
-Thanks.
-
-	-- Dan
+rday
