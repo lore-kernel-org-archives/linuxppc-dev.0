@@ -1,16 +1,16 @@
 Return-Path: <johnsoncheng@qnap.com.tw>
 Received: from qnap.com.tw (unknown [211.75.85.27])
-	by ozlabs.org (Postfix) with SMTP id 58650680A4
+	by ozlabs.org (Postfix) with SMTP id 1B48668053
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 Aug 2005 15:27:36 +1000 (EST)
+	Tue, 23 Aug 2005 15:32:09 +1000 (EST)
 From: "JohnsonCheng" <johnsoncheng@qnap.com.tw>
-To: "'Wolfgang Denk'" <wd@denx.de>
-Date: Tue, 23 Aug 2005 13:26:46 +0800
+To: "'Robert P. J. Day'" <rpjday@mindspring.com>
+Date: Tue, 23 Aug 2005 13:31:35 +0800
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-In-Reply-To: <20050822130702.27D5F353D18@atlas.denx.de>
-Message-Id: <20050823052736.58650680A4@ozlabs.org>
+In-Reply-To: <Pine.LNX.4.63.0508222323480.18519@localhost.localdomain>
+Message-Id: <20050823053209.1B48668053@ozlabs.org>
 Cc: linuxppc-embedded@ozlabs.org
 Subject: RE: Linux Kernel MTD question 
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -23,47 +23,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-When I want to turn on MTD with TQM8XXL, I can't find it in kernel 2.6.12.3.
-I use "MTD\Mapping drivers for chip access\CFI Flash device in physical
-memory map", it seems only one partition can be used.
-
+It doesn't work, too. 
+Error message: Invalid argument.
 
 Thanks,
 Johnson Cheng
 
-
 -----Original Message-----
 From: linuxppc-embedded-bounces@ozlabs.org
-[mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of Wolfgang Denk
-Sent: Monday, August 22, 2005 9:07 PM
+[mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of Robert P. J. Day
+Sent: Tuesday, August 23, 2005 11:24 AM
 To: JohnsonCheng
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Linux Kernel MTD question 
+Subject: RE: Linux Kernel MTD question 
 
-In message <20050822104924.214ED429CB@denx.de> you wrote:
-> 
-> How can I put the Environment variables or configurations in
-> 0x00060000-0x00080000, or put User Data in 0x005C0000-0x1000000?
-> Use U-boot command? Or....
+On Sat, 23 Jul 2005, JohnsonCheng wrote:
 
-It is up to you to define a memory map for your flash  device(s)  and
-create  appropriate partitions for this map in Linux (and probably in
-U-Boot, too, using the new "mtdparts" command).
+> Yes. You are right. It's design by myself.
+> But I meet a problem. If I have three configuration files, A.conf, B.conf
+> and C.conf, then I hope save them in one of partitions of MTD,
+> 0x005C0000-0x10000000.
+> Two questions:
+> 1. How to build these configuration files into an image for U-boot with
+> mkimage?
+> 2. In kernel, how to get these data? I use "mount /dev/mtd4 /mnt", but it
+> failed by block device required.
 
-Then you can use standard commands in U-Boot (erase, cp) and in Linux
-(erase_all, cp) to store any data you likein your flash.
+for this second issue, you might try mounting the block device, which
+is probably called /dev/mtdblock4 or something similar.
 
-It is *your* design. *You* must create it.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-The IQ of the group is the lowest IQ of a member of the group divided
-by the number of people in the group.
+rday
 _______________________________________________
 Linuxppc-embedded mailing list
 Linuxppc-embedded@ozlabs.org
