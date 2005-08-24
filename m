@@ -1,17 +1,19 @@
-Return-Path: <galak@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 10CBD680A5
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Aug 2005 02:56:23 +1000 (EST)
-Date: Wed, 24 Aug 2005 11:56:11 -0500 (CDT)
-From: Kumar Gala <galak@freescale.com>
-To: linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.61.0508241139100.23956@nylon.am.freescale.net>
-Message-ID: <Pine.LNX.4.61.0508241155330.23956@nylon.am.freescale.net>
-References: <Pine.LNX.4.61.0508241139100.23956@nylon.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH 08/15] ppc32: remove use of asm/segment.h
+Return-Path: <trini@kernel.crashing.org>
+Date: Wed, 24 Aug 2005 11:20:20 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Kumar Gala <kumar.gala@freescale.com>
+Message-ID: <20050824182020.GB15735@smtp.west.cox.net>
+References: <20050822141235.GA7110@austin.ibm.com>
+	<0F51EC83-8969-4083-B0D7-9343D075B635@freescale.com>
+	<1124775707.5159.92.camel@gaston>
+	<20050823173142.4f620d75.sfr@canb.auug.org.au>
+	<E470B224-F0FB-48D7-9A04-E42247B11554@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <E470B224-F0FB-48D7-9A04-E42247B11554@freescale.com>
+Cc: olof@lixom.net, Stephen Rothwell <sfr@canb.auug.org.au>,
+	linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Subject: Re: [PATCH 3/3] Move all the very similar files
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,72 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Removed ppc32 architecture specific users of asm/segment.h and
-asm-ppc/segment.h itself
+On Tue, Aug 23, 2005 at 12:05:36PM -0500, Kumar Gala wrote:
+> 
+> On Aug 23, 2005, at 2:31 AM, Stephen Rothwell wrote:
+> 
+> >On Tue, 23 Aug 2005 15:41:47 +1000 Benjamin Herrenschmidt  
+> ><benh@kernel.crashing.org> wrote:
+> >
+> >>
+> >>Most of the ones that are in include/asm* are there because drivers
+> >>outside of arch/* use them.
+> >>
+> >
+> >Indeed.  Here is the result of grepping for all of the .h files in  
+> >patch 3 (minus the
+> >obvious noncontentious ones like errno.h ...):
+> 
+> This seems reasonable then to have them in include/asm-powerpc.  I  
 
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+No it doesn't.  You can easily make the drivers get the includes from
+<platforms/pmac/foo.h>, arch/$(ARCH) is already always in the search
+path, I believe (if not, it's easy to add Makefile things to get it).
 
----
-commit 503a812c1f9cef08e6f96b2b2cf1f32bbfef2bc6
-tree b61a93eb582e90fafda6ff9d064b2ab25e7d3ede
-parent 21a31cb366a764793dc532b525b95bfc3e1723a2
-author Kumar K. Gala <kumar.gala@freescale.com> Wed, 24 Aug 2005 10:58:02 -0500
-committer Kumar K. Gala <kumar.gala@freescale.com> Wed, 24 Aug 2005 10:58:02 -0500
-
- arch/ppc/kernel/temp.c         |    1 -
- arch/ppc/kernel/time.c         |    1 -
- arch/ppc/platforms/chrp_time.c |    1 -
- arch/ppc/syslib/prep_nvram.c   |    1 -
- include/asm-ppc/segment.h      |    1 -
- 5 files changed, 0 insertions(+), 5 deletions(-)
-
-diff --git a/arch/ppc/kernel/temp.c b/arch/ppc/kernel/temp.c
---- a/arch/ppc/kernel/temp.c
-+++ b/arch/ppc/kernel/temp.c
-@@ -21,7 +21,6 @@
- #include <linux/interrupt.h>
- #include <linux/init.h>
- 
--#include <asm/segment.h>
- #include <asm/io.h>
- #include <asm/reg.h>
- #include <asm/nvram.h>
-diff --git a/arch/ppc/kernel/time.c b/arch/ppc/kernel/time.c
---- a/arch/ppc/kernel/time.c
-+++ b/arch/ppc/kernel/time.c
-@@ -58,7 +58,6 @@
- #include <linux/init.h>
- #include <linux/profile.h>
- 
--#include <asm/segment.h>
- #include <asm/io.h>
- #include <asm/nvram.h>
- #include <asm/cache.h>
-diff --git a/arch/ppc/platforms/chrp_time.c b/arch/ppc/platforms/chrp_time.c
---- a/arch/ppc/platforms/chrp_time.c
-+++ b/arch/ppc/platforms/chrp_time.c
-@@ -22,7 +22,6 @@
- #include <linux/init.h>
- #include <linux/bcd.h>
- 
--#include <asm/segment.h>
- #include <asm/io.h>
- #include <asm/nvram.h>
- #include <asm/prom.h>
-diff --git a/arch/ppc/syslib/prep_nvram.c b/arch/ppc/syslib/prep_nvram.c
---- a/arch/ppc/syslib/prep_nvram.c
-+++ b/arch/ppc/syslib/prep_nvram.c
-@@ -15,7 +15,6 @@
- #include <linux/ioport.h>
- 
- #include <asm/sections.h>
--#include <asm/segment.h>
- #include <asm/io.h>
- #include <asm/machdep.h>
- #include <asm/prep_nvram.h>
-diff --git a/include/asm-ppc/segment.h b/include/asm-ppc/segment.h
-deleted file mode 100644
---- a/include/asm-ppc/segment.h
-+++ /dev/null
-@@ -1 +0,0 @@
--#include <asm/uaccess.h>
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
