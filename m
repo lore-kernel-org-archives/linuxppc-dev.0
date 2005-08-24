@@ -1,22 +1,26 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao02.cox.net (fed1rmmtao02.cox.net [68.230.241.37])
-	by ozlabs.org (Postfix) with ESMTP id 53A9E680A7
+Return-Path: <Keith_Henrickson@net.com>
+Received: from mx02.net.com (mx02.net.com [134.56.3.132])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6FE0B67FEA
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 Aug 2005 04:35:22 +1000 (EST)
-Received: from opus ([68.107.143.141]) by fed1rmmtao02.cox.net
-	(InterMail vM.6.01.04.00 201-2131-118-20041027) with ESMTP
-	id <20050824183521.XZRZ3209.fed1rmmtao02.cox.net@opus>
-	for <linuxppc-embedded@ozlabs.org>; Wed, 24 Aug 2005 14:35:21 -0400
-Date: Wed, 24 Aug 2005 11:35:20 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Message-ID: <20050824183520.GC15735@smtp.west.cox.net>
-References: <20050823224702.GA3864@siegfried.thelikelysolution.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050823224702.GA3864@siegfried.thelikelysolution.ca>
-Subject: Re: [PATCH] Allow ns16550.c to get base baud from rs_table instead
-	of BAUD_BASE
+	Thu, 25 Aug 2005 05:12:27 +1000 (EST)
+Received: from mx02-int.net.com (mx02-int.net.com [134.56.112.14])
+	by mx02.net.com (Switch-3.1.3/Switch-3.1.0) with ESMTP id
+	j7OImRTL017915 for <linuxppc-embedded@ozlabs.org>;
+	Wed, 24 Aug 2005 11:48:28 -0700 (PDT)
+Received: from fmt-ex01.net.com (fmt-exchange.net.com [134.56.112.251])
+	by mx02-int.net.com (Switch-3.1.3/Switch-3.1.0) with ESMTP id
+	j7OImNds022863 for <linuxppc-embedded@ozlabs.org>;
+	Wed, 24 Aug 2005 11:48:23 -0700 (PDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Wed, 24 Aug 2005 11:45:17 -0700
+Message-ID: <CE711B0E5D7A1A4096A808997E00832982AD31@fmt-ex01.net.com>
+From: "Keith Henrickson" <Keith_Henrickson@net.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: I2C for the 8270
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,32 +31,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 23, 2005 at 04:47:02PM -0600, Grant Likely wrote:
+I am trying to get the 85xx driver in Linux 2.6.11 to work on the 8270,
+which also has a CPM2.
 
-> [PATCH] Allow ns16550.c to get base baud from rs_table instead of BAUD_BASE
-> 
-> REPOST: fixed formating problems in original patch
-> 
-> Modifies serial_init to get base baud rate from the rs_table entry instead
-> of BAUD_BASE.  Will default back to BAUD_BASE if base_baud is not set.
-> 
-> This patch eliminates duplication between the SERIAL_PORT_DFNS macro and
-> BAUD_BASE.  Without the patch, if a port set the baud rate in
-> SERIAL_PORT_DFNS, but did not update BASE_BAUD, the BASE_BAUD value
-> would still be used.
-> 
-> Rather; serial_init() should look first in SERIAL_PORT_DFNS and use
-> BASE_BAUD as a backup.
-> 
-> Signed-off-by: Grant Likely <grant.likely@gdcanada.com>
+I'm not sure if the driver itself works, as I cannot even get it to
+fully load.
 
-With everything in-tree, this is fine as baud_base is always set to
-BASE_BAUD, but I'm wondering why this was done.  Did you do a port and
-not follow on this?  It looks like today you could get away without
-defining BASE_BAUD correctly (8250_early uses and needs this to be
-correct, but I don't think this is frequently used, yet).  But I'm not
-sure what we gain here.  Thanks.
+I have enabled the 'MPC (8xx and 8xxx) CPM I2C Interface' I2C Algorithm,
+and the 'Motorola MPC8xx and MPC85xx CPM I2C' Hardware Bus.
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+So far, I have gotten it to create '/sys/bus/platform/drivers/fsl-i2c',
+although there is nothing in this directory.  I get this to happen by
+bypassing the device_register() call and just forcing the device to
+i2c_cpm_add_bus().
+
+What I do NOT get are the devices in /dev, or any evidence in /sys that
+there is a device that SHOULD go in /dev.  Any ideas what I am missing?
+
+
+The kernel messages that come out are as follows.
+i2c /dev entries driver
+device class 'i2c-dev': registering
+bus i2c: add driver dev_driver
+i2c-core: driver dev_driver registered.
+fsl-cpm-i2c: CPM2 i2c driver
+bus platform: add driver fsl-i2c
+bus i2c: add driver eeprom
+i2c-core: driver eeprom registered.
+i2c-algo-cpm: CPM2 I2C algorithm module version 0.1 (Mar 22, 2005)
