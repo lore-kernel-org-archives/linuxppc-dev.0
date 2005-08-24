@@ -1,19 +1,18 @@
-Return-Path: <johnsoncheng@qnap.com.tw>
-Received: from qnap.com.tw (unknown [211.75.85.27])
-	by ozlabs.org (Postfix) with SMTP id 6508167F88
+Return-Path: <stefan.nickl@kontron.com>
+Received: from kom-exchfe.kontron-modular.com (mail.kontron-modular.com
+	[62.159.155.200]) by ozlabs.org (Postfix) with ESMTP id E6FBF680A5
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 Aug 2005 15:03:04 +1000 (EST)
-From: "JohnsonCheng" <johnsoncheng@qnap.com.tw>
-To: "'Ricardo Scop'" <scop@digitel.com.br>,
-	"'Robert P. J. Day'" <rpjday@mindspring.com>
-Date: Wed, 24 Aug 2005 13:02:31 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <200508231616.46897.scop@digitel.com.br>
-Message-Id: <20050824050304.6508167F88@ozlabs.org>
+	Wed, 24 Aug 2005 16:38:23 +1000 (EST)
+From: Stefan Nickl <Stefan.Nickl@kontron.com>
+To: JohnsonCheng <johnsoncheng@qnap.com.tw>
+In-Reply-To: <20050823094950.44A4534392@x-save.xtro.de>
+References: <20050823094950.44A4534392@x-save.xtro.de>
+Content-Type: text/plain
+Date: Wed, 24 Aug 2005 08:38:20 +0200
+Message-Id: <1124865500.14304.16.camel@lucy.pep-kaufbeuren.de>
+Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: Linux Kernel MTD question
+Subject: RE: How NEC uPD720101 USB chip work well on linux2.6.12
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,45 +23,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Ricardo and Wolfgang,
+On Tue, 2005-08-23 at 17:42 +0800, JohnsonCheng wrote:
+> Right. My USB architecture is the same as you describe. I have also support
+> EHCI, but I disable it now.
+> The attach files are my kernel configuration and kernel oops while plug-in
+> USB mouse.
 
-Very thanks for your kindly support.
-I am sorry I made a mistake.
-Before you mount /dev/mtdblock4, you have to use mke2fs to format it.
-Now I think my MTD function is almost ready, except write.
-When I run "dd if=/dev/mtd1 of=kernel.img", it's OK.
-But when I run "dd if=kernel.img of=/dev/mtd1", it's failed. No error
-message printed, and the process time is shortly, cause Bad CRC.
+Umh, I just recognized the 720101 isn't from NEC's hub series, but it's
+the host controller itself (720110 would have been a hub also...)! My
+bad.
+So I'm afraid our problems are unrelated.
 
-Thanks,
-Johnson Cheng
+>From the logs you sent I'd say your problem starts right here: 
+ohci_hcd 0000:00:0e.0: request interrupt 17 failed
 
------Original Message-----
-From: linuxppc-embedded-bounces@ozlabs.org
-[mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of Ricardo Scop
-Sent: Wednesday, August 24, 2005 3:17 AM
-To: JohnsonCheng; 'Robert P. J. Day'
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Linux Kernel MTD question
+You should check your PCI interrupt routing, trace INTA from the device,
+it's IDSEL, etc. Look at /usr/src/linux/arch/ppc/platforms/sandpoint.c
+and lspci -vvv.
+But I'm not familiar with the sandpoint, so that's it for me...
 
-Hi Johnson,
-
-On Tuesday 23 August 2005 02:31, JohnsonCheng wrote:
-> It doesn't work, too.
-> Error message: Invalid argument.
-Well, do you have an mtdblock4 entry in /dev?
-
-Also, you should specify your filesystem type to mount, like in:
-
-mount -t jffs2 /dev/mtdblock4 /mnt
-
-BTW, -t jffs2 is just an example.
-
-HTH,
-
--Scop.
-
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+-- 
+Stefan Nickl
+Kontron Modular Computers
