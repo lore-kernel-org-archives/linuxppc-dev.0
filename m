@@ -1,22 +1,22 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao08.cox.net (fed1rmmtao08.cox.net [68.230.241.31])
-	by ozlabs.org (Postfix) with ESMTP id 851A667FEA
+Return-Path: <glikely@gmail.com>
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.206])
+	by ozlabs.org (Postfix) with ESMTP id E486568036
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 Aug 2005 07:47:36 +1000 (EST)
-Received: from opus ([68.107.143.141]) by fed1rmmtao08.cox.net
-	(InterMail vM.6.01.04.00 201-2131-118-20041027) with ESMTP
-	id <20050824214733.GLNH16890.fed1rmmtao08.cox.net@opus>
-	for <linuxppc-embedded@ozlabs.org>; Wed, 24 Aug 2005 17:47:33 -0400
-Date: Wed, 24 Aug 2005 14:47:34 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: linuxppc-embedded@ozlabs.org
-Message-ID: <20050824214734.GE15735@smtp.west.cox.net>
+	Thu, 25 Aug 2005 08:20:49 +1000 (EST)
+Received: by rproxy.gmail.com with SMTP id a36so256405rnf
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 24 Aug 2005 15:20:48 -0700 (PDT)
+Date: Wed, 24 Aug 2005 16:17:09 -0600
+To: Tom Rini <trini@kernel.crashing.org>, linuxppc-embedded@ozlabs.org
+Message-ID: <20050824221709.GB5397@siegfried.thelikelysolution.ca>
 References: <20050823224702.GA3864@siegfried.thelikelysolution.ca>
 	<20050824183520.GC15735@smtp.west.cox.net>
 	<20050824213521.GA5397@siegfried.thelikelysolution.ca>
+	<20050824214734.GE15735@smtp.west.cox.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050824213521.GA5397@siegfried.thelikelysolution.ca>
+In-Reply-To: <20050824214734.GE15735@smtp.west.cox.net>
+From: Grant Likely <glikely@gmail.com>
 Subject: Re: [PATCH] Allow ns16550.c to get base baud from rs_table instead
 	of BAUD_BASE
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -29,50 +29,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 24, 2005 at 03:35:21PM -0600, Grant Likely wrote:
-> On Wed, Aug 24, 2005 at 11:35:20AM -0700, Tom Rini wrote:
-> > On Tue, Aug 23, 2005 at 04:47:02PM -0600, Grant Likely wrote:
-> > 
-> > > [PATCH] Allow ns16550.c to get base baud from rs_table instead of BAUD_BASE
-> > > 
-> > > REPOST: fixed formating problems in original patch
-> > > 
-> > > Modifies serial_init to get base baud rate from the rs_table entry instead
-> > > of BAUD_BASE.  Will default back to BAUD_BASE if base_baud is not set.
-> > > 
-> > > This patch eliminates duplication between the SERIAL_PORT_DFNS macro and
-> > > BAUD_BASE.  Without the patch, if a port set the baud rate in
-> > > SERIAL_PORT_DFNS, but did not update BASE_BAUD, the BASE_BAUD value
-> > > would still be used.
-> > > 
-> > > Rather; serial_init() should look first in SERIAL_PORT_DFNS and use
-> > > BASE_BAUD as a backup.
-> > > 
-> > > Signed-off-by: Grant Likely <grant.likely@gdcanada.com>
-> > 
-> > With everything in-tree, this is fine as baud_base is always set to
-> > BASE_BAUD, but I'm wondering why this was done.  Did you do a port and
-> > not follow on this?  It looks like today you could get away without
-> > defining BASE_BAUD correctly (8250_early uses and needs this to be
-> > correct, but I don't think this is frequently used, yet).  But I'm not
-> > sure what we gain here.  Thanks.
-> I stumbled across this while working on moving v2pro to the platform
-> bus.  (I'm also trying to isolate xparameter.h as much as possible to
-> avoid recompiling the world everytime I get a new bitstream).  I've got
-> the base baud for each port in the rs_table.
+On Wed, Aug 24, 2005 at 02:47:34PM -0700, Tom Rini wrote:
+> I'll buy that, and slightly modify this for 2.6.14, thanks.
+Cool, thanks.
 
-I'll buy that, and slightly modify this for 2.6.14, thanks.
+> The general problem here (Holy crap! arch/ppc/boot/common/ns16550.c uses
+> everything we'd like to kill from <asm*/serial.h>) is come up before,
+> and is being slowly fixed.
+:)
 
-> IMHO it doesn't seem right to have part of the serial parameters pulled
-> from rs_table and the base baud pulled from elseware.  ie. it looked
-> like a latent bug to me, so I wrote the patch.  I've also got the
-> impression that the serial subsystem is trying to move away from
-> depending on BASE_BAUD
+Now how do I get ns16550 to use a flattened device tree in a clean way?
+:P
 
-The general problem here (Holy crap! arch/ppc/boot/common/ns16550.c uses
-everything we'd like to kill from <asm*/serial.h>) is come up before,
-and is being slowly fixed.
-
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+g.
