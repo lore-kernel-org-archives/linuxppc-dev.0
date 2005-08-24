@@ -1,22 +1,17 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from parcelfarce.linux.theplanet.co.uk
-	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A8A9368033
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Aug 2005 02:09:01 +1000 (EST)
-Date: Tue, 23 Aug 2005 20:33:18 -0300
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Andy Fleming <afleming@freescale.com>
-Message-ID: <20050823233318.GA16787@dmt.cnet>
-References: <20050823202708.GE13157@dmt.cnet>
-	<1124836787.5189.107.camel@gaston>
-	<29D5FC3D-C2AD-440E-B929-9AA29F7300CF@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <29D5FC3D-C2AD-440E-B929-9AA29F7300CF@freescale.com>
-Cc: Kumar Gala <galak@freescale.com>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] ppc32: make perfmon.o CONFIG_E500 specific
+Return-Path: <galak@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 10CBD680A5
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Aug 2005 02:56:23 +1000 (EST)
+Date: Wed, 24 Aug 2005 11:56:11 -0500 (CDT)
+From: Kumar Gala <galak@freescale.com>
+To: linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.61.0508241139100.23956@nylon.am.freescale.net>
+Message-ID: <Pine.LNX.4.61.0508241155330.23956@nylon.am.freescale.net>
+References: <Pine.LNX.4.61.0508241139100.23956@nylon.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org
+Subject: [PATCH 08/15] ppc32: remove use of asm/segment.h
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,12 +21,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 23, 2005 at 05:50:15PM -0500, Andy Fleming wrote:
-> I've got some untested code for 74xx (probably only 7450 for now),  
-> but it's several rungs down my priority list right now.  : 
-> (  Hopefully I will have time for it soon...
+Removed ppc32 architecture specific users of asm/segment.h and
+asm-ppc/segment.h itself
 
-OK - you can then add the proper change for inclusion inside
-the #ifdef ?
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
-Please apply the patch (or some variant of it).
+---
+commit 503a812c1f9cef08e6f96b2b2cf1f32bbfef2bc6
+tree b61a93eb582e90fafda6ff9d064b2ab25e7d3ede
+parent 21a31cb366a764793dc532b525b95bfc3e1723a2
+author Kumar K. Gala <kumar.gala@freescale.com> Wed, 24 Aug 2005 10:58:02 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> Wed, 24 Aug 2005 10:58:02 -0500
+
+ arch/ppc/kernel/temp.c         |    1 -
+ arch/ppc/kernel/time.c         |    1 -
+ arch/ppc/platforms/chrp_time.c |    1 -
+ arch/ppc/syslib/prep_nvram.c   |    1 -
+ include/asm-ppc/segment.h      |    1 -
+ 5 files changed, 0 insertions(+), 5 deletions(-)
+
+diff --git a/arch/ppc/kernel/temp.c b/arch/ppc/kernel/temp.c
+--- a/arch/ppc/kernel/temp.c
++++ b/arch/ppc/kernel/temp.c
+@@ -21,7 +21,6 @@
+ #include <linux/interrupt.h>
+ #include <linux/init.h>
+ 
+-#include <asm/segment.h>
+ #include <asm/io.h>
+ #include <asm/reg.h>
+ #include <asm/nvram.h>
+diff --git a/arch/ppc/kernel/time.c b/arch/ppc/kernel/time.c
+--- a/arch/ppc/kernel/time.c
++++ b/arch/ppc/kernel/time.c
+@@ -58,7 +58,6 @@
+ #include <linux/init.h>
+ #include <linux/profile.h>
+ 
+-#include <asm/segment.h>
+ #include <asm/io.h>
+ #include <asm/nvram.h>
+ #include <asm/cache.h>
+diff --git a/arch/ppc/platforms/chrp_time.c b/arch/ppc/platforms/chrp_time.c
+--- a/arch/ppc/platforms/chrp_time.c
++++ b/arch/ppc/platforms/chrp_time.c
+@@ -22,7 +22,6 @@
+ #include <linux/init.h>
+ #include <linux/bcd.h>
+ 
+-#include <asm/segment.h>
+ #include <asm/io.h>
+ #include <asm/nvram.h>
+ #include <asm/prom.h>
+diff --git a/arch/ppc/syslib/prep_nvram.c b/arch/ppc/syslib/prep_nvram.c
+--- a/arch/ppc/syslib/prep_nvram.c
++++ b/arch/ppc/syslib/prep_nvram.c
+@@ -15,7 +15,6 @@
+ #include <linux/ioport.h>
+ 
+ #include <asm/sections.h>
+-#include <asm/segment.h>
+ #include <asm/io.h>
+ #include <asm/machdep.h>
+ #include <asm/prep_nvram.h>
+diff --git a/include/asm-ppc/segment.h b/include/asm-ppc/segment.h
+deleted file mode 100644
+--- a/include/asm-ppc/segment.h
++++ /dev/null
+@@ -1 +0,0 @@
+-#include <asm/uaccess.h>
