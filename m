@@ -1,24 +1,28 @@
-Return-Path: <glikely@gmail.com>
-Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.206])
-	by ozlabs.org (Postfix) with ESMTP id E486568036
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0CED968029
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 Aug 2005 08:20:49 +1000 (EST)
-Received: by rproxy.gmail.com with SMTP id a36so256405rnf
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 Aug 2005 15:20:48 -0700 (PDT)
-Date: Wed, 24 Aug 2005 16:17:09 -0600
-To: Tom Rini <trini@kernel.crashing.org>, linuxppc-embedded@ozlabs.org
-Message-ID: <20050824221709.GB5397@siegfried.thelikelysolution.ca>
-References: <20050823224702.GA3864@siegfried.thelikelysolution.ca>
-	<20050824183520.GC15735@smtp.west.cox.net>
-	<20050824213521.GA5397@siegfried.thelikelysolution.ca>
-	<20050824214734.GE15735@smtp.west.cox.net>
+	Thu, 25 Aug 2005 09:08:05 +1000 (EST)
+Received: from list by ciao.gmane.org with local (Exim 4.43)
+	id 1E83tM-0007yQ-Rl
+	for linuxppc-embedded@ozlabs.org; Thu, 25 Aug 2005 00:38:44 +0200
+Received: from s0106000024c002e0.ss.shawcable.net ([70.64.46.12])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Thu, 25 Aug 2005 00:38:44 +0200
+Received: from jbi130 by s0106000024c002e0.ss.shawcable.net with local (Gmexim
+	0.1 (Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Thu, 25 Aug 2005 00:38:44 +0200
+To: linuxppc-embedded@ozlabs.org
+From: jbi130@yahoo.com
+Date: 24 Aug 2005 16:37:44 -0600
+Message-ID: <87mzn7ufk7.fsf@nimrod.unx.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050824214734.GE15735@smtp.west.cox.net>
-From: Grant Likely <glikely@gmail.com>
-Subject: Re: [PATCH] Allow ns16550.c to get base baud from rs_table instead
-	of BAUD_BASE
+Sender: news <news@sea.gmane.org>
+Subject: SPI support for MPC85xx.
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,16 +33,10 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 24, 2005 at 02:47:34PM -0700, Tom Rini wrote:
-> I'll buy that, and slightly modify this for 2.6.14, thanks.
-Cool, thanks.
+Is there existing SPI support for MPC85xx based boards (8555E in my
+case).  I've checked the archives and there appear to be a few
+implementations, but none of them for the 85xx.
 
-> The general problem here (Holy crap! arch/ppc/boot/common/ns16550.c uses
-> everything we'd like to kill from <asm*/serial.h>) is come up before,
-> and is being slowly fixed.
-:)
+Any pointers appreciated.
 
-Now how do I get ns16550 to use a flattened device tree in a clean way?
-:P
-
-g.
+Thanks.
