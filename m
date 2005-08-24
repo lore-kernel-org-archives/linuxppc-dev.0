@@ -1,17 +1,22 @@
-Return-Path: <galak@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 826EF68105
+Return-Path: <glikely@gmail.com>
+Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.204])
+	by ozlabs.org (Postfix) with ESMTP id A842068100
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 Aug 2005 01:18:40 +1000 (EST)
-Date: Wed, 24 Aug 2005 10:18:27 -0500 (CDT)
-From: Kumar Gala <galak@freescale.com>
-To: Andrew Morton <akpm@osdl.org>
-Message-ID: <Pine.LNX.4.61.0508241017480.23831@nylon.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] ppc32: ppc_sys system on chip identification additions
+	Thu, 25 Aug 2005 01:23:02 +1000 (EST)
+Received: by rproxy.gmail.com with SMTP id a36so170741rnf
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 24 Aug 2005 08:23:01 -0700 (PDT)
+Date: Wed, 24 Aug 2005 09:12:14 -0600
+To: Andrei Konovalov <akonovalov@ru.mvista.com>
+Message-ID: <20050824151214.GA4095@siegfried.thelikelysolution.ca>
+References: <20050823170300.GA910@siegfried.thelikelysolution.ca>
+	<430C7C3A.4000601@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <430C7C3A.4000601@ru.mvista.com>
+From: Grant Likely <glikely@gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Source of xparameter_ml300.h
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,101 +27,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Add the ability to identify an SOC by a name and id.  There are cases in
-which the integer identifier is not sufficient to specify a specific SOC.
-In these cases we can use a string to further qualify the match.
+On Wed, Aug 24, 2005 at 05:55:06PM +0400, Andrei Konovalov wrote:
+> Grant Likely wrote:
+> >I want to know if xparameters_ml300.h is the exact output produced by
+> >EDK or if stuff was changed before it was submitted to the mainline
+> >tree.  (ie. all the stuff under the "linux redefines" comment block)
+> 
+> EDK can also generate the "Linux BSP".
+> In this case EDK uses the scripts from (depending on your setup)
+> /opt/xilinx/edk/7.1/sw/ThirdParty/bsp/linux_v2_00_b/data/
+> In particular, linux_v2_1_0.tcl adds those "linux redefines"
+> and renames xparameters.h to xparameters_ml300.h.
+Ahh; I've been using the standalone option.  I didn't know about the tcl
+script.
+> 
+> >Also, where can I get the bitstream/systemace file that matches
+> >xparameters_ml300.h?
+> 
+> The most reliable way is to generate both (bitstream and
+> xparameters_ml300.h) by yourself. :)
+That's how I've gotten as far as I have :)
 
-Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
-
----
-commit 58d478e75ac5d6cb3a1f738a22555c3841445264
-tree 999d1722d74eb8dc76f40c8f4c52966cea681cb4
-parent eb5d5922d749a74f58416ca1a852651e7323449b
-author Kumar K. Gala <kumar.gala@freescale.com> Wed, 24 Aug 2005 10:14:42 -0500
-committer Kumar K. Gala <kumar.gala@freescale.com> Wed, 24 Aug 2005 10:14:42 -0500
-
- arch/ppc/syslib/ppc_sys.c |   51 ++++++++++++++++++++++++++++++++++++++++++++-
- include/asm-ppc/ppc_sys.h |    1 +
- 2 files changed, 51 insertions(+), 1 deletions(-)
-
-diff --git a/arch/ppc/syslib/ppc_sys.c b/arch/ppc/syslib/ppc_sys.c
---- a/arch/ppc/syslib/ppc_sys.c
-+++ b/arch/ppc/syslib/ppc_sys.c
-@@ -6,6 +6,7 @@
-  * Maintainer: Kumar Gala <kumar.gala@freescale.com>
-  *
-  * Copyright 2005 Freescale Semiconductor Inc.
-+ * Copyright 2005 MontaVista, Inc. by Vitaly Bordug <vbordug@ru.mvista.com>
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -35,8 +36,56 @@ void __init identify_ppc_sys_by_id(u32 i
- 
- void __init identify_ppc_sys_by_name(char *name)
- {
--	/* TODO */
-+	unsigned int i = 0;
-+	while (ppc_sys_specs[i].ppc_sys_name[0])
-+		if (!strcmp(ppc_sys_specs[i].ppc_sys_name, name))
-+			break;
-+		i++;
-+	}
-+	cur_ppc_sys_spec = &ppc_sys_specs[i];
- 	return;
-+}
-+
-+static int __init count_sys_specs(void)
-+{
-+	int i = 0;
-+	while (ppc_sys_specs[i].ppc_sys_name[0])
-+		i++;
-+	return i;
-+}
-+
-+static int __init find_chip_by_name_and_id(char *name, u32 id)
-+{
-+	int ret = -1;
-+	unsigned int i = 0;
-+	unsigned int j = 0;
-+	unsigned int dups = 0;
-+
-+	unsigned char matched[count_sys_specs()];
-+
-+	while (ppc_sys_specs[i].ppc_sys_name[0]) {
-+		if (!strcmp(ppc_sys_specs[i].ppc_sys_name, name))
-+			matched[j++] = i;
-+		i++;
-+	}
-+	if (j != 0) {
-+		for (i = 0; i < j; i++) {
-+			if ((ppc_sys_specs[matched[i]].mask & id) ==
-+			    ppc_sys_specs[matched[i]].value) {
-+				ret = matched[i];
-+				dups++;
-+			}
-+		}
-+		ret = (dups == 1) ? ret : (-1 * dups);
-+	}
-+	return ret;
-+}
-+
-+void __init identify_ppc_sys_by_name_and_id(char *name, u32 id)
-+{
-+	int i = find_chip_by_name_and_id(name, id);
-+	BUG_ON(i < 0);
-+	cur_ppc_sys_spec = &ppc_sys_specs[i];
- }
- 
- /* Update all memory resources by paddr, call before platform_device_register */
-diff --git a/include/asm-ppc/ppc_sys.h b/include/asm-ppc/ppc_sys.h
---- a/include/asm-ppc/ppc_sys.h
-+++ b/include/asm-ppc/ppc_sys.h
-@@ -50,6 +50,7 @@ extern struct ppc_sys_spec *cur_ppc_sys_
- /* determine which specific SOC we are */
- extern void identify_ppc_sys_by_id(u32 id) __init;
- extern void identify_ppc_sys_by_name(char *name) __init;
-+extern void identify_ppc_sys_by_name_and_id(char *name, u32 id) __init;
- 
- /* describes all devices that may exist in a given family of processors */
- extern struct platform_device ppc_sys_platform_devices[];
+> 
+> But if you are speaking about the xparameters_ml300.h in the community
+> trees (linuxppc-2.4 and the 2.6 one from kernel.org), this file
+> is for the reference design by Xilinx:
+> 
+> http://www.xilinx.com/ise/embedded/edk6_2docs/ml300_edk3.zip
+Thanks!
+g.
