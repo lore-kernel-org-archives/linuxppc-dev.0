@@ -1,18 +1,19 @@
-Return-Path: <ktdann@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.196])
-	by ozlabs.org (Postfix) with ESMTP id 0A4EA6812C
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 1EBBB68135
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 Aug 2005 17:38:19 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 68so354110wri
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 Aug 2005 00:38:17 -0700 (PDT)
-Message-ID: <9b7ca657050825003843373dd9@mail.gmail.com>
-Date: Thu, 25 Aug 2005 16:38:17 +0900
-From: Daniel Ann <ktdann@gmail.com>
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+	Thu, 25 Aug 2005 17:42:46 +1000 (EST)
+Date: Thu, 25 Aug 2005 00:42:43 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Andrew Morton <akpm@osdl.org>
+Message-ID: <20050825074243.GA23774@gate.ebshome.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: I2C STOP condition on MPC8245
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-embedded@ozlabs.org
+Subject: [PATCH] ppc32: disable IBM405_ERR77 and IBM405_ERR51 workarounds
+	for 405EP
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,23 +24,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi folks,
+Disable IBM405_ERR77 and IBM405_ERR51 errata workarounds for 405EP. 
+This chip has these problems fixed.
 
-Just wondering, if anyone tried i2c multi-master using mpc8245 with
-kernel 2.6.x.
-Thing is, version of kernel doesnt really matter, since I only have
-problem getting mpc8245 to detect STOP condition sent by the
-atmega64(the other i2c device).
+Signed-off-by: Eugene Surovegin <ebs@ebshome.net>
 
-Not knowing I2C that much, Im curious to know if mpc8245 should raise
-an interrupt if it detects STOP condition sent by the master device.
-
-I have no problem with i2c communication if mpc8245 is master, but
-only when mpc8245 acts as slave, I cant detect the end of transfer.
-
-If mpc8245 doesnt raise an interrupt when it detect STOP condition,
-then how should program running on mpc8245 to know when to stop
-reading ?
-
---=20
-Daniel
+diff --git a/arch/ppc/platforms/4xx/Kconfig b/arch/ppc/platforms/4xx/Kconfig
+--- a/arch/ppc/platforms/4xx/Kconfig
++++ b/arch/ppc/platforms/4xx/Kconfig
+@@ -152,13 +152,13 @@ config IBM440EP_ERR42
+ # All 405-based cores up until the 405GPR and 405EP have this errata.
+ config IBM405_ERR77
+ 	bool
+-	depends on 40x && !403GCX && !405GPR
++	depends on 40x && !403GCX && !405GPR && !405EP
+ 	default y
+ 
+ # All 40x-based cores, up until the 405GPR and 405EP have this errata.
+ config IBM405_ERR51
+ 	bool
+-	depends on 40x && !405GPR
++	depends on 40x && !405GPR && !405EP
+ 	default y
+ 
+ config BOOKE
