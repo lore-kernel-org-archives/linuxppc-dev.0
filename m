@@ -1,18 +1,16 @@
 Return-Path: <johnsoncheng@qnap.com.tw>
 Received: from qnap.com.tw (unknown [211.75.85.27])
-	by ozlabs.org (Postfix) with SMTP id 3C2DC68061
+	by ozlabs.org (Postfix) with SMTP id D90A368110
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 Aug 2005 12:59:56 +1000 (EST)
+	Thu, 25 Aug 2005 13:21:28 +1000 (EST)
 From: "JohnsonCheng" <johnsoncheng@qnap.com.tw>
-To: "'Alex Zeffertt'" <ajz@cambridgebroadband.com>
-Date: Thu, 25 Aug 2005 10:59:15 +0800
+To: <linuxppc-embedded@ozlabs.org>
+Date: Thu, 25 Aug 2005 11:21:00 +0800
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <20050824094955.21977185.ajz@cambridgebroadband.com>
-Message-Id: <20050825025956.3C2DC68061@ozlabs.org>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: Linux Kernel MTD question
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_00A5_01C5A967.22B1A400"
+Message-Id: <20050825032128.D90A368110@ozlabs.org>
+Subject: How to build an image for whole flash
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,75 +21,183 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Good idea. It works well.
-The latest version of mtd utility for erase flash is flash_eraseall.
+This is a multi-part message in MIME format.
 
-Thank you very much,
+------=_NextPart_000_00A5_01C5A967.22B1A400
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+
+Dear All,
+
+ 
+
+My flash is 16M that is mapping on 0xFF000000-0xFFFFFFFF.
+
+mtd0: 0xFF000000-0xFF1FFFFF      Kernel
+
+mtd1: 0xFF200000-0xFF9FFFFF      RootFS
+
+mtd2: 0xFFA00000-0xFFAFFFFF       Config
+
+mtd3: 0xFFF00000-0xFFFFFFFF      U-Boot
+
+ 
+
+Now I can build an image for mtd device, for example, dd if=/dev/mtd0
+of=kernel.img.
+
+But I don't know how to build a image for whole flash ? 
+
+ 
+
+ 
+
+Thanks,
+
 Johnson Cheng
 
------Original Message-----
-From: Alex Zeffertt [mailto:ajz@cambridgebroadband.com] 
-Sent: Wednesday, August 24, 2005 4:50 PM
-To: JohnsonCheng
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Linux Kernel MTD question
 
-Before doing a write to /dev/mtd1 try running 
-~# eraseall /dev/mtd1
+------=_NextPart_000_00A5_01C5A967.22B1A400
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-(eraseall is from the mtd-utils package.)
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:st1=3D"urn:schemas-microsoft-com:office:smarttags" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
 
-Alex
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"chmetcnv" downloadurl=3D""/>
+<!--[if !mso]>
+<style>
+st1\:*{behavior:url(#default#ieooui) }
+</style>
+<![endif]-->
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:PMingLiU;
+	panose-1:2 2 3 0 0 0 0 0 0 0;}
+@font-face
+	{font-family:PMingLiU;
+	panose-1:2 2 3 0 0 0 0 0 0 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+ /* Page Definitions */
+ @page Section1
+	{size:595.3pt 841.9pt;
+	margin:72.0pt 90.0pt 72.0pt 90.0pt;
+	layout-grid:18.0pt;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
 
+</head>
 
-On Wed, 24 Aug 2005 13:02:31 +0800
-"JohnsonCheng" <johnsoncheng@qnap.com.tw> wrote:
+<body lang=3DZH-TW link=3Dblue vlink=3Dpurple =
+style=3D'text-justify-trim:punctuation'>
 
-> Dear Ricardo and Wolfgang,
-> 
-> Very thanks for your kindly support.
-> I am sorry I made a mistake.
-> Before you mount /dev/mtdblock4, you have to use mke2fs to format it.
-> Now I think my MTD function is almost ready, except write.
-> When I run "dd if=/dev/mtd1 of=kernel.img", it's OK.
-> But when I run "dd if=kernel.img of=/dev/mtd1", it's failed. No error
-> message printed, and the process time is shortly, cause Bad CRC.
-> 
-> Thanks,
-> Johnson Cheng
-> 
-> -----Original Message-----
-> From: linuxppc-embedded-bounces@ozlabs.org
-> [mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of Ricardo Scop
-> Sent: Wednesday, August 24, 2005 3:17 AM
-> To: JohnsonCheng; 'Robert P. J. Day'
-> Cc: linuxppc-embedded@ozlabs.org
-> Subject: Re: Linux Kernel MTD question
-> 
-> Hi Johnson,
-> 
-> On Tuesday 23 August 2005 02:31, JohnsonCheng wrote:
-> > It doesn't work, too.
-> > Error message: Invalid argument.
-> Well, do you have an mtdblock4 entry in /dev?
-> 
-> Also, you should specify your filesystem type to mount, like in:
-> 
-> mount -t jffs2 /dev/mtdblock4 /mnt
-> 
-> BTW, -t jffs2 is just an example.
-> 
-> HTH,
-> 
-> -Scop.
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+<div class=3DSection1 style=3D'layout-grid:18.0pt'>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>Dear All,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>My flash is <st1:chmetcnv TCSC=3D"0" =
+NumberType=3D"1"
+Negative=3D"False" HasSpace=3D"False" SourceValue=3D"16" UnitName=3D"m" =
+w:st=3D"on">16M</st1:chmetcnv>
+that is mapping on 0xFF000000-0xFFFFFFFF.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>mtd0: =
+0xFF000000-0xFF1FFFFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+Kernel<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>mtd1: =
+0xFF200000-0xFF9FFFFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+RootFS<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>mtd2: =
+0xFFA00000-0xFFAFFFFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+Config<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>mtd3: =
+0xFFF00000-0xFFFFFFFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+U-Boot<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>Now I can build an image for mtd device, for =
+example,
+dd if=3D/dev/mtd0 of=3Dkernel.img.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>But I don&#8217;t know how to build a image for =
+whole flash
+? <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>Thanks,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>Johnson Cheng<o:p></o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_00A5_01C5A967.22B1A400--
