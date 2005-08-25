@@ -1,19 +1,18 @@
-Return-Path: <wd@denx.de>
-Received: from mailout05.sul.t-online.com (mailout05.sul.t-online.com
-	[194.25.134.82]) by ozlabs.org (Postfix) with ESMTP id 84B3D6812C
+Return-Path: <ktdann@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.196])
+	by ozlabs.org (Postfix) with ESMTP id 0A4EA6812C
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 Aug 2005 17:29:18 +1000 (EST)
-To: "JohnsonCheng" <johnsoncheng@qnap.com.tw>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 25 Aug 2005 11:21:00 +0800."
-	<20050825032128.D90A368110@ozlabs.org>
-Date: Thu, 25 Aug 2005 09:28:53 +0200
-Sender: wd@denx.de
-Message-Id: <20050825072853.99657352674@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: How to build an image for whole flash 
+	Thu, 25 Aug 2005 17:38:19 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id 68so354110wri
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 25 Aug 2005 00:38:17 -0700 (PDT)
+Message-ID: <9b7ca657050825003843373dd9@mail.gmail.com>
+Date: Thu, 25 Aug 2005 16:38:17 +0900
+From: Daniel Ann <ktdann@gmail.com>
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: I2C STOP condition on MPC8245
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,43 +23,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <20050825032128.D90A368110@ozlabs.org> you wrote:
->
-> My flash is 16M that is mapping on 0xFF000000-0xFFFFFFFF.
-> mtd0: 0xFF000000-0xFF1FFFFF      Kernel
-> mtd1: 0xFF200000-0xFF9FFFFF      RootFS
-> mtd2: 0xFFA00000-0xFFAFFFFF       Config
-> mtd3: 0xFFF00000-0xFFFFFFFF      U-Boot
-> 
-> Now I can build an image for mtd device, for example, dd if=/dev/mtd0
-> of=kernel.img.
+Hi folks,
 
-If you want to copy the image to flash, you got the parameters wrong,
-i. e. you must use
+Just wondering, if anyone tried i2c multi-master using mpc8245 with
+kernel 2.6.x.
+Thing is, version of kernel doesnt really matter, since I only have
+problem getting mpc8245 to detect STOP condition sent by the
+atmega64(the other i2c device).
 
-	dd if=kernel.img of=/dev/mtd0
+Not knowing I2C that much, Im curious to know if mpc8245 should raise
+an interrupt if it detects STOP condition sent by the master device.
 
-(after erasing /dev/mtd0, of course); and using some bs=  option  may
-speed up the prcedure a bit, too.
+I have no problem with i2c communication if mpc8245 is master, but
+only when mpc8245 acts as slave, I cant detect the end of transfer.
 
-> But I don't know how to build a image for whole flash ? 
+If mpc8245 doesnt raise an interrupt when it detect STOP condition,
+then how should program running on mpc8245 to know when to stop
+reading ?
 
-What do you mean "for the whole flash"? If you cant to combine the  4
-images  into  one big blob you can do so by (1) padding the images to
-the full size of each partition; this can be done  using  appropriate
-"bs=",   "count="   and   "conv=sync"   parameters  to  dd;  and  (2)
-concatenating the images using "cat".
-
-But this is a prtty inefficient way, and you will also have to change
-your MTD partitioning to provide a big  partition  which  covers  the
-whole flash.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Some people march to the beat of a different drummer. And some people
-tango!
+--=20
+Daniel
