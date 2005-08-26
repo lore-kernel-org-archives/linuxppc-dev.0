@@ -1,20 +1,19 @@
-Return-Path: <peter.ryser@xilinx.com>
-Received: from mail2-red-R.bigfish.com (mail-red.bigfish.com [216.148.222.61])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 8537668029
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 493F46802C
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 27 Aug 2005 01:06:01 +1000 (EST)
-Message-ID: <430F2835.3090302@xilinx.com>
-Date: Fri, 26 Aug 2005 07:33:25 -0700
-From: Peter Ryser <peter.ryser@xilinx.com>
-MIME-Version: 1.0
-To: Keith J Outwater <kjoutwater@raytheon.com>
-References: <OF820ADBC7.FD07ABA9-ON07257061.00633C32-07257061.00641841@mck.us.ray.com>
-In-Reply-To: <OF820ADBC7.FD07ABA9-ON07257061.00633C32-07257061.00641841@mck.us.ray.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Best kernel for Xilinx VirtexII Pro/PPC405 ?
+	Sat, 27 Aug 2005 04:47:56 +1000 (EST)
+In-Reply-To: <Pine.LNX.4.61.0508241017480.23831@nylon.am.freescale.net>
+References: <Pine.LNX.4.61.0508241017480.23831@nylon.am.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v734)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <12F17D0A-B60C-4249-9811-95D8159C087D@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Fri, 26 Aug 2005 13:48:02 -0500
+To: "Gala Kumar K.-galak" <kumar.gala@freescale.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] ppc32: ppc_sys system on chip identification additions
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,64 +24,126 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Good to hear that you got everything working. Just as a note: XAPP542 
-(http://direct.xilinx.com/bvdocs/appnotes/xapp542.pdf) contains a patch 
-for the Linux kernel to make it work together with U-Boot.
+Oops, this patch doesn't build since its missing a '{'.  Will send up  
+an updated patch that fixes the problem.
 
-Does linuxppc-2.4 still accept patches?
+- kumar
 
-- Peter
+On Aug 24, 2005, at 10:18 AM, Gala Kumar K.-galak wrote:
 
-
-Keith J Outwater wrote:
-
->Hi Peter - 
->Well, the good news is that it works, and works well.  In my humble 
->opinion, supporting it would be pretty simple, but I completely understand 
->why RHEL is the supported distribution.  I would much rather see effort 
->put into polishing up EDK under Linux than in supporting every Linux 
->distro out there.
->For me, the bottom line was this: do I want to migrate all of other 
->development activities from FC4 to RHEL for the sake of EDK, or try to run 
->EDK under FC4?  I tried the latter approach, and now that the Jungo 
->WinDriver v7.1 is out, parallel port debugging works by simply using 
->WinDriver 7.1 and patching the Xilinx XPC4 parport driver.
->I now have the kernel booting on a Memec 2VP50 eval board using U-Boot as 
->the bootloader.  I used the linuxppc-2.4 kernel rsynced from MontaVista. 
->That particular kernel did not have support for U-Boot but it did support 
->the ML300 and a Memec 2VP40/2VP70 board.  I had to modify the kernel to 
->accept a board description structure from U-Boot and I added a new board 
->type for my custom hardware.
->The approach I took was definitely the "roll your own approach", but then 
->again I've done this (Linux board ports) a couple times and I know U-Boot 
->well.
->Keith
+> Add the ability to identify an SOC by a name and id.  There are  
+> cases in
+> which the integer identifier is not sufficient to specify a specific
+> SOC.
+> In these cases we can use a string to further qualify the match.
 >
->Peter Ryser <peter.ryser@xilinx.com> wrote on 08/18/2005 07:39:21 AM:
+> Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+> Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 >
->  
+> ---
+> commit 58d478e75ac5d6cb3a1f738a22555c3841445264
+> tree 999d1722d74eb8dc76f40c8f4c52966cea681cb4
+> parent eb5d5922d749a74f58416ca1a852651e7323449b
+> author Kumar K. Gala <kumar.gala@freescale.com> Wed, 24 Aug 2005
+> 10:14:42 -0500
+> committer Kumar K. Gala <kumar.gala@freescale.com> Wed, 24 Aug 2005
+> 10:14:42 -0500
 >
->>>I am running all of my development tools (EDK, ISE, ELDK, etc...) 
->>>      
->>>
->under 
->  
+>  arch/ppc/syslib/ppc_sys.c |   51
+> ++++++++++++++++++++++++++++++++++++++++++++-
+>  include/asm-ppc/ppc_sys.h |    1 +
+>  2 files changed, 51 insertions(+), 1 deletions(-)
 >
->>>Fedora Core 4, so I am looking for a publicly accessible kernel source 
->>>tree that best supports the PPC405 in the Virtex II Pro.
->>>
->>>      
->>>
->>Keep in mind that EDK and ISE are not "officially" supported on FC4. 
->>Anyway, with EDK, ISE, and ELDK you seem to have all that is needed to 
->>get started with Linux on Virtex-II Pro and Virtex-4.
->>
->>- Peter
->>
->>
->>    
->>
+> diff --git a/arch/ppc/syslib/ppc_sys.c b/arch/ppc/syslib/ppc_sys.c
+> --- a/arch/ppc/syslib/ppc_sys.c
+> +++ b/arch/ppc/syslib/ppc_sys.c
+> @@ -6,6 +6,7 @@
+>   * Maintainer: Kumar Gala <kumar.gala@freescale.com>
+>   *
+>   * Copyright 2005 Freescale Semiconductor Inc.
+> + * Copyright 2005 MontaVista, Inc. by Vitaly Bordug
+> <vbordug@ru.mvista.com>
+>   *
+>   * This program is free software; you can redistribute  it and/or
+> modify it
+>   * under  the terms of  the GNU General  Public License as  
+> published by
+> the
+> @@ -35,8 +36,56 @@ void __init identify_ppc_sys_by_id(u32 i
 >
+>  void __init identify_ppc_sys_by_name(char *name)
+>  {
+> -    /* TODO */
+> +    unsigned int i = 0;
+> +    while (ppc_sys_specs[i].ppc_sys_name[0])
+> +        if (!strcmp(ppc_sys_specs[i].ppc_sys_name, name))
+> +            break;
+> +        i++;
+> +    }
+> +    cur_ppc_sys_spec = &ppc_sys_specs[i];
+>      return;
+> +}
+> +
+> +static int __init count_sys_specs(void)
+> +{
+> +    int i = 0;
+> +    while (ppc_sys_specs[i].ppc_sys_name[0])
+> +        i++;
+> +    return i;
+> +}
+> +
+> +static int __init find_chip_by_name_and_id(char *name, u32 id)
+> +{
+> +    int ret = -1;
+> +    unsigned int i = 0;
+> +    unsigned int j = 0;
+> +    unsigned int dups = 0;
+> +
+> +    unsigned char matched[count_sys_specs()];
+> +
+> +    while (ppc_sys_specs[i].ppc_sys_name[0]) {
+> +        if (!strcmp(ppc_sys_specs[i].ppc_sys_name, name))
+> +            matched[j++] = i;
+> +        i++;
+> +    }
+> +    if (j != 0) {
+> +        for (i = 0; i < j; i++) {
+> +            if ((ppc_sys_specs[matched[i]].mask & id) ==
+> +                ppc_sys_specs[matched[i]].value) {
+> +                ret = matched[i];
+> +                dups++;
+> +            }
+> +        }
+> +        ret = (dups == 1) ? ret : (-1 * dups);
+> +    }
+> +    return ret;
+> +}
+> +
+> +void __init identify_ppc_sys_by_name_and_id(char *name, u32 id)
+> +{
+> +    int i = find_chip_by_name_and_id(name, id);
+> +    BUG_ON(i < 0);
+> +    cur_ppc_sys_spec = &ppc_sys_specs[i];
+>  }
 >
->  
+>  /* Update all memory resources by paddr, call before
+> platform_device_register */
+> diff --git a/include/asm-ppc/ppc_sys.h b/include/asm-ppc/ppc_sys.h
+> --- a/include/asm-ppc/ppc_sys.h
+> +++ b/include/asm-ppc/ppc_sys.h
+> @@ -50,6 +50,7 @@ extern struct ppc_sys_spec *cur_ppc_sys_
+>  /* determine which specific SOC we are */
+>  extern void identify_ppc_sys_by_id(u32 id) __init;
+>  extern void identify_ppc_sys_by_name(char *name) __init;
+> +extern void identify_ppc_sys_by_name_and_id(char *name, u32 id)  
+> __init;
+>
+>  /* describes all devices that may exist in a given family of  
+> processors
+> */
+>  extern struct platform_device ppc_sys_platform_devices[];
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 >
