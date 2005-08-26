@@ -1,13 +1,12 @@
-Return-Path: <olof@lixom.net>
-Date: Fri, 26 Aug 2005 14:04:03 -0500
-To: Kumar Gala <kumar.gala@freescale.com>
-Message-ID: <20050826190403.GA6265@austin.ibm.com>
-References: <20050823225303.GF31949@krispykreme>
-	<0192F2FD-0132-4B51-9524-590084E3FB0B@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <0192F2FD-0132-4B51-9524-590084E3FB0B@freescale.com>
-From: Olof Johansson <olof@lixom.net>
+Return-Path: <kumar.gala@freescale.com>
+In-Reply-To: <20050826190403.GA6265@austin.ibm.com>
+References: <20050826190403.GA6265@austin.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v734)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <28F4C8E9-FF41-4954-977D-546732D561B8@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Fri, 26 Aug 2005 14:07:37 -0500
+To: "Olof Johansson" <olof@lixom.net>
 Cc: Andrew Morton <akpm@osdl.org>, ppc64-dev <linuxppc64-dev@ozlabs.org>,
 	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 Subject: Re: [PATCH] ppc64: Add CONFIG_HZ
@@ -20,12 +19,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 26, 2005 at 02:00:43PM -0500, Kumar Gala wrote:
-> Any reason we shouldn't do the same thing on ppc32?
+What were you building for?  I'm wondering if the same issue exists  
+that you are asked, but its not wired to actually do anything.
 
-When I built a 2.6.13-rc7 I got the question about what HZ I wanted,
-so I guess we're already doing it. Maybe the default needs changing
-though, can't remember what it was.
+- kumar
 
+On Aug 26, 2005, at 2:04 PM, Olof Johansson wrote:
 
--Olof
+> On Fri, Aug 26, 2005 at 02:00:43PM -0500, Kumar Gala wrote:
+>
+>> Any reason we shouldn't do the same thing on ppc32?
+>>
+>
+> When I built a 2.6.13-rc7 I got the question about what HZ I wanted,
+> so I guess we're already doing it. Maybe the default needs changing
+> though, can't remember what it was.
+>
+>
+> -Olof
+>
