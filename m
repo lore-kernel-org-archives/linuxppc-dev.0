@@ -1,19 +1,21 @@
-Return-Path: <wd@denx.de>
-Received: from mailout09.sul.t-online.com (mailout09.sul.t-online.com
-	[194.25.134.84]) by ozlabs.org (Postfix) with ESMTP id C135968052
+Return-Path: <ajz@cambridgebroadband.com>
+Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
+	[217.204.121.83])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0D14C6802C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 26 Aug 2005 18:48:44 +1000 (EST)
-To: =?UTF-8?Q?=E5=BE=90=E5=B0=8F=E5=A8=81=E7=9A=84EMAIL?= <rober@opnet.com.tw>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 26 Aug 2005 08:48:44 +0800."
-	<1125017324.7073.4.camel@banana>
-Date: Fri, 26 Aug 2005 10:48:29 +0200
-Sender: wd@denx.de
-Message-Id: <20050826084829.86B07352589@atlas.denx.de>
+	Fri, 26 Aug 2005 20:11:02 +1000 (EST)
+Date: Fri, 26 Aug 2005 11:10:56 +0100
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
+To: "Russell McGuire" <rmcguire@uwbt.com>
+Message-Id: <20050826111056.5a3bf469.ajz@cambridgebroadband.com>
+In-Reply-To: <20050716115551.GA47391@mail19b.g19.rapidsite.net>
+References: <20050716115551.GA47391@mail19b.g19.rapidsite.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: rebuild net-snmp 5.0.6 from eldk 3.1.1 
+Subject: Re: 827x/8x Linux USB Host driver
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,44 +26,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <1125017324.7073.4.camel@banana> you wrote:
+Hello Russell,
+
+I'm interested to know if you got anywhere with this?  Did you find an OS USB driver for the 827x? 
+Or did you write one yourself?
+
+TIA,
+
+Alex
+
+On Sat, 16 Jul 2005 08:55:52 -0700
+"Russell McGuire" <rmcguire@uwbt.com> wrote:
+
 > 
->     Anybody know how to setting fedora linux 3 environment to cross
-> compile netsnmp 5.0.6
-> contain in the eldk 3.1.1.
-
-This is documented in detail in the DULG, please see
-http://www.denx.de/twiki/bin/view/DULG/ELDKRebuildingComponents#Section_3.7.2.
-
-Make sure to follow the instructions, especially those about  setting
-up your PATH!
-
->    I'v try to modify net-snmp.spec for using pcc_8xx-gcc, but still got
-> probems.
-
-The unmodified spec file works just fine.
-
-> Executing(%prep): /bin/sh -e /opt/eldk/var/tmp/rpm-tmp.4936
-...
-> + ./configure --host=i386-pc-linux-gnu --build=i386-pc-linux-gnu --
-> target=ppc-denx-linux --program-prefix= --prefix=/usr --exec-prefix=/usr
-> --bindir=/usr/bin --sbindir=/usr/sbin --sysconfdir=/etc --
-> datadir=/usr/share --includedir=/usr/include/net-snmp --libdir=/usr/lib
-> --libexecdir=/usr/libexec --localstatedir=/var --sharedstatedir=/usr/com
-> --mandir=/usr/share/man --infodir=/usr/share/info --host=ee --enable-
-                                                      ^^^^^^^
-...
-> checking host system type... Invalid configuration `ee': machine `ee'
-> not recognized
-
-You modified the spec file in a way that breaks it. Don't do this.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-People seldom know what they want until you give them what  they  ask
-for.
+> 
+> Does anyone know of the existence of an open source USB host driver for the
+> 827x/8x PowerQUIC II processors for Linux 2.4.2x?
+> 
+> This CPU introduced a USB host controller inside the CPU vs the 8260, which
+> doesn't have one.
+> 
+> 
+> Thanks,
+> 
+> -Russ
