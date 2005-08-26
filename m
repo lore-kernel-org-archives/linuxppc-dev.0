@@ -1,32 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.29.150])
+Return-Path: <olh@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de.ibm.com", Issuer "Equifax" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 713B36813F
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Aug 2005 01:10:28 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate1.de.ibm.com (8.12.10/8.12.10) with ESMTP id j7PFAMOI118208
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Aug 2005 15:10:22 GMT
-Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
-	[9.149.165.229])
-	by d12nrmr1607.megacenter.de.ibm.com (8.12.10/NCO/VERS6.7) with ESMTP
-	id j7PFAMYi194056
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Aug 2005 17:10:22 +0200
-Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av04.megacenter.de.ibm.com (8.12.11/8.13.3) with ESMTP id
-	j7PFAMG4025528
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Aug 2005 17:10:22 +0200
-In-Reply-To: <20050825051528.GB19792@suse.de>
+	(Client CN "mx1.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DE96368033
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Aug 2005 21:38:32 +1000 (EST)
+Date: Fri, 26 Aug 2005 13:38:27 +0200
+From: Olaf Hering <olh@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <20050826113827.GA25134@suse.de>
 References: <20050824115452.GA29148@suse.de> <1124922771.5159.134.camel@gaston>
 	<20050825045108.GA19792@suse.de> <1124946481.7906.8.camel@gaston>
-	<20050825051528.GB19792@suse.de>
-Mime-Version: 1.0 (Apple Message framework v622)
-Message-Id: <fa2c65db26f3b23efd4a7a38099640d1@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Date: Thu, 25 Aug 2005 17:10:45 +0200
-To: Olaf Hering <olh@suse.de>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+	<20050825051528.GB19792@suse.de> <1124948071.7907.10.camel@gaston>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1124948071.7907.10.camel@gaston>
 Cc: linuxppc-dev@ozlabs.org
 Subject: Re: AC Power handling broken for desktops
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -38,13 +26,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Not sure :) I don't fully know how to decode those power things in the
->> device-tree... There are bits in darwin tho.
->
-> Maybe just check for !PowerBook and force PMU_PWR_AC_PRESENT in this 
-> case.
+ On Thu, Aug 25, Benjamin Herrenschmidt wrote:
 
-Or just if battery count is 0, assume AC power ;-)
+> On Thu, 2005-08-25 at 07:15 +0200, Olaf Hering wrote:
+> >  On Thu, Aug 25, Benjamin Herrenschmidt wrote:
+> > 
+> > > Not sure :) I don't fully know how to decode those power things in the
+> > > device-tree... There are bits in darwin tho.
+> > 
+> > Maybe just check for !PowerBook and force PMU_PWR_AC_PRESENT in this case.
+> 
+> Yah, you can check that with pmac_feature, there is a "mobile" flag.
 
+Its not obvious how to get to that flag. Is this patch acceptable?
+No batteries present should mean AC Power == 1.
 
-Segher
+ drivers/macintosh/apm_emu.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
+
+Index: linux-2.6.13-rc7-ac-power/drivers/macintosh/apm_emu.c
+===================================================================
+--- linux-2.6.13-rc7-ac-power.orig/drivers/macintosh/apm_emu.c
++++ linux-2.6.13-rc7-ac-power/drivers/macintosh/apm_emu.c
+@@ -430,8 +430,8 @@ static int apm_emu_get_info(char *buf, c
+ 	      -1: Unknown
+ 	   8) min = minutes; sec = seconds */
+ 
+-	unsigned short  ac_line_status = 0xff;
+-	unsigned short  battery_status = 0xff;
++	unsigned short  ac_line_status;
++	unsigned short  battery_status = 0;
+ 	unsigned short  battery_flag   = 0xff;
+ 	int		percentage     = -1;
+ 	int             time_units     = -1;
+@@ -446,6 +446,7 @@ static int apm_emu_get_info(char *buf, c
+ 	ac_line_status = ((pmu_power_flags & PMU_PWR_AC_PRESENT) != 0);
+ 	for (i=0; i<pmu_battery_count; i++) {
+ 		if (pmu_batteries[i].flags & PMU_BATT_PRESENT) {
++			battery_status++;
+ 			if (percentage < 0)
+ 				percentage = 0;
+ 			if (charge < 0)
+@@ -461,6 +462,9 @@ static int apm_emu_get_info(char *buf, c
+ 				charging++;
+ 		}
+ 	}
++	if (0 == battery_status)
++		ac_line_status = 1;
++	battery_status = 0xff;
+ 	if (real_count) {
+ 		if (amperage < 0) {
+ 			if (btype == PMU_BATT_TYPE_SMART)
