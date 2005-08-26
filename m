@@ -1,21 +1,15 @@
-Return-Path: <glikely@gmail.com>
-Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.195])
-	by ozlabs.org (Postfix) with ESMTP id D483068048
+Return-Path: <susheel.nuguru@mitron.fi>
+Received: from mitron.mitron.fi (mail.mitron.fi [82.116.252.3])
+	by ozlabs.org (Postfix) with ESMTP id DC25268029
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 26 Aug 2005 13:14:40 +1000 (EST)
-Received: by rproxy.gmail.com with SMTP id a36so639384rnf
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 Aug 2005 20:14:39 -0700 (PDT)
-Date: Thu, 25 Aug 2005 21:10:57 -0600
-To: "P. Sadik" <psadik@gmail.com>
-Message-ID: <20050826031057.GA6553@siegfried.thelikelysolution.ca>
-References: <ea43f4f9050825183121655ba2@mail.gmail.com>
+	Fri, 26 Aug 2005 17:34:46 +1000 (EST)
+From: Nuguru Susheel <susheel.nuguru@mitron.fi>
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 26 Aug 2005 10:37:28 +0000
+Message-Id: <1125052648.29224.48.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <ea43f4f9050825183121655ba2@mail.gmail.com>
-From: Grant Likely <glikely@gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Address mapping PPC 405
+Subject: problem mounting ROOT-NFS
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,53 +20,190 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 25, 2005 at 06:31:22PM -0700, P. Sadik wrote:
-> Hello,
-> 
->  On PPC I see that, the kernel .text is at 0xC000_0000. Is it a 
-> translated address? If it is, for running kernel code, the CPU has to
-> consult the TLB always?
-Typically, PPC systems have RAM based at physical address 0 which is
-mapped up to 0xc0000000.  Once the MMU is turned on the TLB is consulted
-for every memory access.
-> 
->  Another question is regarding addressing local peripherals. I am using
-> an ML310 board from Xilinx and it has DDR mapped to 0x0000_0000
-> to 0x0FFF_FFFF (256 MB). Now, I need to add an IP to the PLB.
-> For that, I am thinking of using 0x2000_0000 to 0x2000_0FFF.
-> Now, my driver need to access the registers within the above region.
-> How will I do that? It is an I/O, hence should I use ioremap, or can
-> I access it directly? What role cache will play in this case?
-You can put your peripherals anywhere within the address space as long
-as they don't conflict with each other.  You must add a page mapping for
-each peripheral because once the MMU is turned on you can no longer
-access physical addresses directly.  I believe ioremap is the correct
-facility to do this.
+Hi,
 
-> 
->  The third question is, can I use de-referencing of address. Is it O.K
-> to use pointers to access the registers, or do I have to use read/write
-> variants? 
-Since there is no seperate IO memory space you can access the registers
-with simple pointers.
+  I lately upgraded to Bestcomm API v2.2 from v2.1 , but root-nfs doesnt
+mount while booting from ram, but when booting from FLASH (Compact Flash
+and also NOR) it does well. This problem could be seen when I try to
+boot on MPC5200 RevA.=20
 
-Whether or not it is a good idea (based on coding conventions) I'll
-leave for someone else to answer.  :)
+ Then I switched to MPC5200 RevB to see it is the same here, but with
+same u.boot.bin and kernel image everything boot well on Rev B. I have
+compared the Environment perameters passed from u-boot to the kernel and
+everything seems to be the same. I also looked into the Errata to check
+if anything else regarding bestcomm or fec has changed, but couldnt
+figure out anything.
 
-> 
->   I would appreciate a lot if you could give some insight into this. Any
-> pointers or reading materials will be very helpful.
-Keep me updated on your progress.  I'm working on the ML300 and a couple
-of the MEMEC boards to make v2pro support more flexible in 2.6.x, and
-I'd like to hear about your experiences.
+console messages while booting on MPC5200 RevA from ram goes this
+way ...
 
-Cheers,
-g.
-> 
-> Thanks and regards,
-> 
-> Sadik.
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+
+  =20
+U-Boot 1.1.1 (Aug 24 2005 - 09:56:03)
+
+CPU:   MPC5200 (JTAG ID 0001101d) at 396 MHz
+       Bus 132 MHz, IPB 66 MHz, PCI 33 MHz
+Board: Mitron, Type is not set
+DRAM:  64 MB
+FLASH:  4 MB
+FPGA:  OK
+SPI:   MPC5200_spi,mki_ad initialised
+BL:    (channel 2, dutycycle 50, freq 500) initialised
+Video: SMI720 @ 640x480x8 28kHz 53Hz
+In:    serial
+Out:   serial
+Err:   serial
+NAND:  128 MB at 0x28001000
+Net:   FEC ETHERNET
+IDE:   no card
+ 0
+=3D> tftpboot 800000 u-boot.bin
+Using FEC ETHERNET device
+TFTP from server 192.168.1.61; our IP address is 192.168.30.130
+Filename 'u-boot.bin'.
+Load address: 0x800000
+Loading: T invalid RARP header
+
+TFTP error: 'File not found' (1)
+Starting again
+
+
+Abort
+=3D> tftpboot 800000 pImage
+Using FEC ETHERNET device
+TFTP from server 192.168.1.61; our IP address is 192.168.30.130
+Filename 'pImage'.
+Load address: 0x800000
+Loading:
+#################################################################
+
+#################################################################
+
+#################################################################
+         #
+done
+Bytes transferred =3D 1001433 (f47d9 hex)
+=3D> bootm 800000
+## Booting image at 00800000 ...
+   Image Name:   Linux-2.4.21-rc1
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    1001369 Bytes =3D 977.9 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+Mitron CVS tag: mct3_moto1_update
+Memory BAT mapping: BAT2=3D64Mb, BAT3=3D0Mb, residual: 0Mb
+Linux version 2.4.21-rc1 (nuguru@SW-server) (gcc version 2.95.4 20010319
+(prerelease/franzo/20011204)) #5 Fri Aug 26 09:51:30 EEST 2005
+Mitron SGVT port (C) 2003 Mitron Oy (mitron@mitron.fi)
+On node 0 totalpages: 16384
+zone(0): 16384 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line: nfsroot=3D192.168.1.61:/tftpboot/rootfs
+ip=3D192.168.30.130:192.168.1.61:192.168.1.1:255.255.0.0:SGVT_180::off
+root=3D/dev/nfs video=3Dscarlet:dev:0,no_pal console=3DttyS0;init=3D/bin/sh=
+;
+mgt5100_pic.c/mgt5100_init_irq: using configuration from FPGA binary
+file
+mgt5100_init_irq: external FPGA interrupt controller (by Mitron Oy)
+initialized
+Calibrating delay loop... 263.78 BogoMIPS
+Memory: 61828k available (1768k kernel code, 576k data, 76k init, 0k
+highmem)
+Dentry cache hash table entries: 8192 (order: 4, 65536 bytes)
+Inode cache hash table entries: 4096 (order: 3, 32768 bytes)
+Mount cache hash table entries: 512 (order: 0, 4096 bytes)
+Buffer-cache hash table entries: 4096 (order: 2, 16384 bytes)
+Page-cache hash table entries: 16384 (order: 4, 65536 bytes)
+POSIX conformance testing by UNIFIX
+PCI: Probing PCI hardware
+Memory resource not set for host bridge 0
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society NET3.039
+Initializing RT netlink socket
+Starting kswapd
+JFFS2 version 2.2. (NAND) (C) 2001-2003 Red Hat, Inc.
+hwblock: Identification failure!
+hwblock: Checksum failure!
+hwblock: Forcing fallback
+hwblock: Configuring for MC=EF=BF=BDerial.c->init_chipsels: mfdev->count !=
+=3D
+SGVT_RS_TABLE_SIZE
+Serial driver version 5.05c (2001-07-08) with MANY_PORTS SHARE_IRQ
+SERIAL_PCI enabled
+uart00 at 0xc5076000 (irq =3D 92) is a TI16750
+uart01 at 0xc5078008 (irq =3D 92) is a TI16750
+uart02 at 0xc507a010 (irq =3D 92) is a TI16750
+RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
+PPP generic driver version 2.4.2
+PPP Deflate Compression module registered
+Uniform Multi-Platform E-IDE driver Revision: 7.00beta-2.4
+ide: Assuming 33MHz system bus speed for PIO modes; override with
+idebus=3Dxx
+SCSI subsystem driver Revision: 1.00
+usb.c: registered new driver usbdevfs
+usb.c: registered new driver hub
+usb-ohci-embedded.c: USB OHCI at membase 0xf0001000, IRQ 44
+usb.c: new USB bus registered, assigned bus number 1
+hub.c: USB hub found
+hub.c: 2 ports detected
+usb.c: registered new driver hiddev
+usb.c: registered new driver hid
+hid-core.c: v1.8.1 Andreas Gal, Vojtech Pavlik <vojtech@suse.cz>
+hid-core.c: USB HID support drivers
+usb.c: registered new driver usblp
+printer.c: v0.11: USB Printer Device Class driver
+pegasus.c: v0.4.26 (2002/03/21):Pegasus/Pegasus II USB Ethernet driver
+usb.c: registered new driver pegasus
+Initializing USB Mass Storage driver...
+usb.c: registered new driver usb-storage
+USB Mass Storage support registered.
+eth0: Phy @ 0x0, type LXT971 (0x001378e2)
+Mitron multi chip CAN driver 0.4 inited
+Mitron SPI core functionality initialized
+spi-core.o: adapter SGVT SPI host registered as adapter 0.
+spi_add_driver: driver MKI driver registered.
+kb_probe_func: MKI keyboard 0 found. Versions: hw:3.1 sw:2.2
+spi_attach_client: client [SGVT SPI keyboard] registered to adapter
+[SGVT SPI host](pos. 0).
+MKI initialized succesfully
+SGVT_WDT: Software Watchdog Timer version 0.1, timeout 60 sec.
+SGVT Bank 0: Found 1 x16 devices at 0x0 in 8-bit bank
+ Amd/Fujitsu Extended Query Table at 0x0040
+SGVT Bank 0: Swapping erase regions for broken CFI table.
+number of CFI chips: 1
+cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.
+Creating 3 MTD partitions on "SGVT Bank 0":
+0x00000000-0x00200000 : "kernel"
+0x00200000-0x00280000 : "logo1"
+0x00280000-0x00300000 : "logo2"
+Initialised PWM buzzer, v. 0.2
+Nov. I/O 0.1 succesfully initialized
+spi_add_driver: driver A/D driver registered.
+spi_attach_client: client [SGVT SPI A/D converter] registered to adapter
+[SGVT SPI host](pos. 5).
+SPI A/D initialized succesfully
+ppcpmw 0.8 initialized
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP, IGMP
+IP: routing cache hash table of 512 buckets, 4Kbytes
+TCP: Hash tables configured (established 4096 bind 4096)
+eth0: config: auto-negotiation off, 100FDX, 100HDX, 10FDX, 10HDX.
+IP-Config: Complete:
+      device=3Deth0, addr=3D192.168.30.130, mask=3D255.255.0.0,
+gw=3D192.168.1.1,
+     host=3DSGVT_180, domain=3D, nis-domain=3D(none),
+     bootserver=3D192.168.1.61, rootserver=3D192.168.1.61, rootpath=3D
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+Looking up port of RPC 100003/2 on 192.168.1.61
+eth0: status: link up, 100 Mbps Full Duplex, auto-negotiation complete.
+portmap: server 192.168.1.61 not responding, timed out
+Root-NFS: Unable to get nfsd port number from server, using default
+Looking up port of RPC 100005/1 on 192.168.1.61
+
+then it stays until I reset the core :-(
+
+ any hints  ???
