@@ -1,19 +1,19 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D436B6807F
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Aug 2005 06:13:34 +1000 (EST)
-In-Reply-To: <Pine.LNX.4.61.0508261415080.29975@nylon.am.freescale.net>
-References: <Pine.LNX.4.61.0508261415080.29975@nylon.am.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <f0351d402e64b569bbcfc16fa921d860@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Fri, 26 Aug 2005 16:13:04 -0400
-To: Kumar Gala <galak@freescale.com>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] ppc32: add CONFIG_HZ
+Return-Path: <jdl@freescale.com>
+From: Jon Loeliger <jdl@freescale.com>
+To: linuxppc64-dev <linuxppc64-dev@ozlabs.org>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+In-Reply-To: <20050806005941.5d1fe432.sfr@canb.auug.org.au>
+References: <1123023575.2614.25.camel@cashmere.sps.mot.com>
+	<688ba2276de281a9473b030a16a514c0@embeddededge.com>
+	<20050805174705.731ffa05.sfr@canb.auug.org.au>
+	<200508051353.23750.arnd@arndb.de>
+	<20050806005941.5d1fe432.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Message-Id: <1125089709.32488.35.camel@cashmere.sps.mot.com>
+Mime-Version: 1.0
+Date: Fri, 26 Aug 2005 15:55:11 -0500
+Subject: Re: [PATCH] 1/2 Start header file merger (Was: Re: Beginning
+	Merger Patch)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,22 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 2005-08-05 at 09:59, Stephen Rothwell wrote:
 
-On Aug 26, 2005, at 3:15 PM, Kumar Gala wrote:
+> > Another interesting point about it is which define to use. For s390, we
+> > decided to '#ifdef __s390x__' rather than '#ifdef CONFIG_ARCH_S390X' or
+> > 'ifdef CONFIG_64BIT', because CONFIG_* does not work when including the
+> > headers from user space.
+> 
+> Well noone should even include kernel headers from user space :-) and my
+> understanding is that glibc "sanitizes" its version of the kernel headers
+> anyway.
+> 
+> > Using CONFIG_64BIT instead of __powerpc64__ only within #ifdef __KERNEL__
+> > would be correct but less consistant.
+> 
+> The advantage of using CONFIG_64BIT as much as possible is that it shows
+> us places that can be consolidated across the various architectures
+> (which is a bit of a passion of mine :-)).  And more consolidation should
+> make life easier for the glibc folks in the long run.
 
-> While ppc32 has the CONFIG_HZ Kconfig option, it wasnt actually being
-> used. Connect it up and set all platforms to 250Hz.  This pretty much
-> mimics the ppc64 patch from Anton Blanchard.
+Hi guys,
 
-Why do we keep cranking up this clock frequency?  Do we really need
-it running that fast?  Is it time for someone with RTOS experience to
-implement a real scheduled clock queue in Linux instead of just
-wasting interrupts decrementing a counter waiting for the next
-event to expire?  :-)  If the user "ticks" are still 100 Hz, don't we 
-need
-something that is an integer multiple of that for at least an attempt
-at getting it close to what a user would request?
+Well, the time has come when I need an answer to this
+question in order to make more progress on merging
+some include files.
 
-Thanks.
+Anyone care to take a semi-authoritative stand on what
+symbol to use to distinguish 32/64-bit-ness in the
+include files?
 
-	-- Dan
+Thanks,
+jdl
