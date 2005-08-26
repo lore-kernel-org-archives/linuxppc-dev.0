@@ -1,19 +1,17 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E004068077
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Aug 2005 08:54:52 +1000 (EST)
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B859440@ismail.innsys.innovsys.com>
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao07.cox.net (fed1rmmtao07.cox.net [68.230.241.32])
+	by ozlabs.org (Postfix) with ESMTP id 713C868077
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Aug 2005 08:55:10 +1000 (EST)
+Date: Fri, 26 Aug 2005 15:55:09 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Rune Torgersen <runet@innovsys.com>
+Message-ID: <20050826225509.GF5541@smtp.west.cox.net>
 References: <DCEAAC0833DD314AB0B58112AD99B93B859440@ismail.innsys.innovsys.com>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <8a51e41268831934719db8de5dc28500@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Fri, 26 Aug 2005 18:54:41 -0400
-To: "Rune Torgersen" <runet@innovsys.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B859440@ismail.innsys.innovsys.com>
 Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	Kumar Gala <galak@freescale.com>, Tom Rini <trini@kernel.crashing.org>
+	Kumar Gala <galak@freescale.com>
 Subject: Re: [PATCH] ppc32: add CONFIG_HZ
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,16 +22,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Aug 26, 2005, at 6:48 PM, Rune Torgersen wrote:
-
+On Fri, Aug 26, 2005 at 05:48:53PM -0500, Rune Torgersen wrote:
+> On Friday, August 26, 2005 16:32 Tom Rini wrote:
+> > So 250 is supposed to be the best choice of power vs latency and such.
+> > But hey, there's nothing stopping us from setting all of the embedded
+> > configs back down to 100 :)
+> 
 > I thought the default value for HZ in 2.6 was 1000?
-> At least this is what it is set at for the 82xx (and bigger embedded)
-> boards
 
-Oh geeze, no wonder we can't get any performance
-out of 2.6 on these boards.   Between that and the TLB
-thrashing going on there's nothing left for the applications :-)
+Yes, it was.  With 2.6.13 and on i386 (and other arches that actually
+make use of the question) it can be any of 100, 250 or 1000.
 
-
-	-- Dan
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
