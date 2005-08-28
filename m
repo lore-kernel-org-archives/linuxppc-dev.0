@@ -1,17 +1,21 @@
-Return-Path: <olh@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 46EB9680F4
-	for <linuxppc-dev@ozlabs.org>; Sun, 28 Aug 2005 21:49:20 +1000 (EST)
-Date: Sun, 28 Aug 2005 13:49:15 +0200
-From: Olaf Hering <olh@suse.de>
-To: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org
-Message-ID: <20050828114915.GA16138@suse.de>
+Return-Path: <khali@linux-fr.org>
+Received: from kellthuzad.dmz.nerim.net (smtp-dmz-230-sunday.dmz.nerim.net
+	[195.5.254.230]) by ozlabs.org (Postfix) with ESMTP id 2C4F8680DD
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Aug 2005 04:43:29 +1000 (EST)
+Received: from kraid.nerim.net (smtp-100-sunday.nerim.net [62.4.16.100])
+	by kellthuzad.dmz.nerim.net (Postfix) with ESMTP id 932703ACC6
+	for <linuxppc-dev@ozlabs.org>; Sun, 28 Aug 2005 20:16:55 +0200 (CEST)
+Date: Sun, 28 Aug 2005 20:17:06 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Andreas Schwab <schwab@suse.de>
+Message-Id: <20050828201706.07660a62.khali@linux-fr.org>
+In-Reply-To: <jehdda2tqt.fsf@sykes.suse.de>
+References: <jehdda2tqt.fsf@sykes.suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Subject: [PATCH] fix -Wundef warning for CONFIG_8xx
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Linus Torvalds <torvalds@transmeta.com>
+Subject: Re: 2.6.13-rc7-git2 crashes on iBook
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,26 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi Andreas, all,
 
-happens with allnoconfig + CONFIG_SWAP, introduced with -rc4
+> The last change to drivers/pci/setup-res.c (Ignore disabled ROM
+> resources at setup) is breaking radeonfb on iBook G3 (with Radeon
+> Mobility M6 LY). It crashes in pci_map_rom when called from
+> radeonfb_map_ROM.  This is probably a dormant bug that was just
+> uncovered by the change.
 
-linux-2.6.12/arch/ppc/mm/init.c:565:7: warning: "CONFIG_8xx" is not defined
+FWIW, it didn't seem to break my Sony Vaio PCG-GR214EP (x86 with Radeon
+Mobility M6 LY as well.) So it must be machine-specific, not
+chip-specific.
 
-Signed-off-by: Olaf Hering <olh@suse.de>
-
- arch/ppc/mm/init.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6.12/arch/ppc/mm/init.c
-===================================================================
---- linux-2.6.12.orig/arch/ppc/mm/init.c
-+++ linux-2.6.12/arch/ppc/mm/init.c
-@@ -562,7 +562,7 @@ void flush_dcache_icache_page(struct pag
- #ifdef CONFIG_BOOKE
- 	__flush_dcache_icache(kmap(page));
- 	kunmap(page);
--#elif CONFIG_8xx
-+#elif defined(CONFIG_8xx)
- 	/* On 8xx there is no need to kmap since highmem is not supported */
- 	__flush_dcache_icache(page_address(page)); 
- #else
+-- 
+Jean Delvare
