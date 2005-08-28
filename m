@@ -1,19 +1,20 @@
-Return-Path: <glikely@gmail.com>
-Received: from rproxy.gmail.com (rproxy.gmail.com [64.233.170.206])
-	by ozlabs.org (Postfix) with ESMTP id BCC0E680A4
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Aug 2005 15:15:18 +1000 (EST)
-Received: by rproxy.gmail.com with SMTP id a36so929585rnf
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Aug 2005 22:15:17 -0700 (PDT)
-Date: Fri, 26 Aug 2005 23:04:22 -0600
-To: Dan Malek <dan@embeddededge.com>
-Message-ID: <20050827050422.GC7234@siegfried.thelikelysolution.ca>
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 692DC680A4
+	for <linuxppc-dev@ozlabs.org>; Sun, 28 Aug 2005 10:48:29 +1000 (EST)
+In-Reply-To: <20050827050422.GC7234@siegfried.thelikelysolution.ca>
 References: <DCEAAC0833DD314AB0B58112AD99B93B859440@ismail.innsys.innovsys.com>
 	<20050826225509.GF5541@smtp.west.cox.net>
 	<da1e14409c0face6cee5b4d5fa750c00@embeddededge.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <da1e14409c0face6cee5b4d5fa750c00@embeddededge.com>
-From: Grant Likely <glikely@gmail.com>
+	<20050827050422.GC7234@siegfried.thelikelysolution.ca>
+Mime-Version: 1.0 (Apple Message framework v622)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <d18c6049f1976912db9a7022a85c158a@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Sat, 27 Aug 2005 20:48:04 -0400
+To: Grant Likely <glikely@gmail.com>
 Cc: Andrew Morton <akpm@osdl.org>, Tom Rini <trini@kernel.crashing.org>,
 	Kumar Gala <galak@freescale.com>, linuxppc-dev@ozlabs.org
 Subject: Re: [PATCH] ppc32: add CONFIG_HZ
@@ -26,20 +27,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 26, 2005 at 07:07:01PM -0400, Dan Malek wrote:
-> 
-> On Aug 26, 2005, at 6:55 PM, Tom Rini wrote:
-> 
-> >Yes, it was.  With 2.6.13 and on i386 (and other arches that actually
-> >make use of the question) it can be any of 100, 250 or 1000.
-> 
-> Well, 250 just seems wrong as I mentioned in a previous message.
-> It will function, but an application is going to see lots of clock 
-> jitter
-> unless you work in multiples of 100.  My choices would be 100, 200,
-> 500, or 1000.
-What's the reason for clock jitter?  Is it because most timeouts are set
-to multiples of 100, or some other reason?
 
-Thanks,
-g.
+On Aug 27, 2005, at 1:04 AM, Grant Likely wrote:
+
+> What's the reason for clock jitter?  Is it because most timeouts are 
+> set
+> to multiples of 100, or some other reason?
+
+Yes, the application interfaces are all defined as 100 Hz (10 mSec).
+If the POSIX timer implementation is done properly, it should be
+possible to determine the timer parameters to eliminate this, but
+I doubt any applications do this.  They all assume 10 mSec :-)
+
+
+	-- Dan
