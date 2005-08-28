@@ -1,21 +1,20 @@
-Return-Path: <khali@linux-fr.org>
-Received: from kellthuzad.dmz.nerim.net (smtp-dmz-230-sunday.dmz.nerim.net
-	[195.5.254.230]) by ozlabs.org (Postfix) with ESMTP id 2C4F8680DD
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Aug 2005 04:43:29 +1000 (EST)
-Received: from kraid.nerim.net (smtp-100-sunday.nerim.net [62.4.16.100])
-	by kellthuzad.dmz.nerim.net (Postfix) with ESMTP id 932703ACC6
-	for <linuxppc-dev@ozlabs.org>; Sun, 28 Aug 2005 20:16:55 +0200 (CEST)
-Date: Sun, 28 Aug 2005 20:17:06 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Andreas Schwab <schwab@suse.de>
-Message-Id: <20050828201706.07660a62.khali@linux-fr.org>
-In-Reply-To: <jehdda2tqt.fsf@sykes.suse.de>
-References: <jehdda2tqt.fsf@sykes.suse.de>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4696E6810D
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Aug 2005 07:36:35 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Olaf Hering <olh@suse.de>
+In-Reply-To: <20050826133948.GA29431@suse.de>
+References: <20050826133948.GA29431@suse.de>
+Content-Type: text/plain
+Date: Mon, 29 Aug 2005 07:34:24 +1000
+Message-Id: <1125264864.14186.37.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Linus Torvalds <torvalds@transmeta.com>
-Subject: Re: 2.6.13-rc7-git2 crashes on iBook
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: alsa tumbler audio-gpio-active-state handling broken after
+	2.6.12-rc2
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,17 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Andreas, all,
+On Fri, 2005-08-26 at 15:39 +0200, Olaf Hering wrote:
+> Ben,
+> 
+> this patch 03a53d4895d274ee8562ddc99723b98d8d0ef04c breaks tumbler
+> [PATCH] pmac: sound support for latest laptops
+> 
+> audio-gpio-active-state is zero. active_state was forced to 1 in this
+> case, now it is 0. As a result, no sound is played on my G4/466 and
+> 600Mhz ibook.
 
-> The last change to drivers/pci/setup-res.c (Ignore disabled ROM
-> resources at setup) is breaking radeonfb on iBook G3 (with Radeon
-> Mobility M6 LY). It crashes in pci_map_rom when called from
-> radeonfb_map_ROM.  This is probably a dormant bug that was just
-> uncovered by the change.
+THe problem is checking wether it breaks other machines...
 
-FWIW, it didn't seem to break my Sony Vaio PCG-GR214EP (x86 with Radeon
-Mobility M6 LY as well.) So it must be machine-specific, not
-chip-specific.
-
--- 
-Jean Delvare
+Ben.
