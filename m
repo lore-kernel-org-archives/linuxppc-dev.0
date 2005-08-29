@@ -1,20 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4696E6810D
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Aug 2005 07:36:35 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olaf Hering <olh@suse.de>
-In-Reply-To: <20050826133948.GA29431@suse.de>
-References: <20050826133948.GA29431@suse.de>
-Content-Type: text/plain
-Date: Mon, 29 Aug 2005 07:34:24 +1000
-Message-Id: <1125264864.14186.37.camel@gaston>
+Return-Path: <sfr@canb.auug.org.au>
+Date: Mon, 29 Aug 2005 13:01:33 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Message-Id: <20050829130133.519391c6.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: alsa tumbler audio-gpio-active-state handling broken after
-	2.6.12-rc2
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Mon__29_Aug_2005_13_01_33_+1000_jl9QNs7QryRd/FTz"
+Cc: ppc64-dev <linuxppc64-dev@ozlabs.org>, linuxppc-dev@ozlabs.org
+Subject: [PATCH 0/3] Start the merge
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,16 +18,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2005-08-26 at 15:39 +0200, Olaf Hering wrote:
-> Ben,
-> 
-> this patch 03a53d4895d274ee8562ddc99723b98d8d0ef04c breaks tumbler
-> [PATCH] pmac: sound support for latest laptops
-> 
-> audio-gpio-active-state is zero. active_state was forced to 1 in this
-> case, now it is 0. As a result, no sound is played on my G4/466 and
-> 600Mhz ibook.
+--Signature=_Mon__29_Aug_2005_13_01_33_+1000_jl9QNs7QryRd/FTz
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-THe problem is checking wether it breaks other machines...
+Hi Paulus,
 
-Ben.
+I think the following 3 patches are no longer contentious - I have removed
+some of the files from the third that people expressed concersn over.
+
+Please send at least the first upstream.  The other two can also probably
+be sent.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__29_Aug_2005_13_01_33_+1000_jl9QNs7QryRd/FTz
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQFDEnqNFdBgD/zoJvwRAtkvAKCXLBGgGs8PytSQMt4yzMdsrJzw6gCcCPEQ
+PR2SqgA/HgPKTgFlnhYClSc=
+=FhvX
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__29_Aug_2005_13_01_33_+1000_jl9QNs7QryRd/FTz--
