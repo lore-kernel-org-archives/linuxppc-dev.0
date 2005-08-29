@@ -1,20 +1,34 @@
-Return-Path: <sneakums@zork.net>
-Received: from frotz.zork.net (frotz.zork.net [70.85.129.199])
-	by ozlabs.org (Postfix) with ESMTP id 697AB68135
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Aug 2005 21:13:49 +1000 (EST)
-From: Sean Neakums <sneakums@zork.net>
-To: Andreas Schwab <schwab@suse.de>
-References: <jehdda2tqt.fsf@sykes.suse.de>
-Date: Mon, 29 Aug 2005 11:56:15 +0100
-In-Reply-To: <jehdda2tqt.fsf@sykes.suse.de> (Andreas Schwab's message of "Sun,
-	28 Aug 2005 13:20:10 +0200")
-Message-ID: <7wr7cdt3jk.fsf@frotz.zork.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Linus Torvalds <torvalds@transmeta.com>
-Subject: 2.6.13 PowerBook boot hang (was Re: 2.6.13-rc7-git2 crashes on
-	iBook)
+Return-Path: <segher@kernel.crashing.org>
+Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.29.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de.ibm.com", Issuer "Equifax" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 7B9FC6812D
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Aug 2005 01:30:56 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate4.de.ibm.com (8.12.10/8.12.10) with ESMTP id j7TFUpO0136440
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Aug 2005 15:30:51 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
+	by d12nrmr1607.megacenter.de.ibm.com (8.12.10/NCO/VERS6.7) with ESMTP
+	id j7TFUoQg063800
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Aug 2005 17:30:50 +0200
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11/8.13.3) with ESMTP id
+	j7TFUoDR029662
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Aug 2005 17:30:50 +0200
+In-Reply-To: <f0351d402e64b569bbcfc16fa921d860@embeddededge.com>
+References: <Pine.LNX.4.61.0508261415080.29975@nylon.am.freescale.net>
+	<f0351d402e64b569bbcfc16fa921d860@embeddededge.com>
+Mime-Version: 1.0 (Apple Message framework v622)
+Message-Id: <873573479a451f5b7ac63763237a1c27@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Date: Mon, 29 Aug 2005 17:31:20 +0200
+To: Dan Malek <dan@embeddededge.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	Kumar Gala <galak@freescale.com>
+Subject: Re: [PATCH] ppc32: add CONFIG_HZ
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,48 +38,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andreas Schwab <schwab@suse.de> writes:
+>> While ppc32 has the CONFIG_HZ Kconfig option, it wasnt actually being
+>> used. Connect it up and set all platforms to 250Hz.  This pretty much
+>> mimics the ppc64 patch from Anton Blanchard.
+>
+> Why do we keep cranking up this clock frequency?  Do we really need
+> it running that fast?  Is it time for someone with RTOS experience to
+> implement a real scheduled clock queue in Linux instead of just
+> wasting interrupts decrementing a counter waiting for the next
+> event to expire?  :-)
 
-> The last change to drivers/pci/setup-res.c (Ignore disabled ROM resources
-> at setup) is breaking radeonfb on iBook G3 (with Radeon Mobility M6 LY).
-> It crashes in pci_map_rom when called from radeonfb_map_ROM.  This is
-> probably a dormant bug that was just uncovered by the change.
-
-2.6.13 hangs on boot on my PowerBook 5.4, reverting the disabled ROM
-patch (appended for confirmation) fixes it.  2.6.13-rc7 was fine.
+Sure.  And some people are actually working on that.  But
+on common x86 hardware, it seems to be a really really hard
+thing to do.  Would be a lot easier in PowerPC of course...
 
 
-diff-tree 755528c860b05fcecda1c88a2bdaffcb50760a7f (from 26aad69e3dd854abe9028ca873fb40b410a39dd7)
-Author: Linus Torvalds <torvalds@g5.osdl.org>
-Date:   Fri Aug 26 10:49:22 2005 -0700
-
-    Ignore disabled ROM resources at setup
-    
-    Writing even a disabled value seems to mess up some matrox graphics
-    cards.  It may be a card-related issue, but we may also be writing
-    reserved low bits in the result.
-    
-    This was a fall-out of switching x86 over to the generic PCI resource
-    allocation code, and needs more debugging.  In particular, the old x86
-    code defaulted to not doing any resource allocations at all for ROM
-    resources.
-    
-    In the meantime, this has been reported to make X happier by Helge
-    Hafting <helgehaf@aitel.hist.no>.
-    
-    Signed-off-by: Linus Torvalds <torvalds@osdl.org>
-
-diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
---- a/drivers/pci/setup-res.c
-+++ b/drivers/pci/setup-res.c
-@@ -53,7 +53,9 @@ pci_update_resource(struct pci_dev *dev,
- 	if (resno < 6) {
- 		reg = PCI_BASE_ADDRESS_0 + 4 * resno;
- 	} else if (resno == PCI_ROM_RESOURCE) {
--		new |= res->flags & IORESOURCE_ROM_ENABLE;
-+		if (!(res->flags & IORESOURCE_ROM_ENABLE))
-+			return;
-+		new |= PCI_ROM_ADDRESS_ENABLE;
- 		reg = dev->rom_base_reg;
- 	} else {
- 		/* Hmm, non-standard resource. */
+Segher
