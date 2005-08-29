@@ -1,20 +1,15 @@
-Return-Path: <jonathan@jonmasters.org>
-Received: from apogee.jonmasters.org (apogee.jonmasters.org [212.18.227.82])
-	by ozlabs.org (Postfix) with ESMTP id 8DA8668103
+Return-Path: <susheel.nuguru@mitron.fi>
+Received: from mitron.mitron.fi (mail.mitron.fi [82.116.252.3])
+	by ozlabs.org (Postfix) with ESMTP id 6972568146
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 29 Aug 2005 11:31:20 +1000 (EST)
-Message-ID: <431260BA.7000107@jonmasters.org>
-Date: Mon, 29 Aug 2005 02:11:22 +0100
-From: Jon Masters <jonathan@jonmasters.org>
-MIME-Version: 1.0
-To: Grant Likely <glikely@gmail.com>
-References: <ea43f4f9050825183121655ba2@mail.gmail.com>	
-	<35fb2e5905082808152031ef53@mail.gmail.com>
-	<528646bc05082817268abfb1d@mail.gmail.com>
-In-Reply-To: <528646bc05082817268abfb1d@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Address mapping PPC 405
+	Mon, 29 Aug 2005 17:23:38 +1000 (EST)
+From: Nuguru Susheel <susheel.nuguru@mitron.fi>
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Date: Mon, 29 Aug 2005 10:26:15 +0000
+Message-Id: <1125311175.3232.12.camel@localhost.localdomain>
+Mime-Version: 1.0
+Subject: Re: problem mounting ROOT-NFS
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,44 +20,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
 
-Grant Likely wrote:
+Hi Yan,
+   Yes its true, but why. I checked the permissions for the nfs-root directory in /etc/exports and it is set to no_root_squash which should not be a problem.
+I could access the nfs server when I boot from ramdisk or NOR flash ...
 
-| On 8/28/05, Jon Masters <jonmasters@gmail.com> wrote:
-|
-|>On 8/26/05, P. Sadik <psadik@gmail.com> wrote:
-|>
-|>Lovely. We don't do it that way on 405 but we could - since the MMU is
-|>heavy soft assisted we could do that - we actually have everything run
-|>through the MMU once we've done initial MMU setup, but we do have the
-|>ability to mark ranges of addresses for IO and have the concept of TLB
-|>pinning to lock ranges of kernel addresses in large translated (BAT
-|>like for bigger PPC users) regions using just a few TLB slots. There
-|>is also a ZPR (zone protection register), but that's mostly used to
-|>fake the usual USER/KERNEL page distinction.
+Why is that it couldnt get mount nfs-root while i boot from sram ???? I assume boot peramets should not be doing this?? 
 
-| I believe TLB pinning was removed in 2.6 in favor of large TLB entries
-| for kernel space.  Matt Porter pointed this out to me about a week
-| ago.  This will not matter of course if you're not using 2.6.
+any hints
 
-Maybe so. I'm thinking this is likely on 2.4  but I'd be interested to
-know what you mean - this isn't hugetlb (that's different), and TLB
-pinning on 2.4 means you only use a couple of (large) entries anyway. I
-can go read the source I suppose :-)
 
-| Matt, is there any documentation covering the new design in the kernel
-tree?
+>	Your nfs server did not startup, or with a wrong port.
 
-Hmmm...doc-u-what? :P
+> Best regards,
+> Yan
 
-Jon.
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://enigmail.mozdev.org
+======= At 2005-08-26 18:37:28 you wrote =======
 
-iD8DBQFDEmC6eTyyexZHHxERAknhAJsHFukzIvJc/GEpI6KT6VFjTm6zTgCeMlht
-0jiMOVsht7kOGY2aIsnSObs=
-=Uuxh
------END PGP SIGNATURE-----
+>Hi,
+>
+>  I lately upgraded to Bestcomm API v2.2 from v2.1 , but root-nfs doesnt
+>mount while booting from ram, but when booting from FLASH (Compact Flash
+>and also NOR) it does well. This problem could be seen when I try to
+>boot on MPC5200 RevA. 
+>
+> Then I switched to MPC5200 RevB to see it is the same here, but with
+>same u.boot.bin and kernel image everything boot well on Rev B. I have
+>compared the Environment perameters passed from u-boot to the kernel and
+>everything seems to be the same. I also looked into the Errata to check
+>if anything else regarding bestcomm or fec has changed, but couldnt
+>figure out anything.
+>
+>console messages while booting on MPC5200 RevA from ram goes this
+>way ...
