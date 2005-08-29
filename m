@@ -1,24 +1,33 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E800468175
+Return-Path: <kjoutwater@raytheon.com>
+Received: from tus-gate5.raytheon.com (tus-gate5.raytheon.com [199.46.245.234])
+	by ozlabs.org (Postfix) with ESMTP id 065D06818B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 30 Aug 2005 04:07:11 +1000 (EST)
-In-Reply-To: <Pine.LNX.4.61.0508291239180.30997@nylon.am.freescale.net>
-References: <9FCDBA58F226D911B202000BDBAD467302BEB583@zch01exm40.ap.freescale.net>
-	<Pine.LNX.4.61.0508291239180.30997@nylon.am.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <e62c7e8ed239c5544e044bc5f0054bf3@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Mon, 29 Aug 2005 14:07:05 -0400
-To: Kumar Gala <galak@freescale.com>
-Cc: linux-kernel@vger.kernel.org,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>,
-	Chu hanjin-r52514 <Hanjin.Chu@freescale.com>,
-	Li Tony-r64360 <Tony.Li@freescale.com>
-Subject: Re: [PATCH] ppc32 :Added PCI support for MPC83xx
+	Tue, 30 Aug 2005 04:31:29 +1000 (EST)
+Received: from ds02t00.directory.ray.com (ds02t00.directory.ray.com
+	[147.25.154.117])
+	by tus-gate5.raytheon.com (8.12.10/8.12.10) with ESMTP id
+	j7TIVRtr002450 for <linuxppc-embedded@ozlabs.org>;
+	Mon, 29 Aug 2005 11:31:27 -0700 (MST)
+Received: from ds02t00 (localhost [127.0.0.1])
+	by ds02t00.directory.ray.com (Switch-3.1.7/Switch-3.1.0) with ESMTP id
+	j7TIVLt1021627
+	for <linuxppc-embedded@ozlabs.org>; Mon, 29 Aug 2005 18:31:21 GMT
+Received: from ds02t00.directory.ray.com with LMTP by ds02t00
+	(2.0.6/sieved-2-0-build-559)
+	for <linuxppc-embedded@ozlabs.org>; Mon, 29 Aug 2005 18:31:21 +0000
+Received: from tu2-msg04.rsc.raytheon.com (tu2-msg04.RSC.RAYTHEON.COM
+	[147.24.232.105])
+	by ds02t00.directory.ray.com (Switch-3.1.7/Switch-3.1.0) with ESMTP id
+	j7TIV6dF021558
+	sender kjoutwater@raytheon.com for <linuxppc-embedded@ozlabs.org>;
+	Mon, 29 Aug 2005 18:31:09 GMT
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+From: Keith J Outwater <kjoutwater@raytheon.com>
+Message-ID: <OF9C3C40D4.4EC5E6BD-ON0725706C.0064A09D-0725706C.0065B9FC@mck.us.ray.com>
+Date: Mon, 29 Aug 2005 11:31:06 -0700
+Content-Type: text/plain; charset="US-ASCII"
+Subject: linuxppc-2.4.30-pre1 crashes with root fs on Xilinx SystemACE
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,115 +38,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-On Aug 29, 2005, at 1:42 PM, Kumar Gala wrote:
-
-> diff --git a/arch/ppc/platforms/83xx/mpc834x_sys.c 
-> b/arch/ppc/platforms/83xx/mpc834x_sys.c
-> --- a/arch/ppc/platforms/83xx/mpc834x_sys.c
-> +++ b/arch/ppc/platforms/83xx/mpc834x_sys.c
-> @@ -62,9 +62,29 @@ extern unsigned long total_memory;	/* in
->  unsigned char __res[sizeof (bd_t)];
->
->  #ifdef CONFIG_PCI
-> -#error "PCI is not supported"
-> -/* NEED mpc83xx_map_irq & mpc83xx_exclude_device
-> -   see platforms/85xx/mpc85xx_ads_common.c */
-> +int
-> +mpc83xx_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned 
-> char pin)
-> +{
-> +	static char pci_irq_table[][4] =
-> +	    /*
-> +	     *      PCI IDSEL/INTPIN->INTLINE
-> +	     *       A      B      C      D
-> +	     */
-> +	{
-> +		{PIRQA, PIRQB,  PIRQC,  PIRQD}, /* idsel 0x11 */
-> +		{PIRQC, PIRQD,  PIRQA,  PIRQB}, /* idsel 0x12 */
-> +		{PIRQD, PIRQA,  PIRQB,  PIRQC}  /* idsel 0x13 */
-> +	};
-> +
-> +	const long min_idsel = 0x11, max_idsel = 0x13, irqs_per_slot = 4;
-> +	return PCI_IRQ_TABLE_LOOKUP;
-> +}
-> +
-> +int
-> +mpc83xx_exclude_device(u_char bus, u_char devfn)
-> +{
-> +	return PCIBIOS_SUCCESSFUL;
-> +}
->  #endif /* CONFIG_PCI */
-
-Shouldn't this be in the PQ2FADS board specific file?  Not everyone
-is going to map IDSELs and IRQs this way.
-
-> diff --git a/arch/ppc/platforms/83xx/mpc834x_sys.h 
-> b/arch/ppc/platforms/83xx/mpc834x_sys.h
-> --- a/arch/ppc/platforms/83xx/mpc834x_sys.h
-> +++ b/arch/ppc/platforms/83xx/mpc834x_sys.h
-> @@ -26,7 +26,7 @@
->  #define VIRT_IMMRBAR		((uint)0xfe000000)
->
->  #define BCSR_PHYS_ADDR		((uint)0xf8000000)
-> -#define BCSR_SIZE		((uint)(32 * 1024))
-> +#define BCSR_SIZE		((uint)(128 * 1024))
->
->  #define BCSR_MISC_REG2_OFF	0x07
->  #define BCSR_MISC_REG2_PORESET	0x01
-> @@ -34,23 +34,25 @@
->  #define BCSR_MISC_REG3_OFF	0x08
->  #define BCSR_MISC_REG3_CNFLOCK	0x80
->
-> -#ifdef CONFIG_PCI
-> -/* PCI interrupt controller */
-> -#define PIRQA        MPC83xx_IRQ_IRQ4
-> -#define PIRQB        MPC83xx_IRQ_IRQ5
-> -#define PIRQC        MPC83xx_IRQ_IRQ6
-> -#define PIRQD        MPC83xx_IRQ_IRQ7
-> -
-> -#define MPC834x_SYS_PCI1_LOWER_IO        0x00000000
-> -#define MPC834x_SYS_PCI1_UPPER_IO        0x00ffffff
-> -
-> -#define MPC834x_SYS_PCI1_LOWER_MEM       0x80000000
-> -#define MPC834x_SYS_PCI1_UPPER_MEM       0x9fffffff
-> -
-> -#define MPC834x_SYS_PCI1_IO_BASE         0xe2000000
-> -#define MPC834x_SYS_PCI1_MEM_OFFSET      0x00000000
-> -
-> -#define MPC834x_SYS_PCI1_IO_SIZE         0x01000000
-> -#endif /* CONFIG_PCI */
-> +#define PIRQA	MPC83xx_IRQ_EXT4
-> +#define PIRQB	MPC83xx_IRQ_EXT5
-> +#define PIRQC	MPC83xx_IRQ_EXT6
-> +#define PIRQD	MPC83xx_IRQ_EXT7
-
-The same thing with these BCSRs and IRQ mappings ....  FADS specific.
-
-> +
-> +#define MPC83xx_PCI1_LOWER_IO	0x00000000
-> +#define MPC83xx_PCI1_UPPER_IO	0x00ffffff
-> +#define MPC83xx_PCI1_LOWER_MEM	0x80000000
-> +#define MPC83xx_PCI1_UPPER_MEM	0x9fffffff
-> +#define MPC83xx_PCI1_IO_BASE	0xe2000000
-> +#define MPC83xx_PCI1_MEM_OFFSET	0x00000000
-> +#define MPC83xx_PCI1_IO_SIZE	0x01000000
-> +
-> +#define MPC83xx_PCI2_LOWER_IO	0x00000000
-> +#define MPC83xx_PCI2_UPPER_IO	0x00ffffff
-> +#define MPC83xx_PCI2_LOWER_MEM	0xa0000000
-> +#define MPC83xx_PCI2_UPPER_MEM	0xbfffffff
-> +#define MPC83xx_PCI2_IO_BASE	0xe3000000
-> +#define MPC83xx_PCI2_MEM_OFFSET	0x00000000
-> +#define MPC83xx_PCI2_IO_SIZE	0x01000000
-
-These should be generic to everyone, and could be
-in the ppc83xx_pci.h file.  Maybe surround them with
-#ifndef so a board specific file could move the addresses
-if they wanted?  I don't think an #ifndef is needed for each
-define, maybe just #fndef MPC83xx_PCI1_LOWER_MEM
-and let the board define everything if they want anything different.
-
-  Thanks.
-
-	-- Dan
+Hello - 
+Per a previous suggestion from this list, I rsynced the linuxppc-2.4 
+kernel sources from MontaVista and modified the kernel to run on my custom 
+ppc405/VirtexII Pro based system with U-Boot as the bootloader.
+When I try to use the SystemACE device as the root filesystem, the kernel 
+crashes with a sig 11.  Looking at the 'oops' output it appears  the 
+SystemACE driver may be to blame.  The crash is random - sometimes I get 
+all the way to login as root and then things crash on a file copy or a 
+file read.
+Before I start digging deeper, is anyone running a VirtexIIPro based 
+system with the root filesystem in the CF card attached to a SystemACE? 
+I'm wondering if I really have the best kernel and SystemACE driver.
+BTW, I'm developing the hardware design using Xilinx EDK 7.02i.
+Thanks,
+Keith
