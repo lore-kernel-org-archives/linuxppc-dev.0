@@ -1,20 +1,19 @@
-Return-Path: <grave@ipno.in2p3.fr>
-Received: from ipnmail.in2p3.fr (ipnmail.in2p3.fr [134.158.92.208])
-	by ozlabs.org (Postfix) with ESMTP id C512B6816D
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Aug 2005 20:03:30 +1000 (EST)
-Received: from ipnnarval.in2p3.fr (ipnnarval.in2p3.fr [134.158.92.7])
-	by ipnmail.in2p3.fr (8.13.4/8.13.4/IN2P3.FR) with ESMTP id
-	j7T9XAac032414
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Aug 2005 11:33:10 +0200
-From: Xavier Grave <grave@ipno.in2p3.fr>
-To: ppc dev <linuxppc-dev@ozlabs.org>
-Content-Type: multipart/mixed; boundary="=-cNTu8T9z9vpLf97E8Ft6"
-Date: Mon, 29 Aug 2005 11:32:48 +0200
-Message-Id: <1125307968.5440.15.camel@ipnnarval>
+Return-Path: <stelian@popies.net>
+Received: from placid.alcove-fr (gw.alcove.fr [81.80.245.157])
+	by ozlabs.org (Postfix) with ESMTP id 877BD680F7
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Aug 2005 20:58:08 +1000 (EST)
+From: Stelian Pop <stelian@popies.net>
+To: Alex Williamson <alex.williamson@hp.com>
+In-Reply-To: <1125288175.5595.3.camel@localhost.localdomain>
+References: <jehdda2tqt.fsf@sykes.suse.de>
+	<1125288175.5595.3.camel@localhost.localdomain>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 29 Aug 2005 12:39:11 +0200
+Message-Id: <1125311951.4662.3.camel@localhost.localdomain>
 Mime-Version: 1.0
-Subject: [Fwd: Re: Allocating a cache-safe buffer for DMA devices and
-	drivers]
-Reply-To: grave@ipno.in2p3.fr
+Cc: Linus Torvalds <torvalds@transmeta.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
+Subject: Re: 2.6.13-rc7-git2 crashes on iBook
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,68 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
---=-cNTu8T9z9vpLf97E8Ft6
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-
-Sorry, forgot to cc...
-
---=-cNTu8T9z9vpLf97E8Ft6
-Content-Disposition: inline
-Content-Description: Message =?ISO-8859-1?Q?transf=E9r=E9?= - Re:
-	Allocating a cache-safe buffer for DMA devices and drivers
-Content-Type: message/rfc822
-
-Subject: Re: Allocating a cache-safe buffer for DMA devices and drivers
-From: Xavier Grave <grave@ipno.in2p3.fr>
-Reply-To: grave@ipno.in2p3.fr
-To: Garcia =?ISO-8859-1?Q?J=E9r=E9mie?= <GARCIAJ@3il.fr>
-In-Reply-To: <D4FDDD1349B5AC46B68FC26AD8AF42D6226B4D@exnet.3il.fr>
-References: <D4FDDD1349B5AC46B68FC26AD8AF42D6226B4D@exnet.3il.fr>
-Content-Type: text/plain; charset=ISO-8859-1
-Message-Id: <1125307903.5440.13.camel@ipnnarval>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.2.3 
-Date: Mon, 29 Aug 2005 11:31:48 +0200
-Content-Transfer-Encoding: 8bit
-
-Hi,
-
-Something like that maybe :
-
- virtual_ad = (unsigned long *) kmalloc(sizeof(long)*taille_dma,
-                                         GFP_KERNEL|GFP_DMA|GFP_ATOMIC);
-
-O+ xavier
-
-Le lundi 29 août 2005 à 11:16 +0200, Garcia Jérémie a écrit :
-> Hi everybody, I have to port a vxWorks appz to Linux Montavista running on a powerPC 405EP based architecture.
-> In this one, we use the following vxWorks system call: cacheDmaMalloc( ) whose man page is :
+Le dimanche 28 aoÃ»t 2005 Ã  22:02 -0600, Alex Williamson a Ã©crit :
+> On Sun, 2005-08-28 at 13:20 +0200, Andreas Schwab wrote:
+> > The last change to drivers/pci/setup-res.c (Ignore disabled ROM resources
+> > at setup) is breaking radeonfb on iBook G3 (with Radeon Mobility M6 LY).
+> > It crashes in pci_map_rom when called from radeonfb_map_ROM.  This is
+> > probably a dormant bug that was just uncovered by the change.
 > 
-> NAME
->     cacheDmaMalloc( ) - allocate a cache-safe buffer for DMA devices and drivers
-> 
-> SYNOPSIS
-> void * cacheDmaMalloc
->     (
->     size_t bytes              /* number of bytes to allocate */
->     )
-> 
-> DESCRIPTION
->     This routine returns a pointer to a section of memory that will not experience any cache coherency problems. Function pointers in the CACHE_FUNCS structure provide access to DMA support routines.
-> 
-> RETURNS
->     A pointer to the cache-safe buffer, or NULL. 
-> 
-> 
-> I need to handle the given amount of memory from the user space. 
-> So could anyone told how to achieve the same goal on Linux with these constraints?
-> 
-> Tks a lot for your precious help!
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>    Same thing on Mac Mini.  2.6.13 doesn't boot.  Revert the
+> drivers/pci/setup-res.c change from rc7-git2 and it seems ok.
 
---=-cNTu8T9z9vpLf97E8Ft6--
+Confirmed on an Apple Powerbook too.
+
+For reference, the (already reverted) patch which needs to be applied is
+below.
+
+Signed-off-by: Stelian Pop <stelian@popies.net>
+
+Index: linux-2.6.git/drivers/pci/setup-res.c
+===================================================================
+--- linux-2.6.git.orig/drivers/pci/setup-res.c	2005-08-29 10:03:00.000000000 +0200
++++ linux-2.6.git/drivers/pci/setup-res.c	2005-08-29 12:23:20.980716336 +0200
+@@ -53,9 +53,7 @@
+ 	if (resno < 6) {
+ 		reg = PCI_BASE_ADDRESS_0 + 4 * resno;
+ 	} else if (resno == PCI_ROM_RESOURCE) {
+-		if (!(res->flags & IORESOURCE_ROM_ENABLE))
+-			return;
+-		new |= PCI_ROM_ADDRESS_ENABLE;
++		new |= res->flags & IORESOURCE_ROM_ENABLE;
+ 		reg = dev->rom_base_reg;
+ 	} else {
+ 		/* Hmm, non-standard resource. */
+
+Stelian.
+-- 
+Stelian Pop <stelian@popies.net>
