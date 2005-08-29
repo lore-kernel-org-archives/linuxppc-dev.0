@@ -1,33 +1,22 @@
-Return-Path: <kjoutwater@raytheon.com>
-Received: from lax-gate4.raytheon.com (lax-gate4.raytheon.com [199.46.200.233])
-	by ozlabs.org (Postfix) with ESMTP id 986E56811D
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 2B66C6812C
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 30 Aug 2005 06:52:02 +1000 (EST)
-Received: from ds02w00.directory.ray.com (ds02w00.directory.ray.com
-	[147.25.146.118])
-	by lax-gate4.raytheon.com (8.12.10/8.12.10) with ESMTP id
-	j7TK4ga0021062 for <linuxppc-embedded@ozlabs.org>;
-	Mon, 29 Aug 2005 13:04:42 -0700 (PDT)
-Received: from ds02w00 (localhost [127.0.0.1])
-	by ds02w00.directory.ray.com (Switch-3.1.7/Switch-3.1.7) with ESMTP id
-	j7TK4XtX022916
-	for <linuxppc-embedded@ozlabs.org>; Mon, 29 Aug 2005 20:04:36 GMT
-Received: from ds02w00.directory.ray.com with LMTP by ds02w00
-	(2.0.6/sieved-2-0-build-559)
-	for <linuxppc-embedded@ozlabs.org>; Mon, 29 Aug 2005 20:04:33 +0000
-Received: from tu2-msg04.rsc.raytheon.com (tu2-msg04.RSC.RAYTHEON.COM
-	[147.24.232.105])
-	by ds02w00.directory.ray.com (Switch-3.1.7/Switch-3.1.0) with ESMTP id
-	j7TK430G022643
-	sender kjoutwater@raytheon.com for <linuxppc-embedded@ozlabs.org>;
-	Mon, 29 Aug 2005 20:04:08 GMT
-To: linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-From: Keith J Outwater <kjoutwater@raytheon.com>
-Message-ID: <OF3A16F4F3.EBDE8FF7-ON0725706C.006D0CC0-0725706C.006E3BB4@mck.us.ray.com>
-Date: Mon, 29 Aug 2005 13:04:01 -0700
-Content-Type: text/plain; charset="US-ASCII"
-Subject: Question regarding partitioning of hardware drivers
+	Tue, 30 Aug 2005 08:00:53 +1000 (EST)
+In-Reply-To: <e62c7e8ed239c5544e044bc5f0054bf3@embeddededge.com>
+References: <e62c7e8ed239c5544e044bc5f0054bf3@embeddededge.com>
+Mime-Version: 1.0 (Apple Message framework v734)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <AC68EB7A-5CEA-4241-9AF0-9D50A3973BC4@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Mon, 29 Aug 2005 17:00:59 -0500
+To: Dan Malek <dan@embeddededge.com>
+Cc: linux-kernel@vger.kernel.org,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>,
+	Chu hanjin-r52514 <Hanjin.Chu@freescale.com>,
+	"Gala Kumar K.-galak" <galak@freescale.com>,
+	Li Tony-r64360 <Tony.Li@freescale.com>
+Subject: Re: [PATCH] ppc32 :Added PCI support for MPC83xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -38,30 +27,136 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello everyone - 
-I am developing an embedded ppc system using a 2.4 series kernel and I 
-have a question regarding hardware drivers.
-I have 4 LEDs connected to a GPIO port.  Each LED is controlled by a bit 
-on the I/O port - set a bit to zero to turn the LED on, set the bit to one 
-to turn the LED off.  The state of the bits are readable, so 
-read-modify-write works.  The GPIO port is implemented with a Xilinx IP 
-module and I have a driver available.  The Xilinx driver supports multiple 
-GPIO ports. 
-I have a driver available for the heartbeat LED ('status_led' by Wolfgang 
-Denk) that works.
-Now to the question:
-I wish to use one of the four LEDs as a 'heartbeat' and the remainder as 
-user LEDs.  Since all LEDs are accessed using the same hardware resource, 
-the Linux heartbeat driver and the user GPIO driver will have to 
-arbitrate.  I would like to separate the status led (heartbeat) driver 
-from the GPIO driver as much as I can.  Is there an effective approach for 
-doing this?  I think I could brute-force things by simply combining the 
-GPIO and status LED drivers and then tell the 'unified' driver which LED 
-to use as the heartbeat, but that approach eliminates the benefits of 
-using existing drivers 'as-is', among other things.
-I'm thinking that what I need to be able to do is give each driver access 
-to a mutex that the drivers can then use to coordinate access to the 
-hardware, but I'm not sure how to set up the mutex or where to put the 
-code that does the initialization and mapping for the hardware access.
 
-Keith
+On Aug 29, 2005, at 1:07 PM, Dan Malek wrote:
+
+>
+> On Aug 29, 2005, at 1:42 PM, Kumar Gala wrote:
+>
+>
+>> diff --git a/arch/ppc/platforms/83xx/mpc834x_sys.c
+>> b/arch/ppc/platforms/83xx/mpc834x_sys.c
+>> --- a/arch/ppc/platforms/83xx/mpc834x_sys.c
+>> +++ b/arch/ppc/platforms/83xx/mpc834x_sys.c
+>> @@ -62,9 +62,29 @@ extern unsigned long total_memory;    /* in
+>>  unsigned char __res[sizeof (bd_t)];
+>>
+>>  #ifdef CONFIG_PCI
+>> -#error "PCI is not supported"
+>> -/* NEED mpc83xx_map_irq & mpc83xx_exclude_device
+>> -   see platforms/85xx/mpc85xx_ads_common.c */
+>> +int
+>> +mpc83xx_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned
+>> char pin)
+>> +{
+>> +    static char pci_irq_table[][4] =
+>> +        /*
+>> +         *      PCI IDSEL/INTPIN->INTLINE
+>> +         *       A      B      C      D
+>> +         */
+>> +    {
+>> +        {PIRQA, PIRQB,  PIRQC,  PIRQD}, /* idsel 0x11 */
+>> +        {PIRQC, PIRQD,  PIRQA,  PIRQB}, /* idsel 0x12 */
+>> +        {PIRQD, PIRQA,  PIRQB,  PIRQC}  /* idsel 0x13 */
+>> +    };
+>> +
+>> +    const long min_idsel = 0x11, max_idsel = 0x13, irqs_per_slot =
+>>
+> 4;
+>
+>> +    return PCI_IRQ_TABLE_LOOKUP;
+>> +}
+>> +
+>> +int
+>> +mpc83xx_exclude_device(u_char bus, u_char devfn)
+>> +{
+>> +    return PCIBIOS_SUCCESSFUL;
+>> +}
+>>  #endif /* CONFIG_PCI */
+>>
+>
+> Shouldn't this be in the PQ2FADS board specific file?  Not everyone
+> is going to map IDSELs and IRQs this way.
+
+mpc834x_sys is a board specific file.. This is stupid freescale  
+naming.  The board was called MPC8349 SYS... Not sure what its called  
+now.
+
+>> diff --git a/arch/ppc/platforms/83xx/mpc834x_sys.h
+>> b/arch/ppc/platforms/83xx/mpc834x_sys.h
+>> --- a/arch/ppc/platforms/83xx/mpc834x_sys.h
+>> +++ b/arch/ppc/platforms/83xx/mpc834x_sys.h
+>> @@ -26,7 +26,7 @@
+>>  #define VIRT_IMMRBAR        ((uint)0xfe000000)
+>>
+>>  #define BCSR_PHYS_ADDR        ((uint)0xf8000000)
+>> -#define BCSR_SIZE        ((uint)(32 * 1024))
+>> +#define BCSR_SIZE        ((uint)(128 * 1024))
+>>
+>>  #define BCSR_MISC_REG2_OFF    0x07
+>>  #define BCSR_MISC_REG2_PORESET    0x01
+>> @@ -34,23 +34,25 @@
+>>  #define BCSR_MISC_REG3_OFF    0x08
+>>  #define BCSR_MISC_REG3_CNFLOCK    0x80
+>>
+>> -#ifdef CONFIG_PCI
+>> -/* PCI interrupt controller */
+>> -#define PIRQA        MPC83xx_IRQ_IRQ4
+>> -#define PIRQB        MPC83xx_IRQ_IRQ5
+>> -#define PIRQC        MPC83xx_IRQ_IRQ6
+>> -#define PIRQD        MPC83xx_IRQ_IRQ7
+>> -
+>> -#define MPC834x_SYS_PCI1_LOWER_IO        0x00000000
+>> -#define MPC834x_SYS_PCI1_UPPER_IO        0x00ffffff
+>> -
+>> -#define MPC834x_SYS_PCI1_LOWER_MEM       0x80000000
+>> -#define MPC834x_SYS_PCI1_UPPER_MEM       0x9fffffff
+>> -
+>> -#define MPC834x_SYS_PCI1_IO_BASE         0xe2000000
+>> -#define MPC834x_SYS_PCI1_MEM_OFFSET      0x00000000
+>> -
+>> -#define MPC834x_SYS_PCI1_IO_SIZE         0x01000000
+>> -#endif /* CONFIG_PCI */
+>> +#define PIRQA    MPC83xx_IRQ_EXT4
+>> +#define PIRQB    MPC83xx_IRQ_EXT5
+>> +#define PIRQC    MPC83xx_IRQ_EXT6
+>> +#define PIRQD    MPC83xx_IRQ_EXT7
+>>
+>
+> The same thing with these BCSRs and IRQ mappings ....  FADS specific.
+
+Same comment as above.
+
+>
+>
+>> +
+>> +#define MPC83xx_PCI1_LOWER_IO    0x00000000
+>> +#define MPC83xx_PCI1_UPPER_IO    0x00ffffff
+>> +#define MPC83xx_PCI1_LOWER_MEM    0x80000000
+>> +#define MPC83xx_PCI1_UPPER_MEM    0x9fffffff
+>> +#define MPC83xx_PCI1_IO_BASE    0xe2000000
+>> +#define MPC83xx_PCI1_MEM_OFFSET    0x00000000
+>> +#define MPC83xx_PCI1_IO_SIZE    0x01000000
+>> +
+>> +#define MPC83xx_PCI2_LOWER_IO    0x00000000
+>> +#define MPC83xx_PCI2_UPPER_IO    0x00ffffff
+>> +#define MPC83xx_PCI2_LOWER_MEM    0xa0000000
+>> +#define MPC83xx_PCI2_UPPER_MEM    0xbfffffff
+>> +#define MPC83xx_PCI2_IO_BASE    0xe3000000
+>> +#define MPC83xx_PCI2_MEM_OFFSET    0x00000000
+>> +#define MPC83xx_PCI2_IO_SIZE    0x01000000
+>>
+>
+> These should be generic to everyone, and could be
+> in the ppc83xx_pci.h file.  Maybe surround them with
+> #ifndef so a board specific file could move the addresses
+> if they wanted?  I don't think an #ifndef is needed for each
+> define, maybe just #fndef MPC83xx_PCI1_LOWER_MEM
+> and let the board define everything if they want anything different.
+
+
+This is just like how we did 85xx.  The board specific file has to  
+fill out these defines for its memory map.  I'm guess this is all  
+confusion based on the name, if its not just that let me know.
+
+- kumar
