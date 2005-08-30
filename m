@@ -1,17 +1,20 @@
-Return-Path: <galak@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id D63CF681B0
+Return-Path: <peter.ryser@xilinx.com>
+Received: from mail21-haw-R.bigfish.com (mail-haw.bigfish.com [12.129.199.61])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 3AB3C6819E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 30 Aug 2005 14:49:04 +1000 (EST)
-Date: Mon, 29 Aug 2005 23:48:54 -0500 (CDT)
-From: Kumar Gala <galak@freescale.com>
-To: Andrew Morton <akpm@osdl.org>
-Message-ID: <Pine.LNX.4.61.0508292348210.31749@nylon.am.freescale.net>
+	Tue, 30 Aug 2005 16:37:07 +1000 (EST)
+Message-ID: <4313FA43.1040206@xilinx.com>
+Date: Mon, 29 Aug 2005 23:18:43 -0700
+From: Peter Ryser <peter.ryser@xilinx.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] cpm_uart: Fix baseaddress for SMC 1 and 2
+To: Keith J Outwater <kjoutwater@raytheon.com>
+References: <OF9C3C40D4.4EC5E6BD-ON0725706C.0064A09D-0725706C.0065B9FC@mck.us.ray.com>
+In-Reply-To: <OF9C3C40D4.4EC5E6BD-ON0725706C.0064A09D-0725706C.0065B9FC@mck.us.ray.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: linuxppc-2.4.30-pre1 crashes with root fs on Xilinx SystemACE
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,42 +25,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Base addess register for SMC 1 and 2 are never initialized.
-This means that they will not work unless a bootloader already
-configured them.
+Hi Keith,
 
-The DPRAM already have space reserved, this patch just makes sure
-the base addess register is updated correctly on initialization.
+I sent you a private email but for other interested people:
+Downloading the latest linuxppc-2.4 kernel I could boot from and access 
+System ACE CF without problems on a ML403 (Virtex-4, 4VFX12) and a ML310 
+(Virtex-II Pro, 2VP30) using EDK 7.1.2. In both cases I started with 
+config_xilinx_ml300.
 
-Signed-off-by: Rune Torgersen <runet@innovsys.com>
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+- Peter
 
----
-commit b9ecc8e4b5db64f0b4ee36dbdd6758e4ce3c2025
-tree c6d9da4a2bec187d4fc794b91441323c04642dda
-parent 66256c2b92e3edafca1e86e64fcffe5c72cc39e7
-author Kumar K. Gala <kumar.gala@freescale.com> Mon, 29 Aug 2005 23:30:56 -0500
-committer Kumar K. Gala <kumar.gala@freescale.com> Mon, 29 Aug 2005 23:30:56 -0500
 
- drivers/serial/cpm_uart/cpm_uart_cpm2.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm2.c b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
---- a/drivers/serial/cpm_uart/cpm_uart_cpm2.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
-@@ -266,6 +266,7 @@ int cpm_uart_init_portdesc(void)
- 	cpm_uart_ports[UART_SMC1].smcp = (smc_t *) & cpm2_immr->im_smc[0];
- 	cpm_uart_ports[UART_SMC1].smcup =
- 	    (smc_uart_t *) & cpm2_immr->im_dprambase[PROFF_SMC1];
-+	*(u16 *)(&cpm2_immr->im_dprambase[PROFF_SMC1_BASE]) = PROFF_SMC1;
- 	cpm_uart_ports[UART_SMC1].port.mapbase =
- 	    (unsigned long)&cpm2_immr->im_smc[0];
- 	cpm_uart_ports[UART_SMC1].smcp->smc_smcm |= (SMCM_RX | SMCM_TX);
-@@ -278,6 +279,7 @@ int cpm_uart_init_portdesc(void)
- 	cpm_uart_ports[UART_SMC2].smcp = (smc_t *) & cpm2_immr->im_smc[1];
- 	cpm_uart_ports[UART_SMC2].smcup =
- 	    (smc_uart_t *) & cpm2_immr->im_dprambase[PROFF_SMC2];
-+	*(u16 *)(&cpm2_immr->im_dprambase[PROFF_SMC2_BASE]) = PROFF_SMC2;
- 	cpm_uart_ports[UART_SMC2].port.mapbase =
- 	    (unsigned long)&cpm2_immr->im_smc[1];
- 	cpm_uart_ports[UART_SMC2].smcp->smc_smcm |= (SMCM_RX | SMCM_TX);
+Keith J Outwater wrote:
+
+>Hello - 
+>Per a previous suggestion from this list, I rsynced the linuxppc-2.4 
+>kernel sources from MontaVista and modified the kernel to run on my custom 
+>ppc405/VirtexII Pro based system with U-Boot as the bootloader.
+>When I try to use the SystemACE device as the root filesystem, the kernel 
+>crashes with a sig 11.  Looking at the 'oops' output it appears  the 
+>SystemACE driver may be to blame.  The crash is random - sometimes I get 
+>all the way to login as root and then things crash on a file copy or a 
+>file read.
+>Before I start digging deeper, is anyone running a VirtexIIPro based 
+>system with the root filesystem in the CF card attached to a SystemACE? 
+>I'm wondering if I really have the best kernel and SystemACE driver.
+>BTW, I'm developing the hardware design using Xilinx EDK 7.02i.
+>Thanks,
+>Keith
+>_______________________________________________
+>Linuxppc-embedded mailing list
+>Linuxppc-embedded@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+>
+>  
+>
