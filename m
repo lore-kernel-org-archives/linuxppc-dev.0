@@ -1,29 +1,23 @@
-Return-Path: <rmk+linuxppc-embedded=ozlabs.org@arm.linux.org.uk>
-Received: from parcelfarce.linux.theplanet.co.uk
-	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id ABF5268194
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 4150F680E9
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 30 Aug 2005 17:06:58 +1000 (EST)
-Received: from [2002:d412:e8ba::1] (helo=caramon.arm.linux.org.uk)
-	by parcelfarce.linux.theplanet.co.uk with esmtpsa
-	(TLSv1:DES-CBC3-SHA:168) (Exim 4.43) id 1EA0Fq-0006ej-7F
-	for linuxppc-embedded@ozlabs.org; Tue, 30 Aug 2005 08:09:58 +0100
-Date: Tue, 30 Aug 2005 08:06:26 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-Message-ID: <20050830080626.A19060@flint.arm.linux.org.uk>
-References: <20050830024840.GA5381@dmt.cnet>
+	Tue, 30 Aug 2005 17:44:49 +1000 (EST)
+Date: Tue, 30 Aug 2005 00:44:47 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Kumar Gala <kumar.gala@freescale.com>
+Message-ID: <20050830074447.GC27899@gate.ebshome.net>
+References: <20050727125746.54329281.akpm@osdl.org>
+	<0048AEBE-072F-4250-9D32-EC019D0BDBB9@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050830024840.GA5381@dmt.cnet>;
-	from marcelo.tosatti@cyclades.com on Mon, Aug 29, 2005 at
-	11:48:40PM -0300
-Sender: Russell King <rmk@arm.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org,
-	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] MPC8xx PCMCIA driver
+In-Reply-To: <0048AEBE-072F-4250-9D32-EC019D0BDBB9@freescale.com>
+Cc: Andrew Morton <akpm@osdl.org>, "Gala Kumar K.-galak" <galak@freescale.com>,
+	linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH 00/14] ppc32: Remove board ports that are no longer
+	maintained
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,24 +28,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Aug 29, 2005 at 11:48:40PM -0300, Marcelo Tosatti wrote:
-> Here goes the 8xx PCMCIA driver, originally written by Magnus Damm, with
-> several improvements and fixes.
-
-Please don't copy me on PCMCIA stuff - I don't look after PCMCIA anymore.
-Please use the linux-pcmcia mailing list on lists.infradead.org.  Thanks.
-
-> Russell: The driver is using pccard_nonstatic_ops for card window
-> management, even though the driver its marked SS_STATIC_MAP (using
-> mem->static_map).
+On Mon, Aug 29, 2005 at 08:46:22PM -0500, Kumar Gala wrote:
 > 
-> Otherwise card IO windows aren't allocated properly.
+> On Jul 27, 2005, at 2:57 PM, Andrew Morton wrote:
+> 
+> >Kumar Gala <galak@freescale.com> wrote:
+> >
+> >>
+> >>The following board ports are no longer maintained or have become
+> >> obsolete:
+> >>
+> >> adir
+> >> ash
+> >> beech
+> >> cedar
+> >> ep405
+> >> k2
+> >> mcpn765
+> >> menf1
+> >> oak
+> >> pcore
+> >> rainier
+> >> redwood
+> >> sm850
+> >> spd823ts
+> >>
+> >> We are there for removing support for them.
+> >>
+> >
+> >I'll merge all these into -mm for now, but will hold off sending  
+> >any of
+> >them upstream pending confirmation of which patches we really want to
+> >proceed with.
+> 
+> No one has screamed about anything but ep405 so all the others should  
+> go to Linus now.
 
-This seems very wrong.  Are you suggesting that IO windows need to be
-dynamic and memory windows static?  If so, the pcmcia code isn't
-designed to cope with that.
+Matt told me he would probably get ash soon. There is even a path in 
+the -mm queue which should fix ethernet on this board.
+
+Matt?
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:  2.6 Serial core
+Eugene
