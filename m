@@ -1,20 +1,29 @@
-Return-Path: <peter.ryser@xilinx.com>
-Received: from mail21-haw-R.bigfish.com (mail-haw.bigfish.com [12.129.199.61])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 3AB3C6819E
+Return-Path: <rmk+linuxppc-embedded=ozlabs.org@arm.linux.org.uk>
+Received: from parcelfarce.linux.theplanet.co.uk
+	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id ABF5268194
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 30 Aug 2005 16:37:07 +1000 (EST)
-Message-ID: <4313FA43.1040206@xilinx.com>
-Date: Mon, 29 Aug 2005 23:18:43 -0700
-From: Peter Ryser <peter.ryser@xilinx.com>
-MIME-Version: 1.0
-To: Keith J Outwater <kjoutwater@raytheon.com>
-References: <OF9C3C40D4.4EC5E6BD-ON0725706C.0064A09D-0725706C.0065B9FC@mck.us.ray.com>
-In-Reply-To: <OF9C3C40D4.4EC5E6BD-ON0725706C.0064A09D-0725706C.0065B9FC@mck.us.ray.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: linuxppc-2.4.30-pre1 crashes with root fs on Xilinx SystemACE
+	Tue, 30 Aug 2005 17:06:58 +1000 (EST)
+Received: from [2002:d412:e8ba::1] (helo=caramon.arm.linux.org.uk)
+	by parcelfarce.linux.theplanet.co.uk with esmtpsa
+	(TLSv1:DES-CBC3-SHA:168) (Exim 4.43) id 1EA0Fq-0006ej-7F
+	for linuxppc-embedded@ozlabs.org; Tue, 30 Aug 2005 08:09:58 +0100
+Date: Tue, 30 Aug 2005 08:06:26 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Message-ID: <20050830080626.A19060@flint.arm.linux.org.uk>
+References: <20050830024840.GA5381@dmt.cnet>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050830024840.GA5381@dmt.cnet>;
+	from marcelo.tosatti@cyclades.com on Mon, Aug 29, 2005 at
+	11:48:40PM -0300
+Sender: Russell King <rmk@arm.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] MPC8xx PCMCIA driver
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,40 +34,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Keith,
+On Mon, Aug 29, 2005 at 11:48:40PM -0300, Marcelo Tosatti wrote:
+> Here goes the 8xx PCMCIA driver, originally written by Magnus Damm, with
+> several improvements and fixes.
 
-I sent you a private email but for other interested people:
-Downloading the latest linuxppc-2.4 kernel I could boot from and access 
-System ACE CF without problems on a ML403 (Virtex-4, 4VFX12) and a ML310 
-(Virtex-II Pro, 2VP30) using EDK 7.1.2. In both cases I started with 
-config_xilinx_ml300.
+Please don't copy me on PCMCIA stuff - I don't look after PCMCIA anymore.
+Please use the linux-pcmcia mailing list on lists.infradead.org.  Thanks.
 
-- Peter
+> Russell: The driver is using pccard_nonstatic_ops for card window
+> management, even though the driver its marked SS_STATIC_MAP (using
+> mem->static_map).
+> 
+> Otherwise card IO windows aren't allocated properly.
 
+This seems very wrong.  Are you suggesting that IO windows need to be
+dynamic and memory windows static?  If so, the pcmcia code isn't
+designed to cope with that.
 
-
-Keith J Outwater wrote:
-
->Hello - 
->Per a previous suggestion from this list, I rsynced the linuxppc-2.4 
->kernel sources from MontaVista and modified the kernel to run on my custom 
->ppc405/VirtexII Pro based system with U-Boot as the bootloader.
->When I try to use the SystemACE device as the root filesystem, the kernel 
->crashes with a sig 11.  Looking at the 'oops' output it appears  the 
->SystemACE driver may be to blame.  The crash is random - sometimes I get 
->all the way to login as root and then things crash on a file copy or a 
->file read.
->Before I start digging deeper, is anyone running a VirtexIIPro based 
->system with the root filesystem in the CF card attached to a SystemACE? 
->I'm wondering if I really have the best kernel and SystemACE driver.
->BTW, I'm developing the hardware design using Xilinx EDK 7.02i.
->Thanks,
->Keith
->_______________________________________________
->Linuxppc-embedded mailing list
->Linuxppc-embedded@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
->
->  
->
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:  2.6 Serial core
