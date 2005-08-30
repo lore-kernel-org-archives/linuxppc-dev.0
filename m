@@ -1,23 +1,19 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 4150F680E9
+Return-Path: <wd@denx.de>
+Received: from mailout10.sul.t-online.com (mailout10.sul.t-online.com
+	[194.25.134.21]) by ozlabs.org (Postfix) with ESMTP id CFC3C68193
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 30 Aug 2005 17:44:49 +1000 (EST)
-Date: Tue, 30 Aug 2005 00:44:47 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Kumar Gala <kumar.gala@freescale.com>
-Message-ID: <20050830074447.GC27899@gate.ebshome.net>
-References: <20050727125746.54329281.akpm@osdl.org>
-	<0048AEBE-072F-4250-9D32-EC019D0BDBB9@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <0048AEBE-072F-4250-9D32-EC019D0BDBB9@freescale.com>
-Cc: Andrew Morton <akpm@osdl.org>, "Gala Kumar K.-galak" <galak@freescale.com>,
-	linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH 00/14] ppc32: Remove board ports that are no longer
-	maintained
+	Tue, 30 Aug 2005 18:21:31 +1000 (EST)
+To: "JohnsonCheng" <JohnsonCheng@qnap.com.tw>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 30 Aug 2005 12:16:58 +0800."
+	<20050830041704.3ECDE68166@ozlabs.org>
+Date: Tue, 30 Aug 2005 10:21:10 +0200
+Sender: wd@denx.de
+Message-Id: <20050830082110.CC61D35258E@atlas.denx.de>
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: Cross compile krb5 issue for ppc 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,46 +24,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Aug 29, 2005 at 08:46:22PM -0500, Kumar Gala wrote:
+In message <20050830041704.3ECDE68166@ozlabs.org> you wrote:
 > 
-> On Jul 27, 2005, at 2:57 PM, Andrew Morton wrote:
-> 
-> >Kumar Gala <galak@freescale.com> wrote:
-> >
-> >>
-> >>The following board ports are no longer maintained or have become
-> >> obsolete:
-> >>
-> >> adir
-> >> ash
-> >> beech
-> >> cedar
-> >> ep405
-> >> k2
-> >> mcpn765
-> >> menf1
-> >> oak
-> >> pcore
-> >> rainier
-> >> redwood
-> >> sm850
-> >> spd823ts
-> >>
-> >> We are there for removing support for them.
-> >>
-> >
-> >I'll merge all these into -mm for now, but will hold off sending  
-> >any of
-> >them upstream pending confirmation of which patches we really want to
-> >proceed with.
-> 
-> No one has screamed about anything but ep405 so all the others should  
-> go to Linus now.
+> When I cross compile krb5-1.4.1 for ppc on x86, I got the following error
+> message.
+...
+> Cannot test for constructor/destructor support when cross compiling
 
-Matt told me he would probably get ash soon. There is even a path in 
-the -mm queue which should fix ethernet on this board.
+Yes, this is a very typical situation. Many packages are not  exactly
+well-behaving  in  a  cross  environment,  so  you  need more or less
+extensive tweaking.
 
-Matt?
+> Do anybody can give me advice or tell me where to get krb5 library for ppc?
+
+It's included with the ELDK.
+
+Also, if you look at the ELDK's patches and spec files  you  can  see
+easily what needs to be done to build it in a cross environment.
+
+Best regards,
+
+Wolfgang Denk
 
 -- 
-Eugene
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Most legends have their basis in facts.
+	-- Kirk, "And The Children Shall Lead", stardate 5029.5
