@@ -1,18 +1,16 @@
-Return-Path: <jirislaby@gmail.com>
-Received: from wscnet.wsc.cz (wscnet.wsc.cz [212.80.64.118])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 336836813C
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Aug 2005 08:35:43 +1000 (EST)
-Date: Tue, 30 Aug 2005 00:26:45 +0200
-Message-Id: <200508292226.j7TMQjMo020005@wscnet.wsc.cz>
-In-reply-to: <200508292220.j7TMKbNC019793@wscnet.wsc.cz>
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Greg KH <gregkh@suse.de>
-Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 6/7] arch: pci_find_device remove
-	(ppc/platforms/85xx/mpc85xx_cds_common.c)
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 5287F681D6
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Aug 2005 02:50:00 +1000 (EST)
+Date: Tue, 30 Aug 2005 09:49:58 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <20050830164958.GD27899@gate.ebshome.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Subject: [PATCH] ppc32: export cacheable_memcpy()
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,53 +20,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Generated in 2.6.13-rc6-mm2 kernel version.
+Add declaration and cacheable_memcpy(). I'll be needing this 
+function in new 4xx EMAC driver I'm going to submit to netdev soon.
 
-Signed-off-by: Jiri Slaby <xslaby@fi.muni.cz>
+IMHO, the better place for the declaration would be 
+asm-powerpc/string.h, unfortunately, ppc64 doesn't have this function, 
+so asm-ppc/system.h is the next best place.
 
- mpc85xx_cds_common.c |   11 +++++++----
- 1 files changed, 7 insertions(+), 4 deletions(-)
+Signed-off-by: Eugene Surovegin <ebs@ebshome.net>
+---
 
-diff --git a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c b/arch/ppc/platforms/85xx/mpc85xx_cds_common.c
---- a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c
-+++ b/arch/ppc/platforms/85xx/mpc85xx_cds_common.c
-@@ -354,10 +354,10 @@ mpc85xx_cds_fixup_via(struct pci_control
- void __init
- mpc85xx_cds_pcibios_fixup(void)
- {
--        struct pci_dev *dev = NULL;
-+        struct pci_dev *dev;
- 	u_char		c;
- 
--        if ((dev = pci_find_device(PCI_VENDOR_ID_VIA,
-+	if ((dev = pci_get_device(PCI_VENDOR_ID_VIA,
-                                         PCI_DEVICE_ID_VIA_82C586_1, NULL))) {
-                 /*
-                  * U-Boot does not set the enable bits
-@@ -374,21 +374,24 @@ mpc85xx_cds_pcibios_fixup(void)
- 		 */
-                 dev->irq = 14;
-                 pci_write_config_byte(dev, PCI_INTERRUPT_LINE, dev->irq);
-+		pci_dev_put(dev);
-         }
- 
- 	/*
- 	 * Force legacy USB interrupt routing
- 	 */
--        if ((dev = pci_find_device(PCI_VENDOR_ID_VIA,
-+	if ((dev = pci_get_device(PCI_VENDOR_ID_VIA,
-                                         PCI_DEVICE_ID_VIA_82C586_2, NULL))) {
-                 dev->irq = 10;
-                 pci_write_config_byte(dev, PCI_INTERRUPT_LINE, 10);
-+		pci_dev_put(dev);
-         }
- 
--        if ((dev = pci_find_device(PCI_VENDOR_ID_VIA,
-+	if ((dev = pci_get_device(PCI_VENDOR_ID_VIA,
-                                         PCI_DEVICE_ID_VIA_82C586_2, dev))) {
-                 dev->irq = 11;
-                 pci_write_config_byte(dev, PCI_INTERRUPT_LINE, 11);
-+		pci_dev_put(dev);
-         }
- }
- #endif /* CONFIG_PCI */
+ arch/ppc/kernel/ppc_ksyms.c |    1 +
+ include/asm-ppc/system.h    |    1 +
+ 2 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/arch/ppc/kernel/ppc_ksyms.c b/arch/ppc/kernel/ppc_ksyms.c
+--- a/arch/ppc/kernel/ppc_ksyms.c
++++ b/arch/ppc/kernel/ppc_ksyms.c
+@@ -263,6 +263,7 @@ EXPORT_SYMBOL(__ashrdi3);
+ EXPORT_SYMBOL(__ashldi3);
+ EXPORT_SYMBOL(__lshrdi3);
+ EXPORT_SYMBOL(memcpy);
++EXPORT_SYMBOL(cacheable_memcpy);
+ EXPORT_SYMBOL(memset);
+ EXPORT_SYMBOL(memmove);
+ EXPORT_SYMBOL(memscan);
+diff --git a/include/asm-ppc/system.h b/include/asm-ppc/system.h
+--- a/include/asm-ppc/system.h
++++ b/include/asm-ppc/system.h
+@@ -84,6 +84,7 @@ extern void cvt_fd(float *from, double *
+ extern void cvt_df(double *from, float *to, unsigned long *fpscr);
+ extern int call_rtas(const char *, int, int, unsigned long *, ...);
+ extern void cacheable_memzero(void *p, unsigned int nb);
++extern void *cacheable_memcpy(void *, const void *, unsigned int);
+ extern int do_page_fault(struct pt_regs *, unsigned long, unsigned long);
+ extern void bad_page_fault(struct pt_regs *, unsigned long, int);
+ extern void die(const char *, struct pt_regs *, long);
