@@ -1,21 +1,20 @@
-Return-Path: <mgreer@mvista.com>
-Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
-	by ozlabs.org (Postfix) with ESMTP id CBE4168140
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 9C02E6813F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 30 Aug 2005 09:46:05 +1000 (EST)
-Date: Mon, 29 Aug 2005 16:46:40 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Jon Loeliger <jdl@freescale.com>,
-	"linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
-Message-ID: <20050829234640.GA7419@mag.az.mvista.com>
-References: <1116607235.29111.20.camel@gleep>
-	<f003613a0526b7b6a00a0bd477cd5ac3@freescale.com>
-	<1117221410.26114.95.camel@cashmere.sps.mot.com>
-	<429DFA28.30509@mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <429DFA28.30509@mvista.com>
-Subject: Re: bd_t Cleaning: Board Changes
+	Tue, 30 Aug 2005 11:50:03 +1000 (EST)
+In-Reply-To: <20050727125746.54329281.akpm@osdl.org>
+References: <20050727125746.54329281.akpm@osdl.org>
+Mime-Version: 1.0 (Apple Message framework v734)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <0048AEBE-072F-4250-9D32-EC019D0BDBB9@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Mon, 29 Aug 2005 20:46:22 -0500
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, "Gala Kumar K.-galak" <galak@freescale.com>,
+	linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH 00/14] ppc32: Remove board ports that are no longer
+	maintained
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,33 +25,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jun 01, 2005 at 11:10:48AM -0700, Mark A. Greer wrote:
-> Jon Loeliger wrote:
-> 
-> ><snip>
-> >
-> >Part Two of Four, the Board Changes.
-> >
-> >ppc/platforms/4xx/ash.h                 |   21 -
-...
 
-<snip again>
+On Jul 27, 2005, at 2:57 PM, Andrew Morton wrote:
 
-> <snip>
-> 
-> All,
-> 
-> So is this patch going to go in?  I haven't seen anyone "push it up".  
-> The reason I'm asking is that I have a couple patches that I would like 
-> to push up but they will collide with this one so I need to know if it 
-> (or a variation thereof) is going to go in or not.
-> 
-> Thanks,
-> 
-> Mark
+> Kumar Gala <galak@freescale.com> wrote:
+>
+>>
+>> The following board ports are no longer maintained or have become
+>>  obsolete:
+>>
+>>  adir
+>>  ash
+>>  beech
+>>  cedar
+>>  ep405
+>>  k2
+>>  mcpn765
+>>  menf1
+>>  oak
+>>  pcore
+>>  rainier
+>>  redwood
+>>  sm850
+>>  spd823ts
+>>
+>>  We are there for removing support for them.
+>>
+>
+> I'll merge all these into -mm for now, but will hold off sending  
+> any of
+> them upstream pending confirmation of which patches we really want to
+> proceed with.
 
-Jon,
+No one has screamed about anything but ep405 so all the others should  
+go to Linus now.
 
-Any news on this patch?
-
-Mark
+- kumar
