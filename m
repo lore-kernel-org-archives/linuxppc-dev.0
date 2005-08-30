@@ -1,23 +1,16 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from hera.kernel.org (hera.kernel.org [209.128.68.125])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D71C0681DC
+Return-Path: <a.othieno@bluewin.ch>
+Received: from mail19.bluewin.ch (mail19.bluewin.ch [195.186.18.65])
+	by ozlabs.org (Postfix) with ESMTP id 51C43680EB
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 31 Aug 2005 03:37:53 +1000 (EST)
-Date: Tue, 30 Aug 2005 12:07:05 -0300
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Paul Mackerras <paulus@samba.org>, Dan Malek <dan@embeddededge.com>
-Message-ID: <20050830150705.GA6140@dmt.cnet>
-References: <20050830024840.GA5381@dmt.cnet> <4313D4D6.7080108@pobox.com>
-	<20050830035338.GA5755@dmt.cnet>
-	<17171.57693.981385.165290@cargo.ozlabs.ibm.com>
+	Wed, 31 Aug 2005 09:38:03 +1000 (EST)
+Date: Tue, 30 Aug 2005 19:37:59 -0400
+To: akpm@osdl.org
+Message-ID: <20050830233759.GA16375@mars>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17171.57693.981385.165290@cargo.ozlabs.ibm.com>
-Cc: Jeff Garzik <jgarzik@pobox.com>, linux-kernel@vger.kernel.org,
-	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] MPC8xx PCMCIA driver
+From: a.othieno@bluewin.ch (Arthur Othieno)
+Cc: gc-linux-devel@lists.sourceforge.net, linuxppc-embedded@ozlabs.org
+Subject: [PATCH 0/2] ppc32: Add cputable entry for 750CXe DD2.4
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,74 +21,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Paul, Jeff,
+Greetings,
 
-On Tue, Aug 30, 2005 at 02:32:29PM +1000, Paul Mackerras wrote:
-> Marcelo Tosatti writes:
-> 
-> > The memory map structure which contains device configuration/registers
-> > is _always_ directly mapped with pte's (the 8xx is a chip with builtin
-> > UART/network/etc functionality).
-> > 
-> > I don't think there is a need to use read/write acessors.
+This adds a cputable entry for 750CXe DD2.4, as found in the
+GameCube from Nintendo. To be correctly enumerated, however,
+the table has to be slightly re-ordered first.
 
-Bullshit, yep :) 
+Details within. Thanks.
 
-> Generally on PowerPC you need to use at least the eieio instruction to
-> prevent reordering of the loads and stores to the device.  It's
-> possible that 8xx is sufficiently in-order that you get away without
-> putting in barrier instructions (eieio or sync), but it's not good
-> practice to omit them.
-
-On 8xx, guarded mappings seem to ensure synchronous operation of
-load/store instructions.
-
-Since the internal memory map is guarded, eieio is redudant (ie thats
-why it gets away without explicit barriers now).
-
->From MPC860UM.pdf: 5.2.5.2.1 eieio Behavior
-
-The purpose of eieio is to prevent loads and stores from executing
-speculatively when appropriate. This might be desirable for a FIFO,
-where performing a read or write changes the FIFO's data. This should
-not be done unless it is certain that the instruction will be completed
-and not cancelled. The same function as eieio can be accomplished by
-defining a memory space as having the guarded attribute in the MMU, in
-which case, the eieio instruction is redundant. However, eieio could be
-useful in the rare event that a region where speculative accesses are
-not allowed lies in the middle of a non-guarded page.
-
-There is nothing which prevents compiler reordering though, as Jeff
-notes.
-
-> You can use accessors such as in_be32 and in_le32 in this situation,
-> when you have a kernel virtual address that is already mapped to the
-> device.
-
-Do you think it would be worth to have lighterweight versions of
-in_be32/in_le32 functions (without eieio and isync) ? Would avoid the
-increase in code size and consequently cache footprint.
-
-The IMMAP is referenced directly _all over_ the 8xx core code, must be
-fixed.
-
-> There are multiple reasons:
->
-> * Easier reviewing.  One cannot easily distinguish between writing to
-> normal kernel virtual memory and "magic" memory that produces magicaly
-> side effects such as initiating DMA of a net packet.
-> 
-> * Compiler safety.  As the code is written now, you have no guarantees
-> that the compiler won't combine two stores to the same location, etc.
-> Accessor macros are a convenient place to add compiler barriers or
-> 'volatile' notations that the MPC8xx code lacks.
->
-> * Maintainable.  foo_read[bwl] or foo_read{8,16,32} are preferred
-> because that's the way other bus accessors look like -- yes even
-> embedded SoC buses benefit from these code patterns.  You want your
-> driver to look like other drivers as much as possible.
->
-> * Convenience.  The accessors can be a zero overhead memory read/write
-> at a minimum.  But they can also be convenient places to use special
-> memory read/write instructions that specify uncached memop, compiler
-> barriers, memory barriers, etc.
+	Arthur
