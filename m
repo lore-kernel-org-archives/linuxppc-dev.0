@@ -2,17 +2,17 @@ Return-Path: <ebs@ebshome.net>
 Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id E725F68144
+	by ozlabs.org (Postfix) with ESMTP id 4032168123
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 31 Aug 2005 14:30:59 +1000 (EST)
-Date: Tue, 30 Aug 2005 21:30:56 -0700
+	Wed, 31 Aug 2005 14:32:41 +1000 (EST)
+Date: Tue, 30 Aug 2005 21:32:38 -0700
 From: Eugene Surovegin <ebs@ebshome.net>
 To: Andrew Morton <akpm@osdl.org>
-Message-ID: <20050831043056.GA15639@gate.ebshome.net>
+Message-ID: <20050831043238.GB15639@gate.ebshome.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-embedded@ozlabs.org
-Subject: [PATCH] ppc32: move 4xx PHY_MODE_XXX defines to ibm_ocp.h
+Subject: [PATCH] ppc32: add dcr_base field to ocp_func_mal_data
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,107 +23,135 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Move 4xx PHY_MODE_XXX defines to asm-ppc/ibm_ocp.h. This is 
-a preparation step for the new EMAC driver.
+Add dcr_base field to ocp_func_mal_data. This is preparation step for 
+the new EMAC driver.
 
 Signed-off-by: Eugene Surovegin <ebs@ebshome.net>
 ---
 
- arch/ppc/platforms/4xx/bamboo.c |    7 -------
- arch/ppc/platforms/4xx/ebony.c  |    7 -------
- arch/ppc/platforms/4xx/luan.c   |    7 -------
- arch/ppc/platforms/4xx/ocotea.c |    7 -------
- include/asm-ppc/ibm_ocp.h       |   13 +++++++++++++
- 5 files changed, 13 insertions(+), 28 deletions(-)
+ arch/ppc/platforms/4xx/ibm405ep.c  |    1 +
+ arch/ppc/platforms/4xx/ibm405gp.c  |    1 +
+ arch/ppc/platforms/4xx/ibm405gpr.c |    1 +
+ arch/ppc/platforms/4xx/ibm440ep.c  |    1 +
+ arch/ppc/platforms/4xx/ibm440gp.c  |    1 +
+ arch/ppc/platforms/4xx/ibm440gx.c  |    1 +
+ arch/ppc/platforms/4xx/ibm440sp.c  |    1 +
+ arch/ppc/platforms/4xx/ibmnp405h.c |    1 +
+ include/asm-ppc/ibm_ocp.h          |    3 +++
+ 9 files changed, 11 insertions(+), 0 deletions(-)
 
-diff --git a/arch/ppc/platforms/4xx/bamboo.c b/arch/ppc/platforms/4xx/bamboo.c
---- a/arch/ppc/platforms/4xx/bamboo.c
-+++ b/arch/ppc/platforms/4xx/bamboo.c
-@@ -52,13 +52,6 @@
- #include <syslib/gen550.h>
- #include <syslib/ibm440gx_common.h>
+diff --git a/arch/ppc/platforms/4xx/ibm405ep.c b/arch/ppc/platforms/4xx/ibm405ep.c
+--- a/arch/ppc/platforms/4xx/ibm405ep.c
++++ b/arch/ppc/platforms/4xx/ibm405ep.c
+@@ -33,6 +33,7 @@ static struct ocp_func_mal_data ibm405ep
+ 	.txde_irq	= 13,		/* TX Descriptor Error IRQ */
+ 	.rxde_irq	= 14,		/* RX Descriptor Error IRQ */
+ 	.serr_irq	= 10,		/* MAL System Error IRQ    */
++	.dcr_base	= DCRN_MAL_BASE /* MAL0_CFG DCR number */
+ };
+ OCP_SYSFS_MAL_DATA()
  
--/*
-- * This is a horrible kludge, we eventually need to abstract this
-- * generic PHY stuff, so the  standard phy mode defines can be
-- * easily used from arch code.
-- */
--#include "../../../../drivers/net/ibm_emac/ibm_emac_phy.h"
--
- bd_t __res;
+diff --git a/arch/ppc/platforms/4xx/ibm405gp.c b/arch/ppc/platforms/4xx/ibm405gp.c
+--- a/arch/ppc/platforms/4xx/ibm405gp.c
++++ b/arch/ppc/platforms/4xx/ibm405gp.c
+@@ -46,6 +46,7 @@ static struct ocp_func_mal_data ibm405gp
+ 	.txde_irq	= 13,		/* TX Descriptor Error IRQ */
+ 	.rxde_irq	= 14,		/* RX Descriptor Error IRQ */
+ 	.serr_irq	= 10,		/* MAL System Error IRQ    */
++	.dcr_base	= DCRN_MAL_BASE /* MAL0_CFG DCR number */
+ };
+ OCP_SYSFS_MAL_DATA()
  
- static struct ibm44x_clocks clocks __initdata;
-diff --git a/arch/ppc/platforms/4xx/ebony.c b/arch/ppc/platforms/4xx/ebony.c
---- a/arch/ppc/platforms/4xx/ebony.c
-+++ b/arch/ppc/platforms/4xx/ebony.c
-@@ -55,13 +55,6 @@
- #include <syslib/gen550.h>
- #include <syslib/ibm440gp_common.h>
+diff --git a/arch/ppc/platforms/4xx/ibm405gpr.c b/arch/ppc/platforms/4xx/ibm405gpr.c
+--- a/arch/ppc/platforms/4xx/ibm405gpr.c
++++ b/arch/ppc/platforms/4xx/ibm405gpr.c
+@@ -42,6 +42,7 @@ static struct ocp_func_mal_data ibm405gp
+ 	.txde_irq	= 13,		/* TX Descriptor Error IRQ */
+ 	.rxde_irq	= 14,		/* RX Descriptor Error IRQ */
+ 	.serr_irq	= 10,		/* MAL System Error IRQ    */
++	.dcr_base	= DCRN_MAL_BASE /* MAL0_CFG DCR number */
+ };
+ OCP_SYSFS_MAL_DATA()
  
--/*
-- * This is a horrible kludge, we eventually need to abstract this
-- * generic PHY stuff, so the  standard phy mode defines can be
-- * easily used from arch code.
-- */
--#include "../../../../drivers/net/ibm_emac/ibm_emac_phy.h"
--
- bd_t __res;
+diff --git a/arch/ppc/platforms/4xx/ibm440ep.c b/arch/ppc/platforms/4xx/ibm440ep.c
+--- a/arch/ppc/platforms/4xx/ibm440ep.c
++++ b/arch/ppc/platforms/4xx/ibm440ep.c
+@@ -53,6 +53,7 @@ static struct ocp_func_mal_data ibm440ep
+ 	.txde_irq	= 33,		/* TX Descriptor Error IRQ */
+ 	.rxde_irq	= 34,		/* RX Descriptor Error IRQ */
+ 	.serr_irq	= 32,		/* MAL System Error IRQ    */
++	.dcr_base	= DCRN_MAL_BASE /* MAL0_CFG DCR number */
+ };
+ OCP_SYSFS_MAL_DATA()
  
- static struct ibm44x_clocks clocks __initdata;
-diff --git a/arch/ppc/platforms/4xx/luan.c b/arch/ppc/platforms/4xx/luan.c
---- a/arch/ppc/platforms/4xx/luan.c
-+++ b/arch/ppc/platforms/4xx/luan.c
-@@ -53,13 +53,6 @@
- #include <syslib/ibm440gx_common.h>
- #include <syslib/ibm440sp_common.h>
+diff --git a/arch/ppc/platforms/4xx/ibm440gp.c b/arch/ppc/platforms/4xx/ibm440gp.c
+--- a/arch/ppc/platforms/4xx/ibm440gp.c
++++ b/arch/ppc/platforms/4xx/ibm440gp.c
+@@ -56,6 +56,7 @@ static struct ocp_func_mal_data ibm440gp
+ 	.txde_irq	= 33,		/* TX Descriptor Error IRQ */
+ 	.rxde_irq	= 34,		/* RX Descriptor Error IRQ */
+ 	.serr_irq	= 32,		/* MAL System Error IRQ    */
++	.dcr_base	= DCRN_MAL_BASE /* MAL0_CFG DCR number */
+ };
+ OCP_SYSFS_MAL_DATA()
  
--/*
-- * This is a horrible kludge, we eventually need to abstract this
-- * generic PHY stuff, so the  standard phy mode defines can be
-- * easily used from arch code.
-- */
--#include "../../../../drivers/net/ibm_emac/ibm_emac_phy.h"
--
- bd_t __res;
+diff --git a/arch/ppc/platforms/4xx/ibm440gx.c b/arch/ppc/platforms/4xx/ibm440gx.c
+--- a/arch/ppc/platforms/4xx/ibm440gx.c
++++ b/arch/ppc/platforms/4xx/ibm440gx.c
+@@ -84,6 +84,7 @@ static struct ocp_func_mal_data ibm440gx
+ 	.txde_irq	= 33,		/* TX Descriptor Error IRQ */
+ 	.rxde_irq	= 34,		/* RX Descriptor Error IRQ */
+ 	.serr_irq	= 32,		/* MAL System Error IRQ    */
++	.dcr_base	= DCRN_MAL_BASE /* MAL0_CFG DCR number */
+ };
+ OCP_SYSFS_MAL_DATA()
  
- static struct ibm44x_clocks clocks __initdata;
-diff --git a/arch/ppc/platforms/4xx/ocotea.c b/arch/ppc/platforms/4xx/ocotea.c
---- a/arch/ppc/platforms/4xx/ocotea.c
-+++ b/arch/ppc/platforms/4xx/ocotea.c
-@@ -53,13 +53,6 @@
- #include <syslib/gen550.h>
- #include <syslib/ibm440gx_common.h>
+diff --git a/arch/ppc/platforms/4xx/ibm440sp.c b/arch/ppc/platforms/4xx/ibm440sp.c
+--- a/arch/ppc/platforms/4xx/ibm440sp.c
++++ b/arch/ppc/platforms/4xx/ibm440sp.c
+@@ -43,6 +43,7 @@ static struct ocp_func_mal_data ibm440sp
+ 	.txde_irq	= 34,		/* TX Descriptor Error IRQ */
+ 	.rxde_irq	= 35,		/* RX Descriptor Error IRQ */
+ 	.serr_irq	= 33,		/* MAL System Error IRQ    */
++	.dcr_base	= DCRN_MAL_BASE /* MAL0_CFG DCR number */
+ };
+ OCP_SYSFS_MAL_DATA()
  
--/*
-- * This is a horrible kludge, we eventually need to abstract this
-- * generic PHY stuff, so the  standard phy mode defines can be
-- * easily used from arch code.
-- */
--#include "../../../../drivers/net/ibm_emac/ibm_emac_phy.h"
--
- bd_t __res;
+diff --git a/arch/ppc/platforms/4xx/ibmnp405h.c b/arch/ppc/platforms/4xx/ibmnp405h.c
+--- a/arch/ppc/platforms/4xx/ibmnp405h.c
++++ b/arch/ppc/platforms/4xx/ibmnp405h.c
+@@ -73,6 +73,7 @@ static struct ocp_func_mal_data ibmnp405
+ 	.txde_irq	= 46,		/* TX Descriptor Error IRQ */
+ 	.rxde_irq	= 47,		/* RX Descriptor Error IRQ */
+ 	.serr_irq	= 45,		/* MAL System Error IRQ    */
++	.dcr_base	= DCRN_MAL_BASE /* MAL0_CFG DCR number */
+ };
+ OCP_SYSFS_MAL_DATA()
  
- static struct ibm44x_clocks clocks __initdata;
 diff --git a/include/asm-ppc/ibm_ocp.h b/include/asm-ppc/ibm_ocp.h
 --- a/include/asm-ppc/ibm_ocp.h
 +++ b/include/asm-ppc/ibm_ocp.h
-@@ -100,6 +100,19 @@ void ocp_show_emac_data(struct device *d
- 	device_create_file(dev, &dev_attr_emac_phy_map);		\
+@@ -146,6 +146,7 @@ struct ocp_func_mal_data {
+ 	int	txde_irq;	/* TX Descriptor Error IRQ */
+ 	int	rxde_irq;	/* RX Descriptor Error IRQ */
+ 	int	serr_irq;	/* MAL System Error IRQ    */
++	int	dcr_base;	/* MALx_CFG DCR number   */
+ };
+ 
+ #define OCP_SYSFS_MAL_DATA()						\
+@@ -156,6 +157,7 @@ OCP_SYSFS_ADDTL(struct ocp_func_mal_data
+ OCP_SYSFS_ADDTL(struct ocp_func_mal_data, "%d\n", mal, txde_irq)	\
+ OCP_SYSFS_ADDTL(struct ocp_func_mal_data, "%d\n", mal, rxde_irq)	\
+ OCP_SYSFS_ADDTL(struct ocp_func_mal_data, "%d\n", mal, serr_irq)	\
++OCP_SYSFS_ADDTL(struct ocp_func_mal_data, "%d\n", mal, dcr_base)	\
+ 									\
+ void ocp_show_mal_data(struct device *dev)				\
+ {									\
+@@ -166,6 +168,7 @@ void ocp_show_mal_data(struct device *de
+ 	device_create_file(dev, &dev_attr_mal_txde_irq);		\
+ 	device_create_file(dev, &dev_attr_mal_rxde_irq);		\
+ 	device_create_file(dev, &dev_attr_mal_serr_irq);		\
++	device_create_file(dev, &dev_attr_mal_dcr_base);		\
  }
  
-+/*
-+ * PHY mode settings (EMAC <-> ZMII/RGMII bridge <-> PHY)
-+ */
-+#define PHY_MODE_NA	0
-+#define PHY_MODE_MII	1
-+#define PHY_MODE_RMII	2
-+#define PHY_MODE_SMII	3
-+#define PHY_MODE_RGMII	4
-+#define PHY_MODE_TBI	5
-+#define PHY_MODE_GMII	6
-+#define PHY_MODE_RTBI	7
-+#define PHY_MODE_SGMII	8
-+
- #ifdef CONFIG_40x
  /*
-  * Helper function to copy MAC addresses from the bd_t to OCP EMAC
