@@ -1,17 +1,18 @@
-Return-Path: <Baohua.WANG@alcatel-sbell.com.cn>
-Received: from mail.alcatel-sbell.com.cn (nat1.alcatel-sbell.com.cn
-	[202.96.203.177]) by ozlabs.org (Postfix) with ESMTP id 152D768123
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id E725F68144
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 31 Aug 2005 10:52:40 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C5ADC6.1F80F391"
-Date: Wed, 31 Aug 2005 08:51:29 +0800
-Message-ID: <A9DE2BAF233E444FA9C5E77A5825A01E865067@ydmail.sbell.com.cn>
-From: "FCG WANG Baohua" <Baohua.WANG@alcatel-sbell.com.cn>
-To: <linuxppc-embedded@ozlabs.org>, <wd@denx.de>
-Cc: Jack_liu@usish.com, Tsi-Chung.Liew@freescale.com
-Subject: Question about SMC serial port on MPC8270 in u-boot 
+	Wed, 31 Aug 2005 14:30:59 +1000 (EST)
+Date: Tue, 30 Aug 2005 21:30:56 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Andrew Morton <akpm@osdl.org>
+Message-ID: <20050831043056.GA15639@gate.ebshome.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-embedded@ozlabs.org
+Subject: [PATCH] ppc32: move 4xx PHY_MODE_XXX defines to ibm_ocp.h
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,90 +23,107 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Move 4xx PHY_MODE_XXX defines to asm-ppc/ibm_ocp.h. This is 
+a preparation step for the new EMAC driver.
 
-------_=_NextPart_001_01C5ADC6.1F80F391
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Eugene Surovegin <ebs@ebshome.net>
+---
 
-Dear All:
- When i port the u-boot 1.1.3 on my MPC8270 board, the serial port has =
-the following question:
-  1. the Dual port ram cannot be revised manually, but can be revised by =
-the u-boot code. What's the problem?
-   2. the serial_putc() in serial_smc.c is loop forever on  "while =
-(tbdf->cbd_sc & BD_SC_READY);". How to slove the bug?
-   3. the speed.c calc the wrong cpm, cpu, brg_clk, I had hard coded the =
-right   cpm, cpu, brg_clk values. But the "m8260_cpm_setbrg()" is still =
-wrong? Why?
-       the registers are all right.
-   4. Can you tell me the ALL items about the SMC1  UART output? I had =
-checked almost all the concerned SMC registers, IO ports,
-        data structures, they all seems right, but the UART cannot work. =
-How could I find the problem?=20
-   thanks a lot !=20
+ arch/ppc/platforms/4xx/bamboo.c |    7 -------
+ arch/ppc/platforms/4xx/ebony.c  |    7 -------
+ arch/ppc/platforms/4xx/luan.c   |    7 -------
+ arch/ppc/platforms/4xx/ocotea.c |    7 -------
+ include/asm-ppc/ibm_ocp.h       |   13 +++++++++++++
+ 5 files changed, 13 insertions(+), 28 deletions(-)
 
-
-
-------_=_NextPart_001_01C5ADC6.1F80F391
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dgb2312">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.0.6603.0">
-<TITLE>Question about SMC serial port on MPC8270 in u-boot </TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
-
-<P><SPAN LANG=3D"zh-cn"><FONT COLOR=3D"#000000" SIZE=3D2 =
-FACE=3D"Arial">Dear All:</FONT></SPAN>
-
-<BR><SPAN LANG=3D"zh-cn"><FONT COLOR=3D"#000000" SIZE=3D2 =
-FACE=3D"Arial">&nbsp;When i port the u-boot 1.1.3 on my MPC8270 board, =
-the serial port has the following question:</FONT></SPAN>
-
-<BR><SPAN LANG=3D"zh-cn"><FONT COLOR=3D"#000000" SIZE=3D2 =
-FACE=3D"Arial">&nbsp; 1. the Dual port ram cannot be revised manually, =
-but can be revised by the u-boot code. What's the problem?</FONT></SPAN>
-
-<BR><SPAN LANG=3D"zh-cn"><FONT COLOR=3D"#000000" SIZE=3D2 =
-FACE=3D"Arial">&nbsp;&nbsp; 2. the serial_putc() in serial_smc.c is loop =
-forever on&nbsp; &quot;while (tbdf-&gt;cbd_sc &amp; BD_SC_READY);&quot;. =
-How to slove the bug?</FONT></SPAN></P>
-
-<P><SPAN LANG=3D"zh-cn"><FONT COLOR=3D"#000000" SIZE=3D2 =
-FACE=3D"Arial">&nbsp;&nbsp; 3. the speed.c calc the wrong cpm, cpu, =
-brg_clk, I had hard coded the right&nbsp;&nbsp; cpm, cpu, brg_clk =
-values. But the &quot;m8260_cpm_setbrg()&quot; is still wrong? =
-Why?</FONT></SPAN></P>
-
-<P><SPAN LANG=3D"zh-cn"><FONT COLOR=3D"#000000" SIZE=3D2 =
-FACE=3D"Arial">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; the registers are =
-all right.</FONT></SPAN>
-
-<BR><SPAN LANG=3D"zh-cn"><FONT COLOR=3D"#000000" SIZE=3D2 =
-FACE=3D"Arial">&nbsp;&nbsp; 4. Can you tell me the ALL items about the =
-SMC1&nbsp; UART output? I had checked almost all the concerned SMC =
-registers, IO ports,</FONT></SPAN></P>
-
-<P><SPAN LANG=3D"zh-cn"><FONT COLOR=3D"#000000" SIZE=3D2 =
-FACE=3D"Arial">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; data =
-structures, they all seems right, but the UART cannot work. How could I =
-find the problem? </FONT></SPAN>
-
-<BR><SPAN LANG=3D"zh-cn"><FONT COLOR=3D"#000000" SIZE=3D2 =
-FACE=3D"Arial">&nbsp;&nbsp; thanks a lot ! </FONT></SPAN>
-</P>
-<BR>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C5ADC6.1F80F391--
+diff --git a/arch/ppc/platforms/4xx/bamboo.c b/arch/ppc/platforms/4xx/bamboo.c
+--- a/arch/ppc/platforms/4xx/bamboo.c
++++ b/arch/ppc/platforms/4xx/bamboo.c
+@@ -52,13 +52,6 @@
+ #include <syslib/gen550.h>
+ #include <syslib/ibm440gx_common.h>
+ 
+-/*
+- * This is a horrible kludge, we eventually need to abstract this
+- * generic PHY stuff, so the  standard phy mode defines can be
+- * easily used from arch code.
+- */
+-#include "../../../../drivers/net/ibm_emac/ibm_emac_phy.h"
+-
+ bd_t __res;
+ 
+ static struct ibm44x_clocks clocks __initdata;
+diff --git a/arch/ppc/platforms/4xx/ebony.c b/arch/ppc/platforms/4xx/ebony.c
+--- a/arch/ppc/platforms/4xx/ebony.c
++++ b/arch/ppc/platforms/4xx/ebony.c
+@@ -55,13 +55,6 @@
+ #include <syslib/gen550.h>
+ #include <syslib/ibm440gp_common.h>
+ 
+-/*
+- * This is a horrible kludge, we eventually need to abstract this
+- * generic PHY stuff, so the  standard phy mode defines can be
+- * easily used from arch code.
+- */
+-#include "../../../../drivers/net/ibm_emac/ibm_emac_phy.h"
+-
+ bd_t __res;
+ 
+ static struct ibm44x_clocks clocks __initdata;
+diff --git a/arch/ppc/platforms/4xx/luan.c b/arch/ppc/platforms/4xx/luan.c
+--- a/arch/ppc/platforms/4xx/luan.c
++++ b/arch/ppc/platforms/4xx/luan.c
+@@ -53,13 +53,6 @@
+ #include <syslib/ibm440gx_common.h>
+ #include <syslib/ibm440sp_common.h>
+ 
+-/*
+- * This is a horrible kludge, we eventually need to abstract this
+- * generic PHY stuff, so the  standard phy mode defines can be
+- * easily used from arch code.
+- */
+-#include "../../../../drivers/net/ibm_emac/ibm_emac_phy.h"
+-
+ bd_t __res;
+ 
+ static struct ibm44x_clocks clocks __initdata;
+diff --git a/arch/ppc/platforms/4xx/ocotea.c b/arch/ppc/platforms/4xx/ocotea.c
+--- a/arch/ppc/platforms/4xx/ocotea.c
++++ b/arch/ppc/platforms/4xx/ocotea.c
+@@ -53,13 +53,6 @@
+ #include <syslib/gen550.h>
+ #include <syslib/ibm440gx_common.h>
+ 
+-/*
+- * This is a horrible kludge, we eventually need to abstract this
+- * generic PHY stuff, so the  standard phy mode defines can be
+- * easily used from arch code.
+- */
+-#include "../../../../drivers/net/ibm_emac/ibm_emac_phy.h"
+-
+ bd_t __res;
+ 
+ static struct ibm44x_clocks clocks __initdata;
+diff --git a/include/asm-ppc/ibm_ocp.h b/include/asm-ppc/ibm_ocp.h
+--- a/include/asm-ppc/ibm_ocp.h
++++ b/include/asm-ppc/ibm_ocp.h
+@@ -100,6 +100,19 @@ void ocp_show_emac_data(struct device *d
+ 	device_create_file(dev, &dev_attr_emac_phy_map);		\
+ }
+ 
++/*
++ * PHY mode settings (EMAC <-> ZMII/RGMII bridge <-> PHY)
++ */
++#define PHY_MODE_NA	0
++#define PHY_MODE_MII	1
++#define PHY_MODE_RMII	2
++#define PHY_MODE_SMII	3
++#define PHY_MODE_RGMII	4
++#define PHY_MODE_TBI	5
++#define PHY_MODE_GMII	6
++#define PHY_MODE_RTBI	7
++#define PHY_MODE_SGMII	8
++
+ #ifdef CONFIG_40x
+ /*
+  * Helper function to copy MAC addresses from the bd_t to OCP EMAC
