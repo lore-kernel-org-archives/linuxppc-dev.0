@@ -1,18 +1,22 @@
-Return-Path: <a.othieno@bluewin.ch>
-Received: from mail18.bluewin.ch (mail18.bluewin.ch [195.186.19.64])
-	by ozlabs.org (Postfix) with ESMTP id CBCEC68110
+Return-Path: <roger.larsson@norran.net>
+Received: from ns.skekraft.net (ns.skekraft.net [213.199.96.131])
+	by ozlabs.org (Postfix) with ESMTP id 356A468109
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 31 Aug 2005 09:45:20 +1000 (EST)
-Date: Tue, 30 Aug 2005 19:45:17 -0400
-To: akpm@osdl.org
-Message-ID: <20050830234517.GC16375@mars>
-References: <20050830233759.GA16375@mars>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050830233759.GA16375@mars>
-From: a.othieno@bluewin.ch (Arthur Othieno)
-Cc: gc-linux-devel@lists.sourceforge.net, linuxppc-embedded@ozlabs.org
-Subject: [PATCH 2/2] ppc32: Add cputable entry for 750CXe DD2.4 ("Gekko")
+	Wed, 31 Aug 2005 10:10:45 +1000 (EST)
+Received: from icd.localnet (131.net95.skekraft.net [213.199.95.131])
+	by ns.skekraft.net (Postfix) with ESMTP id 0F3B3A4026
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 31 Aug 2005 02:10:43 +0200 (CEST)
+From: Roger Larsson <roger.larsson@norran.net>
+To: linuxppc-embedded@ozlabs.org
+Date: Wed, 31 Aug 2005 02:10:51 +0200
+References: <431496FC.3090208@icarus.com>
+In-Reply-To: <431496FC.3090208@icarus.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200508310210.51561.roger.larsson@norran.net>
+Subject: Re: Mapping huge user buffers for DMA
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,38 +27,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Add a table entry for 750CXe DD2.4 ("Gekko") as found in the GameCube
-from Nintendo:
+On Tuesday 30 August 2005 19.27, Stephen Williams wrote:
+> I have a PPC405GPr system with an image processing device, that
+> is creating potentially huge amounts of data. In one setup I
+> have a 256Meg system, and I'm trying to map a 192Meg destination
+> buffer using map_user_kiovec and an array of kiobufs.
 
-  http://www-306.ibm.com/chips/techlib/techlib.nsf/techdocs/291C8D0EF3EAEC1687256B72005C745C#C1
+Never tried to map that amount at once. Our code looks, or looked, like this.
+Found some code...
+/usr/src/linuxppc_2_4_devel/arch/cris/drivers/examples/kiobuftest.c 
 
-Signed-off-by: Arthur Othieno <a.othieno@bluewin.ch>
+>
+> I'm finding, however, that I'm getting an Oops in map_user_kiovec
+> when it tries this, and I'm wondering where I need to look for
+> any limits I might be overrunning.
 
+What does the Oops say??
+Hmm... How much space will the vector itself require?
 
- cputable.c |   14 ++++++++++++++
- 1 files changed, 14 insertions(+)
+>
+> Also, I've been considering skipping kiobufs all together and
+> instead using code like this (lifted from map_user_kiobuf)
+>
+> 	/* Try to fault in all of the necessary pages */
+> 	down_read(&mm->mmap_sem);
+> 	/* rw==READ means read from disk, write into memory area */
+> 	err = get_user_pages(current, mm, va, pgcount,
+> 			(rw==READ), 0, iobuf->maplist, NULL);
+> 	up_read(&mm->mmap_sem);
+>
+> to get the user pages directly. This is really what I want, and
+> I do not need the other functionality of kiobufs. Is the
+> get_user_pages function kosher for use by drivers? Is there
+> a limit to what get_user_pages may map?
 
-diff -uprN a/arch/ppc/kernel/cputable.c b/arch/ppc/kernel/cputable.c
---- a/arch/ppc/kernel/cputable.c	2005-08-30 18:18:28.000000000 -0400
-+++ b/arch/ppc/kernel/cputable.c	2005-08-30 19:21:15.000000000 -0400
-@@ -240,6 +240,20 @@ struct cpu_spec	cpu_specs[] = {
- 		.num_pmcs		= 4,
- 		.cpu_setup		= __setup_cpu_750cx
- 	},
-+	{	/* 750CXe "Gekko" (83214) */
-+		.pvr_mask		= 0xffffffff,
-+		.pvr_value		= 0x00083214,
-+		.cpu_name		= "750CXe",
-+		.cpu_features		= CPU_FTR_COMMON |
-+			CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE |
-+			CPU_FTR_USE_TB | CPU_FTR_L2CR | CPU_FTR_TAU |
-+			CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP,
-+		.cpu_user_features	= COMMON_PPC,
-+		.icache_bsize		= 32,
-+		.dcache_bsize		= 32,
-+		.num_pmcs		= 4,
-+		.cpu_setup		= __setup_cpu_750cx
-+	},
- 	{	/* 745/755 */
- 		.pvr_mask		= 0xfffff000,
- 		.pvr_value		= 0x00083000,
+Isn't this the way it is done in 2.6 anyway?
+
+/RogerL
