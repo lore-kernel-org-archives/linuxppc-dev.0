@@ -1,26 +1,23 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx010.isp.belgacom.be (outmx010.isp.belgacom.be
-	[195.238.3.233])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from hera.kernel.org (hera.kernel.org [209.128.68.125])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2475F6815D
+	by ozlabs.org (Postfix) with ESMTP id 5D23B680F3
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Sep 2005 00:28:39 +1000 (EST)
-Received: from outmx010.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx010.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id j81ESV86017347
-	for <linuxppc-embedded@ozlabs.org>; Thu, 1 Sep 2005 16:28:32 +0200
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <43171071.40400@246tNt.com>
-Date: Thu, 01 Sep 2005 16:30:09 +0200
-From: Sylvain Munaut <tnt@246tNt.com>
-MIME-Version: 1.0
-To: John F Davis <johndavi@us.ibm.com>
-References: <OF4A6E57B7.047A8CB6-ON8725706F.00264CE2-C125706F.00264A01@us.ibm.com>
-In-Reply-To: <OF4A6E57B7.047A8CB6-ON8725706F.00264CE2-C125706F.00264A01@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: linux hangs after uncompress kernel image
+	Fri,  2 Sep 2005 00:58:06 +1000 (EST)
+Date: Thu, 1 Sep 2005 11:51:56 -0300
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Dominik Brodowski <linux@dominikbrodowski.net>,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>,
+	linux-kernel@vger.kernel.org, Russell King <rmk+lkml@arm.linux.org.uk>,
+	Dan Malek <dan@embeddededge.com>, Pantelis Antoniou <panto@intracom.gr>
+Message-ID: <20050901145156.GC15489@dmt.cnet>
+References: <20050830024840.GA5381@dmt.cnet>
+	<20050901085319.GB6285@isilmar.linta.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050901085319.GB6285@isilmar.linta.de>
+Subject: Re: [PATCH] MPC8xx PCMCIA driver
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,86 +29,36 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Or take the address of the __log_buf symbol then after the crash,
-reboot and dump the buffer there, so you can see erly printk (before
-console is up).
+Thu, Sep 01, 2005 at 10:53:19AM +0200, Dominik Brodowski wrote:
+> Hi,
+> 
+> On Mon, Aug 29, 2005 at 11:48:40PM -0300, Marcelo Tosatti wrote:
+> > Russell: The driver is using pccard_nonstatic_ops for card window
+> > management, even though the driver its marked SS_STATIC_MAP (using
+> > mem->static_map).
+> 
+> This is obviously broken. Where does it fail if pccard_static_ops is used?
 
-	Sylvain
+IIRC pcmcia_request_io() fails to dynamically allocate IO windows for PCMCIA 
+cards because find_io_region returns NULL. 
 
+OTOH, as Magnus noted, the memory windows are static:
 
-John F Davis wrote:
+ * Because of the lacking offset register we must map the whole card.
+ * We assign each memory window PCMCIA_MEM_WIN_SIZE address space.
+ * Make sure there is (PCMCIA_MEM_WIN_SIZE * PCMCIA_MEM_WIN_NO
+ * * PCMCIA_SOCKETS_NO) bytes at PCMCIA_MEM_WIN_BASE.
+ * The i/o windows are dynamically allocated at PCMCIA_IO_WIN_BASE.
+ * They are maximum 64KByte each...
+
+socket[i].socket.features = SS_CAP_PCCARD | SS_CAP_MEM_ALIGN | SS_CAP_STATIC_MAP;
+socket[i].socket.io_offset = 0;
+
+> > +typedef struct  {
+> > +	u_int regbit;
+> > +	u_int eventbit;
+> > +} event_table_t;
 > 
-> Hello Lily,
-> 
-> Maybe you could try to put in some printk's and see which line of code
-> generates an exception.
-> 
-> JD
-> 
-> 
-> *"lily" <lichanjuan04@st.lzu.edu.cn>*
-> Sent by: linuxppc-embedded-bounces@ozlabs.org
-> 
-> 09/01/2005 05:55 AM
-> 
-> 	
-> To
-> 	<linuxppc-embedded@ozlabs.org>
-> cc
-> 	
-> Subject
-> 	linux hangs after uncompress kernel image
-> 
-> 
-> 	
-> 
-> 
-> 
-> 
-> 
-> i work on octobusHPPC405EP board . when I try to bring up the kernel i
-> meet the problem that linux hangs after uncompressing image:
->  
-> U-Boot 1.1.2 (Jun  3 2005 - 12:05:48)
->  
-> CPU:   IBM PowerPC 405EP Rev. B at 133.333 MHz (PLB=133, OPB=66, EBC=33 MHz)
->       IIC Boot EEPROM disabled
->       PCI async ext clock used, internal PCI arbiter enabled
->       16 kB I-Cache 16 kB D-Cache
-> OCTOBUS Board: ### No HW ID - assuming OCTOBUS HPPC405
-> I2C:   ready
-> DRAM:  32 MB
-> FLASH:  4 MB
-> =>iminfo 1000000
-> ## Checking Image at 01000000 ...
->   Image Name:   Linux-2.4.21-pre5
->   Created:      2005-08-03  17:45:20 UTC
->   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
->   Data Size:    548345 Bytes = 535.5 kB
->   Load Address: 00000000
->   Entry Point:  00000000
->   Verifying Checksum ... OK
-> => bootm 1000000
-> ## Booting image at 01000000 ...
->   Image Name:   Linux-2.4.21-pre5
->   Created:      2005-08-03  17:45:20 UTC
->   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
->   Data Size:    548345 Bytes = 535.5 kB
->   Load Address: 00000000
->   Entry Point:  00000000
->   Verifying Checksum ... OK
->   Uncompressing Kernel Image ... OK
-> 
-> <hang>
-> what's the problem?? _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
-> ------------------------------------------------------------------------
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> No typedefs, please.
+
+OK, will fix.
