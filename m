@@ -1,17 +1,21 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 6542D68106
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Sep 2005 04:47:23 +1000 (EST)
-In-Reply-To: <20050901183808.GA23764@localhost.localdomain>
-References: <20050901183808.GA23764@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v734)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <86F3DB1B-C396-45F4-8DBA-87176648D143@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Thu, 1 Sep 2005 13:47:36 -0500
-To: "Sven Luther" <sven.luther@wanadoo.fr>
-Cc: linuxppc-dev@ozlabs.org, Christian <evil@g-house.de>
-Subject: Re: use of rtc.c on chrp/prep?
+Return-Path: <stelian@popies.net>
+Received: from sd291.sivit.org (sd291.sivit.org [194.146.225.122])
+	by ozlabs.org (Postfix) with ESMTP id EA6546815F
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Sep 2005 06:12:53 +1000 (EST)
+From: Stelian Pop <stelian@popies.net>
+To: Daniel Drake <dsd@gentoo.org>
+In-Reply-To: <431755E4.70703@gentoo.org>
+References: <jehdda2tqt.fsf@sykes.suse.de>
+	<1125288175.5595.3.camel@localhost.localdomain>
+	<1125311951.4662.3.camel@localhost.localdomain>
+	<431755E4.70703@gentoo.org>
+Content-Type: text/plain; charset=ISO-8859-15
+Date: Thu, 01 Sep 2005 21:54:54 +0200
+Message-Id: <1125604494.3999.7.camel@deep-space-9.dsnet>
+Mime-Version: 1.0
+Cc: Linus Torvalds <torvalds@transmeta.com>, linux-kernel@vger.kernel.org,
+	Alex Williamson <alex.williamson@hp.com>, linuxppc-dev@ozlabs.org
+Subject: Re: 2.6.13-rc7-git2 crashes on iBook
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,25 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sep 1, 2005, at 1:38 PM, Sven Luther wrote:
+Le jeudi 01 septembre 2005 à 20:26 +0100, Daniel Drake a écrit :
+> Hi,
+> 
+> Stelian Pop wrote:
+> > Confirmed on an Apple Powerbook too.
+> > 
+> > For reference, the (already reverted) patch which needs to be applied is
+> > below.
+> > 
+> > Signed-off-by: Stelian Pop <stelian@popies.net>
+> > 
+> > Index: linux-2.6.git/drivers/pci/setup-res.c
+[...]
 
-> On Thu, Sep 01, 2005 at 12:57:55PM -0500, Kumar Gala wrote:
->
->> Does anyone enable CONFIG_RTC on chrp/prep?  Tom tells me these are
->> the only platforms that it is even valid to do so on.
->>
->
-> The debian powerpc kernels enables :
->
->   $ grep RTC /boot/config-2.6.12-1-powerpc
->   CONFIG_GEN_RTC=y
->   CONFIG_GEN_RTC_X=y
->
-> and not the CONFIG_RTC variant, and it works well on pegasos, and prep
-> boxes,
-> and probably on ibm chrps too, altough i have not tested personally.
+> Sorry for my ignorance. Which tree was this reverted in? You are probably 
+> aware that this bug made it into 2.6.13 (patch was not reverted there).
 
-Thanks, as far as I can tell no one is using CONFIG_RTC, which means  
-I can "fix" asm-ppc/mc146818rtc.h to no longer #define RTC_IRQ 8
+It must be my bad english but I wasn't implying that the patch was
+reverted in 2.6.13 but that one should apply it (just apply, without -R,
+because I didn't attach the original patch but a reversed version of it)
+on a clean 2.6.13 tree in order to make it work. :)
 
-- kumar
+However, a different fix (a real fix, not the workaround proposed above)
+was discussed on lkml this week and BenH proposed a patch I haven't had
+the chance to test yet (see http://lkml.org/lkml/2005/8/31/1 ).
+
+Stelian.
+-- 
+Stelian Pop <stelian@popies.net>
