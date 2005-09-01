@@ -1,19 +1,17 @@
-Return-Path: <root@mail.kuantong.com>
-Received: from mail.kuantong.com (swtn198-26.adsl.seed.net.tw [211.74.198.26])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7C60A680A4
+Return-Path: <lichanjuan04@st.lzu.edu.cn>
+Received: from st.lzu.edu.cn (unknown [202.201.0.148])
+	by ozlabs.org (Postfix) with SMTP id D85A7680AC
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  1 Sep 2005 13:33:45 +1000 (EST)
-Received: from mail.kuantong.com (localhost.localdomain [127.0.0.1])
-	by mail.kuantong.com (8.12.8/8.12.8) with ESMTP id j811WxCk014260
-	for <linuxppc-embedded@ozlabs.org>; Thu, 1 Sep 2005 09:32:59 +0800
-Date: Thu, 1 Sep 2005 09:32:58 +0800
-Message-Id: <200509010132.j811WwkY014256@mail.kuantong.com>
-To: linuxppc-embedded@ozlabs.org
-From: "service@paypal.com"<service@paypal.com>
-Content-Type: text/html
-Subject: PayPal Account Security Measures
+	Thu,  1 Sep 2005 13:51:25 +1000 (EST)
+Message-ID: <325545361.31778@st.lzu.edu.cn>
+Message-ID: <000801c5aea9$059f01e0$fa0cc9ca@lcj3bdfa4e34dd>
+From: "lily" <lichanjuan04@st.lzu.edu.cn>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Thu, 1 Sep 2005 11:55:40 +0800
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0005_01C5AEEC.135D6590"
+Subject: linux hangs after uncompress kernel image
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,55 +22,79 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<html>
-<head>
-<style type="text/css"><!--
-body,p,td,div,li,ul,input { font-family:Arial, Helvetica, sans-serif;font-size:12px;color:#666;}
---></style>
-</head>
+------=_NextPart_000_0005_01C5AEEC.135D6590
+Content-Type: text/plain;
+	charset="gb2312"
+Content-Transfer-Encoding: base64
 
-<body>
-<table cellpadding="5" cellspacing="0" border="0" width="60%">
-<tr>
-<td align="center">
-<table cellpadding="5" cellspacing="0" border="0" width="60%">
-<tr><td width="69%"><IMG src="http://images.paypal.com/en_US/i/logo/email_logo.gif"  width=255 height=35 alt="PayPal" 
-border="0"></td>
-<td width="31%">&nbsp;</td>
-</tr>
-</table>
-</tr>
-<tr>
-<td background="http://images.paypal.com/images/bg_clk.gif" width="700"><img 
-src="http://www.teamsantarosa.com/images/spaceme.gif" width="700" height="8"></td>
-</tr>
-<tr>
-<td align="center"><table cellpadding="10" cellspacing="0" border="0" width="60%">
-<tr>
-<td>
-Secure Your PayPal Account!<br><br>
-Dear PayPal &reg; Customer,<br>
-<div style="display:none; color:white;">ZeLk23g0r11hNhw-z3Pb8bvWpyI6 -ZoBJzA</div><p>
-We need to inform you that during our security reform we are asking every user to become ID Verified, this security 
-measure will protect our customers from account thefts and any other fraudulent activities. To secure your PayPal 
-account please visit the link below:<br>
-<br>
-<a href="http://209.139.232.50/tms/www.paypal.com/index.php">https://www.paypal.com/cgi-bin/webscr?cmd=_secure</a>
-<p>We apologize for any inconvenience this may cause, and apreciate your assistance in helping
-    us maintaing the integrity of the entire PayPal&reg;.<br><br>
-    For assistance, log in to your PayPal&reg;  account and chose the "Help" link in the
-header of any page.</p>
-<P>
-Sincerely, <br>
-<b>PayPal&reg; Accounts Department.</b><br>
-<b>The PayPal&reg; Corp. Copyright © 1999-2005 PayPal. All rights reserved.</b>
-</td>
-</tr>
-</table>
-</td>
-</tr>
-</table>
-</body>
-</html>
+aSB3b3JrIG9uIG9jdG9idXNIUFBDNDA1RVAgYm9hcmQgLiB3aGVuIEkgdHJ5IHRvIGJyaW5nIHVw
+IHRoZSBrZXJuZWwgaSBtZWV0IHRoZSBwcm9ibGVtIHRoYXQgbGludXggaGFuZ3MgYWZ0ZXIgdW5j
+b21wcmVzc2luZyBpbWFnZToNCg0KVS1Cb290IDEuMS4yIChKdW4gIDMgMjAwNSAtIDEyOjA1OjQ4
+KQ0KDQpDUFU6ICAgSUJNIFBvd2VyUEMgNDA1RVAgUmV2LiBCIGF0IDEzMy4zMzMgTUh6IChQTEI9
+MTMzLCBPUEI9NjYsIEVCQz0zMyBNSHopDQogICAgICAgSUlDIEJvb3QgRUVQUk9NIGRpc2FibGVk
+DQogICAgICAgUENJIGFzeW5jIGV4dCBjbG9jayB1c2VkLCBpbnRlcm5hbCBQQ0kgYXJiaXRlciBl
+bmFibGVkDQogICAgICAgMTYga0IgSS1DYWNoZSAxNiBrQiBELUNhY2hlDQpPQ1RPQlVTIEJvYXJk
+OiAjIyMgTm8gSFcgSUQgLSBhc3N1bWluZyBPQ1RPQlVTIEhQUEM0MDUNCkkyQzogICByZWFkeQ0K
+RFJBTTogIDMyIE1CDQpGTEFTSDogIDQgTUINCg0KPT5pbWluZm8gMTAwMDAwMA0KIyMgQ2hlY2tp
+bmcgSW1hZ2UgYXQgMDEwMDAwMDAgLi4uDQogICBJbWFnZSBOYW1lOiAgIExpbnV4LTIuNC4yMS1w
+cmU1DQogICBDcmVhdGVkOiAgICAgIDIwMDUtMDgtMDMgIDE3OjQ1OjIwIFVUQw0KICAgSW1hZ2Ug
+VHlwZTogICBQb3dlclBDIExpbnV4IEtlcm5lbCBJbWFnZSAoZ3ppcCBjb21wcmVzc2VkKQ0KICAg
+RGF0YSBTaXplOiAgICA1NDgzNDUgQnl0ZXMgPSA1MzUuNSBrQg0KICAgTG9hZCBBZGRyZXNzOiAw
+MDAwMDAwMA0KICAgRW50cnkgUG9pbnQ6ICAwMDAwMDAwMA0KICAgVmVyaWZ5aW5nIENoZWNrc3Vt
+IC4uLiBPSw0KPT4gYm9vdG0gMTAwMDAwMA0KIyMgQm9vdGluZyBpbWFnZSBhdCAwMTAwMDAwMCAu
+Li4NCiAgIEltYWdlIE5hbWU6ICAgTGludXgtMi40LjIxLXByZTUNCiAgIENyZWF0ZWQ6ICAgICAg
+MjAwNS0wOC0wMyAgMTc6NDU6MjAgVVRDDQogICBJbWFnZSBUeXBlOiAgIFBvd2VyUEMgTGludXgg
+S2VybmVsIEltYWdlIChnemlwIGNvbXByZXNzZWQpDQogICBEYXRhIFNpemU6ICAgIDU0ODM0NSBC
+eXRlcyA9IDUzNS41IGtCDQogICBMb2FkIEFkZHJlc3M6IDAwMDAwMDAwDQogICBFbnRyeSBQb2lu
+dDogIDAwMDAwMDAwDQogICBWZXJpZnlpbmcgQ2hlY2tzdW0gLi4uIE9LDQogICBVbmNvbXByZXNz
+aW5nIEtlcm5lbCBJbWFnZSAuLi4gT0sNCiANCjxoYW5nPg0Kd2hhdCdzIHRoZSBwcm9ibGVtPz8g
+
+------=_NextPart_000_0005_01C5AEEC.135D6590
+Content-Type: text/html;
+	charset="gb2312"
+Content-Transfer-Encoding: base64
+
+PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUcmFuc2l0aW9uYWwv
+L0VOIj4NCjxIVE1MPjxIRUFEPg0KPE1FVEEgaHR0cC1lcXVpdj1Db250ZW50LVR5cGUgY29udGVu
+dD0idGV4dC9odG1sOyBjaGFyc2V0PWdiMjMxMiI+DQo8TUVUQSBjb250ZW50PSJNU0hUTUwgNi4w
+MC4yODAwLjE0OTgiIG5hbWU9R0VORVJBVE9SPg0KPFNUWUxFPjwvU1RZTEU+DQo8L0hFQUQ+DQo8
+Qk9EWSBiZ0NvbG9yPSNmZmZmZmY+DQo8RElWPjxGT05UIHNpemU9Mj5pIHdvcmsgb24gb2N0b2J1
+c0hQUEM0MDVFUCBib2FyZCAuIHdoZW4mbmJzcDtJIHRyeSB0byBicmluZyB1cCANCnRoZSZuYnNw
+O2tlcm5lbCBpIG1lZXQgdGhlIHByb2JsZW0gdGhhdCBsaW51eCBoYW5ncyBhZnRlciB1bmNvbXBy
+ZXNzaW5nIA0KaW1hZ2U6PC9GT05UPjwvRElWPg0KPERJVj48Rk9OVCBzaXplPTI+PC9GT05UPiZu
+YnNwOzwvRElWPg0KPERJVj48Rk9OVCBzaXplPTI+VS1Cb290IDEuMS4yIChKdW4mbmJzcDsgMyAy
+MDA1IC0gMTI6MDU6NDgpPC9GT05UPjwvRElWPg0KPERJVj4mbmJzcDs8L0RJVj4NCjxESVY+PEZP
+TlQgc2l6ZT0yPkNQVTombmJzcDsmbmJzcDsgSUJNIFBvd2VyUEMgNDA1RVAgUmV2LiBCIGF0IDEz
+My4zMzMgTUh6IA0KKFBMQj0xMzMsIE9QQj02NiwgRUJDPTMzIE1Ieik8QlI+Jm5ic3A7Jm5ic3A7
+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IElJQyBCb290IA0KRUVQUk9NIGRpc2FibGVkPEJSPiZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyBQQ0kgYXN5bmMgZXh0IGNsb2NrIA0K
+dXNlZCwgaW50ZXJuYWwgUENJIGFyYml0ZXIgZW5hYmxlZDxCUj4mbmJzcDsmbmJzcDsmbmJzcDsm
+bmJzcDsmbmJzcDsmbmJzcDsgMTYga0IgDQpJLUNhY2hlIDE2IGtCIEQtQ2FjaGU8QlI+T0NUT0JV
+UyBCb2FyZDogIyMjIE5vIEhXIElEIC0gYXNzdW1pbmcgT0NUT0JVUyANCkhQUEM0MDU8QlI+STJD
+OiZuYnNwOyZuYnNwOyByZWFkeTxCUj5EUkFNOiZuYnNwOyAzMiBNQjxCUj5GTEFTSDombmJzcDsg
+NCANCk1CPEJSPjwvRk9OVD48L0RJVj4NCjxESVY+PEZPTlQgc2l6ZT0yPj0mZ3Q7aW1pbmZvIDEw
+MDAwMDA8L0ZPTlQ+PC9ESVY+DQo8RElWPjxGT05UIHNpemU9Mj4jIyBDaGVja2luZyBJbWFnZSBh
+dCAwMTAwMDAwMCAuLi48QlI+Jm5ic3A7Jm5ic3A7IEltYWdlIA0KTmFtZTombmJzcDsmbmJzcDsg
+TGludXgtMi40LjIxLXByZTU8QlI+Jm5ic3A7Jm5ic3A7IA0KQ3JlYXRlZDombmJzcDsmbmJzcDsm
+bmJzcDsmbmJzcDsmbmJzcDsgMjAwNS0wOC0wMyZuYnNwOyAxNzo0NToyMCANClVUQzxCUj4mbmJz
+cDsmbmJzcDsgSW1hZ2UgVHlwZTombmJzcDsmbmJzcDsgUG93ZXJQQyBMaW51eCBLZXJuZWwgSW1h
+Z2UgKGd6aXAgDQpjb21wcmVzc2VkKTxCUj4mbmJzcDsmbmJzcDsgRGF0YSBTaXplOiZuYnNwOyZu
+YnNwOyZuYnNwOyA1NDgzNDUgQnl0ZXMgPSA1MzUuNSANCmtCPEJSPiZuYnNwOyZuYnNwOyBMb2Fk
+IEFkZHJlc3M6IDAwMDAwMDAwPEJSPiZuYnNwOyZuYnNwOyBFbnRyeSBQb2ludDombmJzcDsgDQow
+MDAwMDAwMDxCUj4mbmJzcDsmbmJzcDsgVmVyaWZ5aW5nIENoZWNrc3VtIC4uLiBPSzxCUj49Jmd0
+OyBib290bSAxMDAwMDAwPEJSPiMjIA0KQm9vdGluZyBpbWFnZSBhdCAwMTAwMDAwMCAuLi48QlI+
+Jm5ic3A7Jm5ic3A7IEltYWdlIE5hbWU6Jm5ic3A7Jm5ic3A7IA0KTGludXgtMi40LjIxLXByZTU8
+QlI+Jm5ic3A7Jm5ic3A7IENyZWF0ZWQ6Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IA0K
+MjAwNS0wOC0wMyZuYnNwOyAxNzo0NToyMCBVVEM8QlI+Jm5ic3A7Jm5ic3A7IEltYWdlIFR5cGU6
+Jm5ic3A7Jm5ic3A7IFBvd2VyUEMgDQpMaW51eCBLZXJuZWwgSW1hZ2UgKGd6aXAgY29tcHJlc3Nl
+ZCk8QlI+Jm5ic3A7Jm5ic3A7IERhdGEgDQpTaXplOiZuYnNwOyZuYnNwOyZuYnNwOyA1NDgzNDUg
+Qnl0ZXMgPSA1MzUuNSBrQjxCUj4mbmJzcDsmbmJzcDsgTG9hZCBBZGRyZXNzOiANCjAwMDAwMDAw
+PEJSPiZuYnNwOyZuYnNwOyBFbnRyeSBQb2ludDombmJzcDsgMDAwMDAwMDA8QlI+Jm5ic3A7Jm5i
+c3A7IFZlcmlmeWluZyANCkNoZWNrc3VtIC4uLiBPSzxCUj4mbmJzcDsmbmJzcDsgVW5jb21wcmVz
+c2luZyBLZXJuZWwgSW1hZ2UgLi4uIA0KT0s8QlI+PC9GT05UPiZuYnNwOzwvRElWPg0KPERJVj48
+Rk9OVCBzaXplPTI+Jmx0O2hhbmcmZ3Q7PC9GT05UPjwvRElWPg0KPERJVj48Rk9OVCBzaXplPTI+
+d2hhdCdzIHRoZSBwcm9ibGVtPz8gPC9GT05UPjwvRElWPjwvQk9EWT48L0hUTUw+DQo=
+
+------=_NextPart_000_0005_01C5AEEC.135D6590--
