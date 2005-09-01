@@ -1,18 +1,15 @@
-Return-Path: <root@mail.kuantong.com>
-Received: from mail.kuantong.com (swtn198-26.adsl.seed.net.tw [211.74.198.26])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 460306819E
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Sep 2005 12:46:35 +1000 (EST)
-Received: from mail.kuantong.com (localhost.localdomain [127.0.0.1])
-	by mail.kuantong.com (8.12.8/8.12.8) with ESMTP id j811WsCk014247
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 Sep 2005 09:32:54 +0800
-Date: Thu, 1 Sep 2005 09:32:53 +0800
-Message-Id: <200509010132.j811WrZt014244@mail.kuantong.com>
-To: linuxppc-dev@ozlabs.org
-From: "service@paypal.com"<service@paypal.com>
-Content-Type: text/html
-Subject: PayPal Account Security Measures
+Return-Path: <GARCIAJ@3il.fr>
+Received: from email.3il.fr (email.3il.fr [195.25.243.230])
+	by ozlabs.org (Postfix) with ESMTP id 90BC46814D
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Sep 2005 23:44:24 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Thu, 1 Sep 2005 15:44:23 +0200
+Message-ID: <D4FDDD1349B5AC46B68FC26AD8AF42D6226B55@exnet.3il.fr>
+From: =?iso-8859-1?Q?Garcia_J=E9r=E9mie?= <GARCIAJ@3il.fr>
+To: <linuxppc-dev@ozlabs.org>
+Subject: Error while accessing physical address
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,55 +19,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi everybody.
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<html>
-<head>
-<style type="text/css"><!--
-body,p,td,div,li,ul,input { font-family:Arial, Helvetica, sans-serif;font-size:12px;color:#666;}
---></style>
-</head>
+As a kernel newbie, I still encounter basic problems. I read a lot of =
+things on the memory management,
+but obviously I didn't understand some things.
 
-<body>
-<table cellpadding="5" cellspacing="0" border="0" width="60%">
-<tr>
-<td align="center">
-<table cellpadding="5" cellspacing="0" border="0" width="60%">
-<tr><td width="69%"><IMG src="http://images.paypal.com/en_US/i/logo/email_logo.gif"  width=255 height=35 alt="PayPal" 
-border="0"></td>
-<td width="31%">&nbsp;</td>
-</tr>
-</table>
-</tr>
-<tr>
-<td background="http://images.paypal.com/images/bg_clk.gif" width="700"><img 
-src="http://www.teamsantarosa.com/images/spaceme.gif" width="700" height="8"></td>
-</tr>
-<tr>
-<td align="center"><table cellpadding="10" cellspacing="0" border="0" width="60%">
-<tr>
-<td>
-Secure Your PayPal Account!<br><br>
-Dear PayPal &reg; Customer,<br>
-<div style="display:none; color:white;">ZeLk23g0r11hNhw-z3Pb8bvWpyI6 -ZoBJzA</div><p>
-We need to inform you that during our security reform we are asking every user to become ID Verified, this security 
-measure will protect our customers from account thefts and any other fraudulent activities. To secure your PayPal 
-account please visit the link below:<br>
-<br>
-<a href="http://209.139.232.50/tms/www.paypal.com/index.php">https://www.paypal.com/cgi-bin/webscr?cmd=_secure</a>
-<p>We apologize for any inconvenience this may cause, and apreciate your assistance in helping
-    us maintaing the integrity of the entire PayPal&reg;.<br><br>
-    For assistance, log in to your PayPal&reg;  account and chose the "Help" link in the
-header of any page.</p>
-<P>
-Sincerely, <br>
-<b>PayPal&reg; Accounts Department.</b><br>
-<b>The PayPal&reg; Corp. Copyright © 1999-2005 PayPal. All rights reserved.</b>
-</td>
-</tr>
-</table>
-</td>
-</tr>
-</table>
-</body>
-</html>
+I have some kernel source code that only write data to our card =
+registers:
+>>>>>>>
+void bhWriteCardRegister(unsigned short * address, unsigned short data)
+{
+  unsigned short * regHdwAddress;
+
+  printk("Writing data: %x at address:%x\n",data,address);
+
+  /* Get the virtual address for the physical one */
+  regHdwAddress =3D (unsigned short *) ioremap((unsigned =
+short)address,0x1);
+
+  printk("ioremap returned : %x\n",regHdwAddress);
+ =20
+  /* write hardware register data value */=20
+  *regHdwAddress =3D data;
+ =20
+  iounmap((void *)regHdwAddress);
+}
+<<<<<<<<
+
+In a module init I call this function:
+>>>>>>>>
+#define CARD_PROCESSOR_CTRL_IN_SERVICE    0x8000
+#define CARD_PROCESSOR_CTRL_REG_P 0x40000400
+bhWriteCardRegister((unsigned short *)(CARD_PROCESSOR_CTRL_REG_P), =
+(unsigned short)CARD_PROCESSOR_CTRL_IN_SERVICE);
+<<<<<<<<
+
+When I load this module on our powerPC 405EP based arch, the execution =
+gives that:
+>>>>>>>>
+Writing data: 8000 at address:40000400
+ioremap returned : c2090400
+<<<<<<<<
+
+The problem is that after this write operation, every shell cmd I try =
+give a "segmentation fault".
+What I did wrong ??
+
+Please help me cause I have to go on fast... (tks boss...)
