@@ -1,22 +1,28 @@
-Return-Path: <Murray.Jensen@csiro.au>
-Received: from act-ironport-ext-out1.csiro.au (act-ironport-ext-out1.csiro.au
-	[150.229.7.37]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client CN "*.csiro.au",
-	Issuer "Comodo Class 3 Security Services CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id D96B767FEA
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id A20426808E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  1 Sep 2005 17:25:40 +1000 (EST)
-From: Murray.Jensen@csiro.au
-To: "Adrian B. Weissman" <aweissma_ppc@yahoo.com>
-In-reply-to: Your message of "Wed, 31 Aug 2005 22:46:50 -0700"
-	<20050901054650.11322.qmail@web35208.mail.mud.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Thu, 01 Sep 2005 17:16:09 +1000
-Message-ID: <3866.1125558969@gerd>
-Sender: Murray.Jensen@csiro.au
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: A question regarding ramdisks 
+	Thu,  1 Sep 2005 18:28:18 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by protonic.prtnl (Postfix) with ESMTP id 6C7AB4057
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu,  1 Sep 2005 10:09:34 +0200 (CEST)
+Received: from protonic.prtnl ([127.0.0.1])
+	by localhost (protonic [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
+	id 25734-05 for <linuxppc-embedded@ozlabs.org>;
+	Thu,  1 Sep 2005 10:09:34 +0200 (CEST)
+Received: from linux.local (linux.prtnl [192.168.1.97])
+	by protonic.prtnl (Postfix) with ESMTP id 1E1B74046
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu,  1 Sep 2005 10:09:34 +0200 (CEST)
+From: David Jander <david.jander@protonic.nl>
+To: linuxppc-embedded@ozlabs.org
+Date: Thu, 1 Sep 2005 10:09:23 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200509011009.24114.david.jander@protonic.nl>
+Subject: Question about ELDK and i18n...
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,28 +33,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, 31 Aug 2005 22:46:50 -0700 (PDT), "Adrian B. Weissman" writes:
->     Here is what I am doing, I make uImage, after
->configuring ramdisk support
->
->CONFIG_BLK_DEV_RAM=y
->CONFIG_BLK_DEV_RAM_COUNT=2
->CONFIG_BLK_DEV_RAM_SIZE=4096
->CONFIG_INITRAMFS_SOURCE=""
->CONFIG_RAMFS=y
 
-Do you have CONFIG_BLK_DEV_INITRD enabled? Cheers!
-								Murray...
+Hi,
+
+I am using ELDK-3.1, and I am not getting i18n to work. I have looked at 
+recent changelog of ELDK and newer (CVS) versions don't seem to fix any bug 
+in that direction.
+The installation seems ok, the locale-files are all there as it seems.
+I have tried this as a test:
+
+# LANG=es_ES strace tar
+
+in the output, I can see these relevant lines:
+
+open("/usr/lib/locale/locale-archive", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No 
+such file or directory)
+
+- This does not matter.
+
+open("/usr/share/locale/locale.alias", O_RDONLY) = 3
+
+- OK, good. locale.alias is read
+
+open("/usr/lib/locale/es_ES/LC_IDENTIFICATION", O_RDONLY) = 3
+
+- Also looks fine, read the locales identification.
+
+open("/usr/lib/locale/es/LC_IDENTIFICATION", O_RDONLY) = -1 ENOENT (No such 
+file or directory)
+
+- Here I am puzzled. Why? Maybe this is not important.
+
+Then there are no more calls to open or stat with files in "/usr/lib/locale" 
+nor "/usr/share/locale" as argument, and I can't figure out why. What am I 
+doing wrong? Is this version of glibc in ELDK broken?
+
+Best regards,
+
 -- 
-Murray Jensen, CSIRO Manufacturing & Infra. Tech.      Phone: +61 3 9662 7763
-Locked Bag No. 9, Preston, Vic, 3072, Australia.         Fax: +61 3 9662 7853
-Internet: Murray.Jensen@csiro.au
-
-To the extent permitted by law, CSIRO does not represent, warrant and/or
-guarantee that the integrity of this communication has been maintained or
-that the communication is free of errors, virus, interception or interference.
-
-The information contained in this e-mail may be confidential or privileged.
-Any unauthorised use or disclosure is prohibited. If you have received this
-e-mail in error, please delete it immediately and notify Murray Jensen on
-+61 3 9662 7763. Thank you.
+David Jander
