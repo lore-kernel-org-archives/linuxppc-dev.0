@@ -1,16 +1,17 @@
-Return-Path: <GARCIAJ@3il.fr>
-Received: from email.3il.fr (email.3il.fr [195.25.243.230])
-	by ozlabs.org (Postfix) with ESMTP id B8345680F7
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Sep 2005 00:22:20 +1000 (EST)
+Return-Path: <TNghiem@oerlikon.ca>
+Received: from mail.oerlikon.ca (mx.oerlikon.ca [205.233.198.228])
+	by ozlabs.org (Postfix) with ESMTP id 0D21067F88
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Sep 2005 00:52:07 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-Date: Thu, 1 Sep 2005 16:20:23 +0200
-Message-ID: <D4FDDD1349B5AC46B68FC26AD8AF42D6226B57@exnet.3il.fr>
-From: =?iso-8859-1?Q?Garcia_J=E9r=E9mie?= <GARCIAJ@3il.fr>
-To: "Marcin Dawidowicz" <marcin.dawidowicz@kontron.pl>
+Date: Thu, 1 Sep 2005 10:40:51 -0400
+Message-ID: <A93DEE5BF142D6419D27C298B6F463D812CCF5@mail.oerlikon.ca>
+From: "Nghiem, Tien" <TNghiem@oerlikon.ca>
+To: =?iso-8859-1?Q?Garcia_J=E9r=E9mie?= <GARCIAJ@3il.fr>,
+	"Marcin Dawidowicz" <marcin.dawidowicz@kontron.pl>
 Cc: linuxppc-dev@ozlabs.org
-Subject: RE : Error while accessing physical address
+Subject: RE: RE : Error while accessing physical address
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,6 +20,23 @@ List-Post: <mailto:linuxppc-dev@ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+
+Hi Garcia,
+
+unsigned short is 2 bytes, so you should use:
+
+regHdwAddress =3D (unsigned short *) ioremap((unsigned =
+short)address,0x2);
+
+Tien
+-----Original Message-----
+From: linuxppc-dev-bounces@ozlabs.org
+[mailto:linuxppc-dev-bounces@ozlabs.org]On Behalf Of Garcia J=E9r=E9mie
+Sent: Thursday, September 01, 2005 10:20 AM
+To: Marcin Dawidowicz
+Cc: linuxppc-dev@ozlabs.org
+Subject: RE : Error while accessing physical address
+
 
 Tks for your answer Marcin. This is a good idea but unfortunately,=20
 the result remains the same...
@@ -105,3 +123,8 @@ give
 > Linuxppc-dev mailing list
 > Linuxppc-dev@ozlabs.org
 > https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
