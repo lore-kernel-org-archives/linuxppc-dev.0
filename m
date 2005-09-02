@@ -1,12 +1,11 @@
-Return-Path: <mgreer@mvista.com>
-Date: Thu, 1 Sep 2005 17:55:29 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Andrew Morton <akpm@osdl.org>
-Message-ID: <20050902005529.GC10106@mag.az.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-embedded <Linuxppc-embedded@ozlabs.org>
-Subject: [PATCH 2.6.13-mm1] ppc32: cpci690 updates
+Return-Path: <jotken@softadvances.com>
+Message-ID: <4318CA25.3060802@softadvances.com>
+Date: Fri, 02 Sep 2005 16:54:45 -0500
+From: John Otken <jotken@softadvances.com>
+MIME-Version: 1.0
+To: Linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: [PATCH 1/3] Support AMCC Yosemite 440EP and Yellowstone 440GR (v2)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -17,1029 +16,742 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Update the cpci690 platform code:
-- pass mem size in from bootwrapper via bi_rec
-- some minor fixups
+This updated patch adds support for AMCC 440EP Yosemite
+and 440GR Yellowstone evaluation boards.  I tested it
+against the 2.6.13 kernel on both boards.
 
-Signed-off-by: Mark A. Greer <mgreer@mvista.com>
---
+Note: the 440EP and 440GR share the same PVR of 422218D3.
 
-diff -Nur linux-2.6.13-mm1/arch/ppc/boot/simple/misc-cpci690.c linux-2.6.13-mm1-mag/arch/ppc/boot/simple/misc-cpci690.c
---- linux-2.6.13-mm1/arch/ppc/boot/simple/misc-cpci690.c	2005-08-28 16:41:01.000000000 -0700
-+++ linux-2.6.13-mm1-mag/arch/ppc/boot/simple/misc-cpci690.c	2005-09-01 17:00:39.000000000 -0700
-@@ -12,16 +12,56 @@
-  */
- 
- #include <linux/types.h>
-+#include <asm/io.h>
- #include <platforms/cpci690.h>
- 
-+#define	KB	(1024UL)
-+#define	MB	(1024UL*KB)
-+#define	GB	(1024UL*MB)
+The Yosemite platform files are based on Wade Farnsworth's
+Bamboo code.  There is only a single board name macro that
+depends on CONFIG_YOSEMITE vs CONFIG_YELLOWSTONE so I
+didn't create an otherwise identical yellowstone.c/h.
+
+The defconfig files are in parts 2 and 3.
+
+This patch supersedes "Support for AMCC Yosemite 440EP Eval Board"
+from Jul 27: http://patchwork.ozlabs.org/linuxppc/patch?id=1859
+
+Dependencies
+------------
+Jul20  J Otken       Fix invalid function name usb_hcd_put in ohci-ppc-soc.c
+Aug10  D Farnsworth  2.6.12-3 header <asm/usb.h> missing?
+Aug17  J Otken       Support 440EP On-Chip OHCI USB Host Controller (v3)
+Aug31  E Surovegin   Move 4xx PHY_MODE_XXX defines to ibm_ocp.h
+
+Links
+-----
+http://patchwork.ozlabs.org/linuxppc/patch?id=1803
+http://patchwork.ozlabs.org/linuxppc/patch?id=1969
+http://patchwork.ozlabs.org/linuxppc/patch?id=2027
+http://patchwork.ozlabs.org/linuxppc/patch?id=2202
+
+Comments are welcome.
+
+Signed-off-by: John Otken <jotken@softadvances.com>
+
+
+
+diff -uprN b/arch/ppc/kernel/head_44x.S c/arch/ppc/kernel/head_44x.S
+--- b/arch/ppc/kernel/head_44x.S	2005-08-28 18:41:01.000000000 -0500
++++ c/arch/ppc/kernel/head_44x.S	2005-08-30 11:31:21.000000000 -0500
+@@ -190,7 +190,7 @@ skpinv:	addi	r4,r4,1				/* Increment */
+
+  	/* xlat fields */
+  	lis	r4,UART0_PHYS_IO_BASE@h		/* RPN depends on SoC */
+-#ifndef CONFIG_440EP
++#if !defined(CONFIG_440EP) && !defined(CONFIG_440GR)
+  	ori	r4,r4,0x0001		/* ERPN is 1 for second 4GB page */
+  #endif
+
+@@ -230,7 +230,7 @@ skpinv:	addi	r4,r4,1				/* Increment */
+  	lis	r4,interrupt_base@h	/* IVPR only uses the high 16-bits */
+  	mtspr	SPRN_IVPR,r4
+
+-#ifdef CONFIG_440EP
++#if defined(CONFIG_440EP) || defined(CONFIG_440GR)
+  	/* Clear DAPUIB flag in CCR0 (enable APU between CPU and FPU) */
+  	mfspr	r2,SPRN_CCR0
+  	lis	r3,0xffef
+diff -uprN b/arch/ppc/platforms/4xx/Kconfig c/arch/ppc/platforms/4xx/Kconfig
+--- b/arch/ppc/platforms/4xx/Kconfig	2005-08-28 18:41:01.000000000 -0500
++++ c/arch/ppc/platforms/4xx/Kconfig	2005-08-30 13:24:17.000000000 -0500
+@@ -98,6 +98,18 @@ config OCOTEA
+  	help
+  	  This option enables support for the IBM PPC440GX evaluation board.
+
++config YELLOWSTONE
++	bool "Yellowstone"
++	select WANT_EARLY_SERIAL
++	help
++	  This option enables support for the AMCC PPC440GR evaluation board.
 +
- extern u32 mv64x60_console_baud;
- extern u32 mv64x60_mpsc_clk_src;
- extern u32 mv64x60_mpsc_clk_freq;
- 
-+u32 mag = 0xffff;
++config YOSEMITE
++	bool "Yosemite"
++	select WANT_EARLY_SERIAL
++	help
++	  This option enables support for the AMCC PPC440EP evaluation board.
 +
-+unsigned long
-+get_mem_size(void)
+  endchoice
+
+  config EP405PC
+@@ -115,7 +127,7 @@ config NP405H
+
+  config 440EP
+  	bool
+-	depends on BAMBOO
++	depends on BAMBOO || YOSEMITE
+  	select PPC_FPU
+  	default y
+
+@@ -124,6 +136,12 @@ config 440GP
+  	depends on EBONY
+  	default y
+
++config 440GR
++	bool
++	depends on YELLOWSTONE
++	select PPC_FPU
++	default y
++
+  config 440GX
+  	bool
+  	depends on OCOTEA
+@@ -136,7 +154,7 @@ config 440SP
+
+  config 440
+  	bool
+-	depends on 440GP || 440SP || 440EP
++	depends on 440GP || 440SP || 440EP || 440GR
+  	default y
+
+  config 440A
+@@ -144,9 +162,14 @@ config 440A
+  	depends on 440GX
+  	default y
+
++config 440_FPU
++	bool
++	depends on 440EP && !440GR
++	default y
++
+  config IBM440EP_ERR42
+  	bool
+-	depends on 440EP
++	depends on 440EP || 440GR
+  	default y
+
+  # All 405-based cores up until the 405GPR and 405EP have this errata.
+@@ -168,7 +191,7 @@ config BOOKE
+
+  config IBM_OCP
+  	bool
+-	depends on ASH || BAMBOO || BUBINGA || CPCI405 || EBONY || EP405 || LUAN || OCOTEA || REDWOOD_5 || REDWOOD_6 || SYCAMORE || WALNUT
++	depends on ASH || BAMBOO || BUBINGA || CPCI405 || EBONY || EP405 || LUAN || OCOTEA || REDWOOD_5 || REDWOOD_6 || SYCAMORE || WALNUT || YELLOWSTONE || YOSEMITE
+  	default y
+
+  config XILINX_OCP
+diff -uprN b/arch/ppc/platforms/4xx/Makefile c/arch/ppc/platforms/4xx/Makefile
+--- b/arch/ppc/platforms/4xx/Makefile	2005-08-28 18:41:01.000000000 -0500
++++ c/arch/ppc/platforms/4xx/Makefile	2005-08-30 11:13:55.000000000 -0500
+@@ -15,12 +15,15 @@ obj-$(CONFIG_REDWOOD_6)		+= redwood6.o
+  obj-$(CONFIG_SYCAMORE)		+= sycamore.o
+  obj-$(CONFIG_WALNUT)		+= walnut.o
+  obj-$(CONFIG_XILINX_ML300)	+= xilinx_ml300.o
++obj-$(CONFIG_YELLOWSTONE)	+= yosemite.o
++obj-$(CONFIG_YOSEMITE)		+= yosemite.o
+
+  obj-$(CONFIG_405GP)		+= ibm405gp.o
+  obj-$(CONFIG_REDWOOD_5)		+= ibmstb4.o
+  obj-$(CONFIG_NP405H)		+= ibmnp405h.o
+  obj-$(CONFIG_REDWOOD_6)		+= ibmstbx25.o
+  obj-$(CONFIG_440EP)		+= ibm440ep.o
++obj-$(CONFIG_440GR)		+= ibm440ep.o
+  obj-$(CONFIG_440GP)		+= ibm440gp.o
+  obj-$(CONFIG_440GX)		+= ibm440gx.o
+  obj-$(CONFIG_440SP)		+= ibm440sp.o
+diff -uprN b/arch/ppc/platforms/4xx/yosemite.c c/arch/ppc/platforms/4xx/yosemite.c
+--- b/arch/ppc/platforms/4xx/yosemite.c	1969-12-31 17:00:00.000000000 -0700
++++ c/arch/ppc/platforms/4xx/yosemite.c	2005-09-01 11:10:26.351599709 -0500
+@@ -0,0 +1,377 @@
++/*
++ * arch/ppc/platforms/4xx/yosemite.c
++ *
++ * Yosemite and Yellowstone board specific routines
++ *
++ * Wade Farnsworth <wfarnsworth@mvista.com>
++ * Copyright 2004 MontaVista Software Inc.
++ *
++ * John Otken <jotken@softadvances.com>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++#include <linux/config.h>
++#include <linux/stddef.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/pci.h>
++#include <linux/types.h>
++#include <linux/delay.h>
++#include <linux/initrd.h>
++#include <linux/irq.h>
++#include <linux/root_dev.h>
++#include <linux/tty.h>
++#include <linux/serial.h>
++#include <linux/serial_core.h>
++
++#include <asm/ocp.h>
++#include <asm/bootinfo.h>
++#include <asm/ppcboot.h>
++
++#include <syslib/ibm440gx_common.h>
++
++/*
++ * The AMCC Yosemite and Yellowstones boards share the same PC board.
++ * The Yosemite has a 440EP and USB support.  The Yellowstone has a
++ * 440GR and no USB hardware.  The 440EP and 440GR have the same PVR.
++ */
++#ifdef CONFIG_YELLOWSTONE
++#define BOARDNAME  "440GR Yellowstone"
++#else
++#define BOARDNAME  "440EP Yosemite"
++#endif
++
++
++bd_t __res;
++
++static struct ibm44x_clocks clocks __initdata;
++
++
++/*
++ * Yosemite external IRQ triggering/polarity settings
++ */
++unsigned char ppc4xx_uic_ext_irq_cfg[] __initdata = {
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ0: ETH0 */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ1: ETH1 */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ2: PCI_INTA */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ3: STTM_ALERT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ4: GPIO44 */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ5: GND */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ6: GPIO45 */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ7: GPIO46 */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ8: GPIO47 */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ9: GPIO48 */
++};
++
++
++static void __init
++yosemite_calibrate_decr(void)
 +{
-+	u32	size;
++	unsigned int freq;
 +
-+	switch (in_8(((void __iomem *)CPCI690_BR_BASE + CPCI690_BR_MEM_CTLR))
-+			& 0x07) {
-+	case 0x01:
-+		size = 256*MB;
-+		break;
-+	case 0x02:
-+		size = 512*MB;
-+		break;
-+	case 0x03:
-+		size = 768*MB;
-+		break;
-+	case 0x04:
-+		size = 1*GB;
-+		break;
-+	case 0x05:
-+		size = 1*GB + 512*MB;
-+		break;
-+	case 0x06:
-+		size = 2*GB;
-+		break;
-+	default:
-+		size = 0;
-+	}
++	if (mfspr(SPRN_CCR1) & CCR1_TCS)
++		freq = YOSEMITE_TMRCLK;
++	else
++		freq = clocks.cpu;
 +
-+	return size;
++	ibm44x_calibrate_decr(freq);
 +}
 +
- void
- mv64x60_board_init(void __iomem *old_base, void __iomem *new_base)
- {
- 	mv64x60_console_baud = CPCI690_MPSC_BAUD;
- 	mv64x60_mpsc_clk_src = CPCI690_MPSC_CLK_SRC;
--	mv64x60_mpsc_clk_freq = CPCI690_BUS_FREQ;
-+	mv64x60_mpsc_clk_freq =
-+		(get_mem_size() >= (1*GB)) ? 100000000 : 133333333;
- }
-diff -Nur linux-2.6.13-mm1/arch/ppc/configs/cpci690_defconfig linux-2.6.13-mm1-mag/arch/ppc/configs/cpci690_defconfig
---- linux-2.6.13-mm1/arch/ppc/configs/cpci690_defconfig	2005-08-28 16:41:01.000000000 -0700
-+++ linux-2.6.13-mm1-mag/arch/ppc/configs/cpci690_defconfig	2005-09-01 17:10:44.000000000 -0700
-@@ -1,15 +1,17 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.10-rc2
--# Fri Dec  3 15:56:10 2004
-+# Linux kernel version: 2.6.13-mm1
-+# Thu Sep  1 17:10:37 2005
- #
- CONFIG_MMU=y
- CONFIG_GENERIC_HARDIRQS=y
- CONFIG_RWSEM_XCHGADD_ALGORITHM=y
-+CONFIG_GENERIC_CALIBRATE_DELAY=y
- CONFIG_HAVE_DEC_LOCK=y
- CONFIG_PPC=y
- CONFIG_PPC32=y
- CONFIG_GENERIC_NVRAM=y
-+CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
- 
- #
- # Code maturity level options
-@@ -17,33 +19,38 @@
- CONFIG_EXPERIMENTAL=y
- CONFIG_CLEAN_COMPILE=y
- CONFIG_BROKEN_ON_SMP=y
-+CONFIG_INIT_ENV_ARG_LIMIT=32
- 
- #
- # General setup
- #
- CONFIG_LOCALVERSION=""
-+CONFIG_LOCALVERSION_AUTO=y
- # CONFIG_SWAP is not set
- CONFIG_SYSVIPC=y
- # CONFIG_POSIX_MQUEUE is not set
- # CONFIG_BSD_PROCESS_ACCT is not set
- CONFIG_SYSCTL=y
- # CONFIG_AUDIT is not set
--CONFIG_LOG_BUF_SHIFT=14
- # CONFIG_HOTPLUG is not set
- CONFIG_KOBJECT_UEVENT=y
- # CONFIG_IKCONFIG is not set
-+CONFIG_INITRAMFS_SOURCE=""
- # CONFIG_EMBEDDED is not set
- CONFIG_KALLSYMS=y
- # CONFIG_KALLSYMS_EXTRA_PASS is not set
-+CONFIG_PRINTK=y
-+CONFIG_BUG=y
-+CONFIG_BASE_FULL=y
- CONFIG_FUTEX=y
- CONFIG_EPOLL=y
--# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
- CONFIG_SHMEM=y
- CONFIG_CC_ALIGN_FUNCTIONS=0
- CONFIG_CC_ALIGN_LABELS=0
- CONFIG_CC_ALIGN_LOOPS=0
- CONFIG_CC_ALIGN_JUMPS=0
- # CONFIG_TINY_SHMEM is not set
-+CONFIG_BASE_SMALL=0
- 
- #
- # Loadable module support
-@@ -65,38 +72,42 @@
- # CONFIG_POWER3 is not set
- # CONFIG_POWER4 is not set
- # CONFIG_8xx is not set
-+# CONFIG_E200 is not set
- # CONFIG_E500 is not set
-+CONFIG_PPC_FPU=y
- CONFIG_ALTIVEC=y
- # CONFIG_TAU is not set
-+# CONFIG_KEXEC is not set
- # CONFIG_CPU_FREQ is not set
-+# CONFIG_WANT_EARLY_SERIAL is not set
- CONFIG_PPC_STD_MMU=y
- # CONFIG_NOT_COHERENT_CACHE is not set
- 
- #
-+# Performance-monitoring counters support
-+#
-+# CONFIG_PERFCTR is not set
-+
-+#
- # Platform options
- #
- # CONFIG_PPC_MULTIPLATFORM is not set
- # CONFIG_APUS is not set
- # CONFIG_KATANA is not set
--# CONFIG_DMV182 is not set
- # CONFIG_WILLOW is not set
- CONFIG_CPCI690=y
--# CONFIG_PCORE is not set
- # CONFIG_POWERPMC250 is not set
--# CONFIG_EV64260 is not set
--# CONFIG_DB64360 is not set
- # CONFIG_CHESTNUT is not set
- # CONFIG_SPRUCE is not set
-+# CONFIG_HDPU is not set
-+# CONFIG_EV64260 is not set
- # CONFIG_LOPEC is not set
--# CONFIG_MCPN765 is not set
- # CONFIG_MVME5100 is not set
- # CONFIG_PPLUS is not set
- # CONFIG_PRPMC750 is not set
- # CONFIG_PRPMC800 is not set
--# CONFIG_PRPMC880 is not set
- # CONFIG_SANDPOINT is not set
--# CONFIG_ADIR is not set
--# CONFIG_K2 is not set
-+# CONFIG_RADSTONE_PPC7D is not set
- # CONFIG_PAL4 is not set
- # CONFIG_GEMINI is not set
- # CONFIG_EST8260 is not set
-@@ -105,22 +116,41 @@
- # CONFIG_RPX8260 is not set
- # CONFIG_TQM8260 is not set
- # CONFIG_ADS8272 is not set
-+# CONFIG_PQ2FADS is not set
- # CONFIG_LITE5200 is not set
-+# CONFIG_MPC834x_SYS is not set
-+# CONFIG_EV64360 is not set
-+CONFIG_GT64260=y
-+CONFIG_MV64X60=y
- 
- #
- # Set bridge options
- #
- CONFIG_MV64X60_BASE=0xf1000000
- CONFIG_MV64X60_NEW_BASE=0xf1000000
--CONFIG_GT64260=y
--CONFIG_MV64X60=y
- # CONFIG_SMP is not set
-+CONFIG_HIGHMEM=y
-+CONFIG_HZ_100=y
-+# CONFIG_HZ_250 is not set
-+# CONFIG_HZ_1000 is not set
-+CONFIG_HZ=100
-+CONFIG_PREEMPT_NONE=y
-+# CONFIG_PREEMPT_VOLUNTARY is not set
- # CONFIG_PREEMPT is not set
--# CONFIG_HIGHMEM is not set
-+CONFIG_SELECT_MEMORY_MODEL=y
-+CONFIG_FLATMEM_MANUAL=y
-+# CONFIG_DISCONTIGMEM_MANUAL is not set
-+# CONFIG_SPARSEMEM_MANUAL is not set
-+CONFIG_FLATMEM=y
-+CONFIG_FLAT_NODE_MEM_MAP=y
-+# CONFIG_SPARSEMEM_STATIC is not set
- CONFIG_BINFMT_ELF=y
- CONFIG_BINFMT_MISC=y
- CONFIG_CMDLINE_BOOL=y
--CONFIG_CMDLINE="console=ttyMM0,9600 ip=on"
-+CONFIG_CMDLINE="console=ttyMM0 ip=on"
-+# CONFIG_PM is not set
-+CONFIG_SECCOMP=y
-+CONFIG_ISA_DMA_API=y
- 
- #
- # Bus options
-@@ -129,7 +159,11 @@
- CONFIG_PCI=y
- CONFIG_PCI_DOMAINS=y
- CONFIG_PCI_LEGACY_PROC=y
--CONFIG_PCI_NAMES=y
-+
-+#
-+# PCCARD (PCMCIA/CardBus) support
-+#
-+# CONFIG_PCCARD is not set
- 
- #
- # Advanced setup
-@@ -146,6 +180,76 @@
- CONFIG_BOOT_LOAD=0x00800000
- 
- #
-+# Networking
-+#
-+CONFIG_NET=y
-+
-+#
-+# Networking options
-+#
-+CONFIG_PACKET=y
-+# CONFIG_PACKET_MMAP is not set
-+CONFIG_UNIX=y
-+# CONFIG_NET_KEY is not set
-+CONFIG_INET=y
-+CONFIG_IP_MULTICAST=y
-+# CONFIG_IP_ADVANCED_ROUTER is not set
-+CONFIG_IP_FIB_HASH=y
-+CONFIG_IP_PNP=y
-+CONFIG_IP_PNP_DHCP=y
-+# CONFIG_IP_PNP_BOOTP is not set
-+# CONFIG_IP_PNP_RARP is not set
-+# CONFIG_NET_IPIP is not set
-+# CONFIG_NET_IPGRE is not set
-+# CONFIG_IP_MROUTE is not set
-+# CONFIG_ARPD is not set
-+CONFIG_SYN_COOKIES=y
-+# CONFIG_INET_AH is not set
-+# CONFIG_INET_ESP is not set
-+# CONFIG_INET_IPCOMP is not set
-+# CONFIG_INET_TUNNEL is not set
-+CONFIG_INET_DIAG=y
-+CONFIG_INET_TCP_DIAG=y
-+# CONFIG_TCP_CONG_ADVANCED is not set
-+CONFIG_TCP_CONG_BIC=y
-+# CONFIG_IPV6 is not set
-+# CONFIG_NETFILTER is not set
-+
-+#
-+# DCCP Configuration (EXPERIMENTAL)
-+#
-+# CONFIG_IP_DCCP is not set
-+
-+#
-+# SCTP Configuration (EXPERIMENTAL)
-+#
-+# CONFIG_IP_SCTP is not set
-+# CONFIG_ATM is not set
-+# CONFIG_BRIDGE is not set
-+# CONFIG_VLAN_8021Q is not set
-+# CONFIG_DECNET is not set
-+# CONFIG_LLC2 is not set
-+# CONFIG_IPX is not set
-+# CONFIG_ATALK is not set
-+# CONFIG_X25 is not set
-+# CONFIG_LAPB is not set
-+# CONFIG_NET_DIVERT is not set
-+# CONFIG_ECONET is not set
-+# CONFIG_WAN_ROUTER is not set
-+# CONFIG_NET_SCHED is not set
-+# CONFIG_NET_CLS_ROUTE is not set
-+
-+#
-+# Network testing
-+#
-+# CONFIG_NET_PKTGEN is not set
-+# CONFIG_NETFILTER_NETLINK is not set
-+# CONFIG_HAMRADIO is not set
-+# CONFIG_IRDA is not set
-+# CONFIG_BT is not set
-+# CONFIG_IEEE80211 is not set
-+
-+#
- # Device Drivers
- #
- 
-@@ -154,6 +258,7 @@
- #
- CONFIG_STANDALONE=y
- CONFIG_PREVENT_FIRMWARE_BUILD=y
-+# CONFIG_FW_LOADER is not set
- 
- #
- # Memory Technology Devices (MTD)
-@@ -177,6 +282,7 @@
- # CONFIG_BLK_CPQ_CISS_DA is not set
- # CONFIG_BLK_DEV_DAC960 is not set
- # CONFIG_BLK_DEV_UMEM is not set
-+# CONFIG_BLK_DEV_COW_COMMON is not set
- CONFIG_BLK_DEV_LOOP=y
- # CONFIG_BLK_DEV_CRYPTOLOOP is not set
- # CONFIG_BLK_DEV_NBD is not set
-@@ -185,7 +291,6 @@
- CONFIG_BLK_DEV_RAM_COUNT=16
- CONFIG_BLK_DEV_RAM_SIZE=4096
- CONFIG_BLK_DEV_INITRD=y
--CONFIG_INITRAMFS_SOURCE=""
- # CONFIG_LBD is not set
- # CONFIG_CDROM_PKTCDVD is not set
- 
-@@ -196,6 +301,7 @@
- CONFIG_IOSCHED_AS=y
- CONFIG_IOSCHED_DEADLINE=y
- CONFIG_IOSCHED_CFQ=y
-+# CONFIG_ATA_OVER_ETH is not set
- 
- #
- # ATA/ATAPI/MFM/RLL support
-@@ -205,6 +311,7 @@
- #
- # SCSI device support
- #
-+# CONFIG_RAID_ATTRS is not set
- # CONFIG_SCSI is not set
- 
- #
-@@ -215,6 +322,7 @@
- #
- # Fusion MPT device support
- #
-+# CONFIG_FUSION is not set
- 
- #
- # IEEE 1394 (FireWire) support
-@@ -231,71 +339,8 @@
- #
- 
- #
--# Networking support
-+# Network device support
- #
--CONFIG_NET=y
--
--#
--# Networking options
--#
--CONFIG_PACKET=y
--# CONFIG_PACKET_MMAP is not set
--# CONFIG_NETLINK_DEV is not set
--CONFIG_UNIX=y
--# CONFIG_NET_KEY is not set
--CONFIG_INET=y
--CONFIG_IP_MULTICAST=y
--# CONFIG_IP_ADVANCED_ROUTER is not set
--CONFIG_IP_PNP=y
--CONFIG_IP_PNP_DHCP=y
--# CONFIG_IP_PNP_BOOTP is not set
--# CONFIG_IP_PNP_RARP is not set
--# CONFIG_NET_IPIP is not set
--# CONFIG_NET_IPGRE is not set
--# CONFIG_IP_MROUTE is not set
--# CONFIG_ARPD is not set
--CONFIG_SYN_COOKIES=y
--# CONFIG_INET_AH is not set
--# CONFIG_INET_ESP is not set
--# CONFIG_INET_IPCOMP is not set
--# CONFIG_INET_TUNNEL is not set
--CONFIG_IP_TCPDIAG=y
--# CONFIG_IP_TCPDIAG_IPV6 is not set
--# CONFIG_IPV6 is not set
--# CONFIG_NETFILTER is not set
--
--#
--# SCTP Configuration (EXPERIMENTAL)
--#
--# CONFIG_IP_SCTP is not set
--# CONFIG_ATM is not set
--# CONFIG_BRIDGE is not set
--# CONFIG_VLAN_8021Q is not set
--# CONFIG_DECNET is not set
--# CONFIG_LLC2 is not set
--# CONFIG_IPX is not set
--# CONFIG_ATALK is not set
--# CONFIG_X25 is not set
--# CONFIG_LAPB is not set
--# CONFIG_NET_DIVERT is not set
--# CONFIG_ECONET is not set
--# CONFIG_WAN_ROUTER is not set
--
--#
--# QoS and/or fair queueing
--#
--# CONFIG_NET_SCHED is not set
--# CONFIG_NET_CLS_ROUTE is not set
--
--#
--# Network testing
--#
--# CONFIG_NET_PKTGEN is not set
--# CONFIG_NETPOLL is not set
--# CONFIG_NET_POLL_CONTROLLER is not set
--# CONFIG_HAMRADIO is not set
--# CONFIG_IRDA is not set
--# CONFIG_BT is not set
- CONFIG_NETDEVICES=y
- # CONFIG_DUMMY is not set
- # CONFIG_BONDING is not set
-@@ -308,6 +353,11 @@
- # CONFIG_ARCNET is not set
- 
- #
-+# PHY device support
-+#
-+# CONFIG_PHYLIB is not set
-+
-+#
- # Ethernet (10 or 100Mbit)
- #
- CONFIG_NET_ETHERNET=y
-@@ -328,6 +378,7 @@
- # CONFIG_DE4X5 is not set
- # CONFIG_WINBOND_840 is not set
- # CONFIG_DM9102 is not set
-+# CONFIG_ULI526X is not set
- # CONFIG_HP100 is not set
- CONFIG_NET_PCI=y
- # CONFIG_PCNET32 is not set
-@@ -337,7 +388,6 @@
- # CONFIG_FORCEDETH is not set
- # CONFIG_DGRS is not set
- CONFIG_EEPRO100=y
--# CONFIG_EEPRO100_PIO is not set
- # CONFIG_E100 is not set
- # CONFIG_FEALNX is not set
- # CONFIG_NATSEMI is not set
-@@ -360,13 +410,18 @@
- # CONFIG_HAMACHI is not set
- # CONFIG_YELLOWFIN is not set
- # CONFIG_R8169 is not set
-+# CONFIG_SIS190 is not set
-+# CONFIG_SKGE is not set
-+# CONFIG_SKY2 is not set
- # CONFIG_SK98LIN is not set
- # CONFIG_VIA_VELOCITY is not set
- # CONFIG_TIGON3 is not set
-+# CONFIG_BNX2 is not set
- 
- #
- # Ethernet (10000 Mbit)
- #
-+# CONFIG_CHELSIO_T1 is not set
- # CONFIG_IXGB is not set
- # CONFIG_S2IO is not set
- 
-@@ -390,6 +445,11 @@
- # CONFIG_SLIP is not set
- # CONFIG_SHAPER is not set
- # CONFIG_NETCONSOLE is not set
-+# CONFIG_KGDBOE is not set
-+# CONFIG_NETPOLL is not set
-+# CONFIG_NETPOLL_RX is not set
-+# CONFIG_NETPOLL_TRAP is not set
-+# CONFIG_NET_POLL_CONTROLLER is not set
- 
- #
- # ISDN subsystem
-@@ -419,14 +479,6 @@
- # CONFIG_INPUT_EVBUG is not set
- 
- #
--# Input I/O drivers
--#
--# CONFIG_GAMEPORT is not set
--CONFIG_SOUND_GAMEPORT=y
--# CONFIG_SERIO is not set
--# CONFIG_SERIO_I8042 is not set
--
--#
- # Input Device Drivers
- #
- # CONFIG_INPUT_KEYBOARD is not set
-@@ -436,6 +488,12 @@
- # CONFIG_INPUT_MISC is not set
- 
- #
-+# Hardware I/O ports
-+#
-+# CONFIG_SERIO is not set
-+# CONFIG_GAMEPORT is not set
-+
-+#
- # Character devices
- #
- CONFIG_VT=y
-@@ -455,6 +513,7 @@
- CONFIG_SERIAL_MPSC_CONSOLE=y
- CONFIG_SERIAL_CORE=y
- CONFIG_SERIAL_CORE_CONSOLE=y
-+# CONFIG_SERIAL_JSM is not set
- CONFIG_UNIX98_PTYS=y
- CONFIG_LEGACY_PTYS=y
- CONFIG_LEGACY_PTY_COUNT=256
-@@ -483,6 +542,11 @@
- # CONFIG_RAW_DRIVER is not set
- 
- #
-+# TPM devices
-+#
-+# CONFIG_TCG_TPM is not set
-+
-+#
- # I2C support
- #
- # CONFIG_I2C is not set
-@@ -493,10 +557,21 @@
- # CONFIG_W1 is not set
- 
- #
-+# Hardware Monitoring support
-+#
-+CONFIG_HWMON=y
-+# CONFIG_HWMON_VID is not set
-+# CONFIG_HWMON_DEBUG_CHIP is not set
-+
-+#
- # Misc devices
- #
- 
- #
-+# Multimedia Capabilities Port drivers
-+#
-+
-+#
- # Multimedia devices
- #
- # CONFIG_VIDEO_DEV is not set
-@@ -518,6 +593,11 @@
- CONFIG_DUMMY_CONSOLE=y
- 
- #
-+# Speakup console speech
-+#
-+# CONFIG_SPEAKUP is not set
-+
-+#
- # Sound
- #
- # CONFIG_SOUND is not set
-@@ -525,35 +605,59 @@
- #
- # USB support
- #
--# CONFIG_USB is not set
- CONFIG_USB_ARCH_HAS_HCD=y
- CONFIG_USB_ARCH_HAS_OHCI=y
-+# CONFIG_USB is not set
- 
- #
--# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support' may also be needed; see USB_STORAGE Help for more information
-+# USB Gadget Support
- #
-+# CONFIG_USB_GADGET is not set
- 
- #
--# USB Gadget Support
-+# MMC/SD Card support
- #
--# CONFIG_USB_GADGET is not set
-+# CONFIG_MMC is not set
-+
-+#
-+# InfiniBand support
-+#
-+# CONFIG_INFINIBAND is not set
-+
-+#
-+# SN Devices
-+#
-+
-+#
-+# Distributed Lock Manager
-+#
-+# CONFIG_DLM is not set
- 
- #
- # File systems
- #
- CONFIG_EXT2_FS=y
- # CONFIG_EXT2_FS_XATTR is not set
-+# CONFIG_EXT2_FS_XIP is not set
- # CONFIG_EXT3_FS is not set
--# CONFIG_JBD is not set
-+# CONFIG_REISER4_FS is not set
- # CONFIG_REISERFS_FS is not set
- # CONFIG_JFS_FS is not set
-+# CONFIG_FS_POSIX_ACL is not set
-+
-+#
-+# XFS support
-+#
- # CONFIG_XFS_FS is not set
-+# CONFIG_OCFS2_FS is not set
- # CONFIG_MINIX_FS is not set
- # CONFIG_ROMFS_FS is not set
-+CONFIG_INOTIFY=y
- # CONFIG_QUOTA is not set
- CONFIG_DNOTIFY=y
- # CONFIG_AUTOFS_FS is not set
- # CONFIG_AUTOFS4_FS is not set
-+# CONFIG_FUSE_FS is not set
- 
- #
- # CD-ROM/DVD Filesystems
-@@ -574,20 +678,18 @@
- CONFIG_PROC_FS=y
- CONFIG_PROC_KCORE=y
- CONFIG_SYSFS=y
--CONFIG_DEVFS_FS=y
--# CONFIG_DEVFS_MOUNT is not set
--# CONFIG_DEVFS_DEBUG is not set
--# CONFIG_DEVPTS_FS_XATTR is not set
- CONFIG_TMPFS=y
--# CONFIG_TMPFS_XATTR is not set
- # CONFIG_HUGETLB_PAGE is not set
- CONFIG_RAMFS=y
-+# CONFIG_CONFIGFS_FS is not set
-+# CONFIG_RELAYFS_FS is not set
- 
- #
- # Miscellaneous filesystems
- #
- # CONFIG_ADFS_FS is not set
- # CONFIG_AFFS_FS is not set
-+# CONFIG_ASFS_FS is not set
- # CONFIG_HFS_FS is not set
- # CONFIG_HFSPLUS_FS is not set
- # CONFIG_BEFS_FS is not set
-@@ -605,13 +707,14 @@
- #
- CONFIG_NFS_FS=y
- CONFIG_NFS_V3=y
-+# CONFIG_NFS_V3_ACL is not set
- CONFIG_NFS_V4=y
- # CONFIG_NFS_DIRECTIO is not set
- # CONFIG_NFSD is not set
- CONFIG_ROOT_NFS=y
- CONFIG_LOCKD=y
- CONFIG_LOCKD_V4=y
--# CONFIG_EXPORTFS is not set
-+CONFIG_NFS_COMMON=y
- CONFIG_SUNRPC=y
- CONFIG_SUNRPC_GSS=y
- CONFIG_RPCSEC_GSS_KRB5=y
-@@ -621,6 +724,7 @@
- # CONFIG_NCP_FS is not set
- # CONFIG_CODA_FS is not set
- # CONFIG_AFS_FS is not set
-+# CONFIG_9P_FS is not set
- 
- #
- # Partition Types
-@@ -637,6 +741,7 @@
- # Library routines
- #
- # CONFIG_CRC_CCITT is not set
-+# CONFIG_CRC16 is not set
- CONFIG_CRC32=y
- # CONFIG_LIBCRC32C is not set
- 
-@@ -648,7 +753,9 @@
- #
- # Kernel hacking
- #
-+# CONFIG_PRINTK_TIME is not set
- # CONFIG_DEBUG_KERNEL is not set
-+CONFIG_LOG_BUF_SHIFT=14
- # CONFIG_SERIAL_TEXT_DEBUG is not set
- 
- #
-@@ -669,6 +776,7 @@
- # CONFIG_CRYPTO_SHA256 is not set
- # CONFIG_CRYPTO_SHA512 is not set
- # CONFIG_CRYPTO_WP512 is not set
-+# CONFIG_CRYPTO_TGR192 is not set
- CONFIG_CRYPTO_DES=y
- # CONFIG_CRYPTO_BLOWFISH is not set
- # CONFIG_CRYPTO_TWOFISH is not set
-@@ -684,3 +792,7 @@
- # CONFIG_CRYPTO_MICHAEL_MIC is not set
- # CONFIG_CRYPTO_CRC32C is not set
- # CONFIG_CRYPTO_TEST is not set
-+
-+#
-+# Hardware crypto devices
-+#
-diff -Nur linux-2.6.13-mm1/arch/ppc/platforms/cpci690.c linux-2.6.13-mm1-mag/arch/ppc/platforms/cpci690.c
---- linux-2.6.13-mm1/arch/ppc/platforms/cpci690.c	2005-08-28 16:41:01.000000000 -0700
-+++ linux-2.6.13-mm1-mag/arch/ppc/platforms/cpci690.c	2005-09-01 17:00:40.000000000 -0700
-@@ -35,11 +35,7 @@
- #define SET_PCI_IDE_NATIVE
- 
- static struct mv64x60_handle	bh;
--static u32 cpci690_br_base;
--
--static const unsigned int cpu_7xx[16] = { /* 7xx & 74xx (but not 745x) */
--	18, 15, 14, 2, 4, 13, 5, 9, 6, 11, 8, 10, 16, 12, 7, 0
--};
-+static void __iomem *cpci690_br_base;
- 
- TODC_ALLOC();
- 
-@@ -55,7 +51,7 @@
- 		 * 	   A   B   C   D
- 		 */
- 		{
--			{ 90, 91, 88, 89}, /* IDSEL 30/20 - Sentinel */
-+			{ 90, 91, 88, 89 }, /* IDSEL 30/20 - Sentinel */
- 		};
- 
- 		const long min_idsel = 20, max_idsel = 20, irqs_per_slot = 4;
-@@ -67,9 +63,9 @@
- 		 * 	   A   B   C   D
- 		 */
- 		{
--			{ 93, 94, 95, 92}, /* IDSEL 28/18 - PMC slot 2 */
--			{  0,  0,  0,  0}, /* IDSEL 29/19 - Not used */
--			{ 94, 95, 92, 93}, /* IDSEL 30/20 - PMC slot 1 */
-+			{ 93, 94, 95, 92 }, /* IDSEL 28/18 - PMC slot 2 */
-+			{  0,  0,  0,  0 }, /* IDSEL 29/19 - Not used */
-+			{ 94, 95, 92, 93 }, /* IDSEL 30/20 - PMC slot 1 */
- 		};
- 
- 		const long min_idsel = 18, max_idsel = 20, irqs_per_slot = 4;
-@@ -77,68 +73,29 @@
- 	}
- }
- 
--static int
--cpci690_get_cpu_speed(void)
--{
--	unsigned long	hid1;
-+#define	GB	(1024UL * 1024UL * 1024UL)
- 
--	hid1 = mfspr(SPRN_HID1) >> 28;
--	return CPCI690_BUS_FREQ * cpu_7xx[hid1]/2;
-+static u32
-+cpci690_get_bus_freq(void)
-+{
-+	if (boot_mem_size >= (1*GB)) /* bus speed based on mem size */
-+		return 100000000;
-+	else
-+		return 133333333;
- }
- 
--#define	KB	(1024UL)
--#define	MB	(1024UL * KB)
--#define	GB	(1024UL * MB)
--
--unsigned long __init
--cpci690_find_end_of_memory(void)
--{
--	u32		mem_ctlr_size;
--	static u32	board_size;
--	static u8	first_time = 1;
--
--	if (first_time) {
--		/* Using cpci690_set_bat() mapping ==> virt addr == phys addr */
--		switch (in_8((u8 *) (cpci690_br_base +
--			CPCI690_BR_MEM_CTLR)) & 0x07) {
--		case 0x01:
--			board_size = 256*MB;
--			break;
--		case 0x02:
--			board_size = 512*MB;
--			break;
--		case 0x03:
--			board_size = 768*MB;
--			break;
--		case 0x04:
--			board_size = 1*GB;
--			break;
--		case 0x05:
--			board_size = 1*GB + 512*MB;
--			break;
--		case 0x06:
--			board_size = 2*GB;
--			break;
--		default:
--			board_size = 0xffffffff; /* use mem ctlr size */
--		} /* switch */
--
--		mem_ctlr_size =  mv64x60_get_mem_size(CONFIG_MV64X60_NEW_BASE,
--			MV64x60_TYPE_GT64260A);
--
--		/* Check that mem ctlr & board reg agree.  If not, pick MIN. */
--		if (board_size != mem_ctlr_size) {
--			printk(KERN_WARNING "Board register & memory controller"
--				"mem size disagree (board reg: 0x%lx, "
--				"mem ctlr: 0x%lx)\n",
--				(ulong)board_size, (ulong)mem_ctlr_size);
--			board_size = min(board_size, mem_ctlr_size);
--		}
-+static const unsigned int cpu_750xx[32] = { /* 750FX & 750GX */
-+	 0,  0,  2,  2,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15,/* 0-15*/
-+	16, 17, 18, 19, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40,  0 /*16-31*/
-+};
- 
--		first_time = 0;
--	} /* if */
 +static int
-+cpci690_get_cpu_freq(void)
++yosemite_show_cpuinfo(struct seq_file *m)
 +{
-+	unsigned long	pll_cfg;
- 
--	return board_size;
-+	pll_cfg = (mfspr(SPRN_HID1) & 0xf8000000) >> 27;
-+	return cpci690_get_bus_freq() * cpu_750xx[pll_cfg]/2;
- }
- 
- static void __init
-@@ -228,7 +185,7 @@
- 	mv64x60_set_32bit_window(&bh, MV64x60_CPU2DEV_0_WIN, CPCI690_BR_BASE,
- 		CPCI690_BR_SIZE, 0);
- 	bh.ci->enable_window_32bit(&bh, MV64x60_CPU2DEV_0_WIN);
--	cpci690_br_base = (u32)ioremap(CPCI690_BR_BASE, CPCI690_BR_SIZE);
-+	cpci690_br_base = ioremap(CPCI690_BR_BASE, CPCI690_BR_SIZE);
- 
- 	mv64x60_set_32bit_window(&bh, MV64x60_CPU2DEV_1_WIN, CPCI690_TODC_BASE,
- 		CPCI690_TODC_SIZE, 0);
-@@ -329,7 +286,7 @@
- 	pdata->max_idle = 40;
- 	pdata->default_baud = CPCI690_MPSC_BAUD;
- 	pdata->brg_clk_src = CPCI690_MPSC_CLK_SRC;
--	pdata->brg_clk_freq = CPCI690_BUS_FREQ;
-+	pdata->brg_clk_freq = cpci690_get_bus_freq();
- }
- 
- static int __init
-@@ -365,7 +322,7 @@
- 	u32	i = 10000;
- 
- 	local_irq_disable();
--	out_8((u8 *)(cpci690_br_base + CPCI690_BR_SW_RESET), 0x11);
-+	out_8((cpci690_br_base + CPCI690_BR_SW_RESET), 0x11);
- 
- 	while (i != 0) i++;
- 	panic("restart failed\n");
-@@ -394,10 +351,40 @@
- static int
- cpci690_show_cpuinfo(struct seq_file *m)
- {
-+	char	*s;
++	seq_printf(m, "vendor\t\t: AMCC\n");
++	seq_printf(m, "machine\t\t: PPC" BOARDNAME "\n");
 +
-+	seq_printf(m, "cpu MHz\t\t: %d\n",
-+		(cpci690_get_cpu_freq() + 500000) / 1000000);
-+	seq_printf(m, "bus MHz\t\t: %d\n",
-+		(cpci690_get_bus_freq() + 500000) / 1000000);
- 	seq_printf(m, "vendor\t\t: " BOARD_VENDOR "\n");
- 	seq_printf(m, "machine\t\t: " BOARD_MACHINE "\n");
--	seq_printf(m, "cpu MHz\t\t: %d\n", cpci690_get_cpu_speed()/1000/1000);
--	seq_printf(m, "bus MHz\t\t: %d\n", CPCI690_BUS_FREQ/1000/1000);
-+	seq_printf(m, "FPGA Revision\t: %d\n",
-+		in_8(cpci690_br_base + CPCI690_BR_MEM_CTLR) >> 5);
++	return 0;
++}
 +
-+	switch(bh.type) {
-+	case MV64x60_TYPE_GT64260A:
-+		s = "gt64260a";
-+		break;
-+	case MV64x60_TYPE_GT64260B:
-+		s = "gt64260b";
-+		break;
-+	case MV64x60_TYPE_MV64360:
-+		s = "mv64360";
-+		break;
-+	case MV64x60_TYPE_MV64460:
-+		s = "mv64460";
-+		break;
-+	default:
-+		s = "Unknown";
++static inline int
++yosemite_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
++{
++	static char pci_irq_table[][4] =
++	/*
++	 *	PCI IDSEL/INTPIN->INTLINE
++	 * 	   A   B   C   D
++	 */
++	{
++		{ 25, 25, 25, 25 },	/* IDSEL 1 - PCI Slot 0 */
++	};
++
++	const long min_idsel = 12, max_idsel = 12, irqs_per_slot = 4;
++	return PCI_IRQ_TABLE_LOOKUP;
++}
++
++static void __init yosemite_set_emacdata(void)
++{
++	struct ocp_def *def;
++	struct ocp_func_emac_data *emacdata;
++
++	/* Set mac_addr and phy mode for each EMAC */
++
++	def = ocp_get_one_device(OCP_VENDOR_IBM, OCP_FUNC_EMAC, 0);
++	emacdata = def->additions;
++	memcpy(emacdata->mac_addr, __res.bi_enetaddr, 6);
++	emacdata->phy_mode = PHY_MODE_RMII;
++
++	def = ocp_get_one_device(OCP_VENDOR_IBM, OCP_FUNC_EMAC, 1);
++	emacdata = def->additions;
++	memcpy(emacdata->mac_addr, __res.bi_enet1addr, 6);
++	emacdata->phy_mode = PHY_MODE_RMII;
++}
++
++static int
++yosemite_exclude_device(unsigned char bus, unsigned char devfn)
++{
++	return (bus == 0 && devfn == 0);
++}
++
++#define PCI_READW(offset) \
++        (readw((void *)((u32)pci_reg_base+offset)))
++
++#define PCI_WRITEW(value, offset) \
++	(writew(value, (void *)((u32)pci_reg_base+offset)))
++
++#define PCI_WRITEL(value, offset) \
++	(writel(value, (void *)((u32)pci_reg_base+offset)))
++
++static void __init
++yosemite_setup_pci(void)
++{
++	void *pci_reg_base;
++	unsigned long memory_size;
++	memory_size = ppc_md.find_end_of_memory();
++
++	pci_reg_base = ioremap64(YOSEMITE_PCIL0_BASE, YOSEMITE_PCIL0_SIZE);
++
++	/* Enable PCI I/O, Mem, and Busmaster cycles */
++	PCI_WRITEW(PCI_READW(PCI_COMMAND) |
++		   PCI_COMMAND_MEMORY |
++		   PCI_COMMAND_MASTER, PCI_COMMAND);
++
++	/* Disable region first */
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PMM0MA);
++
++	/* PLB starting addr: 0x00000000A0000000 */
++	PCI_WRITEL(YOSEMITE_PCI_PHY_MEM_BASE, YOSEMITE_PCIL0_PMM0LA);
++
++	/* PCI start addr, 0xA0000000 (PCI Address) */
++	PCI_WRITEL(YOSEMITE_PCI_MEM_BASE, YOSEMITE_PCIL0_PMM0PCILA);
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PMM0PCIHA);
++
++	/* Enable no pre-fetch, enable region */
++	PCI_WRITEL(((0xffffffff -
++		     (YOSEMITE_PCI_UPPER_MEM - YOSEMITE_PCI_MEM_BASE)) | 0x01),
++		      YOSEMITE_PCIL0_PMM0MA);
++
++	/* Disable region one */
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PMM1MA);
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PMM1LA);
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PMM1PCILA);
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PMM1PCIHA);
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PMM1MA);
++
++	/* Disable region two */
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PMM2MA);
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PMM2LA);
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PMM2PCILA);
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PMM2PCIHA);
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PMM2MA);
++
++	/* Now configure the PCI->PLB windows, we only use PTM1
++	 *
++	 * For Inbound flow, set the window size to all available memory
++	 * This is required because if size is smaller,
++	 * then Eth/PCI DD would fail as PCI card not able to access
++	 * the memory allocated by DD.
++	 */
++
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PTM1MS);	/* disabled region 1 */
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PTM1LA);	/* begin of address map */
++
++	memory_size = 1 << fls(memory_size - 1);
++
++	/* Size low + Enabled */
++	PCI_WRITEL((0xffffffff - (memory_size - 1)) | 0x1, YOSEMITE_PCIL0_PTM1MS);
++
++	eieio();
++	iounmap(pci_reg_base);
++}
++
++static void __init
++yosemite_setup_hose(void)
++{
++	unsigned int bar_response, bar;
++	struct pci_controller *hose;
++
++	yosemite_setup_pci();
++
++	hose = pcibios_alloc_controller();
++
++	if (!hose)
++		return;
++
++	hose->first_busno = 0;
++	hose->last_busno = 0xff;
++
++	hose->pci_mem_offset = YOSEMITE_PCI_MEM_OFFSET;
++
++	pci_init_resource(&hose->io_resource,
++			YOSEMITE_PCI_LOWER_IO,
++			YOSEMITE_PCI_UPPER_IO,
++			IORESOURCE_IO,
++			"PCI host bridge");
++
++	pci_init_resource(&hose->mem_resources[0],
++			YOSEMITE_PCI_LOWER_MEM,
++			YOSEMITE_PCI_UPPER_MEM,
++			IORESOURCE_MEM,
++			"PCI host bridge");
++
++	ppc_md.pci_exclude_device = yosemite_exclude_device;
++
++	hose->io_space.start = YOSEMITE_PCI_LOWER_IO;
++	hose->io_space.end = YOSEMITE_PCI_UPPER_IO;
++	hose->mem_space.start = YOSEMITE_PCI_LOWER_MEM;
++	hose->mem_space.end = YOSEMITE_PCI_UPPER_MEM;
++	isa_io_base =
++		(unsigned long)ioremap64(YOSEMITE_PCI_IO_BASE, YOSEMITE_PCI_IO_SIZE);
++	hose->io_base_virt = (void *)isa_io_base;
++
++	setup_indirect_pci(hose,
++			YOSEMITE_PCI_CFGA_PLB32,
++			YOSEMITE_PCI_CFGD_PLB32);
++	hose->set_cfg_type = 1;
++
++	/* Zero config bars */
++	for (bar = PCI_BASE_ADDRESS_1; bar <= PCI_BASE_ADDRESS_2; bar += 4) {
++		early_write_config_dword(hose, hose->first_busno,
++					 PCI_FUNC(hose->first_busno), bar,
++					 0x00000000);
++		early_read_config_dword(hose, hose->first_busno,
++					PCI_FUNC(hose->first_busno), bar,
++					&bar_response);
 +	}
-+	seq_printf(m, "bridge type\t: %s\n", s);
-+	seq_printf(m, "bridge rev\t: 0x%x\n", bh.rev);
-+#if defined(CONFIG_NOT_COHERENT_CACHE)
-+	seq_printf(m, "coherency\t: %s\n", "off");
-+#else
-+	seq_printf(m, "coherency\t: %s\n", "on");
++
++	hose->last_busno = pciauto_bus_scan(hose, hose->first_busno);
++
++	ppc_md.pci_swizzle = common_swizzle;
++	ppc_md.pci_map_irq = yosemite_map_irq;
++}
++
++static void __init
++yosemite_early_serial_map(void)
++{
++	struct uart_port port;
++
++	/* Setup ioremapped serial port access */
++	memset(&port, 0, sizeof(port));
++	port.membase = ioremap64(PPC440EP_UART0_ADDR, 8);
++	port.irq = 0;
++	port.uartclk = clocks.uart0;
++	port.regshift = 0;
++	port.iotype = SERIAL_IO_MEM;
++	port.flags = ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST;
++	port.line = 0;
++
++	if (early_serial_setup(&port) != 0) {
++		printk("Early serial init of port 0 failed\n");
++	}
++
++#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
++	/* Configure debug serial access */
++	gen550_init(0, &port);
 +#endif
- 
- 	return 0;
- }
-@@ -407,7 +394,7 @@
- {
- 	ulong freq;
- 
--	freq = CPCI690_BUS_FREQ / 4;
-+	freq = cpci690_get_bus_freq() / 4;
- 
- 	printk(KERN_INFO "time_init: decrementer frequency = %lu.%.6lu MHz\n",
- 	       freq/1000000, freq%1000000);
-@@ -416,25 +403,12 @@
- 	tb_to_us = mulhwu_scale_factor(freq, 1000000);
- }
- 
--static __inline__ void
--cpci690_set_bat(u32 addr, u32 size)
--{
--	addr &= 0xfffe0000;
--	size &= 0x1ffe0000;
--	size = ((size >> 17) - 1) << 2;
--
--	mb();
--	mtspr(SPRN_DBAT1U, addr | size | 0x2); /* Vs == 1; Vp == 0 */
--	mtspr(SPRN_DBAT1L, addr | 0x2a); /* WIMG bits == 0101; PP == r/w access */
--	mb();
--}
--
--#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
-+#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB_MPSC)
- static void __init
- cpci690_map_io(void)
- {
- 	io_block_mapping(CONFIG_MV64X60_NEW_BASE, CONFIG_MV64X60_NEW_BASE,
--		128 * KB, _PAGE_IO);
-+		128 * 1024, _PAGE_IO);
- }
- #endif
- 
-@@ -442,14 +416,15 @@
- platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
- 	      unsigned long r6, unsigned long r7)
- {
--#ifdef CONFIG_BLK_DEV_INITRD
--	initrd_start=initrd_end=0;
--	initrd_below_start_ok=0;
--#endif /* CONFIG_BLK_DEV_INITRD */
--
- 	parse_bootinfo(find_bootinfo());
- 
--	loops_per_jiffy = cpci690_get_cpu_speed() / HZ;
++
++	port.membase = ioremap64(PPC440EP_UART1_ADDR, 8);
++	port.irq = 1;
++	port.uartclk = clocks.uart1;
++	port.line = 1;
++
++	if (early_serial_setup(&port) != 0) {
++		printk("Early serial init of port 1 failed\n");
++	}
++
++#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
++	/* Configure debug serial access */
++	gen550_init(1, &port);
++#endif
++}
++
++static void __init
++yosemite_setup_arch(void)
++{
++	yosemite_set_emacdata();
++
++	ibm440gx_get_clocks(&clocks, YOSEMITE_SYSCLK, 6 * 1843200);
++	ocp_sys_info.opb_bus_freq = clocks.opb;
++
++	/* init to some ~sane value until calibrate_delay() runs */
++        loops_per_jiffy = 50000000/HZ;
++
++	/* Setup PCI host bridge */
++	yosemite_setup_hose();
++
 +#ifdef CONFIG_BLK_DEV_INITRD
-+	/* take care of initrd if we have one */
++	if (initrd_start)
++		ROOT_DEV = Root_RAM0;
++	else
++#endif
++#ifdef CONFIG_ROOT_NFS
++		ROOT_DEV = Root_NFS;
++#else
++		ROOT_DEV = Root_HDA1;
++#endif
++
++	yosemite_early_serial_map();
++
++	/* Identify the system */
++	printk( "AMCC PowerPC " BOARDNAME " Platform\n" );
++}
++
++void __init platform_init(unsigned long r3, unsigned long r4,
++		unsigned long r5, unsigned long r6, unsigned long r7)
++{
++	parse_bootinfo(find_bootinfo());
++
++	/*
++	 * If we were passed in a board information, copy it into the
++	 * residual data area.
++	 */
++	if (r3)
++		__res = *(bd_t *)(r3 + KERNELBASE);
++
++#if defined(CONFIG_BLK_DEV_INITRD)
++	/*
++	 * If the init RAM disk has been configured in, and there's a valid
++	 * starting address for it, set it up.
++	 */
 +	if (r4) {
 +		initrd_start = r4 + KERNELBASE;
 +		initrd_end = r5 + KERNELBASE;
 +	}
-+#endif /* CONFIG_BLK_DEV_INITRD */
- 
- 	isa_mem_base = 0;
- 
-@@ -460,7 +435,6 @@
- 	ppc_md.restart = cpci690_restart;
- 	ppc_md.power_off = cpci690_power_off;
- 	ppc_md.halt = cpci690_halt;
--	ppc_md.find_end_of_memory = cpci690_find_end_of_memory;
- 	ppc_md.time_init = todc_time_init;
- 	ppc_md.set_rtc_time = todc_set_rtc_time;
- 	ppc_md.get_rtc_time = todc_get_rtc_time;
-@@ -468,22 +442,13 @@
- 	ppc_md.nvram_write_val = todc_direct_write_val;
- 	ppc_md.calibrate_decr = cpci690_calibrate_decr;
- 
--	/*
--	 * Need to map in board regs (used by cpci690_find_end_of_memory())
--	 * and the bridge's regs (used by progress);
--	 */
--	cpci690_set_bat(CPCI690_BR_BASE, 32 * MB);
--	cpci690_br_base = CPCI690_BR_BASE;
--
--#ifdef	CONFIG_SERIAL_TEXT_DEBUG
-+#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB_MPSC)
- 	ppc_md.setup_io_mappings = cpci690_map_io;
-+#ifdef CONFIG_SERIAL_TEXT_DEBUG
- 	ppc_md.progress = mv64x60_mpsc_progress;
- 	mv64x60_progress_init(CONFIG_MV64X60_NEW_BASE);
- #endif	/* CONFIG_SERIAL_TEXT_DEBUG */
--#ifdef	CONFIG_KGDB
--	ppc_md.setup_io_mappings = cpci690_map_io;
--	ppc_md.early_serial_map = cpci690_early_serial_map;
--#endif	/* CONFIG_KGDB */
-+#endif	/* defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB_MPSC) */
- 
- #if defined(CONFIG_SERIAL_MPSC)
- 	platform_notify = cpci690_platform_notify;
-diff -Nur linux-2.6.13-mm1/arch/ppc/platforms/cpci690.h linux-2.6.13-mm1-mag/arch/ppc/platforms/cpci690.h
---- linux-2.6.13-mm1/arch/ppc/platforms/cpci690.h	2005-08-28 16:41:01.000000000 -0700
-+++ linux-2.6.13-mm1-mag/arch/ppc/platforms/cpci690.h	2005-09-01 17:00:40.000000000 -0700
-@@ -73,6 +73,4 @@
- #define	CPCI690_MPSC_BAUD			9600
- #define	CPCI690_MPSC_CLK_SRC			8 /* TCLK */
- 
--#define	CPCI690_BUS_FREQ			133333333
--
- #endif /* __PPC_PLATFORMS_CPCI690_H */
++#endif  /* CONFIG_BLK_DEV_INITRD */
++
++	/* Copy the kernel command line arguments to a safe place. */
++
++	if (r6) {
++		*(char *) (r7 + KERNELBASE) = 0;
++		strcpy(cmd_line, (char *) (r6 + KERNELBASE));
++	}
++
++	ibm44x_platform_init();
++
++	ppc_md.setup_arch = yosemite_setup_arch;
++	ppc_md.show_cpuinfo = yosemite_show_cpuinfo;
++	ppc_md.get_irq = NULL;		/* Set in ppc4xx_pic_init() */
++
++	ppc_md.calibrate_decr = yosemite_calibrate_decr;
++
++#ifdef CONFIG_KGDB
++	ppc_md.early_serial_map = yosemite_early_serial_map;
++#endif
++}
+diff -uprN b/arch/ppc/platforms/4xx/yosemite.h c/arch/ppc/platforms/4xx/yosemite.h
+--- b/arch/ppc/platforms/4xx/yosemite.h	1969-12-31 17:00:00.000000000 -0700
++++ c/arch/ppc/platforms/4xx/yosemite.h	2005-08-29 12:58:32.000000000 -0500
+@@ -0,0 +1,85 @@
++/*
++ * arch/ppc/platforms/4xx/yosemite.h
++ *
++ * Yosemite and Yellowstone board definitions
++ *
++ * Wade Farnsworth <wfarnsworth@mvista.com>
++ *
++ * Copyright 2004 MontaVista Software Inc.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++#ifdef __KERNEL__
++#ifndef __ASM_YOSEMITE_H__
++#define __ASM_YOSEMITE_H__
++
++#include <linux/config.h>
++#include <platforms/4xx/ibm440ep.h>
++
++/* Default clock rate */
++#define YOSEMITE_TMRCLK			50000000
++#define YOSEMITE_SYSCLK			66666666
++
++/*
++ * Serial port defines
++ */
++#define RS_TABLE_SIZE			2
++
++#define UART0_IO_BASE			0xEF600300
++#define UART1_IO_BASE			0xEF600400
++
++#define BASE_BAUD			33177600/3/16
++#define UART0_INT			0
++#define UART1_INT			1
++
++#define STD_UART_OP(num)					\
++	{ 0, BASE_BAUD, 0, UART##num##_INT,			\
++		(ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST),	\
++		iomem_base: UART##num##_IO_BASE,		\
++		io_type: SERIAL_IO_MEM},
++
++#define SERIAL_PORT_DFNS	\
++	STD_UART_OP(0)		\
++	STD_UART_OP(1)
++
++/* PCI support */
++#define YOSEMITE_PCI_CFGA_PLB32		0xeec00000
++#define YOSEMITE_PCI_CFGD_PLB32		0xeec00004
++
++#define YOSEMITE_PCI_IO_BASE		0x00000000e0000000ULL
++#define YOSEMITE_PCI_IO_SIZE		0x00010000
++#define YOSEMITE_PCI_MEM_OFFSET		0x00000000
++#define YOSEMITE_PCI_PHY_MEM_BASE	0x00000000a0000000ULL
++
++#define YOSEMITE_PCI_LOWER_IO		0x00000000
++#define YOSEMITE_PCI_UPPER_IO		0x0000ffff
++#define YOSEMITE_PCI_LOWER_MEM		0xa0000000
++#define YOSEMITE_PCI_UPPER_MEM		0xafffffff
++#define YOSEMITE_PCI_MEM_BASE		0xa0000000
++
++#define YOSEMITE_PCIL0_BASE		0x00000000ef400000ULL
++#define YOSEMITE_PCIL0_SIZE		0x40
++
++#define YOSEMITE_PCIL0_PMM0LA		0x000
++#define YOSEMITE_PCIL0_PMM0MA		0x004
++#define YOSEMITE_PCIL0_PMM0PCILA	0x008
++#define YOSEMITE_PCIL0_PMM0PCIHA	0x00C
++#define YOSEMITE_PCIL0_PMM1LA		0x010
++#define YOSEMITE_PCIL0_PMM1MA		0x014
++#define YOSEMITE_PCIL0_PMM1PCILA	0x018
++#define YOSEMITE_PCIL0_PMM1PCIHA	0x01C
++#define YOSEMITE_PCIL0_PMM2LA		0x020
++#define YOSEMITE_PCIL0_PMM2MA		0x024
++#define YOSEMITE_PCIL0_PMM2PCILA	0x028
++#define YOSEMITE_PCIL0_PMM2PCIHA	0x02C
++#define YOSEMITE_PCIL0_PTM1MS		0x030
++#define YOSEMITE_PCIL0_PTM1LA		0x034
++#define YOSEMITE_PCIL0_PTM2MS		0x038
++#define YOSEMITE_PCIL0_PTM2LA		0x03C
++
++#endif                          /* __ASM_YOSEMITE_H__ */
++#endif                          /* __KERNEL__ */
+diff -uprN b/arch/ppc/syslib/ibm440gx_common.c c/arch/ppc/syslib/ibm440gx_common.c
+--- b/arch/ppc/syslib/ibm440gx_common.c	2005-08-28 18:41:01.000000000 -0500
++++ c/arch/ppc/syslib/ibm440gx_common.c	2005-08-29 14:33:05.000000000 -0500
+@@ -34,7 +34,7 @@ void __init ibm440gx_get_clocks(struct i
+  	u32 plld  = CPR_READ(DCRN_CPR_PLLD);
+  	u32 uart0 = SDR_READ(DCRN_SDR_UART0);
+  	u32 uart1 = SDR_READ(DCRN_SDR_UART1);
+-#ifdef CONFIG_440EP
++#if defined(CONFIG_440EP) || defined(CONFIG_440GR)
+  	u32 uart2 = SDR_READ(DCRN_SDR_UART2);
+  	u32 uart3 = SDR_READ(DCRN_SDR_UART3);
+  #endif
+@@ -100,7 +100,7 @@ bypass:
+  		p->uart1 = ser_clk;
+  	else
+  		p->uart1 = p->plb / __fix_zero(uart1 & 0xff, 256);
+-#ifdef CONFIG_440EP
++#if defined(CONFIG_440EP) || defined(CONFIG_440GR)
+  	if (uart2 & 0x00800000)
+  		p->uart2 = ser_clk;
+  	else
+diff -uprN b/arch/ppc/syslib/ibm44x_common.h c/arch/ppc/syslib/ibm44x_common.h
+--- b/arch/ppc/syslib/ibm44x_common.h	2005-08-28 18:41:01.000000000 -0500
++++ c/arch/ppc/syslib/ibm44x_common.h	2005-08-30 11:28:57.000000000 -0500
+@@ -29,7 +29,7 @@ struct ibm44x_clocks {
+  	unsigned int ebc;	/* PerClk */
+  	unsigned int uart0;
+  	unsigned int uart1;
+-#ifdef CONFIG_440EP
++#if defined(CONFIG_440EP) || defined(CONFIG_440GR)
+  	unsigned int uart2;
+  	unsigned int uart3;
+  #endif
+diff -uprN b/arch/ppc/syslib/Makefile c/arch/ppc/syslib/Makefile
+--- b/arch/ppc/syslib/Makefile	2005-08-28 18:41:01.000000000 -0500
++++ c/arch/ppc/syslib/Makefile	2005-08-30 11:14:26.000000000 -0500
+@@ -12,6 +12,7 @@ obj-$(CONFIG_PPC_OCP)		+= ocp.o
+  obj-$(CONFIG_IBM_OCP)		+= ibm_ocp.o
+  obj-$(CONFIG_44x)		+= ibm44x_common.o
+  obj-$(CONFIG_440EP)		+= ibm440gx_common.o
++obj-$(CONFIG_440GR)		+= ibm440gx_common.o
+  obj-$(CONFIG_440GP)		+= ibm440gp_common.o
+  obj-$(CONFIG_440GX)		+= ibm440gx_common.o
+  obj-$(CONFIG_440SP)		+= ibm440gx_common.o ibm440sp_common.o
+@@ -82,6 +83,8 @@ obj-$(CONFIG_SANDPOINT)		+= i8259.o pci_
+  obj-$(CONFIG_SBC82xx)		+= todc_time.o
+  obj-$(CONFIG_SPRUCE)		+= cpc700_pic.o indirect_pci.o pci_auto.o \
+  				   todc_time.o
++obj-$(CONFIG_YELLOWSTONE)	+= indirect_pci.o pci_auto.o
++obj-$(CONFIG_YOSEMITE)		+= indirect_pci.o pci_auto.o
+  obj-$(CONFIG_8260)		+= m8260_setup.o
+  obj-$(CONFIG_PCI_8260)		+= m82xx_pci.o indirect_pci.o pci_auto.o
+  obj-$(CONFIG_8260_PCI9)		+= m8260_pci_erratum9.o
+diff -uprN b/include/asm-ppc/ibm44x.h c/include/asm-ppc/ibm44x.h
+--- b/include/asm-ppc/ibm44x.h	2005-08-28 18:41:01.000000000 -0500
++++ c/include/asm-ppc/ibm44x.h	2005-08-30 11:17:04.000000000 -0500
+@@ -37,7 +37,7 @@
+  /* LS 32-bits of UART0 physical address location for early serial text debug */
+  #if defined(CONFIG_440SP)
+  #define UART0_PHYS_IO_BASE	0xf0000200
+-#elif defined(CONFIG_440EP)
++#elif defined(CONFIG_440EP) || defined(CONFIG_440GR)
+  #define UART0_PHYS_IO_BASE	0xe0000000
+  #else
+  #define UART0_PHYS_IO_BASE	0x40000200
+@@ -56,7 +56,7 @@
+  #define	PPC44x_PCICFG_PAGE	0x0000000900000000ULL
+  #define	PPC44x_PCIIO_PAGE	PPC44x_PCICFG_PAGE
+  #define	PPC44x_PCIMEM_PAGE	0x0000000a00000000ULL
+-#elif defined(CONFIG_440EP)
++#elif defined(CONFIG_440EP) || defined(CONFIG_440GR)
+  #define PPC44x_IO_PAGE		0x0000000000000000ULL
+  #define PPC44x_PCICFG_PAGE	0x0000000000000000ULL
+  #define PPC44x_PCIIO_PAGE	PPC44x_PCICFG_PAGE
+@@ -82,7 +82,7 @@
+  #define PPC44x_PCI2CFG_HI	0x2ec00007UL
+  #define PPC44x_PCIMEM_LO	0x80000000UL
+  #define PPC44x_PCIMEM_HI	0xdfffffffUL
+-#elif defined(CONFIG_440EP)
++#elif defined(CONFIG_440EP) || defined(CONFIG_440GR)
+  #define PPC44x_IO_LO		0xef500000UL
+  #define PPC44x_IO_HI		0xefffffffUL
+  #define PPC44x_PCI0CFG_LO	0xeec00000UL
+@@ -166,7 +166,7 @@
+  #define DCRN_SDR_UART0		0x0120
+  #define DCRN_SDR_UART1		0x0121
+
+-#ifdef CONFIG_440EP
++#if defined(CONFIG_440EP) || defined(CONFIG_440GR)
+  #define DCRN_SDR_UART2		0x0122
+  #define DCRN_SDR_UART3		0x0123
+  #define DCRN_SDR_CUST0		0x4000
+@@ -189,7 +189,7 @@
+  #define DCRNCAP_DMA_SG		1	/* have DMA scatter/gather capability */
+  #define DCRN_MAL_BASE		0x180
+
+-#ifdef CONFIG_440EP
++#if defined(CONFIG_440EP) || defined(CONFIG_440GR)
+  #define DCRN_DMA2P40_BASE	0x300
+  #define DCRN_DMA2P41_BASE	0x308
+  #define DCRN_DMA2P42_BASE	0x310
+diff -uprN b/include/asm-ppc/ibm4xx.h c/include/asm-ppc/ibm4xx.h
+--- b/include/asm-ppc/ibm4xx.h	2005-08-28 18:41:01.000000000 -0500
++++ c/include/asm-ppc/ibm4xx.h	2005-08-29 14:13:32.000000000 -0500
+@@ -113,6 +113,10 @@ void ppc4xx_init(unsigned long r3, unsig
+  #include <platforms/4xx/ocotea.h>
+  #endif
+
++#if defined(CONFIG_YELLOWSTONE) || defined(CONFIG_YOSEMITE)
++#include <platforms/4xx/yosemite.h>
++#endif
++
+  #ifndef __ASSEMBLY__
+  #ifdef CONFIG_40x
+  /*
