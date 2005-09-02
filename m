@@ -1,12 +1,12 @@
 Return-Path: <mgreer@mvista.com>
-Date: Thu, 1 Sep 2005 17:52:28 -0700
+Date: Thu, 1 Sep 2005 17:55:29 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
 To: Andrew Morton <akpm@osdl.org>
-Message-ID: <20050902005228.GB10106@mag.az.mvista.com>
+Message-ID: <20050902005529.GC10106@mag.az.mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-embedded <Linuxppc-embedded@ozlabs.org>
-Subject: [PATCH 2.6.13-mm1] ppc32: katana updates
+Subject: [PATCH 2.6.13-mm1] ppc32: cpci690 updates
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -17,52 +17,90 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Update the katana platform support code:
-- if booted as zImage, pass mem size in via bi_req from bootwrapper
-- if booted as uImage, get mem size from bd_info passed in from u-boot
-- add support for 82544 present on katana 752i's
-- set cacheline size on pci devices
+Update the cpci690 platform code:
+- pass mem size in from bootwrapper via bi_rec
 - some minor fixups
 
 Signed-off-by: Mark A. Greer <mgreer@mvista.com>
 --
 
-diff -Nur linux-2.6.13-mm1/arch/ppc/boot/simple/misc-katana.c linux-2.6.13-mm1-mag/arch/ppc/boot/simple/misc-katana.c
---- linux-2.6.13-mm1/arch/ppc/boot/simple/misc-katana.c	2005-08-28 16:41:01.000000000 -0700
-+++ linux-2.6.13-mm1-mag/arch/ppc/boot/simple/misc-katana.c	2005-09-01 17:00:31.000000000 -0700
-@@ -26,6 +26,8 @@
- #define	min(a,b)	(((a) < (b)) ? (a) : (b))
- #endif
+diff -Nur linux-2.6.13-mm1/arch/ppc/boot/simple/misc-cpci690.c linux-2.6.13-mm1-mag/arch/ppc/boot/simple/misc-cpci690.c
+--- linux-2.6.13-mm1/arch/ppc/boot/simple/misc-cpci690.c	2005-08-28 16:41:01.000000000 -0700
++++ linux-2.6.13-mm1-mag/arch/ppc/boot/simple/misc-cpci690.c	2005-09-01 17:00:39.000000000 -0700
+@@ -12,16 +12,56 @@
+  */
  
-+unsigned long mv64360_get_mem_size(void);
+ #include <linux/types.h>
++#include <asm/io.h>
+ #include <platforms/cpci690.h>
+ 
++#define	KB	(1024UL)
++#define	MB	(1024UL*KB)
++#define	GB	(1024UL*MB)
 +
- void
- mv64x60_board_init(void __iomem *old_base, void __iomem *new_base)
- {
-@@ -35,3 +37,9 @@
- 		min(katana_bus_freq((void __iomem *)KATANA_CPLD_BASE),
- 			MV64x60_TCLK_FREQ_MAX);
- }
+ extern u32 mv64x60_console_baud;
+ extern u32 mv64x60_mpsc_clk_src;
+ extern u32 mv64x60_mpsc_clk_freq;
+ 
++u32 mag = 0xffff;
 +
 +unsigned long
 +get_mem_size(void)
 +{
-+	return mv64360_get_mem_size();
++	u32	size;
++
++	switch (in_8(((void __iomem *)CPCI690_BR_BASE + CPCI690_BR_MEM_CTLR))
++			& 0x07) {
++	case 0x01:
++		size = 256*MB;
++		break;
++	case 0x02:
++		size = 512*MB;
++		break;
++	case 0x03:
++		size = 768*MB;
++		break;
++	case 0x04:
++		size = 1*GB;
++		break;
++	case 0x05:
++		size = 1*GB + 512*MB;
++		break;
++	case 0x06:
++		size = 2*GB;
++		break;
++	default:
++		size = 0;
++	}
++
++	return size;
 +}
-diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-mag/arch/ppc/configs/katana_defconfig
---- linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig	2005-08-28 16:41:01.000000000 -0700
-+++ linux-2.6.13-mm1-mag/arch/ppc/configs/katana_defconfig	2005-09-01 17:16:09.000000000 -0700
-@@ -1,7 +1,7 @@
++
+ void
+ mv64x60_board_init(void __iomem *old_base, void __iomem *new_base)
+ {
+ 	mv64x60_console_baud = CPCI690_MPSC_BAUD;
+ 	mv64x60_mpsc_clk_src = CPCI690_MPSC_CLK_SRC;
+-	mv64x60_mpsc_clk_freq = CPCI690_BUS_FREQ;
++	mv64x60_mpsc_clk_freq =
++		(get_mem_size() >= (1*GB)) ? 100000000 : 133333333;
+ }
+diff -Nur linux-2.6.13-mm1/arch/ppc/configs/cpci690_defconfig linux-2.6.13-mm1-mag/arch/ppc/configs/cpci690_defconfig
+--- linux-2.6.13-mm1/arch/ppc/configs/cpci690_defconfig	2005-08-28 16:41:01.000000000 -0700
++++ linux-2.6.13-mm1-mag/arch/ppc/configs/cpci690_defconfig	2005-09-01 17:10:44.000000000 -0700
+@@ -1,15 +1,17 @@
  #
  # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.11
--# Tue Mar  8 17:31:00 2005
+-# Linux kernel version: 2.6.10-rc2
+-# Fri Dec  3 15:56:10 2004
 +# Linux kernel version: 2.6.13-mm1
-+# Thu Sep  1 17:16:03 2005
++# Thu Sep  1 17:10:37 2005
  #
  CONFIG_MMU=y
  CONFIG_GENERIC_HARDIRQS=y
-@@ -11,6 +11,7 @@
+ CONFIG_RWSEM_XCHGADD_ALGORITHM=y
++CONFIG_GENERIC_CALIBRATE_DELAY=y
+ CONFIG_HAVE_DEC_LOCK=y
  CONFIG_PPC=y
  CONFIG_PPC32=y
  CONFIG_GENERIC_NVRAM=y
@@ -70,7 +108,7 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
  
  #
  # Code maturity level options
-@@ -18,28 +19,31 @@
+@@ -17,33 +19,38 @@
  CONFIG_EXPERIMENTAL=y
  CONFIG_CLEAN_COMPILE=y
  CONFIG_BROKEN_ON_SMP=y
@@ -81,7 +119,7 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
  #
  CONFIG_LOCALVERSION=""
 +CONFIG_LOCALVERSION_AUTO=y
- CONFIG_SWAP=y
+ # CONFIG_SWAP is not set
  CONFIG_SYSVIPC=y
  # CONFIG_POSIX_MQUEUE is not set
  # CONFIG_BSD_PROCESS_ACCT is not set
@@ -97,14 +135,21 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
  # CONFIG_KALLSYMS_EXTRA_PASS is not set
 +CONFIG_PRINTK=y
 +CONFIG_BUG=y
- CONFIG_BASE_FULL=y
++CONFIG_BASE_FULL=y
  CONFIG_FUTEX=y
  CONFIG_EPOLL=y
 -# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
  CONFIG_SHMEM=y
  CONFIG_CC_ALIGN_FUNCTIONS=0
  CONFIG_CC_ALIGN_LABELS=0
-@@ -68,15 +72,23 @@
+ CONFIG_CC_ALIGN_LOOPS=0
+ CONFIG_CC_ALIGN_JUMPS=0
+ # CONFIG_TINY_SHMEM is not set
++CONFIG_BASE_SMALL=0
+ 
+ #
+ # Loadable module support
+@@ -65,38 +72,42 @@
  # CONFIG_POWER3 is not set
  # CONFIG_POWER4 is not set
  # CONFIG_8xx is not set
@@ -115,10 +160,9 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
  # CONFIG_TAU is not set
 +# CONFIG_KEXEC is not set
  # CONFIG_CPU_FREQ is not set
--# CONFIG_83xx is not set
 +# CONFIG_WANT_EARLY_SERIAL is not set
  CONFIG_PPC_STD_MMU=y
- CONFIG_NOT_COHERENT_CACHE=y
+ # CONFIG_NOT_COHERENT_CACHE is not set
  
  #
 +# Performance-monitoring counters support
@@ -129,47 +173,57 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
  # Platform options
  #
  # CONFIG_PPC_MULTIPLATFORM is not set
-@@ -84,21 +96,18 @@
- CONFIG_KATANA=y
+ # CONFIG_APUS is not set
+ # CONFIG_KATANA is not set
+-# CONFIG_DMV182 is not set
  # CONFIG_WILLOW is not set
- # CONFIG_CPCI690 is not set
+ CONFIG_CPCI690=y
 -# CONFIG_PCORE is not set
  # CONFIG_POWERPMC250 is not set
+-# CONFIG_EV64260 is not set
+-# CONFIG_DB64360 is not set
  # CONFIG_CHESTNUT is not set
  # CONFIG_SPRUCE is not set
 +# CONFIG_HDPU is not set
- # CONFIG_EV64260 is not set
++# CONFIG_EV64260 is not set
  # CONFIG_LOPEC is not set
 -# CONFIG_MCPN765 is not set
  # CONFIG_MVME5100 is not set
  # CONFIG_PPLUS is not set
  # CONFIG_PRPMC750 is not set
  # CONFIG_PRPMC800 is not set
+-# CONFIG_PRPMC880 is not set
  # CONFIG_SANDPOINT is not set
- # CONFIG_RADSTONE_PPC7D is not set
 -# CONFIG_ADIR is not set
 -# CONFIG_K2 is not set
++# CONFIG_RADSTONE_PPC7D is not set
  # CONFIG_PAL4 is not set
  # CONFIG_GEMINI is not set
  # CONFIG_EST8260 is not set
-@@ -109,6 +118,8 @@
+@@ -105,22 +116,41 @@
+ # CONFIG_RPX8260 is not set
+ # CONFIG_TQM8260 is not set
  # CONFIG_ADS8272 is not set
- # CONFIG_PQ2FADS is not set
++# CONFIG_PQ2FADS is not set
  # CONFIG_LITE5200 is not set
 +# CONFIG_MPC834x_SYS is not set
 +# CONFIG_EV64360 is not set
- CONFIG_MV64360=y
- CONFIG_MV64X60=y
++CONFIG_GT64260=y
++CONFIG_MV64X60=y
  
-@@ -118,12 +129,28 @@
- CONFIG_MV64X60_BASE=0xf8100000
- CONFIG_MV64X60_NEW_BASE=0xf8100000
+ #
+ # Set bridge options
+ #
+ CONFIG_MV64X60_BASE=0xf1000000
+ CONFIG_MV64X60_NEW_BASE=0xf1000000
+-CONFIG_GT64260=y
+-CONFIG_MV64X60=y
  # CONFIG_SMP is not set
 +CONFIG_HIGHMEM=y
-+# CONFIG_HZ_100 is not set
-+CONFIG_HZ_250=y
++CONFIG_HZ_100=y
++# CONFIG_HZ_250 is not set
 +# CONFIG_HZ_1000 is not set
-+CONFIG_HZ=250
++CONFIG_HZ=100
 +CONFIG_PREEMPT_NONE=y
 +# CONFIG_PREEMPT_VOLUNTARY is not set
  # CONFIG_PREEMPT is not set
@@ -192,30 +246,20 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
  
  #
  # Bus options
-@@ -132,7 +159,6 @@
+@@ -129,7 +159,11 @@
  CONFIG_PCI=y
  CONFIG_PCI_DOMAINS=y
  CONFIG_PCI_LEGACY_PROC=y
 -CONFIG_PCI_NAMES=y
++
++#
++# PCCARD (PCMCIA/CardBus) support
++#
++# CONFIG_PCCARD is not set
  
  #
- # PCCARD (PCMCIA/CardBus) support
-@@ -140,13 +166,10 @@
- # CONFIG_PCCARD is not set
- 
- #
--# PC-card bridges
--#
--
--#
  # Advanced setup
- #
- CONFIG_ADVANCED_OPTIONS=y
-+# CONFIG_HIGHMEM_START_BOOL is not set
- CONFIG_HIGHMEM_START=0xfe000000
- # CONFIG_LOWMEM_SIZE_BOOL is not set
- CONFIG_LOWMEM_SIZE=0x30000000
-@@ -162,6 +185,76 @@
+@@ -146,6 +180,76 @@
  CONFIG_BOOT_LOAD=0x00800000
  
  #
@@ -292,41 +336,23 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
  # Device Drivers
  #
  
-@@ -177,8 +270,8 @@
+@@ -154,6 +258,7 @@
  #
- CONFIG_MTD=y
- # CONFIG_MTD_DEBUG is not set
--CONFIG_MTD_PARTITIONS=y
- CONFIG_MTD_CONCAT=y
-+CONFIG_MTD_PARTITIONS=y
- # CONFIG_MTD_REDBOOT_PARTS is not set
- # CONFIG_MTD_CMDLINE_PARTS is not set
- 
-@@ -212,6 +305,7 @@
- CONFIG_MTD_CFI_I2=y
- # CONFIG_MTD_CFI_I4 is not set
- # CONFIG_MTD_CFI_I8 is not set
-+# CONFIG_MTD_OTP is not set
- CONFIG_MTD_CFI_INTELEXT=y
- # CONFIG_MTD_CFI_AMDSTD is not set
- # CONFIG_MTD_CFI_STAA is not set
-@@ -219,7 +313,6 @@
- # CONFIG_MTD_RAM is not set
- # CONFIG_MTD_ROM is not set
- # CONFIG_MTD_ABSENT is not set
--# CONFIG_MTD_XIP is not set
+ CONFIG_STANDALONE=y
+ CONFIG_PREVENT_FIRMWARE_BUILD=y
++# CONFIG_FW_LOADER is not set
  
  #
- # Mapping drivers for chip access
-@@ -229,6 +322,7 @@
- CONFIG_MTD_PHYSMAP_START=0xe0000000
- CONFIG_MTD_PHYSMAP_LEN=0x0
- CONFIG_MTD_PHYSMAP_BANKWIDTH=4
-+# CONFIG_MTD_PLATRAM is not set
- 
- #
- # Self-contained MTD device drivers
-@@ -278,7 +372,6 @@
+ # Memory Technology Devices (MTD)
+@@ -177,6 +282,7 @@
+ # CONFIG_BLK_CPQ_CISS_DA is not set
+ # CONFIG_BLK_DEV_DAC960 is not set
+ # CONFIG_BLK_DEV_UMEM is not set
++# CONFIG_BLK_DEV_COW_COMMON is not set
+ CONFIG_BLK_DEV_LOOP=y
+ # CONFIG_BLK_DEV_CRYPTOLOOP is not set
+ # CONFIG_BLK_DEV_NBD is not set
+@@ -185,7 +291,6 @@
  CONFIG_BLK_DEV_RAM_COUNT=16
  CONFIG_BLK_DEV_RAM_SIZE=4096
  CONFIG_BLK_DEV_INITRD=y
@@ -334,7 +360,15 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
  # CONFIG_LBD is not set
  # CONFIG_CDROM_PKTCDVD is not set
  
-@@ -299,6 +392,7 @@
+@@ -196,6 +301,7 @@
+ CONFIG_IOSCHED_AS=y
+ CONFIG_IOSCHED_DEADLINE=y
+ CONFIG_IOSCHED_CFQ=y
++# CONFIG_ATA_OVER_ETH is not set
+ 
+ #
+ # ATA/ATAPI/MFM/RLL support
+@@ -205,6 +311,7 @@
  #
  # SCSI device support
  #
@@ -342,7 +376,7 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
  # CONFIG_SCSI is not set
  
  #
-@@ -309,6 +403,7 @@
+@@ -215,6 +322,7 @@
  #
  # Fusion MPT device support
  #
@@ -350,12 +384,13 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
  
  #
  # IEEE 1394 (FireWire) support
-@@ -325,71 +420,8 @@
+@@ -231,71 +339,8 @@
  #
  
  #
 -# Networking support
--#
++# Network device support
+ #
 -CONFIG_NET=y
 -
 -#
@@ -412,8 +447,7 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
 -
 -#
 -# Network testing
-+# Network device support
- #
+-#
 -# CONFIG_NET_PKTGEN is not set
 -# CONFIG_NETPOLL is not set
 -# CONFIG_NET_POLL_CONTROLLER is not set
@@ -423,7 +457,7 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
  CONFIG_NETDEVICES=y
  # CONFIG_DUMMY is not set
  # CONFIG_BONDING is not set
-@@ -402,6 +434,11 @@
+@@ -308,6 +353,11 @@
  # CONFIG_ARCNET is not set
  
  #
@@ -435,7 +469,7 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
  # Ethernet (10 or 100Mbit)
  #
  CONFIG_NET_ETHERNET=y
-@@ -422,6 +459,7 @@
+@@ -328,6 +378,7 @@
  # CONFIG_DE4X5 is not set
  # CONFIG_WINBOND_840 is not set
  # CONFIG_DM9102 is not set
@@ -443,14 +477,15 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
  # CONFIG_HP100 is not set
  CONFIG_NET_PCI=y
  # CONFIG_PCNET32 is not set
-@@ -448,14 +486,19 @@
- #
- # CONFIG_ACENIC is not set
- # CONFIG_DL2K is not set
--# CONFIG_E1000 is not set
-+CONFIG_E1000=y
-+# CONFIG_E1000_NAPI is not set
- # CONFIG_NS83820 is not set
+@@ -337,7 +388,6 @@
+ # CONFIG_FORCEDETH is not set
+ # CONFIG_DGRS is not set
+ CONFIG_EEPRO100=y
+-# CONFIG_EEPRO100_PIO is not set
+ # CONFIG_E100 is not set
+ # CONFIG_FEALNX is not set
+ # CONFIG_NATSEMI is not set
+@@ -360,13 +410,18 @@
  # CONFIG_HAMACHI is not set
  # CONFIG_YELLOWFIN is not set
  # CONFIG_R8169 is not set
@@ -461,10 +496,7 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
  # CONFIG_VIA_VELOCITY is not set
  # CONFIG_TIGON3 is not set
 +# CONFIG_BNX2 is not set
- CONFIG_MV643XX_ETH=y
- CONFIG_MV643XX_ETH_0=y
- CONFIG_MV643XX_ETH_1=y
-@@ -464,6 +507,7 @@
+ 
  #
  # Ethernet (10000 Mbit)
  #
@@ -472,7 +504,7 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
  # CONFIG_IXGB is not set
  # CONFIG_S2IO is not set
  
-@@ -487,6 +531,11 @@
+@@ -390,6 +445,11 @@
  # CONFIG_SLIP is not set
  # CONFIG_SHAPER is not set
  # CONFIG_NETCONSOLE is not set
@@ -484,7 +516,7 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
  
  #
  # ISDN subsystem
-@@ -516,14 +565,6 @@
+@@ -419,14 +479,6 @@
  # CONFIG_INPUT_EVBUG is not set
  
  #
@@ -499,7 +531,7 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
  # Input Device Drivers
  #
  # CONFIG_INPUT_KEYBOARD is not set
-@@ -533,6 +574,12 @@
+@@ -436,6 +488,12 @@
  # CONFIG_INPUT_MISC is not set
  
  #
@@ -512,7 +544,7 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
  # Character devices
  #
  CONFIG_VT=y
-@@ -552,6 +599,7 @@
+@@ -455,6 +513,7 @@
  CONFIG_SERIAL_MPSC_CONSOLE=y
  CONFIG_SERIAL_CORE=y
  CONFIG_SERIAL_CORE_CONSOLE=y
@@ -520,7 +552,7 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
  CONFIG_UNIX98_PTYS=y
  CONFIG_LEGACY_PTYS=y
  CONFIG_LEGACY_PTY_COUNT=256
-@@ -580,6 +628,11 @@
+@@ -483,6 +542,11 @@
  # CONFIG_RAW_DRIVER is not set
  
  #
@@ -531,107 +563,30 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
 +#
  # I2C support
  #
- CONFIG_I2C=y
-@@ -602,11 +655,10 @@
- # CONFIG_I2C_AMD8111 is not set
- # CONFIG_I2C_I801 is not set
- # CONFIG_I2C_I810 is not set
--# CONFIG_I2C_ISA is not set
-+# CONFIG_I2C_PIIX4 is not set
- # CONFIG_I2C_MPC is not set
- # CONFIG_I2C_NFORCE2 is not set
- # CONFIG_I2C_PARPORT_LIGHT is not set
--# CONFIG_I2C_PIIX4 is not set
- # CONFIG_I2C_PROSAVAGE is not set
- # CONFIG_I2C_SAVAGE4 is not set
- # CONFIG_SCx200_ACB is not set
-@@ -621,14 +673,39 @@
- CONFIG_I2C_MV64XXX=y
+ # CONFIG_I2C is not set
+@@ -493,10 +557,21 @@
+ # CONFIG_W1 is not set
  
  #
--# Hardware Sensors Chip support
-+# Miscellaneous I2C Chip support
- #
--# CONFIG_I2C_SENSOR is not set
-+# CONFIG_SENSORS_DS1337 is not set
-+# CONFIG_SENSORS_DS1374 is not set
-+# CONFIG_SENSORS_EEPROM is not set
-+# CONFIG_SENSORS_PCF8574 is not set
-+# CONFIG_SENSORS_PCA9539 is not set
-+# CONFIG_SENSORS_PCF8591 is not set
-+# CONFIG_SENSORS_RTC8564 is not set
-+CONFIG_SENSORS_M41T00=y
-+# CONFIG_SENSORS_MAX6875 is not set
-+# CONFIG_I2C_DEBUG_CORE is not set
-+# CONFIG_I2C_DEBUG_ALGO is not set
-+# CONFIG_I2C_DEBUG_BUS is not set
-+# CONFIG_I2C_DEBUG_CHIP is not set
-+
-+#
-+# Dallas's 1-wire bus
-+#
-+# CONFIG_W1 is not set
-+
-+#
 +# Hardware Monitoring support
 +#
 +CONFIG_HWMON=y
 +# CONFIG_HWMON_VID is not set
- # CONFIG_SENSORS_ADM1021 is not set
- # CONFIG_SENSORS_ADM1025 is not set
- # CONFIG_SENSORS_ADM1026 is not set
- # CONFIG_SENSORS_ADM1031 is not set
-+# CONFIG_SENSORS_ADM9240 is not set
- # CONFIG_SENSORS_ASB100 is not set
-+# CONFIG_SENSORS_ATXP1 is not set
- # CONFIG_SENSORS_DS1621 is not set
- # CONFIG_SENSORS_FSCHER is not set
- # CONFIG_SENSORS_FSCPOS is not set
-@@ -644,36 +721,26 @@
- # CONFIG_SENSORS_LM85 is not set
- # CONFIG_SENSORS_LM87 is not set
- # CONFIG_SENSORS_LM90 is not set
-+# CONFIG_SENSORS_LM92 is not set
- # CONFIG_SENSORS_MAX1619 is not set
- # CONFIG_SENSORS_PC87360 is not set
--# CONFIG_SENSORS_SMSC47B397 is not set
- # CONFIG_SENSORS_SIS5595 is not set
- # CONFIG_SENSORS_SMSC47M1 is not set
-+# CONFIG_SENSORS_SMSC47B397 is not set
- # CONFIG_SENSORS_VIA686A is not set
- # CONFIG_SENSORS_W83781D is not set
-+# CONFIG_SENSORS_W83792D is not set
- # CONFIG_SENSORS_W83L785TS is not set
- # CONFIG_SENSORS_W83627HF is not set
-+# CONFIG_SENSORS_W83627EHF is not set
 +# CONFIG_HWMON_DEBUG_CHIP is not set
++
++#
+ # Misc devices
+ #
  
  #
--# Other I2C Chip support
--#
--# CONFIG_SENSORS_EEPROM is not set
--# CONFIG_SENSORS_PCF8574 is not set
--# CONFIG_SENSORS_PCF8591 is not set
--# CONFIG_SENSORS_RTC8564 is not set
--CONFIG_SENSORS_M41T00=y
--# CONFIG_I2C_DEBUG_CORE is not set
--# CONFIG_I2C_DEBUG_ALGO is not set
--# CONFIG_I2C_DEBUG_BUS is not set
--# CONFIG_I2C_DEBUG_CHIP is not set
--
--#
--# Dallas's 1-wire bus
-+# Misc devices
- #
--# CONFIG_W1 is not set
- 
- #
--# Misc devices
 +# Multimedia Capabilities Port drivers
++#
++
++#
+ # Multimedia devices
  #
- 
- #
-@@ -698,6 +765,11 @@
+ # CONFIG_VIDEO_DEV is not set
+@@ -518,6 +593,11 @@
  CONFIG_DUMMY_CONSOLE=y
  
  #
@@ -643,25 +598,34 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
  # Sound
  #
  # CONFIG_SOUND is not set
-@@ -705,13 +777,9 @@
+@@ -525,35 +605,59 @@
  #
  # USB support
  #
 -# CONFIG_USB is not set
  CONFIG_USB_ARCH_HAS_HCD=y
  CONFIG_USB_ARCH_HAS_OHCI=y
--
--#
--# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support' may also be needed; see USB_STORAGE Help for more information
--#
 +# CONFIG_USB is not set
  
  #
- # USB Gadget Support
-@@ -729,25 +797,39 @@
- # CONFIG_INFINIBAND is not set
+-# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support' may also be needed; see USB_STORAGE Help for more information
++# USB Gadget Support
+ #
++# CONFIG_USB_GADGET is not set
  
  #
+-# USB Gadget Support
++# MMC/SD Card support
+ #
+-# CONFIG_USB_GADGET is not set
++# CONFIG_MMC is not set
++
++#
++# InfiniBand support
++#
++# CONFIG_INFINIBAND is not set
++
++#
 +# SN Devices
 +#
 +
@@ -669,8 +633,8 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
 +# Distributed Lock Manager
 +#
 +# CONFIG_DLM is not set
-+
-+#
+ 
+ #
  # File systems
  #
  CONFIG_EXT2_FS=y
@@ -682,10 +646,10 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
  # CONFIG_REISERFS_FS is not set
  # CONFIG_JFS_FS is not set
 +# CONFIG_FS_POSIX_ACL is not set
- 
- #
- # XFS support
- #
++
++#
++# XFS support
++#
  # CONFIG_XFS_FS is not set
 +# CONFIG_OCFS2_FS is not set
  # CONFIG_MINIX_FS is not set
@@ -699,7 +663,7 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
  
  #
  # CD-ROM/DVD Filesystems
-@@ -768,20 +850,18 @@
+@@ -574,20 +678,18 @@
  CONFIG_PROC_FS=y
  CONFIG_PROC_KCORE=y
  CONFIG_SYSFS=y
@@ -723,22 +687,23 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
  # CONFIG_HFS_FS is not set
  # CONFIG_HFSPLUS_FS is not set
  # CONFIG_BEFS_FS is not set
-@@ -801,12 +881,14 @@
+@@ -605,13 +707,14 @@
  #
  CONFIG_NFS_FS=y
  CONFIG_NFS_V3=y
 +# CONFIG_NFS_V3_ACL is not set
- # CONFIG_NFS_V4 is not set
+ CONFIG_NFS_V4=y
  # CONFIG_NFS_DIRECTIO is not set
  # CONFIG_NFSD is not set
  CONFIG_ROOT_NFS=y
  CONFIG_LOCKD=y
  CONFIG_LOCKD_V4=y
+-# CONFIG_EXPORTFS is not set
 +CONFIG_NFS_COMMON=y
  CONFIG_SUNRPC=y
- # CONFIG_RPCSEC_GSS_KRB5 is not set
- # CONFIG_RPCSEC_GSS_SPKM3 is not set
-@@ -815,6 +897,7 @@
+ CONFIG_SUNRPC_GSS=y
+ CONFIG_RPCSEC_GSS_KRB5=y
+@@ -621,6 +724,7 @@
  # CONFIG_NCP_FS is not set
  # CONFIG_CODA_FS is not set
  # CONFIG_AFS_FS is not set
@@ -746,7 +711,7 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
  
  #
  # Partition Types
-@@ -831,6 +914,7 @@
+@@ -637,6 +741,7 @@
  # Library routines
  #
  # CONFIG_CRC_CCITT is not set
@@ -754,370 +719,200 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/configs/katana_defconfig linux-2.6.13-mm1-ma
  CONFIG_CRC32=y
  # CONFIG_LIBCRC32C is not set
  
-@@ -842,8 +926,10 @@
+@@ -648,7 +753,9 @@
  #
  # Kernel hacking
  #
--# CONFIG_DEBUG_KERNEL is not set
- # CONFIG_PRINTK_TIME is not set
-+# CONFIG_DEBUG_KERNEL is not set
++# CONFIG_PRINTK_TIME is not set
+ # CONFIG_DEBUG_KERNEL is not set
 +CONFIG_LOG_BUF_SHIFT=14
-+# CONFIG_SERIAL_TEXT_DEBUG is not set
+ # CONFIG_SERIAL_TEXT_DEBUG is not set
  
  #
- # Security options
-diff -Nur linux-2.6.13-mm1/arch/ppc/platforms/katana.c linux-2.6.13-mm1-mag/arch/ppc/platforms/katana.c
---- linux-2.6.13-mm1/arch/ppc/platforms/katana.c	2005-08-28 16:41:01.000000000 -0700
-+++ linux-2.6.13-mm1-mag/arch/ppc/platforms/katana.c	2005-09-01 17:00:31.000000000 -0700
-@@ -33,6 +33,7 @@
- #include <linux/bootimg.h>
- #endif
- #include <asm/io.h>
-+#include <asm/unistd.h>
- #include <asm/page.h>
- #include <asm/time.h>
- #include <asm/smp.h>
-@@ -42,15 +43,14 @@
- #include <asm/mv64x60.h>
- #include <platforms/katana.h>
+@@ -669,6 +776,7 @@
+ # CONFIG_CRYPTO_SHA256 is not set
+ # CONFIG_CRYPTO_SHA512 is not set
+ # CONFIG_CRYPTO_WP512 is not set
++# CONFIG_CRYPTO_TGR192 is not set
+ CONFIG_CRYPTO_DES=y
+ # CONFIG_CRYPTO_BLOWFISH is not set
+ # CONFIG_CRYPTO_TWOFISH is not set
+@@ -684,3 +792,7 @@
+ # CONFIG_CRYPTO_MICHAEL_MIC is not set
+ # CONFIG_CRYPTO_CRC32C is not set
+ # CONFIG_CRYPTO_TEST is not set
++
++#
++# Hardware crypto devices
++#
+diff -Nur linux-2.6.13-mm1/arch/ppc/platforms/cpci690.c linux-2.6.13-mm1-mag/arch/ppc/platforms/cpci690.c
+--- linux-2.6.13-mm1/arch/ppc/platforms/cpci690.c	2005-08-28 16:41:01.000000000 -0700
++++ linux-2.6.13-mm1-mag/arch/ppc/platforms/cpci690.c	2005-09-01 17:00:40.000000000 -0700
+@@ -35,11 +35,7 @@
+ #define SET_PCI_IDE_NATIVE
  
--static struct		mv64x60_handle bh;
--static katana_id_t	katana_id;
--static void __iomem	*cpld_base;
--static void __iomem	*sram_base;
+ static struct mv64x60_handle	bh;
+-static u32 cpci690_br_base;
 -
--static u32		katana_flash_size_0;
--static u32		katana_flash_size_1;
--
--static u32		katana_bus_frequency;
-+static struct mv64x60_handle	bh;
-+static katana_id_t		katana_id;
-+static void __iomem		*cpld_base;
-+static void __iomem		*sram_base;
-+static u32			katana_flash_size_0;
-+static u32			katana_flash_size_1;
-+static u32			katana_bus_frequency;
-+static struct pci_controller	katana_hose_a;
+-static const unsigned int cpu_7xx[16] = { /* 7xx & 74xx (but not 745x) */
+-	18, 15, 14, 2, 4, 13, 5, 9, 6, 11, 8, 10, 16, 12, 7, 0
+-};
++static void __iomem *cpci690_br_base;
  
- unsigned char	__res[sizeof(bd_t)];
+ TODC_ALLOC();
  
-@@ -71,8 +71,12 @@
- 			KATANA_PCI_INTA_IRQ_750i, KATANA_PCI_INTB_IRQ_750i },
- 		/* IDSEL 6 (T8110) */
- 		{KATANA_PCI_INTD_IRQ_750i, 0, 0, 0 },
-+		/* IDSEL 7 (unused) */
-+		{0, 0, 0, 0 },
-+		/* IDSEL 8 (Intel 82544) (752i only but doesn't harm 750i) */
-+		{KATANA_PCI_INTD_IRQ_750i, 0, 0, 0 },
- 	};
--	const long min_idsel = 4, max_idsel = 6, irqs_per_slot = 4;
-+	const long min_idsel = 4, max_idsel = 8, irqs_per_slot = 4;
+@@ -55,7 +51,7 @@
+ 		 * 	   A   B   C   D
+ 		 */
+ 		{
+-			{ 90, 91, 88, 89}, /* IDSEL 30/20 - Sentinel */
++			{ 90, 91, 88, 89 }, /* IDSEL 30/20 - Sentinel */
+ 		};
  
- 	return PCI_IRQ_TABLE_LOOKUP;
- }
-@@ -148,7 +152,7 @@
- 			save_exclude = mv64x60_pci_exclude_bridge;
- 			mv64x60_pci_exclude_bridge = 0;
+ 		const long min_idsel = 20, max_idsel = 20, irqs_per_slot = 4;
+@@ -67,9 +63,9 @@
+ 		 * 	   A   B   C   D
+ 		 */
+ 		{
+-			{ 93, 94, 95, 92}, /* IDSEL 28/18 - PMC slot 2 */
+-			{  0,  0,  0,  0}, /* IDSEL 29/19 - Not used */
+-			{ 94, 95, 92, 93}, /* IDSEL 30/20 - PMC slot 1 */
++			{ 93, 94, 95, 92 }, /* IDSEL 28/18 - PMC slot 2 */
++			{  0,  0,  0,  0 }, /* IDSEL 29/19 - Not used */
++			{ 94, 95, 92, 93 }, /* IDSEL 30/20 - PMC slot 1 */
+ 		};
  
--			early_read_config_word(bh.hose_a, 0,
-+			early_read_config_word(bh.hose_b, 0,
- 				PCI_DEVFN(0,0), PCI_DEVICE_ID, &val);
- 
- 			mv64x60_pci_exclude_bridge = save_exclude;
-@@ -191,7 +195,8 @@
- 	struct mv64x60_setup_info si;
- 	void __iomem *vaddr;
- 	int i;
--	u16 val;
-+	u32 v;
-+	u16 val, type;
- 	u8 save_exclude;
- 
- 	/*
-@@ -222,6 +227,20 @@
- 			PCI_DEVICE_ID, val);
+ 		const long min_idsel = 18, max_idsel = 20, irqs_per_slot = 4;
+@@ -77,68 +73,29 @@
  	}
- 
-+	/*
-+	 * While we're in here, set the hotswap register correctly.
-+	 * Turn off blue LED; mask ENUM#, clear insertion & extraction bits.
-+	 */
-+	early_read_config_dword(&hose, 0, PCI_DEVFN(0, 0),
-+		MV64360_PCICFG_CPCI_HOTSWAP, &v);
-+	v &= ~(1<<19);
-+	v |= ((1<<17) | (1<<22) | (1<<23));
-+	early_write_config_dword(&hose, 0, PCI_DEVFN(0, 0),
-+		MV64360_PCICFG_CPCI_HOTSWAP, v);
-+
-+	/* While we're at it, grab the bridge type for later */
-+	early_read_config_word(&hose, 0, PCI_DEVFN(0, 0), PCI_DEVICE_ID, &type);
-+
- 	mv64x60_pci_exclude_bridge = save_exclude;
- 	iounmap(vaddr);
- 
-@@ -251,21 +270,23 @@
- 		si.idma_options[i] = MV64360_IDMA2MEM_SNOOP_NONE;
- 
- 		si.pci_1.acc_cntl_options[i] =
--		    MV64360_PCI_ACC_CNTL_SNOOP_NONE |
--		    MV64360_PCI_ACC_CNTL_SWAP_NONE |
--		    MV64360_PCI_ACC_CNTL_MBURST_128_BYTES |
--		    MV64360_PCI_ACC_CNTL_RDSIZE_256_BYTES;
-+			MV64360_PCI_ACC_CNTL_SNOOP_NONE |
-+			MV64360_PCI_ACC_CNTL_SWAP_NONE |
-+			MV64360_PCI_ACC_CNTL_MBURST_128_BYTES |
-+			MV64360_PCI_ACC_CNTL_RDSIZE_256_BYTES;
- #else
- 		si.cpu_prot_options[i] = 0;
--		si.enet_options[i] = MV64360_ENET2MEM_SNOOP_NONE; /* errata */
--		si.mpsc_options[i] = MV64360_MPSC2MEM_SNOOP_NONE; /* errata */
--		si.idma_options[i] = MV64360_IDMA2MEM_SNOOP_NONE; /* errata */
-+		si.enet_options[i] = MV64360_ENET2MEM_SNOOP_WB;
-+		si.mpsc_options[i] = MV64360_MPSC2MEM_SNOOP_WB;
-+		si.idma_options[i] = MV64360_IDMA2MEM_SNOOP_WB;
- 
- 		si.pci_1.acc_cntl_options[i] =
--		    MV64360_PCI_ACC_CNTL_SNOOP_WB |
--		    MV64360_PCI_ACC_CNTL_SWAP_NONE |
--		    MV64360_PCI_ACC_CNTL_MBURST_32_BYTES |
--		    MV64360_PCI_ACC_CNTL_RDSIZE_32_BYTES;
-+			MV64360_PCI_ACC_CNTL_SNOOP_WB |
-+			MV64360_PCI_ACC_CNTL_SWAP_NONE |
-+			MV64360_PCI_ACC_CNTL_MBURST_32_BYTES |
-+			((type == PCI_DEVICE_ID_MARVELL_MV64360) ?
-+				MV64360_PCI_ACC_CNTL_RDSIZE_32_BYTES :
-+				MV64360_PCI_ACC_CNTL_RDSIZE_256_BYTES);
- #endif
- 	}
- 
-@@ -281,12 +302,26 @@
- 	mv64x60_set_bus(&bh, 1, 0);
- 	bh.hose_b->first_busno = 0;
- 	bh.hose_b->last_busno = 0xff;
-+
-+	/*
-+	 * Need to access hotswap reg which is in the pci config area of the
-+	 * bridge's hose 0.  Note that pcibios_alloc_controller() can't be used
-+	 * to alloc hose_a b/c that would make hose 0 known to the generic
-+	 * pci code which we don't want.
-+	 */
-+	bh.hose_a = &katana_hose_a;
-+	setup_indirect_pci_nomap(bh.hose_a,
-+		bh.v_base + MV64x60_PCI0_CONFIG_ADDR,
-+		bh.v_base + MV64x60_PCI0_CONFIG_DATA);
  }
  
- /* Bridge & platform setup routines */
- void __init
- katana_intr_setup(void)
- {
-+	if (bh.type == MV64x60_TYPE_MV64460) /* As per instns from Marvell */
-+		mv64x60_clr_bits(&bh, MV64x60_CPU_MASTER_CNTL, 1 << 15);
-+
- 	/* MPP 8, 9, and 10 */
- 	mv64x60_clr_bits(&bh, MV64x60_MPP_CNTL_1, 0xfff);
+-static int
+-cpci690_get_cpu_speed(void)
+-{
+-	unsigned long	hid1;
++#define	GB	(1024UL * 1024UL * 1024UL)
  
-@@ -309,9 +344,16 @@
- 	/* Config GPP intr ctlr to respond to level trigger */
- 	mv64x60_set_bits(&bh, MV64x60_COMM_ARBITER_CNTL, (1<<10));
- 
--	/* Erranum FEr PCI-#8 */
--	mv64x60_clr_bits(&bh, MV64x60_PCI0_CMD, (1<<5) | (1<<9));
--	mv64x60_clr_bits(&bh, MV64x60_PCI1_CMD, (1<<5) | (1<<9));
-+	if (bh.type == MV64x60_TYPE_MV64360) {
-+		/* Erratum FEr PCI-#9 */
-+		mv64x60_clr_bits(&bh, MV64x60_PCI1_CMD,
-+				(1<<4) | (1<<5) | (1<<6) | (1<<7));
-+		mv64x60_set_bits(&bh, MV64x60_PCI1_CMD, (1<<8) | (1<<9));
-+	} else {
-+		mv64x60_clr_bits(&bh, MV64x60_PCI1_CMD, (1<<6) | (1<<7));
-+		mv64x60_set_bits(&bh, MV64x60_PCI1_CMD,
-+				(1<<4) | (1<<5) | (1<<8) | (1<<9));
-+	}
- 
- 	/*
- 	 * Dismiss and then enable interrupt on GPP interrupt cause
-@@ -473,17 +515,46 @@
- 		ppc_md.progress("katana_setup_arch: exit", 0);
- }
- 
-+void
-+katana_fixup_resources(struct pci_dev *dev)
+-	hid1 = mfspr(SPRN_HID1) >> 28;
+-	return CPCI690_BUS_FREQ * cpu_7xx[hid1]/2;
++static u32
++cpci690_get_bus_freq(void)
 +{
-+	u16	v16;
-+
-+	pci_write_config_byte(dev, PCI_CACHE_LINE_SIZE, L1_CACHE_LINE_SIZE>>2);
-+
-+	pci_read_config_word(dev, PCI_COMMAND, &v16);
-+	v16 |= PCI_COMMAND_INVALIDATE | PCI_COMMAND_FAST_BACK;
-+	pci_write_config_word(dev, PCI_COMMAND, v16);
-+}
-+
++	if (boot_mem_size >= (1*GB)) /* bus speed based on mem size */
++		return 100000000;
++	else
++		return 133333333;
+ }
+ 
+-#define	KB	(1024UL)
+-#define	MB	(1024UL * KB)
+-#define	GB	(1024UL * MB)
+-
+-unsigned long __init
+-cpci690_find_end_of_memory(void)
+-{
+-	u32		mem_ctlr_size;
+-	static u32	board_size;
+-	static u8	first_time = 1;
+-
+-	if (first_time) {
+-		/* Using cpci690_set_bat() mapping ==> virt addr == phys addr */
+-		switch (in_8((u8 *) (cpci690_br_base +
+-			CPCI690_BR_MEM_CTLR)) & 0x07) {
+-		case 0x01:
+-			board_size = 256*MB;
+-			break;
+-		case 0x02:
+-			board_size = 512*MB;
+-			break;
+-		case 0x03:
+-			board_size = 768*MB;
+-			break;
+-		case 0x04:
+-			board_size = 1*GB;
+-			break;
+-		case 0x05:
+-			board_size = 1*GB + 512*MB;
+-			break;
+-		case 0x06:
+-			board_size = 2*GB;
+-			break;
+-		default:
+-			board_size = 0xffffffff; /* use mem ctlr size */
+-		} /* switch */
+-
+-		mem_ctlr_size =  mv64x60_get_mem_size(CONFIG_MV64X60_NEW_BASE,
+-			MV64x60_TYPE_GT64260A);
+-
+-		/* Check that mem ctlr & board reg agree.  If not, pick MIN. */
+-		if (board_size != mem_ctlr_size) {
+-			printk(KERN_WARNING "Board register & memory controller"
+-				"mem size disagree (board reg: 0x%lx, "
+-				"mem ctlr: 0x%lx)\n",
+-				(ulong)board_size, (ulong)mem_ctlr_size);
+-			board_size = min(board_size, mem_ctlr_size);
+-		}
 +static const unsigned int cpu_750xx[32] = { /* 750FX & 750GX */
 +	 0,  0,  2,  2,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15,/* 0-15*/
 +	16, 17, 18, 19, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40,  0 /*16-31*/
 +};
-+
+ 
+-		first_time = 0;
+-	} /* if */
 +static int
-+katana_get_cpu_freq(void)
++cpci690_get_cpu_freq(void)
 +{
 +	unsigned long	pll_cfg;
-+
+ 
+-	return board_size;
 +	pll_cfg = (mfspr(SPRN_HID1) & 0xf8000000) >> 27;
-+	return katana_bus_frequency * cpu_750xx[pll_cfg]/2;
-+}
-+
- /* Platform device data fixup routines. */
- #if defined(CONFIG_SERIAL_MPSC)
++	return cpci690_get_bus_freq() * cpu_750xx[pll_cfg]/2;
+ }
+ 
  static void __init
- katana_fixup_mpsc_pdata(struct platform_device *pdev)
- {
--	struct mpsc_pdata *pdata;
-+	struct mpsc_pdata *pdata = (struct mpsc_pdata *)pdev->dev.platform_data;
-+	bd_t *bdp = (bd_t *)__res;
+@@ -228,7 +185,7 @@
+ 	mv64x60_set_32bit_window(&bh, MV64x60_CPU2DEV_0_WIN, CPCI690_BR_BASE,
+ 		CPCI690_BR_SIZE, 0);
+ 	bh.ci->enable_window_32bit(&bh, MV64x60_CPU2DEV_0_WIN);
+-	cpci690_br_base = (u32)ioremap(CPCI690_BR_BASE, CPCI690_BR_SIZE);
++	cpci690_br_base = ioremap(CPCI690_BR_BASE, CPCI690_BR_SIZE);
  
--	pdata = (struct mpsc_pdata *)pdev->dev.platform_data;
-+	if (bdp->bi_baudrate)
-+		pdata->default_baud = bdp->bi_baudrate;
-+	else
-+		pdata->default_baud = KATANA_DEFAULT_BAUD;
- 
+ 	mv64x60_set_32bit_window(&bh, MV64x60_CPU2DEV_1_WIN, CPCI690_TODC_BASE,
+ 		CPCI690_TODC_SIZE, 0);
+@@ -329,7 +286,7 @@
  	pdata->max_idle = 40;
--	pdata->default_baud = KATANA_DEFAULT_BAUD;
- 	pdata->brg_clk_src = KATANA_MPSC_CLK_SRC;
- 	/*
- 	 * TCLK (not SysCLk) is routed to BRG, then to the MPSC.  On most parts,
-@@ -513,6 +584,18 @@
+ 	pdata->default_baud = CPCI690_MPSC_BAUD;
+ 	pdata->brg_clk_src = CPCI690_MPSC_CLK_SRC;
+-	pdata->brg_clk_freq = CPCI690_BUS_FREQ;
++	pdata->brg_clk_freq = cpci690_get_bus_freq();
  }
- #endif
  
-+#if defined(CONFIG_SYSFS)
-+static void __init
-+katana_fixup_mv64xxx_pdata(struct platform_device *pdev)
-+{
-+	struct mv64xxx_pdata *pdata = (struct mv64xxx_pdata *)
-+		pdev->dev.platform_data;
-+
-+	/* Katana supports the mv64xxx hotswap register */
-+	pdata->hs_reg_valid = 1;
-+}
-+#endif
-+
  static int __init
- katana_platform_notify(struct device *dev)
- {
-@@ -529,6 +612,9 @@
- 		{ MV643XX_ETH_NAME ".1", katana_fixup_eth_pdata },
- 		{ MV643XX_ETH_NAME ".2", katana_fixup_eth_pdata },
- #endif
-+#if defined(CONFIG_SYSFS)
-+		{ MV64XXX_DEV_NAME ".0", katana_fixup_mv64xxx_pdata },
-+#endif
- 	};
- 	struct platform_device	*pdev;
- 	int	i;
-@@ -536,8 +622,7 @@
- 	if (dev && dev->bus_id)
- 		for (i=0; i<ARRAY_SIZE(dev_map); i++)
- 			if (!strncmp(dev->bus_id, dev_map[i].bus_id,
--				BUS_ID_SIZE)) {
--
-+					BUS_ID_SIZE)) {
- 				pdev = container_of(dev,
- 					struct platform_device, dev);
- 				dev_map[i].rtn(pdev);
-@@ -578,8 +663,7 @@
- 	ptbl_entries = (size >= (64*MB)) ? 6 : 4;
+@@ -365,7 +322,7 @@
+ 	u32	i = 10000;
  
- 	if ((ptbl = kmalloc(ptbl_entries * sizeof(struct mtd_partition),
--		GFP_KERNEL)) == NULL) {
--
-+			GFP_KERNEL)) == NULL) {
- 		printk(KERN_WARNING "Can't alloc MTD partition table\n");
- 		return -ENOMEM;
- 	}
-@@ -611,7 +695,6 @@
- 	physmap_set_partitions(ptbl, ptbl_entries);
- 	return 0;
- }
--
- arch_initcall(katana_setup_mtd);
- #endif
+ 	local_irq_disable();
+-	out_8((u8 *)(cpci690_br_base + CPCI690_BR_SW_RESET), 0x11);
++	out_8((cpci690_br_base + CPCI690_BR_SW_RESET), 0x11);
  
-@@ -632,7 +715,22 @@
- {
- 	u8	v;
- 
--	if (katana_id == KATANA_ID_752I) {
-+	/* Turn on blue LED to indicate its okay to remove */
-+	if (katana_id == KATANA_ID_750I) {
-+		u32	v;
-+		u8	save_exclude;
-+
-+		/* Set LOO bit in cPCI HotSwap reg of hose 0 to turn on LED. */
-+		save_exclude = mv64x60_pci_exclude_bridge;
-+		mv64x60_pci_exclude_bridge = 0;
-+		early_read_config_dword(bh.hose_a, 0, PCI_DEVFN(0, 0),
-+			MV64360_PCICFG_CPCI_HOTSWAP, &v);
-+		v &= 0xff;
-+		v |= (1 << 19);
-+		early_write_config_dword(bh.hose_a, 0, PCI_DEVFN(0, 0),
-+			MV64360_PCICFG_CPCI_HOTSWAP, v);
-+		mv64x60_pci_exclude_bridge = save_exclude;
-+	} else if (katana_id == KATANA_ID_752I) {
- 		   v = in_8(cpld_base + HSL_PLD_BASE + HSL_PLD_HOT_SWAP_OFF);
- 		   v |= HSL_PLD_HOT_SWAP_LED_BIT;
- 		   out_8(cpld_base + HSL_PLD_BASE + HSL_PLD_HOT_SWAP_OFF, v);
-@@ -652,37 +750,65 @@
+ 	while (i != 0) i++;
+ 	panic("restart failed\n");
+@@ -394,10 +351,40 @@
  static int
- katana_show_cpuinfo(struct seq_file *m)
+ cpci690_show_cpuinfo(struct seq_file *m)
  {
 +	char	*s;
 +
-+	seq_printf(m, "cpu freq\t: %dMHz\n",
-+		(katana_get_cpu_freq() + 500000) / 1000000);
-+	seq_printf(m, "bus freq\t: %ldMHz\n",
-+		((long)katana_bus_frequency + 500000) / 1000000);
- 	seq_printf(m, "vendor\t\t: Artesyn Communication Products, LLC\n");
- 
- 	seq_printf(m, "board\t\t: ");
--
- 	switch (katana_id) {
- 	case KATANA_ID_3750:
--		seq_printf(m, "Katana 3750\n");
-+		seq_printf(m, "Katana 3750");
- 		break;
- 
- 	case KATANA_ID_750I:
--		seq_printf(m, "Katana 750i\n");
-+		seq_printf(m, "Katana 750i");
- 		break;
- 
- 	case KATANA_ID_752I:
--		seq_printf(m, "Katana 752i\n");
-+		seq_printf(m, "Katana 752i");
- 		break;
- 
- 	default:
--		seq_printf(m, "Unknown\n");
-+		seq_printf(m, "Unknown");
- 		break;
- 	}
--
--	seq_printf(m, "product ID\t: 0x%x\n",
-+	seq_printf(m, " (product id: 0x%x)\n",
- 		   in_8(cpld_base + KATANA_CPLD_PRODUCT_ID));
-+
-+	seq_printf(m, "pci mode\t: %sMonarch\n",
-+		katana_is_monarch()? "" : "Non-");
- 	seq_printf(m, "hardware rev\t: 0x%x\n",
- 		   in_8(cpld_base+KATANA_CPLD_HARDWARE_VER));
--	seq_printf(m, "PLD rev\t\t: 0x%x\n",
-+	seq_printf(m, "pld rev\t\t: 0x%x\n",
- 		   in_8(cpld_base + KATANA_CPLD_PLD_VER));
--	seq_printf(m, "PLB freq\t: %ldMhz\n",
--		(long)katana_bus_frequency / 1000000);
--	seq_printf(m, "PCI\t\t: %sMonarch\n", katana_is_monarch()? "" : "Non-");
++	seq_printf(m, "cpu MHz\t\t: %d\n",
++		(cpci690_get_cpu_freq() + 500000) / 1000000);
++	seq_printf(m, "bus MHz\t\t: %d\n",
++		(cpci690_get_bus_freq() + 500000) / 1000000);
+ 	seq_printf(m, "vendor\t\t: " BOARD_VENDOR "\n");
+ 	seq_printf(m, "machine\t\t: " BOARD_MACHINE "\n");
+-	seq_printf(m, "cpu MHz\t\t: %d\n", cpci690_get_cpu_speed()/1000/1000);
+-	seq_printf(m, "bus MHz\t\t: %d\n", CPCI690_BUS_FREQ/1000/1000);
++	seq_printf(m, "FPGA Revision\t: %d\n",
++		in_8(cpci690_br_base + CPCI690_BR_MEM_CTLR) >> 5);
 +
 +	switch(bh.type) {
 +	case MV64x60_TYPE_GT64260A:
@@ -1145,56 +940,55 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/platforms/katana.c linux-2.6.13-mm1-mag/arch
  
  	return 0;
  }
-@@ -701,11 +827,20 @@
+@@ -407,7 +394,7 @@
+ {
+ 	ulong freq;
+ 
+-	freq = CPCI690_BUS_FREQ / 4;
++	freq = cpci690_get_bus_freq() / 4;
+ 
+ 	printk(KERN_INFO "time_init: decrementer frequency = %lu.%.6lu MHz\n",
+ 	       freq/1000000, freq%1000000);
+@@ -416,25 +403,12 @@
  	tb_to_us = mulhwu_scale_factor(freq, 1000000);
  }
  
-+/*
-+ * The katana supports both uImage and zImage.  If uImage, get the mem size
-+ * from the bd info.  If zImage, the bootwrapper adds a BI_MEMSIZE entry in
-+ * the bi_rec data which is sucked out and put into boot_mem_size by
-+ * parse_bootinfo().  MMU_init() will then use the boot_mem_size for the mem
-+ * size and not call this routine.  The only way this will fail is when a uImage
-+ * is used but the fw doesn't pass in a valid bi_memsize.  This should never
-+ * happen, though.
-+ */
- unsigned long __init
- katana_find_end_of_memory(void)
- {
--	return mv64x60_get_mem_size(CONFIG_MV64X60_NEW_BASE,
--		MV64x60_TYPE_MV64360);
-+	bd_t *bdp = (bd_t *)__res;
-+	return bdp->bi_memsize;
- }
- 
- #if defined(CONFIG_I2C_MV64XXX) && defined(CONFIG_SENSORS_M41T00)
-@@ -729,15 +864,6 @@
- late_initcall(katana_rtc_hookup);
- #endif
- 
--static inline void
--katana_set_bat(void)
+-static __inline__ void
+-cpci690_set_bat(u32 addr, u32 size)
 -{
+-	addr &= 0xfffe0000;
+-	size &= 0x1ffe0000;
+-	size = ((size >> 17) - 1) << 2;
+-
 -	mb();
--	mtspr(SPRN_DBAT2U, 0xf0001ffe);
--	mtspr(SPRN_DBAT2L, 0xf000002a);
+-	mtspr(SPRN_DBAT1U, addr | size | 0x2); /* Vs == 1; Vp == 0 */
+-	mtspr(SPRN_DBAT1L, addr | 0x2a); /* WIMG bits == 0101; PP == r/w access */
 -	mb();
 -}
 -
- #if defined(CONFIG_SERIAL_TEXT_DEBUG) && defined(CONFIG_SERIAL_MPSC_CONSOLE)
+-#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
++#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB_MPSC)
  static void __init
- katana_map_io(void)
-@@ -763,15 +889,24 @@
- 	 */
- 	if (r3 && r6) {
- 		/* copy board info structure */
--		memcpy( (void *)__res,(void *)(r3+KERNELBASE), sizeof(bd_t) );
-+		memcpy((void *)__res, (void *)(r3+KERNELBASE), sizeof(bd_t));
- 		/* copy command line */
- 		*(char *)(r7+KERNELBASE) = 0;
- 		strcpy(cmd_line, (char *)(r6+KERNELBASE));
- 	}
+ cpci690_map_io(void)
+ {
+ 	io_block_mapping(CONFIG_MV64X60_NEW_BASE, CONFIG_MV64X60_NEW_BASE,
+-		128 * KB, _PAGE_IO);
++		128 * 1024, _PAGE_IO);
+ }
+ #endif
  
+@@ -442,14 +416,15 @@
+ platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
+ 	      unsigned long r6, unsigned long r7)
+ {
+-#ifdef CONFIG_BLK_DEV_INITRD
+-	initrd_start=initrd_end=0;
+-	initrd_below_start_ok=0;
+-#endif /* CONFIG_BLK_DEV_INITRD */
+-
+ 	parse_bootinfo(find_bootinfo());
+ 
+-	loops_per_jiffy = cpci690_get_cpu_speed() / HZ;
 +#ifdef CONFIG_BLK_DEV_INITRD
 +	/* take care of initrd if we have one */
 +	if (r4) {
@@ -1202,44 +996,50 @@ diff -Nur linux-2.6.13-mm1/arch/ppc/platforms/katana.c linux-2.6.13-mm1-mag/arch
 +		initrd_end = r5 + KERNELBASE;
 +	}
 +#endif /* CONFIG_BLK_DEV_INITRD */
-+
+ 
  	isa_mem_base = 0;
  
- 	ppc_md.setup_arch = katana_setup_arch;
-+	ppc_md.pcibios_fixup_resources = katana_fixup_resources;
- 	ppc_md.show_cpuinfo = katana_show_cpuinfo;
- 	ppc_md.init_IRQ = mv64360_init_irq;
- 	ppc_md.get_irq = mv64360_get_irq;
-@@ -790,6 +925,4 @@
- #if defined(CONFIG_SERIAL_MPSC) || defined(CONFIG_MV643XX_ETH)
- 	platform_notify = katana_platform_notify;
- #endif
--
--	katana_set_bat(); /* Need for katana_find_end_of_memory and progress */
- }
-diff -Nur linux-2.6.13-mm1/arch/ppc/platforms/katana.h linux-2.6.13-mm1-mag/arch/ppc/platforms/katana.h
---- linux-2.6.13-mm1/arch/ppc/platforms/katana.h	2005-08-28 16:41:01.000000000 -0700
-+++ linux-2.6.13-mm1-mag/arch/ppc/platforms/katana.h	2005-09-01 17:00:31.000000000 -0700
-@@ -56,14 +56,14 @@
- #define KATANA_PCI1_IO_SIZE                     0x04000000 /* 64 MB */
+@@ -460,7 +435,6 @@
+ 	ppc_md.restart = cpci690_restart;
+ 	ppc_md.power_off = cpci690_power_off;
+ 	ppc_md.halt = cpci690_halt;
+-	ppc_md.find_end_of_memory = cpci690_find_end_of_memory;
+ 	ppc_md.time_init = todc_time_init;
+ 	ppc_md.set_rtc_time = todc_set_rtc_time;
+ 	ppc_md.get_rtc_time = todc_get_rtc_time;
+@@ -468,22 +442,13 @@
+ 	ppc_md.nvram_write_val = todc_direct_write_val;
+ 	ppc_md.calibrate_decr = cpci690_calibrate_decr;
  
- /* Board-specific IRQ info */
--#define  KATANA_PCI_INTA_IRQ_3750		64+8
--#define  KATANA_PCI_INTB_IRQ_3750		64+9
--#define  KATANA_PCI_INTC_IRQ_3750		64+10
+-	/*
+-	 * Need to map in board regs (used by cpci690_find_end_of_memory())
+-	 * and the bridge's regs (used by progress);
+-	 */
+-	cpci690_set_bat(CPCI690_BR_BASE, 32 * MB);
+-	cpci690_br_base = CPCI690_BR_BASE;
 -
--#define  KATANA_PCI_INTA_IRQ_750i		64+8
--#define  KATANA_PCI_INTB_IRQ_750i		64+9
--#define  KATANA_PCI_INTC_IRQ_750i		64+10
--#define  KATANA_PCI_INTD_IRQ_750i		64+14
-+#define  KATANA_PCI_INTA_IRQ_3750		(64+8)
-+#define  KATANA_PCI_INTB_IRQ_3750		(64+9)
-+#define  KATANA_PCI_INTC_IRQ_3750		(64+10)
-+
-+#define  KATANA_PCI_INTA_IRQ_750i		(64+8)
-+#define  KATANA_PCI_INTB_IRQ_750i		(64+9)
-+#define  KATANA_PCI_INTC_IRQ_750i		(64+10)
-+#define  KATANA_PCI_INTD_IRQ_750i		(64+14)
+-#ifdef	CONFIG_SERIAL_TEXT_DEBUG
++#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB_MPSC)
+ 	ppc_md.setup_io_mappings = cpci690_map_io;
++#ifdef CONFIG_SERIAL_TEXT_DEBUG
+ 	ppc_md.progress = mv64x60_mpsc_progress;
+ 	mv64x60_progress_init(CONFIG_MV64X60_NEW_BASE);
+ #endif	/* CONFIG_SERIAL_TEXT_DEBUG */
+-#ifdef	CONFIG_KGDB
+-	ppc_md.setup_io_mappings = cpci690_map_io;
+-	ppc_md.early_serial_map = cpci690_early_serial_map;
+-#endif	/* CONFIG_KGDB */
++#endif	/* defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB_MPSC) */
  
- #define KATANA_CPLD_RST_EVENT			0x00000000
- #define KATANA_CPLD_RST_CMD			0x00001000
+ #if defined(CONFIG_SERIAL_MPSC)
+ 	platform_notify = cpci690_platform_notify;
+diff -Nur linux-2.6.13-mm1/arch/ppc/platforms/cpci690.h linux-2.6.13-mm1-mag/arch/ppc/platforms/cpci690.h
+--- linux-2.6.13-mm1/arch/ppc/platforms/cpci690.h	2005-08-28 16:41:01.000000000 -0700
++++ linux-2.6.13-mm1-mag/arch/ppc/platforms/cpci690.h	2005-09-01 17:00:40.000000000 -0700
+@@ -73,6 +73,4 @@
+ #define	CPCI690_MPSC_BAUD			9600
+ #define	CPCI690_MPSC_CLK_SRC			8 /* TCLK */
+ 
+-#define	CPCI690_BUS_FREQ			133333333
+-
+ #endif /* __PPC_PLATFORMS_CPCI690_H */
