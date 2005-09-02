@@ -1,11 +1,11 @@
 Return-Path: <jotken@softadvances.com>
-Message-ID: <4318CA93.3090109@softadvances.com>
-Date: Fri, 02 Sep 2005 16:56:35 -0500
+Message-ID: <4318CAD0.40506@softadvances.com>
+Date: Fri, 02 Sep 2005 16:57:36 -0500
 From: John Otken <jotken@softadvances.com>
 MIME-Version: 1.0
 To: Linuxppc-embedded@ozlabs.org
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: [Patch 2/3] Add Yosemite Platform defconfig
+Subject: [Patch 3/3] Add Yellowstone Platform defconfig
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -16,18 +16,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Add Yosemite Platform defconfig
+Add Yellowstone Platform defconfig
 
 Signed-off-by: John Otken <jotken@softadvances.com>
 
 
---- a/arch/ppc/configs/yosemite_defconfig	1969-12-31 17:00:00.000000000 -0700
-+++ z/arch/ppc/configs/yosemite_defconfig	2005-09-01 18:17:08.000000000 -0500
-@@ -0,0 +1,1025 @@
+--- a/arch/ppc/configs/yellowstone_defconfig	1969-12-31 17:00:00.000000000 -0700
++++ z/arch/ppc/configs/yellowstone_defconfig	2005-09-01 17:57:49.000000000 -0500
+@@ -0,0 +1,863 @@
 +#
 +# Automatically generated make config: don't edit
 +# Linux kernel version: 2.6.13
-+# Thu Sep  1 15:44:04 2005
++# Tue Aug 30 13:22:53 2005
 +#
 +CONFIG_MMU=y
 +CONFIG_GENERIC_HARDIRQS=y
@@ -117,11 +117,10 @@ Signed-off-by: John Otken <jotken@softadvances.com>
 +# CONFIG_EBONY is not set
 +# CONFIG_LUAN is not set
 +# CONFIG_OCOTEA is not set
-+# CONFIG_YELLOWSTONE is not set
-+CONFIG_YOSEMITE=y
-+CONFIG_440EP=y
++CONFIG_YELLOWSTONE=y
++# CONFIG_YOSEMITE is not set
++CONFIG_440GR=y
 +CONFIG_440=y
-+CONFIG_440_FPU=y
 +CONFIG_IBM440EP_ERR42=y
 +CONFIG_IBM_OCP=y
 +# CONFIG_PPC4xx_DMA is not set
@@ -298,7 +297,6 @@ Signed-off-by: John Otken <jotken@softadvances.com>
 +# CONFIG_BLK_DEV_LOOP is not set
 +# CONFIG_BLK_DEV_NBD is not set
 +# CONFIG_BLK_DEV_SX8 is not set
-+# CONFIG_BLK_DEV_UB is not set
 +CONFIG_BLK_DEV_RAM=y
 +CONFIG_BLK_DEV_RAM_COUNT=16
 +CONFIG_BLK_DEV_RAM_SIZE=4096
@@ -724,125 +722,7 @@ Signed-off-by: John Otken <jotken@softadvances.com>
 +#
 +CONFIG_USB_ARCH_HAS_HCD=y
 +CONFIG_USB_ARCH_HAS_OHCI=y
-+CONFIG_USB=y
-+CONFIG_USB_DEBUG=y
-+
-+#
-+# Miscellaneous USB options
-+#
-+# CONFIG_USB_DEVICEFS is not set
-+# CONFIG_USB_BANDWIDTH is not set
-+# CONFIG_USB_DYNAMIC_MINORS is not set
-+# CONFIG_USB_OTG is not set
-+
-+#
-+# USB Host Controller Drivers
-+#
-+# CONFIG_USB_EHCI_HCD is not set
-+# CONFIG_USB_ISP116X_HCD is not set
-+CONFIG_USB_OHCI_HCD=y
-+CONFIG_USB_OHCI_HCD_PPC_SOC=y
-+CONFIG_USB_OHCI_BIG_ENDIAN=y
-+# CONFIG_USB_OHCI_LITTLE_ENDIAN is not set
-+# CONFIG_USB_UHCI_HCD is not set
-+# CONFIG_USB_SL811_HCD is not set
-+
-+#
-+# USB Device Class drivers
-+#
-+# CONFIG_USB_BLUETOOTH_TTY is not set
-+# CONFIG_USB_ACM is not set
-+# CONFIG_USB_PRINTER is not set
-+
-+#
-+# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support' may also be needed; see USB_STORAGE Help for more information
-+#
-+CONFIG_USB_STORAGE=y
-+# CONFIG_USB_STORAGE_DEBUG is not set
-+# CONFIG_USB_STORAGE_DATAFAB is not set
-+# CONFIG_USB_STORAGE_FREECOM is not set
-+# CONFIG_USB_STORAGE_ISD200 is not set
-+# CONFIG_USB_STORAGE_DPCM is not set
-+# CONFIG_USB_STORAGE_USBAT is not set
-+# CONFIG_USB_STORAGE_SDDR09 is not set
-+# CONFIG_USB_STORAGE_SDDR55 is not set
-+# CONFIG_USB_STORAGE_JUMPSHOT is not set
-+
-+#
-+# USB Input Devices
-+#
-+# CONFIG_USB_HID is not set
-+
-+#
-+# USB HID Boot Protocol drivers
-+#
-+# CONFIG_USB_KBD is not set
-+# CONFIG_USB_MOUSE is not set
-+# CONFIG_USB_AIPTEK is not set
-+# CONFIG_USB_WACOM is not set
-+# CONFIG_USB_ACECAD is not set
-+# CONFIG_USB_KBTAB is not set
-+# CONFIG_USB_POWERMATE is not set
-+# CONFIG_USB_MTOUCH is not set
-+# CONFIG_USB_ITMTOUCH is not set
-+# CONFIG_USB_EGALAX is not set
-+# CONFIG_USB_XPAD is not set
-+# CONFIG_USB_ATI_REMOTE is not set
-+# CONFIG_USB_KEYSPAN_REMOTE is not set
-+
-+#
-+# USB Imaging devices
-+#
-+# CONFIG_USB_MDC800 is not set
-+# CONFIG_USB_MICROTEK is not set
-+
-+#
-+# USB Multimedia devices
-+#
-+# CONFIG_USB_DABUSB is not set
-+
-+#
-+# Video4Linux support is needed for USB Multimedia device support
-+#
-+
-+#
-+# USB Network Adapters
-+#
-+# CONFIG_USB_CATC is not set
-+# CONFIG_USB_KAWETH is not set
-+CONFIG_USB_PEGASUS=y
-+# CONFIG_USB_RTL8150 is not set
-+# CONFIG_USB_USBNET is not set
-+CONFIG_USB_MON=y
-+
-+#
-+# USB port drivers
-+#
-+
-+#
-+# USB Serial Converter support
-+#
-+# CONFIG_USB_SERIAL is not set
-+
-+#
-+# USB Miscellaneous drivers
-+#
-+# CONFIG_USB_EMI62 is not set
-+# CONFIG_USB_EMI26 is not set
-+# CONFIG_USB_AUERSWALD is not set
-+# CONFIG_USB_RIO500 is not set
-+# CONFIG_USB_LEGOTOWER is not set
-+# CONFIG_USB_LCD is not set
-+# CONFIG_USB_LED is not set
-+# CONFIG_USB_CYTHERM is not set
-+# CONFIG_USB_PHIDGETKIT is not set
-+# CONFIG_USB_PHIDGETSERVO is not set
-+# CONFIG_USB_IDMOUSE is not set
-+# CONFIG_USB_LD is not set
-+
-+#
-+# USB DSL modem support
-+#
++# CONFIG_USB is not set
 +
 +#
 +# USB Gadget Support
@@ -896,11 +776,8 @@ Signed-off-by: John Otken <jotken@softadvances.com>
 +#
 +# DOS/FAT/NT Filesystems
 +#
-+CONFIG_FAT_FS=y
-+CONFIG_MSDOS_FS=y
-+CONFIG_VFAT_FS=y
-+CONFIG_FAT_DEFAULT_CODEPAGE=437
-+CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
++# CONFIG_MSDOS_FS is not set
++# CONFIG_VFAT_FS is not set
 +# CONFIG_NTFS_FS is not set
 +
 +#
@@ -962,46 +839,7 @@ Signed-off-by: John Otken <jotken@softadvances.com>
 +#
 +# Native Language Support
 +#
-+CONFIG_NLS=y
-+CONFIG_NLS_DEFAULT="iso8859-1"
-+CONFIG_NLS_CODEPAGE_437=y
-+# CONFIG_NLS_CODEPAGE_737 is not set
-+# CONFIG_NLS_CODEPAGE_775 is not set
-+# CONFIG_NLS_CODEPAGE_850 is not set
-+# CONFIG_NLS_CODEPAGE_852 is not set
-+# CONFIG_NLS_CODEPAGE_855 is not set
-+# CONFIG_NLS_CODEPAGE_857 is not set
-+# CONFIG_NLS_CODEPAGE_860 is not set
-+# CONFIG_NLS_CODEPAGE_861 is not set
-+# CONFIG_NLS_CODEPAGE_862 is not set
-+# CONFIG_NLS_CODEPAGE_863 is not set
-+# CONFIG_NLS_CODEPAGE_864 is not set
-+# CONFIG_NLS_CODEPAGE_865 is not set
-+# CONFIG_NLS_CODEPAGE_866 is not set
-+# CONFIG_NLS_CODEPAGE_869 is not set
-+# CONFIG_NLS_CODEPAGE_936 is not set
-+# CONFIG_NLS_CODEPAGE_950 is not set
-+# CONFIG_NLS_CODEPAGE_932 is not set
-+# CONFIG_NLS_CODEPAGE_949 is not set
-+# CONFIG_NLS_CODEPAGE_874 is not set
-+# CONFIG_NLS_ISO8859_8 is not set
-+# CONFIG_NLS_CODEPAGE_1250 is not set
-+# CONFIG_NLS_CODEPAGE_1251 is not set
-+CONFIG_NLS_ASCII=y
-+CONFIG_NLS_ISO8859_1=y
-+# CONFIG_NLS_ISO8859_2 is not set
-+# CONFIG_NLS_ISO8859_3 is not set
-+# CONFIG_NLS_ISO8859_4 is not set
-+# CONFIG_NLS_ISO8859_5 is not set
-+# CONFIG_NLS_ISO8859_6 is not set
-+# CONFIG_NLS_ISO8859_7 is not set
-+# CONFIG_NLS_ISO8859_9 is not set
-+# CONFIG_NLS_ISO8859_13 is not set
-+# CONFIG_NLS_ISO8859_14 is not set
-+# CONFIG_NLS_ISO8859_15 is not set
-+# CONFIG_NLS_KOI8_R is not set
-+# CONFIG_NLS_KOI8_U is not set
-+# CONFIG_NLS_UTF8 is not set
++# CONFIG_NLS is not set
 +
 +#
 +# Library routines
