@@ -1,18 +1,18 @@
 Return-Path: <pantelis.antoniou@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.204])
-	by ozlabs.org (Postfix) with ESMTP id 14C606818E
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Sep 2005 01:20:55 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id i11so532751wra
-	for <linuxppc-dev@ozlabs.org>; Fri, 02 Sep 2005 08:20:53 -0700 (PDT)
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.192])
+	by ozlabs.org (Postfix) with ESMTP id F21116819C
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Sep 2005 01:47:30 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id i21so80324wra
+	for <linuxppc-dev@ozlabs.org>; Fri, 02 Sep 2005 08:47:29 -0700 (PDT)
 From: Pantelis Antoniou <pantelis.antoniou@gmail.com>
-To: Wolfgang Denk <wd@denx.de>, u-boot-users@lists.sourceforge.net,
-	linuxppc-embedded@ozlabs.org, linuxppc-dev@ozlabs.org
-Date: Fri, 2 Sep 2005 18:14:07 +0300
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
+	linuxppc-embedded@ozlabs.org, u-boot-users@lists.sourceforge.net
+Date: Fri, 2 Sep 2005 18:47:32 +0300
 MIME-Version: 1.0
 Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_/wGGDZ67YEIC0t0"
-Message-Id: <200509021814.08001.pantelis.antoniou@gmail.com>
-Subject: [PATCH] Add Flat OF tree support.
+  boundary="Boundary-00=_UQHGDVaopksEsKC"
+Message-Id: <200509021847.32717.pantelis.antoniou@gmail.com>
+Subject: [PATCH] Support OF Flat Tree for embedded PPC
 Reply-To: pantelis.antoniou@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,7 +23,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Boundary-00=_/wGGDZ67YEIC0t0
+--Boundary-00=_UQHGDVaopksEsKC
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -31,1106 +31,380 @@ Content-Disposition: inline
 
 Hi all.
 
-As you well know, as part of the ongoing cleanup of the linux trees
-regarding PPC, it has been decreed that the preferred way to pass 
-bootloader information shall be the flat OF tree.
+The following patch supports the passing of a OF flat tree from
+the bootloader to the kernel, for embedded PPC processors.
 
-  http://ozlabs.org/pipermail/linuxppc-dev/2005-August/019408.html
-  http://ozlabs.org/pipermail/linuxppc-dev/2005-August/019362.html
+For reference purposes this is done for 8xx processors.
 
-The following patch (broken in two parts), implements just that.
+The bulk of the patch deals of the disentanglement of OF support
+from the generic PMAC & CHRP code.
 
-Please be aware that in order to test it, you'll need a fairly recent
-dtc tool, which is available by git at
-
-  rsync://ozlabs.org/dtc/dtc.git
-
-The xxd binary dumper is needed too which I got from
-
-  ftp://ftp.uni-erlangen.de/pub/utilities/etc/xxd-1.10.tar.gz
-
-Linux patches will follow...
-
-Awaiting comments.
+Please comment.
 
 Regards
 
 Pantelis
 
-P.S. Sorry for cross-posting, but it seems to be appropriate at this time.
 
---Boundary-00=_/wGGDZ67YEIC0t0
-Content-Type: text/plain;
-  charset="us-ascii";
-  name="of-uboot-base.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="of-uboot-base.patch"
+--Boundary-00=_UQHGDVaopksEsKC
+Content-Type: application/x-bzip2;
+  name="of-linux.patch.bz2"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+	filename="of-linux.patch.bz2"
 
-diff --git a/common/Makefile b/common/Makefile
---- a/common/Makefile
-+++ b/common/Makefile
-@@ -51,7 +51,7 @@ COBJS	= main.o ACEX1K.o altera.o bedbug.
- 	  memsize.o miiphybb.o miiphyutil.o \
- 	  s_record.o serial.o soft_i2c.o soft_spi.o spartan2.o \
- 	  usb.o usb_kbd.o usb_storage.o \
--	  virtex2.o xilinx.o
-+	  virtex2.o xilinx.o ft_build.o
- 
- OBJS	= $(AOBJS) $(COBJS)
- 
-diff --git a/common/cmd_bootm.c b/common/cmd_bootm.c
---- a/common/cmd_bootm.c
-+++ b/common/cmd_bootm.c
-@@ -34,6 +34,10 @@
- #include <environment.h>
- #include <asm/byteorder.h>
- 
-+#ifdef CONFIG_OF_FLAT_TREE
-+#include <ft_build.h>
-+#endif
-+
-  /*cmd_boot.c*/
-  extern int do_reset (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[]);
- 
-@@ -487,6 +491,9 @@ fixup_silent_linux ()
- }
- #endif /* CONFIG_SILENT_CONSOLE */
- 
-+extern const unsigned char oftree_dtb[];
-+extern const unsigned int oftree_dtb_len;
-+
- #ifdef CONFIG_PPC
- static void
- do_bootm_linux (cmd_tbl_t *cmdtp, int flag,
-@@ -509,6 +516,9 @@ do_bootm_linux (cmd_tbl_t *cmdtp, int fl
- 	bd_t	*kbd;
- 	void	(*kernel)(bd_t *, ulong, ulong, ulong, ulong);
- 	image_header_t *hdr = &header;
-+#ifdef CONFIG_OF_FLAT_TREE
-+	char	*of_flat_tree;
-+#endif
- 
- 	if ((s = getenv ("initrd_high")) != NULL) {
- 		/* a value of "no" or a similar string will act like 0,
-@@ -773,16 +783,24 @@ do_bootm_linux (cmd_tbl_t *cmdtp, int fl
- 		initrd_start = 0;
- 		initrd_end = 0;
- 	}
--
-+#ifdef CONFIG_OF_FLAT_TREE
-+	if (initrd_start == 0)
-+		of_flat_tree = (char *)(((ulong)kbd - OF_FLAT_TREE_MAX_SIZE) & ~0xF);
-+	else
-+		of_flat_tree = (char *)((initrd_start - OF_FLAT_TREE_MAX_SIZE) & ~0xF);
-+#endif
- 
- 	debug ("## Transferring control to Linux (at address %08lx) ...\n",
- 		(ulong)kernel);
- 
- 	SHOW_BOOT_PROGRESS (15);
- 
-+#ifndef CONFIG_OF_FLAT_TREE
-+
- #if defined(CFG_INIT_RAM_LOCK) && !defined(CONFIG_E500)
- 	unlock_ram_in_cache();
- #endif
-+
- 	/*
- 	 * Linux Kernel Parameters:
- 	 *   r3: ptr to board info data
-@@ -792,6 +810,25 @@ do_bootm_linux (cmd_tbl_t *cmdtp, int fl
- 	 *   r7: End   of command line string
- 	 */
- 	(*kernel) (kbd, initrd_start, initrd_end, cmd_start, cmd_end);
-+#else
-+
-+	ft_setup(of_flat_tree, OF_FLAT_TREE_MAX_SIZE, kbd);
-+	/* ft_dump_blob(of_flat_tree); */
-+
-+#if defined(CFG_INIT_RAM_LOCK) && !defined(CONFIG_E500)
-+	unlock_ram_in_cache();
-+#endif
-+	/*
-+	 * Linux Kernel Parameters:
-+	 *   r3: ptr to board info data
-+	 *   r4: initrd_start or 0 if no initrd
-+	 *   r5: initrd_end - unused if r4 is 0
-+	 *   r6: Start of command line string
-+	 *   r7: End   of command line string
-+	 */
-+	(*kernel) ((bd_t *)of_flat_tree, initrd_start, initrd_end, cmd_start, cmd_end);
-+
-+#endif
- }
- #endif /* CONFIG_PPC */
- 
-diff --git a/common/ft_build.c b/common/ft_build.c
-new file mode 100644
---- /dev/null
-+++ b/common/ft_build.c
-@@ -0,0 +1,751 @@
-+/*
-+ * OF flat tree builder
-+ */
-+
-+#include <common.h>
-+#include <malloc.h>
-+#include <environment.h>
-+
-+#include <asm/errno.h>
-+
-+#include <ft_build.h>
-+
-+#ifdef CONFIG_OF_FLAT_TREE
-+
-+/* align addr on a size boundary - adjust address up if needed -- Cort */
-+#define _ALIGN(addr,size)       (((addr)+(size)-1)&(~((size)-1)))
-+
-+static void ft_put_word(struct ft_cxt *cxt, u32 v)
-+{
-+	if (cxt->overflow)	/* do nothing */
-+		return;
-+
-+	/* check for overflow */
-+	if (cxt->p + 4 > cxt->pstr) {
-+		cxt->overflow = 1;
-+		return;
-+	}
-+
-+	*(u32 *) cxt->p = cpu_to_be32(v);
-+	cxt->p += 4;
-+}
-+
-+static inline void ft_put_bin(struct ft_cxt *cxt, const void *data, int sz)
-+{
-+	u8 *p;
-+
-+	if (cxt->overflow)	/* do nothing */
-+		return;
-+
-+	/* next pointer pos */
-+	p = (u8 *) _ALIGN((unsigned long)cxt->p + sz, 4);
-+
-+	/* check for overflow */
-+	if (p > cxt->pstr) {
-+		cxt->overflow = 1;
-+		return;
-+	}
-+
-+	memcpy(cxt->p, data, sz);
-+	if ((sz & 3) != 0)
-+		memset(cxt->p + sz, 0, 4 - (sz & 3));
-+	cxt->p = p;
-+}
-+
-+void ft_begin_node(struct ft_cxt *cxt, const char *name)
-+{
-+	ft_put_word(cxt, OF_DT_BEGIN_NODE);
-+	ft_put_bin(cxt, name, strlen(name) + 1);
-+}
-+
-+void ft_end_node(struct ft_cxt *cxt)
-+{
-+	ft_put_word(cxt, OF_DT_END_NODE);
-+}
-+
-+void ft_nop(struct ft_cxt *cxt)
-+{
-+	ft_put_word(cxt, OF_DT_NOP);
-+}
-+
-+static int lookup_string(struct ft_cxt *cxt, const char *name)
-+{
-+	u8 *p;
-+
-+	p = cxt->pstr;
-+	while (p < cxt->pstr_begin) {
-+		if (strcmp(p, name) == 0)
-+			return p - cxt->p_begin;
-+		p += strlen(p) + 1;
-+	}
-+
-+	return -1;
-+}
-+
-+void ft_prop(struct ft_cxt *cxt, const char *name, const void *data, int sz)
-+{
-+	int len, off;
-+
-+	if (cxt->overflow)
-+		return;
-+
-+	len = strlen(name) + 1;
-+
-+	off = lookup_string(cxt, name);
-+	if (off == -1) {
-+		/* check if we have space */
-+		if (cxt->p + 12 + sz + len > cxt->pstr) {
-+			cxt->overflow = 1;
-+			return;
-+		}
-+
-+		cxt->pstr -= len;
-+		memcpy(cxt->pstr, name, len);
-+		off = cxt->pstr - cxt->p_begin;
-+	}
-+
-+	/* now put offset from beginning of *STRUCTURE* */
-+	/* will be fixed up at the end */
-+	ft_put_word(cxt, OF_DT_PROP);
-+	ft_put_word(cxt, sz);
-+	ft_put_word(cxt, off);
-+	ft_put_bin(cxt, data, sz);
-+}
-+
-+void ft_prop_str(struct ft_cxt *cxt, const char *name, const char *str)
-+{
-+	ft_prop(cxt, name, str, strlen(str) + 1);
-+}
-+
-+void ft_prop_int(struct ft_cxt *cxt, const char *name, int val)
-+{
-+	u32 v = cpu_to_be32((u32) val);
-+
-+	ft_prop(cxt, name, &v, 4);
-+}
-+
-+/* start construction of the flat OF tree */
-+void ft_begin(struct ft_cxt *cxt, void *blob, int max_size)
-+{
-+	struct boot_param_header *bph = blob;
-+	u32 off;
-+
-+	/* clear the cxt */
-+	memset(cxt, 0, sizeof(*cxt));
-+
-+	cxt->bph = bph;
-+	cxt->max_size = max_size;
-+
-+	/* zero everything in the header area */
-+	memset(bph, 0, sizeof(*bph));
-+
-+	bph->magic = cpu_to_be32(OF_DT_HEADER);
-+	bph->version = cpu_to_be32(0x10);
-+	bph->last_comp_version = cpu_to_be32(0x10);
-+
-+	/* start pointers */
-+	cxt->pres_begin = (u8 *) _ALIGN((unsigned long)(bph + 1), 8);
-+	cxt->pres = cxt->pres_begin;
-+
-+	off = (unsigned long)cxt->pres_begin - (unsigned long)bph;
-+	bph->off_mem_rsvmap = cpu_to_be32(off);
-+
-+	((u64 *) cxt->pres)[0] = 0;	/* phys = 0, size = 0, terminate */
-+	((u64 *) cxt->pres)[1] = 0;
-+
-+	cxt->p_anchor = cxt->pres + 16;	/* over the terminator */
-+}
-+
-+/* add a reserver physical area to the rsvmap */
-+void ft_add_rsvmap(struct ft_cxt *cxt, u64 physaddr, u64 size)
-+{
-+	((u64 *) cxt->pres)[0] = cpu_to_be64(physaddr);	/* phys = 0, size = 0, terminate */
-+	((u64 *) cxt->pres)[1] = cpu_to_be64(size);
-+
-+	cxt->pres += 18;	/* advance */
-+
-+	((u64 *) cxt->pres)[0] = 0;	/* phys = 0, size = 0, terminate */
-+	((u64 *) cxt->pres)[1] = 0;
-+
-+	/* keep track of size */
-+	cxt->res_size = cxt->pres + 16 - cxt->pres_begin;
-+
-+	cxt->p_anchor = cxt->pres + 16;	/* over the terminator */
-+}
-+
-+void ft_begin_tree(struct ft_cxt *cxt)
-+{
-+	cxt->p_begin = cxt->p_anchor;
-+	cxt->pstr_begin = (char *)cxt->bph + cxt->max_size;	/* point at the end */
-+
-+	cxt->p = cxt->p_begin;
-+	cxt->pstr = cxt->pstr_begin;
-+}
-+
-+int ft_end_tree(struct ft_cxt *cxt)
-+{
-+	struct boot_param_header *bph = cxt->bph;
-+	int off, sz, sz1;
-+	u32 tag, v;
-+	u8 *p;
-+
-+	ft_put_word(cxt, OF_DT_END);
-+
-+	if (cxt->overflow)
-+		return -ENOMEM;
-+
-+	/* size of the areas */
-+	cxt->struct_size = cxt->p - cxt->p_begin;
-+	cxt->strings_size = cxt->pstr_begin - cxt->pstr;
-+
-+	/* the offset we must move */
-+	off = (cxt->pstr_begin - cxt->p_begin) - cxt->strings_size;
-+
-+	/* the new strings start */
-+	cxt->pstr_begin = cxt->p_begin + cxt->struct_size;
-+
-+	/* move the whole string area */
-+	memmove(cxt->pstr_begin, cxt->pstr, cxt->strings_size);
-+
-+	/* now perform the fixup of the strings */
-+	p = cxt->p_begin;
-+	while ((tag = be32_to_cpu(*(u32 *) p)) != OF_DT_END) {
-+		p += 4;
-+
-+		if (tag == OF_DT_BEGIN_NODE) {
-+			p = (u8 *) _ALIGN((unsigned long)p + strlen(p) + 1, 4);
-+			continue;
-+		}
-+
-+		if (tag == OF_DT_END_NODE || tag == OF_DT_NOP)
-+			continue;
-+
-+		if (tag != OF_DT_PROP)
-+			return -EINVAL;
-+
-+		sz = be32_to_cpu(*(u32 *) p);
-+		p += 4;
-+
-+		v = be32_to_cpu(*(u32 *) p);
-+		v -= off;
-+		*(u32 *) p = cpu_to_be32(v);	/* move down */
-+		p += 4;
-+
-+		p = (u8 *) _ALIGN((unsigned long)p + sz, 4);
-+	}
-+
-+	/* fix sizes */
-+	p = (char *)cxt->bph;
-+	sz = (cxt->pstr_begin + cxt->strings_size) - p;
-+	sz1 = _ALIGN(sz, 16);	/* align at 16 bytes */
-+	if (sz != sz1)
-+		memset(p + sz, 0, sz1 - sz);
-+	bph->totalsize = cpu_to_be32(sz1);
-+	bph->off_dt_struct = cpu_to_be32(cxt->p_begin - p);
-+	bph->off_dt_strings = cpu_to_be32(cxt->pstr_begin - p);
-+
-+	/* the new strings start */
-+	cxt->pstr_begin = cxt->p_begin + cxt->struct_size;
-+	cxt->pstr = cxt->pstr_begin + cxt->strings_size;
-+
-+	return 0;
-+}
-+
-+/**********************************************************************/
-+
-+static inline int isprint(int c)
-+{
-+	return c >= 0x20 && c <= 0x7e;
-+}
-+
-+static int is_printable_string(const void *data, int len)
-+{
-+	const char *s = data;
-+	const char *ss;
-+
-+	/* zero length is not */
-+	if (len == 0)
-+		return 0;
-+
-+	/* must terminate with zero */
-+	if (s[len - 1] != '\0')
-+		return 0;
-+
-+	ss = s;
-+	while (*s && isprint(*s))
-+		s++;
-+
-+	/* not zero, or not done yet */
-+	if (*s != '\0' || (s + 1 - ss) < len)
-+		return 0;
-+
-+	return 1;
-+}
-+
-+static void print_data(const void *data, int len)
-+{
-+	int i;
-+	const u8 *s;
-+
-+	/* no data, don't print */
-+	if (len == 0)
-+		return;
-+
-+	if (is_printable_string(data, len)) {
-+		printf(" = \"%s\"", (char *)data);
-+		return;
-+	}
-+
-+	switch (len) {
-+	case 1:		/* byte */
-+		printf(" = <0x%02x>", (*(u8 *) data) & 0xff);
-+		break;
-+	case 2:		/* half-word */
-+		printf(" = <0x%04x>", be16_to_cpu(*(u16 *) data) & 0xffff);
-+		break;
-+	case 4:		/* word */
-+		printf(" = <0x%08x>", be32_to_cpu(*(u32 *) data) & 0xffffffffU);
-+		break;
-+	case 8:		/* double-word */
-+		printf(" = <0x%16llx>", be64_to_cpu(*(uint64_t *) data));
-+		break;
-+	default:		/* anything else... hexdump */
-+		printf(" = [");
-+		for (i = 0, s = data; i < len; i++)
-+			printf("%02x%s", s[i], i < len - 1 ? " " : "");
-+		printf("]");
-+
-+		break;
-+	}
-+}
-+
-+void ft_dump_blob(const void *bphp)
-+{
-+	const struct boot_param_header *bph = bphp;
-+	const uint64_t *p_rsvmap = (const uint64_t *)
-+		((const char *)bph + be32_to_cpu(bph->off_mem_rsvmap));
-+	const u32 *p_struct = (const u32 *)
-+		((const char *)bph + be32_to_cpu(bph->off_dt_struct));
-+	const u32 *p_strings = (const u32 *)
-+		((const char *)bph + be32_to_cpu(bph->off_dt_strings));
-+	u32 tag;
-+	const u32 *p;
-+	const char *s, *t;
-+	int depth, sz, shift;
-+	int i;
-+	uint64_t addr, size;
-+
-+	depth = 0;
-+	shift = 4;
-+
-+	for (i = 0;; i++) {
-+		addr = be64_to_cpu(p_rsvmap[i * 2]);
-+		size = be64_to_cpu(p_rsvmap[i * 2 + 1]);
-+		if (addr == 0 && size == 0)
-+			break;
-+
-+		printf("/memreserve/ 0x%llx 0x%llx;\n", addr, size);
-+	}
-+
-+	p = p_struct;
-+	while ((tag = be32_to_cpu(*p++)) != OF_DT_END) {
-+
-+		/* printf("tag: 0x%08x (%d)\n", tag, p - p_struct); */
-+
-+		if (tag == OF_DT_BEGIN_NODE) {
-+			s = (const char *)p;
-+			p = (u32 *) _ALIGN((unsigned long)p + strlen(s) + 1, 4);
-+
-+			printf("%*s%s {\n", depth * shift, "", s);
-+
-+			depth++;
-+			continue;
-+		}
-+
-+		if (tag == OF_DT_END_NODE) {
-+			depth--;
-+
-+			printf("%*s};\n", depth * shift, "");
-+			continue;
-+		}
-+
-+		if (tag == OF_DT_NOP) {
-+			printf("%*s[NOP]\n", depth * shift, "");
-+			continue;
-+		}
-+
-+		if (tag != OF_DT_PROP) {
-+			fprintf(stderr, "%*s ** Unknown tag 0x%08x\n",
-+				depth * shift, "", tag);
-+			break;
-+		}
-+		sz = be32_to_cpu(*p++);
-+		s = (const char *)p_strings + be32_to_cpu(*p++);
-+		t = (const char *)p;
-+		p = (const u32 *)_ALIGN((unsigned long)p + sz, 4);
-+		printf("%*s%s", depth * shift, "", s);
-+		print_data(t, sz);
-+		printf(";\n");
-+	}
-+}
-+
-+void ft_backtrack_node(struct ft_cxt *cxt)
-+{
-+	if (be32_to_cpu(*(u32 *) (cxt->p - 4)) != OF_DT_END_NODE)
-+		return;		/* XXX only for node */
-+
-+	cxt->p -= 4;
-+}
-+
-+/* note that the root node of the blob is "peeled" off */
-+void ft_merge_blob(struct ft_cxt *cxt, void *blob)
-+{
-+	struct boot_param_header *bph = (struct boot_param_header *)blob;
-+	u32 *p_struct = (u32 *) ((char *)bph + be32_to_cpu(bph->off_dt_struct));
-+	u32 *p_strings =
-+	    (u32 *) ((char *)bph + be32_to_cpu(bph->off_dt_strings));
-+	u32 tag, *p;
-+	char *s, *t;
-+	int depth, sz;
-+
-+	if (be32_to_cpu(*(u32 *) (cxt->p - 4)) != OF_DT_END_NODE)
-+		return;		/* XXX only for node */
-+
-+	cxt->p -= 4;
-+
-+	depth = 0;
-+	p = p_struct;
-+	while ((tag = be32_to_cpu(*p++)) != OF_DT_END) {
-+
-+		/* printf("tag: 0x%08x (%d) - %d\n", tag, p - p_struct, depth); */
-+
-+		if (tag == OF_DT_BEGIN_NODE) {
-+			s = (char *)p;
-+			p = (u32 *) _ALIGN((unsigned long)p + strlen(s) + 1, 4);
-+
-+			if (depth++ > 0)
-+				ft_begin_node(cxt, s);
-+
-+			continue;
-+		}
-+
-+		if (tag == OF_DT_END_NODE) {
-+			ft_end_node(cxt);
-+			if (--depth == 0)
-+				break;
-+			continue;
-+		}
-+
-+		if (tag == OF_DT_NOP)
-+			continue;
-+
-+		if (tag != OF_DT_PROP)
-+			break;
-+
-+		sz = be32_to_cpu(*p++);
-+		s = (char *)p_strings + be32_to_cpu(*p++);
-+		t = (char *)p;
-+		p = (u32 *) _ALIGN((unsigned long)p + sz, 4);
-+
-+		ft_prop(cxt, s, t, sz);
-+	}
-+}
-+
-+void *ft_get_prop(void *bphp, const char *propname, int *szp)
-+{
-+	struct boot_param_header *bph = bphp;
-+	uint32_t *p_struct =
-+	    (uint32_t *) ((char *)bph + be32_to_cpu(bph->off_dt_struct));
-+	uint32_t *p_strings =
-+	    (uint32_t *) ((char *)bph + be32_to_cpu(bph->off_dt_strings));
-+	uint32_t version = be32_to_cpu(bph->version);
-+	uint32_t tag;
-+	uint32_t *p;
-+	char *s, *t;
-+	char *ss;
-+	int sz;
-+	static char path[256], prop[256];
-+
-+	path[0] = '\0';
-+
-+	p = p_struct;
-+	while ((tag = be32_to_cpu(*p++)) != OF_DT_END) {
-+
-+		if (tag == OF_DT_BEGIN_NODE) {
-+			s = (char *)p;
-+			p = (uint32_t *) _ALIGN((unsigned long)p + strlen(s) +
-+						1, 4);
-+			strcat(path, s);
-+			strcat(path, "/");
-+			continue;
-+		}
-+
-+		if (tag == OF_DT_END_NODE) {
-+			path[strlen(path) - 1] = '\0';
-+			ss = strrchr(path, '/');
-+			if (ss != NULL)
-+				ss[1] = '\0';
-+			continue;
-+		}
-+
-+		if (tag == OF_DT_NOP)
-+			continue;
-+
-+		if (tag != OF_DT_PROP)
-+			break;
-+
-+		sz = be32_to_cpu(*p++);
-+		s = (char *)p_strings + be32_to_cpu(*p++);
-+		if (version < 0x10 && sz >= 8)
-+			p = (uint32_t *) _ALIGN((unsigned long)p, 8);
-+		t = (char *)p;
-+		p = (uint32_t *) _ALIGN((unsigned long)p + sz, 4);
-+
-+		strcpy(prop, path);
-+		strcat(prop, s);
-+
-+		if (strcmp(prop, propname) == 0) {
-+			*szp = sz;
-+			return t;
-+		}
-+	}
-+
-+	return NULL;
-+}
-+
-+/********************************************************************/
-+
-+extern unsigned char oftree_dtb[];
-+extern unsigned int oftree_dtb_len;
-+
-+/* Function that returns a character from the environment */
-+extern uchar(*env_get_char) (int);
-+
-+void ft_setup(void *blob, int size, bd_t * bd)
-+{
-+	DECLARE_GLOBAL_DATA_PTR;
-+	u8 *end;
-+	u32 *p;
-+	int len;
-+	struct ft_cxt cxt;
-+	int i, k, nxt;
-+	static char tmpenv[256];
-+	char *s, *lval, *rval;
-+	ulong clock;
-+
-+	ft_begin(&cxt, blob, size);
-+
-+	/* fs_add_rsvmap not used */
-+
-+	ft_begin_tree(&cxt);
-+
-+	ft_begin_node(&cxt, "");
-+
-+	ft_end_node(&cxt);
-+
-+	/* copy RO tree */
-+	ft_merge_blob(&cxt, oftree_dtb);
-+
-+	/* back into root */
-+	ft_backtrack_node(&cxt);
-+
-+	ft_begin_node(&cxt, "u-boot-env");
-+
-+	for (i = 0; env_get_char(i) != '\0'; i = nxt + 1) {
-+		for (nxt = i; env_get_char(nxt) != '\0'; ++nxt) ;
-+		s = tmpenv;
-+		for (k = i; k < nxt && s < &tmpenv[sizeof(tmpenv) - 1]; ++k)
-+			*s++ = env_get_char(k);
-+		*s++ = '\0';
-+		lval = tmpenv;
-+		s = strchr(tmpenv, '=');
-+		if (s != NULL) {
-+			*s++ = '\0';
-+			rval = s;
-+		} else
-+			continue;
-+		ft_prop_str(&cxt, lval, rval);
-+	}
-+
-+	ft_end_node(&cxt);
-+
-+	ft_begin_node(&cxt, "chosen");
-+
-+	ft_prop_str(&cxt, "name", "chosen");
-+	ft_prop_str(&cxt, "bootargs", getenv("bootargs"));
-+	ft_prop_int(&cxt, "linux,platform", 0x600);	/* what is this? */
-+
-+	ft_end_node(&cxt);
-+
-+	ft_end_node(&cxt);	/* end root */
-+
-+	ft_end_tree(&cxt);
-+
-+	/*
-+	   printf("merged OF-tree\n");
-+	   ft_dump_blob(blob);
-+	 */
-+
-+	/* paste the bd_t at the end of the flat tree */
-+	end = (char *)blob +
-+	    be32_to_cpu(((struct boot_param_header *)blob)->totalsize);
-+	memcpy(end, bd, sizeof(*bd));
-+
-+#ifdef __powerpc__
-+
-+	p = ft_get_prop(blob, "/u-boot-bd_t/memstart", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(bd->bi_memstart);
-+
-+	p = ft_get_prop(blob, "/u-boot-bd_t/memsize", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(bd->bi_memsize);
-+
-+	p = ft_get_prop(blob, "/u-boot-bd_t/flashstart", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(bd->bi_flashstart);
-+
-+	p = ft_get_prop(blob, "/u-boot-bd_t/flashsize", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(bd->bi_flashsize);
-+
-+	p = ft_get_prop(blob, "/u-boot-bd_t/flashoffset", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(bd->bi_flashoffset);
-+
-+	p = ft_get_prop(blob, "/u-boot-bd_t/sramstart", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(bd->bi_sramstart);
-+
-+	p = ft_get_prop(blob, "/u-boot-bd_t/sramsize", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(bd->bi_sramsize);
-+
-+#if defined(CONFIG_5xx) || defined(CONFIG_8xx) || defined(CONFIG_8260) \
-+	|| defined(CONFIG_E500)
-+	p = ft_get_prop(blob, "/u-boot-bd_t/immr_base", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(bd->bi_immr_base);
-+#endif
-+
-+#if defined(CONFIG_MPC5xxx)
-+	p = ft_get_prop(blob, "/u-boot-bd_t/mbar_base", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(bd->bi_mbar_base);
-+#endif
-+
-+#if defined(CONFIG_MPC83XX)
-+	p = ft_get_prop(blob, "/u-boot-bd_t/immrbar", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(bd->bi_immrbar);
-+#endif
-+
-+#if defined(CONFIG_MPC8220)
-+	p = ft_get_prop(blob, "/u-boot-bd_t/mbar_base", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(bd->bi_mbar_base);
-+
-+	p = ft_get_prop(blob, "/u-boot-bd_t/inpfreq", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(bd->bi_nipfreq);
-+
-+	p = ft_get_prop(blob, "/u-boot-bd_t/pcifreq", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(bd->bi_pcifreq);
-+
-+	p = ft_get_prop(blob, "/u-boot-bd_t/pevfreq", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(bd->bi_pevfreq);
-+
-+	p = ft_get_prop(blob, "/u-boot-bd_t/flbfreq", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(bd->bi_flbfreq);
-+
-+	p = ft_get_prop(blob, "/u-boot-bd_t/vcofreq", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(bd->bi_vcofreq);
-+#endif
-+
-+	p = ft_get_prop(blob, "/u-boot-bd_t/bootflags", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(bd->bi_bootflags);
-+
-+	p = ft_get_prop(blob, "/u-boot-bd_t/ip_addr", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(bd->bi_ip_addr);
-+
-+	p = ft_get_prop(blob, "/u-boot-bd_t/enetaddr", &len);
-+	if (p != NULL)
-+		memcpy(p, bd->bi_enetaddr, 6);
-+
-+	p = ft_get_prop(blob, "/u-boot-bd_t/ethspeed", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32((uint32_t) bd->bi_ethspeed);
-+
-+	p = ft_get_prop(blob, "/u-boot-bd_t/intfreq", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(bd->bi_intfreq);
-+
-+	p = ft_get_prop(blob, "/u-boot-bd_t/busfreq", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(bd->bi_busfreq);
-+
-+#ifdef CONFIG_CPM2
-+
-+	p = ft_get_prop(blob, "/u-boot-bd_t/cpmfreq", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(bd->bi_cpmfreq);
-+
-+	p = ft_get_prop(blob, "/u-boot-bd_t/brgfreq", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(bd->bi_brgfreq);
-+
-+	p = ft_get_prop(blob, "/u-boot-bd_t/sccfreq", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(bd->bi_sccfreq);
-+
-+	p = ft_get_prop(blob, "/u-boot-bd_t/vco", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(bd->bi_vco);
-+#endif
-+
-+#if defined(CONFIG_MPC5xxx)
-+
-+	p = ft_get_prop(blob, "/u-boot-bd_t/ipbfreq", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(bd->bi_ipbfreq);
-+
-+	p = ft_get_prop(blob, "/u-boot-bd_t/pcifreq", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(bd->bi_pcifreq);
-+#endif
-+
-+	p = ft_get_prop(blob, "/u-boot-bd_t/baudrate", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(bd->bi_baudrate);
-+
-+#if defined(CONFIG_8xx)
-+	clock = gd->cpu_clk;
-+#elif defined(CONFIG_8260)
-+	clock = gd->brg_clk;
-+#else
-+	clock = 0;
-+#endif
-+	p = ft_get_prop(blob, "/cpus/" OF_CPU "/clock-frequency", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(clock);
-+
-+	p = ft_get_prop(blob, "/cpus/" OF_CPU "/timebase-frequency", &len);
-+	if (p != NULL)
-+		*p = cpu_to_be32(clock / 4);	/* XXX I'm just guessing */
-+
-+#endif				/* __powerpc__ */
-+
-+	/*
-+	   printf("final OF-tree\n");
-+	   ft_dump_blob(blob);
-+	 */
-+
-+}
-+
-+#endif
-diff --git a/include/ft_build.h b/include/ft_build.h
-new file mode 100644
---- /dev/null
-+++ b/include/ft_build.h
-@@ -0,0 +1,66 @@
-+/*
-+ * OF Flat tree builder
-+ *
-+ */
-+
-+#ifndef FT_BUILD_H
-+#define FT_BUILD_H
-+
-+#include <linux/types.h>
-+#include <asm/u-boot.h>
-+
-+/* Definitions used by the flattened device tree */
-+#define OF_DT_HEADER		0xd00dfeed	/* marker */
-+#define OF_DT_BEGIN_NODE	0x1	/* Start of node, full name */
-+#define OF_DT_END_NODE		0x2	/* End node */
-+#define OF_DT_PROP		0x3	/* Property: name off, size,
-+					 * content */
-+#define OF_DT_NOP		0x4	/* nop */
-+#define OF_DT_END		0x9
-+
-+#define OF_DT_VERSION		0x10
-+
-+struct boot_param_header {
-+	u32 magic;		/* magic word OF_DT_HEADER */
-+	u32 totalsize;		/* total size of DT block */
-+	u32 off_dt_struct;	/* offset to structure */
-+	u32 off_dt_strings;	/* offset to strings */
-+	u32 off_mem_rsvmap;	/* offset to memory reserve map */
-+	u32 version;		/* format version */
-+	u32 last_comp_version;	/* last compatible version */
-+	/* version 2 fields below */
-+	u32 boot_cpuid_phys;	/* Physical CPU id we're booting on */
-+	/* version 3 fields below */
-+	u32 dt_strings_size;	/* size of the DT strings block */
-+};
-+
-+struct ft_cxt {
-+	struct boot_param_header *bph;
-+	int max_size;		/* maximum size of tree */
-+	int overflow;		/* set when this happens */
-+	u8 *p, *pstr, *pres;	/* running pointers */
-+	u8 *p_begin, *pstr_begin, *pres_begin;	/* starting pointers */
-+	u8 *p_anchor;		/* start of constructed area */
-+	int struct_size, strings_size, res_size;
-+};
-+
-+void ft_begin_node(struct ft_cxt *cxt, const char *name);
-+void ft_end_node(struct ft_cxt *cxt);
-+
-+void ft_begin_tree(struct ft_cxt *cxt);
-+int ft_end_tree(struct ft_cxt *cxt);
-+
-+void ft_nop(struct ft_cxt *cxt);
-+void ft_prop(struct ft_cxt *cxt, const char *name, const void *data, int sz);
-+void ft_prop_str(struct ft_cxt *cxt, const char *name, const char *str);
-+void ft_prop_int(struct ft_cxt *cxt, const char *name, int val);
-+void ft_begin(struct ft_cxt *cxt, void *blob, int max_size);
-+void ft_add_rsvmap(struct ft_cxt *cxt, u64 physaddr, u64 size);
-+
-+void ft_setup(void *blob, int size, bd_t * bd);
-+
-+void ft_dump_blob(const void *bphp);
-+void ft_merge_blob(struct ft_cxt *cxt, void *blob);
-+void *ft_get_prop(void *bphp, const char *propname, int *szp);
-+
-+#endif
+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
 
---Boundary-00=_/wGGDZ67YEIC0t0
-Content-Type: text/plain; charset="us-ascii"; name="of-uboot-stxxtc.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="of-uboot-stxxtc.patch"
-
-diff --git a/board/stxxtc/Makefile b/board/stxxtc/Makefile
---- a/board/stxxtc/Makefile
-+++ b/board/stxxtc/Makefile
-@@ -25,11 +25,19 @@ include $(TOPDIR)/config.mk
- 
- LIB	= lib$(BOARD).a
- 
--OBJS	= $(BOARD).o
-+OBJS	= $(BOARD).o oftree.o
- 
- $(LIB):	.depend $(OBJS)
- 	$(AR) crv $@ $(OBJS)
- 
-+%.dtb: %.dts
-+	dtc -f -V 0x10 -I dts -O dtb $< >$@
-+
-+%.c: %.dtb
-+	xxd -i $< \
-+	   | sed -e "s/^unsigned char/const unsigned char/g" \
-+	   | sed -e "s/^unsigned int/const unsigned int/g" > $@
-+
- #########################################################################
- 
- .depend:	Makefile $(SOBJS:.o=.S) $(OBJS:.o=.c)
-@@ -38,3 +46,4 @@ $(LIB):	.depend $(OBJS)
- sinclude .depend
- 
- #########################################################################
-+
-diff --git a/board/stxxtc/oftree.dts b/board/stxxtc/oftree.dts
-new file mode 100644
---- /dev/null
-+++ b/board/stxxtc/oftree.dts
-@@ -0,0 +1,52 @@
-+/ {
-+	model = "STXXTC V1";
-+	compatible = "STXXTC";
-+	#address-cells = <2>;
-+	#size-cells = <2>;
-+
-+	cpus {
-+		linux,phandle = <1>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		PowerPC,MPC870@0 {
-+			linux,phandle = <3>;
-+			name = "PowerPC,MPC870";
-+			device_type = "cpu";
-+			reg = <0>;
-+			clock-frequency = <0>;		/* place-holder for runtime fillup */
-+			timebase-frequency = <0>;	/* dido */
-+			linux,boot-cpu;
-+			i-cache-size = <2000>;
-+			d-cache-size = <2000>;
-+			32-bit;
-+		};
-+	};
-+
-+	memory@0 {
-+		device_type = "memory";
-+		reg = <00000000 00000000 00000000 20000000>;
-+	};
-+
-+	/* copy of the bd_t information (place-holders) */
-+	u-boot-bd_t {
-+		memstart	= <0>;
-+		memsize		= <0>;
-+		flashstart	= <0>;
-+		flashsize	= <0>;
-+		flashoffset	= <0>;
-+		sramstart	= <0>;
-+		sramsize	= <0>;
-+
-+		immr_base	= <0>;
-+
-+		bootflags	= <0>;
-+		ip_addr		= <0>;
-+		enetaddr	= [ 00 00 00 00 00 00 ];
-+		ethspeed	= <0>;
-+		intfreq		= <0>;
-+		busfreq		= <0>;
-+
-+		baudrate	= <0>;
-+	};
-+
-+};
-diff --git a/board/stxxtc/stxxtc.c b/board/stxxtc/stxxtc.c
---- a/board/stxxtc/stxxtc.c
-+++ b/board/stxxtc/stxxtc.c
-@@ -38,6 +38,13 @@
- #include <watchdog.h>
- #endif
- 
-+#include <ft_build.h>
-+
-+/****************************************************************/
-+
-+extern const unsigned char oftree_dtb[];
-+extern const unsigned int oftree_dtb_len;
-+
- /****************************************************************/
- 
- /* some sane bit macros */
-diff --git a/include/configs/stxxtc.h b/include/configs/stxxtc.h
---- a/include/configs/stxxtc.h
-+++ b/include/configs/stxxtc.h
-@@ -574,19 +574,14 @@ typedef unsigned int led_id_t;
- #define CONFIG_CRC32_VERIFY	1
- #define CONFIG_HUSH_OLD_PARSER_COMPATIBLE	1
- 
--/* Note: change below for your network setting!!!
-- * This was done just to facilitate manufacturing test and configuration.
-- */
--#define CONFIG_ETHADDR	 00:e0:0c:07:9b:8a
-+/*****************************************************************************/
- 
--#define CONFIG_SERVERIP 	192.168.08.1
--#define CONFIG_IPADDR  		192.168.08.85
--#define CONFIG_GATEWAYIP	192.168.08.1
--#define CONFIG_NETMASK		255.255.255.0
--#define CONFIG_HOSTNAME 	stx_xtc
--#define CONFIG_ROOTPATH 	/xtcroot
--#define CONFIG_BOOTFILE 	uImage
--#define CONFIG_LOADADDR		0x1000000
-+/* pass open firmware flat tree */
-+#define CONFIG_OF_FLAT_TREE	1
- 
-+/* maximum size of the flat tree (8K) */
-+#define OF_FLAT_TREE_MAX_SIZE	8192
-+
-+#define OF_CPU			"PowerPC,MPC870@0"
- 
- #endif	/* __CONFIG_H */
-
---Boundary-00=_/wGGDZ67YEIC0t0--
+--Boundary-00=_UQHGDVaopksEsKC--
