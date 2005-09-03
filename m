@@ -1,23 +1,21 @@
 Return-Path: <mala@hinterbergen.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id AB4796808E
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Sep 2005 20:09:13 +1000 (EST)
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 7ACF568110
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Sep 2005 20:21:36 +1000 (EST)
 Received: from ws02.hinter.bergen (ws02.hinter.bergen [192.168.42.12])
-	by router.hinter.bergen (Postfix) with ESMTP id 0ECDB1142FB
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Sep 2005 10:03:56 +0000 (UTC)
+	by router.hinter.bergen (Postfix) with ESMTP id 918351142FB
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Sep 2005 10:21:30 +0000 (UTC)
 Received: from ws02.hinter.bergen ([127.0.0.1])
 	by ws02.hinter.bergen with esmtp (Exim 3.36 #1 (Debian))
-	id 1EBUsN-0000ee-00
-	for <linuxppc-dev@ozlabs.org>; Sat, 03 Sep 2005 10:03:55 +0000
-Message-ID: <431974FE.1060703@hinterbergen.de>
-Date: Sat, 03 Sep 2005 10:03:42 +0000
+	id 1EBV9O-0000fx-00
+	for <linuxppc-dev@ozlabs.org>; Sat, 03 Sep 2005 10:21:30 +0000
+Message-ID: <43197929.1060906@hinterbergen.de>
+Date: Sat, 03 Sep 2005 10:21:29 +0000
 From: Manuel Tobias Schiller <mala@hinterbergen.de>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="------------enigD35C75B36E7751CD1458BA20"
-Subject: Strange behaviour of adjtimex/settimeofday syscalls
+Content-Type: multipart/mixed; boundary="------------010307080706070006030106"
+Subject: [PATCH] Re: Strange behaviour of adjtimex/settimeofday syscalls
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,12 +25,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigD35C75B36E7751CD1458BA20
-Content-Type: multipart/mixed; boundary="------------020408020700040604000101"
-
 This is a multi-part message in MIME format.
---------------020408020700040604000101
+--------------010307080706070006030106
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
@@ -71,7 +65,12 @@ Many thanks for your consideration.
 
 Manuel Schiller
 
---------------020408020700040604000101
+
+P.S. I've just noticed that the web interface doesn't handle the PGP
+signatures of my previous submission well, so I'm resending the mail
+without it. I'm terribly sorry for the inconvenience.
+
+--------------010307080706070006030106
 Content-Type: video/x-dv;
  name="ppc-settimeofday.dif"
 Content-Transfer-Encoding: base64
@@ -98,19 +97,4 @@ CS8qIHRpbWVfc3RhdGUgPSBUSU1FX0VSUk9SOyAqLyAgICAgICAgLyogcC4gMjQsIChhKSAq
 LwogCXRpbWVfbWF4ZXJyb3IgPSBOVFBfUEhBU0VfTElNSVQ7CiAJdGltZV9lc3RlcnJvciA9
 IE5UUF9QSEFTRV9MSU1JVDsKIAl3cml0ZV91bmxvY2tfaXJxcmVzdG9yZSgmeHRpbWVfbG9j
 aywgZmxhZ3MpOwo=
---------------020408020700040604000101--
-
---------------enigD35C75B36E7751CD1458BA20
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQFDGXUJ5Dcvt6MwNT4RAplRAJ9fmfKFo8Cf6HPR+Ct1QqvTkJdKvACgqGz/
-TGB07NYP3UhgRCJGcQWHRy4=
-=xhYl
------END PGP SIGNATURE-----
-
---------------enigD35C75B36E7751CD1458BA20--
+--------------010307080706070006030106--
