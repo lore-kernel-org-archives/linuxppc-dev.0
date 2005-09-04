@@ -1,21 +1,11 @@
-Return-Path: <mala@hinterbergen.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 7ACF568110
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Sep 2005 20:21:36 +1000 (EST)
-Received: from ws02.hinter.bergen (ws02.hinter.bergen [192.168.42.12])
-	by router.hinter.bergen (Postfix) with ESMTP id 918351142FB
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Sep 2005 10:21:30 +0000 (UTC)
-Received: from ws02.hinter.bergen ([127.0.0.1])
-	by ws02.hinter.bergen with esmtp (Exim 3.36 #1 (Debian))
-	id 1EBV9O-0000fx-00
-	for <linuxppc-dev@ozlabs.org>; Sat, 03 Sep 2005 10:21:30 +0000
-Message-ID: <43197929.1060906@hinterbergen.de>
-Date: Sat, 03 Sep 2005 10:21:29 +0000
-From: Manuel Tobias Schiller <mala@hinterbergen.de>
+Return-Path: <bgill@freescale.com>
+Date: Sat, 3 Sep 2005 19:01:57 -0500 (CDT)
+From: Becky Bruce <bgill@freescale.com>
+To: linuxppc64-dev@ozlabs.org, linuxppc-dev@ozlabs.org
+Message-ID: <Pine.LNX.4.61.0509031857520.7592@cde-tx32-ldt329.sps.mot.com>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Content-Type: multipart/mixed; boundary="------------010307080706070006030106"
-Subject: [PATCH] Re: Strange behaviour of adjtimex/settimeofday syscalls
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: [PATCH] (updated) Move 3 more headers to asm-powerpc
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,76 +15,1492 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------010307080706070006030106
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Merged several nearly-identical header files from asm-ppc and asm-ppc64 into
+asm-powerpc. Note: This patch supersedes the earlier patch by this name.
 
-Hi all,
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
 
-I'm running Linux 2.4.31 on a G3. I usually synchronize the clocks on my
-LAN using ntpd. Inspecting the kernel with the ntptime utility yields an
-error exit code from ntp_adjtime() which won't clear for weeks (i.e. the
-output line looks like this:
+---
+commit 7e2f23568d8c7fbd5524f5d8940dea64e8e3d067
+tree b5d10b5d6a66ffa37635d5824a48bca9cc23aa85
+parent 6b39374a27eb4be7e9d82145ae270ba02ea90dc8
+author Becky Bruce <becky.bruce@freescale.com> Sat, 03 Sep 2005 17:29:11 -0500
+committer Becky Bruce <becky.bruce@freescale.com> Sat, 03 Sep 2005 17:29:11 -0500
 
-	...
-	ntp_adjtime() returns code 5 (ERROR)
-	...
+ include/asm-powerpc/mman.h     |   52 +++++++++
+ include/asm-powerpc/termbits.h |  191 ++++++++++++++++++++++++++++++++
+ include/asm-powerpc/termios.h  |  236 ++++++++++++++++++++++++++++++++++++++++
+ include/asm-ppc/mman.h         |   44 -------
+ include/asm-ppc/termbits.h     |  185 -------------------------------
+ include/asm-ppc/termios.h      |  232 ---------------------------------------
+ include/asm-ppc64/mman.h       |   52 ---------
+ include/asm-ppc64/termbits.h   |  193 ---------------------------------
+ include/asm-ppc64/termios.h    |  235 ----------------------------------------
+ 9 files changed, 479 insertions(+), 941 deletions(-)
 
-The members of the structure representing the kernel time PLL status etc
-all look reasonable, and clock synchronisation using ntpd works quite
-well - that's why I think there may be something wrong with the kernel
-setting this error condition.)
-
-Looking through the kernel source, I found that the ppc version of
-do_settimeofday sets an error variable without clearing it anywhere.
-Since other architectures don't do that, I applied the patch below to
-avoid setting the error state.
-
-I've been running with the modified kernel for almost a month now
-without problems, so I think this patch might be interesting for the
-general public (I haven't found anything similar with google). I'd like
-to know what you think of it. If you think it's ok, it would be nice of
-you if someone could make sure the patch makes it into mainstream
-kernels. (The likelihood of the patch making it into the mainstream
-kernels is just higher if more people have looked over it, so that's why
-I'm posting it here, hoping for people that have more knowledge of these
-things than I and are willing to test it).
-
-Many thanks for your consideration.
-
-Manuel Schiller
-
-
-P.S. I've just noticed that the web interface doesn't handle the PGP
-signatures of my previous submission well, so I'm resending the mail
-without it. I'm terribly sorry for the inconvenience.
-
---------------010307080706070006030106
-Content-Type: video/x-dv;
- name="ppc-settimeofday.dif"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="ppc-settimeofday.dif"
-
-LS0tIGFyY2gvcHBjL2tlcm5lbC90aW1lLmMJMjAwNS0wNi0wNCAyMzoxMDoyNy4wMDAwMDAw
-MDAgKzAwMDAKKysrIGFyY2gvcHBjL2tlcm5lbC90aW1lLmMJMjAwNS0wOC0wOCAyMDo1Nzow
-OS4wMDAwMDAwMDAgKzAwMDAKQEAgLTQwLDYgKzQwLDkgQEAKICAqCiAgKiAxOTk3LTA5LTEw
-ICBVcGRhdGVkIE5UUCBjb2RlIGFjY29yZGluZyB0byB0ZWNobmljYWwgbWVtb3JhbmR1bSBK
-YW4gJzk2CiAgKiAgICAgICAgICAgICAiQSBLZXJuZWwgTW9kZWwgZm9yIFByZWNpc2lvbiBU
-aW1la2VlcGluZyIgYnkgRGF2ZSBNaWxscworICogMjAwNS0wOC0wOCAgVXBkYXRlZCBkb19z
-ZXR0aW1lb2ZkYXkgbm90IHRvIHNldCB0aW1lX3N0YXRlIHRvIFRJTUVfRVJST1IKKyAqICAg
-ICAgICAgICAgIG90aGVyIGFyY2hpdGVjdHVyZXMgZG9uJ3QgZG8gaXQgZWl0aGVyaTsgdGhp
-cyBtYWtlcyBhZGp0aW1leAorICogICAgICAgICAgICAgcmV0dXJuIE9LIGluc3RlYWQgb2Yg
-RVJST1IgKE0uIFNjaGlsbGVyLCBtYWxhQGhpbnRlcmJlcmdlbi5kZSkKICAqLwogCiAjaW5j
-bHVkZSA8bGludXgvY29uZmlnLmg+CkBAIC0yODQsNyArMjg3LDkgQEAKIAogCXRpbWVfYWRq
-dXN0ID0gMDsgICAgICAgICAgICAgICAgLyogc3RvcCBhY3RpdmUgYWRqdGltZSgpICovCiAJ
-dGltZV9zdGF0dXMgfD0gU1RBX1VOU1lOQzsKLQl0aW1lX3N0YXRlID0gVElNRV9FUlJPUjsg
-ICAgICAgIC8qIHAuIDI0LCAoYSkgKi8KKwkvKiBJIHRoaW5rIHRoZSBmb2xsb3dpbmcgbGlu
-ZSBzaG91bGQgYmUgY29tbWVudGVkIG91dCwgb3RoZXIKKwkgKiBhcmNoaXRlY3R1cmVzIGRv
-bid0IG1vZGlmeSB0aW1lX3N0YXRlIGhlcmUgLSAwOC8wOC8wNSBNLiBTY2hpbGxlciAqLwor
-CS8qIHRpbWVfc3RhdGUgPSBUSU1FX0VSUk9SOyAqLyAgICAgICAgLyogcC4gMjQsIChhKSAq
-LwogCXRpbWVfbWF4ZXJyb3IgPSBOVFBfUEhBU0VfTElNSVQ7CiAJdGltZV9lc3RlcnJvciA9
-IE5UUF9QSEFTRV9MSU1JVDsKIAl3cml0ZV91bmxvY2tfaXJxcmVzdG9yZSgmeHRpbWVfbG9j
-aywgZmxhZ3MpOwo=
---------------010307080706070006030106--
+diff --git a/include/asm-powerpc/mman.h b/include/asm-powerpc/mman.h
+new file mode 100644
+--- /dev/null
++++ b/include/asm-powerpc/mman.h
+@@ -0,0 +1,52 @@
++#ifndef _POWERPC_MMAN_H
++#define _POWERPC_MMAN_H
++
++/*
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#define PROT_READ	0x1		/* page can be read */
++#define PROT_WRITE	0x2		/* page can be written */
++#define PROT_EXEC	0x4		/* page can be executed */
++#define PROT_SEM	0x8		/* page may be used for atomic ops */
++#define PROT_NONE	0x0		/* page can not be accessed */
++#define PROT_GROWSDOWN	0x01000000	/* mprotect flag: extend change to start of growsdown vma */
++#define PROT_GROWSUP	0x02000000	/* mprotect flag: extend change to end of growsup vma */
++
++#define MAP_SHARED	0x01		/* Share changes */
++#define MAP_PRIVATE	0x02		/* Changes are private */
++#define MAP_TYPE	0x0f		/* Mask for type of mapping */
++#define MAP_FIXED	0x10		/* Interpret addr exactly */
++#define MAP_ANONYMOUS	0x20		/* don't use a file */
++#define MAP_RENAME      MAP_ANONYMOUS   /* In SunOS terminology */
++#define MAP_NORESERVE   0x40            /* don't reserve swap pages */
++#define MAP_LOCKED	0x80
++
++#define MAP_GROWSDOWN	0x0100		/* stack-like segment */
++#define MAP_DENYWRITE	0x0800		/* ETXTBSY */
++#define MAP_EXECUTABLE	0x1000		/* mark it as an executable */
++
++#define MS_ASYNC	1		/* sync memory asynchronously */
++#define MS_INVALIDATE	2		/* invalidate the caches */
++#define MS_SYNC		4		/* synchronous memory sync */
++
++#define MCL_CURRENT     0x2000          /* lock all currently mapped pages */
++#define MCL_FUTURE      0x4000          /* lock all additions to address space */
++
++#define MAP_POPULATE	0x8000		/* populate (prefault) pagetables */
++#define MAP_NONBLOCK	0x10000		/* do not block on IO */
++
++#define MADV_NORMAL	0x0		/* default page-in behavior */
++#define MADV_RANDOM	0x1		/* page-in minimum required */
++#define MADV_SEQUENTIAL	0x2		/* read-ahead aggressively */
++#define MADV_WILLNEED	0x3		/* pre-fault pages */
++#define MADV_DONTNEED	0x4		/* discard these pages */
++
++/* compatibility flags */
++#define MAP_ANON	MAP_ANONYMOUS
++#define MAP_FILE	0
++
++#endif /* _POWERPC_MMAN_H */
+diff --git a/include/asm-powerpc/termbits.h b/include/asm-powerpc/termbits.h
+new file mode 100644
+--- /dev/null
++++ b/include/asm-powerpc/termbits.h
+@@ -0,0 +1,191 @@
++#ifndef _POWERPC_TERMBITS_H
++#define _POWERPC_TERMBITS_H
++
++/*
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++typedef unsigned char	cc_t;
++typedef unsigned int	speed_t;
++typedef unsigned int	tcflag_t;
++
++/*
++ * termios type and macro definitions.  Be careful about adding stuff
++ * to this file since it's used in GNU libc and there are strict rules
++ * concerning namespace pollution.
++ */
++
++#define NCCS 19
++struct termios {
++	tcflag_t c_iflag;		/* input mode flags */
++	tcflag_t c_oflag;		/* output mode flags */
++	tcflag_t c_cflag;		/* control mode flags */
++	tcflag_t c_lflag;		/* local mode flags */
++	cc_t c_cc[NCCS];		/* control characters */
++	cc_t c_line;			/* line discipline (== c_cc[19]) */
++	speed_t c_ispeed;		/* input speed */
++	speed_t c_ospeed;		/* output speed */
++};
++
++/* c_cc characters */
++#define VINTR 	         0
++#define VQUIT 	         1
++#define VERASE 	         2
++#define VKILL	         3
++#define VEOF	         4
++#define VMIN	         5
++#define VEOL	         6
++#define VTIME	         7
++#define VEOL2	         8
++#define VSWTC	         9
++#define VWERASE 	10
++#define VREPRINT	11
++#define VSUSP 		12
++#define VSTART		13
++#define VSTOP		14
++#define VLNEXT		15
++#define VDISCARD	16
++
++/* c_iflag bits */
++#define IGNBRK	0000001
++#define BRKINT	0000002
++#define IGNPAR	0000004
++#define PARMRK	0000010
++#define INPCK	0000020
++#define ISTRIP	0000040
++#define INLCR	0000100
++#define IGNCR	0000200
++#define ICRNL	0000400
++#define IXON	0001000
++#define IXOFF	0002000
++#define IXANY	0004000
++#define IUCLC	0010000
++#define IMAXBEL	0020000
++#define	IUTF8	0040000
++
++/* c_oflag bits */
++#define OPOST	0000001
++#define ONLCR	0000002
++#define OLCUC	0000004
++
++#define OCRNL	0000010
++#define ONOCR	0000020
++#define ONLRET	0000040
++
++#define OFILL	00000100
++#define OFDEL	00000200
++#define NLDLY	00001400
++#define   NL0	00000000
++#define   NL1	00000400
++#define   NL2	00001000
++#define   NL3	00001400
++#define TABDLY	00006000
++#define   TAB0	00000000
++#define   TAB1	00002000
++#define   TAB2	00004000
++#define   TAB3	00006000
++#define   XTABS	00006000	/* required by POSIX to == TAB3 */
++#define CRDLY	00030000
++#define   CR0	00000000
++#define   CR1	00010000
++#define   CR2	00020000
++#define   CR3	00030000
++#define FFDLY	00040000
++#define   FF0	00000000
++#define   FF1	00040000
++#define BSDLY	00100000
++#define   BS0	00000000
++#define   BS1	00100000
++#define VTDLY	00200000
++#define   VT0	00000000
++#define   VT1	00200000
++
++/* c_cflag bit meaning */
++#define CBAUD	0000377
++#define  B0	0000000		/* hang up */
++#define  B50	0000001
++#define  B75	0000002
++#define  B110	0000003
++#define  B134	0000004
++#define  B150	0000005
++#define  B200	0000006
++#define  B300	0000007
++#define  B600	0000010
++#define  B1200	0000011
++#define  B1800	0000012
++#define  B2400	0000013
++#define  B4800	0000014
++#define  B9600	0000015
++#define  B19200	0000016
++#define  B38400	0000017
++#define  EXTA   B19200
++#define  EXTB   B38400
++#define  CBAUDEX 0000000
++#define  B57600   00020
++#define  B115200  00021
++#define  B230400  00022
++#define  B460800  00023
++#define  B500000  00024
++#define  B576000  00025
++#define  B921600  00026
++#define B1000000  00027
++#define B1152000  00030
++#define B1500000  00031
++#define B2000000  00032
++#define B2500000  00033
++#define B3000000  00034
++#define B3500000  00035
++#define B4000000  00036
++
++#define CSIZE	00001400
++#define   CS5	00000000
++#define   CS6	00000400
++#define   CS7	00001000
++#define   CS8	00001400
++
++#define CSTOPB	00002000
++#define CREAD	00004000
++#define PARENB	00010000
++#define PARODD	00020000
++#define HUPCL	00040000
++
++#define CLOCAL	00100000
++#define CRTSCTS	  020000000000		/* flow control */
++
++/* c_lflag bits */
++#define ISIG	0x00000080
++#define ICANON	0x00000100
++#define XCASE	0x00004000
++#define ECHO	0x00000008
++#define ECHOE	0x00000002
++#define ECHOK	0x00000004
++#define ECHONL	0x00000010
++#define NOFLSH	0x80000000
++#define TOSTOP	0x00400000
++#define ECHOCTL	0x00000040
++#define ECHOPRT	0x00000020
++#define ECHOKE	0x00000001
++#define FLUSHO	0x00800000
++#define PENDIN	0x20000000
++#define IEXTEN	0x00000400
++
++/* Values for the ACTION argument to `tcflow'.  */
++#define	TCOOFF		0
++#define	TCOON		1
++#define	TCIOFF		2
++#define	TCION		3
++
++/* Values for the QUEUE_SELECTOR argument to `tcflush'.  */
++#define	TCIFLUSH	0
++#define	TCOFLUSH	1
++#define	TCIOFLUSH	2
++
++/* Values for the OPTIONAL_ACTIONS argument to `tcsetattr'.  */
++#define	TCSANOW		0
++#define	TCSADRAIN	1
++#define	TCSAFLUSH	2
++
++#endif /* _POWERPC_TERMBITS_H */
+diff --git a/include/asm-powerpc/termios.h b/include/asm-powerpc/termios.h
+new file mode 100644
+--- /dev/null
++++ b/include/asm-powerpc/termios.h
+@@ -0,0 +1,236 @@
++#ifndef _POWERPC_TERMIOS_H
++#define _POWERPC_TERMIOS_H
++
++/*
++ * Liberally adapted from alpha/termios.h.  In particular, the c_cc[]
++ * fields have been reordered so that termio & termios share the
++ * common subset in the same order (for brain dead programs that don't
++ * know or care about the differences).
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#include <asm/ioctls.h>
++#include <asm/termbits.h>
++
++struct sgttyb {
++	char	sg_ispeed;
++	char	sg_ospeed;
++	char	sg_erase;
++	char	sg_kill;
++	short	sg_flags;
++};
++
++struct tchars {
++	char	t_intrc;
++	char	t_quitc;
++	char	t_startc;
++	char	t_stopc;
++	char	t_eofc;
++	char	t_brkc;
++};
++
++struct ltchars {
++	char	t_suspc;
++	char	t_dsuspc;
++	char	t_rprntc;
++	char	t_flushc;
++	char	t_werasc;
++	char	t_lnextc;
++};
++
++struct winsize {
++	unsigned short ws_row;
++	unsigned short ws_col;
++	unsigned short ws_xpixel;
++	unsigned short ws_ypixel;
++};
++
++#define NCC 10
++struct termio {
++	unsigned short c_iflag;		/* input mode flags */
++	unsigned short c_oflag;		/* output mode flags */
++	unsigned short c_cflag;		/* control mode flags */
++	unsigned short c_lflag;		/* local mode flags */
++	unsigned char c_line;		/* line discipline */
++	unsigned char c_cc[NCC];	/* control characters */
++};
++
++/* c_cc characters */
++#define _VINTR	0
++#define _VQUIT	1
++#define _VERASE	2
++#define _VKILL	3
++#define _VEOF	4
++#define _VMIN	5
++#define _VEOL	6
++#define _VTIME	7
++#define _VEOL2	8
++#define _VSWTC	9
++
++/* line disciplines */
++#define N_TTY		0
++#define N_SLIP		1
++#define N_MOUSE		2
++#define N_PPP		3
++#define N_STRIP		4
++#define N_AX25		5
++#define N_X25		6	/* X.25 async */
++#define N_6PACK		7
++#define N_MASC		8	/* Reserved for Mobitex module <kaz@cafe.net> */
++#define N_R3964		9	/* Reserved for Simatic R3964 module */
++#define N_PROFIBUS_FDL	10	/* Reserved for Profibus <Dave@mvhi.com> */
++#define N_IRDA		11	/* Linux IrDa - http://www.cs.uit.no/~dagb/irda/irda.html */
++#define N_SMSBLOCK	12	/* SMS block mode - for talking to GSM data cards about SMS messages */
++#define N_HDLC		13	/* synchronous HDLC */
++#define N_SYNC_PPP	14
++#define N_HCI		15  /* Bluetooth HCI UART */
++
++#ifdef __KERNEL__
++/*                   ^C  ^\ del  ^U  ^D   1   0   0   0   0  ^W  ^R  ^Z  ^Q  ^S  ^V  ^U  */
++#define INIT_C_CC "\003\034\177\025\004\001\000\000\000\000\027\022\032\021\023\026\025" 
++#endif
++
++#define FIOCLEX		_IO('f', 1)
++#define FIONCLEX	_IO('f', 2)
++#define FIOASYNC	_IOW('f', 125, int)
++#define FIONBIO		_IOW('f', 126, int)
++#define FIONREAD	_IOR('f', 127, int)
++#define TIOCINQ		FIONREAD
++
++#define TIOCGETP	_IOR('t', 8, struct sgttyb)
++#define TIOCSETP	_IOW('t', 9, struct sgttyb)
++#define TIOCSETN	_IOW('t', 10, struct sgttyb)	/* TIOCSETP wo flush */
++
++#define TIOCSETC	_IOW('t', 17, struct tchars)
++#define TIOCGETC	_IOR('t', 18, struct tchars)
++#define TCGETS		_IOR('t', 19, struct termios)
++#define TCSETS		_IOW('t', 20, struct termios)
++#define TCSETSW		_IOW('t', 21, struct termios)
++#define TCSETSF		_IOW('t', 22, struct termios)
++
++#define TCGETA		_IOR('t', 23, struct termio)
++#define TCSETA		_IOW('t', 24, struct termio)
++#define TCSETAW		_IOW('t', 25, struct termio)
++#define TCSETAF		_IOW('t', 28, struct termio)
++
++#define TCSBRK		_IO('t', 29)
++#define TCXONC		_IO('t', 30)
++#define TCFLSH		_IO('t', 31)
++
++#define TIOCSWINSZ	_IOW('t', 103, struct winsize)
++#define TIOCGWINSZ	_IOR('t', 104, struct winsize)
++#define	TIOCSTART	_IO('t', 110)		/* start output, like ^Q */
++#define	TIOCSTOP	_IO('t', 111)		/* stop output, like ^S */
++#define TIOCOUTQ        _IOR('t', 115, int)     /* output queue size */
++
++#define TIOCGLTC	_IOR('t', 116, struct ltchars)
++#define TIOCSLTC	_IOW('t', 117, struct ltchars)
++#define TIOCSPGRP	_IOW('t', 118, int)
++#define TIOCGPGRP	_IOR('t', 119, int)
++
++#define TIOCEXCL	0x540C
++#define TIOCNXCL	0x540D
++#define TIOCSCTTY	0x540E
++
++#define TIOCSTI		0x5412
++#define TIOCMGET	0x5415
++#define TIOCMBIS	0x5416
++#define TIOCMBIC	0x5417
++#define TIOCMSET	0x5418
++#define TIOCGSOFTCAR	0x5419
++#define TIOCSSOFTCAR	0x541A
++#define TIOCLINUX	0x541C
++#define TIOCCONS	0x541D
++#define TIOCGSERIAL	0x541E
++#define TIOCSSERIAL	0x541F
++#define TIOCPKT		0x5420
++
++#define TIOCNOTTY	0x5422
++#define TIOCSETD	0x5423
++#define TIOCGETD	0x5424
++#define TCSBRKP		0x5425	/* Needed for POSIX tcsendbreak() */
++
++#define TIOCSERCONFIG	0x5453
++#define TIOCSERGWILD	0x5454
++#define TIOCSERSWILD	0x5455
++#define TIOCGLCKTRMIOS	0x5456
++#define TIOCSLCKTRMIOS	0x5457
++#define TIOCSERGSTRUCT	0x5458 /* For debugging only */
++#define TIOCSERGETLSR   0x5459 /* Get line status register */
++#define TIOCSERGETMULTI 0x545A /* Get multiport config  */
++#define TIOCSERSETMULTI 0x545B /* Set multiport config */
++
++#define TIOCMIWAIT	0x545C	/* wait for a change on serial input line(s) */
++#define TIOCGICOUNT	0x545D	/* read serial port inline interrupt counts */
++
++/* Used for packet mode */
++#define TIOCPKT_DATA		 0
++#define TIOCPKT_FLUSHREAD	 1
++#define TIOCPKT_FLUSHWRITE	 2
++#define TIOCPKT_STOP		 4
++#define TIOCPKT_START		 8
++#define TIOCPKT_NOSTOP		16
++#define TIOCPKT_DOSTOP		32
++
++/* modem lines */
++#define TIOCM_LE	0x001
++#define TIOCM_DTR	0x002
++#define TIOCM_RTS	0x004
++#define TIOCM_ST	0x008
++#define TIOCM_SR	0x010
++#define TIOCM_CTS	0x020
++#define TIOCM_CAR	0x040
++#define TIOCM_RNG	0x080
++#define TIOCM_DSR	0x100
++#define TIOCM_CD	TIOCM_CAR
++#define TIOCM_RI	TIOCM_RNG
++#define TIOCM_OUT1	0x2000
++#define TIOCM_OUT2	0x4000
++#define TIOCM_LOOP	0x8000
++
++/* ioctl (fd, TIOCSERGETLSR, &result) where result may be as below */
++#define TIOCSER_TEMT    0x01	/* Transmitter physically empty */
++
++#ifdef __KERNEL__
++
++/*
++ * Translate a "termio" structure into a "termios". Ugh.
++ */
++#define SET_LOW_TERMIOS_BITS(termios, termio, x) { \
++	unsigned short __tmp; \
++	get_user(__tmp,&(termio)->x); \
++	(termios)->x = (0xffff0000 & (termios)->x) | __tmp; \
++}
++
++#define user_termio_to_kernel_termios(termios, termio) \
++({ \
++	SET_LOW_TERMIOS_BITS(termios, termio, c_iflag); \
++	SET_LOW_TERMIOS_BITS(termios, termio, c_oflag); \
++	SET_LOW_TERMIOS_BITS(termios, termio, c_cflag); \
++	SET_LOW_TERMIOS_BITS(termios, termio, c_lflag); \
++	copy_from_user((termios)->c_cc, (termio)->c_cc, NCC); \
++})
++
++/*
++ * Translate a "termios" structure into a "termio". Ugh.
++ */
++#define kernel_termios_to_user_termio(termio, termios) \
++({ \
++	put_user((termios)->c_iflag, &(termio)->c_iflag); \
++	put_user((termios)->c_oflag, &(termio)->c_oflag); \
++	put_user((termios)->c_cflag, &(termio)->c_cflag); \
++	put_user((termios)->c_lflag, &(termio)->c_lflag); \
++	put_user((termios)->c_line,  &(termio)->c_line); \
++	copy_to_user((termio)->c_cc, (termios)->c_cc, NCC); \
++})
++
++#define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios))
++#define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios))
++
++#endif	/* __KERNEL__ */
++
++#endif	/* _POWERPC_TERMIOS_H */
+diff --git a/include/asm-ppc/mman.h b/include/asm-ppc/mman.h
+deleted file mode 100644
+--- a/include/asm-ppc/mman.h
++++ /dev/null
+@@ -1,44 +0,0 @@
+-#ifndef __PPC_MMAN_H__
+-#define __PPC_MMAN_H__
+-
+-#define PROT_READ	0x1		/* page can be read */
+-#define PROT_WRITE	0x2		/* page can be written */
+-#define PROT_EXEC	0x4		/* page can be executed */
+-#define PROT_SEM	0x8		/* page may be used for atomic ops */
+-#define PROT_NONE	0x0		/* page can not be accessed */
+-#define PROT_GROWSDOWN	0x01000000	/* mprotect flag: extend change to start of growsdown vma */
+-#define PROT_GROWSUP	0x02000000	/* mprotect flag: extend change to end of growsup vma */
+-
+-#define MAP_SHARED	0x01		/* Share changes */
+-#define MAP_PRIVATE	0x02		/* Changes are private */
+-#define MAP_TYPE	0x0f		/* Mask for type of mapping */
+-#define MAP_FIXED	0x10		/* Interpret addr exactly */
+-#define MAP_ANONYMOUS	0x20		/* don't use a file */
+-#define MAP_RENAME      MAP_ANONYMOUS   /* In SunOS terminology */
+-#define MAP_NORESERVE   0x40            /* don't reserve swap pages */
+-#define MAP_LOCKED	0x80
+-
+-#define MAP_GROWSDOWN	0x0100		/* stack-like segment */
+-#define MAP_DENYWRITE	0x0800		/* ETXTBSY */
+-#define MAP_EXECUTABLE	0x1000		/* mark it as an executable */
+-#define MAP_POPULATE	0x8000		/* populate (prefault) pagetables */
+-#define MAP_NONBLOCK	0x10000		/* do not block on IO */
+-
+-#define MS_ASYNC	1		/* sync memory asynchronously */
+-#define MS_INVALIDATE	2		/* invalidate the caches */
+-#define MS_SYNC		4		/* synchronous memory sync */
+-
+-#define MCL_CURRENT     0x2000          /* lock all currently mapped pages */
+-#define MCL_FUTURE      0x4000          /* lock all additions to address space */
+-
+-#define MADV_NORMAL	0x0		/* default page-in behavior */
+-#define MADV_RANDOM	0x1		/* page-in minimum required */
+-#define MADV_SEQUENTIAL	0x2		/* read-ahead aggressively */
+-#define MADV_WILLNEED	0x3		/* pre-fault pages */
+-#define MADV_DONTNEED	0x4		/* discard these pages */
+-
+-/* compatibility flags */
+-#define MAP_ANON	MAP_ANONYMOUS
+-#define MAP_FILE	0
+-
+-#endif /* __PPC_MMAN_H__ */
+diff --git a/include/asm-ppc/termbits.h b/include/asm-ppc/termbits.h
+deleted file mode 100644
+--- a/include/asm-ppc/termbits.h
++++ /dev/null
+@@ -1,185 +0,0 @@
+-#ifndef _PPC_TERMBITS_H
+-#define _PPC_TERMBITS_H
+-
+-typedef unsigned char	cc_t;
+-typedef unsigned int	speed_t;
+-typedef unsigned int	tcflag_t;
+-
+-/*
+- * termios type and macro definitions.  Be careful about adding stuff
+- * to this file since it's used in GNU libc and there are strict rules
+- * concerning namespace pollution.
+- */
+-
+-#define NCCS 19
+-struct termios {
+-	tcflag_t c_iflag;		/* input mode flags */
+-	tcflag_t c_oflag;		/* output mode flags */
+-	tcflag_t c_cflag;		/* control mode flags */
+-	tcflag_t c_lflag;		/* local mode flags */
+-	cc_t c_cc[NCCS];		/* control characters */
+-	cc_t c_line;			/* line discipline (== c_cc[19]) */
+-	speed_t c_ispeed;		/* input speed */
+-	speed_t c_ospeed;		/* output speed */
+-};
+-
+-/* c_cc characters */
+-#define VINTR 	0
+-#define VQUIT 	1
+-#define VERASE 	2
+-#define VKILL	3
+-#define VEOF	4
+-#define VMIN	5
+-#define VEOL	6
+-#define VTIME	7
+-#define VEOL2	8
+-#define VSWTC	9
+-
+-#define VWERASE 	10
+-#define VREPRINT	11
+-#define VSUSP 		12
+-#define VSTART		13
+-#define VSTOP		14
+-#define VLNEXT		15
+-#define VDISCARD	16
+-
+-/* c_iflag bits */
+-#define IGNBRK	0000001
+-#define BRKINT	0000002
+-#define IGNPAR	0000004
+-#define PARMRK	0000010
+-#define INPCK	0000020
+-#define ISTRIP	0000040
+-#define INLCR	0000100
+-#define IGNCR	0000200
+-#define ICRNL	0000400
+-#define IXON	0001000
+-#define IXOFF	0002000
+-#define IXANY		0004000
+-#define IUCLC		0010000
+-#define IMAXBEL	0020000
+-#define IUTF8	0040000
+-
+-/* c_oflag bits */
+-#define OPOST	0000001
+-#define ONLCR	0000002
+-#define OLCUC	0000004
+-
+-#define OCRNL	0000010
+-#define ONOCR	0000020
+-#define ONLRET	0000040
+-
+-#define OFILL	00000100
+-#define OFDEL	00000200
+-#define NLDLY	00001400
+-#define   NL0	00000000
+-#define   NL1	00000400
+-#define   NL2	00001000
+-#define   NL3	00001400
+-#define TABDLY	00006000
+-#define   TAB0	00000000
+-#define   TAB1	00002000
+-#define   TAB2	00004000
+-#define   TAB3	00006000
+-#define   XTABS	00006000	/* required by POSIX to == TAB3 */
+-#define CRDLY	00030000
+-#define   CR0	00000000
+-#define   CR1	00010000
+-#define   CR2	00020000
+-#define   CR3	00030000
+-#define FFDLY	00040000
+-#define   FF0	00000000
+-#define   FF1	00040000
+-#define BSDLY	00100000
+-#define   BS0	00000000
+-#define   BS1	00100000
+-#define VTDLY	00200000
+-#define   VT0	00000000
+-#define   VT1	00200000
+-
+-/* c_cflag bit meaning */
+-#define CBAUD	0000377
+-#define  B0	0000000		/* hang up */
+-#define  B50	0000001
+-#define  B75	0000002
+-#define  B110	0000003
+-#define  B134	0000004
+-#define  B150	0000005
+-#define  B200	0000006
+-#define  B300	0000007
+-#define  B600	0000010
+-#define  B1200	0000011
+-#define  B1800	0000012
+-#define  B2400	0000013
+-#define  B4800	0000014
+-#define  B9600	0000015
+-#define  B19200	0000016
+-#define  B38400	0000017
+-#define EXTA B19200
+-#define EXTB B38400
+-#define CBAUDEX 0000000
+-#define  B57600   00020
+-#define  B115200  00021
+-#define  B230400  00022
+-#define  B460800  00023
+-#define  B500000  00024
+-#define  B576000  00025
+-#define  B921600  00026
+-#define B1000000  00027
+-#define B1152000  00030
+-#define B1500000  00031
+-#define B2000000  00032
+-#define B2500000  00033
+-#define B3000000  00034
+-#define B3500000  00035
+-#define B4000000  00036
+-
+-#define CSIZE	00001400
+-#define   CS5	00000000
+-#define   CS6	00000400
+-#define   CS7	00001000
+-#define   CS8	00001400
+-
+-#define CSTOPB	00002000
+-#define CREAD	00004000
+-#define PARENB	00010000
+-#define PARODD	00020000
+-#define HUPCL	00040000
+-
+-#define CLOCAL	00100000
+-#define CRTSCTS	  020000000000		/* flow control */
+-
+-/* c_lflag bits */
+-#define ISIG	0x00000080
+-#define ICANON	0x00000100
+-#define XCASE	0x00004000
+-#define ECHO	0x00000008
+-#define ECHOE	0x00000002
+-#define ECHOK	0x00000004
+-#define ECHONL	0x00000010
+-#define NOFLSH	0x80000000
+-#define TOSTOP	0x00400000
+-#define ECHOCTL	0x00000040
+-#define ECHOPRT	0x00000020
+-#define ECHOKE	0x00000001
+-#define FLUSHO	0x00800000
+-#define PENDIN	0x20000000
+-#define IEXTEN	0x00000400
+-
+-/* Values for the ACTION argument to `tcflow'.  */
+-#define	TCOOFF		0
+-#define	TCOON		1
+-#define	TCIOFF		2
+-#define	TCION		3
+-
+-/* Values for the QUEUE_SELECTOR argument to `tcflush'.  */
+-#define	TCIFLUSH	0
+-#define	TCOFLUSH	1
+-#define	TCIOFLUSH	2
+-
+-/* Values for the OPTIONAL_ACTIONS argument to `tcsetattr'.  */
+-#define	TCSANOW		0
+-#define	TCSADRAIN	1
+-#define	TCSAFLUSH	2
+-
+-#endif /* _PPC_TERMBITS_H */
+diff --git a/include/asm-ppc/termios.h b/include/asm-ppc/termios.h
+deleted file mode 100644
+--- a/include/asm-ppc/termios.h
++++ /dev/null
+@@ -1,232 +0,0 @@
+-#ifndef _PPC_TERMIOS_H
+-#define _PPC_TERMIOS_H
+-
+-/*
+- * Liberally adapted from alpha/termios.h.  In particular, the c_cc[]
+- * fields have been reordered so that termio & termios share the
+- * common subset in the same order (for brain dead programs that don't
+- * know or care about the differences).
+- */
+-
+-#include <asm/ioctls.h>
+-#include <asm/termbits.h>
+-
+-struct sgttyb {
+-	char	sg_ispeed;
+-	char	sg_ospeed;
+-	char	sg_erase;
+-	char	sg_kill;
+-	short	sg_flags;
+-};
+-
+-struct tchars {
+-	char	t_intrc;
+-	char	t_quitc;
+-	char	t_startc;
+-	char	t_stopc;
+-	char	t_eofc;
+-	char	t_brkc;
+-};
+-
+-struct ltchars {
+-	char	t_suspc;
+-	char	t_dsuspc;
+-	char	t_rprntc;
+-	char	t_flushc;
+-	char	t_werasc;
+-	char	t_lnextc;
+-};
+-
+-#define FIOCLEX		_IO('f', 1)
+-#define FIONCLEX	_IO('f', 2)
+-#define FIOASYNC	_IOW('f', 125, int)
+-#define FIONBIO		_IOW('f', 126, int)
+-#define FIONREAD	_IOR('f', 127, int)
+-#define TIOCINQ		FIONREAD
+-#define FIOQSIZE	_IOR('f', 128, loff_t)
+-
+-#define TIOCGETP	_IOR('t', 8, struct sgttyb)
+-#define TIOCSETP	_IOW('t', 9, struct sgttyb)
+-#define TIOCSETN	_IOW('t', 10, struct sgttyb)	/* TIOCSETP wo flush */
+-
+-#define TIOCSETC	_IOW('t', 17, struct tchars)
+-#define TIOCGETC	_IOR('t', 18, struct tchars)
+-#define TCGETS		_IOR('t', 19, struct termios)
+-#define TCSETS		_IOW('t', 20, struct termios)
+-#define TCSETSW		_IOW('t', 21, struct termios)
+-#define TCSETSF		_IOW('t', 22, struct termios)
+-
+-#define TCGETA		_IOR('t', 23, struct termio)
+-#define TCSETA		_IOW('t', 24, struct termio)
+-#define TCSETAW		_IOW('t', 25, struct termio)
+-#define TCSETAF		_IOW('t', 28, struct termio)
+-
+-#define TCSBRK		_IO('t', 29)
+-#define TCXONC		_IO('t', 30)
+-#define TCFLSH		_IO('t', 31)
+-
+-#define TIOCSWINSZ	_IOW('t', 103, struct winsize)
+-#define TIOCGWINSZ	_IOR('t', 104, struct winsize)
+-#define	TIOCSTART	_IO('t', 110)		/* start output, like ^Q */
+-#define	TIOCSTOP	_IO('t', 111)		/* stop output, like ^S */
+-#define TIOCOUTQ        _IOR('t', 115, int)     /* output queue size */
+-
+-#define TIOCGLTC	_IOR('t', 116, struct ltchars)
+-#define TIOCSLTC	_IOW('t', 117, struct ltchars)
+-#define TIOCSPGRP	_IOW('t', 118, int)
+-#define TIOCGPGRP	_IOR('t', 119, int)
+-
+-#define TIOCEXCL	0x540C
+-#define TIOCNXCL	0x540D
+-#define TIOCSCTTY	0x540E
+-
+-#define TIOCSTI		0x5412
+-#define TIOCMGET	0x5415
+-#define TIOCMBIS	0x5416
+-#define TIOCMBIC	0x5417
+-#define TIOCMSET	0x5418
+-#define TIOCGSOFTCAR	0x5419
+-#define TIOCSSOFTCAR	0x541A
+-#define TIOCLINUX	0x541C
+-#define TIOCCONS	0x541D
+-#define TIOCGSERIAL	0x541E
+-#define TIOCSSERIAL	0x541F
+-#define TIOCPKT		0x5420
+-
+-#define TIOCNOTTY	0x5422
+-#define TIOCSETD	0x5423
+-#define TIOCGETD	0x5424
+-#define TCSBRKP		0x5425	/* Needed for POSIX tcsendbreak() */
+-
+-#define TIOCSERCONFIG	0x5453
+-#define TIOCSERGWILD	0x5454
+-#define TIOCSERSWILD	0x5455
+-#define TIOCGLCKTRMIOS	0x5456
+-#define TIOCSLCKTRMIOS	0x5457
+-#define TIOCSERGSTRUCT	0x5458 /* For debugging only */
+-#define TIOCSERGETLSR   0x5459 /* Get line status register */
+-#define TIOCSERGETMULTI 0x545A /* Get multiport config  */
+-#define TIOCSERSETMULTI 0x545B /* Set multiport config */
+-
+-#define TIOCMIWAIT	0x545C	/* wait for a change on serial input line(s) */
+-#define TIOCGICOUNT	0x545D	/* read serial port inline interrupt counts */
+-
+-/* Used for packet mode */
+-#define TIOCPKT_DATA		 0
+-#define TIOCPKT_FLUSHREAD	 1
+-#define TIOCPKT_FLUSHWRITE	 2
+-#define TIOCPKT_STOP		 4
+-#define TIOCPKT_START		 8
+-#define TIOCPKT_NOSTOP		16
+-#define TIOCPKT_DOSTOP		32
+-
+-struct winsize {
+-	unsigned short ws_row;
+-	unsigned short ws_col;
+-	unsigned short ws_xpixel;
+-	unsigned short ws_ypixel;
+-};
+-
+-#define NCC 10
+-struct termio {
+-	unsigned short c_iflag;		/* input mode flags */
+-	unsigned short c_oflag;		/* output mode flags */
+-	unsigned short c_cflag;		/* control mode flags */
+-	unsigned short c_lflag;		/* local mode flags */
+-	unsigned char c_line;		/* line discipline */
+-	unsigned char c_cc[NCC];	/* control characters */
+-};
+-
+-/* c_cc characters */
+-#define _VINTR	0
+-#define _VQUIT	1
+-#define _VERASE	2
+-#define _VKILL	3
+-#define _VEOF	4
+-#define _VMIN	5
+-#define _VEOL	6
+-#define _VTIME	7
+-#define _VEOL2	8
+-#define _VSWTC	9
+-
+-#ifdef __KERNEL__
+-/*                   ^C  ^\ del  ^U  ^D   1   0   0   0   0  ^W  ^R  ^Z  ^Q  ^S  ^V  ^U  */
+-#define INIT_C_CC "\003\034\177\025\004\001\000\000\000\000\027\022\032\021\023\026\025"
+-#endif	/* __KERNEL__ */
+-
+-/* modem lines */
+-#define TIOCM_LE	0x001
+-#define TIOCM_DTR	0x002
+-#define TIOCM_RTS	0x004
+-#define TIOCM_ST	0x008
+-#define TIOCM_SR	0x010
+-#define TIOCM_CTS	0x020
+-#define TIOCM_CAR	0x040
+-#define TIOCM_RNG	0x080
+-#define TIOCM_DSR	0x100
+-#define TIOCM_CD	TIOCM_CAR
+-#define TIOCM_RI	TIOCM_RNG
+-#define TIOCM_OUT1	0x2000
+-#define TIOCM_OUT2	0x4000
+-#define TIOCM_LOOP	0x8000
+-
+-/* ioctl (fd, TIOCSERGETLSR, &result) where result may be as below */
+-#define TIOCSER_TEMT    0x01	/* Transmitter physically empty */
+-
+-/* line disciplines */
+-#define N_TTY		0
+-#define N_SLIP		1
+-#define N_MOUSE		2
+-#define N_PPP		3
+-#define N_STRIP		4
+-#define N_AX25		5
+-#define N_X25		6	/* X.25 async */
+-#define N_6PACK		7
+-#define N_MASC		8	/* Reserved for Mobitex module <kaz@cafe.net> */
+-#define N_R3964		9	/* Reserved for Simatic R3964 module */
+-#define N_PROFIBUS_FDL	10	/* Reserved for Profibus <Dave@mvhi.com> */
+-#define N_IRDA		11	/* Linux IrDa - http://irda.sourceforge.net/ */
+-#define N_SMSBLOCK	12	/* SMS block mode - for talking to GSM data cards about SMS messages */
+-#define N_HDLC		13	/* synchronous HDLC */
+-#define N_SYNC_PPP	14
+-#define N_HCI		15  /* Bluetooth HCI UART */
+-
+-#ifdef __KERNEL__
+-
+-/*
+- * Translate a "termio" structure into a "termios". Ugh.
+- */
+-#define SET_LOW_TERMIOS_BITS(termios, termio, x) { \
+-	unsigned short __tmp; \
+-	get_user(__tmp,&(termio)->x); \
+-	(termios)->x = (0xffff0000 & (termios)->x) | __tmp; \
+-}
+-
+-#define user_termio_to_kernel_termios(termios, termio) \
+-({ \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_iflag); \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_oflag); \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_cflag); \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_lflag); \
+-	copy_from_user((termios)->c_cc, (termio)->c_cc, NCC); \
+-})
+-
+-/*
+- * Translate a "termios" structure into a "termio". Ugh.
+- */
+-#define kernel_termios_to_user_termio(termio, termios) \
+-({ \
+-	put_user((termios)->c_iflag, &(termio)->c_iflag); \
+-	put_user((termios)->c_oflag, &(termio)->c_oflag); \
+-	put_user((termios)->c_cflag, &(termio)->c_cflag); \
+-	put_user((termios)->c_lflag, &(termio)->c_lflag); \
+-	put_user((termios)->c_line,  &(termio)->c_line); \
+-	copy_to_user((termio)->c_cc, (termios)->c_cc, NCC); \
+-})
+-
+-#define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios))
+-#define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios))
+-
+-#endif	/* __KERNEL__ */
+-
+-#endif	/* _PPC_TERMIOS_H */
+diff --git a/include/asm-ppc64/mman.h b/include/asm-ppc64/mman.h
+deleted file mode 100644
+--- a/include/asm-ppc64/mman.h
++++ /dev/null
+@@ -1,52 +0,0 @@
+-#ifndef __PPC64_MMAN_H__
+-#define __PPC64_MMAN_H__
+-
+-/*
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-#define PROT_READ	0x1		/* page can be read */
+-#define PROT_WRITE	0x2		/* page can be written */
+-#define PROT_EXEC	0x4		/* page can be executed */
+-#define PROT_SEM	0x8		/* page may be used for atomic ops */
+-#define PROT_NONE	0x0		/* page can not be accessed */
+-#define PROT_GROWSDOWN	0x01000000	/* mprotect flag: extend change to start of growsdown vma */
+-#define PROT_GROWSUP	0x02000000	/* mprotect flag: extend change to end of growsup vma */
+-
+-#define MAP_SHARED	0x01		/* Share changes */
+-#define MAP_PRIVATE	0x02		/* Changes are private */
+-#define MAP_TYPE	0x0f		/* Mask for type of mapping */
+-#define MAP_FIXED	0x10		/* Interpret addr exactly */
+-#define MAP_ANONYMOUS	0x20		/* don't use a file */
+-#define MAP_RENAME      MAP_ANONYMOUS   /* In SunOS terminology */
+-#define MAP_NORESERVE   0x40            /* don't reserve swap pages */
+-#define MAP_LOCKED	0x80
+-
+-#define MAP_GROWSDOWN	0x0100		/* stack-like segment */
+-#define MAP_DENYWRITE	0x0800		/* ETXTBSY */
+-#define MAP_EXECUTABLE	0x1000		/* mark it as an executable */
+-
+-#define MS_ASYNC	1		/* sync memory asynchronously */
+-#define MS_INVALIDATE	2		/* invalidate the caches */
+-#define MS_SYNC		4		/* synchronous memory sync */
+-
+-#define MCL_CURRENT     0x2000          /* lock all currently mapped pages */
+-#define MCL_FUTURE      0x4000          /* lock all additions to address space */
+-
+-#define MAP_POPULATE	0x8000		/* populate (prefault) pagetables */
+-#define MAP_NONBLOCK	0x10000		/* do not block on IO */
+-
+-#define MADV_NORMAL	0x0		/* default page-in behavior */
+-#define MADV_RANDOM	0x1		/* page-in minimum required */
+-#define MADV_SEQUENTIAL	0x2		/* read-ahead aggressively */
+-#define MADV_WILLNEED	0x3		/* pre-fault pages */
+-#define MADV_DONTNEED	0x4		/* discard these pages */
+-
+-/* compatibility flags */
+-#define MAP_ANON	MAP_ANONYMOUS
+-#define MAP_FILE	0
+-
+-#endif /* __PPC64_MMAN_H__ */
+diff --git a/include/asm-ppc64/termbits.h b/include/asm-ppc64/termbits.h
+deleted file mode 100644
+--- a/include/asm-ppc64/termbits.h
++++ /dev/null
+@@ -1,193 +0,0 @@
+-#ifndef _PPC64_TERMBITS_H
+-#define _PPC64_TERMBITS_H
+-
+-/*
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-#include <linux/posix_types.h>
+-
+-typedef unsigned char	cc_t;
+-typedef unsigned int	speed_t;
+-typedef unsigned int	tcflag_t;
+-
+-/*
+- * termios type and macro definitions.  Be careful about adding stuff
+- * to this file since it's used in GNU libc and there are strict rules
+- * concerning namespace pollution.
+- */
+-
+-#define NCCS 19
+-struct termios {
+-	tcflag_t c_iflag;		/* input mode flags */
+-	tcflag_t c_oflag;		/* output mode flags */
+-	tcflag_t c_cflag;		/* control mode flags */
+-	tcflag_t c_lflag;		/* local mode flags */
+-	cc_t c_cc[NCCS];		/* control characters */
+-	cc_t c_line;			/* line discipline (== c_cc[19]) */
+-	speed_t c_ispeed;		/* input speed */
+-	speed_t c_ospeed;		/* output speed */
+-};
+-
+-/* c_cc characters */
+-#define VINTR 	         0
+-#define VQUIT 	         1
+-#define VERASE 	         2
+-#define VKILL	         3
+-#define VEOF	         4
+-#define VMIN	         5
+-#define VEOL	         6
+-#define VTIME	         7
+-#define VEOL2	         8
+-#define VSWTC	         9
+-#define VWERASE 	10
+-#define VREPRINT	11
+-#define VSUSP 		12
+-#define VSTART		13
+-#define VSTOP		14
+-#define VLNEXT		15
+-#define VDISCARD	16
+-
+-/* c_iflag bits */
+-#define IGNBRK	0000001
+-#define BRKINT	0000002
+-#define IGNPAR	0000004
+-#define PARMRK	0000010
+-#define INPCK	0000020
+-#define ISTRIP	0000040
+-#define INLCR	0000100
+-#define IGNCR	0000200
+-#define ICRNL	0000400
+-#define IXON	0001000
+-#define IXOFF	0002000
+-#define IXANY	0004000
+-#define IUCLC	0010000
+-#define IMAXBEL	0020000
+-#define	IUTF8	0040000
+-
+-/* c_oflag bits */
+-#define OPOST	0000001
+-#define ONLCR	0000002
+-#define OLCUC	0000004
+-
+-#define OCRNL	0000010
+-#define ONOCR	0000020
+-#define ONLRET	0000040
+-
+-#define OFILL	00000100
+-#define OFDEL	00000200
+-#define NLDLY	00001400
+-#define   NL0	00000000
+-#define   NL1	00000400
+-#define   NL2	00001000
+-#define   NL3	00001400
+-#define TABDLY	00006000
+-#define   TAB0	00000000
+-#define   TAB1	00002000
+-#define   TAB2	00004000
+-#define   TAB3	00006000
+-#define   XTABS	00006000	/* required by POSIX to == TAB3 */
+-#define CRDLY	00030000
+-#define   CR0	00000000
+-#define   CR1	00010000
+-#define   CR2	00020000
+-#define   CR3	00030000
+-#define FFDLY	00040000
+-#define   FF0	00000000
+-#define   FF1	00040000
+-#define BSDLY	00100000
+-#define   BS0	00000000
+-#define   BS1	00100000
+-#define VTDLY	00200000
+-#define   VT0	00000000
+-#define   VT1	00200000
+-
+-/* c_cflag bit meaning */
+-#define CBAUD	0000377
+-#define  B0	0000000		/* hang up */
+-#define  B50	0000001
+-#define  B75	0000002
+-#define  B110	0000003
+-#define  B134	0000004
+-#define  B150	0000005
+-#define  B200	0000006
+-#define  B300	0000007
+-#define  B600	0000010
+-#define  B1200	0000011
+-#define  B1800	0000012
+-#define  B2400	0000013
+-#define  B4800	0000014
+-#define  B9600	0000015
+-#define  B19200	0000016
+-#define  B38400	0000017
+-#define  EXTA   B19200
+-#define  EXTB   B38400
+-#define  CBAUDEX 0000000
+-#define  B57600   00020
+-#define  B115200  00021
+-#define  B230400  00022
+-#define  B460800  00023
+-#define  B500000  00024
+-#define  B576000  00025
+-#define  B921600  00026
+-#define B1000000  00027
+-#define B1152000  00030
+-#define B1500000  00031
+-#define B2000000  00032
+-#define B2500000  00033
+-#define B3000000  00034
+-#define B3500000  00035
+-#define B4000000  00036
+-
+-#define CSIZE	00001400
+-#define   CS5	00000000
+-#define   CS6	00000400
+-#define   CS7	00001000
+-#define   CS8	00001400
+-
+-#define CSTOPB	00002000
+-#define CREAD	00004000
+-#define PARENB	00010000
+-#define PARODD	00020000
+-#define HUPCL	00040000
+-
+-#define CLOCAL	00100000
+-#define CRTSCTS	  020000000000		/* flow control */
+-
+-/* c_lflag bits */
+-#define ISIG	0x00000080
+-#define ICANON	0x00000100
+-#define XCASE	0x00004000
+-#define ECHO	0x00000008
+-#define ECHOE	0x00000002
+-#define ECHOK	0x00000004
+-#define ECHONL	0x00000010
+-#define NOFLSH	0x80000000
+-#define TOSTOP	0x00400000
+-#define ECHOCTL	0x00000040
+-#define ECHOPRT	0x00000020
+-#define ECHOKE	0x00000001
+-#define FLUSHO	0x00800000
+-#define PENDIN	0x20000000
+-#define IEXTEN	0x00000400
+-
+-/* Values for the ACTION argument to `tcflow'.  */
+-#define	TCOOFF		0
+-#define	TCOON		1
+-#define	TCIOFF		2
+-#define	TCION		3
+-
+-/* Values for the QUEUE_SELECTOR argument to `tcflush'.  */
+-#define	TCIFLUSH	0
+-#define	TCOFLUSH	1
+-#define	TCIOFLUSH	2
+-
+-/* Values for the OPTIONAL_ACTIONS argument to `tcsetattr'.  */
+-#define	TCSANOW		0
+-#define	TCSADRAIN	1
+-#define	TCSAFLUSH	2
+-
+-#endif /* _PPC64_TERMBITS_H */
+diff --git a/include/asm-ppc64/termios.h b/include/asm-ppc64/termios.h
+deleted file mode 100644
+--- a/include/asm-ppc64/termios.h
++++ /dev/null
+@@ -1,235 +0,0 @@
+-#ifndef _PPC64_TERMIOS_H
+-#define _PPC64_TERMIOS_H
+-
+-/*
+- * Liberally adapted from alpha/termios.h.  In particular, the c_cc[]
+- * fields have been reordered so that termio & termios share the
+- * common subset in the same order (for brain dead programs that don't
+- * know or care about the differences).
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-#include <asm/ioctls.h>
+-#include <asm/termbits.h>
+-
+-struct sgttyb {
+-	char	sg_ispeed;
+-	char	sg_ospeed;
+-	char	sg_erase;
+-	char	sg_kill;
+-	short	sg_flags;
+-};
+-
+-struct tchars {
+-	char	t_intrc;
+-	char	t_quitc;
+-	char	t_startc;
+-	char	t_stopc;
+-	char	t_eofc;
+-	char	t_brkc;
+-};
+-
+-struct ltchars {
+-	char	t_suspc;
+-	char	t_dsuspc;
+-	char	t_rprntc;
+-	char	t_flushc;
+-	char	t_werasc;
+-	char	t_lnextc;
+-};
+-
+-struct winsize {
+-	unsigned short ws_row;
+-	unsigned short ws_col;
+-	unsigned short ws_xpixel;
+-	unsigned short ws_ypixel;
+-};
+-
+-#define NCC 10
+-struct termio {
+-	unsigned short c_iflag;		/* input mode flags */
+-	unsigned short c_oflag;		/* output mode flags */
+-	unsigned short c_cflag;		/* control mode flags */
+-	unsigned short c_lflag;		/* local mode flags */
+-	unsigned char c_line;		/* line discipline */
+-	unsigned char c_cc[NCC];	/* control characters */
+-};
+-
+-/* c_cc characters */
+-#define _VINTR	0
+-#define _VQUIT	1
+-#define _VERASE	2
+-#define _VKILL	3
+-#define _VEOF	4
+-#define _VMIN	5
+-#define _VEOL	6
+-#define _VTIME	7
+-#define _VEOL2	8
+-#define _VSWTC	9
+-
+-/* line disciplines */
+-#define N_TTY		0
+-#define N_SLIP		1
+-#define N_MOUSE		2
+-#define N_PPP		3
+-#define N_STRIP		4
+-#define N_AX25		5
+-#define N_X25		6	/* X.25 async */
+-#define N_6PACK		7
+-#define N_MASC		8	/* Reserved for Mobitex module <kaz@cafe.net> */
+-#define N_R3964		9	/* Reserved for Simatic R3964 module */
+-#define N_PROFIBUS_FDL	10	/* Reserved for Profibus <Dave@mvhi.com> */
+-#define N_IRDA		11	/* Linux IrDa - http://www.cs.uit.no/~dagb/irda/irda.html */
+-#define N_SMSBLOCK	12	/* SMS block mode - for talking to GSM data cards about SMS messages */
+-#define N_HDLC		13	/* synchronous HDLC */
+-#define N_SYNC_PPP	14
+-
+-#ifdef __KERNEL__
+-/*                   ^C  ^\ del  ^U  ^D   1   0   0   0   0  ^W  ^R  ^Z  ^Q  ^S  ^V  ^U  */
+-#define INIT_C_CC "\003\034\177\025\004\001\000\000\000\000\027\022\032\021\023\026\025" 
+-#endif
+-
+-#define FIOCLEX		_IO('f', 1)
+-#define FIONCLEX	_IO('f', 2)
+-#define FIOASYNC	_IOW('f', 125, int)
+-#define FIONBIO		_IOW('f', 126, int)
+-#define FIONREAD	_IOR('f', 127, int)
+-#define TIOCINQ		FIONREAD
+-
+-#define TIOCGETP	_IOR('t', 8, struct sgttyb)
+-#define TIOCSETP	_IOW('t', 9, struct sgttyb)
+-#define TIOCSETN	_IOW('t', 10, struct sgttyb)	/* TIOCSETP wo flush */
+-
+-#define TIOCSETC	_IOW('t', 17, struct tchars)
+-#define TIOCGETC	_IOR('t', 18, struct tchars)
+-#define TCGETS		_IOR('t', 19, struct termios)
+-#define TCSETS		_IOW('t', 20, struct termios)
+-#define TCSETSW		_IOW('t', 21, struct termios)
+-#define TCSETSF		_IOW('t', 22, struct termios)
+-
+-#define TCGETA		_IOR('t', 23, struct termio)
+-#define TCSETA		_IOW('t', 24, struct termio)
+-#define TCSETAW		_IOW('t', 25, struct termio)
+-#define TCSETAF		_IOW('t', 28, struct termio)
+-
+-#define TCSBRK		_IO('t', 29)
+-#define TCXONC		_IO('t', 30)
+-#define TCFLSH		_IO('t', 31)
+-
+-#define TIOCSWINSZ	_IOW('t', 103, struct winsize)
+-#define TIOCGWINSZ	_IOR('t', 104, struct winsize)
+-#define	TIOCSTART	_IO('t', 110)		/* start output, like ^Q */
+-#define	TIOCSTOP	_IO('t', 111)		/* stop output, like ^S */
+-#define TIOCOUTQ        _IOR('t', 115, int)     /* output queue size */
+-
+-#define TIOCGLTC	_IOR('t', 116, struct ltchars)
+-#define TIOCSLTC	_IOW('t', 117, struct ltchars)
+-#define TIOCSPGRP	_IOW('t', 118, int)
+-#define TIOCGPGRP	_IOR('t', 119, int)
+-
+-#define TIOCEXCL	0x540C
+-#define TIOCNXCL	0x540D
+-#define TIOCSCTTY	0x540E
+-
+-#define TIOCSTI		0x5412
+-#define TIOCMGET	0x5415
+-#define TIOCMBIS	0x5416
+-#define TIOCMBIC	0x5417
+-#define TIOCMSET	0x5418
+-#define TIOCGSOFTCAR	0x5419
+-#define TIOCSSOFTCAR	0x541A
+-#define TIOCLINUX	0x541C
+-#define TIOCCONS	0x541D
+-#define TIOCGSERIAL	0x541E
+-#define TIOCSSERIAL	0x541F
+-#define TIOCPKT		0x5420
+-
+-#define TIOCNOTTY	0x5422
+-#define TIOCSETD	0x5423
+-#define TIOCGETD	0x5424
+-#define TCSBRKP		0x5425	/* Needed for POSIX tcsendbreak() */
+-
+-#define TIOCSERCONFIG	0x5453
+-#define TIOCSERGWILD	0x5454
+-#define TIOCSERSWILD	0x5455
+-#define TIOCGLCKTRMIOS	0x5456
+-#define TIOCSLCKTRMIOS	0x5457
+-#define TIOCSERGSTRUCT	0x5458 /* For debugging only */
+-#define TIOCSERGETLSR   0x5459 /* Get line status register */
+-#define TIOCSERGETMULTI 0x545A /* Get multiport config  */
+-#define TIOCSERSETMULTI 0x545B /* Set multiport config */
+-
+-#define TIOCMIWAIT	0x545C	/* wait for a change on serial input line(s) */
+-#define TIOCGICOUNT	0x545D	/* read serial port inline interrupt counts */
+-
+-/* Used for packet mode */
+-#define TIOCPKT_DATA		 0
+-#define TIOCPKT_FLUSHREAD	 1
+-#define TIOCPKT_FLUSHWRITE	 2
+-#define TIOCPKT_STOP		 4
+-#define TIOCPKT_START		 8
+-#define TIOCPKT_NOSTOP		16
+-#define TIOCPKT_DOSTOP		32
+-
+-/* modem lines */
+-#define TIOCM_LE	0x001
+-#define TIOCM_DTR	0x002
+-#define TIOCM_RTS	0x004
+-#define TIOCM_ST	0x008
+-#define TIOCM_SR	0x010
+-#define TIOCM_CTS	0x020
+-#define TIOCM_CAR	0x040
+-#define TIOCM_RNG	0x080
+-#define TIOCM_DSR	0x100
+-#define TIOCM_CD	TIOCM_CAR
+-#define TIOCM_RI	TIOCM_RNG
+-#define TIOCM_OUT1	0x2000
+-#define TIOCM_OUT2	0x4000
+-#define TIOCM_LOOP	0x8000
+-
+-/* ioctl (fd, TIOCSERGETLSR, &result) where result may be as below */
+-#define TIOCSER_TEMT    0x01	/* Transmitter physically empty */
+-
+-#ifdef __KERNEL__
+-
+-/*
+- * Translate a "termio" structure into a "termios". Ugh.
+- */
+-#define SET_LOW_TERMIOS_BITS(termios, termio, x) { \
+-	unsigned short __tmp; \
+-	get_user(__tmp,&(termio)->x); \
+-	(termios)->x = (0xffff0000 & (termios)->x) | __tmp; \
+-}
+-
+-#define user_termio_to_kernel_termios(termios, termio) \
+-({ \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_iflag); \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_oflag); \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_cflag); \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_lflag); \
+-	copy_from_user((termios)->c_cc, (termio)->c_cc, NCC); \
+-})
+-
+-/*
+- * Translate a "termios" structure into a "termio". Ugh.
+- */
+-#define kernel_termios_to_user_termio(termio, termios) \
+-({ \
+-	put_user((termios)->c_iflag, &(termio)->c_iflag); \
+-	put_user((termios)->c_oflag, &(termio)->c_oflag); \
+-	put_user((termios)->c_cflag, &(termio)->c_cflag); \
+-	put_user((termios)->c_lflag, &(termio)->c_lflag); \
+-	put_user((termios)->c_line,  &(termio)->c_line); \
+-	copy_to_user((termio)->c_cc, (termios)->c_cc, NCC); \
+-})
+-
+-#define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios))
+-#define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios))
+-
+-#endif	/* __KERNEL__ */
+-
+-#endif	/* _PPC64_TERMIOS_H */
