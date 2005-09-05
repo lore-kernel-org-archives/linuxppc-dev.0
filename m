@@ -1,21 +1,19 @@
-Return-Path: <jason_chen@usish.com>
-Received: from ms.usish.com (ms.usish.com [61.152.162.129])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2E5C967F88
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id B9E0768106
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  6 Sep 2005 01:09:07 +1000 (EST)
-Received: from usish001432 ([218.79.178.147]) (authenticated bits=0)
-	by ms.usish.com (8.12.8/8.12.8) with ESMTP id j85EO2cE024575
-	for <linuxppc-embedded@ozlabs.org>; Mon, 5 Sep 2005 22:24:09 +0800
-Message-Id: <200509051424.j85EO2cE024575@ms.usish.com>
-Date: Mon, 5 Sep 2005 22:25:31 +0800
-From: "Jason Chen" <jason_chen@usish.com>
-To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
+	Tue,  6 Sep 2005 02:37:49 +1000 (EST)
+Date: Mon, 5 Sep 2005 09:37:46 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Andrew Morton <akpm@osdl.org>
+Message-ID: <20050905163746.GB6341@gate.ebshome.net>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Subject: reboot related questions
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-embedded@ozlabs.org
+Subject: [PATCH] ppc32: fix ocp_device_suspend to use pm_message_t instead
+	of u32
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,39 +24,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-aGksYWxsLA0KSSBidWlsdCB1cCBhIHN5c3RlbSB3aGljaCBiYXNlZCBvbiBNUEM4MjQ4LDMyTSBO
-T1IgZmxhc2gsMTI4TSBTRFJBTS5JIHNldCB0aGUgSFJDVyB0byBib290IGZyb20gMHgwIGFkZHJl
-c3MoQ0lQID0gMCAmIEJNUz0xKTthbmQgQlIwID0gMHhmZTAweHh4eCBmb3IgZmxhc2goYmFzZSBh
-ZGRyID0gMHhmZTAwMDAwMCxteSB1LWJvb3Qgd2FzIGJ1cm5lZCBmcm9tIDB4ZmUwMDAwMDApO0JS
-MiA9IDB4MDAwMDAweHggZm9yIHNkcmFtKGJhc2UgYWRkciA9IDB4MDApLg0KaXQncyBPayx0aGUg
-dS1ib290IGFuZCBrZXJuZWwgYWxsIHJ1biBzdWNjZXNzZnVsbHk7IGJ1dCBJIG1ldCBhIHByb2Js
-ZW0gLS0gcmVib290IGNtZCBmYWlsZWQuQWZ0ZXIgc29tZSBlZmZvcnQsIEkgZm91bmQgaXQgY2Fu
-IHJ1biBzdWNjZXNzZnVsbHkgYnkgbW9kaWZ5IC9saW51eC9hcmNoL3BwYy9rZXJuZWwvaGVhZC5T
-IG04MjYwX2dvcm9tIGZ1bmN0aW9uIGJlbG93Og0KDQogICAgLmdsb2JsICBtODI2MF9nb3JvbSAv
-KiByNCA9IGFkZHIgaW4gdGhlIHJvbSAqLw0KbTgyNjBfZ29yb206DQoJbWZtc3IJcjANCglybHdp
-bm0JcjAscjAsMCwxNywxNQkvKiBjbGVhciBNU1JfRUUgaW4gcjAgKi8NCglzeW5jDQoJbXRtc3IJ
-cjANCglzeW5jDQoJbWZzcHIJcjExLCBISUQwDQoJbGlzCXIxMCwgMA0KCW9yaQlyMTAscjEwLEhJ
-RDBfSUNFfEhJRDBfRENFDQoJYW5kYwlyMTEsIHIxMSwgcjEwDQoJbXRzcHIJSElEMCwgcjExDQoJ
-aXN5bmMNCglsaQlyNSwgTVNSXw0KCWxpcwlyNiwyZkBoDQoJYWRkaXMJcjYscjYsLUtFUk5FTEJB
-U0VAaA0KCW9yaQlyNixyNiwyZkBsDQoJbXRzcHIJU1JSMCxyNg0KCW10c3ByCVNSUjEscjUNCglp
-c3luYw0KCXN5bmMNCglyZmkNCjI6DQoJbXRscglyNA0KCWJscg0KICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgIA0KSW4gdGhlc2UgY29kZXMsIE1TUl8gZXF1YWwgTVNSX01FfE1TUl9S
-SSBvcmlnaW5hbGx5LGFmdGVyIGJlIHNldCB0byBNU1JfTUV8TVNSX1JJfE1TUl9JUCx0aGUgcmVi
-b290IGNhbiBydW4gc3VjY2Vzc2Z1bGx5Lg0KTXkgcXVlc3Rpb25zIGNvbWUgb3V0Og0KMSkgWW91
-IGtub3csdGhlIGJpdCBNU1JfSVAgcmVwcmVzZW50IHRoYXQgZXhjZXB0aW9ucyBhcmUgdmVjdG9y
-ZWQgdG8gdGhlIHBoeXNpY2FsIGFkZHJlc3MgMHhGRkZuX25ubm4oSVAgPSAxKSBvciAweDAwMG5f
-bm5ubihJUCA9IDApO2J1dCBpbiBteSBzeXN0ZW0sdGhlIHJlYWwgZXhjZXB0aW9uIHZlY3RvciB3
-YXMgc2V0IHRvIDB4ZmUwMF8weDAwLHNvIGhvdyBDUFUgY291bGQgZmluZCB0aGVtIGluIDB4RkZG
-bl9ubm5uID8/DQoyKSB3aHkgbTgyNjBfZ29yb20gaGFzIHRvIHVzZWQgYSByZmkgaW5zdHJ1Y3Rp
-b24/IHdoeSBub3QganVzdCB0byBzZXQgdGhlIE1TUiB0byBhcHByb3ByaWF0ZSB2YWx1ZSBhbmQg
-bW92ZSBQQyB0byByb20/DQozKSB0aGVyZSBhcmUgbm90IGludGVycnVwdHMgaGFwcGVuZWQgaW4g
-dS1ib290PyBCZWNhdXNlIGluIG15IHN5c3RlbSxhZnRlciByZXNldCx0aGUgQlIwIHNvb24gYmUg
-Y2hhbmdlZCB0byAweGZlMDB4eHh4LGF0IHRoZSBzYW1lIHRpbWUsTVNSW2lwXSA9IDAgKEhSQ1cg
-c2hvdyB0aGlzKSx0aGUgdmVjdG9yIHdpbGwgYmUgaW4gdGhlIHNkcmFtKDB4MDAwbl9ubm5uKSB3
-aGVyZSBhcmUgbm90IGluaXRpYXRlZCxzbyB3aGlsZSB1LWJvb3QgcnVubmluZyx0aGVyZSBhcmUg
-bm90IGludGVycnVwdHMgaGFwcGVuZWQ/IGFtIGkgcmlnaHQ/DQo0KSBhc3N1bWluZyAzKSB3YXMg
-cmlnaHQsIHRoZW4gd2h5IHRoZSBtODI2MF9nb3JvbSBmdW5jdGlvbiBhYm92ZSBoYXMgdG8gc2V0
-IHRoZSBNU1JfIHRvIE1TUl9NRXxNU1JfUkl8TVNSX0lQPyBCZWNhdXNlIG5vIGludGVycnVwdHMs
-d2hlcmUgYXJlIHRoZSB2ZWN0b3JzIHNlZW1zIG5vdCBpbXBvcnRhbnQ/DQoNCkl0J3MgYm9yaW5n
-Li4uDQoNCkphc29uDQoNCqGhoaGhoaGhoaGhoaGhDQqhoaGhoaGhoaGhoaGhoaGhDQqhoaGhoaGh
-oaGhoaGhoaGhoaGhoQ0K
+Recent "u32 -> pm_message_t" change triggered hidden bug in 
+ocp_device_suspend. Fix it to correctly use pm_message_t instead of 
+u32.
+
+Signed-off-by: Eugene Surovegin <ebs@ebshome.net>
+
+diff --git a/arch/ppc/syslib/ocp.c b/arch/ppc/syslib/ocp.c
+--- a/arch/ppc/syslib/ocp.c
++++ b/arch/ppc/syslib/ocp.c
+@@ -165,7 +165,7 @@ ocp_device_remove(struct device *dev)
+ }
+ 
+ static int
+-ocp_device_suspend(struct device *dev, u32 state)
++ocp_device_suspend(struct device *dev, pm_message_t state)
+ {
+ 	struct ocp_device *ocp_dev = to_ocp_dev(dev);
+ 	struct ocp_driver *ocp_drv = to_ocp_drv(dev->driver);
