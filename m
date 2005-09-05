@@ -1,13 +1,21 @@
-Return-Path: <mqy@263.net.cn>
-From: "KylongMu" <mqy@263.net.cn>
-To: <Linuxppc-embedded@ozlabs.org>
-Date: Sun, 4 Sep 2005 23:50:49 +0800
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0000_01C5B1AB.7AE8D390"
-Message-Id: <20050904155104.C5E13C19@smtp.263.net>
-Subject: Promise Ultra 100 TX2 20268 chip receive "lost interrupt" error
-	under 2.6.13 (ppc8540ads platform)
+Return-Path: <jason_chen@usish.com>
+Received: from ms.usish.com (ms.usish.com [61.152.162.129])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2E5C967F88
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  6 Sep 2005 01:09:07 +1000 (EST)
+Received: from usish001432 ([218.79.178.147]) (authenticated bits=0)
+	by ms.usish.com (8.12.8/8.12.8) with ESMTP id j85EO2cE024575
+	for <linuxppc-embedded@ozlabs.org>; Mon, 5 Sep 2005 22:24:09 +0800
+Message-Id: <200509051424.j85EO2cE024575@ms.usish.com>
+Date: Mon, 5 Sep 2005 22:25:31 +0800
+From: "Jason Chen" <jason_chen@usish.com>
+To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain;
+	charset="gb2312"
+Subject: reboot related questions
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -18,95 +26,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
-
-------=_NextPart_000_0000_01C5B1AB.7AE8D390
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-
-Hi, team:
- 
-Kernel version: 2.6.13 (stable version)
-Platform type : ppc8540ads platform
-Problem hardware type: Promise20268 PCI-ATA card
-Configuration:
-configured ATA support with these  part : Device driver, File
-system,Partition table.
-Problem description:
-     When I boot my board, the kernel can recognize my Promise20268 card,
-and my
-SegateHD correctly. but prompt with "lost interrupt" message.
-    After boot procedure, the /proc/partitions file shows correct partitions
-info, but when
-I mount my HD , I get "lost interrupt" message again, and the mount failed.
-    Pls help me to solved this problem, or a suggestion to change with
-another PCI-ATA chip which
-had been tested.
- 
-Cordially,
-KylongMu
-    
- 
-
-------=_NextPart_000_0000_01C5B1AB.7AE8D390
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD><TITLE></TITLE>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.2900.2722" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><!-- Converted from text/plain format --><FONT =
-face=3D'"&#23435;&#20307;"'=20
-color=3D#003f1e>Hi, team:</FONT></DIV>
-<DIV><FONT face=3D&#23435;&#20307; color=3D#003f1e></FONT>&nbsp;</DIV>
-<DIV><FONT face=3D&#23435;&#20307; color=3D#003f1e><STRONG>Kernel =
-version:</STRONG> 2.6.13 (stable=20
-version)</FONT></DIV>
-<DIV><FONT face=3D&#23435;&#20307; color=3D#003f1e><STRONG>Platform =
-type&nbsp;:</STRONG>=20
-ppc8540ads platform</FONT></DIV>
-<DIV><FONT face=3D&#23435;&#20307; color=3D#003f1e><STRONG>Problem =
-hardware type:</STRONG>=20
-Promise20268 PCI-ATA card</FONT></DIV>
-<DIV><FONT face=3D&#23435;&#20307; =
-color=3D#003f1e><STRONG>Configuration:</STRONG></FONT></DIV>
-<DIV><FONT face=3D&#23435;&#20307; color=3D#003f1e>
-<DIV><FONT color=3D#003f1e>configured ATA support&nbsp;with these&nbsp;=20
-part&nbsp;: Device driver, File system,</FONT><FONT =
-color=3D#003f1e>Partition=20
-table.</FONT></DIV></FONT></DIV>
-<DIV><FONT face=3D&#23435;&#20307; color=3D#003f1e><STRONG>Problem=20
-description:</STRONG></FONT></DIV>
-<DIV>&nbsp;&nbsp;&nbsp;&nbsp; <FONT color=3D#003f1e>When I boot my =
-board, the=20
-kernel can recognize my Promise20268 card, and my</FONT></DIV>
-<DIV><FONT color=3D#003f1e>SegateHD </FONT><FONT =
-color=3D#003f1e>correctly. but=20
-prompt with "lost interrupt" message.</FONT></DIV>
-<DIV>&nbsp;&nbsp;&nbsp; <FONT color=3D#003f1e>After boot =
-procedure,&nbsp;the=20
-/proc/partitions file shows correct partitions info, but =
-when</FONT></DIV>
-<DIV><FONT color=3D#003f1e>I mount my HD , I get "lost interrupt" =
-message again,=20
-and the mount failed.</FONT></DIV>
-<DIV>&nbsp;&nbsp;&nbsp;&nbsp;Pls help me to<FONT=20
-color=3D#003f1e>&nbsp;solved&nbsp;this problem, or a suggestion to =
-change with=20
-another <FONT face=3D&#23435;&#20307;>PCI-ATA chip =
-which</FONT></FONT></DIV>
-<DIV><FONT face=3D&#23435;&#20307; color=3D#003f1e>had been =
-tested.</FONT></DIV>
-<DIV><FONT face=3D&#23435;&#20307; color=3D#003f1e></FONT>&nbsp;</DIV>
-<DIV><FONT face=3D&#23435;&#20307; =
-color=3D#003f1e>Cordially,</FONT></DIV>
-<DIV><FONT face=3D&#23435;&#20307; color=3D#003f1e>KylongMu</FONT></DIV>
-<DIV>&nbsp;&nbsp;&nbsp; </DIV>
-<DIV><FONT color=3D#003f1e></FONT>&nbsp;</DIV></BODY></HTML>
-
-------=_NextPart_000_0000_01C5B1AB.7AE8D390--
+aGksYWxsLA0KSSBidWlsdCB1cCBhIHN5c3RlbSB3aGljaCBiYXNlZCBvbiBNUEM4MjQ4LDMyTSBO
+T1IgZmxhc2gsMTI4TSBTRFJBTS5JIHNldCB0aGUgSFJDVyB0byBib290IGZyb20gMHgwIGFkZHJl
+c3MoQ0lQID0gMCAmIEJNUz0xKTthbmQgQlIwID0gMHhmZTAweHh4eCBmb3IgZmxhc2goYmFzZSBh
+ZGRyID0gMHhmZTAwMDAwMCxteSB1LWJvb3Qgd2FzIGJ1cm5lZCBmcm9tIDB4ZmUwMDAwMDApO0JS
+MiA9IDB4MDAwMDAweHggZm9yIHNkcmFtKGJhc2UgYWRkciA9IDB4MDApLg0KaXQncyBPayx0aGUg
+dS1ib290IGFuZCBrZXJuZWwgYWxsIHJ1biBzdWNjZXNzZnVsbHk7IGJ1dCBJIG1ldCBhIHByb2Js
+ZW0gLS0gcmVib290IGNtZCBmYWlsZWQuQWZ0ZXIgc29tZSBlZmZvcnQsIEkgZm91bmQgaXQgY2Fu
+IHJ1biBzdWNjZXNzZnVsbHkgYnkgbW9kaWZ5IC9saW51eC9hcmNoL3BwYy9rZXJuZWwvaGVhZC5T
+IG04MjYwX2dvcm9tIGZ1bmN0aW9uIGJlbG93Og0KDQogICAgLmdsb2JsICBtODI2MF9nb3JvbSAv
+KiByNCA9IGFkZHIgaW4gdGhlIHJvbSAqLw0KbTgyNjBfZ29yb206DQoJbWZtc3IJcjANCglybHdp
+bm0JcjAscjAsMCwxNywxNQkvKiBjbGVhciBNU1JfRUUgaW4gcjAgKi8NCglzeW5jDQoJbXRtc3IJ
+cjANCglzeW5jDQoJbWZzcHIJcjExLCBISUQwDQoJbGlzCXIxMCwgMA0KCW9yaQlyMTAscjEwLEhJ
+RDBfSUNFfEhJRDBfRENFDQoJYW5kYwlyMTEsIHIxMSwgcjEwDQoJbXRzcHIJSElEMCwgcjExDQoJ
+aXN5bmMNCglsaQlyNSwgTVNSXw0KCWxpcwlyNiwyZkBoDQoJYWRkaXMJcjYscjYsLUtFUk5FTEJB
+U0VAaA0KCW9yaQlyNixyNiwyZkBsDQoJbXRzcHIJU1JSMCxyNg0KCW10c3ByCVNSUjEscjUNCglp
+c3luYw0KCXN5bmMNCglyZmkNCjI6DQoJbXRscglyNA0KCWJscg0KICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgIA0KSW4gdGhlc2UgY29kZXMsIE1TUl8gZXF1YWwgTVNSX01FfE1TUl9S
+SSBvcmlnaW5hbGx5LGFmdGVyIGJlIHNldCB0byBNU1JfTUV8TVNSX1JJfE1TUl9JUCx0aGUgcmVi
+b290IGNhbiBydW4gc3VjY2Vzc2Z1bGx5Lg0KTXkgcXVlc3Rpb25zIGNvbWUgb3V0Og0KMSkgWW91
+IGtub3csdGhlIGJpdCBNU1JfSVAgcmVwcmVzZW50IHRoYXQgZXhjZXB0aW9ucyBhcmUgdmVjdG9y
+ZWQgdG8gdGhlIHBoeXNpY2FsIGFkZHJlc3MgMHhGRkZuX25ubm4oSVAgPSAxKSBvciAweDAwMG5f
+bm5ubihJUCA9IDApO2J1dCBpbiBteSBzeXN0ZW0sdGhlIHJlYWwgZXhjZXB0aW9uIHZlY3RvciB3
+YXMgc2V0IHRvIDB4ZmUwMF8weDAwLHNvIGhvdyBDUFUgY291bGQgZmluZCB0aGVtIGluIDB4RkZG
+bl9ubm5uID8/DQoyKSB3aHkgbTgyNjBfZ29yb20gaGFzIHRvIHVzZWQgYSByZmkgaW5zdHJ1Y3Rp
+b24/IHdoeSBub3QganVzdCB0byBzZXQgdGhlIE1TUiB0byBhcHByb3ByaWF0ZSB2YWx1ZSBhbmQg
+bW92ZSBQQyB0byByb20/DQozKSB0aGVyZSBhcmUgbm90IGludGVycnVwdHMgaGFwcGVuZWQgaW4g
+dS1ib290PyBCZWNhdXNlIGluIG15IHN5c3RlbSxhZnRlciByZXNldCx0aGUgQlIwIHNvb24gYmUg
+Y2hhbmdlZCB0byAweGZlMDB4eHh4LGF0IHRoZSBzYW1lIHRpbWUsTVNSW2lwXSA9IDAgKEhSQ1cg
+c2hvdyB0aGlzKSx0aGUgdmVjdG9yIHdpbGwgYmUgaW4gdGhlIHNkcmFtKDB4MDAwbl9ubm5uKSB3
+aGVyZSBhcmUgbm90IGluaXRpYXRlZCxzbyB3aGlsZSB1LWJvb3QgcnVubmluZyx0aGVyZSBhcmUg
+bm90IGludGVycnVwdHMgaGFwcGVuZWQ/IGFtIGkgcmlnaHQ/DQo0KSBhc3N1bWluZyAzKSB3YXMg
+cmlnaHQsIHRoZW4gd2h5IHRoZSBtODI2MF9nb3JvbSBmdW5jdGlvbiBhYm92ZSBoYXMgdG8gc2V0
+IHRoZSBNU1JfIHRvIE1TUl9NRXxNU1JfUkl8TVNSX0lQPyBCZWNhdXNlIG5vIGludGVycnVwdHMs
+d2hlcmUgYXJlIHRoZSB2ZWN0b3JzIHNlZW1zIG5vdCBpbXBvcnRhbnQ/DQoNCkl0J3MgYm9yaW5n
+Li4uDQoNCkphc29uDQoNCqGhoaGhoaGhoaGhoaGhDQqhoaGhoaGhoaGhoaGhoaGhDQqhoaGhoaGh
+oaGhoaGhoaGhoaGhoQ0K
