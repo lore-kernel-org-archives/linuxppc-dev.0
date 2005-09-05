@@ -1,12 +1,16 @@
-Return-Path: <zhonglei@RCS-9000.COM>
-Date: Sun,  4 Sep 2005 13:06:40 +0800
-Message-Id: <200509041306.AA12386382@RCS-9000.COM>
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id DCD2B68077
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Sep 2005 15:46:06 +1000 (EST)
+Date: Sun, 4 Sep 2005 22:46:03 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <20050905054603.GA6341@gate.ebshome.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-From: "zhonglei" <zhonglei@RCS-9000.COM>
-To: <Linuxppc-dev@ozlabs.org>
-Subject: BestComm in MPC5200
-Reply-To: zhonglei@RCS-9000.COM
+Subject: [PATCH] discard *.exit.text and *.exit.data sections
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,8 +20,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-hi:
- I use BestComm API in my driver. I include all the needed .h file in my driver and succeed in compiling the module. But when I insmod and the
-program runs to the function TaskLoadImage((sdma_regs*)MPC52xxx_SDMA), the Nfs from host to target board is disconnected!What's the problem?
-Thanks
-zhonglei
+Discard *.exit.text sections on runtime. We cannot do this on link 
+time because of the way BUG macros are implemented. If "__exit 
+function" calls one of those macros, __bug_table section will 
+reference this function. This is similar to ".altinstructions" 
+situation on i386.
+
+*.exit.data seems to be OK in this respect and is discarded on link 
+time.
+
+Signed-off-by: Eugene Surovegin <ebs@ebshome.net>
+
+diff --git a/arch/ppc/kernel/vmlinux.lds.S b/arch/ppc/kernel/vmlinux.lds.S
+--- a/arch/ppc/kernel/vmlinux.lds.S
++++ b/arch/ppc/kernel/vmlinux.lds.S
+@@ -96,6 +96,9 @@ SECTIONS
+ 	*(.init.text)
+ 	_einittext = .;
+   }
++  /* .exit.text is discarded at runtime, not link time, 
++     to deal with references from __bug_table */
++  .exit.text : { *(.exit.text) }  
+   .init.data : {
+     *(.init.data);
+     __vtop_table_begin = .;
+@@ -190,5 +193,6 @@ SECTIONS
+   /* Sections to be discarded. */
+   /DISCARD/ : {
+     *(.exitcall.exit)
++    *(.exit.data)
+   }
+ }
