@@ -1,18 +1,17 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: Jon Loeliger <jdl@freescale.com>
-Date: Wed, 7 Sep 2005 00:14:14 +0200
-References: <200509020518.32732.arnd@arndb.de>
-	<B6241EC1-429C-4286-BCF0-E0D3DC5049BF@freescale.com>
-	<1126039597.25148.59.camel@cashmere.sps.mot.com>
-In-Reply-To: <1126039597.25148.59.camel@cashmere.sps.mot.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200509070014.15564.arnd@arndb.de>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17182.7390.886339.12876@cargo.ozlabs.ibm.com>
+Date: Wed, 7 Sep 2005 08:49:02 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Jon Loeliger <jdl@freescale.com>
+In-Reply-To: <1126037554.25148.41.camel@cashmere.sps.mot.com>
+References: <20050829130133.519391c6.sfr@canb.auug.org.au>
+	<200508290845.34544.arnd@arndb.de>
+	<1126037554.25148.41.camel@cashmere.sps.mot.com>
 Cc: linuxppc64-dev <linuxppc64-dev@ozlabs.org>,
 	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: Re: PATCH Merge more include files
+Subject: Re: [PATCH 0/3] Start the merge
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,13 +21,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Dinsdag 06 September 2005 22:46, Jon Loeliger wrote:
+Jon Loeliger writes:
+
+> I'd like to call attention to this buried patch.  It appears that
+> it might be lost due to Subject: line swiping;  it likely hasn't
+> gotten first class status as its own independent patch.
 > 
-> If you'd like, I'll submit a patch to use the static inline
-> variant and rip out the definiton in the syscalls.c files.
+> Any chance we can get this one reviewed and pushed upstream too?
 
-Yes, that sounds good.
+I went to send it on yesterday and found that it doesn't apply any
+more.  If Arnd or someone would like to update it, I'll send it on.
 
-Thanks,
-
-	Arnd <><
+Paul.
