@@ -1,15 +1,16 @@
 Return-Path: <jdl@freescale.com>
 From: Jon Loeliger <jdl@freescale.com>
-To: linuxppc64-dev <linuxppc64-dev@ozlabs.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-In-Reply-To: <200508290845.34544.arnd@arndb.de>
-References: <20050829130133.519391c6.sfr@canb.auug.org.au>
-	<200508290845.34544.arnd@arndb.de>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20050902163708.12c1abe3.sfr@canb.auug.org.au>
+References: <1125607912.16685.111.camel@cashmere.sps.mot.com>
+	<20050902163708.12c1abe3.sfr@canb.auug.org.au>
 Content-Type: text/plain
-Message-Id: <1126037554.25148.41.camel@cashmere.sps.mot.com>
+Message-Id: <1126039509.25148.54.camel@cashmere.sps.mot.com>
 Mime-Version: 1.0
-Date: Tue, 06 Sep 2005 15:12:36 -0500
-Subject: Re: [PATCH 0/3] Start the merge
+Date: Tue, 06 Sep 2005 15:45:09 -0500
+Cc: linuxppc64-dev <linuxppc64-dev@ozlabs.org>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: Re: PATCH Merge more include files
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,43 +20,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2005-08-29 at 01:45, Arnd Bergmann wrote:
-> On Maandag 29 August 2005 05:01, Stephen Rothwell wrote:
+On Fri, 2005-09-02 at 01:37, Stephen Rothwell wrote:
+> On Thu, 01 Sep 2005 15:51:52 -0500 Jon Loeliger <jdl@freescale.com> wrote:
+> >
+> > This patch merges several include files from
+> > asm-ppc and asm-ppc64 into the new asm-powerpc.
+> > 
+> > Signed-off-by: Jon Loeliger <jdl@freescale.com>
+> > Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 > 
-> > Please send at least the first upstream.  The other two can also probably
-> > be sent.
+> > +#ifndef _POWERPC_BUGS_H
 > 
-> These certainly look good to me.
-> 
-> This is another patch to merge the atomic.h file. It is not completely
-> trivial and changes the semantics for 32 bit SMP systems, which previously
-> did not do EIEIO_ON_SMP within the atomic operations. AFAICT, that was
-> a bug in the 32 bit version, which is now fixed as a side-effect of
-> the merge.
-> 
-> The combined version of this file also prevents building user space
-> applications using atomic.h on ppc64. That was already impossible
-> on 32 bit ppc, but probably also created broken output on ppc64.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> 
-> --
-> 
->  include/asm-ppc/atomic.h                  |  214 ------------------------------
->  include/asm-ppc64/atomic.h                |  197 ---------------------------
->  include/asm-ppc64/memory.h                |   59 --------
->  linux-2.6.12/include/asm-powerpc/atomic.h |  209 +++++++++++++++++++++++++++++
->  linux-2.6.12/include/asm-powerpc/memory.h |   59 ++++++++
->  linux-2.6.12/include/asm-ppc/io.h         |   11 -
->  6 files changed, 269 insertions(+), 480 deletions(-)
+> I would use _ASM_POWERPC_... but that is just me.
 
-Paul,
+I'll start using _ASM_POWERPC_ from now on.  I will
+also submit a different patch to do a round of this
+sort of cleanup.
 
-I'd like to call attention to this buried patch.  It appears that
-it might be lost due to Subject: line swiping;  it likely hasn't
-gotten first class status as its own independent patch.
+Can we get an official call on the GPL header in
+include files?  I'm defaulting to adding them for now.
 
-Any chance we can get this one reviewed and pushed upstream too?
+> Looks good.
+
+Thanks.  More coming, of course.
+
+So, will you resubmit patches based on your 3/3 patch
+that cover the slid-through the cracks set, or shall I?
+I'm thinking pmac_features.h, dbdma.h, keylargo.h, etc.
 
 Thanks,
 jdl
