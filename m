@@ -1,22 +1,19 @@
-Return-Path: <jjboor@aimsys.nl>
-Received: from linserv001.aimsys.nl (a80-127-156-242.adsl.xs4all.nl
-	[80.127.156.242])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 69167681C4
+Return-Path: <wd@denx.de>
+Received: from mailout10.sul.t-online.com (mailout10.sul.t-online.com
+	[194.25.134.21]) by ozlabs.org (Postfix) with ESMTP id D573F680F2
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  7 Sep 2005 00:17:12 +1000 (EST)
-Message-ID: <431DA0D5.508@aimsys.nl>
-Date: Tue, 06 Sep 2005 15:59:49 +0200
-From: Jaap-Jan Boor <jjboor@aimsys.nl>
-MIME-Version: 1.0
-To: Alex Zeffertt <ajz@cambridgebroadband.com>
-References: <20050906133122.225a0922.ajz@cambridgebroadband.com>	<431D8F5B.9050803@ru.mvista.com>
-	<20050906144845.1e603c72.ajz@cambridgebroadband.com>
-In-Reply-To: <20050906144845.1e603c72.ajz@cambridgebroadband.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed,  7 Sep 2005 00:57:06 +1000 (EST)
+To: vinay hegde <thisismevinay@yahoo.co.in>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 06 Sep 2005 14:00:29 BST."
+	<20050906130029.74727.qmail@web8405.mail.in.yahoo.com>
+Date: Tue, 06 Sep 2005 16:54:05 +0200
+Sender: wd@denx.de
+Message-Id: <20050906145405.BFEC5352661@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: PCI on MPC827x
+Subject: Re: Regarding the PPC board bringup with Linux 2.6 kernel 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,48 +24,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-We use it with 2.4.25. I think you should take a look at Wolfang Denx' 
-2.4 kernel
+In message <20050906130029.74727.qmail@web8405.mail.in.yahoo.com> you wrote:
+>   
+> Does anybody have any idea about the problem? Also,
 
-Jaap-Jan
+Yes.
 
-Alex Zeffertt wrote:
+> is it possible to print some debug messages at this
+> point of booting? {Note that, in the early stage of
 
->On Tue, 06 Sep 2005 16:45:15 +0400
->Vitaly Bordug <vbordug@ru.mvista.com> wrote:
->
->  
->
->>Alex Zeffertt wrote:
->>    
->>
->>>Hi list,
->>>
->>>Does the linuxppc kernel support PCI on PowerQUICC II chips?  If so, in which patch/release was
->>>it added?
->>>
->>>      
->>>
->>The PCI bridge for 8272ADS has been added in 2.6.12-rc6. This stuff 
->>should work on PQ2FADS as well.
->>    
->>
-> 
->Thanks Vitaly.  Unfortunately we're using linux-2.4.25.
->
->Has anybody backported the PCI bridge to 2.4?  If not, do you think it's a lot of work?
->
->Alex
->_______________________________________________
->Linuxppc-embedded mailing list
->Linuxppc-embedded@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->  
->
+Use a BDI2000.
 
+> Can somebody help me with the above problem?
+
+Maybe you start reading the FAQ... See
+http://www.denx.de/twiki/bin/view/DULG/LinuxHangsAfterUncompressingKernel
+
+Best regards,
+
+Wolfgang Denk
 
 -- 
-J.G.J. Boor                       Anton Philipsweg 1
-Software Engineer                 1223 KZ Hilversum
-AimSys bv                         tel. +31 35 689 1941
-Postbus 2194, 1200 CD Hilversum   mailto:jjboor@aimsys.nl
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+A wise person makes his  own  decisions,  a  weak  one  obeys  public
+opinion.                                           -- Chinese proverb
