@@ -1,19 +1,19 @@
-Return-Path: <rpjday@mindspring.com>
-Received: from mailhost.rdmcorp.com (world.rdmcorp.com [204.225.180.10])
-	by ozlabs.org (Postfix) with ESMTP id 18ADC6815E
+Return-Path: <glikely@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.204])
+	by ozlabs.org (Postfix) with ESMTP id 4666868185
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  7 Sep 2005 02:59:46 +1000 (EST)
-Date: Tue, 6 Sep 2005 12:34:40 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Clemens Koller <clemens.koller@anagramm.de>
-In-Reply-To: <431DBF34.2040000@anagramm.de>
-Message-ID: <Pine.LNX.4.63.0509061233340.22132@vericenter>
-References: <20050906145405.BFEC5352661@atlas.denx.de>
-	<431DBF34.2040000@anagramm.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Regarding the PPC board bringup with Linux 2.6 kernel
+	Wed,  7 Sep 2005 04:26:44 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id 68so974405wri
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 06 Sep 2005 11:26:43 -0700 (PDT)
+Message-ID: <528646bc050906112673dd4543@mail.gmail.com>
+Date: Tue, 6 Sep 2005 18:26:43 +0000
+From: Grant Likely <glikely@gmail.com>
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: Xilinx SystemACE driver for 2.6
+Reply-To: glikely@gmail.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,20 +24,8 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 6 Sep 2005, Clemens Koller wrote:
+Has anybody ported the SystemACE driver from 2.4 to 2.6 yet?  If so,
+where can I pull a patch from?  Otherwise I'll start work on it.
 
-> Hi, Vinay
->
-> Please reply to the list also!
->
-> I can guess your problem, but you should give more
-> information about your system i.e.
-> Processor / Board / Kernel version, ...
-
-i missed the first part of this.  i've booted a 2.6 kernel on an 8xx
-board and got to the command prompt.  is that of any use here?
-
-rday
-
-p.s.  i'm not using u-boot as the bootloader but that shouldn't be an
-unmanageable difference.
+Thanks,
+g.
