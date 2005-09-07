@@ -1,19 +1,16 @@
-Return-Path: <glikely@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.204])
-	by ozlabs.org (Postfix) with ESMTP id 4666868185
+Return-Path: <zhonglei@RCS-9000.COM>
+Received: from RCS-9000.COM (unknown [218.94.131.104])
+	by ozlabs.org (Postfix) with ESMTP id BBA3868162
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  7 Sep 2005 04:26:44 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 68so974405wri
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 06 Sep 2005 11:26:43 -0700 (PDT)
-Message-ID: <528646bc050906112673dd4543@mail.gmail.com>
-Date: Tue, 6 Sep 2005 18:26:43 +0000
-From: Grant Likely <glikely@gmail.com>
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+	Wed,  7 Sep 2005 17:31:39 +1000 (EST)
+Date: Wed,  7 Sep 2005 15:34:34 +0800
+Message-Id: <200509071534.AA10944630@RCS-9000.COM>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Xilinx SystemACE driver for 2.6
-Reply-To: glikely@gmail.com
+Content-Type: text/plain; charset=us-ascii
+From: "zhonglei" <zhonglei@RCS-9000.COM>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: How can I compile the module into kernel
+Reply-To: zhonglei@RCS-9000.COM
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,8 +21,7 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Has anybody ported the SystemACE driver from 2.4 to 2.6 yet?  If so,
-where can I pull a patch from?  Otherwise I'll start work on it.
-
-Thanks,
-g.
+hi:
+   My driver is a char device driver htm.o. How can I compile it into my kernel?
+BestRegards
+zhonglei
