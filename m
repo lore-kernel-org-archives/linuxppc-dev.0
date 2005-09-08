@@ -1,17 +1,15 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc64-dev@ozlabs.org
-Date: Fri, 9 Sep 2005 00:36:39 +0200
-References: <f2ea45e1b2a9689c450811a61ed46183@embeddededge.com>
-	<39A39EEE-E3B1-4D34-BC6E-854C3EF56C7D@freescale.com>
-In-Reply-To: <39A39EEE-E3B1-4D34-BC6E-854C3EF56C7D@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200509090036.39992.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org,
-	pantelis.antoniou@gmail.com
-Subject: Re: cpu features testing 32 vs 64 bit
+Return-Path: <benh@kernel.crashing.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@freescale.com>
+In-Reply-To: <Pine.LNX.4.61.0509081611230.5055@nylon.am.freescale.net>
+References: <Pine.LNX.4.61.0509081611230.5055@nylon.am.freescale.net>
+Content-Type: text/plain
+Date: Fri, 09 Sep 2005 09:56:05 +1000
+Message-Id: <1126223767.29803.34.camel@gaston>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	linuxppc64-dev <linuxppc64-dev@ozlabs.org>
+Subject: Re: [PATCH] ppc: Merge tlb.h
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,23 +19,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Freedag 09 September 2005 00:02, Kumar Gala wrote:
+On Thu, 2005-09-08 at 16:11 -0500, Kumar Gala wrote:
+> Merged tlb.h between asm-ppc32 and asm-ppc64 into asm-powerpc.  Also, fixed
+> a compiler warning in arch/ppc/mm/tlb.c since it was roughly related.
 > 
-> On Sep 8, 2005, at 4:48 PM, Dan Malek wrote:
-> >
-> > If we #define CPU_FTR_xxx as a 0 or all 1's for processors that have
-> > or don't have these features, will the compiler be smart enough to
-> > recognize an always true or false condition and remove the
-> > test (or code as appropriate)?
-> 
-> The compiler is smart enough in this case since cpu_has_feature() is  
-> an inline function.
+> Signed-off-by: Kumar K. Gala <kumar.gala@freescale.com>
 
-I actually wrote a patch that solves the problem in a very generic way,
-see http://patchwork.ozlabs.org/linuxppc/patch?id=1048 .
-I don't remember exactly if there were serious objections against
-the patch at that time, but it looks like a much cleaner solution to me
-than defining CPU_FTR_xxx to different values depending on the
-configuration.
+Do we want to do that ?
 
-	Arnd <><
+Replacing 2 different files with one split in #ifdef isn't a progress...
+As I said, I think we need two subdirs for the low level stuffs that is
+different, and that includes at this point all of the memory management
+related stuff.
+
+In addition, I'd appreciate if we could avoid touching ppc64 mm related
+files completely for a couple of weeks as I'm working on a fairly big
+patch that I'm really tired of having to rebase all the time ;)
+
+Ben.
