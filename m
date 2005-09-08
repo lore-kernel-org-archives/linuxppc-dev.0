@@ -1,15 +1,24 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao01.cox.net (fed1rmmtao01.cox.net [68.230.241.38])
-	by ozlabs.org (Postfix) with ESMTP id 054BD68207
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from hera.kernel.org (hera.kernel.org [209.128.68.125])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8429B681CA
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 Sep 2005 01:14:17 +1000 (EST)
-Date: Thu, 8 Sep 2005 08:14:16 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Andrew Morton <akpm@osdl.org>, linuxppc-embedded@ozlabs.org
-Message-ID: <20050908151416.GK3966@smtp.west.cox.net>
+	Fri,  9 Sep 2005 05:40:27 +1000 (EST)
+Date: Thu, 8 Sep 2005 16:34:55 -0300
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Paul Mackerras <paulus@samba.org>
+Message-ID: <20050908193455.GA5446@dmt.cnet>
+References: <20050907230324.GC7513@dmt.cnet> <1126139332.29803.0.camel@gaston>
+	<00a1f47bb2edbbc001c2267191aa36f0@embeddededge.com>
+	<20050908005821.GB8882@dmt.cnet>
+	<17183.48543.616634.628331@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Subject: [PATCH 2.6.13] ppc32: Kill PVR_440* defines
+In-Reply-To: <17183.48543.616634.628331@cargo.ozlabs.ibm.com>
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] add big endian version of ld_/st_ IO access macros and
+	convert main 8xx code to use it
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,78 +29,309 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-The following patch changes the usages of PVR_440* into strcmp's with
-the cpu_name field, and removes the defines altogether.  The Ebony
-portion was briefly tested long ago.  One benefit of moving from
-PVR-tests to string tests in general is that not all CPUs can be
-differentiated by PVR type, but we could otherwise know which one we're
-on and be able to do this type of comparison.
+On Thu, Sep 08, 2005 at 02:27:11PM +1000, Paul Mackerras wrote:
+> Marcelo Tosatti writes:
+> 
+> > eieio/isync are not required. There's no need to execute redudant
+> > instructions and occupy kernel space.
+> 
+> Given how long it takes to access I/O devices, I don't believe an
+> extra instruction or two is going to make a measurable difference.
+> Feel free to show me measurements proving me wrong, of course... :)
 
-See http://patchwork.ozlabs.org/linuxppc/patch?id=1250 for the original
-thread.
+I will try to measure it later on and change out_/in_ macros as         
+suggested.                                                              
 
-Signed-off-by: Tom Rini <trini@kernel.crashing.org>
+For now are there any objections against this? Otherwise I'll merge it.
 
-Index: linux-2.6/arch/ppc/platforms/4xx/ebony.c
-===================================================================
---- linux-2.6.orig/arch/ppc/platforms/4xx/ebony.c
-+++ linux-2.6/arch/ppc/platforms/4xx/ebony.c
-@@ -91,15 +91,10 @@ ebony_calibrate_decr(void)
- 	 * on Rev. C silicon then errata forces us to
- 	 * use the internal clock.
- 	 */
--	switch (PVR_REV(mfspr(SPRN_PVR))) {
--		case PVR_REV(PVR_440GP_RB):
--			freq = EBONY_440GP_RB_SYSCLK;
--			break;
--		case PVR_REV(PVR_440GP_RC1):
--		default:
--			freq = EBONY_440GP_RC_SYSCLK;
--			break;
--	}
-+	if (strcmp(cur_cpu_spec[0]->cpu_name, "440GP Rev. B") == 0)
-+		freq = EBONY_440GP_RB_SYSCLK;
-+	else
-+		freq = EBONY_440GP_RC_SYSCLK;
+There are a few more places which need conversion, plan to change them
+later on also.
+
+Thanks everyone.
+
+diff --git a/arch/ppc/8xx_io/commproc.c b/arch/ppc/8xx_io/commproc.c
+--- a/arch/ppc/8xx_io/commproc.c
++++ b/arch/ppc/8xx_io/commproc.c
+@@ -73,7 +73,7 @@ cpm_mask_irq(unsigned int irq)
+ {
+ 	int cpm_vec = irq - CPM_IRQ_OFFSET;
  
- 	ibm44x_calibrate_decr(freq);
+-	((immap_t *)IMAP_ADDR)->im_cpic.cpic_cimr &= ~(1 << cpm_vec);
++	out_be32(&((immap_t *)IMAP_ADDR)->im_cpic.cpic_cimr, in_be32(&((immap_t *)IMAP_ADDR)->im_cpic.cpic_cimr) & ~(1 << cpm_vec));
  }
-Index: linux-2.6/arch/ppc/syslib/ibm440gx_common.c
-===================================================================
---- linux-2.6.orig/arch/ppc/syslib/ibm440gx_common.c
-+++ linux-2.6/arch/ppc/syslib/ibm440gx_common.c
-@@ -236,9 +236,10 @@ void __init ibm440gx_l2c_setup(struct ib
- 	/* Disable L2C on rev.A, rev.B and 800MHz version of rev.C,
- 	   enable it on all other revisions
+ 
+ static void
+@@ -81,7 +81,7 @@ cpm_unmask_irq(unsigned int irq)
+ {
+ 	int cpm_vec = irq - CPM_IRQ_OFFSET;
+ 
+-	((immap_t *)IMAP_ADDR)->im_cpic.cpic_cimr |= (1 << cpm_vec);
++	out_be32(&((immap_t *)IMAP_ADDR)->im_cpic.cpic_cimr, in_be32(&((immap_t *)IMAP_ADDR)->im_cpic.cpic_cimr) | (1 << cpm_vec));
+ }
+ 
+ static void
+@@ -95,7 +95,7 @@ cpm_eoi(unsigned int irq)
+ {
+ 	int cpm_vec = irq - CPM_IRQ_OFFSET;
+ 
+-	((immap_t *)IMAP_ADDR)->im_cpic.cpic_cisr = (1 << cpm_vec);
++	out_be32(&((immap_t *)IMAP_ADDR)->im_cpic.cpic_cisr, (1 << cpm_vec));
+ }
+ 
+ struct hw_interrupt_type cpm_pic = {
+@@ -133,7 +133,7 @@ m8xx_cpm_reset(void)
+ 	 * manual recommends it.
+ 	 * Bit 25, FAM can also be set to use FEC aggressive mode (860T).
  	 */
--	u32 pvr = mfspr(SPRN_PVR);
--	if (pvr == PVR_440GX_RA || pvr == PVR_440GX_RB ||
--	    (pvr == PVR_440GX_RC && p->cpu > 667000000))
-+	if (strcmp(cur_cpu_spec[0]->cpu_name, "440GX Rev. A") == 0 ||
-+			strcmp(cur_cpu_spec[0]->cpu_name, "440GX Rev. B") == 0
-+			|| (strcmp(cur_cpu_spec[0]->cpu_name, "440GX Rev. C")
-+				== 0 && p->cpu > 667000000))
- 		ibm440gx_l2c_disable();
+-	imp->im_siu_conf.sc_sdcr = 1;
++	out_be32(&imp->im_siu_conf.sc_sdcr, 1),
+ 
+ 	/* Reclaim the DP memory for our use. */
+ 	m8xx_cpm_dpinit();
+@@ -178,10 +178,10 @@ cpm_interrupt_init(void)
+ 
+ 	/* Initialize the CPM interrupt controller.
+ 	*/
+-	((immap_t *)IMAP_ADDR)->im_cpic.cpic_cicr =
++	out_be32(&((immap_t *)IMAP_ADDR)->im_cpic.cpic_cicr,
+ 	    (CICR_SCD_SCC4 | CICR_SCC_SCC3 | CICR_SCB_SCC2 | CICR_SCA_SCC1) |
+-		((CPM_INTERRUPT/2) << 13) | CICR_HP_MASK;
+-	((immap_t *)IMAP_ADDR)->im_cpic.cpic_cimr = 0;
++		((CPM_INTERRUPT/2) << 13) | CICR_HP_MASK);
++	out_be32(&((immap_t *)IMAP_ADDR)->im_cpic.cpic_cimr, 0);
+ 
+         /* install the CPM interrupt controller routines for the CPM
+          * interrupt vectors
+@@ -198,7 +198,7 @@ cpm_interrupt_init(void)
+ 	if (setup_irq(CPM_IRQ_OFFSET + CPMVEC_ERROR, &cpm_error_irqaction))
+ 		panic("Could not allocate CPM error IRQ!");
+ 
+-	((immap_t *)IMAP_ADDR)->im_cpic.cpic_cicr |= CICR_IEN;
++	out_be32(&((immap_t *)IMAP_ADDR)->im_cpic.cpic_cicr, in_be32(&((immap_t *)IMAP_ADDR)->im_cpic.cpic_cicr) | CICR_IEN);
+ }
+ 
+ /*
+@@ -212,8 +212,8 @@ cpm_get_irq(struct pt_regs *regs)
+ 	/* Get the vector by setting the ACK bit and then reading
+ 	 * the register.
+ 	 */
+-	((volatile immap_t *)IMAP_ADDR)->im_cpic.cpic_civr = 1;
+-	cpm_vec = ((volatile immap_t *)IMAP_ADDR)->im_cpic.cpic_civr;
++	out_be16(&((volatile immap_t *)IMAP_ADDR)->im_cpic.cpic_civr, 1);
++	cpm_vec = in_be16(&((volatile immap_t *)IMAP_ADDR)->im_cpic.cpic_civr);
+ 	cpm_vec >>= 11;
+ 
+ 	return cpm_vec;
+diff --git a/arch/ppc/syslib/m8xx_setup.c b/arch/ppc/syslib/m8xx_setup.c
+--- a/arch/ppc/syslib/m8xx_setup.c
++++ b/arch/ppc/syslib/m8xx_setup.c
+@@ -144,12 +144,12 @@ void __init m8xx_calibrate_decr(void)
+ 	int freq, fp, divisor;
+ 
+ 	/* Unlock the SCCR. */
+-	((volatile immap_t *)IMAP_ADDR)->im_clkrstk.cark_sccrk = ~KAPWR_KEY;
+-	((volatile immap_t *)IMAP_ADDR)->im_clkrstk.cark_sccrk = KAPWR_KEY;
++	out_be32(&((immap_t *)IMAP_ADDR)->im_clkrstk.cark_sccrk, ~KAPWR_KEY);
++	out_be32(&((immap_t *)IMAP_ADDR)->im_clkrstk.cark_sccrk, KAPWR_KEY);
+ 
+ 	/* Force all 8xx processors to use divide by 16 processor clock. */
+-	((volatile immap_t *)IMAP_ADDR)->im_clkrst.car_sccr |= 0x02000000;
+-
++	out_be32(&((immap_t *)IMAP_ADDR)->im_clkrst.car_sccr, 
++		in_be32(&((immap_t *)IMAP_ADDR)->im_clkrst.car_sccr)|0x02000000);
+ 	/* Processor frequency is MHz.
+ 	 * The value 'fp' is the number of decrementer ticks per second.
+ 	 */
+@@ -175,28 +175,24 @@ void __init m8xx_calibrate_decr(void)
+ 	 * we guarantee the registers are locked, then we unlock them
+ 	 * for our use.
+ 	 */
+-	((volatile immap_t *)IMAP_ADDR)->im_sitk.sitk_tbscrk = ~KAPWR_KEY;
+-	((volatile immap_t *)IMAP_ADDR)->im_sitk.sitk_rtcsck = ~KAPWR_KEY;
+-	((volatile immap_t *)IMAP_ADDR)->im_sitk.sitk_tbk    = ~KAPWR_KEY;
+-	((volatile immap_t *)IMAP_ADDR)->im_sitk.sitk_tbscrk =  KAPWR_KEY;
+-	((volatile immap_t *)IMAP_ADDR)->im_sitk.sitk_rtcsck =  KAPWR_KEY;
+-	((volatile immap_t *)IMAP_ADDR)->im_sitk.sitk_tbk    =  KAPWR_KEY;
++	out_be32(&((immap_t *)IMAP_ADDR)->im_sitk.sitk_tbscrk, ~KAPWR_KEY);
++	out_be32(&((immap_t *)IMAP_ADDR)->im_sitk.sitk_rtcsck, ~KAPWR_KEY);
++	out_be32(&((immap_t *)IMAP_ADDR)->im_sitk.sitk_tbk, ~KAPWR_KEY);
++	out_be32(&((immap_t *)IMAP_ADDR)->im_sitk.sitk_tbscrk, KAPWR_KEY);
++	out_be32(&((immap_t *)IMAP_ADDR)->im_sitk.sitk_rtcsck, KAPWR_KEY);
++	out_be32(&((immap_t *)IMAP_ADDR)->im_sitk.sitk_tbk, KAPWR_KEY);
+ 
+ 	/* Disable the RTC one second and alarm interrupts. */
+-	((volatile immap_t *)IMAP_ADDR)->im_sit.sit_rtcsc &=
+-						~(RTCSC_SIE | RTCSC_ALE);
++	out_be16(&((immap_t *)IMAP_ADDR)->im_sit.sit_rtcsc, in_be16(&((immap_t *)IMAP_ADDR)->im_sit.sit_rtcsc) & ~(RTCSC_SIE | RTCSC_ALE));
+ 	/* Enable the RTC */
+-	((volatile immap_t *)IMAP_ADDR)->im_sit.sit_rtcsc |=
+-						(RTCSC_RTF | RTCSC_RTE);
++	out_be16(&((immap_t *)IMAP_ADDR)->im_sit.sit_rtcsc, in_be16(&((immap_t *)IMAP_ADDR)->im_sit.sit_rtcsc) | (RTCSC_RTF | RTCSC_RTE));
+ 
+ 	/* Enabling the decrementer also enables the timebase interrupts
+ 	 * (or from the other point of view, to get decrementer interrupts
+ 	 * we have to enable the timebase).  The decrementer interrupt
+ 	 * is wired into the vector table, nothing to do here for that.
+ 	 */
+-	((volatile immap_t *)IMAP_ADDR)->im_sit.sit_tbscr =
+-				((mk_int_int_mask(DEC_INTERRUPT) << 8) |
+-					 (TBSCR_TBF | TBSCR_TBE));
++	out_be16(&((immap_t *)IMAP_ADDR)->im_sit.sit_tbscr, (mk_int_int_mask(DEC_INTERRUPT) << 8) | (TBSCR_TBF | TBSCR_TBE));
+ 
+ 	if (setup_irq(DEC_INTERRUPT, &tbint_irqaction))
+ 		panic("Could not allocate timer IRQ!");
+@@ -216,9 +212,9 @@ void __init m8xx_calibrate_decr(void)
+ static int
+ m8xx_set_rtc_time(unsigned long time)
+ {
+-	((volatile immap_t *)IMAP_ADDR)->im_sitk.sitk_rtck = KAPWR_KEY;
+-	((volatile immap_t *)IMAP_ADDR)->im_sit.sit_rtc = time;
+-	((volatile immap_t *)IMAP_ADDR)->im_sitk.sitk_rtck = ~KAPWR_KEY;
++	out_be32(&((immap_t *)IMAP_ADDR)->im_sitk.sitk_rtck, KAPWR_KEY);
++	out_be32(&((immap_t *)IMAP_ADDR)->im_sit.sit_rtc, time);
++	out_be32(&((immap_t *)IMAP_ADDR)->im_sitk.sitk_rtck, ~KAPWR_KEY);
+ 	return(0);
+ }
+ 
+@@ -226,7 +222,7 @@ static unsigned long
+ m8xx_get_rtc_time(void)
+ {
+ 	/* Get time from the RTC. */
+-	return((unsigned long)(((immap_t *)IMAP_ADDR)->im_sit.sit_rtc));
++	return (unsigned long) in_be32(&((immap_t *)IMAP_ADDR)->im_sit.sit_rtc);
+ }
+ 
+ static void
+@@ -235,13 +231,13 @@ m8xx_restart(char *cmd)
+ 	__volatile__ unsigned char dummy;
+ 
+ 	local_irq_disable();
+-	((immap_t *)IMAP_ADDR)->im_clkrst.car_plprcr |= 0x00000080;
++	out_be32(&((immap_t *)IMAP_ADDR)->im_clkrst.car_plprcr, in_be32(&((immap_t *)IMAP_ADDR)->im_clkrst.car_plprcr) | 0x00000080);
+ 
+ 	/* Clear the ME bit in MSR to cause checkstop on machine check
+ 	*/
+ 	mtmsr(mfmsr() & ~0x1000);
+ 
+-	dummy = ((immap_t *)IMAP_ADDR)->im_clkrst.res[0];
++	dummy = in_8(&((immap_t *)IMAP_ADDR)->im_clkrst.res[0]);
+ 	printk("Restart failed\n");
+ 	while(1);
+ }
+@@ -306,8 +302,7 @@ m8xx_init_IRQ(void)
+ 	i8259_init(0);
+ 
+ 	/* The i8259 cascade interrupt must be level sensitive. */
+-	((immap_t *)IMAP_ADDR)->im_siu_conf.sc_siel &=
+-		~(0x80000000 >> ISA_BRIDGE_INT);
++	out_be32(&((immap_t *)IMAP_ADDR)->im_siu_conf.sc_siel, in_be32(&((immap_t *)IMAP_ADDR)->im_siu_conf.sc_siel & ~(0x80000000 >> ISA_BRIDGE_INT)));
+ 
+ 	if (setup_irq(ISA_BRIDGE_INT, &mbx_i8259_irqaction))
+ 		enable_irq(ISA_BRIDGE_INT);
+diff --git a/arch/ppc/syslib/m8xx_wdt.c b/arch/ppc/syslib/m8xx_wdt.c
+--- a/arch/ppc/syslib/m8xx_wdt.c
++++ b/arch/ppc/syslib/m8xx_wdt.c
+@@ -29,8 +29,8 @@ void m8xx_wdt_reset(void)
+ {
+ 	volatile immap_t *imap = (volatile immap_t *)IMAP_ADDR;
+ 
+-	imap->im_siu_conf.sc_swsr = 0x556c;	/* write magic1 */
+-	imap->im_siu_conf.sc_swsr = 0xaa39;	/* write magic2 */
++	out_be16(imap->im_siu_conf.sc_swsr, 0x556c);	/* write magic1 */
++	out_be16(imap->im_siu_conf.sc_swsr, 0xaa39);	/* write magic2 */
+ }
+ 
+ static irqreturn_t m8xx_wdt_interrupt(int irq, void *dev, struct pt_regs *regs)
+@@ -39,7 +39,7 @@ static irqreturn_t m8xx_wdt_interrupt(in
+ 
+ 	m8xx_wdt_reset();
+ 
+-	imap->im_sit.sit_piscr |= PISCR_PS;	/* clear irq */
++	out_be16(imap->im_sit.sit_piscr, in_be16(imap->im_sit.sit_piscr | PISCR_PS));	/* clear irq */
+ 
+ 	return IRQ_HANDLED;
+ }
+@@ -51,7 +51,7 @@ void __init m8xx_wdt_handler_install(bd_
+ 	u32 sypcr;
+ 	u32 pitrtclk;
+ 
+-	sypcr = imap->im_siu_conf.sc_sypcr;
++	sypcr = in_be32(imap->im_siu_conf.sc_sypcr);
+ 
+ 	irch/ppc/syslib/ppc8xx_pic.c:32:f (!(sypcr & 0x04)) {
+ 		printk(KERN_NOTICE "m8xx_wdt: wdt disabled (SYPCR: 0x%08X)\n",
+@@ -87,9 +87,9 @@ void __init m8xx_wdt_handler_install(bd_
  	else
- 		ibm440gx_l2c_enable();
-Index: linux-2.6/include/asm-ppc/reg.h
-===================================================================
---- linux-2.6.orig/include/asm-ppc/reg.h
-+++ linux-2.6/include/asm-ppc/reg.h
-@@ -366,12 +366,6 @@
- #define PVR_STB03XXX	0x40310000
- #define PVR_NP405H	0x41410000
- #define PVR_NP405L	0x41610000
--#define PVR_440GP_RB	0x40120440
--#define PVR_440GP_RC1	0x40120481
--#define PVR_440GP_RC2	0x40200481
--#define PVR_440GX_RA	0x51b21850
--#define PVR_440GX_RB	0x51b21851
--#define PVR_440GX_RC	0x51b21892
- #define PVR_601		0x00010000
- #define PVR_602		0x00050000
- #define PVR_603		0x00030000
-
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+ 		pitc = pitrtclk * wdt_timeout / binfo->bi_intfreq / 2;
+ 
+-	imap->im_sit.sit_pitc = pitc << 16;
+-	imap->im_sit.sit_piscr =
+-	    (mk_int_int_mask(PIT_INTERRUPT) << 8) | PISCR_PIE | PISCR_PTE;
++	out_be32(imap->im_sit.sit_pitc, pitc << 16);
++
++	out_be16(imap->im_sit.sit_piscr, (mk_int_int_mask(PIT_INTERRUPT) << 8) | PISCR_PIE | PISCR_PTE);
+ 
+ 	if (setup_irq(PIT_INTERRUPT, &m8xx_wdt_irqaction))
+ 		panic("m8xx_wdt: error setting up the watchdog irq!");
+diff --git a/arch/ppc/syslib/ppc8xx_pic.c b/arch/ppc/syslib/ppc8xx_pic.c
+--- a/arch/ppc/syslib/ppc8xx_pic.c
++++ b/arch/ppc/syslib/ppc8xx_pic.c
+@@ -6,6 +6,7 @@
+ #include <linux/signal.h>
+ #include <linux/interrupt.h>
+ #include <asm/irq.h>
++#include <asm/io.h>
+ #include <asm/8xx_immap.h>
+ #include <asm/mpc8xx.h>
+ #include "ppc8xx_pic.h"
+@@ -29,8 +30,7 @@ static void m8xx_mask_irq(unsigned int i
+ 	word = irq_nr >> 5;
+ 
+ 	ppc_cached_irq_mask[word] &= ~(1 << (31-bit));
+-	((immap_t *)IMAP_ADDR)->im_siu_conf.sc_simask =
+-						ppc_cached_irq_mask[word];
++	out_be32(&((immap_t *)IMAP_ADDR)->im_siu_conf.sc_simask, ppc_cached_irq_mask[word]);
+ }
+ 
+ static void m8xx_unmask_irq(unsigned int irq_nr)
+@@ -41,8 +41,7 @@ static void m8xx_unmask_irq(unsigned int
+ 	word = irq_nr >> 5;
+ 
+ 	ppc_cached_irq_mask[word] |= (1 << (31-bit));
+-	((immap_t *)IMAP_ADDR)->im_siu_conf.sc_simask =
+-						ppc_cached_irq_mask[word];
++	out_be32(&((immap_t *)IMAP_ADDR)->im_siu_conf.sc_simask, ppc_cached_irq_mask[word]);
+ }
+ 
+ static void m8xx_end_irq(unsigned int irq_nr)
+@@ -55,8 +54,7 @@ static void m8xx_end_irq(unsigned int ir
+ 		word = irq_nr >> 5;
+ 
+ 		ppc_cached_irq_mask[word] |= (1 << (31-bit));
+-		((immap_t *)IMAP_ADDR)->im_siu_conf.sc_simask =
+-			ppc_cached_irq_mask[word];
++		out_be32(&((immap_t *)IMAP_ADDR)->im_siu_conf.sc_simask, ppc_cached_irq_mask[word]);
+ 	}
+ }
+ 
+@@ -69,9 +67,8 @@ static void m8xx_mask_and_ack(unsigned i
+ 	word = irq_nr >> 5;
+ 
+ 	ppc_cached_irq_mask[word] &= ~(1 << (31-bit));
+-	((immap_t *)IMAP_ADDR)->im_siu_conf.sc_simask =
+-						ppc_cached_irq_mask[word];
+-	((immap_t *)IMAP_ADDR)->im_siu_conf.sc_sipend = 1 << (31-bit);
++	out_be32(&((immap_t *)IMAP_ADDR)->im_siu_conf.sc_simask, ppc_cached_irq_mask[word]);
++	out_be32(&((immap_t *)IMAP_ADDR)->im_siu_conf.sc_sipend, 1 << (31-bit));
+ }
+ 
+ struct hw_interrupt_type ppc8xx_pic = {
+@@ -93,7 +90,7 @@ m8xx_get_irq(struct pt_regs *regs)
+ 	/* For MPC8xx, read the SIVEC register and shift the bits down
+ 	 * to get the irq number.
+ 	 */
+-	irq = ((immap_t *)IMAP_ADDR)->im_siu_conf.sc_sivec >> 26;
++	irq = in_be32(&((immap_t *)IMAP_ADDR)->im_siu_conf.sc_sivec) >> 26;
+ 
+ 	/*
+ 	 * When we read the sivec without an interrupt to process, we will
