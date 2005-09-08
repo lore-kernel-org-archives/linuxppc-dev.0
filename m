@@ -1,16 +1,15 @@
-Return-Path: <gqbenjamin@21cn.com>
-Received: from 21cn.com (send.forptr.21cn.com [202.105.45.49])
-	by ozlabs.org (Postfix) with SMTP id AEA6B681FF
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao10.cox.net (fed1rmmtao10.cox.net [68.230.241.29])
+	by ozlabs.org (Postfix) with ESMTP id E96D568206
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 Sep 2005 00:48:17 +1000 (EST)
-Content-Type: text/html
-MIME-Version: 1.0
-Message-ID: <HZ949091776065.01978@webmail4.inner-21cn.com>
-Date: Thu, 8 Sep 2005 22:39:34 +0800 (CST)
-From: gqbenjamin@21cn.com
-To: zhonglei@RCS-9000.COM
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: How can I compile the module into kernel
+	Fri,  9 Sep 2005 01:13:03 +1000 (EST)
+Date: Thu, 8 Sep 2005 08:13:02 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Andrew Morton <akpm@osdl.org>, linuxppc-embedded@ozlabs.org
+Message-ID: <20050908151302.GI3966@smtp.west.cox.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Subject: [PATCH 2.6.13] ppc32: Correct an instruction in the boot code
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,5 +20,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-<P>Wed, 7 Sep 2005 <A href="mailto: zhonglei@RCS-9000.COM">zhonglei@RCS-9000.COM</A>&nbsp;wrote:<BR>&gt;My driver is a char device driver htm.o. How can I compile it into my kernel?<BR>Add your htm.o into the Makefile of char device, and&nbsp;call your driver's init-function in<BR>init-function of char device.&nbsp;<BR><BR>Best Regards,<BR>Benjamin Q. Guo</P>
-<P>&nbsp;</P><br><br><a href='http://mail.21cn.com/huodong/0808/index.html' target='_blank'><img src='http://mail.21cn.com/free/sj_mfy_54060.gif' width='540' height='60' border='0'></a><br>
+In the flush and invalidate bootcode on PPC4xx we were accidentally
+using the wrong instruction.  Use cmplw, which reads from a register
+like we want.
+
+From: Frank van Maarseveen <frankvm@frankvm.com>
+Signed-off-by: Tom Rini <trini@kernel.crashing.org>
+
+Index: linux-2.6/arch/ppc/boot/common/util.S
+===================================================================
+--- linux-2.6.orig/arch/ppc/boot/common/util.S
++++ linux-2.6/arch/ppc/boot/common/util.S
+@@ -252,7 +252,7 @@ _GLOBAL(flush_instruction_cache)
+ 1:	dcbf	r0,r3			# Flush the data cache
+ 	icbi	r0,r3			# Invalidate the instruction cache
+ 	addi	r3,r3,0x10		# Increment by one cache line
+-	cmplwi	cr0,r3,r4		# Are we at the end yet?
++	cmplw	cr0,r3,r4		# Are we at the end yet?
+ 	blt	1b			# No, keep flushing and invalidating
+ #else
+ 	/* Enable, invalidate and then disable the L1 icache/dcache. */
+
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
