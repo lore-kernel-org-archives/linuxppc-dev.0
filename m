@@ -1,14 +1,15 @@
-Return-Path: <kumar.gala@freescale.com>
-In-Reply-To: <200509090008.39692.pantelis.antoniou@gmail.com>
+Return-Path: <dan@embeddededge.com>
+In-Reply-To: <D8DEC759-EAB9-457F-AF7B-A10D6593B27A@freescale.com>
 References: <200509090008.39692.pantelis.antoniou@gmail.com>
-Mime-Version: 1.0 (Apple Message framework v734)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <D8DEC759-EAB9-457F-AF7B-A10D6593B27A@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Thu, 8 Sep 2005 16:20:17 -0500
-To: <pantelis.antoniou@gmail.com>
+	<D8DEC759-EAB9-457F-AF7B-A10D6593B27A@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v622)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <f2ea45e1b2a9689c450811a61ed46183@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Thu, 8 Sep 2005 17:48:58 -0400
+To: Kumar Gala <kumar.gala@freescale.com>
 Cc: linuxppc64-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
-	linuxppc-embedded@ozlabs.org
+	pantelis.antoniou@gmail.com, linuxppc-embedded@ozlabs.org
 Subject: Re: cpu features testing 32 vs 64 bit
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,31 +21,17 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Sep 8, 2005, at 4:08 PM, Pantelis Antoniou wrote:
+On Sep 8, 2005, at 5:20 PM, Kumar Gala wrote:
 
-> On Friday 09 September 2005 00:02, Becky Bruce wrote:
->
->> So,
->>
->> in include/asm-ppc64/cacheflush.h is the following:
->>
->> static inline void flush_icache_range(unsigned long start, unsigned
->> long stop)
->> {
->>          if (!cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
->>                  __flush_icache_range(start, stop);
->> }
->>
->> On the 32-bit side, we don't need the feature test -
->> CPU_FTR_COHERENT_CACHE is only defined in 64-bit land, and has  
->> bits set
->> in the upper 32.
->>
->>
->
-> Oh yes we need it. 8xx is non coherent.
+>>>          if (!cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
+>>>                  __flush_icache_range(start, stop);
+>>> }
 
-I think she lost the I in ICACHE... its a power5 only feature at this  
-point.
+If we #define CPU_FTR_xxx as a 0 or all 1's for processors that have
+or don't have these features, will the compiler be smart enough to
+recognize an always true or false condition and remove the
+test (or code as appropriate)?
 
-- kumar
+Thanks.
+
+	-- Dan
