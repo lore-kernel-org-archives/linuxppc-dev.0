@@ -1,16 +1,17 @@
-Return-Path: <dan@embeddededge.com>
-In-Reply-To: <D8DEC759-EAB9-457F-AF7B-A10D6593B27A@freescale.com>
-References: <200509090008.39692.pantelis.antoniou@gmail.com>
-	<D8DEC759-EAB9-457F-AF7B-A10D6593B27A@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <f2ea45e1b2a9689c450811a61ed46183@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Thu, 8 Sep 2005 17:48:58 -0400
-To: Kumar Gala <kumar.gala@freescale.com>
-Cc: linuxppc64-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
-	pantelis.antoniou@gmail.com, linuxppc-embedded@ozlabs.org
-Subject: Re: cpu features testing 32 vs 64 bit
+Return-Path: <benh@kernel.crashing.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linas <linas@austin.ibm.com>
+In-Reply-To: <20050908193053.GO30028@austin.ibm.com>
+References: <0C620F0B-92B0-4EBF-BC0C-49FD4D3D4323@freescale.com>
+	<ac556638e1f4b4f9786c30ed0debc4a8@kernel.crashing.org>
+	<20050908193053.GO30028@austin.ibm.com>
+Content-Type: text/plain
+Date: Fri, 09 Sep 2005 07:53:52 +1000
+Message-Id: <1126216432.29803.31.camel@gaston>
+Mime-Version: 1.0
+Cc: ppc64-dev <linuxppc64-dev@ozlabs.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: r13 is non-volatile?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,17 +22,18 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Sep 8, 2005, at 5:20 PM, Kumar Gala wrote:
+> There's a different value in R13 depending on which cpu you're on,
+> so one mustn't save R13 on one CPU and attempt to restore it on
+> another.
+> 
+> Maybe, for ppc32, you can pretend that r13 "is like a paca"? So
+> that instead of saving/restoring r13 like this, you could set it up
+> at the same time/instead of setting up the paca r13?
 
->>>          if (!cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
->>>                  __flush_icache_range(start, stop);
->>> }
+ppc32 uses r2 for that, it contains "current".
 
-If we #define CPU_FTR_xxx as a 0 or all 1's for processors that have
-or don't have these features, will the compiler be smart enough to
-recognize an always true or false condition and remove the
-test (or code as appropriate)?
+I don't think we need to bother merging those low level CPU specific
+things. We need to have a cpu32 and a cpu64 subdirs in there for things
+like these, memory management, etc... imho.
 
-Thanks.
-
-	-- Dan
+Ben.
