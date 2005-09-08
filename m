@@ -1,19 +1,19 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from hera.kernel.org (hera.kernel.org [209.128.68.125])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 17B1468162
+	by ozlabs.org (Postfix) with ESMTP id B4B0D681CA
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  8 Sep 2005 11:03:34 +1000 (EST)
-Date: Wed, 7 Sep 2005 21:58:21 -0300
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Dan Malek <dan@embeddededge.com>
-Message-ID: <20050908005821.GB8882@dmt.cnet>
-References: <20050907230324.GC7513@dmt.cnet> <1126139332.29803.0.camel@gaston>
-	<00a1f47bb2edbbc001c2267191aa36f0@embeddededge.com>
+	Thu,  8 Sep 2005 11:15:29 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+In-Reply-To: <20050908005135.GA8882@dmt.cnet>
+References: <20050907230324.GC7513@dmt.cnet>
+	<1126139332.29803.0.camel@gaston>  <20050908005135.GA8882@dmt.cnet>
+Content-Type: text/plain
+Date: Thu, 08 Sep 2005 11:14:57 +1000
+Message-Id: <1126142097.29803.4.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <00a1f47bb2edbbc001c2267191aa36f0@embeddededge.com>
 Cc: Paul Mackerras <paulus@samba.org>,
 	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
 Subject: Re: [PATCH] add big endian version of ld_/st_ IO access macros and
@@ -28,21 +28,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Sep 07, 2005 at 08:42:42PM -0400, Dan Malek wrote:
+> e is shared by all architectures. Doing something like
 > 
-> On Sep 7, 2005, at 8:28 PM, Benjamin Herrenschmidt wrote:
+> /*
+>  * 8, 16 and 32 bit, big and little endian I/O operations, with barrier.
+>  */
+> extern inline int in_8(volatile unsigned char __iomem *addr)
+> {
+>         int ret;
 > 
-> >I'm not fan of the approach. You should use in_/out_ macros for IOs. If
-> >you don't need eieio on 8xx , then just #ifdef it out of the
-> >implementation of these.
+>         __asm__ __volatile__(
+>                 "lbz%U1%X1 %0,%1;\n"
+> #ifndef CONFIG_8xx
+>                 "twi 0,%0,0;\n"
+>                 "isync" : "=r" (ret) : "m" (*addr));
+> #else
+>                 : "=r" (ret) : "m" (*addr));
+> #endif
+>         return ret;
+> }
 > 
-> Yeah, #ifdef :-)  That patch wouldn't go anywhere (well,
-> to /dev/null perhaps).
+> Seems somewhat ugly?
 
-Well, its easy to s/st/out/ - s/ld/in/, so its still a useful patch. ;)
+Yes. You can work around that by macro-generating the functions with
+different rules for different CPUs, or having the twi/isync be a
+separate asm block that is itself in a macro or inline that gets defined
+differently on 8xx
 
-> We can just use the in_/out_ macros that are there.  The eieio
-> doesn't hurt anything on the 8xx.
-
-eieio/isync are not required. There's no need to execute redudant
-instructions and occupy kernel space.
+Ben.
