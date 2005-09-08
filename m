@@ -1,25 +1,14 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from pokfb.esmtp.ibm.com (over.ny.us.ibm.com [32.97.182.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 64C55681E0
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Sep 2005 05:31:33 +1000 (EST)
-Received: from e32.co.us.ibm.com (e32.esmtp.ibm.com [9.14.4.130])
-	by pokfb.esmtp.ibm.com (8.12.11/8.12.11) with ESMTP id j88JVTp4009568
-	(version=TLSv1/SSLv3 cipher=EDH-RSA-DES-CBC3-SHA bits=168 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 Sep 2005 15:31:30 -0400
-Date: Thu, 8 Sep 2005 14:30:53 -0500
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Message-ID: <20050908193053.GO30028@austin.ibm.com>
-References: <0C620F0B-92B0-4EBF-BC0C-49FD4D3D4323@freescale.com>
-	<ac556638e1f4b4f9786c30ed0debc4a8@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <ac556638e1f4b4f9786c30ed0debc4a8@kernel.crashing.org>
-From: linas <linas@austin.ibm.com>
-Cc: ppc64-dev <linuxppc64-dev@ozlabs.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: r13 is non-volatile?
+Return-Path: <kumar.gala@freescale.com>
+In-Reply-To: <Pine.LNX.4.61.0509071354270.31849@nylon.am.freescale.net>
+References: <Pine.LNX.4.61.0509071354270.31849@nylon.am.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v734)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <F2C8C7A1-55A5-4872-8C11-9C9957FB1AEA@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Thu, 8 Sep 2005 15:32:40 -0500
+To: "Gala Kumar K.-galak" <kumar.gala@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev <linuxppc64-dev@ozlabs.org>
+Subject: Re: [PATCH] ppc: Moved ASM_CONST macro into ppc_asm.h
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,26 +18,125 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 08, 2005 at 07:01:18PM +0200, Segher Boessenkool was heard to remark:
-> >Was looking at merging some code between ppc32 & ppc64 and noticed 
-> >that in ppc32 we consider r13 to be part of the non-volatile register 
-> >set.  Is this really correct?
-> 
-> >r13 is suppose to be sdata pointer in ppc32
-> 
-> sdata pointer is non-volatile by definition...
-> 
-> >and system thread id in ppc64.
-> 
-> The 64-bit kernel uses GPR13 as the PACA pointer, so it handles
-> it specially 
+Well, this patch breaks thinks since ppc_asm.h really needs a hugh  
+__ASSEMBLY__ protection for most of it.
 
-There's a different value in R13 depending on which cpu you're on,
-so one mustn't save R13 on one CPU and attempt to restore it on
-another.
+I'll send an updated patch that also moves ppc_asm.h into include/asm- 
+powerpc once we close on the non-volatile issue with r13 between  
+ppc32/64.
 
-Maybe, for ppc32, you can pretend that r13 "is like a paca"? So
-that instead of saving/restoring r13 like this, you could set it up
-at the same time/instead of setting up the paca r13?
+- kumar
 
---linas
+On Sep 7, 2005, at 1:55 PM, Gala Kumar K.-galak wrote:
+
+> Moved the ASM_CONST macro into ppc_asm for ppc32 and ppc64 since that
+> seems like a much better place for it long term.  Also, by adding the
+> macro to ppc32 it will ease some future merging of code into
+> arch/powerpc.
+>
+> Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+>
+> ---
+> commit f56255eddd631902e3835bf7cdd8d94e69799097
+> tree 82c222d64fdccbaed25e302816fd4cf6237e8d56
+> parent 71c22e7cc4bf30119761b60b26c498d7b9d33e36
+> author Kumar K. Gala <kumar.gala@freescale.com> Wed, 07 Sep 2005
+> 13:53:35 -0500
+> committer Kumar K. Gala <kumar.gala@freescale.com> Wed, 07 Sep 2005
+> 13:53:35 -0500
+>
+>  include/asm-ppc/ppc_asm.h    |   12 ++++++++++++
+>  include/asm-ppc64/cputable.h |    2 +-
+>  include/asm-ppc64/mmu.h      |    1 +
+>  include/asm-ppc64/page.h     |    8 +-------
+>  include/asm-ppc64/ppc_asm.h  |    7 +++++++
+>  5 files changed, 22 insertions(+), 8 deletions(-)
+>
+> diff --git a/include/asm-ppc/ppc_asm.h b/include/asm-ppc/ppc_asm.h
+> --- a/include/asm-ppc/ppc_asm.h
+> +++ b/include/asm-ppc/ppc_asm.h
+> @@ -11,6 +11,9 @@
+>   *  2 of the License, or (at your option) any later version.
+>   */
+>
+> +#ifndef __PPC_ASM_H
+> +#define __PPC_ASM_H
+> +
+>  #include <linux/config.h>
+>
+>  /*
+> @@ -348,3 +351,12 @@ END_FTR_SECTION_IFCLR(CPU_FTR_601)
+>  #define N_RSYM    64
+>  #define N_SLINE    68
+>  #define N_SO    100
+> +
+> +#ifdef __ASSEMBLY__
+> +  #define ASM_CONST(x) x
+> +#else
+> +  #define __ASM_CONST(x) x##UL
+> +  #define ASM_CONST(x) __ASM_CONST(x)
+> +#endif
+> +
+> +#endif /* __PPC_ASM_H */
+> diff --git a/include/asm-ppc64/cputable.h b/include/asm-ppc64/ 
+> cputable.h
+> --- a/include/asm-ppc64/cputable.h
+> +++ b/include/asm-ppc64/cputable.h
+> @@ -16,7 +16,7 @@
+>  #define __ASM_PPC_CPUTABLE_H
+>
+>  #include <linux/config.h>
+> -#include <asm/page.h> /* for ASM_CONST */
+> +#include <asm/ppc_asm.h> /* for ASM_CONST */
+>
+>  /* Exposed to userland CPU features - Must match ppc32 definitions */
+>  #define PPC_FEATURE_32            0x80000000
+> diff --git a/include/asm-ppc64/mmu.h b/include/asm-ppc64/mmu.h
+> --- a/include/asm-ppc64/mmu.h
+> +++ b/include/asm-ppc64/mmu.h
+> @@ -14,6 +14,7 @@
+>  #define _PPC64_MMU_H_
+>
+>  #include <linux/config.h>
+> +#include <asm/ppc_asm.h> /* for ASM_CONST */
+>  #include <asm/page.h>
+>
+>  /*
+> diff --git a/include/asm-ppc64/page.h b/include/asm-ppc64/page.h
+> --- a/include/asm-ppc64/page.h
+> +++ b/include/asm-ppc64/page.h
+> @@ -11,13 +11,7 @@
+>   */
+>
+>  #include <linux/config.h>
+> -
+> -#ifdef __ASSEMBLY__
+> -  #define ASM_CONST(x) x
+> -#else
+> -  #define __ASM_CONST(x) x##UL
+> -  #define ASM_CONST(x) __ASM_CONST(x)
+> -#endif
+> +#include <asm/ppc_asm.h> /* for ASM_CONST */
+>
+>  /* PAGE_SHIFT determines the page size */
+>  #define PAGE_SHIFT    12
+> diff --git a/include/asm-ppc64/ppc_asm.h b/include/asm-ppc64/ppc_asm.h
+> --- a/include/asm-ppc64/ppc_asm.h
+> +++ b/include/asm-ppc64/ppc_asm.h
+> @@ -239,4 +239,11 @@
+>  #define    vr30    30
+>  #define    vr31    31
+>
+> +#ifdef __ASSEMBLY__
+> +  #define ASM_CONST(x) x
+> +#else
+> +  #define __ASM_CONST(x) x##UL
+> +  #define ASM_CONST(x) __ASM_CONST(x)
+> +#endif
+> +
+>  #endif /* _PPC64_PPC_ASM_H */
+> _______________________________________________
+> Linuxppc64-dev mailing list
+> Linuxppc64-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc64-dev
+>
