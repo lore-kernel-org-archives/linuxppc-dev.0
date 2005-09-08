@@ -1,15 +1,12 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Message-ID: <4320A258.1080706@vnet.ibm.com>
-Date: Thu, 08 Sep 2005 15:43:04 -0500
-From: will schmidt <will_schmidt@vnet.ibm.com>
-MIME-Version: 1.0
-To: Kumar Gala <kumar.gala@freescale.com>
-References: <268E83D3-853C-4752-88D1-A7354E924C07@freescale.com>
-In-Reply-To: <268E83D3-853C-4752-88D1-A7354E924C07@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	ppc64-dev <linuxppc64-dev@ozlabs.org>
-Subject: Re: RFC: merging of cputables between ppc32/64
+Return-Path: <becky.bruce@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v622)
+Message-Id: <1729b6f2a199a759c4daeadd3ddcdc4a@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: linuxppc64-dev@ozlabs.org, linuxppc-embedded@ozlabs.org,
+	linuxppc-dev@ozlabs.org
+From: Becky Bruce <becky.bruce@freescale.com>
+Date: Thu, 8 Sep 2005 16:02:31 -0500
+Subject: cpu features testing 32 vs 64 bit 
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,37 +16,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> I was hoping to get some idea on which direction we wanted to head  with 
-> cputable between ppc32/64.  The only major difference that  exists 
-> between the two is the use of cpu_setup().
-> 
-> On ppc32, cpu_setup is called for each processor in an SMP  
-> configuration.  Which gives us the following signature:
-> 
-> typedef void (*cpu_setup_t)(unsigned long offset, int cpu_nr, struct  
-> cpu_spec* spec);
-> 
-> On ppc64, cpu_setup is only called for the boot cpu.  It is left to  the 
-Yeah, at the time, we figured all cpu's in a system would be the same. 
-with the merge of 32/64, is this still going to be the case?
+So,
 
-> cpu save/restore functions to handle setting up the state for  
-> additional CPUs.  Which gives is the following signature:
-> 
-> typedef void (*cpu_setup_t)(unsigned long offset, struct cpu_spec*  spec);
-> 
-> So my question is do we just extend the ppc64 signature to match the  
-> ppc32 by having a dummy "int cpu_nr" that is ignored or do we do  
-> something else?  As far as I can tell cpu_nr is only used by ppc32 as  
-> temp storage so that the cpu_setup functions can return properly.
+in include/asm-ppc64/cacheflush.h is the following:
 
-If cpu_nr is just used as temp storage, then can it be removed and 
-replaced with a local variable?
+static inline void flush_icache_range(unsigned long start, unsigned 
+long stop)
+{
+         if (!cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
+                 __flush_icache_range(start, stop);
+}
 
-> 
-> - kumar
-> _______________________________________________
-> Linuxppc64-dev mailing list
-> Linuxppc64-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc64-dev
+On the 32-bit side, we don't need the feature test - 
+CPU_FTR_COHERENT_CACHE is only defined in 64-bit land, and has bits set 
+in the upper 32.
+
+There's a couple of ways to deal with merging this:
+
+1) The ever-so-popular #ifdef __powerpc64__around the cpu_has_feature 
+test
+2) No ifdef in the code itself, but #define CPU_FTR_WHATEVER to be 0 
+when !__powerpc64__ in cputable.h so that the cpu_has_feature test will 
+always fail for 32-bit.
+
+I'd like to get some opinions on this.  Do folks feel like the 
+performance hit of doing the compare is enough to justify going with 
+method 1?  Should we be using likely/unlikely with the feature test?
+
+This is just one code example - I suspect there will be others as we 
+continue the merge, and the importance of performance may differ 
+depending on where in the code we are.
+
+Thanks!
+-B
