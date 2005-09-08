@@ -1,12 +1,10 @@
-Return-Path: <kumar.gala@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v734)
-Message-Id: <268E83D3-853C-4752-88D1-A7354E924C07@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	ppc64-dev <linuxppc64-dev@ozlabs.org>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Thu, 8 Sep 2005 13:42:34 -0500
-Subject: RFC: merging of cputables between ppc32/64
+Return-Path: <jdl@jdl.com>
+From: jdl@freescale.com
+To: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Date: Thu, 08 Sep 2005 14:05:49 -0500
+Message-Id: <E1EDRiX-00072b-Cp@jdl.com>
+Sender: Jon Loeliger <jdl@jdl.com>
+Subject: PATCH Fix __power64__ typos that should be __powerpc64__
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,26 +14,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I was hoping to get some idea on which direction we wanted to head  
-with cputable between ppc32/64.  The only major difference that  
-exists between the two is the use of cpu_setup().
 
-On ppc32, cpu_setup is called for each processor in an SMP  
-configuration.  Which gives us the following signature:
+Fix __power64__ typo that should be __powerpc64__ instead.
 
-typedef void (*cpu_setup_t)(unsigned long offset, int cpu_nr, struct  
-cpu_spec* spec);
+ include/asm-powerpc/shmbuf.h |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-On ppc64, cpu_setup is only called for the boot cpu.  It is left to  
-the cpu save/restore functions to handle setting up the state for  
-additional CPUs.  Which gives is the following signature:
+Signed-off-by: Jon Loeliger <jdl@freescale.com>
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+---
 
-typedef void (*cpu_setup_t)(unsigned long offset, struct cpu_spec*  
-spec);
 
-So my question is do we just extend the ppc64 signature to match the  
-ppc32 by having a dummy "int cpu_nr" that is ignored or do we do  
-something else?  As far as I can tell cpu_nr is only used by ppc32 as  
-temp storage so that the cpu_setup functions can return properly.
-
-- kumar
+diff --git a/include/asm-powerpc/shmbuf.h b/include/asm-powerpc/shmbuf.h
+--- a/include/asm-powerpc/shmbuf.h
++++ b/include/asm-powerpc/shmbuf.h
+@@ -21,19 +21,19 @@
+ 
+ struct shmid64_ds {
+ 	struct ipc64_perm	shm_perm;	/* operation perms */
+-#ifndef __power64__
++#ifndef __powerpc64__
+ 	unsigned long		__unused1;
+ #endif
+ 	__kernel_time_t		shm_atime;	/* last attach time */
+-#ifndef __power64__
++#ifndef __powerpc64__
+ 	unsigned long		__unused2;
+ #endif
+ 	__kernel_time_t		shm_dtime;	/* last detach time */
+-#ifndef __power64__
++#ifndef __powerpc64__
+ 	unsigned long		__unused3;
+ #endif
+ 	__kernel_time_t		shm_ctime;	/* last change time */
+-#ifndef __power64__
++#ifndef __powerpc64__
+ 	unsigned long		__unused4;
+ #endif
+ 	size_t			shm_segsz;	/* size of segment (bytes) */
