@@ -1,23 +1,22 @@
-Return-Path: <rober@opnet.com.tw>
-Received: from opnet2.opnet.com.tw (unknown [210.243.240.244])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E56E3681F7
+Return-Path: <albert.david@gmail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.193])
+	by ozlabs.org (Postfix) with ESMTP id E21E7681F5
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  8 Sep 2005 17:07:04 +1000 (EST)
-Received: from [10.0.14.26] (h248-210-243-240.opnet.com.tw [210.243.240.248]
-	(may be forged))
-	by opnet2.opnet.com.tw (8.13.3/8.13.1) with ESMTP id j88EwuMu072003
-	for <linuxppc-embedded@ozlabs.org>; Thu, 8 Sep 2005 14:58:56 GMT
-	(envelope-from rober@opnet.com.tw)
-From: =?UTF-8?Q?=E5=BE=90=E5=B0=8F=E5=A8=81=E7=9A=84EMAIL?=
-	<rober@opnet.com.tw>
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain
-Date: Thu, 08 Sep 2005 15:06:52 +0800
-Message-Id: <1126163212.23563.8.camel@banana>
+	Thu,  8 Sep 2005 17:55:03 +1000 (EST)
+Received: by zproxy.gmail.com with SMTP id i1so1121882nzh
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 08 Sep 2005 00:55:02 -0700 (PDT)
+Message-ID: <61124de7050908005569734361@mail.gmail.com>
+Date: Thu, 8 Sep 2005 13:25:02 +0530
+From: Albert David <albert.david@gmail.com>
+To: Albert David <albert.david@gmail.com>, linuxppc-embedded@ozlabs.org
+In-Reply-To: <20050908063136.GA22596@gate.ebshome.net>
 Mime-Version: 1.0
-Subject: Can't run 8M ramdisk at 2.4.20 linux
+Content-Type: text/plain; charset=ISO-8859-1
+References: <61124de7050907230383654a6@mail.gmail.com>
+	<20050908063136.GA22596@gate.ebshome.net>
+Subject: Re: BDI2000 with PPC405EP
+Reply-To: albert.david@gmail.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,28 +27,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi All:
+Dear Eugene,
+Thanks for your suggestion! This was indeed a hardware bug! I found a
+problem with my cpu strapping pins! UART0_TX was never driven
+externally(it was left open),
+Thanks again for your reply,
+with best regards,
+Albert.
 
-    I build a 8M ramdisk file, it  works fine at 2.4.25 linux but fail
-in 2.4.20.Why?
-I do follow command to make 8M ramdsik, all files in the ramdisk is from
-pRamdisk (download from denx ftp site).
-
-dd if=/dev/zero of=new_ramdisk bs=1024k count=8
-/sbin/mke2fs -F -m0 new_ramdisk
-/sbin/tune2fs -c 0 new_ramdisk
-
-RAMDISK: Compressed image found at block 0
-Freeing initrd memory: 1434k freed
-VFS: Mounted root (ext2 filesystem).
-Freeing unused kernel memory: 56k init
-attempt to access beyond end of device
-01:00: rw=0, want=1647259183, limit=16384
-attempt to access beyond end of device
-01:00: rw=0, want=1647259183, limit=16384
-attempt to access beyond end of device
-01:00: rw=0, want=1647259183, limit=16384
-attempt to access beyond end of device
-01:00: rw=0, want=1647259183, limit=16384
-Kernel panic: No init found.  Try passing init= option to kernel.
- <0>Rebooting in 180 seconds..
+On 9/8/05, Eugene Surovegin <ebs@ebshome.net> wrote:
+> On Thu, Sep 08, 2005 at 11:33:53AM +0530, Albert David wrote:
+> > Friends,
+> > I have been trying to find a solution to fix "PPC: timeout while
+> > waiting for freeze" for my custom board.
+> > BDI2000 keeps resetting the system with the following message...
+> >
+> > TARGET: processing user reset request
+> > TARGET: resetting target passed
+> > TARGET: processing target startup ....
+> > *** TARGET: core #0 startup failed # PPC: timeout while waiting for fre=
+eze
+> > TARGET: target will be restarted in 10 sec
+> >
+> > I tried all the possible solutions provided at
+> > http://www.ultsol.com/faq-P206.htm for this perticular behaviour but
+> > the problem remains same!
+> >
+> > I have ensured that my Board's JTAG interface is properly working by
+> > boundary scanning the pins of PPC405EP using UniversalScan software
+> > with Altera-ByteBlaster MV.
+> >
+> > for your information: twice i could succeed connecting BDI2000 with my
+> > target! somehow it happen to work while i was trying to execute low
+> > level JTAG commands such as 'rir' rdr'  and then after exiting(JTAG
+> > command shell of BDI) it worked, but there is no consistency!
+> >
+> > looks like my cpu core is not halting after asserting HALT line.
+> > has anyone faced similar problem??
+>=20
+> In _all_ cases I saw this problem it was a hw bug. Ask your hw
+> engineers to help you. Start with the usual suspects: power, clocks,
+> strapping, etc.
+>=20
+> I don't think working boundary scan is an indication that hw design is
+> OK.
+>=20
+> --
+> Eugene
+>=20
+>
