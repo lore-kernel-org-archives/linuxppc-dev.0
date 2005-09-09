@@ -1,22 +1,18 @@
-Return-Path: <pantelis.antoniou@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.204])
-	by ozlabs.org (Postfix) with ESMTP id 73C9A6823B
+Return-Path: <walt.wimer@timesys.com>
+Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
+	by ozlabs.org (Postfix) with ESMTP id 1F50368213
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 10 Sep 2005 05:58:46 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id i8so1275996wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 09 Sep 2005 12:58:45 -0700 (PDT)
-From: Pantelis Antoniou <pantelis.antoniou@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Date: Fri, 9 Sep 2005 22:59:37 +0300
-References: <19EE6EC66973A5408FBE4CB7772F6F0A02FA20CD@ltnmail.xyplex.com>
-In-Reply-To: <19EE6EC66973A5408FBE4CB7772F6F0A02FA20CD@ltnmail.xyplex.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200509092259.37723.pantelis.antoniou@gmail.com>
-Subject: Re: [PATCH] cpm_uart: Made non-console uart work
-Reply-To: pantelis.antoniou@gmail.com
+	Sat, 10 Sep 2005 06:20:22 +1000 (EST)
+From: "Walter L. Wimer III" <walt.wimer@timesys.com>
+To: Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>
+In-Reply-To: <20050909192739.GA5171@xyzzy.farnsworth.org>
+References: <1126287092.21092.14.camel@excalibur.timesys.com>
+	<20050909192739.GA5171@xyzzy.farnsworth.org>
+Content-Type: text/plain
+Date: Fri, 09 Sep 2005 16:20:20 -0400
+Message-Id: <1126297220.21092.45.camel@excalibur.timesys.com>
+Mime-Version: 1.0
+Subject: Re: Marvell MV64360 interrupt question
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,28 +23,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Friday 09 September 2005 22:21, Murch, Christopher wrote:
-> We've recently applied the 2.6.13 patch.  We're running on an embedded
-> platform using 3 of the cpm uart ports on an 8xx cpu.  After applying the
-> 2.6.13 patch the non-console uarts no longer work.  Upon investigation, we
-> have found that cpu2cpm_addr() is giving us invalid results for memory
-> addresses derived from dma_alloc_coherent().  This causes the cpm to hang.
-> We believe that the better approach would be to use the dma address
-> supplied by the call to dma_alloc_coherent() instead of trying to convert
-> using bus_to_virt() and virt_to_bus().  We believe this is the approach
-> taken by other drivers in the 2.6 kernel.  Any comments?
-> Thanks for your help.
->
+On Fri, 2005-09-09 at 12:27 -0700, Dale Farnsworth wrote:
+> 
+> No additional locking is necessary.  In fact, it seems to me that the 32-bit
+> register reads and writes are already atomic and all of the locking using
+> mv64x60_lock is superfluous.
 
-Yes, it would be proper. This is a temporary hack.
+Ah ha.  mv64x60.h also defines an mv64x60_modify() function that isn't
+intrinsically atomic, so it needs the spinlock.  That in turn requires
+mv64x60_read() and mv64x60_write() to play along too.
 
-What is the IMAP_ADDR value?
+At least in the general case....
 
-And where is the consistent pool located at your board?
 
-> -Chris
-> cmurch@mrv.com
 
-Regards
-
-Pantelis
+Walt
