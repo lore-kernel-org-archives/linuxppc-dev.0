@@ -1,19 +1,18 @@
-Return-Path: <cmurch@mrv.com>
-Received: from mailman.xyplex.com (mailman.xyplex.com [140.179.176.116])
-	by ozlabs.org (Postfix) with ESMTP id 64FA6681D1
+Return-Path: <walt.wimer@timesys.com>
+Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
+	by ozlabs.org (Postfix) with ESMTP id 7F98B68220
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 10 Sep 2005 05:32:24 +1000 (EST)
-Received: from ltnmail.xyplex.com (ltnmail.xyplex.com [140.179.176.25])
-	by mailman.xyplex.com (8.9.3+Sun/8.9.3) with ESMTP id PAA20607
-	for <linuxppc-embedded@ozlabs.org>; Fri, 9 Sep 2005 15:25:49 -0400 (EDT)
-Message-ID: <19EE6EC66973A5408FBE4CB7772F6F0A02FA20CD@ltnmail.xyplex.com>
-From: "Murch, Christopher" <cmurch@mrv.com>
-To: linuxppc-embedded@ozlabs.org
-Date: Fri, 9 Sep 2005 15:21:10 -0400 
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ISO-8859-1"
-Subject: [PATCH] cpm_uart: Made non-console uart work
+	Sat, 10 Sep 2005 05:52:20 +1000 (EST)
+From: "Walter L. Wimer III" <walt.wimer@timesys.com>
+To: Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>
+In-Reply-To: <20050909192739.GA5171@xyzzy.farnsworth.org>
+References: <1126287092.21092.14.camel@excalibur.timesys.com>
+	<20050909192739.GA5171@xyzzy.farnsworth.org>
+Content-Type: text/plain
+Date: Fri, 09 Sep 2005 15:52:17 -0400
+Message-Id: <1126295538.21092.39.camel@excalibur.timesys.com>
+Mime-Version: 1.0
+Subject: Re: Marvell MV64360 interrupt question
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,16 +23,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-We've recently applied the 2.6.13 patch.  We're running on an embedded
-platform using 3 of the cpm uart ports on an 8xx cpu.  After applying the
-2.6.13 patch the non-console uarts no longer work.  Upon investigation, we
-have found that cpu2cpm_addr() is giving us invalid results for memory
-addresses derived from dma_alloc_coherent().  This causes the cpm to hang.
-We believe that the better approach would be to use the dma address supplied
-by the call to dma_alloc_coherent() instead of trying to convert using
-bus_to_virt() and virt_to_bus().  We believe this is the approach taken by
-other drivers in the 2.6 kernel.  Any comments?
-Thanks for your help.
 
--Chris
-cmurch@mrv.com
+Thanks for your response, Dale!
+
+
+Walt
+
+
+
+On Fri, 2005-09-09 at 12:27 -0700, Dale Farnsworth wrote:
+> On Fri, Sep 09, 2005 at 05:31:32PM +0000, Walter L. Wimer III wrote:
+> >                         mv64x60_write(&bh,
+> >                                       MV64x60_GPP_INTR_CAUSE,
+> >                                       (1 << (irq - 64)));
+> 
+> You dropped a ~ on the above line.  It confused me for a bit.
+> 
+
+Ooops!  Sorry about that!!!  Yikes!
+
+
+> > Hmmm...  There's an mv64x60_write() a little earlier in the code...  Is
+> > the "extra" mv64x60_read() here to enforce ordering?  If so, should it
+> > be moved inside the "if" statement so that it's only executed when
+> > actually necessary?
+> 
+> Yes.  It's there to make sure that the clearing of the GPP interrupt
+> is seen by the hardware and takes effect before we return from the function.
+> 
+> > And what about locking?  The mv64x60_xxxx() functions are protected by a
+> > spinlock, but if we're trying to enforce ordering, shouldn't we hold the
+> > lock during the entire write+read operation, rather than dropping and
+> > reacquiring the lock in between?
+> 
+> No additional locking is necessary.  In fact, it seems to me that the 32-bit
+> register reads and writes are already atomic and all of the locking using
+> mv64x60_lock is superfluous.
+
+I wondered about that, too....
+
+> 
+> -Dale
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
