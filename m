@@ -1,17 +1,15 @@
-Return-Path: <Baohua.WANG@alcatel-sbell.com.cn>
-Received: from mail.alcatel-sbell.com.cn (nat1.alcatel-sbell.com.cn
-	[202.96.203.177]) by ozlabs.org (Postfix) with ESMTP id 44114681EF
+Return-Path: <walt.wimer@timesys.com>
+Received: from exchange.timesys.com (mail.timesys.com [65.117.135.102])
+	by ozlabs.org (Postfix) with ESMTP id C7F76681E8
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 Sep 2005 16:20:29 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C5B506.6D332A5D"
-Date: Fri, 9 Sep 2005 14:19:25 +0800
-Message-ID: <A9DE2BAF233E444FA9C5E77A5825A01E86506A@ydmail.sbell.com.cn>
-From: "FCG WANG Baohua" <Baohua.WANG@alcatel-sbell.com.cn>
-To: <thomas@corelatus.com>, <Steven.Scholz@imc-berlin.de>
-Cc: mattl@mvista.com, linuxppc-embedded@ozlabs.org
-Subject: Can the mpc8270 provide the direct IDE interface?
+	Sat, 10 Sep 2005 03:44:04 +1000 (EST)
+From: "Walter L. Wimer III" <walt.wimer@timesys.com>
+To: Linux PPC Embedded list <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain
+Date: Fri, 09 Sep 2005 13:31:32 -0400
+Message-Id: <1126287092.21092.14.camel@excalibur.timesys.com>
+Mime-Version: 1.0
+Subject: Marvell MV64360 interrupt question
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,77 +20,79 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C5B506.6D332A5D
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: quoted-printable
+Hi All,
 
-Dear All:
- I have a question when I port the PCMCIA  driver to MPC8270 board:
- Can the  mpc8270 provide the direct IDE interface without using the =
-PCMCIA  controller? If it can, what's the different with the=20
- drivers\ide\ppc\mpc8xx.c ? Can you provide some resource about the =
-"direct IDE interface " on MPC82xx ?=20
- My PCMCIA  CF card has a specially CPLD to read/write the status of the =
-CF card. What's the codes need to be modified if using=20
- the Card Services package? What's the performance between the direct =
-IDE mode and card service?
-=20
- thanks a lot!
+I'm looking at arch/ppc/syslib/mv64360_pic.c in the 2.6.13 kernel and I
+see the following code:
+
+    int
+    mv64360_get_irq(struct pt_regs *regs)
+    {
+        .
+        .
+        .
+        if (irq == -1) {
+            irq = mv64x60_read(&bh, MV64360_IC_MAIN_CAUSE_HI);
+            irq = __ilog2((irq & 0x1f0003f7) & ppc_cached_irq_mask[1]);
+
+            if (irq == -1)
+                irq = -2; /* bogus interrupt, should never happen */
+            else {
+                if ((irq >= 24) && (irq < MV64x60_IRQ_DOORBELL)) {
+                    irq_gpp = mv64x60_read(&bh, MV64x60_GPP_INTR_CAUSE);
+                    irq_gpp = __ilog2(irq_gpp & ppc_cached_irq_mask[2]);
+
+                    if (irq_gpp == -1)
+                        irq = -2;
+                    else {
+                        irq = irq_gpp + 64;
+                        mv64x60_write(&bh,
+                                      MV64x60_GPP_INTR_CAUSE,
+                                      (1 << (irq - 64)));
+                    }
+                }
+                else
+		    irq += 32;
+            }
+        }
+
+        (void)mv64x60_read(&bh, MV64x60_GPP_INTR_CAUSE);
+        .
+        .
+        .
+    }
+
+Does anybody know what the last mv64x60_read() is intended to do?  It
+*looks* like it's clearing/acknowledging the interrupt, but I don't see
+anything in the Marvell documentation that suggests that *reading* the
+interrupt cause register has such an effect.  From my reading, the
+documentation says that you should write a '0' into the appropriate bit
+position to clear the interrupt.
+
+Hmmm...  There's an mv64x60_write() a little earlier in the code...  Is
+the "extra" mv64x60_read() here to enforce ordering?  If so, should it
+be moved inside the "if" statement so that it's only executed when
+actually necessary?
+
+And what about locking?  The mv64x60_xxxx() functions are protected by a
+spinlock, but if we're trying to enforce ordering, shouldn't we hold the
+lock during the entire write+read operation, rather than dropping and
+reacquiring the lock in between?
 
 
-------_=_NextPart_001_01C5B506.6D332A5D
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: quoted-printable
+At the moment, I'm not running into any actual problems here; this just
+caught my eye and I started wondering about it.
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dgb2312">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.0.6603.0">
-<TITLE>Can the mpc8270 provide the direct IDE interface?</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
+BTW, the reason I'm looking at this code is that the board I'm working
+on has a cascaded interrupt controller (implemented in an FPGA) feeding
+into the MV64360 interrupt controller.  I'm thinking about adding a
+cascade mechanism to mv64360_pic.c similar to the one in the OpenPIC
+code (i.e. like the openpic_hookup_cascade() function).  Any opinions on
+whether this is a good idea or a bad one?
 
-<P><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">Dear =
-All:</FONT></SPAN>
 
-<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;I have a =
-question when I port the PCMCIA&nbsp; driver to MPC8270 =
-board:</FONT></SPAN>
 
-<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;Can =
-the&nbsp; mpc8270 provide the direct IDE interface without using the =
-PCMCIA&nbsp; controller? If it can, what's the different with the =
-</FONT></SPAN></P>
+Thanks!!!
 
-<P><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 =
-FACE=3D"Arial">&nbsp;drivers\ide\ppc\mpc8xx.c ? Can you provide some =
-resource about the &quot;direct IDE interface &quot; on MPC82xx ? =
-</FONT></SPAN>
-
-<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;My =
-PCMCIA&nbsp; CF card has a specially CPLD to read/write the status of =
-the CF card. What's the codes need to be modified if using =
-</FONT></SPAN></P>
-
-<P><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;the Card =
-Services package? What's the performance between the direct IDE mode and =
-card service?</FONT></SPAN>
-
-<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 =
-FACE=3D"Arial">&nbsp;</FONT></SPAN>
-
-<BR><SPAN LANG=3D"zh-cn"><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;thanks a =
-lot!</FONT></SPAN>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C5B506.6D332A5D--
+Walt
