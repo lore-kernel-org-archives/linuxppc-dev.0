@@ -1,15 +1,16 @@
 Return-Path: <kumar.gala@freescale.com>
-In-Reply-To: <1126216432.29803.31.camel@gaston>
-References: <1126216432.29803.31.camel@gaston>
+In-Reply-To: <1126223767.29803.34.camel@gaston>
+References: <1126223767.29803.34.camel@gaston>
 Mime-Version: 1.0 (Apple Message framework v734)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <A21BE716-E470-415A-A6AD-E83292BEE6C3@freescale.com>
+Message-Id: <A32A4DA9-99D6-4574-AD5D-F1C0DFC8AE75@freescale.com>
 From: Kumar Gala <kumar.gala@freescale.com>
-Date: Thu, 8 Sep 2005 20:30:58 -0500
+Date: Thu, 8 Sep 2005 20:34:52 -0500
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: ppc64-dev <linuxppc64-dev@ozlabs.org>, linas <linas@austin.ibm.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: r13 is non-volatile?
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	"Gala Kumar K.-galak" <galak@freescale.com>,
+	linuxppc64-dev <linuxppc64-dev@ozlabs.org>
+Subject: Re: [PATCH] ppc: Merge tlb.h
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,27 +21,45 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Sep 8, 2005, at 4:53 PM, Benjamin Herrenschmidt wrote:
+On Sep 8, 2005, at 6:56 PM, Benjamin Herrenschmidt wrote:
 
+> On Thu, 2005-09-08 at 16:11 -0500, Kumar Gala wrote:
 >
->
->> There's a different value in R13 depending on which cpu you're on,
->> so one mustn't save R13 on one CPU and attempt to restore it on
->> another.
+>> Merged tlb.h between asm-ppc32 and asm-ppc64 into asm-powerpc.  Also,
 >>
->> Maybe, for ppc32, you can pretend that r13 "is like a paca"? So
->> that instead of saving/restoring r13 like this, you could set it up
->> at the same time/instead of setting up the paca r13?
+> fixed
+>
+>> a compiler warning in arch/ppc/mm/tlb.c since it was roughly related.
+>>
+>> Signed-off-by: Kumar K. Gala <kumar.gala@freescale.com>
 >>
 >
-> ppc32 uses r2 for that, it contains "current".
+> Do we want to do that ?
 >
-> I don't think we need to bother merging those low level CPU specific
-> things. We need to have a cpu32 and a cpu64 subdirs in there for  
-> things
-> like these, memory management, etc... imho.
+> Replacing 2 different files with one split in #ifdef isn't a  
+> progress...
+> As I said, I think we need two subdirs for the low level stuffs  
+> that is
+> different, and that includes at this point all of the memory  
+> management
+> related stuff.
 
-My intent is to see if we can make a change so that there isn't an  
-ifdef.
+I understand, but I'm also not sure if its progress to duplicate a  
+major of a file that is common.
+
+In this case it might be better handled by having specific versions  
+per "sub-arch".  I think the key is determining which files should be  
+handled via sub-arch diffs and which should be handled via ifdef's in  
+the file.
+
+Some cases like ppc_asm are so similar that it seems better to have a  
+single file and ifdef the specific case.
+
+> In addition, I'd appreciate if we could avoid touching ppc64 mm  
+> related
+> files completely for a couple of weeks as I'm working on a fairly big
+> patch that I'm really tired of having to rebase all the time ;)
+
+Will avoid touch any other mm related headers than :)
 
 - kumar
