@@ -1,12 +1,13 @@
 Return-Path: <sfr@canb.auug.org.au>
-Date: Sun, 11 Sep 2005 00:00:14 +1000
+Date: Sun, 11 Sep 2005 01:10:57 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Linus <torvalds@osdl.org>
-Message-Id: <20050911000014.7dc55b6f.sfr@canb.auug.org.au>
+To: paulus@samba.org
+Message-Id: <20050911011057.1e90fc41.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc64-dev <linuxppc64-dev@ozlabs.org>, ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc: Move include3 to arch/$(ARCH)/include
+Subject: [PATCH] powerpc: Merge include/asm-ppc*/a.out.h into
+ include/asm-powerpc
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,93 +17,136 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is less troublesome and makes more sense.
-
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
 
- arch/ppc/Makefile   |   16 +++++++++-------
- arch/ppc64/Makefile |   13 +++++++------
- 2 files changed, 16 insertions(+), 13 deletions(-)
+ include/asm-powerpc/a.out.h |   36 ++++++++++++++++++++++++++++++++++++
+ include/asm-ppc/a.out.h     |   26 --------------------------
+ include/asm-ppc64/a.out.h   |   39 ---------------------------------------
+ 3 files changed, 36 insertions(+), 65 deletions(-)
+ create mode 100644 include/asm-powerpc/a.out.h
+ delete mode 100644 include/asm-ppc/a.out.h
+ delete mode 100644 include/asm-ppc64/a.out.h
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
 
-ed5a6c627c4bd12f2030318abb62e2c26e11113b
-diff --git a/arch/ppc/Makefile b/arch/ppc/Makefile
---- a/arch/ppc/Makefile
-+++ b/arch/ppc/Makefile
-@@ -21,13 +21,14 @@ CC		:= $(CC) -m32
- endif
- 
- LDFLAGS_vmlinux	:= -Ttext $(KERNELLOAD) -Bstatic
--CPPFLAGS	+= -Iarch/$(ARCH) -Iinclude3
-+# The -Iarch/$(ARCH)/include is temporary while we are merging
-+CPPFLAGS	+= -Iarch/$(ARCH) -Iarch/$(ARCH)/include
- AFLAGS		+= -Iarch/$(ARCH)
- CFLAGS		+= -Iarch/$(ARCH) -msoft-float -pipe \
- 		-ffixed-r2 -mmultiple
- CPP		= $(CC) -E $(CFLAGS)
- # Temporary hack until we have migrated to asm-powerpc
--LINUXINCLUDE    += -Iinclude3
-+LINUXINCLUDE    += -Iarch/$(ARCH)/include
- 
- CHECKFLAGS	+= -D__powerpc__
- 
-@@ -103,15 +104,16 @@ endef
- 
- archclean:
- 	$(Q)$(MAKE) $(clean)=arch/ppc/boot
--	$(Q)rm -rf include3
-+	# Temporary hack until we have migrated to asm-powerpc
-+	$(Q)rm -rf arch/$(ARCH)/include
- 
- prepare: checkbin
- 
- # Temporary hack until we have migrated to asm-powerpc
--include/asm: include3/asm
--include3/asm:
--	$(Q)if [ ! -d include3 ]; then mkdir -p include3; fi
--	$(Q)ln -fsn $(srctree)/include/asm-powerpc include3/asm
-+include/asm: arch/$(ARCH)/include/asm
-+arch/$(ARCH)/include/asm:
-+	$(Q)if [ ! -d arch/$(ARCH)/include ]; then mkdir -p arch/$(ARCH)/include; fi
-+	$(Q)ln -fsn $(srctree)/include/asm-powerpc arch/$(ARCH)/include/asm
- 
- # Use the file '.tmp_gas_check' for binutils tests, as gas won't output
- # to stdout and these checks are run even on install targets.
-diff --git a/arch/ppc64/Makefile b/arch/ppc64/Makefile
---- a/arch/ppc64/Makefile
-+++ b/arch/ppc64/Makefile
-@@ -56,7 +56,7 @@ LDFLAGS_vmlinux	:= -Bstatic -e $(KERNELL
- CFLAGS		+= -msoft-float -pipe -mminimal-toc -mtraceback=none \
- 		   -mcall-aixdesc
- # Temporary hack until we have migrated to asm-powerpc
--CPPFLAGS	+= -Iinclude3
-+CPPFLAGS	+= -Iarch/$(ARCH)/include
- 
- GCC_VERSION     := $(call cc-version)
- GCC_BROKEN_VEC	:= $(shell if [ $(GCC_VERSION) -lt 0400 ] ; then echo "y"; fi ;)
-@@ -115,14 +115,15 @@ all: $(KBUILD_IMAGE)
- 
- archclean:
- 	$(Q)$(MAKE) $(clean)=$(boot)
--	$(Q)rm -rf include3
-+	# Temporary hack until we have migrated to asm-powerpc
-+	$(Q)rm -rf arch/$(ARCH)/include
- 
- 
- # Temporary hack until we have migrated to asm-powerpc
--include/asm: include3/asm
--include3/asm:
--	$(Q)if [ ! -d include3 ]; then mkdir -p include3; fi;
--	$(Q)ln -fsn $(srctree)/include/asm-powerpc include3/asm
-+include/asm: arch/$(ARCH)/include/asm
-+arch/$(ARCH)/include/asm:
-+	$(Q)if [ ! -d arch/$(ARCH)/include ]; then mkdir -p arch/$(ARCH)/include; fi
-+	$(Q)ln -fsn $(srctree)/include/asm-powerpc arch/$(ARCH)/include/asm
- 
- define archhelp
-   echo  '  zImage.vmode        - Compressed kernel image (arch/$(ARCH)/boot/zImage.vmode)'
+dba4294fb3e51dc6f30e1f6252a5e0ae583db91f
+diff --git a/include/asm-powerpc/a.out.h b/include/asm-powerpc/a.out.h
+new file mode 100644
+--- /dev/null
++++ b/include/asm-powerpc/a.out.h
+@@ -0,0 +1,36 @@
++#ifndef _ASM_POWERPC_A_OUT_H
++#define _ASM_POWERPC_A_OUT_H
++
++struct exec
++{
++	unsigned long a_info;	/* Use macros N_MAGIC, etc for access */
++	unsigned a_text;	/* length of text, in bytes */
++	unsigned a_data;	/* length of data, in bytes */
++	unsigned a_bss;		/* length of uninitialized data area for file, in bytes */
++	unsigned a_syms;	/* length of symbol table data in file, in bytes */
++	unsigned a_entry;	/* start address */
++	unsigned a_trsize;	/* length of relocation info for text, in bytes */
++	unsigned a_drsize;	/* length of relocation info for data, in bytes */
++};
++
++#define N_TRSIZE(a)	((a).a_trsize)
++#define N_DRSIZE(a)	((a).a_drsize)
++#define N_SYMSIZE(a)	((a).a_syms)
++
++#ifdef __KERNEL__
++#ifdef __powerpc64__
++
++#define STACK_TOP_USER64 TASK_SIZE_USER64
++#define STACK_TOP_USER32 TASK_SIZE_USER32
++
++#define STACK_TOP (test_thread_flag(TIF_32BIT) ? \
++		   STACK_TOP_USER32 : STACK_TOP_USER64)
++
++#else /* __powerpc64__ */
++
++#define STACK_TOP TASK_SIZE
++
++#endif /* __powerpc64__ */
++#endif /* __KERNEL__ */
++
++#endif /* _ASM_POWERPC_A_OUT_H */
+diff --git a/include/asm-ppc/a.out.h b/include/asm-ppc/a.out.h
+deleted file mode 100644
+--- a/include/asm-ppc/a.out.h
++++ /dev/null
+@@ -1,26 +0,0 @@
+-#ifndef __PPC_A_OUT_H__
+-#define __PPC_A_OUT_H__
+-
+-/* grabbed from the intel stuff  */
+-#define STACK_TOP TASK_SIZE
+-
+-
+-struct exec
+-{
+-  unsigned long a_info;		/* Use macros N_MAGIC, etc for access */
+-  unsigned a_text;		/* length of text, in bytes */
+-  unsigned a_data;		/* length of data, in bytes */
+-  unsigned a_bss;		/* length of uninitialized data area for file, in bytes */
+-  unsigned a_syms;		/* length of symbol table data in file, in bytes */
+-  unsigned a_entry;		/* start address */
+-  unsigned a_trsize;		/* length of relocation info for text, in bytes */
+-  unsigned a_drsize;		/* length of relocation info for data, in bytes */
+-};
+-
+-
+-#define N_TRSIZE(a)	((a).a_trsize)
+-#define N_DRSIZE(a)	((a).a_drsize)
+-#define N_SYMSIZE(a)	((a).a_syms)
+-
+-
+-#endif
+diff --git a/include/asm-ppc64/a.out.h b/include/asm-ppc64/a.out.h
+deleted file mode 100644
+--- a/include/asm-ppc64/a.out.h
++++ /dev/null
+@@ -1,39 +0,0 @@
+-#ifndef __PPC64_A_OUT_H__
+-#define __PPC64_A_OUT_H__
+-
+-/*
+- * c 2001 PPC 64 Team, IBM Corp
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-struct exec
+-{
+-	unsigned long a_info;	/* Use macros N_MAGIC, etc for access */
+-	unsigned a_text;	/* length of text, in bytes */
+-	unsigned a_data;	/* length of data, in bytes */
+-	unsigned a_bss;		/* length of uninitialized data area for file, in bytes */
+-	unsigned a_syms;	/* length of symbol table data in file, in bytes */
+-	unsigned a_entry;	/* start address */
+-	unsigned a_trsize;	/* length of relocation info for text, in bytes */
+-	unsigned a_drsize;	/* length of relocation info for data, in bytes */
+-};
+-
+-#define N_TRSIZE(a)	((a).a_trsize)
+-#define N_DRSIZE(a)	((a).a_drsize)
+-#define N_SYMSIZE(a)	((a).a_syms)
+-
+-#ifdef __KERNEL__
+-
+-#define STACK_TOP_USER64 TASK_SIZE_USER64
+-#define STACK_TOP_USER32 TASK_SIZE_USER32
+-
+-#define STACK_TOP (test_thread_flag(TIF_32BIT) ? \
+-		   STACK_TOP_USER32 : STACK_TOP_USER64)
+-
+-#endif /* __KERNEL__ */
+-
+-#endif /* __PPC64_A_OUT_H__ */
