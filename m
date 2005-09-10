@@ -1,15 +1,10 @@
-Return-Path: <tklauser@nuerscht.ch>
-Received: from server1.nuerscht.info (nuerscht.net [85.10.196.104])
-	by ozlabs.org (Postfix) with ESMTP id A351F6823F
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Sep 2005 22:49:52 +1000 (EST)
-Date: Sat, 10 Sep 2005 14:16:33 +0200
-From: Tobias Klauser <tklauser@nuerscht.ch>
-To: kernel-janitors@lists.osdl.org
-Message-ID: <20050910121633.GC1218@neon.tklauser.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/4] arch/ppc: Replace custom macro with isdigit()
+Return-Path: <jdl@jdl.com>
+From: jdl@freescale.com
+To: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Date: Sat, 10 Sep 2005 07:52:11 -0500
+Message-Id: <E1EE4q3-0004hi-RD@jdl.com>
+Sender: Jon Loeliger <jdl@jdl.com>
+Subject: Re: PATCH ppc Merge asm-ppc*/posix_types.h
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,50 +14,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Replace the custom is_digit() macro with isdigit() from <linux/ctype.h>
+> On Fri, 09 Sep 2005 16:43:52 -0500 jdl at freescale.com wrote:
+> >
+> > +#ifdef __powerpc64__
+> > +typedef unsigned long	__kernel_nlink_t;
+> > +typedef int             __kernel_ipc_pid_t;
+> > +typedef unsigned long	__kernel_size_t;
+> > +typedef long		__kernel_ssize_t;
+> > +typedef unsigned long	__kernel_old_dev_t;
+> > +#else
+> > +typedef unsigned short	__kernel_nlink_t;
+> > +typedef short		__kernel_ipc_pid_t;
+> > +typedef unsigned int	__kernel_size_t;
+> > +typedef int		__kernel_ssize_t;
+> > +typedef unsigned int	__kernel_old_dev_t;
+> > +#endif
+> 
+> On 32 bit, int == long, so the last three could be removed from the ifdef
+> by making them {unsigned }long ...
 
-Signed-off-by: Tobias Klauser <tklauser@nuerscht.ch>
+Yeah, I tried that too.  In the ppc32 tree, it just starts looking
+nasty all over the place:
 
----
+      CC      drivers/pci/pci-driver.o
+    fs/proc/base.c: In function `seccomp_write':
+    fs/proc/base.c:932: warning: comparison of distinct pointer types lacks a cast
+    net/sunrpc/svcsock.c: In function `svc_sendto':
+    net/sunrpc/svcsock.c:424: warning: unsigned int format, size_t arg (arg 4)
+    net/sunrpc/svcsock.c: In function `svc_recvfrom':
+    net/sunrpc/svcsock.c:477: warning: unsigned int format, size_t arg (arg 4)
 
- arch/ppc/boot/common/misc-common.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
+Lots of others just like it:
 
-diff -urpN -X dontdiff linux-2.6.13/arch/ppc/boot/common/misc-common.c linux-2.6.13~macro_removal/arch/ppc/boot/common/misc-common.c
---- linux-2.6.13/arch/ppc/boot/common/misc-common.c	2005-08-29 01:41:01.000000000 +0200
-+++ linux-2.6.13~macro_removal/arch/ppc/boot/common/misc-common.c	2005-09-10 12:38:31.000000000 +0200
-@@ -16,6 +16,7 @@
- 
- #include <stdarg.h>	/* for va_ bits */
- #include <linux/config.h>
-+#include <linux/ctype.h>
- #include <linux/string.h>
- #include <linux/zlib.h>
- #include "nonstdio.h"
-@@ -301,8 +302,6 @@ _printk(char const *fmt, ...)
- 	return;
- }
- 
--#define is_digit(c) ((c >= '0') && (c <= '9'))
--
- void
- _vprintk(void(*putc)(const char), const char *fmt0, va_list ap)
- {
-@@ -329,7 +328,7 @@ _vprintk(void(*putc)(const char), const 
- 			{
- 				zero_fill = FALSE;
- 			}
--			while (is_digit(c))
-+			while (isdigit(c))
- 			{
- 				left_prec = (left_prec * 10) + (c - '0');
- 				c = *fmt0++;
-@@ -338,7 +337,7 @@ _vprintk(void(*putc)(const char), const 
- 			{
- 				c = *fmt0++;
- 				zero_fill++;
--				while (is_digit(c))
-+				while (isdigit(c))
- 				{
- 					right_prec = (right_prec * 10) + (c - '0');
- 					c = *fmt0++;
+      CC      lib/klist.o
+    net/core/dev.c: In function `dev_ifsioc':
+    net/core/dev.c:2293: warning: comparison of distinct pointer types lacks a cast
+    net/core/dev.c:2304: warning: comparison of distinct pointer types lacks a cast
+
+Pick your favorite subsystem! :-)
+
+I opted to maintain current breakage rather than try to
+fix anything and introduce new breakage. :-)
+
+I think that the approach we're taking here of placing
+the related-but-differing-by-a-__powerpc64__ concepts as
+close to each other as possible is a good one.  In particular
+it calls attention to it, and causes people to wonder "Why
+is _that_ there?  Why don't we just combine it like so..."
+And we probably should.  It is just biting off more than
+we likely should at this step.  Later, yes.
+
+jdl
+
+PS -Sorry about breaking threading; different MUA here.
