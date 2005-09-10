@@ -1,19 +1,19 @@
 Return-Path: <glikely@gmail.com>
-Received: from qproxy.gmail.com (qproxy.gmail.com [72.14.204.200])
-	by ozlabs.org (Postfix) with ESMTP id 56C6868237
+Received: from qproxy.gmail.com (qproxy.gmail.com [72.14.204.205])
+	by ozlabs.org (Postfix) with ESMTP id 811B868237
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 10 Sep 2005 17:43:05 +1000 (EST)
-Received: by qproxy.gmail.com with SMTP id k13so65030qbf
+	Sat, 10 Sep 2005 17:44:50 +1000 (EST)
+Received: by qproxy.gmail.com with SMTP id k13so65034qbf
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 10 Sep 2005 00:43:04 -0700 (PDT)
-Message-ID: <528646bc050910003630c25dca@mail.gmail.com>
-Date: Sat, 10 Sep 2005 01:36:28 -0600
+	Sat, 10 Sep 2005 00:44:48 -0700 (PDT)
+Message-ID: <528646bc05091000377417dc16@mail.gmail.com>
+Date: Sat, 10 Sep 2005 01:37:39 -0600
 From: Grant Likely <glikely@gmail.com>
 To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Subject: [PATCH 1/2] Move Virtex-II Pro / ML300 port over to the platform
-	bus.
+Subject: [PATCH 2/2] Add support for MEMEC 2VP30-FF1152 eval board with
+	simple FPGA design
 Reply-To: glikely@gmail.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,367 +25,206 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a large patch that moves the ML300 to the platform bus.
+Here is an example port to another V2PRO based board.
 
-It also isolates most of the linux tree from changes to the xparameters.h
-file.  Ultimately, the goal is to move everything over to the flattened
-device tree for telling the kernel about devices.  That way xparameters.h
-can go away entirely for the kernel proper.  (Isolated to the bootloader)
-
-This patch will be split up into smaller parts before submitting to mainlin=
-e
-
-Comments are appreciated.
+This patch is for information only and is NOT suitable for submission up to
+mainline
 
 ---
 
- arch/ppc/Kconfig.debug                           |    2 -
- arch/ppc/boot/common/ns16550.c                   |   15 ++++
- arch/ppc/boot/simple/embed_config.c              |    3 +
- arch/ppc/platforms/4xx/Kconfig                   |    5 -
- arch/ppc/platforms/4xx/Makefile                  |    3 -
- arch/ppc/platforms/4xx/virtex-ii_pro.c           |   60 ------------------
- arch/ppc/platforms/4xx/virtex-ii_pro.h           |   74 ++----------------=
-----
- arch/ppc/platforms/4xx/xilinx_ml300.c            |   60 +++++++++++-------
- arch/ppc/platforms/4xx/xilinx_ml300.h            |    2 -
- arch/ppc/platforms/4xx/xilinx_ml300_devices.c    |   71 ++++++++++++++++++=
-+++
- arch/ppc/platforms/4xx/xparameters/xparameters.h |   51 +++++++++++++++
- arch/ppc/syslib/Makefile                         |    2 -
- arch/ppc/syslib/gen550_dbg.c                     |    2 +
- arch/ppc/syslib/xilinx_pic.c                     |   12 ++--
- include/asm-ppc/ppc_sys.h                        |    2 +
- include/asm-ppc/xparameters.h                    |   18 -----
- 16 files changed, 196 insertions(+), 186 deletions(-)
- delete mode 100644 arch/ppc/platforms/4xx/virtex-ii_pro.c
- create mode 100644 arch/ppc/platforms/4xx/xilinx_ml300_devices.c
- create mode 100644 arch/ppc/platforms/4xx/xparameters/xparameters.h
- delete mode 100644 include/asm-ppc/xparameters.h
+ arch/ppc/boot/simple/embed_config.c                |   12 +-
+ arch/ppc/platforms/4xx/Kconfig                     |    9 +
+ arch/ppc/platforms/4xx/Makefile                    |    1=20
+ arch/ppc/platforms/4xx/memec_2vp30.c               |  157 ++++++++++++++++=
+++++
+ arch/ppc/platforms/4xx/memec_2vp30.h               |   47 ++++++
+ arch/ppc/platforms/4xx/memec_2vp30_devices.c       |   59 ++++++++
+ arch/ppc/platforms/4xx/xparameters/xparameters.h   |   29 ++++
+ .../4xx/xparameters/xparameters_memec_2vp30.h      |  100 +++++++++++++++
+ include/asm-ppc/ibm4xx.h                           |    4 +
+ 9 files changed, 410 insertions(+), 8 deletions(-)
+ create mode 100644 arch/ppc/platforms/4xx/memec_2vp30.c
+ create mode 100644 arch/ppc/platforms/4xx/memec_2vp30.h
+ create mode 100644 arch/ppc/platforms/4xx/memec_2vp30_devices.c
+ create mode 100644 arch/ppc/platforms/4xx/xparameters/xparameters_memec_2v=
+p30.h
 
-c434b6a7edfa498ed01ee9c3677e687bad87d805
-diff --git a/arch/ppc/Kconfig.debug b/arch/ppc/Kconfig.debug
---- a/arch/ppc/Kconfig.debug
-+++ b/arch/ppc/Kconfig.debug
-@@ -66,7 +66,7 @@ config SERIAL_TEXT_DEBUG
-=20
- config PPC_OCP
- =09bool
--=09depends on IBM_OCP || XILINX_OCP
-+=09depends on IBM_OCP
- =09default y
-=20
- endmenu
-diff --git a/arch/ppc/boot/common/ns16550.c b/arch/ppc/boot/common/ns16550.=
-c
---- a/arch/ppc/boot/common/ns16550.c
-+++ b/arch/ppc/boot/common/ns16550.c
-@@ -11,6 +11,10 @@
- #include "nonstdio.h"
- #include "serial.h"
-=20
-+#if defined(CONFIG_VIRTEX_II_PRO)
-+#include <platforms/4xx/xparameters/xparameters.h>
-+#endif
-+
- #define SERIAL_BAUD=099600
-=20
- extern unsigned long ISA_io;
-@@ -25,6 +29,7 @@ unsigned long serial_init(int chan, void
- {
- =09unsigned long com_port;
- =09unsigned char lcr, dlm;
-+=09unsigned long baud_base;
-=20
- =09/* We need to find out which type io we're expecting.  If it's
- =09 * 'SERIAL_IO_PORT', we get an offset from the isa_io_base.
-@@ -43,6 +48,12 @@ unsigned long serial_init(int chan, void
-=20
- =09/* How far apart the registers are. */
- =09shift =3D rs_table[chan].iomem_reg_shift;
-+=09baud_base =3D rs_table[chan].baud_base;
-+#if defined(BASE_BAUD)
-+=09if (!baud_base)
-+=09=09baud_base =3D BASE_BAUD;
-+#endif
-+
- =09
- =09/* save the LCR */
- =09lcr =3D inb(com_port + (UART_LCR << shift));
-@@ -62,9 +73,9 @@ unsigned long serial_init(int chan, void
- =09else {
- =09=09/* Input clock. */
- =09=09outb(com_port + (UART_DLL << shift),
--=09=09     (BASE_BAUD / SERIAL_BAUD) & 0xFF);
-+=09=09     (baud_base / SERIAL_BAUD) & 0xFF);
- =09=09outb(com_port + (UART_DLM << shift),
--=09=09     (BASE_BAUD / SERIAL_BAUD) >> 8);
-+=09=09     (baud_base / SERIAL_BAUD) >> 8);
- =09=09/* 8 data, 1 stop, no parity */
- =09=09outb(com_port + (UART_LCR << shift), 0x03);
- =09=09/* RTS/DTR */
+5f6cd89ad6b695ac30c18dff79c9054f66979899
 diff --git a/arch/ppc/boot/simple/embed_config.c
 b/arch/ppc/boot/simple/embed_config.c
 --- a/arch/ppc/boot/simple/embed_config.c
 +++ b/arch/ppc/boot/simple/embed_config.c
-@@ -21,6 +21,9 @@
- #ifdef CONFIG_40x
- #include <asm/io.h>
- #endif
-+#ifdef CONFIG_VIRTEX_II_PRO
-+#include <platforms/4xx/xparameters/xparameters.h>
-+#endif
- extern unsigned long timebase_period_ns;
+@@ -745,7 +745,7 @@ embed_config(bd_t **bdp)
+ }
+ #endif /* WILLOW */
 =20
- /* For those boards that don't provide one.
+-#ifdef CONFIG_XILINX_ML300
++#ifdef CONFIG_VIRTEX_II_PRO
+ void
+ embed_config(bd_t ** bdp)
+ {
+@@ -775,14 +775,14 @@ embed_config(bd_t ** bdp)
+=20
+ =09bd =3D &bdinfo;
+ =09*bdp =3D bd;
+-=09bd->bi_memsize =3D XPAR_DDR_0_SIZE;
+-=09bd->bi_intfreq =3D XPAR_CORE_CLOCK_FREQ_HZ;
+-=09bd->bi_busfreq =3D XPAR_PLB_CLOCK_FREQ_HZ;
+-=09bd->bi_pci_busfreq =3D XPAR_PCI_0_CLOCK_FREQ_HZ;
++=09bd->bi_memsize =3D V2PRO_BI_MEMSIZE;
++=09bd->bi_intfreq =3D V2PRO_BI_INTFREQ;
++=09bd->bi_busfreq =3D V2PRO_BI_BUSFREQ;
++=09bd->bi_pci_busfreq =3D V2PRO_BI_PCI_BUSFREQ;
+ =09timebase_period_ns =3D 1000000000 / bd->bi_tbfreq;
+ =09/* see bi_tbfreq definition in arch/ppc/platforms/4xx/xilinx_ml300.h */
+ }
+-#endif /* CONFIG_XILINX_ML300 */
++#endif /* CONFIG_VIRTEX_II_PRO */
+=20
+ #ifdef CONFIG_IBM_OPENBIOS
+ /* This could possibly work for all treeboot roms.
 diff --git a/arch/ppc/platforms/4xx/Kconfig b/arch/ppc/platforms/4xx/Kconfi=
 g
 --- a/arch/ppc/platforms/4xx/Kconfig
 +++ b/arch/ppc/platforms/4xx/Kconfig
-@@ -212,11 +212,6 @@ config VIRTEX_II_PRO_TLB_FIX
- =09  It is safe to say Y here, but there is a performance impact.
- =09  Say N if unsure.
+@@ -67,6 +67,11 @@ config XILINX_ML300
+ =09help
+ =09  This option enables support for the Xilinx ML300 evaluation board.
 =20
--config XILINX_OCP
--=09bool
--=09depends on VIRTEX_II_PRO
--=09default y
--
- config STB03xxx
++config MEMEC_2VP30
++=09bool "MEMEC 2VP30 Eval Board"
++=09help
++=09  This option enables support for the MEMEC 2VP30-FF1152 eval board.
++
+ endchoice
+=20
+ choice
+@@ -203,7 +208,7 @@ config 405GPR
+=20
+ config VIRTEX_II_PRO
  =09bool
- =09depends on REDWOOD_5 || REDWOOD_6
+-=09depends on XILINX_ML300
++=09depends on XILINX_ML300 || MEMEC_2VP30
+ =09default y
+=20
+ config VIRTEX_II_PRO_TLB_FIX
+@@ -229,7 +234,7 @@ config STB03xxx
+=20
+ config EMBEDDEDBOOT
+ =09bool
+-=09depends on EP405 || XILINX_ML300
++=09depends on EP405 || XILINX_ML300 || MEMEC_2VP30
+ =09default y
+=20
+ config IBM_OPENBIOS
 diff --git a/arch/ppc/platforms/4xx/Makefile b/arch/ppc/platforms/4xx/Makef=
 ile
 --- a/arch/ppc/platforms/4xx/Makefile
 +++ b/arch/ppc/platforms/4xx/Makefile
-@@ -14,7 +14,7 @@ obj-$(CONFIG_REDWOOD_5)=09=09+=3D redwood5.o
- obj-$(CONFIG_REDWOOD_6)=09=09+=3D redwood6.o
+@@ -15,6 +15,7 @@ obj-$(CONFIG_REDWOOD_6)=09=09+=3D redwood6.o
  obj-$(CONFIG_SYCAMORE)=09=09+=3D sycamore.o
  obj-$(CONFIG_WALNUT)=09=09+=3D walnut.o
--obj-$(CONFIG_XILINX_ML300)=09+=3D xilinx_ml300.o
-+obj-$(CONFIG_XILINX_ML300)=09+=3D xilinx_ml300.o xilinx_ml300_devices.o
+ obj-$(CONFIG_XILINX_ML300)=09+=3D xilinx_ml300.o xilinx_ml300_devices.o
++obj-$(CONFIG_MEMEC_2VP30)=09+=3D memec_2vp30.o memec_2vp30_devices.o
 =20
  obj-$(CONFIG_405GP)=09=09+=3D ibm405gp.o
  obj-$(CONFIG_REDWOOD_5)=09=09+=3D ibmstb4.o
-@@ -26,4 +26,3 @@ obj-$(CONFIG_440GX)=09=09+=3D ibm440gx.o
- obj-$(CONFIG_440SP)=09=09+=3D ibm440sp.o
- obj-$(CONFIG_405EP)=09=09+=3D ibm405ep.o
- obj-$(CONFIG_405GPR)=09=09+=3D ibm405gpr.o
--obj-$(CONFIG_VIRTEX_II_PRO)=09+=3D virtex-ii_pro.o
-diff --git a/arch/ppc/platforms/4xx/virtex-ii_pro.c
-b/arch/ppc/platforms/4xx/virtex-ii_pro.c
-deleted file mode 100644
---- a/arch/ppc/platforms/4xx/virtex-ii_pro.c
-+++ /dev/null
-@@ -1,60 +0,0 @@
--/*
-- * arch/ppc/platforms/4xx/virtex-ii_pro.c
-- *
-- * Author: MontaVista Software, Inc.
-- *         source@mvista.com
-- *
-- * 2002-2004 (c) MontaVista Software, Inc.  This file is licensed under th=
+diff --git a/arch/ppc/platforms/4xx/memec_2vp30.c
+b/arch/ppc/platforms/4xx/memec_2vp30.c
+new file mode 100644
+--- /dev/null
++++ b/arch/ppc/platforms/4xx/memec_2vp30.c
+@@ -0,0 +1,157 @@
++/*
++ * arch/ppc/platforms/4xx/memec_2vp30.c
++ *
++ * MEMEC 2VP30-FF1152 evaluation board initialization
++ *
++ * Author: MontaVista Software, Inc.
++ *         source@mvista.com
++ *
++ * 2002-2004 (c) MontaVista Software, Inc.  This file is licensed under th=
 e
-- * terms of the GNU General Public License version 2.  This program is lic=
++ * terms of the GNU General Public License version 2.  This program is lic=
 ensed
-- * "as is" without any warranty of any kind, whether express or implied.
-- */
--
--#include <linux/config.h>
--#include <linux/init.h>
--#include <asm/ocp.h>
--#include "virtex-ii_pro.h"
--
--/* Have OCP take care of the serial ports. */
--struct ocp_def core_ocp[] =3D {
--#ifdef XPAR_UARTNS550_0_BASEADDR
--=09{ .vendor=09=3D OCP_VENDOR_XILINX,
--=09  .function=09=3D OCP_FUNC_16550,
--=09  .index=09=3D 0,
--=09  .paddr=09=3D XPAR_UARTNS550_0_BASEADDR,
--=09  .irq=09=09=3D XPAR_INTC_0_UARTNS550_0_VEC_ID,
--=09  .pm=09=09=3D OCP_CPM_NA
--=09},
--#ifdef XPAR_UARTNS550_1_BASEADDR
--=09{ .vendor=09=3D OCP_VENDOR_XILINX,
--=09  .function=09=3D OCP_FUNC_16550,
--=09  .index=09=3D 1,
--=09  .paddr=09=3D XPAR_UARTNS550_1_BASEADDR,
--=09  .irq=09=09=3D XPAR_INTC_0_UARTNS550_1_VEC_ID,
--=09  .pm=09=09=3D OCP_CPM_NA
--=09},
--#ifdef XPAR_UARTNS550_2_BASEADDR
--=09{ .vendor=09=3D OCP_VENDOR_XILINX,
--=09  .function=09=3D OCP_FUNC_16550,
--=09  .index=09=3D 2,
--=09  .paddr=09=3D XPAR_UARTNS550_2_BASEADDR,
--=09  .irq=09=09=3D XPAR_INTC_0_UARTNS550_2_VEC_ID,
--=09  .pm=09=09=3D OCP_CPM_NA
--=09},
--#ifdef XPAR_UARTNS550_3_BASEADDR
--=09{ .vendor=09=3D OCP_VENDOR_XILINX,
--=09  .function=09=3D OCP_FUNC_16550,
--=09  .index=09=3D 3,
--=09  .paddr=09=3D XPAR_UARTNS550_3_BASEADDR,
--=09  .irq=09=09=3D XPAR_INTC_0_UARTNS550_3_VEC_ID,
--=09  .pm=09=09=3D OCP_CPM_NA
--=09},
--#ifdef XPAR_UARTNS550_4_BASEADDR
--#error Edit this file to add more devices.
--#endif=09=09=09/* 4 */
--#endif=09=09=09/* 3 */
--#endif=09=09=09/* 2 */
--#endif=09=09=09/* 1 */
--#endif=09=09=09/* 0 */
--=09{ .vendor=09=3D OCP_VENDOR_INVALID
--=09}
--};
-diff --git a/arch/ppc/platforms/4xx/virtex-ii_pro.h
-b/arch/ppc/platforms/4xx/virtex-ii_pro.h
---- a/arch/ppc/platforms/4xx/virtex-ii_pro.h
-+++ b/arch/ppc/platforms/4xx/virtex-ii_pro.h
-@@ -15,84 +15,26 @@
- #ifndef __ASM_VIRTEXIIPRO_H__
- #define __ASM_VIRTEXIIPRO_H__
-=20
--#include <linux/config.h>
--#include <asm/xparameters.h>
--
- /* serial defines */
-=20
- #define RS_TABLE_SIZE  4=09/* change this and add more devices below
- =09=09=09=09   if you have more then 4 16x50 UARTs */
-=20
--#define BASE_BAUD=09=09(XPAR_UARTNS550_0_CLOCK_FREQ_HZ/16)
--
--/* The serial ports in the Virtex-II Pro have each I/O byte in the
-- * LSByte of a word.  This means that iomem_reg_shift needs to be 2 to
-- * change the byte offsets into word offsets.  In addition the base
-- * addresses need to have 3 added to them to get to the LSByte.
-+/* Ugly, ugly, ugly! BASE_BAUD defined here to keep 8250.c happy.
-  */
--#define STD_UART_OP(num)=09=09=09=09=09=09 \
--=09{ 0, BASE_BAUD, 0, XPAR_INTC_0_UARTNS550_##num##_VEC_ID,=09 \
--=09=09ASYNC_BOOT_AUTOCONF,=09=09 =09=09=09 \
--=09=09.iomem_base =3D (u8 *)XPAR_UARTNS550_##num##_BASEADDR + 3, \
--=09=09.iomem_reg_shift =3D 2,=09=09=09=09=09 \
--=09=09.io_type =3D SERIAL_IO_MEM},
--
--#if defined(XPAR_INTC_0_UARTNS550_0_VEC_ID)
--#define ML300_UART0 STD_UART_OP(0)
--#else
--#define ML300_UART0
--#endif
--
--#if defined(XPAR_INTC_0_UARTNS550_1_VEC_ID)
--#define ML300_UART1 STD_UART_OP(1)
--#else
--#define ML300_UART1
-+#if !defined(BASE_BAUD)
-+ #define BASE_BAUD=09=09(0) /* dummy value; not used */
- #endif
-=20
--#if defined(XPAR_INTC_0_UARTNS550_2_VEC_ID)
--#define ML300_UART2 STD_UART_OP(2)
--#else
--#define ML300_UART2
--#endif
-+#ifndef __ASSEMBLY__
-=20
--#if defined(XPAR_INTC_0_UARTNS550_3_VEC_ID)
--#define ML300_UART3 STD_UART_OP(3)
--#else
--#define ML300_UART3
--#endif
-+/* Device type enumeration for platform bus definitions */
-+enum ppc_sys_devices {
-+=09V2PRO_UART,
-+};
-=20
--#if defined(XPAR_INTC_0_UARTNS550_4_VEC_ID)
--#error Edit this file to add more devices.
--#elif defined(XPAR_INTC_0_UARTNS550_3_VEC_ID)
--#define NR_SER_PORTS=094
--#elif defined(XPAR_INTC_0_UARTNS550_2_VEC_ID)
--#define NR_SER_PORTS=093
--#elif defined(XPAR_INTC_0_UARTNS550_1_VEC_ID)
--#define NR_SER_PORTS=092
--#elif defined(XPAR_INTC_0_UARTNS550_0_VEC_ID)
--#define NR_SER_PORTS=091
--#else
--#define NR_SER_PORTS=090
- #endif
-=20
--#if defined(CONFIG_UART0_TTYS0)
--#define SERIAL_PORT_DFNS=09\
--=09ML300_UART0=09=09\
--=09ML300_UART1=09=09\
--=09ML300_UART2=09=09\
--=09ML300_UART3
--#endif
--
--#if defined(CONFIG_UART0_TTYS1)
--#define SERIAL_PORT_DFNS=09\
--=09ML300_UART1=09=09\
--=09ML300_UART0=09=09\
--=09ML300_UART2=09=09\
--=09ML300_UART3
--#endif
--
--#define DCRN_CPMFR_BASE=090
--
- #include <asm/ibm405.h>
-=20
- #endif=09=09=09=09/* __ASM_VIRTEXIIPRO_H__ */
-diff --git a/arch/ppc/platforms/4xx/xilinx_ml300.c
-b/arch/ppc/platforms/4xx/xilinx_ml300.c
---- a/arch/ppc/platforms/4xx/xilinx_ml300.c
-+++ b/arch/ppc/platforms/4xx/xilinx_ml300.c
-@@ -17,12 +17,14 @@
- #include <linux/tty.h>
- #include <linux/serial.h>
- #include <linux/serial_core.h>
++ * "as is" without any warranty of any kind, whether express or implied.
++ */
++
++#include <linux/config.h>
++#include <linux/init.h>
++#include <linux/irq.h>
++#include <linux/tty.h>
++#include <linux/serial.h>
++#include <linux/serial_core.h>
 +#include <linux/serial_8250.h>
- #include <linux/serialP.h>
- #include <asm/io.h>
- #include <asm/machdep.h>
--#include <asm/ocp.h>
++#include <linux/serialP.h>
++#include <asm/io.h>
++#include <asm/machdep.h>
 +#include <asm/ppc_sys.h>
-=20
--#include <platforms/4xx/virtex-ii_pro.h>=09/* for NR_SER_PORTS */
++
 +#include <syslib/gen550.h>
 +#include "xparameters/xparameters.h"
-=20
- /*
-  * As an overview of how the following functions (platform_init,
-@@ -80,38 +82,46 @@ ml300_map_io(void)
- #endif
- }
-=20
++
++/*
++ * As an overview of how the following functions (platform_init,
++ * memec_map_io, memec_setup_arch and memec_init_IRQ) fit into the
++ * kernel startup procedure, here's a call tree:
++ *
++ * start_here=09=09=09=09=09arch/ppc/kernel/head_4xx.S
++ *  early_init=09=09=09=09=09arch/ppc/kernel/setup.c
++ *  machine_init=09=09=09=09arch/ppc/kernel/setup.c
++ *    platform_init=09=09=09=09this file
++ *      ppc4xx_init=09=09=09=09arch/ppc/syslib/ppc4xx_setup.c
++ *        parse_bootinfo
++ *          find_bootinfo
++ *        "setup some default ppc_md pointers"
++ *  MMU_init=09=09=09=09=09arch/ppc/mm/init.c
++ *    *ppc_md.setup_io_mappings =3D=3D memec_map_io=09this file
++ *      ppc4xx_map_io=09=09=09=09arch/ppc/syslib/ppc4xx_setup.c
++ *  start_kernel=09=09=09=09init/main.c
++ *    setup_arch=09=09=09=09arch/ppc/kernel/setup.c
++ * #if defined(CONFIG_KGDB)
++ *      *ppc_md.kgdb_map_scc() =3D=3D gen550_kgdb_map_scc
++ * #endif
++ *      *ppc_md.setup_arch =3D=3D memec_setup_arch=09this file
++ *        ppc4xx_setup_arch=09=09=09arch/ppc/syslib/ppc4xx_setup.c
++ *          ppc4xx_find_bridges=09=09=09arch/ppc/syslib/ppc405_pci.c
++ *    init_IRQ=09=09=09=09=09arch/ppc/kernel/irq.c
++ *      *ppc_md.init_IRQ =3D=3D memec_init_IRQ=09this file
++ *        ppc4xx_init_IRQ=09=09=09arch/ppc/syslib/ppc4xx_setup.c
++ *          ppc4xx_pic_init=09=09=09arch/ppc/syslib/xilinx_pic.c
++ */
++
++#if defined(XPAR_POWER_0_POWERDOWN_BASEADDR)
++
++static volatile unsigned *powerdown_base =3D
++    (volatile unsigned *) XPAR_POWER_0_POWERDOWN_BASEADDR;
++
++static void
++xilinx_power_off(void)
++{
++=09local_irq_disable();
++=09out_be32(powerdown_base, XPAR_POWER_0_POWERDOWN_VALUE);
++=09while (1) ;
++}
++#endif
++
++void __init
++memec_map_io(void)
++{
++=09ppc4xx_map_io();
++
++#if defined(XPAR_POWER_0_POWERDOWN_BASEADDR)
++=09powerdown_base =3D ioremap((unsigned long) powerdown_base,
++=09=09=09=09 XPAR_POWER_0_POWERDOWN_HIGHADDR -
++=09=09=09=09 XPAR_POWER_0_POWERDOWN_BASEADDR + 1);
++#endif
++}
++
 +#ifdef CONFIG_SERIAL_8250
- static void __init
- ml300_early_serial_map(void)
- {
--#ifdef CONFIG_SERIAL_8250
--=09struct serial_state old_ports[] =3D { SERIAL_PORT_DFNS };
--=09struct uart_port port;
--=09int i;
--
--=09/* Setup ioremapped serial port access */
--=09for (i =3D 0; i < ARRAY_SIZE(old_ports); i++ ) {
--=09=09memset(&port, 0, sizeof(port));
--=09=09port.membase =3D ioremap((phys_addr_t)(old_ports[i].iomem_base), 16)=
-;
--=09=09port.irq =3D old_ports[i].irq;
--=09=09port.uartclk =3D old_ports[i].baud_base * 16;
--=09=09port.regshift =3D old_ports[i].iomem_reg_shift;
--=09=09port.iotype =3D SERIAL_IO_MEM;
--=09=09port.flags =3D ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST;
--=09=09port.line =3D i;
--
--=09=09if (early_serial_setup(&port) !=3D 0) {
--=09=09=09printk("Early serial init of port %d failed\n", i);
--=09=09}
++static void __init
++memec_early_serial_map(void)
++{
 +#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
 +=09struct uart_port serial_req;
 +#endif
@@ -411,54 +250,115 @@ b/arch/ppc/platforms/4xx/xilinx_ml300.c
 +#endif
 +=09=09pdata++;
 +=09=09i++;
- =09}
--#endif /* CONFIG_SERIAL_8250 */
- }
++=09}
++}
 +#endif /* CONFIG_SERIAL_8250 */
-=20
- void __init
- ml300_setup_arch(void)
- {
--=09ppc4xx_setup_arch();=09/* calls ppc4xx_find_bridges() */
--
++
++void __init
++memec_setup_arch(void)
++{
 +#if defined(CONFIG_SERIAL_8250) || defined(CONFIG_KGDB)
- =09ml300_early_serial_map();
++=09memec_early_serial_map();
 +#endif
 +
 +=09ppc4xx_setup_arch();=09/* calls ppc4xx_find_bridges() */
-=20
- =09/* Identify the system */
- =09printk(KERN_INFO "Xilinx Virtex-II Pro port\n");
-@@ -131,6 +141,8 @@ platform_init(unsigned long r3, unsigned
- {
- =09ppc4xx_init(r3, r4, r5, r6, r7);
-=20
++
++=09/* Identify the system */
++=09printk(KERN_INFO "Xilinx Virtex-II Pro port\n");
++}
++
++/* Called after board_setup_irq from ppc4xx_init_IRQ(). */
++void __init
++memec_init_irq(void)
++{
++=09ppc4xx_init_IRQ();
++}
++
++void __init
++platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
++=09      unsigned long r6, unsigned long r7)
++{
++=09ppc4xx_init(r3, r4, r5, r6, r7);
++
 +=09identify_ppc_sys_by_id(mfspr(SPRN_PVR));
 +
- =09ppc_md.setup_arch =3D ml300_setup_arch;
- =09ppc_md.setup_io_mappings =3D ml300_map_io;
- =09ppc_md.init_IRQ =3D ml300_init_irq;
-diff --git a/arch/ppc/platforms/4xx/xilinx_ml300.h
-b/arch/ppc/platforms/4xx/xilinx_ml300.h
---- a/arch/ppc/platforms/4xx/xilinx_ml300.h
-+++ b/arch/ppc/platforms/4xx/xilinx_ml300.h
-@@ -41,7 +41,7 @@ typedef struct board_info {
- #define PPC4xx_ONB_IO_VADDR=090u
- #define PPC4xx_ONB_IO_SIZE=090u
-=20
--#define PPC4xx_MACHINE_NAME "Xilinx ML300"
-+#define PPC4xx_MACHINE_NAME "Xilinx ML300 Reference System"
-=20
- #endif /* __ASM_XILINX_ML300_H__ */
- #endif /* __KERNEL__ */
-diff --git a/arch/ppc/platforms/4xx/xilinx_ml300_devices.c
-b/arch/ppc/platforms/4xx/xilinx_ml300_devices.c
++=09ppc_md.setup_arch =3D memec_setup_arch;
++=09ppc_md.setup_io_mappings =3D memec_map_io;
++=09ppc_md.init_IRQ =3D memec_init_irq;
++
++#if defined(XPAR_POWER_0_POWERDOWN_BASEADDR)
++=09ppc_md.power_off =3D xilinx_power_off;
++#endif
++
++#ifdef CONFIG_KGDB
++=09ppc_md.early_serial_map =3D memec_early_serial_map;
++#endif
++}
++
+diff --git a/arch/ppc/platforms/4xx/memec_2vp30.h
+b/arch/ppc/platforms/4xx/memec_2vp30.h
 new file mode 100644
 --- /dev/null
-+++ b/arch/ppc/platforms/4xx/xilinx_ml300_devices.c
-@@ -0,0 +1,71 @@
++++ b/arch/ppc/platforms/4xx/memec_2vp30.h
+@@ -0,0 +1,47 @@
 +/*
-+ * arch/ppc/syslib/virtex2pro_devices.c
++ * arch/ppc/platforms/4xx/memec_2vp30.h
++ *
++ * Include file that defines the MEMEC 2VP30-FF1152 evaluation board
++ *
++ * Author: MontaVista Software, Inc.
++ *         source@mvista.com
++ *
++ * 2002-2004 (c) MontaVista Software, Inc.  This file is licensed under th=
+e
++ * terms of the GNU General Public License version 2.  This program is lic=
+ensed
++ * "as is" without any warranty of any kind, whether express or implied.
++ */
++
++#ifdef __KERNEL__
++#ifndef __ASM_MEMEC_2VP30_H__
++#define __ASM_MEMEC_2VP30_H__
++
++/* MEMEC 2VP30 has a Xilinx Virtex-II Pro processor */
++#include <platforms/4xx/virtex-ii_pro.h>
++
++#ifndef __ASSEMBLY__
++
++#include <linux/types.h>
++
++typedef struct board_info {
++=09unsigned int=09 bi_memsize;=09=09/* DRAM installed, in bytes */
++=09unsigned char=09 bi_enetaddr[6];=09/* Local Ethernet MAC address */
++=09unsigned int=09 bi_intfreq;=09=09/* Processor speed, in Hz */
++=09unsigned int=09 bi_busfreq;=09=09/* PLB Bus speed, in Hz */
++=09unsigned int=09 bi_pci_busfreq;=09/* PCI Bus speed, in Hz */
++} bd_t;
++
++/* Some 4xx parts use a different timebase frequency from the internal clo=
+ck.
++*/
++#define bi_tbfreq bi_intfreq
++
++#endif /* !__ASSEMBLY__ */
++
++/* We don't need anything mapped.  Size of zero will accomplish that. */
++#define PPC4xx_ONB_IO_PADDR=090u
++#define PPC4xx_ONB_IO_VADDR=090u
++#define PPC4xx_ONB_IO_SIZE=090u
++
++#define PPC4xx_MACHINE_NAME "MEMEC 2VP30-FF1152 eval board"
++
++#endif /* __ASM_MEMEC_2VP30_H__ */
++#endif /* __KERNEL__ */
+diff --git a/arch/ppc/platforms/4xx/memec_2vp30_devices.c
+b/arch/ppc/platforms/4xx/memec_2vp30_devices.c
+new file mode 100644
+--- /dev/null
++++ b/arch/ppc/platforms/4xx/memec_2vp30_devices.c
+@@ -0,0 +1,59 @@
++/*
++ * arch/ppc/platforms/4xx/memec_2vp30_devices.c
 + *
 + * Virtex-II Pro Device descriptions
 + *
@@ -485,26 +385,14 @@ r
 +#include "xparameters/xparameters.h"
 +
 +struct plat_serial8250_port serial_platform_data[] =3D {
-+#ifdef XPAR_OPB_UART16550_0_BASEADDR
 +=09{
-+=09=09.mapbase  =3D XPAR_OPB_UART16550_0_BASEADDR + 3,
-+=09=09.irq=09  =3D XPAR_DCR_INTC_0_OPB_UART16550_0_IP2INTC_IRPT_INTR,
++=09=09.mapbase  =3D XPAR_RS232_BASEADDR + 0x1003,
++=09=09.irq=09  =3D XPAR_OPB_INTC_0_RS232_IP2INTC_IRPT_INTR,
 +=09=09.iotype=09  =3D UPIO_MEM,
 +=09=09.uartclk  =3D XPAR_XUARTNS550_CLOCK_HZ,
 +=09=09.flags=09  =3D UPF_BOOT_AUTOCONF,
 +=09=09.regshift =3D 2,
 +=09},
-+#endif
-+#ifdef XPAR_OPB_UART16550_1_BASEADDR
-+=09{
-+=09=09.mapbase  =3D XPAR_OPB_UART16550_1_BASEADDR + 3,
-+=09=09.irq=09  =3D XPAR_DCR_INTC_0_OPB_UART16550_1_IP2INTC_IRPT_INTR,
-+=09=09.iotype=09  =3D UPIO_MEM,
-+=09=09.uartclk  =3D XPAR_XUARTNS550_CLOCK_HZ,
-+=09=09.flags=09  =3D UPF_BOOT_AUTOCONF,
-+=09=09.regshift =3D 2,
-+=09},
-+#endif
 +=09{ }, /* terminated by empty record */
 +};
 +
@@ -520,7 +408,7 @@ r
 +struct ppc_sys_spec ppc_sys_specs[] =3D {
 +=09{
 +=09=09/* Only one entry, always assume the same design */
-+=09=09.ppc_sys_name=09=3D "Xilinx ML300 Reference Design",
++=09=09.ppc_sys_name=09=3D "MEMEC 2VP30-FF1152 eval board",
 +=09=09.mask =09=09=3D 0x00000000,
 +=09=09.value =09=09=3D 0x00000000,
 +=09=09.num_devices=09=3D 1,
@@ -533,168 +421,176 @@ r
 +
 diff --git a/arch/ppc/platforms/4xx/xparameters/xparameters.h
 b/arch/ppc/platforms/4xx/xparameters/xparameters.h
-new file mode 100644
---- /dev/null
+--- a/arch/ppc/platforms/4xx/xparameters/xparameters.h
 +++ b/arch/ppc/platforms/4xx/xparameters/xparameters.h
-@@ -0,0 +1,51 @@
-+/*
-+ * arch/ppc/platforms/4xx/xparameters/xparameters.h
-+ *
-+ * This file includes the correct xparameters.h for the CONFIG'ed board
-+ *
-+ * Authors:
-+ *    Grant C. Likely, glikely@gmail.com
-+ *    MontaVista Software, Inc. source@mvista.com
-+ *
-+ * 2005 (c) Grant C. Likely, glikely@gmail.com
-+ * 2004 (c) MontaVista Software, Inc.
-+ *
-+ * This file is licensed under the terms of the GNU General Public License
-+ * version 2.  This program is licensed "as is" without any warranty of an=
-y
-+ * kind, whether express or implied.
-+ */
+@@ -31,6 +31,12 @@
+ #if defined(CONFIG_XILINX_ML300)
+   #include "xparameters_ml300.h"
+=20
++  /* Setup for board information structure */
++  #define V2PRO_BI_MEMSIZE              XPAR_DDR_0_SIZE
++  #define V2PRO_BI_INTFREQ              XPAR_CORE_CLOCK_FREQ_HZ
++  #define V2PRO_BI_BUSFREQ              XPAR_PLB_CLOCK_FREQ_HZ
++  #define V2PRO_BI_PCI_BUSFREQ          XPAR_PCI_0_CLOCK_FREQ_HZ
 +
-+/*
-+ * This file has three purposes:
-+ * 1. Include the correct xparameters.h for the configured design
-+ * 2. Translate design specific macros from xparam to common names
-+ * 3. Provide a SERIAL_PORT_DFNS macro to setup up very early serial ports
-+ *    zImage debug.  Later serial ports are advertised via the platform bu=
-s
-+ *
-+ * The xparameters.h file is the pristine copy generated from Xilinx EDK
-+ * toolset.  If you need to make changes, make the changes in this file
-+ * rather than modifying the generated file.  That way if the design chang=
-es
-+ * then you just need to drop in the new xparameters.h
-+ */
+   /* Values for setting up interrupt controller */
+   #define V2PRO_XINTC_USE_DCR           XPAR_XINTC_USE_DCR
+   #define V2PRO_INTC_BASEADDR           XPAR_INTC_0_BASEADDR
+@@ -45,6 +51,29 @@
+         .iomem_reg_shift =3D 2,                                           =
+\
+         .io_type         =3D SERIAL_IO_MEM,                               =
+\
+   },
++#elif defined(CONFIG_MEMEC_2VP30)
++  #include "xparameters_memec_2vp30.h"
 +
-+#if defined(CONFIG_XILINX_ML300)
-+  #include "xparameters_ml300.h"
++  /* Setup for board information structure */
++  #define V2PRO_BI_MEMSIZE              (XPAR_SDRAM_8MX32_HIGHADDR+1)
++  #define V2PRO_BI_INTFREQ              XPAR_CPU_PPC405_CORE_CLOCK_FREQ_HZ
++  #define V2PRO_BI_BUSFREQ              XPAR_XUARTNS550_CLOCK_HZ
++  #define V2PRO_BI_PCI_BUSFREQ          0
 +
 +  /* Values for setting up interrupt controller */
 +  #define V2PRO_XINTC_USE_DCR           XPAR_XINTC_USE_DCR
-+  #define V2PRO_INTC_BASEADDR           XPAR_INTC_0_BASEADDR
-+  #define V2PRO_INTC_KIND_OF_INTR       XPAR_INTC_0_KIND_OF_INTR
++  #define V2PRO_INTC_BASEADDR           XPAR_OPB_INTC_0_BASEADDR
++  #define V2PRO_INTC_KIND_OF_INTR       XPAR_OPB_INTC_0_KIND_OF_INTR
 +
 +  /* zImage serial port definitions */
 +  #define SERIAL_PORT_DFNS {                                            \
 +        .baud_base       =3D XPAR_XUARTNS550_CLOCK_HZ/16,                 =
 \
-+        .irq             =3D XPAR_DCR_INTC_0_OPB_UART16550_0_IP2INTC_IRPT_=
-INTR, \
++        .irq             =3D XPAR_OPB_INTC_0_RS232_IP2INTC_IRPT_INTR,     =
+\
 +        .flags           =3D ASYNC_BOOT_AUTOCONF,                         =
 \
-+        .iomem_base      =3D (u8 *)XPAR_OPB_UART16550_0_BASEADDR + 3,     =
++        .iomem_base      =3D (u8 *)XPAR_RS232_BASEADDR + 0x1003,          =
 \
 +        .iomem_reg_shift =3D 2,                                           =
 \
 +        .io_type         =3D SERIAL_IO_MEM,                               =
 \
 +  },
-+#else
-+  /* Add other board xparameter includes here before the #else */
-+  #error No *_xparameters.h file included
+ #else
+   /* Add other board xparameter includes here before the #else */
+   #error No *_xparameters.h file included
+diff --git a/arch/ppc/platforms/4xx/xparameters/xparameters_memec_2vp30.h
+b/arch/ppc/platforms/4xx/xparameters/xparameters_memec_2vp30.h
+new file mode 100644
+--- /dev/null
++++ b/arch/ppc/platforms/4xx/xparameters/xparameters_memec_2vp30.h
+@@ -0,0 +1,100 @@
++
++/*******************************************************************
++*
++* CAUTION: This file is automatically generated by libgen.
++* Version: Xilinx EDK 7.1 EDK_H.10.4
++* DO NOT EDIT.
++*
++* Copyright (c) 2005 Xilinx, Inc.  All rights reserved.=20
++*=20
++* Description: Driver parameters
++*
++*******************************************************************/
++
++#define STDIN_BASEADDRESS 0x40400000
++#define STDOUT_BASEADDRESS 0x40400000
++
++/******************************************************************/
++
++#define XPAR_XUARTNS550_NUM_INSTANCES 1
++#define XPAR_XUARTNS550_CLOCK_HZ 100000000
++#define XPAR_RS232_BASEADDR 0x40400000
++#define XPAR_RS232_HIGHADDR 0x4040FFFF
++#define XPAR_RS232_DEVICE_ID 0
++
++/******************************************************************/
++
++#define XPAR_XGPIO_NUM_INSTANCES 2
++#define XPAR_LEDS_4BIT_BASEADDR 0x40020000
++#define XPAR_LEDS_4BIT_HIGHADDR 0x4002FFFF
++#define XPAR_LEDS_4BIT_DEVICE_ID 0
++#define XPAR_LEDS_4BIT_INTERRUPT_PRESENT 0
++#define XPAR_LEDS_4BIT_IS_DUAL 0
++#define XPAR_PUSH_BUTTONS_3BIT_BASEADDR 0x40000000
++#define XPAR_PUSH_BUTTONS_3BIT_HIGHADDR 0x4000FFFF
++#define XPAR_PUSH_BUTTONS_3BIT_DEVICE_ID 1
++#define XPAR_PUSH_BUTTONS_3BIT_INTERRUPT_PRESENT 1
++#define XPAR_PUSH_BUTTONS_3BIT_IS_DUAL 0
++
++/******************************************************************/
++
++#define XPAR_XSYSACE_MEM_WIDTH 16
++#define XPAR_XSYSACE_NUM_INSTANCES 1
++#define XPAR_SYSACE_COMPACTFLASH_BASEADDR 0x41800000
++#define XPAR_SYSACE_COMPACTFLASH_HIGHADDR 0x4180FFFF
++#define XPAR_SYSACE_COMPACTFLASH_DEVICE_ID 0
++#define XPAR_SYSACE_COMPACTFLASH_MEM_WIDTH 16
++
++/******************************************************************/
++
++#define XPAR_INTC_MAX_NUM_INTR_INPUTS 4
++#define XPAR_XINTC_HAS_IPR 1
++#define XPAR_XINTC_USE_DCR 0
++#define XPAR_XINTC_NUM_INSTANCES 1
++#define XPAR_OPB_INTC_0_BASEADDR 0x41200000
++#define XPAR_OPB_INTC_0_HIGHADDR 0x4120FFFF
++#define XPAR_OPB_INTC_0_DEVICE_ID 0
++#define XPAR_OPB_INTC_0_KIND_OF_INTR 0x00000000
++
++/******************************************************************/
++
++#define XPAR_INTC_SINGLE_BASEADDR 0x41200000
++#define XPAR_INTC_SINGLE_HIGHADDR 0x4120FFFF
++#define XPAR_INTC_SINGLE_DEVICE_ID XPAR_OPB_INTC_0_DEVICE_ID
++#define XPAR_ETHERNET_MAC_IP2INTC_IRPT_MASK 0X000001
++#define XPAR_OPB_INTC_0_ETHERNET_MAC_IP2INTC_IRPT_INTR 0
++#define XPAR_PUSH_BUTTONS_3BIT_IP2INTC_IRPT_MASK 0X000002
++#define XPAR_OPB_INTC_0_PUSH_BUTTONS_3BIT_IP2INTC_IRPT_INTR 1
++#define XPAR_SYSACE_COMPACTFLASH_SYSACE_IRQ_MASK 0X000004
++#define XPAR_OPB_INTC_0_SYSACE_COMPACTFLASH_SYSACE_IRQ_INTR 2
++#define XPAR_RS232_IP2INTC_IRPT_MASK 0X000008
++#define XPAR_OPB_INTC_0_RS232_IP2INTC_IRPT_INTR 3
++
++/******************************************************************/
++
++#define XPAR_XEMAC_NUM_INSTANCES 1
++#define XPAR_ETHERNET_MAC_BASEADDR 0x80400000
++#define XPAR_ETHERNET_MAC_HIGHADDR 0x8040FFFF
++#define XPAR_ETHERNET_MAC_DEVICE_ID 0
++#define XPAR_ETHERNET_MAC_ERR_COUNT_EXIST 1
++#define XPAR_ETHERNET_MAC_DMA_PRESENT 1
++#define XPAR_ETHERNET_MAC_MII_EXIST 1
++#define XPAR_ETHERNET_MAC_CAM_EXIST 0
++#define XPAR_ETHERNET_MAC_JUMBO_EXIST 0
++
++/******************************************************************/
++
++#define XPAR_SDRAM_8MX32_BASEADDR 0x00000000
++#define XPAR_SDRAM_8MX32_HIGHADDR 0x01FFFFFF
++
++/******************************************************************/
++
++#define XPAR_PLB_BRAM_IF_CNTLR_1_BASEADDR 0xffffc000
++#define XPAR_PLB_BRAM_IF_CNTLR_1_HIGHADDR 0xffffffff
++
++/******************************************************************/
++
++#define XPAR_CPU_PPC405_CORE_CLOCK_FREQ_HZ 300000000
++
++/******************************************************************/
++
+diff --git a/include/asm-ppc/ibm4xx.h b/include/asm-ppc/ibm4xx.h
+--- a/include/asm-ppc/ibm4xx.h
++++ b/include/asm-ppc/ibm4xx.h
+@@ -63,6 +63,10 @@
+ #include <platforms/4xx/xilinx_ml300.h>
+ #endif
+=20
++#if defined(CONFIG_MEMEC_2VP30)
++#include <platforms/4xx/memec_2vp30.h>
 +#endif
-diff --git a/arch/ppc/syslib/Makefile b/arch/ppc/syslib/Makefile
---- a/arch/ppc/syslib/Makefile
-+++ b/arch/ppc/syslib/Makefile
-@@ -17,7 +17,7 @@ obj-$(CONFIG_440GX)=09=09+=3D ibm440gx_common.
- obj-$(CONFIG_440SP)=09=09+=3D ibm440gx_common.o ibm440sp_common.o
- ifeq ($(CONFIG_4xx),y)
- ifeq ($(CONFIG_VIRTEX_II_PRO),y)
--obj-$(CONFIG_40x)=09=09+=3D xilinx_pic.o
-+obj-$(CONFIG_40x)=09=09+=3D xilinx_pic.o ppc_sys.o
- else
- ifeq ($(CONFIG_403),y)
- obj-$(CONFIG_40x)=09=09+=3D ppc403_pic.o
-diff --git a/arch/ppc/syslib/gen550_dbg.c b/arch/ppc/syslib/gen550_dbg.c
---- a/arch/ppc/syslib/gen550_dbg.c
-+++ b/arch/ppc/syslib/gen550_dbg.c
-@@ -155,6 +155,8 @@ serial_close(unsigned long com_port)
- void
- gen550_init(int i, struct uart_port *serial_req)
- {
-+=09if (i > RS_TABLE_SIZE)
-+=09=09return;
- =09rs_table[i].io_type =3D serial_req->iotype;
- =09rs_table[i].port =3D serial_req->iobase;
- =09rs_table[i].iomem_base =3D serial_req->membase;
-diff --git a/arch/ppc/syslib/xilinx_pic.c b/arch/ppc/syslib/xilinx_pic.c
---- a/arch/ppc/syslib/xilinx_pic.c
-+++ b/arch/ppc/syslib/xilinx_pic.c
-@@ -15,7 +15,7 @@
- #include <linux/init.h>
- #include <linux/irq.h>
- #include <asm/io.h>
--#include <asm/xparameters.h>
-+#include <platforms/4xx/xparameters/xparameters.h>
- #include <asm/ibm4xx.h>
++
+ #ifndef __ASSEMBLY__
 =20
- /* No one else should require these constants, so define them locally here=
-. */
-@@ -122,14 +122,14 @@ ppc4xx_pic_init(void)
- #error NR_IRQS > 32 not supported
- #endif
-=20
--#if XPAR_XINTC_USE_DCR =3D=3D 0
--=09intc =3D ioremap(XPAR_INTC_0_BASEADDR, 32);
-+#if V2PRO_XINTC_USE_DCR =3D=3D 0
-+=09intc =3D ioremap(V2PRO_INTC_BASEADDR, 32);
-=20
- =09printk(KERN_INFO "Xilinx INTC #0 at 0x%08lX mapped to 0x%08lX\n",
--=09       (unsigned long) XPAR_INTC_0_BASEADDR, (unsigned long) intc);
-+=09       (unsigned long) V2PRO_INTC_BASEADDR, (unsigned long) intc);
- #else
- =09printk(KERN_INFO "Xilinx INTC #0 at 0x%08lX (DCR)\n",
--=09       (unsigned long) XPAR_INTC_0_BASEADDR);
-+=09       (unsigned long) V2PRO_INTC_BASEADDR);
- #endif
-=20
- =09/*
-@@ -149,7 +149,7 @@ ppc4xx_pic_init(void)
- =09for (i =3D 0; i < NR_IRQS; ++i) {
- =09=09irq_desc[i].handler =3D &xilinx_intc;
-=20
--=09=09if (XPAR_INTC_0_KIND_OF_INTR & (0x00000001 << i))
-+=09=09if (V2PRO_INTC_KIND_OF_INTR & (0x00000001 << i))
- =09=09=09irq_desc[i].status &=3D ~IRQ_LEVEL;
- =09=09else
- =09=09=09irq_desc[i].status |=3D IRQ_LEVEL;
-diff --git a/include/asm-ppc/ppc_sys.h b/include/asm-ppc/ppc_sys.h
---- a/include/asm-ppc/ppc_sys.h
-+++ b/include/asm-ppc/ppc_sys.h
-@@ -29,6 +29,8 @@
- #include <asm/mpc52xx.h>
- #elif defined(CONFIG_MPC10X_BRIDGE)
- #include <asm/mpc10x.h>
-+#elif defined(CONFIG_VIRTEX_II_PRO)
-+#include <platforms/4xx/virtex-ii_pro.h>
- #else
- #error "need definition of ppc_sys_devices"
- #endif
-diff --git a/include/asm-ppc/xparameters.h b/include/asm-ppc/xparameters.h
-deleted file mode 100644
---- a/include/asm-ppc/xparameters.h
-+++ /dev/null
-@@ -1,18 +0,0 @@
--/*
-- * include/asm-ppc/xparameters.h
-- *
-- * This file includes the correct xparameters.h for the CONFIG'ed board
-- *
-- * Author: MontaVista Software, Inc.
-- *         source@mvista.com
-- *
-- * 2004 (c) MontaVista Software, Inc.  This file is licensed under the ter=
-ms
-- * of the GNU General Public License version 2.  This program is licensed
-- * "as is" without any warranty of any kind, whether express or implied.
-- */
--
--#include <linux/config.h>
--
--#if defined(CONFIG_XILINX_ML300)
--#include <platforms/4xx/xparameters/xparameters_ml300.h>
--#endif
+ #ifdef CONFIG_40x
