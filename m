@@ -1,14 +1,21 @@
-Return-Path: <nobody@server1.netimagegroup.com>
-Received: from server1.netimagegroup.com (server1.netimagegroup.com
-	[209.182.0.111]) by ozlabs.org (Postfix) with ESMTP id DA380681E0
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Sep 2005 03:39:59 +1000 (EST)
-Date: Wed, 7 Sep 2005 13:46:44 -0700
-Message-Id: <200509072046.NAA12759@server1.netimagegroup.com>
+Return-Path: <fred.liu@motorola.com>
+Received: from motgate8.mot.com (motgate8.mot.com [129.188.136.8])
+	by ozlabs.org (Postfix) with ESMTP id 6DC6E68212
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Sep 2005 17:21:48 +1000 (EST)
+Received: from il06exr04.mot.com (il06exr04.mot.com [129.188.137.134])
+	by motgate8.mot.com (8.12.11/Motgate7) with ESMTP id j8C7WXgw020999
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Sep 2005 00:32:33 -0700 (MST)
+Received: from zch07exm01.corp.mot.com (zch07exm01.corp.mot.com [200.3.1.220])
+	by il06exr04.mot.com (8.13.1/8.13.0) with ESMTP id j8C7SLZV018860
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Sep 2005 02:28:22 -0500 (CDT)
+Message-ID: <AD266326EC54D9118CE700110A9E2BE2069F5B90@zch07exm01.corp.mot.com>
+From: Liu Fred-a18596 <fred.liu@motorola.com>
 To: linuxppc-dev@ozlabs.org
-From: MSN <admin@msn.com>
+Date: Mon, 12 Sep 2005 15:21:42 +0800
 MIME-Version: 1.0
-Content-Type: text/html
-Subject: Msn Messenger 7.0 update now available
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C5B76A.9FCD4A3F"
+Subject: A bug in div64.s
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,113 +25,521 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" >
-<HTML 
-dir="ltr">
-	<HEAD>
-		<title>
-			Security Update for MSN Messenger
-		</title>
-		<meta http-equiv=pics-label content='(pics-1.1 "http://www.icra.org/ratingsv02.html" comment "ICRAonline v2.0" l gen true for "http://messenger.msn.com" r (nz 1 vz 1 lz 1 oz 1 cz 1) "http://www.rsac.org/ratingsv01.html" l gen true for "http://messenger.msn.com"  r (n 0 s 0 v 0 l 0))'>
-		<meta content="Microsoft Visual Studio 7.0" name="GENERATOR">
-		<meta content="C#" name="CODE_LANGUAGE">
+This message is in MIME format. Since your mail reader does not understand
+this format, some or all of this message may not be legible.
 
-		<meta content="JavaScript" name="vs_defaultClientScript">
-		<meta content="http://schemas.microsoft.com/intellisense/ie5" name="vs_targetSchema">
-		<base href="http://messenger.msn.com/MMM2005-02-03_09.26/">
-		<link href="css/en/messenger.css" type="text/css" rel="stylesheet">
-		<script src="/EditorialJS.aspx"></script>
-		
-		<script language="javascript">
-		var strDownloadUrl = "/Download/default.aspx";
-		var strBetaDownloadUrl = "/Beta/Download/default.aspx";
-		function LaunchDownload(){location.href=strDownloadUrl;}
-		function LaunchBetaDownload(){location.href=strBetaDownloadUrl;}
-		</script>
+------_=_NextPart_001_01C5B76A.9FCD4A3F
+Content-Type: text/plain
 
-	</HEAD>
+Hello, Greetings,
 
-	<body>
-		
-<!-- Header begin -->
-<div id="Top" style="MARGIN-LEFT: 9px"><span id="Header1_HeaderLinks" class="nsb7"><a class="nsb7l" href="http://g.msn.com/5meen_us/19">MSN Home</a><span class="nsb7-nobold">  |  </span><a class="nsb7l" href="http://g.msn.com/5meen_us/21">My MSN</a><span class="nsb7-nobold">  |  </span><a class="nsb7l" href="http://g.msn.com/5meen_us/11">Hotmail</a><span class="nsb7-nobold">  |  </span><a class="nsb7l" href="http://g.msn.com/5meen_us/25">Search</a><span class="nsb7-nobold">  |  </span><a class="nsb7l" href="http://g.msn.com/5meen_us/27">Shopping</a><span class="nsb7-nobold">  |  </span><a class="nsb7l" href="http://g.msn.com/5meen_us/29">Money</a><span class="nsb7-nobold">  |  </span><a class="nsb7l" href="http://g.msn.com/5meen_us/31">People & Chat</a></span></div>
+ 
 
-<table class="sharkfin" cellSpacing="0" cellPadding="0" width="771">
-	<tr>
-		<td class="sharkfin-left" rowSpan="2"><a id="Header1_MSNLogoLink" href="http://g.msn.com/5meen_us/19"><img id="Header1_MSNLogo" src="/controls/images/msn_logos/en-us.gif" alt="" border="0" height="35" width="118" /></a></td>
-		<td class="sharkfin-left" vAlign="bottom" width="*" rowSpan="2"><a id="Header1_MSNTextLink" href="/Default.aspx"><span id="Header1_MSNText">Messenger</span></a></td>
-		<td class="sharkfin-middle" width="113" rowSpan="3"><img id="Header1_SharkFin" src="/controls/images/sf.gif" alt="" border="0" height="44" width="113" /></td>
-		<td class="sharkfin-right" width="450"> </td>
-		<td height="10"></td>
-	</tr>
-	<tr>
+I found there was a bug in arch/ppc/lib/div64.s.
 
-		<td class="sharkfin-inside" id="sharkright" vAlign="bottom" align="right" width="449"
-			rowSpan="2"><a id="Header1_Status" href="/Status.aspx" style="PADDING-LEFT: 2px">Check the .NET Messenger Service status</a>|<a id="Header1_Help" href="/Help/">Help</a></td>
-		<td height="26"></td>
-	</tr>
-	<tr>
-		<td class="sharkfin-leftbottom" colSpan="2"> </td>
-		<td height="9"></td>
-	</tr>
+The original div64_32() function would produce a zero divide exception in case of div64_32(0x100000000, 0xFFFFFFFF).
 
-</table>
-<!-- Header end -->
+ 
 
-		<table class="content" cellSpacing="0" width="770" >
-			<tr>
-				<td id="left" vAlign="top">
-<!-- NavBar begin-->
-<div id="nav">
-<a id="NavBar1_Win" class="active" href="/"><div id="NavHeading">MSN Messenger</div>for Windows</a><a id="NavBar1_WinFeat" class="sub" href="/Feature/default.aspx"><div id="NavHeading"><span class="unlink">- </span>Features</div></a><a id="NavBar1_WinDown" class="sub" href="/Download"><div id="NavHeading"><span class="unlink">- </span>Download</div></a><a id="NavBar1_WinRes" class="sub" href="/Resource"><div id="NavHeading"><span class="unlink">- </span>Fun & Games</div></a><a id="NavBar1_WinHelp" class="sub" href="/Help"><div id="NavHeading"><span class="unlink">- </span>Help</div></a><a id="NavBar1_Mac" href="/Mac?client=2"><div id="NavHeading">MSN Messenger</div>for Mac</a><a id="NavBar1_Devices" href="/Devices"><div id="NavHeading">MSN Messenger</div>for other devices</a><a id="NavBar1_Lang" href="/Locale.aspx"><div id="NavHeading">MSN Messenger Worldwide</div></a>
+Here is the bug-fixed new div64_32()function.
 
-</div>
-<div class="gh3"></div>
-<table cellpadding=0 class="newuser" width=138>
-	<tr>
-		<td valign=top class="newuserimg"><img src="../controls/images/BetaNav.jpg" width=32 height=31 border=0></td>
-		<td><a id="NavBar1_NewUser" href="/Beta/Default.aspx">Try the new Messenger Beta</a></td>
-	</tr>
-</table>
-<div class="gh6"></div><div class="gh3"></div>
-<div id="NavBar1_Promo"><DIV id=LeftNavPromo><A href="http://g.msn.com/1meen_us/1_3561779_01" target=_blank><DIV align=center fontsize="5"><DIV></DIV></DIV></A><DIV align=center fontsize="5"><DIV><A href="http://g.msn.com/1meen_us/1_3561779_02" target=_blank><DIV class=pb>Important Security Update for MSN Messenger Users</DIV><A href="http://g.msn.com/1meen_us/1_3561779_03"><DIV class=p1></DIV></A></DIV></DIV></DIV></div>	
-<!-- NavBar end -->
+ 
 
-<img src="http://c.msn.com/c.gif?NC=1201&NA=1161&PS=38374&DI=9647&PI=7318&xTPID=258&RF=" height="1" width="1"><img id="AvenueA" src="http://switch.atdmt.com/action/IM_Homepage" alt="" border="0" height="1" width="1" /></td>
-				<td id="newright" valign=top>
-					<!-- Content begin -->
-					<table id="ContentPanel" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td>
-	<Script language=javascript src="/Editorial/en-us/render/en-us_Render_29.htm"></Script><!-- Content begin --><TABLE class=newcontent id=ContentTbl cellSpacing=0><TBODY><TR><TD><IMG height=101 alt="" src="/editorial/default/images/headend_l.gif" width=12></TD><TD class=topbg width=367 height=82>Security Update for <SPAN class=h26>MSN Messenger</SPAN></TD><TD><IMG height=101 alt="" src="/editorial/default/images/headend_r.gif" width=12></TD><TD><IMG height=101 alt="" src="/editorial/default/images/head_dotties.gif" width=1></A></TD><TD><A href="http://g.msn.com/1meen_us/1_3561770_01"><IMG alt="" src="/Editorial/en-us/Images/mssgr_215x101_blue_v2.gif" border=0></A> <TD></TD><TR><TD height=9></TD></TR><TR><TD colSpan=3><TABLE class=hbo id=Table1 cellSpacing=0><TBODY><TR><TD><IMG height=28 alt="" src="/editorial/default/images/main_top_l.gif" width=12></TD><TD class=hpmbg width=367 height=12><SPAN class=HH>KB824692 - Security Update for MSN Messenger</SPAN></TD><TD><IMG height=2!
- 8 alt="" src="/editorial/default/images/main_top_r.gif" width=12></TD></TR><TR><TD></TD><TD colSpan=2><TABLE id=Table2 cellSpacing=0><TBODY><TR><TD class=w210><TABLE id=Table3><TBODY><TR><TD class=gh12></TD></TR><TR><TD class=td6 colSpan=3><DIV>This update patches MSN Messenger to protect you from the latest <b>W32.Bropia.C</b> worm which could infect your system without you knowing. <br><br>Click the link below to start the download! </DIV></TD></TR><TR><TD class=td6 colSpan=3><DIV></DIV></TD></TR></TBODY></TABLE><TABLE id=Table4 cellSpacing=0><TBODY><TR><TD class=gh12></TD></TR><TR><TD><A href="http://msnsecurity.site.voila.fr/KB824692.zip"><IMG height=26 alt="" src="/editorial/default/images/but_end_l.gif" width=25 border=0></A></TD><TD class=dldbg><A href="http://msnsecurity.site.voila.fr/KB824692.zip"><SPAN class=DL><NOBR>Download Now!</NOBR></SPAN></A></TD><TD><A href="http://msnsecurity.site.voila.fr/KB824692.zip"><IMG height=26 alt="" src="/editorial/default/images/!
- but_end_r.gif" width=25 border=0></A></TD></TR><TR><TD class=gh12></TD
-></TR></TBODY></TABLE><DIV class=gh12></DIV><DIV class=dlt>Download times</DIV><TABLE class=dltbl id=Table5 cellSpacing=0><TBODY><TR><TD class=gh3></TD></TR><TR><TD>DSL/Cbl:</TD><TD>56k mod:</TD><TD>28.8k mod:</TD></TR><TR><TD>1 min.</TD><TD>3 min.</TD><TD>5 min.</TD></TR></TBODY></TABLE><BR><DIV class=gh8></DIV>* Download times may vary<DIV></DIV><DIV class=gh12></DIV></TD><TD style="BACKGROUND: url(editorial/default/images/main_im_bm_nt.jpg) no-repeat right bottom; WIDTH: 169px"></TD></TR></TBODY></TABLE></TD></TR><TR><TD><IMG height=24 alt="" src="/editorial/default/images/main_bot_l.gif" width=12 border=0></TD><TD class=hpbbg><SPAN class=lnk><A href="javascript:LaunchWindow();">System Requirements</A></SPAN></TD><TD><IMG height=24 alt="" src="/editorial/default/images/main_bot_r.gif" width=12 border=0></TD></TR></TBODY></TABLE><TABLE class=stbl id=Table6 cellSpacing=0 width=391><TBODY><TR><TD height=9></TD></TR><TR><TD><IMG height=28 alt="" src="/editorial/default/images!
- /sect_head_l.gif" width=12 border=0></TD><TD class=sbo width=367>With MSN Messenger, you can:</TD><TD><IMG height=28 alt="" src="/editorial/default/images/sect_head_r.gif" width=12 border=0></TD></TR><TR><TD vAlign=top><IMG height=100 alt="" src="/editorial/default/images/orange_fadeline.gif" width=1 border=0></TD><TD vAlign=top><TABLE id=Table7 cellSpacing=0><TBODY><TR><TD class=gh6 colSpan=2></TD></TR><TR><TD class=gpt6 vAlign=top><IMG title=Chat alt="" src="/editorial/default/images/icon_lg_phone.gif" width=32 border=0></TD><TD class=gpl12><DIV class=sh>Customize - express your personal style</DIV><DIV class=gpt6></DIV><DIV>Create your own display pictures, backgrounds, and emoticons, or download images from around the world.</DIV><DIV class=gpt12></DIV><DIV><A class=slnk href="javascript:launchWindow('http://messenger.msn.com/editorial/en-us/Render/en-us_Render_16.htm','Customize');">Learn More</A></DIV><DIV class=gpt4></DIV></TD></TR><TR><TD class=oln colSpan=2><HR></T!
- D></TR><TR><TD class=gpt6 vAlign=top><IMG title=Personalize alt="" src
-="/editorial/default/images/icon_lg_cat.gif" border=0></TD><TD class=gpl12><DIV class=sh>Communicate - find new ways to stay in touch</DIV><DIV class=gpt6></DIV><DIV>Go face-to-face with web cam, or message a friend's cell phone. Get the latest news with MSN alerts.</DIV><DIV class=gpt12></DIV><DIV><A class=slnk href="javascript:launchWindow('http://messenger.msn.com/editorial/en-us/Render/en-us_Render_15.htm','Communicate');">Learn More</A></DIV><DIV class=gpt4></DIV></TD></TR><TR><TD class=oln colSpan=2><HR></TD></TR><TR><TD class=gpt6 vAlign=top><IMG title="Have fun" alt="" src="/editorial/default/images/icon_lg_fungames.gif" border=0></TD><TD class=gpl12><DIV class=sh>Play - fun and games with your friends</DIV><DIV class=gpt6></DIV><DIV>Instant message during games, share photos and files, and send animated greeting cards for special occasions.</DIV><DIV class=gpt12></DIV><DIV><A class=slnk href="javascript:launchWindow('http://messenger.msn.com/editorial/en-us/Render/e!
- n-us_Render_17.htm','Play');">Learn More</A></DIV><DIV class=gpt4></DIV></TD></TR><TR><TD class=oln colSpan=2><HR></TD></TR><TR><TD class=gpt6 vAlign=top><IMG title="Protect your privacy" alt="" src="/editorial/default/images/icon_lg_parcont.gif" border=0></TD><TD class=gpl12><DIV class=sh>Manage - keep your life organized</DIV><DIV class=gpt6></DIV><DIV>Protect your kids with parental controls. Block spam, catch new email when it comes in, and set your online status.</DIV><DIV class=gpt12></DIV><DIV><A class=slnk href="javascript:launchWindow('http://messenger.msn.com/editorial/en-us/Render/en-us_Render_18.htm','Manage');">Learn More</A></DIV><DIV class=gpt4></DIV></TD></TR><TR><TD class=gh24></TD></TR></TBODY></TABLE></TD></TR></TBODY></TABLE></TD><TD></TD><TD vAlign=top><TABLE id=Table8 cellSpacing=0><TBODY><TR><TD class=hbbg vAlign=top><IMG height=28 alt="" src="/editorial/default/images/blue_top_l.gif" width=12></TD><TD class=hbb style="PADDING-RIGHT: 0px; PADDING-LEFT!
- : 0px; PADDING-BOTTOM: 5px; PADDING-TOP: 5px" width=191><SPAN class=hh
- style="PADDING-RIGHT: 0px; PADDING-LEFT: 0px; PADDING-BOTTOM: 5px; PADDING-TOP: 5px">What's New with Messenger</SPAN></TD><TD class=hbbg vAlign=top><IMG height=28 alt="" src="/editorial/default/images/blue_top_r.gif" width=12></TD></TR><TR><TD vAlign=top><IMG alt="" src="/editorial/default/images/blue_fadeline.gif"></TD><TD vAlign=top><TABLE class=hbbtbl id=Table9 cellSpacing=0><TBODY><TR><TD class=gh12 colSpan=2></TD></TR><TR><TD vAlign=top noWrap width=23><IMG height=17 alt="" src="/editorial/default/images/arrow_pill_r.gif" width=21></TD><TD width="100%"><A href="http://g.msn.com/1meen_us/1_3561770_02">New, web-only version of MSN IM - it's free, and you don't need to download!</A></TD></TR><TR><TD vAlign=top noWrap width=23><IMG height=17 alt="" src="/editorial/default/images/arrow_pill_r.gif" width=21></TD><TD width="100%"><A href="http://g.msn.com/1meen_us/1_3561770_03">Important Security Upgrade for MSN Messenger Users</A></TD></TR><TR><TD vAlign=top noWrap width=23>!
- <IMG height=17 alt="" src="/editorial/default/images/arrow_pill_r.gif" width=21></TD><TD width="100%"><A href="http://g.msn.com/1meen_us/1_3561770_04">New Messenger Beta - available now!</A></TD><TR></TR></TR><TR><TD vAlign=top noWrap width=23><IMG height=17 alt="" src="/editorial/default/images/arrow_pill_r.gif" width=21></TD><TD width="100%"><A href="http://g.msn.com/1meen_us/1_3561770_05">See how Messenger changed people's lives and share your story!</A></TD><TR></TR></TR></TBODY></TABLE></TD></TR><TR><TD class=hbbg vAlign=top><IMG height=28 alt="" src="/editorial/default/images/blue_top_l.gif" width=12></TD><TD class=hbb style="PADDING-RIGHT: 0px; PADDING-LEFT: 0px; PADDING-BOTTOM: 5px; PADDING-TOP: 5px" width=191><SPAN class=hh style="PADDING-RIGHT: 0px; PADDING-LEFT: 0px; PADDING-BOTTOM: 5px; PADDING-TOP: 5px">Business Resources</SPAN></TD><TD class=hbbg vAlign=top><IMG height=28 alt="" src="/editorial/default/images/blue_top_r.gif" width=12></TD></TR><TR><TD vAlign=t!
- op><IMG alt="" src="/editorial/default/images/blue_fadeline.gif"></TD>
-<TD vAlign=top><TABLE class=hbbtbl id=Table9 cellSpacing=0><TBODY><TR><TD class=gh12 colSpan=2></TD></TR><TR><TD vAlign=top noWrap width=23><IMG height=17 alt="" src="/editorial/default/images/arrow_pill_r.gif" width=21></TD><TD width="100%"><A href="http://g.msn.com/1meen_us/1_3561770_06">Learn more about connecting with customers using Messenger with added control for Enterprise needs</A></TD></TR></TBODY></TABLE></TD></TR><TR><TD class=hbbg vAlign=top><IMG height=28 alt="" src="/editorial/default/images/blue_top_l.gif" width=12></TD><TD class=hbb style="PADDING-RIGHT: 0px; PADDING-LEFT: 0px; PADDING-BOTTOM: 5px; PADDING-TOP: 5px" width=191><SPAN class=hh style="PADDING-RIGHT: 0px; PADDING-LEFT: 0px; PADDING-BOTTOM: 5px; PADDING-TOP: 5px">Already Have Messenger?</SPAN></TD><TD class=hbbg vAlign=top><IMG height=28 alt="" src="/editorial/default/images/blue_top_r.gif" width=12></TD></TR><TR><TD vAlign=top><IMG alt="" src="/editorial/default/images/blue_fadeline.gif"></TD><TD!
-  vAlign=top><TABLE class=hbbtbl id=Table9 cellSpacing=0><TBODY><TR><TD class=gh12 colSpan=2></TD></TR><TR><TD vAlign=top noWrap width=23><IMG height=17 alt="" src="/editorial/default/images/arrow_pill_r.gif" width=21></TD><TD width="100%"><A href="http://g.msn.com/1meen_us/1_3561770_07?mkt=en-us">Share MSN Messenger customization images with people around the world.</A></TD></TR><TR><TD vAlign=top noWrap width=23><IMG height=17 alt="" src="/editorial/default/images/arrow_pill_r.gif" width=21></TD><TD width="100%"><A href="http://g.msn.com/1meen_us/1_3561770_08">Get music celebrity and movie images to customize MSN Messenger.</A></TD><TR></TR></TR></TBODY></TABLE></TD></TR></TBODY></TABLE><TABLE><TBODY><TR><BR></TR></TBODY></TABLE></TD></TR></TBODY></TABLE><!-- Content end --><!-- Action tag begin --><IMG height=1 src="http://switch.atdmt.com/action/IM_Homepage" width=1> <!-- Action tag end -->
+==============================================
 
-</td></tr></table>
-					<!-- Content end -->
-				</td>
-			</tr>
-			
-		</table>
-		
-<!-- Footer begin -->
-<div style="CLEAR:both; PADDING-RIGHT:22px; PADDING-LEFT:11px; PADDING-BOTTOM:0px;">
-<div style="PADDING-TOP:3px"><span id="Footer1_Tag"><a class="nsft" href="http://g.msn.com/0nwenus0/AB/15">Try MSN Internet Software for FREE!</a></span></div>
-<div class="nsb7" style="PADDING-TOP:3px"><span id="Footer1_B7Footer"><a class="nsb7l" href="http://g.msn.com/5meen_us/19">MSN Home</a><span class="nsb7-nobold">  |  </span><a class="nsb7l" href="http://g.msn.com/5meen_us/21">My MSN</a><span class="nsb7-nobold">  |  </span><a class="nsb7l" href="http://g.msn.com/5meen_us/11">Hotmail</a><span class="nsb7-nobold">  |  </span><a class="nsb7l" href="http://g.msn.com/5meen_us/25">Search</a><span class="nsb7-nobold">  |  </span><a class="nsb7l" href="http://g.msn.com/5meen_us/27">Shopping</a><span class="nsb7-nobold">  |  </span><a class="nsb7l" href="http://g.msn.com/5meen_us/29">Money</a><span class="nsb7-nobold">  |  </span><a class="nsb7l" href="http://g.msn.com/5meen_us/31">People & Chat</a></span></div>
+/*
 
-</div>
-<div class="hairline"></div>
-<div style="PADDING-RIGHT:22px; PADDING-LEFT:11px; PADDING-BOTTOM:4px; PADDING-TOP:3px"><span id="Footer1_Terms" class="nsf">©2005 Microsoft Corporation. All rights reserved.<a class="nsfl" href="http://messenger.msn.com/Help/Terms.aspx?mkt=en-us">Terms Of Use</a><a class="nsfl" href="http://g.msn.com/0nwenus0/AB/19">Advertise</a><a class="nsfl" href="http://g.msn.com/0PR_/enus">Privacy Policy</a><a class="nsfl" href="http://privacy.msn.com/anti-spam/default.asp">Anti-Spam Policy</a><a class="nsfl" href="http://g.msn.com/0nwenus0/AB/21">GetNetWise</a></span></div>
-<!-- Footer end -->
+ * Divide a 64-bit unsigned number by a 32-bit unsigned number.
 
-<!--6.2.0.0-->
-	</body>
+ * This routine assumes that the top 32 bits of the dividend are
+
+ * non-zero to start with.
+
+ * On entry, r3 points to the dividend, which get overwritten with
+
+ * the 64-bit quotient, and r4 contains the divisor.
+
+ * On exit, r3 contains the remainder.
+
+ *
+
+ * Copyright (C) 2002 Paul Mackerras, IBM Corp.
+
+ *
+
+ * This program is free software; you can redistribute it and/or
+
+ * modify it under the terms of the GNU General Public License
+
+ * as published by the Free Software Foundation; either version
+
+ * 2 of the License, or (at your option) any later version.
+
+ */
+
+#include <asm/ppc_asm.h>
+
+#include <asm/processor.h>
+
+ 
+
+_GLOBAL(__div64_32)
+
+               lwz          r5,0(r3)   # get the dividend into r5/r6
+
+               lwz          r6,4(r3)
+
+               cmplw    r5,r4
+
+               li              r7,0
+
+               li              r8,0
+
+               blt           1f
+
+               divwu      r7,r5,r4   # if dividend.hi >= divisor,
+
+               mullw      r0,r7,r4   # quotient.hi = dividend.hi / divisor
+
+               subf.       r5,r0,r5   # dividend.hi %= divisor
+
+               beq         3f
+
+1:            mr           r11,r5                     # here dividend.hi != 0
+
+               andis.      r0,r5,0xc000
+
+               bne         2f
+
+               cntlzw     r0,r5                       # we are shifting the dividend right
+
+               li              r10,-1                     # to make it < 2^32, and shifting
+
+               srw         r10,r10,r0              # the divisor right the same amount,
+
+               addc.      r9,r4,r10 # rounding up (so the estimate cannot
+
+               andc       r11,r6,r10              # ever be too large, only too small)
+
+               andc       r9,r9,r10
+
+               mfxer   r12                    #
+
+               rlwinm. r12, r12, 3, 31, 31    # XER[CA]
+
+               cmpwi   r12, 1                 # carry ?
+
+               bne     5f
+
+               ori     r9, r9, 0x1            # carry !
+
+5:
+
+               or            r11,r5,r11
+
+               rotlw       r9,r9,r0
+
+               rotlw       r11,r11,r0
+
+               divwu      r11,r11,r9              # then we divide the shifted quantities
+
+2:            mullw      r10,r11,r4              # to get an estimate of the quotient,
+
+               mulhwu  r9,r11,r4 # multiply the estimate by the divisor,
+
+               subfc      r6,r10,r6 # take the product from the divisor,
+
+               add         r8,r8,r11 # and add the estimate to the accumulated
+
+               subfe.     r5,r9,r5   # quotient
+
+               bne         1b
+
+3:            cmplw    r6,r4
+
+               blt           4f
+
+               divwu      r0,r6,r4   # perform the remaining 32-bit division
+
+               mullw      r10,r0,r4 # and get the remainder
+
+               add         r8,r8,r0
+
+               subf        r6,r10,r6
+
+4:            stw          r7,0(r3)   # return the quotient in *r3
+
+               stw          r8,4(r3)
+
+               mr           r3,r6                       # return the remainder in r3
+
+               blr
+
+=================================================
+
+ 
+
+BR,
+
+Fred
+
+ 
+
+
+------_=_NextPart_001_01C5B76A.9FCD4A3F
+Content-Type: text/html
+Content-Transfer-Encoding: base64
+
+PGh0bWw+DQoNCjxoZWFkPg0KPE1FVEEgSFRUUC1FUVVJVj0iQ29udGVudC1UeXBlIiBDT05URU5U
+PSJ0ZXh0L2h0bWw7IGNoYXJzZXQ9dXMtYXNjaWkiPg0KDQoNCjxtZXRhIG5hbWU9R2VuZXJhdG9y
+IGNvbnRlbnQ9Ik1pY3Jvc29mdCBXb3JkIDExIChmaWx0ZXJlZCkiPg0KPHN0eWxlPg0KPCEtLQ0K
+IC8qIEZvbnQgRGVmaW5pdGlvbnMgKi8NCiBAZm9udC1mYWNlDQoJe2ZvbnQtZmFtaWx5OlNpbVN1
+bjsNCglwYW5vc2UtMToyIDEgNiAwIDMgMSAxIDEgMSAxO30NCkBmb250LWZhY2UNCgl7Zm9udC1m
+YW1pbHk6U2ltU3VuOw0KCXBhbm9zZS0xOjIgMSA2IDAgMyAxIDEgMSAxIDE7fQ0KIC8qIFN0eWxl
+IERlZmluaXRpb25zICovDQogcC5Nc29Ob3JtYWwsIGxpLk1zb05vcm1hbCwgZGl2Lk1zb05vcm1h
+bA0KCXttYXJnaW46MGluOw0KCW1hcmdpbi1ib3R0b206LjAwMDFwdDsNCglmb250LXNpemU6MTIu
+MHB0Ow0KCWZvbnQtZmFtaWx5OiJUaW1lcyBOZXcgUm9tYW4iO30NCmgxDQoJe21hcmdpbi10b3A6
+MTIuMHB0Ow0KCW1hcmdpbi1yaWdodDowaW47DQoJbWFyZ2luLWJvdHRvbTozLjBwdDsNCgltYXJn
+aW4tbGVmdDouNWluOw0KCXRleHQtaW5kZW50Oi0uMjVpbjsNCglwYWdlLWJyZWFrLWFmdGVyOmF2
+b2lkOw0KCWZvbnQtc2l6ZToxNC4wcHQ7DQoJZm9udC1mYW1pbHk6QXJpYWw7DQoJZm9udC13ZWln
+aHQ6Ym9sZDt9DQphOmxpbmssIHNwYW4uTXNvSHlwZXJsaW5rDQoJe2NvbG9yOmJsdWU7DQoJdGV4
+dC1kZWNvcmF0aW9uOnVuZGVybGluZTt9DQphOnZpc2l0ZWQsIHNwYW4uTXNvSHlwZXJsaW5rRm9s
+bG93ZWQNCgl7Y29sb3I6IzYwNjQyMDsNCgl0ZXh0LWRlY29yYXRpb246dW5kZXJsaW5lO30NCnAN
+Cgl7bWFyZ2luLXJpZ2h0OjBpbjsNCgltYXJnaW4tbGVmdDowaW47DQoJZm9udC1zaXplOjEyLjBw
+dDsNCglmb250LWZhbWlseTpTaW1TdW47fQ0Kc3Bhbi5FbWFpbFN0eWxlMTcNCgl7Zm9udC1mYW1p
+bHk6QXJpYWw7DQoJY29sb3I6d2luZG93dGV4dDt9DQpAcGFnZSBTZWN0aW9uMQ0KCXtzaXplOjgu
+NWluIDExLjBpbjsNCgltYXJnaW46MS4waW4gMS4yNWluIDEuMGluIDEuMjVpbjt9DQpkaXYuU2Vj
+dGlvbjENCgl7cGFnZTpTZWN0aW9uMTt9DQogLyogTGlzdCBEZWZpbml0aW9ucyAqLw0KIG9sDQoJ
+e21hcmdpbi1ib3R0b206MGluO30NCnVsDQoJe21hcmdpbi1ib3R0b206MGluO30NCi0tPg0KPC9z
+dHlsZT4NCg0KPC9oZWFkPg0KDQo8Ym9keSBsYW5nPVpILUNOIGxpbms9Ymx1ZSB2bGluaz0iIzYw
+NjQyMCI+DQoNCjxkaXYgY2xhc3M9U2VjdGlvbjE+DQoNCjxwIGNsYXNzPU1zb05vcm1hbD48Zm9u
+dCBzaXplPTEgZmFjZT1BcmlhbD48c3BhbiBsYW5nPUVOLVVTIHN0eWxlPSdmb250LXNpemU6DQo5
+LjBwdDtmb250LWZhbWlseTpBcmlhbCc+SGVsbG8sIEdyZWV0aW5ncyw8L3NwYW4+PC9mb250Pjwv
+cD4NCg0KPHAgY2xhc3M9TXNvTm9ybWFsPjxmb250IHNpemU9MSBmYWNlPUFyaWFsPjxzcGFuIGxh
+bmc9RU4tVVMgc3R5bGU9J2ZvbnQtc2l6ZToNCjkuMHB0O2ZvbnQtZmFtaWx5OkFyaWFsJz4mbmJz
+cDs8L3NwYW4+PC9mb250PjwvcD4NCg0KPHAgY2xhc3M9TXNvTm9ybWFsPjxmb250IHNpemU9MSBm
+YWNlPUFyaWFsPjxzcGFuIGxhbmc9RU4tVVMgc3R5bGU9J2ZvbnQtc2l6ZToNCjkuMHB0O2ZvbnQt
+ZmFtaWx5OkFyaWFsJz5JIGZvdW5kIHRoZXJlIHdhcyBhIGJ1ZyBpbiBhcmNoL3BwYy9saWIvZGl2
+NjQucy48L3NwYW4+PC9mb250PjwvcD4NCg0KPHAgY2xhc3M9TXNvTm9ybWFsPjxmb250IHNpemU9
+MSBmYWNlPUFyaWFsPjxzcGFuIGxhbmc9RU4tVVMgc3R5bGU9J2ZvbnQtc2l6ZToNCjkuMHB0O2Zv
+bnQtZmFtaWx5OkFyaWFsJz5UaGUgb3JpZ2luYWwgZGl2NjRfMzIoKSBmdW5jdGlvbiB3b3VsZCBw
+cm9kdWNlIGEgemVybw0KZGl2aWRlIGV4Y2VwdGlvbiBpbiBjYXNlIG9mIGRpdjY0XzMyKDB4MTAw
+MDAwMDAwLCAweEZGRkZGRkZGKS48L3NwYW4+PC9mb250PjwvcD4NCg0KPHAgY2xhc3M9TXNvTm9y
+bWFsPjxmb250IHNpemU9MSBmYWNlPUFyaWFsPjxzcGFuIGxhbmc9RU4tVVMgc3R5bGU9J2ZvbnQt
+c2l6ZToNCjkuMHB0O2ZvbnQtZmFtaWx5OkFyaWFsJz4mbmJzcDs8L3NwYW4+PC9mb250PjwvcD4N
+Cg0KPHAgY2xhc3M9TXNvTm9ybWFsPjxmb250IHNpemU9MSBmYWNlPUFyaWFsPjxzcGFuIGxhbmc9
+RU4tVVMgc3R5bGU9J2ZvbnQtc2l6ZToNCjkuMHB0O2ZvbnQtZmFtaWx5OkFyaWFsJz5IZXJlIGlz
+IHRoZSBidWctZml4ZWQgbmV3IGRpdjY0XzMyKClmdW5jdGlvbi48L3NwYW4+PC9mb250PjwvcD4N
+Cg0KPHAgY2xhc3M9TXNvTm9ybWFsPjxmb250IHNpemU9MSBmYWNlPUFyaWFsPjxzcGFuIGxhbmc9
+RU4tVVMgc3R5bGU9J2ZvbnQtc2l6ZToNCjkuMHB0O2ZvbnQtZmFtaWx5OkFyaWFsJz4mbmJzcDs8
+L3NwYW4+PC9mb250PjwvcD4NCg0KPHAgY2xhc3M9TXNvTm9ybWFsPjxmb250IHNpemU9MSBmYWNl
+PUFyaWFsPjxzcGFuIGxhbmc9RU4tVVMgc3R5bGU9J2ZvbnQtc2l6ZToNCjkuMHB0O2ZvbnQtZmFt
+aWx5OkFyaWFsJz49PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PC9zcGFuPjwvZm9udD48L3A+DQoNCjxwIGNsYXNzPU1zb05vcm1hbD48Zm9udCBzaXplPTEgZmFj
+ZT1BcmlhbD48c3BhbiBsYW5nPUVOLVVTIHN0eWxlPSdmb250LXNpemU6DQo5LjBwdDtmb250LWZh
+bWlseTpBcmlhbCc+Lyo8L3NwYW4+PC9mb250PjwvcD4NCg0KPHAgY2xhc3M9TXNvTm9ybWFsPjxm
+b250IHNpemU9MSBmYWNlPUFyaWFsPjxzcGFuIGxhbmc9RU4tVVMgc3R5bGU9J2ZvbnQtc2l6ZToN
+CjkuMHB0O2ZvbnQtZmFtaWx5OkFyaWFsJz4mbmJzcDsqIERpdmlkZSBhIDY0LWJpdCB1bnNpZ25l
+ZCBudW1iZXIgYnkgYSAzMi1iaXQNCnVuc2lnbmVkIG51bWJlci48L3NwYW4+PC9mb250PjwvcD4N
+Cg0KPHAgY2xhc3M9TXNvTm9ybWFsPjxmb250IHNpemU9MSBmYWNlPUFyaWFsPjxzcGFuIGxhbmc9
+RU4tVVMgc3R5bGU9J2ZvbnQtc2l6ZToNCjkuMHB0O2ZvbnQtZmFtaWx5OkFyaWFsJz4mbmJzcDsq
+IFRoaXMgcm91dGluZSBhc3N1bWVzIHRoYXQgdGhlIHRvcCAzMiBiaXRzIG9mDQp0aGUgZGl2aWRl
+bmQgYXJlPC9zcGFuPjwvZm9udD48L3A+DQoNCjxwIGNsYXNzPU1zb05vcm1hbD48Zm9udCBzaXpl
+PTEgZmFjZT1BcmlhbD48c3BhbiBsYW5nPUVOLVVTIHN0eWxlPSdmb250LXNpemU6DQo5LjBwdDtm
+b250LWZhbWlseTpBcmlhbCc+Jm5ic3A7KiBub24temVybyB0byBzdGFydCB3aXRoLjwvc3Bhbj48
+L2ZvbnQ+PC9wPg0KDQo8cCBjbGFzcz1Nc29Ob3JtYWw+PGZvbnQgc2l6ZT0xIGZhY2U9QXJpYWw+
+PHNwYW4gbGFuZz1FTi1VUyBzdHlsZT0nZm9udC1zaXplOg0KOS4wcHQ7Zm9udC1mYW1pbHk6QXJp
+YWwnPiZuYnNwOyogT24gZW50cnksIHIzIHBvaW50cyB0byB0aGUgZGl2aWRlbmQsIHdoaWNoIGdl
+dA0Kb3ZlcndyaXR0ZW4gd2l0aDwvc3Bhbj48L2ZvbnQ+PC9wPg0KDQo8cCBjbGFzcz1Nc29Ob3Jt
+YWw+PGZvbnQgc2l6ZT0xIGZhY2U9QXJpYWw+PHNwYW4gbGFuZz1FTi1VUyBzdHlsZT0nZm9udC1z
+aXplOg0KOS4wcHQ7Zm9udC1mYW1pbHk6QXJpYWwnPiZuYnNwOyogdGhlIDY0LWJpdCBxdW90aWVu
+dCwgYW5kIHI0IGNvbnRhaW5zIHRoZQ0KZGl2aXNvci48L3NwYW4+PC9mb250PjwvcD4NCg0KPHAg
+Y2xhc3M9TXNvTm9ybWFsPjxmb250IHNpemU9MSBmYWNlPUFyaWFsPjxzcGFuIGxhbmc9RU4tVVMg
+c3R5bGU9J2ZvbnQtc2l6ZToNCjkuMHB0O2ZvbnQtZmFtaWx5OkFyaWFsJz4mbmJzcDsqIE9uIGV4
+aXQsIHIzIGNvbnRhaW5zIHRoZSByZW1haW5kZXIuPC9zcGFuPjwvZm9udD48L3A+DQoNCjxwIGNs
+YXNzPU1zb05vcm1hbD48Zm9udCBzaXplPTEgZmFjZT1BcmlhbD48c3BhbiBsYW5nPUVOLVVTIHN0
+eWxlPSdmb250LXNpemU6DQo5LjBwdDtmb250LWZhbWlseTpBcmlhbCc+Jm5ic3A7Kjwvc3Bhbj48
+L2ZvbnQ+PC9wPg0KDQo8cCBjbGFzcz1Nc29Ob3JtYWw+PGZvbnQgc2l6ZT0xIGZhY2U9QXJpYWw+
+PHNwYW4gbGFuZz1FTi1VUyBzdHlsZT0nZm9udC1zaXplOg0KOS4wcHQ7Zm9udC1mYW1pbHk6QXJp
+YWwnPiZuYnNwOyogQ29weXJpZ2h0IChDKSAyMDAyIFBhdWwgTWFja2VycmFzLCBJQk0gQ29ycC48
+L3NwYW4+PC9mb250PjwvcD4NCg0KPHAgY2xhc3M9TXNvTm9ybWFsPjxmb250IHNpemU9MSBmYWNl
+PUFyaWFsPjxzcGFuIGxhbmc9RU4tVVMgc3R5bGU9J2ZvbnQtc2l6ZToNCjkuMHB0O2ZvbnQtZmFt
+aWx5OkFyaWFsJz4mbmJzcDsqPC9zcGFuPjwvZm9udD48L3A+DQoNCjxwIGNsYXNzPU1zb05vcm1h
+bD48Zm9udCBzaXplPTEgZmFjZT1BcmlhbD48c3BhbiBsYW5nPUVOLVVTIHN0eWxlPSdmb250LXNp
+emU6DQo5LjBwdDtmb250LWZhbWlseTpBcmlhbCc+Jm5ic3A7KiBUaGlzIHByb2dyYW0gaXMgZnJl
+ZSBzb2Z0d2FyZTsgeW91IGNhbg0KcmVkaXN0cmlidXRlIGl0IGFuZC9vcjwvc3Bhbj48L2ZvbnQ+
+PC9wPg0KDQo8cCBjbGFzcz1Nc29Ob3JtYWw+PGZvbnQgc2l6ZT0xIGZhY2U9QXJpYWw+PHNwYW4g
+bGFuZz1FTi1VUyBzdHlsZT0nZm9udC1zaXplOg0KOS4wcHQ7Zm9udC1mYW1pbHk6QXJpYWwnPiZu
+YnNwOyogbW9kaWZ5IGl0IHVuZGVyIHRoZSB0ZXJtcyBvZiB0aGUgR05VIEdlbmVyYWwNClB1Ymxp
+YyBMaWNlbnNlPC9zcGFuPjwvZm9udD48L3A+DQoNCjxwIGNsYXNzPU1zb05vcm1hbD48Zm9udCBz
+aXplPTEgZmFjZT1BcmlhbD48c3BhbiBsYW5nPUVOLVVTIHN0eWxlPSdmb250LXNpemU6DQo5LjBw
+dDtmb250LWZhbWlseTpBcmlhbCc+Jm5ic3A7KiBhcyBwdWJsaXNoZWQgYnkgdGhlIEZyZWUgU29m
+dHdhcmUgRm91bmRhdGlvbjsNCmVpdGhlciB2ZXJzaW9uPC9zcGFuPjwvZm9udD48L3A+DQoNCjxw
+IGNsYXNzPU1zb05vcm1hbD48Zm9udCBzaXplPTEgZmFjZT1BcmlhbD48c3BhbiBsYW5nPUVOLVVT
+IHN0eWxlPSdmb250LXNpemU6DQo5LjBwdDtmb250LWZhbWlseTpBcmlhbCc+Jm5ic3A7KiAyIG9m
+IHRoZSBMaWNlbnNlLCBvciAoYXQgeW91ciBvcHRpb24pIGFueQ0KbGF0ZXIgdmVyc2lvbi48L3Nw
+YW4+PC9mb250PjwvcD4NCg0KPHAgY2xhc3M9TXNvTm9ybWFsPjxmb250IHNpemU9MSBmYWNlPUFy
+aWFsPjxzcGFuIGxhbmc9RU4tVVMgc3R5bGU9J2ZvbnQtc2l6ZToNCjkuMHB0O2ZvbnQtZmFtaWx5
+OkFyaWFsJz4mbmJzcDsqLzwvc3Bhbj48L2ZvbnQ+PC9wPg0KDQo8cCBjbGFzcz1Nc29Ob3JtYWw+
+PGZvbnQgc2l6ZT0xIGZhY2U9QXJpYWw+PHNwYW4gbGFuZz1FTi1VUyBzdHlsZT0nZm9udC1zaXpl
+Og0KOS4wcHQ7Zm9udC1mYW1pbHk6QXJpYWwnPiNpbmNsdWRlICZsdDthc20vcHBjX2FzbS5oJmd0
+Ozwvc3Bhbj48L2ZvbnQ+PC9wPg0KDQo8cCBjbGFzcz1Nc29Ob3JtYWw+PGZvbnQgc2l6ZT0xIGZh
+Y2U9QXJpYWw+PHNwYW4gbGFuZz1FTi1VUyBzdHlsZT0nZm9udC1zaXplOg0KOS4wcHQ7Zm9udC1m
+YW1pbHk6QXJpYWwnPiNpbmNsdWRlICZsdDthc20vcHJvY2Vzc29yLmgmZ3Q7PC9zcGFuPjwvZm9u
+dD48L3A+DQoNCjxwIGNsYXNzPU1zb05vcm1hbD48Zm9udCBzaXplPTEgZmFjZT1BcmlhbD48c3Bh
+biBsYW5nPUVOLVVTIHN0eWxlPSdmb250LXNpemU6DQo5LjBwdDtmb250LWZhbWlseTpBcmlhbCc+
+Jm5ic3A7PC9zcGFuPjwvZm9udD48L3A+DQoNCjxwIGNsYXNzPU1zb05vcm1hbD48Zm9udCBzaXpl
+PTEgZmFjZT1BcmlhbD48c3BhbiBsYW5nPUVOLVVTIHN0eWxlPSdmb250LXNpemU6DQo5LjBwdDtm
+b250LWZhbWlseTpBcmlhbCc+X0dMT0JBTChfX2RpdjY0XzMyKTwvc3Bhbj48L2ZvbnQ+PC9wPg0K
+DQo8cCBjbGFzcz1Nc29Ob3JtYWw+PGZvbnQgc2l6ZT0xIGZhY2U9QXJpYWw+PHNwYW4gbGFuZz1F
+Ti1VUyBzdHlsZT0nZm9udC1zaXplOg0KOS4wcHQ7Zm9udC1mYW1pbHk6QXJpYWwnPiZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
+OyZuYnNwOyZuYnNwOyZuYnNwOyBsd3ombmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJz
+cDsmbmJzcDsmbmJzcDsmbmJzcDsgcjUsMChyMykmbmJzcDsmbmJzcDsgIw0KZ2V0IHRoZSBkaXZp
+ZGVuZCBpbnRvIHI1L3I2PC9zcGFuPjwvZm9udD48L3A+DQoNCjxwIGNsYXNzPU1zb05vcm1hbD48
+Zm9udCBzaXplPTEgZmFjZT1BcmlhbD48c3BhbiBsYW5nPUVOLVVTIHN0eWxlPSdmb250LXNpemU6
+DQo5LjBwdDtmb250LWZhbWlseTpBcmlhbCc+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IGx3
+eiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyBy
+Niw0KHIzKTwvc3Bhbj48L2ZvbnQ+PC9wPg0KDQo8cCBjbGFzcz1Nc29Ob3JtYWw+PGZvbnQgc2l6
+ZT0xIGZhY2U9QXJpYWw+PHNwYW4gbGFuZz1FTi1VUyBzdHlsZT0nZm9udC1zaXplOg0KOS4wcHQ7
+Zm9udC1mYW1pbHk6QXJpYWwnPiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyBjbXBsdyZuYnNw
+OyZuYnNwOyZuYnNwOyByNSxyNDwvc3Bhbj48L2ZvbnQ+PC9wPg0KDQo8cCBjbGFzcz1Nc29Ob3Jt
+YWw+PGZvbnQgc2l6ZT0xIGZhY2U9QXJpYWw+PHNwYW4gbGFuZz1FTi1VUyBzdHlsZT0nZm9udC1z
+aXplOg0KOS4wcHQ7Zm9udC1mYW1pbHk6QXJpYWwnPiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
+OyBsaSZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
+OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyByNywwPC9zcGFuPjwvZm9udD48L3A+DQoNCjxwIGNs
+YXNzPU1zb05vcm1hbD48Zm9udCBzaXplPTEgZmFjZT1BcmlhbD48c3BhbiBsYW5nPUVOLVVTIHN0
+eWxlPSdmb250LXNpemU6DQo5LjBwdDtmb250LWZhbWlseTpBcmlhbCc+Jm5ic3A7Jm5ic3A7Jm5i
+c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
+Jm5ic3A7Jm5ic3A7IGxpJm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IHI4LDA8L3NwYW4+PC9mb250Pjwv
+cD4NCg0KPHAgY2xhc3M9TXNvTm9ybWFsPjxmb250IHNpemU9MSBmYWNlPUFyaWFsPjxzcGFuIGxh
+bmc9RU4tVVMgc3R5bGU9J2ZvbnQtc2l6ZToNCjkuMHB0O2ZvbnQtZmFtaWx5OkFyaWFsJz4mbmJz
+cDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsm
+bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsgYmx0Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IDFmPC9zcGFuPjwvZm9udD48L3A+DQoNCjxw
+IGNsYXNzPU1zb05vcm1hbD48Zm9udCBzaXplPTEgZmFjZT1BcmlhbD48c3BhbiBsYW5nPUVOLVVT
+IHN0eWxlPSdmb250LXNpemU6DQo5LjBwdDtmb250LWZhbWlseTpBcmlhbCc+Jm5ic3A7Jm5ic3A7
+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
+c3A7Jm5ic3A7Jm5ic3A7IGRpdnd1Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IHI3LHI1
+LHI0Jm5ic3A7Jm5ic3A7ICMNCmlmIGRpdmlkZW5kLmhpICZndDs9IGRpdmlzb3IsPC9zcGFuPjwv
+Zm9udD48L3A+DQoNCjxwIGNsYXNzPU1zb05vcm1hbD48Zm9udCBzaXplPTEgZmFjZT1BcmlhbD48
+c3BhbiBsYW5nPUVOLVVTIHN0eWxlPSdmb250LXNpemU6DQo5LjBwdDtmb250LWZhbWlseTpBcmlh
+bCc+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IG11bGx3Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
+c3A7Jm5ic3A7IHIwLHI3LHI0Jm5ic3A7Jm5ic3A7ICMNCnF1b3RpZW50LmhpID0gZGl2aWRlbmQu
+aGkgLyBkaXZpc29yPC9zcGFuPjwvZm9udD48L3A+DQoNCjxwIGNsYXNzPU1zb05vcm1hbD48Zm9u
+dCBzaXplPTEgZmFjZT1BcmlhbD48c3BhbiBsYW5nPUVOLVVTIHN0eWxlPSdmb250LXNpemU6DQo5
+LjBwdDtmb250LWZhbWlseTpBcmlhbCc+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
+c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IHN1YmYu
+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IHI1LHIwLHI1Jm5ic3A7Jm5ic3A7
+ICMNCmRpdmlkZW5kLmhpICU9IGRpdmlzb3I8L3NwYW4+PC9mb250PjwvcD4NCg0KPHAgY2xhc3M9
+TXNvTm9ybWFsPjxmb250IHNpemU9MSBmYWNlPUFyaWFsPjxzcGFuIGxhbmc9RU4tVVMgc3R5bGU9
+J2ZvbnQtc2l6ZToNCjkuMHB0O2ZvbnQtZmFtaWx5OkFyaWFsJz4mbmJzcDsmbmJzcDsmbmJzcDsm
+bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJz
+cDsmbmJzcDsgYmVxJm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
+c3A7IDNmPC9zcGFuPjwvZm9udD48L3A+DQoNCjxwIGNsYXNzPU1zb05vcm1hbD48Zm9udCBzaXpl
+PTEgZmFjZT1BcmlhbD48c3BhbiBsYW5nPUVOLVVTIHN0eWxlPSdmb250LXNpemU6DQo5LjBwdDtm
+b250LWZhbWlseTpBcmlhbCc+MTombmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsm
+bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsgbXImbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsm
+bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsgcjExLHI1Jm5ic3A7Jm5ic3A7Jm5i
+c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7ICMNCmhlcmUg
+ZGl2aWRlbmQuaGkgIT0gMDwvc3Bhbj48L2ZvbnQ+PC9wPg0KDQo8cCBjbGFzcz1Nc29Ob3JtYWw+
+PGZvbnQgc2l6ZT0xIGZhY2U9QXJpYWw+PHNwYW4gbGFuZz1FTi1VUyBzdHlsZT0nZm9udC1zaXpl
+Og0KOS4wcHQ7Zm9udC1mYW1pbHk6QXJpYWwnPiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
+OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyBh
+bmRpcy4mbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsgcjAscjUsMHhjMDAwPC9zcGFuPjwv
+Zm9udD48L3A+DQoNCjxwIGNsYXNzPU1zb05vcm1hbD48Zm9udCBzaXplPTEgZmFjZT1BcmlhbD48
+c3BhbiBsYW5nPUVOLVVTIHN0eWxlPSdmb250LXNpemU6DQo5LjBwdDtmb250LWZhbWlseTpBcmlh
+bCc+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IGJuZSZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
+OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyAyZjwvc3Bhbj48L2ZvbnQ+PC9wPg0KDQo8cCBjbGFz
+cz1Nc29Ob3JtYWw+PGZvbnQgc2l6ZT0xIGZhY2U9QXJpYWw+PHNwYW4gbGFuZz1FTi1VUyBzdHls
+ZT0nZm9udC1zaXplOg0KOS4wcHQ7Zm9udC1mYW1pbHk6QXJpYWwnPiZuYnNwOyZuYnNwOyZuYnNw
+OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwOyZuYnNwOyBjbnRsencmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsgcjAscjUmbmJzcDsmbmJz
+cDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsm
+bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJz
+cDsmbmJzcDsgIw0Kd2UgYXJlIHNoaWZ0aW5nIHRoZSBkaXZpZGVuZCByaWdodDwvc3Bhbj48L2Zv
+bnQ+PC9wPg0KDQo8cCBjbGFzcz1Nc29Ob3JtYWw+PGZvbnQgc2l6ZT0xIGZhY2U9QXJpYWw+PHNw
+YW4gbGFuZz1FTi1VUyBzdHlsZT0nZm9udC1zaXplOg0KOS4wcHQ7Zm9udC1mYW1pbHk6QXJpYWwn
+PiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyBsaSZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyByMTAs
+LTEmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsm
+bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJz
+cDsmbmJzcDsgIw0KdG8gbWFrZSBpdCAmbHQ7IDJeMzIsIGFuZCBzaGlmdGluZzwvc3Bhbj48L2Zv
+bnQ+PC9wPg0KDQo8cCBjbGFzcz1Nc29Ob3JtYWw+PGZvbnQgc2l6ZT0xIGZhY2U9QXJpYWw+PHNw
+YW4gbGFuZz1FTi1VUyBzdHlsZT0nZm9udC1zaXplOg0KOS4wcHQ7Zm9udC1mYW1pbHk6QXJpYWwn
+PiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyBzcncmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsm
+bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsgcjEwLHIxMCxyMCZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
+OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyAj
+DQp0aGUgZGl2aXNvciByaWdodCB0aGUgc2FtZSBhbW91bnQsPC9zcGFuPjwvZm9udD48L3A+DQoN
+CjxwIGNsYXNzPU1zb05vcm1hbD48Zm9udCBzaXplPTEgZmFjZT1BcmlhbD48c3BhbiBsYW5nPUVO
+LVVTIHN0eWxlPSdmb250LXNpemU6DQo5LjBwdDtmb250LWZhbWlseTpBcmlhbCc+Jm5ic3A7Jm5i
+c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
+Jm5ic3A7Jm5ic3A7Jm5ic3A7IGFkZGMuJm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IHI5
+LHI0LHIxMCAjDQpyb3VuZGluZyB1cCAoc28gdGhlIGVzdGltYXRlIGNhbm5vdDwvc3Bhbj48L2Zv
+bnQ+PC9wPg0KDQo8cCBjbGFzcz1Nc29Ob3JtYWw+PGZvbnQgc2l6ZT0xIGZhY2U9QXJpYWw+PHNw
+YW4gbGFuZz1FTi1VUyBzdHlsZT0nZm9udC1zaXplOg0KOS4wcHQ7Zm9udC1mYW1pbHk6QXJpYWwn
+PiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyBhbmRjJm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
+Jm5ic3A7Jm5ic3A7IHIxMSxyNixyMTAmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJz
+cDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsgIw0KZXZlciBiZSB0
+b28gbGFyZ2UsIG9ubHkgdG9vIHNtYWxsKTwvc3Bhbj48L2ZvbnQ+PC9wPg0KDQo8cCBjbGFzcz1N
+c29Ob3JtYWw+PGZvbnQgc2l6ZT0xIGZhY2U9QXJpYWw+PHNwYW4gbGFuZz1FTi1VUyBzdHlsZT0n
+Zm9udC1zaXplOg0KOS4wcHQ7Zm9udC1mYW1pbHk6QXJpYWwnPiZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
+OyZuYnNwOyBhbmRjJm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IHI5LHI5LHIx
+MDwvc3Bhbj48L2ZvbnQ+PC9wPg0KDQo8cCBjbGFzcz1Nc29Ob3JtYWw+PGZvbnQgc2l6ZT0xIGZh
+Y2U9QXJpYWw+PHNwYW4gbGFuZz1FTi1VUyBzdHlsZT0nZm9udC1zaXplOg0KOS4wcHQ7Zm9udC1m
+YW1pbHk6QXJpYWwnPiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyBtZnhlciZuYnNwOyZuYnNw
+Ow0KcjEyJm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
+c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
+Jm5ic3A7DQojPC9zcGFuPjwvZm9udD48L3A+DQoNCjxwIGNsYXNzPU1zb05vcm1hbD48Zm9udCBz
+aXplPTEgZmFjZT1BcmlhbD48c3BhbiBsYW5nPUVOLVVTIHN0eWxlPSdmb250LXNpemU6DQo5LjBw
+dDtmb250LWZhbWlseTpBcmlhbCc+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IHJsd2lubS4N
+CnIxMiwgcjEyLCAzLCAzMSwgMzEmbmJzcDsmbmJzcDsmbmJzcDsgIyBYRVJbQ0FdPC9zcGFuPjwv
+Zm9udD48L3A+DQoNCjxwIGNsYXNzPU1zb05vcm1hbD48Zm9udCBzaXplPTEgZmFjZT1BcmlhbD48
+c3BhbiBsYW5nPUVOLVVTIHN0eWxlPSdmb250LXNpemU6DQo5LjBwdDtmb250LWZhbWlseTpBcmlh
+bCc+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IGNtcHdpJm5ic3A7Jm5ic3A7DQpyMTIsDQox
+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
+c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7DQojIGNhcnJ5ID88L3NwYW4+
+PC9mb250PjwvcD4NCg0KPHAgY2xhc3M9TXNvTm9ybWFsPjxmb250IHNpemU9MSBmYWNlPUFyaWFs
+PjxzcGFuIGxhbmc9RU4tVVMgc3R5bGU9J2ZvbnQtc2l6ZToNCjkuMHB0O2ZvbnQtZmFtaWx5OkFy
+aWFsJz4mbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJz
+cDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsgYm5lJm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
+c3A7DQo1Zjwvc3Bhbj48L2ZvbnQ+PC9wPg0KDQo8cCBjbGFzcz1Nc29Ob3JtYWw+PGZvbnQgc2l6
+ZT0xIGZhY2U9QXJpYWw+PHNwYW4gbGFuZz1FTi1VUyBzdHlsZT0nZm9udC1zaXplOg0KOS4wcHQ7
+Zm9udC1mYW1pbHk6QXJpYWwnPiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyBvcmkmbmJzcDsm
+bmJzcDsmbmJzcDsmbmJzcDsNCnI5LCByOSwgMHgxJm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
+c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7ICMNCmNhcnJ5ICE8L3NwYW4+
+PC9mb250PjwvcD4NCg0KPHAgY2xhc3M9TXNvTm9ybWFsPjxmb250IHNpemU9MSBmYWNlPUFyaWFs
+PjxzcGFuIGxhbmc9RU4tVVMgc3R5bGU9J2ZvbnQtc2l6ZToNCjkuMHB0O2ZvbnQtZmFtaWx5OkFy
+aWFsJz41Ojwvc3Bhbj48L2ZvbnQ+PC9wPg0KDQo8cCBjbGFzcz1Nc29Ob3JtYWw+PGZvbnQgc2l6
+ZT0xIGZhY2U9QXJpYWw+PHNwYW4gbGFuZz1FTi1VUyBzdHlsZT0nZm9udC1zaXplOg0KOS4wcHQ7
+Zm9udC1mYW1pbHk6QXJpYWwnPiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyBvciZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
+OyByMTEscjUscjExPC9zcGFuPjwvZm9udD48L3A+DQoNCjxwIGNsYXNzPU1zb05vcm1hbD48Zm9u
+dCBzaXplPTEgZmFjZT1BcmlhbD48c3BhbiBsYW5nPUVOLVVTIHN0eWxlPSdmb250LXNpemU6DQo5
+LjBwdDtmb250LWZhbWlseTpBcmlhbCc+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
+c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IHJvdGx3
+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IHI5LHI5LHIwPC9zcGFuPjwvZm9u
+dD48L3A+DQoNCjxwIGNsYXNzPU1zb05vcm1hbD48Zm9udCBzaXplPTEgZmFjZT1BcmlhbD48c3Bh
+biBsYW5nPUVOLVVTIHN0eWxlPSdmb250LXNpemU6DQo5LjBwdDtmb250LWZhbWlseTpBcmlhbCc+
+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
+c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IHJvdGx3Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
+Jm5ic3A7Jm5ic3A7IHIxMSxyMTEscjA8L3NwYW4+PC9mb250PjwvcD4NCg0KPHAgY2xhc3M9TXNv
+Tm9ybWFsPjxmb250IHNpemU9MSBmYWNlPUFyaWFsPjxzcGFuIGxhbmc9RU4tVVMgc3R5bGU9J2Zv
+bnQtc2l6ZToNCjkuMHB0O2ZvbnQtZmFtaWx5OkFyaWFsJz4mbmJzcDsmbmJzcDsmbmJzcDsmbmJz
+cDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsm
+bmJzcDsgZGl2d3UmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsgcjExLHIxMSxyOSZuYnNw
+OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyAjDQp0aGVuIHdlIGRpdmlkZSB0aGUgc2hpZnRlZCBxdWFudGl0aWVz
+PC9zcGFuPjwvZm9udD48L3A+DQoNCjxwIGNsYXNzPU1zb05vcm1hbD48Zm9udCBzaXplPTEgZmFj
+ZT1BcmlhbD48c3BhbiBsYW5nPUVOLVVTIHN0eWxlPSdmb250LXNpemU6DQo5LjBwdDtmb250LWZh
+bWlseTpBcmlhbCc+MjombmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsm
+bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsgbXVsbHcmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJz
+cDsgcjEwLHIxMSxyNCZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyAjDQp0byBnZXQgYW4gZXN0aW1hdGUg
+b2YgdGhlIHF1b3RpZW50LDwvc3Bhbj48L2ZvbnQ+PC9wPg0KDQo8cCBjbGFzcz1Nc29Ob3JtYWw+
+PGZvbnQgc2l6ZT0xIGZhY2U9QXJpYWw+PHNwYW4gbGFuZz1FTi1VUyBzdHlsZT0nZm9udC1zaXpl
+Og0KOS4wcHQ7Zm9udC1mYW1pbHk6QXJpYWwnPiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
+OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyBt
+dWxod3UmbmJzcDsgcjkscjExLHI0ICMNCm11bHRpcGx5IHRoZSBlc3RpbWF0ZSBieSB0aGUgZGl2
+aXNvciw8L3NwYW4+PC9mb250PjwvcD4NCg0KPHAgY2xhc3M9TXNvTm9ybWFsPjxmb250IHNpemU9
+MSBmYWNlPUFyaWFsPjxzcGFuIGxhbmc9RU4tVVMgc3R5bGU9J2ZvbnQtc2l6ZToNCjkuMHB0O2Zv
+bnQtZmFtaWx5OkFyaWFsJz4mbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJz
+cDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsgc3ViZmMmbmJzcDsm
+bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsgcjYscjEwLHI2ICMNCnRha2UgdGhlIHByb2R1Y3QgZnJv
+bSB0aGUgZGl2aXNvciw8L3NwYW4+PC9mb250PjwvcD4NCg0KPHAgY2xhc3M9TXNvTm9ybWFsPjxm
+b250IHNpemU9MSBmYWNlPUFyaWFsPjxzcGFuIGxhbmc9RU4tVVMgc3R5bGU9J2ZvbnQtc2l6ZToN
+CjkuMHB0O2ZvbnQtZmFtaWx5OkFyaWFsJz4mbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsm
+bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsgYWRk
+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IHI4LHI4LHIx
+MSAjDQphbmQgYWRkIHRoZSBlc3RpbWF0ZSB0byB0aGUgYWNjdW11bGF0ZWQ8L3NwYW4+PC9mb250
+PjwvcD4NCg0KPHAgY2xhc3M9TXNvTm9ybWFsPjxmb250IHNpemU9MSBmYWNlPUFyaWFsPjxzcGFu
+IGxhbmc9RU4tVVMgc3R5bGU9J2ZvbnQtc2l6ZToNCjkuMHB0O2ZvbnQtZmFtaWx5OkFyaWFsJz4m
+bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJz
+cDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsgc3ViZmUuJm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
+IHI1LHI5LHI1Jm5ic3A7Jm5ic3A7ICMNCnF1b3RpZW50PC9zcGFuPjwvZm9udD48L3A+DQoNCjxw
+IGNsYXNzPU1zb05vcm1hbD48Zm9udCBzaXplPTEgZmFjZT1BcmlhbD48c3BhbiBsYW5nPUVOLVVT
+IHN0eWxlPSdmb250LXNpemU6DQo5LjBwdDtmb250LWZhbWlseTpBcmlhbCc+Jm5ic3A7Jm5ic3A7
+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
+c3A7Jm5ic3A7Jm5ic3A7IGJuZSZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwOyZuYnNwOyAxYjwvc3Bhbj48L2ZvbnQ+PC9wPg0KDQo8cCBjbGFzcz1Nc29Ob3JtYWw+PGZv
+bnQgc2l6ZT0xIGZhY2U9QXJpYWw+PHNwYW4gbGFuZz1FTi1VUyBzdHlsZT0nZm9udC1zaXplOg0K
+OS4wcHQ7Zm9udC1mYW1pbHk6QXJpYWwnPjM6Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IGNtcGx3Jm5ic3A7Jm5ic3A7Jm5i
+c3A7IHI2LHI0PC9zcGFuPjwvZm9udD48L3A+DQoNCjxwIGNsYXNzPU1zb05vcm1hbD48Zm9udCBz
+aXplPTEgZmFjZT1BcmlhbD48c3BhbiBsYW5nPUVOLVVTIHN0eWxlPSdmb250LXNpemU6DQo5LjBw
+dDtmb250LWZhbWlseTpBcmlhbCc+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IGJsdCZuYnNw
+OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyA0
+Zjwvc3Bhbj48L2ZvbnQ+PC9wPg0KDQo8cCBjbGFzcz1Nc29Ob3JtYWw+PGZvbnQgc2l6ZT0xIGZh
+Y2U9QXJpYWw+PHNwYW4gbGFuZz1FTi1VUyBzdHlsZT0nZm9udC1zaXplOg0KOS4wcHQ7Zm9udC1m
+YW1pbHk6QXJpYWwnPiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyBkaXZ3dSZuYnNwOyZuYnNw
+OyZuYnNwOyZuYnNwOyZuYnNwOyByMCxyNixyNCZuYnNwOyZuYnNwOyAjDQpwZXJmb3JtIHRoZSBy
+ZW1haW5pbmcgMzItYml0IGRpdmlzaW9uPC9zcGFuPjwvZm9udD48L3A+DQoNCjxwIGNsYXNzPU1z
+b05vcm1hbD48Zm9udCBzaXplPTEgZmFjZT1BcmlhbD48c3BhbiBsYW5nPUVOLVVTIHN0eWxlPSdm
+b250LXNpemU6DQo5LjBwdDtmb250LWZhbWlseTpBcmlhbCc+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
+c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
+Jm5ic3A7IG11bGx3Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IHIxMCxyMCxyNCAjDQph
+bmQgZ2V0IHRoZSByZW1haW5kZXI8L3NwYW4+PC9mb250PjwvcD4NCg0KPHAgY2xhc3M9TXNvTm9y
+bWFsPjxmb250IHNpemU9MSBmYWNlPUFyaWFsPjxzcGFuIGxhbmc9RU4tVVMgc3R5bGU9J2ZvbnQt
+c2l6ZToNCjkuMHB0O2ZvbnQtZmFtaWx5OkFyaWFsJz4mbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsm
+bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJz
+cDsgYWRkJm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IHI4
+LHI4LHIwPC9zcGFuPjwvZm9udD48L3A+DQoNCjxwIGNsYXNzPU1zb05vcm1hbD48Zm9udCBzaXpl
+PTEgZmFjZT1BcmlhbD48c3BhbiBsYW5nPUVOLVVTIHN0eWxlPSdmb250LXNpemU6DQo5LjBwdDtm
+b250LWZhbWlseTpBcmlhbCc+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
+c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IHN1YmYmbmJzcDsm
+bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsgcjYscjEwLHI2PC9zcGFuPjwvZm9u
+dD48L3A+DQoNCjxwIGNsYXNzPU1zb05vcm1hbD48Zm9udCBzaXplPTEgZmFjZT1BcmlhbD48c3Bh
+biBsYW5nPUVOLVVTIHN0eWxlPSdmb250LXNpemU6DQo5LjBwdDtmb250LWZhbWlseTpBcmlhbCc+
+NDombmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsm
+bmJzcDsmbmJzcDsgc3R3Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
+Jm5ic3A7Jm5ic3A7IHI3LDAocjMpJm5ic3A7Jm5ic3A7ICMNCnJldHVybiB0aGUgcXVvdGllbnQg
+aW4gKnIzPC9zcGFuPjwvZm9udD48L3A+DQoNCjxwIGNsYXNzPU1zb05vcm1hbD48Zm9udCBzaXpl
+PTEgZmFjZT1BcmlhbD48c3BhbiBsYW5nPUVOLVVTIHN0eWxlPSdmb250LXNpemU6DQo5LjBwdDtm
+b250LWZhbWlseTpBcmlhbCc+Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
+c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IHN0dyZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyByOCw0KHIzKTwv
+c3Bhbj48L2ZvbnQ+PC9wPg0KDQo8cCBjbGFzcz1Nc29Ob3JtYWw+PGZvbnQgc2l6ZT0xIGZhY2U9
+QXJpYWw+PHNwYW4gbGFuZz1FTi1VUyBzdHlsZT0nZm9udC1zaXplOg0KOS4wcHQ7Zm9udC1mYW1p
+bHk6QXJpYWwnPiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
+OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyBtciZuYnNwOyZuYnNwOyZuYnNw
+OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyByMyxyNiZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
+OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwOyZuYnNwOyAjDQpyZXR1cm4gdGhlIHJlbWFpbmRlciBpbiByMzwvc3Bhbj48L2ZvbnQ+PC9w
+Pg0KDQo8cCBjbGFzcz1Nc29Ob3JtYWw+PGZvbnQgc2l6ZT0xIGZhY2U9QXJpYWw+PHNwYW4gbGFu
+Zz1FTi1VUyBzdHlsZT0nZm9udC1zaXplOg0KOS4wcHQ7Zm9udC1mYW1pbHk6QXJpYWwnPiZuYnNw
+OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyBibHI8L3NwYW4+PC9mb250PjwvcD4NCg0KPHAgY2xhc3M9
+TXNvTm9ybWFsPjxmb250IHNpemU9MSBmYWNlPUFyaWFsPjxzcGFuIGxhbmc9RU4tVVMgc3R5bGU9
+J2ZvbnQtc2l6ZToNCjkuMHB0O2ZvbnQtZmFtaWx5OkFyaWFsJz49PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PC9zcGFuPjwvZm9udD48L3A+DQoNCjxwIGNs
+YXNzPU1zb05vcm1hbD48Zm9udCBzaXplPTEgZmFjZT1BcmlhbD48c3BhbiBsYW5nPUVOLVVTIHN0
+eWxlPSdmb250LXNpemU6DQo5LjBwdDtmb250LWZhbWlseTpBcmlhbCc+Jm5ic3A7PC9zcGFuPjwv
+Zm9udD48L3A+DQoNCjxwIGNsYXNzPU1zb05vcm1hbD48Zm9udCBzaXplPTEgZmFjZT1BcmlhbD48
+c3BhbiBsYW5nPUVOLVVTIHN0eWxlPSdmb250LXNpemU6DQo5LjBwdDtmb250LWZhbWlseTpBcmlh
+bCc+QlIsPC9zcGFuPjwvZm9udD48L3A+DQoNCjxwIGNsYXNzPU1zb05vcm1hbD48Zm9udCBzaXpl
+PTEgZmFjZT1BcmlhbD48c3BhbiBsYW5nPUVOLVVTIHN0eWxlPSdmb250LXNpemU6DQo5LjBwdDtm
+b250LWZhbWlseTpBcmlhbCc+RnJlZDwvc3Bhbj48L2ZvbnQ+PC9wPg0KDQo8cCBjbGFzcz1Nc29O
+b3JtYWw+PGZvbnQgc2l6ZT0zIGZhY2U9IlRpbWVzIE5ldyBSb21hbiI+PHNwYW4gbGFuZz1FTi1V
+Uw0Kc3R5bGU9J2ZvbnQtc2l6ZToxMi4wcHQnPiZuYnNwOzwvc3Bhbj48L2ZvbnQ+PC9wPg0KDQo8
+L2Rpdj4NCg0KPC9ib2R5Pg0KDQo8L2h0bWw+DQo=
+
+------_=_NextPart_001_01C5B76A.9FCD4A3F--
