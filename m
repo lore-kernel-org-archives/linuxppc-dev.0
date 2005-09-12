@@ -1,14 +1,21 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <fred.liu@motorola.com>
+Received: from motgate8.mot.com (motgate8.mot.com [129.188.136.8])
+	by ozlabs.org (Postfix) with ESMTP id 1D7EC680F3
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Sep 2005 20:05:18 +1000 (EST)
+Received: from il06exr04.mot.com (il06exr04.mot.com [129.188.137.134])
+	by motgate8.mot.com (8.12.11/Motgate7) with ESMTP id j8CAG47t015156
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Sep 2005 03:16:04 -0700 (MST)
+Received: from zch07exm01.corp.mot.com (zch07exm01.corp.mot.com [200.3.1.220])
+	by il06exr04.mot.com (8.13.1/8.13.0) with ESMTP id j8CABr8L021297
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Sep 2005 05:11:54 -0500 (CDT)
+Message-ID: <AD266326EC54D9118CE700110A9E2BE206A30839@zch07exm01.corp.mot.com>
+From: Liu Fred-a18596 <fred.liu@motorola.com>
+To: Paul Mackerras <paulus@samba.org>
+Date: Mon, 12 Sep 2005 18:05:13 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17189.15274.167010.792875@cargo.ozlabs.ibm.com>
-Date: Mon, 12 Sep 2005 18:26:18 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Liu Fred-a18596 <fred.liu@motorola.com>
-In-Reply-To: <AD266326EC54D9118CE700110A9E2BE2069F5B90@zch07exm01.corp.mot.com>
-References: <AD266326EC54D9118CE700110A9E2BE2069F5B90@zch07exm01.corp.mot.com>
+Content-Type: text/plain
 Cc: linuxppc-dev@ozlabs.org
-Subject: Re: A bug in div64.s
+Subject: RE: A bug in div64.s
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,6 +24,20 @@ List-Post: <mailto:linuxppc-dev@ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+
+Hello, Paul,
+
+Thank you very much. Your code is really cool.
+
+Best regards,
+Fred
+
+-----Original Message-----
+From: Paul Mackerras [mailto:paulus@samba.org] 
+Sent: Monday, September 12, 2005 4:26 PM
+To: Liu Fred-a18596
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: A bug in div64.s
 
 Liu Fred-a18596 writes:
 
