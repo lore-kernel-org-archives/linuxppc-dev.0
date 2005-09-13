@@ -1,22 +1,22 @@
-Return-Path: <jacmet@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.201])
-	by ozlabs.org (Postfix) with ESMTP id 3283568294
+Return-Path: <aris@cathedrallabs.org>
+Received: from tinc.cathedrallabs.org (tinc.cathedrallabs.org [72.9.252.66])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D2BA268272
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Sep 2005 00:42:31 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id 68so2124447wri
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Sep 2005 07:42:30 -0700 (PDT)
-Message-ID: <9305ca4105091307345aa64870@mail.gmail.com>
-Date: Tue, 13 Sep 2005 16:34:20 +0200
-From: Peter Korsgaard <jacmet@gmail.com>
-To: Jeff Stevens <jsteve17@yahoo.com>
-In-Reply-To: <20050913121748.66647.qmail@web33013.mail.mud.yahoo.com>
+	Wed, 14 Sep 2005 00:51:37 +1000 (EST)
+Date: Tue, 13 Sep 2005 11:51:30 -0300
+From: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Message-ID: <20050913145130.GF9076@cathedrallabs.org>
+References: <4326968F.5030609@2net.co.uk>
+	<20050913122541.GB9076@cathedrallabs.org>
+	<20050913142513.GD10602@dmt.cnet>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20050913121748.66647.qmail@web33013.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050913142513.GD10602@dmt.cnet>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: USB root filesytem using a 2.6 kernel?
-Reply-To: jacmet@gmail.com
+Subject: Re: gdb hangs on Linux 2.6.11 on 8xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,16 +27,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 9/13/05, Jeff Stevens <jsteve17@yahoo.com> wrote:
-> Has anyone had any luck booting from a linux filesytem
-> on a USB pen drive running 2.6?
+> Can you please upgrade to a recent kernel? 
+> 
+> A problem with ptrace has been fixed sometime ago, it might be what you're hitting.
+> 
+> The fix is part of v2.6.13:
+> 
+> http://www.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=bf85fa6c878aa3968df47d7f70a2b506c3e53b99
+> 
+> If that does not work, complain. 
+sorry, but it's a 2.6.10 with this patch applied and I did test with
+2.6.13 kernel. I'll re-test with current Linus tree.
 
-It's a timing issue - your USB stick doesn't get detected / scanned
-for partitions before the kernel tries to mount the rootfs. Use the
-rootdelay kernel parameter to force a delay (of E.G. 10s) to fix it.
-
-You might need to upgrade your kernel through, I think it was added in 2.6.=
-11
-
---=20
-Bye, Peter Korsgaard
+-- 
+Aristeu
