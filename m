@@ -1,15 +1,15 @@
-Return-Path: <clemens.koller@anagramm.de>
-Message-ID: <4326AB96.2000608@anagramm.de>
-Date: Tue, 13 Sep 2005 12:36:06 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
+Return-Path: <jsteve17@yahoo.com>
+Received: from web33013.mail.mud.yahoo.com (web33013.mail.mud.yahoo.com
+	[68.142.206.77]) by ozlabs.org (Postfix) with SMTP id 439686823D
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 13 Sep 2005 22:24:28 +1000 (EST)
+Message-ID: <20050913121748.66647.qmail@web33013.mail.mud.yahoo.com>
+Date: Tue, 13 Sep 2005 05:17:48 -0700 (PDT)
+From: Jeff Stevens <jsteve17@yahoo.com>
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-To: KylongMu <mqy@263.net.cn>
-References: <20050913045242.7EF2C82D@smtp.263.net>
-In-Reply-To: <20050913045242.7EF2C82D@smtp.263.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Linuxppc-embedded@ozlabs.org
-Subject: Re: New message about: "Lost interrupt" with promise20268 PCI-IDE
- chard	onmpc8540_ads
+Content-Type: text/plain; charset=iso-8859-1
+Subject: USB root filesytem using a 2.6 kernel?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,53 +20,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello, KylongMu, Rune!
+Has anyone had any luck booting from a linux filesytem
+on a USB pen drive running 2.6?  I am running kernel
+2.6.9 that is programmed into flash and am trying to
+boot from a root filesystem on a USB pen drive.  I am
+using the kernel command line option "root=/dev/sda1".
+ I am able to NFS boot my system, and then mount my
+pen drive, and can see all of the files fine. 
+However, it tells me that I have an invalid root
+option if I try setting root to /dev/sda1.  I
+understand under 2.4 there is a patch that keeps
+trying to mount the sda1 device with time delays in
+between each try.  I tried that, but it didn't help. 
+I also tried the 2.6 patch that keeps a list of ready
+devices, and that didn't work.  I was trying to do
+this without a ramdisk, but so far it looks like I'll
+have to use one after all.
 
-(Please reply to the thread.)
+Thanks,
+   Jeff Stevens
+   jsteve17@yahoo.com
 
-> 	First I according  Clemens Koller' suggestion : remove DMA part ,
-> but the result is no change.
-
-Okay, sorry if my 'workaround' (let's call it 'cheat') didn't do it for you...
-
-> According Clemens Koller's message , I guess mabe the problem is on the
-> hardware configuration.
-> So I checked my schematics and
-> "arch/ppc/platforms/85xx/mpc85xx_ads_common.c" at line 170 .
-> The attached file is changed .
-> 	After these , "Lost interrupt" appears on PCI1-Slot1 , but my
-> PCI1-Slot2 shows no "Lost interrupt"
-> the .config file is still without change .
-> 	Another new problem is I can't mount it on , I attached the steps
-> message of new operation.
-> Please help me check it .
-
-To be honest, I didn't tell you that there are still issues with my
-mpc85xx_map_irq() and friends(). I didn't fix the table for my board
-yet as the official CR854 demo board has only on PCI slot and I just
-didn't care about proper IDSEL->IRQ mapping.
-The hardware add-on we design should be compatible to the ADS board (or to
-be precise to the default mpc8540_ads behaviour in the kernel) as much
-as possible, so there should be no need for a separate platform port.
-
-> Rune Torgersen wrote :
->>I have run a Silicon Image SiI0680 based card on a MPC8560ADS board without
-> problems
-
-Yes, but AFAIK it's only 32bit/33MHz PCI and therefore not speedy enough for
-the things we want to achieve (100..200Mbyte+/sec).
-So, this problem with the PDC has to be fixed... but it will take some time.
-
-Best greets,
-
-Clemens Koller
-_______________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Str. 45/1
-81379 Muenchen
-Germany
-
-http://www.anagramm.de
-Phone: +49-89-741518-50
-Fax: +49-89-741518-19
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
