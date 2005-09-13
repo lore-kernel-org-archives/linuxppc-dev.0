@@ -1,12 +1,11 @@
-Return-Path: <jdl@freescale.com>
-From: Jon Loeliger <jdl@freescale.com>
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	linuxppc64-dev <linuxppc64-dev@ozlabs.org>
-Content-Type: text/plain
-Message-Id: <1126631205.11056.15.camel@cashmere.sps.mot.com>
+Return-Path: <marcelo.tosatti@cyclades.com>
+Date: Tue, 13 Sep 2005 14:50:28 -0300
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: linuxppc-dev@ozlabs.org, linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Message-ID: <20050913175028.GB14889@dmt.cnet>
 Mime-Version: 1.0
-Date: Tue, 13 Sep 2005 12:06:46 -0500
-Subject: Merge Question on asm-ppc*/rwsem.h
+Content-Type: text/plain; charset=us-ascii
+Subject: __switch_to test-and-branch ALTIVEC specific?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,45 +15,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul (or anyone, really),
+Hi,
 
-I am not too familiar with some of the low-level machine
-details that might (do!) influence some of the semaphore
-implementations.  I was hoping I might get you to give
-me a quick nudge in the right direction here.
+This test&branch looks AltiVec specific, any reason for not #ifdef'ing it
+out?
 
-Here is a brief example of the differences found in
-the ppc and pp64 versions of asm-ppc*/rwsem.h:
+--- arch/ppc/kernel/process.c.orig      2005-09-13 14:43:13.000000000 -0300
++++ arch/ppc/kernel/process.c   2005-09-13 14:43:51.000000000 -0300
+@@ -287,11 +287,13 @@ struct task_struct *__switch_to(struct t
+ #endif /* CONFIG_SPE */
+ #endif /* CONFIG_SMP */
 
-    (ppc is -, and ppc64 is + here)
-
-    @@ -69,9 +74,7 @@
-      */
-     static inline void __down_read(struct rw_semaphore *sem)
-     {
-    -       if (atomic_inc_return((atomic_t *)(&sem->count)) > 0)
-    -               smp_wmb();
-    -       else
-    +       if (unlikely(atomic_inc_return((atomic_t *)(&sem->count)) <= 0))
-                    rwsem_down_read_failed(sem);
-     }
-
-If we add likely() to the PPC version, and then invert it,
-we can get effectively this:
-
-    static inline void __down_read(struct rw_semaphore *sem)
-    {
-            if (unlikely(atomic_inc_return((atomic_t *)(&sem->count)) <= 0))
-                    rwsem_down_read_failed(sem);
-    #ifndef __powerpc64__
-            else
-                    smp_wmb();
-    #endif
-    }
-
-Which begs the question, what is the "else smp_wmb();" clause
-really doing for us in the ppc32 case, and can we either
-get rid of it, or is it safe to add to the ppc64 case?
-
-Thanks,
-jdl
++#ifdef CONFIG_ALTIVEC
+        /* Avoid the trap.  On smp this this never happens since
+         * we don't set last_task_used_altivec -- Cort
+         */
+        if (new->thread.regs && last_task_used_altivec == new)
+                new->thread.regs->msr |= MSR_VEC;
++#endif
+ #ifdef CONFIG_SPE
+        /* Avoid the trap.  On smp this this never happens since
+         * we don't set last_task_used_spe
