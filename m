@@ -1,15 +1,19 @@
-Return-Path: <thisismevinay@yahoo.co.in>
-Received: from web8410.mail.in.yahoo.com (web8410.mail.in.yahoo.com
-	[202.43.219.158]) by ozlabs.org (Postfix) with SMTP id 662F468259
+Return-Path: <chris@2net.co.uk>
+Received: from smtp814.mail.ukl.yahoo.com (smtp814.mail.ukl.yahoo.com
+	[217.12.12.204]) by ozlabs.org (Postfix) with SMTP id 55DC768285
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Sep 2005 22:57:08 +1000 (EST)
-Message-ID: <20050913125706.84061.qmail@web8410.mail.in.yahoo.com>
-Date: Tue, 13 Sep 2005 13:57:06 +0100 (BST)
-From: vinay hegde <thisismevinay@yahoo.co.in>
-To: linuxppc-embedded@ozlabs.org
+	Wed, 14 Sep 2005 00:15:42 +1000 (EST)
+Message-ID: <4326DEFD.4080403@2net.co.uk>
+Date: Tue, 13 Sep 2005 15:15:25 +0100
+From: Chris <chris@2net.co.uk>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="0-24254987-1126616226=:83886"
-Subject: Regarding booting the PPC board - issue with Ramdisk
+To: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
+References: <4326968F.5030609@2net.co.uk>
+	<20050913122541.GB9076@cathedrallabs.org>
+In-Reply-To: <20050913122541.GB9076@cathedrallabs.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: gdb hangs on Linux 2.6.11 on 8xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,201 +24,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-24254987-1126616226=:83886
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Content-Id: 
-Content-Disposition: inline
+Aristeu Sergio Rozanski Filho wrote:
+>>I am running Linux 2.6.11 on a TQM823L development board. I find that 
+>>gdb (version 6.3) hangs when I try to run an application - any 
+>>application, even a simple helloworld. It's not just gdb hanging, the 
+>>whole system is stone dead.
+> 
+> "me too"
+> actually the system is not completely dead, you still can use sysrq keys.
+> Tried to use gdbserver too, but it also doesn't work (hangs after the first
+> breakpoint and timeouts).
+> 
+> gdb           S 30106778     0   691    687   692               (NOTLB)
+> Call trace:
+>  [c0005330] __switch_to+0x44/0x78
+>  [c015beb0] schedule+0x30c/0x730
+>  [c015c888] schedule_timeout+0xdc/0xe0
+>  [c0068918] sys_poll+0x27c/0x404
+>  [c0002810] syscall_dotrace_cont+0x24/0x38
+> flash_test    t 100009E4     0   692    691                     (NOTLB)
+> Call trace:
+>  [c0005330] __switch_to+0x44/0x78
+>  [c015beb0] schedule+0x30c/0x730
+>  [c0026248] ptrace_stop+0x68/0x88
+>  [c0026604] get_signal_to_deliver+0x130/0x2b4
+>  [c00063dc] do_signal+0x38/0x464
+>  [c0003034] do_user_signal+0x74/0xc4
+> 
 
-Hi ,
+Good to know that it's not just me... As you point out it's not
+completely dead. A register dump shows the following:
 
-I am trying to bring up the linux 2.6 on mvme6100
-(ppc) board. But, when I boot the board with the
-kernel image, it fails with the following error
-message:
-
->>>>>>>
-RAMDISK: Couldn't find valid RAM disk image starting
-at 0.
-Kernel panic: VFS: Unable to mount root fs on ram1
->>>>>>>
-
-I am not able to understand what is going wrong here.
-The image is comprised of compressed kernel image and
-RFS.
-Can somebody help me in this regard?
-
-I have attached the output that I get when I boot the
-board aong with this mail.
-
-Thank you,
-Vinay
+SysRq : Show Regs
+NIP: C00047BC LR: C000A0C0 SP: C09FBDD0 REGS: c09fbd20 TRAP: 0501    Not
+tainted
+MSR: 00009022 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 10
+TASK = c031f3e0[187] 'gdb' THREAD: c09fa000
+Last syscall: 26
+GPR00: 00009022 C09FBDD0 C031F3E0 00589000 00000100 C01F3000 00588000
+808B0000
+GPR08: 38600000 C01D0000 00009032 0000B100 33003035
+NIP [c00047bc] __flush_dcache_icache_phys+0x38/0x54
+LR [c000a0c0] flush_dcache_icache_page+0x20/0x30
+Call trace:
+  [c000a17c] update_mmu_cache+0x68/0x98
+  [c003dbe8] do_wp_page+0x184/0x3a4
+  [c003ebc8] handle_mm_fault+0x29c/0x42c
+  [c003ee7c] get_user_pages+0x124/0x428
+  [c001a030] access_process_vm+0xfc/0x1bc
+  [c0006680] sys_ptrace+0x22c/0x4b4
+  [c0002590] ret_from_syscall+0x0/0x44
 
 
-		
-__________________________________________________________ 
-Yahoo! India Matrimony: Find your partner now. Go to http://yahoo.shaadi.com
---0-24254987-1126616226=:83886
-Content-Type: application/vnd.sun.xml.writer; name="log.sxw"
-Content-Transfer-Encoding: base64
-Content-Description: 3147179390-log.sxw
-Content-Disposition: attachment; filename="log.sxw"
+Which looks like the call to ptrace caused a page fault, after which it
+to stopped in __flush_dcache_icache_phys for some reason. Maybe some
+serious digging is needed after all.
 
-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
-FwJeUjisxRvMNJoOYEgGJR+EkPSfWmn3St2LdnIJjejrPv+xu5F7e87wkuUk
-OSXm5rQP4e7pdoThHi06Su1zqFE44AtmNULj6eDFthMKd9zbYfIL7+HwP2Wu
-vgFQSwcIDS8cW78EAAA5EgAAUEsDBBQAAAAAAKVmLTPYw8s4ZAQAAGQEAAAI
-AAAAbWV0YS54bWw8P3htbCB2ZXJzaW9uPSIxLjAiIGVuY29kaW5nPSJVVEYt
-OCI/Pgo8IURPQ1RZUEUgb2ZmaWNlOmRvY3VtZW50LW1ldGEgUFVCTElDICIt
-Ly9PcGVuT2ZmaWNlLm9yZy8vRFREIE9mZmljZURvY3VtZW50IDEuMC8vRU4i
-ICJvZmZpY2UuZHRkIj48b2ZmaWNlOmRvY3VtZW50LW1ldGEgeG1sbnM6b2Zm
-aWNlPSJodHRwOi8vb3Blbm9mZmljZS5vcmcvMjAwMC9vZmZpY2UiIHhtbG5z
-OnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB4bWxuczpk
-Yz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iIHhtbG5zOm1l
-dGE9Imh0dHA6Ly9vcGVub2ZmaWNlLm9yZy8yMDAwL21ldGEiIG9mZmljZTp2
-ZXJzaW9uPSIxLjAiPjxvZmZpY2U6bWV0YT48bWV0YTpnZW5lcmF0b3I+T3Bl
-bk9mZmljZS5vcmcgMS4wLjIgKExpbnV4KTwvbWV0YTpnZW5lcmF0b3I+PCEt
-LVNSQzY0MV9bNzY2M11fTElOVVhfSU5URUxfX3N5bHZlc3Rlci5kZXZlbC5y
-ZWRoYXQuY29tX2F0XzIvMjAvMDNfMTI6MzM6NDUtLT48bWV0YTpjcmVhdGlv
-bi1kYXRlPjIwMDUtMDktMTNUMTc6MTg6MDQ8L21ldGE6Y3JlYXRpb24tZGF0
-ZT48ZGM6ZGF0ZT4yMDA1LTA5LTEzVDE4OjIzOjEwPC9kYzpkYXRlPjxkYzps
-YW5ndWFnZT5lbi1VUzwvZGM6bGFuZ3VhZ2U+PG1ldGE6ZWRpdGluZy1jeWNs
-ZXM+MjwvbWV0YTplZGl0aW5nLWN5Y2xlcz48bWV0YTplZGl0aW5nLWR1cmF0
-aW9uPlBUMUg1TThTPC9tZXRhOmVkaXRpbmctZHVyYXRpb24+PG1ldGE6dXNl
-ci1kZWZpbmVkIG1ldGE6bmFtZT0iSW5mbyAxIi8+PG1ldGE6dXNlci1kZWZp
-bmVkIG1ldGE6bmFtZT0iSW5mbyAyIi8+PG1ldGE6dXNlci1kZWZpbmVkIG1l
-dGE6bmFtZT0iSW5mbyAzIi8+PG1ldGE6dXNlci1kZWZpbmVkIG1ldGE6bmFt
-ZT0iSW5mbyA0Ii8+PG1ldGE6ZG9jdW1lbnQtc3RhdGlzdGljIG1ldGE6dGFi
-bGUtY291bnQ9IjAiIG1ldGE6aW1hZ2UtY291bnQ9IjAiIG1ldGE6b2JqZWN0
-LWNvdW50PSIwIiBtZXRhOnBhZ2UtY291bnQ9IjIiIG1ldGE6cGFyYWdyYXBo
-LWNvdW50PSI2OCIgbWV0YTp3b3JkLWNvdW50PSI0NzgiIG1ldGE6Y2hhcmFj
-dGVyLWNvdW50PSIzMDc5Ii8+PC9vZmZpY2U6bWV0YT48L29mZmljZTpkb2N1
-bWVudC1tZXRhPlBLAwQUAAgACAClZi0zAAAAAAAAAAAAAAAADAAAAHNldHRp
-bmdzLnhtbM1YbXeiOBT+vr/C5WtPC9rObJ3TOiegUPpiLQhWv0WSKjMhYUIQ
-7a/fBLUzU3W3q3LO9hyw4d489+bmviVXX+cJqc0wz2JGr7X6maHVMI0Yiunk
-Wgv69uml9rX1x9Wf7UerP+x1auzlJY7wF8SiPMFUnGZYCMmb1XqBee9aNe1U
-1x9TTB9LvjPGJ7re7rdry3F7Na0mBel6p6vVtCXgGRJIa13tRJda0uzLknyt
-TYVIv+g6k3LYTzkNwzD05VhbTZiTmH5/4y+K4qw4L3nrzWZTL6lr1ojRl3jy
-D9h1fcmirW3wm9XedF+r3Lpasq+AT2OBE7We2uozhYlcySzGxdsqtW1zfucP
-JT/gGPZZqq0pYpFKSkyF1mpc6ZsIH0e9xy9iG6xxGOwgRmK6Vd3zT58vDsO+
-wfFkulXp+nn9/K/9wP0pKzyMpHtgawrpBGfvBIwZIxhSrSV4jveXcYMhwnww
-jQk2OSsy6QS7BL1Akh0gyWZMVC/JpSU4fmAIHwX+NIHpaUwRnmO0uf/bA6ac
-I5MHX3zMi1z0TtVMcGWelorNAwJqVzDVG/WLA5x+R+R/Mpp765rFY4KPHvsl
-6rHzVAnq7Qp5lU8OgzaZECw5cjoZMZb0JdJ7P5syvr+BFagNI8H4dti6sSew
-m/mY4EhgZHP5YY843vLx16DcRV7F+XYGWSM/VlGXg5xDIWvzfymtAKEe5LAP
-pRv4KYyqSZE9mVuEh1XvgN8nnmPg38uWJkgRFNuS8No19oOWpZBLh8PcYknK
-caaan6O7dWkfX9qe4Fs23ll3D92BHkwxtzlLfCzy9ynqaFJUTu3BStqHEr/0
-1QrA1U4LkAu29KSKtLeYzAeMVGUczLfuLczw5wszppAvtFY+uT/RDUTGSbiA
-g4dJcHObjqlHogn4X/4FBrL7xPTDf2cdAPAgf9xyoOuXNnDMAID25ViO/aQZ
-e45tDH0wt6gp1/7JGD27Ta8R5qPn23S4MJ+ihOTICRdW0pT0UP5vG3DQzHuh
-OYuotxgOiGEl3VnkEBK9GhKn+204mJNev3M3HtiLUYPkI8f+gZ67xljNbxvi
-wS9+Pk/pt3FjPosSae8bj/X6riF1eR07YWM0KJoP4CcdJeTbqG8UFjGfvE53
-pvYId7wpcjp3gWPTUdhNcRJ87juhoXSW6xx6r7Hd6Cx3UlkCdNQYuVM0vXlq
-NOtyfXKfzZnrCJnwTQMPFFObgQIAw30eeheKHxeKH1jm6ygooYbqNSnplsLr
-o8HtK+qMlE4vT8p2gwKcKPplexIYoJx0V75KPKbwfCfMUBJKe3anwJJw6nEU
-q+ma8v3ojofeSan/cCqkfMf+PrLBm/wLhX+yKT90iBg9P0z6SXju2rczuQ+5
-4nfUyyrnF6UpFP7ccuT8AA7qJCrM+pB2Dfjs1ZFDZqWQe9CRk0r5geI/jyV/
-BEZO89xXdHOpr6L7il7vlhhe0syR3Qyg01yME286dgJQPJr9p6V8pl5Rifer
-fLVf2dIO8inlm0Ct+PqAFAAoZaJsBHYXwz3rFEhTsggyzNtQwONnMDvGBFWZ
-gX04w+HyAuORWoRlxzmwbQpxCBtDsr74Ue1JFUXdze4wpyCLIe3lNBJ5uesV
-CAIknlBZd33B0h7L4orEWDnn0lzKuVTFUr8+y3m04cTLs6r+4ZrY3Wzp1+dd
-B1PM46i24jwg7mw43y3no7qWp7yKuqctvT4QvpBdT2UNJ2dZKk9VVeE7HKbT
-OKqiGfzdFWXzn0CKtjT+h1wXrJryCTZh9H3CWU53Ho6OvZLDvLTNYVEeMKtp
-Yk0i7WHLRnmfpLnzHK1v3FXru27eW38DUEsHCO+8L0lXBQAAIhgAAFBLAwQU
-AAgACAClZi0zAAAAAAAAAAAAAAAAFQAAAE1FVEEtSU5GL21hbmlmZXN0Lnht
-bK2TsW7CMBCG9z6Fe3ty0KlCBKQSKlVqSwYYOrrOhVhy7Mi+UPL2dYdAJbJE
-YrOtu+//fLKX63NjxIl80M5mME9nIMgqV2p7zOCwf02eYb16WD7mu83+q9iK
-RlpdUeDFsBDF4eX9bSMgQdy1ZHdVpRWlzh8R830uPoa6yEbcfoKA4SgtuYQI
-v2VGKRsu2wxq5naB6CLfXflPs9kch6IIEldSpQ0lZNn3/4yp1DLhvqUMZNsa
-rSTHW+PJlmnobBpD0x+vmTxcm6rOmKSVXGeAgJMyximFVtx5ClNp0XgQ/tZW
-+n4cb2TvOk6UVDVNTGA6M8YhjIOVsxyb/6Z0V27g3lC4O7Yhlvd3Jeb4MS62
-S7x5uqtfUEsHCMk0HeETAQAAUgMAAFBLAQIUABQAAAAAAKVmLTNCKrnqEgAA
-ABIAAAAMAAAAAAAAAAAAAAAAAAAAAABsYXlvdXQtY2FjaGVQSwECFAAUAAgA
-CAClZi0zEo1SNRAJAAAyHwAACwAAAAAAAAAAAAAAAAA8AAAAY29udGVudC54
-bWxQSwECFAAUAAgACAClZi0zDS8cW78EAAA5EgAACgAAAAAAAAAAAAAAAACF
-CQAAc3R5bGVzLnhtbFBLAQIUABQAAAAAAKVmLTPYw8s4ZAQAAGQEAAAIAAAA
-AAAAAAAAAAAAAHwOAABtZXRhLnhtbFBLAQIUABQACAAIAKVmLTPvvC9JVwUA
-ACIYAAAMAAAAAAAAAAAAAAAAAAYTAABzZXR0aW5ncy54bWxQSwECFAAUAAgA
-CAClZi0zyTQd4RMBAABSAwAAFQAAAAAAAAAAAAAAAACXGAAATUVUQS1JTkYv
-bWFuaWZlc3QueG1sUEsFBgAAAAAGAAYAXgEAAO0ZAAAAAA==
-
---0-24254987-1126616226=:83886--
+Chris.
