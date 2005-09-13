@@ -1,15 +1,20 @@
-Return-Path: <jsteve17@yahoo.com>
-Received: from web33013.mail.mud.yahoo.com (web33013.mail.mud.yahoo.com
-	[68.142.206.77]) by ozlabs.org (Postfix) with SMTP id 439686823D
+Return-Path: <aris@cathedrallabs.org>
+Received: from tinc.cathedrallabs.org (tinc.cathedrallabs.org [72.9.252.66])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 08CFB68272
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Sep 2005 22:24:28 +1000 (EST)
-Message-ID: <20050913121748.66647.qmail@web33013.mail.mud.yahoo.com>
-Date: Tue, 13 Sep 2005 05:17:48 -0700 (PDT)
-From: Jeff Stevens <jsteve17@yahoo.com>
-To: linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Subject: USB root filesytem using a 2.6 kernel?
+	Tue, 13 Sep 2005 22:49:42 +1000 (EST)
+Date: Tue, 13 Sep 2005 09:25:41 -0300
+From: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
+To: Chris <chris@2net.co.uk>
+Message-ID: <20050913122541.GB9076@cathedrallabs.org>
+References: <4326968F.5030609@2net.co.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4326968F.5030609@2net.co.uk>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: gdb hangs on Linux 2.6.11 on 8xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,28 +25,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Has anyone had any luck booting from a linux filesytem
-on a USB pen drive running 2.6?  I am running kernel
-2.6.9 that is programmed into flash and am trying to
-boot from a root filesystem on a USB pen drive.  I am
-using the kernel command line option "root=/dev/sda1".
- I am able to NFS boot my system, and then mount my
-pen drive, and can see all of the files fine. 
-However, it tells me that I have an invalid root
-option if I try setting root to /dev/sda1.  I
-understand under 2.4 there is a patch that keeps
-trying to mount the sda1 device with time delays in
-between each try.  I tried that, but it didn't help. 
-I also tried the 2.6 patch that keeps a list of ready
-devices, and that didn't work.  I was trying to do
-this without a ramdisk, but so far it looks like I'll
-have to use one after all.
+> I am running Linux 2.6.11 on a TQM823L development board. I find that 
+> gdb (version 6.3) hangs when I try to run an application - any 
+> application, even a simple helloworld. It's not just gdb hanging, the 
+> whole system is stone dead.
+"me too"
+actually the system is not completely dead, you still can use sysrq keys.
+Tried to use gdbserver too, but it also doesn't work (hangs after the first
+breakpoint and timeouts).
 
-Thanks,
-   Jeff Stevens
-   jsteve17@yahoo.com
+gdb           S 30106778     0   691    687   692               (NOTLB)
+Call trace:
+ [c0005330] __switch_to+0x44/0x78
+ [c015beb0] schedule+0x30c/0x730
+ [c015c888] schedule_timeout+0xdc/0xe0
+ [c0068918] sys_poll+0x27c/0x404
+ [c0002810] syscall_dotrace_cont+0x24/0x38
+flash_test    t 100009E4     0   692    691                     (NOTLB)
+Call trace:
+ [c0005330] __switch_to+0x44/0x78
+ [c015beb0] schedule+0x30c/0x730
+ [c0026248] ptrace_stop+0x68/0x88
+ [c0026604] get_signal_to_deliver+0x130/0x2b4
+ [c00063dc] do_signal+0x38/0x464
+ [c0003034] do_user_signal+0x74/0xc4
 
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+-- 
+Aristeu
