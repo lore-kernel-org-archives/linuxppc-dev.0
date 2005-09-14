@@ -1,18 +1,17 @@
-Return-Path: <adobriyan@gmail.com>
-Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.195])
-	by ozlabs.org (Postfix) with ESMTP id 6CA8D68263
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Sep 2005 06:07:09 +1000 (EST)
-Received: by zproxy.gmail.com with SMTP id s1so22789nze
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Sep 2005 13:07:08 -0700 (PDT)
-Date: Thu, 15 Sep 2005 00:10:52 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Paul Mackerras <paulus@samba.org>
-Message-ID: <20050914201052.GJ19491@mipter.zuzino.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, Armin Kuster <akuster@mvista.com>,
-	Domen Puncer <domen@coderock.org>
-Subject: [PATCH] Remove arch/ppc/syslib/ppc4xx_pm.c
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: Kumar Gala <kumar.gala@freescale.com>
+Date: Thu, 15 Sep 2005 01:58:09 +0200
+References: <200509090623.41889.arnd@arndb.de>
+	<06F93AF6-7AF8-4320-B9E3-CBF9EA333403@freescale.com>
+In-Reply-To: <06F93AF6-7AF8-4320-B9E3-CBF9EA333403@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200509150158.10511.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, pantelis.antoniou@gmail.com,
+	linuxppc64-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] powerpc: merge include/asm/cputable.h
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,64 +21,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Domen Puncer <domen@coderock.org>
+On Middeweken 14 September 2005 21:11, Kumar Gala wrote:
+> I not sure I understand what the introduction of the enum's gets us.
+> 
+It doesn't have to be an enum, it could just as well be a #define,
+if we find that to be better in some way (maybe compile-time).
 
-Remove nowhere referenced file (grep ppc4xx_pm -r . didn't find anything)
+The general idea is to convert run-time checks into compile-time
+checks in order to improve the running kernel. If you have
 
-Signed-off-by: Domen Puncer <domen@coderock.org>
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+// start code
+enum {
+	FEATURE_1 = 1,
+	FEATURE_2 = 2,
+	PLATFORM_1 = FEATURE_1, 
+	PLATFORM_2 = FEATURE_2, 
+	PLATFORM_3 = FEATURE_1 | FEATURE_2,
+	FEATURE_POSSIBLE = 
+#ifdef CONFIG_PLATFORM_1
+		PLATFORM_1 |
+#endif
+#ifdef CONFIG_FEATURE_2
+		PLATFORM_2 |
+#endif
+#ifdef CONFIG_FEATURE_3
+		PLATFORM_3 |
+#endif
+		0,
+	FEATURE_ALWAYS =
+#ifdef CONFIG_PLATFORM_1
+		PLATFORM_1 &
+#endif
+#ifdef CONFIG_PLATFORM_2
+		PLATFORM_2 &
+#endif
+#ifdef CONFIG_PLATFORM_3
+		PLATFORM_3 &
+#endif
+		FEATURE_POSSIBLE,
+};
 
- arch/ppc/syslib/ppc4xx_pm.c |   47 --------------------------------------------
- 1 files changed, 47 deletions(-)
+static inline int have_feature(unsigned long feature)
+{
+    return (FEATURE_ALWAYS & feature) ||
+           (FEATURE_POSSIBLE & runtime_feature & feature);
+}
 
---- a/arch/ppc/syslib/ppc4xx_pm.c	2005-09-14 19:05:25.000000000 +0400
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,47 +0,0 @@
--/*
-- * Author: Armin Kuster <akuster@mvista.com>
-- *
-- * 2002 (c) MontaVista, Software, Inc.  This file is licensed under
-- * the terms of the GNU General Public License version 2.  This program
-- * is licensed "as is" without any warranty of any kind, whether express
-- * or implied.
-- *
-- * This an attempt to get Power Management going for the IBM 4xx processor.
-- * This was derived from the ppc4xx._setup.c file
-- */
--
--#include <linux/config.h>
--#include <linux/init.h>
--
--#include <asm/ibm4xx.h>
--
--void __init
--ppc4xx_pm_init(void)
--{
--
--	unsigned int value = 0;
--
--	/* turn off unused hardware to save power */
--#ifdef CONFIG_405GP
--	value |= CPM_DCP;	/* CodePack */
--#endif
--
--#if !defined(CONFIG_IBM_OCP_GPIO)
--	value |= CPM_GPIO0;
--#endif
--
--#if !defined(CONFIG_PPC405_I2C_ADAP)
--	value |= CPM_IIC0;
--#ifdef CONFIG_STB03xxx
--	value |= CPM_IIC1;
--#endif
--#endif
--
--
--#if !defined(CONFIG_405_DMA)
--	value |= CPM_DMA;
--#endif
--
--	mtdcr(DCRN_CPMFR, value);
--
--}
+int foo();
+int bar();
+int main(void)
+{
+	if (have_feature(FEATURE_1))
+		return foo();
+	if (have_feature(FEATURE_2))
+		return bar();
+	return 0;
+}
+// end code
+
+Then gcc will produce optimal object code for any combination
+of CONFIG_PLATFORM_{1,2,3}. Of course I have to admit that the
+header file is not exactly elegant ;-).
+
+	Arnd <><
