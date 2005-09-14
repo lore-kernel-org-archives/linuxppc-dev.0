@@ -1,15 +1,15 @@
-Return-Path: <kumar.gala@freescale.com>
-In-Reply-To: <20050913203555.GB18639@dmt.cnet>
-References: <20050913203555.GB18639@dmt.cnet>
-Mime-Version: 1.0 (Apple Message framework v734)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <28EAC1FF-341D-45C3-BA9E-221AE04F6DC1@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Tue, 13 Sep 2005 16:43:31 -0500
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-Cc: linuxppc-dev@ozlabs.org, cort@fsmlabs.com,
-	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: __switch_to test-and-branch ALTIVEC specific?
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc64-dev@ozlabs.org
+Date: Wed, 14 Sep 2005 04:35:21 +0200
+References: <1126644202.11056.59.camel@cashmere.sps.mot.com>
+In-Reply-To: <1126644202.11056.59.camel@cashmere.sps.mot.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200509140435.21916.arnd@arndb.de>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: Re: PATCH powerpc: Merge asm-ppc*/sections.h
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,24 +19,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Dinsdag 13 September 2005 22:43, Jon Loeliger wrote:
+> Here is a patch to merge asm-ppc*/sections.h.
+> 
+> If anyone knows if we can do better here,
+> please feel free to abuse, er, let me know!
 
-On Sep 13, 2005, at 3:35 PM, Marcelo Tosatti wrote:
+Ok, I don't like this patch. IMHO for the architecture merge, we should
+have a common implementation of this, either always using per-platform
+sections or never using them, meaning that we get rid of this file.
 
-> On Tue, Sep 13, 2005 at 02:05:57PM -0500, Kumar Gala wrote:
->
->> This probably has to due with what happens on a G4 system with a
->> kernel not build with Altivec.. However, I dont remember exactly what
->>
->
->
->> behavior is desired.
->>
->
-> What would be the appropriate set of definitions to use, then ?
->
-> #if defined (CONFIG_ALTIVEC || CONFIG_6xx) ?
+At the very least, the __*func() macros should go away, they are completely
+bogus.
 
-That's probably better.  Hopefully Ben will have some reason if what  
-you suggest is not sufficient.
+Using the sections in arch/powerpc has the obvious advantage that it
+reduces the size of the running kernel, but also has a certain amount
+of bug-potential or at least makes the code slightly more ugly.
+It is also easier to remove the feature in ppc than adding it in ppc64.
 
-- k
+The users of the ppc64 function in_kernel_text() can probably be converted
+to the generic is_kernel_text() function.
+
+	Arnd <><
