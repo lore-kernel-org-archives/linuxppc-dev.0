@@ -1,21 +1,23 @@
-Return-Path: <f.janot@ateme.fr>
-Received: from postman.ateme.net (postman.ateme.net [217.167.236.59])
-	by ozlabs.org (Postfix) with ESMTP id 7CD62682A3
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from hera.kernel.org (hera.kernel.org [209.128.68.125])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AC4F1682A0
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Sep 2005 23:11:04 +1000 (EST)
-Received: from pc179 (pc-179.ateme.net [172.16.16.179])
-	by postman.ateme.net (Postfix) with SMTP id 2C9164B8019
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Sep 2005 14:49:33 +0200 (CEST)
-Message-ID: <00a401c5b92a$c1315d50$b31010ac@pc179>
-From: "Frederic Janot" <f.janot@ateme.fr>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Wed, 14 Sep 2005 14:49:33 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: MPC5200 : BAPI versions & processor revision
-Reply-To: Frederic Janot <f.janot@ateme.fr>
+	Thu, 15 Sep 2005 00:17:14 +1000 (EST)
+Date: Wed, 14 Sep 2005 11:11:31 -0300
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Dominik Brodowski <linux@dominikbrodowski.net>,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>,
+	linux-kernel@vger.kernel.org, Pantelis Antoniou <panto@intracom.gr>,
+	Dan Malek <dan@embeddededge.com>
+Message-ID: <20050914141131.GA6830@dmt.cnet>
+References: <20050830024840.GA5381@dmt.cnet>
+	<20050901085319.GB6285@isilmar.linta.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050901085319.GB6285@isilmar.linta.de>
+Subject: Re: [PATCH] MPC8xx PCMCIA driver
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,17 +28,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+On Thu, Sep 01, 2005 at 10:53:19AM +0200, Dominik Brodowski wrote:
 
-I'm a bit confused about Bestcomm on MPC5200 and I need yours lights :)
+> > +typedef struct  {
+> > +	u_int regbit;
+> > +	u_int eventbit;
+> > +} event_table_t;
+> 
+> No typedefs, please.
 
-Since a while, and I don't know why, I believe that Rev. A (L25R) and Rev.
-B1 (M08A) of the MPC5200 processor can run well with BAPI v2.1. And with
-Rev. B2 (M62C), we have to used BAPI v2.2.
+OK, I've converted it to a plain "struct".
 
-Am I right or should I used BAPI v2.2 with all Rev B ?
-Does BAPI v2.2 is backward compatible with Rev A ?
+I think this code is just following PCMCIA style:
 
-Thanks for your reply,
+typedef struct pccard_mem_map { 
+	u_char	map;
+	u_char	flags;
+	u_short	speed;
+	u_long	static_start;
+	u_int	card_start;
+	struct resource *res;
+} pccard_mem_map;
 
-Frederic
+Any reason why this typedef and similar ones in ss.h 
+are wanted? 
+
+PCMCIA is also using u_xxx "weird data types" extensively.
