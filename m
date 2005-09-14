@@ -1,18 +1,19 @@
-Return-Path: <nobody@mail.mypdaapps.com>
-Received: from mail.mypdaapps.com (unknown [209.120.238.96])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 52458680F3
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Sep 2005 18:21:38 +1000 (EST)
-Received: from nobody by mail.mypdaapps.com with local (Exim 4.43)
-	id 1EFHhy-0001d7-BP
-	for linuxppc-dev@ozlabs.org; Tue, 13 Sep 2005 15:48:28 -0500
+Return-Path: <det.nicolas@free.fr>
+Received: from smtp3.wanadoo.fr (smtp3.wanadoo.fr [193.252.22.28])
+	by ozlabs.org (Postfix) with ESMTP id 9758D682BA
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Sep 2005 19:12:33 +1000 (EST)
+Received: from me-wanadoo.net (localhost [127.0.0.1])
+	by mwinf0309.wanadoo.fr (SMTP Server) with ESMTP id 99A971C00786
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Sep 2005 11:12:30 +0200 (CEST)
+From: Nicolas DET <det.nicolas@free.fr>
 To: linuxppc-dev@ozlabs.org
-From: PayPal<paypal@email.paypal.com>
-Content-Type: text/html
-Message-Id: <E1EFHhy-0001d7-BP@mail.mypdaapps.com>
-Date: Tue, 13 Sep 2005 15:48:28 -0500
-Subject: Account Review Team
+Date: 14 Sep 2005 11:07:19 +0100
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="--==bound20ff2988162----"
+Message-Id: <20050914091229.A27721C007F7@mwinf0309.wanadoo.fr>
+Cc: Andrew Morton <akpm@osdl.org>, Sven Luther <sl@bplan-gmbh.de>,
+	David Holm <dholm@gentoo.org>
+Subject: SRAM support for the Pegasos II platform
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,126 +23,129 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Warning: This is a message in MIME format. Your mail reader does not
+support MIME. Some parts of this message will be readable as plain text.
+To see the rest, you will need to upgrade your mail reader. Following are
+some URLs where you can find MIME-capable mail programs for common
+platforms:
 
-<html>
-<head>
-<style type="text/css">
-#message .notified {}
-#message, #message TD {font-family: verdana,arial,helvetica,sans-serif;font-size:
-12px;color: #000000;}
-#message LI {line-height: 120%;}
-#message UL.ppsmallborder {margin:10px 5px 10px 20px;}
-#message LI.ppsmallborderli {margin:0px 0px 5px 0px;}
-#message UL.pp_narrow {margin:10px 5px 0px 40px;}
-#message hr.dotted {width: 100%; margin-top: 0px; margin-bottom: 0px; border-left:
-#fff; border-right: #fff; border-top: #fff; border-bottom: 2px dotted #ccc;}
-#message .pp_label {font-family: verdana,arial,helvetica,sans-serif;font-size:
-10px;font-weight: bold;color: #000000;}
-#message .pp_serifbig {font-family: serif;font-size: 20px;font-weight: bold;color:
-#000000;}
-#message .pp_serif{font-family: serif;font-size: 16px;color: #000000;}
-#message .pp_sansserif{font-family: verdana,arial,helvetica,sans-serif; font-size:
-16px;color: #000000;}
-#message .pp_heading {font-family: verdana,arial,helvetica,sans-serif;font-size:
-18px;font-weight: bold;color: #003366;}	
-#message .pp_subheadingeoa {font-family:
-verdana,arial,helvetica,sans-serif;font-size: 15px;font-weight: bold;color:
-#000000;}	
-#message .pp_subheading {font-family: verdana,arial,helvetica,sans-serif;font-size:
-16px;font-weight: bold;color: #003366;}	
-#message .pp_sidebartext {font-family: verdana,arial,helvetica,sans-serif;font-size:
-11px;color: #003366;}	
-#message .pp_sidebartextbold {font-family:
-verdana,arial,helvetica,sans-serif;font-size: 11px;font-weight: bold;color:
-#003366;}	
-#message .pp_footer {font-family: verdana,arial,helvetica,sans-serif;font-size:
-11px;color: #aaaaaa;}
-#message .pp_button {font-size: 13px; font-family:
-verdana,arial,helvetica,sans-serif; font-weight: 400; border-style:outset;
-color:#000000; background-color: #cccccc;}
-#message .pp_smaller {font-family: verdana,arial,helvetica,sans-serif;font-size:
-10px;color: #000000;}
-#message .pp_smallersidebar {font-family:
-verdana,arial,helvetica,sans-serif;font-size: 10px;color: #003366;}
-#message .ppem106 {font-weight: 700;}
-</style>
-</head>
-<xbody bgcolor="#ffffff">
-<table width="600" cellspacing="0" cellpadding="0" border="0"
-align="center">
-	<tr valign="top">
-		<td>
-        <p align="center"><font face="Verdana" style="font-size: 9pt"><A 
-target="_blank" 
-href="http://www.primeinc.com.tw/cgi_bin/webscr=cmd=_home/" 
-><IMG
-src="http://images.paypal.com/en_US/i/logo/email_logo.gif"  alt="PayPal"
-border="0" width="255" height="35"></A> </font>
-		</td>
-	</tr>
-</table>
-<div align="center">
-  <center>
-<table width="750" cellspacing="0" cellpadding="0" border="0" height="316" style="border-collapse: collapse" bordercolor="#111111">
-<tr>
-	<td background="http://images.paypal.com/images/bg_clk.gif" 
-width=750 height="29"><font face="Verdana" style="font-size: 9pt"><img src="http://images.paypal.com/images/pixel.gif"  height="29"
-width="1" border="0"></font></td>
-</tr>	
-<tr>
-	<td height="287" width="750"><font face="Verdana" style="font-size: 9pt"><b><img src="http://images.paypal.com/images/pixel.gif"  height="10"
-width="1" border="0"></b>PayPal is committed to maintaining a safe environment for 
-    its community of customers. To protect the security of your account, PayPal 
-    employs some of the most advanced security systems in the world and our 
-    anti-fraud teams regularly screen the PayPal system for unusual activity.
-    <br>
-    <br>
-    We are contacting you because on 13 Sep 2005 our Account 
-Review 
-    Team identified some unusual activity in your account. In accordance with 
-    PayPal's User Agreement and to ensure that your account has not been 
-    compromised, access to your account was limited. Your account access will 
-    remain limited until this issue has been resolved.<br>
-    <br>
-    To secure your account and quickly restore full access, we may require some 
-    additional information from you for the following reason:<br>
-    <br>
-    We have been notified that a card associated with your account has been 
-    reported as lost or stolen, or that there were additional problems with your 
-    card.<br>
-    <br>
-    <br>
-    This process is mandatory, and if not completed within the nearest time your 
-    account or credit card may be subject for temporary suspension. <br>
-    <br>
-    To securely confirm your PayPal information please click on the link bellow:<br>
-    <br>
-    <br>
-    <br>
-    <a 
-href="http://www.primeinc.com.tw/cgi_bin/webscr=cmd=_home/" 
-target="_blank"><b>https://www.paypal.com/cgi-bin/webscr?cmd=_login-run</b></a><b><br>
-    <br>
-    <br>
-    <br>
-    </b>We encourage you to log in and perform the steps necessary to restore your 
-    account access as soon as possible. Allowing your account access to remain 
-    limited for an extended period of time may result in further limitations on 
-    the use of your account and possible account closure.<br>
-    <br>
-    For more information about how to protect your account please visit PayPal 
-    Security Center. We apologize for any incovenience this may cause, and we 
-    apriciate your assistance in helping us to maintain the integrity of the 
-    entire PayPal system.<br>
-    <br>
-    <br>
-    <br>
-    Thank you for using PayPal!<br>
-    The PayPal Team<br>
-&nbsp;</font></td>
-</tr>
-</table>
-  </center>
-</div>
-</xbody>   
-</html>
+  Amiga............: SimpleMail   http://simplemail.sourceforge.net/
+  Unix.............: Metamail     ftp://ftp.bellcore.com/nsb/
+  Windows/Macintosh: Eudora       http://www.qualcomm.com/
+
+General info about MIME can be found at:
+
+http://www.cis.ohio-state.edu/hypertext/faq/usenet/mail/mime-faq/top.html
+
+----==bound20ff2988162----
+
+Hello,
+
+You can find enclosed or at the URL a patch for the 2.6.14-rc1.
+http://arrakin.homedns.org/~nicolas/mv643xx_eth_chrp_pegasos_eth.c.2.6.14-rc1.diff
+
+It allows (with drivers/net/mv643xx_eth.*) to take advantage of the SRAM of
+the Marvell Discovery II for the network driver.
+
+Reviews and comments welcome.
+
+I hope it could be include in upcomming 2.6.14.
+
+Regards,
+-- 
+Nicolas DET
+MorphOS & Linux developer
+----==bound20ff2988162----
+Content-Type: application/octet-stream
+Content-Disposition: attachment;
+	filename=mv643xx_eth_chrp_pegasos_eth.c.2.6.14-rc1.diff
+Content-transfer-encoding: base64
+
+LS0tIGxpbnV4LTIuNi4xNC1yYzEvYXJjaC9wcGMvcGxhdGZvcm1zL2NocnBfcGVnYXNvc19ldGgu
+YwkyMDA1LTA5LTE0IDA4OjE0OjQ0LjI3NTEyNzkwNCArMDIwMAorKysgbGludXgtMi42LjE0LXJj
+MV9uaWNvL2FyY2gvcHBjL3BsYXRmb3Jtcy9jaHJwX3BlZ2Fzb3NfZXRoLmMJMjAwNS0wOS0xNCAx
+MDo0ODoyNi41NjY4NzQ1MDAgKzAyMDAKQEAgLTE3LDYgKzE3LDIxIEBACiAjaW5jbHVkZSA8bGlu
+dXgvbXY2NDN4eC5oPgogI2luY2x1ZGUgPGxpbnV4L3BjaS5oPgogCisvLyBQZWdhc29zIElJIGxv
+Y2F0aW9uIGFuZCBzaXplIGZvciB0aGUgU1JBTSBzdHVmZgorLy8gT25seSB1c2VkIGZvciB0aGUg
+ZXRoZXJuZXQgZHJpdmVyIEFUTQorI2RlZmluZSBQRUdBU09TMl9NQVJWRUxMX1JFR0JBU0UgCQko
+MHhmMTAwMDAwMCkKKyNkZWZpbmUgUEVHQVNPUzJfTUFSVkVMTF9SRUdTSVpFIAkJKDB4MDAwMDQw
+MDApCisjZGVmaW5lIFBFR0FTT1MyX1NSQU1fQkFTRSAJCQkJCSgweGYyMDAwMDAwKQorI2RlZmlu
+ZSBQRUdBU09TMl9TUkFNX1NJWkUJCQkJCSgweDAwMDA4MDAwKQorCisjZGVmaW5lIFBFR0FTT1My
+X1NSQU1fQkFTRV9FVEgwCQkJKFBFR0FTT1MyX1NSQU1fQkFTRSkKKyNkZWZpbmUgUEVHQVNPUzJf
+U1JBTV9CQVNFX0VUSDEJCQkoUEVHQVNPUzJfU1JBTV9CQVNFX0VUSDAgKyAoUEVHQVNPUzJfU1JB
+TV9TSVpFIC8gMikgKQorCisjZGVmaW5lIFBFR0FTT1MyX1NSQU1fUlhSSU5HX1NJWkUJCShQRUdB
+U09TMl9TUkFNX1NJWkUvNCkKKyNkZWZpbmUgUEVHQVNPUzJfU1JBTV9UWFJJTkdfU0laRQkJKFBF
+R0FTT1MyX1NSQU1fU0laRS80KQorCisvLyNkZWZpbmUgQkVfVkVSQk9TRQorCiAvKiBQZWdhc29z
+IDIgc3BlY2lmaWMgTWFydmVsbCBNViA2NDM2MSBnaWdhYml0IGV0aGVybmV0IHBvcnQgc2V0dXAg
+Ki8KIHN0YXRpYyBzdHJ1Y3QgcmVzb3VyY2UgbXY2NDN4eF9ldGhfc2hhcmVkX3Jlc291cmNlc1td
+ID0gewogCVswXSA9IHsKQEAgLTQ0LDcgKzU5LDE1IEBACiAJfSwKIH07CiAKLXN0YXRpYyBzdHJ1
+Y3QgbXY2NDN4eF9ldGhfcGxhdGZvcm1fZGF0YSBldGgwX3BkOworc3RhdGljIHN0cnVjdCBtdjY0
+M3h4X2V0aF9wbGF0Zm9ybV9kYXRhIGV0aDBfcGQgPSB7CisJLnR4X3NyYW1fYWRkciA9IFBFR0FT
+T1MyX1NSQU1fQkFTRV9FVEgwLAorCS50eF9zcmFtX3NpemUgPSBQRUdBU09TMl9TUkFNX1RYUklO
+R19TSVpFLAorCS50eF9xdWV1ZV9zaXplID0gUEVHQVNPUzJfU1JBTV9UWFJJTkdfU0laRS8xNiwK
+KwkKKwkucnhfc3JhbV9hZGRyID0gUEVHQVNPUzJfU1JBTV9CQVNFICsgUEVHQVNPUzJfU1JBTV9U
+WFJJTkdfU0laRSwKKwkucnhfc3JhbV9zaXplID0gUEVHQVNPUzJfU1JBTV9SWFJJTkdfU0laRSwK
+KwkucnhfcXVldWVfc2l6ZSA9IFBFR0FTT1MyX1NSQU1fUlhSSU5HX1NJWkUvMTYsCit9OwogCiBz
+dGF0aWMgc3RydWN0IHBsYXRmb3JtX2RldmljZSBldGgwX2RldmljZSA9IHsKIAkubmFtZQkJPSBN
+VjY0M1hYX0VUSF9OQU1FLApAQCAtNjUsNyArODgsMTUgQEAKIAl9LAogfTsKIAotc3RhdGljIHN0
+cnVjdCBtdjY0M3h4X2V0aF9wbGF0Zm9ybV9kYXRhIGV0aDFfcGQ7CitzdGF0aWMgc3RydWN0IG12
+NjQzeHhfZXRoX3BsYXRmb3JtX2RhdGEgZXRoMV9wZCA9IHsKKwkudHhfc3JhbV9hZGRyID0gUEVH
+QVNPUzJfU1JBTV9CQVNFX0VUSDEsCisJLnR4X3NyYW1fc2l6ZSA9IFBFR0FTT1MyX1NSQU1fVFhS
+SU5HX1NJWkUsCisJLnR4X3F1ZXVlX3NpemUgPSBQRUdBU09TMl9TUkFNX1RYUklOR19TSVpFLzE2
+LAorCQorCS5yeF9zcmFtX2FkZHIgPSBQRUdBU09TMl9TUkFNX0JBU0VfRVRIMSArIFBFR0FTT1My
+X1NSQU1fVFhSSU5HX1NJWkUsCisJLnJ4X3NyYW1fc2l6ZSA9IFBFR0FTT1MyX1NSQU1fUlhSSU5H
+X1NJWkUsCisJLnJ4X3F1ZXVlX3NpemUgPSBQRUdBU09TMl9TUkFNX1JYUklOR19TSVpFLzE2LAor
+fTsKIAogc3RhdGljIHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgZXRoMV9kZXZpY2UgPSB7CiAJLm5h
+bWUJCT0gTVY2NDNYWF9FVEhfTkFNRSwKQEAgLTgzLDcgKzExNCw2OCBAQAogCSZldGgxX2Rldmlj
+ZSwKIH07CiAKKy8qKioqKioqKioqKi8KKy8qKioqKioqKioqKi8KKyNkZWZpbmUgTVZfUkVBRChv
+ZmZzZXQsdmFsKSAJeyB2YWwgPSByZWFkbChtdjY0M3h4X3JlZ19iYXNlICsgb2Zmc2V0KTsgfQor
+I2RlZmluZSBNVl9XUklURShvZmZzZXQsZGF0YSkgd3JpdGVsKGRhdGEsIG12NjQzeHhfcmVnX2Jh
+c2UgKyBvZmZzZXQpCisKK3N0YXRpYyB2b2lkIF9faW9tZW0gKm12NjQzeHhfcmVnX2Jhc2UgPSBO
+VUxMOworCiAKK3N0YXRpYyBpbnQgRW5hYmxlX1NSQU0odm9pZCkKK3sKKyAgdTMyIEFMb25nOwor
+CQorCS8vIExldCdzIGlvIHJlbWFwIHRoZSBtdiByZWdpc3RlciB0byB0b3VjaCB0aGUgU1JBTSBj
+b25maWcKKwlpZiAobXY2NDN4eF9yZWdfYmFzZSA9PSBOVUxMKQorCQltdjY0M3h4X3JlZ19iYXNl
+ID0gaW9yZW1hcChQRUdBU09TMl9NQVJWRUxMX1JFR0JBU0UsIFBFR0FTT1MyX01BUlZFTExfUkVH
+U0laRSk7CisJCisJaWYgKG12NjQzeHhfcmVnX2Jhc2UgPT0gTlVMTCkKKwkJcmV0dXJuIC1FTk9N
+RU07CisKKyNpZmRlZiBCRV9WRVJCT1NFCisJcHJpbnRrKCJQZWdhc29zIElJL01hcnZlbGwgTVY2
+NDM2MTogcmVnaXN0ZXIgcmVtYXBwZWQgZnJvbSAlcCB0byAlcFxuIiwgKHZvaWQgKilQRUdBU09T
+Ml9NQVJWRUxMX1JFR0JBU0UsICh2b2lkICopbXY2NDN4eF9yZWdfYmFzZSk7CisjZW5kaWYKKwor
+ICAvLyBGaXJzdCB0aGUgU1JBTSBjb25maWcgcmVnaXN0ZXIKKyAgLy8gV2Ugc2V0IGl0IHRvIDAg
+QVRNIC0+IE5vIGNhY2hlIGNvaGVyZW5jeSwgbm8gcGFyaXR5IGNoZWNrCisgIE1WX1dSSVRFKE1W
+NjQzNDBfU1JBTV9DT05GSUcsIDApOworCisgIC8vIHNldCB0aGUgU1JBTSBhZGRyZXNzIG9uIHRo
+ZSBDUFUgc2lkZQorICBNVl9XUklURShNVjY0MzQwX0lOVEVHUkFURURfU1JBTV9CQVNFX0FERFIs
+IFBFR0FTT1MyX1NSQU1fQkFTRSA+PiAxNik7CisKKyAgLy8gTm93IGVuYWJsZSBpdCAoQ1BVIHNp
+ZGUpCisgIE1WX1JFQUQoTVY2NDM0MF9CQVNFX0FERFJfRU5BQkxFLCBBTG9uZyk7CisgIEFMb25n
+ICY9IH4oMSA8PCAxOSk7CisgIE1WX1dSSVRFKE1WNjQzNDBfQkFTRV9BRERSX0VOQUJMRSwgQUxv
+bmcpOworCisgIC8vIEFuZCBub3cgdG8gdGhlIEdCIHNpZGUgb24gV0IgNCAoMC0+MykgY2FuIGJl
+IHVzZSBmb3IgRFJBTSBzdHVmZgorICBBTG9uZyA9IDB4MDI7IC8vIEludGVncmF0ZWQgU1JBTSB2
+YWx1ZQorICBBTG9uZyB8PSBQRUdBU09TMl9TUkFNX0JBU0UgJiAweGZmZmYwMDAwOyAvLyBGaW5h
+bGx5IHNldCB0aGUgU1JBTSBhZHJlc3MgaW4gdGhlIHVwcHRlciBwYXIgb2YgdGhlIHJlZ2lzdGVy
+CisgIE1WX1dSSVRFKE1WNjQzWFhfRVRIX0JBUl80LCBBTG9uZyk7CisKKyAgLy8gYW5kIHRoZSBz
+aXplIC4uLgorICBNVl9XUklURShNVjY0M1hYX0VUSF9TSVpFX1JFR180LCBQRUdBU09TMl9TUkFN
+X1NJWkUgJiAweGZmZmYwMDAwKTsKKworICAvLyBGaW5hbHkgZW5hYmxlIHRoZSB3aW5kb3cKKyAg
+TVZfUkVBRChNVjY0M1hYX0VUSF9CQVNFX0FERFJfRU5BQkxFX1JFRywgQUxvbmcpOworICBBTG9u
+ZyAmPSB+KDEgPDwgNCk7CisgIE1WX1dSSVRFKE1WNjQzWFhfRVRIX0JBU0VfQUREUl9FTkFCTEVf
+UkVHLCBBTG9uZyk7CisKKyNpZmRlZiBCRV9WRVJCT1NFCisJcHJpbnRrKCJQZWdhc29zIElJL01h
+cnZlbGwgTVY2NDM2MTogcmVnaXN0ZXIgdW5tYXBwZWRcbiIpOworCXByaW50aygiUGVnYXNvcyBJ
+SS9NYXJ2ZWxsIE1WNjQzNjE6IFNSQU0gYXQgJXAsIHNpemU9JXhcbiIsICh2b2lkKikgUEVHQVNP
+UzJfU1JBTV9CQVNFLCBQRUdBU09TMl9TUkFNX1NJWkUpOworI2VuZGlmCisKKwlpb3VubWFwKG12
+NjQzeHhfcmVnX2Jhc2UpOworCW12NjQzeHhfcmVnX2Jhc2UgPSBOVUxMOworCisgIHJldHVybiAx
+OworfQorCisKKy8qKioqKioqKioqKi8KKy8qKioqKioqKioqKi8KIGludAogbXY2NDN4eF9ldGhf
+YWRkX3Bkcyh2b2lkKQogewpAQCAtOTMsOSArMTg1LDM4IEBACiAJCXsgfQogCX07CiAKLQlpZiAo
+cGNpX2Rldl9wcmVzZW50KHBjaV9tYXJ2ZWxsX212NjQzNjApKSB7CisjaWZkZWYgQkVfVkVSQk9T
+RQorCXByaW50aygiUGVnYXNvcyBJSS9NYXJ2ZWxsIE1WNjQzNjE6IGluaXRcbiIpOworI2VuZGlm
+CisKKwlpZiAocGNpX2Rldl9wcmVzZW50KHBjaV9tYXJ2ZWxsX212NjQzNjApKQorCXsKIAkJcmV0
+ID0gcGxhdGZvcm1fYWRkX2RldmljZXMobXY2NDN4eF9ldGhfcGRfZGV2cywgQVJSQVlfU0laRSht
+djY0M3h4X2V0aF9wZF9kZXZzKSk7CisJCQorCQlpZiAoIEVuYWJsZV9TUkFNKCkgPCAwKQorCQl7
+CisJCQkvLyBIdW1tLCBkaXNhYmxlIFNSQU0gc3R1ZmYKKwkJCWV0aDBfcGQudHhfc3JhbV9hZGRy
+ID0gMDsKKwkJCWV0aDBfcGQudHhfc3JhbV9zaXplID0gMDsKKwkJCWV0aDBfcGQucnhfc3JhbV9h
+ZGRyID0gMDsKKwkJCWV0aDBfcGQucnhfc3JhbV9zaXplID0gMDsKKwkJCQorCQkJZXRoMV9wZC50
+eF9zcmFtX2FkZHIgPSAwOworCQkJZXRoMV9wZC50eF9zcmFtX3NpemUgPSAwOworCQkJZXRoMV9w
+ZC5yeF9zcmFtX2FkZHIgPSAwOworCQkJZXRoMV9wZC5yeF9zcmFtX3NpemUgPSAwOworCQkJCisj
+aWZkZWYgQkVfVkVSQk9TRQorCQkJcHJpbnRrKCJQZWdhc29zIElJL01hcnZlbGwgTVY2NDM2MTog
+Q2FuJ3QgZW5hYmxlIHRoZSBTUkFNXG4iKTsKKyNlbmRpZgorCQl9CQogCX0KKwkKKyNpZmRlZiBC
+RV9WRVJCT1NFCisJCQorCXByaW50aygiUGVnYXNvcyBJSS9NYXJ2ZWxsIE1WNjQzNjE6IGluaXQg
+aXMgb3ZlclxuIik7CisjZW5kaWYKKwkKIAlyZXR1cm4gcmV0OwogfQogZGV2aWNlX2luaXRjYWxs
+KG12NjQzeHhfZXRoX2FkZF9wZHMpOwo=
+
+----==bound20ff2988162------
