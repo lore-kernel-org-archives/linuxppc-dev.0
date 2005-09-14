@@ -1,15 +1,15 @@
 Return-Path: <kumar.gala@freescale.com>
-In-Reply-To: <Pine.LNX.4.61.0509091501510.8000@nylon.am.freescale.net>
-References: <Pine.LNX.4.61.0509091501510.8000@nylon.am.freescale.net>
+In-Reply-To: <200509090623.41889.arnd@arndb.de>
+References: <200509090623.41889.arnd@arndb.de>
 Mime-Version: 1.0 (Apple Message framework v734)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <F0F2A9CC-F204-407C-A9FA-A60818D09DAB@freescale.com>
+Message-Id: <06F93AF6-7AF8-4320-B9E3-CBF9EA333403@freescale.com>
 From: Kumar Gala <kumar.gala@freescale.com>
-Date: Wed, 14 Sep 2005 10:41:26 -0500
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	linuxppc64-dev <linuxppc64-dev@ozlabs.org>
-Subject: Re: [PATCH] powerpc: Merged ppc_asm.h   
+Date: Wed, 14 Sep 2005 14:11:22 -0500
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, pantelis.antoniou@gmail.com,
+	linuxppc64-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] powerpc: merge include/asm/cputable.h
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,612 +19,1914 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul,
+Arnd,
 
-What's the status of applying this to your tree?
-
-http://patchwork.ozlabs.org/linuxppc/patch?id=2330
+I not sure I understand what the introduction of the enum's gets us.
 
 - kumar
 
-On Sep 9, 2005, at 3:02 PM, Gala Kumar K.-galak wrote:
+On Sep 8, 2005, at 11:23 PM, Arnd Bergmann wrote:
 
-> Merged ppc_asm.h between ppc32 & ppc64.  The majority of the file is
-> common between the two architectures excluding how a single GPR is
-> saved/restored and which GPRs are non-volatile.
+> This is an updated version of my old patch that creates a more  
+> optimized
+> version of cpu_has_feature(). This version actually combines
+> asm-ppc/cputable.h and asm-ppc64/cputable.h, which turned out to be
+> a lot more work than only the 64 bit version.
 >
-> Additionally, moved the ASM_CONST macro used on ppc64 into ppc_asm.h.
+> The 64 bit parts a relatively straightforward port of my earlier work
+> which I tested in a number of configurations. The 32 bit parts are
+> not tested at all, all I did was compiling the ppc defconfig with  
+> this.
 >
-> Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+> I think it is best if I hand the patch over to Kumar and Becky for
+> further testing and cleaning up the remaining bits in the new
+> file, as they appear to have invested some thought in it already.
+> This version still has a number of #ifdef __powerpc64__ that should
+> probably go away in the process.
 >
-> ---
-> commit ba0d4d2e26509b73b7daed0c203f481d0bb06ea0
-> tree fa78f19160a9174f1fec441c4f3351962c75dad4
-> parent bbe4b1a6e25818f03d09f3260345bfa4442acca0
-> author Kumar K. Gala <kumar.gala@freescale.com> Fri, 09 Sep 2005
-> 15:01:18 -0500
-> committer Kumar K. Gala <kumar.gala@freescale.com> Fri, 09 Sep 2005
-> 15:01:18 -0500
+> The patch also relies on having the ASM_CONST() macro in ppc_asm.h,
+> as proposed by Kumar Gala, so it won't work on the current git
+> head without that change.
 >
->  arch/ppc/kernel/head.S           |    6 -
->  arch/ppc/kernel/head_fsl_booke.S |    6 -
->  include/asm-powerpc/ppc_asm.h    |  437
-> ++++++++++++++++++++++++++++++++++++++
->  include/asm-ppc/ppc_asm.h        |  350  
-> ------------------------------
->  include/asm-ppc64/cputable.h     |    2
->  include/asm-ppc64/mmu.h          |    1
->  include/asm-ppc64/page.h         |    8 -
->  include/asm-ppc64/ppc_asm.h      |  242 ---------------------
->  8 files changed, 446 insertions(+), 606 deletions(-)
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 >
-> diff --git a/arch/ppc/kernel/head.S b/arch/ppc/kernel/head.S
-> --- a/arch/ppc/kernel/head.S
-> +++ b/arch/ppc/kernel/head.S
-> @@ -804,7 +804,7 @@ load_up_altivec:
->      beq    1f
->      add    r4,r4,r6
->      addi    r4,r4,THREAD    /* want THREAD of last_task_used_altivec
-> */
-> -    SAVE_32VR(0,r10,r4)
-> +    SAVE_32VRS(0,r10,r4)
->      mfvscr    vr0
->      li    r10,THREAD_VSCR
->      stvx    vr0,r10,r4
-> @@ -824,7 +824,7 @@ load_up_altivec:
->      stw    r4,THREAD_USED_VR(r5)
->      lvx    vr0,r10,r5
->      mtvscr    vr0
-> -    REST_32VR(0,r10,r5)
-> +    REST_32VRS(0,r10,r5)
->  #ifndef CONFIG_SMP
->      subi    r4,r5,THREAD
->      sub    r4,r4,r6
-> @@ -870,7 +870,7 @@ giveup_altivec:
->      addi    r3,r3,THREAD        /* want THREAD of task */
->      lwz    r5,PT_REGS(r3)
->      cmpwi    0,r5,0
-> -    SAVE_32VR(0, r4, r3)
-> +    SAVE_32VRS(0, r4, r3)
->      mfvscr    vr0
->      li    r4,THREAD_VSCR
->      stvx    vr0,r4,r3
-> diff --git a/arch/ppc/kernel/head_fsl_booke.S
-> b/arch/ppc/kernel/head_fsl_booke.S
-> --- a/arch/ppc/kernel/head_fsl_booke.S
-> +++ b/arch/ppc/kernel/head_fsl_booke.S
-> @@ -853,7 +853,7 @@ load_up_spe:
->      cmpi    0,r4,0
->      beq    1f
->      addi    r4,r4,THREAD    /* want THREAD of last_task_used_spe */
-> -    SAVE_32EVR(0,r10,r4)
-> +    SAVE_32EVRS(0,r10,r4)
->         evxor    evr10, evr10, evr10    /* clear out evr10 */
->      evmwumiaa evr10, evr10, evr10    /* evr10 <- ACC = 0 * 0 + ACC */
->      li    r5,THREAD_ACC
-> @@ -873,7 +873,7 @@ load_up_spe:
->      stw    r4,THREAD_USED_SPE(r5)
->      evlddx    evr4,r10,r5
->      evmra    evr4,evr4
-> -    REST_32EVR(0,r10,r5)
-> +    REST_32EVRS(0,r10,r5)
->  #ifndef CONFIG_SMP
->      subi    r4,r5,THREAD
->      stw    r4,last_task_used_spe@l(r3)
-> @@ -963,7 +963,7 @@ _GLOBAL(giveup_spe)
->      addi    r3,r3,THREAD        /* want THREAD of task */
->      lwz    r5,PT_REGS(r3)
->      cmpi    0,r5,0
-> -    SAVE_32EVR(0, r4, r3)
-> +    SAVE_32EVRS(0, r4, r3)
->         evxor    evr6, evr6, evr6    /* clear out evr6 */
->      evmwumiaa evr6, evr6, evr6    /* evr6 <- ACC = 0 * 0 + ACC */
->      li    r4,THREAD_ACC
-> diff --git a/include/asm-powerpc/ppc_asm.h
-> b/include/asm-powerpc/ppc_asm.h
-> new file mode 100644
-> --- /dev/null
-> +++ b/include/asm-powerpc/ppc_asm.h
-> @@ -0,0 +1,437 @@
-> +/*
-> + * Copyright (C) 1995-1999 Gary Thomas, Paul Mackerras, Cort Dougan.
-> + */
+> --
+>
+>  clean-cg/arch/ppc/kernel/cputable.c     |  401 ++++ 
+> +----------------------
+>  clean-cg/arch/ppc64/Kconfig             |   30 ++
+>  clean-cg/arch/ppc64/kernel/cputable.c   |   82 +----
+>  clean-cg/include/asm-powerpc/cputable.h |  475 ++++++++++++++++++++ 
+> ++++++++++++
+>  include/asm-ppc/cputable.h              |  128 --------
+>  include/asm-ppc64/cputable.h            |  167 -----------
+>
+> Index: clean-cg/include/asm-ppc64/cputable.h
+> ===================================================================
+> --- clean-cg.orig/include/asm-ppc64/cputable.h
+> +++ /dev/null
+> @@ -1,167 +0,0 @@
+> -/*
+> - *  include/asm-ppc64/cputable.h
+> - *
+> - *  Copyright (C) 2001 Ben. Herrenschmidt (benh@kernel.crashing.org)
+> - *
+> - *  Modifications for ppc64:
+> - *      Copyright (C) 2003 Dave Engebretsen <engebret@us.ibm.com>
+> - *
+> - *  This program is free software; you can redistribute it and/or
+> - *  modify it under the terms of the GNU General Public License
+> - *  as published by the Free Software Foundation; either version
+> - *  2 of the License, or (at your option) any later version.
+> - */
+> -
+> -#ifndef __ASM_PPC_CPUTABLE_H
+> -#define __ASM_PPC_CPUTABLE_H
+> -
+> -#include <linux/config.h>
+> -#include <asm/page.h> /* for ASM_CONST */
+> -
+> -/* Exposed to userland CPU features - Must match ppc32 definitions */
+> -#define PPC_FEATURE_32            0x80000000
+> -#define PPC_FEATURE_64            0x40000000
+> -#define PPC_FEATURE_601_INSTR        0x20000000
+> -#define PPC_FEATURE_HAS_ALTIVEC        0x10000000
+> -#define PPC_FEATURE_HAS_FPU        0x08000000
+> -#define PPC_FEATURE_HAS_MMU        0x04000000
+> -#define PPC_FEATURE_HAS_4xxMAC        0x02000000
+> -#define PPC_FEATURE_UNIFIED_CACHE    0x01000000
+> -
+> -#ifdef __KERNEL__
+> -
+> -#ifndef __ASSEMBLY__
+> -
+> -/* This structure can grow, it's real size is used by head.S code
+> - * via the mkdefs mechanism.
+> - */
+> -struct cpu_spec;
+> -struct op_ppc64_model;
+> -
+> -typedef    void (*cpu_setup_t)(unsigned long offset, struct  
+> cpu_spec* spec);
+> -
+> -struct cpu_spec {
+> -    /* CPU is matched via (PVR & pvr_mask) == pvr_value */
+> -    unsigned int    pvr_mask;
+> -    unsigned int    pvr_value;
+> -
+> -    char        *cpu_name;
+> -    unsigned long    cpu_features;        /* Kernel features */
+> -    unsigned int    cpu_user_features;    /* Userland features */
+> -
+> -    /* cache line sizes */
+> -    unsigned int    icache_bsize;
+> -    unsigned int    dcache_bsize;
+> -
+> -    /* number of performance monitor counters */
+> -    unsigned int    num_pmcs;
+> -
+> -    /* this is called to initialize various CPU bits like L1 cache,
+> -     * BHT, SPD, etc... from head.S before branching to  
+> identify_machine
+> -     */
+> -    cpu_setup_t    cpu_setup;
+> -
+> -    /* Used by oprofile userspace to select the right counters */
+> -    char        *oprofile_cpu_type;
+> -
+> -    /* Processor specific oprofile operations */
+> -    struct op_ppc64_model *oprofile_model;
+> -};
+> -
+> -extern struct cpu_spec        cpu_specs[];
+> -extern struct cpu_spec        *cur_cpu_spec;
+> -
+> -static inline unsigned long cpu_has_feature(unsigned long feature)
+> -{
+> -    return cur_cpu_spec->cpu_features & feature;
+> -}
+> -
+> -#endif /* __ASSEMBLY__ */
+> -
+> -/* CPU kernel features */
+> -
+> -/* Retain the 32b definitions for the time being - use bottom half  
+> of word */
+> -#define CPU_FTR_SPLIT_ID_CACHE        ASM_CONST(0x0000000000000001)
+> -#define CPU_FTR_L2CR            ASM_CONST(0x0000000000000002)
+> -#define CPU_FTR_SPEC7450        ASM_CONST(0x0000000000000004)
+> -#define CPU_FTR_ALTIVEC            ASM_CONST(0x0000000000000008)
+> -#define CPU_FTR_TAU            ASM_CONST(0x0000000000000010)
+> -#define CPU_FTR_CAN_DOZE        ASM_CONST(0x0000000000000020)
+> -#define CPU_FTR_USE_TB            ASM_CONST(0x0000000000000040)
+> -#define CPU_FTR_604_PERF_MON        ASM_CONST(0x0000000000000080)
+> -#define CPU_FTR_601            ASM_CONST(0x0000000000000100)
+> -#define CPU_FTR_HPTE_TABLE        ASM_CONST(0x0000000000000200)
+> -#define CPU_FTR_CAN_NAP            ASM_CONST(0x0000000000000400)
+> -#define CPU_FTR_L3CR            ASM_CONST(0x0000000000000800)
+> -#define CPU_FTR_L3_DISABLE_NAP        ASM_CONST(0x0000000000001000)
+> -#define CPU_FTR_NAP_DISABLE_L2_PR    ASM_CONST(0x0000000000002000)
+> -#define CPU_FTR_DUAL_PLL_750FX        ASM_CONST(0x0000000000004000)
+> -
+> -/* Add the 64b processor unique features in the top half of the  
+> word */
+> -#define CPU_FTR_SLB                   ASM_CONST(0x0000000100000000)
+> -#define CPU_FTR_16M_PAGE              ASM_CONST(0x0000000200000000)
+> -#define CPU_FTR_TLBIEL                 ASM_CONST(0x0000000400000000)
+> -#define CPU_FTR_NOEXECUTE             ASM_CONST(0x0000000800000000)
+> -#define CPU_FTR_NODSISRALIGN          ASM_CONST(0x0000001000000000)
+> -#define CPU_FTR_IABR              ASM_CONST(0x0000002000000000)
+> -#define CPU_FTR_MMCRA              ASM_CONST(0x0000004000000000)
+> -/* unused                 ASM_CONST(0x0000008000000000) */
+> -#define CPU_FTR_SMT              ASM_CONST(0x0000010000000000)
+> -#define CPU_FTR_COHERENT_ICACHE      ASM_CONST(0x0000020000000000)
+> -#define CPU_FTR_LOCKLESS_TLBIE        ASM_CONST(0x0000040000000000)
+> -#define CPU_FTR_MMCRA_SIHV        ASM_CONST(0x0000080000000000)
+> -#define CPU_FTR_CTRL            ASM_CONST(0x0000100000000000)
+> -
+> -#ifndef __ASSEMBLY__
+> -
+> -#define COMMON_USER_PPC64    (PPC_FEATURE_32 | PPC_FEATURE_64 | \
+> -                     PPC_FEATURE_HAS_FPU | PPC_FEATURE_HAS_MMU)
+> -
+> -#define CPU_FTR_PPCAS_ARCH_V2_BASE (CPU_FTR_SLB | \
+> -                                 CPU_FTR_TLBIEL |  
+> CPU_FTR_NOEXECUTE | \
+> -                                 CPU_FTR_NODSISRALIGN | CPU_FTR_CTRL)
+> -
+> -/* iSeries doesn't support large pages */
+> -#ifdef CONFIG_PPC_ISERIES
+> -#define CPU_FTR_PPCAS_ARCH_V2    (CPU_FTR_PPCAS_ARCH_V2_BASE)
+> -#else
+> -#define CPU_FTR_PPCAS_ARCH_V2    (CPU_FTR_PPCAS_ARCH_V2_BASE |  
+> CPU_FTR_16M_PAGE)
+> -#endif /* CONFIG_PPC_ISERIES */
+> -
+> -#endif /* __ASSEMBLY */
+> -
+> -#ifdef __ASSEMBLY__
+> -
+> -#define BEGIN_FTR_SECTION        98:
+> -
+> -#define END_FTR_SECTION(msk, val)        \
+> -99:                        \
+> -    .section __ftr_fixup,"a";        \
+> -    .align 3;                \
+> -    .llong msk;                    \
+> -    .llong val;                    \
+> -    .llong 98b;                    \
+> -    .llong 99b;                     \
+> -    .previous
+> -
+> -#else
+> -
+> -#define BEGIN_FTR_SECTION        "98:\n"
+> -#define END_FTR_SECTION(msk, val)        \
+> -"99:\n"                        \
+> -"    .section __ftr_fixup,\"a\";\n"        \
+> -"    .align 3;\n"                \
+> -"    .llong "#msk";\n"            \
+> -"    .llong "#val";\n"            \
+> -"    .llong 98b;\n"                    \
+> -"    .llong 99b;\n"                     \
+> -"    .previous\n"
+> -
+> -#endif /* __ASSEMBLY__ */
+> -
+> -#define END_FTR_SECTION_IFSET(msk)    END_FTR_SECTION((msk), (msk))
+> -#define END_FTR_SECTION_IFCLR(msk)    END_FTR_SECTION((msk), 0)
+> -
+> -#endif /* __ASM_PPC_CPUTABLE_H */
+> -#endif /* __KERNEL__ */
+> -
+> Index: clean-cg/arch/ppc64/Kconfig
+> ===================================================================
+> --- clean-cg.orig/arch/ppc64/Kconfig
+> +++ clean-cg/arch/ppc64/Kconfig
+> @@ -125,6 +125,36 @@ config BPA_IIC
+>      bool
+>      default y
+>
+> +config CPU_POWER3
+> +    bool
+> +    default y
+> +    depends on (PPC_ISERIES || PPC_PSERIES) && !POWER4_ONLY
 > +
-> +#ifndef _ASM_POWERPC_PPC_ASM_H
-> +#define _ASM_POWERPC_PPC_ASM_H
+> +config CPU_RS64
+> +    bool
+> +    default y
+> +    depends on (PPC_ISERIES || PPC_PSERIES) && !POWER4_ONLY
+> +
+> +config CPU_POWER4
+> +    bool
+> +    default y
+> +    depends on PPC_ISERIES || PPC_PSERIES
+> +
+> +config CPU_PPC970
+> +    bool
+> +    default y
+> +    depends on PPC_PSERIES || PPC_PMAC || PPC_MAPLE
+> +
+> +config CPU_POWER5
+> +    bool
+> +    default y
+> +    depends on PPC_PSERIES
+> +
+> +config CPU_CELL
+> +    bool
+> +    default y
+> +    depends on PPC_BPA
+> +
+>  # VMX is pSeries only for now until somebody writes the iSeries
+>  # exception vectors for it
+>  config ALTIVEC
+> Index: clean-cg/arch/ppc64/kernel/cputable.c
+> ===================================================================
+> --- clean-cg.orig/arch/ppc64/kernel/cputable.c
+> +++ clean-cg/arch/ppc64/kernel/cputable.c
+> @@ -37,26 +37,13 @@ extern void __setup_cpu_power4(unsigned
+>  extern void __setup_cpu_ppc970(unsigned long offset, struct  
+> cpu_spec* spec);
+>  extern void __setup_cpu_be(unsigned long offset, struct cpu_spec*  
+> spec);
+>
+> -
+> -/* We only set the altivec features if the kernel was compiled  
+> with altivec
+> - * support
+> - */
+> -#ifdef CONFIG_ALTIVEC
+> -#define CPU_FTR_ALTIVEC_COMP    CPU_FTR_ALTIVEC
+> -#define PPC_FEATURE_HAS_ALTIVEC_COMP PPC_FEATURE_HAS_ALTIVEC
+> -#else
+> -#define CPU_FTR_ALTIVEC_COMP    0
+> -#define PPC_FEATURE_HAS_ALTIVEC_COMP    0
+> -#endif
+> -
+>  struct cpu_spec    cpu_specs[] = {
+>      {    /* Power3 */
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x00400000,
+>          .cpu_name        = "POWER3 (630)",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE | CPU_FTR_IABR,
+> -        .cpu_user_features = COMMON_USER_PPC64,
+> +        .cpu_features        = CPU_FTR_POWER3,
+> +        .cpu_user_features    = COMMON_USER_PPC64,
+>          .icache_bsize        = 128,
+>          .dcache_bsize        = 128,
+>          .num_pmcs        = 8,
+> @@ -70,8 +57,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x00410000,
+>          .cpu_name        = "POWER3 (630+)",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE | CPU_FTR_IABR,
+> +        .cpu_features        = CPU_FTR_POWER3,
+>          .cpu_user_features    = COMMON_USER_PPC64,
+>          .icache_bsize        = 128,
+>          .dcache_bsize        = 128,
+> @@ -86,9 +72,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x00330000,
+>          .cpu_name        = "RS64-II (northstar)",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE | CPU_FTR_IABR |
+> -            CPU_FTR_MMCRA | CPU_FTR_CTRL,
+> +        .cpu_features        = CPU_FTR_RS64,
+>          .cpu_user_features    = COMMON_USER_PPC64,
+>          .icache_bsize        = 128,
+>          .dcache_bsize        = 128,
+> @@ -103,9 +87,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x00340000,
+>          .cpu_name        = "RS64-III (pulsar)",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE | CPU_FTR_IABR |
+> -            CPU_FTR_MMCRA | CPU_FTR_CTRL,
+> +        .cpu_features        = CPU_FTR_RS64,
+>          .cpu_user_features    = COMMON_USER_PPC64,
+>          .icache_bsize        = 128,
+>          .dcache_bsize        = 128,
+> @@ -120,9 +102,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x00360000,
+>          .cpu_name        = "RS64-III (icestar)",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE | CPU_FTR_IABR |
+> -            CPU_FTR_MMCRA | CPU_FTR_CTRL,
+> +        .cpu_features        = CPU_FTR_RS64,
+>          .cpu_user_features    = COMMON_USER_PPC64,
+>          .icache_bsize        = 128,
+>          .dcache_bsize        = 128,
+> @@ -137,9 +117,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x00370000,
+>          .cpu_name        = "RS64-IV (sstar)",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE | CPU_FTR_IABR |
+> -            CPU_FTR_MMCRA | CPU_FTR_CTRL,
+> +        .cpu_features        = CPU_FTR_RS64,
+>          .cpu_user_features    = COMMON_USER_PPC64,
+>          .icache_bsize        = 128,
+>          .dcache_bsize        = 128,
+> @@ -154,9 +132,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x00350000,
+>          .cpu_name        = "POWER4 (gp)",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE |
+> -            CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_MMCRA,
+> +        .cpu_features        = CPU_FTR_POWER4,
+>          .cpu_user_features    = COMMON_USER_PPC64,
+>          .icache_bsize        = 128,
+>          .dcache_bsize        = 128,
+> @@ -171,9 +147,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x00380000,
+>          .cpu_name        = "POWER4+ (gq)",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE |
+> -            CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_MMCRA,
+> +        .cpu_features        = CPU_FTR_POWER4,
+>          .cpu_user_features    = COMMON_USER_PPC64,
+>          .icache_bsize        = 128,
+>          .dcache_bsize        = 128,
+> @@ -188,10 +162,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x00390000,
+>          .cpu_name        = "PPC970",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE |
+> -            CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_ALTIVEC_COMP |
+> -            CPU_FTR_CAN_NAP | CPU_FTR_MMCRA,
+> +        .cpu_features        = CPU_FTR_PPC970,
+>          .cpu_user_features    = COMMON_USER_PPC64 |
+>              PPC_FEATURE_HAS_ALTIVEC_COMP,
+>          .icache_bsize        = 128,
+> @@ -207,10 +178,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x003c0000,
+>          .cpu_name        = "PPC970FX",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE |
+> -            CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_ALTIVEC_COMP |
+> -            CPU_FTR_CAN_NAP | CPU_FTR_MMCRA,
+> +        .cpu_features        = CPU_FTR_PPC970,
+>          .cpu_user_features    = COMMON_USER_PPC64 |
+>              PPC_FEATURE_HAS_ALTIVEC_COMP,
+>          .icache_bsize        = 128,
+> @@ -226,10 +194,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x00440000,
+>          .cpu_name        = "PPC970MP",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE |
+> -            CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_ALTIVEC_COMP |
+> -            CPU_FTR_CAN_NAP | CPU_FTR_MMCRA,
+> +        .cpu_features        = CPU_FTR_PPC970,
+>          .cpu_user_features    = COMMON_USER_PPC64 |
+>              PPC_FEATURE_HAS_ALTIVEC_COMP,
+>          .icache_bsize        = 128,
+> @@ -244,11 +209,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x003a0000,
+>          .cpu_name        = "POWER5 (gr)",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE |
+> -            CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_MMCRA | CPU_FTR_SMT |
+> -            CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE |
+> -            CPU_FTR_MMCRA_SIHV,
+> +        .cpu_features        = CPU_FTR_POWER5,
+>          .cpu_user_features    = COMMON_USER_PPC64,
+>          .icache_bsize        = 128,
+>          .dcache_bsize        = 128,
+> @@ -263,11 +224,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x003b0000,
+>          .cpu_name        = "POWER5 (gs)",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE |
+> -            CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_MMCRA | CPU_FTR_SMT |
+> -            CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE |
+> -            CPU_FTR_MMCRA_SIHV,
+> +        .cpu_features        = CPU_FTR_POWER5,
+>          .cpu_user_features    = COMMON_USER_PPC64,
+>          .icache_bsize        = 128,
+>          .dcache_bsize        = 128,
+> @@ -281,11 +238,8 @@ struct cpu_spec    cpu_specs[] = {
+>      {    /* BE DD1.x */
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x00700000,
+> -        .cpu_name        = "Broadband Engine",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE |
+> -            CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_ALTIVEC_COMP |
+> -            CPU_FTR_SMT,
+> +        .cpu_name        = "Cell Broadband Engine",
+> +        .cpu_features        = CPU_FTR_CELL,
+>          .cpu_user_features    = COMMON_USER_PPC64 |
+>              PPC_FEATURE_HAS_ALTIVEC_COMP,
+>          .icache_bsize        = 128,
+> @@ -296,9 +250,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0x00000000,
+>          .pvr_value        = 0x00000000,
+>          .cpu_name        = "POWER4 (compatible)",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE |
+> -            CPU_FTR_PPCAS_ARCH_V2,
+> +        .cpu_features        = CPU_FTR_COMPATIBLE,
+>          .cpu_user_features    = COMMON_USER_PPC64,
+>          .icache_bsize        = 128,
+>          .dcache_bsize        = 128,
+> Index: clean-cg/arch/ppc/kernel/cputable.c
+> ===================================================================
+> --- clean-cg.orig/arch/ppc/kernel/cputable.c
+> +++ clean-cg/arch/ppc/kernel/cputable.c
+> @@ -42,17 +42,6 @@ extern void __setup_cpu_generic(unsigned
+>  #define COMMON_PPC    (PPC_FEATURE_32 | PPC_FEATURE_HAS_FPU | \
+>               PPC_FEATURE_HAS_MMU)
+>
+> -/* We only set the altivec features if the kernel was compiled  
+> with altivec
+> - * support
+> - */
+> -#ifdef CONFIG_ALTIVEC
+> -#define CPU_FTR_ALTIVEC_COMP        CPU_FTR_ALTIVEC
+> -#define PPC_FEATURE_ALTIVEC_COMP        PPC_FEATURE_HAS_ALTIVEC
+> -#else
+> -#define CPU_FTR_ALTIVEC_COMP        0
+> -#define PPC_FEATURE_ALTIVEC_COMP           0
+> -#endif
+> -
+>  /* We only set the spe features if the kernel was compiled with
+>   * spe support
+>   */
+> @@ -62,34 +51,13 @@ extern void __setup_cpu_generic(unsigned
+>  #define PPC_FEATURE_SPE_COMP           0
+>  #endif
+>
+> -/* We need to mark all pages as being coherent if we're SMP or we
+> - * have a 74[45]x and an MPC107 host bridge.
+> - */
+> -#if defined(CONFIG_SMP) || defined(CONFIG_MPC10X_BRIDGE)
+> -#define CPU_FTR_COMMON                  CPU_FTR_NEED_COHERENT
+> -#else
+> -#define CPU_FTR_COMMON                  0
+> -#endif
+> -
+> -/* The powersave features NAP & DOZE seems to confuse BDI when
+> -   debugging. So if a BDI is used, disable theses
+> - */
+> -#ifndef CONFIG_BDI_SWITCH
+> -#define CPU_FTR_MAYBE_CAN_DOZE    CPU_FTR_CAN_DOZE
+> -#define CPU_FTR_MAYBE_CAN_NAP    CPU_FTR_CAN_NAP
+> -#else
+> -#define CPU_FTR_MAYBE_CAN_DOZE    0
+> -#define CPU_FTR_MAYBE_CAN_NAP    0
+> -#endif
+> -
+>  struct cpu_spec    cpu_specs[] = {
+>  #if CLASSIC_PPC
+>      {     /* 601 */
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x00010000,
+>          .cpu_name        = "601",
+> -        .cpu_features        = CPU_FTR_COMMON | CPU_FTR_601 |
+> -            CPU_FTR_HPTE_TABLE,
+> +        .cpu_features        = CPU_FTR_PPC601,
+>          .cpu_user_features     = COMMON_PPC | PPC_FEATURE_601_INSTR |
+>              PPC_FEATURE_UNIFIED_CACHE,
+>          .icache_bsize        = 32,
+> @@ -100,9 +68,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x00030000,
+>          .cpu_name        = "603",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE |
+> -            CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP,
+> +        .cpu_features        = CPU_FTR_603,
+>          .cpu_user_features    = COMMON_PPC,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -112,9 +78,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x00060000,
+>          .cpu_name        = "603e",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE |
+> -            CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP,
+> +        .cpu_features        = CPU_FTR_603,
+>          .cpu_user_features    = COMMON_PPC,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -124,9 +88,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x00070000,
+>          .cpu_name        = "603ev",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE |
+> -            CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP,
+> +        .cpu_features        = CPU_FTR_603,
+>          .cpu_user_features    = COMMON_PPC,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -136,9 +98,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x00040000,
+>          .cpu_name        = "604",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> -            CPU_FTR_604_PERF_MON | CPU_FTR_HPTE_TABLE,
+> +        .cpu_features        = CPU_FTR_604,
+>          .cpu_user_features    = COMMON_PPC,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -149,9 +109,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xfffff000,
+>          .pvr_value        = 0x00090000,
+>          .cpu_name        = "604e",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> -            CPU_FTR_604_PERF_MON | CPU_FTR_HPTE_TABLE,
+> +        .cpu_features        = CPU_FTR_604,
+>          .cpu_user_features    = COMMON_PPC,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -162,9 +120,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x00090000,
+>          .cpu_name        = "604r",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> -            CPU_FTR_604_PERF_MON | CPU_FTR_HPTE_TABLE,
+> +        .cpu_features        = CPU_FTR_604,
+>          .cpu_user_features    = COMMON_PPC,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -175,9 +131,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x000a0000,
+>          .cpu_name        = "604ev",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> -            CPU_FTR_604_PERF_MON | CPU_FTR_HPTE_TABLE,
+> +        .cpu_features        = CPU_FTR_604,
+>          .cpu_user_features    = COMMON_PPC,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -188,10 +142,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffffffff,
+>          .pvr_value        = 0x00084202,
+>          .cpu_name        = "740/750",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE |
+> -            CPU_FTR_USE_TB | CPU_FTR_L2CR | CPU_FTR_HPTE_TABLE |
+> -            CPU_FTR_MAYBE_CAN_NAP,
+> +        .cpu_features        = CPU_FTR_740_NOTAU,
+>          .cpu_user_features    = COMMON_PPC,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -202,10 +153,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xfffffff0,
+>          .pvr_value        = 0x00080100,
+>          .cpu_name        = "750CX",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE |
+> -            CPU_FTR_USE_TB | CPU_FTR_L2CR | CPU_FTR_TAU |
+> -            CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP,
+> +        .cpu_features        = CPU_FTR_750,
+>          .cpu_user_features    = COMMON_PPC,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -216,10 +164,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xfffffff0,
+>          .pvr_value        = 0x00082200,
+>          .cpu_name        = "750CX",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE |
+> -            CPU_FTR_USE_TB | CPU_FTR_L2CR | CPU_FTR_TAU |
+> -            CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP,
+> +        .cpu_features        = CPU_FTR_750,
+>          .cpu_user_features    = COMMON_PPC,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -230,10 +175,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xfffffff0,
+>          .pvr_value        = 0x00082210,
+>          .cpu_name        = "750CXe",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE |
+> -            CPU_FTR_USE_TB | CPU_FTR_L2CR | CPU_FTR_TAU |
+> -            CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP,
+> +        .cpu_features        = CPU_FTR_750,
+>          .cpu_user_features    = COMMON_PPC,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -244,10 +186,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffffffff,
+>          .pvr_value        = 0x00083214,
+>          .cpu_name        = "750CXe",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE |
+> -            CPU_FTR_USE_TB | CPU_FTR_L2CR | CPU_FTR_TAU |
+> -            CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP,
+> +        .cpu_features        = CPU_FTR_750,
+>          .cpu_user_features    = COMMON_PPC,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -258,10 +197,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xfffff000,
+>          .pvr_value        = 0x00083000,
+>          .cpu_name        = "745/755",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE |
+> -            CPU_FTR_USE_TB | CPU_FTR_L2CR | CPU_FTR_TAU |
+> -            CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP,
+> +        .cpu_features        = CPU_FTR_750,
+>          .cpu_user_features    = COMMON_PPC,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -272,11 +208,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffffff00,
+>          .pvr_value        = 0x70000100,
+>          .cpu_name        = "750FX",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE |
+> -            CPU_FTR_USE_TB | CPU_FTR_L2CR | CPU_FTR_TAU |
+> -            CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP |
+> -            CPU_FTR_DUAL_PLL_750FX | CPU_FTR_NO_DPM,
+> +        .cpu_features        = CPU_FTR_750FX1,
+>          .cpu_user_features    = COMMON_PPC,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -287,11 +219,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffffffff,
+>          .pvr_value        = 0x70000200,
+>          .cpu_name        = "750FX",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE |
+> -            CPU_FTR_USE_TB | CPU_FTR_L2CR | CPU_FTR_TAU |
+> -            CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP |
+> -            CPU_FTR_NO_DPM,
+> +        .cpu_features        = CPU_FTR_750FX2,
+>          .cpu_user_features    = COMMON_PPC,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -302,11 +230,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x70000000,
+>          .cpu_name        = "750FX",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE |
+> -            CPU_FTR_USE_TB | CPU_FTR_L2CR | CPU_FTR_TAU |
+> -            CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP |
+> -            CPU_FTR_DUAL_PLL_750FX | CPU_FTR_HAS_HIGH_BATS,
+> +        .cpu_features        = CPU_FTR_750FX,
+>          .cpu_user_features    = COMMON_PPC,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -317,11 +241,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x70020000,
+>          .cpu_name        = "750GX",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB |
+> -            CPU_FTR_L2CR | CPU_FTR_TAU | CPU_FTR_HPTE_TABLE |
+> -            CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_DUAL_PLL_750FX |
+> -            CPU_FTR_HAS_HIGH_BATS,
+> +        .cpu_features        = CPU_FTR_750GX,
+>          .cpu_user_features    = COMMON_PPC,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -332,10 +252,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x00080000,
+>          .cpu_name        = "740/750",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE |
+> -            CPU_FTR_USE_TB | CPU_FTR_L2CR | CPU_FTR_TAU |
+> -            CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP,
+> +        .cpu_features        = CPU_FTR_740,
+>          .cpu_user_features    = COMMON_PPC,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -346,11 +263,8 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffffffff,
+>          .pvr_value        = 0x000c1101,
+>          .cpu_name        = "7400 (1.1)",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE |
+> -            CPU_FTR_USE_TB | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP |
+> -            CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP,
+> -        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_ALTIVEC_COMP,
+> +        .cpu_features        = CPU_FTR_7400_NOTAU,
+> +        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_HAS_ALTIVEC_COMP,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+>          .num_pmcs        = 4,
+> @@ -360,12 +274,8 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x000c0000,
+>          .cpu_name        = "7400",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE |
+> -            CPU_FTR_USE_TB | CPU_FTR_L2CR | CPU_FTR_TAU |
+> -            CPU_FTR_ALTIVEC_COMP | CPU_FTR_HPTE_TABLE |
+> -            CPU_FTR_MAYBE_CAN_NAP,
+> -        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_ALTIVEC_COMP,
+> +        .cpu_features        = CPU_FTR_7400,
+> +        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_HAS_ALTIVEC_COMP,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+>          .num_pmcs        = 4,
+> @@ -375,12 +285,8 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x800c0000,
+>          .cpu_name        = "7410",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE |
+> -            CPU_FTR_USE_TB | CPU_FTR_L2CR | CPU_FTR_TAU |
+> -            CPU_FTR_ALTIVEC_COMP | CPU_FTR_HPTE_TABLE |
+> -            CPU_FTR_MAYBE_CAN_NAP,
+> -        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_ALTIVEC_COMP,
+> +        .cpu_features        = CPU_FTR_7400,
+> +        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_HAS_ALTIVEC_COMP,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+>          .num_pmcs        = 4,
+> @@ -390,12 +296,8 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffffffff,
+>          .pvr_value        = 0x80000200,
+>          .cpu_name        = "7450",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> -            CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
+> -            CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
+> -            CPU_FTR_NEED_COHERENT,
+> -        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_ALTIVEC_COMP,
+> +        .cpu_features        = CPU_FTR_7450_20,
+> +        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_HAS_ALTIVEC_COMP,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+>          .num_pmcs        = 6,
+> @@ -405,14 +307,8 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffffffff,
+>          .pvr_value        = 0x80000201,
+>          .cpu_name        = "7450",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> -            CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR |
+> -            CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
+> -            CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
+> -            CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_L3_DISABLE_NAP |
+> -            CPU_FTR_NEED_COHERENT,
+> -        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_ALTIVEC_COMP,
+> +        .cpu_features        = CPU_FTR_7450_21,
+> +        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_HAS_ALTIVEC_COMP,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+>          .num_pmcs        = 6,
+> @@ -422,13 +318,8 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x80000000,
+>          .cpu_name        = "7450",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> -            CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR |
+> -            CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
+> -            CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
+> -            CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_NEED_COHERENT,
+> -        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_ALTIVEC_COMP,
+> +        .cpu_features        = CPU_FTR_7450_23,
+> +        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_HAS_ALTIVEC_COMP,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+>          .num_pmcs        = 6,
+> @@ -438,12 +329,8 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffffff00,
+>          .pvr_value        = 0x80010100,
+>          .cpu_name        = "7455",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> -            CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
+> -            CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
+> -            CPU_FTR_HAS_HIGH_BATS | CPU_FTR_NEED_COHERENT,
+> -        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_ALTIVEC_COMP,
+> +        .cpu_features        = CPU_FTR_7455_1,
+> +        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_HAS_ALTIVEC_COMP,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+>          .num_pmcs        = 6,
+> @@ -453,14 +340,8 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffffffff,
+>          .pvr_value        = 0x80010200,
+>          .cpu_name        = "7455",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> -            CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR |
+> -            CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
+> -            CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
+> -            CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_L3_DISABLE_NAP |
+> -            CPU_FTR_NEED_COHERENT | CPU_FTR_HAS_HIGH_BATS,
+> -        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_ALTIVEC_COMP,
+> +        .cpu_features        = CPU_FTR_7455_20,
+> +        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_HAS_ALTIVEC_COMP,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+>          .num_pmcs        = 6,
+> @@ -470,14 +351,8 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x80010000,
+>          .cpu_name        = "7455",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> -            CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR |
+> -            CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
+> -            CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
+> -            CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS |
+> -            CPU_FTR_NEED_COHERENT,
+> -        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_ALTIVEC_COMP,
+> +        .cpu_features        = CPU_FTR_7455,
+> +        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_HAS_ALTIVEC_COMP,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+>          .num_pmcs        = 6,
+> @@ -487,14 +362,8 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffffffff,
+>          .pvr_value        = 0x80020100,
+>          .cpu_name        = "7447/7457",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> -            CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR |
+> -            CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
+> -            CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
+> -            CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS |
+> -            CPU_FTR_NEED_COHERENT | CPU_FTR_NO_BTIC,
+> -        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_ALTIVEC_COMP,
+> +        .cpu_features        = CPU_FTR_7447_10,
+> +        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_HAS_ALTIVEC_COMP,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+>          .num_pmcs        = 6,
+> @@ -504,14 +373,8 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffffffff,
+>          .pvr_value        = 0x80020101,
+>          .cpu_name        = "7447/7457",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> -            CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR |
+> -            CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
+> -            CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
+> -            CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS |
+> -            CPU_FTR_NEED_COHERENT | CPU_FTR_NO_BTIC,
+> -        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_ALTIVEC_COMP,
+> +        .cpu_features        = CPU_FTR_7447_10,
+> +        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_HAS_ALTIVEC_COMP,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+>          .num_pmcs        = 6,
+> @@ -521,14 +384,8 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x80020000,
+>          .cpu_name        = "7447/7457",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> -            CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR |
+> -            CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
+> -            CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
+> -            CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS |
+> -            CPU_FTR_NEED_COHERENT,
+> -        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_ALTIVEC_COMP,
+> +        .cpu_features        = CPU_FTR_7447,
+> +        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_HAS_ALTIVEC_COMP,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+>          .num_pmcs        = 6,
+> @@ -538,13 +395,8 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x80030000,
+>          .cpu_name        = "7447A",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> -            CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR |
+> -            CPU_FTR_ALTIVEC_COMP | CPU_FTR_HPTE_TABLE |
+> -            CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR |
+> -            CPU_FTR_HAS_HIGH_BATS | CPU_FTR_NEED_COHERENT,
+> -        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_ALTIVEC_COMP,
+> +        .cpu_features        = CPU_FTR_7447A,
+> +        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_HAS_ALTIVEC_COMP,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+>          .num_pmcs        = 6,
+> @@ -554,13 +406,8 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x80040000,
+>          .cpu_name        = "7448",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> -            CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR |
+> -            CPU_FTR_ALTIVEC_COMP | CPU_FTR_HPTE_TABLE |
+> -            CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR |
+> -            CPU_FTR_HAS_HIGH_BATS | CPU_FTR_NEED_COHERENT,
+> -        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_ALTIVEC_COMP,
+> +        .cpu_features        = CPU_FTR_7447A,
+> +        .cpu_user_features    = COMMON_PPC |  
+> PPC_FEATURE_HAS_ALTIVEC_COMP,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+>          .num_pmcs        = 6,
+> @@ -570,9 +417,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0x7fff0000,
+>          .pvr_value        = 0x00810000,
+>          .cpu_name        = "82xx",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE |
+> -            CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_82XX,
+>          .cpu_user_features    = COMMON_PPC,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -582,9 +427,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0x7fff0000,
+>          .pvr_value        = 0x00820000,
+>          .cpu_name        = "G2_LE",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB |
+> -            CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_HAS_HIGH_BATS,
+> +        .cpu_features        = CPU_FTR_G2_LE,
+>          .cpu_user_features    = COMMON_PPC,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -594,9 +437,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0x7fff0000,
+>          .pvr_value        = 0x00830000,
+>          .cpu_name        = "e300",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB |
+> -            CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_HAS_HIGH_BATS,
+> +        .cpu_features        = CPU_FTR_E300,
+>          .cpu_user_features    = COMMON_PPC,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -606,9 +447,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0x00000000,
+>          .pvr_value        = 0x00000000,
+>          .cpu_name        = "(generic PPC)",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> -            CPU_FTR_HPTE_TABLE,
+> +        .cpu_features        = CPU_FTR_CLASSIC32,
+>          .cpu_user_features    = COMMON_PPC,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -620,9 +459,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x00400000,
+>          .cpu_name        = "Power3 (630)",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> -            CPU_FTR_HPTE_TABLE,
+> +        .cpu_features        = CPU_FTR_POWER3_32,
+>          .cpu_user_features    = COMMON_PPC | PPC_FEATURE_64,
+>          .icache_bsize        = 128,
+>          .dcache_bsize        = 128,
+> @@ -633,9 +470,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x00410000,
+>          .cpu_name        = "Power3 (630+)",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> -            CPU_FTR_HPTE_TABLE,
+> +        .cpu_features        = CPU_FTR_POWER3_32,
+>          .cpu_user_features    = COMMON_PPC | PPC_FEATURE_64,
+>          .icache_bsize        = 128,
+>          .dcache_bsize        = 128,
+> @@ -646,9 +481,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x00360000,
+>          .cpu_name        = "I-star",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> -            CPU_FTR_HPTE_TABLE,
+> +        .cpu_features        = CPU_FTR_POWER3_32,
+>          .cpu_user_features    = COMMON_PPC | PPC_FEATURE_64,
+>          .icache_bsize        = 128,
+>          .dcache_bsize        = 128,
+> @@ -659,55 +492,19 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x00370000,
+>          .cpu_name        = "S-star",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> -            CPU_FTR_HPTE_TABLE,
+> +        .cpu_features        = CPU_FTR_POWER3_32,
+>          .cpu_user_features    = COMMON_PPC | PPC_FEATURE_64,
+>          .icache_bsize        = 128,
+>          .dcache_bsize        = 128,
+>          .num_pmcs        = 8,
+>          .cpu_setup        = __setup_cpu_power3
+>      },
+> -#endif /* CONFIG_PPC64BRIDGE */
+> -#ifdef CONFIG_POWER4
+> -    {    /* Power4 */
+> -        .pvr_mask        = 0xffff0000,
+> -        .pvr_value        = 0x00350000,
+> -        .cpu_name        = "Power4",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> -            CPU_FTR_HPTE_TABLE,
+> -        .cpu_user_features    = COMMON_PPC | PPC_FEATURE_64,
+> -        .icache_bsize        = 128,
+> -        .dcache_bsize        = 128,
+> -        .num_pmcs        = 8,
+> -        .cpu_setup        = __setup_cpu_power4
+> -    },
+> -    {    /* PPC970 */
+> -        .pvr_mask        = 0xffff0000,
+> -        .pvr_value        = 0x00390000,
+> -        .cpu_name        = "PPC970",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> -            CPU_FTR_HPTE_TABLE |
+> -            CPU_FTR_ALTIVEC_COMP | CPU_FTR_MAYBE_CAN_NAP,
+> -        .cpu_user_features    = COMMON_PPC | PPC_FEATURE_64 |
+> -            PPC_FEATURE_ALTIVEC_COMP,
+> -        .icache_bsize        = 128,
+> -        .dcache_bsize        = 128,
+> -        .num_pmcs        = 8,
+> -        .cpu_setup        = __setup_cpu_ppc970
+> -    },
+>      {    /* PPC970FX */
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x003c0000,
+>          .cpu_name        = "PPC970FX",
+> -        .cpu_features        = CPU_FTR_COMMON |
+> -            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> -            CPU_FTR_HPTE_TABLE |
+> -            CPU_FTR_ALTIVEC_COMP | CPU_FTR_MAYBE_CAN_NAP,
+> -        .cpu_user_features    = COMMON_PPC | PPC_FEATURE_64 |
+> -            PPC_FEATURE_ALTIVEC_COMP,
+> +        .cpu_features        = CPU_FTR_970_32,
+> +        .cpu_user_features    = COMMON_PPC | PPC_FEATURE_64 |  
+> PPC_FEATURE_HAS_ALTIVEC_COMP,
+>          .icache_bsize        = 128,
+>          .dcache_bsize        = 128,
+>          .num_pmcs        = 8,
+> @@ -721,8 +518,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .cpu_name        = "8xx",
+>          /* CPU_FTR_MAYBE_CAN_DOZE is possible,
+>           * if the 8xx code is there.... */
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_8XX,
+>          .cpu_user_features    = PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
+>          .icache_bsize        = 16,
+>          .dcache_bsize        = 16,
+> @@ -733,8 +529,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffffff00,
+>          .pvr_value        = 0x00200200,
+>          .cpu_name        = "403GC",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_40X,
+>          .cpu_user_features    = PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
+>          .icache_bsize        = 16,
+>          .dcache_bsize        = 16,
+> @@ -743,8 +538,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffffff00,
+>          .pvr_value        = 0x00201400,
+>          .cpu_name        = "403GCX",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_40X,
+>          .cpu_user_features    = PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
+>          .icache_bsize        = 16,
+>          .dcache_bsize        = 16,
+> @@ -753,8 +547,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x00200000,
+>          .cpu_name        = "403G ??",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_40X,
+>          .cpu_user_features    = PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
+>          .icache_bsize        = 16,
+>          .dcache_bsize        = 16,
+> @@ -763,8 +556,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x40110000,
+>          .cpu_name        = "405GP",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_40X,
+>          .cpu_user_features    = PPC_FEATURE_32 |
+>              PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
+>          .icache_bsize        = 32,
+> @@ -774,8 +566,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x40130000,
+>          .cpu_name        = "STB03xxx",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_40X,
+>          .cpu_user_features    = PPC_FEATURE_32 |
+>              PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
+>          .icache_bsize        = 32,
+> @@ -785,8 +576,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x41810000,
+>          .cpu_name        = "STB04xxx",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_40X,
+>          .cpu_user_features    = PPC_FEATURE_32 |
+>              PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
+>          .icache_bsize        = 32,
+> @@ -796,8 +586,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x41610000,
+>          .cpu_name        = "NP405L",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_40X,
+>          .cpu_user_features    = PPC_FEATURE_32 |
+>              PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
+>          .icache_bsize        = 32,
+> @@ -807,8 +596,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x40B10000,
+>          .cpu_name        = "NP4GS3",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_40X,
+>          .cpu_user_features    = PPC_FEATURE_32 |
+>              PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
+>          .icache_bsize        = 32,
+> @@ -818,8 +606,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x41410000,
+>          .cpu_name        = "NP405H",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_40X,
+>          .cpu_user_features    = PPC_FEATURE_32 |
+>              PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
+>          .icache_bsize        = 32,
+> @@ -829,8 +616,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x50910000,
+>          .cpu_name        = "405GPr",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_40X,
+>          .cpu_user_features    = PPC_FEATURE_32 |
+>              PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
+>          .icache_bsize        = 32,
+> @@ -840,8 +626,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x51510000,
+>          .cpu_name        = "STBx25xx",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_40X,
+>          .cpu_user_features    = PPC_FEATURE_32 |
+>              PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
+>          .icache_bsize        = 32,
+> @@ -851,8 +636,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x41F10000,
+>          .cpu_name        = "405LP",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_40X,
+>          .cpu_user_features    = PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -861,8 +645,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x20010000,
+>          .cpu_name        = "Virtex-II Pro",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_40X,
+>          .cpu_user_features    = PPC_FEATURE_32 |
+>              PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
+>          .icache_bsize        = 32,
+> @@ -872,8 +655,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xffff0000,
+>          .pvr_value        = 0x51210000,
+>          .cpu_name        = "405EP",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_40X,
+>          .cpu_user_features    = PPC_FEATURE_32 |
+>              PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
+>          .icache_bsize        = 32,
+> @@ -886,8 +668,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xf0000fff,
+>          .pvr_value        = 0x40000850,
+>          .cpu_name        = "440EP Rev. A",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_44X,
+>          .cpu_user_features    = COMMON_PPC, /* 440EP has an FPU */
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -896,8 +677,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xf0000fff,
+>          .pvr_value        = 0x400008d3,
+>          .cpu_name        = "440EP Rev. B",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_44X,
+>          .cpu_user_features    = COMMON_PPC, /* 440EP has an FPU */
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -906,8 +686,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xf0000fff,
+>          .pvr_value        = 0x40000440,
+>          .cpu_name        = "440GP Rev. B",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_44X,
+>          .cpu_user_features    = PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -916,8 +695,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xf0000fff,
+>          .pvr_value        = 0x40000481,
+>          .cpu_name        = "440GP Rev. C",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_44X,
+>          .cpu_user_features    = PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -926,8 +704,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xf0000fff,
+>          .pvr_value        = 0x50000850,
+>          .cpu_name        = "440GX Rev. A",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_44X,
+>          .cpu_user_features    = PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -936,8 +713,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xf0000fff,
+>          .pvr_value        = 0x50000851,
+>          .cpu_name        = "440GX Rev. B",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_44X,
+>          .cpu_user_features    = PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -946,8 +722,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xf0000fff,
+>          .pvr_value        = 0x50000892,
+>          .cpu_name        = "440GX Rev. C",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_44X,
+>          .cpu_user_features    = PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -956,8 +731,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xf0000fff,
+>          .pvr_value        = 0x50000894,
+>          .cpu_name        = "440GX Rev. F",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_44X,
+>          .cpu_user_features    = PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -966,8 +740,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0xff000fff,
+>          .pvr_value        = 0x53000891,
+>          .cpu_name        = "440SP Rev. A",
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_44X,
+>          .cpu_user_features    = PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> @@ -979,7 +752,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_value        = 0x81000000,
+>          .cpu_name        = "e200z5",
+>          /* xxx - galak: add CPU_FTR_MAYBE_CAN_DOZE */
+> -        .cpu_features        = CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_E200,
+>          .cpu_user_features    = PPC_FEATURE_32 |
+>              PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_EFP_SINGLE |
+>              PPC_FEATURE_UNIFIED_CACHE,
+> @@ -990,7 +763,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_value        = 0x81100000,
+>          .cpu_name        = "e200z6",
+>          /* xxx - galak: add CPU_FTR_MAYBE_CAN_DOZE */
+> -        .cpu_features        = CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_E200,
+>          .cpu_user_features    = PPC_FEATURE_32 |
+>              PPC_FEATURE_HAS_MMU | PPC_FEATURE_SPE_COMP |
+>              PPC_FEATURE_HAS_EFP_SINGLE |
+> @@ -1002,8 +775,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_value        = 0x80200000,
+>          .cpu_name        = "e500",
+>          /* xxx - galak: add CPU_FTR_MAYBE_CAN_DOZE */
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB,
+> +        .cpu_features        = CPU_FTR_E500,
+>          .cpu_user_features    = PPC_FEATURE_32 |
+>              PPC_FEATURE_HAS_MMU | PPC_FEATURE_SPE_COMP |
+>              PPC_FEATURE_HAS_EFP_SINGLE,
+> @@ -1016,8 +788,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_value        = 0x80210000,
+>          .cpu_name        = "e500v2",
+>          /* xxx - galak: add CPU_FTR_MAYBE_CAN_DOZE */
+> -        .cpu_features        = CPU_FTR_SPLIT_ID_CACHE |
+> -            CPU_FTR_USE_TB | CPU_FTR_BIG_PHYS,
+> +        .cpu_features        = CPU_FTR_E500_2,
+>          .cpu_user_features    = PPC_FEATURE_32 |
+>              PPC_FEATURE_HAS_MMU | PPC_FEATURE_SPE_COMP |
+>              PPC_FEATURE_HAS_EFP_SINGLE | PPC_FEATURE_HAS_EFP_DOUBLE,
+> @@ -1031,7 +802,7 @@ struct cpu_spec    cpu_specs[] = {
+>          .pvr_mask        = 0x00000000,
+>          .pvr_value        = 0x00000000,
+>          .cpu_name        = "(generic PPC)",
+> -        .cpu_features        = CPU_FTR_COMMON,
+> +        .cpu_features        = CPU_FTR_GENERIC_32,
+>          .cpu_user_features    = PPC_FEATURE_32,
+>          .icache_bsize        = 32,
+>          .dcache_bsize        = 32,
+> Index: clean-cg/include/asm-powerpc/cputable.h
+> ===================================================================
+> --- /dev/null
+> +++ clean-cg/include/asm-powerpc/cputable.h
+> @@ -0,0 +1,475 @@
+> +#ifndef __ASM_POWERPC_CPUTABLE_H
+> +#define __ASM_POWERPC_CPUTABLE_H
+> +
+> +#ifdef __KERNEL__
+> +#include <linux/config.h>
+> +#include <asm/ppc_asm.h> /* for ASM_CONST */
+> +
+> +#define PPC_FEATURE_32            0x80000000
+> +#define PPC_FEATURE_64            0x40000000
+> +#define PPC_FEATURE_601_INSTR        0x20000000
+> +#define PPC_FEATURE_HAS_ALTIVEC        0x10000000
+> +#define PPC_FEATURE_HAS_FPU        0x08000000
+> +#define PPC_FEATURE_HAS_MMU        0x04000000
+> +#define PPC_FEATURE_HAS_4xxMAC        0x02000000
+> +#define PPC_FEATURE_UNIFIED_CACHE    0x01000000
+> +#define PPC_FEATURE_HAS_SPE        0x00800000
+> +#define PPC_FEATURE_HAS_EFP_SINGLE    0x00400000
+> +#define PPC_FEATURE_HAS_EFP_DOUBLE    0x00200000
+> +
+> +#ifndef __ASSEMBLY__
+> +
+> +/* This structure can grow, it's real size is used by head.S code
+> + * via the mkdefs mechanism.
+> + */
+> +struct cpu_spec;
+> +struct op_ppc64_model;
+> +
+> +#ifndef __powerpc64__
+> +typedef    void (*cpu_setup_t)(unsigned long offset, int cpu_nr,  
+> struct cpu_spec* spec);
+> +#else /* __powerpc64__ */
+> +typedef    void (*cpu_setup_t)(unsigned long offset, struct  
+> cpu_spec* spec);
+> +#endif /* __powerpc64__ */
+> +
+> +struct cpu_spec {
+> +    /* CPU is matched via (PVR & pvr_mask) == pvr_value */
+> +    unsigned int    pvr_mask;
+> +    unsigned int    pvr_value;
+> +
+> +    char        *cpu_name;
+> +    unsigned long    cpu_features;        /* Kernel features */
+> +    unsigned int    cpu_user_features;    /* Userland features */
+> +
+> +    /* cache line sizes */
+> +    unsigned int    icache_bsize;
+> +    unsigned int    dcache_bsize;
+> +
+> +    /* number of performance monitor counters */
+> +    unsigned int    num_pmcs;
+> +
+> +    /* this is called to initialize various CPU bits like L1 cache,
+> +     * BHT, SPD, etc... from head.S before branching to  
+> identify_machine
+> +     */
+> +    cpu_setup_t    cpu_setup;
+> +#ifdef __powerpc64__
+> +
+> +    /* Used by oprofile userspace to select the right counters */
+> +    char        *oprofile_cpu_type;
+> +
+> +    /* Processor specific oprofile operations */
+> +    struct op_ppc64_model *oprofile_model;
+> +#endif /* __powerpc64__ */
+> +};
+> +
+> +extern struct cpu_spec        cpu_specs[];
+> +
+> +#ifndef __powerpc64__
+> +extern struct cpu_spec        *cur_cpu_spec[];
+> +#else /* __powerpc64__ */
+> +extern struct cpu_spec        *cur_cpu_spec;
+> +#endif /* __powerpc64__ */
+> +
+> +#endif /* __ASSEMBLY__ */
+> +
+> +/* CPU kernel features */
+> +
+> +/* Retain the 32b definitions all use bottom half of word */
+> +#define CPU_FTR_SPLIT_ID_CACHE        ASM_CONST(0x0000000000000001)
+> +#define CPU_FTR_L2CR            ASM_CONST(0x0000000000000002)
+> +#define CPU_FTR_SPEC7450        ASM_CONST(0x0000000000000004)
+> +#define CPU_FTR_ALTIVEC            ASM_CONST(0x0000000000000008)
+> +#define CPU_FTR_TAU            ASM_CONST(0x0000000000000010)
+> +#define CPU_FTR_CAN_DOZE        ASM_CONST(0x0000000000000020)
+> +#define CPU_FTR_USE_TB            ASM_CONST(0x0000000000000040)
+> +#define CPU_FTR_604_PERF_MON        ASM_CONST(0x0000000000000080)
+> +#define CPU_FTR_601            ASM_CONST(0x0000000000000100)
+> +#define CPU_FTR_HPTE_TABLE        ASM_CONST(0x0000000000000200)
+> +#define CPU_FTR_CAN_NAP            ASM_CONST(0x0000000000000400)
+> +#define CPU_FTR_L3CR            ASM_CONST(0x0000000000000800)
+> +#define CPU_FTR_L3_DISABLE_NAP        ASM_CONST(0x0000000000001000)
+> +#define CPU_FTR_NAP_DISABLE_L2_PR    ASM_CONST(0x0000000000002000)
+> +#define CPU_FTR_DUAL_PLL_750FX        ASM_CONST(0x0000000000004000)
+> +#define CPU_FTR_NO_DPM            ASM_CONST(0x0000000000008000)
+> +#define CPU_FTR_HAS_HIGH_BATS        ASM_CONST(0x0000000000010000)
+> +#define CPU_FTR_NEED_COHERENT        ASM_CONST(0x0000000000020000)
+> +#define CPU_FTR_NO_BTIC            ASM_CONST(0x0000000000040000)
+> +#define CPU_FTR_BIG_PHYS        ASM_CONST(0x0000000000080000)
+> +
+> +#ifdef __powerpc64__
+> +/* Add the 64b processor unique features in the top half of the  
+> word */
+> +#define CPU_FTR_SLB                   ASM_CONST(0x0000000100000000)
+> +#define CPU_FTR_16M_PAGE              ASM_CONST(0x0000000200000000)
+> +#define CPU_FTR_TLBIEL                 ASM_CONST(0x0000000400000000)
+> +#define CPU_FTR_NOEXECUTE             ASM_CONST(0x0000000800000000)
+> +#define CPU_FTR_NODSISRALIGN          ASM_CONST(0x0000001000000000)
+> +#define CPU_FTR_IABR              ASM_CONST(0x0000002000000000)
+> +#define CPU_FTR_MMCRA              ASM_CONST(0x0000004000000000)
+> +/* unused                 ASM_CONST(0x0000008000000000) */
+> +#define CPU_FTR_SMT              ASM_CONST(0x0000010000000000)
+> +#define CPU_FTR_COHERENT_ICACHE      ASM_CONST(0x0000020000000000)
+> +#define CPU_FTR_LOCKLESS_TLBIE        ASM_CONST(0x0000040000000000)
+> +#define CPU_FTR_MMCRA_SIHV        ASM_CONST(0x0000080000000000)
+> +#define CPU_FTR_CTRL            ASM_CONST(0x0000100000000000)
+> +#endif
+> +
+> +#ifndef __ASSEMBLY__
+> +
+> +#define COMMON_USER_PPC64    (PPC_FEATURE_32 | PPC_FEATURE_64 | \
+> +                 PPC_FEATURE_HAS_FPU | PPC_FEATURE_HAS_MMU)
+> +
+> +#define CPU_FTR_PPCAS_ARCH_V2_BASE (CPU_FTR_SLB | \
+> +                    CPU_FTR_TLBIEL | CPU_FTR_NOEXECUTE | \
+> +                    CPU_FTR_NODSISRALIGN | CPU_FTR_CTRL)
+> +
+> +/* iSeries doesn't support large pages */
+> +#ifdef CONFIG_PPC_ISERIES
+> +#define CPU_FTR_PPCAS_ARCH_V2    (CPU_FTR_PPCAS_ARCH_V2_BASE)
+> +#else
+> +#define CPU_FTR_PPCAS_ARCH_V2    (CPU_FTR_PPCAS_ARCH_V2_BASE |  
+> CPU_FTR_16M_PAGE)
+> +#endif /* CONFIG_PPC_ISERIES */
+> +
+> +/* We only set the altivec features if the kernel was compiled  
+> with altivec
+> + * support
+> + */
+> +#ifdef CONFIG_ALTIVEC
+> +#define CPU_FTR_ALTIVEC_COMP    CPU_FTR_ALTIVEC
+> +#define PPC_FEATURE_HAS_ALTIVEC_COMP PPC_FEATURE_HAS_ALTIVEC
+> +#else
+> +#define CPU_FTR_ALTIVEC_COMP    0
+> +#define PPC_FEATURE_HAS_ALTIVEC_COMP    0
+> +#endif
+> +
+> +/* We need to mark all pages as being coherent if we're SMP or we
+> + * have a 74[45]x and an MPC107 host bridge.
+> + */
+> +#if defined(CONFIG_SMP) || defined(CONFIG_MPC10X_BRIDGE)
+> +#define CPU_FTR_COMMON                  CPU_FTR_NEED_COHERENT
+> +#else
+> +#define CPU_FTR_COMMON                  0
+> +#endif
+> +
+> +/* The powersave features NAP & DOZE seems to confuse BDI when
+> +   debugging. So if a BDI is used, disable theses
+> + */
+> +#ifndef CONFIG_BDI_SWITCH
+> +#define CPU_FTR_MAYBE_CAN_DOZE    CPU_FTR_CAN_DOZE
+> +#define CPU_FTR_MAYBE_CAN_NAP    CPU_FTR_CAN_NAP
+> +#else
+> +#define CPU_FTR_MAYBE_CAN_DOZE    0
+> +#define CPU_FTR_MAYBE_CAN_NAP    0
+> +#endif
+> +
+> +#define CLASSIC_PPC (!defined(CONFIG_8xx) && !defined(CONFIG_4xx)  
+> && \
+> +             !defined(CONFIG_POWER3) && !defined(CONFIG_POWER4) && \
+> +             !defined(CONFIG_BOOKE))
+> +
+> +enum {
+> +    CPU_FTR_PPC601 = CPU_FTR_COMMON | CPU_FTR_601 |  
+> CPU_FTR_HPTE_TABLE,
+> +    CPU_FTR_603 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
+> +        CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB |
+> +        CPU_FTR_MAYBE_CAN_NAP,
+> +    CPU_FTR_604 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
+> +        CPU_FTR_USE_TB | CPU_FTR_604_PERF_MON | CPU_FTR_HPTE_TABLE,
+> +    CPU_FTR_740_NOTAU = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
+> +        CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR |
+> +        CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP,
+> +    CPU_FTR_740 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
+> +        CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR |
+> +        CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP,
+> +    CPU_FTR_750 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
+> +        CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR |
+> +        CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP,
+> +    CPU_FTR_750FX1 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
+> +        CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR |
+> +        CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP |
+> +        CPU_FTR_DUAL_PLL_750FX | CPU_FTR_NO_DPM,
+> +    CPU_FTR_750FX2 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
+> +        CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR |
+> +        CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP |
+> +        CPU_FTR_NO_DPM,
+> +    CPU_FTR_750FX = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
+> +        CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR |
+> +        CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP |
+> +        CPU_FTR_DUAL_PLL_750FX | CPU_FTR_HAS_HIGH_BATS,
+> +    CPU_FTR_750GX = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE |
+> +        CPU_FTR_USE_TB | CPU_FTR_L2CR | CPU_FTR_TAU |
+> +        CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP |
+> +        CPU_FTR_DUAL_PLL_750FX | CPU_FTR_HAS_HIGH_BATS,
+> +    CPU_FTR_7400_NOTAU = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
+> +        CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR |
+> +        CPU_FTR_ALTIVEC_COMP | CPU_FTR_HPTE_TABLE |
+> +        CPU_FTR_MAYBE_CAN_NAP,
+> +    CPU_FTR_7400 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
+> +        CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR |
+> +        CPU_FTR_TAU | CPU_FTR_ALTIVEC_COMP | CPU_FTR_HPTE_TABLE |
+> +        CPU_FTR_MAYBE_CAN_NAP,
+> +    CPU_FTR_7450_20 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
+> +        CPU_FTR_USE_TB | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP |
+> +        CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
+> +        CPU_FTR_NEED_COHERENT,
+> +    CPU_FTR_7450_21 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
+> +        CPU_FTR_USE_TB |
+> +        CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP |
+> +        CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
+> +        CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_L3_DISABLE_NAP |
+> +        CPU_FTR_NEED_COHERENT,
+> +    CPU_FTR_7450_23 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
+> +        CPU_FTR_USE_TB |
+> +        CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP |
+> +        CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
+> +        CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_NEED_COHERENT,
+> +    CPU_FTR_7455_1 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
+> +        CPU_FTR_USE_TB |
+> +        CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
+> +        CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |  
+> CPU_FTR_HAS_HIGH_BATS |
+> +        CPU_FTR_NEED_COHERENT,
+> +    CPU_FTR_7455_20 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
+> +        CPU_FTR_USE_TB |
+> +        CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP |
+> +        CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
+> +        CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_L3_DISABLE_NAP |
+> +        CPU_FTR_NEED_COHERENT | CPU_FTR_HAS_HIGH_BATS,
+> +    CPU_FTR_7455 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
+> +        CPU_FTR_USE_TB |
+> +        CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP |
+> +        CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
+> +        CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS |
+> +        CPU_FTR_NEED_COHERENT,
+> +    CPU_FTR_7447_10 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
+> +        CPU_FTR_USE_TB |
+> +        CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP |
+> +        CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
+> +        CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS |
+> +        CPU_FTR_NEED_COHERENT | CPU_FTR_NO_BTIC,
+> +    CPU_FTR_7447 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
+> +        CPU_FTR_USE_TB |
+> +        CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP |
+> +        CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
+> +        CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS |
+> +        CPU_FTR_NEED_COHERENT,
+> +    CPU_FTR_7447A = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
+> +        CPU_FTR_USE_TB |
+> +        CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP |
+> +        CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
+> +        CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS |
+> +        CPU_FTR_NEED_COHERENT,
+> +    CPU_FTR_82XX = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
+> +        CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB,
+> +    CPU_FTR_G2_LE = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE |
+> +        CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP |  
+> CPU_FTR_HAS_HIGH_BATS,
+> +    CPU_FTR_E300 = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE |
+> +        CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP |  
+> CPU_FTR_HAS_HIGH_BATS,
+> +    CPU_FTR_CLASSIC32 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
+> +        CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE,
+> +    CPU_FTR_POWER3_32 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
+> +        CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE,
+> +    CPU_FTR_POWER4_32 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
+> +        CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE,
+> +    CPU_FTR_970_32 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
+> +        CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE | CPU_FTR_ALTIVEC_COMP |
+> +        CPU_FTR_MAYBE_CAN_NAP,
+> +    CPU_FTR_8XX = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB,
+> +    CPU_FTR_40X = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB,
+> +    CPU_FTR_44X = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB,
+> +    CPU_FTR_E200 = CPU_FTR_USE_TB,
+> +    CPU_FTR_E500 = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB,
+> +    CPU_FTR_E500_2 = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> +        CPU_FTR_BIG_PHYS,
+> +    CPU_FTR_GENERIC_32 = CPU_FTR_COMMON,
+> +#ifdef __powerpc64__
+> +    CPU_FTR_POWER3 = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> +        CPU_FTR_HPTE_TABLE | CPU_FTR_IABR,
+> +    CPU_FTR_RS64 = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> +        CPU_FTR_HPTE_TABLE | CPU_FTR_IABR |
+> +        CPU_FTR_MMCRA | CPU_FTR_CTRL,
+> +    CPU_FTR_POWER4 = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> +        CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_MMCRA,
+> +    CPU_FTR_PPC970 = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> +        CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 |
+> +        CPU_FTR_ALTIVEC_COMP | CPU_FTR_CAN_NAP | CPU_FTR_MMCRA,
+> +    CPU_FTR_POWER5 = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> +        CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 |
+> +        CPU_FTR_MMCRA | CPU_FTR_SMT |
+> +        CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE |
+> +        CPU_FTR_MMCRA_SIHV,
+> +    CPU_FTR_CELL = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> +        CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 |
+> +        CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT,
+> +    CPU_FTR_COMPATIBLE = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
+> +        CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2,
+> +#endif
+> +    CPU_FTR_POSSIBLE =
+> +#if CLASSIC_PPC
+> +        CPU_FTR_601 | CPU_FTR_603 | CPU_FTR_604 | CPU_FTR_740_NOTAU |
+> +        CPU_FTR_740 | CPU_FTR_750 | CPU_FTR_750FX1 |
+> +        CPU_FTR_750FX2 | CPU_FTR_750FX | CPU_FTR_750GX |
+> +        CPU_FTR_7400_NOTAU | CPU_FTR_7400 | CPU_FTR_7450_20 |
+> +        CPU_FTR_7450_21 | CPU_FTR_7450_23 | CPU_FTR_7455_1 |
+> +        CPU_FTR_7455_20 | CPU_FTR_7455 | CPU_FTR_7447_10 |
+> +        CPU_FTR_7447 | CPU_FTR_7447A | CPU_FTR_82XX |
+> +        CPU_FTR_G2_LE | CPU_FTR_E300 | CPU_FTR_CLASSIC32 |
+> +#else
+> +        CPU_FTR_GENERIC_32 |
+> +#endif
+> +#ifdef CONFIG_PPC64BRIDGE
+> +        CPU_FTR_POWER3_32 |
+> +#endif
+> +#ifdef CONFIG_POWER4
+> +        CPU_FTR_POWER4_32 | CPU_FTR_970_32 |
+> +#endif
+> +#ifdef CONFIG_8xx
+> +        CPU_FTR_8XX |
+> +#endif
+> +#ifdef CONFIG_40x
+> +        CPU_FTR_40X |
+> +#endif
+> +#ifdef CONFIG_44x
+> +        CPU_FTR_44X |
+> +#endif
+> +#ifdef CONFIG_FSL_BOOKE
+> +        CPU_FTR_E200 | CPU_FTR_E500 | CPU_FTR_E500_2 |
+> +#endif
+> +#ifdef CONFIG_CPU_POWER3
+> +        CPU_FTR_POWER3 |
+> +#endif
+> +#ifdef CONFIG_CPU_RS64
+> +        CPU_FTR_RS64 |
+> +#endif
+> +#ifdef CONFIG_CPU_POWER4
+> +        CPU_FTR_POWER4 |
+> +#endif
+> +#ifdef CONFIG_CPU_PPC970
+> +        CPU_FTR_PPC970 |
+> +#endif
+> +#ifdef CONFIG_CPU_POWER5
+> +        CPU_FTR_POWER5 |
+> +#endif
+> +#ifdef CONFIG_CPU_CELL
+> +        CPU_FTR_CELL |
+> +#endif
+> +        0,
+> +    CPU_FTR_ALWAYS =
+> +#if CLASSIC_PPC
+> +        CPU_FTR_601 & CPU_FTR_603 & CPU_FTR_604 & CPU_FTR_740_NOTAU &
+> +        CPU_FTR_740 & CPU_FTR_750 & CPU_FTR_750FX1 &
+> +        CPU_FTR_750FX2 & CPU_FTR_750FX & CPU_FTR_750GX &
+> +        CPU_FTR_7400_NOTAU & CPU_FTR_7400 & CPU_FTR_7450_20 &
+> +        CPU_FTR_7450_21 & CPU_FTR_7450_23 & CPU_FTR_7455_1 &
+> +        CPU_FTR_7455_20 & CPU_FTR_7455 & CPU_FTR_7447_10 &
+> +        CPU_FTR_7447 & CPU_FTR_7447A & CPU_FTR_82XX &
+> +        CPU_FTR_G2_LE & CPU_FTR_E300 & CPU_FTR_CLASSIC32 &
+> +#else
+> +        CPU_FTR_GENERIC_32 &
+> +#endif
+> +#ifdef CONFIG_PPC64BRIDGE
+> +        CPU_FTR_POWER3_32 &
+> +#endif
+> +#ifdef CONFIG_POWER4
+> +        CPU_FTR_POWER4_32 & CPU_FTR_970_32 &
+> +#endif
+> +#ifdef CONFIG_8xx
+> +        CPU_FTR_8XX &
+> +#endif
+> +#ifdef CONFIG_40x
+> +        CPU_FTR_40X &
+> +#endif
+> +#ifdef CONFIG_44x
+> +        CPU_FTR_44X &
+> +#endif
+> +#ifdef CONFIG_FSL_BOOKE
+> +        CPU_FTR_E200 & CPU_FTR_E500 & CPU_FTR_E500_2 &
+> +#endif
+> +#ifdef CONFIG_CPU_POWER3
+> +        CPU_FTR_POWER3 &
+> +#endif
+> +#ifdef CONFIG_CPU_RS64
+> +        CPU_FTR_RS64 &
+> +#endif
+> +#ifdef CONFIG_CPU_POWER4
+> +        CPU_FTR_POWER4 &
+> +#endif
+> +#ifdef CONFIG_CPU_PPC970
+> +        CPU_FTR_PPC970 &
+> +#endif
+> +#ifdef CONFIG_CPU_POWER5
+> +        CPU_FTR_POWER5 &
+> +#endif
+> +#ifdef CONFIG_CPU_CELL
+> +        CPU_FTR_CELL &
+> +#endif
+> +        CPU_FTR_POSSIBLE,
+> +};
+> +
+> +static inline int cpu_has_feature(unsigned long feature)
+> +{
+> +    return (CPU_FTR_ALWAYS & feature) ||
+> +           (CPU_FTR_POSSIBLE
+> +#ifndef __powerpc64__
+> +        & cur_cpu_spec[0]->cpu_features
+> +#else
+> +        & cur_cpu_spec->cpu_features
+> +#endif
+> +        & feature);
+> +}
+> +
+> +#endif /* __ASSEMBLY */
 > +
 > +#ifdef __ASSEMBLY__
 > +
-> +/*
-> + * Macros for storing registers into and loading registers from
-> + * exception frames.
-> + */
-> +#ifdef __powerpc64__
-> +#define SAVE_GPR(n, base)    std    n,GPR0+8*(n)(base)
-> +#define REST_GPR(n, base)    ld    n,GPR0+8*(n)(base)
-> +#define SAVE_NVGPRS(base)    SAVE_8GPRS(14, base); SAVE_10GPRS(22,
-> base)
-> +#define REST_NVGPRS(base)    REST_8GPRS(14, base); REST_10GPRS(22,
-> base)
-> +#else
-> +#define SAVE_GPR(n, base)    stw    n,GPR0+4*(n)(base)
-> +#define REST_GPR(n, base)    lwz    n,GPR0+4*(n)(base)
-> +#define SAVE_NVGPRS(base)    SAVE_GPR(13, base); SAVE_8GPRS(14,
-> base); \
-> +                SAVE_10GPRS(22, base)
-> +#define REST_NVGPRS(base)    REST_GPR(13, base); REST_8GPRS(14,
-> base); \
-> +                REST_10GPRS(22, base)
-> +#endif
+> +#define BEGIN_FTR_SECTION        98:
 > +
-> +
-> +#define SAVE_2GPRS(n, base)    SAVE_GPR(n, base); SAVE_GPR(n+1, base)
-> +#define SAVE_4GPRS(n, base)    SAVE_2GPRS(n, base); SAVE_2GPRS(n+2,
-> base)
-> +#define SAVE_8GPRS(n, base)    SAVE_4GPRS(n, base); SAVE_4GPRS(n+4,
-> base)
-> +#define SAVE_10GPRS(n, base)    SAVE_8GPRS(n, base); SAVE_2GPRS(n+8,
-> base)
-> +#define REST_2GPRS(n, base)    REST_GPR(n, base); REST_GPR(n+1, base)
-> +#define REST_4GPRS(n, base)    REST_2GPRS(n, base); REST_2GPRS(n+2,
-> base)
-> +#define REST_8GPRS(n, base)    REST_4GPRS(n, base); REST_4GPRS(n+4,
-> base)
-> +#define REST_10GPRS(n, base)    REST_8GPRS(n, base); REST_2GPRS(n+8,
-> base)
-> +
-> +#define SAVE_FPR(n, base)    stfd    n,THREAD_FPR0+8*(n)(base)
-> +#define SAVE_2FPRS(n, base)    SAVE_FPR(n, base); SAVE_FPR(n+1, base)
-> +#define SAVE_4FPRS(n, base)    SAVE_2FPRS(n, base); SAVE_2FPRS(n+2,
-> base)
-> +#define SAVE_8FPRS(n, base)    SAVE_4FPRS(n, base); SAVE_4FPRS(n+4,
-> base)
-> +#define SAVE_16FPRS(n, base)    SAVE_8FPRS(n, base); SAVE_8FPRS(n+8,
-> base)
-> +#define SAVE_32FPRS(n, base)    SAVE_16FPRS(n, base); SAVE_16FPRS(n 
-> +16,
-> base)
-> +#define REST_FPR(n, base)    lfd    n,THREAD_FPR0+8*(n)(base)
-> +#define REST_2FPRS(n, base)    REST_FPR(n, base); REST_FPR(n+1, base)
-> +#define REST_4FPRS(n, base)    REST_2FPRS(n, base); REST_2FPRS(n+2,
-> base)
-> +#define REST_8FPRS(n, base)    REST_4FPRS(n, base); REST_4FPRS(n+4,
-> base)
-> +#define REST_16FPRS(n, base)    REST_8FPRS(n, base); REST_8FPRS(n+8,
-> base)
-> +#define REST_32FPRS(n, base)    REST_16FPRS(n, base); REST_16FPRS(n 
-> +16,
-> base)
-> +
-> +#define SAVE_VR(n,b,base)    li b,THREAD_VR0+(16*(n));  stvx n,b,base
-> +#define SAVE_2VRS(n,b,base)    SAVE_VR(n,b,base); SAVE_VR(n+1,b,base)
-> +#define SAVE_4VRS(n,b,base)    SAVE_2VRS(n,b,base);
-> SAVE_2VRS(n+2,b,base)
-> +#define SAVE_8VRS(n,b,base)    SAVE_4VRS(n,b,base);
-> SAVE_4VRS(n+4,b,base)
-> +#define SAVE_16VRS(n,b,base)    SAVE_8VRS(n,b,base);
-> SAVE_8VRS(n+8,b,base)
-> +#define SAVE_32VRS(n,b,base)    SAVE_16VRS(n,b,base);
-> SAVE_16VRS(n+16,b,base)
-> +#define REST_VR(n,b,base)    li b,THREAD_VR0+(16*(n)); lvx n,b,base
-> +#define REST_2VRS(n,b,base)    REST_VR(n,b,base); REST_VR(n+1,b,base)
-> +#define REST_4VRS(n,b,base)    REST_2VRS(n,b,base);
-> REST_2VRS(n+2,b,base)
-> +#define REST_8VRS(n,b,base)    REST_4VRS(n,b,base);
-> REST_4VRS(n+4,b,base)
-> +#define REST_16VRS(n,b,base)    REST_8VRS(n,b,base);
-> REST_8VRS(n+8,b,base)
-> +#define REST_32VRS(n,b,base)    REST_16VRS(n,b,base);
-> REST_16VRS(n+16,b,base)
-> +
-> +#define SAVE_EVR(n,s,base)    evmergehi s,s,n; stw
-> s,THREAD_EVR0+4*(n)(base)
-> +#define SAVE_2EVRS(n,s,base)    SAVE_EVR(n,s,base); SAVE_EVR(n 
-> +1,s,base)
-> +#define SAVE_4EVRS(n,s,base)    SAVE_2EVRS(n,s,base);
-> SAVE_2EVRS(n+2,s,base)
-> +#define SAVE_8EVRS(n,s,base)    SAVE_4EVRS(n,s,base);
-> SAVE_4EVRS(n+4,s,base)
-> +#define SAVE_16EVRS(n,s,base)    SAVE_8EVRS(n,s,base);
-> SAVE_8EVRS(n+8,s,base)
-> +#define SAVE_32EVRS(n,s,base)    SAVE_16EVRS(n,s,base);
-> SAVE_16EVRS(n+16,s,base)
-> +#define REST_EVR(n,s,base)    lwz s,THREAD_EVR0+4*(n)(base);  
-> evmergelo
-> n,s,n
-> +#define REST_2EVRS(n,s,base)    REST_EVR(n,s,base); REST_EVR(n 
-> +1,s,base)
-> +#define REST_4EVRS(n,s,base)    REST_2EVRS(n,s,base);
-> REST_2EVRS(n+2,s,base)
-> +#define REST_8EVRS(n,s,base)    REST_4EVRS(n,s,base);
-> REST_4EVRS(n+4,s,base)
-> +#define REST_16EVRS(n,s,base)    REST_8EVRS(n,s,base);
-> REST_8EVRS(n+8,s,base)
-> +#define REST_32EVRS(n,s,base)    REST_16EVRS(n,s,base);
-> REST_16EVRS(n+16,s,base)
-> +
-> +/* Macros to adjust thread priority for Iseries hardware  
-> multithreading
-> */
-> +#define HMT_LOW        or 1,1,1
-> +#define HMT_MEDIUM    or 2,2,2
-> +#define HMT_HIGH    or 3,3,3
-> +
-> +/* handle instructions that older assemblers may not know */
-> +#define RFCI        .long 0x4c000066    /* rfci instruction */
-> +#define RFDI        .long 0x4c00004e    /* rfdi instruction */
-> +#define RFMCI        .long 0x4c00004c    /* rfmci instruction */
-> +
-> +/*
-> + * LOADADDR( rn, name )
-> + *   loads the address of 'name' into 'rn'
-> + *
-> + * LOADBASE( rn, name )
-> + *   loads the address (less the low 16 bits) of 'name' into 'rn'
-> + *   suitable for base+disp addressing
-> + */
-> +#ifdef __powerpc64__
-> +#define LOADADDR(rn,name) \
-> +    lis    rn,name##@highest;    \
-> +    ori    rn,rn,name##@higher;    \
-> +    rldicr    rn,rn,32,31;        \
-> +    oris    rn,rn,name##@h;        \
-> +    ori    rn,rn,name##@l
-> +
-> +#define LOADBASE(rn,name) \
-> +    lis    rn,name@highest;    \
-> +    ori    rn,rn,name@higher;    \
-> +    rldicr    rn,rn,32,31;        \
-> +    oris    rn,rn,name@ha
-> +
-> +
-> +#define SET_REG_TO_CONST(reg, value)                 \
-> +    lis     reg,(((value)>>48)&0xFFFF);             \
-> +    ori     reg,reg,(((value)>>32)&0xFFFF);         \
-> +    rldicr  reg,reg,32,31;                          \
-> +    oris    reg,reg,(((value)>>16)&0xFFFF);         \
-> +    ori     reg,reg,((value)&0xFFFF);
-> +
-> +#define SET_REG_TO_LABEL(reg, label)                 \
-> +    lis     reg,(label)@highest;                    \
-> +    ori     reg,reg,(label)@higher;                 \
-> +    rldicr  reg,reg,32,31;                          \
-> +    oris    reg,reg,(label)@h;                      \
-> +    ori     reg,reg,(label)@l;
-> +#endif
-> +
-> +/* various errata or part fixups */
-> +#ifdef CONFIG_PPC601_SYNC_FIX
-> +#define SYNC                \
-> +BEGIN_FTR_SECTION            \
-> +    sync;                \
-> +    isync;                \
-> +END_FTR_SECTION_IFSET(CPU_FTR_601)
-> +#define SYNC_601            \
-> +BEGIN_FTR_SECTION            \
-> +    sync;                \
-> +END_FTR_SECTION_IFSET(CPU_FTR_601)
-> +#define ISYNC_601            \
-> +BEGIN_FTR_SECTION            \
-> +    isync;                \
-> +END_FTR_SECTION_IFSET(CPU_FTR_601)
-> +#else
-> +#define    SYNC
-> +#define SYNC_601
-> +#define ISYNC_601
-> +#endif
-> +
-> +
-> +#ifndef CONFIG_SMP
-> +#define TLBSYNC
-> +#else /* CONFIG_SMP */
-> +/* tlbsync is not implemented on 601 */
-> +#define TLBSYNC                \
-> +BEGIN_FTR_SECTION            \
-> +    tlbsync;            \
-> +    sync;                \
-> +END_FTR_SECTION_IFCLR(CPU_FTR_601)
-> +#endif
-> +
-> +
-> +/*
-> + * This instruction is not implemented on the PPC 603 or 601;  
-> however,
-> on
-> + * the 403GCX and 405GP tlbia IS defined and tlbie is not.
-> + * All of these instructions exist in the 8xx, they have magical
-> powers,
-> + * and they must be used.
-> + */
-> +
-> +#if !defined(CONFIG_4xx) && !defined(CONFIG_8xx)
-> +#define tlbia                    \
-> +    li    r4,1024;            \
-> +    mtctr    r4;                \
-> +    lis    r4,KERNELBASE@h;        \
-> +0:    tlbie    r4;                \
-> +    addi    r4,r4,0x1000;            \
-> +    bdnz    0b
-> +#endif
-> +
-> +
-> +#ifdef CONFIG_IBM405_ERR77
-> +#define PPC405_ERR77(ra,rb)    dcbt    ra, rb;
-> +#define    PPC405_ERR77_SYNC    sync;
-> +#else
-> +#define PPC405_ERR77(ra,rb)
-> +#define PPC405_ERR77_SYNC
-> +#endif
-> +
-> +
-> +#ifdef CONFIG_IBM440EP_ERR42
-> +#define PPC440EP_ERR42 isync
-> +#else
-> +#define PPC440EP_ERR42
-> +#endif
-> +
-> +
-> +#if defined(CONFIG_BOOKE)
-> +#define tophys(rd,rs)                \
-> +    addis    rd,rs,0
-> +
-> +#define tovirt(rd,rs)                \
-> +    addis    rd,rs,0
-> +
-> +#elif defined(CONFIG_PPC64)
-> +/* PPPBBB - DRENG  If KERNELBASE is always 0xC0...,
-> + * Then we can easily do this with one asm insn. -Peter
-> + */
-> +#define tophys(rd,rs)                           \
-> +        lis     rd,((KERNELBASE>>48)&0xFFFF);   \
-> +        rldicr  rd,rd,32,31;                    \
-> +        sub     rd,rs,rd
-> +
-> +#define tovirt(rd,rs)                           \
-> +        lis     rd,((KERNELBASE>>48)&0xFFFF);   \
-> +        rldicr  rd,rd,32,31;                    \
-> +        add     rd,rs,rd
-> +#else
-> +/*
-> + * On APUS (Amiga PowerPC cpu upgrade board), we don't know the
-> + * physical base address of RAM at compile time.
-> + */
-> +#define tophys(rd,rs)                \
-> +0:    addis    rd,rs,-KERNELBASE@h;        \
-> +    .section ".vtop_fixup","aw";        \
-> +    .align  1;                \
-> +    .long   0b;                \
+> +#ifndef __powerpc64__
+> +#define END_FTR_SECTION(msk, val)        \
+> +99:                        \
+> +    .section __ftr_fixup,"a";        \
+> +    .align 2;                \
+> +    .long msk;                \
+> +    .long val;                \
+> +    .long 98b;                \
+> +    .long 99b;                \
 > +    .previous
-> +
-> +#define tovirt(rd,rs)                \
-> +0:    addis    rd,rs,KERNELBASE@h;        \
-> +    .section ".ptov_fixup","aw";        \
-> +    .align  1;                \
-> +    .long   0b;                \
+> +#else /* __powerpc64__ */
+> +#define END_FTR_SECTION(msk, val)        \
+> +99:                        \
+> +    .section __ftr_fixup,"a";        \
+> +    .align 3;                \
+> +    .llong msk;                \
+> +    .llong val;                \
+> +    .llong 98b;                \
+> +    .llong 99b;                 \
 > +    .previous
-> +#endif
-> +
-> +/*
-> + * On 64-bit cpus, we use the rfid instruction instead of rfi, but
-> + * we then have to make sure we preserve the top 32 bits except for
-> + * the 64-bit mode bit, which we clear.
-> + */
-> +#if defined(CONFIG_PPC64BRIDGE)
-> +#define    FIX_SRR1(ra, rb)    \
-> +    mr    rb,ra;        \
-> +    mfmsr    ra;        \
-> +    clrldi    ra,ra,1;        /* turn off 64-bit mode */ \
-> +    rldimi    ra,rb,0,32
-> +#define    RFI        .long    0x4c000024    /* rfid
-> instruction */
-> +#define MTMSRD(r)    .long    (0x7c000164 + ((r) << 21))    /*
-> mtmsrd */
-> +#define CLR_TOP32(r)    rlwinm    (r),(r),0,0,31    /* clear top  
-> 32 bits */
-> +#elif defined(CONFIG_PPC64)
-> +/* Insert the high 32 bits of the MSR into what will be the new
-> +   MSR (via SRR1 and rfid)  This preserves the MSR.SF and MSR.ISF
-> +   bits. */
-> +
-> +#define FIX_SRR1(ra, rb)    \
-> +    mr    rb,ra;        \
-> +    mfmsr    ra;        \
-> +    rldimi    ra,rb,0,32
-> +
-> +#define CLR_TOP32(r)    rlwinm    (r),(r),0,0,31    /* clear top  
-> 32 bits */
+> +#endif /* __powerpc64__ */
 > +
 > +#else
-> +#define FIX_SRR1(ra, rb)
-> +#ifndef CONFIG_40x
-> +#define    RFI        rfi
-> +#else
-> +#define RFI        rfi; b .    /* Prevent prefetch past rfi */
-> +#endif
-> +#define MTMSRD(r)    mtmsr    r
-> +#define CLR_TOP32(r)
-> +#endif
 > +
-> +/* The boring bits... */
+> +#define BEGIN_FTR_SECTION        "98:\n"
 > +
-> +/* Condition Register Bit Fields */
+> +#ifndef __powerpc64__
+> +#define END_FTR_SECTION(msk, val)        \
+> +"99:\n"                        \
+> +"    .section __ftr_fixup,\"a\";\n"        \
+> +"    .align 2;\n"                \
+> +"    .long "#msk";\n"            \
+> +"    .long "#val";\n"            \
+> +"    .long 98b;\n"                \
+> +"    .long 99b;\n"                 \
+> +"    .previous\n"
+> +#else /* __powerpc64__ */
+> +#define END_FTR_SECTION(msk, val)        \
+> +"99:\n"                        \
+> +"    .section __ftr_fixup,\"a\";\n"        \
+> +"    .align 3;\n"                \
+> +"    .llong "#msk";\n"            \
+> +"    .llong "#val";\n"            \
+> +"    .llong 98b;\n"                \
+> +"    .llong 99b;\n"                 \
+> +"    .previous\n"
+> +#endif /* __powerpc64__ */
 > +
-> +#define    cr0    0
-> +#define    cr1    1
-> +#define    cr2    2
-> +#define    cr3    3
-> +#define    cr4    4
-> +#define    cr5    5
-> +#define    cr6    6
-> +#define    cr7    7
+> +#endif /* __ASSEMBLY__ */
 > +
+> +#define END_FTR_SECTION_IFSET(msk)    END_FTR_SECTION((msk), (msk))
+> +#define END_FTR_SECTION_IFCLR(msk)    END_FTR_SECTION((msk), 0)
 > +
-> +/* General Purpose Registers (GPRs) */
-> +
-> +#define    r0    0
-> +#define    r1    1
-> +#define    r2    2
-> +#define    r3    3
-> +#define    r4    4
-> +#define    r5    5
-> +#define    r6    6
-> +#define    r7    7
-> +#define    r8    8
-> +#define    r9    9
-> +#define    r10    10
-> +#define    r11    11
-> +#define    r12    12
-> +#define    r13    13
-> +#define    r14    14
-> +#define    r15    15
-> +#define    r16    16
-> +#define    r17    17
-> +#define    r18    18
-> +#define    r19    19
-> +#define    r20    20
-> +#define    r21    21
-> +#define    r22    22
-> +#define    r23    23
-> +#define    r24    24
-> +#define    r25    25
-> +#define    r26    26
-> +#define    r27    27
-> +#define    r28    28
-> +#define    r29    29
-> +#define    r30    30
-> +#define    r31    31
-> +
-> +
-> +/* Floating Point Registers (FPRs) */
-> +
-> +#define    fr0    0
-> +#define    fr1    1
-> +#define    fr2    2
-> +#define    fr3    3
-> +#define    fr4    4
-> +#define    fr5    5
-> +#define    fr6    6
-> +#define    fr7    7
-> +#define    fr8    8
-> +#define    fr9    9
-> +#define    fr10    10
-> +#define    fr11    11
-> +#define    fr12    12
-> +#define    fr13    13
-> +#define    fr14    14
-> +#define    fr15    15
-> +#define    fr16    16
-> +#define    fr17    17
-> +#define    fr18    18
-> +#define    fr19    19
-> +#define    fr20    20
-> +#define    fr21    21
-> +#define    fr22    22
-> +#define    fr23    23
-> +#define    fr24    24
-> +#define    fr25    25
-> +#define    fr26    26
-> +#define    fr27    27
-> +#define    fr28    28
-> +#define    fr29    29
-> +#define    fr30    30
-> +#define    fr31    31
-> +
-> +/* AltiVec Registers (VPRs) */
-> +
-> +#define    vr0    0
-> +#define    vr1    1
-> +#define    vr2    2
-> +#define    vr3    3
-> +#define    vr4    4
-> +#define    vr5    5
-> +#define    vr6    6
-> +#define    vr7    7
-> +#define    vr8    8
-> +#define    vr9    9
-> +#define    vr10    10
-> +#define    vr11    11
-> +#define    vr12    12
-> +#define    vr13    13
-> +#define    vr14    14
-> +#define    vr15    15
-> +#define    vr16    16
-> +#define    vr17    17
-> +#define    vr18    18
-> +#define    vr19    19
-> +#define    vr20    20
-> +#define    vr21    21
-> +#define    vr22    22
-> +#define    vr23    23
-> +#define    vr24    24
-> +#define    vr25    25
-> +#define    vr26    26
-> +#define    vr27    27
-> +#define    vr28    28
-> +#define    vr29    29
-> +#define    vr30    30
-> +#define    vr31    31
-> +
-> +/* SPE Registers (EVPRs) */
-> +
-> +#define    evr0    0
-> +#define    evr1    1
-> +#define    evr2    2
-> +#define    evr3    3
-> +#define    evr4    4
-> +#define    evr5    5
-> +#define    evr6    6
-> +#define    evr7    7
-> +#define    evr8    8
-> +#define    evr9    9
-> +#define    evr10    10
-> +#define    evr11    11
-> +#define    evr12    12
-> +#define    evr13    13
-> +#define    evr14    14
-> +#define    evr15    15
-> +#define    evr16    16
-> +#define    evr17    17
-> +#define    evr18    18
-> +#define    evr19    19
-> +#define    evr20    20
-> +#define    evr21    21
-> +#define    evr22    22
-> +#define    evr23    23
-> +#define    evr24    24
-> +#define    evr25    25
-> +#define    evr26    26
-> +#define    evr27    27
-> +#define    evr28    28
-> +#define    evr29    29
-> +#define    evr30    30
-> +#define    evr31    31
-> +
-> +/* some stab codes */
-> +#define N_FUN    36
-> +#define N_RSYM    64
-> +#define N_SLINE    68
-> +#define N_SO    100
-> +
-> +#define ASM_CONST(x) x
-> +#else
-> +  #define __ASM_CONST(x) x##UL
-> +  #define ASM_CONST(x) __ASM_CONST(x)
-> +#endif /*  __ASSEMBLY__ */
-> +
-> +#endif /* _ASM_POWERPC_PPC_ASM_H */
-> diff --git a/include/asm-ppc/ppc_asm.h b/include/asm-ppc/ppc_asm.h
-> deleted file mode 100644
-> --- a/include/asm-ppc/ppc_asm.h
+> +#endif /* __KERNEL__ */
+> +#endif /* __ASM_POWERPC_CPUTABLE_H */
+> Index: clean-cg/include/asm-ppc/cputable.h
+> ===================================================================
+> --- clean-cg.orig/include/asm-ppc/cputable.h
 > +++ /dev/null
-> @@ -1,350 +0,0 @@
+> @@ -1,128 +0,0 @@
 > -/*
-> - * include/asm-ppc/ppc_asm.h
+> - *  include/asm-ppc/cputable.h
 > - *
-> - * Definitions used by various bits of low-level assembly code on
-> PowerPC.
-> - *
-> - * Copyright (C) 1995-1999 Gary Thomas, Paul Mackerras, Cort Dougan.
+> - *  Copyright (C) 2001 Ben. Herrenschmidt (benh@kernel.crashing.org)
 > - *
 > - *  This program is free software; you can redistribute it and/or
 > - *  modify it under the terms of the GNU General Public License
@@ -632,709 +1934,123 @@ On Sep 9, 2005, at 3:02 PM, Gala Kumar K.-galak wrote:
 > - *  2 of the License, or (at your option) any later version.
 > - */
 > -
-> -#include <linux/config.h>
+> -#ifndef __ASM_PPC_CPUTABLE_H
+> -#define __ASM_PPC_CPUTABLE_H
 > -
-> -/*
-> - * Macros for storing registers into and loading registers from
-> - * exception frames.
+> -/* Exposed to userland CPU features */
+> -#define PPC_FEATURE_32            0x80000000
+> -#define PPC_FEATURE_64            0x40000000
+> -#define PPC_FEATURE_601_INSTR        0x20000000
+> -#define PPC_FEATURE_HAS_ALTIVEC        0x10000000
+> -#define PPC_FEATURE_HAS_FPU        0x08000000
+> -#define PPC_FEATURE_HAS_MMU        0x04000000
+> -#define PPC_FEATURE_HAS_4xxMAC        0x02000000
+> -#define PPC_FEATURE_UNIFIED_CACHE    0x01000000
+> -#define PPC_FEATURE_HAS_SPE        0x00800000
+> -#define PPC_FEATURE_HAS_EFP_SINGLE    0x00400000
+> -#define PPC_FEATURE_HAS_EFP_DOUBLE    0x00200000
+> -
+> -#ifdef __KERNEL__
+> -
+> -#ifndef __ASSEMBLY__
+> -
+> -/* This structure can grow, it's real size is used by head.S code
+> - * via the mkdefs mecanism.
 > - */
-> -#define SAVE_GPR(n, base)    stw    n,GPR0+4*(n)(base)
-> -#define SAVE_2GPRS(n, base)    SAVE_GPR(n, base); SAVE_GPR(n+1, base)
-> -#define SAVE_4GPRS(n, base)    SAVE_2GPRS(n, base); SAVE_2GPRS(n+2,
-> base)
-> -#define SAVE_8GPRS(n, base)    SAVE_4GPRS(n, base); SAVE_4GPRS(n+4,
-> base)
-> -#define SAVE_10GPRS(n, base)    SAVE_8GPRS(n, base); SAVE_2GPRS(n+8,
-> base)
-> -#define REST_GPR(n, base)    lwz    n,GPR0+4*(n)(base)
-> -#define REST_2GPRS(n, base)    REST_GPR(n, base); REST_GPR(n+1, base)
-> -#define REST_4GPRS(n, base)    REST_2GPRS(n, base); REST_2GPRS(n+2,
-> base)
-> -#define REST_8GPRS(n, base)    REST_4GPRS(n, base); REST_4GPRS(n+4,
-> base)
-> -#define REST_10GPRS(n, base)    REST_8GPRS(n, base); REST_2GPRS(n+8,
-> base)
+> -struct cpu_spec;
 > -
-> -#define SAVE_NVGPRS(base)    SAVE_GPR(13, base); SAVE_8GPRS(14,
-> base); \
-> -                SAVE_10GPRS(22, base)
-> -#define REST_NVGPRS(base)    REST_GPR(13, base); REST_8GPRS(14,
-> base); \
-> -                REST_10GPRS(22, base)
+> -typedef    void (*cpu_setup_t)(unsigned long offset, int cpu_nr,  
+> struct cpu_spec* spec);
 > -
-> -#define SAVE_FPR(n, base)    stfd    n,THREAD_FPR0+8*(n)(base)
-> -#define SAVE_2FPRS(n, base)    SAVE_FPR(n, base); SAVE_FPR(n+1, base)
-> -#define SAVE_4FPRS(n, base)    SAVE_2FPRS(n, base); SAVE_2FPRS(n+2,
-> base)
-> -#define SAVE_8FPRS(n, base)    SAVE_4FPRS(n, base); SAVE_4FPRS(n+4,
-> base)
-> -#define SAVE_16FPRS(n, base)    SAVE_8FPRS(n, base); SAVE_8FPRS(n+8,
-> base)
-> -#define SAVE_32FPRS(n, base)    SAVE_16FPRS(n, base); SAVE_16FPRS(n 
-> +16,
-> base)
-> -#define REST_FPR(n, base)    lfd    n,THREAD_FPR0+8*(n)(base)
-> -#define REST_2FPRS(n, base)    REST_FPR(n, base); REST_FPR(n+1, base)
-> -#define REST_4FPRS(n, base)    REST_2FPRS(n, base); REST_2FPRS(n+2,
-> base)
-> -#define REST_8FPRS(n, base)    REST_4FPRS(n, base); REST_4FPRS(n+4,
-> base)
-> -#define REST_16FPRS(n, base)    REST_8FPRS(n, base); REST_8FPRS(n+8,
-> base)
-> -#define REST_32FPRS(n, base)    REST_16FPRS(n, base); REST_16FPRS(n 
-> +16,
-> base)
+> -struct cpu_spec {
+> -    /* CPU is matched via (PVR & pvr_mask) == pvr_value */
+> -    unsigned int    pvr_mask;
+> -    unsigned int    pvr_value;
 > -
-> -#define SAVE_VR(n,b,base)    li b,THREAD_VR0+(16*(n));  stvx n,b,base
-> -#define SAVE_2VR(n,b,base)    SAVE_VR(n,b,base); SAVE_VR(n+1,b,base)
-> -#define SAVE_4VR(n,b,base)    SAVE_2VR(n,b,base); SAVE_2VR(n 
-> +2,b,base)
-> -#define SAVE_8VR(n,b,base)    SAVE_4VR(n,b,base); SAVE_4VR(n 
-> +4,b,base)
-> -#define SAVE_16VR(n,b,base)    SAVE_8VR(n,b,base); SAVE_8VR(n 
-> +8,b,base)
-> -#define SAVE_32VR(n,b,base)    SAVE_16VR(n,b,base);
-> SAVE_16VR(n+16,b,base)
-> -#define REST_VR(n,b,base)    li b,THREAD_VR0+(16*(n)); lvx n,b,base
-> -#define REST_2VR(n,b,base)    REST_VR(n,b,base); REST_VR(n+1,b,base)
-> -#define REST_4VR(n,b,base)    REST_2VR(n,b,base); REST_2VR(n 
-> +2,b,base)
-> -#define REST_8VR(n,b,base)    REST_4VR(n,b,base); REST_4VR(n 
-> +4,b,base)
-> -#define REST_16VR(n,b,base)    REST_8VR(n,b,base); REST_8VR(n 
-> +8,b,base)
-> -#define REST_32VR(n,b,base)    REST_16VR(n,b,base);
-> REST_16VR(n+16,b,base)
+> -    char        *cpu_name;
+> -    unsigned int    cpu_features;        /* Kernel features */
+> -    unsigned int    cpu_user_features;    /* Userland features */
 > -
-> -#define SAVE_EVR(n,s,base)    evmergehi s,s,n; stw
-> s,THREAD_EVR0+4*(n)(base)
-> -#define SAVE_2EVR(n,s,base)    SAVE_EVR(n,s,base); SAVE_EVR(n 
-> +1,s,base)
-> -#define SAVE_4EVR(n,s,base)    SAVE_2EVR(n,s,base);
-> SAVE_2EVR(n+2,s,base)
-> -#define SAVE_8EVR(n,s,base)    SAVE_4EVR(n,s,base);
-> SAVE_4EVR(n+4,s,base)
-> -#define SAVE_16EVR(n,s,base)    SAVE_8EVR(n,s,base);
-> SAVE_8EVR(n+8,s,base)
-> -#define SAVE_32EVR(n,s,base)    SAVE_16EVR(n,s,base);
-> SAVE_16EVR(n+16,s,base)
+> -    /* cache line sizes */
+> -    unsigned int    icache_bsize;
+> -    unsigned int    dcache_bsize;
 > -
-> -#define REST_EVR(n,s,base)    lwz s,THREAD_EVR0+4*(n)(base);  
-> evmergelo
-> n,s,n
-> -#define REST_2EVR(n,s,base)    REST_EVR(n,s,base); REST_EVR(n 
-> +1,s,base)
-> -#define REST_4EVR(n,s,base)    REST_2EVR(n,s,base);
-> REST_2EVR(n+2,s,base)
-> -#define REST_8EVR(n,s,base)    REST_4EVR(n,s,base);
-> REST_4EVR(n+4,s,base)
-> -#define REST_16EVR(n,s,base)    REST_8EVR(n,s,base);
-> REST_8EVR(n+8,s,base)
-> -#define REST_32EVR(n,s,base)    REST_16EVR(n,s,base);
-> REST_16EVR(n+16,s,base)
+> -    /* number of performance monitor counters */
+> -    unsigned int    num_pmcs;
 > -
-> -#ifdef CONFIG_PPC601_SYNC_FIX
-> -#define SYNC                \
-> -BEGIN_FTR_SECTION            \
-> -    sync;                \
-> -    isync;                \
-> -END_FTR_SECTION_IFSET(CPU_FTR_601)
-> -#define SYNC_601            \
-> -BEGIN_FTR_SECTION            \
-> -    sync;                \
-> -END_FTR_SECTION_IFSET(CPU_FTR_601)
-> -#define ISYNC_601            \
-> -BEGIN_FTR_SECTION            \
-> -    isync;                \
-> -END_FTR_SECTION_IFSET(CPU_FTR_601)
-> -#else
-> -#define    SYNC
-> -#define SYNC_601
-> -#define ISYNC_601
-> -#endif
+> -    /* this is called to initialize various CPU bits like L1 cache,
+> -     * BHT, SPD, etc... from head.S before branching to  
+> identify_machine
+> -     */
+> -    cpu_setup_t    cpu_setup;
+> -};
 > -
-> -#ifndef CONFIG_SMP
-> -#define TLBSYNC
-> -#else /* CONFIG_SMP */
-> -/* tlbsync is not implemented on 601 */
-> -#define TLBSYNC                \
-> -BEGIN_FTR_SECTION            \
-> -    tlbsync;            \
-> -    sync;                \
-> -END_FTR_SECTION_IFCLR(CPU_FTR_601)
-> -#endif
+> -extern struct cpu_spec        cpu_specs[];
+> -extern struct cpu_spec        *cur_cpu_spec[];
 > -
-> -/*
-> - * This instruction is not implemented on the PPC 603 or 601;  
-> however,
-> on
-> - * the 403GCX and 405GP tlbia IS defined and tlbie is not.
-> - * All of these instructions exist in the 8xx, they have magical
-> powers,
-> - * and they must be used.
-> - */
+> -static inline unsigned int cpu_has_feature(unsigned int feature)
+> -{
+> -    return cur_cpu_spec[0]->cpu_features & feature;
+> -}
 > -
-> -#if !defined(CONFIG_4xx) && !defined(CONFIG_8xx)
-> -#define tlbia                    \
-> -    li    r4,1024;            \
-> -    mtctr    r4;                \
-> -    lis    r4,KERNELBASE@h;        \
-> -0:    tlbie    r4;                \
-> -    addi    r4,r4,0x1000;            \
-> -    bdnz    0b
-> -#endif
+> -#endif /* __ASSEMBLY__ */
 > -
-> -#ifdef CONFIG_BOOKE
-> -#define tophys(rd,rs)                \
-> -    addis    rd,rs,0
-> -
-> -#define tovirt(rd,rs)                \
-> -    addis    rd,rs,0
-> -
-> -#else  /* CONFIG_BOOKE */
-> -/*
-> - * On APUS (Amiga PowerPC cpu upgrade board), we don't know the
-> - * physical base address of RAM at compile time.
-> - */
-> -#define tophys(rd,rs)                \
-> -0:    addis    rd,rs,-KERNELBASE@h;        \
-> -    .section ".vtop_fixup","aw";        \
-> -    .align  1;                \
-> -    .long   0b;                \
-> -    .previous
-> -
-> -#define tovirt(rd,rs)                \
-> -0:    addis    rd,rs,KERNELBASE@h;        \
-> -    .section ".ptov_fixup","aw";        \
-> -    .align  1;                \
-> -    .long   0b;                \
-> -    .previous
-> -#endif  /* CONFIG_BOOKE */
-> -
-> -/*
-> - * On 64-bit cpus, we use the rfid instruction instead of rfi, but
-> - * we then have to make sure we preserve the top 32 bits except for
-> - * the 64-bit mode bit, which we clear.
-> - */
-> -#ifdef CONFIG_PPC64BRIDGE
-> -#define    FIX_SRR1(ra, rb)    \
-> -    mr    rb,ra;        \
-> -    mfmsr    ra;        \
-> -    clrldi    ra,ra,1;        /* turn off 64-bit mode */ \
-> -    rldimi    ra,rb,0,32
-> -#define    RFI        .long    0x4c000024    /* rfid
-> instruction */
-> -#define MTMSRD(r)    .long    (0x7c000164 + ((r) << 21))    /*
-> mtmsrd */
-> -#define CLR_TOP32(r)    rlwinm    (r),(r),0,0,31    /* clear top  
-> 32 bits */
-> -
-> -#else
-> -#define FIX_SRR1(ra, rb)
-> -#ifndef CONFIG_40x
-> -#define    RFI        rfi
-> -#else
-> -#define RFI        rfi; b .    /* Prevent prefetch past rfi */
-> -#endif
-> -#define MTMSRD(r)    mtmsr    r
-> -#define CLR_TOP32(r)
-> -#endif /* CONFIG_PPC64BRIDGE */
-> -
-> -#define RFCI        .long 0x4c000066    /* rfci instruction */
-> -#define RFDI        .long 0x4c00004e    /* rfdi instruction */
-> -#define RFMCI        .long 0x4c00004c    /* rfmci instruction */
-> -
-> -#ifdef CONFIG_IBM405_ERR77
-> -#define PPC405_ERR77(ra,rb)    dcbt    ra, rb;
-> -#define    PPC405_ERR77_SYNC    sync;
-> -#else
-> -#define PPC405_ERR77(ra,rb)
-> -#define PPC405_ERR77_SYNC
-> -#endif
-> -
-> -#ifdef CONFIG_IBM440EP_ERR42
-> -#define PPC440EP_ERR42 isync
-> -#else
-> -#define PPC440EP_ERR42
-> -#endif
-> -
-> -/* The boring bits... */
-> -
-> -/* Condition Register Bit Fields */
-> -
-> -#define    cr0    0
-> -#define    cr1    1
-> -#define    cr2    2
-> -#define    cr3    3
-> -#define    cr4    4
-> -#define    cr5    5
-> -#define    cr6    6
-> -#define    cr7    7
-> -
-> -
-> -/* General Purpose Registers (GPRs) */
-> -
-> -#define    r0    0
-> -#define    r1    1
-> -#define    r2    2
-> -#define    r3    3
-> -#define    r4    4
-> -#define    r5    5
-> -#define    r6    6
-> -#define    r7    7
-> -#define    r8    8
-> -#define    r9    9
-> -#define    r10    10
-> -#define    r11    11
-> -#define    r12    12
-> -#define    r13    13
-> -#define    r14    14
-> -#define    r15    15
-> -#define    r16    16
-> -#define    r17    17
-> -#define    r18    18
-> -#define    r19    19
-> -#define    r20    20
-> -#define    r21    21
-> -#define    r22    22
-> -#define    r23    23
-> -#define    r24    24
-> -#define    r25    25
-> -#define    r26    26
-> -#define    r27    27
-> -#define    r28    28
-> -#define    r29    29
-> -#define    r30    30
-> -#define    r31    31
-> -
-> -
-> -/* Floating Point Registers (FPRs) */
-> -
-> -#define    fr0    0
-> -#define    fr1    1
-> -#define    fr2    2
-> -#define    fr3    3
-> -#define    fr4    4
-> -#define    fr5    5
-> -#define    fr6    6
-> -#define    fr7    7
-> -#define    fr8    8
-> -#define    fr9    9
-> -#define    fr10    10
-> -#define    fr11    11
-> -#define    fr12    12
-> -#define    fr13    13
-> -#define    fr14    14
-> -#define    fr15    15
-> -#define    fr16    16
-> -#define    fr17    17
-> -#define    fr18    18
-> -#define    fr19    19
-> -#define    fr20    20
-> -#define    fr21    21
-> -#define    fr22    22
-> -#define    fr23    23
-> -#define    fr24    24
-> -#define    fr25    25
-> -#define    fr26    26
-> -#define    fr27    27
-> -#define    fr28    28
-> -#define    fr29    29
-> -#define    fr30    30
-> -#define    fr31    31
-> -
-> -#define    vr0    0
-> -#define    vr1    1
-> -#define    vr2    2
-> -#define    vr3    3
-> -#define    vr4    4
-> -#define    vr5    5
-> -#define    vr6    6
-> -#define    vr7    7
-> -#define    vr8    8
-> -#define    vr9    9
-> -#define    vr10    10
-> -#define    vr11    11
-> -#define    vr12    12
-> -#define    vr13    13
-> -#define    vr14    14
-> -#define    vr15    15
-> -#define    vr16    16
-> -#define    vr17    17
-> -#define    vr18    18
-> -#define    vr19    19
-> -#define    vr20    20
-> -#define    vr21    21
-> -#define    vr22    22
-> -#define    vr23    23
-> -#define    vr24    24
-> -#define    vr25    25
-> -#define    vr26    26
-> -#define    vr27    27
-> -#define    vr28    28
-> -#define    vr29    29
-> -#define    vr30    30
-> -#define    vr31    31
-> -
-> -#define    evr0    0
-> -#define    evr1    1
-> -#define    evr2    2
-> -#define    evr3    3
-> -#define    evr4    4
-> -#define    evr5    5
-> -#define    evr6    6
-> -#define    evr7    7
-> -#define    evr8    8
-> -#define    evr9    9
-> -#define    evr10    10
-> -#define    evr11    11
-> -#define    evr12    12
-> -#define    evr13    13
-> -#define    evr14    14
-> -#define    evr15    15
-> -#define    evr16    16
-> -#define    evr17    17
-> -#define    evr18    18
-> -#define    evr19    19
-> -#define    evr20    20
-> -#define    evr21    21
-> -#define    evr22    22
-> -#define    evr23    23
-> -#define    evr24    24
-> -#define    evr25    25
-> -#define    evr26    26
-> -#define    evr27    27
-> -#define    evr28    28
-> -#define    evr29    29
-> -#define    evr30    30
-> -#define    evr31    31
-> -
-> -/* some stab codes */
-> -#define N_FUN    36
-> -#define N_RSYM    64
-> -#define N_SLINE    68
-> -#define N_SO    100
-> diff --git a/include/asm-ppc64/cputable.h b/include/asm-ppc64/ 
-> cputable.h
-> --- a/include/asm-ppc64/cputable.h
-> +++ b/include/asm-ppc64/cputable.h
-> @@ -16,7 +16,7 @@
->  #define __ASM_PPC_CPUTABLE_H
->
->  #include <linux/config.h>
-> -#include <asm/page.h> /* for ASM_CONST */
-> +#include <asm/ppc_asm.h> /* for ASM_CONST */
->
->  /* Exposed to userland CPU features - Must match ppc32 definitions */
->  #define PPC_FEATURE_32            0x80000000
-> diff --git a/include/asm-ppc64/mmu.h b/include/asm-ppc64/mmu.h
-> --- a/include/asm-ppc64/mmu.h
-> +++ b/include/asm-ppc64/mmu.h
-> @@ -14,6 +14,7 @@
->  #define _PPC64_MMU_H_
->
->  #include <linux/config.h>
-> +#include <asm/ppc_asm.h> /* for ASM_CONST */
->  #include <asm/page.h>
->
->  /*
-> diff --git a/include/asm-ppc64/page.h b/include/asm-ppc64/page.h
-> --- a/include/asm-ppc64/page.h
-> +++ b/include/asm-ppc64/page.h
-> @@ -11,13 +11,7 @@
->   */
->
->  #include <linux/config.h>
+> -/* CPU kernel features */
+> -#define CPU_FTR_SPLIT_ID_CACHE        0x00000001
+> -#define CPU_FTR_L2CR            0x00000002
+> -#define CPU_FTR_SPEC7450        0x00000004
+> -#define CPU_FTR_ALTIVEC            0x00000008
+> -#define CPU_FTR_TAU            0x00000010
+> -#define CPU_FTR_CAN_DOZE        0x00000020
+> -#define CPU_FTR_USE_TB            0x00000040
+> -#define CPU_FTR_604_PERF_MON        0x00000080
+> -#define CPU_FTR_601            0x00000100
+> -#define CPU_FTR_HPTE_TABLE        0x00000200
+> -#define CPU_FTR_CAN_NAP            0x00000400
+> -#define CPU_FTR_L3CR            0x00000800
+> -#define CPU_FTR_L3_DISABLE_NAP        0x00001000
+> -#define CPU_FTR_NAP_DISABLE_L2_PR    0x00002000
+> -#define CPU_FTR_DUAL_PLL_750FX        0x00004000
+> -#define CPU_FTR_NO_DPM            0x00008000
+> -#define CPU_FTR_HAS_HIGH_BATS        0x00010000
+> -#define CPU_FTR_NEED_COHERENT        0x00020000
+> -#define CPU_FTR_NO_BTIC            0x00040000
+> -#define CPU_FTR_BIG_PHYS        0x00080000
 > -
 > -#ifdef __ASSEMBLY__
-> -  #define ASM_CONST(x) x
+> -
+> -#define BEGIN_FTR_SECTION        98:
+> -
+> -#define END_FTR_SECTION(msk, val)        \
+> -99:                        \
+> -    .section __ftr_fixup,"a";        \
+> -    .align 2;                \
+> -    .long msk;                \
+> -    .long val;                \
+> -    .long 98b;                \
+> -    .long 99b;                \
+> -    .previous
+> -
 > -#else
-> -  #define __ASM_CONST(x) x##UL
-> -  #define ASM_CONST(x) __ASM_CONST(x)
-> -#endif
-> +#include <asm/ppc_asm.h> /* for ASM_CONST */
->
->  /* PAGE_SHIFT determines the page size */
->  #define PAGE_SHIFT    12
-> diff --git a/include/asm-ppc64/ppc_asm.h b/include/asm-ppc64/ppc_asm.h
-> deleted file mode 100644
-> --- a/include/asm-ppc64/ppc_asm.h
-> +++ /dev/null
-> @@ -1,242 +0,0 @@
-> -/*
-> - * arch/ppc64/kernel/ppc_asm.h
-> - *
-> - * Definitions used by various bits of low-level assembly code on
-> PowerPC.
-> - *
-> - * Copyright (C) 1995-1999 Gary Thomas, Paul Mackerras, Cort Dougan.
-> - *
-> - *  This program is free software; you can redistribute it and/or
-> - *  modify it under the terms of the GNU General Public License
-> - *  as published by the Free Software Foundation; either version
-> - *  2 of the License, or (at your option) any later version.
-> - */
 > -
-> -#ifndef _PPC64_PPC_ASM_H
-> -#define _PPC64_PPC_ASM_H
-> -/*
-> - * Macros for storing registers into and loading registers from
-> - * exception frames.
-> - */
-> -#define SAVE_GPR(n, base)    std    n,GPR0+8*(n)(base)
-> -#define SAVE_2GPRS(n, base)    SAVE_GPR(n, base); SAVE_GPR(n+1, base)
-> -#define SAVE_4GPRS(n, base)    SAVE_2GPRS(n, base); SAVE_2GPRS(n+2,
-> base)
-> -#define SAVE_8GPRS(n, base)    SAVE_4GPRS(n, base); SAVE_4GPRS(n+4,
-> base)
-> -#define SAVE_10GPRS(n, base)    SAVE_8GPRS(n, base); SAVE_2GPRS(n+8,
-> base)
-> -#define REST_GPR(n, base)    ld    n,GPR0+8*(n)(base)
-> -#define REST_2GPRS(n, base)    REST_GPR(n, base); REST_GPR(n+1, base)
-> -#define REST_4GPRS(n, base)    REST_2GPRS(n, base); REST_2GPRS(n+2,
-> base)
-> -#define REST_8GPRS(n, base)    REST_4GPRS(n, base); REST_4GPRS(n+4,
-> base)
-> -#define REST_10GPRS(n, base)    REST_8GPRS(n, base); REST_2GPRS(n+8,
-> base)
-> -
-> -#define SAVE_NVGPRS(base)    SAVE_8GPRS(14, base); SAVE_10GPRS(22,
-> base)
-> -#define REST_NVGPRS(base)    REST_8GPRS(14, base); REST_10GPRS(22,
-> base)
-> -
-> -#define SAVE_FPR(n, base)    stfd    n,THREAD_FPR0+8*(n)(base)
-> -#define SAVE_2FPRS(n, base)    SAVE_FPR(n, base); SAVE_FPR(n+1, base)
-> -#define SAVE_4FPRS(n, base)    SAVE_2FPRS(n, base); SAVE_2FPRS(n+2,
-> base)
-> -#define SAVE_8FPRS(n, base)    SAVE_4FPRS(n, base); SAVE_4FPRS(n+4,
-> base)
-> -#define SAVE_16FPRS(n, base)    SAVE_8FPRS(n, base); SAVE_8FPRS(n+8,
-> base)
-> -#define SAVE_32FPRS(n, base)    SAVE_16FPRS(n, base); SAVE_16FPRS(n 
-> +16,
-> base)
-> -#define REST_FPR(n, base)    lfd    n,THREAD_FPR0+8*(n)(base)
-> -#define REST_2FPRS(n, base)    REST_FPR(n, base); REST_FPR(n+1, base)
-> -#define REST_4FPRS(n, base)    REST_2FPRS(n, base); REST_2FPRS(n+2,
-> base)
-> -#define REST_8FPRS(n, base)    REST_4FPRS(n, base); REST_4FPRS(n+4,
-> base)
-> -#define REST_16FPRS(n, base)    REST_8FPRS(n, base); REST_8FPRS(n+8,
-> base)
-> -#define REST_32FPRS(n, base)    REST_16FPRS(n, base); REST_16FPRS(n 
-> +16,
-> base)
-> -
-> -#define SAVE_VR(n,b,base)    li b,THREAD_VR0+(16*(n));  stvx n,b,base
-> -#define SAVE_2VRS(n,b,base)    SAVE_VR(n,b,base); SAVE_VR(n+1,b,base)
-> -#define SAVE_4VRS(n,b,base)    SAVE_2VRS(n,b,base);
-> SAVE_2VRS(n+2,b,base)
-> -#define SAVE_8VRS(n,b,base)    SAVE_4VRS(n,b,base);
-> SAVE_4VRS(n+4,b,base)
-> -#define SAVE_16VRS(n,b,base)    SAVE_8VRS(n,b,base);
-> SAVE_8VRS(n+8,b,base)
-> -#define SAVE_32VRS(n,b,base)    SAVE_16VRS(n,b,base);
-> SAVE_16VRS(n+16,b,base)
-> -#define REST_VR(n,b,base)    li b,THREAD_VR0+(16*(n)); lvx n,b,base
-> -#define REST_2VRS(n,b,base)    REST_VR(n,b,base); REST_VR(n+1,b,base)
-> -#define REST_4VRS(n,b,base)    REST_2VRS(n,b,base);
-> REST_2VRS(n+2,b,base)
-> -#define REST_8VRS(n,b,base)    REST_4VRS(n,b,base);
-> REST_4VRS(n+4,b,base)
-> -#define REST_16VRS(n,b,base)    REST_8VRS(n,b,base);
-> REST_8VRS(n+8,b,base)
-> -#define REST_32VRS(n,b,base)    REST_16VRS(n,b,base);
-> REST_16VRS(n+16,b,base)
-> -
-> -/* Macros to adjust thread priority for Iseries hardware  
-> multithreading
-> */
-> -#define HMT_LOW        or 1,1,1
-> -#define HMT_MEDIUM    or 2,2,2
-> -#define HMT_HIGH    or 3,3,3
-> -
-> -/* Insert the high 32 bits of the MSR into what will be the new
-> -   MSR (via SRR1 and rfid)  This preserves the MSR.SF and MSR.ISF
-> -   bits. */
-> -
-> -#define FIX_SRR1(ra, rb)    \
-> -    mr    rb,ra;        \
-> -    mfmsr    ra;        \
-> -    rldimi    ra,rb,0,32
-> -
-> -#define CLR_TOP32(r)    rlwinm    (r),(r),0,0,31    /* clear top  
-> 32 bits */
-> -
-> -/*
-> - * LOADADDR( rn, name )
-> - *   loads the address of 'name' into 'rn'
-> - *
-> - * LOADBASE( rn, name )
-> - *   loads the address (less the low 16 bits) of 'name' into 'rn'
-> - *   suitable for base+disp addressing
-> - */
-> -#define LOADADDR(rn,name) \
-> -    lis    rn,name##@highest;    \
-> -    ori    rn,rn,name##@higher;    \
-> -    rldicr    rn,rn,32,31;        \
-> -    oris    rn,rn,name##@h;        \
-> -    ori    rn,rn,name##@l
-> -
-> -#define LOADBASE(rn,name) \
-> -    lis    rn,name@highest;    \
-> -    ori    rn,rn,name@higher;    \
-> -    rldicr    rn,rn,32,31;        \
-> -    oris    rn,rn,name@ha
+> -#define BEGIN_FTR_SECTION        "98:\n"
+> -#define END_FTR_SECTION(msk, val)        \
+> -"99:\n"                        \
+> -"    .section __ftr_fixup,\"a\";\n"        \
+> -"    .align 2;\n"                \
+> -"    .long "#msk";\n"            \
+> -"    .long "#val";\n"            \
+> -"    .long 98b;\n"                    \
+> -"    .long 99b;\n"                     \
+> -"    .previous\n"
 > -
 > -
-> -#define SET_REG_TO_CONST(reg, value)                 \
-> -    lis     reg,(((value)>>48)&0xFFFF);             \
-> -    ori     reg,reg,(((value)>>32)&0xFFFF);         \
-> -    rldicr  reg,reg,32,31;                          \
-> -    oris    reg,reg,(((value)>>16)&0xFFFF);         \
-> -    ori     reg,reg,((value)&0xFFFF);
+> -#endif /* __ASSEMBLY__ */
 > -
-> -#define SET_REG_TO_LABEL(reg, label)                 \
-> -    lis     reg,(label)@highest;                    \
-> -    ori     reg,reg,(label)@higher;                 \
-> -    rldicr  reg,reg,32,31;                          \
-> -    oris    reg,reg,(label)@h;                      \
-> -    ori     reg,reg,(label)@l;
+> -#define END_FTR_SECTION_IFSET(msk)    END_FTR_SECTION((msk), (msk))
+> -#define END_FTR_SECTION_IFCLR(msk)    END_FTR_SECTION((msk), 0)
 > -
+> -#endif /* __ASM_PPC_CPUTABLE_H */
+> -#endif /* __KERNEL__ */
 > -
-> -/* PPPBBB - DRENG  If KERNELBASE is always 0xC0...,
-> - * Then we can easily do this with one asm insn. -Peter
-> - */
-> -#define tophys(rd,rs)                           \
-> -        lis     rd,((KERNELBASE>>48)&0xFFFF);   \
-> -        rldicr  rd,rd,32,31;                    \
-> -        sub     rd,rs,rd
-> -
-> -#define tovirt(rd,rs)                           \
-> -        lis     rd,((KERNELBASE>>48)&0xFFFF);   \
-> -        rldicr  rd,rd,32,31;                    \
-> -        add     rd,rs,rd
-> -
-> -/* Condition Register Bit Fields */
-> -
-> -#define    cr0    0
-> -#define    cr1    1
-> -#define    cr2    2
-> -#define    cr3    3
-> -#define    cr4    4
-> -#define    cr5    5
-> -#define    cr6    6
-> -#define    cr7    7
-> -
-> -
-> -/* General Purpose Registers (GPRs) */
-> -
-> -#define    r0    0
-> -#define    r1    1
-> -#define    r2    2
-> -#define    r3    3
-> -#define    r4    4
-> -#define    r5    5
-> -#define    r6    6
-> -#define    r7    7
-> -#define    r8    8
-> -#define    r9    9
-> -#define    r10    10
-> -#define    r11    11
-> -#define    r12    12
-> -#define    r13    13
-> -#define    r14    14
-> -#define    r15    15
-> -#define    r16    16
-> -#define    r17    17
-> -#define    r18    18
-> -#define    r19    19
-> -#define    r20    20
-> -#define    r21    21
-> -#define    r22    22
-> -#define    r23    23
-> -#define    r24    24
-> -#define    r25    25
-> -#define    r26    26
-> -#define    r27    27
-> -#define    r28    28
-> -#define    r29    29
-> -#define    r30    30
-> -#define    r31    31
-> -
-> -
-> -/* Floating Point Registers (FPRs) */
-> -
-> -#define    fr0    0
-> -#define    fr1    1
-> -#define    fr2    2
-> -#define    fr3    3
-> -#define    fr4    4
-> -#define    fr5    5
-> -#define    fr6    6
-> -#define    fr7    7
-> -#define    fr8    8
-> -#define    fr9    9
-> -#define    fr10    10
-> -#define    fr11    11
-> -#define    fr12    12
-> -#define    fr13    13
-> -#define    fr14    14
-> -#define    fr15    15
-> -#define    fr16    16
-> -#define    fr17    17
-> -#define    fr18    18
-> -#define    fr19    19
-> -#define    fr20    20
-> -#define    fr21    21
-> -#define    fr22    22
-> -#define    fr23    23
-> -#define    fr24    24
-> -#define    fr25    25
-> -#define    fr26    26
-> -#define    fr27    27
-> -#define    fr28    28
-> -#define    fr29    29
-> -#define    fr30    30
-> -#define    fr31    31
-> -
-> -#define    vr0    0
-> -#define    vr1    1
-> -#define    vr2    2
-> -#define    vr3    3
-> -#define    vr4    4
-> -#define    vr5    5
-> -#define    vr6    6
-> -#define    vr7    7
-> -#define    vr8    8
-> -#define    vr9    9
-> -#define    vr10    10
-> -#define    vr11    11
-> -#define    vr12    12
-> -#define    vr13    13
-> -#define    vr14    14
-> -#define    vr15    15
-> -#define    vr16    16
-> -#define    vr17    17
-> -#define    vr18    18
-> -#define    vr19    19
-> -#define    vr20    20
-> -#define    vr21    21
-> -#define    vr22    22
-> -#define    vr23    23
-> -#define    vr24    24
-> -#define    vr25    25
-> -#define    vr26    26
-> -#define    vr27    27
-> -#define    vr28    28
-> -#define    vr29    29
-> -#define    vr30    30
-> -#define    vr31    31
-> -
-> -#endif /* _PPC64_PPC_ASM_H */
-> _______________________________________________
-> Linuxppc64-dev mailing list
-> Linuxppc64-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc64-dev
 >
