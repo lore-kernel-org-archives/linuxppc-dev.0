@@ -1,20 +1,23 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 7FB4D682DA
+Return-Path: <rober@opnet.com.tw>
+Received: from opnet2.opnet.com.tw (unknown [210.243.240.244])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E0B966828F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Sep 2005 08:23:04 +1000 (EST)
-Date: Tue, 13 Sep 2005 15:23:01 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-Message-ID: <20050913222300.GA13219@gate.ebshome.net>
-References: <20050913175028.GB14889@dmt.cnet>
+	Wed, 14 Sep 2005 16:10:31 +1000 (EST)
+Received: from [10.0.14.26] (h248-210-243-240.opnet.com.tw [210.243.240.248]
+	(may be forged))
+	by opnet2.opnet.com.tw (8.13.3/8.13.1) with ESMTP id j8EE1Mkn093683
+	for <linuxppc-embedded@ozlabs.org>; Wed, 14 Sep 2005 14:01:23 GMT
+	(envelope-from rober@opnet.com.tw)
+From: =?UTF-8?Q?=E5=BE=90=E5=B0=8F=E5=A8=81=E7=9A=84EMAIL?=
+	<rober@opnet.com.tw>
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Date: Wed, 14 Sep 2005 14:10:17 +0800
+Message-Id: <1126678217.27221.6.camel@banana>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050913175028.GB14889@dmt.cnet>
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: -dev and -embedded cross-posting
+Subject: How to modify MTD driver for MX29LV320ABTC-90?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,17 +28,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Guys,
+Hi All:
+     
+          I used 2.4.25 linux at my custom MPC852T.My hardware has 2 *
+MX29LV320ABTC, working at 16bit mode.Now i want to used MTD to partion
+my flash and JFFS2.I want to know how
+to modify MTD for MX29LV320ABTC.
 
-let's not cross-post -dev posts here. In general, -embedded isn't 
-a totally separate list, it just covers embedded specific stuff, which 
-is not interesting to several loud -dev readers :). Things which 
-aren't embedded specific should go -dev.
+init_tqm_mtd: chip probing count 0
+init_tqm_mtd: chip probing count 1
+TQM8xxL: No support flash chips found!
 
-I think, everybody *interested* in general PPC32 development issues 
-here, are also subscribed to -dev list.
+PS:My first flash address start at 0x40000000, second is 0x40400000 
 
-Thanks.
 
--- 
-Eugene
+Best Regards,
+Rober Hsu
