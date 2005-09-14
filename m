@@ -1,19 +1,15 @@
-Return-Path: <det.nicolas@free.fr>
-Received: from smtp3.wanadoo.fr (smtp3.wanadoo.fr [193.252.22.28])
-	by ozlabs.org (Postfix) with ESMTP id 9758D682BA
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Sep 2005 19:12:33 +1000 (EST)
-Received: from me-wanadoo.net (localhost [127.0.0.1])
-	by mwinf0309.wanadoo.fr (SMTP Server) with ESMTP id 99A971C00786
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Sep 2005 11:12:30 +0200 (CEST)
-From: Nicolas DET <det.nicolas@free.fr>
-To: linuxppc-dev@ozlabs.org
-Date: 14 Sep 2005 11:07:19 +0100
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="--==bound20ff2988162----"
-Message-Id: <20050914091229.A27721C007F7@mwinf0309.wanadoo.fr>
-Cc: Andrew Morton <akpm@osdl.org>, Sven Luther <sl@bplan-gmbh.de>,
-	David Holm <dholm@gentoo.org>
-Subject: SRAM support for the Pegasos II platform
+Return-Path: <hch@lst.de>
+Date: Wed, 14 Sep 2005 13:05:06 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Jon Loeliger <jdl@freescale.com>
+Message-ID: <20050914110506.GA7049@lst.de>
+References: <1126643920.11056.53.camel@cashmere.sps.mot.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1126643920.11056.53.camel@cashmere.sps.mot.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	linuxppc64-dev <linuxppc64-dev@ozlabs.org>
+Subject: Re: PATCH powerpc: Merge asm-ppc*/hardirq.h
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,129 +19,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Warning: This is a message in MIME format. Your mail reader does not
-support MIME. Some parts of this message will be readable as plain text.
-To see the rest, you will need to upgrade your mail reader. Following are
-some URLs where you can find MIME-capable mail programs for common
-platforms:
+On Tue, Sep 13, 2005 at 03:38:40PM -0500, Jon Loeliger wrote:
+> +#ifndef _ASM_POWERPC_HARDIRQ_H
+> +#define _ASM_POWERPC_HARDIRQ_H
+> +#ifdef __KERNEL__
 
-  Amiga............: SimpleMail   http://simplemail.sourceforge.net/
-  Unix.............: Metamail     ftp://ftp.bellcore.com/nsb/
-  Windows/Macintosh: Eudora       http://www.qualcomm.com/
+the __KERNEL__ ifdefs is not needed.  <asm/hardirq.h> is only included
+from <linux/hardirq.h> which doesn't have anything user-visible.
 
-General info about MIME can be found at:
+> +
+> +#include <linux/config.h>
 
-http://www.cis.ohio-state.edu/hypertext/faq/usenet/mail/mime-faq/top.html
+not needed.
 
-----==bound20ff2988162----
+> +#include <linux/cache.h>
+> +
+> +#ifdef __powerpc64__
+> +#include <linux/preempt.h>
+> +#else
+> +#include <linux/smp_lock.h>
+> +#include <asm/irq.h>
+> +#endif
 
-Hello,
+We shouldn't need either of these include blocks at all.
 
-You can find enclosed or at the URL a patch for the 2.6.14-rc1.
-http://arrakin.homedns.org/~nicolas/mv643xx_eth_chrp_pegasos_eth.c.2.6.14-rc1.diff
+> +
+> +/* The __last_jiffy_stamp field is needed to ensure that no decrementer
+> + * interrupt is lost on SMP machines. Since on most CPUs it is in the same
+> + * cache line as local_irq_count, it is cheap to access and is also used on UP
+> + * for uniformity.
+> + */
+> +typedef struct {
+> +	unsigned int __softirq_pending;	/* set_bit is used on this */
+> +	unsigned int __last_jiffy_stamp;
+> +} ____cacheline_aligned irq_cpustat_t;
 
-It allows (with drivers/net/mv643xx_eth.*) to take advantage of the SRAM of
-the Marvell Discovery II for the network driver.
-
-Reviews and comments welcome.
-
-I hope it could be include in upcomming 2.6.14.
-
-Regards,
--- 
-Nicolas DET
-MorphOS & Linux developer
-----==bound20ff2988162----
-Content-Type: application/octet-stream
-Content-Disposition: attachment;
-	filename=mv643xx_eth_chrp_pegasos_eth.c.2.6.14-rc1.diff
-Content-transfer-encoding: base64
-
-LS0tIGxpbnV4LTIuNi4xNC1yYzEvYXJjaC9wcGMvcGxhdGZvcm1zL2NocnBfcGVnYXNvc19ldGgu
-YwkyMDA1LTA5LTE0IDA4OjE0OjQ0LjI3NTEyNzkwNCArMDIwMAorKysgbGludXgtMi42LjE0LXJj
-MV9uaWNvL2FyY2gvcHBjL3BsYXRmb3Jtcy9jaHJwX3BlZ2Fzb3NfZXRoLmMJMjAwNS0wOS0xNCAx
-MDo0ODoyNi41NjY4NzQ1MDAgKzAyMDAKQEAgLTE3LDYgKzE3LDIxIEBACiAjaW5jbHVkZSA8bGlu
-dXgvbXY2NDN4eC5oPgogI2luY2x1ZGUgPGxpbnV4L3BjaS5oPgogCisvLyBQZWdhc29zIElJIGxv
-Y2F0aW9uIGFuZCBzaXplIGZvciB0aGUgU1JBTSBzdHVmZgorLy8gT25seSB1c2VkIGZvciB0aGUg
-ZXRoZXJuZXQgZHJpdmVyIEFUTQorI2RlZmluZSBQRUdBU09TMl9NQVJWRUxMX1JFR0JBU0UgCQko
-MHhmMTAwMDAwMCkKKyNkZWZpbmUgUEVHQVNPUzJfTUFSVkVMTF9SRUdTSVpFIAkJKDB4MDAwMDQw
-MDApCisjZGVmaW5lIFBFR0FTT1MyX1NSQU1fQkFTRSAJCQkJCSgweGYyMDAwMDAwKQorI2RlZmlu
-ZSBQRUdBU09TMl9TUkFNX1NJWkUJCQkJCSgweDAwMDA4MDAwKQorCisjZGVmaW5lIFBFR0FTT1My
-X1NSQU1fQkFTRV9FVEgwCQkJKFBFR0FTT1MyX1NSQU1fQkFTRSkKKyNkZWZpbmUgUEVHQVNPUzJf
-U1JBTV9CQVNFX0VUSDEJCQkoUEVHQVNPUzJfU1JBTV9CQVNFX0VUSDAgKyAoUEVHQVNPUzJfU1JB
-TV9TSVpFIC8gMikgKQorCisjZGVmaW5lIFBFR0FTT1MyX1NSQU1fUlhSSU5HX1NJWkUJCShQRUdB
-U09TMl9TUkFNX1NJWkUvNCkKKyNkZWZpbmUgUEVHQVNPUzJfU1JBTV9UWFJJTkdfU0laRQkJKFBF
-R0FTT1MyX1NSQU1fU0laRS80KQorCisvLyNkZWZpbmUgQkVfVkVSQk9TRQorCiAvKiBQZWdhc29z
-IDIgc3BlY2lmaWMgTWFydmVsbCBNViA2NDM2MSBnaWdhYml0IGV0aGVybmV0IHBvcnQgc2V0dXAg
-Ki8KIHN0YXRpYyBzdHJ1Y3QgcmVzb3VyY2UgbXY2NDN4eF9ldGhfc2hhcmVkX3Jlc291cmNlc1td
-ID0gewogCVswXSA9IHsKQEAgLTQ0LDcgKzU5LDE1IEBACiAJfSwKIH07CiAKLXN0YXRpYyBzdHJ1
-Y3QgbXY2NDN4eF9ldGhfcGxhdGZvcm1fZGF0YSBldGgwX3BkOworc3RhdGljIHN0cnVjdCBtdjY0
-M3h4X2V0aF9wbGF0Zm9ybV9kYXRhIGV0aDBfcGQgPSB7CisJLnR4X3NyYW1fYWRkciA9IFBFR0FT
-T1MyX1NSQU1fQkFTRV9FVEgwLAorCS50eF9zcmFtX3NpemUgPSBQRUdBU09TMl9TUkFNX1RYUklO
-R19TSVpFLAorCS50eF9xdWV1ZV9zaXplID0gUEVHQVNPUzJfU1JBTV9UWFJJTkdfU0laRS8xNiwK
-KwkKKwkucnhfc3JhbV9hZGRyID0gUEVHQVNPUzJfU1JBTV9CQVNFICsgUEVHQVNPUzJfU1JBTV9U
-WFJJTkdfU0laRSwKKwkucnhfc3JhbV9zaXplID0gUEVHQVNPUzJfU1JBTV9SWFJJTkdfU0laRSwK
-KwkucnhfcXVldWVfc2l6ZSA9IFBFR0FTT1MyX1NSQU1fUlhSSU5HX1NJWkUvMTYsCit9OwogCiBz
-dGF0aWMgc3RydWN0IHBsYXRmb3JtX2RldmljZSBldGgwX2RldmljZSA9IHsKIAkubmFtZQkJPSBN
-VjY0M1hYX0VUSF9OQU1FLApAQCAtNjUsNyArODgsMTUgQEAKIAl9LAogfTsKIAotc3RhdGljIHN0
-cnVjdCBtdjY0M3h4X2V0aF9wbGF0Zm9ybV9kYXRhIGV0aDFfcGQ7CitzdGF0aWMgc3RydWN0IG12
-NjQzeHhfZXRoX3BsYXRmb3JtX2RhdGEgZXRoMV9wZCA9IHsKKwkudHhfc3JhbV9hZGRyID0gUEVH
-QVNPUzJfU1JBTV9CQVNFX0VUSDEsCisJLnR4X3NyYW1fc2l6ZSA9IFBFR0FTT1MyX1NSQU1fVFhS
-SU5HX1NJWkUsCisJLnR4X3F1ZXVlX3NpemUgPSBQRUdBU09TMl9TUkFNX1RYUklOR19TSVpFLzE2
-LAorCQorCS5yeF9zcmFtX2FkZHIgPSBQRUdBU09TMl9TUkFNX0JBU0VfRVRIMSArIFBFR0FTT1My
-X1NSQU1fVFhSSU5HX1NJWkUsCisJLnJ4X3NyYW1fc2l6ZSA9IFBFR0FTT1MyX1NSQU1fUlhSSU5H
-X1NJWkUsCisJLnJ4X3F1ZXVlX3NpemUgPSBQRUdBU09TMl9TUkFNX1JYUklOR19TSVpFLzE2LAor
-fTsKIAogc3RhdGljIHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgZXRoMV9kZXZpY2UgPSB7CiAJLm5h
-bWUJCT0gTVY2NDNYWF9FVEhfTkFNRSwKQEAgLTgzLDcgKzExNCw2OCBAQAogCSZldGgxX2Rldmlj
-ZSwKIH07CiAKKy8qKioqKioqKioqKi8KKy8qKioqKioqKioqKi8KKyNkZWZpbmUgTVZfUkVBRChv
-ZmZzZXQsdmFsKSAJeyB2YWwgPSByZWFkbChtdjY0M3h4X3JlZ19iYXNlICsgb2Zmc2V0KTsgfQor
-I2RlZmluZSBNVl9XUklURShvZmZzZXQsZGF0YSkgd3JpdGVsKGRhdGEsIG12NjQzeHhfcmVnX2Jh
-c2UgKyBvZmZzZXQpCisKK3N0YXRpYyB2b2lkIF9faW9tZW0gKm12NjQzeHhfcmVnX2Jhc2UgPSBO
-VUxMOworCiAKK3N0YXRpYyBpbnQgRW5hYmxlX1NSQU0odm9pZCkKK3sKKyAgdTMyIEFMb25nOwor
-CQorCS8vIExldCdzIGlvIHJlbWFwIHRoZSBtdiByZWdpc3RlciB0byB0b3VjaCB0aGUgU1JBTSBj
-b25maWcKKwlpZiAobXY2NDN4eF9yZWdfYmFzZSA9PSBOVUxMKQorCQltdjY0M3h4X3JlZ19iYXNl
-ID0gaW9yZW1hcChQRUdBU09TMl9NQVJWRUxMX1JFR0JBU0UsIFBFR0FTT1MyX01BUlZFTExfUkVH
-U0laRSk7CisJCisJaWYgKG12NjQzeHhfcmVnX2Jhc2UgPT0gTlVMTCkKKwkJcmV0dXJuIC1FTk9N
-RU07CisKKyNpZmRlZiBCRV9WRVJCT1NFCisJcHJpbnRrKCJQZWdhc29zIElJL01hcnZlbGwgTVY2
-NDM2MTogcmVnaXN0ZXIgcmVtYXBwZWQgZnJvbSAlcCB0byAlcFxuIiwgKHZvaWQgKilQRUdBU09T
-Ml9NQVJWRUxMX1JFR0JBU0UsICh2b2lkICopbXY2NDN4eF9yZWdfYmFzZSk7CisjZW5kaWYKKwor
-ICAvLyBGaXJzdCB0aGUgU1JBTSBjb25maWcgcmVnaXN0ZXIKKyAgLy8gV2Ugc2V0IGl0IHRvIDAg
-QVRNIC0+IE5vIGNhY2hlIGNvaGVyZW5jeSwgbm8gcGFyaXR5IGNoZWNrCisgIE1WX1dSSVRFKE1W
-NjQzNDBfU1JBTV9DT05GSUcsIDApOworCisgIC8vIHNldCB0aGUgU1JBTSBhZGRyZXNzIG9uIHRo
-ZSBDUFUgc2lkZQorICBNVl9XUklURShNVjY0MzQwX0lOVEVHUkFURURfU1JBTV9CQVNFX0FERFIs
-IFBFR0FTT1MyX1NSQU1fQkFTRSA+PiAxNik7CisKKyAgLy8gTm93IGVuYWJsZSBpdCAoQ1BVIHNp
-ZGUpCisgIE1WX1JFQUQoTVY2NDM0MF9CQVNFX0FERFJfRU5BQkxFLCBBTG9uZyk7CisgIEFMb25n
-ICY9IH4oMSA8PCAxOSk7CisgIE1WX1dSSVRFKE1WNjQzNDBfQkFTRV9BRERSX0VOQUJMRSwgQUxv
-bmcpOworCisgIC8vIEFuZCBub3cgdG8gdGhlIEdCIHNpZGUgb24gV0IgNCAoMC0+MykgY2FuIGJl
-IHVzZSBmb3IgRFJBTSBzdHVmZgorICBBTG9uZyA9IDB4MDI7IC8vIEludGVncmF0ZWQgU1JBTSB2
-YWx1ZQorICBBTG9uZyB8PSBQRUdBU09TMl9TUkFNX0JBU0UgJiAweGZmZmYwMDAwOyAvLyBGaW5h
-bGx5IHNldCB0aGUgU1JBTSBhZHJlc3MgaW4gdGhlIHVwcHRlciBwYXIgb2YgdGhlIHJlZ2lzdGVy
-CisgIE1WX1dSSVRFKE1WNjQzWFhfRVRIX0JBUl80LCBBTG9uZyk7CisKKyAgLy8gYW5kIHRoZSBz
-aXplIC4uLgorICBNVl9XUklURShNVjY0M1hYX0VUSF9TSVpFX1JFR180LCBQRUdBU09TMl9TUkFN
-X1NJWkUgJiAweGZmZmYwMDAwKTsKKworICAvLyBGaW5hbHkgZW5hYmxlIHRoZSB3aW5kb3cKKyAg
-TVZfUkVBRChNVjY0M1hYX0VUSF9CQVNFX0FERFJfRU5BQkxFX1JFRywgQUxvbmcpOworICBBTG9u
-ZyAmPSB+KDEgPDwgNCk7CisgIE1WX1dSSVRFKE1WNjQzWFhfRVRIX0JBU0VfQUREUl9FTkFCTEVf
-UkVHLCBBTG9uZyk7CisKKyNpZmRlZiBCRV9WRVJCT1NFCisJcHJpbnRrKCJQZWdhc29zIElJL01h
-cnZlbGwgTVY2NDM2MTogcmVnaXN0ZXIgdW5tYXBwZWRcbiIpOworCXByaW50aygiUGVnYXNvcyBJ
-SS9NYXJ2ZWxsIE1WNjQzNjE6IFNSQU0gYXQgJXAsIHNpemU9JXhcbiIsICh2b2lkKikgUEVHQVNP
-UzJfU1JBTV9CQVNFLCBQRUdBU09TMl9TUkFNX1NJWkUpOworI2VuZGlmCisKKwlpb3VubWFwKG12
-NjQzeHhfcmVnX2Jhc2UpOworCW12NjQzeHhfcmVnX2Jhc2UgPSBOVUxMOworCisgIHJldHVybiAx
-OworfQorCisKKy8qKioqKioqKioqKi8KKy8qKioqKioqKioqKi8KIGludAogbXY2NDN4eF9ldGhf
-YWRkX3Bkcyh2b2lkKQogewpAQCAtOTMsOSArMTg1LDM4IEBACiAJCXsgfQogCX07CiAKLQlpZiAo
-cGNpX2Rldl9wcmVzZW50KHBjaV9tYXJ2ZWxsX212NjQzNjApKSB7CisjaWZkZWYgQkVfVkVSQk9T
-RQorCXByaW50aygiUGVnYXNvcyBJSS9NYXJ2ZWxsIE1WNjQzNjE6IGluaXRcbiIpOworI2VuZGlm
-CisKKwlpZiAocGNpX2Rldl9wcmVzZW50KHBjaV9tYXJ2ZWxsX212NjQzNjApKQorCXsKIAkJcmV0
-ID0gcGxhdGZvcm1fYWRkX2RldmljZXMobXY2NDN4eF9ldGhfcGRfZGV2cywgQVJSQVlfU0laRSht
-djY0M3h4X2V0aF9wZF9kZXZzKSk7CisJCQorCQlpZiAoIEVuYWJsZV9TUkFNKCkgPCAwKQorCQl7
-CisJCQkvLyBIdW1tLCBkaXNhYmxlIFNSQU0gc3R1ZmYKKwkJCWV0aDBfcGQudHhfc3JhbV9hZGRy
-ID0gMDsKKwkJCWV0aDBfcGQudHhfc3JhbV9zaXplID0gMDsKKwkJCWV0aDBfcGQucnhfc3JhbV9h
-ZGRyID0gMDsKKwkJCWV0aDBfcGQucnhfc3JhbV9zaXplID0gMDsKKwkJCQorCQkJZXRoMV9wZC50
-eF9zcmFtX2FkZHIgPSAwOworCQkJZXRoMV9wZC50eF9zcmFtX3NpemUgPSAwOworCQkJZXRoMV9w
-ZC5yeF9zcmFtX2FkZHIgPSAwOworCQkJZXRoMV9wZC5yeF9zcmFtX3NpemUgPSAwOworCQkJCisj
-aWZkZWYgQkVfVkVSQk9TRQorCQkJcHJpbnRrKCJQZWdhc29zIElJL01hcnZlbGwgTVY2NDM2MTog
-Q2FuJ3QgZW5hYmxlIHRoZSBTUkFNXG4iKTsKKyNlbmRpZgorCQl9CQogCX0KKwkKKyNpZmRlZiBC
-RV9WRVJCT1NFCisJCQorCXByaW50aygiUGVnYXNvcyBJSS9NYXJ2ZWxsIE1WNjQzNjE6IGluaXQg
-aXMgb3ZlclxuIik7CisjZW5kaWYKKwkKIAlyZXR1cm4gcmV0OwogfQogZGV2aWNlX2luaXRjYWxs
-KG12NjQzeHhfZXRoX2FkZF9wZHMpOwo=
-
-----==bound20ff2988162------
+I'd suggest just using a DECLARE_PER_CPU variable for last_jiffy_stamp.
+In facct I plan to get rid of irq_cpustat_t completely at some point.
