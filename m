@@ -1,13 +1,14 @@
-Return-Path: <jdl@freescale.com>
-From: Jon Loeliger <jdl@freescale.com>
-To: Christoph Hellwig <hch@lst.de>
-In-Reply-To: <20050914110506.GA7049@lst.de>
+Return-Path: <hch@lst.de>
+Date: Wed, 14 Sep 2005 15:43:47 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Jon Loeliger <jdl@freescale.com>
+Message-ID: <20050914134347.GB9700@lst.de>
 References: <1126643920.11056.53.camel@cashmere.sps.mot.com>
 	<20050914110506.GA7049@lst.de>
-Content-Type: text/plain
-Message-Id: <1126705294.14036.4.camel@cashmere.sps.mot.com>
+	<1126705294.14036.4.camel@cashmere.sps.mot.com>
 Mime-Version: 1.0
-Date: Wed, 14 Sep 2005 08:41:34 -0500
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1126705294.14036.4.camel@cashmere.sps.mot.com>
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
 	linuxppc64-dev <linuxppc64-dev@ozlabs.org>
 Subject: Re: PATCH powerpc: Merge asm-ppc*/hardirq.h
@@ -20,52 +21,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2005-09-14 at 06:05, Christoph Hellwig wrote:
-> On Tue, Sep 13, 2005 at 03:38:40PM -0500, Jon Loeliger wrote:
-> > +#ifndef _ASM_POWERPC_HARDIRQ_H
-> > +#define _ASM_POWERPC_HARDIRQ_H
-> > +#ifdef __KERNEL__
+On Wed, Sep 14, 2005 at 08:41:34AM -0500, Jon Loeliger wrote:
+> > I'd suggest just using a DECLARE_PER_CPU variable for last_jiffy_stamp.
+> > In facct I plan to get rid of irq_cpustat_t completely at some point.
 > 
-> the __KERNEL__ ifdefs is not needed.  <asm/hardirq.h> is only included
-> from <linux/hardirq.h> which doesn't have anything user-visible.
+> Hmmm... So, I don't want to mess that up.  How about I leave it
+> as I've suggested and leave that step up to you as a follow on?
 
-Will do.
-
-> > +
-> > +#include <linux/config.h>
-> 
-> not needed.
-> 
-> > +#include <linux/cache.h>
-> > +
-> > +#ifdef __powerpc64__
-> > +#include <linux/preempt.h>
-> > +#else
-> > +#include <linux/smp_lock.h>
-> > +#include <asm/irq.h>
-> > +#endif
-> 
-> We shouldn't need either of these include blocks at all.
-
-OK.  I'll do some out-ripping and verify that it
-all compiles still.
-
-> > +
-> > +/* The __last_jiffy_stamp field is needed to ensure that no decrementer
-> > + * interrupt is lost on SMP machines. Since on most CPUs it is in the same
-> > + * cache line as local_irq_count, it is cheap to access and is also used on UP
-> > + * for uniformity.
-> > + */
-> > +typedef struct {
-> > +	unsigned int __softirq_pending;	/* set_bit is used on this */
-> > +	unsigned int __last_jiffy_stamp;
-> > +} ____cacheline_aligned irq_cpustat_t;
-> 
-> I'd suggest just using a DECLARE_PER_CPU variable for last_jiffy_stamp.
-> In facct I plan to get rid of irq_cpustat_t completely at some point.
-
-Hmmm... So, I don't want to mess that up.  How about I leave it
-as I've suggested and leave that step up to you as a follow on?
-
-Thanks,
-jdl
+ok.
