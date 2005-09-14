@@ -1,21 +1,21 @@
-Return-Path: <jgarzik@pobox.com>
-Received: from mail.dvmed.net (mail.dvmed.net [216.237.124.58])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 31D876826F
+Return-Path: <f.janot@ateme.fr>
+Received: from postman.ateme.net (postman.ateme.net [217.167.236.59])
+	by ozlabs.org (Postfix) with ESMTP id 7CD62682A3
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Sep 2005 22:46:01 +1000 (EST)
-Message-ID: <43281B7D.5000106@pobox.com>
-Date: Wed, 14 Sep 2005 08:45:49 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
+	Wed, 14 Sep 2005 23:11:04 +1000 (EST)
+Received: from pc179 (pc-179.ateme.net [172.16.16.179])
+	by postman.ateme.net (Postfix) with SMTP id 2C9164B8019
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 14 Sep 2005 14:49:33 +0200 (CEST)
+Message-ID: <00a401c5b92a$c1315d50$b31010ac@pc179>
+From: "Frederic Janot" <f.janot@ateme.fr>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Wed, 14 Sep 2005 14:49:33 +0200
 MIME-Version: 1.0
-To: Eugene Surovegin <ebs@ebshome.net>
-References: <20050831045847.GA17017@gate.ebshome.net>
-	<20050831050048.GB17017@gate.ebshome.net>
-In-Reply-To: <20050831050048.GB17017@gate.ebshome.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: netdev@vger.kernel.org, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH 1/2] New PowerPC 4xx on-chip ethernet controller driver
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: MPC5200 : BAPI versions & processor revision
+Reply-To: Frederic Janot <f.janot@ateme.fr>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,14 +26,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Eugene Surovegin wrote:
-> Remove old PPC4xx EMAC driver
-> 
-> Signed-off-by: Eugene Surovegin <ebs@ebshome.net>
+Hi all,
 
-Please post a diff, along with a description of the changes.
+I'm a bit confused about Bestcomm on MPC5200 and I need yours lights :)
 
-One huge patch to "remove emac driver" and another huge patch to "add 
-emac driver" is quite silly.
+Since a while, and I don't know why, I believe that Rev. A (L25R) and Rev.
+B1 (M08A) of the MPC5200 processor can run well with BAPI v2.1. And with
+Rev. B2 (M62C), we have to used BAPI v2.2.
 
-	Jeff
+Am I right or should I used BAPI v2.2 with all Rev B ?
+Does BAPI v2.2 is backward compatible with Rev A ?
+
+Thanks for your reply,
+
+Frederic
