@@ -1,15 +1,16 @@
-Return-Path: <deboralh@fel.com.cn>
-Received: from fel.com.cn (unknown [210.192.120.106])
-	by ozlabs.org (Postfix) with ESMTP id 485E96826D
+Return-Path: <stephane.fillod@thomson.net>
+Received: from dmzraw5.extranet.tce.com (dmzraw5.extranet.tce.com
+	[157.254.234.142]) by ozlabs.org (Postfix) with ESMTP id 5F6F36827B
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Sep 2005 19:58:49 +1000 (EST)
-Date: Wed, 14 Sep 2005 17:42:21 +0800
-From: "Debora Liu" <deboralh@fel.com.cn>
-To: "=?iso-8859-1?B?0OzQoc3+tcRFTUFJTA==?=" <rober@opnet.com.tw>
-Message-Id: <200509141737671.SM02088@RavProxy>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: How to modify MTD driver for MX29LV320ABTC-90?
-Reply-To: deboralh@fel.com.cn
+	Wed, 14 Sep 2005 20:20:03 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Wed, 14 Sep 2005 11:47:30 +0200
+Message-ID: <1CFEB358338412458B21FAA0D78FE86D4F0DD5@rennsmail02.eu.thmulti.com>
+From: "Fillod Stephane" <stephane.fillod@thomson.net>
+To: "linux-ppc-embedded" <linuxppc-embedded@ozlabs.org>
+Subject: RE: How to support LFS on ppc 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,15 +21,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello, ???
+>I have a problem about Large File System on ppc. The following is my =
+example code:
 
-In message < 2005-09-14 14:10:17 rober@opnet.com.tw>  you wrote:
+Actually not problem with LFS, but with int types.
 
-> init_tqm_mtd: chip probing count 0
-> init_tqm_mtd: chip probing count 1
-> TQM8xxL: No support flash chips found!
-Creat yourself coder in drivers/mtd/maps
+>#define _FILE_OFFSET_BITS 64
+>#include <sys/stat.h>
+>#include <unistd.h>
+>Int main()
+>{
+>=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 struct stat buf;
+>=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 stat64("/3G",&buf);
+>=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 printf("size of test =3D %ld =
+\n",buf.st_size);
+                                   ^^^
+Try %lld instead. Or to be portable, #include <inttypes.h>
+and printf("size of test =3D %" PRId64 "\n", buf.st_size);
 
-        Debora Liu
-        deboralh@sinovee.com
-          2005-09-14
+--=20
+Stephane
