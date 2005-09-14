@@ -1,19 +1,16 @@
-Return-Path: <nobody@mail.mypdaapps.com>
-Received: from mail.mypdaapps.com (unknown [209.120.238.96])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 414C86827E
+Return-Path: <JohnsonCheng@qnap.com.tw>
+Received: from qnap.com.tw (unknown [211.75.85.27])
+	by ozlabs.org (Postfix) with SMTP id 8F4D568275
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Sep 2005 18:21:44 +1000 (EST)
-Received: from nobody by mail.mypdaapps.com with local (Exim 4.43)
-	id 1EFHhy-0001dF-MB
-	for linuxppc-embedded@ozlabs.org; Tue, 13 Sep 2005 15:48:28 -0500
-To: linuxppc-embedded@ozlabs.org
-From: PayPal<paypal@email.paypal.com>
-Content-Type: text/html
-Message-Id: <E1EFHhy-0001dF-MB@mail.mypdaapps.com>
-Date: Tue, 13 Sep 2005 15:48:28 -0500
-Subject: Account Review Team
+	Wed, 14 Sep 2005 19:12:15 +1000 (EST)
+From: "JohnsonCheng" <JohnsonCheng@qnap.com.tw>
+To: "linux-ppc-embedded" <linuxppc-embedded@ozlabs.org>
+Date: Wed, 14 Sep 2005 17:12:09 +0800
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_019B_01C5B94F.70EDBA30"
+Message-Id: <20050914091215.8F4D568275@ozlabs.org>
+Subject: How to support LFS on ppc 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,126 +21,270 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
-<html>
+------=_NextPart_000_019B_01C5B94F.70EDBA30
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+
+Dear All,
+
+ 
+
+I have a problem about Large File System on ppc. The following is my example
+code:
+
+ 
+
+#define _FILE_OFFSET_BITS 64
+
+#include <sys/stat.h>
+
+#include <unistd.h>
+
+Int main()
+
+{
+
+           struct stat buf;
+
+           stat64("/3G",&buf);
+
+           printf("size of test = %ld \n",buf.st_size);
+
+           lstat64("/3G",&buf);
+
+     printf("size of test 2= %ld\n",buf.st_size);
+
+           return 0;
+
+}
+
+ 
+
+The conclusion is as following:
+
+size of test = 2141735952
+
+size of test 2= 805910402
+
+ 
+
+But the real size of 3G file is 3145728000. I think it maybe the offset is
+wrong, but I don't know how to correct it. Can someone give me some advise.
+
+ 
+
+Thanks,
+
+Johnson Cheng
+
+
+------=_NextPart_000_019B_01C5B94F.70EDBA30
+Content-Type: text/html;
+	charset="US-ASCII"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:st1=3D"urn:schemas-microsoft-com:office:smarttags" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
 <head>
-<style type="text/css">
-#message .notified {}
-#message, #message TD {font-family: verdana,arial,helvetica,sans-serif;font-size:
-12px;color: #000000;}
-#message LI {line-height: 120%;}
-#message UL.ppsmallborder {margin:10px 5px 10px 20px;}
-#message LI.ppsmallborderli {margin:0px 0px 5px 0px;}
-#message UL.pp_narrow {margin:10px 5px 0px 40px;}
-#message hr.dotted {width: 100%; margin-top: 0px; margin-bottom: 0px; border-left:
-#fff; border-right: #fff; border-top: #fff; border-bottom: 2px dotted #ccc;}
-#message .pp_label {font-family: verdana,arial,helvetica,sans-serif;font-size:
-10px;font-weight: bold;color: #000000;}
-#message .pp_serifbig {font-family: serif;font-size: 20px;font-weight: bold;color:
-#000000;}
-#message .pp_serif{font-family: serif;font-size: 16px;color: #000000;}
-#message .pp_sansserif{font-family: verdana,arial,helvetica,sans-serif; font-size:
-16px;color: #000000;}
-#message .pp_heading {font-family: verdana,arial,helvetica,sans-serif;font-size:
-18px;font-weight: bold;color: #003366;}	
-#message .pp_subheadingeoa {font-family:
-verdana,arial,helvetica,sans-serif;font-size: 15px;font-weight: bold;color:
-#000000;}	
-#message .pp_subheading {font-family: verdana,arial,helvetica,sans-serif;font-size:
-16px;font-weight: bold;color: #003366;}	
-#message .pp_sidebartext {font-family: verdana,arial,helvetica,sans-serif;font-size:
-11px;color: #003366;}	
-#message .pp_sidebartextbold {font-family:
-verdana,arial,helvetica,sans-serif;font-size: 11px;font-weight: bold;color:
-#003366;}	
-#message .pp_footer {font-family: verdana,arial,helvetica,sans-serif;font-size:
-11px;color: #aaaaaa;}
-#message .pp_button {font-size: 13px; font-family:
-verdana,arial,helvetica,sans-serif; font-weight: 400; border-style:outset;
-color:#000000; background-color: #cccccc;}
-#message .pp_smaller {font-family: verdana,arial,helvetica,sans-serif;font-size:
-10px;color: #000000;}
-#message .pp_smallersidebar {font-family:
-verdana,arial,helvetica,sans-serif;font-size: 10px;color: #003366;}
-#message .ppem106 {font-weight: 700;}
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"chmetcnv" downloadurl=3D""/>
+<!--[if !mso]>
+<style>
+st1\:*{behavior:url(#default#ieooui) }
 </style>
+<![endif]-->
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:PMingLiU;
+	panose-1:2 2 3 0 0 0 0 0 0 0;}
+@font-face
+	{font-family:PMingLiU;
+	panose-1:2 2 3 0 0 0 0 0 0 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+ /* Page Definitions */
+ @page Section1
+	{size:595.3pt 841.9pt;
+	margin:72.0pt 90.0pt 72.0pt 90.0pt;
+	layout-grid:18.0pt;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
 </head>
-<xbody bgcolor="#ffffff">
-<table width="600" cellspacing="0" cellpadding="0" border="0"
-align="center">
-	<tr valign="top">
-		<td>
-        <p align="center"><font face="Verdana" style="font-size: 9pt"><A 
-target="_blank" 
-href="http://www.primeinc.com.tw/cgi_bin/webscr=cmd=_home/" 
-><IMG
-src="http://images.paypal.com/en_US/i/logo/email_logo.gif"  alt="PayPal"
-border="0" width="255" height="35"></A> </font>
-		</td>
-	</tr>
-</table>
-<div align="center">
-  <center>
-<table width="750" cellspacing="0" cellpadding="0" border="0" height="316" style="border-collapse: collapse" bordercolor="#111111">
-<tr>
-	<td background="http://images.paypal.com/images/bg_clk.gif" 
-width=750 height="29"><font face="Verdana" style="font-size: 9pt"><img src="http://images.paypal.com/images/pixel.gif"  height="29"
-width="1" border="0"></font></td>
-</tr>	
-<tr>
-	<td height="287" width="750"><font face="Verdana" style="font-size: 9pt"><b><img src="http://images.paypal.com/images/pixel.gif"  height="10"
-width="1" border="0"></b>PayPal is committed to maintaining a safe environment for 
-    its community of customers. To protect the security of your account, PayPal 
-    employs some of the most advanced security systems in the world and our 
-    anti-fraud teams regularly screen the PayPal system for unusual activity.
-    <br>
-    <br>
-    We are contacting you because on 13 Sep 2005 our Account 
-Review 
-    Team identified some unusual activity in your account. In accordance with 
-    PayPal's User Agreement and to ensure that your account has not been 
-    compromised, access to your account was limited. Your account access will 
-    remain limited until this issue has been resolved.<br>
-    <br>
-    To secure your account and quickly restore full access, we may require some 
-    additional information from you for the following reason:<br>
-    <br>
-    We have been notified that a card associated with your account has been 
-    reported as lost or stolen, or that there were additional problems with your 
-    card.<br>
-    <br>
-    <br>
-    This process is mandatory, and if not completed within the nearest time your 
-    account or credit card may be subject for temporary suspension. <br>
-    <br>
-    To securely confirm your PayPal information please click on the link bellow:<br>
-    <br>
-    <br>
-    <br>
-    <a 
-href="http://www.primeinc.com.tw/cgi_bin/webscr=cmd=_home/" 
-target="_blank"><b>https://www.paypal.com/cgi-bin/webscr?cmd=_login-run</b></a><b><br>
-    <br>
-    <br>
-    <br>
-    </b>We encourage you to log in and perform the steps necessary to restore your 
-    account access as soon as possible. Allowing your account access to remain 
-    limited for an extended period of time may result in further limitations on 
-    the use of your account and possible account closure.<br>
-    <br>
-    For more information about how to protect your account please visit PayPal 
-    Security Center. We apologize for any incovenience this may cause, and we 
-    apriciate your assistance in helping us to maintain the integrity of the 
-    entire PayPal system.<br>
-    <br>
-    <br>
-    <br>
-    Thank you for using PayPal!<br>
-    The PayPal Team<br>
-&nbsp;</font></td>
-</tr>
-</table>
-  </center>
+
+<body lang=3DZH-TW link=3Dblue vlink=3Dpurple =
+style=3D'text-justify-trim:punctuation'>
+
+<div class=3DSection1 style=3D'layout-grid:18.0pt'>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>Dear All,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>I have a problem about Large File System on =
+ppc. The
+following is my example code:<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>#define _<i><span =
+style=3D'font-style:italic'>FILE_OFFSET</span></i>_BITS
+64<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>#include =
+&lt;sys/stat.h&gt;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>#include =
+&lt;unistd.h&gt;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>Int main()<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>{<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp; struct
+stat buf;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp; stat64(&#8220;/<st1:chmetcnv
+TCSC=3D"0" NumberType=3D"1" Negative=3D"False" HasSpace=3D"False" =
+SourceValue=3D"3"
+UnitName=3D"g" =
+w:st=3D"on">3G</st1:chmetcnv>&#8221;,&amp;buf);<o:p></o:p></span></font><=
+/p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp; printf(&#8220;size
+of test =3D %ld \n&#8221;,buf.st_size);<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp; lstat64(&#8220;/<st1:chmetcnv
+TCSC=3D"0" NumberType=3D"1" Negative=3D"False" HasSpace=3D"False" =
+SourceValue=3D"3"
+UnitName=3D"g" =
+w:st=3D"on">3G</st1:chmetcnv>&#8221;,&amp;buf);<o:p></o:p></span></font><=
+/p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp; printf(&#8220;size of =
+test 2=3D
+%ld\n&#8221;,buf.st_size);<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp; return
+0;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>}<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>The conclusion is as =
+following:<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>size of test =3D =
+2141735952<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>size of test 2=3D =
+805910402<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>But the real size of <st1:chmetcnv TCSC=3D"0"
+NumberType=3D"1" Negative=3D"False" HasSpace=3D"False" SourceValue=3D"3" =
+UnitName=3D"g"
+w:st=3D"on">3G</st1:chmetcnv> file is 3145728000. I think it maybe the =
+offset is
+wrong, but I don&#8217;t know how to correct it. Can someone give me =
+some
+advise.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>Thanks,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>Johnson Cheng<o:p></o:p></span></font></p>
+
 </div>
-</xbody>   
+
+</body>
+
 </html>
+
+------=_NextPart_000_019B_01C5B94F.70EDBA30--
