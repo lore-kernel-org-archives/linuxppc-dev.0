@@ -1,18 +1,19 @@
-Return-Path: <JohnsonCheng@qnap.com.tw>
-Received: from qnap.com.tw (unknown [211.75.85.27])
-	by ozlabs.org (Postfix) with SMTP id 33ACB68259
+Return-Path: <nishant.subs@myrealbox.com>
+Received: from smtp-send.myrealbox.com (smtp-send.myrealbox.com
+	[192.108.102.143])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "*.myrealbox.com",
+	Issuer "Comodo Class 3 Security Services CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4AE456828F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Sep 2005 21:46:03 +1000 (EST)
-From: "JohnsonCheng" <JohnsonCheng@qnap.com.tw>
-To: "'Fillod Stephane'" <stephane.fillod@thomson.net>,
-	"'linux-ppc-embedded'" <linuxppc-embedded@ozlabs.org>
-Date: Wed, 14 Sep 2005 19:45:54 +0800
+	Wed, 14 Sep 2005 22:28:12 +1000 (EST)
+From: "Nishant Galange" <nishant.subs@myrealbox.com>
+To: linuxppc-embedded@ozlabs.org
+Date: Wed, 14 Sep 2005 09:12:03 +0000
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ISO-8859-1"
-In-Reply-To: <1CFEB358338412458B21FAA0D78FE86D4F0DD5@rennsmail02.eu.thmulti.com>
-Message-Id: <20050914114603.33ACB68259@ozlabs.org>
-Subject: RE: How to support LFS on ppc 
+Message-ID: <1126689123.c803515cnishant.subs@myrealbox.com>
+Content-Type: text/plain; charset="UTF-8"
+Subject: How to access linux symbols from dynamically loaded .so (dlopen)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,38 +24,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Stephane,
+Hi all
 
-Great. It's work when I use %lld instead of %ld.
+Help needed desperately. Some background on the problem:
 
-Thanks,
-Johnson Cheng
+The embedded linux (built as one large elf
+file) contains an important function called "board_init()"
 
+A test module (built as a shared object test.so) contains a function
+called start_test()
 
------Original Message-----
-From: Fillod Stephane [mailto:stephane.fillod@thomson.net]=20
-Sent: Wednesday, September 14, 2005 5:48 PM
-To: linux-ppc-embedded
-Cc: JohnsonCheng
-Subject: RE: How to support LFS on ppc=20
+void start_test() {
+=09board_init(); /* The shared object has to call a function defined in the=
+ embedded linux elf image */
+=09/*Do board tests here... */
+}
 
->I have a problem about Large File System on ppc. The following is my
-example code:
+1. Linux comes up to the command prompt on the board.
+2. A GUI application communicates with the board via Ethernet=20
+3. The GUI
+transfers the test module test.so over Ethernet=20
+4. The downloaded test.so is loaded via dlopen().=20
+5. dlopen() and dlsym() calls succeed. start_test() starts executing=20
+6. It barfs at board_init() saying "Undefined symbol: board_init"
 
-Actually not problem with LFS, but with int types.
+So the dynamically loaded shared object cannot get a reference to a functio=
+n define in the linux that loaded it...
 
->#define _FILE_OFFSET_BITS 64
->#include <sys/stat.h>
->#include <unistd.h>
->Int main()
->{
->=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 struct stat buf;
->=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 stat64("/3G",&buf);
->=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 printf("size of test =3D %ld =
-\n",buf.st_size);
-                                   ^^^
-Try %lld instead. Or to be portable, #include <inttypes.h>
-and printf("size of test =3D %" PRId64 "\n", buf.st_size);
+How do we solve this problem? How do I make sure that symbols in the linux =
+image are exposed to dynamically loaded libraries?
 
---=20
-Stephane
+Most probably, it has a simple solution to tweak some compiler/linker
+options. But I may be wrong...
+
+Waiting,
+Nishant
