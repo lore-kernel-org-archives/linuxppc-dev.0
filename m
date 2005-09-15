@@ -1,14 +1,14 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
+Return-Path: <linville@tuxdriver.com>
+Date: Thu, 15 Sep 2005 10:07:01 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Message-ID: <20050915140659.GA17670@tuxdriver.com>
+References: <20050915160430.550d02ed.sfr@canb.auug.org.au>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17193.22650.615956.743651@cargo.ozlabs.ibm.com>
-Date: Thu, 15 Sep 2005 21:18:18 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-In-Reply-To: <20050913175028.GB14889@dmt.cnet>
-References: <20050913175028.GB14889@dmt.cnet>
-Cc: linuxppc-dev@ozlabs.org, linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: __switch_to test-and-branch ALTIVEC specific?
+In-Reply-To: <20050915160430.550d02ed.sfr@canb.auug.org.au>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, ppc64-dev <linuxppc64-dev@ozlabs.org>
+Subject: Re: [PATCH] powerpc: don't execute a temporary comment
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,12 +18,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Marcelo Tosatti writes:
+On Thu, Sep 15, 2005 at 04:04:30PM +1000, Stephen Rothwell wrote:
 
-> This test&branch looks AltiVec specific, any reason for not #ifdef'ing it
-> out?
+> --- a/arch/ppc/Makefile
+> +++ b/arch/ppc/Makefile
+> @@ -102,9 +102,9 @@ define archhelp
+>    @echo '  *_defconfig     - Select default config from arch/$(ARCH)/ppc/configs'
+>  endef
+>  
+> +# arch/$(ARCH)/include is a temporary hack until we have migrated to asm-powerpc
+>  archclean:
+>  	$(Q)$(MAKE) $(clean)=arch/ppc/boot
+> -	# Temporary hack until we have migrated to asm-powerpc
+>  	$(Q)rm -rf arch/$(ARCH)/include
+>  
+>  archprepare: checkbin
 
-No, your patch looks fine.  (/me wishes patchwork had a "Queued"
-state.)
+Why is this helpful?  Better in general to keep the commment near the code, no?
 
-Paul.
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
