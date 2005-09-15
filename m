@@ -1,16 +1,14 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17193.64509.576852.408757@cargo.ozlabs.ibm.com>
-Date: Fri, 16 Sep 2005 08:55:57 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "John W. Linville" <linville@tuxdriver.com>
-In-Reply-To: <20050915140659.GA17670@tuxdriver.com>
-References: <20050915160430.550d02ed.sfr@canb.auug.org.au>
-	<20050915140659.GA17670@tuxdriver.com>
-Cc: ppc64-dev <linuxppc64-dev@ozlabs.org>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] powerpc: don't execute a temporary comment
+Return-Path: <dale@farnsworth.org>
+Received: from xyzzy.farnsworth.org (unknown [65.200.49.142])
+	by ozlabs.org (Postfix) with SMTP id C53D26828C
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Sep 2005 09:45:00 +1000 (EST)
+Date: 15 Sep 2005 23:44:57 -0000
+Message-ID: <20050915234457.6761.qmail@xyzzy.farnsworth.org>
+From: "Dale Farnsworth" <dale@farnsworth.org>
+To: det.nicolas@free.fr
+In-Reply-To: <20050914091229.A27721C007F7@mwinf0309.wanadoo.fr>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: SRAM support for the Pegasos II platform
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,11 +18,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-John W. Linville writes:
+In article <20050914091229.A27721C007F7@mwinf0309.wanadoo.fr> you write:
+> You can find enclosed or at the URL a patch for the 2.6.14-rc1.
+> http://arrakin.homedns.org/~nicolas/mv643xx_eth_chrp_pegasos_eth.c.2.6.14-rc1.diff
+> 
+> It allows (with drivers/net/mv643xx_eth.*) to take advantage of the SRAM of
+> the Marvell Discovery II for the network driver.
+> 
+> Reviews and comments welcome.
 
-> Why is this helpful?  Better in general to keep the commment near the code, no?
+Hi Nicolas,
 
-Where it was, it was a command, not a comment, so it got printed out
-on the screen when you did a make clean, which seemed a bit silly.
++#define PEGASOS2_SRAM_SIZE				(0x00008000)
 
-Paul.
+I think the SRAM is 256KB, so shouldn't this be 0x00040000 ?
+
+-Dale
