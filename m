@@ -1,17 +1,12 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: Kumar Gala <kumar.gala@freescale.com>
-Date: Thu, 15 Sep 2005 01:58:09 +0200
-References: <200509090623.41889.arnd@arndb.de>
-	<06F93AF6-7AF8-4320-B9E3-CBF9EA333403@freescale.com>
-In-Reply-To: <06F93AF6-7AF8-4320-B9E3-CBF9EA333403@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200509150158.10511.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, pantelis.antoniou@gmail.com,
-	linuxppc64-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] powerpc: merge include/asm/cputable.h
+Return-Path: <sfr@canb.auug.org.au>
+Date: Thu, 15 Sep 2005 16:04:30 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Message-Id: <20050915160430.550d02ed.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, ppc64-dev <linuxppc64-dev@ozlabs.org>
+Subject: [PATCH] powerpc: don't execute a temporary comment
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,66 +16,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Middeweken 14 September 2005 21:11, Kumar Gala wrote:
-> I not sure I understand what the introduction of the enum's gets us.
-> 
-It doesn't have to be an enum, it could just as well be a #define,
-if we find that to be better in some way (maybe compile-time).
 
-The general idea is to convert run-time checks into compile-time
-checks in order to improve the running kernel. If you have
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
 
-// start code
-enum {
-	FEATURE_1 = 1,
-	FEATURE_2 = 2,
-	PLATFORM_1 = FEATURE_1, 
-	PLATFORM_2 = FEATURE_2, 
-	PLATFORM_3 = FEATURE_1 | FEATURE_2,
-	FEATURE_POSSIBLE = 
-#ifdef CONFIG_PLATFORM_1
-		PLATFORM_1 |
-#endif
-#ifdef CONFIG_FEATURE_2
-		PLATFORM_2 |
-#endif
-#ifdef CONFIG_FEATURE_3
-		PLATFORM_3 |
-#endif
-		0,
-	FEATURE_ALWAYS =
-#ifdef CONFIG_PLATFORM_1
-		PLATFORM_1 &
-#endif
-#ifdef CONFIG_PLATFORM_2
-		PLATFORM_2 &
-#endif
-#ifdef CONFIG_PLATFORM_3
-		PLATFORM_3 &
-#endif
-		FEATURE_POSSIBLE,
-};
+ arch/ppc/Makefile   |    2 +-
+ arch/ppc64/Makefile |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-static inline int have_feature(unsigned long feature)
-{
-    return (FEATURE_ALWAYS & feature) ||
-           (FEATURE_POSSIBLE & runtime_feature & feature);
-}
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-int foo();
-int bar();
-int main(void)
-{
-	if (have_feature(FEATURE_1))
-		return foo();
-	if (have_feature(FEATURE_2))
-		return bar();
-	return 0;
-}
-// end code
-
-Then gcc will produce optimal object code for any combination
-of CONFIG_PLATFORM_{1,2,3}. Of course I have to admit that the
-header file is not exactly elegant ;-).
-
-	Arnd <><
+86f7688825b1f1e6fa4c43bce001b2a232f7d1bc
+diff --git a/arch/ppc/Makefile b/arch/ppc/Makefile
+--- a/arch/ppc/Makefile
++++ b/arch/ppc/Makefile
+@@ -102,9 +102,9 @@ define archhelp
+   @echo '  *_defconfig     - Select default config from arch/$(ARCH)/ppc/configs'
+ endef
+ 
++# arch/$(ARCH)/include is a temporary hack until we have migrated to asm-powerpc
+ archclean:
+ 	$(Q)$(MAKE) $(clean)=arch/ppc/boot
+-	# Temporary hack until we have migrated to asm-powerpc
+ 	$(Q)rm -rf arch/$(ARCH)/include
+ 
+ archprepare: checkbin
+diff --git a/arch/ppc64/Makefile b/arch/ppc64/Makefile
+--- a/arch/ppc64/Makefile
++++ b/arch/ppc64/Makefile
+@@ -113,9 +113,9 @@ defaultimage-$(CONFIG_PPC_ISERIES) := vm
+ KBUILD_IMAGE := $(defaultimage-y)
+ all: $(KBUILD_IMAGE)
+ 
++# arch/$(ARCH)/include is a temporary hack until we have migrated to asm-powerpc
+ archclean:
+ 	$(Q)$(MAKE) $(clean)=$(boot)
+-	# Temporary hack until we have migrated to asm-powerpc
+ 	$(Q)rm -rf arch/$(ARCH)/include
+ 
+ 
