@@ -1,18 +1,19 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutvdomng.kundenserver.de (moutvdom.kundenserver.de
-	[212.227.126.249]) by ozlabs.org (Postfix) with ESMTP id 5BB1A68292
+Return-Path: <sr@denx.de>
+Received: from natfrord.rzone.de (natfrord.rzone.de [81.169.145.161])
+	by ozlabs.org (Postfix) with ESMTP id 5568E68285
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Sep 2005 20:41:29 +1000 (EST)
-Message-ID: <43294FD0.7050105@anagramm.de>
-Date: Thu, 15 Sep 2005 12:41:20 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
+	Fri, 16 Sep 2005 02:19:15 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-embedded@ozlabs.org
+Date: Thu, 15 Sep 2005 18:03:14 +0200
+References: <ea43f4f9050825183121655ba2@mail.gmail.com>
+	<431260BA.7000107@jonmasters.org> <20050830083859.B5925@cox.net>
+In-Reply-To: <20050830083859.B5925@cox.net>
 MIME-Version: 1.0
-To: FCG WANG Baohua <Baohua.WANG@alcatel-sbell.com.cn>
-References: <A9DE2BAF233E444FA9C5E77A5825A01E86506C@ydmail.sbell.com.cn>
-In-Reply-To: <A9DE2BAF233E444FA9C5E77A5825A01E86506C@ydmail.sbell.com.cn>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: A question about the /dev/ide
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200509151803.15301.sr@denx.de>
+Subject: PPC4xx cleanup
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,38 +24,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello, Wang Baohua!
+Hi,
 
-FCG WANG Baohua wrote:
-> Dear all:
->   I had use the UPM of MPC8270 to create the device driver of my pcmcia CF card. 
+I am right now testing and cleaning up some of the AMCC 4xx eval board ports 
+to better support U-Boot as firmware. One question before I begin to send a 
+few patches:
 
-Just an idea: There are IDE-to-CF adapters and PCI-IDE adapters with working drivers.
-(for evaluation)
+All of the 44x boards I looked at (e.g. Ocotea) have to be extended in the 
+platform file (e.g. platforms/4xx/ocotea.c) to not only copy the bd_info 
+struct from r3, but also check r4 and r6 for initrd and kernel command line 
+passing from the bootloader. Instead of adding this code to all different 
+platform files, I would like to move this code to the common function 
+"ibm44x_platform_init" (syslib/ibm44x_common.c) like it is done in the 40x 
+ports "ppc4xx_init" (syslib/ppc4xx_setup.c). 
 
-> How to create the "/dev/hda" device nodes? I had only "/dev/ide" device nodes,
-> I want to use command like  "mkswap /dev/hda4".
-> When I use "mkswap /dev/ide/host0/bus0/target0/lun0/part1p4",
-> it shows the "No such file or directory" message. How can I create 
-> the right device nodes? thanks!
+Any objections/remarks?
 
-man mknod?
-
-But maybe you want to read some more things about devfs, udev, ... /etc/devfsd.conf
-before you know what you are doing there?
-Well... all that depends on your kernel/system config a bit...
-
-Best greets,
-
--- 
-Clemens Koller
-_______________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Str. 45/1
-81379 Muenchen
-Germany
-
-http://www.anagramm.de
-Phone: +49-89-741518-50
-Fax: +49-89-741518-19
+Best regards,
+Stefan
