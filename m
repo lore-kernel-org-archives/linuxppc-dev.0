@@ -1,17 +1,14 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17193.22140.962651.122114@cargo.ozlabs.ibm.com>
-Date: Thu, 15 Sep 2005 21:09:48 +1000
+Message-ID: <17193.22650.615956.743651@cargo.ozlabs.ibm.com>
+Date: Thu, 15 Sep 2005 21:18:18 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Jon Loeliger <jdl@freescale.com>
-In-Reply-To: <1126705588.14036.10.camel@cashmere.sps.mot.com>
-References: <1126644202.11056.59.camel@cashmere.sps.mot.com>
-	<200509140435.21916.arnd@arndb.de>
-	<1126705588.14036.10.camel@cashmere.sps.mot.com>
-Cc: linuxppc64-dev <linuxppc64-dev@ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: Re: PATCH powerpc: Merge asm-ppc*/sections.h
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+In-Reply-To: <20050913175028.GB14889@dmt.cnet>
+References: <20050913175028.GB14889@dmt.cnet>
+Cc: linuxppc-dev@ozlabs.org, linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: __switch_to test-and-branch ALTIVEC specific?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,19 +18,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jon Loeliger writes:
+Marcelo Tosatti writes:
 
-> In the Grand Scheme of Things, removing things and making them
-> simpler seems a lofty goal. :-)   Anyone know of any pitfalls that
-> await me if I try to remove these sections, a la pmac and friends?
+> This test&branch looks AltiVec specific, any reason for not #ifdef'ing it
+> out?
 
-You'll probably get most objection from the PReP users, for whom
-getting back a few hundred kB is a big deal.  (Maybe we should just
-buy both of them a G5 or something. 8-)
-
-> And I assume that the obvious mappings can take place (ie, that
-> "pmac.text" can just be placed in regular .text, etc), right?
-
-Yes.
+No, your patch looks fine.  (/me wishes patchwork had a "Queued"
+state.)
 
 Paul.
