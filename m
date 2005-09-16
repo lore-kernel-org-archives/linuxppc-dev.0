@@ -1,18 +1,18 @@
-Return-Path: <JohnsonCheng@qnap.com.tw>
-Received: from qnap.com.tw (unknown [211.75.85.27])
-	by ozlabs.org (Postfix) with SMTP id 8E7A4682BB
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutvdomng.kundenserver.de (moutvdom.kundenserver.de
+	[212.227.126.249]) by ozlabs.org (Postfix) with ESMTP id D61B9682C2
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 Sep 2005 17:00:43 +1000 (EST)
-From: "JohnsonCheng" <JohnsonCheng@qnap.com.tw>
-To: <wd@denx.de>
-Date: Fri, 16 Sep 2005 15:00:31 +0800
+	Fri, 16 Sep 2005 18:57:41 +1000 (EST)
+Message-ID: <432A8902.8060203@anagramm.de>
+Date: Fri, 16 Sep 2005 10:57:38 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-In-Reply-To: <20050916063238.24A5B352B7B@atlas.denx.de>
-Message-Id: <20050916070043.8E7A4682BB@ozlabs.org>
-Cc: 'linux-ppc-embedded' <linuxppc-embedded@ozlabs.org>
-Subject: RE: How to use kerberos in ELDK 
+To: Russell McGuire <rmcguire@uwbt.com>
+References: <20050915191243.GA52539@mail19d.g19.rapidsite.net>
+In-Reply-To: <20050915191243.GA52539@mail19d.g19.rapidsite.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Getting Perl on Embedded Linux PowerPC
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,66 +23,67 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Wolfgang,
+Hello, Russell!
 
-Maybe I meet the big trouble.
-I find no powerpc-linux-rpm in my build machine, only have
-powerpc-linux-gcc, powerpc-linux-ar .....
-What should I do?
+Russell McGuire wrote:
+> I was attempting to get some ATM Tools compiled into the embedded PowerPC,
+> and found I needed Perl installed on the target before I continue.
+> 
+> So my question...
+> 
+> Has anyone had any luck getting any version of Perl 5 or higher installed
+> onto the file system. I am still running this over the NFS dev environment,
+> and plan to remove it before final production, so space is of no concern at
+> the moment.  
 
-Thanks,
-Johnson Cheng
+I was compiling and running Perl on my mpc8540 system (natively)...
+I haven't had any problems with that.
 
------Original Message-----
-From: wd@denx.de [mailto:wd@denx.de] 
-Sent: Friday, September 16, 2005 2:33 PM
-To: JohnsonCheng
-Cc: 'linux-ppc-embedded'
-Subject: Re: How to use kerberos in ELDK 
+$ perl --version
+This is perl, v5.8.6 built for ppc-linux
 
-In message <20050916031236.E521942DDD@denx.de> you wrote:
-> 1. For ppc-2005-03-07-src, 
->    [root]# rpm -iv krb5-1.2.7-14_3.src.rpm
+----- my (old) install log says:
+perl:
+        wget ftp://.../perl-5.8.6.tar.gz
+	tar ...
+        less INSTALL
+        rm -f config.sh Policy.sh
+        sh Configure
+or
+        sh Configure -de        (for default installation)
+        make
+        make test
+and it should end up with something like:
+All tests successful.
+u=6.52  s=0.89  cu=415.95  cs=22.58  scripts=845  tests=87560
+make[2]: Leaving directory `/home/clemens/build/perl-5.8.6'
+make[1]: Leaving directory `/home/clemens/build/perl-5.8.6'
+and finally:
+	su -
+        make install
+-----
 
-There is no need to be root to install the ELDK or ELDK packages.
+> Or perhaps a pre-compiled RPM that installs, that is built for PowerPC.
 
-Also, you should read (and  follow)  the  documentation;  the  manual
-explains  in  deatil that you have to use the ELLDK's own RPM-tool to
-install  (or  remove)  ELDK   packets.   For   details   please   see
-http://www.denx.de/twiki/bin/view/DULG/ELDKIndividualPackages
+Sorry, no rpm's over here. Which PowerPC?
 
-> 2. For ppc-2005-03-07
->    [root]# rpm -iv krb5-libs-ppc_6xx-1.2.7-14_3.ppc.rpm
->     Error: Failed dependencies:
-> 		grep-ppc_6xx is needed by krb5-libs-ppc_6xx-1.2.7-14_3
-> 		sh-utils-ppc_6xx is needed by krb5-libs-ppc_6xx-1.2.7-14_3
->    [root]# rpm -iv grep-ppc_6xx-2.5.1-4_1.ppc.rpm
->     Preparing packages for installation...
-> 		Package grep-ppc_6xx-2.5.1-4_1 is intended for a ppc
-> architecture 
-> 		File /bin/egrep freom install of grep-ppc_6xx-2.5.1-4_1
-> conflicts with file from package grep-2.5.1-26
+> I am using DENX Linux 2.4.25 at the moment, with pretty much the default
+> root file system that is provided.
 
-All these are consequences of your wrong commands.
+Should be no problem, I think. I started with that too, a long time ago.
+Give it a try. You just need make sure that you don't run out of coffee! ;-)
 
-You must use "${CROSS_COMPILE}rpm" instead.
-
->    Ps: My build machine is x86, therefore, my target ppc board has not
-> enough space to do this, how can I get krb5 library from ELDK on x86?
-
-Actually these get installed by default when you install the ELDK:
-
-	-> ppc_8xx-rpm -q krb5-devel krb5-libs
-	krb5-devel-ppc_8xx-1.2.7-14_3
-	krb5-libs-ppc_8xx-1.2.7-14_3
-
-
-Best regards,
-
-Wolfgang Denk
+Greets,
 
 -- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Houston, Tranquillity Base here.  The Eagle has landed.
-                                                    -- Neil Armstrong
+Clemens Koller
+_______________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Str. 45/1
+81379 Muenchen
+Germany
+
+http://www.anagramm.de
+Phone: +49-89-741518-50
+Fax: +49-89-741518-19
