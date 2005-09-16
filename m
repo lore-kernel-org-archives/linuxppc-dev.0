@@ -1,19 +1,19 @@
-Return-Path: <wd@denx.de>
-Received: from mailout03.sul.t-online.com (mailout03.sul.t-online.com
-	[194.25.134.81]) by ozlabs.org (Postfix) with ESMTP id 260376829F
+Return-Path: <shawnxjin@gmail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.203])
+	by ozlabs.org (Postfix) with ESMTP id 04C98682B2
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 Sep 2005 09:42:58 +1000 (EST)
-To: "Russell McGuire" <rmcguire@uwbt.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 15 Sep 2005 16:12:42 PDT."
-	<20050915191243.GA52539@mail19d.g19.rapidsite.net>
-Date: Fri, 16 Sep 2005 01:42:39 +0200
-Sender: wd@denx.de
-Message-Id: <20050915234239.75CC6353B46@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Getting Perl on Embedded Linux PowerPC 
+	Fri, 16 Sep 2005 10:07:15 +1000 (EST)
+Received: by zproxy.gmail.com with SMTP id l1so432623nzf
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 15 Sep 2005 17:07:14 -0700 (PDT)
+Message-ID: <c3d0340b050915170043abba5f@mail.gmail.com>
+Date: Thu, 15 Sep 2005 17:00:06 -0700
+From: Shawn Jin <shawnxjin@gmail.com>
+To: ppcembed <linuxppc-embedded@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: How to dump D-cache
+Reply-To: shawnxjin@gmail.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,39 +24,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <20050915191243.GA52539@mail19d.g19.rapidsite.net> you wrote:
-> 
-> I was attempting to get some ATM Tools compiled into the embedded PowerPC,
-> and found I needed Perl installed on the target before I continue.
+Hi,
 
-You probably want to avoid his in an embedded system...
+The instruction dcread is used to read data cache. The syntax is
+dcread RT,RA,RB. The effective address is formed by adding RA to RB.
+In order to read a specific cache line or the whole d-cache, how do I
+know the effective addresses correponding to the cache line(s)? The
+processor is ppc440.
 
-> Has anyone had any luck getting any version of Perl 5 or higher installed
-> onto the file system. I am still running this over the NFS dev environment,
-> and plan to remove it before final production, so space is of no concern at
-> the moment.  
-
-Sure. This is trivial. Perl configures and builds just fine, assuming
-you have enough time, memory and swap space.
-
-> Or perhaps a pre-compiled RPM that installs, that is built for PowerPC.
-
-No RPM, sorry.
-
-> I am using DENX Linux 2.4.25 at the moment, with pretty much the default
-> root file system that is provided.
-
-Just follow the standard instructions for  configuring  and  building
-Perl  (in  native  mode, of course). I did this several times before,
-without any problems. You have to be patient,  though,  It's  a  huge
-amount of code, and definitely takes a lot of time to compile.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Never underestimate the bandwidth of a station wagon full of tapes.
-                                -- Dr. Warren Jackson, Director, UTCS
+Thanks,
+-Shawn.
