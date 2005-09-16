@@ -1,17 +1,19 @@
-Return-Path: <rtafas@parks.com.br>
-Received: from PKMAIL.parks.local (mail.parks.com.br [200.248.200.133])
-	by ozlabs.org (Postfix) with ESMTP id 715B9682C5
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id B4F28682C5
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 17 Sep 2005 04:34:14 +1000 (EST)
-Message-ID: <432AE61E.9060801@parks.com.br>
-Date: Fri, 16 Sep 2005 12:34:54 -0300
-From: Ricardo Fialho Tafas Junior <rtafas@parks.com.br>
-MIME-Version: 1.0
-To: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-References: <023EF71CB65AA949A2C510353690C86B5BF2C0@rokonet-e.rokonet_tree.local>
-In-Reply-To: <023EF71CB65AA949A2C510353690C86B5BF2C0@rokonet-e.rokonet_tree.local>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: Re: OpenSSL 0.9.8 compile error!
+	Sat, 17 Sep 2005 05:29:02 +1000 (EST)
+In-Reply-To: <580ff9f6f516e94ae546c695bad0071c@embeddededge.com>
+References: <580ff9f6f516e94ae546c695bad0071c@embeddededge.com>
+Mime-Version: 1.0 (Apple Message framework v734)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <D91A246D-C79B-4B13-A512-4F5CCF7C8399@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Fri, 16 Sep 2005 14:29:12 -0500
+To: Dan Malek <dan@embeddededge.com>
+Cc: "Gala Kumar K.-galak" <galak@freescale.com>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: bseip config doesn't build
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,62 +24,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-it worked and compiled ok.
 
-thanks
+On Sep 16, 2005, at 12:34 PM, Dan Malek wrote:
 
-Ricard Fialho Tafas Jr
-  R&D Engineer
-  Parks S.A. Comunicações Digitais
-  www.parks.com.br
-  +55 51 4700523
-  e-mail: rtafas@parks.com.br
+>
+> On Sep 16, 2005, at 12:41 PM, Kumar Gala wrote:
+>
+>
+>> Anyone have any ideas why the bseip_defconfig doesnt build.  I get  
+>> the
+>> following error:
+>>
+>
+> I'll look into it.
+>
+>
+>>   CC      arch/ppc/8xx_io/enet.o
+>>
+>
+> I thought we are should be using the drivers/net/* version of this?
 
+I think that is the longer term plan.  I believe at this point we are  
+still using 8xx_io/enet.c.  Not sure how this broken and it might be  
+a simple defconfig update that is required.
 
+thanks for looking into it.
 
-Eli Brin wrote:
-> Dear Ricardo,
-> 
-> You need to add no-asm (and probably no-hw).  Please look at the makefile
-> and Configure.
-> 
-> This works on 0.9.7b, but I believe that's you problem.
-> 
-> Eli
-> 
-> 
-> 
-> -----Original Message-----
-> From: Ricardo Fialho Tafas Junior [mailto:rtafas@parks.com.br]
-> Sent: Friday, September 16, 2005 1:19 PM
-> To: linux-ppc-embedded
-> Subject: OpenSSL 0.9.8 compile error!
-> 
-> 
-> Hello list,
-> 
-> I'm trying to crosscompile openSSL to PPC8xx. I've downloaded the latest 
-> version and when I call "make" I get the following error:
-> 
-> ppc_8xx-gcc -I.. -I../.. -I../../include -DOPENSSL_THREADS -D_REENTRANT 
-> -DDSO_DLFCN -DHAVE_DLFCN_H -DB_ENDIAN -DTERMIO -O3 -Wall -c  -o 
-> linux_ppc32.o linux_ppc32.s
-> linux_ppc32.s: Assembler messages:
-> linux_ppc32.s:109: Error: Unknown pseudo-op:  `.machine'
-> make[3]: *** [linux_ppc32.o] Error 1
-> make[3]: Leaving directory `/home/rtafas/voip_devel/openssl-0.9.8/crypto/bn'
-> make[2]: *** [subdirs] Error 1
-> make[2]: Leaving directory `/home/rtafas/voip_devel/openssl-0.9.8/crypto'
-> make[1]: *** [build_crypto] Error 1
-> make[1]: Leaving directory `/home/rtafas/voip_devel/openssl-0.9.8'
-> make: *** [top] Error 2
-> 
-> Before that:
-> I make a "./Configure linux-ppc" and edited the makefile to cross 
-> compile it and to force it to use ppc-8xx_gcc and ppc_8xx-ar.
-> 
-> Any idea to solve this?
-> Any "how to" to compile Openssl in embedded enviroment?
-> 
-> Thanks,
-> 
+- kumar
