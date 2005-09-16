@@ -1,15 +1,17 @@
-Return-Path: <kumar.gala@freescale.com>
-In-Reply-To: <17193.64509.576852.408757@cargo.ozlabs.ibm.com>
-References: <17193.64509.576852.408757@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v734)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <BC681339-998A-46A3-8728-30BA1A455ECF@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Thu, 15 Sep 2005 21:22:43 -0500
-To: Paul Mackerras <paulus@samba.org>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, ppc64-dev <linuxppc64-dev@ozlabs.org>,
-	Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] powerpc: don't execute a temporary comment
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: Kumar Gala <kumar.gala@freescale.com>
+Date: Fri, 16 Sep 2005 05:11:38 +0200
+References: <200509160056.32617.arnd@arndb.de>
+	<D6BA4E97-B338-4584-8ECD-440FC70AFED0@freescale.com>
+In-Reply-To: <D6BA4E97-B338-4584-8ECD-440FC70AFED0@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200509160511.39277.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, pantelis.antoniou@gmail.com,
+	linuxppc64-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] powerpc: merge include/asm/cputable.h
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,25 +21,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We are going to send this to Linus for 2.6.14, right?
+On Freedag 16 September 2005 04:22, Kumar Gala wrote:
 
-- k
+> > #define CPU_FTR_POSSIBLE CPU_FTR_PSERIES_POSSIBLE |  
+> > CPU_FTR_PMAC_POSSIBLE \
+> >          | CPU_FTR_...
+> > #define CPU_FTR_ALWAYS CPU_FTR_POSSIBLE & CPU_FTR_PSERIES_ALWAYS \
+> >         & CPU_FTR_PMAC_ALWAYS & CPU_FTR_ ...
+> 
+> Yes, something like that.  Why do we need the CPU_FTR_ALWAYS.  It  
+> seems that CPU_FTR_POSSIBLE is sufficient.  I may just not understand  
+> the purpose of CPU_FTR_ALWAYS.
+>
+> > One point to consider is that we traditionally use #ifdef in the
+> > source for many places that could simply use cpu_has_feature(). E.g.
+> > most instances of #ifdef CONFIG_ALTIVEC could be replaced by
+> > cpu_has_feature(CPU_FTR_ALTIVEC) without additional run-time overhead.
+> 
+> These should stay as CONFIG options because to reduce the code size  
+> of the kernel which is important to embedded people.
 
-On Sep 15, 2005, at 5:55 PM, Paul Mackerras wrote:
+The whole point of the logic is to reduce code size, because gcc
+is smart enough to remove all dead code then.
+Consider again the definition of
 
-> John W. Linville writes:
->
->
->> Why is this helpful?  Better in general to keep the commment near the
->>
-> code, no?
->
-> Where it was, it was a command, not a comment, so it got printed out
-> on the screen when you did a make clean, which seemed a bit silly.
->
-> Paul.
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
+| static inline int have_feature(unsigned long feature)
+| {
+|      return (FEATURE_ALWAYS & feature) ||
+|             (FEATURE_POSSIBLE & runtime_feature & feature);
+| }
+
+If the feature is part of FEATURE_ALWAYS, this will be optimized to
+
+|      return 1 || FEATURE_POSSIBLE & runtime_feature & feature;
+
+and subsequently
+
+|      return 1;
+
+If it is not part of FEATURE_POSSIBLE, it it equivalent to
+
+|      return 0 || (0 & runtime_feature & feature);
+
+which becomes
+
+|      return 0;
+
+
+Any code inside of
+
+|      if (0) { /* ... */ }
+
+is only checked for syntax by gcc but will not end up in the object code.
+For the 'if(1)' case, the code gets smaller as well, because the runtime
+flag does not have to be dereferenced.
+
+For some places, we might prefer to replace '#ifdef CONFIG_FOO' not with
+have_feature(FOO), but rather with feature_possible(FOO), given a definition
+of 
+
+static inline int have_feature(unsigned int feature)
+{
+	return !!(FEATURE_POSSIBLE & feature);
+}
+
+which always get evaluated at compile time.
+
+	Arnd <><
