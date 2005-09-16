@@ -1,18 +1,16 @@
-Return-Path: <JohnsonCheng@qnap.com.tw>
-Received: from qnap.com.tw (unknown [211.75.85.27])
-	by ozlabs.org (Postfix) with SMTP id D3292682D0
+Return-Path: <jonaris70@tsamail.co.za>
+Received: from dee22 (unknown [213.181.85.82])
+	by ozlabs.org (Postfix) with SMTP id C5F0B682DD
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 Sep 2005 22:09:25 +1000 (EST)
-From: "JohnsonCheng" <JohnsonCheng@qnap.com.tw>
-To: <wd@denx.de>
-Date: Fri, 16 Sep 2005 20:09:18 +0800
+	Fri, 16 Sep 2005 22:29:45 +1000 (EST)
+From: "colaristide2" <colaristide2@o2.pl>
+To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
+Date: Fri, 16 Sep 05 05:23:26 Pacific Standard Time
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-In-Reply-To: <20050916112324.0528D352B7B@atlas.denx.de>
-Message-Id: <20050916120925.D3292682D0@ozlabs.org>
-Cc: 'linux-ppc-embedded' <linuxppc-embedded@ozlabs.org>
-Subject: RE: How to use kerberos in ELDK 
+Content-Type: multipart/mixed;
+	boundary= "----=_NextPart_000_00E9_94651167.C9F5DB8E"
+Message-Id: <20050916122945.C5F0B682DD@ozlabs.org>
+Subject: HELLO
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,45 +21,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Yes. I have find out how to do it.
-./install -d ppc_6xx
+------=_NextPart_000_00E9_94651167.C9F5DB8E
+Content-Type: text/plain
+Content-Transfer-Encoding: base64
 
-Thanks,
-Johnson Cheng
-
------Original Message-----
-From: wd@denx.de [mailto:wd@denx.de] 
-Sent: Friday, September 16, 2005 7:23 PM
-To: JohnsonCheng
-Cc: 'linux-ppc-embedded'
-Subject: Re: How to use kerberos in ELDK 
-
-In message <20050916070358.781D2422AF@denx.de> you wrote:
-> 
-> Maybe I meet the big trouble.
-> I find no powerpc-linux-rpm in my build machine, only have
-> powerpc-linux-gcc, powerpc-linux-ar .....
-> What should I do?
-
-You should really READ the documentation. It says, and I  explicitely
-quoted this in my previous posting:
-
-> You must use "${CROSS_COMPILE}rpm" instead.
-
-So instead of trying powerpc-linux-rpm which indeed  does  not  exist
-you  should  run  ppc_8xx-rpm  or whichever other architecture you're
-using (alternatively ppc-rpm would work, but this is undocumented and
-not recommended).
-
-Please RTFM!
-
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"...and the fully armed nuclear warheads, are, of  course,  merely  a
-courtesy detail."
+SGVsbG8sDQoNCk15IG5hbWUgaXMgQ29sKFJ0ZCkgSm9uIEFyaXN0aWRlLGJyb3RoZXIgdG8g
+dGhlDQpleGlsZWQgUHJlc2lkZW50IG9mIEhhaXRpLChEci5KZWFuIEJlcnRyYW5kDQpBcmlz
+dGlkZSkNCg0KRHVlIHRvIHRoZSBldm9sdXRpb24gYWdhaW5zdCB0aGUgZ292ZXJubWVudA0K
+b2YgbXkgYnJvdGhlciBjYXVzZWQgYnkgaGlzIHBvbGl0aWNhbCBvcHBvbmVudHMgaW4NCkhh
+aXRpLHdlIG1hbmFnZWQgdG8gZW50ZXIgYSByZWQgY3Jvc3MgYWlycGxhbmUgdGhhdA0Kd2Fz
+IGV2YWN1YXRpbmcgZm9yZWlnbmVycyBhbmQgd2UgYXJlIHByZXNlbnRseSBvbg0KcG9saXRp
+Y2FsIGFzc3lsdW0gaW4gQ2VudHJhbCBBZnJpY2FuIFJlcHViaWxjKENBUikNCg0KSSB3aXNo
+IHRvIGludmVzdCBpbiBSZWFsIEVzdGF0ZSBhbmQgY29tbWVyY2lhbA0KUHJvcGVydGllcyBh
+bmQgZXF1YWxseSBzdGFydCBhIG5ldyBsaWZlIGluIHlvdXINCmNvdW50cnkgd2l0aCB5b3Vy
+IGFzc2lzdGFuY2UgYW5kIGNvb3BlcmF0aW9uLklmIHlvdQ0KYXJlIGluIGEgZ29vZCBwb3Np
+dGlvbiB0byBoZWxwIG15IGZhbWlseSxwbGVhc2Ugc2VuZA0KYW4gZS1tYWlsIHRvIG15IHBl
+cnNvbmFsIGFkZHJlc3MgYmVsb3cgaW5kaWNhdGluZyB5b3VyDQpkZXNpcmUgdG8gaGVscCBt
+ZWludmVzdCB0aGlzIGZ1bmRzIGluIHlvdXIgY291bnRyeSBhbmQNCmJleW9uZC4NCkkgdXJn
+ZW50bHkgYXdhaXQgeW91ciBlLW1haWwgbGV0dGVyLg0KDQpSZXBseSB0byBteSBjb25maWRl
+bnRpYWwgbWFpbCBib3g6IGpvbmFyaXMwNUB5YWhvby5jb20NCg0KQmVzdCBSZWdhcmRzIGFu
+ZCBob3BlIHRvIG1lZXQgeW91IHNvb24uDQoNCkdvZCBibGVzcywNCg0KQ29sIEpvbihSdGQp
+Lg0KDQogICAg
+------=_NextPart_000_00E9_94651167.C9F5DB8E--
