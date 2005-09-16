@@ -1,17 +1,29 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id A6A99682D0
+Return-Path: <arnaud.carer@cleode.com>
+Received: from smtp9.wanadoo.fr (smtp9.wanadoo.fr [193.252.22.22])
+	by ozlabs.org (Postfix) with ESMTP id 523E2682DB
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 Sep 2005 22:54:47 +1000 (EST)
-Message-ID: <432AC094.9020606@ru.mvista.com>
-Date: Fri, 16 Sep 2005 16:54:44 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
+	Fri, 16 Sep 2005 23:48:02 +1000 (EST)
+Received: from smtp9.wanadoo.fr (mwinf0904 [172.22.140.26])
+	by mwinf0905.wanadoo.fr (SMTP Server) with ESMTP id C9BD31816DBD
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 16 Sep 2005 15:29:56 +0200 (CEST)
+Received: from me-wanadoo.net (localhost [127.0.0.1])
+	by mwinf0904.wanadoo.fr (SMTP Server) with ESMTP id 8385D24001B5
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 16 Sep 2005 15:29:53 +0200 (CEST)
+Received: from baobab (ARennes-251-1-12-190.w83-195.abo.wanadoo.fr
+	[83.195.47.190])
+	by mwinf0904.wanadoo.fr (SMTP Server) with ESMTP id 9844B24001B4
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 16 Sep 2005 15:29:52 +0200 (CEST)
+From: "Arnaud Carer" <arnaud.carer@cleode.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Fri, 16 Sep 2005 15:29:52 +0200
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-Content-Type: multipart/mixed; boundary="------------050701010500010609040506"
-Cc: linux-kernel@vger.kernel.org, Kumar Gala <galak@freescale.com>,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] ppc32: Add ppc_sys descriptions for PowerQUICC I devices
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_002C_01C5BAD3.7BCDFC50"
+Message-Id: <20050916132952.9844B24001B4@mwinf0904.wanadoo.fr>
+Subject: I2S MPC5200
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,395 +35,265 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------050701010500010609040506
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+
+------=_NextPart_000_002C_01C5BAD3.7BCDFC50
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Added ppc_sys device and system definitions for PowerQUICC I devices.
-This will allow drivers for PQI to be proper platform device drivers. 
-Currently sys section contains only MPC885 and MPC866. Identification 
-should be done with identify_ppc_sys_by_name call, with board-specific 
-"name" string passed, since PQI do not have any register that could 
-identify the SOC.
+Hi,
 
-Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
-Signed-off-by: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+I am looking for an I2s Linux driver to implement an audio output with the
+mpc5200
 
-
-
---------------050701010500010609040506
-Content-Type: text/x-patch;
- name="mpc8xx_sys_desc.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="mpc8xx_sys_desc.patch"
-
-diff --git a/arch/ppc/syslib/Makefile b/arch/ppc/syslib/Makefile
---- a/arch/ppc/syslib/Makefile
-+++ b/arch/ppc/syslib/Makefile
-@@ -34,7 +34,8 @@ ifeq ($(CONFIG_40x),y)
- obj-$(CONFIG_PCI)		+= indirect_pci.o pci_auto.o ppc405_pci.o
- endif
- endif
--obj-$(CONFIG_8xx)		+= m8xx_setup.o ppc8xx_pic.o $(wdt-mpc8xx-y)
-+obj-$(CONFIG_8xx)		+= m8xx_setup.o ppc8xx_pic.o $(wdt-mpc8xx-y) \
-+				   ppc_sys.o mpc8xx_devices.o mpc8xx_sys.o
- ifeq ($(CONFIG_8xx),y)
- obj-$(CONFIG_PCI)		+= qspan_pci.o i8259.o
- endif
-diff --git a/arch/ppc/syslib/mpc8xx_devices.c b/arch/ppc/syslib/mpc8xx_devices.c
-new file mode 100644
---- /dev/null
-+++ b/arch/ppc/syslib/mpc8xx_devices.c
-@@ -0,0 +1,224 @@
-+/*
-+ * arch/ppc/syslib/mpc8xx_devices.c
-+ *
-+ * MPC8xx Device descriptions
-+ *
-+ * Maintainer: Kumar Gala <kumar.gala@freescale.com>
-+ *
-+ * Copyright 2005 MontaVista Software, Inc. by Vitaly Bordug<vbordug@ru.mvista.com>
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/device.h>
-+#include <linux/serial_8250.h>
-+#include <linux/mii.h>
-+#include <asm/commproc.h>
-+#include <asm/mpc8xx.h>
-+#include <asm/irq.h>
-+#include <asm/ppc_sys.h>
-+
-+/* We use offsets for IORESOURCE_MEM to do not set dependences at compile time.
-+ * They will get fixed up by mach_mpc8xx_fixup
-+ */
-+
-+struct platform_device ppc_sys_platform_devices[] = {
-+	[MPC8xx_CPM_FEC1] =	{
-+		.name = "fsl-cpm-fec",
-+		.id	= 1,
-+		.num_resources = 2,
-+		.resource = (struct resource[])	{
-+			{
-+				.name 	= "regs",
-+				.start	= 0xe00,
-+				.end	= 0xe88,
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name	= "interrupt",
-+				.start	= MPC8xx_INT_FEC1,
-+				.end	= MPC8xx_INT_FEC1,
-+				.flags	= IORESOURCE_IRQ,
-+			},
-+		},
-+	},
-+	[MPC8xx_CPM_FEC2] =	{
-+		.name = "fsl-cpm-fec",
-+		.id	= 2,
-+		.num_resources = 2,
-+		.resource = (struct resource[])	{
-+			{
-+				.name	= "regs",
-+				.start	= 0x1e00,
-+				.end	= 0x1e88,
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name	= "interrupt",
-+				.start	= MPC8xx_INT_FEC2,
-+				.end	= MPC8xx_INT_FEC2,
-+				.flags	= IORESOURCE_IRQ,
-+			},
-+		},
-+	},
-+	[MPC8xx_CPM_SCC1] = {
-+		.name = "fsl-cpm-scc",
-+		.id	= 1,
-+		.num_resources = 3,
-+		.resource = (struct resource[]) {
-+			{
-+				.name	= "regs",
-+				.start	= 0xa00,
-+				.end	= 0xa18,
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name 	= "pram",
-+				.start 	= 0x3c00,
-+				.end 	= 0x3c80,
-+				.flags 	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name	= "interrupt",
-+				.start	= MPC8xx_INT_SCC1,
-+				.end	= MPC8xx_INT_SCC1,
-+				.flags	= IORESOURCE_IRQ,
-+			},
-+		},
-+	},
-+	[MPC8xx_CPM_SCC2] = {
-+		.name = "fsl-cpm-scc",
-+		.id	= 2,
-+		.num_resources	= 3,
-+		.resource = (struct resource[]) {
-+			{
-+				.name	= "regs",
-+				.start	= 0xa20,
-+				.end	= 0xa38,
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name 	= "pram",
-+				.start 	= 0x3d00,
-+				.end 	= 0x3d80,
-+				.flags 	= IORESOURCE_MEM,
-+			},
-+
-+			{
-+				.name	= "interrupt",
-+				.start	= MPC8xx_INT_SCC2,
-+				.end	= MPC8xx_INT_SCC2,
-+				.flags	= IORESOURCE_IRQ,
-+			},
-+		},
-+	},
-+	[MPC8xx_CPM_SCC3] = {
-+		.name = "fsl-cpm-scc",
-+		.id	= 3,
-+		.num_resources	= 3,
-+		.resource = (struct resource[]) {
-+			{
-+				.name	= "regs",
-+				.start	= 0xa40,
-+				.end	= 0xa58,
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name 	= "pram",
-+				.start 	= 0x3e00,
-+				.end 	= 0x3e80,
-+				.flags 	= IORESOURCE_MEM,
-+			},
-+
-+			{
-+				.name	= "interrupt",
-+				.start	= MPC8xx_INT_SCC3,
-+				.end	= MPC8xx_INT_SCC3,
-+				.flags	= IORESOURCE_IRQ,
-+			},
-+		},
-+	},
-+	[MPC8xx_CPM_SCC4] = {
-+		.name = "fsl-cpm-scc",
-+		.id	= 4,
-+		.num_resources	= 3,
-+		.resource = (struct resource[]) {
-+			{
-+				.name	= "regs",
-+				.start	= 0xa60,
-+				.end	= 0xa78,
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name 	= "pram",
-+				.start 	= 0x3f00,
-+				.end 	= 0x3f80,
-+				.flags 	= IORESOURCE_MEM,
-+			},
-+
-+			{
-+				.name	= "interrupt",
-+				.start	= MPC8xx_INT_SCC4,
-+				.end	= MPC8xx_INT_SCC4,
-+				.flags	= IORESOURCE_IRQ,
-+			},
-+		},
-+	},
-+	[MPC8xx_CPM_SMC1] = {
-+		.name = "fsl-cpm-smc",
-+		.id	= 1,
-+		.num_resources	= 2,
-+		.resource = (struct resource[]) {
-+			{
-+				.name	= "regs",
-+				.start	= 0xa82,
-+				.end	= 0xa91,
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name	= "interrupt",
-+				.start	= MPC8xx_INT_SMC1,
-+				.end	= MPC8xx_INT_SMC1,
-+				.flags	= IORESOURCE_IRQ,
-+			},
-+		},
-+	},
-+	[MPC8xx_CPM_SMC2] = {
-+		.name = "fsl-cpm-smc",
-+		.id	= 2,
-+		.num_resources	= 2,
-+		.resource = (struct resource[]) {
-+			{
-+				.name	= "regs",
-+				.start	= 0xa92,
-+				.end	= 0xaa1,
-+				.flags	= IORESOURCE_MEM,
-+			},
-+			{
-+				.name	= "interrupt",
-+				.start	= MPC8xx_INT_SMC2,
-+				.end	= MPC8xx_INT_SMC2,
-+				.flags	= IORESOURCE_IRQ,
-+			},
-+		},
-+	},
-+};
-+
-+static int __init mach_mpc8xx_fixup(struct platform_device *pdev)
-+{
-+	ppc_sys_fixup_mem_resource (pdev, IMAP_ADDR);
-+	return 0;
-+}
-+
-+static int __init mach_mpc8xx_init(void)
-+{
-+	ppc_sys_device_fixup = mach_mpc8xx_fixup;
-+	return 0;
-+}
-+
-+postcore_initcall(mach_mpc8xx_init);
-diff --git a/arch/ppc/syslib/mpc8xx_sys.c b/arch/ppc/syslib/mpc8xx_sys.c
-new file mode 100644
---- /dev/null
-+++ b/arch/ppc/syslib/mpc8xx_sys.c
-@@ -0,0 +1,61 @@
-+/*
-+ * arch/ppc/platforms/mpc8xx_sys.c
-+ *
-+ * MPC8xx System descriptions
-+ *
-+ * Maintainer: Kumar Gala <kumar.gala@freescale.com>
-+ *
-+ * Copyright 2005 MontaVista Software, Inc. by Vitaly Bordug <vbordug@ru.mvista.com>
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/device.h>
-+#include <asm/ppc_sys.h>
-+
-+struct ppc_sys_spec *cur_ppc_sys_spec; 
-+struct ppc_sys_spec ppc_sys_specs[] = {
-+	{
-+		.ppc_sys_name	= "MPC86X",
-+		.mask 		= 0xFFFFFFFF,
-+		.value 		= 0x00000000,
-+		.num_devices	= 2,
-+		.device_list	= (enum ppc_sys_devices[])
-+		{
-+			MPC8xx_CPM_FEC1,
-+			MPC8xx_CPM_SCC1,
-+			MPC8xx_CPM_SCC2,
-+			MPC8xx_CPM_SCC3,
-+			MPC8xx_CPM_SCC4,
-+			MPC8xx_CPM_SMC1,
-+			MPC8xx_CPM_SMC2,
-+		},
-+	},
-+	{
-+		.ppc_sys_name	= "MPC885",
-+		.mask 		= 0xFFFFFFFF,
-+		.value 		= 0x00000000,
-+		.num_devices	= 3,
-+		.device_list	= (enum ppc_sys_devices[])
-+		{
-+			MPC8xx_CPM_FEC1,
-+			MPC8xx_CPM_FEC2,
-+			MPC8xx_CPM_SCC1,
-+			MPC8xx_CPM_SCC2,
-+			MPC8xx_CPM_SCC3,
-+			MPC8xx_CPM_SCC4,
-+			MPC8xx_CPM_SMC1,
-+			MPC8xx_CPM_SMC2,
-+		},
-+	},
-+	{	/* default match */
-+		.ppc_sys_name	= "",
-+		.mask 		= 0x00000000,
-+		.value 		= 0x00000000,
-+	},
-+};
-diff --git a/include/asm-ppc/irq.h b/include/asm-ppc/irq.h
---- a/include/asm-ppc/irq.h
-+++ b/include/asm-ppc/irq.h
-@@ -138,6 +138,16 @@ irq_canonicalize(int irq)
- #define	SIU_IRQ7	(14)
- #define	SIU_LEVEL7	(15)
  
-+#define MPC8xx_INT_FEC1		SIU_LEVEL1
-+#define MPC8xx_INT_FEC2		SIU_LEVEL3
-+
-+#define MPC8xx_INT_SCC1		(CPM_IRQ_OFFSET + CPMVEC_SCC1)
-+#define MPC8xx_INT_SCC2		(CPM_IRQ_OFFSET + CPMVEC_SCC2)
-+#define MPC8xx_INT_SCC3		(CPM_IRQ_OFFSET + CPMVEC_SCC3)
-+#define MPC8xx_INT_SCC4		(CPM_IRQ_OFFSET + CPMVEC_SCC4)
-+#define MPC8xx_INT_SMC1		(CPM_IRQ_OFFSET + CPMVEC_SMC1)
-+#define MPC8xx_INT_SMC2		(CPM_IRQ_OFFSET + CPMVEC_SMC2)
-+
- /* The internal interrupts we can configure as we see fit.
-  * My personal preference is CPM at level 2, which puts it above the
-  * MBX PCI/ISA/IDE interrupts.
-diff --git a/include/asm-ppc/mpc8xx.h b/include/asm-ppc/mpc8xx.h
---- a/include/asm-ppc/mpc8xx.h
-+++ b/include/asm-ppc/mpc8xx.h
-@@ -97,6 +97,22 @@ extern unsigned char __res[];
- 
- struct pt_regs;
- 
-+enum ppc_sys_devices {
-+	MPC8xx_CPM_FEC1,
-+	MPC8xx_CPM_FEC2,
-+	MPC8xx_CPM_I2C,
-+	MPC8xx_CPM_SCC1,
-+	MPC8xx_CPM_SCC2,
-+	MPC8xx_CPM_SCC3,
-+	MPC8xx_CPM_SCC4,
-+	MPC8xx_CPM_SPI,
-+	MPC8xx_CPM_MCC1,
-+	MPC8xx_CPM_MCC2,
-+	MPC8xx_CPM_SMC1,
-+	MPC8xx_CPM_SMC2,
-+	MPC8xx_CPM_USB,
-+};
-+
- #endif /* !__ASSEMBLY__ */
- #endif /* CONFIG_8xx */
- #endif /* __CONFIG_8xx_DEFS */
-diff --git a/include/asm-ppc/ppc_sys.h b/include/asm-ppc/ppc_sys.h
---- a/include/asm-ppc/ppc_sys.h
-+++ b/include/asm-ppc/ppc_sys.h
-@@ -27,6 +27,8 @@
- #include <asm/mpc83xx.h>
- #elif defined(CONFIG_85xx)
- #include <asm/mpc85xx.h>
-+#elif defined(CONFIG_8xx)
-+#include <asm/mpc8xx.h>
- #elif defined(CONFIG_PPC_MPC52xx)
- #include <asm/mpc52xx.h>
- #elif defined(CONFIG_MPC10X_BRIDGE)
 
---------------050701010500010609040506--
+I2s.c and i2s_ring.c include in the DENX ELDK kernel seems to be wrong.
+
+ 
+
+>i2s.c is not really a driver, but a (very OLD) test  version  of  one
+>used  to  demonstrate  certain  BestComm  related problems. Don't try
+>using it as a real driver ;-)
+ 
+>The ring driver appears to be RX only, 
+ 
+ 
+Thanks,
+ 
+Arnaud
+
+ 
+
+ 
+
+ 
+
+ 
+
+___________________________________
+
+ 
+
+Arnaud Carer
+
+Firmware Development 
+
+ 
+
+ <http://www.cleode.fr/>  <http://www.cleode.fr/> CLEODE
+
+ <http://www.cleode.fr> www.cleode.fr
+
+Tel: 02 96 48 68 18
+
+Fax: 02 96 48 19 11
+
+ 
+
+
+------=_NextPart_000_002C_01C5BAD3.7BCDFC50
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:st1=3D"urn:schemas-microsoft-com:office:smarttags" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"PersonName"/>
+<!--[if !mso]>
+<style>
+st1\:*{behavior:url(#default#ieooui) }
+</style>
+<![endif]-->
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:"MS Mincho";
+	panose-1:2 2 6 9 4 2 5 8 3 4;}
+@font-face
+	{font-family:"\@MS Mincho";
+	panose-1:0 0 0 0 0 0 0 0 0 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+pre
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:10.0pt;
+	font-family:"Courier New";}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:595.3pt 841.9pt;
+	margin:70.85pt 70.85pt 70.85pt 70.85pt;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DFR link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'>Hi,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'>I am looking for an I2s Linux driver to =
+implement an audio
+output with the mpc5200<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'>I2s.c and i2s_ring.c include in the DENX ELDK =
+kernel
+seems to be wrong.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<pre><font size=3D2 face=3D"Courier New"><span lang=3DEN-GB =
+style=3D'font-size:10.0pt'>&gt;i2s.c is not really a driver, but a (very =
+OLD) test&nbsp; version&nbsp; of&nbsp; =
+one<o:p></o:p></span></font></pre><pre><font
+size=3D2 face=3D"Courier New"><span lang=3DEN-GB =
+style=3D'font-size:10.0pt'>&gt;used&nbsp; to&nbsp; demonstrate&nbsp; =
+certain&nbsp; BestComm&nbsp; related problems. Don't =
+try<o:p></o:p></span></font></pre><pre><font
+size=3D2 face=3D"Courier New"><span lang=3DEN-GB =
+style=3D'font-size:10.0pt'>&gt;using it as a real driver =
+;-)<o:p></o:p></span></font></pre><pre><font
+size=3D2 face=3D"Courier New"><span lang=3DEN-GB =
+style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></pre><pre><fon=
+t
+size=3D2 face=3D"Courier New"><span lang=3DEN-GB =
+style=3D'font-size:10.0pt'>&gt;The ring driver appears to be RX only, =
+<o:p></o:p></span></font></pre><pre><font
+size=3D2 face=3D"Courier New"><span lang=3DEN-GB =
+style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></pre><pre><fon=
+t
+size=3D2 face=3D"Courier New"><span lang=3DEN-GB =
+style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></pre><pre><fon=
+t
+size=3D2 face=3D"Courier New"><span lang=3DEN-GB =
+style=3D'font-size:10.0pt'>Thanks,<o:p></o:p></span></font></pre><pre><fo=
+nt
+size=3D2 face=3D"Courier New"><span lang=3DEN-GB =
+style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></pre><pre><fon=
+t
+size=3D2 face=3D"Courier New"><span lang=3DEN-GB =
+style=3D'font-size:10.0pt'>Arnaud<o:p></o:p></span></font></pre>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DPT-BR =
+style=3D'font-size:
+10.0pt;font-family:Arial'>___________________________________</span></fon=
+t><span
+lang=3DPT-BR><o:p></o:p></span></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+lang=3DPT-BR
+style=3D'font-size:12.0pt'>&nbsp;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><st1:PersonName ProductID=3D"Arnaud Carer"
+style=3D"BACKGROUND-POSITION: left bottom; BACKGROUND-IMAGE: =
+url(res://ietag.dll/#34/#1001); BACKGROUND-REPEAT: repeat-x"
+tabIndex=3D"0" w:st=3D"on"><b><font size=3D3 color=3D"#3366ff" =
+face=3DArial><span
+ lang=3DPT-BR =
+style=3D'font-size:12.0pt;font-family:Arial;color:#3366FF;font-weight:
+ bold'>Arnaud Carer</span></font></b></st1:PersonName><b><font =
+color=3D"#3366ff"><span
+lang=3DPT-BR =
+style=3D'color:#3366FF;font-weight:bold'><o:p></o:p></span></font></b></p=
+>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'>Firmware</span></font><font size=3D2 =
+face=3DArial><span
+lang=3DPT-BR style=3D'font-size:10.0pt;font-family:Arial'> =
+Development&nbsp;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+lang=3DPT-BR
+style=3D'font-size:12.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'><a href=3D"http://www.cleode.fr/"></a><a =
+href=3D"http://www.cleode.fr/"></a></span></font><font
+size=3D2 face=3DArial><span lang=3DPT-BR =
+style=3D'font-size:10.0pt;font-family:Arial'>CLEODE</span></font><span
+lang=3DPT-BR><o:p></o:p></span></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><a href=3D"http://www.cleode.fr"><span =
+lang=3DPT-BR>www.cleode.fr</span></a></span></font><span
+lang=3DPT-BR><o:p></o:p></span></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Tel: 02 96 48 68 18</span></font><o:p></o:p></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Fax: 02 96 48 19 11</span></font><o:p></o:p></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_002C_01C5BAD3.7BCDFC50--
