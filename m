@@ -1,19 +1,18 @@
-Return-Path: <wd@denx.de>
-Received: from mailout01.sul.t-online.com (mailout01.sul.t-online.com
-	[194.25.134.80]) by ozlabs.org (Postfix) with ESMTP id AE24F6829F
+Return-Path: <JohnsonCheng@qnap.com.tw>
+Received: from qnap.com.tw (unknown [211.75.85.27])
+	by ozlabs.org (Postfix) with SMTP id 8E7A4682BB
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 Sep 2005 16:33:18 +1000 (EST)
-To: "JohnsonCheng" <JohnsonCheng@qnap.com.tw>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 16 Sep 2005 11:11:36 +0800."
-	<20050916031236.E521942DDD@denx.de>
-Date: Fri, 16 Sep 2005 08:32:38 +0200
-Sender: wd@denx.de
-Message-Id: <20050916063238.24A5B352B7B@atlas.denx.de>
+	Fri, 16 Sep 2005 17:00:43 +1000 (EST)
+From: "JohnsonCheng" <JohnsonCheng@qnap.com.tw>
+To: <wd@denx.de>
+Date: Fri, 16 Sep 2005 15:00:31 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+In-Reply-To: <20050916063238.24A5B352B7B@atlas.denx.de>
+Message-Id: <20050916070043.8E7A4682BB@ozlabs.org>
 Cc: 'linux-ppc-embedded' <linuxppc-embedded@ozlabs.org>
-Subject: Re: How to use kerberos in ELDK 
+Subject: RE: How to use kerberos in ELDK 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,6 +22,23 @@ List-Post: <mailto:linuxppc-embedded@ozlabs.org>
 List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+
+Dear Wolfgang,
+
+Maybe I meet the big trouble.
+I find no powerpc-linux-rpm in my build machine, only have
+powerpc-linux-gcc, powerpc-linux-ar .....
+What should I do?
+
+Thanks,
+Johnson Cheng
+
+-----Original Message-----
+From: wd@denx.de [mailto:wd@denx.de] 
+Sent: Friday, September 16, 2005 2:33 PM
+To: JohnsonCheng
+Cc: 'linux-ppc-embedded'
+Subject: Re: How to use kerberos in ELDK 
 
 In message <20050916031236.E521942DDD@denx.de> you wrote:
 > 1. For ppc-2005-03-07-src, 
