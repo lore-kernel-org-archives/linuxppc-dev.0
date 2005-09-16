@@ -1,17 +1,15 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: Kumar Gala <kumar.gala@freescale.com>
-Date: Fri, 16 Sep 2005 05:11:38 +0200
-References: <200509160056.32617.arnd@arndb.de>
-	<D6BA4E97-B338-4584-8ECD-440FC70AFED0@freescale.com>
-In-Reply-To: <D6BA4E97-B338-4584-8ECD-440FC70AFED0@freescale.com>
+Return-Path: <jonaris70@tsamail.co.za>
+Received: from dee22 (unknown [213.181.85.82])
+	by ozlabs.org (Postfix) with SMTP id C6C48682D0
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Sep 2005 22:29:39 +1000 (EST)
+From: "colaristide2" <colaristide2@o2.pl>
+To: "linuxppc-dev" <linuxppc-dev@ozlabs.org>
+Date: Fri, 16 Sep 05 05:23:26 Pacific Standard Time
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200509160511.39277.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, pantelis.antoniou@gmail.com,
-	linuxppc64-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] powerpc: merge include/asm/cputable.h
+Content-Type: multipart/mixed;
+	boundary= "----=_NextPart_000_00E9_94651167.C9F5DB8E"
+Message-Id: <20050916122939.C6C48682D0@ozlabs.org>
+Subject: HELLO
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,70 +19,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Freedag 16 September 2005 04:22, Kumar Gala wrote:
+------=_NextPart_000_00E9_94651167.C9F5DB8E
+Content-Type: text/plain
+Content-Transfer-Encoding: base64
 
-> > #define CPU_FTR_POSSIBLE CPU_FTR_PSERIES_POSSIBLE |  
-> > CPU_FTR_PMAC_POSSIBLE \
-> >          | CPU_FTR_...
-> > #define CPU_FTR_ALWAYS CPU_FTR_POSSIBLE & CPU_FTR_PSERIES_ALWAYS \
-> >         & CPU_FTR_PMAC_ALWAYS & CPU_FTR_ ...
-> 
-> Yes, something like that.  Why do we need the CPU_FTR_ALWAYS.  It  
-> seems that CPU_FTR_POSSIBLE is sufficient.  I may just not understand  
-> the purpose of CPU_FTR_ALWAYS.
->
-> > One point to consider is that we traditionally use #ifdef in the
-> > source for many places that could simply use cpu_has_feature(). E.g.
-> > most instances of #ifdef CONFIG_ALTIVEC could be replaced by
-> > cpu_has_feature(CPU_FTR_ALTIVEC) without additional run-time overhead.
-> 
-> These should stay as CONFIG options because to reduce the code size  
-> of the kernel which is important to embedded people.
-
-The whole point of the logic is to reduce code size, because gcc
-is smart enough to remove all dead code then.
-Consider again the definition of
-
-| static inline int have_feature(unsigned long feature)
-| {
-|      return (FEATURE_ALWAYS & feature) ||
-|             (FEATURE_POSSIBLE & runtime_feature & feature);
-| }
-
-If the feature is part of FEATURE_ALWAYS, this will be optimized to
-
-|      return 1 || FEATURE_POSSIBLE & runtime_feature & feature;
-
-and subsequently
-
-|      return 1;
-
-If it is not part of FEATURE_POSSIBLE, it it equivalent to
-
-|      return 0 || (0 & runtime_feature & feature);
-
-which becomes
-
-|      return 0;
-
-
-Any code inside of
-
-|      if (0) { /* ... */ }
-
-is only checked for syntax by gcc but will not end up in the object code.
-For the 'if(1)' case, the code gets smaller as well, because the runtime
-flag does not have to be dereferenced.
-
-For some places, we might prefer to replace '#ifdef CONFIG_FOO' not with
-have_feature(FOO), but rather with feature_possible(FOO), given a definition
-of 
-
-static inline int have_feature(unsigned int feature)
-{
-	return !!(FEATURE_POSSIBLE & feature);
-}
-
-which always get evaluated at compile time.
-
-	Arnd <><
+SGVsbG8sDQoNCk15IG5hbWUgaXMgQ29sKFJ0ZCkgSm9uIEFyaXN0aWRlLGJyb3RoZXIgdG8g
+dGhlDQpleGlsZWQgUHJlc2lkZW50IG9mIEhhaXRpLChEci5KZWFuIEJlcnRyYW5kDQpBcmlz
+dGlkZSkNCg0KRHVlIHRvIHRoZSBldm9sdXRpb24gYWdhaW5zdCB0aGUgZ292ZXJubWVudA0K
+b2YgbXkgYnJvdGhlciBjYXVzZWQgYnkgaGlzIHBvbGl0aWNhbCBvcHBvbmVudHMgaW4NCkhh
+aXRpLHdlIG1hbmFnZWQgdG8gZW50ZXIgYSByZWQgY3Jvc3MgYWlycGxhbmUgdGhhdA0Kd2Fz
+IGV2YWN1YXRpbmcgZm9yZWlnbmVycyBhbmQgd2UgYXJlIHByZXNlbnRseSBvbg0KcG9saXRp
+Y2FsIGFzc3lsdW0gaW4gQ2VudHJhbCBBZnJpY2FuIFJlcHViaWxjKENBUikNCg0KSSB3aXNo
+IHRvIGludmVzdCBpbiBSZWFsIEVzdGF0ZSBhbmQgY29tbWVyY2lhbA0KUHJvcGVydGllcyBh
+bmQgZXF1YWxseSBzdGFydCBhIG5ldyBsaWZlIGluIHlvdXINCmNvdW50cnkgd2l0aCB5b3Vy
+IGFzc2lzdGFuY2UgYW5kIGNvb3BlcmF0aW9uLklmIHlvdQ0KYXJlIGluIGEgZ29vZCBwb3Np
+dGlvbiB0byBoZWxwIG15IGZhbWlseSxwbGVhc2Ugc2VuZA0KYW4gZS1tYWlsIHRvIG15IHBl
+cnNvbmFsIGFkZHJlc3MgYmVsb3cgaW5kaWNhdGluZyB5b3VyDQpkZXNpcmUgdG8gaGVscCBt
+ZWludmVzdCB0aGlzIGZ1bmRzIGluIHlvdXIgY291bnRyeSBhbmQNCmJleW9uZC4NCkkgdXJn
+ZW50bHkgYXdhaXQgeW91ciBlLW1haWwgbGV0dGVyLg0KDQpSZXBseSB0byBteSBjb25maWRl
+bnRpYWwgbWFpbCBib3g6IGpvbmFyaXMwNUB5YWhvby5jb20NCg0KQmVzdCBSZWdhcmRzIGFu
+ZCBob3BlIHRvIG1lZXQgeW91IHNvb24uDQoNCkdvZCBibGVzcywNCg0KQ29sIEpvbihSdGQp
+Lg0KDQogICAg
+------=_NextPart_000_00E9_94651167.C9F5DB8E--
