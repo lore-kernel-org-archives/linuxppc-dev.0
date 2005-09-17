@@ -1,15 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <Simon.Richter@hogyros.de>
+Received: from tuminfo2.informatik.tu-muenchen.de
+	(tuminfo2.informatik.tu-muenchen.de [131.159.0.81])
+	by ozlabs.org (Postfix) with ESMTP id 675DB682C5
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 Sep 2005 00:31:13 +1000 (EST)
+Message-ID: <432C23AE.6020800@hogyros.de>
+Date: Sat, 17 Sep 2005 16:09:50 +0200
+From: Simon Richter <Simon.Richter@hogyros.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17196.5625.322927.221055@cargo.ozlabs.ibm.com>
-Date: Sat, 17 Sep 2005 23:11:21 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1126956437.4171.20.camel@baythorne.infradead.org>
-References: <1126956437.4171.20.camel@baythorne.infradead.org>
-Cc: ppc-dev list <linuxppc-dev@ozlabs.org>,
-	Davide Libenzi <davidel@xmailserver.org>, viro@ftp.linux.org.uk
-Subject: Re: Repeated corruption of file->f_ep_lock
+To: Kumar Gala <kumar.gala@freescale.com>
+References: <15A1D026-00E3-4652-ABA5-9A8B8517A2CA@freescale.com>
+In-Reply-To: <15A1D026-00E3-4652-ABA5-9A8B8517A2CA@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: ppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: Reminder: removal of APUS and Gemini still pending
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,22 +22,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Woodhouse writes:
+Kumar Gala wrote:
 
-> The previous and next members of 'struct file', which are f_ep_list and
-> f_mapping respectively, are always fine. It's just f_ep_lock which is
-> scribbled upon, and the scribble is fairly repeatable: 'owner_cpu' is
-> almost always set to 0x901 but occasionally 0x501, and the 'lock' field
-> has values like 20282484, 24042884, 28022484, 24042084, 22000424 (hex).
-> Do those numbers seem meaningful to anyone? Any clues as to where they
-> might be coming from?
+> This is a reminder email to all those that care that APUS and Gemini  
+> configs are still not building in the kernel.  They are still  scheduled 
+> to be removed after the release of 2.6.15.
 
-They look like part of an exception stack frame.  The 901 or 501 would
-be the trap number; 500 for an external interrupt or 900 for a
-decrementer interrupt, plus 1 which we use as a marker to say that
-only the volatile registers have been saved in the frame.  The other
-values (20282484 etc.) could possibly be condition register values.
-That would fit with owner_cpu being 2 words past the lock field; the
-trap field in struct pt_regs is 2 words past the ccr field.
+I have a tree that builds an APUS kernel (with Roman Zippel's patches 
+forwarded to HEAD), however I wanted to hold back with merging it until 
+the ppc/ppc64 -> powerpc transition is finished; also, I would like to 
+get proper changesets with attribution instead of a big patch (the plan 
+is to forward-merge the changes until after the transition, then turn 
+them back into a diff and apply them step by step).
 
-Paul.
+    Simon
