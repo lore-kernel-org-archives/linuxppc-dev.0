@@ -1,19 +1,15 @@
 Return-Path: <benh@kernel.crashing.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gabriel Paubert <paubert@iram.es>
-In-Reply-To: <20050915205709.GA31156@iram.es>
-References: <1126644202.11056.59.camel@cashmere.sps.mot.com>
-	<200509140435.21916.arnd@arndb.de>
-	<1126705588.14036.10.camel@cashmere.sps.mot.com>
-	<17193.22140.962651.122114@cargo.ozlabs.ibm.com>
-	<20050915205709.GA31156@iram.es>
+To: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <A6CA30D6-DDC3-4AEF-8CA2-58CFA261F44B@freescale.com>
+References: <20050913175028.GB14889@dmt.cnet>
+	<A6CA30D6-DDC3-4AEF-8CA2-58CFA261F44B@freescale.com>
 Content-Type: text/plain
-Date: Sun, 18 Sep 2005 11:28:35 +1000
-Message-Id: <1127006916.23095.6.camel@gaston>
+Date: Sun, 18 Sep 2005 11:31:08 +1000
+Message-Id: <1127007069.23095.8.camel@gaston>
 Mime-Version: 1.0
-Cc: linuxppc64-dev <linuxppc64-dev@ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: Re: PATCH powerpc: Merge asm-ppc*/sections.h
+Cc: linuxppc-dev@ozlabs.org, linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: __switch_to test-and-branch ALTIVEC specific?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,16 +19,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, 2005-09-13 at 14:05 -0500, Kumar Gala wrote:
+> This probably has to due with what happens on a G4 system with a  
+> kernel not build with Altivec.. However, I dont remember exactly what  
+> behavior is desired.
 
-> So yes, I object strongly object if I don't have a way 
-> of removing useless PMAC code. The kernel is already very 
-> bloated compared with the 2.2 we started with, which was 
-> well below 1MB with the minimal setup: serial console, root 
-> on NFS, no swap, some locally modules to control the PCI<->VME 
-> bridge and what is behind on the VME bus. 
-
-I think we should have the ability to not build some platforms like we
-have on ppc64. That would allow you to build a PReP kernel without CHRP
-and PMAC code.
+No, we should never set MSR_VEC on a kernel not built with
+CONFIG_ALTIVEC.
 
 Ben.
