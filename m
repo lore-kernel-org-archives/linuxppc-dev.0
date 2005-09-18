@@ -1,15 +1,11 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17197.63153.78371.490616@cargo.ozlabs.ibm.com>
-Date: Mon, 19 Sep 2005 09:22:25 +1000
+Message-ID: <17197.65270.548340.377011@cargo.ozlabs.ibm.com>
+Date: Mon, 19 Sep 2005 09:57:42 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Jon Loeliger <jdl@freescale.com>
-In-Reply-To: <1126631205.11056.15.camel@cashmere.sps.mot.com>
-References: <1126631205.11056.15.camel@cashmere.sps.mot.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	linuxppc64-dev <linuxppc64-dev@ozlabs.org>
-Subject: Re: Merge Question on asm-ppc*/rwsem.h
+To: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Subject: Git tree for the 32/64 merge
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,15 +15,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jon Loeliger writes:
+I have created a git tree on kernel.org as a place to accumulate the
+patches for the ppc32/ppc64 merge.  It is at:
 
-> Which begs the question, what is the "else smp_wmb();" clause
-> really doing for us in the ppc32 case, and can we either
-> get rid of it, or is it safe to add to the ppc64 case?
+rsync://rsync.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc-merge.git
 
-I think the difference is that the atomic ops that return a value also
-have include a barrier on ppc64, but don't on ppc32 (although they
-probably should).  IOW I think the merged case should follow ppc64
-here.
+It doesn't include the objects in Linus' tree; instead it has an
+objects/info/alternates file pointing to Linus' tree.
+
+This tree contains all the patches I found in a scan through my inbox
+that relate to the merge and haven't already gone to Linus.  If you
+have a patch that should go in, please resend it.
 
 Paul.
