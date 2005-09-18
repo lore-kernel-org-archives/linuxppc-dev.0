@@ -1,15 +1,15 @@
-Return-Path: <kumar.gala@freescale.com>
-In-Reply-To: <1127006735.23095.4.camel@gaston>
-References: <1127006735.23095.4.camel@gaston>
-Mime-Version: 1.0 (Apple Message framework v734)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <216D7B09-CC72-482D-9C06-3416D5E02DBE@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Sun, 18 Sep 2005 12:50:30 -0500
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
-Subject: Re: PATCH powerpc: 00/04 Remove __pmac, etc, sections,
-	merge sections.h
+Return-Path: <galak@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 59E5D68305
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Sep 2005 04:02:11 +1000 (EST)
+Date: Sun, 18 Sep 2005 13:02:03 -0500 (CDT)
+From: Kumar Gala <galak@freescale.com>
+To: Paul Mackerras <paulus@samba.org>
+Message-ID: <Pine.LNX.4.61.0509181301340.19087@nylon.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
+Subject: [PATCH] ppc32: Allow user to individual select CHRP/PMAC/PREP config
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,28 +19,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Made the CHRP/PMAC/PREP config options selectable by the user.
+This allows us to build kernels specifically for one of the
+platforms thus reducing code size.
 
-On Sep 17, 2005, at 8:25 PM, Benjamin Herrenschmidt wrote:
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
-> On Sat, 2005-09-17 at 10:31 -0500, Jon Loeliger wrote:
->
->> Here is a new patch that removes all notion of the pmac, prep,
->> chrp and openfirmware initialization sections, and then unifies
->> the sections.h files without those __pmac, etc, sections identifiers
->> cluttering things up.
->>
->
-> When did we decide to do that ? Some people are still using ppc  
-> machines
-> with rather small memory footprint (old ones), it's handy to get  
-> rid of
-> the code you don't need... It would make sense if we could compile
-> CHRP/PMAC/PREP in/out (like we can do with platforms on ppc64) so that
-> people who have tight memory requirements can build a PReP or CHRP
-> kernel without all of the pmac code.
+---
+commit 41bfc892910fa820db2dfcaf876b2cbc2e3c4e56
+tree 2f77679b39af1f36174ada8338ad267858e46024
+parent e08f933110ff9e7d1a4b4e0ccead28e47c6840ea
+author Kumar K. Gala <kumar.gala@freescale.com> Sun, 18 Sep 2005 13:01:02 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> Sun, 18 Sep 2005 13:01:02 -0500
 
-I think the discussion earlier in this week lead us to believe this  
-was the way to go.  We can provide a simple patch to allow selecting  
-CHRP/PMAC/PREP specifically in addition to MUTLIPLATFORM.
+ arch/ppc/Kconfig |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-- kumar
+diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
+--- a/arch/ppc/Kconfig
++++ b/arch/ppc/Kconfig
+@@ -747,12 +747,13 @@ config CPM2
+ 	  on it (826x, 827x, 8560).
+ 
+ config PPC_CHRP
++	bool "  Common Hardware Reference Platform (CHRP) based machines"
+ 	bool
+ 	depends on PPC_MULTIPLATFORM
+ 	default y
+ 
+ config PPC_PMAC
+-	bool
++	bool "  Apple PowerMac based machines"
+ 	depends on PPC_MULTIPLATFORM
+ 	default y
+ 
+@@ -762,6 +763,7 @@ config PPC_PMAC64
+ 	default y
+ 
+ config PPC_PREP
++	bool "  PowerPC Reference Platform (PREP) based machines"
+ 	bool
+ 	depends on PPC_MULTIPLATFORM
+ 	default y
