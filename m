@@ -1,15 +1,15 @@
-Return-Path: <galak@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 59E5D68305
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Sep 2005 04:02:11 +1000 (EST)
-Date: Sun, 18 Sep 2005 13:02:03 -0500 (CDT)
-From: Kumar Gala <galak@freescale.com>
-To: Paul Mackerras <paulus@samba.org>
-Message-ID: <Pine.LNX.4.61.0509181301340.19087@nylon.am.freescale.net>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
-Subject: [PATCH] ppc32: Allow user to individual select CHRP/PMAC/PREP config
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17197.58312.715169.991104@cargo.ozlabs.ibm.com>
+Date: Mon, 19 Sep 2005 08:01:44 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Simon Richter <Simon.Richter@hogyros.de>
+In-Reply-To: <432C23AE.6020800@hogyros.de>
+References: <15A1D026-00E3-4652-ABA5-9A8B8517A2CA@freescale.com>
+	<432C23AE.6020800@hogyros.de>
+Cc: ppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: Reminder: removal of APUS and Gemini still pending
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,45 +19,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Made the CHRP/PMAC/PREP config options selectable by the user.
-This allows us to build kernels specifically for one of the
-platforms thus reducing code size.
+Simon Richter writes:
 
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+> I have a tree that builds an APUS kernel (with Roman Zippel's patches 
+> forwarded to HEAD), however I wanted to hold back with merging it until 
+> the ppc/ppc64 -> powerpc transition is finished; also, I would like to 
 
----
-commit 41bfc892910fa820db2dfcaf876b2cbc2e3c4e56
-tree 2f77679b39af1f36174ada8338ad267858e46024
-parent e08f933110ff9e7d1a4b4e0ccead28e47c6840ea
-author Kumar K. Gala <kumar.gala@freescale.com> Sun, 18 Sep 2005 13:01:02 -0500
-committer Kumar K. Gala <kumar.gala@freescale.com> Sun, 18 Sep 2005 13:01:02 -0500
+That sounds like a mistake to me...
 
- arch/ppc/Kconfig |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+> get proper changesets with attribution instead of a big patch (the plan 
+> is to forward-merge the changes until after the transition, then turn 
+> them back into a diff and apply them step by step).
 
-diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
---- a/arch/ppc/Kconfig
-+++ b/arch/ppc/Kconfig
-@@ -747,12 +747,13 @@ config CPM2
- 	  on it (826x, 827x, 8560).
- 
- config PPC_CHRP
-+	bool "  Common Hardware Reference Platform (CHRP) based machines"
- 	bool
- 	depends on PPC_MULTIPLATFORM
- 	default y
- 
- config PPC_PMAC
--	bool
-+	bool "  Apple PowerMac based machines"
- 	depends on PPC_MULTIPLATFORM
- 	default y
- 
-@@ -762,6 +763,7 @@ config PPC_PMAC64
- 	default y
- 
- config PPC_PREP
-+	bool "  PowerPC Reference Platform (PREP) based machines"
- 	bool
- 	depends on PPC_MULTIPLATFORM
- 	default y
+One of the things I particularly want to do is to remove the special
+cases in the virtual<->physical address translations for APUS.
+Perhaps the sparsemem or discontigmem code could be used instead?
+
+Paul.
