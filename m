@@ -1,15 +1,16 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17197.58312.715169.991104@cargo.ozlabs.ibm.com>
-Date: Mon, 19 Sep 2005 08:01:44 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Simon Richter <Simon.Richter@hogyros.de>
-In-Reply-To: <432C23AE.6020800@hogyros.de>
-References: <15A1D026-00E3-4652-ABA5-9A8B8517A2CA@freescale.com>
-	<432C23AE.6020800@hogyros.de>
-Cc: ppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: Reminder: removal of APUS and Gemini still pending
+Return-Path: <benh@kernel.crashing.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <kumar.gala@freescale.com>
+In-Reply-To: <216D7B09-CC72-482D-9C06-3416D5E02DBE@freescale.com>
+References: <1127006735.23095.4.camel@gaston>
+	<216D7B09-CC72-482D-9C06-3416D5E02DBE@freescale.com>
+Content-Type: text/plain
+Date: Mon, 19 Sep 2005 08:13:16 +1000
+Message-Id: <1127081596.4502.8.camel@gaston>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Subject: Re: PATCH powerpc: 00/04 Remove __pmac, etc, sections, merge
+	sections.h
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,20 +20,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Simon Richter writes:
 
-> I have a tree that builds an APUS kernel (with Roman Zippel's patches 
-> forwarded to HEAD), however I wanted to hold back with merging it until 
-> the ppc/ppc64 -> powerpc transition is finished; also, I would like to 
+> I think the discussion earlier in this week lead us to believe this  
+> was the way to go.  We can provide a simple patch to allow selecting  
+> CHRP/PMAC/PREP specifically in addition to MUTLIPLATFORM.
 
-That sounds like a mistake to me...
+It should be done like ppc64, that is MULTIPLATFORM can be built with an
+aribtrary "set" of platforms. In fact, I think the merged arch should
+trash if possible all "exclusive" CONFIG_MYBOARD stuff, but only ever do
+what ppc64 does, that is any combination of platforms for the same CPU
+family can be built at the same time.
 
-> get proper changesets with attribution instead of a big patch (the plan 
-> is to forward-merge the changes until after the transition, then turn 
-> them back into a diff and apply them step by step).
-
-One of the things I particularly want to do is to remove the special
-cases in the virtual<->physical address translations for APUS.
-Perhaps the sparsemem or discontigmem code could be used instead?
-
-Paul.
+Ben.
