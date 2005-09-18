@@ -1,16 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <216D7B09-CC72-482D-9C06-3416D5E02DBE@freescale.com>
-References: <1127006735.23095.4.camel@gaston>
-	<216D7B09-CC72-482D-9C06-3416D5E02DBE@freescale.com>
-Content-Type: text/plain
-Date: Mon, 19 Sep 2005 08:13:16 +1000
-Message-Id: <1127081596.4502.8.camel@gaston>
+Return-Path: <a.othieno@bluewin.ch>
+Received: from mail19.bluewin.ch (mail19.bluewin.ch [195.186.18.65])
+	by ozlabs.org (Postfix) with ESMTP id D0193682FF
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Sep 2005 09:00:31 +1000 (EST)
+Date: Sun, 18 Sep 2005 18:49:55 -0400
+To: Kumar Gala <galak@freescale.com>
+Message-ID: <20050918224955.GA5739@mars>
+References: <Pine.LNX.4.61.0509181301340.19087@nylon.am.freescale.net>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
-Subject: Re: PATCH powerpc: 00/04 Remove __pmac, etc, sections, merge
-	sections.h
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.61.0509181301340.19087@nylon.am.freescale.net>
+From: a.othieno@bluewin.ch (Arthur Othieno)
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] ppc32: Allow user to individual select CHRP/PMAC/PREP
+	config
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,15 +22,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sun, Sep 18, 2005 at 01:02:03PM -0500, Kumar Gala wrote:
+> Made the CHRP/PMAC/PREP config options selectable by the user.
+> This allows us to build kernels specifically for one of the
+> platforms thus reducing code size.
+> 
+> Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+> 
+> ---
+> commit 41bfc892910fa820db2dfcaf876b2cbc2e3c4e56
+> tree 2f77679b39af1f36174ada8338ad267858e46024
+> parent e08f933110ff9e7d1a4b4e0ccead28e47c6840ea
+> author Kumar K. Gala <kumar.gala@freescale.com> Sun, 18 Sep 2005 13:01:02 -0500
+> committer Kumar K. Gala <kumar.gala@freescale.com> Sun, 18 Sep 2005 13:01:02 -0500
+> 
+>  arch/ppc/Kconfig |    4 +++-
+>  1 files changed, 3 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
+> --- a/arch/ppc/Kconfig
+> +++ b/arch/ppc/Kconfig
+> @@ -747,12 +747,13 @@ config CPM2
+>  	  on it (826x, 827x, 8560).
+>  
+>  config PPC_CHRP
+> +	bool "  Common Hardware Reference Platform (CHRP) based machines"
+>  	bool
 
-> I think the discussion earlier in this week lead us to believe this  
-> was the way to go.  We can provide a simple patch to allow selecting  
-> CHRP/PMAC/PREP specifically in addition to MUTLIPLATFORM.
+Forgot to knock off that extra `bool' ?
 
-It should be done like ppc64, that is MULTIPLATFORM can be built with an
-aribtrary "set" of platforms. In fact, I think the merged arch should
-trash if possible all "exclusive" CONFIG_MYBOARD stuff, but only ever do
-what ppc64 does, that is any combination of platforms for the same CPU
-family can be built at the same time.
+>  	depends on PPC_MULTIPLATFORM
+>  	default y
+>  
+>  config PPC_PMAC
+> -	bool
+> +	bool "  Apple PowerMac based machines"
+>  	depends on PPC_MULTIPLATFORM
+>  	default y
+>  
+> @@ -762,6 +763,7 @@ config PPC_PMAC64
+>  	default y
+>  
+>  config PPC_PREP
+> +	bool "  PowerPC Reference Platform (PREP) based machines"
+>  	bool
 
-Ben.
+Ditto.
+
+>  	depends on PPC_MULTIPLATFORM
+>  	default y
