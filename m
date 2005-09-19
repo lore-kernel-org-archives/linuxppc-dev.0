@@ -1,16 +1,14 @@
-Return-Path: <galak@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 3F8A468346
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Sep 2005 12:33:24 +1000 (EST)
-Date: Sun, 18 Sep 2005 21:33:18 -0500 (CDT)
-From: Kumar Gala <galak@freescale.com>
+Return-Path: <kumar.gala@freescale.com>
+In-Reply-To: <17197.65270.548340.377011@cargo.ozlabs.ibm.com>
+References: <17197.65270.548340.377011@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v734)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <4EA4DEDF-0D49-4C60-B236-88D96AE9335B@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Sun, 18 Sep 2005 21:36:24 -0500
 To: Paul Mackerras <paulus@samba.org>
-Message-ID: <Pine.LNX.4.61.0509182132310.19665@nylon.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
-Subject: [PATCH][UPDATE] ppc32: Allow user to individual select
- CHRP/PMAC/PREP config
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Subject: Re: Git tree for the 32/64 merge
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,46 +18,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Made the CHRP/PMAC/PREP config options selectable by the user.
-This allows us to build kernels specifically for one of the
-platforms thus reducing code size.
+Can you get this tree added to gitweb on kernel.org
 
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+- kumar
 
----
-commit f827bdb6363b826d34ede1790d37dd27c28d19b5
-tree 40219a80fd22a02f292b5366d6209f3f57aa1c6c
-parent 6c0741fbdee5bd0f8ed13ac287c4ab18e8ba7d83
-author Kumar K. Gala <kumar.gala@freescale.com> Sun, 18 Sep 2005 21:31:54 -0500
-committer Kumar K. Gala <kumar.gala@freescale.com> Sun, 18 Sep 2005 21:31:54 -0500
+On Sep 18, 2005, at 6:57 PM, Paul Mackerras wrote:
 
- arch/ppc/Kconfig |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
---- a/arch/ppc/Kconfig
-+++ b/arch/ppc/Kconfig
-@@ -747,12 +747,12 @@ config CPM2
- 	  on it (826x, 827x, 8560).
- 
- config PPC_CHRP
--	bool
-+	bool "  Common Hardware Reference Platform (CHRP) based machines"
- 	depends on PPC_MULTIPLATFORM
- 	default y
- 
- config PPC_PMAC
--	bool
-+	bool "  Apple PowerMac based machines"
- 	depends on PPC_MULTIPLATFORM
- 	default y
- 
-@@ -762,7 +762,7 @@ config PPC_PMAC64
- 	default y
- 
- config PPC_PREP
--	bool
-+	bool "  PowerPC Reference Platform (PReP) based machines"
- 	depends on PPC_MULTIPLATFORM
- 	default y
- 
+> I have created a git tree on kernel.org as a place to accumulate the
+> patches for the ppc32/ppc64 merge.  It is at:
+>
+> rsync://rsync.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc- 
+> merge.g
+> it
+>
+> It doesn't include the objects in Linus' tree; instead it has an
+> objects/info/alternates file pointing to Linus' tree.
+>
+> This tree contains all the patches I found in a scan through my inbox
+> that relate to the merge and haven't already gone to Linus.  If you
+> have a patch that should go in, please resend it.
+>
+> Paul.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
