@@ -1,23 +1,16 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id D3EAC682C0
+Return-Path: <jonaris100@tsamail.co.za>
+Received: from dee22 (unknown [213.181.85.82])
+	by ozlabs.org (Postfix) with SMTP id AD6F26831E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 20 Sep 2005 03:15:02 +1000 (EST)
-Date: Mon, 19 Sep 2005 10:14:59 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Stefan Roese <sr@denx.de>
-Message-ID: <20050919171458.GA8367@gate.ebshome.net>
-References: <ea43f4f9050825183121655ba2@mail.gmail.com>
-	<200509191302.15462.sr@denx.de> <20050919065942.A25356@cox.net>
-	<200509191706.24298.sr@denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200509191706.24298.sr@denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] ppc32: cleanup AMCC PPC4xx eval boards to better
-	support U-Boot
+	Tue, 20 Sep 2005 03:25:10 +1000 (EST)
+From: "jonaris0" <jonaris0@tsamail.co.za>
+To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
+Date: Mon, 19 Sep 05 10:17:48 Pacific Standard Time
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary= "----=_NextPart_000_001E_98567F7D.589544C1"
+Message-Id: <20050919172510.AD6F26831E@ozlabs.org>
+Subject: HELLO
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,26 +21,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Sep 19, 2005 at 05:06:23PM +0200, Stefan Roese wrote:
-> Hi Matt,
-> 
-> On Monday 19 September 2005 15:59, Matt Porter wrote:
-> > On Mon, Sep 19, 2005 at 01:02:14PM +0200, Stefan Roese wrote:
-> > > Just to be sure: The 44x boot-wrapper approach you mention is
-> > > "boot/simple/pibs.c"?
-> >
-> > Yes, there's both boot/simple/pibs.c and boot/simple/openbios.c that
-> > were created so we could have the default firmware and u-boot use the
-> > same kernel build.
-> 
-> Yes, that's what I thought. But Eugene mentioned, that he boots vmlinux 
-> without any boot-wrapper on the OpenBIOS targets (except Ebony probably).
+------=_NextPart_000_001E_98567F7D.589544C1
+Content-Type: text/plain
+Content-Transfer-Encoding: base64
 
-Bad phrasing on my part. What I meant was "U-Boot is different from 
-OpenBIOS targets already, as with U-Boot we don't use any boot-wrapper 
-like with OpenBIOS".
-
-Sorry for confusion :).
-
--- 
-Eugene
+SGVsbG8sDQoNCk15IG5hbWUgaXMgQ29sKFJ0ZCkgSm9uIEFyaXN0aWRlLGJyb3RoZXIgdG8g
+dGhlDQpleGlsZWQgUHJlc2lkZW50IG9mIEhhaXRpLChEci5KZWFuIEJlcnRyYW5kDQpBcmlz
+dGlkZSkNCg0KRHVlIHRvIHRoZSBldm9sdXRpb24gYWdhaW5zdCB0aGUgZ292ZXJubWVudA0K
+b2YgbXkgYnJvdGhlciBjYXVzZWQgYnkgaGlzIHBvbGl0aWNhbCBvcHBvbmVudHMgaW4NCkhh
+aXRpLHdlIG1hbmFnZWQgdG8gZW50ZXIgYSByZWQgY3Jvc3MgYWlycGxhbmUgdGhhdA0Kd2Fz
+IGV2YWN1YXRpbmcgZm9yZWlnbmVycyBhbmQgd2UgYXJlIHByZXNlbnRseSBvbg0KcG9saXRp
+Y2FsIGFzc3lsdW0gaW4gQ2VudHJhbCBBZnJpY2FuIFJlcHViaWxjKENBUikNCg0KSSB3aXNo
+IHRvIGludmVzdCBpbiBSZWFsIEVzdGF0ZSBhbmQgY29tbWVyY2lhbA0KUHJvcGVydGllcyBh
+bmQgZXF1YWxseSBzdGFydCBhIG5ldyBsaWZlIGluIHlvdXINCmNvdW50cnkgd2l0aCB5b3Vy
+IGFzc2lzdGFuY2UgYW5kIGNvb3BlcmF0aW9uLklmIHlvdQ0KYXJlIGluIGEgZ29vZCBwb3Np
+dGlvbiB0byBoZWxwIG15IGZhbWlseSxwbGVhc2Ugc2VuZA0KYW4gZS1tYWlsIHRvIG15IHBl
+cnNvbmFsIGFkZHJlc3MgYmVsb3cgaW5kaWNhdGluZyB5b3VyDQpkZXNpcmUgdG8gaGVscCBt
+ZWludmVzdCB0aGlzIGZ1bmRzIGluIHlvdXIgY291bnRyeSBhbmQNCmJleW9uZC4NCkkgdXJn
+ZW50bHkgYXdhaXQgeW91ciBlLW1haWwgbGV0dGVyLg0KDQpSZXBseSB0byBteSBjb25maWRl
+bnRpYWwgbWFpbCBib3g6IGpvbmFyaXMwNUB5YWhvby5jb20NCg0KQmVzdCBSZWdhcmRzIGFu
+ZCBob3BlIHRvIG1lZXQgeW91IHNvb24uDQoNCkdvZCBibGVzcywNCg0KQ29sIEpvbihSdGQp
+Lg0KDQogICAg
+------=_NextPart_000_001E_98567F7D.589544C1--
