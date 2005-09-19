@@ -1,13 +1,21 @@
-Return-Path: <sfr@canb.auug.org.au>
-Date: Mon, 19 Sep 2005 17:50:21 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Message-Id: <20050919175021.23456028.sfr@canb.auug.org.au>
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 203D768333
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Sep 2005 19:10:54 +1000 (EST)
+Date: Mon, 19 Sep 2005 11:10:46 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Paul Mackerras <paulus@samba.org>
+Message-ID: <20050919091046.GA7873@lst.de>
+References: <15A1D026-00E3-4652-ABA5-9A8B8517A2CA@freescale.com>
+	<432C23AE.6020800@hogyros.de>
+	<17197.58312.715169.991104@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc64-dev <linuxppc64-dev@ozlabs.org>, ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc: Merge include/asm-ppc*/a.out.h into
- include/asm-powerpc
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17197.58312.715169.991104@cargo.ozlabs.ibm.com>
+Cc: ppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: Reminder: removal of APUS and Gemini still pending
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,137 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, Sep 19, 2005 at 08:01:44AM +1000, Paul Mackerras wrote:
+> That sounds like a mistake to me...
+> 
+> > get proper changesets with attribution instead of a big patch (the plan 
+> > is to forward-merge the changes until after the transition, then turn 
+> > them back into a diff and apply them step by step).
+> 
+> One of the things I particularly want to do is to remove the special
+> cases in the virtual<->physical address translations for APUS.
+> Perhaps the sparsemem or discontigmem code could be used instead?
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
+The apus codedrop Sven put into the Debian Kernel SVN repo has this
+removed, see:
 
- include/asm-powerpc/a.out.h |   36 ++++++++++++++++++++++++++++++++++++
- include/asm-ppc/a.out.h     |   26 --------------------------
- include/asm-ppc64/a.out.h   |   39 ---------------------------------------
- 3 files changed, 36 insertions(+), 65 deletions(-)
- create mode 100644 include/asm-powerpc/a.out.h
- delete mode 100644 include/asm-ppc/a.out.h
- delete mode 100644 include/asm-ppc64/a.out.h
+http://svn.debian.org/wsvn/kernel/dists/trunk/linux-2.6/debian/patches-debian/powerpc-apus.patch?op=file&rev=0&sc=0
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
-e4be8c960725725bccb547e84104e3fefca27f1
-diff --git a/include/asm-powerpc/a.out.h b/include/asm-powerpc/a.out.h
-new file mode 100644
---- /dev/null
-+++ b/include/asm-powerpc/a.out.h
-@@ -0,0 +1,36 @@
-+#ifndef _ASM_POWERPC_A_OUT_H
-+#define _ASM_POWERPC_A_OUT_H
-+
-+struct exec
-+{
-+	unsigned long a_info;	/* Use macros N_MAGIC, etc for access */
-+	unsigned a_text;	/* length of text, in bytes */
-+	unsigned a_data;	/* length of data, in bytes */
-+	unsigned a_bss;		/* length of uninitialized data area for file, in bytes */
-+	unsigned a_syms;	/* length of symbol table data in file, in bytes */
-+	unsigned a_entry;	/* start address */
-+	unsigned a_trsize;	/* length of relocation info for text, in bytes */
-+	unsigned a_drsize;	/* length of relocation info for data, in bytes */
-+};
-+
-+#define N_TRSIZE(a)	((a).a_trsize)
-+#define N_DRSIZE(a)	((a).a_drsize)
-+#define N_SYMSIZE(a)	((a).a_syms)
-+
-+#ifdef __KERNEL__
-+#ifdef __powerpc64__
-+
-+#define STACK_TOP_USER64 TASK_SIZE_USER64
-+#define STACK_TOP_USER32 TASK_SIZE_USER32
-+
-+#define STACK_TOP (test_thread_flag(TIF_32BIT) ? \
-+		   STACK_TOP_USER32 : STACK_TOP_USER64)
-+
-+#else /* __powerpc64__ */
-+
-+#define STACK_TOP TASK_SIZE
-+
-+#endif /* __powerpc64__ */
-+#endif /* __KERNEL__ */
-+
-+#endif /* _ASM_POWERPC_A_OUT_H */
-diff --git a/include/asm-ppc/a.out.h b/include/asm-ppc/a.out.h
-deleted file mode 100644
---- a/include/asm-ppc/a.out.h
-+++ /dev/null
-@@ -1,26 +0,0 @@
--#ifndef __PPC_A_OUT_H__
--#define __PPC_A_OUT_H__
--
--/* grabbed from the intel stuff  */
--#define STACK_TOP TASK_SIZE
--
--
--struct exec
--{
--  unsigned long a_info;		/* Use macros N_MAGIC, etc for access */
--  unsigned a_text;		/* length of text, in bytes */
--  unsigned a_data;		/* length of data, in bytes */
--  unsigned a_bss;		/* length of uninitialized data area for file, in bytes */
--  unsigned a_syms;		/* length of symbol table data in file, in bytes */
--  unsigned a_entry;		/* start address */
--  unsigned a_trsize;		/* length of relocation info for text, in bytes */
--  unsigned a_drsize;		/* length of relocation info for data, in bytes */
--};
--
--
--#define N_TRSIZE(a)	((a).a_trsize)
--#define N_DRSIZE(a)	((a).a_drsize)
--#define N_SYMSIZE(a)	((a).a_syms)
--
--
--#endif
-diff --git a/include/asm-ppc64/a.out.h b/include/asm-ppc64/a.out.h
-deleted file mode 100644
---- a/include/asm-ppc64/a.out.h
-+++ /dev/null
-@@ -1,39 +0,0 @@
--#ifndef __PPC64_A_OUT_H__
--#define __PPC64_A_OUT_H__
--
--/*
-- * c 2001 PPC 64 Team, IBM Corp
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of the GNU General Public License
-- * as published by the Free Software Foundation; either version
-- * 2 of the License, or (at your option) any later version.
-- */
--
--struct exec
--{
--	unsigned long a_info;	/* Use macros N_MAGIC, etc for access */
--	unsigned a_text;	/* length of text, in bytes */
--	unsigned a_data;	/* length of data, in bytes */
--	unsigned a_bss;		/* length of uninitialized data area for file, in bytes */
--	unsigned a_syms;	/* length of symbol table data in file, in bytes */
--	unsigned a_entry;	/* start address */
--	unsigned a_trsize;	/* length of relocation info for text, in bytes */
--	unsigned a_drsize;	/* length of relocation info for data, in bytes */
--};
--
--#define N_TRSIZE(a)	((a).a_trsize)
--#define N_DRSIZE(a)	((a).a_drsize)
--#define N_SYMSIZE(a)	((a).a_syms)
--
--#ifdef __KERNEL__
--
--#define STACK_TOP_USER64 TASK_SIZE_USER64
--#define STACK_TOP_USER32 TASK_SIZE_USER32
--
--#define STACK_TOP (test_thread_flag(TIF_32BIT) ? \
--		   STACK_TOP_USER32 : STACK_TOP_USER64)
--
--#endif /* __KERNEL__ */
--
--#endif /* __PPC64_A_OUT_H__ */
+even if apus folks don't want to merge now all the core touching parts
+of that patch should go in as they clanup the ifdef APUS mess quite a
+lot.
