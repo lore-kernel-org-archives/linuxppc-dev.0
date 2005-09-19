@@ -1,14 +1,15 @@
 Return-Path: <sfr@canb.auug.org.au>
-Date: Mon, 19 Sep 2005 23:13:24 +1000
+Date: Mon, 19 Sep 2005 23:15:51 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Message-Id: <20050919231324.426e3dae.sfr@canb.auug.org.au>
+Message-Id: <20050919231551.2e13b6d8.sfr@canb.auug.org.au>
 In-Reply-To: <20050919231051.28fcdf30.sfr@canb.auug.org.au>
 References: <20050919231051.28fcdf30.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc64-dev <linuxppc64-dev@ozlabs.org>, ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 1/6] powerpc: Move arch/ppc*/oprofile/Kconfig to arch/powerpc
+Subject: [PATCH 2/6] Merge arch/ppc*/oprofile/Makefile into
+ arch/powerpc/oprofile
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,132 +19,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-These files are identical.
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
 
- arch/powerpc/oprofile/Kconfig |   23 +++++++++++++++++++++++
- arch/ppc/Kconfig              |    2 +-
- arch/ppc/oprofile/Kconfig     |   23 -----------------------
- arch/ppc64/Kconfig            |    2 +-
- arch/ppc64/oprofile/Kconfig   |   23 -----------------------
- 5 files changed, 25 insertions(+), 48 deletions(-)
- create mode 100644 arch/powerpc/oprofile/Kconfig
- delete mode 100644 arch/ppc/oprofile/Kconfig
- delete mode 100644 arch/ppc64/oprofile/Kconfig
+ arch/powerpc/oprofile/Makefile |   11 +++++++++++
+ arch/ppc/oprofile/Makefile     |   15 +--------------
+ arch/ppc64/oprofile/Makefile   |   10 +---------
+ 3 files changed, 13 insertions(+), 23 deletions(-)
+ create mode 100644 arch/powerpc/oprofile/Makefile
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
 
-51b2e663af2bae454a5e4737dfb0b7e0c4898b2f
-diff --git a/arch/powerpc/oprofile/Kconfig b/arch/powerpc/oprofile/Kconfig
+03447d2b4ddb0a51f7316c32c280dbc497ce8d83
+diff --git a/arch/powerpc/oprofile/Makefile b/arch/powerpc/oprofile/Makefile
 new file mode 100644
 --- /dev/null
-+++ b/arch/powerpc/oprofile/Kconfig
-@@ -0,0 +1,23 @@
++++ b/arch/powerpc/oprofile/Makefile
+@@ -0,0 +1,11 @@
++obj-$(CONFIG_OPROFILE) += oprofile.o
 +
-+menu "Profiling support"
-+	depends on EXPERIMENTAL
++DRIVER_OBJS := $(addprefix ../../../drivers/oprofile/, \
++		oprof.o cpu_buffer.o buffer_sync.o \
++		event_buffer.o oprofile_files.o \
++		oprofilefs.o oprofile_stats.o \
++		timer_int.o )
 +
-+config PROFILING
-+	bool "Profiling support (EXPERIMENTAL)"
-+	help
-+	  Say Y here to enable the extended profiling support mechanisms used
-+	  by profilers such as OProfile.
-+
-+
-+config OPROFILE
-+	tristate "OProfile system profiling (EXPERIMENTAL)"
-+	depends on PROFILING
-+	help
-+	  OProfile is a profiling system capable of profiling the
-+	  whole system, include the kernel, kernel modules, libraries,
-+	  and applications.
-+
-+	  If unsure, say N.
-+
-+endmenu
-+
-diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
---- a/arch/ppc/Kconfig
-+++ b/arch/ppc/Kconfig
-@@ -1370,7 +1370,7 @@ endmenu
- 
- source "lib/Kconfig"
- 
--source "arch/ppc/oprofile/Kconfig"
-+source "arch/powerpc/oprofile/Kconfig"
- 
- source "arch/ppc/Kconfig.debug"
- 
-diff --git a/arch/ppc/oprofile/Kconfig b/arch/ppc/oprofile/Kconfig
-deleted file mode 100644
---- a/arch/ppc/oprofile/Kconfig
-+++ /dev/null
-@@ -1,23 +0,0 @@
++oprofile-y := $(DRIVER_OBJS) common.o
++oprofile-$(CONFIG_PPC64) += op_model_rs64.o op_model_power4.o
++oprofile-$(CONFIG_FSL_BOOKE) += op_model_fsl_booke.o
+diff --git a/arch/ppc/oprofile/Makefile b/arch/ppc/oprofile/Makefile
+--- a/arch/ppc/oprofile/Makefile
++++ b/arch/ppc/oprofile/Makefile
+@@ -1,14 +1 @@
+-obj-$(CONFIG_OPROFILE) += oprofile.o
 -
--menu "Profiling support"
--	depends on EXPERIMENTAL
+-DRIVER_OBJS := $(addprefix ../../../drivers/oprofile/, \
+-		oprof.o cpu_buffer.o buffer_sync.o \
+-		event_buffer.o oprofile_files.o \
+-		oprofilefs.o oprofile_stats.o \
+-		timer_int.o )
 -
--config PROFILING
--	bool "Profiling support (EXPERIMENTAL)"
--	help
--	  Say Y here to enable the extended profiling support mechanisms used
--	  by profilers such as OProfile.
+-oprofile-y := $(DRIVER_OBJS) common.o
 -
+-ifeq ($(CONFIG_FSL_BOOKE),y)
+-	oprofile-y += op_model_fsl_booke.o
+-endif
 -
--config OPROFILE
--	tristate "OProfile system profiling (EXPERIMENTAL)"
--	depends on PROFILING
--	help
--	  OProfile is a profiling system capable of profiling the
--	  whole system, include the kernel, kernel modules, libraries,
--	  and applications.
++include arch/powerpc/oprofile/Makefile
+diff --git a/arch/ppc64/oprofile/Makefile b/arch/ppc64/oprofile/Makefile
+--- a/arch/ppc64/oprofile/Makefile
++++ b/arch/ppc64/oprofile/Makefile
+@@ -1,9 +1 @@
+-obj-$(CONFIG_OPROFILE) += oprofile.o
 -
--	  If unsure, say N.
+-DRIVER_OBJS := $(addprefix ../../../drivers/oprofile/, \
+-		oprof.o cpu_buffer.o buffer_sync.o \
+-		event_buffer.o oprofile_files.o \
+-		oprofilefs.o oprofile_stats.o \
+-		timer_int.o )
 -
--endmenu
--
-diff --git a/arch/ppc64/Kconfig b/arch/ppc64/Kconfig
---- a/arch/ppc64/Kconfig
-+++ b/arch/ppc64/Kconfig
-@@ -461,7 +461,7 @@ config VIOPATH
- 	depends on VIOCONS || VIODASD || VIOCD || VIOTAPE || VETH
- 	default y
- 
--source "arch/ppc64/oprofile/Kconfig"
-+source "arch/powerpc/oprofile/Kconfig"
- 
- source "arch/ppc64/Kconfig.debug"
- 
-diff --git a/arch/ppc64/oprofile/Kconfig b/arch/ppc64/oprofile/Kconfig
-deleted file mode 100644
---- a/arch/ppc64/oprofile/Kconfig
-+++ /dev/null
-@@ -1,23 +0,0 @@
--
--menu "Profiling support"
--	depends on EXPERIMENTAL
--
--config PROFILING
--	bool "Profiling support (EXPERIMENTAL)"
--	help
--	  Say Y here to enable the extended profiling support mechanisms used
--	  by profilers such as OProfile.
--	  
--
--config OPROFILE
--	tristate "OProfile system profiling (EXPERIMENTAL)"
--	depends on PROFILING
--	help
--	  OProfile is a profiling system capable of profiling the
--	  whole system, include the kernel, kernel modules, libraries,
--	  and applications.
--
--	  If unsure, say N.
--
--endmenu
--
+-oprofile-y := $(DRIVER_OBJS) common.o op_model_rs64.o op_model_power4.o
++include arch/powerpc/oprofile/Makefile
