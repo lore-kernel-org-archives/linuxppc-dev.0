@@ -1,14 +1,14 @@
 Return-Path: <jonaris100@tsamail.co.za>
 Received: from dee22 (unknown [213.181.85.82])
-	by ozlabs.org (Postfix) with SMTP id 19F5E68320
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Sep 2005 01:31:26 +1000 (EST)
+	by ozlabs.org (Postfix) with SMTP id 9FF1E68316
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Sep 2005 03:25:01 +1000 (EST)
 From: "jonaris0" <jonaris0@tsamail.co.za>
 To: "linuxppc-dev" <linuxppc-dev@ozlabs.org>
-Date: Mon, 19 Sep 05 08:25:30 Pacific Standard Time
+Date: Mon, 19 Sep 05 10:17:48 Pacific Standard Time
 MIME-Version: 1.0
 Content-Type: multipart/mixed;
-	boundary= "----=_NextPart_000_00D7_C298EDB.B8716A9E"
-Message-Id: <20050919153126.19F5E68320@ozlabs.org>
+	boundary= "----=_NextPart_000_001E_98567F7D.589544C1"
+Message-Id: <20050919172501.9FF1E68316@ozlabs.org>
 Subject: HELLO
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,7 +19,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_NextPart_000_00D7_C298EDB.B8716A9E
+------=_NextPart_000_001E_98567F7D.589544C1
 Content-Type: text/plain
 Content-Transfer-Encoding: base64
 
@@ -40,4 +40,4 @@ ZW50bHkgYXdhaXQgeW91ciBlLW1haWwgbGV0dGVyLg0KDQpSZXBseSB0byBteSBjb25maWRl
 bnRpYWwgbWFpbCBib3g6IGpvbmFyaXMwNUB5YWhvby5jb20NCg0KQmVzdCBSZWdhcmRzIGFu
 ZCBob3BlIHRvIG1lZXQgeW91IHNvb24uDQoNCkdvZCBibGVzcywNCg0KQ29sIEpvbihSdGQp
 Lg0KDQogICAg
-------=_NextPart_000_00D7_C298EDB.B8716A9E--
+------=_NextPart_000_001E_98567F7D.589544C1--
