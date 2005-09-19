@@ -1,23 +1,16 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.195])
-	by ozlabs.org (Postfix) with ESMTP id 2BA37682DD
+Return-Path: <earl.olsen@dilithiumnetworks.com>
+Received: from DHOST001-17.DEX001.intermedia.net (dhost001-17.intermedia.net
+	[64.78.61.64]) by ozlabs.org (Postfix) with ESMTP id D8C946829E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 20 Sep 2005 04:40:06 +1000 (EST)
-Received: by zproxy.gmail.com with SMTP id l1so691391nzf
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 19 Sep 2005 11:40:05 -0700 (PDT)
-Message-ID: <c3d0340b050919114040d0a0fe@mail.gmail.com>
-Date: Mon, 19 Sep 2005 11:40:05 -0700
-From: Shawn Jin <shawnxjin@gmail.com>
-To: Wolfgang Denk <wd@denx.de>
-In-Reply-To: <20050919153747.78ACC352682@atlas.denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <200509191155.36540.david.jander@protonic.nl>
-	<20050919153747.78ACC352682@atlas.denx.de>
-Cc: David Jander <david.jander@protonic.nl>, linuxppc-embedded@ozlabs.org
-Subject: Re: Which way to store log in flash on mpc8xx?
-Reply-To: shawnxjin@gmail.com
+	Tue, 20 Sep 2005 05:05:48 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C5BD4B.75723892"
+Date: Mon, 19 Sep 2005 11:53:44 -0700
+Message-ID: <B8561865DB141248943E2376D0E85215014202FA@DHOST001-17.DEX001.intermedia.net>
+From: "Earl Olsen" <earl.olsen@dilithiumnetworks.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: GT64260_eth (Ethernet) Driver
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,17 +21,114 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> > This must be a very common task (to store logfiles in flash), but I jus=
-t can't
-> > seem to find the right way to do it.
->=20
-> Note that log files may cause a lot of trouble  when  using  a  JFFS2
-> file  system. Youmay want to addd a buffering layer, like pramfs in a
-> dedicated RAM area (SRAM ideally).
+This is a multi-part message in MIME format.
 
-What's the trouble caused by log files when using a JFFS2? I'm not
-aware of that. Any pointers to where I should look into are much
-appreciated.
+------_=_NextPart_001_01C5BD4B.75723892
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Best regards,
--Shawn.
+
+Dieu:
+
+I saw that you had a problem with uncachedPages in gt64260_eth.c.
+I'm having the same problem you describe.  Did you ever get this
+resolved?
+
+Thanks for any help
+
+
+--
+Earl Olsen
+Senior Software Engineer
+Dilithium Networks, Inc.
+TEL:+1 707-792-3925
+earl.olsen@dilithiumnetworks.com
+www.dilithiumnetworks.com
+
+Communications for a Borderless World
+
+This electronic message from Dilithium Networks contains information
+which may be privileged or confidential. It is intended to be for the
+use of the recipient(s) named above. If you are not the intended
+recipient please return the message to the sender by replying to it and
+then delete the message from your computer. Dilithium Networks shall not
+be held liable to any person resulting from the use of any information
+contained in this e-mail and shall not be liable to any person who acts
+or omits to do anything in reliance upon it. Dilithium Networks does not
+accept responsibility for changes made to this message after it was
+sent.
+
+
+------_=_NextPart_001_01C5BD4B.75723892
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7226.0">
+<TITLE>GT64260_eth (Ethernet) Driver</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/rtf format -->
+<BR>
+
+<P><FONT SIZE=3D2 FACE=3D"Courier New">Dieu:</FONT>
+</P>
+
+<P><FONT SIZE=3D2 FACE=3D"Courier New">I saw that you had a problem with =
+uncachedPages in gt64260_eth.c.</FONT>
+
+<BR><FONT SIZE=3D2 FACE=3D"Courier New">I'm having the same problem you =
+describe.&nbsp; Did you ever get this resolved?</FONT>
+</P>
+
+<P><FONT SIZE=3D2 FACE=3D"Courier New">Thanks for any help</FONT>
+</P>
+<BR>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">--</FONT>
+
+<BR><FONT SIZE=3D2 FACE=3D"Arial">Earl Olsen</FONT>
+
+<BR><FONT SIZE=3D2 FACE=3D"Arial">Senior Software Engineer</FONT>
+
+<BR><FONT SIZE=3D2 FACE=3D"Arial">Dilithium Networks</FONT><FONT =
+SIZE=3D2 FACE=3D"Arial">, Inc.</FONT>
+
+<BR><FONT SIZE=3D2 FACE=3D"Arial">T</FONT><FONT SIZE=3D2 =
+FACE=3D"Arial">EL</FONT><FONT SIZE=3D2 FACE=3D"Arial">:+1 =
+707-792-3925</FONT>
+
+<BR><FONT SIZE=3D2 FACE=3D"Arial">e</FONT><FONT SIZE=3D2 =
+FACE=3D"Arial">arl.</FONT><FONT SIZE=3D2 FACE=3D"Arial">o</FONT><FONT =
+SIZE=3D2 FACE=3D"Arial">lsen@dilithiumnetworks.com</FONT>
+
+<BR><A HREF=3D"file://www.dilithiumnetworks.com"><U><FONT =
+COLOR=3D"#0000FF" SIZE=3D2 =
+FACE=3D"Arial">www.dilithiumnetworks.com</FONT></U></A>
+</P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">Communications for a Borderless =
+World</FONT>
+</P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">This electronic message from Dilithium =
+Networks contains information which may be privileged or confidential. =
+It is intended to be for the use of the recipient(s) named above. If you =
+are not the intended recipient please return the message to the sender =
+by replying to it and then delete the message from your computer. =
+Dilithium Networks shall not be held liable to any person resulting from =
+the use of any information contained in this e-mail and shall not be =
+liable to any person who acts or omits to do anything in reliance upon =
+it. Dilithium Networks does not accept responsibility for changes made =
+to this message after it was sent.</FONT></P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C5BD4B.75723892--
