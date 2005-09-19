@@ -1,20 +1,19 @@
 Return-Path: <wd@denx.de>
 Received: from mailout09.sul.t-online.com (mailout09.sul.t-online.com
-	[194.25.134.84]) by ozlabs.org (Postfix) with ESMTP id A34A9682C0
+	[194.25.134.84]) by ozlabs.org (Postfix) with ESMTP id 79D99682C0
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 20 Sep 2005 01:33:21 +1000 (EST)
-To: "Peter Fercher" <peter.fercher@scs.ch>
+	Tue, 20 Sep 2005 01:38:06 +1000 (EST)
+To: David Jander <david.jander@protonic.nl>
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 19 Sep 2005 11:16:08 +0200."
-	<002e01c5bcfa$c500d860$dbe5fed4@scsad.scs.ch>
-Date: Mon, 19 Sep 2005 17:33:07 +0200
+In-reply-to: Your message of "Mon, 19 Sep 2005 11:55:36 +0200."
+	<200509191155.36540.david.jander@protonic.nl>
+Date: Mon, 19 Sep 2005 17:37:47 +0200
 Sender: wd@denx.de
-Message-Id: <20050919153307.6EED8352682@atlas.denx.de>
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: kernel 2.6.12.2,
-	octobus ppc405EP: GUNZIP ERROR - must RESET board to recover
+Message-Id: <20050919153747.78ACC352682@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Which way to store log in flash on mpc8xx? 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,24 +24,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <002e01c5bcfa$c500d860$dbe5fed4@scsad.scs.ch> you wrote:
+In message <200509191155.36540.david.jander@protonic.nl> you wrote:
 > 
-...
-> TFTP from server 192.168.1.1; our IP address is 192.168.1.2
-> Filename 'uImage-2.6.12.2'.
-> Load address: 0x100000
-...
->    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
->    Data Size:    919184 Bytes = 897.6 kB
-...
-> GUNZIP ERROR - must RESET board to recover.
+> Kernel of choice seems to be denx linuxppc_2_4_devel, but I cannot trust the 
+> version of jffs2 used in that kernel anymore. Somtimes gc.c crashes with a 
+> BUG() in line 139, and sometimes processes are frozen for a looong time 
 
-Your load address is much too low for a kernel that big.
+Can you provide a little more details? The MTD / JFFS2 code  in  this
+kernel  is  not too old, andwe use it in a couple of projects without
+such problems.
 
-> any hints ?
+> waiting for GC. I have debugged that problem a little bit, and definitely, 
+> the FLASH access works ok, and the chip is new. No CRC- or read-errors, but 
+> still gc.c crashes.
 
-Yes. RTFM. RTFAQ. See especially
-http://www.denx.de/twiki/bin/view/DULG/LinuxUncompressingError
+Can you provide soem more information for debugging?
+
+> The version of mtd/jffs2 drivers in that kernel seem to be from march/2005 cvs 
+> code, but when I read the following, I get even more scared:
+> http://www.linux-mtd.infradead.org/source.html#kernelversions
+
+Don't worry. We backported the MTD / JFFS2 code. See the  history  of
+changes on our CVS or git server.
+
+> This must be a very common task (to store logfiles in flash), but I just can't 
+> seem to find the right way to do it.
+
+Note that log files may cause a lot of trouble  when  using  a  JFFS2
+file  system. Youmay want to addd a buffering layer, like pramfs in a
+dedicated RAM area (SRAM ideally).
+
 
 Best regards,
 
@@ -51,5 +62,5 @@ Wolfgang Denk
 -- 
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-The important thing about being a leader is not being right or wrong,
-but being *certain*.                    - Terry Pratchett, _Truckers_
+Never underestimate the bandwidth of a station wagon full of tapes.
+                                -- Dr. Warren Jackson, Director, UTCS
