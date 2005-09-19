@@ -1,16 +1,16 @@
-Return-Path: <frannk_m1@yahoo.com>
-Received: from web32202.mail.mud.yahoo.com (web32202.mail.mud.yahoo.com
-	[68.142.207.133]) by ozlabs.org (Postfix) with SMTP id 0A284682E5
+Return-Path: <jonaris100@tsamail.co.za>
+Received: from dee22 (unknown [213.181.85.82])
+	by ozlabs.org (Postfix) with SMTP id 6D70B68325
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 20 Sep 2005 01:15:58 +1000 (EST)
-Message-ID: <20050919150917.19378.qmail@web32202.mail.mud.yahoo.com>
-Date: Mon, 19 Sep 2005 08:09:17 -0700 (PDT)
-From: Frank <frannk_m1@yahoo.com>
-To: David Jander <david.jander@protonic.nl>, linuxppc-embedded@ozlabs.org
-In-Reply-To: <200509191155.36540.david.jander@protonic.nl>
+	Tue, 20 Sep 2005 01:31:34 +1000 (EST)
+From: "jonaris0" <jonaris0@tsamail.co.za>
+To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
+Date: Mon, 19 Sep 05 08:25:30 Pacific Standard Time
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Subject: Re: Which way to store log in flash on mpc8xx?
+Content-Type: multipart/mixed;
+	boundary= "----=_NextPart_000_00D7_C298EDB.B8716A9E"
+Message-Id: <20050919153134.6D70B68325@ozlabs.org>
+Subject: HELLO
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,58 +21,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---- David JandJandervidaviddjandertprotonic nlote:
+------=_NextPart_000_00D7_C298EDB.B8716A9E
+Content-Type: text/plain
+Content-Transfer-Encoding: base64
 
-> 
-> Hi all,
-> 
-> I am looking for a reliable way to store logflogfilesflash.
-> The logflogfiles 
-> written by syslsyslogd The problem is that I am running on a
-MPC8MPCprocessor, and
-> kernel 2.6 is not 
-> quite there yet for that processor, so I have to stick with
-> 2.4.
-> Kernel of choice seems to be denxdenxulinuxppc_devedevelt I
-> cannot trust the 
-> version of jffsjffsed in that kernel anymore. SomtSomtimescgc>
-crashes with a 
-> BUG() in line 139, and sometimes processes are frozen for a
-> looolooonge 
-> waiting for GC. GChave debugged that problem a little bit, and
-> definitely, 
-> the FLASH access works ok, okd the chip is new. No CRC-CRC
-> read-errors, but 
-> still gc.cgcrashes.
-> The version of mtd/mtdsjffsivers in that kernel seem to be
-> from march/2005 cvs cvs code, but when I read the following, I
-get even more scared:
->
-httphttpww.wwwulinux.mtdrinfradead/source.htmlhtmlnkernelversions
-> So, I need something different. jffsjffs maybe ?
-> This must be a very common task (to store logflogfilesflash),
-> but I just can't 
-> seem to find the right way to do it.
-> 
-> Any advice is highly appreciated.
-> 
-> Sincerely,
-> 
-> -- 
-> David JandJanderProtProtonicland.
-
-I'm using JFFSJFFS a 860 based board (to store log files
-amonamongster things) and haven't seen any of the problems
-you're expeexperiencing I were you, I would double check my
-configuration settings...
-> _______________________________________________
-> LinuLinuxppcedded mailing list
-> LinuLinuxppcedded@ozlaozlabs
-> httphttpszlaozlabs/mailman/listlistinfoulinuxppcedded
-> 
-
-
-		
-__________________________________ 
-Yahoo! Mail - PC Magazine Editors' Choice 2005 
-http://mail.yahoo.com
+SGVsbG8sDQoNCk15IG5hbWUgaXMgQ29sKFJ0ZCkgSm9uIEFyaXN0aWRlLGJyb3RoZXIgdG8g
+dGhlDQpleGlsZWQgUHJlc2lkZW50IG9mIEhhaXRpLChEci5KZWFuIEJlcnRyYW5kDQpBcmlz
+dGlkZSkNCg0KRHVlIHRvIHRoZSBldm9sdXRpb24gYWdhaW5zdCB0aGUgZ292ZXJubWVudA0K
+b2YgbXkgYnJvdGhlciBjYXVzZWQgYnkgaGlzIHBvbGl0aWNhbCBvcHBvbmVudHMgaW4NCkhh
+aXRpLHdlIG1hbmFnZWQgdG8gZW50ZXIgYSByZWQgY3Jvc3MgYWlycGxhbmUgdGhhdA0Kd2Fz
+IGV2YWN1YXRpbmcgZm9yZWlnbmVycyBhbmQgd2UgYXJlIHByZXNlbnRseSBvbg0KcG9saXRp
+Y2FsIGFzc3lsdW0gaW4gQ2VudHJhbCBBZnJpY2FuIFJlcHViaWxjKENBUikNCg0KSSB3aXNo
+IHRvIGludmVzdCBpbiBSZWFsIEVzdGF0ZSBhbmQgY29tbWVyY2lhbA0KUHJvcGVydGllcyBh
+bmQgZXF1YWxseSBzdGFydCBhIG5ldyBsaWZlIGluIHlvdXINCmNvdW50cnkgd2l0aCB5b3Vy
+IGFzc2lzdGFuY2UgYW5kIGNvb3BlcmF0aW9uLklmIHlvdQ0KYXJlIGluIGEgZ29vZCBwb3Np
+dGlvbiB0byBoZWxwIG15IGZhbWlseSxwbGVhc2Ugc2VuZA0KYW4gZS1tYWlsIHRvIG15IHBl
+cnNvbmFsIGFkZHJlc3MgYmVsb3cgaW5kaWNhdGluZyB5b3VyDQpkZXNpcmUgdG8gaGVscCBt
+ZWludmVzdCB0aGlzIGZ1bmRzIGluIHlvdXIgY291bnRyeSBhbmQNCmJleW9uZC4NCkkgdXJn
+ZW50bHkgYXdhaXQgeW91ciBlLW1haWwgbGV0dGVyLg0KDQpSZXBseSB0byBteSBjb25maWRl
+bnRpYWwgbWFpbCBib3g6IGpvbmFyaXMwNUB5YWhvby5jb20NCg0KQmVzdCBSZWdhcmRzIGFu
+ZCBob3BlIHRvIG1lZXQgeW91IHNvb24uDQoNCkdvZCBibGVzcywNCg0KQ29sIEpvbihSdGQp
+Lg0KDQogICAg
+------=_NextPart_000_00D7_C298EDB.B8716A9E--
