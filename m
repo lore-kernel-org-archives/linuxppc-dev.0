@@ -1,16 +1,20 @@
-Return-Path: <jonaris100@tsamail.co.za>
-Received: from dee22 (unknown [213.181.85.82])
-	by ozlabs.org (Postfix) with SMTP id 6D70B68325
+Return-Path: <wd@denx.de>
+Received: from mailout09.sul.t-online.com (mailout09.sul.t-online.com
+	[194.25.134.84]) by ozlabs.org (Postfix) with ESMTP id A34A9682C0
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 20 Sep 2005 01:31:34 +1000 (EST)
-From: "jonaris0" <jonaris0@tsamail.co.za>
-To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
-Date: Mon, 19 Sep 05 08:25:30 Pacific Standard Time
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary= "----=_NextPart_000_00D7_C298EDB.B8716A9E"
-Message-Id: <20050919153134.6D70B68325@ozlabs.org>
-Subject: HELLO
+	Tue, 20 Sep 2005 01:33:21 +1000 (EST)
+To: "Peter Fercher" <peter.fercher@scs.ch>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 19 Sep 2005 11:16:08 +0200."
+	<002e01c5bcfa$c500d860$dbe5fed4@scsad.scs.ch>
+Date: Mon, 19 Sep 2005 17:33:07 +0200
+Sender: wd@denx.de
+Message-Id: <20050919153307.6EED8352682@atlas.denx.de>
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: kernel 2.6.12.2,
+	octobus ppc405EP: GUNZIP ERROR - must RESET board to recover
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,25 +25,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_NextPart_000_00D7_C298EDB.B8716A9E
-Content-Type: text/plain
-Content-Transfer-Encoding: base64
+In message <002e01c5bcfa$c500d860$dbe5fed4@scsad.scs.ch> you wrote:
+> 
+...
+> TFTP from server 192.168.1.1; our IP address is 192.168.1.2
+> Filename 'uImage-2.6.12.2'.
+> Load address: 0x100000
+...
+>    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+>    Data Size:    919184 Bytes = 897.6 kB
+...
+> GUNZIP ERROR - must RESET board to recover.
 
-SGVsbG8sDQoNCk15IG5hbWUgaXMgQ29sKFJ0ZCkgSm9uIEFyaXN0aWRlLGJyb3RoZXIgdG8g
-dGhlDQpleGlsZWQgUHJlc2lkZW50IG9mIEhhaXRpLChEci5KZWFuIEJlcnRyYW5kDQpBcmlz
-dGlkZSkNCg0KRHVlIHRvIHRoZSBldm9sdXRpb24gYWdhaW5zdCB0aGUgZ292ZXJubWVudA0K
-b2YgbXkgYnJvdGhlciBjYXVzZWQgYnkgaGlzIHBvbGl0aWNhbCBvcHBvbmVudHMgaW4NCkhh
-aXRpLHdlIG1hbmFnZWQgdG8gZW50ZXIgYSByZWQgY3Jvc3MgYWlycGxhbmUgdGhhdA0Kd2Fz
-IGV2YWN1YXRpbmcgZm9yZWlnbmVycyBhbmQgd2UgYXJlIHByZXNlbnRseSBvbg0KcG9saXRp
-Y2FsIGFzc3lsdW0gaW4gQ2VudHJhbCBBZnJpY2FuIFJlcHViaWxjKENBUikNCg0KSSB3aXNo
-IHRvIGludmVzdCBpbiBSZWFsIEVzdGF0ZSBhbmQgY29tbWVyY2lhbA0KUHJvcGVydGllcyBh
-bmQgZXF1YWxseSBzdGFydCBhIG5ldyBsaWZlIGluIHlvdXINCmNvdW50cnkgd2l0aCB5b3Vy
-IGFzc2lzdGFuY2UgYW5kIGNvb3BlcmF0aW9uLklmIHlvdQ0KYXJlIGluIGEgZ29vZCBwb3Np
-dGlvbiB0byBoZWxwIG15IGZhbWlseSxwbGVhc2Ugc2VuZA0KYW4gZS1tYWlsIHRvIG15IHBl
-cnNvbmFsIGFkZHJlc3MgYmVsb3cgaW5kaWNhdGluZyB5b3VyDQpkZXNpcmUgdG8gaGVscCBt
-ZWludmVzdCB0aGlzIGZ1bmRzIGluIHlvdXIgY291bnRyeSBhbmQNCmJleW9uZC4NCkkgdXJn
-ZW50bHkgYXdhaXQgeW91ciBlLW1haWwgbGV0dGVyLg0KDQpSZXBseSB0byBteSBjb25maWRl
-bnRpYWwgbWFpbCBib3g6IGpvbmFyaXMwNUB5YWhvby5jb20NCg0KQmVzdCBSZWdhcmRzIGFu
-ZCBob3BlIHRvIG1lZXQgeW91IHNvb24uDQoNCkdvZCBibGVzcywNCg0KQ29sIEpvbihSdGQp
-Lg0KDQogICAg
-------=_NextPart_000_00D7_C298EDB.B8716A9E--
+Your load address is much too low for a kernel that big.
+
+> any hints ?
+
+Yes. RTFM. RTFAQ. See especially
+http://www.denx.de/twiki/bin/view/DULG/LinuxUncompressingError
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+The important thing about being a leader is not being right or wrong,
+but being *certain*.                    - Terry Pratchett, _Truckers_
