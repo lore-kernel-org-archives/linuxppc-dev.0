@@ -1,11 +1,22 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17197.65270.548340.377011@cargo.ozlabs.ibm.com>
-Date: Mon, 19 Sep 2005 09:57:42 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
-Subject: Git tree for the 32/64 merge
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 16A8268339
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Sep 2005 10:44:22 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Olaf Hering <olh@suse.de>
+In-Reply-To: <20050826113827.GA25134@suse.de>
+References: <20050824115452.GA29148@suse.de>
+	<1124922771.5159.134.camel@gaston> <20050825045108.GA19792@suse.de>
+	<1124946481.7906.8.camel@gaston> <20050825051528.GB19792@suse.de>
+	<1124948071.7907.10.camel@gaston>  <20050826113827.GA25134@suse.de>
+Content-Type: text/plain
+Date: Mon, 19 Sep 2005 10:44:22 +1000
+Message-Id: <1127090662.4502.12.camel@gaston>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: AC Power handling broken for desktops
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,16 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I have created a git tree on kernel.org as a place to accumulate the
-patches for the ppc32/ppc64 merge.  It is at:
+On Fri, 2005-08-26 at 13:38 +0200, Olaf Hering wrote:
+>  On Thu, Aug 25, Benjamin Herrenschmidt wrote:
+> 
+> > On Thu, 2005-08-25 at 07:15 +0200, Olaf Hering wrote:
+> > >  On Thu, Aug 25, Benjamin Herrenschmidt wrote:
+> > > 
+> > > > Not sure :) I don't fully know how to decode those power things in the
+> > > > device-tree... There are bits in darwin tho.
+> > > 
+> > > Maybe just check for !PowerBook and force PMU_PWR_AC_PRESENT in this case.
+> > 
+> > Yah, you can check that with pmac_feature, there is a "mobile" flag.
+> 
+> Its not obvious how to get to that flag. Is this patch acceptable?
+> No batteries present should mean AC Power == 1.
+> 
+>  drivers/macintosh/apm_emu.c |    8 ++++++--
+>  1 files changed, 6 insertions(+), 2 deletions(-)
 
-rsync://rsync.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc-merge.git
+Looks good to me.
 
-It doesn't include the objects in Linus' tree; instead it has an
-objects/info/alternates file pointing to Linus' tree.
-
-This tree contains all the patches I found in a scan through my inbox
-that relate to the merge and haven't already gone to Linus.  If you
-have a patch that should go in, please resend it.
-
-Paul.
+Ben
