@@ -1,29 +1,28 @@
-Return-Path: <peter.fercher@scs.ch>
-Received: from mail.scs.ch (mail.scs.ch [212.254.229.5])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 687D668354
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id DBE5D68333
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 19 Sep 2005 19:24:14 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by mail.scs.ch (8.12.11/8.12.11) with ESMTP id j8J9GE32003044
-	for <linuxppc-embedded@ozlabs.org>; Mon, 19 Sep 2005 11:16:14 +0200
-Received: from mail.scs.ch ([127.0.0.1])
-	by localhost (mail.scs.ch [127.0.0.1]) (amavisd-new,
-	port 10024) with LMTP id 02394-05 for <linuxppc-embedded@ozlabs.org>;
-	Mon, 19 Sep 2005 11:16:11 +0200 (CEST)
-Received: from gull (219.scs.ch [212.254.229.219])
-	by mail.scs.ch (8.12.11/8.12.11) with ESMTP id j8J9G87D003021
-	for <linuxppc-embedded@ozlabs.org>; Mon, 19 Sep 2005 11:16:08 +0200
-From: "Peter Fercher" <peter.fercher@scs.ch>
-To: "linux-ppc-embedded" <linuxppc-embedded@ozlabs.org>
-Date: Mon, 19 Sep 2005 11:16:08 +0200
-Message-ID: <002e01c5bcfa$c500d860$dbe5fed4@scsad.scs.ch>
+	Mon, 19 Sep 2005 19:55:44 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by protonic.prtnl (Postfix) with ESMTP id A595B29EC9
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 19 Sep 2005 11:52:33 +0200 (CEST)
+Received: from protonic.prtnl ([127.0.0.1])
+	by localhost (protonic [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
+	id 16948-01 for <linuxppc-embedded@ozlabs.org>;
+	Mon, 19 Sep 2005 11:52:33 +0200 (CEST)
+Received: from linux.local (linux.prtnl [192.168.1.97])
+	by protonic.prtnl (Postfix) with ESMTP id 0374329EC6
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 19 Sep 2005 11:52:33 +0200 (CEST)
+From: David Jander <david.jander@protonic.nl>
+To: linuxppc-embedded@ozlabs.org
+Date: Mon, 19 Sep 2005 11:55:36 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Subject: kernel 2.6.12.2,
-	octobus ppc405EP: GUNZIP ERROR - must RESET board to recover
+  charset="us-ascii"
+Message-Id: <200509191155.36540.david.jander@protonic.nl>
+Subject: Which way to store log in flash on mpc8xx?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,79 +33,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-hi,
 
-trying to run a 2.6.12.2 on a octubus board i get.. (console print =
-follows)
+Hi all,
 
+I am looking for a reliable way to store logfiles in flash. The logfiles are 
+written by syslogd.
+The problem is that I am running on a MPC8xx processor, and kernel 2.6 is not 
+quite there yet for that processor, so I have to stick with 2.4.
+Kernel of choice seems to be denx linuxppc_2_4_devel, but I cannot trust the 
+version of jffs2 used in that kernel anymore. Somtimes gc.c crashes with a 
+BUG() in line 139, and sometimes processes are frozen for a looong time 
+waiting for GC. I have debugged that problem a little bit, and definitely, 
+the FLASH access works ok, and the chip is new. No CRC- or read-errors, but 
+still gc.c crashes.
+The version of mtd/jffs2 drivers in that kernel seem to be from march/2005 cvs 
+code, but when I read the following, I get even more scared:
+http://www.linux-mtd.infradead.org/source.html#kernelversions
 
+So, I need something different. jffs (1) maybe ?
+This must be a very common task (to store logfiles in flash), but I just can't 
+seem to find the right way to do it.
 
-U-Boot 1.1.0 (May 11 2004 - 12:01:24)
+Any advice is highly appreciated.
 
-=20
+Sincerely,
 
-CPU:   IBM PowerPC 405EP Rev. B at 133.333 MHz (PLB=3D133, OPB=3D66, =
-EBC=3D33 MHz)
-
-       IIC Boot EEPROM disabled
-
-       PCI async ext clock used, internal PCI arbiter enabled
-
-       16 kB I-Cache 16 kB D-Cache
-
-OCTOBUS Board: ### No HW ID - assuming OCTOBUS HPPC405
-
-I2C:   ready
-
-DRAM:  32 MB
-
-FLASH:  4 MB
-
-Hit any key to stop autoboot:  0
-
-ENET Speed is 100 Mbps - FULL duplex connection
-
-BOOTP broadcast 1
-
-TFTP from server 192.168.1.1; our IP address is 192.168.1.2
-
-Filename 'uImage-2.6.12.2'.
-
-Load address: 0x100000
-
-Loading: =
-#################################################################
-
-         =
-#################################################################
-
-         ##################################################
-
-done
-
-Bytes transferred =3D 919248 (e06d0 hex)
-
-## Booting image at 00100000 ...
-
-   Image Name:   Linux-2.6.12.2
-
-   Created:      2005-09-19   9:03:08 UTC
-
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-
-   Data Size:    919184 Bytes =3D 897.6 kB
-
-   Load Address: 00000000
-
-   Entry Point:  00000000
-
-   Verifying Checksum ... OK
-
-   Uncompressing Kernel Image ... Error: inflate() returned -3
-
-GUNZIP ERROR - must RESET board to recover.
-
-
-
-any hints ?
-cheers, peter
+-- 
+David Jander
+Protonic Holland.
