@@ -1,20 +1,19 @@
-Return-Path: <sr@denx.de>
-Received: from natfrord.rzone.de (natfrord.rzone.de [81.169.145.161])
-	by ozlabs.org (Postfix) with ESMTP id DBBB268344
+Return-Path: <peter.fercher@scs.ch>
+Received: from mail.scs.ch (mail.scs.ch [212.254.229.5])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DD4BF6832B
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 19 Sep 2005 21:20:18 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-embedded@ozlabs.org
-Date: Mon, 19 Sep 2005 13:20:09 +0200
-References: <ea43f4f9050825183121655ba2@mail.gmail.com>
-	<200509151803.15301.sr@denx.de> <20050915092555.A27452@cox.net>
-In-Reply-To: <20050915092555.A27452@cox.net>
+	Mon, 19 Sep 2005 23:37:28 +1000 (EST)
+From: "Peter Fercher" <peter.fercher@scs.ch>
+To: <benh@kernel.crashing.org>
+Date: Mon, 19 Sep 2005 15:37:07 +0200
+Message-ID: <004101c5bd1f$3d1b91e0$dbe5fed4@scsad.scs.ch>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_p7pLDT7JVysd4gl"
-Message-Id: <200509191320.09661.sr@denx.de>
-Subject: [PATCH] ppc32: cleanup AMCC PPC44x eval boards to better support
-	U-Boot
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0042_01C5BD30.00A461E0"
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: emac driver broken in 2.6.12.2 ?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,262 +24,129 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---Boundary-00=_p7pLDT7JVysd4gl
+This is a multi-part message in MIME format.
+
+------=_NextPart_000_0042_01C5BD30.00A461E0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-Cleanup PPC440 eval boards (bamboo, ebony, luan and ocotea) to better
-support U-Boot as bootloader.
+hi,
+ 
+i have problems with the IBM EMAC with 2.6.12.2 (the driver worked with
+2.4.25)
+running on ppc405EP octobus board. Cross compiled on x86 using the eldk-3.1
+toolchain
+ 
+any hints ?
+ 
+emac: IBM EMAC Ethernet driver, version 2.0
 
-Signed-off-by: Stefan Roese <sr@denx.de>
+Maintained by Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Best regards,
-Stefan
+eth0: IBM emac, MAC 00:00:00:00:00:00
 
---Boundary-00=_p7pLDT7JVysd4gl
-Content-Type: text/x-diff; charset="iso-8859-1"; name="ppc44x_u-boot.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="ppc44x_u-boot.patch"
+eth0: Found Generic MII PHY (0x00)
 
-[PATCH] ppc32: cleanup AMCC PPC44x eval boards to better support U-Boot
+eth1: IBM emac, MAC 00:00:00:00:00:00
 
-Cleanup PPC440 eval boards (bamboo, ebony, luan and ocotea) to better
-support U-Boot as bootloader.
+eth1: Found Generic MII PHY (0x01)
 
-Signed-off-by: Stefan Roese <sr@denx.de>
+ 
+cheers, peter
 
----
-commit bd7c0c4a9e3dac8549cc0c557ab809d4d0785005
-tree cb6578ee063c0975a1e951785d6ab18c921d8e62
-parent d8ac10639b6a1ed900efbee38c18baaca31e64dc
-author Stefan Roese <sr@denx.de> Mon, 19 Sep 2005 13:11:52 +0200
-committer Stefan Roese <sr@denx.de> Mon, 19 Sep 2005 13:11:52 +0200
+---------------------------------------------------------
+Supercomputing Systems AG    phone:  +41 (0)43 456 16 31
+Peter Fercher                fax:    +41 (0)43 456 16 10
+Technoparkstrasse 1          email:  peter.fercher@scs.ch
+CH-8005 Zuerich              url:    http://www.scs.ch <http://www.scs.ch/>
 
- arch/ppc/platforms/4xx/bamboo.c |   14 ++------------
- arch/ppc/platforms/4xx/ebony.c  |   13 ++-----------
- arch/ppc/platforms/4xx/luan.c   |   13 ++-----------
- arch/ppc/platforms/4xx/ocotea.c |   31 +++++++++++--------------------
- arch/ppc/syslib/ibm44x_common.c |   35 ++++++++++++++++++++++++++++++++++-
- arch/ppc/syslib/ibm44x_common.h |    3 ++-
- 6 files changed, 53 insertions(+), 56 deletions(-)
+---------------------------------------------------------
+  
 
-diff --git a/arch/ppc/platforms/4xx/bamboo.c b/arch/ppc/platforms/4xx/bamboo.c
---- a/arch/ppc/platforms/4xx/bamboo.c
-+++ b/arch/ppc/platforms/4xx/bamboo.c
-@@ -52,7 +52,7 @@
- #include <syslib/gen550.h>
- #include <syslib/ibm440gx_common.h>
  
--bd_t __res;
-+extern bd_t __res;
- 
- static struct ibm44x_clocks clocks __initdata;
- 
-@@ -426,17 +426,7 @@ bamboo_setup_arch(void)
- void __init platform_init(unsigned long r3, unsigned long r4,
- 		unsigned long r5, unsigned long r6, unsigned long r7)
- {
--	parse_bootinfo(find_bootinfo());
--
--	/*
--	 * If we were passed in a board information, copy it into the
--	 * residual data area.
--	 */
--	if (r3)
--		__res = *(bd_t *)(r3 + KERNELBASE);
--
--
--	ibm44x_platform_init();
-+	ibm44x_platform_init(r3, r4, r5, r6, r7);
- 
- 	ppc_md.setup_arch = bamboo_setup_arch;
- 	ppc_md.show_cpuinfo = bamboo_show_cpuinfo;
-diff --git a/arch/ppc/platforms/4xx/ebony.c b/arch/ppc/platforms/4xx/ebony.c
---- a/arch/ppc/platforms/4xx/ebony.c
-+++ b/arch/ppc/platforms/4xx/ebony.c
-@@ -55,7 +55,7 @@
- #include <syslib/gen550.h>
- #include <syslib/ibm440gp_common.h>
- 
--bd_t __res;
-+extern bd_t __res;
- 
- static struct ibm44x_clocks clocks __initdata;
- 
-@@ -318,16 +318,7 @@ ebony_setup_arch(void)
- void __init platform_init(unsigned long r3, unsigned long r4,
- 		unsigned long r5, unsigned long r6, unsigned long r7)
- {
--	parse_bootinfo(find_bootinfo());
--
--	/*
--	 * If we were passed in a board information, copy it into the
--	 * residual data area.
--	 */
--	if (r3)
--		__res = *(bd_t *)(r3 + KERNELBASE);
--
--	ibm44x_platform_init();
-+	ibm44x_platform_init(r3, r4, r5, r6, r7);
- 
- 	ppc_md.setup_arch = ebony_setup_arch;
- 	ppc_md.show_cpuinfo = ebony_show_cpuinfo;
-diff --git a/arch/ppc/platforms/4xx/luan.c b/arch/ppc/platforms/4xx/luan.c
---- a/arch/ppc/platforms/4xx/luan.c
-+++ b/arch/ppc/platforms/4xx/luan.c
-@@ -53,7 +53,7 @@
- #include <syslib/ibm440gx_common.h>
- #include <syslib/ibm440sp_common.h>
- 
--bd_t __res;
-+extern bd_t __res;
- 
- static struct ibm44x_clocks clocks __initdata;
- 
-@@ -356,16 +356,7 @@ luan_setup_arch(void)
- void __init platform_init(unsigned long r3, unsigned long r4,
- 		unsigned long r5, unsigned long r6, unsigned long r7)
- {
--	parse_bootinfo(find_bootinfo());
--
--	/*
--	 * If we were passed in a board information, copy it into the
--	 * residual data area.
--	 */
--	if (r3)
--		__res = *(bd_t *)(r3 + KERNELBASE);
--
--	ibm44x_platform_init();
-+	ibm44x_platform_init(r3, r4, r5, r6, r7);
- 
- 	ppc_md.setup_arch = luan_setup_arch;
- 	ppc_md.show_cpuinfo = luan_show_cpuinfo;
-diff --git a/arch/ppc/platforms/4xx/ocotea.c b/arch/ppc/platforms/4xx/ocotea.c
---- a/arch/ppc/platforms/4xx/ocotea.c
-+++ b/arch/ppc/platforms/4xx/ocotea.c
-@@ -53,7 +53,7 @@
- #include <syslib/gen550.h>
- #include <syslib/ibm440gx_common.h>
- 
--bd_t __res;
-+extern bd_t __res;
- 
- static struct ibm44x_clocks clocks __initdata;
- 
-@@ -287,6 +287,15 @@ ocotea_setup_arch(void)
- 
- 	ibm440gx_tah_enable();
- 
-+	/*
-+	 * Determine various clocks.
-+	 * To be completely correct we should get SysClk
-+	 * from FPGA, because it can be changed by on-board switches
-+	 * --ebs
-+	 */
-+	ibm440gx_get_clocks(&clocks, 33333333, 6 * 1843200);
-+	ocp_sys_info.opb_bus_freq = clocks.opb;
-+
- 	/* Setup TODC access */
- 	TODC_INIT(TODC_TYPE_DS1743,
- 			0,
-@@ -325,25 +334,7 @@ static void __init ocotea_init(void)
- void __init platform_init(unsigned long r3, unsigned long r4,
- 		unsigned long r5, unsigned long r6, unsigned long r7)
- {
--	parse_bootinfo(find_bootinfo());
--
--	/*
--	 * If we were passed in a board information, copy it into the
--	 * residual data area.
--	 */
--	if (r3)
--		__res = *(bd_t *)(r3 + KERNELBASE);
--
--	/*
--	 * Determine various clocks.
--	 * To be completely correct we should get SysClk
--	 * from FPGA, because it can be changed by on-board switches
--	 * --ebs
--	 */
--	ibm440gx_get_clocks(&clocks, 33333333, 6 * 1843200);
--	ocp_sys_info.opb_bus_freq = clocks.opb;
--
--	ibm44x_platform_init();
-+	ibm44x_platform_init(r3, r4, r5, r6, r7);
- 
- 	ppc_md.setup_arch = ocotea_setup_arch;
- 	ppc_md.show_cpuinfo = ocotea_show_cpuinfo;
-diff --git a/arch/ppc/syslib/ibm44x_common.c b/arch/ppc/syslib/ibm44x_common.c
---- a/arch/ppc/syslib/ibm44x_common.c
-+++ b/arch/ppc/syslib/ibm44x_common.c
-@@ -27,9 +27,14 @@
- #include <asm/time.h>
- #include <asm/ppc4xx_pic.h>
- #include <asm/param.h>
-+#include <asm/bootinfo.h>
-+#include <asm/ppcboot.h>
- 
- #include <syslib/gen550.h>
- 
-+/* Global Variables */
-+bd_t __res;
-+
- phys_addr_t fixup_bigphys_addr(phys_addr_t addr, phys_addr_t size)
- {
- 	phys_addr_t page_4gb = 0;
-@@ -150,8 +155,36 @@ static unsigned long __init ibm44x_find_
- 	return mem_size;
- }
- 
--void __init ibm44x_platform_init(void)
-+void __init ibm44x_platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-+				 unsigned long r6, unsigned long r7)
- {
-+	parse_bootinfo(find_bootinfo());
-+
-+	/*
-+	 * If we were passed in a board information, copy it into the
-+	 * residual data area.
-+	 */
-+	if (r3)
-+		__res = *(bd_t *)(r3 + KERNELBASE);
-+
-+#if defined(CONFIG_BLK_DEV_INITRD)
-+	/*
-+	 * If the init RAM disk has been configured in, and there's a valid
-+	 * starting address for it, set it up.
-+	 */
-+	if (r4) {
-+		initrd_start = r4 + KERNELBASE;
-+		initrd_end = r5 + KERNELBASE;
-+	}
-+#endif  /* CONFIG_BLK_DEV_INITRD */
-+
-+	/* Copy the kernel command line arguments to a safe place. */
-+
-+	if (r6) {
-+		*(char *) (r7 + KERNELBASE) = 0;
-+		strcpy(cmd_line, (char *) (r6 + KERNELBASE));
-+	}
-+
- 	ppc_md.init_IRQ = ppc4xx_pic_init;
- 	ppc_md.find_end_of_memory = ibm44x_find_end_of_memory;
- 	ppc_md.restart = ibm44x_restart;
-diff --git a/arch/ppc/syslib/ibm44x_common.h b/arch/ppc/syslib/ibm44x_common.h
---- a/arch/ppc/syslib/ibm44x_common.h
-+++ b/arch/ppc/syslib/ibm44x_common.h
-@@ -36,7 +36,8 @@ struct ibm44x_clocks {
- };
- 
- /* common 44x platform init */
--void ibm44x_platform_init(void) __init;
-+void ibm44x_platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-+			  unsigned long r6, unsigned long r7) __init;
- 
- /* initialize decrementer and tick-related variables */
- void ibm44x_calibrate_decr(unsigned int freq) __init;
 
---Boundary-00=_p7pLDT7JVysd4gl--
+------=_NextPart_000_0042_01C5BD30.00A461E0
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<TITLE>Message</TITLE>
+
+<META content=3D"MSHTML 6.00.2800.1515" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D173253413-19092005>hi,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D173253413-19092005></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D173253413-19092005>i have =
+problems with=20
+the IBM EMAC with 2.6.12.2 (the driver worked=20
+with&nbsp;2.4.25)</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN =
+class=3D173253413-19092005>running on ppc405EP=20
+octobus board. Cross compiled on x86 using the eldk-3.1=20
+toolchain</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D173253413-19092005></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D173253413-19092005>any =
+hints=20
+?</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>emac: IBM EMAC Ethernet driver, version =
+
+2.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+=20
+<BR>Maintained by Benjamin Herrenschmidt &lt;<A=20
+href=3D"mailto:benh@kernel.crashing.org">benh@kernel.crashing.org</A>&gt;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;=20
+<BR>eth0: IBM emac, MAC=20
+00:00:00:00:00:00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20
+<BR>eth0: Found Generic MII PHY=20
+(0x00)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20
+<BR>eth1: IBM emac, MAC=20
+00:00:00:00:00:00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20
+<BR>eth1: Found Generic MII PHY=20
+(0x01)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20
+</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><SPAN class=3D173253413-19092005><FONT face=3DArial =
+size=3D2>cheers,=20
+peter</FONT></SPAN></DIV>
+<P><FONT=20
+size=3D2>---------------------------------------------------------<BR>Sup=
+ercomputing=20
+Systems AG&nbsp;&nbsp;&nbsp; phone:&nbsp; +41 (0)43 456 16 31<BR>Peter=20
+Fercher&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;=20
+fax:&nbsp;&nbsp;&nbsp; +41 (0)43 456 16 10<BR>Technoparkstrasse=20
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; email:&nbsp;=20
+peter.fercher@scs.ch<BR>CH-8005=20
+Zuerich&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;=20
+url:&nbsp;&nbsp;&nbsp; <A href=3D"http://www.scs.ch/"=20
+target=3D_blank>http://www.scs.ch</A>&nbsp;<BR>--------------------------=
+-------------------------------<BR>&nbsp;</FONT>=20
+</P>
+<DIV>&nbsp;</DIV></BODY></HTML>
+
+------=_NextPart_000_0042_01C5BD30.00A461E0--
