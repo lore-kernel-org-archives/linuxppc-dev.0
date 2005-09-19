@@ -1,16 +1,19 @@
-Return-Path: <earl.olsen@dilithiumnetworks.com>
-Received: from DHOST001-17.DEX001.intermedia.net (dhost001-17.intermedia.net
-	[64.78.61.64]) by ozlabs.org (Postfix) with ESMTP id D8C946829E
+Return-Path: <wd@denx.de>
+Received: from mailout05.sul.t-online.com (mailout05.sul.t-online.com
+	[194.25.134.82]) by ozlabs.org (Postfix) with ESMTP id D546268341
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 20 Sep 2005 05:05:48 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C5BD4B.75723892"
-Date: Mon, 19 Sep 2005 11:53:44 -0700
-Message-ID: <B8561865DB141248943E2376D0E85215014202FA@DHOST001-17.DEX001.intermedia.net>
-From: "Earl Olsen" <earl.olsen@dilithiumnetworks.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: GT64260_eth (Ethernet) Driver
+	Tue, 20 Sep 2005 05:21:29 +1000 (EST)
+To: David Jander <david.jander@protonic.nl>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 19 Sep 2005 19:26:12 +0200."
+	<200509191926.12736.david.jander@protonic.nl>
+Date: Mon, 19 Sep 2005 21:21:01 +0200
+Sender: wd@denx.de
+Message-Id: <20050919192101.C6267353BF3@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Which way to store log in flash on mpc8xx? 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,114 +24,63 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+In message <200509191926.12736.david.jander@protonic.nl> you wrote:
+> 
+> What happened: System boots, all fs are mounted. The first app that writes 
+> something to the log-partition (in this case a config file that is 
+> overwritten) causes the GC thread for that partition to crash with a BUG() in 
+> line 139 of gc.c, and the application freezes forever. Since GC is dead, all 
+> further write-accesses to that partition also hang forever.
 
-------_=_NextPart_001_01C5BD4B.75723892
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Are you 100% sure your system is stable and wihout any memory errors?
+Never seen any other erros or crashes?
 
+> My big question: Is it at all possible that gc.c comes to that BUG() in line 
+> 139 because of anything other than a bug in jffs2-code?
 
-Dieu:
+Yes, for example when your  SDRAM  initialization  is  broken  and/or
+other memory corruption happens.
 
-I saw that you had a problem with uncachedPages in gt64260_eth.c.
-I'm having the same problem you describe.  Did you ever get this
-resolved?
+> I mean, if hardware really was a problem, then I should also get at least 
+> CRC-errors from jffs2, shouldn't I? IMHO at least, jffs2 should be robust 
+> enough to not crash on flash-errors, shouldn't it?
 
-Thanks for any help
+I don't think it's a flash error. If there is data  corruption,  then
+it's more likely the SDRAM.
 
+> The logs of almost all files in fs/jffs2/ which I have say that the actual 
+> version corresponds to the CVS-snapshot of March 13, 2005, and that the 
+> previous version of April 2004 is broken.
+> Which files were modified _after_ March 13, 2005? 
+> (A hint to what command options or tools to use to browse cvs-logs more easily 
+> at this point is appreciated... I am using cervisia).
 
---
-Earl Olsen
-Senior Software Engineer
-Dilithium Networks, Inc.
-TEL:+1 707-792-3925
-earl.olsen@dilithiumnetworks.com
-www.dilithiumnetworks.com
+cvsps is really helpful, see http://www.cobite.com/cvsps/cvsps-2.1.tar.gz
 
-Communications for a Borderless World
+Also there are web interfaces to our kernel tree;
+for CVS see
+	http://81.169.171.120/cgi-bin/cvsweb/
+for git see
+	http://81.169.171.120/cgi-bin/gitweb.cgi
 
-This electronic message from Dilithium Networks contains information
-which may be privileged or confidential. It is intended to be for the
-use of the recipient(s) named above. If you are not the intended
-recipient please return the message to the sender by replying to it and
-then delete the message from your computer. Dilithium Networks shall not
-be held liable to any person resulting from the use of any information
-contained in this e-mail and shall not be liable to any person who acts
-or omits to do anything in reliance upon it. Dilithium Networks does not
-accept responsibility for changes made to this message after it was
-sent.
+Make sure to use at least the version tagged as LABEL_2005_05_09_1245
+or later.
 
+> I know about the problems jffs2 has with logfiles and alikes. I am still 
+> thinking about what would be the most robust way of coping with this, and 
+> until now, oversized partitions with log-rotation on size seems to do the 
+> trick. I don't want to loose log-data on power-loss so I don't feel so 
+> comfortable with buffering much of it in RAM.
 
-------_=_NextPart_001_01C5BD4B.75723892
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+The problem with your approach is the number of  erase  cycles  which
+will cause the flash to die sooner than you may want.
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7226.0">
-<TITLE>GT64260_eth (Ethernet) Driver</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
-<BR>
+Best regards,
 
-<P><FONT SIZE=3D2 FACE=3D"Courier New">Dieu:</FONT>
-</P>
+Wolfgang Denk
 
-<P><FONT SIZE=3D2 FACE=3D"Courier New">I saw that you had a problem with =
-uncachedPages in gt64260_eth.c.</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Courier New">I'm having the same problem you =
-describe.&nbsp; Did you ever get this resolved?</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Courier New">Thanks for any help</FONT>
-</P>
-<BR>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">--</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">Earl Olsen</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">Senior Software Engineer</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">Dilithium Networks</FONT><FONT =
-SIZE=3D2 FACE=3D"Arial">, Inc.</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">T</FONT><FONT SIZE=3D2 =
-FACE=3D"Arial">EL</FONT><FONT SIZE=3D2 FACE=3D"Arial">:+1 =
-707-792-3925</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">e</FONT><FONT SIZE=3D2 =
-FACE=3D"Arial">arl.</FONT><FONT SIZE=3D2 FACE=3D"Arial">o</FONT><FONT =
-SIZE=3D2 FACE=3D"Arial">lsen@dilithiumnetworks.com</FONT>
-
-<BR><A HREF=3D"file://www.dilithiumnetworks.com"><U><FONT =
-COLOR=3D"#0000FF" SIZE=3D2 =
-FACE=3D"Arial">www.dilithiumnetworks.com</FONT></U></A>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Communications for a Borderless =
-World</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">This electronic message from Dilithium =
-Networks contains information which may be privileged or confidential. =
-It is intended to be for the use of the recipient(s) named above. If you =
-are not the intended recipient please return the message to the sender =
-by replying to it and then delete the message from your computer. =
-Dilithium Networks shall not be held liable to any person resulting from =
-the use of any information contained in this e-mail and shall not be =
-liable to any person who acts or omits to do anything in reliance upon =
-it. Dilithium Networks does not accept responsibility for changes made =
-to this message after it was sent.</FONT></P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C5BD4B.75723892--
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+A dog always bit deepest on the veterinary hand.
+                                    - Terry Pratchett, _Wyrd Sisters_
