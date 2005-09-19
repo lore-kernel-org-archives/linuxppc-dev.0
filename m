@@ -1,21 +1,16 @@
-Return-Path: <sr@denx.de>
-Received: from natsmtp00.rzone.de (natsmtp00.rzone.de [81.169.145.165])
-	by ozlabs.org (Postfix) with ESMTP id 107536830E
+Return-Path: <frannk_m1@yahoo.com>
+Received: from web32202.mail.mud.yahoo.com (web32202.mail.mud.yahoo.com
+	[68.142.207.133]) by ozlabs.org (Postfix) with SMTP id 0A284682E5
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 20 Sep 2005 01:06:45 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: Matt Porter <mporter@kernel.crashing.org>
-Date: Mon, 19 Sep 2005 17:06:23 +0200
-References: <ea43f4f9050825183121655ba2@mail.gmail.com>
-	<200509191302.15462.sr@denx.de> <20050919065942.A25356@cox.net>
-In-Reply-To: <20050919065942.A25356@cox.net>
+	Tue, 20 Sep 2005 01:15:58 +1000 (EST)
+Message-ID: <20050919150917.19378.qmail@web32202.mail.mud.yahoo.com>
+Date: Mon, 19 Sep 2005 08:09:17 -0700 (PDT)
+From: Frank <frannk_m1@yahoo.com>
+To: David Jander <david.jander@protonic.nl>, linuxppc-embedded@ozlabs.org
+In-Reply-To: <200509191155.36540.david.jander@protonic.nl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200509191706.24298.sr@denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] ppc32: cleanup AMCC PPC4xx eval boards to better
-	support U-Boot
+Content-Type: text/plain; charset=iso-8859-1
+Subject: Re: Which way to store log in flash on mpc8xx?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,23 +21,58 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Matt,
+--- David JandJandervidaviddjandertprotonic nlote:
 
-On Monday 19 September 2005 15:59, Matt Porter wrote:
-> On Mon, Sep 19, 2005 at 01:02:14PM +0200, Stefan Roese wrote:
-> > Just to be sure: The 44x boot-wrapper approach you mention is
-> > "boot/simple/pibs.c"?
+> 
+> Hi all,
+> 
+> I am looking for a reliable way to store logflogfilesflash.
+> The logflogfiles 
+> written by syslsyslogd The problem is that I am running on a
+MPC8MPCprocessor, and
+> kernel 2.6 is not 
+> quite there yet for that processor, so I have to stick with
+> 2.4.
+> Kernel of choice seems to be denxdenxulinuxppc_devedevelt I
+> cannot trust the 
+> version of jffsjffsed in that kernel anymore. SomtSomtimescgc>
+crashes with a 
+> BUG() in line 139, and sometimes processes are frozen for a
+> looolooonge 
+> waiting for GC. GChave debugged that problem a little bit, and
+> definitely, 
+> the FLASH access works ok, okd the chip is new. No CRC-CRC
+> read-errors, but 
+> still gc.cgcrashes.
+> The version of mtd/mtdsjffsivers in that kernel seem to be
+> from march/2005 cvs cvs code, but when I read the following, I
+get even more scared:
 >
-> Yes, there's both boot/simple/pibs.c and boot/simple/openbios.c that
-> were created so we could have the default firmware and u-boot use the
-> same kernel build.
+httphttpww.wwwulinux.mtdrinfradead/source.htmlhtmlnkernelversions
+> So, I need something different. jffsjffs maybe ?
+> This must be a very common task (to store logflogfilesflash),
+> but I just can't 
+> seem to find the right way to do it.
+> 
+> Any advice is highly appreciated.
+> 
+> Sincerely,
+> 
+> -- 
+> David JandJanderProtProtonicland.
 
-Yes, that's what I thought. But Eugene mentioned, that he boots vmlinux 
-without any boot-wrapper on the OpenBIOS targets (except Ebony probably). You 
-would loose this possibility, if I add this wrapper and switch from OpenBIOS 
-to U-Boot bd_info struct in the kernel.
+I'm using JFFSJFFS a 860 based board (to store log files
+amonamongster things) and haven't seen any of the problems
+you're expeexperiencing I were you, I would double check my
+configuration settings...
+> _______________________________________________
+> LinuLinuxppcedded mailing list
+> LinuLinuxppcedded@ozlaozlabs
+> httphttpszlaozlabs/mailman/listlistinfoulinuxppcedded
+> 
 
-Did I miss something here? How should I proceed?
 
-Best regards,
-Stefan
+		
+__________________________________ 
+Yahoo! Mail - PC Magazine Editors' Choice 2005 
+http://mail.yahoo.com
