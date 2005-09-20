@@ -1,17 +1,17 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 7926168308
+Return-Path: <eli.brin@rokonet.co.il>
+Received: from rokonet-e.ROKONET_TREE.LOCAL (unknown [192.114.177.4])
+	by ozlabs.org (Postfix) with ESMTP id 914B66830C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Sep 2005 05:14:58 +1000 (EST)
+	Wed, 21 Sep 2005 05:24:31 +1000 (EST)
+Message-ID: <023EF71CB65AA949A2C510353690C86B5BF2C3@rokonet-e.rokonet_tree.local>
+From: Eli Brin <eli.brin@rokonet.co.il>
+To: David Jander <david.jander@protonic.nl>
+Date: Tue, 20 Sep 2005 22:25:33 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Date: Tue, 20 Sep 2005 14:14:56 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B859465@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <jeff@theptrgroup.com>
+	charset="ISO-8859-1"
 Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: wait_event and interrupts
+Subject: RE: Which way to store log in flash on mpc8xx? 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,23 +22,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Jeff Angielski [mailto:jeff@theptrgroup.com]=20
-> Sent: Tuesday, September 20, 2005 13:40
-> On Tue, 2005-09-20 at 12:56 -0500, Rune Torgersen wrote:
->=20
-> > Is there a better way of doing this?
->=20
-> If you *must* share the variable between interrupt and non-interrupt
-> context, you must mutex it in an interrupt safe way.  The use of
-> spin_lock_irqsave() comes to mind for you read function.
+Hello David,
 
-The shared variable is an int, which should be atomic to access anyways.
-Someone else told me to try to set the shared variable to volatile.
+Wolfgang wrote:
+>Yes, there is. Run the system with root file system mounted over NFS,
+>and then put some load on the system, like  by  compiling  the  linux
+>kernel  on  the  target.
 
-> But you are going to have other problems with this approach anyways
-> since you "appear" to be assuming a one-to-one relationship=20
-> between your
-> interrupt handler and the read function.  Is that really true?
-Yes. The read function starts the hardware, and the hardware responds
-with an interrupt when it's done.
+If you want to have some fun, and stress the platform, compile and run (via
+NFS) Crafty, an open source Linux chess porgram.
+
+We did so on our 8xx target and it plays very well...
+
+Best regards,
+Eli Brin
