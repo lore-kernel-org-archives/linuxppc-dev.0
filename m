@@ -1,18 +1,23 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id CB2D66836C
+Return-Path: <stevan@iritel.com>
+Received: from iritel.iritel.bg.ac.yu (iritel.iritel.bg.ac.yu [193.203.18.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5FCB6682F7
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 20 Sep 2005 19:56:33 +1000 (EST)
-Message-ID: <432FDCCF.30804@ru.mvista.com>
-Date: Tue, 20 Sep 2005 13:56:31 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-MIME-Version: 1.0
-To: "Landau, Bracha" <BLandau@nds.com>
-References: <B621B955FA9FBB4C83F9724972F4DD1901CB5421@ILEX2.IL.NDS.COM>
-In-Reply-To: <B621B955FA9FBB4C83F9724972F4DD1901CB5421@ILEX2.IL.NDS.COM>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: 8250 serial driver on MPC8272ADS board
+	Wed, 21 Sep 2005 01:21:57 +1000 (EST)
+Received: from iritel (root@localhost)
+	by iritel.iritel.bg.ac.yu (8.13.1/8.13.1) with SMTP id j8KFFuFS017032
+	for <linuxppc-embedded@ozlabs.org>; Tue, 20 Sep 2005 17:15:56 +0200
+Received: from [193.203.19.118] (stevan [193.203.19.118])
+	by iritel.iritel.bg.ac.yu (8.13.1/8.13.1) with ESMTP id j8KFFuSo017027
+	for <linuxppc-embedded@ozlabs.org>; Tue, 20 Sep 2005 17:15:56 +0200
+From: Stevan Ignjatovic <stevan@iritel.com>
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Message-Id: <1127229408.3932.40.camel@stevan.iritel.co.yu>
+Mime-Version: 1.0
+Date: Tue, 20 Sep 2005 17:16:48 +0200
+Subject: MPC8250 MCC operating on 2-bit channels
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,14 +28,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Landau, Bracha wrote:
-> I am running linux kernel 2.6.13 on a MPC8272ADS board. When I compile the kernel with the 8250 serial driver, the kernel crashes when loading it. It crashes also if compiled as a module and insmod'ed later.
-> Has anyone had experience with this?
+Hello,
 
-That's because this board does not have 8250 serial, you should use 
-CPM_UART(SCC1 and SCC4) instead (take a look at the 
-arch/ppc/configs/ads8272_defconfig)
+My problem is concerned with the multi channel controller MCC2 on
+MPC8250. Its task is to relay messages from D channels between Local
+Exchange and ISDN BRA subscribers. All active D channels (up to 128) are
+aggregated into single stream tied directly to the TDMc2, ie. both
+TDMc2_Rx and TDMc2_Tx are divided into 2-bit channels. 2.048MHz clock
+and 8KHz frame pulse are generated externaly and are connected to
+corresponding processor pins (common pins for receive and transmit
+sections).
 
--- 
-Sincerely,
-Vitaly
+When tested with internal loopback (SI2MR[SDM2]=0b10) everything works
+fine, ie. for example the message we send through channel 0 is received
+correctly on channel 0. However, it doesn't work in real application.
+
+The debugging process led me to this simple test. I connected TDMc2_Rx
+and TDMc2_Tx to FPGA in which I implemented the delay of N frames (N x
+125us, since the frame pulse is 8KHz), such that for N=0 I have simple
+external loopback, for N=1 delay of one entire frame, and so on. I was
+sending messages through channel 0 (it is the only channel I actually
+started). The results I obtained were very strange. For N=0, N=4, N=8
+the received message was correct, but for N=1,2,3 it was not (I was
+usually reported CRC erro,r or non octet alignment error, or abort).When
+I tried with 4-bit channels, the result was correct for N=0,2,4,....
+Only with 8-bit channels I obtained correct result for all frame delays.
+The fact that everything works fine with 8-bit channels makes me believe
+that all MCC and SIRAM settings are ok. I tried many combinations of
+SIRAM programming (For example, I tried to program only channel 0 as
+2-bit and all others as 8-bit, or as null entries), but it didn't work
+out. It is also worth to mention that I have never received GUN or GOV
+errors. 
+
+Has anybody dealt with 2-bit channels on MCC? What can cause such
+problems (remember that everything works fine with 8-bit channels). I
+would also appreciate if somebody has the possibility to implement
+similar test.
+
+Regards,
+Stevan 
