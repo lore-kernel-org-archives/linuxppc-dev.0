@@ -1,17 +1,20 @@
-Return-Path: <eli.brin@rokonet.co.il>
-Received: from rokonet-e.ROKONET_TREE.LOCAL (unknown [192.114.177.4])
-	by ozlabs.org (Postfix) with ESMTP id 914B66830C
+Return-Path: <jacmet@sunsite.dk>
+Received: from adicia.telenet-ops.be (adicia.telenet-ops.be [195.130.132.56])
+	by ozlabs.org (Postfix) with ESMTP id B638268308
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Sep 2005 05:24:31 +1000 (EST)
-Message-ID: <023EF71CB65AA949A2C510353690C86B5BF2C3@rokonet-e.rokonet_tree.local>
-From: Eli Brin <eli.brin@rokonet.co.il>
-To: David Jander <david.jander@protonic.nl>
-Date: Tue, 20 Sep 2005 22:25:33 +0200
+	Wed, 21 Sep 2005 05:49:48 +1000 (EST)
+To: glikely@gmail.com
+References: <528646bc05091000377417dc16@mail.gmail.com>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Tue, 20 Sep 2005 21:50:35 +0200
+In-Reply-To: <528646bc05091000377417dc16@mail.gmail.com> (Grant Likely's
+	message of "Sat, 10 Sep 2005 01:37:39 -0600")
+Message-ID: <87vf0vselw.fsf@p4.48ers.dk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ISO-8859-1"
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: Which way to store log in flash on mpc8xx? 
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH 2/2] Add support for MEMEC 2VP30-FF1152 eval board with
+ simple FPGA design
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,17 +25,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello David,
+>>>>> "Grant" == Grant Likely <glikely@gmail.com> writes:
 
-Wolfgang wrote:
->Yes, there is. Run the system with root file system mounted over NFS,
->and then put some load on the system, like  by  compiling  the  linux
->kernel  on  the  target.
+Hi,
 
-If you want to have some fun, and stress the platform, compile and run (via
-NFS) Crafty, an open source Linux chess porgram.
+ Grant> Here is an example port to another V2PRO based board.  This
+ Grant> patch is for information only and is NOT suitable for
+ Grant> submission up to mainline
 
-We did so on our 8xx target and it plays very well...
+Ok, I still have a little comment though..
 
-Best regards,
-Eli Brin
+ Grant> diff --git a/arch/ppc/boot/simple/embed_config.c
+ Grant> b/arch/ppc/boot/simple/embed_config.c
+ Grant> --- a/arch/ppc/boot/simple/embed_config.c
+ Grant> +++ b/arch/ppc/boot/simple/embed_config.c
+ Grant> @@ -745,7 +745,7 @@ embed_config(bd_t **bdp)
+ Grant>  }
+ Grant>  #endif /* WILLOW */
+ Grant>  
+ Grant> -#ifdef CONFIG_XILINX_ML300
+ Grant> +#ifdef CONFIG_VIRTEX_II_PRO
+ Grant>  void
+ Grant>  embed_config(bd_t ** bdp)
+ Grant>  {
+
+Please don't force all V2P boards to use the same embed_config. I'm
+using RedBoot on a V2P board, which provides a ready to go bd_t that I
+can directly use.
+
+-- 
+Bye, Peter Korsgaard
