@@ -1,23 +1,13 @@
-Return-Path: <stevan@iritel.com>
-Received: from iritel.iritel.bg.ac.yu (iritel.iritel.bg.ac.yu [193.203.18.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5FCB6682F7
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Sep 2005 01:21:57 +1000 (EST)
-Received: from iritel (root@localhost)
-	by iritel.iritel.bg.ac.yu (8.13.1/8.13.1) with SMTP id j8KFFuFS017032
-	for <linuxppc-embedded@ozlabs.org>; Tue, 20 Sep 2005 17:15:56 +0200
-Received: from [193.203.19.118] (stevan [193.203.19.118])
-	by iritel.iritel.bg.ac.yu (8.13.1/8.13.1) with ESMTP id j8KFFuSo017027
-	for <linuxppc-embedded@ozlabs.org>; Tue, 20 Sep 2005 17:15:56 +0200
-From: Stevan Ignjatovic <stevan@iritel.com>
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain
-Message-Id: <1127229408.3932.40.camel@stevan.iritel.co.yu>
-Mime-Version: 1.0
-Date: Tue, 20 Sep 2005 17:16:48 +0200
-Subject: MPC8250 MCC operating on 2-bit channels
+Return-Path: <mqy@263.net.cn>
+From: "KylongMu" <mqy@263.net.cn>
+To: "Wolfgang Denk" <wd@denx.de>
+Date: Tue, 20 Sep 2005 23:17:56 +0800
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_000B_01C5BE39.8D5505E0"
+Message-Id: <20050920151811.C0246E55@smtp.263.net>
+Cc: Linuxppc-embedded@ozlabs.org
+Subject: ELDK included in which AMCC440EP Kit?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,42 +18,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+This is a multi-part message in MIME format.
 
-My problem is concerned with the multi channel controller MCC2 on
-MPC8250. Its task is to relay messages from D channels between Local
-Exchange and ISDN BRA subscribers. All active D channels (up to 128) are
-aggregated into single stream tied directly to the TDMc2, ie. both
-TDMc2_Rx and TDMc2_Tx are divided into 2-bit channels. 2.048MHz clock
-and 8KHz frame pulse are generated externaly and are connected to
-corresponding processor pins (common pins for receive and transmit
-sections).
+------=_NextPart_000_000B_01C5BE39.8D5505E0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-When tested with internal loopback (SI2MR[SDM2]=0b10) everything works
-fine, ie. for example the message we send through channel 0 is received
-correctly on channel 0. However, it doesn't work in real application.
+Hi , Denk:
+    I'm going to buy the AMCC440EP Evaluation Kit , there are two
+types : one is Bamboo , another is Yosemite .
+    Witch of them supported by ELDK , or both of them . There are
+not clear message from web.
+ 
+Thanks a lot!
+ 
+KylongMu
 
-The debugging process led me to this simple test. I connected TDMc2_Rx
-and TDMc2_Tx to FPGA in which I implemented the delay of N frames (N x
-125us, since the frame pulse is 8KHz), such that for N=0 I have simple
-external loopback, for N=1 delay of one entire frame, and so on. I was
-sending messages through channel 0 (it is the only channel I actually
-started). The results I obtained were very strange. For N=0, N=4, N=8
-the received message was correct, but for N=1,2,3 it was not (I was
-usually reported CRC erro,r or non octet alignment error, or abort).When
-I tried with 4-bit channels, the result was correct for N=0,2,4,....
-Only with 8-bit channels I obtained correct result for all frame delays.
-The fact that everything works fine with 8-bit channels makes me believe
-that all MCC and SIRAM settings are ok. I tried many combinations of
-SIRAM programming (For example, I tried to program only channel 0 as
-2-bit and all others as 8-bit, or as null entries), but it didn't work
-out. It is also worth to mention that I have never received GUN or GOV
-errors. 
+------=_NextPart_000_000B_01C5BE39.8D5505E0
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Has anybody dealt with 2-bit channels on MCC? What can cause such
-problems (remember that everything works fine with 8-bit channels). I
-would also appreciate if somebody has the possibility to implement
-similar test.
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD><TITLE></TITLE>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2900.2722" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><!-- Converted from text/plain format --><FONT =
+face=3D'"&#23435;&#20307;"' color=3D#003f1e>Hi=20
+, Denk:</FONT></DIV>
+<DIV>&nbsp;&nbsp;&nbsp; <FONT color=3D#003f1e>I'm going to buy the =
+AMCC440EP=20
+Evaluation Kit , there are two</FONT></DIV>
+<DIV><FONT color=3D#003f1e>types : one is Bamboo , another is Yosemite=20
+.</FONT></DIV>
+<DIV>&nbsp;&nbsp;&nbsp; <FONT color=3D#003f1e>Witch&nbsp;of them =
+supported&nbsp;by=20
+ELDK , or both of them . There are</FONT></DIV>
+<DIV><FONT color=3D#003f1e>not clear message from web.</FONT></DIV>
+<DIV><FONT color=3D#003f1e></FONT>&nbsp;</DIV>
+<DIV><FONT color=3D#003f1e>Thanks a lot!</FONT></DIV>
+<DIV><FONT color=3D#003f1e></FONT>&nbsp;</DIV>
+<DIV><FONT color=3D#003f1e>KylongMu</FONT></DIV></BODY></HTML>
 
-Regards,
-Stevan 
+------=_NextPart_000_000B_01C5BE39.8D5505E0--
