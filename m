@@ -1,19 +1,15 @@
 Return-Path: <wd@denx.de>
-Received: from mailout04.sul.t-online.com (mailout04.sul.t-online.com
-	[194.25.134.18]) by ozlabs.org (Postfix) with ESMTP id BAA4B68310
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Sep 2005 04:08:21 +1000 (EST)
-To: David Jander <david.jander@protonic.nl>
+To: "KylongMu" <mqy@263.net.cn>
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 20 Sep 2005 11:17:39 +0200."
-	<200509201117.40454.david.jander@protonic.nl>
-Date: Tue, 20 Sep 2005 20:07:58 +0200
+In-reply-to: Your message of "Tue, 20 Sep 2005 23:17:56 +0800."
+	<20050920151811.C0246E55@smtp.263.net>
+Date: Tue, 20 Sep 2005 20:10:45 +0200
 Sender: wd@denx.de
-Message-Id: <20050920180758.9020C353AB3@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Which way to store log in flash on mpc8xx? 
+Message-Id: <20050920181045.21320353AB3@atlas.denx.de>
+Cc: Linuxppc-embedded@ozlabs.org
+Subject: Re: ELDK included in which AMCC440EP Kit? 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,42 +20,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <200509201117.40454.david.jander@protonic.nl> you wrote:
+In message <20050920151811.C0246E55@smtp.263.net> you wrote:
 > 
-> Is there something like memtest86 for linux-ppc (i.e. written in portable C)?
+>     I'm going to buy the AMCC440EP Evaluation Kit , there are two
+> types : one is Bamboo , another is Yosemite .
+>     Witch of them supported by ELDK , or both of them . There are
+> not clear message from web.
 
-Yes, there is. Run the system with root file system mounted over NFS,
-and then put some load on the system, like  by  compiling  the  linux
-kernel  on  the  target.  Anything  else which adds DMA load does not
-hurt, either. In such a situation, with a lots of  context  switches,
-stress  on  the  memory  management  system  and having a lots of DMA
-traffic going on you may see some memory problems. Unfortunately none
-of the standard memory tests will catch thse, as  the  tests  usually
-provide  only plain read / write accesses, while the problems show up
-only in burst mode, i. e. when filling the caches and/or doing DMA.
+The ELDK is a tool chain. It is hardware independent, so any  4xx/44x
+board is "supported" by the ELDK.
 
-There is an attempt of a burst mode memory test in the  U-Boot  code,
-but  I  have to admit that I didn't work to show the exact problem on
-the system it was written for.
-
-> Hmm, but.... there is no data corruption. I have not seen one file on flash 
-> that had other data than intended, and that inspite of the GC freaking out.
-
-Maybe there is no corruption of the data in flash. But are  you  sure
-that  correct  data are loaded to and read from RAM? We had a similar
-problem on a board where data got corrupted only when doing a lot  of
-transfers flash->RAM.
-
-> That commit only changed 3 files, non of them directly related to jffs2 code, 
-
-This is correct.
-
-> and only seemed to add support for FUJITSU flash chips. What am I missing?
-> MTD developers say that cvs from march-2005 _is_ broken, so there must be some 
-
-Yes, of course it's broken. Like  all  computer  code.  There  are  a
-couple  of  known  issues  (especially  with NAND flash), but I don't
-think they could explain the type of problems you are seeing.
+Both the U-Boot and the Linux source code as available  on  the  ELDK
+CDROM  image  is  too  old  for  the Yosemite, but you can access the
+current versions from our git/CVS/FTP servers, and then  both  Bamboo
+and Yosemite are supported.
 
 Best regards,
 
@@ -68,6 +42,6 @@ Wolfgang Denk
 -- 
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Einstein argued that there must be simplified explanations of nature,
-because God is not capricious or arbitrary. No  such  faith  comforts
-the software engineer.                             - Fred Brooks, Jr.
+"The more data I punch in this card,  the lighter it becomes, and the
+lower the mailing cost."
+                     - Stan Kelly-Bootle, "The Devil's DP Dictionary"
