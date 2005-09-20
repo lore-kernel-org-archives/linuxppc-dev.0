@@ -1,10 +1,13 @@
-Return-Path: <jdl@jdl.com>
-From: linuxppc@jdl.com
-To: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
-Date: Tue, 20 Sep 2005 14:32:37 -0500
-Message-Id: <E1EHnr3-0002XL-JT@jdl.com>
-Sender: Jon Loeliger <jdl@jdl.com>
-Subject: PATCH powerpc Merge asm-ppc*/vga.h
+Return-Path: <galak@freescale.com>
+Date: Tue, 20 Sep 2005 15:45:26 -0500 (CDT)
+From: Kumar Gala <galak@freescale.com>
+To: Paul Mackerras <paulus@samba.org>
+Message-ID: <Pine.LNX.4.61.0509201544290.24915@nylon.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev <linuxppc64-dev@ozlabs.org>
+Subject: [PATCH] powerpc: merge include/asm-ppc*/auxvec.h into
+ include/asm-powerpc/auxvec.h
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,180 +17,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Merge asm-ppc*/vga.h
-
-Signed-off-by: Jon Loeliger <jdl@freescale.com>
 Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+
 ---
+commit 40ec2534f42b5d38123c41858a3c85bc2eae272b
+tree e13c35c52e65b3ac32a7d9bd37be9b45accb0631
+parent e89b8279aafe3b896a1d1fbb4d10fbe91841d8e9
+author Kumar K. Gala <kumar.gala@freescale.com> Tue, 20 Sep 2005 15:31:13 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> Tue, 20 Sep 2005 15:31:13 -0500
 
- include/asm-powerpc/vga.h |   54 +++++++++++++++++++++++++++++++++++++++++++++
- include/asm-ppc/vga.h     |   46 --------------------------------------
- include/asm-ppc64/vga.h   |   50 ------------------------------------------
- 3 files changed, 54 insertions(+), 96 deletions(-)
+ include/asm-powerpc/auxvec.h |   19 +++++++++++++++++++
+ include/asm-ppc/auxvec.h     |   14 --------------
+ include/asm-ppc64/auxvec.h   |   19 -------------------
+ 3 files changed, 19 insertions(+), 33 deletions(-)
 
-
-diff --git a/include/asm-powerpc/vga.h b/include/asm-powerpc/vga.h
+diff --git a/include/asm-powerpc/auxvec.h b/include/asm-powerpc/auxvec.h
 new file mode 100644
 --- /dev/null
-+++ b/include/asm-powerpc/vga.h
-@@ -0,0 +1,54 @@
-+#ifndef _ASM_POWERPC_VGA_H_
-+#define _ASM_POWERPC_VGA_H_
-+
-+#ifdef __KERNEL__
++++ b/include/asm-powerpc/auxvec.h
+@@ -0,0 +1,19 @@
++#ifndef _ASM_POWERPC_AUXVEC_H
++#define _ASM_POWERPC_AUXVEC_H
 +
 +/*
-+ *	Access to VGA videoram
-+ *
-+ *	(c) 1998 Martin Mares <mj@ucw.cz>
++ * We need to put in some extra aux table entries to tell glibc what
++ * the cache block size is, so it can use the dcbz instruction safely.
 + */
++#define AT_DCACHEBSIZE		19
++#define AT_ICACHEBSIZE		20
++#define AT_UCACHEBSIZE		21
++/* A special ignored type value for PPC, for glibc compatibility.  */
++#define AT_IGNOREPPC		22
 +
-+
-+#include <asm/io.h>
-+
-+#include <linux/config.h>
-+
-+#if defined(CONFIG_VGA_CONSOLE) || defined(CONFIG_MDA_CONSOLE)
-+
-+#define VT_BUF_HAVE_RW
-+/*
-+ *  These are only needed for supporting VGA or MDA text mode, which use little
-+ *  endian byte ordering.
-+ *  In other cases, we can optimize by using native byte ordering and
-+ *  <linux/vt_buffer.h> has already done the right job for us.
++/* The vDSO location. We have to use the same value as x86 for glibc's
++ * sake :-)
 + */
++#define AT_SYSINFO_EHDR		33
 +
-+static inline void scr_writew(u16 val, volatile u16 *addr)
-+{
-+    st_le16(addr, val);
-+}
-+
-+static inline u16 scr_readw(volatile const u16 *addr)
-+{
-+    return ld_le16(addr);
-+}
-+
-+#define VT_BUF_HAVE_MEMCPYW
-+#define scr_memcpyw	memcpy
-+
-+#endif /* !CONFIG_VGA_CONSOLE && !CONFIG_MDA_CONSOLE */
-+
-+extern unsigned long vgacon_remap_base;
-+
-+#ifdef __powerpc64__
-+#define VGA_MAP_MEM(x) ((unsigned long) ioremap((x), 0))
-+#else
-+#define VGA_MAP_MEM(x) (x + vgacon_remap_base)
 +#endif
-+
-+#define vga_readb(x) (*(x))
-+#define vga_writeb(x,y) (*(y) = (x))
-+
-+#endif	/* __KERNEL__ */
-+#endif	/* _ASM_POWERPC_VGA_H_ */
-diff --git a/include/asm-ppc/vga.h b/include/asm-ppc/vga.h
+diff --git a/include/asm-ppc/auxvec.h b/include/asm-ppc/auxvec.h
 deleted file mode 100644
---- a/include/asm-ppc/vga.h
+--- a/include/asm-ppc/auxvec.h
 +++ /dev/null
-@@ -1,46 +0,0 @@
+@@ -1,14 +0,0 @@
+-#ifndef __PPC_AUXVEC_H
+-#define __PPC_AUXVEC_H
+-
 -/*
-- *	Access to VGA videoram
-- *
-- *	(c) 1998 Martin Mares <mj@ucw.cz>
+- * We need to put in some extra aux table entries to tell glibc what
+- * the cache block size is, so it can use the dcbz instruction safely.
 - */
--
--#ifdef __KERNEL__
--#ifndef _LINUX_ASM_VGA_H_
--#define _LINUX_ASM_VGA_H_
--
--#include <asm/io.h>
--
--#include <linux/config.h>
--
--#if defined(CONFIG_VGA_CONSOLE) || defined(CONFIG_MDA_CONSOLE)
--
--#define VT_BUF_HAVE_RW
--/*
-- *  These are only needed for supporting VGA or MDA text mode, which use little
-- *  endian byte ordering.
-- *  In other cases, we can optimize by using native byte ordering and
-- *  <linux/vt_buffer.h> has already done the right job for us.
-- */
--
--extern inline void scr_writew(u16 val, volatile u16 *addr)
--{
--    st_le16(addr, val);
--}
--
--extern inline u16 scr_readw(volatile const u16 *addr)
--{
--    return ld_le16(addr);
--}
--
--#define VT_BUF_HAVE_MEMCPYW
--#define scr_memcpyw	memcpy
--
--#endif /* !CONFIG_VGA_CONSOLE && !CONFIG_MDA_CONSOLE */
--
--extern unsigned long vgacon_remap_base;
--#define VGA_MAP_MEM(x) (x + vgacon_remap_base)
--#define vga_readb(x) (*(x))
--#define vga_writeb(x,y) (*(y) = (x))
+-#define AT_DCACHEBSIZE		19
+-#define AT_ICACHEBSIZE		20
+-#define AT_UCACHEBSIZE		21
+-/* A special ignored type value for PPC, for glibc compatibility.  */
+-#define AT_IGNOREPPC		22
 -
 -#endif
--#endif /* __KERNEL__ */
-diff --git a/include/asm-ppc64/vga.h b/include/asm-ppc64/vga.h
+diff --git a/include/asm-ppc64/auxvec.h b/include/asm-ppc64/auxvec.h
 deleted file mode 100644
---- a/include/asm-ppc64/vga.h
+--- a/include/asm-ppc64/auxvec.h
 +++ /dev/null
-@@ -1,50 +0,0 @@
+@@ -1,19 +0,0 @@
+-#ifndef __PPC64_AUXVEC_H
+-#define __PPC64_AUXVEC_H
+-
 -/*
-- *	Access to VGA videoram
-- *
-- *	(c) 1998 Martin Mares <mj@ucw.cz>
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of the GNU General Public License
-- * as published by the Free Software Foundation; either version
-- * 2 of the License, or (at your option) any later version.
+- * We need to put in some extra aux table entries to tell glibc what
+- * the cache block size is, so it can use the dcbz instruction safely.
 - */
+-#define AT_DCACHEBSIZE		19
+-#define AT_ICACHEBSIZE		20
+-#define AT_UCACHEBSIZE		21
+-/* A special ignored type value for PPC, for glibc compatibility.  */
+-#define AT_IGNOREPPC		22
 -
--#ifndef _LINUX_ASM_VGA_H_
--#define _LINUX_ASM_VGA_H_
--
--#include <asm/io.h>
--
--#include <linux/config.h>
--
--#if defined(CONFIG_VGA_CONSOLE) || defined(CONFIG_MDA_CONSOLE)
--
--#define VT_BUF_HAVE_RW
--/*
-- *  These are only needed for supporting VGA or MDA text mode, which use little
-- *  endian byte ordering.
-- *  In other cases, we can optimize by using native byte ordering and
-- *  <linux/vt_buffer.h> has already done the right job for us.
+-/* The vDSO location. We have to use the same value as x86 for glibc's
+- * sake :-)
 - */
+-#define AT_SYSINFO_EHDR		33
 -
--static inline void scr_writew(u16 val, volatile u16 *addr)
--{
--    st_le16(addr, val);
--}
--
--static inline u16 scr_readw(volatile const u16 *addr)
--{
--    return ld_le16(addr);
--}
--
--#define VT_BUF_HAVE_MEMCPYW
--#define scr_memcpyw	memcpy
--
--#endif /* !CONFIG_VGA_CONSOLE && !CONFIG_MDA_CONSOLE */
--
--extern unsigned long vgacon_remap_base;
--#define VGA_MAP_MEM(x) ((unsigned long) ioremap((x), 0))
--
--#define vga_readb(x) (*(x))
--#define vga_writeb(x,y) (*(y) = (x))
--
--#endif
+-#endif /* __PPC64_AUXVEC_H */
