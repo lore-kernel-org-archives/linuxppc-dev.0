@@ -1,22 +1,16 @@
-Return-Path: <jacmet@sunsite.dk>
-Received: from hoboe1bl1.telenet-ops.be (hoboe1bl1.telenet-ops.be
-	[195.130.137.72]) by ozlabs.org (Postfix) with ESMTP id 4E2DC682C0
+Return-Path: <BLandau@nds.com>
+Received: from ILEX5.IL.NDS.COM (jeru1.ndsisrael.com [192.118.34.248])
+	by ozlabs.org (Postfix) with ESMTP id 899B1682F8
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Sep 2005 16:40:05 +1000 (EST)
-To: glikely@gmail.com
-References: <528646bc05091000377417dc16@mail.gmail.com>
-	<87vf0vselw.fsf@p4.48ers.dk>
-	<528646bc050920133519382674@mail.gmail.com>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Wed, 21 Sep 2005 08:13:41 +0200
-In-Reply-To: <528646bc050920133519382674@mail.gmail.com> (Grant Likely's
-	message of "Tue, 20 Sep 2005 14:35:20 -0600")
-Message-ID: <87aci77xt6.fsf@p4.48ers.dk>
+	Wed, 21 Sep 2005 20:21:11 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH 2/2] Add support for MEMEC 2VP30-FF1152 eval board with
- simple FPGA design
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Wed, 21 Sep 2005 13:21:03 +0300
+Message-ID: <02AA386EB831044F8537A696BA785C78076297@ILEX5.IL.NDS.COM>
+From: "Landau, Bracha" <BLandau@nds.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: using SCC4 on MPC8272ADS
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,22 +21,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> "Grant" == Grant Likely <glikely@gmail.com> writes:
+I am using the MPC8272ADS with kernel 2.6.10. The kernel is configured to=
+ support 4 CPM SCCs, of which 1 and 4 are connected on the board.
+I created device files as follows:
 
- Grant> No problem.  I need to go back and review this code anyway to
- Grant> determine if any of it should be split out into common
- Grant> routines for all v2p boards.
+mknod /dev/ttyCPM0 c 204 46
+mknod /dev/ttyCPM1 c 204 47
+mknod /dev/ttyCPM2 c 204 48
+mknod /dev/ttyCPM3 c 204 49
 
-Ok.
+If I boot the kernel using console=3DttyCPM3 I see that it uses SCC4. But=
+ when I boot with console=3DttyCPM0 and write to the second port using a =
+command like "echo hello > /dev/ttyCPM3" I don't see that anything is bei=
+ng outputted to the second console.
 
- Grant> Hey, do you have any drivers for the common 'stock' v2p device
- Grant> cores ported to 2.6 for your board? (like Ethernet, PS/2,
- Grant> framebuffer, etc) I'm about to start porting the SystemACE
- Grant> driver and I also need Ethernet and PS/2 devices, but I don't
- Grant> want to duplicate if anyone has already done the work.
-
-Unfortunately not. We don't use any of the Xilinx IP cores (except
-serial/emc), so I haven't had much of an incentive to do the work.
-
--- 
-Bye, Peter Korsgaard
+What am I doing wrong?
+=20
+*************************************************************************=
+**********
+Information contained in this email message is intended only for use of t=
+he individual or entity named above. If the reader of this message is not=
+ the intended recipient, or the employee or agent responsible to deliver =
+it to the intended recipient, you are hereby notified that any disseminat=
+ion, distribution or copying of this communication is strictly prohibited=
+=2E If you have received this communication in error, please immediately =
+notify the postmaster@nds.com and destroy the original message.
+*************************************************************************=
+**********
