@@ -3,11 +3,11 @@ Received: from shelob.oktetlabs.ru (unknown [195.209.228.254])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "shelob.oktetlabs.ru",
 	Issuer "OKTET Labs Root CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id F27F5682FF
+	by ozlabs.org (Postfix) with ESMTP id B7A28682FF
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 22 Sep 2005 03:22:58 +1000 (EST)
-Message-ID: <43319192.70406@yandex.ru>
-Date: Wed, 21 Sep 2005 21:00:02 +0400
+	Thu, 22 Sep 2005 03:22:59 +1000 (EST)
+Message-ID: <43319131.1080101@yandex.ru>
+Date: Wed, 21 Sep 2005 20:58:25 +0400
 From: "Artem B. Bityutskiy" <dedekind@yandex.ru>
 MIME-Version: 1.0
 To: Andy Hawkins <a.hawkins@cabletime.com>
@@ -29,14 +29,26 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 Andy Hawkins wrote:
 > Hi,
+Hi Andy
+
 > 
 > We have a custom PPC-405EP based board, with a Samsumg 8Gbit flash
 > (K9W8G08U1M) attached via EBC bank 2. When we read from this flash, we are
 > only getting data rates of around 20 MBits/sec (this is using 'dd' to read
 > direct from the linux /dev/mtd/x device). Our estimates show that the device
 > should be capable of something like 100 MBits/sec.
-> 
-Ops, pardon, you are not going to use JFFS2 :-) Ignore that mail then :-)
+
+Bah, 8Gbit! :-)
+
+JFFS2 is not enough scalable to work with 8Gbit Flashes. The practical 
+limit is about 1Gbit. I would suggest to forget about JFFS2 in your 
+case. You will never feel comfortable with JFFS2 + 8Gbit flashes.
+
+Try to make 500MB file and remount JFFS2, then open it. See how much 
+time this will take. See how much memory will me used.
+
+Also ypu may glance at the introduction chapters at 
+http://www.linux-mtd.infradead.org/tech/JFFS3design.pdf
 
 -- 
 Best Regards,
