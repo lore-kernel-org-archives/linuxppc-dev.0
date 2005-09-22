@@ -1,21 +1,15 @@
-Return-Path: <kalle.pokki@iki.fi>
-Received: from smtp2.song.fi (smtp2.song.fi [194.100.2.122])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 72A17682FA
+Return-Path: <bambooproducts@bambooproducts.net>
+Received: from bambooproducts.net (unknown [61.173.50.177])
+	by ozlabs.org (Postfix) with ESMTP id 98629682A9
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 22 Sep 2005 23:11:53 +1000 (EST)
-Received: from [194.100.64.94] (host94.eke.fi [194.100.64.94])
-	by smtp2.song.fi (Postfix) with ESMTP id A5B644DE18
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 22 Sep 2005 16:11:47 +0300 (EEST)
-Message-ID: <4332AD93.9070205@iki.fi>
-Date: Thu, 22 Sep 2005 15:11:47 +0200
-From: Kalle Pokki <kalle.pokki@iki.fi>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: CPM2 early console
+	Fri, 23 Sep 2005 00:16:31 +1000 (EST)
+From: "Tianyu Bamboo" <bambooproducts@bambooproducts.net>
+To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
+Content-Type: text/html;
+	charset="iso-8859-1"
+Date: Thu, 22 Sep 2005 22:17:04 +0800
+Message-Id: <20050922141631.98629682A9@ozlabs.org>
+Subject: Bamboo Products
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,20 +20,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+Dear Sir/Madam,
 
-I'm trying to get vanilla 2.6.13.1 running on an EP8248 board without 
-much success. I created my own platform files and have the kernel 
-booting, but the execution is permanently stuck in the 
-cpm_uart_console_write() function in the first while ((bdp->cbd_sc & 
-BD_SC_READY) != 0) statement.
+We are a manufacturer of bamboo flooring and plank in China, our web site is:
 
-I don't have any COP debugger for this processor family, so the only 
-debugging aid is the two leds onboard... It's clear that the buffer 
-descriptor is not in sync with the CPM, but I have no clue what the 
-address of the buffer descriptor is.
+www.hsbamboo.com
 
-It seems this code is rather new, and I'm wondering if any of you have 
-some patches that are not in the mainline kernel yet. Has anyone tested 
-this with a 8248 processor? If so, could you please send your .config to 
-me in case I made some errors in the platform definition.
+There have our details, and please get my contact information in the website, not this email address, thank you very much.
+
+Best Wishes
+
+Yao Zhiheng
