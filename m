@@ -1,17 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3CB2568300
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Sep 2005 16:03:28 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andrew Morton <akpm@osdl.org>
-Content-Type: text/plain
-Date: Thu, 22 Sep 2005 16:01:21 +1000
-Message-Id: <1127368881.32344.36.camel@gaston>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] ppc32: fix build with oprofile
+Return-Path: <galak@freescale.com>
+Date: Thu, 22 Sep 2005 10:13:31 -0500 (CDT)
+From: Kumar Gala <galak@freescale.com>
+To: Paul Mackerras <paulus@samba.org>
+Message-ID: <Pine.LNX.4.61.0509221012590.30414@nylon.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev <linuxppc64-dev@ozlabs.org>
+Subject: [PATCH] powerpc: Fix building of power3 config on ppc32  
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,49 +16,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Current -git tree doesn't build when enabling oprofile on a non-bookE
-CPU (like on a PowerMac for example). While there is no performance
-counter support for these CPUs implemented yet, it's still nice to be
-able to use the timer based sampling, and that got broken.
+The spinlock_types.h merge renamed the structure for raw_spinlock_t to
+match ppc64.  In doing so some of the spinlock macros/functions needed to
+be updated to match.  Apparently, this seems to only be caught when
+building power3.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
-Index: linux-work/arch/ppc/kernel/Makefile
-===================================================================
---- linux-work.orig/arch/ppc/kernel/Makefile	2005-09-22 15:44:03.000000000 +1000
-+++ linux-work/arch/ppc/kernel/Makefile	2005-09-22 15:51:17.000000000 +1000
-@@ -15,9 +15,8 @@
- obj-y				:= entry.o traps.o irq.o idle.o time.o misc.o \
- 					process.o signal.o ptrace.o align.o \
- 					semaphore.o syscalls.o setup.o \
--					cputable.o ppc_htab.o
-+					cputable.o ppc_htab.o perfmon.o
- obj-$(CONFIG_6xx)		+= l2cr.o cpu_setup_6xx.o
--obj-$(CONFIG_E500)		+= perfmon.o
- obj-$(CONFIG_SOFTWARE_SUSPEND)	+= swsusp.o
- obj-$(CONFIG_POWER4)		+= cpu_setup_power4.o
- obj-$(CONFIG_MODULES)		+= module.o ppc_ksyms.o
-Index: linux-work/arch/ppc/kernel/perfmon.c
-===================================================================
---- linux-work.orig/arch/ppc/kernel/perfmon.c	2005-09-22 14:06:18.000000000 +1000
-+++ linux-work/arch/ppc/kernel/perfmon.c	2005-09-22 15:51:49.000000000 +1000
-@@ -45,7 +45,7 @@
- 	mtpmr(PMRN_PMGC0, pmgc0);
+---
+commit faf6551d6434845fb16e28c203b2dc66d91ebd1f
+tree 7f14282bd0eea36376ea64ee2ab7a61aaadd1ea0
+parent 613d5aafb93030cbf69943dd47c3b37bdfd5a398
+author Kumar K. Gala <kumar.gala@freescale.com> Thu, 22 Sep 2005 10:12:03 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> Thu, 22 Sep 2005 10:12:03 -0500
+
+ include/asm-ppc/spinlock.h |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/include/asm-ppc/spinlock.h b/include/asm-ppc/spinlock.h
+--- a/include/asm-ppc/spinlock.h
++++ b/include/asm-ppc/spinlock.h
+@@ -9,7 +9,7 @@
+  * (the type definitions are in asm/raw_spinlock_types.h)
+  */
+ 
+-#define __raw_spin_is_locked(x)		((x)->lock != 0)
++#define __raw_spin_is_locked(x)		((x)->slock != 0)
+ #define __raw_spin_unlock_wait(lock) \
+ 	do { while (__raw_spin_is_locked(lock)) cpu_relax(); } while (0)
+ #define __raw_spin_lock_flags(lock, flags) __raw_spin_lock(lock)
+@@ -31,17 +31,17 @@ static inline void __raw_spin_lock(raw_s
+ 	bne-	2b\n\
+ 	isync"
+ 	: "=&r"(tmp)
+-	: "r"(&lock->lock), "r"(1)
++	: "r"(&lock->slock), "r"(1)
+ 	: "cr0", "memory");
  }
  
--#else
-+#elif CONFIG_6xx
- /* Ensure exceptions are disabled */
- 
- static void dummy_perf(struct pt_regs *regs)
-@@ -55,6 +55,10 @@
- 	mmcr0 &= ~MMCR0_PMXE;
- 	mtspr(SPRN_MMCR0, mmcr0);
+ static inline void __raw_spin_unlock(raw_spinlock_t *lock)
+ {
+ 	__asm__ __volatile__("eieio	# __raw_spin_unlock": : :"memory");
+-	lock->lock = 0;
++	lock->slock = 0;
  }
-+#else
-+static void dummy_perf(struct pt_regs *regs)
-+{
-+}
- #endif
  
- void (*perf_irq)(struct pt_regs *) = dummy_perf;
+-#define __raw_spin_trylock(l) (!test_and_set_bit(0,&(l)->lock))
++#define __raw_spin_trylock(l) (!test_and_set_bit(0,(volatile unsigned long *)(&(l)->slock)))
+ 
+ /*
+  * Read-write spinlocks, allowing multiple readers
