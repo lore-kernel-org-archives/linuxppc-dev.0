@@ -1,12 +1,10 @@
-Return-Path: <galak@freescale.com>
-Date: Thu, 22 Sep 2005 10:13:31 -0500 (CDT)
-From: Kumar Gala <galak@freescale.com>
-To: Paul Mackerras <paulus@samba.org>
-Message-ID: <Pine.LNX.4.61.0509221012590.30414@nylon.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev <linuxppc64-dev@ozlabs.org>
-Subject: [PATCH] powerpc: Fix building of power3 config on ppc32  
+Return-Path: <jdl@jdl.com>
+From: Jon Loeliger <jdl@freescale.com>
+To: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Date: Thu, 22 Sep 2005 13:20:13 -0500
+Message-Id: <E1EIVg5-0001HI-E8@jdl.com>
+Sender: Jon Loeliger <jdl@jdl.com>
+Subject: PATCH powerpc Merge asm-ppc*/seccomp.h
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,53 +14,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The spinlock_types.h merge renamed the structure for raw_spinlock_t to
-match ppc64.  In doing so some of the spinlock macros/functions needed to
-be updated to match.  Apparently, this seems to only be caught when
-building power3.
 
+Merge asm-ppc*/seccomp.h.
+
+Signed-off-by: Jon Loeliger <jdl@freescale.com>
 Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
-
 ---
-commit faf6551d6434845fb16e28c203b2dc66d91ebd1f
-tree 7f14282bd0eea36376ea64ee2ab7a61aaadd1ea0
-parent 613d5aafb93030cbf69943dd47c3b37bdfd5a398
-author Kumar K. Gala <kumar.gala@freescale.com> Thu, 22 Sep 2005 10:12:03 -0500
-committer Kumar K. Gala <kumar.gala@freescale.com> Thu, 22 Sep 2005 10:12:03 -0500
 
- include/asm-ppc/spinlock.h |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/include/asm-ppc/spinlock.h b/include/asm-ppc/spinlock.h
---- a/include/asm-ppc/spinlock.h
-+++ b/include/asm-ppc/spinlock.h
-@@ -9,7 +9,7 @@
-  * (the type definitions are in asm/raw_spinlock_types.h)
-  */
- 
--#define __raw_spin_is_locked(x)		((x)->lock != 0)
-+#define __raw_spin_is_locked(x)		((x)->slock != 0)
- #define __raw_spin_unlock_wait(lock) \
- 	do { while (__raw_spin_is_locked(lock)) cpu_relax(); } while (0)
- #define __raw_spin_lock_flags(lock, flags) __raw_spin_lock(lock)
-@@ -31,17 +31,17 @@ static inline void __raw_spin_lock(raw_s
- 	bne-	2b\n\
- 	isync"
- 	: "=&r"(tmp)
--	: "r"(&lock->lock), "r"(1)
-+	: "r"(&lock->slock), "r"(1)
- 	: "cr0", "memory");
- }
- 
- static inline void __raw_spin_unlock(raw_spinlock_t *lock)
- {
- 	__asm__ __volatile__("eieio	# __raw_spin_unlock": : :"memory");
--	lock->lock = 0;
-+	lock->slock = 0;
- }
- 
--#define __raw_spin_trylock(l) (!test_and_set_bit(0,&(l)->lock))
-+#define __raw_spin_trylock(l) (!test_and_set_bit(0,(volatile unsigned long *)(&(l)->slock)))
- 
- /*
-  * Read-write spinlocks, allowing multiple readers
+ include/asm-powerpc/seccomp.h |   21 +++++++++++++++++++++
+ include/asm-ppc/seccomp.h     |   10 ----------
+ include/asm-ppc64/seccomp.h   |   21 ---------------------
+ 3 files changed, 21 insertions(+), 31 deletions(-)
+
+
+diff --git a/include/asm-powerpc/seccomp.h b/include/asm-powerpc/seccomp.h
+new file mode 100644
+--- /dev/null
++++ b/include/asm-powerpc/seccomp.h
+@@ -0,0 +1,21 @@
++#ifndef _ASM_POWERPC_SECCOMP_H
++
++#include <linux/thread_info.h>
++
++#if defined(__powerpc64__) && !defined(TIF_32BIT)
++#error "unexpected TIF_32BIT on ppc64"
++#endif
++
++#include <linux/unistd.h>
++
++#define __NR_seccomp_read __NR_read
++#define __NR_seccomp_write __NR_write
++#define __NR_seccomp_exit __NR_exit
++#define __NR_seccomp_sigreturn __NR_rt_sigreturn
++
++#define __NR_seccomp_read_32 __NR_read
++#define __NR_seccomp_write_32 __NR_write
++#define __NR_seccomp_exit_32 __NR_exit
++#define __NR_seccomp_sigreturn_32 __NR_sigreturn
++
++#endif	/* _ASM_POWERPC_SECCOMP_H */
+diff --git a/include/asm-ppc/seccomp.h b/include/asm-ppc/seccomp.h
+deleted file mode 100644
+--- a/include/asm-ppc/seccomp.h
++++ /dev/null
+@@ -1,10 +0,0 @@
+-#ifndef _ASM_SECCOMP_H
+-
+-#include <linux/unistd.h>
+-
+-#define __NR_seccomp_read __NR_read
+-#define __NR_seccomp_write __NR_write
+-#define __NR_seccomp_exit __NR_exit
+-#define __NR_seccomp_sigreturn __NR_rt_sigreturn
+-
+-#endif /* _ASM_SECCOMP_H */
+diff --git a/include/asm-ppc64/seccomp.h b/include/asm-ppc64/seccomp.h
+deleted file mode 100644
+--- a/include/asm-ppc64/seccomp.h
++++ /dev/null
+@@ -1,21 +0,0 @@
+-#ifndef _ASM_SECCOMP_H
+-
+-#include <linux/thread_info.h> /* already defines TIF_32BIT */
+-
+-#ifndef TIF_32BIT
+-#error "unexpected TIF_32BIT on ppc64"
+-#endif
+-
+-#include <linux/unistd.h>
+-
+-#define __NR_seccomp_read __NR_read
+-#define __NR_seccomp_write __NR_write
+-#define __NR_seccomp_exit __NR_exit
+-#define __NR_seccomp_sigreturn __NR_rt_sigreturn
+-
+-#define __NR_seccomp_read_32 __NR_read
+-#define __NR_seccomp_write_32 __NR_write
+-#define __NR_seccomp_exit_32 __NR_exit
+-#define __NR_seccomp_sigreturn_32 __NR_sigreturn
+-
+-#endif /* _ASM_SECCOMP_H */
