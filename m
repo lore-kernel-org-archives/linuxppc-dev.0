@@ -1,23 +1,18 @@
-Return-Path: <rober@opnet.com.tw>
-Received: from opnet2.opnet.com.tw (unknown [210.243.240.244])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 72F73682F8
+Return-Path: <galak@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id CF2C6682F4
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 22 Sep 2005 12:07:45 +1000 (EST)
-Received: from [10.0.14.26] (h248-210-243-240.opnet.com.tw [210.243.240.248]
-	(may be forged))
-	by opnet2.opnet.com.tw (8.13.3/8.13.1) with ESMTP id j8M9vH3O012942
-	for <linuxppc-embedded@ozlabs.org>; Thu, 22 Sep 2005 09:57:17 GMT
-	(envelope-from rober@opnet.com.tw)
-From: =?UTF-8?Q?=E5=BE=90=E5=B0=8F=E5=A8=81=E7=9A=84EMAIL?=
-	<rober@opnet.com.tw>
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain
-Date: Thu, 22 Sep 2005 10:07:31 +0800
-Message-Id: <1127354851.14175.4.camel@banana>
-Mime-Version: 1.0
-Subject: How to limit the log file size?
+	Thu, 22 Sep 2005 14:59:04 +1000 (EST)
+Date: Wed, 21 Sep 2005 23:54:58 -0500 (CDT)
+From: Kumar Gala <galak@freescale.com>
+To: Linus Torvalds <torvalds@osdl.org>
+Message-ID: <Pine.LNX.4.61.0509212353540.28494@nylon.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Andrew Morton <akpm@osdl.org>, andrew@cesa.opbu.xerox.com,
+	linux-kernel@vger.kernel.org,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH] ppc32: Fix configuration of PCI IO space on MPC85xx platform
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,10 +23,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all:
+For platforms that don't have PCI IO at 0 the outbound window
+registers were not being properly configured.
 
-    There are some daemon like snmpd, boa...has log file at directory
-var, I want to know how to limte it's file size? 
+Signed-off-by: Andrew Klossner <andrew@cesa.opbu.xerox.com>
+Signed-off-by: Kumar K. Gala <kumar.gala@freescale.com>
 
-Best Regards,
-Rober Hsu
+---
+commit 7b992aef26bd7dc2ed3eea0554d3e901d17aa999
+tree a39f664767dbb49df981ed2037b7921f982a7854
+parent db1488b812a7a96d50d51b018fbeb20586cc8e84
+author Kumar K. Gala <kumar.gala@freescale.com> Wed, 21 Sep 2005 23:53:25 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> Wed, 21 Sep 2005 23:53:25 -0500
+
+ arch/ppc/syslib/ppc85xx_setup.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/ppc/syslib/ppc85xx_setup.c b/arch/ppc/syslib/ppc85xx_setup.c
+--- a/arch/ppc/syslib/ppc85xx_setup.c
++++ b/arch/ppc/syslib/ppc85xx_setup.c
+@@ -184,8 +184,8 @@ mpc85xx_setup_pci1(struct pci_controller
+ 	pci->powar1 = 0x80044000 |
+ 	   (__ilog2(MPC85XX_PCI1_UPPER_MEM - MPC85XX_PCI1_LOWER_MEM + 1) - 1);
+ 
+-	/* Setup outboud IO windows @ MPC85XX_PCI1_IO_BASE */
+-	pci->potar2 = 0x00000000;
++	/* Setup outbound IO windows @ MPC85XX_PCI1_IO_BASE */
++	pci->potar2 = (MPC85XX_PCI1_LOWER_IO >> 12) & 0x000fffff;
+ 	pci->potear2 = 0x00000000;
+ 	pci->powbar2 = (MPC85XX_PCI1_IO_BASE >> 12) & 0x000fffff;
+ 	/* Enable, IO R/W */
+@@ -235,8 +235,8 @@ mpc85xx_setup_pci2(struct pci_controller
+ 	pci->powar1 = 0x80044000 |
+ 	   (__ilog2(MPC85XX_PCI2_UPPER_MEM - MPC85XX_PCI2_LOWER_MEM + 1) - 1);
+ 
+-	/* Setup outboud IO windows @ MPC85XX_PCI2_IO_BASE */
+-	pci->potar2 = 0x00000000;
++	/* Setup outbound IO windows @ MPC85XX_PCI2_IO_BASE */
++	pci->potar2 = (MPC85XX_PCI2_LOWER_IO >> 12) & 0x000fffff;;
+ 	pci->potear2 = 0x00000000;
+ 	pci->powbar2 = (MPC85XX_PCI2_IO_BASE >> 12) & 0x000fffff;
+ 	/* Enable, IO R/W */
