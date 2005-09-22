@@ -1,21 +1,22 @@
-Return-Path: <listmember@orkun.us>
-Received: from www65.dixiesys.com (ns65a.dixiesys.com [65.254.42.90])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 82B5768300
+Return-Path: <scop@digitel.com.br>
+Received: from phoenix.digitel.com.br (unknown [200.198.105.46])
+	by ozlabs.org (Postfix) with ESMTP id 37354682F8
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 23 Sep 2005 06:10:16 +1000 (EST)
-Message-ID: <43330F99.3010906@orkun.us>
-Date: Thu, 22 Sep 2005 15:10:01 -0500
-From: Tolunay Orkun <listmember@orkun.us>
+	Fri, 23 Sep 2005 06:40:54 +1000 (EST)
+Received: from [10.10.10.4] by phoenix.digitel.com.br (GMS
+	10.03.3304/NU1492.00.9fae9071) with ESMTP id ryxzrbaa for
+	linuxppc-embedded@ozlabs.org; Thu, 22 Sep 2005 17:40:03 -0300
+Content-Type: text/plain;
+  charset="utf-8"
+From: Ricardo Scop <scop@digitel.com.br>
+To: =?utf-8?q?=E5=BE=90=E5=B0=8F=E5=A8=81=E7=9A=84EMAIL?= <rober@opnet.com.tw>,
+	linuxppc-embedded@ozlabs.org
+Date: Thu, 22 Sep 2005 17:47:40 -0300
+References: <1127354851.14175.4.camel@banana>
+In-Reply-To: <1127354851.14175.4.camel@banana>
 MIME-Version: 1.0
-To: Eugene Surovegin <ebs@ebshome.net>
-References: <432B3D99.5030209@orkun.us>
-	<20050916224131.GA9941@gate.ebshome.net>
-In-Reply-To: <20050916224131.GA9941@gate.ebshome.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: squashfs on ppc
+Message-Id: <200509221747.41076.scop@digitel.com.br>
+Subject: Re: How to limit the log file size?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,39 +27,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thanks for the reply. I've built file system images based on ext2, 
-cramfs and squashfs (2.1).
+Hi Rober,
 
-Uncompressed ext2 image is about 12MB consisting mostly of busybox, 
-other executables and shared libraries etc. Everything is stripped.
-
-cramfs based image took the least ram allocation but the most flash 
-space (18% more than gzipped ext2 image).
-squashfs was close to cramfs in ram usage but was about equal to gzipped 
-ext2 image.
-
-Thus, I have found squashfs based initrd to be good blance between ram 
-and flash.
-
-
-Eugene Surovegin wrote:
-
->On Fri, Sep 16, 2005 at 04:48:09PM -0500, Tolunay Orkun wrote:
->  
+On Wednesday 21 September 2005 23:07, =E5=BE=90=E5=B0=8F=E5=A8=81=E7=9A=84=
+EMAIL wrote:
+> Hi all:
 >
->>Has anyone any positive or negative experience of using squashfs on 
->>PowerPC as initrd?
->>
->>Our environment is PowerPC 405GP running 2.4.31 kernel. U-Boot is our 
->>bootloader. Any comparison with respect to CramFS?
->>    
->>
->
->I use squashfs and squashfs2. Both work just fine on PPC.
->
->They provide significantly better compression ration than cramfs, 
->although at the expense of some speed (mostly visible during initial 
->startup of big user-space app).
->
->  
->
+>     There are some daemon like snmpd, boa...has log file at directory
+> var, I want to know how to limte it's file size?
+
+I'm using emlog module (http://www.circlemud.org/~jelson/software/emlog/)=
+ to=20
+create circular buffers that are used as log files instead of regular one=
+s.=20
+You can define the file size when it is created; runs smoothly and=20
+flawlessly.
+
+HTH,
+
+--=20
+Ricardo Scop.
+
+        \|/
+    ___ -*-
+   (@ @)/|\
+  /  V  \|  R SCOP Consult.
+ /(     )\  Linux-based communications
+--^^---^^+------------------------------
+rscop@matrix.com.br
++55 51 999-36-777
+Porto Alegre, RS - BRazil
+--
+P. S.: "If you don't have time to do it right, when will you have time
+to do it over?"  -- Penny Hines =20
