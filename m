@@ -1,17 +1,17 @@
 Return-Path: <rolandd@cisco.com>
 Received: from ams-iport-1.cisco.com (ams-iport-1.cisco.com [144.254.224.140])
-	by ozlabs.org (Postfix) with ESMTP id EB815682F4
+	by ozlabs.org (Postfix) with ESMTP id 07E5B682F4
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 23 Sep 2005 13:13:26 +1000 (EST)
-In-Reply-To: <2005922203.92drttvd27WS9dXk@cisco.com>
+	Fri, 23 Sep 2005 13:13:28 +1000 (EST)
+In-Reply-To: <2005922203.qtfGFmWm3E8jkhq1@cisco.com>
 Date: Thu, 22 Sep 2005 20:03:35 -0700
-Message-Id: <2005922203.UPGbNSgrHKasoXYq@cisco.com>
+Message-Id: <2005922203.tCj2DaX4oc1ISyYc@cisco.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 To: mporter@kernel.crashing.org
 From: Roland Dreier <rolandd@cisco.com>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: [PATCH 2/4] [PPC32] Add 440SPe support
+Subject: [PATCH 4/4] [PPC32] Add Yucca (440SPe eval board) platform
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,504 +22,507 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Add support for the AMCC PowerPC 440SPe SoC.
+Add support for AMCC PowerPC 440SPe "Yucca" eval board platform.
 
 Signed-off-by: Roland Dreier <rolandd@cisco.com>
 
 ---
 
- arch/ppc/kernel/cputable.c          |   10 +++
- arch/ppc/platforms/4xx/Kconfig      |    8 ++
- arch/ppc/platforms/4xx/Makefile     |    1 
- arch/ppc/platforms/4xx/amcc440spe.c |  134 +++++++++++++++++++++++++++++++++++
- arch/ppc/platforms/4xx/amcc440spe.h |   64 +++++++++++++++++
- arch/ppc/syslib/Makefile            |    1 
- arch/ppc/syslib/ibm440sp_common.c   |    4 +
- arch/ppc/syslib/ppc4xx_pic.c        |   38 ++++++++++
- include/asm-ppc/ibm44x.h            |   42 ++++++++---
- 9 files changed, 287 insertions(+), 15 deletions(-)
- create mode 100644 arch/ppc/platforms/4xx/amcc440spe.c
- create mode 100644 arch/ppc/platforms/4xx/amcc440spe.h
+ arch/ppc/boot/simple/Makefile   |    6 +
+ arch/ppc/platforms/4xx/Kconfig  |   11 +-
+ arch/ppc/platforms/4xx/Makefile |    1 
+ arch/ppc/platforms/4xx/yucca.c  |  286 +++++++++++++++++++++++++++++++++++++++
+ arch/ppc/platforms/4xx/yucca.h  |  115 ++++++++++++++++
+ include/asm-ppc/ibm4xx.h        |    4 +
+ 6 files changed, 421 insertions(+), 2 deletions(-)
+ create mode 100644 arch/ppc/platforms/4xx/yucca.c
+ create mode 100644 arch/ppc/platforms/4xx/yucca.h
 
-4d773d76476fd1f577d1c7755c24d973fbfc1fe5
-diff --git a/arch/ppc/kernel/cputable.c b/arch/ppc/kernel/cputable.c
---- a/arch/ppc/kernel/cputable.c
-+++ b/arch/ppc/kernel/cputable.c
-@@ -972,6 +972,16 @@ struct cpu_spec	cpu_specs[] = {
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
- 	},
-+	{ /* 440SPe Rev. A */
-+		.pvr_mask		= 0xff000fff,
-+		.pvr_value		= 0x53000890,
-+		.cpu_name		= "440SPe Rev. A",
-+		.cpu_features		= CPU_FTR_SPLIT_ID_CACHE |
-+			CPU_FTR_USE_TB,
-+		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
-+		.icache_bsize		= 32,
-+		.dcache_bsize		= 32,
-+	},
- #endif /* CONFIG_44x */
- #ifdef CONFIG_FSL_BOOKE
- 	{ 	/* e200z5 */
+542fc1a61c8a721ee4c894ca961d8242d20e813a
+diff --git a/arch/ppc/boot/simple/Makefile b/arch/ppc/boot/simple/Makefile
+--- a/arch/ppc/boot/simple/Makefile
++++ b/arch/ppc/boot/simple/Makefile
+@@ -79,6 +79,12 @@ zimageinitrd-$(CONFIG_LUAN)		:= zImage.i
+   entrypoint-$(CONFIG_LUAN)		:= 0x01000000
+      extra.o-$(CONFIG_LUAN)		:= pibs.o
+ 
++      zimage-$(CONFIG_YUCCA)		:= zImage-TREE
++zimageinitrd-$(CONFIG_YUCCA)		:= zImage.initrd-TREE
++         end-$(CONFIG_YUCCA)		:= yucca
++  entrypoint-$(CONFIG_YUCCA)		:= 0x01000000
++     extra.o-$(CONFIG_YUCCA)		:= pibs.o
++
+       zimage-$(CONFIG_OCOTEA)		:= zImage-TREE
+ zimageinitrd-$(CONFIG_OCOTEA)		:= zImage.initrd-TREE
+          end-$(CONFIG_OCOTEA)		:= ocotea
 diff --git a/arch/ppc/platforms/4xx/Kconfig b/arch/ppc/platforms/4xx/Kconfig
 --- a/arch/ppc/platforms/4xx/Kconfig
 +++ b/arch/ppc/platforms/4xx/Kconfig
-@@ -124,9 +124,13 @@ config 440SP
- 	depends on LUAN
- 	default y
+@@ -82,6 +82,12 @@ config LUAN
+ 	help
+ 	  This option enables support for the IBM PPC440SP evaluation board.
  
-+config 440SPE
-+	bool
-+	default n
++config YUCCA
++	bool "Yucca"
++	select WANT_EARLY_SERIAL
++	help
++	  This option enables support for the AMCC PPC440SPe evaluation board.
 +
+ config OCOTEA
+ 	bool "Ocotea"
+ 	select WANT_EARLY_SERIAL
+@@ -126,7 +132,8 @@ config 440SP
+ 
+ config 440SPE
+ 	bool
+-	default n
++	depends on YUCCA
++	default y
+ 
  config 440
  	bool
--	depends on 440GP || 440SP || 440EP
-+	depends on 440GP || 440SP || 440SPE || 440EP
- 	default y
+@@ -162,7 +169,7 @@ config BOOKE
  
- config 440A
-@@ -168,7 +172,7 @@ config XILINX_OCP
- 
- config IBM_EMAC4
+ config IBM_OCP
  	bool
--	depends on 440GX || 440SP
-+	depends on 440GX || 440SP || 440SPE
+-	depends on ASH || BAMBOO || BUBINGA || CPCI405 || EBONY || EP405 || LUAN || OCOTEA || REDWOOD_5 || REDWOOD_6 || SYCAMORE || WALNUT
++	depends on ASH || BAMBOO || BUBINGA || CPCI405 || EBONY || EP405 || LUAN || YUCCA || OCOTEA || REDWOOD_5 || REDWOOD_6 || SYCAMORE || WALNUT
  	default y
  
- config BIOS_FIXUP
+ config XILINX_OCP
 diff --git a/arch/ppc/platforms/4xx/Makefile b/arch/ppc/platforms/4xx/Makefile
 --- a/arch/ppc/platforms/4xx/Makefile
 +++ b/arch/ppc/platforms/4xx/Makefile
-@@ -22,6 +22,7 @@ obj-$(CONFIG_440EP)		+= ibm440ep.o
- obj-$(CONFIG_440GP)		+= ibm440gp.o
- obj-$(CONFIG_440GX)		+= ibm440gx.o
- obj-$(CONFIG_440SP)		+= ibm440sp.o
-+obj-$(CONFIG_440SPE)		+= amcc440spe.o
- obj-$(CONFIG_405EP)		+= ibm405ep.o
- obj-$(CONFIG_405GPR)		+= ibm405gpr.o
- obj-$(CONFIG_VIRTEX_II_PRO)	+= virtex-ii_pro.o
-diff --git a/arch/ppc/platforms/4xx/amcc440spe.c b/arch/ppc/platforms/4xx/amcc440spe.c
+@@ -7,6 +7,7 @@ obj-$(CONFIG_EBONY)		+= ebony.o
+ obj-$(CONFIG_EP405)		+= ep405.o
+ obj-$(CONFIG_BUBINGA)		+= bubinga.o
+ obj-$(CONFIG_LUAN)		+= luan.o
++obj-$(CONFIG_YUCCA)		+= yucca.o
+ obj-$(CONFIG_OCOTEA)		+= ocotea.o
+ obj-$(CONFIG_REDWOOD_5)		+= redwood5.o
+ obj-$(CONFIG_REDWOOD_6)		+= redwood6.o
+diff --git a/arch/ppc/platforms/4xx/yucca.c b/arch/ppc/platforms/4xx/yucca.c
 new file mode 100644
 --- /dev/null
-+++ b/arch/ppc/platforms/4xx/amcc440spe.c
-@@ -0,0 +1,134 @@
++++ b/arch/ppc/platforms/4xx/yucca.c
+@@ -0,0 +1,286 @@
 +/*
-+ * arch/ppc/platforms/4xx/amc440spe.c
++ * arch/ppc/platforms/4xx/yucca.c
 + *
-+ * PPC440SPe I/O descriptions
++ * Yucca board specific routines
 + *
-+ * Roland Dreier <rolandd@cisco.com>
++ * Roland Dreier <rolandd@cisco.com> (based on yucca.c by Matt Porter)
++ *
++ * Copyright 2004-2005 MontaVista Software Inc.
 + * Copyright (c) 2005 Cisco Systems.  All rights reserved.
 + *
-+ * Matt Porter <mporter@kernel.crashing.org>
-+ * Copyright 2002-2005 MontaVista Software Inc.
-+ *
-+ * Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
-+ * Copyright (c) 2003, 2004 Zultys Technologies
-+ *
 + * This program is free software; you can redistribute  it and/or modify it
 + * under  the terms of  the GNU General  Public License as published by the
 + * Free Software Foundation;  either version 2 of the  License, or (at your
 + * option) any later version.
-+ *
 + */
++
++#include <linux/config.h>
++#include <linux/stddef.h>
++#include <linux/kernel.h>
 +#include <linux/init.h>
-+#include <linux/module.h>
-+#include <platforms/4xx/amcc440spe.h>
++#include <linux/errno.h>
++#include <linux/reboot.h>
++#include <linux/pci.h>
++#include <linux/kdev_t.h>
++#include <linux/types.h>
++#include <linux/major.h>
++#include <linux/blkdev.h>
++#include <linux/console.h>
++#include <linux/delay.h>
++#include <linux/ide.h>
++#include <linux/initrd.h>
++#include <linux/irq.h>
++#include <linux/seq_file.h>
++#include <linux/root_dev.h>
++#include <linux/tty.h>
++#include <linux/serial.h>
++#include <linux/serial_core.h>
++
++#include <asm/system.h>
++#include <asm/pgtable.h>
++#include <asm/page.h>
++#include <asm/dma.h>
++#include <asm/io.h>
++#include <asm/machdep.h>
 +#include <asm/ocp.h>
++#include <asm/pci-bridge.h>
++#include <asm/time.h>
++#include <asm/todc.h>
++#include <asm/bootinfo.h>
++#include <asm/ppc4xx_pic.h>
++#include <asm/ppcboot.h>
 +
-+static struct ocp_func_emac_data amc440spe_emac0_def = {
-+	.rgmii_idx	= -1,		/* No RGMII */
-+	.rgmii_mux	= -1,		/* No RGMII */
-+	.zmii_idx       = -1,           /* No ZMII */
-+	.zmii_mux       = -1,           /* No ZMII */
-+	.mal_idx        = 0,            /* MAL device index */
-+	.mal_rx_chan    = 0,            /* MAL rx channel number */
-+	.mal_tx_chan    = 0,            /* MAL tx channel number */
-+	.wol_irq        = 61,  		/* WOL interrupt number */
-+	.mdio_idx       = -1,           /* No shared MDIO */
-+	.tah_idx	= -1,		/* No TAH */
-+	.jumbo		= 1,		/* Jumbo frames supported */
-+};
-+OCP_SYSFS_EMAC_DATA()
++#include <syslib/ibm44x_common.h>
++#include <syslib/ibm440gx_common.h>
++#include <syslib/ibm440sp_common.h>
 +
-+static struct ocp_func_mal_data amc440spe_mal0_def = {
-+	.num_tx_chans   = 1,    	/* Number of TX channels */
-+	.num_rx_chans   = 1,    	/* Number of RX channels */
-+	.txeob_irq	= 38,		/* TX End Of Buffer IRQ  */
-+	.rxeob_irq	= 39,		/* RX End Of Buffer IRQ  */
-+	.txde_irq	= 34,		/* TX Descriptor Error IRQ */
-+	.rxde_irq	= 35,		/* RX Descriptor Error IRQ */
-+	.serr_irq	= 33,		/* MAL System Error IRQ    */
-+};
-+OCP_SYSFS_MAL_DATA()
++/*
++ * This is a horrible kludge, we eventually need to abstract this
++ * generic PHY stuff, so the  standard phy mode defines can be
++ * easily used from arch code.
++ */
++#include "../../../../drivers/net/ibm_emac/ibm_emac_phy.h"
 +
-+static struct ocp_func_iic_data amc440spe_iic0_def = {
-+	.fast_mode	= 0,		/* Use standad mode (100Khz) */
-+};
++bd_t __res;
 +
-+static struct ocp_func_iic_data amc440spe_iic1_def = {
-+	.fast_mode	= 0,		/* Use standad mode (100Khz) */
-+};
-+OCP_SYSFS_IIC_DATA()
++static struct ibm44x_clocks clocks __initdata;
 +
-+struct ocp_def core_ocp[] = {
-+	{ .vendor	= OCP_VENDOR_IBM,
-+	  .function	= OCP_FUNC_OPB,
-+	  .index	= 0,
-+	  .paddr	= 0x0000000140000000ULL,
-+	  .irq		= OCP_IRQ_NA,
-+	  .pm		= OCP_CPM_NA,
-+	},
-+	{ .vendor	= OCP_VENDOR_IBM,
-+	  .function	= OCP_FUNC_16550,
-+	  .index	= 0,
-+	  .paddr	= PPC440SPE_UART0_ADDR,
-+	  .irq		= UART0_INT,
-+	  .pm		= IBM_CPM_UART0,
-+	},
-+	{ .vendor	= OCP_VENDOR_IBM,
-+	  .function	= OCP_FUNC_16550,
-+	  .index	= 1,
-+	  .paddr	= PPC440SPE_UART1_ADDR,
-+	  .irq		= UART1_INT,
-+	  .pm		= IBM_CPM_UART1,
-+	},
-+	{ .vendor	= OCP_VENDOR_IBM,
-+	  .function	= OCP_FUNC_16550,
-+	  .index	= 2,
-+	  .paddr	= PPC440SPE_UART2_ADDR,
-+	  .irq		= UART2_INT,
-+	  .pm		= IBM_CPM_UART2,
-+	},
-+	{ .vendor	= OCP_VENDOR_IBM,
-+	  .function	= OCP_FUNC_IIC,
-+	  .index	= 0,
-+	  .paddr	= 0x00000001f0000400ULL,
-+	  .irq		= 2,
-+	  .pm		= IBM_CPM_IIC0,
-+	  .additions	= &amc440spe_iic0_def,
-+	  .show		= &ocp_show_iic_data
-+	},
-+	{ .vendor	= OCP_VENDOR_IBM,
-+	  .function	= OCP_FUNC_IIC,
-+	  .index	= 1,
-+	  .paddr	= 0x00000001f0000500ULL,
-+	  .irq		= 3,
-+	  .pm		= IBM_CPM_IIC1,
-+	  .additions	= &amc440spe_iic1_def,
-+	  .show		= &ocp_show_iic_data
-+	},
-+	{ .vendor	= OCP_VENDOR_IBM,
-+	  .function	= OCP_FUNC_GPIO,
-+	  .index	= 0,
-+	  .paddr	= 0x00000001f0000700ULL,
-+	  .irq		= OCP_IRQ_NA,
-+	  .pm		= IBM_CPM_GPIO0,
-+	},
-+	{ .vendor	= OCP_VENDOR_IBM,
-+	  .function	= OCP_FUNC_MAL,
-+	  .paddr	= OCP_PADDR_NA,
-+	  .irq		= OCP_IRQ_NA,
-+	  .pm		= OCP_CPM_NA,
-+	  .additions	= &amc440spe_mal0_def,
-+	  .show		= &ocp_show_mal_data,
-+	},
-+	{ .vendor	= OCP_VENDOR_IBM,
-+	  .function	= OCP_FUNC_EMAC,
-+	  .index	= 0,
-+	  .paddr	= 0x00000004f0000800ULL,
-+	  .irq		= 60,
-+	  .pm		= OCP_CPM_NA,
-+	  .additions	= &amc440spe_emac0_def,
-+	  .show		= &ocp_show_emac_data,
-+	},
-+	{ .vendor	= OCP_VENDOR_INVALID
++static void __init
++yucca_calibrate_decr(void)
++{
++	unsigned int freq;
++
++	if (mfspr(SPRN_CCR1) & CCR1_TCS)
++		freq = YUCCA_TMR_CLK;
++	else
++		freq = clocks.cpu;
++
++	ibm44x_calibrate_decr(freq);
++}
++
++static int
++yucca_show_cpuinfo(struct seq_file *m)
++{
++	seq_printf(m, "vendor\t\t: AMCC\n");
++	seq_printf(m, "machine\t\t: PPC440SPe EVB (Yucca)\n");
++
++	return 0;
++}
++
++static inline int
++yucca_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
++{
++	struct pci_controller *hose = pci_bus_to_hose(dev->bus->number);
++
++	/* PCIX */
++	if (hose->index == 3) {
++		static char pci_irq_table[][4] =
++		/*
++		 *	PCI IDSEL/INTPIN->INTLINE
++		 *	  A   B   C   D
++		 */
++		{
++			{ 81, -1, -1, -1 },	/* IDSEL 1 - PCIX0 Slot 0 */
++		};
++		const long min_idsel = 1, max_idsel = 1, irqs_per_slot = 4;
++		return PCI_IRQ_TABLE_LOOKUP;
++	/* PCIE0 */
++	} else if (hose->index == 0) {
++		static char pci_irq_table[][4] =
++		/*
++		 *	PCI IDSEL/INTPIN->INTLINE
++		 *	  A   B   C   D
++		 */
++		{
++			{ 96, 97, 98, 99 },
++		};
++		const long min_idsel = 1, max_idsel = 1, irqs_per_slot = 4;
++		return PCI_IRQ_TABLE_LOOKUP;
++	/* PCIE1 */
++	} else if (hose->index == 1) {
++		static char pci_irq_table[][4] =
++		/*
++		 *	PCI IDSEL/INTPIN->INTLINE
++		 *	  A   B   C   D
++		 */
++		{
++			{ 100, 101, 102, 103 },
++		};
++		const long min_idsel = 1, max_idsel = 1, irqs_per_slot = 4;
++		return PCI_IRQ_TABLE_LOOKUP;
++	/* PCIE2 */
++	} else if (hose->index == 2) {
++		static char pci_irq_table[][4] =
++		/*
++		 *	PCI IDSEL/INTPIN->INTLINE
++		 *	  A   B   C   D
++		 */
++		{
++			{ 104, 105, 106, 107 },
++		};
++		const long min_idsel = 1, max_idsel = 1, irqs_per_slot = 4;
++		return PCI_IRQ_TABLE_LOOKUP;
 +	}
-+};
-diff --git a/arch/ppc/platforms/4xx/amcc440spe.h b/arch/ppc/platforms/4xx/amcc440spe.h
++	return -1;
++}
++
++static void __init yucca_set_emacdata(void)
++{
++	struct ocp_def *def;
++	struct ocp_func_emac_data *emacdata;
++
++	/* Set phy_map, phy_mode, and mac_addr for the EMAC */
++	def = ocp_get_one_device(OCP_VENDOR_IBM, OCP_FUNC_EMAC, 0);
++	emacdata = def->additions;
++	emacdata->phy_map = 0x00000001;	/* Skip 0x00 */
++	emacdata->phy_mode = PHY_MODE_GMII;
++	memcpy(emacdata->mac_addr, __res.bi_enetaddr, 6);
++}
++
++static void __init
++yucca_setup_hoses(void)
++{
++
++}
++
++TODC_ALLOC();
++
++static void __init
++yucca_early_serial_map(void)
++{
++	struct uart_port port;
++
++	/* Setup ioremapped serial port access */
++	memset(&port, 0, sizeof(port));
++	port.membase = ioremap64(PPC440SPE_UART0_ADDR, 8);
++	port.irq = UART0_INT;
++	port.uartclk = clocks.uart0;
++	port.regshift = 0;
++	port.iotype = SERIAL_IO_MEM;
++	port.flags = ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST;
++	port.line = 0;
++
++	if (early_serial_setup(&port) != 0) {
++		printk("Early serial init of port 0 failed\n");
++	}
++
++	port.membase = ioremap64(PPC440SPE_UART1_ADDR, 8);
++	port.irq = UART1_INT;
++	port.uartclk = clocks.uart1;
++	port.line = 1;
++
++	if (early_serial_setup(&port) != 0) {
++		printk("Early serial init of port 1 failed\n");
++	}
++
++	port.membase = ioremap64(PPC440SPE_UART2_ADDR, 8);
++	port.irq = UART2_INT;
++	port.uartclk = BASE_BAUD;
++	port.line = 2;
++
++	if (early_serial_setup(&port) != 0) {
++		printk("Early serial init of port 2 failed\n");
++	}
++}
++
++static void __init
++yucca_setup_arch(void)
++{
++	yucca_set_emacdata();
++
++#if !defined(CONFIG_BDI_SWITCH)
++	/*
++	 * The Abatron BDI JTAG debugger does not tolerate others
++	 * mucking with the debug registers.
++	 */
++        mtspr(SPRN_DBCR0, (DBCR0_TDE | DBCR0_IDM));
++#endif
++
++	/*
++	 * Determine various clocks.
++	 * To be completely correct we should get SysClk
++	 * from FPGA, because it can be changed by on-board switches
++	 * --ebs
++	 */
++	/* 440GX and 440SP clocking is the same -mdp */
++	ibm440gx_get_clocks(&clocks, 33333333, 6 * 1843200);
++	ocp_sys_info.opb_bus_freq = clocks.opb;
++
++	/* init to some ~sane value until calibrate_delay() runs */
++        loops_per_jiffy = 50000000/HZ;
++
++	/* Setup PCIXn host bridges */
++	yucca_setup_hoses();
++
++#ifdef CONFIG_BLK_DEV_INITRD
++	if (initrd_start)
++		ROOT_DEV = Root_RAM0;
++	else
++#endif
++#ifdef CONFIG_ROOT_NFS
++		ROOT_DEV = Root_NFS;
++#else
++		ROOT_DEV = Root_HDA1;
++#endif
++
++	yucca_early_serial_map();
++
++	/* Identify the system */
++	printk("Yucca port (Roland Dreier <rolandd@cisco.com>)\n");
++}
++
++void __init platform_init(unsigned long r3, unsigned long r4,
++		unsigned long r5, unsigned long r6, unsigned long r7)
++{
++	parse_bootinfo(find_bootinfo());
++
++	/*
++	 * If we were passed in a board information, copy it into the
++	 * residual data area.
++	 */
++	if (r3)
++		__res = *(bd_t *)(r3 + KERNELBASE);
++
++#if defined(CONFIG_BLK_DEV_INITRD)
++	/*
++	 * If the init RAM disk has been configured in, and there's a valid
++	 * starting address for it, set it up.
++	 */
++	if (r4) {
++		initrd_start = r4 + KERNELBASE;
++		initrd_end = r5 + KERNELBASE;
++	}
++#endif /* CONFIG_BLK_DEV_INITRD */
++
++	ibm44x_platform_init();
++
++	ppc_md.setup_arch = yucca_setup_arch;
++	ppc_md.show_cpuinfo = yucca_show_cpuinfo;
++	ppc_md.find_end_of_memory = ibm440sp_find_end_of_memory;
++	ppc_md.get_irq = NULL;		/* Set in ppc4xx_pic_init() */
++
++	ppc_md.calibrate_decr = yucca_calibrate_decr;
++#ifdef CONFIG_KGDB
++	ppc_md.early_serial_map = yucca_early_serial_map;
++#endif
++}
+diff --git a/arch/ppc/platforms/4xx/yucca.h b/arch/ppc/platforms/4xx/yucca.h
 new file mode 100644
 --- /dev/null
-+++ b/arch/ppc/platforms/4xx/amcc440spe.h
-@@ -0,0 +1,64 @@
++++ b/arch/ppc/platforms/4xx/yucca.h
+@@ -0,0 +1,115 @@
 +/*
-+ * arch/ppc/platforms/4xx/ibm440sp.h
++ * arch/ppc/platforms/4xx/yucca.h
 + *
-+ * PPC440SP definitions
++ * Yucca board definitions
 + *
-+ * Matt Porter <mporter@kernel.crashing.org>
++ * Roland Dreier <rolandd@cisco.com> (based on luan.h by Matt Porter)
 + *
-+ * Copyright 2004-2005 MontaVista Software, Inc.
++ * Copyright 2004-2005 MontaVista Software Inc.
++ * Copyright (c) 2005 Cisco Systems.  All rights reserved.
 + *
 + * This program is free software; you can redistribute  it and/or modify it
 + * under  the terms of  the GNU General  Public License as published by the
 + * Free Software Foundation;  either version 2 of the  License, or (at your
 + * option) any later version.
++ *
 + */
 +
 +#ifdef __KERNEL__
-+#ifndef __PPC_PLATFORMS_AMCC440SPE_H
-+#define __PPC_PLATFORMS_AMCC440SPE_H
++#ifndef __ASM_YUCCA_H__
++#define __ASM_YUCCA_H__
 +
 +#include <linux/config.h>
++#include <platforms/4xx/amcc440spe.h>
 +
-+#include <asm/ibm44x.h>
++/* F/W TLB mapping used in bootloader glue to reset EMAC */
++#define PPC44x_EMAC0_MR0	0xa0000800
 +
-+/* UART */
-+#define PPC440SPE_UART0_ADDR	0x00000004f0000200ULL
-+#define PPC440SPE_UART1_ADDR	0x00000004f0000300ULL
-+#define PPC440SPE_UART2_ADDR	0x00000004f0000600ULL
-+#define UART0_INT		0
-+#define UART1_INT		1
-+#define UART2_INT		37
++/* Location of MAC addresses in PIBS image */
++#define PIBS_FLASH_BASE		0xffe00000
++#define PIBS_MAC_BASE		(PIBS_FLASH_BASE+0x1b0400)
 +
-+/* Clock and Power Management */
-+#define IBM_CPM_IIC0		0x80000000	/* IIC interface */
-+#define IBM_CPM_IIC1		0x40000000	/* IIC interface */
-+#define IBM_CPM_PCI		0x20000000	/* PCI bridge */
-+#define IBM_CPM_CPU		    0x02000000	/* processor core */
-+#define IBM_CPM_DMA		    0x01000000	/* DMA controller */
-+#define IBM_CPM_BGO		    0x00800000	/* PLB to OPB bus arbiter */
-+#define IBM_CPM_BGI		    0x00400000	/* OPB to PLB bridge */
-+#define IBM_CPM_EBC		    0x00200000	/* External Bux Controller */
-+#define IBM_CPM_EBM		    0x00100000	/* Ext Bus Master Interface */
-+#define IBM_CPM_DMC		    0x00080000	/* SDRAM peripheral controller */
-+#define IBM_CPM_PLB		    0x00040000	/* PLB bus arbiter */
-+#define IBM_CPM_SRAM		0x00020000	/* SRAM memory controller */
-+#define IBM_CPM_PPM		    0x00002000	/* PLB Performance Monitor */
-+#define IBM_CPM_UIC1		0x00001000	/* Universal Interrupt Controller */
-+#define IBM_CPM_GPIO0		0x00000800	/* General Purpose IO (??) */
-+#define IBM_CPM_GPT		    0x00000400	/* General Purpose Timers  */
-+#define IBM_CPM_UART0		0x00000200	/* serial port 0 */
-+#define IBM_CPM_UART1		0x00000100	/* serial port 1 */
-+#define IBM_CPM_UART2		0x00000100	/* serial port 1 */
-+#define IBM_CPM_UIC0		0x00000080	/* Universal Interrupt Controller */
-+#define IBM_CPM_TMRCLK		0x00000040	/* CPU timers */
-+#define IBM_CPM_EMAC0  		0x00000020	/* EMAC 0     */
++/* External timer clock frequency */
++#define YUCCA_TMR_CLK		25000000
 +
-+#define DFLT_IBM4xx_PM		~(IBM_CPM_UIC | IBM_CPM_UIC1 | IBM_CPM_CPU \
-+				| IBM_CPM_EBC | IBM_CPM_SRAM | IBM_CPM_BGO \
-+				| IBM_CPM_EBM | IBM_CPM_PLB | IBM_CPM_OPB \
-+				| IBM_CPM_TMRCLK | IBM_CPM_DMA | IBM_CPM_PCI \
-+				| IBM_CPM_TAHOE0 | IBM_CPM_TAHOE1 \
-+				| IBM_CPM_EMAC0 | IBM_CPM_EMAC1 \
-+			  	| IBM_CPM_EMAC2 | IBM_CPM_EMAC3 )
-+#endif /* __PPC_PLATFORMS_AMCC440SP_H */
-+#endif /* __KERNEL__ */
-diff --git a/arch/ppc/syslib/Makefile b/arch/ppc/syslib/Makefile
---- a/arch/ppc/syslib/Makefile
-+++ b/arch/ppc/syslib/Makefile
-@@ -15,6 +15,7 @@ obj-$(CONFIG_440EP)		+= ibm440gx_common.
- obj-$(CONFIG_440GP)		+= ibm440gp_common.o
- obj-$(CONFIG_440GX)		+= ibm440gx_common.o
- obj-$(CONFIG_440SP)		+= ibm440gx_common.o ibm440sp_common.o
-+obj-$(CONFIG_440SPE)		+= ibm440gx_common.o ibm440sp_common.o
- ifeq ($(CONFIG_4xx),y)
- ifeq ($(CONFIG_VIRTEX_II_PRO),y)
- obj-$(CONFIG_40x)		+= xilinx_pic.o
-diff --git a/arch/ppc/syslib/ibm440sp_common.c b/arch/ppc/syslib/ibm440sp_common.c
---- a/arch/ppc/syslib/ibm440sp_common.c
-+++ b/arch/ppc/syslib/ibm440sp_common.c
-@@ -1,7 +1,7 @@
- /*
-  * arch/ppc/syslib/ibm440sp_common.c
-  *
-- * PPC440SP system library
-+ * PPC440SP/PPC440SPe system library
-  *
-  * Matt Porter <mporter@kernel.crashing.org>
-  * Copyright 2002-2005 MontaVista Software Inc.
-@@ -35,7 +35,7 @@ unsigned long __init ibm440sp_find_end_o
- 	u32 mem_size = 0;
- 
- 	/* Read two bank sizes and sum */
--	for (i=0; i<2; i++)
-+	for (i=0; i< MQ0_NUM_BANKS; i++)
- 		switch (mfdcr(DCRN_MQ0_BS0BAS + i) & MQ0_CONFIG_SIZE_MASK) {
- 			case MQ0_CONFIG_SIZE_8M:
- 				mem_size += PPC44x_MEM_SIZE_8M;
-diff --git a/arch/ppc/syslib/ppc4xx_pic.c b/arch/ppc/syslib/ppc4xx_pic.c
---- a/arch/ppc/syslib/ppc4xx_pic.c
-+++ b/arch/ppc/syslib/ppc4xx_pic.c
-@@ -37,6 +37,7 @@ extern unsigned char ppc4xx_uic_ext_irq_
- #define IRQ_MASK_UICx(irq)		(1 << (31 - ((irq) & 0x1f)))
- #define IRQ_MASK_UIC1(irq)		IRQ_MASK_UICx(irq)
- #define IRQ_MASK_UIC2(irq)		IRQ_MASK_UICx(irq)
-+#define IRQ_MASK_UIC3(irq)		IRQ_MASK_UICx(irq)
- 
- #define UIC_HANDLERS(n)							\
- static void ppc4xx_uic##n##_enable(unsigned int irq)			\
-@@ -87,7 +88,39 @@ static void ppc4xx_uic##n##_end(unsigned
- 	.end 		= ppc4xx_uic##n##_end,				\
- }									\
- 
--#if NR_UICS == 3
-+#if NR_UICS == 4
-+#define ACK_UIC0_PARENT
-+#define ACK_UIC1_PARENT	mtdcr(DCRN_UIC_SR(UIC0), UIC0_UIC1NC);
-+#define ACK_UIC2_PARENT	mtdcr(DCRN_UIC_SR(UIC0), UIC0_UIC2NC);
-+#define ACK_UIC3_PARENT	mtdcr(DCRN_UIC_SR(UIC0), UIC0_UIC3NC);
-+UIC_HANDLERS(0);
-+UIC_HANDLERS(1);
-+UIC_HANDLERS(2);
-+UIC_HANDLERS(3);
++/*
++ * FPGA registers
++ */
++#define YUCCA_FPGA_REG_BASE			0x00000004e2000000ULL
++#define YUCCA_FPGA_REG_SIZE			0x24
 +
-+static int ppc4xx_pic_get_irq(struct pt_regs *regs)
-+{
-+	u32 uic0 = mfdcr(DCRN_UIC_MSR(UIC0));
-+	if (uic0 & UIC0_UIC1NC)
-+		return 64 - ffs(mfdcr(DCRN_UIC_MSR(UIC1)));
-+	else if (uic0 & UIC0_UIC2NC)
-+		return 96 - ffs(mfdcr(DCRN_UIC_MSR(UIC2)));
-+	else if (uic0 & UIC0_UIC2NC)
-+		return 128 - ffs(mfdcr(DCRN_UIC_MSR(UIC3)));
-+	else
-+		return uic0 ? 32 - ffs(uic0) : -1;
-+}
++#define FPGA_REG1A				0x1a
 +
-+static void __init ppc4xx_pic_impl_init(void)
-+{
-+	/* Enable cascade interrupts in UIC0 */
-+	/* Enable cascade interrupt in UIC0 */
-+	ppc_cached_irq_mask[0] |= UIC0_UIC1NC | UIC0_UIC2NC | UIC0_UIC3NC;
-+	mtdcr(DCRN_UIC_SR(UIC0), UIC0_UIC1NC | UIC0_UIC2NC | UIC0_UIC3NC);
-+	mtdcr(DCRN_UIC_ER(UIC0), ppc_cached_irq_mask[0]);
-+}
++#define FPGA_REG1A_PE0_GLED			0x8000
++#define FPGA_REG1A_PE1_GLED			0x4000
++#define FPGA_REG1A_PE2_GLED			0x2000
++#define FPGA_REG1A_PE0_YLED			0x1000
++#define FPGA_REG1A_PE1_YLED			0x0800
++#define FPGA_REG1A_PE2_YLED			0x0400
++#define FPGA_REG1A_PE0_PWRON			0x0200
++#define FPGA_REG1A_PE1_PWRON			0x0100
++#define FPGA_REG1A_PE2_PWRON			0x0080
++#define FPGA_REG1A_PE0_REFCLK_ENABLE		0x0040
++#define FPGA_REG1A_PE1_REFCLK_ENABLE		0x0020
++#define FPGA_REG1A_PE2_REFCLK_ENABLE		0x0010
++#define FPGA_REG1A_PE_SPREAD0			0x0008
++#define FPGA_REG1A_PE_SPREAD1			0x0004
++#define FPGA_REG1A_PE_SELSOURCE_0		0x0002
++#define FPGA_REG1A_PE_SELSOURCE_1		0x0001
 +
-+#elif NR_UICS == 3
- #define ACK_UIC0_PARENT	mtdcr(DCRN_UIC_SR(UICB), UICB_UIC0NC);
- #define ACK_UIC1_PARENT	mtdcr(DCRN_UIC_SR(UICB), UICB_UIC1NC);
- #define ACK_UIC2_PARENT	mtdcr(DCRN_UIC_SR(UICB), UICB_UIC2NC);
-@@ -169,6 +202,9 @@ static struct ppc4xx_uic_impl {
- 	{ .decl = DECLARE_UIC(1), .base = UIC1 },
- #if NR_UICS > 2
- 	{ .decl = DECLARE_UIC(2), .base = UIC2 },
-+#if NR_UICS > 3
-+	{ .decl = DECLARE_UIC(3), .base = UIC3 },
-+#endif
++#define FPGA_REG1C				0x1c
++
++#define FPGA_REG1C_PE0_ROOTPOINT		0x8000
++#define FPGA_REG1C_PE1_ENDPOINT			0x4000
++#define FPGA_REG1C_PE2_ENDPOINT			0x2000
++#define FPGA_REG1C_PE0_PRSNT			0x1000
++#define FPGA_REG1C_PE1_PRSNT			0x0800
++#define FPGA_REG1C_PE2_PRSNT			0x0400
++#define FPGA_REG1C_PE0_WAKE			0x0080
++#define FPGA_REG1C_PE1_WAKE			0x0040
++#define FPGA_REG1C_PE2_WAKE			0x0020
++#define FPGA_REG1C_PE0_PERST			0x0010
++#define FPGA_REG1C_PE1_PERST			0x0008
++#define FPGA_REG1C_PE2_PERST			0x0004
++
++/*
++ * Serial port defines
++ */
++#define RS_TABLE_SIZE	3
++
++/* PIBS defined UART mappings, used before early_serial_setup */
++#define UART0_IO_BASE	0xa0000200
++#define UART1_IO_BASE	0xa0000300
++#define UART2_IO_BASE	0xa0000600
++
++#define BASE_BAUD	11059200
++#define STD_UART_OP(num)					\
++	{ 0, BASE_BAUD, 0, UART##num##_INT,			\
++		(ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST),	\
++		iomem_base: UART##num##_IO_BASE,		\
++		io_type: SERIAL_IO_MEM},
++
++#define SERIAL_PORT_DFNS	\
++	STD_UART_OP(0)		\
++	STD_UART_OP(1)		\
++	STD_UART_OP(2)
++
++/* PCI support */
++#define YUCCA_PCIX_LOWER_IO	0x00000000
++#define YUCCA_PCIX_UPPER_IO	0x0000ffff
++#define YUCCA_PCIX_LOWER_MEM	0x80000000
++#define YUCCA_PCIX_UPPER_MEM	0x8fffffff
++#define YUCCA_PCIE0_LOWER_MEM	0x90000000
++#define YUCCA_PCIE0_UPPER_MEM	0x9fffffff
++#define YUCCA_PCIE1_LOWER_MEM	0xa0000000
++#define YUCCA_PCIE1_UPPER_MEM	0xafffffff
++#define YUCCA_PCIE2_LOWER_MEM	0xb0000000
++#define YUCCA_PCIE2_UPPER_MEM	0xbfffffff
++
++#define YUCCA_PCIX_MEM_SIZE	0x10000000
++#define YUCCA_PCIX_MEM_OFFSET	0x00000000
++#define YUCCA_PCIE_MEM_SIZE	0x10000000
++#define YUCCA_PCIE_MEM_OFFSET	0x00000000
++
++#endif				/* __ASM_YUCCA_H__ */
++#endif				/* __KERNEL__ */
+diff --git a/include/asm-ppc/ibm4xx.h b/include/asm-ppc/ibm4xx.h
+--- a/include/asm-ppc/ibm4xx.h
++++ b/include/asm-ppc/ibm4xx.h
+@@ -97,6 +97,10 @@ void ppc4xx_init(unsigned long r3, unsig
+ #include <platforms/4xx/luan.h>
  #endif
+ 
++#if defined(CONFIG_YUCCA)
++#include <platforms/4xx/yucca.h>
++#endif
++
+ #if defined(CONFIG_OCOTEA)
+ #include <platforms/4xx/ocotea.h>
  #endif
- };
-diff --git a/include/asm-ppc/ibm44x.h b/include/asm-ppc/ibm44x.h
---- a/include/asm-ppc/ibm44x.h
-+++ b/include/asm-ppc/ibm44x.h
-@@ -41,6 +41,9 @@
- #if defined(CONFIG_440SP)
- #define UART0_PHYS_ERPN		1
- #define UART0_PHYS_IO_BASE	0xf0000200
-+#elif defined(CONFIG_440SPE)
-+#define UART0_PHYS_ERPN		4
-+#define UART0_PHYS_IO_BASE	0xf0000200
- #elif defined(CONFIG_440EP)
- #define UART0_PHYS_IO_BASE	0xe0000000
- #else
-@@ -76,7 +79,7 @@
- /*
-  * 36-bit trap ranges
-  */
--#if defined(CONFIG_440SP)
-+#if defined(CONFIG_440SP) || defined(CONFIG_440SPE)
- #define PPC44x_IO_LO		0xf0000000UL
- #define PPC44x_IO_HI		0xf0000fffUL
- #define PPC44x_PCI0CFG_LO	0x0ec00000UL
-@@ -114,7 +117,7 @@
-  */
- 
- 
--/* CPRs (440GX and 440SP) */
-+/* CPRs (440GX and 440SP/440SPe) */
- #define DCRN_CPR_CONFIG_ADDR	0xc
- #define DCRN_CPR_CONFIG_DATA	0xd
- 
-@@ -135,7 +138,7 @@
- 	mtdcr(DCRN_CPR_CONFIG_ADDR, offset); \
- 	mtdcr(DCRN_CPR_CONFIG_DATA, data);})
- 
--/* SDRs (440GX and 440SP) */
-+/* SDRs (440GX and 440SP/440SPe) */
- #define DCRN_SDR_CONFIG_ADDR 	0xe
- #define DCRN_SDR_CONFIG_DATA	0xf
- #define DCRN_SDR_PFC0		0x4100
-@@ -185,7 +188,7 @@
- 	mtdcr(DCRN_SDR_CONFIG_ADDR, offset); \
- 	mtdcr(DCRN_SDR_CONFIG_DATA,data);})
- 
--/* DMA (excluding 440SP) */
-+/* DMA (excluding 440SP/440SPe) */
- #define DCRN_DMA0_BASE		0x100
- #define DCRN_DMA1_BASE		0x108
- #define DCRN_DMA2_BASE		0x110
-@@ -205,12 +208,20 @@
- /* UIC */
- #define DCRN_UIC0_BASE	0xc0
- #define DCRN_UIC1_BASE	0xd0
--#define DCRN_UIC2_BASE	0x210
--#define DCRN_UICB_BASE	0x200
- #define UIC0		DCRN_UIC0_BASE
- #define UIC1		DCRN_UIC1_BASE
-+
-+#ifdef CONFIG_440SPE
-+#define DCRN_UIC2_BASE	0xe0
-+#define DCRN_UIC3_BASE	0xf0
-+#define UIC2		DCRN_UIC2_BASE
-+#define UIC3		DCRN_UIC3_BASE
-+#else
-+#define DCRN_UIC2_BASE	0x210
-+#define DCRN_UICB_BASE	0x200
- #define UIC2		DCRN_UIC2_BASE
- #define UICB		DCRN_UICB_BASE
-+#endif
- 
- #define DCRN_UIC_SR(base)       (base + 0x0)
- #define DCRN_UIC_ER(base)       (base + 0x2)
-@@ -223,6 +234,12 @@
- 
- #define UIC0_UIC1NC      	0x00000002
- 
-+#ifdef CONFIG_440SPE
-+#define UIC0_UIC1NC      0x00000002
-+#define UIC0_UIC2NC      0x00008000
-+#define UIC0_UIC3NC      0x00200000
-+#endif
-+
- #define UICB_UIC0NC		0x40000000
- #define UICB_UIC1NC		0x10000000
- #define UICB_UIC2NC		0x04000000
-@@ -412,9 +429,13 @@
- #define PPC44x_MEM_SIZE_1G		0x40000000
- #define PPC44x_MEM_SIZE_2G		0x80000000
- 
--/* 440SP memory controller DCRs */
-+/* 440SP/440SPe memory controller DCRs */
- #define DCRN_MQ0_BS0BAS			0x40
--#define DCRN_MQ0_BS1BAS			0x41
-+#if defined(CONFIG_440SP)
-+#define MQ0_NUM_BANKS			2
-+#elif defined(CONFIG_440SPE)
-+#define MQ0_NUM_BANKS			4
-+#endif
- 
- #define MQ0_CONFIG_SIZE_MASK		0x0000fff0
- #define MQ0_CONFIG_SIZE_8M		0x0000ffc0
-@@ -426,8 +447,9 @@
- #define MQ0_CONFIG_SIZE_512M		0x0000f000
- #define MQ0_CONFIG_SIZE_1G		0x0000e000
- #define MQ0_CONFIG_SIZE_2G		0x0000c000
-+#define MQ0_CONFIG_SIZE_4G		0x00008000
- 
--/* Internal SRAM Controller 440GX/440SP */
-+/* Internal SRAM Controller 440GX/440SP/440SPe */
- #define DCRN_SRAM0_BASE		0x000
- 
- #define DCRN_SRAM0_SB0CR	(DCRN_SRAM0_BASE + 0x020)
-@@ -451,7 +473,7 @@
- #define DCRN_SRAM0_DPC		(DCRN_SRAM0_BASE + 0x02a)
- #define  SRAM_DPC_ENABLE	0x80000000
- 
--/* L2 Cache Controller 440GX/440SP */
-+/* L2 Cache Controller 440GX/440SP/440SPe */
- #define DCRN_L2C0_CFG		0x030
- #define  L2C_CFG_L2M		0x80000000
- #define  L2C_CFG_ICU		0x40000000
