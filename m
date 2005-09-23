@@ -1,10 +1,14 @@
-Return-Path: <jdl@jdl.com>
-From: Jon Loeliger <jdl@freescale.com>
-To: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
-Date: Fri, 23 Sep 2005 08:05:03 -0500
-Message-Id: <E1EInEd-00023v-MX@jdl.com>
-Sender: Jon Loeliger <jdl@jdl.com>
-Subject: PATCH powerpc Merge asm-ppc*/seccomp.h, drop TIF_32BIT check
+Return-Path: <dhowells@redhat.com>
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <E1EIn23-0001pB-H0@jdl.com> 
+References: <E1EIn23-0001pB-H0@jdl.com> <E1EIXAI-0006Q0-OS@jdl.com>
+	<606.1127460740@warthog.cambridge.redhat.com>
+To: Jon Loeliger <jdl@freescale.com>
+Date: Fri, 23 Sep 2005 15:09:28 +0100
+Message-ID: <23115.1127484568@warthog.cambridge.redhat.com>
+Sender: dhowells@redhat.com
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Subject: Re: PATCH powerpc Merge asm-ppc*/rwsem.h 
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,78 +18,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Merge asm-ppc*/seccomp.h. Drop TIF_32BIT check.
 
-Signed-off-by: Jon Loeliger <jdl@freescale.com>
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
----
+Jon Loeliger <jdl@freescale.com> wrote:
 
+> No problem.  I _can_ resubmit the patch with this fix.
+> However, I am not certain that I should yet.
 
- include/asm-powerpc/seccomp.h |   16 ++++++++++++++++
- include/asm-ppc/seccomp.h     |   10 ----------
- include/asm-ppc64/seccomp.h   |   21 ---------------------
- 3 files changed, 16 insertions(+), 31 deletions(-)
+I'd suggest that you wait until the merge is complete, I think.
 
+> But what do you wan to do with ppc32 land then?
+> Leaving it a "signed long" will limit ppc32 land but
+> not ppc64 folks.  (No problem.)
 
-diff --git a/include/asm-powerpc/seccomp.h b/include/asm-powerpc/seccomp.h
-new file mode 100644
---- /dev/null
-+++ b/include/asm-powerpc/seccomp.h
-@@ -0,0 +1,16 @@
-+#ifndef _ASM_POWERPC_SECCOMP_H
-+
-+#include <linux/thread_info.h>
-+#include <linux/unistd.h>
-+
-+#define __NR_seccomp_read __NR_read
-+#define __NR_seccomp_write __NR_write
-+#define __NR_seccomp_exit __NR_exit
-+#define __NR_seccomp_sigreturn __NR_rt_sigreturn
-+
-+#define __NR_seccomp_read_32 __NR_read
-+#define __NR_seccomp_write_32 __NR_write
-+#define __NR_seccomp_exit_32 __NR_exit
-+#define __NR_seccomp_sigreturn_32 __NR_sigreturn
-+
-+#endif	/* _ASM_POWERPC_SECCOMP_H */
-diff --git a/include/asm-ppc/seccomp.h b/include/asm-ppc/seccomp.h
-deleted file mode 100644
---- a/include/asm-ppc/seccomp.h
-+++ /dev/null
-@@ -1,10 +0,0 @@
--#ifndef _ASM_SECCOMP_H
--
--#include <linux/unistd.h>
--
--#define __NR_seccomp_read __NR_read
--#define __NR_seccomp_write __NR_write
--#define __NR_seccomp_exit __NR_exit
--#define __NR_seccomp_sigreturn __NR_rt_sigreturn
--
--#endif /* _ASM_SECCOMP_H */
-diff --git a/include/asm-ppc64/seccomp.h b/include/asm-ppc64/seccomp.h
-deleted file mode 100644
---- a/include/asm-ppc64/seccomp.h
-+++ /dev/null
-@@ -1,21 +0,0 @@
--#ifndef _ASM_SECCOMP_H
--
--#include <linux/thread_info.h> /* already defines TIF_32BIT */
--
--#ifndef TIF_32BIT
--#error "unexpected TIF_32BIT on ppc64"
--#endif
--
--#include <linux/unistd.h>
--
--#define __NR_seccomp_read __NR_read
--#define __NR_seccomp_write __NR_write
--#define __NR_seccomp_exit __NR_exit
--#define __NR_seccomp_sigreturn __NR_rt_sigreturn
--
--#define __NR_seccomp_read_32 __NR_read
--#define __NR_seccomp_write_32 __NR_write
--#define __NR_seccomp_exit_32 __NR_exit
--#define __NR_seccomp_sigreturn_32 __NR_sigreturn
--
--#endif /* _ASM_SECCOMP_H */
+I'd suggest "signed long" in both cases. A maximum of 32K processes on ppc32
+is probably reasonable.
+
+> Also, this begs the question of the comment from Paul:
+> 
+>     struct rw_semaphore {
+> 	/* XXX this should be able to be an atomic_t  -- paulus */
+> 	signed int		count;
+
+Paul can be wrong sometimes:-)
+
+Changing to atomic_t would leave the 32K process limit in place.
+
+> Changing the size of counter will cause bad sizes
+> due to the actual treatment of count as an atomic_t.
+
+You will not be able to use the standard atomic ops unless you increase them
+to 64-bits on ppc64.
+
+> And if we _do_ convert it to be an atomic_t, should _that_
+> be where the real type for count gets established?
+
+You should not do that unless you increase atomic_t to 64-bits on ppc64.
+
+> And finally, I've been working on merging header files
+> under the vague guideline of "merge maintaining existing
+> functionality/breakage".  I've been trying NOT to introduce
+> simultaneous "improvements" at the risk of breaking something.
+
+Sounds reasonable.
+
+> To that end, I ask if the request to make 'count' be 64-bits
+> should be submitted as a follow on patch that stands on its
+> own and can clean up around it as necessary?  Or do you want
+> it mixed in with this "merge" patch too?
+
+Follow-on is fine.
+
+David
