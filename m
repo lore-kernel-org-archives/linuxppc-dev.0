@@ -1,14 +1,10 @@
 Return-Path: <jdl@jdl.com>
 From: Jon Loeliger <jdl@freescale.com>
 To: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
-In-Reply-To: Your message of "Fri, 23 Sep 2005 11:08:09 +0200."
-	<20050923090809.GA31688@lst.de>
-References: <E1EIVg5-0001HI-E8@jdl.com> <20050922183126.GA18853@lst.de>
-	<E1EIVwC-0001IQ-5s@jdl.com> <20050923090809.GA31688@lst.de>
-Date: Fri, 23 Sep 2005 07:54:52 -0500
-Message-Id: <E1EIn4m-0001po-Bx@jdl.com>
+Date: Fri, 23 Sep 2005 08:05:03 -0500
+Message-Id: <E1EInEd-00023v-MX@jdl.com>
 Sender: Jon Loeliger <jdl@jdl.com>
-Subject: Re: PATCH powerpc Merge asm-ppc*/seccomp.h 
+Subject: PATCH powerpc Merge asm-ppc*/seccomp.h, drop TIF_32BIT check
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,21 +14,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day Christoph Hellwig mumbled:
-> > 
-> > But keep the #include?  It's actually the part
-> > that is defining TIF_32BIT for ppc64 (indirectly
-> > through linux/thread_info.h and asm/thread_info.h).
-> > Won't those bits be needed still?
-> 
-> I'm not sure.  This header definitly doesn't need it, but I suspect
-> seccompt.c expects to get it via this header.
+Merge asm-ppc*/seccomp.h. Drop TIF_32BIT check.
 
-I dug around in this a bit.  The nested includes here yield
-a fairly wide distribution of availability of TIF_32BIT.
-I'm hesitant to remove it in this "merge" patch, so I
-will leave its removal to a follow on patch/effort.
+Signed-off-by: Jon Loeliger <jdl@freescale.com>
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+---
 
-New patch with #if test removed coming up.
 
-jdl
+ include/asm-powerpc/seccomp.h |   16 ++++++++++++++++
+ include/asm-ppc/seccomp.h     |   10 ----------
+ include/asm-ppc64/seccomp.h   |   21 ---------------------
+ 3 files changed, 16 insertions(+), 31 deletions(-)
+
+
+diff --git a/include/asm-powerpc/seccomp.h b/include/asm-powerpc/seccomp.h
+new file mode 100644
+--- /dev/null
++++ b/include/asm-powerpc/seccomp.h
+@@ -0,0 +1,16 @@
++#ifndef _ASM_POWERPC_SECCOMP_H
++
++#include <linux/thread_info.h>
++#include <linux/unistd.h>
++
++#define __NR_seccomp_read __NR_read
++#define __NR_seccomp_write __NR_write
++#define __NR_seccomp_exit __NR_exit
++#define __NR_seccomp_sigreturn __NR_rt_sigreturn
++
++#define __NR_seccomp_read_32 __NR_read
++#define __NR_seccomp_write_32 __NR_write
++#define __NR_seccomp_exit_32 __NR_exit
++#define __NR_seccomp_sigreturn_32 __NR_sigreturn
++
++#endif	/* _ASM_POWERPC_SECCOMP_H */
+diff --git a/include/asm-ppc/seccomp.h b/include/asm-ppc/seccomp.h
+deleted file mode 100644
+--- a/include/asm-ppc/seccomp.h
++++ /dev/null
+@@ -1,10 +0,0 @@
+-#ifndef _ASM_SECCOMP_H
+-
+-#include <linux/unistd.h>
+-
+-#define __NR_seccomp_read __NR_read
+-#define __NR_seccomp_write __NR_write
+-#define __NR_seccomp_exit __NR_exit
+-#define __NR_seccomp_sigreturn __NR_rt_sigreturn
+-
+-#endif /* _ASM_SECCOMP_H */
+diff --git a/include/asm-ppc64/seccomp.h b/include/asm-ppc64/seccomp.h
+deleted file mode 100644
+--- a/include/asm-ppc64/seccomp.h
++++ /dev/null
+@@ -1,21 +0,0 @@
+-#ifndef _ASM_SECCOMP_H
+-
+-#include <linux/thread_info.h> /* already defines TIF_32BIT */
+-
+-#ifndef TIF_32BIT
+-#error "unexpected TIF_32BIT on ppc64"
+-#endif
+-
+-#include <linux/unistd.h>
+-
+-#define __NR_seccomp_read __NR_read
+-#define __NR_seccomp_write __NR_write
+-#define __NR_seccomp_exit __NR_exit
+-#define __NR_seccomp_sigreturn __NR_rt_sigreturn
+-
+-#define __NR_seccomp_read_32 __NR_read
+-#define __NR_seccomp_write_32 __NR_write
+-#define __NR_seccomp_exit_32 __NR_exit
+-#define __NR_seccomp_sigreturn_32 __NR_sigreturn
+-
+-#endif /* _ASM_SECCOMP_H */
