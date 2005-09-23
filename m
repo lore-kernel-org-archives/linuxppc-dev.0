@@ -1,14 +1,19 @@
-Return-Path: <dhowells@redhat.com>
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <E1EIn23-0001pB-H0@jdl.com> 
-References: <E1EIn23-0001pB-H0@jdl.com> <E1EIXAI-0006Q0-OS@jdl.com>
-	<606.1127460740@warthog.cambridge.redhat.com>
-To: Jon Loeliger <jdl@freescale.com>
-Date: Fri, 23 Sep 2005 15:09:28 +0100
-Message-ID: <23115.1127484568@warthog.cambridge.redhat.com>
-Sender: dhowells@redhat.com
-Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
-Subject: Re: PATCH powerpc Merge asm-ppc*/rwsem.h 
+Return-Path: <det.nicolas@free.fr>
+Received: from smtp6.wanadoo.fr (smtp6.wanadoo.fr [193.252.22.25])
+	by ozlabs.org (Postfix) with ESMTP id B3ABE68373
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Sep 2005 01:22:46 +1000 (EST)
+Received: from me-wanadoo.net (localhost [127.0.0.1])
+	by mwinf0609.wanadoo.fr (SMTP Server) with ESMTP id D5A4024000C6
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Sep 2005 17:22:43 +0200 (CEST)
+From: Nicolas DET <det.nicolas@free.fr>
+To: linuxppc-dev@ozlabs.org
+Date: 23 Sep 2005 17:22:45 +0100
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="--==bound213431d8165----"
+Message-Id: <20050923152242.BE6F62400135@mwinf0609.wanadoo.fr>
+Cc: Andrew Morton <akpm@osdl.org>, Sven Luther <sl@bplan-gmbh.de>,
+	David Holm <dholm@gentoo.org>
+Subject: Tiny patch for cputable.c -> 750CXe support
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,54 +23,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Warning: This is a message in MIME format. Your mail reader does not
+support MIME. Some parts of this message will be readable as plain text.
+To see the rest, you will need to upgrade your mail reader. Following are
+some URLs where you can find MIME-capable mail programs for common
+platforms:
 
-Jon Loeliger <jdl@freescale.com> wrote:
+  Amiga............: SimpleMail   http://simplemail.sourceforge.net/
+  Unix.............: Metamail     ftp://ftp.bellcore.com/nsb/
+  Windows/Macintosh: Eudora       http://www.qualcomm.com/
 
-> No problem.  I _can_ resubmit the patch with this fix.
-> However, I am not certain that I should yet.
+General info about MIME can be found at:
 
-I'd suggest that you wait until the merge is complete, I think.
+http://www.cis.ohio-state.edu/hypertext/faq/usenet/mail/mime-faq/top.html
 
-> But what do you wan to do with ppc32 land then?
-> Leaving it a "signed long" will limit ppc32 land but
-> not ppc64 folks.  (No problem.)
+----==bound213431d8165----
 
-I'd suggest "signed long" in both cases. A maximum of 32K processes on ppc32
-is probably reasonable.
+Hello,
 
-> Also, this begs the question of the comment from Paul:
-> 
->     struct rw_semaphore {
-> 	/* XXX this should be able to be an atomic_t  -- paulus */
-> 	signed int		count;
+You can find enclosed or at 
+http://arrakin.homedns.org/~nicolas/cputable_750CXe_2.6.14.rc1.diff
 
-Paul can be wrong sometimes:-)
+A tiny patch which alow to correctly recognized every (let's hope) 750CXe
+cpus.
+Tested on my system (750 CXe rev 3.1, PVR: 0008 3311).
 
-Changing to atomic_t would leave the 32K process limit in place.
+Feel free to comment and review it.
 
-> Changing the size of counter will cause bad sizes
-> due to the actual treatment of count as an atomic_t.
+By the way, a nice 750CXe PVR summary can be found there:
+http://www-306.ibm.com/chips/techlib/techlib.nsf/techdocs/291C8D0EF3EAEC1687256B72005C745C#C1
 
-You will not be able to use the standard atomic ops unless you increase them
-to 64-bits on ppc64.
+Regards,
+-- 
+Nicolas DET
+MorphOS & Linux developer
+----==bound213431d8165----
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename=cputable_750CXe_2.6.14.rc1.diff
+Content-transfer-encoding: base64
 
-> And if we _do_ convert it to be an atomic_t, should _that_
-> be where the real type for count gets established?
+LS0tIGxpbnV4LTIuNi4xNC1yYzEvYXJjaC9wcGMva2VybmVsL2NwdXRhYmxlLmMJMjAwNS0wOS0x
+NCAwODoxNDo0My42NzIyMTk1NjAgKzAyMDAKKysrIGxpbnV4LTIuNi4xNC1yYzFfbmljby9hcmNo
+L3BwYy9rZXJuZWwvY3B1dGFibGUuYwkyMDA1LTA5LTIzIDE3OjAxOjQwLjM1NTAwMzAwMCArMDIw
+MApAQCAtMTk4LDYgKzE5OCw3IEBACiAJCS5udW1fcG1jcwkJPSA0LAogCQkuY3B1X3NldHVwCQk9
+IF9fc2V0dXBfY3B1Xzc1MAogCX0sCisJLy8gRm9yIHRoZSA3NTBDWCBmYW1pbGx5IHNlZTogIGh0
+dHA6Ly93d3ctMzA2LmlibS5jb20vY2hpcHMvdGVjaGxpYi90ZWNobGliLm5zZi90ZWNoZG9jcy8y
+OTFDOEQwRUYzRUFFQzE2ODcyNTZCNzIwMDVDNzQ1QyNDMQogCXsJLyogNzUwQ1ggKDgwMTAwIGFu
+ZCA4MDEweD8pICovCiAJCS5wdnJfbWFzawkJPSAweGZmZmZmZmYwLAogCQkucHZyX3ZhbHVlCQk9
+IDB4MDAwODAxMDAsCkBAIC0yMTIsMTAgKzIxMywxMCBAQAogCQkubnVtX3BtY3MJCT0gNCwKIAkJ
+LmNwdV9zZXR1cAkJPSBfX3NldHVwX2NwdV83NTBjeAogCX0sCi0JewkvKiA3NTBDWCAoODIyMDEg
+YW5kIDgyMjAyKSAqLwotCQkucHZyX21hc2sJCT0gMHhmZmZmZmZmMCwKLQkJLnB2cl92YWx1ZQkJ
+PSAweDAwMDgyMjAwLAotCQkuY3B1X25hbWUJCT0gIjc1MENYIiwKKwl7CS8qIDc1MENYZSAoODIy
+MDIpICovCisJCS5wdnJfbWFzawkJPSAweGZmZmZmZmZmLAorCQkucHZyX3ZhbHVlCQk9IDB4MDAw
+ODIyMDIsCisJCS5jcHVfbmFtZQkJPSAiNzUwQ1hlIHJldiAyLjIiLAogCQkuY3B1X2ZlYXR1cmVz
+CQk9IENQVV9GVFJfQ09NTU9OIHwKIAkJCUNQVV9GVFJfU1BMSVRfSURfQ0FDSEUgfCBDUFVfRlRS
+X01BWUJFX0NBTl9ET1pFIHwKIAkJCUNQVV9GVFJfVVNFX1RCIHwgQ1BVX0ZUUl9MMkNSIHwgQ1BV
+X0ZUUl9UQVUgfApAQCAtMjI2LDEwICsyMjcsMjQgQEAKIAkJLm51bV9wbWNzCQk9IDQsCiAJCS5j
+cHVfc2V0dXAJCT0gX19zZXR1cF9jcHVfNzUwY3gKIAl9LAotCXsJLyogNzUwQ1hlICg4MjIxNCkg
+Ki8KLQkJLnB2cl9tYXNrCQk9IDB4ZmZmZmZmZjAsCi0JCS5wdnJfdmFsdWUJCT0gMHgwMDA4MjIx
+MCwKLQkJLmNwdV9uYW1lCQk9ICI3NTBDWGUiLAorCXsJLyogNzUwQ1hlICg4MjIxNCAmIDgyMzE0
+KSAqLworCQkucHZyX21hc2sJCT0gMHhmZmZmZjBmZiwKKwkJLnB2cl92YWx1ZQkJPSAweDAwMDgy
+MjE0LAorCQkuY3B1X25hbWUJCT0gIjc1MENYZSByZXYgMi40IiwKKwkJLmNwdV9mZWF0dXJlcwkJ
+PSBDUFVfRlRSX0NPTU1PTiB8CisJCQlDUFVfRlRSX1NQTElUX0lEX0NBQ0hFIHwgQ1BVX0ZUUl9N
+QVlCRV9DQU5fRE9aRSB8CisJCQlDUFVfRlRSX1VTRV9UQiB8IENQVV9GVFJfTDJDUiB8IENQVV9G
+VFJfVEFVIHwKKwkJCUNQVV9GVFJfSFBURV9UQUJMRSB8IENQVV9GVFJfTUFZQkVfQ0FOX05BUCwK
+KwkJLmNwdV91c2VyX2ZlYXR1cmVzCT0gQ09NTU9OX1BQQywKKwkJLmljYWNoZV9ic2l6ZQkJPSAz
+MiwKKwkJLmRjYWNoZV9ic2l6ZQkJPSAzMiwKKwkJLm51bV9wbWNzCQk9IDQsCisJCS5jcHVfc2V0
+dXAJCT0gX19zZXR1cF9jcHVfNzUwY3gKKwl9LAorCXsJLyogNzUwQ1hlICgwMDA4MjMxMSBvciAw
+MDA4MzMxMSkgcmV2aXNpb24gMy4xIC8gMy4xIHByZV9HQSAqLworCQkucHZyX21hc2sJCT0gMHhm
+ZmZmMGZmZiwKKwkJLnB2cl92YWx1ZQkJPSAweDAwMDgwMzExLAorCQkuY3B1X25hbWUJCT0gIjc1
+MENYZSByZXYgMy4xIiwKIAkJLmNwdV9mZWF0dXJlcwkJPSBDUFVfRlRSX0NPTU1PTiB8CiAJCQlD
+UFVfRlRSX1NQTElUX0lEX0NBQ0hFIHwgQ1BVX0ZUUl9NQVlCRV9DQU5fRE9aRSB8CiAJCQlDUFVf
+RlRSX1VTRV9UQiB8IENQVV9GVFJfTDJDUiB8IENQVV9GVFJfVEFVIHwKQEAgLTI0Myw3ICsyNTgs
+MjEgQEAKIAl7CS8qIDc1MENYZSAiR2Vra28iICg4MzIxNCkgKi8KIAkJLnB2cl9tYXNrCQk9IDB4
+ZmZmZmZmZmYsCiAJCS5wdnJfdmFsdWUJCT0gMHgwMDA4MzIxNCwKLQkJLmNwdV9uYW1lCQk9ICI3
+NTBDWGUiLAorCQkuY3B1X25hbWUJCT0gIjc1MENYZSAnR2Vra28nIiwKKwkJLmNwdV9mZWF0dXJl
+cwkJPSBDUFVfRlRSX0NPTU1PTiB8CisJCQlDUFVfRlRSX1NQTElUX0lEX0NBQ0hFIHwgQ1BVX0ZU
+Ul9NQVlCRV9DQU5fRE9aRSB8CisJCQlDUFVfRlRSX1VTRV9UQiB8IENQVV9GVFJfTDJDUiB8IENQ
+VV9GVFJfVEFVIHwKKwkJCUNQVV9GVFJfSFBURV9UQUJMRSB8IENQVV9GVFJfTUFZQkVfQ0FOX05B
+UCwKKwkJLmNwdV91c2VyX2ZlYXR1cmVzCT0gQ09NTU9OX1BQQywKKwkJLmljYWNoZV9ic2l6ZQkJ
+PSAzMiwKKwkJLmRjYWNoZV9ic2l6ZQkJPSAzMiwKKwkJLm51bV9wbWNzCQk9IDQsCisJCS5jcHVf
+c2V0dXAJCT0gX19zZXR1cF9jcHVfNzUwY3gKKwl9LAorCXsJLyogNzUwQ1ggKDgyMjAxIGFuZCA4
+MjIwMikgKi8KKwkJLnB2cl9tYXNrCQk9IDB4ZmZmZmZmZjAsCisJCS5wdnJfdmFsdWUJCT0gMHgw
+MDA4MjIwMCwKKwkJLmNwdV9uYW1lCQk9ICI3NTBDWCIsCiAJCS5jcHVfZmVhdHVyZXMJCT0gQ1BV
+X0ZUUl9DT01NT04gfAogCQkJQ1BVX0ZUUl9TUExJVF9JRF9DQUNIRSB8IENQVV9GVFJfTUFZQkVf
+Q0FOX0RPWkUgfAogCQkJQ1BVX0ZUUl9VU0VfVEIgfCBDUFVfRlRSX0wyQ1IgfCBDUFVfRlRSX1RB
+VSB8Cg==
 
-You should not do that unless you increase atomic_t to 64-bits on ppc64.
-
-> And finally, I've been working on merging header files
-> under the vague guideline of "merge maintaining existing
-> functionality/breakage".  I've been trying NOT to introduce
-> simultaneous "improvements" at the risk of breaking something.
-
-Sounds reasonable.
-
-> To that end, I ask if the request to make 'count' be 64-bits
-> should be submitted as a follow on patch that stands on its
-> own and can clean up around it as necessary?  Or do you want
-> it mixed in with this "merge" patch too?
-
-Follow-on is fine.
-
-David
+----==bound213431d8165------
