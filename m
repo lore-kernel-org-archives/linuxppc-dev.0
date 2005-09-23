@@ -1,22 +1,22 @@
-Return-Path: <glikely@gmail.com>
-Received: from qproxy.gmail.com (qproxy.gmail.com [72.14.204.195])
-	by ozlabs.org (Postfix) with ESMTP id 3A90A6838F
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao03.cox.net (fed1rmmtao03.cox.net [68.230.241.36])
+	by ozlabs.org (Postfix) with ESMTP id 223F3683A1
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 24 Sep 2005 02:54:41 +1000 (EST)
-Received: by qproxy.gmail.com with SMTP id q12so24580qba
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 23 Sep 2005 09:54:40 -0700 (PDT)
-Message-ID: <528646bc05092309543d4e2c2f@mail.gmail.com>
-Date: Fri, 23 Sep 2005 10:54:40 -0600
-From: Grant Likely <glikely@gmail.com>
-To: bennett78@digis.net, linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-In-Reply-To: <528646bc0509230933251d6600@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <43335991.1040004@digis.net>
-	<528646bc0509230933251d6600@mail.gmail.com>
-Subject: Re: SPI bus master driver for the Freescale MPC52xx
-Reply-To: Grant Likely <glikely@gmail.com>
+	Sat, 24 Sep 2005 03:12:06 +1000 (EST)
+Date: Fri, 23 Sep 2005 10:11:58 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Roland Dreier <rolandd@cisco.com>
+Message-ID: <20050923101158.E21055@cox.net>
+References: <2005922203.UPGbNSgrHKasoXYq@cisco.com>
+	<2005922203.qtfGFmWm3E8jkhq1@cisco.com>
+	<20050923032236.GA10089@gate.ebshome.net>
+	<52irwscq49.fsf@cisco.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <52irwscq49.fsf@cisco.com>;
+	from rolandd@cisco.com on Thu, Sep 22, 2005 at 10:25:26PM -0700
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH 3/4] [PPC32] ibm_emac: Add 440SPe support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,55 +27,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Bah!  Your reply-to: address is broken.  Check your email client.
+On Thu, Sep 22, 2005 at 10:25:26PM -0700, Roland Dreier wrote:
+>     Eugene> Well, new driver was sent to jgarzik and netdev list three
+>     Eugene> weeks ago. So far I haven't heard anything technical from
+>     Eugene> Jeff. I don't know when and even if it will be merged.
+> 
+> Assuming everyone in the PPC4xx world thinks your driver should
+> replace the old driver, it might be worth sending directly to Andrew.
+> There's no reason Jeff has to become a bottleneck for this.
 
-let me try that again...
+We're working on this. It's not exactly that simple since Jeff
+established that all net drivers must enter through the netdev
+tree. I expect it can get merged post 2.6.14 if all goes well.
 
-On 9/23/05, Grant Likely <glikely@gmail.com> wrote:
-> Hi.
->
-> First off, I've included the linuxppc-embedded mailing list in my
-> reply.  It's better to mail the list and CC: me rather than just
-> mailing me.  There are many others far brighter than me on the list
-> who can provide far more help.
->
-> On 9/22/05, Frank Bennett <bennett78@digis.net> wrote:
-> >  Gary:
-> My name is Grant
->
-> >
-> >  I saw your patch on http://patchwork.ozlabs.org/linuxppc
-> >  I'm developing a SPI driver for the Lite5200.
-> Are you using a PSC or the SPI peripheral?  The driver I've written is fo=
-r a PSC
-> >
-> >  What distribution of Linux is this for?
-> Any distro you want.  It should apply cleanly against any recent 2.6.x ke=
-rnel
->
-> >  What is this patch registry all about?
-> Are you refering to the bit about device drivers registering to the
-> SPI subsystem?  If so, the first patch provides the generic SPI
-> infrastructure.  Device drivers for SPI masters and SPI slaves
-> register to the SPI subsystem.  That way SPI master device drivers are
-> decoupled from SPI slave device drivers.  It follows the new device
-> model in the 2.6.x kernels.  (See "Linux Device Drivers" book from
-> O'reilly for details.
->
-> >  Can I get a snapshot of the mpc52xx driver stuff?
-> I've made no changes since posting the patch.
->
-> Eventually I'll have a public git tree with all my changes posted in
-> it; but not yet.
->
-> >  How can I contribute to this effort?
-> Write code, write documentation and post patches.  Also, look in the
-> LKML archives.  There are two other competing SPI implementations that
-> are being developed.  I've been pulled off onto other work so I've not
-> done any additional work.  The other code looks more promising.
->
-> That being said, my code works for me so it may be usable for you as-is.
->
-> cheers,
-> g.
->
+-Matt
