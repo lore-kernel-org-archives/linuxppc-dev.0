@@ -1,17 +1,21 @@
-Return-Path: <rolandd@cisco.com>
-Received: from ams-iport-1.cisco.com (ams-iport-1.cisco.com [144.254.224.140])
-	by ozlabs.org (Postfix) with ESMTP id AF28368385
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 89DFE68352
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 23 Sep 2005 13:13:49 +1000 (EST)
-In-Reply-To: 
-Date: Thu, 22 Sep 2005 20:03:34 -0700
-Message-Id: <2005922203.zpZEPMsMBP43qjJI@cisco.com>
+	Fri, 23 Sep 2005 13:22:39 +1000 (EST)
+Date: Thu, 22 Sep 2005 20:22:36 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Roland Dreier <rolandd@cisco.com>
+Message-ID: <20050923032236.GA10089@gate.ebshome.net>
+References: <2005922203.UPGbNSgrHKasoXYq@cisco.com>
+	<2005922203.qtfGFmWm3E8jkhq1@cisco.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-To: mporter@kernel.crashing.org
-From: Roland Dreier <rolandd@cisco.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <2005922203.qtfGFmWm3E8jkhq1@cisco.com>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: [PATCH 0/4] 440SPe support
+Subject: Re: [PATCH 3/4] [PPC32] ibm_emac: Add 440SPe support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,26 +26,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Here is a series of patches that add basic support for AMCC's PowerPC
-440SPe SoC.  With these patches, the kernel will boot and run on the
-"Yucca" 440SPe eval board, with ethernet and serial working.
+On Thu, Sep 22, 2005 at 08:03:35PM -0700, Roland Dreier wrote:
+> Eugene, I'm not sure what the status of your ibm_emac rewrite is.  Is
+> there a tree somewhere that you would like me to merge this change
+> with and then send you a patch, or do you want to take care of merging?
 
-I don't have PCI-X or PCI Express in a mergeable state, but I thought
-it would be worth posting these now for review.  Also, it would
-probably be good to figure out how we want to merge this upstream once
-2.6.14 comes out -- 440SPe requires some minor changes to ethernet PHY
-handling, which will have to be coordinated with the ibm_emac rewrite,
-and there are also some minor conflicts with the 440GR patches I saw.
+Well, new driver was sent to jgarzik and netdev list three weeks ago. 
+So far I haven't heard anything technical from Jeff. I don't know when 
+and even if it will be merged.
 
-Right now I'm working on PCI Express support, and I'll post those
-patches once I have something reasonable.
+There is a GIT tree with new driver, for more info look at 
+http://kernel.ebshome.net/emac/index.html
 
-I also have a git tree at
+I don't know what to recommend now - wait for net driver maintainer 
+(I've heard some people have been waiting for couple months already) 
+or sent this patch upstream ignoring new driver :(. Matt?
 
-    rsync://rsync.kernel.org/pub/scm/linux/kernel/git/roland/ppc440spe.git
+I'll try to look at merging your patch into my tree, but probably not 
+right now - I'm kinda busy with other stuff and netdev "progress" 
+doesn't quite motivate me working on this project, frankly. Though, if 
+you can send me a patch against my tree, I'll appreciate it :).
 
-that contains all of these patches, in case that makes it easier to
-merge this stuff.
-
-Thanks,
-  Roland
+-- 
+Eugene
