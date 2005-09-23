@@ -1,15 +1,15 @@
-Return-Path: <anton@ozlabs.org>
-Date: Fri, 23 Sep 2005 17:44:13 +1000
-From: Anton Blanchard <anton@samba.org>
-To: David Howells <dhowells@redhat.com>
-Message-ID: <20050923074413.GD19971@krispykreme>
-References: <E1EIXAI-0006Q0-OS@jdl.com>
+Return-Path: <dhowells@redhat.com>
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20050923074413.GD19971@krispykreme> 
+References: <20050923074413.GD19971@krispykreme> <E1EIXAI-0006Q0-OS@jdl.com>
 	<606.1127460740@warthog.cambridge.redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <606.1127460740@warthog.cambridge.redhat.com>
-Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
-Subject: Re: PATCH powerpc Merge asm-ppc*/rwsem.h
+To: Anton Blanchard <anton@samba.org>
+Date: Fri, 23 Sep 2005 08:52:30 +0100
+Message-ID: <1280.1127461950@warthog.cambridge.redhat.com>
+Sender: dhowells@redhat.com
+Cc: David Howells <dhowells@redhat.com>, linuxppc-dev@ozlabs.org,
+	linuxppc64-dev@ozlabs.org
+Subject: Re: PATCH powerpc Merge asm-ppc*/rwsem.h 
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,12 +19,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Anton Blanchard <anton@samba.org> wrote:
 
-> rwsems on ppc64 should really be using a 64-bit counter, not a 32-bit counter,
-> otherwise you limit the maximum number of processes to 32K-ish.
+> > The counter should be "signed long" really.
 > 
-> The counter should be "signed long" really.
+> Agreed, we should move to a 64bit count.
 
-Agreed, we should move to a 64bit count.
+With a 64-bit counter, the constants should be:
 
-Anton
+#define RWSEM_UNLOCKED_VALUE		  0x0000000000000000L
+#define RWSEM_ACTIVE_BIAS		  0x0000000000000001L
+#define RWSEM_ACTIVE_MASK		  0x00000000ffffffffL
+#define RWSEM_WAITING_BIAS		(-0x0000000100000000L)
+#define RWSEM_ACTIVE_READ_BIAS		RWSEM_ACTIVE_BIAS
+#define RWSEM_ACTIVE_WRITE_BIAS		(RWSEM_WAITING_BIAS + RWSEM_ACTIVE_BIAS)
+
+Just like in the asm-s390/rwsem.h.
+
+David
