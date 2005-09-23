@@ -1,18 +1,11 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 861C868336
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Sep 2005 01:54:26 +1000 (EST)
-In-Reply-To: <20050923152242.BE6F62400135@mwinf0609.wanadoo.fr>
-References: <20050923152242.BE6F62400135@mwinf0609.wanadoo.fr>
-Mime-Version: 1.0 (Apple Message framework v734)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <20812E62-A1C7-4711-A2EA-F8E83C1BA9F3@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Fri, 23 Sep 2005 10:54:36 -0500
-To: "Nicolas DET" <det.nicolas@free.fr>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	Sven Luther <sl@bplan-gmbh.de>, David Holm <dholm@gentoo.org>
-Subject: Re: Tiny patch for cputable.c -> 750CXe support
+Return-Path: <bgill@freescale.com>
+Date: Fri, 23 Sep 2005 11:07:36 -0500 (CDT)
+From: Becky Bruce <bgill@freescale.com>
+To: linuxppc64-dev@ozlabs.org, linuxppc-dev@ozlabs.org
+Message-ID: <Pine.LNX.4.61.0509231104200.29342@cde-tx32-ldt329.sps.mot.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: [PATCH] powerpc: merge semaphore.h
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,59 +15,349 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch is overkill for what you want.
+powerpc: Merge semaphore.h
 
-First you are changing 82202 which is listed as a 750CX to be  
-reported as a 750CXe. Second, why not just add in the one case for  
-00083311 which is missing.  Finally, we shouldn't put the revision  
-info into the cpu_name unless it actually matters.  Seeing as the  
-cpu_features fields are all the same for all 750CXe parts there is no  
-need to distinguish them, we only need to ensure a match occurs.
+Adopted the ppc64 version of semaphore.h.  The 32-bit version used
+smp_wmb(), but recent updates to atomic.h mean this is no longer required.
+The 64-bit version made use of unlikely(), which has been retained in the
+combined version.
 
-Your patch really should be something like:
+This patch requires the recent atomic.h patch.
 
-+    {    /* 750CXe rev 3.1 */
-+        .pvr_mask         = 0xffff0fff,
-+        .pvr_value        = 0x00080311,
-+        .cpu_name        = "750CXe",
-+        .cpu_features        = CPU_FTR_COMMON |
-+            CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE |
-+            CPU_FTR_USE_TB | CPU_FTR_L2CR | CPU_FTR_TAU |
-+            CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP,
-+        .cpu_user_features    = COMMON_PPC,
-+        .icache_bsize        = 32,
-+        .dcache_bsize        = 32,
-+        .num_pmcs        = 4,
-+        .cpu_setup        = __setup_cpu_750cx
-+    },
+Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
 
-- kumar
+---
+commit 76b1ba19ac14976b8cd288180bb939f429a70820
+tree 330c84e832b71d9b803feaa340de40de689edc78
+parent ab08c88845ac6e755db2ef806c36d1e469ef4180
+author Becky Bruce <becky.bruce@freescale.com> Fri, 23 Sep 2005 11:01:14 -0500
+committer Becky Bruce <becky.bruce@freescale.com> Fri, 23 Sep 2005 11:01:14 -0500
 
+ include/asm-powerpc/semaphore.h |   98 ++++++++++++++++++++++++++++++++++
+ include/asm-ppc/semaphore.h     |  111 ---------------------------------------
+ include/asm-ppc64/semaphore.h   |   98 ----------------------------------
+ 3 files changed, 98 insertions(+), 209 deletions(-)
 
-On Sep 23, 2005, at 11:22 AM, Nicolas DET wrote:
-
-> Hello,
->
-> You can find enclosed or at
-> http://arrakin.homedns.org/~nicolas/cputable_750CXe_2.6.14.rc1.diff
->
-> A tiny patch which alow to correctly recognized every (let's hope)
-> 750CXe
-> cpus.
-> Tested on my system (750 CXe rev 3.1, PVR: 0008 3311).
->
-> Feel free to comment and review it.
->
-> By the way, a nice 750CXe PVR summary can be found there:
-> http://www-306.ibm.com/chips/techlib/techlib.nsf/techdocs/ 
-> 291C8D0EF3EAEC
-> 1687256B72005C745C#C1
->
-> Regards,
-> -- 
-> Nicolas DET
-> MorphOS & Linux developer
->
-> <cputable_750CXe_2.6.14.rc1.diff>
-> <ATT368009.txt>
->
+diff --git a/include/asm-powerpc/semaphore.h b/include/asm-powerpc/semaphore.h
+new file mode 100644
+--- /dev/null
++++ b/include/asm-powerpc/semaphore.h
+@@ -0,0 +1,98 @@
++#ifndef _ASM_POWERPC_SEMAPHORE_H
++#define _ASM_POWERPC_SEMAPHORE_H
++
++/*
++ * Remove spinlock-based RW semaphores; RW semaphore definitions are
++ * now in rwsem.h and we use the generic lib/rwsem.c implementation.
++ * Rework semaphores to use atomic_dec_if_positive.
++ * -- Paul Mackerras (paulus@samba.org)
++ */
++
++#ifdef __KERNEL__
++
++#include <asm/atomic.h>
++#include <asm/system.h>
++#include <linux/wait.h>
++#include <linux/rwsem.h>
++
++struct semaphore {
++	/*
++	 * Note that any negative value of count is equivalent to 0,
++	 * but additionally indicates that some process(es) might be
++	 * sleeping on `wait'.
++	 */
++	atomic_t count;
++	wait_queue_head_t wait;
++};
++
++#define __SEMAPHORE_INITIALIZER(name, n)				\
++{									\
++	.count		= ATOMIC_INIT(n),				\
++	.wait		= __WAIT_QUEUE_HEAD_INITIALIZER((name).wait)	\
++}
++
++#define __MUTEX_INITIALIZER(name) \
++	__SEMAPHORE_INITIALIZER(name, 1)
++
++#define __DECLARE_SEMAPHORE_GENERIC(name, count) \
++	struct semaphore name = __SEMAPHORE_INITIALIZER(name,count)
++
++#define DECLARE_MUTEX(name)		__DECLARE_SEMAPHORE_GENERIC(name, 1)
++#define DECLARE_MUTEX_LOCKED(name)	__DECLARE_SEMAPHORE_GENERIC(name, 0)
++
++static inline void sema_init (struct semaphore *sem, int val)
++{
++	atomic_set(&sem->count, val);
++	init_waitqueue_head(&sem->wait);
++}
++
++static inline void init_MUTEX (struct semaphore *sem)
++{
++	sema_init(sem, 1);
++}
++
++static inline void init_MUTEX_LOCKED (struct semaphore *sem)
++{
++	sema_init(sem, 0);
++}
++
++extern void __down(struct semaphore * sem);
++extern int  __down_interruptible(struct semaphore * sem);
++extern void __up(struct semaphore * sem);
++
++static inline void down(struct semaphore * sem)
++{
++	might_sleep();
++
++	/*
++	 * Try to get the semaphore, take the slow path if we fail.
++	 */
++	if (unlikely(atomic_dec_return(&sem->count) < 0))
++		__down(sem);
++}
++
++static inline int down_interruptible(struct semaphore * sem)
++{
++	int ret = 0;
++
++	might_sleep();
++
++	if (unlikely(atomic_dec_return(&sem->count) < 0))
++		ret = __down_interruptible(sem);
++	return ret;
++}
++
++static inline int down_trylock(struct semaphore * sem)
++{
++	return atomic_dec_if_positive(&sem->count) < 0;
++}
++
++static inline void up(struct semaphore * sem)
++{
++	if (unlikely(atomic_inc_return(&sem->count) <= 0))
++		__up(sem);
++}
++
++#endif /* __KERNEL__ */
++
++#endif /* _ASM_POWERPC_SEMAPHORE_H */
+diff --git a/include/asm-ppc/semaphore.h b/include/asm-ppc/semaphore.h
+deleted file mode 100644
+--- a/include/asm-ppc/semaphore.h
++++ /dev/null
+@@ -1,111 +0,0 @@
+-#ifndef _PPC_SEMAPHORE_H
+-#define _PPC_SEMAPHORE_H
+-
+-/*
+- * Swiped from asm-sparc/semaphore.h and modified
+- * -- Cort (cort@cs.nmt.edu)
+- *
+- * Stole some rw spinlock-based semaphore stuff from asm-alpha/semaphore.h
+- * -- Ani Joshi (ajoshi@unixbox.com)
+- *
+- * Remove spinlock-based RW semaphores; RW semaphore definitions are
+- * now in rwsem.h and we use the generic lib/rwsem.c implementation.
+- * Rework semaphores to use atomic_dec_if_positive.
+- * -- Paul Mackerras (paulus@samba.org)
+- */
+-
+-#ifdef __KERNEL__
+-
+-#include <asm/atomic.h>
+-#include <asm/system.h>
+-#include <linux/wait.h>
+-#include <linux/rwsem.h>
+-
+-struct semaphore {
+-	/*
+-	 * Note that any negative value of count is equivalent to 0,
+-	 * but additionally indicates that some process(es) might be
+-	 * sleeping on `wait'.
+-	 */
+-	atomic_t count;
+-	wait_queue_head_t wait;
+-};
+-
+-#define __SEMAPHORE_INITIALIZER(name, n)				\
+-{									\
+-	.count		= ATOMIC_INIT(n),				\
+-	.wait		= __WAIT_QUEUE_HEAD_INITIALIZER((name).wait)	\
+-}
+-
+-#define __MUTEX_INITIALIZER(name) \
+-	__SEMAPHORE_INITIALIZER(name, 1)
+-
+-#define __DECLARE_SEMAPHORE_GENERIC(name, count) \
+-	struct semaphore name = __SEMAPHORE_INITIALIZER(name,count)
+-
+-#define DECLARE_MUTEX(name)		__DECLARE_SEMAPHORE_GENERIC(name, 1)
+-#define DECLARE_MUTEX_LOCKED(name)	__DECLARE_SEMAPHORE_GENERIC(name, 0)
+-
+-static inline void sema_init (struct semaphore *sem, int val)
+-{
+-	atomic_set(&sem->count, val);
+-	init_waitqueue_head(&sem->wait);
+-}
+-
+-static inline void init_MUTEX (struct semaphore *sem)
+-{
+-	sema_init(sem, 1);
+-}
+-
+-static inline void init_MUTEX_LOCKED (struct semaphore *sem)
+-{
+-	sema_init(sem, 0);
+-}
+-
+-extern void __down(struct semaphore * sem);
+-extern int  __down_interruptible(struct semaphore * sem);
+-extern void __up(struct semaphore * sem);
+-
+-extern inline void down(struct semaphore * sem)
+-{
+-	might_sleep();
+-
+-	/*
+-	 * Try to get the semaphore, take the slow path if we fail.
+-	 */
+-	if (atomic_dec_return(&sem->count) < 0)
+-		__down(sem);
+-	smp_wmb();
+-}
+-
+-extern inline int down_interruptible(struct semaphore * sem)
+-{
+-	int ret = 0;
+-
+-	might_sleep();
+-
+-	if (atomic_dec_return(&sem->count) < 0)
+-		ret = __down_interruptible(sem);
+-	smp_wmb();
+-	return ret;
+-}
+-
+-extern inline int down_trylock(struct semaphore * sem)
+-{
+-	int ret;
+-
+-	ret = atomic_dec_if_positive(&sem->count) < 0;
+-	smp_wmb();
+-	return ret;
+-}
+-
+-extern inline void up(struct semaphore * sem)
+-{
+-	smp_wmb();
+-	if (atomic_inc_return(&sem->count) <= 0)
+-		__up(sem);
+-}
+-
+-#endif /* __KERNEL__ */
+-
+-#endif /* !(_PPC_SEMAPHORE_H) */
+diff --git a/include/asm-ppc64/semaphore.h b/include/asm-ppc64/semaphore.h
+deleted file mode 100644
+--- a/include/asm-ppc64/semaphore.h
++++ /dev/null
+@@ -1,98 +0,0 @@
+-#ifndef _PPC64_SEMAPHORE_H
+-#define _PPC64_SEMAPHORE_H
+-
+-/*
+- * Remove spinlock-based RW semaphores; RW semaphore definitions are
+- * now in rwsem.h and we use the generic lib/rwsem.c implementation.
+- * Rework semaphores to use atomic_dec_if_positive.
+- * -- Paul Mackerras (paulus@samba.org)
+- */
+-
+-#ifdef __KERNEL__
+-
+-#include <asm/atomic.h>
+-#include <asm/system.h>
+-#include <linux/wait.h>
+-#include <linux/rwsem.h>
+-
+-struct semaphore {
+-	/*
+-	 * Note that any negative value of count is equivalent to 0,
+-	 * but additionally indicates that some process(es) might be
+-	 * sleeping on `wait'.
+-	 */
+-	atomic_t count;
+-	wait_queue_head_t wait;
+-};
+-
+-#define __SEMAPHORE_INITIALIZER(name, n)				\
+-{									\
+-	.count		= ATOMIC_INIT(n),				\
+-	.wait		= __WAIT_QUEUE_HEAD_INITIALIZER((name).wait)	\
+-}
+-
+-#define __MUTEX_INITIALIZER(name) \
+-	__SEMAPHORE_INITIALIZER(name, 1)
+-
+-#define __DECLARE_SEMAPHORE_GENERIC(name, count) \
+-	struct semaphore name = __SEMAPHORE_INITIALIZER(name,count)
+-
+-#define DECLARE_MUTEX(name)		__DECLARE_SEMAPHORE_GENERIC(name, 1)
+-#define DECLARE_MUTEX_LOCKED(name)	__DECLARE_SEMAPHORE_GENERIC(name, 0)
+-
+-static inline void sema_init (struct semaphore *sem, int val)
+-{
+-	atomic_set(&sem->count, val);
+-	init_waitqueue_head(&sem->wait);
+-}
+-
+-static inline void init_MUTEX (struct semaphore *sem)
+-{
+-	sema_init(sem, 1);
+-}
+-
+-static inline void init_MUTEX_LOCKED (struct semaphore *sem)
+-{
+-	sema_init(sem, 0);
+-}
+-
+-extern void __down(struct semaphore * sem);
+-extern int  __down_interruptible(struct semaphore * sem);
+-extern void __up(struct semaphore * sem);
+-
+-static inline void down(struct semaphore * sem)
+-{
+-	might_sleep();
+-
+-	/*
+-	 * Try to get the semaphore, take the slow path if we fail.
+-	 */
+-	if (unlikely(atomic_dec_return(&sem->count) < 0))
+-		__down(sem);
+-}
+-
+-static inline int down_interruptible(struct semaphore * sem)
+-{
+-	int ret = 0;
+-
+-	might_sleep();
+-
+-	if (unlikely(atomic_dec_return(&sem->count) < 0))
+-		ret = __down_interruptible(sem);
+-	return ret;
+-}
+-
+-static inline int down_trylock(struct semaphore * sem)
+-{
+-	return atomic_dec_if_positive(&sem->count) < 0;
+-}
+-
+-static inline void up(struct semaphore * sem)
+-{
+-	if (unlikely(atomic_inc_return(&sem->count) <= 0))
+-		__up(sem);
+-}
+-
+-#endif /* __KERNEL__ */
+-
+-#endif /* !(_PPC64_SEMAPHORE_H) */
