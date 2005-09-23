@@ -2,20 +2,20 @@ Return-Path: <ebs@ebshome.net>
 Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 89DFE68352
+	by ozlabs.org (Postfix) with ESMTP id 7AA4C6833B
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 23 Sep 2005 13:22:39 +1000 (EST)
-Date: Thu, 22 Sep 2005 20:22:36 -0700
+	Fri, 23 Sep 2005 13:29:51 +1000 (EST)
+Date: Thu, 22 Sep 2005 20:29:49 -0700
 From: Eugene Surovegin <ebs@ebshome.net>
 To: Roland Dreier <rolandd@cisco.com>
-Message-ID: <20050923032236.GA10089@gate.ebshome.net>
-References: <2005922203.UPGbNSgrHKasoXYq@cisco.com>
-	<2005922203.qtfGFmWm3E8jkhq1@cisco.com>
+Message-ID: <20050923032949.GB10089@gate.ebshome.net>
+References: <2005922203.92drttvd27WS9dXk@cisco.com>
+	<2005922203.UPGbNSgrHKasoXYq@cisco.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <2005922203.qtfGFmWm3E8jkhq1@cisco.com>
+In-Reply-To: <2005922203.UPGbNSgrHKasoXYq@cisco.com>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH 3/4] [PPC32] ibm_emac: Add 440SPe support
+Subject: Re: [PATCH 2/4] [PPC32] Add 440SPe support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,25 +27,34 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 On Thu, Sep 22, 2005 at 08:03:35PM -0700, Roland Dreier wrote:
-> Eugene, I'm not sure what the status of your ibm_emac rewrite is.  Is
-> there a tree somewhere that you would like me to merge this change
-> with and then send you a patch, or do you want to take care of merging?
+> Add support for the AMCC PowerPC 440SPe SoC.
 
-Well, new driver was sent to jgarzik and netdev list three weeks ago. 
-So far I haven't heard anything technical from Jeff. I don't know when 
-and even if it will be merged.
+[snip]
 
-There is a GIT tree with new driver, for more info look at 
-http://kernel.ebshome.net/emac/index.html
+> +static struct ocp_func_mal_data amc440spe_mal0_def = {
+> +	.num_tx_chans   = 1,    	/* Number of TX channels */
+> +	.num_rx_chans   = 1,    	/* Number of RX channels */
+> +	.txeob_irq	= 38,		/* TX End Of Buffer IRQ  */
+> +	.rxeob_irq	= 39,		/* RX End Of Buffer IRQ  */
+> +	.txde_irq	= 34,		/* TX Descriptor Error IRQ */
+> +	.rxde_irq	= 35,		/* RX Descriptor Error IRQ */
+> +	.serr_irq	= 33,		/* MAL System Error IRQ    */
+> +};
+> +OCP_SYSFS_MAL_DATA()
 
-I don't know what to recommend now - wait for net driver maintainer 
-(I've heard some people have been waiting for couple months already) 
-or sent this patch upstream ignoring new driver :(. Matt?
+Roland, I recently added new field (.dcr_base) to this structure (as a 
+preparation step for new EMAC driver), could you do this for 440SPe as 
+well? It's not needed right now, but as soon as new EMAC driver is in, 
+440SPe will stop working.
 
-I'll try to look at merging your patch into my tree, but probably not 
-right now - I'm kinda busy with other stuff and netdev "progress" 
-doesn't quite motivate me working on this project, frankly. Though, if 
-you can send me a patch against my tree, I'll appreciate it :).
+[snip]
+
+> +static void __init ppc4xx_pic_impl_init(void)
+> +{
+> +	/* Enable cascade interrupts in UIC0 */
+> +	/* Enable cascade interrupt in UIC0 */
+
+I think you probably missed this part :)
 
 -- 
 Eugene
