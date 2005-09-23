@@ -1,19 +1,20 @@
-Return-Path: <rolandd@cisco.com>
-Received: from ams-iport-1.cisco.com (ams-iport-1.cisco.com [144.254.224.140])
-	by ozlabs.org (Postfix) with ESMTP id A67106838B
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 0796368399
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 24 Sep 2005 08:44:45 +1000 (EST)
-To: Matt Porter <mporter@kernel.crashing.org>
+	Sat, 24 Sep 2005 08:58:13 +1000 (EST)
+Date: Fri, 23 Sep 2005 15:58:11 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Roland Dreier <rolandd@cisco.com>
+Message-ID: <20050923225811.GB22816@gate.ebshome.net>
 References: <2005922203.92drttvd27WS9dXk@cisco.com>
 	<2005922203.UPGbNSgrHKasoXYq@cisco.com>
-	<20050923102038.G21055@cox.net>
-From: Roland Dreier <rolandd@cisco.com>
-Date: Fri, 23 Sep 2005 15:44:35 -0700
-In-Reply-To: <20050923102038.G21055@cox.net> (Matt Porter's message of "Fri,
-	23 Sep 2005 10:20:38 -0700")
-Message-ID: <52y85n8kvg.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	<20050923102038.G21055@cox.net> <52y85n8kvg.fsf@cisco.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <52y85n8kvg.fsf@cisco.com>
 Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: [PATCH 2/4] [PPC32] Add 440SPe support
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -26,20 +27,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-    Matt> Please change these new files to ppc440spe.*.  After the new
-    Matt> EMAC driver is merged, we are planning a Great Renaming(tm)
-    Matt> to make the current filenames be vendor neutral. i.e. ibm4*->ppc4*
+On Fri, Sep 23, 2005 at 03:44:35PM -0700, Roland Dreier wrote:
+> BTW, Eugene, you might want to do a 'git prune-packed' on your git
+> tree.  It's pretty wasteful to clone your tree now, because you have a
+> lot of individual objects that also appear in Linus's packs.
 
-OK, I made these changes and rebased to Eugene's EMAC git tree.  This
-tree passes some basic tests on my Yucca board.  I just pushed this,
-so pending mirror delays, it will be at
+Yeah, I did this yesterday, so I guess your next pulls should be OK. 
+You may need to do this on the cloned tree as well.
 
-  rsync://rsync.kernel.org/pub/scm/linux/kernel/git/roland/ppc440spe.git
-
-I can repost the patchset if anyone wants to see it.
-
-BTW, Eugene, you might want to do a 'git prune-packed' on your git
-tree.  It's pretty wasteful to clone your tree now, because you have a
-lot of individual objects that also appear in Linus's packs.
-
- - R.
+-- 
+Eugene
