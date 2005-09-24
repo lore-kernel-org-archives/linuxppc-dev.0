@@ -1,15 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17204.41449.162199.476757@cargo.ozlabs.ibm.com>
-Date: Sat, 24 Sep 2005 10:46:33 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: David Howells <dhowells@redhat.com>
-In-Reply-To: <606.1127460740@warthog.cambridge.redhat.com>
-References: <E1EIXAI-0006Q0-OS@jdl.com>
-	<606.1127460740@warthog.cambridge.redhat.com>
-Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
-Subject: Re: PATCH powerpc Merge asm-ppc*/rwsem.h 
+Return-Path: <sfr@canb.auug.org.au>
+Date: Sat, 24 Sep 2005 10:48:27 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Paul Mackerras <paulus@samba.org>
+Message-Id: <20050924104827.114939ca.sfr@canb.auug.org.au>
+In-Reply-To: <17204.38908.767118.59625@cargo.ozlabs.ibm.com>
+References: <Pine.LNX.4.61.0509231408170.3791@nylon.am.freescale.net>
+	<17204.38908.767118.59625@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sat__24_Sep_2005_10_48_27_+1000_PAIeZo_aRsMgMX1F"
+Cc: michael@ellerman.id.au, linuxppc-dev@ozlabs.org, arnd@arndb.de,
+	galak@freescale.com, linuxppc64-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: merged asm/cputable.h
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,30 +22,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Howells writes:
+--Signature=_Sat__24_Sep_2005_10_48_27_+1000_PAIeZo_aRsMgMX1F
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> rwsems on ppc64 should really be using a 64-bit counter, not a 32-bit counter,
-> otherwise you limit the maximum number of processes to 32K-ish.
-> 
-> The counter should be "signed long" really.
+On Sat, 24 Sep 2005 10:04:12 +1000 Paul Mackerras <paulus@samba.org> wrote:
+>
+> Kumar Gala writes:
+>=20
+> > +#ifdef __powerpc64__
+> > +extern struct cpu_spec		*cur_cpu_spec;
+> > +#else /* __powerpc64__ */
+> > +extern struct cpu_spec		*cur_cpu_spec[];
+> > +#endif /* __powerpc64__ */
+>=20
+> I would like to see this unified - it makes no sense for them to be
+> different.  We are unlikely to support asymmetric multiprocessing any
+> time soon, so let's go with the single cur_cpu_spec pointer (a la
+> ppc64).
 
-It has long annoyed me that we waste half the bits in the rwsem
-counter, just because you assume a lowest-common-denominator set of
-atomic ops.  IIRC your implementation replaced the earlier ppc
-implementation which had a 32-bit counter and didn't have the 32k
-process limit.
+Michael Ellerman also has a patch that makes this a struct (i.e. not a
+pointer) which allows us to mark the array of cpuspec's that we test
+against at boot time as __init.  Maybe he could do the ppc32 single
+cpu_spec as part of that.
 
-I'd have to study it in more detail, but I strongly suspect that with
-an atomic operation that did something like
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-	*p = max(*p, limit) + inc
+--Signature=_Sat__24_Sep_2005_10_48_27_+1000_PAIeZo_aRsMgMX1F
+Content-Type: application/pgp-signature
 
-atomically (or alternatively a min), we could increase the limit to at
-least 1G processes with a 32-bit counter, without needing to change
-your common slow-path implementation.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
 
-Such an atomic op is easy to implement with load-and-reserve /
-store-conditional instructions.  Look at __sem_update_count in
-arch/ppc64/kernel/semaphore.c for an example.
+iD8DBQFDNKJgFdBgD/zoJvwRAjQ8AJ4x6xsrXt9AvVM7VVqYOW6kCH6XlACbB0/E
+JBKMV4oPAnfWBR+6u8ds1Bc=
+=pJtX
+-----END PGP SIGNATURE-----
 
-Paul.
+--Signature=_Sat__24_Sep_2005_10_48_27_+1000_PAIeZo_aRsMgMX1F--
