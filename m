@@ -1,17 +1,20 @@
-Return-Path: <kumar.gala@freescale.com>
-In-Reply-To: <20050924104827.114939ca.sfr@canb.auug.org.au>
-References: <Pine.LNX.4.61.0509231408170.3791@nylon.am.freescale.net>
-	<17204.38908.767118.59625@cargo.ozlabs.ibm.com>
-	<20050924104827.114939ca.sfr@canb.auug.org.au>
-Mime-Version: 1.0 (Apple Message framework v734)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <BCC97EBE-6171-4FF9-A696-B98B11046391@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Sat, 24 Sep 2005 10:35:03 -0500
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: michael@ellerman.id.au, linuxppc-dev@ozlabs.org, arnd@arndb.de,
-	linuxppc64-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc: merged asm/cputable.h
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3A02868385
+	for <linuxppc-dev@ozlabs.org>; Sun, 25 Sep 2005 08:11:24 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@freescale.com>
+In-Reply-To: <Pine.LNX.4.61.0509221450190.30738@nylon.am.freescale.net>
+References: <Pine.LNX.4.61.0509221450190.30738@nylon.am.freescale.net>
+Content-Type: text/plain
+Date: Sun, 25 Sep 2005 08:10:11 +1000
+Message-Id: <1127599811.27674.47.camel@gaston>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] ppc32: make sure we have an L3 before touch its
+	control register
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,36 +24,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 2005-09-22 at 14:51 -0500, Kumar Gala wrote:
+> Ben,
+> 
+> Can you take a look at this.  I think its pretty straight forward and if 
+> your ok with it please forward on to linus.
 
-On Sep 23, 2005, at 7:48 PM, Stephen Rothwell wrote:
+We usually haven't dong the fixup of cpu features yet at the point
+setup() is run, thus your change will have no effect. You need to
+actually go look at the CPU feature bits. (You can look a bit below in
+that same code how it does for CPU_FTR_L3_DISABLE_NAP and
+CCPU_FTR_CAN_NAP.
 
-> On Sat, 24 Sep 2005 10:04:12 +1000 Paul Mackerras  
-> <paulus@samba.org> wrote:
->
->>
->> Kumar Gala writes:
->>
->>
->>> +#ifdef __powerpc64__
->>> +extern struct cpu_spec        *cur_cpu_spec;
->>> +#else /* __powerpc64__ */
->>> +extern struct cpu_spec        *cur_cpu_spec[];
->>> +#endif /* __powerpc64__ */
->>>
->>
->> I would like to see this unified - it makes no sense for them to be
->> different.  We are unlikely to support asymmetric multiprocessing any
->> time soon, so let's go with the single cur_cpu_spec pointer (a la
->> ppc64).
->>
->
-> Michael Ellerman also has a patch that makes this a struct (i.e. not a
-> pointer) which allows us to mark the array of cpuspec's that we test
-> against at boot time as __init.  Maybe he could do the ppc32 single
-> cpu_spec as part of that.
+Also, it's 745x, those CPUs so far always existed in their 744x version
+without L3 and no way to recongnize them via PVR afaik (until before
+7447A). I would expect L3CR to just return 0. Is this not the case on
+7447/7448 ? If yes, then there is no need to change the code...
 
-I'm all for unifying this as well.  If Michael can post his patch  
-I'll look at fixing up this issue. Let's merge the current patch and  
-follow it up with an update that includes this fix and Michael's work.
+Ben.
 
-- kumar
+> - kumar
+> 
+> --
+> 
+> Some variants of 745x may not actually have the L3CR register.  Since
+> we mark which variants of 745x have L3CRs in the cputable we can
+> use that information to ensure that the mfspr L3CR will not cause
+> an exception in the processors that don't have the register.
+> 
+> Signed-off-by: Kumar K. Gala <kumar.gala@freescale.com>
+> 
+> ---
+> commit f706b6046f1fee29bdf3081dd783f7e482012165
+> tree 6d42ee61458ec94ac7d4567e3f0383dd1e47a537
+> parent d8ac10639b6a1ed900efbee38c18baaca31e64dc
+> author Kumar K. Gala <kumar.gala@freescale.com> Thu, 22 Sep 2005 14:47:52 -0500
+> committer Kumar K. Gala <kumar.gala@freescale.com> Thu, 22 Sep 2005 14:47:52 -0500
+> 
+>  arch/ppc/kernel/cpu_setup_6xx.S |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/ppc/kernel/cpu_setup_6xx.S b/arch/ppc/kernel/cpu_setup_6xx.S
+> --- a/arch/ppc/kernel/cpu_setup_6xx.S
+> +++ b/arch/ppc/kernel/cpu_setup_6xx.S
+> @@ -212,9 +212,11 @@ setup_745x_specifics:
+>  	 * the firmware. If any, we disable NAP capability as
+>  	 * it's known to be bogus on rev 2.1 and earlier
+>  	 */
+> +BEGIN_FTR_SECTION
+>  	mfspr	r11,SPRN_L3CR
+>  	andis.	r11,r11,L3CR_L3E@h
+>  	beq	1f
+> +END_FTR_SECTION_IFSET(CPU_FTR_L3CR)
+>  	lwz	r6,CPU_SPEC_FEATURES(r5)
+>  	andi.	r0,r6,CPU_FTR_L3_DISABLE_NAP
+>  	beq	1f
