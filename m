@@ -1,17 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C29DE68363
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Sep 2005 13:42:45 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andrew Morton <akpm@osdl.org>
-Content-Type: text/plain
-Date: Mon, 26 Sep 2005 13:42:12 +1000
-Message-Id: <1127706133.15882.23.camel@gaston>
+Return-Path: <zhonglei@RCS-9000.COM>
+Received: from RCS-9000.COM (unknown [218.94.131.104])
+	by ozlabs.org (Postfix) with ESMTP id 6E34568336
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Sep 2005 17:45:07 +1000 (EST)
+Date: Mon, 26 Sep 2005 15:48:03 +0800
+Message-Id: <200509261548.AA26280018@RCS-9000.COM>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] ppc: fix stupid thinko in oprofile fix
+Content-Type: text/plain; charset=us-ascii
+From: "zhonglei" <zhonglei@RCS-9000.COM>
+To: <linuxppc-dev@ozlabs.org>
+Subject: sys_shmat
+Reply-To: zhonglei@RCS-9000.COM
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,22 +19,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I did something stupid in my oprofile fix, here's the obvious fix:
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-Index: linux-work/arch/ppc/kernel/perfmon.c
-===================================================================
---- linux-work.orig/arch/ppc/kernel/perfmon.c	2005-09-26 09:53:19.000000000 +1000
-+++ linux-work/arch/ppc/kernel/perfmon.c	2005-09-26 13:40:16.000000000 +1000
-@@ -45,9 +45,8 @@
- 	mtpmr(PMRN_PMGC0, pmgc0);
- }
- 
--#elif CONFIG_6xx
-+#elif defined(CONFIG_6xx)
- /* Ensure exceptions are disabled */
--
- static void dummy_perf(struct pt_regs *regs)
- {
- 	unsigned int mmcr0 = mfspr(SPRN_MMCR0);
+hi:
+   I get a pointer shramptr from sys_shmat(shid,0,SHM_R|SHM_W,&shramptr) to use share RAM in my driver.
+But when I assign a value into this pointer in my interrupt routine,
+the system shows: oops: kernel access of bad area!
+what's the problem?
+thanks
+zhonglei 
