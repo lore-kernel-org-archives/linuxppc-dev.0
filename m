@@ -1,17 +1,19 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao06.cox.net (fed1rmmtao06.cox.net [68.230.241.33])
-	by ozlabs.org (Postfix) with ESMTP id 1C26168394
+Return-Path: <jzhou@ztesandiego.com>
+Received: from ztesandiego.com (69-229-94-146.ded.pacbell.net [69.229.94.146])
+	by ozlabs.org (Postfix) with ESMTP id 80C5E68394
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 27 Sep 2005 07:37:28 +1000 (EST)
-Date: Mon, 26 Sep 2005 14:37:27 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Matt Porter <mporter@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>
-Message-ID: <20050926213727.GL18074@smtp.west.cox.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-embedded@ozlabs.org
-Subject: [PATCH] Add support for XMON on AMCC 440GX
+	Tue, 27 Sep 2005 07:55:09 +1000 (EST)
+Received: from Jerry ([69.229.94.147])
+	by ztesandiego.com (Merak 5.1.5) with SMTP id JHA74081
+	for <linuxppc-embedded@ozlabs.org>; Mon, 26 Sep 2005 14:41:23 -0700
+From: "Jerry Zhou" <jzhou@ztesandiego.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Mon, 26 Sep 2005 14:41:16 -0700
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0026_01C5C2A8.59B64960"
+Message-Id: <20050926215509.80C5E68394@ozlabs.org>
+Subject: Hello-new comer ask a start question.
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,30 +24,128 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Note: The hex address rather than define matches style in the rest of
-the code.
+This is a multi-part message in MIME format.
 
-Add support for XMON on the AMCC 440GX boards.
+------=_NextPart_000_0026_01C5C2A8.59B64960
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Cal Erickson <cerickson@mvista.com>
-Signed-off-by: Tom Rini <trini@kernel.crashing.org>
+Dear all,
 
---- a/arch/ppc/xmon/start.c	2003-12-30 17:41:00.000000000 -0800
-+++ b/arch/ppc/xmon/new_start.c	2005-09-23 09:20:24.000000000 -0700
-@@ -213,6 +213,12 @@
- 	TXRDY = 0x20;
- 	RXRDY = 1;
- 	DLAB = 0x80;
-+#elif defined(CONFIG_440GX)
-+        sccd = (volatile unsigned char *)ioremap64(0x0000000140000200, 8);
-+        sccc = (volatile unsigned char *)( sccd + 5 );
-+        TXRDY = 0x20;
-+        RXRDY = 1;
-+        DLAB = 0x80;
- #endif /* platform */
  
- 	__sysrq_put_key_op('x', &sysrq_xmon_op);
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+I am a new comer. 
+
+ 
+
+I have bring up a MPC850 board by vxWorks BSP, and I want to bring it up by
+linux, would you please tell me how to start?
+
+ 
+
+Appreciate for your help
+
+ 
+
+Jerry Zhou
+
+
+------=_NextPart_000_0026_01C5C2A8.59B64960
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:SimSun;
+	panose-1:2 1 6 0 3 1 1 1 1 1;}
+@font-face
+	{font-family:SimSun;
+	panose-1:2 1 6 0 3 1 1 1 1 1;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Dear all,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>I am a new comer. <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>I have bring up a MPC850 board by vxWorks BSP, and I =
+want to
+bring it up by linux, would you please tell me how to =
+start?<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Appreciate for your help<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Jerry Zhou<o:p></o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_0026_01C5C2A8.59B64960--
