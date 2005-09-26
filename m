@@ -1,18 +1,17 @@
-Return-Path: <mgreer@mvista.com>
-Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
-	by ozlabs.org (Postfix) with ESMTP id F2E9568378
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao06.cox.net (fed1rmmtao06.cox.net [68.230.241.33])
+	by ozlabs.org (Postfix) with ESMTP id 1C26168394
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 27 Sep 2005 03:16:03 +1000 (EST)
-Date: Mon, 26 Sep 2005 10:15:11 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: smiling_23 <smiling_23@nerdshack.com>
-Message-ID: <20050926171511.GB13009@mag.az.mvista.com>
-References: <432FFE87.6020100@nerdshack.com>
+	Tue, 27 Sep 2005 07:37:28 +1000 (EST)
+Date: Mon, 26 Sep 2005 14:37:27 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Matt Porter <mporter@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>
+Message-ID: <20050926213727.GL18074@smtp.west.cox.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <432FFE87.6020100@nerdshack.com>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: porting Linux on ppc7a
+Subject: [PATCH] Add support for XMON on AMCC 440GX
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,22 +22,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 20, 2005 at 05:50:23PM +0530, smiling_23 wrote:
-> Hi all,
->           I am tryin to port Linux on ppc7a radstone board. I have seen 
-> two threads on porting linux on ppc7a, There
-> he mentioned ppc7a board is similar to EV64260  board. I tried to get 
-> the data sheets of EV64620, i failed to found this
-> board data sheets. If any one has this board data sheets , web link or 
-> any information please send the information to me.
-> Thanks and regards,
-> Venkata jagadish.p.
+Note: The hex address rather than define matches style in the rest of
+the code.
 
-Before you go too far, did you look to see what already in the community
-source?  There is a port to the radstone ppc7d.  I don't know but I
-wouldn't be surprised if its pretty close to your ppc7a.
+Add support for XMON on the AMCC 440GX boards.
 
-If you want docs on Marvell products like the ev64260, you need to sign an NDA
-(last time I checked).
+Signed-off-by: Cal Erickson <cerickson@mvista.com>
+Signed-off-by: Tom Rini <trini@kernel.crashing.org>
 
-Mark
+--- a/arch/ppc/xmon/start.c	2003-12-30 17:41:00.000000000 -0800
++++ b/arch/ppc/xmon/new_start.c	2005-09-23 09:20:24.000000000 -0700
+@@ -213,6 +213,12 @@
+ 	TXRDY = 0x20;
+ 	RXRDY = 1;
+ 	DLAB = 0x80;
++#elif defined(CONFIG_440GX)
++        sccd = (volatile unsigned char *)ioremap64(0x0000000140000200, 8);
++        sccc = (volatile unsigned char *)( sccd + 5 );
++        TXRDY = 0x20;
++        RXRDY = 1;
++        DLAB = 0x80;
+ #endif /* platform */
+ 
+ 	__sysrq_put_key_op('x', &sysrq_xmon_op);
+
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
