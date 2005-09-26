@@ -1,17 +1,18 @@
-Return-Path: <flar@pants.nu>
-Received: from cynthia.pants.nu (adsl-216-102-214-42.dsl.snfc21.pacbell.net
-	[216.102.214.42]) by ozlabs.org (Postfix) with ESMTP id DE0DA68373
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Sep 2005 03:44:06 +1000 (EST)
-Date: Mon, 26 Sep 2005 10:44:04 -0700
-From: Brad Boyer <flar@allandria.com>
-To: zhonglei <zhonglei@RCS-9000.COM>
-Message-ID: <20050926174403.GA28765@pants.nu>
-References: <200509261548.AA26280018@RCS-9000.COM>
+Return-Path: <benh@kernel.crashing.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: michael@ellerman.id.au
+In-Reply-To: <200509261157.37514.michael@ellerman.id.au>
+References: <Pine.LNX.4.61.0509231408170.3791@nylon.am.freescale.net>
+	<20050924104827.114939ca.sfr@canb.auug.org.au>
+	<BCC97EBE-6171-4FF9-A696-B98B11046391@freescale.com>
+	<200509261157.37514.michael@ellerman.id.au>
+Content-Type: text/plain
+Date: Tue, 27 Sep 2005 08:45:54 +1000
+Message-Id: <1127774755.15882.104.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200509261548.AA26280018@RCS-9000.COM>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: sys_shmat
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org,
+	Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] powerpc: merged asm/cputable.h
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,23 +22,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Sep 26, 2005 at 03:48:03PM +0800, zhonglei wrote:
->    I get a pointer shramptr from sys_shmat(shid,0,SHM_R|SHM_W,&shramptr) to use share RAM in my driver.
-> But when I assign a value into this pointer in my interrupt routine,
-> the system shows: oops: kernel access of bad area!
-> what's the problem?
+On Mon, 2005-09-26 at 11:57 +1000, Michael Ellerman wrote:
 
-The problem is that sys_shmat is the implementation of the shmat() system
-call and is therefore only intended to attach shared memory to a normal
-user-space process. The memory is attached to whatever process is listed
-as current at the time of the call. This is obviously not what you wanted,
-since you apparently want something that is useful from kernel-space.
+> Here's a version of my patch updated to apply on top of the merge tree.
+> It'll be a lot cleaner when ppc32 has a single cur_cpu_spec, as we'll
+> be able to remove a lot of the #ifdefs.
 
-Perhaps you should tell the list what you are trying to do from a more
-conceptual view? No matter what you are trying to do, I think you are
-misunderstanding the services that are available to a driver in the kernel.
-The key question you need to answer is where you need to be able to
-access this memory. In particular, do you need it in a user-space program?
+There is a small issue here: You turn identify_cpu into C code. However,
+on ppc32, this is called with the kernel not yet relocated (before
+prom_init even !). Same with the feature fixup. On ppc32, in order to
+run C code that early, it needs to be in -mrelocatable bits of code
+(like prom_init) or use RELOC macros (ugh !).
 
-	Brad Boyer
-	flar@allandria.com
+This puts some light on the fact that we do things quite differently
+here between ppc32 and ppc64. On ppc64, the call to identify CPU is done
+after kernel is relocated (after prom_init), and before early_setup,
+though the call to fixup the feature sections is done later, after the
+initial parsing of the flat device-tree, where we can "adjust" some
+features based on firmware properties.
+
+We might want to sync a bit what ppc32 and ppc64 do here, however, that
+will/would require some changes in the way we manipulate some MMU bits.
+
+On ppc32, we first create a temporary initial mapping, using BATs on
+6xx, using other mecanisms on other CPUs, that covers kernel text & data
+(not much more). This could be "equivalent" of the ppc64 bit that runs
+in real mode. (Though we have to be careful there if we do something
+like unpacking the device-tree, that has to be done -after- final
+translation is turned on with full access to the linear mapping).
+
+Also, the ppc64 bits calls indentify_cpu from asm on the primary CPU at
+least. I don't think that is strictly necessary, at least not any more.
+It could be done instead at the beginning of early_setup.
+
+Ben.
