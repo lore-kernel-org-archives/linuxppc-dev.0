@@ -1,18 +1,22 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 7B779683E4
+Return-Path: <kalle.pokki@iki.fi>
+Received: from smtp2.song.fi (smtp2.song.fi [194.100.2.122])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 91163683F1
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Sep 2005 04:50:41 +1000 (EST)
-In-Reply-To: <000a01c5c38a$0f77cda0$5201a8c0@GEG2400>
-References: <000a01c5c38a$0f77cda0$5201a8c0@GEG2400>
-Mime-Version: 1.0 (Apple Message framework v734)
-Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
-Message-Id: <B310BDDC-A773-4D85-8314-F4320C5FA90C@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Date: Tue, 27 Sep 2005 13:50:43 -0500
-To: =?ISO-8859-1?Q?G=E9rard_Gu=E9vel?= <gguevel@interfaceconcept.com>
+	Wed, 28 Sep 2005 06:35:18 +1000 (EST)
+Message-ID: <4339AD01.30708@iki.fi>
+Date: Tue, 27 Sep 2005 22:35:13 +0200
+From: Kalle Pokki <kalle.pokki@iki.fi>
+MIME-Version: 1.0
+To: Dan Malek <dan@embeddedalley.com>
+References: <DCEAAC0833DD314AB0B58112AD99B93B85946A@ismail.innsys.innovsys.com>
+	<4333DF04.3000908@iki.fi> <43395322.1080407@iki.fi>
+	<384d09b865d454875c447cc02c89d001@embeddedalley.com>
+In-Reply-To: <384d09b865d454875c447cc02c89d001@embeddedalley.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: How to use SPE on MPC8541
+Subject: Re: CPM2 early console
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,37 +27,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-On Sep 27, 2005, at 12:36, G=E9rard Gu=E9vel wrote:
+Dan Malek wrote:
 
 >
+> On Sep 27, 2005, at 10:11 AM, Kalle Pokki wrote:
 >
+>> Any ideas what can set the bootmem memory as cached?
 >
->> You say the application runs, right?  So what made you check the SPE
->> bit state?  The kernel keeps SPE disabled by default so it doesn't
->> have to save the upper 32 bits of the registers every context
->> switch.  When a process uses SPE for the first time, an exception is
->> triggered, the kernel enables SPE for that process, and then that
->> process should be able to use SPE every time it gets cpu time.
->>
->> How are you determining that the SPE bit is not set?  Is your
->> application not executing the SPE instructions?
->>
->> Andy
->>
->
-> Yes the application runs. I wrote a mini driver with an ioctl which
-> performs a mfmsr() call and  returns the value to the user =20
-> application.
-> I called this ioctl at several times before and after executing SPE =20=
+> All of memory is always cached on 82xx.  Which is fine
+> since the cache controller keeps the processor core
+> and peripherals coherent in hardware.
 
-> code.
-> I already tried to manually force the SPE bit with another ioctl which
-> performs a enable_kernel_spe() call. The bit SPE is right set at =20
-> this time
-> but disappears later.
+OK. Then the question really is why isn't the cache controller enforcing 
+coherency between the G2_LE core and the CPM. While trying to debug the 
+console driver I wrote a really simple SCC driver separated from the 
+rest of the kernel in order to have a usable debug printf. And I 
+couldn't get any buffers printed through the SCC until I started to use 
+buffers in DPRAM. The CPM just didn't see anything I wrote to the 
+buffers. The same thing seems to bother at least the console driver and 
+the FCC ethernet driver (though they don't work at all for me at the 
+moment..)
 
-Your driver runs in kernel space.  The kernel has the SPE bit off.  =20
-The MSR state is process-specific.  If the code executes, the MSR bit =20=
-
-is set.  Why do you want to see if the bit is set?
+I think it is obvious I have misconfigured something, but at this point 
+I am not even sure if it is something I should have initialised in the 
+boot loader.
