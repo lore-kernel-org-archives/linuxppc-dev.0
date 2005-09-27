@@ -1,23 +1,18 @@
-Return-Path: <gguevel@interfaceconcept.com>
-Received: from relay02s.clb.oleane.net (relay02s.clb.oleane.net
-	[213.56.31.143]) by ozlabs.org (Postfix) with ESMTP id 7D97068381
+Return-Path: <afleming@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 63C0168336
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Sep 2005 01:42:18 +1000 (EST)
-Received: from smtp12.clb.oleane.net (smtp12.clb.oleane.net [213.56.31.47])
-	by relay02s.clb.oleane.net with ESMTP id j8RFWd4L019094
-	for <linuxppc-embedded@ozlabs.org>; Tue, 27 Sep 2005 17:32:40 +0200
-Received: from GEG2400 ([62.160.30.216]) (authenticated)
-	by smtp12.clb.oleane.net with ESMTP id j8RFRhLv007776
-	for <linuxppc-embedded@ozlabs.org>; Tue, 27 Sep 2005 17:27:46 +0200
-From: =?iso-8859-1?Q?G=E9rard_Gu=E9vel?= <gguevel@interfaceconcept.com>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Tue, 27 Sep 2005 17:30:25 +0200
-Message-ID: <000d01c5c378$64610960$5201a8c0@GEG2400>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <e29792bf3239d4cfb5861e7826300795@freescale.com>
-Subject: How to use SPE on MPC8541
+	Wed, 28 Sep 2005 01:56:34 +1000 (EST)
+In-Reply-To: <000d01c5c378$64610960$5201a8c0@GEG2400>
+References: <000d01c5c378$64610960$5201a8c0@GEG2400>
+Mime-Version: 1.0 (Apple Message framework v734)
+Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
+Message-Id: <5D83ECE9-90F7-4BE2-B173-C20CB868E9F6@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Date: Tue, 27 Sep 2005 10:56:36 -0500
+To: =?ISO-8859-1?Q?G=E9rard_Gu=E9vel?= <gguevel@interfaceconcept.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: How to use SPE on MPC8541
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,26 +24,39 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Hi,
+On Sep 27, 2005, at 10:30, G=E9rard Gu=E9vel wrote:
 
-I am running a Linux 2.6.9 on a MPC8541 custom board.
+>
+> Hi,
+>
+> I am running a Linux 2.6.9 on a MPC8541 custom board.
+>
+> I would like to run a user application which contains
+> some SPE code extracted from a freescale library.
+>
+> I compiled the kernel with the CONFIG_SPE set to yes.
+> The application also compiles and I can run it on the
+> board.
+>
+> But it seems the SPE bit from the MSR register
+> is not set when the process runs.
+>
+> I tried to use a call to the enable_kernel_spe function
+> to force the bit, but it is always erased by the kernel (??)
+> when scheduling task and never set again.
+>
+> Must I compile the application with some special flags
+> to instruct the kernel I want to use SPE ?
 
-I would like to run a user application which contains
-some SPE code extracted from a freescale library.
 
-I compiled the kernel with the CONFIG_SPE set to yes.
-The application also compiles and I can run it on the
-board.
+You say the application runs, right?  So what made you check the SPE =20
+bit state?  The kernel keeps SPE disabled by default so it doesn't =20
+have to save the upper 32 bits of the registers every context =20
+switch.  When a process uses SPE for the first time, an exception is =20
+triggered, the kernel enables SPE for that process, and then that =20
+process should be able to use SPE every time it gets cpu time.
 
-But it seems the SPE bit from the MSR register
-is not set when the process runs.
+How are you determining that the SPE bit is not set?  Is your =20
+application not executing the SPE instructions?
 
-I tried to use a call to the enable_kernel_spe function
-to force the bit, but it is always erased by the kernel (??)
-when scheduling task and never set again.
-
-Must I compile the application with some special flags
-to instruct the kernel I want to use SPE ?
-
-Thanks for any idea
-Gérard
+Andy
