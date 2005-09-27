@@ -1,16 +1,13 @@
-Return-Path: <panto@intracom.gr>
-Message-ID: <4339161D.4010607@intracom.gr>
-Date: Tue, 27 Sep 2005 12:51:25 +0300
-From: Pantelis Antoniou <panto@intracom.gr>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-References: <17208.37250.577664.621993@cargo.ozlabs.ibm.com>	<20050927082324.GA11437@lst.de>	<17209.817.732159.375607@cargo.ozlabs.ibm.com>	<43390DDC.7090701@cs.helsinki.fi>	<4339104E.7050705@intracom.gr>
-	<17209.5879.121421.718258@cargo.ozlabs.ibm.com>
-In-Reply-To: <17209.5879.121421.718258@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Heikki Lindholm <holindho@cs.helsinki.fi>,
-	linuxppc64-dev@ozlabs.org
+Return-Path: <dostrow@gentoo.org>
+From: Daniel Ostrow <dostrow@gentoo.org>
+To: panto@intracom.gr
+Content-Type: text/plain
+Date: Tue, 27 Sep 2005 11:43:46 -0400
+Message-Id: <1127835826.7811.27.camel@Memoria.anyarch.net>
+Mime-Version: 1.0
+Cc: linuxppc64-dev@ozlabs.org, linuxppc-dev@ozlabs.org
 Subject: Re: Starting the arch/powerpc merge
+Reply-To: dostrow@gentoo.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,34 +17,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras wrote:
-> Pantelis Antoniou writes:
-> 
-> 
->>Count me in too; using a 970 in 32 bit mode, because of gentoo X.org
->>problems in 64 bit mode.
-> 
-> 
-> I'm using an X.org server on a ppc64 kernel, and it all works,
-> including DRI.  Both 32-bit and 64-bit X server and clients work.  We
-> now have the 32-bit ioctl compatibility sorted out in the kernel DRM.
-> So I don't think X is a reason to run a 32-bit kernel any more.
-> 
-> What X.org problems do you see with a 64-bit kernel?
-> 
-> Paul.
-> 
-> 
-> 
+>Pantelis Antoniou writes:
+>
+>> Count me in too; using a 970 in 32 bit mode, because of gentoo X.org
+>> problems in 64 bit mode.
+>
+>I'm using an X.org server on a ppc64 kernel, and it all works,
+>including DRI.  Both 32-bit and 64-bit X server and clients work.  We
+>now have the 32-bit ioctl compatibility sorted out in the kernel DRM.
+>So I don't think X is a reason to run a 32-bit kernel any more.
+>
+>What X.org problems do you see with a 64-bit kernel?
+>
+>Paul.
 
-I didn't really tried a very recent kernel, I tried it about a month ago,
-and it didn't work. Could be a gentoo problem for all I know.
+Speaking as a member of the Gentoo/PPC64 team I'm also curious what
+issues you are having...the only open issues that I am aware of have to
+do with the recent r7 X.org prereleases...both modular and monolithic.
+If that is what you are talking about then yeah there are issues...but
+more then likely they are on the X.org side not the kernels. Anything in
+the 6.8.2 range (which is what is stable) has been working fine for a
+long long time under a pure 64-bit env.
 
-Since I don't have time to debug these kind of problems, it's really nice
-to know that it now works :).
+Thanks,
 
-No worries then.
-
-Regards
-
-Pantelis
+-- 
+Daniel Ostrow
+Gentoo Foundation Board of Trustees
+Gentoo/{PPC,PPC64,DevRel}
+dostrow@gentoo.org
