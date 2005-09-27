@@ -1,18 +1,19 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 63C0168336
+Return-Path: <wd@denx.de>
+Received: from mailout09.sul.t-online.com (mailout09.sul.t-online.com
+	[194.25.134.84]) by ozlabs.org (Postfix) with ESMTP id 23EA8683D7
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Sep 2005 01:56:34 +1000 (EST)
-In-Reply-To: <000d01c5c378$64610960$5201a8c0@GEG2400>
-References: <000d01c5c378$64610960$5201a8c0@GEG2400>
-Mime-Version: 1.0 (Apple Message framework v734)
-Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
-Message-Id: <5D83ECE9-90F7-4BE2-B173-C20CB868E9F6@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Date: Tue, 27 Sep 2005 10:56:36 -0500
-To: =?ISO-8859-1?Q?G=E9rard_Gu=E9vel?= <gguevel@interfaceconcept.com>
+	Wed, 28 Sep 2005 02:07:52 +1000 (EST)
+To: xiay@nari-relays.com
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 27 Sep 2005 21:53:24 +0800."
+	<200509272153.AA292552812@NARI-RELAYS.COM>
+Date: Tue, 27 Sep 2005 18:07:14 +0200
+Sender: wd@denx.de
+Message-Id: <20050927160714.DEBDA353CD8@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: How to use SPE on MPC8541
+Subject: Re: (no subject) 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,40 +24,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+In message <200509272153.AA292552812@NARI-RELAYS.COM> you wrote:
+> I have plugged a PCI net card (i82559)on the ICECUBE board (mpc5200), but could not make it work .Which environment should i config in U-BOOT?
 
-On Sep 27, 2005, at 10:30, G=E9rard Gu=E9vel wrote:
+What are you talking about? Make it work in U-Boot?  In  Linux?  What
+exactly  did you try, and what did not work? What was the exact error
+messages?
 
->
-> Hi,
->
-> I am running a Linux 2.6.9 on a MPC8541 custom board.
->
-> I would like to run a user application which contains
-> some SPE code extracted from a freescale library.
->
-> I compiled the kernel with the CONFIG_SPE set to yes.
-> The application also compiles and I can run it on the
-> board.
->
-> But it seems the SPE bit from the MSR register
-> is not set when the process runs.
->
-> I tried to use a call to the enable_kernel_spe function
-> to force the bit, but it is always erased by the kernel (??)
-> when scheduling task and never set again.
->
-> Must I compile the application with some special flags
-> to instruct the kernel I want to use SPE ?
+Best regards,
 
+Wolfgang Denk
 
-You say the application runs, right?  So what made you check the SPE =20
-bit state?  The kernel keeps SPE disabled by default so it doesn't =20
-have to save the upper 32 bits of the registers every context =20
-switch.  When a process uses SPE for the first time, an exception is =20
-triggered, the kernel enables SPE for that process, and then that =20
-process should be able to use SPE every time it gets cpu time.
-
-How are you determining that the SPE bit is not set?  Is your =20
-application not executing the SPE instructions?
-
-Andy
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Der Horizont vieler Menschen ist ein Kreis mit Radius Null --
+und das nennen sie ihren Standpunkt.
