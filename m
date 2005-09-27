@@ -1,18 +1,30 @@
-Return-Path: <matej.kupljen@ultra.si>
-Received: from deliver-1.mx.triera.net (deliver-1.mx.triera.net [213.161.0.31])
-	by ozlabs.org (Postfix) with ESMTP id D7C9C68369
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id 5E0F5683B6
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 27 Sep 2005 20:34:12 +1000 (EST)
-From: Matej Kupljen <matej.kupljen@ultra.si>
-To: TXEMA LOPEZ <tlopez@aotek.es>
-In-Reply-To: <918EB199DDDFFA42BEA2EB3A1C6021F3628924@correo.fagorautomation.net>
-References: <918EB199DDDFFA42BEA2EB3A1C6021F3628924@correo.fagorautomation.net>
-Content-Type: text/plain
-Date: Tue, 27 Sep 2005 12:14:40 +0200
-Message-Id: <1127816080.26702.16.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Kernel debugging problem on MPC5200.
+	Tue, 27 Sep 2005 22:08:25 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by protonic.prtnl (Postfix) with ESMTP id 081C129EC6
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 27 Sep 2005 14:06:48 +0200 (CEST)
+Received: from protonic.prtnl ([127.0.0.1])
+	by localhost (protonic [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
+	id 12275-04 for <linuxppc-embedded@ozlabs.org>;
+	Tue, 27 Sep 2005 14:06:47 +0200 (CEST)
+Received: from linux.local (linux.prtnl [192.168.1.97])
+	by protonic.prtnl (Postfix) with ESMTP id 54FEA28067
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 27 Sep 2005 14:06:47 +0200 (CEST)
+From: David Jander <david.jander@protonic.nl>
+To: linuxppc-embedded@ozlabs.org
+Date: Tue, 27 Sep 2005 14:08:18 +0200
+References: <20050926215509.80C5E68394@ozlabs.org>
+In-Reply-To: <20050926215509.80C5E68394@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200509271408.18413.david.jander@protonic.nl>
+Subject: Re: Hello-new comer ask a start question.
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,12 +35,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi
 
-> What are we missing?
+Hi,
 
-See this thread:
-http://ozlabs.org/pipermail/linuxppc-embedded/2005-February/016831.html
+On Monday 26 September 2005 23:41, Jerry Zhou wrote:
+> I am a new comer.
 
-BR,
-Matej
+Welcome ;-)
+
+> I have bring up a MPC850 board by vxWorks BSP, and I want to bring it up by
+> linux, would you please tell me how to start?
+
+Have a look at:
+http://www.denx.de/
+
+And wade through the archives of this list.
+
+Greetings,
+
+-- 
+David Jander
