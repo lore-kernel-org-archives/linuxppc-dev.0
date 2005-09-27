@@ -1,15 +1,14 @@
-Return-Path: <zhonglei@RCS-9000.COM>
-Received: from RCS-9000.COM (unknown [218.94.131.104])
-	by ozlabs.org (Postfix) with ESMTP id 8FDE5683CE
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Sep 2005 10:56:43 +1000 (EST)
-Date: Tue, 27 Sep 2005 08:59:45 +0800
-Message-Id: <200509270859.AA76218526@RCS-9000.COM>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: "zhonglei" <zhonglei@RCS-9000.COM>
-To: <linuxppc-dev@ozlabs.org>
-Subject: share memory
-Reply-To: zhonglei@RCS-9000.COM
+Return-Path: <kumar.gala@freescale.com>
+In-Reply-To: <17208.37250.577664.621993@cargo.ozlabs.ibm.com>
+References: <17208.37250.577664.621993@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v734)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <660EDD16-DB29-4168-8399-A0F4FA407CF5@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Mon, 26 Sep 2005 22:39:56 -0500
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Subject: Re: Starting the arch/powerpc merge
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,8 +18,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-hi:
-  I want my driver to transfer 512byte data from kernel to user-space every 100us in the interrupt routine. Because the amount of data is  large, the copy_to_user(...) is too slow to fit the request.I tried to use sys_shmat in my driver to build a share memory,but the return of the function is a kernel virtual address which I can not use in the kernel interrupt routine directory! 
-  What can I do? What function can I use to convert the kernel virtual address to kernel logic address? Or is there some other good way to handle this problem?
-  Thanks a lot!
-zhonglei
+
+On Sep 26, 2005, at 7:25 PM, Paul Mackerras wrote:
+
+> I have pushed a commit to the powerpc-merge.git tree which gets us far
+> enough to be able to build a 32-bit powermac kernel with
+> ARCH=powerpc.  It's still very rough in places, and it uses bits out
+> of arch/ppc/kernel and arch/ppc/syslib, but it is a start.
+>
+> Of course, this means that we are about to bump up against the really
+> hard bits of the merge.  Things like
+>
+> * converting ppc32 to use the lmb infrastructure
+> * introducing the device-tree flattening/unflattening to ppc32
+> * working out how to deal with the early hash table initialization
+>   that POWER4 needs on ppc32
+> * reconciling the fact that ppc64 needs RELOC in the prom_init code,
+>   whereas ppc32 doesn't; but ppc64 doesn't need RELOC when running
+>   with the MMU off but ppc32 does (or needs -mrelocatable).
+>
+> I look forward to people sending me patches to push this on a bit
+> further, and in particular to populate arch/powerpc/platforms a bit
+> more. :)
+
+You have duplicated files between arch/ppc/ and arch/powerpc.  Do you  
+plan on cleaning this up are should we make sure we "fix" both?
+
+- kumar
