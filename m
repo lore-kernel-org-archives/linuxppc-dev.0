@@ -1,20 +1,18 @@
-Return-Path: <r.pavon-sierra@hima.com>
-Received: from hima.com (mail.hima.com [80.146.244.10])
-	by ozlabs.org (Postfix) with SMTP id 357F9683ED
+Return-Path: <gguevel@interfaceconcept.com>
+Received: from smtp4.clb.oleane.net (smtp4.clb.oleane.net [213.56.31.20])
+	by ozlabs.org (Postfix) with ESMTP id 8F49868416
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Sep 2005 17:03:54 +1000 (EST)
-Received: from SN7855 ([192.168.100.10])
-	by hima.com (mail.hima.com [212.116.4.129]) (MDaemon.PRO.v8.1.3.R)
-	with ESMTP id md50000159895.msg
-	for <linuxppc-embedded@ozlabs.org>; Wed, 28 Sep 2005 09:03:54 +0200
-From: "Roberto Pavon Sierra" <r.pavon-sierra@hima.com>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Wed, 28 Sep 2005 09:02:33 +0200
-Message-ID: <000701c5c3fa$99fcd090$8700a8c0@SN7855>
+	Wed, 28 Sep 2005 17:59:59 +1000 (EST)
+From: =?iso-8859-1?Q?G=E9rard_Gu=E9vel?= <gguevel@interfaceconcept.com>
+To: "'Andy Fleming'" <afleming@freescale.com>
+Date: Wed, 28 Sep 2005 10:02:18 +0200
+Message-ID: <003201c5c402$fb80d430$5201a8c0@GEG2400>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-Subject: Driver radeonfb for ATI M6 video controller
+In-Reply-To: <B310BDDC-A773-4D85-8314-F4320C5FA90C@freescale.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: How to use SPE on MPC8541
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,15 +23,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
 
-i try to initialize my video card ATI M6. I installed the driver radeonfb
-(kernel linux 2.6.12) for ATI M6 in ppc, but this driver cann´t read the
-BIOS-serial flash and takes always default values and not the initialization
-values from the BIOS.
-Can someone help me with this problem? must i install too a XF86-emulator in
-my board (ppc 440GX)? Can i initialize this video card without BIOS?
+Andy,
 
-Best regards,
+> Your driver runs in kernel space.  The kernel has the SPE bit off.
+> The MSR state is process-specific.  If the code executes, the
+> MSR bit
+> is set.  Why do you want to see if the bit is set?
 
-Roberto
+OK, this is a bad idea to use a driver to check the msr register.
+
+I don't especially want to see if the bit is set, I just want
+to improve the board performance for a Linux application :-).
+
+To check the performance, I used the Dhrystone 2.1 benchmark with
+the standard glibc (strcpy, strcmp, ...) on one part, and with
+the freescale SPE library on the other part (vstrcpy, vstrcmp, ...).
+
+I already verified in the binary elf file that the right functions are
+called.
+When I run the benchmark, I get the same MIPS with and without SPE code.
+
+I ran the same benchmark on the same board without OS,
+with a personal pseudo glibc, I have the same MIPS as under Linux,
+with the freescale library, I gain 40% of perf.
+
+That's I want to retreive with the Linux OS.
+
+Regards
+Gérard
