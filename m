@@ -1,16 +1,18 @@
-Return-Path: <johan.derycke@barco.com>
-Received: from kuuvir01.barco.com (unknown.barco.com [194.7.240.10])
-	by ozlabs.org (Postfix) with SMTP id 9D21C6840D
+Return-Path: <afleming@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 320F0683F8
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Sep 2005 22:35:16 +1000 (EST)
-Message-ID: <81A66F72DCACD511B0600002A551BFCB08D3A926@kuumex05.barco.com>
-From: "Derycke, Johan" <johan.derycke@barco.com>
-To: linuxppc-embedded@ozlabs.org
-Date: Wed, 28 Sep 2005 14:23:58 +0200
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C5C427.7FAE9566"
-Subject: mpc5200 and pcmcia
+	Thu, 29 Sep 2005 01:32:01 +1000 (EST)
+In-Reply-To: <003201c5c402$fb80d430$5201a8c0@GEG2400>
+References: <003201c5c402$fb80d430$5201a8c0@GEG2400>
+Mime-Version: 1.0 (Apple Message framework v734)
+Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
+Message-Id: <AD2A3D43-57D8-4198-BAD3-FB5E3B549361@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Date: Wed, 28 Sep 2005 10:32:02 -0500
+To: =?ISO-8859-1?Q?G=E9rard_Gu=E9vel?= <gguevel@interfaceconcept.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: How to use SPE on MPC8541
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,76 +23,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This message is in MIME format. Since your mail reader does not understand
-this format, some or all of this message may not be legible.
 
-------_=_NextPart_001_01C5C427.7FAE9566
-Content-Type: text/plain
+On Sep 28, 2005, at 03:02, G=E9rard Gu=E9vel wrote:
 
-Hi all,
+>
+> Andy,
+>
+>
+>> Your driver runs in kernel space.  The kernel has the SPE bit off.
+>> The MSR state is process-specific.  If the code executes, the
+>> MSR bit
+>> is set.  Why do you want to see if the bit is set?
+>>
+>
+> OK, this is a bad idea to use a driver to check the msr register.
+>
+> I don't especially want to see if the bit is set, I just want
+> to improve the board performance for a Linux application :-).
+>
+> To check the performance, I used the Dhrystone 2.1 benchmark with
+> the standard glibc (strcpy, strcmp, ...) on one part, and with
+> the freescale SPE library on the other part (vstrcpy, vstrcmp, ...).
+>
+> I already verified in the binary elf file that the right functions are
+> called.
+> When I run the benchmark, I get the same MIPS with and without SPE =20
+> code.
 
-I am working on a custom board based on the Lite5200.
-It is expanded with a PCI1410 PC Card Controller on the PCI bus.
-
-In the history of this list I found a patch against an older kernel version
-to solve some issues:
-http://ozlabs.org/pipermail/linuxppc-embedded/2004-December/016273.html
-
-I took the old 2.4.23 kernel and applied the patch. 
-I could get my 3c589 network adaptor to work.
-Is this patch available for the current 2.4.25 kernel?
-
-Br,
-
-Johan Derycke
+Hmm... This is very strange, because Dhrystone is exactly the =20
+benchmark this was tested on.  How did you determine that the SPE =20
+functions are called?
 
 
-------_=_NextPart_001_01C5C427.7FAE9566
-Content-Type: text/html
-Content-Transfer-Encoding: quoted-printable
+> I ran the same benchmark on the same board without OS,
+> with a personal pseudo glibc, I have the same MIPS as under Linux,
+> with the freescale library, I gain 40% of perf.
+>
+> That's I want to retreive with the Linux OS.
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-5.5.2658.24">
-<TITLE>mpc5200 and pcmcia</TITLE>
-</HEAD>
-<BODY>
-
-<P><FONT SIZE=3D2>Hi all,</FONT>
-</P>
-
-<P><FONT SIZE=3D2>I am working on a custom board based on the =
-Lite5200.</FONT>
-<BR><FONT SIZE=3D2>It is expanded with a PCI1410 PC Card Controller on =
-the PCI bus.</FONT>
-</P>
-
-<P><FONT SIZE=3D2>In the history of this list I found a patch against =
-an older kernel version to solve some issues:</FONT>
-<BR><FONT SIZE=3D2><A =
-HREF=3D"http://ozlabs.org/pipermail/linuxppc-embedded/2004-December/0162=
-73.html" =
-TARGET=3D"_blank">http://ozlabs.org/pipermail/linuxppc-embedded/2004-Dec=
-ember/016273.html</A></FONT>
-</P>
-
-<P><FONT SIZE=3D2>I took the old 2.4.23 kernel and applied the patch. =
-</FONT>
-<BR><FONT SIZE=3D2>I could get my 3c589 network adaptor to work.</FONT>
-<BR><FONT SIZE=3D2>Is this patch available for the current 2.4.25 =
-kernel?</FONT>
-</P>
-
-<P><FONT SIZE=3D2>Br,</FONT>
-</P>
-
-<P><FONT SIZE=3D2>Johan Derycke</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C5C427.7FAE9566--
+I'm not sure why you aren't seeing a performance gain, but I assure =20
+you that, if SPE instructions weren't working, Dhrystone would =20
+crash.  The only other possibility I can think of is that the SPE =20
+versions of the functions aren't being called.=
