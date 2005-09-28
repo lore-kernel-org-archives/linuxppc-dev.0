@@ -1,16 +1,16 @@
 Return-Path: <afleming@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 320F0683F8
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 9ED0668336
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Sep 2005 01:32:01 +1000 (EST)
-In-Reply-To: <003201c5c402$fb80d430$5201a8c0@GEG2400>
-References: <003201c5c402$fb80d430$5201a8c0@GEG2400>
+	Thu, 29 Sep 2005 01:34:27 +1000 (EST)
+In-Reply-To: <1CFEB358338412458B21FAA0D78FE86D4F0DF7@rennsmail02.eu.thmulti.com>
+References: <1CFEB358338412458B21FAA0D78FE86D4F0DF7@rennsmail02.eu.thmulti.com>
 Mime-Version: 1.0 (Apple Message framework v734)
 Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
-Message-Id: <AD2A3D43-57D8-4198-BAD3-FB5E3B549361@freescale.com>
+Message-Id: <06E75914-965A-4D05-A36A-717891EF8051@freescale.com>
 From: Andy Fleming <afleming@freescale.com>
-Date: Wed, 28 Sep 2005 10:32:02 -0500
-To: =?ISO-8859-1?Q?G=E9rard_Gu=E9vel?= <gguevel@interfaceconcept.com>
+Date: Wed, 28 Sep 2005 10:34:37 -0500
+To: Fillod Stephane <stephane.fillod@thomson.net>
 Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: How to use SPE on MPC8541
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -24,44 +24,34 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Sep 28, 2005, at 03:02, G=E9rard Gu=E9vel wrote:
+On Sep 28, 2005, at 03:12, Fillod Stephane wrote:
 
+> Bonjour G=E9rard,
 >
-> Andy,
+> G=E9rard Gu=E9vel wrote:
 >
->
->> Your driver runs in kernel space.  The kernel has the SPE bit off.
->> The MSR state is process-specific.  If the code executes, the
->> MSR bit
->> is set.  Why do you want to see if the bit is set?
+>> I don't especially want to see if the bit is set, I just want
+>> to improve the board performance for a Linux application :-).
 >>
 >
-> OK, this is a bad idea to use a driver to check the msr register.
->
-> I don't especially want to see if the bit is set, I just want
-> to improve the board performance for a Linux application :-).
->
-> To check the performance, I used the Dhrystone 2.1 benchmark with
-> the standard glibc (strcpy, strcmp, ...) on one part, and with
-> the freescale SPE library on the other part (vstrcpy, vstrcmp, ...).
->
-> I already verified in the binary elf file that the right functions are
-> called.
-> When I run the benchmark, I get the same MIPS with and without SPE =20
-> code.
-
-Hmm... This is very strange, because Dhrystone is exactly the =20
-benchmark this was tested on.  How did you determine that the SPE =20
-functions are called?
+> Do you know where your CPU is spending much of its time?
+> It looks like a job for OProfile. Support for e500 exists in 2.6.x
+> thanks to the fine folks of Freescale. We appreciate their involvement
+> in OSS community.
 
 
-> I ran the same benchmark on the same board without OS,
-> with a personal pseudo glibc, I have the same MIPS as under Linux,
-> with the freescale library, I gain 40% of perf.
->
-> That's I want to retreive with the Linux OS.
+Yeah, oprofile would probably help here.
 
-I'm not sure why you aren't seeing a performance gain, but I assure =20
-you that, if SPE instructions weren't working, Dhrystone would =20
-crash.  The only other possibility I can think of is that the SPE =20
-versions of the functions aren't being called.=
+>
+>> with the standard glibc (strcpy, strcmp, ...) on one part, and with
+>> the freescale SPE library on the other part (vstrcpy, vstrcmp, ...).
+>>
+>
+> Will the SPE enhanced C library calls will be integrated in Glibc =20
+> one day?
+>
+
+I don't think the glibc people integrate processor-specific changes, =20
+so it's not likely.
+
+Andy=
