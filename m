@@ -1,17 +1,35 @@
-Return-Path: <gguevel@interfaceconcept.com>
-Received: from smtp4.clb.oleane.net (smtp4.clb.oleane.net [213.56.31.20])
-	by ozlabs.org (Postfix) with ESMTP id 8F49868416
+Return-Path: <stephane.fillod@thomson.net>
+Received: from dmzraw4.extranet.tce.com (dmzraw4.extranet.tce.com
+	[157.254.234.139]) by ozlabs.org (Postfix) with ESMTP id AA51068404
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Sep 2005 17:59:59 +1000 (EST)
-From: =?iso-8859-1?Q?G=E9rard_Gu=E9vel?= <gguevel@interfaceconcept.com>
-To: "'Andy Fleming'" <afleming@freescale.com>
-Date: Wed, 28 Sep 2005 10:02:18 +0200
-Message-ID: <003201c5c402$fb80d430$5201a8c0@GEG2400>
+	Wed, 28 Sep 2005 18:12:16 +1000 (EST)
+Received: from indyvss3.am.thmulti.com (unknown [157.254.92.62])
+	by dmzraw4.extranet.tce.com (Postfix) with ESMTP id C9BA71291
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 28 Sep 2005 08:12:14 +0000 (GMT)
+Received: from localhost (localhost [127.0.0.1])
+	by indyvss3.am.thmulti.com (Postfix) with ESMTP id 9364E3B725
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 28 Sep 2005 08:12:14 +0000 (GMT)
+Received: from indyvss3.am.thmulti.com ([127.0.0.1])
+	by localhost (indyvss3 [127.0.0.1]) (amavisd-new, port 10024) with LMTP
+	id 20377-01-13 for <linuxppc-embedded@ozlabs.org>;
+	Wed, 28 Sep 2005 08:12:09 +0000 (GMT)
+Received: from smtprelay2.indy.tce.com (smtprelay2.indy.tce.com
+	[157.254.96.95])
+	by indyvss3.am.thmulti.com (Postfix) with ESMTP id 752BF3B70D
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 28 Sep 2005 08:12:09 +0000 (GMT)
+Received: from boulsmailbh02.eu.thmulti.com (localhost [127.0.0.1])
+	by smtprelay2.indy.tce.com (8.12.9/8.12.8) with ESMTP id j8S8C4gx018716
+	for <linuxppc-embedded@ozlabs.org>; Wed, 28 Sep 2005 08:12:08 GMT
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-In-Reply-To: <B310BDDC-A773-4D85-8314-F4320C5FA90C@freescale.com>
-Cc: linuxppc-embedded@ozlabs.org
+Date: Wed, 28 Sep 2005 10:12:04 +0200
+Message-ID: <1CFEB358338412458B21FAA0D78FE86D4F0DF7@rennsmail02.eu.thmulti.com>
+From: "Fillod Stephane" <stephane.fillod@thomson.net>
+To: <linuxppc-embedded@ozlabs.org>
 Subject: RE: How to use SPE on MPC8541
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,32 +41,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Bonjour G=E9rard,
 
-Andy,
+G=E9rard Gu=E9vel wrote:
+>I don't especially want to see if the bit is set, I just want
+>to improve the board performance for a Linux application :-).
 
-> Your driver runs in kernel space.  The kernel has the SPE bit off.
-> The MSR state is process-specific.  If the code executes, the
-> MSR bit
-> is set.  Why do you want to see if the bit is set?
+Do you know where your CPU is spending much of its time?
+It looks like a job for OProfile. Support for e500 exists in 2.6.x=20
+thanks to the fine folks of Freescale. We appreciate their involvement=20
+in OSS community.
 
-OK, this is a bad idea to use a driver to check the msr register.
+>To check the performance, I used the Dhrystone 2.1 benchmark=20
 
-I don't especially want to see if the bit is set, I just want
-to improve the board performance for a Linux application :-).
+I like the lmbench microbenchmark too. It depends on what profile
+is your application (instruction mix, library calls, cache usage, =
+paging,..)
 
-To check the performance, I used the Dhrystone 2.1 benchmark with
-the standard glibc (strcpy, strcmp, ...) on one part, and with
-the freescale SPE library on the other part (vstrcpy, vstrcmp, ...).
+>with the standard glibc (strcpy, strcmp, ...) on one part, and with
+>the freescale SPE library on the other part (vstrcpy, vstrcmp, ...).
 
-I already verified in the binary elf file that the right functions are
-called.
-When I run the benchmark, I get the same MIPS with and without SPE code.
+Will the SPE enhanced C library calls will be integrated in Glibc one =
+day?=20
 
-I ran the same benchmark on the same board without OS,
-with a personal pseudo glibc, I have the same MIPS as under Linux,
-with the freescale library, I gain 40% of perf.
 
-That's I want to retreive with the Linux OS.
-
-Regards
-Gérard
+Regards,
+Stephane
