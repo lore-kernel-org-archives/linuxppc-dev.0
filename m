@@ -1,36 +1,21 @@
-Return-Path: <peter.ryser@xilinx.com>
-Received: from mail20-kan-R.bigfish.com (mail-kan.bigfish.com [63.161.60.29])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id CD680683FE
+Return-Path: <KokHow.Teh@marconi.com>
+Received: from smtpoutuk01.marconi.com (smtpoutuk01.marconi.com
+	[128.87.251.112]) by ozlabs.org (Postfix) with ESMTP id 26100683FB
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Sep 2005 20:38:08 +1000 (EST)
-Received: from mail20-kan.bigfish.com (localhost.localdomain [127.0.0.1])
-	by mail20-kan-R.bigfish.com (Postfix) with ESMTP id 1395A31E187
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Sep 2005 10:10:11 +0000 (UTC)
-Received: from newsgate.xilinx.com (unknown-60-204.xilinx.com [149.199.60.204])
-	by mail20-kan.bigfish.com (Postfix) with ESMTP id C3C863196FC
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Sep 2005 10:10:10 +0000 (UTC)
-Received: from cliff.xilinx.com (cliff [149.199.38.103])
-	by newsgate.xilinx.com (8.11.6p2/8.11.6) with ESMTP id j8SAAAe24683
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Sep 2005 03:10:10 -0700 (PDT)
-Received: from XSJ-EXCHVS1.xlnx.xilinx.com (localhost [127.0.0.1])
-	by cliff.xilinx.com (8.12.9/8.11.6) with ESMTP id j8SAA9r0000603
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Sep 2005 03:10:09 -0700 (PDT)
-Message-ID: <433A68FE.8030907@xilinx.com>
-Date: Wed, 28 Sep 2005 02:57:18 -0700
-From: Peter Ryser <peter.ryser@xilinx.com>
-MIME-Version: 1.0
+	Wed, 28 Sep 2005 22:26:31 +1000 (EST)
+Received: from cvdgwy02.uk.marconicomms.com (cvis27.uk.marconicomms.com
+	[128.87.251.110])
+	by smtpoutuk01.marconi.com (8.12.11/8.12.11) with ESMTP id
+	j8SCFucH008713
+	for <linuxppc-embedded@ozlabs.org>; Wed, 28 Sep 2005 13:16:24 +0100
+	(envelope-from KokHow.Teh@marconi.com)
 To: linuxppc-embedded@ozlabs.org
-References: <20050823170300.GA910@siegfried.thelikelysolution.ca>
-	<430C7C3A.4000601@ru.mvista.com>
-In-Reply-To: <430C7C3A.4000601@ru.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: Re: Source of xparameter_ml300.h
+From: "KokHow Teh" <KokHow.Teh@marconi.com>
+Date: Wed, 28 Sep 2005 18:01:06 +0800
+Message-ID: <OFB310EF66.7D840B38-ON4825708A.0036EC3B@uk.marconicomms.com>
+MIME-Version: 1.0
+Content-type: text/plain; charset=us-ascii
+Subject: booting and mounting PCIIDE: kernel access of bad area
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -41,74 +26,98 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Please have a look at XAPP765 
-(http://direct.xilinx.com/bvdocs/appnotes/xapp765.pdf) and the EDK 
-documentation to see how this works. The latest MLD to create a BSP for 
-a linuxppc-2.4 kernel is linuxppc_mvl31_v1_01_a. linuxppc_mvl31_v1_00_a 
-works too but everything else is not up-to-date.
+Hi;
+      I have rebuilt arabella linux kernel with PCI IDE support. However,
+the kernel bootup crashes with "kernel access of bad area" message. I think
+it has something to do with the IDE base addess setup. I have tried to
+change the ide0=base,ctl but to no avail. Hope you are able to advise me on
+that. Thanks.
 
-The documentation and tutorials for the ML310 board are also an 
-excellent source of information how to get a Linux kernel up and running 
-on Virtex-II Pro (see http://www.xilinx.com/ml310).
+Regards,
+TEH
+u-boot> diskboot $loadaddr 0:1
 
-The reference design for the ML403 is yet another source of information 
-(http://www.xilinx.com/ml403). Have a look at the reference design users 
-guide.
+Loading from IDE device 0, partition 1: Name: hda1
+  Type: U-Boot
+   Image Name:   Linux Kernel Image
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    893382 Bytes = 872.4 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+u-boot> bootm
+## Booting image at 00100000 ...
+   Image Name:   Linux Kernel Image
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    893382 Bytes = 872.4 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+MPC82xxADS/PQ2FADS board support by Arabella
+Memory BAT mapping: BAT2=32Mb, BAT3=0Mb, residual: 0Mb
+Linux version 2.4.26 (root@ShrekII.marconi.com) (gcc version 3.3.2) #6 Wed
+Sep 28 11:58:24 MYT 2005
+ADS setup arch
+MPC82xx PCI bridge initialization
+On node 0 totalpages: 8192
+zone(0): 8192 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line: root=/dev/hda2 rw ide0=0x1f0,0x3f6
+ide_setup: ide0=0x1f0,0x3f6
 
-Using the MLD (tcl script) is much less error-prone than any other 
-method that involves changing the files by hand. It's a little bit of a 
-learning curve but once mastered it just works.
-
-- Peter
-
-
-
-Andrei Konovalov wrote:
-
-> Grant Likely wrote:
->
->> Does anyone know the origin of xparameter_ml300.h?  The
->> Xilinx EDK generates an xparameters.h file for each design, but the
->> structure of the file changes between releases.
->>
->> I want to know if xparameters_ml300.h is the exact output produced by
->> EDK or if stuff was changed before it was submitted to the mainline
->> tree.  (ie. all the stuff under the "linux redefines" comment block)
->
->
-> EDK can also generate the "Linux BSP".
-> In this case EDK uses the scripts from (depending on your setup)
-> /opt/xilinx/edk/7.1/sw/ThirdParty/bsp/linux_v2_00_b/data/
-> In particular, linux_v2_1_0.tcl adds those "linux redefines"
-> and renames xparameters.h to xparameters_ml300.h.
->
->> Also, where can I get the bitstream/systemace file that matches
->> xparameters_ml300.h?
->
->
-> The most reliable way is to generate both (bitstream and
-> xparameters_ml300.h) by yourself. :)
->
-> But if you are speaking about the xparameters_ml300.h in the community
-> trees (linuxppc-2.4 and the 2.6 one from kernel.org), this file
-> is for the reference design by Xilinx:
->
-> http://www.xilinx.com/ise/embedded/edk6_2docs/ml300_edk3.zip
->
->> I've got a custom ml300 image that I'm regression
->> testing against, but I'd like to also test against some form of 'stock'
->> image. :)
->>
->> Thanks,
->> g.
->
->
-> Thanks,
-> Andrei
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
->
+ADS init IRQ. NR_IRQS=256
+PIC: fully preemptible IRQ mode
+ADS time init
+ADS calibrate decrementer. FREQ=100000000, tb_ticks_per_jiffy=250000
+Calibrating delay loop... 266.24 BogoMIPS
+Memory: 30252k available (1384k kernel code, 472k data, 232k init, 0k
+highmem)
+Dentry cache hash table entries: 4096 (order: 3, 32768 bytes)
+Inode cache hash table entries: 2048 (order: 2, 16384 bytes)
+Mount cache hash table entries: 512 (order: 0, 4096 bytes)
+Buffer cache hash table entries: 1024 (order: 0, 4096 bytes)
+Page-cache hash table entries: 8192 (order: 3, 32768 bytes)
+POSIX conformance testing by UNIFIX
+PCI: Probing PCI hardware
+PCI: moved device 00:16.0 resource 6 (7201) to 90000000
+PCI: moved device 00:16.0 resource 4 (101) to 0
+PCI: moved device 00:16.0 resource 0 (101) to 10
+PCI: moved device 00:16.0 resource 2 (101) to 10
+PCI: moved device 00:16.0 resource 1 (101) to 20
+PCI: moved device 00:16.0 resource 3 (101) to 20
+ADS init
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society NET3.039
+Initializing RT netlink socket
+Starting kswapd
+devfs: v1.12c (20020818) Richard Gooch (rgooch@atnf.csiro.au)
+devfs: boot_options: 0x1
+Installing knfsd (copyright (C) 1996 okir@monad.swb.de).
+JFFS2 version 2.2. (C) 2001-2003 Red Hat, Inc.
+pty: 256 Unix98 ptys configured
+Generic RTC Driver v1.07
+devsoc: devsoc_init:
+RAMDISK driver initialized: 16 RAM disks of 16384K size 1024 blocksize
+Uniform Multi-Platform E-IDE driver Revision: 7.00beta4-2.4
+ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+Oops: kernel access of bad area, sig: 11
+NIP: C00BC0B0 XER: 20000000 LR: C00BC0A4 SP: C02F1F20 REGS: c02f1e70 TRAP:
+0300    Not tainted
+MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+DAR: 00000CFB, DSISR: 22000000
+TASK = c02f0000[1] 'swapper' Last syscall: 120
+last math 00000000 last altivec 00000000
+GPR00: 00000001 C02F1F20 C02F0000 00000001 00009032 00000001 00000832
+00000000
+GPR08: C01E0000 C01B0000 C01E0000 00000000 C01E0000 FFFFFFFF 01FC5000
+00000000
+GPR16: 00000001 00000001 FFFFFFFF 007FFF00 003FF000 00000000 00000001
+01B78978
+GPR24: 00000000 00000000 40000000 00000000 007FFF00 C01E0000 C01B067C
+C01E0000
+Call backtrace:
+C0197464 C01A7658 C01A88B8 C01A8940 C01A898C C019E684 C0003970
+C000820C
+Kernel panic: Attempted to kill init!
+ <0>Rebooting in 180 seconds..
