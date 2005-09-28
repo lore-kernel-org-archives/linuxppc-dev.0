@@ -1,9 +1,22 @@
-Return-Path: <info@mail.ssjhg.com>
-Date: 28 Sep 2005 21:57:58 +0900
-Message-ID: <20050928125758.25096.qmail@mail.ssjhg.com>
-From: info@ssjhg.com
-To: Linuxppc-embedded@ozlabs.org
-Subject: おば様で稼ぐ！！
+Return-Path: <andrewd.lists@gmail.com>
+Received: from xproxy.gmail.com (xproxy.gmail.com [66.249.82.194])
+	by ozlabs.org (Postfix) with ESMTP id 7AA5A6841A
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 29 Sep 2005 09:33:40 +1000 (EST)
+Received: by xproxy.gmail.com with SMTP id i27so940902wxd
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 28 Sep 2005 16:33:39 -0700 (PDT)
+Message-ID: <54823def050928162638991050@mail.gmail.com>
+Date: Thu, 29 Sep 2005 09:26:21 +1000
+From: Andrew Dennison <andrewd.lists@gmail.com>
+To: "Derycke, Johan" <johan.derycke@barco.com>
+In-Reply-To: <81A66F72DCACD511B0600002A551BFCB08D3A926@kuumex05.barco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <81A66F72DCACD511B0600002A551BFCB08D3A926@kuumex05.barco.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: mpc5200 and pcmcia
+Reply-To: Andrew Dennison <andrewd.lists@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -14,45 +27,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-жжжжжжжжжжжжжжжжжжжжжжжж
+On 9/28/05, Derycke, Johan <johan.derycke@barco.com> wrote:
+>
+> I am working on a custom board based on the Lite5200.
+> It is expanded with a PCI1410 PC Card Controller on the PCI bus.
+>
+> In the history of this list I found a patch against an older kernel versi=
+on
+> to solve some issues:
+> http://ozlabs.org/pipermail/linuxppc-embedded/2004-December/016273.html
+>
+> I took the old 2.4.23 kernel and applied the patch.
+> I could get my 3c589 network adaptor to work.
 
-女性の相手をして頂ける男性募集
+Nice to get some feedback, Your the second person that has used it.
 
-当番組では、登録している女性会員の
+> Is this patch available for the current 2.4.25 kernel?
+>
 
-相手をしてくれる男性を募集しています。
-http://awg.webchu.com/gyakuten/?dog
+It will work conceptually with 2.4.25 as I'm currently running a
+relatively recent denx kernel with similar changes. I haven't
+published a recent patch yet as there wasn't much feedback last
+time...
 
-募集条件　２２歳から３５歳までの男性
+I've recently done some more work on this to clean it up, for example
+USB didn't work with that previous patch but they now coesist happily.
 
-報酬に関しては、相手女性と直接話してお決め下さい。
+I'll look at posting a patch soon when it's merged into my shiny new GIT tr=
+ee.
 
-当方は交渉成立の際、女性会員の方から料金を頂く為
-
-男性会員の方から一切お金を頂きません。
-
-尚、登録している女性会員の方は、身元審査をした
-
-方のみとなります。会員の中には社会的地位のある方も
-
-おりますので、常識ある方のみの募集とさせて頂きます。
-
-宜しくお願い致します。
-
-http://awg.webchu.com/gyakuten/?dog
-
-жжжжжжжжжжжжжжжжжжжжжжжж
-
-
-
-
-
-
-
-
-I don't veceive yourmail
-
-メール受信拒否
-
-
-　
+Andrew
