@@ -1,19 +1,20 @@
-Return-Path: <wd@denx.de>
-Received: from mailout01.sul.t-online.com (mailout01.sul.t-online.com
-	[194.25.134.80]) by ozlabs.org (Postfix) with ESMTP id E548E683D6
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 7A11D683D4
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 30 Sep 2005 01:29:21 +1000 (EST)
-To: "JohnsonCheng" <JohnsonCheng@qnap.com.tw>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 29 Sep 2005 20:51:45 +0800."
-	<20050929125154.00375683D1@ozlabs.org>
-Date: Thu, 29 Sep 2005 17:29:06 +0200
-Sender: wd@denx.de
-Message-Id: <20050929152906.219A6353AB4@atlas.denx.de>
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: where to find mkfs utility 
+	Fri, 30 Sep 2005 02:57:18 +1000 (EST)
+Date: Thu, 29 Sep 2005 09:57:15 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Sam Song <samlinuxppc@yahoo.com.cn>
+Message-ID: <20050929165715.GA24176@gate.ebshome.net>
+References: <20050929123535.66570.qmail@web15803.mail.cnb.yahoo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050929123535.66570.qmail@web15803.mail.cnb.yahoo.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Available user-level tool for I2C device?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,21 +25,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <20050929125154.00375683D1@ozlabs.org> you wrote:
-> 
-> When can I found mkfs.mkdos, mkfs.vfat and mkfs.ntfs utilities.
-> 
-> Are all these in the same package, and what is this package name?
+On Thu, Sep 29, 2005 at 08:35:35PM +0800, Sam Song wrote:
+> I have a RTC chip DS1337 on a 8248 target. It can
+> work right in u-boot and linux. If no similar utility,
+> I will switch to change hwclock.c in busybox to make
+> it. Any idea?
 
-mkfs.msdos and mkfs.vfat are part of the dosfstools package.
-
-Never heard of mkfs.ntfs yet.
-
-Best regards,
-
-Wolfgang Denk
+Right approach would be making standard in-kernel RTC driver for this 
+chip. In fact, such driver was already posted to lm-sensors list some 
+time ago.
 
 -- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Why is an average signature file longer than an average Perl script??
+Eugene
