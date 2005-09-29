@@ -1,13 +1,28 @@
-Return-Path: <deboralh@sinovee.com>
-Date: Thu, 29 Sep 2005 17:24:49 +0800
-From: "debora liu" <deboralh@sinovee.com>
-To: "linuxppc-embedde" <Linuxppc-embedded@ozlabs.org>
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Message-Id: <200509291717812.SM01120@RavProxy>
-Cc: "xiay@nari-relays.com" <xiay@nari-relays.com>
-Subject: Re: how to make a PCI net card work on ICECUBE ?
+Return-Path: <kalle.pokki@iki.fi>
+Received: from smtp2.song.fi (smtp2.song.fi [194.100.2.122])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A59B168397
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 29 Sep 2005 22:24:15 +1000 (EST)
+Received: from [194.100.64.94] (host94.eke.fi [194.100.64.94])
+	by smtp2.song.fi (Postfix) with ESMTP id 6B9D04DE7C
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 29 Sep 2005 15:24:08 +0300 (EEST)
+Message-ID: <433BDCE7.2060206@iki.fi>
+Date: Thu, 29 Sep 2005 14:24:07 +0200
+From: Kalle Pokki <kalle.pokki@iki.fi>
+MIME-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
+References: <DCEAAC0833DD314AB0B58112AD99B93B85946A@ismail.innsys.innovsys.com>
+	<4333DF04.3000908@iki.fi> <43395322.1080407@iki.fi>
+	<384d09b865d454875c447cc02c89d001@embeddedalley.com>
+	<4339AD01.30708@iki.fi>
+	<714c16295fbfa97caafd1d0aa3a5932e@embeddedalley.com>
+	<433A6E6D.4070403@iki.fi>
+In-Reply-To: <433A6E6D.4070403@iki.fi>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: CPM2 early console
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -18,23 +33,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-SGVsbG8sIM/E0+oNCg0KSW4gbWVzc2FnZSA8MjAwNS0wOS0yOSAxMTo1NjozMiB4aWF5QG5hcmkt
-cmVsYXlzLmNvbT4geW91IHdyb3RlOg0KDQo+VGhhbmtzIGZvciB5b3VyIGhlbHAuDQo+DQo+SSBm
-b3VuZCBvdXQgdGhhdCB0aGUgSUNFQ1VCRSBib2FyZCBjb3VsZCB0ZnRwYm9vdCB2aWEgdGhlIFBD
-SSBuZXRjYXJkIGlmIHdpcmUgbmV0IHRvIHRoZSBjYXJkLCBidXQgdGhlIGJvYXJkIGNvdWxkIG5v
-dCBtb3VudCBORlMgdmlhIHRoZSBjYXJkLg0KdGZ0cGJvb3QgY291bGQgZG93biBrZXJuZWwgdXNl
-IGV0aDAgb3IgZXRoMSB3aXRoIHVib290DQo+DQo+U28gaSBzZXQgdGhlIGVudmlyb25tZW50IGV0
-aGFjdCB0byBpODI1NTkjMCBhbmQgc2F2ZWVudiAsIGJ1dCB0aGUgYm9hcmQgc3RpbGwgY291bGQg
-bm90IG1vdW50IE5GUyB2aWEgdGhlIGNhcmQuRHVyaW5nIHRoZSBib290aW5nLXVwICx0aGVyZSB3
-YXMgbm90aGluZyBhYm91dCBldGgxIHNob3duIC4NCndoaWNoIGlzIGV0aDAgaW4ga2VybmVsPw0K
-Pg0KPkFuZCBpIHdpcmVkIG5ldCB0byB0aGUgRkVDIGV0aGVybmV0IHBvcnQscmVzZXQgdGhlIGJv
-YXJkLGZvdW5kIHRoYXQgdGhlIGVudmlyb25tZW50IGV0aGFjdCB3YXMgbm93IEZFQyBFVEhFUk5F
-VCxzbyBpIHNldCBpdCBhZ2FpbiB0byBpODI1NTkjMCBhbmQgc2F2ZWVudixib290ZWQgdXAgdGhl
-IGtlcm5lbCwgdGhlcmUgd2FzIG5vdGhpbmcgYWJvdXQgZXRoMSBzaG93biAsIGkgdHJpZWQgaWZj
-b25maWcgZXRoMSAqIHVwICxpbmZvcm1hdGlvbiB3ZXJlIGJlbG93OiANCj4NCj5iYXNoLTIuMDVi
-IyBpZmNvbmZpZyBldGgxIDE5OC44Ny4xMDIuMjE4IHVwDQo+U0lPQ1NJRkFERFI6IE5vIHN1Y2gg
-ZGV2aWNlDQo+ZXRoMTogdW5rbm93biBpbnRlcmZhY2U6IE5vIHN1Y2ggZGV2aWNlDQo+ZXRoMTog
-dW5rbm93biBpbnRlcmZhY2U6IE5vIHN1Y2ggZGV2aWNlIA0KRG8geW91IHJlZ2llc3QgaTgyNTU5
-IGRyaXZlcj8NCgkJCQkgDQqhoaGhoaGhoaGhoaGhoaGhRGVib3JhIExpdQ0KoaGhoaGhoaGhoaGh
-oaGhoWRlYm9yYWxoQHNpbm92ZWUuY29tDQqhoaGhoaGhoaGhoaGhoaGhoaGhoTIwMDUtMDktMjkN
-Cg0K
+Kalle Pokki wrote:
+
+> I guess Linux remaps the RAM as copy-back. But snooping should work 
+> with copy-back caches, shouldn't it?
+
+Oh, well. The kernel boots just fine if I add
+
+flags |= _PAGE_WRITETHRU | _PAGE_COHERENT;
+
+in setbat() in arch/ppc/mm/ppc_mmu.c. But this should not depend on this 
+kind of a hack, should it?
