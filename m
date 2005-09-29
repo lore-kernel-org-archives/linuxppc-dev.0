@@ -2,19 +2,24 @@ Return-Path: <dan@embeddededge.com>
 Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 736BC6838B
+	by ozlabs.org (Postfix) with ESMTP id A1796683D2
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Sep 2005 22:48:07 +1000 (EST)
-In-Reply-To: <9999CA1912E416428A03B319E6D084C807C831@DCB02.cb.i.cz>
-References: <9999CA1912E416428A03B319E6D084C807C831@DCB02.cb.i.cz>
+	Thu, 29 Sep 2005 22:50:46 +1000 (EST)
+In-Reply-To: <433BDCE7.2060206@iki.fi>
+References: <DCEAAC0833DD314AB0B58112AD99B93B85946A@ismail.innsys.innovsys.com>
+	<4333DF04.3000908@iki.fi> <43395322.1080407@iki.fi>
+	<384d09b865d454875c447cc02c89d001@embeddedalley.com>
+	<4339AD01.30708@iki.fi>
+	<714c16295fbfa97caafd1d0aa3a5932e@embeddedalley.com>
+	<433A6E6D.4070403@iki.fi> <433BDCE7.2060206@iki.fi>
 Mime-Version: 1.0 (Apple Message framework v622)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <c9c3114352a4fd6bb2b121c11991122c@embeddededge.com>
+Message-Id: <30a4271599a05b56b51b6c3e03cb1b70@embeddededge.com>
 From: Dan Malek <dan@embeddededge.com>
-Date: Thu, 29 Sep 2005 08:48:06 -0400
-To: "Borsodi Petr" <Petr.Borsodi@i.cz>
+Date: Thu, 29 Sep 2005 08:50:49 -0400
+To: Kalle Pokki <kalle.pokki@iki.fi>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: BRG setting error
+Subject: Re: CPM2 early console
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,12 +31,15 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Sep 29, 2005, at 5:06 AM, Borsodi Petr wrote:
+On Sep 29, 2005, at 8:24 AM, Kalle Pokki wrote:
 
-> I found an error in Baud Rate Generator setting for MPC82XX processors.
+> flags |= _PAGE_WRITETHRU | _PAGE_COHERENT;
+>
+> in setbat() in arch/ppc/mm/ppc_mmu.c. But this should not depend on 
+> this kind of a hack, should it?
 
-How about a patch we can apply?  Declaring a bug and hoping
-someone else will fix it isn't likely to happen :-)
+This is clearly wrong since other 82xx processors work fine.  Something
+is amiss with your boot rom or other setup of this processor.
 
 Thanks.
 
