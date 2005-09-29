@@ -1,14 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc64-dev@ozlabs.org
-Content-Type: text/plain
-Date: Thu, 29 Sep 2005 17:20:31 +1000
-Message-Id: <1127978432.6102.53.camel@gaston>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: iMac G5: experimental thermal & cpufreq support
+Return-Path: <pochini@shiny.it>
+Message-ID: <XFMail.20050929092052.pochini@shiny.it>
+Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
+In-Reply-To: <1127865914.6102.0.camel@gaston>
+Date: Thu, 29 Sep 2005 09:20:52 +0200 (CEST)
+Sender: pochini@agnus.shiny.it
+From: Giuliano Pochini <pochini@shiny.it>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc64-dev@ozlabs.org, linuxppc-dev@ozlabs.org
+Subject: Re: Starting the arch/powerpc merge
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,73 +18,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi !
 
-I now have some experimental thermal control and cpufreq support for
-iMac G5. I have not _yet_ implemented support for the SMU based single
-CPU desktops (PowerMac9,1), those will have to wait a little bit more
-(not too much hopefully, but I need potential testers to contact me as I
-lack hardware access). At this point, it should work on PowerMac8,1
-(iMacG5 rev A) and PowerMac8,2 (iMacG5 rev B).
+On 28-Sep-2005 Benjamin Herrenschmidt wrote:
+> On Tue, 2005-09-27 at 18:30 +1000, Paul Mackerras wrote:
+>> Christoph Hellwig writes:
+>>
+>> > What about just dropping POWER3/4 support in 32bit mode?
+>>
+>> Yes... I'm getting very close to deciding to do that.  In fact POWER3
+>> isn't too bad, since it still has BATs, but POWER4/PPC970 would be
+>> tricky.
+>>
+>> Does anyone on these lists have any major objections if we drop
+>> support for 32-bit kernels on POWER3 and POWER4/PPC970?
+>
+> I've stopped supporting G5 on 32 bits kernel for some time now, I have
+> absolutely no problem just dropping the POWER4 support in 32 bits kernel
+> in the merged tree.
 
-WARNING: This is really a 'first shot'. There is no overtemp detection,
-so be careful. The driver doesn't yet have a sysfs interface for you to
-read the temperature, but I left it with verbose debugging enabled in
-the kernel log so you can see what's going on with the 2 control loops
-(the System one which ticks every 5 seconds and the CPU one which ticks
-every second). Please tell me if it appears to behave properly. On my
-iMac G5 rev A, the target temperature for the CPU is set by the firmware
-at 78 degree C with a max at about 83 degree. If I put load on the CPU,
-the CPU appears to properly ramp up slowly to 82 then go down and
-stabilize at 78 while the driver slowly ramps the fans up.
+Out of curiosity, is there any advantage in using a 32 bits
+kernel on ppc64 over a 64 bits kernel ?  Speed ?  Complexity ?
+Compatibility ?  Memory ?
 
-The algorithm itself is extracted from darwin. However, it's a rather
-complex modified version of the PID algorithm, and thus it could use
-some review to make sure I got everything right.
 
-The thermal control is also part of a new infrastructure I have written
-called "windfarm" that splits the whole thing into several modules
-(though I have only tested with everything built in at this point).
-Ultimately, it should be possible to port the existing Desktop G5 and
-Xserver thermal driver to the new infrastructure provided that the
-appropriate sensor & control modules are written. The old thermal driver
-uses pretty much the same 2 kind of PID control loops as provided by the
-windfarm_pid helper.
 
-I would encourage people doing thermal control on other machines
-(laptops, etc...) to also use the new infrastructure.
-
-Ok, now the patches. You need to appy them in proper order. First of
-all, it all is on top of current -git as of yesterday. I won't guarantee
-they will apply on anything more ancient.
-
-First, you need a fix that is currently pending in -mm (and should be in
-2.6.14 before it's final) :
-
-http://gate.crashing.org/~benh/ppc64-smu-fix.diff
-
-Then, you can apply the patch that adds cpufreq support for the iMac G5
-(and possibly the SMU based desktop, though not tested)
-
-http://gate.crashing.org/~benh/ppc64-fx-freq-scaling.diff
-
-Then apply those 2 patches in that order:
-
-http://gate.crashing.org/~benh/ppc64-smu-partitions.diff
-http://gate.crashing.org/~benh/ppc64-smu-thermal-control.diff
-
-That's it. Now enable:
-
-  CONFIG_WINDFARM_SMU
- 
-and
-
-  CONFIG_I2C_PMAC_SMU
-
-If you are using modules, you may have to manually load the whole bunch,
-especially the i2c SMU one which isn't requested (yet).
-
-And let me know :)
-
-Regards,
-Ben.
+--
+Giuliano.
