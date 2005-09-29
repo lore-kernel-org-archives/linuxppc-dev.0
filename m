@@ -1,18 +1,14 @@
-Return-Path: <ananthakiran@gmail.com>
-Received: from xproxy.gmail.com (xproxy.gmail.com [66.249.82.201])
-	by ozlabs.org (Postfix) with ESMTP id 3313F68336
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Sep 2005 15:25:59 +1000 (EST)
-Received: by xproxy.gmail.com with SMTP id s16so1295484wxc
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Sep 2005 22:25:58 -0700 (PDT)
-Message-ID: <dc204d3f0509282219580befb3@mail.gmail.com>
-Date: Thu, 29 Sep 2005 10:49:16 +0530
-From: Anantha Kiran Kandukuri <ananthakiran@gmail.com>
-To: linuxppc-dev@ozlabs.org
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_1152_21834323.1127971156216"
-Subject: Determining physical processors on SMT driven architectures
-Reply-To: Anantha Kiran Kandukuri <ananthakiran@gmail.com>
+Return-Path: <benh@kernel.crashing.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc64-dev@ozlabs.org
+Content-Type: text/plain
+Date: Thu, 29 Sep 2005 17:20:31 +1000
+Message-Id: <1127978432.6102.53.camel@gaston>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: iMac G5: experimental thermal & cpufreq support
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,70 +18,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_1152_21834323.1127971156216
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hi !
 
-Hi,
-Is there a programatical way of caliculating physical CPUs on IBM
-SMT driven archtitural machines.
+I now have some experimental thermal control and cpufreq support for
+iMac G5. I have not _yet_ implemented support for the SMU based single
+CPU desktops (PowerMac9,1), those will have to wait a little bit more
+(not too much hopefully, but I need potential testers to contact me as I
+lack hardware access). At this point, it should work on PowerMac8,1
+(iMacG5 rev A) and PowerMac8,2 (iMacG5 rev B).
 
-I am aware of commands of sort "lsdev -C -c processor" and "smtctl".
-But is there any API to do same thing. I saw "processor_info"
-strucutre in "/usr/include/sys/iplcb.h" contains information i am
-looking for. Is there a way to access this.
+WARNING: This is really a 'first shot'. There is no overtemp detection,
+so be careful. The driver doesn't yet have a sysfs interface for you to
+read the temperature, but I left it with verbose debugging enabled in
+the kernel log so you can see what's going on with the 2 control loops
+(the System one which ticks every 5 seconds and the CPU one which ticks
+every second). Please tell me if it appears to behave properly. On my
+iMac G5 rev A, the target temperature for the CPU is set by the firmware
+at 78 degree C with a max at about 83 degree. If I put load on the CPU,
+the CPU appears to properly ramp up slowly to 82 then go down and
+stabilize at 78 while the driver slowly ramps the fans up.
 
-Linux on IntelHT, stores this info in "/proc/cpuinfo" file. Similarly
-AIX stores this info in "/dev/pmem" file. In KDB, "ipl" subcommand
-actually parses file "/dev/pmem" to access "processor_info" strctures.
-Can i simulate these KDB commands in a programatical fashion.
+The algorithm itself is extracted from darwin. However, it's a rather
+complex modified version of the PID algorithm, and thus it could use
+some review to make sure I got everything right.
 
-Atleast, are there "CPUID" sort of assembly instructions in AIX, so
-that i can probe for actual number of CPUs.
+The thermal control is also part of a new infrastructure I have written
+called "windfarm" that splits the whole thing into several modules
+(though I have only tested with everything built in at this point).
+Ultimately, it should be possible to port the existing Desktop G5 and
+Xserver thermal driver to the new infrastructure provided that the
+appropriate sensor & control modules are written. The old thermal driver
+uses pretty much the same 2 kind of PID control loops as provided by the
+windfarm_pid helper.
 
-Any help is appreciated.
+I would encourage people doing thermal control on other machines
+(laptops, etc...) to also use the new infrastructure.
 
-Thanks
--Ananth
---
+Ok, now the patches. You need to appy them in proper order. First of
+all, it all is on top of current -git as of yesterday. I won't guarantee
+they will apply on anything more ancient.
 
-------=_Part_1152_21834323.1127971156216
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+First, you need a fix that is currently pending in -mm (and should be in
+2.6.14 before it's final) :
 
-Hi,<br>
-&nbsp;Is there a programatical way of caliculating physical CPUs on=20
-IBM<br>
-SMT driven archtitural machines.<br>
-<br>
-&nbsp;I am aware of commands of sort=20
-&quot;lsdev -C -c processor&quot; and &quot;smtctl&quot;.<br>
-But is there any API to do same thing.=20
-I saw &quot;processor_info&quot;<br>
-strucutre in &quot;/usr/include/sys/iplcb.h&quot; contains=20
-information i am<br>
-looking for. Is there a way to access this.<br>
-<br>
-&nbsp;Linux on=20
-IntelHT, stores this info in &quot;/proc/cpuinfo&quot; file. Similarly<br>
-AIX stores this=20
-info in &quot;/dev/pmem&quot; file. In KDB, &quot;ipl&quot; subcommand<br>
-actually parses file=20
-&quot;/dev/pmem&quot; to access &quot;processor_info&quot; strctures.<br>
-Can i simulate these KDB=20
-commands in a programatical fashion.<br>
-<br>
-&nbsp;Atleast, are there &quot;CPUID&quot; sort of=20
-assembly instructions in AIX, so<br>
-that i can probe for actual number of=20
-CPUs.<br>
-<br>
-&nbsp;Any help is appreciated.<br>
-<br>
-Thanks<br>
--Ananth<br>
---<br>
+http://gate.crashing.org/~benh/ppc64-smu-fix.diff
 
-------=_Part_1152_21834323.1127971156216--
+Then, you can apply the patch that adds cpufreq support for the iMac G5
+(and possibly the SMU based desktop, though not tested)
+
+http://gate.crashing.org/~benh/ppc64-fx-freq-scaling.diff
+
+Then apply those 2 patches in that order:
+
+http://gate.crashing.org/~benh/ppc64-smu-partitions.diff
+http://gate.crashing.org/~benh/ppc64-smu-thermal-control.diff
+
+That's it. Now enable:
+
+  CONFIG_WINDFARM_SMU
+ 
+and
+
+  CONFIG_I2C_PMAC_SMU
+
+If you are using modules, you may have to manually load the whole bunch,
+especially the i2c SMU one which isn't requested (yet).
+
+And let me know :)
+
+Regards,
+Ben.
