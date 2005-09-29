@@ -1,23 +1,18 @@
-Return-Path: <lagrange@fr.oleane.com>
-Received: from relay04s.clb.oleane.net (relay04s.clb.oleane.net
-	[213.56.31.142]) by ozlabs.org (Postfix) with ESMTP id 7E5846839F
+Return-Path: <markc@mail.com>
+Received: from relay03.roc.ny.frontiernet.net (relay03.roc.ny.frontiernet.net
+	[66.133.182.166]) by ozlabs.org (Postfix) with ESMTP id 42722683DA
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Sep 2005 23:12:29 +1000 (EST)
-Received: from smtp12.clb.oleane.net (smtp12.clb.oleane.net [213.56.31.47])
-	by relay04s.clb.oleane.net with ESMTP id j8TDCPEX002900
-	for <linuxppc-embedded@ozlabs.org>; Thu, 29 Sep 2005 15:12:27 +0200
-Received: from GEG2400 ([62.160.30.216]) (authenticated)
-	by smtp12.clb.oleane.net with ESMTP id j8TCwtrC002510
-	for <linuxppc-embedded@ozlabs.org>; Thu, 29 Sep 2005 14:59:02 +0200
-From: "Laurent Lagrange" <lagrange@fr.oleane.com>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Thu, 29 Sep 2005 15:01:42 +0200
-Message-ID: <000001c5c4f5$f1a60c70$5201a8c0@GEG2400>
+	Thu, 29 Sep 2005 23:21:05 +1000 (EST)
+Message-ID: <007701c5c4f4$c7e539c0$0301a8c0@chuck2>
+From: "Mark Chambers" <markc@mail.com>
+To: "Fend, Matthias" <mfend@harris.com>,
+	<linuxppc-embedded@ozlabs.org>
+References: <8D4C69676E66D511A1CB00508BBBB192052D42EF@ranmx1.cs.myharris.net>
+Date: Thu, 29 Sep 2005 08:52:08 -0400
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-In-Reply-To: <000a01c5c4f4$1a5f1370$5201a8c0@GEG2400>
-Subject: MPC8555 and USB2
+Subject: Re: mpc8xx and LCD
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,12 +23,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+mpc8xx and LCD>hello,
+>We want to use mpc860/855 with a 320x240 graphic lcd module.
+>Now there are many possibilities to interface such a module, but I guess
+this is not the first time
+>someone will need a LCD display. So I'm trying to find out the most common
+way to implement the
+>desired functionality.
+>At the moment I think we should use a lcd controller from Epson (S1D13700
+or S1D13305) since they are
+>working on Linux framebuffer device driver for it. But I'm not sure how to
+design the hardware interface ... all
+>the LCD modules I found provide only a reduced number of port pins so that
+the controller only can be used
+>in indirect-mode, so I'm not sure whether to connect the module directly to
+the CPUs bus or use some
+>GPIO pins for this...
+>Has anybody else implemented a LCD into a mpc8xx (not 823) board
+successfully ?
+>Are there some good resources somewhere in the web about this topic ?
+>thanks for your recommendations,
+> mattthias
 
-Hi,
+Can you send a couple of links to the modules you are considering?
 
-Does anyone knows if an USB2 host controller (EHCI) driver 
-(even experimental) is available for a MPC8555 ?
-
-Thanks for any idea
-Laurent
- 
+Mark Chambers
