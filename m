@@ -1,17 +1,17 @@
-Return-Path: <mgreer@mvista.com>
-Received: from av.mvista.com (gateway-1237.mvista.com [12.44.186.158])
-	by ozlabs.org (Postfix) with ESMTP id 27817683BC
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Sep 2005 06:37:28 +1000 (EST)
-Date: Thu, 29 Sep 2005 13:36:47 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Corey Minyard <minyard@acm.org>
-Message-ID: <20050929203647.GA6597@mag.az.mvista.com>
-References: <20050929183221.GA17292@i2.minyard.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20050929183221.GA17292@i2.minyard.local>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: MV64x60 watchdog timer driver updates
+Return-Path: <geoffrey.levand@am.sony.com>
+Message-ID: <433C7882.20000@am.sony.com>
+Date: Thu, 29 Sep 2005 16:28:02 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <1127978432.6102.53.camel@gaston>
+In-Reply-To: <1127978432.6102.53.camel@gaston>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc64-dev@ozlabs.org,
+	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: iMac G5: experimental thermal & cpufreq support
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,21 +21,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 29, 2005 at 01:32:21PM -0500, Corey Minyard wrote:
-> James looked at an earlier version and said it was ok, and suggested
-> a few changes.  This has been tested against 2.6.14-rc2 on a Katana.
+Benjamin Herrenschmidt wrote:
+> The algorithm itself is extracted from darwin. However, it's a rather
+> complex modified version of the PID algorithm, and thus it could use
+> some review to make sure I got everything right.
 > 
-> Note that the bus_clk value from the platform information seems to
-> be in MHZ, but the actual frequency is generally 133,333,333, not
-> 133,000,000.  I don't think the inaccuracy matters here, but it seems
-> a little odd.
 
-Yes, it makes more sense to me to pass the actual frequency and not do
-the '* 1000000'.
+As we are already in the digital domain, I would think it would be 
+more savvy to use a digital controller than try to simulate an
+analog controller...  Why don't you abstract the control algorithm 
+such that you can plug in others as they are developed.
 
-Also--I should have thought of this earlier--there should probably be a
-patch to add a default platform_data entry in arch/ppc/syslib/mv64x60.c
-and a patch for katana.c if the defaults in mv64x60.c aren't correct
-for the katana.  At least, that's how things are done now.
-
-Mark
+-Geoff
