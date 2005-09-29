@@ -1,18 +1,18 @@
-Return-Path: <markc@mail.com>
-Received: from relay03.roc.ny.frontiernet.net (relay03.roc.ny.frontiernet.net
-	[66.133.182.166]) by ozlabs.org (Postfix) with ESMTP id 42722683DA
+Return-Path: <gguevel@interfaceconcept.com>
+Received: from smtp3.clb.oleane.net (smtp3.clb.oleane.net [213.56.31.19])
+	by ozlabs.org (Postfix) with ESMTP id 88E7A6839F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Sep 2005 23:21:05 +1000 (EST)
-Message-ID: <007701c5c4f4$c7e539c0$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-To: "Fend, Matthias" <mfend@harris.com>,
-	<linuxppc-embedded@ozlabs.org>
-References: <8D4C69676E66D511A1CB00508BBBB192052D42EF@ranmx1.cs.myharris.net>
-Date: Thu, 29 Sep 2005 08:52:08 -0400
+	Thu, 29 Sep 2005 23:21:29 +1000 (EST)
+From: =?iso-8859-1?Q?G=E9rard_Gu=E9vel?= <gguevel@interfaceconcept.com>
+To: "'Andy Fleming'" <afleming@freescale.com>
+Date: Thu, 29 Sep 2005 15:23:51 +0200
+Message-ID: <000501c5c4f9$0b1b81a0$5201a8c0@GEG2400>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-Subject: Re: mpc8xx and LCD
+In-Reply-To: <AD2A3D43-57D8-4198-BAD3-FB5E3B549361@freescale.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: How to use SPE on MPC8541
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,28 +23,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-mpc8xx and LCD>hello,
->We want to use mpc860/855 with a 320x240 graphic lcd module.
->Now there are many possibilities to interface such a module, but I guess
-this is not the first time
->someone will need a LCD display. So I'm trying to find out the most common
-way to implement the
->desired functionality.
->At the moment I think we should use a lcd controller from Epson (S1D13700
-or S1D13305) since they are
->working on Linux framebuffer device driver for it. But I'm not sure how to
-design the hardware interface ... all
->the LCD modules I found provide only a reduced number of port pins so that
-the controller only can be used
->in indirect-mode, so I'm not sure whether to connect the module directly to
-the CPUs bus or use some
->GPIO pins for this...
->Has anybody else implemented a LCD into a mpc8xx (not 823) board
-successfully ?
->Are there some good resources somewhere in the web about this topic ?
->thanks for your recommendations,
-> mattthias
 
-Can you send a couple of links to the modules you are considering?
+> Hmm... This is very strange, because Dhrystone is exactly the
+> benchmark this was tested on.  How did you determine that the SPE
+> functions are called?
 
-Mark Chambers
+I prefix the strcpy and strcmp functions with a "v" in dhry21a.c and
+dhry21b.c. Then I statically compile the c files with the freescale
+assembly source S files and not with the library libcfsl_e500.a.
+
+If I don't add the S files the ld fails else it succeeds.
+I retreive the symbols vstr... in the binary dhrystone with readelf.
+So I presume that it is the right code that is called.
+
+> I'm not sure why you aren't seeing a performance gain, but I assure
+> you that, if SPE instructions weren't working, Dhrystone would
+> crash.
+
+I confirm that if I try to run this binary without SPE in Linux kernel
+I get an exception.
+
+> The only other possibility I can think of is that the SPE
+> versions of the functions aren't being called.
+
+I don't understand what you say.
+Perhaps have you a pre-compiled dhrystone for Linux 2.6
+I can try and compare on my board
+
+Thanks
+Gérard
