@@ -1,25 +1,16 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A1796683D2
+Return-Path: <JohnsonCheng@qnap.com.tw>
+Received: from qnap.com.tw (unknown [211.75.85.27])
+	by ozlabs.org (Postfix) with SMTP id 00375683D1
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Sep 2005 22:50:46 +1000 (EST)
-In-Reply-To: <433BDCE7.2060206@iki.fi>
-References: <DCEAAC0833DD314AB0B58112AD99B93B85946A@ismail.innsys.innovsys.com>
-	<4333DF04.3000908@iki.fi> <43395322.1080407@iki.fi>
-	<384d09b865d454875c447cc02c89d001@embeddedalley.com>
-	<4339AD01.30708@iki.fi>
-	<714c16295fbfa97caafd1d0aa3a5932e@embeddedalley.com>
-	<433A6E6D.4070403@iki.fi> <433BDCE7.2060206@iki.fi>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <30a4271599a05b56b51b6c3e03cb1b70@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Thu, 29 Sep 2005 08:50:49 -0400
-To: Kalle Pokki <kalle.pokki@iki.fi>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: CPM2 early console
+	Thu, 29 Sep 2005 22:51:54 +1000 (EST)
+From: "JohnsonCheng" <JohnsonCheng@qnap.com.tw>
+To: "linux-ppc-embedded" <linuxppc-embedded@ozlabs.org>
+Date: Thu, 29 Sep 2005 20:51:45 +0800
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0015_01C5C537.9A53BF20"
+Message-Id: <20050929125154.00375683D1@ozlabs.org>
+Subject: where to find mkfs utility
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,17 +21,118 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
-On Sep 29, 2005, at 8:24 AM, Kalle Pokki wrote:
+------=_NextPart_000_0015_01C5C537.9A53BF20
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-> flags |= _PAGE_WRITETHRU | _PAGE_COHERENT;
->
-> in setbat() in arch/ppc/mm/ppc_mmu.c. But this should not depend on 
-> this kind of a hack, should it?
+Dear All,
 
-This is clearly wrong since other 82xx processors work fine.  Something
-is amiss with your boot rom or other setup of this processor.
+ 
 
-Thanks.
+When can I found mkfs.mkdos, mkfs.vfat and mkfs.ntfs utilities.
 
-	-- Dan
+Are all these in the same package, and what is this package name?
+
+ 
+
+Thanks,
+
+Johnson Cheng
+
+
+------=_NextPart_000_0015_01C5C537.9A53BF20
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:&#26032;&#32048;&#26126;&#39636;;
+	panose-1:2 2 3 0 0 0 0 0 0 0;}
+@font-face
+	{font-family:"\@&#26032;&#32048;&#26126;&#39636;";
+	panose-1:2 2 3 0 0 0 0 0 0 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+ /* Page Definitions */
+ @page Section1
+	{size:595.3pt 841.9pt;
+	margin:72.0pt 90.0pt 72.0pt 90.0pt;
+	layout-grid:18.0pt;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DZH-TW link=3Dblue vlink=3Dpurple =
+style=3D'text-justify-trim:punctuation'>
+
+<div class=3DSection1 style=3D'layout-grid:18.0pt'>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>Dear All,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>When can I found mkfs.mkdos, mkfs.vfat and =
+mkfs.ntfs utilities.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>Are all these in the same package, and what is =
+this
+package name?<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>Thanks,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>Johnson Cheng<o:p></o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_0015_01C5C537.9A53BF20--
