@@ -1,19 +1,25 @@
-Return-Path: <wd@denx.de>
-Received: from mailout07.sul.t-online.com (mailout07.sul.t-online.com
-	[194.25.134.83]) by ozlabs.org (Postfix) with ESMTP id 5910A683B4
+Return-Path: <Petr.Borsodi@i.cz>
+Received: from ns.decros.cz (ns.decros.cz [193.85.26.2])
+	by ozlabs.org (Postfix) with ESMTP id 35E176838E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Sep 2005 17:58:52 +1000 (EST)
-To: xiay@nari-relays.com
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 29 Sep 2005 11:56:32 +0800."
-	<200509291156.AA2359564@NARI-RELAYS.COM>
-Date: Thu, 29 Sep 2005 09:58:34 +0200
-Sender: wd@denx.de
-Message-Id: <20050929075834.7C63C353AB4@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: how to make a PCI net card work on ICECUBE ? 
+	Thu, 29 Sep 2005 19:46:48 +1000 (EST)
+Received: from gwi.cb.i.cz (gw.decros.cz [193.85.26.254])
+	by ns.decros.cz (8.11.7/8.11.7) with ESMTP id j8T96dD86743
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 29 Sep 2005 11:06:39 +0200 (CEST)
+Received: from DCB02.cb.i.cz (dcb02.cb.i.cz [192.168.51.4])
+	by gwi.cb.i.cz (8.13.1/8.13.1) with ESMTP id j8T96ZVc064809
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 29 Sep 2005 11:06:35 +0200 (CEST)
+	(envelope-from Petr.Borsodi@i.cz)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Date: Thu, 29 Sep 2005 11:06:35 +0200
+Message-ID: <9999CA1912E416428A03B319E6D084C807C831@DCB02.cb.i.cz>
+From: "Borsodi Petr" <Petr.Borsodi@i.cz>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: BRG setting error
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,27 +30,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <200509291156.AA2359564@NARI-RELAYS.COM> you wrote:
-> 
-> I found out that the ICECUBE board could tftpboot via the PCI netcard if wire net to the card, but the board could not mount NFS via the card.
-> 
-> So i set the environment ethact to i82559#0 and saveenv , but the board still could not mount NFS via the card.During the booting-up ,there was nothing about eth1 shown .
-...
-> bash-2.05b# ifconfig eth1 198.87.102.218 up
-> SIOCSIFADDR: No such device
-> eth1: unknown interface: No such device
-> eth1: unknown interface: No such device 
-> 
-> where did i make mistakes ?
+Hi all,
 
-I guess you forgot to configure the correct driver for  your  network
-card into your Linux kernel.
+I found an error in Baud Rate Generator setting for MPC82XX processors.
 
-Best regards,
+The CD field of im_brgcx (x =3D 1..8) register is set to wrong value. =
+This
+field must be set to divisor lowered by 1, in according with doc for
+MPC8272 or similar. I have searched 2.4.31 and 2.6.12 kernels.
 
-Wolfgang Denk
+Please check these functions:
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Old programmers never die, they just branch to a new address.
+linux-2.4.31\arch\ppc\boot\simple\m8260_tty.c: serial_init
+linux-2.4.31\arch\ppc\cpm2_io\commproc.c: cpm2_setbrg
+linux-2.4.31\arch\ppc\cpm2_io\commproc.c: cpm2_fastbrg
+
+linux-2.6.12\arch\ppc\boot\simple\m8260_tty.c: serial_init
+linux-2.6.12\arch\ppc\syslib\cpm2_common.c: cpm2_setbrg
+linux-2.6.12\arch\ppc\syslib\cpm2_common.c: cpm2_fastbrg
+
+This problem is shown only for small divider - for normal UART baud
+rates the deviation is slight.
+
+(I think that better approach is round the divisor to nearest value).
+
+Best regards
+
+
+Petr Borsodi, SW Development
+S.ICZ a.s., J.S. Baara 40, 370 01 Ceske Budejovice, Czech Republic
