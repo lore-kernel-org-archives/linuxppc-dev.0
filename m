@@ -1,16 +1,19 @@
-Return-Path: <mfend@harris.com>
-Received: from mlbe2k2.cs.myharris.net (mlbe2k2.cs.myharris.net
-	[137.237.90.89]) by ozlabs.org (Postfix) with ESMTP id D46566834E
+Return-Path: <wd@denx.de>
+Received: from mailout07.sul.t-online.com (mailout07.sul.t-online.com
+	[194.25.134.83]) by ozlabs.org (Postfix) with ESMTP id 5910A683B4
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Sep 2005 17:10:32 +1000 (EST)
-Message-ID: <8D4C69676E66D511A1CB00508BBBB192052D42EF@ranmx1.cs.myharris.net>
-From: "Fend, Matthias" <mfend@harris.com>
-To: linuxppc-embedded@ozlabs.org
-Date: Thu, 29 Sep 2005 02:53:26 -0400
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C5C4C2.7DA567FE"
-Subject: mpc8xx and LCD
+	Thu, 29 Sep 2005 17:58:52 +1000 (EST)
+To: xiay@nari-relays.com
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 29 Sep 2005 11:56:32 +0800."
+	<200509291156.AA2359564@NARI-RELAYS.COM>
+Date: Thu, 29 Sep 2005 09:58:34 +0200
+Sender: wd@denx.de
+Message-Id: <20050929075834.7C63C353AB4@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: how to make a PCI net card work on ICECUBE ? 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,90 +24,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This message is in MIME format. Since your mail reader does not understand
-this format, some or all of this message may not be legible.
+In message <200509291156.AA2359564@NARI-RELAYS.COM> you wrote:
+> 
+> I found out that the ICECUBE board could tftpboot via the PCI netcard if wire net to the card, but the board could not mount NFS via the card.
+> 
+> So i set the environment ethact to i82559#0 and saveenv , but the board still could not mount NFS via the card.During the booting-up ,there was nothing about eth1 shown .
+...
+> bash-2.05b# ifconfig eth1 198.87.102.218 up
+> SIOCSIFADDR: No such device
+> eth1: unknown interface: No such device
+> eth1: unknown interface: No such device 
+> 
+> where did i make mistakes ?
 
-------_=_NextPart_001_01C5C4C2.7DA567FE
-Content-Type: text/plain
+I guess you forgot to configure the correct driver for  your  network
+card into your Linux kernel.
 
-hello,
+Best regards,
 
-We want to use mpc860/855 with a 320x240 graphic lcd module.
-Now there are many possibilities to interface such a module, but I guess this is
-not the first time
-someone will need a LCD display. So I'm trying to find out the most common way
-to implement the 
-desired functionality. 
+Wolfgang Denk
 
-At the moment I think we should use a lcd controller from Epson (S1D13700 or
-S1D13305) since they are 
-working on Linux framebuffer device driver for it. But I'm not sure how to
-design the hardware interface ... all
-the LCD modules I found provide only a reduced number of port pins so that the
-controller only can be used
-in indirect-mode, so I'm not sure whether to connect the module directly to the
-CPUs bus or use some
-GPIO pins for this...
-
-Has anybody else implemented a LCD into a mpc8xx (not 823) board successfully ?
-Are there some good resources somewhere in the web about this topic ?
-
-thanks for your recommendations,
- mattthias
-
-
-------_=_NextPart_001_01C5C4C2.7DA567FE
-Content-Type: text/html
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-5.5.2657.73">
-<TITLE>mpc8xx and LCD</TITLE>
-</HEAD>
-<BODY>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">hello,</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">We want to use mpc860/855 with a =
-320x240 graphic lcd module.</FONT>
-<BR><FONT SIZE=3D2 FACE=3D"Arial">Now there are many possibilities to =
-interface such a module, but I guess this is not the first time</FONT>
-<BR><FONT SIZE=3D2 FACE=3D"Arial">someone will need a LCD display. So =
-I'm trying to find out the most common way to implement the </FONT>
-<BR><FONT SIZE=3D2 FACE=3D"Arial">desired functionality. </FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">At the moment I think we should use a =
-lcd controller from Epson (S1D13700 or S1D13305) since they are </FONT>
-<BR><FONT SIZE=3D2 FACE=3D"Arial">working on Linux framebuffer device =
-driver for it. But I'm not sure how to design the hardware interface =
-... all</FONT>
-<BR><FONT SIZE=3D2 FACE=3D"Arial">the LCD modules I found provide only =
-a reduced number of port pins so that the controller only can be =
-used</FONT>
-<BR><FONT SIZE=3D2 FACE=3D"Arial">in indirect-mode, so I'm not sure =
-whether to connect the module directly to the CPUs bus or use =
-some</FONT>
-<BR><FONT SIZE=3D2 FACE=3D"Arial">GPIO pins for this...</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Has anybody else implemented a LCD =
-into a mpc8xx (not 823) board successfully ?</FONT>
-<BR><FONT SIZE=3D2 FACE=3D"Arial">Are there some good resources =
-somewhere in the web about this topic ?</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">thanks for your =
-recommendations,</FONT>
-<BR><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;mattthias</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C5C4C2.7DA567FE--
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Old programmers never die, they just branch to a new address.
