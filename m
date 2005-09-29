@@ -1,15 +1,20 @@
-Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15803.mail.cnb.yahoo.com (web15803.mail.cnb.yahoo.com
-	[202.165.102.83]) by ozlabs.org (Postfix) with SMTP id 6D323683B2
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 736BC6838B
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Sep 2005 22:42:23 +1000 (EST)
-Message-ID: <20050929123535.66570.qmail@web15803.mail.cnb.yahoo.com>
-Date: Thu, 29 Sep 2005 20:35:35 +0800 (CST)
-From: Sam Song <samlinuxppc@yahoo.com.cn>
-To: linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
-Subject: Available user-level tool for I2C device?
+	Thu, 29 Sep 2005 22:48:07 +1000 (EST)
+In-Reply-To: <9999CA1912E416428A03B319E6D084C807C831@DCB02.cb.i.cz>
+References: <9999CA1912E416428A03B319E6D084C807C831@DCB02.cb.i.cz>
+Mime-Version: 1.0 (Apple Message framework v622)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <c9c3114352a4fd6bb2b121c11991122c@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Thu, 29 Sep 2005 08:48:06 -0400
+To: "Borsodi Petr" <Petr.Borsodi@i.cz>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: BRG setting error
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,21 +25,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
 
-I'd like to ask whether there is user-level utility
-for I2C device registers access like lspci/setpci for
-PCI device?
+On Sep 29, 2005, at 5:06 AM, Borsodi Petr wrote:
 
-I have a RTC chip DS1337 on a 8248 target. It can
-work right in u-boot and linux. If no similar utility,
-I will switch to change hwclock.c in busybox to make
-it. Any idea?
+> I found an error in Baud Rate Generator setting for MPC82XX processors.
 
-Thanks in advance,
+How about a patch we can apply?  Declaring a bug and hoping
+someone else will fix it isn't likely to happen :-)
 
-Sam
+Thanks.
 
-__________________________________________________
-∏œøÏ◊¢≤·—≈ª¢≥¨¥Û»›¡ø√‚∑—” œ‰?
-http://cn.mail.yahoo.com
+	-- Dan
