@@ -1,14 +1,16 @@
-Return-Path: <pochini@shiny.it>
-Message-ID: <XFMail.20050929092052.pochini@shiny.it>
-Content-Type: text/plain; charset=us-ascii
-MIME-Version: 1.0
-In-Reply-To: <1127865914.6102.0.camel@gaston>
-Date: Thu, 29 Sep 2005 09:20:52 +0200 (CEST)
-Sender: pochini@agnus.shiny.it
-From: Giuliano Pochini <pochini@shiny.it>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc64-dev@ozlabs.org, linuxppc-dev@ozlabs.org
-Subject: Re: Starting the arch/powerpc merge
+Return-Path: <benh@kernel.crashing.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc64-dev@ozlabs.org
+In-Reply-To: <1127978432.6102.53.camel@gaston>
+References: <1127978432.6102.53.camel@gaston>
+Content-Type: text/plain
+Date: Thu, 29 Sep 2005 18:40:29 +1000
+Message-Id: <1127983229.6102.60.camel@gaston>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: iMac G5: experimental thermal & cpufreq support
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,29 +20,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 2005-09-29 at 17:20 +1000, Benjamin Herrenschmidt wrote:
 
-On 28-Sep-2005 Benjamin Herrenschmidt wrote:
-> On Tue, 2005-09-27 at 18:30 +1000, Paul Mackerras wrote:
->> Christoph Hellwig writes:
->>
->> > What about just dropping POWER3/4 support in 32bit mode?
->>
->> Yes... I'm getting very close to deciding to do that.  In fact POWER3
->> isn't too bad, since it still has BATs, but POWER4/PPC970 would be
->> tricky.
->>
->> Does anyone on these lists have any major objections if we drop
->> support for 32-bit kernels on POWER3 and POWER4/PPC970?
->
-> I've stopped supporting G5 on 32 bits kernel for some time now, I have
-> absolutely no problem just dropping the POWER4 support in 32 bits kernel
-> in the merged tree.
+> http://gate.crashing.org/~benh/ppc64-smu-thermal-control.diff
 
-Out of curiosity, is there any advantage in using a 32 bits
-kernel on ppc64 over a 64 bits kernel ?  Speed ?  Complexity ?
-Compatibility ?  Memory ?
+You may want to re-download this one if you got it already, I just fixed
+a bug in the calculations of the CPU control loop. It's now getting
+results much more consistant with OS X. I still have to add some
+overtemp handling and I'll remove the debug stuff and work on supporting
+the PowerMac9,1 desktop model.
 
-
-
---
-Giuliano.
+Ben.
