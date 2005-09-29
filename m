@@ -1,18 +1,16 @@
-Return-Path: <gguevel@interfaceconcept.com>
-Received: from smtp3.clb.oleane.net (smtp3.clb.oleane.net [213.56.31.19])
-	by ozlabs.org (Postfix) with ESMTP id 88E7A6839F
+Return-Path: <mfend@harris.com>
+Received: from mlbe2k2.cs.myharris.net (mlbe2k2.cs.myharris.net
+	[137.237.90.89]) by ozlabs.org (Postfix) with ESMTP id 235356839F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Sep 2005 23:21:29 +1000 (EST)
-From: =?iso-8859-1?Q?G=E9rard_Gu=E9vel?= <gguevel@interfaceconcept.com>
-To: "'Andy Fleming'" <afleming@freescale.com>
-Date: Thu, 29 Sep 2005 15:23:51 +0200
-Message-ID: <000501c5c4f9$0b1b81a0$5201a8c0@GEG2400>
+	Thu, 29 Sep 2005 23:45:08 +1000 (EST)
+Message-ID: <8D4C69676E66D511A1CB00508BBBB192052D435D@ranmx1.cs.myharris.net>
+From: "Fend, Matthias" <mfend@harris.com>
+To: linuxppc-embedded@ozlabs.org
+Date: Thu, 29 Sep 2005 09:45:06 -0400
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-In-Reply-To: <AD2A3D43-57D8-4198-BAD3-FB5E3B549361@freescale.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: How to use SPE on MPC8541
+Subject: AW: mpc8xx and LCD
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,32 +21,59 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+hi,=20
 
-> Hmm... This is very strange, because Dhrystone is exactly the
-> benchmark this was tested on.  How did you determine that the SPE
-> functions are called?
+>>Can you send a couple of links to the modules you are considering?
 
-I prefix the strcpy and strcmp functions with a "v" in dhry21a.c and
-dhry21b.c. Then I statically compile the c files with the freescale
-assembly source S files and not with the library libcfsl_e500.a.
+there are some 320x240 from EDT (Emerging Display Technologies) with =
+S1D13305
+S1D13700
+http://www.actron.de/graphic_displays_edt.htm
 
-If I don't add the S files the ld fails else it succeeds.
-I retreive the symbols vstr... in the binary dhrystone with readelf.
-So I presume that it is the right code that is called.
+also from Powertip a 320x240 with S1D13305/ S1D13704 is available
+http://www.actron.de/graphic_displays_powertip.htm
 
-> I'm not sure why you aren't seeing a performance gain, but I assure
-> you that, if SPE instructions weren't working, Dhrystone would
-> crash.
+and also from ampire is one ... (available /w or w/o Epson's S1D =
+controller)
+http://www.ampire.com.tw/AmpireCatalogue/P082-AT320240Q3.pdf
 
-I confirm that if I try to run this binary without SPE in Linux kernel
-I get an exception.
 
-> The only other possibility I can think of is that the SPE
-> versions of the functions aren't being called.
+matthias
 
-I don't understand what you say.
-Perhaps have you a pre-compiled dhrystone for Linux 2.6
-I can try and compare on my board
+-----Urspr=FCngliche Nachricht-----
+Von: Mark Chambers [mailto:markc@mail.com]=20
+Gesendet: Donnerstag, 29. September 2005 14:52
+An: Fend, Matthias; linuxppc-embedded@ozlabs.org
+Betreff: Re: mpc8xx and LCD
 
-Thanks
-Gérard
+mpc8xx and LCD>hello,
+>We want to use mpc860/855 with a 320x240 graphic lcd module.
+>Now there are many possibilities to interface such a module, but I =
+guess
+this is not the first time
+>someone will need a LCD display. So I'm trying to find out the most =
+common
+way to implement the
+>desired functionality.
+>At the moment I think we should use a lcd controller from Epson =
+(S1D13700
+or S1D13305) since they are
+>working on Linux framebuffer device driver for it. But I'm not sure =
+how to
+design the hardware interface ... all
+>the LCD modules I found provide only a reduced number of port pins so =
+that
+the controller only can be used
+>in indirect-mode, so I'm not sure whether to connect the module =
+directly to
+the CPUs bus or use some
+>GPIO pins for this...
+>Has anybody else implemented a LCD into a mpc8xx (not 823) board
+successfully ?
+>Are there some good resources somewhere in the web about this topic ?
+>thanks for your recommendations,
+> mattthias
+
+Can you send a couple of links to the modules you are considering?
+
+Mark Chambers
