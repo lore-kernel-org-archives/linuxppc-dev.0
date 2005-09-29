@@ -1,18 +1,18 @@
-Return-Path: <afleming@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 19273683D6
+Return-Path: <markc@mail.com>
+Received: from relay01.roc.ny.frontiernet.net (relay01.roc.ny.frontiernet.net
+	[66.133.182.164]) by ozlabs.org (Postfix) with ESMTP id 52A3467B48
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 30 Sep 2005 00:30:08 +1000 (EST)
-In-Reply-To: <011901c5c49a$9aa01fc0$3f13180a@utsfd.cs.fujitsu.co.jp>
-References: <011901c5c49a$9aa01fc0$3f13180a@utsfd.cs.fujitsu.co.jp>
-Mime-Version: 1.0 (Apple Message framework v734)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <4D122DC0-BFB6-469B-8569-AE04AE5DD7FC@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Date: Thu, 29 Sep 2005 09:30:15 -0500
-To: sun <sun.zhitai@jp.fujitsu.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: fix-up GIANFAR driver timer bug
+	Fri, 30 Sep 2005 00:44:18 +1000 (EST)
+Message-ID: <00c501c5c504$96c59780$0301a8c0@chuck2>
+From: "Mark Chambers" <markc@mail.com>
+To: "Fend, Matthias" <mfend@harris.com>,
+	<linuxppc-embedded@ozlabs.org>
+References: <8D4C69676E66D511A1CB00508BBBB192052D435D@ranmx1.cs.myharris.net>
+Date: Thu, 29 Sep 2005 10:44:45 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Re: mpc8xx and LCD
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,73 +23,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-The reported issue no longer exists in the latest version of the  
-driver, which should be in linus' tree soon (it's in the netdev  
-tree).  However, it may have crept into the PHY Layer, so I will  
-investigate.  Thank you for reporting this!
+hi,
 
-Andy
+>>Can you send a couple of links to the modules you are considering?
 
-On Sep 28, 2005, at 21:07, sun wrote:
+>there are some 320x240 from EDT (Emerging Display Technologies) with
+S1D13305
+>S1D13700
+>http://www.actron.de/graphic_displays_edt.htm
+>
+>also from Powertip a 320x240 with S1D13305/ S1D13704 is available
+>http://www.actron.de/graphic_displays_powertip.htm
+>
+>and also from ampire is one ... (available /w or w/o Epson's S1D
+controller)
+>http://www.ampire.com.tw/AmpireCatalogue/P082-AT320240Q3.pdf
+>
 
-> Repeat executing a command series like the attached descript will  
-> cause
-> system hanging or kernel panic shown below on a GIANFAR used system.
-> The attached patch is for fix the above issue.
-> The issue and the solution have been confirmed on
-> MPC8560ADS and MPC85555CDS evaluation boards.
->
-> ----------
-> -sh-3.00# ./net_setting.sh
-> eth1 setting start
-> ###set ip-address
->
-> ###net Trying to free free IRQ103
-> down
->
-> ###set MAC address
->
-> ###net up
-> kernel BUG in cascade at kernel/timer.c:419!
-> Oops: Exception in kernel mode, sig: 5 [#1]
-> NIP: C0029090 LR: C00290A0 SP: CCD69B20 REGS: ccd69a70 TRAP:  
-> 0700    Not tainted
-> MSR: 00021000 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 00
-> TASK = cde58080[170] 'ifconfig' THREAD: ccd68000
-> Last syscall: 54
-> GPR00: 00000001 CCD69B20 CDE58080 C0311DD4 C031269C FFFBD700  
-> C0311F4C C0311E94
-> GPR08: FFFBD869 00003B60 00000169 00003B5F FFFBD700 1010A204  
-> 00000000 00000000
-> GPR16: 00000000 1001C094 00000000 00000000 C07D2400 FFFF8914  
-> C03092C0 C0310000
-> GPR24: C0310000 C0310000 C0280000 C0311DD4 00000017 C0311DD4  
-> C0312694 C031269C
-> NIP [c0029090] cascade+0x40/0x78
-> LR [c00290a0] cascade+0x50/0x78
-> Call trace:
-> [c002923c] run_timer_softirq+0x174/0x1d8
-> [c0024b4c] __do_softirq+0x80/0xf4
-> [c0024c18] do_softirq+0x58/0x60
-> [c0003930] timer_interrupt+0xa0/0x208
-> [c0002598] ret_from_except+0x0/0x18
-> [c001f694] release_console_sem+0xc4/0x234
-> [c001f95c] vprintk+0x158/0x1c0
-> [c001fa14] printk+0x50/0x60
-> [c014d91c] get_phy_info+0xcc/0xe4
-> [c014b30c] gfar_enet_open+0x2ec/0x390
-> [c01a7630] dev_open+0xb0/0xd8
-> [c01a8dc4] dev_change_flags+0x6c/0x144
-> [c01e6eec] devinet_ioctl+0x618/0x764
-> [c01e8250] inet_ioctl+0x10c/0x120
-> [c019dbcc] sock_ioctl+0x1ac/0x288
-> Kernel panic - not syncing: Aiee, killing interrupt handler!
-> <0>Rebooting in 1 seconds..U-Boot 1.1.2 (Aug 19 2005 - 09:55:23)
->
->
-> <fixIFCONFIGpanic.patch>
-> <net_setting.sh>
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Ok, I see the problem with the S1D13305, but the S1D13704 looks ok.
+In order to work as a linux framebuffer, the cpu must be able to directly
+address
+pixels.  You can't have a controller like the 13305 that makes you write a
+pixel address and then write the pixel.  A controller like the 13704 just
+makes
+the pixel memory look like RAM, so it's easy to interface.  The only thing
+different is that you must be able to handle wait states, because the pixel
+memory is shared between the controller and the cpu.  The 13704 manual
+has a section showing how to interface to an MPC821, so that's basically
+the same as MPC860.  However, watch your DSACK0 signal closely - this
+signal is shared with 8xx internal logic.  It must be synchronized with the
+cpu clock, and you may not be able to just let a pullup resistor handle the
+rising edge - if that rising edge leaks into the succeeding cycle you can
+see
+some weird intermittent problems.  So plan on needing to run WAIT from any
+controller through some glue logic to clean it up for the 8xx.
+
+Or you may be able to just get by with making your cycle time long enough
+that you can ignore WAIT.  It sounds a bit ugly but as a practical matter
+it won't affect performance much.
+
+Mark Chambers
