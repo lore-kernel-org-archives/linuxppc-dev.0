@@ -1,18 +1,19 @@
-Return-Path: <markc@mail.com>
-Received: from relay01.roc.ny.frontiernet.net (relay01.roc.ny.frontiernet.net
-	[66.133.182.164]) by ozlabs.org (Postfix) with ESMTP id 52A3467B48
+Return-Path: <wd@denx.de>
+Received: from mailout01.sul.t-online.com (mailout01.sul.t-online.com
+	[194.25.134.80]) by ozlabs.org (Postfix) with ESMTP id E548E683D6
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 30 Sep 2005 00:44:18 +1000 (EST)
-Message-ID: <00c501c5c504$96c59780$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-To: "Fend, Matthias" <mfend@harris.com>,
-	<linuxppc-embedded@ozlabs.org>
-References: <8D4C69676E66D511A1CB00508BBBB192052D435D@ranmx1.cs.myharris.net>
-Date: Thu, 29 Sep 2005 10:44:45 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: Re: mpc8xx and LCD
+	Fri, 30 Sep 2005 01:29:21 +1000 (EST)
+To: "JohnsonCheng" <JohnsonCheng@qnap.com.tw>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 29 Sep 2005 20:51:45 +0800."
+	<20050929125154.00375683D1@ozlabs.org>
+Date: Thu, 29 Sep 2005 17:29:06 +0200
+Sender: wd@denx.de
+Message-Id: <20050929152906.219A6353AB4@atlas.denx.de>
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: where to find mkfs utility 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,43 +24,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-hi,
+In message <20050929125154.00375683D1@ozlabs.org> you wrote:
+> 
+> When can I found mkfs.mkdos, mkfs.vfat and mkfs.ntfs utilities.
+> 
+> Are all these in the same package, and what is this package name?
 
->>Can you send a couple of links to the modules you are considering?
+mkfs.msdos and mkfs.vfat are part of the dosfstools package.
 
->there are some 320x240 from EDT (Emerging Display Technologies) with
-S1D13305
->S1D13700
->http://www.actron.de/graphic_displays_edt.htm
->
->also from Powertip a 320x240 with S1D13305/ S1D13704 is available
->http://www.actron.de/graphic_displays_powertip.htm
->
->and also from ampire is one ... (available /w or w/o Epson's S1D
-controller)
->http://www.ampire.com.tw/AmpireCatalogue/P082-AT320240Q3.pdf
->
+Never heard of mkfs.ntfs yet.
 
-Ok, I see the problem with the S1D13305, but the S1D13704 looks ok.
-In order to work as a linux framebuffer, the cpu must be able to directly
-address
-pixels.  You can't have a controller like the 13305 that makes you write a
-pixel address and then write the pixel.  A controller like the 13704 just
-makes
-the pixel memory look like RAM, so it's easy to interface.  The only thing
-different is that you must be able to handle wait states, because the pixel
-memory is shared between the controller and the cpu.  The 13704 manual
-has a section showing how to interface to an MPC821, so that's basically
-the same as MPC860.  However, watch your DSACK0 signal closely - this
-signal is shared with 8xx internal logic.  It must be synchronized with the
-cpu clock, and you may not be able to just let a pullup resistor handle the
-rising edge - if that rising edge leaks into the succeeding cycle you can
-see
-some weird intermittent problems.  So plan on needing to run WAIT from any
-controller through some glue logic to clean it up for the 8xx.
+Best regards,
 
-Or you may be able to just get by with making your cycle time long enough
-that you can ignore WAIT.  It sounds a bit ugly but as a practical matter
-it won't affect performance much.
+Wolfgang Denk
 
-Mark Chambers
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Why is an average signature file longer than an average Perl script??
