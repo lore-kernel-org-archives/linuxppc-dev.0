@@ -1,14 +1,14 @@
 Return-Path: <sfr@canb.auug.org.au>
-Date: Fri, 30 Sep 2005 23:52:34 +1000
+Date: Fri, 30 Sep 2005 23:55:17 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Message-Id: <20050930235234.2c07aeec.sfr@canb.auug.org.au>
+Message-Id: <20050930235517.47c497fb.sfr@canb.auug.org.au>
 In-Reply-To: <20050930233602.138b6e27.sfr@canb.auug.org.au>
 References: <20050930233602.138b6e27.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc64-dev <linuxppc64-dev@ozlabs.org>, ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 3/9] powerpc: remove old vector.S files
+Subject: [PATCH 4/9] powerpc: more cleanup of powerpc/kernel
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,441 +18,215 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Update old kernel/Makefiles to cope
+Update head_64.S from arch/ppc64
+Remove arch/ppc/kernel/fpu.S
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-
 ---
 
- arch/ppc/kernel/Makefile   |    1 
- arch/ppc/kernel/vector.S   |  217 --------------------------------------------
- arch/ppc64/kernel/Makefile |    1 
- arch/ppc64/kernel/vector.S |  172 -----------------------------------
- 4 files changed, 2 insertions(+), 389 deletions(-)
- delete mode 100644 arch/ppc/kernel/vector.S
- delete mode 100644 arch/ppc64/kernel/vector.S
+ arch/powerpc/kernel/head_64.S |    9 ++-
+ arch/ppc/kernel/Makefile      |    1 
+ arch/ppc/kernel/fpu.S         |  133 -----------------------------------------
+ 3 files changed, 7 insertions(+), 136 deletions(-)
+ delete mode 100644 arch/ppc/kernel/fpu.S
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
 
-dcff1b170b43d9b8cb83e275cb3451dfd261c23e
+ee400b63f37120987bd12a2fada850c6212d7563
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -1253,7 +1253,7 @@ unrecov_slb:
+  *
+  * On iSeries, the hypervisor must fill in at least one entry before
+  * we get control (with relocate on).  The address is give to the hv
+- * as a page number (see xLparMap in LparData.c), so this must be at a
++ * as a page number (see xLparMap in lpardata.c), so this must be at a
+  * fixed address (the linker can't compute (u64)&initial_stab >>
+  * PAGE_SHIFT).
+  */
+@@ -1364,6 +1364,7 @@ _STATIC(__start_initialization_iSeries)
+ 	addi	r2,r2,0x4000
+ 
+ 	bl	.iSeries_early_setup
++	bl	.early_setup
+ 
+ 	/* relocation is on at this point */
+ 
+@@ -1970,20 +1971,22 @@ _GLOBAL(hmt_start_secondary)
+ 	blr
+ #endif
+ 
+-#if defined(CONFIG_KEXEC) || (defined(CONFIG_SMP) && !defined(CONFIG_PPC_ISERIES))
++#if defined(CONFIG_KEXEC) || defined(CONFIG_SMP)
+ _GLOBAL(smp_release_cpus)
+ 	/* All secondary cpus are spinning on a common
+ 	 * spinloop, release them all now so they can start
+ 	 * to spin on their individual paca spinloops.
+ 	 * For non SMP kernels, the secondary cpus never
+ 	 * get out of the common spinloop.
++	 * XXX This does nothing useful on iSeries, secondaries are
++	 * already waiting on their paca.
+ 	 */
+ 	li	r3,1
+ 	LOADADDR(r5,__secondary_hold_spinloop)
+ 	std	r3,0(r5)
+ 	sync
+ 	blr
+-#endif /* CONFIG_SMP && !CONFIG_PPC_ISERIES */
++#endif /* CONFIG_SMP */
+ 
+ 
+ /*
 diff --git a/arch/ppc/kernel/Makefile b/arch/ppc/kernel/Makefile
 --- a/arch/ppc/kernel/Makefile
 +++ b/arch/ppc/kernel/Makefile
-@@ -38,6 +38,7 @@ endif
- 
+@@ -39,6 +39,7 @@ endif
  # These are here while we do the architecture merge
  vecemu-y			+= ../../powerpc/kernel/vecemu.o
-+vector-y			+= ../../powerpc/kernel/vector.o
+ vector-y			+= ../../powerpc/kernel/vector.o
++fpu-y				+= ../../powerpc/kernel/fpu.o
  
  else
  obj-y				:= entry.o irq.o idle.o time.o misc.o \
-diff --git a/arch/ppc/kernel/vector.S b/arch/ppc/kernel/vector.S
+diff --git a/arch/ppc/kernel/fpu.S b/arch/ppc/kernel/fpu.S
 deleted file mode 100644
---- a/arch/ppc/kernel/vector.S
+--- a/arch/ppc/kernel/fpu.S
 +++ /dev/null
-@@ -1,217 +0,0 @@
--#include <asm/ppc_asm.h>
+@@ -1,133 +0,0 @@
+-/*
+- *  FPU support code, moved here from head.S so that it can be used
+- *  by chips which use other head-whatever.S files.
+- *
+- *  This program is free software; you can redistribute it and/or
+- *  modify it under the terms of the GNU General Public License
+- *  as published by the Free Software Foundation; either version
+- *  2 of the License, or (at your option) any later version.
+- *
+- */
+-
+-#include <linux/config.h>
 -#include <asm/processor.h>
--
--/*
-- * The routines below are in assembler so we can closely control the
-- * usage of floating-point registers.  These routines must be called
-- * with preempt disabled.
-- */
--	.data
--fpzero:
--	.long	0
--fpone:
--	.long	0x3f800000	/* 1.0 in single-precision FP */
--fphalf:
--	.long	0x3f000000	/* 0.5 in single-precision FP */
--
--	.text
--/*
-- * Internal routine to enable floating point and set FPSCR to 0.
-- * Don't call it from C; it doesn't use the normal calling convention.
-- */
--fpenable:
--	mfmsr	r10
--	ori	r11,r10,MSR_FP
--	mtmsr	r11
--	isync
--	stfd	fr0,24(r1)
--	stfd	fr1,16(r1)
--	stfd	fr31,8(r1)
--	lis	r11,fpzero@ha
--	mffs	fr31
--	lfs	fr1,fpzero@l(r11)
--	mtfsf	0xff,fr1
--	blr
--
--fpdisable:
--	mtfsf	0xff,fr31
--	lfd	fr31,8(r1)
--	lfd	fr1,16(r1)
--	lfd	fr0,24(r1)
--	mtmsr	r10
--	isync
--	blr
--
--/*
-- * Vector add, floating point.
-- */
--	.globl	vaddfp
--vaddfp:
--	stwu	r1,-32(r1)
--	mflr	r0
--	stw	r0,36(r1)
--	bl	fpenable
--	li	r0,4
--	mtctr	r0
--	li	r6,0
--1:	lfsx	fr0,r4,r6
--	lfsx	fr1,r5,r6
--	fadds	fr0,fr0,fr1
--	stfsx	fr0,r3,r6
--	addi	r6,r6,4
--	bdnz	1b
--	bl	fpdisable
--	lwz	r0,36(r1)
--	mtlr	r0
--	addi	r1,r1,32
--	blr
--
--/*
-- * Vector subtract, floating point.
-- */
--	.globl	vsubfp
--vsubfp:
--	stwu	r1,-32(r1)
--	mflr	r0
--	stw	r0,36(r1)
--	bl	fpenable
--	li	r0,4
--	mtctr	r0
--	li	r6,0
--1:	lfsx	fr0,r4,r6
--	lfsx	fr1,r5,r6
--	fsubs	fr0,fr0,fr1
--	stfsx	fr0,r3,r6
--	addi	r6,r6,4
--	bdnz	1b
--	bl	fpdisable
--	lwz	r0,36(r1)
--	mtlr	r0
--	addi	r1,r1,32
--	blr
--
--/*
-- * Vector multiply and add, floating point.
-- */
--	.globl	vmaddfp
--vmaddfp:
--	stwu	r1,-48(r1)
--	mflr	r0
--	stw	r0,52(r1)
--	bl	fpenable
--	stfd	fr2,32(r1)
--	li	r0,4
--	mtctr	r0
--	li	r7,0
--1:	lfsx	fr0,r4,r7
--	lfsx	fr1,r5,r7
--	lfsx	fr2,r6,r7
--	fmadds	fr0,fr0,fr2,fr1
--	stfsx	fr0,r3,r7
--	addi	r7,r7,4
--	bdnz	1b
--	lfd	fr2,32(r1)
--	bl	fpdisable
--	lwz	r0,52(r1)
--	mtlr	r0
--	addi	r1,r1,48
--	blr
--
--/*
-- * Vector negative multiply and subtract, floating point.
-- */
--	.globl	vnmsubfp
--vnmsubfp:
--	stwu	r1,-48(r1)
--	mflr	r0
--	stw	r0,52(r1)
--	bl	fpenable
--	stfd	fr2,32(r1)
--	li	r0,4
--	mtctr	r0
--	li	r7,0
--1:	lfsx	fr0,r4,r7
--	lfsx	fr1,r5,r7
--	lfsx	fr2,r6,r7
--	fnmsubs	fr0,fr0,fr2,fr1
--	stfsx	fr0,r3,r7
--	addi	r7,r7,4
--	bdnz	1b
--	lfd	fr2,32(r1)
--	bl	fpdisable
--	lwz	r0,52(r1)
--	mtlr	r0
--	addi	r1,r1,48
--	blr
--
--/*
-- * Vector reciprocal estimate.  We just compute 1.0/x.
-- * r3 -> destination, r4 -> source.
-- */
--	.globl	vrefp
--vrefp:
--	stwu	r1,-32(r1)
--	mflr	r0
--	stw	r0,36(r1)
--	bl	fpenable
--	lis	r9,fpone@ha
--	li	r0,4
--	lfs	fr1,fpone@l(r9)
--	mtctr	r0
--	li	r6,0
--1:	lfsx	fr0,r4,r6
--	fdivs	fr0,fr1,fr0
--	stfsx	fr0,r3,r6
--	addi	r6,r6,4
--	bdnz	1b
--	bl	fpdisable
--	lwz	r0,36(r1)
--	mtlr	r0
--	addi	r1,r1,32
--	blr
--
--/*
-- * Vector reciprocal square-root estimate, floating point.
-- * We use the frsqrte instruction for the initial estimate followed
-- * by 2 iterations of Newton-Raphson to get sufficient accuracy.
-- * r3 -> destination, r4 -> source.
-- */
--	.globl	vrsqrtefp
--vrsqrtefp:
--	stwu	r1,-48(r1)
--	mflr	r0
--	stw	r0,52(r1)
--	bl	fpenable
--	stfd	fr2,32(r1)
--	stfd	fr3,40(r1)
--	stfd	fr4,48(r1)
--	stfd	fr5,56(r1)
--	lis	r9,fpone@ha
--	lis	r8,fphalf@ha
--	li	r0,4
--	lfs	fr4,fpone@l(r9)
--	lfs	fr5,fphalf@l(r8)
--	mtctr	r0
--	li	r6,0
--1:	lfsx	fr0,r4,r6
--	frsqrte	fr1,fr0		/* r = frsqrte(s) */
--	fmuls	fr3,fr1,fr0	/* r * s */
--	fmuls	fr2,fr1,fr5	/* r * 0.5 */
--	fnmsubs	fr3,fr1,fr3,fr4	/* 1 - s * r * r */
--	fmadds	fr1,fr2,fr3,fr1	/* r = r + 0.5 * r * (1 - s * r * r) */
--	fmuls	fr3,fr1,fr0	/* r * s */
--	fmuls	fr2,fr1,fr5	/* r * 0.5 */
--	fnmsubs	fr3,fr1,fr3,fr4	/* 1 - s * r * r */
--	fmadds	fr1,fr2,fr3,fr1	/* r = r + 0.5 * r * (1 - s * r * r) */
--	stfsx	fr1,r3,r6
--	addi	r6,r6,4
--	bdnz	1b
--	lfd	fr5,56(r1)
--	lfd	fr4,48(r1)
--	lfd	fr3,40(r1)
--	lfd	fr2,32(r1)
--	bl	fpdisable
--	lwz	r0,36(r1)
--	mtlr	r0
--	addi	r1,r1,32
--	blr
-diff --git a/arch/ppc64/kernel/Makefile b/arch/ppc64/kernel/Makefile
---- a/arch/ppc64/kernel/Makefile
-+++ b/arch/ppc64/kernel/Makefile
-@@ -76,3 +76,4 @@ endif
- 
- # These are here while we do the architecture merge
- vecemu-y			+= ../../powerpc/kernel/vecemu.o
-+vector-y			+= ../../powerpc/kernel/vector.o
-diff --git a/arch/ppc64/kernel/vector.S b/arch/ppc64/kernel/vector.S
-deleted file mode 100644
---- a/arch/ppc64/kernel/vector.S
-+++ /dev/null
-@@ -1,172 +0,0 @@
+-#include <asm/page.h>
+-#include <asm/mmu.h>
+-#include <asm/pgtable.h>
+-#include <asm/cputable.h>
+-#include <asm/cache.h>
+-#include <asm/thread_info.h>
 -#include <asm/ppc_asm.h>
--#include <asm/processor.h>
+-#include <asm/asm-offsets.h>
 -
 -/*
-- * The routines below are in assembler so we can closely control the
-- * usage of floating-point registers.  These routines must be called
-- * with preempt disabled.
+- * This task wants to use the FPU now.
+- * On UP, disable FP for the task which had the FPU previously,
+- * and save its floating-point registers in its thread_struct.
+- * Load up this task's FP registers from its thread_struct,
+- * enable the FPU for the current task and return to the task.
 - */
--	.section ".toc","aw"
--fpzero:
--	.tc	FD_0_0[TC],0
--fpone:
--	.tc	FD_3ff00000_0[TC],0x3ff0000000000000	/* 1.0 */
--fphalf:
--	.tc	FD_3fe00000_0[TC],0x3fe0000000000000	/* 0.5 */
--
--	.text
--/*
-- * Internal routine to enable floating point and set FPSCR to 0.
-- * Don't call it from C; it doesn't use the normal calling convention.
-- */
--fpenable:
--	mfmsr	r10
--	ori	r11,r10,MSR_FP
--	mtmsr	r11
+-	.globl	load_up_fpu
+-load_up_fpu:
+-	mfmsr	r5
+-	ori	r5,r5,MSR_FP
+-#ifdef CONFIG_PPC64BRIDGE
+-	clrldi	r5,r5,1			/* turn off 64-bit mode */
+-#endif /* CONFIG_PPC64BRIDGE */
+-	SYNC
+-	MTMSRD(r5)			/* enable use of fpu now */
 -	isync
--	stfd	fr31,-8(r1)
--	stfd	fr0,-16(r1)
--	stfd	fr1,-24(r1)
--	mffs	fr31
--	lfd	fr1,fpzero@toc(r2)
--	mtfsf	0xff,fr1
--	blr
+-/*
+- * For SMP, we don't do lazy FPU switching because it just gets too
+- * horrendously complex, especially when a task switches from one CPU
+- * to another.  Instead we call giveup_fpu in switch_to.
+- */
+-#ifndef CONFIG_SMP
+-	tophys(r6,0)			/* get __pa constant */
+-	addis	r3,r6,last_task_used_math@ha
+-	lwz	r4,last_task_used_math@l(r3)
+-	cmpwi	0,r4,0
+-	beq	1f
+-	add	r4,r4,r6
+-	addi	r4,r4,THREAD		/* want last_task_used_math->thread */
+-	SAVE_32FPRS(0, r4)
+-	mffs	fr0
+-	stfd	fr0,THREAD_FPSCR-4(r4)
+-	lwz	r5,PT_REGS(r4)
+-	add	r5,r5,r6
+-	lwz	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
+-	li	r10,MSR_FP|MSR_FE0|MSR_FE1
+-	andc	r4,r4,r10		/* disable FP for previous task */
+-	stw	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
+-1:
+-#endif /* CONFIG_SMP */
+-	/* enable use of FP after return */
+-	mfspr	r5,SPRN_SPRG3		/* current task's THREAD (phys) */
+-	lwz	r4,THREAD_FPEXC_MODE(r5)
+-	ori	r9,r9,MSR_FP		/* enable FP for current */
+-	or	r9,r9,r4
+-	lfd	fr0,THREAD_FPSCR-4(r5)
+-	mtfsf	0xff,fr0
+-	REST_32FPRS(0, r5)
+-#ifndef CONFIG_SMP
+-	subi	r4,r5,THREAD
+-	sub	r4,r4,r6
+-	stw	r4,last_task_used_math@l(r3)
+-#endif /* CONFIG_SMP */
+-	/* restore registers and return */
+-	/* we haven't used ctr or xer or lr */
+-	b	fast_exception_return
 -
--fpdisable:
--	mtlr	r12
--	mtfsf	0xff,fr31
--	lfd	fr1,-24(r1)
--	lfd	fr0,-16(r1)
--	lfd	fr31,-8(r1)
--	mtmsr	r10
+-/*
+- * FP unavailable trap from kernel - print a message, but let
+- * the task use FP in the kernel until it returns to user mode.
+- */
+- 	.globl	KernelFP
+-KernelFP:
+-	lwz	r3,_MSR(r1)
+-	ori	r3,r3,MSR_FP
+-	stw	r3,_MSR(r1)		/* enable use of FP after return */
+-	lis	r3,86f@h
+-	ori	r3,r3,86f@l
+-	mr	r4,r2			/* current */
+-	lwz	r5,_NIP(r1)
+-	bl	printk
+-	b	ret_from_except
+-86:	.string	"floating point used in kernel (task=%p, pc=%x)\n"
+-	.align	4,0
+-
+-/*
+- * giveup_fpu(tsk)
+- * Disable FP for the task given as the argument,
+- * and save the floating-point registers in its thread_struct.
+- * Enables the FPU for use in the kernel on return.
+- */
+-	.globl	giveup_fpu
+-giveup_fpu:
+-	mfmsr	r5
+-	ori	r5,r5,MSR_FP
+-	SYNC_601
+-	ISYNC_601
+-	MTMSRD(r5)			/* enable use of fpu now */
+-	SYNC_601
 -	isync
+-	cmpwi	0,r3,0
+-	beqlr-				/* if no previous owner, done */
+-	addi	r3,r3,THREAD	        /* want THREAD of task */
+-	lwz	r5,PT_REGS(r3)
+-	cmpwi	0,r5,0
+-	SAVE_32FPRS(0, r3)
+-	mffs	fr0
+-	stfd	fr0,THREAD_FPSCR-4(r3)
+-	beq	1f
+-	lwz	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
+-	li	r3,MSR_FP|MSR_FE0|MSR_FE1
+-	andc	r4,r4,r3		/* disable FP for previous task */
+-	stw	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
+-1:
+-#ifndef CONFIG_SMP
+-	li	r5,0
+-	lis	r4,last_task_used_math@ha
+-	stw	r5,last_task_used_math@l(r4)
+-#endif /* CONFIG_SMP */
 -	blr
--
--/*
-- * Vector add, floating point.
-- */
--_GLOBAL(vaddfp)
--	mflr	r12
--	bl	fpenable
--	li	r0,4
--	mtctr	r0
--	li	r6,0
--1:	lfsx	fr0,r4,r6
--	lfsx	fr1,r5,r6
--	fadds	fr0,fr0,fr1
--	stfsx	fr0,r3,r6
--	addi	r6,r6,4
--	bdnz	1b
--	b	fpdisable
--
--/*
-- * Vector subtract, floating point.
-- */
--_GLOBAL(vsubfp)
--	mflr	r12
--	bl	fpenable
--	li	r0,4
--	mtctr	r0
--	li	r6,0
--1:	lfsx	fr0,r4,r6
--	lfsx	fr1,r5,r6
--	fsubs	fr0,fr0,fr1
--	stfsx	fr0,r3,r6
--	addi	r6,r6,4
--	bdnz	1b
--	b	fpdisable
--
--/*
-- * Vector multiply and add, floating point.
-- */
--_GLOBAL(vmaddfp)
--	mflr	r12
--	bl	fpenable
--	stfd	fr2,-32(r1)
--	li	r0,4
--	mtctr	r0
--	li	r7,0
--1:	lfsx	fr0,r4,r7
--	lfsx	fr1,r5,r7
--	lfsx	fr2,r6,r7
--	fmadds	fr0,fr0,fr2,fr1
--	stfsx	fr0,r3,r7
--	addi	r7,r7,4
--	bdnz	1b
--	lfd	fr2,-32(r1)
--	b	fpdisable
--
--/*
-- * Vector negative multiply and subtract, floating point.
-- */
--_GLOBAL(vnmsubfp)
--	mflr	r12
--	bl	fpenable
--	stfd	fr2,-32(r1)
--	li	r0,4
--	mtctr	r0
--	li	r7,0
--1:	lfsx	fr0,r4,r7
--	lfsx	fr1,r5,r7
--	lfsx	fr2,r6,r7
--	fnmsubs	fr0,fr0,fr2,fr1
--	stfsx	fr0,r3,r7
--	addi	r7,r7,4
--	bdnz	1b
--	lfd	fr2,-32(r1)
--	b	fpdisable
--
--/*
-- * Vector reciprocal estimate.  We just compute 1.0/x.
-- * r3 -> destination, r4 -> source.
-- */
--_GLOBAL(vrefp)
--	mflr	r12
--	bl	fpenable
--	li	r0,4
--	lfd	fr1,fpone@toc(r2)
--	mtctr	r0
--	li	r6,0
--1:	lfsx	fr0,r4,r6
--	fdivs	fr0,fr1,fr0
--	stfsx	fr0,r3,r6
--	addi	r6,r6,4
--	bdnz	1b
--	b	fpdisable
--
--/*
-- * Vector reciprocal square-root estimate, floating point.
-- * We use the frsqrte instruction for the initial estimate followed
-- * by 2 iterations of Newton-Raphson to get sufficient accuracy.
-- * r3 -> destination, r4 -> source.
-- */
--_GLOBAL(vrsqrtefp)
--	mflr	r12
--	bl	fpenable
--	stfd	fr2,-32(r1)
--	stfd	fr3,-40(r1)
--	stfd	fr4,-48(r1)
--	stfd	fr5,-56(r1)
--	li	r0,4
--	lfd	fr4,fpone@toc(r2)
--	lfd	fr5,fphalf@toc(r2)
--	mtctr	r0
--	li	r6,0
--1:	lfsx	fr0,r4,r6
--	frsqrte	fr1,fr0		/* r = frsqrte(s) */
--	fmuls	fr3,fr1,fr0	/* r * s */
--	fmuls	fr2,fr1,fr5	/* r * 0.5 */
--	fnmsubs	fr3,fr1,fr3,fr4	/* 1 - s * r * r */
--	fmadds	fr1,fr2,fr3,fr1	/* r = r + 0.5 * r * (1 - s * r * r) */
--	fmuls	fr3,fr1,fr0	/* r * s */
--	fmuls	fr2,fr1,fr5	/* r * 0.5 */
--	fnmsubs	fr3,fr1,fr3,fr4	/* 1 - s * r * r */
--	fmadds	fr1,fr2,fr3,fr1	/* r = r + 0.5 * r * (1 - s * r * r) */
--	stfsx	fr1,r3,r6
--	addi	r6,r6,4
--	bdnz	1b
--	lfd	fr5,-56(r1)
--	lfd	fr4,-48(r1)
--	lfd	fr3,-40(r1)
--	lfd	fr2,-32(r1)
--	b	fpdisable
