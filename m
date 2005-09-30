@@ -1,14 +1,14 @@
 Return-Path: <sfr@canb.auug.org.au>
-Date: Sat, 1 Oct 2005 00:05:16 +1000
+Date: Sat, 1 Oct 2005 00:14:39 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Message-Id: <20051001000516.1d444d51.sfr@canb.auug.org.au>
+Message-Id: <20051001001439.2f04423d.sfr@canb.auug.org.au>
 In-Reply-To: <20050930233602.138b6e27.sfr@canb.auug.org.au>
 References: <20050930233602.138b6e27.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc64-dev <linuxppc64-dev@ozlabs.org>, ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 7/9] ppc64: simplify the build a little
+Subject: [PATCH 9/9] powerpc: make iSeries boot
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,117 +18,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds arch/powerp/kernel/ to core-y in arch/ppc64/Makefile so that we
-don;t have to put in a special line in arch/ppc64/kernel/Makefile for each
-file we merge.  We should be able to use a similar technique for other
-directories as we get to them.
+Now that we use the device tree, it helps to build it in.
+It also helps to link the kernel at the correct address.
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
 
- arch/powerpc/Makefile        |    1 -
- arch/powerpc/kernel/Makefile |   13 +++++++++----
- arch/ppc64/Makefile          |    2 +-
- arch/ppc64/kernel/Makefile   |   11 ++---------
- 4 files changed, 12 insertions(+), 15 deletions(-)
+ arch/powerpc/Kconfig       |    4 ++--
+ arch/powerpc/Kconfig.debug |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
 
-28163804fe2135701522671bd8c3828e1aa0ce62
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -121,7 +121,6 @@ head-$(CONFIG_FSL_BOOKE)	:= arch/powerpc
+1b4c416e0cf237dce004392122db45eb22dbc416
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -317,7 +317,7 @@ config PPC_BPA
  
- ifeq ($(CONFIG_PPC32),y)
- head-$(CONFIG_6xx)		+= arch/powerpc/kernel/idle_6xx.o
--head-$(CONFIG_POWER4)		+= arch/powerpc/kernel/idle_power4.o
- head-$(CONFIG_PPC_FPU)		+= arch/powerpc/kernel/fpu.o
+ config PPC_OF
+ 	bool
+-	depends on PPC_MULTIPLATFORM	# for now
++	depends on PPC_MULTIPLATFORM || PPC_ISERIES
+ 	default y
+ 
+ config XICS
+@@ -836,7 +836,7 @@ endmenu
+ if PPC64
+ config KERNEL_START
+ 	hex
+-	default "0xc0000000"
++	default "0xc000000000000000"
  endif
  
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -2,6 +2,10 @@
- # Makefile for the linux kernel.
- #
+ source "net/Kconfig"
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -55,7 +55,7 @@ config BDI_SWITCH
  
-+ifeq ($(CONFIG_PPC64),y)
-+EXTRA_CFLAGS	+= -mno-minimal-toc
-+endif
-+
- extra-$(CONFIG_PPC_STD_MMU)	:= head.o
- extra_$(CONFIG_PPC64)		:= head_64.o
- extra-$(CONFIG_40x)		:= head_4xx.o
-@@ -9,12 +13,13 @@ extra-$(CONFIG_44x)		:= head_44x.o
- extra-$(CONFIG_FSL_BOOKE)	:= head_fsl_booke.o
- extra-$(CONFIG_8xx)		:= head_8xx.o
- extra-$(CONFIG_6xx)		+= idle_6xx.o
--extra-$(CONFIG_POWER4)		+= idle_power4.o
- extra-$(CONFIG_PPC_FPU)		+= fpu.o
- extra-y				+= vmlinux.lds
- 
--obj-y				:= semaphore.o process.o
--obj-$(CONFIG_PPC32)		+= traps32.c
--obj-$(CONFIG_PPC64)		+= traps64.c
-+obj-$(CONFIG_PPC32)		:= semaphore.o process.o
-+obj-$(CONFIG_PPC32)		+= traps32.o
-+obj-$(CONFIG_PPC64)		+= traps64.o idle_power4.o
-+ifeq ($(CONFIG_PPC32),y)
- obj-$(CONFIG_MODULES)		+= ppc_ksyms.o
-+endif
- obj-$(CONFIG_ALTIVEC)		+= vecemu.o vector.o
-diff --git a/arch/ppc64/Makefile b/arch/ppc64/Makefile
---- a/arch/ppc64/Makefile
-+++ b/arch/ppc64/Makefile
-@@ -82,7 +82,7 @@ CFLAGS += $(call cc-option,-funit-at-a-t
- head-y := arch/ppc64/kernel/head.o
- 
- libs-y				+= arch/ppc64/lib/
--core-y				+= arch/ppc64/kernel/
-+core-y				+= arch/ppc64/kernel/ arch/powerpc/kernel/
- core-y				+= arch/ppc64/mm/
- core-y				+= arch/powerpc/platforms/
- core-$(CONFIG_XMON)		+= arch/ppc64/xmon/
-diff --git a/arch/ppc64/kernel/Makefile b/arch/ppc64/kernel/Makefile
---- a/arch/ppc64/kernel/Makefile
-+++ b/arch/ppc64/kernel/Makefile
-@@ -7,12 +7,12 @@ ifneq ($(CONFIG_PPC_MERGE),y)
- EXTRA_CFLAGS	+= -mno-minimal-toc
- extra-y		:= head.o vmlinux.lds
- 
--obj-y               :=	setup.o entry.o traps64.o irq.o idle.o dma.o \
-+obj-y               :=	setup.o entry.o irq.o idle.o dma.o \
- 			time.o process.o signal.o syscalls.o misc.o ptrace.o \
- 			align.o semaphore.o bitops.o pacaData.o \
- 			udbg.o binfmt_elf32.o sys_ppc32.o ioctl32.o \
- 			ptrace32.o signal32.o rtc.o init_task.o \
--			lmb.o cputable.o cpu_setup_power4.o idle_power4.o \
-+			lmb.o cputable.o cpu_setup_power4.o \
- 			iommu.o sysfs.o vdso.o pmc.o firmware.o prom.o
- obj-y += vdso32/ vdso64/
- 
-@@ -66,7 +66,6 @@ obj-$(CONFIG_PPC_BPA)		+= pSeries_smp.o
- obj-$(CONFIG_PPC_MAPLE)		+= smp-tbsync.o
- endif
- 
--obj-$(CONFIG_ALTIVEC)		+= vecemu.o vector.o
- obj-$(CONFIG_KPROBES)		+= kprobes.o
- 
- CFLAGS_ioctl32.o += -Ifs/
-@@ -76,12 +75,6 @@ arch/ppc64/kernel/head.o: arch/powerpc/p
- AFLAGS_head.o += -Iarch/powerpc/platforms/iseries
- endif
- 
--# These are here while we do the architecture merge
--vecemu-y			+= ../../powerpc/kernel/vecemu.o
--vector-y			+= ../../powerpc/kernel/vector.o
--idle_power4-y			+= ../../powerpc/kernel/idle_power4.o
--traps64-y			+= ../../powerpc/kernel/traps64.o
--
- else
- 
- endif
+ config BOOTX_TEXT
+ 	bool "Support for early boot text console (BootX or OpenFirmware only)"
+-	depends PPC_OF
++	depends PPC_OF && !PPC_ISERIES
+ 	help
+ 	  Say Y here to see progress messages from the boot firmware in text
+ 	  mode. Requires either BootX or Open Firmware.
