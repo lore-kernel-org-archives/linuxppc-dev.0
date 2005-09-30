@@ -2,19 +2,25 @@ Return-Path: <dan@embeddededge.com>
 Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A06EA6838F
+	by ozlabs.org (Postfix) with ESMTP id A3E29683CF
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 30 Sep 2005 23:55:37 +1000 (EST)
-In-Reply-To: <8D4C69676E66D511A1CB00508BBBB192052D4395@ranmx1.cs.myharris.net>
-References: <8D4C69676E66D511A1CB00508BBBB192052D4395@ranmx1.cs.myharris.net>
+	Fri, 30 Sep 2005 23:58:47 +1000 (EST)
+In-Reply-To: <20050930142218.348041d6.ajz@cambridgebroadband.com>
+References: <DCEAAC0833DD314AB0B58112AD99B93B85946A@ismail.innsys.innovsys.com>
+	<4333DF04.3000908@iki.fi> <43395322.1080407@iki.fi>
+	<384d09b865d454875c447cc02c89d001@embeddedalley.com>
+	<4339AD01.30708@iki.fi>
+	<714c16295fbfa97caafd1d0aa3a5932e@embeddedalley.com>
+	<433A6E6D.4070403@iki.fi> <433BDCE7.2060206@iki.fi>
+	<20050930142218.348041d6.ajz@cambridgebroadband.com>
 Mime-Version: 1.0 (Apple Message framework v622)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <ed8744038b59c4ab9bc4a9bfa9f4ebd8@embeddededge.com>
+Message-Id: <2c578118c5d984e6e87ac3c073469866@embeddededge.com>
 From: Dan Malek <dan@embeddededge.com>
-Date: Fri, 30 Sep 2005 09:55:43 -0400
-To: "Fend, Matthias" <mfend@harris.com>
+Date: Fri, 30 Sep 2005 09:58:48 -0400
+To: Alex Zeffertt <ajz@cambridgebroadband.com>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: AW: mpc8xx and LCD
+Subject: Re: CPM2 early console
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,57 +32,13 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Sep 30, 2005, at 7:07 AM, Fend, Matthias wrote:
+On Sep 30, 2005, at 9:22 AM, Alex Zeffertt wrote:
 
-> As I know at least the S1D13700 is brand new (the people from Epson 
-> are working
-> on a
-> Linux driver at the moment).
+> Are there any drawbacks to this approach?
 
-OK.
+The general system performance is going to suffer,
+and if you really have a cache coherency problem
+it only solves the write case and not the read case.
 
-> Do you think it's possible to write the device driver in such a way 
-> that
-> he also translates the pixel data into the indirect register mode of 
-> the
-> S1D13700 ?
-
-The only way I can think of is to access protect the "frame buffer",
-trap all accesses and then do some translation in software.  Very, very
-slow and inefficient.  The most efficient way is for applications (like 
-X)
-to do this internally.
-
-
-> ? You mean the 823 has an internal LCD controller -
-
-Yes.
-
-> ..... I know that but I want to
-> use a 860 or 855 (we already use them in other products).
-
-Oh well .... :-)
-
-
-> Do you think it would be the best way to use an 823 and a driver-only 
-> display ?
-
-I don't understand the question.
-
-> As there are so many devices with LCD display in use, I thought there 
-> could be a
-> an easy going standard solution for this, but it seems to be a little 
-> bit tricky
-
-There is a standard.  Attach your graphics device to the processor bus 
-as
-a memory mapped device and use a Linux frame buffer :-)  The complexity
-of your graphics requirements will determine how much additional 
-software
-you have to write.  Since I like to use X-windows, most of the software 
-I
-end up writing is in that server, not the Linux driver.
-
-Thanks.
 
 	-- Dan
