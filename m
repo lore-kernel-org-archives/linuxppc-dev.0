@@ -1,44 +1,98 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A3E29683CF
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 30 Sep 2005 23:58:47 +1000 (EST)
-In-Reply-To: <20050930142218.348041d6.ajz@cambridgebroadband.com>
-References: <DCEAAC0833DD314AB0B58112AD99B93B85946A@ismail.innsys.innovsys.com>
-	<4333DF04.3000908@iki.fi> <43395322.1080407@iki.fi>
-	<384d09b865d454875c447cc02c89d001@embeddedalley.com>
-	<4339AD01.30708@iki.fi>
-	<714c16295fbfa97caafd1d0aa3a5932e@embeddedalley.com>
-	<433A6E6D.4070403@iki.fi> <433BDCE7.2060206@iki.fi>
-	<20050930142218.348041d6.ajz@cambridgebroadband.com>
-Mime-Version: 1.0 (Apple Message framework v622)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <2c578118c5d984e6e87ac3c073469866@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Fri, 30 Sep 2005 09:58:48 -0400
-To: Alex Zeffertt <ajz@cambridgebroadband.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: CPM2 early console
-List-Id: Linux on Embedded PowerPC Developers Mail List
-	<linuxppc-embedded.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
-List-Post: <mailto:linuxppc-embedded@ozlabs.org>
-List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+Return-Path: <sfr@canb.auug.org.au>
+Date: Fri, 30 Sep 2005 23:36:02 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Message-Id: <20050930233602.138b6e27.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__30_Sep_2005_23_36_02_+1000_fjKdipMiF9MEyg6g"
+Cc: ppc64-dev <linuxppc64-dev@ozlabs.org>, ppc-dev <linuxppc-dev@ozlabs.org>
+Subject: [PATCH 0/9] more merge changes
+List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Fri__30_Sep_2005_23_36_02_+1000_fjKdipMiF9MEyg6g
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Sep 30, 2005, at 9:22 AM, Alex Zeffertt wrote:
+Another series of patches to continue the merge.  These are some tidyups
+and moving of more code and lead to enough merged for ppc64 legacy iSeries
+to build and boot with ARCH=3Dpowerpc.  There is still a lot left to merge,
+though.
 
-> Are there any drawbacks to this approach?
+As an aside, this leads to a machine that says this:
 
-The general system performance is going to suffer,
-and if you really have a cache coherency problem
-it only solves the write case and not the read case.
+igosouth:~# uname -a
+Linux igosouth 2.6.14-rc2sfr #1 SMP Fri Sep 30 17:16:03 EST 2005 powerpc GN=
+U/Linux
 
+i.e. it identifies itself as powerpc not ppc64. Which benh points out will
+probably break all sorts of things :-)
 
-	-- Dan
+I have built this for (my configs) pSeries, iSeries, g5, ARCH=3Dppc,
+ARCH=3Dpowerpc ppc32 pmac, ARCH=3Dpowerpc iSeries and booted the ARCH=3Dpow=
+erpc
+iSeries kernel.  So hopefully I haven't broken too much.
+
+Paulus, I will let you know where you can find my git tree in a separate em=
+ail.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+ arch/powerpc/Kconfig                           |   12 +
+ arch/powerpc/Kconfig.debug                     |    2=20
+ arch/powerpc/Makefile                          |   28 +--
+ arch/powerpc/kernel/Makefile                   |   20 +-
+ arch/powerpc/kernel/asm-offsets.c              |  220 +++++++++++++-------=
+-----
+ arch/powerpc/kernel/head_64.S                  |    9 -
+ arch/powerpc/kernel/idle_power4.S              |    5=20
+ arch/powerpc/kernel/vmlinux.lds                |  174 -------------------
+ arch/powerpc/kernel/vmlinux.lds.S              |  190 ++++++++++++++++++++-
+ arch/powerpc/platforms/iseries/call_sm.h       |    7=20
+ arch/powerpc/platforms/iseries/ipl_parms.h     |    7=20
+ arch/powerpc/platforms/iseries/irq.c           |    3=20
+ arch/powerpc/platforms/iseries/irq.h           |    8=20
+ arch/powerpc/platforms/iseries/lpardata.c      |   10 -
+ arch/powerpc/platforms/iseries/lpevents.c      |    2=20
+ arch/powerpc/platforms/iseries/main_store.h    |    7=20
+ arch/powerpc/platforms/iseries/pci.c           |    3=20
+ arch/powerpc/platforms/iseries/proc.c          |    5=20
+ arch/powerpc/platforms/iseries/processor_vpd.h |    7=20
+ arch/powerpc/platforms/iseries/release_data.h  |    7=20
+ arch/powerpc/platforms/iseries/setup.c         |   10 -
+ arch/powerpc/platforms/iseries/spcomm_area.h   |    7=20
+ arch/powerpc/platforms/iseries/vpd_areas.h     |    7=20
+ arch/ppc/kernel/Makefile                       |    2=20
+ arch/ppc/kernel/fpu.S                          |  133 ---------------
+ arch/ppc/kernel/vector.S                       |  217 --------------------=
+----
+ arch/ppc64/Makefile                            |    2=20
+ arch/ppc64/kernel/Makefile                     |   16 -
+ arch/ppc64/kernel/vector.S                     |  172 -------------------
+ include/asm-powerpc/system.h                   |    4=20
+ include/asm-ppc64/iSeries/iSeries_irq.h        |    8=20
+ 31 files changed, 406 insertions(+), 898 deletions(-)
+
+--Signature=_Fri__30_Sep_2005_23_36_02_+1000_fjKdipMiF9MEyg6g
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
+
+iD8DBQFDPT9IFdBgD/zoJvwRAmU5AJwK0ct8tSm/hyd2u3S8iCASFJi/7gCeOG5A
+b2yFuCRhDiy9sWVCIbJta04=
+=xIBh
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__30_Sep_2005_23_36_02_+1000_fjKdipMiF9MEyg6g--
