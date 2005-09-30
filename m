@@ -1,20 +1,20 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from witte.sonytel.be (witte.sonytel.be [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 08D776842A
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Oct 2005 02:23:59 +1000 (EST)
-Date: Fri, 30 Sep 2005 17:18:22 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@sonycom.com
-To: Corey Minyard <minyard@acm.org>
-In-Reply-To: <433D557C.4020301@acm.org>
-Message-ID: <Pine.LNX.4.62.0509301717510.9170@numbat.sonytel.be>
-References: <20050929183221.GA17292@i2.minyard.local>
-	<20050929203647.GA6597@mag.az.mvista.com>
-	<433D557C.4020301@acm.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
-Subject: Re: MV64x60 watchdog timer driver updates
+Return-Path: <jwboyer@jdub.homelinux.org>
+Received: from jdub.homelinux.org (71-36-223-245.roch.qwest.net
+	[71.36.223.245])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0C82568436
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Oct 2005 03:49:35 +1000 (EST)
+From: Josh Boyer <jwboyer@jdub.homelinux.org>
+To: "Ruslan V. Sushko" <rsushko@ru.mvista.com>
+In-Reply-To: <1128095076.15236.15.camel@mephisto.spb.rtsoft.ru>
+References: <1128095076.15236.15.camel@mephisto.spb.rtsoft.ru>
+Content-Type: text/plain
+Date: Fri, 30 Sep 2005 12:49:21 -0500
+Message-Id: <1128102561.3111.6.camel@windu.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 3/3]MTD driver for Yucca board
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,40 +24,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 30 Sep 2005, Corey Minyard wrote:
-> Mark A. Greer wrote:
-> > On Thu, Sep 29, 2005 at 01:32:21PM -0500, Corey Minyard wrote:
-> > > James looked at an earlier version and said it was ok, and suggested
-> > > a few changes.  This has been tested against 2.6.14-rc2 on a Katana.
-> > > 
-> > > Note that the bus_clk value from the platform information seems to
-> > > be in MHZ, but the actual frequency is generally 133,333,333, not
-> > > 133,000,000.  I don't think the inaccuracy matters here, but it seems
-> > > a little odd.
-> > >    
-> > 
-> > Yes, it makes more sense to me to pass the actual frequency and not do
-> > the '* 1000000'.
-> >  
-> The only trouble is if  you go over 4GHZ...  Maybe it should be in KHZ instead
-> of MHZ?  or 64-bits?  Or maybe we don't worry about >4GHZ busses?
-> 
-> Also, how would one go about changing this?  Would you need something like:
-> 
-> if (bus_clk < 1000)
->  bus_clk *= 1000000
-> 
-> for backwards compatability?
+On Fri, 2005-09-30 at 19:44 +0400, Ruslan V. Sushko wrote:
+> This patch adds MTD driver for Yucca ppc440SPe board. The patch
+> implemented for Roland Dreier git tree for Yucca 440SPe board
 
-Hey, don't touch the i2c! ;-)
+> +MODULE_LICENSE("GPL");
+> +MODULE_AUTHOR("Ruslan V. Sushko <rsushko@ru.mvista.com>");
+> +MODULE_DESCRIPTION("MTD map and partitions for IBM 440SPe Yucca boards");
 
-Gr{oetje,eeting}s,
+Nit: I think you mean "AMCC 440SPe Yucca boards".  IBM no longer makes
+reference boards for 4xx hardware.
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+josh
