@@ -1,17 +1,20 @@
-Return-Path: <rsushko@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 238AD6842A
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Oct 2005 01:52:12 +1000 (EST)
-Received: from mephisto.spb.rtsoft.ru ([10.149.0.1])
-	by buildserver.ru.mvista.com (8.11.6/8.11.6) with ESMTP id j8UFUpt11766
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Sep 2005 20:30:51 +0500
-From: "Ruslan V. Sushko" <rsushko@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: multipart/mixed; boundary="=-BuXdzjmcHB+ZETdT1heq"
-Date: Fri, 30 Sep 2005 19:30:47 +0400
-Message-Id: <1128094247.15236.4.camel@mephisto.spb.rtsoft.ru>
-Mime-Version: 1.0
-Subject: [PATCH 1/3] I2C and GPIO controlers address fix on Yucca board
+Return-Path: <geert@linux-m68k.org>
+Received: from witte.sonytel.be (witte.sonytel.be [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 08D776842A
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Oct 2005 02:23:59 +1000 (EST)
+Date: Fri, 30 Sep 2005 17:18:22 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@sonycom.com
+To: Corey Minyard <minyard@acm.org>
+In-Reply-To: <433D557C.4020301@acm.org>
+Message-ID: <Pine.LNX.4.62.0509301717510.9170@numbat.sonytel.be>
+References: <20050929183221.GA17292@i2.minyard.local>
+	<20050929203647.GA6597@mag.az.mvista.com>
+	<433D557C.4020301@acm.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Subject: Re: MV64x60 watchdog timer driver updates
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,54 +24,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 30 Sep 2005, Corey Minyard wrote:
+> Mark A. Greer wrote:
+> > On Thu, Sep 29, 2005 at 01:32:21PM -0500, Corey Minyard wrote:
+> > > James looked at an earlier version and said it was ok, and suggested
+> > > a few changes.  This has been tested against 2.6.14-rc2 on a Katana.
+> > > 
+> > > Note that the bus_clk value from the platform information seems to
+> > > be in MHZ, but the actual frequency is generally 133,333,333, not
+> > > 133,000,000.  I don't think the inaccuracy matters here, but it seems
+> > > a little odd.
+> > >    
+> > 
+> > Yes, it makes more sense to me to pass the actual frequency and not do
+> > the '* 1000000'.
+> >  
+> The only trouble is if  you go over 4GHZ...  Maybe it should be in KHZ instead
+> of MHZ?  or 64-bits?  Or maybe we don't worry about >4GHZ busses?
+> 
+> Also, how would one go about changing this?  Would you need something like:
+> 
+> if (bus_clk < 1000)
+>  bus_clk *= 1000000
+> 
+> for backwards compatability?
 
---=-BuXdzjmcHB+ZETdT1heq
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Hey, don't touch the i2c! ;-)
 
-This patch fixes physical address for I2C and GPIO controllers on Yucca
-PPC440SPe board. The fixes below allows to enable ibm ocp i2c driver to
-access to Yucca peripheral devices. The patch is implemented for Roland
-Dreier git tree for Yucca PPC440SPe board.
+Gr{oetje,eeting}s,
 
+						Geert
 
---=-BuXdzjmcHB+ZETdT1heq
-Content-Disposition: attachment; filename=yucca_i2c.patch
-Content-Type: text/x-patch; name=yucca_i2c.patch; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-diff --git a/arch/ppc/platforms/4xx/ppc440spe.c b/arch/ppc/platforms/4xx/ppc440spe.c
---- a/arch/ppc/platforms/4xx/ppc440spe.c
-+++ b/arch/ppc/platforms/4xx/ppc440spe.c
-@@ -90,7 +90,7 @@ struct ocp_def core_ocp[] = {
- 	{ .vendor	= OCP_VENDOR_IBM,
- 	  .function	= OCP_FUNC_IIC,
- 	  .index	= 0,
--	  .paddr	= 0x00000001f0000400ULL,
-+	  .paddr	= 0x00000004f0000400ULL,
- 	  .irq		= 2,
- 	  .pm		= IBM_CPM_IIC0,
- 	  .additions	= &ppc440spe_iic0_def,
-@@ -99,7 +99,7 @@ struct ocp_def core_ocp[] = {
- 	{ .vendor	= OCP_VENDOR_IBM,
- 	  .function	= OCP_FUNC_IIC,
- 	  .index	= 1,
--	  .paddr	= 0x00000001f0000500ULL,
-+	  .paddr	= 0x00000004f0000500ULL,
- 	  .irq		= 3,
- 	  .pm		= IBM_CPM_IIC1,
- 	  .additions	= &ppc440spe_iic1_def,
-@@ -108,7 +108,7 @@ struct ocp_def core_ocp[] = {
- 	{ .vendor	= OCP_VENDOR_IBM,
- 	  .function	= OCP_FUNC_GPIO,
- 	  .index	= 0,
--	  .paddr	= 0x00000001f0000700ULL,
-+	  .paddr	= 0x00000004f0000700ULL,
- 	  .irq		= OCP_IRQ_NA,
- 	  .pm		= IBM_CPM_GPIO0,
- 	},
-
-
-
-
---=-BuXdzjmcHB+ZETdT1heq--
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
