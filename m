@@ -1,15 +1,17 @@
-Return-Path: <kumar.gala@freescale.com>
-In-Reply-To: <20051001000001.1f1d8c48.sfr@canb.auug.org.au>
-References: <20050930233602.138b6e27.sfr@canb.auug.org.au>
-	<20051001000001.1f1d8c48.sfr@canb.auug.org.au>
-Mime-Version: 1.0 (Apple Message framework v734)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <52E29A49-AAF2-4E61-AAB2-CD02ABCBE447@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Fri, 30 Sep 2005 15:52:40 -0500
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: ppc64-dev <linuxppc64-dev@ozlabs.org>, ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH 6/9] powerpc: merge idle_power4.S and fixup traps.c
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D76916842C
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Oct 2005 09:23:49 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@osdl.org>
+Content-Type: text/plain
+Date: Sat, 01 Oct 2005 09:21:25 +1000
+Message-Id: <1128122486.31197.61.camel@gaston>
+Mime-Version: 1.0
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] pmac: fix cpufreq for old tipb 550Mhz
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,42 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-(My first attempt at posting to the list failed due to size)
+The old 550Mhz titanium powerbook can switch to a lower frequency
+(500Mhz). A user has been repeately reporting overtemp conditions on his
+machine at high speed so this simple patch adds support to PowerMac
+cpufreq for this machine. The difference in frequency isn't big but seem
+enough to fix that user's problems. The patch has been around for some
+time now and doesn't seem to cause any problem, so I suppose it could go
+in now.
 
-I really dont like the ideal of splitting up traps.c into traps32.c  
-and traps64.c.  This defeats the purpose of the merge.  I expect that  
-a significant portion of traps.c is common (or can be made to be)  
-between all powerpc's.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Alain RICHARD <alain.richard@equation.fr>
 
-- kumar
-
-
-On Sep 30, 2005, at 9:00 AM, Stephen Rothwell wrote:
-
-> Use idle_power4.S from ppc64 as we are not going to support
-> 32 bit power4 in the merged tree.
->
-> create traps{32,64}.c as these are hard to merge.
->
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->
->  arch/powerpc/Kconfig              |    4
->  arch/powerpc/kernel/Makefile      |    4
->  arch/powerpc/kernel/idle_power4.S |   78 +++
->  arch/powerpc/kernel/traps.c       | 1047
-> -------------------------------------
->  arch/powerpc/kernel/traps32.c     | 1047
-> +++++++++++++++++++++++++++++++++++++
->  arch/powerpc/kernel/traps64.c     |  568 ++++++++++++++++++++
->  arch/ppc64/kernel/Makefile        |   10
->  arch/ppc64/kernel/idle_power4.S   |   79 ---
->  arch/ppc64/kernel/traps.c         |  568 --------------------
->  9 files changed, 1707 insertions(+), 1698 deletions(-)
->  create mode 100644 arch/powerpc/kernel/idle_power4.S
->  delete mode 100644 arch/powerpc/kernel/traps.c
->  create mode 100644 arch/powerpc/kernel/traps32.c
->  create mode 100644 arch/powerpc/kernel/traps64.c
->  delete mode 100644 arch/ppc64/kernel/idle_power4.S
->  delete mode 100644 arch/ppc64/kernel/traps.c
->
+Index: linux-work/arch/ppc/platforms/pmac_cpufreq.c
+===================================================================
+--- linux-work.orig/arch/ppc/platforms/pmac_cpufreq.c	2005-09-22 14:06:18.000000000 +1000
++++ linux-work/arch/ppc/platforms/pmac_cpufreq.c	2005-10-01 09:17:32.000000000 +1000
+@@ -695,6 +695,13 @@
+ 		set_speed_proc = pmu_set_cpu_speed;
+ 		is_pmu_based = 1;
+ 	}
++	/* Else check for TiPb 550 */
++	else if (machine_is_compatible("PowerBook3,3") && cur_freq == 550000) {
++		hi_freq = cur_freq;
++		low_freq = 500000;
++		set_speed_proc = pmu_set_cpu_speed;
++		is_pmu_based = 1;
++	}
+ 	/* Else check for TiPb 400 & 500 */
+ 	else if (machine_is_compatible("PowerBook3,2")) {
+ 		/* We only know about the 400 MHz and the 500Mhz model
