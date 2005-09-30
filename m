@@ -1,14 +1,18 @@
-Return-Path: <sfr@canb.auug.org.au>
-Date: Sat, 1 Oct 2005 00:14:39 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Message-Id: <20051001001439.2f04423d.sfr@canb.auug.org.au>
-In-Reply-To: <20050930233602.138b6e27.sfr@canb.auug.org.au>
-References: <20050930233602.138b6e27.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc64-dev <linuxppc64-dev@ozlabs.org>, ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 9/9] powerpc: make iSeries boot
+Return-Path: <minyard@acm.org>
+Received: from rwcrmhc12.comcast.net (rwcrmhc13.comcast.net [216.148.227.118])
+	by ozlabs.org (Postfix) with ESMTP id 19350683B6
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Oct 2005 01:16:53 +1000 (EST)
+Message-ID: <433D557C.4020301@acm.org>
+Date: Fri, 30 Sep 2005 10:10:52 -0500
+From: Corey Minyard <minyard@acm.org>
+MIME-Version: 1.0
+To: "Mark A. Greer" <mgreer@mvista.com>
+References: <20050929183221.GA17292@i2.minyard.local>
+	<20050929203647.GA6597@mag.az.mvista.com>
+In-Reply-To: <20050929203647.GA6597@mag.az.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: MV64x60 watchdog timer driver updates
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,52 +22,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Now that we use the device tree, it helps to build it in.
-It also helps to link the kernel at the correct address.
+Mark A. Greer wrote:
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
+>On Thu, Sep 29, 2005 at 01:32:21PM -0500, Corey Minyard wrote:
+>  
+>
+>>James looked at an earlier version and said it was ok, and suggested
+>>a few changes.  This has been tested against 2.6.14-rc2 on a Katana.
+>>
+>>Note that the bus_clk value from the platform information seems to
+>>be in MHZ, but the actual frequency is generally 133,333,333, not
+>>133,000,000.  I don't think the inaccuracy matters here, but it seems
+>>a little odd.
+>>    
+>>
+>
+>Yes, it makes more sense to me to pass the actual frequency and not do
+>the '* 1000000'.
+>  
+>
+The only trouble is if  you go over 4GHZ...  Maybe it should be in KHZ 
+instead of MHZ?  or 64-bits?  Or maybe we don't worry about >4GHZ busses?
 
- arch/powerpc/Kconfig       |    4 ++--
- arch/powerpc/Kconfig.debug |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+Also, how would one go about changing this?  Would you need something like:
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+if (bus_clk < 1000)
+  bus_clk *= 1000000
 
-1b4c416e0cf237dce004392122db45eb22dbc416
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -317,7 +317,7 @@ config PPC_BPA
- 
- config PPC_OF
- 	bool
--	depends on PPC_MULTIPLATFORM	# for now
-+	depends on PPC_MULTIPLATFORM || PPC_ISERIES
- 	default y
- 
- config XICS
-@@ -836,7 +836,7 @@ endmenu
- if PPC64
- config KERNEL_START
- 	hex
--	default "0xc0000000"
-+	default "0xc000000000000000"
- endif
- 
- source "net/Kconfig"
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
---- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -55,7 +55,7 @@ config BDI_SWITCH
- 
- config BOOTX_TEXT
- 	bool "Support for early boot text console (BootX or OpenFirmware only)"
--	depends PPC_OF
-+	depends PPC_OF && !PPC_ISERIES
- 	help
- 	  Say Y here to see progress messages from the boot firmware in text
- 	  mode. Requires either BootX or Open Firmware.
+for backwards compatability?
+
+>Also--I should have thought of this earlier--there should probably be a
+>patch to add a default platform_data entry in arch/ppc/syslib/mv64x60.c
+>and a patch for katana.c if the defaults in mv64x60.c aren't correct
+>for the katana.  At least, that's how things are done now.
+>  
+>
+I'm not sure I understand completely.  How would you go about setting 
+the platform data?
+
+Thanks,
+
+-Corey
