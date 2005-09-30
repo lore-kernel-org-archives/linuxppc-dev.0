@@ -1,88 +1,54 @@
-Return-Path: <juanholder@logiclinux.com>
-Received: from localhost.localdomain (unknown [200.123.132.161])
-	by ozlabs.org (Postfix) with ESMTP id E6FD4685EC
-	for <linuxppc-dev@ozlabs.org>; Mon, 31 Oct 2005 23:21:44 +1100 (EST)
-Received: from localhost.localdomain (localhost.localdomain [127.0.0.1])
-	by localhost.localdomain (Postfix) with ESMTP id AC81244096
-	for <linuxppc-dev@ozlabs.org>; Mon, 31 Oct 2005 09:23:10 -0300 (ART)
-From: "Juan P. Holder" <juanholder@logiclinux.com>
-To: linuxppc-dev@ozlabs.org
-In-Reply-To: <BAY14-F28EE9562AD50489238A8C8B96D0@phx.gbl>
-References: <BAY14-F28EE9562AD50489238A8C8B96D0@phx.gbl>
-Content-Type: multipart/alternative; boundary="=-D98w85RCURHni4hNRVlp"
-Date: Mon, 31 Oct 2005 09:23:10 -0300
-Message-Id: <1130761390.19017.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-Subject: Re: ayuda
-List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Return-Path: <kalle.pokki@iki.fi>
+Received: from smtp1.song.fi (smtp1.song.fi [194.100.2.121])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2031B683B6
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat,  1 Oct 2005 06:11:01 +1000 (EST)
+Message-ID: <433D9BCE.5000909@iki.fi>
+Date: Fri, 30 Sep 2005 22:10:54 +0200
+From: Kalle Pokki <kalle.pokki@iki.fi>
+MIME-Version: 1.0
+To: Dan Malek <dan@embeddededge.com>
+References: <DCEAAC0833DD314AB0B58112AD99B93B85946A@ismail.innsys.innovsys.com>
+	<4333DF04.3000908@iki.fi> <43395322.1080407@iki.fi>
+	<384d09b865d454875c447cc02c89d001@embeddedalley.com>
+	<4339AD01.30708@iki.fi>
+	<714c16295fbfa97caafd1d0aa3a5932e@embeddedalley.com>
+	<433A6E6D.4070403@iki.fi> <433BDCE7.2060206@iki.fi>
+	<20050930142218.348041d6.ajz@cambridgebroadband.com>
+	<2c578118c5d984e6e87ac3c073469866@embeddededge.com>
+In-Reply-To: <2c578118c5d984e6e87ac3c073469866@embeddededge.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: CPM2 early console
+List-Id: Linux on Embedded PowerPC Developers Mail List
+	<linuxppc-embedded.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
+List-Post: <mailto:linuxppc-embedded@ozlabs.org>
+List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Dan Malek wrote:
 
---=-D98w85RCURHni4hNRVlp
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+> On Sep 30, 2005, at 9:22 AM, Alex Zeffertt wrote:
+>
+>> Are there any drawbacks to this approach?
+>
+> The general system performance is going to suffer,
+> and if you really have a cache coherency problem
+> it only solves the write case and not the read case.
 
-Buenas como va, yo hace poco compre un ibook G4, instale debian sarge
-para ppc y anduvo muy bien salvo en algunos detalles, lo que voy a
-probar que me dijeron es genial es UBUNTU, SI PODES probalo.. yo lo
-probare estos dias y te cuento!
+The read case seems to be solved by setting the appropriate GBL bits in 
+the parameter ram areas, since the buffers work correctly in both 
+directions by just setting cache write-through and coherent (coherent 
+alone won't help). Still, there must be a correct way of doing this, but 
+I think I have already tried modifying every register that sounds 
+related. The errata doesn't list anything useful.
 
-Jean Pierre
-
-El dom, 30-10-2005 a las 00:26 +0000, Doug Carrillo escribió:
-
-> Hola, tengo una G3 PPC, deseo instalar linux
-> 
-> Cual distribucion me sirve?
-> 
-> _________________________________________________________________
-> MSN Amor: busca tu ½ naranja http://latam.msn.com/amor/
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
-
---=-D98w85RCURHni4hNRVlp
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 TRANSITIONAL//EN">
-<HTML>
-<HEAD>
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; CHARSET=UTF-8">
-  <META NAME="GENERATOR" CONTENT="GtkHTML/3.6.2">
-</HEAD>
-<BODY>
-Buenas como va, yo hace poco compre un ibook G4, instale debian sarge para ppc y anduvo muy bien salvo en algunos detalles, lo que voy a probar que me dijeron es genial es UBUNTU, SI PODES probalo.. yo lo probare estos dias y te cuento!<BR>
-<BR>
-Jean Pierre<BR>
-<BR>
-El dom, 30-10-2005 a las 00:26 +0000, Doug Carrillo escribi&#243;:
-<BLOCKQUOTE TYPE=CITE>
-<PRE>
-<FONT COLOR="#000000">Hola, tengo una G3 PPC, deseo instalar linux</FONT>
-
-<FONT COLOR="#000000">Cual distribucion me sirve?</FONT>
-
-<FONT COLOR="#000000">_________________________________________________________________</FONT>
-<FONT COLOR="#000000">MSN Amor: busca tu &#189; naranja <A HREF="http://latam.msn.com/amor/">http://latam.msn.com/amor/</A></FONT>
-
-<FONT COLOR="#000000">_______________________________________________</FONT>
-<FONT COLOR="#000000">Linuxppc-dev mailing list</FONT>
-<FONT COLOR="#000000"><A HREF="mailto:Linuxppc-dev@ozlabs.org">Linuxppc-dev@ozlabs.org</A></FONT>
-<FONT COLOR="#000000"><A HREF="https://ozlabs.org/mailman/listinfo/linuxppc-dev">https://ozlabs.org/mailman/listinfo/linuxppc-dev</A></FONT>
-
-</PRE>
-</BLOCKQUOTE>
-</BODY>
-</HTML>
-
---=-D98w85RCURHni4hNRVlp--
+Another way of getting around the problem would be to place the buffers 
+in a cache-inhibited memory area and have copy-back caches for other 
+data. I successfully tried this in another application without Linux.
