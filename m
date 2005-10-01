@@ -1,13 +1,13 @@
 Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15809.mail.cnb.yahoo.com (web15809.mail.cnb.yahoo.com
-	[202.165.102.89]) by ozlabs.org (Postfix) with SMTP id 8481C68437
+Received: from web15806.mail.cnb.yahoo.com (web15806.mail.cnb.yahoo.com
+	[202.165.102.86]) by ozlabs.org (Postfix) with SMTP id 1E88E68437
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  1 Oct 2005 13:50:15 +1000 (EST)
-Message-ID: <20051001035013.38332.qmail@web15809.mail.cnb.yahoo.com>
-Date: Sat, 1 Oct 2005 11:50:12 +0800 (CST)
+	Sat,  1 Oct 2005 13:58:40 +1000 (EST)
+Message-ID: <20051001035828.88701.qmail@web15806.mail.cnb.yahoo.com>
+Date: Sat, 1 Oct 2005 11:58:27 +0800 (CST)
 From: Sam Song <samlinuxppc@yahoo.com.cn>
-To: Eugene Surovegin <ebs@ebshome.net>
-In-Reply-To: <20050929165715.GA24176@gate.ebshome.net>
+To: Tolunay Orkun <listmember@orkun.us>
+In-Reply-To: <433C398E.30408@orkun.us>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=gb2312
 Cc: linuxppc-embedded@ozlabs.org
@@ -22,25 +22,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Eugene Surovegin <ebs@ebshome.net>–¥µ¿:
-> Right approach would be making standard in-kernel
-> RTC driver for this chip. In fact, such driver was 
-> already posted to lm-sensors list some time ago.
+Tolunay Orkun <listmember@orkun.us> wrote:
+> I've a hwclock.c implementation for DS1307/DS1338. I
+> do not know how close DS1337 was but it should not 
+> be too difficult to adapt.
 
-I happen to have a LM75 on this board. Your hints 
-remind me to follow the lm-sensors list to find 
-something special on this point as well.
+Tolunay, thank you so much for providing me this 
+closest stuff. It can just work right on DS1337 on
+my board. I just added alarm register operation in it.
+After finshing LM75 porting on this board, I'd like
+to try to get a common i2c utility just like "imd"
+and "imm" in u-boot.
 
-Thanks a lot,
+Have a nice weekend,
 
 Sam
 
-
-
-	
-
-	
-		
-___________________________________________________________ 
-—≈ª¢√‚∑—G” œ‰£≠÷–π˙µ⁄“ªæ¯Œﬁ¿¨ª¯” º˛…ß»≈≥¨¥Û” œ‰ 
+__________________________________________________
+∏œøÏ◊¢≤·—≈ª¢≥¨¥Û»›¡ø√‚∑—” œ‰?
 http://cn.mail.yahoo.com
