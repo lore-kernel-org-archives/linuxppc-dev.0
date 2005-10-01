@@ -1,17 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D76916842C
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Oct 2005 09:23:49 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@osdl.org>
-Content-Type: text/plain
-Date: Sat, 01 Oct 2005 09:21:25 +1000
-Message-Id: <1128122486.31197.61.camel@gaston>
+Return-Path: <sfr@canb.auug.org.au>
+Date: Sat, 1 Oct 2005 12:17:14 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kumar Gala <kumar.gala@freescale.com>
+Message-Id: <20051001121714.1b5886aa.sfr@canb.auug.org.au>
+In-Reply-To: <52E29A49-AAF2-4E61-AAB2-CD02ABCBE447@freescale.com>
+References: <20050930233602.138b6e27.sfr@canb.auug.org.au>
+	<20051001000001.1f1d8c48.sfr@canb.auug.org.au>
+	<52E29A49-AAF2-4E61-AAB2-CD02ABCBE447@freescale.com>
 Mime-Version: 1.0
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] pmac: fix cpufreq for old tipb 550Mhz
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sat__1_Oct_2005_12_17_14_+1000_xDr8=odW.5tNhsrT"
+Cc: linuxppc64-dev@ozlabs.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 6/9] powerpc: merge idle_power4.S and fixup traps.c
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,32 +22,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The old 550Mhz titanium powerbook can switch to a lower frequency
-(500Mhz). A user has been repeately reporting overtemp conditions on his
-machine at high speed so this simple patch adds support to PowerMac
-cpufreq for this machine. The difference in frequency isn't big but seem
-enough to fix that user's problems. The patch has been around for some
-time now and doesn't seem to cause any problem, so I suppose it could go
-in now.
+--Signature=_Sat__1_Oct_2005_12_17_14_+1000_xDr8=odW.5tNhsrT
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Alain RICHARD <alain.richard@equation.fr>
+On Fri, 30 Sep 2005 15:52:40 -0500 Kumar Gala <kumar.gala@freescale.com> wr=
+ote:
+>
+> (My first attempt at posting to the list failed due to size)
 
-Index: linux-work/arch/ppc/platforms/pmac_cpufreq.c
-===================================================================
---- linux-work.orig/arch/ppc/platforms/pmac_cpufreq.c	2005-09-22 14:06:18.000000000 +1000
-+++ linux-work/arch/ppc/platforms/pmac_cpufreq.c	2005-10-01 09:17:32.000000000 +1000
-@@ -695,6 +695,13 @@
- 		set_speed_proc = pmu_set_cpu_speed;
- 		is_pmu_based = 1;
- 	}
-+	/* Else check for TiPb 550 */
-+	else if (machine_is_compatible("PowerBook3,3") && cur_freq == 550000) {
-+		hi_freq = cur_freq;
-+		low_freq = 500000;
-+		set_speed_proc = pmu_set_cpu_speed;
-+		is_pmu_based = 1;
-+	}
- 	/* Else check for TiPb 400 & 500 */
- 	else if (machine_is_compatible("PowerBook3,2")) {
- 		/* We only know about the 400 MHz and the 500Mhz model
+Yes, quoting the whole patch was probably not necessary :-)
+
+> I really dont like the ideal of splitting up traps.c into traps32.c =20
+> and traps64.c.  This defeats the purpose of the merge.  I expect that =20
+> a significant portion of traps.c is common (or can be made to be) =20
+> between all powerpc's.
+
+My first attempt at the merge was a real mess and a right pain, so I put
+the two files in as a compromise.  However, I have made another attempt
+and ,although it took a while,  it seems to be going ok.  How about we put
+the two in for now (as that will allow the merge of more platforms to
+continue) and I will supply a further patch in a few days that combines
+the two trapsxx.c files?
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sat__1_Oct_2005_12_17_14_+1000_xDr8=odW.5tNhsrT
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
+
+iD8DBQFDPfGqFdBgD/zoJvwRAkCfAJ0RIE2up8og37vVqNBw8xxrMFR7EACcDYjj
+VOeuYbrRD90Dd+RjSRSNcHQ=
+=zebT
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__1_Oct_2005_12_17_14_+1000_xDr8=odW.5tNhsrT--
