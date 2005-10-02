@@ -2,18 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4142768352
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Oct 2005 14:00:39 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 2B57F683F3
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Oct 2005 15:52:40 +1000 (EST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: "Antonino A. Daplas" <adaplas@gmail.com>
+In-Reply-To: <1128225462.8267.24.camel@gaston>
+References: <1128225462.8267.24.camel@gaston>
 Content-Type: text/plain
-Date: Sun, 02 Oct 2005 13:57:42 +1000
-Message-Id: <1128225462.8267.24.camel@gaston>
+Date: Sun, 02 Oct 2005 15:49:46 +1000
+Message-Id: <1128232186.8267.31.camel@gaston>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	linux-fbdev-devel@lists.sourceforge.net,
 	Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: [PATCH] nvidiafb: PPC & mode setting fixes
+Subject: Re: [PATCH] nvidiafb: PPC & mode setting fixes (#2)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,7 +25,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi !
+(This version removes a useless bit that slipped in the previous one)
 
 This patch fixes a couple of things in nvidiafb:
 
@@ -39,7 +41,6 @@ the same and that fixed the problem. (The display was strangely shifted
 with garbage in the margin but not on all lines, and not in bpp 32)
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
 Index: linux-work/drivers/video/Kconfig
 ===================================================================
 --- linux-work.orig/drivers/video/Kconfig	2005-09-23 12:53:23.000000000 +1000
@@ -53,21 +54,6 @@ Index: linux-work/drivers/video/Kconfig
         help
  	  This enables I2C support for nVidia Chipsets.  This is used
  	  only for getting EDID information from the attached display
-Index: linux-work/drivers/video/fbmon.c
-===================================================================
---- linux-work.orig/drivers/video/fbmon.c	2005-09-23 12:44:00.000000000 +1000
-+++ linux-work/drivers/video/fbmon.c	2005-09-30 18:28:53.000000000 +1000
-@@ -574,8 +574,9 @@
- 
- 	*dbsize = num;
- 	m = kmalloc(num * sizeof(struct fb_videomode), GFP_KERNEL);
--	if (!m)
-+	if (!m) {
- 		return mode;
-+	}
- 	memmove(m, mode, num * sizeof(struct fb_videomode));
- 	kfree(mode);
- 	return m;
 Index: linux-work/drivers/video/nvidia/nv_of.c
 ===================================================================
 --- linux-work.orig/drivers/video/nvidia/nv_of.c	2005-09-23 12:44:01.000000000 +1000
