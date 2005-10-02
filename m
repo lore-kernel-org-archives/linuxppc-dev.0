@@ -1,14 +1,15 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17218.31264.61421.415716@cargo.ozlabs.ibm.com>
-Date: Tue, 4 Oct 2005 22:48:32 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Rune Torgersen" <runet@innovsys.com>
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B859476@ismail.innsys.innovsys.com>
-References: <DCEAAC0833DD314AB0B58112AD99B93B859476@ismail.innsys.innovsys.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: RE: clock skew on B/W G3
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <20051001001005.348d7798.sfr@canb.auug.org.au>
+References: <20050930233602.138b6e27.sfr@canb.auug.org.au>
+	<20051001001005.348d7798.sfr@canb.auug.org.au>
+Mime-Version: 1.0 (Apple Message framework v622)
+Message-Id: <27c25b49c3f8c5d3f563a0b9b39bda8c@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Date: Sun, 2 Oct 2005 03:06:04 +0200
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, ppc64-dev <linuxppc64-dev@ozlabs.org>
+Subject: Re: [PATCH 8/9] powerpc: make iSeries build
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,18 +19,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Rune Torgersen writes:
+> The merge of vmlinux.lds.S would be much cleaner if it is clear that
+> putting the ..start/end symbols inside the section definitions is OK on
+> ppc32.
 
-> CONFIG_HZ is not broken, but the whole clock configuration is.
-> (I poseded something about it for 8260 earlier this summer)
-> 
-> Basic problem is that CLOCK_TICK_RATE which is used for setting up the
-> variables used for advancing the clock, is hardcoded to a value that
-> only makes sence for an i386. (it is default set at 1193180Hz which
-> happens to be the timer clock for timer1 on an i386 machine)
+It is okay, and putting those symbol definitions
+outside the section definition (like the ppc32
+linker script used to do) can be wrong even, for
+example, when the output sections need extra
+alignment.
 
-I do not believe CLOCK_TICK_RATE affects timekeeping at all on ppc or
-ppc64 machines, but I could be wrong.  Can you show us where and how
-CLOCK_TICK_RATE affects things?
 
-Paul.
+Segher
