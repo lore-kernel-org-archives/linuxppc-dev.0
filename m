@@ -1,18 +1,12 @@
-Return-Path: <marvin24@gmx.de>
-Received: from mail.gmx.net (pop.gmx.de [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id B4018683EC
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Oct 2005 02:46:16 +1000 (EST)
-From: Marc <marvin24@gmx.de>
-To: linuxppc-dev@ozlabs.org,
- linux-kernel@vger.kernel.org
-Date: Sun, 2 Oct 2005 18:46:09 +0200
-References: <200510011429.45698.marvin24@gmx.de>
-In-Reply-To: <200510011429.45698.marvin24@gmx.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200510021846.09860.marvin24@gmx.de>
-Subject: Re: clock skew on B/W G3
+Return-Path: <linuxppcdev@qbjnet.com>
+Received: from kunk.qbjnet.com (ddsl1-28.ddsl.mr.net [137.192.135.28])
+	by ozlabs.org (Postfix) with SMTP id 9078C68446
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Oct 2005 11:07:21 +1000 (EST)
+Date: 3 Oct 2005 01:00:39 -0000
+Message-ID: <20051003010039.20105.qmail@kunk.qbjnet.com>
+From: Bob Brose <linuxppcdev@qbjnet.com>
+To: linuxppc-dev@ozlabs.org
+Subject: (no subject)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,28 +16,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I'm trying to fix some of the AX25 code in the 2.6 kernel and traced down
+a problem to the use of a char var which was being assigned
+the value of -1. On x86 when the var was compared to -1 it succeded but
+on PPC it failed. So I tried a simple test:
 
-Some additions to the previous mail: I was able to isolate the problem to t=
-he=20
-introduction of a user specificable value of HZ (in include/asm-ppc/parm.h)=
-=2E=20
-I used a value of 250 while the former default was 1000. Setting it back to=
-=20
-1000 makes the clock tick right again.
+main()
+{
+char atest;
+atest=-1;
+printf("%i,%X\n",atest,atest);
+}
 
-Is the CONFIG_HZ known to be broken on PPC ?
+With GCC 3.3.5 on 2.6.14-rc1 x86 I get:
+./atest
+-1,FFFFFFFF
 
-Thanks
+With GCC 3.3.5 on 2.6.14-rc1 PPC I get:
+./atest
+255,FF
 
-Marc
+If I change the declaration of atest to a signed char on PPC I get the
+same result as x86.
 
-Le Samstag 01 Oktober 2005 14:29, marvin24@gmx.de a =C3=A9crit :
-> Hi,
->
-> something between 2.6.13-git4 and 2.6.14-git5 makes my clock running ~20%
-                                        ^^ should be 13 of course=20
-
-> slower. This problem still exists in current kernel versions. Sorry for
-> reporting so late, but I hope it would go away while time passes...
->
-> As the subject says I have blue/white Apple G3/400. My config I attached.
+Does this mean the char in x86 is signed and in PPC it's unsigned?
+Has it always been thus?
+ 
