@@ -1,16 +1,19 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id B187368446
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Oct 2005 00:30:24 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Mon, 3 Oct 2005 09:18:14 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B859476@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Marc" <marvin24@gmx.de>, <linuxppc-dev@ozlabs.org>,
-	<linux-kernel@vger.kernel.org>
-Subject: RE: clock skew on B/W G3
+Return-Path: <mgreer@mvista.com>
+Received: from hermes.mvista.com (gateway-1237.mvista.com [12.44.186.158])
+	by ozlabs.org (Postfix) with ESMTP id 190D668423
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Oct 2005 06:46:40 +1000 (EST)
+Date: Mon, 3 Oct 2005 13:46:08 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Corey Minyard <minyard@acm.org>
+Message-ID: <20051003204608.GC29005@mag.az.mvista.com>
+References: <20050929183221.GA17292@i2.minyard.local>
+	<20050929203647.GA6597@mag.az.mvista.com>
+	<433D557C.4020301@acm.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <433D557C.4020301@acm.org>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: MV64x60 watchdog timer driver updates
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,29 +23,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From:  Marc
-> Sent: Sunday, October 02, 2005 11:46
->=20
-> Some additions to the previous mail: I was able to isolate=20
-> the problem to the=20
-> introduction of a user specificable value of HZ (in=20
-> include/asm-ppc/parm.h).=20
-> I used a value of 250 while the former default was 1000.=20
-> Setting it back to=20
-> 1000 makes the clock tick right again.
->=20
-> Is the CONFIG_HZ known to be broken on PPC ?
->=20
+On Fri, Sep 30, 2005 at 10:10:52AM -0500, Corey Minyard wrote:
+> Mark A. Greer wrote:
+> 
+> >On Thu, Sep 29, 2005 at 01:32:21PM -0500, Corey Minyard wrote:
+> > 
+> >
+> >>James looked at an earlier version and said it was ok, and suggested
+> >>a few changes.  This has been tested against 2.6.14-rc2 on a Katana.
+> >>
+> >>Note that the bus_clk value from the platform information seems to
+> >>be in MHZ, but the actual frequency is generally 133,333,333, not
+> >>133,000,000.  I don't think the inaccuracy matters here, but it seems
+> >>a little odd.
+> >>   
+> >>
+> >
+> >Yes, it makes more sense to me to pass the actual frequency and not do
+> >the '* 1000000'.
+> > 
+> >
+> The only trouble is if  you go over 4GHZ...  Maybe it should be in KHZ 
+> instead of MHZ?  or 64-bits?  Or maybe we don't worry about >4GHZ busses?
 
-CONFIG_HZ is not broken, but the whole clock configuration is.
-(I poseded something about it for 8260 earlier this summer)
+My vote is to worry about it when the time comes.  IIRC, the fastest a
+Marvell bridge part can be clocked right now is 200 MHz so there's some time.
 
-Basic problem is that CLOCK_TICK_RATE which is used for setting up the
-variables used for advancing the clock, is hardcoded to a value that
-only makes sence for an i386. (it is default set at 1193180Hz which
-happens to be the timer clock for timer1 on an i386 machine)
+> Also, how would one go about changing this?  Would you need something like:
+> 
+> if (bus_clk < 1000)
+>  bus_clk *= 1000000
+> 
+> for backwards compatability?
 
-Another problem here is that that value apparently hve to be #define'd
-which means you cannot insert the decrementer frequency from the
-boot-loader either.
+When I didn't see anyone passing that value in via platform_data so
+there's no compatibility issue.  I could have missed something though...
+
+> >Also--I should have thought of this earlier--there should probably be a
+> >patch to add a default platform_data entry in arch/ppc/syslib/mv64x60.c
+> >and a patch for katana.c if the defaults in mv64x60.c aren't correct
+> >for the katana.  At least, that's how things are done now.
+> > 
+> >
+> I'm not sure I understand completely.  How would you go about setting 
+> the platform data?
+
+Look near the top of arch/ppc/syslib/mv64x60.c and you will see a bunch
+of default platform_data being set up for marvell bridges.  They can then
+be tweaked by the platform specific code via the platform_notify() hook
+(see arch/ppc/platforms/katana.c:katana_platform_notify(), et. al.).
+
+Mark
