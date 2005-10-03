@@ -1,12 +1,13 @@
 Return-Path: <linuxppcdev@qbjnet.com>
 Received: from kunk.qbjnet.com (ddsl1-28.ddsl.mr.net [137.192.135.28])
-	by ozlabs.org (Postfix) with SMTP id 9078C68446
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Oct 2005 11:07:21 +1000 (EST)
-Date: 3 Oct 2005 01:00:39 -0000
-Message-ID: <20051003010039.20105.qmail@kunk.qbjnet.com>
+	by ozlabs.org (Postfix) with SMTP id B1FEE683E3
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Oct 2005 12:11:30 +1000 (EST)
+Date: 3 Oct 2005 02:11:29 -0000
+Message-ID: <20051003021129.20564.qmail@kunk.qbjnet.com>
 From: Bob Brose <linuxppcdev@qbjnet.com>
 To: linuxppc-dev@ozlabs.org
-Subject: (no subject)
+Subject: Q: signed vs unsigned char,
+	PPC vs x86 gcc 3.3.5 compiler differences
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
