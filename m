@@ -1,21 +1,16 @@
-Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4788668467
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Oct 2005 17:07:54 +1000 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Bob Brose <linuxppcdev@qbjnet.com>
-References: <20051003010039.20105.qmail@kunk.qbjnet.com>
-Date: Mon, 03 Oct 2005 09:07:43 +0200
-In-Reply-To: <20051003010039.20105.qmail@kunk.qbjnet.com> (Bob Brose's message
-	of "3 Oct 2005 01:00:39 -0000")
-Message-ID: <jemzlr13k0.fsf@sykes.suse.de>
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id B187368446
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Oct 2005 00:30:24 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: (no subject)
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Mon, 3 Oct 2005 09:18:14 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B859476@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Marc" <marvin24@gmx.de>, <linuxppc-dev@ozlabs.org>,
+	<linux-kernel@vger.kernel.org>
+Subject: RE: clock skew on B/W G3
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +20,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Bob Brose <linuxppcdev@qbjnet.com> writes:
+> -----Original Message-----
+> From:  Marc
+> Sent: Sunday, October 02, 2005 11:46
+>=20
+> Some additions to the previous mail: I was able to isolate=20
+> the problem to the=20
+> introduction of a user specificable value of HZ (in=20
+> include/asm-ppc/parm.h).=20
+> I used a value of 250 while the former default was 1000.=20
+> Setting it back to=20
+> 1000 makes the clock tick right again.
+>=20
+> Is the CONFIG_HZ known to be broken on PPC ?
+>=20
 
-> Does this mean the char in x86 is signed and in PPC it's unsigned?
+CONFIG_HZ is not broken, but the whole clock configuration is.
+(I poseded something about it for 8260 earlier this summer)
 
-Yes.
+Basic problem is that CLOCK_TICK_RATE which is used for setting up the
+variables used for advancing the clock, is hardcoded to a value that
+only makes sence for an i386. (it is default set at 1193180Hz which
+happens to be the timer clock for timer1 on an i386 machine)
 
-> Has it always been thus?
-
-Yes.
-
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Another problem here is that that value apparently hve to be #define'd
+which means you cannot insert the decrementer frequency from the
+boot-loader either.
