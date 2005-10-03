@@ -1,16 +1,15 @@
-Return-Path: <hollis@penguinppc.org>
-Received: from smtpauth07.mail.atl.earthlink.net
-	(smtpauth07.mail.atl.earthlink.net [209.86.89.67])
-	by ozlabs.org (Postfix) with ESMTP id 8BB756838D
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Oct 2005 12:22:21 +1000 (EST)
-In-Reply-To: <20051003021129.20564.qmail@kunk.qbjnet.com>
-References: <20051003021129.20564.qmail@kunk.qbjnet.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <4641d8304aa3e61826054e240b821540@penguinppc.org>
-From: Hollis Blanchard <hollis@penguinppc.org>
-Date: Sun, 2 Oct 2005 21:22:13 -0500
+Return-Path: <cfriesen@nortel.com>
+Received: from zctfs063.nortelnetworks.com (zctfs063.nortelnetworks.com
+	[47.164.128.120]) by ozlabs.org (Postfix) with ESMTP id 4F235683E7
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Oct 2005 15:07:35 +1000 (EST)
+Message-ID: <4340BC80.4000500@nortel.com>
+Date: Sun, 02 Oct 2005 23:07:12 -0600
+From: "Christopher Friesen" <cfriesen@nortel.com>
+MIME-Version: 1.0
 To: Bob Brose <linuxppcdev@qbjnet.com>
+References: <20051003021129.20564.qmail@kunk.qbjnet.com>
+In-Reply-To: <20051003021129.20564.qmail@kunk.qbjnet.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 Subject: Re: Q: signed vs unsigned char,
 	PPC vs x86 gcc 3.3.5 compiler differences
@@ -23,15 +22,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Oct 2, 2005, at 9:11 PM, Bob Brose wrote:
+Bob Brose wrote:
 
-> If I change the declaration of atest to a signed char on PPC I get the
-> same result as x86.
->
 > Does this mean the char in x86 is signed and in PPC it's unsigned?
 > Has it always been thus?
 
-Yes, and yes. If it matters to you, you should explicitly use "signed 
-char" or "unsigned char"...
+ From K+R:
 
--Hollis
+"Whether plain chars are signed or unsigned is machine-dependent, but 
+printable characters are always positive."
+
+Chris
