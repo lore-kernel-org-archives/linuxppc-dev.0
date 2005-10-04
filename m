@@ -1,33 +1,30 @@
-Return-Path: <kalle.pokki@iki.fi>
-Received: from smtp2.song.fi (smtp2.song.fi [194.100.2.122])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D9B6D6845E
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id 0176F683E3
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Oct 2005 20:16:45 +1000 (EST)
-Message-ID: <43425687.9010801@iki.fi>
-Date: Tue, 04 Oct 2005 12:16:39 +0200
-From: Kalle Pokki <kalle.pokki@iki.fi>
+	Wed,  5 Oct 2005 01:11:42 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by protonic.prtnl (Postfix) with ESMTP id 09EC529EC9
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  4 Oct 2005 17:10:05 +0200 (CEST)
+Received: from protonic.prtnl ([127.0.0.1])
+	by localhost (protonic [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
+	id 10368-08 for <linuxppc-embedded@ozlabs.org>;
+	Tue,  4 Oct 2005 17:10:04 +0200 (CEST)
+Received: from linux.local (linux.prtnl [192.168.1.97])
+	by protonic.prtnl (Postfix) with ESMTP id 4729329EC6
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  4 Oct 2005 17:10:04 +0200 (CEST)
+From: David Jander <david.jander@protonic.nl>
+To: linuxppc-embedded@ozlabs.org
+Date: Tue, 4 Oct 2005 17:11:33 +0200
+References: <OF3208D35D.AA3CBB6C-ON48257090.0019F4B3@uk.marconicomms.com>
+In-Reply-To: <OF3208D35D.AA3CBB6C-ON48257090.0019F4B3@uk.marconicomms.com>
 MIME-Version: 1.0
-To: Alex Zeffertt <ajz@cambridgebroadband.com>
-References: <DCEAAC0833DD314AB0B58112AD99B93B85946A@ismail.innsys.innovsys.com>
-	<4333DF04.3000908@iki.fi> <43395322.1080407@iki.fi>
-	<384d09b865d454875c447cc02c89d001@embeddedalley.com>
-	<4339AD01.30708@iki.fi>
-	<714c16295fbfa97caafd1d0aa3a5932e@embeddedalley.com>
-	<433A6E6D.4070403@iki.fi> <433BDCE7.2060206@iki.fi>
-	<20050930142218.348041d6.ajz@cambridgebroadband.com>
-	<2c578118c5d984e6e87ac3c073469866@embeddededge.com>
-	<433D9BCE.5000909@iki.fi>
-	<6eac69d46b656d812783d81a6ebeac84@embeddededge.com>
-	<433E2530.7090503@iki.fi>
-	<26a6f673ac9438729eccfe0c376c6b3d@embeddedalley.com>
-	<4340D7EF.2040709@iki.fi> <43423996.7090403@iki.fi>
-	<20051004105917.27d93a91.ajz@cambridgebroadband.com>
-In-Reply-To: <20051004105917.27d93a91.ajz@cambridgebroadband.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: dan@embeddedalley.com, linuxppc-embedded@ozlabs.org
-Subject: Re: CPM2 early console
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200510041711.34388.david.jander@protonic.nl>
+Subject: Re: serial console
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -38,24 +35,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Alex Zeffertt wrote:
+On Tuesday 04 October 2005 08:54, KokHow Teh wrote:
+> Hi;
+>       I have debian linux running on my PQ2FADS-ZU with devfs and serial
+> driver compiled in. I have read Documentation/serial-console.txt and I have
+> tried both passing "console=" option as well as without passing that to the
+> kernel and both don't give me the expected results.
+>       When I pass "console=tts/0,115200n8" to the kernel, I don't get any
+> console output until the login prompt which I set to 115200 in
+> /etc/inittab. When I don't pass "console=" option to the kernel, I get
+> console output all the way until "Freeing unused kernel memory:" and the
+> console output is garbled and I don't see any login prompt. Here is the
+> /dev/* content:
 
->Hi Kalle,  I've just checked and it makes no difference to the ATM
->driver.  In fact, on my platform (PM828+u-boot-1.1.3) the pipeline
->depth was already set to 1.
->
->You are probably right that the pipeline depth was the cause of your
->problem- but my problem is something else.  I think that Freescale
->simply overlooked the ATM external connection table case when
->designing the cache coherency protocol - because they offered no way
->to assert GBL when external connection tables are accessed.
->  
->
-The ATM in 8260 seems to have a huge errata list. Just quickly looking 
-at those at least CPM71: CPM does not snoop MCC buffer descriptors 
-sounds related, but it may be some other issue also. Do you already use 
-the microcode patch provided by Freescale?
+I don't know exactly what I am talking about right now, but the string "tts/0" 
+in the console-line sounds suspicious to me. AFAIK when using devfs still 
+device names on the kernel-commandline have to be old-style.
+Just a guess: try using "console=ttyS0,115200n8" and see if this helps.
 
-I'm confident my problem was fixed with the correct setting of the 
-pipeline depth. I had trouble with everything related to cache 
-coherency, not just a single communication protocol.
+Greetings,
+
+-- 
+David Jander
