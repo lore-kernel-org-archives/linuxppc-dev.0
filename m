@@ -1,19 +1,30 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 67A086838D
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp103.biz.mail.mud.yahoo.com (smtp103.biz.mail.mud.yahoo.com
+	[68.142.200.238]) by ozlabs.org (Postfix) with SMTP id 9E63F683EA
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  5 Oct 2005 01:16:12 +1000 (EST)
-Message-ID: <43429CBA.6050906@ru.mvista.com>
-Date: Tue, 04 Oct 2005 19:16:10 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-MIME-Version: 1.0
-To: KokHow.Teh@marconi.com
-References: <OF3208D35D.AA3CBB6C-ON48257090.0019F4B3@uk.marconicomms.com>
-	<200510041711.34388.david.jander@protonic.nl>
-In-Reply-To: <200510041711.34388.david.jander@protonic.nl>
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: serial console
+	Wed,  5 Oct 2005 02:04:58 +1000 (EST)
+In-Reply-To: <43423996.7090403@iki.fi>
+References: <DCEAAC0833DD314AB0B58112AD99B93B85946A@ismail.innsys.innovsys.com>
+	<4333DF04.3000908@iki.fi> <43395322.1080407@iki.fi>
+	<384d09b865d454875c447cc02c89d001@embeddedalley.com>
+	<4339AD01.30708@iki.fi>
+	<714c16295fbfa97caafd1d0aa3a5932e@embeddedalley.com>
+	<433A6E6D.4070403@iki.fi> <433BDCE7.2060206@iki.fi>
+	<20050930142218.348041d6.ajz@cambridgebroadband.com>
+	<2c578118c5d984e6e87ac3c073469866@embeddededge.com>
+	<433D9BCE.5000909@iki.fi>
+	<6eac69d46b656d812783d81a6ebeac84@embeddededge.com>
+	<433E2530.7090503@iki.fi>
+	<26a6f673ac9438729eccfe0c376c6b3d@embeddedalley.com>
+	<4340D7EF.2040709@iki.fi> <43423996.7090403@iki.fi>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <78dde895f83bb5b18bc62915a3e0c563@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Date: Tue, 4 Oct 2005 09:04:56 -0700
+To: Kalle Pokki <kalle.pokki@iki.fi>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: CPM2 early console
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,33 +36,14 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-> On Tuesday 04 October 2005 08:54, KokHow Teh wrote:
-> 
->>Hi;
->>      I have debian linux running on my PQ2FADS-ZU with devfs and serial
->>driver compiled in. I have read Documentation/serial-console.txt and I have
->>tried both passing "console=" option as well as without passing that to the
->>kernel and both don't give me the expected results.
->>      When I pass "console=tts/0,115200n8" to the kernel, I don't get any
->>console output until the login prompt which I set to 115200 in
->>/etc/inittab. When I don't pass "console=" option to the kernel, I get
->>console output all the way until "Freeing unused kernel memory:" and the
->>console output is garbled and I don't see any login prompt. Here is the
->>/dev/* content:
-> 
-> 
-> I don't know exactly what I am talking about right now, but the string "tts/0" 
-> in the console-line sounds suspicious to me. AFAIK when using devfs still 
-> device names on the kernel-commandline have to be old-style.
-> Just a guess: try using "console=ttyS0,115200n8" and see if this helps.
-> 
-Yes, but PQ2FADS use cpm_uart and hence the commandline should be
-console=ttyCPM0,115200
+On Oct 4, 2005, at 1:13 AM, Kalle Pokki wrote:
 
-> Greetings,
-> 
+> ...... This errata should probably be included in the Linux kernel, 
+> since it really depends on it.
 
+Everything depends on that, and it should be done in the boot rom as
+part of the processor initialization after reset.
 
--- 
-Sincerely,
-Vitaly
+Thanks.
+
+	-- Dan
