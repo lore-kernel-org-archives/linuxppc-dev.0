@@ -1,16 +1,15 @@
-Return-Path: <ajz@cambridgebroadband.com>
-Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
-	[217.204.121.83])
+Return-Path: <kalle.pokki@iki.fi>
+Received: from smtp2.song.fi (smtp2.song.fi [194.100.2.122])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5EC0968375
+	by ozlabs.org (Postfix) with ESMTP id D9B6D6845E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Oct 2005 19:59:33 +1000 (EST)
-Date: Tue, 4 Oct 2005 10:59:17 +0100
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
-To: Kalle Pokki <kalle.pokki@iki.fi>
-Message-Id: <20051004105917.27d93a91.ajz@cambridgebroadband.com>
-In-Reply-To: <43423996.7090403@iki.fi>
+	Tue,  4 Oct 2005 20:16:45 +1000 (EST)
+Message-ID: <43425687.9010801@iki.fi>
+Date: Tue, 04 Oct 2005 12:16:39 +0200
+From: Kalle Pokki <kalle.pokki@iki.fi>
+MIME-Version: 1.0
+To: Alex Zeffertt <ajz@cambridgebroadband.com>
 References: <DCEAAC0833DD314AB0B58112AD99B93B85946A@ismail.innsys.innovsys.com>
 	<4333DF04.3000908@iki.fi> <43395322.1080407@iki.fi>
 	<384d09b865d454875c447cc02c89d001@embeddedalley.com>
@@ -24,8 +23,9 @@ References: <DCEAAC0833DD314AB0B58112AD99B93B85946A@ismail.innsys.innovsys.com>
 	<433E2530.7090503@iki.fi>
 	<26a6f673ac9438729eccfe0c376c6b3d@embeddedalley.com>
 	<4340D7EF.2040709@iki.fi> <43423996.7090403@iki.fi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	<20051004105917.27d93a91.ajz@cambridgebroadband.com>
+In-Reply-To: <20051004105917.27d93a91.ajz@cambridgebroadband.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: dan@embeddedalley.com, linuxppc-embedded@ozlabs.org
 Subject: Re: CPM2 early console
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -38,21 +38,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 04 Oct 2005 10:13:10 +0200
-Kalle Pokki <kalle.pokki@iki.fi> wrote:
+Alex Zeffertt wrote:
 
-> I found it. It's in the MPC8272 family errata. When setting pipeline
-> depth to one everything works. Can you Alex confirm this works also
-> for you? 
+>Hi Kalle,  I've just checked and it makes no difference to the ATM
+>driver.  In fact, on my platform (PM828+u-boot-1.1.3) the pipeline
+>depth was already set to 1.
+>
+>You are probably right that the pipeline depth was the cause of your
+>problem- but my problem is something else.  I think that Freescale
+>simply overlooked the ATM external connection table case when
+>designing the cache coherency protocol - because they offered no way
+>to assert GBL when external connection tables are accessed.
+>  
+>
+The ATM in 8260 seems to have a huge errata list. Just quickly looking 
+at those at least CPM71: CPM does not snoop MCC buffer descriptors 
+sounds related, but it may be some other issue also. Do you already use 
+the microcode patch provided by Freescale?
 
-Hi Kalle,  I've just checked and it makes no difference to the ATM
-driver.  In fact, on my platform (PM828+u-boot-1.1.3) the pipeline
-depth was already set to 1.
-
-You are probably right that the pipeline depth was the cause of your
-problem- but my problem is something else.  I think that Freescale
-simply overlooked the ATM external connection table case when
-designing the cache coherency protocol - because they offered no way
-to assert GBL when external connection tables are accessed.
-
-Alex
+I'm confident my problem was fixed with the correct setting of the 
+pipeline depth. I had trouble with everything related to cache 
+coherency, not just a single communication protocol.
