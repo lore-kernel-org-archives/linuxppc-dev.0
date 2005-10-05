@@ -1,17 +1,32 @@
-Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15803.mail.cnb.yahoo.com (web15803.mail.cnb.yahoo.com
-	[202.165.102.83]) by ozlabs.org (Postfix) with SMTP id A11356845D
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id 04EC868458
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  5 Oct 2005 13:33:49 +1000 (EST)
-Message-ID: <20051005033346.25431.qmail@web15803.mail.cnb.yahoo.com>
-Date: Wed, 5 Oct 2005 11:33:46 +0800 (CST)
-From: Sam Song <samlinuxppc@yahoo.com.cn>
-To: Yuli Barcohen <yuli@arabellasw.com>
-In-Reply-To: <17215.59283.623355.83952@astp0002.localdomain>
+	Wed,  5 Oct 2005 19:16:30 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by protonic.prtnl (Postfix) with ESMTP id 3578829EC9
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed,  5 Oct 2005 11:14:53 +0200 (CEST)
+Received: from protonic.prtnl ([127.0.0.1])
+	by localhost (protonic [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
+	id 20065-07 for <linuxppc-embedded@ozlabs.org>;
+	Wed,  5 Oct 2005 11:14:52 +0200 (CEST)
+Received: from linux.local (linux.prtnl [192.168.1.97])
+	by protonic.prtnl (Postfix) with ESMTP id 8718929EC6
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed,  5 Oct 2005 11:14:52 +0200 (CEST)
+From: David Jander <david.jander@protonic.nl>
+To: linuxppc-embedded@ozlabs.org
+Date: Wed, 5 Oct 2005 11:16:20 +0200
+References: <OF3208D35D.AA3CBB6C-ON48257090.0019F4B3@uk.marconicomms.com>
+	<200510041711.34388.david.jander@protonic.nl>
+	<43429CBA.6050906@ru.mvista.com>
+In-Reply-To: <43429CBA.6050906@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
-Cc: Jonathan Masel <jmasel@arabellasw.com>, linuxppc-embedded@ozlabs.org
-Subject: Re: Available user-level tool for I2C device?
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200510051116.21756.david.jander@protonic.nl>
+Subject: Re: serial console
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,18 +37,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Yuli Barcohen <yuli@arabellasw.com> wrote:
-> so the same tool works for both I2C and SPI. I
-> attached to this mail the
-> source, brief documentation, and some examples.
+On Tuesday 04 October 2005 17:16, Vitaly Bordug wrote:
+> Yes, but PQ2FADS use cpm_uart and hence the commandline should be
+> console=ttyCPM0,115200
 
-Greatly appreciate! This utility is on the top of
-what I expected and thought. 
+You are totally right. I did that same mistake once in the past and again now. 
+Shame on me ;-)
+Now that I remeber, this might give trouble if you happen to use a normal uart 
+(16550 or similar) also, and devfs. I had to slightly hack serial.c in my 
+version of the kernel for this combination to work. I don't remeber right now 
+exactly what I did, but it had to do with "SERIAL_DEV_OFFSET" and major/minor 
+numbers ;-)
+Anyway, I don't think your board has this combination.
 
-Sam
+Greetings,
 
-
-		
-___________________________________________________________ 
-雅虎邮箱超强增值服务－2G超大空间、pop3收信、无限量邮件提醒 
-http://cn.mail.yahoo.com
+-- 
+David Jander
