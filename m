@@ -1,31 +1,18 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id 04EC868458
+Return-Path: <vbordug@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id 672896847D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  5 Oct 2005 19:16:30 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by protonic.prtnl (Postfix) with ESMTP id 3578829EC9
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  5 Oct 2005 11:14:53 +0200 (CEST)
-Received: from protonic.prtnl ([127.0.0.1])
-	by localhost (protonic [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
-	id 20065-07 for <linuxppc-embedded@ozlabs.org>;
-	Wed,  5 Oct 2005 11:14:52 +0200 (CEST)
-Received: from linux.local (linux.prtnl [192.168.1.97])
-	by protonic.prtnl (Postfix) with ESMTP id 8718929EC6
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  5 Oct 2005 11:14:52 +0200 (CEST)
-From: David Jander <david.jander@protonic.nl>
-To: linuxppc-embedded@ozlabs.org
-Date: Wed, 5 Oct 2005 11:16:20 +0200
-References: <OF3208D35D.AA3CBB6C-ON48257090.0019F4B3@uk.marconicomms.com>
-	<200510041711.34388.david.jander@protonic.nl>
-	<43429CBA.6050906@ru.mvista.com>
-In-Reply-To: <43429CBA.6050906@ru.mvista.com>
+	Wed,  5 Oct 2005 22:23:41 +1000 (EST)
+Message-ID: <4343C5CB.2040006@ru.mvista.com>
+Date: Wed, 05 Oct 2005 16:23:39 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200510051116.21756.david.jander@protonic.nl>
+To: KokHow Teh <KokHow.Teh@marconi.com>
+References: <OF0BB1D8FC.27908478-ON48257091.000E28F8@uk.marconicomms.com>
+In-Reply-To: <OF0BB1D8FC.27908478-ON48257091.000E28F8@uk.marconicomms.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: david.jander@protonic.nl,
+	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
 Subject: Re: serial console
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -37,20 +24,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 04 October 2005 17:16, Vitaly Bordug wrote:
-> Yes, but PQ2FADS use cpm_uart and hence the commandline should be
-> console=ttyCPM0,115200
+KokHow Teh wrote:
+> Hi;
+>       I have tried with 4 types of command lines with my linux kernel with
+> devfs and serial device compiled in and none gives me the desired results:
+> 
+> (1)   console=tts/0,115200n8 OR console=ttyCPM0,115200n8
+> 
+>       no serial console output at all during boot time but it gives me
+> login prompt at the end.
+> 
+> (2)   without "console=" OR console=ttyS0,115200n8
+> 
+>       serial console output fine during bootup but only until the point
+> when it prints out "Freeing unused kernel memory: 232k init 4k prep". After
+> that, the serial console output is garbled. No login prompt.
+> 
+>       So this has not solved my problem. I need more advice. Here are some
+> more questions and observations:
+> 
+> (1)   David Jander's comment:
+> 
+> I don't know exactly what I am talking about right now, but the string
+> "tts/0"
+> in the console-line sounds suspicious to me. AFAIK when using devfs still
+> device names on the kernel-commandline have to be old-style.
+> Just a guess: try using "console=ttyS0,115200n8" and see if this helps.
+> 
+>       Is it confirmed that kernel-commandline has to be old-style even
+> though the kernel is using devfs?
+> 
+> (2)   Vitaly Bordug's suggestion of using "console=ttyCPM0". May I know
+> where is ttyCPM0 defined and how is it bound to the serial console device
+> driver in the source?
+> 
+Ummm.. The driver itself is in drivers/serial/cpm_uart. It does have the 
+different major than ordinary ttyS... This relates to the 2.6.x kernel 
+of course. I could suggest you to try the latest kernel.org release, in 
+which you board is known to work fine.
 
-You are totally right. I did that same mistake once in the past and again now. 
-Shame on me ;-)
-Now that I remeber, this might give trouble if you happen to use a normal uart 
-(16550 or similar) also, and devfs. I had to slightly hack serial.c in my 
-version of the kernel for this combination to work. I don't remeber right now 
-exactly what I did, but it had to do with "SERIAL_DEV_OFFSET" and major/minor 
-numbers ;-)
-Anyway, I don't think your board has this combination.
+>       Thanks for any input and pointer.
+> 
+> Regards,
+> TEH
+> 
+> 
+> 
 
-Greetings,
 
 -- 
-David Jander
+Sincerely,
+Vitaly
