@@ -1,17 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EF507683C0
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Oct 2005 17:44:23 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@osdl.org>
-Content-Type: text/plain
-Date: Wed, 05 Oct 2005 17:43:40 +1000
-Message-Id: <1128498220.22073.3.camel@gaston>
+Return-Path: <paubert@iram.es>
+From: Gabriel Paubert <paubert@iram.es>
+Date: Wed, 5 Oct 2005 20:20:31 +0200
+To: Becky Bruce <bgill@freescale.com>
+Message-ID: <20051005182031.GA15359@iram.es>
+References: <Pine.LNX.4.61.0509271427090.21928@cde-tx32-ldt329.sps.mot.com>
+	<20050927211534.GA32173@iram.es>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] ppc: Fix timekeeping with HZ=250 on some Mac models
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20050927211534.GA32173@iram.es>
+Cc: linuxppc64-dev@ozlabs.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: improved byte swapping functions
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,27 +19,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Older Macs which uses the VIA chip timers to calibrate the timebase used
-some code that wouldn't work if HZ wasn't divisible by 100... This fixes
-it at least for 250. Not totally perfect but should be enough for now
-(so it at least works with the default value which is now 250). There is
-still a potential issue with the core using CLOCK_TICK_RATE to maintain
-xtime and CLOCK_TICK_RATE value on ppc32 is pure crap, but that is a
-different problem, this patch at least brings us back to our previous
-situation.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Gabriel Paubert <paubert@iram.es>
 
-Index: linux-work/arch/ppc/platforms/pmac_time.c
-===================================================================
---- linux-work.orig/arch/ppc/platforms/pmac_time.c	2005-09-22 14:06:18.000000000 +1000
-+++ linux-work/arch/ppc/platforms/pmac_time.c	2005-10-05 08:14:17.000000000 +1000
-@@ -195,7 +195,7 @@
- 		;
- 	dend = get_dec();
+The previous versions of ___arch__swab16 and ___arch__swab32 were
+not optimal. In most cases the code can be made shorter and faster
+with this patch.
+
+Signed-off-by: Gabriel Paubert <paubert@iram.es>
+
+---
+
+Additional notes: 
+
+1) for ___arch__swab16, the trick is to let the compiler 
+generate a single rlwinm instruction for the final right 
+shift and cast. 
+
+2) For ___arch_swab32, the rotated value passed as a parameter 
+already has 2 bytes at the right place, so only 2 rlwimi 
+instructions are necessary to complete the byte swap.
+
+3) edit if you don't like the formatting of the result.
+
+4) I've been reading the thread about how to format patches
+and I hope that I got it right. But I believe that the
+diffstat output is overkill for such a small patch.
+
+	Regards,
+	Gabriel
+
+diff --git a/include/asm-powerpc/byteorder.h b/include/asm-powerpc/byteorder.h
+--- a/include/asm-powerpc/byteorder.h
++++ b/include/asm-powerpc/byteorder.h
+@@ -42,23 +42,22 @@ static __inline__ void st_le32(volatile 
  
--	tb_ticks_per_jiffy = (dstart - dend) / (6 * (HZ/100));
-+	tb_ticks_per_jiffy = (dstart - dend) / ((6 * HZ)/100);
- 	tb_to_us = mulhwu_scale_factor(dstart - dend, 60000);
+ static __inline__ __attribute_const__ __u16 ___arch__swab16(__u16 value)
+ {
+-	__u16 result;
++	__u32 tmp;
  
- 	printk(KERN_INFO "via_calibrate_decr: ticks per jiffy = %u (%u ticks)\n",
+-	__asm__("rlwimi %0,%1,8,16,23"
+-	    : "=r" (result)
+-	    : "r" (value), "0" (value >> 8));
+-	return result;
++	__asm__("rlwimi %0,%0,16,8,15"
++		: "=r" (tmp) : "0" (value));
++	return (__u16)(tmp>>8);
+ }
+ 
+ static __inline__ __attribute_const__ __u32 ___arch__swab32(__u32 value)
+ {
+ 	__u32 result;
+ 
+-	__asm__("rlwimi %0,%1,24,16,23\n\t"
+-	    "rlwimi %0,%1,8,8,15\n\t"
+-	    "rlwimi %0,%1,24,0,7"
++	__asm__(
++"	rlwimi %0,%1,24,16,23\n"
++"	rlwimi %0,%1,24,0,7\n"
+ 	    : "=r" (result)
+-	    : "r" (value), "0" (value >> 24));
++	    : "r" (value), "0" ((value >> 24)|(value<<8)));
+ 	return result;
+ }
+ 
