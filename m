@@ -1,16 +1,16 @@
 Return-Path: <earl.olsen@dilithiumnetworks.com>
 Received: from DHOST001-17.DEX001.intermedia.net (dhost001-17.intermedia.net
-	[64.78.61.64]) by ozlabs.org (Postfix) with ESMTP id 1568C683A2
+	[64.78.61.64]) by ozlabs.org (Postfix) with ESMTP id E39F1683FF
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  6 Oct 2005 07:18:05 +1000 (EST)
+	Thu,  6 Oct 2005 07:21:02 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C5C9F2.457C3463"
-Date: Wed, 5 Oct 2005 14:18:03 -0700
-Message-ID: <B8561865DB141248943E2376D0E8521501420345@DHOST001-17.DEX001.intermedia.net>
+	boundary="----_=_NextPart_001_01C5C9F2.AF6FBE63"
+Date: Wed, 5 Oct 2005 14:21:01 -0700
+Message-ID: <B8561865DB141248943E2376D0E8521501420346@DHOST001-17.DEX001.intermedia.net>
 From: "Earl Olsen" <earl.olsen@dilithiumnetworks.com>
 To: <linuxppc-embedded@ozlabs.org>
-Subject: We are using a PPC 750 with 512m of RAM.  
+Subject: problems with dma_alloc_coherent and consistent_alloc 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,11 +23,13 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C5C9F2.457C3463
+------_=_NextPart_001_01C5C9F2.AF6FBE63
 Content-Type: text/plain;
 	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
+
+(Sorry, I had trouble outlook and messed up the subject line)
 
 We are using a PPC 750 with 512m of RAM. =20
 
@@ -75,7 +77,7 @@ accept responsibility for changes made to this message after it was
 sent.
 
 
-------_=_NextPart_001_01C5C9F2.457C3463
+------_=_NextPart_001_01C5C9F2.AF6FBE63
 Content-Type: text/html;
 	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
@@ -87,11 +89,15 @@ Content-Transfer-Encoding: quoted-printable
 charset=3Dus-ascii">
 <META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
 6.5.7226.0">
-<TITLE>We are using a PPC 750 with 512m of RAM.  </TITLE>
+<TITLE>problems with dma_alloc_coherent and consistent_alloc </TITLE>
 </HEAD>
 <BODY>
 <!-- Converted from text/rtf format -->
 <BR>
+
+<P><FONT SIZE=3D2 FACE=3D"Courier New">(Sorry, I had trouble outlook and =
+messed up the subject line)</FONT>
+</P>
 
 <P><FONT SIZE=3D2 FACE=3D"Courier New">We are using a PPC 750 with 512m =
 of RAM.&nbsp; </FONT>
@@ -186,4 +192,4 @@ to this message after it was sent.</FONT></P>
 
 </BODY>
 </HTML>
-------_=_NextPart_001_01C5C9F2.457C3463--
+------_=_NextPart_001_01C5C9F2.AF6FBE63--
