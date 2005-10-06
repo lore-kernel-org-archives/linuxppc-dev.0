@@ -1,16 +1,19 @@
-Return-Path: <KokHow.Teh@marconi.com>
-Received: from smtpoutuk01.marconi.com (smtpoutuk01.marconi.com
-	[128.87.251.112]) by ozlabs.org (Postfix) with ESMTP id 49485683CF
+Return-Path: <wd@denx.de>
+Received: from mailout04.sul.t-online.com (mailout04.sul.t-online.com
+	[194.25.134.18]) by ozlabs.org (Postfix) with ESMTP id A4A6C683CF
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  6 Oct 2005 14:53:37 +1000 (EST)
-To: "Vitaly Bordug <vbordug" <vbordug@ru.mvista.com>
-From: "KokHow Teh" <KokHow.Teh@marconi.com>
-Date: Thu, 6 Oct 2005 12:53:26 +0800
-Message-ID: <OFAF025B3B.4E7DEDE8-ON48257092.0018E543@uk.marconicomms.com>
-MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+	Thu,  6 Oct 2005 17:26:59 +1000 (EST)
+To: "KokHow Teh" <KokHow.Teh@marconi.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 06 Oct 2005 12:53:26 +0800."
+	<OFAF025B3B.4E7DEDE8-ON48257092.0018E543@uk.marconicomms.com>
+Date: Thu, 06 Oct 2005 09:26:40 +0200
+Sender: wd@denx.de
+Message-Id: <20051006072640.38B90353D93@atlas.denx.de>
 Cc: "linuxppc-embedded list <linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
-Subject: kernel.org's kernel: building and root file system
+Subject: Re: kernel.org's kernel: building and root file system 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,36 +24,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+In message <OFAF025B3B.4E7DEDE8-ON48257092.0018E543@uk.marconicomms.com> you wrote:
+> 
+>       I am new to this and I have some questions of "what's next?" after
+> having downloaded the latest kernel from kernel.org:
 
-Hi;
-      I am new to this and I have some questions of "what's next?" after
-having downloaded the latest kernel from kernel.org:
+Have a look at the DULG - http://www.denx.de/twiki/bin/view/DULG/Manual
 
-(1)   Since I am going to build the kernel for PPC platform and
-architecture, running `make xconfig` won't bring up the right set of
-configurations for your target but the default which is a generic X86
-architecture and platform. What is the usual step so that I will have the
-configuration set for my target? I think of 2:
+It covers most of your questions.
 
-      (i) copy arch/ppc/configs/<foo>_defconfig to $SRC_BASE/.config; `make
-xconfig`
-      (ii) `make xconfig`; and inside the X-window, open the
-arch/ppc/configs/<foo>_defconfig and save it for your architecture.
+Best regards,
 
-      I tried (ii) but after having opened the <foo>_defconfig, it is not
-reflected at all in the X-window. It is still showing the default
-configurations.
+Wolfgang Denk
 
-(2)   Ok, you have the kernel running on your PPC target. How about the
-root file system? Where and how can I have/build a generic root file system
-that works with kernels running from kernel.org?
-
-(3)   Toolchain. What cross-toolchain is generally used to build the kernel
-for your target? For PPC, I come across this
-http://penguinppc.org/dev/crosstool.php... Is that popularly used to build
-kernel from kernel.org for PPC architecture and platform?
-
-      Thanks for any comment and insight.
-
-Regards,
-TEH
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Harrison's Postulate:
+	For every action, there is an equal and opposite criticism.
