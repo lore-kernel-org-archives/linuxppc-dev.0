@@ -1,20 +1,22 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
+Return-Path: <ajz@cambridgebroadband.com>
+Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
+	[217.204.121.83])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DDD9B684B9
+	by ozlabs.org (Postfix) with ESMTP id B7CE8684BA
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  6 Oct 2005 23:52:33 +1000 (EST)
-Date: Wed, 5 Oct 2005 20:05:32 -0300
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Earl Olsen <earl.olsen@dilithiumnetworks.com>
-Message-ID: <20051005230532.GA10220@logos.cnet>
-References: <B8561865DB141248943E2376D0E8521501420346@DHOST001-17.DEX001.intermedia.net>
+	Fri,  7 Oct 2005 02:36:33 +1000 (EST)
+Received: from zambia.cambridgebroadband.com (cbluk-gw0.cambridgebroadband.com
+	[217.204.121.82])
+	by cambridgebroadband.com (8.12.8/8.12.8) with SMTP id j96GaS9a009422
+	for <linuxppc-embedded@ozlabs.org>; Thu, 6 Oct 2005 17:36:28 +0100
+Date: Thu, 6 Oct 2005 17:36:27 +0100
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
+To: linuxppc-embedded@ozlabs.org
+Message-Id: <20051006173628.53f25862.ajz@cambridgebroadband.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <B8561865DB141248943E2376D0E8521501420346@DHOST001-17.DEX001.intermedia.net>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: problems with dma_alloc_coherent and consistent_alloc
+Content-Type: text/plain; charset=US-ASCII
+Subject: mpc8272ads support in linux-2.4
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,36 +27,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Oct 05, 2005 at 02:21:01PM -0700, Earl Olsen wrote:
-> 
-> (Sorry, I had trouble outlook and messed up the subject line)
-> 
-> We are using a PPC 750 with 512m of RAM.
+Hi list,
 
-I dont know much about your hardware, but I'll shoot anyway.
+I have read that the MPC8272ADS board is supported in linux-2.6.  Has
+anybody backported this support to linux-2.4.  I am using linux-2.4.25
+from ELDK.  If anyone has a patch I would be very grateful if they
+sent it to me.
 
-> 1) When we try to allocate memory using consistent_alloc we get a 
-> failure with get_pteptr - there is no pte.  
-> 
-> 2) When we try using dma_alloc_coherent the system locks up when
-> we try to access that memory.
-> 
-> I'm guessing these problems stem from the memory being allocated
-> is from the 384 bytes of RAM that gets handed over to BATs 2 AND 3,
+Regards,
 
-You mean Mbytes?
+Alex Zeffertt
 
-> not the remaining memory handled by the page table.
-> 
-> In the first case, pages are allocated, but since if came from the
-> BAT region, will not have a page table mapping.
-> 
-> In the second case, if dma_alloc_init gets memory from the BAT
-> region, then we have the BAT and page management mechanisms
-> both trying to control the memory.
-> 
-> Does this sound like a good theory?  Has anybody encountered
-> this problem before?
-
-The kernel should create pte tables for all RAM, even if parts of 
-memory are not accessed through pagetable mappings.
+PS Does anyone know where the master PPC patches are kept?  I.e. the
+ones you apply to kernels from kernel.org to get all the stuff that
+hasn't yet been upstreamed.
