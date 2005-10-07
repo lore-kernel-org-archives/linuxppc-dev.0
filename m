@@ -1,17 +1,17 @@
-Return-Path: <xiay@nari-relays.com>
-Received: from NARI-RELAYS.COM (unknown [221.226.124.170])
-	by ozlabs.org (Postfix) with ESMTP id 5F9BE684CA
+Return-Path: <stephane.fillod@thomson.net>
+Received: from dmzraw5.extranet.tce.com (dmzraw5.extranet.tce.com
+	[157.254.234.142]) by ozlabs.org (Postfix) with ESMTP id ADAB468387
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  7 Oct 2005 19:59:50 +1000 (EST)
-Date: Fri,  7 Oct 2005 18:10:58 +0800
-Message-Id: <200510071810.AA52953120@NARI-RELAYS.COM>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: "=?ISO-8859-1?Q?=CF=C4=D3=EA?= " <xiay@nari-relays.com>
-To: <linuxppc-embedded@ozlabs.org>
-Cc: deboralh@sinovee.com
-Subject: about pci net controller without EPROM onboard
-Reply-To: xiay@nari-relays.com
+	Fri,  7 Oct 2005 21:21:13 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Fri, 7 Oct 2005 13:21:05 +0200
+Message-ID: <1CFEB358338412458B21FAA0D78FE86D4F0E0D@rennsmail02.eu.thmulti.com>
+From: "Fillod Stephane" <stephane.fillod@thomson.net>
+To: "Wojciech Kromer" <wojciech.kromer@dgt.com.pl>,
+	<linuxppc-embedded@ozlabs.org>
+Subject: RE: mpc8248 and FCC ethernet
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,31 +22,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thanks for the help , i found out that the kernel was not configued well for pci net card .
+Wojciech Kromer wrote:
+[..]
+>But inside kernel all RX frames are filled with 0xff data,
+>also send frames I can see on the other side, are full of 0xff.
+>Clocks and other FCC aware registers seems to be correct.
+>The same version on linux (2_4_devel from denx.de) works fine
+>on another mpc8260 board.
 
-Now i am boarding U-BOOT and kernel(linuxppc) to my own board (based on MPC5200,have a i82551 on board without 
+Most likely, you're using a wrong DPRAM range.
+This reminds me this problem "All-ones problem with FCC1 on MPC8541"
+=20
+http://ozlabs.org/pipermail/linuxppc-embedded/2004-November/016050.html
 
-EPROM).After i set the eth1addr ,U-boot could tftp files through the i82551 chip :
+so double check your manual. The MPC8555E manual is still wrong in
+this regard, and no errata has been issued yet.
 
-PCI:   Bus Dev VenId DevId Class Int
-        00  18  8086  1209  0200  00
-        00  1a  1057  5803  0680  00
-In:    serial
-Out:   serial
-Err:   serial
-Net:   FEC ETHERNET, i82559#0
-
-But after the kernel bootup ,i could not find eth1 ,message during bootup as follow :
-
-POSIX conformance testing by UNIFIX
-
-PCI: Probing PCI hardware
-PCI: Cannot allocate resource region 0 of device 00:1a.0
-
-Intel(R) PRO/100 Network Driver - version 2.3.38-k1
-Copyright (c) 2004 Intel Corporation
-PCI: Enabling device 00:18.0 (0006 -> 0007)
-e100: Invalid Ethernet address
-e100: Failed to initialize, instance #0
-
-How can i make the chip active ?
+--=20
+Stephane
