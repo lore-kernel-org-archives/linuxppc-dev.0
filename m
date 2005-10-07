@@ -1,17 +1,22 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id B2713684E9
+Return-Path: <ajz@cambridgebroadband.com>
+Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
+	[217.204.121.83])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 10C55683A9
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  8 Oct 2005 01:47:31 +1000 (EST)
-Message-ID: <43469891.9080908@ru.mvista.com>
-Date: Fri, 07 Oct 2005 19:47:29 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-MIME-Version: 1.0
-To: Alex Zeffertt <ajz@cambridgebroadband.com>
+	Sat,  8 Oct 2005 02:19:21 +1000 (EST)
+Date: Fri, 7 Oct 2005 17:19:17 +0100
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
+To: Vitaly Bordug <vbordug@ru.mvista.com>, linuxppc-embedded@ozlabs.org
+Message-Id: <20051007171917.538355cc.ajz@cambridgebroadband.com>
+In-Reply-To: <43469CCD.5010404@ru.mvista.com>
 References: <20051007163735.31f48aeb.ajz@cambridgebroadband.com>
-In-Reply-To: <20051007163735.31f48aeb.ajz@cambridgebroadband.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+	<43469891.9080908@ru.mvista.com>
+	<20051007165749.305c6bd3.ajz@cambridgebroadband.com>
+	<43469CCD.5010404@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Subject: Re: Oops accessing BCSR on 8272ADS
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,32 +28,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Alex Zeffertt wrote:
-> Hi list,
-> 
-> I've just downloaded linux-2.4.31 from kernel.org and compiled it for
-> the mpc8272ads board.
-> 
-> When I boot the kernel it oopses in fcc_enet.c:init_fcc_startup() at
-> the point where it tries to write to the BCSR.
-> 
-> Does anybody know why writing to the BCSR should cause a machine
-> check?
-> 
-I guess I was not ioremapped/io_block_mapped properly.
-Take a look into arch/ppc/kernel/m8260_setup.c m8260_map_io() function.
-Anyway BCSR is better to be ioremapped in the place it is required.
-> TIA,
-> 
-> Alex
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+> > 
+> It depends on which u-boot you're using and there I'm aware of
+> issues when BCSR resides somewhere different... Try 0xF8000000.
+> Don't you have btw
 > 
 
+Thanks Vitaly.  You were right.  In my u-boot - version 1.1.1 - it was
+0xf8000000 not 0xf4500000.  I just modified BCSR_ADDR and that stopped
+the oops.
 
--- 
-Sincerely,
-Vitaly
+Cheers,
+
+Alex
