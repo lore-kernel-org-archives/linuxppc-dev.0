@@ -1,21 +1,17 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 5134C684DF
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Oct 2005 00:38:47 +1000 (EST)
-In-Reply-To: <1128645230.17365.5.camel@gaston>
-References: <Pine.LNX.4.61.0509221450190.30738@nylon.am.freescale.net>
-	<1127599811.27674.47.camel@gaston>
-	<AFEB186E-99B9-4BE8-9AE3-315C74277483@freescale.com>
-	<1128644808.17365.2.camel@gaston> <1128645230.17365.5.camel@gaston>
-Mime-Version: 1.0 (Apple Message framework v734)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <FCCCED05-6243-44CE-B610-5BA7EB3A92AB@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Fri, 7 Oct 2005 09:39:13 -0500
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] ppc32: make sure we have an L3 before touch its control
-	register
+Return-Path: <pgaltieri@mvista.com>
+Received: from hermes.mvista.com (gateway-1237.mvista.com [12.44.186.158])
+	by ozlabs.org (Postfix) with ESMTP id 73F9168505
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Oct 2005 04:09:38 +1000 (EST)
+Received: from playin.mvista.com (playin.az.mvista.com [10.50.1.73])
+	by hermes.mvista.com (Postfix) with ESMTP id 46F661A53F
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Oct 2005 11:09:37 -0700 (PDT)
+From: Paolo Galtieri <pgaltieri@mvista.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: multipart/mixed; boundary="=-BO5BWmMR95Z2x24CRQi5"
+Date: Fri, 07 Oct 2005 11:09:37 -0700
+Message-Id: <1128708577.4809.36.camel@playin.mvista.com>
+Mime-Version: 1.0
+Subject: Updated high mem patch
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,37 +22,34 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Oct 6, 2005, at 7:33 PM, Benjamin Herrenschmidt wrote:
+--=-BO5BWmMR95Z2x24CRQi5
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-> On Fri, 2005-10-07 at 10:26 +1000, Benjamin Herrenschmidt wrote:
->
->>> Dope, you're right.  I notice that we apparent do this for BTIC and
->>>
->
->
->>> DPM in this function though?
->>>
->>
->> Yes, those bits are buggy. Good catch
->>
->
-> And no, in fact, my brain is buggy... On ppc32 we identify first, then
-> fixup, then only do the call_setup_cpu ! That's why the Idle NAP code
-> actually goes test the feature bit.
->
-> I think ppc64 does it the other way around. ppc64 certainly _requires_
-> taht the fixup has not yet been applied while running early_setup() as
-> it may change some CPU features according to firmware properties.
->
-> So in the merged kernel, we need to be extra careful here. I think we
-> should go the ppc64 way actually and apply the fixups later. But that
-> means fixing the code in cpu_setup_6xx.S indeed.
+There was a minor error in the high mem patch I posted yesterday.  I
+have attached the correct patch.
 
-Well, since we do this early on ppc32, my patch should be ok than.  
-(And is need on 7448, do to some crazyness in how L3CR works on  
-various versions of 7448).
+Paolo
 
-I'd like to see we push this now and worry about "fixing" all of  
-cpu_setup_6xx.S when we move it over to arch/powerpc
+--=-BO5BWmMR95Z2x24CRQi5
+Content-Disposition: attachment; filename=PPC-highmempatch
+Content-Type: text/plain; name=PPC-highmempatch; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-- kumar
+--- linux-2.6.14/arch/ppc/kernel/dma-mapping.c.orig	2005-10-06 15:50:46.000000000 -0700
++++ linux-2.6.14/arch/ppc/kernel/dma-mapping.c	2005-10-07 08:36:33.000000000 -0700
+@@ -401,10 +401,10 @@
+ static inline void __dma_sync_page_highmem(struct page *page,
+ 		unsigned long offset, size_t size, int direction)
+ {
+-	size_t seg_size = min((size_t)PAGE_SIZE, size) - offset;
++	size_t seg_size = min((size_t)(PAGE_SIZE - offset), size);
+ 	size_t cur_size = seg_size;
+ 	unsigned long flags, start, seg_offset = offset;
+-	int nr_segs = PAGE_ALIGN(size + (PAGE_SIZE - offset))/PAGE_SIZE;
++	int nr_segs = 1 + ((size - seg_size) + PAGE_SIZE - 1)/PAGE_SIZE;
+ 	int seg_nr = 0;
+ 
+ 	local_irq_save(flags);
+
+--=-BO5BWmMR95Z2x24CRQi5--
