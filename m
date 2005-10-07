@@ -2,22 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EABE768439
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Oct 2005 10:35:18 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 261B468504
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Oct 2005 10:56:18 +1000 (EST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <kumar.gala@freescale.com>
-In-Reply-To: <1128644808.17365.2.camel@gaston>
-References: <Pine.LNX.4.61.0509221450190.30738@nylon.am.freescale.net>
-	<1127599811.27674.47.camel@gaston>
-	<AFEB186E-99B9-4BE8-9AE3-315C74277483@freescale.com>
-	<1128644808.17365.2.camel@gaston>
+To: Paolo Galtieri <pgaltieri@mvista.com>
+In-Reply-To: <1128639689.4809.19.camel@playin.mvista.com>
+References: <1128639689.4809.19.camel@playin.mvista.com>
 Content-Type: text/plain
-Date: Fri, 07 Oct 2005 10:33:49 +1000
-Message-Id: <1128645230.17365.5.camel@gaston>
+Date: Fri, 07 Oct 2005 10:54:40 +1000
+Message-Id: <1128646480.17365.7.camel@gaston>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] ppc32: make sure we have an L3 before touch its
-	control register
+Subject: Re: Two bugs in handling of highmem on PPC
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,22 +23,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2005-10-07 at 10:26 +1000, Benjamin Herrenschmidt wrote:
-> > Dope, you're right.  I notice that we apparent do this for BTIC and  
-> > DPM in this function though?
+
 > 
-> Yes, those bits are buggy. Good catch
+> I would very much appreciate it if those of you who are more familiar
+> with this part of the kernel could review and comment on my
+> interpretation of what is going on and provide feedback.
 
-And no, in fact, my brain is buggy... On ppc32 we identify first, then
-fixup, then only do the call_setup_cpu ! That's why the Idle NAP code
-actually goes test the feature bit.
+While the first bit of your patch makes some sense, the second one
+doesn't at all to me, you must be missing something there...
 
-I think ppc64 does it the other way around. ppc64 certainly _requires_
-taht the fixup has not yet been applied while running early_setup() as
-it may change some CPU features according to firmware properties.
-
-So in the merged kernel, we need to be extra careful here. I think we
-should go the ppc64 way actually and apply the fixups later. But that
-means fixing the code in cpu_setup_6xx.S indeed.
-
-Ben.
+Ben
