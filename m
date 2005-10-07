@@ -1,17 +1,18 @@
-Return-Path: <stephane.fillod@thomson.net>
-Received: from dmzraw5.extranet.tce.com (dmzraw5.extranet.tce.com
-	[157.254.234.142]) by ozlabs.org (Postfix) with ESMTP id ADAB468387
+Return-Path: <vbordug@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id 58290683CF
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  7 Oct 2005 21:21:13 +1000 (EST)
+	Fri,  7 Oct 2005 21:57:46 +1000 (EST)
+Message-ID: <434662B8.5000407@ru.mvista.com>
+Date: Fri, 07 Oct 2005 15:57:44 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Fri, 7 Oct 2005 13:21:05 +0200
-Message-ID: <1CFEB358338412458B21FAA0D78FE86D4F0E0D@rennsmail02.eu.thmulti.com>
-From: "Fillod Stephane" <stephane.fillod@thomson.net>
-To: "Wojciech Kromer" <wojciech.kromer@dgt.com.pl>,
-	<linuxppc-embedded@ozlabs.org>
-Subject: RE: mpc8248 and FCC ethernet
+To: Alex Zeffertt <ajz@cambridgebroadband.com>
+References: <20051006173628.53f25862.ajz@cambridgebroadband.com>
+In-Reply-To: <20051006173628.53f25862.ajz@cambridgebroadband.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: mpc8272ads support in linux-2.4
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,21 +23,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Wojciech Kromer wrote:
-[..]
->But inside kernel all RX frames are filled with 0xff data,
->also send frames I can see on the other side, are full of 0xff.
->Clocks and other FCC aware registers seems to be correct.
->The same version on linux (2_4_devel from denx.de) works fine
->on another mpc8260 board.
+Alex Zeffertt wrote:
+> Hi list,
+> 
+> I have read that the MPC8272ADS board is supported in linux-2.6.  Has
+> anybody backported this support to linux-2.4.  I am using linux-2.4.25
+> from ELDK.  If anyone has a patch I would be very grateful if they
+> sent it to me.
+> 
+Yes, it has been supported within 2.4 tree in bitkeeper days.
+The source you can rsync from source.mvista.com (take a look at 
+http://penguinppc.org/kernel/.
+> Regards,
+> 
+> Alex Zeffertt
+> 
+> PS Does anyone know where the master PPC patches are kept?  I.e. the
+> ones you apply to kernels from kernel.org to get all the stuff that
+> hasn't yet been upstreamed.
+Actually answer is nowhere AFAIK. Now with git, we are working with 
+maintainers, and often with Andrew Morton directly, so ppc patches 
+usually are pushed without inbetween place unlike they used to.
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+> 
 
-Most likely, you're using a wrong DPRAM range.
-This reminds me this problem "All-ones problem with FCC1 on MPC8541"
-=20
-http://ozlabs.org/pipermail/linuxppc-embedded/2004-November/016050.html
 
-so double check your manual. The MPC8555E manual is still wrong in
-this regard, and no errata has been issued yet.
-
---=20
-Stephane
+-- 
+Sincerely,
+Vitaly
