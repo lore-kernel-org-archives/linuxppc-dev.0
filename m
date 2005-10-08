@@ -1,21 +1,19 @@
-Return-Path: <rmcguire@uwbt.com>
-Received: from mail19d.g19.rapidsite.net (mail19d.dulles19-verio.com
-	[204.202.242.120]) by ozlabs.org (Postfix) with SMTP id 9710468505
+Return-Path: <vijesh.vh@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.199])
+	by ozlabs.org (Postfix) with ESMTP id 6B3DC683CF
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  8 Oct 2005 12:01:17 +1000 (EST)
-Received: from mx14.stngva01.us.mxservers.net (204.202.242.37)
-	by mail19d.g19.rapidsite.net (RS ver 1.0.95vs) with SMTP id 3-04976873
+	Sat,  8 Oct 2005 20:13:16 +1000 (EST)
+Received: by wproxy.gmail.com with SMTP id i12so428593wra
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  7 Oct 2005 22:01:14 -0400 (EDT)
-From: "Russell McGuire" <rmcguire@uwbt.com>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Fri, 7 Oct 2005 19:00:58 -0700
-Message-ID: <000001c5cbac$20e66270$6405a8c0@absolut>
+	Sat, 08 Oct 2005 03:13:15 -0700 (PDT)
+Message-ID: <8e78982e0510080306n48d9c8b2p858f22bed588f6b9@mail.gmail.com>
+Date: Sat, 8 Oct 2005 15:36:36 +0530
+From: Vijesh VH <vijesh.vh@gmail.com>
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <20051007020004.517E8684D1@ozlabs.org>
-Subject: porting 82xx HCI driver
+Content-Type: multipart/alternative;
+	boundary="----=_Part_3612_1828328.1128765996996"
+Subject: USB IRQ Handling in IBMSTBx25xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,30 +24,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Everyone,
+------=_Part_3612_1828328.1128765996996
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-I am attempting to port the 8xx HCI driver over to the MPC8280, and have it
-compiling...
+Hi,
 
-However, there are a few functions that seem to be missing, that are
-implicitly defined... These are just warnings during a compile but turn up
-as errors when attempting to load the modules...
+Has any one worked on Interrupt handling in PPC 405 for STBx25xx. I am
+working in interfacing USB devices for STB. The Device Driver is getting
+stuck or runs unconditional in calling ISR. I Identified that that the
+spin_unlock_irqrestore function call in the kernel does it. So i am unable
+to go ahead and could not find what to do further. If any one is aware or
+worked on this kind of problem plz help me.
 
-I was curious if it was just a missing piece of the kernel that I have not
-included in the build.
+--
+Thanks and Regards,
+Vijesh V H
 
+------=_Part_3612_1828328.1128765996996
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Here are a few of the functions...
+Hi,<br>
+<br>
+&nbsp;&nbsp;&nbsp; Has any one worked on Interrupt handling in PPC 405
+for STBx25xx. I am working in interfacing USB devices for STB. The
+Device Driver is getting stuck or runs unconditional in calling ISR. I
+Identified that that the spin_unlock_irqrestore function call in the
+kernel does it. So i am unable to go ahead and could not find what to
+do further. If any one is aware or worked on this kind of problem plz
+help me.<br clear=3D"all"><br>-- <br>Thanks and Regards,<br>Vijesh V H=20
 
-stop_sof_timer
-ack_sof_timer
-assert_reset
-board_stop_force_disconnect
-
-
-I have done a complete text search on the kernel source I have for 2.4.25
-and haven't turned up anything.
-
-Any ideas?
-
--Russ
+------=_Part_3612_1828328.1128765996996--
