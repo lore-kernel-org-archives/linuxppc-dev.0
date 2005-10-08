@@ -1,17 +1,17 @@
-Return-Path: <xiay@nari-relays.com>
-Received: from NARI-RELAYS.COM (unknown [221.226.124.170])
-	by ozlabs.org (Postfix) with ESMTP id D0400683BA
+Return-Path: <frannk_m1@yahoo.com>
+Received: from web32207.mail.mud.yahoo.com (web32207.mail.mud.yahoo.com
+	[68.142.207.138]) by ozlabs.org (Postfix) with SMTP id 703B66838E
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  9 Oct 2005 00:18:08 +1000 (EST)
-Date: Sat,  8 Oct 2005 22:30:08 +0800
-Message-Id: <200510082230.AA69861636@NARI-RELAYS.COM>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: "=?ISO-8859-1?Q?=CF=C4=D3=EA?= " <xiay@nari-relays.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: onboard pci ethernet controller(i82551)without eprom(linuxppc2.2.4
-	MPC5200)
-Reply-To: xiay@nari-relays.com
+	Sun,  9 Oct 2005 03:51:03 +1000 (EST)
+Message-ID: <20051008175100.71465.qmail@web32207.mail.mud.yahoo.com>
+Date: Sat, 8 Oct 2005 10:51:00 -0700 (PDT)
+From: Frank <frannk_m1@yahoo.com>
+To: xiay@nari-relays.com, linuxppc-embedded@ozlabs.org
+In-Reply-To: <200510082230.AA69861636@NARI-RELAYS.COM>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Subject: Re: onboard pci ethernet controller(i82551)without
+	eprom(linuxppc2.2.4 MPC5200)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,56 +22,81 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-After i modified e100_init() in e100_main.c , the pci ethernet card could been found :
+--- ÏÄÓêÏÄÓêiayxiayinariays.com> wrote:
 
-bash-2.05b# ifconfig -a
-eth0      Link encap:Ethernet  HWaddr FF:FF:FF:FF:FF:FF
-          BROADCAST MULTICAST  MTU:1500  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000
-          RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
-          Memory:40000000-40000038
+> After i modified e100_initinitn e100_main.c , the pci
+pcieethernetcard could been found :
+> 
+> bash-2.05b# ifcoifconfig
+> eth0eth   Link encaencapernet  HWadHWaddrFF:FF:FF:FF:FF
+>           BROADCAST MULTMULTICASTU:MTU0  Metric:1
+>           RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+>           TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+>           collisions:0 txqutxqueuelen0
+>           RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
+>           Memory:40000000-40000038
+> 
+> eth1eth   Link encaencapernet  HWadHWaddr04:9F:00:15:2B
+>           inetinetraddr.87.102.215  BcasBcast.87.102.255 
+> Mask:255.255.255.0
+>           UP BROADCAST RUNNING MULTMULTICASTU:MTU0  Metric:1
+>           RX packets:12606 errors:42 dropped:0 overruns:0
+> frame:0
+>           TX packets:7668 errors:3 dropped:0 overruns:3
+> carrier:0
+>           collisions:0 txqutxqueuelen0
+>           RX bytes:10596597 (10.1 Mb)  TX bytes:1218624 (1.1
+> Mb)
+>           Interrupt:43
+> 
+> lo        Link encaencapal LoopLoopback         
+inetinetraddr.0.0.1  Mask:255.0.0.0
+>           UP LOOPLOOPBACKNING  MTU:MTU36  Metric:1
+>           RX packets:4 errors:0 dropped:0 overruns:0 frame:0
+>           TX packets:4 errors:0 dropped:0 overruns:0 carrier:0
+>           collisions:0 txqutxqueuelen> 
+> But i still could not confconfig0eth> 
+> bash-2.05b# ifcoifconfig0eth8.87.102.140
+> SIOCSIOCSIFFLAGSsource temporarily unavailable
+> 
+> I noticed that there was message as blow during kernel
+bootbootup 
+> POSIPOSIXformance testing by UNIFUNIFIXPCI:PCIobing PCI
+PCIdware
+> PCI:PCInnot allocate resource region 0 of device 00:1a.0
+> Linux NET4.0 for Linux 2.4
+> 
+> Intel(R) PRO/100 Network Driver - version 2.3.38-k1
+> Copyright (c) 2004 Intel Corporation
+> 
+> PCI:PCIabling device 00:18.0 (0006 -> 0007)
+> e100: eth0ethntel(R) PRO/100 Network Connection
+> Hardware receive checchecksumsbled
+> 
+> IP-CIPfConfigiled to open eth0eth 
+> what is wrong?
+> 
+> Best regards
+> 
+> XiayXiayuu don't have a valid mac address. Try
+temptemporarilydhard codingand see what happens...
 
-eth1      Link encap:Ethernet  HWaddr 00:04:9F:00:15:2B
-          inet addr:198.87.102.215  Bcast:198.87.102.255  Mask:255.255.255.0
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:12606 errors:42 dropped:0 overruns:0 frame:0
-          TX packets:7668 errors:3 dropped:0 overruns:3 carrier:0
-          collisions:0 txqueuelen:1000
-          RX bytes:10596597 (10.1 Mb)  TX bytes:1218624 (1.1 Mb)
-          Interrupt:43
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> _______________________________________________
+> LinuLinuxppcedded mailing list
+> LinuLinuxppcedded@ozlaozlabs
+> httphttpszlaozlabs/mailman/listlistinfoulinuxppcedded
+> 
 
-lo        Link encap:Local Loopback
-          inet addr:127.0.0.1  Mask:255.0.0.0
-          UP LOOPBACK RUNNING  MTU:16436  Metric:1
-          RX packets:4 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:4 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0
 
-But i still could not config eth0:
-
-bash-2.05b# ifconfig eth0 198.87.102.140
-SIOCSIFFLAGS: Resource temporarily unavailable
-
-I noticed that there was message as blow during kernel bootup:
-
-POSIX conformance testing by UNIFIX
-PCI: Probing PCI hardware
-PCI: Cannot allocate resource region 0 of device 00:1a.0
-Linux NET4.0 for Linux 2.4
-
-Intel(R) PRO/100 Network Driver - version 2.3.38-k1
-Copyright (c) 2004 Intel Corporation
-
-PCI: Enabling device 00:18.0 (0006 -> 0007)
-e100: eth0: Intel(R) PRO/100 Network Connection
-Hardware receive checksums enabled
-
-IP-Config: Failed to open eth0
-
-what is wrong?
-
-Best regards
-
-Xiayu
+	
+		
+__________________________________ 
+Yahoo! Mail - PC Magazine Editors' Choice 2005 
+http://mail.yahoo.com
