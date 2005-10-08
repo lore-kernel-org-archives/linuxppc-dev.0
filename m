@@ -1,19 +1,17 @@
-Return-Path: <vijesh.vh@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.199])
-	by ozlabs.org (Postfix) with ESMTP id 6B3DC683CF
+Return-Path: <xiay@nari-relays.com>
+Received: from NARI-RELAYS.COM (unknown [221.226.124.170])
+	by ozlabs.org (Postfix) with ESMTP id D0400683BA
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  8 Oct 2005 20:13:16 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id i12so428593wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 08 Oct 2005 03:13:15 -0700 (PDT)
-Message-ID: <8e78982e0510080306n48d9c8b2p858f22bed588f6b9@mail.gmail.com>
-Date: Sat, 8 Oct 2005 15:36:36 +0530
-From: Vijesh VH <vijesh.vh@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_3612_1828328.1128765996996"
-Subject: USB IRQ Handling in IBMSTBx25xx
+	Sun,  9 Oct 2005 00:18:08 +1000 (EST)
+Date: Sat,  8 Oct 2005 22:30:08 +0800
+Message-Id: <200510082230.AA69861636@NARI-RELAYS.COM>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: "=?ISO-8859-1?Q?=CF=C4=D3=EA?= " <xiay@nari-relays.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: onboard pci ethernet controller(i82551)without eprom(linuxppc2.2.4
+	MPC5200)
+Reply-To: xiay@nari-relays.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,37 +22,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_3612_1828328.1128765996996
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+After i modified e100_init() in e100_main.c , the pci ethernet card could been found :
 
-Hi,
+bash-2.05b# ifconfig -a
+eth0      Link encap:Ethernet  HWaddr FF:FF:FF:FF:FF:FF
+          BROADCAST MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
+          Memory:40000000-40000038
 
-Has any one worked on Interrupt handling in PPC 405 for STBx25xx. I am
-working in interfacing USB devices for STB. The Device Driver is getting
-stuck or runs unconditional in calling ISR. I Identified that that the
-spin_unlock_irqrestore function call in the kernel does it. So i am unable
-to go ahead and could not find what to do further. If any one is aware or
-worked on this kind of problem plz help me.
+eth1      Link encap:Ethernet  HWaddr 00:04:9F:00:15:2B
+          inet addr:198.87.102.215  Bcast:198.87.102.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:12606 errors:42 dropped:0 overruns:0 frame:0
+          TX packets:7668 errors:3 dropped:0 overruns:3 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:10596597 (10.1 Mb)  TX bytes:1218624 (1.1 Mb)
+          Interrupt:43
 
---
-Thanks and Regards,
-Vijesh V H
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:4 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:4 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
 
-------=_Part_3612_1828328.1128765996996
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+But i still could not config eth0:
 
-Hi,<br>
-<br>
-&nbsp;&nbsp;&nbsp; Has any one worked on Interrupt handling in PPC 405
-for STBx25xx. I am working in interfacing USB devices for STB. The
-Device Driver is getting stuck or runs unconditional in calling ISR. I
-Identified that that the spin_unlock_irqrestore function call in the
-kernel does it. So i am unable to go ahead and could not find what to
-do further. If any one is aware or worked on this kind of problem plz
-help me.<br clear=3D"all"><br>-- <br>Thanks and Regards,<br>Vijesh V H=20
+bash-2.05b# ifconfig eth0 198.87.102.140
+SIOCSIFFLAGS: Resource temporarily unavailable
 
-------=_Part_3612_1828328.1128765996996--
+I noticed that there was message as blow during kernel bootup:
+
+POSIX conformance testing by UNIFIX
+PCI: Probing PCI hardware
+PCI: Cannot allocate resource region 0 of device 00:1a.0
+Linux NET4.0 for Linux 2.4
+
+Intel(R) PRO/100 Network Driver - version 2.3.38-k1
+Copyright (c) 2004 Intel Corporation
+
+PCI: Enabling device 00:18.0 (0006 -> 0007)
+e100: eth0: Intel(R) PRO/100 Network Connection
+Hardware receive checksums enabled
+
+IP-Config: Failed to open eth0
+
+what is wrong?
+
+Best regards
+
+Xiayu
