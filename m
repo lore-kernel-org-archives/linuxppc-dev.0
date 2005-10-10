@@ -1,29 +1,18 @@
-Return-Path: <a.hawkins@cabletime.com>
-Received: from anchor-fallback-93.mail.demon.net
-	(anchor-fallback-93.mail.demon.net [194.217.242.93])
-	by ozlabs.org (Postfix) with ESMTP id 570376842B
+Return-Path: <vbordug@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id D9725683D5
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 10 Oct 2005 21:03:21 +1000 (EST)
-Received: from anchor-post-30.mail.demon.net ([194.217.242.88]:3839 "EHLO
-	anchor-post-30.mail.demon.net") by anchor-fallback-93.mail.demon.net
-	with ESMTP id S828687AbVIMKFf (ORCPT
-	<rfc822;linuxppc-embedded@ozlabs.org>);
-	Tue, 13 Sep 2005 11:05:35 +0100
-Received: from mailgate.cabletime.com ([80.177.138.66] helo=cabletime.com)
-	by anchor-post-30.mail.demon.net with esmtp (Exim 4.42)
-	id 1EF7f5-000NRA-2x
-	for linuxppc-embedded@ozlabs.org; Tue, 13 Sep 2005 10:05:13 +0000
-Received: from adh.cabletime.com ([191.53.51.21] helo=adh)
-	by cabletime.com with smtp (Exim 3.35 #1 (Debian))
-	id 1EF7es-0004jm-00
-	for <linuxppc-embedded@ozlabs.org>; Tue, 13 Sep 2005 11:04:58 +0100
-From: "Andy Hawkins" <a.hawkins@cabletime.com>
-To: <linuxppc-embedded@ozlabs.org>
-Message-ID: <002a01c5b84a$99881450$153335bf@cabletime.com>
+	Mon, 10 Oct 2005 21:29:34 +1000 (EST)
+Message-ID: <434A509C.3080709@ru.mvista.com>
+Date: Mon, 10 Oct 2005 15:29:32 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: Help with PCMCIA Compact Flash on PPC405 EP
+To: Dmytro Bablinyuk <dmytro.bablinyuk@rftechnology.com.au>
+References: <4349F072.6050309@rftechnology.com.au>
+In-Reply-To: <4349F072.6050309@rftechnology.com.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: cur_ppc_sys_spec is NULL
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,28 +22,50 @@ List-Post: <mailto:linuxppc-embedded@ozlabs.org>
 List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
-Date: Mon, 10 Oct 2005 11:03:23 -0000
 
-Hi,
+Dmytro Bablinyuk wrote:
+> I have latest linux-2.6-denx (MPC8272ADS board) kernel and I have some 
+> questions, may be somebody knows:
+> Here is the kernel output
+> 
+> Linux version 2.6.14-rc3-g2f70d4fe ..
+> Motorola PQ2 ADS PowerPC port
+> Built 1 zonelists
+> Kernel command line: console=ttyCPM0,115200 /dev/ram rw
+> PID hash table entries: 512 (order: 9, 8192 bytes)
+> Warning: real time clock seems stuck!
+> Dentry cache hash table entries: 16384 (order: 4, 65536 bytes)
+> Inode-cache hash table entries: 8192 (order: 3, 32768 bytes)
+> Memory: 62720k available (1628k kernel code, 388k data, 92k init, 0k 
+> highmem)
+> Mount-cache hash table entries: 512
+> NET: Registered protocol family 16
+> <stuck here>
+> 
+> Using gdb and BDI2000 I have allocated the problem in ppc_sys_init(void) 
+> - cur_ppc_sys_spec is NULL. There are 3 functions to find an appropriate 
+>  spec:
+> identify_ppc_sys_by_id
+> identify_ppc_sys_by_name
+> identify_ppc_sys_by_name_and_id
+> None of them are called by pq2ads.c or from any other place for 8272. I 
+> am just wondering if anybody might know at what stage spec should be 
+> selected for 8272ADS?
+> 
+Yes, that's just the point, and I know about this issue. One of those do 
+need to be called early in the board initialization code.
+I'll come with the fix shortly (hopefully today).
+> Thank you,
+> 
+> Dimitry
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+> 
 
-We're using a PCMCIA adapter (TI PCI1510 PC card Cardbus Controller) on a
-PPC 405 EP running a Montavista 2.4.20 kernel. The PCMCIA adapter works
-correctly, as we can insert a hard disk into there, and successfully mount
-and access it.
 
-However, when we insert a Compact Flash adapter (Lexar Media PC Card Adapter
-part 2076-C) with a Compact Flash card (PNY 1 Gig CompactFlash EMET1034) the
-whole board appears to go into a tight loop. I've stepped the code using a
-BDI, and it appears that the PCMCIA adapter is continually generating
-interrupts, but the handler routine in yenta.c thinks that there's nothing
-to do.
-
-Removing the CF card will bring the system back to life. It appears to be
-generating something like 350,000 interrupts every second while the card is
-inserted.
-
-Can anyone offer any advice?
-
-Thanks
-
-Andy
+-- 
+Sincerely,
+Vitaly
