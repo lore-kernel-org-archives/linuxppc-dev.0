@@ -1,19 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9946F684C5
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Oct 2005 08:21:04 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olaf Hering <olh@suse.de>
-In-Reply-To: <20051010200739.GA14317@suse.de>
-References: <20051010200739.GA14317@suse.de>
-Content-Type: text/plain
-Date: Tue, 11 Oct 2005 08:17:40 +1000
-Message-Id: <1128982661.17365.170.camel@gaston>
-Mime-Version: 1.0
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] Add modalias to macio sysfs attributes
+Return-Path: <galak@freescale.com>
+Date: Mon, 10 Oct 2005 14:41:50 -0500 (CDT)
+From: Kumar Gala <galak@freescale.com>
+To: Paul Mackerras <paulus@samba.org>
+Message-ID: <Pine.LNX.4.61.0510101441240.1572@nylon.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev <linuxppc64-dev@ozlabs.org>
+Subject: [PATCH] powerpc: Some fixes to allow building for a Book-E processor
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,53 +16,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2005-10-10 at 22:07 +0200, Olaf Hering wrote:
-> Provide a "compatible" entry in /sys/bus/macio/devices/*/
-> This can be used to load drivers via the modules.alias file.
-> 
-> Author: <schab@suse.de>
-> Signed-off-by: Olaf Hering <olh@suse.de>
+Some minor fixes that are needed if we are building for a book-e
+processor.  Book-e processors dont have DABR or hashed page tables.
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Kumar K. Gala <kumar.gala@freescale.com>
 
-> --- linux-2.6.13-rc7/drivers/macintosh/macio_sysfs.c.~1~	2005-08-26 16:32:13.000000000 +0200
-> +++ linux-2.6.13-rc7/drivers/macintosh/macio_sysfs.c	2005-08-27 11:58:47.000000000 +0200
-> @@ -39,6 +39,31 @@ compatible_show (struct device *dev, str
->  	return length;
->  }
->  
-> +static ssize_t modalias_show (struct device *dev, struct device_attribute *attr,
-> +			      char *buf)
-> +{
-> +	struct of_device *of;
-> +	char *compat;
-> +	int cplen;
-> +	int length;
-> +
-> +	of = &to_macio_device (dev)->ofdev;
-> +	compat = (char *) get_property (of->node, "compatible", &cplen);
-> +	if (!compat) compat = "", cplen = 1;
-> +	length = sprintf (buf, "of:N%sT%s", of->node->name, of->node->type);
-> +	buf += length;
-> +	while (cplen > 0) {
-> +		int l;
-> +		length += sprintf (buf, "C%s", compat);
-> +		buf += length;
-> +		l = strlen (compat) + 1;
-> +		compat += l;
-> +		cplen -= l;
-> +	}
-> +
-> +	return length;
-> +}
-> +
->  macio_config_of_attr (name, "%s\n");
->  macio_config_of_attr (type, "%s\n");
->  
-> @@ -46,5 +71,6 @@ struct device_attribute macio_dev_attrs[
->  	__ATTR_RO(name),
->  	__ATTR_RO(type),
->  	__ATTR_RO(compatible),
-> +	__ATTR_RO(modalias),
->  	__ATTR_NULL
->  };
+---
+commit dfc32a358c961c3fbfa94942ecb06da2e895ffe7
+tree 61513cafc77bf3fb49ccf9ab652ff2a0b492b113
+parent 05f62a5c049845eab8dfb3aeda55c18a2d4396e3
+author Kumar K. Gala <kumar.gala@freescale.com> Mon, 10 Oct 2005 13:12:10 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> Mon, 10 Oct 2005 13:12:10 -0500
+
+ arch/powerpc/kernel/process.c |    2 ++
+ arch/powerpc/mm/Makefile      |    5 ++---
+ arch/powerpc/mm/fault.c       |    2 ++
+ 3 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -214,6 +214,7 @@ int dump_spe(struct pt_regs *regs, elf_v
+ }
+ #endif /* CONFIG_SPE */
+ 
++#if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
+ static void set_dabr_spr(unsigned long val)
+ {
+ 	mtspr(SPRN_DABR, val);
+@@ -238,6 +239,7 @@ int set_dabr(unsigned long dabr)
+ }
+ 
+ static DEFINE_PER_CPU(unsigned long, current_dabr);
++#endif /* !(CONFIG_4xx || CONFIG_BOOKE) */
+ 
+ struct task_struct *__switch_to(struct task_struct *prev,
+ 	struct task_struct *new)
+diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+--- a/arch/powerpc/mm/Makefile
++++ b/arch/powerpc/mm/Makefile
+@@ -3,10 +3,9 @@
+ #
+ 
+ obj-y				:= fault.o mem.o lmb.o
+-obj-$(CONFIG_PPC32)		+= init.o pgtable.o mmu_context.o \
+-				   tlb.o
++obj-$(CONFIG_PPC32)		+= init.o pgtable.o mmu_context.o
+ obj-$(CONFIG_PPC64)		+= init64.o pgtable64.o mmu_context64.o
+-obj-$(CONFIG_PPC_STD_MMU_32)	+= ppc_mmu.o hash_32.o
++obj-$(CONFIG_PPC_STD_MMU_32)	+= ppc_mmu.o hash_32.o tlb.o
+ obj-$(CONFIG_40x)		+= 4xx_mmu.o
+ obj-$(CONFIG_44x)		+= 44x_mmu.o
+ obj-$(CONFIG_FSL_BOOKE)		+= fsl_booke_mmu.o
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -80,6 +80,7 @@ static int store_updates_sp(struct pt_re
+ 	return 0;
+ }
+ 
++#if !(defined(CONFIG_4xx) || defined(CONFIG_BOOKE))
+ static void do_dabr(struct pt_regs *regs, unsigned long error_code)
+ {
+ 	siginfo_t info;
+@@ -101,6 +102,7 @@ static void do_dabr(struct pt_regs *regs
+ 	info.si_addr = (void __user *)regs->nip;
+ 	force_sig_info(SIGTRAP, &info, current);
+ }
++#endif
+ 
+ /*
+  * For 600- and 800-family processors, the error_code parameter is DSISR
