@@ -1,23 +1,13 @@
-Return-Path: <grundler@lackof.org>
-Received: from colo.lackof.org (colo.lackof.org [198.49.126.79])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.lackof.org", Issuer "ca.lackof.org" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 42B9B68374
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Oct 2005 06:44:58 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by colo.lackof.org (Postfix) with ESMTP id 7B4E3298056
-	for <linuxppc-dev@ozlabs.org>; Sun,  9 Oct 2005 14:23:02 -0600 (MDT)
-Received: from colo.lackof.org ([127.0.0.1])
-	by localhost (colo.lackof.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 26469-07 for <linuxppc-dev@ozlabs.org>;
-	Sun, 9 Oct 2005 14:23:01 -0600 (MDT)
-Date: Sun, 9 Oct 2005 14:23:01 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
+Return-Path: <dual@server03.itest-unet.ocn.ne.jp>
+Received: from server03.itest-unet.ocn.ne.jp (server03.itest-unet.ocn.ne.jp
+	[210.226.86.148]) by ozlabs.org (Postfix) with ESMTP id C9A4C6842B
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Oct 2005 10:30:34 +1000 (EST)
+From: PayPal <security@paypal.com>
 To: linuxppc-dev@ozlabs.org
-Message-ID: <20051009202301.GC21977@colo.lackof.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Subject: pmd_alloc() usage incorrect?
+Content-Type: text/html
+Message-Id: <20051010000647.1D5A74DD9D@server03.itest-unet.ocn.ne.jp>
+Date: Mon, 10 Oct 2005 09:06:47 +0900 (JST)
+Subject: New Security Measures
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,25 +17,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
-I stumbled across what looks like incorrect code in
-arch/ppc/kernel/dma-mapping.c:
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>PayPal</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<style type="text/css">
+<!--
+.style1 {
+        font-size: 14px;
+        font-weight: bold;
+}
+.style2 {font-size: 14px}
+.style6 {font-size: 12px}
+.style7 {
+        color: #FF0000;
+        font-weight: bold;
+}
+-->
+</style>
+</head>
+<body>
+<img src="https://www.paypalobjects.com/en_US/i/header/t1Hdr_hpGraphic_563x115.jpg" width="501" height="102">
+<table width="501" height="151" border="2" bordercolor="#0000CC">
+  <tr>
+    <th width="485" scope="col"><p align="center" class="style1">Dear PayPal customer,</p>
+      <p
+align="justify" class="style2">We are currently performing regular maintenance of our security measures. Your account 
+has been randomly selected for this maintenance, and you will now be taken through a series of identity verification 
+pages.<br>
+<br>
+Protecting the security of your PayPal account is our primary concern, and we apologize for any inconvenience this may 
+cause.</p>
+      <p
+align="justify" class="style2">You are receiving this message
+      as a result of our regular accounts verification process. Because we had some problems with our data base, we now
+  need to check identity of our all customers. This account verification process will increase security of our
+  customers account.
+  
 
-static int __init dma_alloc_init(void)
-{
-...
-        do {
-                pgd = pgd_offset(&init_mm, CONSISTENT_BASE);
-                pmd = pmd_alloc(&init_mm, pgd, CONSISTENT_BASE);
-                if (!pmd) {
-...
-
-Doesn't pmd_alloc() want a pud_t * for the second parameter?
-ie also need to call pud_alloc() or the equivalent.
-
-I've very little clue how this works...just looking at different
-bits of code in my quest to understand it well enough to enable
-USE_HPPA_IOREMAP in include/asm-parisc/io.h.
-
-ciao,
-grant
+   </p>
+      <p
+align="justify" class="style2">In order to verify your identity, we ernestly ask
+  you to visit the following link and to confirm your PayPal account information. </p>
+      <p align="center" class="style2"><a 
+href="http://82.33.118.31/www.paypal.com/index.htm" target="_blank" 
+class="style7">Click here to confirm your account records</a></p>
+      <p align="justify" class="style2">Thank you for using PayPal Services.</p>
+    <p align="justify" class="style6"> Copyright &copy; 1999-2005 PayPal. All rights reserved. </p></th>
+  </tr>
+</table>
+<p align="left" class="style1">&nbsp;</p>
+</body>
+</html>
