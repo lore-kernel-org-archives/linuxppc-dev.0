@@ -1,14 +1,20 @@
-Return-Path: <dual@server03.itest-unet.ocn.ne.jp>
-Received: from server03.itest-unet.ocn.ne.jp (server03.itest-unet.ocn.ne.jp
-	[210.226.86.148]) by ozlabs.org (Postfix) with ESMTP id 216F868374
+Return-Path: <dmytro.bablinyuk@rftechnology.com.au>
+Received: from mfep9.connect.com.au (fep9.mfe.bur.connect.com.au [203.63.86.9])
+	by ozlabs.org (Postfix) with ESMTP id DFB6D68387
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 10 Oct 2005 10:31:32 +1000 (EST)
-From: PayPal <security@paypal.com>
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/html
-Message-Id: <20051010000647.C4B8D4DAD4@server03.itest-unet.ocn.ne.jp>
-Date: Mon, 10 Oct 2005 09:06:47 +0900 (JST)
-Subject: New Security Measures
+	Mon, 10 Oct 2005 15:40:05 +1000 (EST)
+Received: from [192.168.1.100] (cor12-ppp681.hay.dsl.connect.net.au
+	[61.68.71.173])
+	by mfep9.connect.com.au (Postfix) with ESMTP id 6F13AC1A8
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 10 Oct 2005 14:39:10 +1000 (EST)
+Message-ID: <4349F072.6050309@rftechnology.com.au>
+Date: Mon, 10 Oct 2005 14:39:14 +1000
+From: Dmytro Bablinyuk <dmytro.bablinyuk@rftechnology.com.au>
+MIME-Version: 1.0
+To: Linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: cur_ppc_sys_spec is NULL
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,57 +25,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-"http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-<title>PayPal</title>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<style type="text/css">
-<!--
-.style1 {
-        font-size: 14px;
-        font-weight: bold;
-}
-.style2 {font-size: 14px}
-.style6 {font-size: 12px}
-.style7 {
-        color: #FF0000;
-        font-weight: bold;
-}
--->
-</style>
-</head>
-<body>
-<img src="https://www.paypalobjects.com/en_US/i/header/t1Hdr_hpGraphic_563x115.jpg" width="501" height="102">
-<table width="501" height="151" border="2" bordercolor="#0000CC">
-  <tr>
-    <th width="485" scope="col"><p align="center" class="style1">Dear PayPal customer,</p>
-      <p
-align="justify" class="style2">We are currently performing regular maintenance of our security measures. Your account 
-has been randomly selected for this maintenance, and you will now be taken through a series of identity verification 
-pages.<br>
-<br>
-Protecting the security of your PayPal account is our primary concern, and we apologize for any inconvenience this may 
-cause.</p>
-      <p
-align="justify" class="style2">You are receiving this message
-      as a result of our regular accounts verification process. Because we had some problems with our data base, we now
-  need to check identity of our all customers. This account verification process will increase security of our
-  customers account.
-  
+I have latest linux-2.6-denx (MPC8272ADS board) kernel and I have some 
+questions, may be somebody knows:
+Here is the kernel output
 
-   </p>
-      <p
-align="justify" class="style2">In order to verify your identity, we ernestly ask
-  you to visit the following link and to confirm your PayPal account information. </p>
-      <p align="center" class="style2"><a 
-href="http://82.33.118.31/www.paypal.com/index.htm" target="_blank" 
-class="style7">Click here to confirm your account records</a></p>
-      <p align="justify" class="style2">Thank you for using PayPal Services.</p>
-    <p align="justify" class="style6"> Copyright &copy; 1999-2005 PayPal. All rights reserved. </p></th>
-  </tr>
-</table>
-<p align="left" class="style1">&nbsp;</p>
-</body>
-</html>
+Linux version 2.6.14-rc3-g2f70d4fe ..
+Motorola PQ2 ADS PowerPC port
+Built 1 zonelists
+Kernel command line: console=ttyCPM0,115200 /dev/ram rw
+PID hash table entries: 512 (order: 9, 8192 bytes)
+Warning: real time clock seems stuck!
+Dentry cache hash table entries: 16384 (order: 4, 65536 bytes)
+Inode-cache hash table entries: 8192 (order: 3, 32768 bytes)
+Memory: 62720k available (1628k kernel code, 388k data, 92k init, 0k 
+highmem)
+Mount-cache hash table entries: 512
+NET: Registered protocol family 16
+<stuck here>
+
+Using gdb and BDI2000 I have allocated the problem in ppc_sys_init(void) 
+- cur_ppc_sys_spec is NULL. There are 3 functions to find an appropriate 
+  spec:
+identify_ppc_sys_by_id
+identify_ppc_sys_by_name
+identify_ppc_sys_by_name_and_id
+None of them are called by pq2ads.c or from any other place for 8272. I 
+am just wondering if anybody might know at what stage spec should be 
+selected for 8272ADS?
+
+Thank you,
+
+Dimitry
