@@ -1,18 +1,16 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 69C196842B
+Return-Path: <916@mcd.com.pl>
+Received: from v00722.home.net.pl (v00722.home.net.pl [212.85.98.214])
+	by ozlabs.org (Postfix) with SMTP id CFF146842D
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 10 Oct 2005 21:37:09 +1000 (EST)
-Message-ID: <434A5263.5000903@ru.mvista.com>
-Date: Mon, 10 Oct 2005 15:37:07 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
+	Mon, 10 Oct 2005 21:42:10 +1000 (EST)
 MIME-Version: 1.0
-To: Alexey Dyatchkov <alexey@waves.com>
-References: <003101c5cd7a$e479aa10$0100000a@Omerxp>
-In-Reply-To: <003101c5cd7a$e479aa10$0100000a@Omerxp>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC8xx slave USB driver
+Content-Type: text/plain;
+	charset="iso-8859-2"
+Date: Mon, 10 Oct 2005 13:37:12 +0200
+Message-ID: <99477CB23E7ACB4EA366A2B6970DA618060F7E@mcdserver.mcd.com.pl>
+From: "Tomasz Prochownik" <916@mcd.com.pl>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: MPC5200,PSC in uart mode, receiving problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,28 +21,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Alexey Dyatchkov wrote:
-> Hi there,
-> 
-> Please help!
-> I am looking for a slave (client) USB driver for MPC850.
-> We are using slightly modified Denx linux 2.4.12 on our board (modified
-> RPXLITE)
-> 
-Maybe http://www.heeltoe.com/software/usb/usb.html will help this 
-case... Well this at least worths to take a look.
-> Thanks in advance,
-> Alexey
-> 
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
+Hello.
+I'm beginner in ppc linux, so I believe, you can help me. I hope you'll =
+be able to understand my english :o).
+
+I have MPC5200Lite board with Linux from Denx (kernel 2.4.25).
+I try to use PSC in UART mode to read chars from other system.
+
+My init ttyS function:
+
+   i_Fd =3D open("/dev/ttyS2", O_RDWR | O_NOCTTY |O_NDELAY);
+
+   if (i_Fd =3D=3D -1 )
+   {DEBUG_OUT("[ERROR]\r\n");}
+   else
+   {
+	 tcgetattr(i_Fd,&strBufOptions);=09
+	 bzero(&strOptions, sizeof(strOptions));
+	 strOptions.c_cflag =3D Baud | CS8 |CREAD |CLOCAL;
+	 strOptions.c_iflag =3D 0;
+	 strOptions.c_oflag =3D 0;
+	 strOptions.c_lflag =3D 0;
+	 strOptions.c_cc[VTIME] =3D 0;
+	 strOptions.c_cc[VMIN] 	=3D 0;
+	 tcflush(i_Fd, TCIFLUSH);
+         tcsetattr(i_Fd,TCSANOW,&strOptions);
+   }
 
 
--- 
-Sincerely,
-Vitaly
+Everything works fine until first framing error (FE)  in receiver. Since =
+then function read(i_Fd,DataBuffer,CO_MAX_BUF_LEN-1) returns number of =
+received chars, but value of every char in DataBuffer is zero.
+
+I have done some experiments and noticed one more strange things:
+
+1. I use hyperterminal in 115200 baud as root console
+2. If I change speed to 9600, send one char to MPC5200 (framing error?) =
+and change speed back to 115200 -> uart blocks (there is no response in =
+the console).
+..so maybe bug isn't in my code...?
+I have read in errata about blocking uart receiver(bug ID: 364) , but I =
+don't know it can be in my application.
+
+Best regards
+
+-=3D=3D=3D-
+Tomasz Prochownik
+MCD Electronics
+33 861 60 35 w. 13
+916@mcd.com.pl
