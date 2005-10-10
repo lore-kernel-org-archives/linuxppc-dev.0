@@ -1,19 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <olh@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8698668430
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Oct 2005 11:40:35 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Grant Grundler <grundler@parisc-linux.org>
-In-Reply-To: <20051009202301.GC21977@colo.lackof.org>
-References: <20051009202301.GC21977@colo.lackof.org>
-Content-Type: text/plain
-Date: Mon, 10 Oct 2005 11:37:45 +1000
-Message-Id: <1128908266.17365.107.camel@gaston>
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1BC1868457
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Oct 2005 02:33:56 +1000 (EST)
+Date: Mon, 10 Oct 2005 18:33:49 +0200
+From: Olaf Hering <olh@suse.de>
+To: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+Message-ID: <20051010163349.GA1381@suse.de>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Cc: linuxppc-dev@ozlabs.org
-Subject: Re: pmd_alloc() usage incorrect?
+Subject: error: implicit declaration of function 'cpu_die'
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,30 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2005-10-09 at 14:23 -0600, Grant Grundler wrote:
-> Hi,
-> I stumbled across what looks like incorrect code in
-> arch/ppc/kernel/dma-mapping.c:
-> 
-> static int __init dma_alloc_init(void)
-> {
-> ...
->         do {
->                 pgd = pgd_offset(&init_mm, CONSISTENT_BASE);
->                 pmd = pmd_alloc(&init_mm, pgd, CONSISTENT_BASE);
->                 if (!pmd) {
-> ...
-> 
-> Doesn't pmd_alloc() want a pud_t * for the second parameter?
-> ie also need to call pud_alloc() or the equivalent.
-> 
-> I've very little clue how this works...just looking at different
-> bits of code in my quest to understand it well enough to enable
-> USE_HPPA_IOREMAP in include/asm-parisc/io.h.
 
-In theory you are right... However, ppc32 uses a 2 level page tables, so
-this doesn't matter, pud is folded into pgd (and pmd too in fact, you
-probably don't need it neither). It would still be nicer to do the full
-conversion to pud types though.
+How can I fix this properly?
+arch/ppc/kernel/idle.c includes linux/smp.h, which includes asm-smp.h
+only if CONFIG_SMP is defined.
+As a result, cpu_die remains undefined for non-SMP builds.
 
-Ben.
+The include order was changed recently, as this kernel .config built ok with 2.6.13.
+I see cpu_die was introduced recently in include/asm-ppc/smp.h, in 2.6.14-rc1.
+
+
+  CC      arch/ppc/kernel/idle.o
+arch/ppc/kernel/idle.c: In function 'default_idle':
+arch/ppc/kernel/idle.c:58: error: implicit declaration of function 'cpu_die'
+make[1]: *** [arch/ppc/kernel/idle.o] Error 1
+
+
+-- 
+short story of a lazy sysadmin:
+ alias appserv=wotan
