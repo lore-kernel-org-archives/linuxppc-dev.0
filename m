@@ -1,18 +1,18 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id C25DB684C4
+Return-Path: <Alexey@waves.com>
+Received: from exchange.waves.com (mail.waves.com [12.34.136.7])
+	by ozlabs.org (Postfix) with ESMTP id 50685684C6
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 10 Oct 2005 22:07:54 +1000 (EST)
-Message-ID: <434A5998.9000208@ru.mvista.com>
-Date: Mon, 10 Oct 2005 16:07:52 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
+	Mon, 10 Oct 2005 22:19:48 +1000 (EST)
+From: "Alexey Dyatchkov" <alexey@waves.com>
+To: "'Vitaly Bordug'" <vbordug@ru.mvista.com>
+Date: Mon, 10 Oct 2005 14:19:24 +0200
+Message-ID: <006301c5cd94$db129850$0100000a@Omerxp>
 MIME-Version: 1.0
-To: Alexey Dyatchkov <alexey@waves.com>
-References: <006101c5cd92$7bfb1920$0100000a@Omerxp>
-In-Reply-To: <006101c5cd92$7bfb1920$0100000a@Omerxp>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
+In-reply-to: <434A5998.9000208@ru.mvista.com>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC8xx slave USB driver
+Subject: RE: MPC8xx slave USB driver
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,6 +22,18 @@ List-Post: <mailto:linuxppc-embedded@ozlabs.org>
 List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+
+Wow!
+
+Thanks a lot!
+Alexey
+
+-----Original Message-----
+From: Vitaly Bordug [mailto:vbordug@ru.mvista.com] 
+Sent: Monday, October 10, 2005 2:08 PM
+To: Alexey Dyatchkov
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: MPC8xx slave USB driver
 
 Alexey Dyatchkov wrote:
 > Thanks!
