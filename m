@@ -1,24 +1,24 @@
 Return-Path: <wd@denx.de>
-Received: from mailout09.sul.t-online.com (mailout09.sul.t-online.com
-	[194.25.134.84]) by ozlabs.org (Postfix) with ESMTP id 20AA76842D
+Received: from mailout06.sul.t-online.com (mailout06.sul.t-online.com
+	[194.25.134.19]) by ozlabs.org (Postfix) with ESMTP id 2CD84684C9
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Oct 2005 05:37:25 +1000 (EST)
+	Tue, 11 Oct 2005 05:46:50 +1000 (EST)
 Received: from atlas.denx.de (atlas.denx.de [10.0.0.14])
-	by denx.de (Postfix) with ESMTP id 65B0742ABE
+	by denx.de (Postfix) with ESMTP id AC17142ABE
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 10 Oct 2005 21:37:06 +0200 (MEST)
+	Mon, 10 Oct 2005 21:46:35 +0200 (MEST)
 Received: from atlas.denx.de (localhost.localdomain [127.0.0.1])
-	by atlas.denx.de (Postfix) with ESMTP id 67266353ADC
+	by atlas.denx.de (Postfix) with ESMTP id D87E1353CD8
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 10 Oct 2005 21:37:00 +0200 (MEST)
+	Mon, 10 Oct 2005 21:46:29 +0200 (MEST)
 To: linuxppc-embedded@ozlabs.org
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-Date: Mon, 10 Oct 2005 21:37:00 +0200
+Date: Mon, 10 Oct 2005 21:46:29 +0200
 Sender: wd@denx.de
-Message-Id: <20051010193700.67266353ADC@atlas.denx.de>
-Subject: [PATCH] MPC5200 - Make PCI work in 2.6 with the IceCube 5200
+Message-Id: <20051010194629.D87E1353CD8@atlas.denx.de>
+Subject: [PATCH] MPC5200 - Fix compile problems
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,71 +31,95 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 Hello,
 
-the following patch is against the current 2.6 kernel.org tree
-(commit f96c3bbe91117402f13119ce9e609db9087ed58f):
+the following patch  is  against  the  current  2.6  kernel.org  tree
+(commit  f96c3bbe91117402f13119ce9e609db9087ed58f) **after** applying
+following two patches:
 
-As a prerequisite for a working system, the  following  two  poatches
-are needed, too:
 
 http://patchwork.ozlabs.org/linuxppc/patch?id=2018
 http://patchwork.ozlabs.org/linuxppc/patch?id=2017
 
+Without the patch, I get this:
+
+  CC      net/sysctl_net.o
+In file included from drivers/net/fec_mpc52xx/fec.c:33:
+arch/ppc/syslib/bestcomm/bestcomm.h: In function 'sdma_enable_task':
+arch/ppc/syslib/bestcomm/bestcomm.h:130: warning: ISO C90 forbids mixed declarations and code
+  LD      fs/built-in.o
+drivers/net/fec_mpc52xx/fec.c: In function 'fec_reinit':
+drivers/net/fec_mpc52xx/fec.c:525: error: invalid storage class for function 'fec_update_stat'
+make[3]: *** [drivers/net/fec_mpc52xx/fec.o] Error 1
+make[2]: *** [drivers/net/fec_mpc52xx] Error 2
+make[1]: *** [drivers/net] Error 2
+drivers/serial/mpc52xx_uart.c:703: error: static declaration of 'mpc52xx_uart_driver' follows non-static declaration
+drivers/serial/mpc52xx_uart.c:671: error: previous declaration of 'mpc52xx_uart_driver' was here
+make[2]: *** [drivers/serial/mpc52xx_uart.o] Error 1
+make[1]: *** [drivers/serial] Error 2
+
 
 !-------------------------------------------------------------flip-
 
-[patch] making PCI work in the MPC5200
-Patch by Alessandro Rubini, 08 Oct 2005
+MPC5200: Fix compiler warnings with GCC 4.x
 
-Make PCI work in 2.6 with the IceCube 5200.
-
-Without the memory barriers all PCI config reads returned 0xffffffff
-(actually, there may be more mb() than needed). Using wmb(); was not
-enough to be able to read configuration registers.
-
-Signed-off by Alessandro Rubini <rubini@gnudd.com>
 Signed-off by Wolfgang Denk <wd@denx.de>
 
 ---
-commit cdd7fdf10b3cbb7eb82cacc7ba5dba3553020f49
-tree 97d045b44c87c00a4b3fe5bca57b479be87e68b6
-parent 509b5c9fcbfe7fcae7d4f98946e4dc9794d68645
-author Wolfgang Denk <wd@pollux.denx.de> Sat, 08 Oct 2005 22:41:53 +0200
-committer Wolfgang Denk <wd@pollux.denx.de> Sat, 08 Oct 2005 22:41:53 +0200
+commit c55cdf8cbaf7b9f18f9357a9b9e2582ae3326541
+tree e46f7ed10df8d84e3f85439cb3c81bc8a1630487
+parent cdd7fdf10b3cbb7eb82cacc7ba5dba3553020f49
+author Wolfgang Denk <wd@pollux.denx.de> Mon, 10 Oct 2005 21:16:49 +0200
+committer Wolfgang Denk <wd@pollux.denx.de> Mon, 10 Oct 2005 21:16:49 +0200
 
- arch/ppc/syslib/mpc52xx_pci.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ arch/ppc/syslib/bestcomm/bestcomm.h |    4 +++-
+ drivers/net/fec_mpc52xx/fec.c       |    2 +-
+ drivers/serial/mpc52xx_uart.c       |    2 +-
+ 3 files changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/arch/ppc/syslib/mpc52xx_pci.c b/arch/ppc/syslib/mpc52xx_pci.c
---- a/arch/ppc/syslib/mpc52xx_pci.c
-+++ b/arch/ppc/syslib/mpc52xx_pci.c
-@@ -39,6 +39,7 @@ mpc52xx_pci_read_config(struct pci_bus *
- 		((bus->number - hose->bus_offset) << 16) |
- 		(devfn << 8) |
- 		(offset & 0xfc));
-+	mb();
+diff --git a/arch/ppc/syslib/bestcomm/bestcomm.h b/arch/ppc/syslib/bestcomm/bestcomm.h
+--- a/arch/ppc/syslib/bestcomm/bestcomm.h
++++ b/arch/ppc/syslib/bestcomm/bestcomm.h
+@@ -116,6 +116,8 @@ struct sdma_tdt {
  
- 	value = in_le32(hose->cfg_data);
+ static inline void sdma_enable_task(int task)
+ {
++	u16 reg;
++
+ 	DPRINTK("***DMA enable task (%d): tdt = %08x\n",task, sdma.tdt);
+ 	DPRINTK("***tdt->start   = %08x\n",sdma.tdt[task].start);
+ 	DPRINTK("***tdt->stop    = %08x\n",sdma.tdt[task].stop);
+@@ -127,7 +129,7 @@ static inline void sdma_enable_task(int 
+ 	DPRINTK("***tdt->litbase = %08x\n",sdma.tdt[task].litbase);
+ 	DPRINTK("***--------------\n");
  
-@@ -70,6 +71,7 @@ mpc52xx_pci_write_config(struct pci_bus 
- 		((bus->number - hose->bus_offset) << 16) |
- 		(devfn << 8) |
- 		(offset & 0xfc));
-+	mb();
+-	u16 reg = in_be16(&sdma.io->tcr[task]);
++	reg = in_be16(&sdma.io->tcr[task]);
+ 	DPRINTK("***enable task: &sdma.io->tcr=%08x, reg = %04x\n", &sdma.io->tcr, reg);
+ 	out_be16(&sdma.io->tcr[task],  reg | TASK_ENABLE);
+ }
+diff --git a/drivers/net/fec_mpc52xx/fec.c b/drivers/net/fec_mpc52xx/fec.c
+--- a/drivers/net/fec_mpc52xx/fec.c
++++ b/drivers/net/fec_mpc52xx/fec.c
+@@ -522,7 +522,7 @@ static void fec_reinit(struct net_device
+ {
+ 	struct fec_priv *priv = (struct fec_priv *)dev->priv;
+ 	struct mpc52xx_fec *fec = priv->fec;
+-	static void fec_update_stat(struct net_device *);
++	void fec_update_stat(struct net_device *);
  
- 	if (len != 4) {
- 		value = in_le32(hose->cfg_data);
-@@ -80,9 +82,11 @@ mpc52xx_pci_write_config(struct pci_bus 
+ 	netif_stop_queue(dev);
+ 	out_be32(&fec->imask, 0x0);
+diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
+--- a/drivers/serial/mpc52xx_uart.c
++++ b/drivers/serial/mpc52xx_uart.c
+@@ -668,7 +668,7 @@ mpc52xx_console_setup(struct console *co
+ }
  
- 		value &= ~mask;
- 		val = value | ((val << offset) & mask);
-+		mb();
- 	}
  
- 	out_le32(hose->cfg_data, val);
-+	mb();
+-extern struct uart_driver mpc52xx_uart_driver;
++static struct uart_driver mpc52xx_uart_driver;
  
- 	out_be32(hose->cfg_addr, 0);
- 
+ static struct console mpc52xx_console = {
+ 	.name	= "ttyS",
 
 
 
@@ -110,5 +134,6 @@ Wolfgang Denk
 -- 
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Experience is what causes a person to make new  mistakes  instead  of
-old ones.
+...when fits of creativity run strong, more than  one  programmer  or
+writer  has  been  known to abandon the desktop for the more spacious
+floor.                                             - Fred Brooks, Jr.
