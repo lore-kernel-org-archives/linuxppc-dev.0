@@ -1,19 +1,24 @@
-Return-Path: <Simon.Richter@hogyros.de>
-Received: from kleinhenz.com (kleinhenz.com [213.239.205.196])
-	by ozlabs.org (Postfix) with ESMTP id 08F63684B3
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Oct 2005 02:49:27 +1000 (EST)
-Message-ID: <434A9B87.409@hogyros.de>
-Date: Mon, 10 Oct 2005 18:49:11 +0200
-From: Simon Richter <Simon.Richter@hogyros.de>
-MIME-Version: 1.0
-To: Olaf Hering <olh@suse.de>
-References: <20051010163349.GA1381@suse.de>
-In-Reply-To: <20051010163349.GA1381@suse.de>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="------------enig07F106E2873239CE1A4D080A"
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: error: implicit declaration of function 'cpu_die'
+Return-Path: <olh@suse.de>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id EA288683D5
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Oct 2005 03:09:02 +1000 (EST)
+Date: Mon, 10 Oct 2005 19:08:57 +0200
+From: Olaf Hering <olh@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Andrew Morton <akpm@osdl.org>
+Message-ID: <20051010170857.GB9928@suse.de>
+References: <20050824115452.GA29148@suse.de> <1124922771.5159.134.camel@gaston>
+	<20050825045108.GA19792@suse.de> <1124946481.7906.8.camel@gaston>
+	<20050825051528.GB19792@suse.de> <1124948071.7907.10.camel@gaston>
+	<20050826113827.GA25134@suse.de> <1127090662.4502.12.camel@gaston>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1127090662.4502.12.camel@gaston>
+Cc: linuxppc-dev@ozlabs.org
+Subject: [PATCH] AC Power handling broken for desktops
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,65 +28,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig07F106E2873239CE1A4D080A
-Content-Type: multipart/mixed; boundary="------------050905070208020306050005"
 
-This is a multi-part message in MIME format.
---------------050905070208020306050005
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Currently, AC Power is 0 on a desktop G4.
+No batteries present should mean AC Power == 1.
 
-Hi,
+Signed-off-by: Olaf Hering <olh@suse.de>
 
-> arch/ppc/kernel/idle.c includes linux/smp.h, which includes asm-smp.h
-> only if CONFIG_SMP is defined.
-> As a result, cpu_die remains undefined for non-SMP builds.
+ drivers/macintosh/apm_emu.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-I have used the attached patch for my tree[1], but this needs to be 
-cross-checked with the other architectures.
-
-    Simon
-
-[1] where I merge the APUS stuff by Roman Zippel -- 
-http://www.psi5.com/~geier/linux-2.6-apus.git
-
---------------050905070208020306050005
-Content-Type: text/plain;
- name="cpu_die.diff"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="cpu_die.diff"
-
-ZGlmZiAtLWdpdCBhL2luY2x1ZGUvYXNtLXBwYy9zbXAuaCBiL2luY2x1ZGUvYXNtLXBwYy9z
-bXAuaAotLS0gYS9pbmNsdWRlL2FzbS1wcGMvc21wLmgKKysrIGIvaW5jbHVkZS9hc20tcHBj
-L3NtcC5oCkBAIC02NiwxMSArNjYsNyBAQCBleHRlcm4gc3RydWN0IGtsb2NrX2luZm9fc3Ry
-dWN0IGtsb2NrX2luCiAKICNlbmRpZiAvKiBfX0FTU0VNQkxZX18gKi8KIAotI2Vsc2UgLyog
-IShDT05GSUdfU01QKSAqLwotCi1zdGF0aWMgaW5saW5lIHZvaWQgY3B1X2RpZSh2b2lkKSB7
-IH0KLQotI2VuZGlmIC8qICEoQ09ORklHX1NNUCkgKi8KKyNlbmRpZiAvKiBDT05GSUdfU01Q
-ICovCiAKICNlbmRpZiAvKiAhKF9QUENfU01QX0gpICovCiAjZW5kaWYgLyogX19LRVJORUxf
-XyAqLwpkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9zbXAuaCBiL2luY2x1ZGUvbGludXgv
-c21wLmgKLS0tIGEvaW5jbHVkZS9saW51eC9zbXAuaAorKysgYi9pbmNsdWRlL2xpbnV4L3Nt
-cC5oCkBAIC05OSw2ICs5OSw3IEBAIHZvaWQgc21wX3ByZXBhcmVfYm9vdF9jcHUodm9pZCk7
-CiBzdGF0aWMgaW5saW5lIHZvaWQgc21wX3NlbmRfcmVzY2hlZHVsZShpbnQgY3B1KSB7IH0K
-ICNkZWZpbmUgbnVtX2Jvb3RpbmdfY3B1cygpCQkJMQogI2RlZmluZSBzbXBfcHJlcGFyZV9i
-b290X2NwdSgpCQkJZG8ge30gd2hpbGUgKDApCitzdGF0aWMgaW5saW5lIHZvaWQgY3B1X2Rp
-ZSh2b2lkKSB7IH0KIAogI2VuZGlmIC8qICFTTVAgKi8KIAo=
---------------050905070208020306050005--
-
---------------enig07F106E2873239CE1A4D080A
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
-
-iQCVAwUBQ0qbilYr4CN7gCINAQIivgP/RRyW0Z5L9T9jslx25UBscOqVNc3FLfCF
-nLzWZ/7ObrT1YE5xHiDd+aPx4tPaICQeBdeXy+MoA4JMdgVYNwacoUlLw/rUkBqQ
-X/gEXu4RXetHdVlXLekl6ZGv9ZYDDxMVBLoNth0f7xqmiPrHo0dygFFUExK1d4aD
-gvSrRHLIIb4=
-=wxq4
------END PGP SIGNATURE-----
-
---------------enig07F106E2873239CE1A4D080A--
+Index: linux-2.6.13-rc7-ac-power/drivers/macintosh/apm_emu.c
+===================================================================
+--- linux-2.6.13-rc7-ac-power.orig/drivers/macintosh/apm_emu.c
++++ linux-2.6.13-rc7-ac-power/drivers/macintosh/apm_emu.c
+@@ -430,8 +430,8 @@ static int apm_emu_get_info(char *buf, c
+ 	      -1: Unknown
+ 	   8) min = minutes; sec = seconds */
+ 
+-	unsigned short  ac_line_status = 0xff;
+-	unsigned short  battery_status = 0xff;
++	unsigned short  ac_line_status;
++	unsigned short  battery_status = 0;
+ 	unsigned short  battery_flag   = 0xff;
+ 	int		percentage     = -1;
+ 	int             time_units     = -1;
+@@ -446,6 +446,7 @@ static int apm_emu_get_info(char *buf, c
+ 	ac_line_status = ((pmu_power_flags & PMU_PWR_AC_PRESENT) != 0);
+ 	for (i=0; i<pmu_battery_count; i++) {
+ 		if (pmu_batteries[i].flags & PMU_BATT_PRESENT) {
++			battery_status++;
+ 			if (percentage < 0)
+ 				percentage = 0;
+ 			if (charge < 0)
+@@ -461,6 +462,9 @@ static int apm_emu_get_info(char *buf, c
+ 				charging++;
+ 		}
+ 	}
++	if (0 == battery_status)
++		ac_line_status = 1;
++	battery_status = 0xff;
+ 	if (real_count) {
+ 		if (amperage < 0) {
+ 			if (btype == PMU_BATT_TYPE_SMART)
+-- 
+short story of a lazy sysadmin:
+ alias appserv=wotan
