@@ -1,19 +1,29 @@
-Return-Path: <apoorvsangal@gmail.com>
-Message-ID: <a79669360510100340g2563b441w9418001c034dbe5b@mail.gmail.com>
-Date: Mon, 10 Oct 2005 16:10:30 +0530
-From: apoorv sangal <apoorvsangal@gmail.com>
-To: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>,
-	Linuxppc-embedded@ozlabs.org, david.jander@protonic.nl
-In-Reply-To: <20051007123126.GA6879@cathedrallabs.org>
+Return-Path: <a.hawkins@cabletime.com>
+Received: from anchor-fallback-93.mail.demon.net
+	(anchor-fallback-93.mail.demon.net [194.217.242.93])
+	by ozlabs.org (Postfix) with ESMTP id 570376842B
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 10 Oct 2005 21:03:21 +1000 (EST)
+Received: from anchor-post-30.mail.demon.net ([194.217.242.88]:3839 "EHLO
+	anchor-post-30.mail.demon.net") by anchor-fallback-93.mail.demon.net
+	with ESMTP id S828687AbVIMKFf (ORCPT
+	<rfc822;linuxppc-embedded@ozlabs.org>);
+	Tue, 13 Sep 2005 11:05:35 +0100
+Received: from mailgate.cabletime.com ([80.177.138.66] helo=cabletime.com)
+	by anchor-post-30.mail.demon.net with esmtp (Exim 4.42)
+	id 1EF7f5-000NRA-2x
+	for linuxppc-embedded@ozlabs.org; Tue, 13 Sep 2005 10:05:13 +0000
+Received: from adh.cabletime.com ([191.53.51.21] helo=adh)
+	by cabletime.com with smtp (Exim 3.35 #1 (Debian))
+	id 1EF7es-0004jm-00
+	for <linuxppc-embedded@ozlabs.org>; Tue, 13 Sep 2005 11:04:58 +0100
+From: "Andy Hawkins" <a.hawkins@cabletime.com>
+To: <linuxppc-embedded@ozlabs.org>
+Message-ID: <002a01c5b84a$99881450$153335bf@cabletime.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_20833_22641474.1128940830157"
-References: <a79669360510062205v629affb9ga687078f018afae@mail.gmail.com>
-	<20051007123126.GA6879@cathedrallabs.org>
-Cc: apoorv sangal <apoorv_sangal@satyam.com>, vikrant_basotra@satyam.com,
-	sibi_mathew@satyam.com
-Subject: Re: Problem Regarding Ping in Linux kernel version 2.4.24
-Reply-To: apoorv sangal <apoorvsangal@gmail.com>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Help with PCMCIA Compact Flash on PPC405 EP
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,92 +33,28 @@ List-Post: <mailto:linuxppc-embedded@ozlabs.org>
 List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+Date: Mon, 10 Oct 2005 11:03:23 -0000
 
-------=_Part_20833_22641474.1128940830157
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hi,
 
-Hi
-Thanks for the inputs... As per your suggestion I commented
- { mk_mii_write(MII_REG_CR, 0x1200), NULL }, /* autonegotiate */
-but it doesn't make any diffrence, still the ping doesn't worked.
- At Boot loader level (u-boot) Ping works fine,
-    Regards
-Apoorv Sangal
+We're using a PCMCIA adapter (TI PCI1510 PC card Cardbus Controller) on a
+PPC 405 EP running a Montavista 2.4.20 kernel. The PCMCIA adapter works
+correctly, as we can insert a hard disk into there, and successfully mount
+and access it.
 
+However, when we insert a Compact Flash adapter (Lexar Media PC Card Adapter
+part 2076-C) with a Compact Flash card (PNY 1 Gig CompactFlash EMET1034) the
+whole board appears to go into a tight loop. I've stepped the code using a
+BDI, and it appears that the PCMCIA adapter is continually generating
+interrupts, but the handler routine in yenta.c thinks that there's nothing
+to do.
 
- On 10/7/05, Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org> wrote:
->
-> Hi,
-> > I have ported Linux kernel version 2.4.24 on MPC8266 based customized
-> > Board, having LXT971 ethernet chip.
-> > The root file system is JFFS2 which i have made using mkfs.jffs2 utilit=
-y
-> which
-> > comes along with the ELDK 3.0
-> > In the kernel code i checked that there is support for the LXT971 chip,
-> but
-> > even after enabling all the network related funcuntionalities in the
-> linux
-> > kernel configuration, I am either not able to ping from the board to an=
-y
-> > machine on the network, nor from the any other machine to the board.
-> > The board is able to ping itself.
-> > Can some one please throw some light why the board is not able to ping
-> any
-> > other machine.
-> try to comment this line in LXT971 section of driver:
-> { mk_mii_write(MII_REG_CR, 0x1200), NULL }, /* autonegotiate */
-> and check if it works
->
-> --
-> Aristeu
->
->
+Removing the CF card will bring the system back to life. It appears to be
+generating something like 350,000 interrupts every second while the card is
+inserted.
 
-------=_Part_20833_22641474.1128940830157
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Can anyone offer any advice?
 
-<div>Hi </div>
-<div>Thanks for the inputs... As per your suggestion I commented </div>
-<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;{ mk_m=
-ii_write(MII_REG_CR, 0x1200), NULL }, /* autonegotiate */</div>
-<div>but it doesn't make any diffrence, still the ping doesn't worked.</div=
->
-<div>&nbsp;</div>
-<div>At Boot loader level (u-boot) Ping works fine, </div>
-<div>&nbsp;</div>
-<div>&nbsp;</div>
-<div>&nbsp;</div>
-<div>
-<div>Regards</div><span class=3D"sg">
-<div>Apoorv Sangal</div></span></div>
-<div>&nbsp;</div>
-<div><br><br>&nbsp;</div>
-<div><span class=3D"gmail_quote">On 10/7/05, <b class=3D"gmail_sendername">=
-Aristeu Sergio Rozanski Filho</b> &lt;<a href=3D"mailto:aris@cathedrallabs.=
-org">aris@cathedrallabs.org</a>&gt; wrote:</span>
-<blockquote class=3D"gmail_quote" style=3D"PADDING-LEFT: 1ex; MARGIN: 0px 0=
-px 0px 0.8ex; BORDER-LEFT: #ccc 1px solid">Hi,<br>&gt;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I have ported Linux kernel version =
-2.4.24 on MPC8266 based customized<br>&gt; Board,&nbsp;&nbsp;having LXT971 =
-ethernet chip.
-<br>&gt; The root file system is JFFS2 which i have made using mkfs.jffs2 u=
-tility which<br>&gt; comes along with the ELDK 3.0<br>&gt; In the kernel co=
-de i checked that there is support for the LXT971 chip, but<br>&gt; even af=
-ter enabling all the network related funcuntionalities in the linux
-<br>&gt; kernel configuration, I am either not able to ping from the board =
-to any<br>&gt; machine on the network, nor from the any other machine to th=
-e board.<br>&gt; The board is able to ping itself.<br>&gt; Can some one ple=
-ase throw some light why the board is not able to ping any
-<br>&gt; other machine.<br>try to comment this line in LXT971 section of dr=
-iver:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; { mk_mii_write(MII_REG_CR, 0x=
-1200), NULL }, /* autonegotiate */<br>and check if it works<br><br>--<br>Ar=
-isteu<br><br></blockquote>
-</div><br>
+Thanks
 
-------=_Part_20833_22641474.1128940830157--
+Andy
