@@ -1,18 +1,22 @@
-Return-Path: <dmytro.bablinyuk@rftechnology.com.au>
-Received: from mfep8.connect.com.au (fep8.mfe.bur.connect.com.au [203.63.86.8])
-	by ozlabs.org (Postfix) with ESMTP id 34759684CE
+Return-Path: <achim.machura@berghof.com>
+Received: from mail123.messagelabs.com (mail123.messagelabs.com [85.158.136.3])
+	by ozlabs.org (Postfix) with SMTP id ECDA368387
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Oct 2005 10:13:18 +1000 (EST)
-Message-ID: <434B03A2.8060608@rftechnology.com.au>
-Date: Tue, 11 Oct 2005 10:13:22 +1000
-From: Dmytro Bablinyuk <dmytro.bablinyuk@rftechnology.com.au>
+	Mon, 10 Oct 2005 23:21:05 +1000 (EST)
+Received: from BATEEE52 (batee-e52.be-int [10.255.241.52])
+	by pegasus.berghof.com (8.12.10/8.12.10) with SMTP id j9ADDgMM011747
+	for <linuxppc-embedded@ozlabs.org>; Mon, 10 Oct 2005 15:13:42 +0200
+From: "Achim Machura" <achim.machura@berghof.com>
+To: "'Tomasz Prochownik'" <916@mcd.com.pl>
+Date: Mon, 10 Oct 2005 15:13:35 +0200
+Message-ID: <000b01c5cd9c$6ca23850$34f1ff0a@beint.local>
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-References: <20051010234614.1FE2A353D84@atlas.denx.de>
-In-Reply-To: <20051010234614.1FE2A353D84@atlas.denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: boot-time partitions and bootargs for 2.6.14
+Content-Type: text/plain;
+	charset="iso-8859-2"
+In-Reply-To: <99477CB23E7ACB4EA366A2B6970DA618060F7E@mcdserver.mcd.com.pl>
+Cc: "Linuxppc-Embedded \(E-Mail\)" <linuxppc-embedded@ozlabs.org>
+Subject: AW: MPC5200,PSC in uart mode, receiving problem
+Reply-To: achim.machura@berghof.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,25 +27,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> Are you sure that your flash device name in Linux is just "0" ? 
-I think you are right. I missed the point.
+Hello Tomasz
 
-=> flinfo
+> blocks (there is no response in the console).
 
-Bank # 1: Sharp 28F016SC (16 Mbit, 32 x 64K)
-   Size: 8 MB in 32 Sectors
-   Sector Start Addresses:
-     FF800000      FF840000      FF880000      FF8C0000      FF900000
-     FF940000      FF980000      FF9C0000      FFA00000      FFA40000
-     FFA80000      FFAC0000      FFB00000      FFB40000      FFB80000
-     FFBC0000      FFC00000      FFC40000      FFC80000      FFCC0000
-     FFD00000      FFD40000      FFD80000      FFDC0000      FFE00000
-     FFE40000      FFE80000      FFEC0000      FFF00000 (RO) FFF40000 (RO)
-     FFF80000      FFFC0000
+perhaps we have the same problem a few times ago.
+When we connect devices on ttySx which have wrong level on the lines the
+uart stay in break mode.
 
-So I have
-mtdparts=1:1024k(Linux),4096k(FS),2048k(Unused),512k(U-Boot),512()
+I have made some fixes on the psc-driver. With these fixes the uart works,
+but i don't know how efficient.
+(clear breakmode and clear buffer)
 
-But problem remains...
-Kernel panic - not syncing: VFS: Unable to mount root fs on 
-unknown-block(31,1)
+If you want, i can send the code
+
+
+best regards
+achim
