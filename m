@@ -1,19 +1,18 @@
-Return-Path: <wd@denx.de>
-Received: from mailout07.sul.t-online.com (mailout07.sul.t-online.com
-	[194.25.134.83]) by ozlabs.org (Postfix) with ESMTP id 43FA568532
+Return-Path: <dmytro.bablinyuk@rftechnology.com.au>
+Received: from mfep5.connect.com.au (fep5.mfe.bur.connect.com.au [203.63.86.5])
+	by ozlabs.org (Postfix) with ESMTP id 9ADC168542
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Oct 2005 17:19:01 +1000 (EST)
-To: achim.machura@berghof.com,
-	"Linuxppc-Embedded (E-Mail)" <linuxppc-embedded@ozlabs.org>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 11 Oct 2005 08:55:34 +0200."
-	<81A66F72DCACD511B0600002A551BFCB08EE8AD4@kuumex05.barco.com>
-Date: Tue, 11 Oct 2005 09:18:41 +0200
-Sender: wd@denx.de
-Message-Id: <20051011071841.6C0FE353ADC@atlas.denx.de>
-Subject: Re: MPC5200,PSC in uart mode, receiving problem 
+	Tue, 11 Oct 2005 17:33:09 +1000 (EST)
+Message-ID: <434B6AB4.3060604@rftechnology.com.au>
+Date: Tue, 11 Oct 2005 17:33:08 +1000
+From: Dmytro Bablinyuk <dmytro.bablinyuk@rftechnology.com.au>
+MIME-Version: 1.0
+To: Wolfgang Denk <wd@denx.de>
+References: <20051011071754.8F73D353ADC@atlas.denx.de>
+In-Reply-To: <20051011071754.8F73D353ADC@atlas.denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: boot-time partitions and bootargs for 2.6.14
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,19 +23,10 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <81A66F72DCACD511B0600002A551BFCB08EE8AD4@kuumex05.barco.com> you wrote:
 > 
-> This message is in MIME format. Since your mail reader does not understand
-> this format, some or all of this message may not be legible.
+> Make sure to add the mtdparts=... stuff to your bootargs!
+> 
+Yep, thank you all. Indeed I missed it.
+I will be more careful next time.
 
-Even better, post a patch here on the list so we all can benefit.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-The only time the world beats a path to your door is when you are  in
-the bathroom.
+Thank you again!
