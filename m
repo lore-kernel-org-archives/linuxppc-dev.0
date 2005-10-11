@@ -1,17 +1,18 @@
-Return-Path: <stefan.nickl@kontron.com>
-Received: from KOM-MAILSRV1.kontron-modular.com (unknown [62.159.155.196])
-	by ozlabs.org (Postfix) with ESMTP id 6E6D768557
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Oct 2005 21:10:08 +1000 (EST)
+Return-Path: <markc@mail.com>
+Message-ID: <005801c5ce5e$a5fd8470$0301a8c0@chuck2>
+From: "Mark Chambers" <markc@mail.com>
+To: "apoorv sangal" <apoorvsangal@gmail.com>,
+	<Linuxppc-embedded@ozlabs.org>
+References: <a79669360510062205v629affb9ga687078f018afae@mail.gmail.com>
+	<20051007123126.GA6879@cathedrallabs.org>
+	<a79669360510100340g2563b441w9418001c034dbe5b@mail.gmail.com>
+	<003d01c5cd97$34404470$0301a8c0@chuck2>
+	<a79669360510102327o694dffb4pcf8ead02d95c9414@mail.gmail.com>
+Date: Tue, 11 Oct 2005 08:23:45 -0400
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Date: Tue, 11 Oct 2005 12:57:59 +0200
-Message-ID: <DADA32856852FC458E0F96B664A6F55E73A8EF@kom-mailsrv1.kontron-modular.com>
-From: "Stefan Nickl" <stefan.nickl@kontron.com>
-To: "Gerhard Jaeger" <g.jaeger@sysgo.com>
-Cc: Stefan Nickl <stefan.nickl@kontron.com>, linuxppc-embedded@ozlabs.org
-Subject: RE: Which PHY connection to use on MPC8541...
+	charset="iso-8859-1"
+Subject: Re: Problem Regarding Ping in Linux kernel version 2.4.24
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,57 +23,72 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+
+
 Hi,
+I am sending the output from the console of the boot sequence and ifconfig
+command as following.
+Please check the same and let me know where i am going wrong.
+****************************************************************************
+***************************
+[snip]
 
-about a year ago we resorted to using port pin MDIO in this situation
-for the FCCs because the fcc_enet driver and the gianfar driver live
-in separate worlds, so to speak.
+eth0: FCC2 ENET Version 0.4, 00:10:EC:40:30:8C
 
-But in the meantime, Andy Fleming was very active regarding the PHY
-abstraction layer. I still haven't seen patches that migrate fcc_enet
-to using this layer, but the gianfar driver seems to use this code now.
+[snip]
+init started: BusyBox v0.60.5 (2004.11.09-16:07+0000) multi-call
+binarymount: Mounting /dev/ram0 on /tmp failed: Invalid argument
+# ifconfig eth0 down
+# ifconfig eth0 172.19.56.218
+# ifconfig eth0 up
+# ifconfig
+eth0 Link encap:Ethernet HWaddr 00:10:EC:40:30:8C
+inet addr:172.19.56.218 Bcast:172.19.255.255 Mask:255.255.0.0
+UP BROADCAST RUNNING MULTICAST MTU:1500 Metric:1
+RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+collisions:0 txqueuelen:1000
+RX bytes:0 (0.0 iB) TX bytes:0 (0.0 iB)
+Base address:0x8500
+lo Link encap:Local Loopback
+inet addr:127.0.0.1 Mask:255.0.0.0
+UP LOOPBACK RUNNING MTU:16436 Metric:1
+RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+collisions:0 txqueuelen:0
+RX bytes:0 (0.0 iB) TX bytes:0 (0.0 iB)
+# ping 127.0.0.1
+PING 127.0.0.1 (127.0.0.1): 56 data bytes
+64 bytes from 127.0.0.1: icmp_seq=0 ttl=64 time=0.6 ms
+64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=0.2 ms
+64 bytes from 127.0.0.1: icmp_seq=2 ttl=64 time=0.2 ms
+64 bytes from 127.0.0.1: icmp_seq=3 ttl=64 time=0.2 ms
+64 bytes from 127.0.0.1: icmp_seq=4 ttl=64 time=0.2 ms
+--- 127.0.0.1 ping statistics ---
+5 packets transmitted, 5 packets received, 0% packet loss
+round-trip min/avg/max = 0.2/0.2/0.6 ms
+#
+# ping 172.19.59.101
+PING 172.19.59.101 (172.19.59.101): 56 data bytes
+--- 172.19.59.101 ping statistics ---
+6 packets transmitted, 0 packets received, 100% packet loss
+****************************************************************************
+***************************
+Regards,
+Apoorv Sangal.
 
-So I'd say quick solution: use TSEC1 MDIO for TSECs and cpm port pins
-for FCC, clean solution: change fcc_enet to use the PHY abstraction
-layer.
 
---=20
-Stefan Nickl
-Kontron Modular Computers
+It appears you have correctly assigned MAC and IP addresses.  The problem
+does appear to be at
+the hardware level, because the ethernet interface is not doing anything at
+all.  My guess would be
+that the driver is not configured for the correct pins.  You mentioned that
+you are using custom hardware,
+so look, probably in arch/ppc/8260_io/fcc_enet.c and make sure you have it
+configured for Tx and
+Rx clock coming in on the right pins, and also check that you are configured
+for the correct PHY
+interrupt.
 
-
-> -----Original Message-----
-> From: linuxppc-embedded-bounces@ozlabs.org=20
-> [mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of=20
-> Gerhard Jaeger
-> Sent: Tuesday, October 11, 2005 12:14 PM
-> To: linuxppc-embedded@ozlabs.org
-> Subject: Which PHY connection to use on MPC8541...
->=20
-> Hi list,
->=20
-> we're currently designing a custon MPC8541 based board having=20
-> three ethernet connections.
-> For some reasons, we'd like to use the FCC1 and 2 + TSEC1.=20
-> From what I see from the docs, it should be no problem to=20
-> connect i.e. a quad phy (for FCC1/2) and a gigabit phy (for=20
-> TSEC1) to the EC_MDIO of the TSEC as long as they have=20
-> different addresses.=20
-> I don't want to use the GPIO stuff for MDIO.
->=20
-> The question is, what does this mean to the drivers? For the=20
-> gianfar driver this should be okay and from what I see, the=20
-> upcoming fs_enet driver supports also a phy connected either=20
-> to the GPIOs (bitbanging) or the TSEC MDIO. Is this right, or=20
-> am I missing something essential?=20
-> Would it be better to use the GPIO-MDIO for the FCC phy and=20
-> the TSEC-MDIO for the TSEC phy?
->=20
-> TIA
-> Gerhard
->=20
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->=20
+Good luck,
+Mark Chambers
