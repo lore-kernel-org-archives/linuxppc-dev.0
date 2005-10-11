@@ -1,18 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 43542684C5
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Oct 2005 11:43:51 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andrew Morton <akpm@osdl.org>
-Content-Type: text/plain
-Date: Wed, 12 Oct 2005 11:39:33 +1000
-Message-Id: <1129081173.17365.264.camel@gaston>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linus Torvalds <torvalds@osdl.org>
-Subject: [PATCH] ppc32: Fix timekeeping
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc64-dev@ozlabs.org
+Date: Tue, 11 Oct 2005 20:54:51 +0200
+References: <17227.44943.714106.911471@cargo.ozlabs.ibm.com>
+In-Reply-To: <17227.44943.714106.911471@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200510112054.52348.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: merge progress
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,32 +19,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Interestingly enough, ppc32 had broken timekeeping for ages... It
-worked, but probably drifted a bit more than could be explained by the
-actual bad precision of the timebase calibration. We discovered that
-recently when somebody figured out that the common code was using
-CLOCK_TICK_RATE to correct the timekeeing, and ppc32 had a completely
-bogus value for it.
+On Dinsdag 11 Oktober 2005 14:26, Paul Mackerras wrote:
+> With ARCH=ppc64, pSeries, iSeries, powermac and maple all build, and
+> pSeries and iSeries have been boot-tested.  I think I have broken
+> BPA/cell because it was using pSeries_smp.c (I think we need to make
+> cell have its own bpa_smp.c or whatever anyway).
 
-This patch turns it into something saner. Probably not as good as doing
-something based on the actual timebase frequency precision but I'll
-leave that sort of math to others. This at least makes it better for the
-common HZ values.
+I will fix that up when I move BPA over to arch/powerpc/platforms/cell.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
-Please get that one in 2.6.14
+Do you plan to have the whole merge tree included in 2.6.15? Otherwise
+I'd rather postpone doing the structural changes on BPA until November,
+because we're currently freezing our spufs development to 2.6.14 and
+I'd like to have only one current set of big patches.
 
-Index: linux-work/include/asm-powerpc/timex.h
-===================================================================
---- linux-work.orig/include/asm-powerpc/timex.h	2005-09-22 14:07:27.000000000 +1000
-+++ linux-work/include/asm-powerpc/timex.h	2005-10-06 11:53:51.000000000 +1000
-@@ -10,7 +10,7 @@
- #include <linux/config.h>
- #include <asm/cputable.h>
- 
--#define CLOCK_TICK_RATE	1193180 /* Underlying HZ */
-+#define CLOCK_TICK_RATE	1024000 /* Underlying HZ */
- 
- typedef unsigned long cycles_t;
- 
+	Arnd <><
