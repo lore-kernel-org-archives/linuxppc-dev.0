@@ -1,15 +1,19 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc64-dev@ozlabs.org
-Date: Tue, 11 Oct 2005 20:54:51 +0200
-References: <17227.44943.714106.911471@cargo.ozlabs.ibm.com>
-In-Reply-To: <17227.44943.714106.911471@cargo.ozlabs.ibm.com>
+Return-Path: <reiser@namesys.com>
+Received: from rwcrmhc12.comcast.net (rwcrmhc14.comcast.net [204.127.198.54])
+	by ozlabs.org (Postfix) with ESMTP id E735868302
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Oct 2005 06:12:59 +1000 (EST)
+Message-ID: <434C1ACF.5040006@namesys.com>
+Date: Tue, 11 Oct 2005 13:04:31 -0700
+From: Hans Reiser <reiser@namesys.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200510112054.52348.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: merge progress
+To: Olaf Hering <olh@suse.de>
+References: <20050426211019.GA11579@suse.de> <426F9646.3000407@namesys.com>
+	<20051011190133.GA31348@suse.de>
+In-Reply-To: <20051011190133.GA31348@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	reiserfs-dev@namesys.com, Jeff Mahoney <jeffm@suse.de>
+Subject: Re: [PATCH] make gcc -O1 in fs/reiserfs optional
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,17 +23,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Dinsdag 11 Oktober 2005 14:26, Paul Mackerras wrote:
-> With ARCH=ppc64, pSeries, iSeries, powermac and maple all build, and
-> pSeries and iSeries have been boot-tested.  I think I have broken
-> BPA/cell because it was using pSeries_smp.c (I think we need to make
-> cell have its own bpa_smp.c or whatever anyway).
+Sounds good to me.  Thanks Olaf!
 
-I will fix that up when I move BPA over to arch/powerpc/platforms/cell.
+Hans
 
-Do you plan to have the whole merge tree included in 2.6.15? Otherwise
-I'd rather postpone doing the structural changes on BPA until November,
-because we're currently freezing our spufs development to 2.6.14 and
-I'd like to have only one current set of big patches.
+Olaf Hering wrote:
 
-	Arnd <><
+> On Wed, Apr 27, Hans Reiser wrote:
+>
+>  
+>
+>>Olaf Hering wrote:
+>>
+>>    
+>>
+>>>Jeff,
+>>>
+>>>you added this EXTRA_CFLAGS= during 2.4 development, I think the broken
+>>>compiler was gcc 3.2 on SLES8. Can we turn this -O1 into a .config
+>>>option?
+>>>      
+>>>
+>
+>  
+>
+>>Sounds reasonable.
+>>    
+>>
+>
+> only compile with -O1 if the (very old) compiler is broken
+> We use reiserfs alot in SLES9 on ppc64, and it was never seen
+> with gcc33.
+>
+>Signed-off-by: Olaf Hering <olh@suse.de>
+>
+>Index: linux-2.6.12-rc3-olh/fs/reiserfs/Makefile
+>===================================================================
+>--- linux-2.6.12-rc3-olh.orig/fs/reiserfs/Makefile
+>+++ linux-2.6.12-rc3-olh/fs/reiserfs/Makefile
+>@@ -21,13 +21,7 @@ ifeq ($(CONFIG_REISERFS_FS_POSIX_ACL),y)
+> reiserfs-objs += xattr_acl.o
+> endif
+> 
+>-# gcc -O2 (the kernel default)  is overaggressive on ppc32 when many inline
+>-# functions are used.  This causes the compiler to advance the stack
+>-# pointer out of the available stack space, corrupting kernel space,
+>-# and causing a panic. Since this behavior only affects ppc32, this ifeq
+>-# will work around it. If any other architecture displays this behavior,
+>-# add it here.
+>-ifeq ($(CONFIG_PPC32),y)
+>+ifeq ($(CONFIG_REISERFS_CC_REDUCE_OPTIMZE),y)
+> EXTRA_CFLAGS := -O1
+> endif
+> 
+>Index: linux-2.6.12-rc3-olh/fs/Kconfig
+>===================================================================
+>--- linux-2.6.12-rc3-olh.orig/fs/Kconfig
+>+++ linux-2.6.12-rc3-olh/fs/Kconfig
+>@@ -186,6 +186,18 @@ config REISERFS_FS
+> 	  If you like it, you can pay us to add new features to it that you
+> 	  need, buy a support contract, or pay us to port it to another OS.
+> 
+>+config REISERFS_CC_REDUCE_OPTIMZE
+>+	bool "Reduce CC optimization level to workaround compiler bugs"
+>+	depends on PPC32
+>+	default n
+>+	help
+>+	  gcc -O2 (the kernel default) is overaggressive on ppc32 when many inline
+>+	  functions are used.  This causes the compiler to advance the stack
+>+	  pointer out of the available stack space, corrupting kernel space,
+>+	  and causing a panic. Since this behavior only affects ppc32, this ifeq
+>+	  will work around it. If any other architecture displays this behavior,
+>+	  add it here.
+>+
+> config REISERFS_CHECK
+> 	bool "Enable reiserfs debug mode"
+> 	depends on REISERFS_FS
+>  
+>
