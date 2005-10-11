@@ -1,16 +1,19 @@
-Return-Path: <JohnsonCheng@qnap.com.tw>
-Received: from qnap.com.tw (unknown [211.75.85.27])
-	by ozlabs.org (Postfix) with SMTP id B467868541
+Return-Path: <vbordug@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id 2C77368541
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Oct 2005 22:52:45 +1000 (EST)
-From: "JohnsonCheng" <JohnsonCheng@qnap.com.tw>
-To: "linux-ppc-embedded" <linuxppc-embedded@ozlabs.org>
-Date: Tue, 11 Oct 2005 20:52:29 +0800
+	Tue, 11 Oct 2005 23:10:04 +1000 (EST)
+Message-ID: <434BB9AA.1090000@ru.mvista.com>
+Date: Tue, 11 Oct 2005 17:10:02 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_009F_01C5CEA5.B29A9CD0"
-Message-Id: <20051011125245.B467868541@ozlabs.org>
-Subject: make modules failed.
+To: Dmytro Bablinyuk <dmytro.bablinyuk@rftechnology.com.au>
+References: <20051010234614.1FE2A353D84@atlas.denx.de><434B12C5.2050809@tait	.co.nz>	<434B2D23.2020208@rftechnology.com.au>	<434B3072.1090008@tait.co.nz>
+	<434B635D.1000509@rftechnology.com.au>
+In-Reply-To: <434B635D.1000509@rftechnology.com.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: boot-time partitions and bootargs for 2.6.14
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,219 +24,91 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Assuming the board is 8272ads, you could try the MTD cvs from 
+infradead.org,
+I used to add the map for this board - look into drivers/mtd/maps/pq2fads.c
 
-------=_NextPart_000_009F_01C5CEA5.B29A9CD0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Dmytro Bablinyuk wrote:
+>> In that case you should have a u-boot line of
+>>
+>> mtdparts=physically_mapped_flash:1024k(Linux),4096k(FS),2048k(Unused),512k(U-Boot),512() 
+> 
+> 
+> 
+> Yep, I set
+> mtdparts=phys_mapped_flash:1024k(Linux),4096k(FS),2048k(Unused),512k(U-Boot),512() 
+> 
+> 
+> I got flash discovery working and I set 'CONFIG_MTD_CMDLINE_PARTS=y' but 
+> kernel is not even attempting to parse 'mtdparts'. It's not calling 
+> 'parse_cmdline_partitions' function. Even if I got wrong 'mtd-id', it 
+> still should attempt to parse 'mtdparts' (well, at least I think so).
+> 
+> Here is output:
+> 
+> Kernel command line: console=ttyCPM0,115200 root=31:01 rw rootfstype=jffs2
+> PID hash table entries: 512 (order: 9, 8192 bytes)
+> Warning: real time clock seems stuck!
+> Dentry cache hash table entries: 16384 (order: 4, 65536 bytes)
+> Inode-cache hash table entries: 8192 (order: 3, 32768 bytes)
+> Memory: 62720k available (1572k kernel code, 408k data, 96k init, 0k 
+> highmem)
+> Mount-cache hash table entries: 512
+> NET: Registered protocol family 16
+> JFFS2 version 2.2. (NAND) (C) 2001-2003 Red Hat, Inc.
+> JFFS2: default compression mode: priority
+> fuse init (API version 7.2)
+> Initializing Cryptographic API
+> Generic RTC Driver v1.07
+> Serial: CPM driver $Revision: 0.01 $
+> ttyCPM0 at MMIO 0xf0011a00 (irq = 40) is a CPM UART
+> ttyCPM1 at MMIO 0xf0011a20 (irq = 41) is a CPM UART
+> io scheduler noop registered
+> io scheduler anticipatory registered
+> io scheduler deadline registered
+> io scheduler cfq registered
+> RAMDISK driver initialized: 16 RAM disks of 32768K size 1024 blocksize
+> loop: loaded (max 8 devices)
+> physmap flash device: 800000 at ff800000
+> Found: Intel I28F016S3
+> phys_mapped_flash: Found 4 x8 devices at 0x0 in 32-bit bank
+> RedBoot partition parsing not available
+> eth0: FCC ENET Version 0.3, 00:04:9f:91:22:33
+> mii_reg: 600eb881
+> eth0: Phy @ 0x0, type Davicom DM9161E (0x0181b881)
+> eth1: FCC ENET Version 0.3, 00:04:9f:51:22:33
+> mii_reg: 618eb881
+> eth1: Phy @ 0x3, type Davicom DM9161E (0x0181b881)
+> NET: Registered protocol family 2
+> IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
+> TCP established hash table entries: 4096 (order: 3, 32768 bytes)
+> TCP bind hash table entries: 4096 (order: 2, 16384 bytes)
+> TCP: Hash tables configured (established 4096 bind 4096)
+> TCP reno registered
+> TCP bic registered
+> NET: Registered protocol family 1
+> NET: Registered protocol family 17
+> 
+> Does anybody has any idea of why parsing of 'mtdparts' is not even started?
+> 
+> I have enabled debug macro:
+> 
+> /* debug macro */
+> #if 1
+> #define dbg(x) do { printk("DEBUG-CMDLINE-PART: "); printk x; } while(0)
+> #else
+> #define dbg(x)
+> #endif
+> 
+> Thank you
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+> 
 
-When I install linux2.6 modules on powerpc, it's failed as following:
 
- 
-
-[root]# make ARCH=ppc CROSS_COMPILE=powerpc-linux-
-INSTALL_MOD_PATH=/opt/cross-project/images/modules-2.6.12.3 modules
-
-  INSTALL drivers/net/bonding/bonding.ko
-
-  INSTALL drivers/usb/serial/usbserial.ko
-
-  INSTALL drivers/usb/serial/visor.ko
-
-  INSTALL fs/binfmt_misc.ko
-
-  INSTALL fs/udf/udf.ko
-
-  INSTALL lib/crc-ccitt.ko
-
-if [ -r System.map -a -x /sbin/depmod ]; then /sbin/depmod -ae -F System.map
--b
-
-/opt/cross-project/TS-101/images/modules-2.6.12.3 -r 2.6.12.3; fi
-
-make: *** [_modinst_post] Error 139
-
-[root]#
-
- 
-
-It seems that I can't use /sbin/depmod, because it's for x86. I am not sure.
-
-How to fix it?
-
- 
-
-Thanks,
-
-Johnson Cheng
-
-
-------=_NextPart_000_009F_01C5CEA5.B29A9CD0
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns:st1=3D"urn:schemas-microsoft-com:office:smarttags" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<o:SmartTagType =
-namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
- name=3D"chsdate" downloadurl=3D""/>
-<!--[if !mso]>
-<style>
-st1\:*{behavior:url(#default#ieooui) }
-</style>
-<![endif]-->
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:&#26032;&#32048;&#26126;&#39636;;
-	panose-1:2 2 3 0 0 0 0 0 0 0;}
-@font-face
-	{font-family:"\@&#26032;&#32048;&#26126;&#39636;";
-	panose-1:2 2 3 0 0 0 0 0 0 0;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0cm;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
- /* Page Definitions */
- @page Section1
-	{size:595.3pt 841.9pt;
-	margin:72.0pt 90.0pt 72.0pt 90.0pt;
-	layout-grid:18.0pt;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DZH-TW link=3Dblue vlink=3Dpurple =
-style=3D'text-justify-trim:punctuation'>
-
-<div class=3DSection1 style=3D'layout-grid:18.0pt'>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>When I install linux2.6 modules on powerpc, =
-it&#8217;s
-failed as following:<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>[root]# make ARCH=3Dppc =
-CROSS_COMPILE=3Dpowerpc-linux-
-INSTALL_MOD_PATH=3D/opt/cross-project/images/modules-<st1:chsdate
-IsROCDate=3D"False" IsLunarDate=3D"False" Day=3D"30" Month=3D"12" =
-Year=3D"1899" w:st=3D"on">2.6.12</st1:chsdate>.3
-modules<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>&nbsp; INSTALL =
-drivers/net/bonding/bonding.ko<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>&nbsp; INSTALL =
-drivers/usb/serial/usbserial.ko<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>&nbsp; INSTALL =
-drivers/usb/serial/visor.ko<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>&nbsp; INSTALL =
-fs/binfmt_misc.ko<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>&nbsp; INSTALL =
-fs/udf/udf.ko<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>&nbsp; INSTALL =
-lib/crc-ccitt.ko<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>if [ -r System.map -a -x /sbin/depmod ]; then
-/sbin/depmod -ae -F System.map -b<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>/opt/cross-project/TS-101/images/modules-<st1:ch=
-sdate
-IsROCDate=3D"False" IsLunarDate=3D"False" Day=3D"30" Month=3D"12" =
-Year=3D"1899" w:st=3D"on">2.6.12</st1:chsdate>.3
--r 2.6.12.3; fi<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>make: *** [_modinst_post] Error =
-139<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>[root]#<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>It seems that I can&#8217;t use /sbin/depmod, =
-because it&#8217;s
-for x86. I am not sure.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>How to fix it?<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>Thanks,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>Johnson Cheng<o:p></o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------=_NextPart_000_009F_01C5CEA5.B29A9CD0--
+-- 
+Sincerely,
+Vitaly
