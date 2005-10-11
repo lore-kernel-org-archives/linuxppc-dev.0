@@ -1,19 +1,19 @@
-Return-Path: <reiser@namesys.com>
-Received: from rwcrmhc12.comcast.net (rwcrmhc14.comcast.net [204.127.198.54])
-	by ozlabs.org (Postfix) with ESMTP id E735868302
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Oct 2005 06:12:59 +1000 (EST)
-Message-ID: <434C1ACF.5040006@namesys.com>
-Date: Tue, 11 Oct 2005 13:04:31 -0700
-From: Hans Reiser <reiser@namesys.com>
-MIME-Version: 1.0
-To: Olaf Hering <olh@suse.de>
-References: <20050426211019.GA11579@suse.de> <426F9646.3000407@namesys.com>
-	<20051011190133.GA31348@suse.de>
-In-Reply-To: <20051011190133.GA31348@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	reiserfs-dev@namesys.com, Jeff Mahoney <jeffm@suse.de>
-Subject: Re: [PATCH] make gcc -O1 in fs/reiserfs optional
+Return-Path: <akpm@osdl.org>
+Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 3547B684C7
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Oct 2005 06:50:53 +1000 (EST)
+Date: Tue, 11 Oct 2005 13:50:22 -0700
+From: Andrew Morton <akpm@osdl.org>
+To: Nicolas DET <det.nicolas@free.fr>
+Message-Id: <20051011135022.60ddfbbc.akpm@osdl.org>
+In-Reply-To: <20050914091229.A27721C007F7@mwinf0309.wanadoo.fr>
+References: <20050914091229.A27721C007F7@mwinf0309.wanadoo.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, sl@bplan-gmbh.de, dholm@gentoo.org
+Subject: Re: SRAM support for the Pegasos II platform
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,81 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sounds good to me.  Thanks Olaf!
-
-Hans
-
-Olaf Hering wrote:
-
-> On Wed, Apr 27, Hans Reiser wrote:
+Nicolas DET <det.nicolas@free.fr> wrote:
 >
->  
->
->>Olaf Hering wrote:
->>
->>    
->>
->>>Jeff,
->>>
->>>you added this EXTRA_CFLAGS= during 2.4 development, I think the broken
->>>compiler was gcc 3.2 on SLES8. Can we turn this -O1 into a .config
->>>option?
->>>      
->>>
->
->  
->
->>Sounds reasonable.
->>    
->>
->
-> only compile with -O1 if the (very old) compiler is broken
-> We use reiserfs alot in SLES9 on ppc64, and it was never seen
-> with gcc33.
->
->Signed-off-by: Olaf Hering <olh@suse.de>
->
->Index: linux-2.6.12-rc3-olh/fs/reiserfs/Makefile
->===================================================================
->--- linux-2.6.12-rc3-olh.orig/fs/reiserfs/Makefile
->+++ linux-2.6.12-rc3-olh/fs/reiserfs/Makefile
->@@ -21,13 +21,7 @@ ifeq ($(CONFIG_REISERFS_FS_POSIX_ACL),y)
-> reiserfs-objs += xattr_acl.o
-> endif
+> You can find enclosed or at the URL a patch for the 2.6.14-rc1.
+> http://arrakin.homedns.org/~nicolas/mv643xx_eth_chrp_pegasos_eth.c.2.6.14-rc1.diff
 > 
->-# gcc -O2 (the kernel default)  is overaggressive on ppc32 when many inline
->-# functions are used.  This causes the compiler to advance the stack
->-# pointer out of the available stack space, corrupting kernel space,
->-# and causing a panic. Since this behavior only affects ppc32, this ifeq
->-# will work around it. If any other architecture displays this behavior,
->-# add it here.
->-ifeq ($(CONFIG_PPC32),y)
->+ifeq ($(CONFIG_REISERFS_CC_REDUCE_OPTIMZE),y)
-> EXTRA_CFLAGS := -O1
-> endif
-> 
->Index: linux-2.6.12-rc3-olh/fs/Kconfig
->===================================================================
->--- linux-2.6.12-rc3-olh.orig/fs/Kconfig
->+++ linux-2.6.12-rc3-olh/fs/Kconfig
->@@ -186,6 +186,18 @@ config REISERFS_FS
-> 	  If you like it, you can pay us to add new features to it that you
-> 	  need, buy a support contract, or pay us to port it to another OS.
-> 
->+config REISERFS_CC_REDUCE_OPTIMZE
->+	bool "Reduce CC optimization level to workaround compiler bugs"
->+	depends on PPC32
->+	default n
->+	help
->+	  gcc -O2 (the kernel default) is overaggressive on ppc32 when many inline
->+	  functions are used.  This causes the compiler to advance the stack
->+	  pointer out of the available stack space, corrupting kernel space,
->+	  and causing a panic. Since this behavior only affects ppc32, this ifeq
->+	  will work around it. If any other architecture displays this behavior,
->+	  add it here.
->+
-> config REISERFS_CHECK
-> 	bool "Enable reiserfs debug mode"
-> 	depends on REISERFS_FS
->  
->
+> It allows (with drivers/net/mv643xx_eth.*) to take advantage of the SRAM of
+> the Marvell Discovery II for the network driver.
+
+I've kind of lost the plot with what happened with this patch.  Who is the
+maintainer of this driver, and has [s]he commented on this patch?
+
+The patch does strange things with whitespace: some places it uses spaces,
+other places it uses tabs.  Please fix that up using hard tabs and resend. 
+When doing so, please first review
+http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt for the patch
+preparation protocol, thanks.
