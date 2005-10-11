@@ -1,24 +1,18 @@
-Return-Path: <sr@denx.de>
-Received: from natsmtp00.rzone.de (natsmtp00.rzone.de [81.169.145.165])
-	by ozlabs.org (Postfix) with ESMTP id BC22668457
+Return-Path: <dmytro.bablinyuk@rftechnology.com.au>
+Received: from mfep9.connect.com.au (fep9.mfe.bur.connect.com.au [203.63.86.9])
+	by ozlabs.org (Postfix) with ESMTP id E502C68519
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Oct 2005 03:01:05 +1000 (EST)
-Received: from workstation.lan (ip51cf43f8.direct-adsl.nl [81.207.67.248])
-	by post.webmailer.de (8.13.1/8.13.1) with ESMTP id j9AH0xX3017129
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 10 Oct 2005 19:01:00 +0200 (MEST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-embedded@ozlabs.org
-Date: Mon, 10 Oct 2005 19:00:58 +0200
-References: <a79669360510062205v629affb9ga687078f018afae@mail.gmail.com>
-	<a79669360510100340g2563b441w9418001c034dbe5b@mail.gmail.com>
-	<003d01c5cd97$34404470$0301a8c0@chuck2>
-In-Reply-To: <003d01c5cd97$34404470$0301a8c0@chuck2>
+	Tue, 11 Oct 2005 11:02:00 +1000 (EST)
+Message-ID: <434B0F0F.9030601@rftechnology.com.au>
+Date: Tue, 11 Oct 2005 11:02:07 +1000
+From: Dmytro Bablinyuk <dmytro.bablinyuk@rftechnology.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-6"
-Message-Id: <200510101900.58976.sr@denx.de>
-Subject: MPC8555 USB host support
+To: Wolfgang Denk <wd@denx.de>
+References: <20051010234614.1FE2A353D84@atlas.denx.de>
+In-Reply-To: <20051010234614.1FE2A353D84@atlas.denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: boot-time partitions and bootargs for 2.6.14
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,9 +23,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I am wondering, if the USB host controller of the MPC8555 is supported at all 
-right now. The manual states, that it is similar to, but not fully OHCI or 
-UHCI compatible. Any infos about this?
-
-Best regards,
-Stefan
+Sorry for 3d email. The failed line I sent was incorrect - the problem 
+is that debugger jumps from line to line on every step.
+I have added -fno-schedule-insns -fno-schedule-insns2 into kernel Makefile:
+CFLAGS          := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+                    -fno-strict-aliasing -fno-common \
+                    -ffreestanding \
+                    -fno-schedule-insns -fno-schedule-insns2
+But it still jumping. What options shall I add in order to prevent 
+debugger jumping while debugging kernel?
+Sorry, for slight off-topic.
+Thank you
