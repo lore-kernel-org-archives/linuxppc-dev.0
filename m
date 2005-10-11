@@ -1,32 +1,17 @@
-Return-Path: <robin.gilks@tait.co.nz>
-Received: from gatekeeper.tait.co.nz (tel096021.tait.co.nz [202.37.96.21])
-	by ozlabs.org (Postfix) with ESMTP id 01FC4683D5
+Return-Path: <peter@mcubelogics.com>
+Received: from trueweb.co.kr (whois1.trueweb.co.kr [211.215.19.210])
+	by ozlabs.org (Postfix) with ESMTP id E6717684C5
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Oct 2005 13:24:37 +1000 (EST)
-Received: from gatekeeper.tait.co.nz (merlin.tait.co.nz [127.0.0.1])
-	by localhost.tait.co.nz (Postfix) with ESMTP id 232C115B691
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Oct 2005 16:24:36 +1300 (NZDT)
-Received: from sunstrike.tait.co.nz (unknown [172.25.40.92])by
-	gatekeeper.tait.co.nz (Postfix) with ESMTP id 85E0615B685for
-	<linuxppc-embedded@ozlabs.org>; Tue, 11 Oct 2005 16:24:35 +1300 (NZDT)
-Received: from conversion-daemon.sunstrike.tait.co.nz by
-	sunstrike.tait.co.nz(Sun Java System Messaging Server 6.1 (built Apr 28
-	2004))id <0IO600G01ACZBK00@sunstrike.tait.co.nz>(original mail from
-	robin.gilks@tait.co.nz) for linuxppc-embedded@ozlabs.org;
-	Tue, 11 Oct 2005 16:24:35 +1300 (NZDT)
-Date: Tue, 11 Oct 2005 16:24:34 +1300
-From: Robin Gilks <robin.gilks@tait.co.nz>
-In-reply-to: <434B2D23.2020208@rftechnology.com.au>
-To: linuxppc-embedded@ozlabs.org
-Message-id: <434B3072.1090008@tait.co.nz>
-MIME-version: 1.0
-Content-type: text/plain;
-	format=flowed;
-	charset=ISO-8859-1
-References: <20051010234614.1FE2A353D84@atlas.denx.de><434B12C5.2050809@tait
-	.co.nz> <434B2D23.2020208@rftechnology.com.au>
-Subject: Re: boot-time partitions and bootargs for 2.6.14
+	Tue, 11 Oct 2005 15:13:27 +1000 (EST)
+Message-ID: <004501c5ce10$dd668810$1801a8c0@PETER>
+From: =?ks_c_5601-1987?B?wMzB2LyuXChwZXRlclwp?= <peter@mcubelogics.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Tue, 11 Oct 2005 12:07:07 +0900
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0042_01C5CE5C.4CF5FDF0"
+Subject: What can I do to port JVM on MPC
+Reply-To: =?ks_c_5601-1987?B?wMzB2LyuXChwZXRlclwp?= <peter@mcubelogics.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -37,49 +22,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dmytro Bablinyuk wrote:
+This is a multi-part message in MIME format.
 
->> struct map_info physmap_map = {
->>    .name = "fred",
->>    .size = WINDOW_SIZE,
->>    .buswidth = BUSWIDTH,
->>    .phys = WINDOW_ADDR,
->> };
->> and a command line something like:
->> mtdparts=fred:1024k(Linux),4096k(FS),2048k(Unused),512k(U-Boot),512()
->
->
-> Thank you Robin,
->
-> Yes, I have 'working' jffs2.img (original from board).
-> I checked for spaces - it looks ok. It has 'physically_mapped_flash'. 
+------=_NextPart_000_0042_01C5CE5C.4CF5FDF0
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
+Content-Transfer-Encoding: base64
 
-[snip]
+SGkgZXZlcnlvbmUsDQpJJ20gcnVubmluZyBsaW51eCAyLjQuMjIgb24gbXkgTVBDODI3MkFEUyBi
+b2FyZCB1c2luZyBNZXRyb3dlcmtzIEJTUA0KYW5kIEkgbmVlZCBKVk0gb24gaXQgdG8gZ28gZnVy
+dGhlciBpbiBteSBwcm9qZWN0Lg0KQnV0IGl0J3MgdmVyeSBoYXJkIHRvIGZpbmQgYW55IGNsdWUg
+Zm9yIHBvcnRpbmcgaXQuDQpBbnkgYWR2aWNlIG9yIHN0YXJ0aW5nIHBvaW50Pw0KDQpUaGFua3Mu
+DQoNCnBldGVyDQo=
 
-In that case you should have a u-boot line of
+------=_NextPart_000_0042_01C5CE5C.4CF5FDF0
+Content-Type: text/html;
+	charset="ks_c_5601-1987"
+Content-Transfer-Encoding: base64
 
-mtdparts=physically_mapped_flash:1024k(Linux),4096k(FS),2048k(Unused),512k(U-Boot),512()
-not of
-mtdparts=1:1024k(Linux),4096k(FS),2048k(Unused),512k(U-Boot),512()
+PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUcmFuc2l0aW9uYWwv
+L0VOIj4NCjxIVE1MPjxIRUFEPg0KPE1FVEEgaHR0cC1lcXVpdj1Db250ZW50LVR5cGUgY29udGVu
+dD0idGV4dC9odG1sOyBjaGFyc2V0PWtzX2NfNTYwMS0xOTg3Ij4NCjxNRVRBIGNvbnRlbnQ9Ik1T
+SFRNTCA2LjAwLjI4MDAuMTQ3NiIgbmFtZT1HRU5FUkFUT1I+DQo8U1RZTEU+PC9TVFlMRT4NCjwv
+SEVBRD4NCjxCT0RZIGJnQ29sb3I9I2ZmZmZmZj4NCjxESVY+PEZPTlQgc2l6ZT0yPg0KPERJVj48
+Rk9OVCBzaXplPTI+SGkgZXZlcnlvbmUsPC9GT05UPjwvRElWPg0KPERJVj48Rk9OVCBzaXplPTI+
+SSdtIHJ1bm5pbmcgbGludXggMi40LjIyIG9uIG15IE1QQzgyNzJBRFMgYm9hcmQgdXNpbmcgDQpN
+ZXRyb3dlcmtzIEJTUDwvRk9OVD48L0RJVj4NCjxESVY+PEZPTlQgc2l6ZT0yPmFuZCBJIG5lZWQg
+SlZNIG9uIGl0IHRvIGdvIGZ1cnRoZXIgaW4gbXkgcHJvamVjdC48L0ZPTlQ+PC9ESVY+DQo8RElW
+PjxGT05UIHNpemU9Mj5CdXQmbmJzcDtpdCdzIHZlcnkgaGFyZCB0byBmaW5kJm5ic3A7YW55Jm5i
+c3A7Y2x1ZSBmb3IgcG9ydGluZyANCml0LjwvRk9OVD48L0RJVj4NCjxESVY+PEZPTlQgc2l6ZT0y
+PkFueSBhZHZpY2Ugb3Igc3RhcnRpbmcgcG9pbnQ/PC9GT05UPjwvRElWPg0KPERJVj48Rk9OVCBz
+aXplPTI+PC9GT05UPiZuYnNwOzwvRElWPg0KPERJVj48Rk9OVCBzaXplPTI+VGhhbmtzLjwvRk9O
+VD48L0RJVj4NCjxESVY+PEZPTlQgc2l6ZT0yPjwvRk9OVD4mbmJzcDs8L0RJVj4NCjxESVY+PEZP
+TlQgc2l6ZT0yPnBldGVyPC9GT05UPjwvRElWPg0KPERJVj48L0ZPTlQ+Jm5ic3A7PC9ESVY+PC9E
+SVY+PC9CT0RZPjwvSFRNTD4NCg==
 
-The name is significant (I think!!)
-
--- 
-Robin Gilks
-Senior Design Engineer          Phone: (+64)(3) 357 1569
-Tait Electronics                Fax  :  (+64)(3) 359 4632
-PO Box 1645 Christchurch        Email : robin.gilks@tait.co.nz
-New Zealand
-
-
-=======================================================================
-This email, including any attachments, is only for the intended
-addressee.  It is subject to copyright, is confidential and may be
-the subject of legal or other privilege, none of which is waived or
-lost by reason of this transmission.
-If the receiver is not the intended addressee, please accept our
-apologies, notify us by return, delete all copies and perform no
-other act on the email.
-Unfortunately, we cannot warrant that the email has not been
- altered or corrupted during transmission.
-=======================================================================
+------=_NextPart_000_0042_01C5CE5C.4CF5FDF0--
