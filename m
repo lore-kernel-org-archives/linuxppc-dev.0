@@ -1,19 +1,17 @@
-Return-Path: <dick@softplc.com>
-Received: from ylpvm53.prodigy.net (ylpvm53-ext.prodigy.net [207.115.57.84])
-	by ozlabs.org (Postfix) with ESMTP id 16DF568543
+Return-Path: <stefan.nickl@kontron.com>
+Received: from KOM-MAILSRV1.kontron-modular.com (unknown [62.159.155.196])
+	by ozlabs.org (Postfix) with ESMTP id 6E6D768557
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Oct 2005 20:42:22 +1000 (EST)
-Received: from [192.100.100.10] ([67.64.64.34])
-	by ylpvm53.prodigy.net (8.12.10 outbound/8.12.10) with ESMTP id
-	j9BAatCG007852
-	for <linuxppc-embedded@ozlabs.org>; Tue, 11 Oct 2005 06:36:55 -0400
-Message-ID: <434B9648.5000608@softplc.com>
-Date: Tue, 11 Oct 2005 05:39:04 -0500
-From: Dick Hollenbeck <dick@softplc.com>
+	Tue, 11 Oct 2005 21:10:08 +1000 (EST)
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: What Can I do to port JVM on MPC?
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Tue, 11 Oct 2005 12:57:59 +0200
+Message-ID: <DADA32856852FC458E0F96B664A6F55E73A8EF@kom-mailsrv1.kontron-modular.com>
+From: "Stefan Nickl" <stefan.nickl@kontron.com>
+To: "Gerhard Jaeger" <g.jaeger@sysgo.com>
+Cc: Stefan Nickl <stefan.nickl@kontron.com>, linuxppc-embedded@ozlabs.org
+Subject: RE: Which PHY connection to use on MPC8541...
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,33 +22,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-There is a JVM that is part of GCC called libgcj.  It differs from Sun's 
-JVM in that is uses "ahead of time compilation" of the Java code all the 
-way to machine code.  Whereas Sun's JVM runs on "java bytecode" and at 
-runtime compiles this bytecode to machine code "just in time".
+Hi,
 
-Unfortunately the build system for libgcj is abysmal and shameful, and 
-the garbage collector will pause the process that runs it about 55 msecs 
-every so often.  So aside from the build system and the GC, libgcj is 
-excellent work.
+about a year ago we resorted to using port pin MDIO in this situation
+for the FCCs because the fcc_enet driver and the gianfar driver live
+in separate worlds, so to speak.
 
+But in the meantime, Andy Fleming was very active regarding the PHY
+abstraction layer. I still haven't seen patches that migrate fcc_enet
+to using this layer, but the gianfar driver seems to use this code now.
 
-I would start with libgcj.
+So I'd say quick solution: use TSEC1 MDIO for TSECs and cpm port pins
+for FCC, clean solution: change fcc_enet to use the PHY abstraction
+layer.
 
-    http://gcc.gnu.org/java/
-
-It should be your path of best investment.
-
-
-Been there, done that.
+--=20
+Stefan Nickl
+Kontron Modular Computers
 
 
-Regards,
-
-Dick Hollenbeck
-
--- 
-Please help fix the U.S. software industry before it is too late.
-Contact your U.S. representatives with this information:
-http://lpf.ai.mit.edu/Patents/industry-at-risk.html
-http://www.groklaw.net/article.php?story=20041003041632172
+> -----Original Message-----
+> From: linuxppc-embedded-bounces@ozlabs.org=20
+> [mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of=20
+> Gerhard Jaeger
+> Sent: Tuesday, October 11, 2005 12:14 PM
+> To: linuxppc-embedded@ozlabs.org
+> Subject: Which PHY connection to use on MPC8541...
+>=20
+> Hi list,
+>=20
+> we're currently designing a custon MPC8541 based board having=20
+> three ethernet connections.
+> For some reasons, we'd like to use the FCC1 and 2 + TSEC1.=20
+> From what I see from the docs, it should be no problem to=20
+> connect i.e. a quad phy (for FCC1/2) and a gigabit phy (for=20
+> TSEC1) to the EC_MDIO of the TSEC as long as they have=20
+> different addresses.=20
+> I don't want to use the GPIO stuff for MDIO.
+>=20
+> The question is, what does this mean to the drivers? For the=20
+> gianfar driver this should be okay and from what I see, the=20
+> upcoming fs_enet driver supports also a phy connected either=20
+> to the GPIOs (bitbanging) or the TSEC MDIO. Is this right, or=20
+> am I missing something essential?=20
+> Would it be better to use the GPIO-MDIO for the FCC phy and=20
+> the TSEC-MDIO for the TSEC phy?
+>=20
+> TIA
+> Gerhard
+>=20
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>=20
