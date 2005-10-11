@@ -1,19 +1,17 @@
 Return-Path: <vbordug@ru.mvista.com>
 Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 2C77368541
+	by ozlabs.org (Postfix) with SMTP id BD6276854E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Oct 2005 23:10:04 +1000 (EST)
-Message-ID: <434BB9AA.1090000@ru.mvista.com>
-Date: Tue, 11 Oct 2005 17:10:02 +0400
+	Tue, 11 Oct 2005 23:54:46 +1000 (EST)
+Message-ID: <434BC424.50700@ru.mvista.com>
+Date: Tue, 11 Oct 2005 17:54:44 +0400
 From: Vitaly Bordug <vbordug@ru.mvista.com>
 MIME-Version: 1.0
-To: Dmytro Bablinyuk <dmytro.bablinyuk@rftechnology.com.au>
-References: <20051010234614.1FE2A353D84@atlas.denx.de><434B12C5.2050809@tait	.co.nz>	<434B2D23.2020208@rftechnology.com.au>	<434B3072.1090008@tait.co.nz>
-	<434B635D.1000509@rftechnology.com.au>
-In-Reply-To: <434B635D.1000509@rftechnology.com.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: boot-time partitions and bootargs for 2.6.14
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Content-Type: multipart/mixed; boundary="------------000509040504060509040504"
+Cc: Kumar Gala <galak@freescale.com>,
+	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH] ppc32: ppc_sys fixes for 8xx and 82xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,91 +22,159 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Assuming the board is 8272ads, you could try the MTD cvs from 
-infradead.org,
-I used to add the map for this board - look into drivers/mtd/maps/pq2fads.c
+This is a multi-part message in MIME format.
+--------------000509040504060509040504
+Content-Type: text/plain; charset=KOI8-R; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Dmytro Bablinyuk wrote:
->> In that case you should have a u-boot line of
->>
->> mtdparts=physically_mapped_flash:1024k(Linux),4096k(FS),2048k(Unused),512k(U-Boot),512() 
-> 
-> 
-> 
-> Yep, I set
-> mtdparts=phys_mapped_flash:1024k(Linux),4096k(FS),2048k(Unused),512k(U-Boot),512() 
-> 
-> 
-> I got flash discovery working and I set 'CONFIG_MTD_CMDLINE_PARTS=y' but 
-> kernel is not even attempting to parse 'mtdparts'. It's not calling 
-> 'parse_cmdline_partitions' function. Even if I got wrong 'mtd-id', it 
-> still should attempt to parse 'mtdparts' (well, at least I think so).
-> 
-> Here is output:
-> 
-> Kernel command line: console=ttyCPM0,115200 root=31:01 rw rootfstype=jffs2
-> PID hash table entries: 512 (order: 9, 8192 bytes)
-> Warning: real time clock seems stuck!
-> Dentry cache hash table entries: 16384 (order: 4, 65536 bytes)
-> Inode-cache hash table entries: 8192 (order: 3, 32768 bytes)
-> Memory: 62720k available (1572k kernel code, 408k data, 96k init, 0k 
-> highmem)
-> Mount-cache hash table entries: 512
-> NET: Registered protocol family 16
-> JFFS2 version 2.2. (NAND) (C) 2001-2003 Red Hat, Inc.
-> JFFS2: default compression mode: priority
-> fuse init (API version 7.2)
-> Initializing Cryptographic API
-> Generic RTC Driver v1.07
-> Serial: CPM driver $Revision: 0.01 $
-> ttyCPM0 at MMIO 0xf0011a00 (irq = 40) is a CPM UART
-> ttyCPM1 at MMIO 0xf0011a20 (irq = 41) is a CPM UART
-> io scheduler noop registered
-> io scheduler anticipatory registered
-> io scheduler deadline registered
-> io scheduler cfq registered
-> RAMDISK driver initialized: 16 RAM disks of 32768K size 1024 blocksize
-> loop: loaded (max 8 devices)
-> physmap flash device: 800000 at ff800000
-> Found: Intel I28F016S3
-> phys_mapped_flash: Found 4 x8 devices at 0x0 in 32-bit bank
-> RedBoot partition parsing not available
-> eth0: FCC ENET Version 0.3, 00:04:9f:91:22:33
-> mii_reg: 600eb881
-> eth0: Phy @ 0x0, type Davicom DM9161E (0x0181b881)
-> eth1: FCC ENET Version 0.3, 00:04:9f:51:22:33
-> mii_reg: 618eb881
-> eth1: Phy @ 0x3, type Davicom DM9161E (0x0181b881)
-> NET: Registered protocol family 2
-> IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
-> TCP established hash table entries: 4096 (order: 3, 32768 bytes)
-> TCP bind hash table entries: 4096 (order: 2, 16384 bytes)
-> TCP: Hash tables configured (established 4096 bind 4096)
-> TCP reno registered
-> TCP bic registered
-> NET: Registered protocol family 1
-> NET: Registered protocol family 17
-> 
-> Does anybody has any idea of why parsing of 'mtdparts' is not even started?
-> 
-> I have enabled debug macro:
-> 
-> /* debug macro */
-> #if 1
-> #define dbg(x) do { printk("DEBUG-CMDLINE-PART: "); printk x; } while(0)
-> #else
-> #define dbg(x)
-> #endif
-> 
-> Thank you
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
+This patch fixes a numbers of issues regarding to that both 8xx and 82xx 
+began to use ppc_sys model:
+	- Platform is now identified by default deviceless SOC, if no 
+BOARD_CHIP_NAME is specified in the bard-specific header. For the list 
+of supported names refer to (arch/ppc/syslib/) mpc8xx_sys.c and 
+mpc82xx_sys.c for 8xx and 82xx respectively.
+	- Fixed a bug in identification by name - if the name was not found, it 
+returned -1 instead of default deviceless ppc_spec.
+	- fixed devices amount in the 8xx platform system descriptions
 
+
+Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
 
 -- 
 Sincerely,
 Vitaly
+
+--------------000509040504060509040504
+Content-Type: text/x-patch;
+ name="1.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="1.patch"
+
+diff --git a/arch/ppc/platforms/fads.h b/arch/ppc/platforms/fads.h
+--- a/arch/ppc/platforms/fads.h
++++ b/arch/ppc/platforms/fads.h
+@@ -25,6 +25,8 @@
+ 
+ #if defined(CONFIG_MPC86XADS)
+ 
++#define BOARD_CHIP_NAME "MPC86X"
++
+ /* U-Boot maps BCSR to 0xff080000 */
+ #define BCSR_ADDR		((uint)0xff080000)
+ 
+diff --git a/arch/ppc/platforms/mpc885ads.h b/arch/ppc/platforms/mpc885ads.h
+--- a/arch/ppc/platforms/mpc885ads.h
++++ b/arch/ppc/platforms/mpc885ads.h
+@@ -88,5 +88,7 @@
+ #define SICR_ENET_MASK	((uint)0x00ff0000)
+ #define SICR_ENET_CLKRT	((uint)0x002c0000)
+ 
++#define BOARD_CHIP_NAME "MPC885"
++
+ #endif /* __ASM_MPC885ADS_H__ */
+ #endif /* __KERNEL__ */
+diff --git a/arch/ppc/syslib/m8260_setup.c b/arch/ppc/syslib/m8260_setup.c
+--- a/arch/ppc/syslib/m8260_setup.c
++++ b/arch/ppc/syslib/m8260_setup.c
+@@ -62,6 +62,9 @@ m8260_setup_arch(void)
+ 	if (initrd_start)
+ 		ROOT_DEV = Root_RAM0;
+ #endif
++	
++	identify_ppc_sys_by_name_and_id(BOARD_CHIP_NAME, in_be32(CPM_MAP_ADDR + CPM_IMMR_OFFSET));
++	
+ 	m82xx_board_setup();
+ }
+ 
+diff --git a/arch/ppc/syslib/m8xx_setup.c b/arch/ppc/syslib/m8xx_setup.c
+--- a/arch/ppc/syslib/m8xx_setup.c
++++ b/arch/ppc/syslib/m8xx_setup.c
+@@ -403,7 +403,9 @@ platform_init(unsigned long r3, unsigned
+ 		*(char *)(r7+KERNELBASE) = 0;
+ 		strcpy(cmd_line, (char *)(r6+KERNELBASE));
+ 	}
+-
++	
++	identify_ppc_sys_by_name(BOARD_CHIP_NAME);
++	
+ 	ppc_md.setup_arch		= m8xx_setup_arch;
+ 	ppc_md.show_percpuinfo		= m8xx_show_percpuinfo;
+ 	ppc_md.irq_canonicalize	= NULL;
+diff --git a/arch/ppc/syslib/mpc8xx_sys.c b/arch/ppc/syslib/mpc8xx_sys.c
+--- a/arch/ppc/syslib/mpc8xx_sys.c
++++ b/arch/ppc/syslib/mpc8xx_sys.c
+@@ -24,7 +24,7 @@ struct ppc_sys_spec ppc_sys_specs[] = {
+ 		.ppc_sys_name	= "MPC86X",
+ 		.mask 		= 0xFFFFFFFF,
+ 		.value 		= 0x00000000,
+-		.num_devices	= 2,
++		.num_devices	= 7,
+ 		.device_list	= (enum ppc_sys_devices[])
+ 		{
+ 			MPC8xx_CPM_FEC1,
+@@ -40,7 +40,7 @@ struct ppc_sys_spec ppc_sys_specs[] = {
+ 		.ppc_sys_name	= "MPC885",
+ 		.mask 		= 0xFFFFFFFF,
+ 		.value 		= 0x00000000,
+-		.num_devices	= 3,
++		.num_devices	= 8,
+ 		.device_list	= (enum ppc_sys_devices[])
+ 		{
+ 			MPC8xx_CPM_FEC1,
+diff --git a/arch/ppc/syslib/ppc_sys.c b/arch/ppc/syslib/ppc_sys.c
+--- a/arch/ppc/syslib/ppc_sys.c
++++ b/arch/ppc/syslib/ppc_sys.c
+@@ -69,6 +69,9 @@ static int __init find_chip_by_name_and_
+ 			matched[j++] = i;
+ 		i++;
+ 	}
++
++	ret = i;
++
+ 	if (j != 0) {
+ 		for (i = 0; i < j; i++) {
+ 			if ((ppc_sys_specs[matched[i]].mask & id) ==
+diff --git a/include/asm-ppc/cpm2.h b/include/asm-ppc/cpm2.h
+--- a/include/asm-ppc/cpm2.h
++++ b/include/asm-ppc/cpm2.h
+@@ -1087,6 +1087,9 @@ typedef struct im_idma {
+ #define SCCR_PCIDF_MSK	0x00000078	/* PCI division factor	*/
+ #define SCCR_PCIDF_SHIFT 3
+ 
++#ifndef CPM_IMMR_OFFSET
++#define CPM_IMMR_OFFSET	0x101a8
++#endif
+ 
+ #endif /* __CPM2__ */
+ #endif /* __KERNEL__ */
+diff --git a/include/asm-ppc/mpc8260.h b/include/asm-ppc/mpc8260.h
+--- a/include/asm-ppc/mpc8260.h
++++ b/include/asm-ppc/mpc8260.h
+@@ -92,6 +92,10 @@ enum ppc_sys_devices {
+ extern unsigned char __res[];
+ #endif
+ 
++#ifndef BOARD_CHIP_NAME
++#define BOARD_CHIP_NAME ""
++#endif
++
+ #endif /* CONFIG_8260 */
+ #endif /* !__ASM_PPC_MPC8260_H__ */
+ #endif /* __KERNEL__ */
+diff --git a/include/asm-ppc/mpc8xx.h b/include/asm-ppc/mpc8xx.h
+--- a/include/asm-ppc/mpc8xx.h
++++ b/include/asm-ppc/mpc8xx.h
+@@ -113,6 +113,10 @@ enum ppc_sys_devices {
+ 	MPC8xx_CPM_USB,
+ };
+ 
++#ifndef BOARD_CHIP_NAME
++#define BOARD_CHIP_NAME ""
++#endif
++
+ #endif /* !__ASSEMBLY__ */
+ #endif /* CONFIG_8xx */
+ #endif /* __CONFIG_8xx_DEFS */
+
+--------------000509040504060509040504--
