@@ -1,17 +1,18 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id BD6276854E
+Return-Path: <afleming@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 4D96468302
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Oct 2005 23:54:46 +1000 (EST)
-Message-ID: <434BC424.50700@ru.mvista.com>
-Date: Tue, 11 Oct 2005 17:54:44 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-MIME-Version: 1.0
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-Content-Type: multipart/mixed; boundary="------------000509040504060509040504"
-Cc: Kumar Gala <galak@freescale.com>,
-	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] ppc32: ppc_sys fixes for 8xx and 82xx
+	Wed, 12 Oct 2005 04:05:32 +1000 (EST)
+In-Reply-To: <DADA32856852FC458E0F96B664A6F55E73A8EF@kom-mailsrv1.kontron-modular.com>
+References: <DADA32856852FC458E0F96B664A6F55E73A8EF@kom-mailsrv1.kontron-modular.com>
+Mime-Version: 1.0 (Apple Message framework v734)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <4BD1885F-AD59-4FFF-8694-AB66BE80DF96@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Date: Tue, 11 Oct 2005 13:05:46 -0500
+To: Stefan Nickl <stefan.nickl@kontron.com>
+Cc: linuxppc-embedded@ozlabs.org, Gerhard Jaeger <g.jaeger@sysgo.com>
+Subject: Re: Which PHY connection to use on MPC8541...
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,159 +23,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------000509040504060509040504
-Content-Type: text/plain; charset=KOI8-R; format=flowed
-Content-Transfer-Encoding: 7bit
 
-This patch fixes a numbers of issues regarding to that both 8xx and 82xx 
-began to use ppc_sys model:
-	- Platform is now identified by default deviceless SOC, if no 
-BOARD_CHIP_NAME is specified in the bard-specific header. For the list 
-of supported names refer to (arch/ppc/syslib/) mpc8xx_sys.c and 
-mpc82xx_sys.c for 8xx and 82xx respectively.
-	- Fixed a bug in identification by name - if the name was not found, it 
-returned -1 instead of default deviceless ppc_spec.
-	- fixed devices amount in the 8xx platform system descriptions
+On Oct 11, 2005, at 05:57, Stefan Nickl wrote:
 
 
-Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+> Hi,
+>
+> about a year ago we resorted to using port pin MDIO in this situation
+> for the FCCs because the fcc_enet driver and the gianfar driver live
+> in separate worlds, so to speak.
+>
+> But in the meantime, Andy Fleming was very active regarding the PHY
+> abstraction layer. I still haven't seen patches that migrate fcc_enet
+> to using this layer, but the gianfar driver seems to use this code  
+> now.
+>
 
--- 
-Sincerely,
-Vitaly
 
---------------000509040504060509040504
-Content-Type: text/x-patch;
- name="1.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="1.patch"
+The work to migrate the new fs_enet driver to use the TSEC MDIO is in  
+progress.  I have a few other things I'm working on right now, and  
+I've been having some hardware issues, but I've already done most of  
+the work to get the FCC to use the TSEC's MDIO bus.
 
-diff --git a/arch/ppc/platforms/fads.h b/arch/ppc/platforms/fads.h
---- a/arch/ppc/platforms/fads.h
-+++ b/arch/ppc/platforms/fads.h
-@@ -25,6 +25,8 @@
- 
- #if defined(CONFIG_MPC86XADS)
- 
-+#define BOARD_CHIP_NAME "MPC86X"
-+
- /* U-Boot maps BCSR to 0xff080000 */
- #define BCSR_ADDR		((uint)0xff080000)
- 
-diff --git a/arch/ppc/platforms/mpc885ads.h b/arch/ppc/platforms/mpc885ads.h
---- a/arch/ppc/platforms/mpc885ads.h
-+++ b/arch/ppc/platforms/mpc885ads.h
-@@ -88,5 +88,7 @@
- #define SICR_ENET_MASK	((uint)0x00ff0000)
- #define SICR_ENET_CLKRT	((uint)0x002c0000)
- 
-+#define BOARD_CHIP_NAME "MPC885"
-+
- #endif /* __ASM_MPC885ADS_H__ */
- #endif /* __KERNEL__ */
-diff --git a/arch/ppc/syslib/m8260_setup.c b/arch/ppc/syslib/m8260_setup.c
---- a/arch/ppc/syslib/m8260_setup.c
-+++ b/arch/ppc/syslib/m8260_setup.c
-@@ -62,6 +62,9 @@ m8260_setup_arch(void)
- 	if (initrd_start)
- 		ROOT_DEV = Root_RAM0;
- #endif
-+	
-+	identify_ppc_sys_by_name_and_id(BOARD_CHIP_NAME, in_be32(CPM_MAP_ADDR + CPM_IMMR_OFFSET));
-+	
- 	m82xx_board_setup();
- }
- 
-diff --git a/arch/ppc/syslib/m8xx_setup.c b/arch/ppc/syslib/m8xx_setup.c
---- a/arch/ppc/syslib/m8xx_setup.c
-+++ b/arch/ppc/syslib/m8xx_setup.c
-@@ -403,7 +403,9 @@ platform_init(unsigned long r3, unsigned
- 		*(char *)(r7+KERNELBASE) = 0;
- 		strcpy(cmd_line, (char *)(r6+KERNELBASE));
- 	}
--
-+	
-+	identify_ppc_sys_by_name(BOARD_CHIP_NAME);
-+	
- 	ppc_md.setup_arch		= m8xx_setup_arch;
- 	ppc_md.show_percpuinfo		= m8xx_show_percpuinfo;
- 	ppc_md.irq_canonicalize	= NULL;
-diff --git a/arch/ppc/syslib/mpc8xx_sys.c b/arch/ppc/syslib/mpc8xx_sys.c
---- a/arch/ppc/syslib/mpc8xx_sys.c
-+++ b/arch/ppc/syslib/mpc8xx_sys.c
-@@ -24,7 +24,7 @@ struct ppc_sys_spec ppc_sys_specs[] = {
- 		.ppc_sys_name	= "MPC86X",
- 		.mask 		= 0xFFFFFFFF,
- 		.value 		= 0x00000000,
--		.num_devices	= 2,
-+		.num_devices	= 7,
- 		.device_list	= (enum ppc_sys_devices[])
- 		{
- 			MPC8xx_CPM_FEC1,
-@@ -40,7 +40,7 @@ struct ppc_sys_spec ppc_sys_specs[] = {
- 		.ppc_sys_name	= "MPC885",
- 		.mask 		= 0xFFFFFFFF,
- 		.value 		= 0x00000000,
--		.num_devices	= 3,
-+		.num_devices	= 8,
- 		.device_list	= (enum ppc_sys_devices[])
- 		{
- 			MPC8xx_CPM_FEC1,
-diff --git a/arch/ppc/syslib/ppc_sys.c b/arch/ppc/syslib/ppc_sys.c
---- a/arch/ppc/syslib/ppc_sys.c
-+++ b/arch/ppc/syslib/ppc_sys.c
-@@ -69,6 +69,9 @@ static int __init find_chip_by_name_and_
- 			matched[j++] = i;
- 		i++;
- 	}
-+
-+	ret = i;
-+
- 	if (j != 0) {
- 		for (i = 0; i < j; i++) {
- 			if ((ppc_sys_specs[matched[i]].mask & id) ==
-diff --git a/include/asm-ppc/cpm2.h b/include/asm-ppc/cpm2.h
---- a/include/asm-ppc/cpm2.h
-+++ b/include/asm-ppc/cpm2.h
-@@ -1087,6 +1087,9 @@ typedef struct im_idma {
- #define SCCR_PCIDF_MSK	0x00000078	/* PCI division factor	*/
- #define SCCR_PCIDF_SHIFT 3
- 
-+#ifndef CPM_IMMR_OFFSET
-+#define CPM_IMMR_OFFSET	0x101a8
-+#endif
- 
- #endif /* __CPM2__ */
- #endif /* __KERNEL__ */
-diff --git a/include/asm-ppc/mpc8260.h b/include/asm-ppc/mpc8260.h
---- a/include/asm-ppc/mpc8260.h
-+++ b/include/asm-ppc/mpc8260.h
-@@ -92,6 +92,10 @@ enum ppc_sys_devices {
- extern unsigned char __res[];
- #endif
- 
-+#ifndef BOARD_CHIP_NAME
-+#define BOARD_CHIP_NAME ""
-+#endif
-+
- #endif /* CONFIG_8260 */
- #endif /* !__ASM_PPC_MPC8260_H__ */
- #endif /* __KERNEL__ */
-diff --git a/include/asm-ppc/mpc8xx.h b/include/asm-ppc/mpc8xx.h
---- a/include/asm-ppc/mpc8xx.h
-+++ b/include/asm-ppc/mpc8xx.h
-@@ -113,6 +113,10 @@ enum ppc_sys_devices {
- 	MPC8xx_CPM_USB,
- };
- 
-+#ifndef BOARD_CHIP_NAME
-+#define BOARD_CHIP_NAME ""
-+#endif
-+
- #endif /* !__ASSEMBLY__ */
- #endif /* CONFIG_8xx */
- #endif /* __CONFIG_8xx_DEFS */
 
---------------000509040504060509040504--
+
+>
+> So I'd say quick solution: use TSEC1 MDIO for TSECs and cpm port pins
+> for FCC, clean solution: change fcc_enet to use the PHY abstraction
+> layer.
+>
+
+
+I'd say it depends on how long until your hardware is ready.  You  
+might want to wire up the cpm IO pins, just in case.  I have yet to  
+actually get the fs_enet driver to send packets on the 8560, so  
+there's no telling how long it will be before that driver works on 8541.
+
+Andy
