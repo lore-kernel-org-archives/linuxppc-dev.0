@@ -1,20 +1,19 @@
 Return-Path: <sr@denx.de>
-Received: from natfrord.rzone.de (natfrord.rzone.de [81.169.145.161])
-	by ozlabs.org (Postfix) with ESMTP id BB95F68526
+Received: from natsmtp00.rzone.de (natsmtp00.rzone.de [81.169.145.165])
+	by ozlabs.org (Postfix) with ESMTP id 235A0684C7
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Oct 2005 16:59:28 +1000 (EST)
+	Wed, 12 Oct 2005 17:28:05 +1000 (EST)
 From: Stefan Roese <sr@denx.de>
-To: linuxppc-embedded@ozlabs.org
-Date: Wed, 12 Oct 2005 08:59:11 +0200
+To: Mike Rapoport <mike@compulab.co.il>
+Date: Wed, 12 Oct 2005 09:27:56 +0200
 References: <a79669360510062205v629affb9ga687078f018afae@mail.gmail.com>
-	<200510101900.58976.sr@denx.de>
-	<61cc712d0510111329i45138617lc8eeea1edad4ae0f@mail.gmail.com>
-In-Reply-To: <61cc712d0510111329i45138617lc8eeea1edad4ae0f@mail.gmail.com>
+	<200510120859.12362.sr@denx.de> <434CB71E.5000603@compulab.co.il>
+In-Reply-To: <434CB71E.5000603@compulab.co.il>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200510120859.12362.sr@denx.de>
-Cc: Kylo Ginsberg <kylo.ginsberg@gmail.com>
+Message-Id: <200510120927.56692.sr@denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: MPC8555 USB host support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,17 +25,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 11 October 2005 22:29, Kylo Ginsberg wrote:
-> I asked a similar question a few months back and found the comments
-> instructive.  Google for a thread started with this subject: "MPC885 -
-> USB HCI drivers".
+Mike,
 
-Thanks for the hint. This brings me back to the "MPC885 - USB HCI drivers" 
-thread.
+On Wednesday 12 October 2005 09:11, Mike Rapoport wrote:
+> I don't know if Pantelis found a volo^H^H^Hictim, but I've made some
+> porting of the USB HCI driver for
+> 82xx (I afraid 8xx support was broken during the port). But the code is
+> *very* ugly and still buggy.
 
-Pantelis, you mentioned an existing (and working ;-)) linux 2.4 USB HCI driver 
-for 8xx and 82xx. Did you find the time to clean the driver up? Perhaps, I 
-could be your "vict^H^H^Holunteer", to port it to 2.6.
-
+I am currently collecting information about the porting effort, and your "ugly 
+and buggy" driver would be very helpful. So, please send me your version as 
+well. Thanks.
+ 
 Best regards,
 Stefan
