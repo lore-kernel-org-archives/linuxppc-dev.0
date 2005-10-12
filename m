@@ -1,24 +1,17 @@
-Return-Path: <kylo.ginsberg@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.206])
-	by ozlabs.org (Postfix) with ESMTP id ABF766842B
+Return-Path: <rolandd@cisco.com>
+Received: from ams-iport-1.cisco.com (ams-iport-1.cisco.com [144.254.224.140])
+	by ozlabs.org (Postfix) with ESMTP id 0CFBF684C7
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Oct 2005 06:36:31 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id i13so798247wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Oct 2005 13:36:30 -0700 (PDT)
-Message-ID: <61cc712d0510111329i45138617lc8eeea1edad4ae0f@mail.gmail.com>
-Date: Tue, 11 Oct 2005 13:29:15 -0700
-From: Kylo Ginsberg <kylo.ginsberg@gmail.com>
-To: Stefan Roese <sr@denx.de>
-In-Reply-To: <200510101900.58976.sr@denx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <a79669360510062205v629affb9ga687078f018afae@mail.gmail.com>
-	<a79669360510100340g2563b441w9418001c034dbe5b@mail.gmail.com>
-	<003d01c5cd97$34404470$0301a8c0@chuck2>
-	<200510101900.58976.sr@denx.de>
+	Wed, 12 Oct 2005 14:20:36 +1000 (EST)
+In-Reply-To: 
+Date: Tue, 11 Oct 2005 21:20:30 -0700
+Message-Id: <200510112120.0zjEUfdtXtv77Emb@cisco.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+To: mporter@kernel.crashing.org
+From: Roland Dreier <rolandd@cisco.com>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC8555 USB host support
+Subject: [PATCH 0/4] updated 440SPe support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,25 +22,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Stefan,
+Here is an updated series of patches that add basic support for AMCC's
+PowerPC 440SPe SoC.  With these patches, the kernel will boot and run
+on the "Yucca" 440SPe eval board, with ethernet, serial and PCI
+Express in root port mode working (tested with an InfiniBand HCA,
+naturally ;).
 
-I asked a similar question a few months back and found the comments
-instructive.  Google for a thread started with this subject: "MPC885 -
-USB HCI drivers".
+Since my last posting, I've fixed a few bugs (UIC3 interrupt handling
+being the most notable fix) and implemented basic PCI Express support.
+I left out the changes required for the old ibm_emac ethernet driver,
+since I'm assuming Eugene's new driver will be merged, and his tree
+already has 440SPe support.
 
-Kylo
+I now have all the features I need for the project I'm working on, so
+I don't expect to be adding much to my port.  I will do whatever
+cleanup, bugfixing and integration is required to get this merged
+upstream.  It looks like 2.6.15 will be opening up soon, so please let
+me know if there's anything I can do to make merging easier.
 
-On 10/10/05, Stefan Roese <sr@denx.de> wrote:
-> I am wondering, if the USB host controller of the MPC8555 is supported at=
- all
-> right now. The manual states, that it is similar to, but not fully OHCI o=
-r
-> UHCI compatible. Any infos about this?
->
-> Best regards,
-> Stefan
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
+I also have a git tree based on Eugene Surovegin's git tree at
+
+    rsync://rsync.kernel.org/pub/scm/linux/kernel/git/roland/ppc440spe.git
+
+that contains all of these patches, in case that makes it easier to
+merge this stuff.
+
+Thanks,
+  Roland
