@@ -1,19 +1,19 @@
-Return-Path: <ashish.bijlani@gmail.com>
-Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.202])
-	by ozlabs.org (Postfix) with ESMTP id B1416684E3
+Return-Path: <davidkwho@gmail.com>
+Received: from qproxy.gmail.com (qproxy.gmail.com [72.14.204.192])
+	by ozlabs.org (Postfix) with ESMTP id 6F59F684E3
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 13 Oct 2005 17:48:28 +1000 (EST)
-Received: by zproxy.gmail.com with SMTP id l1so270983nzf
+	Fri, 14 Oct 2005 00:27:24 +1000 (EST)
+Received: by qproxy.gmail.com with SMTP id v38so108114qbe
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 13 Oct 2005 00:48:26 -0700 (PDT)
-Message-ID: <ec55b17e0510130042m6c6c0c43ndf09f40a03f9cf97@mail.gmail.com>
-Date: Thu, 13 Oct 2005 13:12:19 +0530
-From: Ashish Bijlani <ashish.bijlani@gmail.com>
+	Thu, 13 Oct 2005 07:27:22 -0700 (PDT)
+Message-ID: <4dd15d180510130720m45089eafk10cd9936457ced8b@mail.gmail.com>
+Date: Thu, 13 Oct 2005 10:20:50 -0400
+From: David Ho <davidkwho@gmail.com>
 To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----=_Part_745_18796991.1129189339941"
-Subject: MPC7447A based board with MV64462 Marvell Discovery III controller
+	boundary="----=_Part_4953_28156639.1129213250527"
+Subject: NPTL support on PPC
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,47 +24,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_745_18796991.1129189339941
+------=_Part_4953_28156639.1129213250527
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
-Hi,
+Hi all,
 
-I'm trying to bring MPC7447A based board with MV64462 Marvell Discovery III
-controller up. Can you guide me to Linux-2.6 sources with support for
-MV64462 Marvell Discovery III controller and MPC7447A PowerPC processor.
-Support for I2c, dual 10/100/1000 ethernet ports, and relevant platform
-should be there. I cannot access the bit keeper repositories so please guid=
-e
-me to the linux-2.6 kernel source tree if you can.
+Just out of curiosity, is NPTL support already available on PPC?
 
-Thanks in advance.
+I believe there are 2 parts to it. Kernel support which is probably already
+there in 2.6. And the other is glibc, is there a generally available
+toolchain (i.e. ELDK) that already support NPTL?
 
--Ashish
+Thanks, David
 
-------=_Part_745_18796991.1129189339941
+------=_Part_4953_28156639.1129213250527
 Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
-Hi,<br>
-
+Hi all,<br>
 <br>
-I'm trying to bring&nbsp; MPC7447A based board with MV64462 Marvell
-Discovery III controller up. Can you guide me to Linux-2.6 sources with
-support for
-MV64462 Marvell Discovery III controller and MPC7447A PowerPC
-processor. Support for I2c, dual 10/100/1000 ethernet ports, and
-relevant platform
-should be there. I cannot access the bit keeper repositories so please
-guide me to the linux-2.6 kernel source tree if you can.<br>
-
+Just out of curiosity, is NPTL support already available on PPC?<br>
 <br>
-
-Thanks in advance.<br>
-<span class=3D"sg">
+I believe there are 2 parts to it.&nbsp; Kernel support which is
+probably already there in 2.6.&nbsp; And the other is glibc, is there a
+generally available toolchain (i.e. ELDK) that already support NPTL?<br>
 <br>
--Ashish</span>
+Thanks, David<br>
 
-------=_Part_745_18796991.1129189339941--
+------=_Part_4953_28156639.1129213250527--
