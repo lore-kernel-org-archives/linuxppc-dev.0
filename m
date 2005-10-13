@@ -1,19 +1,15 @@
-Return-Path: <mgreer@mvista.com>
-Received: from hermes.mvista.com (gateway-1237.mvista.com [12.44.186.158])
-	by ozlabs.org (Postfix) with ESMTP id 0B662684E3
+Return-Path: <rolandd@cisco.com>
+Received: from ams-iport-1.cisco.com (ams-iport-1.cisco.com [144.254.224.140])
+	by ozlabs.org (Postfix) with ESMTP id 407C76855E
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 14 Oct 2005 04:27:10 +1000 (EST)
-Date: Thu, 13 Oct 2005 11:26:54 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Ashish Bijlani <ashish.bijlani@gmail.com>
-Message-ID: <20051013182654.GA18497@mag.az.mvista.com>
-References: <ec55b17e0510130042m6c6c0c43ndf09f40a03f9cf97@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <ec55b17e0510130042m6c6c0c43ndf09f40a03f9cf97@mail.gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC7447A based board with MV64462 Marvell Discovery III
-	controller
+	Fri, 14 Oct 2005 06:05:26 +1000 (EST)
+To: linuxppc-embedded@ozlabs.org, mporter@kernel.crashing.org
+From: Roland Dreier <rolandd@cisco.com>
+Date: Thu, 13 Oct 2005 13:05:20 -0700
+Message-ID: <5264s12nen.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Subject: What is OCP_FUNC_OPB ??
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,29 +20,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 13, 2005 at 01:12:19PM +0530, Ashish Bijlani wrote:
-> Hi,
-> 
-> I'm trying to bring MPC7447A based board with MV64462 Marvell Discovery III
-> controller up. Can you guide me to Linux-2.6 sources with support for
-> MV64462 Marvell Discovery III controller and MPC7447A PowerPC processor.
-> Support for I2c, dual 10/100/1000 ethernet ports, and relevant platform
-> should be there. I cannot access the bit keeper repositories so please guide
-> me to the linux-2.6 kernel source tree if you can.
+While merging Ruslan Sushko's fix for GPIO and IIC addresses into my
+440SPe tree, I noticed that ocp_core[] has an entry for a function
+OCP_FUNC_OPB.  I'd like to get this correct for the 440SPe port, but I
+don't see any users in the tree.
 
-Ashish,
+Is this field just used to create an entry in sysfs -- if so what does
+userspace use it for??  Or is it just completely obsolete?  What is
+the .paddr member supposed to represent?  Is it just the base address
+of the whole OPB region?
 
-Support for both the 7447A and mv64x6x is in the latest 2.6 mainline
-kernel source at kernel.org.
+Is it worth applying the patch below (according to the 440SP manual,
+the OPB region starts at 0x1 f000 0000), or should we just get rid of
+these entries entirely?
 
-If your board is a chrp/openfirmware board, then you probably want to use
-the Pegasos code as an example.  If your board has U-boot or some other
-non-OF firmware, then use the katana or chestnut as an example (katana
-is more up-to-date than the chestnut).  The ev64360 code may help too.
-There are i2c and enet drivers (and mpsc and wdt) in that source as well.
+Thanks,
+  Roland
 
-Note that I've never had a 64462 to test with.   Since the '2' means it
-has less functionality than the '0', you may run into some problems.
-If you do, please let me know what they are.
+[PPC32] Correct OPB base address for PowerPC 440SP
 
-Mark
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+
+---
+
+diff --git a/arch/ppc/platforms/4xx/ibm440sp.c b/arch/ppc/platforms/4xx/ibm440sp.c
+index feb17e4..0b7e462 100644
+--- a/arch/ppc/platforms/4xx/ibm440sp.c
++++ b/arch/ppc/platforms/4xx/ibm440sp.c
+@@ -60,7 +60,7 @@ struct ocp_def core_ocp[] = {
+ 	{ .vendor	= OCP_VENDOR_IBM,
+ 	  .function	= OCP_FUNC_OPB,
+ 	  .index	= 0,
+-	  .paddr	= 0x0000000140000000ULL,
++	  .paddr	= 0x00000001f0000000ULL,
+ 	  .irq		= OCP_IRQ_NA,
+ 	  .pm		= OCP_CPM_NA,
+ 	},
