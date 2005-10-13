@@ -1,28 +1,19 @@
-Return-Path: <roffermanns@sysgo.com>
-Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
-	by ozlabs.org (Postfix) with ESMTP id 3BFAA684C7
+Return-Path: <ashish.bijlani@gmail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.202])
+	by ozlabs.org (Postfix) with ESMTP id B1416684E3
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 13 Oct 2005 02:20:48 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.sysgo.com (Postfix) with ESMTP id 935C4FB862
+	Thu, 13 Oct 2005 17:48:28 +1000 (EST)
+Received: by zproxy.gmail.com with SMTP id l1so270983nzf
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Oct 2005 17:47:39 +0200 (CEST)
-Received: from donald.sysgo.com (unknown [172.20.1.30])
-	by mail.sysgo.com (Postfix) with ESMTP id 7CE23FB862
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Oct 2005 17:47:39 +0200 (CEST)
-Received: from kolab.sysgo.com (rof.sysgo.com [172.22.10.10])
-	by donald.sysgo.com (Postfix) with ESMTP id 1A46B1ABDAF
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Oct 2005 17:47:37 +0200 (CEST)
-From: Rolf Offermanns <roffermanns@sysgo.com>
+	Thu, 13 Oct 2005 00:48:26 -0700 (PDT)
+Message-ID: <ec55b17e0510130042m6c6c0c43ndf09f40a03f9cf97@mail.gmail.com>
+Date: Thu, 13 Oct 2005 13:12:19 +0530
+From: Ashish Bijlani <ashish.bijlani@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Date: Wed, 12 Oct 2005 17:47:38 +0200
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200510121747.38983.roffermanns@sysgo.com>
-Subject: SPI driver for AMCC 440EP
+Content-Type: multipart/alternative;
+	boundary="----=_Part_745_18796991.1129189339941"
+Subject: MPC7447A based board with MV64462 Marvell Discovery III controller
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,22 +24,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi!
-Does anyone have an SPI driver for the PPC440EP?
+------=_Part_745_18796991.1129189339941
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-If not I am going to write one. In that case, what API would you suggest to 
-use.
+Hi,
 
-I checked the archives (both LKML and linuxppc-embedded) for SPI API 
-discussions, but I am still not sure which way to go since all discussions 
-ended at some point without an agreement. I would like to see the driver 
-going into mainline someday, so please give me a hint about which way to 
-choose.
+I'm trying to bring MPC7447A based board with MV64462 Marvell Discovery III
+controller up. Can you guide me to Linux-2.6 sources with support for
+MV64462 Marvell Discovery III controller and MPC7447A PowerPC processor.
+Support for I2c, dual 10/100/1000 ethernet ports, and relevant platform
+should be there. I cannot access the bit keeper repositories so please guid=
+e
+me to the linux-2.6 kernel source tree if you can.
 
-Thanks,
-Rolf
--- 
-Rolf Offermanns <roffermanns@sysgo.com>
-SYSGO AG     Tel.: +49-6136-9948-0
-Am Pfaffenstein 14   Fax: +49-6136-9948-10
-55270 Klein-Winternheim  http://www.sysgo.com
+Thanks in advance.
+
+-Ashish
+
+------=_Part_745_18796991.1129189339941
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+Hi,<br>
+
+<br>
+I'm trying to bring&nbsp; MPC7447A based board with MV64462 Marvell
+Discovery III controller up. Can you guide me to Linux-2.6 sources with
+support for
+MV64462 Marvell Discovery III controller and MPC7447A PowerPC
+processor. Support for I2c, dual 10/100/1000 ethernet ports, and
+relevant platform
+should be there. I cannot access the bit keeper repositories so please
+guide me to the linux-2.6 kernel source tree if you can.<br>
+
+<br>
+
+Thanks in advance.<br>
+<span class=3D"sg">
+<br>
+-Ashish</span>
+
+------=_Part_745_18796991.1129189339941--
