@@ -1,25 +1,20 @@
-Return-Path: <sven.luther@wanadoo.fr>
-Received: from smtp5.wanadoo.fr (smtp5.wanadoo.fr [193.252.22.26])
-	by ozlabs.org (Postfix) with ESMTP id A70A96857A
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Oct 2005 01:48:17 +1000 (EST)
-Received: from smtp5.wanadoo.fr (mwinf0512 [172.22.136.36])
-	by mwinf0510.wanadoo.fr (SMTP Server) with ESMTP id 618D73905
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Oct 2005 17:29:44 +0200 (CEST)
-Received: from me-wanadoo.net (localhost [127.0.0.1])
-	by mwinf0512.wanadoo.fr (SMTP Server) with ESMTP id 12F641C00232
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Oct 2005 17:29:41 +0200 (CEST)
-Date: Fri, 14 Oct 2005 17:18:30 +0200
-From: Sven Luther <sl@bplan-gmbh.de>
-To: Dale Farnsworth <dale@farnsworth.org>
-Message-ID: <20051014151830.GA31442@localhost.localdomain>
-References: <1129233624.4161.30.camel@localhost.localdomain>
-	<20051014135641.15104.qmail@xyzzy.farnsworth.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20051014135641.15104.qmail@xyzzy.farnsworth.org>
-Cc: linuxppc-dev@ozlabs.org, sl@bplan-gmbh.de
-Subject: Re: [PATCH 2.6.14-rc3 1/1] chrp_pegasos_eth: Added Marvell
-	Discovery II SRAM support
+Return-Path: <hollis@penguinppc.org>
+Received: from smtpauth03.mail.atl.earthlink.net
+	(smtpauth03.mail.atl.earthlink.net [209.86.89.63])
+	by ozlabs.org (Postfix) with ESMTP id 84ADA68577
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Oct 2005 01:54:35 +1000 (EST)
+In-Reply-To: <20051014145644.M46291@gmx.net>
+References: <20051014115753.M37114@quicknet.nl>
+	<f308ce32868b18c6be30cf2a28d86ade@kernel.crashing.org>
+	<20051014145644.M46291@gmx.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=WINDOWS-1252; format=flowed
+Message-Id: <80e720f67822d61a3dcd52cb906996cf@penguinppc.org>
+From: Hollis Blanchard <hollis@penguinppc.org>
+Date: Fri, 14 Oct 2005 10:54:30 -0500
+To: "i2a" <i2a@gmx.net>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: open firmware
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,19 +24,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 14, 2005 at 01:56:41PM -0000, Dale Farnsworth wrote:
-> > -	static struct pci_device_id pci_marvell_mv64360[] = {
-> > +	static struct pci_device_id pci_marvell_mv64360[] =
-> > +	{
-> 
-> > +	if (pci_dev_present(pci_marvell_mv64360))
-> > +	{
-> 
-> Open brace should not be on a line by itself except in function definitions.
+On Oct 14, 2005, at 10:34 AM, i2a wrote:
 
-Oh, neat, i knew i should not use same-line-braces for function but didn't
-know i should use them for non-functions :)
+> On Fri, 14 Oct 2005 15:17:47 +0200, Segher Boessenkool wrote
+>>
+>> See http://playground.sun.com/1275/
+>
+> Thanks, initially I had no luck with this site (I had find it),
+> http://playground.sun.com/1275/home.html#OFDCoreDoc
+>
+> The two links of the core documentation are dead :(, and there has to=20=
 
-Friendly,
+> be a way
+> to get the documentation without having to buy =93the book=94.
 
-Sven Luther
+openbios.org has a better-organized documentation collection.
+
+> But here it is, via this page http://www.firmworks.com/www/ieee.htm
+> I got to ftp://playground.sun.com/pub/p1275/coredoc/ where the coredoc=20=
+
+> is
+> downloadable (it is old, but better then nothing), no idea why there=20=
+
+> are no
+> pointers to it..
+>
+> If someone has any newer documentation pls let me know, the system I=20=
+
+> use is from
+> 2004.
+
+The Open Firmware documents have not changed for a long time (which is=20=
+
+probably a bad thing).
+
+-Hollis=
