@@ -1,18 +1,21 @@
-Return-Path: <markc@mail.com>
-Received: from relay02.roc.ny.frontiernet.net (relay02.roc.ny.frontiernet.net
-	[66.133.182.165]) by ozlabs.org (Postfix) with ESMTP id 53CB868550
+Return-Path: <ajz@cambridgebroadband.com>
+Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
+	[217.204.121.83])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8C81568564
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 15 Oct 2005 00:31:25 +1000 (EST)
-Message-ID: <00a701c5d0cc$4e0e6840$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-To: "David Jander" <david.jander@protonic.nl>
-References: <200510141135.47186.david.jander@protonic.nl>
-Date: Fri, 14 Oct 2005 10:33:40 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+	Sat, 15 Oct 2005 00:33:24 +1000 (EST)
+Date: Fri, 14 Oct 2005 15:33:14 +0100
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
+To: "gokul" <kn.gokul@gdatech.co.in>
+Message-Id: <20051014153314.262c0d60.ajz@cambridgebroadband.com>
+In-Reply-To: <02a401c5d0b8$6a6aef40$1600a8c0@Gokul>
+References: <02a401c5d0b8$6a6aef40$1600a8c0@Gokul>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: jffs2 robustness against powerfailure
+Subject: Re: How to porting U-Boot to MPC852T
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,90 +26,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->
-> Hi,
->
-> We have a custom embedded linux board, based on a MPC852T processor,
-running
-> 2.4.25 kernel from denx. Jffs2 has certain backported patches after cvs
-from
-> 03/2005.
-> I wanted to try some stress-testing the flash using jffs2 and the
-"checkfs"
-> tool which comes as part of the jffs2 sources. I setup a "power-cycle-box"
-as
-> described in the README and started logging everything the system
-produced.
-> Since jffs2 claims to be robust against power-failures I set the threshold
-for
-> maximum number of corrupt files allowed to 0. The test procedure rewrites
-all
-> testfiles using a single write() call for each file, so that should be ok.
-> After 279 power-cycles, it stopped with a CRC error in "file13". Of course
-> "file13" was the one being written to when power was cut off the last
-time.
->
-> Question: Is this a known shorcoming of jffs2, or must I assume that my
-> hardware is broken?
->
-> The latter is relatively unlikely, once I try to explain the contents of
-the
-> file:
->
-> diskles9:/flash # hexdump file13
-> 0000000 0000 0300 0000 036d 0000 0942 0000 20b0
-> 0000010 0000 08dd 0000 0715 0000 1da1 0000 043c
-> 0000020 0000 05c2 0000 228d 0000 10ad 0000 1c35
-> ...
-> 00002e0 0000 14f1 0000 0d94 0000 1911 0000 12dd
-> 00002f0 0000 09e9 0000 0686 0000 2380 0000 2294
-> 0000300 0000 18f1 0000 01be 0000 25bb 0000 1af9
-> 0000310 0000 1b94 0000 02b0 0000 2511 0000 1f79
-> 0000320 0000 1f97 0000 0b53 0000 1eb7 0000 10bb
-> 0000330 0000 2529 0000 2130 0000 0361 0000 0ff8
-> 0000340 0000 1428 0000 10ab 0000 0364 0000 1b89
-> 0000350 b110
->
-> As one can easily see, the first int (0x00000300) indicates the
-file-length,
-> after which the 16-bit CRC should be placed. At offset 0000300 in the file
-> there seems to be just more random data (a CRC of 0x0000 is unlikely and
-> known wrong in this case).
-> At the end of the file (offset 0x0000350) there is something that looks
-more
-> like a checksum.
-> Apparently the previous file was 0x0352 bytes long and the new file was
-going
-> to be 0x0302 bytes long, but was never written completely.
-> How comes I get a to see a valid file containing a mix of old and new data
-if
-> it was written with a single write() call?????
-> Shouldn't jffs2 throw away the new incomplete node and keep the old
-version of
-> the file?
->
-> Can anyone explain what happened here??
->
-> Greetings,
->
-> -- 
-> David Jander
+On Fri, 14 Oct 2005 17:41:32 +0530
+"gokul" <kn.gokul@gdatech.co.in> wrote:
 
-Well, I can tell you this, from bitter experience:  Chips do strange stuff
-when power is
-coming or going.  One thing that can happen is addresses get messed up, so
-writes go
-to the wrong place.  You say your hardware is good, but it may not have been
-thoroughly characterized for power-down behavior.   Probably the same chip
-that
-generates a power-up reset generates a reset when power is falling, check if
-the trip
-voltage is high enough.
+> Hi
+> 
+> 
+> I have to Port U Boot for MPC852T .Is there u boot code is available
+> ?
+> 
+> Can u send me the link ?
+> 
+> 
+> 
+> With Regards
+> Gokul
+> 
+> 
+> 
 
-You could rule a power problem out by running your tests where you reset the
-processor (shorting hreset or poreset somewhere) but not power-cycling the
-board, and see if
-the failures are the same.
+First of all: you need to ask on the u-boot-users mailing list, not
+here.
 
-Just my $.02,
-Mark Chambers
+Second, u-boot already supports MPC852T.  What you really want is for
+u-boot to be ported to your board.  Ask the u-boot-users list if your
+board is supported.  If not, maybe you can pay someone to do it for
+you.
+
+Alex
