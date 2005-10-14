@@ -1,20 +1,18 @@
-Return-Path: <akpm@osdl.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 3EAD368570
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Oct 2005 09:31:33 +1000 (EST)
-Date: Thu, 13 Oct 2005 16:27:34 -0700
-From: Andrew Morton <akpm@osdl.org>
-To: Olaf Hering <olh@suse.de>
-Message-Id: <20051013162734.615bba34.akpm@osdl.org>
-In-Reply-To: <20051011190133.GA31348@suse.de>
-References: <20050426211019.GA11579@suse.de> <426F9646.3000407@namesys.com>
-	<20051011190133.GA31348@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <jeffm@suse.de>
+Received: from locomotive.unixthugs.org (locomotive.csh.rit.edu
+	[129.21.60.149]) by ozlabs.org (Postfix) with ESMTP id 40CC968550
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Oct 2005 11:20:02 +1000 (EST)
+Message-ID: <434F0710.50607@suse.de>
+Date: Thu, 13 Oct 2005 21:17:04 -0400
+From: Jeff Mahoney <jeffm@suse.de>
+MIME-Version: 1.0
+To: Andrew Morton <akpm@osdl.org>
+References: <20050426211019.GA11579@suse.de>	<426F9646.3000407@namesys.com>	<20051011190133.GA31348@suse.de>
+	<20051013162734.615bba34.akpm@osdl.org>
+In-Reply-To: <20051013162734.615bba34.akpm@osdl.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org, reiserfs-dev@namesys.com, reiser@namesys.com,
-	jeffm@suse.de
+	Olaf Hering <olh@suse.de>
 Subject: Re: [PATCH] make gcc -O1 in fs/reiserfs optional
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,73 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olaf Hering <olh@suse.de> wrote:
->
->  On Wed, Apr 27, Hans Reiser wrote:
+Andrew Morton wrote:
+> Are you sure it's due to inline functions?  I thought the problem was that
+> certain versions of gcc did automatic inlining of non-inlined functions and
+> we get excessive stack windup due to that.  And iirc we put in global
+> compiler options to defeat that behaviour.  Andi would recall.
 > 
-> > Olaf Hering wrote:
-> > 
-> > >Jeff,
-> > >
-> > >you added this EXTRA_CFLAGS= during 2.4 development, I think the broken
-> > >compiler was gcc 3.2 on SLES8. Can we turn this -O1 into a .config
-> > >option?
-> 
-> > Sounds reasonable.
-> 
->  only compile with -O1 if the (very old) compiler is broken
->  We use reiserfs alot in SLES9 on ppc64, and it was never seen
->  with gcc33.
-> 
+> Furthermore, we do have infrastructure for detecting the gcc version at
+> build time.  It would be better to use that for disabling `-O2', rather
+> than a config option.
 
-I dunno about this.
+Andrew -
 
-> 
-> Index: linux-2.6.12-rc3-olh/fs/reiserfs/Makefile
-> ===================================================================
-> --- linux-2.6.12-rc3-olh.orig/fs/reiserfs/Makefile
-> +++ linux-2.6.12-rc3-olh/fs/reiserfs/Makefile
-> @@ -21,13 +21,7 @@ ifeq ($(CONFIG_REISERFS_FS_POSIX_ACL),y)
->  reiserfs-objs += xattr_acl.o
->  endif
->  
-> -# gcc -O2 (the kernel default)  is overaggressive on ppc32 when many inline
-> -# functions are used.  This causes the compiler to advance the stack
-> -# pointer out of the available stack space, corrupting kernel space,
-> -# and causing a panic. Since this behavior only affects ppc32, this ifeq
-> -# will work around it. If any other architecture displays this behavior,
-> -# add it here.
-> -ifeq ($(CONFIG_PPC32),y)
-> +ifeq ($(CONFIG_REISERFS_CC_REDUCE_OPTIMZE),y)
->  EXTRA_CFLAGS := -O1
->  endif
->  
-> Index: linux-2.6.12-rc3-olh/fs/Kconfig
-> ===================================================================
-> --- linux-2.6.12-rc3-olh.orig/fs/Kconfig
-> +++ linux-2.6.12-rc3-olh/fs/Kconfig
-> @@ -186,6 +186,18 @@ config REISERFS_FS
->  	  If you like it, you can pay us to add new features to it that you
->  	  need, buy a support contract, or pay us to port it to another OS.
->  
-> +config REISERFS_CC_REDUCE_OPTIMZE
-> +	bool "Reduce CC optimization level to workaround compiler bugs"
-> +	depends on PPC32
-> +	default n
-> +	help
-> +	  gcc -O2 (the kernel default) is overaggressive on ppc32 when many inline
-> +	  functions are used.  This causes the compiler to advance the stack
-> +	  pointer out of the available stack space, corrupting kernel space,
-> +	  and causing a panic. Since this behavior only affects ppc32, this ifeq
-> +	  will work around it. If any other architecture displays this behavior,
-> +	  add it here.
-> +
+This "fix" has been in the kernel since I developed the endian safe
+patches for ReiserFS in the 2.4 days; This patch just makes it optional
+rather than required.
 
-Are you sure it's due to inline functions?  I thought the problem was that
-certain versions of gcc did automatic inlining of non-inlined functions and
-we get excessive stack windup due to that.  And iirc we put in global
-compiler options to defeat that behaviour.  Andi would recall.
+You could be correct regarding the behavior. I noticed it was related to
+inline functions and stack usage. Since this was quite a few years ago
+now, I don't recall the exact details, just that -O1 worked around it. I
+was content blaming gcc and moving on with development. I seem to recall
+thinking that was overaggressive aliasing avoidance between temporary
+variables in static inline functions. The endian safe code frequently
+uses static inlines for conversion of disk order bitfields (like key
+type and offset). balance_leaf() is a beast of a function at around 1400
+lines or so. When compiled with -O2, it wanted to allocate 6k of stack
+space. With -O1, it ended up allocating about 230 bytes. It seemed to be
+the only function really affected by the bug, but I wanted to be certain.
 
-Furthermore, we do have infrastructure for detecting the gcc version at
-build time.  It would be better to use that for disabling `-O2', rather
-than a config option.
+I do agree that using the kbuild infrastructure to determine the need
+for this option would work quite a bit better.
+
+-Jeff
+
+-- 
+Jeff Mahoney
+SUSE Labs
