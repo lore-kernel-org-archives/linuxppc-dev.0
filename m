@@ -1,21 +1,32 @@
-Return-Path: <joerg@dorchain.net>
-Received: from Redstar.dorchain.net (153-133-088-212.ip-addr.teresto.net
-	[212.88.133.153])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mtagate3.de.ibm.com (mtagate3.de.ibm.com [195.212.29.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.dorchain.net", Issuer "Dorchain Family" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 622A068571
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Oct 2005 22:51:33 +1000 (EST)
-Received: (from joerg@localhost)
-	by Redstar.dorchain.net (8.13.4/8.13.4) id j9ECcNws009598
-	for linuxppc-dev@ozlabs.org; Fri, 14 Oct 2005 14:38:23 +0200
-Date: Fri, 14 Oct 2005 14:38:23 +0200
-From: Joerg Dorchain <joerg@dorchain.net>
-To: linuxppc-dev@ozlabs.org
-Message-ID: <20051014123823.GA9477@Redstar.dorchain.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="AhhlLboLdkugWU4S"
-Subject: 2.6.13 ati (ibook) frambuffer problem
+	(Client CN "de.ibm.com", Issuer "Equifax" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id DE47F68573
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Oct 2005 23:16:45 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate3.de.ibm.com (8.12.10/8.12.10) with ESMTP id j9EDGb1a093562
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Oct 2005 13:16:37 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
+	by d12nrmr1607.megacenter.de.ibm.com (8.12.10/NCO/VERS6.7) with ESMTP
+	id j9EDGbpv206860
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Oct 2005 15:16:37 +0200
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11/8.13.3) with ESMTP id
+	j9EDGbF7028595
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Oct 2005 15:16:37 +0200
+In-Reply-To: <20051014115753.M37114@quicknet.nl>
+References: <20051014115753.M37114@quicknet.nl>
+Mime-Version: 1.0 (Apple Message framework v622)
+Message-Id: <f308ce32868b18c6be30cf2a28d86ade@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Date: Fri, 14 Oct 2005 15:17:47 +0200
+To: "i2a" <i2a@gmx.net>
+Content-Type: text/plain; charset=WINDOWS-1252; format=flowed
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: open firmware
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,38 +36,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> The linuxppc kernel uses the open firmware to access the ppc machine=20=
 
---AhhlLboLdkugWU4S
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> infos, I
+> want to be able to program to the open firmware to. Although there is=20=
 
-Hi,
+> a lost of
+> info inside the ppc kernel I still want to know the internals=20
+> (definitions etc)
+> of =93open firmware=94.
+>
+> Has someone documentation available? On inet I only found the UI=20
+> description :(
 
-after upgrading to a vanilla 2.6.13 kernel (from 2.6.12) there seems to
-be a problem with the framebuffer driver I use for my ibook. The display
-statz at the opnpic message, and after a while the machine reboot (looks
-like panic().
+See http://playground.sun.com/1275/
 
-Can someone confirm? Or better, point me to a patch ;-)?
 
-For given reason, what is the common method to debug crashes before the
-display is working?
-
-TIA,
-
-Joerg
-
---AhhlLboLdkugWU4S
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQFDT6a/jY4+4PdzvOARApjUAJ9SSurtN09wIUIeg/Bt8sbqBMa/7wCcCdny
-pRWe0eZsjIcQ1+wmS3njgDU=
-=sKFd
------END PGP SIGNATURE-----
-
---AhhlLboLdkugWU4S--
+Segher
