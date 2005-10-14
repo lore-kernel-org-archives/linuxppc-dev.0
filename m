@@ -1,20 +1,19 @@
-Return-Path: <dale@farnsworth.org>
-Received: from xyzzy.farnsworth.org (unknown [65.200.49.142])
-	by ozlabs.org (Postfix) with SMTP id 7691E68564
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Oct 2005 07:42:20 +1000 (EST)
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Fri, 14 Oct 2005 14:42:17 -0700
-To: Sven Luther <sl@bplan-gmbh.de>
-Message-ID: <20051014214217.GA29529@xyzzy.farnsworth.org>
-References: <1129233624.4161.30.camel@localhost.localdomain>
-	<20051014135641.15104.qmail@xyzzy.farnsworth.org>
-	<20051014151830.GA31442@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20051014151830.GA31442@localhost.localdomain>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7AF516856F
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Oct 2005 08:00:18 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Joerg Dorchain <joerg@dorchain.net>
+In-Reply-To: <20051014123823.GA9477@Redstar.dorchain.net>
+References: <20051014123823.GA9477@Redstar.dorchain.net>
+Content-Type: text/plain
+Date: Sat, 15 Oct 2005 07:58:25 +1000
+Message-Id: <1129327105.21765.39.camel@gaston>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2.6.14-rc3 1/1] chrp_pegasos_eth: Added Marvell
-	Discovery II SRAM support
+Subject: Re: 2.6.13 ati (ibook) frambuffer problem
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,45 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 14, 2005 at 05:18:30PM +0200, Sven Luther wrote:
-> On Fri, Oct 14, 2005 at 01:56:41PM -0000, Dale Farnsworth wrote:
-> > > -	static struct pci_device_id pci_marvell_mv64360[] = {
-> > > +	static struct pci_device_id pci_marvell_mv64360[] =
-> > > +	{
-> > 
-> > > +	if (pci_dev_present(pci_marvell_mv64360))
-> > > +	{
-> > 
-> > Open brace should not be on a line by itself except in function definitions.
+On Fri, 2005-10-14 at 14:38 +0200, Joerg Dorchain wrote:
+> Hi,
 > 
-> Oh, neat, i knew i should not use same-line-braces for function but didn't
-> know i should use them for non-functions :)
+> after upgrading to a vanilla 2.6.13 kernel (from 2.6.12) there seems to
+> be a problem with the framebuffer driver I use for my ibook. The display
+> statz at the opnpic message, and after a while the machine reboot (looks
+> like panic().
+> 
+> Can someone confirm? Or better, point me to a patch ;-)?
+> 
+> For given reason, what is the common method to debug crashes before the
+> display is working?
 
-???
+This looks like a bug that was introduced by linus in 2.6.13 and that I
+_think_ should be fixed in the stable series, so if you get 2.6.13.x (x
+= latest stable release) it should work.
 
-I guess what I wrote wasn't clear, since in his most recent patch,
-Nicolas added more places like the above where the "{" has been moved
-to a line by itself.  Just the opposite of what I meant to suggest.
+Usually, to debug those crashes, I'm adding a hack to kernel/printk.c to
+call btext_drawstring() (with some test to make sure to do that not too
+early, typically only after setup_arch has been called).
 
->From Documentation/CodingStyle:
->		Chapter 3: Placing Braces
->
->The other issue that always comes up in C styling is the placement of
->braces.  Unlike the indent size, there are few technical reasons to
->choose one placement strategy over the other, but the preferred way, as
->shown to us by the prophets Kernighan and Ritchie, is to put the opening
->brace last on the line, and put the closing brace first, thusly:
->
->	if (x is true) {
->		we do y
->	}
->
->However, there is one special case, namely functions: they have the
->opening brace at the beginning of the next line, thus:
->
->	int function(int x)
->	{
->		body of function
->	}
-
--Dale
+Ben.
