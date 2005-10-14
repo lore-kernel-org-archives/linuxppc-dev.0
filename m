@@ -1,19 +1,18 @@
-Return-Path: <jeffm@suse.de>
-Received: from locomotive.unixthugs.org (locomotive.csh.rit.edu
-	[129.21.60.149]) by ozlabs.org (Postfix) with ESMTP id 40CC968550
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Oct 2005 11:20:02 +1000 (EST)
-Message-ID: <434F0710.50607@suse.de>
-Date: Thu, 13 Oct 2005 21:17:04 -0400
-From: Jeff Mahoney <jeffm@suse.de>
-MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-References: <20050426211019.GA11579@suse.de>	<426F9646.3000407@namesys.com>	<20051011190133.GA31348@suse.de>
-	<20051013162734.615bba34.akpm@osdl.org>
-In-Reply-To: <20051013162734.615bba34.akpm@osdl.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, reiserfs-dev@namesys.com, reiser@namesys.com,
-	Olaf Hering <olh@suse.de>
-Subject: Re: [PATCH] make gcc -O1 in fs/reiserfs optional
+Return-Path: <nd@bplan-gmbh.de>
+Received: from natsmtp00.rzone.de (natsmtp00.rzone.de [81.169.145.165])
+	by ozlabs.org (Postfix) with ESMTP id 0623168577
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Oct 2005 16:45:18 +1000 (EST)
+From: Nicolas DET <nd@bplan-gmbh.de>
+To: Sven Luther <sl@bplan-gmbh.de>
+In-Reply-To: <1129233624.4161.30.camel@localhost.localdomain>
+References: <1129233624.4161.30.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-15
+Date: Fri, 14 Oct 2005 08:50:19 +0200
+Message-Id: <1129272619.4034.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2.6.14-rc3 1/1] chrp_pegasos_eth: Added Marvell
+	Discovery II SRAM support
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,39 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andrew Morton wrote:
-> Are you sure it's due to inline functions?  I thought the problem was that
-> certain versions of gcc did automatic inlining of non-inlined functions and
-> we get excessive stack windup due to that.  And iirc we put in global
-> compiler options to defeat that behaviour.  Andi would recall.
+Le jeudi 13 octobre 2005 à 22:00 +0200, Nicolas DET a écrit :
+> Added proper entry to support the Marvell MV64361 (Marvell Discovery II)
+> SRAM.
 > 
-> Furthermore, we do have infrastructure for detecting the gcc version at
-> build time.  It would be better to use that for disabling `-O2', rather
-> than a config option.
+> This feature may be used by the mv643xx_eth driver.
+> 
+> Signed-off-by: Nicolas DET <det.nicolas@free.fr)
+> 
 
-Andrew -
+I hope the patch is ok now. I apologized for the text format issue.
 
-This "fix" has been in the kernel since I developed the endian safe
-patches for ReiserFS in the 2.4 days; This patch just makes it optional
-rather than required.
+By the way, I compiled and booted the 2.6.14-rc4. It feels a bit faster
+than rc3 (maybe it's just an impression). I'm also glad the Firewire
+supported has been improved since rc3.
 
-You could be correct regarding the behavior. I noticed it was related to
-inline functions and stack usage. Since this was quite a few years ago
-now, I don't recall the exact details, just that -O1 worked around it. I
-was content blaming gcc and moving on with development. I seem to recall
-thinking that was overaggressive aliasing avoidance between temporary
-variables in static inline functions. The endian safe code frequently
-uses static inlines for conversion of disk order bitfields (like key
-type and offset). balance_leaf() is a beast of a function at around 1400
-lines or so. When compiled with -O2, it wanted to allocate 6k of stack
-space. With -O1, it ended up allocating about 230 bytes. It seemed to be
-the only function really affected by the bug, but I wanted to be certain.
-
-I do agree that using the kbuild infrastructure to determine the need
-for this option would work quite a bit better.
-
--Jeff
-
--- 
-Jeff Mahoney
-SUSE Labs
+Regards
+Nicolas DET
