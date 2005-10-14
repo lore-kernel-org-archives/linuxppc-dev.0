@@ -1,14 +1,26 @@
-Return-Path: <dale@farnsworth.org>
-Received: from xyzzy.farnsworth.org (unknown [65.200.49.142])
-	by ozlabs.org (Postfix) with SMTP id 399516855F
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Oct 2005 23:56:44 +1000 (EST)
-Date: 14 Oct 2005 13:56:41 -0000
-Message-ID: <20051014135641.15104.qmail@xyzzy.farnsworth.org>
-From: "Dale Farnsworth" <dale@farnsworth.org>
-To: nd@bplan-gmbh.de, linuxppc-dev@ozlabs.org
-In-Reply-To: <1129233624.4161.30.camel@localhost.localdomain>
-Subject: Re: [PATCH 2.6.14-rc3 1/1] chrp_pegasos_eth: Added Marvell Discovery
-	II SRAM support
+Return-Path: <i2a@gmx.net>
+Received: from mx102.multikabel.net (mx102.multikabel.net [212.127.254.140])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3FACD68564
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Oct 2005 01:34:25 +1000 (EST)
+Received: from vmx100.multikabel.net ([212.127.254.147])
+	by mx102.multikabel.net with esmtp (Exim 4.54) id 1EQRZc-00049g-4i
+	for linuxppc-dev@ozlabs.org; Fri, 14 Oct 2005 17:34:20 +0200
+Received: from sun.nodomain.nl (84-104-47-99.cable.quicknet.nl [84.104.47.99])
+	by vmx100.multikabel.net (8.13.3/8.13.3) with ESMTP id j9EFYDoD021407
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Oct 2005 17:34:19 +0200
+From: "i2a" <i2a@gmx.net>
+To: linuxppc-dev@ozlabs.org
+Date: Fri, 14 Oct 2005 17:34:15 +0200
+Message-Id: <20051014145644.M46291@gmx.net>
+In-Reply-To: <f308ce32868b18c6be30cf2a28d86ade@kernel.crashing.org>
+References: <20051014115753.M37114@quicknet.nl>
+	<f308ce32868b18c6be30cf2a28d86ade@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=iso-8859-1
+Subject: Re: open firmware
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,26 +30,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In article <1129233624.4161.30.camel@localhost.localdomain> Nicolas DET wrote:
-> Added proper entry to support the Marvell MV64361 (Marvell Discovery II)
-> SRAM.
+On Fri, 14 Oct 2005 15:17:47 +0200, Segher Boessenkool wrote
+> > The linuxppc kernel uses the open firmware to access the ppc machine 
+> > infos, I
+> > want to be able to program to the open firmware to. Although there is 
+> > a lost of
+> > info inside the ppc kernel I still want to know the internals 
+> > (definitions etc)
+> > of [WINDOWS-1252?]“open [WINDOWS-1252?]firmware”.
+> >
+> > Has someone documentation available? On inet I only found the UI 
+> > description :(
+> 
+> See http://playground.sun.com/1275/
+> 
+> Segher
 
-Hi Nicolas,
+Thanks, initially I had no luck with this site (I had find it),
+http://playground.sun.com/1275/home.html#OFDCoreDoc
 
-I noticed a couple of style issues.
-
-> +// Pegasos II location and size for the SRAM stuff
-
-C++ style comments are discouraged in the kernel source.
-
-> -	static struct pci_device_id pci_marvell_mv64360[] = {
-> +	static struct pci_device_id pci_marvell_mv64360[] =
-> +	{
-
-> +	if (pci_dev_present(pci_marvell_mv64360))
-> +	{
-
-Open brace should not be on a line by itself except in function definitions.
+The two links of the core documentation are dead :(, and there has to be a way
+to get the documentation without having to buy “the book”.
 
 
--Dale Farnsworth
+But here it is, via this page http://www.firmworks.com/www/ieee.htm
+I got to ftp://playground.sun.com/pub/p1275/coredoc/ where the coredoc is
+downloadable (it is old, but better then nothing), no idea why there are no
+pointers to it..
+
+If someone has any newer documentation pls let me know, the system I use is from
+2004.
+
+Grts,
+  Ingmar
