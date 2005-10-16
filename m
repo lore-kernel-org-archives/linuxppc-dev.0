@@ -1,21 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 933886857A
-	for <linuxppc-dev@ozlabs.org>; Sun, 16 Oct 2005 18:44:02 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Joerg Dorchain <joerg@dorchain.net>
-In-Reply-To: <20051016081759.GA2609@Redstar.dorchain.net>
-References: <20051014123823.GA9477@Redstar.dorchain.net>
-	<1129327105.21765.39.camel@gaston>
-	<20051016081759.GA2609@Redstar.dorchain.net>
-Content-Type: text/plain
-Date: Sun, 16 Oct 2005 18:42:46 +1000
-Message-Id: <1129452167.7620.34.camel@gaston>
+Return-Path: <sven.luther@wanadoo.fr>
+Received: from smtp2.wanadoo.fr (smtp2.wanadoo.fr [193.252.22.29])
+	by ozlabs.org (Postfix) with ESMTP id 53A036856A
+	for <linuxppc-dev@ozlabs.org>; Sun, 16 Oct 2005 20:40:20 +1000 (EST)
+Received: from me-wanadoo.net (localhost [127.0.0.1])
+	by mwinf0201.wanadoo.fr (SMTP Server) with ESMTP id 3E3261C00460
+	for <linuxppc-dev@ozlabs.org>; Sun, 16 Oct 2005 12:40:16 +0200 (CEST)
+Date: Sun, 16 Oct 2005 12:28:28 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linuxppc-dev@ozlabs.org, Andrew Morton <akpm@osdl.org>,
+	debian-kernel@lists.debian.org
+Message-ID: <20051016102828.GA32332@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: 2.6.13 ati (ibook) frambuffer problem
+Content-Type: multipart/mixed; boundary="s2ZSL+KKDSLx8OML"
+From: Sven Luther <sven.luther@wanadoo.fr>
+Subject: Two 32bit power3/4 build-failure patches ...
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,92 +23,92 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2005-10-16 at 10:17 +0200, Joerg Dorchain wrote:
-> On Sat, Oct 15, 2005 at 07:58:25AM +1000, Benjamin Herrenschmidt wrote:
-> > 
-> > This looks like a bug that was introduced by linus in 2.6.13 and that I
-> > _think_ should be fixed in the stable series, so if you get 2.6.13.x (x
-> > = latest stable release) it should work.
-> 
-> 2.6.13.4 does not fix it and(, as far as I skimmed it,) contains no
-> changes to the ati framebuffer code.
 
-Hrm... annoying, I was sure it was fixed, I'll have to check. The bug
-isn't actually in the ATI code, but in the PCI code. Well, maybe you are
-hitting something else...
+--s2ZSL+KKDSLx8OML
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-The bug I'm thinking about was fixed by git commit
-6821eb3b64158ec230982f4db5f027b326edd620, here's the patch. Let me know
-if it helps.
+Hello,
 
----
+I have here two 32bit power[34] build failure patches that the debian kernels
+has been using for some time, and which i think i did post here in the past,
+but it doesn't seem to be applied.
 
-[PATCH] Fix PCI ROM mapping
+Well, those are 32 bit issues, and debian doesn't build anymore 32bit kernels
+of those flavours, but i guess it may be possible that some random user wants
+to build them, so it would be nice if they could be included upstream.
 
-This fixes a problem with pci_map_rom() which doesn't properly
-update the ROM BAR value with the address thas allocated for it by the
-PCI code. This problem, among other, breaks boot on Mac laptops.
+Friendly,
 
-It'ss a new version based on Linus latest one with better error
-checking.
+Sven Luther
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Linus Torvalds <torvalds@osdl.org>
 
- drivers/pci/rom.c |   24 +++++++++++++++++-------
- 1 files changed, 17 insertions(+), 7 deletions(-)
+--s2ZSL+KKDSLx8OML
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="powerpc-fix-power3-ftbfs.patch"
 
-diff --git a/drivers/pci/rom.c b/drivers/pci/rom.c
---- a/drivers/pci/rom.c
-+++ b/drivers/pci/rom.c
-@@ -21,13 +21,21 @@
-  * between the ROM and other resources, so enabling it may disable access
-  * to MMIO registers or other card memory.
-  */
--static void pci_enable_rom(struct pci_dev *pdev)
-+static int pci_enable_rom(struct pci_dev *pdev)
- {
-+       struct resource *res = pdev->resource + PCI_ROM_RESOURCE;
-+       struct pci_bus_region region;
-        u32 rom_addr;
+#! /bin/sh -e 
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Description: Works around a broken build system, namely the
+## DP: Description: simple bootloader on power 3/4.
+## DP: Misc: Pulled from the ubuntu tree.
+## DP: Patch author: fabbione@ubuntu.com
+## DP: Upstream status: FTBFS fix, guess it will be fixed upstream too
+
+. $(dirname $0)/DPATCH
+
+@DPATCH@
+diff -urNad linux-source-2.6.10-2.6.10/arch/ppc/boot/simple/misc-prep.c /usr/src/dpatchtemp/dpep.cQRwcC/linux-source-2.6.10-2.6.10/arch/ppc/boot/simple/misc-prep.c
+--- linux-source-2.6.10-2.6.10/arch/ppc/boot/simple/misc-prep.c	2004-12-24 22:33:51.000000000 +0100
++++ /usr/src/dpatchtemp/dpep.cQRwcC/linux-source-2.6.10-2.6.10/arch/ppc/boot/simple/misc-prep.c	2004-12-28 10:43:29.838010536 +0100
+@@ -152,9 +152,11 @@
+ 		hold_residual->VitalProductData.Reserved5 = 0xdeadbeef;
+ 	}
  
-+       if (!res->flags)
-+               return -1;
-+
-+       pcibios_resource_to_bus(pdev, &region, res);
-        pci_read_config_dword(pdev, pdev->rom_base_reg, &rom_addr);
--       rom_addr |= PCI_ROM_ADDRESS_ENABLE;
-+       rom_addr &= ~PCI_ROM_ADDRESS_MASK;
-+       rom_addr |= region.start | PCI_ROM_ADDRESS_ENABLE;
-        pci_write_config_dword(pdev, pdev->rom_base_reg, rom_addr);
-+       return 0;
- }
++#if defined(CONFIG_6xx)
+ 	/* Now go and clear out the BATs and ensure that our MSR is
+ 	 * correct .*/
+ 	disable_6xx_mmu();
++#endif
  
- /**
-@@ -71,19 +79,21 @@ void __iomem *pci_map_rom(struct pci_dev
-        } else {
-                if (res->flags & IORESOURCE_ROM_COPY) {
-                        *size = pci_resource_len(pdev, PCI_ROM_RESOURCE);
--                       return (void __iomem *)pci_resource_start(pdev, PCI_ROM_RESOURCE);
-+                       return (void __iomem *)pci_resource_start(pdev,
-+                                                            PCI_ROM_RESOURCE);
-                } else {
-                        /* assign the ROM an address if it doesn't have one */
--                       if (res->parent == NULL)
--                               pci_assign_resource(pdev, PCI_ROM_RESOURCE);
--
-+                       if (res->parent == NULL &&
-+                           pci_assign_resource(pdev,PCI_ROM_RESOURCE))
-+                               return NULL;
-                        start = pci_resource_start(pdev, PCI_ROM_RESOURCE);
-                        *size = pci_resource_len(pdev, PCI_ROM_RESOURCE);
-                        if (*size == 0)
-                                return NULL;
- 
-                        /* Enable ROM space decodes */
--                       pci_enable_rom(pdev);
-+                       if (pci_enable_rom(pdev))
-+                               return NULL;
-                }
-        }
- 
+ 	/* Make r3 be a pointer to the residual data. */
+ 	return (unsigned long)hold_residual;
+
+--s2ZSL+KKDSLx8OML
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment;
+	filename="powerpc-pmac-cache-power34-fix.patch"
+
+#! /bin/sh -e
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Description: [PATCH] ppc32: fixes FTBFS on power3/4.
+## DP: This patch doesn't build pmac_cache.S on power3/power4, since it is
+## DP: broken there and not needed.
+## DP: Patch author: Sven Luther <luther@debian.org>
+## DP: Upstream status: FTBFS, submitted to linuxppc-dev and benh.
+
+. $(dirname $0)/DPATCH
+
+@DPATCH@
+--- kernel-source-2.6.11/arch/ppc/platforms/Makefile.orig	2005-03-27 11:38:25.000000000 +0200
++++ kernel-source-2.6.11/arch/ppc/platforms/Makefile	2005-03-27 11:39:23.000000000 +0200
+@@ -9,9 +9,15 @@
+ ifeq ($(CONFIG_APUS),y)
+ obj-$(CONFIG_PCI)		+= apus_pci.o
+ endif
++ifeq ($(CONFIG_6xx),y)
+ obj-$(CONFIG_PPC_PMAC)		+= pmac_pic.o pmac_setup.o pmac_time.o \
+ 					pmac_feature.o pmac_pci.o pmac_sleep.o \
+ 					pmac_low_i2c.o pmac_cache.o
++else
++obj-$(CONFIG_PPC_PMAC)		+= pmac_pic.o pmac_setup.o pmac_time.o \
++					pmac_feature.o pmac_pci.o pmac_sleep.o \
++					pmac_low_i2c.o
++endif
+ obj-$(CONFIG_PPC_CHRP)		+= chrp_setup.o chrp_time.o chrp_pci.o \
+ 					chrp_pegasos_eth.o
+ obj-$(CONFIG_PPC_PREP)		+= prep_pci.o prep_setup.o
+
+--s2ZSL+KKDSLx8OML--
