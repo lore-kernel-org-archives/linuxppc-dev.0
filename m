@@ -1,26 +1,17 @@
-Return-Path: <niklaus.giger@member.fsf.org>
-Received: from mxout.hispeed.ch (mxout.hispeed.ch [62.2.95.247])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 072A36856C
+Return-Path: <som_kadam1@rediffmail.com>
+Received: from rediffmail.com (unknown [202.54.124.216])
+	by ozlabs.org (Postfix) with SMTP id C7EA06856A
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 16 Oct 2005 07:05:51 +1000 (EST)
-Received: from ng (84-73-191-33.dclient.hispeed.ch [84.73.191.33])
-	(authenticated bits=0)
-	by mxout.hispeed.ch (8.12.6/8.12.6/tornado-1.0) with ESMTP id
-	j9FKBgcT017976
-	(version=TLSv1/SSLv3 cipher=RC4-MD5 bits=128 verify=NO)
-	for <linuxppc-embedded@ozlabs.org>; Sat, 15 Oct 2005 22:11:43 +0200
-From: Niklaus Giger <niklaus.giger@member.fsf.org>
-To: linuxppc-embedded@ozlabs.org
-Date: Sat, 15 Oct 2005 22:11:41 +0200
+	Sun, 16 Oct 2005 23:00:25 +1000 (EST)
+Date: 16 Oct 2005 12:53:38 -0000
+Message-ID: <20051016125338.12386.qmail@webmail50.rediffmail.com>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_9JWUD2EuxOu9QOx"
-Message-Id: <200510152211.41916.niklaus.giger@member.fsf.org>
-Subject: Janitorial patch: Removing obsolete,
-	broken oaknet driver including references to it
-Reply-To: niklaus.giger@member.fsf.org
+From: "somshekar chandrashekar kadam" <som_kadam1@rediffmail.com>
+To: linuxppc-embedded@ozlabs.org
+Content-type: multipart/alternative;
+	boundary="Next_1129467218---0-202.54.124.216-12384"
+Subject: denx 3.1.1 eldk ramdisk_image 
+Reply-To: somshekar chandrashekar kadam <som_kadam1@rediffmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,163 +22,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---Boundary-00=_9JWUD2EuxOu9QOx
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+ This is a multipart mime message
+
+
+--Next_1129467218---0-202.54.124.216-12384
+Content-type: text/plain;
+	charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
-Hi everybody
+=0AHi ,=0A=0A  thanks Wlofgang Denk for the answer we can use ramdisk image=
+ used for other kernel version , =0Anow i am using ELDK 3.1.1 , and also us=
+ing the ramdisk image provided by the ELDK ramdisk_image.gz , =0Aand in ker=
+nel i have configured for intial ramdisk support with size 4096 and for ext=
+2 file system , =0Ait gives the message =0A=0AVFS kernel panic unable to mo=
+unt root fs 01:00 =0A=0Ai tried both options =0Afirst one making a multi im=
+age =0Ausing mkimage clubbing it into one image FI64_fresh , with vmlinux.g=
+z and ramdisk_image.gz =0A=0A./mkimage -A ppc -O linux -T multi -C gzip -a =
+0 -e 0 -n FI64_fresh -d vmlinux.gz:ramdisk_image.gz FI64_fresh=0A =A0=0Ai d=
+ownload FI64_fresh at 0x500000 using tftpboot =0A=0Ause bootm 0x500000 to b=
+oot the kernel i get the above message .=0A=0Asecond option =0A=0Aat 0x5000=
+00 in ram i download uImage of the linux-2.4.25 .=0Aat 0x600000 i download =
+ramdisk_image.gz =0A=0Aand use the command =0Abootm 0x500000 0x600000 =0A i=
+ get the same message as above =0A=0Ai do intial check using imi command it=
+ says images are fine after veryfing checksum =0A=0Ais it i am missing some=
+thoing else please let me know or is there any other way to check this =0A=
+=0A=0AThanks In Advance =0ANeelu =0A
+--Next_1129467218---0-202.54.124.216-12384
+Content-type: text/html;
+	charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-As I wandered through the 2.6.14-rc4 kernel I noticed that since 2.6.10 the 
-old OAK (PPC403) evaluation board from IBM is no longer supported. I am quite 
-familiar with this board, as we at work we have quite a few some running 
-another OS.
-
-The ethernet driver for this board (oaknet.c) required quite a few tricks 
-(e.g. some function like ei_obp) to work around some very annnoying design 
-weaknesses of the original board. As this driver is only used for this board 
-and not even compilable (eg. ei_obp is nowhere defined) I think it would be 
-better to remove it altogether.
-
-As this is my first attempt to get a patch into the linux kernel, do not 
-hesitate to point out any mistakes I made.
-
-My experiences using cogito have been very positive.
-
-Please CC to me as I am not subscribed to this list.
-
-Best regards
-
-Niklaus Giger
-
---Boundary-00=_9JWUD2EuxOu9QOx
-Content-Type: application/x-bzip2;
-  name="patch.oaknet.bz2"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
-	filename="patch.oaknet.bz2"
-
-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
-
---Boundary-00=_9JWUD2EuxOu9QOx--
+<P>=0A<BR>=0AHi ,<BR>=0A<BR>=0A&nbsp; thanks Wlofgang Denk for the answer w=
+e can use ramdisk image used for other kernel version , <BR>=0Anow i am usi=
+ng ELDK 3.1.1 , and also using the ramdisk image provided by the ELDK ramdi=
+sk_image.gz , <BR>=0Aand in kernel i have configured for intial ramdisk sup=
+port with size 4096 and for ext2 file system , <BR>=0Ait gives the message =
+<BR>=0A<BR>=0AVFS kernel panic unable to mount root fs 01:00 <BR>=0A<BR>=0A=
+i tried both options <BR>=0Afirst one making a multi image <BR>=0Ausing mki=
+mage clubbing it into one image FI64_fresh , with vmlinux.gz and ramdisk_im=
+age.gz <BR>=0A<BR>=0A./mkimage -A ppc -O linux -T multi -C gzip -a 0 -e 0 -=
+n FI64_fresh -d vmlinux.gz:ramdisk_image.gz FI64_fresh<BR>=0A&nbsp; <BR>=0A=
+i download FI64_fresh at 0x500000 using tftpboot <BR>=0A<BR>=0Ause bootm 0x=
+500000 to boot the kernel i get the above message .<BR>=0A<BR>=0Asecond opt=
+ion <BR>=0A<BR>=0Aat 0x500000 in ram i download uImage of the linux-2.4.25 =
+.<BR>=0Aat 0x600000 i download ramdisk_image.gz <BR>=0A<BR>=0Aand use the c=
+ommand <BR>=0Abootm 0x500000 0x600000 <BR>=0A i get the same message as abo=
+ve <BR>=0A<BR>=0Ai do intial check using imi command it says images are fin=
+e after veryfing checksum <BR>=0A<BR>=0Ais it i am missing somethoing else =
+please let me know or is there any other way to check this <BR>=0A<BR>=0A<B=
+R>=0AThanks In Advance <BR>=0ANeelu <BR>=0A=0A</P>=0A<br><br>=0A<a href=3D"=
+http://adworks.rediff.com/cgi-bin/AdWorks/sigclick.cgi/www.rediff.com/signa=
+ture-home.htm/1507191490@Middle5?PARTNER=3D3"><IMG SRC=3D"http://adworks.re=
+diff.com/cgi-bin/AdWorks/sigimpress.cgi/www.rediff.com/signature-home.htm/1=
+963059423@Middle5?OAS_query=3Dnull&PARTNER=3D3" BORDER=3D0 VSPACE=3D0 HSPAC=
+E=3D0></a>=0A
+--Next_1129467218---0-202.54.124.216-12384--
