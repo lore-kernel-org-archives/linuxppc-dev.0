@@ -1,21 +1,20 @@
-Return-Path: <bgholikh@cisco.com>
-Received: from sj-iport-2.cisco.com (sj-iport-2-in.cisco.com [171.71.176.71])
-	by ozlabs.org (Postfix) with ESMTP id C13BB685B5
+Return-Path: <SRS0+edbbf47766ee5d8b3fab+785+infradead.org+dwmw2@baythorne.srs.infradead.org>
+Received: from baythorne.infradead.org (baythorne.infradead.org [81.187.2.161])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7431C68585
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 17 Oct 2005 22:24:40 +1000 (EST)
-Received: from xbh-sjc-211.amer.cisco.com (xbh-sjc-211.cisco.com
-	[171.70.151.144])
-	by sj-core-1.cisco.com (8.12.10/8.12.6) with ESMTP id j9HCODux028623
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 17 Oct 2005 05:24:37 -0700 (PDT)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C5D315.AEB5F3AD"
-Date: Mon, 17 Oct 2005 05:24:12 -0700
-Message-ID: <F795765B112E7344AF36AA911279641584969B@xmb-sjc-212.amer.cisco.com>
-From: "Bizhan Gholikhamseh \(bgholikh\)" <bgholikh@cisco.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Need help Please:IOMEM memory allocation
+	Mon, 17 Oct 2005 22:38:00 +1000 (EST)
+From: David Woodhouse <dwmw2@infradead.org>
+To: David Jander <david.jander@protonic.nl>
+In-Reply-To: <200510141135.47186.david.jander@protonic.nl>
+References: <200510141135.47186.david.jander@protonic.nl>
+Content-Type: text/plain
+Date: Mon, 17 Oct 2005 13:37:52 +0100
+Message-Id: <1129552672.3830.249.camel@baythorne.infradead.org>
+Mime-Version: 1.0
+Cc: linux-mtd@lists.infradead.org, linuxppc-embedded@ozlabs.org
+Subject: Re: jffs2 robustness against powerfailure
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,118 +25,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Fri, 2005-10-14 at 11:35 +0200, David Jander wrote:
+> We have a custom embedded linux board, based on a MPC852T processor, running 
+> 2.4.25 kernel from denx. Jffs2 has certain backported patches after cvs from 
+> 03/2005.
 
-------_=_NextPart_001_01C5D315.AEB5F3AD
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+That sounds like a recipe for pain. March 2005 wasn't a good time to
+take a snapshot from CVS; that just happens to be the time that we
+stopped bothering to make it build in obsolete kernels.
 
-Hi All,
-I am trying to develop a SPI driver for MPC8541.=20
-I need to allocate memory buffers within kernel that their physical
-address is
-on 64 byte boundary and initialize the transmit and receive buffer
-descriptors with the
-their physical locations. Since I am not sure how to do this within the
-kernel here is how I am doing it:
-=20
- unsigned long mem_addr_rx =3D __get_free_page(GFP_KERNEL);  //receive
-buffer
- unsigned long mem_addr_tx =3D __get_free_page(GFP_KERNEL); //transmit
-buffer
-.....
-rx_buffer_addr =3D __pa(mem_addr_rx);
-tx_buffer_addr=3D__pa(mem_addr_tx);
-=20
-My assumption is by allocating a page, I am guaranteed that I will have
-64 byte boundary condition.
-Is this correct?
-=20
-I have also told, the SPI does not have snoop bit, so I need to allocate
-buffers from iomem, I have
-no idea how to do this.
-=20
-Please help,
-Many thanks in advance,
-Regards,
-Bizhan
+If you want _stable_ JFFS2 code, you should use the code which is in the
+2.4.31 kernel, or use the code which is in the 2.6 kernel (perhaps
+updated from current CVS). 
 
-------_=_NextPart_001_01C5D315.AEB5F3AD
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+> How comes I get a to see a valid file containing a mix of old and new
+> data if it was written with a single write() call?????
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.2800.1498" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D973480512-17102005>Hi=20
-All,</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D973480512-17102005>I am =
-trying to=20
-develop a SPI driver for MPC8541. </SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D973480512-17102005>I need =
-to allocate=20
-memory buffers within kernel that their physical address =
-is</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D973480512-17102005>on 64 =
-byte boundary=20
-and initialize the transmit and receive buffer descriptors with=20
-the</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D973480512-17102005>their =
-physical=20
-locations. Since I am not sure how to do this within =
-the</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D973480512-17102005>kernel =
-here is how I=20
-am doing it:</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D973480512-17102005></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN =
-class=3D973480512-17102005>&nbsp;unsigned long=20
-mem_addr_rx =3D __get_free_page(GFP_KERNEL);&nbsp;&nbsp;//receive=20
-buffer<BR>&nbsp;unsigned long mem_addr_tx =3D =
-__get_free_page(GFP_KERNEL);=20
-//transmit buffer<BR>.....</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN =
-class=3D973480512-17102005>rx_buffer_addr =3D=20
-__pa(mem_addr_rx);</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D973480512-17102005>tx_buffer_addr=3D__pa(mem_addr_tx);</SPAN></FO=
-NT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D973480512-17102005></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D973480512-17102005>My =
-assumption is by=20
-allocating a page, I am guaranteed that I will have 64 byte boundary=20
-condition.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D973480512-17102005>Is =
-this=20
-correct?</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D973480512-17102005></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D973480512-17102005>I have =
-also told,=20
-the SPI does not have snoop bit, so I need to allocate buffers from =
-iomem, I=20
-have</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D973480512-17102005>no =
-idea how to do=20
-this.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D973480512-17102005></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D973480512-17102005>Please =
+Linux doesn't guarantee atomicity of writes larger than a single page,
+but since your case is smaller than a page, it should have been atomic.
 
-help,</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D973480512-17102005>Many =
-thanks in=20
-advance,</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D973480512-17102005>Regards,</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D973480512-17102005>Bizhan</SPAN></FONT></DIV></BODY></HTML>
+> Shouldn't jffs2 throw away the new incomplete node and keep the old
+> version of the file?
 
-------_=_NextPart_001_01C5D315.AEB5F3AD--
+Yes, it should. It's acceptable that there are extra data in the file
+after 0x300 bytes, because the test program first does a write() call
+and then a subsequent truncate() call. But it's not expected that the
+0x300-byte write was not atomic; except in certain circumstances (like
+reaching the end of an eraseblock and writing a smaller node there) you
+should have seen all of it, or none. 
+
+Please could you reproduce on a sane kernel and show the output of the
+checkfs program during your test just before the power down, and also if
+possible take an image of the contents of the flash _before_ mounting it
+again after the power cycle. I'd like to see precisely the log nodes
+which were present on the flash. If it's difficult to take a snapshot
+before remounting, then running with CONFIG_JFFS2_FS_DEBUG=1 and
+capturing all the KERN_DEBUG output via a serial console would suffice.
+
+-- 
+dwmw2
