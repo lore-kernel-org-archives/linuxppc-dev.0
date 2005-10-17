@@ -1,20 +1,25 @@
-Return-Path: <SRS0+edbbf47766ee5d8b3fab+785+infradead.org+dwmw2@baythorne.srs.infradead.org>
-Received: from baythorne.infradead.org (baythorne.infradead.org [81.187.2.161])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <rubini@mail.gnudd.com>
+Received: from mail.gnudd.com (adsl-203-134.38-151.net24.it [151.38.134.203])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7431C68585
+	by ozlabs.org (Postfix) with ESMTP id ED9E2685A9
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 17 Oct 2005 22:38:00 +1000 (EST)
-From: David Woodhouse <dwmw2@infradead.org>
-To: David Jander <david.jander@protonic.nl>
-In-Reply-To: <200510141135.47186.david.jander@protonic.nl>
-References: <200510141135.47186.david.jander@protonic.nl>
-Content-Type: text/plain
-Date: Mon, 17 Oct 2005 13:37:52 +0100
-Message-Id: <1129552672.3830.249.camel@baythorne.infradead.org>
+	Tue, 18 Oct 2005 02:51:25 +1000 (EST)
+Received: from mail.gnudd.com (rubini@localhost [127.0.0.1])
+	by mail.gnudd.com (8.12.3/8.12.3/Debian-7.1) with ESMTP id
+	j9HGgrNu021942
+	for <linuxppc-embedded@ozlabs.org>; Mon, 17 Oct 2005 18:42:53 +0200
+Received: (from rubini@localhost)
+	by mail.gnudd.com (8.12.3/8.12.3/Debian-7.1) id j9HGgroq021941
+	for linuxppc-embedded@ozlabs.org; Mon, 17 Oct 2005 18:42:53 +0200
+Date: Mon, 17 Oct 2005 18:42:53 +0200
+From: Alessandro Rubini <rubini@gnudd.com>
+To: linuxppc-embedded@ozlabs.org
+Message-ID: <20051017164253.GA21936@mail.gnudd.com>
 Mime-Version: 1.0
-Cc: linux-mtd@lists.infradead.org, linuxppc-embedded@ozlabs.org
-Subject: Re: jffs2 robustness against powerfailure
+Content-Type: text/plain; charset=iso-8859-1
+Sender: rubini@ar.linux.it
+Subject: flash for lite5200
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,42 +30,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2005-10-14 at 11:35 +0200, David Jander wrote:
-> We have a custom embedded linux board, based on a MPC852T processor, running 
-> 2.4.25 kernel from denx. Jffs2 has certain backported patches after cvs from 
-> 03/2005.
 
-That sounds like a recipe for pain. March 2005 wasn't a good time to
-take a snapshot from CVS; that just happens to be the time that we
-stopped bothering to make it build in obsolete kernels.
+Hello.
 
-If you want _stable_ JFFS2 code, you should use the code which is in the
-2.4.31 kernel, or use the code which is in the 2.6 kernel (perhaps
-updated from current CVS). 
+I'm using linux-2.6.14-rc3-g4c234921 from denx, and I need to access
+the flash device.  While in 2.4 there is drivers/mtd/maps/icecube.c
+(by Wolfgang Denk himself, it seems), I managed to see the flash
+using the physmap driver and cmdline partitions.
 
-> How comes I get a to see a valid file containing a mix of old and new
-> data if it was written with a single write() call?????
+Does it make sense to add the correct MTD settings to
+arch/ppc/configs/lite5200_defconfig (and some hints in
+Documentation/powerpc/mpc52xx.txt) without porting the whole of
+maps/icecube.c or is there a specific advantage in add a file in maps?
+-- well, besides having sensible partitions already ported from 2.4?
 
-Linux doesn't guarantee atomicity of writes larger than a single page,
-but since your case is smaller than a page, it should have been atomic.
+In either case, I'm willing to contribute the patch.
 
-> Shouldn't jffs2 throw away the new incomplete node and keep the old
-> version of the file?
+These are the winning settings for me, but it doesn't cope with
+lite5200 speciments with 8MBi of flash (are there any still around?)
+[there's more than strictly needed, actually]
 
-Yes, it should. It's acceptable that there are extra data in the file
-after 0x300 bytes, because the test program first does a write() call
-and then a subsequent truncate() call. But it's not expected that the
-0x300-byte write was not atomic; except in certain circumstances (like
-reaching the end of an eraseblock and writing a smaller node there) you
-should have seen all of it, or none. 
+CONFIG_MTD=y
+CONFIG_MTD_PARTITIONS=y
+CONFIG_MTD_CMDLINE_PARTS=y
+CONFIG_MTD_CHAR=y
+CONFIG_MTD_CFI=y
+CONFIG_MTD_GEN_PROBE=y
+CONFIG_MTD_MAP_BANK_WIDTH_1=y
+CONFIG_MTD_MAP_BANK_WIDTH_2=y
+CONFIG_MTD_MAP_BANK_WIDTH_4=y
+CONFIG_MTD_CFI_I1=y
+CONFIG_MTD_CFI_I2=y
+CONFIG_MTD_CFI_INTELEXT=y
+CONFIG_MTD_CFI_AMDSTD=y
+CONFIG_MTD_CFI_AMDSTD_RETRY=0
+CONFIG_MTD_CFI_UTIL=y
 
-Please could you reproduce on a sane kernel and show the output of the
-checkfs program during your test just before the power down, and also if
-possible take an image of the contents of the flash _before_ mounting it
-again after the power cycle. I'd like to see precisely the log nodes
-which were present on the flash. If it's difficult to take a snapshot
-before remounting, then running with CONFIG_JFFS2_FS_DEBUG=1 and
-capturing all the KERN_DEBUG output via a serial console would suffice.
+CONFIG_MTD_PHYSMAP=y
+CONFIG_MTD_PHYSMAP_START=0xff000000
+CONFIG_MTD_PHYSMAP_LEN=0x1000000
+CONFIG_MTD_PHYSMAP_BANKWIDTH=1
 
--- 
-dwmw2
+
+/alessandro
