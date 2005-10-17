@@ -1,16 +1,16 @@
 Return-Path: <som_kadam1@rediffmail.com>
-Received: from rediffmail.com (unknown [203.199.83.146])
-	by ozlabs.org (Postfix) with SMTP id 2438F68590
+Received: from rediffmail.com (unknown [203.199.83.135])
+	by ozlabs.org (Postfix) with SMTP id 86B9968597
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 17 Oct 2005 18:52:48 +1000 (EST)
-Date: 17 Oct 2005 08:52:41 -0000
-Message-ID: <20051017085241.13510.qmail@webmail24.rediffmail.com>
+	Mon, 17 Oct 2005 19:00:00 +1000 (EST)
+Date: 17 Oct 2005 08:53:11 -0000
+Message-ID: <20051017085311.29163.qmail@webmail45.rediffmail.com>
 MIME-Version: 1.0
 From: "somshekar chandrashekar kadam" <som_kadam1@rediffmail.com>
 To: linuxppc-embedded@ozlabs.org
 Content-type: multipart/alternative;
-	boundary="Next_1129539161---0-203.199.83.146-13478"
-Subject: Re: Linuxppc-embedded Digest, Vol 14, Issue 33
+	boundary="Next_1129539191---0-203.199.83.135-29136"
+Subject: eldk 3.1.1 ramdisk image problem
 Reply-To: somshekar chandrashekar kadam <som_kadam1@rediffmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,7 +25,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
  This is a multipart mime message
 
 
---Next_1129539161---0-203.199.83.146-13478
+--Next_1129539191---0-203.199.83.135-29136
 Content-type: text/plain;
 	charset=iso-8859-1
 Content-Transfer-Encoding: quoted-printable
@@ -287,7 +287,7 @@ h support=0A#=0A# CONFIG_BLUEZ is not set=0A=0A#=0A# Cryptographic options=
 G_CRC32 is not set=0A# CONFIG_ZLIB_INFLATE is not set=0A# CONFIG_ZLIB_DEFLA=
 TE is not set=0A=0A#=0A# Kernel hacking=0A#=0A# CONFIG_DEBUG_KERNEL is not =
 set=0ACONFIG_LOG_BUF_SHIFT=3D0=0A=0A
---Next_1129539161---0-203.199.83.146-13478
+--Next_1129539191---0-203.199.83.135-29136
 Content-type: text/html;
 	charset=iso-8859-1
 Content-Transfer-Encoding: quoted-printable
@@ -668,4 +668,4 @@ rks/sigclick.cgi/www.rediff.com/signature-home.htm/1507191490@Middle5?PARTN=
 ER=3D3"><IMG SRC=3D"http://adworks.rediff.com/cgi-bin/AdWorks/sigimpress.cg=
 i/www.rediff.com/signature-home.htm/1963059423@Middle5?OAS_query=3Dnull&PAR=
 TNER=3D3" BORDER=3D0 VSPACE=3D0 HSPACE=3D0></a>=0A
---Next_1129539161---0-203.199.83.146-13478--
+--Next_1129539191---0-203.199.83.135-29136--
