@@ -1,22 +1,24 @@
-Return-Path: <sven.luther@wanadoo.fr>
-Received: from smtp6.wanadoo.fr (smtp6.wanadoo.fr [193.252.22.25])
-	by ozlabs.org (Postfix) with ESMTP id 271AA6856C
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Oct 2005 09:06:17 +1000 (EST)
-Received: from me-wanadoo.net (localhost [127.0.0.1])
-	by mwinf0607.wanadoo.fr (SMTP Server) with ESMTP id 02D401C00202
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Oct 2005 01:06:15 +0200 (CEST)
-Date: Mon, 17 Oct 2005 00:54:09 +0200
+Return-Path: <joerg@dorchain.net>
+Received: from Redstar.dorchain.net (153-133-088-212.ip-addr.teresto.net
+	[212.88.133.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.dorchain.net", Issuer "Dorchain Family" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id C69A3685AC
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Oct 2005 04:41:17 +1000 (EST)
+Date: Mon, 17 Oct 2005 20:34:43 +0200
+From: Joerg Dorchain <joerg@dorchain.net>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <20051016225409.GB2200@localhost.localdomain>
-References: <20051016102828.GA32332@localhost.localdomain>
-	<1129502584.7620.37.camel@gaston>
+Message-ID: <20051017183443.GB28756@Redstar.dorchain.net>
+References: <20051014123823.GA9477@Redstar.dorchain.net>
+	<1129327105.21765.39.camel@gaston>
+	<20051016081759.GA2609@Redstar.dorchain.net>
+	<1129452167.7620.34.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1129502584.7620.37.camel@gaston>
-From: Sven Luther <sven.luther@wanadoo.fr>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	debian-kernel@lists.debian.org
-Subject: Re: Two 32bit power3/4 build-failure patches ...
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="UHN/qo2QbUvPLonB"
+In-Reply-To: <1129452167.7620.34.camel@gaston>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: 2.6.13 ati (ibook) frambuffer problem
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,24 +28,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 17, 2005 at 08:43:03AM +1000, Benjamin Herrenschmidt wrote:
-> On Sun, 2005-10-16 at 12:28 +0200, Sven Luther wrote:
-> > Hello,
-> > 
-> > I have here two 32bit power[34] build failure patches that the debian kernels
-> > has been using for some time, and which i think i did post here in the past,
-> > but it doesn't seem to be applied.
-> > 
-> > Well, those are 32 bit issues, and debian doesn't build anymore 32bit kernels
-> > of those flavours, but i guess it may be possible that some random user wants
-> > to build them, so it would be nice if they could be included upstream.
-> 
-> I think we'll be dropping 64 bits CPU support for 32 bits kernel anyway.
 
-Ok, so i just drop these patches them, but i guess you can still apply them,
-don't you think ? They can cause no problem, and may be useful until 32bit
-kernels are dropped.
+--UHN/qo2QbUvPLonB
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Friendly,
+On Sun, Oct 16, 2005 at 06:42:46PM +1000, Benjamin Herrenschmidt wrote:
+> On Sun, 2005-10-16 at 10:17 +0200, Joerg Dorchain wrote:
+> > On Sat, Oct 15, 2005 at 07:58:25AM +1000, Benjamin Herrenschmidt wrote:
+> > >=20
+> > > This looks like a bug that was introduced by linus in 2.6.13 and that=
+ I
+> > > _think_ should be fixed in the stable series, so if you get 2.6.13.x =
+(x
+> > > =3D latest stable release) it should work.
+> >=20
+> > 2.6.13.4 does not fix it and(, as far as I skimmed it,) contains no
+> > changes to the ati framebuffer code.
+>=20
+> Hrm... annoying, I was sure it was fixed, I'll have to check. The bug
+> isn't actually in the ATI code, but in the PCI code. Well, maybe you are
+> hitting something else...
 
-Sven Luther
+It seems.
+>=20
+> The bug I'm thinking about was fixed by git commit
+> 6821eb3b64158ec230982f4db5f027b326edd620, here's the patch. Let me know
+> if it helps.
+
+This patch is contained in 2.6.13.4. It did not help.
+
+I selected
+
+CONFIG_FB
+CONFIG_FB_RADEON
+CONFIG_FB_RADEON_I2C
+CONFIG_BACKLIGHT_LCD_SUPPORT
+FRAMEBUFFER_CONSOLE
+
+The 2.6.12 version worked. Would it make sense to post the complete
+=2Econfig?
+
+Bye,
+
+Joerg
+
+
+--UHN/qo2QbUvPLonB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQFDU+7DjY4+4PdzvOARAuu+AJ9AVOyAeDn0NfALitj2l2Q5TgmIlgCfUnl7
+W6tnpL3woRdFrPjavxEFUNw=
+=V4K2
+-----END PGP SIGNATURE-----
+
+--UHN/qo2QbUvPLonB--
