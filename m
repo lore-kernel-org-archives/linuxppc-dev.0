@@ -1,15 +1,23 @@
-Return-Path: <dhlii@comcast.net>
-Received: from sccrmhc14.comcast.net (sccrmhc14.comcast.net [63.240.76.49])
-	by ozlabs.org (Postfix) with ESMTP id 2144F685D7
+Return-Path: <ajz@cambridgebroadband.com>
+Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
+	[217.204.121.83])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9AA83685DE
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 18 Oct 2005 18:19:10 +1000 (EST)
-Message-ID: <4354AC78.5080206@comcast.net>
-Date: Tue, 18 Oct 2005 04:04:08 -0400
-From: "David H. Lynch Jr" <dhlii@comcast.net>
-MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: Need help Understanding initial memory conditions.
+	Tue, 18 Oct 2005 18:47:51 +1000 (EST)
+Date: Tue, 18 Oct 2005 09:47:30 +0100
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Message-Id: <20051018094730.36aa7b99.ajz@cambridgebroadband.com>
+In-Reply-To: <20051017184441.GC1245@mag.az.mvista.com>
+References: <20051017123543.51aa7d24.ajz@cambridgebroadband.com>
+	<20051017184441.GC1245@mag.az.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-atm-general@lists.sourceforge.net, linuxppc-embedded@ozlabs.org
+Subject: Re: Announce: MPC8272ADS platform support added to mpc8260sar
+ project.
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,36 +28,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-    What exactly is the minimal startup system state the Linux 2.6.13 
-Kernel expects ?
+On Mon, 17 Oct 2005 11:44:41 -0700
+"Mark A. Greer" <mgreer@mvista.com> wrote:
 
-    I am trying to bring up a xilinx V4 ppc 405 board.
-    It has flash based at 0x0 and DRAM based at ox98000000.
-    I already have a working monitor/program loader and a filesystem of 
-the flash. I can fairly easily compile and load onto the filesystem and 
-run standalone PPC apps on the board.
-    All memory is as configured by the base hardware. The MMU, BAT, ... 
-are all at their powerup state.
+> On Mon, Oct 17, 2005 at 12:35:43PM +0100, Alex Zeffertt wrote:
+> > Hi lists, 
+> > 
+> > I'm writing to let anybody (who may be interested) know that I've
+> > added support for the MPC8272ADS platform to the mpc8260sar ATM
+> > device driver:
+> > 
+> > 	http://mpc8260sar.sourceforge.net
+> 
+> There is already an ads8272_defconfig in the kernel.org tree and
+> AFAIK it works.  Did you add some functionality or change something?
+>  Or am I missing something?
+> 
 
-    I have put together a Linux config based heavily on an abbreviated 
-version of the Xilinx ML-300 config.
-    If I try to load it it just goes bye-bye.
-   
-    I am trying to decipher the initial machine state Linux 2.6.13 expects.
-    u-boot seems to completely setup the MMU, but also seems to expect 
-to start execution from flash or ROM.
-    scanning the Linux code seems to indicate that the only entry that 
-needs to be setup for the MMU is the one for block Linux starts 
-executing out of.
-    I am also being somewhat confused by references to physical address 
-0 and virtual address 0xc000000.
-    I thought Linux executed from virtual address 0, and the actual 
-physical address was a function of the hardware.
-
-   
-
-   
-   
-   
-   
-   
+I've added support for this platform to the ATM driver.
+                                     ^^^^^^^^^^^^^^^^^
+Alex
