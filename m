@@ -1,16 +1,15 @@
-Return-Path: <Peter.Schaefer-Hutter@tfk-racoms.com>
-Received: from rcprx1.tfk-racoms.com (rcprx1.tfk-racoms.com [195.245.55.49])
-	by ozlabs.org (Postfix) with SMTP id 9BA9C685DF
+Return-Path: <dhlii@comcast.net>
+Received: from sccrmhc14.comcast.net (sccrmhc14.comcast.net [63.240.76.49])
+	by ozlabs.org (Postfix) with ESMTP id 2144F685D7
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 18 Oct 2005 17:56:29 +1000 (EST)
+	Tue, 18 Oct 2005 18:19:10 +1000 (EST)
+Message-ID: <4354AC78.5080206@comcast.net>
+Date: Tue, 18 Oct 2005 04:04:08 -0400
+From: "David H. Lynch Jr" <dhlii@comcast.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Tue, 18 Oct 2005 09:51:45 +0200
-Message-ID: <8E342283C2100540AAC5D103097054778A3CFB@rcexc.racoms.loc>
-From: "Schaefer-Hutter, Peter" <Peter.Schaefer-Hutter@tfk-racoms.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: RE: fs_enet driver - me too
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Need help Understanding initial memory conditions.
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,14 +20,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Rune Torgersen wrote:
-> Does anybody have a working patchset for fs_enet for 2.6.12?
->=20
-> The patches I've found on this list (and on ozlab's patch list) I
-> cannot get to compile.
+    What exactly is the minimal startup system state the Linux 2.6.13 
+Kernel expects ?
 
-Any news?
+    I am trying to bring up a xilinx V4 ppc 405 board.
+    It has flash based at 0x0 and DRAM based at ox98000000.
+    I already have a working monitor/program loader and a filesystem of 
+the flash. I can fairly easily compile and load onto the filesystem and 
+run standalone PPC apps on the board.
+    All memory is as configured by the base hardware. The MMU, BAT, ... 
+are all at their powerup state.
 
-Regards,
-=20
-Peter
+    I have put together a Linux config based heavily on an abbreviated 
+version of the Xilinx ML-300 config.
+    If I try to load it it just goes bye-bye.
+   
+    I am trying to decipher the initial machine state Linux 2.6.13 expects.
+    u-boot seems to completely setup the MMU, but also seems to expect 
+to start execution from flash or ROM.
+    scanning the Linux code seems to indicate that the only entry that 
+needs to be setup for the MMU is the one for block Linux starts 
+executing out of.
+    I am also being somewhat confused by references to physical address 
+0 and virtual address 0xc000000.
+    I thought Linux executed from virtual address 0, and the actual 
+physical address was a function of the hardware.
+
+   
+
+   
+   
+   
+   
+   
