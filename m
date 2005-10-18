@@ -1,21 +1,24 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <dhlii@dlasys.net>
+Received: from xm.dlasys.net (unknown [24.152.213.223])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4F5D5685BB
+	by ozlabs.org (Postfix) with ESMTP id D2917685C4
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Oct 2005 04:57:42 +1000 (EST)
-Date: Tue, 18 Oct 2005 12:24:11 -0200
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Message-ID: <20051018142411.GA14065@logos.cnet>
-References: <434BC424.50700@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <434BC424.50700@ru.mvista.com>
-Cc: Kumar Gala <galak@freescale.com>,
-	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] ppc32: ppc_sys fixes for 8xx and 82xx
+	Wed, 19 Oct 2005 05:36:26 +1000 (EST)
+Received: from [206.223.20.140] (port=2115 helo=[206.223.20.140])
+	by xm.dlasys.net with esmtp (Exim 4.52 #1 (Debian))
+	id 1ERwx3-0002IX-2k
+	for <linuxppc-embedded@ozlabs.org>; Tue, 18 Oct 2005 15:16:45 -0400
+Message-ID: <435549C2.1000106@dlasys.net>
+Date: Tue, 18 Oct 2005 15:15:14 -0400
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
+MIME-Version: 1.0
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+References: <4354AC78.5080206@comcast.net> <4354B707.6060002@iki.fi>
+In-Reply-To: <4354B707.6060002@iki.fi>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: Need help Understanding initial memory conditions.
+Reply-To: dhlii@comcast.net
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,20 +29,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Vitaly,
+Kalle Pokki wrote:
 
-> This patch fixes a numbers of issues regarding to that both 8xx and 82xx 
-> began to use ppc_sys model:
-> 	- Platform is now identified by default deviceless SOC, if no 
-> BOARD_CHIP_NAME is specified in the bard-specific header. For the list 
-> of supported names refer to (arch/ppc/syslib/) mpc8xx_sys.c and 
-> mpc82xx_sys.c for 8xx and 82xx respectively.
-> 	- Fixed a bug in identification by name - if the name was not found, 
-> 	it returned -1 instead of default deviceless ppc_spec.
-> 	- fixed devices amount in the 8xx platform system descriptions
+> David H. Lynch Jr wrote:
+>
+>>    What exactly is the minimal startup system state the Linux 2.6.13 
+>> Kernel expects ?
+>
+>
+> It's pretty hard to describe the system state fully, as there are so 
+> many registers it may depend on. However, I can point out a few things 
+> from your setup:
+>
+> 1. Put RAM to 0x0000000 and flash to some location it mirrors to your 
+> boot vector. Linux always expects your physical memory to be at zero. 
+> It is then mapped to virtual address 0xC0000000.
 
-Patch looks good. 
+    In both this list and elsewhere I have seen several references to 
+the difficulty setting up Linux with a physical RAM base other than 0x0. 
+I was hoping that I could bypass that by re-arranging physical memory 
+using the BAT's or MMU.
+I am gathering that while this is possible, that it not sufficient. That 
+if memory is re-arranged after power-on it has to be done by something 
+Linux is not aware of.
 
-For 8xx, I was wondering if the PARTNUM field of the IMMR 
-(section 10.4.1 of MPC860UM.pdf) does have meaningful 
-information which could be used to identify the CPU.
+>
+> 2. You don't need to have MMU enabled.
+
+    There is a god. I am a compitent developer with lots of low level 
+experience, but I have thus far completely missed out on both PPC 
+assembler and memory management.
+
+>
+> 3. Make sure your boot arguments are passed properly to the kernel. 
+> This includes the settings in registers r3 ... r7 and the bd_info 
+> structure . There are many variants of that structure, make sure you 
+> use the same ones in the boot loader and in Linux.
+
+    That I should have no problem with.
+
+
+>
+>
+
+Thank You very much
