@@ -1,20 +1,21 @@
-Return-Path: <kalle.pokki@iki.fi>
-Received: from smtp2.song.fi (smtp2.song.fi [194.100.2.122])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 21746685E0
+Return-Path: <mgreer@mvista.com>
+Received: from hermes.mvista.com (gateway-1237.mvista.com [12.44.186.158])
+	by ozlabs.org (Postfix) with ESMTP id 2275D685BB
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 18 Oct 2005 18:49:17 +1000 (EST)
-Message-ID: <4354B707.6060002@iki.fi>
-Date: Tue, 18 Oct 2005 10:49:11 +0200
-From: Kalle Pokki <kalle.pokki@iki.fi>
-MIME-Version: 1.0
-To: "David H. Lynch Jr" <dhlii@comcast.net>
-References: <4354AC78.5080206@comcast.net>
-In-Reply-To: <4354AC78.5080206@comcast.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: Need help Understanding initial memory conditions.
+	Wed, 19 Oct 2005 04:22:13 +1000 (EST)
+Date: Tue, 18 Oct 2005 11:22:06 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Alex Zeffertt <ajz@cambridgebroadband.com>
+Message-ID: <20051018182206.GA30244@mag.az.mvista.com>
+References: <20051017123543.51aa7d24.ajz@cambridgebroadband.com>
+	<20051017184441.GC1245@mag.az.mvista.com>
+	<20051018094730.36aa7b99.ajz@cambridgebroadband.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20051018094730.36aa7b99.ajz@cambridgebroadband.com>
+Cc: linux-atm-general@lists.sourceforge.net, linuxppc-embedded@ozlabs.org
+Subject: Re: Announce: MPC8272ADS platform support added to mpc8260sar
+	project.
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,22 +26,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-David H. Lynch Jr wrote:
+On Tue, Oct 18, 2005 at 09:47:30AM +0100, Alex Zeffertt wrote:
+> On Mon, 17 Oct 2005 11:44:41 -0700
+> "Mark A. Greer" <mgreer@mvista.com> wrote:
+> 
+> > On Mon, Oct 17, 2005 at 12:35:43PM +0100, Alex Zeffertt wrote:
+> > > Hi lists, 
+> > > 
+> > > I'm writing to let anybody (who may be interested) know that I've
+> > > added support for the MPC8272ADS platform to the mpc8260sar ATM
+> > > device driver:
+> > > 
+> > > 	http://mpc8260sar.sourceforge.net
+> > 
+> > There is already an ads8272_defconfig in the kernel.org tree and
+> > AFAIK it works.  Did you add some functionality or change something?
+> >  Or am I missing something?
+> > 
+> 
+> I've added support for this platform to the ATM driver.
+>                                      ^^^^^^^^^^^^^^^^^
 
->    What exactly is the minimal startup system state the Linux 2.6.13 
-> Kernel expects ?
+Oh, duh.  Sorry 'bout that.
 
-It's pretty hard to describe the system state fully, as there are so 
-many registers it may depend on. However, I can point out a few things 
-from your setup:
-
-1. Put RAM to 0x0000000 and flash to some location it mirrors to your 
-boot vector. Linux always expects your physical memory to be at zero. It 
-is then mapped to virtual address 0xC0000000.
-
-2. You don't need to have MMU enabled.
-
-3. Make sure your boot arguments are passed properly to the kernel. This 
-includes the settings in registers r3 ... r7 and the bd_info structure . 
-There are many variants of that structure, make sure you use the same 
-ones in the boot loader and in Linux.
+Mark
