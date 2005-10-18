@@ -1,19 +1,20 @@
-Return-Path: <wd@denx.de>
-Received: from mailout08.sul.t-online.com (mailout08.sul.t-online.com
-	[194.25.134.20]) by ozlabs.org (Postfix) with ESMTP id 4B8F8685BB
+Return-Path: <SRS0+b07f4ba7e79ebc6f8047+786+infradead.org+dwmw2@baythorne.srs.infradead.org>
+Received: from baythorne.infradead.org (baythorne.infradead.org [81.187.2.161])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 89B52685D1
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 18 Oct 2005 06:09:08 +1000 (EST)
-To: somshekar chandrashekar kadam <som_kadam1@rediffmail.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "17 Oct 2005 07:52:08 -0000."
-	<20051017075208.29624.qmail@webmail24.rediffmail.com>
-Date: Mon, 17 Oct 2005 22:08:51 +0200
-Sender: wd@denx.de
-Message-Id: <20051017200851.9357D352B7B@atlas.denx.de>
+	Tue, 18 Oct 2005 17:53:07 +1000 (EST)
+From: David Woodhouse <dwmw2@infradead.org>
+To: Nathael PAJANI <nathael.pajani@cpe.fr>
+In-Reply-To: <43539813.8010809@cpe.fr>
+References: <43539813.8010809@cpe.fr>
+Content-Type: text/plain
+Date: Tue, 18 Oct 2005 08:53:02 +0100
+Message-Id: <1129621982.3830.310.camel@baythorne.infradead.org>
+Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: ELDK 3.1.1 ramdisk 
+Subject: Re: Newbie... in mailing lists...
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,52 +25,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <20051017075208.29624.qmail@webmail24.rediffmail.com> you wrote:
->
->    I am using MPC862 with 64mb ram , with Denx 3.1.1 eldk
-> with linux-2.4.25 on my custom board. 
-> on Uboot i use SMC2 as my seri
-> al console , when i load linux i use SCC4 as my serisl console , this is be
-> cuase i dont have any idea why my SMC2 is not working , it works fine on my
->  linux-2.4.18 kernel , 
-> anyways thats not the problem ,
+On Mon, 2005-10-17 at 14:24 +0200, Nathael PAJANI wrote:
+> I tried to reply to this thread: 
+> http://ozlabs.org/pipermail/linuxppc-embedded/2005-October/020555.html
+> But it created a new one..... not good.
 
-Yes it is. It is a major mistake to ignore one problem and to try  to
-continue and then complain about other, later issues.
+That's a problem with the archives; it's not your fault. If you look at
+the mailto: link at the top of that page, you see it looks like this:
 
-Fix one problem at a time.
+mailto:linuxppc-embedded%40ozlabs.org?Subject=eldk%203.1.1%20ramdisk%20image%20problem&In-Reply-To=
 
-Do not try to continue before fixing the console problem.
+Although it _attempts_ to set the In-Reply-To: header which would make
+your message appear to be a reply to the mail in the archive, it seems
+to be missing the actual message-id of that mail; it's just empty.
 
-> i am using r
-> amdisk_image.gz provided by eldk , and i have configured kernel wit intial
-> ramdisk support , i have attachec the config file below , and also the boot
-> ing messages in another file . as i chnages the console from smc2 to scc4 f
-> rom uboot to linux may be intial message is not clear , 
+> I tried to look for advices on posting and replying on the mailling list...
+> but the links given there: 
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> for the rules (http://lists.linuxppc.org/rules.html) and posting 
+> guidlines (http://lists.linuxppc.org/guidelines.html) are down.
 
-It is not only not clear, but unreadable. Like most of your  message,
-btw. Please fix your mailer.
-
-> i always get ker
-> nel panic VFS unable to mount root fs , is there something else i need to d
-> o or i am missing very important configuartion , please throw some light
-
-Which exact boot arguments did you pass?
-
-
-You configure for a MBX board - is this *really*  one  of  these  old
-door stoppers?
-
-Try removing devfs support and CONFIG_CMDLINE_BOOL and CONFIG_CMDLINE
-from your configuration.
-
-Best regards,
-Viele Grüße,
-
-Wolfgang Denk
+The rules are fairly much the same everywhere -- not only for mailing
+lists but for email in general. Try http://david.woodhou.se/email.html
+if you think you need to read about it, perhaps.
 
 -- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Everyting looks interesting until you do it. Then you find it's  just
-another job.                     - Terry Pratchett, _Moving Pictures_
+dwmw2
