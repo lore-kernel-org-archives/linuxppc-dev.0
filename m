@@ -1,12 +1,15 @@
-Return-Path: <galak@freescale.com>
-Date: Tue, 18 Oct 2005 17:42:41 -0500 (CDT)
-From: Kumar Gala <galak@freescale.com>
-To: Paul Mackerras <paulus@samba.org>
-Message-ID: <Pine.LNX.4.61.0510181742110.3329@nylon.am.freescale.net>
+Return-Path: <shrisha.prasad@in.abb.com>
+Received: from apisx02.abbasiapacific.com.sg (apisx02.abbasiapacific.com.sg
+	[210.24.147.18]) by ozlabs.org (Postfix) with ESMTP id 06A9C685E8
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Oct 2005 15:33:28 +1000 (EST)
+To: linuxppc-dev@ozlabs.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] ppc32: replace use of _GLOBAL with .globl for ppc32
+Message-ID: <OF9C8A73CA.88B8C155-ON6525709F.001C451E-6525709F.001C3403@in.abb.com>
+From: shrisha.prasad@in.abb.com
+Date: Wed, 19 Oct 2005 10:39:43 +0530
+Content-Type: multipart/alternative;
+	boundary="=_alternative 001C33FE6525709F_="
+Subject: Parameter RAM Conflict of SCC1 SPI & Ethernet 
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,152 +19,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The _GLOBAL() macro is for text symbols only. Changed to using
-.globl for .data symbols.  This is also needed in ppc32 land
-to allow FSL Book-E, 40x, and 44x to work.
+This is a multipart message in MIME format.
+--=_alternative 001C33FE6525709F_=
+Content-Type: text/plain; charset="us-ascii"
 
-Signed-off-by: Kumar K. Gala <kumar.gala@freescale.com>
+Hi all,
 
----
-commit ca6e6d7a599f8e8a5976c044910b98ef30258e30
-tree d220cd916c8bdb6bb9c5ddbdfc2ecbfa5004cf89
-parent a2084dccc9e9b0ccc5c40ed2f1273c82b23369d2
-author Kumar K. Gala <kumar.gala@freescale.com> Tue, 18 Oct 2005 17:40:56 -0500
-committer Kumar K. Gala <kumar.gala@freescale.com> Tue, 18 Oct 2005 17:40:56 -0500
+The MPC862 UM Errata mentions that there is possiblity to solve 
+ParameterRAM Conflict without a Microcode patch .
+I am working on a SerialEEPROM SPI Driver for mpc862
+ my driver needs to do is read the chip number from SPROM and calculate 
+the MAC address 
+The SPI  mpc8xx is interfaced to 9346 eeprom for this and I want to 
+retrieve the MAC address 
 
- arch/ppc/kernel/head_44x.S       |   18 +++++++++++-------
- arch/ppc/kernel/head_4xx.S       |   16 +++++++++++-----
- arch/ppc/kernel/head_fsl_booke.S |   17 +++++++++++------
- 3 files changed, 33 insertions(+), 18 deletions(-)
+The errata tells that no patch  required for relocation ,but using some 
+trick you can avoid it
 
-diff --git a/arch/ppc/kernel/head_44x.S b/arch/ppc/kernel/head_44x.S
---- a/arch/ppc/kernel/head_44x.S
-+++ b/arch/ppc/kernel/head_44x.S
-@@ -743,14 +743,18 @@ _GLOBAL(set_context)
-  * goes at the beginning of the data segment, which is page-aligned.
-  */
- 	.data
--_GLOBAL(sdata)
--_GLOBAL(empty_zero_page)
-+	.align	12
-+	.globl	sdata
-+sdata:
-+	.globl	empty_zero_page
-+empty_zero_page:
- 	.space	4096
- 
- /*
-  * To support >32-bit physical addresses, we use an 8KB pgdir.
-  */
--_GLOBAL(swapper_pg_dir)
-+	.globl	swapper_pg_dir
-+swapper_pg_dir:
- 	.space	8192
- 
- /* Reserved 4k for the critical exception stack & 4k for the machine
-@@ -759,13 +763,15 @@ _GLOBAL(swapper_pg_dir)
-         .align 12
- exception_stack_bottom:
- 	.space	BOOKE_EXCEPTION_STACK_SIZE
--_GLOBAL(exception_stack_top)
-+	.globl	exception_stack_top
-+exception_stack_top:
- 
- /*
-  * This space gets a copy of optional info passed to us by the bootstrap
-  * which is used to pass parameters into the kernel like root=/dev/sda1, etc.
-  */
--_GLOBAL(cmd_line)
-+	.globl	cmd_line
-+cmd_line:
- 	.space	512
- 
- /*
-@@ -774,5 +780,3 @@ _GLOBAL(cmd_line)
-  */
- abatron_pteptrs:
- 	.space	8
--
--
-diff --git a/arch/ppc/kernel/head_4xx.S b/arch/ppc/kernel/head_4xx.S
---- a/arch/ppc/kernel/head_4xx.S
-+++ b/arch/ppc/kernel/head_4xx.S
-@@ -988,10 +988,14 @@ _GLOBAL(set_context)
-  * goes at the beginning of the data segment, which is page-aligned.
-  */
- 	.data
--_GLOBAL(sdata)
--_GLOBAL(empty_zero_page)
-+	.align	12
-+	.globl	sdata
-+sdata:
-+	.globl	empty_zero_page
-+empty_zero_page:
- 	.space	4096
--_GLOBAL(swapper_pg_dir)
-+	.globl	swapper_pg_dir
-+swapper_pg_dir:
- 	.space	4096
- 
- 
-@@ -1001,12 +1005,14 @@ _GLOBAL(swapper_pg_dir)
- exception_stack_bottom:
- 	.space	4096
- critical_stack_top:
--_GLOBAL(exception_stack_top)
-+	.globl	exception_stack_top
-+exception_stack_top:
- 
- /* This space gets a copy of optional info passed to us by the bootstrap
-  * which is used to pass parameters into the kernel like root=/dev/sda1, etc.
-  */
--_GLOBAL(cmd_line)
-+	.globl	cmd_line
-+cmd_line:
- 	.space	512
- 
- /* Room for two PTE pointers, usually the kernel and current user pointers
-diff --git a/arch/ppc/kernel/head_fsl_booke.S b/arch/ppc/kernel/head_fsl_booke.S
---- a/arch/ppc/kernel/head_fsl_booke.S
-+++ b/arch/ppc/kernel/head_fsl_booke.S
-@@ -1028,10 +1028,14 @@ _GLOBAL(set_context)
-  * goes at the beginning of the data segment, which is page-aligned.
-  */
- 	.data
--_GLOBAL(sdata)
--_GLOBAL(empty_zero_page)
-+	.align	12
-+	.globl	sdata
-+sdata:
-+	.globl	empty_zero_page
-+empty_zero_page:
- 	.space	4096
--_GLOBAL(swapper_pg_dir)
-+	.globl	swapper_pg_dir
-+swapper_pg_dir:
- 	.space	4096
- 
- /* Reserved 4k for the critical exception stack & 4k for the machine
-@@ -1040,13 +1044,15 @@ _GLOBAL(swapper_pg_dir)
-         .align 12
- exception_stack_bottom:
- 	.space	BOOKE_EXCEPTION_STACK_SIZE * NR_CPUS
--_GLOBAL(exception_stack_top)
-+	.globl	exception_stack_top
-+exception_stack_top:
- 
- /*
-  * This space gets a copy of optional info passed to us by the bootstrap
-  * which is used to pass parameters into the kernel like root=/dev/sda1, etc.
-  */
--_GLOBAL(cmd_line)
-+	.globl	cmd_line
-+cmd_line:
- 	.space	512
- 
- /*
-@@ -1055,4 +1061,3 @@ _GLOBAL(cmd_line)
-  */
- abatron_pteptrs:
- 	.space	8
--
+I am using the UBoot SPI Driver code for MPC8xx ,Do I need to modify the 
+code in order to suit my requirements 
+
+Since I am a newbie in kernel programming ,some help is requested .
+
+Regards
+
+--=_alternative 001C33FE6525709F_=
+Content-Type: text/html; charset="us-ascii"
+
+
+<br><font size=2 face="sans-serif">Hi all,</font>
+<br>
+<br><font size=2 face="sans-serif">The MPC862 UM Errata mentions that there is possiblity to solve ParameterRAM Conflict without a Microcode patch .</font>
+<br><font size=2 face="sans-serif">I am working on a SerialEEPROM SPI Driver for mpc862</font>
+<br><font size=2 face="sans-serif">&nbsp;my driver needs to do is read the chip number from SPROM and calculate the MAC address </font>
+<br><font size=2 face="sans-serif">The SPI &nbsp;mpc8xx is interfaced to 9346 eeprom for this and I want to retrieve the MAC address </font>
+<br>
+<br><font size=2 face="sans-serif">The errata tells that no patch &nbsp;required for relocation ,but using some trick you can avoid it</font>
+<br>
+<br><font size=2 face="sans-serif">I am using the UBoot SPI Driver code for MPC8xx ,Do I need to modify the code in order to suit my requirements </font>
+<br>
+<br><font size=2 face="sans-serif">Since I am a newbie in kernel programming ,some help is requested .</font>
+<br>
+<br><font size=2 face="sans-serif">Regards</font>
+<br>
+--=_alternative 001C33FE6525709F_=--
