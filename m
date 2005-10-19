@@ -1,24 +1,20 @@
-Return-Path: <akonovalov@ru.mvista.com>
-Received: from localhost.localdomain (83-102-234-29.broadband.corbina.ru
-	[83.102.234.29])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AF895685ED
+Return-Path: <blackrocketman@gmail.com>
+Received: from qproxy.gmail.com (qproxy.gmail.com [72.14.204.197])
+	by ozlabs.org (Postfix) with ESMTP id 50882685F4
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Oct 2005 02:05:24 +1000 (EST)
-Message-ID: <43561EF0.6040305@ru.mvista.com>
-Date: Wed, 19 Oct 2005 14:24:48 +0400
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
+	Thu, 20 Oct 2005 03:42:53 +1000 (EST)
+Received: by qproxy.gmail.com with SMTP id q17so152760qba
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 19 Oct 2005 10:42:52 -0700 (PDT)
+Message-ID: <b06af6180510191036o7d1d5b33tadf8b04018219eea@mail.gmail.com>
+Date: Wed, 19 Oct 2005 11:36:24 -0600
+From: Andrew McCarthy <andrew@thediligent.com>
+Sender: blackrocketman@gmail.com
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-To: Kalle Pokki <kalle.pokki@iki.fi>, "David H. Lynch Jr" <dhlii@comcast.net>
-References: <4354AC78.5080206@comcast.net>
-	<4354B707.6060002@iki.fi>	<435549C2.1000106@dlasys.net>
-	<435557A0.8090505@iki.fi>	<4355D6C1.4030004@comcast.net>
-	<4355E9B5.30106@iki.fi>
-In-Reply-To: <4355E9B5.30106@iki.fi>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Need help Understanding initial memory conditions.
+Content-Type: multipart/alternative;
+	boundary="----=_Part_8274_24014424.1129743384607"
+Subject: PPC 440 / JFFS2 checksum question.
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,37 +25,127 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Kalle Pokki wrote:
-> David H. Lynch Jr wrote:
-> 
->> Alright I have RAM at physical 0x0 now.  I throw a copy of a 
->> compressed linux image into RAM (anywhere special ?) load the assorted 
->> registers with the appropriate values, fill the board info struct., 
->> and just jump to the start of the image and pray that load text starts 
->> coming out my serial port ?
-> 
-> Basically, but the exact thing to do depends which image you take. The 
-> build process results in a few different image files. I usually just 
-> take the vmlinux ELF file, and then my own scripts objcopy it to binary, 
-> compress, objcopy to an object file, and link the compressed image 
-> directly to the boot loader. The boot loader is then, of course, 
-> responsible of uncompressing the image to RAM to 0x00000000.
-> 
-> I think the kernel build can also create some "self-extracting" images, 
-> but I have never tried those.
+------=_Part_8274_24014424.1129743384607
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Yes, this is exactly the way ML300 is booted (as regards to the code
-currently in www.kernel.org's 2.6 tree).
-Use 'make zImage' or 'make zImage.initrd' to get zImage.elf or zImage.initrd.elf.
+We have some PPC440GX based blade servers that boot
+from flash. My boss wants me to add
+additional checksums somewhere in the JFFS2 partitions
+as an overall check of the JFFS2 filesystem images that
+we burn to flash. Once the image is burned, that file
+system is never written to again. (That's the theory anyway).
+So every time they boot they want to read these checksum
+out of the flash and use it to decide if they want to/can boot
+with that filesystem or fallback to another one.
+ Each copy of the kernel has its own JFFS2 partition.
+The root file system has its own JFFS2 partition. I don't
+understand why they don't just write everything to one
+JFFS2 partition. They say it is because they are
+worried about power failure while writing to the flash and want
+to isolate any write failures.
+( I tried to tell them that the journaling already handles
+that case quite well - but they are non-believers)
+ Some questions;
+ 1) Is a filesystem-wide checksum really necessary or
+is it kind of silly?
+ 1.1) Doesn't JFFS2 already do some integrity checking after
+it finishes writing a file? Are there checksums or anything that
+serves the same function? They want to avoid having to
+checksum the entire filesystem at boot time (due to quick
+boot time requirements) - is there some field or fields, or technique that
+can quickly tell me if the filesystem is ok?
+ 2) Is there any place within the bounds of a JFFS2
+partition that is safe from being overwritten? before and
+after checksums could be placed there.
+ 2.1) Is there any way to create such a place? for example,
+by appending the checksums to the end of some filesystem-wide
+structure like a super block? Or maybe it can be hidden in
+a couple of inodes that are never overwritten.
+ What I'm looking for regarding this adding extra checksums into the
+JFFS2 image is:
+ 3.1) How can it be done?
+3.2) Why might it be unnecessary or even inadvisable?
+3.3) Why can't it be done?
+ Once I understand the answers to these questions I can
+go back and see what they want to do.
+ In the meantime, I am dumping and analyzing the JFFS2
+filesystems we have and reading the code trying to find the
+answers.
+ thanks for your time.
 
-> Maybe they don't even work anymore, as 
-> many (most?)  people just use the U-boot images.
+------=_Part_8274_24014424.1129743384607
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-There is U-Boot port for ML300 by Peter Ryser from Xilinx,
-but I haven't tried using it (yet). IIRC there is an appnote
-on Xilinx web site that describes how to boot the 2.4 kernel
-with U-Boot (few modifications need to be done to the kernel).
+<div>We&nbsp;have some&nbsp;PPC440GX based blade servers that boot</div>
+<div>from flash.&nbsp; My boss wants me&nbsp;to add</div>
+<div>additional checksums somewhere in the JFFS2 partitions</div>
+<div>as an overall check of the JFFS2 filesystem images that</div>
+<div>we burn to flash.&nbsp; Once the image is burned, that file</div>
+<div>system is never written to again.&nbsp; (That's the theory anyway). </=
+div>
+<div>So every time they boot they want to read these checksum</div>
+<div>out of the flash and use it to decide if they want to/can boot</div>
+<div>with that filesystem or fallback to another one.&nbsp; </div>
+<div>&nbsp;</div>
+<div>Each copy of the &nbsp;kernel has its own JFFS2 partition.&nbsp;&nbsp;=
+</div>
+<div>The root file system has its own JFFS2 partition.&nbsp; I don't </div>
+<div>understand why they don't just write everything to one </div>
+<div>JFFS2 partition.&nbsp; They say it is because they are </div>
+<div>worried about power failure while writing to the flash and want </div>
+<div>to isolate any write failures.&nbsp; </div>
+<div>( I tried to tell them that the journaling already handles </div>
+<div>that case quite well - but they are non-believers)</div>
+<div>&nbsp;</div>
+<div>Some questions;</div>
+<div>&nbsp;</div>
+<div>1)&nbsp; Is a filesystem-wide checksum really necessary or</div>
+<div>is it kind of silly?</div>
+<div>&nbsp;</div>
+<div>1.1)&nbsp; Doesn't JFFS2 already do some integrity checking after</div=
+>
+<div>it finishes writing a file?&nbsp; Are there checksums or anything that=
+ </div>
+<div>serves the same function?&nbsp;&nbsp;&nbsp;&nbsp;They want to avoid ha=
+ving to </div>
+<div>checksum the entire filesystem at boot time (due to quick<span></span>=
+ </div>
+<div>boot time requirements) - is there some field or fields, or technique&=
+nbsp;that</div>
+<div>can quickly tell me if the filesystem is ok?</div>
+<div>&nbsp;</div>
+<div>2)&nbsp; Is there any place within the bounds of a JFFS2 </div>
+<div>partition that is safe from being overwritten?&nbsp; before and </div>
+<div>after checksums could be placed there.</div>
+<div>&nbsp;</div>
+<div>2.1)&nbsp; Is there any way to create such a place?&nbsp; for example,=
+</div>
+<div>by appending the&nbsp;checksums to the end of some filesystem-wide</di=
+v>
+<div>structure like a super block?&nbsp; Or maybe it can be hidden in </div=
+>
+<div>a couple of inodes that are never overwritten.</div>
+<div>&nbsp;</div>
+<div>What I'm looking for regarding this adding extra checksums into the</d=
+iv>
+<div>JFFS2 image is:</div>
+<div>&nbsp;</div>
+<div>3.1)&nbsp; How can it be done?</div>
+<div>3.2)&nbsp; Why might it be unnecessary or even inadvisable?</div>
+<div>3.3)&nbsp; Why can't it be done?</div>
+<div>&nbsp;</div>
+<div>Once I understand the answers to these&nbsp; questions I can </div>
+<div>go back and see what they want to do.</div>
+<div>&nbsp;</div>
+<div>In the meantime, I am dumping and analyzing the JFFS2 </div>
+<div>filesystems we have and reading the code trying to find the </div>
+<div>answers.</div>
+<div>&nbsp;</div>
+<div>thanks for your time.</div><span class=3D"sg">
+<div>&nbsp;</div></span>
 
-
-Best regards,
-Andrei
+------=_Part_8274_24014424.1129743384607--
