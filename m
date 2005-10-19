@@ -1,15 +1,18 @@
-Return-Path: <shrisha.prasad@in.abb.com>
-Received: from apisx02.abbasiapacific.com.sg (apisx02.abbasiapacific.com.sg
-	[210.24.147.18]) by ozlabs.org (Postfix) with ESMTP id 06A9C685E8
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Oct 2005 15:33:28 +1000 (EST)
-To: linuxppc-dev@ozlabs.org
+Return-Path: <geert@linux-m68k.org>
+Received: from witte.sonytel.be (witte.sonytel.be [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 794B8685E8
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Oct 2005 19:22:50 +1000 (EST)
+Date: Wed, 19 Oct 2005 11:22:43 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@sonycom.com
+To: i2a <i2a@gmx.net>
+In-Reply-To: <20051018191029.M22134@quicknet.nl>
+Message-ID: <Pine.LNX.4.62.0510191122220.25580@numbat.sonytel.be>
+References: <20051018191029.M22134@quicknet.nl>
 MIME-Version: 1.0
-Message-ID: <OF9C8A73CA.88B8C155-ON6525709F.001C451E-6525709F.001C3403@in.abb.com>
-From: shrisha.prasad@in.abb.com
-Date: Wed, 19 Oct 2005 10:39:43 +0530
-Content-Type: multipart/alternative;
-	boundary="=_alternative 001C33FE6525709F_="
-Subject: Parameter RAM Conflict of SCC1 SPI & Ethernet 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Subject: Re: openpic/mac-io
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,47 +22,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 001C33FE6525709F_=
-Content-Type: text/plain; charset="us-ascii"
+On Tue, 18 Oct 2005, i2a wrote:
+> I am searching for documentation about the OpenPIC interrupt-controller in mac
+> systems. I found this site but most of the links are dead or give no hope on
+> real technical documentation :).
+> http://www.macbsd.com/openmac/refs.html
+> 
+> Could someone give any pointers or files?
 
-Hi all,
+http://www.printk.net/pub/docs/openpic/
 
-The MPC862 UM Errata mentions that there is possiblity to solve 
-ParameterRAM Conflict without a Microcode patch .
-I am working on a SerialEEPROM SPI Driver for mpc862
- my driver needs to do is read the chip number from SPROM and calculate 
-the MAC address 
-The SPI  mpc8xx is interfaced to 9346 eeprom for this and I want to 
-retrieve the MAC address 
+Gr{oetje,eeting}s,
 
-The errata tells that no patch  required for relocation ,but using some 
-trick you can avoid it
+						Geert
 
-I am using the UBoot SPI Driver code for MPC8xx ,Do I need to modify the 
-code in order to suit my requirements 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Since I am a newbie in kernel programming ,some help is requested .
-
-Regards
-
---=_alternative 001C33FE6525709F_=
-Content-Type: text/html; charset="us-ascii"
-
-
-<br><font size=2 face="sans-serif">Hi all,</font>
-<br>
-<br><font size=2 face="sans-serif">The MPC862 UM Errata mentions that there is possiblity to solve ParameterRAM Conflict without a Microcode patch .</font>
-<br><font size=2 face="sans-serif">I am working on a SerialEEPROM SPI Driver for mpc862</font>
-<br><font size=2 face="sans-serif">&nbsp;my driver needs to do is read the chip number from SPROM and calculate the MAC address </font>
-<br><font size=2 face="sans-serif">The SPI &nbsp;mpc8xx is interfaced to 9346 eeprom for this and I want to retrieve the MAC address </font>
-<br>
-<br><font size=2 face="sans-serif">The errata tells that no patch &nbsp;required for relocation ,but using some trick you can avoid it</font>
-<br>
-<br><font size=2 face="sans-serif">I am using the UBoot SPI Driver code for MPC8xx ,Do I need to modify the code in order to suit my requirements </font>
-<br>
-<br><font size=2 face="sans-serif">Since I am a newbie in kernel programming ,some help is requested .</font>
-<br>
-<br><font size=2 face="sans-serif">Regards</font>
-<br>
---=_alternative 001C33FE6525709F_=--
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
