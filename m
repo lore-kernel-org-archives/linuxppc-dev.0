@@ -1,22 +1,17 @@
-Return-Path: <SRS0+a5e15608dd26525b8a20+787+infradead.org+dwmw2@baythorne.srs.infradead.org>
-Received: from baythorne.infradead.org (baythorne.infradead.org [81.187.2.161])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2E68A685D3
+Return-Path: <Fabien.Clement@thomson.net>
+Received: from dmzraw5.extranet.tce.com (dmzraw5.extranet.tce.com
+	[157.254.234.142]) by ozlabs.org (Postfix) with ESMTP id 0A066685ED
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Oct 2005 19:50:13 +1000 (EST)
-From: David Woodhouse <dwmw2@infradead.org>
-To: David Jander <david.jander@protonic.nl>
-In-Reply-To: <200510191010.47799.david.jander@protonic.nl>
-References: <200510141135.47186.david.jander@protonic.nl>
-	<1129552672.3830.249.camel@baythorne.infradead.org>
-	<200510191010.47799.david.jander@protonic.nl>
-Content-Type: text/plain; charset=UTF-8
-Date: Wed, 19 Oct 2005 10:50:06 +0100
-Message-Id: <1129715406.3830.353.camel@baythorne.infradead.org>
-Mime-Version: 1.0
-Cc: linux-mtd@lists.infradead.org, linuxppc-embedded@ozlabs.org
-Subject: Re: jffs2 robustness against powerfailure
+	Wed, 19 Oct 2005 21:40:42 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Wed, 19 Oct 2005 13:17:54 +0200
+Message-ID: <9C1918067C3BC14C9C351C206D8A843701F54A94@rennsmail03.eu.thmulti.com>
+From: "Clement Fabien" <Fabien.Clement@thomson.net>
+To: "somshekar chandrashekar kadam" <som_kadam1@rediffmail.com>,
+	<linuxppc-embedded@ozlabs.org>
+Subject: RE: ELDK 3.1.1 ramdisk
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,43 +22,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2005-10-19 at 10:10 +0200, David Jander wrote:
-> 2.6 is not an option yet for mpc8xx architecture, so I'll have to stick with 
-> either what I have now or 2.4.31, but I fear the tradeoff of using vanilla 
-> 2.4.31 jffs2 will be much slower fs, prohibitively long mount-times, etc... 
-> am I right?
+Hi,
 
-If it's all running perfectly for you and you have no work to do, then
-yes, perhaps you're right. But since that's evidently _not_ the case,
-then no, I would disagree.
+Make sure ROOT_DEV is initialized to the correct device, for instance :
 
-If I were you, the first thing I'd do would be to get a current kernel
-working. It should only take a week or so -- porting from 2.4 to 2.6
-really isn't that difficult.
+In Sandpoint.c (arch\ppc\platforms):	=09
 
-> I am still busy doing experiments, please have a little patience.
-> Until now I have turned on debug info in the same kernel as before, and get 
-> literally tons of log info. My monitor script had a bug, so the board was 
-> reset a little to soon in several occasions (shouldn't harm, should it), so 
-> now I have an image of jffs2 which on boot of the system produces a BUG() in 
-> gc.c line 139.
+#ifdef	CONFIG_ROOT_NFS
+	ROOT_DEV =3D to_kdev_t(0x00FF);	/* /dev/nfs pseudo device */
+#endif
 
-That should never happen, regardless of when the board is reset.
-Assuming it still happens with JFFS2 code I care about (either 2.4 or
-2.6), please could I have a copy of this image?
+There is no default value for it, except if you pass it on command line
 
-The problem you first reported doesn't seem too worrying to me. Writes
-aren't always atomic -- in fact the Linux VFS¹ _guarantees_ that writes
-larger than a page are _not_ atomic, because it splits pages up to call
-prepare_write() and commit_write() on each one.
+Fabien
 
-JFFS2 will mostly write each page out in a single node, but when there
-is only a small amount of space at the end of an eraseblock it will
-split writes still further, filling the eraseblock with as much data as
-possible before writing the remainder of the page into a new eraseblock.
-I suspect that's what happened in the case you showed. 
- 
--- 
-dwmw2
+________________________________________
+From: linuxppc-embedded-bounces@ozlabs.org =
+[mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of somshekar =
+chandrashekar kadam
+Sent: lundi 17 octobre 2005 09:52
+To: linuxppc-embedded@ozlabs.org
+Subject: ELDK 3.1.1 ramdisk
 
-¹ Assuming you use generic_file_write()
+=A0=20
+HI ,=20
+
+=A0 I am using MPC862 with 64mb ram , with Denx 3.1.1 eldk=20
+with linux-2.4.25 on my custom board.=20
+on Uboot i use SMC2 as my serial console , when i load linux i use SCC4 =
+as my serisl console , this is becuase i dont have any idea why my SMC2 =
+is not working , it works fine on my linux-2.4.18 kernel ,=20
+anyways thats not the problem ,
+
+i am using ramdisk_image.gz provided by eldk , and i have configured =
+kernel wit intial ramdisk support , i have attachec the config file =
+below , and also the booting messages in another file . as i chnages the =
+console from smc2 to scc4 from uboot to linux may be intial message is =
+not clear ,=20
+i always get kernel panic VFS unable to mount root fs , is there =
+something else i need to do or i am missing very important configuartion =
+, please throw some light=20
+
+thanks in advance=20
+Neelu=20
