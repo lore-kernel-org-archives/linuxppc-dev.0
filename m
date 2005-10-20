@@ -1,17 +1,23 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 0B28D685FF
+Return-Path: <christopher.cordahi@gmail.com>
+Received: from qproxy.gmail.com (qproxy.gmail.com [72.14.204.196])
+	by ozlabs.org (Postfix) with ESMTP id 6A986685F1
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Oct 2005 03:57:15 +1000 (EST)
-Message-ID: <435688F9.8030509@ru.mvista.com>
-Date: Wed, 19 Oct 2005 21:57:13 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
+	Thu, 20 Oct 2005 10:36:02 +1000 (EST)
+Received: by qproxy.gmail.com with SMTP id z8so232900qbc
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 19 Oct 2005 17:36:00 -0700 (PDT)
+Message-ID: <a1a7967e0510191729x520b2aeak@mail.gmail.com>
+Date: Wed, 19 Oct 2005 20:29:45 -0400
+From: Christopher Cordahi <christopher.cordahi@gmail.com>
+To: Dan Malek <dan@embeddededge.com>
+In-Reply-To: <4c41159c3c06e288e5d69469f1e3ce7b@embeddededge.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-Content-Type: multipart/mixed; boundary="------------040409040506060205060709"
-Cc: linux-kernel@vger.kernel.org, Kumar Gala <galak@freescale.com>,
+Content-Type: text/plain; charset=ISO-8859-1
+References: <434BC424.50700@ru.mvista.com> <20051018142411.GA14065@logos.cnet>
+	<4c41159c3c06e288e5d69469f1e3ce7b@embeddededge.com>
+Cc: Kumar Gala <galak@freescale.com>,
 	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] ppc32: ppc_sys fixes for 8xx and 82xx (whitespaces fixed)
+Subject: Re: [PATCH] ppc32: ppc_sys fixes for 8xx and 82xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,160 +28,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------040409040506060205060709
-Content-Type: text/plain; charset=KOI8-R; format=flowed
-Content-Transfer-Encoding: 7bit
+On 18/10/05, Dan Malek <dan@embeddededge.com> wrote:
+>
+> On Oct 18, 2005, at 10:24 AM, Marcelo Tosatti wrote:
+>
+> > For 8xx, I was wondering if the PARTNUM field of the IMMR
+> > (section 10.4.1 of MPC860UM.pdf) does have meaningful
+> > information which could be used to identify the CPU.
+>
+> It has meaningful information, but not the way you want
+> to use it :-)  The PARTNUM/MASKNUM is only useful
+> once you know the type of processor (like 823, 850, 885, etc)
+> The PARTNUM is only useful within the "family."  For
+> example, the 860 and 880 are two different families, and
+> will contain the similar PARTNUM values through their life.
+> I believe it's tied to the fabrication process.
 
-This patch fixes a numbers of issues regarding to that both 8xx and 82xx
-began to use ppc_sys model:
-	- Platform is now identified by default deviceless SOC, if no
-BOARD_CHIP_NAME is specified in the bard-specific header. For the list
-of supported names refer to (arch/ppc/syslib/) mpc8xx_sys.c and
-mpc82xx_sys.c for 8xx and 82xx respectively.
-	- Fixed a bug in identification by name - if the name was not found, it
-returned -1 instead of default deviceless ppc_spec.
-	- fixed devices amount in the 8xx platform system descriptions
+I don't understand in what way Marcelo wants to use it, but
+from my understanding and a quick look of the Freescale product
+summary pages it's the opposite of what you're indicating.
+I believe the PARTNUM identifies the family not the part.
+You can't tell an 885 from an 870 (IMMR contains 0x09xx).
+Similarly you can't tell an 860EN from an 860T (IMMR
+contains 0x00xx or 0x05xx).
+But you can tell an 860 from an 880 which are in different
+families.  Note that it's not always obvious which parts
+are in the same family.
 
+> You may as well stop looking for an easy (or possibly
+> any) way to differentiate these parts in software, but
+> due to they way they are fabricated, I don't think that's
+> ever going to happen. :-)
+Also just because a feature isn't supposed to be present
+doesn't mean it's not.
+We bought 860EN (4 SCCs) parts but Motorola accidentily
+shipped us 860DE (2 SCCs) parts.  We installed, tested and
+shipped a few of these parts using all 4 SCCs without
+problem.  It wasn't until another unrelated problem occurred
+that we noticed that we had used a tray of the wrong part.
 
-Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
-Signed-off-by: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
--- 
-Sincerely,
-Vitaly
-
-
---------------040409040506060205060709
-Content-Type: text/x-patch;
- name="2.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="2.patch"
-
-diff --git a/arch/ppc/platforms/fads.h b/arch/ppc/platforms/fads.h
---- a/arch/ppc/platforms/fads.h
-+++ b/arch/ppc/platforms/fads.h
-@@ -25,6 +25,8 @@
- 
- #if defined(CONFIG_MPC86XADS)
- 
-+#define BOARD_CHIP_NAME "MPC86X"
-+
- /* U-Boot maps BCSR to 0xff080000 */
- #define BCSR_ADDR		((uint)0xff080000)
- 
-diff --git a/arch/ppc/platforms/mpc885ads.h b/arch/ppc/platforms/mpc885ads.h
---- a/arch/ppc/platforms/mpc885ads.h
-+++ b/arch/ppc/platforms/mpc885ads.h
-@@ -88,5 +88,7 @@
- #define SICR_ENET_MASK	((uint)0x00ff0000)
- #define SICR_ENET_CLKRT	((uint)0x002c0000)
- 
-+#define BOARD_CHIP_NAME "MPC885"
-+
- #endif /* __ASM_MPC885ADS_H__ */
- #endif /* __KERNEL__ */
-diff --git a/arch/ppc/syslib/m8260_setup.c b/arch/ppc/syslib/m8260_setup.c
---- a/arch/ppc/syslib/m8260_setup.c
-+++ b/arch/ppc/syslib/m8260_setup.c
-@@ -62,6 +62,10 @@ m8260_setup_arch(void)
- 	if (initrd_start)
- 		ROOT_DEV = Root_RAM0;
- #endif
-+
-+	identify_ppc_sys_by_name_and_id(BOARD_CHIP_NAME, 
-+				in_be32(CPM_MAP_ADDR + CPM_IMMR_OFFSET));
-+
- 	m82xx_board_setup();
- }
- 
-diff --git a/arch/ppc/syslib/m8xx_setup.c b/arch/ppc/syslib/m8xx_setup.c
---- a/arch/ppc/syslib/m8xx_setup.c
-+++ b/arch/ppc/syslib/m8xx_setup.c
-@@ -404,6 +404,8 @@ platform_init(unsigned long r3, unsigned
- 		strcpy(cmd_line, (char *)(r6+KERNELBASE));
- 	}
- 
-+	identify_ppc_sys_by_name(BOARD_CHIP_NAME);
-+
- 	ppc_md.setup_arch		= m8xx_setup_arch;
- 	ppc_md.show_percpuinfo		= m8xx_show_percpuinfo;
- 	ppc_md.irq_canonicalize	= NULL;
-diff --git a/arch/ppc/syslib/mpc8xx_sys.c b/arch/ppc/syslib/mpc8xx_sys.c
---- a/arch/ppc/syslib/mpc8xx_sys.c
-+++ b/arch/ppc/syslib/mpc8xx_sys.c
-@@ -24,7 +24,7 @@ struct ppc_sys_spec ppc_sys_specs[] = {
- 		.ppc_sys_name	= "MPC86X",
- 		.mask 		= 0xFFFFFFFF,
- 		.value 		= 0x00000000,
--		.num_devices	= 2,
-+		.num_devices	= 7,
- 		.device_list	= (enum ppc_sys_devices[])
- 		{
- 			MPC8xx_CPM_FEC1,
-@@ -40,7 +40,7 @@ struct ppc_sys_spec ppc_sys_specs[] = {
- 		.ppc_sys_name	= "MPC885",
- 		.mask 		= 0xFFFFFFFF,
- 		.value 		= 0x00000000,
--		.num_devices	= 3,
-+		.num_devices	= 8,
- 		.device_list	= (enum ppc_sys_devices[])
- 		{
- 			MPC8xx_CPM_FEC1,
-diff --git a/arch/ppc/syslib/ppc_sys.c b/arch/ppc/syslib/ppc_sys.c
---- a/arch/ppc/syslib/ppc_sys.c
-+++ b/arch/ppc/syslib/ppc_sys.c
-@@ -69,6 +69,9 @@ static int __init find_chip_by_name_and_
- 			matched[j++] = i;
- 		i++;
- 	}
-+
-+	ret = i;
-+
- 	if (j != 0) {
- 		for (i = 0; i < j; i++) {
- 			if ((ppc_sys_specs[matched[i]].mask & id) ==
-diff --git a/include/asm-ppc/cpm2.h b/include/asm-ppc/cpm2.h
---- a/include/asm-ppc/cpm2.h
-+++ b/include/asm-ppc/cpm2.h
-@@ -1087,6 +1087,9 @@ typedef struct im_idma {
- #define SCCR_PCIDF_MSK	0x00000078	/* PCI division factor	*/
- #define SCCR_PCIDF_SHIFT 3
- 
-+#ifndef CPM_IMMR_OFFSET
-+#define CPM_IMMR_OFFSET	0x101a8
-+#endif
- 
- #endif /* __CPM2__ */
- #endif /* __KERNEL__ */
-diff --git a/include/asm-ppc/mpc8260.h b/include/asm-ppc/mpc8260.h
---- a/include/asm-ppc/mpc8260.h
-+++ b/include/asm-ppc/mpc8260.h
-@@ -92,6 +92,10 @@ enum ppc_sys_devices {
- extern unsigned char __res[];
- #endif
- 
-+#ifndef BOARD_CHIP_NAME
-+#define BOARD_CHIP_NAME ""
-+#endif
-+
- #endif /* CONFIG_8260 */
- #endif /* !__ASM_PPC_MPC8260_H__ */
- #endif /* __KERNEL__ */
-diff --git a/include/asm-ppc/mpc8xx.h b/include/asm-ppc/mpc8xx.h
---- a/include/asm-ppc/mpc8xx.h
-+++ b/include/asm-ppc/mpc8xx.h
-@@ -113,6 +113,10 @@ enum ppc_sys_devices {
- 	MPC8xx_CPM_USB,
- };
- 
-+#ifndef BOARD_CHIP_NAME
-+#define BOARD_CHIP_NAME ""
-+#endif
-+
- #endif /* !__ASSEMBLY__ */
- #endif /* CONFIG_8xx */
- #endif /* __CONFIG_8xx_DEFS */
-
---------------040409040506060205060709--
+Chris
