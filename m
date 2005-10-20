@@ -1,16 +1,22 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17240.8660.61369.647302@cargo.ozlabs.ibm.com>
-Date: Fri, 21 Oct 2005 09:01:40 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Giuliano Pochini <pochini@shiny.it>, linuxppc-dev@ozlabs.org,
-	linuxppc64-dev@ozlabs.org
-In-Reply-To: <17221.45591.341270.888791@cargo.ozlabs.ibm.com>
-References: <1127865914.6102.0.camel@gaston>
-	<XFMail.20050929092052.pochini@shiny.it>
-	<17221.45591.341270.888791@cargo.ozlabs.ibm.com>
-Subject: Re: Starting the arch/powerpc merge
+Return-Path: <hollis@penguinppc.org>
+Received: from smtpauth09.mail.atl.earthlink.net
+	(smtpauth09.mail.atl.earthlink.net [209.86.89.69])
+	by ozlabs.org (Postfix) with ESMTP id A7B626862A
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Oct 2005 09:33:22 +1000 (EST)
+In-Reply-To: <20051020151748.GB27704@localhost.localdomain>
+References: <20051014115753.M37114@quicknet.nl>
+	<f308ce32868b18c6be30cf2a28d86ade@kernel.crashing.org>
+	<20051014145644.M46291@gmx.net>
+	<80e720f67822d61a3dcd52cb906996cf@penguinppc.org>
+	<20051020151748.GB27704@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <f3b993b330f790b539e585aa89c399ab@penguinppc.org>
+From: Hollis Blanchard <hollis@penguinppc.org>
+Date: Thu, 20 Oct 2005 18:33:18 -0500
+To: Sven Luther <sven.luther@wanadoo.fr>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: CHRP specifications
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,14 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I wrote:
+On Oct 20, 2005, at 10:17 AM, Sven Luther wrote:
+>
+> BTW, anyone know of where to get the CHRP specs in downloadable html 
+> or pdf or
+> something format. Not the chrp OF bindings, but the real CHRP specs ?
 
-> Not really.  The main thing in the past has been that DRI with 32-bit
-> X server and clients would work with a 32-bit kernel but not a 64-bit
-> kernel, but that's fixed now.  A 64-bit kernel is faster on most
-> lmbench tests.  I guess a 32-bit kernel might end up a little smaller,
-> but that's the only possible advantage I can think of.
+I believe you've seen this before, but the link is still in the same 
+place... http://penguinppc.org/otherhw/#chrp
 
-Oops, sorry, mail system breakage here...
+As I recall, though, the CHRP specification mandates such obsolete 
+features as an ADB controller, so claiming "CHRP compliance" may not be 
+all that special these days. :)
 
-Paul.
+-Hollis
