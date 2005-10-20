@@ -1,21 +1,20 @@
-Return-Path: <adgospod@gmail.com>
-Received: from qproxy.gmail.com (qproxy.gmail.com [72.14.204.200])
-	by ozlabs.org (Postfix) with ESMTP id 1AF746860B
+Return-Path: <claus.baumgartner@netsonic.fi>
+Received: from smtp.netsonic.fi (smtp.netsonic.fi [194.29.192.26])
+	by ozlabs.org (Postfix) with ESMTP id 271D66861B
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Oct 2005 22:26:31 +1000 (EST)
-Received: by qproxy.gmail.com with SMTP id q17so76535qba
+	Fri, 21 Oct 2005 00:21:46 +1000 (EST)
+Received: from webmail.netsonic.fi (mc4.netsonic.fi [194.29.192.103])
+	by smtp.netsonic.fi (Postfix) with ESMTP id 5A9691F8060
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Oct 2005 05:26:30 -0700 (PDT)
-Message-ID: <bdfc5d6e0510200519l1f4ffc2dyfaad70ca7b860c1a@mail.gmail.com>
-Date: Thu, 20 Oct 2005 08:19:32 -0400
-From: Andy Gospodarek <adgospod@gmail.com>
-To: JohnsonCheng <JohnsonCheng@qnap.com.tw>
-In-Reply-To: <20051020110322.A910E6860C@ozlabs.org>
+	Thu, 20 Oct 2005 16:50:59 +0300 (EEST)
+Message-ID: <1795.194.9.254.253.1129816331.squirrel@webmail.netsonic.fi>
+Date: Thu, 20 Oct 2005 16:52:11 +0300 (EEST)
+From: "claus" <claus.baumgartner@netsonic.fi>
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20051020110322.A910E6860C@ozlabs.org>
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: How to make mudules on linux-ppc2.6.12
+Content-Type: text/plain;charset=iso-8859-1
+Subject: MPC8270 with preemptible kernel stucks in early console write
+Reply-To: claus.baumgartner@netsonic.fi
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,77 +25,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Johnson,
+Hi there,
 
-See:
+I'm porting the 2.6.13.2 kernel to a custom board with a MPC8270.
+If I compile the kernel preemptible then it gets stuck at the following
+line in the cpm_uart_console_write function:
 
-http://lwn.net/Articles/21817/
+    while ((bdp->cbd_sc & BD_SC_READY) != 0)
+            ;
 
-I found this article to be helpful in the past.
+The early_console output works fine in the beginning of the boot but then
+it gets stuck after the line "checking if image is initramfs...it isn't
+(no cpio magic); looks like an initrd" is printed. The problem doesn't
+seem to have anything to do with the initramfs detection though.
 
--andy
+I can see with the debugger that the descriptors are OK and the buffers
+are filled with correct data but it seems that the SCC is not sending the
+characters and the main core is stuck waiting for a descriptor to be
+ready for use.
+
+Everything works fine if the kernel is not configured preemptible.
+
+Has anyone else had similar behavior?
+Any ideas?
 
 
-On 10/20/05, JohnsonCheng <JohnsonCheng@qnap.com.tw> wrote:
->
->
->
-> Dear All,
->
->
->
-> I just write a "hello world" module code, but I can't compile it for
-> ppc2.6.12.
->
-> My Makefile is list as following:
->
->
->
-> obj-m :=3D test.o
->
-> all:
->
->   make ARCH=3Dppc CROSS_COMPILE=3Dpowerpc-linux- -C /root/linux-2.6.12.3
-> SUBDIR=3D. modules
->
->
->
-> When I run make, no error message output, but I find no test.ko modules. =
-The
-> output message is list as following:
->
->
->
-> make ARCH=3Dppc CROSS_COMPILE=3Dpowerpc-linux- -C /root/linux-2.6.1
->
-> 2.3 SUBDIR=3D. modules
->
-> make[1]: Entering directory `/root/linux-2.6.12.3'
->
->   CHK     include/linux/version.h
->
-> make[2]: `arch/ppc/kernel/asm-offsets.s' is up to date.
->
->   Building modules, stage 2.
->
->   MODPOST
->
-> make[1]: Leaving directory `/root/linux-2.6.12.3'
->
->
->
-> Do anyone can give me some help ?
->
->
->
-> Thanks,
->
-> Johnson Cheng
->
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
->
+-Claus-
