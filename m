@@ -1,22 +1,20 @@
-Return-Path: <hollis@penguinppc.org>
-Received: from smtpauth09.mail.atl.earthlink.net
-	(smtpauth09.mail.atl.earthlink.net [209.86.89.69])
-	by ozlabs.org (Postfix) with ESMTP id A7B626862A
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Oct 2005 09:33:22 +1000 (EST)
-In-Reply-To: <20051020151748.GB27704@localhost.localdomain>
-References: <20051014115753.M37114@quicknet.nl>
-	<f308ce32868b18c6be30cf2a28d86ade@kernel.crashing.org>
-	<20051014145644.M46291@gmx.net>
-	<80e720f67822d61a3dcd52cb906996cf@penguinppc.org>
-	<20051020151748.GB27704@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <f3b993b330f790b539e585aa89c399ab@penguinppc.org>
-From: Hollis Blanchard <hollis@penguinppc.org>
-Date: Thu, 20 Oct 2005 18:33:18 -0500
-To: Sven Luther <sven.luther@wanadoo.fr>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 413EF68637
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Oct 2005 14:42:32 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: maz@misterjones.org
+In-Reply-To: <wrpll0of535.fsf@wild-wind.fr.eu.org>
+References: <wrpll0of535.fsf@wild-wind.fr.eu.org>
+Content-Type: text/plain
+Date: Fri, 21 Oct 2005 14:38:29 +1000
+Message-Id: <1129869509.6265.32.camel@gaston>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
-Subject: Re: CHRP specifications
+Subject: Re: v2.6.13.4 : Bad page state at prep_new_page when booting with
+	quik
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,17 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Oct 20, 2005, at 10:17 AM, Sven Luther wrote:
->
-> BTW, anyone know of where to get the CHRP specs in downloadable html 
-> or pdf or
-> something format. Not the chrp OF bindings, but the real CHRP specs ?
+On Thu, 2005-10-20 at 19:53 +0200, Marc Zyngier wrote:
+> List,
+> 
+> I finally managed to bring back to life an old Apus 3000/200 (PowerMac
+> 6400 clone, 603e@200, no L2 cache, 144MB RAM). Kernel is vanilla
+> 2.6.13.4, userland is Debian Sarge.
+> 
+> The strange thing is : while the machine boots perfectly with BootX,
+> it fills the console with messages like this when booted from quik :
 
-I believe you've seen this before, but the link is still in the same 
-place... http://penguinppc.org/otherhw/#chrp
+Well, it definitely looks like something is wrong :) Not sure what's up
+at this point. Could be cache coherency not properly enabled on PSX
+memory controller by Open Firmware maybe ...
 
-As I recall, though, the CHRP specification mandates such obsolete 
-features as an ADB controller, so claiming "CHRP compliance" may not be 
-all that special these days. :)
+It would be useful if you could dump the memory controller registers
+between an OF boot and a BootX boot.
 
--Hollis
+Look at this bit in pmac_setup.c:
+
+	sysctrl_regs = (volatile u32 *) ioremap(0xf8000000, 0x1000);
+	ohare_init();
+
+The first line maps those registers, the second line enables the L2
+cache on PSX memory controller. (The name "ohare_init() is actually a
+bit bogus here, since that has nothing to do with ohare, but we do it in
+ohare based machines only... go figure, that's pre-historical code,
+certainly predates my involvement here :).
+
+I'd suggest dumping to 8 or so first words of sysctrl_regs and checking
+what difference is there.
+
+Then, there is another blob that enables cache coherency on the PCI side
+of Bandit/PSX in pmac_pci.c in init_bandit(). But this code seems to be
+called for you ...
+
+It could be something else tho ... like some problem with quik...
+
+Ben.
