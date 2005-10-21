@@ -1,11 +1,21 @@
-Return-Path: <bgill@freescale.com>
-Date: Fri, 21 Oct 2005 16:16:58 -0500 (CDT)
-From: Becky Bruce <bgill@freescale.com>
-To: linuxppc64-dev@ozlabs.org, linuxppc-dev@ozlabs.org
-Message-ID: <Pine.LNX.4.61.0510211615420.20228@cde-tx32-ldt329.sps.mot.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Subject: [PATCH] powerpc: Fix types.h
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 234FD6861F
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Oct 2005 08:47:18 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: maz@misterjones.org
+In-Reply-To: <wrpek6eeo94.fsf@wild-wind.fr.eu.org>
+References: <wrpll0of535.fsf@wild-wind.fr.eu.org>
+	<1129869509.6265.32.camel@gaston> <wrpek6eeo94.fsf@wild-wind.fr.eu.org>
+Content-Type: text/plain
+Date: Sat, 22 Oct 2005 08:42:08 +1000
+Message-Id: <1129934528.7919.15.camel@gaston>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: v2.6.13.4 : Bad page state at prep_new_page when booting with
+	quik
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,33 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Powerpc: Fix types.h
+On Fri, 2005-10-21 at 20:08 +0200, Marc Zyngier wrote:
 
-I noticed that Paul had already pulled the version of types.h that
-is missing the config.h include into the merge tree - this patch adds 
-it back in.
+> I fear that... But even in such a case ,understanding what confuses
+> the kernel would help a lot...
+> 
+> Thanks for your help,
 
-Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
+Hrm... another thing you can do is have a look at the init_bandit()
+routine. It does:
 
----
-commit ffaa354bbf9c75b1101167137662ba37bb6cdb02
-tree 4b9df364146754813e7425efab1d6ac322ee2abc
-parent b30219b583bf29e7f6a1236f07e5727626979d6c
-author Becky Bruce <becky.bruce@freescale.com> Fri, 21 Oct 2005 16:11:26 -0500
-committer Becky Bruce <becky.bruce@freescale.com> Fri, 21 Oct 2005 16:11:26 -0500
+	/* read the word at offset 0x50 */
+	out_le32(bp->cfg_addr, (1UL << BANDIT_DEVNUM) + BANDIT_MAGIC);
+	udelay(2);
+	magic = in_le32(bp->cfg_data);
 
- include/asm-powerpc/types.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+What is the value of "magic" in both cases ?
 
-diff --git a/include/asm-powerpc/types.h b/include/asm-powerpc/types.h
---- a/include/asm-powerpc/types.h
-+++ b/include/asm-powerpc/types.h
-@@ -64,6 +64,8 @@ typedef struct {
- 
- #ifndef __ASSEMBLY__
- 
-+#include <linux/config.h>
-+
- typedef signed char s8;
- typedef unsigned char u8;
- 
+As for the rest, well, printing out the various addresses where the
+kernel is copied and/or decompresses itself may help...
+
+Have you tried also netbooting directly vmlinux.coff ? (boot enet: might
+work on OldWorld OF, you'll need a bootp server) That works with some
+oldworlds, not all, depends if they have a working ethernet driver in
+OF.
+
+Ben.
