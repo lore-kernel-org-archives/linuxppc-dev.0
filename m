@@ -1,19 +1,16 @@
-Return-Path: <rupeshs@myw.ltindia.com>
-Received: from mywsmtp.ltindia.com (unknown [203.199.60.127])
-	by ozlabs.org (Postfix) with SMTP id BAC486860C
+Return-Path: <Peter.Schaefer-Hutter@tfk-racoms.com>
+Received: from rcprx1.tfk-racoms.com (rcprx1.tfk-racoms.com [195.245.55.49])
+	by ozlabs.org (Postfix) with SMTP id 4B5CA68626
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 21 Oct 2005 19:08:58 +1000 (EST)
-Received: (from EMAIL [192.168.172.1])
-	by mywsmtp.ltindia.com (SMSSMTP 4.0.0.59) with SMTP id
-	M2005102114092413684
-	for <linuxppc-embedded@ozlabs.org>; Fri, 21 Oct 2005 14:09:24 +0530
-Message-Id: <s358f676.093@EMAIL>
-Date: Fri, 21 Oct 2005 14:08:26 +0530
-From: "Rupesh S" <rupeshs@myw.ltindia.com>
+	Fri, 21 Oct 2005 19:29:10 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Fri, 21 Oct 2005 11:31:10 +0200
+Message-ID: <8E342283C2100540AAC5D103097054778A4189@rcexc.racoms.loc>
+From: "Schaefer-Hutter, Peter" <Peter.Schaefer-Hutter@tfk-racoms.com>
 To: <linuxppc-embedded@ozlabs.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Subject: Support for MPC8548 processor
+Subject: MPC8xx soft-float userspace ...
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,15 +21,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi
+Hello!
 
-Can anyone help me know if there exists any linux kernel that supports =
-MPC8548 processor based boards ?
-And if it exists, does the kernel support the PCI Express module that is =
-there within MPC8548 ?
+Due to the fact that the in-kernel FPU emulation looks=20
+broken on MPC8xx i want to build a complete soft-float
+userspace.
 
-Thanks in advance
+While i was successful in compiling a glibc with -mcpu=3D860
+and soft-float (and without memset.S) there's still floating
+point in there. Does anybody have some pointers what else
+needs to be removed?
 
+TIA and best regards,
 
---
-Rupesh S
+ Peter=20
