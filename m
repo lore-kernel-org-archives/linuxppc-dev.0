@@ -1,23 +1,25 @@
-Return-Path: <rupert@ces.ch>
-Received: from server1.serv-net.de (31.204.203.213.rev.inetbone.net
-	[213.203.204.31])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <maz@misterjones.org>
+Received: from young-lust.wild-wind.fr.eu.org (lopsy-lu.misterjones.org
+	[62.4.18.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 52687685ED
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Oct 2005 04:28:09 +1000 (EST)
-From: Rupert Eibauer <rupert@ces.ch>
-To: Kumar Gala <kumar.gala@freescale.com>
-Date: Fri, 21 Oct 2005 20:43:16 +0200
-References: <200510211417.49651.rupert@ces.ch>
-	<200510211711.02997.rupert@ces.ch>
-	<B34FF652-6E5D-437D-812C-763B2D10C7CA@freescale.com>
-In-Reply-To: <B34FF652-6E5D-437D-812C-763B2D10C7CA@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id EFB0B6865E
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Oct 2005 04:52:16 +1000 (EST)
+From: Marc Zyngier <maz@misterjones.org>
+To: Mark Guertin <mguertin@macdiscussion.com>
+In-Reply-To: <6337E791-EB1F-47E5-8518-FE0D83987705@macdiscussion.com> (Mark
+	Guertin's message of "Fri, 21 Oct 2005 14:36:02 -0400")
+References: <wrpll0of535.fsf@wild-wind.fr.eu.org>
+	<1129869509.6265.32.camel@gaston>
+	<wrpek6eeo94.fsf@wild-wind.fr.eu.org>
+	<6337E791-EB1F-47E5-8518-FE0D83987705@macdiscussion.com>
+Date: Fri, 21 Oct 2005 20:52:09 +0200
+Message-ID: <wrp3bmuln3a.fsf@wild-wind.fr.eu.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200510212043.18615.rupert@ces.ch>
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH][RFT] please use this one
+Subject: Re: v2.6.13.4 : Bad page state at prep_new_page when booting with
+	quik
+Reply-To: maz@misterjones.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,35 +29,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 21 October 2005 17:23, Kumar Gala wrote:
-> 
-> On Oct 21, 2005, at 10:11 AM, Rupert Eibauer wrote:
-> 
-> > On Friday 21 October 2005 16:28, Kumar Gala wrote:
-> >
-> >> The concept of PPC_HIGH_BATS is already some what handled with
-> >> CPU_FTR_HAS_HIGH_BATS.  I recommend you use this feature instead of
-> >> introducing another one as well as a compile time option.
-> >>
-> >
-> > CPU_FTR_HAS_HIGH_BATS only clears the high bats, but does
-> > not attempt to use them. My patch will use them.
-> 
-> I understand, I'm suggesting you expand CPU_FTR_HAS_HIGH_BATS to  
-> include your additional functionality.
+>>>>> "Mark" == Mark Guertin <mguertin@macdiscussion.com> writes:
 
-How do you mean that exactly?
+Mark> Not sure what quick version you are using, but the guys at  
+Mark> shiner.info have been hacking on it for a while (including some bug  
+Mark> fixes) .. so you might want to try out alternate versions if you  
+Mark> haven't already.
 
-Do you mean making the feature always-on (not selectable in Kconfig)?
-Having CONFIG_PPC_LARGE_BATS and CONFIG_HIGH_PATS always-on would
-be ok for me, but for PHYS_64BIT should be left up to the platform
-to decide if it should be presented to the user or not.
+Mark> http://shiner.info/?files/Yellow%20Dog%20Linux%204/quik
 
-Do you think the other two features, CPU_FTR_BIG_PHYS and 
-CPU_FTR_LARGE_BATS should be merged into one bit? They could for now, 
-because there is no processor supporting only one of them.
+Hmmm, checking...
 
-Rupert
+maz@strange-fruit:~$ dpkg -l quik
+Desired=Unknown/Install/Remove/Purge/Hold
+| Status=Not/Installed/Config-files/Unpacked/Failed-config/Half-installed
+|/ Err?=(none)/Hold/Reinst-required/X=both-problems (Status,Err: uppercase=bad)
+||/ Name           Version        Description
++++-==============-==============-============================================
+ii  quik           2.1-6          Bootloader for PowerMac or CHRP systems
 
-> 
-> - kumar
+Looks like I already have the latest...
+
+Thanks anyway.
+
+	M.
+-- 
+And if you don't know where you're going, any road will take you there...
