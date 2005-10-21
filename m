@@ -1,14 +1,15 @@
-Return-Path: <pochini@shiny.it>
-Message-ID: <XFMail.20051021091908.pochini@shiny.it>
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <cfriesen@nortel.com>
+Received: from zctfs063.nortelnetworks.com (zctfs063.nortelnetworks.com
+	[47.164.128.120]) by ozlabs.org (Postfix) with ESMTP id EE41D6863A
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Oct 2005 15:04:00 +1000 (EST)
+Message-ID: <435876B8.9000706@nortel.com>
+Date: Thu, 20 Oct 2005 23:03:52 -0600
+From: "Christopher Friesen" <cfriesen@nortel.com>
 MIME-Version: 1.0
-In-Reply-To: <17221.45591.341270.888791@cargo.ozlabs.ibm.com>
-Date: Fri, 21 Oct 2005 09:19:08 +0200 (CEST)
-Sender: pochini@agnus.shiny.it
-From: Giuliano Pochini <pochini@shiny.it>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
-Subject: Re: Starting the arch/powerpc merge
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: status of kexec for ppc on 2.6.10, any gotchas?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,28 +20,21 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On 06-Oct-2005 Paul Mackerras wrote:
+I've been asked to look at kexec for ppc on 2.6.10.  The syscall appears 
+to be present, but there seem to be additional patches for 2.6.10-mm at:
 
->> Out of curiosity, is there any advantage in using a 32 bits
->> kernel on ppc64 over a 64 bits kernel ?  Speed ?  Complexity ?
->> Compatibility ?  Memory ?
->
-> Not really.  The main thing in the past has been that DRI with 32-bit
-> X server and clients would work with a 32-bit kernel but not a 64-bit
-> kernel, but that's fixed now.  A 64-bit kernel is faster on most
-> lmbench tests.  I guess a 32-bit kernel might end up a little smaller,
-> but that's the only possible advantage I can think of.
+http://www.xmission.com/~ebiederm/files/kexec/
 
-And 32<->64 bits compatibility layer for 32bits apps is not needed,
-so maybe they run a bit faster. Well, at this point IMHO 32-on-64
-support may be dropped without regrets. Spending time for an useless
-thing is - uhm - useless.
+Are these patches needed?
 
+I haven't been able to find any current official documentation, although 
+I found some old stuff from 2.5 and a writeup at:
+ 
+http://www-128.ibm.com/developerworks/linux/library/l-kexec.html?ca=dgr-lnxw04RebootFast
 
-> Oops, sorry, mail system breakage here...
+Is there any official HOWTO on this?  Any issues I should look at in 
+particular?
 
-My mail wasn't important anyway :))
+Thanks for any pointers,
 
-
---
-Giuliano.
+Chris
