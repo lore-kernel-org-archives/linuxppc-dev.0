@@ -3,21 +3,17 @@ Received: from server1.serv-net.de (31.204.203.213.rev.inetbone.net
 	[213.203.204.31])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D7E456864B
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Oct 2005 22:27:02 +1000 (EST)
-Received: from b094c.b.pppool.de ([213.7.9.76])
-	by server1.serv-net.de with esmtpa (Exim 4.52) id 1ESvz6-0002ng-Os
-	for linuxppc-dev@ozlabs.org; Fri, 21 Oct 2005 14:26:58 +0200
+	by ozlabs.org (Postfix) with ESMTP id 15FBB6864D
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Oct 2005 23:02:27 +1000 (EST)
 From: Rupert Eibauer <rupert@ces.ch>
 To: linuxppc-dev@ozlabs.org
-Date: Fri, 21 Oct 2005 14:42:07 +0200
-References: <200510211417.49651.rupert@ces.ch>
-In-Reply-To: <200510211417.49651.rupert@ces.ch>
+Date: Fri, 21 Oct 2005 14:17:46 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200510211442.08477.rupert@ces.ch>
-Subject: Re: [PATCH][RFT] please use this one
+  charset="us-ascii"
+Message-Id: <200510211417.49651.rupert@ces.ch>
+Cc: rupert@ces.ch
+Subject: [PATCH][RFT] Make PPC7450Features useable
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,13 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+(Please CC to me, I am not subscribed)
+
 Hello,
 
-Please try this one. The first one contained a last-second
-fix which I didn't test if it compiles.
+This patch makes 3 of the 7450 features useable. These are:
 
-Regards,
-Rupert
+- High BAT (BATs 4-7)
+- Extended BAT Block Size (In this mode a BAT can cover
+  up to 4GB)
+- 36-Bit Physical addressing with BATs
+
+I was able to test the High BAT and the 36-Bit addressing on a
+7447A, for the large BAT, I don't have enough memory. Maybe somebody
+with at least 512 MB of memory should test it.
+
+I don't have much experience in submitting, kernel patches, so
+if there is anything wrong with my patch, please point it out.
+
+However, I did not manage to adjust the page tables to do the
+same trick (36-Bit Addressing). The page tables seem a lot more
+magic to me.
+
+Here is the patch:
 
 diff -urN linux-2.6.13.3.orig/arch/ppc/Kconfig linux-2.6.13.3/arch/ppc/Kconfig
 --- linux-2.6.13.3.orig/arch/ppc/Kconfig	Fri Oct 21 05:42:59 2005
@@ -77,7 +89,7 @@ diff -urN linux-2.6.13.3.orig/arch/ppc/kernel/cpu_setup_6xx.S linux-2.6.13.3/arc
  	ori	r11,r11,HID0_SGE | HID0_FOLD | HID0_BHTE
  	ori	r11,r11,HID0_LRSTK | HID0_BTIC
 -	oris	r11,r11,HID0_DPM@h
-+	oris	r11,r11,(HID0_DPM | HID0_XAEN)@h
++	oris	r11,r11,HID0_DPM@h | HID0_XAEN@h
  BEGIN_FTR_SECTION
  	xori	r11,r11,HID0_BTIC
  END_FTR_SECTION_IFSET(CPU_FTR_NO_BTIC)
