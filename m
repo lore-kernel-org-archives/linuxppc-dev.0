@@ -1,20 +1,23 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 62ACF68654
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Oct 2005 01:22:42 +1000 (EST)
-In-Reply-To: <200510211711.02997.rupert@ces.ch>
-References: <200510211417.49651.rupert@ces.ch>
-	<200510211442.08477.rupert@ces.ch>
-	<30B37541-CAC4-4052-B33D-AE1373C16FD3@freescale.com>
-	<200510211711.02997.rupert@ces.ch>
-Mime-Version: 1.0 (Apple Message framework v734)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <B34FF652-6E5D-437D-812C-763B2D10C7CA@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Fri, 21 Oct 2005 10:23:16 -0500
-To: "Rupert Eibauer" <rupert@ces.ch>
+Return-Path: <maz@misterjones.org>
+Received: from young-lust.wild-wind.fr.eu.org (lopsy-lu.misterjones.org
+	[62.4.18.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2173C685ED
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Oct 2005 04:16:07 +1000 (EST)
+From: Marc Zyngier <maz@misterjones.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <wrpll0of535.fsf@wild-wind.fr.eu.org>
+	<1129869509.6265.32.camel@gaston>
+Date: Fri, 21 Oct 2005 20:08:55 +0200
+Message-ID: <wrpek6eeo94.fsf@wild-wind.fr.eu.org>
+In-Reply-To: <1129869509.6265.32.camel@gaston> (Benjamin Herrenschmidt's
+	message of "Fri, 21 Oct 2005 14:38:29 +1000")
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH][RFT] please use this one
+Subject: Re: v2.6.13.4 : Bad page state at prep_new_page when booting with
+	quik
+Reply-To: maz@misterjones.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,20 +27,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+>>>>> "BenH" == Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-On Oct 21, 2005, at 10:11 AM, Rupert Eibauer wrote:
+BenH> I'd suggest dumping to 8 or so first words of sysctrl_regs and checking
+BenH> what difference is there.
 
-> On Friday 21 October 2005 16:28, Kumar Gala wrote:
->
->> The concept of PPC_HIGH_BATS is already some what handled with
->> CPU_FTR_HAS_HIGH_BATS.  I recommend you use this feature instead of
->> introducing another one as well as a compile time option.
->>
->
-> CPU_FTR_HAS_HIGH_BATS only clears the high bats, but does
-> not attempt to use them. My patch will use them.
+Here you go :
 
-I understand, I'm suggesting you expand CPU_FTR_HAS_HIGH_BATS to  
-include your additional functionality.
+BootX :
 
-- kumar
+*fde69000 = 10000000
+*fde69004 = 00000000
+*fde69008 = 04000000
+*fde6900c = 00000000
+*fde69010 = 04101102
+*fde69014 = 00000000
+*fde69018 = 00000345
+*fde6901c = 00000000
+
+Quik:
+
+*fdeff000 = 10000000
+*fdeff004 = 00000000
+*fdeff008 = 04000000
+*fdeff00c = 00000000
+*fdeff010 = 04101102
+*fdeff014 = 00000000
+*fdeff018 = 00000345
+*fdeff01c = 00000000
+
+Except for the ioremap address being different, not much to see
+here...
+
+BenH> It could be something else tho ... like some problem with
+BenH> quik...
+
+I fear that... But even in such a case ,understanding what confuses
+the kernel would help a lot...
+
+Thanks for your help,
+
+	M.
+-- 
+And if you don't know where you're going, any road will take you there...
