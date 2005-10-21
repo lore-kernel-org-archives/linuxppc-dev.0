@@ -1,20 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 413EF68637
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Oct 2005 14:42:32 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: maz@misterjones.org
-In-Reply-To: <wrpll0of535.fsf@wild-wind.fr.eu.org>
-References: <wrpll0of535.fsf@wild-wind.fr.eu.org>
-Content-Type: text/plain
-Date: Fri, 21 Oct 2005 14:38:29 +1000
-Message-Id: <1129869509.6265.32.camel@gaston>
+Return-Path: <sven.luther@wanadoo.fr>
+Received: from smtp11.wanadoo.fr (smtp11.wanadoo.fr [193.252.22.31])
+	by ozlabs.org (Postfix) with ESMTP id 1475D6861F
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Oct 2005 15:31:51 +1000 (EST)
+Received: from me-wanadoo.net (localhost [127.0.0.1])
+	by mwinf1103.wanadoo.fr (SMTP Server) with ESMTP id 4811C1C00112
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Oct 2005 07:31:46 +0200 (CEST)
+Date: Fri, 21 Oct 2005 07:18:45 +0200
+To: Hollis Blanchard <hollis@penguinppc.org>
+Message-ID: <20051021051844.GA12653@localhost.localdomain>
+References: <20051014115753.M37114@quicknet.nl>
+	<f308ce32868b18c6be30cf2a28d86ade@kernel.crashing.org>
+	<20051014145644.M46291@gmx.net>
+	<80e720f67822d61a3dcd52cb906996cf@penguinppc.org>
+	<20051020151748.GB27704@localhost.localdomain>
+	<f3b993b330f790b539e585aa89c399ab@penguinppc.org>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <f3b993b330f790b539e585aa89c399ab@penguinppc.org>
+From: Sven Luther <sven.luther@wanadoo.fr>
 Cc: linuxppc-dev@ozlabs.org
-Subject: Re: v2.6.13.4 : Bad page state at prep_new_page when booting with
-	quik
+Subject: Re: CHRP specifications
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,41 +29,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2005-10-20 at 19:53 +0200, Marc Zyngier wrote:
-> List,
+On Thu, Oct 20, 2005 at 06:33:18PM -0500, Hollis Blanchard wrote:
+> On Oct 20, 2005, at 10:17 AM, Sven Luther wrote:
+> >
+> >BTW, anyone know of where to get the CHRP specs in downloadable html 
+> >or pdf or
+> >something format. Not the chrp OF bindings, but the real CHRP specs ?
 > 
-> I finally managed to bring back to life an old Apus 3000/200 (PowerMac
-> 6400 clone, 603e@200, no L2 cache, 144MB RAM). Kernel is vanilla
-> 2.6.13.4, userland is Debian Sarge.
-> 
-> The strange thing is : while the machine boots perfectly with BootX,
-> it fills the console with messages like this when booted from quik :
+> I believe you've seen this before, but the link is still in the same 
+> place... http://penguinppc.org/otherhw/#chrp
 
-Well, it definitely looks like something is wrong :) Not sure what's up
-at this point. Could be cache coherency not properly enabled on PSX
-memory controller by Open Firmware maybe ...
+ah, yes, remember now,  i even already downloaded it :)
 
-It would be useful if you could dump the memory controller registers
-between an OF boot and a BootX boot.
+> As I recall, though, the CHRP specification mandates such obsolete 
+> features as an ADB controller, so claiming "CHRP compliance" may not be 
+> all that special these days. :)
 
-Look at this bit in pmac_setup.c:
+still good for the other features and for documentation.
 
-	sysctrl_regs = (volatile u32 *) ioremap(0xf8000000, 0x1000);
-	ohare_init();
+Friendly,
 
-The first line maps those registers, the second line enables the L2
-cache on PSX memory controller. (The name "ohare_init() is actually a
-bit bogus here, since that has nothing to do with ohare, but we do it in
-ohare based machines only... go figure, that's pre-historical code,
-certainly predates my involvement here :).
-
-I'd suggest dumping to 8 or so first words of sysctrl_regs and checking
-what difference is there.
-
-Then, there is another blob that enables cache coherency on the PCI side
-of Bandit/PSX in pmac_pci.c in init_bandit(). But this code seems to be
-called for you ...
-
-It could be something else tho ... like some problem with quik...
-
-Ben.
+Sven Luther
