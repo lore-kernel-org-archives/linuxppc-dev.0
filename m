@@ -1,18 +1,18 @@
-Return-Path: <BlakesleeS@embeddedplanet.com>
-Received: from tag-03.ashton-group.com (tag-03.ashton-group.com [66.94.86.90])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CAB4B68656
+Return-Path: <wd@denx.de>
+Received: from mailout09.sul.t-online.com (mailout09.sul.t-online.com
+	[194.25.134.84]) by ozlabs.org (Postfix) with ESMTP id 3209C685D8
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 22 Oct 2005 01:00:05 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C5D64B.E6784892"
-Date: Fri, 21 Oct 2005 10:29:52 -0400
-Message-ID: <1628E43D99629C46988BE46087A3FBB93ADA8F@ep-01.EmbeddedPlanet.local>
-From: "Steven Blakeslee" <BlakesleeS@embeddedplanet.com>
-To: "Peter Fercher" <peter.fercher@scs.ch>,
-	"linux-ppc-embedded" <linuxppc-embedded@ozlabs.org>
-Subject: RE: bdi2000 file for yosemite board
+	Sat, 22 Oct 2005 01:59:43 +1000 (EST)
+To: "Peter Fercher" <peter.fercher@scs.ch>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-Type: multipart/mixed ;
+	boundary="==_Exmh_1129910354_68740"
+Date: Fri, 21 Oct 2005 17:59:27 +0200
+Sender: wd@denx.de
+Message-Id: <20051021155927.D6FAB35341A@atlas.denx.de>
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: bdi2000 file for yosemite board 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,155 +23,163 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+This is a multipart MIME message.
 
-------_=_NextPart_001_01C5D64B.E6784892
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_002_01C5D64B.E6784892"
+--==_Exmh_1129910354_68740
+Content-type: text/plain; charset=ISO-8859-1
+Content-transfer-encoding: 8bit
+In-reply-to: Your message of "Fri, 21 Oct 2005 16:19:31 +0200."
+	<008601c5d64a$743ebdc0$dbe5fed4@scsad.scs.ch>
 
+In message <008601c5d64a$743ebdc0$dbe5fed4@scsad.scs.ch> you wrote:
+> 
+> does anybody have a clue where to get a yosemite (ppc440ep eval board from
+> embedded planet) .cfg and .reg (configuration and register definition) file
+> for the bdi2000 programmer to reprogramm the flash (write u-boot into flash)
 
-------_=_NextPart_002_01C5D64B.E6784892
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Please see attachment.
 
-Never tried the FLASH portion.
+Best regards,
 
+Wolfgang Denk
 
-________________________________
-
-	From: linuxppc-embedded-bounces@ozlabs.org
-[mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of Peter Fercher
-	Sent: Friday, October 21, 2005 10:20 AM
-	To: linux-ppc-embedded
-	Subject: bdi2000 file for yosemite board
-=09
-=09
-	does anybody have a clue where to get a yosemite (ppc440ep eval
-board from embedded planet) .cfg and .reg (configuration and register
-definition) file for the bdi2000 programmer to reprogramm the flash
-(write u-boot into flash) ?
-	=20
-	=20
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Digital computers are themselves more complex than most things people
+build: They have very large numbers of states. This makes conceiving,
+describing, and testing them hard. Software systems  have  orders-of-
+magnitude more states than computers do.           - Fred Brooks, Jr.
 
 
-------_=_NextPart_002_01C5D64B.E6784892
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+--==_Exmh_1129910354_68740
+Content-Type: text/plain ; name="yosemite.cfg"; charset=us-ascii
+Content-Description: yosemite.cfg
+Content-Disposition: attachment; filename="yosemite.cfg"
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD><TITLE>Message</TITLE>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.2900.2722" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV dir=3Dltr align=3Dleft><SPAN class=3D904162514-21102005><FONT =
-face=3DArial=20
-color=3D#0000ff size=3D2>Never tried the FLASH =
-portion.</FONT></SPAN></DIV><BR>
-<BLOCKQUOTE dir=3Dltr=20
-style=3D"PADDING-LEFT: 5px; MARGIN-LEFT: 5px; BORDER-LEFT: #0000ff 2px =
-solid; MARGIN-RIGHT: 0px">
-  <DIV class=3DOutlookMessageHeader lang=3Den-us dir=3Dltr align=3Dleft>
-  <HR tabIndex=3D-1>
-  <FONT face=3DTahoma size=3D2><B>From:</B> =
-linuxppc-embedded-bounces@ozlabs.org=20
-  [mailto:linuxppc-embedded-bounces@ozlabs.org] <B>On Behalf Of =
-</B>Peter=20
-  Fercher<BR><B>Sent:</B> Friday, October 21, 2005 10:20 =
-AM<BR><B>To:</B>=20
-  linux-ppc-embedded<BR><B>Subject:</B> bdi2000 file for yosemite=20
-  board<BR></FONT><BR></DIV>
-  <DIV></DIV>
-  <DIV><SPAN class=3D613151314-21102005><FONT face=3DArial size=3D2>does =
-anybody have=20
-  a clue where to get a yosemite (ppc440ep eval =
-board&nbsp;from&nbsp;embedded=20
-  planet)&nbsp;.cfg and .reg (configuration and register =
-definition)&nbsp;file=20
-  for the bdi2000 programmer to reprogramm the flash (write u-boot into =
-flash)=20
-  ?</FONT></SPAN></DIV>
-  <DIV><SPAN class=3D613151314-21102005><FONT face=3DArial=20
-  size=3D2></FONT></SPAN>&nbsp;</DIV>
-  <DIV><FONT face=3DArial =
-size=3D2></FONT>&nbsp;</DIV></BLOCKQUOTE></BODY></HTML>
+;bdiGDB configuration file for IBM 440GX Reference Board
+; ------------------------------------------------------
+;
+[INIT]
+; Setup TLB
+WTLB    0xF0000095  0x0F00003F  ;Boot Space 256MB
+WTLB    0x00000094  0x0000003F  ;SDRAM 256MB @ 0x00000000
+WTLB    0xd0000095  0x2000001B  ;PCI Page Entry
+WTLB    0xe0000095  0x1400001B  ;Peripheral Page Entry
+;
+; Setup caches
+WSPR    0x370   0x00000000      ;INV0
+WSPR    0x371   0x00000000      ;INV1
+WSPR    0x372   0x00000000      ;INV2
+WSPR    0x373   0x00000000      ;INV3
+WSPR    0x390   0x00000000      ;DNV0
+WSPR    0x391   0x00000000      ;DNV1
+WSPR    0x392   0x00000000      ;DNV2
+WSPR    0x393   0x00000000      ;DNV3
+WSPR    0x398   0x0001f800      ;DVLIM
+WSPR    0x399   0x0001f800      ;IVLIM
+;
+; Setup Peripheral Bus
+WDCR	0x12	0x00000010	;Select EBC0_B0AP
+WDCR	0x13	0x04055200	;B0AP: Flash and SRAM
+WDCR	0x12	0x00000000	;Select EBC0_B0CR
+;WDCR	0x13	0xffc58000	;B0CR: 4MB at 0xFFC00000, r/w, 8bit
+WDCR	0x13	0xffc5a000	;B0CR: 4MB at 0xFFC00000, r/w, 16bit
+;WDCR	0x12	0x00000012	;Select EBC0_B2AP
+;WDCR	0x13	0x05055200	;B2AP: 4 MB Flash
+;WDCR	0x12	0x00000002	;Select EBC0_B2CR
+;WDCR	0x13	0xff838000	;B2CR: 2MB at 0xFFE00000, r/w, 8bit
+;
+; Setup SDRAM Controller (DDR SDRAM)
+WDCR	0x10	0x00000082	;Select SDRAM0_CLKTR
+WDCR	0x11	0x40000000	;CLKTR: Advance 90 degrees
+WDCR	0x10	0x00000080	;Select SDRAM0_TR0
+WDCR	0x11	0x410a4012	;TR0:
+WDCR	0x10	0x00000081	;Select SDRAM0_TR1
+WDCR	0x11	0x8080080b	;TR1:
+WDCR	0x10	0x00000040	;Select SDRAM0_B0CR
+WDCR	0x11	0x000a4001	;B0CR:
+WDCR	0x10	0x00000044	;Select SDRAM0_B1CR
+WDCR	0x11	0x080a4001	;B1CR:
+WDCR	0x10	0x00000030	;Select SDRAM0_RTR
+WDCR	0x11	0x04080000	;RTR:
+WDCR	0x10	0x00000020	;Select SDRAM0_CFG0
+WDCR	0x11	0x34000000	;CFG0: enable SDRAM
+WDCR	0x11	0x84000000	;CFG0: enable SDRAM
+DELAY   100
+;
+; Setup default vector table
+WSPR    0x03f   0x00000000      ;IVPR   vector base at 0x00000000
+WSPR    0x190   0x00000100      ;IVOR0  Critical Input
+WSPR    0x191   0x00000200      ;IVOR1  Machine Check
+WSPR    0x192   0x00000300      ;IVOR2  Data Storage
+WSPR    0x193   0x00000400      ;IVOR3  Instruction Storage
+WSPR    0x194   0x00000500      ;IVOR4  External Input
+WSPR    0x195   0x00000600      ;IVOR5  Alignment
+WSPR    0x196   0x00000700      ;IVOR6  Program
+WSPR    0x197   0x00000800      ;IVOR7  Reserved
+WSPR    0x198   0x00000c00      ;IVOR8  System Call
+WSPR    0x199   0x00000a00      ;IVOR9  Reserved
+WSPR    0x19a   0x00001000      ;IVOR10 Decrementer
+WSPR    0x19b   0x00001010      ;IVOR11 Fixed Interval Timer
+WSPR    0x19c   0x00001020      ;IVOR12 Watchdog Timer
+WSPR    0x19d   0x00001100      ;IVOR13 Data TLB Error
+WSPR    0x19e   0x00001200      ;IVOR14 Instruction TLB Error
+WSPR    0x19f   0x00000f00      ;IVOR15 Debug
+;
+; Clear DBCR1 and DBCR2
+WSPR    0x135   0x00000000      ;DBCR1
+WSPR    0x136   0x00000000      ;DBCR2
 
-------_=_NextPart_002_01C5D64B.E6784892--
 
-------_=_NextPart_001_01C5D64B.E6784892
-Content-Type: application/octet-stream;
-	name="4xxep440.cfg"
-Content-Transfer-Encoding: base64
-Content-Description: 4xxep440.cfg
-Content-Disposition: attachment;
-	filename="4xxep440.cfg"
+[TARGET]
+JTAGCLOCK   0                   ;use 16 MHz JTAG clock
+CPUTYPE     440 		;the used target CPU type
+SCANMISC    8                   ;IR length is 8 bits for 440GX
+WAKEUP      50                  ;wakeup time after reset
+BREAKMODE   SOFT      	        ;SOFT or HARD, HARD uses PPC hardware breakpoint
+STEPMODE    JTAG                ;JTAG or HWBP, HWBP uses one or two hardware breakpoints
+;MMU         XLAT 0xC0000000     ;enable virtual address mode
+;PTBASE      0x00000000          ;address where kernel/user stores pointer to page table
+;SIO         7 9600              ;TCP port for serial IO
+;REGLIST     ALL                 ;select register to transfer to GDB
 
-O2VwNDQwIDI1Nk0NCjstLS0tLS0tLS0tLS0tLS0NCjt3cml0dGVuIGJ5IFN0ZXZlbiBCbGFrZXNs
-ZWUNCjsNCjsNCltJTklUXQ0KOyBTZXR1cCBUTEINCldUTEIgCTB4RjAwMDAwOUQgIDB4MEYwMDAw
-M0YgO0Jvb3QgU3BhY2UgMjU2TUIgDQpXVExCIAkweDAwMDAwMDlEICAweDAwMDAwMDNGIDtTRFJB
-TSAyNTZNQiBAIDB4MDAwMDAwMDAgDQpXVExCIAkweEUwMDAwMDlEICAweDBFMDAwMDNGIDtSZWdp
-c3RlcnMgMjU2TUIgDQpXVExCCTB4ODAwMDAwOUQgIDB4MDgwMDAwM0YgO0JDU1JzIDI1Nk1CDQo7
-DQo7IFNldHVwIGNhY2hlcywgZG9uJ3QgbmVlZA0KV1NQUiAgICAweDM3MCAgIDB4MDAwMDAwMDAg
-ICAgICA7SU5WMA0KV1NQUiAgICAweDM3MSAgIDB4MDAwMDAwMDAgICAgICA7SU5WMQ0KV1NQUiAg
-ICAweDM3MiAgIDB4MDAwMDAwMDAgICAgICA7SU5WMg0KV1NQUiAgICAweDM3MyAgIDB4MDAwMDAw
-MDAgICAgICA7SU5WMw0KV1NQUiAgICAweDM5MCAgIDB4MDAwMDAwMDAgICAgICA7RE5WMA0KV1NQ
-UiAgICAweDM5MSAgIDB4MDAwMDAwMDAgICAgICA7RE5WMQ0KV1NQUiAgICAweDM5MiAgIDB4MDAw
-MDAwMDAgICAgICA7RE5WMg0KV1NQUiAgICAweDM5MyAgIDB4MDAwMDAwMDAgICAgICA7RE5WMw0K
-V1NQUiAgICAweDM5OCAgIDB4MDAwMWY4MDAgICAgICA7RFZMSU0NCldTUFIgICAgMHgzOTkgICAw
-eDAwMDFmODAwICAgICAgO0lWTElNDQo7DQo7IFNldHVwIFBlcmlwaGVyYWwgQnVzDQo7Ozs7Ozs7
-Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0ZMQVNIIENTMCAzMk0geCAxNg0KV0RDUgkweDEyCTB4MDAw
-MDAwMTAJO1NlbGVjdCBFQkMwX0IwQVANCldEQ1IJMHgxMwkweDAzMDE3MzAwCTtCMEFQOiBGbGFz
-aA0KV0RDUgkweDEyCTB4MDAwMDAwMDAJO1NlbGVjdCBFQkMwX0IwQ1INCjtXRENSCTB4MTMJMHhm
-YzBkYTAwMAk7QjBDUjogNjRNZWcsIDE2Qml0IGF0IDB4RkMwMDAwMDANCldEQ1IJMHgxMwkweGZl
-MGJhMDAwCTtCMENSOiAzMk1lZywgMTZCaXQgYXQgMHhGRTAwMDAwMA0KOw0KOzs7Ozs7Ozs7Ozs7
-Ozs7Ozs7Ozs7Ozs7Ozs7OztCQ1NSIE5WUkFNIENTMg0KV0RDUgkweDEyCTB4MDAwMDAwMTIJO1Nl
-bGVjdCBFQkMwX0IyQVANCldEQ1IJMHgxMwkweDA0ODE0NTAwCTtFQkMwX0IyQVA6IEJDU1INCldE
-Q1IJMHgxMgkweDAwMDAwMDAyCTtTZWxlY3QgRUJDMF9CMkNSDQpXRENSCTB4MTMJMHg4MDAxODAw
-MAk7RUJDMF9CMkNSOiAxTWVnLCAxNkJpdCBhdCAweDgwMDAwMDAwDQo7V00zMgkweGVmNjAwYjA4
-IDB4NTAwMTAwMDAJO0VuYWJsZSBDUzIsIFBlckFkZHIwNywwNiBwaW4gR1BJTzBfT1NSTA0KO1dN
-MzIJMHhlZjYwMGIxMCAweDUwMDEwMDAwCTtFbmFibGUgQ1MyLCBQZXJBZGRyMDcsMDYgcGluIEdQ
-SU8wX1RTUkwNCjtXTTMyCTB4ZWY2MDBiMzAgMHg1MDAwMDAwMAk7RW5hYmxlIFBlckFkZHIwNyww
-NiBwaW4NCg0KV00zMgkweGVmNjAwYjA4IDB4NDAwMTAwMDAJO0VuYWJsZSBDUzIsIFBlckFkZHIw
-NyBwaW4gR1BJTzBfT1NSTA0KV00zMgkweGVmNjAwYjEwIDB4NDAwMTAwMDAJO0VuYWJsZSBDUzIs
-IFBlckFkZHIwNyBwaW4gR1BJTzBfVFNSTA0KV00zMgkweGVmNjAwYjMwIDB4NDAwMDAwMDAJO0Vu
-YWJsZSBQZXJBZGRyMDcgcGluDQoNCjtXTTMyCTB4ZWY2MDBiMDggMHgwMDAxMDAwMAk7RW5hYmxl
-IENTMiwgcGluIEdQSU8wX09TUkwNCjtXTTMyCTB4ZWY2MDBiMTAgMHgwMDAxMDAwMAk7RW5hYmxl
-IENTMiwgcGluIEdQSU8wX1RTUkwNCjsNCjsgU2V0dXAgU0RSQU0gQ29udHJvbGxlciAoRERSIFNE
-UkFNKQ0KV0RDUgkweDEwCTB4MDAwMDAwODIJO1NlbGVjdCBTRFJBTTBfQ0xLVFINCldEQ1IJMHgx
-MQkweDQwMDAwMDAwCTtDTEtUUjogQWR2YW5jZSA5MCBkZWdyZWVzDQpXRENSCTB4MTAJMHgwMDAw
-MDA4MAk7U2VsZWN0IFNEUkFNMF9UUjANCldEQ1IJMHgxMQkweDQxMGE0MDEyCTtUUjA6DQpXRENS
-CTB4MTAJMHgwMDAwMDA4MQk7U2VsZWN0IFNEUkFNMF9UUjENCldEQ1IJMHgxMQkweDgwODAwODE5
-CTtUUjE6DQoNCjs7TWF5IGhhdmUgdG8gY2hhbmdlIGFkZHJlc3NpbmcgbW9kZQ0KV0RDUgkweDEw
-CTB4MDAwMDAwNDAJO1NlbGVjdCBTRFJBTTBfQjBDUg0KV0RDUgkweDExCTB4MDAwYTQwMDEJO0Iw
-Q1I6IDEyOE0gZmlyc3QgYmFuaywgc3RhcnQgMHgwLCAxM3gxMA0KO1dEQ1IJMHgxMQkweDAwMGEy
-MDAxCTtCMENSOiA2NE0gZmlyc3QgYmFuaywgc3RhcnQgMHgwLCAxM3g5DQpXRENSCTB4MTAJMHgw
-MDAwMDA0NAk7U2VsZWN0IFNEUkFNMF9CMUNSDQpXRENSCTB4MTEJMHgwODBhNDAwMQk7QjFDUjog
-MTI4TSBzZWNvbmQgYmFuaywgc3RhcnQgMHgwODAwMDAwMCwgMTN4MTANCjtXRENSCTB4MTEJMHgw
-NDBhMjAwMQk7QjFDUjogNjRNIHNlY29uZCBiYW5rLCBzdGFydCAweDA4MDAwMDAwLCAxM3g5DQoN
-CldEQ1IJMHgxMAkweDAwMDAwMDMwCTtTZWxlY3QgU0RSQU0wX1JUUg0KV0RDUgkweDExCTB4MDQw
-ODAwMDAJO1JUUjoNCldEQ1IJMHgxMAkweDAwMDAwMDIwCTtTZWxlY3QgU0RSQU0wX0NGRzANCldE
-Q1IJMHgxMQkweDM0MDAwMDAwCTtDRkcwOiAzMmJpdCwgUE1VIGRpc2FibGUNCldEQ1IJMHgxMQkw
-eDg0MDAwMDAwCTtDRkcwOiBlbmFibGUgU0RSQU0NCjsNCkRFTEFZICAgMTAwDQo7DQo7IENsZWFy
-IERCQ1IxIGFuZCBEQkNSMg0KV1NQUiAgICAweDEzNSAgIDB4MDAwMDAwMDAgICAgICA7REJDUjEN
-CldTUFIgICAgMHgxMzYgICAweDAwMDAwMDAwICAgICAgO0RCQ1IyDQo7DQo7DQpbVEFSR0VUXQ0K
-SlRBR0NMT0NLICAgMAkJCTt1c2UgMTYgTUh6IEpUQUcgY2xvY2sNCkNQVVRZUEUJICAgIDQ0MAkJ
-CTt0aGUgdXNlZCB0YXJnZXQgQ1BVIHR5cGUNClNDQU5NSVNDICAgIDggMHhFMCAgICAgICAgICAg
-ICAgO0lSIGxlbmd0aCBpcyA4IGJpdHMgZm9yIDQ0MEdYDQpXQUtFVVAgICAgICA1MDAgICAgICAg
-ICAgICAgICAgIDt3YWtldXAgdGltZSBhZnRlciByZXNldA0KQkRJTU9ERQkgICAgQUdFTlQJCTt0
-aGUgQkRJIHdvcmtpbmcgbW9kZSAoTE9BRE9OTFkgfCBBR0VOVCkNCkJSRUFLTU9ERSAgIEhBUkQJ
-CTtTT0ZUIG9yIEhBUkQsIEhBUkQgdXNlcyBQUEMgaGFyZHdhcmUgYnJlYWtwb2ludA0KU1RFUE1P
-REUgICAgSlRBRwkJO0pUQUcgb3IgSFdCUCwgSFdCUCB1c2VzIG9uZSBvciB0d28gaGFyZHdhcmUg
-YnJlYWtwb2ludHMNCjsNCltIT1NUXQ0KSVAgICAgICAgICAgMTAuMC4wLjE5OCAgIDtXaW5kb3dz
-IGhvc3QNCkZJTEUgICAgICAgIHBjYjR4eDEwMC5lcA0KO0ZPUk1BVCAgICAgIEJJTiAweDIwMDAw
-MA0KRk9STUFUCSAgICBTUkVDDQpMT0FEICAgICAgICBNQU5VQUwgICAgICAgICAgICAgIDtsb2Fk
-IGNvZGUgTUFOVUFMIG9yIEFVVE8gYWZ0ZXIgcmVzZXQNCjsNCjsNCltSRUdTXQ0KSURDUjEJMHgw
-MTAJMHgwMTEJO1NEUkFNMF9DRkdBRERSIGFuZCBTRFJBTTBfQ0ZHREFUQQ0KSURDUjIJMHgwMTIJ
-MHgwMTMJO0VCQzBfQ0ZHQUREUiAgIGFuZCBFQkMwX0NGR0RBVEENCklEQ1IzCTB4MDE0CTB4MDE1
-CTtFQk0wX0NGR0FERFIgICBhbmQgRUJNMF9DRkdEQVRBDQpJRENSNAkweDAxNgkweDAxNwk7UFBN
-MF9DRkdBRERSICAgYW5kIFBQTTBfQ0ZHREFUQQ0KSURDUjUJMHgwMEMJMHgwMEQJO0NQUjBfQ0ZH
-QUREUiAgIGFuZCBDUFIwX0NGR0RBVEENCklEQ1I2CTB4MDBFCTB4MDBGCTtTRFIwX0NGR0FERFIg
-ICBhbmQgU0RSMF9DRkdEQVRBDQpGSUxFICAgIGRlZnMvcmVnNDQwZ3guZGVmDQo7
 
-------_=_NextPart_001_01C5D64B.E6784892--
+[HOST]
+IP          192.168.1.1
+FILE        /tftpboot/yosemite/u-boot.bin
+FORMAT      BIN
+DUMP        /tftpboot/yosemite/dump.bin
+PROMPT      440EP>
+
+
+[FLASH]
+; user flash at 0xff800000, AM29LV033C (4M x 8)
+;WORKSPACE   0xFF800000  ;workspace in SRAM for fast programming algorithm
+WORKSPACE   0x00100000  ;workspace in SDRAM for fast programming algorithm
+CHIPTYPE    AM29BX16    ;Flash type (AM29F | AM29BX8 | AM29BX16 | I28BX8 | I28BX16)
+CHIPSIZE    0x200000    ;The size of one flash chip in bytes
+BUSWIDTH    16          ;The width of the flash memory bus in bits (8 | 16 | 32)
+FILE        /tftpboot/yosemite/u-boot.bin
+FORMAT      BIN 0xFFF80000
+ERASE       0xFFF80000  ;erase sector 4
+ERASE       0xFFF90000  ;erase sector 4
+ERASE       0xFFFA0000  ;erase sector 4
+ERASE       0xFFFB0000  ;erase sector 4
+ERASE       0xFFFC0000  ;erase sector 4
+ERASE       0xFFFD0000  ;erase sector 5
+ERASE       0xFFFE0000  ;erase sector 6
+ERASE       0xFFFF0000  ;erase sector 7
+
+[REGS]
+IDCR1	0x010	0x011	;SDRAM0_CFGADDR and SDRAM0_CFGDATA
+IDCR2	0x012	0x013	;EBC0_CFGADDR   and EBC0_CFGDATA
+IDCR3	0x014	0x015	;EBM0_CFGADDR   and EBM0_CFGDATA
+IDCR4	0x016	0x017	;PPM0_CFGADDR   and PPM0_CFGDATA
+IDCR5	0x00C	0x00D	;CPR0_CFGADDR   and CPR0_CFGDATA
+IDCR6	0x00E	0x00F	;SDR0_CFGADDR   and SDR0_CFGDATA
+DMM1    0xD0000000      ;PCI        (should map to 2_000_0000)
+DMM2    0xE0000000      ;Peripheral (should map to 1_400_0000)
+FILE    /tftpboot/BDI2000/reg440gx.def
+
+--==_Exmh_1129910354_68740--
