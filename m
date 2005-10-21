@@ -1,22 +1,11 @@
-Return-Path: <mguertin@macdiscussion.com>
-Received: from mail.brucemaudesign.com (H51.C17.B96.tor.eicat.ca [66.96.17.51])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 029DB68639
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Oct 2005 05:09:12 +1000 (EST)
-In-Reply-To: <wrpek6eeo94.fsf@wild-wind.fr.eu.org>
-References: <wrpll0of535.fsf@wild-wind.fr.eu.org>
-	<1129869509.6265.32.camel@gaston>
-	<wrpek6eeo94.fsf@wild-wind.fr.eu.org>
-Mime-Version: 1.0 (Apple Message framework v734)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <6337E791-EB1F-47E5-8518-FE0D83987705@macdiscussion.com>
-From: Mark Guertin <mguertin@macdiscussion.com>
-Date: Fri, 21 Oct 2005 14:36:02 -0400
-To: maz@misterjones.org
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: v2.6.13.4 : Bad page state at prep_new_page when booting with
-	quik
+Return-Path: <bgill@freescale.com>
+Date: Fri, 21 Oct 2005 15:57:31 -0500 (CDT)
+From: Becky Bruce <bgill@freescale.com>
+To: linuxppc64-dev@ozlabs.org, linuxppc-dev@ozlabs.org
+Message-ID: <Pine.LNX.4.61.0510211554440.19407@cde-tx32-ldt329.sps.mot.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: [PATCH] (revised again) merge types.h
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,66 +15,298 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Not sure what quick version you are using, but the guys at  
-shiner.info have been hacking on it for a while (including some bug  
-fixes) .. so you might want to try out alternate versions if you  
-haven't already.
+Hopefully, this is the last revision of this patch :)
 
-http://shiner.info/?files/Yellow%20Dog%20Linux%204/quik
+powerpc: Merge types.h
 
-Mark
+This patch merges types.h into include/asm-powerpc. At this point, there are 
+no significant changes.  On 64-bit, we've picked up a #include of 
+linux/config.h. 
 
-On 21-Oct-05, at 2:08 PM, Marc Zyngier wrote:
+This patch has been built on several different 32 and 64-bit platforms,
+and booted on mpc8540_ads.
 
->>>>>> "BenH" == Benjamin Herrenschmidt <benh@kernel.crashing.org>  
->>>>>> writes:
->>>>>>
->
-> BenH> I'd suggest dumping to 8 or so first words of sysctrl_regs  
-> and checking
-> BenH> what difference is there.
->
-> Here you go :
->
-> BootX :
->
-> *fde69000 = 10000000
-> *fde69004 = 00000000
-> *fde69008 = 04000000
-> *fde6900c = 00000000
-> *fde69010 = 04101102
-> *fde69014 = 00000000
-> *fde69018 = 00000345
-> *fde6901c = 00000000
->
-> Quik:
->
-> *fdeff000 = 10000000
-> *fdeff004 = 00000000
-> *fdeff008 = 04000000
-> *fdeff00c = 00000000
-> *fdeff010 = 04101102
-> *fdeff014 = 00000000
-> *fdeff018 = 00000345
-> *fdeff01c = 00000000
->
-> Except for the ioremap address being different, not much to see
-> here...
->
-> BenH> It could be something else tho ... like some problem with
-> BenH> quik...
->
-> I fear that... But even in such a case ,understanding what confuses
-> the kernel would help a lot...
->
-> Thanks for your help,
->
->     M.
-> -- 
-> And if you don't know where you're going, any road will take you  
-> there...
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
+Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
+Signed-off-by: Kumar Gala <kumar.gala@freescale.com>
+
+---
+commit 995fc5087d7f02d7e570c9a904a16453e1d8d307
+tree 8326faf3664a5c2912ab28f822d9ab7e84fc8a1b
+parent 4746820969c846263fca3f0b54e0c1af883b67ed
+author Becky Bruce <becky.bruce@freescale.com> Wed, 19 Oct 2005 11:12:13 -0500
+committer Becky Bruce <becky.bruce@freescale.com> Wed, 19 Oct 2005 11:12:13 -0500
+
+ include/asm-powerpc/types.h |  106 +++++++++++++++++++++++++++++++++++++++++++
+ include/asm-ppc/types.h     |   69 ------------------------------
+ include/asm-ppc64/types.h   |   79 ----------------------------------
+ 3 files changed, 106 insertions(+), 148 deletions(-)
+
+diff --git a/include/asm-powerpc/types.h b/include/asm-powerpc/types.h
+new file mode 100644
+--- /dev/null
++++ b/include/asm-powerpc/types.h
+@@ -0,0 +1,106 @@
++#ifndef _ASM_POWERPC_TYPES_H
++#define _ASM_POWERPC_TYPES_H
++
++#ifndef __ASSEMBLY__
++
++/*
++ * This file is never included by application software unless
++ * explicitly requested (e.g., via linux/types.h) in which case the
++ * application is Linux specific so (user-) name space pollution is
++ * not a major issue.  However, for interoperability, libraries still
++ * need to be careful to avoid a name clashes.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#ifdef __powerpc64__
++typedef unsigned int umode_t;
++#else
++typedef unsigned short umode_t;
++#endif
++
++/*
++ * __xx is ok: it doesn't pollute the POSIX namespace. Use these in the
++ * header files exported to user space
++ */
++
++typedef __signed__ char __s8;
++typedef unsigned char __u8;
++
++typedef __signed__ short __s16;
++typedef unsigned short __u16;
++
++typedef __signed__ int __s32;
++typedef unsigned int __u32;
++
++#ifdef __powerpc64__
++typedef __signed__ long __s64;
++typedef unsigned long __u64;
++#else
++#if defined(__GNUC__) && !defined(__STRICT_ANSI__)
++typedef __signed__ long long __s64;
++typedef unsigned long long __u64;
++#endif
++#endif /* __powerpc64__ */
++
++typedef struct {
++	__u32 u[4];
++} __attribute((aligned(16))) __vector128;
++
++#endif /* __ASSEMBLY__ */
++
++#ifdef __KERNEL__
++/*
++ * These aren't exported outside the kernel to avoid name space clashes
++ */
++#ifdef __powerpc64__
++#define BITS_PER_LONG 64
++#else
++#define BITS_PER_LONG 32
++#endif
++
++#ifndef __ASSEMBLY__
++
++#include <linux/config.h>
++
++typedef signed char s8;
++typedef unsigned char u8;
++
++typedef signed short s16;
++typedef unsigned short u16;
++
++typedef signed int s32;
++typedef unsigned int u32;
++
++#ifdef __powerpc64__
++typedef signed long s64;
++typedef unsigned long u64;
++#else
++typedef signed long long s64;
++typedef unsigned long long u64;
++#endif
++
++typedef __vector128 vector128;
++
++typedef u32 dma_addr_t;
++typedef u64 dma64_addr_t;
++
++typedef struct {
++	unsigned long entry;
++	unsigned long toc;
++	unsigned long env;
++} func_descr_t;
++
++#ifdef CONFIG_LBD
++typedef u64 sector_t;
++#define HAVE_SECTOR_T
++#endif
++
++#endif /* __ASSEMBLY__ */
++
++#endif /* __KERNEL__ */
++
++#endif /* _ASM_POWERPC_TYPES_H */
+diff --git a/include/asm-ppc/types.h b/include/asm-ppc/types.h
+deleted file mode 100644
+--- a/include/asm-ppc/types.h
++++ /dev/null
+@@ -1,69 +0,0 @@
+-#ifndef _PPC_TYPES_H
+-#define _PPC_TYPES_H
+-
+-#ifndef __ASSEMBLY__
+-
+-typedef __signed__ char __s8;
+-typedef unsigned char __u8;
+-
+-typedef __signed__ short __s16;
+-typedef unsigned short __u16;
+-
+-typedef __signed__ int __s32;
+-typedef unsigned int __u32;
+-
+-#if defined(__GNUC__) && !defined(__STRICT_ANSI__)
+-typedef __signed__ long long __s64;
+-typedef unsigned long long __u64;
+-#endif
+-
+-typedef struct {
+-	__u32 u[4];
+-} __vector128;
+-
+-/*
+- * XXX allowed outside of __KERNEL__ for now, until glibc gets
+- * a proper set of asm headers of its own.  -- paulus
+- */
+-typedef unsigned short umode_t;
+-
+-#endif /* __ASSEMBLY__ */
+-
+-#ifdef __KERNEL__
+-/*
+- * These aren't exported outside the kernel to avoid name space clashes
+- */
+-#define BITS_PER_LONG 32
+-
+-#ifndef __ASSEMBLY__
+-
+-#include <linux/config.h>
+-
+-typedef signed char s8;
+-typedef unsigned char u8;
+-
+-typedef signed short s16;
+-typedef unsigned short u16;
+-
+-typedef signed int s32;
+-typedef unsigned int u32;
+-
+-typedef signed long long s64;
+-typedef unsigned long long u64;
+-
+-typedef __vector128 vector128;
+-
+-/* DMA addresses are 32-bits wide */
+-typedef u32 dma_addr_t;
+-typedef u64 dma64_addr_t;
+-
+-#ifdef CONFIG_LBD
+-typedef u64 sector_t;
+-#define HAVE_SECTOR_T
+-#endif
+-
+-#endif /* __ASSEMBLY__ */
+-
+-#endif /* __KERNEL__ */
+-
+-#endif
+diff --git a/include/asm-ppc64/types.h b/include/asm-ppc64/types.h
+deleted file mode 100644
+--- a/include/asm-ppc64/types.h
++++ /dev/null
+@@ -1,79 +0,0 @@
+-#ifndef _PPC64_TYPES_H
+-#define _PPC64_TYPES_H
+-
+-#ifndef __ASSEMBLY__
+-
+-/*
+- * This file is never included by application software unless
+- * explicitly requested (e.g., via linux/types.h) in which case the
+- * application is Linux specific so (user-) name space pollution is
+- * not a major issue.  However, for interoperability, libraries still
+- * need to be careful to avoid a name clashes.
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-typedef unsigned int umode_t;
+-
+-/*
+- * __xx is ok: it doesn't pollute the POSIX namespace. Use these in the
+- * header files exported to user space
+- */
+-
+-typedef __signed__ char __s8;
+-typedef unsigned char __u8;
+-
+-typedef __signed__ short __s16;
+-typedef unsigned short __u16;
+-
+-typedef __signed__ int __s32;
+-typedef unsigned int __u32;
+-
+-typedef __signed__ long __s64;
+-typedef unsigned long __u64;
+-
+-typedef struct {
+-	__u32 u[4];
+-} __attribute((aligned(16))) __vector128;
+-
+-#endif /* __ASSEMBLY__ */
+-
+-#ifdef __KERNEL__
+-/*
+- * These aren't exported outside the kernel to avoid name space clashes
+- */
+-#define BITS_PER_LONG 64
+-
+-#ifndef __ASSEMBLY__
+-
+-typedef signed char s8;
+-typedef unsigned char u8;
+-
+-typedef signed short s16;
+-typedef unsigned short u16;
+-
+-typedef signed int s32;
+-typedef unsigned int u32;
+-
+-typedef signed long s64;
+-typedef unsigned long u64;
+-
+-typedef __vector128 vector128;
+-
+-typedef u32 dma_addr_t;
+-typedef u64 dma64_addr_t;
+-
+-typedef struct {
+-	unsigned long entry;
+-	unsigned long toc;
+-	unsigned long env;
+-} func_descr_t;
+-
+-#endif /* __ASSEMBLY__ */
+-
+-#endif /* __KERNEL__ */
+-
+-#endif /* _PPC64_TYPES_H */
