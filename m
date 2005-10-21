@@ -1,20 +1,20 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 23A8768638
+Return-Path: <r.pavon-sierra@hima.com>
+Received: from hima.com (mail.hima.com [80.146.244.10])
+	by ozlabs.org (Postfix) with SMTP id 395156863E
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 21 Oct 2005 23:54:59 +1000 (EST)
-In-Reply-To: <8E342283C2100540AAC5D103097054778A4189@rcexc.racoms.loc>
-References: <8E342283C2100540AAC5D103097054778A4189@rcexc.racoms.loc>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <e08bcb4de7fa6a71f103ce2c50c067f8@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Fri, 21 Oct 2005 10:00:42 -0400
-To: "Schaefer-Hutter, Peter" <Peter.Schaefer-Hutter@tfk-racoms.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC8xx soft-float userspace ...
+	Sat, 22 Oct 2005 00:07:32 +1000 (EST)
+Received: from SN7855 ([192.168.100.10])
+	by hima.com (mail.hima.com [212.116.4.129]) (MDaemon.PRO.v8.1.3.R)
+	with ESMTP id md50000200872.msg
+	for <linuxppc-embedded@ozlabs.org>; Fri, 21 Oct 2005 16:07:40 +0200
+From: "Roberto Pavon Sierra" <r.pavon-sierra@hima.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Fri, 21 Oct 2005 16:05:40 +0200
+Message-ID: <002901c5d648$8562a0f0$8700a8c0@SN7855>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: write/read PCI in Linux PPC
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,21 +25,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-On Oct 21, 2005, at 5:31 AM, Schaefer-Hutter, Peter wrote:
+I try to write at the PCI-Addresses of the ATI´s video controller in
+Linux-PPC. How can I write these Addresses? I can work only with few
+commands in my Linux-kernel image.
 
-> Due to the fact that the in-kernel FPU emulation looks
-> broken on MPC8xx i want to build a complete soft-float
-> userspace.
+Thanks in advance,
 
-How does it "look broken?"  It's always worked for me :-)
-
-> ....  Does anybody have some pointers what else
-> needs to be removed?
-
-Well, if you found it, you should be able to trace this to a
-source file and remove it, right?
-
-Thanks.
-
-	-- Dan
+Roberto
