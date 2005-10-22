@@ -1,21 +1,19 @@
-Return-Path: <wd@denx.de>
-Received: from mailout02.sul.t-online.com (mailout02.sul.t-online.com
-	[194.25.134.17]) by ozlabs.org (Postfix) with ESMTP id 6B56268601
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Oct 2005 07:28:48 +1000 (EST)
-Received: from atlas.denx.de (atlas.denx.de [10.0.0.14])
-	by denx.de (Postfix) with ESMTP id CF9C342AFB
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Oct 2005 23:28:39 +0200 (MEST)
-Received: from atlas.denx.de (localhost.localdomain [127.0.0.1])
-	by atlas.denx.de (Postfix) with ESMTP id 85CEC353418
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Oct 2005 23:28:39 +0200 (MEST)
-To: linuxppc-dev@ozlabs.org
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-Date: Sat, 22 Oct 2005 23:28:39 +0200
-Sender: wd@denx.de
-Message-Id: <20051022212839.85CEC353418@atlas.denx.de>
-Subject: [PATCH] Cleanup mpc83xx_restart() code
+Return-Path: <olh@suse.de>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9929F68601
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Oct 2005 07:30:41 +1000 (EST)
+Date: Sat, 22 Oct 2005 23:30:37 +0200
+From: Olaf Hering <olh@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Andrew Morton <akpm@osdl.org>
+Message-ID: <20051022213037.GA6097@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@ozlabs.org
+Subject: [PATCH] hide pmac specific drivers if CONFIG_ADB is not set
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,193 +23,187 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The current Linux 2.6 mpc83xx_restart() routine which is supposed to
-be common for all MPC83xx boards actually performs mpc834x_sys board
-specific operations. This code was moved to
-arch/ppc/platforms/83xx/mpc834x_sys.c, and mpc83xx_restart() was
-replaced with generic MPC83xx reset code. Now mpc834x_sys uses it's
-platform specific restart code and we can use common MPC83xx reset
-code in other MPC83xx boards
+
+This started out as a fix for https://bugzilla.novell.com/show_bug.cgi?id=119606
+
+Hiding a few pmac specific drivers when ADB is disabled can not hurt:
+
+AGP_UNINORTH exist only on systems with ADB_PMU
+I2C_KEYWEST is used by sound
+MACE exists only on systems with ADB_CUDA
+BMAC exists on old and new Macs
+SCSI_MESH exists on old Macs, but the PB Lombard has an external connector
+SERIAL_PMACZILOG exists on old and new Macs
+BLK_DEV_IDE_PMAC exists on old and new Macs
+APPLE_AIRPORT exist only on systems with ADB_PMU
+FB_CONTROL exists only on old Macs
+FB_PLATINUM exists only on old Macs
+FB_VALKYRIE exists only on old Macs
+FB_CT65550 exists only on old Macs
 
 
----
-ppc83xx common code cleanup, MPC834x_SYS platform specific code moved to
-arch/ppc/platform/83xx/mpc834x_sys.c
 
-Signed-off-by: Marian Balakowicz <m8@semihalf.com>
-Signed-off-by: Wolfgang Denk <wd@denx.de>
+Signed-off-by: Olaf Hering <olh@suse.de>
 
----
-commit 8176ad2d83c41be9697b475c8c0b975908cb7843
-tree 16a5246f615529cf423b63231990723ab8a6bd13
-parent 80387b45146a9e397c1fec1138f3eb3884c42ed8
-author Marian Balakowicz <m8@semihalf.com> Tue, 18 Oct 2005 18:35:07 +0200
-committer Marian Balakowicz <m8@semihalf.com> Tue, 18 Oct 2005 18:35:07 +0200
+ drivers/char/agp/Kconfig     |    2 +-
+ drivers/i2c/busses/Kconfig   |    2 +-
+ drivers/ide/Kconfig          |    2 +-
+ drivers/net/Kconfig          |    4 ++--
+ drivers/net/wireless/Kconfig |    2 +-
+ drivers/scsi/Kconfig         |    4 ++--
+ drivers/serial/Kconfig       |    2 +-
+ drivers/video/Kconfig        |    8 ++++----
+ 8 files changed, 13 insertions(+), 13 deletions(-)
 
- arch/ppc/platforms/83xx/mpc834x_sys.c |   36 ++++++++++++++++++++++++
- arch/ppc/syslib/ppc83xx_setup.c       |   49 +++++++++++----------------------
- include/asm-ppc/mpc83xx.h             |   13 +++++++++
- 3 files changed, 65 insertions(+), 33 deletions(-)
-
-diff --git a/arch/ppc/platforms/83xx/mpc834x_sys.c b/arch/ppc/platforms/83xx/mpc834x_sys.c
---- a/arch/ppc/platforms/83xx/mpc834x_sys.c
-+++ b/arch/ppc/platforms/83xx/mpc834x_sys.c
-@@ -245,6 +245,40 @@ mpc834x_sys_set_bat(void)
- 	mb();
- }
+Index: linux-2.6.14-rc5/drivers/char/agp/Kconfig
+===================================================================
+--- linux-2.6.14-rc5.orig/drivers/char/agp/Kconfig
++++ linux-2.6.14-rc5/drivers/char/agp/Kconfig
+@@ -147,7 +147,7 @@ config AGP_ALPHA_CORE
  
-+void
-+mpc83xx_sys_restart(char *cmd)
-+{
-+	volatile unsigned char __iomem *reg;
-+	unsigned char tmp;
-+
-+	reg = ioremap(BCSR_PHYS_ADDR, BCSR_SIZE);
-+
-+	local_irq_disable();
-+
-+	/*
-+	 * Unlock the BCSR bits so a PRST will update the contents.
-+	 * Otherwise the reset asserts but doesn't clear.
-+	 */
-+	tmp = in_8(reg + BCSR_MISC_REG3_OFF);
-+	tmp |= BCSR_MISC_REG3_CNFLOCK; /* low true, high false */
-+	out_8(reg + BCSR_MISC_REG3_OFF, tmp);
-+
-+	/*
-+	 * Trigger a reset via a low->high transition of the
-+	 * PORESET bit.
-+	 */
-+	tmp = in_8(reg + BCSR_MISC_REG2_OFF);
-+	tmp &= ~BCSR_MISC_REG2_PORESET;
-+	out_8(reg + BCSR_MISC_REG2_OFF, tmp);
-+
-+	udelay(1);
-+
-+	tmp |= BCSR_MISC_REG2_PORESET;
-+	out_8(reg + BCSR_MISC_REG2_OFF, tmp);
-+
-+	for(;;);
-+}
-+
- void __init
- platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
- 	      unsigned long r6, unsigned long r7)
-@@ -313,7 +347,7 @@ platform_init(unsigned long r3, unsigned
- 	ppc_md.init_IRQ = mpc834x_sys_init_IRQ;
- 	ppc_md.get_irq = ipic_get_irq;
+ config AGP_UNINORTH
+ 	tristate "Apple UniNorth & U3 AGP support"
+-	depends on AGP && PPC_PMAC
++	depends on AGP && PPC_PMAC && ADB_PMU
+ 	help
+ 	  This option gives you AGP support for Apple machines with a
+ 	  UniNorth or U3 (Apple G5) bridge.
+Index: linux-2.6.14-rc5/drivers/i2c/busses/Kconfig
+===================================================================
+--- linux-2.6.14-rc5.orig/drivers/i2c/busses/Kconfig
++++ linux-2.6.14-rc5/drivers/i2c/busses/Kconfig
+@@ -237,7 +237,7 @@ config I2C_IXP2000
  
--	ppc_md.restart = mpc83xx_restart;
-+	ppc_md.restart = mpc83xx_sys_restart;
- 	ppc_md.power_off = mpc83xx_power_off;
- 	ppc_md.halt = mpc83xx_halt;
+ config I2C_KEYWEST
+ 	tristate "Powermac Keywest I2C interface"
+-	depends on I2C && PPC_PMAC
++	depends on I2C && PPC_PMAC && (ADB_CUDA || ADB_PMU)
+ 	help
+ 	  This supports the use of the I2C interface in the combo-I/O
+ 	  chip on recent Apple machines.  Say Y if you have such a machine.
+Index: linux-2.6.14-rc5/drivers/net/Kconfig
+===================================================================
+--- linux-2.6.14-rc5.orig/drivers/net/Kconfig
++++ linux-2.6.14-rc5/drivers/net/Kconfig
+@@ -178,7 +178,7 @@ source "drivers/net/arm/Kconfig"
  
-diff --git a/arch/ppc/syslib/ppc83xx_setup.c b/arch/ppc/syslib/ppc83xx_setup.c
---- a/arch/ppc/syslib/ppc83xx_setup.c
-+++ b/arch/ppc/syslib/ppc83xx_setup.c
-@@ -63,13 +63,10 @@ mpc83xx_find_end_of_memory(void)
- long __init
- mpc83xx_time_init(void)
- {
--#define SPCR_OFFS   0x00000110
--#define SPCR_TBEN   0x00400000
--
- 	bd_t *binfo = (bd_t *)__res;
--	u32 *spcr = ioremap(binfo->bi_immr_base + SPCR_OFFS, 4);
-+	u32 *spcr = ioremap(binfo->bi_immr_base + MPC83xx_SPCR, 4);
+ config MACE
+ 	tristate "MACE (Power Mac ethernet) support"
+-	depends on NET_ETHERNET && PPC_PMAC && PPC32
++	depends on NET_ETHERNET && PPC_PMAC && PPC32 && ADB_CUDA
+ 	select CRC32
+ 	help
+ 	  Power Macintoshes and clones with Ethernet built-in on the
+@@ -201,7 +201,7 @@ config MACE_AAUI_PORT
  
--	*spcr |= SPCR_TBEN;
-+	*spcr |= MPC83xx_SPCR_TBEN;
+ config BMAC
+ 	tristate "BMAC (G3 ethernet) support"
+-	depends on NET_ETHERNET && PPC_PMAC && PPC32
++	depends on NET_ETHERNET && PPC_PMAC && PPC32 && (ADB_CUDA || ADB_PMU)
+ 	select CRC32
+ 	help
+ 	  Say Y for support of BMAC Ethernet interfaces. These are used on G3
+Index: linux-2.6.14-rc5/drivers/scsi/Kconfig
+===================================================================
+--- linux-2.6.14-rc5.orig/drivers/scsi/Kconfig
++++ linux-2.6.14-rc5/drivers/scsi/Kconfig
+@@ -1529,7 +1529,7 @@ config SCSI_DEBUG
  
- 	iounmap(spcr);
+ config SCSI_MESH
+ 	tristate "MESH (Power Mac internal SCSI) support"
+-	depends on PPC32 && PPC_PMAC && SCSI
++	depends on PPC32 && PPC_PMAC && SCSI && (ADB_CUDA || ADB_PMU)
+ 	help
+ 	  Many Power Macintoshes and clones have a MESH (Macintosh Enhanced
+ 	  SCSI Hardware) SCSI bus adaptor (the 7200 doesn't, but all of the
+@@ -1560,7 +1560,7 @@ config SCSI_MESH_RESET_DELAY_MS
  
-@@ -132,35 +129,23 @@ mpc83xx_early_serial_map(void)
- void
- mpc83xx_restart(char *cmd)
- {
--	volatile unsigned char __iomem *reg;
--	unsigned char tmp;
--
--	reg = ioremap(BCSR_PHYS_ADDR, BCSR_SIZE);
--
--	local_irq_disable();
--
--	/*
--	 * Unlock the BCSR bits so a PRST will update the contents.
--	 * Otherwise the reset asserts but doesn't clear.
--	 */
--	tmp = in_8(reg + BCSR_MISC_REG3_OFF);
--	tmp |= BCSR_MISC_REG3_CNFLOCK; /* low true, high false */
--	out_8(reg + BCSR_MISC_REG3_OFF, tmp);
--
--	/*
--	 * Trigger a reset via a low->high transition of the
--	 * PORESET bit.
--	 */
--	tmp = in_8(reg + BCSR_MISC_REG2_OFF);
--	tmp &= ~BCSR_MISC_REG2_PORESET;
--	out_8(reg + BCSR_MISC_REG2_OFF, tmp);
--
--	udelay(1);
-+	bd_t *binfo = (bd_t *)__res;
+ config SCSI_MAC53C94
+ 	tristate "53C94 (Power Mac external SCSI) support"
+-	depends on PPC32 && PPC_PMAC && SCSI
++	depends on PPC32 && PPC_PMAC && SCSI && ADB_CUDA
+ 	help
+ 	  On Power Macintoshes (and clones) with two SCSI buses, the external
+ 	  SCSI bus is usually controlled by a 53C94 SCSI bus adaptor. Older
+Index: linux-2.6.14-rc5/drivers/serial/Kconfig
+===================================================================
+--- linux-2.6.14-rc5.orig/drivers/serial/Kconfig
++++ linux-2.6.14-rc5/drivers/serial/Kconfig
+@@ -651,7 +651,7 @@ config SERIAL_68360
  
--	tmp |= BCSR_MISC_REG2_PORESET;
--	out_8(reg + BCSR_MISC_REG2_OFF, tmp);
-+	u32 *rcr = ioremap(binfo->bi_immr_base + MPC83xx_RCR, 4);
-+	u32 *rpr = ioremap(binfo->bi_immr_base + MPC83xx_RPR, 4);
+ config SERIAL_PMACZILOG
+ 	tristate "PowerMac z85c30 ESCC support"
+-	depends on PPC_OF && PPC_PMAC
++	depends on PPC_OF && PPC_PMAC && (ADB_CUDA || ADB_PMU)
+ 	select SERIAL_CORE
+ 	help
+ 	  This driver supports the Zilog z85C30 serial ports found on
+Index: linux-2.6.14-rc5/drivers/ide/Kconfig
+===================================================================
+--- linux-2.6.14-rc5.orig/drivers/ide/Kconfig
++++ linux-2.6.14-rc5/drivers/ide/Kconfig
+@@ -744,7 +744,7 @@ endif
  
--	for(;;);
-+	/* apply reset protect unlock command to
-+	 * reset control protection  register */
-+	*rpr = MPC83xx_RPR_RSTE;
-+
-+	/* apply software hard reset to
-+	 * reset control register*/
-+	*rcr = MPC83xx_RCR_SWHR;
-+
-+	/* not reached, but... */
-+	iounmap(rcr);
-+	iounmap(rpr);
-+	for (;;) ;
- }
+ config BLK_DEV_IDE_PMAC
+ 	bool "Builtin PowerMac IDE support"
+-	depends on PPC_PMAC && IDE=y
++	depends on PPC_PMAC && IDE=y && (ADB_CUDA || ADB_PMU)
+ 	help
+ 	  This driver provides support for the built-in IDE controller on
+ 	  most of the recent Apple Power Macintoshes and PowerBooks.
+Index: linux-2.6.14-rc5/drivers/net/wireless/Kconfig
+===================================================================
+--- linux-2.6.14-rc5.orig/drivers/net/wireless/Kconfig
++++ linux-2.6.14-rc5/drivers/net/wireless/Kconfig
+@@ -281,7 +281,7 @@ config HERMES
  
- void
-diff --git a/include/asm-ppc/mpc83xx.h b/include/asm-ppc/mpc83xx.h
---- a/include/asm-ppc/mpc83xx.h
-+++ b/include/asm-ppc/mpc83xx.h
-@@ -95,6 +95,19 @@ extern unsigned char __res[];
+ config APPLE_AIRPORT
+ 	tristate "Apple Airport support (built-in)"
+-	depends on PPC_PMAC && HERMES
++	depends on PPC_PMAC && HERMES && ADB_PMU
+ 	help
+ 	  Say Y here to support the Airport 802.11b wireless Ethernet hardware
+ 	  built into the Macintosh iBook and other recent PowerPC-based
+Index: linux-2.6.14-rc5/drivers/video/Kconfig
+===================================================================
+--- linux-2.6.14-rc5.orig/drivers/video/Kconfig
++++ linux-2.6.14-rc5/drivers/video/Kconfig
+@@ -359,7 +359,7 @@ config FB_OF
  
- #define MPC83xx_CCSRBAR_SIZE	(1024*1024)
+ config FB_CONTROL
+ 	bool "Apple \"control\" display support"
+-	depends on (FB = y) && PPC_PMAC
++	depends on (FB = y) && PPC_PMAC && ADB_CUDA
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+@@ -371,7 +371,7 @@ config FB_CONTROL
  
-+/* system priority and configuration register */
-+#define MPC83xx_SPCR            0x00000110
-+#define MPC83xx_SPCR_TBEN       0x00400000
-+
-+/* reset protection register */
-+#define MPC83xx_RPR		0x00000918
-+#define MPC83xx_RPR_RSTE	0x52535445      /* "RSTE" in ASCII */
-+
-+/* reset control register*/
-+#define MPC83xx_RCR		0x0000091c
-+#define MPC83xx_RCR_SWHR	0x00000002      /* sw hard reset */
-+#define MPC83xx_RCR_SWSR	0x00000001      /* sw soft reset */
-+
- /* Let modules/drivers get at immrbar (physical) */
- extern phys_addr_t immrbar;
+ config FB_PLATINUM
+ 	bool "Apple \"platinum\" display support"
+-	depends on (FB = y) && PPC_PMAC
++	depends on (FB = y) && PPC_PMAC && ADB_CUDA
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+@@ -383,7 +383,7 @@ config FB_PLATINUM
  
-
-
-
-!-------------------------------------------------------------flip-
-
-
-
-
-Best regards,
-
-Wolfgang Denk
-
+ config FB_VALKYRIE
+ 	bool "Apple \"valkyrie\" display support"
+-	depends on (FB = y) && (MAC || PPC_PMAC)
++	depends on (FB = y) && (MAC || (PPC_PMAC && ADB_CUDA))
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+@@ -395,7 +395,7 @@ config FB_VALKYRIE
+ 
+ config FB_CT65550
+ 	bool "Chips 65550 display support"
+-	depends on (FB = y) && PPC
++	depends on (FB = y) && PPC_PMAC && ADB_CUDA
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
 -- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-You can observe a lot just by watching.                  - Yogi Berra
+short story of a lazy sysadmin:
+ alias appserv=wotan
