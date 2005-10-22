@@ -1,18 +1,19 @@
-Return-Path: <rupert@ces.ch>
-Received: from server1.serv-net.de (unknown [213.203.204.31])
+Return-Path: <olh@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C138E685B3
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Oct 2005 23:38:42 +1000 (EST)
-From: Rupert Eibauer <rupert@ces.ch>
-To: Kumar Gala <kumar.gala@freescale.com>
-Date: Sat, 22 Oct 2005 15:54:01 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200510221554.03810.rupert@ces.ch>
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8A632685B2
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Oct 2005 05:46:31 +1000 (EST)
+Date: Sat, 22 Oct 2005 21:46:26 +0200
+From: Olaf Hering <olh@suse.de>
+To: Andrew Morton <akpm@osdl.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <20051022194626.GA3496@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Cc: linuxppc-dev@ozlabs.org
-Subject: [PATCH][RFT] Extended BAT features, take 2
+Subject: [PATCH] dmasound_pmac depends on pmac specific config options
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,282 +23,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
 
-Here is the updated patch. Please test.
+dmasound_pmac should depend on pmac specific .config options.
+Since PMAC is always defined, but PMAC wont boot without either
+CUDA or PMU, one of these options indicates that the kernel is
+for a PowerMac.
+CONFIG_PM can be selected unconditionally.
 
-What this patch actually does:
-- Make CONFIG_PHYS_64BIT selectable for the 6xx family
-- Make the BATs use 36-Bit addressing and use large BATs
-  when available on the processor.
-- Make use of the 4 additional BATs on some processors.
+sound/oss/dmasound/dmasound_awacs.c:262: warning: `struct pmu_sleep_notifier' declared inside parameter list
+sound/oss/dmasound/dmasound_awacs.c:262: warning: its scope is only this definition or declaration, which is probably not what you want
+sound/oss/dmasound/dmasound_awacs.c:263: error: variable `awacs_sleep_notifier' has initializer but incomplete type
+sound/oss/dmasound/dmasound_awacs.c:264: warning: excess elements in struct initializer
+sound/oss/dmasound/dmasound_awacs.c:264: warning: (near initialization for `awacs_sleep_notifier')
+sound/oss/dmasound/dmasound_awacs.c:264: error: `SLEEP_LEVEL_SOUND' undeclared here (not in a function)
+sound/oss/dmasound/dmasound_awacs.c:264: warning: excess elements in struct initializer
+sound/oss/dmasound/dmasound_awacs.c:264: warning: (near initialization for `awacs_sleep_notifier')
+sound/oss/dmasound/dmasound_awacs.c: In function `PMacIrqCleanup':
+sound/oss/dmasound/dmasound_awacs.c:679: warning: implicit declaration of function `pmu_unregister_sleep_notifier'
+sound/oss/dmasound/dmasound_awacs.c: At top level:
+sound/oss/dmasound/dmasound_awacs.c:1424: error: conflicting types for `awacs_sleep_notify'
+sound/oss/dmasound/dmasound_awacs.c:262: error: previous declaration of `awacs_sleep_notify'
+sound/oss/dmasound/dmasound_awacs.c: In function `awacs_sleep_notify':
+sound/oss/dmasound/dmasound_awacs.c:1428: error: `PBOOK_SLEEP_NOW' undeclared (first use in this function)
+sound/oss/dmasound/dmasound_awacs.c:1428: error: (Each undeclared identifier is reported only once
+sound/oss/dmasound/dmasound_awacs.c:1428: error: for each function it appears in.)
+sound/oss/dmasound/dmasound_awacs.c:1481: error: `PBOOK_WAKE' undeclared (first use in this function)
+sound/oss/dmasound/dmasound_awacs.c:1552: error: `PBOOK_SLEEP_OK' undeclared (first use in this function)
+sound/oss/dmasound/dmasound_awacs.c: In function `dmasound_awacs_init':
+sound/oss/dmasound/dmasound_awacs.c:3057: warning: implicit declaration of function `pmu_register_sleep_notifier'
+sound/oss/dmasound/dmasound_awacs.c: At top level:
+sound/oss/dmasound/dmasound_awacs.c:263: error: storage size of `awacs_sleep_notifier' isn't known
 
-Changes to the old patch:
-- Removed all additional configuration options
-- Merged LARGE_BATS with PHYS_64BIT because there seems to be no processor 
-  supporting only one of these features (I am not sure about the e500v2, 
-  but maybe somebody else is sure)
+Signed-off-by: Olaf Hering <olh@suse.de>
 
-Rupert
+ sound/oss/dmasound/Kconfig |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
-diff -urN linux-2.6.13.3.orig/arch/ppc/Kconfig linux-2.6.13.3/arch/ppc/Kconfig
---- linux-2.6.13.3.orig/arch/ppc/Kconfig	Fri Oct 21 05:42:59 2005
-+++ linux-2.6.13.3/arch/ppc/Kconfig	Fri Oct 21 21:05:09 2005
-@@ -115,8 +115,8 @@
- 	default y if E500 && PHYS_64BIT
+Index: linux-2.6.14-rc5/sound/oss/dmasound/Kconfig
+===================================================================
+--- linux-2.6.14-rc5.orig/sound/oss/dmasound/Kconfig
++++ linux-2.6.14-rc5/sound/oss/dmasound/Kconfig
+@@ -14,7 +14,7 @@ config DMASOUND_ATARI
  
- config PHYS_64BIT
--	bool 'Large physical address support' if E500
--	depends on 44x || E500
-+	bool 'Large physical address support' if E500 || 6xx
-+	depends on 44x || E500 || 6xx
- 	default y if 44x
- 	---help---
- 	  This option enables kernel support for larger than 32-bit physical
-diff -urN linux-2.6.13.3.orig/arch/ppc/kernel/cpu_setup_6xx.S linux-2.6.13.3/arch/ppc/kernel/cpu_setup_6xx.S
---- linux-2.6.13.3.orig/arch/ppc/kernel/cpu_setup_6xx.S	Fri Oct 21 05:49:53 2005
-+++ linux-2.6.13.3/arch/ppc/kernel/cpu_setup_6xx.S	Fri Oct 21 21:07:06 2005
-@@ -228,14 +228,18 @@
- 	/* All of the bits we have to set.....
- 	 */
- 	ori	r11,r11,HID0_SGE | HID0_FOLD | HID0_BHTE
--	ori	r11,r11,HID0_LRSTK | HID0_BTIC
--	oris	r11,r11,HID0_DPM@h
-+	ori	r11,r11,HID0_LRSTK | HID0_BTIC | HID0_XBSEN
-+	oris	r11,r11,(HID0_DPM | HID0_XAEN)@h
- BEGIN_FTR_SECTION
- 	xori	r11,r11,HID0_BTIC
- END_FTR_SECTION_IFSET(CPU_FTR_NO_BTIC)
- BEGIN_FTR_SECTION
- 	xoris	r11,r11,HID0_DPM@h	/* disable dynamic power mgmt */
- END_FTR_SECTION_IFSET(CPU_FTR_NO_DPM)
-+BEGIN_FTR_SECTION
-+	xori	r11,r11,HID0_XBSEN
-+	xoris	r11,r11,HID0_XAEN@h
-+END_FTR_SECTION_IFCLR(CPU_FTR_BIG_PHYS)
- 
- 	/* All of the bits we have to clear....
- 	 */
-diff -urN linux-2.6.13.3.orig/arch/ppc/kernel/cputable.c linux-2.6.13.3/arch/ppc/kernel/cputable.c
---- linux-2.6.13.3.orig/arch/ppc/kernel/cputable.c	Fri Oct 21 05:49:53 2005
-+++ linux-2.6.13.3/arch/ppc/kernel/cputable.c	Fri Oct 21 21:11:55 2005
-@@ -62,6 +62,12 @@
- #define PPC_FEATURE_SPE_COMP       	0
- #endif
- 
-+#ifndef CONFIG_PHYS_64BIT
-+#define CPU_FTR_BIG_PHYS_COMP		CPU_FTR_BIG_PHYS
-+#else
-+#define CPU_FTR_BIG_PHYS_COMP		0
-+#endif
-+
- /* We need to mark all pages as being coherent if we're SMP or we
-  * have a 74[45]x and an MPC107 host bridge.
-  */
-@@ -428,6 +434,7 @@
- 			CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
- 			CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
- 			CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
-+			CPU_FTR_BIG_PHYS_COMP |
- 			CPU_FTR_HAS_HIGH_BATS | CPU_FTR_NEED_COHERENT,
- 		.cpu_user_features	= COMMON_PPC | PPC_FEATURE_ALTIVEC_COMP,
- 		.icache_bsize		= 32,
-@@ -445,6 +452,7 @@
- 			CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
- 			CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
- 			CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_L3_DISABLE_NAP |
-+			CPU_FTR_BIG_PHYS_COMP |
- 			CPU_FTR_NEED_COHERENT | CPU_FTR_HAS_HIGH_BATS,
- 		.cpu_user_features	= COMMON_PPC | PPC_FEATURE_ALTIVEC_COMP,
- 		.icache_bsize		= 32,
-@@ -462,6 +470,7 @@
- 			CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
- 			CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
- 			CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS |
-+			CPU_FTR_BIG_PHYS_COMP |
- 			CPU_FTR_NEED_COHERENT,
- 		.cpu_user_features	= COMMON_PPC | PPC_FEATURE_ALTIVEC_COMP,
- 		.icache_bsize		= 32,
-@@ -478,6 +487,7 @@
- 			CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR |
- 			CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
- 			CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
-+			CPU_FTR_BIG_PHYS_COMP |
- 			CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS |
- 			CPU_FTR_NEED_COHERENT | CPU_FTR_NO_BTIC,
- 		.cpu_user_features	= COMMON_PPC | PPC_FEATURE_ALTIVEC_COMP,
-@@ -496,6 +506,7 @@
- 			CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
- 			CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
- 			CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS |
-+			CPU_FTR_BIG_PHYS_COMP |
- 			CPU_FTR_NEED_COHERENT | CPU_FTR_NO_BTIC,
- 		.cpu_user_features	= COMMON_PPC | PPC_FEATURE_ALTIVEC_COMP,
- 		.icache_bsize		= 32,
-@@ -513,6 +524,7 @@
- 			CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
- 			CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
- 			CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS |
-+			CPU_FTR_BIG_PHYS_COMP |
- 			CPU_FTR_NEED_COHERENT,
- 		.cpu_user_features	= COMMON_PPC | PPC_FEATURE_ALTIVEC_COMP,
- 		.icache_bsize		= 32,
-@@ -529,6 +541,7 @@
- 			CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR |
- 			CPU_FTR_ALTIVEC_COMP | CPU_FTR_HPTE_TABLE |
- 			CPU_FTR_SPEC7450 | CPU_FTR_NAP_DISABLE_L2_PR |
-+			CPU_FTR_BIG_PHYS_COMP |
- 			CPU_FTR_HAS_HIGH_BATS | CPU_FTR_NEED_COHERENT,
- 		.cpu_user_features	= COMMON_PPC | PPC_FEATURE_ALTIVEC_COMP,
- 		.icache_bsize		= 32,
-diff -urN linux-2.6.13.3.orig/arch/ppc/kernel/head.S linux-2.6.13.3/arch/ppc/kernel/head.S
---- linux-2.6.13.3.orig/arch/ppc/kernel/head.S	Fri Oct 21 05:49:53 2005
-+++ linux-2.6.13.3/arch/ppc/kernel/head.S	Fri Oct 21 21:12:17 2005
-@@ -1165,6 +1165,12 @@
- 	LOAD_BAT(1,r3,r4,r5)
- 	LOAD_BAT(2,r3,r4,r5)
- 	LOAD_BAT(3,r3,r4,r5)
-+BEGIN_FTR_SECTION
-+	LOAD_BAT(4,r3,r4,r5)
-+	LOAD_BAT(5,r3,r4,r5)
-+	LOAD_BAT(6,r3,r4,r5)
-+	LOAD_BAT(7,r3,r4,r5)
-+END_FTR_SECTION_IFSET(CPU_FTR_HAS_HIGH_BATS)
- #endif /* CONFIG_POWER4 */
- 	blr
- 
-diff -urN linux-2.6.13.3.orig/arch/ppc/mm/pgtable.c linux-2.6.13.3/arch/ppc/mm/pgtable.c
---- linux-2.6.13.3.orig/arch/ppc/mm/pgtable.c	Fri Oct 21 05:49:53 2005
-+++ linux-2.6.13.3/arch/ppc/mm/pgtable.c	Fri Oct 21 05:53:49 2005
-@@ -55,8 +55,8 @@
- 
- #ifdef HAVE_BATS
- extern unsigned long v_mapped_by_bats(unsigned long va);
--extern unsigned long p_mapped_by_bats(unsigned long pa);
--void setbat(int index, unsigned long virt, unsigned long phys,
-+extern unsigned long p_mapped_by_bats(phys_addr_t pa);
-+void setbat(int index, unsigned long virt, phys_addr_t phys,
- 	    unsigned int size, int flags);
- 
- #else /* !HAVE_BATS */
-@@ -339,7 +339,7 @@
- 	/*
- 	 * Use a BAT for this if possible...
- 	 */
--	if (io_bat_index < 2 && is_power_of_2(size)
-+	if (io_bat_index < (ppc_bat_count() - 2) && is_power_of_2(size)
- 	    && (virt & (size - 1)) == 0 && (phys & (size - 1)) == 0) {
- 		setbat(io_bat_index, virt, phys, size, flags);
- 		++io_bat_index;
-diff -urN linux-2.6.13.3.orig/arch/ppc/mm/ppc_mmu.c linux-2.6.13.3/arch/ppc/mm/ppc_mmu.c
---- linux-2.6.13.3.orig/arch/ppc/mm/ppc_mmu.c	Fri Oct 21 05:49:53 2005
-+++ linux-2.6.13.3/arch/ppc/mm/ppc_mmu.c	Fri Oct 21 21:15:07 2005
-@@ -47,13 +47,13 @@
- #else
- 	u32	word[2];
- #endif
--} BATS[4][2];			/* 4 pairs of IBAT, DBAT */
-+} BATS[8][2];			/* 8 pairs of IBAT, DBAT */
- 
- struct batrange {		/* stores address ranges mapped by BATs */
- 	unsigned long start;
- 	unsigned long limit;
--	unsigned long phys;
--} bat_addrs[4];
-+	phys_addr_t phys;
-+} bat_addrs[8];
- 
- /*
-  * Return PA for this VA if it is mapped by a BAT, or 0
-@@ -70,7 +70,7 @@
- /*
-  * Return VA for a given PA or 0 if not mapped
-  */
--unsigned long p_mapped_by_bats(unsigned long pa)
-+unsigned long p_mapped_by_bats(phys_addr_t pa)
- {
- 	int b;
- 	for (b = 0; b < 4; ++b)
-@@ -87,13 +87,14 @@
- 	return 0;
- #else
- 	unsigned long tot, bl, done;
--	unsigned long max_size = (256<<20);
-+	unsigned long max_size = ppc_max_bat_size();
- 	unsigned long align;
-+	int bat_nbr = ppc_bat_count() - 2;
- 
- 	if (__map_without_bats)
- 		return 0;
- 
--	/* Set up BAT2 and if necessary BAT3 to cover RAM. */
-+	/* Set up BAT[2|6] and if necessary BAT[3|7] to cover RAM. */
- 
- 	/* Make sure we don't map a block larger than the
- 	   smallest alignment of the physical address. */
-@@ -109,16 +110,17 @@
- 			break;
- 	}
- 
--	setbat(2, KERNELBASE, PPC_MEMSTART, bl, _PAGE_RAM);
--	done = (unsigned long)bat_addrs[2].limit - KERNELBASE + 1;
--	if ((done < tot) && !bat_addrs[3].limit) {
--		/* use BAT3 to cover a bit more */
-+	setbat(bat_nbr, KERNELBASE, PPC_MEMSTART, bl, _PAGE_RAM);
-+	done = (unsigned long)bat_addrs[bat_nbr].limit - KERNELBASE + 1;
-+	bat_nbr++;
-+	if ((done < tot) && !bat_addrs[bat_nbr].limit) {
-+		/* use BAT[3|7] to cover a bit more */
- 		tot -= done;
- 		for (bl = 128<<10; bl < max_size; bl <<= 1)
- 			if (bl * 2 > tot)
- 				break;
--		setbat(3, KERNELBASE+done, PPC_MEMSTART+done, bl, _PAGE_RAM);
--		done = (unsigned long)bat_addrs[3].limit - KERNELBASE + 1;
-+		setbat(bat_nbr, KERNELBASE+done, PPC_MEMSTART+done, bl, _PAGE_RAM);
-+		done = (unsigned long)bat_addrs[bat_nbr].limit - KERNELBASE + 1;
- 	}
- 
- 	return done;
-@@ -130,7 +132,7 @@
-  * The parameters are not checked; in particular size must be a power
-  * of 2 between 128k and 256M.
-  */
--void __init setbat(int index, unsigned long virt, unsigned long phys,
-+void __init setbat(int index, unsigned long virt, phys_addr_t phys,
- 		   unsigned int size, int flags)
- {
- 	unsigned int bl;
-@@ -148,6 +150,9 @@
- 		wimgxpp = flags & (_PAGE_WRITETHRU | _PAGE_NO_CACHE
- 				   | _PAGE_COHERENT | _PAGE_GUARDED);
- 		wimgxpp |= (flags & _PAGE_RW)? BPP_RW: BPP_RX;
-+#ifdef CONFIG_PHYS_64BIT
-+		wimgxpp |= ((phys >> 30) & 4) | ((phys >> 24) & 0xe00);
-+#endif
- 		bat[1].word[0] = virt | (bl << 2) | 2; /* Vs=1, Vp=0 */
- 		bat[1].word[1] = phys | wimgxpp;
- #ifndef CONFIG_KGDB /* want user access for breakpoints */
-diff -urN linux-2.6.13.3.orig/include/asm-ppc/mmu.h linux-2.6.13.3/include/asm-ppc/mmu.h
---- linux-2.6.13.3.orig/include/asm-ppc/mmu.h	Fri Oct 21 05:44:49 2005
-+++ linux-2.6.13.3/include/asm-ppc/mmu.h	Fri Oct 21 21:23:55 2005
-@@ -18,11 +18,19 @@
- #ifndef CONFIG_PHYS_64BIT
- typedef unsigned long phys_addr_t;
- #define PHYS_FMT	"%.8lx"
-+#define cpu_has_bigphys() 0
-+#define ppc_max_bat_size() (256<<20)
- #else
- typedef unsigned long long phys_addr_t;
- extern phys_addr_t fixup_bigphys_addr(phys_addr_t, phys_addr_t);
- #define PHYS_FMT	"%16Lx"
-+#define cpu_has_bigphys() cpu_has_feature(CPU_FTR_BIG_PHYS)
-+/* We don't allow 4G Bat's because it doesn't fit into size_t */
-+#define ppc_max_bat_size() \
-+	(cpu_has_feature(CPU_FTR_BIG_PHYS)?(2<<30):(256<<20))
- #endif
-+
-+#define ppc_bat_count() (cpu_has_feature(CPU_FTR_HAS_HIGH_BATS) ? 8 : 4)
- 
- /* Default "unsigned long" context */
- typedef unsigned long mm_context_t;
+ config DMASOUND_PMAC
+ 	tristate "PowerMac DMA sound support"
+-	depends on PPC32 && PPC_PMAC && SOUND && I2C
++	depends on PPC32 && PPC_PMAC && SOUND && I2C && (ADB_CUDA || ADB_PMU)
+  	select DMASOUND
+ 	help
+ 	  If you want to use the internal audio of your PowerMac in Linux,
+-- 
+short story of a lazy sysadmin:
+ alias appserv=wotan
