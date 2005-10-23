@@ -2,18 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 78EC568618
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Oct 2005 18:27:15 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 990D868601
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Oct 2005 18:28:12 +1000 (EST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olaf Hering <olh@suse.de>
-In-Reply-To: <20051023081240.GA20134@suse.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+In-Reply-To: <Pine.LNX.4.62.0510231021070.16077@numbat.sonytel.be>
 References: <20051022213037.GA6097@suse.de>
-	<1130022347.7919.39.camel@gaston>  <20051023081240.GA20134@suse.de>
+	<Pine.LNX.4.62.0510231021070.16077@numbat.sonytel.be>
 Content-Type: text/plain
-Date: Sun, 23 Oct 2005 18:22:40 +1000
-Message-Id: <1130055760.7919.59.camel@gaston>
+Date: Sun, 23 Oct 2005 18:23:31 +1000
+Message-Id: <1130055811.7919.61.camel@gaston>
 Mime-Version: 1.0
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org
+Cc: Andrew Morton <akpm@osdl.org>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>, Olaf Hering <olh@suse.de>
 Subject: Re: [PATCH] hide pmac specific drivers if CONFIG_ADB is not set
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,14 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-> > No. SMU machines too
+On Sun, 2005-10-23 at 10:23 +0200, Geert Uytterhoeven wrote:
+> On Sat, 22 Oct 2005, Olaf Hering wrote:
+> > SCSI_MESH exists on old Macs, but the PB Lombard has an external connector
 > 
-> arch/ppc64/configs/g5_defconfig has CONFIG_ADB_PMU enabled.
-> It compiles ok with that option disabled.
-> Is there a pmu in early G5 models?
+> And on some CHRP.
+> 
+> > --- linux-2.6.14-rc5.orig/drivers/scsi/Kconfig
+> > +++ linux-2.6.14-rc5/drivers/scsi/Kconfig
+> > @@ -1529,7 +1529,7 @@ config SCSI_DEBUG
+> >  
+> >  config SCSI_MESH
+> >  	tristate "MESH (Power Mac internal SCSI) support"
+> > -	depends on PPC32 && PPC_PMAC && SCSI
+> > +	depends on PPC32 && PPC_PMAC && SCSI && (ADB_CUDA || ADB_PMU)
+> >  	help
+> >  	  Many Power Macintoshes and clones have a MESH (Macintosh Enhanced
+> >  	  SCSI Hardware) SCSI bus adaptor (the 7200 doesn't, but all of the
+> 
+> You can no longer enable MESH when compiling for CHRP or when disabling ADB?
+> 
+> It's clearly visible my LongTrail died last year... :-(
 
-Yes, but not newer ones and I intend to change the way all those low
-level support options are dealt with anyway
+Come on, Geert, I told you back then I was doing that :) You didn't
+complain and we figured out nobody around had any of these in working
+conditions anymore :)
 
 Ben.
