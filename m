@@ -1,21 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <rupert@ces.ch>
+Received: from server1.serv-net.de (31.204.203.213.rev.inetbone.net
+	[213.203.204.31])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 990D868601
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Oct 2005 18:28:12 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-In-Reply-To: <Pine.LNX.4.62.0510231021070.16077@numbat.sonytel.be>
-References: <20051022213037.GA6097@suse.de>
-	<Pine.LNX.4.62.0510231021070.16077@numbat.sonytel.be>
-Content-Type: text/plain
-Date: Sun, 23 Oct 2005 18:23:31 +1000
-Message-Id: <1130055811.7919.61.camel@gaston>
-Mime-Version: 1.0
-Cc: Andrew Morton <akpm@osdl.org>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>, Olaf Hering <olh@suse.de>
-Subject: Re: [PATCH] hide pmac specific drivers if CONFIG_ADB is not set
+	by ozlabs.org (Postfix) with ESMTP id 3B06B6856A
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Oct 2005 19:21:09 +1000 (EST)
+From: Rupert Eibauer <rupert@ces.ch>
+To: Paul Mackerras <paulus@samba.org>
+Date: Sun, 23 Oct 2005 11:36:51 +0200
+References: <200510221554.03810.rupert@ces.ch>
+	<17242.56232.293762.303684@cargo.ozlabs.ibm.com>
+In-Reply-To: <17242.56232.293762.303684@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200510231136.51548.rupert@ces.ch>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH][RFT] Extended BAT features, take 2
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,30 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2005-10-23 at 10:23 +0200, Geert Uytterhoeven wrote:
-> On Sat, 22 Oct 2005, Olaf Hering wrote:
-> > SCSI_MESH exists on old Macs, but the PB Lombard has an external connector
+On Sunday 23 October 2005 02:39, Paul Mackerras wrote:
+> Rupert Eibauer writes:
 > 
-> And on some CHRP.
+> > What this patch actually does:
+> > - Make CONFIG_PHYS_64BIT selectable for the 6xx family
 > 
-> > --- linux-2.6.14-rc5.orig/drivers/scsi/Kconfig
-> > +++ linux-2.6.14-rc5/drivers/scsi/Kconfig
-> > @@ -1529,7 +1529,7 @@ config SCSI_DEBUG
-> >  
-> >  config SCSI_MESH
-> >  	tristate "MESH (Power Mac internal SCSI) support"
-> > -	depends on PPC32 && PPC_PMAC && SCSI
-> > +	depends on PPC32 && PPC_PMAC && SCSI && (ADB_CUDA || ADB_PMU)
-> >  	help
-> >  	  Many Power Macintoshes and clones have a MESH (Macintosh Enhanced
-> >  	  SCSI Hardware) SCSI bus adaptor (the 7200 doesn't, but all of the
-> 
-> You can no longer enable MESH when compiling for CHRP or when disabling ADB?
-> 
-> It's clearly visible my LongTrail died last year... :-(
+> Why?  What does this gain us?  
 
-Come on, Geert, I told you back then I was doing that :) You didn't
-complain and we figured out nobody around had any of these in working
-conditions anymore :)
+I have I/O resources there which are not reachable in 32 bit mode.
 
-Ben.
+> We still can't use RAM above the 4GB point AFAICS.
+
+Does this mean the page tables do not support 63 bit?
+
+Rupert
