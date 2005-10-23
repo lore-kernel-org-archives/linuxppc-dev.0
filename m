@@ -1,24 +1,21 @@
-Return-Path: <pantelis.antoniou@gmail.com>
-Received: from qproxy.gmail.com (qproxy.gmail.com [72.14.204.192])
-	by ozlabs.org (Postfix) with ESMTP id B1C0E68654
+Return-Path: <SRS0+294551be047bdcc6b225+791+infradead.org+dwmw2@baythorne.srs.infradead.org>
+Received: from baythorne.infradead.org (baythorne.infradead.org [81.187.2.161])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CDDD36856A
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 22 Oct 2005 03:20:32 +1000 (EST)
-Received: by qproxy.gmail.com with SMTP id q18so353391qba
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 21 Oct 2005 10:20:30 -0700 (PDT)
-From: Pantelis Antoniou <pantelis.antoniou@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Date: Fri, 21 Oct 2005 20:18:57 +0300
-References: <4358DD4C.7020507@cpe.fr>
-	<B6774C27-2E9C-4660-8D5C-4EBE5FEF698D@freescale.com>
-In-Reply-To: <B6774C27-2E9C-4660-8D5C-4EBE5FEF698D@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200510212018.58334.pantelis.antoniou@gmail.com>
-Cc: Nathael PAJANI <nathael.pajani@cpe.fr>
-Subject: Re: Three-Speed Ethernet support on MPC8560 (TSEC)
-Reply-To: pantelis.antoniou@gmail.com
+	Sun, 23 Oct 2005 21:38:32 +1000 (EST)
+From: David Woodhouse <dwmw2@infradead.org>
+To: Nathael PAJANI <nathael.pajani@cpe.fr>
+In-Reply-To: <1129621982.3830.310.camel@baythorne.infradead.org>
+References: <43539813.8010809@cpe.fr>
+	<1129621982.3830.310.camel@baythorne.infradead.org>
+Content-Type: text/plain
+Date: Sun, 23 Oct 2005 12:38:26 +0100
+Message-Id: <1130067506.6932.23.camel@baythorne.infradead.org>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Newbie... in mailing lists...
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,48 +26,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Friday 21 October 2005 16:39, Kumar Gala wrote:
+On Tue, 2005-10-18 at 08:53 +0100, David Woodhouse wrote:
+> That's a problem with the archives; it's not your fault. If you look
+> at the mailto: link at the top of that page, you see it looks like
+> this:
 > 
-> On Oct 21, 2005, at 7:21 AM, Nathael PAJANI wrote:
+> mailto:linuxppc-embedded%40ozlabs.org?Subject=eldk%203.1.1%20ramdisk%20image%20problem&In-Reply-To=
 > 
-> > Hi all!
-> >
-> > I'm working on a port of linux (2.6.13-2) on an Actis-computer board,
-> > based on the Freescale MPC8560 Processor.
-> >
-> > I solved the problems I had with the init process, and I actually have
-> > the console (SCC1) and one ethernet controler (FCC3) running.
-> >
-> > I will now go on with the Three-Speed Ethernet Controler, and there
-> > actually seem to be no support for it, but maybe I did not look at the
-> > right place?
-> 
-> The TSEC has been supported for a long time.  The driver is call  
-> gianfar (drivers/net/gianfar*).
-> 
-> > I got another question, about the FCC driver: it uses a "big"  
-> > structure
-> > "fcc_enet_t" wich seems to be aimed at stats. This is initialised,  
-> > but I
-> > did not find where this is used. Is it?
-> 
-> The FCC enet driver has been completely rewritten recently and is in  
-> the process of being accepted into the kernel.  Hopefully one of the  
-> guys with more knowledge on the details will be able to help you on  
-> the specifics.
->
+> Although it _attempts_ to set the In-Reply-To: header which would make
+> your message appear to be a reply to the mail in the archive, it seems
+> to be missing the actual message-id of that mail; it's just empty.
 
-fcc_enet_t is in the CPM parameter area. It is used but the statistics
-it provides are not, since we properly update the linux net device stats
-manually.
- 
-> - kumar
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+I filed this mailman bug along with a partial fix at
+https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=171567
 
-Regards
-
-Pantelis
+-- 
+dwmw2
