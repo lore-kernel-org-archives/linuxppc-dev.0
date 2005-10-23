@@ -1,20 +1,19 @@
-Return-Path: <rupert@ces.ch>
-Received: from server1.serv-net.de (31.204.203.213.rev.inetbone.net
-	[213.203.204.31])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3B06B6856A
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Oct 2005 19:21:09 +1000 (EST)
-From: Rupert Eibauer <rupert@ces.ch>
-To: Paul Mackerras <paulus@samba.org>
-Date: Sun, 23 Oct 2005 11:36:51 +0200
+	by ozlabs.org (Postfix) with ESMTP id 9E600685C8
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Oct 2005 20:00:07 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Rupert Eibauer <rupert@ces.ch>
+In-Reply-To: <200510231136.51548.rupert@ces.ch>
 References: <200510221554.03810.rupert@ces.ch>
 	<17242.56232.293762.303684@cargo.ozlabs.ibm.com>
-In-Reply-To: <17242.56232.293762.303684@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200510231136.51548.rupert@ces.ch>
+	<200510231136.51548.rupert@ces.ch>
+Content-Type: text/plain
+Date: Sun, 23 Oct 2005 19:55:31 +1000
+Message-Id: <1130061332.7919.63.camel@gaston>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 Subject: Re: [PATCH][RFT] Extended BAT features, take 2
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,18 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sunday 23 October 2005 02:39, Paul Mackerras wrote:
-> Rupert Eibauer writes:
+On Sun, 2005-10-23 at 11:36 +0200, Rupert Eibauer wrote:
+> On Sunday 23 October 2005 02:39, Paul Mackerras wrote:
+> > Rupert Eibauer writes:
+> > 
+> > > What this patch actually does:
+> > > - Make CONFIG_PHYS_64BIT selectable for the 6xx family
+> > 
+> > Why?  What does this gain us?  
 > 
-> > What this patch actually does:
-> > - Make CONFIG_PHYS_64BIT selectable for the 6xx family
+> I have I/O resources there which are not reachable in 32 bit mode.
 > 
-> Why?  What does this gain us?  
+> > We still can't use RAM above the 4GB point AFAICS.
+> 
+> Does this mean the page tables do not support 63 bit?
 
-I have I/O resources there which are not reachable in 32 bit mode.
+Not with the current code. At least not for those CPUs.
 
-> We still can't use RAM above the 4GB point AFAICS.
-
-Does this mean the page tables do not support 63 bit?
-
-Rupert
+Ben.
