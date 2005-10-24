@@ -1,18 +1,18 @@
 Return-Path: <wd@denx.de>
 Received: from mailout06.sul.t-online.com (mailout06.sul.t-online.com
-	[194.25.134.19]) by ozlabs.org (Postfix) with ESMTP id DC226685F8
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Oct 2005 04:24:20 +1000 (EST)
+	[194.25.134.19]) by ozlabs.org (Postfix) with ESMTP id 5F1146863E
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Oct 2005 04:30:01 +1000 (EST)
 To: Kumar Gala <kumar.gala@freescale.com>
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 24 Oct 2005 10:16:21 CDT."
-	<989A4B75-70FA-43BE-AAA7-379D42AFEA49@freescale.com>
-Date: Mon, 24 Oct 2005 20:23:55 +0200
+In-reply-to: Your message of "Mon, 24 Oct 2005 10:20:24 CDT."
+	<398F469F-357E-445D-B48E-59899230E001@freescale.com>
+Date: Mon, 24 Oct 2005 20:29:48 +0200
 Sender: wd@denx.de
-Message-Id: <20051024182355.7E37E353444@atlas.denx.de>
+Message-Id: <20051024182948.BA8D3353444@atlas.denx.de>
 Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [Patch] Add support for TQM834x Boards 
+Subject: Re: Add PCI support for TQM834x Boards 
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,29 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <989A4B75-70FA-43BE-AAA7-379D42AFEA49@freescale.com> you wrote:
+Dear Kumar,
+
+in message <398F469F-357E-445D-B48E-59899230E001@freescale.com> you wrote:
+>
+> * The comment in mpc83xx_setup_hose() may not be 100% correct (see  
+> inline)
+
+It probably needs more explanation.
+
+> * Updating of pci_ids.h should be done via http:// 
+> pciids.sourceforge.net/.  I can handle doing this for 834x if you  
+> want me to.
+
+I'd appreciate if you could handle it this time. I will  remeber  how
+to do it correctly from now on. Thanks.
+
+...
+> > +#ifdef CONFIG_TQM834x
 > 
-> Will you or Marian being maintaining this board family going forward?
+> Is the following comment 100% correct?  I'm not sure I follow the  
+> STK85xx reference.
+> 
+> > +    /*
+> > +     * WARNING! only PCI_CLK_OUTPUT1 is enabled for the TQM834x as this is
+> > +     * the one line actually used for clocking all external PCI devices in
+> > +     * current setup of the STK85xx.  Enabling other PCI_CLK_OUTPUT lines
 
-I'll be the maintainer / contact.
-
-> Also, you need to split out the MTD portion and submit that to the  
-> MTD maintainer separately.
-
-I already did so. Included here for completeness. Let me know if this
-is a problem and I will resubmit without the MTD part.
-
-> The only other comment is that tqm834x_show_cpuinfo() might want to  
-> be updated the vendor info.
-
-What do you mean? We set vendor as  "Freescale  Inc."  -  isn't  this
-correct for the MPC8349 CPU? What schould it be?
-
-> Otherwise, once the I2C DS1337 patch is ack'd I'll push this upstream.
-
-Thanks.
-
-Ummm... what about my earlier patch for the PPChameleonEVB board?
+This is correct. TQ uses the same eval  board  for  all  TQM83xx  and
+TQM85xx  modules.  It  was originally developed for the TQM85xx so it
+got named STK85xx (STarter Kit 85xx). Later,  it  was  impossible  to
+reflect  the  use for the TQM83xx in the name of the eval board. Yes,
+this is confusing...
 
 Best regards,
 
@@ -53,5 +62,4 @@ Wolfgang Denk
 -- 
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-A committee is a group that keeps the minutes and loses hours.
-                                                      -- Milton Berle
+"Have you lived in this village all your life?"        "No, not yet."
