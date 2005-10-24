@@ -1,18 +1,18 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 46A936861B
+Return-Path: <info@moreframe.com>
+Received: from mxvip28.hichina.com (unknown [218.30.102.158])
+	by ozlabs.org (Postfix) with ESMTP id 5B1B168637
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 25 Oct 2005 02:15:09 +1000 (EST)
-Message-ID: <435D088C.9060000@ru.mvista.com>
-Date: Mon, 24 Oct 2005 20:15:08 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-MIME-Version: 1.0
-To: Alex Zeffertt <ajz@cambridgebroadband.com>
-References: <20051024170707.5068be0a.ajz@cambridgebroadband.com>
-In-Reply-To: <20051024170707.5068be0a.ajz@cambridgebroadband.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: m82xxhci USB driver problems
+	Tue, 25 Oct 2005 02:34:06 +1000 (EST)
+Date: Tue, 25 Oct 2005 00:34:43 +0800
+From: "info" <info@moreframe.com>
+To: "Andy Fleming" <afleming@freescale.com>,
+	"Kumar Gala" <kumar.gala@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain;
+	charset="gb2312"
+Message-ID: <1130171639$34043$40489524@info@moreframe.com>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: Help needed Linux-2.6 - MPC8540
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,85 +23,258 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Maybe there's something with SOF generation - check if RCCR[EIE] is set.
-Just a pure guess...
-Alex Zeffertt wrote:
-> Hi list,
-> 
-> I'm trying to get the m82xxhci USB host controller driver working on
-> my MPC8272ADS board, and linux-2.4.25.
-> 
-> I can compile and modprobe the module.  When I insert a USB pen drive
-> I get the following message:
-> 
-> 	# hub.c: new USB device m8xxhci-1, assigned address 4
-> 	Manufacturer:
-> 	Product: USB Disk Pro
-> 	SerialNumber: 07531E630012
-> 	scsi0 : SCSI emulation for USB Mass Storage devices
-> 
-> Which looks okay.  But after a long delay I get:
-> 	
-> 	# usb_control/bulk_msg: timeout
->                                 
-> Then after another delay:
-> 	
-> 	# usb-storage: host_reset() requested but not implemented
-> 	#
-> 
-> 
-> Then after another delay:
-> 
-> 	# scsi: device set offline - command error recover failed: host 0
-> 	channel 0 id 0 lun 0
-> 
-> After this final message, but not before, the pen drive device appears
-> in /proc/bus/usb/devices:
-> 
-> 	# cat /proc/bus/usb/devices
-> 	T:  Bus=01 Lev=00 Prnt=00 Port=00 Cnt=00 Dev#=  1 Spd=12  MxCh= 1
-> 	B:  Alloc=  0/900 us ( 0%), #Int=  0, #Iso=  0
-> 	D:  Ver= 1.10 Cls=09(hub  ) Sub=00 Prot=00 MxPS= 8 #Cfgs=  1
-> 	P:  Vendor=0000 ProdID=0000 Rev= 0.00
-> 	S:  Product=USB MPC8xx Root Hub
-> 	S:  SerialNumber=f0011b60	
-> 	C:* #Ifs= 1 Cfg#= 1 Atr=40 MxPwr=  0mA
-> 	I:  If#= 0 Alt= 0 #EPs= 1 Cls=09(hub  ) Sub=00 Prot=00 Driver=hub
-> 	E:  Ad=81(I) Atr=03(Int.) MxPS=   2 Ivl=255ms
-> 	T:  Bus=01 Lev=01 Prnt=01 Port=00 Cnt=01 Dev#=  2 Spd=12  MxCh= 0
-> 	D:  Ver= 1.10 Cls=00(>ifc ) Sub=00 Prot=00 MxPS= 8 #Cfgs=  1
-> 	P:  Vendor=0d7d ProdID=0120 Rev= 1.00
-> 	S:  Manufacturer=
-> 	S:  Product=USB Disk Pro
-> 	S:  SerialNumber=07531E630012
-> 	C:* #Ifs= 1 Cfg#= 1 Atr=80 MxPwr=100mA
-> 	I:  If#= 0 Alt= 0 #EPs= 3 Cls=08(stor.) Sub=04 Prot=00
-> 	Driver=usb-storage E:  Ad=81(I) Atr=02(Bulk) MxPS=  64 Ivl=0ms
-> 	E:  Ad=02(O) Atr=02(Bulk) MxPS=  64 Ivl=0ms
-> 	E:  Ad=83(I) Atr=03(Int.) MxPS=   2 Ivl=1ms
-> 
-> 
-> 
-> Does anybody have any idea what could be causing this problem?  The
-> HCI is clearly able to communicate with the device because it
-> identifies it.  But I don't know why the timeout should occur!
-> 
-> 
-> Alex
-> 
-> 
-> PS A possibly related problem: I have built sd_mod.o as a module, and
-> I can modprobe sd_mod okay.  However, after I have run modprobe I
-> still do not see an "sd" block device in /proc/devices.  I have no
-> idea why though....
+Andy, Kumar
+
+Thank you for your help!
+GDAtech only give me linux-2.4.27 binary file for RMC-G8500 card, I try to port 2.6.13 for that card myself.
+
+Today, I download linux-2.6.13.tar.bz2 and patch-2.6.14-rc5.bz2 from kernel.org. 
+I download http://lwn.net/Articles/146253/ "Patch: Gianfar PHY Layer Update".
+I download http://ozlabs.org/pipermail/linuxppc-embedded/2005-October/020593.html  "[PATCH] 85xx PHY Platform Update"
+I patch and build them together get a linux 2.6.14-rc5 for MPC8540, try it on RMC-G8500 card
+
+U-Boot 1.1.1 (Aug 10 2004 - 11:01:21)
+
+Motorola PowerPC ProcessorID=00000000 Rev. PVR=80200020
+Board: GDA Technologies RMC-G8500 [PowerQUICC III]
+        CPU: 825 MHz
+        CCB: 330 MHz
+        DDR: 165 MHz
+        LBC: 82 MHz
+L1 D-cache 32KB, L1 I-cache 32KB enabled.
+I2C:   ready
+DRAM:  256 MB
+8540 in PCI Host Mode.
+8540 is the PCI Arbiter.
+FLASH:  8 MB
+L2 cache enabled: 256KB
+In:    serial
+Out:   serial
+Err:   serial
+Net:   MOTO ETHERNET
+Hit any key to stop autoboot:  0 
+RMCG8500#>tftp 200000 uImage; tftp 400000 your.ramdisk.u-boot; bootm 200000 400000
+Using MOTO ETHERNET device
+TFTP from server 192.96.134.135; our IP address is 192.96.134.136
+Filename 'uImage'.
+Load address: 0x200000
+Loading: #################################################################
+         #################################################################
+         #################################################################
+         ################################
+done
+Bytes transferred = 1159376 (11b0d0 hex)
+Using MOTO ETHERNET device
+TFTP from server 192.96.134.135; our IP address is 192.96.134.136
+Filename 'your.ramdisk.u-boot'.
+Load address: 0x400000
+Loading: #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         ########################################
+done
+Bytes transferred = 3530818 (35e042 hex)
+## Booting image at 00200000 ...
+   Image Name:   Linux-2.6.14-rc5
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    1159312 Bytes =  1.1 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+## Loading RAMDisk Image at 00400000 ...
+   Image Name:   zzz ppc ramdisk
+   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
+   Data Size:    3530754 Bytes =  3.4 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Loading Ramdisk to 0fc54000, end 0ffb2002 ... OK
+Memory CAM mapping: CAM0=256Mb, CAM1=0Mb, CAM2=0Mb residual: 0Mb
+Linux version 2.6.14-rc5 (root@ppclinux) (gcc version 3.3.3 (Yellow Dog Linux 3.3.3-16.ydl.4)) #1 Mon Oct 24 13:22:56 EDT 2005
+Built 1 zonelists
+Kernel command line: console=ttyS0,115200 root=/dev/ram rw doPci=1
+OpenPIC Version 1.2 (1 CPUs and 60 IRQ sources) at fcfbb000
+PID hash table entries: 2048 (order: 11, 32768 bytes)
+Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
+Inode-cache hash table entries: 32768 (order: 5, 131072 bytes)
+Memory: 253440k available (1904k kernel code, 516k data, 132k init, 0k highmem)
+Mount-cache hash table entries: 512
+checking if image is initramfs...it isn't (no cpio magic); looks like an initrd
+softlockup thread 0 started up.
+Freeing initrd memory: 3448k freed
+NET: Registered protocol family 16
+PCI: Probing PCI hardware
+Generic PHY: Registered new driver
+SCSI subsystem initialized
+Generic RTC Driver v1.07
+i8042.c: i8042 controller self test timeout.
+Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing disabled
+ttyS0 at MMIO 0xfdf04500 (irq = 26) is a 16550A
+ttyS1 at MMIO 0xfdf04600 (irq = 26) is a 16550A
+io scheduler noop registered
+io scheduler anticipatory registered
+io scheduler deadline registered
+io scheduler cfq registered
+RAMDISK driver initialized: 16 RAM disks of 32768K size 1024 blocksize
+loop: loaded (max 8 devices)
+Gianfar MII Bus: probed
+
+
+!!STOP HERE
+
+
+
+>
+>On Oct 23, 2005, at 10:39, info wrote:
+>
+>> Junita
+>>
+>> Sorry to disturbed you. I find your question in the http:// 
+>> ozlabs.org mail list.
+>> Have you fixed the bug in gianfar_phy.c?
+>> tempval = gfar_read(&priv-> regs-> dmactrl);
+>> tempval |= (DMACTRL_GRS | DMACTRL_GTS);
+>> gfar_write(&priv-> regs-> dmactrl, tempval);
+>>
+>> while (!(gfar_read(&priv-> regs-> ievent) & (IEVENT_GRSC |  
+>> IEVENT_GTSC)))
+>> cpu_relax();
+>>
+>> /* Reset MAC layer */
+>> gfar_write(&priv-> regs-> maccfg1, MACCFG1_SOFT_RESET);
+>
+>
+>I'm a bit confused by the statement above.  The code you present is  
+>from gianfar.c, and is certainly not a bug.  It is possible you are  
+>using an older version of the code, which has a bug, which is fixed  
+>by adding these lines above the code you show:
+>
+>         tempval = gfar_read(&priv->regs->dmactrl);
+>         tempval &= ~(DMACTRL_GRS | DMACTRL_GTS);
+>         gfar_write(&priv->regs->dmactrl, tempval);
+>
+>This fixes a problem where setting GRS and GTS when they're already  
+>set doesn't initiate the graceful stop.  But if you are using 2.6.13,  
+>you should have this fix.  I suspect that, like I told Junita, you  
+>need to make sure the platform code has the right CCSRBAR value set up.
+>
+>>
+>> I buy a RMC-G8500 card from GDAtech, I try to build linux-2.6.13.4  
+>> from kernel.org and meet the same problems as you had. I test the  
+>> same code on freescale 8540_ADS board, it is good.Can you share  
+>> some infomation of your progress?
+>
+>
+>I'm not familiar with this card.  Are you sure there's support for it  
+>in your source tree?
+>
+>
+>Andy Fleming
+>
+>.
+
+
+>You need the corresponding patches that are in the netdev tree for  
+>the PHY subsystem.
+
+>- kumar
+
+>On Oct 24, 2005, at 9:49 AM, info wrote:
+
+> Andy, Kumar
+>
+> I try this patch for RMC-G8500 from GDAtech, error message below:
+> ---------------------------------------------------------------------- 
+> -----------
+>  [root@ppclinux linux-2.6.13]# make uImage
+>   CHK     include/linux/version.h
+>   CHK     include/linux/compile.h
+>   CHK     usr/initramfs_list
+>   CC      drivers/net/gianfar.o
+> drivers/net/gianfar.c: In function `gfar_probe':
+> drivers/net/gianfar.c:217: error: structure has no member named  
+> `phy_reg_addr'
+> drivers/net/gianfar.c: In function `init_phy':
+> drivers/net/gianfar.c:452: error: structure has no member named  
+> `phyid'
+> drivers/net/gianfar.c: In function `stop_gfar':
+> drivers/net/gianfar.c:636: error: structure has no member named  
+> `interruptPHY'
+> drivers/net/gianfar.c: In function `gfar_phy_startup_timer':
+> drivers/net/gianfar.c:1818: error: structure has no member named  
+> `interruptPHY'
+> drivers/net/gianfar.c:1826: error: structure has no member named  
+> `interruptPHY'
+> make[2]: *** [drivers/net/gianfar.o] Error 1
+> make[1]: *** [drivers/net] Error 2
+> make: *** [drivers] Error 2
+>
+> ---------------------------------------------------------------------- 
+> -----------
+> because???
+>
+>  /* Internal interrupts are all Level Sensitive, and Positive  
+> Polarity */
+> diff --git a/include/linux/fsl_devices.h b/include/linux/fsl_devices.h
+> --- a/include/linux/fsl_devices.h
+> +++ b/include/linux/fsl_devices.h
+> @@ -47,14 +47,19 @@
+>  struct gianfar_platform_data {
+>      /* device specific information */
+>      u32 device_flags;
+> -    u32 phy_reg_addr;
+>
+>      /* board specific information */
+>      u32 board_flags;
+> -    u32 phy_flags;
+> -    u32 phyid;
+> -    u32 interruptPHY;
+> +    const char *bus_id;
+>      u8 mac_addr[6];
+> +};
+> +
+>
+>
+> ---------------------------------------------------------------------- 
+> ---------------------
+> <This patch updates the 85xx platform code to support the new PHY  
+> Layer.
+> <
+> <Signed-off-by: Andy Fleming <afleming at freescale.com>
+> <Signed-off-by: Kumar Gala <Kumar.gala at freescale.com>
+> <
+> <
+> <diff --git a/arch/ppc/platforms/85xx/mpc8540_ads.c b/arch/ppc/ 
+> platforms/85xx/mpc8540_ads.c
+> <--- a/arch/ppc/platforms/85xx/mpc8540_ads.c
+> <+++ b/arch/ppc/platforms/85xx/mpc8540_ads.c
+> <@@ -53,6 +53,10 @@
+> <
+> < #include <syslib/ppc85xx_setup.h>
+> <
+> <+static const char *GFAR_PHY_0 = "phy0:0";
+> <+static const char *GFAR_PHY_1 = "phy0:1";
+> <+static const char *GFAR_PHY_3 = "phy0:3";
+> <+
+> < /*  
+> ********************************************************************** 
+> **
+> <  *
+> <  * Setup the architecture
+> <@@ -64,6 +68,7 @@ mpc8540ads_setup_arch(void)
+>
+>
+>
 > _______________________________________________
 > Linuxppc-embedded mailing list
 > Linuxppc-embedded@ozlabs.org
 > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
-
-
--- 
-Sincerely,
-Vitaly
+>
