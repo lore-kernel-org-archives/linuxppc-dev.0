@@ -1,18 +1,22 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id C0E0968618
+Return-Path: <ajz@cambridgebroadband.com>
+Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
+	[217.204.121.83])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 740596861F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 25 Oct 2005 01:27:43 +1000 (EST)
-In-Reply-To: <1130081898$57509$59788830@info@moreframe.com>
-References: <1130081898$57509$59788830@info@moreframe.com>
-Mime-Version: 1.0 (Apple Message framework v734)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <D85EC946-F790-457F-8892-500410AB5B58@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Date: Mon, 24 Oct 2005 10:27:18 -0500
-To: info <info@moreframe.com>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: Help needed Linux-2.6 - MPC8541
+	Tue, 25 Oct 2005 02:07:12 +1000 (EST)
+Received: from zambia.cambridgebroadband.com (cbluk-gw0.cambridgebroadband.com
+	[217.204.121.82])
+	by cambridgebroadband.com (8.12.8/8.12.8) with SMTP id j9OG779a031618
+	for <linuxppc-embedded@ozlabs.org>; Mon, 24 Oct 2005 17:07:08 +0100
+Date: Mon, 24 Oct 2005 17:07:07 +0100
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
+To: linuxppc-embedded@ozlabs.org
+Message-Id: <20051024170707.5068be0a.ajz@cambridgebroadband.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Subject: m82xxhci USB driver problems
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,49 +27,71 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi list,
 
-On Oct 23, 2005, at 10:39, info wrote:
+I'm trying to get the m82xxhci USB host controller driver working on
+my MPC8272ADS board, and linux-2.4.25.
 
-> Junita
->
-> Sorry to disturbed you. I find your question in the http:// 
-> ozlabs.org mail list.
-> Have you fixed the bug in gianfar_phy.c?
-> tempval = gfar_read(&priv-> regs-> dmactrl);
-> tempval |= (DMACTRL_GRS | DMACTRL_GTS);
-> gfar_write(&priv-> regs-> dmactrl, tempval);
->
-> while (!(gfar_read(&priv-> regs-> ievent) & (IEVENT_GRSC |  
-> IEVENT_GTSC)))
-> cpu_relax();
->
-> /* Reset MAC layer */
-> gfar_write(&priv-> regs-> maccfg1, MACCFG1_SOFT_RESET);
+I can compile and modprobe the module.  When I insert a USB pen drive
+I get the following message:
 
+	# hub.c: new USB device m8xxhci-1, assigned address 4
+	Manufacturer:
+	Product: USB Disk Pro
+	SerialNumber: 07531E630012
+	scsi0 : SCSI emulation for USB Mass Storage devices
 
-I'm a bit confused by the statement above.  The code you present is  
-from gianfar.c, and is certainly not a bug.  It is possible you are  
-using an older version of the code, which has a bug, which is fixed  
-by adding these lines above the code you show:
-
-         tempval = gfar_read(&priv->regs->dmactrl);
-         tempval &= ~(DMACTRL_GRS | DMACTRL_GTS);
-         gfar_write(&priv->regs->dmactrl, tempval);
-
-This fixes a problem where setting GRS and GTS when they're already  
-set doesn't initiate the graceful stop.  But if you are using 2.6.13,  
-you should have this fix.  I suspect that, like I told Junita, you  
-need to make sure the platform code has the right CCSRBAR value set up.
-
->
-> I buy a RMC-G8500 card from GDAtech, I try to build linux-2.6.13.4  
-> from kernel.org and meet the same problems as you had. I test the  
-> same code on freescale 8540_ADS board, it is good.Can you share  
-> some infomation of your progress?
+Which looks okay.  But after a long delay I get:
+	
+	# usb_control/bulk_msg: timeout
+                                
+Then after another delay:
+	
+	# usb-storage: host_reset() requested but not implemented
+	#
 
 
-I'm not familiar with this card.  Are you sure there's support for it  
-in your source tree?
+Then after another delay:
+
+	# scsi: device set offline - command error recover failed: host 0
+	channel 0 id 0 lun 0
+
+After this final message, but not before, the pen drive device appears
+in /proc/bus/usb/devices:
+
+	# cat /proc/bus/usb/devices
+	T:  Bus=01 Lev=00 Prnt=00 Port=00 Cnt=00 Dev#=  1 Spd=12  MxCh= 1
+	B:  Alloc=  0/900 us ( 0%), #Int=  0, #Iso=  0
+	D:  Ver= 1.10 Cls=09(hub  ) Sub=00 Prot=00 MxPS= 8 #Cfgs=  1
+	P:  Vendor=0000 ProdID=0000 Rev= 0.00
+	S:  Product=USB MPC8xx Root Hub
+	S:  SerialNumber=f0011b60	
+	C:* #Ifs= 1 Cfg#= 1 Atr=40 MxPwr=  0mA
+	I:  If#= 0 Alt= 0 #EPs= 1 Cls=09(hub  ) Sub=00 Prot=00 Driver=hub
+	E:  Ad=81(I) Atr=03(Int.) MxPS=   2 Ivl=255ms
+	T:  Bus=01 Lev=01 Prnt=01 Port=00 Cnt=01 Dev#=  2 Spd=12  MxCh= 0
+	D:  Ver= 1.10 Cls=00(>ifc ) Sub=00 Prot=00 MxPS= 8 #Cfgs=  1
+	P:  Vendor=0d7d ProdID=0120 Rev= 1.00
+	S:  Manufacturer=
+	S:  Product=USB Disk Pro
+	S:  SerialNumber=07531E630012
+	C:* #Ifs= 1 Cfg#= 1 Atr=80 MxPwr=100mA
+	I:  If#= 0 Alt= 0 #EPs= 3 Cls=08(stor.) Sub=04 Prot=00
+	Driver=usb-storage E:  Ad=81(I) Atr=02(Bulk) MxPS=  64 Ivl=0ms
+	E:  Ad=02(O) Atr=02(Bulk) MxPS=  64 Ivl=0ms
+	E:  Ad=83(I) Atr=03(Int.) MxPS=   2 Ivl=1ms
 
 
-Andy Fleming
+
+Does anybody have any idea what could be causing this problem?  The
+HCI is clearly able to communicate with the device because it
+identifies it.  But I don't know why the timeout should occur!
+
+
+Alex
+
+
+PS A possibly related problem: I have built sd_mod.o as a module, and
+I can modprobe sd_mod okay.  However, after I have run modprobe I
+still do not see an "sd" block device in /proc/devices.  I have no
+idea why though....
