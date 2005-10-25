@@ -1,22 +1,18 @@
-Return-Path: <ajz@cambridgebroadband.com>
-Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
-	[217.204.121.83])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D1B516860C
+Return-Path: <shakthimaan@gmail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.206])
+	by ozlabs.org (Postfix) with ESMTP id C7DA3685A3
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 25 Oct 2005 18:51:15 +1000 (EST)
-Date: Tue, 25 Oct 2005 09:51:10 +0100
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Message-Id: <20051025095110.6492e7a0.ajz@cambridgebroadband.com>
-In-Reply-To: <435D088C.9060000@ru.mvista.com>
-References: <20051024170707.5068be0a.ajz@cambridgebroadband.com>
-	<435D088C.9060000@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: m82xxhci USB driver problems
+	Wed, 26 Oct 2005 04:31:25 +1000 (EST)
+Received: by zproxy.gmail.com with SMTP id i11so1039594nzh
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 25 Oct 2005 11:31:24 -0700 (PDT)
+Message-ID: <d16b1c80510251125y7864354ao96f8262e17150aa6@mail.gmail.com>
+Date: Tue, 25 Oct 2005 23:55:04 +0530
+From: Shakthi Kannan <shakthimaan@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: Development for Motorola MPC850DSL
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,10 +23,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, 24 Oct 2005 20:15:08 +0400
-Vitaly Bordug <vbordug@ru.mvista.com> wrote:
+Greetings!
 
-> Maybe there's something with SOF generation - check if RCCR[EIE] is
-> set. Just a pure guess...
+I have few queries on embedded GNU/Linux development for Motorola MPC850DSL=
+.
 
-No, it is set.
+1. Where can I find Linux kernel patches (2.6) specifically for the
+Motorola series?
+
+2. Are there existing drivers available for these peripherals?:
+
+   SRAM - ST TC55V4000
+   SDRAM - Micron 48LC4M16A2
+   RS232 - MAX3243
+   RS485 - MAX3089
+   EEPROM - Atmel AT25010AN-10SI-2.7 - SPI port
+   Ethernet PHY - Intel LXT905LC
+
+3. Can this toolchain be used for 2.6 kernel compilation or do we need
+to build one (maybe using Dan Kegel's scripts)?
+
+http://www.connotech.com/gcc_mpc8xx/powerpc_eabi_mpc850.htm
+
+Any feedback is appreciated.
+
+Thanking you,
+
+SK
+
+--
+Shakthi Kannan, MS
+Software Engineer, Specsoft (Hexaware Technologies)
+[E]: shakthimaan@gmail.com           [M]: (91) 98407-87007
+[W]: http://www.shakthimaan.com   [L]: Chennai, India
