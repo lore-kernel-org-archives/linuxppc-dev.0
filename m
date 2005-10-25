@@ -1,16 +1,21 @@
 Return-Path: <nd@bplan-gmbh.de>
 Received: from natsmtp00.rzone.de (natsmtp00.rzone.de [81.169.145.165])
-	by ozlabs.org (Postfix) with ESMTP id C9684685DC
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Oct 2005 17:31:45 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 95AAC685DC
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Oct 2005 17:33:54 +1000 (EST)
+Received: from [192.168.0.41] (ALyon-253-1-62-186.w86-193.abo.wanadoo.fr
+	[86.193.205.186])
+	by post.webmailer.de (8.13.1/8.13.1) with ESMTP id j9P7XpZv022544
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Oct 2005 09:33:52 +0200 (MEST)
 From: Nicolas DET <nd@bplan-gmbh.de>
-To: Sven Luther <sl@bplan-gmbh.de>, Andrew Morton <akpm@osdl.org>,
-	linuxppc-dev@ozlabs.org
-Content-Type: multipart/mixed; boundary="=-RbFmcnXkIaD0zHykO6oU"
-Date: Tue, 25 Oct 2005 09:31:35 +0200
-Message-Id: <1130225496.3946.2.camel@localhost.localdomain>
+To: linuxppc-dev@ozlabs.org
+In-Reply-To: <1130225496.3946.2.camel@localhost.localdomain>
+References: <1130225496.3946.2.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-15
+Date: Tue, 25 Oct 2005 09:33:50 +0200
+Message-Id: <1130225631.3970.4.camel@localhost.localdomain>
 Mime-Version: 1.0
-Subject: [PATCH 2.6.14-rc5 1/1] : mv643xx_eth_showsram: Added information
-	message when using the SRAM
+Subject: Re: [PATCH 2.6.14-rc5 1/1] : mv643xx_eth_showsram: Added
+	information message when using the SRAM
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,35 +25,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Le mardi 25 octobre 2005 à 09:31 +0200, Nicolas DET a écrit :
+> Added information message when using the SRAM in mv643xx_eth_probe()
+> 
 
---=-RbFmcnXkIaD0zHykO6oU
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+This is a tiny path. Nevertheless, I think it is useful to get this
+information.
 
-Added information message when using the SRAM in mv643xx_eth_probe()
-
-Signed-off-by: Nicolas DET <det.nicolas@free.fr>
-Signed-off-by: Sven Luther <sl@bplan-gmbh.de>
-
-
---=-RbFmcnXkIaD0zHykO6oU
-Content-Disposition: attachment; filename=mv643xx_eth_showsram_2.6.14-rc5.diff
-Content-Type: text/x-patch; name=mv643xx_eth_showsram_2.6.14-rc5.diff;
-	charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
-
-diff -Naur a/drivers/net/mv643xx_eth.c b/drivers/net/mv643xx_eth.c
---- a/drivers/net/mv643xx_eth.c	2005-10-25 09:24:57.952386000 +0200
-+++ b/drivers/net/mv643xx_eth.c	2005-10-25 09:25:02.220386000 +0200
-@@ -1533,6 +1533,9 @@
- 	printk(KERN_NOTICE "%s: RX NAPI Enabled \n", dev->name);
- #endif
- 
-+	if (mp->tx_sram_size > 0)
-+		printk(KERN_NOTICE "%s: Using SRAM\n", dev->name);
-+
- 	return 0;
- 
- out:
-
---=-RbFmcnXkIaD0zHykO6oU--
+-
+Regards
+Nicolas DET
