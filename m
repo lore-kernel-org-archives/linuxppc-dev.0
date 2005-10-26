@@ -1,17 +1,15 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 18CDD685C4
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Oct 2005 07:13:04 +1000 (EST)
-Date: Wed, 26 Oct 2005 14:08:59 -0200
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Andreas Schwab <schwab@suse.de>
-Message-ID: <20051026160859.GA10688@logos.cnet>
-References: <20051026133648.GA10373@logos.cnet> <jezmow3v8n.fsf@sykes.suse.de>
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao07.cox.net (fed1rmmtao07.cox.net [68.230.241.32])
+	by ozlabs.org (Postfix) with ESMTP id D248968583
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Oct 2005 08:37:28 +1000 (EST)
+Date: Wed, 26 Oct 2005 15:02:05 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Message-ID: <20051026220205.GH26475@smtp.west.cox.net>
+References: <20051026133648.GA10373@logos.cnet>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <jezmow3v8n.fsf@sykes.suse.de>
+In-Reply-To: <20051026133648.GA10373@logos.cnet>
 Cc: linuxppc-dev@ozlabs.org
 Subject: Re: Makefile check for older binutils broken?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,29 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Oct 26, 2005 at 09:59:20PM +0200, Andreas Schwab wrote:
-> Marcelo Tosatti <marcelo.tosatti@cyclades.com> writes:
+On Wed, Oct 26, 2005 at 11:36:48AM -0200, Marcelo Tosatti wrote:
 > 
-> > Anyway, surrounding the verification command around an eval expression
-> > does the trick correcting the situation. Is it any good? 
+> Hi,
 > 
-> Not at all.  You have effectively disabled the check completely.
+> While trying to compile 2.6.14-rc4 on my Pegasos (running Debian unstable):
 > 
-> > diff --git a/arch/ppc/Makefile b/arch/ppc/Makefile
-> > index 0432a25..cdd9250 100644
-> > --- a/arch/ppc/Makefile
-> > +++ b/arch/ppc/Makefile
-> > @@ -126,7 +126,7 @@ checkbin:
-> >  			false; \
-> >  		fi ; \
-> >  	fi
-> > -	@if ! /bin/echo dssall | $(AS) -many -o $(TOUT) >/dev/null 2>&1 ; then \
-> > +	@if ! [[ "/bin/echo dssall | $(AS) -many -o $(TOUT) >/dev/null 2>&1" ]] ; then \
-> 
-> A non-empty string is always true.
+> make[2]: Entering directory `/home/marcelo/8xx/linux-2.6.14-rc4'
+> *** 2.6 kernels no longer build correctly with old versions of binutils.
+> *** Please upgrade your binutils to 2.12.1 or newer
+> make[2]: *** [checkbin] Error 1
 
-Doh - it seemed too easy. I'll go search for some clue (and buy a shell book).
+What's your CONFIG_SHELL set to?
 
-I bet either Make or bash is screwing up.
+[snip]
+> marcelo@pegasos:~$ /bin/echo dssall | as -many -o /tmp/output.as >/dev/null 2>&1
+> marcelo@pegasos:~$ echo $?
 
-Thanks
+What about if you run the whole test on shell (if ...), does it work there? 
+What shell are you running?
+
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
