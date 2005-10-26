@@ -1,12 +1,19 @@
-Return-Path: <galak@freescale.com>
-Date: Wed, 26 Oct 2005 09:56:39 -0500 (CDT)
-From: Kumar Gala <galak@freescale.com>
-To: Paul Mackerras <paulus@samba.org>
-Message-ID: <Pine.LNX.4.61.0510260956110.6094@linen.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev <linuxppc64-dev@ozlabs.org>
-Subject: [PATCH] powerpc: only build idle_6xx for 6xx
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 932FC685DC
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Oct 2005 04:51:34 +1000 (EST)
+Received: from logos.cnet (localhost [127.0.0.1])
+	by hera.kernel.org (8.13.1/8.13.1) with ESMTP id j9QIea56016416
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Oct 2005 11:40:36 -0700
+Date: Wed, 26 Oct 2005 11:36:48 -0200
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <20051026133648.GA10373@logos.cnet>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Subject: Makefile check for older binutils broken?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,36 +23,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-For the current time idle_6xx only applies to 6xx ppc32 CPUs
 
-Signed-off-by: Kumar K. Gala <kumar.gala@freescale.com>
+Hi,
 
----
-commit e19eaf379ab1a633eea2d5ff0e0d99ca834324f1
-tree cf91db25a28f8f1d9d2426bc8b70c29d94aa249f
-parent b6a4ce526a87bd8a99a396ac993240d6d3239852
-author Kumar K. Gala <kumar.gala@freescale.com> Wed, 26 Oct 2005 09:37:54 -0500
-committer Kumar K. Gala <kumar.gala@freescale.com> Wed, 26 Oct 2005 09:37:54 -0500
+While trying to compile 2.6.14-rc4 on my Pegasos (running Debian unstable):
 
- arch/powerpc/kernel/Makefile |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+make[2]: Entering directory `/home/marcelo/8xx/linux-2.6.14-rc4'
+*** 2.6 kernels no longer build correctly with old versions of binutils.
+*** Please upgrade your binutils to 2.12.1 or newer
+make[2]: *** [checkbin] Error 1
 
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -27,13 +27,14 @@ extra-$(CONFIG_40x)		:= head_4xx.o
- extra-$(CONFIG_44x)		:= head_44x.o
- extra-$(CONFIG_FSL_BOOKE)	:= head_fsl_booke.o
- extra-$(CONFIG_8xx)		:= head_8xx.o
-+extra-$(CONFIG_6xx)		+= idle_6xx.o
- extra-$(CONFIG_PPC64)		+= entry_64.o
- extra-$(CONFIG_PPC_FPU)		+= fpu.o
- extra-y				+= vmlinux.lds
- 
- obj-y				+= process.o init_task.o time.o \
- 				   prom.o systbl.o traps.o setup-common.o
--obj-$(CONFIG_PPC32)		+= entry_32.o idle_6xx.o setup_32.o misc_32.o
-+obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o misc_32.o
- obj-$(CONFIG_PPC64)		+= setup_64.o misc_64.o
- obj-$(CONFIG_PPC_OF)		+= prom_init.o
- obj-$(CONFIG_MODULES)		+= ppc_ksyms.o
+Even though Debian uses a recent version of binutils:
+
+GNU assembler 2.16.1 Debian GNU/Linux
+Copyright 2005 Free Software Foundation, Inc.
+This program is free software; you may redistribute it under the terms of
+the GNU General Public License.  This program has absolutely no warranty.
+This assembler was configured for a target of `powerpc-linux-gnu'.
+
+The return value of the verification command is 0:
+
+marcelo@pegasos:~$ /bin/echo dssall | as -many -o /tmp/output.as >/dev/null 2>&1
+marcelo@pegasos:~$ echo $?
+0
+
+So somehow the verification inside the Makefile fails (maybe a make or shell 
+bug? not sure).
+
+Anyway, surrounding the verification command around an eval expression
+does the trick correcting the situation. Is it any good? 
+
+I'm not sure what to expect from older binutils versions as I don't have
+any around at the moment for testing.
+
+diff --git a/arch/ppc/Makefile b/arch/ppc/Makefile
+index 0432a25..cdd9250 100644
+--- a/arch/ppc/Makefile
++++ b/arch/ppc/Makefile
+@@ -126,7 +126,7 @@ checkbin:
+ 			false; \
+ 		fi ; \
+ 	fi
+-	@if ! /bin/echo dssall | $(AS) -many -o $(TOUT) >/dev/null 2>&1 ; then \
++	@if ! [[ "/bin/echo dssall | $(AS) -many -o $(TOUT) >/dev/null 2>&1" ]] ; then \
+ 		echo -n '*** ${VERSION}.${PATCHLEVEL} kernels no longer build ' ; \
+ 		echo 'correctly with old versions of binutils.' ; \
+ 		echo '*** Please upgrade your binutils to 2.12.1 or newer' ; \
