@@ -1,19 +1,17 @@
-Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B30D9685CF
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Oct 2005 05:59:27 +1000 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-References: <20051026133648.GA10373@logos.cnet>
-Date: Wed, 26 Oct 2005 21:59:20 +0200
-In-Reply-To: <20051026133648.GA10373@logos.cnet> (Marcelo Tosatti's message of
-	"Wed, 26 Oct 2005 11:36:48 -0200")
-Message-ID: <jezmow3v8n.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 18CDD685C4
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Oct 2005 07:13:04 +1000 (EST)
+Date: Wed, 26 Oct 2005 14:08:59 -0200
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Andreas Schwab <schwab@suse.de>
+Message-ID: <20051026160859.GA10688@logos.cnet>
+References: <20051026133648.GA10373@logos.cnet> <jezmow3v8n.fsf@sykes.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <jezmow3v8n.fsf@sykes.suse.de>
 Cc: linuxppc-dev@ozlabs.org
 Subject: Re: Makefile check for older binutils broken?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,30 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Marcelo Tosatti <marcelo.tosatti@cyclades.com> writes:
+On Wed, Oct 26, 2005 at 09:59:20PM +0200, Andreas Schwab wrote:
+> Marcelo Tosatti <marcelo.tosatti@cyclades.com> writes:
+> 
+> > Anyway, surrounding the verification command around an eval expression
+> > does the trick correcting the situation. Is it any good? 
+> 
+> Not at all.  You have effectively disabled the check completely.
+> 
+> > diff --git a/arch/ppc/Makefile b/arch/ppc/Makefile
+> > index 0432a25..cdd9250 100644
+> > --- a/arch/ppc/Makefile
+> > +++ b/arch/ppc/Makefile
+> > @@ -126,7 +126,7 @@ checkbin:
+> >  			false; \
+> >  		fi ; \
+> >  	fi
+> > -	@if ! /bin/echo dssall | $(AS) -many -o $(TOUT) >/dev/null 2>&1 ; then \
+> > +	@if ! [[ "/bin/echo dssall | $(AS) -many -o $(TOUT) >/dev/null 2>&1" ]] ; then \
+> 
+> A non-empty string is always true.
 
-> Anyway, surrounding the verification command around an eval expression
-> does the trick correcting the situation. Is it any good? 
+Doh - it seemed too easy. I'll go search for some clue (and buy a shell book).
 
-Not at all.  You have effectively disabled the check completely.
+I bet either Make or bash is screwing up.
 
-> diff --git a/arch/ppc/Makefile b/arch/ppc/Makefile
-> index 0432a25..cdd9250 100644
-> --- a/arch/ppc/Makefile
-> +++ b/arch/ppc/Makefile
-> @@ -126,7 +126,7 @@ checkbin:
->  			false; \
->  		fi ; \
->  	fi
-> -	@if ! /bin/echo dssall | $(AS) -many -o $(TOUT) >/dev/null 2>&1 ; then \
-> +	@if ! [[ "/bin/echo dssall | $(AS) -many -o $(TOUT) >/dev/null 2>&1" ]] ; then \
-
-A non-empty string is always true.
-
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Thanks
