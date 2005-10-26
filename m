@@ -1,21 +1,16 @@
-Return-Path: <bgholikh@cisco.com>
-Received: from sj-iport-3.cisco.com (sj-iport-3-in.cisco.com [171.71.176.72])
-	by ozlabs.org (Postfix) with ESMTP id 82DB3685A3
+Return-Path: <galak@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 3D378685C0
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 26 Oct 2005 04:44:25 +1000 (EST)
-Received: from xbh-sjc-231.amer.cisco.com (xbh-sjc-231.cisco.com
-	[128.107.191.100])
-	by sj-core-1.cisco.com (8.12.10/8.12.6) with ESMTP id j9PIhqun023584
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 25 Oct 2005 11:44:20 -0700 (PDT)
+	Wed, 26 Oct 2005 15:27:32 +1000 (EST)
+Date: Wed, 26 Oct 2005 00:27:28 -0500 (CDT)
+From: Kumar Gala <galak@freescale.com>
+To: Paul Mackerras <paulus@samba.org>
+Message-ID: <Pine.LNX.4.61.0510260025590.22489@nylon.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C5D994.156587C3"
-Date: Tue, 25 Oct 2005 11:44:08 -0700
-Message-ID: <F795765B112E7344AF36AA91127964158496CE@xmb-sjc-212.amer.cisco.com>
-From: "Bizhan Gholikhamseh \(bgholikh\)" <bgholikh@cisco.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: compact flash driver
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH] ppc32: Fix warnings due to use of seq_file
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,40 +21,82 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Having a prototype that uses seq_file without always including
+seq_file.h generates a lot of warnings.  This happened when asm/irq.h
+was merged.
 
-------_=_NextPart_001_01C5D994.156587C3
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Moving the prototypes into the file the actualy needs it resolves
+the warnings.
 
-Hello All,
-Are there any compact flash driver supported for Linux 2.6? If there is
-where can i get the source code.
-Thanks,
-Bizhan
+Signed-off-by: Kumar K. Gala <kumar.gala@freescale.com>
 
-------_=_NextPart_001_01C5D994.156587C3
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+---
+commit 42f89bb5e263cd295937b2af57a8e6338560e73f
+tree 89c699d57f424973e8b10d85056d9526902bc2c5
+parent c77ae9103af0c3f77a298a7edd626da0675eddc5
+author Kumar K. Gala <kumar.gala@freescale.com> Wed, 26 Oct 2005 00:25:31 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> Wed, 26 Oct 2005 00:25:31 -0500
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.2800.1498" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D167074318-25102005>Hello=20
-All,</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D167074318-25102005>Are =
-there any=20
-compact flash driver supported for Linux 2.6? If there is where can i =
-get the=20
-source code.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D167074318-25102005>Thanks,</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D167074318-25102005>Bizhan</SPAN></FONT></DIV></BODY></HTML>
+ arch/ppc/platforms/85xx/mpc8540_ads.c        |    2 ++
+ arch/ppc/platforms/85xx/mpc8560_ads.c        |    1 +
+ arch/ppc/platforms/85xx/mpc85xx_ads_common.h |    1 -
+ arch/ppc/platforms/85xx/stx_gp3.c            |    1 +
+ arch/ppc/platforms/85xx/stx_gp3.h            |    1 -
+ 5 files changed, 4 insertions(+), 2 deletions(-)
 
-------_=_NextPart_001_01C5D994.156587C3--
+diff --git a/arch/ppc/platforms/85xx/mpc8540_ads.c b/arch/ppc/platforms/85xx/mpc8540_ads.c
+--- a/arch/ppc/platforms/85xx/mpc8540_ads.c
++++ b/arch/ppc/platforms/85xx/mpc8540_ads.c
+@@ -52,6 +52,8 @@
+ 
+ #include <syslib/ppc85xx_setup.h>
+ 
++extern int mpc85xx_ads_show_cpuinfo(struct seq_file *m);
++
+ /* ************************************************************************
+  *
+  * Setup the architecture
+diff --git a/arch/ppc/platforms/85xx/mpc8560_ads.c b/arch/ppc/platforms/85xx/mpc8560_ads.c
+--- a/arch/ppc/platforms/85xx/mpc8560_ads.c
++++ b/arch/ppc/platforms/85xx/mpc8560_ads.c
+@@ -55,6 +55,7 @@
+ #include <syslib/ppc85xx_common.h>
+ #include <syslib/ppc85xx_setup.h>
+ 
++extern int mpc85xx_ads_show_cpuinfo(struct seq_file *m);
+ 
+ /* ************************************************************************
+  *
+diff --git a/arch/ppc/platforms/85xx/mpc85xx_ads_common.h b/arch/ppc/platforms/85xx/mpc85xx_ads_common.h
+--- a/arch/ppc/platforms/85xx/mpc85xx_ads_common.h
++++ b/arch/ppc/platforms/85xx/mpc85xx_ads_common.h
+@@ -25,7 +25,6 @@
+ #define BCSR_ADDR		((uint)0xf8000000)
+ #define BCSR_SIZE		((uint)(32 * 1024))
+ 
+-extern int mpc85xx_ads_show_cpuinfo(struct seq_file *m);
+ extern void mpc85xx_ads_init_IRQ(void) __init;
+ extern void mpc85xx_ads_map_io(void) __init;
+ 
+diff --git a/arch/ppc/platforms/85xx/stx_gp3.c b/arch/ppc/platforms/85xx/stx_gp3.c
+--- a/arch/ppc/platforms/85xx/stx_gp3.c
++++ b/arch/ppc/platforms/85xx/stx_gp3.c
+@@ -58,6 +58,7 @@
+ #include <syslib/cpm2_pic.h>
+ #include <syslib/ppc85xx_common.h>
+ 
++extern int mpc85xx_show_cpuinfo(struct seq_file *m);
+ 
+ unsigned char __res[sizeof(bd_t)];
+ 
+diff --git a/arch/ppc/platforms/85xx/stx_gp3.h b/arch/ppc/platforms/85xx/stx_gp3.h
+--- a/arch/ppc/platforms/85xx/stx_gp3.h
++++ b/arch/ppc/platforms/85xx/stx_gp3.h
+@@ -42,7 +42,6 @@ extern void mpc85xx_setup_hose(void) __i
+ extern void mpc85xx_restart(char *cmd);
+ extern void mpc85xx_power_off(void);
+ extern void mpc85xx_halt(void);
+-extern int mpc85xx_show_cpuinfo(struct seq_file *m);
+ extern void mpc85xx_init_IRQ(void) __init;
+ extern unsigned long mpc85xx_find_end_of_memory(void) __init;
+ extern void mpc85xx_calibrate_decr(void) __init;
