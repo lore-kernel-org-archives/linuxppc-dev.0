@@ -1,17 +1,24 @@
-Return-Path: <hs@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 0B111685CF
+Return-Path: <ajz@cambridgebroadband.com>
+Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
+	[217.204.121.83])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7CC9F685CB
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 26 Oct 2005 17:35:52 +1000 (EST)
-Message-ID: <1130311000.435f2d58835a8@webmail.mnet-online.de>
-Date: Wed, 26 Oct 2005 09:16:40 +0200
-From: hs@denx.de
-To: vbordug@ru.mvista.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] ppc32: ppc_sys fixes for 8xx and 82xx (whitespaces
-	fixed)
+	Wed, 26 Oct 2005 18:59:40 +1000 (EST)
+Received: from zambia.cambridgebroadband.com (cbluk-gw0.cambridgebroadband.com
+	[217.204.121.82])
+	by cambridgebroadband.com (8.12.8/8.12.8) with SMTP id j9Q8xZ9a010436
+	for <linuxppc-embedded@ozlabs.org>; Wed, 26 Oct 2005 09:59:35 +0100
+Date: Wed, 26 Oct 2005 09:59:35 +0100
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
+To: linuxppc-embedded@ozlabs.org
+Message-Id: <20051026095935.66fe98d8.ajz@cambridgebroadband.com>
+In-Reply-To: <F795765B112E7344AF36AA91127964158496CE@xmb-sjc-212.amer.cisco.com>
+References: <F795765B112E7344AF36AA91127964158496CE@xmb-sjc-212.amer.cisco.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Subject: Re: compact flash driver
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,36 +29,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+On Tue, 25 Oct 2005 11:44:08 -0700
+"Bizhan Gholikhamseh \(bgholikh\)" <bgholikh@cisco.com> wrote:
 
-i tried your Patch on a MPC8270 based Board, and got some
-compilerwarnings, which the following Patch will fix.
+> Hello All,
+> Are there any compact flash driver supported for Linux 2.6? If there
+> is where can i get the source code.
+> Thanks,
+> Bizhan
+> 
 
-Thanks
-Heiko Schocher
 
----
-
- arch/ppc/syslib/m8260_setup.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/arch/ppc/syslib/m8260_setup.c b/arch/ppc/syslib/m8260_setup.c
---- a/arch/ppc/syslib/m8260_setup.c
-+++ b/arch/ppc/syslib/m8260_setup.c
-@@ -28,6 +28,7 @@
- #include <asm/machdep.h>
- #include <asm/bootinfo.h>
- #include <asm/time.h>
-+#include <asm/ppc_sys.h>
-
- #include "cpm2_pic.h"
-
-@@ -74,7 +75,7 @@ m8260_setup_arch(void)
- #endif
-
-        identify_ppc_sys_by_name_and_id(BOARD_CHIP_NAME,
--                               in_be32(CPM_MAP_ADDR + CPM_IMMR_OFFSET));
-+                       in_be32((void *)(CPM_MAP_ADDR + CPM_IMMR_OFFSET)));
-
-        m82xx_board_setup();
- }
+I think that CF cards just get treated the same as any other IDE
+disk by linux.  No special driver needed.
