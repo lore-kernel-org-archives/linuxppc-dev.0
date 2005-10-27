@@ -1,12 +1,20 @@
-Return-Path: <mgreer@mvista.com>
-Received: from hermes.mvista.com (gateway-1237.mvista.com [12.44.186.158])
-	by ozlabs.org (Postfix) with ESMTP id 39CF768583
+Return-Path: <sven.luther@wanadoo.fr>
+Received: from smtp8.wanadoo.fr (smtp8.wanadoo.fr [193.252.22.23])
+	by ozlabs.org (Postfix) with ESMTP id D08706855F
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 28 Oct 2005 06:10:59 +1000 (EST)
-Date: Thu, 27 Oct 2005 13:11:05 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
+	Fri, 28 Oct 2005 06:32:02 +1000 (EST)
+Received: from me-wanadoo.net (localhost [127.0.0.1])
+	by mwinf0808.wanadoo.fr (SMTP Server) with ESMTP id 6D7D71C0027D
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 27 Oct 2005 22:31:59 +0200 (CEST)
+Received: from pegasos (AStrasbourg-251-1-40-23.w82-126.abo.wanadoo.fr
+	[82.126.157.23])
+	by mwinf0808.wanadoo.fr (SMTP Server) with ESMTP id 481551C00264
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 27 Oct 2005 22:31:59 +0200 (CEST)
+Date: Thu, 27 Oct 2005 22:30:17 +0200
 To: "Mark A. Greer" <mgreer@mvista.com>
-Message-ID: <20051027201105.GD13847@mag.az.mvista.com>
+Message-ID: <20051027203017.GA13787@localhost.localdomain>
 References: <ec55b17e0510270617k368b4555gf3f37e07cee3b4e6@mail.gmail.com>
 	<20051027181751.GD9628@mag.az.mvista.com>
 	<20051027184921.GA11742@localhost.localdomain>
@@ -14,6 +22,7 @@ References: <ec55b17e0510270617k368b4555gf3f37e07cee3b4e6@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20051027200447.GC13847@mag.az.mvista.com>
+From: Sven Luther <sven.luther@wanadoo.fr>
 Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: Board based on MPC7447 and MV64462
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -48,11 +57,15 @@ On Thu, Oct 27, 2005 at 01:04:47PM -0700, Mark A. Greer wrote:
 > gets its info from).  If it wasn't, the generic pci code would get
 > confused as would the bridge.
 
-Actually, I guess this is more to hide the bridge from the pci_auto when
-it walks the pci buses.  If the pci resources are already allocated
-correctly (as in pegasos?) it may not confuse the generic pci code.
-Even if it doesn't get confused, its by luck.  The bridge's pci regs
-are NOT pci compliant and, IMHO, its iffy to assume that things woun't
-get messed up.
+The pegasos OF allows access to the pci config area through rtas, and those
+call filter out any dangerous accesses. And since you didn't know about rtas,
+i will explain for others who may be in other cases.
 
-Mark
+RTAS is a OpenFirmware/CHRP extension (RunTimeAbstraction..., not sure about
+the S), which provides a set of methods which will run even when linux has
+taken over and overwritten the firmware, providing stuff like halt/reset,
+pci-read|write-config, nvram-fetch|store, clock access functions, ...
+
+Friendly,
+
+Sven Luther
