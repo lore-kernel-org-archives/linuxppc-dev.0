@@ -1,16 +1,12 @@
-Return-Path: <kumar.gala@freescale.com>
-In-Reply-To: <17248.45467.698310.551177@cargo.ozlabs.ibm.com>
-References: <Pine.LNX.4.61.0510260956110.6094@linen.am.freescale.net>
-	<17248.45467.698310.551177@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v734)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <1C38E8D7-C93F-4524-B66A-55193B468B08@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Date: Thu, 27 Oct 2005 08:45:04 -0500
+Return-Path: <galak@freescale.com>
+Date: Thu, 27 Oct 2005 08:54:36 -0500 (CDT)
+From: Kumar Gala <galak@freescale.com>
 To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org, Kumar Gala <galak@freescale.com>,
-	linuxppc64-dev <linuxppc64-dev@ozlabs.org>
-Subject: Re: [PATCH] powerpc: only build idle_6xx for 6xx
+Message-ID: <Pine.LNX.4.61.0510270854090.27447@nylon.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev <linuxppc64-dev@ozlabs.org>
+Subject: [PATCH][UPDATED] powerpc: only build idle_6xx for 6xx
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,30 +16,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+For the current time idle_6xx only applies to 6xx ppc32 CPUs
 
-On Oct 27, 2005, at 5:53 AM, Paul Mackerras wrote:
+Signed-off-by: Kumar K. Gala <kumar.gala@freescale.com>
 
-> Kumar Gala writes:
->
->
->> For the current time idle_6xx only applies to 6xx ppc32 CPUs
->>
->
->
->> +extra-$(CONFIG_6xx)        += idle_6xx.o
->>
->
->
->> -obj-$(CONFIG_PPC32)        += entry_32.o idle_6xx.o setup_32.o  
->> misc_32.o
->> +obj-$(CONFIG_PPC32)        += entry_32.o setup_32.o misc_32.o
->>
->
-> Why does idle_6xx.o become an extra- rather than an obj- ?
+---
+commit e3b3bc6d075bd1d07caa64bcaa3add128a0cb6f3
+tree e41cfdec6b3565258cb5bee14078a23f8be3b6ff
+parent 0f72dedad02fc2869ddc13ff2f6998ec7dfdcbc1
+author Kumar K. Gala <kumar.gala@freescale.com> Thu, 27 Oct 2005 08:53:36 -0500
+committer Kumar K. Gala <kumar.gala@freescale.com> Thu, 27 Oct 2005 08:53:36 -0500
 
-Because I copied and pasted the line from arch/ppc/kernel/Makefile w/ 
-o paying any attention to it.  I'll send a proper patch :)
+ arch/powerpc/kernel/Makefile |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-(I'm really trying to see if you actually look at our patches or not :)
-
-- kumar
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -33,11 +33,12 @@ extra-y				+= vmlinux.lds
+ 
+ obj-y				+= process.o init_task.o time.o \
+ 				   prom.o systbl.o traps.o setup-common.o
+-obj-$(CONFIG_PPC32)		+= entry_32.o idle_6xx.o setup_32.o misc_32.o
++obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o misc_32.o
+ obj-$(CONFIG_PPC64)		+= setup_64.o misc_64.o
+ obj-$(CONFIG_PPC_OF)		+= prom_init.o
+ obj-$(CONFIG_MODULES)		+= ppc_ksyms.o
+ obj-$(CONFIG_BOOTX_TEXT)	+= btext.o
++obj-$(CONFIG_6xx)		+= idle_6xx.o
+ 
+ ifeq ($(CONFIG_PPC_ISERIES),y)
+ $(obj)/head_64.o: $(obj)/lparmap.s
