@@ -1,20 +1,19 @@
-Return-Path: <wd@denx.de>
-Received: from mailout03.sul.t-online.com (mailout03.sul.t-online.com
-	[194.25.134.81]) by ozlabs.org (Postfix) with ESMTP id 098EC685C1
+Return-Path: <ashish.bijlani@gmail.com>
+Received: from xproxy.gmail.com (xproxy.gmail.com [66.249.82.207])
+	by ozlabs.org (Postfix) with ESMTP id 5F598685D0
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 27 Oct 2005 23:47:51 +1000 (EST)
-To: David Jander <david.jander@protonic.nl>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 27 Oct 2005 14:39:48 +0200."
-	<200510271439.48990.david.jander@protonic.nl>
-Date: Thu, 27 Oct 2005 15:47:35 +0200
-Sender: wd@denx.de
-Message-Id: <20051027134735.8E7C6353E30@atlas.denx.de>
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: MPC8xx support in 2.6 and [PATCH] USB host controller
-	selection...
+	Thu, 27 Oct 2005 23:50:33 +1000 (EST)
+Received: by xproxy.gmail.com with SMTP id t6so663914wxc
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 27 Oct 2005 06:50:32 -0700 (PDT)
+Message-ID: <ec55b17e0510270617k368b4555gf3f37e07cee3b4e6@mail.gmail.com>
+Date: Thu, 27 Oct 2005 18:47:29 +0530
+From: Ashish Bijlani <ashish.bijlani@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_22574_21278703.1130419049883"
+Subject: Board based on MPC7447 and MV64462
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,22 +24,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <200510271439.48990.david.jander@protonic.nl> you wrote:
-> 
-> I am trying to figure out if kernel-2.6.x is already a (stable) option for 
-> MPC8xx processors. Any hints? experience?
-> I just rsynced DENX's git tree (cg-clone will crash on a 404 error).
+------=_Part_22574_21278703.1130419049883
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Make sure to use current versions of git resp. cogito.
+Hi,
 
+I've added platform support for a board based on MPC7447A and MV64462
+Marvell Discovery III system controller. I modified code for Katana to make
+it work for this board. The ethernet and serial are working fine but I don'=
+t
+see anything in "lspci" output. Also I don't see timer in "cat
+/proc/interrupts". Does anybody have any idea on this? Thanks in advance.
 
-Best regards,
+Thanks,
+Ashish
 
-Wolfgang Denk
+------=_Part_22574_21278703.1130419049883
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Every program has at least one bug and can be shortened by  at  least
-one instruction - from which, by induction, one can deduce that every
-program can be reduced to one instruction which doesn't work.
+Hi,<br>
+<br>
+I've added platform support for a board based on MPC7447A and MV64462
+Marvell Discovery III system controller. I modified code for Katana to
+make it work for this board. The ethernet and serial are working fine
+but I don't see anything in &quot;lspci&quot; output. Also I don't see time=
+r in
+&quot;cat /proc/interrupts&quot;. Does anybody have any idea on this? Thank=
+s in
+advance.<br>
+<br>
+Thanks,<br>
+Ashish<br>
+
+------=_Part_22574_21278703.1130419049883--
