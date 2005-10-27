@@ -1,19 +1,21 @@
-Return-Path: <ashish.bijlani@gmail.com>
-Received: from xproxy.gmail.com (xproxy.gmail.com [66.249.82.207])
-	by ozlabs.org (Postfix) with ESMTP id 5F598685D0
+Return-Path: <jeff@theptrgroup.com>
+Received: from mail.theptrgroup.com (unknown [209.183.211.17])
+	by ozlabs.org (Postfix) with ESMTP id 04792685D3
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 27 Oct 2005 23:50:33 +1000 (EST)
-Received: by xproxy.gmail.com with SMTP id t6so663914wxc
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 27 Oct 2005 06:50:32 -0700 (PDT)
-Message-ID: <ec55b17e0510270617k368b4555gf3f37e07cee3b4e6@mail.gmail.com>
-Date: Thu, 27 Oct 2005 18:47:29 +0530
-From: Ashish Bijlani <ashish.bijlani@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_22574_21278703.1130419049883"
-Subject: Board based on MPC7447 and MV64462
+	Fri, 28 Oct 2005 00:36:06 +1000 (EST)
+From: Jeff Angielski <jeff@theptrgroup.com>
+To: Wolfgang Denk <wd@denx.de>
+In-Reply-To: <20051027134735.8E7C6353E30@atlas.denx.de>
+References: <20051027134735.8E7C6353E30@atlas.denx.de>
+Content-Type: text/plain
+Date: Thu, 27 Oct 2005 10:28:43 -0400
+Message-Id: <1130423323.8477.24.camel@nighteyes.site>
+Mime-Version: 1.0
+Cc: David Jander <david.jander@protonic.nl>,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: MPC8xx support in 2.6 and [PATCH] USB host controller
+	selection...
+Reply-To: jeff@theptrgroup.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,40 +26,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_22574_21278703.1130419049883
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Thu, 2005-10-27 at 15:47 +0200, Wolfgang Denk wrote:
+> In message <200510271439.48990.david.jander@protonic.nl> you wrote:
+> > 
+> > I am trying to figure out if kernel-2.6.x is already a (stable) option for 
+> > MPC8xx processors. Any hints? experience?
+> > I just rsynced DENX's git tree (cg-clone will crash on a 404 error).
+> 
+> Make sure to use current versions of git resp. cogito.
 
-Hi,
+I get the same errors using using the latest versions: git version
+0.99.8f and cogito-0.15.  FWIW, the u-boot.git came down just fine.
 
-I've added platform support for a board based on MPC7447A and MV64462
-Marvell Discovery III system controller. I modified code for Katana to make
-it work for this board. The ethernet and serial are working fine but I don'=
-t
-see anything in "lspci" output. Also I don't see timer in "cat
-/proc/interrupts". Does anybody have any idea on this? Thanks in advance.
 
-Thanks,
-Ashish
+> cg-clone http://www.denx.de/git/linux-2.6-denx.git linux-2.6-denx
+defaulting to local storage area
+10:24:51 URL:http://www.denx.de/git/linux-2.6-denx.git/HEAD [41/41] ->
+"refs/heads/.origin-fetching" [1]
+progress: 1 objects, 264 bytes
+walk b2304e619029b177db18dc771f2b9ba8cd273b81
+progress: 3 objects, 1180 bytes
+walk cb7f6ec5c2d64db78984188461dc29b72e924180
+progress: 4 objects, 1424 bytes
+error: The requested URL returned error: 404
+Getting pack list
+error: The requested URL returned error: 404
+Getting alternates list
+error: Unable to find ca442d313d86dc67e0a2e5d584b465bd382cbf5c under
+http://www.denx.de/git/linux-2.6-denx.git/
 
-------=_Part_22574_21278703.1130419049883
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Cannot obtain needed blob ca442d313d86dc67e0a2e5d584b465bd382cbf5c
+while processing commit cb7f6ec5c2d64db78984188461dc29b72e924180.
+cg-fetch: objects fetch failed
+cg-clone: fetch failed
 
-Hi,<br>
-<br>
-I've added platform support for a board based on MPC7447A and MV64462
-Marvell Discovery III system controller. I modified code for Katana to
-make it work for this board. The ethernet and serial are working fine
-but I don't see anything in &quot;lspci&quot; output. Also I don't see time=
-r in
-&quot;cat /proc/interrupts&quot;. Does anybody have any idea on this? Thank=
-s in
-advance.<br>
-<br>
-Thanks,<br>
-Ashish<br>
 
-------=_Part_22574_21278703.1130419049883--
+Jeff Angielski
+The PTR Group
