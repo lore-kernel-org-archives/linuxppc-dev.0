@@ -1,22 +1,21 @@
-Return-Path: <olh@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id F0CB468621
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Oct 2005 07:43:04 +1000 (EST)
-Received: from Relay1.suse.de (mail2.suse.de [195.135.221.8])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by mx2.suse.de (Postfix) with ESMTP id DE2261B53D
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Oct 2005 23:42:59 +0200 (CEST)
-Date: Fri, 28 Oct 2005 23:42:59 +0200
-From: Olaf Hering <olh@suse.de>
-To: linuxppc-dev@ozlabs.org
-Message-ID: <20051028214258.GA30726@suse.de>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7028068627
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Oct 2005 08:39:20 +1000 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Noah yan <noah.yan@gmail.com>
+In-Reply-To: <59521b110510280856y9c39f4by54cadd01830ded07@mail.gmail.com>
+References: <59521b110510270605k6e098826w2d37c50e82ddd758@mail.gmail.com>
+	<1130452630.29054.77.camel@gaston>
+	<59521b110510280856y9c39f4by54cadd01830ded07@mail.gmail.com>
+Content-Type: text/plain
+Date: Sat, 29 Oct 2005 08:39:04 +1000
+Message-Id: <1130539144.29054.119.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Subject: memcpy for unaligned memory regions
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: How the linux use BAT
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,134 +25,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The vmlinux.coff is constantly crashing for me, depending on the size
-and location of the vmlinux.gz and the ramdisk. The 601 can not handle
-unaligned memory access that cross a page boundary (or whatever).
-So I tweaked the memcpy.S from arch/ppc64/boot to deal with this. 
-Does this look ok?
+On Fri, 2005-10-28 at 10:56 -0500, Noah yan wrote:
 
+>         
+> I am sorry that I did make it clear. It is a little confusing for me
+> between the hardware segment and the term "segment" or "section" used
+> in a process's address space (AS). One of my understanding is that a
+> section in a process's AS is mapped to a hardware segment, which sound
+> straightforward but maybe wrong because a process binary may have lots
+> of segments that are not the same size. 
 
-	.globl	memmove
-memmove:
-	cmpwi	0,r5,0
-	beqlr
-	cmplw	0,r3,r4
-	bgt	backwards_memcpy
-	/* fall through */
+No, there is no relationship. The kernel just sets up enough segments to
+map the entire process address space, this is irrelevant to the actual
+program sections.
 
-	.globl	memcpy
-memcpy:
-	cmpwi	0,r5,0
-	beqlr
-	andi.	r0,r4,3			/* get src word aligned */
-	beq	20f
-10:	subfic	r0,r0,4
-	cmpd	r0,r5
-	blt	11f
-	mr	r0,r5
-11:	mtctr	r0
-12:	lbz	r7,0(r4)
-	stb	r7,0(r3)
-	addi	r4,r4,1
-	addi	r3,r3,1
-	bdnz	12b
-	subf.	r5,r0,r5
-	beqlr
-20:	andi.	r0,r3,3			/* get dest word aligned */
-	beq	30f
-	subfic	r0,r0,4
-	cmpd	r0,r5
-	blt	21f
-	mr	r0,r5
-21:	mtctr	r0
-22:	lbz	r7,0(r4)
-	stb	r7,0(r3)
-	addi	r4,r4,1
-	addi	r3,r3,1
-	bdnz	22b
-	subf.	r5,r0,r5
-	beqlr
-	andi.	r0,r4,3			/* get src word aligned */
-	bne	10b
-30:
-	rlwinm.	r7,r5,32-3,3,31		/* r7 = r5 >> 3 */
-	addi	r6,r3,-4
-	addi	r4,r4,-4
-	beq	32f			/* if less than 8 bytes to do */
-	mtctr	r7
-31:	lwz	r7,4(r4)
-	lwzu	r8,8(r4)
-	stw	r7,4(r6)
-	stwu	r8,8(r6)
-	bdnz	31b
-	andi.	r5,r5,7
-32:	cmplwi	0,r5,4
-	blt	33f
-	lwzu	r0,4(r4)
-	addi	r5,r5,-4
-	stwu	r0,4(r6)
-33:	cmpwi	0,r5,0
-	beqlr
-	mtctr	r5
-	addi	r4,r4,3
-	addi	r6,r6,3
-34:	lbzu	r0,1(r4)
-	stbu	r0,1(r6)
-	bdnz	34b
-	blr
+> Pure segment VM is also hard to maintain memory efficiency.  Or,
+> several sections, such as different data section are in segments. I
+> remember in Linux x86 (posibbly 2.4), segment is not fully used in
+> term of VM. The segmentation of the kernel and userland are defined
+> upon booting and never changed later on. 
 
-	.globl	backwards_memcpy
-backwards_memcpy:
-	add	r6,r3,r5
-	add	r4,r4,r5
+The segmentation mecanism on PowerPC is slightly different. We change
+segments when context switching as they contain the "vsid" which acts as
+a kind of context ID, thus we can keep entry for more than one
+context/process in the hash table, we don't have to flush it on context
+switches.
 
-	andi.	r0,r4,3			/* get src word aligned */
-	beq	20f
-10:	cmpd	r0,r5
-	blt	11f
-	mr	r0,r5
-11:	mtctr	r0
-12:	lbzu	r7,-1(r4)
-	stbu	r7,-1(r6)
-	bdnz	12b
-	subf.	r5,r0,r5
-	beqlr
-20:	andi.	r0,r6,3			/* get dest word aligned */
-	beq	30f
-	cmpd	r0,r5
-	blt	21f
-	mr	r0,r5
-21:	mtctr	r0
-22:	lbzu	r7,-1(r4)
-	stbu	r7,-1(r6)
-	bdnz	22b
-	subf.	r5,r0,r5
-	beqlr
-	andi.	r0,r4,3			/* get src word aligned */
-	bne	10b
-30:
-	rlwinm.	r7,r5,32-3,3,31		/* r7 = r5 >> 3 */
-	beq	32f
-	mtctr	r7
-31:	lwz	r7,-4(r4)
-	lwzu	r8,-8(r4)
-	stw	r7,-4(r6)
-	stwu	r8,-8(r6)
-	bdnz	31b
-	andi.	r5,r5,7
-32:	cmplwi	0,r5,4
-	blt	33f
-	lwzu	r0,-4(r4)
-	subi	r5,r5,4
-	stwu	r0,-4(r6)
-33:	cmpwi	0,r5,0
-	beqlr
-	mtctr	r5
-34:	lbzu	r0,-1(r4)
-	stbu	r0,-1(r6)
-	bdnz	34b
-	blr
-
--- 
-short story of a lazy sysadmin:
- alias appserv=wotan
+> Thanks very much!
+> Noah
+> 
+> 
+> 
+>  
+> 
+>         The way linux uses BATs is for the kernel linear mapping.
+>         Linux uses by
+>         default (though that can be configued differently) a 3G/1G
+>         split, that 
+>         is the low 3G of address space are used by userland (and
+>         covered by the
+>         user page tables) and the high 1G are used by the kernel. That
+>         kernel
+>         space itself is split into a bottom part up to 768Mb (by
+>         default, that 
+>         can also be configured differently) which is the linear
+>         mapping, that is
+>         a single linear mapping of all RAM from 0xc0000000. The rest
+>         of the
+>         kernel space is mapped with page tables and known as the
+>         kernel virtual 
+>         space, used for vmalloc and ioremap.
+>         
+>         The BATs are used for the linear mapping. They "override" the
+>         page
+>         tables over it if any (though we usually don't bother setting
+>         up PTEs
+>         over the space that is BAT mapped). They basically improve
+>         performances 
+>         by not requiring to go through the hash trasnslation for most
+>         kernel
+>         accesses to memory and not using space in the TLB/ERAT.
+>         
+>         Ben.
+>         
+>         
+> 
