@@ -1,21 +1,19 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 195B968613
+Return-Path: <wd@denx.de>
+Received: from mailout04.sul.t-online.com (mailout04.sul.t-online.com
+	[194.25.134.18]) by ozlabs.org (Postfix) with ESMTP id 1AE3668615
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 29 Oct 2005 06:29:54 +1000 (EST)
-Date: Fri, 28 Oct 2005 13:21:09 -0200
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: David Jander <david.jander@protonic.nl>, Greg KH <greg@kroah.com>
-Message-ID: <20051028152109.GB18915@logos.cnet>
-References: <200510271439.48990.david.jander@protonic.nl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200510271439.48990.david.jander@protonic.nl>
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: MPC8xx support in 2.6 and [PATCH] USB host controller
-	selection...
+	Sat, 29 Oct 2005 06:37:36 +1000 (EST)
+To: David Jander <david.jander@protonic.nl>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 28 Oct 2005 12:57:22 +0200."
+	<200510281257.22650.david.jander@protonic.nl>
+Date: Fri, 28 Oct 2005 22:37:27 +0200
+Sender: wd@denx.de
+Message-Id: <20051028203727.76C2C353E3E@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Kernel 2.6 on MPC8xx performance trouble... 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,98 +24,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Greg, please refer to the end of the message.
-
-On Thu, Oct 27, 2005 at 02:39:48PM +0200, David Jander wrote:
+In message <200510281257.22650.david.jander@protonic.nl> you wrote:
+>
+> > What is 'a' and 'b'? The only other explanation I can see is that your
+> > "Do something" is more memory heavy than you think - array calculations?
+> > (Cache problems should probably give a worse result, but you could check
+> > that those config registers are the same).
 > 
-> Hi all,
-> 
-> I am trying to figure out if kernel-2.6.x is already a (stable) option for 
-> MPC8xx processors. Any hints? experience?
+> They are just integers with fixed start values. These are in the loop, so it's 
+> not an empty loop and hopefully the compiler won't out-optimize it so easily 
+> (that is of course without specifying any optimization flags). Please don't 
+> tell me it's a lousy benchmark, because I already know that! Be it as lousy 
+> as it is, I shouldn't get _those_ results IMHO.
 
-We're using v2.6.11 on production (with a custom board). Has survived
-internal QA procedure, which took a couple of months under various
-stress tests.
+Indeed, you should not get such results.  If  you  compare  with  the
+lmbench  results  of  our 2.4/2.6 comparison, you will notice that we
+did NOT see such behaviour. There was a  perfromnce  degradation  for
+pure  integer tests, due to increased system overhead, but far from a
+factor of 2.
+See http://www.denx.de/wiki/pub/Know/Linux24vs26/lmbench_results
 
-> I just rsynced DENX's git tree (cg-clone will crash on a 404 error).
-> Problems I have found until now:
-> 
-> - Processor identification is still shady. Thanks to Marcello's patch 
-> yesterday, it now boots up without problems, but this definitely needs to be 
-> done. Who is working on this part?
+Best regards,
 
-Vitaly, can you please push your patch upstream now that v2.6.14 is out?
+Wolfgang Denk
 
-> - USB Kconfig file for 2.6 kernel is broken. It is not correct to assume that 
-> you either have a PCI interface or a processor with internal HCI. Proof: We 
-> have a board based on MPC852T (no internal UHCI) which can plug into an 
-> (optional) daughter board with a ISP1160 on it. See attached patch.
-
-Is it driven by the UHCI driver?
-
->From http://www.semiconductors.philips.com/cgi-bin/pldb/pip/isp1160.html
-
-The ISP1160 is an embedded Universal Serial Bus (USB) Host Controller
-(HC) that complies with Universal Serial Bus Specification Rev. 2.0,
-supporting data transfer at full-speed (12 Mbit/s) and low-speed (1.5
-Mbit/s).
-
-> Maybe the patch should be sent elsewere since it has not much to do with PPC, 
-> so can someone please tell me where?
-
-I guess that you should have something like
-
-config USB_ARCH_HAS_HCD
-	default y if USB_ARCH_HAS_OHCI
-	default y if USB_ARCH_HAS_UHCI
-
-config USB_ARCH_UHCI
-	default y if 8xx
-
-Greg?
-
-> Greetings,
-> 
-> -- 
-> David Jander
-
-> --- drivers/usb/Kconfig.old	2005-10-27 14:26:03.701868944 +0200
-> +++ drivers/usb/Kconfig	2005-10-27 14:26:37.729695928 +0200
-> @@ -4,37 +4,9 @@
->  
->  menu "USB support"
->  
-> -# Host-side USB depends on having a host controller
-> -# NOTE:  dummy_hcd is always an option, but it's ignored here ...
-> -# NOTE:  SL-811 option should be board-specific ...
-> -config USB_ARCH_HAS_HCD
-> -	boolean
-> -	default y if USB_ARCH_HAS_OHCI
-> -	default y if ARM				# SL-811
-> -	default PCI
-> -
-> -# many non-PCI SOC chips embed OHCI
-> -config USB_ARCH_HAS_OHCI
-> -	boolean
-> -	# ARM:
-> -	default y if SA1111
-> -	default y if ARCH_OMAP
-> -	default y if ARCH_LH7A404
-> -	default y if ARCH_S3C2410
-> -	default y if PXA27x
-> -	# PPC:
-> -	default y if STB03xxx
-> -	default y if PPC_MPC52xx
-> -	default y if 440EP
-> -	# MIPS:
-> -	default y if SOC_AU1X00
-> -	# more:
-> -	default PCI
-> -
->  # ARM SA1111 chips have a non-PCI based "OHCI-compatible" USB host interface.
->  config USB
->  	tristate "Support for Host-side USB"
-> -	depends on USB_ARCH_HAS_HCD
->  	---help---
->  	  Universal Serial Bus (USB) is a specification for a serial bus
->  	  subsystem which offers higher speeds and more features than the
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+A fanatic is a person who can't change his mind and won't change  the
+subject.                                          - Winston Churchill
