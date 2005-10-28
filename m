@@ -1,16 +1,14 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao09.cox.net (fed1rmmtao09.cox.net [68.230.241.30])
-	by ozlabs.org (Postfix) with ESMTP id 00680685CF
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Oct 2005 03:30:45 +1000 (EST)
-Date: Fri, 28 Oct 2005 10:30:41 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Message-ID: <20051028103041.B15268@cox.net>
+Return-Path: <schwab@suse.de>
+From: Andreas Schwab <schwab@suse.de>
+To: "Christopher Friesen" <cfriesen@nortel.com>
 References: <17250.8725.358204.62510@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17250.8725.358204.62510@cargo.ozlabs.ibm.com>;
-	from paulus@samba.org on Fri, Oct 28, 2005 at 11:05:25PM +1000
+	<43624B30.20600@nortel.com>
+Date: Fri, 28 Oct 2005 19:54:58 +0200
+In-Reply-To: <43624B30.20600@nortel.com> (Christopher Friesen's message of
+	"Fri, 28 Oct 2005 10:00:48 -0600")
+Message-ID: <jemzkto7bh.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
 Subject: Re: Patches for 2.6.15
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -22,19 +20,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 28, 2005 at 11:05:25PM +1000, Paul Mackerras wrote:
-> If anyone has patches for arch/ppc{,64} and include/asm-ppc{,64} that
-> they would like to see go upstream now that 2.6.14 is out, other than
-> patches that are already in the powerpc-merge tree, please let me
-> know.  I am planning to ask Linus to pull the powerpc-merge tree
-> shortly, and that will probably break your patches.
+"Christopher Friesen" <cfriesen@nortel.com> writes:
 
-Ok, we have a set of 4xx patches that I plan to send to Andrew.
-They are some existing 4xx SoC/board updates as well as a new
-SoC/board. They are obviously mostly confined to the 4xx code paths
-but there's likely conflicts in changes to Makefiles, etc.
+> Under the unified architecture, what is the machine type in the "uname" 
+> outout?
 
-Would you prefer these going upstream before or after the 
-powerpc-merge pull?
+I don't think that should change in any way.
 
--Matt
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
