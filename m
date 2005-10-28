@@ -3,19 +3,20 @@ Received: from lists.sandelman.ca (cod.sandelman.ca [192.139.46.139])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client CN "lists.sandelman.ca",
 	Issuer "Michael Richardson" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id C43D76861E
+	by ozlabs.org (Postfix) with ESMTP id 99FB86861E
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 31 Oct 2005 16:12:40 +1100 (EST)
-To: =?UTF-8?Q?=E5=BE=90=E5=B0=8F=E5=A8=81=E7=9A=84EMAIL?= <rober@opnet.com.tw>
-In-Reply-To: Message from =?UTF-8?Q?=E5=BE=90=E5=B0=8F=E5=A8=81=E7=9A=84EMAIL?=
-	<rober@opnet.com.tw>
-	of "Thu, 27 Oct 2005 15:04:27 +0800." <1130396668.15267.6.camel@banana>
-References: <1130396668.15267.6.camel@banana> 
-Date: Fri, 28 Oct 2005 09:50:36 -0400
-Message-ID: <5283.1130507436@marajade.sandelman.ca>
+	Mon, 31 Oct 2005 16:12:42 +1100 (EST)
+To: Alex Zeffertt <ajz@cambridgebroadband.com>
+In-Reply-To: Message from Alex Zeffertt <ajz@cambridgebroadband.com> of "Wed,
+	26 Oct 2005 09:59:35 BST."
+	<20051026095935.66fe98d8.ajz@cambridgebroadband.com>
+References: <F795765B112E7344AF36AA91127964158496CE@xmb-sjc-212.amer.cisco.com>
+	<20051026095935.66fe98d8.ajz@cambridgebroadband.com>
+Date: Fri, 28 Oct 2005 10:42:54 -0400
+Message-ID: <6976.1130510574@marajade.sandelman.ca>
 From: mcr <mcr@marajade.sandelman.ca>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: about HDLC Ethernet Driver 
+Subject: Re: compact flash driver 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,22 +30,23 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 -----BEGIN PGP SIGNED MESSAGE-----
 
 
->>>>> "rober" == rober  <UTF-8> writes:
-    rober>     I used Linux 2.4.25 at my custom MPC852T and I want to
-    rober> used scc with HDLC mode to communiction with another
-    rober> MPC852T. How to build a ethernet base on HDLC for
-    rober> communication with these two CPU?
+>>>>> "Alex" == Alex Zeffertt <ajz@cambridgebroadband.com> writes:
+    >> Hello All, Are there any compact flash driver supported for Linux
+    >> 2.6? If there is where can i get the source code.  Thanks, Bizhan
+    >> 
 
-  So, you have two MPC852Ts on a board, and they are cross-wired such
-that you send HDLC between them using the scc, and you want to:
-(my question):
-    a) you want to reprogram the scc's to send ethernet frames?
-    b) you want to encapsulate ethernet frames in HDLC?
-    c) you want to connect the two 852s using some kind of IP
-       networking?
+    Alex> I think that CF cards just get treated the same as any other
+    Alex> IDE disk by linux.  No special driver needed.
 
-  HDLC is commonly used on T1 links, and one method puts frames that
-essentially look like ethernet frames over it. 
+  Yes. There are some gotchas with newer pcmcia/cardbus flash cards.
+For instance, Silicon Systems devices claim to support IORDY, but don't,
+which results in a system hang.  I imagine that the same kind of things
+will show up in newer CF devices, although I think that CF can't support
+DMA.
+  It also depends upon how you interface CF: via an IDE controller, or
+via a cardbus interface.
+
+  I expect to have a git tree with stuff available soon.
 
 - -- 
 ]       ON HUMILITY: to err is human. To moo, bovine.           |  firewalls  [
@@ -55,9 +57,9 @@ essentially look like ethernet frames over it.
 Version: GnuPG v1.2.2 (GNU/Linux)
 Comment: Finger me for keys
 
-iQCVAwUBQ2IsqoqHRg3pndX9AQFeswP/Rrsj0USUKFL5kEXBDnUznWtEFJLAI1eM
-wmuAIQBw8idS/hPhbV2ox9pEeZyUk419rUigVMi9LkVqBZzyJaRulN8SdGsR28sv
-X7N0uD0zNGP0MU0cerW0QXGad1oUkElWELkM2YnUWnv3+1AXW2fsoOtipPvSkAo7
-P6dR3MUV3VU=
-=ap8A
+iQCVAwUBQ2I47IqHRg3pndX9AQHzEwQAu53kgQ2F+gIUBilfigelHgFlh4dSJ/uu
+X/QemYuRvya8ozuoGSEbh4aY4RleSWikw0AAv5rz8HVwm/3JjnE1k0C8vU2/kHyY
+2PYvY/X2SJI4w6HNokFbAjM0IlV56zApZZTR0hGBbvCrqC4md2xxuY3SoJZZwHtY
+36hwZtdVSKg=
+=ib5u
 -----END PGP SIGNATURE-----
