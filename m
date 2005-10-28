@@ -1,21 +1,16 @@
-Return-Path: <wd@denx.de>
-Received: from mailout07.sul.t-online.com (mailout07.sul.t-online.com
-	[194.25.134.83]) by ozlabs.org (Postfix) with ESMTP id 9DC226857D
+Return-Path: <xiay@nari-relays.com>
+Received: from NARI-RELAYS.COM (unknown [221.226.124.170])
+	by ozlabs.org (Postfix) with ESMTP id D4F5A6855F
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 28 Oct 2005 07:08:51 +1000 (EST)
-To: jeff@theptrgroup.com
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 27 Oct 2005 10:28:43 EDT."
-	<1130423323.8477.24.camel@nighteyes.site>
-Date: Thu, 27 Oct 2005 23:08:30 +0200
-Sender: wd@denx.de
-Message-Id: <20051027210830.6DE57353E3E@atlas.denx.de>
-Cc: David Jander <david.jander@protonic.nl>,
-	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: MPC8xx support in 2.6 and [PATCH] USB host controller
-	selection...
+	Fri, 28 Oct 2005 12:42:08 +1000 (EST)
+Date: Fri, 28 Oct 2005 10:54:11 +0800
+Message-Id: <200510281054.AA34079032@NARI-RELAYS.COM>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: "=?ISO-8859-1?Q?=CF=C4=D3=EA?= " <xiay@nari-relays.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: NFS can not mount (linuxppc2.2.4 mpc5200 lxt971)
+Reply-To: xiay@nari-relays.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,29 +21,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <1130423323.8477.24.camel@nighteyes.site> you wrote:
->
-> > > I just rsynced DENX's git tree (cg-clone will crash on a 404 error).
-> > 
-> > Make sure to use current versions of git resp. cogito.
-> 
-> I get the same errors using using the latest versions: git version
-> 0.99.8f and cogito-0.15.  FWIW, the u-boot.git came down just fine.
-...
-> Cannot obtain needed blob ca442d313d86dc67e0a2e5d584b465bd382cbf5c
-> while processing commit cb7f6ec5c2d64db78984188461dc29b72e924180.
-> cg-fetch: objects fetch failed
-> cg-clone: fetch failed
+I have ported linuxppc2.2.4 to my board based on ICECUBE.
+One board can not mount NFS(eth0 = lxt971), Message as follow:
 
-Don't know what that means.  Accessing  the  tree  using  rsync://...
-works fine.
+eth0: config: auto-negotiation on, 100HDX, 10HDX.
+IP-Config: Complete:
+      device=eth0, addr=198.87.102.211, mask=255.255.255.0, gw=198.87.102.140,
+     host=oops, domain=, nis-domain=(none),
+     bootserver=198.87.102.140, rootserver=198.98.102.140, rootpath=
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+Looking up port of RPC 100003/2 on 198.98.102.140
+eth0: status: link up, Unknown speed/duplex, auto-negotiation complete, remote f
+ault.
+portmap: server 198.98.102.140 not responding, timed out
+Root-NFS: Unable to get nfsd port number from server, using default
+Looking up port of RPC 100005/1 on 198.98.102.140
+portmap: server 198.98.102.140 not responding, timed out
+Root-NFS: Unable to get mountd port number from server, using default
+mount: server 198.98.102.140 not responding, timed out
+Root-NFS: Server returned error -5 while mounting /opt/eldk/ppc_82xx
+VFS: Unable to mount root fs via NFS, trying floppy.
+VFS: Cannot open root device "nfs" or 02:00
+Please append a correct "root=" boot option
+Kernel panic: VFS: Unable to mount root fs on 02:00
 
-Best regards,
+But i can ping the board from my PC:
 
-Wolfgang Denk
+Pinging 198.87.102.211 with 32 bytes of data:
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-An expert is a person who avoids the small errors while  sweeping  on
-to the grand fallacy.
+Reply from 198.87.102.211: bytes=32 time<10ms TTL=64
+Reply from 198.87.102.211: bytes=32 time<10ms TTL=64
+Reply from 198.87.102.211: bytes=32 time<10ms TTL=64
+Reply from 198.87.102.211: bytes=32 time<10ms TTL=64
+
+
+The other boards using the same program can mount NFS on the same server.
+
+What part of this board might be wrong? 
+
+Thanks!
