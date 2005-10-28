@@ -1,24 +1,17 @@
-Return-Path: <msuresh@gamebox.net>
-Received: from smtp-out.hotpop.com (smtp-out.hotpop.com [38.113.3.61])
-	by ozlabs.org (Postfix) with ESMTP id ABC1868572
+Return-Path: <simlo@phys.au.dk>
+Received: from lirs02.phys.au.dk (lirs02.phys.au.dk [130.225.28.43])
+	by ozlabs.org (Postfix) with ESMTP id 75D91685C0
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 28 Oct 2005 17:42:42 +1000 (EST)
-Received: from gamebox.net (kubrick.hotpop.com [38.113.3.105])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 940051BA287A
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 28 Oct 2005 06:56:22 +0000 (UTC)
-Received: from [192.168.0.222] (dsl-Chn-static-055.252.247.61.touchtelindia.net
-	[61.247.252.55])
-	by smtp-1.hotpop.com (Postfix) with ESMTP id AB7571A01EB
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 28 Oct 2005 06:55:10 +0000 (UTC)
-Message-ID: <4361CC7B.7080304@gamebox.net>
-Date: Fri, 28 Oct 2005 12:30:11 +0530
-From: Suresh Chandra Mannava <msuresh@gamebox.net>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: SMP Design
+	Fri, 28 Oct 2005 18:03:37 +1000 (EST)
+Date: Fri, 28 Oct 2005 09:49:55 +0200 (METDST)
+From: Esben Nielsen <simlo@phys.au.dk>
+To: =?ISO-8859-1?Q?=CF=C4=D3=EA?=  <xiay@nari-relays.com>
+In-Reply-To: <200510281054.AA34079032@NARI-RELAYS.COM>
+Message-Id: <Pine.OSF.4.05.10510280948570.21523-100000@da410.phys.au.dk>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: NFS can not mount (linuxppc2.2.4 mpc5200 lxt971)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,32 +22,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
-I am working on a symmetric multiprocessing(SMP) based board design.  
-Now,  I am into feasibility analysis.
-Here are my queries
-What qualifies a CPU to be capable of SMP?
-       Hardware cache coherency
-       test-and-set, compare-and-swap or load-link/ store-conditional 
-instructions.
-       Unique Id(read this in Intel MP specs) Is it required for 
-powerpc-smp?
-       CPU-local interrupt controller (intel specific) Is it required 
-for powerpc-smp
-       OpenPIC, interrupt routing
- 
-what are the other points that support SMP for a CPU. I read that ppc 
-603 won't support pure SMP.
 
-I am searching for the "considerations for SMP design using powerpc 
-processors"
-please provide pointers for the same.
 
-Can I find any reference design for SMP boards? I am interested 
-architecture part, interrupt routing and OpenPIC stuff.
-I find it hard to find information on SMP board design.
+On Fri, 28 Oct 2005, =CF=C4=D3=EA  wrote:
 
-Waiting for your response.
+> I have ported linuxppc2.2.4 to my board based on ICECUBE.
+> One board can not mount NFS(eth0 =3D lxt971), Message as follow:
+>=20
+> eth0: config: auto-negotiation on, 100HDX, 10HDX.
+> IP-Config: Complete:
+>       device=3Deth0, addr=3D198.87.102.211, mask=3D255.255.255.0, gw=3D19=
+8.87.102.140,
+>      host=3Doops, domain=3D, nis-domain=3D(none),
+>      bootserver=3D198.87.102.140, rootserver=3D198.98.102.140, rootpath=
+=3D
+> NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+> Looking up port of RPC 100003/2 on 198.98.102.140
+> eth0: status: link up, Unknown speed/duplex, auto-negotiation complete, r=
+emote f
+> ault.
+> portmap: server 198.98.102.140 not responding, timed out
+> Root-NFS: Unable to get nfsd port number from server, using default
+> Looking up port of RPC 100005/1 on 198.98.102.140
+> portmap: server 198.98.102.140 not responding, timed out
+> Root-NFS: Unable to get mountd port number from server, using default
+> mount: server 198.98.102.140 not responding, timed out
+> Root-NFS: Server returned error -5 while mounting /opt/eldk/ppc_82xx
+> VFS: Unable to mount root fs via NFS, trying floppy.
+> VFS: Cannot open root device "nfs" or 02:00
+> Please append a correct "root=3D" boot option
+> Kernel panic: VFS: Unable to mount root fs on 02:00
+>=20
+> But i can ping the board from my PC:
+>=20
+> Pinging 198.87.102.211 with 32 bytes of data:
+>=20
+> Reply from 198.87.102.211: bytes=3D32 time<10ms TTL=3D64
+> Reply from 198.87.102.211: bytes=3D32 time<10ms TTL=3D64
+> Reply from 198.87.102.211: bytes=3D32 time<10ms TTL=3D64
+> Reply from 198.87.102.211: bytes=3D32 time<10ms TTL=3D64
+>=20
+>=20
+> The other boards using the same program can mount NFS on the same server.
+>=20
+> What part of this board might be wrong?=20
+>=20
+I can't tell you what is wrong, but I have seen the same error:
+It works fine on the Lite5200 proto board but not on our custom board :-(
 
-Thanks and Regards,
-Suresh Chandra Mannava.
+Esben
+
+
+> Thanks!
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>=20
