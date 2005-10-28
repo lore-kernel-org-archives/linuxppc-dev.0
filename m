@@ -1,19 +1,18 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao11.cox.net (fed1rmmtao11.cox.net [68.230.241.28])
-	by ozlabs.org (Postfix) with ESMTP id 10204685E6
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Oct 2005 02:10:55 +1000 (EST)
-Date: Fri, 28 Oct 2005 09:10:54 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-Message-ID: <20051028161054.GB22245@smtp.west.cox.net>
-References: <20051026133648.GA10373@logos.cnet>
-	<20051026220205.GH26475@smtp.west.cox.net>
-	<20051028085224.GA17520@logos.cnet>
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao09.cox.net (fed1rmmtao09.cox.net [68.230.241.30])
+	by ozlabs.org (Postfix) with ESMTP id 00680685CF
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Oct 2005 03:30:45 +1000 (EST)
+Date: Fri, 28 Oct 2005 10:30:41 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Message-ID: <20051028103041.B15268@cox.net>
+References: <17250.8725.358204.62510@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20051028085224.GA17520@logos.cnet>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: Makefile check for older binutils broken?
+In-Reply-To: <17250.8725.358204.62510@cargo.ozlabs.ibm.com>;
+	from paulus@samba.org on Fri, Oct 28, 2005 at 11:05:25PM +1000
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Subject: Re: Patches for 2.6.15
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,37 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 28, 2005 at 06:52:24AM -0200, Marcelo Tosatti wrote:
-> On Wed, Oct 26, 2005 at 03:02:05PM -0700, Tom Rini wrote:
-> > On Wed, Oct 26, 2005 at 11:36:48AM -0200, Marcelo Tosatti wrote:
-> > > 
-> > > Hi,
-> > > 
-> > > While trying to compile 2.6.14-rc4 on my Pegasos (running Debian unstable):
-> > > 
-> > > make[2]: Entering directory `/home/marcelo/8xx/linux-2.6.14-rc4'
-> > > *** 2.6 kernels no longer build correctly with old versions of binutils.
-> > > *** Please upgrade your binutils to 2.12.1 or newer
-> > > make[2]: *** [checkbin] Error 1
-> > 
-> > What's your CONFIG_SHELL set to?
-> 
-> bash
-> 
-> > 
-> > [snip]
-> > > marcelo@pegasos:~$ /bin/echo dssall | as -many -o /tmp/output.as >/dev/null 2>&1
-> > > marcelo@pegasos:~$ echo $?
-> > 
-> > What about if you run the whole test on shell (if ...), does it work there? 
-> > What shell are you running?
-> 
-> Yep, that does the trick. Is it good now?
+On Fri, Oct 28, 2005 at 11:05:25PM +1000, Paul Mackerras wrote:
+> If anyone has patches for arch/ppc{,64} and include/asm-ppc{,64} that
+> they would like to see go upstream now that 2.6.14 is out, other than
+> patches that are already in the powerpc-merge tree, please let me
+> know.  I am planning to ask Linus to pull the powerpc-merge tree
+> shortly, and that will probably break your patches.
 
-Er, that's odd.  I was using writing parens, not shell parens :)   Can
-you test the failure case here by changing dssall to garbage?  Also,
-that's not a clean patch, but vs your last one that wasn't valid.
+Ok, we have a set of 4xx patches that I plan to send to Andrew.
+They are some existing 4xx SoC/board updates as well as a new
+SoC/board. They are obviously mostly confined to the 4xx code paths
+but there's likely conflicts in changes to Makefiles, etc.
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+Would you prefer these going upstream before or after the 
+powerpc-merge pull?
+
+-Matt
