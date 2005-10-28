@@ -1,21 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7028068627
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Oct 2005 08:39:20 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Noah yan <noah.yan@gmail.com>
-In-Reply-To: <59521b110510280856y9c39f4by54cadd01830ded07@mail.gmail.com>
-References: <59521b110510270605k6e098826w2d37c50e82ddd758@mail.gmail.com>
-	<1130452630.29054.77.camel@gaston>
-	<59521b110510280856y9c39f4by54cadd01830ded07@mail.gmail.com>
-Content-Type: text/plain
-Date: Sat, 29 Oct 2005 08:39:04 +1000
-Message-Id: <1130539144.29054.119.camel@gaston>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: How the linux use BAT
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc64-dev@ozlabs.org
+Date: Sat, 29 Oct 2005 01:11:13 +0200
+References: <17250.8725.358204.62510@cargo.ozlabs.ibm.com>
+In-Reply-To: <17250.8725.358204.62510@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200510290111.13867.arnd@arndb.de>
+Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org
+Subject: Re: Patches for 2.6.15
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,68 +19,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2005-10-28 at 10:56 -0500, Noah yan wrote:
+On Freedag 28 Oktober 2005 15:05, Paul Mackerras wrote:
+> If anyone has patches for arch/ppc{,64} and include/asm-ppc{,64} that
+> they would like to see go upstream now that 2.6.14 is out, other than
+> patches that are already in the powerpc-merge tree, please let me
+> know. =A0I am planning to ask Linus to pull the powerpc-merge tree
+> shortly, and that will probably break your patches.
 
->         
-> I am sorry that I did make it clear. It is a little confusing for me
-> between the hardware segment and the term "segment" or "section" used
-> in a process's address space (AS). One of my understanding is that a
-> section in a process's AS is mapped to a hardware segment, which sound
-> straightforward but maybe wrong because a process binary may have lots
-> of segments that are not the same size. 
+Out of my spufs patches, I'd like to have at least the reservation
+for my two system call numbers in there so we don't get any conflicts
+on that front. The patch follows in another mail.
 
-No, there is no relationship. The kernel just sets up enough segments to
-map the entire process address space, this is irrelevant to the actual
-program sections.
+=46rom my point of view, the spufs itself could go in at this point,
+but I have the feeling that the real concerns from other people
+will come up at the moment that I post them for inclusion.=20
 
-> Pure segment VM is also hard to maintain memory efficiency.  Or,
-> several sections, such as different data section are in segments. I
-> remember in Linux x86 (posibbly 2.4), segment is not fully used in
-> term of VM. The segmentation of the kernel and userland are defined
-> upon booting and never changed later on. 
+Andrew, are you ok with including spufs in -mm when the merge
+tree is upstream?
 
-The segmentation mecanism on PowerPC is slightly different. We change
-segments when context switching as they contain the "vsid" which acts as
-a kind of context ID, thus we can keep entry for more than one
-context/process in the hash table, we don't have to flush it on context
-switches.
+> If possible, I'd like to get to the point where we can remove
+> arch/ppc64 entirely by the end of the 2-week merge window for 2.6.15.
 
-> Thanks very much!
-> Noah
-> 
-> 
-> 
->  
-> 
->         The way linux uses BATs is for the kernel linear mapping.
->         Linux uses by
->         default (though that can be configued differently) a 3G/1G
->         split, that 
->         is the low 3G of address space are used by userland (and
->         covered by the
->         user page tables) and the high 1G are used by the kernel. That
->         kernel
->         space itself is split into a bottom part up to 768Mb (by
->         default, that 
->         can also be configured differently) which is the linear
->         mapping, that is
->         a single linear mapping of all RAM from 0xc0000000. The rest
->         of the
->         kernel space is mapped with page tables and known as the
->         kernel virtual 
->         space, used for vmalloc and ioremap.
->         
->         The BATs are used for the linear mapping. They "override" the
->         page
->         tables over it if any (though we usually don't bother setting
->         up PTEs
->         over the space that is BAT mapped). They basically improve
->         performances 
->         by not requiring to go through the hash trasnslation for most
->         kernel
->         accesses to memory and not using space in the TLB/ERAT.
->         
->         Ben.
->         
->         
-> 
+Ok, I'll do a new patch to move over the BPA files then to get
+my stuff out of the way ASAP.
+
+	Arnd <><
