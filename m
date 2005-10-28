@@ -1,20 +1,20 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 413C168615
+Return-Path: <typedef@eircom.net>
+Received: from eurodubx.europlex.local (mail.europlex.ie [83.141.76.10])
+	by ozlabs.org (Postfix) with ESMTP id 1C92E68613
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 29 Oct 2005 06:39:40 +1000 (EST)
-Date: Fri, 28 Oct 2005 13:30:59 -0200
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: David Jander <david.jander@protonic.nl>
-Message-ID: <20051028153059.GC18915@logos.cnet>
-References: <200510280857.44625.david.jander@protonic.nl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200510280857.44625.david.jander@protonic.nl>
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: Kernel 2.6 on MPC8xx performance trouble...
+	Sat, 29 Oct 2005 06:42:04 +1000 (EST)
+Message-ID: <43628EAA.6080409@eircom.net>
+Date: Fri, 28 Oct 2005 21:48:42 +0100
+From: Bryan O'Donoghue <typedef@eircom.net>
+MIME-Version: 1.0
+To: Peter Hanson <peterh@google.com>
+References: <1628E43D99629C46988BE46087A3FBB93ADEE3@ep-01.EmbeddedPlanet.local>
+	<50e923300510281227i15609c9dt7778ecbe20920dfa@mail.google.com>
+In-Reply-To: <50e923300510281227i15609c9dt7778ecbe20920dfa@mail.google.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: Steven Blakeslee <BlakesleeS@embeddedplanet.com>,
+	linuxppc-embedded@ozlabs.org
+Subject: Re: Howto Cross Compile GCC to run on PPC Platform
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,23 +25,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 28, 2005 at 08:57:44AM +0200, David Jander wrote:
+Peter Hanson wrote:
+> On 10/28/05, Steven Blakeslee <BlakesleeS@embeddedplanet.com> wrote:
 > 
-> Hi all,
+>>>get it to cross compile gcc (to run on ppc).  Does anyone
+>>>know of a good HowTo to do this?
+>>
+>>Karim Yaghmour's "Building Embedded Linux Systems"
+>>
+>>
+>>
+>>> I'm currently downloading the source distro of ELDK, so if
+>>>it's already in there I'll find it, but if there is one
+>>>elsewhere online please let me know.
+>>
+>>Very good, full of features.
 > 
-> Many people have said it before: 2.6 has a performance penalty specially for 
-> embdedded systems.
-> But now that I have 2.6 running on our 100MHz MPC852T based board, I was 
-> shocked to see the result:
-> The most simple task doing nothing but a closed loop of integer math runs at 
-> _half_ the speed compared to kernel 2.4.25!!!!!
+> 
+> My favorite cross tool chain site:
+> 
+> Building and Testing gcc/glibc cross toolchains
+> http://kegel.com/crosstool/
+> 
+> Look into Canadian crosses.  At the very least you should find the
+> discussion helpful.
 
-David,
+I'd use the ELDK if I were you as an x86 hosted cross compiler, if only 
+because it makes sense in terms of compiling bootloader & kernel with 
+the same toolchain. Also, if memory serves the ELDK comes with a powerpc 
+gcc in the supplied ppc root file system.
 
-Do you have CONFIG_PIN_TLB enabled?
+Alternatively : you can use the uClibc toolchain, to generate a similar 
+setup.
 
-If you do, please patch this in:
+Here's a script I've thrown together since I sometimes need to generate 
+gcc toolchains easily for various targets. I've tested it with arm and 
+powerpc and because, it might be useful to switch between c libraries. ymmv.
+http://netsoc.dit.ie/~deckard/software/build_compiler.sh. This script is 
+based on some excellent documents that Red Hat produced.
 
-http://www.kernel.org/git/?p=linux/kernel/git/marcelo/8xx-fixes;a=commitdiff;h=a41ba028534c45280170c05c23609ea84f34b38a
+http://sources.redhat.com/ml/crossgcc/2005-08/msg00114/l-cross-ltr.pdf
 
-And select DEBUG_PIN_TLBIE.
+-- 
+"Caveat Emptor" -- James T. Kirk, in no such episode
