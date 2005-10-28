@@ -1,16 +1,28 @@
-Return-Path: <xiay@nari-relays.com>
-Received: from NARI-RELAYS.COM (unknown [221.226.124.170])
-	by ozlabs.org (Postfix) with ESMTP id D4F5A6855F
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id 2B4E368593
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 28 Oct 2005 12:42:08 +1000 (EST)
-Date: Fri, 28 Oct 2005 10:54:11 +0800
-Message-Id: <200510281054.AA34079032@NARI-RELAYS.COM>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: "=?ISO-8859-1?Q?=CF=C4=D3=EA?= " <xiay@nari-relays.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: NFS can not mount (linuxppc2.2.4 mpc5200 lxt971)
-Reply-To: xiay@nari-relays.com
+	Fri, 28 Oct 2005 16:57:53 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by protonic.prtnl (Postfix) with ESMTP id 3EF0729EBB
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 28 Oct 2005 08:56:13 +0200 (CEST)
+Received: from protonic.prtnl ([127.0.0.1])
+	by localhost (protonic [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
+	id 05066-04 for <linuxppc-embedded@ozlabs.org>;
+	Fri, 28 Oct 2005 08:56:12 +0200 (CEST)
+Received: from linux.local (linux.prtnl [192.168.1.97])
+	by protonic.prtnl (Postfix) with ESMTP id 5416C28067
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 28 Oct 2005 08:56:12 +0200 (CEST)
+From: David Jander <david.jander@protonic.nl>
+To: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Date: Fri, 28 Oct 2005 08:57:44 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200510280857.44625.david.jander@protonic.nl>
+Subject: Kernel 2.6 on MPC8xx performance trouble...
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,42 +33,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I have ported linuxppc2.2.4 to my board based on ICECUBE.
-One board can not mount NFS(eth0 = lxt971), Message as follow:
 
-eth0: config: auto-negotiation on, 100HDX, 10HDX.
-IP-Config: Complete:
-      device=eth0, addr=198.87.102.211, mask=255.255.255.0, gw=198.87.102.140,
-     host=oops, domain=, nis-domain=(none),
-     bootserver=198.87.102.140, rootserver=198.98.102.140, rootpath=
-NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-Looking up port of RPC 100003/2 on 198.98.102.140
-eth0: status: link up, Unknown speed/duplex, auto-negotiation complete, remote f
-ault.
-portmap: server 198.98.102.140 not responding, timed out
-Root-NFS: Unable to get nfsd port number from server, using default
-Looking up port of RPC 100005/1 on 198.98.102.140
-portmap: server 198.98.102.140 not responding, timed out
-Root-NFS: Unable to get mountd port number from server, using default
-mount: server 198.98.102.140 not responding, timed out
-Root-NFS: Server returned error -5 while mounting /opt/eldk/ppc_82xx
-VFS: Unable to mount root fs via NFS, trying floppy.
-VFS: Cannot open root device "nfs" or 02:00
-Please append a correct "root=" boot option
-Kernel panic: VFS: Unable to mount root fs on 02:00
+Hi all,
 
-But i can ping the board from my PC:
+Many people have said it before: 2.6 has a performance penalty specially for 
+embdedded systems.
+But now that I have 2.6 running on our 100MHz MPC852T based board, I was 
+shocked to see the result:
+The most simple task doing nothing but a closed loop of integer math runs at 
+_half_ the speed compared to kernel 2.4.25!!!!!
 
-Pinging 198.87.102.211 with 32 bytes of data:
+Here are the conditions for the test:
+- Bogomips are the same, so the CPU definitely runs at the same clock-rate 
+(and not half) as with "2.4".
+- Enabling and disabling preemption doesn't have any impact (as expected for 
+such kinds of tasks).
+- Setting HZ to 100 or 1000 also has only about 3% impact on speed.
+- The binary of the test program is the same in both cases (no re-compile with 
+other optimizations by accident).
+- The hardware is the same (exact same board).
+- Certain hardware drivers that are not ported to "2.6" yet were present in 
+"2.4" but (obviously) not in "2.6", but non of them could have a _positive_ 
+impact on performance.
+- Kernel versions are 2.4.25 (denx-devel) and 2.6.14-rc5 (denx-git 20051027).
 
-Reply from 198.87.102.211: bytes=32 time<10ms TTL=64
-Reply from 198.87.102.211: bytes=32 time<10ms TTL=64
-Reply from 198.87.102.211: bytes=32 time<10ms TTL=64
-Reply from 198.87.102.211: bytes=32 time<10ms TTL=64
+Result: The test takes 3 seconds on kernel-2.6 and 1.5 seconds on kernel-2.4. 
+Here is what "time" has to say about it:
 
+real    0m3.119s
+user    0m3.080s
+sys     0m0.040s
 
-The other boards using the same program can mount NFS on the same server.
+The test loop is pretty brain-dead, but that doesn't matter right now.
+This is it:
+	[....]
+	gettimeofday(&tv0,NULL);
+        for(t=0L; t<10000000L; t++)
+        {
+                a+=b; /* Do something */
+        }
+        gettimeofday(&tv,NULL);
+	[...]
 
-What part of this board might be wrong? 
+Any ideas?
+Am I misconfiguring something? Is 2.6 support for mpc8xx still broken 
+(cache/tlb, mm, etc) or is 2.6 supposed to perform THAT bad??
 
-Thanks!
+Greetings,
+
+-- 
+David Jander
