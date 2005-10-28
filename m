@@ -1,19 +1,21 @@
-Return-Path: <wd@denx.de>
-Received: from mailout09.sul.t-online.com (mailout09.sul.t-online.com
-	[194.25.134.84]) by ozlabs.org (Postfix) with ESMTP id 53C7D685CF
+Return-Path: <greg@kroah.com>
+Received: from perch.kroah.org (mail.kroah.org [69.55.234.183])
+	by ozlabs.org (Postfix) with ESMTP id 076B068621
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 29 Oct 2005 06:51:29 +1000 (EST)
-To: Jeff Stevens <jsteve17@yahoo.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 28 Oct 2005 08:55:09 PDT."
-	<20051028155510.17662.qmail@web33413.mail.mud.yahoo.com>
-Date: Fri, 28 Oct 2005 22:51:24 +0200
-Sender: wd@denx.de
-Message-Id: <20051028205124.17147353E3E@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Howto Cross Compile GCC to run on PPC Platform 
+	Sat, 29 Oct 2005 06:46:18 +1000 (EST)
+Date: Fri, 28 Oct 2005 13:43:47 -0700
+From: Greg KH <greg@kroah.com>
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Message-ID: <20051028204347.GB18096@kroah.com>
+References: <200510271439.48990.david.jander@protonic.nl>
+	<20051028152109.GB18915@logos.cnet>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20051028152109.GB18915@logos.cnet>
+Cc: David Jander <david.jander@protonic.nl>,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: MPC8xx support in 2.6 and [PATCH] USB host controller
+	selection...
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,31 +26,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <20051028155510.17662.qmail@web33413.mail.mud.yahoo.com> you wrote:
->    I am trying to compile GCC on an x86 platform to
-> run natively on an embedded PPC platform.  I am able
-> to compile gcc as a cross compiler (to run on x86),
-> but can't seem to get it to cross compile gcc (to run
-> on ppc).  Does anyone know of a good HowTo to do this?
->  I'm currently downloading the source distro of ELDK,
-> so if it's already in there I'll find it, but if there
+On Fri, Oct 28, 2005 at 01:21:09PM -0200, Marcelo Tosatti wrote:
+> Greg, please refer to the end of the message.
+> > - USB Kconfig file for 2.6 kernel is broken. It is not correct to assume that 
+> > you either have a PCI interface or a processor with internal HCI. Proof: We 
+> > have a board based on MPC852T (no internal UHCI) which can plug into an 
+> > (optional) daughter board with a ISP1160 on it. See attached patch.
 
-It is.
+Then please send the proper patch to the linux-usb-devel mailing list.
 
-> is one elsewhere online please let me know.
+> Is it driven by the UHCI driver?
 
-Note that released versions of the ELDK (up  to  and  including  ELDK
-3.1.1)  require  a  RedHat-7.3  build  host. Don't waste your time on
-trying later Linux distros ;-)
+It shouldn't be :)
 
-Current top-of-tree in CVS should build under Fedora Core 4; but this
-code has not been released yet - it is beta quality only.
+> >From http://www.semiconductors.philips.com/cgi-bin/pldb/pip/isp1160.html
+> 
+> The ISP1160 is an embedded Universal Serial Bus (USB) Host Controller
+> (HC) that complies with Universal Serial Bus Specification Rev. 2.0,
+> supporting data transfer at full-speed (12 Mbit/s) and low-speed (1.5
+> Mbit/s).
 
-Best regards,
+We already have a driver for this device in the kernel tree, right?
 
-Wolfgang Denk
+> > Maybe the patch should be sent elsewere since it has not much to do with PPC, 
+> > so can someone please tell me where?
+> 
+> I guess that you should have something like
+> 
+> config USB_ARCH_HAS_HCD
+> 	default y if USB_ARCH_HAS_OHCI
+> 	default y if USB_ARCH_HAS_UHCI
+> 
+> config USB_ARCH_UHCI
+> 	default y if 8xx
+> 
+> Greg?
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"Any excuse will serve a tyrant."                             - Aesop
+I don't understand what you are trying to fix up here.  What is wrong
+with the current checks?  If your arch/board has support for the 1160
+and we have the Kconfig set wrong for that, we can easily change it.
+
+thanks,
+
+greg k-h
