@@ -1,11 +1,12 @@
 Return-Path: <akpm@osdl.org>
-Message-Id: <200510290047.j9T0lKBd030105@shell0.pdx.osdl.net>
+Message-Id: <200510290047.j9T0lOho030120@shell0.pdx.osdl.net>
 To: paulus@samba.org
 From: akpm@osdl.org
-Date: Fri, 28 Oct 2005 17:46:49 -0700
+Date: Fri, 28 Oct 2005 17:46:54 -0700
 Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, olh@suse.de,
 	linuxppc64-dev@ozlabs.org
-Subject: [patch 34/43] ppc64 boot: proof that reloc works
+Subject: [patch 39/43] ppc64: compile nls_cp437 and nls_iso8859_1 into the
+	kernel in defconfig
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,68 +19,39 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Olaf Hering <olh@suse.de>
 
-To prove that the relocation works, move the crt0.o away from the beginning. 
-Move linker options from command line into linker script.  rename entry point
-because '_start' is referenced in printf output.
+compile nls_cp437 and nls_iso8859_1 into the kernel in defconfig.  This is
+already enabled in pSeries_defconfig.
+
+Reason: if one just boots the new shiny zImage and the root filesystem is
+on a filesystem not readable by yaboot (like jfs, raid or lvm) upgrading
+the bootloader will fail because the FAT bootpartition can not be mounted.
 
 Signed-off-by: Olaf Hering <olh@suse.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Anton Blanchard <anton@samba.org>
-Cc: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Andrew Morton <akpm@osdl.org>
 ---
 
- arch/ppc64/boot/Makefile   |    4 ++--
- arch/ppc64/boot/crt0.S     |    4 ++--
- arch/ppc64/boot/zImage.lds |    3 +++
- 3 files changed, 7 insertions(+), 4 deletions(-)
+ arch/ppc64/defconfig |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff -puN arch/ppc64/boot/crt0.S~ppc64-boot-proof-that-reloc-works arch/ppc64/boot/crt0.S
---- devel/arch/ppc64/boot/crt0.S~ppc64-boot-proof-that-reloc-works	2005-10-28 17:44:04.000000000 -0700
-+++ devel-akpm/arch/ppc64/boot/crt0.S	2005-10-28 17:45:21.000000000 -0700
-@@ -12,8 +12,8 @@
- #include "ppc_asm.h"
- 
- 	.text
--	.globl	_start
--_start:
-+	.globl	_zimage_start
-+_zimage_start:
- 	bl	reloc_offset
- 
- reloc_offset:
-diff -puN arch/ppc64/boot/Makefile~ppc64-boot-proof-that-reloc-works arch/ppc64/boot/Makefile
---- devel/arch/ppc64/boot/Makefile~ppc64-boot-proof-that-reloc-works	2005-10-28 17:44:04.000000000 -0700
-+++ devel-akpm/arch/ppc64/boot/Makefile	2005-10-28 17:44:04.000000000 -0700
-@@ -24,7 +24,7 @@
- HOSTCC		:= gcc
- BOOTCFLAGS	:= $(HOSTCFLAGS) -fno-builtin -nostdinc -isystem $(shell $(CROSS32CC) -print-file-name=include) -fPIC
- BOOTAFLAGS	:= -D__ASSEMBLY__ $(BOOTCFLAGS) -traditional -nostdinc
--BOOTLFLAGS	:= -Ttext 0x00400000 -e _start -T $(srctree)/$(src)/zImage.lds
-+BOOTLFLAGS	:= -T $(srctree)/$(src)/zImage.lds
- OBJCOPYFLAGS    := contents,alloc,load,readonly,data
- 
- zlib       := infblock.c infcodes.c inffast.c inflate.c inftrees.c infutil.c
-@@ -34,7 +34,7 @@ zliblinuxheader := zlib.h zconf.h zutil.
- $(addprefix $(obj)/,$(zlib) main.o): $(addprefix $(obj)/,$(zliblinuxheader)) $(addprefix $(obj)/,$(zlibheader))
- #$(addprefix $(obj)/,main.o): $(addprefix $(obj)/,zlib.h)
- 
--src-boot := crt0.S string.S prom.c main.c div64.S
-+src-boot := string.S prom.c main.c div64.S crt0.S
- src-boot += $(zlib)
- src-boot := $(addprefix $(obj)/, $(src-boot))
- obj-boot := $(addsuffix .o, $(basename $(src-boot)))
-diff -puN arch/ppc64/boot/zImage.lds~ppc64-boot-proof-that-reloc-works arch/ppc64/boot/zImage.lds
---- devel/arch/ppc64/boot/zImage.lds~ppc64-boot-proof-that-reloc-works	2005-10-28 17:44:04.000000000 -0700
-+++ devel-akpm/arch/ppc64/boot/zImage.lds	2005-10-28 17:44:04.000000000 -0700
-@@ -1,6 +1,9 @@
- OUTPUT_ARCH(powerpc:common)
-+ENTRY(_zimage_start)
- SECTIONS
- {
-+  . = (4*1024*1024);
-+  _start = .;
-   .text      :
-   {
-     *(.text)
+diff -puN arch/ppc64/defconfig~ppc64-compile-nls_cp437-and-nls_iso8859_1-into-the-kernel-in-defconfig arch/ppc64/defconfig
+--- devel/arch/ppc64/defconfig~ppc64-compile-nls_cp437-and-nls_iso8859_1-into-the-kernel-in-defconfig	2005-10-28 17:44:05.000000000 -0700
++++ devel-akpm/arch/ppc64/defconfig	2005-10-28 17:44:05.000000000 -0700
+@@ -1318,7 +1318,7 @@ CONFIG_MSDOS_PARTITION=y
+ #
+ CONFIG_NLS=y
+ CONFIG_NLS_DEFAULT="iso8859-1"
+-CONFIG_NLS_CODEPAGE_437=m
++CONFIG_NLS_CODEPAGE_437=y
+ CONFIG_NLS_CODEPAGE_737=m
+ CONFIG_NLS_CODEPAGE_775=m
+ CONFIG_NLS_CODEPAGE_850=m
+@@ -1342,7 +1342,7 @@ CONFIG_NLS_ISO8859_8=m
+ CONFIG_NLS_CODEPAGE_1250=m
+ CONFIG_NLS_CODEPAGE_1251=m
+ CONFIG_NLS_ASCII=m
+-CONFIG_NLS_ISO8859_1=m
++CONFIG_NLS_ISO8859_1=y
+ CONFIG_NLS_ISO8859_2=m
+ CONFIG_NLS_ISO8859_3=m
+ CONFIG_NLS_ISO8859_4=m
 _
