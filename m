@@ -1,11 +1,11 @@
 Return-Path: <akpm@osdl.org>
-Message-Id: <200510290047.j9T0lLdN030108@shell0.pdx.osdl.net>
+Message-Id: <200510290047.j9T0lMmf030111@shell0.pdx.osdl.net>
 To: paulus@samba.org
 From: akpm@osdl.org
-Date: Fri, 28 Oct 2005 17:46:50 -0700
+Date: Fri, 28 Oct 2005 17:46:51 -0700
 Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, olh@suse.de,
 	linuxppc64-dev@ozlabs.org
-Subject: [patch 35/43] ppc64 boot: print firmware provided stackpointer
+Subject: [patch 36/43] ppc64: AC Power handling broken for desktops
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,53 +18,48 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Olaf Hering <olh@suse.de>
 
-Show firmware provided stackpointer during boot.
-
-This helps to find the "taboo" areas on the various boards.  claim tends to
-fail for these memory areas, but some jokers return success anyway.
-
-Use %p to print the load address, its a pointer.
+Currently, AC Power is 0 on a desktop G4.  No batteries present should mean
+AC Power == 1.
 
 Signed-off-by: Olaf Hering <olh@suse.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Anton Blanchard <anton@samba.org>
 Cc: Paul Mackerras <paulus@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Andrew Morton <akpm@osdl.org>
 ---
 
- arch/ppc64/boot/crt0.S |    1 +
- arch/ppc64/boot/main.c |    4 ++--
- 2 files changed, 3 insertions(+), 2 deletions(-)
+ drivers/macintosh/apm_emu.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-diff -puN arch/ppc64/boot/crt0.S~ppc64-boot-print-firmware-provided-stackpointer arch/ppc64/boot/crt0.S
---- devel/arch/ppc64/boot/crt0.S~ppc64-boot-print-firmware-provided-stackpointer	2005-10-28 17:44:04.000000000 -0700
-+++ devel-akpm/arch/ppc64/boot/crt0.S	2005-10-28 17:44:04.000000000 -0700
-@@ -54,5 +54,6 @@ clear_caches:
- 	sync
- 	isync
+diff -puN drivers/macintosh/apm_emu.c~ppc64-ac-power-handling-broken-for-desktops drivers/macintosh/apm_emu.c
+--- devel/drivers/macintosh/apm_emu.c~ppc64-ac-power-handling-broken-for-desktops	2005-10-28 17:44:04.000000000 -0700
++++ devel-akpm/drivers/macintosh/apm_emu.c	2005-10-28 17:44:04.000000000 -0700
+@@ -430,8 +430,8 @@ static int apm_emu_get_info(char *buf, c
+ 	      -1: Unknown
+ 	   8) min = minutes; sec = seconds */
  
-+	mr	r6,r1
- 	b	start
- 
-diff -puN arch/ppc64/boot/main.c~ppc64-boot-print-firmware-provided-stackpointer arch/ppc64/boot/main.c
---- devel/arch/ppc64/boot/main.c~ppc64-boot-print-firmware-provided-stackpointer	2005-10-28 17:44:04.000000000 -0700
-+++ devel-akpm/arch/ppc64/boot/main.c	2005-10-28 17:44:04.000000000 -0700
-@@ -131,7 +131,7 @@ static unsigned long try_claim(unsigned 
- 	return addr;
- }
- 
--void start(unsigned long a1, unsigned long a2, void *promptr)
-+void start(unsigned long a1, unsigned long a2, void *promptr, void *sp)
- {
- 	unsigned long i;
- 	int len;
-@@ -151,7 +151,7 @@ void start(unsigned long a1, unsigned lo
- 	if (getprop(chosen_handle, "stdin", &stdin, sizeof(stdin)) != 4)
- 		exit();
- 
--	printf("\n\rzImage starting: loaded at 0x%lx\n\r", (unsigned long) _start);
-+	printf("\n\rzImage starting: loaded at 0x%p (sp: 0x%p)\n\r", _start, sp);
- 
- 	/*
- 	 * The first available claim_base must be above the end of the
+-	unsigned short  ac_line_status = 0xff;
+-	unsigned short  battery_status = 0xff;
++	unsigned short  ac_line_status;
++	unsigned short  battery_status = 0;
+ 	unsigned short  battery_flag   = 0xff;
+ 	int		percentage     = -1;
+ 	int             time_units     = -1;
+@@ -446,6 +446,7 @@ static int apm_emu_get_info(char *buf, c
+ 	ac_line_status = ((pmu_power_flags & PMU_PWR_AC_PRESENT) != 0);
+ 	for (i=0; i<pmu_battery_count; i++) {
+ 		if (pmu_batteries[i].flags & PMU_BATT_PRESENT) {
++			battery_status++;
+ 			if (percentage < 0)
+ 				percentage = 0;
+ 			if (charge < 0)
+@@ -461,6 +462,9 @@ static int apm_emu_get_info(char *buf, c
+ 				charging++;
+ 		}
+ 	}
++	if (0 == battery_status)
++		ac_line_status = 1;
++	battery_status = 0xff;
+ 	if (real_count) {
+ 		if (amperage < 0) {
+ 			if (btype == PMU_BATT_TYPE_SMART)
 _
