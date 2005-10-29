@@ -1,21 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 255CE68623
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Oct 2005 10:02:47 +1000 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Parag Warudkar <kernel-stuff@comcast.net>
-In-Reply-To: <05700451-DD42-4BBE-9DB2-8705B88548BF@comcast.net>
-References: <15DF6933-2475-439D-BE0A-DC232B92FDB7@comcast.net>
-	<1130540164.29054.130.camel@gaston>
-	<05700451-DD42-4BBE-9DB2-8705B88548BF@comcast.net>
-Content-Type: text/plain
-Date: Sat, 29 Oct 2005 10:02:20 +1000
-Message-Id: <1130544140.29054.144.camel@gaston>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org
-Subject: Re: PPC32 - No IDE/ATA devices on new PowerBook
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17250.48622.69899.322254@cargo.ozlabs.ibm.com>
+Date: Sat, 29 Oct 2005 10:10:22 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: "Christopher Friesen" <cfriesen@nortel.com>
+In-Reply-To: <43624B30.20600@nortel.com>
+References: <17250.8725.358204.62510@cargo.ozlabs.ibm.com>
+	<43624B30.20600@nortel.com>
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Subject: Re: Patches for 2.6.15
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,55 +19,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2005-10-28 at 19:24 -0400, Parag Warudkar wrote:
+Christopher Friesen writes:
 
-> Thanks. I tried 2.4 kernel and to my surprise it detected the IDE/ATA  
-> controller! (Although it balked out with errors - read past the end  
-> of the device or something...).
+> Under the unified architecture, what is the machine type in the "uname" 
+> outout?
 
-2.4 used the device-tree exclusively for probing IDE on pmac, while 2.6
-uses PCI probing when it's a PCI device. The device-tree method tend to
-work even when we don't have the PCI ID, but it's dangerous: the driver
-doesn't know the details of the timings for this chip revision etc...
-and thus may well do crap. I wouldn't try too much with 2.4.
+"ppc" on 32-bit machines, "ppc64" on 64-bit machines, same as before.
 
-Can you try this patch ? If you don't have a way to build a patched
-kernel, you may find somebody on linuxppc-dev list who can do it for
-you.
+The intention is that the merge doesn't change the user/kernel ABI in
+any way. :)
 
-Index: linux-work/drivers/ide/ppc/pmac.c
-===================================================================
---- linux-work.orig/drivers/ide/ppc/pmac.c	2005-09-22 14:06:32.000000000 +1000
-+++ linux-work/drivers/ide/ppc/pmac.c	2005-10-29 10:00:03.000000000 +1000
-@@ -1664,11 +1664,16 @@
- };
- 
- static struct pci_device_id pmac_ide_pci_match[] = {
--	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_UNI_N_ATA, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_IPID_ATA100, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_K2_ATA100, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-+	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_UNI_N_ATA,
-+	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-+	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_IPID_ATA100,
-+	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-+	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_K2_ATA100,
-+	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
- 	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_SH_ATA,
- 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-+	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_IPIDD2_ATA,
-+	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
- };
- 
- static struct pci_driver pmac_ide_pci_driver = {
-Index: linux-work/include/linux/pci_ids.h
-===================================================================
---- linux-work.orig/include/linux/pci_ids.h	2005-10-06 09:59:14.000000000 +1000
-+++ linux-work/include/linux/pci_ids.h	2005-10-29 09:59:06.000000000 +1000
-@@ -912,6 +912,7 @@
- #define PCI_DEVICE_ID_APPLE_SH_FW       0x0052
- #define PCI_DEVICE_ID_APPLE_U3L_AGP	0x0058
- #define PCI_DEVICE_ID_APPLE_U3H_AGP	0x0059
-+#define PCI_DEVICE_ID_APPLE_IPIDD2_ATA  0x0069
- #define PCI_DEVICE_ID_APPLE_TIGON3	0x1645
- 
- #define PCI_VENDOR_ID_YAMAHA		0x1073
+Paul.
