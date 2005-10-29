@@ -1,11 +1,12 @@
 Return-Path: <akpm@osdl.org>
-Message-Id: <200510290046.j9T0kiJc029997@shell0.pdx.osdl.net>
+Message-Id: <200510290046.j9T0knw4030009@shell0.pdx.osdl.net>
 To: paulus@samba.org
 From: akpm@osdl.org
-Date: Fri, 28 Oct 2005 17:46:14 -0700
-Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, sr@denx.de,
-	linuxppc64-dev@ozlabs.org
-Subject: [patch 04/43] ppc32: Cleanup AMCC PPC44x eval board U-Boot support
+Date: Fri, 28 Oct 2005 17:46:18 -0700
+Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org,
+	rolandd@cisco.com
+Subject: [patch 08/43] ppc: make phys_mem_access_prot() work with pfns
+	instead of addresses
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,237 +17,227 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-From: Matt Porter <mporter@kernel.crashing.org>
+From: Roland Dreier <rolandd@cisco.com>
 
-Cleanup PPC440 eval boards (bamboo, ebony, luan and ocotea) to better
-support U-Boot as bootloader.
+Change the phys_mem_access_prot() function to take a pfn instead of an
+address.  This allows mmap64() to work on /dev/mem for addresses above 4G
+on 32-bit architectures.  We start with a pfn in mmap_mem(), so there's no
+need to convert to an address; in fact, it's actively bad, since the
+conversion can overflow when the address is above 4G.
 
-Signed-off-by: Stefan Roese <sr@denx.de>
-Signed-off-by: Matt Porter <mporter@kernel.crashing.org>
+Similarly fix the ppc32 page_is_ram() function to avoid a conversion to an
+address by directly comparing to max_pfn.  Working with max_pfn instead of
+high_memory fixes page_is_ram() to give the right answer for highmem pages.
+
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Andrew Morton <akpm@osdl.org>
 ---
 
- arch/ppc/platforms/4xx/bamboo.c |   14 ++------------
- arch/ppc/platforms/4xx/ebony.c  |   13 ++-----------
- arch/ppc/platforms/4xx/luan.c   |   13 ++-----------
- arch/ppc/platforms/4xx/ocotea.c |   31 +++++++++++--------------------
- arch/ppc/syslib/ibm44x_common.c |   35 ++++++++++++++++++++++++++++++++++-
- arch/ppc/syslib/ibm44x_common.h |    3 ++-
- 6 files changed, 53 insertions(+), 56 deletions(-)
+ arch/ppc/kernel/pci.c       |    5 +++--
+ arch/ppc/mm/init.c          |   10 ++++------
+ arch/ppc64/kernel/pci.c     |    5 +++--
+ arch/ppc64/mm/init.c        |    6 +++---
+ drivers/char/mem.c          |    4 +---
+ drivers/video/fbmem.c       |    2 +-
+ include/asm-ppc/machdep.h   |    2 +-
+ include/asm-ppc/pci.h       |    2 +-
+ include/asm-ppc/pgtable.h   |    2 +-
+ include/asm-ppc64/machdep.h |    2 +-
+ include/asm-ppc64/pci.h     |    2 +-
+ include/asm-ppc64/pgtable.h |    2 +-
+ 12 files changed, 21 insertions(+), 23 deletions(-)
 
-diff -puN arch/ppc/platforms/4xx/bamboo.c~ppc32-cleanup-amcc-ppc44x-eval-board-u-boot-support arch/ppc/platforms/4xx/bamboo.c
---- devel/arch/ppc/platforms/4xx/bamboo.c~ppc32-cleanup-amcc-ppc44x-eval-board-u-boot-support	2005-10-28 17:44:02.000000000 -0700
-+++ devel-akpm/arch/ppc/platforms/4xx/bamboo.c	2005-10-28 17:44:02.000000000 -0700
-@@ -51,7 +51,7 @@
- #include <syslib/gen550.h>
- #include <syslib/ibm440gx_common.h>
- 
--bd_t __res;
-+extern bd_t __res;
- 
- static struct ibm44x_clocks clocks __initdata;
- 
-@@ -425,17 +425,7 @@ bamboo_setup_arch(void)
- void __init platform_init(unsigned long r3, unsigned long r4,
- 		unsigned long r5, unsigned long r6, unsigned long r7)
+diff -puN arch/ppc64/kernel/pci.c~ppc-make-phys_mem_access_prot-work-with-pfns-instead-of arch/ppc64/kernel/pci.c
+--- devel/arch/ppc64/kernel/pci.c~ppc-make-phys_mem_access_prot-work-with-pfns-instead-of	2005-10-28 17:44:02.000000000 -0700
++++ devel-akpm/arch/ppc64/kernel/pci.c	2005-10-28 17:44:02.000000000 -0700
+@@ -727,16 +727,17 @@ static pgprot_t __pci_mmap_set_pgprot(st
+  * above routine
+  */
+ pgprot_t pci_phys_mem_access_prot(struct file *file,
+-				  unsigned long offset,
++				  unsigned long pfn,
+ 				  unsigned long size,
+ 				  pgprot_t protection)
  {
--	parse_bootinfo(find_bootinfo());
--
--	/*
--	 * If we were passed in a board information, copy it into the
--	 * residual data area.
--	 */
--	if (r3)
--		__res = *(bd_t *)(r3 + KERNELBASE);
--
--
--	ibm44x_platform_init();
-+	ibm44x_platform_init(r3, r4, r5, r6, r7);
+ 	struct pci_dev *pdev = NULL;
+ 	struct resource *found = NULL;
+ 	unsigned long prot = pgprot_val(protection);
++	unsigned long offset = pfn << PAGE_SHIFT;
+ 	int i;
  
- 	ppc_md.setup_arch = bamboo_setup_arch;
- 	ppc_md.show_cpuinfo = bamboo_show_cpuinfo;
-diff -puN arch/ppc/platforms/4xx/ebony.c~ppc32-cleanup-amcc-ppc44x-eval-board-u-boot-support arch/ppc/platforms/4xx/ebony.c
---- devel/arch/ppc/platforms/4xx/ebony.c~ppc32-cleanup-amcc-ppc44x-eval-board-u-boot-support	2005-10-28 17:44:02.000000000 -0700
-+++ devel-akpm/arch/ppc/platforms/4xx/ebony.c	2005-10-28 17:44:02.000000000 -0700
-@@ -54,7 +54,7 @@
- #include <syslib/gen550.h>
- #include <syslib/ibm440gp_common.h>
+-	if (page_is_ram(offset >> PAGE_SHIFT))
++	if (page_is_ram(pfn))
+ 		return __pgprot(prot);
  
--bd_t __res;
-+extern bd_t __res;
- 
- static struct ibm44x_clocks clocks __initdata;
- 
-@@ -317,16 +317,7 @@ ebony_setup_arch(void)
- void __init platform_init(unsigned long r3, unsigned long r4,
- 		unsigned long r5, unsigned long r6, unsigned long r7)
- {
--	parse_bootinfo(find_bootinfo());
--
--	/*
--	 * If we were passed in a board information, copy it into the
--	 * residual data area.
--	 */
--	if (r3)
--		__res = *(bd_t *)(r3 + KERNELBASE);
--
--	ibm44x_platform_init();
-+	ibm44x_platform_init(r3, r4, r5, r6, r7);
- 
- 	ppc_md.setup_arch = ebony_setup_arch;
- 	ppc_md.show_cpuinfo = ebony_show_cpuinfo;
-diff -puN arch/ppc/platforms/4xx/luan.c~ppc32-cleanup-amcc-ppc44x-eval-board-u-boot-support arch/ppc/platforms/4xx/luan.c
---- devel/arch/ppc/platforms/4xx/luan.c~ppc32-cleanup-amcc-ppc44x-eval-board-u-boot-support	2005-10-28 17:44:02.000000000 -0700
-+++ devel-akpm/arch/ppc/platforms/4xx/luan.c	2005-10-28 17:44:02.000000000 -0700
-@@ -52,7 +52,7 @@
- #include <syslib/ibm440gx_common.h>
- #include <syslib/ibm440sp_common.h>
- 
--bd_t __res;
-+extern bd_t __res;
- 
- static struct ibm44x_clocks clocks __initdata;
- 
-@@ -355,16 +355,7 @@ luan_setup_arch(void)
- void __init platform_init(unsigned long r3, unsigned long r4,
- 		unsigned long r5, unsigned long r6, unsigned long r7)
- {
--	parse_bootinfo(find_bootinfo());
--
--	/*
--	 * If we were passed in a board information, copy it into the
--	 * residual data area.
--	 */
--	if (r3)
--		__res = *(bd_t *)(r3 + KERNELBASE);
--
--	ibm44x_platform_init();
-+	ibm44x_platform_init(r3, r4, r5, r6, r7);
- 
- 	ppc_md.setup_arch = luan_setup_arch;
- 	ppc_md.show_cpuinfo = luan_show_cpuinfo;
-diff -puN arch/ppc/platforms/4xx/ocotea.c~ppc32-cleanup-amcc-ppc44x-eval-board-u-boot-support arch/ppc/platforms/4xx/ocotea.c
---- devel/arch/ppc/platforms/4xx/ocotea.c~ppc32-cleanup-amcc-ppc44x-eval-board-u-boot-support	2005-10-28 17:44:02.000000000 -0700
-+++ devel-akpm/arch/ppc/platforms/4xx/ocotea.c	2005-10-28 17:44:02.000000000 -0700
-@@ -52,7 +52,7 @@
- #include <syslib/gen550.h>
- #include <syslib/ibm440gx_common.h>
- 
--bd_t __res;
-+extern bd_t __res;
- 
- static struct ibm44x_clocks clocks __initdata;
- 
-@@ -286,6 +286,15 @@ ocotea_setup_arch(void)
- 
- 	ibm440gx_tah_enable();
- 
-+	/*
-+	 * Determine various clocks.
-+	 * To be completely correct we should get SysClk
-+	 * from FPGA, because it can be changed by on-board switches
-+	 * --ebs
-+	 */
-+	ibm440gx_get_clocks(&clocks, 33333333, 6 * 1843200);
-+	ocp_sys_info.opb_bus_freq = clocks.opb;
-+
- 	/* Setup TODC access */
- 	TODC_INIT(TODC_TYPE_DS1743,
- 			0,
-@@ -324,25 +333,7 @@ static void __init ocotea_init(void)
- void __init platform_init(unsigned long r3, unsigned long r4,
- 		unsigned long r5, unsigned long r6, unsigned long r7)
- {
--	parse_bootinfo(find_bootinfo());
--
--	/*
--	 * If we were passed in a board information, copy it into the
--	 * residual data area.
--	 */
--	if (r3)
--		__res = *(bd_t *)(r3 + KERNELBASE);
--
--	/*
--	 * Determine various clocks.
--	 * To be completely correct we should get SysClk
--	 * from FPGA, because it can be changed by on-board switches
--	 * --ebs
--	 */
--	ibm440gx_get_clocks(&clocks, 33333333, 6 * 1843200);
--	ocp_sys_info.opb_bus_freq = clocks.opb;
--
--	ibm44x_platform_init();
-+	ibm44x_platform_init(r3, r4, r5, r6, r7);
- 
- 	ppc_md.setup_arch = ocotea_setup_arch;
- 	ppc_md.show_cpuinfo = ocotea_show_cpuinfo;
-diff -puN arch/ppc/syslib/ibm44x_common.c~ppc32-cleanup-amcc-ppc44x-eval-board-u-boot-support arch/ppc/syslib/ibm44x_common.c
---- devel/arch/ppc/syslib/ibm44x_common.c~ppc32-cleanup-amcc-ppc44x-eval-board-u-boot-support	2005-10-28 17:44:02.000000000 -0700
-+++ devel-akpm/arch/ppc/syslib/ibm44x_common.c	2005-10-28 17:44:02.000000000 -0700
-@@ -27,9 +27,14 @@
- #include <asm/time.h>
- #include <asm/ppc4xx_pic.h>
- #include <asm/param.h>
-+#include <asm/bootinfo.h>
-+#include <asm/ppcboot.h>
- 
- #include <syslib/gen550.h>
- 
-+/* Global Variables */
-+bd_t __res;
-+
- phys_addr_t fixup_bigphys_addr(phys_addr_t addr, phys_addr_t size)
- {
- 	phys_addr_t page_4gb = 0;
-@@ -150,8 +155,36 @@ static unsigned long __init ibm44x_find_
- 	return mem_size;
+ 	prot |= _PAGE_NO_CACHE | _PAGE_GUARDED;
+diff -puN arch/ppc64/mm/init.c~ppc-make-phys_mem_access_prot-work-with-pfns-instead-of arch/ppc64/mm/init.c
+--- devel/arch/ppc64/mm/init.c~ppc-make-phys_mem_access_prot-work-with-pfns-instead-of	2005-10-28 17:44:02.000000000 -0700
++++ devel-akpm/arch/ppc64/mm/init.c	2005-10-28 17:44:02.000000000 -0700
+@@ -855,13 +855,13 @@ void pgtable_cache_init(void)
+ 	}
  }
  
--void __init ibm44x_platform_init(void)
-+void __init ibm44x_platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-+				 unsigned long r6, unsigned long r7)
+-pgprot_t phys_mem_access_prot(struct file *file, unsigned long addr,
++pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+ 			      unsigned long size, pgprot_t vma_prot)
  {
-+	parse_bootinfo(find_bootinfo());
-+
-+	/*
-+	 * If we were passed in a board information, copy it into the
-+	 * residual data area.
-+	 */
-+	if (r3)
-+		__res = *(bd_t *)(r3 + KERNELBASE);
-+
-+#if defined(CONFIG_BLK_DEV_INITRD)
-+	/*
-+	 * If the init RAM disk has been configured in, and there's a valid
-+	 * starting address for it, set it up.
-+	 */
-+	if (r4) {
-+		initrd_start = r4 + KERNELBASE;
-+		initrd_end = r5 + KERNELBASE;
-+	}
-+#endif  /* CONFIG_BLK_DEV_INITRD */
-+
-+	/* Copy the kernel command line arguments to a safe place. */
-+
-+	if (r6) {
-+		*(char *) (r7 + KERNELBASE) = 0;
-+		strcpy(cmd_line, (char *) (r6 + KERNELBASE));
-+	}
-+
- 	ppc_md.init_IRQ = ppc4xx_pic_init;
- 	ppc_md.find_end_of_memory = ibm44x_find_end_of_memory;
- 	ppc_md.restart = ibm44x_restart;
-diff -puN arch/ppc/syslib/ibm44x_common.h~ppc32-cleanup-amcc-ppc44x-eval-board-u-boot-support arch/ppc/syslib/ibm44x_common.h
---- devel/arch/ppc/syslib/ibm44x_common.h~ppc32-cleanup-amcc-ppc44x-eval-board-u-boot-support	2005-10-28 17:44:02.000000000 -0700
-+++ devel-akpm/arch/ppc/syslib/ibm44x_common.h	2005-10-28 17:44:02.000000000 -0700
-@@ -36,7 +36,8 @@ struct ibm44x_clocks {
- };
+ 	if (ppc_md.phys_mem_access_prot)
+-		return ppc_md.phys_mem_access_prot(file, addr, size, vma_prot);
++		return ppc_md.phys_mem_access_prot(file, pfn, size, vma_prot);
  
- /* common 44x platform init */
--void ibm44x_platform_init(void) __init;
-+void ibm44x_platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-+			  unsigned long r6, unsigned long r7) __init;
+-	if (!page_is_ram(addr >> PAGE_SHIFT))
++	if (!page_is_ram(pfn))
+ 		vma_prot = __pgprot(pgprot_val(vma_prot)
+ 				    | _PAGE_GUARDED | _PAGE_NO_CACHE);
+ 	return vma_prot;
+diff -puN arch/ppc/kernel/pci.c~ppc-make-phys_mem_access_prot-work-with-pfns-instead-of arch/ppc/kernel/pci.c
+--- devel/arch/ppc/kernel/pci.c~ppc-make-phys_mem_access_prot-work-with-pfns-instead-of	2005-10-28 17:44:02.000000000 -0700
++++ devel-akpm/arch/ppc/kernel/pci.c	2005-10-28 17:44:02.000000000 -0700
+@@ -1586,16 +1586,17 @@ static pgprot_t __pci_mmap_set_pgprot(st
+  * above routine
+  */
+ pgprot_t pci_phys_mem_access_prot(struct file *file,
+-				  unsigned long offset,
++				  unsigned long pfn,
+ 				  unsigned long size,
+ 				  pgprot_t protection)
+ {
+ 	struct pci_dev *pdev = NULL;
+ 	struct resource *found = NULL;
+ 	unsigned long prot = pgprot_val(protection);
++	unsigned long offset = pfn << PAGE_SHIFT;
+ 	int i;
  
- /* initialize decrementer and tick-related variables */
- void ibm44x_calibrate_decr(unsigned int freq) __init;
+-	if (page_is_ram(offset >> PAGE_SHIFT))
++	if (page_is_ram(pfn))
+ 		return prot;
+ 
+ 	prot |= _PAGE_NO_CACHE | _PAGE_GUARDED;
+diff -puN arch/ppc/mm/init.c~ppc-make-phys_mem_access_prot-work-with-pfns-instead-of arch/ppc/mm/init.c
+--- devel/arch/ppc/mm/init.c~ppc-make-phys_mem_access_prot-work-with-pfns-instead-of	2005-10-28 17:44:02.000000000 -0700
++++ devel-akpm/arch/ppc/mm/init.c	2005-10-28 17:44:02.000000000 -0700
+@@ -648,18 +648,16 @@ void update_mmu_cache(struct vm_area_str
+  */
+ int page_is_ram(unsigned long pfn)
+ {
+-	unsigned long paddr = (pfn << PAGE_SHIFT);
+-
+-	return paddr < __pa(high_memory);
++	return pfn < max_pfn;
+ }
+ 
+-pgprot_t phys_mem_access_prot(struct file *file, unsigned long addr,
++pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+ 			      unsigned long size, pgprot_t vma_prot)
+ {
+ 	if (ppc_md.phys_mem_access_prot)
+-		return ppc_md.phys_mem_access_prot(file, addr, size, vma_prot);
++		return ppc_md.phys_mem_access_prot(file, pfn, size, vma_prot);
+ 
+-	if (!page_is_ram(addr >> PAGE_SHIFT))
++	if (!page_is_ram(pfn))
+ 		vma_prot = __pgprot(pgprot_val(vma_prot)
+ 				    | _PAGE_GUARDED | _PAGE_NO_CACHE);
+ 	return vma_prot;
+diff -puN drivers/char/mem.c~ppc-make-phys_mem_access_prot-work-with-pfns-instead-of drivers/char/mem.c
+--- devel/drivers/char/mem.c~ppc-make-phys_mem_access_prot-work-with-pfns-instead-of	2005-10-28 17:44:02.000000000 -0700
++++ devel-akpm/drivers/char/mem.c	2005-10-28 17:44:02.000000000 -0700
+@@ -231,9 +231,7 @@ static ssize_t write_mem(struct file * f
+ static int mmap_mem(struct file * file, struct vm_area_struct * vma)
+ {
+ #if defined(__HAVE_PHYS_MEM_ACCESS_PROT)
+-	unsigned long offset = vma->vm_pgoff << PAGE_SHIFT;
+-
+-	vma->vm_page_prot = phys_mem_access_prot(file, offset,
++	vma->vm_page_prot = phys_mem_access_prot(file, vma->vm_pgoff,
+ 						 vma->vm_end - vma->vm_start,
+ 						 vma->vm_page_prot);
+ #elif defined(pgprot_noncached)
+diff -puN drivers/video/fbmem.c~ppc-make-phys_mem_access_prot-work-with-pfns-instead-of drivers/video/fbmem.c
+--- devel/drivers/video/fbmem.c~ppc-make-phys_mem_access_prot-work-with-pfns-instead-of	2005-10-28 17:44:02.000000000 -0700
++++ devel-akpm/drivers/video/fbmem.c	2005-10-28 17:44:02.000000000 -0700
+@@ -918,7 +918,7 @@ fb_mmap(struct file *file, struct vm_are
+ 	}
+ #endif
+ #elif defined(__powerpc__)
+-	vma->vm_page_prot = phys_mem_access_prot(file, off,
++	vma->vm_page_prot = phys_mem_access_prot(file, off >> PAGE_SHIFT,
+ 						 vma->vm_end - vma->vm_start,
+ 						 vma->vm_page_prot);
+ #elif defined(__alpha__)
+diff -puN include/asm-ppc64/machdep.h~ppc-make-phys_mem_access_prot-work-with-pfns-instead-of include/asm-ppc64/machdep.h
+--- devel/include/asm-ppc64/machdep.h~ppc-make-phys_mem_access_prot-work-with-pfns-instead-of	2005-10-28 17:44:02.000000000 -0700
++++ devel-akpm/include/asm-ppc64/machdep.h	2005-10-28 17:44:02.000000000 -0700
+@@ -130,7 +130,7 @@ struct machdep_calls {
+ 	
+ 	/* Get access protection for /dev/mem */
+ 	pgprot_t	(*phys_mem_access_prot)(struct file *file,
+-						unsigned long offset,
++						unsigned long pfn,
+ 						unsigned long size,
+ 						pgprot_t vma_prot);
+ 
+diff -puN include/asm-ppc64/pci.h~ppc-make-phys_mem_access_prot-work-with-pfns-instead-of include/asm-ppc64/pci.h
+--- devel/include/asm-ppc64/pci.h~ppc-make-phys_mem_access_prot-work-with-pfns-instead-of	2005-10-28 17:44:02.000000000 -0700
++++ devel-akpm/include/asm-ppc64/pci.h	2005-10-28 17:44:02.000000000 -0700
+@@ -168,7 +168,7 @@ extern void pcibios_add_platform_entries
+ 
+ struct file;
+ extern pgprot_t	pci_phys_mem_access_prot(struct file *file,
+-					 unsigned long offset,
++					 unsigned long pfn,
+ 					 unsigned long size,
+ 					 pgprot_t prot);
+ 
+diff -puN include/asm-ppc64/pgtable.h~ppc-make-phys_mem_access_prot-work-with-pfns-instead-of include/asm-ppc64/pgtable.h
+--- devel/include/asm-ppc64/pgtable.h~ppc-make-phys_mem_access_prot-work-with-pfns-instead-of	2005-10-28 17:44:02.000000000 -0700
++++ devel-akpm/include/asm-ppc64/pgtable.h	2005-10-28 17:44:02.000000000 -0700
+@@ -471,7 +471,7 @@ static inline void __ptep_set_access_fla
+ #define pgprot_noncached(prot)	(__pgprot(pgprot_val(prot) | _PAGE_NO_CACHE | _PAGE_GUARDED))
+ 
+ struct file;
+-extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long addr,
++extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+ 				     unsigned long size, pgprot_t vma_prot);
+ #define __HAVE_PHYS_MEM_ACCESS_PROT
+ 
+diff -puN include/asm-ppc/machdep.h~ppc-make-phys_mem_access_prot-work-with-pfns-instead-of include/asm-ppc/machdep.h
+--- devel/include/asm-ppc/machdep.h~ppc-make-phys_mem_access_prot-work-with-pfns-instead-of	2005-10-28 17:44:02.000000000 -0700
++++ devel-akpm/include/asm-ppc/machdep.h	2005-10-28 17:44:02.000000000 -0700
+@@ -98,7 +98,7 @@ struct machdep_calls {
+ 
+ 	/* Get access protection for /dev/mem */
+ 	pgprot_t	(*phys_mem_access_prot)(struct file *file,
+-						unsigned long offset,
++						unsigned long pfn,
+ 						unsigned long size,
+ 						pgprot_t vma_prot);
+ 
+diff -puN include/asm-ppc/pci.h~ppc-make-phys_mem_access_prot-work-with-pfns-instead-of include/asm-ppc/pci.h
+--- devel/include/asm-ppc/pci.h~ppc-make-phys_mem_access_prot-work-with-pfns-instead-of	2005-10-28 17:44:02.000000000 -0700
++++ devel-akpm/include/asm-ppc/pci.h	2005-10-28 17:44:02.000000000 -0700
+@@ -126,7 +126,7 @@ extern void pcibios_add_platform_entries
+ 
+ struct file;
+ extern pgprot_t	pci_phys_mem_access_prot(struct file *file,
+-					 unsigned long offset,
++					 unsigned long pfn,
+ 					 unsigned long size,
+ 					 pgprot_t prot);
+ 
+diff -puN include/asm-ppc/pgtable.h~ppc-make-phys_mem_access_prot-work-with-pfns-instead-of include/asm-ppc/pgtable.h
+--- devel/include/asm-ppc/pgtable.h~ppc-make-phys_mem_access_prot-work-with-pfns-instead-of	2005-10-28 17:44:02.000000000 -0700
++++ devel-akpm/include/asm-ppc/pgtable.h	2005-10-28 17:44:02.000000000 -0700
+@@ -705,7 +705,7 @@ static inline void __ptep_set_access_fla
+ #define pgprot_noncached(prot)	(__pgprot(pgprot_val(prot) | _PAGE_NO_CACHE | _PAGE_GUARDED))
+ 
+ struct file;
+-extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long addr,
++extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+ 				     unsigned long size, pgprot_t vma_prot);
+ #define __HAVE_PHYS_MEM_ACCESS_PROT
+ 
 _
