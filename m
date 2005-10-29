@@ -1,11 +1,11 @@
 Return-Path: <akpm@osdl.org>
-Message-Id: <200510290047.j9T0lRGc030126@shell0.pdx.osdl.net>
+Message-Id: <200510290047.j9T0lNNJ030117@shell0.pdx.osdl.net>
 To: paulus@samba.org
 From: akpm@osdl.org
-Date: Fri, 28 Oct 2005 17:46:56 -0700
-Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, olh@suse.de,
+Date: Fri, 28 Oct 2005 17:46:53 -0700
+Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, luther@debian.org,
 	linuxppc64-dev@ozlabs.org
-Subject: [patch 41/43] ppc64: change name of target file during make install
+Subject: [patch 38/43] Various powerpc 32bit ppc64 build fixes
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,47 +16,54 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-From: Olaf Hering <olh@suse.de>
+From: Sven Luther <sven.luther@wanadoo.fr>
 
-'make install' creates a /boot/zImage[.vmode] file when the defconfig is used.
+Find here attached two small build fixes for the 32bit ppc64 kernels.  I
+know the support for those kernels will soon go away, and debian is not
+using them anymore, but until then it is nice to not have it broken, since
+other users may need it.
 
-It uses the second arg as file content, which is the vmlinux, and the 5th
-arg as file name, which is the BOOTIMAGE name.
-
-A comment in an earlier patch to install.sh states that yaboot can not load
-a zImage+initrd combo.  This was true in kernel 2.6.5 because it did use
-bi_recs to pass the initrd info.  But this concept was always broken. 
-Register r3 holds the initrd address and r4 holds the initrd size.  This
-works with all kernel versions.  The current code in main.c leaves r3 and
-r4 alone, so the kernel should be able to see and use the memory range with
-the initrd content.
-
-If one wants to rerun mkinitrd, it is currently hard to get the uname -r
-value for the installed zImage.  Without this info, mkinitrd can not know
-what modules to use.  This would be fixable by including the /proc/version
-output of the new kernel.  But it is simpler to just use the plain vmlinux.
-
-So all this patch does is to write to /boot/vmlinux instead to /boot/zImage
-
-Signed-off-by: Olaf Hering <olh@suse.de>
+Signed-off-by: Sven Luther <luther@debian.org>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Andrew Morton <akpm@osdl.org>
 ---
 
- arch/ppc64/boot/install.sh |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
+ arch/ppc/boot/simple/misc-prep.c |    2 ++
+ arch/ppc/platforms/Makefile      |    6 ++++++
+ 2 files changed, 8 insertions(+)
 
-diff -puN arch/ppc64/boot/install.sh~ppc64-change-name-of-target-file-during-make-install arch/ppc64/boot/install.sh
---- devel/arch/ppc64/boot/install.sh~ppc64-change-name-of-target-file-during-make-install	2005-10-28 17:44:05.000000000 -0700
-+++ devel-akpm/arch/ppc64/boot/install.sh	2005-10-28 17:44:05.000000000 -0700
-@@ -28,7 +28,7 @@ if [ -x /sbin/${CROSS_COMPILE}installker
- # Default install
+diff -puN arch/ppc/boot/simple/misc-prep.c~various-powerpc-32bit-ppc64-build-fixes arch/ppc/boot/simple/misc-prep.c
+--- devel/arch/ppc/boot/simple/misc-prep.c~various-powerpc-32bit-ppc64-build-fixes	2005-10-28 17:44:04.000000000 -0700
++++ devel-akpm/arch/ppc/boot/simple/misc-prep.c	2005-10-28 17:44:04.000000000 -0700
+@@ -152,9 +152,11 @@ load_kernel(unsigned long load_addr, int
+ 		hold_residual->VitalProductData.Reserved5 = 0xdeadbeef;
+ 	}
  
- # this should work for both the pSeries zImage and the iSeries vmlinux.sm
--image_name=`basename $5`
-+image_name=`basename $2`
++#if defined(CONFIG_6xx)
+ 	/* Now go and clear out the BATs and ensure that our MSR is
+ 	 * correct .*/
+ 	disable_6xx_mmu();
++#endif
  
- if [ -f $4/$image_name ]; then
- 	mv $4/$image_name $4/$image_name.old
+ 	/* Make r3 be a pointer to the residual data. */
+ 	return (unsigned long)hold_residual;
+diff -puN arch/ppc/platforms/Makefile~various-powerpc-32bit-ppc64-build-fixes arch/ppc/platforms/Makefile
+--- devel/arch/ppc/platforms/Makefile~various-powerpc-32bit-ppc64-build-fixes	2005-10-28 17:44:04.000000000 -0700
++++ devel-akpm/arch/ppc/platforms/Makefile	2005-10-28 17:44:04.000000000 -0700
+@@ -9,9 +9,15 @@ obj-$(CONFIG_APUS)		+= apus_setup.o
+ ifeq ($(CONFIG_APUS),y)
+ obj-$(CONFIG_PCI)		+= apus_pci.o
+ endif
++ifeq ($(CONFIG_6xx),y)
+ obj-$(CONFIG_PPC_PMAC)		+= pmac_pic.o pmac_setup.o pmac_time.o \
+ 					pmac_feature.o pmac_pci.o pmac_sleep.o \
+ 					pmac_low_i2c.o pmac_cache.o
++else
++obj-$(CONFIG_PPC_PMAC)		+= pmac_pic.o pmac_setup.o pmac_time.o \
++					pmac_feature.o pmac_pci.o pmac_sleep.o \
++					pmac_low_i2c.o
++endif
+ obj-$(CONFIG_PPC_CHRP)		+= chrp_setup.o chrp_time.o chrp_pci.o \
+ 					chrp_pegasos_eth.o
+ ifeq ($(CONFIG_PPC_CHRP),y)
 _
