@@ -1,11 +1,10 @@
 Return-Path: <akpm@osdl.org>
-Message-Id: <200510290046.j9T0kmQY030006@shell0.pdx.osdl.net>
+Message-Id: <200510290046.j9T0kkk2030000@shell0.pdx.osdl.net>
 To: paulus@samba.org
 From: akpm@osdl.org
-Date: Fri, 28 Oct 2005 17:46:17 -0700
-Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, olh@suse.de,
-	linuxppc64-dev@ozlabs.org
-Subject: [patch 07/43] ppc32: update xmon help text
+Date: Fri, 28 Oct 2005 17:46:15 -0700
+Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Subject: [patch 05/43] ppc32: #ifdef out ALTIVEC specific code in __switch_to
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,36 +15,32 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-From: Olaf Hering <olh@suse.de>
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
 
-Mention a few more commands in xmon.  System.map processing was replaced
-with kallsyms.
+#ifdef out an ALTIVEC specific tweak in __switch_to()
 
-Signed-off-by: Olaf Hering <olh@suse.de>
+Signed-off-by: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
 Signed-off-by: Andrew Morton <akpm@osdl.org>
 ---
 
- arch/ppc/xmon/xmon.c |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
+ arch/ppc/kernel/process.c |    2 ++
+ 1 files changed, 2 insertions(+)
 
-diff -puN arch/ppc/xmon/xmon.c~ppc32-update-xmon-help-text arch/ppc/xmon/xmon.c
---- devel/arch/ppc/xmon/xmon.c~ppc32-update-xmon-help-text	2005-10-28 17:44:02.000000000 -0700
-+++ devel-akpm/arch/ppc/xmon/xmon.c	2005-10-28 17:44:02.000000000 -0700
-@@ -148,9 +148,14 @@ Commands:\n\
-   r	print registers\n\
-   S	print special registers\n\
-   t	print backtrace\n\
--  la	lookup address in system.map\n\
--  ls	lookup symbol in system.map\n\
-+  la	lookup address\n\
-+  ls	lookup symbol\n\
-+  C	checksum\n\
-+  P	call function with arguments\n\
-+  T	print time\n\
-   x	exit monitor\n\
-+  zr    reboot\n\
-+  zh    halt\n\
- ";
+diff -puN arch/ppc/kernel/process.c~ppc32-ifdef-out-altivec-specific-code-in-__switch_to arch/ppc/kernel/process.c
+--- devel/arch/ppc/kernel/process.c~ppc32-ifdef-out-altivec-specific-code-in-__switch_to	2005-10-28 17:44:02.000000000 -0700
++++ devel-akpm/arch/ppc/kernel/process.c	2005-10-28 17:44:02.000000000 -0700
+@@ -287,11 +287,13 @@ struct task_struct *__switch_to(struct t
+ #endif /* CONFIG_SPE */
+ #endif /* CONFIG_SMP */
  
- static int xmon_trace[NR_CPUS];
++#ifdef CONFIG_ALTIVEC
+ 	/* Avoid the trap.  On smp this this never happens since
+ 	 * we don't set last_task_used_altivec -- Cort
+ 	 */
+ 	if (new->thread.regs && last_task_used_altivec == new)
+ 		new->thread.regs->msr |= MSR_VEC;
++#endif
+ #ifdef CONFIG_SPE
+ 	/* Avoid the trap.  On smp this this never happens since
+ 	 * we don't set last_task_used_spe
 _
