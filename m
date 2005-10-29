@@ -2,17 +2,17 @@ Return-Path: <ebs@ebshome.net>
 Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id A80D568622
+	by ozlabs.org (Postfix) with ESMTP id 3DFC568635
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 30 Oct 2005 06:45:33 +1100 (EST)
-Date: Sat, 29 Oct 2005 12:45:31 -0700
+	Sun, 30 Oct 2005 06:47:46 +1100 (EST)
+Date: Sat, 29 Oct 2005 12:47:41 -0700
 From: Eugene Surovegin <ebs@ebshome.net>
 To: Jeff Garzik <jgarzik@pobox.com>
-Message-ID: <20051029194531.GC1865@gate.ebshome.net>
+Message-ID: <20051029194741.GD1865@gate.ebshome.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, sr@denx.de, linuxppc-embedded@ozlabs.org
-Subject: [PATCH 2/3] PPC 44x EMAC driver: add 440GR support
+Cc: netdev@vger.kernel.org, linuxppc-embedded@ozlabs.org
+Subject: [PATCH 3/3] PPC 4xx EMAC driver: fix VSC8201 PHY initialization
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,82 +23,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Add PowerPC 440GR support
+* MII registers must override strap pins
+* disable "echo" mode to make 10/HDX work (Franz Sirl)
 
-Signed-off-by: Stefan Roese <sr@denx.de>
 Signed-off-by: Eugene Surovegin <ebs@ebshome.net>
 ---
 
- drivers/net/Kconfig                  |    2 +-
- drivers/net/ibm_emac/ibm_emac.h      |    3 ++-
- drivers/net/ibm_emac/ibm_emac_core.c |    7 ++++---
- drivers/net/ibm_emac/ibm_emac_mal.h  |    2 +-
- 4 files changed, 8 insertions(+), 6 deletions(-)
+ drivers/net/ibm_emac/ibm_emac_phy.c |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index 6d4f9ce..97760c1 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -1203,7 +1203,7 @@ config IBM_EMAC_RX_SKB_HEADROOM
+diff --git a/drivers/net/ibm_emac/ibm_emac_phy.c b/drivers/net/ibm_emac/ibm_emac_phy.c
+index a27e49c..67935dd 100644
+--- a/drivers/net/ibm_emac/ibm_emac_phy.c
++++ b/drivers/net/ibm_emac/ibm_emac_phy.c
+@@ -236,12 +236,16 @@ static struct mii_phy_def genmii_phy_def
+ };
  
- config IBM_EMAC_PHY_RX_CLK_FIX
- 	bool "PHY Rx clock workaround"
--	depends on IBM_EMAC && (405EP || 440GX || 440EP)
-+	depends on IBM_EMAC && (405EP || 440GX || 440EP || 440GR)
- 	help
- 	  Enable this if EMAC attached to a PHY which doesn't generate
- 	  RX clock if there is no link, if this is the case, you will 
-diff --git a/drivers/net/ibm_emac/ibm_emac.h b/drivers/net/ibm_emac/ibm_emac.h
-index d3166da..644edbf 100644
---- a/drivers/net/ibm_emac/ibm_emac.h
-+++ b/drivers/net/ibm_emac/ibm_emac.h
-@@ -26,7 +26,8 @@
- /* This is a simple check to prevent use of this driver on non-tested SoCs */
- #if !defined(CONFIG_405GP) && !defined(CONFIG_405GPR) && !defined(CONFIG_405EP) && \
-     !defined(CONFIG_440GP) && !defined(CONFIG_440GX) && !defined(CONFIG_440SP) && \
--    !defined(CONFIG_440EP) && !defined(CONFIG_NP405H) && !defined(CONFIG_440SPE)
-+    !defined(CONFIG_440EP) && !defined(CONFIG_NP405H) && !defined(CONFIG_440SPE) && \
-+    !defined(CONFIG_440GR)
- #error	"Unknown SoC. Please, check chip user manual and make sure EMAC defines are OK"
- #endif
+ /* CIS8201 */
++#define MII_CIS8201_10BTCSR	0x16
++#define  TENBTCSR_ECHO_DISABLE	0x2000
+ #define MII_CIS8201_EPCR	0x17
+ #define  EPCR_MODE_MASK		0x3000
+ #define  EPCR_GMII_MODE		0x0000
+ #define  EPCR_RGMII_MODE	0x1000
+ #define  EPCR_TBI_MODE		0x2000
+ #define  EPCR_RTBI_MODE		0x3000
++#define MII_CIS8201_ACSR	0x1c
++#define  ACSR_PIN_PRIO_SELECT	0x0004
  
-diff --git a/drivers/net/ibm_emac/ibm_emac_core.c b/drivers/net/ibm_emac/ibm_emac_core.c
-index 48239e1..eb7d694 100644
---- a/drivers/net/ibm_emac/ibm_emac_core.c
-+++ b/drivers/net/ibm_emac/ibm_emac_core.c
-@@ -87,10 +87,11 @@ MODULE_LICENSE("GPL");
-  */
- static u32 busy_phy_map;
+ static int cis8201_init(struct mii_phy *phy)
+ {
+@@ -269,6 +273,14 @@ static int cis8201_init(struct mii_phy *
+ 	}
  
--#if defined(CONFIG_IBM_EMAC_PHY_RX_CLK_FIX) && (defined(CONFIG_405EP) || defined(CONFIG_440EP))
-+#if defined(CONFIG_IBM_EMAC_PHY_RX_CLK_FIX) && \
-+    (defined(CONFIG_405EP) || defined(CONFIG_440EP) || defined(CONFIG_440GR))
- /* 405EP has "EMAC to PHY Control Register" (CPC0_EPCTL) which can help us
-  * with PHY RX clock problem.
-- * 440EP has more sane SDR0_MFR register implementation than 440GX, which
-+ * 440EP/440GR has more sane SDR0_MFR register implementation than 440GX, which
-  * also allows controlling each EMAC clock
-  */
- static inline void EMAC_RX_CLK_TX(int idx)
-@@ -100,7 +101,7 @@ static inline void EMAC_RX_CLK_TX(int id
+ 	phy_write(phy, MII_CIS8201_EPCR, epcr);
++	
++	/* MII regs override strap pins */
++	phy_write(phy, MII_CIS8201_ACSR, 
++		  phy_read(phy, MII_CIS8201_ACSR) | ACSR_PIN_PRIO_SELECT);
++
++	/* Disable TX_EN -> CRS echo mode, otherwise 10/HDX doesn't work */
++	phy_write(phy, MII_CIS8201_10BTCSR,
++		  phy_read(phy, MII_CIS8201_10BTCSR) | TENBTCSR_ECHO_DISABLE);
  
- #if defined(CONFIG_405EP)
- 	mtdcr(0xf3, mfdcr(0xf3) | (1 << idx));
--#else /* CONFIG_440EP */
-+#else /* CONFIG_440EP || CONFIG_440GR */
- 	SDR_WRITE(DCRN_SDR_MFR, SDR_READ(DCRN_SDR_MFR) | (0x08000000 >> idx));
- #endif
- 
-diff --git a/drivers/net/ibm_emac/ibm_emac_mal.h b/drivers/net/ibm_emac/ibm_emac_mal.h
-index fb6dfe1..2a2d3b2 100644
---- a/drivers/net/ibm_emac/ibm_emac_mal.h
-+++ b/drivers/net/ibm_emac/ibm_emac_mal.h
-@@ -32,7 +32,7 @@
-  * reflect the fact that 40x and 44x have slightly different MALs. --ebs
-  */
- #if defined(CONFIG_405GP) || defined(CONFIG_405GPR) || defined(CONFIG_405EP) || \
--    defined(CONFIG_440EP) || defined(CONFIG_NP405H)
-+    defined(CONFIG_440EP) || defined(CONFIG_440GR) || defined(CONFIG_NP405H)
- #define MAL_VERSION		1
- #elif defined(CONFIG_440GP) || defined(CONFIG_440GX) || defined(CONFIG_440SP) || \
-       defined(CONFIG_440SPE)
+ 	return 0;
+ }
