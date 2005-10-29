@@ -1,22 +1,17 @@
-Return-Path: <sven.luther@wanadoo.fr>
-Received: from smtp9.wanadoo.fr (smtp9.wanadoo.fr [193.252.22.22])
-	by ozlabs.org (Postfix) with ESMTP id 6C4D568621
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Oct 2005 16:29:51 +1000 (EST)
-Received: from me-wanadoo.net (localhost [127.0.0.1])
-	by mwinf0909.wanadoo.fr (SMTP Server) with ESMTP id A5EE02400119
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Oct 2005 08:29:48 +0200 (CEST)
-Date: Sat, 29 Oct 2005 08:27:24 +0200
-To: Paul Mackerras <paulus@samba.org>
-Message-ID: <20051029062724.GA1893@localhost.localdomain>
-References: <200510290047.j9T0lNNJ030117@shell0.pdx.osdl.net>
-	<17251.2983.358202.164993@cargo.ozlabs.ibm.com>
+Return-Path: <sfr@canb.auug.org.au>
+Date: Sat, 29 Oct 2005 18:07:55 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kumar Gala <kumar.gala@freescale.com>
+Message-Id: <20051029180755.22de749b.sfr@canb.auug.org.au>
+In-Reply-To: <D45D980C-C3F8-4418-A159-6F10708C914A@freescale.com>
+References: <17250.8725.358204.62510@cargo.ozlabs.ibm.com>
+	<D45D980C-C3F8-4418-A159-6F10708C914A@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17251.2983.358202.164993@cargo.ozlabs.ibm.com>
-From: Sven Luther <sven.luther@wanadoo.fr>
-Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, luther@debian.org,
-	linuxppc64-dev@ozlabs.org
-Subject: Re: [patch 38/43] Various powerpc 32bit ppc64 build fixes
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sat__29_Oct_2005_18_07_55_+1000_BxkG0qYyVaAYV+gA"
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Subject: Re: Patches for 2.6.15
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,32 +21,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Oct 29, 2005 at 03:41:59PM +1000, Paul Mackerras wrote:
-> Sven Luther writes:
-> 
-> > +ifeq ($(CONFIG_6xx),y)
-> >  obj-$(CONFIG_PPC_PMAC)		+= pmac_pic.o pmac_setup.o pmac_time.o \
-> >  					pmac_feature.o pmac_pci.o pmac_sleep.o \
-> >  					pmac_low_i2c.o pmac_cache.o
-> > +else
-> > +obj-$(CONFIG_PPC_PMAC)		+= pmac_pic.o pmac_setup.o pmac_time.o \
-> > +					pmac_feature.o pmac_pci.o pmac_sleep.o \
-> > +					pmac_low_i2c.o
-> > +endif
-> 
-> This is a bit gross.  How about:
+--Signature=_Sat__29_Oct_2005_18_07_55_+1000_BxkG0qYyVaAYV+gA
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Well, i sent to linuxppc-dev for comments too :)
+On Fri, 28 Oct 2005 13:49:26 -0500 Kumar Gala <kumar.gala@freescale.com> wr=
+ote:
+>
+> Can you merge this in:
+>=20
+> http://patchwork.ozlabs.org/linuxppc/patch?id=3D2931
 
-> pmac-$(CONFIG_6xx)		:= pmac_cache.o
-> obj-$(CONFIG_PPC_PMAC)		+= pmac_pic.o pmac_setup.o pmac_time.o \
-> 					pmac_feature.o pmac_pci.o pmac_sleep.o \
-> 					pmac_low_i2c.o $(pmac-y)
-> 
-> Care to send a revised patch?
+I can't find any use of mpc85xx_show_cpuinfo.  Is there something subtle he=
+re?
 
-Sure, i will do so early next week.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Friendly,
+--Signature=_Sat__29_Oct_2005_18_07_55_+1000_BxkG0qYyVaAYV+gA
+Content-Type: application/pgp-signature
 
-Sven Luther
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
+
+iD8DBQFDYy3jFdBgD/zoJvwRAnUUAKCBe6+fzwiROOJp3mp213W/oyOaIgCfU1el
+YObv1dBdLesXtgRIbDsvnpA=
+=X+It
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__29_Oct_2005_18_07_55_+1000_BxkG0qYyVaAYV+gA--
