@@ -1,11 +1,11 @@
 Return-Path: <akpm@osdl.org>
-Message-Id: <200510290047.j9T0lJaf030102@shell0.pdx.osdl.net>
+Message-Id: <200510290047.j9T0lLdN030108@shell0.pdx.osdl.net>
 To: paulus@samba.org
 From: akpm@osdl.org
-Date: Fri, 28 Oct 2005 17:46:48 -0700
+Date: Fri, 28 Oct 2005 17:46:50 -0700
 Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, olh@suse.de,
 	linuxppc64-dev@ozlabs.org
-Subject: [patch 33/43] ppc64 boot: make the zImage relocateable
+Subject: [patch 35/43] ppc64 boot: print firmware provided stackpointer
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,8 +18,12 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Olaf Hering <olh@suse.de>
 
-Make the zImage relocateable.  So yaboot could just load and run any ELF
-binary, without worrying about its load address.
+Show firmware provided stackpointer during boot.
+
+This helps to find the "taboo" areas on the various boards.  claim tends to
+fail for these memory areas, but some jokers return success anyway.
+
+Use %p to print the load address, its a pointer.
 
 Signed-off-by: Olaf Hering <olh@suse.de>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
@@ -28,77 +32,39 @@ Cc: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Andrew Morton <akpm@osdl.org>
 ---
 
- arch/ppc64/boot/Makefile   |    2 +-
- arch/ppc64/boot/crt0.S     |   29 +++++++++++++++++++++++++++++
- arch/ppc64/boot/zImage.lds |    4 +++-
- 3 files changed, 33 insertions(+), 2 deletions(-)
+ arch/ppc64/boot/crt0.S |    1 +
+ arch/ppc64/boot/main.c |    4 ++--
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-diff -puN arch/ppc64/boot/crt0.S~ppc64-boot-make-the-zimage-relocateable arch/ppc64/boot/crt0.S
---- devel/arch/ppc64/boot/crt0.S~ppc64-boot-make-the-zimage-relocateable	2005-10-28 17:44:04.000000000 -0700
-+++ devel-akpm/arch/ppc64/boot/crt0.S	2005-10-28 17:45:21.000000000 -0700
-@@ -14,9 +14,38 @@
- 	.text
- 	.globl	_start
- _start:
-+	bl	reloc_offset
-+
-+reloc_offset:
-+	mflr	r0
-+	lis	r9,reloc_offset@ha
-+	addi	r9,r9,reloc_offset@l
-+	subf.	r0,r9,r0
-+	beq	clear_caches
-+
-+reloc_got2:
-+	lis	r9,__got2_start@ha
-+	addi	r9,r9,__got2_start@l
-+	lis	r8,__got2_end@ha
-+	addi	r8,r8,__got2_end@l
-+	subf.	r8,r9,r8
-+	beq	clear_caches
-+	srwi.	r8,r8,2
-+	mtctr	r8
-+	add	r9,r0,r9
-+reloc_got2_loop:
-+	lwz	r8,0(r9)
-+	add	r8,r8,r0
-+	stw	r8,0(r9)
-+	addi	r9,r9,4
-+	bdnz	reloc_got2_loop
-+
-+clear_caches:
- 	lis	r9,_start@h
-+	add	r9,r0,r9
- 	lis	r8,_etext@ha
- 	addi	r8,r8,_etext@l
-+	add	r8,r0,r8
- 1:	dcbf	r0,r9
- 	icbi	r0,r9
- 	addi	r9,r9,0x20
-diff -puN arch/ppc64/boot/Makefile~ppc64-boot-make-the-zimage-relocateable arch/ppc64/boot/Makefile
---- devel/arch/ppc64/boot/Makefile~ppc64-boot-make-the-zimage-relocateable	2005-10-28 17:44:04.000000000 -0700
-+++ devel-akpm/arch/ppc64/boot/Makefile	2005-10-28 17:45:21.000000000 -0700
-@@ -22,7 +22,7 @@
+diff -puN arch/ppc64/boot/crt0.S~ppc64-boot-print-firmware-provided-stackpointer arch/ppc64/boot/crt0.S
+--- devel/arch/ppc64/boot/crt0.S~ppc64-boot-print-firmware-provided-stackpointer	2005-10-28 17:44:04.000000000 -0700
++++ devel-akpm/arch/ppc64/boot/crt0.S	2005-10-28 17:44:04.000000000 -0700
+@@ -54,5 +54,6 @@ clear_caches:
+ 	sync
+ 	isync
  
++	mr	r6,r1
+ 	b	start
  
- HOSTCC		:= gcc
--BOOTCFLAGS	:= $(HOSTCFLAGS) -fno-builtin -nostdinc -isystem $(shell $(CROSS32CC) -print-file-name=include)
-+BOOTCFLAGS	:= $(HOSTCFLAGS) -fno-builtin -nostdinc -isystem $(shell $(CROSS32CC) -print-file-name=include) -fPIC
- BOOTAFLAGS	:= -D__ASSEMBLY__ $(BOOTCFLAGS) -traditional -nostdinc
- BOOTLFLAGS	:= -Ttext 0x00400000 -e _start -T $(srctree)/$(src)/zImage.lds
- OBJCOPYFLAGS    := contents,alloc,load,readonly,data
-diff -puN arch/ppc64/boot/zImage.lds~ppc64-boot-make-the-zimage-relocateable arch/ppc64/boot/zImage.lds
---- devel/arch/ppc64/boot/zImage.lds~ppc64-boot-make-the-zimage-relocateable	2005-10-28 17:44:04.000000000 -0700
-+++ devel-akpm/arch/ppc64/boot/zImage.lds	2005-10-28 17:45:21.000000000 -0700
-@@ -13,7 +13,9 @@ SECTIONS
-     *(.rodata*)
-     *(.data*)
-     *(.sdata*)
--    *(.got*)
-+    __got2_start = .;
-+    *(.got2)
-+    __got2_end = .;
-   }
+diff -puN arch/ppc64/boot/main.c~ppc64-boot-print-firmware-provided-stackpointer arch/ppc64/boot/main.c
+--- devel/arch/ppc64/boot/main.c~ppc64-boot-print-firmware-provided-stackpointer	2005-10-28 17:44:04.000000000 -0700
++++ devel-akpm/arch/ppc64/boot/main.c	2005-10-28 17:44:04.000000000 -0700
+@@ -131,7 +131,7 @@ static unsigned long try_claim(unsigned 
+ 	return addr;
+ }
  
-   . = ALIGN(4096);
+-void start(unsigned long a1, unsigned long a2, void *promptr)
++void start(unsigned long a1, unsigned long a2, void *promptr, void *sp)
+ {
+ 	unsigned long i;
+ 	int len;
+@@ -151,7 +151,7 @@ void start(unsigned long a1, unsigned lo
+ 	if (getprop(chosen_handle, "stdin", &stdin, sizeof(stdin)) != 4)
+ 		exit();
+ 
+-	printf("\n\rzImage starting: loaded at 0x%lx\n\r", (unsigned long) _start);
++	printf("\n\rzImage starting: loaded at 0x%p (sp: 0x%p)\n\r", _start, sp);
+ 
+ 	/*
+ 	 * The first available claim_base must be above the end of the
 _
