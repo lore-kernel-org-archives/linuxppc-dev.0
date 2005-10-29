@@ -1,11 +1,11 @@
 Return-Path: <akpm@osdl.org>
-Message-Id: <200510290047.j9T0lFdo030090@shell0.pdx.osdl.net>
+Message-Id: <200510290047.j9T0lGUx030093@shell0.pdx.osdl.net>
 To: paulus@samba.org
 From: akpm@osdl.org
-Date: Fri, 28 Oct 2005 17:46:44 -0700
+Date: Fri, 28 Oct 2005 17:46:45 -0700
 Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, olh@suse.de,
 	linuxppc64-dev@ozlabs.org
-Subject: [patch 29/43] ppc64 boot: cleanup linker script
+Subject: [patch 30/43] ppc64 boot: use memset to clear bss
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,8 +18,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Olaf Hering <olh@suse.de>
 
-Remove userland related stuff from ld.script, they are not required for zImage
-use wildcards for some sections.
+Use memset to clear bss, instead of own version.
 
 Signed-off-by: Olaf Hering <olh@suse.de>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
@@ -28,99 +27,56 @@ Cc: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Andrew Morton <akpm@osdl.org>
 ---
 
- arch/ppc64/boot/zImage.lds |   59 +++------------------------------------------
- 1 files changed, 5 insertions(+), 54 deletions(-)
+ arch/ppc64/boot/crt0.S |   19 -------------------
+ arch/ppc64/boot/main.c |    3 +++
+ 2 files changed, 3 insertions(+), 19 deletions(-)
 
-diff -puN arch/ppc64/boot/zImage.lds~ppc64-boot-cleanup-linker-script arch/ppc64/boot/zImage.lds
---- devel/arch/ppc64/boot/zImage.lds~ppc64-boot-cleanup-linker-script	2005-10-28 17:44:04.000000000 -0700
-+++ devel-akpm/arch/ppc64/boot/zImage.lds	2005-10-28 17:45:21.000000000 -0700
-@@ -1,62 +1,19 @@
- OUTPUT_ARCH(powerpc:common)
--SEARCH_DIR(/lib); SEARCH_DIR(/usr/lib); SEARCH_DIR(/usr/local/lib); SEARCH_DIR(/usr/local/powerpc-any-elf/lib);
--/* Do we need any of these for elf?
--   __DYNAMIC = 0;    */
- SECTIONS
- {
--  /* Read-only sections, merged into text segment: */
--  . = + SIZEOF_HEADERS;
--  .interp : { *(.interp) }
--  .hash          : { *(.hash)      }
--  .dynsym        : { *(.dynsym)        }
--  .dynstr        : { *(.dynstr)        }
--  .rel.text      : { *(.rel.text)      }
--  .rela.text     : { *(.rela.text)     }
--  .rel.data      : { *(.rel.data)      }
--  .rela.data     : { *(.rela.data)     }
--  .rel.rodata    : { *(.rel.rodata)    }
--  .rela.rodata   : { *(.rela.rodata)   }
--  .rel.got       : { *(.rel.got)       }
--  .rela.got      : { *(.rela.got)      }
--  .rel.ctors     : { *(.rel.ctors) }
--  .rela.ctors    : { *(.rela.ctors)    }
--  .rel.dtors     : { *(.rel.dtors) }
--  .rela.dtors    : { *(.rela.dtors)    }
--  .rel.bss       : { *(.rel.bss)       }
--  .rela.bss      : { *(.rela.bss)      }
--  .rel.plt       : { *(.rel.plt)       }
--  .rela.plt      : { *(.rela.plt)      }
--  .plt : { *(.plt) }
-   .text      :
-   {
-     *(.text)
-     *(.fixup)
--    *(.got1)
-   }
--  . = ALIGN(4096);
-   _etext = .;
--  PROVIDE (etext = .);
--  .rodata    :
--  {
--    *(.rodata)
--    *(.rodata1)
--  }
--  .kstrtab   : { *(.kstrtab) }
--  __vermagic : { *(__vermagic) }
--  .fini      : { *(.fini)    } =0
--  .ctors     : { *(.ctors)   }
--  .dtors     : { *(.dtors)   }
--  /* Read-write section, merged into data segment: */
-   . = ALIGN(4096);
-   .data    :
-   {
--    *(.data)
--    *(.data1)
--    *(.sdata)
--    *(.sdata2)
--    *(.got.plt) *(.got)
--    *(.dynamic)
--    CONSTRUCTORS
-+    *(.rodata*)
-+    *(.data*)
-+    *(.sdata*)
-+    *(.got*)
-   }
+diff -puN arch/ppc64/boot/crt0.S~ppc64-boot-use-memset-to-clear-bss arch/ppc64/boot/crt0.S
+--- devel/arch/ppc64/boot/crt0.S~ppc64-boot-use-memset-to-clear-bss	2005-10-28 17:44:04.000000000 -0700
++++ devel-akpm/arch/ppc64/boot/crt0.S	2005-10-28 17:45:21.000000000 -0700
+@@ -25,24 +25,5 @@ _start:
+ 	sync
+ 	isync
  
-   . = ALIGN(4096);
-@@ -71,20 +28,14 @@ SECTIONS
- 
-   . = ALIGN(4096);
-   _edata  =  .;
--  PROVIDE (edata = .);
+-	## Clear out the BSS as per ANSI C requirements
 -
--  .fixup   : { *(.fixup) }
+-	lis	r7,_end@ha
+-	addi    r7,r7,_end@l		# r7 = &_end 
+-	lis	r8,__bss_start@ha	# 
+-	addi    r8,r8,__bss_start@l	# r8 = &_bss_start
+-
+-	## Determine how large an area, in number of words, to clear
+-
+-	subf	r7,r8,r7		# r7 = &_end - &_bss_start + 1 
+-	addi	r7,r7,3			# r7 += 3 
+-	srwi.	r7,r7,2			# r7 = size in words.
+-	beq	3f			# If the size is zero, don't bother
+-	addi	r8,r8,-4		# r8 -= 4 
+-	mtctr	r7			# SPRN_CTR = number of words to clear
+-	li	r0,0			# r0 = 0
+-2:	stwu	r0,4(r8)		# Clear out a word
+-	bdnz	2b			# Keep clearing until done
+-3:
+ 	b	start
  
-   . = ALIGN(4096);
-   __bss_start = .;
-   .bss       :
-   {
--   *(.sbss) *(.scommon)
--   *(.dynbss)
-+   *(.sbss)
-    *(.bss)
--   *(COMMON)
-   }
-   . = ALIGN(4096);
-   _end = . ;
--  PROVIDE (end = .);
- }
+diff -puN arch/ppc64/boot/main.c~ppc64-boot-use-memset-to-clear-bss arch/ppc64/boot/main.c
+--- devel/arch/ppc64/boot/main.c~ppc64-boot-use-memset-to-clear-bss	2005-10-28 17:44:04.000000000 -0700
++++ devel-akpm/arch/ppc64/boot/main.c	2005-10-28 17:45:22.000000000 -0700
+@@ -26,6 +26,7 @@ extern void flush_cache(void *, unsigned
+ #define	ONE_MB		0x100000
+ 
+ extern char _start[];
++extern char __bss_start[];
+ extern char _end[];
+ extern char _vmlinux_start[];
+ extern char _vmlinux_end[];
+@@ -138,6 +139,8 @@ void start(unsigned long a1, unsigned lo
+ 	Elf64_Ehdr *elf64;
+ 	Elf64_Phdr *elf64ph;
+ 
++	memset(__bss_start, 0, _end - __bss_start);
++
+ 	prom = (int (*)(void *)) promptr;
+ 	chosen_handle = finddevice("/chosen");
+ 	if (chosen_handle == (void *) -1)
 _
