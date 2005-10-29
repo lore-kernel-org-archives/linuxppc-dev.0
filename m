@@ -1,28 +1,20 @@
-Return-Path: <sven.luther@wanadoo.fr>
-Received: from smtp11.wanadoo.fr (smtp11.wanadoo.fr [193.252.22.31])
-	by ozlabs.org (Postfix) with ESMTP id E218D68630
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Oct 2005 15:39:54 +1000 (EST)
-Received: from me-wanadoo.net (localhost [127.0.0.1])
-	by mwinf1102.wanadoo.fr (SMTP Server) with ESMTP id 2F8F61C0009F
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Oct 2005 07:39:52 +0200 (CEST)
-Received: from pegasos (AStrasbourg-251-1-40-23.w82-126.abo.wanadoo.fr
-	[82.126.157.23])
-	by mwinf1102.wanadoo.fr (SMTP Server) with ESMTP id 12E2B1C00099
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Oct 2005 07:39:52 +0200 (CEST)
-Date: Sat, 29 Oct 2005 07:37:49 +0200
-From: Sven Luther <sl@bplan-gmbh.de>
-To: Paul Mackerras <paulus@samba.org>
-Message-ID: <20051029053749.GA874@localhost.localdomain>
-References: <20051025075159.GA10316@localhost.localdomain>
-	<17251.265.196352.234376@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17251.265.196352.234376@cargo.ozlabs.ibm.com>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	Sven Luther <sl@bplan-gmbh.de>
-Subject: Re: [PATCH 2.6.14-rc5 1/1] : mv643xx_eth_pcidev - implements
-	hotplug for the marvell gige functionality by probing the
-	northbridge pci id.
+Message-ID: <17251.3222.175214.996295@cargo.ozlabs.ibm.com>
+Date: Sat, 29 Oct 2005 15:45:58 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Andrew Morton <akpm@osdl.org>
+In-Reply-To: <20051028174029.24d4dbb9.akpm@osdl.org>
+References: <17250.8725.358204.62510@cargo.ozlabs.ibm.com>
+	<20051028103041.B15268@cox.net>
+	<E053D1B7-2363-45D1-AEFC-83B8B5B4C4F8@freescale.com>
+	<20051028130246.459f1e9a.akpm@osdl.org>
+	<17250.49231.248045.41302@cargo.ozlabs.ibm.com>
+	<20051028174029.24d4dbb9.akpm@osdl.org>
+Cc: linuxppc-dev@ozlabs.org, kumar.gala@freescale.com,
+	linuxppc64-dev@ozlabs.org
+Subject: Re: Patches for 2.6.15
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,28 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Oct 29, 2005 at 02:56:41PM +1000, Paul Mackerras wrote:
-> Sven Luther writes:
-> 
-> > +static struct pci_device_id pci_marvell_mv64360[] = {
-> > +	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, PCI_DEVICE_ID_MARVELL_MV64360) },
-> 
-> Are there other devices in this northbridge whose drivers might also
-> want to bind to this PCI id?
-> 
-> What other devices does this northbridge contain?
+Andrew Morton writes:
 
-Yep, Dale proposed to add : 
+> I'll mail them all over.
 
-+       { PCI_DEVICE(PCI_VENDOR_ID_MARVELL, PCI_DEVICE_ID_MARVELL_MV64460) },
+Got them, thanks.  I'm going to drop 06, 12, 13, 18, 19, 20, 21, and
+37 for now.  The rest I have committed to the powerpc-merge tree.
 
-Which i was about to resubmit the patch when i saw the commit, ... Err, no i
-misunderstood your question.
+The reasons for dropping them are:
 
-Other devices, well, there is the interrupt controller, some dma engine and
-the builtin sram, but nothing to my knowledge which would benefit from being
-bound to the pci id.
+06 - need to discuss the specifics of the patch with Marcelo
+12, 13 - going through netdev tree
+18 - it seems there is still ongoing discussion about whether this is
+     the best approach
+19, 20, 21 - BenH's SMU stuff, which he told me he would rebase on
+     top of the merge tree
+37 - I want the patch done a little differently
 
-Friendly,
-
-Sven Luther
+Regards,
+Paul.
