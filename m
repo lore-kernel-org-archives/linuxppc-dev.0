@@ -1,21 +1,22 @@
-Return-Path: <akpm@osdl.org>
-Date: Fri, 28 Oct 2005 22:59:17 -0700
-From: Andrew Morton <akpm@osdl.org>
+Return-Path: <sven.luther@wanadoo.fr>
+Received: from smtp9.wanadoo.fr (smtp9.wanadoo.fr [193.252.22.22])
+	by ozlabs.org (Postfix) with ESMTP id 6C4D568621
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Oct 2005 16:29:51 +1000 (EST)
+Received: from me-wanadoo.net (localhost [127.0.0.1])
+	by mwinf0909.wanadoo.fr (SMTP Server) with ESMTP id A5EE02400119
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Oct 2005 08:29:48 +0200 (CEST)
+Date: Sat, 29 Oct 2005 08:27:24 +0200
 To: Paul Mackerras <paulus@samba.org>
-Message-Id: <20051028225917.2873a74e.akpm@osdl.org>
-In-Reply-To: <17251.3222.175214.996295@cargo.ozlabs.ibm.com>
-References: <17250.8725.358204.62510@cargo.ozlabs.ibm.com>
-	<20051028103041.B15268@cox.net>
-	<E053D1B7-2363-45D1-AEFC-83B8B5B4C4F8@freescale.com>
-	<20051028130246.459f1e9a.akpm@osdl.org>
-	<17250.49231.248045.41302@cargo.ozlabs.ibm.com>
-	<20051028174029.24d4dbb9.akpm@osdl.org>
-	<17251.3222.175214.996295@cargo.ozlabs.ibm.com>
+Message-ID: <20051029062724.GA1893@localhost.localdomain>
+References: <200510290047.j9T0lNNJ030117@shell0.pdx.osdl.net>
+	<17251.2983.358202.164993@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, kumar.gala@freescale.com,
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17251.2983.358202.164993@cargo.ozlabs.ibm.com>
+From: Sven Luther <sven.luther@wanadoo.fr>
+Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, luther@debian.org,
 	linuxppc64-dev@ozlabs.org
-Subject: Re: Patches for 2.6.15
+Subject: Re: [patch 38/43] Various powerpc 32bit ppc64 build fixes
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,24 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@samba.org> wrote:
->
-> Andrew Morton writes:
+On Sat, Oct 29, 2005 at 03:41:59PM +1000, Paul Mackerras wrote:
+> Sven Luther writes:
 > 
-> > I'll mail them all over.
+> > +ifeq ($(CONFIG_6xx),y)
+> >  obj-$(CONFIG_PPC_PMAC)		+= pmac_pic.o pmac_setup.o pmac_time.o \
+> >  					pmac_feature.o pmac_pci.o pmac_sleep.o \
+> >  					pmac_low_i2c.o pmac_cache.o
+> > +else
+> > +obj-$(CONFIG_PPC_PMAC)		+= pmac_pic.o pmac_setup.o pmac_time.o \
+> > +					pmac_feature.o pmac_pci.o pmac_sleep.o \
+> > +					pmac_low_i2c.o
+> > +endif
 > 
-> Got them, thanks.  I'm going to drop 06, 12, 13, 18, 19, 20, 21, and
-> 37 for now.  The rest I have committed to the powerpc-merge tree.
-> 
-> The reasons for dropping them are:
-> 
-> 06 - need to discuss the specifics of the patch with Marcelo
-> 12, 13 - going through netdev tree
-> 18 - it seems there is still ongoing discussion about whether this is
->      the best approach
-> 19, 20, 21 - BenH's SMU stuff, which he told me he would rebase on
->      top of the merge tree
-> 37 - I want the patch done a little differently
+> This is a bit gross.  How about:
 
-OK, well I'll probably drop all those patches as well - hopefully all the
-originators know what's going on and nothing will fall through a crack.
+Well, i sent to linuxppc-dev for comments too :)
+
+> pmac-$(CONFIG_6xx)		:= pmac_cache.o
+> obj-$(CONFIG_PPC_PMAC)		+= pmac_pic.o pmac_setup.o pmac_time.o \
+> 					pmac_feature.o pmac_pci.o pmac_sleep.o \
+> 					pmac_low_i2c.o $(pmac-y)
+> 
+> Care to send a revised patch?
+
+Sure, i will do so early next week.
+
+Friendly,
+
+Sven Luther
