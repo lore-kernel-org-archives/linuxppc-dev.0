@@ -1,12 +1,11 @@
 Return-Path: <akpm@osdl.org>
-Message-Id: <200510290047.j9T0lSZ2030129@shell0.pdx.osdl.net>
+Message-Id: <200510290047.j9T0lMO5030114@shell0.pdx.osdl.net>
 To: paulus@samba.org
 From: akpm@osdl.org
-Date: Fri, 28 Oct 2005 17:46:57 -0700
-Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, olh@suse.de,
-	linuxppc64-dev@ozlabs.org
-Subject: [patch 42/43] ppc64: remove duplicate local variable in
-	set_preferred_console
+Date: Fri, 28 Oct 2005 17:46:52 -0700
+Cc: akpm@osdl.org, sfr@canb.auug.org.au, boutcher@us.ibm.com,
+	linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Subject: [patch 37/43] ppc64: make dma_addr_t 64 bits
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,26 +16,43 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-From: Olaf Hering <olh@suse.de>
+From: Stephen Rothwell <sfr@canb.auug.org.au>
 
-remove duplicate local variable, saves 2 asm instructions.
+There has been a need expressed for dma_addr_t to be 64 bits on PPC64. 
+This patch does that.  I have built it for pSeries and iSeries and booted a
+virtual only iSeries partition.
 
-Signed-off-by: Olaf Hering <olh@suse.de>
+Signed-off-by: Anton Blanchard <anton@samba.org>
+Acked-by: Dave Boutcher <boutcher@us.ibm.com>
 Signed-off-by: Andrew Morton <akpm@osdl.org>
 ---
 
- arch/ppc64/kernel/setup.c |    1 -
- 1 files changed, 1 deletion(-)
+ include/asm-ppc64/scatterlist.h |    2 +-
+ include/asm-ppc64/types.h       |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff -puN arch/ppc64/kernel/setup.c~ppc64-remove-duplicate-local-variable-in-set_preferred_console arch/ppc64/kernel/setup.c
---- devel/arch/ppc64/kernel/setup.c~ppc64-remove-duplicate-local-variable-in-set_preferred_console	2005-10-28 17:44:05.000000000 -0700
-+++ devel-akpm/arch/ppc64/kernel/setup.c	2005-10-28 17:44:05.000000000 -0700
-@@ -881,7 +881,6 @@ static int __init set_preferred_console(
+diff -puN include/asm-ppc64/scatterlist.h~ppc64-make-dma_addr_t-64-bits include/asm-ppc64/scatterlist.h
+--- devel/include/asm-ppc64/scatterlist.h~ppc64-make-dma_addr_t-64-bits	2005-10-28 17:44:04.000000000 -0700
++++ devel-akpm/include/asm-ppc64/scatterlist.h	2005-10-28 17:44:04.000000000 -0700
+@@ -19,7 +19,7 @@ struct scatterlist {
+ 	unsigned int length;
  
-  		if (reg && compat && (strcmp(compat, "hvterm-protocol") == 0)) {
-  			/* Host Virtual Serial Interface */
-- 			int offset;
-  			switch (reg[0]) {
-  				case 0x30000000:
-  					offset = 0;
+ 	/* For TCE support */
+-	u32 dma_address;
++	dma_addr_t dma_address;
+ 	u32 dma_length;
+ };
+ 
+diff -puN include/asm-ppc64/types.h~ppc64-make-dma_addr_t-64-bits include/asm-ppc64/types.h
+--- devel/include/asm-ppc64/types.h~ppc64-make-dma_addr_t-64-bits	2005-10-28 17:44:04.000000000 -0700
++++ devel-akpm/include/asm-ppc64/types.h	2005-10-28 17:44:04.000000000 -0700
+@@ -63,7 +63,7 @@ typedef unsigned long u64;
+ 
+ typedef __vector128 vector128;
+ 
+-typedef u32 dma_addr_t;
++typedef u64 dma_addr_t;
+ typedef u64 dma64_addr_t;
+ 
+ typedef struct {
 _
