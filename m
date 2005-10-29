@@ -1,21 +1,18 @@
-Return-Path: <greg@kroah.com>
-Received: from perch.kroah.org (mail.kroah.org [69.55.234.183])
-	by ozlabs.org (Postfix) with ESMTP id 076B068621
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id DFDCD68622
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 29 Oct 2005 06:46:18 +1000 (EST)
-Date: Fri, 28 Oct 2005 13:43:47 -0700
-From: Greg KH <greg@kroah.com>
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-Message-ID: <20051028204347.GB18096@kroah.com>
-References: <200510271439.48990.david.jander@protonic.nl>
-	<20051028152109.GB18915@logos.cnet>
+	Sun, 30 Oct 2005 06:43:28 +1100 (EST)
+Date: Sat, 29 Oct 2005 12:43:14 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Jeff Garzik <jgarzik@pobox.com>
+Message-ID: <20051029194314.GB1865@gate.ebshome.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20051028152109.GB18915@logos.cnet>
-Cc: David Jander <david.jander@protonic.nl>,
-	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: MPC8xx support in 2.6 and [PATCH] USB host controller
-	selection...
+Cc: netdev@vger.kernel.org, linuxppc-embedded@ozlabs.org
+Subject: [PATCH 1/3] PPC 44x EMAC driver: add 440SPe support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,46 +23,121 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 28, 2005 at 01:21:09PM -0200, Marcelo Tosatti wrote:
-> Greg, please refer to the end of the message.
-> > - USB Kconfig file for 2.6 kernel is broken. It is not correct to assume that 
-> > you either have a PCI interface or a processor with internal HCI. Proof: We 
-> > have a board based on MPC852T (no internal UHCI) which can plug into an 
-> > (optional) daughter board with a ISP1160 on it. See attached patch.
+For some reason, the hardware designers made the polarity of one bit
+in the 440SPe's PHY interface register the opposite of all other PPC
+440 chips.  To handle this, abstract our access to this bit and do the
+right thing based on the configured CPU type.
 
-Then please send the proper patch to the linux-usb-devel mailing list.
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+Signed-off-by: Eugene Surovegin <ebs@ebshome.net>
+---
 
-> Is it driven by the UHCI driver?
+ drivers/net/ibm_emac/ibm_emac.h      |   21 ++++++++++++++++++++-
+ drivers/net/ibm_emac/ibm_emac_core.c |   13 +++++++------
+ drivers/net/ibm_emac/ibm_emac_mal.h  |    3 ++-
+ 3 files changed, 29 insertions(+), 8 deletions(-)
 
-It shouldn't be :)
-
-> >From http://www.semiconductors.philips.com/cgi-bin/pldb/pip/isp1160.html
-> 
-> The ISP1160 is an embedded Universal Serial Bus (USB) Host Controller
-> (HC) that complies with Universal Serial Bus Specification Rev. 2.0,
-> supporting data transfer at full-speed (12 Mbit/s) and low-speed (1.5
-> Mbit/s).
-
-We already have a driver for this device in the kernel tree, right?
-
-> > Maybe the patch should be sent elsewere since it has not much to do with PPC, 
-> > so can someone please tell me where?
-> 
-> I guess that you should have something like
-> 
-> config USB_ARCH_HAS_HCD
-> 	default y if USB_ARCH_HAS_OHCI
-> 	default y if USB_ARCH_HAS_UHCI
-> 
-> config USB_ARCH_UHCI
-> 	default y if 8xx
-> 
-> Greg?
-
-I don't understand what you are trying to fix up here.  What is wrong
-with the current checks?  If your arch/board has support for the 1160
-and we have the Kconfig set wrong for that, we can easily change it.
-
-thanks,
-
-greg k-h
+diff --git a/drivers/net/ibm_emac/ibm_emac.h b/drivers/net/ibm_emac/ibm_emac.h
+index 28c476f..d3166da 100644
+--- a/drivers/net/ibm_emac/ibm_emac.h
++++ b/drivers/net/ibm_emac/ibm_emac.h
+@@ -26,7 +26,7 @@
+ /* This is a simple check to prevent use of this driver on non-tested SoCs */
+ #if !defined(CONFIG_405GP) && !defined(CONFIG_405GPR) && !defined(CONFIG_405EP) && \
+     !defined(CONFIG_440GP) && !defined(CONFIG_440GX) && !defined(CONFIG_440SP) && \
+-    !defined(CONFIG_440EP) && !defined(CONFIG_NP405H)
++    !defined(CONFIG_440EP) && !defined(CONFIG_NP405H) && !defined(CONFIG_440SPE)
+ #error	"Unknown SoC. Please, check chip user manual and make sure EMAC defines are OK"
+ #endif
+ 
+@@ -246,6 +246,25 @@ struct emac_regs {
+ #define EMAC_STACR_PCDA_SHIFT		5
+ #define EMAC_STACR_PRA_MASK		0x1f
+ 
++/*
++ * For the 440SPe, AMCC inexplicably changed the polarity of
++ * the "operation complete" bit in the MII control register.
++ */
++#if defined(CONFIG_440SPE)
++static inline int emac_phy_done(u32 stacr)
++{
++	return !(stacr & EMAC_STACR_OC);
++};
++#define EMAC_STACR_START 		EMAC_STACR_OC
++
++#else /* CONFIG_440SPE */
++static inline int emac_phy_done(u32 stacr)
++{
++	return stacr & EMAC_STACR_OC;
++};
++#define EMAC_STACR_START 		0
++#endif /* !CONFIG_440SPE */
++
+ /* EMACx_TRTR */
+ #if !defined(CONFIG_IBM_EMAC4)
+ #define EMAC_TRTR_SHIFT			27
+diff --git a/drivers/net/ibm_emac/ibm_emac_core.c b/drivers/net/ibm_emac/ibm_emac_core.c
+index 943fbd1..48239e1 100644
+--- a/drivers/net/ibm_emac/ibm_emac_core.c
++++ b/drivers/net/ibm_emac/ibm_emac_core.c
+@@ -546,7 +546,7 @@ static int __emac_mdio_read(struct ocp_e
+ 
+ 	/* Wait for management interface to become idle */
+ 	n = 10;
+-	while (!(in_be32(&p->stacr) & EMAC_STACR_OC)) {
++	while (!emac_phy_done(in_be32(&p->stacr))) {
+ 		udelay(1);
+ 		if (!--n)
+ 			goto to;
+@@ -556,11 +556,12 @@ static int __emac_mdio_read(struct ocp_e
+ 	out_be32(&p->stacr,
+ 		 EMAC_STACR_BASE(emac_opb_mhz()) | EMAC_STACR_STAC_READ |
+ 		 (reg & EMAC_STACR_PRA_MASK)
+-		 | ((id & EMAC_STACR_PCDA_MASK) << EMAC_STACR_PCDA_SHIFT));
++		 | ((id & EMAC_STACR_PCDA_MASK) << EMAC_STACR_PCDA_SHIFT)
++		 | EMAC_STACR_START);
+ 
+ 	/* Wait for read to complete */
+ 	n = 100;
+-	while (!((r = in_be32(&p->stacr)) & EMAC_STACR_OC)) {
++	while (!emac_phy_done(r = in_be32(&p->stacr))) {
+ 		udelay(1);
+ 		if (!--n)
+ 			goto to;
+@@ -594,7 +595,7 @@ static void __emac_mdio_write(struct ocp
+ 
+ 	/* Wait for management interface to be idle */
+ 	n = 10;
+-	while (!(in_be32(&p->stacr) & EMAC_STACR_OC)) {
++	while (!emac_phy_done(in_be32(&p->stacr))) {
+ 		udelay(1);
+ 		if (!--n)
+ 			goto to;
+@@ -605,11 +606,11 @@ static void __emac_mdio_write(struct ocp
+ 		 EMAC_STACR_BASE(emac_opb_mhz()) | EMAC_STACR_STAC_WRITE |
+ 		 (reg & EMAC_STACR_PRA_MASK) |
+ 		 ((id & EMAC_STACR_PCDA_MASK) << EMAC_STACR_PCDA_SHIFT) |
+-		 (val << EMAC_STACR_PHYD_SHIFT));
++		 (val << EMAC_STACR_PHYD_SHIFT) | EMAC_STACR_START);
+ 
+ 	/* Wait for write to complete */
+ 	n = 100;
+-	while (!(in_be32(&p->stacr) & EMAC_STACR_OC)) {
++	while (!emac_phy_done(in_be32(&p->stacr))) {
+ 		udelay(1);
+ 		if (!--n)
+ 			goto to;
+diff --git a/drivers/net/ibm_emac/ibm_emac_mal.h b/drivers/net/ibm_emac/ibm_emac_mal.h
+index 15b0bda..fb6dfe1 100644
+--- a/drivers/net/ibm_emac/ibm_emac_mal.h
++++ b/drivers/net/ibm_emac/ibm_emac_mal.h
+@@ -34,7 +34,8 @@
+ #if defined(CONFIG_405GP) || defined(CONFIG_405GPR) || defined(CONFIG_405EP) || \
+     defined(CONFIG_440EP) || defined(CONFIG_NP405H)
+ #define MAL_VERSION		1
+-#elif defined(CONFIG_440GP) || defined(CONFIG_440GX) || defined(CONFIG_440SP)
++#elif defined(CONFIG_440GP) || defined(CONFIG_440GX) || defined(CONFIG_440SP) || \
++      defined(CONFIG_440SPE)
+ #define MAL_VERSION		2
+ #else
+ #error "Unknown SoC, please check chip manual and choose MAL 'version'"
