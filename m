@@ -1,17 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EAB5F6862F
-	for <linuxppc-dev@ozlabs.org>; Sun, 30 Oct 2005 15:04:54 +1100 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: bcm43xx-dev@lists.berlios.de
-Content-Type: text/plain
-Date: Sun, 30 Oct 2005 15:03:55 +1100
-Message-Id: <1130645036.29054.229.camel@gaston>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id AC9536861E
+	for <linuxppc-dev@ozlabs.org>; Sun, 30 Oct 2005 16:00:00 +1100 (EST)
+Date: Sat, 29 Oct 2005 23:42:56 -0500
+To: linuxppc-dev@ozlabs.org
+Message-ID: <20051030044256.GA10863@pb15.lixom.net>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: 30 bits DMA and ppc
+Content-Type: text/plain; charset=us-ascii
+From: Olof Johansson <olof@lixom.net>
+Subject: [PATCH] PPC: Basic enablement for new 15" PowerBook
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,57 +18,103 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi !
+Hi,
 
-I was thinking about the best ways to deal with the 30 bits limitation
-of the Broadcom chips for DMA on PowerMacs. No emergency there, we still
-need to have a working bcm43xx driver and the developpement can be done
-with <= 1Gb of RAM, but it will have to be addressed at one point as we
-are getting closer to something that is useable :)
+Partial enablement patch for the new PowerBooks (hires revisions).
 
-I will not implement something like GFP_DMA, I think. It just sucks too
-much...
+This enables the ATA controller, Gigabit ethernet and basic AGP setup.
 
-However, what I can do is have the architecture code reserve a pool of
-memory at boot if the machine main RAM is bigger than 1Gb, to use for
-bounce-buffering. On the G5 with more than 2Gb, this is even easier
-since I already have to blow away a 16Mb page for use by the IOMMU, but
-the IOMMU only uses 2Mb in there, so I have about 14Mb that I could
-re-use for that. On 32 bits machine, I can just reserve something early
-during boot.
+Still remaining is to get the touchpad to work, the simple change of
+just adding the new USB ids isn't enough. Sleep isn't working quite yet
+either but this will give a kernel that can be used for installation
+and basic use for now.
 
-Now, how to actually make use of that pool. One way is to hack something
-specific inside the bcm43xx driver. The pool can then be easily cut in
-regions: the descriptor rings buffers, and 2 pools, one for Rx and one
-for Tx. The allocation inside of those pools can be done as simple ring
-buffer too due to the inherently ordered processing of packets.
+It's a qualified guess that the new 17" is PowerBook5,9, but until it's
+confirmed there's not much use in adding it to the pmac_feature table.
 
-However, the above would require arch specific hacks, and would only
-work for one card in the system (too bad if you plug a cardbus one).
 
-Another possibility that might be more interesting is to use swiotlb.
-This is a somewhat generic bounce-buffering implementation of the DMA
-mapping routines that is used by ia64 and x86_64 when no IOMMU is
-available. It will automatically do nothing if the address fits the DMA
-mask so it shouldn't add much overhead to other drivers and would "make
-things work" transparently. In addition, for G5s with more than 2Gb of
-RAM (which have an iommu), I could modify the iommu code to take into
-account the DMA mask when allocating DMA virtual space. (The later would
-have a slight risk of failure, but I doubt it will happen in practice,
-as it would mean one has more than 1Gb of pending DMA at a given point
-in time).
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-I tend to prefer the later solution ...
 
-Anybody with strong disagreement with using swiotlb on PPC ? The choice
-of wether to allocate RAM for it at boot and how much can be done per
-platform and based on the amount of real RAM (for example, on pmac, I
-suppose I would only allocate some if the physical RAM is more than 1Gb
-since that's the limitation of those Broadcom chips and I don't see any
-other potential user for it).
-
-Besides, it may end up being useful for some crappy embedded stuffs (no
-name here :)
-
-Ben.
+Index: linux-2.6.14/arch/ppc/platforms/pmac_feature.c
+===================================================================
+--- linux-2.6.14.orig/arch/ppc/platforms/pmac_feature.c	2005-10-29 23:07:09.000000000 -0500
++++ linux-2.6.14/arch/ppc/platforms/pmac_feature.c	2005-10-29 23:26:33.000000000 -0500
+@@ -2317,6 +2317,10 @@ static struct pmac_mb_def pmac_mb_defs[]
+ 		PMAC_TYPE_UNKNOWN_INTREPID,	intrepid_features,
+ 		PMAC_MB_MAY_SLEEP | PMAC_MB_HAS_FW_POWER | PMAC_MB_MOBILE,
+ 	},
++	{	"PowerBook5,8",			"PowerBook G4 15\"",
++		PMAC_TYPE_UNKNOWN_INTREPID,	intrepid_features,
++		PMAC_MB_MAY_SLEEP | PMAC_MB_HAS_FW_POWER | PMAC_MB_MOBILE,
++	},
+ 	{	"PowerBook6,1",			"PowerBook G4 12\"",
+ 		PMAC_TYPE_UNKNOWN_INTREPID,	intrepid_features,
+ 		PMAC_MB_MAY_SLEEP | PMAC_MB_HAS_FW_POWER | PMAC_MB_MOBILE,
+Index: linux-2.6.14/drivers/ide/ppc/pmac.c
+===================================================================
+--- linux-2.6.14.orig/drivers/ide/ppc/pmac.c	2005-10-29 23:07:09.000000000 -0500
++++ linux-2.6.14/drivers/ide/ppc/pmac.c	2005-10-29 23:13:44.000000000 -0500
+@@ -1664,11 +1664,16 @@ static struct macio_driver pmac_ide_maci
+ };
  
+ static struct pci_device_id pmac_ide_pci_match[] = {
+-	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_UNI_N_ATA, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_IPID_ATA100, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_K2_ATA100, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
++	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_UNI_N_ATA,
++	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
++	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_IPID_ATA100,
++	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
++	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_K2_ATA100,
++	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+ 	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_SH_ATA,
+ 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
++	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_IPID2_ATA,
++	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+ };
+ 
+ static struct pci_driver pmac_ide_pci_driver = {
+Index: linux-2.6.14/drivers/net/sungem.c
+===================================================================
+--- linux-2.6.14.orig/drivers/net/sungem.c	2005-10-29 23:07:09.000000000 -0500
++++ linux-2.6.14/drivers/net/sungem.c	2005-10-29 23:12:58.000000000 -0500
+@@ -128,6 +128,8 @@ static struct pci_device_id gem_pci_tbl[
+ 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
+ 	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_SH_SUNGEM,
+ 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
++	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_IPID2_GMAC,
++	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
+ 	{0, }
+ };
+ 
+Index: linux-2.6.14/include/linux/pci_ids.h
+===================================================================
+--- linux-2.6.14.orig/include/linux/pci_ids.h	2005-10-29 23:07:09.000000000 -0500
++++ linux-2.6.14/include/linux/pci_ids.h	2005-10-29 23:12:58.000000000 -0500
+@@ -913,6 +915,10 @@
+ #define PCI_DEVICE_ID_APPLE_SH_FW       0x0052
+ #define PCI_DEVICE_ID_APPLE_U3L_AGP	0x0058
+ #define PCI_DEVICE_ID_APPLE_U3H_AGP	0x0059
++#define PCI_DEVICE_ID_APPLE_IPID2_AGP	0x0066
++#define PCI_DEVICE_ID_APPLE_IPID2_ATA	0x0069
++#define PCI_DEVICE_ID_APPLE_IPID2_FW	0x006a
++#define PCI_DEVICE_ID_APPLE_IPID2_GMAC	0x006b
+ #define PCI_DEVICE_ID_APPLE_TIGON3	0x1645
+ 
+ #define PCI_VENDOR_ID_YAMAHA		0x1073
+Index: linux-2.6.14/drivers/char/agp/uninorth-agp.c
+===================================================================
+--- linux-2.6.14.orig/drivers/char/agp/uninorth-agp.c	2005-10-29 23:07:09.000000000 -0500
++++ linux-2.6.14/drivers/char/agp/uninorth-agp.c	2005-10-29 23:12:58.000000000 -0500
+@@ -557,6 +557,10 @@ static struct agp_device_ids uninorth_ag
+ 		.device_id	= PCI_DEVICE_ID_APPLE_U3H_AGP,
+ 		.chipset_name	= "U3H",
+ 	},
++	{
++		.device_id	= PCI_DEVICE_ID_APPLE_IPID2_AGP,
++		.chipset_name	= "UniNorth/Intrepid2",
++	},
+ };
+ 
+ static int __devinit agp_uninorth_probe(struct pci_dev *pdev,
