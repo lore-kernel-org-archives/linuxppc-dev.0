@@ -1,20 +1,18 @@
-Return-Path: <mbuesch@freenet.de>
-Received: from mout0.freenet.de (mout0.freenet.de [194.97.50.131])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6EDC26861E
-	for <linuxppc-dev@ozlabs.org>; Sun, 30 Oct 2005 20:00:59 +1100 (EST)
-From: Michael Buesch <mbuesch@freenet.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Sun, 30 Oct 2005 09:47:21 +0100
-References: <1130645036.29054.229.camel@gaston>
-In-Reply-To: <1130645036.29054.229.camel@gaston>
-MIME-Version: 1.0
-Message-Id: <200510300947.21917.mbuesch@freenet.de>
-Content-Type: multipart/signed; boundary="nextPart3796900.1S1bxy24Lc";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, bcm43xx-dev@lists.berlios.de
-Subject: Re: [Bcm43xx-dev] 30 bits DMA and ppc
+Return-Path: <wd@denx.de>
+Received: from mailout01.sul.t-online.com (mailout01.sul.t-online.com
+	[194.25.134.80]) by ozlabs.org (Postfix) with ESMTP id 66B2B68641
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Oct 2005 02:19:02 +1100 (EST)
+To: Matthew McClintock <msm@freescale.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sat, 29 Oct 2005 19:38:27 CDT."
+	<1130632707.7470.16.camel@localhost.localdomain>
+Date: Sun, 30 Oct 2005 16:18:47 +0100
+Sender: wd@denx.de
+Message-Id: <20051030151847.C4383353416@atlas.denx.de>
+Cc: Jeff Garzik <jgarzik@pobox.com>, linuxppc-dev@ozlabs.org
+Subject: Re: use of phy_connect() in drivers/net/gianfar.c ? 
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,39 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart3796900.1S1bxy24Lc
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Dear Matthew,
 
-On Sunday 30 October 2005 05:03, Benjamin Herrenschmidt wrote:
-[snip]
-> However, the above would require arch specific hacks, and would only
-> work for one card in the system (too bad if you plug a cardbus one).
-[snap]
+in message <1130632707.7470.16.camel@localhost.localdomain> you wrote:
+> 
+> As far as I understand there are patches in the -mm tree with contain
+> the updates for the Gianfar driver. The issue is due to a
 
-I think we should not need to modify the driver.
-Drivers already set the DMA mask. As far as I can see, this mask
-is currently (mostly) ignored on PPC and i386 (at least).
-As far as I can see, PPC ignores it completely and i386 allocates in the
-GFP_DMA region, if DMA is limited.
-So I would say, it should be possible to use this mask
-with some bounce buffers, as you suggested. That sounds like a good
-solution to me. It's worth a try.
+Do you happen to know of a specific (set of) patch(es)? URL?
 
-=2D-=20
-Greetings Michael.
+> synchronization issue with the new PHY abstraction layer that was added.
 
---nextPart3796900.1S1bxy24Lc
-Content-Type: application/pgp-signature
+Yes, obviously. But I am still so naïve to expect that  such  changes
+would not make it untested (the code is not even compile clean) to an
+official kernel release like 2.6.14 ?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.5 (GNU/Linux)
+> I know Andy will not be back at his computer until Monday, you can wait
+> until then or look for the patch in the -mm tree.
 
-iD8DBQBDZIiZlb09HEdWDKgRApNcAKCyDcws0GUthHCFyd4MKoxCQ5DM4wCeOki4
-aoHm7aef5ttnaT158aDBDvw=
-=63fH
------END PGP SIGNATURE-----
+Is there a git repository somewhere for the mm tree?
 
---nextPart3796900.1S1bxy24Lc--
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+(null cookie; hope that's ok)
