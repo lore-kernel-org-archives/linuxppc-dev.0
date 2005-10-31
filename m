@@ -1,32 +1,23 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id 38EB56860C
+Return-Path: <THagen@oslo.westerngeco.slb.com>
+Received: from mail.slb.com (eurmta01.london.eur.slb.com [134.32.26.55])
+	by ozlabs.org (Postfix) with ESMTP id E1FD9685ED
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  1 Nov 2005 00:08:47 +1100 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by protonic.prtnl (Postfix) with ESMTP id BF24229EBB
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 31 Oct 2005 14:07:09 +0100 (CET)
-Received: from protonic.prtnl ([127.0.0.1])
-	by localhost (protonic [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
-	id 27483-06 for <linuxppc-embedded@ozlabs.org>;
-	Mon, 31 Oct 2005 14:07:09 +0100 (CET)
-Received: from linux.local (linux.prtnl [192.168.1.97])
-	by protonic.prtnl (Postfix) with ESMTP id A227128067
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 31 Oct 2005 14:07:08 +0100 (CET)
-From: David Jander <david.jander@protonic.nl>
-To: linuxppc-embedded@ozlabs.org
-Date: Mon, 31 Oct 2005 15:08:41 +0200
-References: <200510280857.44625.david.jander@protonic.nl>
-	<200510310921.34696.david.jander@protonic.nl>
-	<003501c5de1a$be79b390$0301a8c0@chuck2>
-In-Reply-To: <003501c5de1a$be79b390$0301a8c0@chuck2>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200510311408.41691.david.jander@protonic.nl>
-Subject: Re: Kernel 2.6 on MPC8xx performance trouble...
+	Tue,  1 Nov 2005 01:29:41 +1100 (EST)
+Received: from pmxchannel_int-daemon.eurmta01.london.eur.slb.com by
+	eurmta01.london.eur.slb.com
+	(iPlanet Messaging Server 5.2 Patch 2 (built Jul 14 2004))
+	id <0IP800807A6QMK@eurmta01.london.eur.slb.com> for
+	linuxppc-embedded@ozlabs.org; Mon, 31 Oct 2005 14:13:38 +0000 (GMT)
+Date: Mon, 31 Oct 2005 15:13:34 +0100
+From: Tore Martin Hagen <THagen@oslo.westerngeco.slb.com>
+In-reply-to: <200510281054.AA34079032@NARI-RELAYS.COM>
+To: xiay@nari-relays.com
+Message-id: <4366268E.2020300@oslo.westerngeco.slb.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+References: <200510281054.AA34079032@NARI-RELAYS.COM>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: NFS can not mount (linuxppc2.2.4 mpc5200 lxt971)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -37,21 +28,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Monday 31 October 2005 13:58, Mark Chambers wrote:
->[...]
-> > No, sir, no cache detected !
-> >
-> > Where do I have to look now?
+ÏÄÓê wrote:
+
+>eth0: config: auto-negotiation on, 100HDX, 10HDX.
+>IP-Config: Complete:
+>      device=eth0, addr=198.87.102.211, mask=255.255.255.0, gw=198.87.102.140,
+>     host=oops, domain=, nis-domain=(none),
+>     bootserver=198.87.102.140, rootserver=198.98.102.140, rootpath=
+>  
 >
-> Could the cache be in writethrough mode? (Instead of writeback)
+Hi
 
-Good point. I just checked the same test, but reading instead of writing. Same 
-result, no cache detected.
+Check out your DHCP server.  You don't get the rootpath from it.
 
-I know how to change cache policy in u-boot, but does the kernel change that? 
-If so, where?
+/etc/dhcpd.conf should contain
+option root-path "/local/Mpc8266ads/Box0/root";  
+or something similar.
+also take a look in /var/log/messages to pinpoint the problem.
 
-Greetings,
-
--- 
-David Jander
+/Tore Hagen
