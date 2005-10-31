@@ -1,21 +1,25 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 0DFAE6865A
-	for <linuxppc-dev@ozlabs.org>; Mon, 31 Oct 2005 09:02:50 +1100 (EST)
-Date: Sun, 30 Oct 2005 16:02:09 -0600
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <20051030220209.GB11327@pb15.lixom.net>
+Return-Path: <i2a@gmx.net>
+Received: from vmx15.multikabel.net (vmx15.multikabel.net [212.127.254.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1DF1068646
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Oct 2005 11:36:04 +1100 (EST)
+Received: from vmx100.multikabel.net ([212.127.254.147])
+	by vmx15.multikabel.net with esmtp (Exim 4.44) id 1EWNeU-0005Ll-G1
+	for linuxppc-dev@ozlabs.org; Mon, 31 Oct 2005 01:35:54 +0100
+Received: from sun.nodomain.nl (84-104-47-99.cable.quicknet.nl [84.104.47.99])
+	by vmx100.multikabel.net (8.13.3/8.13.3) with ESMTP id j9V0ZkXE012799
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Oct 2005 01:35:52 +0100
+From: "Ingmar" <i2a@gmx.net>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Date: Mon, 31 Oct 2005 01:35:49 +0100
+Message-Id: <20051031002926.M71008@quicknet.nl>
+In-Reply-To: <1130645036.29054.229.camel@gaston>
 References: <1130645036.29054.229.camel@gaston>
-	<20051030175956.GB7039@pb15.lixom.net>
-	<1130706859.29054.283.camel@gaston>
-	<20051030213517.GA11327@pb15.lixom.net>
-	<1130708514.29054.292.camel@gaston>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1130708514.29054.292.camel@gaston>
-From: Olof Johansson <olof@lixom.net>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, bcm43xx-dev@lists.berlios.de
-Subject: Re: 30 bits DMA and ppc
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=iso-8859-1
+Subject: exception vectors
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,17 +29,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 31, 2005 at 08:41:54AM +1100, Benjamin Herrenschmidt wrote:
-> > Yep, the table is already split once, and I'm not sure in retrospect how
-> > useful that split was anyway, it can maybe go away. Switching it around
-> > shouldn't be a big issue.
-> 
-> No real need to split permanently... the search could be restricted to a
-> given range easily.
+Hi all,
 
-Yeah, that's what it does now too, if it can't find anything in the
-"right" part of the table, it'll try the other. So other devices would
-use the same section if the "regular" table got full.
+I am trying to overwrite the exception vector space of an ibook G4 :).
 
+I have set up (for every exception) a small piece of code, that's a prefix of a
+handler to be called. My problem is, that writing the “small” chunks of code to
+the exception vector space gives no problem(so it seams) but writing all the
+pieces of code as one chunk gives a exception [dsi, dsisr 0x42000000], this
+indicates a store problem.
 
--Olof
+I have tried different modes of copying, mmu on/off, also chanced the WING bit,
+switched the exception prefix on.
+
+I don't believe putting the exception vectors to there “place” one by one is the
+right way, in the Linux kernel the kernel get relocated and the code comes into
+place. I have taken this as an example, unfortunately to to result :(..
+
+ - Am I overlooking something?
+ - Is the a “standard way” to overwrite the exception vector space of a powerpc?
+
+ThankZ,
+  Ingmar
