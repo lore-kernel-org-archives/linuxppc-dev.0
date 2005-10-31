@@ -1,19 +1,18 @@
-Return-Path: <sr@denx.de>
-Received: from natnoddy.rzone.de (natnoddy.rzone.de [81.169.145.166])
-	by ozlabs.org (Postfix) with ESMTP id 9593068604
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id C6B5A68604
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 31 Oct 2005 20:29:27 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
+	Mon, 31 Oct 2005 20:31:15 +1100 (EST)
+From: David Jander <david.jander@protonic.nl>
 To: linuxppc-embedded@ozlabs.org
-Date: Mon, 31 Oct 2005 11:29:13 +0200
-References: <ea43f4f9050825183121655ba2@mail.gmail.com>
-	<200509301452.52074.sr@denx.de> <200510281758.56646.sr@denx.de>
-In-Reply-To: <200510281758.56646.sr@denx.de>
+Date: Mon, 31 Oct 2005 11:31:09 +0200
+References: <20051028203727.76C2C353E3E@atlas.denx.de>
+In-Reply-To: <20051028203727.76C2C353E3E@atlas.denx.de>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_pPeZDZMewEMK+25"
-Message-Id: <200510311029.13432.sr@denx.de>
-Subject: [PATCH] ppc32: Add missing initrd header on ppc440
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200510311031.09522.david.jander@protonic.nl>
+Subject: Re: Kernel 2.6 on MPC8xx performance trouble...
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,60 +23,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---Boundary-00=_pPeZDZMewEMK+25
-Content-Type: text/plain;
-  charset="iso-8859-6"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Friday 28 October 2005 22:37, Wolfgang Denk wrote:
+>[...]
+> > They are just integers with fixed start values. These are in the loop, so
+> > it's not an empty loop and hopefully the compiler won't out-optimize it
+> > so easily (that is of course without specifying any optimization flags).
+> > Please don't tell me it's a lousy benchmark, because I already know that!
+> > Be it as lousy as it is, I shouldn't get _those_ results IMHO.
+>
+> Indeed, you should not get such results.  If  you  compare  with  the
+> lmbench  results  of  our 2.4/2.6 comparison, you will notice that we
+> did NOT see such behaviour. There was a  perfromnce  degradation  for
+> pure  integer tests, due to increased system overhead, but far from a
+> factor of 2.
+> See http://www.denx.de/wiki/pub/Know/Linux24vs26/lmbench_results
 
-Sorry, but this missing header slipped though last time. Please apply.
+I have seen them, and my conclusion is: Your kernel was working ok, while 
+mine, a newer one, is broken. 
+As you can see in the other e-mail I just posted (replying to Marcelo), at 
+least the CPU cache seems to be disabled. Might this have something to do 
+with processor model (mis-) identification?
+I had to apply the "ppc_sys: do not BUG if system ID is unknown" patch from 
+Marcelo Tosatti a few days back in order to be able to boot in the first 
+place. I had a look at ppc_sys system identification for 8xx and it looked a 
+little bit nonsensical to me, since all 8xx report the same ID. Maybe the 
+intention was to set the ID "by hand" in board support and setup.
+Problem is: there is still no real board-support infrastructure for mpc8xx, 
+like there is for mpc82xx for example. What are the plans for 8xx? Should I 
+try to emulate what others have done for some PQ2 platforms, i.e. create a 
+arch/ppc/platforms/myplatform.c file and implement board_init()?
 
-Signed-off-by: Stefan Roese <sr@denx.de>
+Greetings,
 
-By the way: What is the current status of the pending 4xx patches. Are they 
-going in in this 2-week merge window?
-
-Best regards,
-Stefan
-
---Boundary-00=_pPeZDZMewEMK+25
-Content-Type: text/x-diff; charset="iso-8859-6";
-	name="ppc440-initrd-header-added.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="ppc440-initrd-header-added.patch"
-
-[PATCH] ppc32: Add missing initrd header on ppc440
-
-Signed-off-by: Stefan Roese <sr@denx.de>
-
----
-commit 54069303584813d4f0bafcd04bb2b7b0e9fc4693
-tree 319e03ffc9097b7a8376b6e3108b4249f6d6dc0d
-parent d8832f2614a9bfdb445a62a23e80f01886ae661e
-author Stefan Roese <sr@denx.de> Mon, 31 Oct 2005 10:20:52 +0100
-committer Stefan Roese <sr@denx.de> Mon, 31 Oct 2005 10:20:52 +0100
-
- arch/ppc/syslib/ibm44x_common.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/arch/ppc/syslib/ibm44x_common.c b/arch/ppc/syslib/ibm44x_common.c
-index 5152c8e..6dae518 100644
---- a/arch/ppc/syslib/ibm44x_common.c
-+++ b/arch/ppc/syslib/ibm44x_common.c
-@@ -20,6 +20,7 @@
- #include <linux/types.h>
- #include <linux/serial.h>
- #include <linux/module.h>
-+#include <linux/initrd.h>
- 
- #include <asm/ibm44x.h>
- #include <asm/mmu.h>
-
-
-
-!-------------------------------------------------------------flip-
-
-
-
---Boundary-00=_pPeZDZMewEMK+25--
+-- 
+David Jander
+Protonic Holland.
