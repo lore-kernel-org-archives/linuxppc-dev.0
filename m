@@ -1,21 +1,17 @@
-Return-Path: <mgreer@mvista.com>
-Received: from hermes.mvista.com (gateway-1237.mvista.com [12.44.186.158])
-	by ozlabs.org (Postfix) with ESMTP id 8ED276864F
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Nov 2005 06:05:19 +1100 (EST)
-Date: Mon, 31 Oct 2005 12:05:24 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Paul Mackerras <paulus@samba.org>
-Message-ID: <20051031190524.GE5055@mag.az.mvista.com>
-References: <20051025075159.GA10316@localhost.localdomain>
-	<17251.265.196352.234376@cargo.ozlabs.ibm.com>
+Return-Path: <pochini@shiny.it>
+Received: from vsmtp2alice.tin.it (vsmtp2alice.tin.it [212.216.176.142])
+	by ozlabs.org (Postfix) with ESMTP id BD05F685E6
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Nov 2005 08:13:27 +1100 (EST)
+Received: from Jay (82.54.120.45) by vsmtp2alice.tin.it (7.2.060.1)
+	id 4363086F00056D8D for linuxppc-dev@ozlabs.org;
+	Mon, 31 Oct 2005 22:13:21 +0100
+Date: Mon, 31 Oct 2005 21:11:48 +0000
+From: Giuliano Pochini <pochini@shiny.it>
+To: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
+Message-Id: <20051031211148.240d0c28.pochini@shiny.it>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17251.265.196352.234376@cargo.ozlabs.ibm.com>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	Sven Luther <sl@bplan-gmbh.de>
-Subject: Re: [PATCH 2.6.14-rc5 1/1] : mv643xx_eth_pcidev - implements
-	hotplug for the marvell gige functionality by probing the
-	northbridge pci id.
+Content-Type: text/plain; charset=US-ASCII
+Subject: enabling/disabling CPUs Kconfig bug
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Oct 29, 2005 at 02:56:41PM +1000, Paul Mackerras wrote:
-> Sven Luther writes:
-> 
-> > +static struct pci_device_id pci_marvell_mv64360[] = {
-> > +	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, PCI_DEVICE_ID_MARVELL_MV64360) },
-> 
-> Are there other devices in this northbridge whose drivers might also
-> want to bind to this PCI id?
-> 
-> What other devices does this northbridge contain?
 
-It does have a PIC, DMA engine, and SRAM that Sven mentioned but there
-are also a serial controller (MPSC), an i2c controller, and a watchdog
-timer.  I would guess that the MPSC and i2c drivers, at least, should
-use MODULE_DEVICE_TABLE.  If you agree, I'll add it to the list.
+The option Processor-->Support for enabling/disabling CPUs should require
+Platform options-->Power Management support to be enabled, otherwise compile
+fails. I'm not sure if this patch is right or if the problem is somewhere else.
 
-Mark
+
+Signed-off-by Giuliano Pochini <pochini@shiny.it>
+
+--- arch/ppc/Kconfig__orig	2005-10-30 17:19:17.000000000 +0000
++++ arch/ppc/Kconfig	2005-10-30 17:19:59.000000000 +0000
+@@ -263,7 +263,7 @@
+ 
+ config HOTPLUG_CPU
+ 	bool "Support for enabling/disabling CPUs"
+-	depends on SMP && HOTPLUG && EXPERIMENTAL && PPC_PMAC
++	depends on SMP && HOTPLUG && EXPERIMENTAL && PPC_PMAC && PM
+ 	---help---
+ 	  Say Y here to be able to disable and re-enable individual
+ 	  CPUs at runtime on SMP machines.
+
+
+--
+Giuliano.
