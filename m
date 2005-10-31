@@ -1,17 +1,17 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id C6B5A68604
+Return-Path: <markc@mail.com>
+Received: from relay01.roc.ny.frontiernet.net (relay01.roc.ny.frontiernet.net
+	[66.133.182.164]) by ozlabs.org (Postfix) with ESMTP id 601AE68604
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 31 Oct 2005 20:31:15 +1100 (EST)
-From: David Jander <david.jander@protonic.nl>
-To: linuxppc-embedded@ozlabs.org
-Date: Mon, 31 Oct 2005 11:31:09 +0200
-References: <20051028203727.76C2C353E3E@atlas.denx.de>
-In-Reply-To: <20051028203727.76C2C353E3E@atlas.denx.de>
+	Mon, 31 Oct 2005 23:55:21 +1100 (EST)
+Message-ID: <003501c5de1a$be79b390$0301a8c0@chuck2>
+From: "Mark Chambers" <markc@mail.com>
+To: "David Jander" <david.jander@protonic.nl>, <linuxppc-embedded@ozlabs.org>
+References: <200510280857.44625.david.jander@protonic.nl><20051028153059.GC18915@logos.cnet>
+	<200510310921.34696.david.jander@protonic.nl>
+Date: Mon, 31 Oct 2005 07:58:03 -0500
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200510311031.09522.david.jander@protonic.nl>
+	charset="iso-8859-1"
 Subject: Re: Kernel 2.6 on MPC8xx performance trouble...
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,38 +23,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Friday 28 October 2005 22:37, Wolfgang Denk wrote:
->[...]
-> > They are just integers with fixed start values. These are in the loop, so
-> > it's not an empty loop and hopefully the compiler won't out-optimize it
-> > so easily (that is of course without specifying any optimization flags).
-> > Please don't tell me it's a lousy benchmark, because I already know that!
-> > Be it as lousy as it is, I shouldn't get _those_ results IMHO.
 >
-> Indeed, you should not get such results.  If  you  compare  with  the
-> lmbench  results  of  our 2.4/2.6 comparison, you will notice that we
-> did NOT see such behaviour. There was a  perfromnce  degradation  for
-> pure  integer tests, due to increased system overhead, but far from a
-> factor of 2.
-> See http://www.denx.de/wiki/pub/Know/Linux24vs26/lmbench_results
+> I have made another test in the meantime, trying to check if cache is
+working.
+> <snip>
+> No, sir, no cache detected !
+>
+> Where do I have to look now?
+>
 
-I have seen them, and my conclusion is: Your kernel was working ok, while 
-mine, a newer one, is broken. 
-As you can see in the other e-mail I just posted (replying to Marcelo), at 
-least the CPU cache seems to be disabled. Might this have something to do 
-with processor model (mis-) identification?
-I had to apply the "ppc_sys: do not BUG if system ID is unknown" patch from 
-Marcelo Tosatti a few days back in order to be able to boot in the first 
-place. I had a look at ppc_sys system identification for 8xx and it looked a 
-little bit nonsensical to me, since all 8xx report the same ID. Maybe the 
-intention was to set the ID "by hand" in board support and setup.
-Problem is: there is still no real board-support infrastructure for mpc8xx, 
-like there is for mpc82xx for example. What are the plans for 8xx? Should I 
-try to emulate what others have done for some PQ2 platforms, i.e. create a 
-arch/ppc/platforms/myplatform.c file and implement board_init()?
+Could the cache be in writethrough mode? (Instead of writeback)
 
-Greetings,
-
--- 
-David Jander
-Protonic Holland.
+Mark Chambers
