@@ -1,15 +1,32 @@
-Return-Path: <horms@koto.vergenet.net>
-Received: from koto.vergenet.net (koto.vergenet.net [210.128.90.7])
-	by ozlabs.org (Postfix) with ESMTP id 25ECA68641
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 Nov 2005 00:29:48 +1100 (EST)
-Date: Mon, 31 Oct 2005 22:11:00 +0900
-From: Horms <horms@verge.net.au>
-To: linuxppc-dev@ozlabs.org
-Message-ID: <20051031131059.GA7645@verge.net.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Andrew Morton <akpm@osdl.org>, david@woodhou.se
-Subject: audit_sysctl_exit can only be used with CONF_AUDIT_SYSCTL
+Return-Path: <segher@kernel.crashing.org>
+Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.29.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de.ibm.com", Issuer "Equifax" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 0418E68641
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 Nov 2005 03:46:25 +1100 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate1.de.ibm.com (8.12.10/8.12.10) with ESMTP id j9VGkKEH112082
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Oct 2005 16:46:20 GMT
+Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
+	[9.149.165.228])
+	by d12nrmr1607.megacenter.de.ibm.com (8.12.10/NCO/VERS6.7) with ESMTP
+	id j9VGkK9S225086
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Oct 2005 17:46:20 +0100
+Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av02.megacenter.de.ibm.com (8.12.11/8.13.3) with ESMTP id
+	j9VGkKSu004465
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Oct 2005 17:46:20 +0100
+In-Reply-To: <20051030044256.GA10863@pb15.lixom.net>
+References: <20051030044256.GA10863@pb15.lixom.net>
+Mime-Version: 1.0 (Apple Message framework v622)
+Message-Id: <1a5b4360dec1539647aa113dcc60d541@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Date: Mon, 31 Oct 2005 17:47:45 +0100
+To: Olof Johansson <olof@lixom.net>
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] PPC: Basic enablement for new 15" PowerBook
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,26 +36,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This section of code calls .audit_syscal_exit,
-but is inside CONFIG_AUDIT, so it will fail to build
-if CONFIG_AUDITSYSCALL is not defined. 
+> It's a qualified guess that the new 17" is PowerBook5,9, but until it's
+> confirmed there's not much use in adding it to the pmac_feature table.
 
-After discussion with David Woodhouse, change the 
-ifdef to CONFIG_AUDITSYSCALL
+It is.  See  
+http://developer.apple.com/documentation/Hardware/Developer_Notes/ 
+Macintosh_CPUs-G4/17inchPowerBookG4/1Overview/ 
+chapter_2_section_6.html#//apple_ref/doc/uid/TP40003166-CH205-TPXREF108
 
 
-Signed-off-by: Horms <horms@verge.net.au>
-
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 984a106..2d22bf0 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -279,7 +279,7 @@ _GLOBAL(ppc32_rt_sigsuspend)
- 	bne	syscall_exit
- 	/* If sigsuspend() returns zero, we are going into a signal handler. We
- 	   may need to call audit_syscall_exit() to mark the exit from sigsuspend() */
--#ifdef CONFIG_AUDIT
-+#ifdef CONFIG_AUDITSYSCALL
- 	ld	r3,PACACURRENT(r13)
- 	ld	r4,AUDITCONTEXT(r3)
- 	cmpdi	0,r4,0
+Segher
