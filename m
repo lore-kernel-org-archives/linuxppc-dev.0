@@ -1,22 +1,19 @@
-Return-Path: <mcr@marajade.sandelman.ca>
-Received: from lists.sandelman.ca (cod.sandelman.ca [192.139.46.139])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "lists.sandelman.ca",
-	Issuer "Michael Richardson" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 99FB86861E
+Return-Path: <mike@compulab.co.il>
+Received: from alexmail (62-90-235-247.barak.net.il [62.90.235.247])
+	by ozlabs.org (Postfix) with ESMTP id D1A5168604
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 31 Oct 2005 16:12:42 +1100 (EST)
+	Mon, 31 Oct 2005 17:47:15 +1100 (EST)
+Message-ID: <4365BD71.9010507@compulab.co.il>
+Date: Mon, 31 Oct 2005 08:45:05 +0200
+From: Mike Rapoport <mike@compulab.co.il>
+MIME-Version: 1.0
 To: Alex Zeffertt <ajz@cambridgebroadband.com>
-In-Reply-To: Message from Alex Zeffertt <ajz@cambridgebroadband.com> of "Wed,
-	26 Oct 2005 09:59:35 BST."
-	<20051026095935.66fe98d8.ajz@cambridgebroadband.com>
-References: <F795765B112E7344AF36AA91127964158496CE@xmb-sjc-212.amer.cisco.com>
-	<20051026095935.66fe98d8.ajz@cambridgebroadband.com>
-Date: Fri, 28 Oct 2005 10:42:54 -0400
-Message-ID: <6976.1130510574@marajade.sandelman.ca>
-From: mcr <mcr@marajade.sandelman.ca>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: compact flash driver 
+References: <a79669360510062205v629affb9ga687078f018afae@mail.gmail.com>	<200510120859.12362.sr@denx.de>	<434CB71E.5000603@compulab.co.il>	<200510120927.56692.sr@denx.de>
+	<20051012133414.7f7e2faf.ajz@cambridgebroadband.com>
+In-Reply-To: <20051012133414.7f7e2faf.ajz@cambridgebroadband.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Stefan Roese <sr@denx.de>, linuxppc-embedded@ozlabs.org
+Subject: Re: MPC8555 USB host support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,39 +24,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
------BEGIN PGP SIGNED MESSAGE-----
+Alex,
+
+>this. Maybe the best thing to do would be to create a sourceforge
+>project and post the latest patches there.  I have an 8272ads board
+>  
+>
+Following your advice I've created a sourceforge project for the USB 
+drivers for mpc82xx. For now I've posted there only 2.6 version. As for 
+driver for 2.4, it would be better if it'll be posted by someone who's 
+actually working with USB in Linux 2.4.
+
+>and I'd be happy to test it out and provide feedback.
+>
+>Regards,
+>
+>Alex
+>
+>
+>
+>  
+>
 
 
->>>>> "Alex" == Alex Zeffertt <ajz@cambridgebroadband.com> writes:
-    >> Hello All, Are there any compact flash driver supported for Linux
-    >> 2.6? If there is where can i get the source code.  Thanks, Bizhan
-    >> 
-
-    Alex> I think that CF cards just get treated the same as any other
-    Alex> IDE disk by linux.  No special driver needed.
-
-  Yes. There are some gotchas with newer pcmcia/cardbus flash cards.
-For instance, Silicon Systems devices claim to support IORDY, but don't,
-which results in a system hang.  I imagine that the same kind of things
-will show up in newer CF devices, although I think that CF can't support
-DMA.
-  It also depends upon how you interface CF: via an IDE controller, or
-via a cardbus interface.
-
-  I expect to have a git tree with stuff available soon.
-
-- -- 
-]       ON HUMILITY: to err is human. To moo, bovine.           |  firewalls  [
-]   Michael Richardson,    Xelerance Corporation, Ottawa, ON    |net architect[
-] mcr@xelerance.com      http://www.sandelman.ottawa.on.ca/mcr/ |device driver[
-] panic("Just another Debian GNU/Linux using, kernel hacking, security guy"); [
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.2 (GNU/Linux)
-Comment: Finger me for keys
-
-iQCVAwUBQ2I47IqHRg3pndX9AQHzEwQAu53kgQ2F+gIUBilfigelHgFlh4dSJ/uu
-X/QemYuRvya8ozuoGSEbh4aY4RleSWikw0AAv5rz8HVwm/3JjnE1k0C8vU2/kHyY
-2PYvY/X2SJI4w6HNokFbAjM0IlV56zApZZTR0hGBbvCrqC4md2xxuY3SoJZZwHtY
-36hwZtdVSKg=
-=ib5u
------END PGP SIGNATURE-----
+-- 
+Sincerely yours,
+Mike Rapoport
