@@ -1,23 +1,20 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.pegasosppc.com (mithrandir.softwarenexus.net
-	[66.98.186.96])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F0B1D6862A
-	for <linuxppc-dev@ozlabs.org>; Mon, 31 Oct 2005 11:11:26 +1100 (EST)
-Received: from yukito.bakuhatsu.net ([66.93.214.113] helo=yukito)
-	by mail.pegasosppc.com with esmtpa (Exim 4.51 (FreeBSD))
-	id 1EWHES-0004Ex-H3
-	for linuxppc-dev@ozlabs.org; Sun, 30 Oct 2005 17:44:36 +0000
-From: "Matt Sealey" <matt@genesi-usa.com>
-To: <linuxppc-dev@ozlabs.org>
-Date: Sun, 30 Oct 2005 17:38:50 -0600
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="UTF-8"
-Message-Id: <E1EWHES-0004Ex-H3@mail.pegasosppc.com>
-Subject: PowerPC PVR version bug (G4 etc.)
-Reply-To: matt@genesi-usa.com
+	by ozlabs.org (Postfix) with ESMTP id C51BB68630
+	for <linuxppc-dev@ozlabs.org>; Mon, 31 Oct 2005 13:19:26 +1100 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ingmar <i2a@gmx.net>
+In-Reply-To: <20051031002926.M71008@quicknet.nl>
+References: <1130645036.29054.229.camel@gaston>
+	<20051031002926.M71008@quicknet.nl>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 31 Oct 2005 13:17:58 +1100
+Message-Id: <1130725079.29054.320.camel@gaston>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: exception vectors
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,42 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 2005-10-31 at 01:35 +0100, Ingmar wrote:
+> Hi all,
+> 
+> I am trying to overwrite the exception vector space of an ibook G4 :).
+> 
+> I have set up (for every exception) a small piece of code, that's a prefix of a
+> handler to be called. My problem is, that writing the “small” chunks of code to
+> the exception vector space gives no problem(so it seams) but writing all the
+> pieces of code as one chunk gives a exception [dsi, dsisr 0x42000000], this
+> indicates a store problem.
+> 
+> I have tried different modes of copying, mmu on/off, also chanced the WING bit,
+> switched the exception prefix on.
+> 
+> I don't believe putting the exception vectors to there “place” one by one is the
+> right way, in the Linux kernel the kernel get relocated and the code comes into
+> place. I have taken this as an example, unfortunately to to result :(..
+> 
+>  - Am I overlooking something?
+>  - Is the a “standard way” to overwrite the exception vector space of a powerpc?
 
-There is a small, innocuous but annoying processor version reporting bug.
+Well, you typically do this with the MMU disabled and making sure you
+don't take an exception while copying over them...
 
-/proc/cpuinfo for my 1Ghz 7447 says
-
-revision : 0.1 (pvr 8002 0101)
-
-In fact the processor is version 1.1. You can see it is properly encoded
-but the macro used to decode it is (in asm-ppc/reg.h):
-
-#define PVR_MAJ(pvr)	(((pvr) >>  4) & 0xF)	/* Major revision field */
-#define PVR_MIN(pvr)	(((pvr) >>  0) & 0xF)	/* Minor revision field */
-
-When Freescale processors are detected, it sets maj and min to the results
-of these macros.
-
-Then it prints:
-
-seq_printf(m, "revision\t: %hd.%hd (pvr %04x %04x)\n",
-	maj, min, PVR_VER(pvr), PVR_REV(pvr));
-
-Obviously for standalone Freescale processors, at least this is plain wrong;
-the correct shift is >> 8 for the major revision field. There is a comment
-above the PVR_ macros that this is an IBM encoding scheme, so..
-
-Any chance of a minor fix for this? It will affect every G4 processor ever
-made which is a lot of chips in a lot of machines, and for systems that can
-use a 7447, 7447A, 7448 there are two or three PVRs (7448 especially which
-has a 1.1 and a 2.1 version) that can produce a 0.1 result which may cause
-problems if someone accidentally decides to grep that string and ignore the
-PVR.
-
-As I said it's innocuous but it's there.
-
-Thanks :)
-
--- 
-Matt Sealey <matt@genesi-usa.com>
-Manager, Genesi, Developer Relations
+Ben.
