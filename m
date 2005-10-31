@@ -1,23 +1,21 @@
-Return-Path: <THagen@oslo.westerngeco.slb.com>
-Received: from mail.slb.com (eurmta01.london.eur.slb.com [134.32.26.55])
-	by ozlabs.org (Postfix) with ESMTP id E1FD9685ED
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtai19.cox.net (fed1rmmtai19.cox.net [68.230.241.40])
+	by ozlabs.org (Postfix) with ESMTP id 6AB4E68646
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  1 Nov 2005 01:29:41 +1100 (EST)
-Received: from pmxchannel_int-daemon.eurmta01.london.eur.slb.com by
-	eurmta01.london.eur.slb.com
-	(iPlanet Messaging Server 5.2 Patch 2 (built Jul 14 2004))
-	id <0IP800807A6QMK@eurmta01.london.eur.slb.com> for
-	linuxppc-embedded@ozlabs.org; Mon, 31 Oct 2005 14:13:38 +0000 (GMT)
-Date: Mon, 31 Oct 2005 15:13:34 +0100
-From: Tore Martin Hagen <THagen@oslo.westerngeco.slb.com>
-In-reply-to: <200510281054.AA34079032@NARI-RELAYS.COM>
-To: xiay@nari-relays.com
-Message-id: <4366268E.2020300@oslo.westerngeco.slb.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-References: <200510281054.AA34079032@NARI-RELAYS.COM>
+	Tue,  1 Nov 2005 02:05:23 +1100 (EST)
+Date: Mon, 31 Oct 2005 07:41:35 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Stefan Roese <sr@denx.de>
+Message-ID: <20051031074135.D11144@cox.net>
+References: <ea43f4f9050825183121655ba2@mail.gmail.com>
+	<200509301452.52074.sr@denx.de> <200510281758.56646.sr@denx.de>
+	<200510311029.13432.sr@denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200510311029.13432.sr@denx.de>;
+	from sr@denx.de on Mon, Oct 31, 2005 at 11:29:13AM +0200
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: NFS can not mount (linuxppc2.2.4 mpc5200 lxt971)
+Subject: Re: [PATCH] ppc32: Add missing initrd header on ppc440
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,22 +26,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-ÏÄÓê wrote:
+On Mon, Oct 31, 2005 at 11:29:13AM +0200, Stefan Roese wrote:
+> By the way: What is the current status of the pending 4xx patches. Are they 
+> going in in this 2-week merge window?
 
->eth0: config: auto-negotiation on, 100HDX, 10HDX.
->IP-Config: Complete:
->      device=eth0, addr=198.87.102.211, mask=255.255.255.0, gw=198.87.102.140,
->     host=oops, domain=, nis-domain=(none),
->     bootserver=198.87.102.140, rootserver=198.98.102.140, rootpath=
->  
->
-Hi
+The PPC44x U-Boot cleanup was queued and merged.  The rest of PPC4xx
+cleanup patches are now pending with akpm and will probably be queued
+for Linus shortly. There will be no problem with them being merged.
 
-Check out your DHCP server.  You don't get the rootpath from it.
-
-/etc/dhcpd.conf should contain
-option root-path "/local/Mpc8266ads/Box0/root";  
-or something similar.
-also take a look in /var/log/messages to pinpoint the problem.
-
-/Tore Hagen
+-Matt
