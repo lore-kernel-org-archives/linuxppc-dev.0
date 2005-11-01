@@ -1,14 +1,19 @@
-Return-Path: <SRS0+4a536cd6c556040094b6+800+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-From: David Woodhouse <dwmw2@infradead.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17253.39993.502458.390760@cargo.ozlabs.ibm.com>
-References: <17253.39993.502458.390760@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 01 Nov 2005 16:06:47 +0000
-Message-Id: <1130861207.21212.66.camel@hades.cambridge.redhat.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
-Subject: Re: please pull the powerpc-merge.git tree
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3F80D68663
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Nov 2005 03:50:39 +1100 (EST)
+In-Reply-To: <AHEILKONAKAEJPHNMOPNMEFBCDAA.hs@denx.de>
+References: <AHEILKONAKAEJPHNMOPNMEFBCDAA.hs@denx.de>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <e192e9e7fa764d69dc8e4f4d4391a447@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Tue, 1 Nov 2005 11:08:30 -0500
+To: hs@dexn.de
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] ppc32: Fix SCC Uart write problem after 2. open()
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,33 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2005-10-31 at 15:23 +1100, Paul Mackerras wrote:
-> It is now possible to build kernels for powermac, pSeries, iSeries and
-> maple with ARCH=powerpc, and for powermac, both 32-bit and 64-bit
-> build and run. 
 
-The ppc64 build (http://david.woodhou.se/powerpc-merge-64.config) fares
-worse than ppc32 for me -- it doesn't even build. 
+On Nov 1, 2005, at 2:17 AM, Heiko Schocher wrote:
 
-arch/powerpc/platforms/powermac/pic.c:614: error: ‘ppc_cached_irq_mask’ undeclared (first use in this function)
-arch/powerpc/platforms/powermac/pic.c:620: error: ‘pmac_irq_hw’ undeclared (first use in this function)
-arch/powerpc/platforms/powermac/pic.c:621: error: ‘max_real_irqs’ undeclared (first use in this function)
-arch/powerpc/platforms/powermac/pic.c:641: warning: implicit declaration of function ‘pmac_unmask_irq’
+> The following Patch will fix this problem.
 
-If I leave CONFIG_ADB_PMU enabled (as I think I should since some G5s
-have it?) I also see this:
+This is wrong.  We should never have to reinitialize the
+buffer descriptors (which I see the driver does in some cases)
+and we certainly should never have to reinitialize the
+SCC or SMC peripherals like this.
 
-drivers/macintosh/via-pmu.c:2410: undefined reference to `.pmac_tweak_clock_spreading'
-drivers/macintosh/via-pmu.c:2494: undefined reference to `.set_context'
-drivers/macintosh/via-pmu.c:2670: undefined reference to `._nmask_and_or_msr'
-drivers/macintosh/via-pmu.c:2592: undefined reference to `.set_context'
+Once the driver has initialized the SCC or SMC and set up
+the buffer descriptors during kernel start up, it should never
+be done again.  The only thing we should do is stop/start
+the transmitter or receiver, and they should continue operation
+with the next buffer descriptor in the ring.
 
-If I turn CONFIG_ADB_PMU off, I see this:
+This patch just covers up a driver bug, find and fix the real bug.
 
-arch/powerpc/platforms/powermac/time.c:335: undefined reference to `.pmu_register_sleep_notifier'
+Thanks.
 
-I think I'll leave the task of switching the Fedora rawhide kernel to
-arch/powerpc to another day :)
-
--- 
-dwmw2
+	-- Dan
