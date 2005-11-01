@@ -1,24 +1,20 @@
-Return-Path: <pantelis.antoniou@gmail.com>
-Received: from nproxy.gmail.com (nproxy.gmail.com [64.233.182.193])
-	by ozlabs.org (Postfix) with ESMTP id 982136866B
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao05.cox.net (fed1rmmtao05.cox.net [68.230.241.34])
+	by ozlabs.org (Postfix) with ESMTP id 4C6E068667
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 Nov 2005 09:51:37 +1100 (EST)
-Received: by nproxy.gmail.com with SMTP id n28so405627nfc
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 01 Nov 2005 14:51:34 -0800 (PST)
-From: Pantelis Antoniou <pantelis.antoniou@gmail.com>
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-Date: Wed, 2 Nov 2005 00:55:57 +0200
-References: <200510302203.25390.pantelis.antoniou@gmail.com>
-	<20051101172524.GA5623@logos.cnet>
-In-Reply-To: <20051101172524.GA5623@logos.cnet>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200511020055.58010.pantelis.antoniou@gmail.com>
-Cc: Dan Malek <dan@embeddedalley.com>, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH 2.6.14] mm: 8xx MM fix for
-Reply-To: pantelis.antoniou@gmail.com
+	Wed,  2 Nov 2005 10:29:41 +1100 (EST)
+Date: Tue, 1 Nov 2005 16:29:39 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Wolfgang Denk <wd@denx.de>
+Message-ID: <20051101162939.G30577@cox.net>
+References: <20051012153817.D370D353A4F@atlas.denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20051012153817.D370D353A4F@atlas.denx.de>;
+	from wd@denx.de on Wed, Oct 12, 2005 at 05:38:17PM +0200
+Cc: llandre <r&d2@dave-tech.it>, linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH 1/2] ppc32: Add initial support for DAVE "PPChameleon"
+	board.
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,33 +25,77 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 01 November 2005 19:25, Marcelo Tosatti wrote:
-> On Sun, Oct 30, 2005 at 11:03:24PM +0300, Pantelis Antoniou wrote:
-> > Latest MMU changes caused 8xx to stop working. Flushing tlb of the faulting
-> > address fixes the problem.
-> 
-> Hi Panto,
-> 
-> Its working fine around here. How much of a vanilla 2.6.14 your is?
-> 
-> [root@CAS root]# cat /proc/cpuinfo
-> processor       : 0
-> cpu             : 8xx
-> clock           : 48MHz
-> bus clock       : 48MHz
-> revision        : 0.0 (pvr 0050 0000)
-> bogomips        : 47.82
-> [root@CAS root]# uname -a
-> Linux CAS 2.6.14 #2 Tue Nov 1 16:20:28 CST 2005 ppc unknown
-> 
-> 
+On Wed, Oct 12, 2005 at 05:38:17PM +0200, Wolfgang Denk wrote:
+> the following patch (against current kernel.org tree) adds suport for
+> the "PPChameleon" modules / eval boards manufactured by DAVE s.r.l.
 
-Vanila 2.6.14 worked fine too.
+See comments below.
+ 
+> +config PPChameleonEVB
+> +	bool "PPChameleonEVB"
+> +	help
+> +	  This option enables support for the DAVE 405EP evaluation board.
+> +
 
-It's the mm patches that started coming in later. 
-Unfortunately the version did not change, so I can't provide it.
-Did you used a current git tree?
+It's unusual to have a mixed case config option. Is there a better
+option that makes sense? PP_CHAM_EVB?
 
-Regards
+>  /* DCR defines */
+> -#define DCRN_CPMSR_BASE         0x0BA
+> -#define DCRN_CPMFR_BASE         0x0B9
+> +#define DCRN_CPMSR_BASE		0x0BA
+> +#define DCRN_CPMFR_BASE		0x0B9
 
-Pantelis
+Please drop these whitespace changes.
+
+> -#define IBM_CPM_GPT             0x80000000      /* GPT interface */
+> -#define IBM_CPM_PCI             0x40000000      /* PCI bridge */
+> -#define IBM_CPM_UIC             0x00010000      /* Universal Int Controller */
+> -#define IBM_CPM_CPU             0x00008000      /* processor core */
+> -#define IBM_CPM_EBC             0x00002000      /* EBC controller */
+> -#define IBM_CPM_SDRAM0          0x00004000      /* SDRAM memory controller */
+> -#define IBM_CPM_GPIO0           0x00001000      /* General Purpose IO */
+> -#define IBM_CPM_TMRCLK          0x00000400      /* CPU timers */
+> -#define IBM_CPM_PLB             0x00000100      /* PLB bus arbiter */
+> -#define IBM_CPM_OPB             0x00000080      /* PLB to OPB bridge */
+> -#define IBM_CPM_DMA             0x00000040      /* DMA controller */
+> -#define IBM_CPM_IIC0            0x00000010      /* IIC interface */
+> -#define IBM_CPM_UART1           0x00000002      /* serial port 0 */
+> -#define IBM_CPM_UART0           0x00000001      /* serial port 1 */
+> +#define IBM_CPM_GPT		0x80000000      /* GPT interface */
+> +#define IBM_CPM_PCI		0x40000000      /* PCI bridge */
+> +#define IBM_CPM_UIC		0x00010000      /* Universal Int Controller */
+> +#define IBM_CPM_CPU		0x00008000      /* processor core */
+> +#define IBM_CPM_EBC		0x00002000      /* EBC controller */
+> +#define IBM_CPM_SDRAM0		0x00004000      /* SDRAM memory controller */
+> +#define IBM_CPM_GPIO0		0x00001000      /* General Purpose IO */
+> +#define IBM_CPM_TMRCLK		0x00000400      /* CPU timers */
+> +#define IBM_CPM_PLB		0x00000100      /* PLB bus arbiter */
+> +#define IBM_CPM_OPB		0x00000080      /* PLB to OPB bridge */
+> +#define IBM_CPM_DMA		0x00000040      /* DMA controller */
+> +#define IBM_CPM_IIC0		0x00000010      /* IIC interface */
+> +#define IBM_CPM_UART1		0x00000002      /* serial port 0 */
+> +#define IBM_CPM_UART0		0x00000001      /* serial port 1 */
+
+Same here, if whitespace chanes are important submit them separately.
+
+> diff --git a/arch/ppc/platforms/4xx/ppchameleon.c b/arch/ppc/platforms/4xx/ppchameleon.c
+> new file mode 100644
+> --- /dev/null
+
+<snip>
+
+> +#if defined(CONFIG_BIOS_FIXUP)
+> +void __init bios_fixup (struct pci_controller *hose, struct pcil0_regs *pcip)
+
+<snip>
+
+You don't use this bios_fixup garbage in this port (at least according
+to your defconfig) so just drop it.
+
+As an aside, this stuff is pretty awful and has been since 405 first
+came into the tree. If the basic functionality were required, a new
+port should simply reprogram the pci host bridge and let the pci
+subsystem place the BARs.
+
+-Matt
