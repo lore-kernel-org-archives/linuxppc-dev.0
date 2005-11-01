@@ -1,19 +1,23 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3F80D68663
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Nov 2005 03:50:39 +1100 (EST)
-In-Reply-To: <AHEILKONAKAEJPHNMOPNMEFBCDAA.hs@denx.de>
-References: <AHEILKONAKAEJPHNMOPNMEFBCDAA.hs@denx.de>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <e192e9e7fa764d69dc8e4f4d4391a447@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Tue, 1 Nov 2005 11:08:30 -0500
-To: hs@dexn.de
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] ppc32: Fix SCC Uart write problem after 2. open()
+Return-Path: <mgreer@mvista.com>
+Received: from hermes.mvista.com (gateway-1237.mvista.com [12.44.186.158])
+	by ozlabs.org (Postfix) with ESMTP id CB6F168664
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Nov 2005 03:57:16 +1100 (EST)
+Date: Tue, 1 Nov 2005 09:57:29 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Paul Mackerras <paulus@samba.org>
+Message-ID: <20051101165729.GA2987@mag.az.mvista.com>
+References: <20051025075159.GA10316@localhost.localdomain>
+	<17251.265.196352.234376@cargo.ozlabs.ibm.com>
+	<20051031190524.GE5055@mag.az.mvista.com>
+	<17255.13444.672360.996441@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17255.13444.672360.996441@cargo.ozlabs.ibm.com>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	Sven Luther <sl@bplan-gmbh.de>
+Subject: Re: [PATCH 2.6.14-rc5 1/1] : mv643xx_eth_pcidev - implements
+	hotplug for the marvell gige functionality by probing the
+	northbridge pci id.
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,24 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Nov 01, 2005 at 08:25:24PM +1100, Paul Mackerras wrote:
+> Mark A. Greer writes:
+> 
+> > It does have a PIC, DMA engine, and SRAM that Sven mentioned but there
+> > are also a serial controller (MPSC), an i2c controller, and a watchdog
+> > timer.  I would guess that the MPSC and i2c drivers, at least, should
+> > use MODULE_DEVICE_TABLE.  If you agree, I'll add it to the list.
+> 
+> But the point is that if one driver has claimed the device (because
+> its ID is in its module device table), the other drivers won't be able
+> to.
 
-On Nov 1, 2005, at 2:17 AM, Heiko Schocher wrote:
+Okay.  TBH, I still have to look at what the MODULE_DEVICE_TABLE does so
+it was ignorance + laziness on my part.
 
-> The following Patch will fix this problem.
+> You need something like the macio driver that BenH did, which
+> claims the macio device and creates a macio bus structure and allows
+> individual macio device drivers to claim the pieces of it.
 
-This is wrong.  We should never have to reinitialize the
-buffer descriptors (which I see the driver does in some cases)
-and we certainly should never have to reinitialize the
-SCC or SMC peripherals like this.
+I'll take a look.
 
-Once the driver has initialized the SCC or SMC and set up
-the buffer descriptors during kernel start up, it should never
-be done again.  The only thing we should do is stop/start
-the transmitter or receiver, and they should continue operation
-with the next buffer descriptor in the ring.
-
-This patch just covers up a driver bug, find and fix the real bug.
-
-Thanks.
-
-	-- Dan
+Mark
