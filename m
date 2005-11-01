@@ -1,20 +1,20 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id 50F60685E6
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BB7DE6866A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  1 Nov 2005 02:30:03 +1100 (EST)
-From: David Jander <david.jander@protonic.nl>
-To: linuxppc-embedded@ozlabs.org
-Date: Mon, 31 Oct 2005 17:29:57 +0200
-References: <200510280857.44625.david.jander@protonic.nl>
-	<003501c5de1a$be79b390$0301a8c0@chuck2>
-	<200510311408.41691.david.jander@protonic.nl>
-In-Reply-To: <200510311408.41691.david.jander@protonic.nl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200510311629.57608.david.jander@protonic.nl>
-Subject: Re: Kernel 2.6 on MPC8xx performance trouble...
+	Wed,  2 Nov 2005 09:41:58 +1100 (EST)
+Date: Tue, 1 Nov 2005 15:25:24 -0200
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Pantelis Antoniou <pantelis.antoniou@gmail.com>
+Message-ID: <20051101172524.GA5623@logos.cnet>
+References: <200510302203.25390.pantelis.antoniou@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200510302203.25390.pantelis.antoniou@gmail.com>
+Cc: Dan Malek <dan@embeddedalley.com>, linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH 2.6.14] mm: 8xx MM fix for
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,34 +25,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Monday 31 October 2005 14:08, David Jander wrote:
-> On Monday 31 October 2005 13:58, Mark Chambers wrote:
-> >[...]
-> >
-> > > No, sir, no cache detected !
-> > >
-> > > Where do I have to look now?
-> >
-> > Could the cache be in writethrough mode? (Instead of writeback)
->
-> Good point. I just checked the same test, but reading instead of writing.
-> Same result, no cache detected.
->
-> I know how to change cache policy in u-boot, but does the kernel change
-> that? If so, where?
+On Sun, Oct 30, 2005 at 11:03:24PM +0300, Pantelis Antoniou wrote:
+> Latest MMU changes caused 8xx to stop working. Flushing tlb of the faulting
+> address fixes the problem.
 
-Sorry for the stupid question. I did not remember it was there right before my 
-eyes. It seems I just got lost in the new menu structure of the Kconfig.
-And yes, cache was in writethrough mode!!
-It seems as though this option disables cache entirely, because after turning 
-it on, I suddenly get 2.4-type speed measurements.
-With CONFIG_8xx_COPYBACK undefined, both reading and writing gives results as 
-if there was simply no cache. Shouldn't it at least speed up memory-read 
-access?
-Sorry to everone for wasting their time with this stupid mistake of mine.
-Thanks for all the help anyway.
+Hi Panto,
 
-Greetings,
+Its working fine around here. How much of a vanilla 2.6.14 your is?
 
--- 
-David Jander
+[root@CAS root]# cat /proc/cpuinfo
+processor       : 0
+cpu             : 8xx
+clock           : 48MHz
+bus clock       : 48MHz
+revision        : 0.0 (pvr 0050 0000)
+bogomips        : 47.82
+[root@CAS root]# uname -a
+Linux CAS 2.6.14 #2 Tue Nov 1 16:20:28 CST 2005 ppc unknown
