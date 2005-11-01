@@ -1,17 +1,18 @@
-Return-Path: <mmporter@cox.net>
-Date: Tue, 1 Nov 2005 06:22:50 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Message-ID: <20051101062250.A28639@cox.net>
-References: <17250.8725.358204.62510@cargo.ozlabs.ibm.com>
-	<20051028103041.B15268@cox.net>
-	<17255.737.832440.137041@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17255.737.832440.137041@cargo.ozlabs.ibm.com>;
-	from paulus@samba.org on Tue, Nov 01, 2005 at 04:53:37PM +1100
-Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
-Subject: Re: Patches for 2.6.15
+Return-Path: <dick@softplc.com>
+Received: from ylpvm25.prodigy.net (ylpvm25-ext.prodigy.net [207.115.57.56])
+	by ozlabs.org (Postfix) with ESMTP id 34E7E6865E
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Nov 2005 02:40:35 +1100 (EST)
+Received: from [192.100.100.10] ([67.64.64.34])
+	by ylpvm25.prodigy.net (smtpauth/dk/flock 8.13.4/8.13.4) with ESMTP id
+	jA1FSeX2023895
+	for <linuxppc-dev@ozlabs.org>; Tue, 1 Nov 2005 10:28:40 -0500
+Message-ID: <43678A3A.1050803@softplc.com>
+Date: Tue, 01 Nov 2005 09:31:06 -0600
+From: Dick Hollenbeck <dick@softplc.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: AMCC440EP Boot Source
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,23 +22,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Nov 01, 2005 at 04:53:37PM +1100, Paul Mackerras wrote:
-> Matt Porter writes:
-> 
-> > Ok, we have a set of 4xx patches that I plan to send to Andrew.
-> > They are some existing 4xx SoC/board updates as well as a new
-> > SoC/board. They are obviously mostly confined to the 4xx code paths
-> > but there's likely conflicts in changes to Makefiles, etc.
-> > 
-> > Would you prefer these going upstream before or after the 
-> > powerpc-merge pull?
-> 
-> Did you send them yet?  Linus has pulled the powerpc-merge tree, as
-> I'm sure you've noticed.
+We are looking at the yosemite design but want a CF2 socket for the OS 
+image.   Can U-Boot reside in the EEPROM accessible via I2C?  
 
-Yes I did. I saw the merge go into mainline and rebased what was
-necessary off of that.  Andrew now has them queued up for Linus so
-we are set. BTW, we're starting to look at merging 4xx to arch/powerpc/
-now.
+This would allow us to remove the flash entirely in favor of the CF2 
+flash.  If yes, are there any drawbacks to this vs. keeping a small bit 
+of flash soldered to the board?
 
--Matt
+
+-- 
+Please help fix the U.S. software industry before it is too late.
+Contact your U.S. representatives with this information:
+http://lpf.ai.mit.edu/Patents/industry-at-risk.html
+http://www.groklaw.net/article.php?story=20041003041632172
