@@ -1,18 +1,22 @@
-Return-Path: <BlakesleeS@embeddedplanet.com>
-Received: from tag-03.ashton-group.com (tag-03.ashton-group.com [66.94.86.90])
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 48ECB68662
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Nov 2005 04:14:09 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Tue, 1 Nov 2005 11:43:59 -0500
-Message-ID: <1628E43D99629C46988BE46087A3FBB93AE08B@ep-01.EmbeddedPlanet.local>
-From: "Steven Blakeslee" <BlakesleeS@embeddedplanet.com>
-To: "Dick Hollenbeck" <dick@softplc.com>,
-	<linuxppc-dev@ozlabs.org>
-Subject: RE: AMCC440EP Boot Source
+	by ozlabs.org (Postfix) with ESMTP id BF0B568660
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Nov 2005 08:49:36 +1100 (EST)
+Date: Tue, 1 Nov 2005 14:33:12 -0200
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Tom Rini <trini@kernel.crashing.org>
+Message-ID: <20051101163312.GB5095@logos.cnet>
+References: <20051026133648.GA10373@logos.cnet>
+	<20051026220205.GH26475@smtp.west.cox.net>
+	<20051028085224.GA17520@logos.cnet>
+	<20051028161054.GB22245@smtp.west.cox.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20051028161054.GB22245@smtp.west.cox.net>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: Makefile check for older binutils broken?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,18 +26,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> We are looking at the yosemite design but want a CF2 socket=20
-> for the OS=20
-> image.   Can U-Boot reside in the EEPROM accessible via I2C? =20
 
-Are you sure that the 440EP can run code from the EEPROM on the I2C?
-The 440EP loads configuration information from the EEPROM on the I2C but
-I don't know it can run code.=20
+> > Yep, that does the trick. Is it good now?
+> 
+> Er, that's odd.  I was using writing parens, not shell parens :)   Can
+> you test the failure case here by changing dssall to garbage?  Also,
+> that's not a clean patch, but vs your last one that wasn't valid.
 
->=20
-> This would allow us to remove the flash entirely in favor of=20
-> the CF2 flash.  If yes, are there any drawbacks to this vs.=20
-> keeping a small bit of flash soldered to the board?
+Problem is specific to invocation of "make" inside a (particular) Makefile.
 
-I'm pretty sure you need to have flash.  If you don't want the onboard
-flash you can connect some through the PCI.
+Again, sorry for you wasting your time.
