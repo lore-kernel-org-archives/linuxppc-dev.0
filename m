@@ -1,18 +1,14 @@
-Return-Path: <dick@softplc.com>
-Received: from ylpvm25.prodigy.net (ylpvm25-ext.prodigy.net [207.115.57.56])
-	by ozlabs.org (Postfix) with ESMTP id 34E7E6865E
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Nov 2005 02:40:35 +1100 (EST)
-Received: from [192.100.100.10] ([67.64.64.34])
-	by ylpvm25.prodigy.net (smtpauth/dk/flock 8.13.4/8.13.4) with ESMTP id
-	jA1FSeX2023895
-	for <linuxppc-dev@ozlabs.org>; Tue, 1 Nov 2005 10:28:40 -0500
-Message-ID: <43678A3A.1050803@softplc.com>
-Date: Tue, 01 Nov 2005 09:31:06 -0600
-From: Dick Hollenbeck <dick@softplc.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: AMCC440EP Boot Source
+Return-Path: <SRS0+4a536cd6c556040094b6+800+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+From: David Woodhouse <dwmw2@infradead.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <17253.39993.502458.390760@cargo.ozlabs.ibm.com>
+References: <17253.39993.502458.390760@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Tue, 01 Nov 2005 15:54:04 +0000
+Message-Id: <1130860444.21212.52.camel@hades.cambridge.redhat.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Subject: Re: please pull the powerpc-merge.git tree
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,16 +18,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We are looking at the yosemite design but want a CF2 socket for the OS 
-image.   Can U-Boot reside in the EEPROM accessible via I2C?  
+On Mon, 2005-10-31 at 15:23 +1100, Paul Mackerras wrote:
+> It is now possible to build kernels for powermac, pSeries, iSeries and
+> maple with ARCH=powerpc, and for powermac, both 32-bit and 64-bit
+> build and run. 
 
-This would allow us to remove the flash entirely in favor of the CF2 
-flash.  If yes, are there any drawbacks to this vs. keeping a small bit 
-of flash soldered to the board?
+Hm. Not entirely in line with my experience. Can you share the configs
+you used?
+
+Using http://david/woodhou.se/powerpc-merge-32.config it doesn't
+actually boot on my powerbook. I'll try it on the Pegasos later or
+tomorrow, where I have a serial console; it dies very early.
+
+Aside from disabling CONFIG_NVRAM because call_rtas() isn't implemented
+anywhere, I also needed to do this to make that config build:
+
+--- linux-2.6.14/arch/powerpc/kernel/setup-common.c.orig	2005-11-01 10:14:32.000000000 +0000
++++ linux-2.6.14/arch/powerpc/kernel/setup-common.c	2005-11-01 10:15:03.000000000 +0000
+@@ -203,11 +203,11 @@ static int show_cpuinfo(struct seq_file 
+ #ifdef CONFIG_TAU_AVERAGE
+ 		/* more straightforward, but potentially misleading */
+ 		seq_printf(m,  "temperature \t: %u C (uncalibrated)\n",
+-			   cpu_temp(i));
++			   cpu_temp(cpu_id));
+ #else
+ 		/* show the actual temp sensor range */
+ 		u32 temp;
+-		temp = cpu_temp_both(i);
++		temp = cpu_temp_both(cpu_id);
+ 		seq_printf(m, "temperature \t: %u-%u C (uncalibrated)\n",
+ 			   temp & 0xff, temp >> 16);
+ #endif
 
 
 -- 
-Please help fix the U.S. software industry before it is too late.
-Contact your U.S. representatives with this information:
-http://lpf.ai.mit.edu/Patents/industry-at-risk.html
-http://www.groklaw.net/article.php?story=20041003041632172
+dwmw2
