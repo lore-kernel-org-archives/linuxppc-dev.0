@@ -1,14 +1,16 @@
-Return-Path: <bgill@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id DEE5F68673
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Nov 2005 03:52:58 +1100 (EST)
-Date: Wed, 2 Nov 2005 10:52:52 -0600 (CST)
-From: Becky Bruce <bgill@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Message-ID: <Pine.LNX.4.61.0511021050250.26891@cde-tx32-ldt329.sps.mot.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Subject: [PATCH] ppc - fix build warnings in arch/ppc/kernel/traps.c
+Return-Path: <SRS0+86b099cbe611c29e26f6+801+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+From: David Woodhouse <dwmw2@infradead.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <17256.17408.247708.622755@cargo.ozlabs.ibm.com>
+References: <17253.39993.502458.390760@cargo.ozlabs.ibm.com>
+	<1130861207.21212.66.camel@hades.cambridge.redhat.com>
+	<17256.17408.247708.622755@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Wed, 02 Nov 2005 16:54:46 +0000
+Message-Id: <1130950487.21212.89.camel@hades.cambridge.redhat.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Subject: Re: please pull the powerpc-merge.git tree
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,52 +20,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-ppc: Fix build warnings in traps.c
+On Wed, 2005-11-02 at 15:43 +1100, Paul Mackerras wrote:
+> Those errors were all due to getting powerbook sleep code included
+> because you have CONFIG_PM=y.  I have changed things so that that code
+> doesn't get included on a 64-bit build (at least until BenH gets sleep
+> going on the G5 :).
 
-The latest updates to bug.h generate build warnings in traps.c in 
-arch/ppc.  Fix print format specifiers to account for change of line type  
-to long from int.
+OK, now the Fedora rawhide kernel builds for ppc64 with arch/powerpc and
+runs on both my POWER5 and G5 test boxes. I need this if I want nvram
+support on the G5 though.
 
-Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
+Should we be using CONFIG_GENERIC_NVRAM on ppc64, and actually allowing
+the nvram support to be optional?
 
----
-commit fdbe8ff0c9719da6bcbe6fedf10fb3d32c09ec92
-tree 6330b8c00cd62dab8b58cd8808619cf3a1d44f69
-parent 211317f02e1d2ac3ebd5bf139889160c834573da
-author Becky Bruce <becky.bruce@freescale.com> Wed, 02 Nov 2005 10:47:59 -0600
-committer Becky Bruce <becky.bruce@freescale.com> Wed, 02 Nov 2005 10:47:59 -0600
-
- arch/ppc/kernel/traps.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/arch/ppc/kernel/traps.c b/arch/ppc/kernel/traps.c
-index f265b81..16adde6 100644
---- a/arch/ppc/kernel/traps.c
-+++ b/arch/ppc/kernel/traps.c
-@@ -606,22 +606,22 @@ int check_bug_trap(struct pt_regs *regs)
- 	if (bug->line & BUG_WARNING_TRAP) {
- 		/* this is a WARN_ON rather than BUG/BUG_ON */
- #ifdef CONFIG_XMON
--		xmon_printf(KERN_ERR "Badness in %s at %s:%d\n",
-+		xmon_printf(KERN_ERR "Badness in %s at %s:%ld\n",
- 		       bug->function, bug->file,
- 		       bug->line & ~BUG_WARNING_TRAP);
- #endif /* CONFIG_XMON */		
--		printk(KERN_ERR "Badness in %s at %s:%d\n",
-+		printk(KERN_ERR "Badness in %s at %s:%ld\n",
- 		       bug->function, bug->file,
- 		       bug->line & ~BUG_WARNING_TRAP);
- 		dump_stack();
- 		return 1;
- 	}
- #ifdef CONFIG_XMON
--	xmon_printf(KERN_CRIT "kernel BUG in %s at %s:%d!\n",
-+	xmon_printf(KERN_CRIT "kernel BUG in %s at %s:%ld!\n",
- 	       bug->function, bug->file, bug->line);
- 	xmon(regs);
- #endif /* CONFIG_XMON */
--	printk(KERN_CRIT "kernel BUG in %s at %s:%d!\n",
-+	printk(KERN_CRIT "kernel BUG in %s at %s:%ld!\n",
- 	       bug->function, bug->file, bug->line);
+--- a/arch/powerpc/platforms/powermac/setup.c
++++ b/arch/powerpc/platforms/powermac/setup.c
+@@ -351,7 +350,7 @@ void __init pmac_setup_arch(void)
+ 	find_via_pmu();
+ 	smu_init();
  
- 	return 0;
+-#ifdef CONFIG_NVRAM
++#if defined(CONFIG_NVRAM) || defined(CONFIG_PPC64)
+ 	pmac_nvram_init();
+ #endif
+ 
+
+
+-- 
+dwmw2
