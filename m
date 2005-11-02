@@ -1,17 +1,17 @@
-Return-Path: <dhlii@comcast.net>
-Received: from sccrmhc11.comcast.net (sccrmhc11.comcast.net [204.127.202.55])
-	by ozlabs.org (Postfix) with ESMTP id CE22B68593
+Return-Path: <bgholikh@cisco.com>
+Received: from sj-iport-2.cisco.com (sj-iport-2-in.cisco.com [171.71.176.71])
+	by ozlabs.org (Postfix) with ESMTP id 3B92E68658
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 Nov 2005 20:45:22 +1100 (EST)
-Message-ID: <43688AAD.5050208@comcast.net>
-Date: Wed, 02 Nov 2005 04:45:17 -0500
-From: "David H. Lynch Jr" <dhlii@comcast.net>
+	Wed,  2 Nov 2005 22:28:08 +1100 (EST)
 MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-References: <20050906130029.74727.qmail@web8405.mail.in.yahoo.com>
-In-Reply-To: <20050906130029.74727.qmail@web8405.mail.in.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: Board Bringup problem with 2.6.13.4
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C5DFA0.7C1E0493"
+Date: Wed, 2 Nov 2005 03:28:02 -0800
+Message-ID: <F795765B112E7344AF36AA91127964158496E9@xmb-sjc-212.amer.cisco.com>
+From: "Bizhan Gholikhamseh \(bgholikh\)" <bgholikh@cisco.com>
+To: <mcr@marajade.sandelman.ca>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: compact flash driver
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,41 +22,99 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I am working through bringing up Linux 2.6.13.4 on a Xilinx V4 based ppc405.
-with memory from 0x0 through 0x7fffffff
+This is a multi-part message in MIME format.
+
+------_=_NextPart_001_01C5DFA0.7C1E0493
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+>>>>> "Alex" =3D=3D Alex Zeffertt <ajz@cambridgebroadband.com> writes:
+
+>> Hello All, Are there any compact flash driver supported for Linux
+
+>> 2.6? If there is where can i get the source code. Thanks, Bizhan
+
+>>=20
+
+Alex> I think that CF cards just get treated the same as any other
+
+Alex> IDE disk by linux. No special driver needed.
+
+>Yes. There are some gotchas with newer pcmcia/cardbus flash cards.
+
+>For instance, Silicon Systems devices claim to support IORDY, but
+don't, which results in a system hang. I imagine that the same >kind of
+things will show up in newer CF devices, although I think that CF can't
+support DMA.
+
+>It also depends upon how you interface CF: via an IDE controller, or
+via a cardbus interface.
+
+>I expect to have a git tree with stuff available soon.
+
+Do you have an early release code? I can start to work at.
+
+Many thanks in advance,
+
+Bizhan
 
 
+------_=_NextPart_001_01C5DFA0.7C1E0493
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Right now I get:
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2800.1498" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV>
+<P><FONT face=3DArial size=3D2>&gt;&gt;&gt;&gt;&gt; "Alex" =3D=3D Alex =
+Zeffertt=20
+&lt;ajz@cambridgebroadband.com&gt; writes:</FONT></P>
+<P><FONT face=3DArial size=3D2>&gt;&gt; Hello All, Are there any compact =
+flash=20
+driver supported for Linux</FONT></P>
+<P><FONT face=3DArial size=3D2>&gt;&gt; 2.6? If there is where can i get =
+the source=20
+code. Thanks, Bizhan</FONT></P>
+<P><FONT face=3DArial size=3D2>&gt;&gt; </FONT></P>
+<P><FONT face=3DArial size=3D2>Alex&gt; I think that CF cards just get =
+treated the=20
+same as any other</FONT></P>
+<P><FONT face=3DArial size=3D2>Alex&gt; IDE disk by linux. No special =
+driver=20
+needed.</FONT></P>
+<P><FONT face=3DArial><FONT size=3D2><SPAN =
+class=3D487392411-02112005>&gt;</SPAN>Yes.=20
+There are some gotchas with newer pcmcia/cardbus flash =
+cards.</FONT></FONT></P>
+<P><FONT face=3DArial><FONT size=3D2><SPAN =
+class=3D487392411-02112005>&gt;</SPAN>For=20
+instance, Silicon Systems devices claim to support IORDY, but don't, =
+which=20
+results in a system hang. I imagine that the same&nbsp;<SPAN=20
+class=3D487392411-02112005>&gt;</SPAN>kind of things will show up in =
+newer CF=20
+devices, although I think that CF can't support DMA.</FONT></FONT></P>
+<P><FONT face=3DArial><FONT size=3D2><SPAN =
+class=3D487392411-02112005>&gt;</SPAN>It=20
+also depends upon how you interface CF: via an IDE controller, or via a =
+cardbus=20
+interface.</FONT></FONT></P>
+<P><FONT face=3DArial><FONT size=3D2><SPAN =
+class=3D487392411-02112005>&gt;</SPAN>I=20
+expect to have a git tree with stuff available soon.</FONT></FONT></P>
+<P><SPAN class=3D487392411-02112005><FONT face=3DArial size=3D2>Do you =
+have an early=20
+release code? I can start to work at.</FONT></SPAN></P>
+<P><SPAN class=3D487392411-02112005><FONT face=3DArial size=3D2>Many =
+thanks in=20
+advance,</FONT></SPAN></P>
+<P><SPAN class=3D487392411-02112005><FONT face=3DArial=20
+size=3D2>Bizhan</FONT></SPAN></P></DIV></BODY></HTML>
 
- >Starting MonitorX.elf: V3.3.2.0.
- >
- >loaded at:     00400000 0047F13C
- >board data at: 0047D128 0047D13C
- >relocated to:  00405300 00405314
- >zimage at:     00405A95 0047CE71
- >avail ram:     00480000 08000000
- >
- >Linux/PPC load: console=ttyS0,9600 console=tty0 init=/linuxrc 
-looptype=squashfs cdroot splash=silentttttt
- >Uncompressing Linux......done.
- >Now booting the kernel
-
-I have been able to trace execution into head_4xx.S  to immediately 
-before turn_on_mmu:
-But immediately after this I lose the ability to trace.
-
-I have been tracing things with a status port at 0x70000000 I can write 
-to and read from the host side with code like
-
-    lis   r14,0x7000      /* debugging port */
-    li   r15,0x2305      /* value to output */
-    stw   r15,4(r14)  
-    eieio
- 
-after turn_on_mmu executes this does not seem to work.
-looking at other code it appeared that I needed to add
-tophy(r14,r14) prior to the stw
-but that does not seem to help.
-
-What do I need to do to be able to continue to use my debug port ?
+------_=_NextPart_001_01C5DFA0.7C1E0493--
