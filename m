@@ -1,16 +1,22 @@
-Return-Path: <SRS0+e5d05c376b37d7088a49+801+infradead.org+dwmw2@baythorne.srs.infradead.org>
-From: David Woodhouse <dwmw2@infradead.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17256.4190.184855.821331@cargo.ozlabs.ibm.com>
-References: <17253.39993.502458.390760@cargo.ozlabs.ibm.com>
-	<1130860444.21212.52.camel@hades.cambridge.redhat.com>
-	<17256.4190.184855.821331@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Wed, 02 Nov 2005 09:06:19 +0000
-Message-Id: <1130922379.10031.154.camel@baythorne.infradead.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
-Subject: Re: please pull the powerpc-merge.git tree
+Return-Path: <hs@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id B6D9468660
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Nov 2005 00:01:14 +1100 (EST)
+Received: from mail.m-online.net (svr20.m-online.net [192.168.3.148])
+	by mail-out.m-online.net (Postfix) with ESMTP id D65F17068C
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Nov 2005 13:59:53 +0100 (CET)
+Received: from embluxa7e0291e (82.131.201.147.pool.invitel.hu [82.131.201.147])
+	by smtp-auth.mnet-online.de (Postfix) with ESMTP id D8455125A11
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 Nov 2005 14:01:11 +0100 (CET)
+From: "Heiko Schocher" <hs@denx.de>
+To: <linuxppc-dev@ozlabs.org>
+Date: Wed, 2 Nov 2005 14:01:08 +0100
+Message-ID: <AHEILKONAKAEJPHNMOPNEEFNCDAA.hs@denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Re: [PATCH] ppc32: fix: swallowed chars when booting.
+Reply-To: hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,24 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2005-11-02 at 12:03 +1100, Paul Mackerras wrote:
-> That's probably either the pci quirk that got added to do USB host
-> controller handoff unconditionally on all platforms, and which touches
-> the device without doing pci_enable_device or checking whether MMIO is
-> enabled.  A fix has gone into Linus' tree for that.
-> 
-> There was also a bug added to the adbhid.c driver which would cause an
-> oops when you pressed a key if you had an ADB keyboard (which
-> powerbooks do).  That's also fixed in Linus' tree.
+Hello,
 
-It was neither of those -- after a few warnings about sleeping in
-inappropriate contexts it just seems to stop. The Pegasos is a little
-more informative -- lots of 'hda: lost interrupt' on that. Keyboard
-seems to work though, and Bogomips calculation -- so maybe it's just PCI
-interrupts which are missing. I'll poke at it further.
+during I am searching the right solution for my
+other patch, i found another way for solving the
+swallowed chars problem when booting on SMC2.
 
-I'll also try again on the powerbook today and see if I can get anything
-more useful out of it.
+Please comment.
 
--- 
-dwmw2
+thanks
+Heiko Schocher
+
+[PATCH] ppc32:  Fix: swallowed chars on SMC2 Console.
+
+Signed-off-by: Heiko Schocher <hs@denx.de>
+
+---
+ drivers/serial/cpm_uart/cpm_uart_core.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c
+b/drivers/serial/cpm_uart/cpm_uart_core.c
+index 25825f2..baedd74 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_core.c
++++ b/drivers/serial/cpm_uart/cpm_uart_core.c
+@@ -552,9 +552,9 @@ static void cpm_uart_set_termios(struct
+ 		 * enables, because we want to put them back if they were
+ 		 * present.
+ 		 */
+-		prev_mode = smcp->smc_smcmr;
+-		smcp->smc_smcmr = smcr_mk_clen(bits) | cval | SMCMR_SM_UART;
+-		smcp->smc_smcmr |= (prev_mode & (SMCMR_REN | SMCMR_TEN));
++		prev_mode = smcp->smc_smcmr & (SMCMR_REN | SMCMR_TEN);
++		smcp->smc_smcmr = smcr_mk_clen(bits) | cval | SMCMR_SM_UART
++				| prev_mode;
+ 	} else {
+ 		sccp->scc_psmr = (sbits << 12) | scval;
+ 	}
