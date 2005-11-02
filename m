@@ -1,17 +1,15 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17256.12943.258107.529163@cargo.ozlabs.ibm.com>
-Date: Wed, 2 Nov 2005 14:29:19 +1100
+Message-ID: <17256.17408.247708.622755@cargo.ozlabs.ibm.com>
+Date: Wed, 2 Nov 2005 15:43:44 +1100
 From: Paul Mackerras <paulus@samba.org>
-To: Al Viro <viro@ftp.linux.org.uk>
-In-Reply-To: <20051102031043.GB7992@ftp.linux.org.uk>
-References: <20051101151716.GY7992@ftp.linux.org.uk>
-	<17256.10342.228209.745529@cargo.ozlabs.ibm.com>
-	<20051102031043.GB7992@ftp.linux.org.uk>
-Cc: linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@osdl.org>,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ppc bug.h namespace pollution
+To: David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <1130861207.21212.66.camel@hades.cambridge.redhat.com>
+References: <17253.39993.502458.390760@cargo.ozlabs.ibm.com>
+	<1130861207.21212.66.camel@hades.cambridge.redhat.com>
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Subject: Re: please pull the powerpc-merge.git tree
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,14 +19,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Al Viro writes:
+David Woodhouse writes:
 
-> Should be OK...
-> 
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> The ppc64 build (http://david.woodhou.se/powerpc-merge-64.config) fares
+> worse than ppc32 for me -- it doesn't even build. 
 
-OK, I'll put that in my powerpc-merge tree and ask Linus to pull it.
-I want to do a few more cleanups on that file now that I look at it.
+Those errors were all due to getting powerbook sleep code included
+because you have CONFIG_PM=y.  I have changed things so that that code
+doesn't get included on a 64-bit build (at least until BenH gets sleep
+going on the G5 :).
 
-Thanks,
+I also pulled in Linus' tree, and now drivers/char/tlclk.c fails to
+build for some reason.  I claim that's not my fault, however. :)
+
 Paul.
