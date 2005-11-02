@@ -1,20 +1,17 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao05.cox.net (fed1rmmtao05.cox.net [68.230.241.34])
-	by ozlabs.org (Postfix) with ESMTP id 410A868675
+Return-Path: <dhlii@comcast.net>
+Received: from sccrmhc11.comcast.net (sccrmhc11.comcast.net [204.127.202.55])
+	by ozlabs.org (Postfix) with ESMTP id CE22B68593
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 Nov 2005 10:30:16 +1100 (EST)
-Date: Tue, 1 Nov 2005 16:30:14 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Wolfgang Denk <wd@denx.de>
-Message-ID: <20051101163014.H30577@cox.net>
-References: <20051012154431.C4C53353A4F@atlas.denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20051012154431.C4C53353A4F@atlas.denx.de>;
-	from wd@denx.de on Wed, Oct 12, 2005 at 05:44:31PM +0200
-Cc: llandre <r&d2@dave-tech.it>, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH 2/2] MTD: Add initial support for DAVE "PPChameleon"
-	board.
+	Wed,  2 Nov 2005 20:45:22 +1100 (EST)
+Message-ID: <43688AAD.5050208@comcast.net>
+Date: Wed, 02 Nov 2005 04:45:17 -0500
+From: "David H. Lynch Jr" <dhlii@comcast.net>
+MIME-Version: 1.0
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+References: <20050906130029.74727.qmail@web8405.mail.in.yahoo.com>
+In-Reply-To: <20050906130029.74727.qmail@web8405.mail.in.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Board Bringup problem with 2.6.13.4
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,13 +22,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Oct 12, 2005 at 05:44:31PM +0200, Wolfgang Denk wrote:
-> Hello,
-> 
-> the following  patch  (against  current  kernel.org  tree)  adds  MTD
-> support  for  the NOR and NAND flashes on the "PPChameleon" modules /
-> eval boards manufactured by DAVE s.r.l.
+I am working through bringing up Linux 2.6.13.4 on a Xilinx V4 based ppc405.
+with memory from 0x0 through 0x7fffffff
 
-This should be submitted to the MTD maintainer(s).
 
--Matt
+
+Right now I get:
+
+ >Starting MonitorX.elf: V3.3.2.0.
+ >
+ >loaded at:     00400000 0047F13C
+ >board data at: 0047D128 0047D13C
+ >relocated to:  00405300 00405314
+ >zimage at:     00405A95 0047CE71
+ >avail ram:     00480000 08000000
+ >
+ >Linux/PPC load: console=ttyS0,9600 console=tty0 init=/linuxrc 
+looptype=squashfs cdroot splash=silentttttt
+ >Uncompressing Linux......done.
+ >Now booting the kernel
+
+I have been able to trace execution into head_4xx.S  to immediately 
+before turn_on_mmu:
+But immediately after this I lose the ability to trace.
+
+I have been tracing things with a status port at 0x70000000 I can write 
+to and read from the host side with code like
+
+    lis   r14,0x7000      /* debugging port */
+    li   r15,0x2305      /* value to output */
+    stw   r15,4(r14)  
+    eieio
+ 
+after turn_on_mmu executes this does not seem to work.
+looking at other code it appeared that I needed to add
+tophy(r14,r14) prior to the stw
+but that does not seem to help.
+
+What do I need to do to be able to continue to use my debug port ?
