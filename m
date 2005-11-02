@@ -1,13 +1,13 @@
 Return-Path: <SRS0+e5d05c376b37d7088a49+801+infradead.org+dwmw2@baythorne.srs.infradead.org>
 From: David Woodhouse <dwmw2@infradead.org>
 To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17256.17408.247708.622755@cargo.ozlabs.ibm.com>
+In-Reply-To: <17256.4190.184855.821331@cargo.ozlabs.ibm.com>
 References: <17253.39993.502458.390760@cargo.ozlabs.ibm.com>
-	<1130861207.21212.66.camel@hades.cambridge.redhat.com>
-	<17256.17408.247708.622755@cargo.ozlabs.ibm.com>
+	<1130860444.21212.52.camel@hades.cambridge.redhat.com>
+	<17256.4190.184855.821331@cargo.ozlabs.ibm.com>
 Content-Type: text/plain
-Date: Wed, 02 Nov 2005 07:35:12 +0000
-Message-Id: <1130916912.10031.143.camel@baythorne.infradead.org>
+Date: Wed, 02 Nov 2005 09:06:19 +0000
+Message-Id: <1130922379.10031.154.camel@baythorne.infradead.org>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
 Subject: Re: please pull the powerpc-merge.git tree
@@ -20,36 +20,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2005-11-02 at 15:43 +1100, Paul Mackerras wrote:
-> I also pulled in Linus' tree, and now drivers/char/tlclk.c fails to
-> build for some reason.  I claim that's not my fault, however. :)
+On Wed, 2005-11-02 at 12:03 +1100, Paul Mackerras wrote:
+> That's probably either the pci quirk that got added to do USB host
+> controller handoff unconditionally on all platforms, and which touches
+> the device without doing pci_enable_device or checking whether MMIO is
+> enabled.  A fix has gone into Linus' tree for that.
+> 
+> There was also a bug added to the adbhid.c driver which would cause an
+> oops when you pressed a key if you had an ADB keyboard (which
+> powerbooks do).  That's also fixed in Linus' tree.
 
-It just needs <linux/platform_device.h> included. That reminds me -- I
-needed that in platforms/chrp/pegasos_eth.c too.
+It was neither of those -- after a few warnings about sleeping in
+inappropriate contexts it just seems to stop. The Pegasos is a little
+more informative -- lots of 'hda: lost interrupt' on that. Keyboard
+seems to work though, and Bogomips calculation -- so maybe it's just PCI
+interrupts which are missing. I'll poke at it further.
 
-diff --git a/arch/powerpc/platforms/chrp/pegasos_eth.c b/arch/powerpc/platforms/chrp/pegasos_eth.c
---- a/arch/powerpc/platforms/chrp/pegasos_eth.c
-+++ b/arch/powerpc/platforms/chrp/pegasos_eth.c
-@@ -15,6 +15,7 @@
- #include <linux/ioport.h>
- #include <linux/device.h>
- #include <linux/mv643xx.h>
-+#include <linux/platform_device.h>
- #include <linux/pci.h>
- 
- #define PEGASOS2_MARVELL_REGBASE 		(0xf1000000)
-diff --git a/drivers/char/tlclk.c b/drivers/char/tlclk.c
---- a/drivers/char/tlclk.c
-+++ b/drivers/char/tlclk.c
-@@ -43,6 +43,7 @@
- #include <linux/sysfs.h>
- #include <linux/device.h>
- #include <linux/miscdevice.h>
-+#include <linux/platform_device.h>
- #include <asm/io.h>		/* inb/outb */
- #include <asm/uaccess.h>
- 
-
+I'll also try again on the powerbook today and see if I can get anything
+more useful out of it.
 
 -- 
 dwmw2
