@@ -1,22 +1,14 @@
-Return-Path: <hs@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id B6D9468660
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 Nov 2005 00:01:14 +1100 (EST)
-Received: from mail.m-online.net (svr20.m-online.net [192.168.3.148])
-	by mail-out.m-online.net (Postfix) with ESMTP id D65F17068C
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Nov 2005 13:59:53 +0100 (CET)
-Received: from embluxa7e0291e (82.131.201.147.pool.invitel.hu [82.131.201.147])
-	by smtp-auth.mnet-online.de (Postfix) with ESMTP id D8455125A11
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 Nov 2005 14:01:11 +0100 (CET)
-From: "Heiko Schocher" <hs@denx.de>
-To: <linuxppc-dev@ozlabs.org>
-Date: Wed, 2 Nov 2005 14:01:08 +0100
-Message-ID: <AHEILKONAKAEJPHNMOPNEEFNCDAA.hs@denx.de>
+Return-Path: <bgill@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id DEE5F68673
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Nov 2005 03:52:58 +1100 (EST)
+Date: Wed, 2 Nov 2005 10:52:52 -0600 (CST)
+From: Becky Bruce <bgill@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <Pine.LNX.4.61.0511021050250.26891@cde-tx32-ldt329.sps.mot.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: Re: [PATCH] ppc32: fix: swallowed chars when booting.
-Reply-To: hs@denx.de
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: [PATCH] ppc - fix build warnings in arch/ppc/kernel/traps.c
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,40 +18,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+ppc: Fix build warnings in traps.c
 
-during I am searching the right solution for my
-other patch, i found another way for solving the
-swallowed chars problem when booting on SMC2.
+The latest updates to bug.h generate build warnings in traps.c in 
+arch/ppc.  Fix print format specifiers to account for change of line type  
+to long from int.
 
-Please comment.
-
-thanks
-Heiko Schocher
-
-[PATCH] ppc32:  Fix: swallowed chars on SMC2 Console.
-
-Signed-off-by: Heiko Schocher <hs@denx.de>
+Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
 
 ---
- drivers/serial/cpm_uart/cpm_uart_core.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+commit fdbe8ff0c9719da6bcbe6fedf10fb3d32c09ec92
+tree 6330b8c00cd62dab8b58cd8808619cf3a1d44f69
+parent 211317f02e1d2ac3ebd5bf139889160c834573da
+author Becky Bruce <becky.bruce@freescale.com> Wed, 02 Nov 2005 10:47:59 -0600
+committer Becky Bruce <becky.bruce@freescale.com> Wed, 02 Nov 2005 10:47:59 -0600
 
-diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c
-b/drivers/serial/cpm_uart/cpm_uart_core.c
-index 25825f2..baedd74 100644
---- a/drivers/serial/cpm_uart/cpm_uart_core.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_core.c
-@@ -552,9 +552,9 @@ static void cpm_uart_set_termios(struct
- 		 * enables, because we want to put them back if they were
- 		 * present.
- 		 */
--		prev_mode = smcp->smc_smcmr;
--		smcp->smc_smcmr = smcr_mk_clen(bits) | cval | SMCMR_SM_UART;
--		smcp->smc_smcmr |= (prev_mode & (SMCMR_REN | SMCMR_TEN));
-+		prev_mode = smcp->smc_smcmr & (SMCMR_REN | SMCMR_TEN);
-+		smcp->smc_smcmr = smcr_mk_clen(bits) | cval | SMCMR_SM_UART
-+				| prev_mode;
- 	} else {
- 		sccp->scc_psmr = (sbits << 12) | scval;
+ arch/ppc/kernel/traps.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/ppc/kernel/traps.c b/arch/ppc/kernel/traps.c
+index f265b81..16adde6 100644
+--- a/arch/ppc/kernel/traps.c
++++ b/arch/ppc/kernel/traps.c
+@@ -606,22 +606,22 @@ int check_bug_trap(struct pt_regs *regs)
+ 	if (bug->line & BUG_WARNING_TRAP) {
+ 		/* this is a WARN_ON rather than BUG/BUG_ON */
+ #ifdef CONFIG_XMON
+-		xmon_printf(KERN_ERR "Badness in %s at %s:%d\n",
++		xmon_printf(KERN_ERR "Badness in %s at %s:%ld\n",
+ 		       bug->function, bug->file,
+ 		       bug->line & ~BUG_WARNING_TRAP);
+ #endif /* CONFIG_XMON */		
+-		printk(KERN_ERR "Badness in %s at %s:%d\n",
++		printk(KERN_ERR "Badness in %s at %s:%ld\n",
+ 		       bug->function, bug->file,
+ 		       bug->line & ~BUG_WARNING_TRAP);
+ 		dump_stack();
+ 		return 1;
  	}
+ #ifdef CONFIG_XMON
+-	xmon_printf(KERN_CRIT "kernel BUG in %s at %s:%d!\n",
++	xmon_printf(KERN_CRIT "kernel BUG in %s at %s:%ld!\n",
+ 	       bug->function, bug->file, bug->line);
+ 	xmon(regs);
+ #endif /* CONFIG_XMON */
+-	printk(KERN_CRIT "kernel BUG in %s at %s:%d!\n",
++	printk(KERN_CRIT "kernel BUG in %s at %s:%ld!\n",
+ 	       bug->function, bug->file, bug->line);
+ 
+ 	return 0;
