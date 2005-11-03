@@ -1,16 +1,17 @@
-Return-Path: <SRS0+86b099cbe611c29e26f6+801+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-From: David Woodhouse <dwmw2@infradead.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17256.17408.247708.622755@cargo.ozlabs.ibm.com>
-References: <17253.39993.502458.390760@cargo.ozlabs.ibm.com>
-	<1130861207.21212.66.camel@hades.cambridge.redhat.com>
-	<17256.17408.247708.622755@cargo.ozlabs.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1CE9768596
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 Nov 2005 17:33:57 +1100 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
 Content-Type: text/plain
-Date: Wed, 02 Nov 2005 16:54:46 +0000
-Message-Id: <1130950487.21212.89.camel@hades.cambridge.redhat.com>
+Date: Thu, 03 Nov 2005 17:33:39 +1100
+Message-Id: <1130999620.4680.28.camel@gaston>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
-Subject: Re: please pull the powerpc-merge.git tree
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: 2.6.14 USB vs. sleep issues
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,31 +21,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2005-11-02 at 15:43 +1100, Paul Mackerras wrote:
-> Those errors were all due to getting powerbook sleep code included
-> because you have CONFIG_PM=y.  I have changed things so that that code
-> doesn't get included on a 64-bit build (at least until BenH gets sleep
-> going on the G5 :).
+For those who experience crashes on sleep and/or wakeup (typically due
+to USB) with 2.6.14, I made a test patch that might help. Please let me
+know if it makes things more reliable.
 
-OK, now the Fedora rawhide kernel builds for ppc64 with arch/powerpc and
-runs on both my POWER5 and G5 test boxes. I need this if I want nvram
-support on the G5 though.
+http://gate.crashing.org/~benh/fix-ohci-sleep.diff
 
-Should we be using CONFIG_GENERIC_NVRAM on ppc64, and actually allowing
-the nvram support to be optional?
+Note that the patch is totally untested here so it may be just plain
+bogus :)
 
---- a/arch/powerpc/platforms/powermac/setup.c
-+++ b/arch/powerpc/platforms/powermac/setup.c
-@@ -351,7 +350,7 @@ void __init pmac_setup_arch(void)
- 	find_via_pmu();
- 	smu_init();
- 
--#ifdef CONFIG_NVRAM
-+#if defined(CONFIG_NVRAM) || defined(CONFIG_PPC64)
- 	pmac_nvram_init();
- #endif
- 
-
-
--- 
-dwmw2
+Ben.
