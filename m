@@ -1,16 +1,22 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 5E60A68662
+Return-Path: <pantelis.antoniou@gmail.com>
+Received: from nproxy.gmail.com (nproxy.gmail.com [64.233.182.192])
+	by ozlabs.org (Postfix) with ESMTP id 48EBF6865E
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Nov 2005 01:27:07 +1100 (EST)
-Message-ID: <436A1E39.7030206@ru.mvista.com>
-Date: Thu, 03 Nov 2005 17:27:05 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
+	Fri,  4 Nov 2005 05:34:32 +1100 (EST)
+Received: by nproxy.gmail.com with SMTP id y38so115464nfb
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 03 Nov 2005 10:34:31 -0800 (PST)
+From: Pantelis Antoniou <pantelis.antoniou@gmail.com>
+To: akpm@osdl.org
+Date: Thu, 3 Nov 2005 20:39:26 +0200
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Content-Type: multipart/mixed; boundary="------------090101040003000503090900"
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] fs_enet build fix
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200511032039.27395.pantelis.antoniou@gmail.com>
+Cc: Kumar <kumar.gala@freescale.com>, Dan Malek <dan@embeddedalley.com>, Gala,
+	linuxppc-embedded@ozlabs.org, Jeff Garzik <jgarzik@pobox.com>
+Subject: [PATCH] ppc32: Put CPM1 config option
+Reply-To: pantelis.antoniou@gmail.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,71 +27,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------090101040003000503090900
-Content-Type: text/plain; charset=KOI8-R; format=flowed
-Content-Transfer-Encoding: 7bit
+Kconfig patch needed by fs_enet to work.
+Works like CONFIG_CPM2.
 
-Due to the recent update of the platform code, some platform device 
-drivers fail to compile. This fix is for fs_enet, adding #include of a 
-new header, to which a number of platform stuff has been relocated.
-
-Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
-
--- 
-Sincerely,
-Vitaly
-
---------------090101040003000503090900
-Content-Type: text/x-patch;
- name="fs_enet_fix.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="fs_enet_fix.patch"
-
-diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
---- a/drivers/net/fs_enet/fs_enet-main.c
-+++ b/drivers/net/fs_enet/fs_enet-main.c
-@@ -37,6 +37,7 @@
- #include <linux/ethtool.h>
- #include <linux/bitops.h>
- #include <linux/fs.h>
-+#include <linux/platform_device.h>
+diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
+--- a/arch/ppc/Kconfig
++++ b/arch/ppc/Kconfig
+@@ -746,7 +746,17 @@ config MPC834x
+ 	bool
+ 	default y if MPC834x_SYS
  
- #include <linux/vmalloc.h>
- #include <asm/pgtable.h>
-diff --git a/drivers/net/fs_enet/mac-fcc.c b/drivers/net/fs_enet/mac-fcc.c
---- a/drivers/net/fs_enet/mac-fcc.c
-+++ b/drivers/net/fs_enet/mac-fcc.c
-@@ -34,6 +34,7 @@
- #include <linux/ethtool.h>
- #include <linux/bitops.h>
- #include <linux/fs.h>
-+#include <linux/platform_device.h>
- 
- #include <asm/immap_cpm2.h>
- #include <asm/mpc8260.h>
-diff --git a/drivers/net/fs_enet/mac-fec.c b/drivers/net/fs_enet/mac-fec.c
---- a/drivers/net/fs_enet/mac-fec.c
-+++ b/drivers/net/fs_enet/mac-fec.c
-@@ -34,6 +34,7 @@
- #include <linux/ethtool.h>
- #include <linux/bitops.h>
- #include <linux/fs.h>
-+#include <linux/platform_device.h>
- 
- #include <asm/irq.h>
- #include <asm/uaccess.h>
-diff --git a/drivers/net/fs_enet/mac-scc.c b/drivers/net/fs_enet/mac-scc.c
---- a/drivers/net/fs_enet/mac-scc.c
-+++ b/drivers/net/fs_enet/mac-scc.c
-@@ -34,6 +34,7 @@
- #include <linux/ethtool.h>
- #include <linux/bitops.h>
- #include <linux/fs.h>
-+#include <linux/platform_device.h>
- 
- #include <asm/irq.h>
- #include <asm/uaccess.h>
-
---------------090101040003000503090900--
++config CPM1
++	bool
++	depends on 8xx
++	default y
++	help
++	  The CPM1 (Communications Processor Module) is a coprocessor on
++	  embedded CPUs made by Motorola.  Selecting this option means that
++	  you wish to build a kernel for a machine with a CPM1 coprocessor
++	  on it (8xx, 827x, 8560).
++
+ config CPM2
+ 	bool
+ 	depends on 8260 || MPC8560 || MPC8555
+ config PPC_GEN550
