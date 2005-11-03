@@ -1,20 +1,17 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 709C768621
+Return-Path: <Martin.Krause@tqs.de>
+Received: from mail.tqs.de (mail.tqs.de [62.157.136.17])
+	by ozlabs.org (Postfix) with ESMTP id 5680468621
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  3 Nov 2005 15:24:14 +1100 (EST)
-In-Reply-To: <000901c5e017$91aef880$6405a8c0@absolut>
-References: <000901c5e017$91aef880$6405a8c0@absolut>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <4b172607a67f8ad6a9ba20bf0cb0371b@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Wed, 2 Nov 2005 23:30:11 -0500
-To: "Absolut Hunter" <absoluthunter@comcast.net>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: SM501 Frame Buffer driver on PPC
+	Thu,  3 Nov 2005 19:46:32 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Thu, 3 Nov 2005 09:19:08 +0100
+Message-ID: <47F3F98010FF784EBEE6526EAAB078D1C05E66@tq-mailsrv.tq-net.de>
+From: "Martin Krause" <Martin.Krause@tqs.de>
+To: "Absolut Hunter" <absoluthunter@comcast.net>,
+	<linuxppc-embedded@ozlabs.org>
+Subject: RE: SM501 Frame Buffer driver on PPC
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,23 +22,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi Russell,
 
-On Nov 2, 2005, at 8:40 PM, Absolut Hunter wrote:
+Absolut Hunter wrote on Thursday, November 03, 2005 2:40 AM:=20
+> The TQM5200 Board uses this driver, but I am gathering this is a PCI
+> based=20
+> video setup?; Our board uses a local bus memory interface. I.e. we
+> have=20
+> setup the SM501 to be in the SH-3/4 Slave mode.
+
+On the TQM5200 the SM501 is connected over the local bus, not over
+PCI. The SH-4 Interface is used.
+
+> We have dedicated 32Megs of Video memory to be local only to the
+> SM501, and mapped it to 0xF8000000 on /CS6, placing the registers at
+> 0xFBE00000=20
+>=20
+> Anyway, I have the UPMA machine setup to communicate with the SM501
+> and have verified basic communication with registers, etc.. When
+> using Linux the=20
+> kernel Oops's when register_framebuffer is called. I have setup the
+> voyager.h file to use the correct addresses.
+
+Yes,
+
+#define FB_PHYSICAL_ADDR	0xF8000000
+#define REG_PHYSICAL_ADDR	0xFBE00000=20
+
+should do the job (if the addresses are correct).
 
 > Has anyone used the SM501 driver with this type of NON-Unified memory
-> architecture?
-
-What do you mean, non-unified?
-
->  I am guessing this can be confusing to the driver since the
-> frame buffer registers inside the SM501 need to be using offset ZERO 
-> instead
+> architecture? I am guessing this can be confusing to the driver since
+> the=20
+> frame buffer registers inside the SM501 need to be using offset ZERO
+> instead=20
 > of the 0xF8000000 like the MPC8280 sees.
 
-The SM501 PCI driver assumes the addresses are from the PCI
-base address, not from zero.   Properly using the local bus address
-in a similar way should work just fine.
+I'm not sure, what you mean with NON-Unified memory. Note that the
+TQM5200 uses the memory integrated in the SM501 as framebuffer. So
+the SM501 is configured to use internal memory. If you want to use=20
+external memory, you have to change the SM501 initialisation. Take
+a look at the DRAM Control register of the SM501. Pin GPIO12 is
+used during reset to enable or disable "Embedded Memory Control".
 
-Thanks.
+Please note, that the framebuffer driver does all register accesses
+32-bit wide. Make sure your hardware supports this.
 
-	-- Dan
+Maybe you have to change endianness (little/big).
+
+Regards,
+Martin
