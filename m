@@ -1,16 +1,16 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 0F3F968678
+Return-Path: <absoluthunter@comcast.net>
+Received: from sccrmhc14.comcast.net (sccrmhc14.comcast.net [63.240.77.84])
+	by ozlabs.org (Postfix) with ESMTP id 75C7E68682
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  3 Nov 2005 06:55:16 +1100 (EST)
-Message-ID: <436919A2.7050108@ru.mvista.com>
-Date: Wed, 02 Nov 2005 22:55:14 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
+	Thu,  3 Nov 2005 12:51:53 +1100 (EST)
+From: "Absolut Hunter" <absoluthunter@comcast.net>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Wed, 2 Nov 2005 17:40:16 -0800
+Message-ID: <000901c5e017$91aef880$6405a8c0@absolut>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Content-Type: multipart/mixed; boundary="------------050905040700040209080701"
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] ppc32: Fixed warning
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: SM501 Frame Buffer driver on PPC
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,36 +21,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------050905040700040209080701
-Content-Type: text/plain; charset=KOI8-R; format=flowed
-Content-Transfer-Encoding: 7bit
+All,
 
-This adds missing header and thus fix the warning issued by ming prototype.
+I am attempting to bring up a SM501 frame buffer driver on our PPC MPC8280
+board. Using the Denx Kernel 2.4.25 I see that most of this is already
+included in the kernel.
 
-Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+However a few questions:
 
--- 
-Sincerely,
-Vitaly
+The TQM5200 Board uses this driver, but I am gathering this is a PCI based
+video setup?; Our board uses a local bus memory interface. I.e. we have
+setup the SM501 to be in the SH-3/4 Slave mode. 
 
---------------050905040700040209080701
-Content-Type: text/x-patch;
- name="8xx_setup.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="8xx_setup.patch"
+We have dedicated 32Megs of Video memory to be local only to the SM501, and
+mapped it to 0xF8000000 on /CS6, placing the registers at 0xFBE00000
 
-diff --git a/arch/ppc/syslib/m8xx_setup.c b/arch/ppc/syslib/m8xx_setup.c
---- a/arch/ppc/syslib/m8xx_setup.c
-+++ b/arch/ppc/syslib/m8xx_setup.c
-@@ -45,6 +45,7 @@
- #include <asm/bootinfo.h>
- #include <asm/time.h>
- #include <asm/xmon.h>
-+#include <asm/ppc_sys.h>
- 
- #include "ppc8xx_pic.h"
- 
+Anyway, I have the UPMA machine setup to communicate with the SM501 and have
+verified basic communication with registers, etc.. When using Linux the
+kernel Oops's when register_framebuffer is called. I have setup the
+voyager.h file to use the correct addresses.
 
---------------050905040700040209080701--
+Has anyone used the SM501 driver with this type of NON-Unified memory
+architecture? I am guessing this can be confusing to the driver since the
+frame buffer registers inside the SM501 need to be using offset ZERO instead
+of the 0xF8000000 like the MPC8280 sees.
+
+Thanks,
+
+-Russell McGuire
