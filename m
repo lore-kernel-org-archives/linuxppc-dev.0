@@ -1,16 +1,22 @@
-Return-Path: <x65485830@163.com>
-Received: from 163.com (m13-16.163.com [220.181.13.16])
-	by ozlabs.org (Postfix) with SMTP id 3E8C368689
+Return-Path: <jarno.manninen@tut.fi>
+Received: from kivi.ton.tut.fi (kivi.ton.tut.fi [193.166.235.14])
+	by ozlabs.org (Postfix) with ESMTP id 11BF568678
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Nov 2005 11:38:38 +1100 (EST)
-MIME-Version: 1.0
-Message-ID: <436AA9FC.000022.09285@bj163app16.163.com>
-Date: Fri, 4 Nov 2005 08:23:24 +0800 (CST)
-From: "=?gb2312?B?eDY1NDg1ODMw?=" <x65485830@163.com>
+	Fri,  4 Nov 2005 15:53:04 +1100 (EST)
+Received: from b34.paawola.ton.tut.fi ([195.148.75.85])
+	by kivi.ton.tut.fi with esmtp (Exim 3.35 #1 (Debian))
+	id 1EXtHL-0004ms-00
+	for <linuxppc-embedded@ozlabs.org>; Fri, 04 Nov 2005 06:34:15 +0200
+From: Jarno Manninen <jarno.manninen@tut.fi>
 To: linuxppc-embedded@ozlabs.org
-Content-Type: Multipart/Alternative;
-	boundary="Boundary-=_kTiSSuSJwCKlFWYvPXcbeYylprHt"
-Subject: problem with mpc823e i2c!!!!
+Date: Fri, 4 Nov 2005 06:34:15 +0200
+References: <47F3F98010FF784EBEE6526EAAB078D1C05E6C@tq-mailsrv.tq-net.de>
+In-Reply-To: <47F3F98010FF784EBEE6526EAAB078D1C05E6C@tq-mailsrv.tq-net.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200511040634.15623.jarno.manninen@tut.fi>
+Subject: Re: SM501 Frame Buffer driver on PPC
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,116 +27,75 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Thursday 03 November 2005 16:16, Martin Krause wrote:
+> Mark Chambers wrote on Thursday, November 03, 2005 3:06 PM:
+> > > The endianess on PCI on ppc is still an issue (I haven't
+> > > investigated this problem further during the last month).
+> >
+> > There really shouldn't be an endian issue on SM501 since registers are
+> > 32 bit.  What we do have is the 5200 that does byte swapping on PCI
+> > for no good reason (IMHO)
 
---Boundary-=_kTiSSuSJwCKlFWYvPXcbeYylprHt
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
+Actually the 5200 does _not_ change the order of bytes written on the PCI bus, 
+but just the bytelanes. Why? Consider this. We have two mapped entities and 
+some data in system memory.
 
-SGksDQoNCiAgIFNvcnJ5IGZvciBib3RoZXJpbmcgeW91ICBhZ2FpbiAtIEkgd2lsbCBhcHBy
-ZWNpYXRlIHlvdXIgb3BpbmlvbiBhZHZpc2UgZ3VpZGFuY2UuIA0KSSdtIHRyeWluZyB0byB1
-c2UgdGhlIE1QQyBJMkMgY29udHJvbGxlciB0byBnZW5lcmF0ZSBJMkMgdHJhbnNhY3Rpb25z
-LEkgdXNlIGxpbnV4IGtlcm5lbCx3aGljaCBjb25maWcgaXMgQ09ORklHX1VDT0RFX1BBVENI
-PXksQ09ORklHX0kyQz15LENPTkZJR19JMkNfQUxHTzhYWD15LENPTkZJR19JMkNfQ0hBUkRF
-Vj15LENPTkZJR19JMkNfUFJPQz15Lg0KDQpJIHVzZSBYUEM4MjNFWlQ3NUIyIGNwdSxidXQg
-d2hlbiBJIHN0YXJ0IHVwIHRoZSBib2FyZCxJIGZvdW5kIEkyYyBkcml2ZXIgaHVhbmcgdGhl
-IGNwdS4NCg0KV2hhdCBpcyB5b3VyIGludGVycHJldGF0aW9uIG9mIGVudHJpZXMgSSBmb3Vu
-ZCBpbiB0aGUgbG9nIGJ1ZiB3aXRoIHJlZ2FyZHMgdG8gSTJDIGRyaXZlciA/DQp3aGljaCBp
-cyBzbGVlcCxJMmMgY2FuJ3QgdHJhbmltaXQsd2hpY2ggY2FuIG5vdCBpbnRlcnJ1cHRlLlRo
-YXQgaXMgd2h5Pw0KQmVzdCB0aGFua3MgdG8geW91IQ0KIyMgQm9vdGluZyBpbWFnZSBhdCAw
-MDIwMDAwMCAuLi4NCiAgIEltYWdlIE5hbWU6ICAgTGludXgtMi40LjE4X3R4MjAwLTEuMC1T
-SURURUMNCiAgIENyZWF0ZWQ6ICAgICAgMjAwNS0xMC0zMSAgIDI6NTc6MjEgVVRDDQogICBJ
-bWFnZSBUeXBlOiAgIFBvd2VyUEMgTGludXggS2VybmVsIEltYWdlIChnemlwIGNvbXByZXNz
-ZWQpDQogICBEYXRhIFNpemU6ICAgIDcwNzQyMiBCeXRlcyA9IDY5MC44IGtCDQogICBMb2Fk
-IEFkZHJlc3M6IDAwMDAwMDAwDQogICBFbnRyeSBQb2ludDogIDAwMDAwMDAwDQogICBVbmNv
-bXByZXNzaW5nIEtlcm5lbCBJbWFnZSAuLi4gT0sNCkxpbnV4IHZlcnNpb24gMi40LjE4X3R4
-MjAwLTEuMC1TSURURUMgKHJvb3RAZnJlZXBhc3MpIChnY2MgdmVyc2lvbiAzLjIuMSAyMDAy
-MDk1STJDL1NQSSB1Q29kZSBwYXRjaCBpbnN0YWxsZWQNCnJweGZiOiBhbGxvY2F0ZWQgMTE4
-IHBhZ2VzIGZvciBmcmFtZSBidWZmZXINCk9uIG5vZGUgMCB0b3RhbHBhZ2VzOiAzMjc2OA0K
-em9uZSgwKTogMzI3NjggcGFnZXMuDQp6b25lKDEpOiAwIHBhZ2VzLg0Kem9uZSgyKTogMCBw
-YWdlcy4NCktlcm5lbCBjb21tYW5kIGxpbmU6IGNvbnNvbGU9dHR5MCBjb25zb2xlPXR0eVMw
-LDk2MDAgcm9vdD0vZGV2L25mcyBydyBuZnNyb290PTExDQpEZWNyZW1lbnRlciBGcmVxdWVu
-Y3kgPSAyNDAwMDAwMDAvNjANCkNvbnNvbGU6IGNvbG91ciBkdW1teSBkZXZpY2UgODB4MjUN
-CkNhbGlicmF0aW5nIGRlbGF5IGxvb3AuLi4gNjMuNjkgQm9nb01JUFMNCk1lbW9yeTogMTI2
-ODE2ayBhdmFpbGFibGUgKDEyMzZrIGtlcm5lbCBjb2RlLCA0MDBrIGRhdGEsIDc2ayBpbml0
-LCAwayBoaWdobWVtKQ0KRGVudHJ5LWNhY2hlIGhhc2ggdGFibGUgZW50cmllczogMTYzODQg
-KG9yZGVyOiA1LCAxMzEwNzIgYnl0ZXMpDQpJbm9kZS1jYWNoZSBoYXNoIHRhYmxlIGVudHJp
-ZXM6IDgxOTIgKG9yZGVyOiA0LCA2NTUzNiBieXRlcykNCk1vdW50LWNhY2hlIGhhc2ggdGFi
-bGUgZW50cmllczogMjA0OCAob3JkZXI6IDIsIDE2Mzg0IGJ5dGVzKQ0KQnVmZmVyLWNhY2hl
-IGhhc2ggdGFibGUgZW50cmllczogODE5MiAob3JkZXI6IDMsIDMyNzY4IGJ5dGVzKQ0KUGFn
-ZS1jYWNoZSBoYXNoIHRhYmxlIGVudHJpZXM6IDMyNzY4IChvcmRlcjogNSwgMTMxMDcyIGJ5
-dGVzKQ0KUE9TSVggY29uZm9ybWFuY2UgdGVzdGluZyBieSBVTklGSVgNCkxpbnV4IE5FVDQu
-MCBmb3IgTGludXggMi40DQpCYXNlZCB1cG9uIFN3YW5zZWEgVW5pdmVyc2l0eSBDb21wdXRl
-ciBTb2NpZXR5IE5FVDMuMDM5DQpJbml0aWFsaXppbmcgUlQgbmV0bGluayBzb2NrZXQNClN0
-YXJ0aW5nIGtzd2FwZA0KRGlzYWJsaW5nIHRoZSBPdXQgT2YgTWVtb3J5IEtpbGxlcg0KSkZG
-UzIgdmVyc2lvbiAyLjEuIChDKSAyMDAxLCAyMDAyIFJlZCBIYXQsIEluYy4sIGRlc2lnbmVk
-IGJ5IEF4aXMgQ29tbXVuaWNhdGlvbi4NCmkyYy1jb3JlLm86IGkyYyBjb3JlIG1vZHVsZSB2
-ZXJzaW9uIDIuNi4yICgyMDAxMTExOCkNCmkyYy1kZXYubzogaTJjIC9kZXYgZW50cmllcyBk
-cml2ZXIgbW9kdWxlIHZlcnNpb24gMi42LjIgKDIwMDExMTE4KQ0KaTJjLWFsZ28tOHh4Lm86
-IGkyYyBtcGM4eHggYWxnb3JpdGhtIG1vZHVsZSB2ZXJzaW9uIDIuNi4yICgyMDAxMTExOCkN
-CmkyYy1ycHgubzogaTJjIE1QQzh4eCBtb2R1bGUgdmVyc2lvbiAyLjYuMiAoMjAwMTExMTgp
-DQppMmMtYWxnby04eHgubzogaHcgcm91dGluZXMgZm9yIG04eHggcmVnaXN0ZXJlZC4NCmNw
-bV9paWNfaW5pdCgpIC0gaWlwPWZhMjAyNDAwDQpjcG1faWljX2luaXRbMTI1XSBJbnN0YWxs
-IElTUiBmb3IgSVJRIDE2DQogaTJjLWFsZ28tOHh4Lm86IHNjYW5uaW5nIGJ1cyBtOHh4Li4u
-DQppaXAgZmEyMDI0MDAsIGRwX2FkZHIgMHg4MTANCmlpY190YmFzZSAyMDY0LCByX3RiYXNl
-IDIwNjQNCg==
---Boundary-=_kTiSSuSJwCKlFWYvPXcbeYylprHt
-Content-Type: text/html; charset="gb2312"
-Content-Transfer-Encoding: base64
+	struct something {
+		char 1;
+		char 2;
+		char 3;
+		char 4;
+	};
 
-SGksPGJyPjxicj4gICBTb3JyeSBmb3IgYm90aGVyaW5nIHlvdSAgYWdhaW4gLSBJIHdpbGwg
-YXBwcmVjaWF0ZSB5b3VyIG9waW5pb24gYWR2aXNlIGd1aWRhbmNlLiA8YnI+SSdtIHRyeWlu
-ZyB0byB1c2UgdGhlIE1QQyBJMkMgY29udHJvbGxlciB0byBnZW5lcmF0ZSBJMkMgdHJhbnNh
-Y3Rpb25zLEkgdXNlIGxpbnV4IGtlcm5lbCx3aGljaCBjb25maWcgaXMgQ09ORklHX1VDT0RF
-X1BBVENIPXksQ09ORklHX0kyQz15LENPTkZJR19JMkNfQUxHTzhYWD15LENPTkZJR19JMkNf
-Q0hBUkRFVj15LENPTkZJR19JMkNfUFJPQz15Ljxicj48YnI+SSB1c2UgWFBDODIzRVpUNzVC
-MiBjcHUsYnV0IHdoZW4gSSBzdGFydCB1cCB0aGUgYm9hcmQsSSBmb3VuZCBJMmMgZHJpdmVy
-IGh1YW5nIHRoZSBjcHUuPGJyPjxicj5XaGF0IGlzIHlvdXIgaW50ZXJwcmV0YXRpb24gb2Yg
-ZW50cmllcyBJIGZvdW5kIGluIHRoZSBsb2cgYnVmIHdpdGggcmVnYXJkcyB0byBJMkMgZHJp
-dmVyID88YnI+d2hpY2ggaXMgc2xlZXAsSTJjIGNhbid0IHRyYW5pbWl0LHdoaWNoIGNhbiBu
-b3QgaW50ZXJydXB0ZS5UaGF0IGlzIHdoeT88YnI+QmVzdCB0aGFua3MgdG8geW91ITxicj4j
-IyBCb290aW5nIGltYWdlIGF0IDAwMjAwMDAwIC4uLjxicj4gICBJbWFnZSBOYW1lOiAgIExp
-bnV4LTIuNC4xOF90eDIwMC0xLjAtU0lEVEVDPGJyPiAgIENyZWF0ZWQ6ICAgICAgMjAwNS0x
-MC0zMSAgIDI6NTc6MjEgVVRDPGJyPiAgIEltYWdlIFR5cGU6ICAgUG93ZXJQQyBMaW51eCBL
-ZXJuZWwgSW1hZ2UgKGd6aXAgY29tcHJlc3NlZCk8YnI+ICAgRGF0YSBTaXplOiAgICA3MDc0
-MjIgQnl0ZXMgPSA2OTAuOCBrQjxicj4gICBMb2FkIEFkZHJlc3M6IDAwMDAwMDAwPGJyPiAg
-IEVudHJ5IFBvaW50OiAgMDAwMDAwMDA8YnI+ICAgVW5jb21wcmVzc2luZyBLZXJuZWwgSW1h
-Z2UgLi4uIE9LPGJyPkxpbnV4IHZlcnNpb24gMi40LjE4X3R4MjAwLTEuMC1TSURURUMgKHJv
-b3RAZnJlZXBhc3MpIChnY2MgdmVyc2lvbiAzLjIuMSAyMDAyMDk1STJDL1NQSSB1Q29kZSBw
-YXRjaCBpbnN0YWxsZWQ8YnI+cnB4ZmI6IGFsbG9jYXRlZCAxMTggcGFnZXMgZm9yIGZyYW1l
-IGJ1ZmZlcjxicj5PbiBub2RlIDAgdG90YWxwYWdlczogMzI3Njg8YnI+em9uZSgwKTogMzI3
-NjggcGFnZXMuPGJyPnpvbmUoMSk6IDAgcGFnZXMuPGJyPnpvbmUoMik6IDAgcGFnZXMuPGJy
-Pktlcm5lbCBjb21tYW5kIGxpbmU6IGNvbnNvbGU9dHR5MCBjb25zb2xlPXR0eVMwLDk2MDAg
-cm9vdD0vZGV2L25mcyBydyBuZnNyb290PTExPGJyPkRlY3JlbWVudGVyIEZyZXF1ZW5jeSA9
-IDI0MDAwMDAwMC82MDxicj5Db25zb2xlOiBjb2xvdXIgZHVtbXkgZGV2aWNlIDgweDI1PGJy
-PkNhbGlicmF0aW5nIGRlbGF5IGxvb3AuLi4gNjMuNjkgQm9nb01JUFM8YnI+TWVtb3J5OiAx
-MjY4MTZrIGF2YWlsYWJsZSAoMTIzNmsga2VybmVsIGNvZGUsIDQwMGsgZGF0YSwgNzZrIGlu
-aXQsIDBrIGhpZ2htZW0pPGJyPkRlbnRyeS1jYWNoZSBoYXNoIHRhYmxlIGVudHJpZXM6IDE2
-Mzg0IChvcmRlcjogNSwgMTMxMDcyIGJ5dGVzKTxicj5Jbm9kZS1jYWNoZSBoYXNoIHRhYmxl
-IGVudHJpZXM6IDgxOTIgKG9yZGVyOiA0LCA2NTUzNiBieXRlcyk8YnI+TW91bnQtY2FjaGUg
-aGFzaCB0YWJsZSBlbnRyaWVzOiAyMDQ4IChvcmRlcjogMiwgMTYzODQgYnl0ZXMpPGJyPkJ1
-ZmZlci1jYWNoZSBoYXNoIHRhYmxlIGVudHJpZXM6IDgxOTIgKG9yZGVyOiAzLCAzMjc2OCBi
-eXRlcyk8YnI+UGFnZS1jYWNoZSBoYXNoIHRhYmxlIGVudHJpZXM6IDMyNzY4IChvcmRlcjog
-NSwgMTMxMDcyIGJ5dGVzKTxicj5QT1NJWCBjb25mb3JtYW5jZSB0ZXN0aW5nIGJ5IFVOSUZJ
-WDxicj5MaW51eCBORVQ0LjAgZm9yIExpbnV4IDIuNDxicj5CYXNlZCB1cG9uIFN3YW5zZWEg
-VW5pdmVyc2l0eSBDb21wdXRlciBTb2NpZXR5IE5FVDMuMDM5PGJyPkluaXRpYWxpemluZyBS
-VCBuZXRsaW5rIHNvY2tldDxicj5TdGFydGluZyBrc3dhcGQ8YnI+RGlzYWJsaW5nIHRoZSBP
-dXQgT2YgTWVtb3J5IEtpbGxlcjxicj5KRkZTMiB2ZXJzaW9uIDIuMS4gKEMpIDIwMDEsIDIw
-MDIgUmVkIEhhdCwgSW5jLiwgZGVzaWduZWQgYnkgQXhpcyBDb21tdW5pY2F0aW9uLjxicj5p
-MmMtY29yZS5vOiBpMmMgY29yZSBtb2R1bGUgdmVyc2lvbiAyLjYuMiAoMjAwMTExMTgpPGJy
-PmkyYy1kZXYubzogaTJjIC9kZXYgZW50cmllcyBkcml2ZXIgbW9kdWxlIHZlcnNpb24gMi42
-LjIgKDIwMDExMTE4KTxicj5pMmMtYWxnby04eHgubzogaTJjIG1wYzh4eCBhbGdvcml0aG0g
-bW9kdWxlIHZlcnNpb24gMi42LjIgKDIwMDExMTE4KTxicj5pMmMtcnB4Lm86IGkyYyBNUEM4
-eHggbW9kdWxlIHZlcnNpb24gMi42LjIgKDIwMDExMTE4KTxicj5pMmMtYWxnby04eHgubzog
-aHcgcm91dGluZXMgZm9yIG04eHggcmVnaXN0ZXJlZC48YnI+Y3BtX2lpY19pbml0KCkgLSBp
-aXA9ZmEyMDI0MDA8YnI+Y3BtX2lpY19pbml0WzEyNV0gSW5zdGFsbCBJU1IgZm9yIElSUSAx
-Njxicj4gaTJjLWFsZ28tOHh4Lm86IHNjYW5uaW5nIGJ1cyBtOHh4Li4uPGJyPmlpcCBmYTIw
-MjQwMCwgZHBfYWRkciAweDgxMDxicj5paWNfdGJhc2UgMjA2NCwgcl90YmFzZSAyMDY0PGJy
-Pjxicj48IS0tIGZvb3RlciAtLT48YnI+PGJyPjxicj48YnI+PGJyPjxkaXYgc3R5bGU9ImJv
-cmRlci1ib3R0b206MXB4IHNvbGlkICM5OTkiPjwvZGl2Pjxicj4NCg0KCTxmb250IGNvbG9y
-PSJibGFjayIgc3R5bGU9ImZvbnQtc2l6ZToxNC44cHgiPs/rINKqINK7ILj2IL/sIG4gsbYg
-tcQgw+Igt9Eg08ogz+QgwvAgo78gPC9mb250Pg0KCTxicj4NCgk8YSBocmVmPSJodHRwOi8v
-d3d3LjEyNi5jb20vaGVscC8xMjZmYWIuaHRtIiB0YXJnZXQ9Il9ibGFuayIgc3R5bGU9ImZv
-bnQtc2l6ZToxMnB4O2xpbmUtaGVpZ2h0OjE2MCU7Y29sb3I6Ymx1ZSI+MTI2INeoINK1ILXn
-INfTINPKIL7WIKGqoaogyKsgx/Igwewgz8ggtcQg1tAgzsQg08ogz+Qgt/4gycwgtPggxOMg
-vfggyOsgvKsgy9kg1q4gwsMNCjwvYT4NCg==
---Boundary-=_kTiSSuSJwCKlFWYvPXcbeYylprHt--
+	/* Mapped memory from PCI bus */
+	struct something *device_memory;
+	uint32_t *device_register;
+
+	/* And local data */
+	struct something system_memory = { 0x11, 0x22, 0x33, 0x44 };
+	uint32_t value = 0x11223344;
+
+And we transfer data from system memory to PCI device.
+
+	memcpy(device_memory, &system_memory, sizeof(struct something));
+	*device_register = value;
+
+These both would create 32-bit access to the PCI device( I suppose :), but if 
+we just blindly swap or don't swap written bytes the result is mess:
+
+					Swapping
+Item		With 						Without
+struct	{ 0x44, 0x33, 0x22, 0x11 }	{ 0x11, 0x22, 0x33, 0x44 }
+integer	0x44331100				0x11223344
+Result	Integer OK				Struct OK
+		Struct messed				Integer messed
+
+So the actual problem is that there is no feasible way to determine if a 
+access of given width needs to be swapped on the "bus-level". So basically it 
+is left to user to decide when the swapping is needed. But of course this can 
+be taken care on the device level with clever planning.
+
+I hope I didn't get it all too wrong. :)
+
+> We experienced a byte swapping issue on the SM501, too, although it
+> is connected via the local plus bus with the MPC5200 and not via PCI
+> bus.
+>
+> In 16 bpp mode bytes appear to be swapped in a very ugly way.
+> Unfortunately we have no explanation for this, nor a real
+> workaround.
+
+Yes, the byteswap implementation on SMI-chips is quite braindead. They have
+	
+Input	1234
+Swap1	4321
+Swap2	3412
+
+When what we really need is:
+
+Swap	2143
+
+IMHO the easiest way is to use 24-bit mode that can be usually handled only by 
+changing the byte-offsets.
+
+- Jarno
