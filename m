@@ -1,22 +1,18 @@
-Return-Path: <panto@intracom.gr>
-Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
-	by ozlabs.org (Postfix) with ESMTP id 6E6C468679
+Return-Path: <dhlii@comcast.net>
+Received: from sccrmhc11.comcast.net (sccrmhc11.comcast.net [204.127.202.55])
+	by ozlabs.org (Postfix) with ESMTP id AF09368672
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  4 Nov 2005 21:35:08 +1100 (EST)
-Received: from mailserv.intranet.gr (localhost [127.0.0.1])
-	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id jA4Ah2xg000299
-	for <linuxppc-embedded@ozlabs.org>; Fri, 4 Nov 2005 12:43:03 +0200 (EET)
-Message-ID: <436B380A.7060709@intracom.gr>
-Date: Fri, 04 Nov 2005 12:29:30 +0200
-From: Pantelis Antoniou <panto@intracom.gr>
+	Sat,  5 Nov 2005 07:27:39 +1100 (EST)
+Message-ID: <436BC435.4090203@comcast.net>
+Date: Fri, 04 Nov 2005 15:27:33 -0500
+From: "David H. Lynch Jr" <dhlii@comcast.net>
 MIME-Version: 1.0
-To: David Jander <david.jander@protonic.nl>
-References: <200511032039.27395.pantelis.antoniou@gmail.com>
-	<200511041133.23086.david.jander@protonic.nl>
-In-Reply-To: <200511041133.23086.david.jander@protonic.nl>
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+References: <20050906130029.74727.qmail@web8405.mail.in.yahoo.com>
+	<43688AAD.5050208@comcast.net>
+In-Reply-To: <43688AAD.5050208@comcast.net>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] ppc32: Put CPM1 config option
+Subject: Re: Board Bringup problem with 2.6.13.4
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,29 +23,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-David Jander wrote:
-> On Thursday 03 November 2005 19:39, Pantelis Antoniou wrote:
-> 
->>[...]
->>+config CPM1
->>+	bool
->>+	depends on 8xx
->>+	default y
->>+	help
->>+	  The CPM1 (Communications Processor Module) is a coprocessor on
->>+	  embedded CPUs made by Motorola.  Selecting this option means that
->>+	  you wish to build a kernel for a machine with a CPM1 coprocessor
->>+	  on it (8xx, 827x, 8560).
-> 
-> 
-> Not that the help of a hidden bool is of much importance, but what have the 
-> mpc827x and mpc8560 to do with a CPM1? Those are PQ2 processors AFAIK.
-> Why does this option have a help anyway?
-> 
-> Greetings,
-> 
 
-Nothing - I was posted in a hurry.
-Cut and paste :\
+I am working through bringing up Linux 2.6.14 on a Xilinx V4 based
+ppc405. with memory from 0x0 through 0x7fffffff
 
--- Pantelis
+I have a debugging port at XPAR_KEYHOLE, I basically copied the code to 
+setup a tlb entry for the serial debugging console to get an additional 
+entry for my debugging port.
+
+I am not particularly sharp on memory management.
+Can I just cut and paste that code changing the address, and the tlb 
+slot as below ?
+
+     /* Load a TLB entry for the Keyhole, We use a 4k real==virtual 
+mapping. */
+
+     lis    r3,XPAR_KEYHOLE@h
+     ori    r3,r3,XPAR_KEYHOLE@l
+     mr    r4,r3
+     clrrwi    r4,r4,12
+     ori    r4,r4,(TLB_WR|TLB_I|TLB_M|TLB_G)
+
+     clrrwi    r3,r3,12
+     ori    r3,r3,(TLB_VALID | TLB_PAGESZ(PAGESZ_4K))
+
+     li    r0,1            /* TLB slot 1 */
+     tlbwe    r4,r0,TLB_DATA
+     tlbwe    r3,r0,TLB_TAG
