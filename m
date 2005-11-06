@@ -1,18 +1,17 @@
-Return-Path: <mqy@263.net.cn>
-Received: from smtp.263.net (263.net.cn [211.150.96.21])
-	by ozlabs.org (Postfix) with ESMTP id B7001686A2
+Return-Path: <ppclinux@sundmangroup.com>
+Received: from smtp1.uniweb.no (smtp1.uniweb.no [195.159.128.247])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C4C03686B5
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  7 Nov 2005 02:56:09 +1100 (EST)
-From: "KylongMu" <mqy@263.net.cn>
-To: <wd@denx.de>
-Date: Sun, 6 Nov 2005 23:55:48 +0800
+	Mon,  7 Nov 2005 03:00:42 +1100 (EST)
+Message-ID: <35107.194.237.142.7.1131292443.squirrel@webmail1.unisite.se>
+Date: Sun, 6 Nov 2005 16:54:03 +0100 (CET)
+From: ppclinux@sundmangroup.com
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <20051102164644.6D167353A2C@atlas.denx.de>
-Message-Id: <20051106155605.60A3EC73@smtp.263.net>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Today's 2.6.14 can't finish build with yosemite-defconfig 
+Content-Type: text/plain;charset=iso-8859-15
+Subject: RAISE OF PRIORITY?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,13 +22,9 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Denk
-	After cg-update today's kernel repository, I test with these steps:
-Make yosemite-defconfig
-Make uImage
+Hello,
+Does anyone of you know if there are any problems involved in raising the
+priority of a SCHED_OTHER thread to SCHED_RR and then lower it back to
+SCHED_OTHER?
 
-But the build stops with some errors, last cg-update (5 days ago) is ok.
-
-Cordially,
-
-Kylong Mu
+Regards // Matias
