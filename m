@@ -1,17 +1,19 @@
-Return-Path: <ppclinux@sundmangroup.com>
-Received: from smtp1.uniweb.no (smtp1.uniweb.no [195.159.128.247])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C4C03686B5
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 2EE54686B9
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  7 Nov 2005 03:00:42 +1100 (EST)
-Message-ID: <35107.194.237.142.7.1131292443.squirrel@webmail1.unisite.se>
-Date: Sun, 6 Nov 2005 16:54:03 +0100 (CET)
-From: ppclinux@sundmangroup.com
-To: linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-15
-Subject: RAISE OF PRIORITY?
+	Mon,  7 Nov 2005 07:42:26 +1100 (EST)
+To: bennett78@digis.net
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sat, 05 Nov 2005 12:22:50 MST."
+	<436D068A.7030905@digis.net>
+Date: Sun, 06 Nov 2005 21:42:24 +0100
+Sender: wd@denx.de
+Message-Id: <20051106204224.12A52352674@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: MPC5200 I2S driver 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,9 +24,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
-Does anyone of you know if there are any problems involved in raising the
-priority of a SCHED_OTHER thread to SCHED_RR and then lower it back to
-SCHED_OTHER?
+In message <436D068A.7030905@digis.net> you wrote:
+> 
+> I am developing a couple of drivers: one a Data
+> Acquisition driver for SPI based AD7683 SAR ADC
+> on PSC6/codec and a LCD user interface on PSC3/SPI
+> using the DENX Linux distribution. Is arch/ppc/5xxx_io/i2s.c
+> a good example of a Bestcomm, Codec, non Ethernet
+> example?
 
-Regards // Matias
+The  arch/ppc/5xxx_io/i2s.c  driver  is  *not*  a  good  example  for
+anything  usefuil - it is test code used to demonstrate some problems
+with (earlier versions of) the BestComm API code.  It  is  not  in  a
+working state.
+
+An example for a working driver is in  "i2s_ring.c",  but  note  that
+this  driver  uses a pretty specialized interface to the application,
+so you will probably have to adjust this for your needs.
+
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Be careful what you wish for. You never know who will be listening.
+                                      - Terry Pratchett, _Soul Music_
