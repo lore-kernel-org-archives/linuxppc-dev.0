@@ -1,19 +1,15 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 2EE54686B9
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  7 Nov 2005 07:42:26 +1100 (EST)
-To: bennett78@digis.net
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sat, 05 Nov 2005 12:22:50 MST."
-	<436D068A.7030905@digis.net>
-Date: Sun, 06 Nov 2005 21:42:24 +0100
-Sender: wd@denx.de
-Message-Id: <20051106204224.12A52352674@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC5200 I2S driver 
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17262.42993.975296.653728@cargo.ozlabs.ibm.com>
+Date: Mon, 7 Nov 2005 12:03:45 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+In-Reply-To: <20051105150332.GB6577@logos.cnet>
+References: <20051105150332.GB6577@logos.cnet>
+Cc: Dominik Brodowski <linux@dominikbrodowski.net>,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] ppc32 8xx: MPC8xx PCMCIA update
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,31 +20,11 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <436D068A.7030905@digis.net> you wrote:
-> 
-> I am developing a couple of drivers: one a Data
-> Acquisition driver for SPI based AD7683 SAR ADC
-> on PSC6/codec and a LCD user interface on PSC3/SPI
-> using the DENX Linux distribution. Is arch/ppc/5xxx_io/i2s.c
-> a good example of a Bestcomm, Codec, non Ethernet
-> example?
+Marcelo Tosatti writes:
 
-The  arch/ppc/5xxx_io/i2s.c  driver  is  *not*  a  good  example  for
-anything  usefuil - it is test code used to demonstrate some problems
-with (earlier versions of) the BestComm API code.  It  is  not  in  a
-working state.
+> The following patch updates the MPC8xx PCMCIA driver:
 
-An example for a working driver is in  "i2s_ring.c",  but  note  that
-this  driver  uses a pretty specialized interface to the application,
-so you will probably have to adjust this for your needs.
+This and the following patch look OK as far as I can tell - Dominik,
+will you take care of sending them to Linus?
 
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Be careful what you wish for. You never know who will be listening.
-                                      - Terry Pratchett, _Soul Music_
+Paul.
