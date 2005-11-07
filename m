@@ -1,13 +1,19 @@
-Return-Path: <mqy@263.net.cn>
-From: "KylongMu" <mqy@263.net.cn>
-To: "Wolfgang Denk" <wd@denx.de>
-Date: Mon, 7 Nov 2005 14:43:13 +0800
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id 51541686FC
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon,  7 Nov 2005 18:27:22 +1100 (EST)
+From: David Jander <david.jander@protonic.nl>
+To: linuxppc-embedded@ozlabs.org
+Date: Mon, 7 Nov 2005 09:27:12 +0200
+References: <61BDFF5614E6D3119B6E00508B446754037CD88D@mail.digital-dispatch.com>
+In-Reply-To: <61BDFF5614E6D3119B6E00508B446754037CD88D@mail.digital-dispatch.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0000_01C5E3A9.9A923B20"
-Message-Id: <20051107064328.E9A261127@smtp.263.net>
-Cc: Linuxppc-embedded@ozlabs.org
-Subject: 11-07-2005 2.6.14 can't finish build with yosemite-defconfig 
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200511070827.13130.david.jander@protonic.nl>
+Cc: David Zhang <David.Zhang@digital-dispatch.com>
+Subject: Re: problems on isp1362 driver
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -18,35 +24,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Friday 15 July 2005 02:14, David Zhang wrote:
+>[...]
+> We are using Philips ISP1362 USB controller on WinCE 4.2.  It seems that we
+> are encountering "ATL interrupt" missing problem.  I am wondering if any of
+> you ever had the similar problem.
 
-------=_NextPart_000_0000_01C5E3A9.9A923B20
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Where does this driver come from? Does it have anything to do with linux 
+kernel versions of that driver? If so, which one, 2.4 or 2.6?
 
-Dear Denk
-	After cg-update today's kernel repository, I test with these steps:
-Make yosemite-defconfig
-Make uImage
+I don't know WinCE, much less how drivers work in WinCE. Please specify what's 
+the relationship (or expected relationship) with linux. In any case, you'd 
+have to tell more details about the problem you're experiencing, otherwise 
+it's unlikely someone here can help you.
 
-But the build stops with some errors, last cg-update (6 days ago) is ok.
+I am using the isp116x HCD driver from kernel 2.6 now with a isp1160 chip, and 
+it runs fine. I suppose you are talking about the Host part of the 1362?
 
-Cordially,
+Greetings,
 
-Kylong Mu
-
-------=_NextPart_000_0000_01C5E3A9.9A923B20
-Content-Type: text/plain;
-	name="11-07-2005-build-error-yosemite.txt"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment; filename="11-07-2005-build-error-yosemite.txt"
-
-  CHK     include/linux/version.h=0A=
-  CHK     include/linux/compile.h=0A=
-  CHK     usr/initramfs_list=0A=
-make[1]: *** No rule to make target `arch/ppc/syslib/indirect_pci.o', =
-needed by `arch/ppc/syslib/built-in.o'.  Stop.=0A=
-make: *** [arch/ppc/syslib] Error 2=0A=
-
-------=_NextPart_000_0000_01C5E3A9.9A923B20--
+-- 
+David Jander
