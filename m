@@ -1,19 +1,22 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id 51541686FC
+Return-Path: <panto@intracom.gr>
+Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
+	by ozlabs.org (Postfix) with ESMTP id 32309686C5
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  7 Nov 2005 18:27:22 +1100 (EST)
-From: David Jander <david.jander@protonic.nl>
-To: linuxppc-embedded@ozlabs.org
-Date: Mon, 7 Nov 2005 09:27:12 +0200
-References: <61BDFF5614E6D3119B6E00508B446754037CD88D@mail.digital-dispatch.com>
-In-Reply-To: <61BDFF5614E6D3119B6E00508B446754037CD88D@mail.digital-dispatch.com>
+	Mon,  7 Nov 2005 18:59:07 +1100 (EST)
+Received: from mailserv.intranet.gr (localhost [127.0.0.1])
+	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id jA78766X001385
+	for <linuxppc-embedded@ozlabs.org>; Mon, 7 Nov 2005 10:07:06 +0200 (EET)
+Message-ID: <436F07F5.1030206@intracom.gr>
+Date: Mon, 07 Nov 2005 09:53:25 +0200
+From: Pantelis Antoniou <panto@intracom.gr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200511070827.13130.david.jander@protonic.nl>
-Cc: David Zhang <David.Zhang@digital-dispatch.com>
-Subject: Re: problems on isp1362 driver
+To: "John W. Linville" <linville@tuxdriver.com>
+References: <20051106025701.GA9698@tuxdriver.com>
+In-Reply-To: <20051106025701.GA9698@tuxdriver.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-embedded@ozlabs.org
+Subject: Re: [patch 2.6.14] fec_8xx: make CONFIG_FEC_8XX depend on CONFIG_8xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,24 +27,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Friday 15 July 2005 02:14, David Zhang wrote:
->[...]
-> We are using Philips ISP1362 USB controller on WinCE 4.2.  It seems that we
-> are encountering "ATL interrupt" missing problem.  I am wondering if any of
-> you ever had the similar problem.
+John W. Linville wrote:
+> Make CONFIG_FEC_8XX depend on CONFIG_8xx.  This keeps allmodconfig from
+> breaking on non-8xx (PPC) platforms.
+> 
+> Signed-off-by: John W. Linville <linville@tuxdriver.com>
+> ---
+> 
+>  drivers/net/fec_8xx/Kconfig |    2 +-
+>  1 files changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/fec_8xx/Kconfig b/drivers/net/fec_8xx/Kconfig
+> index 4560026..a84c232 100644
+> --- a/drivers/net/fec_8xx/Kconfig
+> +++ b/drivers/net/fec_8xx/Kconfig
+> @@ -1,6 +1,6 @@
+>  config FEC_8XX
+>  	tristate "Motorola 8xx FEC driver"
+> -	depends on NET_ETHERNET
+> +	depends on NET_ETHERNET && 8xx
+>  	select MII
+>  
+>  config FEC_8XX_GENERIC_PHY
 
-Where does this driver come from? Does it have anything to do with linux 
-kernel versions of that driver? If so, which one, 2.4 or 2.6?
+Yes, this is the correct approach. Please disregard the other
+patches floating about.
 
-I don't know WinCE, much less how drivers work in WinCE. Please specify what's 
-the relationship (or expected relationship) with linux. In any case, you'd 
-have to tell more details about the problem you're experiencing, otherwise 
-it's unlikely someone here can help you.
+Regards
 
-I am using the isp116x HCD driver from kernel 2.6 now with a isp1160 chip, and 
-it runs fine. I suppose you are talking about the Host part of the 1362?
-
-Greetings,
-
--- 
-David Jander
+Pantelis
