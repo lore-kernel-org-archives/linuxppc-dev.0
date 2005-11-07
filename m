@@ -1,17 +1,19 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 45EEB68665
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (unknown [212.105.56.243])
+	by ozlabs.org (Postfix) with ESMTP id E1D8B6867C
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Nov 2005 04:12:14 +1100 (EST)
-Date: Mon, 7 Nov 2005 10:11:01 -0200
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>, support@abatron.ch
-Message-ID: <20051107121101.GI15522@logos.cnet>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Subject: BDI2000 and Linux 2.6 kernel
+	Tue,  8 Nov 2005 05:14:17 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Mon, 7 Nov 2005 19:14:15 +0100
+Message-ID: <F6AD7E21CDF4E145A44F61F43EE6D9393FD5C5@tmnt04.transmode.se>
+From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
+To: "Tom Rini" <trini@kernel.crashing.org>,
+	"Marcelo Tosatti" <marcelo.tosatti@cyclades.com>
+Cc: linuxppc-embedded@ozlabs.org, Dan Malek <dan@embeddedalley.com>,
+	gtolstolytkin@ru.mvista.com
+Subject: RE: [PATCH 2.6.14] mm: 8xx MM fix for
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,104 +24,109 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+> -----Original Message-----
+> From: Tom Rini [mailto:trini@kernel.crashing.org]=20
+> Sent: 07 November 2005 16:52
+> To: Marcelo Tosatti
+> Cc: Joakim Tjernlund; Pantelis Antoniou; Dan Malek;=20
+> linuxppc-embedded@ozlabs.org; gtolstolytkin@ru.mvista.com
+> Subject: Re: [PATCH 2.6.14] mm: 8xx MM fix for
+>=20
+> On Mon, Nov 07, 2005 at 08:16:18AM -0200, Marcelo Tosatti wrote:
+> > Joakim!
+> >=20
+> > On Mon, Nov 07, 2005 at 03:32:52PM +0100, Joakim Tjernlund wrote:
+> > > Hi Marcelo
+> > >=20
+> > > [SNIP]=20
+> > > > The root of the problem are the changes against the 8xx TLB=20
+> > > > handlers introduced
+> > > > during v2.6. What happens is the TLBMiss handlers load the=20
+> > > > zeroed pte into
+> > > > the TLB, causing the TLBError handler to be invoked (thats=20
+> > > > two TLB faults per=20
+> > > > pagefault), which then jumps to the generic MM code to=20
+> setup the pte.
+> > > >=20
+> > > > The bug is that the zeroed TLB is not invalidated (the=20
+> same reason
+> > > > for the "dcbst" misbehaviour), resulting in infinite=20
+> TLBError faults.
+> > > >=20
+> > > > Dan, I wonder why we just don't go back to v2.4 behaviour.
+> > >=20
+> > > This is one reason why it is the way it is:
+> > >=20
+> http://ozlabs.org/pipermail/linuxppc-embedded/2005-January/016382.html
+> > > This details are little fuzzy ATM, but I think the reason for the
+> > > current
+> > > impl. was only that it was less intrusive to impl.
+> >=20
+> > Ah, I see. I wonder if the bug is processor specific: we=20
+> don't have such
+> > changes in our v2.4 tree and never experienced such problem.
+> >=20
+> > It should be pretty easy to hit it right? (instruction=20
+> pagefaults should
+> > fail).
+> >=20
+> > Grigori, Tom, can you enlight us about the issue on the URL=20
+> above. How
+> > can it be triggered?
+>=20
+> So after looking at the code in 2.6.14 and current git, I think the
+> above URL isn't relevant, unless there was a change I missed (which
+> could totally be possible) that reverted the patch there and=20
+> fixed that
+> issue in a different manner.  But since I didn't figure that=20
+> out until I
+> had finished researching it again:
 
-Currently gdb over BDI (and I've seen other reports on this list) fails to
-translate virtual->physical addresses on PPC 8xx:
+I wasn't clear enough. What I meant was that the above patch made me
+think and
+the result was that I came up with a simpler fix, the "two exception"
+fix that
+is in current kernels. See
+http://linux.bkbits.net:8080/linux-2.6/diffs/arch/ppc/kernel/head_8xx.S@
+1.19?nav=3Dindex.html|src/.|src/arch|src/arch/ppc|src/arch/ppc/kernel|his=
+t
+/arch/ppc/kernel/head_8xx.S
+It appears this fix has some other issues :(
 
-*** MMU: address translation for 0xC000C66C failed
-*** MMU: address translation for 0xC000C66C failed
+How do the other ppc arches do? I am guessing that they don't double
+fault, but bails
+out to do_page_fault from the TLB Miss handler, like 8xx used to do.
 
-Thats because the v2.6 kernel was changed to use physical addresses on the
-first level page.
+>=20
+> Switching hats for a minute, this came from a bug a customer of
+> MontaVista found, so I can't give out the testcase :(
+>=20
+> To repeat what Joakim said back then:
+> "I think I have figured this out. The first TLB misses that happen at
+> app startup is Data TLB misses. These will then hit the NULL L1 entry
+> and end up in do_page_fault() which will populate the L1=20
+> entry. But when
+> you have a very large app that spans more than one L1 entry (16 MB I
+> think) it may happen that you will have I-TLB Miss first one of the L1
+> entrys which will make the I-TLB handler bail out to=20
+> do_page_fault() and
+> the app craches(SEGV)."
 
-Dan informed me there might be a firmware update available to address 
-this problem. Is this true?
+This still stands I think.
 
-With the following the kernel stores the virtual address on the PMD 
-getting the BDI "to work".
+>=20
+> Looking at the patch again, what I don't see is why I talk=20
+> about fudging
+> I-TLB Miss at 0x400 when it's I-TLB Error we fudge at being there, but
+> then get hung up that there can be a slight diff between the=20
+> two ("This
+> is because we check bit 4 of SRR1 in both cases, but in the case of an
+> I-TLB Miss, this bit is always set, and it only indicates a protection
+> fault on an I-TLB Error.") so instead of 0x1300 jumping to the handler
+> at 0x400, we treat it like a regular exception so we know=20
+> where we came
+> from, and perhaps missed fixing a case somewhere?
 
-A newer firmware would be much better though.
+Didn't look into this part of your patch, sorry.
 
---- linux-2.6.14-rc4.orig/arch/ppc/kernel/head_8xx.S	2005-10-18 16:59:34.000000000 -0500
-+++ linux-2.6.14-rc4/arch/ppc/kernel/head_8xx.S	2005-11-01 05:45:00.000000000 -0600
-@@ -320,11 +320,12 @@ InstructionTLBMiss:
- 	lwz	r11, 0(r10)	/* Get the level 1 entry */
- 	rlwinm.	r10, r11,0,0,19	/* Extract page descriptor page address */
- 	beq	2f		/* If zero, don't try to find a pte */
-+	tophys(r11,r11)
- 
- 	/* We have a pte table, so load the MI_TWC with the attributes
- 	 * for this "segment."
- 	 */
--	ori	r11,r11,1		/* Set valid bit */
-+	/*ori	r11,r11,1		 Set valid bit */
- 	DO_8xx_CPU6(0x2b80, r3)
- 	mtspr	SPRN_MI_TWC, r11	/* Set segment attributes */
- 	DO_8xx_CPU6(0x3b80, r3)
-@@ -379,6 +380,7 @@ DataStoreTLBMiss:
- 	lwz	r11, 0(r10)	/* Get the level 1 entry */
- 	rlwinm.	r10, r11,0,0,19	/* Extract page descriptor page address */
- 	beq	2f		/* If zero, don't try to find a pte */
-+	tophys(r11,r11)
- 
- 	/* We have a pte table, so load fetch the pte from the table.
- 	 */
-@@ -493,6 +495,7 @@ DataTLBError:
- 	lwz	r11, 0(r10)	/* Get the level 1 entry */
- 	rlwinm.	r10, r11,0,0,19	/* Extract page descriptor page address */
- 	beq	2f		/* If zero, bail */
-+	tophys(r11,r11)
- 
- 	/* We have a pte table, so fetch the pte from the table.
- 	 */
-diff -Nur -p --exclude-from=linux-2.6.14-rc4/Documentation/dontdiff linux-2.6.14-rc4.orig/include/asm-ppc/pgalloc.h linux-2.6.14-rc4/include/asm-ppc/pgalloc.h
---- linux-2.6.14-rc4.orig/include/asm-ppc/pgalloc.h	2005-10-18 17:00:09.000000000 -0500
-+++ linux-2.6.14-rc4/include/asm-ppc/pgalloc.h	2005-11-01 08:02:08.000000000 -0600
-@@ -19,16 +19,16 @@ extern void pgd_free(pgd_t *pgd);
- #define __pmd_free_tlb(tlb,x)		do { } while (0)
- #define pgd_populate(mm, pmd, pte)      BUG()
- 
--#ifndef CONFIG_BOOKE
-+#if defined(CONFIG_BOOKE) || defined(CONFIG_8xx)
- #define pmd_populate_kernel(mm, pmd, pte)	\
--		(pmd_val(*(pmd)) = __pa(pte) | _PMD_PRESENT)
-+		(pmd_val(*(pmd)) = (unsigned long)pte | _PMD_PRESENT)
- #define pmd_populate(mm, pmd, pte)	\
--		(pmd_val(*(pmd)) = (page_to_pfn(pte) << PAGE_SHIFT) | _PMD_PRESENT)
-+		(pmd_val(*(pmd)) = (unsigned long)page_to_virt(pte) | _PMD_PRESENT)
- #else
- #define pmd_populate_kernel(mm, pmd, pte)	\
--		(pmd_val(*(pmd)) = (unsigned long)pte | _PMD_PRESENT)
-+		(pmd_val(*(pmd)) = __pa(pte) | _PMD_PRESENT)
- #define pmd_populate(mm, pmd, pte)	\
--		(pmd_val(*(pmd)) = (unsigned long)page_to_virt(pte) | _PMD_PRESENT)
-+		(pmd_val(*(pmd)) = (page_to_pfn(pte) << PAGE_SHIFT) | _PMD_PRESENT)
- #endif
- 
- extern pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long addr);
-diff -Nur -p --exclude-from=linux-2.6.14-rc4/Documentation/dontdiff linux-2.6.14-rc4.orig/include/asm-ppc/pgtable.h linux-2.6.14-rc4/include/asm-ppc/pgtable.h
---- linux-2.6.14-rc4.orig/include/asm-ppc/pgtable.h	2005-10-18 17:00:09.000000000 -0500
-+++ linux-2.6.14-rc4/include/asm-ppc/pgtable.h	2005-11-01 08:01:34.000000000 -0600
-@@ -719,16 +719,16 @@ extern pgprot_t phys_mem_access_prot(str
-  * handler).  On everything else the pmd contains the physical address
-  * of the pte page.  -- paulus
-  */
--#ifndef CONFIG_BOOKE
-+#if defined (CONFIG_BOOKE) || defined CONFIG_8xx
- #define pmd_page_kernel(pmd)	\
--	((unsigned long) __va(pmd_val(pmd) & PAGE_MASK))
-+	((unsigned long) (pmd_val(pmd) & PAGE_MASK))
- #define pmd_page(pmd)		\
--	(mem_map + (pmd_val(pmd) >> PAGE_SHIFT))
-+	(mem_map + (__pa(pmd_val(pmd)) >> PAGE_SHIFT))
- #else
- #define pmd_page_kernel(pmd)	\
--	((unsigned long) (pmd_val(pmd) & PAGE_MASK))
-+	((unsigned long) __va(pmd_val(pmd) & PAGE_MASK))
- #define pmd_page(pmd)		\
--	(mem_map + (__pa(pmd_val(pmd)) >> PAGE_SHIFT))
-+	(mem_map + (pmd_val(pmd) >> PAGE_SHIFT))
- #endif
- 
- /* to find an entry in a kernel page-table-directory */
+ Jocke
