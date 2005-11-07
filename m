@@ -1,17 +1,20 @@
-Return-Path: <dan@embeddedalley.com>
-Received: from smtp101.biz.mail.re2.yahoo.com (smtp101.biz.mail.re2.yahoo.com
-	[68.142.229.215]) by ozlabs.org (Postfix) with SMTP id F031B68679
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 01D076868A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Nov 2005 02:56:29 +1100 (EST)
-In-Reply-To: <F6AD7E21CDF4E145A44F61F43EE6D9393FD5A2@tmnt04.transmode.se>
-References: <F6AD7E21CDF4E145A44F61F43EE6D9393FD5A2@tmnt04.transmode.se>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <a144cb5305133b4a5c38afc2a432c62d@embeddedalley.com>
-From: Dan Malek <dan@embeddedalley.com>
-Date: Mon, 7 Nov 2005 11:02:42 -0500
-To: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
-Cc: linuxppc-embedded@ozlabs.org
+	Tue,  8 Nov 2005 03:13:17 +1100 (EST)
+Date: Mon, 7 Nov 2005 09:12:16 -0200
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Message-ID: <20051107111216.GD15522@logos.cnet>
+References: <F6AD7E21CDF4E145A44F61F43EE6D9393FD5B5@tmnt04.transmode.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <F6AD7E21CDF4E145A44F61F43EE6D9393FD5B5@tmnt04.transmode.se>
+Cc: Tom Rini <trini@kernel.crashing.org>, linuxppc-embedded@ozlabs.org,
+	Dan Malek <dan@embeddedalley.com>, gtolstolytkin@ru.mvista.com
 Subject: Re: [PATCH 2.6.14] mm: 8xx MM fix for
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,15 +26,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Mon, Nov 07, 2005 at 04:44:32PM +0100, Joakim Tjernlund wrote:
+>  
+> > Joakim!
+> > 
+> > On Mon, Nov 07, 2005 at 03:32:52PM +0100, Joakim Tjernlund wrote:
+> > > Hi Marcelo
+> > > 
+> > > [SNIP] 
+> > > > The root of the problem are the changes against the 8xx TLB 
+> > > > handlers introduced
+> > > > during v2.6. What happens is the TLBMiss handlers load the 
+> > > > zeroed pte into
+> > > > the TLB, causing the TLBError handler to be invoked (thats 
+> > > > two TLB faults per 
+> > > > pagefault), which then jumps to the generic MM code to 
+> > setup the pte.
+> > > > 
+> > > > The bug is that the zeroed TLB is not invalidated (the same reason
+> > > > for the "dcbst" misbehaviour), resulting in infinite 
+> > TLBError faults.
+> > > > 
+> > > > Dan, I wonder why we just don't go back to v2.4 behaviour.
+> > > 
+> > > This is one reason why it is the way it is:
+> > > 
+> > http://ozlabs.org/pipermail/linuxppc-embedded/2005-January/016382.html
+> > > This details are little fuzzy ATM, but I think the reason for the
+> > > current
+> > > impl. was only that it was less intrusive to impl.
+> > 
+> > Ah, I see. I wonder if the bug is processor specific: we 
+> > don't have such
+> > changes in our v2.4 tree and never experienced such problem.
+> > 
+> > It should be pretty easy to hit it right? (instruction 
+> > pagefaults should
+> > fail).
+> 
+> No, its pretty hard to trigger it. Read the all mails on the subject to
+> see why.
+> The one or two exception approach doesn't matter performancewise(at
+> least for ITLB exceptions)
+> I think.
 
-On Nov 7, 2005, at 9:32 AM, Joakim Tjernlund wrote:
-
-> This is one reason why it is the way it is:
-
-Oh geeze, what a hack!  :-)  This could have been fixed
-with a line of assembler code in the TLB miss exception.
-I'll take a look at all of this and fix it up.
-
-Thanks.
-
-	-- Dan
+Fine, let it continue the way it is then.
