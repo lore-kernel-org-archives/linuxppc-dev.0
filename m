@@ -1,22 +1,19 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C80316867C
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 616F06868F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Nov 2005 09:04:36 +1100 (EST)
-Date: Mon, 7 Nov 2005 15:02:37 -0200
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <20051107170237.GC17830@logos.cnet>
-References: <200510302203.25390.pantelis.antoniou@gmail.com>
-	<20051107084431.GA15180@logos.cnet>
-	<1131396000.4652.24.camel@gaston>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1131396000.4652.24.camel@gaston>
-Cc: linuxppc-embedded@ozlabs.org, Dan Malek <dan@embeddedalley.com>
-Subject: Re: [PATCH 2.6.14] mm: 8xx MM fix for
+	Tue,  8 Nov 2005 09:09:37 +1100 (EST)
+To: Sette Agostino <Agostino.Sette@siemens.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 07 Nov 2005 15:34:44 +0100."
+	<69DF49BE936F4441980EC1D59F0ADC2F0108C12C@aqlby02a.siemens.it>
+Date: Mon, 07 Nov 2005 23:09:34 +0100
+Sender: wd@denx.de
+Message-Id: <20051107220934.9120C353E30@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: PPCBoot 2.0.0 Errors 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,42 +24,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Nov 08, 2005 at 07:39:59AM +1100, Benjamin Herrenschmidt wrote:
-> On Mon, 2005-11-07 at 06:44 -0200, Marcelo Tosatti wrote:
+In message <69DF49BE936F4441980EC1D59F0ADC2F0108C12C@aqlby02a.siemens.it> you wrote:
 > 
-> > 
-> > The bug is that the zeroed TLB is not invalidated (the same reason
-> > for the "dcbst" misbehaviour), resulting in infinite TLBError faults.
+> I have the following problem at the PPCBoot startup:
 > 
-> I see, so you are in the same situation as ia64 which has valid but
-> unmapped TLBs ?
-> 
-> > Dan, I wonder why we just don't go back to v2.4 behaviour. It is not very
-> > clear to me that "two exception" speedup offsets the additional code required
-> > for "one exception" version. Have you actually done any measurements? 
-> 
-> What do you mean by "one exception" version ? You probably get 3 in fact
-> since after you have serviced the fault in the common code, you take
-> another fault to fill the PTE.
+> PPCBoot 2.0.0 (Oct 20 2005 - 12:28:22)
 
-Yep, that would be 3!
+PPCBoot is a dead project. It was discontinued more than 3 years ago.
+It is definitely a bad idea to  use  it  for  current  projects.  Use
+U-Boot instead.
 
-> In fact, you could even go back to one exception by pre-filling the TLB
-> in update_mmu_cache :)
+Also, this is completely off topic on this mailing list.
 
-OK, thats a good idea as we talked on IRC. Working on that.
+> CPU:   unknown MPC859 (0x08010004) at 133 MHz: 16 kB I-Cache 8 kB D-Cache
 
-> > There is chance that the additional code ends up in the same cacheline,
-> > which would mean no huge gain by the "two exception" approach. Might be
-> > even harmful for performance (you need two exceptions instead of one
-> > after all).
-> > 
-> > The "two exception" approach requires a TLB flush (to nuke the zeroed)
-> > at each PTE update for correct behaviour (which BTW is another slowdown):
-> 
-> I think the current code, even with your fix, is sub-optimal. But of
-> course, the only way to be sure is to do real measurements
+Use U-Boot instead.
 
-Indeed.
+> Board: Siemens CCM
 
-Thanks!
+And don't use a board configuration that does not match your hardware.
+
+> ## Booting image at 40180000 ...
+>    Image Name:   Linux-2.4.20-rthal5
+
+Argh... Ancient stuff again. Forget it.
+
+> Anybody experienced the same problem? Any suggestions about how to solve it?
+
+Use current software. Read the documentation. Post on the appropriate
+mailing lists.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+My challenge to the goto-less programmer  is  to  recode  tcp_input()
+without any gotos ... without any loss of efficiency (there has to be
+a catch).                                             - W. R. Stevens
