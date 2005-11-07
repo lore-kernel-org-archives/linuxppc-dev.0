@@ -1,25 +1,17 @@
-Return-Path: <pantelis.antoniou@gmail.com>
-Received: from nproxy.gmail.com (nproxy.gmail.com [64.233.182.202])
-	by ozlabs.org (Postfix) with ESMTP id 69741686B8
+Return-Path: <ejohnson@acdstar.com>
+Received: from mail.acdstar.com (mail.acdstar.com [209.98.244.9])
+	by ozlabs.org (Postfix) with ESMTP id 4EFD1686C2
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Nov 2005 07:45:37 +1100 (EST)
-Received: by nproxy.gmail.com with SMTP id y38so148086nfb
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 07 Nov 2005 12:45:35 -0800 (PST)
-From: Pantelis Antoniou <pantelis.antoniou@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 7 Nov 2005 22:50:02 +0200
-References: <200510302203.25390.pantelis.antoniou@gmail.com>
-	<20051107084431.GA15180@logos.cnet>
-	<1131396000.4652.24.camel@gaston>
-In-Reply-To: <1131396000.4652.24.camel@gaston>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200511072250.03217.pantelis.antoniou@gmail.com>
-Cc: Dan Malek <dan@embeddedalley.com>, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH 2.6.14] mm: 8xx MM fix for
-Reply-To: pantelis.antoniou@gmail.com
+	Tue,  8 Nov 2005 08:12:17 +1100 (EST)
+Message-Id: <6.2.5.6.1.20051107145546.01d91498@acdstar.com>
+Date: Mon, 07 Nov 2005 15:04:32 -0600
+To: bennett78@digis.net, linuxppc-embedded@ozlabs.org
+From: "Eric N. Johnson (ACD)" <ejohnson@acdstar.com>
+In-Reply-To: <436D068A.7030905@digis.net>
+References: <436D068A.7030905@digis.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
+Subject: Re: MPC5200 I2S driver
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,47 +22,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Monday 07 November 2005 22:39, Benjamin Herrenschmidt wrote:
-> On Mon, 2005-11-07 at 06:44 -0200, Marcelo Tosatti wrote:
-> 
-> > 
-> > The bug is that the zeroed TLB is not invalidated (the same reason
-> > for the "dcbst" misbehaviour), resulting in infinite TLBError faults.
-> 
-> I see, so you are in the same situation as ia64 which has valid but
-> unmapped TLBs ?
-> 
-> > Dan, I wonder why we just don't go back to v2.4 behaviour. It is not very
-> > clear to me that "two exception" speedup offsets the additional code required
-> > for "one exception" version. Have you actually done any measurements? 
-> 
-> What do you mean by "one exception" version ? You probably get 3 in fact
-> since after you have serviced the fault in the common code, you take
-> another fault to fill the PTE.
-> 
-> In fact, you could even go back to one exception by pre-filling the TLB
-> in update_mmu_cache :)
-> 
 
-Yep. That should be the target. Remember the poor 8xx is not exactly a 
-speed demon :).
+>I would be interested in getting any driver code
+>examples for Bestcomm/PSC6/CODEC for the mpc5200
+>as well.
 
-> > There is chance that the additional code ends up in the same cacheline,
-> > which would mean no huge gain by the "two exception" approach. Might be
-> > even harmful for performance (you need two exceptions instead of one
-> > after all).
-> > 
-> > The "two exception" approach requires a TLB flush (to nuke the zeroed)
-> > at each PTE update for correct behaviour (which BTW is another slowdown):
-> 
-> I think the current code, even with your fix, is sub-optimal. But of
-> course, the only way to be sure is to do real measurements
-> 
-> Ben.
-> 
-> 
+There was an earlier discussion on this list.  Have a look at:
+http://ozlabs.org/pipermail/linuxppc-embedded/2005-September/020210.html
 
-The TLB flush is bogus IMO. I'm going to try the last patch by marcelo to
-see if it works for me.
+That message has the code we've used to run an I2S DAC on the 
+MPC5200.  It's been stable, although we've not done extensive 
+testing.  You'll also have to prune out the code that's specific to 
+our hardware, and it supports output only.  We have not tried using I2S inputs.
 
-Pantelis.
+Eric
+
+------------------------------------
+Eric Johnson, Electrical Engineer
+Advanced Communication Design
+   7901 12th Avenue South
+   Bloomington, MN 55425
+Ph: 952-854-4000  Fax: 952-854-5774
