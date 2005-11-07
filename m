@@ -1,15 +1,21 @@
-Return-Path: <Agostino.Sette@siemens.com>
-Received: from MILVB95A.icn.siemens.it (milvb95a.icn.siemens.it
-	[83.103.117.137]) by ozlabs.org (Postfix) with ESMTP id 3529868692
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 93F6468665
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Nov 2005 03:57:06 +1100 (EST)
-Message-ID: <69DF49BE936F4441980EC1D59F0ADC2F0108C12C@aqlby02a.siemens.it>
-From: Sette Agostino <Agostino.Sette@siemens.com>
-To: linuxppc-embedded@ozlabs.org
-Date: Mon, 7 Nov 2005 15:34:44 +0100 
-MIME-Version: 1.0
-Content-Type: text/plain
-Subject: PPCBoot 2.0.0 Errors
+	Tue,  8 Nov 2005 04:11:52 +1100 (EST)
+In-Reply-To: <20051107112424.GE15522@logos.cnet>
+References: <20051107112424.GE15522@logos.cnet>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <a4ca39fa7ebdefb0aed21af16f5d20c4@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Mon, 7 Nov 2005 12:17:46 -0500
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Cc: Edson Seabra <edson.seabra@cyclades.com>,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: BDI and 85xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,63 +26,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
 
-I have the following problem at the PPCBoot startup:
+On Nov 7, 2005, at 6:24 AM, Marcelo Tosatti wrote:
 
-PPCBoot 2.0.0 (Oct 20 2005 - 12:28:22)
- 
-CPU:   unknown MPC859 (0x08010004) at 133 MHz: 16 kB I-Cache 8 kB D-Cache
-FEC present
-         *** Warning: CPU Core has Silicon Bugs -- Check the Errata ***
-Board: Siemens CCM
-       Watchdog enabled
-DRAM:  Restart Reason: 0xc0000000
-32 MB
-FLASH:  8 MB
-In:    serial
-Out:   serial
-Err:   serial
-Restart Reason: 0xc0000000
-PUMA:  env. variable puma_addr undefined
-Net:   FEC ETHERNET
+> Edson had to patch this in to get BDI to work on 85xx with 2.6.14.
 
-Furthermore, at the kernel startup I have:
+How about we just change MSR_KERNEL and MSR_USER
+in the include file #define instead of all of this run-time code?
+Or, change the code so it preserves DE in general, so we don't
+need a special kernel configuration just for the BDI?
 
-## Booting image at 40180000 ...
-   Image Name:   Linux-2.4.20-rthal5
-   Created:      2004-10-04  10:14:39 UTC
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    614355 Bytes = 599.10 kB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-IP-Config: Gateway not on directly connected network.
-init started:  BusyBox v0.60.5 (2003.11.19-14:32+0000) multi-callmount:
-Mounting devpts on /dev/pts failed: No su
-ch file or directory
-/opt/rc.project: /opt/bin/sinfo: No such file or directory
-export USER='root'
-export HOME='/'
-export wdt_8xx='timeout:120'
-export TERM='linux'
-export PATH='/usr/bin:/bin:/usr/sbin:/sbin'
-export SHELL='/bin/sh'
-export PWD='/'
-export mem='32512k'
-/opt/rc.project: /opt/bin/sinfo: No such file or directory
-export USER='root'
-export HOME='/'
-export wdt_8xx='timeout:120'
-export TERM='linux'
-export PATH='/usr/bin:/bin:/usr/sbin:/sbin'
-export SHELL='/bin/sh'
-export PWD='/'
-export mem='32512k'
+The original reason I did the BDI_SWITCH was due to the
+overhead of tracking user PTE switches in the context switch
+code.  I don't like the way this has been overloaded to mean
+"BDI general operation."  We should be able to attach a BDI2000
+to any kernel configuration and always get kernel debugging
+capability.  The BDI_SWITCH was to enable the extra feature
+(with some overhead) of debugging into user applications,
+it never should have affected any kernel debug operation.
 
-Anybody experienced the same problem? Any suggestions about how to solve it?
+It's unfortunate that Book-E is such a PITA for debuggers,
+but let's please find a better way of using these features.
+Separate kernel configurations to enable hardware
+debugging isn't acceptable.
 
+Thanks.
 
-Thanks in advance,
-Agostino
+	-- Dan
