@@ -1,17 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <SRS0+b070d120c301b1432305+806+infradead.org+dwmw2@baythorne.srs.infradead.org>
+Received: from baythorne.infradead.org (baythorne.infradead.org [81.187.2.161])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A8912686F8
-	for <linuxppc-dev@ozlabs.org>; Mon,  7 Nov 2005 16:58:16 +1100 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id DC2B2686C4
+	for <linuxppc-dev@ozlabs.org>; Mon,  7 Nov 2005 20:47:38 +1100 (EST)
+From: David Woodhouse <dwmw2@infradead.org>
 To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <17261.57380.473046.69200@cargo.ozlabs.ibm.com>
+References: <1131264050.10031.265.camel@baythorne.infradead.org>
+	<17261.57380.473046.69200@cargo.ozlabs.ibm.com>
 Content-Type: text/plain
-Date: Mon, 07 Nov 2005 16:57:33 +1100
-Message-Id: <1131343053.4652.1.camel@gaston>
+Date: Mon, 07 Nov 2005 09:47:30 +0000
+Message-Id: <1131356850.27347.17.camel@baythorne.infradead.org>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] ppc: Fix PowerBook HD led on ARCH=powerpc
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] Fix ppc32 smp build.
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,35 +24,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The PowerBook HD led code uses obsoletes device-tree accessors which do
-not work anymore for getting the root of the tree.
+On Sun, 2005-11-06 at 21:51 +1100, Paul Mackerras wrote:
+> If we really can get unsynchronized timebases still, then I suppose we
+> need to bring back the smp_tb_synchronized variable, 
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+We make no attempt to sync the timebases on quad powersurge, as far as I
+can tell -- and we never set smp_tb_synchronized there.
 
-Index: linux-work/drivers/ide/ppc/pmac.c
-===================================================================
---- linux-work.orig/drivers/ide/ppc/pmac.c	2005-11-03 09:40:54.000000000 +1100
-+++ linux-work/drivers/ide/ppc/pmac.c	2005-11-07 15:44:05.000000000 +1100
-@@ -497,16 +497,19 @@
- 	if (pmu_get_model() != PMU_KEYLARGO_BASED)
- 		return 0;
- 	
--	dt = find_devices("device-tree");
-+	dt = of_find_node_by_path("/");
- 	if (dt == NULL)
- 		return 0;
- 	model = (const char *)get_property(dt, "model", NULL);
- 	if (model == NULL)
- 		return 0;
- 	if (strncmp(model, "PowerBook", strlen("PowerBook")) != 0 &&
--	    strncmp(model, "iBook", strlen("iBook")) != 0)
-+	    strncmp(model, "iBook", strlen("iBook")) != 0) {
-+		of_node_put(dt);
- 	    	return 0;
--	
-+	}
-+	of_node_put(dt);
-+
- 	pmu_blink_on.complete = 1;
- 	pmu_blink_off.complete = 1;
- 	spin_lock_init(&pmu_blink_lock);
+-- 
+dwmw2
