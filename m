@@ -1,21 +1,19 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 01D076868A
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao02.cox.net (fed1rmmtao02.cox.net [68.230.241.37])
+	by ozlabs.org (Postfix) with ESMTP id 247B068593
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Nov 2005 03:13:17 +1100 (EST)
-Date: Mon, 7 Nov 2005 09:12:16 -0200
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Message-ID: <20051107111216.GD15522@logos.cnet>
-References: <F6AD7E21CDF4E145A44F61F43EE6D9393FD5B5@tmnt04.transmode.se>
+	Tue,  8 Nov 2005 03:22:22 +1100 (EST)
+Date: Mon, 7 Nov 2005 09:22:15 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Message-ID: <20051107162215.GE3839@smtp.west.cox.net>
+References: <20051104180605.GA3271@logos.cnet>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <F6AD7E21CDF4E145A44F61F43EE6D9393FD5B5@tmnt04.transmode.se>
-Cc: Tom Rini <trini@kernel.crashing.org>, linuxppc-embedded@ozlabs.org,
-	Dan Malek <dan@embeddedalley.com>, gtolstolytkin@ru.mvista.com
-Subject: Re: [PATCH 2.6.14] mm: 8xx MM fix for
+In-Reply-To: <20051104180605.GA3271@logos.cnet>
+Cc: Paul Mackerras <paulus@samba.org>,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: Required functions for relocating not part of relocate section
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,48 +24,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Nov 07, 2005 at 04:44:32PM +0100, Joakim Tjernlund wrote:
->  
-> > Joakim!
-> > 
-> > On Mon, Nov 07, 2005 at 03:32:52PM +0100, Joakim Tjernlund wrote:
-> > > Hi Marcelo
-> > > 
-> > > [SNIP] 
-> > > > The root of the problem are the changes against the 8xx TLB 
-> > > > handlers introduced
-> > > > during v2.6. What happens is the TLBMiss handlers load the 
-> > > > zeroed pte into
-> > > > the TLB, causing the TLBError handler to be invoked (thats 
-> > > > two TLB faults per 
-> > > > pagefault), which then jumps to the generic MM code to 
-> > setup the pte.
-> > > > 
-> > > > The bug is that the zeroed TLB is not invalidated (the same reason
-> > > > for the "dcbst" misbehaviour), resulting in infinite 
-> > TLBError faults.
-> > > > 
-> > > > Dan, I wonder why we just don't go back to v2.4 behaviour.
-> > > 
-> > > This is one reason why it is the way it is:
-> > > 
-> > http://ozlabs.org/pipermail/linuxppc-embedded/2005-January/016382.html
-> > > This details are little fuzzy ATM, but I think the reason for the
-> > > current
-> > > impl. was only that it was less intrusive to impl.
-> > 
-> > Ah, I see. I wonder if the bug is processor specific: we 
-> > don't have such
-> > changes in our v2.4 tree and never experienced such problem.
-> > 
-> > It should be pretty easy to hit it right? (instruction 
-> > pagefaults should
-> > fail).
-> 
-> No, its pretty hard to trigger it. Read the all mails on the subject to
-> see why.
-> The one or two exception approach doesn't matter performancewise(at
-> least for ITLB exceptions)
-> I think.
+On Fri, Nov 04, 2005 at 04:06:05PM -0200, Marcelo Tosatti wrote:
 
-Fine, let it continue the way it is then.
+> Hi Paul,
+> 
+> Recent 2.6-git (from Wednesday) tree fails to boot on 8xx due to:
+[snip]
+> Problem is that flush_instruction_cache (and flush_data_cache)
+> from boot/common/util.S are not being copied to the relocate section,
+> even though the file contains the proper entry:
+> 
+>         .section ".relocate_code","xa"
+[snip]
+> The problem does not exist on v2.6.14.
+
+What version of binutils / etc?  I recall a change in that area of code,
+but I thought it went in for 2.6.14..
+
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
