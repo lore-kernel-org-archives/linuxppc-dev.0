@@ -1,18 +1,21 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2A6C3686AE
+	by ozlabs.org (Postfix) with ESMTP id 38EA568698
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Nov 2005 07:11:52 +1100 (EST)
-Date: Mon, 7 Nov 2005 13:10:11 -0200
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Dan Malek <dan@embeddededge.com>
-Message-ID: <20051107151011.GA17161@logos.cnet>
+	Tue,  8 Nov 2005 07:40:24 +1100 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+In-Reply-To: <20051107084431.GA15180@logos.cnet>
+References: <200510302203.25390.pantelis.antoniou@gmail.com>
+	<20051107084431.GA15180@logos.cnet>
+Content-Type: text/plain
+Date: Tue, 08 Nov 2005 07:39:59 +1100
+Message-Id: <1131396000.4652.24.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: fix swapping on 8xx?
+Cc: linuxppc-embedded@ozlabs.org, Dan Malek <dan@embeddedalley.com>
+Subject: Re: [PATCH 2.6.14] mm: 8xx MM fix for
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,70 +26,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi, 
+On Mon, 2005-11-07 at 06:44 -0200, Marcelo Tosatti wrote:
 
-The following is an attempt to fix swapping on 8xx by not touching
-_PAGE_ACCESSED bit if the page is not present.
+> 
+> The bug is that the zeroed TLB is not invalidated (the same reason
+> for the "dcbst" misbehaviour), resulting in infinite TLBError faults.
 
-Dan, what do you think?
+I see, so you are in the same situation as ia64 which has valid but
+unmapped TLBs ?
 
+> Dan, I wonder why we just don't go back to v2.4 behaviour. It is not very
+> clear to me that "two exception" speedup offsets the additional code required
+> for "one exception" version. Have you actually done any measurements? 
 
-diff --git a/arch/ppc/kernel/head_8xx.S b/arch/ppc/kernel/head_8xx.S
-index de09787..4451828 100644
---- a/arch/ppc/kernel/head_8xx.S
-+++ b/arch/ppc/kernel/head_8xx.S
-@@ -41,6 +41,22 @@
- #else
- #define DO_8xx_CPU6(val, reg)
- #endif
-+
-+/* can't overwrite the _PAGE_ACCESSED bit of a non-present page (might
-+   contain swap data). */
-+#ifdef CONFIG_SWAP
-+#define SET_PAGE_ACCESSED(reg, destreg, tmpreg)		\
-+	andi.	tmpreg, reg, _PAGE_PRESENT;		\
-+	beq	9f;					\
-+	ori	reg, reg, _PAGE_ACCESSED;		\
-+	stw	r10, 0(destreg);			\
-+9:
-+#else
-+#define SET_PAGE_ACCESSED(reg, destreg, tmpreg)	\
-+	ori	reg, reg, _PAGE_ACCESSED;	\
-+	stw	reg, 0(destreg);
-+#endif
-+
- 	.text
- 	.globl	_stext
- _stext:
-@@ -332,8 +348,7 @@ InstructionTLBMiss:
- 	mfspr	r11, SPRN_MD_TWC	/* ....and get the pte address */
- 	lwz	r10, 0(r11)	/* Get the pte */
- 
--	ori	r10, r10, _PAGE_ACCESSED
--	stw	r10, 0(r11)
-+	SET_PAGE_ACCESSED(r10, r11, r3)
- 
- 	/* The Linux PTE won't go exactly into the MMU TLB.
- 	 * Software indicator bits 21, 22 and 28 must be clear.
-@@ -399,8 +414,7 @@ DataStoreTLBMiss:
- 	mtspr	SPRN_MD_TWC, r11
- 
- 	mfspr	r11, SPRN_MD_TWC	/* get the pte address again */
--	ori	r10, r10, _PAGE_ACCESSED
--	stw	r10, 0(r11)
-+	SET_PAGE_ACCESSED(r10, r11, r3)	/* and update pte in table */
- 
- 	/* The Linux PTE won't go exactly into the MMU TLB.
- 	 * Software indicator bits 21, 22 and 28 must be clear.
-@@ -507,9 +521,9 @@ DataTLBError:
- 
- 	/* Update 'changed', among others.
- 	*/
--	ori	r10, r10, _PAGE_DIRTY|_PAGE_ACCESSED|_PAGE_HWWRITE
-+	ori	r10, r10, _PAGE_DIRTY|_PAGE_HWWRITE
- 	mfspr	r11, SPRN_MD_TWC		/* Get pte address again */
--	stw	r10, 0(r11)		/* and update pte in table */
-+	SET_PAGE_ACCESSED(r10, r11, r3)		/* and update pte in table */
- 
- 	/* The Linux PTE won't go exactly into the MMU TLB.
- 	 * Software indicator bits 21, 22 and 28 must be clear.
+What do you mean by "one exception" version ? You probably get 3 in fact
+since after you have serviced the fault in the common code, you take
+another fault to fill the PTE.
+
+In fact, you could even go back to one exception by pre-filling the TLB
+in update_mmu_cache :)
+
+> There is chance that the additional code ends up in the same cacheline,
+> which would mean no huge gain by the "two exception" approach. Might be
+> even harmful for performance (you need two exceptions instead of one
+> after all).
+> 
+> The "two exception" approach requires a TLB flush (to nuke the zeroed)
+> at each PTE update for correct behaviour (which BTW is another slowdown):
+
+I think the current code, even with your fix, is sub-optimal. But of
+course, the only way to be sure is to do real measurements
+
+Ben.
