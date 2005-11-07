@@ -1,22 +1,17 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F20B8686A4
-	for <linuxppc-dev@ozlabs.org>; Tue,  8 Nov 2005 04:19:27 +1100 (EST)
-In-Reply-To: <20051107163144.GF3839@smtp.west.cox.net>
-References: <1131357857.27347.28.camel@baythorne.infradead.org>
-	<20051107160939.GD3839@smtp.west.cox.net>
-	<1131380422.27347.72.camel@baythorne.infradead.org>
-	<20051107163144.GF3839@smtp.west.cox.net>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <da56f10d9e365f6194e129205a690c02@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Mon, 7 Nov 2005 12:25:12 -0500
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] Fix 8250 probe on ppc32
+Return-Path: <pochini@shiny.it>
+Received: from vsmtp3alice.tin.it (vsmtp3alice.tin.it [212.216.176.143])
+	by ozlabs.org (Postfix) with ESMTP id 42A6268698
+	for <linuxppc-dev@ozlabs.org>; Tue,  8 Nov 2005 07:10:22 +1100 (EST)
+Received: from Jay (82.56.61.137) by vsmtp3alice.tin.it (7.2.060.1)
+	id 436F7ADE0000FF4D for linuxppc-dev@ozlabs.org;
+	Mon, 7 Nov 2005 21:10:16 +0100
+Date: Mon, 7 Nov 2005 20:10:11 +0000
+From: Giuliano Pochini <pochini@shiny.it>
+To: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
+Message-Id: <20051107201011.3b1e4db4.pochini@shiny.it>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Subject: Linux 2.6.14 and ALSA
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,23 +22,38 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Nov 7, 2005, at 11:31 AM, Tom Rini wrote:
 
-> ..... If everything going forward ships from the hw
-> vendor with U-Boot,
+I know there is a big ppc32-ppc64 merge in progress. Anyway, with Linux
+2.6.14 alsa-driver doesn't compile anymore. The configure script cannot
+compile many of its mini test programs because it cannot find the following
+headers. This is not a bug report. This is just a (incomplete?) list of
+files that have still to be moved in order to make alsa compile. I hope it
+helps.
 
-You can't make that assumption.  Very few production
-systems ship with U-Boot, whether we like it or not.
-For those of us that developed all of this "boot wrapper"
-code and remember why it was done, all of those reasons
-still exist.  More people are using U-Boot, but it's mostly
-during development.  The other embedded software we
-are trying to displace with Linux sometimes doesn't have
-the rom space, and there is the "we didn't have it before"
-mentality that is hard to change.
 
-Don't cast this old boot code too far away, people still use it.
+/usr/src/linux//include/asm/delay.h:5:23: asm/param.h: No such file or directory
+/usr/src/linux//include/asm/machdep.h:9:23: asm/setup.h: No such file or directory
+/usr/src/linux//include/linux/errno.h:4:23: asm/errno.h: No such file or directory
+/usr/src/linux//include/linux/fcntl.h:4:23: asm/fcntl.h: No such file or directory
+/usr/src/linux//include/linux/ioctl.h:4:23: asm/ioctl.h: No such file or directory
+/usr/src/linux//include/linux/jiffies.h:9:23: asm/div64.h: No such file or directory
+/usr/src/linux//include/linux/linkage.h:5:25: asm/linkage.h: No such file or directory
+/usr/src/linux//include/linux/module.h:21:23: asm/local.h: No such file or directory
+/usr/src/linux//include/linux/module.h:23:24: asm/module.h: No such file or directory
+/usr/src/linux//include/linux/percpu.h:7:24: asm/percpu.h: No such file or directory
+/usr/src/linux//include/linux/resource.h:68:26: asm/resource.h: No such file or directory
+/usr/src/linux//include/linux/sched.h:24:25: asm/cputime.h: No such file or directory
+/usr/src/linux//include/linux/sched.h:4:36: asm/param.h: No such file or directory
+/usr/src/linux//include/linux/sem.h:36:24: asm/sembuf.h: No such file or directory
+/usr/src/linux//include/linux/signal.h:7:25: asm/siginfo.h: No such file or directory
+/usr/src/linux//include/linux/string.h:24:24: asm/string.h: No such file or directory
+/usr/src/linux//include/linux/termios.h:5:25: asm/termios.h: No such file or directory
+/usr/src/linux//include/linux/timex.h:60:23: asm/param.h: No such file or directory
+/usr/src/linux//include/linux/timex.h:61:23: asm/timex.h: No such file or directory
+/usr/src/linux//include/linux/topology.h:34:26: asm/topology.h: No such file or directory
 
-Thanks.
+The whole config.log is here: http://www.webalice.it/g_pochini/config.log
 
-	-- Dan
+
+--
+Giuliano.
