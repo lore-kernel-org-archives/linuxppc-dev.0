@@ -1,15 +1,13 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <mqy@263.net.cn>
+From: "KylongMu" <mqy@263.net.cn>
+To: "Wolfgang Denk" <wd@denx.de>
+Date: Mon, 7 Nov 2005 14:43:13 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17262.42993.975296.653728@cargo.ozlabs.ibm.com>
-Date: Mon, 7 Nov 2005 12:03:45 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-In-Reply-To: <20051105150332.GB6577@logos.cnet>
-References: <20051105150332.GB6577@logos.cnet>
-Cc: Dominik Brodowski <linux@dominikbrodowski.net>,
-	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] ppc32 8xx: MPC8xx PCMCIA update
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_0000_01C5E3A9.9A923B20"
+Message-Id: <20051107064328.E9A261127@smtp.263.net>
+Cc: Linuxppc-embedded@ozlabs.org
+Subject: 11-07-2005 2.6.14 can't finish build with yosemite-defconfig 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,11 +18,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Marcelo Tosatti writes:
+This is a multi-part message in MIME format.
 
-> The following patch updates the MPC8xx PCMCIA driver:
+------=_NextPart_000_0000_01C5E3A9.9A923B20
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-This and the following patch look OK as far as I can tell - Dominik,
-will you take care of sending them to Linus?
+Dear Denk
+	After cg-update today's kernel repository, I test with these steps:
+Make yosemite-defconfig
+Make uImage
 
-Paul.
+But the build stops with some errors, last cg-update (6 days ago) is ok.
+
+Cordially,
+
+Kylong Mu
+
+------=_NextPart_000_0000_01C5E3A9.9A923B20
+Content-Type: text/plain;
+	name="11-07-2005-build-error-yosemite.txt"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment; filename="11-07-2005-build-error-yosemite.txt"
+
+  CHK     include/linux/version.h=0A=
+  CHK     include/linux/compile.h=0A=
+  CHK     usr/initramfs_list=0A=
+make[1]: *** No rule to make target `arch/ppc/syslib/indirect_pci.o', =
+needed by `arch/ppc/syslib/built-in.o'.  Stop.=0A=
+make: *** [arch/ppc/syslib] Error 2=0A=
+
+------=_NextPart_000_0000_01C5E3A9.9A923B20--
