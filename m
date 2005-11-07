@@ -1,23 +1,18 @@
-Return-Path: <linville@tuxdriver.com>
-Received: from ra.tuxdriver.com (ra.tuxdriver.com [24.172.12.4])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 528E5684B6
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (unknown [212.105.56.243])
+	by ozlabs.org (Postfix) with ESMTP id 73283686A4
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Nov 2005 05:25:11 +1100 (EST)
-Date: Mon, 7 Nov 2005 13:24:59 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Pantelis Antoniou <panto@intracom.gr>, linuxppc-embedded@ozlabs.org,
-	netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-ID: <20051107182459.GD13797@tuxdriver.com>
-References: <20051106025701.GA9698@tuxdriver.com>
-	<436F07F5.1030206@intracom.gr>
-	<20051107182031.GC13797@tuxdriver.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20051107182031.GC13797@tuxdriver.com>
-Subject: [patch 2.6.14 (take #2)] fec_8xx: make CONFIG_FEC_8XX depend on
-	CONFIG_8xx
+	Tue,  8 Nov 2005 05:37:47 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Mon, 7 Nov 2005 19:37:45 +0100
+Message-ID: <F6AD7E21CDF4E145A44F61F43EE6D9393FD5C6@tmnt04.transmode.se>
+From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
+To: "Tom Rini" <trini@kernel.crashing.org>
+Cc: Dan Malek <dan@embeddedalley.com>, gtolstolytkin@ru.mvista.com,
+	linuxppc-embedded@ozlabs.org
+Subject: RE: [PATCH 2.6.14] mm: 8xx MM fix for
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,28 +23,95 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Change CONFIG_FEC_8XX to depend on CONFIG_8xx instead of CONFIG_FEC.
-CONFIG_FEC depends on ColdFire CPUs, which does not apply for the
-PPC 8xx processors.
+ >=20
+> On Mon, Nov 07, 2005 at 07:14:15PM +0100, Joakim Tjernlund wrote:
+> > > -----Original Message-----
+> > > From: Tom Rini [mailto:trini@kernel.crashing.org]=20
+> > > Sent: 07 November 2005 16:52
+> > > To: Marcelo Tosatti
+> > > Cc: Joakim Tjernlund; Pantelis Antoniou; Dan Malek;=20
+> > > linuxppc-embedded@ozlabs.org; gtolstolytkin@ru.mvista.com
+> > > Subject: Re: [PATCH 2.6.14] mm: 8xx MM fix for
+> > >=20
+> > > On Mon, Nov 07, 2005 at 08:16:18AM -0200, Marcelo Tosatti wrote:
+> > > > Joakim!
+> > > >=20
+> > > > On Mon, Nov 07, 2005 at 03:32:52PM +0100, Joakim=20
+> Tjernlund wrote:
+> > > > > Hi Marcelo
+> > > > >=20
+> > > > > [SNIP]=20
+> > > > > > The root of the problem are the changes against the 8xx TLB=20
+> > > > > > handlers introduced
+> > > > > > during v2.6. What happens is the TLBMiss handlers load the=20
+> > > > > > zeroed pte into
+> > > > > > the TLB, causing the TLBError handler to be invoked (thats=20
+> > > > > > two TLB faults per=20
+> > > > > > pagefault), which then jumps to the generic MM code to=20
+> > > setup the pte.
+> > > > > >=20
+> > > > > > The bug is that the zeroed TLB is not invalidated (the=20
+> > > same reason
+> > > > > > for the "dcbst" misbehaviour), resulting in infinite=20
+> > > TLBError faults.
+> > > > > >=20
+> > > > > > Dan, I wonder why we just don't go back to v2.4 behaviour.
+> > > > >=20
+> > > > > This is one reason why it is the way it is:
+> > > > >=20
+> > >=20
+> http://ozlabs.org/pipermail/linuxppc-embedded/2005-January/016382.html
+> > > > > This details are little fuzzy ATM, but I think the=20
+> reason for the
+> > > > > current
+> > > > > impl. was only that it was less intrusive to impl.
+> > > >=20
+> > > > Ah, I see. I wonder if the bug is processor specific: we=20
+> > > don't have such
+> > > > changes in our v2.4 tree and never experienced such problem.
+> > > >=20
+> > > > It should be pretty easy to hit it right? (instruction=20
+> > > pagefaults should
+> > > > fail).
+> > > >=20
+> > > > Grigori, Tom, can you enlight us about the issue on the URL=20
+> > > above. How
+> > > > can it be triggered?
+> > >=20
+> > > So after looking at the code in 2.6.14 and current git, I=20
+> think the
+> > > above URL isn't relevant, unless there was a change I=20
+> missed (which
+> > > could totally be possible) that reverted the patch there and=20
+> > > fixed that
+> > > issue in a different manner.  But since I didn't figure that=20
+> > > out until I
+> > > had finished researching it again:
+> >=20
+> > I wasn't clear enough. What I meant was that the above patch made me
+> > think and
+> > the result was that I came up with a simpler fix, the "two=20
+> exception"
+> > fix that
+> > is in current kernels. See
+> >=20
+> http://linux.bkbits.net:8080/linux-2.6/diffs/arch/ppc/kernel/h
+> ead_8xx.S@
+> >=20
+> 1.19?nav=3Dindex.html|src/.|src/arch|src/arch/ppc|src/arch/ppc/k
+> ernel|hist
+> > /arch/ppc/kernel/head_8xx.S
+> > It appears this fix has some other issues :(
+> >=20
+> > How do the other ppc arches do? I am guessing that they don't double
+> > fault, but bails
+> > out to do_page_fault from the TLB Miss handler, like 8xx used to do.
+>=20
+> Assuming Dan doesn't come up with a more simple & better fix, maybe we
+> should go back to the original patch I made?
 
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
----
+That was what I was thinking too(or some variation of your patch)
+I wonder if that would solve the misbehaving dcbst problem Marcelo found
+some time ago too?
 
- drivers/net/fec_8xx/Kconfig |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/fec_8xx/Kconfig b/drivers/net/fec_8xx/Kconfig
-index 94e7a9a..a84c232 100644
---- a/drivers/net/fec_8xx/Kconfig
-+++ b/drivers/net/fec_8xx/Kconfig
-@@ -1,6 +1,6 @@
- config FEC_8XX
- 	tristate "Motorola 8xx FEC driver"
--	depends on NET_ETHERNET && FEC
-+	depends on NET_ETHERNET && 8xx
- 	select MII
- 
- config FEC_8XX_GENERIC_PHY
--- 
-John W. Linville
-linville@tuxdriver.com
+ Jocke
