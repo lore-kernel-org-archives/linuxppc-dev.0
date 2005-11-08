@@ -1,21 +1,18 @@
 Return-Path: <dan@embeddedalley.com>
 Received: from smtp101.biz.mail.re2.yahoo.com (smtp101.biz.mail.re2.yahoo.com
-	[68.142.229.215]) by ozlabs.org (Postfix) with SMTP id C3F1D68698
+	[68.142.229.215]) by ozlabs.org (Postfix) with SMTP id 39CB1686C2
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Nov 2005 11:40:02 +1100 (EST)
-In-Reply-To: <20051107182211.GI3839@smtp.west.cox.net>
-References: <F6AD7E21CDF4E145A44F61F43EE6D9393FD5C5@tmnt04.transmode.se>
-	<20051107182211.GI3839@smtp.west.cox.net>
+	Tue,  8 Nov 2005 11:49:27 +1100 (EST)
+In-Reply-To: <20051107151011.GA17161@logos.cnet>
+References: <20051107151011.GA17161@logos.cnet>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <5f867ec927fc64da92297b2bb017e57d@embeddedalley.com>
+Message-Id: <b4fb08107c7bd17161f36e023035080a@embeddedalley.com>
 From: Dan Malek <dan@embeddedalley.com>
-Date: Mon, 7 Nov 2005 19:46:16 -0500
-To: Tom Rini <trini@kernel.crashing.org>
-Cc: linuxppc-embedded@ozlabs.org,
-	Joakim Tjernlund <joakim.tjernlund@transmode.se>,
-	gtolstolytkin@ru.mvista.com
-Subject: Re: [PATCH 2.6.14] mm: 8xx MM fix for
+Date: Mon, 7 Nov 2005 19:55:39 -0500
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: fix swapping on 8xx?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,13 +24,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Nov 7, 2005, at 1:22 PM, Tom Rini wrote:
+On Nov 7, 2005, at 10:10 AM, Marcelo Tosatti wrote:
 
-> Assuming Dan doesn't come up with a more simple & better fix, maybe we
-> should go back to the original patch I made?
+> The following is an attempt to fix swapping on 8xx by not touching
+> _PAGE_ACCESSED bit if the page is not present.
 
-I'm working on it.  It'll look more like 2.4.
+Ugh ....  I suppose.  I hate assembler code macros .......
+Somehow, "swapping" and "8xx" just don't belong together.
+I'm tempted to add a configuration option that is the complete
+opposite of this and assumes are really embedded system.
+Mark pages as always accessed, data pages as always dirty,
+and you can eliminate lots of TLB faults in systems that are
+fairly static.
 
-Thanks.
+None of this should really be done in a TLB miss handler,
+if there is anything that needs to be updated in a PTE, it should
+be pushed out to an error function.  A TLB miss handler
+should fit in a cache line ......
 
 	-- Dan
