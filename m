@@ -1,16 +1,16 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 9 Nov 2005 09:32:02 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Stefan Roese <sr@denx.de>
-Message-ID: <20051108223202.GA25185@localhost.localdomain>
-References: <20051107124917.C1671@cox.net>
-	<20051107190128.68d41294.akpm@osdl.org>
-	<20051108093759.A26086@cox.net> <200511081838.11236.sr@denx.de>
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao02.cox.net (fed1rmmtao02.cox.net [68.230.241.37])
+	by ozlabs.org (Postfix) with ESMTP id 8C7F3686E8
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Nov 2005 09:36:33 +1100 (EST)
+Date: Tue, 8 Nov 2005 15:36:31 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Andrew Morton <akpm@osdl.org>, Paul Mackerras <paulus@samba.org>,
+	Kumar Gala <galak@gate.crashing.org>
+Message-ID: <20051108223631.GR3839@smtp.west.cox.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200511081838.11236.sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
-Subject: Re: 440EP FPU support missing
+Cc: linuxppc-dev@ozlabs.org, Matt Mackall <mpm@selenic.com>
+Subject: [PATCH 2.6.14] ppc32: Fix CONFIG_PRINTK=n building
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,27 +20,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Nov 08, 2005 at 06:38:11PM +0100, Stefan Roese wrote:
-> In the current linux version, Bamboo (440EP) won't compile anymore, because of 
-> missing fpu support:
-> 
-> make uImage
-> ...
->   LD      init/built-in.o
->   LD      .tmp_vmlinux1
-> arch/ppc/kernel/head_44x.o(.text+0x868): In function `_start':
-> : undefined reference to `KernelFP'
-> make: *** [.tmp_vmlinux1] Error 1
-> 
-> Somehow arch/ppc/kernel/fpu.S has disappeared. :-( I assume, this happened in 
-> the ppc/ppc64 -> powerpc merge. Any thoughts, why this file disappeared and 
-> how to solve this problem (just restore the original file)?
+The following patch is needed to allow PRINTK=n to work on ppc32.
 
-It's just moved to arch/powerpc/kernel/fpu.S.  All you should need is
-to tweak the Makefiles so that it's included in your build.
+Direct calls to printk from asm files can't be magically removed so we
+have to do it manually.
+
+Signed-off-by: Tom Rini <trini@kernel.crashing.org>
+
+Index: linux-2.6.14/arch/ppc/kernel/fpu.S
+===================================================================
+--- linux-2.6.14.orig/arch/ppc/kernel/fpu.S
++++ linux-2.6.14/arch/ppc/kernel/fpu.S
+@@ -91,7 +91,9 @@ KernelFP:
+ 	ori	r3,r3,86f@l
+ 	mr	r4,r2			/* current */
+ 	lwz	r5,_NIP(r1)
++#ifdef CONFIG_PRINTK
+ 	bl	printk
++#endif
+ 	b	ret_from_except
+ 86:	.string	"floating point used in kernel (task=%p, pc=%x)\n"
+ 	.align	4,0
+Index: linux-2.6.14/arch/ppc/kernel/head.S
+===================================================================
+--- linux-2.6.14.orig/arch/ppc/kernel/head.S
++++ linux-2.6.14/arch/ppc/kernel/head.S
+@@ -846,7 +846,9 @@ KernelAltiVec:
+ 	ori	r3,r3,87f@l
+ 	mr	r4,r2		/* current */
+ 	lwz	r5,_NIP(r1)
++#ifdef CONFIG_PRINTK
+ 	bl	printk
++#endif
+ 	b	ret_from_except
+ 87:	.string	"AltiVec used in kernel  (task=%p, pc=%x)  \n"
+ 	.align	4,0
+Index: linux-2.6.14/arch/ppc/kernel/head_fsl_booke.S
+===================================================================
+--- linux-2.6.14.orig/arch/ppc/kernel/head_fsl_booke.S
++++ linux-2.6.14/arch/ppc/kernel/head_fsl_booke.S
+@@ -906,7 +906,9 @@ KernelSPE:
+ 	ori	r3,r3,87f@l
+ 	mr	r4,r2		/* current */
+ 	lwz	r5,_NIP(r1)
++#ifdef CONFIG_PRINTK
+ 	bl	printk
++#endif
+ 	b	ret_from_except
+ 87:	.string	"SPE used in kernel  (task=%p, pc=%x)  \n"
+ 	.align	4,0
 
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Tom Rini
+http://gate.crashing.org/~trini/
