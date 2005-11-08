@@ -1,19 +1,21 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao03.cox.net (fed1rmmtao03.cox.net [68.230.241.36])
-	by ozlabs.org (Postfix) with ESMTP id 1C063686D1
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4E9BB686D3
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  9 Nov 2005 08:02:05 +1100 (EST)
-Date: Tue, 8 Nov 2005 14:02:04 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Wolfgang Denk <wd@denx.de>
-Message-ID: <20051108210204.GP3839@smtp.west.cox.net>
-References: <20051108175658.GO3839@smtp.west.cox.net>
-	<20051108205259.A2870352B33@atlas.denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed,  9 Nov 2005 09:24:19 +1100 (EST)
 In-Reply-To: <20051108205259.A2870352B33@atlas.denx.de>
-Cc: David Jander <david.jander@protonic.nl>, linuxppc-embedded@ozlabs.org
-Subject: Re: fix swapping on 8xx?
+References: <20051108205259.A2870352B33@atlas.denx.de>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <9edbd784a9398cdd8c08c474b1b37e43@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Tue, 8 Nov 2005 17:30:27 -0500
+To: Wolfgang Denk <wd@denx.de>
+Cc: Tom Rini <trini@kernel.crashing.org>,
+	David Jander <david.jander@protonic.nl>, linuxppc-embedded@ozlabs.org
+Subject: Re: fix swapping on 8xx? 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,27 +26,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Nov 08, 2005 at 09:52:59PM +0100, Wolfgang Denk wrote:
-> In message <20051108175658.GO3839@smtp.west.cox.net> you wrote:
-> >
-> > > Well, at least it sounds ugly together, but it is also at least conceiveable. 
-> > > There seem to be people who use PCMCIA for an IDE interface, so swapping may 
-> > > become desireable in some cases.
-> > 
-> > I think Dan might be in the camp that says a properly designed embedded
-> > system won't need to swap.  And when I hear about how people do try and
-> > swap on systems like this, I really start agreeing.  Maybe we could make
-> > 8xx just select SWAP=n? :)
-> 
-> No! David is right. There are systems out in the field  running  with
-> IDE  harddisks attached (either through custom hardware interfaces or
-> through standard PCMCIA adapters), and some of  these  actually  need
-> and use swap space.
-> 
+
+On Nov 8, 2005, at 3:52 PM, Wolfgang Denk wrote:
+
 > Please do not remove stuff that is needed and used to work (in 2.4).
 
-Note the bug in question exists in 2.4, and I think really even 2.2.
+I'm not proposing we remove anything :-)  It would just be nice
+to eliminate the overhead of managing the PTEs if we don't
+need such a feature.  The complexity of the TLB miss handler
+just keeps growing to add/fix this stuff, and it really shouldn't
+be in that code path.  All of this support should be pushed
+into the error path, and if it was somewhat configurable we
+wouldn't be in that path if not necessary.
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+Thanks.
+
+	-- Dan
