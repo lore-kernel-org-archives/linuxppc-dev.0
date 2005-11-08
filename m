@@ -1,19 +1,21 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 616F06868F
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp101.biz.mail.re2.yahoo.com (smtp101.biz.mail.re2.yahoo.com
+	[68.142.229.215]) by ozlabs.org (Postfix) with SMTP id B5C3C67A44
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Nov 2005 09:09:37 +1100 (EST)
-To: Sette Agostino <Agostino.Sette@siemens.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 07 Nov 2005 15:34:44 +0100."
-	<69DF49BE936F4441980EC1D59F0ADC2F0108C12C@aqlby02a.siemens.it>
-Date: Mon, 07 Nov 2005 23:09:34 +0100
-Sender: wd@denx.de
-Message-Id: <20051107220934.9120C353E30@atlas.denx.de>
+	Tue,  8 Nov 2005 11:38:02 +1100 (EST)
+In-Reply-To: <200511072250.03217.pantelis.antoniou@gmail.com>
+References: <200510302203.25390.pantelis.antoniou@gmail.com>
+	<20051107084431.GA15180@logos.cnet>
+	<1131396000.4652.24.camel@gaston>
+	<200511072250.03217.pantelis.antoniou@gmail.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <cbe32e9ba3fb8fd6c8d930e7f578369f@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Date: Mon, 7 Nov 2005 19:44:14 -0500
+To: pantelis.antoniou@gmail.com
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: PPCBoot 2.0.0 Errors 
+Subject: Re: [PATCH 2.6.14] mm: 8xx MM fix for
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,43 +26,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <69DF49BE936F4441980EC1D59F0ADC2F0108C12C@aqlby02a.siemens.it> you wrote:
-> 
-> I have the following problem at the PPCBoot startup:
-> 
-> PPCBoot 2.0.0 (Oct 20 2005 - 12:28:22)
 
-PPCBoot is a dead project. It was discontinued more than 3 years ago.
-It is definitely a bad idea to  use  it  for  current  projects.  Use
-U-Boot instead.
+On Nov 7, 2005, at 3:50 PM, Pantelis Antoniou wrote:
 
-Also, this is completely off topic on this mailing list.
+> Yep. That should be the target. Remember the poor 8xx is not exactly a
+> speed demon :).
 
-> CPU:   unknown MPC859 (0x08010004) at 133 MHz: 16 kB I-Cache 8 kB D-Cache
+It really isn't a big speed difference.  The context save/restore
+is minimal.  The original thought was " ...well, I'm already here,
+I know we will take another exception, so may as well fake the
+error case and call do_page_fault."   However, I really do like
+a minimal TLB miss case for valid PTEs, and push everything
+else to the heavyweight functions.
 
-Use U-Boot instead.
+Thanks.
 
-> Board: Siemens CCM
-
-And don't use a board configuration that does not match your hardware.
-
-> ## Booting image at 40180000 ...
->    Image Name:   Linux-2.4.20-rthal5
-
-Argh... Ancient stuff again. Forget it.
-
-> Anybody experienced the same problem? Any suggestions about how to solve it?
-
-Use current software. Read the documentation. Post on the appropriate
-mailing lists.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-My challenge to the goto-less programmer  is  to  recode  tcp_input()
-without any gotos ... without any loss of efficiency (there has to be
-a catch).                                             - W. R. Stevens
+	-- Dan
