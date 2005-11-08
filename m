@@ -1,20 +1,20 @@
 Return-Path: <dan@embeddedalley.com>
 Received: from smtp101.biz.mail.re2.yahoo.com (smtp101.biz.mail.re2.yahoo.com
-	[68.142.229.215]) by ozlabs.org (Postfix) with SMTP id B5C3C67A44
+	[68.142.229.215]) by ozlabs.org (Postfix) with SMTP id C3F1D68698
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Nov 2005 11:38:02 +1100 (EST)
-In-Reply-To: <200511072250.03217.pantelis.antoniou@gmail.com>
-References: <200510302203.25390.pantelis.antoniou@gmail.com>
-	<20051107084431.GA15180@logos.cnet>
-	<1131396000.4652.24.camel@gaston>
-	<200511072250.03217.pantelis.antoniou@gmail.com>
+	Tue,  8 Nov 2005 11:40:02 +1100 (EST)
+In-Reply-To: <20051107182211.GI3839@smtp.west.cox.net>
+References: <F6AD7E21CDF4E145A44F61F43EE6D9393FD5C5@tmnt04.transmode.se>
+	<20051107182211.GI3839@smtp.west.cox.net>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <cbe32e9ba3fb8fd6c8d930e7f578369f@embeddedalley.com>
+Message-Id: <5f867ec927fc64da92297b2bb017e57d@embeddedalley.com>
 From: Dan Malek <dan@embeddedalley.com>
-Date: Mon, 7 Nov 2005 19:44:14 -0500
-To: pantelis.antoniou@gmail.com
-Cc: linuxppc-embedded@ozlabs.org
+Date: Mon, 7 Nov 2005 19:46:16 -0500
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: linuxppc-embedded@ozlabs.org,
+	Joakim Tjernlund <joakim.tjernlund@transmode.se>,
+	gtolstolytkin@ru.mvista.com
 Subject: Re: [PATCH 2.6.14] mm: 8xx MM fix for
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,17 +27,12 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Nov 7, 2005, at 3:50 PM, Pantelis Antoniou wrote:
+On Nov 7, 2005, at 1:22 PM, Tom Rini wrote:
 
-> Yep. That should be the target. Remember the poor 8xx is not exactly a
-> speed demon :).
+> Assuming Dan doesn't come up with a more simple & better fix, maybe we
+> should go back to the original patch I made?
 
-It really isn't a big speed difference.  The context save/restore
-is minimal.  The original thought was " ...well, I'm already here,
-I know we will take another exception, so may as well fake the
-error case and call do_page_fault."   However, I really do like
-a minimal TLB miss case for valid PTEs, and push everything
-else to the heavyweight functions.
+I'm working on it.  It'll look more like 2.4.
 
 Thanks.
 
