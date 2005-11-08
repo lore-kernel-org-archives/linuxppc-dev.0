@@ -1,16 +1,16 @@
-Return-Path: <Agostino.Sette@siemens.com>
-Received: from MILVB94A.icn.siemens.it (milvb94a.icn.siemens.it
-	[83.103.117.135]) by ozlabs.org (Postfix) with ESMTP id 8F567686AD
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  9 Nov 2005 00:52:59 +1100 (EST)
-Message-ID: <69DF49BE936F4441980EC1D59F0ADC2F010AD1A3@aqlby02a.siemens.it>
-From: Sette Agostino <Agostino.Sette@siemens.com>
-To: wd@denx.de
-Date: Tue, 8 Nov 2005 14:52:38 +0100 
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: PPCBoot 2.0.0 Errors 
+Return-Path: <mmporter@cox.net>
+Date: Tue, 8 Nov 2005 09:37:59 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Andrew Morton <akpm@osdl.org>
+Message-ID: <20051108093759.A26086@cox.net>
+References: <20051107124917.C1671@cox.net>
+	<20051107190128.68d41294.akpm@osdl.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20051107190128.68d41294.akpm@osdl.org>;
+	from akpm@osdl.org on Mon, Nov 07, 2005 at 07:01:28PM -0800
+Cc: linuxppc64-dev@ozlabs.org, paulus@samba.org, linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] ppc32: fix perf_irq extern on e500
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,24 +21,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->> 
->> As I told you, I tried to produce the U-boot, but I am nont confident on
-the
->> version (1.0.0).
+On Mon, Nov 07, 2005 at 07:01:28PM -0800, Andrew Morton wrote:
+> Matt Porter <mporter@kernel.crashing.org> wrote:
+> >
+> > Add an extern reference to perf_irq on e500.
 
->No, indeed. This is ancient stuff. Use top of tree from the GIT  repo
->(or CVS), or download the latest snapshot from our FTP server.
-Ok, I did it and I produced a new u-boot
+<snip>
 
->> Could you suggest me the latest stale version I must get?
+> >  #ifdef CONFIG_E500
+> > +extern perf_irq_t perf_irq;
+> > +
+> >  void performance_monitor_exception(struct pt_regs *regs)
+> >  {
+> >  	perf_irq(regs);
+> 
+> extern decls are placed in header files, please.  
 
->May I suggest that you start reading the manual? See
->http://www.denx.de/wiki/DULG/Manual
-Ok, I alreay read it, but it is not so easy to convince my bosses to change
-the boot :-(.
-Anyway I am going to take a closer look to the doc.
+Here's the updated patch, addressing this for ppc64 as well.  Paul,
+would you prefer that this go through the powerpc-merge tree since
+the updated version modifies arch/powerpc/?
 
-Thanks once again
+-Matt
 
-Best Regards
-Agostino Sette
+Fixes e500 build and cleans up traps.c by moving perf_irq extern to
+pmc.h.
+
+Signed-off-by: Matt Porter <mporter@kernel.crashing.org>
+
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 07e5ee4..32cd797 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -898,10 +898,6 @@ void altivec_unavailable_exception(struc
+ 	die("Unrecoverable VMX/Altivec Unavailable Exception", regs, SIGABRT);
+ }
+ 
+-#ifdef CONFIG_PPC64
+-extern perf_irq_t perf_irq;
+-#endif
+-
+ #if defined(CONFIG_PPC64) || defined(CONFIG_E500)
+ void performance_monitor_exception(struct pt_regs *regs)
+ {
+diff --git a/include/asm-powerpc/pmc.h b/include/asm-powerpc/pmc.h
+index 2f3c3fc..5f41f3a 100644
+--- a/include/asm-powerpc/pmc.h
++++ b/include/asm-powerpc/pmc.h
+@@ -22,6 +22,7 @@
+ #include <asm/ptrace.h>
+ 
+ typedef void (*perf_irq_t)(struct pt_regs *);
++extern perf_irq_t perf_irq;
+ 
+ int reserve_pmc_hardware(perf_irq_t new_perf_irq);
+ void release_pmc_hardware(void);
