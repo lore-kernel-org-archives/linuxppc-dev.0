@@ -1,15 +1,14 @@
-Return-Path: <mmporter@cox.net>
-Date: Tue, 8 Nov 2005 15:30:36 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 9 Nov 2005 09:32:02 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
 To: Stefan Roese <sr@denx.de>
-Message-ID: <20051108153036.F27232@cox.net>
+Message-ID: <20051108223202.GA25185@localhost.localdomain>
 References: <20051107124917.C1671@cox.net>
 	<20051107190128.68d41294.akpm@osdl.org>
 	<20051108093759.A26086@cox.net> <200511081838.11236.sr@denx.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200511081838.11236.sr@denx.de>;
-	from sr@denx.de on Tue, Nov 08, 2005 at 06:38:11PM +0100
+In-Reply-To: <200511081838.11236.sr@denx.de>
 Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
 Subject: Re: 440EP FPU support missing
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -37,24 +36,11 @@ On Tue, Nov 08, 2005 at 06:38:11PM +0100, Stefan Roese wrote:
 > the ppc/ppc64 -> powerpc merge. Any thoughts, why this file disappeared and 
 > how to solve this problem (just restore the original file)?
 
-arch/powerpc/kernel/fpu.S is being used now which doesn't have KernelFP.
-I don't know why the 44x fpu support wasn't using
-kernel_fp_unavailable_exception() before but I must have missed that
-reviewing it.
+It's just moved to arch/powerpc/kernel/fpu.S.  All you should need is
+to tweak the Makefiles so that it's included in your build.
 
-Try this patch.
-
--Matt
-
-diff --git a/arch/ppc/kernel/head_booke.h b/arch/ppc/kernel/head_booke.h
-index aeb349b..f3d274c 100644
---- a/arch/ppc/kernel/head_booke.h
-+++ b/arch/ppc/kernel/head_booke.h
-@@ -358,6 +358,6 @@ label:
- 	NORMAL_EXCEPTION_PROLOG;					      \
- 	bne	load_up_fpu;		/* if from user, just load it up */   \
- 	addi	r3,r1,STACK_FRAME_OVERHEAD;				      \
--	EXC_XFER_EE_LITE(0x800, KernelFP)
-+	EXC_XFER_EE_LITE(0x800, kernel_fp_unavailable_exception)
- 
- #endif /* __HEAD_BOOKE_H__ */
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
