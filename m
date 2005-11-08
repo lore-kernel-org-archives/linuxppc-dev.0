@@ -1,19 +1,22 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao01.cox.net (fed1rmmtao01.cox.net [68.230.241.38])
-	by ozlabs.org (Postfix) with ESMTP id 3A9B2686B8
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 26DA0686AD
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  9 Nov 2005 04:56:59 +1100 (EST)
-Date: Tue, 8 Nov 2005 10:56:58 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: David Jander <david.jander@protonic.nl>
-Message-ID: <20051108175658.GO3839@smtp.west.cox.net>
+	Wed,  9 Nov 2005 05:51:12 +1100 (EST)
+In-Reply-To: <20051108175658.GO3839@smtp.west.cox.net>
 References: <20051107151011.GA17161@logos.cnet>
 	<b4fb08107c7bd17161f36e023035080a@embeddedalley.com>
 	<200511081259.26525.david.jander@protonic.nl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200511081259.26525.david.jander@protonic.nl>
-Cc: linuxppc-embedded@ozlabs.org
+	<20051108175658.GO3839@smtp.west.cox.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <ae77b5dcfdaa24efebf92042907e2ce8@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Tue, 8 Nov 2005 13:57:07 -0500
+To: Tom Rini <trini@kernel.crashing.org>
+Cc: David Jander <david.jander@protonic.nl>, linuxppc-embedded@ozlabs.org
 Subject: Re: fix swapping on 8xx?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,35 +28,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Nov 08, 2005 at 01:59:26PM +0200, David Jander wrote:
-> On Tuesday 08 November 2005 01:55, Dan Malek wrote:
-> > On Nov 7, 2005, at 10:10 AM, Marcelo Tosatti wrote:
-> > > The following is an attempt to fix swapping on 8xx by not touching
-> > > _PAGE_ACCESSED bit if the page is not present.
-> >
-> > Ugh ....  I suppose.  I hate assembler code macros .......
-> > Somehow, "swapping" and "8xx" just don't belong together.
-> 
-> Well, at least it sounds ugly together, but it is also at least conceiveable. 
-> There seem to be people who use PCMCIA for an IDE interface, so swapping may 
-> become desireable in some cases.
 
-I think Dan might be in the camp that says a properly designed embedded
-system won't need to swap.  And when I hear about how people do try and
-swap on systems like this, I really start agreeing.  Maybe we could make
-8xx just select SWAP=n? :)
+On Nov 8, 2005, at 12:56 PM, Tom Rini wrote:
 
-> > I'm tempted to add a configuration option that is the complete
-> > opposite of this and assumes are really embedded system.
-> > Mark pages as always accessed, data pages as always dirty,
-> > and you can eliminate lots of TLB faults in systems that are
-> > fairly static.
-> 
-> It sounds tempting indeed, but should you really notice a performance increase 
-> out of this?
+> I think Dan might be in the camp that says a properly designed embedded
+> system won't need to swap.
 
-Compared to 8xx in 2.6 today?  Absolutely.
+I'm actually in the camp that knows the majority of systems
+running Linux aren't workstations and don't have disk drives.
+It would be nice to have selectable features for such applications.
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+>> It sounds tempting indeed, but should you really notice a performance 
+>> increase
+>> out of this?
+
+Yes.  Most importantly it adds some predictability which is quite
+measurable on this class of processor.  It was a coding mistake way
+back in 2.2 that actually exposed this.  I was taking some liberties by
+updating more status in the PTE than I should have, and Paulus
+made me fix it in 2.4 :-)  It basically eliminates TLB faults associated
+with system status tracking, since we aren't paging there isn't any
+need to track page aging and such.  If you are paging, it still
+functions properly, you may just not pick the most suitable pages
+to steal.
+
+Thanks.
+
+	-- Dan
