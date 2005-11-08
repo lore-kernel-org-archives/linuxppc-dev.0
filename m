@@ -1,20 +1,18 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4E9BB686D3
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 0BB4C686F8
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  9 Nov 2005 09:24:19 +1100 (EST)
-In-Reply-To: <20051108205259.A2870352B33@atlas.denx.de>
-References: <20051108205259.A2870352B33@atlas.denx.de>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <9edbd784a9398cdd8c08c474b1b37e43@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Tue, 8 Nov 2005 17:30:27 -0500
-To: Wolfgang Denk <wd@denx.de>
-Cc: Tom Rini <trini@kernel.crashing.org>,
-	David Jander <david.jander@protonic.nl>, linuxppc-embedded@ozlabs.org
+	Wed,  9 Nov 2005 09:47:00 +1100 (EST)
+To: Tom Rini <trini@kernel.crashing.org>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 08 Nov 2005 14:02:04 MST."
+	<20051108210204.GP3839@smtp.west.cox.net>
+Date: Tue, 08 Nov 2005 23:46:58 +0100
+Sender: wd@denx.de
+Message-Id: <20051108224658.98933352B33@atlas.denx.de>
+Cc: David Jander <david.jander@protonic.nl>, linuxppc-embedded@ozlabs.org
 Subject: Re: fix swapping on 8xx? 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,19 +24,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+In message <20051108210204.GP3839@smtp.west.cox.net> you wrote:
+>
+> > Please do not remove stuff that is needed and used to work (in 2.4).
+> 
+> Note the bug in question exists in 2.4, and I think really even 2.2.
 
-On Nov 8, 2005, at 3:52 PM, Wolfgang Denk wrote:
+Hm... as far as I can remember (and see in the change logs) the  only
+fix  we  implemented  for our 2.4.25 tree to get swapping on a MPC8xx
+working was a set of bad offsets in include/asm-ppc/pgtable.h - see
+http://www.denx.de/cgi-bin/gitweb.cgi?p=linuxppc_2_4_devel.git;a=commit;h=e6d7a1c83f9fd5820cdb85389d6a8f2207f3641d
 
-> Please do not remove stuff that is needed and used to work (in 2.4).
+With this change swapping works fine for us - some of  our  customers
+have been using this code in production for over two years now.
 
-I'm not proposing we remove anything :-)  It would just be nice
-to eliminate the overhead of managing the PTEs if we don't
-need such a feature.  The complexity of the TLB miss handler
-just keeps growing to add/fix this stuff, and it really shouldn't
-be in that code path.  All of this support should be pushed
-into the error path, and if it was somewhat configurable we
-wouldn't be in that path if not necessary.
+Best regards,
 
-Thanks.
+Wolfgang Denk
 
-	-- Dan
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Good morning. This is the telephone company. Due  to  repairs,  we're
+giving  you  advance notice that your service will be cut off indefi-
+nitely at ten o'clock. That's two minutes from now.
