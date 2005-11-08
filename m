@@ -1,18 +1,31 @@
-Return-Path: <Agostino.Sette@siemens.com>
-Received: from MILVB94A.icn.siemens.it (milvb94a.icn.siemens.it
-	[83.103.117.135]) by ozlabs.org (Postfix) with ESMTP id 61E7C686C3
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id 90C8C686A6
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Nov 2005 20:18:29 +1100 (EST)
-Message-ID: <69DF49BE936F4441980EC1D59F0ADC2F0108C29F@aqlby02a.siemens.it>
-From: Sette Agostino <Agostino.Sette@siemens.com>
-To: wd@denx.de,
-	Sette Agostino <Agostino.Sette@siemens.com>
-Date: Tue, 8 Nov 2005 10:18:05 +0100 
+	Tue,  8 Nov 2005 22:59:38 +1100 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by protonic.prtnl (Postfix) with ESMTP id 08F1229EBC
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  8 Nov 2005 12:57:54 +0100 (CET)
+Received: from protonic.prtnl ([127.0.0.1])
+	by localhost (protonic [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
+	id 30792-07 for <linuxppc-embedded@ozlabs.org>;
+	Tue,  8 Nov 2005 12:57:53 +0100 (CET)
+Received: from linux.local (linux.prtnl [192.168.1.97])
+	by protonic.prtnl (Postfix) with ESMTP id 4191C29EBB
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  8 Nov 2005 12:57:53 +0100 (CET)
+From: David Jander <david.jander@protonic.nl>
+To: linuxppc-embedded@ozlabs.org
+Date: Tue, 8 Nov 2005 13:59:26 +0200
+References: <20051107151011.GA17161@logos.cnet>
+	<b4fb08107c7bd17161f36e023035080a@embeddedalley.com>
+In-Reply-To: <b4fb08107c7bd17161f36e023035080a@embeddedalley.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset=iso-8859-1
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: PPCBoot 2.0.0 Errors 
+  charset="iso-8859-1"
+Message-Id: <200511081259.26525.david.jander@protonic.nl>
+Subject: Re: fix swapping on 8xx?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,90 +36,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Wolfgang,
+On Tuesday 08 November 2005 01:55, Dan Malek wrote:
+> On Nov 7, 2005, at 10:10 AM, Marcelo Tosatti wrote:
+> > The following is an attempt to fix swapping on 8xx by not touching
+> > _PAGE_ACCESSED bit if the page is not present.
+>
+> Ugh ....  I suppose.  I hate assembler code macros .......
+> Somehow, "swapping" and "8xx" just don't belong together.
 
-As I told you, I tried to produce the U-boot, but I am nont confident =
-on the
-version (1.0.0).
-Could you suggest me the latest stale version I must get?
+Well, at least it sounds ugly together, but it is also at least conceiveable. 
+There seem to be people who use PCMCIA for an IDE interface, so swapping may 
+become desireable in some cases.
 
-Thanks
+> I'm tempted to add a configuration option that is the complete
+> opposite of this and assumes are really embedded system.
+> Mark pages as always accessed, data pages as always dirty,
+> and you can eliminate lots of TLB faults in systems that are
+> fairly static.
 
-Best Regards,
-Agostino Sette
+It sounds tempting indeed, but should you really notice a performance increase 
+out of this?
 
+Greetings,
 
-TechnoLabs
-Department of Innovation Software3
-S.S. 17 Localit=E0 Boschetto
-67100 L' Aquila (Italy)
-Tel: (+39)  0862 344.557
-Fax: (+39)  0862 344.623
-e-mail: Agostino.Sette@siemens.com =20
-=20
-
------Original Message-----
-From: wd@denx.de [mailto:wd@denx.de]=20
-Sent: marted=EC 8 novembre 2005 10.09
-To: Sette Agostino
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: PPCBoot 2.0.0 Errors=20
-
-In message =
-<69DF49BE936F4441980EC1D59F0ADC2F0108C267@aqlby02a.siemens.it>
-you wrote:
->=20
-> I agree with you concerning the PPCBoot. In fact in other boards we =
-are
-using U-Boot.
-> We tried to use U-Boot for MPC859 but we had some problems we are =
-trying
-to
-> solve.
-
-You cannot solve  these  problems  by  downgrading  to  PPCBoot.  The
-852/859/866  processors  are  definitelu *not* supported by PPCBoot -
-the required changes of the clock handling were added much later. You
-*must* use U-Boot.
-
-> As far as you know to change the boot or the kernel on cards in field =
-is
-not
-> so easy :-(
-
-You mean you shipped boards to customers in  the  field  in  a  state
-where you did not even decide for a final version of the boot loader?
-Gosh...
-
-> We found an unexpected beahviour regarding the Linux time tick.=20
-
-...whichis probablky cause by using PPCBoot which does not understand
-to deal with a 859.
-
-> Another interesting point is that the same kernel works well on other
-TQM8xx
-> modules, but not fot TQM859.
-
-U-Boot is running perfectly fine on the TQM859 - we have these boards
-here in our virtual lab; they are tested on a regular base.
-
-> I will try to introduce the U-Boot, but I am not confident it will =
-solve
-the
-> problem, what do you think about it?
-
-I can *guarantee* you that PPCBoot is definitely worse on your =
-hardware.
-
-> Last question, which is the appropriate mailing list?
-
-u-boot-users
-
-Best regards,
-
-Wolfgang Denk
-
---=20
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Always leave room to add an explanation if it doesn't work out.
+-- 
+David Jander
