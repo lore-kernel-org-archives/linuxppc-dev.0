@@ -1,18 +1,20 @@
-Return-Path: <dan@embeddedalley.com>
-Received: from smtp101.biz.mail.re2.yahoo.com (smtp101.biz.mail.re2.yahoo.com
-	[68.142.229.215]) by ozlabs.org (Postfix) with SMTP id 39CB1686C2
+Return-Path: <akpm@osdl.org>
+Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 229E96868F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  8 Nov 2005 11:49:27 +1100 (EST)
-In-Reply-To: <20051107151011.GA17161@logos.cnet>
-References: <20051107151011.GA17161@logos.cnet>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <b4fb08107c7bd17161f36e023035080a@embeddedalley.com>
-From: Dan Malek <dan@embeddedalley.com>
-Date: Mon, 7 Nov 2005 19:55:39 -0500
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: fix swapping on 8xx?
+	Tue,  8 Nov 2005 14:01:40 +1100 (EST)
+Date: Mon, 7 Nov 2005 19:01:28 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: Matt Porter <mporter@kernel.crashing.org>
+Message-Id: <20051107190128.68d41294.akpm@osdl.org>
+In-Reply-To: <20051107124917.C1671@cox.net>
+References: <20051107124917.C1671@cox.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] ppc32: fix perf_irq extern on e500
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,23 +25,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Matt Porter <mporter@kernel.crashing.org> wrote:
+>
+> Add an extern reference to perf_irq on e500.
+> 
+> Signed-off-by: Matt Porter <mporter@kernel.crashing.org>
+> 
+> diff --git a/arch/ppc/kernel/traps.c b/arch/ppc/kernel/traps.c
+> index 16adde6..ff1bdc2 100644
+> --- a/arch/ppc/kernel/traps.c
+> +++ b/arch/ppc/kernel/traps.c
+> @@ -888,6 +888,8 @@ void altivec_assist_exception(struct pt_
+>  #endif /* CONFIG_ALTIVEC */
+>  
+>  #ifdef CONFIG_E500
+> +extern perf_irq_t perf_irq;
+> +
+>  void performance_monitor_exception(struct pt_regs *regs)
+>  {
+>  	perf_irq(regs);
 
-On Nov 7, 2005, at 10:10 AM, Marcelo Tosatti wrote:
-
-> The following is an attempt to fix swapping on 8xx by not touching
-> _PAGE_ACCESSED bit if the page is not present.
-
-Ugh ....  I suppose.  I hate assembler code macros .......
-Somehow, "swapping" and "8xx" just don't belong together.
-I'm tempted to add a configuration option that is the complete
-opposite of this and assumes are really embedded system.
-Mark pages as always accessed, data pages as always dirty,
-and you can eliminate lots of TLB faults in systems that are
-fairly static.
-
-None of this should really be done in a TLB miss handler,
-if there is anything that needs to be updated in a PTE, it should
-be pushed out to an error function.  A TLB miss handler
-should fit in a cache line ......
-
-	-- Dan
+extern decls are placed in header files, please.  
