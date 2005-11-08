@@ -1,18 +1,20 @@
-Return-Path: <adobriyan@gmail.com>
-Received: from nproxy.gmail.com (nproxy.gmail.com [64.233.182.193])
-	by ozlabs.org (Postfix) with ESMTP id F14A6686AD
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Nov 2005 05:02:07 +1100 (EST)
-Received: by nproxy.gmail.com with SMTP id y38so212847nfb
-	for <linuxppc-dev@ozlabs.org>; Tue, 08 Nov 2005 10:02:05 -0800 (PST)
-Date: Tue, 8 Nov 2005 21:08:02 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Paul Mackerras <paulus@samba.org>
-Message-ID: <20051108180802.GH7631@mipter.zuzino.mipt.ru>
+Return-Path: <oxymoron@waste.org>
+Received: from waste.org (waste.org [216.27.176.166])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "waste.org", Issuer "waste.org" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id DCE31686C1
+	for <linuxppc-dev@ozlabs.org>; Wed,  9 Nov 2005 09:52:21 +1100 (EST)
+Date: Tue, 8 Nov 2005 14:39:27 -0800
+From: Matt Mackall <mpm@selenic.com>
+To: Tom Rini <trini@kernel.crashing.org>
+Message-ID: <20051108223927.GE9760@waste.org>
+References: <20051108223631.GR3839@smtp.west.cox.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	Domen Puncer <domen@coderock.org>
-Subject: [PATCH] Remove arch/ppc/syslib/ppc4xx_pm.c
+In-Reply-To: <20051108223631.GR3839@smtp.west.cox.net>
+Cc: Andrew Morton <akpm@osdl.org>, Kumar Gala <galak@gate.crashing.org>,
+	linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2.6.14] ppc32: Fix CONFIG_PRINTK=n building
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,62 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Domen Puncer <domen@coderock.org>
+On Tue, Nov 08, 2005 at 03:36:31PM -0700, Tom Rini wrote:
+> The following patch is needed to allow PRINTK=n to work on ppc32.
+> 
+> Direct calls to printk from asm files can't be magically removed so we
+> have to do it manually.
+> 
+> Signed-off-by: Tom Rini <trini@kernel.crashing.org>
 
-Remove nowhere referenced file ("grep ppc4xx_pm -r ." didn't find anything)
+Looks good. 
 
-Signed-off-by: Domen Puncer <domen@coderock.org>
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+Acked-by: Matt Mackall <mpm@selenic.com>
 
-Index: linux-kj/arch/ppc/syslib/ppc4xx_pm.c
-===================================================================
---- linux-kj.orig/arch/ppc/syslib/ppc4xx_pm.c	2005-11-08 20:46:23.000000000 +0300
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,47 +0,0 @@
--/*
-- * Author: Armin Kuster <akuster@mvista.com>
-- *
-- * 2002 (c) MontaVista, Software, Inc.  This file is licensed under
-- * the terms of the GNU General Public License version 2.  This program
-- * is licensed "as is" without any warranty of any kind, whether express
-- * or implied.
-- *
-- * This an attempt to get Power Management going for the IBM 4xx processor.
-- * This was derived from the ppc4xx._setup.c file
-- */
--
--#include <linux/config.h>
--#include <linux/init.h>
--
--#include <asm/ibm4xx.h>
--
--void __init
--ppc4xx_pm_init(void)
--{
--
--	unsigned int value = 0;
--
--	/* turn off unused hardware to save power */
--#ifdef CONFIG_405GP
--	value |= CPM_DCP;	/* CodePack */
--#endif
--
--#if !defined(CONFIG_IBM_OCP_GPIO)
--	value |= CPM_GPIO0;
--#endif
--
--#if !defined(CONFIG_PPC405_I2C_ADAP)
--	value |= CPM_IIC0;
--#ifdef CONFIG_STB03xxx
--	value |= CPM_IIC1;
--#endif
--#endif
--
--
--#if !defined(CONFIG_405_DMA)
--	value |= CPM_DMA;
--#endif
--
--	mtdcr(DCRN_CPMFR, value);
--
--}
+-- 
+Mathematics is the supreme nostalgia of our time.
