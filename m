@@ -1,16 +1,20 @@
-Return-Path: <mmporter@cox.net>
-Date: Tue, 8 Nov 2005 09:37:59 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Andrew Morton <akpm@osdl.org>
-Message-ID: <20051108093759.A26086@cox.net>
-References: <20051107124917.C1671@cox.net>
-	<20051107190128.68d41294.akpm@osdl.org>
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao01.cox.net (fed1rmmtao01.cox.net [68.230.241.38])
+	by ozlabs.org (Postfix) with ESMTP id 3A9B2686B8
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed,  9 Nov 2005 04:56:59 +1100 (EST)
+Date: Tue, 8 Nov 2005 10:56:58 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: David Jander <david.jander@protonic.nl>
+Message-ID: <20051108175658.GO3839@smtp.west.cox.net>
+References: <20051107151011.GA17161@logos.cnet>
+	<b4fb08107c7bd17161f36e023035080a@embeddedalley.com>
+	<200511081259.26525.david.jander@protonic.nl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20051107190128.68d41294.akpm@osdl.org>;
-	from akpm@osdl.org on Mon, Nov 07, 2005 at 07:01:28PM -0800
-Cc: linuxppc64-dev@ozlabs.org, paulus@samba.org, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] ppc32: fix perf_irq extern on e500
+In-Reply-To: <200511081259.26525.david.jander@protonic.nl>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: fix swapping on 8xx?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,57 +25,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Nov 07, 2005 at 07:01:28PM -0800, Andrew Morton wrote:
-> Matt Porter <mporter@kernel.crashing.org> wrote:
+On Tue, Nov 08, 2005 at 01:59:26PM +0200, David Jander wrote:
+> On Tuesday 08 November 2005 01:55, Dan Malek wrote:
+> > On Nov 7, 2005, at 10:10 AM, Marcelo Tosatti wrote:
+> > > The following is an attempt to fix swapping on 8xx by not touching
+> > > _PAGE_ACCESSED bit if the page is not present.
 > >
-> > Add an extern reference to perf_irq on e500.
-
-<snip>
-
-> >  #ifdef CONFIG_E500
-> > +extern perf_irq_t perf_irq;
-> > +
-> >  void performance_monitor_exception(struct pt_regs *regs)
-> >  {
-> >  	perf_irq(regs);
+> > Ugh ....  I suppose.  I hate assembler code macros .......
+> > Somehow, "swapping" and "8xx" just don't belong together.
 > 
-> extern decls are placed in header files, please.  
+> Well, at least it sounds ugly together, but it is also at least conceiveable. 
+> There seem to be people who use PCMCIA for an IDE interface, so swapping may 
+> become desireable in some cases.
 
-Here's the updated patch, addressing this for ppc64 as well.  Paul,
-would you prefer that this go through the powerpc-merge tree since
-the updated version modifies arch/powerpc/?
+I think Dan might be in the camp that says a properly designed embedded
+system won't need to swap.  And when I hear about how people do try and
+swap on systems like this, I really start agreeing.  Maybe we could make
+8xx just select SWAP=n? :)
 
--Matt
+> > I'm tempted to add a configuration option that is the complete
+> > opposite of this and assumes are really embedded system.
+> > Mark pages as always accessed, data pages as always dirty,
+> > and you can eliminate lots of TLB faults in systems that are
+> > fairly static.
+> 
+> It sounds tempting indeed, but should you really notice a performance increase 
+> out of this?
 
-Fixes e500 build and cleans up traps.c by moving perf_irq extern to
-pmc.h.
+Compared to 8xx in 2.6 today?  Absolutely.
 
-Signed-off-by: Matt Porter <mporter@kernel.crashing.org>
-
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 07e5ee4..32cd797 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -898,10 +898,6 @@ void altivec_unavailable_exception(struc
- 	die("Unrecoverable VMX/Altivec Unavailable Exception", regs, SIGABRT);
- }
- 
--#ifdef CONFIG_PPC64
--extern perf_irq_t perf_irq;
--#endif
--
- #if defined(CONFIG_PPC64) || defined(CONFIG_E500)
- void performance_monitor_exception(struct pt_regs *regs)
- {
-diff --git a/include/asm-powerpc/pmc.h b/include/asm-powerpc/pmc.h
-index 2f3c3fc..5f41f3a 100644
---- a/include/asm-powerpc/pmc.h
-+++ b/include/asm-powerpc/pmc.h
-@@ -22,6 +22,7 @@
- #include <asm/ptrace.h>
- 
- typedef void (*perf_irq_t)(struct pt_regs *);
-+extern perf_irq_t perf_irq;
- 
- int reserve_pmc_hardware(perf_irq_t new_perf_irq);
- void release_pmc_hardware(void);
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
