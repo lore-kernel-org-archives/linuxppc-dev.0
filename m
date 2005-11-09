@@ -1,19 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BA2A6686C7
-	for <linuxppc-dev@ozlabs.org>; Wed,  9 Nov 2005 20:02:32 +1100 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20051109072228.GA7983@pb15.lixom.net>
-References: <20051109072228.GA7983@pb15.lixom.net>
-Content-Type: text/plain
-Date: Wed, 09 Nov 2005 20:00:55 +1100
-Message-Id: <1131526855.24637.67.camel@gaston>
-Mime-Version: 1.0
-Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] ppc: add support for new powerbooks
+Return-Path: <sr@denx.de>
+From: Stefan Roese <sr@denx.de>
+To: Matt Porter <mporter@kernel.crashing.org>
+Date: Wed, 9 Nov 2005 10:47:32 +0100
+References: <20051107124917.C1671@cox.net> <200511081838.11236.sr@denx.de>
+	<20051108153036.F27232@cox.net>
+In-Reply-To: <20051108153036.F27232@cox.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200511091047.32662.sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Subject: Re: 440EP FPU support missing
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,16 +20,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tuesday 08 November 2005 23:30, Matt Porter wrote:
+> On Tue, Nov 08, 2005 at 06:38:11PM +0100, Stefan Roese wrote:
+> > Somehow arch/ppc/kernel/fpu.S has disappeared. :-( I assume, this
+> > happened in the ppc/ppc64 -> powerpc merge. Any thoughts, why this file
+> > disappeared and how to solve this problem (just restore the original
+> > file)?
+>
+> arch/powerpc/kernel/fpu.S is being used now which doesn't have KernelFP.
+> I don't know why the 44x fpu support wasn't using
+> kernel_fp_unavailable_exception() before but I must have missed that
+> reviewing it.
+>
+> Try this patch.
+>
+> -Matt
+>
+> diff --git a/arch/ppc/kernel/head_booke.h b/arch/ppc/kernel/head_booke.h
+> index aeb349b..f3d274c 100644
+> --- a/arch/ppc/kernel/head_booke.h
+> +++ b/arch/ppc/kernel/head_booke.h
+> @@ -358,6 +358,6 @@ label:
+>  	NORMAL_EXCEPTION_PROLOG;					      \
+>  	bne	load_up_fpu;		/* if from user, just load it up */   \
+>  	addi	r3,r1,STACK_FRAME_OVERHEAD;				      \
+> -	EXC_XFER_EE_LITE(0x800, KernelFP)
+> +	EXC_XFER_EE_LITE(0x800, kernel_fp_unavailable_exception)
+>
+>  #endif /* __HEAD_BOOKE_H__ */
 
-> Enablement patch for the new PowerBooks (late 2005 edition).
-> 
-> This enables the ATA controller, Gigabit ethernet and basic AGP setup.
-> Bluetooth works out-of-the box after running hid2hci.
-> 
-> Still remaining is to get the touchpad to work, the simple change of
-> just adding the new USB ids isn't enough.
-> 
-> 
-> Signed-off-by: Olof Johansson <olof@lixom.net>
+Thanks Matt. That fixes the problem. Please send this patch upstream.
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Best regards,
+Stefan
