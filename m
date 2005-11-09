@@ -1,24 +1,19 @@
-Return-Path: <linville@tuxdriver.com>
-Received: from ra.tuxdriver.com (ra.tuxdriver.com [24.172.12.4])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 279B6686F7
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 9698C686C1
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Nov 2005 08:52:53 +1100 (EST)
-Date: Wed, 9 Nov 2005 16:52:39 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Pantelis Antoniou <panto@intracom.gr>, linuxppc-embedded@ozlabs.org,
-	netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-ID: <20051109215237.GC24099@tuxdriver.com>
-References: <20051106025701.GA9698@tuxdriver.com>
-	<436F07F5.1030206@intracom.gr>
-	<20051107182031.GC13797@tuxdriver.com>
-	<20051107182459.GD13797@tuxdriver.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20051107182459.GD13797@tuxdriver.com>
-Subject: Re: [patch 2.6.14 (take #2)] fec_8xx: make CONFIG_FEC_8XX depend on
-	CONFIG_8xx
+	Thu, 10 Nov 2005 09:57:22 +1100 (EST)
+To: srideep.devireddy@wipro.com
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 09 Nov 2005 09:51:28 +0530."
+	<6AD9F6A5F6E096408F0B703773355A075BB03B@CHN-SNR-MBX01.wipro.com>
+Date: Wed, 09 Nov 2005 23:57:19 +0100
+Sender: wd@denx.de
+Message-Id: <20051109225719.B635E3525DE@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: FW: U-boot linux kernel 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,46 +24,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Nov 07, 2005 at 01:24:59PM -0500, John W. Linville wrote:
-> Change CONFIG_FEC_8XX to depend on CONFIG_8xx instead of CONFIG_FEC.
-> CONFIG_FEC depends on ColdFire CPUs, which does not apply for the
-> PPC 8xx processors.
+In message <6AD9F6A5F6E096408F0B703773355A075BB03B@CHN-SNR-MBX01.wipro.com> you wrote:
+> 
+>   I am right now working on MPC 8272 Ads board  to bring up the u-boot
+> and the linux kernel on it . As I am success full in bringing up the
+> u-boot . but I am finding it difficult in getting the linux up . As I
+> downloaded the vmlinux image from montavista linux site for 8272Ads
 
-FWIW, I have this patch available on the linville-fec_8xx branch of
-netdev-jwl as described below.
+Are you sure this image is configured for use with U-Boot?
 
-Thanks,
+> board and they  tried to tftp to 100000 at u-boot prompt I am not able
 
-John
+And did you read the FAQ, for example
+http://www.denx.de/wiki/view/DULG/LinuxUncompressingError ???
 
----
+Best regards,
 
-The following changes since commit 330d57fb98a916fa8e1363846540dd420e99499a:
-  Al Viro:
-        Fix sysctl unregistration oops (CVE-2005-2709)
+Wolfgang Denk
 
-are found in the git repository at:
-
-  git://git.tuxdriver.com/git/netdev-jwl.git linville-fec_8xx
-
-John W. Linville:
-      fec_8xx: make CONFIG_FEC_8XX depend on CONFIG_8xx
-
- drivers/net/fec_8xx/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/net/fec_8xx/Kconfig b/drivers/net/fec_8xx/Kconfig
-index 94e7a9a..a84c232 100644
---- a/drivers/net/fec_8xx/Kconfig
-+++ b/drivers/net/fec_8xx/Kconfig
-@@ -1,6 +1,6 @@
- config FEC_8XX
- 	tristate "Motorola 8xx FEC driver"
--	depends on NET_ETHERNET && FEC
-+	depends on NET_ETHERNET && 8xx
- 	select MII
- 
- config FEC_8XX_GENERIC_PHY
 -- 
-John W. Linville
-linville@tuxdriver.com
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Alliance: In international politics, the union  of  two  thieves  who
+have  their hands so deeply inserted in each other's pocket that they
+cannot separately plunder a third.                   - Ambrose Bierce
