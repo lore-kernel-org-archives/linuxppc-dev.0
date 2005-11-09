@@ -2,17 +2,18 @@ Return-Path: <galak@gate.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9D763686E3
+	by ozlabs.org (Postfix) with ESMTP id 7DD10686DE
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Nov 2005 05:15:02 +1100 (EST)
-Date: Wed, 9 Nov 2005 12:13:11 -0600 (CST)
+	Thu, 10 Nov 2005 07:35:23 +1100 (EST)
+Date: Wed, 9 Nov 2005 14:33:20 -0600 (CST)
 From: Kumar Gala <galak@gate.crashing.org>
-To: jgarzik@pobox.com
-Message-ID: <Pine.LNX.4.44.0511091211030.26349-100000@gate.crashing.org>
+To: Andrew Morton <akpm@osdl.org>
+Message-ID: <Pine.LNX.4.44.0511091432500.29821-100000@gate.crashing.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: netdev@vger.kernel.org, linuxppc-embedded@ozlabs.org
-Subject: [PATCH] gianfar mii needs to zero out the mii_bus structure
+Cc: linuxppc-embedded@ozlabs.org
+Subject: [PATCH] ppc32: Add support for handling PCI interrupts on MPC834x
+ PCI expansion card
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,34 +24,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-To ensure that phy_mask and any future elements of the mii_bus
-structure are initialized use kzalloc() instead of kmalloc().
-
-This fixes an issue in which phy_mask was not being initialized
-and we would skip random phy addresses when scanning.
+The MPC8349 PIBs system has a expansion board with 6 PCI slots.  We needed
+to update the IDSEL interrupt mapping for it to work properly.  However,
+only PCI1 is supported as the first revision of this expansion board doesn't
+function properly for PCI2.  For the time being we have zero'd out the entries
+for the IDSELs related to PCI2.  When a functioning expansion board exists
+we can fix the table.
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
 ---
-commit 35003e02e33939b7359635f3cf7b424723ffd4b0
-tree 386160e32c51e8f1e662811738e79571c7218fdb
-parent d0876a2748ddc33ca9ed1ea26cf958726c50c7b9
-author Kumar Gala <galak@kernel.crashing.org> Wed, 09 Nov 2005 12:11:40 -0600
-committer Kumar Gala <galak@kernel.crashing.org> Wed, 09 Nov 2005 12:11:40 -0600
+commit b23f8a20b85440d4bebf1a2ddea5830ca85ff655
+tree c60902116ecca2880d12d15350fed1e5d780bc79
+parent 35003e02e33939b7359635f3cf7b424723ffd4b0
+author Kumar Gala <galak@kernel.crashing.org> Wed, 09 Nov 2005 14:33:30 -0600
+committer Kumar Gala <galak@kernel.crashing.org> Wed, 09 Nov 2005 14:33:30 -0600
 
- drivers/net/gianfar_mii.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/ppc/platforms/83xx/mpc834x_sys.c |   15 +++++++++++----
+ 1 files changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/gianfar_mii.c b/drivers/net/gianfar_mii.c
-index 5a74d3d..ee1a77a 100644
---- a/drivers/net/gianfar_mii.c
-+++ b/drivers/net/gianfar_mii.c
-@@ -134,7 +134,7 @@ int gfar_mdio_probe(struct device *dev)
- 	if (NULL == dev)
- 		return -EINVAL;
+diff --git a/arch/ppc/platforms/83xx/mpc834x_sys.c b/arch/ppc/platforms/83xx/mpc834x_sys.c
+index 98edc75..763777c 100644
+--- a/arch/ppc/platforms/83xx/mpc834x_sys.c
++++ b/arch/ppc/platforms/83xx/mpc834x_sys.c
+@@ -73,12 +73,19 @@ mpc83xx_map_irq(struct pci_dev *dev, uns
+ 	     *       A      B      C      D
+ 	     */
+ 	{
+-		{PIRQA, PIRQB,  PIRQC,  PIRQD}, /* idsel 0x11 */
+-		{PIRQC, PIRQD,  PIRQA,  PIRQB}, /* idsel 0x12 */
+-		{PIRQD, PIRQA,  PIRQB,  PIRQC}  /* idsel 0x13 */
++		{PIRQA, PIRQB, PIRQC, PIRQD},	/* idsel 0x11 */
++		{PIRQC, PIRQD, PIRQA, PIRQB},	/* idsel 0x12 */
++		{PIRQD, PIRQA, PIRQB, PIRQC},	/* idsel 0x13 */
++		{0, 0, 0, 0},
++		{PIRQA, PIRQB, PIRQC, PIRQD},	/* idsel 0x15 */
++		{PIRQD, PIRQA, PIRQB, PIRQC},	/* idsel 0x16 */
++		{PIRQC, PIRQD, PIRQA, PIRQB},	/* idsel 0x17 */
++		{PIRQB, PIRQC, PIRQD, PIRQA},	/* idsel 0x18 */
++		{0, 0, 0, 0},			/* idsel 0x19 */
++		{0, 0, 0, 0},			/* idsel 0x20 */
+ 	};
  
--	new_bus = kmalloc(sizeof(struct mii_bus), GFP_KERNEL);
-+	new_bus = kzalloc(sizeof(struct mii_bus), GFP_KERNEL);
+-	const long min_idsel = 0x11, max_idsel = 0x13, irqs_per_slot = 4;
++	const long min_idsel = 0x11, max_idsel = 0x20, irqs_per_slot = 4;
+ 	return PCI_IRQ_TABLE_LOOKUP;
+ }
  
- 	if (NULL == new_bus)
- 		return -ENOMEM;
