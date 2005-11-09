@@ -1,18 +1,18 @@
 Return-Path: <vbordug@ru.mvista.com>
 Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 6E5936868F
+	by ozlabs.org (Postfix) with SMTP id 8FCF2686D6
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Nov 2005 00:12:38 +1100 (EST)
-Message-ID: <4371F5C3.40805@ru.mvista.com>
-Date: Wed, 09 Nov 2005 16:12:35 +0300
+	Thu, 10 Nov 2005 00:21:25 +1100 (EST)
+Message-ID: <4371F7D3.7070303@ru.mvista.com>
+Date: Wed, 09 Nov 2005 16:21:23 +0300
 From: Vitaly Bordug <vbordug@ru.mvista.com>
 MIME-Version: 1.0
-To: Mike Rapoport <mike@compulab.co.il>
-References: <4371A513.6040409@compulab.co.il>
-In-Reply-To: <4371A513.6040409@compulab.co.il>
+To: srideep.devireddy@wipro.com
+References: <6AD9F6A5F6E096408F0B703773355A075BB210@CHN-SNR-MBX01.wipro.com>
+In-Reply-To: <6AD9F6A5F6E096408F0B703773355A075BB210@CHN-SNR-MBX01.wipro.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: Using SMC on MPC8272 based board
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: u-boot + kernel (help required)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,25 +23,150 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Mike Rapoport wrote:
-> I have a custom board based on MPC8272 and I don't succeed to enable SMC 
-> serial port. I'm running Linux 2.6.12.3 with CPM serial drivers from 
-> 2.6.13.2.
-> When I configure the kernel to use one or two SCCs, with or without 
-> serial console everything works fine. But if I configure the kernel to 
-> support SMC serial port, I see nothing at the SMC port.
-> I've noticed that SMC1 pins are configured at port D (as in MPC8260), 
-> but MPC8272 has the SMC1 on the port C. I've changed the pins assignment 
-> to use the port C pins, but it didn't help.
-> When I enable support for serial console on SCC/SMC port, the system 
-> hangs when the SMC is enabled.
-> When I don't enable support for serial console on SCC/SMC port, the 
-> system boots OK, but there's nothing on the SMC port.
+srideep.devireddy@wipro.com wrote:
+>  
 > 
+> Hi ,
+> 
+>    
+> 
+> we were able to get the u-boot up on MPC8272ADS board . We are just 
+> struck up in bringing up the Linux... we get the following errors .. 
+> actually we made a uImage  from vmlinux and tried to tftp and used bootm 
+> 100000 , we eneded up with these errors ...actually after the message 
+> Uncompressing Kernel Image ... OK board gets reset .Any help would be 
+> thankfull.
+> 
+I can suggest to try the current 2.6, on which 8272 is supported and 
+known to work. A problem with binary you got is possibly because of 
+configuration incompatibility of your u-boot and kernel binary.
 
-That is because (at least if you use "pure" 8272) the board does have 
-SCC1 and SCC4 for UART0 and UART1 respectively. SMC could not be used as 
-serial port on this board.
+
+>  
+> 
+>  
+> 
+> *=> tftp 100000 vmlinux.72*
+> 
+> *Using FCC1 ETHERNET device*
+> 
+> *TFTP from server 10.0.0.1; our IP address is 10.0.0.2*
+> 
+> *Filename 'vmlinux.72'.*
+> 
+> *Load address: 0x100000*
+> 
+> *Loading: #################################################################*
+> 
+> *         #################################################################*
+> 
+> *         #######################*
+> 
+> *done*
+> 
+> *Bytes transferred = 782424 (bf058 hex)*
+> 
+> *=> bootm 100000*
+> 
+> *## Booting image at 00100000 ...*
+> 
+> *   Image Name:   Linux-2.4.22*
+> 
+> *   Image Type:   PowerPC Linux Kernel Image (gzip compressed)*
+> 
+> *   Data Size:    782360 Bytes = 764 kB*
+> 
+> *   Load Address: 00000000*
+> 
+> *   Entry Point:  00000000*
+> 
+> *   Verifying Checksum ... OK*
+> 
+> *   Uncompressing Kernel Image ... OK*
+> 
+> *                                                                                
+> *
+> 
+> *                                                                                
+> *
+> 
+> *U-Boot 1.1.1 (Nov  8 2005 - 16:19:13)*
+> 
+> *                                                                                
+> *
+> 
+> *MPC8272 Reset Status: Check Stop, External Soft, External Hard*
+> 
+> *                                                                                
+> *
+> 
+> *MPC8272 Clock Configuration*
+> 
+> * - Bus-to-Core Mult 3.5x, VCO Div 2, 60x Bus Freq  30-85 , Core Freq 
+> 100-300*
+> 
+> * - dfbrg 1, corecnf 0x1e, busdf 3, cpmdf 1, plldf 0, pllmf 3*
+> 
+> * - vco_out  400000000, scc_clk  100000000, brg_clk   25000000*
+> 
+> * - cpu_clk  350000000, cpm_clk  200000000, bus_clk  100000000*
+> 
+> * - pci_clk   66666666*
+> 
+> *                                                                                
+> *
+> 
+> *CPU:   MPC8272 (HiP7 Rev 14, Mask A.0 1K50M) at 350 MHz*
+> 
+> *Board: Motorola MPC8272ADS*
+> 
+> *DRAM:  64 MB*
+> 
+> *FLASH:  8 MB*
+> 
+> *In:    serial*
+> 
+> *Out:   serial*
+> 
+> *Err:   serial*
+> 
+> *Net:   FCC1 ETHERNET*
+> 
+> *Hit any key to stop autoboot:  0*
+> 
+> *=>*
+> 
+>  
+> 
+>  
+> 
+> Best Regards
+> 
+>  
+> 
+> Srideep
+> 
+>  
+> 
+> 
+> Confidentiality Notice
+> 
+> The information contained in this electronic message and any attachments 
+> to this message are intended
+> for the exclusive use of the addressee(s) and may contain confidential 
+> or privileged information. If
+> you are not the intended recipient, please notify the sender at Wipro or 
+> Mailadmin@wipro.com immediately
+> and destroy all copies of this message and any attachments.
+> 
+> 
+> ------------------------------------------------------------------------
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
 
 -- 
 Sincerely,
