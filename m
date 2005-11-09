@@ -1,28 +1,18 @@
-Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B7F7E686DA
+Return-Path: <vbordug@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id 6E5936868F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  9 Nov 2005 23:05:37 +1100 (EST)
-Received: from root by ciao.gmane.org with local (Exim 4.43)
-	id 1EZnY4-0007Y1-C9
-	for linuxppc-embedded@ozlabs.org; Wed, 09 Nov 2005 11:51:24 +0100
-Received: from dsl-202-45-109-210.vic.netspace.net.au ([202.45.109.210])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Wed, 09 Nov 2005 11:51:24 +0100
-Received: from ronkbox-news by dsl-202-45-109-210.vic.netspace.net.au with
-	local (Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Wed, 09 Nov 2005 11:51:24 +0100
-To: linuxppc-embedded@ozlabs.org
-From: Ron Kellam <ronkbox-news@yahoo.com>
-Date: Wed, 09 Nov 2005 17:55:43 +1100
-Message-ID: <bdv0n1le1g1bsnano4kr22omgl5p9ilbag@4ax.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: news <news@sea.gmane.org>
-Subject: State of SPI for 2.4.25 kernel?
+	Thu, 10 Nov 2005 00:12:38 +1100 (EST)
+Message-ID: <4371F5C3.40805@ru.mvista.com>
+Date: Wed, 09 Nov 2005 16:12:35 +0300
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+MIME-Version: 1.0
+To: Mike Rapoport <mike@compulab.co.il>
+References: <4371A513.6040409@compulab.co.il>
+In-Reply-To: <4371A513.6040409@compulab.co.il>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: Using SMC on MPC8272 based board
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,19 +23,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Help!  I was hoping to use SPI on an MPC8247 running the EDLK 2.4.25
-kernel, but as I look into the code, I'm not hopeful...
+Mike Rapoport wrote:
+> I have a custom board based on MPC8272 and I don't succeed to enable SMC 
+> serial port. I'm running Linux 2.6.12.3 with CPM serial drivers from 
+> 2.6.13.2.
+> When I configure the kernel to use one or two SCCs, with or without 
+> serial console everything works fine. But if I configure the kernel to 
+> support SMC serial port, I see nothing at the SMC port.
+> I've noticed that SMC1 pins are configured at port D (as in MPC8260), 
+> but MPC8272 has the SMC1 on the port C. I've changed the pins assignment 
+> to use the port C pins, but it didn't help.
+> When I enable support for serial console on SCC/SMC port, the system 
+> hangs when the SMC is enabled.
+> When I don't enable support for serial console on SCC/SMC port, the 
+> system boots OK, but there's nothing on the SMC port.
+> 
 
-Can someone fill me in on the state of SPI in the 2.24.xx kernels.
-What about under 2.6.xx?  (although I haven't yet brought 2.6.xx up on
-the custom board I've got).
+That is because (at least if you use "pure" 8272) the board does have 
+SCC1 and SCC4 for UART0 and UART1 respectively. SMC could not be used as 
+serial port on this board.
 
-I've currently resorted to bit-banging for I2C, as the MPC8260 algo
-driver didn't seem to behave on an 8272 family CPU.  I was intending
-on also going bit-banging for the SPI, but spi-algo-bit.c seems to be
-in a half complete state and won't even compile.
-
-Any info appreciated.
-
-Thanks,
-Ron Kellam.
+-- 
+Sincerely,
+Vitaly
