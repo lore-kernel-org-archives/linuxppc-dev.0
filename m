@@ -1,19 +1,24 @@
-Return-Path: <galak@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <linville@tuxdriver.com>
+Received: from ra.tuxdriver.com (ra.tuxdriver.com [24.172.12.4])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7DD10686DE
+	by ozlabs.org (Postfix) with ESMTP id 279B6686F7
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Nov 2005 07:35:23 +1100 (EST)
-Date: Wed, 9 Nov 2005 14:33:20 -0600 (CST)
-From: Kumar Gala <galak@gate.crashing.org>
-To: Andrew Morton <akpm@osdl.org>
-Message-ID: <Pine.LNX.4.44.0511091432500.29821-100000@gate.crashing.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
-Subject: [PATCH] ppc32: Add support for handling PCI interrupts on MPC834x
- PCI expansion card
+	Thu, 10 Nov 2005 08:52:53 +1100 (EST)
+Date: Wed, 9 Nov 2005 16:52:39 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Pantelis Antoniou <panto@intracom.gr>, linuxppc-embedded@ozlabs.org,
+	netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-ID: <20051109215237.GC24099@tuxdriver.com>
+References: <20051106025701.GA9698@tuxdriver.com>
+	<436F07F5.1030206@intracom.gr>
+	<20051107182031.GC13797@tuxdriver.com>
+	<20051107182459.GD13797@tuxdriver.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20051107182459.GD13797@tuxdriver.com>
+Subject: Re: [patch 2.6.14 (take #2)] fec_8xx: make CONFIG_FEC_8XX depend on
+	CONFIG_8xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,50 +29,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-The MPC8349 PIBs system has a expansion board with 6 PCI slots.  We needed
-to update the IDSEL interrupt mapping for it to work properly.  However,
-only PCI1 is supported as the first revision of this expansion board doesn't
-function properly for PCI2.  For the time being we have zero'd out the entries
-for the IDSELs related to PCI2.  When a functioning expansion board exists
-we can fix the table.
+On Mon, Nov 07, 2005 at 01:24:59PM -0500, John W. Linville wrote:
+> Change CONFIG_FEC_8XX to depend on CONFIG_8xx instead of CONFIG_FEC.
+> CONFIG_FEC depends on ColdFire CPUs, which does not apply for the
+> PPC 8xx processors.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+FWIW, I have this patch available on the linville-fec_8xx branch of
+netdev-jwl as described below.
+
+Thanks,
+
+John
 
 ---
-commit b23f8a20b85440d4bebf1a2ddea5830ca85ff655
-tree c60902116ecca2880d12d15350fed1e5d780bc79
-parent 35003e02e33939b7359635f3cf7b424723ffd4b0
-author Kumar Gala <galak@kernel.crashing.org> Wed, 09 Nov 2005 14:33:30 -0600
-committer Kumar Gala <galak@kernel.crashing.org> Wed, 09 Nov 2005 14:33:30 -0600
 
- arch/ppc/platforms/83xx/mpc834x_sys.c |   15 +++++++++++----
- 1 files changed, 11 insertions(+), 4 deletions(-)
+The following changes since commit 330d57fb98a916fa8e1363846540dd420e99499a:
+  Al Viro:
+        Fix sysctl unregistration oops (CVE-2005-2709)
 
-diff --git a/arch/ppc/platforms/83xx/mpc834x_sys.c b/arch/ppc/platforms/83xx/mpc834x_sys.c
-index 98edc75..763777c 100644
---- a/arch/ppc/platforms/83xx/mpc834x_sys.c
-+++ b/arch/ppc/platforms/83xx/mpc834x_sys.c
-@@ -73,12 +73,19 @@ mpc83xx_map_irq(struct pci_dev *dev, uns
- 	     *       A      B      C      D
- 	     */
- 	{
--		{PIRQA, PIRQB,  PIRQC,  PIRQD}, /* idsel 0x11 */
--		{PIRQC, PIRQD,  PIRQA,  PIRQB}, /* idsel 0x12 */
--		{PIRQD, PIRQA,  PIRQB,  PIRQC}  /* idsel 0x13 */
-+		{PIRQA, PIRQB, PIRQC, PIRQD},	/* idsel 0x11 */
-+		{PIRQC, PIRQD, PIRQA, PIRQB},	/* idsel 0x12 */
-+		{PIRQD, PIRQA, PIRQB, PIRQC},	/* idsel 0x13 */
-+		{0, 0, 0, 0},
-+		{PIRQA, PIRQB, PIRQC, PIRQD},	/* idsel 0x15 */
-+		{PIRQD, PIRQA, PIRQB, PIRQC},	/* idsel 0x16 */
-+		{PIRQC, PIRQD, PIRQA, PIRQB},	/* idsel 0x17 */
-+		{PIRQB, PIRQC, PIRQD, PIRQA},	/* idsel 0x18 */
-+		{0, 0, 0, 0},			/* idsel 0x19 */
-+		{0, 0, 0, 0},			/* idsel 0x20 */
- 	};
+are found in the git repository at:
+
+  git://git.tuxdriver.com/git/netdev-jwl.git linville-fec_8xx
+
+John W. Linville:
+      fec_8xx: make CONFIG_FEC_8XX depend on CONFIG_8xx
+
+ drivers/net/fec_8xx/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/fec_8xx/Kconfig b/drivers/net/fec_8xx/Kconfig
+index 94e7a9a..a84c232 100644
+--- a/drivers/net/fec_8xx/Kconfig
++++ b/drivers/net/fec_8xx/Kconfig
+@@ -1,6 +1,6 @@
+ config FEC_8XX
+ 	tristate "Motorola 8xx FEC driver"
+-	depends on NET_ETHERNET && FEC
++	depends on NET_ETHERNET && 8xx
+ 	select MII
  
--	const long min_idsel = 0x11, max_idsel = 0x13, irqs_per_slot = 4;
-+	const long min_idsel = 0x11, max_idsel = 0x20, irqs_per_slot = 4;
- 	return PCI_IRQ_TABLE_LOOKUP;
- }
- 
+ config FEC_8XX_GENERIC_PHY
+-- 
+John W. Linville
+linville@tuxdriver.com
