@@ -1,25 +1,25 @@
 Return-Path: <srideep.devireddy@wipro.com>
-Received: from wip-cdctls-mx3.wipro.com (wip-cdctls-mx3.wipro.com
-	[203.91.201.23])
+Received: from wip-cdctls-mx1.wipro.com (wip-cdctls-mx1.wipro.com
+	[203.91.201.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "wip-cdctls-mx3.wipro.com",
-	Issuer "wip-cdctls-mx3.wipro.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id B2BCB686E1
+	(Client CN "wip-cdctls-mx1.wipro.com",
+	Issuer "VeriSign Trust Network" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id AB767686EB
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  9 Nov 2005 21:50:18 +1100 (EST)
-Received: from wip-cdctls-mx3.wipro.com (localhost.localdomain [127.0.0.1])
-	by localhost (Postfix) with ESMTP id 77B6529C062
+	Wed,  9 Nov 2005 21:55:44 +1100 (EST)
+Received: from wip-cdctls-mx1.wipro.com (localhost.localdomain [127.0.0.1])
+	by localhost (Postfix) with ESMTP id 4A5D53C4072
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  9 Nov 2005 16:20:10 +0530 (IST)
-Received: from chn-snr-bh1.wipro.com (chn-snr-bh1.wipro.com [10.145.50.91])
-	by wip-cdctls-mx3.wipro.com (Postfix) with ESMTP id 6901729C04E
+	Wed,  9 Nov 2005 16:22:46 +0530 (IST)
+Received: from chn-snr-bh2.wipro.com (chn-snr-bh2.wipro.com [10.145.50.92])
+	by wip-cdctls-mx1.wipro.com (Postfix) with ESMTP id 3F4393C4008
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  9 Nov 2005 16:20:10 +0530 (IST)
+	Wed,  9 Nov 2005 16:22:46 +0530 (IST)
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C5E51B.5AD9BE35"
-Date: Wed, 9 Nov 2005 16:20:20 +0530
-Message-ID: <6AD9F6A5F6E096408F0B703773355A075BB20C@CHN-SNR-MBX01.wipro.com>
+	boundary="----_=_NextPart_001_01C5E51C.1EA3D6DD"
+Date: Wed, 9 Nov 2005 16:25:48 +0530
+Message-ID: <6AD9F6A5F6E096408F0B703773355A075BB210@CHN-SNR-MBX01.wipro.com>
 From: <srideep.devireddy@wipro.com>
 To: <linuxppc-embedded@ozlabs.org>
 Subject: u-boot + kernel (help required)
@@ -35,7 +35,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C5E51B.5AD9BE35
+------_=_NextPart_001_01C5E51C.1EA3D6DD
 Content-Type: text/plain;
 	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
@@ -162,231 +162,6 @@ Srideep
 
 =0D
 
-=0D
-
-=0D
-
------Original Message-----
-From: Sakethan Kotta (WT01 - Broadband Networks)=0D
-Sent: Tuesday, November 08, 2005 9:45 AM
-To: Srideep DeviReddy (WT01 - Broadband Networks)
-Cc: sundar raman (WT01 - Broadband Networks)
-Subject: RE: Emailing: u-boot
-
-=0D
-
-Hi Srideep,
-
-=0D
-
-  Nice to here this. Congrats. What was the problem? Please do reply for
-this.
-
-=0D
-
-U can use "bootp or tftp". We have used "bootp". It has 2 options, one
-is loading address & the other one is source file name. If you are not
-giving the source address in the command line, bootp will take the
-default address. If you don't supply the file name at the command line,
-then bootp will take the file from the "DHCP server".=0D
-
-=0D
-
-Before doing the TFTP, you need to get the IP Address for the board. For
-that you need to run a DHCP server. Board also takes the TFTP server IP
-from DHCP and will do the TFTP to down load the file. Make sure that
-some 15MB from the starting of the SDRAM should not be used for the
-Bootp, as that space will be used for the kernel booting.
-
-=0D
-
-Once the file is transferred, u have to execute the "bootm <Address>".
-It will boot the kernel.
-
-=0D
-
-Regards,
-
-saketh
-
-=0D
-
------Original Message-----
-
-From: Srideep DeviReddy (WT01 - Broadband Networks)=0D
-
-Sent: Monday, November 07, 2005 4:29 PM
-
-To: Sakethan Kotta (WT01 - Broadband Networks)
-
-Subject: RE: Emailing: u-boot
-
-=0D
-
-Hi Saketh ,
-
-=0D
-
-     We got u-boot up on MPC8272ADS board, thanks for your help. Right
-now we are trying to get linux kernel and get the os up. As suggestion
-from you , before we start this . I have a doubt at what location
-(address) do we need to do a TFTP .so that when we do a go.. It starts
-executing...
-
-=0D
-
-Best Regards
-
-Srideep
-
-=0D
-
------Original Message-----
-
-From: Sakethan Kotta (WT01 - Broadband Networks)=0D
-
-Sent: Friday, October 28, 2005 10:29 AM
-
-To: Srideep DeviReddy (WT01 - Broadband Networks)
-
-Cc: sundar raman (WT01 - Broadband Networks)
-
-Subject: RE: Emailing: u-boot
-
-=0D
-
-Hi,
-
-=0D
-
-  I have changed the source code and compiled. So you may need the
-latest source or map file to sync the GDB with the executable.=0D
-
-=0D
-
-With thanks & regards,
-
-saketh
-
-=0D
-
------Original Message-----
-
-From: Srideep DeviReddy (WT01 - Broadband Networks)=0D
-
-Sent: Friday, October 28, 2005 10:19 AM
-
-To: Sakethan Kotta (WT01 - Broadband Networks)
-
-Cc: sundar raman (WT01 - Broadband Networks)
-
-Subject: RE: Emailing: u-boot
-
-=0D
-
-Hi sakethan,
-
-=0D
-
-       I tried programming the U-boot.bin on to the flash at 0xfff00000
-keeping the jumper pins to 2&3(BCSR) . After programming I changed them
-to 1&2(flash) , and tried connecting to serial but still not able to get
-u-boot prompt .
-
-=0D
-
-  When I try to used gdb and debug we get an error  like given below
-
-=0D
-
-(gdb) target remote 10.145.102.120:2001
-
-Remote debugging using 10.145.102.120:2001
-
-0xfff00100 in _start () at /u-boot-1.1.3/cpu/mpc8260/start.S:1046
-
-warning: Source file is more recent than executable.
-
-=0D
-
-1046            blr
-
-(gdb) cont
-
-Continuing.
-
-=0D
-
-Program received signal SIGSTOP, Stopped (signal).
-
-0xfff00128 in boot_warm () at /u-boot-1.1.3/cpu/mpc8260/start.S:1046
-
-1046            blr
-
-(gdb) d
-
-(gdb) b relocate_code
-
-Breakpoint 1 at 0xff803558: file /u-boot-1.1.3/cpu/mpc8260/start.S, line
-1046.
-
-(gdb) cont
-
-Continuing.
-
-=0D
-
-Program received signal SIGSTOP, Stopped (signal).
-
-0xfff00124 in boot_warm () at /u-boot-1.1.3/cpu/mpc8260/start.S:1046
-
-1046            blr
-
-=0D
-
-=0D
-
-I am getting an error in 1046 line of start.S file .
-
-=0D
-
-Regards
-
-Srideep
-
-=0D
-
------Original Message-----
-
-From: Sakethan Kotta (WT01 - Broadband Networks)=0D
-
-Sent: Thursday, October 27, 2005 2:40 PM
-
-To: Srideep DeviReddy (WT01 - Broadband Networks)
-
-Cc: sundar raman (WT01 - Broadband Networks)
-
-Subject: Emailing: u-boot
-
-=0D
-
- =0D
-
-Hi Srideep & Sunadar,
-
-=0D
-
-  I have attached a U-Boot.Bin file. Please program this on the ADS
-board at address location 0xFFF00000 & keep the jumper J9 for 2&3 pins.
-Please do this and let me know the results. This should work fine.
-
-=0D
-
-With thanks & regards,
-
-saketh
-
-
 
 
 
@@ -399,27 +174,19 @@ for the exclusive use of the addressee(s) and may contain confidential or=
 you are not the intended recipient, please notify the sender at Wipro or=
  Mailadmin@wipro.com immediately
 and destroy all copies of this message and any attachments.
-------_=_NextPart_001_01C5E51B.5AD9BE35
+------_=_NextPart_001_01C5E51C.1EA3D6DD
 Content-Type: text/html;
 	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
 <html xmlns:v=3D"urn:schemas-microsoft-com:vml" xmlns:o=
 =3D"urn:schemas-microsoft-com:office:office" xmlns:w=
-=3D"urn:schemas-microsoft-com:office:word" xmlns:st1=
-=3D"urn:schemas-microsoft-com:office:smarttags" xmlns=
+=3D"urn:schemas-microsoft-com:office:word" xmlns=
 =3D"http://www.w3.org/TR/REC-html40">
 
 <head>
 <meta http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii">
 <meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<o:SmartTagType namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
- name=3D"PersonName" downloadurl=3D"http://www.microsoft.com"/>
-<!--[if !mso]>
-<style>
-st1\:*{behavior:url(#default#ieooui) }
-</style>
-<![endif]-->
 <style>
 <!--
  /* Style Definitions */
@@ -440,6 +207,10 @@ p.MsoPlainText, li.MsoPlainText, div.MsoPlainText
 	font-size:10.0pt;
 	font-family:"Courier New";}
 span.EmailStyle18
+	{mso-style-type:personal;
+	font-family:Arial;
+	color:black;}
+span.EmailStyle19
 	{mso-style-type:personal-reply;
 	font-family:Arial;
 	color:black;}
@@ -478,10 +249,10 @@ style=3D'color:black'>on MPC8272ADS board </span></font>. We are just=
 in bringing up the Linux... we get the following errors .. actually we made=
  a
 uImage&nbsp; from vmlinux and tried to tftp and used bootm 100000 , we=
- eneded
-up with these errors ...<font color=3Dblack><span style=
-=3D'color:black'>actually
-after the message </span></font><font color=3Dolive><span style=
+ eneded up
+with these errors ...<font color=3Dblack><span style=
+=3D'color:black'>actually after
+the message </span></font><font color=3Dolive><span style=
 =3D'color:olive'>Uncompressing
 Kernel Image ... OK </span></font>board gets reset .Any help would be
 thankfull.<font color=3Dolive><span style=
@@ -807,488 +578,6 @@ style=3D'font-size:10.0pt;color:olive'><o:p>&nbsp;</o:p></span></font></p>
 =3D'font-size:
 10.0pt'><o:p>&nbsp;</o:p></span></font></p>
 
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>-----Original Message-----<br>
-From: Sakethan Kotta (WT01 - Broadband Networks) <br>
-Sent: Tuesday, November 08, 2005 9:45 AM<br>
-To: <st1:PersonName w:st=3D"on">Srideep DeviReddy</st1:PersonName> (WT01 -
-Broadband Networks)<br>
-Cc: <st1:PersonName w:st=3D"on">sundar raman</st1:PersonName> (WT01 -=
- Broadband
-Networks)<br>
-Subject: RE: Emailing: u-boot<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Hi Srideep,<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>&nbsp; Nice to here this. Congrats. What was the problem? Please do
-reply for this.<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>U can use &quot;bootp or tftp&quot;. We have used=
- &quot;bootp&quot;. It
-has 2 options, one is loading address &amp; the other one is source file=
- name.
-If you are not giving the source address in the command line, bootp will=
- take
-the default address. If you don't supply the file name at the command line,
-then bootp will take the file from the &quot;DHCP server&quot;.=
- <o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Before doing the TFTP, you need to get the IP Address for the=
- board.
-For that you need to run a DHCP server. Board also takes the TFTP server IP
-from DHCP and will do the TFTP to down load the file. Make sure that some=
- 15MB
-from the starting of the SDRAM should not be used for the Bootp, as that=
- space
-will be used for the kernel booting.<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Once the file is transferred, u have to execute the &quot;bootm
-&lt;Address&gt;&quot;. It will boot the=
- kernel.<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Regards,<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>saketh<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>-----Original Message-----<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>From: <st1:PersonName w:st=3D"on">Srideep=
- DeviReddy</st1:PersonName>
-(WT01 - Broadband Networks) <o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Sent: Monday, November 07, 2005 4:29=
- PM<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>To: Sakethan Kotta (WT01 - Broadband=
- Networks)<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Subject: RE: Emailing: u-boot<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Hi Saketh ,<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>&nbsp;&nbsp;&nbsp;&nbsp; We got u-boot up on MPC8272ADS board,=
- thanks
-for your help. Right now we are trying to get linux kernel and get the os=
- up.
-As suggestion from you , before we start this . I have a doubt at what=
- location
-(address) do we need to do a TFTP .so that when we do a go.. It starts
-executing...<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Best Regards<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Srideep<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>-----Original Message-----<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>From: Sakethan Kotta (WT01 - Broadband Networks)=
- <o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Sent: Friday, October 28, 2005 10:29=
- AM<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>To: <st1:PersonName w:st=3D"on">Srideep DeviReddy</st1:PersonName>=
- (WT01
-- Broadband Networks)<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Cc: <st1:PersonName w:st=3D"on">sundar raman</st1:PersonName> (WT01=
- -
-Broadband Networks)<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Subject: RE: Emailing: u-boot<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Hi,<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>&nbsp; I have changed the source code and compiled. So you may need=
- the
-latest source or map file to sync the GDB with the executable.=
- <o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>With thanks &amp; regards,<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>saketh<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>-----Original Message-----<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>From: <st1:PersonName w:st=3D"on">Srideep=
- DeviReddy</st1:PersonName>
-(WT01 - Broadband Networks) <o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Sent: Friday, October 28, 2005 10:19=
- AM<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>To: Sakethan Kotta (WT01 - Broadband=
- Networks)<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Cc: <st1:PersonName w:st=3D"on">sundar raman</st1:PersonName> (WT01=
- -
-Broadband Networks)<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Subject: RE: Emailing: u-boot<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Hi sakethan,<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I tried programming the=
- U-boot.bin
-on to the flash at 0xfff00000 keeping the jumper pins to 2&amp;3(BCSR) .=
- After
-programming I changed them to 1&amp;2(flash) , and tried connecting to=
- serial
-but still not able to get u-boot prompt .<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>&nbsp; When I try to used gdb and debug we get an error&nbsp; like
-given below<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>(gdb) target remote=
- 10.145.102.120:2001<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Remote debugging using=
- 10.145.102.120:2001<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>0xfff00100 in _start () at=
- /u-boot-1.1.3/cpu/mpc8260/start.S:1046<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>warning: Source file is more recent than=
- executable.<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>&nbsp;<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>1046&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;
-blr<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>(gdb) cont<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Continuing.<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>&nbsp;<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Program received signal SIGSTOP, Stopped=
- (signal).<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>0xfff00128 in boot_warm () at=
- /u-boot-1.1.3/cpu/mpc8260/start.S:1046<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>1046&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;
-blr<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>(gdb) d<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>(gdb) b relocate_code<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Breakpoint 1 at 0xff803558: file /u-boot-1.1.3/cpu/mpc8260/start.S,
-line 1046.<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>(gdb) cont<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Continuing.<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>&nbsp;<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Program received signal SIGSTOP, Stopped=
- (signal).<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>0xfff00124 in boot_warm () at=
- /u-boot-1.1.3/cpu/mpc8260/start.S:1046<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>1046&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;
-blr<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>I am getting an error in 1046 line of start.S file=
- .<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Regards<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Srideep<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>-----Original Message-----<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>From: Sakethan Kotta (WT01 - Broadband Networks)=
- <o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Sent: Thursday, October 27, 2005 2:40=
- PM<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>To: <st1:PersonName w:st=3D"on">Srideep DeviReddy</st1:PersonName>=
- (WT01
-- Broadband Networks)<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Cc: <st1:PersonName w:st=3D"on">sundar raman</st1:PersonName> (WT01=
- -
-Broadband Networks)<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Subject: Emailing: u-boot<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>&nbsp; <o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>Hi Srideep &amp; Sunadar,<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>&nbsp; I have attached a U-Boot.Bin file. Please program this on=
- the ADS
-board at address location 0xFFF00000 &amp; keep the jumper J9 for 2&amp;3=
- pins.
-Please do this and let me know the results. This should work=
- fine.<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>With thanks &amp; regards,<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span style=
-=3D'font-size:
-10.0pt'>saketh<o:p></o:p></span></font></p>
-
 </div>
 
 </body>
@@ -1296,7 +585,6 @@ Please do this and let me know the results. This should work=
 </html>
 
 <table><tr><td bgcolor=3D#ffffff><font color=3D#000000><br>
-<br>
 Confidentiality Notice <br>
 <br>
 The information contained in this electronic message and any attachments to=
@@ -1307,4 +595,4 @@ you are not the intended recipient, please notify the sender at Wipro or=
  Mailadmin@wipro.com immediately<br>
 and destroy all copies of this message and any attachments.<br>
 </font></td></tr></table>
-------_=_NextPart_001_01C5E51B.5AD9BE35--
+------_=_NextPart_001_01C5E51C.1EA3D6DD--
