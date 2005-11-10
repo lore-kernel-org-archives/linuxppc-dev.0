@@ -1,21 +1,19 @@
-Return-Path: <kalle.pokki@iki.fi>
-Received: from smtp1.song.fi (smtp1.song.fi [194.100.2.121])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F399068703
+Return-Path: <nathael.pajani@cpe.fr>
+Received: from smtp-out.completel.net (smtp-out.completel.net [83.145.110.36])
+	by ozlabs.org (Postfix) with ESMTP id CE555686EE
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Nov 2005 19:20:37 +1100 (EST)
-Received: from [194.100.64.94] (host94.eke.fi [194.100.64.94])
-	by smtp1.song.fi (Postfix) with ESMTP id 882265F8ED
+	Thu, 10 Nov 2005 21:37:57 +1100 (EST)
+Received: from [192.52.109.152] (unknown [83.145.98.3])
+	by smtp-out.completel.net (Postfix) with ESMTP id 3DD53280072
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Nov 2005 10:20:30 +0200 (EET)
-Message-ID: <437302CE.8070309@iki.fi>
-Date: Thu, 10 Nov 2005 10:20:30 +0200
-From: Kalle Pokki <kalle.pokki@iki.fi>
+	Thu, 10 Nov 2005 11:37:56 +0100 (CET)
+Message-ID: <4373238E.8000405@cpe.fr>
+Date: Thu, 10 Nov 2005 11:40:14 +0100
+From: Nathael PAJANI <nathael.pajani@cpe.fr>
 MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+To: linuxppc-embedded@ozlabs.org
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: PowerPC reservations
+Subject: Re: "Now booting the kernel"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,50 +24,59 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+(Sorry, I first replyed with the wrong mail address)
 
-Can someone please help me understand how the memory reservations in 
-PowerPC actually work. Let's just assume uniprocessor with a pre-emptive 
-scheduler, and take a text-book example of an atomic increment case, 
-which is also frequently used in e.g. the Linux kernel. With two atomic 
-operations, everything seems to be just fine. But how about with three 
-concurrent threads of execution?
+ >Linux/PPC load: console=ttyS0,9600 root=/dev/xsysace/disc0/part2 rw
+ >Uncompressing Linux...done.
+ >Now booting the kernel
 
- From the following code, assume r3 contains the same address for each 
-incrementing operation. If the first atomic increment is pre-empted  in 
-the middle, execution then jumps to the second increment (by the 
-scheduler). The second increment runs through and succeeds, and 
-continues straight to the third increment. Then it is again pre-empted 
-in the middle, execution returning to the first increment. Now the 
-processor has the reservation with the correct address, and the first 
-increment succeeds when still holding the original input value. The 
-first and the second increment thus write the same value in memory. 
-After the first increment, the scheduler again continues the third 
-increment, which doesn't succeed a first, but the second round succeeds. 
-However, the value in the address pointed by r3 was not increased by 
-three, but by two.
+Hi!
 
-Am I just not getting how this is really supposed to work? Are there 
-still some other constructs in use to prevent this, e.g. extra stwcx. 
-instructions when changing the thread of execution?
+At this state the bootloader stops executing and the Linux Kernel 
+starts. The problem is that the Linux kernel does not know yet how to 
+use the serial.
 
-I'm also wondering why the architecture specifically defines the stwcx. 
-instruction to have, well, undefined behavior in case the reservation 
-address differs from the address of the previous lwarx...
+You won't have any message before it is set up (in early-console if my 
+memory is allright)
 
-1:      lwarx r6, r0, r3
-        addi r6, r6, 1
-        stwcx. r6, r0, r3
-        bne- 1b
+So what you can do to check what's going on, is put "breakpoints" in the 
+boot sequence. This means in the file arch/ppc/kernel/head*.S used for 
+your board you should try to comment the line with the "tlbwe" 
+instruction in the section "/* 2. Invalidate all entries except the 
+entry we're executing in */"
+This will allow you to keep access to your board registers.
 
-.....
+Then you go step by step, putting some code which will reboot the board 
+when executed, so you know you're going up to that point, and then move 
+the "breakpoint" further.
 
-2:      lwarx r7, r0, r3
-        addi r7, r7, 1
-        stwcx. r7, r0, r3
-        bne- 2b
+This code does the reboot (for the booke I can reboot the board by 
+writting '4' at address 0xfa001001):
 
-3:      lwarx r8, r0, r3
-        addi r8, r8, 1
-        stwcx. r8, r0, r3
-        bne- 3b
+ASM:
+   lis r4,0xfa00
+   li  r5,4
+   stb r5,0x1001(r4)
+   msync
+
+C:
+*((volatile unsigned char*)0xfa001001 = 4;
+
+
+This way, instead of hanging up, the board reboots and you know where 
+you are.
+
+If you're going up to this:
+         bl      machine_init    /* arch/ppc/kernel/setup.c */
+         bl      MMU_init    /* arch/ppc/mm/init.c */
+It's quite good, these are C functions, but they are processor specific, 
+once again, check that the ones used (compiled) are those you need.
+
+And next you've got the "start_kernel" call, which leads you to C code 
+definitely. It's in init/main.c.
+
+
+I hope I did not tell anything wrong, and that this will help.
+
+Have fun.
+Nathael.
