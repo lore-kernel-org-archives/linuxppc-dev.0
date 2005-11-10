@@ -1,28 +1,19 @@
-Return-Path: <srideep.devireddy@wipro.com>
-Received: from wip-cdctls-mx1.wipro.com (wip-cdctls-mx1.wipro.com
-	[203.91.201.15])
+Return-Path: <robin@india.tejasnetworks.com>
+Received: from anche.india.tejasnetworks.com (india.tejasnetworks.com
+	[164.164.94.83])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "wip-cdctls-mx1.wipro.com",
-	Issuer "VeriSign Trust Network" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id EE632686EA
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 30BCE686FA
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Nov 2005 23:37:26 +1100 (EST)
-Received: from wip-cdctls-mx1.wipro.com (localhost.localdomain [127.0.0.1])
-	by localhost (Postfix) with ESMTP id D57903C409A
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Nov 2005 18:04:25 +0530 (IST)
-Received: from chn-snr-bh2.wipro.com (chn-snr-bh2.wipro.com [10.145.50.92])
-	by wip-cdctls-mx1.wipro.com (Postfix) with ESMTP id CA69F3C4056
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Nov 2005 18:04:25 +0530 (IST)
+	Fri, 11 Nov 2005 01:43:39 +1100 (EST)
+Message-ID: <43735DD0.9030205@india.tejasnetworks.com>
+Date: Thu, 10 Nov 2005 20:18:48 +0530
+From: Robin Mathew <robin@india.tejasnetworks.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C5E5F3.7E1CA31D"
-Date: Thu, 10 Nov 2005 18:07:31 +0530
-Message-ID: <6AD9F6A5F6E096408F0B703773355A07605C40@CHN-SNR-MBX01.wipro.com>
-From: <srideep.devireddy@wipro.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: floating point  + kernel (PPC)
+To: Linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Nicholas Basker <nbasker@india.tejasnetworks.com>
+Subject: SCC QMC driver for 8247
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,285 +24,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
-
-------_=_NextPart_001_01C5E5F3.7E1CA31D
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-
-Thanks for your help friends ...
-
-=0D
-
-     I am able to bring my kernel up ...... right now I have a problem
-after some time at the console .... I get floating point used in kernel
-(task=3DC0188480,pc=3D1100)
-
-=0D
-
-10.0.0.2 login: root
-
-Last login: Tnhu Jan  1 00:00sole
-
-Linux 10.0.0.2 2.4.22 #1 Tue Nov 8 12:03:26 UTC 2005 ppc unknown
-
-=0D
-
-
-MontaVista(R) Linux(R) Professional Edition 3.1
-
-=0D
-
-
-root@10.0.0.2:~# <mailto:root@10.0.0.2:~> =0D
-
-=0D
-
-root@10.0.0.2:/home# cd ..
-
-root@10.0.0.2:/# ls
-
-bin  boot  dev  etc  home  lib  mnt  opt  proc  root  sbin  tmp  usr
-var
-
-root@10.0.0.2:/# floating point used in kernel (task=3Dc0188480, pc=3D1100)
-
-=0D
-
-=0D
-
-What does this mean ...? This makes the console hang .....Can any 1 help
-me on in this?=0D
-
-=0D
-
-Best Regards
-
-srideep
-
-=0D
-
-
-
-
-Confidentiality Notice=0D
-
-The information contained in this electronic message and any attachments to=
- this message are intended
-for the exclusive use of the addressee(s) and may contain confidential or=
- privileged information. If
-you are not the intended recipient, please notify the sender at Wipro or=
- Mailadmin@wipro.com immediately
-and destroy all copies of this message and any attachments.
-------_=_NextPart_001_01C5E5F3.7E1CA31D
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" xmlns:o=
-=3D"urn:schemas-microsoft-com:office:office" xmlns:w=
-=3D"urn:schemas-microsoft-com:office:word" xmlns=
-=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; charset=
-=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	color:black;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dblack face=3DArial><span style=
-=3D'font-size:
-10.0pt;font-family:Arial;color:black'>Thanks for your help friends=
- &#8230;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dblack face=3DArial><span style=
-=3D'font-size:
-10.0pt;font-family:Arial;color:black'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dblack face=3DArial><span style=
-=3D'font-size:
-10.0pt;font-family:Arial;color:black'>&nbsp;&nbsp;&nbsp;&nbsp; I am able to
-bring my kernel up &#8230;&#8230; right now I have a problem after some=
- time at
-the console &#8230;. I <b><span style=3D'font-weight:bold'>get=
- </span></b></span></font><b><font
-color=3Dblack><span style=3D'color:black;font-weight:bold'>floating point=
- used in
-kernel (task=3DC0188480,pc=3D1100)</span></font></b><b><font size=3D2 color=
-=3Dblack
-face=3DArial><span style=3D'font-size:10.0pt;font-family:Arial;color:black;
-font-weight:bold'><o:p></o:p></span></font></b></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dblack face=3DArial><span style=
-=3D'font-size:
-10.0pt;font-family:Arial;color:black'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
- Roman"><span
-style=3D'font-size:12.0pt;color:black'>10.0.0.2 login:=
- root<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
- Roman"><span
-style=3D'font-size:12.0pt;color:black'>Last login: Tnhu Jan&nbsp; 1=
- 00:00sole<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
- Roman"><span
-style=3D'font-size:12.0pt;color:black'>Linux 10.0.0.2 2.4.22 #1 Tue Nov 8
-12:03:26 UTC 2005 ppc unknown<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
- Roman"><span
-style=
-=3D'font-size:12.0pt;color:black'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;
-&nbsp;&nbsp;&nbsp;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
- Roman"><span
-style=3D'font-size:12.0pt;color:black'>MontaVista(R) Linux(R) Professional
-Edition 3.1<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
- Roman"><span
-style=
-=3D'font-size:12.0pt;color:black'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
- Roman"><span
-style=3D'font-size:12.0pt;color:black'><a href=3D"mailto:root@10.0.0.2:~"
-title=
-=3D"mailto:root@10.0.0.2:~&#10;mailto:root@10.0.0.2:~#">root@10.0.0.2:~#</a=
->
-<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
- Roman"><span
-style=3D'font-size:12.0pt;color:black'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 color=3D"#993300" face=3D"Times New=
- Roman"><span
-style=3D'font-size:12.0pt;color:#993300'>root@10.0.0.2:/home# cd=
- ..<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 color=3D"#993300" face=3D"Times New=
- Roman"><span
-style=3D'font-size:12.0pt;color:#993300'>root@10.0.0.2:/#=
- ls<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 color=3D"#993300" face=3D"Times New=
- Roman"><span
-style=3D'font-size:12.0pt;color:#993300'>bin&nbsp; boot&nbsp; dev&nbsp;=
- etc&nbsp;
-home&nbsp; lib&nbsp; mnt&nbsp; opt&nbsp; proc&nbsp; root&nbsp; sbin&nbsp;
-tmp&nbsp; usr&nbsp; var<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 color=3D"#993300" face=3D"Times New=
- Roman"><span
-style=3D'font-size:12.0pt;color:#993300'>root@10.0.0.2:/# floating point=
- used in
-kernel (task=3Dc0188480, pc=3D1100)<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 color=3D"#993300" face=3D"Times New=
- Roman"><span
-style=
-=3D'font-size:12.0pt;color:#993300'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
- Roman"><span
-style=3D'font-size:12.0pt;color:black'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
- Roman"><span
-style=3D'font-size:12.0pt;color:black'>What does this mean &#8230;? This=
- makes
-the console hang &#8230;..Can any 1 help me on in this?=
- <o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
- Roman"><span
-style=3D'font-size:12.0pt;color:black'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
- Roman"><span
-style=3D'font-size:12.0pt;color:black'>Best=
- Regards<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
- Roman"><span
-style=3D'font-size:12.0pt;color:black'>srideep<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
- Roman"><span
-style=3D'font-size:12.0pt;color:black'><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-<table><tr><td bgcolor=3D#ffffff><font color=3D#000000><br>
-Confidentiality Notice <br>
-<br>
-The information contained in this electronic message and any attachments to=
- this message are intended<br>
-for the exclusive use of the addressee(s) and may contain confidential or=
- privileged information. If<br>
-you are not the intended recipient, please notify the sender at Wipro or=
- Mailadmin@wipro.com immediately<br>
-and destroy all copies of this message and any attachments.<br>
-</font></td></tr></table>
-------_=_NextPart_001_01C5E5F3.7E1CA31D--
+Hello:
+
+We are working on implementing driver for SCC operating in QMC mode that 
+supports multiple HDLC channels. The details of the system we are using 
+are the following.
+
+CPU Version = 8247 based on 82xx family of processor(PVR 80822014)
+The Linux OS Version = DENKS Linux version 2.4.20.
+The Peripherals used are = FCC1 in 10/100 ethernet
+                                            FCC2 in 10/100 ethernet
+                                            SCC1 currently not used, but 
+proposed to be used in HDLC mode.
+                                            SCC3 is not used.
+                                            SCC4 operating in QMC mode 
+with super -channel capability. Trying to operate 192kbps HDLC channel 
+(using 3x64kbps QMC channels).
+                                            SMC2 in UART mode (as a 
+simple debug port without any modem signals).
+                                            SPI interface currently not 
+used but shall be used in future.
+                                            I2C is being used.
+
+01. Can the channel specific parameters of the SCC4 in QMC mode be 
+relocated from DPRAM base address?? There is no mention in the 
+8272RM.pdf about configuring the base address of channel specific 
+parameters. From the QMC memory structure diagram, it looks like the 
+channel specific parameters will be taken from the the DPRAM base 
+address. Can you please confirm it?
+
+02. We have changed the function m8260_cpm_dpalloc() used for DPRAM 
+allocation in the linux source code. It was allocating memory from 
+128Byte location to 8KByte location in DPRAM. But since QMC requires the 
+lower 4KByte for channel specific parameters, we changed the function to 
+allocate DPRAM from 4KByte location. Will this change lead to any 
+problem for proper linux operation?
+
+03. We are encountering a strange problem with scc4 parameter RAM. When 
+the driver is coming up, its trying to initialize the SCC4 parameter RAM 
+for QMC. In the location (immr + 0x8318), we are writing the value 
+0x8320 but the value magically changes to 0x8300. We tried to write to 
+the location using BDI and again the problem is seen. Is this a known 
+problem with the processor?? This problem doesnot appear everytime. Is 
+there any known cause for this problem?
+
+Regards,
+Robin
