@@ -1,12 +1,19 @@
-Return-Path: <galak@gate.crashing.org>
-Date: Thu, 10 Nov 2005 10:34:33 -0600 (CST)
-From: Kumar Gala <galak@gate.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Message-ID: <Pine.LNX.4.44.0511101034060.17269-100000@gate.crashing.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
-Subject: [PATCH] ppc32: fix PQ2 PCI DMA interrupt handling
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id DE03C68705
+	for <linuxppc-dev@ozlabs.org>; Fri, 11 Nov 2005 03:44:39 +1100 (EST)
+Date: Thu, 10 Nov 2005 08:44:04 -0800
+To: Andrew Morton <akpm@osdl.org>
+Message-ID: <20051110164404.GA7303@pb15.lixom.net>
+References: <20051109072228.GA7983@pb15.lixom.net>
+	<1131526855.24637.67.camel@gaston>
+	<20051109213837.47c8dce7.akpm@osdl.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20051109213837.47c8dce7.akpm@osdl.org>
+From: Olof Johansson <olof@lixom.net>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] ppc: add support for new powerbooks
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,45 +23,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The bit position in the status register corresponding to the
-PCI DMA interrupt was incorrect.  Additionally, we did not
-have a define for the PCI DMA interrupt.
+On Wed, Nov 09, 2005 at 09:38:37PM -0800, Andrew Morton wrote:
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> >
+> > Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
+> I don't think I'm adding much value handling ppc/ppc64 patches, really. 
+> I'd prefer to get out of that business.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+Main benefit for me, as a patch submitter, is that you consistently,
+always, ACK when you pick up or drop a patch. In other words, I don't
+have to go polling a tree to see if it made it in or not.
 
----
-commit 6a9fa9805be85c33a177061d6bf4f4c2a95c9c7e
-tree 2a72692b7373d2f4d328aee3652ece9d9ff7e750
-parent b23f8a20b85440d4bebf1a2ddea5830ca85ff655
-author Kumar Gala <galak@kernel.crashing.org> Thu, 10 Nov 2005 10:35:15 -0600
-committer Kumar Gala <galak@kernel.crashing.org> Thu, 10 Nov 2005 10:35:15 -0600
+> It would be better to have an arch maintainer who runs a git tree, same as
+> ia64, arm, etc.
+> 
+> And, given the amount of shared infrastructure, I suspect it would have to
+> be a single git tree for both architectures.
+> 
+> I'd still sweep up random ppc patches, but those will go into mainline via the
+> originator->mm->git-powerpc->linus route.
+> 
+> Possible?
 
- arch/ppc/syslib/cpm2_pic.c |    2 +-
- include/asm-powerpc/irq.h  |    1 +
- 2 files changed, 2 insertions(+), 1 deletions(-)
+I'm fine with all that; to be honest I haven't been certain where the
+smaller ppc/ppc64 patches should go during this whole merge business (or
+after, for that matter).
 
-diff --git a/arch/ppc/syslib/cpm2_pic.c b/arch/ppc/syslib/cpm2_pic.c
-index c867be6..29d95d4 100644
---- a/arch/ppc/syslib/cpm2_pic.c
-+++ b/arch/ppc/syslib/cpm2_pic.c
-@@ -37,7 +37,7 @@ static	u_char	irq_to_siureg[] = {
- static	u_char	irq_to_siubit[] = {
- 	 0, 15, 14, 13, 12, 11, 10,  9,
- 	 8,  7,  6,  5,  4,  3,  2,  1,
--	 2,  1, 15, 14, 13, 12, 11, 10,
-+	 2,  1,  0, 14, 13, 12, 11, 10,
- 	 9,  8,  7,  6,  5,  4,  3,  0,
- 	31, 30, 29, 28, 27, 26, 25, 24,
- 	23, 22, 21, 20, 19, 18, 17, 16,
-diff --git a/include/asm-powerpc/irq.h b/include/asm-powerpc/irq.h
-index b3935ea..921bfa9 100644
---- a/include/asm-powerpc/irq.h
-+++ b/include/asm-powerpc/irq.h
-@@ -389,6 +389,7 @@ extern u64 ppc64_interrupt_controller;
- #define	SIU_INT_TIMER4		((uint)0x0f + CPM_IRQ_OFFSET)
- #define	SIU_INT_TMCNT		((uint)0x10 + CPM_IRQ_OFFSET)
- #define	SIU_INT_PIT		((uint)0x11 + CPM_IRQ_OFFSET)
-+#define	SIU_INT_PCI		((uint)0x12 + CPM_IRQ_OFFSET)
- #define	SIU_INT_IRQ1		((uint)0x13 + CPM_IRQ_OFFSET)
- #define	SIU_INT_IRQ2		((uint)0x14 + CPM_IRQ_OFFSET)
- #define	SIU_INT_IRQ3		((uint)0x15 + CPM_IRQ_OFFSET)
+If Paulus wants to start an arch tree, that's fine with me. I do share
+Ben's opinion about less review though, I guess we'll just have to deal
+with that.
+
+Also, Paul, I kindly request some sort of ACK mechanism similar to
+Andrew's when patches are picked up. :-)
+
+
+Thanks,
+
+-Olof
