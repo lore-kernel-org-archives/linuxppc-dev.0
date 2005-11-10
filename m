@@ -1,20 +1,21 @@
-Return-Path: <nathael.pajani@ecrin.com>
-Received: from smtp-out.completel.net (smtp-out.completel.net [83.145.110.36])
-	by ozlabs.org (Postfix) with ESMTP id 5222D686EA
+Return-Path: <brodo@dominikbrodowski.de>
+Received: from linta.de (isilmar.linta.de [213.239.214.66])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A3A37686EA
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Nov 2005 19:44:15 +1100 (EST)
-Received: from [192.52.109.152] (unknown [83.145.98.3])
-	by smtp-out.completel.net (Postfix) with ESMTP id 0CAF7280041
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 10 Nov 2005 09:44:13 +0100 (CET)
-Message-ID: <437308E6.2070804@ecrin.com>
-Date: Thu, 10 Nov 2005 09:46:30 +0100
-From: Nathael PAJANI <nathael.pajani@ecrin.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: Re: "Now booting the kernel"
-Reply-To: nathael.pajani@ecrin.com
+	Thu, 10 Nov 2005 22:32:54 +1100 (EST)
+Date: Thu, 10 Nov 2005 11:03:04 +0100
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+To: Paul Mackerras <paulus@samba.org>
+Message-ID: <20051110100304.GA21855@dominikbrodowski.de>
+References: <20051105150332.GB6577@logos.cnet>
+	<17262.42993.975296.653728@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17262.42993.975296.653728@cargo.ozlabs.ibm.com>
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] ppc32 8xx: MPC8xx PCMCIA update
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,57 +26,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
- >Linux/PPC load: console=ttyS0,9600 root=/dev/xsysace/disc0/part2 rw
- >Uncompressing Linux...done.
- >Now booting the kernel
+Hi,
 
-Hi!
+On Mon, Nov 07, 2005 at 12:03:45PM +1100, Paul Mackerras wrote:
+> Marcelo Tosatti writes:
+> 
+> > The following patch updates the MPC8xx PCMCIA driver:
+> 
+> This and the following patch look OK as far as I can tell - Dominik,
+> will you take care of sending them to Linus?
 
-At this state the bootloader stops executing and the Linux Kernel 
-starts. The problem is that the Linux kernel does not know yet how to 
-use the serial.
+Yes, will do.
 
-You won't have any message before it is set up (in early-console if my 
-memory is allright)
-
-So what you can do to check what's going on, is put "breakpoints" in the 
-boot sequence. This means in the file arch/ppc/kernel/head*.S used for 
-your board you should try to comment the line with the "tlbwe" 
-instruction in the section "/* 2. Invalidate all entries except the 
-entry we're executing in */"
-This will allow you to keep access to your board registers.
-
-Then you go step by step, putting some code which will reboot the board 
-when executed, so you know you're going up to that point, and then move 
-the "breakpoint" further.
-
-This code does the reboot (for the booke I can reboot the board by 
-writting '4' at address 0xfa001001):
-
-ASM:
-   lis r4,0xfa00
-   li  r5,4
-   stb r5,0x1001(r4)
-   msync
-
-C:
-*((volatile unsigned char*)0xfa001001 = 4;
-
-
-This way, instead of hanging up, the board reboots and you know where 
-you are.
-
-If you're going up to this:
-         bl      machine_init	/* arch/ppc/kernel/setup.c */
-         bl      MMU_init	/* arch/ppc/mm/init.c */
-It's quite good, these are C functions, but they are processor specific, 
-once again, check that the ones used (compiled) are those you need.
-
-And next you've got the "start_kernel" call, which leads you to C code 
-definitely. It's in init/main.c.
-
-
-I hope I did not tell anything wrong, and that this will help.
-
-Have fun.
-Nathael.
+Thanks,
+	Dominik
