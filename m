@@ -1,19 +1,20 @@
-Return-Path: <robin@india.tejasnetworks.com>
-Received: from anche.india.tejasnetworks.com (india.tejasnetworks.com
-	[164.164.94.83])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 30BCE686FA
+Return-Path: <nathael.pajani@ecrin.com>
+Received: from smtp-out.completel.net (smtp-out.completel.net [83.145.110.36])
+	by ozlabs.org (Postfix) with ESMTP id 5222D686EA
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 11 Nov 2005 01:43:39 +1100 (EST)
-Message-ID: <43735DD0.9030205@india.tejasnetworks.com>
-Date: Thu, 10 Nov 2005 20:18:48 +0530
-From: Robin Mathew <robin@india.tejasnetworks.com>
+	Thu, 10 Nov 2005 19:44:15 +1100 (EST)
+Received: from [192.52.109.152] (unknown [83.145.98.3])
+	by smtp-out.completel.net (Postfix) with ESMTP id 0CAF7280041
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 10 Nov 2005 09:44:13 +0100 (CET)
+Message-ID: <437308E6.2070804@ecrin.com>
+Date: Thu, 10 Nov 2005 09:46:30 +0100
+From: Nathael PAJANI <nathael.pajani@ecrin.com>
 MIME-Version: 1.0
-To: Linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+To: linuxppc-embedded@ozlabs.org
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Nicholas Basker <nbasker@india.tejasnetworks.com>
-Subject: SCC QMC driver for 8247
+Subject: Re: "Now booting the kernel"
+Reply-To: nathael.pajani@ecrin.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,49 +25,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello:
+ >Linux/PPC load: console=ttyS0,9600 root=/dev/xsysace/disc0/part2 rw
+ >Uncompressing Linux...done.
+ >Now booting the kernel
 
-We are working on implementing driver for SCC operating in QMC mode that 
-supports multiple HDLC channels. The details of the system we are using 
-are the following.
+Hi!
 
-CPU Version = 8247 based on 82xx family of processor(PVR 80822014)
-The Linux OS Version = DENKS Linux version 2.4.20.
-The Peripherals used are = FCC1 in 10/100 ethernet
-                                            FCC2 in 10/100 ethernet
-                                            SCC1 currently not used, but 
-proposed to be used in HDLC mode.
-                                            SCC3 is not used.
-                                            SCC4 operating in QMC mode 
-with super -channel capability. Trying to operate 192kbps HDLC channel 
-(using 3x64kbps QMC channels).
-                                            SMC2 in UART mode (as a 
-simple debug port without any modem signals).
-                                            SPI interface currently not 
-used but shall be used in future.
-                                            I2C is being used.
+At this state the bootloader stops executing and the Linux Kernel 
+starts. The problem is that the Linux kernel does not know yet how to 
+use the serial.
 
-01. Can the channel specific parameters of the SCC4 in QMC mode be 
-relocated from DPRAM base address?? There is no mention in the 
-8272RM.pdf about configuring the base address of channel specific 
-parameters. From the QMC memory structure diagram, it looks like the 
-channel specific parameters will be taken from the the DPRAM base 
-address. Can you please confirm it?
+You won't have any message before it is set up (in early-console if my 
+memory is allright)
 
-02. We have changed the function m8260_cpm_dpalloc() used for DPRAM 
-allocation in the linux source code. It was allocating memory from 
-128Byte location to 8KByte location in DPRAM. But since QMC requires the 
-lower 4KByte for channel specific parameters, we changed the function to 
-allocate DPRAM from 4KByte location. Will this change lead to any 
-problem for proper linux operation?
+So what you can do to check what's going on, is put "breakpoints" in the 
+boot sequence. This means in the file arch/ppc/kernel/head*.S used for 
+your board you should try to comment the line with the "tlbwe" 
+instruction in the section "/* 2. Invalidate all entries except the 
+entry we're executing in */"
+This will allow you to keep access to your board registers.
 
-03. We are encountering a strange problem with scc4 parameter RAM. When 
-the driver is coming up, its trying to initialize the SCC4 parameter RAM 
-for QMC. In the location (immr + 0x8318), we are writing the value 
-0x8320 but the value magically changes to 0x8300. We tried to write to 
-the location using BDI and again the problem is seen. Is this a known 
-problem with the processor?? This problem doesnot appear everytime. Is 
-there any known cause for this problem?
+Then you go step by step, putting some code which will reboot the board 
+when executed, so you know you're going up to that point, and then move 
+the "breakpoint" further.
 
-Regards,
-Robin
+This code does the reboot (for the booke I can reboot the board by 
+writting '4' at address 0xfa001001):
+
+ASM:
+   lis r4,0xfa00
+   li  r5,4
+   stb r5,0x1001(r4)
+   msync
+
+C:
+*((volatile unsigned char*)0xfa001001 = 4;
+
+
+This way, instead of hanging up, the board reboots and you know where 
+you are.
+
+If you're going up to this:
+         bl      machine_init	/* arch/ppc/kernel/setup.c */
+         bl      MMU_init	/* arch/ppc/mm/init.c */
+It's quite good, these are C functions, but they are processor specific, 
+once again, check that the ones used (compiled) are those you need.
+
+And next you've got the "start_kernel" call, which leads you to C code 
+definitely. It's in init/main.c.
+
+
+I hope I did not tell anything wrong, and that this will help.
+
+Have fun.
+Nathael.
