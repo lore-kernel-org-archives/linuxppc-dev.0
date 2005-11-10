@@ -1,22 +1,12 @@
-Return-Path: <akpm@osdl.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 6C42F686AD
-	for <linuxppc-dev@ozlabs.org>; Thu, 10 Nov 2005 17:30:02 +1100 (EST)
-Date: Wed, 9 Nov 2005 22:29:45 -0800
-From: Andrew Morton <akpm@osdl.org>
+Return-Path: <galak@gate.crashing.org>
+Date: Thu, 10 Nov 2005 10:34:33 -0600 (CST)
+From: Kumar Gala <galak@gate.crashing.org>
 To: Paul Mackerras <paulus@samba.org>
-Message-Id: <20051109222945.5b721c56.akpm@osdl.org>
-In-Reply-To: <17266.58346.798470.79283@cargo.ozlabs.ibm.com>
-References: <20051109072228.GA7983@pb15.lixom.net>
-	<1131526855.24637.67.camel@gaston>
-	<20051109213837.47c8dce7.akpm@osdl.org>
-	<17266.58346.798470.79283@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] ppc: add support for new powerbooks
+Message-ID: <Pine.LNX.4.44.0511101034060.17269-100000@gate.crashing.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Subject: [PATCH] ppc32: fix PQ2 PCI DMA interrupt handling
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,40 +16,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@samba.org> wrote:
->
-> > And, given the amount of shared infrastructure, I suspect it would have to
-> > be a single git tree for both architectures.
-> > 
-> > I'd still sweep up random ppc patches, but those will go into mainline via the
-> > originator->mm->git-powerpc->linus route.
-> > 
-> > Possible?
-> 
-> Yes.  Good idea, in fact.  I'll create a powerpc.git tree once the
-> current merge window closes.
+The bit position in the status register corresponding to the
+PCI DMA interrupt was incorrect.  Additionally, we did not
+have a define for the PCI DMA interrupt.
 
-OK.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-> Do I need to grep the -mm releases for ppc patches or will you mail
-> them to me?
+---
+commit 6a9fa9805be85c33a177061d6bf4f4c2a95c9c7e
+tree 2a72692b7373d2f4d328aee3652ece9d9ff7e750
+parent b23f8a20b85440d4bebf1a2ddea5830ca85ff655
+author Kumar Gala <galak@kernel.crashing.org> Thu, 10 Nov 2005 10:35:15 -0600
+committer Kumar Gala <galak@kernel.crashing.org> Thu, 10 Nov 2005 10:35:15 -0600
 
-If I see a ppc patch I will:
+ arch/ppc/syslib/cpm2_pic.c |    2 +-
+ include/asm-powerpc/irq.h  |    1 +
+ 2 files changed, 2 insertions(+), 1 deletions(-)
 
-- merge it into -mm, add you guys to the cc on the mm-commits email.
-
-- stage the patch after git-powerpc.patch in the -mm lineup.
-
-- if I see the patch appear in git-powerpc.patch, I just drop it.  I sync
-  with the git trees maybe twice per day.
-
-- time passes
-
-- if it still hasn't been merged into git-powerpc, I start spamming you
-  with the patch.
-
-So no, you don't need to grep -mm and I won't bypass the git-powerpc tree
-and the patch won't get lost.  All you need to do is to either merge or
-nack the patch at some stage.
-
-Easy as pie ;)
+diff --git a/arch/ppc/syslib/cpm2_pic.c b/arch/ppc/syslib/cpm2_pic.c
+index c867be6..29d95d4 100644
+--- a/arch/ppc/syslib/cpm2_pic.c
++++ b/arch/ppc/syslib/cpm2_pic.c
+@@ -37,7 +37,7 @@ static	u_char	irq_to_siureg[] = {
+ static	u_char	irq_to_siubit[] = {
+ 	 0, 15, 14, 13, 12, 11, 10,  9,
+ 	 8,  7,  6,  5,  4,  3,  2,  1,
+-	 2,  1, 15, 14, 13, 12, 11, 10,
++	 2,  1,  0, 14, 13, 12, 11, 10,
+ 	 9,  8,  7,  6,  5,  4,  3,  0,
+ 	31, 30, 29, 28, 27, 26, 25, 24,
+ 	23, 22, 21, 20, 19, 18, 17, 16,
+diff --git a/include/asm-powerpc/irq.h b/include/asm-powerpc/irq.h
+index b3935ea..921bfa9 100644
+--- a/include/asm-powerpc/irq.h
++++ b/include/asm-powerpc/irq.h
+@@ -389,6 +389,7 @@ extern u64 ppc64_interrupt_controller;
+ #define	SIU_INT_TIMER4		((uint)0x0f + CPM_IRQ_OFFSET)
+ #define	SIU_INT_TMCNT		((uint)0x10 + CPM_IRQ_OFFSET)
+ #define	SIU_INT_PIT		((uint)0x11 + CPM_IRQ_OFFSET)
++#define	SIU_INT_PCI		((uint)0x12 + CPM_IRQ_OFFSET)
+ #define	SIU_INT_IRQ1		((uint)0x13 + CPM_IRQ_OFFSET)
+ #define	SIU_INT_IRQ2		((uint)0x14 + CPM_IRQ_OFFSET)
+ #define	SIU_INT_IRQ3		((uint)0x15 + CPM_IRQ_OFFSET)
