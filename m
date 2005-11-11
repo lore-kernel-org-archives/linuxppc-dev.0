@@ -1,15 +1,17 @@
-Return-Path: <wd@denx.de>
-To: "KylongMu" <mqy@263.net.cn>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 11 Nov 2005 10:04:14 +0800."
-	<20051111020420.9644C1073@smtp.263.net>
-Date: Fri, 11 Nov 2005 09:39:08 +0100
-Sender: wd@denx.de
-Message-Id: <20051111083908.42494353C42@atlas.denx.de>
-Cc: Linuxppc-embedded@ozlabs.org
-Subject: Re: 11-11-05 2.6.14 on AMCC Yosemite board(boot error) 
+Return-Path: <lichanjuan04@st.lzu.edu.cn>
+Received: from st.lzu.edu.cn (unknown [202.201.0.148])
+	by ozlabs.org (Postfix) with SMTP id B0CE9686FA
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 11 Nov 2005 20:15:31 +1100 (EST)
+Message-ID: <331697990.25627@st.lzu.edu.cn>
+Message-ID: <000a01c5e6a0$1eba5150$f10cc9ca@lcj3bdfa4e34dd>
+From: "lily" <lichanjuan04@st.lzu.edu.cn>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Fri, 11 Nov 2005 17:13:02 +0800
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0007_01C5E6E3.2C6C8000"
+Subject: floating point operation of ppc 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,47 +22,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <20051111020420.9644C1073@smtp.263.net> you wrote:
-> 
-> 	With today's update, I can make the kernel by Yosemite_defconfig,
-> but
-> When boot my board with this new kernel, it halt at boot time, the
-> attachment
-> Is the boot message.
+This is a multi-part message in MIME format.
 
-What you show is NOT the current code.
+------=_NextPart_000_0007_01C5E6E3.2C6C8000
+Content-Type: text/plain;
+	charset="gb2312"
+Content-Transfer-Encoding: base64
 
-> U-Boot 1.1.3 (Sep  7 2005 - 09:03:02)
+aGksYWxsOg0KICAgIGkgYnVpbGQgYW4gZW1iZWRkZWQgbGludXggb24gcG93ZXJwYyA0MDVlcCxp
+IG5lZWQgZXhlY3V0ZSBmbG9hdGluZyBwb2ludCBvcGVyYXRpb24sYW5kIGkgZW5hYmxlICJtYXRo
+IGVtdWxhdGUiIG9wdGlvbiBpbiBrZXJuZWwsIGkgcnVuIGEgd2hpbGUoMSlsb29wICxpbiB0aGUg
+bG9vcCB0aGVyZSB3YXMgZmxvYXRpbmcgcG9pbnQgZXhwcmVzc2lvbiAsYWZ0ZXIgdGVzdCAsaSBm
+b3VuZCB0aGUgd2hpbGUgKDEpIGV4aXQgYmVjYXVzZSBvZiB0aGUgZmxvYXRpbmcgcG9pbnQgY29t
+cHV0YXRpb24sdGhhdCBpcyB0aGUgZmxvYXRpbmcgcG9pbnQgY2FuJ3QgZXhlY3V0ZSBvbiBwcGMg
+c3RhYmxlbHkuSXMgdGhlcmUgc29tZW9uZSBtZWV0cyB0aGUgc2FtZSBwcm9ibGVtcyAscGxlYXNl
+IGdpdmUgbWUgc29tZSBzdWdnZXN0aW9uLHRoYW5rcyEhIQ0KDQogICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgIGxpbHkg
 
-Please update U-Boot as well. You need this commit included:
+------=_NextPart_000_0007_01C5E6E3.2C6C8000
+Content-Type: text/html;
+	charset="gb2312"
+Content-Transfer-Encoding: base64
 
-commit f190c11b1f22ff766e046588e5a7bb55f28ae305
-tree 1c41a7beffe8a293174dcb7c28b394349204a047
-parent 4d03a21f2329bb13a9661a23742ac0b77a7a76d5
-author Stefan Roese <sr@denx.de> Sat, 05 Nov 2005 15:50:16 +0100
-committer Stefan Roese <sr@denx.de> Sat, 05 Nov 2005 15:50:16 +0100
+PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUcmFuc2l0aW9uYWwv
+L0VOIj4NCjxIVE1MPjxIRUFEPg0KPE1FVEEgaHR0cC1lcXVpdj1Db250ZW50LVR5cGUgY29udGVu
+dD0idGV4dC9odG1sOyBjaGFyc2V0PWdiMjMxMiI+DQo8TUVUQSBjb250ZW50PSJNU0hUTUwgNi4w
+MC4yODAwLjE1MTUiIG5hbWU9R0VORVJBVE9SPg0KPFNUWUxFPjwvU1RZTEU+DQo8L0hFQUQ+DQo8
+Qk9EWSBiZ0NvbG9yPSNmZmZmZmY+DQo8RElWPjxGT05UIHNpemU9Mj5oaSxhbGw6PC9GT05UPjwv
+RElWPg0KPERJVj48Rk9OVCBzaXplPTI+Jm5ic3A7Jm5ic3A7Jm5ic3A7IGkgYnVpbGQgYW4gZW1i
+ZWRkZWQgbGludXggb24gcG93ZXJwYyANCjQwNWVwLGkgbmVlZCBleGVjdXRlIGZsb2F0aW5nIHBv
+aW50IG9wZXJhdGlvbixhbmQgaSBlbmFibGUgIm1hdGggZW11bGF0ZSIgDQpvcHRpb24mbmJzcDtp
+biBrZXJuZWwsIGkgcnVuIGEgd2hpbGUoMSlsb29wICxpbiB0aGUgbG9vcCB0aGVyZSB3YXMgZmxv
+YXRpbmcgDQpwb2ludCBleHByZXNzaW9uICxhZnRlciB0ZXN0ICxpIGZvdW5kIHRoZSB3aGlsZSAo
+MSkgZXhpdCBiZWNhdXNlIG9mIHRoZSBmbG9hdGluZyANCnBvaW50IGNvbXB1dGF0aW9uLHRoYXQg
+aXMgdGhlIGZsb2F0aW5nIHBvaW50IGNhbid0IGV4ZWN1dGUgb24gcHBjIHN0YWJsZWx5LklzIA0K
+dGhlcmUgc29tZW9uZSBtZWV0cyB0aGUgc2FtZSBwcm9ibGVtcyAscGxlYXNlJm5ic3A7Z2l2ZSBt
+ZSBzb21lIA0Kc3VnZ2VzdGlvbix0aGFua3MhISE8L0ZPTlQ+PC9ESVY+DQo8RElWPiZuYnNwOzwv
+RElWPg0KPERJVj48Rk9OVCANCnNpemU9Mj4mbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsm
+bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJz
+cDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsm
+bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJz
+cDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsm
+bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJz
+cDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsm
+bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJz
+cDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsm
+bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJz
+cDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsg
+DQpsaWx5PC9GT05UPiZuYnNwOzwvRElWPjwvQk9EWT48L0hUTUw+DQo=
 
-    Adjust bd->bi_flashstart on Yellowstone & Yosemite to correct size
-    Patch by Stefan Roese, 05 Nov 2005
-
-I recommend to use the top-of-tree from the CVS or GIT repositories.
-
-> Linux version 2.6.14 (root@dxp) (gcc version 4.0.0) #1 Fri Nov 11
-> 09:51:04 CST 2005
-
-This is not the current code base. You should  use  top-of-tree  from
-GIT repository (commit ff1df84b3c3154ffdb646941e1c70d17554e3042); the
-kernel will display something like this:
-
-Linux version 2.6.14-gff1df84b ...
-
-
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-                  Nail here --X-- for new monitor.
+------=_NextPart_000_0007_01C5E6E3.2C6C8000--
