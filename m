@@ -1,23 +1,22 @@
-Return-Path: <mbuesch@freenet.de>
-Received: from mout2.freenet.de (mout2.freenet.de [194.97.50.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D9E446873C
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Nov 2005 10:14:49 +1100 (EST)
-From: Michael Buesch <mbuesch@freenet.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Sun, 13 Nov 2005 00:13:45 +0100
+Return-Path: <bunk@stusta.de>
+Received: from mailout.stusta.mhn.de (mailout.stusta.mhn.de [141.84.69.5])
+	by ozlabs.org (Postfix) with SMTP id D192768737
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Nov 2005 10:53:07 +1100 (EST)
+Date: Sat, 12 Nov 2005 22:53:04 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Michael Buesch <mbuesch@freenet.de>
+Message-ID: <20051112215304.GB21448@stusta.de>
 References: <Pine.LNX.4.64.0511111753080.3263@g5.osdl.org>
+	<200511122145.38409.mbuesch@freenet.de>
 	<Pine.LNX.4.64.0511121257000.3263@g5.osdl.org>
-	<1131834254.7406.43.camel@gaston>
-In-Reply-To: <1131834254.7406.43.camel@gaston>
+	<200511122237.17157.mbuesch@freenet.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart35388533.skd0ZB2N8m";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200511130013.45610.mbuesch@freenet.de>
-Cc: linuxppc-dev@ozlabs.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: asm/delay.h missing on powerpc (was: Re: Linuv 2.6.15-rc1)
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200511122237.17157.mbuesch@freenet.de>
+Cc: Linus Torvalds <torvalds@osdl.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org
+Subject: Re: Linuv 2.6.15-rc1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,35 +26,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart35388533.skd0ZB2N8m
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Sat, Nov 12, 2005 at 10:37:16PM +0100, Michael Buesch wrote:
+> On Saturday 12 November 2005 22:00, you wrote:
+> > 
+> > On Sat, 12 Nov 2005, Michael Buesch wrote:
+> > > 
+> > > Latest GIT tree does not boot on my G4 PowerBook.
+> > 
+> > What happens if you do
+> > 
+> > 	make ARCH=powerpc
+> > 
+> > and build everything that way (including the "config" phase)?
+> 
+> I did
+> make mrproper
+> copy the .config over again
+> make ARCH=powerpc menuconfig
+> exit and save from menuconfig
+> make ARCH=powerpc
+> 
+> The result of the build is:
+> 
+>   CHK     include/linux/version.h
+>   CHK     include/linux/compile.h
+>   CHK     usr/initramfs_list
+>   GEN     .version
+>   CHK     include/linux/compile.h
+>   UPD     include/linux/compile.h
+>   CC      init/version.o
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux1
+> arch/powerpc/kernel/built-in.o: In function `platform_init':
+> : undefined reference to `prep_init'
+> arch/powerpc/kernel/built-in.o:(__ksymtab+0x4d8): undefined reference to `ucSystemType'
+> arch/powerpc/kernel/built-in.o:(__ksymtab+0x4e0): undefined reference to `_prep_type'
+> make: *** [.tmp_vmlinux1] Error 1
 
-On Saturday 12 November 2005 23:24, you wrote:
-> =C3=8Ct should still work. I'm running -rc1 with "powerpc" on mine so tha=
-t at
-> least works, it's possible that we broke "ppc", I'll have a look and
-> send a fix.
+Please send your .config .
 
-powerpc arch builds and runs now, but
-I have problems compiling the bcm430x driver. It includes linux/delay.h.
-linux/delay.h includes asm/delay.h, which does not exist.
-What to do now?
+> Greetings Michael.
 
-=2D-=20
-Greetings Michael.
+cu
+Adrian
 
---nextPart35388533.skd0ZB2N8m
-Content-Type: application/pgp-signature
+-- 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQBDdncplb09HEdWDKgRAkYPAJsHxod/e8y4MY1892gcWqqMkzfJRgCdGbc8
-oUpxsllA+Duypvur1BVQujY=
-=/+wy
------END PGP SIGNATURE-----
-
---nextPart35388533.skd0ZB2N8m--
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
