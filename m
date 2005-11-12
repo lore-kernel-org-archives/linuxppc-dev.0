@@ -1,18 +1,14 @@
 Return-Path: <mqy@263.net.cn>
-Received: from smtp.263.net (263.net.cn [211.150.96.21])
-	by ozlabs.org (Postfix) with ESMTP id 8DAFF68704
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 13 Nov 2005 03:48:02 +1100 (EST)
 From: "KylongMu" <mqy@263.net.cn>
-To: <wd@denx.de>
-Date: Sun, 13 Nov 2005 00:47:49 +0800
+To: "Wolfgang Denk" <wd@denx.de>
+Date: Sun, 13 Nov 2005 02:01:24 +0800
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0000_01C5E7EB.E0413DB0"
-In-Reply-To: <20051111083908.42494353C42@atlas.denx.de>
-Message-Id: <20051112164751.CA6C6DBB@smtp.263.net>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: 11-11-05 2.6.14 on AMCC Yosemite board(boot error) 
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_000B_01C5E7F6.278ED3D0"
+In-Reply-To: <20051112164751.CA6C6DBB@smtp.263.net>
+Message-Id: <20051112180127.10C03CEA@smtp.263.net>
+Cc: Linuxppc-embedded@ozlabs.org
+Subject: Problem solved: 11-11-05 2.6.14 on AMCC Yosemite board(boot error) 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,17 +21,71 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------=_NextPart_000_0000_01C5E7EB.E0413DB0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_001_0001_01C5E7EB.E0413DB0"
-
-
-------=_NextPart_001_0001_01C5E7EB.E0413DB0
+------=_NextPart_000_000B_01C5E7F6.278ED3D0
 Content-Type: text/plain;
 	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 Dear Denk:
+
+      The problem is solved After I check the document at:
+
+http://www.denx.de/wiki/view/DULG/RamdiskGreaterThan4MBCausesProblems
+
+It wrote:
+
+14.3.14. Ramdisk Greater than 4 MB Causes Problems
+
+Question: 
+
+I built a ramdisk image which is bigger than 4 MB. I run into problems when
+I try to boot Linux with this image, while other (smaller) ramdisk images
+work fine. 
+
+Answer: 
+
+The Linux kernel has a default maximum ramdisk size of 4096 kB. To boot with
+a bigger ramdisk image, you must raise this value. There are two methods: 
+
+*   Dynamical adjustment using boot arguments:
+You can pass a boot argument ramdisk_size=<size-in-kB> to the Linux kernel
+to overwrite the configured maximum. Note that this argument needs to be
+before any root argument. A flexible way to to this is using U-Boot
+environment variables. For instance, to boot with a ramdisk image of 6 MB
+(6144 kB), you can define: 
+
+=> setenv rd_size 6144
+
+=> setenv bootargs ... ramdisk_size=\$(rd_size) ...
+
+=> saveenv
+
+       
+
+If you later find out that you need an even bigger ramdisk image, or that a
+smaller one is sufficient, all that needs changing is the value of the
+"rd_size" environment variable.
+
+With the first way I modify the boorargs, and all work OK
+
+*    
+
+*	Increasing the Linux kernel default value:
+When configuring your Linux kernel, adjust the value of the
+CONFIG_BLK_DEV_RAM_SIZE parameter so that it contains a number equal or
+larger than your ramdisk (in kB). (In the 2.4 kernel series, you'll find
+this setting under the "Block devices" menu choice while, in the 2.6 series,
+it will be under "Device drivers" -> "Block devices".) 
+
+With the second way I only modify the CONFIG_BLK_DEV_RAM_SIZE, but when it
+boot, it's shows this problem still:
+
+Kernel panic - not syncing: No init found.  Try passing init= option to
+kernel.
+
+ 
+
+Last file I wrote:
 
  
 
@@ -107,7 +157,7 @@ Thanks a lot!
 Kylong Mu
 
 
-------=_NextPart_001_0001_01C5E7EB.E0413DB0
+------=_NextPart_000_000B_01C5E7F6.278ED3D0
 Content-Type: text/html;
 	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
@@ -119,10 +169,8 @@ xmlns:st1=3D"urn:schemas-microsoft-com:office:smarttags" =
 xmlns=3D"http://www.w3.org/TR/REC-html40">
 
 <head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+<meta http-equiv=3DContent-Type content=3D"text/html; =
 charset=3Dus-ascii">
-
-
 <meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
 <o:SmartTagType =
 namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
@@ -139,6 +187,9 @@ st1\:*{behavior:url(#default#ieooui) }
 <!--
  /* Font Definitions */
  @font-face
+	{font-family:Wingdings;
+	panose-1:5 0 0 0 0 0 0 0 0 0;}
+@font-face
 	{font-family:SimSun;
 	panose-1:2 1 6 0 3 1 1 1 1 1;}
 @font-face
@@ -163,13 +214,59 @@ p.MsoPlainText, li.MsoPlainText, div.MsoPlainText
 	margin-bottom:.0001pt;
 	font-size:9.0pt;
 	font-family:SimSun;}
- /* Page Definitions */
- @page Section1
+code
+	{font-family:SimSun;}
+pre
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:SimSun;}
+span.EmailStyle18
+	{mso-style-type:personal-reply;
+	font-family:Arial;
+	color:navy;}
+@page Section1
 	{size:595.3pt 841.9pt;
 	margin:72.0pt 126.65pt 72.0pt 126.65pt;
 	layout-grid:15.6pt;}
 div.Section1
 	{page:Section1;}
+ /* List Definitions */
+ @list l0
+	{mso-list-id:552353865;
+	mso-list-template-ids:-79517406;}
+@list l0:level1
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0B7;
+	mso-level-tab-stop:36.0pt;
+	mso-level-number-position:left;
+	text-indent:-18.0pt;
+	mso-ansi-font-size:10.0pt;
+	font-family:Symbol;}
+@list l1
+	{mso-list-id:1795253666;
+	mso-list-template-ids:-1859327692;}
+@list l1:level1
+	{mso-level-number-format:bullet;
+	mso-level-text:\F0B7;
+	mso-level-tab-stop:36.0pt;
+	mso-level-number-position:left;
+	text-indent:-18.0pt;
+	mso-ansi-font-size:10.0pt;
+	font-family:Symbol;}
+@list l1:level2
+	{mso-level-number-format:bullet;
+	mso-level-text:o;
+	mso-level-tab-stop:72.0pt;
+	mso-level-number-position:left;
+	text-indent:-18.0pt;
+	mso-ansi-font-size:10.0pt;
+	font-family:"Courier New";
+	mso-bidi-font-family:"Times New Roman";}
+ol
+	{margin-bottom:0cm;}
+ul
+	{margin-bottom:0cm;}
 -->
 </style>
 <!--[if gte mso 9]><xml>
@@ -189,8 +286,224 @@ style=3D'text-justify-trim:punctuation'>
 lang=3DEN-US
 style=3D'font-size:9.0pt'>Dear Denk:<o:p></o:p></span></font></p>
 
-<p class=3DMsoPlainText><font size=3D1 face=3D&#23435;&#20307;><span =
-lang=3DEN-US><o:p>&nbsp;</o:p></span></font></p>
+<p class=3DMsoPlainText><font size=3D1 color=3Dnavy =
+face=3D&#23435;&#20307;><span
+lang=3DEN-US =
+style=3D'font-size:7.5pt;color:navy'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+</span></font><font
+size=3D3 color=3Dnavy><span lang=3DEN-US =
+style=3D'font-size:12.0pt;color:navy'>The
+problem is solved After I check the document =
+at:<o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText><font size=3D3 color=3Dnavy =
+face=3D&#23435;&#20307;><span
+lang=3DEN-US style=3D'font-size:12.0pt;color:navy'><a
+href=3D"http://www.denx.de/wiki/view/DULG/RamdiskGreaterThan4MBCausesProb=
+lems">http://www.denx.de/wiki/view/DULG/RamdiskGreaterThan4MBCausesProble=
+ms</a><o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText><font size=3D3 color=3Dnavy =
+face=3D&#23435;&#20307;><span
+lang=3DEN-US style=3D'font-size:12.0pt;color:navy'>It =
+wrote:</span></font><font
+size=3D2 color=3Dnavy><span lang=3DEN-US =
+style=3D'font-size:10.5pt;color:navy'><o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText><a name=3D"Section_14.3.14."></a><st1:chsdate
+IsROCDate=3D"False" IsLunarDate=3D"False" Day=3D"30" Month=3D"12" =
+Year=3D"1899" w:st=3D"on"><font
+ size=3D1 face=3D&#23435;&#20307;><span lang=3DEN-US =
+style=3D'font-size:9.0pt'>14.3.14</span></font></st1:chsdate><span
+lang=3DEN-US>. Ramdisk Greater than 4 MB Causes Problems</span><span =
+lang=3DEN-US><o:p></o:p></span></p>
+
+<p class=3DMsoNormal align=3Dleft style=3D'text-align:left'><font =
+size=3D3 face=3D&#23435;&#20307;><span
+lang=3DEN-US style=3D'font-size:12.0pt;font-family:SimSun'>Question: =
+<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal align=3Dleft =
+style=3D'margin-left:36.0pt;text-align:left'><font
+size=3D3 face=3D&#23435;&#20307;><span lang=3DEN-US =
+style=3D'font-size:12.0pt;
+font-family:SimSun'>I built a ramdisk image which is bigger than 4 MB. I =
+run
+into problems when I try to boot Linux with this image, while other =
+(smaller)
+ramdisk images work fine. <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal align=3Dleft style=3D'text-align:left'><font =
+size=3D3 face=3D&#23435;&#20307;><span
+lang=3DEN-US style=3D'font-size:12.0pt;font-family:SimSun'>Answer: =
+<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal align=3Dleft =
+style=3D'margin-left:36.0pt;text-align:left'><font
+size=3D3 face=3D&#23435;&#20307;><span lang=3DEN-US =
+style=3D'font-size:12.0pt;
+font-family:SimSun'>The Linux kernel has a default maximum ramdisk size =
+of 4096
+kB. To boot with a bigger ramdisk image, you must raise this value. =
+There are
+two methods: <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal align=3Dleft =
+style=3D'mso-margin-top-alt:auto;mso-margin-bottom-alt:
+auto;margin-left:72.0pt;text-align:left;text-indent:-18.0pt;mso-list:l0 =
+level1 lfo1'><![if !supportLists]><font
+size=3D2 face=3DSymbol><span lang=3DEN-US =
+style=3D'font-size:10.0pt;font-family:Symbol'><span
+style=3D'mso-list:Ignore'>&middot;<font size=3D1 face=3D"Times New =
+Roman"><span
+style=3D'font:7.0pt "Times New Roman"'>&nbsp;&nbsp; =
+</span></font></span></span></font><![endif]><font
+size=3D3 face=3D&#23435;&#20307;><span lang=3DEN-US =
+style=3D'font-size:12.0pt;
+font-family:SimSun'>Dynamical adjustment using boot arguments:<br>
+You can pass a boot argument </span></font><font size=3D3 =
+face=3D&#23435;&#20307;><span
+lang=3DEN-US =
+style=3D'font-size:12.0pt;font-family:SimSun'>ramdisk_size=3D&lt;size-in-=
+kB&gt;</span></font><font
+size=3D3 face=3D&#23435;&#20307;><span lang=3DEN-US =
+style=3D'font-size:12.0pt;
+font-family:SimSun'> to the Linux kernel to overwrite the configured =
+maximum.
+Note that this argument needs to be before any </span></font><font =
+size=3D3
+face=3D&#23435;&#20307;><span lang=3DEN-US =
+style=3D'font-size:12.0pt;font-family:
+SimSun'>root</span></font><font size=3D3 face=3D&#23435;&#20307;><span =
+lang=3DEN-US
+style=3D'font-size:12.0pt;font-family:SimSun'> argument. A flexible way =
+to to
+this is using U-Boot environment variables. For instance, to boot with a
+ramdisk image of 6 MB (6144 kB), you can define: =
+<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal align=3Dleft style=3D'text-align:left'><font =
+size=3D3 face=3D&#23435;&#20307;><span
+lang=3DEN-US style=3D'font-size:12.0pt;font-family:SimSun'>=3D&gt; =
+setenv rd_size
+6144<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal align=3Dleft style=3D'text-align:left'><font =
+size=3D3 face=3D&#23435;&#20307;><span
+lang=3DEN-US style=3D'font-size:12.0pt;font-family:SimSun'>=3D&gt; =
+setenv bootargs
+... ramdisk_size=3D\$(rd_size) ...<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal align=3Dleft style=3D'text-align:left'><font =
+size=3D3 face=3D&#23435;&#20307;><span
+lang=3DEN-US style=3D'font-size:12.0pt;font-family:SimSun'>=3D&gt; =
+saveenv<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal align=3Dleft style=3D'text-align:left'><font =
+size=3D3 face=3D&#23435;&#20307;><span
+lang=3DEN-US =
+style=3D'font-size:12.0pt;font-family:SimSun'>&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;
+<o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText><font size=3D3 face=3D&#23435;&#20307;><span =
+lang=3DEN-US
+style=3D'font-size:12.0pt'>If you later find out that you need an even =
+bigger
+ramdisk image, or that a smaller one is sufficient, all that needs =
+changing is
+the value of the </span></font><font size=3D3><span lang=3DEN-US =
+style=3D'font-size:
+12.0pt'>&quot;rd_size&quot;</span></font><font size=3D3><span =
+lang=3DEN-US
+style=3D'font-size:12.0pt'> environment =
+variable.<o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText><b><font size=3D4 color=3Dblue =
+face=3D&#23435;&#20307;><span
+lang=3DEN-US style=3D'font-size:14.0pt;color:blue;font-weight:bold'>With =
+the first
+way I modify the boorargs, and all work =
+OK<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoNormal align=3Dleft =
+style=3D'mso-margin-top-alt:auto;mso-margin-bottom-alt:
+auto;margin-left:72.0pt;text-align:left;text-indent:-18.0pt;mso-list:l1 =
+level1 lfo2'><![if !supportLists]><font
+size=3D2 face=3DSymbol><span lang=3DEN-US =
+style=3D'font-size:10.0pt;font-family:Symbol'><span
+style=3D'mso-list:Ignore'>&middot;<font size=3D1 face=3D"Times New =
+Roman"><span
+style=3D'font:7.0pt "Times New Roman"'>&nbsp;&nbsp; =
+</span></font></span></span></font><![endif]><font
+size=3D3 face=3D&#23435;&#20307;><span lang=3DEN-US =
+style=3D'font-size:12.0pt;
+font-family:SimSun'><o:p>&nbsp;</o:p></span></font></p>
+
+<ul type=3Ddisc>
+ <ul type=3Dcircle>
+  <li class=3DMsoNormal =
+style=3D'mso-margin-top-alt:auto;mso-margin-bottom-alt:
+      auto;text-align:left;mso-list:l1 level2 lfo2'><font size=3D3 =
+face=3D&#23435;&#20307;><span
+      lang=3DEN-US =
+style=3D'font-size:12.0pt;font-family:SimSun'>Increasing the
+      Linux kernel default value:<br>
+      When configuring your Linux kernel, adjust the value of the =
+</span></font><font
+      size=3D3 face=3D&#23435;&#20307;><span lang=3DEN-US =
+style=3D'font-size:12.0pt;
+      font-family:SimSun'>CONFIG_BLK_DEV_RAM_SIZE</span></font><font =
+size=3D3
+      face=3D&#23435;&#20307;><span lang=3DEN-US =
+style=3D'font-size:12.0pt;
+      font-family:SimSun'> parameter so that it contains a number equal =
+or
+      larger than your ramdisk (in kB). (In the 2.4 kernel series, =
+you'll find
+      this setting under the &quot;Block devices&quot; menu choice =
+while, in
+      the 2.6 series, it will be under &quot;Device drivers&quot; -&gt;
+      &quot;Block devices&quot;.) <o:p></o:p></span></font></li>
+ </ul>
+</ul>
+
+<p class=3DMsoPlainText><b><font size=3D4 color=3Dblue =
+face=3DArial><span lang=3DEN-US
+style=3D'font-size:14.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+With the
+second way I only modify the </span></font></b><b><font size=3D4 =
+color=3Dblue><span
+lang=3DEN-US =
+style=3D'font-size:14.0pt;color:blue;font-weight:bold'>CONFIG_BLK_DEV_RAM=
+_SIZE,
+but when it boot, it&#8217;s shows this problem =
+still:</span></font></b><b><font
+size=3D4 color=3Dblue face=3DArial><span lang=3DEN-US =
+style=3D'font-size:14.0pt;
+font-family:Arial;color:blue;font-weight:bold'><o:p></o:p></span></font><=
+/b></p>
+
+<p class=3DMsoPlainText><b><font size=3D4 color=3Dblue =
+face=3DArial><span lang=3DEN-US
+style=3D'font-size:14.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+Kernel
+panic - not syncing: No init found.&nbsp; Try passing init=3D option to =
+kernel.<o:p></o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><b><font size=3D4 color=3Dblue =
+face=3DArial><span lang=3DEN-US
+style=3D'font-size:14.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+<o:p>&nbsp;</o:p></span></font></b></p>
+
+<p class=3DMsoPlainText><font size=3D4 face=3DArial><span lang=3DEN-US
+style=3D'font-size:14.0pt;font-family:Arial'>Last file I =
+wrote:<o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText><b><font size=3D4 color=3Dblue =
+face=3DArial><span lang=3DEN-US
+style=3D'font-size:14.0pt;font-family:Arial;color:blue;font-weight:bold'>=
+<o:p>&nbsp;</o:p></span></font></b></p>
 
 <p class=3DMsoPlainText><font size=3D1 face=3D&#23435;&#20307;><span =
 lang=3DEN-US
@@ -201,8 +514,10 @@ code.<o:p></o:p></span></font></p>
 face=3D&#23435;&#20307;><span
 lang=3DEN-US =
 style=3D'font-size:9.0pt;color:black'>&nbsp;&nbsp;&nbsp;&nbsp; =
-</span><span
-lang=3DEN-US>By update with the most recent code, I did new test, and =
+</span></font><font
+size=3D1 color=3Dblack><span lang=3DEN-US =
+style=3D'font-size:7.5pt;color:black'>By
+update with the most recent code, I did new test, and =
 get<o:p></o:p></span></font></p>
 
 <p class=3DMsoPlainText><font size=3D1 color=3Dblack =
@@ -214,11 +529,12 @@ lang=3DEN-US
 style=3D'font-family:"Courier =
 New";color:black'>&#8217;</span></font><font
 color=3Dblack><span lang=3DEN-US style=3D'color:black'>t solve it, pls =
-check the attachment.
-<o:p></o:p></span></font></p>
+check the
+attachment. <o:p></o:p></span></font></p>
 
 <p class=3DMsoPlainText><font size=3D1 face=3D&#23435;&#20307;><span =
-lang=3DEN-US><o:p>&nbsp;</o:p></span></font></p>
+lang=3DEN-US
+style=3D'font-size:7.5pt'><o:p>&nbsp;</o:p></span></font></p>
 
 <p class=3DMsoPlainText><font size=3D1 face=3D&#23435;&#20307;><span =
 lang=3DEN-US
@@ -228,7 +544,8 @@ w:st=3D"on">1.1.3</st1:chsdate>
 (Sep&nbsp; 7 2005 - 09:03:02)<o:p></o:p></span></font></p>
 
 <p class=3DMsoPlainText><font size=3D1 face=3D&#23435;&#20307;><span =
-lang=3DEN-US><o:p>&nbsp;</o:p></span></font></p>
+lang=3DEN-US
+style=3D'font-size:7.5pt'><o:p>&nbsp;</o:p></span></font></p>
 
 <p class=3DMsoPlainText><font size=3D1 face=3D&#23435;&#20307;><span =
 lang=3DEN-US
@@ -237,7 +554,8 @@ this commit
 included:<o:p></o:p></span></font></p>
 
 <p class=3DMsoPlainText><font size=3D1 face=3D&#23435;&#20307;><span =
-lang=3DEN-US><o:p>&nbsp;</o:p></span></font></p>
+lang=3DEN-US
+style=3D'font-size:7.5pt'><o:p>&nbsp;</o:p></span></font></p>
 
 <p class=3DMsoPlainText><font size=3D1 face=3D&#23435;&#20307;><span =
 lang=3DEN-US
@@ -314,7 +632,8 @@ Sat, 05
 Nov 2005 15:50:16 +0100<o:p></o:p></span></font></p>
 
 <p class=3DMsoPlainText><font size=3D1 face=3D&#23435;&#20307;><span =
-lang=3DEN-US><o:p>&nbsp;</o:p></span></font></p>
+lang=3DEN-US
+style=3D'font-size:7.5pt'><o:p>&nbsp;</o:p></span></font></p>
 
 <p class=3DMsoPlainText><font size=3D1 face=3D&#23435;&#20307;><span =
 lang=3DEN-US
@@ -329,7 +648,8 @@ style=3D'font-size:9.0pt'>&gt;&nbsp;&nbsp;&nbsp; Patch by Stefan Roese, =
 2005<o:p></o:p></span></font></p>
 
 <p class=3DMsoPlainText><font size=3D1 face=3D&#23435;&#20307;><span =
-lang=3DEN-US><o:p>&nbsp;</o:p></span></font></p>
+lang=3DEN-US
+style=3D'font-size:7.5pt'><o:p>&nbsp;</o:p></span></font></p>
 
 <p class=3DMsoPlainText><font size=3D1 face=3D&#23435;&#20307;><span =
 lang=3DEN-US
@@ -338,7 +658,8 @@ the CVS or
 GIT repositories.<o:p></o:p></span></font></p>
 
 <p class=3DMsoPlainText><font size=3D1 face=3D&#23435;&#20307;><span =
-lang=3DEN-US><o:p>&nbsp;</o:p></span></font></p>
+lang=3DEN-US
+style=3D'font-size:7.5pt'><o:p>&nbsp;</o:p></span></font></p>
 
 <p class=3DMsoPlainText><font size=3D1 face=3D&#23435;&#20307;><span =
 lang=3DEN-US
@@ -355,7 +676,8 @@ style=3D'font-size:9.0pt'>&gt; 09:51:04 CST =
 2005<o:p></o:p></span></font></p>
 
 <p class=3DMsoPlainText><font size=3D1 face=3D&#23435;&#20307;><span =
-lang=3DEN-US><o:p>&nbsp;</o:p></span></font></p>
+lang=3DEN-US
+style=3D'font-size:7.5pt'><o:p>&nbsp;</o:p></span></font></p>
 
 <p class=3DMsoPlainText><font size=3D1 face=3D&#23435;&#20307;><span =
 lang=3DEN-US
@@ -382,7 +704,8 @@ style=3D'font-size:9.0pt'>&gt;kernel will display something like =
 this:<o:p></o:p></span></font></p>
 
 <p class=3DMsoPlainText><font size=3D1 face=3D&#23435;&#20307;><span =
-lang=3DEN-US><o:p>&nbsp;</o:p></span></font></p>
+lang=3DEN-US
+style=3D'font-size:7.5pt'><o:p>&nbsp;</o:p></span></font></p>
 
 <p class=3DMsoPlainText><font size=3D1 face=3D&#23435;&#20307;><span =
 lang=3DEN-US
@@ -420,7 +743,8 @@ Month=3D"12" Year=3D"1899" w:st=3D"on">2.6.14</st1:chsdate>. =
 <o:p></o:p></span></font></p>
 
 <p class=3DMsoPlainText><font size=3D1 face=3D&#23435;&#20307;><span =
-lang=3DEN-US><o:p>&nbsp;</o:p></span></font></p>
+lang=3DEN-US
+style=3D'font-size:7.5pt'><o:p>&nbsp;</o:p></span></font></p>
 
 <p class=3DMsoPlainText><font size=3D1 face=3D&#23435;&#20307;><span =
 lang=3DEN-US
@@ -428,7 +752,9 @@ style=3D'font-size:9.0pt'>Thanks a lot!<o:p></o:p></span></font></p>
 
 <p class=3DMsoPlainText><font size=3D1 color=3Dblack =
 face=3D&#23435;&#20307;><span
-lang=3DEN-US><o:p>&nbsp;</o:p></span></font></p>
+lang=3DEN-US =
+style=3D'font-size:7.5pt;color:black'><o:p>&nbsp;</o:p></span></font></p>=
+
 
 <p class=3DMsoPlainText><font size=3D1 color=3Dblack =
 face=3D&#23435;&#20307;><span
@@ -441,233 +767,4 @@ Mu<o:p></o:p></span></font></p>
 
 </html>
 
-------=_NextPart_001_0001_01C5E7EB.E0413DB0--
-
-------=_NextPart_000_0000_01C5E7EB.E0413DB0
-Content-Type: text/plain;
-	name="bootmessage.txt"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
-	filename="bootmessage.txt"
-
-[root@dxp filesystem]# kermit -c=0A=
-Connecting to /dev/ttyS0, speed 9600=0A=
- Escape character: Ctrl-\ (ASCII 28, FS): enabled=0A=
-Type the escape character followed by C to get back,=0A=
-or followed by ? to see other options.=0A=
-----------------------------------------------------=0A=
-=0A=
-=0A=
-U-Boot 1.1.4 (Nov 11 2005 - 19:35:30)=0A=
-=0A=
-AMCC PowerPC 440EP Rev. B=0A=
-Board: Yosemite - AMCC PPC440EP Evaluation Board=0A=
-        VCO: 1066 MHz=0A=
-        CPU: 533 MHz=0A=
-        PLB: 133 MHz=0A=
-        OPB: 66 MHz=0A=
-        EPB: 66 MHz=0A=
-        PCI: 66 MHz=0A=
-I2C:   ready=0A=
-DRAM:  256 MB=0A=
-FLASH: 64 MB=0A=
-PCI:   Bus Dev VenId DevId Class Int=0A=
-In:    serial=0A=
-Out:   serial=0A=
-Err:   serial=0A=
-Net:   ppc_4xx_eth0, ppc_4xx_eth1=0A=
-=0A=
-Type "run flash_nfs" to mount root filesystem over NFS=0A=
-=0A=
-Hit any key to stop autoboot:  0=0A=
-=3D>=0A=
-=3D> tftp 400000 uImage=0A=
-ENET Speed is 100 Mbps - FULL duplex connection=0A=
-Using ppc_4xx_eth0 device=0A=
-TFTP from server 192.168.0.93; our IP address is 192.168.0.66=0A=
-Filename 'uImage'.=0A=
-Load address: 0x400000=0A=
-Loading: =
-#################################################################=0A=
-         =
-#################################################################=0A=
-         =
-#################################################################=0A=
-         ##########################################=0A=
-done=0A=
-Bytes transferred =3D 1212624 (1280d0 hex)=0A=
-=3D> tftp 4000000 ramdisk.img=0A=
-Using ppc_4xx_eth0 device=0A=
-TFTP from server 192.168.0.93; our IP address is 192.168.0.66=0A=
-Filename 'ramdisk.img'.=0A=
-Load address: 0x4000000=0A=
-Loading: =
-#################################################################=0A=
-         =
-#################################################################=0A=
-         =
-#################################################################=0A=
-         =
-#################################################################=0A=
-         =
-#################################################################=0A=
-         =
-#################################################################=0A=
-         =
-#################################################################=0A=
-         =
-#################################################################=0A=
-         =
-#################################################################=0A=
-         =
-#################################################################=0A=
-         =
-#################################################################=0A=
-         =
-#################################################################=0A=
-         =
-#################################################################=0A=
-         =
-#################################################################=0A=
-         =
-#################################################################=0A=
-         =
-#################################################################=0A=
-         =
-#################################################################=0A=
-         =
-#################################################################=0A=
-         =
-#################################################################=0A=
-         =
-#################################################################=0A=
-         =
-#################################################################=0A=
-         =
-#################################################################=0A=
-         =
-#################################################################=0A=
-         =
-#################################################################=0A=
-         =
-#################################################################=0A=
-         #############################################=0A=
-done=0A=
-Bytes transferred =3D 8547050 (826aea hex)=0A=
-=3D> bootm 400000 4000000=0A=
-## Booting image at 00400000 ...=0A=
-   Image Name:   Linux-2.6.14=0A=
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)=0A=
-   Data Size:    1212560 Bytes =3D  1.2 MB=0A=
-   Load Address: 00000000=0A=
-   Entry Point:  00000000=0A=
-   Verifying Checksum ... OK=0A=
-   Uncompressing Kernel Image ... OK=0A=
-## Loading RAMDisk Image at 04000000 ...=0A=
-   Image Name:   Yosemite Ramdisk=0A=
-   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)=0A=
-   Data Size:    8546986 Bytes =3D  8.2 MB=0A=
-   Load Address: 00000000=0A=
-   Entry Point:  00000000=0A=
-   Verifying Checksum ... OK=0A=
-   Loading Ramdisk to 0f713000, end 0ff39aaa ... OK=0A=
-Linux version 2.6.14 (root@dxp) (gcc version 4.0.0) #1 Sat Nov 12 =
-23:29:30 CST 2005=0A=
-AMCC PowerPC 440EP Yosemite Platform=0A=
-Built 1 zonelists=0A=
-Kernel command line:=0A=
-PID hash table entries: 2048 (order: 11, 32768 bytes)=0A=
-Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)=0A=
-Inode-cache hash table entries: 32768 (order: 5, 131072 bytes)=0A=
-Memory: 248576k available (1852k kernel code, 604k data, 136k init, 0k =
-highmem)=0A=
-Mount-cache hash table entries: 512=0A=
-checking if image is initramfs...it isn't (no cpio magic); looks like an =
-initrd=0A=
-softlockup thread 0 started up.=0A=
-Freeing initrd memory: 8346k freed=0A=
-NET: Registered protocol family 16=0A=
-PCI: Probing PCI hardware=0A=
-usbcore: registered new driver usbfs=0A=
-usbcore: registered new driver hub=0A=
-SCSI subsystem initialized=0A=
-io scheduler noop registered=0A=
-io scheduler anticipatory registered=0A=
-io scheduler deadline registered=0A=
-io scheduler cfq registered=0A=
-usbmon: debugfs is not available=0A=
-ppc-soc-ohci ppc-soc-ohci.0: USB Host Controller=0A=
-ppc-soc-ohci ppc-soc-ohci.0: new USB bus registered, assigned bus number =
-1=0A=
-ppc-soc-ohci ppc-soc-ohci.0: irq 40, io mem 0xef601000=0A=
-usb usb1: Product: USB Host Controller=0A=
-usb usb1: Manufacturer: Linux 2.6.14 ohci_hcd=0A=
-usb usb1: SerialNumber: PPC-SOC USB=0A=
-hub 1-0:1.0: USB hub found=0A=
-hub 1-0:1.0: 2 ports detected=0A=
-Initializing USB Mass Storage driver...=0A=
-usbcore: registered new driver usb-storage=0A=
-USB Mass Storage support registered.=0A=
-pegasus: v0.6.12 (2005/01/13), Pegasus/Pegasus II USB Ethernet driver=0A=
-usbcore: registered new driver pegasus=0A=
-Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing enabled=0A=
-serial8250: ttyS0 at MMIO 0x0 (irq =3D 0) is a 16550A=0A=
-serial8250: ttyS1 at MMIO 0x0 (irq =3D 1) is a 16550A=0A=
-RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize=0A=
-PPC 4xx OCP EMAC driver, version 3.53=0A=
-mal0: initialized, 4 TX channels, 2 RX channels=0A=
-zmii0: bridge in RMII mode=0A=
-eth0: emac0, MAC 00:10:ec:00:87:40=0A=
-eth0: found Generic MII PHY (0x01)=0A=
-eth1: emac1, MAC 00:10:ec:00:87:47=0A=
-eth1: found Generic MII PHY (0x03)=0A=
-Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2=0A=
-ide: Assuming 50MHz system bus speed for PIO modes; override with =
-idebus=3Dxx=0A=
-AMCC440-flash: Found 1 x16 devices at 0x0 in 16-bit bank=0A=
- Amd/Fujitsu Extended Query Table at 0x0040=0A=
-AMCC440-flash: CFI does not contain boot bank location. Assuming top.=0A=
-number of CFI chips: 1=0A=
-cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.=0A=
-Creating 5 MTD partitions on "AMCC440-flash":=0A=
-0x00000000-0x00180000 : "kernel"=0A=
-0x00180000-0x00400000 : "root"=0A=
-0x00400000-0x03f40000 : "user"=0A=
-0x03f40000-0x03f80000 : "env"=0A=
-0x03f80000-0x04000000 : "u-boot"=0A=
-mice: PS/2 mouse device common for all mice=0A=
-NET: Registered protocol family 2=0A=
-IP route cache hash table entries: 4096 (order: 2, 16384 bytes)=0A=
-TCP established hash table entries: 16384 (order: 4, 65536 bytes)=0A=
-TCP bind hash table entries: 16384 (order: 4, 65536 bytes)=0A=
-TCP: Hash tables configured (established 16384 bind 16384)=0A=
-TCP reno registered=0A=
-TCP bic registered=0A=
-NET: Registered protocol family 1=0A=
-NET: Registered protocol family 17=0A=
-RAMDISK: Compressed image found at block 0=0A=
-RAMDISK: incomplete write (-28 !=3D 32768) 4194304=0A=
-VFS: Mounted root (ext2 filesystem) readonly.=0A=
-Freeing unused kernel memory: 136k init=0A=
-attempt to access beyond end of device=0A=
-ram0: rw=3D0, want=3D32776, limit=3D8192=0A=
-EXT2-fs error (device ram0): ext2_get_inode: unable to read inode block =
-- inode=3D4001, block=3D16387=0A=
-Warning: unable to open an initial console.=0A=
-attempt to access beyond end of device=0A=
-ram0: rw=3D0, want=3D49538, limit=3D8192=0A=
-EXT2-fs error (device ram0): ext2_get_inode: unable to read inode block =
-- inode=3D6003, block=3D24768=0A=
-attempt to access beyond end of device=0A=
-ram0: rw=3D0, want=3D65544, limit=3D8192=0A=
-EXT2-fs error (device ram0): ext2_get_inode: unable to read inode block =
-- inode=3D8001, block=3D32771=0A=
-attempt to access beyond end of device=0A=
-ram0: rw=3D0, want=3D16770, limit=3D8192=0A=
-EXT2-fs error (device ram0): ext2_get_inode: unable to read inode block =
-- inode=3D2001, block=3D8384=0A=
-Kernel panic - not syncing: No init found.  Try passing init=3D option =
-to kernel.=0A=
- <0>Rebooting in 180 seconds.. =0A=
-
-------=_NextPart_000_0000_01C5E7EB.E0413DB0--
+------=_NextPart_000_000B_01C5E7F6.278ED3D0--
