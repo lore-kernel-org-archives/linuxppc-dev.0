@@ -1,16 +1,21 @@
-Return-Path: <wd@denx.de>
-To: "KylongMu" <mqy@263.net.cn>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sun, 13 Nov 2005 02:01:24 +0800."
-	<20051112180127.10C03CEA@smtp.263.net>
-Date: Sun, 13 Nov 2005 00:32:34 +0100
-Sender: wd@denx.de
-Message-Id: <20051112233234.2177D353A2C@atlas.denx.de>
-Cc: Linuxppc-embedded@ozlabs.org
-Subject: Re: Problem solved: 11-11-05 2.6.14 on AMCC Yosemite board(boot
-	error)
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 386D768766
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 13 Nov 2005 11:34:07 +1100 (EST)
+Date: Sat, 12 Nov 2005 17:28:26 -0200
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Message-ID: <20051112192826.GB20537@logos.cnet>
+References: <F6AD7E21CDF4E145A44F61F43EE6D9393FD5C6@tmnt04.transmode.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <F6AD7E21CDF4E145A44F61F43EE6D9393FD5C6@tmnt04.transmode.se>
+Cc: Tom Rini <trini@kernel.crashing.org>, Dan Malek <dan@embeddedalley.com>,
+	gtolstolytkin@ru.mvista.com, linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH 2.6.14] mm: 8xx MM fix for
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,28 +26,112 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <20051112180127.10C03CEA@smtp.263.net> you wrote:
+On Mon, Nov 07, 2005 at 07:37:45PM +0100, Joakim Tjernlund wrote:
+>  > 
+> > On Mon, Nov 07, 2005 at 07:14:15PM +0100, Joakim Tjernlund wrote:
+> > > > -----Original Message-----
+> > > > From: Tom Rini [mailto:trini@kernel.crashing.org] 
+> > > > Sent: 07 November 2005 16:52
+> > > > To: Marcelo Tosatti
+> > > > Cc: Joakim Tjernlund; Pantelis Antoniou; Dan Malek; 
+> > > > linuxppc-embedded@ozlabs.org; gtolstolytkin@ru.mvista.com
+> > > > Subject: Re: [PATCH 2.6.14] mm: 8xx MM fix for
+> > > > 
+> > > > On Mon, Nov 07, 2005 at 08:16:18AM -0200, Marcelo Tosatti wrote:
+> > > > > Joakim!
+> > > > > 
+> > > > > On Mon, Nov 07, 2005 at 03:32:52PM +0100, Joakim 
+> > Tjernlund wrote:
+> > > > > > Hi Marcelo
+> > > > > > 
+> > > > > > [SNIP] 
+> > > > > > > The root of the problem are the changes against the 8xx TLB 
+> > > > > > > handlers introduced
+> > > > > > > during v2.6. What happens is the TLBMiss handlers load the 
+> > > > > > > zeroed pte into
+> > > > > > > the TLB, causing the TLBError handler to be invoked (thats 
+> > > > > > > two TLB faults per 
+> > > > > > > pagefault), which then jumps to the generic MM code to 
+> > > > setup the pte.
+> > > > > > > 
+> > > > > > > The bug is that the zeroed TLB is not invalidated (the 
+> > > > same reason
+> > > > > > > for the "dcbst" misbehaviour), resulting in infinite 
+> > > > TLBError faults.
+> > > > > > > 
+> > > > > > > Dan, I wonder why we just don't go back to v2.4 behaviour.
+> > > > > > 
+> > > > > > This is one reason why it is the way it is:
+> > > > > > 
+> > > > 
+> > http://ozlabs.org/pipermail/linuxppc-embedded/2005-January/016382.html
+> > > > > > This details are little fuzzy ATM, but I think the 
+> > reason for the
+> > > > > > current
+> > > > > > impl. was only that it was less intrusive to impl.
+> > > > > 
+> > > > > Ah, I see. I wonder if the bug is processor specific: we 
+> > > > don't have such
+> > > > > changes in our v2.4 tree and never experienced such problem.
+> > > > > 
+> > > > > It should be pretty easy to hit it right? (instruction 
+> > > > pagefaults should
+> > > > > fail).
+> > > > > 
+> > > > > Grigori, Tom, can you enlight us about the issue on the URL 
+> > > > above. How
+> > > > > can it be triggered?
+> > > > 
+> > > > So after looking at the code in 2.6.14 and current git, I 
+> > think the
+> > > > above URL isn't relevant, unless there was a change I 
+> > missed (which
+> > > > could totally be possible) that reverted the patch there and 
+> > > > fixed that
+> > > > issue in a different manner.  But since I didn't figure that 
+> > > > out until I
+> > > > had finished researching it again:
+> > > 
+> > > I wasn't clear enough. What I meant was that the above patch made me
+> > > think and
+> > > the result was that I came up with a simpler fix, the "two 
+> > exception"
+> > > fix that
+> > > is in current kernels. See
+> > > 
+> > http://linux.bkbits.net:8080/linux-2.6/diffs/arch/ppc/kernel/h
+> > ead_8xx.S@
+> > > 
+> > 1.19?nav=index.html|src/.|src/arch|src/arch/ppc|src/arch/ppc/k
+> > ernel|hist
+> > > /arch/ppc/kernel/head_8xx.S
+> > > It appears this fix has some other issues :(
+> > > 
+> > > How do the other ppc arches do? I am guessing that they don't double
+> > > fault, but bails
+> > > out to do_page_fault from the TLB Miss handler, like 8xx used to do.
+> > 
+> > Assuming Dan doesn't come up with a more simple & better fix, maybe we
+> > should go back to the original patch I made?
 > 
->       The problem is solved After I check the document at:
-> http://www.denx.de/wiki/view/DULG/RamdiskGreaterThan4MBCausesProblems
+> That was what I was thinking too(or some variation of your patch)
+> I wonder if that would solve the misbehaving dcbst problem Marcelo found
+> some time ago too?
 
-Yes, reading the FAQ has always been an excellent idea. But there was
-no need to quote the text here in full.
+Hi Joakim,
 
-> Last file I wrote:
-...
->      I update my source code by "cg-update" directly, after many message and
-> file download it shows "full merged",
-> 
-> I think it is work. But the version only is 2.6.14. 
+Yes, it would fix the "dcbst" issue. That problem was triggered by a
+zeroed TLB entry.
 
-It ain't the current version.
+In practice it seems that the "three exception" approach does not impose
+a significant overhead in comparison with the "two exception" version
+(as can be seen by the results of the latency tests).
 
-Best regards,
+Anyway, if decided upon, the "two exception" version (no zeroed TLB
+entry state) needs the TLBMiss handler should to the present bit as Dan
+mentioned.
 
-Wolfgang Denk
+I don't know what Dan is up to, he meant to be doing significant changes.
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Two wrongs don't make a right, but three rights make a left.
+I'll be playing with TLB preloading next week... how's your TLB handler
+shrinkage idea?
