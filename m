@@ -1,21 +1,21 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 567BF6872A
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Nov 2005 09:09:28 +1100 (EST)
-Date: Sat, 12 Nov 2005 14:08:53 -0800
-To: Michael Buesch <mbuesch@freenet.de>
-Message-ID: <20051112220853.GB10506@pb15.lixom.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5C6C368732
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Nov 2005 09:27:55 +1100 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@osdl.org>
+In-Reply-To: <Pine.LNX.4.64.0511121257000.3263@g5.osdl.org>
 References: <Pine.LNX.4.64.0511111753080.3263@g5.osdl.org>
 	<200511122145.38409.mbuesch@freenet.de>
 	<Pine.LNX.4.64.0511121257000.3263@g5.osdl.org>
-	<200511122237.17157.mbuesch@freenet.de>
+Content-Type: text/plain; charset=utf-8
+Date: Sun, 13 Nov 2005 09:24:14 +1100
+Message-Id: <1131834254.7406.43.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200511122237.17157.mbuesch@freenet.de>
-From: Olof Johansson <olof@lixom.net>
-Cc: Linus Torvalds <torvalds@osdl.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Michael Buesch <mbuesch@freenet.de>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: Linuv 2.6.15-rc1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,27 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Nov 12, 2005 at 10:37:16PM +0100, Michael Buesch wrote:
-
-> The result of the build is:
+On Sat, 2005-11-12 at 13:00 -0800, Linus Torvalds wrote:
 > 
->   CHK     include/linux/version.h
->   CHK     include/linux/compile.h
->   CHK     usr/initramfs_list
->   GEN     .version
->   CHK     include/linux/compile.h
->   UPD     include/linux/compile.h
->   CC      init/version.o
->   LD      init/built-in.o
->   LD      .tmp_vmlinux1
-> arch/powerpc/kernel/built-in.o: In function `platform_init':
-> : undefined reference to `prep_init'
-> arch/powerpc/kernel/built-in.o:(__ksymtab+0x4d8): undefined reference to `ucSystemType'
-> arch/powerpc/kernel/built-in.o:(__ksymtab+0x4e0): undefined reference to `_prep_type'
-> make: *** [.tmp_vmlinux1] Error 1
+> On Sat, 12 Nov 2005, Michael Buesch wrote:
+> > 
+> > Latest GIT tree does not boot on my G4 PowerBook.
+> 
+> What happens if you do
+> 
+> 	make ARCH=powerpc
+> 
+> and build everything that way (including the "config" phase)?
+> 
+> So far ppc32 is still a valid architecture, and your config file makes it 
+> clear that you've used that. But I suspect most of the active testing has 
+> been done with the "powerpc" architecture compiled for 32-bit.
+> 
+> That said, the ppc32 tree should still work. BenH? Paul?
 
-Disabling CONFIG_PPC_PREP and CONFIG_PPC_CHRP will work around it for
-now, neither are needed for a powermac.
+Ìt should still work. I'm running -rc1 with "powerpc" on mine so that at
+least works, it's possible that we broke "ppc", I'll have a look and
+send a fix.
 
-
--Olof
+Ben.
