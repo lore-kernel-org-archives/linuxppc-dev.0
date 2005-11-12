@@ -1,24 +1,16 @@
-Return-Path: <bunk@stusta.de>
-Received: from mailout.stusta.mhn.de (emailhub.stusta.mhn.de [141.84.69.5])
-	by ozlabs.org (Postfix) with SMTP id 7034668737
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Nov 2005 12:26:10 +1100 (EST)
-Date: Sun, 13 Nov 2005 02:26:09 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <20051113012608.GH21448@stusta.de>
-References: <Pine.LNX.4.64.0511111753080.3263@g5.osdl.org>
-	<200511122237.17157.mbuesch@freenet.de>
-	<20051112215304.GB21448@stusta.de>
-	<200511122257.05552.mbuesch@freenet.de>
-	<20051112222045.GC21448@stusta.de>
-	<1131834667.7406.49.camel@gaston>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <ut@ulrich-teichert.org>
+Received: from arbas.nms.ulrich-teichert.org (i3ED65318.versanet.de
+	[62.214.83.24]) by ozlabs.org (Postfix) with ESMTP id 385666876A
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Nov 2005 11:00:08 +1100 (EST)
+Message-Id: <200511122351.jACNpiG5016918@arbas.nms.ulrich-teichert.org>
+To: benh@kernel.crashing.org (Benjamin Herrenschmidt)
+Date: Sun, 13 Nov 2005 00:51:43 +0100 (MET)
 In-Reply-To: <1131834667.7406.49.camel@gaston>
-Cc: linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@osdl.org>,
-	Michael Buesch <mbuesch@freenet.de>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [2.6 patch] PPC_PREP: remove unneeded exports
+From: Ulrich Teichert <ulrich.teichert@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: Linuv 2.6.15-rc1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,85 +20,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Nov 13, 2005 at 09:31:06AM +1100, Benjamin Herrenschmidt wrote:
-> 
-> > ucSystemType is a variable that is EXPORT_SYMBOL'ed but never used in 
-> > any way.
-> > 
-> > _prep_type is a variable that is needlessly EXPORT_SYMBOL'ed.
-> 
-> Therse are old PREP stuffs
->...
+Hi,
 
-Is the patch below OK?
+[trimmed the cc list a bit]
+>Yes, PREP need to be migrated, but that includes adding some minimum
+>device-tree support for it among others. And few people still have PREP
+>machines, I'm not even sure we have access to one here in ozlabs... I
+>think for 2.6.15, we'd better just disable it in .config for
+>ARCH=powerpc.
 
-> Ben.
+for what's it worth, I'm still owning:
 
-cu
-Adrian
+wehrle:~> uname -a
+Linux wehrle 2.4.19 #3 Sun Aug 4 08:28:30 BST 2002 ppc unknown
+wehrle:~> cat /proc/cpuinfo 
+cpu             : 604r
+clock           : 199MHz
+revision        : 18.3 (pvr 0009 1203)
+bogomips        : 397.31
+machine         : PReP IBM 43P-140 (Tiger1)
+upgrade cpu     : not present
+scsi fuse       : ok
+simms           : 1:128MiB 2:128MiB 3:128MiB 4:128MiB 5:128MiB 
+l2 cache        : sync burst, parity, 1MiB
 
+and
 
-<--  snip  -->
+sed:~> uname -a
+Linux sed 2.4.28 #8 Mon Dec 13 22:16:08 CET 2004 ppc unknown
+sed:~> cat /proc/cpuinfo 
+processor       : 0
+cpu             : 604r
+clock           : ???
+revision        : 49.2 (pvr 0009 3102)
+bogomips        : 299.00
+machine         : PReP Utah (Powerstack II Pro4000)
+l2 cache        : 512KiB, parity disabled SRAM:synchronous, pipelined, no parity
 
+Especially the 43p-140 is quite easy to get via ebay, the Powerstack II
+is a more rare machine nowadays, I think.
 
-This patch removes the EXPORT_SYMBOL'ed but completely unused variable 
-ucSystemType and removes the unneeded EXPORT_SYMBOL(_prep_type).
-
-
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
-
----
-
- arch/powerpc/kernel/ppc_ksyms.c |    5 -----
- arch/ppc/kernel/ppc_ksyms.c     |    4 ----
- arch/ppc/platforms/prep_setup.c |    1 -
- include/asm-powerpc/processor.h |    1 -
- 4 files changed, 11 deletions(-)
-
---- linux-2.6.15-rc1/include/asm-powerpc/processor.h.old	2005-11-13 01:44:12.000000000 +0100
-+++ linux-2.6.15-rc1/include/asm-powerpc/processor.h	2005-11-13 01:44:25.000000000 +0100
-@@ -68,7 +68,6 @@
-  * vendor. Board revision is also made available. This will be moved
-  * elsewhere soon
-  */
--extern unsigned char ucSystemType;
- extern unsigned char ucBoardRev;
- extern unsigned char ucBoardRevMaj, ucBoardRevMin;
- 
---- linux-2.6.15-rc1/arch/ppc/platforms/prep_setup.c.old	2005-11-13 01:44:36.000000000 +0100
-+++ linux-2.6.15-rc1/arch/ppc/platforms/prep_setup.c	2005-11-13 01:44:40.000000000 +0100
-@@ -72,7 +72,6 @@
- 
- TODC_ALLOC();
- 
--unsigned char ucSystemType;
- unsigned char ucBoardRev;
- unsigned char ucBoardRevMaj, ucBoardRevMin;
- 
---- linux-2.6.15-rc1/arch/ppc/kernel/ppc_ksyms.c.old	2005-11-13 01:44:49.000000000 +0100
-+++ linux-2.6.15-rc1/arch/ppc/kernel/ppc_ksyms.c	2005-11-13 01:44:54.000000000 +0100
-@@ -82,10 +82,6 @@
- EXPORT_SYMBOL(ISA_DMA_THRESHOLD);
- EXPORT_SYMBOL(DMA_MODE_READ);
- EXPORT_SYMBOL(DMA_MODE_WRITE);
--#if defined(CONFIG_PPC_PREP)
--EXPORT_SYMBOL(_prep_type);
--EXPORT_SYMBOL(ucSystemType);
--#endif
- 
- #if !defined(__INLINE_BITOPS)
- EXPORT_SYMBOL(set_bit);
---- linux-2.6.15-rc1/arch/powerpc/kernel/ppc_ksyms.c.old	2005-11-13 01:45:06.000000000 +0100
-+++ linux-2.6.15-rc1/arch/powerpc/kernel/ppc_ksyms.c	2005-11-13 01:45:12.000000000 +0100
-@@ -76,11 +76,6 @@
- EXPORT_SYMBOL(sys_sigreturn);
- #endif
- 
--#if defined(CONFIG_PPC_PREP)
--EXPORT_SYMBOL(_prep_type);
--EXPORT_SYMBOL(ucSystemType);
--#endif
--
- EXPORT_SYMBOL(strcpy);
- EXPORT_SYMBOL(strncpy);
- EXPORT_SYMBOL(strcat);
+HTH,
+Uli
+-- 
+Dipl. Inf. Ulrich Teichert|e-mail: Ulrich.Teichert@gmx.de
+Stormweg 24               |listening to: Suicide Drive (The Deep Eynde)
+24539 Neumuenster, Germany|Public Pervert (Interpol) Cauchemar (Opération S)
