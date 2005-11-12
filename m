@@ -1,23 +1,17 @@
-Return-Path: <torvalds@osdl.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id E51926872B
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Nov 2005 08:00:24 +1100 (EST)
-Date: Sat, 12 Nov 2005 13:00:12 -0800 (PST)
-From: Linus Torvalds <torvalds@osdl.org>
-To: Michael Buesch <mbuesch@freenet.de>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>
-In-Reply-To: <200511122145.38409.mbuesch@freenet.de>
-Message-ID: <Pine.LNX.4.64.0511121257000.3263@g5.osdl.org>
-References: <Pine.LNX.4.64.0511111753080.3263@g5.osdl.org>
-	<200511122145.38409.mbuesch@freenet.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linuv 2.6.15-rc1
+Return-Path: <adobriyan@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.204])
+	by ozlabs.org (Postfix) with ESMTP id 16E9968719
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Nov 2005 08:01:39 +1100 (EST)
+Received: by wproxy.gmail.com with SMTP id 50so751550wri
+	for <linuxppc-dev@ozlabs.org>; Sat, 12 Nov 2005 13:01:38 -0800 (PST)
+Date: Sun, 13 Nov 2005 00:08:58 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Paul Mackerras <paulus@samba.org>
+Message-ID: <20051112210858.GB20860@mipter.zuzino.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Remove arch/ppc/syslib/qspan_pci.c
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,22 +21,411 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+From: Alexey Dobriyan <adobriyan@gmail.com>
 
+It was uncompilable since at least 2.4.0:
+	void __init
+	m8xx_pcibios_fixup(void))
 
-On Sat, 12 Nov 2005, Michael Buesch wrote:
-> 
-> Latest GIT tree does not boot on my G4 PowerBook.
+Noticed by (don't laugh) indent(1).
 
-What happens if you do
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 
-	make ARCH=powerpc
-
-and build everything that way (including the "config" phase)?
-
-So far ppc32 is still a valid architecture, and your config file makes it 
-clear that you've used that. But I suspect most of the active testing has 
-been done with the "powerpc" architecture compiled for 32-bit.
-
-That said, the ppc32 tree should still work. BenH? Paul?
-
-		Linus
+Index: linux-kj/arch/ppc/syslib/qspan_pci.c
+===================================================================
+--- linux-kj.orig/arch/ppc/syslib/qspan_pci.c	2005-11-12 15:37:13.000000000 +0300
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,381 +0,0 @@
+-/*
+- * QSpan pci routines.
+- * Most 8xx boards use the QSpan PCI bridge.  The config address register
+- * is located 0x500 from the base of the bridge control/status registers.
+- * The data register is located at 0x504.
+- * This is a two step operation.  First, the address register is written,
+- * then the data register is read/written as required.
+- * I don't know what to do about interrupts (yet).
+- *
+- * The RPX Classic implementation shares a chip select for normal
+- * PCI access and QSpan control register addresses.  The selection is
+- * further selected by a bit setting in a board control register.
+- * Although it should happen, we disable interrupts during this operation
+- * to make sure some driver doesn't accidentally access the PCI while
+- * we have switched the chip select.
+- */
+-
+-#include <linux/config.h>
+-#include <linux/kernel.h>
+-#include <linux/pci.h>
+-#include <linux/delay.h>
+-#include <linux/string.h>
+-#include <linux/init.h>
+-
+-#include <asm/io.h>
+-#include <asm/mpc8xx.h>
+-#include <asm/system.h>
+-#include <asm/machdep.h>
+-#include <asm/pci-bridge.h>
+-
+-
+-/*
+- * This blows......
+- * When reading the configuration space, if something does not respond
+- * the bus times out and we get a machine check interrupt.  So, the
+- * good ol' exception tables come to mind to trap it and return some
+- * value.
+- *
+- * On an error we just return a -1, since that is what the caller wants
+- * returned if nothing is present.  I copied this from __get_user_asm,
+- * with the only difference of returning -1 instead of EFAULT.
+- * There is an associated hack in the machine check trap code.
+- *
+- * The QSPAN is also a big endian device, that is it makes the PCI
+- * look big endian to us.  This presents a problem for the Linux PCI
+- * functions, which assume little endian.  For example, we see the
+- * first 32-bit word like this:
+- *	------------------------
+- *	| Device ID | Vendor ID |
+- *	------------------------
+- * If we read/write as a double word, that's OK.  But in our world,
+- * when read as a word, device ID is at location 0, not location 2 as
+- * the little endian PCI would believe.  We have to switch bits in
+- * the PCI addresses given to us to get the data to/from the correct
+- * byte lanes.
+- *
+- * The QSPAN only supports 4 bits of "slot" in the dev_fn instead of 5.
+- * It always forces the MS bit to zero.  Therefore, dev_fn values
+- * greater than 128 are returned as "no device found" errors.
+- *
+- * The QSPAN can only perform long word (32-bit) configuration cycles.
+- * The "offset" must have the two LS bits set to zero.  Read operations
+- * require we read the entire word and then sort out what should be
+- * returned.  Write operations other than long word require that we
+- * read the long word, update the proper word or byte, then write the
+- * entire long word back.
+- *
+- * PCI Bridge hack.  We assume (correctly) that bus 0 is the primary
+- * PCI bus from the QSPAN.  If we are called with a bus number other
+- * than zero, we create a Type 1 configuration access that a downstream
+- * PCI bridge will interpret.
+- */
+-
+-#define __get_qspan_pci_config(x, addr, op)		\
+-	__asm__ __volatile__(				\
+-		"1:	"op" %0,0(%1)\n"		\
+-		"	eieio\n"			\
+-		"2:\n"					\
+-		".section .fixup,\"ax\"\n"		\
+-		"3:	li %0,-1\n"			\
+-		"	b 2b\n"				\
+-		".section __ex_table,\"a\"\n"		\
+-		"	.align 2\n"			\
+-		"	.long 1b,3b\n"			\
+-		".text"					\
+-		: "=r"(x) : "r"(addr) : " %0")
+-
+-#define QS_CONFIG_ADDR	((volatile uint *)(PCI_CSR_ADDR + 0x500))
+-#define QS_CONFIG_DATA	((volatile uint *)(PCI_CSR_ADDR + 0x504))
+-
+-#define mk_config_addr(bus, dev, offset) \
+-	(((bus)<<16) | ((dev)<<8) | (offset & 0xfc))
+-
+-#define mk_config_type1(bus, dev, offset) \
+-	mk_config_addr(bus, dev, offset) | 1;
+-
+-static DEFINE_SPINLOCK(pcibios_lock);
+-
+-int qspan_pcibios_read_config_byte(unsigned char bus, unsigned char dev_fn,
+-				  unsigned char offset, unsigned char *val)
+-{
+-	uint	temp;
+-	u_char	*cp;
+-#ifdef CONFIG_RPXCLASSIC
+-	unsigned long flags;
+-#endif
+-
+-	if ((bus > 7) || (dev_fn > 127)) {
+-		*val = 0xff;
+-		return PCIBIOS_DEVICE_NOT_FOUND;
+-	}
+-
+-#ifdef CONFIG_RPXCLASSIC
+-	/* disable interrupts */
+-	spin_lock_irqsave(&pcibios_lock, flags);
+-	*((uint *)RPX_CSR_ADDR) &= ~BCSR2_QSPACESEL;
+-	eieio();
+-#endif
+-
+-	if (bus == 0)
+-		*QS_CONFIG_ADDR = mk_config_addr(bus, dev_fn, offset);
+-	else
+-		*QS_CONFIG_ADDR = mk_config_type1(bus, dev_fn, offset);
+-	__get_qspan_pci_config(temp, QS_CONFIG_DATA, "lwz");
+-
+-#ifdef CONFIG_RPXCLASSIC
+-	*((uint *)RPX_CSR_ADDR) |= BCSR2_QSPACESEL;
+-	eieio();
+-	spin_unlock_irqrestore(&pcibios_lock, flags);
+-#endif
+-
+-	offset ^= 0x03;
+-	cp = ((u_char *)&temp) + (offset & 0x03);
+-	*val = *cp;
+-	return PCIBIOS_SUCCESSFUL;
+-}
+-
+-int qspan_pcibios_read_config_word(unsigned char bus, unsigned char dev_fn,
+-				  unsigned char offset, unsigned short *val)
+-{
+-	uint	temp;
+-	ushort	*sp;
+-#ifdef CONFIG_RPXCLASSIC
+-	unsigned long flags;
+-#endif
+-
+-	if ((bus > 7) || (dev_fn > 127)) {
+-		*val = 0xffff;
+-		return PCIBIOS_DEVICE_NOT_FOUND;
+-	}
+-
+-#ifdef CONFIG_RPXCLASSIC
+-	/* disable interrupts */
+-	spin_lock_irqsave(&pcibios_lock, flags);
+-	*((uint *)RPX_CSR_ADDR) &= ~BCSR2_QSPACESEL;
+-	eieio();
+-#endif
+-
+-	if (bus == 0)
+-		*QS_CONFIG_ADDR = mk_config_addr(bus, dev_fn, offset);
+-	else
+-		*QS_CONFIG_ADDR = mk_config_type1(bus, dev_fn, offset);
+-	__get_qspan_pci_config(temp, QS_CONFIG_DATA, "lwz");
+-	offset ^= 0x02;
+-
+-#ifdef CONFIG_RPXCLASSIC
+-	*((uint *)RPX_CSR_ADDR) |= BCSR2_QSPACESEL;
+-	eieio();
+-	spin_unlock_irqrestore(&pcibios_lock, flags);
+-#endif
+-
+-	sp = ((ushort *)&temp) + ((offset >> 1) & 1);
+-	*val = *sp;
+-	return PCIBIOS_SUCCESSFUL;
+-}
+-
+-int qspan_pcibios_read_config_dword(unsigned char bus, unsigned char dev_fn,
+-				   unsigned char offset, unsigned int *val)
+-{
+-#ifdef CONFIG_RPXCLASSIC
+-	unsigned long flags;
+-#endif
+-
+-	if ((bus > 7) || (dev_fn > 127)) {
+-		*val = 0xffffffff;
+-		return PCIBIOS_DEVICE_NOT_FOUND;
+-	}
+-
+-#ifdef CONFIG_RPXCLASSIC
+-	/* disable interrupts */
+-	spin_lock_irqsave(&pcibios_lock, flags);
+-	*((uint *)RPX_CSR_ADDR) &= ~BCSR2_QSPACESEL;
+-	eieio();
+-#endif
+-
+-	if (bus == 0)
+-		*QS_CONFIG_ADDR = mk_config_addr(bus, dev_fn, offset);
+-	else
+-		*QS_CONFIG_ADDR = mk_config_type1(bus, dev_fn, offset);
+-	__get_qspan_pci_config(*val, QS_CONFIG_DATA, "lwz");
+-
+-#ifdef CONFIG_RPXCLASSIC
+-	*((uint *)RPX_CSR_ADDR) |= BCSR2_QSPACESEL;
+-	eieio();
+-	spin_unlock_irqrestore(&pcibios_lock, flags);
+-#endif
+-
+-	return PCIBIOS_SUCCESSFUL;
+-}
+-
+-int qspan_pcibios_write_config_byte(unsigned char bus, unsigned char dev_fn,
+-				   unsigned char offset, unsigned char val)
+-{
+-	uint	temp;
+-	u_char	*cp;
+-#ifdef CONFIG_RPXCLASSIC
+-	unsigned long flags;
+-#endif
+-
+-	if ((bus > 7) || (dev_fn > 127))
+-		return PCIBIOS_DEVICE_NOT_FOUND;
+-
+-	qspan_pcibios_read_config_dword(bus, dev_fn, offset, &temp);
+-
+-	offset ^= 0x03;
+-	cp = ((u_char *)&temp) + (offset & 0x03);
+-	*cp = val;
+-
+-#ifdef CONFIG_RPXCLASSIC
+-	/* disable interrupts */
+-	spin_lock_irqsave(&pcibios_lock, flags);
+-	*((uint *)RPX_CSR_ADDR) &= ~BCSR2_QSPACESEL;
+-	eieio();
+-#endif
+-
+-	if (bus == 0)
+-		*QS_CONFIG_ADDR = mk_config_addr(bus, dev_fn, offset);
+-	else
+-		*QS_CONFIG_ADDR = mk_config_type1(bus, dev_fn, offset);
+-	*QS_CONFIG_DATA = temp;
+-
+-#ifdef CONFIG_RPXCLASSIC
+-	*((uint *)RPX_CSR_ADDR) |= BCSR2_QSPACESEL;
+-	eieio();
+-	spin_unlock_irqrestore(&pcibios_lock, flags);
+-#endif
+-
+-	return PCIBIOS_SUCCESSFUL;
+-}
+-
+-int qspan_pcibios_write_config_word(unsigned char bus, unsigned char dev_fn,
+-				   unsigned char offset, unsigned short val)
+-{
+-	uint	temp;
+-	ushort	*sp;
+-#ifdef CONFIG_RPXCLASSIC
+-	unsigned long flags;
+-#endif
+-
+-	if ((bus > 7) || (dev_fn > 127))
+-		return PCIBIOS_DEVICE_NOT_FOUND;
+-
+-	qspan_pcibios_read_config_dword(bus, dev_fn, offset, &temp);
+-
+-	offset ^= 0x02;
+-	sp = ((ushort *)&temp) + ((offset >> 1) & 1);
+-	*sp = val;
+-
+-#ifdef CONFIG_RPXCLASSIC
+-	/* disable interrupts */
+-	spin_lock_irqsave(&pcibios_lock, flags);
+-	*((uint *)RPX_CSR_ADDR) &= ~BCSR2_QSPACESEL;
+-	eieio();
+-#endif
+-
+-	if (bus == 0)
+-		*QS_CONFIG_ADDR = mk_config_addr(bus, dev_fn, offset);
+-	else
+-		*QS_CONFIG_ADDR = mk_config_type1(bus, dev_fn, offset);
+-	*QS_CONFIG_DATA = temp;
+-
+-#ifdef CONFIG_RPXCLASSIC
+-	*((uint *)RPX_CSR_ADDR) |= BCSR2_QSPACESEL;
+-	eieio();
+-	spin_unlock_irqrestore(&pcibios_lock, flags);
+-#endif
+-
+-	return PCIBIOS_SUCCESSFUL;
+-}
+-
+-int qspan_pcibios_write_config_dword(unsigned char bus, unsigned char dev_fn,
+-				    unsigned char offset, unsigned int val)
+-{
+-#ifdef CONFIG_RPXCLASSIC
+-	unsigned long flags;
+-#endif
+-
+-	if ((bus > 7) || (dev_fn > 127))
+-		return PCIBIOS_DEVICE_NOT_FOUND;
+-
+-#ifdef CONFIG_RPXCLASSIC
+-	/* disable interrupts */
+-	spin_lock_irqsave(&pcibios_lock, flags);
+-	*((uint *)RPX_CSR_ADDR) &= ~BCSR2_QSPACESEL;
+-	eieio();
+-#endif
+-
+-	if (bus == 0)
+-		*QS_CONFIG_ADDR = mk_config_addr(bus, dev_fn, offset);
+-	else
+-		*QS_CONFIG_ADDR = mk_config_type1(bus, dev_fn, offset);
+-	*(unsigned int *)QS_CONFIG_DATA = val;
+-
+-#ifdef CONFIG_RPXCLASSIC
+-	*((uint *)RPX_CSR_ADDR) |= BCSR2_QSPACESEL;
+-	eieio();
+-	spin_unlock_irqrestore(&pcibios_lock, flags);
+-#endif
+-
+-	return PCIBIOS_SUCCESSFUL;
+-}
+-
+-int qspan_pcibios_find_device(unsigned short vendor, unsigned short dev_id,
+-			     unsigned short index, unsigned char *bus_ptr,
+-			     unsigned char *dev_fn_ptr)
+-{
+-    int num, devfn;
+-    unsigned int x, vendev;
+-
+-    if (vendor == 0xffff)
+-	return PCIBIOS_BAD_VENDOR_ID;
+-    vendev = (dev_id << 16) + vendor;
+-    num = 0;
+-    for (devfn = 0;  devfn < 32;  devfn++) {
+-	qspan_pcibios_read_config_dword(0, devfn<<3, PCI_VENDOR_ID, &x);
+-	if (x == vendev) {
+-	    if (index == num) {
+-		*bus_ptr = 0;
+-		*dev_fn_ptr = devfn<<3;
+-		return PCIBIOS_SUCCESSFUL;
+-	    }
+-	    ++num;
+-	}
+-    }
+-    return PCIBIOS_DEVICE_NOT_FOUND;
+-}
+-
+-int qspan_pcibios_find_class(unsigned int class_code, unsigned short index,
+-			    unsigned char *bus_ptr, unsigned char *dev_fn_ptr)
+-{
+-    int devnr, x, num;
+-
+-    num = 0;
+-    for (devnr = 0;  devnr < 32;  devnr++) {
+-	qspan_pcibios_read_config_dword(0, devnr<<3, PCI_CLASS_REVISION, &x);
+-	if ((x>>8) == class_code) {
+-	    if (index == num) {
+-		*bus_ptr = 0;
+-		*dev_fn_ptr = devnr<<3;
+-		return PCIBIOS_SUCCESSFUL;
+-	    }
+-	    ++num;
+-	}
+-    }
+-    return PCIBIOS_DEVICE_NOT_FOUND;
+-}
+-
+-void __init
+-m8xx_pcibios_fixup(void))
+-{
+-   /* Lots to do here, all board and configuration specific. */
+-}
+-
+-void __init
+-m8xx_setup_pci_ptrs(void))
+-{
+-	set_config_access_method(qspan);
+-
+-	ppc_md.pcibios_fixup = m8xx_pcibios_fixup;
+-}
+-
+Index: linux-kj/arch/ppc/syslib/Makefile
+===================================================================
+--- linux-kj.orig/arch/ppc/syslib/Makefile	2005-11-12 15:37:13.000000000 +0300
++++ linux-kj/arch/ppc/syslib/Makefile	2005-11-12 15:41:53.000000000 +0300
+@@ -37,7 +37,6 @@ endif
+ endif
+ obj-$(CONFIG_8xx)		+= m8xx_setup.o ppc8xx_pic.o $(wdt-mpc8xx-y) \
+ 				   ppc_sys.o mpc8xx_devices.o mpc8xx_sys.o
+-obj-$(CONFIG_PCI_QSPAN)		+= qspan_pci.o
+ obj-$(CONFIG_PPC_OF)		+= prom_init.o prom.o
+ obj-$(CONFIG_PPC_PMAC)		+= open_pic.o
+ obj-$(CONFIG_POWER4)		+= open_pic2.o
