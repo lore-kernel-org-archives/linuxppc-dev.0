@@ -1,15 +1,14 @@
-Return-Path: <sjmunroe@us.ibm.com>
-In-Reply-To: <1131747209.24637.255.camel@gaston>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-From: Steve Munroe <sjmunroe@us.ibm.com>
-Message-ID: <OF64F7B949.DD4E083C-ON862570B6.007B524B-862570B6.007BCC7D@us.ibm.com>
-Date: Fri, 11 Nov 2005 16:32:11 -0600
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@ozlabs.org, Tom Gall <tom_gall@vnet.ibm.com>,
-	munroesj@us.ibm.com, libc-alpha@sources.redhat.com,
-	linuxppc64-dev@ozlabs.org
-Subject: Re: [PATCH] glibc vDSO bits for ppc/ppc64 update
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17269.14127.936147.778781@cargo.ozlabs.ibm.com>
+Date: Sat, 12 Nov 2005 11:28:31 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <1131745047.21212.194.camel@hades.cambridge.redhat.com>
+References: <1131745047.21212.194.camel@hades.cambridge.redhat.com>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [RFC] Attempt to clean up sigsuspend et al
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,30 +18,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 11/11/2005 
-04:13:28 PM:
+David Woodhouse writes:
 
+> This is an attempt to get rid of it all, motivated mostly because I want
+> to add two _new_ functions which would need such treatment (pselect,
+> ppoll).
 > 
-> > Additional hp_timer_t is now declared as unsigned long long int 
-> > to match up with benh's get_tbfreq on 32 bit ppc. (ppc64 is already
-> > 64 bit)
-> 
-> I'm not sure having hp_timer_t be 64 bits on 32 bits libraries is the
-> right thing to do. I suppose it's a matter of performances tradeoff. The
-> fact that the vDSO __kernel_get_tbfreq() returns a long long doesn't
-> force you to use a long long hp_timer_t, the vDSO doesn't have to return
-> a value of type hp_timer_t :)
-> 
-> I did that on the vDSO to avoid having to change the vDSO interface if
-> we ever have to deal with >4Ghz time sources.
-> 
+> We define a new thread flag TIF_RESTOREALL which is set by the syscall
+> which needs this treatment, and make the syscall return path honour it.
+> This seems to work as far as I've tested it (i.e. the system boots) for
+> ppc64, but I haven't even attempted to compile the 32-bit version yet.
 
-A 64-bit timebase is required to the use hp-timing for clock_gettime(
-CLOCK_PROCESS_CPUTIME_ID, ) and  clock_gettime(CLOCK_THREAD_CPUTIME_ID, ). 
+Ummm, I don't see where you save the non-volatile GPRs to the
+exception frame _before_ do_signal (called from within *_sigsuspend)
+copies them to the user stack...
 
-
-So 64-bit it is.
-
-Steven J. Munroe
-Linux on Power Toolchain Architect
-IBM Corporation, Linux Technology Center
+Paul.
