@@ -1,16 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <geert@linux-m68k.org>
+Received: from witte.sonytel.be (witte.sonytel.be [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 6DEDC68713
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Nov 2005 20:17:39 +1100 (EST)
+Date: Sun, 13 Nov 2005 10:17:32 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@sonycom.com
+To: Ulrich Teichert <ulrich.teichert@gmx.de>
+In-Reply-To: <200511122351.jACNpiG5016918@arbas.nms.ulrich-teichert.org>
+Message-ID: <Pine.LNX.4.62.0511131014150.17491@numbat.sonytel.be>
+References: <200511122351.jACNpiG5016918@arbas.nms.ulrich-teichert.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17270.58406.370195.733887@cargo.ozlabs.ibm.com>
-Date: Sun, 13 Nov 2005 17:58:46 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1131756526.27347.212.camel@baythorne.infradead.org>
-References: <1131745047.21212.194.camel@hades.cambridge.redhat.com>
-	<17269.14127.936147.778781@cargo.ozlabs.ibm.com>
-	<1131756526.27347.212.camel@baythorne.infradead.org>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [RFC] Attempt to clean up sigsuspend et al
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Subject: Re: Linuv 2.6.15-rc1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,30 +22,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Woodhouse writes:
+On Sun, 13 Nov 2005, Ulrich Teichert wrote:
+> Especially the 43p-140 is quite easy to get via ebay, the Powerstack II
+> is a more rare machine nowadays, I think.
+                         ^^^^^^^^
+Probably because almost no one managed to buy one originally in the first
+place? :-)
 
-> I suppose I could make a TIF_xxx flag make entry.S do that. It's not
-> massively pretty, but then it wasn't pretty beforehand either. At least
-> I'd have made the ppc32 and ppc64 code match, removed the assembly
-> wrappers for a bunch of syscalls, and shortened the syscall exit fast
-> path on ppc64. 
-> 
-> I'd probably still be removing more lines of code than I add, but I'm
-> not entirely convinced by the whole plan. What do you think?
+I tried a long time ago, but the people at the Motorola PowerPC booth at CeBIT
+didn't even know about their own machines...
 
-Or have a mark in the syscall table (e.g. set the bottom bit of the
-address) for the syscalls that need the full register set.  That does
-mean an extra conditional branch in the syscall entry path for all
-syscalls, though.
+Gr{oetje,eeting}s,
 
-> Failing that, I'll just switch them both to do either what ppc32
-> currently does with sigreturn_exit() or what ppc64 does with returning
-> zero to take the ret_from_except path. Probably the former, since
-> pselect() and ppoll() will sometimes want to return zero without
-> invoking a signal handler.  And we can probably shorten the ppc64
-> syscall exit path anyway, either way. 
+						Geert
 
-I'll be upset if you can shorten it by a lot - I thought I had it
-pretty tight already. :)
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Paul.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
