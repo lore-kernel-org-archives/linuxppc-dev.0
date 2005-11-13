@@ -1,20 +1,26 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from witte.sonytel.be (witte.sonytel.be [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 5A54568719
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Nov 2005 04:47:25 +1100 (EST)
-Date: Sun, 13 Nov 2005 18:47:20 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@sonycom.com
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>
-In-Reply-To: <200511080502.jA852dWI011502@hera.kernel.org>
-Message-ID: <Pine.LNX.4.62.0511131845230.17491@numbat.sonytel.be>
-References: <200511080502.jA852dWI011502@hera.kernel.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ppc64: Thermal control for SMU based machines
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id F05C168734
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Nov 2005 08:03:24 +1100 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <71C11A0C-4FC8-4081-A890-A4FF7DA48752@kernel.crashing.org>
+References: <Pine.LNX.4.64.0511111753080.3263@g5.osdl.org>
+	<200511122145.38409.mbuesch@freenet.de>
+	<Pine.LNX.4.64.0511121257000.3263@g5.osdl.org>
+	<200511122237.17157.mbuesch@freenet.de>
+	<1131834336.7406.46.camel@gaston>
+	<71C11A0C-4FC8-4081-A890-A4FF7DA48752@kernel.crashing.org>
+Content-Type: text/plain
+Date: Mon, 14 Nov 2005 07:59:20 +1100
+Message-Id: <1131915560.5504.67.camel@gaston>
+Mime-Version: 1.0
+Cc: ppc-dev list <linuxppc-dev@ozlabs.org>, Linus Torvalds <torvalds@osdl.org>,
+	Michael Buesch <mbuesch@freenet.de>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linuv 2.6.15-rc1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,41 +30,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 7 Nov 2005, Linux Kernel Mailing List wrote:
-> tree d3f63b3ea80790c2f29ea435781c1331f17d269e
-> parent 7d49697ef92bd2cf84ab53bd4cea82fefb197fb9
-> author Benjamin Herrenschmidt <benh@kernel.crashing.org> Mon, 07 Nov 2005 16:08:17 +1100
-> committer Paul Mackerras <paulus@samba.org> Tue, 08 Nov 2005 11:17:56 +1100
-> 
-> [PATCH] ppc64: Thermal control for SMU based machines
-> 
-> This adds a new thermal control framework for PowerMac, along with the
-> implementation for PowerMac8,1, PowerMac8,2 (iMac G5 rev 1 and 2), and
-> PowerMac9,1 (latest single CPU desktop). In the future, I expect to move
-> the older G5 thermal control to the new framework as well.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
+On Sun, 2005-11-13 at 10:37 -0600, Kumar Gala wrote:
 
-> --- a/drivers/macintosh/Kconfig
-> +++ b/drivers/macintosh/Kconfig
-> @@ -169,6 +169,25 @@ config THERM_PM72
->  	  This driver provides thermostat and fan control for the desktop
->  	  G5 machines. 
->  
-> +config WINDFARM
-> +	tristate "New PowerMac thermal control infrastructure"
+> Can we please add some defconfigs for arch/powerpc to possibly help  
+> with this issue.  I'm think a pmac32, pmac64, and whatever other 64  
+> bit configs would be a good start.
 
-Shouldn't this depend on some PowerMac-related variables, to prevent it from
-showing up on m68k?
+The 64 bits defconfigs are there already. I'll do a pmac one.
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Ben.
