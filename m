@@ -1,18 +1,22 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from witte.sonytel.be (witte.sonytel.be [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 6DEDC68713
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Nov 2005 20:17:39 +1100 (EST)
-Date: Sun, 13 Nov 2005 10:17:32 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@sonycom.com
-To: Ulrich Teichert <ulrich.teichert@gmx.de>
-In-Reply-To: <200511122351.jACNpiG5016918@arbas.nms.ulrich-teichert.org>
-Message-ID: <Pine.LNX.4.62.0511131014150.17491@numbat.sonytel.be>
-References: <200511122351.jACNpiG5016918@arbas.nms.ulrich-teichert.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
-Subject: Re: Linuv 2.6.15-rc1
+Return-Path: <SRS0+0c11b2d6486fa6634c62+812+infradead.org+dwmw2@baythorne.srs.infradead.org>
+Received: from baythorne.infradead.org (baythorne.infradead.org [81.187.2.161])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CAA9268713
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Nov 2005 20:41:33 +1100 (EST)
+From: David Woodhouse <dwmw2@infradead.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <17270.58406.370195.733887@cargo.ozlabs.ibm.com>
+References: <1131745047.21212.194.camel@hades.cambridge.redhat.com>
+	<17269.14127.936147.778781@cargo.ozlabs.ibm.com>
+	<1131756526.27347.212.camel@baythorne.infradead.org>
+	<17270.58406.370195.733887@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Sun, 13 Nov 2005 09:41:26 +0000
+Message-Id: <1131874887.27347.221.camel@baythorne.infradead.org>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [RFC] Attempt to clean up sigsuspend et al
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,23 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 13 Nov 2005, Ulrich Teichert wrote:
-> Especially the 43p-140 is quite easy to get via ebay, the Powerstack II
-> is a more rare machine nowadays, I think.
-                         ^^^^^^^^
-Probably because almost no one managed to buy one originally in the first
-place? :-)
+On Sun, 2005-11-13 at 17:58 +1100, Paul Mackerras wrote:
+> Or have a mark in the syscall table (e.g. set the bottom bit of the
+> address) for the syscalls that need the full register set.  That does
+> mean an extra conditional branch in the syscall entry path for all
+> syscalls, though.
 
-I tried a long time ago, but the people at the Motorola PowerPC booth at CeBIT
-didn't even know about their own machines...
+We don't need to do it on entry; we can do it on exit. If do_signal()
+sees that the nvgprs weren't saved in the pt_regs it's playing with,
+then it can set a new TIF_SAVENVPGRS_TO_SIG_FRAME bit. I don't think we
+even need to store a pointer saying where to put them -- the signal
+frame will always be at the top of the userspace stack.
 
-Gr{oetje,eeting}s,
+As long as we handle the new bit before TIF_SIGPENDING and before
+another call to do_signal(), we don't need to worry about recursive
+signals and having to fill in more than one signal frame.
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-- 
+dwmw2
