@@ -1,15 +1,23 @@
 Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 368736874D
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Nov 2005 11:36:58 +1100 (EST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain
-Date: Sun, 13 Nov 2005 11:27:39 +1100
-Message-Id: <1131841660.5504.5.camel@gaston>
+To: Michael Buesch <mbuesch@freenet.de>
+In-Reply-To: <200511130013.45610.mbuesch@freenet.de>
+References: <Pine.LNX.4.64.0511111753080.3263@g5.osdl.org>
+	<Pine.LNX.4.64.0511121257000.3263@g5.osdl.org>
+	<1131834254.7406.43.camel@gaston>
+	<200511130013.45610.mbuesch@freenet.de>
+Content-Type: text/plain; charset=utf-8
+Date: Sun, 13 Nov 2005 11:33:13 +1100
+Message-Id: <1131841993.5504.13.camel@gaston>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	linuxppc64-dev <linuxppc64-dev@ozlabs.org>,
-	David Woodhouse <dwmw2@infradead.org>, Steve Munroe <sjmunroe@us.ibm.com>,
-	"tom_gall@mac.com" <tom_gall@mac.com>
-Subject: [PATCH] powerpc: vdso fixes
+Cc: linuxppc-dev@ozlabs.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: asm/delay.h missing on powerpc (was: Re: Linuv 2.6.15-rc1)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,127 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This fixes various errors in the new functions added in the vDSO's,
-I've been able to test the 32 bits version and I get consistent results
-with the corresponding syscalls.
+On Sun, 2005-11-13 at 00:13 +0100, Michael Buesch wrote:
+> On Saturday 12 November 2005 23:24, you wrote:
+> > Ìt should still work. I'm running -rc1 with "powerpc" on mine so that at
+> > least works, it's possible that we broke "ppc", I'll have a look and
+> > send a fix.
+> 
+> powerpc arch builds and runs now, but
+> I have problems compiling the bcm430x driver. It includes linux/delay.h.
+> linux/delay.h includes asm/delay.h, which does not exist.
+> What to do now?
 
-There is still a question about get_tbfreq() though. It currently
-returns the value that the kernel keeps in tb_ticks_per_sec. This value
-is obtained from the timebase at boot, but it's truncated to HZ
-precision:
+I suspect that building drivers out of tree doesn't work very well with
+the new "merged" architecture where includes are split between asm/ppc
+and asm-powerpc... You should make sure that you build the driver with
+the same ARCH as the kernel, that is ARCH=powerpc at least, if we got
+the Makefiles right, that should give you all the headers...
 
-	tb_ticks_per_jiffy = ppc_tb_freq / HZ;
-	tb_ticks_per_sec = tb_ticks_per_jiffy * HZ;
+(building glibc is definitely a pain :)
 
-And it's later on modified by the ppc_adjtimex() code.
-
-This is different from the value exposed in /proc/cpuinfo for the
-timebase which is a straight copy of ppc_tb_freq, which is the
-calibration value obtained at boot and unmodified.
-
-The question at this point are: Is that "rouding" to HZ done by the
-kernel correct ? And should the vDSO return this value that gets
-adjusted or the fixed initial calibration value, or both.
-
-In the later case, should I add an argument to get_tbfreq() or add a
-separate function ?
-
-In the meantime, please apply this patch as it fixes a few annoying bug
-in the vDSO implementation currently in -rc1.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-Index: linux-work/arch/powerpc/kernel/asm-offsets.c
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/asm-offsets.c	2005-11-13 10:34:07.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/asm-offsets.c	2005-11-13 10:34:50.000000000 +1100
-@@ -275,8 +275,8 @@
- #else
- 	DEFINE(TVAL32_TV_SEC, offsetof(struct timeval, tv_sec));
- 	DEFINE(TVAL32_TV_USEC, offsetof(struct timeval, tv_usec));
--	DEFINE(TSPEC32_TV_SEC, offsetof(struct timespec, tv_sec));
--	DEFINE(TSPEC32_TV_NSEC, offsetof(struct timespec, tv_nsec));
-+	DEFINE(TSPC32_TV_SEC, offsetof(struct timespec, tv_sec));
-+	DEFINE(TSPC32_TV_NSEC, offsetof(struct timespec, tv_nsec));
- #endif
- 	/* timeval/timezone offsets for use by vdso */
- 	DEFINE(TZONE_TZ_MINWEST, offsetof(struct timezone, tz_minuteswest));
-Index: linux-work/arch/powerpc/kernel/vdso32/gettimeofday.S
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/vdso32/gettimeofday.S	2005-11-13 10:34:07.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/vdso32/gettimeofday.S	2005-11-13 10:55:55.000000000 +1100
-@@ -83,7 +83,7 @@
- 	/* Check for supported clock IDs */
- 	cmpli	cr0,r3,CLOCK_REALTIME
- 	cmpli	cr1,r3,CLOCK_MONOTONIC
--	cror	cr0,cr0,cr1
-+	cror	cr0*4+eq,cr0*4+eq,cr1*4+eq
- 	bne	cr0,99f
- 
- 	mflr	r12			/* r12 saves lr */
-@@ -91,7 +91,7 @@
- 	mr	r10,r3			/* r10 saves id */
- 	mr	r11,r4			/* r11 saves tp */
- 	bl	__get_datapage@local	/* get data page */
--	mr	r9, r3			/* datapage ptr in r9 */
-+	mr	r9,r3			/* datapage ptr in r9 */
- 	beq	cr1,50f			/* if monotonic -> jump there */
- 
- 	/*
-@@ -210,7 +210,7 @@
- 	/* Check for supported clock IDs */
- 	cmpwi	cr0,r3,CLOCK_REALTIME
- 	cmpwi	cr1,r3,CLOCK_MONOTONIC
--	cror	cr0,cr0,cr1
-+	cror	cr0*4+eq,cr0*4+eq,cr1*4+eq
- 	bne	cr0,99f
- 
- 	li	r3,0
-Index: linux-work/arch/powerpc/kernel/vdso64/gettimeofday.S
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/vdso64/gettimeofday.S	2005-11-13 10:34:07.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/vdso64/gettimeofday.S	2005-11-13 10:56:08.000000000 +1100
-@@ -68,7 +68,7 @@
- 	/* Check for supported clock IDs */
- 	cmpwi	cr0,r3,CLOCK_REALTIME
- 	cmpwi	cr1,r3,CLOCK_MONOTONIC
--	cror	cr0,cr0,cr1
-+	cror	cr0*4+eq,cr0*4+eq,cr1*4+eq
- 	bne	cr0,99f
- 
- 	mflr	r12			/* r12 saves lr */
-@@ -181,7 +181,7 @@
- 	/* Check for supported clock IDs */
- 	cmpwi	cr0,r3,CLOCK_REALTIME
- 	cmpwi	cr1,r3,CLOCK_MONOTONIC
--	cror	cr0,cr0,cr1
-+	cror	cr0*4+eq,cr0*4+eq,cr1*4+eq
- 	bne	cr0,99f
- 
- 	li	r3,0
-Index: linux-work/arch/powerpc/kernel/vdso32/datapage.S
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/vdso32/datapage.S	2005-11-12 08:27:18.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/vdso32/datapage.S	2005-11-13 11:06:39.000000000 +1100
-@@ -77,8 +77,9 @@
- 	mflr	r12
-   .cfi_register lr,r12
- 	bl	__get_datapage@local
--	lwz	r3,CFG_TB_TICKS_PER_SEC(r3)
- 	lwz	r4,(CFG_TB_TICKS_PER_SEC + 4)(r3)
-+	lwz	r3,CFG_TB_TICKS_PER_SEC(r3)
- 	mtlr	r12
-+	blr
-   .cfi_endproc
- V_FUNCTION_END(__kernel_get_tbfreq)
-Index: linux-work/arch/powerpc/kernel/vdso64/datapage.S
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/vdso64/datapage.S	2005-11-12 08:27:19.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/vdso64/datapage.S	2005-11-13 10:58:45.000000000 +1100
-@@ -80,5 +80,6 @@
- 	bl	V_LOCAL_FUNC(__get_datapage)
- 	ld	r3,CFG_TB_TICKS_PER_SEC(r3)
- 	mtlr	r12
-+	blr
-   .cfi_endproc
- V_FUNCTION_END(__kernel_get_tbfreq)
+Ben.
