@@ -1,26 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B112968713
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Nov 2005 14:27:25 +1100 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Adrian Bunk <bunk@stusta.de>
-In-Reply-To: <20051113012608.GH21448@stusta.de>
-References: <Pine.LNX.4.64.0511111753080.3263@g5.osdl.org>
-	<200511122237.17157.mbuesch@freenet.de>
-	<20051112215304.GB21448@stusta.de>
-	<200511122257.05552.mbuesch@freenet.de>
-	<20051112222045.GC21448@stusta.de>
-	<1131834667.7406.49.camel@gaston>  <20051113012608.GH21448@stusta.de>
-Content-Type: text/plain
-Date: Sun, 13 Nov 2005 14:23:29 +1100
-Message-Id: <1131852210.5504.36.camel@gaston>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@osdl.org>,
-	Michael Buesch <mbuesch@freenet.de>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [2.6 patch] PPC_PREP: remove unneeded exports
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17270.58406.370195.733887@cargo.ozlabs.ibm.com>
+Date: Sun, 13 Nov 2005 17:58:46 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <1131756526.27347.212.camel@baythorne.infradead.org>
+References: <1131745047.21212.194.camel@hades.cambridge.redhat.com>
+	<17269.14127.936147.778781@cargo.ozlabs.ibm.com>
+	<1131756526.27347.212.camel@baythorne.infradead.org>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [RFC] Attempt to clean up sigsuspend et al
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,25 +20,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2005-11-13 at 02:26 +0100, Adrian Bunk wrote:
-> On Sun, Nov 13, 2005 at 09:31:06AM +1100, Benjamin Herrenschmidt wrote:
-> > 
-> > > ucSystemType is a variable that is EXPORT_SYMBOL'ed but never used in 
-> > > any way.
-> > > 
-> > > _prep_type is a variable that is needlessly EXPORT_SYMBOL'ed.
-> > 
-> > Therse are old PREP stuffs
-> >...
+David Woodhouse writes:
+
+> I suppose I could make a TIF_xxx flag make entry.S do that. It's not
+> massively pretty, but then it wasn't pretty beforehand either. At least
+> I'd have made the ppc32 and ppc64 code match, removed the assembly
+> wrappers for a bunch of syscalls, and shortened the syscall exit fast
+> path on ppc64. 
 > 
-> Is the patch below OK?
+> I'd probably still be removing more lines of code than I add, but I'm
+> not entirely convinced by the whole plan. What do you think?
 
-The ucXXX variables should probably go (or at least be unexported) but I
-would keep the _prep_type export for now, unless we are certain no
-driver and no out of tree stuff neither uses it (hrm... might well be
-the case).
+Or have a mark in the syscall table (e.g. set the bottom bit of the
+address) for the syscalls that need the full register set.  That does
+mean an extra conditional branch in the syscall entry path for all
+syscalls, though.
 
-In any case, the proper fix is probably to move the EXPORT_SYMBOL() out
-of ppc_ksyms, and have it next to the declaration of the variable.
+> Failing that, I'll just switch them both to do either what ppc32
+> currently does with sigreturn_exit() or what ppc64 does with returning
+> zero to take the ret_from_except path. Probably the former, since
+> pselect() and ppoll() will sometimes want to return zero without
+> invoking a signal handler.  And we can probably shorten the ppc64
+> syscall exit path anyway, either way. 
 
-Ben.
+I'll be upset if you can shorten it by a lot - I thought I had it
+pretty tight already. :)
+
+Paul.
