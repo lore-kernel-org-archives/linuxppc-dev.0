@@ -1,26 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3885568722
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Nov 2005 03:37:33 +1100 (EST)
-In-Reply-To: <1131834336.7406.46.camel@gaston>
-References: <Pine.LNX.4.64.0511111753080.3263@g5.osdl.org>
-	<200511122145.38409.mbuesch@freenet.de>
-	<Pine.LNX.4.64.0511121257000.3263@g5.osdl.org>
-	<200511122237.17157.mbuesch@freenet.de>
-	<1131834336.7406.46.camel@gaston>
-Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <71C11A0C-4FC8-4081-A890-A4FF7DA48752@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Date: Sun, 13 Nov 2005 10:37:44 -0600
-To: Paul Mackerras <paulus@samba.org>
-Cc: ppc-dev list <linuxppc-dev@ozlabs.org>, Linus Torvalds <torvalds@osdl.org>,
-	Michael Buesch <mbuesch@freenet.de>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linuv 2.6.15-rc1
+Return-Path: <geert@linux-m68k.org>
+Received: from witte.sonytel.be (witte.sonytel.be [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 5A54568719
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Nov 2005 04:47:25 +1100 (EST)
+Date: Sun, 13 Nov 2005 18:47:20 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@sonycom.com
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>
+In-Reply-To: <200511080502.jA852dWI011502@hera.kernel.org>
+Message-ID: <Pine.LNX.4.62.0511131845230.17491@numbat.sonytel.be>
+References: <200511080502.jA852dWI011502@hera.kernel.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ppc64: Thermal control for SMU based machines
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,39 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 7 Nov 2005, Linux Kernel Mailing List wrote:
+> tree d3f63b3ea80790c2f29ea435781c1331f17d269e
+> parent 7d49697ef92bd2cf84ab53bd4cea82fefb197fb9
+> author Benjamin Herrenschmidt <benh@kernel.crashing.org> Mon, 07 Nov 2005 16:08:17 +1100
+> committer Paul Mackerras <paulus@samba.org> Tue, 08 Nov 2005 11:17:56 +1100
+> 
+> [PATCH] ppc64: Thermal control for SMU based machines
+> 
+> This adds a new thermal control framework for PowerMac, along with the
+> implementation for PowerMac8,1, PowerMac8,2 (iMac G5 rev 1 and 2), and
+> PowerMac9,1 (latest single CPU desktop). In the future, I expect to move
+> the older G5 thermal control to the new framework as well.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Paul Mackerras <paulus@samba.org>
 
-On Nov 12, 2005, at 4:25 PM, Benjamin Herrenschmidt wrote:
+> --- a/drivers/macintosh/Kconfig
+> +++ b/drivers/macintosh/Kconfig
+> @@ -169,6 +169,25 @@ config THERM_PM72
+>  	  This driver provides thermostat and fan control for the desktop
+>  	  G5 machines. 
+>  
+> +config WINDFARM
+> +	tristate "New PowerMac thermal control infrastructure"
 
-> On Sat, 2005-11-12 at 22:37 +0100, Michael Buesch wrote:
->> On Saturday 12 November 2005 22:00, you wrote:
->>>
->>> On Sat, 12 Nov 2005, Michael Buesch wrote:
->>>>
->>>> Latest GIT tree does not boot on my G4 PowerBook.
->>>
->>> What happens if you do
->>>
->>> 	make ARCH=powerpc
->>>
->>> and build everything that way (including the "config" phase)?
->>
->> I did
->> make mrproper
->> copy the .config over again
->> make ARCH=powerpc menuconfig
->> exit and save from menuconfig
->> make ARCH=powerpc
->
-> You need to disable PREP support when building with ARCH=powerpc  
-> for 32
-> bits, it doesn't build (yet). We should remove it from Kconfig...
->
-> Also, there is an issue with the make clean stuff, make sure when
-> switching archs to also remove arch/powerpc/include/asm symlink before
-> trying to build.
+Shouldn't this depend on some PowerMac-related variables, to prevent it from
+showing up on m68k?
 
-Can we please add some defconfigs for arch/powerpc to possibly help  
-with this issue.  I'm think a pmac32, pmac64, and whatever other 64  
-bit configs would be a good start.
+Gr{oetje,eeting}s,
 
-- kumar
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
