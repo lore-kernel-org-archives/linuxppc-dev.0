@@ -1,23 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 368736874D
-	for <linuxppc-dev@ozlabs.org>; Sun, 13 Nov 2005 11:36:58 +1100 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Buesch <mbuesch@freenet.de>
-In-Reply-To: <200511130013.45610.mbuesch@freenet.de>
+Return-Path: <bunk@stusta.de>
+Received: from mailout.stusta.mhn.de (emailhub.stusta.mhn.de [141.84.69.5])
+	by ozlabs.org (Postfix) with SMTP id 7034668737
+	for <linuxppc-dev@ozlabs.org>; Sun, 13 Nov 2005 12:26:10 +1100 (EST)
+Date: Sun, 13 Nov 2005 02:26:09 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <20051113012608.GH21448@stusta.de>
 References: <Pine.LNX.4.64.0511111753080.3263@g5.osdl.org>
-	<Pine.LNX.4.64.0511121257000.3263@g5.osdl.org>
-	<1131834254.7406.43.camel@gaston>
-	<200511130013.45610.mbuesch@freenet.de>
-Content-Type: text/plain; charset=utf-8
-Date: Sun, 13 Nov 2005 11:33:13 +1100
-Message-Id: <1131841993.5504.13.camel@gaston>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org,
+	<200511122237.17157.mbuesch@freenet.de>
+	<20051112215304.GB21448@stusta.de>
+	<200511122257.05552.mbuesch@freenet.de>
+	<20051112222045.GC21448@stusta.de>
+	<1131834667.7406.49.camel@gaston>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1131834667.7406.49.camel@gaston>
+Cc: linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@osdl.org>,
+	Michael Buesch <mbuesch@freenet.de>,
 	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: asm/delay.h missing on powerpc (was: Re: Linuv 2.6.15-rc1)
+Subject: [2.6 patch] PPC_PREP: remove unneeded exports
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,23 +28,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2005-11-13 at 00:13 +0100, Michael Buesch wrote:
-> On Saturday 12 November 2005 23:24, you wrote:
-> > Ìt should still work. I'm running -rc1 with "powerpc" on mine so that at
-> > least works, it's possible that we broke "ppc", I'll have a look and
-> > send a fix.
+On Sun, Nov 13, 2005 at 09:31:06AM +1100, Benjamin Herrenschmidt wrote:
 > 
-> powerpc arch builds and runs now, but
-> I have problems compiling the bcm430x driver. It includes linux/delay.h.
-> linux/delay.h includes asm/delay.h, which does not exist.
-> What to do now?
+> > ucSystemType is a variable that is EXPORT_SYMBOL'ed but never used in 
+> > any way.
+> > 
+> > _prep_type is a variable that is needlessly EXPORT_SYMBOL'ed.
+> 
+> Therse are old PREP stuffs
+>...
 
-I suspect that building drivers out of tree doesn't work very well with
-the new "merged" architecture where includes are split between asm/ppc
-and asm-powerpc... You should make sure that you build the driver with
-the same ARCH as the kernel, that is ARCH=powerpc at least, if we got
-the Makefiles right, that should give you all the headers...
+Is the patch below OK?
 
-(building glibc is definitely a pain :)
+> Ben.
 
-Ben.
+cu
+Adrian
+
+
+<--  snip  -->
+
+
+This patch removes the EXPORT_SYMBOL'ed but completely unused variable 
+ucSystemType and removes the unneeded EXPORT_SYMBOL(_prep_type).
+
+
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
+
+---
+
+ arch/powerpc/kernel/ppc_ksyms.c |    5 -----
+ arch/ppc/kernel/ppc_ksyms.c     |    4 ----
+ arch/ppc/platforms/prep_setup.c |    1 -
+ include/asm-powerpc/processor.h |    1 -
+ 4 files changed, 11 deletions(-)
+
+--- linux-2.6.15-rc1/include/asm-powerpc/processor.h.old	2005-11-13 01:44:12.000000000 +0100
++++ linux-2.6.15-rc1/include/asm-powerpc/processor.h	2005-11-13 01:44:25.000000000 +0100
+@@ -68,7 +68,6 @@
+  * vendor. Board revision is also made available. This will be moved
+  * elsewhere soon
+  */
+-extern unsigned char ucSystemType;
+ extern unsigned char ucBoardRev;
+ extern unsigned char ucBoardRevMaj, ucBoardRevMin;
+ 
+--- linux-2.6.15-rc1/arch/ppc/platforms/prep_setup.c.old	2005-11-13 01:44:36.000000000 +0100
++++ linux-2.6.15-rc1/arch/ppc/platforms/prep_setup.c	2005-11-13 01:44:40.000000000 +0100
+@@ -72,7 +72,6 @@
+ 
+ TODC_ALLOC();
+ 
+-unsigned char ucSystemType;
+ unsigned char ucBoardRev;
+ unsigned char ucBoardRevMaj, ucBoardRevMin;
+ 
+--- linux-2.6.15-rc1/arch/ppc/kernel/ppc_ksyms.c.old	2005-11-13 01:44:49.000000000 +0100
++++ linux-2.6.15-rc1/arch/ppc/kernel/ppc_ksyms.c	2005-11-13 01:44:54.000000000 +0100
+@@ -82,10 +82,6 @@
+ EXPORT_SYMBOL(ISA_DMA_THRESHOLD);
+ EXPORT_SYMBOL(DMA_MODE_READ);
+ EXPORT_SYMBOL(DMA_MODE_WRITE);
+-#if defined(CONFIG_PPC_PREP)
+-EXPORT_SYMBOL(_prep_type);
+-EXPORT_SYMBOL(ucSystemType);
+-#endif
+ 
+ #if !defined(__INLINE_BITOPS)
+ EXPORT_SYMBOL(set_bit);
+--- linux-2.6.15-rc1/arch/powerpc/kernel/ppc_ksyms.c.old	2005-11-13 01:45:06.000000000 +0100
++++ linux-2.6.15-rc1/arch/powerpc/kernel/ppc_ksyms.c	2005-11-13 01:45:12.000000000 +0100
+@@ -76,11 +76,6 @@
+ EXPORT_SYMBOL(sys_sigreturn);
+ #endif
+ 
+-#if defined(CONFIG_PPC_PREP)
+-EXPORT_SYMBOL(_prep_type);
+-EXPORT_SYMBOL(ucSystemType);
+-#endif
+-
+ EXPORT_SYMBOL(strcpy);
+ EXPORT_SYMBOL(strncpy);
+ EXPORT_SYMBOL(strcat);
