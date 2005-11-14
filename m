@@ -1,24 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4A98068750
+Return-Path: <gautran@mrv.com>
+Received: from mailman.xyplex.com (mailman.xyplex.com [140.179.176.116])
+	by ozlabs.org (Postfix) with ESMTP id 5D1FD68773
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 Nov 2005 09:50:22 +1100 (EST)
-In-Reply-To: <608ff4f57a546901e9193ebbbe368053@embeddededge.com>
-References: <20051114152024.GA29314@logos.cnet>
-	<5F8A6977-E33A-4E84-B029-D1B49716DC82@kernel.crashing.org>
-	<20051114155313.GA29411@logos.cnet>
-	<608ff4f57a546901e9193ebbbe368053@embeddededge.com>
-Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <475D0B8F-FF5A-44DC-9D03-7156AFE2AAB0@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Date: Mon, 14 Nov 2005 16:50:41 -0600
-To: Dan Malek <dan@embeddededge.com>
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [Edson.Seabra@cyclades.com: Re: BDI and 85xx]
+	Tue, 15 Nov 2005 10:47:38 +1100 (EST)
+Message-ID: <437920D3.8020105@mrv.com>
+Date: Mon, 14 Nov 2005 18:42:11 -0500
+From: Guillaume Autran <gautran@mrv.com>
+MIME-Version: 1.0
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+References: <20051107121101.GI15522@logos.cnet>
+In-Reply-To: <20051107121101.GI15522@logos.cnet>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: support@abatron.ch, linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: BDI2000 and Linux 2.6 kernel
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,38 +23,140 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi Marcelo,
 
-On Nov 14, 2005, at 4:43 PM, Dan Malek wrote:
+Despite your patch, I'm still having trouble getting my BDI2000 to translate 
+kernel virtual address to physical address on a 2.6.13 kernel.
 
->
-> On Nov 14, 2005, at 10:53 AM, Marcelo Tosatti wrote:
->
->> Doh my bad. Attached it is.
->>
->>
->> <8xx_gdb.diff>
->
-> Well, this probably works for you but have you
-> considered how it affects others?
->
-> I'm not going to get into the -ggdb flags discussion,
-> since I know we've had that in the past.  Why is
-> this needed and should it be done for everyone?
->
-> Your update of MSR_KERNEL will work for you,
-> but won't work on anything that isn't a Book E processor.
-> You can't make this a generic update to all processors.
-> It will fail on everything that really wants to use the
-> BDI_SWITCH configuration option as it was intended.
-> The DE in Book E conflicts with BE in traditional PPC.
+What should I look for to make sure I set it up properly ?
 
-We should but this in asm-ppc/reg_booke.h since book-e has its own  
-MSR_* defines.
+Regards,
+Guillaume.
 
-> This also doesn't do anything to address my real concern,
-> we shouldn't have to create a special kernel configuration
-> just to attach a debugger .........
 
-I'm not 100% sure this is even possible on some of the book-e variants.
 
-- kumar
+
+
+Marcelo Tosatti wrote:
+> Hi,
+> 
+> Currently gdb over BDI (and I've seen other reports on this list) fails to
+> translate virtual->physical addresses on PPC 8xx:
+> 
+> *** MMU: address translation for 0xC000C66C failed
+> *** MMU: address translation for 0xC000C66C failed
+> 
+> Thats because the v2.6 kernel was changed to use physical addresses on the
+> first level page.
+> 
+> Dan informed me there might be a firmware update available to address 
+> this problem. Is this true?
+> 
+> With the following the kernel stores the virtual address on the PMD 
+> getting the BDI "to work".
+> 
+> A newer firmware would be much better though.
+> 
+> --- linux-2.6.14-rc4.orig/arch/ppc/kernel/head_8xx.S	2005-10-18 16:59:34.000000000 -0500
+> +++ linux-2.6.14-rc4/arch/ppc/kernel/head_8xx.S	2005-11-01 05:45:00.000000000 -0600
+> @@ -320,11 +320,12 @@ InstructionTLBMiss:
+>  	lwz	r11, 0(r10)	/* Get the level 1 entry */
+>  	rlwinm.	r10, r11,0,0,19	/* Extract page descriptor page address */
+>  	beq	2f		/* If zero, don't try to find a pte */
+> +	tophys(r11,r11)
+>  
+>  	/* We have a pte table, so load the MI_TWC with the attributes
+>  	 * for this "segment."
+>  	 */
+> -	ori	r11,r11,1		/* Set valid bit */
+> +	/*ori	r11,r11,1		 Set valid bit */
+>  	DO_8xx_CPU6(0x2b80, r3)
+>  	mtspr	SPRN_MI_TWC, r11	/* Set segment attributes */
+>  	DO_8xx_CPU6(0x3b80, r3)
+> @@ -379,6 +380,7 @@ DataStoreTLBMiss:
+>  	lwz	r11, 0(r10)	/* Get the level 1 entry */
+>  	rlwinm.	r10, r11,0,0,19	/* Extract page descriptor page address */
+>  	beq	2f		/* If zero, don't try to find a pte */
+> +	tophys(r11,r11)
+>  
+>  	/* We have a pte table, so load fetch the pte from the table.
+>  	 */
+> @@ -493,6 +495,7 @@ DataTLBError:
+>  	lwz	r11, 0(r10)	/* Get the level 1 entry */
+>  	rlwinm.	r10, r11,0,0,19	/* Extract page descriptor page address */
+>  	beq	2f		/* If zero, bail */
+> +	tophys(r11,r11)
+>  
+>  	/* We have a pte table, so fetch the pte from the table.
+>  	 */
+> diff -Nur -p --exclude-from=linux-2.6.14-rc4/Documentation/dontdiff linux-2.6.14-rc4.orig/include/asm-ppc/pgalloc.h linux-2.6.14-rc4/include/asm-ppc/pgalloc.h
+> --- linux-2.6.14-rc4.orig/include/asm-ppc/pgalloc.h	2005-10-18 17:00:09.000000000 -0500
+> +++ linux-2.6.14-rc4/include/asm-ppc/pgalloc.h	2005-11-01 08:02:08.000000000 -0600
+> @@ -19,16 +19,16 @@ extern void pgd_free(pgd_t *pgd);
+>  #define __pmd_free_tlb(tlb,x)		do { } while (0)
+>  #define pgd_populate(mm, pmd, pte)      BUG()
+>  
+> -#ifndef CONFIG_BOOKE
+> +#if defined(CONFIG_BOOKE) || defined(CONFIG_8xx)
+>  #define pmd_populate_kernel(mm, pmd, pte)	\
+> -		(pmd_val(*(pmd)) = __pa(pte) | _PMD_PRESENT)
+> +		(pmd_val(*(pmd)) = (unsigned long)pte | _PMD_PRESENT)
+>  #define pmd_populate(mm, pmd, pte)	\
+> -		(pmd_val(*(pmd)) = (page_to_pfn(pte) << PAGE_SHIFT) | _PMD_PRESENT)
+> +		(pmd_val(*(pmd)) = (unsigned long)page_to_virt(pte) | _PMD_PRESENT)
+>  #else
+>  #define pmd_populate_kernel(mm, pmd, pte)	\
+> -		(pmd_val(*(pmd)) = (unsigned long)pte | _PMD_PRESENT)
+> +		(pmd_val(*(pmd)) = __pa(pte) | _PMD_PRESENT)
+>  #define pmd_populate(mm, pmd, pte)	\
+> -		(pmd_val(*(pmd)) = (unsigned long)page_to_virt(pte) | _PMD_PRESENT)
+> +		(pmd_val(*(pmd)) = (page_to_pfn(pte) << PAGE_SHIFT) | _PMD_PRESENT)
+>  #endif
+>  
+>  extern pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long addr);
+> diff -Nur -p --exclude-from=linux-2.6.14-rc4/Documentation/dontdiff linux-2.6.14-rc4.orig/include/asm-ppc/pgtable.h linux-2.6.14-rc4/include/asm-ppc/pgtable.h
+> --- linux-2.6.14-rc4.orig/include/asm-ppc/pgtable.h	2005-10-18 17:00:09.000000000 -0500
+> +++ linux-2.6.14-rc4/include/asm-ppc/pgtable.h	2005-11-01 08:01:34.000000000 -0600
+> @@ -719,16 +719,16 @@ extern pgprot_t phys_mem_access_prot(str
+>   * handler).  On everything else the pmd contains the physical address
+>   * of the pte page.  -- paulus
+>   */
+> -#ifndef CONFIG_BOOKE
+> +#if defined (CONFIG_BOOKE) || defined CONFIG_8xx
+>  #define pmd_page_kernel(pmd)	\
+> -	((unsigned long) __va(pmd_val(pmd) & PAGE_MASK))
+> +	((unsigned long) (pmd_val(pmd) & PAGE_MASK))
+>  #define pmd_page(pmd)		\
+> -	(mem_map + (pmd_val(pmd) >> PAGE_SHIFT))
+> +	(mem_map + (__pa(pmd_val(pmd)) >> PAGE_SHIFT))
+>  #else
+>  #define pmd_page_kernel(pmd)	\
+> -	((unsigned long) (pmd_val(pmd) & PAGE_MASK))
+> +	((unsigned long) __va(pmd_val(pmd) & PAGE_MASK))
+>  #define pmd_page(pmd)		\
+> -	(mem_map + (__pa(pmd_val(pmd)) >> PAGE_SHIFT))
+> +	(mem_map + (pmd_val(pmd) >> PAGE_SHIFT))
+>  #endif
+>  
+>  /* to find an entry in a kernel page-table-directory */
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+
+-- 
+=======================================
+Guillaume Autran
+Senior Software Engineer
+MRV Communications, Inc.
+Tel: (978) 952-4932 office
+=======================================
