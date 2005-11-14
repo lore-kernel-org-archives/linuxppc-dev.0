@@ -1,18 +1,12 @@
 Return-Path: <galak@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5440C68754
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Nov 2005 10:04:00 +1100 (EST)
-Date: Mon, 14 Nov 2005 17:01:43 -0600 (CST)
+Date: Mon, 14 Nov 2005 17:21:44 -0600 (CST)
 From: Kumar Gala <galak@gate.crashing.org>
 To: Paul Mackerras <paulus@samba.org>
-Message-ID: <Pine.LNX.4.44.0511141655560.8331-100000@gate.crashing.org>
+Message-ID: <Pine.LNX.4.44.0511141721190.9033-100000@gate.crashing.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: michael@ellerman.id.au, linuxppc-dev@ozlabs.org,
-	linuxppc64@gate.crashing.org
-Subject: asm-ppc/page.h vs asm-powerpc/page.h
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Subject: [PATCH] powerpc: put page page_to_virt for Book-e processors
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,14 +16,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Guys, what's going on here.
+Book-E processors use page_to_virt since we have to always translate.
 
-Why haven't we removed asm-ppc/page.h?
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-When I build ARCH=powerpc I get asm-powerpc/page.h, which doesn't build on 
-85xx since page_to_virt is missing.
+---
+commit 62ac3a10f41d7d300cf82846348f65eab0dbfd40
+tree 039f1c393bd77fb8c6daf1c8ebd883c9a72be6e2
+parent ed24c128ba54329d142c4d4c7c5e05cec6065b08
+author Kumar Gala <galak@kernel.crashing.org> Mon, 14 Nov 2005 17:22:35 -0600
+committer Kumar Gala <galak@kernel.crashing.org> Mon, 14 Nov 2005 17:22:35 -0600
 
-Any reason we are keeping around asm-ppc/page.h and causing this 
-confusion?
+ include/asm-powerpc/page.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-- kumar
+diff --git a/include/asm-powerpc/page.h b/include/asm-powerpc/page.h
+index 18c1e5e..e34a2ba 100644
+--- a/include/asm-powerpc/page.h
++++ b/include/asm-powerpc/page.h
+@@ -53,6 +53,7 @@
+ #endif
+ 
+ #define virt_to_page(kaddr)	pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
++#define page_to_virt(page)	__va(page_to_pfn(page) << PAGE_SHIFT)
+ #define pfn_to_kaddr(pfn)	__va((pfn) << PAGE_SHIFT)
+ #define virt_addr_valid(kaddr)	pfn_valid(__pa(kaddr) >> PAGE_SHIFT)
+ 
