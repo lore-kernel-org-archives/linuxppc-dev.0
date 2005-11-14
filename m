@@ -1,22 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9B9C768729
-	for <linuxppc-dev@ozlabs.org>; Mon, 14 Nov 2005 19:06:36 +1100 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arkadiusz Miskiewicz <arekm@pld-linux.org>
-In-Reply-To: <200511140819.42439.arekm@pld-linux.org>
-References: <1130999620.4680.28.camel@gaston> <43751182.1020009@gmail.com>
-	<1131745946.24637.251.camel@gaston>
-	<200511140819.42439.arekm@pld-linux.org>
-Content-Type: text/plain
-Date: Mon, 14 Nov 2005 19:06:10 +1100
-Message-Id: <1131955571.5504.150.camel@gaston>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org,
-	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
-Subject: Re: 2.6.14 USB vs. sleep issues
+Return-Path: <aswathavijay@gmail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.193])
+	by ozlabs.org (Postfix) with ESMTP id 7D77B68714
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Nov 2005 21:14:41 +1100 (EST)
+Received: by zproxy.gmail.com with SMTP id j2so1119650nzf
+	for <linuxppc-dev@ozlabs.org>; Mon, 14 Nov 2005 02:14:32 -0800 (PST)
+Message-ID: <5f87992f0511140208r4ea22462n9f1482c11ec742d8@mail.gmail.com>
+Date: Mon, 14 Nov 2005 15:38:15 +0530
+From: Vijayakumar Ramalingam <aswathavijay@gmail.com>
+To: linuxppc-dev@ozlabs.org
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_3907_13499843.1131962895686"
+Subject: Steps to upgrade a Linux 2.6.7 kernel to 64 bit kernel
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,16 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2005-11-14 at 08:19 +0100, Arkadiusz Miskiewicz wrote:
-> On Friday 11 November 2005 22:52, Benjamin Herrenschmidt wrote:
-> > The latest patch that is candidate for upstream is:
-> 
-> Oopsed for one pld user in a way shown in attachment after connecting usb 
-> device while laptop (recent ibook g4 afaik) was in sleep and then waking it 
-> up. That was with 2.6.14.2+your patch.
+------=_Part_3907_13499843.1131962895686
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Ok, so there are still unresolved issues in the USB layer, which doesn't
-surprise me. I'm trying to work with the USB folks to get those resolved
-in 2.6.15 at least, we'll see if I succeed...
+ Hi all,
+ I want to build a 64 bit ppc kernel from 32 bit ppc-linux kernel 2.6.7
+  I want to know how it can be done & what else to be taken care?
+ Thanks
+Vijay
 
-Ben.
+------=_Part_3907_13499843.1131962895686
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+<div>
+<div>Hi all,</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp; I&nbsp;want to build a 64 bit ppc kernel from=
+&nbsp;32 bit ppc-linux kernel 2.6.7</div>
+<div>&nbsp;</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I want to know how it can be done &amp; =
+what else to be taken care?</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+<div>Thanks</div>
+<div>Vijay</div></div>
+
+------=_Part_3907_13499843.1131962895686--
