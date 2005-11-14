@@ -1,19 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@gate.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 738D468748
-	for <linuxppc-dev@ozlabs.org>; Tue, 15 Nov 2005 08:03:40 +1100 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mikael Pettersson <mikpe@user.it.uu.se>
-In-Reply-To: <17272.46529.847423.310952@alkaid.it.uu.se>
-References: <17272.46529.847423.310952@alkaid.it.uu.se>
-Content-Type: text/plain
-Date: Tue, 15 Nov 2005 08:03:00 +1100
-Message-Id: <1132002180.5504.206.camel@gaston>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.15-rc1 fails to boot on eMac
+	by ozlabs.org (Postfix) with ESMTP id 5440C68754
+	for <linuxppc-dev@ozlabs.org>; Tue, 15 Nov 2005 10:04:00 +1100 (EST)
+Date: Mon, 14 Nov 2005 17:01:43 -0600 (CST)
+From: Kumar Gala <galak@gate.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Message-ID: <Pine.LNX.4.44.0511141655560.8331-100000@gate.crashing.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: michael@ellerman.id.au, linuxppc-dev@ozlabs.org,
+	linuxppc64@gate.crashing.org
+Subject: asm-ppc/page.h vs asm-powerpc/page.h
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,11 +22,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2005-11-14 at 17:05 +0100, Mikael Pettersson wrote:
-> Linux kernel 2.6.15-rc1 (vanilla, not patched, compiled with
-> gcc-3.4.4) refuses to boot on my Apple eMac (1.25GHz G4). After
-> yaboot has loaded the kernel the output on the console is:
+Guys, what's going on here.
 
-Yup, there is something wrong, I'm still investigating.
+Why haven't we removed asm-ppc/page.h?
 
-Ben.
+When I build ARCH=powerpc I get asm-powerpc/page.h, which doesn't build on 
+85xx since page_to_virt is missing.
+
+Any reason we are keeping around asm-ppc/page.h and causing this 
+confusion?
+
+- kumar
