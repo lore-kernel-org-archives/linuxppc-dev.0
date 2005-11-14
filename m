@@ -1,19 +1,34 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 0592D68722
+Return-Path: <hubert.loewenguth@thales-bm.com>
+Received: from thsmsgxrt11p.thalesgroup.com (thsmsgxrt11p.thalesgroup.com
+	[192.54.144.134]) by ozlabs.org (Postfix) with ESMTP id 6F7B168726
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 14 Nov 2005 22:36:28 +1100 (EST)
-To: Sette Agostino <Agostino.Sette@siemens.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 14 Nov 2005 12:26:54 +0100."
-	<69DF49BE936F4441980EC1D59F0ADC2F010ADBDD@aqlby02a.siemens.it>
-Date: Mon, 14 Nov 2005 12:36:26 +0100
-Sender: wd@denx.de
-Message-Id: <20051114113626.89CE5352568@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: PPCBoot 2.0.0 Errors 
+	Tue, 15 Nov 2005 04:41:31 +1100 (EST)
+Received: from thsmsgirt22p.corp.thales (unknown [10.33.231.6])
+	by thsmsgxrt11p.thalesgroup.com (Postfix) with ESMTP id 043AE3FD0B
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 14 Nov 2005 18:34:24 +0100 (CET)
+Received: from thsmsgirt11p-out.corp.thales (10.33.231.1) by
+	thsmsgirt22p.corp.thales (7.2.055.4)
+	id 4378970900008308 for linuxppc-embedded@ozlabs.org;
+	Mon, 14 Nov 2005 18:34:20 +0100
+Received: from thsmsgiav11p.corp.thales (unknown [10.33.231.31])
+	by thsmsgirt11p-out.corp.thales (Postfix) with SMTP id E85007400A
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 14 Nov 2005 18:34:23 +0100 (CET)
+Received: from cnfplex.tbm.fr.thales (unknown [10.33.13.187])
+	by thsmsgirt11p.corp.thales (Postfix) with ESMTP id D1EAD3C004
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 14 Nov 2005 18:34:23 +0100 (CET)
+Received: from [178.1.60.149] (178.1.60.149) by cnfplex.tbm.fr.thales (NPlex
+	6.5.026) id 4372EBBD00002FB9 for linuxppc-embedded@ozlabs.org;
+	Mon, 14 Nov 2005 18:34:23 +0100
+Message-ID: <4378CAA8.5080808@thales-bm.com>
+Date: Mon, 14 Nov 2005 18:34:32 +0100
+From: hubert loewenguth <hubert.loewenguth@thales-bm.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: MPC8260 fcc_enet transmit timed out
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,24 +39,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <69DF49BE936F4441980EC1D59F0ADC2F010ADBDD@aqlby02a.siemens.it> you wrote:
-> 
-> Now I have the U-Boot for MPC859, but I am not sure this line is
-> correct
+Hello to the community
 
-I will not continue to answer your U-Boot  questions  on  this  list,
-where  they  are  off  topic. Please post on the u-boot-users mailing
-list instead.
+After having searched more than a week to correct my problem, I have 
+finally decided to try to find some help :
 
-Also, make sure to use a more appropriate Subject: line.
+- I have a board with a MPC8260 (HIP 3 C.2), with three PHY chipset : 
+LXT971A from intel
+- The MII  lines MDC and MDIO are present, but I have no PHY interrupt line
+=> so I have to configure my PHY and the fcc_enet.c drivers to be in 
+half-duplex mode
+- I use the 2.4.20 linux kernel
 
-Best regards,
+Every thing works very fine, everything is ok and the TCP/IP ethernet 
+communication works fine (telnet, ftp, udp ....)
+BUT if I plug / unplug the ethernet link numerous times during TCP 
+traffic,the  fcc_enet.c driver enter in an "infernal loop" and prints 
+continuously :
 
-Wolfgang Denk
+/NETDEV WATCHDOG: eth0: transmit timed out
+eth0: transmit timed out.
+ Ring data dump: cur_tx c02b60b8 (full) cur_rx c02b7098.
+ Tx @base c02b60a0 :
+1c00 05ea 014f786a
+1c00 05ea 013ce06a
+1c00 05ea 013ce86a
+........
+/
+And never exit from this infernal loop.
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-You Earth people glorified organized violence  for  forty  centuries.
-But you imprison those who employ it privately.
-	-- Spock, "Dagger of the Mind", stardate 2715.1
+I have found some personns in this mailling list who has encounter a 
+problem wich seems similar:
+
+http://ozlabs.org/pipermail/linuxppc-embedded/2005-January/016539.html
+http://ozlabs.org/pipermail/linuxppc-embedded/2001-December/005714.html
+
+I really don't find what can be the origin of my problem:
+- I don't succeed to reproduce it in full duplex mode (using a full 
+duplex link and configuring the drivers and the PHY in full duplex)
+- I have verified the pin configuration numerous times, the routing of 
+clock signals also....
+- I have not  applied  a MPC8260  microcode patch, I will try it but I 
+don't think there is a patch wich correct it
+
+Is there any personn who has already encounter this matter ?
+Thanks to the community for any help
+
+     
