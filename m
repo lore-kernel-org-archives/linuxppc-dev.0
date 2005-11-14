@@ -1,18 +1,19 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 636D868732
+Return-Path: <scop@digitel.com.br>
+Received: from cosmos.digitel.com.br (cosmos.digitel.com.br [200.198.105.42])
+	by ozlabs.org (Postfix) with ESMTP id 8392568704
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 Nov 2005 06:47:38 +1100 (EST)
-Date: Mon, 14 Nov 2005 12:38:21 -0200
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Message-ID: <20051114143821.GA28852@logos.cnet>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: obi@saftware.de, Florian Schirmer <jolt@tuxbox.org>, carjay@gmx.de
-Subject: [PATCH] m8xx_wdt: software watchdog reset/interrupt select
+	Tue, 15 Nov 2005 07:13:00 +1100 (EST)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Ricardo Scop <scop@digitel.com.br>
+To: hubert loewenguth <hubert.loewenguth@thales-bm.com>,
+	linuxppc-embedded@ozlabs.org
+Date: Mon, 14 Nov 2005 17:53:52 -0200
+References: <4378CAA8.5080808@thales-bm.com>
+In-Reply-To: <4378CAA8.5080808@thales-bm.com>
+MIME-Version: 1.0
+Message-Id: <200511141753.52832.scop@digitel.com.br>
+Subject: Re: MPC8260 fcc_enet transmit timed out
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,180 +24,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Hi, Hubert
 
-Currently the mpc8xx_wdt driver installs an IRQ handler for
-PIT_INTERRUPT (SIU_LEVEL0, irq 1) to service the WDT until a userspace
-watchdog daemon takes over after boot.
+On Monday 14 November 2005 15:34, hubert loewenguth wrote:
+> Hello to the community
+>
+> After having searched more than a week to correct my problem, I have
+> finally decided to try to find some help :
+>
+> - I have a board with a MPC8260 (HIP 3 C.2), with three PHY chipset :
+> LXT971A from intel
+> - The MII  lines MDC and MDIO are present, but I have no PHY interrupt =
+line
+> =3D> so I have to configure my PHY and the fcc_enet.c drivers to be in
+> half-duplex mode
+> - I use the 2.4.20 linux kernel
+                  ^^
+                  You could try a newer version, maybe the problem is alr=
+eady=20
+gone.
 
-However, if the "software watchdog reset/interrupt select" (SWRI) bit of
-SYPCR register is set, no interrupt is generated. In that configuration
-(the default) HRESET signal is generated if the WDT timeout expires,
-without kernel notification.
+HTH,
 
-The following patch creates a kernel timer to service the WDT and rearm
-itself in case this configuration is detected, making it possible to
-boot the system with the watchdog turned on. The timer is shutdown
-once the userspace daemon open's the device.
+--=20
+Ricardo Scop.
 
-Note: From my reading of the documentation, even if the SWRI bit is
-unset (interrupt select mode), an NMI at IRQ0 should cause the system to
-jump to exception vector 0x100, resetting the system.
-
-So I'm wondering if the interrupt mode ever worked?
-
-
---- ../git/linux-2.6/arch/ppc/syslib/m8xx_wdt.c	2005-11-08 11:38:39.000000000 -0600
-+++ linux-2.6-git-wednov02/arch/ppc/syslib/m8xx_wdt.c	2005-11-14 10:36:53.000000000 -0600
-@@ -45,35 +45,18 @@
- 	return IRQ_HANDLED;
- }
- 
--void __init m8xx_wdt_handler_install(bd_t * binfo)
-+#define SYPCR_SWP 0x1
-+#define SYPCR_SWRI 0x2
-+#define SYPCR_SWE 0x4
-+
-+/* software watchdog reset/interrupt select */
-+int m8xx_wdt_keepalive_mode = 0;
-+
-+void __init m8xx_wdt_install_irq(volatile immap_t *imap, bd_t *binfo)
- {
--	volatile immap_t *imap = (volatile immap_t *)IMAP_ADDR;
- 	u32 pitc;
--	u32 sypcr;
- 	u32 pitrtclk;
- 
--	sypcr = in_be32(&imap->im_siu_conf.sc_sypcr);
--
--	if (!(sypcr & 0x04)) {
--		printk(KERN_NOTICE "m8xx_wdt: wdt disabled (SYPCR: 0x%08X)\n",
--		       sypcr);
--		return;
--	}
--
--	m8xx_wdt_reset();
--
--	printk(KERN_NOTICE
--	       "m8xx_wdt: active wdt found (SWTC: 0x%04X, SWP: 0x%01X)\n",
--	       (sypcr >> 16), sypcr & 0x01);
--
--	wdt_timeout = (sypcr >> 16) & 0xFFFF;
--
--	if (!wdt_timeout)
--		wdt_timeout = 0xFFFF;
--
--	if (sypcr & 0x01)
--		wdt_timeout *= 2048;
--
- 	/*
- 	 * Fire trigger if half of the wdt ticked down 
- 	 */
-@@ -98,6 +81,66 @@
- 	printk(KERN_NOTICE
- 	       "m8xx_wdt: keep-alive trigger installed (PITC: 0x%04X)\n", pitc);
- 
-+}
-+
-+static void m8xx_wdt_timer_func(unsigned long data);
-+
-+static struct timer_list m8xx_wdt_timer =
-+	TIMER_INITIALIZER(m8xx_wdt_timer_func, 0, 0);
-+
-+void m8xx_wdt_stop_timer(void)
-+{
-+	del_timer(&m8xx_wdt_timer);
-+}
-+
-+static void m8xx_wdt_timer_func(unsigned long data)
-+{
-+	m8xx_wdt_reset();
-+	m8xx_wdt_timer.expires = jiffies + 25;
-+	add_timer(&m8xx_wdt_timer);
-+}
-+
-+void m8xx_wdt_install_timer(volatile immap_t *imap)
-+{
-+	m8xx_wdt_timer.expires = jiffies + 25;
-+	add_timer(&m8xx_wdt_timer);
-+}
-+
-+void __init m8xx_wdt_handler_install(bd_t * binfo)
-+{
-+	volatile immap_t *imap = (volatile immap_t *)IMAP_ADDR;
-+	u32 sypcr;
-+
-+	sypcr = in_be32(&imap->im_siu_conf.sc_sypcr);
-+
-+	printk(KERN_NOTICE "m8xx_wdt SYPCR: 0x%08X)\n", sypcr);
-+
-+	if (!(sypcr & SYPCR_SWE)) {
-+		printk(KERN_NOTICE "m8xx_wdt: wdt disabled (SYPCR: 0x%08X)\n",
-+		       sypcr);
-+		return;
-+	}
-+
-+	m8xx_wdt_reset();
-+
-+	printk(KERN_NOTICE
-+	       "m8xx_wdt: active wdt found (SWTC: 0x%04X, SWP: 0x%01X)\n",
-+	       (sypcr >> 16), sypcr & SYPCR_SWP);
-+
-+	wdt_timeout = (sypcr >> 16) & 0xFFFF;
-+
-+	if (!wdt_timeout)
-+		wdt_timeout = 0xFFFF;
-+
-+	if (sypcr & SYPCR_SWP)
-+		wdt_timeout *= 2048;
-+
-+	m8xx_wdt_keepalive_mode = sypcr & SYPCR_SWRI;
-+	if (m8xx_wdt_keepalive_mode)
-+		m8xx_wdt_install_timer(imap);
-+	else
-+		m8xx_wdt_install_irq(imap, binfo);
-+
- 	wdt_timeout /= binfo->bi_intfreq;
- }
- 
---- ../git/linux-2.6/arch/ppc/syslib/m8xx_wdt.h	2005-10-10 18:06:12.000000000 -0500
-+++ linux-2.6-git-wednov02/arch/ppc/syslib/m8xx_wdt.h	2005-11-14 10:37:39.000000000 -0600
-@@ -9,8 +9,12 @@
- #ifndef _PPC_SYSLIB_M8XX_WDT_H
- #define _PPC_SYSLIB_M8XX_WDT_H
- 
-+extern int m8xx_wdt_keepalive_mode;
-+
- extern void m8xx_wdt_handler_install(bd_t * binfo);
- extern int m8xx_wdt_get_timeout(void);
- extern void m8xx_wdt_reset(void);
-+extern void m8xx_wdt_install_timer(volatile immap_t *imap);
-+extern void m8xx_wdt_stop_timer(void);
- 
- #endif				/* _PPC_SYSLIB_M8XX_WDT_H */
---- ../git/linux-2.6/drivers/char/watchdog/mpc8xx_wdt.c	2005-10-10 18:06:15.000000000 -0500
-+++ linux-2.6-git-wednov02/drivers/char/watchdog/mpc8xx_wdt.c	2005-11-14 10:37:15.000000000 -0600
-@@ -27,7 +27,10 @@
- {
- 	volatile immap_t *imap = (volatile immap_t *)IMAP_ADDR;
- 
--	imap->im_sit.sit_piscr &= ~(PISCR_PIE | PISCR_PTE);
-+	if (m8xx_wdt_keepalive_mode)
-+		m8xx_wdt_stop_timer();
-+	else
-+		imap->im_sit.sit_piscr &= ~(PISCR_PIE | PISCR_PTE);
- 
- 	printk(KERN_NOTICE "mpc8xx_wdt: keep-alive handler deactivated\n");
- }
-@@ -36,7 +39,10 @@
- {
- 	volatile immap_t *imap = (volatile immap_t *)IMAP_ADDR;
- 
--	imap->im_sit.sit_piscr |= PISCR_PIE | PISCR_PTE;
-+	if (m8xx_wdt_keepalive_mode)
-+		m8xx_wdt_install_timer(imap);
-+	else
-+		imap->im_sit.sit_piscr |= PISCR_PIE | PISCR_PTE;
- 
- 	printk(KERN_NOTICE "mpc8xx_wdt: keep-alive handler activated\n");
- }
+        \|/
+    ___ -*-
+   (@ @)/|\
+  /  V  \|  R SCOP Consult.
+ /(     )\  Linux-based communications
+--^^---^^+------------------------------
+rscop@matrix.com.br
++55 51 999-36-777
+Porto Alegre, RS - BRazil
+--
+P. S.: "If you don't have time to do it right, when will you have time
+to do it over?"  -- Penny Hines =20
