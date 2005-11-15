@@ -1,22 +1,19 @@
 Return-Path: <jolt@tuxbox.org>
 Received: from fiebig.biz (loadbalancer1.core.taytron.net [80.190.249.152])
-	by ozlabs.org (Postfix) with ESMTP id 4099368776
+	by ozlabs.org (Postfix) with ESMTP id 856B96877D
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 Nov 2005 17:26:28 +1100 (EST)
-Message-ID: <43797C29.3000605@tuxbox.org>
-Date: Tue, 15 Nov 2005 07:11:53 +0100
+	Tue, 15 Nov 2005 17:41:42 +1100 (EST)
+Message-ID: <43798327.70305@tuxbox.org>
+Date: Tue, 15 Nov 2005 07:41:43 +0100
 From: Florian Schirmer <jolt@tuxbox.org>
 MIME-Version: 1.0
 To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
 References: <20051114143821.GA28852@logos.cnet>
-	<9E7D3814-47AB-4601-A565-2530C3A4BEE0@kernel.crashing.org>
-	<20051114155736.GB29411@logos.cnet>
-	<20051114160302.GC29411@logos.cnet>
-In-Reply-To: <20051114160302.GC29411@logos.cnet>
+In-Reply-To: <20051114143821.GA28852@logos.cnet>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: obi@saftware.de, carjay@gmx.de,
 	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] m8xx_wdt: software watchdog reset/interrupt select\
+Subject: Re: [PATCH] m8xx_wdt: software watchdog reset/interrupt select
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,14 +26,32 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 Hi,
 
-> Actually, drivers/char/watchdog/mpc8xx_wdt.c is a module, while
-> some of the initialization code must reside in the kernel image.
+> Note: From my reading of the documentation, even if the SWRI bit is
+> unset (interrupt select mode), an NMI at IRQ0 should cause the system to
+> jump to exception vector 0x100, resetting the system.
 > 
-> Thats the reason for the split - not sure if merging the two
-> files is worth?
+> So I'm wondering if the interrupt mode ever worked?
 
-If you have a short timeout (like the 2 secs we had) then you need to 
-have the handler ready long before the module could be loaded.
+Never tried the interrupt mode. IMHO doesn't make much sense for a 
+watchdog. Why don't you simply set SWRI?
+
+
+> +static void m8xx_wdt_timer_func(unsigned long data)
+> +{
+> +	m8xx_wdt_reset();
+> +	m8xx_wdt_timer.expires = jiffies + 25;
+> +	add_timer(&m8xx_wdt_timer);
+> +}
+> +
+> +void m8xx_wdt_install_timer(volatile immap_t *imap)
+> +{
+> +	m8xx_wdt_timer.expires = jiffies + 25;
+> +	add_timer(&m8xx_wdt_timer);
+> +}
+
+m8xx_wdt_install_timer doesn't need imap and you could call it from 
+m8xx_wdt_timer_func to re-engange the timer resulting in less duplicated 
+code. Just a cosmetic thing though.
 
 Best,
    Florian
