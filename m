@@ -1,12 +1,13 @@
-Return-Path: <becky.bruce@freescale.com>
-In-Reply-To: <1132001719.5504.204.camel@gaston>
+Return-Path: <benh@kernel.crashing.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Becky Bruce <becky.bruce@freescale.com>
+In-Reply-To: <269d7972781989e47cc114f8e2124b80@freescale.com>
 References: <1132001719.5504.204.camel@gaston>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <269d7972781989e47cc114f8e2124b80@freescale.com>
-From: Becky Bruce <becky.bruce@freescale.com>
-Date: Mon, 14 Nov 2005 23:10:08 -0600
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	<269d7972781989e47cc114f8e2124b80@freescale.com>
+Content-Type: text/plain
+Date: Tue, 15 Nov 2005 16:35:09 +1100
+Message-Id: <1132032910.23979.6.camel@gaston>
+Mime-Version: 1.0
 Cc: linuxppc64-dev <linuxppc64-dev@ozlabs.org>,
 	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 Subject: Re: [PATCH] powerpc: Merge align.c
@@ -19,30 +20,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ben,
+On Mon, 2005-11-14 at 23:10 -0600, Becky Bruce wrote:
+> Ben,
+> 
+> I've just done some basic testing of lmw/stmw, lwz/stw, lhx/sth, 
+> lfs/stfs, and lfd/stfd misaligned across a doubleword boundary, and 
+> everything looks good so far.   I'll check out the byte reversals and a 
+> few other forms tomorrow.
 
-I've just done some basic testing of lmw/stmw, lwz/stw, lhx/sth,=20
-lfs/stfs, and lfd/stfd misaligned across a doubleword boundary, and=20
-everything looks good so far.   I'll check out the byte reversals and a=20=
+Excellent, thanks ! BTW. Make sure you test these one CPUs that actually
+trap on misaligned accesses :) Best is probably to do the misaligned
+access accross a page boundary, that's what most CPUs can do.
 
-few other forms tomorrow.
-
-Cheers,
-B
-
-On Nov 14, 2005, at 2:55 PM, Benjamin Herrenschmidt wrote:
-
-> On Mon, 2005-11-14 at 13:53 -0600, Becky Bruce wrote:
-> > Ben,
-> >
-> > I talked to Kumar about this a little bit (I had started a merge of
-> > this file, but got distracted!) and he doesn't have any test cases.=A0=
-
-> > I'll put something together and test this out on some of the 32-bit
-> > systems I have here in my lab.=A0 It won't be complete, but it will =
-be
-> > something.......
->
-> Thanks,
-> Ben.
->
+Ben.
