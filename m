@@ -1,15 +1,14 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 0048E68753
-	for <linuxppc-dev@ozlabs.org>; Wed, 16 Nov 2005 04:05:32 +1100 (EST)
-Date: Tue, 15 Nov 2005 09:05:14 -0800
-To: paulus@samba.org
-Message-ID: <20051115170514.GA7241@pb15.lixom.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: Olof Johansson <olof@lixom.net>
-Cc: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: add new powerbooks to feature table
+Return-Path: <galak@gate.crashing.org>
+Date: Tue, 15 Nov 2005 11:03:24 -0600 (CST)
+From: Kumar Gala <galak@gate.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Message-ID: <Pine.LNX.4.44.0511151102540.25366-100000@gate.crashing.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc64-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
+	linuxppc-embedded@ozlabs.org
+Subject: [PATCH] powerpc: replace page_to_virt() with lowmem_page_address()
+ for Book-E
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,31 +18,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+page_to_virt and lowmem_page_address provided equiavlent functionality
+so use the more standard lowmem_page_address
 
-The previous PowerBook patch didn't contain the feature table updates
-for ARCH=powerpc. Here they are.
+This also addresses build issue in ARCH=powerpc since page_to_virt()
+has been removed from include/asm-powerpc/page.h
 
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+---
+commit bd544f8830a563d50d58970c9360379efc555641
+tree 887891cdf18bef998f5b5a5ffff9b879ff3591db
+parent 1b5b521b837ee0a9366a0750d915e09566229be4
+author Kumar Gala <galak@kernel.crashing.org> Tue, 15 Nov 2005 11:03:34 -0600
+committer Kumar Gala <galak@kernel.crashing.org> Tue, 15 Nov 2005 11:03:34 -0600
 
+ include/asm-ppc/pgalloc.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Index: linux-2.6/arch/powerpc/platforms/powermac/feature.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/powermac/feature.c	2005-11-15 00:05:28.000000000 -0800
-+++ linux-2.6/arch/powerpc/platforms/powermac/feature.c	2005-11-15 00:05:59.000000000 -0800
-@@ -2362,6 +2362,14 @@ static struct pmac_mb_def pmac_mb_defs[]
- 		PMAC_TYPE_UNKNOWN_INTREPID,	intrepid_features,
- 		PMAC_MB_MAY_SLEEP | PMAC_MB_HAS_FW_POWER | PMAC_MB_MOBILE,
- 	},
-+	{	"PowerBook5,8",			"PowerBook G4 15\"",
-+		PMAC_TYPE_UNKNOWN_INTREPID,	intrepid_features,
-+		PMAC_MB_MAY_SLEEP | PMAC_MB_HAS_FW_POWER | PMAC_MB_MOBILE,
-+	},
-+	{	"PowerBook5,9",			"PowerBook G4 17\"",
-+		PMAC_TYPE_UNKNOWN_INTREPID,	intrepid_features,
-+		PMAC_MB_MAY_SLEEP | PMAC_MB_HAS_FW_POWER | PMAC_MB_MOBILE,
-+	},
- 	{	"PowerBook6,1",			"PowerBook G4 12\"",
- 		PMAC_TYPE_UNKNOWN_INTREPID,	intrepid_features,
- 		PMAC_MB_MAY_SLEEP | PMAC_MB_HAS_FW_POWER | PMAC_MB_MOBILE,
+diff --git a/include/asm-ppc/pgalloc.h b/include/asm-ppc/pgalloc.h
+index 931b6de..bdefd1c 100644
+--- a/include/asm-ppc/pgalloc.h
++++ b/include/asm-ppc/pgalloc.h
+@@ -28,7 +28,7 @@ extern void pgd_free(pgd_t *pgd);
+ #define pmd_populate_kernel(mm, pmd, pte)	\
+ 		(pmd_val(*(pmd)) = (unsigned long)pte | _PMD_PRESENT)
+ #define pmd_populate(mm, pmd, pte)	\
+-		(pmd_val(*(pmd)) = (unsigned long)page_to_virt(pte) | _PMD_PRESENT)
++		(pmd_val(*(pmd)) = (unsigned long)lowmem_page_address(pte) | _PMD_PRESENT)
+ #endif
+ 
+ extern pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long addr);
