@@ -1,21 +1,28 @@
-Return-Path: <avolkov@varma-el.com>
-Received: from amanaus.varma-el.com (unknown [195.144.244.147])
+Return-Path: <rmk+linuxppc-embedded=ozlabs.org@arm.linux.org.uk>
+Received: from parcelfarce.linux.theplanet.co.uk
+	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.varma-el.com",
-	Issuer "mail.varma-el.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 3AD2D6875C
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 348EB6878F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Nov 2005 05:54:37 +1100 (EST)
-Message-ID: <437A2EE8.4050404@varma-el.com>
-Date: Tue, 15 Nov 2005 21:54:32 +0300
-From: Andrey Volkov <avolkov@varma-el.com>
-MIME-Version: 1.0
-To: Russell King <rmk@arm.linux.org.uk>
-Content-Type: multipart/mixed; boundary="------------030104070109080504070906"
+	Wed, 16 Nov 2005 06:07:33 +1100 (EST)
+Received: from [2002:d412:e8ba::1] (helo=caramon.arm.linux.org.uk)
+	by parcelfarce.linux.theplanet.co.uk with esmtpsa
+	(TLSv1:DES-CBC3-SHA:168) (Exim 4.43) id 1Ec69G-0001jA-KO
+	for linuxppc-embedded@ozlabs.org; Tue, 15 Nov 2005 19:07:19 +0000
+Date: Tue, 15 Nov 2005 19:06:55 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Andrey Volkov <avolkov@varma-el.com>
+Message-ID: <20051115190655.GA10892@flint.arm.linux.org.uk>
+References: <437A2EE8.4050404@varma-el.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <437A2EE8.4050404@varma-el.com>
+Sender: Russell King <rmk@arm.linux.org.uk>
 Cc: linux-kernel@vger.kernel.org,
 	ML linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH 1/1 kernel 2.6.15-rc1] Fix copy-paste bug after _Convert
- platform drivers to use_ (again)
+Subject: Re: [PATCH 1/1 kernel 2.6.15-rc1] Fix copy-paste bug after _Convert
+	platform drivers to use_ (again)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,46 +33,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------030104070109080504070906
-Content-Type: text/plain; charset=KOI8-R
-Content-Transfer-Encoding: 7bit
+On Tue, Nov 15, 2005 at 09:54:32PM +0300, Andrey Volkov wrote:
+> Hello Russell,
+> 
+> I fear it is not a last patch of such kind :(.
+> Please recheck places where you are changed
+> pdev<->dev.
 
-Hello Russell,
-
-I fear it is not a last patch of such kind :(.
-Please recheck places where you are changed
-pdev<->dev.
+Either that will have to wait a number of days or someone else will
+have to do that.  I'm sorry but I'm rather unwell and in no fit state
+to do anything major with kernels atm.
 
 -- 
-Regards
-Andrey Volkov
-
-
---------------030104070109080504070906
-Content-Type: text/plain;
- name="ohci-ohci-ppc-soc.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="ohci-ohci-ppc-soc.diff"
-
-Fix copy-paste bug in ohci-ppc-soc.c(ohci_hcd_ppc_soc_drv_remove)
-
-Sign-off-by: Andrey Volkov <avolkov@varma-el.com>
----
-
-diff --git a/drivers/usb/host/ohci-ppc-soc.c b/drivers/usb/host/ohci-ppc-soc.c
-index 1875576..2ec6a78 100644
---- a/drivers/usb/host/ohci-ppc-soc.c
-+++ b/drivers/usb/host/ohci-ppc-soc.c
-@@ -185,7 +185,7 @@ static int ohci_hcd_ppc_soc_drv_probe(st
- 
- static int ohci_hcd_ppc_soc_drv_remove(struct platform_device *pdev)
- {
--	struct usb_hcd *hcd = platform_get_drvdata(dev);
-+	struct usb_hcd *hcd = platform_get_drvdata(pdev);
- 
- 	usb_hcd_ppc_soc_remove(hcd, pdev);
- 	return 0;
-
---------------030104070109080504070906--
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:  2.6 Serial core
