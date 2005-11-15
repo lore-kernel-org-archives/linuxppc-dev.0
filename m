@@ -1,11 +1,19 @@
-Return-Path: <cfriesen@nortel.com>
-Message-ID: <437A5049.9090308@nortel.com>
-Date: Tue, 15 Nov 2005 15:16:57 -0600
-From: "Christopher Friesen" <cfriesen@nortel.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 142FC687BB
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 16 Nov 2005 09:44:15 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc64-dev@ozlabs.org
+Date: Tue, 15 Nov 2005 23:38:53 +0100
+References: <437A5049.9090308@nortel.com>
+In-Reply-To: <437A5049.9090308@nortel.com>
 MIME-Version: 1.0
-To: linuxppc64-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Subject: modify the cache-inhibit and guard bits from userspace?
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200511152338.53238.arnd@arndb.de>
+Cc: Christopher Friesen <cfriesen@nortel.com>, linuxppc-embedded@ozlabs.org
+Subject: Re: modify the cache-inhibit and guard bits from userspace?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -16,23 +24,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Am Dienstag 15 November 2005 22:16 schrieb Christopher Friesen:
+> What's the most logical way for me to do this? =A0Do I extend mprotect()
+> to support additional flags?
+>
+> Has anyone done this before? =A0I didn't find anything in google.
+> Currently the guard bit seems to only be used for ioremap() and in
+> __pci_mmap_set_pgprot() if the memory doesn't support write combining.
 
-We're running a dual-970 blade, based on a modified 2.6.10.
+I have seen an earlier patch that modifies madvise to do this, which seems
+a little saner than mprotect, although they can probably both be implemented
+in a similar way.
 
-We have an application that does lots of random data fetches over a 
-fairly large data set (a few GB) contained entirely in RAM, and the 
-performance guys think that we may be spending time in unnecessary 
-hardware prefetches and would like me to provide them a mechanism to 
-individually specify the cache-inhibited and guard bits from userspace 
-so that they can try to fine-tune their performance.
+Alternatively, you could write a new file system similar to hugetlbfs and s=
+et=20
+the cache-inhibit bit in its mmap function.
 
-What's the most logical way for me to do this?  Do I extend mprotect() 
-to support additional flags?
-
-Has anyone done this before?  I didn't find anything in google. 
-Currently the guard bit seems to only be used for ioremap() and in 
-__pci_mmap_set_pgprot() if the memory doesn't support write combining.
-
-Thanks,
-
-Chris
+	Arnd <><
