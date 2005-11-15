@@ -1,24 +1,19 @@
-Return-Path: <alebas@televes.com>
-Received: from tvesnat.televes.com (unknown [212.163.42.137])
-	by ozlabs.org (Postfix) with ESMTP id 1DE0E68742
+Return-Path: <joachim.denil@gmail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.204])
+	by ozlabs.org (Postfix) with ESMTP id 4474868747
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 Nov 2005 22:20:48 +1100 (EST)
-Message-ID: <1132056238.4379ceae1564a@webmail.televes.com:443>
-Date: Tue, 15 Nov 2005 13:03:58 +0100
-From: Alexandre BASTOS <alebas@televes.com>
-To: Mike Rapoport <mike@compulab.co.il>
-References: <a79669360510062205v629affb9ga687078f018afae@mail.gmail.com>
-	<200510120859.12362.sr@denx.de> <434CB71E.5000603@compulab.co.il>
-	<200510120927.56692.sr@denx.de>
-	<20051012133414.7f7e2faf.ajz@cambridgebroadband.com>
-	<4365BD71.9010507@compulab.co.il>
-	<1131960060.7748.9.camel@hawk.pwav.net>
-	<43798741.5070604@compulab.co.il>
-In-Reply-To: <43798741.5070604@compulab.co.il>
+	Tue, 15 Nov 2005 23:10:19 +1100 (EST)
+Received: by zproxy.gmail.com with SMTP id x3so1610485nzd
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 15 Nov 2005 04:10:19 -0800 (PST)
+To: <linuxppc-embedded@ozlabs.org>
+Date: Tue, 15 Nov 2005 13:03:51 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC8555 USB host support
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0036_01C5E9E5.073A21C0"
+From: Joachim Denil <joachim.denil@gmail.com>
+Message-ID: <4379ce76.65b4ffc2.2c64.274a@mx.gmail.com>
+Subject: porting linux to new board type
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,87 +24,326 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Mike,
+This is a multi-part message in MIME format.
 
+------=_NextPart_000_0036_01C5E9E5.073A21C0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-> I've opened a project on the SourceForge,
-> http://cpm2usb.sourceforge.net. The file containing patch against
-> 2.6.12.3 can be downloaded at http://sourceforge.net/projects/cpm2usb.
->
-> The driver was developed on MPC8272ADS, but should go as well on 8270
-> since they have the same USB host controller AFAIK.
-> Currently, as far as I tested it works fine with full-speed single
-> device attached through hub, but fails is there are transfers from/to
-> several devices simultaneously.
-> As for the code itself, it's far from being perfect.
+Hi,
+ 
+For an internship I have to port linux to custom made board. I assume I'll
+have to set the memory-map right and make the hardware initialize, set IRQ,
+.. Browsing trough the kernel source I found that all that happens within
+/arch/ppc/platforms and there are separate files for each board. But how do
+I start to write my own code. Can someone give me some pointers or is there
+any documentation on this subject? This is what my board is made of:
+ 
+*	64 Mb SDRAM (a PLD copy's the kernel to this location (0x00000000))
+*	1 MB boot ram (a PLD copy's the boot loader from flash to this
+location at the end of the memory map)
+*	MMC card reader
+*	Flash 8MB (don't have to use it though-> the PLD's use them to copy
+boot loader and kernel there)
+*	Leds that I can use through a PLD-register
+ 
+The processor is a 405Gr processor, 1 UART is connected to a V24 iface.
+The boot loader is a striped version of ppcboot, and is now used to load a
+self written RTOS. So I guess I can use that version.
+ 
+Is there besides this something else I 'll have to adjust? 
+ 
+Thanks,
+ 
+Joachim Denil
+Student @ Karel De Grote hogeschool Antwerpen (Belgium)
 
+------=_NextPart_000_0036_01C5E9E5.073A21C0
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-I have been testing your cpm2usb driver from sourceforge on my
-MPC8272ADS and I couldn't get a usb 2.0 pendrive working.
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
 
-usbcore tries to identify the device with both schemes, old and
-new, but the hcd returns always a timeout. The output from console:
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DProgId content=3DWord.Document>
+<meta name=3DGenerator content=3D"Microsoft Word 11">
+<meta name=3DOriginator content=3D"Microsoft Word 11">
+<link rel=3DFile-List href=3D"cid:filelist.xml@01C5E9E4.DFBFA020">
+<!--[if gte mso 9]><xml>
+ <o:OfficeDocumentSettings>
+  <o:DoNotRelyOnCSS/>
+ </o:OfficeDocumentSettings>
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <w:WordDocument>
+  <w:DontDisplayPageBoundaries/>
+  <w:SpellingState>Clean</w:SpellingState>
+  <w:GrammarState>Clean</w:GrammarState>
+  <w:DocumentKind>DocumentEmail</w:DocumentKind>
+  <w:HyphenationZone>21</w:HyphenationZone>
+  <w:EnvelopeVis/>
+  <w:ValidateAgainstSchemas/>
+  <w:SaveIfXMLInvalid>false</w:SaveIfXMLInvalid>
+  <w:IgnoreMixedContent>false</w:IgnoreMixedContent>
+  <w:AlwaysShowPlaceholderText>false</w:AlwaysShowPlaceholderText>
+  <w:Compatibility>
+   <w:BreakWrappedTables/>
+   <w:SnapToGridInCell/>
+   <w:WrapTextWithPunct/>
+   <w:UseAsianBreakRules/>
+   <w:UseWord2002TableStyleRules/>
+  </w:Compatibility>
+  <w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel>
+ </w:WordDocument>
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <w:LatentStyles DefLockedState=3D"false" LatentStyleCount=3D"156">
+ </w:LatentStyles>
+</xml><![endif]-->
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Wingdings;
+	panose-1:5 0 0 0 0 0 0 0 0 0;
+	mso-font-charset:2;
+	mso-generic-font-family:auto;
+	mso-font-pitch:variable;
+	mso-font-signature:0 268435456 0 0 -2147483648 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{mso-style-parent:"";
+	margin:0cm;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;
+	text-underline:single;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;
+	text-underline:single;}
+span.E-mailStijl17
+	{mso-style-type:personal-compose;
+	mso-style-noshow:yes;
+	mso-ansi-font-size:10.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:Arial;
+	mso-ascii-font-family:Arial;
+	mso-hansi-font-family:Arial;
+	mso-bidi-font-family:Arial;
+	color:windowtext;}
+span.SpellE
+	{mso-style-name:"";
+	mso-spl-e:yes;}
+span.GramE
+	{mso-style-name:"";
+	mso-gram-e:yes;}
+@page Section1
+	{size:595.3pt 841.9pt;
+	margin:70.85pt 70.85pt 70.85pt 70.85pt;
+	mso-header-margin:35.4pt;
+	mso-footer-margin:35.4pt;
+	mso-paper-source:0;}
+div.Section1
+	{page:Section1;}
+ /* List Definitions */
+ @list l0
+	{mso-list-id:950630662;
+	mso-list-type:hybrid;
+	mso-list-template-ids:1501716094 1491915954 68354051 68354053 68354049 =
+68354051 68354053 68354049 68354051 68354053;}
+@list l0:level1
+	{mso-level-start-at:0;
+	mso-level-number-format:bullet;
+	mso-level-text:\F0B7;
+	mso-level-tab-stop:36.0pt;
+	mso-level-number-position:left;
+	text-indent:-18.0pt;
+	font-family:Symbol;
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:Arial;}
+ol
+	{margin-bottom:0cm;}
+ul
+	{margin-bottom:0cm;}
+-->
+</style>
+<!--[if gte mso 10]>
+<style>
+ /* Style Definitions */=20
+ table.MsoNormalTable
+	{mso-style-name:Standaardtabel;
+	mso-tstyle-rowband-size:0;
+	mso-tstyle-colband-size:0;
+	mso-style-noshow:yes;
+	mso-style-parent:"";
+	mso-padding-alt:0cm 5.4pt 0cm 5.4pt;
+	mso-para-margin:0cm;
+	mso-para-margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-ansi-language:#0400;
+	mso-fareast-language:#0400;
+	mso-bidi-language:#0400;}
+</style>
+<![endif]-->
+</head>
 
-# modprobe usbcore
-usbcore: registered new driver usbfs
-usbcore: registered new driver hub
+<body lang=3DNL link=3Dblue vlink=3Dpurple =
+style=3D'tab-interval:35.4pt'>
 
-# modprobe m82xx-hcd
-=> driver mpc82xx-hcd, 2005
-mpc82xx-hcd mpc82xx-hcd.3: PQ2 intergrated USB controller v0.1
-mpc82xx-hcd mpc82xx-hcd.3: new USB bus registered, assigned bus number 1
-usb usb1: Product: PQ2 intergrated USB controller v0.1
-usb usb1: Manufacturer: Linux 2.6.12 mpc82xx-hcd
-usb usb1: SerialNumber: mpc82xx-hcd.3
-hub 1-0:1.0: USB hub found
-hub 1-0:1.0: 1 port detected
-PQ2USB: debug file creation
+<div class=3DSection1>
 
-[... After pendrive insertion]
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial;mso-ansi-language:EN-GB'>Hi,<o:p></o:p></span></=
+font></p>
 
-usb 1-1: new full speed USB device using mpc82xx-hcd and address 2
-usb 1-1: device descriptor read/64, error -110
-usb 1-1: device descriptor read/64, error -110
-usb 1-1: new full speed USB device using mpc82xx-hcd and address 3
-usb 1-1: device descriptor read/64, error -110
-usb 1-1: device descriptor read/64, error -110
-usb 1-1: new full speed USB device using mpc82xx-hcd and address 4
-usb 1-1: device not accepting address 4, error -110
-usb 1-1: new full speed USB device using mpc82xx-hcd and address 5
-usb 1-1: device not accepting address 5, error -110
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial;mso-ansi-language:EN-GB'><o:p>&nbsp;</o:p></span=
+></font></p>
 
-To compile the driver as a module, I made only a change in "tx_err"
-function from m82xx-hcd.c, which shouldn't be affecting.
-I have also commented out the re-definition of BCSR_ADDR, which is
-already defined to f4500000 in pq2ads.h
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial;mso-ansi-language:EN-GB'>For an internship I =
+have to
+port <span class=3DSpellE>linux</span> to custom made board. I assume =
+I&#8217;ll
+have to set the memory-map right and make the hardware initialize, set =
+<span
+class=3DGramE>IRQ, &#8230;.</span> Browsing trough the kernel source I =
+found that
+all that happens within /arch/<span class=3DSpellE>ppc</span>/platforms =
+and there
+are separate files for each board. But how do I start to write my own =
+code. Can
+someone give me some pointers or is there any documentation on this =
+subject? This
+is what my board is made of:<o:p></o:p></span></font></p>
 
---- m82xx-hcd.c.orig    2005-11-15 12:05:40.547987056 +0100
-+++ m82xx-hcd.c 2005-11-14 18:15:13.000000000 +0100
-@@ -98,7 +98,7 @@
-        hp->usb_clock = USB_CLOCK_PC24_CLK8;
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial;mso-ansi-language:EN-GB'><o:p>&nbsp;</o:p></span=
+></font></p>
 
-        {
--#define BCSR_ADDR              ((uint)0xf8000000)
-+//#define BCSR_ADDR            ((uint)0xf8000000)
-        volatile uint* bcsr_usb = (volatile uint*)(BCSR_ADDR +
-                                                   BCSR_USB_OFFSET);
+<ul style=3D'margin-top:0cm' type=3Ddisc>
+ <li class=3DMsoNormal style=3D'mso-list:l0 level1 lfo1;tab-stops:list =
+36.0pt'><font
+     size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:10.0pt;font-family:
+     Arial;mso-ansi-language:EN-GB'>64 Mb SDRAM (a PLD copy&#8217;s the =
+kernel
+     to this location (0x00000000))<o:p></o:p></span></font></li>
+ <li class=3DMsoNormal style=3D'mso-list:l0 level1 lfo1;tab-stops:list =
+36.0pt'><font
+     size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:10.0pt;font-family:
+     Arial;mso-ansi-language:EN-GB'>1 MB boot ram (a PLD copy&#8217;s =
+the boot
+     loader from flash to this location at the end of the memory =
+map)<o:p></o:p></span></font></li>
+ <li class=3DMsoNormal style=3D'mso-list:l0 level1 lfo1;tab-stops:list =
+36.0pt'><font
+     size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:10.0pt;font-family:
+     Arial;mso-ansi-language:EN-GB'>MMC card =
+reader<o:p></o:p></span></font></li>
+ <li class=3DMsoNormal style=3D'mso-list:l0 level1 lfo1;tab-stops:list =
+36.0pt'><font
+     size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:10.0pt;font-family:
+     Arial;mso-ansi-language:EN-GB'>Flash 8MB (don&#8217;t have to use =
+it though-&gt;
+     the <span class=3DSpellE>PLD&#8217;s</span> use them to copy boot =
+loader and
+     kernel there)<o:p></o:p></span></font></li>
+ <li class=3DMsoNormal style=3D'mso-list:l0 level1 lfo1;tab-stops:list =
+36.0pt'><span
+     class=3DSpellE><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+     =
+10.0pt;font-family:Arial;mso-ansi-language:EN-GB'>Leds</span></font></spa=
+n><font
+     size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:10.0pt;font-family:
+     Arial;mso-ansi-language:EN-GB'> that I can use through a =
+PLD-register<o:p></o:p></span></font></li>
+</ul>
 
-@@ -281,7 +281,9 @@
- static void tx_err(struct m8xxhci_private *hp, int ber)
- {
-        volatile usbregs_t *usbregs = hp->usbregs;
--       volatile cpm_cpm2_t *cp = cpmp;
-+       //volatile cpm_cpm2_t *cp = cpmp;
-+       volatile cpm2_map_t *immap = (volatile cpm2_map_t *)CPM_MAP_ADDR;
-+       volatile cpm_cpm2_t *cp = &immap->im_cpm;
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial;mso-ansi-language:EN-GB'><o:p>&nbsp;</o:p></span=
+></font></p>
 
-        if ( hp->active_qe )
-                hp->stats.txe[hp->active_qe->qtype]++;
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial;mso-ansi-language:EN-GB'>The processor is a =
+405Gr
+processor, 1 UART is connected to a V24 <span =
+class=3DSpellE>iface</span>.<o:p></o:p></span></font></p>
 
-So, any idea which could be happening? I have little knowledge about usb
-so I am quite lost.
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial;mso-ansi-language:EN-GB'>The boot loader is a =
+striped
+version of <span class=3DSpellE>ppcboot</span>, and is now used to load =
+a self
+written RTOS. So I guess I can use that =
+version.<o:p></o:p></span></font></p>
 
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial;mso-ansi-language:EN-GB'><o:p>&nbsp;</o:p></span=
+></font></p>
 
-Thanks.
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial;mso-ansi-language:EN-GB'>Is there besides this =
+something
+else <span class=3DGramE>I &#8216;<span class=3DSpellE>ll</span></span> =
+have to adjust?
+<o:p></o:p></span></font></p>
 
-Alex BASTOS
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial;mso-ansi-language:EN-GB'><o:p>&nbsp;</o:p></span=
+></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial;mso-ansi-language:EN-GB'>Thanks,<o:p></o:p></spa=
+n></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial;mso-ansi-language:EN-GB'><o:p>&nbsp;</o:p></span=
+></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Joachim Denil<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Student @ <span class=3DSpellE>Karel</span> De Grote
+hogeschool Antwerpen (<span =
+class=3DSpellE>Belgium</span>)<o:p></o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_0036_01C5E9E5.073A21C0--
