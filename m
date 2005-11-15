@@ -1,23 +1,22 @@
-Return-Path: <mike@compulab.co.il>
-Received: from alexmail (62-90-235-247.barak.net.il [62.90.235.247])
-	by ozlabs.org (Postfix) with ESMTP id 58DDC68785
+Return-Path: <jolt@tuxbox.org>
+Received: from fiebig.biz (loadbalancer1.core.taytron.net [80.190.249.152])
+	by ozlabs.org (Postfix) with ESMTP id 4099368776
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 Nov 2005 18:01:35 +1100 (EST)
-Message-ID: <43798741.5070604@compulab.co.il>
-Date: Tue, 15 Nov 2005 08:59:13 +0200
-From: Mike Rapoport <mike@compulab.co.il>
+	Tue, 15 Nov 2005 17:26:28 +1100 (EST)
+Message-ID: <43797C29.3000605@tuxbox.org>
+Date: Tue, 15 Nov 2005 07:11:53 +0100
+From: Florian Schirmer <jolt@tuxbox.org>
 MIME-Version: 1.0
-To: Hans Schillstrom <hans.schillstrom@pwav.com>
-References: <a79669360510062205v629affb9ga687078f018afae@mail.gmail.com>	
-	<200510120859.12362.sr@denx.de>	<434CB71E.5000603@compulab.co.il>	
-	<200510120927.56692.sr@denx.de>	
-	<20051012133414.7f7e2faf.ajz@cambridgebroadband.com>	
-	<4365BD71.9010507@compulab.co.il>
-	<1131960060.7748.9.camel@hawk.pwav.net>
-In-Reply-To: <1131960060.7748.9.camel@hawk.pwav.net>
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+References: <20051114143821.GA28852@logos.cnet>
+	<9E7D3814-47AB-4601-A565-2530C3A4BEE0@kernel.crashing.org>
+	<20051114155736.GB29411@logos.cnet>
+	<20051114160302.GC29411@logos.cnet>
+In-Reply-To: <20051114160302.GC29411@logos.cnet>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-Subject: Re: MPC8555 USB host support
+Cc: obi@saftware.de, carjay@gmx.de,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] m8xx_wdt: software watchdog reset/interrupt select\
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,36 +27,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hans Schillstrom wrote:
+Hi,
 
->Hi Mike
->I'm working with a 8270 board and 2.6.12 kernel and searching for USB
->drivers.
->
->Could you help me finding the files ?
->  
->
-I've opened a project on the SourceForge, 
-http://cpm2usb.sourceforge.net. The file containing patch against 
-2.6.12.3 can be downloaded at http://sourceforge.net/projects/cpm2usb.
+> Actually, drivers/char/watchdog/mpc8xx_wdt.c is a module, while
+> some of the initialization code must reside in the kernel image.
+> 
+> Thats the reason for the split - not sure if merging the two
+> files is worth?
 
->I can help you with the testing.
->What status do they have right now ?
->  
->
-The driver was developed on MPC8272ADS, but should go as well on 8270 
-since they have the same USB host controller AFAIK.
-Currently, as far as I tested it works fine with full-speed single 
-device attached through hub, but fails is there are transfers from/to 
-several devices simultaneously.
-As for the code itself, it's far from being perfect.
+If you have a short timeout (like the 2 secs we had) then you need to 
+have the handler ready long before the module could be loaded.
 
->Regards 
->Hans
->  
->
-
-
--- 
-Sincerely yours,
-Mike Rapoport
+Best,
+   Florian
