@@ -1,18 +1,22 @@
-Return-Path: <galak@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <avolkov@varma-el.com>
+Received: from amanaus.varma-el.com (unknown [195.144.244.147])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 195046876C
+	(Client CN "mail.varma-el.com",
+	Issuer "mail.varma-el.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 2A95D6877F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Nov 2005 06:37:03 +1100 (EST)
-Date: Tue, 15 Nov 2005 13:34:47 -0600 (CST)
-From: Kumar Gala <galak@gate.crashing.org>
-To: Greg KH <greg@kroah.com>
-In-Reply-To: <20051115175955.GA14518@kroah.com>
-Message-ID: <Pine.LNX.4.44.0511151332310.28098-100000@gate.crashing.org>
+	Wed, 16 Nov 2005 06:41:21 +1100 (EST)
+Message-ID: <437A39DA.5030307@varma-el.com>
+Date: Tue, 15 Nov 2005 22:41:14 +0300
+From: Andrey Volkov <avolkov@varma-el.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+References: <437A1208.2060804@ru.mvista.com> <20051115165532.GB12968@kroah.com>
+	<437A21EA.5020507@ru.mvista.com>
+In-Reply-To: <437A21EA.5020507@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Greg KH <greg@kroah.com>,
+	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
 Subject: Re: Platform device model drawback
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,22 +28,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> You only register the driver once.  The individual devices can be bound
-> to the same driver, right?
+Vitaly Bordug wrote:
+> Greg KH wrote:
 > 
-> > Not registering it in CPM_UART, how the pdev could be obtained?
-> > 
-> > Maybe this is clear, but platform stuff is cumbersome some times...
+>> On Tue, Nov 15, 2005 at 07:51:20PM +0300, Vitaly Bordug wrote:
+>>
+>>> Hi, Greg!
+>>>
+>>> While doing "platformization" for one of the Freescale SoC's, I have
+>>> discovered a serious drawback of the model - it prevents registering
+>>> driver with the same name.
+>>
+>>
+>> That's not a "drawback" :)
+>>
+>>> For instance, cpm2 on either ppc82xx or ppc85xx is very flexible, and
+>>> its device fsl-cpm-scc could (and actually are) utilized in the
+>>> different drivers.
+>>>
+>>> Those devices will have different bus_id, but pdev->name fields are
+>>> the same for all the fsl-cpm-scc, only id is different there. Hence
+>>> the fsl-cpm-scc could be driver_register'ed only once, while it is
+>>> required several times.
+>>
+>>
+>> A driver is registered only once, but can be bound to multiple devices
+>> just fine, right?
 > 
-> Then make it cleaner :)
+> Please let me know, how?
+> 
+> I have for instance struct device_driver with name="fsl-cpm-scc" in both
+> fs_enet and cpm_uart(one using SCC1, the other - SCC4, the same device
+> with different id's).
+> 
+> Once it has been registered in fs_enet, I could not register it in
+> cpm_uart, due to kobject_register fo require unique names in
+> kobject->name. Am I missing something?
 
-This is where the confusion is.  We have two instances of device A.  We 
-want instance 1 of device A bound to driver "enet" and instance 2 of 
-device A bound to "serial".
+May be better to convert fsl-cpm-scc to BUS driver which will be
+derived from platform_driver? In this case you'll get flexible
+SCCx enumerator as bonus.
 
-Today both instances are called "deviceA".  However we can't register two 
-different drivers as "deviceA".
-
-Not sure if that clarifies the issue any.
-
-- kumar
+--
+Regards
+Andrey Volkov
