@@ -1,20 +1,23 @@
-Return-Path: <zjznliang_popo@163.com>
-Received: from 163.com (bj44-206.i.netease.com [202.108.44.206])
-	by ozlabs.org (Postfix) with SMTP id CE1FD68763
+Return-Path: <mike@compulab.co.il>
+Received: from alexmail (62-90-235-247.barak.net.il [62.90.235.247])
+	by ozlabs.org (Postfix) with ESMTP id 58DDC68785
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 Nov 2005 16:41:09 +1100 (EST)
-Received: from zjzn (unknown [61.183.211.137])
-	by smtp3 (Coremail) with SMTP id KUA8W1RxeUOeNpkA.1
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 Nov 2005 13:25:43 +0800 (CST)
-Date: Tue, 15 Nov 2005 13:26:20 +0800
-From: "zjznliang" <zjznliang_popo@163.com>
-To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Message-Id: <20051115054109.CE1FD68763@ozlabs.org>
-Subject: interrupts limit??
+	Tue, 15 Nov 2005 18:01:35 +1100 (EST)
+Message-ID: <43798741.5070604@compulab.co.il>
+Date: Tue, 15 Nov 2005 08:59:13 +0200
+From: Mike Rapoport <mike@compulab.co.il>
+MIME-Version: 1.0
+To: Hans Schillstrom <hans.schillstrom@pwav.com>
+References: <a79669360510062205v629affb9ga687078f018afae@mail.gmail.com>	
+	<200510120859.12362.sr@denx.de>	<434CB71E.5000603@compulab.co.il>	
+	<200510120927.56692.sr@denx.de>	
+	<20051012133414.7f7e2faf.ajz@cambridgebroadband.com>	
+	<4365BD71.9010507@compulab.co.il>
+	<1131960060.7748.9.camel@hawk.pwav.net>
+In-Reply-To: <1131960060.7748.9.camel@hawk.pwav.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
+Subject: Re: MPC8555 USB host support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,22 +28,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-SGkgLGxpbnV4cHBjLWVtYmVkZGVkIKOhDQoNCgkJICBJIGhhdmUgZG9uZSB0aGUgaW50ZXJydXB0
-IHJlcXVlc3QgYnkgcmVxdWVzdF9pcnEoKSBvbiB0aGUgTGludXggMi40LjI1ICx3aGVuIHR5cGlu
-ZyB0aGUgJ2NhdCAvcHJvYy9pbnRlcnJ1cHRzJywgSSBjYW4gc2VlIHRoZSBpbmZvcm1hdGlvbiBh
-cyBmb2xsb3cgOg0KDQovcHJvYyAjIGNhdCBpbnRlcnJ1cHRzDQogICAgICAgICAgIENQVTANCiAg
-MjogICAgICAgMzQyMCAgIDh4eCBTSVUgICBFZGdlICAgICAgd2JnYV9pbnRlcnJ1cHQNCiAgNTog
-ICAgICAgICAgMCAgIDh4eCBTSVUgICBFZGdlICAgICAgQ1BNIGNhc2NhZGUNCiAxNTogICAgICAg
-ICAgMCAgIDh4eCBTSVUgICBFZGdlICAgICAgdGJpbnQNCiAxNjogICAgICAgICAgMCAgIENQTSAg
-ICAgICBFZGdlICAgICAgZXJyb3INCiAyMDogICAgICAgIDgwMSAgIENQTSAgICAgICBFZGdlICAg
-ICAgU01DMQ0KDQphbmQgSSBjYW4gc2VlIHRoZSBudW1iZXIgb2Ygd2JnYV9pbnRlcnJ1cHQgaXMg
-aW5jcmVhc2luZy4gQnV0IGEgZmV3IG1pbnV0ZXMgbGF0ZXIgLHRoZSBudW1iZXIgaXMgbG9ja2Vk
-IGF0IDEyODAwMCBhcyBmb2xsb3c6DQoNCi9wcm9jICMgY2F0IGludGVycnVwdHMNCiAgICAgICAg
-ICAgQ1BVMA0KICAyOiAgICAgMTI4MDAwICAgOHh4IFNJVSAgIEVkZ2UgICAgICB3YmdhX2ludGVy
-cnVwdA0KICA1OiAgICAgICAgICAwICAgOHh4IFNJVSAgIEVkZ2UgICAgICBDUE0gY2FzY2FkZQ0K
-IDE1OiAgICAgICAgICAwICAgOHh4IFNJVSAgIEVkZ2UgICAgICB0YmludA0KIDE2OiAgICAgICAg
-ICAwICAgQ1BNICAgICAgIEVkZ2UgICAgICBlcnJvcg0KIDIwOiAgICAgICAgODMzICAgQ1BNICAg
-ICAgIEVkZ2UgICAgICBTTUMxDQoNCmFuZCB0aGVyZSBpcyBubyB3YmdhX2ludGVycnVwdCBhbnkg
-bW9yZS4uLi53aGF0J3MgdGhlIG1hdHRlciB3aXRoIHRoZSBpbnRlcnJ1cHQ/d2h5IGlzIDEyODAw
-MD8/PyANCg0KDQqhoaGhemp6bmxpYW5nDQqhoaGhoaGhoaGhoaGhoaGhemp6bmxpYW5nX3BvcG9A
-MTYzLmNvbQ0KoaGhoaGhoaGhoaGhoaGhoaGhoaEyMDA1LTExLTE1DQo=
+Hans Schillstrom wrote:
+
+>Hi Mike
+>I'm working with a 8270 board and 2.6.12 kernel and searching for USB
+>drivers.
+>
+>Could you help me finding the files ?
+>  
+>
+I've opened a project on the SourceForge, 
+http://cpm2usb.sourceforge.net. The file containing patch against 
+2.6.12.3 can be downloaded at http://sourceforge.net/projects/cpm2usb.
+
+>I can help you with the testing.
+>What status do they have right now ?
+>  
+>
+The driver was developed on MPC8272ADS, but should go as well on 8270 
+since they have the same USB host controller AFAIK.
+Currently, as far as I tested it works fine with full-speed single 
+device attached through hub, but fails is there are transfers from/to 
+several devices simultaneously.
+As for the code itself, it's far from being perfect.
+
+>Regards 
+>Hans
+>  
+>
+
+
+-- 
+Sincerely yours,
+Mike Rapoport
