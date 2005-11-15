@@ -1,16 +1,18 @@
-Return-Path: <jolt@tuxbox.org>
-Received: from fiebig.biz (loadbalancer1.core.taytron.net [80.190.249.152])
-	by ozlabs.org (Postfix) with ESMTP id 856B96877D
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3E90B68748
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 Nov 2005 17:41:42 +1100 (EST)
-Message-ID: <43798327.70305@tuxbox.org>
-Date: Tue, 15 Nov 2005 07:41:43 +0100
-From: Florian Schirmer <jolt@tuxbox.org>
-MIME-Version: 1.0
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-References: <20051114143821.GA28852@logos.cnet>
-In-Reply-To: <20051114143821.GA28852@logos.cnet>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 15 Nov 2005 21:52:57 +1100 (EST)
+Date: Tue, 15 Nov 2005 03:42:16 -0200
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Florian Schirmer <jolt@tuxbox.org>
+Message-ID: <20051115054216.GB29963@logos.cnet>
+References: <20051114143821.GA28852@logos.cnet> <43798327.70305@tuxbox.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <43798327.70305@tuxbox.org>
 Cc: obi@saftware.de, carjay@gmx.de,
 	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
 Subject: Re: [PATCH] m8xx_wdt: software watchdog reset/interrupt select
@@ -24,34 +26,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Hi Florian!
 
-> Note: From my reading of the documentation, even if the SWRI bit is
-> unset (interrupt select mode), an NMI at IRQ0 should cause the system to
-> jump to exception vector 0x100, resetting the system.
+On Tue, Nov 15, 2005 at 07:41:43AM +0100, Florian Schirmer wrote:
+> Hi,
 > 
-> So I'm wondering if the interrupt mode ever worked?
+> >Note: From my reading of the documentation, even if the SWRI bit is
+> >unset (interrupt select mode), an NMI at IRQ0 should cause the system to
+> >jump to exception vector 0x100, resetting the system.
+> >
+> >So I'm wondering if the interrupt mode ever worked?
+> 
+> Never tried the interrupt mode. IMHO doesn't make much sense for a 
+> watchdog. Why don't you simply set SWRI?
 
-Never tried the interrupt mode. IMHO doesn't make much sense for a 
-watchdog. Why don't you simply set SWRI?
+The SYPCR register can be set only _once_ at machine startup and the
+bootloader in question does not have an option to change the mode. Many
+bootloaders probably dont.
 
+> >+static void m8xx_wdt_timer_func(unsigned long data)
+> >+{
+> >+	m8xx_wdt_reset();
+> >+	m8xx_wdt_timer.expires = jiffies + 25;
+> >+	add_timer(&m8xx_wdt_timer);
+> >+}
+> >+
+> >+void m8xx_wdt_install_timer(volatile immap_t *imap)
+> >+{
+> >+	m8xx_wdt_timer.expires = jiffies + 25;
+> >+	add_timer(&m8xx_wdt_timer);
+> >+}
+> 
+> m8xx_wdt_install_timer doesn't need imap and you could call it from 
+> m8xx_wdt_timer_func to re-engange the timer resulting in less duplicated 
+> code. Just a cosmetic thing though.
 
-> +static void m8xx_wdt_timer_func(unsigned long data)
-> +{
-> +	m8xx_wdt_reset();
-> +	m8xx_wdt_timer.expires = jiffies + 25;
-> +	add_timer(&m8xx_wdt_timer);
-> +}
-> +
-> +void m8xx_wdt_install_timer(volatile immap_t *imap)
-> +{
-> +	m8xx_wdt_timer.expires = jiffies + 25;
-> +	add_timer(&m8xx_wdt_timer);
-> +}
+Indeed. Will update the patch and resend you for review.
 
-m8xx_wdt_install_timer doesn't need imap and you could call it from 
-m8xx_wdt_timer_func to re-engange the timer resulting in less duplicated 
-code. Just a cosmetic thing though.
-
-Best,
-   Florian
+Thanks
