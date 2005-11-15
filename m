@@ -1,18 +1,27 @@
-Return-Path: <markc@mail.com>
-Received: from relay02.roc.ny.frontiernet.net (relay02.roc.ny.frontiernet.net
-	[66.133.182.165]) by ozlabs.org (Postfix) with ESMTP id 86DE368746
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8659E6875C
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 15 Nov 2005 23:37:56 +1100 (EST)
-Message-ID: <005301c5e9e1$d4a69ed0$0301a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-To: "zjznliang" <zjznliang_popo@163.com>,
-	"linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
-References: <20051115054109.CE1FD68763@ozlabs.org>
-Date: Tue, 15 Nov 2005 07:40:55 -0500
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Subject: Re: interrupts limit??
+	Wed, 16 Nov 2005 02:22:15 +1100 (EST)
+In-Reply-To: <43798741.5070604@compulab.co.il>
+References: <a79669360510062205v629affb9ga687078f018afae@mail.gmail.com>	
+	<200510120859.12362.sr@denx.de>	<434CB71E.5000603@compulab.co.il>	
+	<200510120927.56692.sr@denx.de>	
+	<20051012133414.7f7e2faf.ajz@cambridgebroadband.com>	
+	<4365BD71.9010507@compulab.co.il>
+	<1131960060.7748.9.camel@hawk.pwav.net>
+	<43798741.5070604@compulab.co.il>
+Mime-Version: 1.0 (Apple Message framework v746.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <D95D5881-250C-4B54-BD5A-54C79D9E0496@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Date: Tue, 15 Nov 2005 09:22:32 -0600
+To: Mike Rapoport <mike@compulab.co.il>
+Cc: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
+Subject: Re: MPC8555 USB host support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,42 +32,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Any reason not to get this driver into the kernel main line?
 
+- kumar
 
-> Hi ,linuxppc-embedded £¡
->
->   I have done the interrupt request by request_irq() on the Linux 2.4.25
-,when typing the 'cat /proc/interrupts', I can see the information as follow
-:
->
-> /proc # cat interrupts
->            CPU0
->   2:       3420   8xx SIU   Edge      wbga_interrupt
->   5:          0   8xx SIU   Edge      CPM cascade
->  15:          0   8xx SIU   Edge      tbint
->  16:          0   CPM       Edge      error
->  20:        801   CPM       Edge      SMC1
->
-> and I can see the number of wbga_interrupt is increasing. But a few
-minutes later ,the number is locked at 128000 as follow:
->
-> /proc # cat interrupts
->            CPU0
->   2:     128000   8xx SIU   Edge      wbga_interrupt
->   5:          0   8xx SIU   Edge      CPM cascade
->  15:          0   8xx SIU   Edge      tbint
->  16:          0   CPM       Edge      error
->  20:        833   CPM       Edge      SMC1
->
-> and there is no wbga_interrupt any more....what's the matter with the
-interrupt?why is 128000???
->
->
+On Nov 15, 2005, at 12:59 AM, Mike Rapoport wrote:
 
-The problem is not /proc/interrupts, if that's what you're thinking.  The
-number can go much
-higher.  Believe what it's telling you:  Your driver has a problem and has
-stopped generating
-interrupts.
-
-Mark Chambers
+> Hans Schillstrom wrote:
+>
+>> Hi Mike
+>> I'm working with a 8270 board and 2.6.12 kernel and searching for USB
+>> drivers.
+>>
+>> Could you help me finding the files ?
+>>
+> I've opened a project on the SourceForge, http:// 
+> cpm2usb.sourceforge.net. The file containing patch against 2.6.12.3  
+> can be downloaded at http://sourceforge.net/projects/cpm2usb.
+>
+>> I can help you with the testing.
+>> What status do they have right now ?
+>>
+> The driver was developed on MPC8272ADS, but should go as well on  
+> 8270 since they have the same USB host controller AFAIK.
+> Currently, as far as I tested it works fine with full-speed single  
+> device attached through hub, but fails is there are transfers from/ 
+> to several devices simultaneously.
+> As for the code itself, it's far from being perfect.
+>
+>> Regards Hans
+>>
+>
+>
+> -- 
+> Sincerely yours,
+> Mike Rapoport
+>
+>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
