@@ -1,18 +1,11 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 4C85068784
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Nov 2005 06:43:40 +1100 (EST)
-In-Reply-To: <20051115175955.GA14518@kroah.com>
-References: <20051115175955.GA14518@kroah.com>
-Mime-Version: 1.0 (Apple Message framework v734)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <96E15040-E751-475E-8A63-D20F77D69B50@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Date: Tue, 15 Nov 2005 13:43:39 -0600
-To: Greg KH <greg@kroah.com>
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: Platform device model drawback
+Return-Path: <cfriesen@nortel.com>
+Message-ID: <437A5049.9090308@nortel.com>
+Date: Tue, 15 Nov 2005 15:16:57 -0600
+From: "Christopher Friesen" <cfriesen@nortel.com>
+MIME-Version: 1.0
+To: linuxppc64-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: modify the cache-inhibit and guard bits from userspace?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,46 +17,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Nov 15, 2005, at 11:59, Greg KH wrote:
+We're running a dual-970 blade, based on a modified 2.6.10.
 
+We have an application that does lots of random data fetches over a 
+fairly large data set (a few GB) contained entirely in RAM, and the 
+performance guys think that we may be spending time in unnecessary 
+hardware prefetches and would like me to provide them a mechanism to 
+individually specify the cache-inhibited and guard bits from userspace 
+so that they can try to fine-tune their performance.
 
-> > I have for instance struct device_driver with name="fsl-cpm-scc"  
-> in both
-> > fs_enet and cpm_uart(one using SCC1, the other - SCC4, the same  
-> device with
-> > different id's).
-> >
-> > Once it has been registered in fs_enet, I could not register it in
-> > cpm_uart, due to kobject_register fo require unique names in  
-> kobject->name.
-> > Am I missing something?
->
-> You only register the driver once.  The individual devices can be  
-> bound
-> to the same driver, right?
->
-> > Not registering it in CPM_UART, how the pdev could be obtained?
-> >
-> > Maybe this is clear, but platform stuff is cumbersome some times...
->
-> Then make it cleaner :)
->
-> If you have specific code that explains this better, that might help
-> out.
->
+What's the most logical way for me to do this?  Do I extend mprotect() 
+to support additional flags?
 
-So the problem Vitaly is referring to is that the CPM is somewhat  
-programmable.  The SCC (Serial Communications Controller) is capable  
-of being used as a uart, or as an ethernet device, depending on  
-software configuration.  Currently, most systems I'm aware of  
-configure this at boot time, depending on how the kernel has been  
-configured.  So the same SOC may have SCC1 as a uart on one board,  
-but as an ethernet controller on another board.
+Has anyone done this before?  I didn't find anything in google. 
+Currently the guard bit seems to only be used for ioremap() and in 
+__pci_mmap_set_pgprot() if the memory doesn't support write combining.
 
-I believe there is work being done to clean this up, and make it more  
-flexible.  As a temporary solution, we might want to declare 8  
-different devices.  Something like "cpm-scc-uart", and "cpm-scc- 
-enet".  And then create SCC1-4 twice, and let the board code delete  
-the devices that aren't going to be used.
+Thanks,
 
-Andy
+Chris
