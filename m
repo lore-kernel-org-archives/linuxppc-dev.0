@@ -1,19 +1,20 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 9991C68740
+Return-Path: <zjznliang_popo@163.com>
+Received: from 163.com (m12-12.163.com [220.181.12.12])
+	by ozlabs.org (Postfix) with SMTP id ADE6A68728
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Nov 2005 12:06:58 +1100 (EST)
-To: mcnernbm@notes.udayton.edu
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 15 Nov 2005 19:15:36 EST."
-	<OF3D06561E.1EB2655E-ON852570BB.00015870-852570BB.00016F3F@notes.udayton.edu>
-Date: Wed, 16 Nov 2005 02:06:56 +0100
-Sender: wd@denx.de
-Message-Id: <20051116010656.7370B353F35@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: U-Boot 
+	Wed, 16 Nov 2005 13:34:22 +1100 (EST)
+Received: from zjzn (unknown [61.183.211.137])
+	by smtp13 (Coremail) with SMTP id 8gAkhv2WekMZiY4C.1
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 16 Nov 2005 10:18:50 +0800 (CST)
+Date: Wed, 16 Nov 2005 10:19:08 +0800
+From: "zjznliang" <zjznliang_popo@163.com>
+To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain;
+	charset="gb2312"
+Message-Id: <20051116023422.ADE6A68728@ozlabs.org>
+Subject: how to use the system call in the module ?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,32 +25,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <OF3D06561E.1EB2655E-ON852570BB.00015870-852570BB.00016F3F@notes.udayton.edu> you wrote:
->
-> I have a question about U-Boot.  I have a board with no flash capability 
-> at all.  Will u-boot work on a xilinx board with no flash and only sdram? 
-> Can uboot be downloaded into sdram and used to boot linux?
-> Thanks
-> Brett
-> --=_alternative 00016F3D852570BB_=
-> Content-Type: text/html; charset="US-ASCII"
-
-One questions, three goof-ups.
-
-1) This is the linuxppc-embedded list. U-Boot related  questions  are
-   off topic here and should be posted to u-boot-users instead.
-
-2) The answers to your questions are "yes" and "yes", but you  posted
-   without reading the FAQ. See especially
-   http://www.denx.de/wiki/view/DULG/CanUBootBeConfiguredSuchThatItCanBeStartedInRAM
-
-3) Please don't post HTML to public mailing lists.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Today is the yesterday you worried about tomorrow.
+SGkgbGludXhwcGMtZW1iZWRkZWSjoQ0KDQoJICAgICBJbiB0aGUgZGV2aWNlIGRyaXZlciwgd2Ug
+YWx3YXlzIHdhbnQgdG8gc2VuZCBzb21lIGRhdGEgdG8gdGhlIGFwcGxpY2F0aW9uIC4gU28gSSB3
+YXMgIHRoaW5raW5nICwgdGhlIElQQyB3b3VsZCAgZG8gbWUgYSBmYXZvciAuIEkgdXNlZCB0aGUg
+c3lzX21zZ2dldCBhbmQgc3lzX21zZ3NuZCBpbiB0aGUgbW9kdWxlICxidXQgSSBnb3QgdGhpcyB3
+aGVuIEkgdHlwZSB0aGUgImluc21vZCAgbW9kdWxlIiBjb21tYW5kIDoNCgkJaW5zbW9kOiB1bnJl
+c29sdmVkIHN5bWJvbCBzeXNfbXNnZ2V0IA0KCQlpbnNtb2Q6IHVucmVzb2x2ZWQgc3ltYm9sIHN5
+c19tc2dzbmQgDQoNCgkJSW4gbXkgb3BpbmlvbiAsdGhlIHN5c3RlbSBjYWxsIGlzIHRoZSBzeXN0
+ZW0gY2FsbCB0byB0aGUgdXNlciBhcHBsaWNhdGlvbiBhbmQgdGhlIGZ1bmN0aW9uIHRvIHRoZSBr
+ZXJuZWwgbW9kZSAoZWc6IG1vZHVsZSApLHNvIGhvdyB0byB1c2UgdGhlIHN5c3RlbSBjYWxsIGlu
+IGtlcm5lbCBtb2RlIGlzIHRoZSB3YXkgdGhhdCBob3cgdG8gcmVjb2duaXNlIHRoZSBmdW5jdGlv
+biBvZiBzeXN0ZW0gY2FsbCBpbiB0aGUgbW9kdWxlIC4NCiANCgkJQXQgdGhlIGJlZ2lubmluZywg
+SSBoYWQgdG8gb3BlbiBhbmQgcmVhZCBhIGZpbGUgaW4gdGhlIG1vZHVsZSAsIHNvIEkgdXNlZCAg
+dGhpcyB3YXkgdG8gYWRkIHRoZSBzeXN0ZW0gY2FsbCA6DQoNCgkJI2RlZmluZSBfS0VSTkVMX1NZ
+U0NBTExTXw0KCQkjaW5jbHVkZSA8bGludXgvdW5pc3RkLmg+DQoNCgkJV2hlbiBJIHR5cGVkIHRo
+ZSAiaW5zbW9kIG1vZHVsZSAiLHRoZSBzeW1ib2wgb3BlbiBhbmQgcmVhZCBjb3VsZCBiZSBmb3Vu
+ZCAsYnV0IHRoZSBmdW5jdGlvbiB3YXMgbm90IGF2YWlsYWJpbGl0eS5TbyBJIGNoZWNrZWQgdGhl
+IC9wcm9jL2tzeW1zIGZvciB0aGUgZnVuY3Rpb24gd2hpY2ggdGhlIGtlcm5lbCBjb3VsZCBjYWxs
+ICwgYW5kIHVzZWQgdGhlIGZpbHBfb3BlbiAoKSBhbmQga2VybmVsX3JlYWQgKCkgZm9yIGluc3Rl
+YWQgLg0KCQkNCgkJTm93ICwgSSBkaWQgYSB0ZXN0ICwgY29tcGlsZSB0aGUgbW9kdWxlIHdpdGgg
+dGhlIGxpbnV4IGtlcm5lbCwgdGhlIHN5c19tc2dnZXQgYW5kIHN5c19tc2dzbmQgY291bGQgd29y
+ayBmaW5lIC4gSSB0aG91Z2h0IHRoZSByZWFzb24gaXMgdGhhdCB0aGUgc3lzX21zZ2dldCBpcyBh
+biBleHRlcm4gZnVuY3Rpb24gd2hlbiBjb21waWxpbmcgd2l0aCB0aGUga2VybmVsLlNvIHBlcmhh
+cHMgLCB3aGVuIEkgZG8gaW5zbW9kIHRoZSBtb2R1bGUsIEkgZGlkIG5vdCBleHBvcnRlIHRoZSBz
+eXNfbXNnZ2V0IGFuZCBzeXNfbXNnc25kIGFzIHRoZSBrZXJuZWwgc3ltYm9scy4NCg0KCQlIb3cg
+dG8gZXhwb3J0ZSB0aGUgc3lzdGVtIGNhbGwgYXMgdGhlIGtlcm5lbCBzeW1ib2xzPz8gDQoNCiAg
+ICAgICBBbnkgaGVscCBvbiB0aGlzIHdvdWxkIGJlIGdyZWF0bHkgYXBwcmVjaWF0ZWQuIFRoYW5r
+cyBmb3IgeW91ciBwYXRpZW5jZS4gDQoNCiAJCQkJDQoNCqGhoaF6anpubGlhbmcNCqGhoaGhoaGh
+emp6bmxpYW5nX3BvcG9AMTYzLmNvbQ0KoaGhoaGhoaGhoaGhMjAwNS0xMS0xNg0K
