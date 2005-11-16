@@ -1,17 +1,21 @@
-Return-Path: <Alexey@waves.com>
-Received: from exchange.waves.com (mail.waves.com [12.34.136.7])
-	by ozlabs.org (Postfix) with ESMTP id A18116872D
+Return-Path: <jolt@tuxbox.org>
+Received: from fiebig.biz (loadbalancer1.core.taytron.net [80.190.249.152])
+	by ozlabs.org (Postfix) with ESMTP id 9818A68725
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Nov 2005 22:30:14 +1100 (EST)
-From: "Alexey Dyatchkov" <alexey@waves.com>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Wed, 16 Nov 2005 13:14:28 +0200
-Message-ID: <001f01c5ea9e$ea775a70$0100000a@Omerxp>
+	Wed, 16 Nov 2005 22:47:26 +1100 (EST)
+Message-ID: <437B1C53.1060004@tuxbox.org>
+Date: Wed, 16 Nov 2005 12:47:31 +0100
+From: Florian Schirmer <jolt@tuxbox.org>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0020_01C5EAAF.AE002A70"
-Cc: 'Ami Levi' <ami@waves.com>
-Subject: Denx linux 2.4.25 on RPXLITE
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+References: <20051114143821.GA28852@logos.cnet> <43798327.70305@tuxbox.org>
+	<20051115054216.GB29963@logos.cnet>
+	<20051115142147.GD32373@logos.cnet>
+In-Reply-To: <20051115142147.GD32373@logos.cnet>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: obi@saftware.de, carjay@gmx.de,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] m8xx_wdt: software watchdog reset/interrupt select
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,198 +26,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
-
-------=_NextPart_000_0020_01C5EAAF.AE002A70
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-
 Hi,
 
- 
+>> The SYPCR register can be set only _once_ at machine startup and the
+>> bootloader in question does not have an option to change the mode. Many
+>> bootloaders probably dont.
 
-I'm trying to bring up Denx linux-2.4.25, latest found on
-ftp.denx.de/pub/linux, on our proprietary board.
+Okay, i was asuming you have control over the bootloader.
 
-Our board is very much similar to RPXLITE. In fact it is RPXLITE with few
-minor changes.
+> Updated patch addresses code duplication issue you mentioned and also 
+> adds an error message in case timer interrupt frequency is higher
+> than the watchdog frequency.
+> 
+> Can I add your Signed-off-by in case you're OK with it?
 
-We did such works before, and all we usualy needed was to tune the io
-mapping.
+Maybe i'm missing something obvious, but why is the interrupt driven 
+reaming code not working for your configuration. Are you using the PIT 
+for something else?
 
-I did so with this kernel and it stucks in calibrate_delay() on "while
-(ticks==jiffies)", row 207.
+Otherwise i'm fine with the patch. Feel free to add my Signed-off-by line.
 
-And it seems that no interrupts are coming to kernel (breakpoint in do_irq
-is never achieved).
-
-(No printk's on console, btw)
-
- 
-
-I'm not experienced enough in kernel debugging and feel stuck.
-
-Please help!
-
- 
-
-Thanks in advance,
-
-Alexey
-
-
-------=_NextPart_000_0020_01C5EAAF.AE002A70
-Content-Type: text/html;
-	charset="US-ASCII"
-Content-Transfer-Encoding: quoted-printable
-
-<html>
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-
-
-<meta name=3DGenerator content=3D"Microsoft Word 10 (filtered)">
-
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:"MS Mincho";
-	panose-1:2 2 6 9 4 2 5 8 3 4;}
-@font-face
-	{font-family:"\@MS Mincho";
-	panose-1:2 2 6 9 4 2 5 8 3 4;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0cm;
-	margin-bottom:.0001pt;
-	text-align:right;
-	direction:rtl;
-	unicode-bidi:embed;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{font-family:Arial;
-	color:windowtext;
-	font-weight:normal;
-	font-style:normal;
-	text-decoration:none none;}
-@page Section1
-	{size:595.3pt 841.9pt;
-	margin:72.0pt 90.0pt 72.0pt 90.0pt;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1 dir=3DRTL>
-
-<p class=3DMsoNormal dir=3DLTR =
-style=3D'text-align:left;direction:ltr;unicode-bidi:
-embed'><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>Hi,</span></font></p>
-
-<p class=3DMsoNormal dir=3DLTR =
-style=3D'text-align:left;direction:ltr;unicode-bidi:
-embed'><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>&nbsp;</span></font></p>
-
-<p class=3DMsoNormal dir=3DLTR =
-style=3D'text-align:left;direction:ltr;unicode-bidi:
-embed'><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>I'm
-trying to bring up Denx linux-2.4.25, latest found on =
-ftp.denx.de/pub/linux, on
-our proprietary board.</span></font></p>
-
-<p class=3DMsoNormal dir=3DLTR =
-style=3D'text-align:left;direction:ltr;unicode-bidi:
-embed'><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>Our
-board is very much similar to RPXLITE. In fact it is RPXLITE with few =
-minor
-changes.</span></font></p>
-
-<p class=3DMsoNormal dir=3DLTR =
-style=3D'text-align:left;direction:ltr;unicode-bidi:
-embed'><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>We
-did such works before, and all we usualy needed was to tune the io =
-mapping.</span></font></p>
-
-<p class=3DMsoNormal dir=3DLTR =
-style=3D'text-align:left;direction:ltr;unicode-bidi:
-embed'><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>I
-did so with this kernel and it stucks in calibrate_delay() on =
-&quot;while (ticks=3D=3Djiffies)&quot;,
-row 207.</span></font></p>
-
-<p class=3DMsoNormal dir=3DLTR =
-style=3D'text-align:left;direction:ltr;unicode-bidi:
-embed'><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>And
-it seems that no interrupts are coming to kernel (breakpoint in do_irq =
-is never
-achieved).</span></font></p>
-
-<p class=3DMsoNormal dir=3DLTR =
-style=3D'text-align:left;direction:ltr;unicode-bidi:
-embed'><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>(No
-printk's on console, btw)</span></font></p>
-
-<p class=3DMsoNormal dir=3DLTR =
-style=3D'text-align:left;direction:ltr;unicode-bidi:
-embed'><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>&nbsp;</span></font></p>
-
-<p class=3DMsoNormal dir=3DLTR =
-style=3D'text-align:left;direction:ltr;unicode-bidi:
-embed'><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>I'm
-not experienced enough in kernel debugging and feel =
-stuck.</span></font></p>
-
-<p class=3DMsoNormal dir=3DLTR =
-style=3D'text-align:left;direction:ltr;unicode-bidi:
-embed'><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>Please
-help!</span></font></p>
-
-<p class=3DMsoNormal dir=3DLTR =
-style=3D'text-align:left;direction:ltr;unicode-bidi:
-embed'><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>&nbsp;</span></font></p>
-
-<p class=3DMsoNormal dir=3DLTR =
-style=3D'text-align:left;direction:ltr;unicode-bidi:
-embed'><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>Thanks
-in advance,</span></font></p>
-
-<p class=3DMsoNormal dir=3DLTR =
-style=3D'text-align:left;direction:ltr;unicode-bidi:
-embed'><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>Alexey</span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------=_NextPart_000_0020_01C5EAAF.AE002A70--
+Best,
+   Florian
