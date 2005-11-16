@@ -1,19 +1,11 @@
-Return-Path: <dan@embeddededge.com>
-In-Reply-To: <1132117236.5646.75.camel@gaston>
-References: <1132032910.23979.6.camel@gaston>
-	<00eecfdbd5bccc7b293d847033121eee@freescale.com>
-	<1132108490.5646.67.camel@gaston>
-	<02de724e66fe23fd23a3635c8b6f049f@embeddededge.com>
-	<1132117236.5646.75.camel@gaston>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <324befe15b30886e86b0110c30334c8f@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Wed, 16 Nov 2005 00:35:30 -0500
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	linuxppc64-dev <linuxppc64-dev@ozlabs.org>
-Subject: Re: [PATCH] powerpc: Merge align.c
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17274.51251.591579.8751@cargo.ozlabs.ibm.com>
+Date: Wed, 16 Nov 2005 16:48:35 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org, akpm@osdl.org
+Subject: powerpc.git tree now on kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,15 +15,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I have just created a git tree for ppc/powerpc patches that are
+candidates for 2.6.16.  The tree is at:
 
-On Nov 16, 2005, at 12:00 AM, Benjamin Herrenschmidt wrote:
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
 
-> Oh well, I suppose I'll have to dig out paulus' 601 based mac :)
+Currently, besides the patches that are in the powerpc-merge.git tree,
+there are the following patches in there:
 
-If we don't have any contemporary processors that need
-this solution, can we just put on aside until someone
-has hardware that requires it?
+Adrian Bunk:
+      PPC_PREP: remove unneeded exports
 
-Thanks.
+Benjamin Herrenschmidt:
+      powerpc: Merge align.c (#2)
 
-	-- Dan
+David Gibson:
+      powerpc: Remove imalloc.h
+
+David Woodhouse:
+      syscall entry/exit revamp
+
+Kumar Gala:
+      powerpc: moved ipic code to arch/powerpc
+
+Michael Ellerman:
+      powerpc: Merge kexec
+
+Mike Kravetz:
+      Remove SPAN_OTHER_NODES config definition
+
+Although some of these patches may go to Linus before 2.6.15 is
+released, I won't be asking Linus to pull this tree directly, since it
+is likely to get a bit messy as patches are updated.  I expect that
+Andrew Morton will pull this tree periodically and include it in his
+-mm releases.
+
+Paul.
