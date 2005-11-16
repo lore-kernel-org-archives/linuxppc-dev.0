@@ -1,12 +1,13 @@
-Return-Path: <hch@lst.de>
-Date: Wed, 16 Nov 2005 09:24:56 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Paul Mackerras <paulus@samba.org>
-Message-ID: <20051116082456.GA24802@lst.de>
-References: <17274.51251.591579.8751@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17274.51251.591579.8751@cargo.ozlabs.ibm.com>
+Message-ID: <17274.61005.845301.27856@cargo.ozlabs.ibm.com>
+Date: Wed, 16 Nov 2005 19:31:09 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Christoph Hellwig <hch@lst.de>
+In-Reply-To: <20051116082456.GA24802@lst.de>
+References: <17274.51251.591579.8751@cargo.ozlabs.ibm.com>
+	<20051116082456.GA24802@lst.de>
 Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
 Subject: Re: powerpc.git tree now on kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -18,14 +19,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Nov 16, 2005 at 04:48:35PM +1100, Paul Mackerras wrote:
-> Although some of these patches may go to Linus before 2.6.15 is
-> released, I won't be asking Linus to pull this tree directly, since it
-> is likely to get a bit messy as patches are updated.  I expect that
-> Andrew Morton will pull this tree periodically and include it in his
-> -mm releases.
+Christoph Hellwig writes:
 
-Please make sure at least all patches required to kill arch/ppc64 and
-include/asm-ppc64 go to Linus.  If 2.6.15 released with the include3
-hack that would mean endless pain to people building external modules
-and the distributions trying to support that.
+> Please make sure at least all patches required to kill arch/ppc64 and
+> include/asm-ppc64 go to Linus.  If 2.6.15 released with the include3
+> hack that would mean endless pain to people building external modules
+> and the distributions trying to support that.
+
+Yes, that is my intention.  For 2.6.15, at this stage, some of the
+header files might end up looking like:
+
+#ifdef CONFIG_PPC32
+#include <asm-ppc/foo.h>
+#else
+/* contents of asm-ppc64/foo.h */
+#endif
+
+if it looks like doing a proper merge will require too many changes.
+But at least it gets the files out of include/asm-ppc64.
+
+Paul.
