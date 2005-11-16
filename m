@@ -1,20 +1,20 @@
-Return-Path: <dan@embeddededge.com>
-In-Reply-To: <20051116194553.GA23679@iram.es>
-References: <1132032910.23979.6.camel@gaston>
-	<00eecfdbd5bccc7b293d847033121eee@freescale.com>
-	<20051116093609.GA26269@iram.es>
-	<43D0A21D-89BC-4EFE-BA2A-94760BA32276@kernel.crashing.org>
-	<755b1bfb034aebb5de36dc0594e08ec6@embeddededge.com>
-	<20051116194553.GA23679@iram.es>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <6ebdb3aa72b262f31fd89bfc747c9d81@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Wed, 16 Nov 2005 15:36:40 -0500
-To: Gabriel Paubert <paubert@iram.es>
-Cc: linuxppc64-dev <linuxppc64-dev@ozlabs.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] powerpc: Merge align.c
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 28E0968757
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2005 08:02:02 +1100 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Wolfgang Pfeiffer <roto@gmx.net>
+In-Reply-To: <20051116180925.GB3080@localhost>
+References: <1130999620.4680.28.camel@gaston> <20051116180925.GB3080@localhost>
+Content-Type: text/plain
+Date: Thu, 17 Nov 2005 08:01:07 +1100
+Message-Id: <1132174868.5646.112.camel@gaston>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
+Subject: Re: 2.6.14 USB vs. sleep issues
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,17 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 2005-11-16 at 19:09 +0100, Wolfgang Pfeiffer wrote:
+> On Thu, Nov 03, 2005 at 05:33:39PM +1100, Benjamin Herrenschmidt wrote:
+> > For those who experience crashes on sleep and/or wakeup (typically due
+> > to USB) with 2.6.14, I made a test patch that might help. [ ... ]
+> 
+> Ben, I just compiled and installed a 2.6.14.1 from kernel.org with
+> none of your patches from this thread applied to it, and I have no
+> sleep/wakeup probs with it so far: about 3 instances of sleep/wakeup
+> until now, all of them successful.
+> 
+> Maybe I even made it a bit more complicated for the system, as I
+> connected a USB HUB, with 4 ports, to the machine: It just seems to
+> work ...
 
-On Nov 16, 2005, at 2:45 PM, Gabriel Paubert wrote:
+Only newer machines with a NEC USB2 chip that shares interrupts appear
+to be affected by the problem.
 
-> I originally asked because I believed that these cores are
-> actually closer to the 603e than to the original 603.
-
-That's correct.  In fact, I think the original 8260 and
-perhaps the 5200 were 603e cores.  As I mentioned,
-the newer ones are subtly different, but better than
-the 603e ;-)
-
-Thanks.
-
-	-- Dan
+Ben.
