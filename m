@@ -1,19 +1,16 @@
-Return-Path: <olh@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3C5C368734
-	for <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2005 03:38:38 +1100 (EST)
-Date: Wed, 16 Nov 2005 17:38:32 +0100
-From: Olaf Hering <olh@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Message-ID: <20051116163832.GA17120@suse.de>
-References: <20051022213206.GB6097@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20051022213206.GB6097@suse.de>
-Subject: Re: [PATCH] pmu_register_sleep_notifier needs ADB_PMU
+Return-Path: <avolkov@varma-el.com>
+Message-ID: <437B6447.8010203@varma-el.com>
+Date: Wed, 16 Nov 2005 19:54:31 +0300
+From: Andrey Volkov <avolkov@varma-el.com>
+MIME-Version: 1.0
+To: Becky Bruce <becky.bruce@freescale.com>
+References: <1132108490.5646.67.camel@gaston>
+	<4ad202b87fa52d954e645b05fb45ca13@freescale.com>
+In-Reply-To: <4ad202b87fa52d954e645b05fb45ca13@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	linuxppc64-dev <linuxppc64-dev@ozlabs.org>
+Subject: Re: [PATCH] powerpc: Merge align.c
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,81 +20,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- On Sat, Oct 22, Olaf Hering wrote:
-
+Becky Bruce wrote:
+> On Nov 15, 2005, at 8:34 PM, Benjamin Herrenschmidt wrote:
 > 
-> a simple patch for a pegsos user:
-> https://bugzilla.novell.com/show_bug.cgi?id=119606
+>> >
+>> > BTW, Based on the pile of docs I have here, I think the list of
+>> > alignment-exception-causing events on FSL's current parts (603, 603e,
+>> > 750, 74x, 74xx, e500) is:
+>> >
+>> > - lmw/stmw (all procs, non-word aligned)
+>> > - single and double precision floating point ld/st ops (non-E500, non
+>> > data size aligned)
+>> > - dcbz to WT or CI memory (all procs)
+>> > - dcbz with cache disabled (all procs but 603e?)
+>> > - misaligned little endian accesses (603e)
+>> > - lwarx/stwcx (all procs)
+>> > - multiple/string with LE set (750, 603e, 7450, 7400)
+>> > - eciwx/ecowx (750, 7450, 7400)
+>> > - a couple of others related to vector processing
+>> >
+>> > If anybody knows offhand of something missing there, let me know.
+>>
+>> What about lwz/stw cropssing page boundaries ? Is this handled in HW ?
+>>
+>> Ben.
+> 
+> 
+> Apparently so, much to my surprise - I ran the testcase with those
+> instructions misaligned across a page boundary last night and got no
+> alignment exception.  I was surprised, and asked my husband about it (he
+> worked on the load/store units for a bunch of our parts), and he says
+> these guys never cause an exception for any of FSL's current parts as
+> far as he knows.  This is supported by our documentation as well - the
+> only place I see these listed is on 603e, where they can cause an
+> exception if the page is mapped little endian.
+> 
+Try this for 603e (BE):
+ memcpy(xxxx3, xxxx0, 8);
 
-Still not fully fixed:
+I get invalid behavior (0 in second dword) on MPC5200 for external flash
+access.
 
-
-drivers/video/aty/radeon_pm.c: In function `radeonfb_pm_init':
-drivers/video/aty/radeon_pm.c:2769: warning: implicit declaration of function `pmac_call_feature'
-drivers/video/aty/radeon_pm.c:2769: error: `PMAC_FTR_DEVICE_CAN_WAKE' undeclared (first use in this function)
-drivers/video/aty/radeon_pm.c:2769: error: (Each undeclared identifier is reported only once
-drivers/video/aty/radeon_pm.c:2769: error: for each function it appears in.)
-drivers/video/aty/radeon_pm.c:2770: warning: implicit declaration of function `pmac_set_early_video_resume'
-
- drivers/video/aty/radeon_pm.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
-
-Index: linux-2.6.15-rc1-olh/drivers/video/aty/radeon_pm.c
-===================================================================
---- linux-2.6.15-rc1-olh.orig/drivers/video/aty/radeon_pm.c
-+++ linux-2.6.15-rc1-olh/drivers/video/aty/radeon_pm.c
-@@ -1321,7 +1321,7 @@ static void radeon_pm_full_reset_sdram(s
- 	mdelay( 15);
- }
- 
--#ifdef CONFIG_PPC_OF
-+#ifdef CONFIG_PPC_PMAC
- 
- static void radeon_pm_reset_pad_ctlr_strength(struct radeonfb_info *rinfo)
- {
-@@ -2401,7 +2401,7 @@ static void radeon_reinitialize_QW(struc
- }
- #endif /* 0 */
- 
--#endif /* CONFIG_PPC_OF */
-+#endif /* CONFIG_PPC_PMAC */
- 
- static void radeon_set_suspend(struct radeonfb_info *rinfo, int suspend)
- {
-@@ -2700,7 +2700,7 @@ int radeonfb_pci_resume(struct pci_dev *
- 	return rc;
- }
- 
--#ifdef CONFIG_PPC_OF
-+#ifdef CONFIG_PPC_PMAC
- static void radeonfb_early_resume(void *data)
- {
-         struct radeonfb_info *rinfo = data;
-@@ -2734,7 +2734,7 @@ void radeonfb_pm_init(struct radeonfb_in
- 	 * BIOS does tho. Right now, all this PM stuff is pmac-only for that
- 	 * reason. --BenH
- 	 */
--#if defined(CONFIG_PM) && defined(CONFIG_PPC_OF)
-+#if defined(CONFIG_PM) && defined(CONFIG_PPC_PMAC)
- 	if (_machine == _MACH_Pmac && rinfo->of_node) {
- 		if (rinfo->is_mobility && rinfo->pm_reg &&
- 		    rinfo->family <= CHIP_FAMILY_RV250)
-@@ -2778,12 +2778,12 @@ void radeonfb_pm_init(struct radeonfb_in
- 		OUTREG(TV_DAC_CNTL, INREG(TV_DAC_CNTL) | 0x07000000);
- #endif
- 	}
--#endif /* defined(CONFIG_PM) && defined(CONFIG_PPC_OF) */
-+#endif /* defined(CONFIG_PM) && defined(CONFIG_PPC_PMAC) */
- }
- 
- void radeonfb_pm_exit(struct radeonfb_info *rinfo)
- {
--#if defined(CONFIG_PM) && defined(CONFIG_PPC_OF)
-+#if defined(CONFIG_PM) && defined(CONFIG_PPC_PMAC)
- 	if (rinfo->pm_mode != radeon_pm_none)
- 		pmac_set_early_video_resume(NULL, NULL);
- #endif
-
--- 
-short story of a lazy sysadmin:
- alias appserv=wotan
+--
+Regards
+Andrey Volkov
