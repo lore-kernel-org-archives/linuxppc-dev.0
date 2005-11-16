@@ -1,17 +1,27 @@
 Return-Path: <galak@kernel.crashing.org>
-In-Reply-To: <20051116093609.GA26269@iram.es>
-References: <1132032910.23979.6.camel@gaston>
-	<00eecfdbd5bccc7b293d847033121eee@freescale.com>
-	<20051116093609.GA26269@iram.es>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9035E68743
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2005 02:24:33 +1100 (EST)
+In-Reply-To: <1132136755.21643.40.camel@hades.cambridge.redhat.com>
+References: <1131357857.27347.28.camel@baythorne.infradead.org>
+	<20051107160939.GD3839@smtp.west.cox.net>
+	<1131380422.27347.72.camel@baythorne.infradead.org>
+	<20051107165453.GA29111@lst.de>
+	<1131382971.27347.79.camel@baythorne.infradead.org>
+	<1132131116.28963.75.camel@baythorne.infradead.org>
+	<17274.63508.501761.748278@cargo.ozlabs.ibm.com>
+	<1132136755.21643.40.camel@hades.cambridge.redhat.com>
 Mime-Version: 1.0 (Apple Message framework v746.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <43D0A21D-89BC-4EFE-BA2A-94760BA32276@kernel.crashing.org>
+Message-Id: <8CE48849-147D-4140-96B4-9727E1E509C7@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Date: Wed, 16 Nov 2005 09:15:09 -0600
-To: Gabriel Paubert <paubert@iram.es>
-Cc: linuxppc64-dev <linuxppc64-dev@ozlabs.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] powerpc: Merge align.c
+Date: Wed, 16 Nov 2005 09:24:51 -0600
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Tom Rini <trini@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] Fix 8250 probe on ppc32
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,79 +32,79 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Nov 16, 2005, at 3:36 AM, Gabriel Paubert wrote:
+On Nov 16, 2005, at 4:25 AM, David Woodhouse wrote:
 
-> On Tue, Nov 15, 2005 at 08:19:58PM -0600, Becky Bruce wrote:
->> Ben,
->>
->> Yeah,  I clearly shouldn't run testcases at 11pm, because I got in a
->> rush and only confirmed that lmw/stmw were actually taking the
->> exception.  Those 2 are working beautifully.  To test the others, I
->> need to run on a different board which, of course,  isn't bootable at
->> the moment.  As soon as I can get that up and running, I'll try  
->> some of
->> the other cases and let you know how it goes......
->>
->> BTW, Based on the pile of docs I have here, I think the list of
->> alignment-exception-causing events on FSL's current parts (603, 603e,
->> 750, 74x, 74xx, e500) is:
+> On Wed, 2005-11-16 at 20:12 +1100, Paul Mackerras wrote:
+>> Yes, it works on newworld (at least it does on my G4 powerbook).  It
+>> should work on 32-bit CHRP with any luck, but for oldworld we'll have
+>> to generate a COFF file.
 >
-> The 603 is still in production? And is the upcoming 8641 exactly
-> the same as the 74xx series in this respect?
+> I'll try it on Pegasos some time tonight or tomorrow. AFAICT I'm going
+> to need the patch which started this thread, if I want any serial  
+> ports
+> on my Pegasos. The newly-created asm-powerpc/serial.h file is  
+> devoid of
+> serial port definitions.
+>
+> Here it is again, with Tom's three criticisms addressed, deliberately
+> ignored, and addressed. In that order.
+>
+> It no longer touches asm-ppc/serial.h, so doesn't break the legacy
+> zImage.
+>
+> ---
+> [PATCH] Fix 8250 probe on ppc32
+>
+> There are no serial ports defined in the new asm-powerpc/serial.h, and
+> rightly so. The 64-bit setup code has a routine to look in the device
+> tree for them and register a platform_device for any we find there;  
+> this
+> patch steals that routine and makes it available on 32-bit machines
+> too...
+>
+> Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+>
 
-603 is used in all 82xx/83xx processors from Freescale. The 8641 is  
-the same core as 7448.
+[snip]
 
->> - single and double precision floating point ld/st ops (non-E500, non
->> data size aligned)
+> --- linux-2.6.13/drivers/serial/Kconfig.sof	2005-10-20  
+> 12:54:48.000000000 +0100
+> +++ linux-2.6.13/drivers/serial/Kconfig	2005-10-20  
+> 13:05:39.000000000 +0100
+> @@ -77,6 +77,11 @@ config SERIAL_8250_CS
 >
-> Hmm, you can load a double from any 4 byte aligned address AFAIR.
+>  	  If unsure, say N.
+>
+> +config SERIAL_8250_OF
+> +       bool
+> +       default y
+> +       depends on PPC_OF && SERIAL_8250 && PPC_MERGE
+> +
+>  config SERIAL_8250_ACPI
+>  	bool "8250/16550 device discovery via ACPI namespace"
+>  	default y if IA64
 
-This is only because every processor handles the misalignment for  
-you.  Its completely valid for someone to build a PPC that has an  
-alignment exception in this case.
+[snip]
 
->> - dcbz to WT or CI memory (all procs)
->> - dcbz with cache disabled (all procs but 603e?)
->> - misaligned little endian accesses (603e)
->
-> I understand that you mention it for completeness since we
-> don't care about LE mode AFAICT. But I believe that there
-> were some differences between 603 and 603e in this area.
->
-> However we do care about byte reversal instructions, which
-> probably believe like the corresponding normal instruction
-> (i.e., lwbrx has the same rules as lwzx, etc.)
->
->> - lwarx/stwcx (all procs)
->
-> And ldarx/stdcx. on 64 bit, but these ones should not
-> be emulated. So it's easy ;-)
->
->> - multiple/string with LE set (750, 603e, 7450, 7400)
->
-> Again LE mode is probably irrelevant.
+Should this really depend on PPC_OF?  Does it require true  
+OpenFirmware or just a flat dev tree to work?
 
-Agree with that. We dont support LE on classic.
+I ask because I'd like to extended this in the future to handle 8250  
+serial ports that aren't on a PCI or ISA bus, but on SoCs like 83xx,  
+85xx, 86xx, 4xx?  These will most likely not be running with true OF  
+but I've got a flat dev tree working today.
 
->> - eciwx/ecowx (750, 7450, 7400)
->
-> Have these instructions ever been used for something
-> under Linux?
+The following is what I've been toying with for an description of the  
+8250 node (in .dts format):
 
-I dont believe so.
+                 serial@4500 {
+                         device_type = "serial";
+                         compatible = "ns16550";
+                         reg = <4500 100>;
+                         clock-frequency = <0>;
+                         interrupts = <1a 3>;
+                         interrupt-parent = <40000>;
+                 };
 
->> - a couple of others related to vector processing
->
-> Which ones? The Altivec load and store instructions
-> simply mask the low order bits AFAIR.
-
-SPE misalignment is something to look at.
-
->> If anybody knows offhand of something missing there, let me know.
->
-> Nothing, but did you check when crossing a segment (256MB) boundary.
-> I seem to remember that some processors performed misaligned
-> load/store across pages but not across segments.
 
 - kumar
