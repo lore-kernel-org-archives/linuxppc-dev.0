@@ -1,19 +1,21 @@
-Return-Path: <greg@kroah.com>
-Received: from perch.kroah.org (mail.kroah.org [69.55.234.183])
-	by ozlabs.org (Postfix) with ESMTP id B67ED687C1
+Return-Path: <flucifredi@acm.org>
+Received: from mail23.sea5.speakeasy.net (mail23.sea5.speakeasy.net
+	[69.17.117.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2B495687C8
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Nov 2005 10:50:27 +1100 (EST)
-Date: Tue, 15 Nov 2005 14:40:56 -0800
-From: Greg KH <greg@kroah.com>
-To: Kumar Gala <galak@gate.crashing.org>
-Message-ID: <20051115224056.GA14357@kroah.com>
-References: <20051115175955.GA14518@kroah.com>
-	<Pine.LNX.4.44.0511151332310.28098-100000@gate.crashing.org>
+	Wed, 16 Nov 2005 11:08:15 +1100 (EST)
+From: Federico Lucifredi <flucifredi@acm.org>
+To: srideep.devireddy@wipro.com
+In-Reply-To: <6AD9F6A5F6E096408F0B703773355A0751AC41@CHN-SNR-MBX01.wipro.com>
+References: <6AD9F6A5F6E096408F0B703773355A0751AC41@CHN-SNR-MBX01.wipro.com>
+Content-Type: text/plain
+Date: Tue, 15 Nov 2005 19:00:46 -0500
+Message-Id: <1132099246.9583.45.camel@zago.boston.ximian.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.44.0511151332310.28098-100000@gate.crashing.org>
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: Platform device model drawback
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Problem:-BDI(u-boot) programming on MPC 8272ADS
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,33 +26,84 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Nov 15, 2005 at 01:34:47PM -0600, Kumar Gala wrote:
-> > You only register the driver once.  The individual devices can be bound
-> > to the same driver, right?
-> > 
-> > > Not registering it in CPM_UART, how the pdev could be obtained?
-> > > 
-> > > Maybe this is clear, but platform stuff is cumbersome some times...
-> > 
-> > Then make it cleaner :)
+Srideep,
+ I have never used the BDI 2000 with the MPC8272, however, I can tell
+you that configuring your emulator for your specific board, if the
+manufacturer does not provide a *verified* configuration for it, is
+something that takes some time and a few variables to tweak.
+
+ Maybe you can expect to find a configuration ready made for some
+Motorola prototype board like the ADS 8272, *but* it would be a mistake
+to assume that that maps directly to your hardware in a workable manner.
+
+ Bottom line, you need to know exactly what all of the emulator knobs
+are, and, if this is new hardware, keep in mind that it [the new
+hardware] could be malfunctioning. Do not assume the hardware is
+operating as a reliable computer unless you have positive proof that is
+the case - my personal experience is that I tried to make an emulator
+work on hardware that someone above me kept insisting "had to be
+working" - which was not the case.  I got plenty of frustration and
+nothing to show for it - I should have defended the case that the
+hardware was not working much harder than I did 8)
+
+ Anyway.. I am digressing. How is your BDI 2000 behaving ? I was using
+an "Embedded Toolsmiths" emulator, by the way.
+
+ -f
+
+On Wed, 2005-10-12 at 17:14 +0530, srideep.devireddy@wipro.com wrote:
+> Hi ,
 > 
-> This is where the confusion is.  We have two instances of device A.  We 
-> want instance 1 of device A bound to driver "enet" and instance 2 of 
-> device A bound to "serial".
-
-That's different from what was described earlier :)
-
-In this case, you need two different struct devices.
-
-> Today both instances are called "deviceA".  However we can't register two 
-> different drivers as "deviceA".
-
-Nor would you want to.
-
-> Not sure if that clarifies the issue any.
-
-A bit.  I think it still sounds messy...
-
-thanks,
-
-greg k-h
+>    I am srideep , we  have problem in programming flash on MPC 8272
+> ADS file using BDI 2000 with  linux as host. As I am new to this  I
+> need your help in this regard.
+> 
+>  
+> 
+> We have connected the BDI2000 to MPC8272ADS board. We are working on
+> linux  & I have  attached configuration file for 8272 ADS board .
+> 
+>  BDI 2000 could recognize the processor type.
+> 
+>  But when we try to program the flash (with uboot binary image ) at
+> location 0xff800000 on MPC 8272ADS evaluation board, it failed to
+> program,
+> 
+> We tried to unlock and do the same but still left with the same error.
+> 
+> But when we tried to program in any other location it programmed but
+> it doesnt boot .
+> 
+> Can you kindly send us the working configuration file.
+> 
+>  
+> 
+>  
+> 
+> Thanks & Regards
+> 
+> Srideep Reddy D
+> 
+> Software Engineer 
+> 
+> Telecom solutions 
+> 
+> Wipro Technologies
+> 
+> 91-44-30691952
+> 
+>  
+> 
+> 
+> 
+> 
+> Confidentiality Notice 
+> 
+> The information contained in this electronic message and any
+> attachments to this message are intended
+> for the exclusive use of the addressee(s) and may contain confidential
+> or privileged information. If
+> you are not the intended recipient, please notify the sender at Wipro
+> or Mailadmin@wipro.com immediately
+> and destroy all copies of this message and any attachments.
+> 
