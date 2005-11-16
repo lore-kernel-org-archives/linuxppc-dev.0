@@ -1,16 +1,18 @@
-Return-Path: <avolkov@varma-el.com>
-Message-ID: <437B6447.8010203@varma-el.com>
-Date: Wed, 16 Nov 2005 19:54:31 +0300
-From: Andrey Volkov <avolkov@varma-el.com>
+Return-Path: <roto@gmx.net>
+Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id D8E0F68724
+	for <linuxppc-dev@ozlabs.org>; Thu, 17 Nov 2005 05:09:34 +1100 (EST)
+Date: Wed, 16 Nov 2005 19:09:26 +0100
+From: Wolfgang Pfeiffer <roto@gmx.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <20051116180925.GB3080@localhost>
+References: <1130999620.4680.28.camel@gaston>
 MIME-Version: 1.0
-To: Becky Bruce <becky.bruce@freescale.com>
-References: <1132108490.5646.67.camel@gaston>
-	<4ad202b87fa52d954e645b05fb45ca13@freescale.com>
-In-Reply-To: <4ad202b87fa52d954e645b05fb45ca13@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <1130999620.4680.28.camel@gaston>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	linuxppc64-dev <linuxppc64-dev@ozlabs.org>
-Subject: Re: [PATCH] powerpc: Merge align.c
+	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
+Subject: Re: 2.6.14 USB vs. sleep issues
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,47 +22,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Becky Bruce wrote:
-> On Nov 15, 2005, at 8:34 PM, Benjamin Herrenschmidt wrote:
-> 
->> >
->> > BTW, Based on the pile of docs I have here, I think the list of
->> > alignment-exception-causing events on FSL's current parts (603, 603e,
->> > 750, 74x, 74xx, e500) is:
->> >
->> > - lmw/stmw (all procs, non-word aligned)
->> > - single and double precision floating point ld/st ops (non-E500, non
->> > data size aligned)
->> > - dcbz to WT or CI memory (all procs)
->> > - dcbz with cache disabled (all procs but 603e?)
->> > - misaligned little endian accesses (603e)
->> > - lwarx/stwcx (all procs)
->> > - multiple/string with LE set (750, 603e, 7450, 7400)
->> > - eciwx/ecowx (750, 7450, 7400)
->> > - a couple of others related to vector processing
->> >
->> > If anybody knows offhand of something missing there, let me know.
->>
->> What about lwz/stw cropssing page boundaries ? Is this handled in HW ?
->>
->> Ben.
-> 
-> 
-> Apparently so, much to my surprise - I ran the testcase with those
-> instructions misaligned across a page boundary last night and got no
-> alignment exception.  I was surprised, and asked my husband about it (he
-> worked on the load/store units for a bunch of our parts), and he says
-> these guys never cause an exception for any of FSL's current parts as
-> far as he knows.  This is supported by our documentation as well - the
-> only place I see these listed is on 603e, where they can cause an
-> exception if the page is mapped little endian.
-> 
-Try this for 603e (BE):
- memcpy(xxxx3, xxxx0, 8);
+On Thu, Nov 03, 2005 at 05:33:39PM +1100, Benjamin Herrenschmidt wrote:
+> For those who experience crashes on sleep and/or wakeup (typically due
+> to USB) with 2.6.14, I made a test patch that might help. [ ... ]
 
-I get invalid behavior (0 in second dword) on MPC5200 for external flash
-access.
+Ben, I just compiled and installed a 2.6.14.1 from kernel.org with
+none of your patches from this thread applied to it, and I have no
+sleep/wakeup probs with it so far: about 3 instances of sleep/wakeup
+until now, all of them successful.
 
---
-Regards
-Andrey Volkov
+Maybe I even made it a bit more complicated for the system, as I
+connected a USB HUB, with 4 ports, to the machine: It just seems to
+work ...
+
+-------------------------------------
+$ cat /proc/cpuinfo 
+processor       : 0
+cpu             : 7455, altivec supported
+clock           : 867MHz
+revision        : 0.2 (pvr 8001 0302)
+bogomips        : 865.18
+machine         : PowerBook3,5
+motherboard     : PowerBook3,5 MacRISC2 MacRISC Power Macintosh
+detected as     : 80 (PowerBook Titanium IV)
+pmac flags      : 0000001b
+L2 cache        : 256K unified
+memory          : 768MB
+pmac-generation : NewWorld
+-----------------------------------
+
+HTH
+
+Best Regards
+Wolfgang
+
+-- 
+Wolfgang Pfeiffer
+http://profiles.yahoo.com/wolfgangpfeiffer
+
+Key ID: E3037113
+Key fingerprint = A8CA 9D8C 54C4 4CC1 0B26  AA3C 9108 FB42 E303 7113
