@@ -1,20 +1,24 @@
-Return-Path: <zjznliang_popo@163.com>
-Received: from 163.com (m12-12.163.com [220.181.12.12])
-	by ozlabs.org (Postfix) with SMTP id ADE6A68728
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 23BE668725
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Nov 2005 13:34:22 +1100 (EST)
-Received: from zjzn (unknown [61.183.211.137])
-	by smtp13 (Coremail) with SMTP id 8gAkhv2WekMZiY4C.1
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 16 Nov 2005 10:18:50 +0800 (CST)
-Date: Wed, 16 Nov 2005 10:19:08 +0800
-From: "zjznliang" <zjznliang_popo@163.com>
-To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Message-Id: <20051116023422.ADE6A68728@ozlabs.org>
-Subject: how to use the system call in the module ?
+	Wed, 16 Nov 2005 17:17:23 +1100 (EST)
+Received: from cpe-66-69-212-100.austin.res.rr.com ([66.69.212.100]
+	helo=[192.168.1.100])
+	by nommos.sslcatacombnetworking.com with esmtp (Exim 4.52)
+	id 1EcGbe-0003BY-N6
+	for linuxppc-embedded@ozlabs.org; Wed, 16 Nov 2005 00:17:18 -0600
+Mime-Version: 1.0 (Apple Message framework v746.2)
+References: <17274.51251.591579.8751@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <6D755333-B416-4F31-A3A8-18ED308582E2@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Date: Wed, 16 Nov 2005 00:17:44 -0600
+To: "linuxppc-embedded@ozlabs.org list" <linuxppc-embedded@ozlabs.org>
+Subject: Fwd: powerpc.git tree now on kernel.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,31 +29,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-SGkgbGludXhwcGMtZW1iZWRkZWSjoQ0KDQoJICAgICBJbiB0aGUgZGV2aWNlIGRyaXZlciwgd2Ug
-YWx3YXlzIHdhbnQgdG8gc2VuZCBzb21lIGRhdGEgdG8gdGhlIGFwcGxpY2F0aW9uIC4gU28gSSB3
-YXMgIHRoaW5raW5nICwgdGhlIElQQyB3b3VsZCAgZG8gbWUgYSBmYXZvciAuIEkgdXNlZCB0aGUg
-c3lzX21zZ2dldCBhbmQgc3lzX21zZ3NuZCBpbiB0aGUgbW9kdWxlICxidXQgSSBnb3QgdGhpcyB3
-aGVuIEkgdHlwZSB0aGUgImluc21vZCAgbW9kdWxlIiBjb21tYW5kIDoNCgkJaW5zbW9kOiB1bnJl
-c29sdmVkIHN5bWJvbCBzeXNfbXNnZ2V0IA0KCQlpbnNtb2Q6IHVucmVzb2x2ZWQgc3ltYm9sIHN5
-c19tc2dzbmQgDQoNCgkJSW4gbXkgb3BpbmlvbiAsdGhlIHN5c3RlbSBjYWxsIGlzIHRoZSBzeXN0
-ZW0gY2FsbCB0byB0aGUgdXNlciBhcHBsaWNhdGlvbiBhbmQgdGhlIGZ1bmN0aW9uIHRvIHRoZSBr
-ZXJuZWwgbW9kZSAoZWc6IG1vZHVsZSApLHNvIGhvdyB0byB1c2UgdGhlIHN5c3RlbSBjYWxsIGlu
-IGtlcm5lbCBtb2RlIGlzIHRoZSB3YXkgdGhhdCBob3cgdG8gcmVjb2duaXNlIHRoZSBmdW5jdGlv
-biBvZiBzeXN0ZW0gY2FsbCBpbiB0aGUgbW9kdWxlIC4NCiANCgkJQXQgdGhlIGJlZ2lubmluZywg
-SSBoYWQgdG8gb3BlbiBhbmQgcmVhZCBhIGZpbGUgaW4gdGhlIG1vZHVsZSAsIHNvIEkgdXNlZCAg
-dGhpcyB3YXkgdG8gYWRkIHRoZSBzeXN0ZW0gY2FsbCA6DQoNCgkJI2RlZmluZSBfS0VSTkVMX1NZ
-U0NBTExTXw0KCQkjaW5jbHVkZSA8bGludXgvdW5pc3RkLmg+DQoNCgkJV2hlbiBJIHR5cGVkIHRo
-ZSAiaW5zbW9kIG1vZHVsZSAiLHRoZSBzeW1ib2wgb3BlbiBhbmQgcmVhZCBjb3VsZCBiZSBmb3Vu
-ZCAsYnV0IHRoZSBmdW5jdGlvbiB3YXMgbm90IGF2YWlsYWJpbGl0eS5TbyBJIGNoZWNrZWQgdGhl
-IC9wcm9jL2tzeW1zIGZvciB0aGUgZnVuY3Rpb24gd2hpY2ggdGhlIGtlcm5lbCBjb3VsZCBjYWxs
-ICwgYW5kIHVzZWQgdGhlIGZpbHBfb3BlbiAoKSBhbmQga2VybmVsX3JlYWQgKCkgZm9yIGluc3Rl
-YWQgLg0KCQkNCgkJTm93ICwgSSBkaWQgYSB0ZXN0ICwgY29tcGlsZSB0aGUgbW9kdWxlIHdpdGgg
-dGhlIGxpbnV4IGtlcm5lbCwgdGhlIHN5c19tc2dnZXQgYW5kIHN5c19tc2dzbmQgY291bGQgd29y
-ayBmaW5lIC4gSSB0aG91Z2h0IHRoZSByZWFzb24gaXMgdGhhdCB0aGUgc3lzX21zZ2dldCBpcyBh
-biBleHRlcm4gZnVuY3Rpb24gd2hlbiBjb21waWxpbmcgd2l0aCB0aGUga2VybmVsLlNvIHBlcmhh
-cHMgLCB3aGVuIEkgZG8gaW5zbW9kIHRoZSBtb2R1bGUsIEkgZGlkIG5vdCBleHBvcnRlIHRoZSBz
-eXNfbXNnZ2V0IGFuZCBzeXNfbXNnc25kIGFzIHRoZSBrZXJuZWwgc3ltYm9scy4NCg0KCQlIb3cg
-dG8gZXhwb3J0ZSB0aGUgc3lzdGVtIGNhbGwgYXMgdGhlIGtlcm5lbCBzeW1ib2xzPz8gDQoNCiAg
-ICAgICBBbnkgaGVscCBvbiB0aGlzIHdvdWxkIGJlIGdyZWF0bHkgYXBwcmVjaWF0ZWQuIFRoYW5r
-cyBmb3IgeW91ciBwYXRpZW5jZS4gDQoNCiAJCQkJDQoNCqGhoaF6anpubGlhbmcNCqGhoaGhoaGh
-emp6bmxpYW5nX3BvcG9AMTYzLmNvbQ0KoaGhoaGhoaGhoaGhMjAwNS0xMS0xNg0K
+For those that only read linuxppc-embedded (and shame on you :)
+
+- kumar
+
+Begin forwarded message:
+
+> From: Paul Mackerras <paulus@samba.org>
+> Date: November 15, 2005 11:48:35 PM CST
+> To: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org, akpm@osdl.org
+> Subject: powerpc.git tree now on kernel.org
+>
+> I have just created a git tree for ppc/powerpc patches that are
+> candidates for 2.6.16.  The tree is at:
+>
+> git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
+>
+> Currently, besides the patches that are in the powerpc-merge.git tree,
+> there are the following patches in there:
+>
+> Adrian Bunk:
+>       PPC_PREP: remove unneeded exports
+>
+> Benjamin Herrenschmidt:
+>       powerpc: Merge align.c (#2)
+>
+> David Gibson:
+>       powerpc: Remove imalloc.h
+>
+> David Woodhouse:
+>       syscall entry/exit revamp
+>
+> Kumar Gala:
+>       powerpc: moved ipic code to arch/powerpc
+>
+> Michael Ellerman:
+>       powerpc: Merge kexec
+>
+> Mike Kravetz:
+>       Remove SPAN_OTHER_NODES config definition
+>
+> Although some of these patches may go to Linus before 2.6.15 is
+> released, I won't be asking Linus to pull this tree directly, since it
+> is likely to get a bit messy as patches are updated.  I expect that
+> Andrew Morton will pull this tree periodically and include it in his
+> -mm releases.
+>
+> Paul.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
