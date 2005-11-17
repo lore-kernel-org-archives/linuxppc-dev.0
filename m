@@ -1,15 +1,22 @@
-Return-Path: <n_tbinh@yahoo.com>
-Received: from web30710.mail.mud.yahoo.com (web30710.mail.mud.yahoo.com
-	[68.142.200.143]) by ozlabs.org (Postfix) with SMTP id 12ADF68744
+Return-Path: <jolt@tuxbox.org>
+Received: from fiebig.biz (loadbalancer1.core.taytron.net [80.190.249.152])
+	by ozlabs.org (Postfix) with ESMTP id C149E68757
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Nov 2005 19:26:38 +1100 (EST)
-Message-ID: <20051117081956.4614.qmail@web30710.mail.mud.yahoo.com>
-Date: Thu, 17 Nov 2005 08:19:56 +0000 (GMT)
-From: Nguyen Thanh Binh <n_tbinh@yahoo.com>
-To: linuxppc-embedded@ozlabs.org
+	Thu, 17 Nov 2005 20:13:16 +1100 (EST)
+Message-ID: <437C499C.6090002@tuxbox.org>
+Date: Thu, 17 Nov 2005 10:13:00 +0100
+From: Florian Schirmer <jolt@tuxbox.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Subject: Booting hangs after "Calibrating delay loop..."
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+References: <20051114143821.GA28852@logos.cnet> <43798327.70305@tuxbox.org>
+	<20051115054216.GB29963@logos.cnet>
+	<20051115142147.GD32373@logos.cnet> <437B1C53.1060004@tuxbox.org>
+	<20051116083609.GC4441@logos.cnet>
+In-Reply-To: <20051116083609.GC4441@logos.cnet>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: obi@saftware.de, carjay@gmx.de,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] m8xx_wdt: software watchdog reset/interrupt select
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,31 +27,58 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+Hi,
 
-When booting Monta Vista Linux on Memec board
-(Virtex-4 FX12 LC), it hung after printing the
-following message:
+okay here is what the current driver does:
 
-    "Calibrating delay loop..."
+During startup it installs a timer irq (PIT) handler and sets the 
+frequency to half of the watchdog timeout. As soon as this timer irq 
+triggers we reset the watchdog inside the irq handler.
 
-By looking at the source code, I found that in the
-init/main.c the problem came from the
-calibrate_delay()
-function: jiffies was not incremented (jiffies was
-always equal to 0).
+If a userspace handler takes over the watchdog we deinstall the timer 
+irq handler and let the userspace daemon handle the watchdog resets.
 
-Have anyone get the similar problem or any experience
-to fix it?
+Please not that we're talking about the timer irq, not the watchdog 
+interrupt.
 
-Thank you.
+I don't see why it should make a difference wether the watchdog 
+generates a IRQ0/HRESET or a system reset directly since it should never 
+trigger anyway.
 
-Binh Nguyen
+All the patch does is to use a kernel timer instead of the hardware 
+timer. So i'm little confused.
 
-Nguy&#7877;n Thanh Bình
+And yes you should be right about the watchdog irq. It doesn't make 
+sense to install a watchdog irq handler. It doesn't make any sense to 
+put the watchdog into irq mode. As far as i know nobody ever tried to 
+use that mode.
 
+If you're bound to irq mode because the bootloader activates it the 
+whole code should still work out of the box as long as the irq causes a 
+system reset. But maybe i'm missing something obvious or the docs are 
+incorrect/incomplete?
 
-		
-___________________________________________________________ 
-How much free photo storage do you get? Store your holiday 
-snaps for FREE with Yahoo! Photos http://uk.photos.yahoo.com
+Best,
+   Florian
+
+> Anyway, the SWRI bit selects interrupt (0) or reset mode (1) for the watchdog.  
+> 
+> On reset mode no interrupt is sent to the kernel - the watchdog logic resets
+> the system with HRESET.
+> 
+> So, the timer in m8xx_wdt is _required_ for reset mode.
+> 
+> Does that make sense?
+> 
+>> Otherwise i'm fine with the patch. Feel free to add my Signed-off-by line.
+> 
+> Ok, lets sort this out first. 
+> 
+> I wonder how interrupt mode is supposed to work, because the manual states
+> that in interrupt mode (SWRI == 0) an NMI (IRQ0) is triggered, which jumps
+> to 0x100 exception vector (SW reset).
+> 
+> Maybe I'm misunderstanding the interrupt mode?
+> 
+> Folks who wrote the patch claim it works on their 8xx's (as can be found
+> on mailing list archives).
