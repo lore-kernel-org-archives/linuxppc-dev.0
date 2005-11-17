@@ -1,26 +1,17 @@
-Return-Path: <shtrom@zorglub.ssji.net>
-Received: from whymper.ssji.net (whymper.ssji.net [213.41.140.194])
+Return-Path: <SRS0+ece2fd61c1dcd6e6d665+816+infradead.org+dwmw2@baythorne.srs.infradead.org>
+Received: from baythorne.infradead.org (baythorne.infradead.org [81.187.2.161])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5884268734
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Nov 2005 00:19:16 +1100 (EST)
-Received: from mudrublic.csbnet.se ([193.11.243.56] helo=gloduk.narf.ssji.net)
-	by whymper.ssji.net with esmtpsa (TLSv1:AES256-SHA:256) (Exim 4.50)
-	id 1EcjL7-0003D8-Ab
-	for linuxppc-dev@ozlabs.org; Thu, 17 Nov 2005 13:58:09 +0100
-Date: Thu, 17 Nov 2005 13:58:04 +0100
-From: Olivier Mehani <shtrom@ssji.net>
-To: linuxppc-dev@ozlabs.org
-Message-Id: <20051117135804.7a320dbe.shtrom@ssji.net>
-In-Reply-To: <200511171234.31085.lkml@oxley.org>
-References: <200511170213.16926.lkml@oxley.org>
-	<Pine.LNX.4.60.0511161918050.29361@tin.icics.ubc.ca>
-	<200511171234.31085.lkml@oxley.org>
+	by ozlabs.org (Postfix) with ESMTP id A345B6873F
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Nov 2005 02:24:39 +1100 (EST)
+From: David Woodhouse <dwmw2@infradead.org>
+To: paulus@samba.org
+Content-Type: text/plain
+Date: Thu, 17 Nov 2005 15:24:29 +0000
+Message-Id: <1132241069.28963.169.camel@baythorne.infradead.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__17_Nov_2005_13_58_04_+0100_XnHKcjPGt6xc3wmE"
-Subject: Re: [REQUEST] Tap for right click on PowerBook trackpad
+Cc: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Fix zImage boot on old Pegasos firmware
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,42 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__17_Nov_2005_13_58_04_+0100_XnHKcjPGt6xc3wmE
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+If a claim fails, the Pegasos firmware pretends it never even made it
+into the prom, rather than indicating that it tried and failed.
 
-On Thu, 17 Nov 2005 12:34:29 +0000
-Felix Oxley <lkml@oxley.org> wrote:
-> Actually, ububtu which I was experimenting with had this feature
-> enabled by default. However I find it extremely cumbersome to have to
-> remove my hand form the trackpad in order to press F12.
+Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 
-If I'm not mistaken, the default mapping are fn+Alt for right click and
-fn+Ctrl for middle click, which I find much more convenient than F11
-and F12 on my iBook (closer to the trackpad).
+diff --git a/arch/powerpc/boot/prom.c b/arch/powerpc/boot/prom.c
+index 4bea2f4..e8a6304 100644
+--- a/arch/powerpc/boot/prom.c
++++ b/arch/powerpc/boot/prom.c
+@@ -116,6 +116,7 @@ finddevice(const char *name)
+ void *
+ claim(unsigned long virt, unsigned long size, unsigned long align)
+ {
++	int ret;
+ 	struct prom_args {
+ 		char *service;
+ 		int nargs;
+@@ -132,7 +133,11 @@ claim(unsigned long virt, unsigned long 
+ 	args.virt = virt;
+ 	args.size = size;
+ 	args.align = align;
+-	(*prom)(&args);
++	ret = (*prom)(&args);
++	/* The original Pegasos II firmware claims that the call never made 
++	   it into the prom, rather than returning failure correctly */
++	if (ret)
++		return (void *)-1;
+ 	return args.ret;
+ }
+ 
 
-> I believe the Linux trackpad driver can do other specail action such
-> as 'click and drag' or something  similar. Therefore I was/am hoping
-> that implementing tap for right click would be possible.
-
-I'm adding my own question as it is almost the same topic:
-Is it possible to have the same behavior as with synaptics touchpads
-(scrolling) ? I've googled but didn't find any sure answer.
-
---=20
-Olivier Mehani <shtrom@ssji.net>
-PGP fingerprint: 3720 A1F7 1367 9FA3 C654 6DFB 6845 4071 E346 2FD1
-
---Signature=_Thu__17_Nov_2005_13_58_04_+0100_XnHKcjPGt6xc3wmE
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQFDfH5faEVAceNGL9ERAgFdAJ9iRFxf0uvY3Czl3uHCfBjgwH9lPQCfTHWP
-j52o4KlZHO5gjkGKI8+8pVA=
-=hzxm
------END PGP SIGNATURE-----
-
---Signature=_Thu__17_Nov_2005_13_58_04_+0100_XnHKcjPGt6xc3wmE--
+-- 
+dwmw2
