@@ -1,24 +1,32 @@
-Return-Path: <rmk+linuxppc-embedded=ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
-	[212.18.232.186])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+Return-Path: <peterh@google.com>
+Received: from smtp-out.google.com (smtp-out.google.com [216.239.45.12])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4375768775
+	by ozlabs.org (Postfix) with ESMTP id B67EB6874D
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Nov 2005 03:10:32 +1100 (EST)
-Date: Thu, 17 Nov 2005 16:10:15 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Andrey Volkov <avolkov@varma-el.com>
-Message-ID: <20051117161015.GC26032@flint.arm.linux.org.uk>
-References: <437A2EE8.4050404@varma-el.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <437A2EE8.4050404@varma-el.com>
-Sender: Russell King <rmk@arm.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org,
-	ML linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH 1/1 kernel 2.6.15-rc1] Fix copy-paste bug after _Convert
-	platform drivers to use_ (again)
+	Fri, 18 Nov 2005 04:52:16 +1100 (EST)
+Received: from nappa.corp.google.com (nappa.corp.google.com [172.24.0.4])
+	by smtp-out.google.com with ESMTP id jAHHqAa0022898
+	for <linuxppc-embedded@ozlabs.org>; Thu, 17 Nov 2005 09:52:10 -0800
+Received: from smtp-out2.google.com (fpx22.prod.google.com [10.253.24.22])
+	by nappa.corp.google.com with ESMTP id jAHHo9hb023149
+	for <linuxppc-embedded@ozlabs.org>; Thu, 17 Nov 2005 09:51:56 -0800
+Received: by smtp-out2.google.com with SMTP id 22so314695fpx
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 17 Nov 2005 09:51:56 -0800 (PST)
+Message-ID: <50e923300511170951o5695e3f2s8b4b7ae4c1f8788a@mail.google.com>
+Date: Thu, 17 Nov 2005 09:51:56 -0800
+From: Peter Hanson <peterh@google.com>
+To: Greg KH <greg@kroah.com>, linuxppc-embedded@ozlabs.org
+In-Reply-To: <20051117041645.GA19145@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20051115175955.GA14518@kroah.com>
+	<Pine.LNX.4.44.0511151332310.28098-100000@gate.crashing.org>
+	<20051115224056.GA14357@kroah.com>
+	<50e923300511161839g12ad1e88je46f989192cd3f58@mail.google.com>
+	<20051117041645.GA19145@kroah.com>
+Subject: Re: Platform device model drawback
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,16 +37,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Nov 15, 2005 at 09:54:32PM +0300, Andrey Volkov wrote:
-> I fear it is not a last patch of such kind :(.
-> Please recheck places where you are changed
-> pdev<->dev.
+On 11/16/05, Greg KH <greg@kroah.com> wrote:
+> On Wed, Nov 16, 2005 at 06:39:49PM -0800, Peter Hanson wrote:
+> > IIRC, Arabella claims to deal nicely with dynamic allocation of
+> > PowerPC resources to Linux devices =3D>
+> > http://www.arabellasw.com/home.php
+>
+> I don't understand how that pertains to this thread...
 
-Applied.  However, what you ask is to review the entire kernel looking
-for a one-character error needle in a massive haystack.  That's a job
-better suited to compilers than eyes.
+Potential conflict: multiple logical devices competing for the same
+SoC resource.  Converse: similar logical devices supported by
+different resources.  Both cases have been mentioned in this thread,
+with confusion about how to deal with them.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:  2.6 Serial core
+Does Arabella solve it as claimed?  I don't know.  But dynamic
+allocation doesn't sound crazy.  Maybe some of the code or design can
+even be copied.
+
+> And why did you post it only to me?
+
+Oops.  Correcting now.
+
+> thanks,
+>
+> greg k-h
