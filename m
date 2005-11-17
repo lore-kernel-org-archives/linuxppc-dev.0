@@ -1,17 +1,17 @@
-Return-Path: <SRS0+ece2fd61c1dcd6e6d665+816+infradead.org+dwmw2@baythorne.srs.infradead.org>
-Received: from baythorne.infradead.org (baythorne.infradead.org [81.187.2.161])
+Return-Path: <olh@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A345B6873F
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Nov 2005 02:24:39 +1100 (EST)
-From: David Woodhouse <dwmw2@infradead.org>
-To: paulus@samba.org
-Content-Type: text/plain
-Date: Thu, 17 Nov 2005 15:24:29 +0000
-Message-Id: <1132241069.28963.169.camel@baythorne.infradead.org>
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id EC3F668748
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Nov 2005 08:09:08 +1100 (EST)
+Date: Thu, 17 Nov 2005 22:09:02 +0100
+From: Olaf Hering <olh@suse.de>
+To: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Message-ID: <20051117210902.GB31775@suse.de>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Fix zImage boot on old Pegasos firmware
+Content-Type: text/plain; charset=utf-8
+Subject: [PATCH] ppc boot: replace string labels with numbers
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,36 +21,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If a claim fails, the Pegasos firmware pretends it never even made it
-into the prom, rather than indicating that it tried and failed.
 
-Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+Replacing the string labels with numbers saves 117 bytes in the final zImage.
+These local labels are not discared.
 
-diff --git a/arch/powerpc/boot/prom.c b/arch/powerpc/boot/prom.c
-index 4bea2f4..e8a6304 100644
---- a/arch/powerpc/boot/prom.c
-+++ b/arch/powerpc/boot/prom.c
-@@ -116,6 +116,7 @@ finddevice(const char *name)
- void *
- claim(unsigned long virt, unsigned long size, unsigned long align)
- {
-+	int ret;
- 	struct prom_args {
- 		char *service;
- 		int nargs;
-@@ -132,7 +133,11 @@ claim(unsigned long virt, unsigned long 
- 	args.virt = virt;
- 	args.size = size;
- 	args.align = align;
--	(*prom)(&args);
-+	ret = (*prom)(&args);
-+	/* The original Pegasos II firmware claims that the call never made 
-+	   it into the prom, rather than returning failure correctly */
-+	if (ret)
-+		return (void *)-1;
- 	return args.ret;
- }
+Signed-off-by: Olaf Hering <olh@suse.de>
+
+ arch/powerpc/boot/crt0.S |   23 +++++++++++------------
+ 1 files changed, 11 insertions(+), 12 deletions(-)
+
+Index: linux-2.6.15-rc1-olh/arch/powerpc/boot/crt0.S
+===================================================================
+--- linux-2.6.15-rc1-olh.orig/arch/powerpc/boot/crt0.S
++++ linux-2.6.15-rc1-olh/arch/powerpc/boot/crt0.S
+@@ -14,43 +14,42 @@
+ 	.text
+ 	.globl	_zimage_start
+ _zimage_start:
+-	bl	reloc_offset
++	bl	1f
  
-
+-reloc_offset:
++1:
+ 	mflr	r0
+-	lis	r9,reloc_offset@ha
+-	addi	r9,r9,reloc_offset@l
++	lis	r9,1b@ha
++	addi	r9,r9,1b@l
+ 	subf.	r0,r9,r0
+-	beq	clear_caches
++	beq	3f
+ 
+-reloc_got2:
+ 	lis	r9,__got2_start@ha
+ 	addi	r9,r9,__got2_start@l
+ 	lis	r8,__got2_end@ha
+ 	addi	r8,r8,__got2_end@l
+ 	subf.	r8,r9,r8
+-	beq	clear_caches
++	beq	3f
+ 	srwi.	r8,r8,2
+ 	mtctr	r8
+ 	add	r9,r0,r9
+-reloc_got2_loop:
++2:
+ 	lwz	r8,0(r9)
+ 	add	r8,r8,r0
+ 	stw	r8,0(r9)
+ 	addi	r9,r9,4
+-	bdnz	reloc_got2_loop
++	bdnz	2b
+ 
+-clear_caches:
++3:
+ 	lis	r9,_start@h
+ 	add	r9,r0,r9
+ 	lis	r8,_etext@ha
+ 	addi	r8,r8,_etext@l
+ 	add	r8,r0,r8
+-1:	dcbf	r0,r9
++4:	dcbf	r0,r9
+ 	icbi	r0,r9
+ 	addi	r9,r9,0x20
+ 	cmplwi	0,r9,8
+-	blt	1b
++	blt	4b
+ 	sync
+ 	isync
+ 
 -- 
-dwmw2
+short story of a lazy sysadmin:
+ alias appserv=wotan
