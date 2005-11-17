@@ -1,22 +1,17 @@
-Return-Path: <jolt@tuxbox.org>
-Received: from fiebig.biz (loadbalancer1.core.taytron.net [80.190.249.152])
-	by ozlabs.org (Postfix) with ESMTP id C149E68757
+Return-Path: <dhlii@comcast.net>
+Received: from sccrmhc12.comcast.net (sccrmhc12.comcast.net [204.127.202.56])
+	by ozlabs.org (Postfix) with ESMTP id B54FF6873F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Nov 2005 20:13:16 +1100 (EST)
-Message-ID: <437C499C.6090002@tuxbox.org>
-Date: Thu, 17 Nov 2005 10:13:00 +0100
-From: Florian Schirmer <jolt@tuxbox.org>
+	Thu, 17 Nov 2005 20:37:05 +1100 (EST)
+Message-ID: <437C4E07.8020307@comcast.net>
+Date: Thu, 17 Nov 2005 04:31:51 -0500
+From: "David H. Lynch Jr." <dhlii@comcast.net>
 MIME-Version: 1.0
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-References: <20051114143821.GA28852@logos.cnet> <43798327.70305@tuxbox.org>
-	<20051115054216.GB29963@logos.cnet>
-	<20051115142147.GD32373@logos.cnet> <437B1C53.1060004@tuxbox.org>
-	<20051116083609.GC4441@logos.cnet>
-In-Reply-To: <20051116083609.GC4441@logos.cnet>
+To: linuxppc-embedded@ozlabs.org
+References: <437308E6.2070804@ecrin.com>
+In-Reply-To: <437308E6.2070804@ecrin.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: obi@saftware.de, carjay@gmx.de,
-	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] m8xx_wdt: software watchdog reset/interrupt select
+Subject: Re: "Now booting the kernel"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,58 +22,100 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+I am having similar difficulties on a Xilinx Virtex 4.
 
-okay here is what the current driver does:
+    I have some advantages over Nitesh in that I have a 32bit port at 
+0x70000000 that I can write values to and see what they are (at least 
+until the MMU is enabled)
+    and with some additional complexity use as a sort of UART to write text.
+   
+    Thus far this is what I get:
 
-During startup it installs a timer irq (PIT) handler and sets the 
-frequency to half of the watchdog timeout. As soon as this timer irq 
-triggers we reset the watchdog inside the irq handler.
+Starting MonitorX.elf: V3.3.2.0.
+Loading zImage.elf.
 
-If a userspace handler takes over the watchdog we deinstall the timer 
-irq handler and let the userspace daemon handle the watchdog resets.
+loaded at:     00400000 0048C138
+board data at: 0048A124 0048A138
+relocated to:  004050AC 004050C0
+zimage at:     00405865 00489E79
+avail ram:     0048D000 08000000
 
-Please not that we're talking about the timer irq, not the watchdog 
-interrupt.
+Linux/PPC load: console=ttyS0,9600 console=tty0 root=/dev/sda2
+Uncompressing Linux...done.
+Now booting the kernel
 
-I don't see why it should make a difference wether the watchdog 
-generates a IRQ0/HRESET or a system reset directly since it should never 
-trigger anyway.
+After that I am in arch/ppc/kernel/head_4xx.S and only get output from 
+my debug port.
+I have used that to determine as follows:
 
-All the patch does is to use a kernel timer instead of the hardware 
-timer. So i'm little confused.
+    B1B1B1B1                                         - @head_4xx.S
+    00058001                                           - @initial_mmu
+    C0000000                                          - output Virtual 
+Address of KERNELBASE
+    00000000                                           - output physical 
+address of KERNELBASE
+    00057003                                           - @setup tlb 
+entry for debug console
+    70000000                                           - physical 
+address of memory to create tlb for debug console (same as debug port)
+    00057002                                           - @turn_on_mmu
+    00021032                                           - MSR Machine 
+status register
+   C00022A0                                           - virtual address 
+of start_here
+   40000000                                             - physical 
+address of start_here ??? shouldn't this be 000022A0 ?
+   
+I can trace right up to the rfi that kicks the processor into virtual mode.
+The very first thing I have done at start_here is write a unique value 
+to my debug  - I never see that.
 
-And yes you should be right about the watchdog irq. It doesn't make 
-sense to install a watchdog irq handler. It doesn't make any sense to 
-put the watchdog into irq mode. As far as i know nobody ever tried to 
-use that mode.
+That should mean either:
+          I do not have the correct tlb entry to enable my debug port to 
+work once the MMU is enabled
+          or
+          I am not getting to start_here.
 
-If you're bound to irq mode because the bootloader activates it the 
-whole code should still work out of the box as long as the irq causes a 
-system reset. But maybe i'm missing something obvious or the docs are 
-incorrect/incomplete?
+Interestingly I also output identifiers for exceptions - and I am 
+getting repeated DTLB miss exceptions - all for address FFB13458
 
-Best,
-   Florian
+I also did memory dumps of what I thought were interesting regions at 
+the end of load_kernel
 
-> Anyway, the SWRI bit selects interrupt (0) or reset mode (1) for the watchdog.  
-> 
-> On reset mode no interrupt is sent to the kernel - the watchdog logic resets
-> the system with HRESET.
-> 
-> So, the timer in m8xx_wdt is _required_ for reset mode.
-> 
-> Does that make sense?
-> 
->> Otherwise i'm fine with the patch. Feel free to add my Signed-off-by line.
-> 
-> Ok, lets sort this out first. 
-> 
-> I wonder how interrupt mode is supposed to work, because the manual states
-> that in interrupt mode (SWRI == 0) an NMI (IRQ0) is triggered, which jumps
-> to 0x100 exception vector (SW reset).
-> 
-> Maybe I'm misunderstanding the interrupt mode?
-> 
-> Folks who wrote the patch claim it works on their 8xx's (as can be found
-> on mailing list archives).
+The dump of 0x0 looks very much like the start of head_4xx.S - the  
+signature values I am writing to my debug port (as well as the address 
+of the debug port itself) all in close proximity
+are tty good clues.
+
+the dump of 0x400000 looks like the start of arch/ppc/boot/simple/head.S 
+which is what I would expect.
+
+the dump of 0x22a0 looks like start_here.
+
+
+The only thing I see that seems to be wrong is that if I use tophys() to 
+try to convert start_here to a physical address I don't think I should 
+get 0x40000000
+For reference a snippet of my debug output code is below.
+
+             lis     r14,0x7000                                       // 
+high address of debug port
+             lis     r0,0x5
+             ori    r0,r0,0x7002                          
+             stw   r0,4(r14)
+             eieio                                                      
+   // output 0x57002
+
+             lis     r0,start_here@h                                // 
+output start_here (virtual)
+             ori     r0,r0,start_here@l
+             stw     r0,4(r14)
+             eieio
+   
+             tophys  (r0,r0);                                          
+// output start_here physical
+             stw     r0,4(r14)
+             eieio
+
+
+Help !?
