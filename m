@@ -1,16 +1,31 @@
-Return-Path: <prabha.j@tcs.com>
-Received: from INKOLG01.tcs.com (inkolg01.tcs.com [203.197.96.54])
-	by ozlabs.org (Postfix) with ESMTP id E6BC66872B
+Return-Path: <yuli@arabellasw.com>
+Received: from gold.webfusion.co.uk (gold.webfusion.co.uk [212.67.202.159])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 70C2568714
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Nov 2005 23:20:05 +1100 (EST)
-To: linuxppc-embedded@ozlabs.org
+	Thu, 17 Nov 2005 23:50:03 +1100 (EST)
+From: Yuli Barcohen <yuli@arabellasw.com>
 MIME-Version: 1.0
-From: prabha.j@tcs.com
-Message-ID: <OFF101A064.257D1AD3-ON652570BC.0020DC73-652570BC.002126C8@tcs.com>
-Date: Thu, 17 Nov 2005 11:32:06 +0530
-Content-Type: multipart/alternative;
-	boundary="=_alternative 0021269F652570BC_="
-Subject: help
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17276.30957.873761.950476@home2.localdomain>
+Date: Thu, 17 Nov 2005 14:34:53 +0200
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+In-Reply-To: <437B56E7.5090109@ru.mvista.com>
+References: <a79669360510062205v629affb9ga687078f018afae@mail.gmail.com>
+	<200510120859.12362.sr@denx.de> <434CB71E.5000603@compulab.co.il>
+	<200510120927.56692.sr@denx.de>
+	<20051012133414.7f7e2faf.ajz@cambridgebroadband.com>
+	<4365BD71.9010507@compulab.co.il>
+	<1131960060.7748.9.camel@hawk.pwav.net>
+	<43798741.5070604@compulab.co.il>
+	<D95D5881-250C-4B54-BD5A-54C79D9E0496@kernel.crashing.org>
+	<437A016C.8070405@ru.mvista.com>
+	<F9559612-EC8F-44BB-BA15-05DB48D4F031@kernel.crashing.org>
+	<437B56E7.5090109@ru.mvista.com>
+Cc: Jonathan Masel <jmasel@arabellasw.com>,
+	"'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
+Subject: Re: MPC8555 USB host support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,104 +36,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 0021269F652570BC_=
-Content-Type: text/plain; charset="US-ASCII"
+>>>>> Vitaly Bordug writes:
 
+...
 
-Hi all,
-I am trying to build kernel image for my custom borad which is similar to 
-mpc8260ads board. But i am getting the error.
+    Vitaly> I also have a bunch of patches for gregkh, supporting serial
+    Vitaly> function, but they need nontrivial cleanup I do not have
+    Vitaly> time currently for. So I think I grab this one together with
+    Vitaly> my stuff when I head for it.
 
-I am using denx enldk and also the kernel source.
+    Kumar> Also, are you aware of Freescale's driver for this?
 
-The error is
- make[1]: Entering directory 
-`/home/cdot/eldk/ppc_6xx/usr/src/linux-2.4.25/arch/ppc/lib'
-make all_targets
-make[2]: Entering directory 
-`/home/cdot/eldk/ppc_6xx/usr/src/linux-2.4.25/arch/ppc/lib'
-make[2]: Nothing to be done for `all_targets'.
-make[2]: Leaving directory 
-`/home/cdot/eldk/ppc_6xx/usr/src/linux-2.4.25/arch/ppc/lib'
-make[1]: Leaving directory 
-`/home/cdot/eldk/ppc_6xx/usr/src/linux-2.4.25/arch/ppc/lib'
-ppc_6xx-ld -T arch/ppc/vmlinux.lds -Ttext 0xc0000000 -Bstatic 
-arch/ppc/kernel/head.o arch/ppc/kernel/idle_6xx.o init/main.o 
-init/version.o init/do_mounts.o \
-        --start-group \
-        arch/ppc/kernel/kernel.o arch/ppc/platforms/platform.o 
-arch/ppc/mm/mm.o arch/ppc/lib/lib.o kernel/kernel.o mm/mm.o fs/fs.o 
-ipc/ipc.o \
-         drivers/char/char.o drivers/block/block.o drivers/misc/misc.o 
-drivers/net/net.o drivers/pci/driver.o drivers/mtd/mtdlink.o 
-drivers/macintosh/macintosh.o drivers/media/media.o \
-        net/network.o \
-        /home/cdot/eldk/ppc_6xx/usr/src/linux-2.4.25/lib/lib.a \
-        --end-group \
-        -o vmlinux
-arch/ppc/kernel/kernel.o(__ksymtab+0x480): In function `sys_call_table':
-arch/ppc/kernel/entry.S: undefined reference to `__res'
-make: *** [vmlinux] Error 1
+    Vitaly> I used to try arabella one (came with MW bsp) but that
+    Vitaly> version does not work with 8272.
 
-Thanks in advance
+If so, it's a very old version. The driver works with any MPC82xx (and
+MPC885, BTW). Also, please remember that many Freescale ADS boards have
+hardware problems (depending on the board's revision).
 
-Prabha J.
-Tata Consultancy Services Limited
-Mailto: prabha.j@tcs.com
-Website: http://www.tcs.com
+    Vitaly> If there are something usable, it will be interesting to
+    Vitaly> look at.
 
-Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you
---=_alternative 0021269F652570BC_=
-Content-Type: text/html; charset="US-ASCII"
+...
 
-
-<br><font size=2 face="sans-serif">Hi all,</font>
-<br><font size=2 face="sans-serif">I am trying to build kernel image for
-my custom borad which is similar to mpc8260ads board. But i am getting
-the error.</font>
-<br>
-<br><font size=2 face="sans-serif">I am using denx enldk and also the kernel
-source.</font>
-<br>
-<br><font size=2 face="sans-serif">The error is</font>
-<br><font size=2 face="sans-serif">&nbsp;make[1]: Entering directory `/home/cdot/eldk/ppc_6xx/usr/src/linux-2.4.25/arch/ppc/lib'</font>
-<br><font size=2 face="sans-serif">make all_targets</font>
-<br><font size=2 face="sans-serif">make[2]: Entering directory `/home/cdot/eldk/ppc_6xx/usr/src/linux-2.4.25/arch/ppc/lib'</font>
-<br><font size=2 face="sans-serif">make[2]: Nothing to be done for `all_targets'.</font>
-<br><font size=2 face="sans-serif">make[2]: Leaving directory `/home/cdot/eldk/ppc_6xx/usr/src/linux-2.4.25/arch/ppc/lib'</font>
-<br><font size=2 face="sans-serif">make[1]: Leaving directory `/home/cdot/eldk/ppc_6xx/usr/src/linux-2.4.25/arch/ppc/lib'</font>
-<br><font size=2 face="sans-serif">ppc_6xx-ld -T arch/ppc/vmlinux.lds -Ttext
-0xc0000000 -Bstatic arch/ppc/kernel/head.o arch/ppc/kernel/idle_6xx.o init/main.o
-init/version.o init/do_mounts.o \</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; --start-group
-\</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; arch/ppc/kernel/kernel.o
-arch/ppc/platforms/platform.o arch/ppc/mm/mm.o arch/ppc/lib/lib.o kernel/kernel.o
-mm/mm.o fs/fs.o ipc/ipc.o \</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;drivers/char/char.o
-drivers/block/block.o drivers/misc/misc.o drivers/net/net.o drivers/pci/driver.o
-drivers/mtd/mtdlink.o drivers/macintosh/macintosh.o drivers/media/media.o
-\</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; net/network.o
-\</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; /home/cdot/eldk/ppc_6xx/usr/src/linux-2.4.25/lib/lib.a
-\</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; --end-group
-\</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; -o vmlinux</font>
-<br><font size=2 face="sans-serif">arch/ppc/kernel/kernel.o(__ksymtab+0x480):
-In function `sys_call_table':</font>
-<br><font size=2 face="sans-serif">arch/ppc/kernel/entry.S: undefined reference
-to `__res'</font>
-<br><font size=2 face="sans-serif">make: *** [vmlinux] Error 1</font>
-<br>
-<br><font size=2 face="sans-serif">Thanks in advance</font>
-<br><font size=2 face="sans-serif"><br>
-Prabha J.<br>
-Tata Consultancy Services Limited<br>
-Mailto: prabha.j@tcs.com<br>
-Website: http://www.tcs.com</font>
-<table><tr><td bgcolor=#ffffff><font color=#000000>Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you<br>
-</font></td></tr></table>
---=_alternative 0021269F652570BC_=--
+-- 
+========================================================================
+ Yuli Barcohen       | Phone +972-9-765-1788 |  Software Project Leader
+ yuli@arabellasw.com | Fax   +972-9-765-7494 | Arabella Software, Israel
+========================================================================
