@@ -1,20 +1,17 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7F70368777
+Return-Path: <dhlii@comcast.net>
+Received: from sccrmhc14.comcast.net (sccrmhc14.comcast.net [204.127.202.59])
+	by ozlabs.org (Postfix) with ESMTP id 3F7E66878E
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Nov 2005 06:24:43 +1100 (EST)
-Date: Thu, 17 Nov 2005 12:07:15 -0200
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Message-ID: <20051117140715.GC9753@logos.cnet>
-References: <437B2051.5030408@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <437B2051.5030408@ru.mvista.com>
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] ppc32: 8xx board-specific platform stuff for fs_enet
+	Fri, 18 Nov 2005 06:43:37 +1100 (EST)
+Message-ID: <437CDD65.7020709@comcast.net>
+Date: Thu, 17 Nov 2005 14:43:33 -0500
+From: "David H. Lynch Jr" <dhlii@comcast.net>
+MIME-Version: 1.0
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+References: <437308E6.2070804@ecrin.com> <437C4E07.8020307@comcast.net>
+In-Reply-To: <437C4E07.8020307@comcast.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: "Now booting the kernel"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,15 +22,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Nov 16, 2005 at 03:04:33PM +0300, Vitaly Bordug wrote:
-> This adds board-specific files needed to utilize fs_enet Ethernet driver
-> for MPC885ADS and MPC866ADS.
-> 
-> Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
-> 
-
-Vitaly,
-
-It also sounds to me that mpc885_nonplatform_device_init()
-initialization suits board_init() time, instead of post-start_kernel()
-do_initcalls(). No?
+David H. Lynch Jr. wrote:
+> I am having similar difficulties on a Xilinx Virtex 4.
+>
+>    I have some advantages over Nitesh in that I have a 32bit port at 
+> 0x70000000 that I can write values to and see what they are (at least 
+> until the MMU is enabled)
+>    and with some additional complexity use as a sort of UART to write 
+> text.
+>      Thus far this is what I get:
+>
+> Starting MonitorX.elf: V3.3.2.0.
+> Loading zImage.elf.
+Sorry, this is Linux 2.6.14 on a Xilinx-VI
