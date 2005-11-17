@@ -1,19 +1,24 @@
-Return-Path: <galak@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 29CF46873F
+Return-Path: <glikely@gmail.com>
+Received: from nproxy.gmail.com (nproxy.gmail.com [64.233.182.195])
+	by ozlabs.org (Postfix) with ESMTP id CDD946877F
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Nov 2005 10:48:08 +1100 (EST)
-Date: Thu, 17 Nov 2005 17:45:40 -0600 (CST)
-From: Kumar Gala <galak@gate.crashing.org>
-To: Linus Torvalds <torvalds@osdl.org>
-Message-ID: <Pine.LNX.4.44.0511171745150.17133-100000@gate.crashing.org>
+	Fri, 18 Nov 2005 10:52:33 +1100 (EST)
+Received: by nproxy.gmail.com with SMTP id x30so531781nfb
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 17 Nov 2005 15:52:31 -0800 (PST)
+Message-ID: <528646bc0511171546s4095b3ebgb71cd13880480d1b@mail.gmail.com>
+Date: Thu, 17 Nov 2005 16:46:17 -0700
+From: Grant Likely <glikely@gmail.com>
+To: Greg KH <greg@kroah.com>, Vitaly Bordug <vbordug@ru.mvista.com>
+In-Reply-To: <20051115224056.GA14357@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
-	linuxppc-embedded@ozlabs.org
-Subject: [PATCH] ppc: Fix warnings related to seq_file
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20051115175955.GA14518@kroah.com>
+	<Pine.LNX.4.44.0511151332310.28098-100000@gate.crashing.org>
+	<20051115224056.GA14357@kroah.com>
+Cc: Kumar Gala <galak@gate.crashing.org>,
+	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: Platform device model drawback
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,52 +29,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-When we moved things around in irq.h seq_file became an issue.  Fix
-warnings related to its usage.
+On 11/15/05, Greg KH <greg@kroah.com> wrote:
+> On Tue, Nov 15, 2005 at 01:34:47PM -0600, Kumar Gala wrote:
+> > This is where the confusion is.  We have two instances of device A.  We
+> > want instance 1 of device A bound to driver "enet" and instance 2 of
+> > device A bound to "serial".
+>
+> That's different from what was described earlier :)
+>
+> In this case, you need two different struct devices.
+Which is what we have.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>
+> > Today both instances are called "deviceA".  However we can't register t=
+wo
+> > different drivers as "deviceA".
+>
+> Nor would you want to.
+>
+> > Not sure if that clarifies the issue any.
+>
+> A bit.  I think it still sounds messy...
+Does this help?  (We also discussed this a bit at the PPC BoF at OLS this y=
+ear)
 
----
-commit ac2a1a810d71d6c5f928cfbb428717bc3c567fde
-tree c213a8035b6bb13aeb5e2bf639b3af9830462fb2
-parent 81fa90f4627668b94ba55163dca08b076ee71e50
-author Kumar Gala <galak@kernel.crashing.org> Thu, 17 Nov 2005 17:47:03 -0600
-committer Kumar Gala <galak@kernel.crashing.org> Thu, 17 Nov 2005 17:47:03 -0600
+ For example on the mpc52xx (see arch/ppc/syslib/mpc52xx_devices.c);
+   - 6 PSC devices on chip;
+   - (struct platform_device) for each device has: .name=3D'mpc52xx-psc';
+   - However, SCC1 may be driven by the Ethernet driver but PSC2 and
+PSC6 may be serial
+   - problem then is: How do you get only PSC1 bound to the
+psc-ethernet driver and only PSC2 & PSC6 bound to the serial driver?
 
- arch/ppc/platforms/85xx/mpc85xx_ads_common.h |    2 ++
- arch/ppc/platforms/85xx/stx_gp3.h            |    2 --
- 2 files changed, 2 insertions(+), 2 deletions(-)
+Possible solution;  Modify the naming scheme slightly from what is
+currently used.
+1. Make the Ethernet driver register the name "mpc52xx-psc:eth"
+2. Make the serial driver register the name "mpc52xx-psc:uart"
+3. In the board-specific platform code, modify the .name field in
+struct platform_device *before* the device is registered with the
+platform device. (possibly by extending ppc_sys_device_fixup callback)
+   - The board specific code would set PSC1 to "mpc52xx-psc:eth",
+PSC2&6 to "mpc52xx-psc:uart".  PSC3-5 would stick with "mpc52xx-psc"
+and so would not get bound to anything.
 
-diff --git a/arch/ppc/platforms/85xx/mpc85xx_ads_common.h b/arch/ppc/platforms/85xx/mpc85xx_ads_common.h
-index 7b26bcc..198a6a0 100644
---- a/arch/ppc/platforms/85xx/mpc85xx_ads_common.h
-+++ b/arch/ppc/platforms/85xx/mpc85xx_ads_common.h
-@@ -25,6 +25,8 @@
- #define BCSR_ADDR		((uint)0xf8000000)
- #define BCSR_SIZE		((uint)(32 * 1024))
- 
-+struct seq_file;
-+
- extern int mpc85xx_ads_show_cpuinfo(struct seq_file *m);
- extern void mpc85xx_ads_init_IRQ(void) __init;
- extern void mpc85xx_ads_map_io(void) __init;
-diff --git a/arch/ppc/platforms/85xx/stx_gp3.h b/arch/ppc/platforms/85xx/stx_gp3.h
-index 7bcc6c3..2f25b51 100644
---- a/arch/ppc/platforms/85xx/stx_gp3.h
-+++ b/arch/ppc/platforms/85xx/stx_gp3.h
-@@ -21,7 +21,6 @@
- 
- #include <linux/config.h>
- #include <linux/init.h>
--#include <linux/seq_file.h>
- #include <asm/ppcboot.h>
- 
- #define BOARD_CCSRBAR		((uint)0xe0000000)
-@@ -43,7 +42,6 @@ extern void mpc85xx_setup_hose(void) __i
- extern void mpc85xx_restart(char *cmd);
- extern void mpc85xx_power_off(void);
- extern void mpc85xx_halt(void);
--extern int mpc85xx_show_cpuinfo(struct seq_file *m);
- extern void mpc85xx_init_IRQ(void) __init;
- extern unsigned long mpc85xx_find_end_of_memory(void) __init;
- extern void mpc85xx_calibrate_decr(void) __init;
+Q: Can the .name field be modified *after* platform_device is
+registered w/ the platform bus?
+
+g.
