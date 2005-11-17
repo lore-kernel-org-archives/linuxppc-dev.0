@@ -1,20 +1,15 @@
-Return-Path: <zjznliang_popo@163.com>
-Received: from 163.com (m12-16.163.com [220.181.12.16])
-	by ozlabs.org (Postfix) with SMTP id B2C4E6872B
+Return-Path: <n_tbinh@yahoo.com>
+Received: from web30710.mail.mud.yahoo.com (web30710.mail.mud.yahoo.com
+	[68.142.200.143]) by ozlabs.org (Postfix) with SMTP id 12ADF68744
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Nov 2005 18:50:09 +1100 (EST)
-Received: from zjzn (unknown [61.183.211.137])
-	by smtp9 (Coremail) with SMTP id JQBY1yw2fEP5R9UD.1
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Nov 2005 15:50:08 +0800 (CST)
-Date: Thu, 17 Nov 2005 15:50:32 +0800
-From: "zjznliang" <zjznliang_popo@163.com>
-To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Message-Id: <20051117075009.B2C4E6872B@ozlabs.org>
-Subject: Help ! 2.6.14 kernel can't bring up
+	Thu, 17 Nov 2005 19:26:38 +1100 (EST)
+Message-ID: <20051117081956.4614.qmail@web30710.mail.mud.yahoo.com>
+Date: Thu, 17 Nov 2005 08:19:56 +0000 (GMT)
+From: Nguyen Thanh Binh <n_tbinh@yahoo.com>
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Subject: Booting hangs after "Calibrating delay loop..."
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,28 +20,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-SGkgbGludXhwcGMtZW1iZWRkZWSjoQ0KDQoJICAgICAgICAgSSAgaGF2ZSBkb3dubG9hZGVkIHRo
-ZSBMaW51eCAyLjYuMTQgZnJvbSB3d3cuZGVueC5kZS5JIGFkZGVkIGFuZCBtb2RpZmllZCB0aGUg
-ZmlsZSBhbmQgY29tcGlsZSBpdCBhcyB3aGF0IEkgZGlkIG9uIExpbnV4IDIuNC4yNSB3aGljaCB3
-YXMgYWxzbyBkb3dubG9hZGVkIG9uIHd3dy5kZW54LmRlLiBNeSBib2FyZCBpcyBiYXNlIG9uIE1Q
-QyA4NTcgLGFuZCBpdCBnb2VzIHdlbGwgaW4gTGludXggMi40LjI1IC4gTXkgYm9vdGxvYWRlciBp
-cyBVLUJvb3QgMS4xLjMgd2hpY2ggZ29lcyB3ZWxsIHRvby4gQnV0IHdoZW4gSSBicmluZyB1cCB0
-aGUgTGludXggMi42LjE0ICxJIG9ubHkgZ290IHRoZSBpbmZvcm1hdGlvbiBhcyBmb2xsb3cgOg0K
-DQojIyBCb290aW5nIGltYWdlIGF0IGZmYzQwMDAwIC4uLg0KICAgSW1hZ2UgTmFtZTogICBMaW51
-eC0yLjYuMTQNCiAgIENyZWF0ZWQ6ICAgICAgMjAwNS0xMS0xNyAgIDc6MTE6NDIgVVRDDQogICBJ
-bWFnZSBUeXBlOiAgIFBvd2VyUEMgTGludXggS2VybmVsIEltYWdlIChnemlwIGNvbXByZXNzZWQp
-DQogICBEYXRhIFNpemU6ICAgIDY3ODE3MCBCeXRlcyA9IDY2Mi4zIGtCDQogICBMb2FkIEFkZHJl
-c3M6IDAwMDAwMDAwDQogICBFbnRyeSBQb2ludDogIDAwMDAwMDAwDQogICBWZXJpZnlpbmcgQ2hl
-Y2tzdW0gLi4uIE9LDQogICBVbmNvbXByZXNzaW5nIEtlcm5lbCBJbWFnZSAuLi4gT0sNCiMjIExv
-YWRpbmcgUkFNRGlzayBJbWFnZSBhdCBmZmQwMDAwMCAuLi4NCiAgIEltYWdlIE5hbWU6DQogICBD
-cmVhdGVkOiAgICAgIDIwMDUtMTEtMDkgICA5OjI4OjI3IFVUQw0KICAgSW1hZ2UgVHlwZTogICBQ
-b3dlclBDIExpbnV4IFJBTURpc2sgSW1hZ2UgKGd6aXAgY29tcHJlc3NlZCkNCiAgIERhdGEgU2l6
-ZTogICAgMTU2NDM2OSBCeXRlcyA9ICAxLjUgTUINCiAgIExvYWQgQWRkcmVzczogMDBjMDAwMDAN
-CiAgIEVudHJ5IFBvaW50OiAgMDBjMDAwMDANCiAgIFZlcmlmeWluZyBDaGVja3N1bSAuLi4gT0sN
-CiAgIExvYWRpbmcgUmFtZGlzayB0byAwMGUzZTAwMCwgZW5kIDAwZmJiZWQxIC4uLiBPSw0KDQpB
-bmQgdGhlcmUgaXMgbm90aGluZyBvdXRwdXQgLEkgdGhvdWdodCB0aGF0IGl0IHdhcyBzZXJpYWwg
-cG9ydCBmYXVsdCAuIEkgY2hlY2tlZCBteSBMaW51eCBjb25maWd1cmF0aW9uICxidXQgZm91bmQg
-bm90aGluZyAuDQoNCkhvdyB0byBtYWtlIHRoZSBsaW51eCAyLjYuMTQgd2VsbCBvbiBteSBib2Fy
-ZCA/Pw0KDQogDQogICBBbnkgaGVscCBvbiB0aGlzIHdvdWxkIGJlIGdyZWF0bHkgYXBwcmVjaWF0
-ZWQuIFRoYW5rcyBmb3IgeW91ciBwYXRpZW5jZS4gDQoNCiAJCQkJDQoNCqGhoaF6anpubGlhbmcN
-CqGhoaGhoaGhemp6bmxpYW5nX3BvcG9AMTYzLmNvbQ0KoaGhoaGhoaGhoaGhMjAwNS0xMS0xNw0K
+Hi all,
+
+When booting Monta Vista Linux on Memec board
+(Virtex-4 FX12 LC), it hung after printing the
+following message:
+
+    "Calibrating delay loop..."
+
+By looking at the source code, I found that in the
+init/main.c the problem came from the
+calibrate_delay()
+function: jiffies was not incremented (jiffies was
+always equal to 0).
+
+Have anyone get the similar problem or any experience
+to fix it?
+
+Thank you.
+
+Binh Nguyen
+
+Nguy&#7877;n Thanh Bình
+
+
+		
+___________________________________________________________ 
+How much free photo storage do you get? Store your holiday 
+snaps for FREE with Yahoo! Photos http://uk.photos.yahoo.com
