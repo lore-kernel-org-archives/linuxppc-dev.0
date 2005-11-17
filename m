@@ -1,31 +1,19 @@
-Return-Path: <yuli@arabellasw.com>
-Received: from gold.webfusion.co.uk (gold.webfusion.co.uk [212.67.202.159])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 70C2568714
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 808A768760
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 17 Nov 2005 23:50:03 +1100 (EST)
-From: Yuli Barcohen <yuli@arabellasw.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17276.30957.873761.950476@home2.localdomain>
-Date: Thu, 17 Nov 2005 14:34:53 +0200
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-In-Reply-To: <437B56E7.5090109@ru.mvista.com>
-References: <a79669360510062205v629affb9ga687078f018afae@mail.gmail.com>
-	<200510120859.12362.sr@denx.de> <434CB71E.5000603@compulab.co.il>
-	<200510120927.56692.sr@denx.de>
-	<20051012133414.7f7e2faf.ajz@cambridgebroadband.com>
-	<4365BD71.9010507@compulab.co.il>
-	<1131960060.7748.9.camel@hawk.pwav.net>
-	<43798741.5070604@compulab.co.il>
-	<D95D5881-250C-4B54-BD5A-54C79D9E0496@kernel.crashing.org>
-	<437A016C.8070405@ru.mvista.com>
-	<F9559612-EC8F-44BB-BA15-05DB48D4F031@kernel.crashing.org>
-	<437B56E7.5090109@ru.mvista.com>
-Cc: Jonathan Masel <jmasel@arabellasw.com>,
-	"'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-Subject: Re: MPC8555 USB host support
+	Fri, 18 Nov 2005 01:04:19 +1100 (EST)
+To: prabha.j@tcs.com
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 17 Nov 2005 11:32:06 +0530."
+	<OFF101A064.257D1AD3-ON652570BC.0020DC73-652570BC.002126C8@tcs.com>
+Date: Thu, 17 Nov 2005 15:04:16 +0100
+Sender: wd@denx.de
+Message-Id: <20051117140416.F1E6E353444@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: help 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -36,31 +24,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> Vitaly Bordug writes:
+In message <OFF101A064.257D1AD3-ON652570BC.0020DC73-652570BC.002126C8@tcs.com> you wrote:
+> 
+> I am trying to build kernel image for my custom borad which is similar to 
+> mpc8260ads board. But i am getting the error.
+
+"Similar to" means "not exactly the same", so you should  not  expect
+that the code runs unchanged. As a minimum, you must carefully select
+a configuration that matches your board.
 
 ...
+> arch/ppc/kernel/entry.S: undefined reference to `__res'
 
-    Vitaly> I also have a bunch of patches for gregkh, supporting serial
-    Vitaly> function, but they need nontrivial cleanup I do not have
-    Vitaly> time currently for. So I think I grab this one together with
-    Vitaly> my stuff when I head for it.
+Fix this!
 
-    Kumar> Also, are you aware of Freescale's driver for this?
+Best regards,
 
-    Vitaly> I used to try arabella one (came with MW bsp) but that
-    Vitaly> version does not work with 8272.
-
-If so, it's a very old version. The driver works with any MPC82xx (and
-MPC885, BTW). Also, please remember that many Freescale ADS boards have
-hardware problems (depending on the board's revision).
-
-    Vitaly> If there are something usable, it will be interesting to
-    Vitaly> look at.
-
-...
+Wolfgang Denk
 
 -- 
-========================================================================
- Yuli Barcohen       | Phone +972-9-765-1788 |  Software Project Leader
- yuli@arabellasw.com | Fax   +972-9-765-7494 | Arabella Software, Israel
-========================================================================
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+"Nature is very un-American.  Nature never hurries."
+- William George Jordan
