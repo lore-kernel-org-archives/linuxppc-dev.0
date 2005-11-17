@@ -1,17 +1,18 @@
-Return-Path: <dhlii@comcast.net>
-Received: from sccrmhc14.comcast.net (sccrmhc14.comcast.net [204.127.202.59])
-	by ozlabs.org (Postfix) with ESMTP id 3F7E66878E
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id EDA776877F
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Nov 2005 06:43:37 +1100 (EST)
-Message-ID: <437CDD65.7020709@comcast.net>
-Date: Thu, 17 Nov 2005 14:43:33 -0500
-From: "David H. Lynch Jr" <dhlii@comcast.net>
-MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-References: <437308E6.2070804@ecrin.com> <437C4E07.8020307@comcast.net>
-In-Reply-To: <437C4E07.8020307@comcast.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: Re: "Now booting the kernel"
+	Fri, 18 Nov 2005 07:35:10 +1100 (EST)
+Date: Thu, 17 Nov 2005 13:17:30 -0200
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Tom Rini <trini@kernel.crashing.org>
+Message-ID: <20051117151730.GA10180@logos.cnet>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: INTERACTIVE_CONSOLE for misc-embedded.c and watchdog issue
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,16 +23,78 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-David H. Lynch Jr. wrote:
-> I am having similar difficulties on a Xilinx Virtex 4.
->
->    I have some advantages over Nitesh in that I have a 32bit port at 
-> 0x70000000 that I can write values to and see what they are (at least 
-> until the MMU is enabled)
->    and with some additional complexity use as a sort of UART to write 
-> text.
->      Thus far this is what I get:
->
-> Starting MonitorX.elf: V3.3.2.0.
-> Loading zImage.elf.
-Sorry, this is Linux 2.6.14 on a Xilinx-VI
+
+
+Hi Tom,
+
+The following patch against misc-embedded.c adds an INTERACTIVE_CONSOLE
+#define to guard reading from console (causes unecessary delay in some
+situations).
+
+Its an adaptation of misc.c's define, a difference being that platform
+headers define "NO_INTERACTIVE_CONSOLE" if required.
+
+What do you think?
+
+Another issue is the watchdog - if it is active all 8xx systems
+should fail to boot because load_kernel() (and the gzip functions)
+don't calm the dog.
+
+Our internal kernels always have sprinkled "service_wdt()" calls
+around "load_kernel()".
+
+Adding hooks for the wdt to be service there (and possibly other places)
+is terrible, but is there any other solution so early?
+
+Setting up a HW timer with early setup code might be possible, 
+but sounds quite complicated.
+
+Of course, with U-Boot all of this is a non-issue, but for simple
+bootloaders (which I suppose are quite common) it is a nasty problem.
+
+
+diff --git a/arch/ppc/boot/simple/misc-embedded.c b/arch/ppc/boot/simple/misc-embedded.c
+index 3865f3f..85e3e24 100644
+--- a/arch/ppc/boot/simple/misc-embedded.c
++++ b/arch/ppc/boot/simple/misc-embedded.c
+@@ -23,6 +23,10 @@
+ 
+ #include "nonstdio.h"
+ 
++#ifndef NO_INTERACTIVE_CONSOLE
++#define INTERACTIVE_CONSOLE
++#endif
++
+ /* The linker tells us where the image is. */
+ extern char __image_begin, __image_end;
+ extern char __ramdisk_begin, __ramdisk_end;
+@@ -82,8 +86,11 @@ embed_config(bd_t **bdp)
+ unsigned long
+ load_kernel(unsigned long load_addr, int num_words, unsigned long cksum, bd_t *bp)
+ {
++#ifdef INTERACTIVE_CONSOLE
+ 	char *cp, ch;
+-	int timer = 0, zimage_size;
++	int timer = 0;
++#endif
++	int zimage_size;
+ 	unsigned long initrd_size;
+ 
+ 	/* First, capture the embedded board information.  Then
+@@ -187,6 +194,8 @@ load_kernel(unsigned long load_addr, int
+ #endif
+ 	while ( *cp )
+ 		putc(*cp++);
++
++#ifdef INTERACTIVE_CONSOLE
+ 	while (timer++ < 5*1000) {
+ 		if (tstc()) {
+ 			while ((ch = getc()) != '\n' && ch != '\r') {
+@@ -211,6 +220,7 @@ load_kernel(unsigned long load_addr, int
+ 		udelay(1000);  /* 1 msec */
+ 	}
+ 	*cp = 0;
++#endif
+ 	puts("\nUncompressing Linux...");
+ 
+ 	gunzip(0, 0x400000, zimage_start, &zimage_size);
