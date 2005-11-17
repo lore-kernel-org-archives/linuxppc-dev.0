@@ -1,18 +1,30 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
+Return-Path: <dave@cray.com>
+Received: from mail1.cray.com (mail1.cray.com [136.162.0.111])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EDA776877F
+	(Client CN "mail1.cray.com", Issuer "Cray Inc" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id C1E0868775
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Nov 2005 07:35:10 +1100 (EST)
-Date: Thu, 17 Nov 2005 13:17:30 -0200
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Tom Rini <trini@kernel.crashing.org>
-Message-ID: <20051117151730.GA10180@logos.cnet>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: INTERACTIVE_CONSOLE for misc-embedded.c and watchdog issue
+	Fri, 18 Nov 2005 08:58:03 +1100 (EST)
+Received: from beaver.us.cray.com (beaver.us.cray.com [172.30.74.51])
+	by mail1.cray.com (8.13.3/8.13.3/gw-5323) with ESMTP id jAHLp04Y019590
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 17 Nov 2005 15:51:01 -0600 (CST)
+Received: from orchid.us.cray.com (orchid.us.cray.com [172.30.27.91])
+	by beaver.us.cray.com (8.13.4/8.13.3/hub-5273) with ESMTP id
+	jAHLp0XD030803
+	for <linuxppc-embedded@ozlabs.org>; Thu, 17 Nov 2005 15:51:00 -0600
+Received: from [127.0.0.1] (relay6-internal [192.168.234.20])
+	by orchid.us.cray.com (8.13.1/8.12.10/irix-ham-1.4) with ESMTP id
+	jAHLoxp91595762 for <linuxppc-embedded@ozlabs.org>;
+	Thu, 17 Nov 2005 15:50:59 -0600 (CST)
+Message-ID: <437CFB43.4060400@cray.com>
+Date: Thu, 17 Nov 2005 15:50:59 -0600
+From: David Updegraff <dave@cray.com>
+MIME-Version: 1.0
+To: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Content-Type: multipart/mixed; boundary="------------000308000001050601010709"
+Subject: gianfar generic PHY assumptions.
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,78 +35,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
+--------------000308000001050601010709
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
+Hi.
 
-Hi Tom,
+This patch lets gianfar work on 83xx (or 85xx??) boards that have 
+Generic PHYs on them that do _NOT_ happen to have an IRQ line wired to 
+external_15.  Surely reasonable that if we can't ID the PHY that its 
+probably not irq-wired the Freescale-ADS "way"...
 
-The following patch against misc-embedded.c adds an INTERACTIVE_CONSOLE
-#define to guard reading from console (causes unecessary delay in some
-situations).
+It was critical for us; perhaps usefull for others.
 
-Its an adaptation of misc.c's define, a difference being that platform
-headers define "NO_INTERACTIVE_CONSOLE" if required.
+-dbu.
 
-What do you think?
+--------------000308000001050601010709
+Content-Type: text/plain;
+ name="x"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="x"
 
-Another issue is the watchdog - if it is active all 8xx systems
-should fail to boot because load_kernel() (and the gzip functions)
-don't calm the dog.
-
-Our internal kernels always have sprinkled "service_wdt()" calls
-around "load_kernel()".
-
-Adding hooks for the wdt to be service there (and possibly other places)
-is terrible, but is there any other solution so early?
-
-Setting up a HW timer with early setup code might be possible, 
-but sounds quite complicated.
-
-Of course, with U-Boot all of this is a non-issue, but for simple
-bootloaders (which I suppose are quite common) it is a nasty problem.
-
-
-diff --git a/arch/ppc/boot/simple/misc-embedded.c b/arch/ppc/boot/simple/misc-embedded.c
-index 3865f3f..85e3e24 100644
---- a/arch/ppc/boot/simple/misc-embedded.c
-+++ b/arch/ppc/boot/simple/misc-embedded.c
-@@ -23,6 +23,10 @@
+diff --git a/drivers/net/gianfar_phy.c b/drivers/net/gianfar_phy.c
+index 7c965f2..1c08bd0 100644
+--- a/drivers/net/gianfar_phy.c
++++ b/drivers/net/gianfar_phy.c
+@@ -234,6 +234,19 @@ static int marvell_config_aneg(struct gf
  
- #include "nonstdio.h"
- 
-+#ifndef NO_INTERACTIVE_CONSOLE
-+#define INTERACTIVE_CONSOLE
-+#endif
+ 	return 0;
+ }
++/* Init for GENERIC: just here to make sure the gainfar driver does not assume
++ * that it has an interrupt. Since don't even know what model it is, seems 
++ * unlikely that they have bothered to wire in an IRQ line exactly like the 
++ * the platform/ files have assumed.
++ */
++static int genmii_init(struct gfar_mii_info *mii_info)
++{
++	struct gfar_private *priv = netdev_priv(mii_info->dev);
++	if (priv)
++		priv->einfo->board_flags &= ~FSL_GIANFAR_BRD_HAS_PHY_INTR;
++	return 0;
++}
 +
- /* The linker tells us where the image is. */
- extern char __image_begin, __image_end;
- extern char __ramdisk_begin, __ramdisk_end;
-@@ -82,8 +86,11 @@ embed_config(bd_t **bdp)
- unsigned long
- load_kernel(unsigned long load_addr, int num_words, unsigned long cksum, bd_t *bp)
+ static int genmii_config_aneg(struct gfar_mii_info *mii_info)
  {
-+#ifdef INTERACTIVE_CONSOLE
- 	char *cp, ch;
--	int timer = 0, zimage_size;
-+	int timer = 0;
-+#endif
-+	int zimage_size;
- 	unsigned long initrd_size;
- 
- 	/* First, capture the embedded board information.  Then
-@@ -187,6 +194,8 @@ load_kernel(unsigned long load_addr, int
- #endif
- 	while ( *cp )
- 		putc(*cp++);
-+
-+#ifdef INTERACTIVE_CONSOLE
- 	while (timer++ < 5*1000) {
- 		if (tstc()) {
- 			while ((ch = getc()) != '\n' && ch != '\r') {
-@@ -211,6 +220,7 @@ load_kernel(unsigned long load_addr, int
- 		udelay(1000);  /* 1 msec */
- 	}
- 	*cp = 0;
-+#endif
- 	puts("\nUncompressing Linux...");
- 
- 	gunzip(0, 0x400000, zimage_start, &zimage_size);
+ 	if (mii_info->autoneg) {
+@@ -585,6 +598,7 @@ static struct phy_info phy_info_genmii= 
+ 	.phy_id_mask	= 0x00000000,
+ 	.name		= "Generic MII",
+ 	.features	= MII_BASIC_FEATURES,
++	.init		= genmii_init,
+ 	.config_aneg	= genmii_config_aneg,
+ 	.read_status	= genmii_read_status,
+ };
+
+--------------000308000001050601010709--
