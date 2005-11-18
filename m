@@ -1,32 +1,21 @@
-Return-Path: <dwmw2@infradead.org>
-Received: from baythorne.infradead.org (baythorne.infradead.org [81.187.2.161])
+Return-Path: <olh@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C8C206874D
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Nov 2005 08:39:50 +1100 (EST)
-From: David Woodhouse <dwmw2@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1132349794.20016.94.camel@gaston>
-References: <20051107160939.GD3839@smtp.west.cox.net>
-	<1131380422.27347.72.camel@baythorne.infradead.org>
-	<20051107165453.GA29111@lst.de>
-	<1131382971.27347.79.camel@baythorne.infradead.org>
-	<1132131116.28963.75.camel@baythorne.infradead.org>
-	<17274.63508.501761.748278@cargo.ozlabs.ibm.com>
-	<1132136755.21643.40.camel@hades.cambridge.redhat.com>
-	<17277.10875.334722.856865@cargo.ozlabs.ibm.com>
-	<3F990F6D-7A3F-47CA-938F-968593678895@kernel.crashing.org>
-	<1132285818.20016.79.camel@gaston>  <20051118082358.GA2309@lst.de>
-	<1132311088.20016.88.camel@gaston>
-	<5534EC32-EE72-4019-A5D9-305F8348E4D9@kernel.crashing.org>
-	<1132349794.20016.94.camel@gaston>
-Content-Type: text/plain
-Date: Fri, 18 Nov 2005 21:39:40 +0000
-Message-Id: <1132349980.3642.50.camel@baythorne.infradead.org>
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6CE336874D
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Nov 2005 09:13:15 +1100 (EST)
+Date: Fri, 18 Nov 2005 23:13:09 +0100
+From: Olaf Hering <olh@suse.de>
+To: Paul Mackerras <paulus@samba.org>
+Message-ID: <20051118221309.GA12724@suse.de>
+References: <17277.28534.614112.962810@cargo.ozlabs.ibm.com>
+	<20051118075158.GB14865@suse.de>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Tom Rini <trini@kernel.crashing.org>
-Subject: Re: [PATCH] Fix 8250 probe on ppc32
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20051118075158.GB14865@suse.de>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] generate COFF zImage in arch/powerpc/boot
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,17 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2005-11-19 at 08:36 +1100, Benjamin Herrenschmidt wrote:
-> As soon as you can get something mapped I suppose... On ppc32 with
-> BootX, I setup a BAT in head.S, thus udbg is available in
-> machine_init(). On ppc64 with hypervisor console, we can enable hacks
-> that initialize udbg in real mode.
+ On Fri, Nov 18, Olaf Hering wrote:
 
-About the same time as you can first call register_console() with it
-then.
+>  On Fri, Nov 18, Paul Mackeras wrote:
+> 
+> 
+> > +++ merge-hack/arch/powerpc/boot/zImage.lds	2005-11-16 23:16:48.000000000 +1100
+> 
+> This change makes arch/powerpc/boot/README obsolete. 
+> Last time I looked, the COFF loader liked only .text, .data and .bss.
+> But maybe hack-coff needs some tweaking to modify also other sections.
 
-I always used to call serial8250_console_init() from the beginning of
-setup_arch() if I wanted that kind of thing.
+I tried to keep the kernel in its own section. But the firmware does not
+fully setup the memory range for that section. claim and map calls for
+that area are not enough.
+So we either need a ld script for coff with kernel and initrd in the
+.data section. Or we write a tool to extract the vmlinux.gz and initrd
+based on nm or readelf -a output.
 
 -- 
-dwmw2
+short story of a lazy sysadmin:
+ alias appserv=wotan
