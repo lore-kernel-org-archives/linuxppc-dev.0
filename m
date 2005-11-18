@@ -1,13 +1,12 @@
-Return-Path: <hch@lst.de>
-Received: from mail.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4A595687BD
-	for <linuxppc-dev@ozlabs.org>; Fri, 18 Nov 2005 19:24:11 +1100 (EST)
-Date: Fri, 18 Nov 2005 09:23:58 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <20051118082358.GA2309@lst.de>
+	by ozlabs.org (Postfix) with ESMTP id B8AA4687AF
+	for <linuxppc-dev@ozlabs.org>; Fri, 18 Nov 2005 21:53:14 +1100 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christoph Hellwig <hch@lst.de>
+In-Reply-To: <20051118082358.GA2309@lst.de>
 References: <20051107160939.GD3839@smtp.west.cox.net>
 	<1131380422.27347.72.camel@baythorne.infradead.org>
 	<20051107165453.GA29111@lst.de>
@@ -17,10 +16,11 @@ References: <20051107160939.GD3839@smtp.west.cox.net>
 	<1132136755.21643.40.camel@hades.cambridge.redhat.com>
 	<17277.10875.334722.856865@cargo.ozlabs.ibm.com>
 	<3F990F6D-7A3F-47CA-938F-968593678895@kernel.crashing.org>
-	<1132285818.20016.79.camel@gaston>
+	<1132285818.20016.79.camel@gaston>  <20051118082358.GA2309@lst.de>
+Content-Type: text/plain
+Date: Fri, 18 Nov 2005 21:51:28 +1100
+Message-Id: <1132311088.20016.88.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1132285818.20016.79.camel@gaston>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	David Woodhouse <dwmw2@infradead.org>, Tom Rini <trini@kernel.crashing.org>
 Subject: Re: [PATCH] Fix 8250 probe on ppc32
@@ -33,18 +33,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Nov 18, 2005 at 02:50:17PM +1100, Benjamin Herrenschmidt wrote:
-> On Thu, 2005-11-17 at 21:26 -0600, Kumar Gala wrote:
-> > Paul or BenH,
+On Fri, 2005-11-18 at 09:23 +0100, Christoph Hellwig wrote:
+> On Fri, Nov 18, 2005 at 02:50:17PM +1100, Benjamin Herrenschmidt wrote:
+> > On Thu, 2005-11-17 at 21:26 -0600, Kumar Gala wrote:
+> > > Paul or BenH,
+> > > 
+> > > Would you like to enlighten us on this ambitious rework?
 > > 
-> > Would you like to enlighten us on this ambitious rework?
+> > First, some better & more generic routines for translating addresses
+> > from the device-tree, and some more generic code for looking for
+> > standard serial port using the above routines, among others ... also,
+> > set_preferred_console gets modified to use the previous list so it can
+> > detect the ports more reliably, etc ....
 > 
-> First, some better & more generic routines for translating addresses
-> from the device-tree, and some more generic code for looking for
-> standard serial port using the above routines, among others ... also,
-> set_preferred_console gets modified to use the previous list so it can
-> detect the ports more reliably, etc ....
+> so as a start can we move the code to a place in arch/powerpc/ where
+> it can bee used by ppc32 _now_ because it fixes a real problem?  You
+> can add your encehancements whenever you get time to actually do it.
 
-so as a start can we move the code to a place in arch/powerpc/ where
-it can bee used by ppc32 _now_ because it fixes a real problem?  You
-can add your encehancements whenever you get time to actually do it.
+My patch makes it ppc32 too :) udbg gets build on ppc32 along with early
+console etc... all with the same code path as ppc64. I still need to
+test it on more hw and fix a few problems and hopefully will post it
+before the week-end is over.
+
+Ben
