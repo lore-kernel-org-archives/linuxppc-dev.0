@@ -1,12 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <dwmw2@infradead.org>
+Received: from baythorne.infradead.org (baythorne.infradead.org [81.187.2.161])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8A7E968775
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Nov 2005 08:38:26 +1100 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <5534EC32-EE72-4019-A5D9-305F8348E4D9@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id C8C206874D
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Nov 2005 08:39:50 +1100 (EST)
+From: David Woodhouse <dwmw2@infradead.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1132349794.20016.94.camel@gaston>
 References: <20051107160939.GD3839@smtp.west.cox.net>
 	<1131380422.27347.72.camel@baythorne.infradead.org>
 	<20051107165453.GA29111@lst.de>
@@ -19,12 +19,13 @@ References: <20051107160939.GD3839@smtp.west.cox.net>
 	<1132285818.20016.79.camel@gaston>  <20051118082358.GA2309@lst.de>
 	<1132311088.20016.88.camel@gaston>
 	<5534EC32-EE72-4019-A5D9-305F8348E4D9@kernel.crashing.org>
+	<1132349794.20016.94.camel@gaston>
 Content-Type: text/plain
-Date: Sat, 19 Nov 2005 08:36:34 +1100
-Message-Id: <1132349794.20016.94.camel@gaston>
+Date: Fri, 18 Nov 2005 21:39:40 +0000
+Message-Id: <1132349980.3642.50.camel@baythorne.infradead.org>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	David Woodhouse <dwmw2@infradead.org>, Tom Rini <trini@kernel.crashing.org>
+	Tom Rini <trini@kernel.crashing.org>
 Subject: Re: [PATCH] Fix 8250 probe on ppc32
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -35,13 +36,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sat, 2005-11-19 at 08:36 +1100, Benjamin Herrenschmidt wrote:
+> As soon as you can get something mapped I suppose... On ppc32 with
+> BootX, I setup a BAT in head.S, thus udbg is available in
+> machine_init(). On ppc64 with hypervisor console, we can enable hacks
+> that initialize udbg in real mode.
 
-> How early on can we use udbg? I'd be interested to see how this is  
-> going to work out for 4xx/83xx/85xx w/built-in 8250's.
+About the same time as you can first call register_console() with it
+then.
 
-As soon as you can get something mapped I suppose... On ppc32 with
-BootX, I setup a BAT in head.S, thus udbg is available in
-machine_init(). On ppc64 with hypervisor console, we can enable hacks
-that initialize udbg in real mode.
+I always used to call serial8250_console_init() from the beginning of
+setup_arch() if I wanted that kind of thing.
 
-Ben.
+-- 
+dwmw2
