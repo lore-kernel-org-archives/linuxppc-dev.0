@@ -1,24 +1,22 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from xm.dlasys.net (unknown [24.152.213.223])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A68E068775
+Return-Path: <greg@kroah.com>
+Received: from perch.kroah.org (mail.kroah.org [69.55.234.183])
+	by ozlabs.org (Postfix) with ESMTP id 0443968775
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 19 Nov 2005 10:19:47 +1100 (EST)
-Received: from [206.223.20.141] (port=1211 helo=[206.223.20.141])
-	by xm.dlasys.net with esmtp (Exim 4.54 #1 (Debian))
-	id 1EdbZS-0001xP-0N
-	for <linuxppc-embedded@ozlabs.org>; Sat, 19 Nov 2005 17:52:34 -0500
-Message-ID: <437E606D.20601@dlasys.net>
-Date: Fri, 18 Nov 2005 18:14:53 -0500
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
-MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-References: <20051118024803.E2988687A1@ozlabs.org>
-In-Reply-To: <20051118024803.E2988687A1@ozlabs.org>
-Content-Type: text/plain; charset=GB2312
-Subject: Re: Help ! 2.6.14 kernel can't bring up
-Reply-To: dhlii@comcast.net
+	Sat, 19 Nov 2005 11:02:59 +1100 (EST)
+Date: Fri, 18 Nov 2005 15:47:11 -0800
+From: Greg KH <greg@kroah.com>
+To: Grant Likely <glikely@gmail.com>
+Message-ID: <20051118234711.GB26118@kroah.com>
+References: <20051115175955.GA14518@kroah.com>
+	<Pine.LNX.4.44.0511151332310.28098-100000@gate.crashing.org>
+	<20051115224056.GA14357@kroah.com>
+	<528646bc0511171546s4095b3ebgb71cd13880480d1b@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <528646bc0511171546s4095b3ebgb71cd13880480d1b@mail.gmail.com>
+Cc: Kumar Gala <galak@gate.crashing.org>,
+	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: Platform device model drawback
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,32 +27,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-zjznliang wrote:
-> Hi linuxppc-embedded£¡
->
-> 	Hi , How to config the "early printk" in 2.6.14 linux configration???
->
->
->  	
-Console and debugging I/O is available at all stages of The Linux
-loading process - If the drivers for your board support it.
-There is nearly free support for 8250 like serial ports, in virtually
-all boards. Support for other debugging IO devices is fairly simple to
-setup.
+On Thu, Nov 17, 2005 at 04:46:17PM -0700, Grant Likely wrote:
+> On 11/15/05, Greg KH <greg@kroah.com> wrote:
+> > On Tue, Nov 15, 2005 at 01:34:47PM -0600, Kumar Gala wrote:
+> > > This is where the confusion is.  We have two instances of device A.  We
+> > > want instance 1 of device A bound to driver "enet" and instance 2 of
+> > > device A bound to "serial".
+> >
+> > That's different from what was described earlier :)
+> >
+> > In this case, you need two different struct devices.
+> Which is what we have.
+> 
+> >
+> > > Today both instances are called "deviceA".  However we can't register two
+> > > different drivers as "deviceA".
+> >
+> > Nor would you want to.
+> >
+> > > Not sure if that clarifies the issue any.
+> >
+> > A bit.  I think it still sounds messy...
+> Does this help?  (We also discussed this a bit at the PPC BoF at OLS this year)
+> 
+>  For example on the mpc52xx (see arch/ppc/syslib/mpc52xx_devices.c);
+>    - 6 PSC devices on chip;
+>    - (struct platform_device) for each device has: .name='mpc52xx-psc';
+>    - However, SCC1 may be driven by the Ethernet driver but PSC2 and
+> PSC6 may be serial
+>    - problem then is: How do you get only PSC1 bound to the
+> psc-ethernet driver and only PSC2 & PSC6 bound to the serial driver?
 
-I used the arch/ppc/syslib/mv64x60_dbg.c and
-arch/ppc/boot/simple/mv64x60_tty.c as templates to create trivial
-drivers for debugging IO
-on hardware that had no relation to a UART.
+I really do not know, sorry.
 
-I think "early printk" refers to the early serial driver that can be
-used after the kernel has uncompressed itself and relocated itself and
-switched to
-a virtual environment. For 8250 like serial ports that can enabled in
-the linux .config file setup by make menuconfig or whatever variant of
-make xxconfig
-you prefer. For non-8250 like uarts you will again have to write an
-early serial driver. All the early debug IO drivers are trivial - little
-more is needed than
-an implementation of putc, as opposed to the full conolse support
-required for a tty on a booted system.
+> 
+> Possible solution;  Modify the naming scheme slightly from what is
+> currently used.
+> 1. Make the Ethernet driver register the name "mpc52xx-psc:eth"
+> 2. Make the serial driver register the name "mpc52xx-psc:uart"
+> 3. In the board-specific platform code, modify the .name field in
+> struct platform_device *before* the device is registered with the
+> platform device. (possibly by extending ppc_sys_device_fixup callback)
+>    - The board specific code would set PSC1 to "mpc52xx-psc:eth",
+> PSC2&6 to "mpc52xx-psc:uart".  PSC3-5 would stick with "mpc52xx-psc"
+> and so would not get bound to anything.
+> 
+> Q: Can the .name field be modified *after* platform_device is
+> registered w/ the platform bus?
+
+No, it can not, sorry.
+
+Good luck,
+
+greg k-h
