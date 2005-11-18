@@ -1,21 +1,23 @@
 Return-Path: <olh@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
+	(Client CN "mx1.suse.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6CE336874D
-	for <linuxppc-dev@ozlabs.org>; Sat, 19 Nov 2005 09:13:15 +1100 (EST)
-Date: Fri, 18 Nov 2005 23:13:09 +0100
+	by ozlabs.org (Postfix) with ESMTP id 6E2426874D
+	for <linuxppc-dev@ozlabs.org>; Sat, 19 Nov 2005 09:19:10 +1100 (EST)
+Date: Fri, 18 Nov 2005 23:19:04 +0100
 From: Olaf Hering <olh@suse.de>
-To: Paul Mackerras <paulus@samba.org>
-Message-ID: <20051118221309.GA12724@suse.de>
-References: <17277.28534.614112.962810@cargo.ozlabs.ibm.com>
-	<20051118075158.GB14865@suse.de>
+To: Hollis Blanchard <hollis@penguinppc.org>
+Message-ID: <20051118221904.GA13068@suse.de>
+References: <20051117210902.GB31775@suse.de>
+	<437D0A21.4090803@smiths-aerospace.com>
+	<20051118074237.GA14865@suse.de>
+	<322e5a1c14e0e7a08d88868f23ec7c73@penguinppc.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20051118075158.GB14865@suse.de>
+In-Reply-To: <322e5a1c14e0e7a08d88868f23ec7c73@penguinppc.org>
 Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] generate COFF zImage in arch/powerpc/boot
+Subject: Re: [PATCH] ppc boot: replace string labels with numbers
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +27,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- On Fri, Nov 18, Olaf Hering wrote:
+ On Fri, Nov 18, Hollis Blanchard wrote:
 
->  On Fri, Nov 18, Paul Mackeras wrote:
+> >The code should be obvious.
 > 
-> 
-> > +++ merge-hack/arch/powerpc/boot/zImage.lds	2005-11-16 23:16:48.000000000 +1100
-> 
-> This change makes arch/powerpc/boot/README obsolete. 
-> Last time I looked, the COFF loader liked only .text, .data and .bss.
-> But maybe hack-coff needs some tweaking to modify also other sections.
+> I hope the above was a joke, Olaf.
 
-I tried to keep the kernel in its own section. But the firmware does not
-fully setup the memory range for that section. claim and map calls for
-that area are not enough.
-So we either need a ld script for coff with kernel and initrd in the
-.data section. Or we write a tool to extract the vmlinux.gz and initrd
-based on nm or readelf -a output.
+Not really. Perhaps I have been working on that code for too long now.
+Its the string table that makes a difference.
 
 -- 
 short story of a lazy sysadmin:
