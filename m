@@ -1,26 +1,28 @@
-Return-Path: <glikely@gmail.com>
-Received: from nproxy.gmail.com (nproxy.gmail.com [64.233.182.198])
-	by ozlabs.org (Postfix) with ESMTP id D838168734
+Return-Path: <srideep.devireddy@wipro.com>
+Received: from wip-cdctls-mx3.wipro.com (wip-cdctls-mx3.wipro.com
+	[203.91.201.23])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "wip-cdctls-mx3.wipro.com",
+	Issuer "wip-cdctls-mx3.wipro.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 26432681BE
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 19 Nov 2005 13:37:03 +1100 (EST)
-Received: by nproxy.gmail.com with SMTP id x30so18971nfb
+	Sat, 19 Nov 2005 15:33:54 +1100 (EST)
+Received: from wip-cdctls-mx3.wipro.com (localhost.localdomain [127.0.0.1])
+	by localhost (Postfix) with ESMTP id D68B429C004
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 18 Nov 2005 18:37:01 -0800 (PST)
-Message-ID: <528646bc0511181837l61687e10g27d17c4287aaf909@mail.gmail.com>
-Date: Fri, 18 Nov 2005 19:37:01 -0700
-From: Grant Likely <glikely@gmail.com>
-To: Greg KH <greg@kroah.com>
-In-Reply-To: <20051118234711.GB26118@kroah.com>
+	Sat, 19 Nov 2005 10:03:46 +0530 (IST)
+Received: from chn-snr-bh1.wipro.com (chn-snr-bh1.wipro.com [10.145.50.91])
+	by wip-cdctls-mx3.wipro.com (Postfix) with ESMTP id C9F0229C002
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 19 Nov 2005 10:03:46 +0530 (IST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20051115175955.GA14518@kroah.com>
-	<Pine.LNX.4.44.0511151332310.28098-100000@gate.crashing.org>
-	<20051115224056.GA14357@kroah.com>
-	<528646bc0511171546s4095b3ebgb71cd13880480d1b@mail.gmail.com>
-	<20051118234711.GB26118@kroah.com>
-Cc: Kumar Gala <galak@gate.crashing.org>,
-	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: Platform device model drawback
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C5ECC2.6E20318A"
+Date: Sat, 19 Nov 2005 10:03:46 +0530
+Message-ID: <6AD9F6A5F6E096408F0B703773355A0765E931@CHN-SNR-MBX01.wipro.com>
+From: <srideep.devireddy@wipro.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Memtest-SDRAM
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,47 +33,165 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 11/18/05, Greg KH <greg@kroah.com> wrote:
-> On Thu, Nov 17, 2005 at 04:46:17PM -0700, Grant Likely wrote:
-> > Does this help?  (We also discussed this a bit at the PPC BoF at OLS th=
-is year)
-> >
-> >  For example on the mpc52xx (see arch/ppc/syslib/mpc52xx_devices.c);
-> >    - 6 PSC devices on chip;
-> >    - (struct platform_device) for each device has: .name=3D'mpc52xx-psc=
-';
-> >    - However, SCC1 may be driven by the Ethernet driver but PSC2 and
-> > PSC6 may be serial
-> >    - problem then is: How do you get only PSC1 bound to the
-> > psc-ethernet driver and only PSC2 & PSC6 bound to the serial driver?
->
-> I really do not know, sorry.
->
-> >
-> > Possible solution;  Modify the naming scheme slightly from what is
-> > currently used.
-> > 1. Make the Ethernet driver register the name "mpc52xx-psc:eth"
-> > 2. Make the serial driver register the name "mpc52xx-psc:uart"
-> > 3. In the board-specific platform code, modify the .name field in
-> > struct platform_device *before* the device is registered with the
-> > platform device. (possibly by extending ppc_sys_device_fixup callback)
-> >    - The board specific code would set PSC1 to "mpc52xx-psc:eth",
-> > PSC2&6 to "mpc52xx-psc:uart".  PSC3-5 would stick with "mpc52xx-psc"
-> > and so would not get bound to anything.
+This is a multi-part message in MIME format.
 
-Ignoring the question below, do you see any problem with the above solution=
-?
+------_=_NextPart_001_01C5ECC2.6E20318A
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-> >
-> > Q: Can the .name field be modified *after* platform_device is
-> > registered w/ the platform bus?
->
-> No, it can not, sorry.
-Not a big deal, that question was a bit of an aside.  If the name
-could be changed, then the device function could change at runtime by
-unbinding one function driver, changing the name and rebind
-another....  But now that I think about it for more that 2ms, a
-solution to this would be to just unregister, change .name, and
-reregister the struct platform_device.
 
-g.
+Hi all ,
+
+=0D
+
+  Can I comprehensively test and conform that my SDRAM is creating
+problem other than mtest at u-boot( which I already implemented the
+mtest with the help of mailing list , where my memory failed . ) , if is
+there is a way please do let me know .=0D
+
+=0D
+
+Thanks in advance,
+
+=0D
+
+Best Regards\
+
+Srideep
+
+=0D
+
+=0D
+
+=0D
+
+
+
+
+
+Confidentiality Notice=0D
+
+The information contained in this electronic message and any attachments to=
+ this message are intended
+for the exclusive use of the addressee(s) and may contain confidential or=
+ privileged information. If
+you are not the intended recipient, please notify the sender at Wipro or=
+ Mailadmin@wipro.com immediately
+and destroy all copies of this message and any attachments.
+------_=_NextPart_001_01C5ECC2.6E20318A
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" xmlns:w=
+=3D"urn:schemas-microsoft-com:office:word" xmlns=
+=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; charset=
+=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	color:black;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
+ Roman"><span
+style=3D'font-size:12.0pt;color:black'>Hi all=
+ ,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
+ Roman"><span
+style=3D'font-size:12.0pt;color:black'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
+ Roman"><span
+style=3D'font-size:12.0pt;color:black'>&nbsp; Can I comprehensively test=
+ and conform
+that my SDRAM is creating problem other than mtest at u-boot( which I=
+ already implemented
+the mtest with the help of mailing list , where my memory failed . ) , if=
+ is
+there is a way please do let me know . <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
+ Roman"><span
+style=3D'font-size:12.0pt;color:black'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
+ Roman"><span
+style=3D'font-size:12.0pt;color:black'>Thanks in=
+ advance,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
+ Roman"><span
+style=3D'font-size:12.0pt;color:black'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
+ Roman"><span
+style=3D'font-size:12.0pt;color:black'>Best=
+ Regards\<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
+ Roman"><span
+style=3D'font-size:12.0pt;color:black'>Srideep<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
+ Roman"><span
+style=3D'font-size:12.0pt;color:black'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
+ Roman"><span
+style=3D'font-size:12.0pt;color:black'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
+ Roman"><span
+style=3D'font-size:12.0pt;color:black'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+<table><tr><td bgcolor=3D#ffffff><font color=3D#000000><br>
+<br>
+Confidentiality Notice <br>
+<br>
+The information contained in this electronic message and any attachments to=
+ this message are intended<br>
+for the exclusive use of the addressee(s) and may contain confidential or=
+ privileged information. If<br>
+you are not the intended recipient, please notify the sender at Wipro or=
+ Mailadmin@wipro.com immediately<br>
+and destroy all copies of this message and any attachments.<br>
+</font></td></tr></table>
+------_=_NextPart_001_01C5ECC2.6E20318A--
