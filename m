@@ -1,19 +1,16 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 3142F68734
+Return-Path: <mike@compulab.co.il>
+Received: from alexmail (62-90-235-247.barak.net.il [62.90.235.247])
+	by ozlabs.org (Postfix) with ESMTP id 293C2681C2
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 20 Nov 2005 02:24:16 +1100 (EST)
-To: srideep.devireddy@wipro.com
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sat, 19 Nov 2005 10:03:46 +0530."
-	<6AD9F6A5F6E096408F0B703773355A0765E931@CHN-SNR-MBX01.wipro.com>
-Date: Sat, 19 Nov 2005 16:24:13 +0100
-Sender: wd@denx.de
-Message-Id: <20051119152413.D0B44353BEF@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Memtest-SDRAM 
+	Mon, 21 Nov 2005 01:07:43 +1100 (EST)
+Message-ID: <4380829E.7040804@compulab.co.il>
+Date: Sun, 20 Nov 2005 16:05:18 +0200
+From: Mike Rapoport <mike@compulab.co.il>
+MIME-Version: 1.0
+To: galak@kernel.crashing.org
+Content-Type: multipart/mixed; boundary="------------030601010503040100000305"
+Cc: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH] ppc32: smc1_lineif fix for mpc8272
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,23 +21,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <6AD9F6A5F6E096408F0B703773355A0765E931@CHN-SNR-MBX01.wipro.com> you wrote:
-> 
->   Can I comprehensively test and conform that my SDRAM is creating
-> problem other than mtest at u-boot( which I already implemented the
-> mtest with the help of mailing list , where my memory failed . ) , if is
-> there is a way please do let me know .
+This is a multi-part message in MIME format.
+--------------030601010503040100000305
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-A simple test is: if Linux is running  without  problems  under  load
-than there are no problems with your SDRAM.
+This patch fixes the pin assignment of SMC1 for MPC8272 family
 
-See also the U-Boot FAQ.
+Signed-off-by: Mike Rapoport <mike@compulab.co.il>
 
-Best regards,
-
-Wolfgang Denk
 
 -- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-I have a very small mind and must live with it.    -- Edsger Dijkstra
+Sincerely yours,
+Mike Rapoport
+
+
+
+--------------030601010503040100000305
+Content-Type: text/x-diff;
+ name="smc_8272.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="smc_8272.patch"
+
+diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm2.c b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+--- a/drivers/serial/cpm_uart/cpm_uart_cpm2.c
++++ b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+@@ -89,11 +89,19 @@ void smc1_lineif(struct uart_cpm_port *p
+ {
+ 	volatile iop_cpm2_t *io = &cpm2_immr->im_ioport;
+ 
++#ifdef CONFIG_8272
++	/* SMC1 is only on port C on 8272 */
++	io->iop_pparc |= 0x0c000000;
++	io->iop_pdirc |= 0x04000000;
++	io->iop_pdirc &= ~0x08000000;
++	io->iop_psorc &= ~0x0c000000;
++#else
+ 	/* SMC1 is only on port D */
+ 	io->iop_ppard |= 0x00c00000;
+ 	io->iop_pdird |= 0x00400000;
+ 	io->iop_pdird &= ~0x00800000;
+ 	io->iop_psord &= ~0x00c00000;
++#endif
+ 
+ 	/* Wire BRG1 to SMC1 */
+ 	cpm2_immr->im_cpmux.cmx_smr &= 0x0f;
+
+--------------030601010503040100000305--
