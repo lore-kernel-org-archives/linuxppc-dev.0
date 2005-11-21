@@ -1,15 +1,15 @@
 Return-Path: <rsushko@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 5F138681C2
+	by ozlabs.org (Postfix) with ESMTP id BAE41687BB
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 Nov 2005 01:53:16 +1100 (EST)
+	Tue, 22 Nov 2005 01:53:18 +1100 (EST)
 From: "Ruslan V. Sushko" <rsushko@ru.mvista.com>
 To: linuxppc-embedded@ozlabs.org
-Content-Type: multipart/mixed; boundary="=-UCeA0tMpibMPflbmLAPF"
-Date: Mon, 21 Nov 2005 17:26:03 +0300
-Message-Id: <1132583163.11785.42.camel@mephisto.spb.rtsoft.ru>
+Content-Type: multipart/mixed; boundary="=-Fz4Cv8flYd8kPuxSYS++"
+Date: Mon, 21 Nov 2005 17:26:09 +0300
+Message-Id: <1132583169.11785.44.camel@mephisto.spb.rtsoft.ru>
 Mime-Version: 1.0
-Subject: [PATCH 2/3] ppc32: PCIX support for Yucca board
+Subject: [PATCH 3/3] ppc32: MTD support for Yucca board
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,285 +21,443 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
---=-UCeA0tMpibMPflbmLAPF
+--=-Fz4Cv8flYd8kPuxSYS++
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
-This patch adds PCI-X support for Yucca board
+Following patch adds MTD support for Yucca embedded memories(Flashes,
+SRAM, FRAM).
+
 
 Signed-off-by: Ruslan V. Sushko <rsushko@ru.mvista.com>
 
---=-UCeA0tMpibMPflbmLAPF
-Content-Disposition: attachment; filename=yucca_pcix_support.patch
-Content-Type: text/x-patch; name=yucca_pcix_support.patch; charset=UTF-8
+--=-Fz4Cv8flYd8kPuxSYS++
+Content-Disposition: attachment; filename=yucca_mtd_support.patch
+Content-Type: text/x-patch; name=yucca_mtd_support.patch; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-diff --git a/arch/ppc/platforms/4xx/yucca.c b/arch/ppc/platforms/4xx/yucca.c
---- a/arch/ppc/platforms/4xx/yucca.c
-+++ b/arch/ppc/platforms/4xx/yucca.c
-@@ -58,6 +58,25 @@ extern bd_t __res;
+diff --git a/arch/ppc/platforms/4xx/yucca.h b/arch/ppc/platforms/4xx/yucca.h
+--- a/arch/ppc/platforms/4xx/yucca.h
++++ b/arch/ppc/platforms/4xx/yucca.h
+@@ -32,12 +32,88 @@
+ /* External timer clock frequency */
+ #define YUCCA_TMR_CLK		25000000
  
- static struct ibm44x_clocks clocks __initdata;
++/* System Memory map (physical address, not effective address)
++ * Flash and other devices via EBC.
++ *
++ * This should be the same mapping as done by PIBS in the
++ * (not mandatory but ease code reading between two codes)
++ * xxx/boardlib/ebc.c
++ *
++ * depending of the switch setting off the board, the location of devices
++ * in the address map are not the same:
++ */
++/* Common definitions */
++
++#define BOARD_SMALL_FLASH_SIZE                    0x100000      /* 1M */
++#define BOARD_FRAM_SIZE			            0x8000
++#define BOARD_SRAM_SIZE			          0x100000
++#define BOARD_OPER_FLASH_SIZE                     0x400000      /* 4M */
++
++
++/* Configuration 1:
++ * the small flash and sram are placed on top   (CS0)
++ * the Large flash is placed below              (CS2)
++ * The FPGA and FRAM at the end                 (CS1)
++ *                                        xxxx----xxxx----
++ */
++#define BOARD_CONF1_SMALL_FLASH         0x00000004FFF00000ull
++#define BOARD_CONF1_FRAM                0x00000004FF000000ull
++#define BOARD_CONF1_OPER_FLASH          0x00000004E7C00000ull
++#define BOARD_CONF1_SRAM                0x00000004E7000000ull
++
++/* Configuration 2:
++ * the small flash and sram are placed on top   (CS0)
++ * but now sram before smal flash
++ * the Large flash is placed below (no change)  (CS2)
++ * The FPGA and FRAM stay in same place.        (CS1)
++ *                                        xxxx----xxxx----
++ */
++#define BOARD_CONF2_OPER_FLASH          0x00000004FFC00000ull
++#define BOARD_CONF2_SRAM                0x00000004FF000000ull
++#define BOARD_CONF2_SMALL_FLASH         0x00000004E7F00000ull
++#define BOARD_CONF2_FRAM                0x00000004E7000000ull
++
++/* Configuration 3:
++ * the Large flash is placed on top,            (CS0)
++ * the small flash and sram are placed below.   (CS2)
++ * The FPGA and FRAM stay in same place.        (CS1)
++ *                                        xxxx----xxxx----
++ */
++#define BOARD_CONF3_SRAM                0x00000004FFF00000ull
++#define BOARD_CONF3_OPER_FLASH          0x00000004FF000000ull
++#define BOARD_CONF3_SMALL_FLASH         0x00000004E7F00000ull
++#define BOARD_CONF3_FRAM                0x00000004E7000000ull
++
+ /*
+  * FPGA registers
+  */
+ #define YUCCA_FPGA_REG_BASE			0x00000004e2000000ULL
+ #define YUCCA_FPGA_REG_SIZE			0x24
  
-+unsigned char ppc4xx_uic_ext_irq_cfg[] __initdata = {
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ15: EXT */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ14: EXT */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ13: EXT */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ12: PCI-X slot */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ11: EXT */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ10: EXT */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ9:  EXT */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ8:  EXT */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ7:  EXT */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ6:  EXT */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ5:  EXT */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ4:  EXT */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ3:  EXT */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ2:  EXT */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ1:  EXT */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ0:  EXT */
++#define FPGA_REG10                              0x10 /* Ethernet/Reset/Boot
++                                                        configs */
++#define FPGA_REG10_ETH_MODE10                   0x8000
++#define FPGA_REG10_ETH_MODE100                  0x4000
++#define FPGA_REG10_ETH_MODE1000                 0x2000
++#define FPGA_REG10_ETH_FORCE_DUPLEX             0x1000
++#define FPGA_REG10_LOG_RESET_ETHERNET           0x0800
++#define FPGA_REG10_ETH_AUTO_NEGO                0x0400
++#define FPGA_REG10_LOG_INT_ETH                  0x0200
++#define FPGA_REG10_LOG_RESET_HISR               0x0080
++#define FPGA_REG10_LOG_RESET_DISPLAY            0x0040
++#define FPGA_REG10_LOG_RESET_SDRAM              0x0020
++#define FPGA_REG10_LOG_OPBOOT                   0x0010
++#define FPGA_REG10_LOG_SRAM_BOOT                0x0008
++#define FPGA_REG10_LOG_BTBOOT                   0x0004
++
++/*Boot configurations */
++#define BOARD_CONFIG_MASK                       (0x001C)
++#define BOARD_CONFIG_1                          (0x0018)
++#define BOARD_CONFIG_2                          (0x000C)
++#define BOARD_CONFIG_3                          (0x0014)
++#define BOARD_BOOT_OPER_FLASH(x)       (((x) & BOARD_CONFIG_MASK) == \
++                                                 BOARD_CONFIG_2)
++
+ #define FPGA_REG1A				0x1a
+ 
+ #define FPGA_REG1A_PE0_GLED			0x8000
+diff --git a/drivers/mtd/maps/Kconfig b/drivers/mtd/maps/Kconfig
+--- a/drivers/mtd/maps/Kconfig
++++ b/drivers/mtd/maps/Kconfig
+@@ -339,6 +339,14 @@ config MTD_OCOTEA
+ 	  Ocotea board. If you have one of these boards and would like to
+ 	  use the flash chips on it, say 'Y'.
+ 
++config MTD_YUCCA
++        tristate "Flash devices mapped on IBM 440SPe Yucca"
++        depends on MTD_CFI && YUCCA
++        help
++          This enables access routines for the flash chips on the IBM 440SPe
++          Yucca board. If you have one of these boards and would like to
++          use the flash chips on it, say 'Y'.
++
+ config MTD_REDWOOD
+ 	tristate "CFI Flash devices mapped on IBM Redwood"
+ 	depends on MTD_CFI && ( REDWOOD_4 || REDWOOD_5 || REDWOOD_6 )
+diff --git a/drivers/mtd/maps/Makefile b/drivers/mtd/maps/Makefile
+--- a/drivers/mtd/maps/Makefile
++++ b/drivers/mtd/maps/Makefile
+@@ -56,6 +56,7 @@ obj-$(CONFIG_MTD_NETtel)	+= nettel.o
+ obj-$(CONFIG_MTD_SCB2_FLASH)	+= scb2_flash.o
+ obj-$(CONFIG_MTD_EBONY)		+= ebony.o
+ obj-$(CONFIG_MTD_OCOTEA)	+= ocotea.o
++obj-$(CONFIG_MTD_YUCCA)         += yucca_flash.o
+ obj-$(CONFIG_MTD_BEECH)		+= beech-mtd.o
+ obj-$(CONFIG_MTD_ARCTIC)	+= arctic-mtd.o
+ obj-$(CONFIG_MTD_WALNUT)        += walnut.o
+diff --git a/drivers/mtd/maps/yucca_flash.c b/drivers/mtd/maps/yucca_flash.c
+new file mode 100644
+--- /dev/null
++++ b/drivers/mtd/maps/yucca_flash.c
+@@ -0,0 +1,297 @@
++/*
++ * Mapping for Yucca user flash
++ *
++ * This was derived from the luan.c
++ *
++ * Ruslan Sushko <rsushko@ru.mvista.com>
++ * Matt Porter <mporter@mvista.com>
++ *
++ * Copyright (C) 2002-2005 MontaVista Software Inc.
++ * (C) Copyright IBM Corp. 2004
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++#include <linux/module.h>
++#include <linux/types.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/mtd/mtd.h>
++#include <linux/mtd/map.h>
++#include <linux/mtd/partitions.h>
++#include <linux/config.h>
++#include <linux/version.h>
++#include <asm/io.h>
++
++static struct mtd_info *oper_flash_mtd = NULL;
++static struct mtd_info *small_flash_mtd = NULL;
++static struct mtd_info *fram_mtd = NULL;
++static struct mtd_info *sram_mtd = NULL;
++
++static struct map_info yucca_sram_map = {
++        .name =         "Yucca SRAM",
++        .size =         BOARD_SRAM_SIZE,
++        .bankwidth = 2,
 +};
 +
- static void __init
- yucca_calibrate_decr(void)
- {
-@@ -80,13 +99,83 @@ yucca_show_cpuinfo(struct seq_file *m)
- 	return 0;
- }
- 
--static enum {
--	HOSE_UNKNOWN,
-+static void __init yucca_set_emacdata(void)
-+{
-+	struct ocp_def *def;
-+	struct ocp_func_emac_data *emacdata;
-+
-+	/* Set phy_map, phy_mode, and mac_addr for the EMAC */
-+	def = ocp_get_one_device(OCP_VENDOR_IBM, OCP_FUNC_EMAC, 0);
-+	emacdata = def->additions;
-+	emacdata->phy_map = 0x00000001;	/* Skip 0x00 */
-+	emacdata->phy_mode = PHY_MODE_GMII;
-+	memcpy(emacdata->mac_addr, __res.bi_enetaddr, 6);
-+}
-+
-+enum yucca_hoses {
- 	HOSE_PCIX,
- 	HOSE_PCIE0,
- 	HOSE_PCIE1,
--	HOSE_PCIE2
--} hose_type[4];
-+	HOSE_PCIE2,
-+	HOSE_MAX
++static struct map_info yucca_fram_map = {
++        .name =         "Yucca FRAM",
++        .size =         BOARD_FRAM_SIZE,
++        .bankwidth = 1,
 +};
 +
-+static enum yucca_hoses hose_type[4];
++static struct map_info yucca_small_map = {
++        .name =         "Yucca small flash",
++        .size =         BOARD_SMALL_FLASH_SIZE,
++        .bankwidth = 1,
++};
 +
-+#define is_pcix_hose(_hs_) ((_hs_) == HOSE_PCIX)
-+#define is_pcie_hose(_hs_) (((_hs_) >= HOSE_PCIE0) && ((_hs_) <= HOSE_PCIE2))
-+#define pcie_hose_num(_hs_) ((_hs_) - HOSE_PCIE0)
++static struct map_info yucca_oper_map = {
++        .name =         "Yucca Operational flash",
++        .size =         BOARD_OPER_FLASH_SIZE,
++        .bankwidth = 2,
++};
 +
-+#define PCIX_READW(offset) \
-+        (readw((void *)((u32)pcix_reg_base+offset)))
++static struct mtd_partition yucca_sram_partitions[] = {
++        {
++                .name =   "SRAM",
++                .offset = 0x0,
++                .size =   0x100000,
++        }
++};
 +
-+#define PCIX_WRITEW(value, offset) \
-+        (writew(value, (void *)((u32)pcix_reg_base+offset)))
++static struct mtd_partition yucca_fram_partitions[] = {
++        {
++                .name =   "FRAM",
++                .offset = 0x0,
++                .size =   0x8000,
++        }
++};
 +
-+#define PCIX_WRITEL(value, offset) \
-+        (writel(value, (void *)((u32)pcix_reg_base+offset)))
++static struct mtd_partition yucca_small_partitions[] = {
++        {
++                .name =   "U-boot",
++                .offset = 0x0,
++                .size =   0x100000,
++        }
++};
 +
-+static void __init
-+ppc440spe_setup_pcix(struct pci_controller *hose)
++static struct mtd_partition yucca_oper_partitions[] = {
++        {
++                .name =   "Linux Kernel",
++                .offset = 0,
++                .size =   0x100000,
++        },
++        {
++                .name =   "Free Area",
++                .offset = 0x100000,
++                .size =   0x300000,
++        }
++};
++
++#define NB_OF(x)  (sizeof(x)/sizeof(x[0]))
++static void cleanup_yucca(void);
++
++
++int __init init_yucca(void)
 +{
-+	void *pcix_reg_base;
++        u16 fpga10_reg;
++        volatile u16 *fpga_adr;
++        unsigned long long small_flash_base, oper_flash_base;
++        unsigned long long sram_base, fram_base;
++        int memconfig = 0;
++        int err = 0;
 +
-+        pcix_reg_base = ioremap64(PCIX0_REG_BASE, PCIX_REG_SIZE);
++        fpga_adr = ioremap64(YUCCA_FPGA_REG_BASE, YUCCA_FPGA_REG_SIZE);
++        if (!fpga_adr)
++                return -ENOMEM;
 +
-+        /* Disable all windows */
-+        PCIX_WRITEL(0, PCIX0_POM0SA);
-+        PCIX_WRITEL(0, PCIX0_POM1SA);
-+        PCIX_WRITEL(0, PCIX0_POM2SA);
-+        PCIX_WRITEL(0, PCIX0_PIM0SA);
-+        PCIX_WRITEL(0, PCIX0_PIM0SAH);
-+        PCIX_WRITEL(0, PCIX0_PIM1SA);
-+        PCIX_WRITEL(0, PCIX0_PIM2SA);
-+        PCIX_WRITEL(0, PCIX0_PIM2SAH);
 +
-+        /*
-+         * Setup 512MB PLB->PCI outbound mem window
-+         * (a_n000_0000->0_n000_0000)
-+         * */
-+        PCIX_WRITEL(0x0000000d, PCIX0_POM0LAH);
-+        PCIX_WRITEL(hose->mem_space.start, PCIX0_POM0LAL);
-+        PCIX_WRITEL(0x00000000, PCIX0_POM0PCIAH);
-+        PCIX_WRITEL(hose->mem_space.start, PCIX0_POM0PCIAL);
-+        PCIX_WRITEL(~(hose->mem_space.end - hose->mem_space.start) | 1 ,
-+                        PCIX0_POM0SA);
++        fpga10_reg = *((u16*)((u32)fpga_adr + FPGA_REG10));
++        iounmap(fpga_adr);
++        switch (fpga10_reg & BOARD_CONFIG_MASK) {
++                default:
++                        printk("Memory config switches are invalid: "
++                               "fpga10_reg= %x. Using default configuration\n",
++                                        fpga10_reg);
++                case BOARD_CONFIG_1:
++                        memconfig = 1;
++                        small_flash_base =      BOARD_CONF1_SMALL_FLASH;
++                        oper_flash_base =       BOARD_CONF1_OPER_FLASH;
++		        sram_base =             BOARD_CONF1_SRAM;
++		        fram_base =             BOARD_CONF1_FRAM;
++                        break;
++                case BOARD_CONFIG_2:
++                        memconfig = 2;
++                        small_flash_base =      BOARD_CONF2_SMALL_FLASH;
++                        oper_flash_base =       BOARD_CONF2_OPER_FLASH;
++		        sram_base =             BOARD_CONF2_SRAM;
++		        fram_base =             BOARD_CONF3_FRAM;
++                        break;
++                case BOARD_CONFIG_3:
++                        memconfig = 3;
++                        small_flash_base =      BOARD_CONF3_SMALL_FLASH;
++                        oper_flash_base =       BOARD_CONF3_OPER_FLASH;
++		        sram_base =             BOARD_CONF3_SRAM;
++		        fram_base =             BOARD_CONF3_FRAM;
++                        break;
++        }
 +
-+        /* Setup 1GB PCI->PLB inbound memory window at 0, enable MSIs */
-+        PCIX_WRITEL(0x00000000, PCIX0_PIM0LAH);
-+        PCIX_WRITEL(0x00000000, PCIX0_PIM0LAL);
-+        PCIX_WRITEL(0xc0000007, PCIX0_PIM0SA);
-+        PCIX_WRITEL(0xffffffff, PCIX0_PIM0SAH);
++        printk("Using EBC memory configuration #%d\n", memconfig);
 +
-+                /* Enable PCIX0 I/O, Mem, and Busmaster cycles */
-+        PCIX_WRITEW(PCIX_READW(PCIX0_COMMAND) | PCI_COMMAND_MEMORY |
-+                        PCI_COMMAND_MASTER, PCIX0_COMMAND);
++        yucca_small_map.phys = small_flash_base;
++        yucca_small_map.virt = ioremap64(small_flash_base,
++                        yucca_small_map.size);
 +
-+        iounmap(pcix_reg_base);
-+	eieio();
++        if (!yucca_small_map.virt) {
++                printk("Failed to ioremap small flash\n");
++                err = -EIO;
++                goto ret_err;
++        }
++
++        simple_map_init(&yucca_small_map);
++
++        small_flash_mtd = do_map_probe("map_rom", &yucca_small_map);
++        if (small_flash_mtd) {
++                small_flash_mtd->owner = THIS_MODULE;
++                add_mtd_partitions(small_flash_mtd, yucca_small_partitions,
++                                        NB_OF(yucca_small_partitions));
++        } else {
++                printk("map probe failed for small flash\n");
++                err = -ENXIO;
++                goto ret_err;
++        }
++
++        yucca_oper_map.phys = oper_flash_base;
++        yucca_oper_map.virt = ioremap64(oper_flash_base,
++                        yucca_oper_map.size);
++
++        if (!yucca_oper_map.virt) {
++                printk("Failed to ioremap oper flash\n");
++                err = -EIO;
++                goto ret_err;
++        }
++
++        simple_map_init(&yucca_oper_map);
++
++        oper_flash_mtd = do_map_probe("cfi_probe", &yucca_oper_map);
++        if (oper_flash_mtd) {
++                oper_flash_mtd->owner = THIS_MODULE;
++                add_mtd_partitions(oper_flash_mtd, yucca_oper_partitions,
++                                        NB_OF(yucca_oper_partitions));
++        } else {
++                printk("map probe failed for oper flash\n");
++                err = -ENXIO;
++                goto ret_err;
++        }
++
++        yucca_sram_map.phys = sram_base;
++        yucca_sram_map.virt = ioremap64(sram_base,
++                                 yucca_sram_map.size);
++
++        if (!yucca_sram_map.virt) {
++                printk("Failed to ioremap SRAM\n");
++                err = -EIO;
++                goto ret_err;
++        }
++
++        simple_map_init(&yucca_sram_map);
++
++        sram_mtd = do_map_probe("map_ram", &yucca_sram_map);
++        if (sram_mtd) {
++                sram_mtd->owner = THIS_MODULE;
++                add_mtd_partitions(sram_mtd, yucca_sram_partitions,
++                                        NB_OF(yucca_sram_partitions));
++        } else {
++                printk("map probe failed for SRAM\n");
++                err = -ENXIO;
++                goto ret_err;
++        }
++
++        yucca_fram_map.phys = fram_base;
++        yucca_fram_map.virt = ioremap64(fram_base,
++                                 yucca_fram_map.size);
++
++        if (!yucca_fram_map.virt) {
++                printk("Failed to ioremap FRAM\n");
++                err = -EIO;
++                goto ret_err;
++        }
++
++        simple_map_init(&yucca_fram_map);
++
++        fram_mtd = do_map_probe("map_ram", &yucca_fram_map);
++        if (fram_mtd) {
++                fram_mtd->owner = THIS_MODULE;
++                add_mtd_partitions(fram_mtd, yucca_fram_partitions,
++                                        NB_OF(yucca_fram_partitions));
++        } else {
++                printk("map probe failed for FRAM\n");
++                err = -ENXIO;
++                goto ret_err;
++        }
++        return 0;
++ret_err:
++        cleanup_yucca();
++        return err;
 +}
- 
- static inline int
- yucca_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
-@@ -100,7 +189,7 @@ yucca_map_irq(struct pci_dev *dev, unsig
- 		 *	  A   B   C   D
- 		 */
- 		{
--			{ 81, -1, -1, -1 },	/* IDSEL 1 - PCIX0 Slot 0 */
-+			{ 49, -1, -1, -1 },	/* IDSEL 1 - PCIX0 Slot 0 */
- 		};
- 		const long min_idsel = 1, max_idsel = 1, irqs_per_slot = 4;
- 		return PCI_IRQ_TABLE_LOOKUP;
-@@ -141,25 +230,16 @@ yucca_map_irq(struct pci_dev *dev, unsig
- 	return -1;
- }
- 
--static void __init yucca_set_emacdata(void)
--{
--	struct ocp_def *def;
--	struct ocp_func_emac_data *emacdata;
--
--	/* Set phy_map, phy_mode, and mac_addr for the EMAC */
--	def = ocp_get_one_device(OCP_VENDOR_IBM, OCP_FUNC_EMAC, 0);
--	emacdata = def->additions;
--	emacdata->phy_map = 0x00000001;	/* Skip 0x00 */
--	emacdata->phy_mode = PHY_MODE_GMII;
--	memcpy(emacdata->mac_addr, __res.bi_enetaddr, 6);
--}
--
- static int __init yucca_pcie_card_present(int port)
- {
-    void __iomem *pcie_fpga_base;
-    u16 reg;
- 
-    pcie_fpga_base = ioremap64(YUCCA_FPGA_REG_BASE, YUCCA_FPGA_REG_SIZE);
-+   if (!pcie_fpga_base) {
-+              printk(KERN_ERR "FPGA remap filed\n");
-+              return 0;
-+   }
-    reg = in_be16(pcie_fpga_base + FPGA_REG1C);
-    iounmap(pcie_fpga_base);
- 
-@@ -240,35 +320,44 @@ yucca_setup_hoses(void)
- {
- 	struct pci_controller *hose;
- 	char name[20];
-+        enum yucca_hoses hs;
-         int bus_no = 0;
--	int i;
- 
--	for (i = 0; i <= 2; ++i) {
--		if (!yucca_pcie_card_present(i))
--			continue;
--
--		printk(KERN_INFO "PCIE%d: card present\n", i);
--		yucca_setup_pcie_fpga_rootpoint(i);
--		if (ppc440spe_init_pcie_rootport(i)) {
--			printk(KERN_WARNING "PCIE%d: initialization failed\n", i);
--			continue;
--		}
-+	for (hs = HOSE_PCIX; hs < HOSE_MAX; ++hs) {
-+                if (is_pcie_hose(hs)) {
-+                        if (!yucca_pcie_card_present(pcie_hose_num(hs)))
-+                                continue;
 +
-+                        printk(KERN_INFO "PCIE%d: card present\n",
-+                                        pcie_hose_num(hs));
++static void cleanup_yucca(void)
++{
++        if (yucca_small_map.virt) {
++                iounmap((void *)yucca_small_map.virt);
++                yucca_small_map.virt = 0;
++        }
 +
-+                        yucca_setup_pcie_fpga_rootpoint(pcie_hose_num(hs));
-+                        if (ppc440spe_init_pcie_rootport(pcie_hose_num(hs))) {
-+                                printk(KERN_ERR "PCIE%d: initialization "
-+                                                "failed\n", pcie_hose_num(hs));
-+                                continue;
-+                        }
-+                }
- 
- 		hose = pcibios_alloc_controller();
++        if (yucca_oper_map.virt) {
++                iounmap((void *)yucca_oper_map.virt);
++                yucca_oper_map.virt = 0;
++        }
 +
- 		if (!hose)
- 			return;
- 
--		sprintf(name, "PCIE%d host bridge", i);
-+		sprintf(name, "PCI%s%d host bridge",
-+                                is_pcix_hose(hs) ? "X" : "E",
-+                                is_pcie_hose(hs) ?  pcie_hose_num(hs) : 0
-+                                );
- 		pci_init_resource(&hose->io_resource,
- 				  YUCCA_PCIX_LOWER_IO,
- 				  YUCCA_PCIX_UPPER_IO,
- 				  IORESOURCE_IO,
- 				  name);
- 
--		hose->mem_space.start = YUCCA_PCIE_LOWER_MEM +
--			i * YUCCA_PCIE_MEM_SIZE;
-+		hose->mem_space.start = YUCCA_PCIX_LOWER_MEM +
-+			hs * YUCCA_PCIX_MEM_SIZE;
- 		hose->mem_space.end   = hose->mem_space.start +
--			YUCCA_PCIE_MEM_SIZE - 1;
-+			YUCCA_PCIX_MEM_SIZE - 1;
- 
- 		pci_init_resource(&hose->mem_resources[0],
- 				  hose->mem_space.start,
-@@ -278,9 +367,24 @@ yucca_setup_hoses(void)
- 
- 		hose->first_busno = bus_no;
- 		hose->last_busno  = 0xFF;
--		hose_type[hose->index] = HOSE_PCIE0 + i;
-+		hose_type[hose->index] = hs;
++	if (yucca_fram_map.virt) {
++                iounmap((void *)yucca_fram_map.virt);
++                yucca_fram_map.virt = 0;
++	}
 +
-+                if (is_pcix_hose(hs)) {
-+         	        hose->io_space.start = YUCCA_PCIX_LOWER_IO;
-+                	hose->io_space.end = YUCCA_PCIX_UPPER_IO;
-+               	        isa_io_base =
-+		                (unsigned long)
-+                                        ioremap64(PCIX0_IO_BASE, PCIX_IO_SIZE);
-+	                hose->io_base_virt = (void *)isa_io_base;
++	if (yucca_sram_map.virt) {
++                iounmap((void *)yucca_sram_map.virt);
++                yucca_sram_map.virt = 0;
++	}
 +
-+                        ppc440spe_setup_pcix(hose);
++        if (oper_flash_mtd) {
++                del_mtd_partitions(oper_flash_mtd);
++                map_destroy(oper_flash_mtd);
++        }
 +
-+    	                setup_indirect_pci(hose, PCIX0_CFGA, PCIX0_CFGD);
-+                        hose->set_cfg_type = 1;
-+                } else {
-+		        ppc440spe_setup_pcie(hose, pcie_hose_num(hs));
-+                }
- 
--		ppc440spe_setup_pcie(hose, i);
- 		hose->last_busno = pciauto_bus_scan(hose, hose->first_busno);
-                 bus_no = hose->last_busno + 1;
-                 printk(KERN_INFO "%s: resources allocated\n", name);
-diff --git a/include/asm-ppc/ibm44x.h b/include/asm-ppc/ibm44x.h
---- a/include/asm-ppc/ibm44x.h
-+++ b/include/asm-ppc/ibm44x.h
-@@ -557,12 +557,19 @@
- #define PCIX1_CFGD		0x1ec00004UL
- #define PCIX2_CFGD		0x2ec00004UL
- 
-+#if defined (CONFIG_440SPE)
-+#define PCIX0_IO_BASE		0x0000000C08000000ULL
-+#else
- #define PCIX0_IO_BASE		0x0000000908000000ULL
- #define PCIX1_IO_BASE		0x0000000908000000ULL
- #define PCIX2_IO_BASE		0x0000000908000000ULL
-+#endif
++        if (small_flash_mtd) {
++                del_mtd_partitions(small_flash_mtd);
++                map_destroy(small_flash_mtd);
++        }
 +
- #define PCIX_IO_SIZE		0x00010000
- 
--#ifdef CONFIG_440SP
-+#if defined (CONFIG_440SPE)
-+#define PCIX0_REG_BASE		0x0000000c0ec80000ULL
-+#elif defined(CONFIG_440SP)
- #define PCIX0_REG_BASE		0x000000090ec80000ULL
- #else
- #define PCIX0_REG_BASE		0x000000020ec80000ULL
++        if (fram_mtd) {
++                del_mtd_partitions(fram_mtd);
++                map_destroy(fram_mtd);
++        }
++
++        if (sram_mtd) {
++                del_mtd_partitions(sram_mtd);
++                map_destroy(sram_mtd);
++        }
++
++}
++
++static void __exit rem_yucca(void)
++{
++        cleanup_yucca();
++}
++
++module_init(init_yucca);
++module_exit(rem_yucca);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Ruslan V. Sushko <rsushko@ru.mvista.com>");
++MODULE_DESCRIPTION("MTD map and partitions for AMCC 440SPe Yucca board");
++
 
---=-UCeA0tMpibMPflbmLAPF--
+--=-Fz4Cv8flYd8kPuxSYS++--
