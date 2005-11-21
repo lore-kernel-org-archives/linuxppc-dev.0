@@ -1,17 +1,17 @@
-Return-Path: <zjznliang_popo@163.com>
-Received: from 163.com (m12-13.163.com [220.181.12.13])
-	by ozlabs.org (Postfix) with SMTP id C6F8C687B3
+Return-Path: <wojciech.kromer@dgt.com.pl>
+Received: from dgt.com.pl (mail.dgt.com.pl [195.117.141.2])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id ED6A367A60
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 21 Nov 2005 18:14:55 +1100 (EST)
-Date: Mon, 21 Nov 2005 14:59:58 +0800
-From: "zjznliang" <zjznliang_popo@163.com>
-To: "clemens.koller" <clemens.koller@anagramm.de>
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Message-Id: <20051121071455.C6F8C687B3@ozlabs.org>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re:Re: Help ! 2.6.14 kernel can't bring up
+	Mon, 21 Nov 2005 18:41:42 +1100 (EST)
+Message-ID: <43817ACF.1030903@dgt.com.pl>
+Date: Mon, 21 Nov 2005 08:44:15 +0100
+From: Wojciech Kromer <wojciech.kromer@dgt.com.pl>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Subject: Strange results with changing HZ
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,24 +22,80 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-SGkgY2xlbWVucy5rb2xsZXKjoQ0KDQoJICAgICAgICAgIEkgaGF2ZSBjb25maWdlZCB0aGUgQ09O
-RklHX1dBTlRfRUFSTFlfU0VSSUFMIGZvciB0aGUgMi42LjE0IGtlcm5lbCxidXQgSSBzdGlsbCBk
-aWRuJ3Qgc2VlIG5vdGhpbmcgb3V0cHV0IA0Kb24gdGhlIHNlcmlhbCBwb3J0IC4NCgkJCUkgaGF2
-ZSBzb21lIGRvdWJ0cywNCgkJCTEsIExpbnV4IGtlcm5lbCAyLjQuMjUgY2FuIHdvcmsgd2VsbCB3
-aXRoIHRoZSBzYW1lIFUtQm9vdCBhbmQgYm9hcmQgYXMgTGludXgga2VybmVsIDIuNi4xNCwgd2hh
-dCBpcyB0aGUgZGlmZmVyZW50IA0Kd2l0aCB0aGUgc2VyaWFsIHBvcnQgZHJpdmVyIGJldHdlZW4g
-dGhlc2UgPw0KCQkJMi5UaGUgY29tbWFuZCBsaW5lICxVLUJvb3Qgc2VuZHMgY29tbWFuZCBsaW5l
-IHRvIHRoZSBrZXJuZWwgLGxpa2UgYXMgImJhdWRyYXRlICxyb290IC4uLi4iLiBJbiB0aGUgbGlu
-dXgga2VybmVsIA0KMi42LjE0LCJtYWtlIG1lbnVjb25maWcgLHBsYXRmb3JtIC0+ZGVmYXVsdCBi
-b290bG9hZGVyIGtlcm5lbCBhcmd1bWVudCIsSSBjb25maWcgdGhlIGNvbnNvbGUgYXMgdGhlIHNh
-bWUgYXMgdGhlIFUtYm9vdCAsDQpidXQgaXQgd2FzIGZhaWwgLkRpZG4ndCBjb25maWcgaXQgLGl0
-IHdhcyBzdGlsbCBmYWlsIC4NCg0KCQkJSSBoYXZlIG1lYXN1cmVkIHRoZSBwaW4gb2YgdGhlIHNl
-cmlhbCBwb3J0ICwgbm8gcHVyc2Ugb3V0cHV0LiBJIGNoZWNrZWQgdGhlIENTIChjaGlwIHNlbGVj
-dCApIHBpbiBvZiB0aGUgU0RSQU0NCih3aGVyZSBpcyB0aGUgbGludXgga2VybmVsICBpbXBsZW1l
-bnRhdGlvbiksIHRoZSBwaW4gaGFzIHB1cnNlcyB3aGVuIHRoZSBzZXJpYWwgcG9ydCB3aXRoIG5v
-dGhpbmcgLHNvIEkgdGhvdWdodCB0aGUgbGludXggDQprZXJuZWwgd2FzIHJ1bm5pbmcgLGJ1dCB0
-aGUgc2VyaWFsIHBvcnQgd2FzIGZhaWwgLi4uLi4uLi4NCg0KCQlOb3cgLCBtYXliZSBJIHdpbGwg
-Y2hlY2sgdGhlIGtlcm5lbCBjb2RlIHRvIHRyYWNlIHRoZSBwcm9ibGVtIC4gDQoNCgkJVGhhbmtz
-IGZvciB5b3VyIHBhdGllbmNlLg0KIA0KCQlJZiB5b3UgaGF2ZSBzb21lIGFkdmljZXMgLHBsZWFz
-ZSBsZXQgbWUga25vdyAgLlRoYW5rIHlvdSAhIA0KIAkJCQkNCg0KoaGhoXpqem5saWFuZw0KoaGh
-oaGhoaF6anpubGlhbmdfcG9wb0AxNjMuY29tDQqhoaGhoaGhoaGhoaEyMDA1LTExLTIxDQo=
+My system is:
+ - 2.4.25 kernel from denx.de
+ - uclibc (gcc 3.4.2) + busybox
+ - changed HZ to 1000
+ - rebuild kernel only
+
+AFAIR there souldn't be any need to recompile user apps.
+
+I have strange results.
+Sleep and timeout selects works fine, but alarm functions seems to be 
+too fast.
+For example included program or ping waits too short.
+
+
+
+it is OK:
+
+# time alarm_test
+alarm fired after 0.099166s
+real    0m 0.11s
+user    0m 0.00s
+sys     0m 0.00s
+#
+# time sleep 1
+real    0m 1.01s
+user    0m 0.00s
+sys     0m 0.00s
+# time sleep 10
+real    0m 10.01s
+user    0m 0.00s
+sys     0m 0.00s
+
+
+but:
+
+# alarm_test
+alarm fired after 0.099709s
+# alarm_test
+alarm fired after 0.099710s
+
+
+------------------------------------ alarm_test.c :
+
+#include <stdio.h>
+#include <signal.h>
+#include <unistd.h>
+#include <sys/time.h>
+
+static void sighand(int sig)
+{
+}
+
+int main()
+{
+ struct timeval tv1, tv2;
+ sigset_t set;
+
+ sigfillset(&set);
+ sigdelset(&set, SIGALRM);
+ sigdelset(&set, SIGINT);
+
+ signal(SIGALRM, sighand);
+ gettimeofday(&tv1, NULL);
+
+ alarm(1);
+ sigsuspend(&set);
+ gettimeofday(&tv2, NULL);
+
+ tv1.tv_sec = tv2.tv_sec - tv1.tv_sec - (tv2.tv_usec < tv1.tv_usec);
+ tv1.tv_usec = tv2.tv_usec - tv1.tv_usec + (tv2.tv_usec < tv1.tv_usec) * 
+1000000;
+
+ printf("alarm fired after %ld.%06lds\n",
+ tv1.tv_sec, tv1.tv_usec);
+
+ return 0;
+}
