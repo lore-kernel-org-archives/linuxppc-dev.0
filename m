@@ -1,21 +1,25 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao02.cox.net (fed1rmmtao02.cox.net [68.230.241.37])
-	by ozlabs.org (Postfix) with ESMTP id 577EA687B7
+Return-Path: <hs@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 15905681BE
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 Nov 2005 02:57:48 +1100 (EST)
-Date: Mon, 21 Nov 2005 08:57:45 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Message-ID: <20051121085745.A19935@cox.net>
-References: <1132583169.11785.44.camel@mephisto.spb.rtsoft.ru>
-	<4381E1A1.1060405@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4381E1A1.1060405@ru.mvista.com>;
-	from vbordug@ru.mvista.com on Mon, Nov 21, 2005 at 06:02:57PM
-	+0300
-Cc: "Ruslan V. Sushko" <rsushko@ru.mvista.com>, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH 3/3] ppc32: MTD support for Yucca board
+	Tue, 22 Nov 2005 03:57:40 +1100 (EST)
+Received: from mail01.m-online.net (unknown [192.168.3.149])
+	by mail-out.m-online.net (Postfix) with ESMTP id D61207028D
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 21 Nov 2005 17:55:48 +0100 (CET)
+Received: from embluxa7e0291e (213-163-18-7.vnet.hu [213.163.18.7])
+	by smtp-auth.mnet-online.de (Postfix) with ESMTP id 6DCEAB80EE
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 21 Nov 2005 17:57:38 +0100 (CET)
+From: "Heiko Schocher" <hs@denx.de>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Mon, 21 Nov 2005 17:57:24 +0100
+Message-ID: <AHEILKONAKAEJPHNMOPNCELNCDAA.hs@denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: anyone used i2c-algo-8260 for the MPC8272 family?
+Reply-To: hs@denx.de
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,12 +30,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Nov 21, 2005 at 06:02:57PM +0300, Vitaly Bordug wrote:
-> Guess this should come through MTD community (linux-mtd@lists.infradead.org), rebased to 
-> the MTD tree of course.
+Hi Ron,
 
-Indeed, however, it need to be split so the driver/mtd portion goes to
-the MTD maintainers. The arch/ppc portion will go in through the powerpc
-tree.
+> There are some subtle differences b/t the 8260 family and 8272 family.
+> The 8272 family only has 8KB DPRAM (c.f. 16KB), so I believe the
+> definition of PROFF_I2C in include/linux/cpm_8260.h should be
+> different.  I've changed it from:
+> 
+> 	#define PROFF_I2C	((16 * 1024) - 64)
+> to 
+> 	#define PROFF_I2C	((8 * 1024) - 64)
+> 
+> but still get no I2C activity, and a kernel hang.
 
--Matt
+I think your change above is right for a MPC8247.
+
+> Anyone have this working, or any thoughts to contribute?
+
+Look at my Patch, which I just posted at linuxppc-dev, which 
+(I hope) will help you (!! it is for a MPC8260 based Board):
+
+http://ozlabs.org/pipermail/linuxppc-dev/2005-November/020492.html
+
+or have a look at the Git repository at Denx:
+
+http://source.denx.net/git/linux-2.6-denx.git
+
+where you can find the complete PM82x port for the 2.6.14 Kernel.
+
+Best regards,
+Heiko
