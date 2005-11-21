@@ -1,16 +1,16 @@
 Return-Path: <hs@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id F18CE687B7
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Nov 2005 02:55:47 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id DBFB3687B8
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Nov 2005 03:01:13 +1100 (EST)
 From: "Heiko Schocher" <hs@denx.de>
 To: <linuxppc-dev@ozlabs.org>
-Date: Mon, 21 Nov 2005 16:55:28 +0100
-Message-ID: <AHEILKONAKAEJPHNMOPNMELLCDAA.hs@denx.de>
+Date: Mon, 21 Nov 2005 17:00:56 +0100
+Message-ID: <AHEILKONAKAEJPHNMOPNEELMCDAA.hs@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Cc: lm-sensors@lm-sensors.org
-Subject: [PATCH]	I2C:	Add I2C support for the MPC8260
+Subject: [PATCH]	I2C:	Added support for the PCF8563 chip.
 Reply-To: hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,722 +25,618 @@ Hello,
 
 the following Patch (against 2.6 kernel.org tree, COMMIT_ID:
 f093182d313edde9b1f86dbdaf40ba4da2dbd0e7) adds support for
-the I2C on a MPC8260.
+the PCF8563 RTC on the PM82X Boards from Microsys.
+
+Signed-off-by: Heiko Schocher <hs@denx.de>
+
 ---
- drivers/i2c/busses/Kconfig       |   10 +
- drivers/i2c/busses/Makefile      |    1
- drivers/i2c/busses/i2c-mpc8260.c |  617 ++++++++++++++++++++++++++++++++++++++
- include/linux/i2c-algo-8260.h    |   26 ++
- include/linux/i2c-id.h           |    3
- 5 files changed, 657 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
-index 4010fe9..77f9c69 100644
---- a/drivers/i2c/busses/Kconfig
-+++ b/drivers/i2c/busses/Kconfig
-@@ -270,6 +270,16 @@ config I2C_MPC
+ drivers/i2c/chips/Kconfig   |    9 +
+ drivers/i2c/chips/Makefile  |    1
+ drivers/i2c/chips/pcf8563.c |  549 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/i2c-id.h      |    1
+ 4 files changed, 560 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/i2c/chips/Kconfig b/drivers/i2c/chips/Kconfig
+index f9fae28..c470b0d 100644
+--- a/drivers/i2c/chips/Kconfig
++++ b/drivers/i2c/chips/Kconfig
+@@ -46,6 +46,15 @@ config SENSORS_PCF8574
  	  This driver can also be built as a module.  If so, the module
- 	  will be called i2c-mpc.
+ 	  will be called pcf8574.
 
-+config I2C_MPC8260
-+	tristate "MPC 8260"
-+	depends on I2C && PPC32
++config SENSORS_PCF8563
++	tristate "Philips PCF8563 RTC Chip"
++	depends on I2C && EXPERIMENTAL
 +	help
-+	  If you say yes to this option, support will be included for the
-+	  I2C interface on the MPC8260.
++	  If you say yes here you get support for Philips PCF8563 RTC chip.
 +
 +	  This driver can also be built as a module.  If so, the module
-+	  will be called i2c-m8260.
++	  will be called i2c-pcf8563.
 +
- config I2C_NFORCE2
- 	tristate "Nvidia nForce2, nForce3 and nForce4"
- 	depends on I2C && PCI
-diff --git a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
-index f1df00f..b4d8cea 100644
---- a/drivers/i2c/busses/Makefile
-+++ b/drivers/i2c/busses/Makefile
-@@ -43,6 +43,7 @@ obj-$(CONFIG_I2C_VIAPRO)	+= i2c-viapro.o
- obj-$(CONFIG_I2C_VOODOO3)	+= i2c-voodoo3.o
- obj-$(CONFIG_SCx200_ACB)	+= scx200_acb.o
- obj-$(CONFIG_SCx200_I2C)	+= scx200_i2c.o
-+obj-$(CONFIG_I2C_MPC8260)	+= i2c-mpc8260.o
-
- ifeq ($(CONFIG_I2C_DEBUG_BUS),y)
- EXTRA_CFLAGS += -DDEBUG
-diff --git a/drivers/i2c/busses/i2c-mpc8260.c b/drivers/i2c/busses/i2c-mpc8260.c
+ config SENSORS_PCA9539
+ 	tristate "Philips PCA9539 16-bit I/O port"
+ 	depends on I2C && EXPERIMENTAL
+diff --git a/drivers/i2c/chips/Makefile b/drivers/i2c/chips/Makefile
+index 46178b5..e37835a 100644
+--- a/drivers/i2c/chips/Makefile
++++ b/drivers/i2c/chips/Makefile
+@@ -9,6 +9,7 @@ obj-$(CONFIG_SENSORS_MAX6875)	+= max6875
+ obj-$(CONFIG_SENSORS_M41T00)	+= m41t00.o
+ obj-$(CONFIG_SENSORS_PCA9539)	+= pca9539.o
+ obj-$(CONFIG_SENSORS_PCF8574)	+= pcf8574.o
++obj-$(CONFIG_SENSORS_PCF8563)	+= pcf8563.o
+ obj-$(CONFIG_SENSORS_PCF8591)	+= pcf8591.o
+ obj-$(CONFIG_SENSORS_RTC8564)	+= rtc8564.o
+ obj-$(CONFIG_ISP1301_OMAP)	+= isp1301_omap.o
+diff --git a/drivers/i2c/chips/pcf8563.c b/drivers/i2c/chips/pcf8563.c
 new file mode 100644
-index 0000000..f1bfa51
+index 0000000..8c4018b
 --- /dev/null
-+++ b/drivers/i2c/busses/i2c-mpc8260.c
-@@ -0,0 +1,617 @@
++++ b/drivers/i2c/chips/pcf8563.c
+@@ -0,0 +1,549 @@
 +/*
-+ * (C) Copyright 2005
-+ * Heiko Schocher <hs@denx.de>
++ *  linux/drivers/i2c/chips/pcf8563.c
 + *
-+ * This is a combined i2c adapter and algorithm driver for the
-+ * MPC8260 Processor
++ *  Copyright (C) 2002-2004 Stefan Eletzhofer
 + *
-+ * Release 0.1
++ *	based on linux/drivers/acron/char/pcf8583.c
++ *  Copyright (C) 2000 Russell King
 + *
-+ * This file is licensed under the terms of the GNU General Public
-+ * License version 2. This program is licensed "as is" without any
-+ * warranty of any kind, whether express or implied.
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * Driver for system3's PHILIPS PCF 8563 chip
 + */
-+
-+#include <linux/config.h>
-+#include <linux/kernel.h>
 +#include <linux/module.h>
-+#include <linux/sched.h>
-+#include <linux/init.h>
-+#include <linux/pci.h>
-+#include <asm/io.h>
-+#include <linux/fsl_devices.h>
++#include <linux/kernel.h>
 +#include <linux/i2c.h>
-+#include <linux/interrupt.h>
-+#include <linux/delay.h>
-+#include <asm/immap_cpm2.h>
-+#include <asm/mpc8260.h>
-+#include <asm/cpm2.h>
++#include <linux/slab.h>
++#include <linux/string.h>
++#include <linux/rtc.h>		/* get the user-level API */
++#include <linux/init.h>
++#include <linux/list.h>
++#include <asm/time.h>
++#include <asm/machdep.h>
 +
-+#include <linux/i2c-algo-8260.h>
-+#include <linux/platform_device.h>
++#include "rtc8564.h"
 +
-+#define CPM_MAX_READ	513
++#ifdef DEBUG
++# define _DBG(x, fmt, args...) do{ if (debug>=x) printk(KERN_DEBUG"%s: " fmt "\n", __FUNCTION__, ##args); } while(0);
++#else
++# define _DBG(x, fmt, args...) do { } while(0);
++#endif
 +
-+static wait_queue_head_t iic_wait;
-+static ushort r_tbase, r_rbase;
++#define _DBGRTCTM(x, rtctm) if (debug>x) printk("%s: secs=%d, mins=%d, hours=%d, mday=%d, " \
++			"mon=%d, year=%d, wday=%d\n", __FUNCTION__, \
++			(rtctm).tm_sec, (rtctm).tm_min, (rtctm).tm_hour, (rtctm).tm_mday, \
++			(rtctm).tm_mon, (rtctm).tm_year, (rtctm).tm_wday);
 +
-+int cpm_scan = 0;
-+int cpm_debug = 0;
-+
-+struct mpc_i2c {
-+	u32 interrupt;
-+	wait_queue_head_t queue;
-+	struct i2c_adapter adap;
-+	int irq;
-+	u32 flags;
-+	struct i2c_algo_8260_data *data;
++struct pcf8563_data {
++	struct i2c_client client;
++	struct list_head list;
++	u16 ctrl;
 +};
 +
-+static struct i2c_algo_8260_data pm82x_data;
++/*
++ * Internal variables
++ */
++static LIST_HEAD(pcf8563_clients);
 +
-+static void
-+mpc8260_iic_init(struct i2c_algo_8260_data *data)
++static 	struct i2c_client *myclient = NULL;
++
++static inline u8 _pcf8563_ctrl1(struct i2c_client *client)
 +{
-+	volatile cpm_cpm2_t *cp;
-+	volatile cpm2_map_t *immap;
-+
-+	cp = cpmp;	/* Get pointer to Communication Processor */
-+	immap = (cpm2_map_t *)CPM_MAP_ADDR;	/* and to internal registers */
-+
-+	*(ushort *)(&immap->im_dprambase[PROFF_I2C_BASE]) = PROFF_I2C;
-+	data->iip = (iic_t *)&immap->im_dprambase[PROFF_I2C];
-+
-+	data->i2c = (i2c_cpm2_t *)&(immap->im_i2c);
-+	data->cp = cp;
-+
-+	/* Initialize Port D IIC pins.
-+	*/
-+	immap->im_ioport.iop_ppard |= 0x00030000;
-+	immap->im_ioport.iop_pdird &= ~0x00030000;
-+	immap->im_ioport.iop_podrd |= 0x00030000;
-+	immap->im_ioport.iop_psord |= 0x00030000;
-+
-+	/* Allocate space for two transmit and two receive buffer
-+	 * descriptors in the DP ram.
-+	 */
-+	data->dp_addr = cpm_dpalloc(sizeof(cbd_t) * 4, 8);
-+
-+	/* ptr to i2c area */
-+	data->i2c = (i2c_cpm2_t *)&(((cpm2_map_t *)CPM_MAP_ADDR)->im_i2c);
++	struct pcf8563_data *data = i2c_get_clientdata(client);
++	return data->ctrl & 0xff;
++}
++static inline u8 _pcf8563_ctrl2(struct i2c_client *client)
++{
++	struct pcf8563_data *data = i2c_get_clientdata(client);
++	return (data->ctrl & 0xff00) >> 8;
 +}
 +
-+static irqreturn_t mpc8260_i2c_isr(int irq, void *dev_id, struct pt_regs *regs)
++#define CTRL1(c) _pcf8563_ctrl1(c)
++#define CTRL2(c) _pcf8563_ctrl2(c)
++
++#define BCD_TO_BIN(val) (((val)&15) + ((val)>>4)*10)
++#define BIN_TO_BCD(val) ((((val)/10)<<4) + (val)%10)
++
++static int debug = 0;
++module_param(debug, int, S_IRUGO | S_IWUSR);
++
++static struct i2c_driver pcf8563_driver;
++
++static int pcf8563_read_mem(struct i2c_client *client, struct mem *mem);
++static int pcf8563_write_mem(struct i2c_client *client, struct mem *mem);
++static unsigned long	pcf8563_get_rtc_time(void);
++static int		pcf8563_set_rtc_time(unsigned long now);
++
++/* save/restore old machdep pointers */
++int		(*save_set_rtc_time)(unsigned long);
++unsigned long	(*save_get_rtc_time)(void);
++
++static int pcf8563_read(struct i2c_client *client, unsigned char adr,
++			unsigned char *buf, unsigned char len)
 +{
-+	struct mpc_i2c *mpc_i2c = dev_id;
-+	struct i2c_algo_8260_data *cpm_adap = mpc_i2c->data;
-+	volatile i2c_cpm2_t *i2c = cpm_adap->i2c;
++	int ret = -EIO;
++	unsigned char addr[1] = { adr };
++	struct i2c_msg msgs[2] = {
++		{client->addr, 0, 1, addr},
++		{client->addr, I2C_M_RD, len, buf}
++	};
 +
-+	if (cpm_debug > 1)
-+		printk(KERN_DEBUG "cpm_iic_interrupt(dev_id=%p)\n", dev_id);
++	_DBG(1, "client=%p, adr=%d, buf=%p, len=%d", client, adr, buf, len);
 +
-+	/* Clear interrupt.
-+	*/
-+	i2c->i2c_i2cer = 0xff;
-+
-+	/* Get 'me going again.
-+	*/
-+	wake_up_interruptible(&iic_wait);
-+	return IRQ_HANDLED;
-+}
-+
-+
-+static void
-+cpm_iic_init(struct i2c_algo_8260_data *cpm_adap)
-+{
-+	volatile iic_t		*iip = cpm_adap->iip;
-+	volatile i2c_cpm2_t	*i2c = cpm_adap->i2c;
-+
-+	if (cpm_debug) printk(KERN_DEBUG "cpm_iic_init() - iip=%p\n",iip);
-+
-+	/* Initialize the parameter ram.
-+	 * We need to make sure many things are initialized to zero,
-+	 * especially in the case of a microcode patch.
-+	 */
-+	iip->iic_rstate = 0;
-+	iip->iic_rdp = 0;
-+	iip->iic_rbptr = 0;
-+	iip->iic_rbc = 0;
-+	iip->iic_rxtmp = 0;
-+	iip->iic_tstate = 0;
-+	iip->iic_tdp = 0;
-+	iip->iic_tbptr = 0;
-+	iip->iic_tbc = 0;
-+	iip->iic_txtmp = 0;
-+
-+	/* Set up the IIC parameters in the parameter ram.
-+	*/
-+	iip->iic_tbase = r_tbase = cpm_adap->dp_addr;
-+	iip->iic_rbase = r_rbase = cpm_adap->dp_addr + sizeof(cbd_t)*2;
-+
-+	iip->iic_tfcr = CPMFCR_GBL | CPMFCR_EB;
-+	iip->iic_rfcr = CPMFCR_GBL | CPMFCR_EB;
-+
-+	/* Set maximum receive size.
-+	*/
-+	iip->iic_mrblr = CPM_MAX_READ;
-+
-+		/* Initialize Tx/Rx parameters.
-+		*/
-+	{
-+		volatile cpm_cpm2_t *cp = cpm_adap->cp;
-+		cp->cp_cpcr =
-+			mk_cr_cmd(CPM_CR_I2C_PAGE, CPM_CR_I2C_SBLOCK, 0x00, CPM_CR_INIT_TRX) | CPM_CR_FLG;
-+		while (cp->cp_cpcr & CPM_CR_FLG);
++	if (!buf) {
++		ret = -EINVAL;
++		goto done;
 +	}
 +
-+	/* Select an arbitrary address.  Just make sure it is unique.
-+	*/
-+	i2c->i2c_i2add = 0x34;
++	ret = i2c_transfer(client->adapter, msgs, 2);
++	if (ret == 2) {
++		ret = 0;
++	}
 +
-+	/* Divider is 2 * ( 15 + 3 )
-+	*/
-+	i2c->i2c_i2brg = 0x0f;
++done:
++	return ret;
++}
 +
-+	/* Pre-divider is BRGCLK/4
++static int pcf8563_write(struct i2c_client *client, unsigned char adr,
++			 unsigned char *data, unsigned char len)
++{
++	int ret = 0;
++	unsigned char _data[16];
++	struct i2c_msg wr;
++	int i;
++
++	if (!data || len > 15) {
++		ret = -EINVAL;
++		goto done;
++	}
++
++	_DBG(1, "client=%p, adr=%d, buf=%p, len=%d", client, adr, data, len);
++
++	_data[0] = adr;
++	for (i = 0; i < len; i++) {
++		_data[i + 1] = data[i];
++		_DBG(5, "data[%d] = 0x%02x (%d)", i, data[i], data[i]);
++	}
++
++	wr.addr = client->addr;
++	wr.flags = 0;
++	wr.len = len + 1;
++	wr.buf = _data;
++
++	ret = i2c_transfer(client->adapter, &wr, 1);
++	if (ret == 1) {
++		ret = 0;
++	}
++
++done:
++	return ret;
++}
++
++static void pcf8563_set_system_time (void)
++{
++	unsigned long now, flags;
++	extern time_t last_rtc_update;
++	extern seqlock_t xtime_lock;
++
++	/* Switching kernel RTC pointers */
++	_DBG (2,"RTC switching kernel pointers\n");
++
++	save_set_rtc_time   = ppc_md.set_rtc_time;
++	save_get_rtc_time   = ppc_md.get_rtc_time;
++
++	ppc_md.set_rtc_time = pcf8563_set_rtc_time;
++	ppc_md.get_rtc_time = pcf8563_get_rtc_time;
++
++	/*
++	 * Set system time
++	 * Code copied from arch/ppc/kernel/time.c
 +	 */
-+	i2c->i2c_i2mod = 0x06;
++	write_seqlock_irqsave(&xtime_lock, flags);
 +
-+	/* Disable interrupts.
-+	*/
-+	i2c->i2c_i2cmr = 0;
-+	i2c->i2c_i2cer = 0xff;
++	now = pcf8563_get_rtc_time();
++	_DBG (2,"Set System Time from RTC Time: %lu\n", now);
++	xtime.tv_nsec = 0;
++	xtime.tv_sec  = now;
 +
-+	init_waitqueue_head(&iic_wait);
-+}
++	last_rtc_update = now - 658;
 +
++	time_adjust   = 0;		/* stop active adjtime() */
++	time_status  |= STA_UNSYNC;
++	time_state    = TIME_ERROR;
++	time_maxerror = NTP_PHASE_LIMIT;
++	time_esterror = NTP_PHASE_LIMIT;
++
++	write_sequnlock_irqrestore(&xtime_lock, flags);
 +
 +#if 0
-+static int
-+cpm_iic_shutdown(struct i2c_algo_8260_data *cpm_adap)
-+{
-+	volatile i2c_cpm2_t *i2c = cpm_adap->i2c;
++	/*
++	 * Check for low voltage
++	 */
++	if (rtc_rd (0x02) & 0x80) {
++		printk (KERN_CRIT
++			"PCF8563 RTC Low Voltage - date/time not reliable\n");
++	}
 +
-+	/* Shut down IIC.
-+	*/
-+	i2c->i2c_i2mod = 0;
-+	i2c->i2c_i2cmr = 0;
-+	i2c->i2c_i2cer = 0xff;
-+
-+	return(0);
-+}
-+#endif
-+
-+static void
-+cpm_reset_iic_params(volatile iic_t *iip)
-+{
-+	iip->iic_tbase = r_tbase;
-+	iip->iic_rbase = r_rbase;
-+
-+	iip->iic_tfcr = CPMFCR_GBL | CPMFCR_EB;
-+	iip->iic_rfcr = CPMFCR_GBL | CPMFCR_EB;
-+
-+	iip->iic_mrblr = CPM_MAX_READ;
-+
-+	iip->iic_rstate = 0;
-+	iip->iic_rdp = 0;
-+	iip->iic_rbptr = 0;
-+	iip->iic_rbc = 0;
-+	iip->iic_rxtmp = 0;
-+	iip->iic_tstate = 0;
-+	iip->iic_tdp = 0;
-+	iip->iic_tbptr = 0;
-+	iip->iic_tbc = 0;
-+	iip->iic_txtmp = 0;
-+}
-+
-+#define BD_SC_NAK		((ushort)0x0004) /* NAK - did not respond */
-+#define CPM_CR_CLOSE_RXBD	((ushort)0x0007)
-+
-+static void force_close(struct i2c_algo_8260_data *cpm)
-+{
-+#if 0
-+	volatile cpm_cpm2_t *cp = cpm->cp;
-+
-+	if (cpm_debug) printk(KERN_DEBUG "force_close()\n");
-+	cp->cp_cpcr =
-+		mk_cr_cmd(CPM_CR_CH_I2C, CPM_CR_CLOSE_RXBD) |
-+		CPM_CR_FLG;
-+
-+	while (cp->cp_cpcr & CPM_CR_FLG);
++	/*
++	 * Reset any error conditions, alarms, etc.
++	 */
++	pcf8563_reset_rtc ();
 +#endif
 +}
 +
-+
-+/* Read from IIC...
-+ * abyte = address byte, with r/w flag already set
-+ */
-+static int
-+cpm_iic_read(struct i2c_algo_8260_data *cpm, u_char abyte, char *buf, int count)
++static int pcf8563_attach(struct i2c_adapter *adap, int addr, int kind)
 +{
-+	volatile cpm2_map_t *immap = (cpm2_map_t *)CPM_MAP_ADDR;
-+	volatile iic_t *iip = cpm->iip;
-+	volatile i2c_cpm2_t *i2c = cpm->i2c;
-+	volatile cbd_t	*tbdf, *rbdf;
-+	u_char *tb;
-+	unsigned long flags;
++	int ret;
++	struct i2c_client *new_client;
++	struct pcf8563_data *d;
++	unsigned char data[10];
++	unsigned char ad[1] = { 0 };
++	struct i2c_msg ctrl_wr[1] = {
++		{addr, 0, 2, data}
++	};
++	struct i2c_msg ctrl_rd[2] = {
++		{addr, 0, 1, ad},
++		{addr, I2C_M_RD, 2, data}
++	};
 +
-+	if (count >= CPM_MAX_READ)
++	d = kmalloc(sizeof(struct pcf8563_data), GFP_KERNEL);
++	if (!d) {
++		ret = -ENOMEM;
++		goto done;
++	}
++	memset(d, 0, sizeof(struct pcf8563_data));
++	INIT_LIST_HEAD(&d->list);
++
++	new_client = &d->client;
++
++	strlcpy(new_client->name, "RTC8563", I2C_NAME_SIZE);
++	i2c_set_clientdata(new_client, d);
++	new_client->flags = I2C_CLIENT_ALLOW_USE | I2C_DF_NOTIFY;
++	new_client->addr = addr;
++	new_client->adapter = adap;
++	new_client->driver = &pcf8563_driver;
++
++	_DBG(1, "client=%p", new_client);
++
++	/* init ctrl1 reg */
++	data[0] = 0;
++	data[1] = 0;
++	ret = i2c_transfer(new_client->adapter, ctrl_wr, 1);
++	if (ret != 1) {
++		printk(KERN_INFO "pcf8563: cant init ctrl1\n");
++		ret = -ENODEV;
++		goto done;
++	}
++	/* read back ctrl1 and ctrl2 */
++	ret = i2c_transfer(new_client->adapter, ctrl_rd, 2);
++	if (ret != 2) {
++		printk(KERN_INFO "pcf8563: cant read ctrl\n");
++		ret = -ENODEV;
++		goto done;
++	}
++	d->ctrl = data[0] | (data[1] << 8);
++
++	_DBG(1, "RTC8564_REG_CTRL1=%02x, RTC8564_REG_CTRL2=%02x",
++	     data[0], data[1]);
++
++	ret = i2c_attach_client(new_client);
++
++	/* Add client to local list */
++	list_add(&d->list, &pcf8563_clients);
++
++done:
++	if (ret) {
++		kfree(d);
++	} else {
++		myclient = new_client;
++		pcf8563_set_system_time();
++	}
++	return ret;
++}
++
++static int pcf8563_probe(struct i2c_adapter *adap)
++{
++	/*
++	 * Probing seems to confuse the RTC on PM826 and CPU86 and UC100.
++	 * Not sure if it's true for other boards though - thus the
++	 * conditional.
++	 */
++#if defined(CONFIG_PM82X)
++	pcf8563_attach(adap, 0x51, 0);
++	return 0;
++#else
++	return i2c_probe(adap, &addr_data, pcf8563_attach);
++#endif
++}
++
++static int pcf8563_detach(struct i2c_client *client)
++{
++	struct pcf8563_data *data = i2c_get_clientdata(client);
++
++	i2c_detach_client(client);
++	kfree(i2c_get_clientdata(client));
++	list_del(&data->list);
++	return 0;
++}
++
++static int pcf8563_get_datetime(struct i2c_client *client, struct rtc_time *dt)
++{
++	int ret = -EIO;
++	unsigned char buf[15];
++
++	_DBG(1, "client=%p, dt=%p", client, dt);
++
++	if (!dt)
 +		return -EINVAL;
 +
-+	tbdf = (cbd_t *)&immap->im_dprambase[iip->iic_tbase];
-+	rbdf = (cbd_t *)&immap->im_dprambase[iip->iic_rbase];
-+
-+	/* To read, we need an empty buffer of the proper length.
-+	 * All that is used is the first byte for address, the remainder
-+	 * is just used for timing (and doesn't really have to exist).
-+	 */
-+	if (/*cpm->reloc*/0) {
-+		cpm_reset_iic_params(iip);
-+	}
-+	tb = cpm->temp;
-+	tb = (u_char *)(((uint)tb + 15) & ~15);
-+	tb[0] = abyte;		/* Device address byte w/rw flag */
-+
-+	dma_cache_wback_inv (tb, 1);
-+
-+	if (cpm_debug) printk(KERN_DEBUG "cpm_iic_read(abyte=0x%x)\n", abyte);
-+
-+	tbdf->cbd_bufaddr = __pa(tb);
-+	tbdf->cbd_datlen = count + 1;
-+	tbdf->cbd_sc =
-+		BD_SC_READY | BD_SC_INTRPT | BD_SC_LAST |
-+		BD_SC_WRAP | BD_IIC_START;
-+
-+	rbdf->cbd_datlen = 0;
-+	rbdf->cbd_bufaddr = __pa(buf);
-+	rbdf->cbd_sc = BD_SC_EMPTY | BD_SC_WRAP;
-+
-+	if (count > 0 && count < CPM_MAX_READ)
-+		iip->iic_mrblr = count;	/* prevent excessive read */
-+
-+	dma_cache_inv (buf, count);
-+
-+	/* Chip bug, set enable here */
-+	local_irq_save(flags);
-+	i2c->i2c_i2cmr = 0x13;	/* Enable some interupts */
-+	i2c->i2c_i2cer = 0xff;
-+	i2c->i2c_i2mod |= 1;	/* Enable */
-+	i2c->i2c_i2com = 0x81;	/* Start master */
-+
-+	/* Wait for IIC transfer */
-+	interruptible_sleep_on(&iic_wait);
-+	local_irq_restore(flags);
-+	if (signal_pending(current))
-+		return -EIO;
-+
-+	if (cpm_debug) {
-+		printk(KERN_DEBUG "tx sc %04x, rx sc %04x\n",
-+		       tbdf->cbd_sc, rbdf->cbd_sc);
-+	}
-+
-+	if (tbdf->cbd_sc & BD_SC_NAK) {
-+		printk(KERN_INFO "IIC read; no ack\n");
-+		return 0;
-+	}
-+
-+	if (rbdf->cbd_sc & BD_SC_EMPTY) {
-+		printk(KERN_INFO "IIC read; complete but rbuf empty\n");
-+		force_close(cpm);
-+		printk(KERN_INFO "tx sc %04x, rx sc %04x\n",
-+		       tbdf->cbd_sc, rbdf->cbd_sc);
-+	}
-+
-+	if (cpm_debug) printk(KERN_DEBUG "read %d bytes\n", rbdf->cbd_datlen);
-+
-+	if (rbdf->cbd_datlen < count) {
-+		printk(KERN_INFO "IIC read; short, wanted %d got %d\n",
-+		       count, rbdf->cbd_datlen);
-+		return 0;
-+	}
-+	if (cpm_debug) {
-+			int u;
-+			for (u = 0; u < count; u++) {
-+				printk(KERN_DEBUG "buf[%d] = 0x%x\n", u, buf[u]);
-+			}
-+			}
-+
-+
-+	return count;
-+}
-+
-+/* Write to IIC...
-+ * addr = address byte, with r/w flag already set
-+ */
-+static int
-+cpm_iic_write(struct i2c_algo_8260_data *cpm, u_char abyte, char *buf,int count)
-+{
-+	volatile cpm2_map_t *immap = (cpm2_map_t *)CPM_MAP_ADDR;
-+	volatile iic_t *iip = cpm->iip;
-+	volatile i2c_cpm2_t *i2c = cpm->i2c;
-+	volatile cbd_t	*tbdf;
-+	u_char *tb;
-+	unsigned long flags;
-+
-+	tb = cpm->temp;
-+	tb = (u_char *)(((uint)tb + 15) & ~15);
-+	*tb = abyte;		/* Device address byte w/rw flag */
-+
-+	dma_cache_wback_inv (tb, 1);
-+	dma_cache_wback_inv (buf, count);
-+
-+	if (cpm_debug) printk(KERN_DEBUG "cpm_iic_write(abyte=0x%x)\n", abyte);
-+	if (cpm_debug) printk(KERN_DEBUG "buf[0] = 0x%x, buf[1] = 0x%x\n", buf[0], buf[1]);
-+
-+	/* set up 2 descriptors */
-+	tbdf = (cbd_t *)&immap->im_dprambase[iip->iic_tbase];
-+
-+	tbdf[0].cbd_bufaddr = __pa(tb);
-+	tbdf[0].cbd_datlen = 1;
-+	tbdf[0].cbd_sc = BD_SC_READY | BD_IIC_START;
-+
-+	tbdf[1].cbd_bufaddr = __pa(buf);
-+	tbdf[1].cbd_datlen = count;
-+	tbdf[1].cbd_sc = BD_SC_READY | BD_SC_INTRPT | BD_SC_LAST | BD_SC_WRAP;
-+
-+	/* Chip bug, set enable here */
-+	local_irq_save(flags);;
-+	i2c->i2c_i2cmr = 0x13;	/* Enable some interupts */
-+	i2c->i2c_i2cer = 0xff;
-+	i2c->i2c_i2mod |= 1;	/* Enable */
-+	i2c->i2c_i2com = 0x81;	/* Start master */
-+
-+	/* Wait for IIC transfer */
-+	interruptible_sleep_on(&iic_wait);
-+	local_irq_restore(flags);
-+	if (signal_pending(current))
-+		return -EIO;
-+
-+	if (cpm_debug) {
-+		printk(KERN_DEBUG "tx0 sc %04x, tx1 sc %04x\n",
-+		       tbdf[0].cbd_sc, tbdf[1].cbd_sc);
-+	}
-+
-+	if (tbdf->cbd_sc & BD_SC_NAK) {
-+		printk(KERN_INFO "IIC write; no ack\n");
-+		return 0;
-+	}
-+
-+	if (tbdf->cbd_sc & BD_SC_READY) {
-+		printk(KERN_INFO "IIC write; complete but tbuf ready\n");
-+		return 0;
-+	}
-+
-+	return count;
-+}
-+
-+#if 0
-+/* See if an IIC address exists..
-+ * addr = 7 bit address, unshifted
-+ */
-+static int
-+cpm_iic_tryaddress(struct i2c_algo_8260_data *cpm, int addr)
-+{
-+	volatile cpm2_map_t *immap = (cpm2_map_t *)CPM_MAP_ADDR;
-+	volatile iic_t *iip = cpm->iip;
-+	volatile i2c_cpm2_t *i2c = cpm->i2c;
-+	volatile cbd_t *tbdf, *rbdf;
-+	u_char *tb;
-+	unsigned long flags, len;
-+
-+	if (cpm_debug > 1)
-+		printk(KERN_DEBUG "cpm_iic_tryaddress(cpm=%p,addr=%d)\n", cpm, addr);
-+
-+	if (cpm_debug && addr == 0) {
-+		printk(KERN_DEBUG "iip %p, dp_addr 0x%x\n", cpm->iip, cpm->dp_addr);
-+		printk(KERN_DEBUG "iic_tbase %d, r_tbase %d\n", iip->iic_tbase, r_tbase);
-+	}
-+
-+	tbdf = (cbd_t *)&immap->im_dprambase[iip->iic_tbase];
-+	rbdf = (cbd_t *)&immap->im_dprambase[iip->iic_rbase];
-+
-+	tb = cpm->temp;
-+	tb = (u_char *)(((uint)tb + 15) & ~15);
-+
-+	/* do a simple read */
-+	tb[0] = (addr << 1) | 1;	/* device address (+ read) */
-+	len = 2;
-+
-+	dma_cache_wback_inv (tb, 1);
-+
-+	tbdf->cbd_bufaddr = __pa(tb);
-+	tbdf->cbd_datlen = len;
-+	tbdf->cbd_sc =
-+		BD_SC_READY | BD_SC_INTRPT | BD_SC_LAST |
-+		BD_SC_WRAP | BD_IIC_START;
-+
-+	rbdf->cbd_datlen = 0;
-+	rbdf->cbd_bufaddr = __pa(tb+2);
-+	rbdf->cbd_sc = BD_SC_EMPTY | BD_SC_WRAP;
-+
-+	local_irq_save(flags);
-+	i2c->i2c_i2cmr = 0x13;	/* Enable some interupts */
-+	i2c->i2c_i2cer = 0xff;
-+	i2c->i2c_i2mod |= 1;	/* Enable */
-+	i2c->i2c_i2com = 0x81;	/* Start master */
-+
-+	if (cpm_debug > 1) printk(KERN_DEBUG "about to sleep\n");
-+
-+	/* wait for IIC transfer */
-+	interruptible_sleep_on(&iic_wait);
-+	local_irq_restore(flags);
-+	if (signal_pending(current))
-+		return -EIO;
-+
-+	if (cpm_debug > 1) printk(KERN_DEBUG "back from sleep\n");
-+
-+	if (tbdf->cbd_sc & BD_SC_NAK) {
-+		if (cpm_debug > 1) printk(KERN_DEBUG "IIC try; no ack\n");
-+		return 0;
-+	}
-+
-+	if (tbdf->cbd_sc & BD_SC_READY) {
-+		printk(KERN_INFO "IIC try; complete but tbuf ready\n");
-+	}
-+
-+	return 1;
-+}
-+#endif
-+
-+static int mpc8260_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
-+{
-+	struct i2c_msg *pmsg;
-+	int i;
-+	int ret = 0;
-+	struct mpc_i2c *mpc_i2c = i2c_get_adapdata(adap);
-+	struct i2c_algo_8260_data *data = mpc_i2c->data;
-+	u_char addr;
-+
-+	for (i = 0; i < num; i++) {
-+			pmsg = &msgs[i];
-+
-+		if (cpm_debug)
-+			printk(KERN_DEBUG "i2c-algo-8260.o: "
-+			       "#%d addr=0x%x flags=0x%x len=%d\n",
-+			       i, pmsg->addr, pmsg->flags, pmsg->len);
-+
-+		addr = pmsg->addr << 1;
-+		if (pmsg->flags & I2C_M_RD )
-+			addr |= 1;
-+		if (pmsg->flags & I2C_M_REV_DIR_ADDR )
-+			addr ^= 1;
-+
-+		if (!(pmsg->flags & I2C_M_NOSTART)) {
-+		}
-+		if (pmsg->flags & I2C_M_RD ) {
-+			/* read bytes into buffer*/
-+			ret = cpm_iic_read(data, addr, pmsg->buf, pmsg->len);
-+			if (cpm_debug)
-+				printk(KERN_DEBUG "i2c-algo-8260.o: read %d bytes\n", ret);
-+			if (ret < pmsg->len ) {
-+				return (ret<0)? ret : -EREMOTEIO;
-+			}
-+		} else {
-+			/* write bytes from buffer */
-+			ret = cpm_iic_write(data, addr, pmsg->buf, pmsg->len);
-+			if (cpm_debug)
-+				printk(KERN_DEBUG "i2c-algo-8260.o: wrote %d\n", ret);
-+			if (ret < pmsg->len ) {
-+				return (ret<0) ? ret : -EREMOTEIO;
-+			}
-+		}
-+	}
-+	return (ret < 0) ? ret : num;
-+}
-+
-+static u32 mpc8260_functionality(struct i2c_adapter *adap)
-+{
-+	return I2C_FUNC_SMBUS_EMUL | I2C_FUNC_10BIT_ADDR |
-+	       I2C_FUNC_PROTOCOL_MANGLING;
-+}
-+
-+static struct i2c_algorithm mpc8260_algo = {
-+	.master_xfer = mpc8260_xfer,
-+	.functionality = mpc8260_functionality,
-+};
-+
-+static struct i2c_adapter mpc8260_ops = {
-+	.owner = THIS_MODULE,
-+	.name = "MPC 8260 adapter",
-+	.id = I2C_HW_MPC8260,
-+	.algo = &mpc8260_algo,
-+	.class = I2C_CLASS_HWMON,
-+	.timeout = 1,
-+	.retries = 1
-+};
-+
-+static int fsl_i2c_probe(struct device *device)
-+{
-+	int result = 0;
-+	struct mpc_i2c *i2c;
-+	struct platform_device *pdev = to_platform_device(device);
-+	struct fsl_i2c_platform_data *pdata;
-+
-+	pdata = (struct fsl_i2c_platform_data *) pdev->dev.platform_data;
-+
-+	if (!(i2c = kmalloc(sizeof(*i2c), GFP_KERNEL))) {
-+		return -ENOMEM;
-+	}
-+	memset(i2c, 0, sizeof(*i2c));
-+
-+	i2c->data = &pm82x_data;
-+	/* CPM Plattform initialisation */
-+	mpc8260_iic_init (i2c->data);
-+	/* CPM init */
-+	cpm_iic_init (i2c->data);
-+	i2c->irq = platform_get_irq(pdev, 0);
-+
-+	if (i2c->irq != 0) {
-+		if ((result = request_irq(i2c->irq, mpc8260_i2c_isr,
-+					  SA_SHIRQ, "i2c-mpc", i2c)) < 0) {
-+			printk(KERN_ERR
-+			       "i2c-mpc - failed to attach interrupt\n");
-+			goto fail_irq;
-+		}
-+	}
-+	dev_set_drvdata(device, i2c);
-+
-+	i2c->adap = mpc8260_ops;
-+	i2c_set_adapdata(&i2c->adap, i2c);
-+	i2c->adap.dev.parent = &pdev->dev;
-+	if ((result = i2c_add_adapter(&i2c->adap)) < 0) {
-+		printk(KERN_ERR "i2c-mpc - failed to add adapter\n");
-+		goto fail_add;
-+	}
-+
-+	return result;
-+
-+  fail_add:
-+	if (i2c->irq != 0)
-+		free_irq(i2c->irq, NULL);
-+  fail_irq:
-+	kfree(i2c);
-+	return result;
-+};
-+
-+static int fsl_i2c_remove(struct device *device)
-+{
-+	struct mpc_i2c *i2c = dev_get_drvdata(device);
-+
-+	/* hier noich irgendwo das dpalloc wieder freigeben */
-+	cpm_dpfree (i2c->data->dp_addr);
-+
-+	i2c_del_adapter(&i2c->adap);
-+	dev_set_drvdata(device, NULL);
-+
-+	if (i2c->irq != 0)
-+		free_irq(i2c->irq, i2c);
-+
-+	kfree(i2c);
++	memset(buf, 0, sizeof(buf));
++
++	ret = pcf8563_read(client, 0, buf, 15);
++	if (ret)
++		return ret;
++
++	dt->tm_year = 1900 + BCD_TO_BIN(buf[RTC8564_REG_YEAR]);
++	if (buf[RTC8564_REG_MON_CENT] & 0x80)
++		dt->tm_year += 100;
++	dt->tm_mday = BCD_TO_BIN(buf[RTC8564_REG_DAY] & 0x3f);
++	dt->tm_wday = BCD_TO_BIN(buf[RTC8564_REG_WDAY] & 7);
++	dt->tm_mon = BCD_TO_BIN(buf[RTC8564_REG_MON_CENT] & 0x1f);
++
++	dt->tm_sec = BCD_TO_BIN(buf[RTC8564_REG_SEC] & 0x7f);
++/*	dt->vl = (buf[RTC8564_REG_SEC] & 0x80) == 0x80; */
++	dt->tm_min = BCD_TO_BIN(buf[RTC8564_REG_MIN] & 0x7f);
++	dt->tm_hour = BCD_TO_BIN(buf[RTC8564_REG_HR] & 0x3f);
++
++	_DBGRTCTM(2, *dt);
 +	return 0;
-+};
-+
-+/* Structure for a device driver */
-+static struct device_driver fsl_i2c_driver = {
-+	.name = "fsl-cpm-i2c",
-+	.bus = &platform_bus_type,
-+	.probe = fsl_i2c_probe,
-+	.remove = fsl_i2c_remove,
-+};
-+
-+static int __init fsl_i2c_init(void)
-+{
-+	return driver_register(&fsl_i2c_driver);
 +}
 +
-+static void __exit fsl_i2c_exit(void)
++static int
++pcf8563_set_datetime(struct i2c_client *client, struct rtc_time *dt, int datetoo)
 +{
-+	driver_unregister(&fsl_i2c_driver);
++	int ret, len = 5;
++	unsigned char buf[15];
++	unsigned char val;
++
++	_DBG(1, "client=%p, dt=%p", client, dt);
++
++	if (!dt)
++		return -EINVAL;
++
++	_DBGRTCTM(2, *dt);
++
++	buf[RTC8564_REG_CTRL1] = CTRL1(client) | RTC8564_CTRL1_STOP;
++	buf[RTC8564_REG_CTRL2] = CTRL2(client);
++	buf[RTC8564_REG_SEC] = BIN_TO_BCD(dt->tm_sec);
++	buf[RTC8564_REG_MIN] = BIN_TO_BCD(dt->tm_min);
++	buf[RTC8564_REG_HR] = BIN_TO_BCD(dt->tm_hour);
++
++	if (datetoo) {
++		len += 5;
++		buf[RTC8564_REG_DAY] = BIN_TO_BCD(dt->tm_mday);
++		buf[RTC8564_REG_WDAY] = BIN_TO_BCD(dt->tm_wday);
++		buf[RTC8564_REG_MON_CENT] = BIN_TO_BCD(dt->tm_mon) & 0x1f;
++		if (dt->tm_year >= 2000) {
++			val = dt->tm_year - 2000;
++			buf[RTC8564_REG_MON_CENT] |= (1 << 7);
++		} else {
++			val = dt->tm_year - 1900;
++		}
++		buf[RTC8564_REG_YEAR] = BIN_TO_BCD(val);
++	}
++
++	ret = pcf8563_write(client, 0, buf, len);
++	if (ret) {
++		_DBG(1, "error writing data! %d", ret);
++	}
++
++	buf[RTC8564_REG_CTRL1] = CTRL1(client);
++	ret = pcf8563_write(client, 0, buf, 1);
++	if (ret) {
++		_DBG(1, "error writing data! %d", ret);
++	}
++
++	return ret;
 +}
 +
-+module_init(fsl_i2c_init);
-+module_exit(fsl_i2c_exit);
++static int pcf8563_get_ctrl(struct i2c_client *client, unsigned int *ctrl)
++{
++	struct pcf8563_data *data = i2c_get_clientdata(client);
 +
-+MODULE_AUTHOR("Heiko Schocher <hs@denx.de>");
-+MODULE_DESCRIPTION
-+    ("I2C-Bus adapter for MPC8260 processors");
++	if (!ctrl)
++		return -1;
++
++	*ctrl = data->ctrl;
++	return 0;
++}
++
++static int pcf8563_set_ctrl(struct i2c_client *client, unsigned int *ctrl)
++{
++	struct pcf8563_data *data = i2c_get_clientdata(client);
++	unsigned char buf[2];
++
++	if (!ctrl)
++		return -1;
++
++	buf[0] = *ctrl & 0xff;
++	buf[1] = (*ctrl & 0xff00) >> 8;
++	data->ctrl = *ctrl;
++
++	return pcf8563_write(client, 0, buf, 2);
++}
++
++static int pcf8563_read_mem(struct i2c_client *client, struct mem *mem)
++{
++
++	if (!mem)
++		return -EINVAL;
++
++	return pcf8563_read(client, mem->loc, mem->data, mem->nr);
++}
++
++static int pcf8563_write_mem(struct i2c_client *client, struct mem *mem)
++{
++
++	if (!mem)
++		return -EINVAL;
++
++	return pcf8563_write(client, mem->loc, mem->data, mem->nr);
++}
++
++static int
++pcf8563_command(struct i2c_client *client, unsigned int cmd, void *arg)
++{
++
++	_DBG(1, "cmd=%d", cmd);
++
++	switch (cmd) {
++	case RTC_GETDATETIME:
++		return pcf8563_get_datetime(client, arg);
++
++	case RTC_SETTIME:
++		return pcf8563_set_datetime(client, arg, 0);
++
++	case RTC_SETDATETIME:
++		return pcf8563_set_datetime(client, arg, 1);
++
++	case RTC_GETCTRL:
++		return pcf8563_get_ctrl(client, arg);
++
++	case RTC_SETCTRL:
++		return pcf8563_set_ctrl(client, arg);
++
++	case MEM_READ:
++		return pcf8563_read_mem(client, arg);
++
++	case MEM_WRITE:
++		return pcf8563_write_mem(client, arg);
++
++	default:
++		return -EINVAL;
++	}
++}
++
++/*
++ * Public API for access to specific device. Useful for low-level
++ * RTC access from kernel code.
++ */
++int pcf8563_do_command(int bus, int cmd, void *arg)
++{
++	struct list_head *walk;
++	struct list_head *tmp;
++	struct pcf8563_data *data;
++
++	list_for_each_safe(walk, tmp, &pcf8563_clients) {
++		data = list_entry(walk, struct pcf8563_data, list);
++		if (data->client.adapter->nr == bus) {
++			return pcf8563_command(&data->client, cmd, arg);
++		}
++	}
++
++	return -ENODEV;
++}
++
++extern spinlock_t rtc_lock;
++/***************************************************************************
++ *
++ * get RTC time:
++ */
++static unsigned long pcf8563_get_rtc_time(void)
++{
++	struct rtc_time tm;
++	int result;
++
++	spin_lock(&rtc_lock);
++	result = pcf8563_do_command(0, RTC_GETDATETIME, &tm);
++	spin_unlock(&rtc_lock);
++
++	if (result == 0)
++		result = mktime(tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
++
++	return result;
++}
++
++/***************************************************************************
++ *
++ * set RTC time:
++ */
++static int pcf8563_set_rtc_time(unsigned long now)
++{
++	struct rtc_time tm;
++	unsigned char century, year, mon, wday, mday, hour, min, sec;
++
++	to_tm (now, &tm);
++
++	_DBG (2, "Set RTC [dec] year=%d mon=%d day=%d hour=%d min=%d sec=%d\n",
++		tm.tm_year, tm.tm_mon, tm.tm_mday,
++		tm.tm_hour, tm.tm_min, tm.tm_sec);
++
++	century = (tm.tm_year >= 2000) ? 0x80 : 0;
++	year = BIN_TO_BCD (tm.tm_year % 100);
++	mon  = BIN_TO_BCD (tm.tm_mon) | century;
++	wday = BIN_TO_BCD (tm.tm_wday);
++	mday = BIN_TO_BCD (tm.tm_mday);
++	hour = BIN_TO_BCD (tm.tm_hour);
++	min  = BIN_TO_BCD (tm.tm_min);
++	sec  = BIN_TO_BCD (tm.tm_sec);
++
++	_DBG (2, "Set RTC [bcd] year=%X mon=%X day=%X "
++		"hour=%X min=%X sec=%X wday=%X\n",
++		year, mon, mday, hour, min, sec, wday);
++
++	pcf8563_set_datetime(myclient, &tm, 1);
++
++	return (0);
++}
++
++static struct i2c_driver pcf8563_driver = {
++	.owner		= THIS_MODULE,
++	.name		= "PCF8563",
++	.id		= I2C_DRIVERID_RTC8564,
++	.flags		= I2C_DF_NOTIFY,
++	.attach_adapter = pcf8563_probe,
++	.detach_client	= pcf8563_detach,
++	.command	= pcf8563_command
++};
++
++static __init int pcf8563_init(void)
++{
++	return i2c_add_driver(&pcf8563_driver);
++}
++
++static __exit void pcf8563_exit(void)
++{
++	ppc_md.set_rtc_time = save_set_rtc_time;
++	ppc_md.get_rtc_time = save_get_rtc_time;
++
++	i2c_del_driver(&pcf8563_driver);
++}
++
++MODULE_AUTHOR("Stefan Eletzhofer <Stefan.Eletzhofer@eletztrick.de>");
++MODULE_DESCRIPTION("EPSON RTC8563 Driver");
 +MODULE_LICENSE("GPL");
-diff --git a/include/linux/i2c-algo-8260.h b/include/linux/i2c-algo-8260.h
-new file mode 100644
-index 0000000..73b3e33
---- /dev/null
-+++ b/include/linux/i2c-algo-8260.h
-@@ -0,0 +1,26 @@
-+/* ------------------------------------------------------------------------- */
-+/* i2c-algo-8260.h i2c driver algorithms for MPX8260 CPM		     */
-+/* ------------------------------------------------------------------------- */
 +
-+/* $Id$ */
-+
-+#ifndef I2C_ALGO_8260_H
-+#define I2C_ALGO_8260_H 1
-+
-+#include <linux/i2c.h>
-+
-+struct i2c_algo_8260_data {
-+	uint dp_addr;
-+	int reloc;
-+	volatile i2c_cpm2_t *i2c;
-+	volatile iic_t	*iip;
-+	volatile cpm_cpm2_t *cp;
-+
-+	int	(*setisr) (int irq,
-+			   void (*func)(int, void (*)(void *), void *),
-+			   void *data);
-+
-+	u_char	temp[513];
-+};
-+
-+#endif /* I2C_ALGO_8260_H */
++module_init(pcf8563_init);
++module_exit(pcf8563_exit);
 diff --git a/include/linux/i2c-id.h b/include/linux/i2c-id.h
-index 1543daa..35b0a57 100644
+index 1ce4b54..b16c548 100644
 --- a/include/linux/i2c-id.h
 +++ b/include/linux/i2c-id.h
-@@ -223,6 +223,9 @@
- /* --- PowerPC on-chip adapters						*/
- #define I2C_HW_OCP		0x120000 /* IBM on-chip I2C adapter */
+@@ -99,6 +99,7 @@
+ #define I2C_DRIVERID_MAX6900	63	/* MAX6900 real-time clock	*/
+ #define I2C_DRIVERID_SAA7114H	64	/* video decoder		*/
+ #define I2C_DRIVERID_DS1374	65	/* DS1374 real time clock	*/
++#define I2C_DRIVERID_PCF8563	66	/* real time clock		*/
 
-+/* --- MPC8260 PowerPC adapters					*/
-+#define I2C_HW_MPC8260    	0x100002 /* MPC8260 I2C adapter */
-+
- /* --- Broadcom SiByte adapters						*/
- #define I2C_HW_SIBYTE		0x150000
 
+ #define I2C_DRIVERID_EXP0	0xF0	/* experimental use id's	*/
 
 
 
 !-------------------------------------------------------------flip-
-
-
-
-Signed-off-by: Heiko Schocher <hs@denx.de>
