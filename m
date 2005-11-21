@@ -1,21 +1,21 @@
 Return-Path: <hs@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 308AC681BE
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Nov 2005 21:25:19 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 91769687A9
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Nov 2005 21:31:12 +1100 (EST)
 Received: from mail01.m-online.net (unknown [192.168.3.149])
-	by mail-out.m-online.net (Postfix) with ESMTP id 1ED93704F8
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Nov 2005 11:23:28 +0100 (CET)
+	by mail-out.m-online.net (Postfix) with ESMTP id D311A7040A
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Nov 2005 11:29:21 +0100 (CET)
 Received: from embluxa7e0291e (213-163-18-7.vnet.hu [213.163.18.7])
-	by smtp-auth.mnet-online.de (Postfix) with ESMTP id 13BE990F29
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Nov 2005 11:23:25 +0100 (CET)
+	by smtp-auth.mnet-online.de (Postfix) with ESMTP id 9FD4EB83A4
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Nov 2005 11:29:20 +0100 (CET)
 From: "Heiko Schocher" <hs@denx.de>
 To: <linuxppc-dev@ozlabs.org>
-Date: Mon, 21 Nov 2005 11:24:58 +0100
-Message-ID: <AHEILKONAKAEJPHNMOPNKELACDAA.hs@denx.de>
+Date: Mon, 21 Nov 2005 11:30:56 +0100
+Message-ID: <AHEILKONAKAEJPHNMOPNEELBCDAA.hs@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-Subject: [PATCH]	ppc32:	Add support for PM82x Boards
+Subject: [PATCH]	ppc32:	Add defconfig File for PM826 Board.
 Reply-To: hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,281 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello
+Hello,
 
 the following Patch (against 2.6 kernel.org tree, COMMIT_ID:
-f093182d313edde9b1f86dbdaf40ba4da2dbd0e7) adds support for
-the Microsys PM82x Boards. Verified on the PM827 Board.
-
-not included yet: support for MTD, I2C, RTC.
-
-Note: 2 previously submitted Patches are required:
-
-Thu, 4 Nov 2005 [PATCH] ppc32: Fix SCC Uart write problem after 2. open()
-Tue, 3 Nov 2005 [PATCH] ppc32: fix: swallowed chars when booting.
+f093182d313edde9b1f86dbdaf40ba4da2dbd0e7) adds the defconfig
+File for the PM826 Board from Microsys.
 
 Signed-off-by: Heiko Schocher <hs@denx.de>
 
 ---
+ arch/ppc/configs/pm826_defconfig |  808
+++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 808 insertions(+), 0 deletions(-)
 
- arch/ppc/8260_io/Kconfig                |    7
- arch/ppc/8260_io/fcc_enet.c             |  117 ++++
- arch/ppc/Kconfig                        |    7
- arch/ppc/configs/pm82x_defconfig        |  897
-+++++++++++++++++++++++++++++++
- arch/ppc/platforms/Makefile             |    1
- arch/ppc/platforms/pm82x.h              |   48 ++
- arch/ppc/platforms/pm82x_setup.c        |   40 +
- arch/ppc/syslib/m8260_setup.c           |   24 +
- arch/ppc/syslib/m82xx_pci.c             |   15 -
- drivers/serial/cpm_uart/cpm_uart_cpm2.c |   56 ++
- include/asm-ppc/cpm2.h                  |    2
- include/asm-ppc/mpc8260.h               |    4
- 12 files changed, 1212 insertions(+), 6 deletions(-)
-
-diff --git a/arch/ppc/8260_io/Kconfig b/arch/ppc/8260_io/Kconfig
-index ea9651e..0cb917d 100644
---- a/arch/ppc/8260_io/Kconfig
-+++ b/arch/ppc/8260_io/Kconfig
-@@ -23,6 +23,10 @@ config FCC1_ENET
- 	help
- 	  Use CPM2 fast Ethernet controller 1 to drive Ethernet (default).
-
-+config DB_CR826_J30x_ON
-+	bool "  DB CR826 Legacy Jumper ON"
-+	depends on PM82X
-+
- config FCC2_ENET
- 	bool "Ethernet on FCC2"
- 	depends on FEC_ENET
-@@ -59,6 +63,9 @@ config FCC_DM9131
- config FCC_DM9161
- 	bool "DM9161"
-
-+config FCC_AMD79C873
-+	bool "AMD79C873"
-+
- config FCC_GENERIC_PHY
- 	bool "Generic"
- endchoice
-diff --git a/arch/ppc/8260_io/fcc_enet.c b/arch/ppc/8260_io/fcc_enet.c
-index 4edeede..2f67f5b 100644
---- a/arch/ppc/8260_io/fcc_enet.c
-+++ b/arch/ppc/8260_io/fcc_enet.c
-@@ -202,8 +202,18 @@ static int fcc_enet_set_mac_address(stru
-
- #define PC_F1RXCLK	PC_CLK(F1_RXCLK)
- #define PC_F1TXCLK	PC_CLK(F1_TXCLK)
-+#if defined(CONFIG_PM82X)
-+#ifndef CONFIG_DB_CR826_J30x_ON
-+#define CMX1_CLK_ROUTE  ((uint)0x35000000)
-+#define CMX1_CLK_MASK   ((uint)0x7f000000)
-+#else
-+#define CMX1_CLK_ROUTE  ((uint)0x37000000)
-+#define CMX1_CLK_MASK   ((uint)0x7f000000)
-+#endif
-+#else
- #define CMX1_CLK_ROUTE	(CMXFCR_RF1CS(F1_RXCLK) | CMXFCR_TF1CS(F1_TXCLK))
- #define CMX1_CLK_MASK	((uint)0xff000000)
-+#endif
-
- #define PC_F2RXCLK	PC_CLK(F2_RXCLK)
- #define PC_F2TXCLK	PC_CLK(F2_TXCLK)
-@@ -297,6 +307,14 @@ static int fcc_enet_set_mac_address(stru
- #elif defined(CONFIG_EST8260) || defined(CONFIG_ADS8260) ||
-defined(CONFIG_PQ2FADS)
- #define PC_MDIO		((uint)0x00400000)
- #define PC_MDCK		((uint)0x00200000)
-+#elif defined (CONFIG_PM82X)
-+#ifndef CONFIG_DB_CR826_J30x_ON
-+#define PC_MDIO		((uint)0x00000080) /* MDIO on PC24 */
-+#define PC_MDCK		((uint)0x00000100) /* MDCK on PC23 */
-+#else
-+#define PC_MDIO		((uint)0x00000100) /* MDIO on PA23 */
-+#define PC_MDCK		((uint)0x00000200) /* MDCK on PA22 */
-+#endif  /* CONFIG_DB_CR826_J30x_ON */
- #else
- #define PC_MDIO		((uint)0x00000004)
- #define PC_MDCK		((uint)0x00000020)
-@@ -875,6 +893,28 @@ static void mii_parse_anar(uint mii_reg,
- 	fep->phy_status = s;
- }
-
-+#ifdef CONFIG_FCC_AMD79C873
-+/* Some boards don't have the MDIRQ line connected (PM82x is such a board)
-*/
-+
-+static void mii_waitfor_anc(uint mii_reg, struct net_device *dev)
-+{
-+	struct fcc_enet_private *fep;
-+	int regval;
-+	int i;
-+
-+	fep = dev->priv;
-+	regval = mk_mii_read(MII_BMSR) | (fep->phy_addr << 23);
-+
-+	for (i = 0; i < 1000; i++) {
-+		if (mii_send_receive(fep->fip, regval) & 0x20)
-+			return;
-+		udelay(10000);
-+	}
-+
-+	printk("%s: autonegotiation timeout\n", dev->name);
-+}
-+#endif
-+
- /* ------------------------------------------------------------------------
-- */
- /* Generic PHY support.  Should work for all PHYs, but does not support
-link
-  * change interrupts.
-@@ -1150,6 +1190,72 @@ static phy_info_t phy_info_qs6612 = {
-
- #endif /* CONFIG_FEC_QS6612 */
-
-+/* ------------------------------------------------------------------------
-- */
-+/* The AMD Am79C873 PHY is on PM82x                             */
-+
-+#ifdef CONFIG_FCC_AMD79C873
-+
-+#define MII_79C873_IER		17  /* Interrupt Enable Register */
-+#define MII_79C873_DR		18  /* Diagnostic Register       */
-+
-+static void mii_parse_79c873_cr(uint mii_reg, struct net_device *dev)
-+{
-+	volatile struct fcc_enet_private *fep = dev->priv;
-+	uint s = fep->phy_status;
-+
-+	s &= ~(PHY_STAT_SPMASK);
-+
-+	if (mii_reg & 0x2000) {
-+		if (mii_reg & 0x0100)
-+			s |= PHY_STAT_100FDX;
-+		else
-+			s |= PHY_STAT_100HDX;
-+	} else {
-+		if (mii_reg & 0x0100)
-+			s |= PHY_STAT_10FDX;
-+		else
-+			s |= PHY_STAT_10HDX;
-+	}
-+
-+	fep->phy_status = s;
-+}
-+
-+static phy_info_t phy_info_79c873 = {
-+	0x00181b80,
-+	"AMD79C873",
-+
-+	(const phy_cmd_t []) {  /* config */
-+		{ mk_mii_read(MII_BMCR), mii_parse_cr },
-+		{ mk_mii_read(MII_ADVERTISE), mii_parse_anar },
-+		{ mk_mii_end, }
-+	},
-+	(const phy_cmd_t []) {  /* startup */
-+#if 0
-+		{ mk_mii_write(MII_79C873_IER, 0xff00), NULL },
-+#endif
-+		{ mk_mii_write(MII_BMCR, 0x1200), NULL }, /* autonegotiate */
-+#ifdef  CONFIG_PM82X
-+		{ mk_mii_read(MII_BMSR), mii_waitfor_anc },
-+#endif
-+		{ mk_mii_end, }
-+	},
-+	(const phy_cmd_t []) { /* ack_int */
-+		/* read SR twice: to acknowledge and to get link status */
-+		{ mk_mii_read(MII_BMSR), mii_parse_sr },
-+		{ mk_mii_read(MII_BMSR), mii_parse_sr },
-+
-+		/* find out the current link parameters */
-+
-+		{ mk_mii_read(MII_BMCR), mii_parse_79c873_cr },
-+		{ mk_mii_end, }
-+	},
-+	(const phy_cmd_t []) {  /* shutdown - disable interrupts */
-+		{ mk_mii_write(MII_79C873_IER, 0x0000), NULL },
-+		{ mk_mii_end, }
-+	},
-+};
-+
-+#endif /* CONFIG_FCC_AMD79C873 */
-
- /* ------------------------------------------------------------------------
-- */
- /* The Davicom DM9131 is used on the HYMOD board			     */
-@@ -1381,6 +1487,10 @@ static phy_info_t *phy_info[] = {
- 	&phy_info_dm9161,
- #endif /* CONFIG_FCC_DM9161 */
-
-+#ifdef CONFIG_FCC_AMD79C873
-+	&phy_info_79c873,
-+#endif /* CONFIG_FCC_AMD79C873 */
-+
- #ifdef CONFIG_FCC_GENERIC_PHY
- 	/* Generic PHY support.  This must be the last PHY in the table.
- 	 * It will be used to support any PHY that doesn't match a previous
-@@ -1847,8 +1957,10 @@ init_fcc_ioports(fcc_info_t *fip, volati
- #ifdef	CONFIG_USE_MDIO
- 	/* ....and the MII serial clock/data.
- 	*/
-+#ifndef CONFIG_PM82X
- 	io->iop_pdatc |= (fip->fc_mdio | fip->fc_mdck);
- 	io->iop_podrc &= ~(fip->fc_mdio | fip->fc_mdck);
-+#endif
- 	io->iop_pdirc |= (fip->fc_mdio | fip->fc_mdck);
- 	io->iop_pparc &= ~(fip->fc_mdio | fip->fc_mdck);
- #endif	/* CONFIG_USE_MDIO */
-@@ -2380,6 +2492,11 @@ fcc_enet_open(struct net_device *dev)
- 			schedule();
-
- 		mii_do_cmd(dev, fep->phy->startup);
-+#ifdef  CONFIG_PM82X
-+		/* Read the autonegotiation results */
-+		mii_do_cmd(dev, fep->phy->ack_int);
-+		mii_do_cmd(dev, phy_cmd_relink);
-+#endif  /* CONFIG_PM82X */
- 		netif_start_queue(dev);
- 		return 0;		/* Success */
- 	}
-diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
-index 8fa51b0..1add0a9 100644
---- a/arch/ppc/Kconfig
-+++ b/arch/ppc/Kconfig
-@@ -667,6 +667,11 @@ config TQM8260
- 	  End of Life: not yet :-)
- 	  URL: <http://www.denx.de/PDF/TQM82xx_SPEC_Rev005.pdf>
-
-+config PM82X
-+	bool "PM82X"
-+	help
-+	  This option enables support for the MicroSys PM82x evaluation boards.
-+
- config ADS8272
- 	bool "ADS8272"
-
-@@ -723,7 +728,7 @@ config PPC_MPC52xx
- config 8260
- 	bool "CPM2 Support" if WILLOW
- 	depends on 6xx
--	default y if TQM8260 || RPX8260 || EST8260 || SBS8260 || SBC82xx ||
-PQ2FADS
-+	default y if TQM8260 || RPX8260 || EST8260 || SBS8260 || SBC82xx ||
-PQ2FADS || PM82X
- 	help
- 	  The MPC8260 is a typical embedded CPU made by Motorola.  Selecting
- 	  this option means that you wish to build a kernel for a machine with
-diff --git a/arch/ppc/configs/pm82x_defconfig
-b/arch/ppc/configs/pm82x_defconfig
+diff --git a/arch/ppc/configs/pm826_defconfig
+b/arch/ppc/configs/pm826_defconfig
 new file mode 100644
-index 0000000..13f0e8a
+index 0000000..24a3488
 --- /dev/null
-+++ b/arch/ppc/configs/pm82x_defconfig
-@@ -0,0 +1,897 @@
++++ b/arch/ppc/configs/pm826_defconfig
+@@ -0,0 +1,808 @@
 +#
 +# Automatically generated make config: don't edit
-+# Linux kernel version: 2.6.14-rc3
-+# Mon Oct 17 12:21:11 2005
++# Linux kernel version: 2.6.14-rc5
++# Sun Oct 30 14:34:35 2005
 +#
 +CONFIG_MMU=y
 +CONFIG_GENERIC_HARDIRQS=y
@@ -413,6 +162,7 @@ index 0000000..13f0e8a
 +# CONFIG_LITE5200 is not set
 +# CONFIG_MPC834x_SYS is not set
 +# CONFIG_EV64360 is not set
++# CONFIG_TQM834x is not set
 +CONFIG_8260=y
 +CONFIG_CPM2=y
 +# CONFIG_PC_KEYBOARD is not set
@@ -443,12 +193,8 @@ index 0000000..13f0e8a
 +#
 +# Bus options
 +#
-+CONFIG_PCI=y
-+CONFIG_PCI_DOMAINS=y
-+CONFIG_PCI_8260=y
-+# CONFIG_8260_PCI9 is not set
-+CONFIG_PCI_LEGACY_PROC=y
-+# CONFIG_PCI_DEBUG is not set
++# CONFIG_PCI is not set
++# CONFIG_PCI_DOMAINS is not set
 +
 +#
 +# PCCARD (PCMCIA/CardBus) support
@@ -611,13 +357,11 @@ index 0000000..13f0e8a
 +# CONFIG_MTD_PHYSMAP is not set
 +# CONFIG_MTD_SBC8240 is not set
 +CONFIG_MTD_PM82X=y
-+# CONFIG_MTD_PCI is not set
 +# CONFIG_MTD_PLATRAM is not set
 +
 +#
 +# Self-contained MTD device drivers
 +#
-+# CONFIG_MTD_PMC551 is not set
 +# CONFIG_MTD_SLRAM is not set
 +# CONFIG_MTD_PHRAM is not set
 +# CONFIG_MTD_MTDRAM is not set
@@ -656,14 +400,9 @@ index 0000000..13f0e8a
 +# Block devices
 +#
 +# CONFIG_BLK_DEV_FD is not set
-+# CONFIG_BLK_CPQ_DA is not set
-+# CONFIG_BLK_CPQ_CISS_DA is not set
-+# CONFIG_BLK_DEV_DAC960 is not set
-+# CONFIG_BLK_DEV_UMEM is not set
 +# CONFIG_BLK_DEV_COW_COMMON is not set
 +# CONFIG_BLK_DEV_LOOP is not set
 +# CONFIG_BLK_DEV_NBD is not set
-+# CONFIG_BLK_DEV_SX8 is not set
 +CONFIG_BLK_DEV_RAM=y
 +CONFIG_BLK_DEV_RAM_COUNT=16
 +CONFIG_BLK_DEV_RAM_SIZE=4096
@@ -704,12 +443,10 @@ index 0000000..13f0e8a
 +#
 +# IEEE 1394 (FireWire) support
 +#
-+# CONFIG_IEEE1394 is not set
 +
 +#
 +# I2O device support
 +#
-+# CONFIG_I2O is not set
 +
 +#
 +# Macintosh device drivers
@@ -725,11 +462,6 @@ index 0000000..13f0e8a
 +# CONFIG_TUN is not set
 +
 +#
-+# ARCnet devices
-+#
-+# CONFIG_ARCNET is not set
-+
-+#
 +# PHY device support
 +#
 +# CONFIG_PHYLIB is not set
@@ -739,64 +471,19 @@ index 0000000..13f0e8a
 +#
 +CONFIG_NET_ETHERNET=y
 +CONFIG_MII=y
-+# CONFIG_HAPPYMEAL is not set
-+# CONFIG_SUNGEM is not set
-+# CONFIG_CASSINI is not set
-+# CONFIG_NET_VENDOR_3COM is not set
-+
-+#
-+# Tulip family network device support
-+#
-+# CONFIG_NET_TULIP is not set
-+# CONFIG_HP100 is not set
-+CONFIG_NET_PCI=y
-+# CONFIG_PCNET32 is not set
-+# CONFIG_AMD8111_ETH is not set
-+# CONFIG_ADAPTEC_STARFIRE is not set
-+# CONFIG_B44 is not set
-+# CONFIG_FORCEDETH is not set
-+# CONFIG_DGRS is not set
-+CONFIG_EEPRO100=y
-+# CONFIG_E100 is not set
-+# CONFIG_FEALNX is not set
-+# CONFIG_NATSEMI is not set
-+# CONFIG_NE2K_PCI is not set
-+# CONFIG_8139CP is not set
-+# CONFIG_8139TOO is not set
-+# CONFIG_SIS900 is not set
-+# CONFIG_EPIC100 is not set
-+# CONFIG_SUNDANCE is not set
-+# CONFIG_TLAN is not set
-+# CONFIG_VIA_RHINE is not set
++CONFIG_USE_MDIO=y
 +
 +#
 +# Ethernet (1000 Mbit)
 +#
-+# CONFIG_ACENIC is not set
-+# CONFIG_DL2K is not set
-+# CONFIG_E1000 is not set
-+# CONFIG_NS83820 is not set
-+# CONFIG_HAMACHI is not set
-+# CONFIG_YELLOWFIN is not set
-+# CONFIG_R8169 is not set
-+# CONFIG_SIS190 is not set
-+# CONFIG_SKGE is not set
-+# CONFIG_SK98LIN is not set
-+# CONFIG_VIA_VELOCITY is not set
-+# CONFIG_TIGON3 is not set
-+# CONFIG_BNX2 is not set
 +
 +#
 +# Ethernet (10000 Mbit)
 +#
-+# CONFIG_CHELSIO_T1 is not set
-+# CONFIG_IXGB is not set
-+# CONFIG_S2IO is not set
 +
 +#
 +# Token Ring devices
 +#
-+# CONFIG_TR is not set
 +
 +#
 +# Wireless LAN (non-hamradio)
@@ -807,8 +494,6 @@ index 0000000..13f0e8a
 +# Wan interfaces
 +#
 +# CONFIG_WAN is not set
-+# CONFIG_FDDI is not set
-+# CONFIG_HIPPI is not set
 +# CONFIG_PPP is not set
 +# CONFIG_SLIP is not set
 +# CONFIG_SHAPER is not set
@@ -861,7 +546,6 @@ index 0000000..13f0e8a
 +CONFIG_SERIAL_CPM_SCC4=y
 +CONFIG_SERIAL_CPM_SMC1=y
 +CONFIG_SERIAL_CPM_SMC2=y
-+# CONFIG_SERIAL_JSM is not set
 +CONFIG_UNIX98_PTYS=y
 +CONFIG_LEGACY_PTYS=y
 +CONFIG_LEGACY_PTY_COUNT=256
@@ -880,19 +564,16 @@ index 0000000..13f0e8a
 +# CONFIG_GEN_RTC_X is not set
 +# CONFIG_DTLK is not set
 +# CONFIG_R3964 is not set
-+# CONFIG_APPLICOM is not set
 +
 +#
 +# Ftape, the floppy tape device driver
 +#
 +# CONFIG_AGP is not set
-+# CONFIG_DRM is not set
 +# CONFIG_RAW_DRIVER is not set
 +
 +#
 +# TPM devices
 +#
-+# CONFIG_TCG_TPM is not set
 +
 +#
 +# I2C support
@@ -910,28 +591,10 @@ index 0000000..13f0e8a
 +#
 +# I2C Hardware Bus support
 +#
-+# CONFIG_I2C_ALI1535 is not set
-+# CONFIG_I2C_ALI1563 is not set
-+# CONFIG_I2C_ALI15X3 is not set
-+# CONFIG_I2C_AMD756 is not set
-+# CONFIG_I2C_AMD8111 is not set
-+# CONFIG_I2C_I801 is not set
-+# CONFIG_I2C_I810 is not set
-+# CONFIG_I2C_PIIX4 is not set
 +# CONFIG_I2C_MPC is not set
 +CONFIG_I2C_MPC8260=y
-+# CONFIG_I2C_NFORCE2 is not set
 +# CONFIG_I2C_PARPORT_LIGHT is not set
-+# CONFIG_I2C_PROSAVAGE is not set
-+# CONFIG_I2C_SAVAGE4 is not set
-+# CONFIG_SCx200_ACB is not set
-+# CONFIG_I2C_SIS5595 is not set
-+# CONFIG_I2C_SIS630 is not set
-+# CONFIG_I2C_SIS96X is not set
 +# CONFIG_I2C_STUB is not set
-+# CONFIG_I2C_VIA is not set
-+# CONFIG_I2C_VIAPRO is not set
-+# CONFIG_I2C_VOODOO3 is not set
 +# CONFIG_I2C_PCA_ISA is not set
 +
 +#
@@ -994,9 +657,8 @@ index 0000000..13f0e8a
 +#
 +# USB support
 +#
-+CONFIG_USB_ARCH_HAS_HCD=y
-+CONFIG_USB_ARCH_HAS_OHCI=y
-+# CONFIG_USB is not set
++# CONFIG_USB_ARCH_HAS_HCD is not set
++# CONFIG_USB_ARCH_HAS_OHCI is not set
 +
 +#
 +# USB Gadget Support
@@ -1011,7 +673,6 @@ index 0000000..13f0e8a
 +#
 +# InfiniBand support
 +#
-+# CONFIG_INFINIBAND is not set
 +
 +#
 +# SN Devices
@@ -1129,7 +790,6 @@ index 0000000..13f0e8a
 +# CONFIG_NLS is not set
 +# CONFIG_SCC_ENET is not set
 +CONFIG_FEC_ENET=y
-+CONFIG_USE_MDIO=y
 +
 +#
 +# CPM2 Options
@@ -1194,361 +854,6 @@ index 0000000..13f0e8a
 +#
 +# Hardware crypto devices
 +#
-diff --git a/arch/ppc/platforms/Makefile b/arch/ppc/platforms/Makefile
-index 7c5cdab..becaed3 100644
---- a/arch/ppc/platforms/Makefile
-+++ b/arch/ppc/platforms/Makefile
-@@ -26,6 +26,7 @@ obj-$(CONFIG_PMAC_BACKLIGHT)	+= pmac_bac
- obj-$(CONFIG_PREP_RESIDUAL)	+= residual.o
- obj-$(CONFIG_PQ2ADS)		+= pq2ads.o
- obj-$(CONFIG_TQM8260)		+= tqm8260_setup.o
-+obj-$(CONFIG_PM82X)		+= pm82x_setup.o
- obj-$(CONFIG_CPCI690)		+= cpci690.o
- obj-$(CONFIG_EV64260)		+= ev64260.o
- obj-$(CONFIG_CHESTNUT)		+= chestnut.o
-diff --git a/arch/ppc/platforms/pm82x.h b/arch/ppc/platforms/pm82x.h
-new file mode 100644
-index 0000000..ee12e1d
---- /dev/null
-+++ b/arch/ppc/platforms/pm82x.h
-@@ -0,0 +1,48 @@
-+/*
-+ * PM82X board specific definitions
-+ *
-+ * Copyright (c) 2005 Heiko Schocher (hs@denx.de)
-+ */
-+
-+#ifndef __MACH_PM82X_H
-+#define __MACH_PM82X_H
-+
-+#include <linux/config.h>
-+
-+#include <asm/ppcboot.h>
-+
-+#if defined(CONFIG_PCI)
-+/* #include <platforms/m8260_pci.h> */
-+#endif
-+
-+#define CPM_MAP_ADDR		((uint)0xF0000000)
-+#define	I2C_ADDR_RTC		0x51
-+
-+/* For our show_cpuinfo hooks. */
-+#define CPUINFO_VENDOR		"Microsys"
-+#define CPUINFO_MACHINE	"PM82x PowerPC"
-+
-+#if defined (CONFIG_MTD_NAND_DISKONCHIP)
-+#define BOOTROM_RESTART_ADDR	((uint)0x40000100)
-+#else
-+#define BOOTROM_RESTART_ADDR	((uint)0xFF800100)
-+#endif
-+
-+/* PPC Sys identification */
-+#define BOARD_CHIP_NAME "8250"
-+
-+#ifdef CONFIG_PCI
-+/* PCI interrupt controller */
-+#define PCI_INT_STAT_REG	0xF8200000
-+#define PCI_INT_MASK_REG	0xF8200004
-+#define PIRQA			(NR_CPM_INTS + 0)
-+#define PIRQB			(NR_CPM_INTS + 1)
-+#define PIRQC			(NR_CPM_INTS + 2)
-+#define PIRQD			(NR_CPM_INTS + 3)
-+
-+#define PCI_INT_TO_SIU  SIU_INT_IRQ2
-+
-+#endif /* CONFIG_PCI */
-+
-+
-+#endif	/* __MACH_PM82X_H */
-diff --git a/arch/ppc/platforms/pm82x_setup.c
-b/arch/ppc/platforms/pm82x_setup.c
-new file mode 100644
-index 0000000..dd8ea88
---- /dev/null
-+++ b/arch/ppc/platforms/pm82x_setup.c
-@@ -0,0 +1,40 @@
-+/*
-+ * arch/ppc/platforms/pm82x_setup.c
-+ *
-+ * PM82X platform support
-+ *
-+ * Author: Heiko Schocher <hs@denx.de>
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/init.h>
-+
-+#include <asm/mpc8260.h>
-+#include <asm/cpm2.h>
-+#include <asm/machdep.h>
-+
-+static int
-+pm82x_set_rtc_time(unsigned long time)
-+{
-+	((cpm2_map_t *)CPM_MAP_ADDR)->im_sit.sit_tmcnt = time;
-+	((cpm2_map_t *)CPM_MAP_ADDR)->im_sit.sit_tmcntsc = 0x3;
-+	return(0);
-+}
-+
-+static unsigned long
-+pm82x_get_rtc_time(void)
-+{
-+	return ((cpm2_map_t *)CPM_MAP_ADDR)->im_sit.sit_tmcnt;
-+}
-+
-+void __init
-+m82xx_board_init(void)
-+{
-+	/* Anything special for this platform */
-+	ppc_md.set_rtc_time	= pm82x_set_rtc_time;
-+	ppc_md.get_rtc_time	= pm82x_get_rtc_time;
-+}
-diff --git a/arch/ppc/syslib/m8260_setup.c b/arch/ppc/syslib/m8260_setup.c
-index 76a2aa4..f4b0f3a 100644
---- a/arch/ppc/syslib/m8260_setup.c
-+++ b/arch/ppc/syslib/m8260_setup.c
-@@ -51,6 +51,16 @@ m8260_setup_arch(void)
-
- 	/* Reset the Communication Processor Module. */
- 	cpm2_reset();
-+
-+#ifdef  CONFIG_PM82X
-+	/* On PM82x BRG1 is not initialized by the firmware (as the console
-+	 * is on SMC2). We initialize it here to avoid "realtime clock stuck"
-+	 * messages. Later on, when the RTC driver loads up, it re-installs
-+	 * its own handlers.
-+	 */
-+	cpm_setbrg(0, 9600);
-+#endif  /* CONFIG_PM82X */
-+
- #ifdef CONFIG_8260_PCI9
- 	/* Initialise IDMA for PCI erratum workaround */
- 	idma_pci9_init();
-@@ -156,9 +166,9 @@ m8260_show_cpuinfo(struct seq_file *m)
- 		   "core clock\t: %u MHz\n"
- 		   "CPM  clock\t: %u MHz\n"
- 		   "bus  clock\t: %u MHz\n",
--		   CPUINFO_VENDOR, CPUINFO_MACHINE, bp->bi_memsize,
--		   bp->bi_baudrate, bp->bi_intfreq / 1000000,
--		   bp->bi_cpmfreq / 1000000, bp->bi_busfreq / 1000000);
-+		   CPUINFO_VENDOR, CPUINFO_MACHINE, (unsigned int) bp->bi_memsize,
-+		   (int) bp->bi_baudrate, (unsigned int) bp->bi_intfreq / 1000000,
-+		   (unsigned int) bp->bi_cpmfreq / 1000000, (unsigned int) bp->bi_busfreq
-/ 1000000);
- 	return 0;
- }
-
-@@ -176,7 +186,15 @@ m8260_init_IRQ(void)
- 	/* Initialize the default interrupt mapping priorities,
- 	 * in case the boot rom changed something on us.
- 	 */
-+#ifndef CONFIG_PM82X
- 	cpm2_immr->im_intctl.ic_siprr = 0x05309770;
-+	cpm2_immr->im_intctl.ic_scprrh = 0x05309770;
-+	cpm2_immr->im_intctl.ic_scprrl = 0x05309770;
-+#else
-+	cpm2_immr->im_intctl.ic_siprr = 0x0530b370;
-+	cpm2_immr->im_intctl.ic_scprrh = 0x0530b370;
-+	cpm2_immr->im_intctl.ic_scprrl = 0x0530b370;
-+#endif
-
- #if defined(CONFIG_PCI) && (defined(CONFIG_ADS8272) ||
-defined(CONFIG_PQ2FADS))
-  	/* Initialize stuff for the 82xx CPLD IC and install demux  */
-diff --git a/arch/ppc/syslib/m82xx_pci.c b/arch/ppc/syslib/m82xx_pci.c
-index 1d1c395..5af560e 100644
---- a/arch/ppc/syslib/m82xx_pci.c
-+++ b/arch/ppc/syslib/m82xx_pci.c
-@@ -300,6 +300,19 @@ pq2ads_setup_pci(struct pci_controller *
-
- }
-
-+void m8260_pcibios_fixup(void)
-+{
-+	struct pci_dev *dev = NULL;
-+
-+	for_each_pci_dev(dev) {
-+#ifdef CONFIG_PM82X
-+		if (dev->bus->number == 0 && (dev->devfn & ~0x7) == (0xD << 3)) {
-+			dev->irq = SIU_INT_IRQ5;
-+		}
-+#endif
-+	}
-+}
-+
- void __init pq2_find_bridges(void)
- {
- 	extern int pci_assign_all_buses;
-@@ -377,7 +390,7 @@ void __init pq2_find_bridges(void)
- 	hose->last_busno = pciauto_bus_scan(hose, hose->first_busno);
-
- 	ppc_md.pci_map_irq = pq2pci_map_irq;
--	ppc_md.pcibios_fixup = NULL;
-+	ppc_md.pcibios_fixup = m8260_pcibios_fixup;
- 	ppc_md.pcibios_fixup_bus = NULL;
-
- }
-diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm2.c
-b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
-index fd9e53e..39776bc 100644
---- a/drivers/serial/cpm_uart/cpm_uart_cpm2.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
-@@ -95,8 +95,13 @@ void smc1_lineif(struct uart_cpm_port *p
- 	io->iop_pdird &= ~0x00800000;
- 	io->iop_psord &= ~0x00c00000;
-
-+#if defined(CONFIG_PM82X)
-+	/* Wire BRG7 to SMC1 */
-+	cpm2_immr->im_cpmux.cmx_smr &= 0x1f;
-+#else
- 	/* Wire BRG1 to SMC1 */
- 	cpm2_immr->im_cpmux.cmx_smr &= 0x0f;
-+#endif
- 	pinfo->brg = 1;
- }
-
-@@ -104,14 +109,29 @@ void smc2_lineif(struct uart_cpm_port *p
- {
- 	volatile iop_cpm2_t *io = &cpm2_immr->im_ioport;
-
-+#if defined(CONFIG_PM82X)
-+	/* SMC2 is only on port A */
-+	io->iop_ppard |= 0x08000000;
-+	io->iop_pdird &= ~0x08000000;
-+	io->iop_psord |= 0x08000000;
-+	io->iop_pparc |= 0x00010000;
-+	io->iop_pdirc |= 0x00010000;
-+	io->iop_psorc &= ~0x00010000;
-+#else
- 	/* SMC2 is only on port A */
- 	io->iop_ppara |= 0x00c00000;
- 	io->iop_pdira |= 0x00400000;
- 	io->iop_pdira &= ~0x00800000;
- 	io->iop_psora &= ~0x00c00000;
-+#endif
-
-+#if defined(CONFIG_PM82X)
-+	/* Wire BRG8 to SMC2 */
-+	cpm2_immr->im_cpmux.cmx_smr &= 0xf1;
-+#else
- 	/* Wire BRG2 to SMC2 */
- 	cpm2_immr->im_cpmux.cmx_smr &= 0xf0;
-+#endif
- 	pinfo->brg = 2;
- }
-
-@@ -119,12 +139,22 @@ void scc1_lineif(struct uart_cpm_port *p
- {
- 	volatile iop_cpm2_t *io = &cpm2_immr->im_ioport;
-
-+#if defined(CONFIG_PM82X)
-+	io->iop_ppard |= 0x00000001;	/* Rx */
-+	io->iop_pparb |= 0x00000008;	/* Tx */
-+
-+	io->iop_psord &= ~0x00000001;   /* Rx */
-+	io->iop_psorb |= 0x00000008;    /* Tx */
-+	io->iop_pdird &= ~0x00000001;   /* Rx */
-+	io->iop_pdirb |= 0x00000008;    /* Tx */
-+#else
- 	/* Use Port D for SCC1 instead of other functions.  */
- 	io->iop_ppard |= 0x00000003;
- 	io->iop_psord &= ~0x00000001;	/* Rx */
- 	io->iop_psord |= 0x00000002;	/* Tx */
- 	io->iop_pdird &= ~0x00000001;	/* Rx */
- 	io->iop_pdird |= 0x00000002;	/* Tx */
-+#endif
-
- 	/* Wire BRG1 to SCC1 */
- 	cpm2_immr->im_cpmux.cmx_scr &= 0x00ffffff;
-@@ -149,6 +179,14 @@ void scc2_lineif(struct uart_cpm_port *p
- 	io->iop_psord &= ~0x00000010;	/* Tx */
- 	io->iop_pdird &= ~0x00000008;	/* Rx */
- 	io->iop_pdird |= 0x00000010;	/* Tx */
-+#elif defined(CONFIG_PM82X)
-+	volatile iop_cpm2_t *io = &cpm2_immr->im_ioport;
-+	io->iop_pparb |= 0x00010000;	/* Rx */
-+	io->iop_pdirb &= ~0x00010000;
-+	io->iop_psorb &= ~0x00010000;
-+	io->iop_ppard |= 0x00000010;	/* Tx */
-+	io->iop_pdird |= 0x00000010;
-+	io->iop_psord &= ~0x00000010;
- #else
- 	volatile iop_cpm2_t *io = &cpm2_immr->im_ioport;
- 	io->iop_pparb |= 0x008b0000;
-@@ -165,12 +203,21 @@ void scc2_lineif(struct uart_cpm_port *p
-
- void scc3_lineif(struct uart_cpm_port *pinfo)
- {
-+#if defined(CONFIG_PM82X)
-+	volatile iop_cpm2_t *io = &cpm2_immr->im_ioport;
-+	io->iop_pparb |= 0x00820000;	/* Rx */
-+	io->iop_pdirb &= ~0x00020000;
-+	io->iop_psorb &= ~0x00020000;
-+	io->iop_pdirb |= 0x00800000;	/* Tx */
-+	io->iop_psorb |= 0x00800000;
-+#else
- 	volatile iop_cpm2_t *io = &cpm2_immr->im_ioport;
- 	io->iop_pparb |= 0x008b0000;
- 	io->iop_pdirb |= 0x00880000;
- 	io->iop_psorb |= 0x00880000;
- 	io->iop_pdirb &= ~0x00030000;
- 	io->iop_psorb &= ~0x00030000;
-+#endif
- 	cpm2_immr->im_cpmux.cmx_scr &= 0xffff00ff;
- 	cpm2_immr->im_cpmux.cmx_scr |= 0x00001200;
- 	pinfo->brg = 3;
-@@ -180,10 +227,19 @@ void scc4_lineif(struct uart_cpm_port *p
- {
- 	volatile iop_cpm2_t *io = &cpm2_immr->im_ioport;
-
-+#if defined(CONFIG_PM82X)
-+	io->iop_ppard |= 0x00000200;	/* Rx */
-+	io->iop_pdird &= ~0x00000200;
-+	io->iop_psord &= ~0x00000200;
-+	io->iop_ppard |= 0x00000400;	/* Tx */
-+	io->iop_pdird |= 0x00000400;
-+	io->iop_psord &= ~0x00000400;
-+#else
- 	io->iop_ppard |= 0x00000600;
- 	io->iop_psord &= ~0x00000600;	/* Tx/Rx */
- 	io->iop_pdird &= ~0x00000200;	/* Rx */
- 	io->iop_pdird |= 0x00000400;	/* Tx */
-+#endif
-
- 	cpm2_immr->im_cpmux.cmx_scr &= 0xffffff00;
- 	cpm2_immr->im_cpmux.cmx_scr |= 0x0000001b;
-diff --git a/include/asm-ppc/cpm2.h b/include/asm-ppc/cpm2.h
-index 43d2ebb..0e7a03c 100644
---- a/include/asm-ppc/cpm2.h
-+++ b/include/asm-ppc/cpm2.h
-@@ -181,7 +181,7 @@ typedef struct cpm_buf_desc {
-  */
- #define PROFF_SMC1	(0)
- #define PROFF_SMC2	(64)
--
-+#define PROFF_I2C	((16 * 1024) - 64)
-
- /* Define enough so I can at least use the serial port as a UART.
-  */
-diff --git a/include/asm-ppc/mpc8260.h b/include/asm-ppc/mpc8260.h
-index 3214526..501ea8e 100644
---- a/include/asm-ppc/mpc8260.h
-+++ b/include/asm-ppc/mpc8260.h
-@@ -36,6 +36,10 @@
- #include <platforms/tqm8260.h>
- #endif
-
-+#ifdef CONFIG_PM82X
-+#include <platforms/pm82x.h>
-+#endif
-+
- #if defined(CONFIG_PQ2ADS) || defined (CONFIG_PQ2FADS)
- #include <platforms/pq2ads.h>
- #endif
 
 
 
