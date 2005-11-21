@@ -1,28 +1,17 @@
-Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C4AAA67A60
+Return-Path: <zjznliang_popo@163.com>
+Received: from 163.com (m12-13.163.com [220.181.12.13])
+	by ozlabs.org (Postfix) with SMTP id C6F8C687B3
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 21 Nov 2005 17:58:00 +1100 (EST)
-Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1Ee5bI-00049T-KZ
-	for linuxppc-embedded@ozlabs.org; Mon, 21 Nov 2005 07:56:28 +0100
-Received: from dsl-202-45-109-210.vic.netspace.net.au ([202.45.109.210])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Mon, 21 Nov 2005 07:56:28 +0100
-Received: from ronkbox-news by dsl-202-45-109-210.vic.netspace.net.au with
-	local (Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Mon, 21 Nov 2005 07:56:28 +0100
-To: linuxppc-embedded@ozlabs.org
-From: Ron Kellam <ronkbox-news@yahoo.com>
-Date: Mon, 21 Nov 2005 17:56:07 +1100
-Message-ID: <qpr2o1dhoelk8rt11jl3lbangfs0hj710a@4ax.com>
+	Mon, 21 Nov 2005 18:14:55 +1100 (EST)
+Date: Mon, 21 Nov 2005 14:59:58 +0800
+From: "zjznliang" <zjznliang_popo@163.com>
+To: "clemens.koller" <clemens.koller@anagramm.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: news <news@sea.gmane.org>
-Subject: anyone used i2c-algo-8260 for the MPC8272 family?
+Content-Type: text/plain;
+	charset="gb2312"
+Message-Id: <20051121071455.C6F8C687B3@ozlabs.org>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re:Re: Help ! 2.6.14 kernel can't bring up
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,23 +22,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
-
-I'm trying to get i2c-algo-8260 and i2c-pm826 working on an MPC8247.
-It doesn't... It just hangs the kernel.
-
-There are some subtle differences b/t the 8260 family and 8272 family.
-The 8272 family only has 8KB DPRAM (c.f. 16KB), so I believe the
-definition of PROFF_I2C in include/linux/cpm_8260.h should be
-different.  I've changed it from:
-
-	#define PROFF_I2C	((16 * 1024) - 64)
-to 
-	#define PROFF_I2C	((8 * 1024) - 64)
-
-but still get no I2C activity, and a kernel hang.
-
-Anyone have this working, or any thoughts to contribute?
-
-Regards,
-Ron Kellam.
+SGkgY2xlbWVucy5rb2xsZXKjoQ0KDQoJICAgICAgICAgIEkgaGF2ZSBjb25maWdlZCB0aGUgQ09O
+RklHX1dBTlRfRUFSTFlfU0VSSUFMIGZvciB0aGUgMi42LjE0IGtlcm5lbCxidXQgSSBzdGlsbCBk
+aWRuJ3Qgc2VlIG5vdGhpbmcgb3V0cHV0IA0Kb24gdGhlIHNlcmlhbCBwb3J0IC4NCgkJCUkgaGF2
+ZSBzb21lIGRvdWJ0cywNCgkJCTEsIExpbnV4IGtlcm5lbCAyLjQuMjUgY2FuIHdvcmsgd2VsbCB3
+aXRoIHRoZSBzYW1lIFUtQm9vdCBhbmQgYm9hcmQgYXMgTGludXgga2VybmVsIDIuNi4xNCwgd2hh
+dCBpcyB0aGUgZGlmZmVyZW50IA0Kd2l0aCB0aGUgc2VyaWFsIHBvcnQgZHJpdmVyIGJldHdlZW4g
+dGhlc2UgPw0KCQkJMi5UaGUgY29tbWFuZCBsaW5lICxVLUJvb3Qgc2VuZHMgY29tbWFuZCBsaW5l
+IHRvIHRoZSBrZXJuZWwgLGxpa2UgYXMgImJhdWRyYXRlICxyb290IC4uLi4iLiBJbiB0aGUgbGlu
+dXgga2VybmVsIA0KMi42LjE0LCJtYWtlIG1lbnVjb25maWcgLHBsYXRmb3JtIC0+ZGVmYXVsdCBi
+b290bG9hZGVyIGtlcm5lbCBhcmd1bWVudCIsSSBjb25maWcgdGhlIGNvbnNvbGUgYXMgdGhlIHNh
+bWUgYXMgdGhlIFUtYm9vdCAsDQpidXQgaXQgd2FzIGZhaWwgLkRpZG4ndCBjb25maWcgaXQgLGl0
+IHdhcyBzdGlsbCBmYWlsIC4NCg0KCQkJSSBoYXZlIG1lYXN1cmVkIHRoZSBwaW4gb2YgdGhlIHNl
+cmlhbCBwb3J0ICwgbm8gcHVyc2Ugb3V0cHV0LiBJIGNoZWNrZWQgdGhlIENTIChjaGlwIHNlbGVj
+dCApIHBpbiBvZiB0aGUgU0RSQU0NCih3aGVyZSBpcyB0aGUgbGludXgga2VybmVsICBpbXBsZW1l
+bnRhdGlvbiksIHRoZSBwaW4gaGFzIHB1cnNlcyB3aGVuIHRoZSBzZXJpYWwgcG9ydCB3aXRoIG5v
+dGhpbmcgLHNvIEkgdGhvdWdodCB0aGUgbGludXggDQprZXJuZWwgd2FzIHJ1bm5pbmcgLGJ1dCB0
+aGUgc2VyaWFsIHBvcnQgd2FzIGZhaWwgLi4uLi4uLi4NCg0KCQlOb3cgLCBtYXliZSBJIHdpbGwg
+Y2hlY2sgdGhlIGtlcm5lbCBjb2RlIHRvIHRyYWNlIHRoZSBwcm9ibGVtIC4gDQoNCgkJVGhhbmtz
+IGZvciB5b3VyIHBhdGllbmNlLg0KIA0KCQlJZiB5b3UgaGF2ZSBzb21lIGFkdmljZXMgLHBsZWFz
+ZSBsZXQgbWUga25vdyAgLlRoYW5rIHlvdSAhIA0KIAkJCQkNCg0KoaGhoXpqem5saWFuZw0KoaGh
+oaGhoaF6anpubGlhbmdfcG9wb0AxNjMuY29tDQqhoaGhoaGhoaGhoaEyMDA1LTExLTIxDQo=
