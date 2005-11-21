@@ -1,17 +1,15 @@
-Return-Path: <wojciech.kromer@dgt.com.pl>
-Received: from dgt.com.pl (mail.dgt.com.pl [195.117.141.2])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id ED6A367A60
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15803.mail.cnb.yahoo.com (web15803.mail.cnb.yahoo.com
+	[202.165.102.83]) by ozlabs.org (Postfix) with SMTP id B83D5687A5
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 21 Nov 2005 18:41:42 +1100 (EST)
-Message-ID: <43817ACF.1030903@dgt.com.pl>
-Date: Mon, 21 Nov 2005 08:44:15 +0100
-From: Wojciech Kromer <wojciech.kromer@dgt.com.pl>
-MIME-Version: 1.0
+	Mon, 21 Nov 2005 22:23:45 +1100 (EST)
+Message-ID: <20051121111704.89583.qmail@web15803.mail.cnb.yahoo.com>
+Date: Mon, 21 Nov 2005 19:17:03 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
 To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Subject: Strange results with changing HZ
+MIME-Version: 1.0
+Content-Type: text/plain; charset=gb2312
+Subject: Re : anyone used i2c-algo-8260 for the MPC8272 family?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,80 +20,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-My system is:
- - 2.4.25 kernel from denx.de
- - uclibc (gcc 3.4.2) + busybox
- - changed HZ to 1000
- - rebuild kernel only
+> Ron Kellam <ronkbox-news@yahoo.com> wrote:
+> Anyone have this working, or any thoughts to
+> contribute?
+ 
+What the kernel version are you talking about? 
+ 
+For 2.4.31, it worked on my custom 8248 platform.
+Sure, some porting work involved.
+ 
+As for 2.6, I also haven't made it work. I tried
+the official 2.6.13-rc3 kernel and denx-2.6.14
+kernel. Both no luck. I also want to know something 
+in this regards.
+ 
+Thanks,
 
-AFAIR there souldn't be any need to recompile user apps.
-
-I have strange results.
-Sleep and timeout selects works fine, but alarm functions seems to be 
-too fast.
-For example included program or ping waits too short.
-
-
-
-it is OK:
-
-# time alarm_test
-alarm fired after 0.099166s
-real    0m 0.11s
-user    0m 0.00s
-sys     0m 0.00s
-#
-# time sleep 1
-real    0m 1.01s
-user    0m 0.00s
-sys     0m 0.00s
-# time sleep 10
-real    0m 10.01s
-user    0m 0.00s
-sys     0m 0.00s
+Sam
 
 
-but:
-
-# alarm_test
-alarm fired after 0.099709s
-# alarm_test
-alarm fired after 0.099710s
-
-
------------------------------------- alarm_test.c :
-
-#include <stdio.h>
-#include <signal.h>
-#include <unistd.h>
-#include <sys/time.h>
-
-static void sighand(int sig)
-{
-}
-
-int main()
-{
- struct timeval tv1, tv2;
- sigset_t set;
-
- sigfillset(&set);
- sigdelset(&set, SIGALRM);
- sigdelset(&set, SIGINT);
-
- signal(SIGALRM, sighand);
- gettimeofday(&tv1, NULL);
-
- alarm(1);
- sigsuspend(&set);
- gettimeofday(&tv2, NULL);
-
- tv1.tv_sec = tv2.tv_sec - tv1.tv_sec - (tv2.tv_usec < tv1.tv_usec);
- tv1.tv_usec = tv2.tv_usec - tv1.tv_usec + (tv2.tv_usec < tv1.tv_usec) * 
-1000000;
-
- printf("alarm fired after %ld.%06lds\n",
- tv1.tv_sec, tv1.tv_usec);
-
- return 0;
-}
+		
+___________________________________________________________ 
+雅虎邮箱超强增值服务－2G超大空间、pop3收信、无限量邮件提醒 
+http://cn.mail.yahoo.com
