@@ -1,25 +1,17 @@
-Return-Path: <hs@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 15905681BE
+Return-Path: <dale@farnsworth.org>
+Received: from xyzzy.farnsworth.org (unknown [65.200.49.142])
+	by ozlabs.org (Postfix) with SMTP id 2A30E687A5
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 Nov 2005 03:57:40 +1100 (EST)
-Received: from mail01.m-online.net (unknown [192.168.3.149])
-	by mail-out.m-online.net (Postfix) with ESMTP id D61207028D
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 21 Nov 2005 17:55:48 +0100 (CET)
-Received: from embluxa7e0291e (213-163-18-7.vnet.hu [213.163.18.7])
-	by smtp-auth.mnet-online.de (Postfix) with ESMTP id 6DCEAB80EE
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 21 Nov 2005 17:57:38 +0100 (CET)
-From: "Heiko Schocher" <hs@denx.de>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Mon, 21 Nov 2005 17:57:24 +0100
-Message-ID: <AHEILKONAKAEJPHNMOPNCELNCDAA.hs@denx.de>
+	Tue, 22 Nov 2005 04:54:28 +1100 (EST)
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Mon, 21 Nov 2005 10:47:45 -0700
+To: "Ruslan V. Sushko" <rsushko@ru.mvista.com>, linuxppc-embedded@ozlabs.org
+Message-ID: <20051121174745.GA2654@xyzzy.farnsworth.org>
+References: <1132583152.11785.41.camel@mephisto.spb.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: anyone used i2c-algo-8260 for the MPC8272 family?
-Reply-To: hs@denx.de
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1132583152.11785.41.camel@mephisto.spb.rtsoft.ru>
+Subject: Re: [PATCH 1/3] ppc32: Fix a few issues in Yucca PCIe functionality
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,33 +22,92 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Ron,
-
-> There are some subtle differences b/t the 8260 family and 8272 family.
-> The 8272 family only has 8KB DPRAM (c.f. 16KB), so I believe the
-> definition of PROFF_I2C in include/linux/cpm_8260.h should be
-> different.  I've changed it from:
+On Mon, Nov 21, 2005 at 02:25:52PM +0000, Ruslan V. Sushko wrote:
+> This patch includes following changes:
 > 
-> 	#define PROFF_I2C	((16 * 1024) - 64)
-> to 
-> 	#define PROFF_I2C	((8 * 1024) - 64)
+> 1) Fix wrong PCIe config space address calculation for slot #3 (Using an
+> signed integer for port numbering will cause wrong address accessing)
+> 2) Fix the PCI bus numbering assignment. This will be an issues if more
+> than one PCI card is inserted.
+> 3) Add verbose error checking.
+> 4) Remove commented or unused lines.
 > 
-> but still get no I2C activity, and a kernel hang.
+> Signed-off-by: Ruslan V. Sushko <rsushko@ru.mvista.com>
 
-I think your change above is right for a MPC8247.
+There are a couple of whitespace/style problems in these 3 patches.
+Please clean them up and re-submit.
 
-> Anyone have this working, or any thoughts to contribute?
+> diff --git a/arch/ppc/platforms/4xx/yucca.c b/arch/ppc/platforms/4xx/yucca.c
+> --- a/arch/ppc/platforms/4xx/yucca.c
+> +++ b/arch/ppc/platforms/4xx/yucca.c
+> @@ -280,12 +276,14 @@ yucca_setup_hoses(void)
+>  				  IORESOURCE_MEM,
+>  				  name);
+>  
+> -		hose->first_busno = 0;
+> -		hose->last_busno  = 15;
+> +		hose->first_busno = bus_no;
+> +		hose->last_busno  = 0xFF;
+>  		hose_type[hose->index] = HOSE_PCIE0 + i;
+>  
+>  		ppc440spe_setup_pcie(hose, i);
+>  		hose->last_busno = pciauto_bus_scan(hose, hose->first_busno);
+> +                bus_no = hose->last_busno + 1;
+> +                printk(KERN_INFO "%s: resources allocated\n", name);
 
-Look at my Patch, which I just posted at linuxppc-dev, which 
-(I hope) will help you (!! it is for a MPC8260 based Board):
+The above two lines have leading spaces instead of tabs.  The same
+problem exists in several other lines added by the patches.
 
-http://ozlabs.org/pipermail/linuxppc-dev/2005-November/020492.html
+diff --git a/arch/ppc/syslib/ppc440spe_pcie.c b/arch/ppc/syslib/ppc440spe_pcie.c
+--- a/arch/ppc/syslib/ppc440spe_pcie.c
++++ b/arch/ppc/syslib/ppc440spe_pcie.c
+> @@ -157,33 +162,37 @@ int ppc440spe_init_pcie(void)
+>  	/* Set PLL clock receiver to LVPECL */
+>  	SDR_WRITE(PESDR0_PLLLCT1, SDR_READ(PESDR0_PLLLCT1) | 1 << 28);
+>  
+> -	check_error();
+> -
+> -	printk(KERN_INFO "PCIE initialization OK\n");
+> -
+> -	if (!(SDR_READ(PESDR0_PLLLCT2) & 0x10000))
+> -		printk(KERN_INFO "PESDR_PLLCT2 resistance calibration failed (0x%08x)\n",
+> +	if (check_error()) {
+> +                return -1;
+> +        }
 
-or have a look at the Git repository at Denx:
+The above braces aren't needed.
 
-http://source.denx.net/git/linux-2.6-denx.git
+> +
+> +	if (!(SDR_READ(PESDR0_PLLLCT2) & 0x10000)) {
+> +		printk(KERN_INFO "PCIE: PESDR_PLLCT2 resistance calibration "
+> +                                "failed (0x%08x)\n",
+>  		       SDR_READ(PESDR0_PLLLCT2));
+> +                return -1;
+> +        }
+>  
+>  	/* De-assert reset of PCIe PLL, wait for lock */
+>  	SDR_WRITE(PESDR0_PLLLCT1, SDR_READ(PESDR0_PLLLCT1) & ~(1 << 24));
+>  	udelay(3);
+> +	printk(KERN_INFO "PCIE initialization OK\n");
+>  
+>  	return 0;
+>  }
+>  
+> -int ppc440spe_init_pcie_rootport(int port)
+> +int ppc440spe_init_pcie_rootport(u32 port)
+>  {
+>  	static int core_init;
+>  	void __iomem *utl_base;
+> +        int attempts;
+>  	u32 val = 0;
+> -	int i;
+>  
+>  	if (!core_init) {
+> +		if(ppc440spe_init_pcie()) {
+> +			return -1;
+> +                }
 
-where you can find the complete PM82x port for the 2.6.14 Kernel.
+Again, the above braces are unnecessary.
 
-Best regards,
-Heiko
+Thanks,
+-Dale Farnsworth
