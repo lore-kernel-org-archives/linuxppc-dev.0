@@ -2,11 +2,11 @@ Return-Path: <benh@kernel.crashing.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc64-dev <linuxppc64-dev@ozlabs.org>
 Content-Type: text/plain
-Date: Tue, 22 Nov 2005 15:45:53 +1100
-Message-Id: <1132634753.26560.128.camel@gaston>
+Date: Tue, 22 Nov 2005 15:49:19 +1100
+Message-Id: <1132634960.26560.133.camel@gaston>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc: Add OF address parsing code
+Subject: [PATCH] powerpc: serial port discovery
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,51 +16,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Parsing addresses extracted from Open Firmware isn't a simple matter. We
-have various bits of code that try to do it in various place, including
-some heuristics in prom.c that pre-parse addresses at boot and fill
-device-nodes "addrs", but those are dodgy at best and I want to
-deprecate them. So this patch introduces a new set of routines that
-should be capable of parsing most types of addresses and translating
-them into CPU physical addresses. It currently works for things on PCI
-busses and ISA busses and should work on "standard" busses like the root
-bus or the MacIO bus that don't put funky flags in addresses. If you
-have other bus types that do use funky flags, you'll have to add new bus
-type translators, which is fairly easy.
+This moves the discovery of legacy serial ports to a separate file,
+makes it common to ppc32 and ppc64, and reworks it to use the new OF
+address translators to get to the ports early. This new version can also
+detect some PCI serial cards using legacy chips and will probably match
+those discovered port with the default console choice.
+
+Only ppc64 gets udbg still yet, unifying udbg isn't finished yet.
+
+It also adds some speed-probing code to udbg so that the default console
+can come up at the same speed it was set to by the firmware.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
-This is not for 2.6.15. It's part of a series of patch which, when complete,
-will unify serial port detection and udbg, and remove completely "addrs"
-and the crappy heuristics from prom.c
+Same comments as for the previous one, this isn't 1.6.15 material.
 
-Index: linux-serialfix/arch/powerpc/kernel/Makefile
-===================================================================
---- linux-serialfix.orig/arch/powerpc/kernel/Makefile	2005-11-22 14:41:26.000000000 +1100
-+++ linux-serialfix/arch/powerpc/kernel/Makefile	2005-11-22 15:43:43.000000000 +1100
-@@ -12,7 +12,8 @@
- endif
- 
- obj-y				:= semaphore.o cputable.o ptrace.o syscalls.o \
--				   irq.o align.o signal_32.o pmc.o vdso.o
-+				   irq.o align.o signal_32.o pmc.o vdso.o \
-+				   prom_parse.o
- obj-y				+= vdso32/
- obj-$(CONFIG_PPC64)		+= setup_64.o binfmt_elf32.o sys_ppc32.o \
- 				   signal_64.o ptrace32.o systbl.o \
-Index: linux-serialfix/arch/powerpc/kernel/prom_parse.c
+Index: linux-serialfix/arch/powerpc/kernel/legacy_serial.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-serialfix/arch/powerpc/kernel/prom_parse.c	2005-11-22 15:11:59.000000000 +1100
-@@ -0,0 +1,404 @@
-+#undef DEBUG
-+
++++ linux-serialfix/arch/powerpc/kernel/legacy_serial.c	2005-11-22 15:43:37.000000000 +1100
+@@ -0,0 +1,478 @@
++#include <linux/config.h>
 +#include <linux/kernel.h>
-+#include <linux/string.h>
-+#include <linux/pci_regs.h>
-+#include <linux/module.h>
++#include <linux/serial.h>
++#include <linux/serial_8250.h>
++#include <linux/serial_core.h>
++#include <linux/console.h>
++#include <linux/pci.h>
++#include <asm/io.h>
++#include <asm/mmu.h>
 +#include <asm/prom.h>
++#include <asm/serial.h>
++#include <asm/udbg.h>
++#include <asm/pci-bridge.h>
++#include <asm/ppc-pci.h>
++
++#undef DEBUG
 +
 +#ifdef DEBUG
 +#define DBG(fmt...) do { printk(fmt); } while(0)
@@ -68,447 +60,1221 @@ Index: linux-serialfix/arch/powerpc/kernel/prom_parse.c
 +#define DBG(fmt...) do { } while(0)
 +#endif
 +
-+/* Max address size we deal with */
-+#define OF_MAX_ADDR_CELLS	4
-+#define OF_CHECK_COUNTS(na, ns)	((na) > 0 && (na) <= OF_MAX_ADDR_CELLS && \
-+			(ns) > 0)
++#define MAX_LEGACY_SERIAL_PORTS	8
 +
-+/* Debug utility */
-+#ifdef DEBUG
-+static void of_dump_addr(const char *s, u32 *addr, int na)
++static struct plat_serial8250_port
++legacy_serial_ports[MAX_LEGACY_SERIAL_PORTS+1];
++static struct legacy_serial_info {
++	struct device_node		*np;
++	unsigned int			speed;
++	unsigned int			clock;
++	phys_addr_t			taddr;
++} legacy_serial_infos[MAX_LEGACY_SERIAL_PORTS];
++static unsigned int legacy_serial_count;
++static int legacy_serial_console = -1;
++
++static int __init add_legacy_port(struct device_node *np, int want_index,
++				  int iotype, phys_addr_t base,
++				  phys_addr_t taddr, unsigned long irq)
 +{
-+	printk("%s", s);
-+	while(na--)
-+		printk(" %08x", *(addr++));
-+	printk("\n");
++	u32 *clk, *spd, clock;
++	int index;
++
++	/* get clock freq. if present */
++	clk = (u32 *)get_property(np, "clock-frequency", NULL);
++	clock = clk ? *clk : BASE_BAUD * 16;
++
++	/* get default speed if present */
++	spd = (u32 *)get_property(np, "current-speed", NULL);
++
++	/* If we have a location index, then try to use it */
++	if (want_index >= 0 && want_index < MAX_LEGACY_SERIAL_PORTS)
++		index = want_index;
++	else
++		index = legacy_serial_count;
++
++	/* if our index is still out of range, that mean that
++	 * array is full, we could scan for a free slot but that
++	 * make little sense to bother, just skip the port
++	 */
++	if (index >= MAX_LEGACY_SERIAL_PORTS)
++		return -1;
++	if (index >= legacy_serial_count)
++		legacy_serial_count = index + 1;
++
++	/* Check if there is a port who already claimed our slot */
++	if (legacy_serial_infos[index].np != 0) {
++		/* if we still have some room, move it, else override */
++		if (legacy_serial_count < MAX_LEGACY_SERIAL_PORTS) {
++			printk(KERN_INFO "Moved legacy port %d -> %d\n",
++			       index, legacy_serial_count);
++			legacy_serial_ports[legacy_serial_count] =
++				legacy_serial_ports[index];
++			legacy_serial_infos[legacy_serial_count] =
++				legacy_serial_infos[index];
++			legacy_serial_count++;
++		} else {
++			printk(KERN_INFO "Replacing legacy port %d\n", index);
++		}
++	}
++
++	/* Now fill the entry */
++	memset(&legacy_serial_ports[index], 0,
++	       sizeof(struct plat_serial8250_port));
++	if (iotype == UPIO_PORT)
++		legacy_serial_ports[index].iobase = base;
++	else
++		legacy_serial_ports[index].membase = (void __iomem *)base;
++	legacy_serial_ports[index].iotype = iotype;
++	legacy_serial_ports[index].uartclk = clock;
++	legacy_serial_ports[index].irq = irq;
++	legacy_serial_ports[index].flags = ASYNC_BOOT_AUTOCONF;
++	legacy_serial_infos[index].taddr = taddr;
++	legacy_serial_infos[index].np = of_node_get(np);
++	legacy_serial_infos[index].clock = clock;
++	legacy_serial_infos[index].speed = spd ? *spd : 0;
++
++	printk(KERN_INFO "Found legacy serial port %d for %s\n",
++	       index, np->full_name);
++	printk(KERN_INFO "  %s=%llx, taddr=%llx, irq=%lx, clk=%d, speed=%d\n",
++	       (iotype == UPIO_PORT) ? "port" : "mem",
++	       (unsigned long long)base, (unsigned long long)taddr, irq,
++	       legacy_serial_ports[index].uartclk,
++	       legacy_serial_infos[index].speed);
++
++	return index;
 +}
-+#else
-+static void of_dump_addr(const char *s, u32 *addr, int na) { }
++
++static int __init add_legacy_isa_port(struct device_node *np,
++				      struct device_node *isa_bridge)
++{
++	u32 *reg;
++	char *typep;
++	int index = -1;
++	phys_addr_t taddr;
++
++	/* Get the ISA port number */
++	reg = (u32 *)get_property(np, "reg", NULL);
++	if (reg == NULL)
++		return -1;
++
++	/* Verify it's an IO port, we don't support anything else */
++	if (!(reg[0] & 0x00000001))
++		return -1;
++
++	/* Now look for an "ibm,aix-loc" property that gives us ordering
++	 * if any...
++	 */
++	typep = (char *)get_property(np, "ibm,aix-loc", NULL);
++
++	/* If we have a location index, then use it */
++	if (typep && *typep == 'S')
++		index = simple_strtol(typep+1, NULL, 0) - 1;
++
++	/* Translate ISA address */
++	taddr = of_translate_address(np, reg);
++
++	/* Add port, irq will be dealt with later */
++	return add_legacy_port(np, index, UPIO_PORT, reg[1], taddr, NO_IRQ);
++
++}
++
++static int __init add_legacy_pci_port(struct device_node *np,
++				      struct device_node *pci_dev)
++{
++	phys_addr_t addr, base;
++	u32 *addrp;
++	int iotype, index = -1;
++
++#if 0
++	/* We only support ports that have a clock frequency properly
++	 * encoded in the device-tree (that is have an fcode). Anything
++	 * else can't be used that early and will be normally probed by
++	 * the generic 8250_pci driver later on.
++	 */
++	if (get_property(np, "clock-frequency", NULL) == NULL)
++		return -1;
 +#endif
 +
-+/* Read a big address */
-+static inline u64 of_read_addr(u32 *cell, int size)
-+{
-+	u64 r = 0;
-+	while (size--)
-+		r = (r << 32) | *(cell++);
-+	return r;
-+}
++	/* Get the PCI address. Assume BAR 0 */
++	addrp = of_get_pci_addr(pci_dev, 0, NULL);
++	if (addrp == NULL)
++		return -1;
 +
-+/* Callbacks for bus specific translators */
-+struct of_bus {
-+	char		*name;
-+	int		(*match)(struct device_node *parent);
-+	void		(*count_cells)(struct device_node *child,
-+				       int *addrc, int *sizec);
-+	u64		(*map)(u32 *addr, u32 *range, int na, int ns, int pna);
-+	int		(*translate)(u32 *addr, u64 offset, int na);
-+};
++	/* We only support BAR 0 for now */
++	iotype = (addrp[0] & 0x02000000) ? UPIO_MEM : UPIO_PORT;
++	addr = of_translate_address(pci_dev, addrp);
 +
++	/* Set the IO base to the same as the translated address for MMIO,
++	 * or to the domain local IO base for PIO (it will be fixed up later)
++	 */
++	if (iotype == UPIO_MEM)
++		base = addr;
++	else
++		base = addrp[2];
 +
-+/*
-+ * Default translator (generic bus)
-+ */
++	/* Try to guess an index... If we have subdevices of the pci dev,
++	 * we get to their "reg" property
++	 */
++	if (np != pci_dev) {
++		u32 *reg = (u32 *)get_property(np, "reg", NULL);
++		if (reg && (*reg < 4))
++			index = legacy_serial_count + *reg;
++	}
 +
-+static void of_default_count_cells(struct device_node *dev,
-+				   int *addrc, int *sizec)
-+{
-+	if (addrc)
-+		*addrc = prom_n_addr_cells(dev);
-+	if (sizec)
-+		*sizec = prom_n_size_cells(dev);
-+}
-+
-+static u64 of_default_map(u32 *addr, u32 *range, int na, int ns, int pna)
-+{
-+	u64 cp, s, da;
-+
-+	cp = of_read_addr(range, na);
-+	s  = of_read_addr(range + na + pna, ns);
-+	da = of_read_addr(addr, na);
-+
-+	DBG("OF: default map, cp=%lx, s=%lx, da=%lx\n", cp, s, da);
-+
-+	if (da < cp || da >= (cp + s))
-+		return OF_BAD_ADDR;
-+	return da - cp;
-+}
-+
-+static int of_default_translate(u32 *addr, u64 offset, int na)
-+{
-+	u64 a = of_read_addr(addr, na);
-+	memset(addr, 0, na * 4);
-+	a += offset;
-+	if (na > 1)
-+		addr[na - 2] = a >> 32;
-+	addr[na - 1] = a & 0xffffffffu;
-+
-+	return 0;
-+}
-+
-+
-+/*
-+ * PCI bus specific translator
-+ */
-+
-+static int of_bus_pci_match(struct device_node *np)
-+{
-+	return !strcmp(np->type, "pci");
-+}
-+
-+static void of_bus_pci_count_cells(struct device_node *np,
-+				   int *addrc, int *sizec)
-+{
-+	if (addrc)
-+		*addrc = 3;
-+	if (sizec)
-+		*sizec = 2;
-+}
-+
-+static u64 of_bus_pci_map(u32 *addr, u32 *range, int na, int ns, int pna)
-+{
-+	u64 cp, s, da;
-+
-+	/* Check address type match */
-+	if ((addr[0] ^ range[0]) & 0x03000000)
-+		return OF_BAD_ADDR;
-+
-+	/* Read address values, skipping high cell */
-+	cp = of_read_addr(range + 1, na - 1);
-+	s  = of_read_addr(range + na + pna, ns);
-+	da = of_read_addr(addr + 1, na - 1);
-+
-+	DBG("OF: PCI map, cp=%lx, s=%lx, da=%lx\n", cp, s, da);
-+
-+	if (da < cp || da >= (cp + s))
-+		return OF_BAD_ADDR;
-+	return da - cp;
-+}
-+
-+static int of_bus_pci_translate(u32 *addr, u64 offset, int na)
-+{
-+	return of_default_translate(addr + 1, offset, na - 1);
++	/* Add port, irq will be dealt with later. We passed a translated
++	 * IO port value. It will be fixed up later along with the irq
++	 */
++	return add_legacy_port(np, index, iotype, base, addr, NO_IRQ);
 +}
 +
 +/*
-+ * ISA bus specific translator
++ * This is called very early, as part of setup_system() or eventually
++ * setup_arch(), basically before anything else in this file. This function
++ * will try to build a list of all the available 8250-compatible serial ports
++ * in the machine using the Open Firmware device-tree. It currently only deals
++ * with ISA and PCI busses but could be extended. It allows a very early boot
++ * console to be initialized, that list is also used later to provide 8250 with
++ * the machine non-PCI ports and to properly pick the default console port
 + */
-+
-+static int of_bus_isa_match(struct device_node *np)
++void __init find_legacy_serial_ports(void)
 +{
-+	return !strcmp(np->name, "isa");
++	struct device_node *np, *stdout;
++	char *path;
++	int index;
++
++	DBG(" -> find_legacy_serial_port()\n");
++
++	/* Now find out if one of these is out firmware console */
++	path = (char *)get_property(of_chosen, "linux,stdout-path", NULL);
++	if (path == NULL) {
++		DBG(" no linux,stdout-path !\n");
++		return;
++	}
++	stdout = of_find_node_by_path(path);
++	if (stdout) {
++		DBG("stdout is %s\n", stdout->full_name);
++	}
++
++	/* First fill our array with ISA ports */
++	for (np = NULL; (np = of_find_node_by_type(np, "serial"));) {
++		struct device_node *isa = of_get_parent(np);
++		if (isa && !strcmp(isa->name, "isa")) {
++			index = add_legacy_isa_port(np, isa);
++			if (index >= 0 && np == stdout)
++				legacy_serial_console = index;
++		}
++		of_node_put(isa);
++	}
++
++	/* Next, try to locate PCI ports */
++	for (np = NULL; (np = of_find_all_nodes(np));) {
++		struct device_node *pci, *parent = of_get_parent(np);
++		if (parent && !strcmp(parent->name, "isa")) {
++			of_node_put(parent);
++			continue;
++		}
++		if (strcmp(np->name, "serial") && strcmp(np->type, "serial")) {
++			of_node_put(parent);
++			continue;
++		}
++		/* Check for known pciclass, and also check wether we have
++		 * a device with child nodes for ports or not
++		 */
++		if (device_is_compatible(np, "pciclass,0700") ||
++		    device_is_compatible(np, "pciclass,070002"))
++			pci = np;
++		else if (device_is_compatible(parent, "pciclass,0700") ||
++			 device_is_compatible(parent, "pciclass,070002"))
++			pci = parent;
++		else {
++			of_node_put(parent);
++			continue;
++		}
++		index = add_legacy_pci_port(np, pci);
++		if (index >= 0 && np == stdout)
++			legacy_serial_console = index;
++		of_node_put(parent);
++	}
++
++	DBG("legacy_serial_console = %d\n", legacy_serial_console);
++
++	/* udbg is 64 bits only for now, that will change soon though ... */
++#ifdef CONFIG_PPC64
++	while (legacy_serial_console >= 0) {
++		struct legacy_serial_info *info =
++			&legacy_serial_infos[legacy_serial_console];
++		void __iomem *addr;
++
++		if (info->taddr == 0)
++			break;
++		addr = ioremap(info->taddr, 0x1000);
++		if (addr == NULL)
++			break;
++		if (info->speed == 0)
++			info->speed = udbg_probe_uart_speed(addr, info->clock);
++		DBG("default console speed = %d\n", info->speed);
++		udbg_init_uart(addr, info->speed, info->clock);
++		break;
++	}
++#endif /* CONFIG_PPC64 */
++
++	DBG(" <- find_legacy_serial_port()\n");
 +}
 +
-+static void of_bus_isa_count_cells(struct device_node *child,
-+				   int *addrc, int *sizec)
-+{
-+	if (addrc)
-+		*addrc = 2;
-+	if (sizec)
-+		*sizec = 1;
-+}
-+
-+static u64 of_bus_isa_map(u32 *addr, u32 *range, int na, int ns, int pna)
-+{
-+	u64 cp, s, da;
-+
-+	/* Check address type match */
-+	if ((addr[0] ^ range[0]) & 0x00000001)
-+		return OF_BAD_ADDR;
-+
-+	/* Read address values, skipping high cell */
-+	cp = of_read_addr(range + 1, na - 1);
-+	s  = of_read_addr(range + na + pna, ns);
-+	da = of_read_addr(addr + 1, na - 1);
-+
-+	DBG("OF: ISA map, cp=%lx, s=%lx, da=%lx\n", cp, s, da);
-+
-+	if (da < cp || da >= (cp + s))
-+		return OF_BAD_ADDR;
-+	return da - cp;
-+}
-+
-+static int of_bus_isa_translate(u32 *addr, u64 offset, int na)
-+{
-+	return of_default_translate(addr + 1, offset, na - 1);
-+}
-+
-+/*
-+ * Array of bus specific translators
-+ */
-+
-+static struct of_bus of_busses[] = {
-+	/* PCI */
-+	{
-+		.name = "pci",
-+		.match = of_bus_pci_match,
-+		.count_cells = of_bus_pci_count_cells,
-+		.map = of_bus_pci_map,
-+		.translate = of_bus_pci_translate,
-+	},
-+	/* ISA */
-+	{
-+		.name = "isa",
-+		.match = of_bus_isa_match,
-+		.count_cells = of_bus_isa_count_cells,
-+		.map = of_bus_isa_map,
-+		.translate = of_bus_isa_translate,
-+	},
-+	/* Default */
-+	{
-+		.name = "default",
-+		.match = NULL,
-+		.count_cells = of_default_count_cells,
-+		.map = of_default_map,
-+		.translate = of_default_translate,
++static struct platform_device serial_device = {
++	.name	= "serial8250",
++	.id	= PLAT8250_DEV_PLATFORM,
++	.dev	= {
++		.platform_data = legacy_serial_ports,
 +	},
 +};
 +
-+static struct of_bus *of_match_bus(struct device_node *np)
++static void __init fixup_port_irq(int index,
++				  struct device_node *np,
++				  struct plat_serial8250_port *port)
++{
++	DBG("fixup_port_irq(%d)\n", index);
++
++	/* Check for interrupts in that node */
++	if (np->n_intrs > 0) {
++		port->irq = np->intrs[0].line;
++		DBG(" port %d (%s), irq=%d\n",
++		    index, np->full_name, port->irq);
++		return;
++	}
++
++	/* Check for interrupts in the parent */
++	np = of_get_parent(np);
++	if (np == NULL)
++		return;
++
++	if (np->n_intrs > 0) {
++		port->irq = np->intrs[0].line;
++		DBG(" port %d (%s), irq=%d\n",
++		    index, np->full_name, port->irq);
++	}
++	of_node_put(np);
++}
++
++static void __init fixup_port_pio(int index,
++				  struct device_node *np,
++				  struct plat_serial8250_port *port)
++{
++	struct pci_controller *hose;
++
++	DBG("fixup_port_pio(%d)\n", index);
++
++	hose = pci_find_hose_for_OF_device(np);
++	if (hose) {
++		unsigned long offset = (unsigned long)hose->io_base_virt -
++#ifdef CONFIG_PPC64
++			pci_io_base;
++#else
++			isa_io_base;
++#endif
++		DBG("port %d, IO %lx -> %lx\n",
++		    index, port->iobase, port->iobase + offset);
++		port->iobase += offset;
++	}
++}
++
++/*
++ * This is called as an arch initcall, hopefully before the PCI bus is
++ * probed and/or the 8250 driver loaded since we need to register our
++ * platform devices before 8250 PCI ones are detected as some of them
++ * must properly "override" the platform ones.
++ *
++ * This function fixes up the interrupt value for platform ports as it
++ * couldn't be done earlier before interrupt maps have been parsed. It
++ * also "corrects" the IO address for PIO ports for the same reason,
++ * since earlier, the PHBs virtual IO space wasn't assigned yet. It then
++ * registers all those platform ports for use by the 8250 driver when it
++ * finally loads.
++ */
++static int __init serial_dev_init(void)
 +{
 +	int i;
 +
-+	for (i = 0; i < ARRAY_SIZE(of_busses); i ++)
-+		if (!of_busses[i].match || of_busses[i].match(np))
-+			return &of_busses[i];
-+	BUG();
-+	return NULL;
++	if (legacy_serial_count == 0)
++		return -ENODEV;
++
++	/*
++	 * Before we register the platfrom serial devices, we need
++	 * to fixup their interrutps and their IO ports.
++	 */
++	DBG("Fixing serial ports interrupts and IO ports ...\n");
++
++	for (i = 0; i < legacy_serial_count; i++) {
++		struct plat_serial8250_port *port = &legacy_serial_ports[i];
++		struct device_node *np = legacy_serial_infos[i].np;
++
++		if (port->irq == NO_IRQ)
++			fixup_port_irq(i, np, port);
++		if (port->iotype == UPIO_PORT)
++			fixup_port_pio(i, np, port);
++	}
++
++	DBG("Registering platform serial ports\n");
++
++	return platform_device_register(&serial_device);
 +}
-+
-+static int of_translate_one(struct device_node *parent, struct of_bus *bus,
-+			    struct of_bus *pbus, u32 *addr,
-+			    int na, int ns, int pna)
-+{
-+	u32 *ranges;
-+	unsigned int rlen;
-+	int rone;
-+	u64 offset = OF_BAD_ADDR;
-+
-+	/* No "ranges" property is not an error */
-+	ranges = (u32 *)get_property(parent, "ranges", &rlen);
-+	if (ranges == NULL) {
-+		offset = of_read_addr(addr, na);
-+		memset(addr, 0, pna);
-+		goto finish;
-+	}
-+
-+	DBG("OF: walking ranges...\n");
-+
-+	/* Now walk through the ranges */
-+	rlen /= 4;
-+	rone = na + pna + ns;
-+	for (; rlen >= rone; rlen -= rone, ranges += rone) {
-+		offset = bus->map(addr, ranges, na, ns, pna);
-+		if (offset != OF_BAD_ADDR)
-+			break;
-+	}
-+	if (offset == OF_BAD_ADDR) {
-+		DBG("OF: not found !\n");
-+		return 1;
-+	}
-+	memcpy(addr, ranges + na, 4 * pna);
-+
-+ finish:
-+	of_dump_addr("OF: parent translation for:", addr, pna);
-+	DBG("OF: with offset: %lx\n", offset);
-+
-+	/* Translate it into parent bus space */
-+	return pbus->translate(addr, offset, pna);
-+}
++arch_initcall(serial_dev_init);
 +
 +
 +/*
-+ * Translate an address from the device-tree into a CPU physical address,
-+ * this walks up the tree and applies the various bus mappings on the
-+ * way.
-+ *
-+ * Note: We consider that crossing any level with #size-cells == 0 to mean
-+ * that translation is impossible (that is we are not dealing with a value
-+ * that can be mapped to a cpu physical address). This is not really specified
-+ * that way, but this is traditionally the way IBM at least do things
++ * This is called very early, as part of console_init() (typically just after
++ * time_init()). This function is respondible for trying to find a good
++ * default console on serial ports. It tries to match the open firmware
++ * default output with one of the available serial console drivers, either
++ * one of the platform serial ports that have been probed earlier by
++ * find_legacy_serial_ports() or some more platform specific ones.
 + */
-+u64 of_translate_address(struct device_node *dev, u32 *in_addr)
++static int __init check_legacy_serial_console(void)
 +{
-+	struct device_node *parent = NULL;
-+	struct of_bus *bus, *pbus;
-+	u32 addr[OF_MAX_ADDR_CELLS];
-+	int na, ns, pna, pns;
-+	u64 result = OF_BAD_ADDR;
++	struct device_node *prom_stdout = NULL;
++	int speed = 0, offset = 0;
++	char *name;
++	u32 *spd;
 +
-+	DBG("OF: ** translation for device %s **\n", dev->full_name);
++	DBG(" -> check_legacy_serial_console()\n");
 +
-+	/* Increase refcount at current level */
-+	of_node_get(dev);
-+
-+	/* Get parent & match bus type */
-+	parent = of_get_parent(dev);
-+	if (parent == NULL)
-+		goto bail;
-+	bus = of_match_bus(parent);
-+
-+	/* Cound address cells & copy address locally */
-+	bus->count_cells(dev, &na, &ns);
-+	if (!OF_CHECK_COUNTS(na, ns)) {
-+		printk(KERN_ERR "prom_parse: Bad cell count for %s\n",
-+		       dev->full_name);
-+		goto bail;
++	/* The user has requested a console so this is already set up. */
++	if (strstr(saved_command_line, "console=")) {
++		DBG(" console was specified !\n");
++		return -EBUSY;
 +	}
-+	memcpy(addr, in_addr, na * 4);
 +
-+	DBG("OF: bus is %s (na=%d, ns=%d) on %s\n",
-+	    bus->name, na, ns, parent->full_name);
-+	of_dump_addr("OF: translating address:", addr, na);
++	if (!of_chosen) {
++		DBG(" of_chosen is NULL !\n");
++		return -ENODEV;
++	}
++	/* We are getting a weird phandle from OF ... */
++	/* ... So use the full path instead */
++	name = (char *)get_property(of_chosen, "linux,stdout-path", NULL);
++	if (name == NULL) {
++		DBG(" no linux,stdout-path !\n");
++		return -ENODEV;
++	}
++	prom_stdout = of_find_node_by_path(name);
++	if (!prom_stdout) {
++		DBG(" can't find stdout package %s !\n", name);
++		return -ENODEV;
++	}
++	DBG("stdout is %s\n", prom_stdout->full_name);
 +
-+	/* Translate */
-+	for (;;) {
-+		/* Switch to parent bus */
-+		of_node_put(dev);
-+		dev = parent;
-+		parent = of_get_parent(dev);
++	name = (char *)get_property(prom_stdout, "name", NULL);
++	if (!name) {
++		DBG(" stdout package has no name !\n");
++		goto not_found;
++	}
++	spd = (u32 *)get_property(prom_stdout, "current-speed", NULL);
++	if (spd)
++		speed = *spd;
 +
-+		/* If root, we have finished */
-+		if (parent == NULL) {
-+			DBG("OF: reached root node\n");
-+			result = of_read_addr(addr, na);
++	if (0)
++		;
++#ifdef CONFIG_SERIAL_8250_CONSOLE
++	else if (strcmp(name, "serial") == 0) {
++		int i;
++		/* Look for it in probed array */
++		for (i = 0; i < legacy_serial_count; i++) {
++			if (prom_stdout != legacy_serial_infos[i].np)
++				continue;
++			offset = i;
++			speed = legacy_serial_infos[i].speed;
 +			break;
 +		}
-+
-+		/* Get new parent bus and counts */
-+		pbus = of_match_bus(parent);
-+		pbus->count_cells(dev, &pna, &pns);
-+		if (!OF_CHECK_COUNTS(pna, pns)) {
-+			printk(KERN_ERR "prom_parse: Bad cell count for %s\n",
-+			       dev->full_name);
-+			break;
-+		}
-+
-+		DBG("OF: parent bus is %s (na=%d, ns=%d) on %s\n",
-+		    pbus->name, pna, pns, parent->full_name);
-+
-+		/* Apply bus translation */
-+		if (of_translate_one(dev, bus, pbus, addr, na, ns, pna))
-+			break;
-+
-+		/* Complete the move up one level */
-+		na = pna;
-+		ns = pns;
-+		bus = pbus;
-+
-+		of_dump_addr("OF: one level translation:", addr, na);
++		if (i >= legacy_serial_count)
++			goto not_found;
 +	}
-+ bail:
-+	of_node_put(parent);
-+	of_node_put(dev);
++#endif /* CONFIG_SERIAL_8250_CONSOLE */
++#ifdef CONFIG_SERIAL_PMACZILOG_CONSOLE
++	else if (strcmp(name, "ch-a") == 0)
++		offset = 0;
++	else if (strcmp(name, "ch-b") == 0)
++		offset = 1;
++#endif /* CONFIG_SERIAL_PMACZILOG_CONSOLE */
++	else
++		goto not_found;
++	of_node_put(prom_stdout);
 +
-+	return result;
++	DBG("Found serial console at ttyS%d\n", offset);
++
++	if (speed) {
++		static char __initdata opt[16];
++		sprintf(opt, "%d", speed);
++		return add_preferred_console("ttyS", offset, opt);
++	} else
++		return add_preferred_console("ttyS", offset, NULL);
++
++ not_found:
++	DBG("No preferred console found !\n");
++	of_node_put(prom_stdout);
++	return -ENODEV;
 +}
-+EXPORT_SYMBOL(of_translate_address);
++console_initcall(check_legacy_serial_console);
 +
-+u32 *of_get_address(struct device_node *dev, int index, u64 *size)
+Index: linux-serialfix/arch/powerpc/kernel/Makefile
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/kernel/Makefile	2005-11-22 15:12:17.000000000 +1100
++++ linux-serialfix/arch/powerpc/kernel/Makefile	2005-11-22 15:12:20.000000000 +1100
+@@ -32,10 +32,6 @@
+ obj-$(CONFIG_LPARCFG)		+= lparcfg.o
+ obj-$(CONFIG_IBMVIO)		+= vio.o
+ obj-$(CONFIG_GENERIC_TBSYNC)	+= smp-tbsync.o
+-obj-$(CONFIG_PPC_PSERIES)	+= udbg_16550.o
+-obj-$(CONFIG_PPC_MAPLE)		+= udbg_16550.o
+-udbgscc-$(CONFIG_PPC64)		:= udbg_scc.o
+-obj-$(CONFIG_PPC_PMAC)		+= $(udbgscc-y)
+ obj64-$(CONFIG_PPC_MULTIPLATFORM) += nvram_64.o
+ 
+ ifeq ($(CONFIG_PPC_MERGE),y)
+@@ -58,14 +54,15 @@
+ obj-$(CONFIG_6xx)		+= idle_6xx.o
+ obj-$(CONFIG_SMP)		+= smp.o
+ obj-$(CONFIG_KPROBES)		+= kprobes.o
+-
++obj-$(CONFIG_PPC_MULTIPLATFORM) += legacy_serial.o
++obj64-$(CONFIG_PPC_MULTIPLATFORM) += udbg_16550.o
++obj64-$(CONFIG_PPC_PMAC)	+= udbg_scc.o
+ module-$(CONFIG_PPC64)		+= module_64.o
+ obj-$(CONFIG_MODULES)		+= $(module-y)
+ 
+ pci64-$(CONFIG_PPC64)		+= pci_64.o pci_dn.o pci_iommu.o \
+ 				   pci_direct_iommu.o iomap.o
+ obj-$(CONFIG_PCI)		+= $(pci64-y)
+-
+ kexec64-$(CONFIG_PPC64)		+= machine_kexec_64.o
+ obj-$(CONFIG_KEXEC)		+= $(kexec64-y)
+ 
+Index: linux-serialfix/arch/powerpc/kernel/setup-common.c
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/kernel/setup-common.c	2005-11-22 15:12:17.000000000 +1100
++++ linux-serialfix/arch/powerpc/kernel/setup-common.c	2005-11-22 15:12:20.000000000 +1100
+@@ -294,129 +294,6 @@
+ 	.show =	show_cpuinfo,
+ };
+ 
+-#ifdef CONFIG_PPC_MULTIPLATFORM
+-static int __init set_preferred_console(void)
+-{
+-	struct device_node *prom_stdout = NULL;
+-	char *name;
+-	u32 *spd;
+-	int offset = 0;
+-
+-	DBG(" -> set_preferred_console()\n");
+-
+-	/* The user has requested a console so this is already set up. */
+-	if (strstr(saved_command_line, "console=")) {
+-		DBG(" console was specified !\n");
+-		return -EBUSY;
+-	}
+-
+-	if (!of_chosen) {
+-		DBG(" of_chosen is NULL !\n");
+-		return -ENODEV;
+-	}
+-	/* We are getting a weird phandle from OF ... */
+-	/* ... So use the full path instead */
+-	name = (char *)get_property(of_chosen, "linux,stdout-path", NULL);
+-	if (name == NULL) {
+-		DBG(" no linux,stdout-path !\n");
+-		return -ENODEV;
+-	}
+-	prom_stdout = of_find_node_by_path(name);
+-	if (!prom_stdout) {
+-		DBG(" can't find stdout package %s !\n", name);
+-		return -ENODEV;
+-	}	
+-	DBG("stdout is %s\n", prom_stdout->full_name);
+-
+-	name = (char *)get_property(prom_stdout, "name", NULL);
+-	if (!name) {
+-		DBG(" stdout package has no name !\n");
+-		goto not_found;
+-	}
+-	spd = (u32 *)get_property(prom_stdout, "current-speed", NULL);
+-
+-	if (0)
+-		;
+-#ifdef CONFIG_SERIAL_8250_CONSOLE
+-	else if (strcmp(name, "serial") == 0) {
+-		int i;
+-		u32 *reg = (u32 *)get_property(prom_stdout, "reg", &i);
+-		if (i > 8) {
+-			switch (reg[1]) {
+-				case 0x3f8:
+-					offset = 0;
+-					break;
+-				case 0x2f8:
+-					offset = 1;
+-					break;
+-				case 0x898:
+-					offset = 2;
+-					break;
+-				case 0x890:
+-					offset = 3;
+-					break;
+-				default:
+-					/* We dont recognise the serial port */
+-					goto not_found;
+-			}
+-		}
+-	}
+-#endif /* CONFIG_SERIAL_8250_CONSOLE */
+-#ifdef CONFIG_PPC_PSERIES
+-	else if (strcmp(name, "vty") == 0) {
+- 		u32 *reg = (u32 *)get_property(prom_stdout, "reg", NULL);
+- 		char *compat = (char *)get_property(prom_stdout, "compatible", NULL);
+-
+- 		if (reg && compat && (strcmp(compat, "hvterm-protocol") == 0)) {
+- 			/* Host Virtual Serial Interface */
+- 			switch (reg[0]) {
+- 				case 0x30000000:
+- 					offset = 0;
+- 					break;
+- 				case 0x30000001:
+- 					offset = 1;
+- 					break;
+- 				default:
+-					goto not_found;
+- 			}
+-			of_node_put(prom_stdout);
+-			DBG("Found hvsi console at offset %d\n", offset);
+- 			return add_preferred_console("hvsi", offset, NULL);
+- 		} else {
+- 			/* pSeries LPAR virtual console */
+-			of_node_put(prom_stdout);
+-			DBG("Found hvc console\n");
+- 			return add_preferred_console("hvc", 0, NULL);
+- 		}
+-	}
+-#endif /* CONFIG_PPC_PSERIES */
+-#ifdef CONFIG_SERIAL_PMACZILOG_CONSOLE
+-	else if (strcmp(name, "ch-a") == 0)
+-		offset = 0;
+-	else if (strcmp(name, "ch-b") == 0)
+-		offset = 1;
+-#endif /* CONFIG_SERIAL_PMACZILOG_CONSOLE */
+-	else
+-		goto not_found;
+-	of_node_put(prom_stdout);
+-
+-	DBG("Found serial console at ttyS%d\n", offset);
+-
+-	if (spd) {
+-		static char __initdata opt[16];
+-		sprintf(opt, "%d", *spd);
+-		return add_preferred_console("ttyS", offset, opt);
+-	} else
+-		return add_preferred_console("ttyS", offset, NULL);
+-
+- not_found:
+-	DBG("No preferred console found !\n");
+-	of_node_put(prom_stdout);
+-	return -ENODEV;
+-}
+-console_initcall(set_preferred_console);
+-#endif /* CONFIG_PPC_MULTIPLATFORM */
+-
+ void __init check_for_initrd(void)
+ {
+ #ifdef CONFIG_BLK_DEV_INITRD
+Index: linux-serialfix/arch/powerpc/kernel/setup_64.c
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/kernel/setup_64.c	2005-11-22 15:12:17.000000000 +1100
++++ linux-serialfix/arch/powerpc/kernel/setup_64.c	2005-11-22 15:12:20.000000000 +1100
+@@ -451,6 +451,15 @@
+ 	 */
+ 	ppc_md.init_early();
+ 
++ 	/*
++	 * We can discover serial ports now since the above did setup the
++	 * hash table management for us, thus ioremap works. We do that early
++	 * so that further code can be debugged
++	 */
++#ifdef CONFIG_PPC_MULTIPLATFORM
++	find_legacy_serial_ports();
++#endif
++
+ 	/*
+ 	 * "Finish" the device-tree, that is do the actual parsing of
+ 	 * some of the properties like the interrupt map
+@@ -649,187 +658,6 @@
+ 	printk("[terminate]%04x %s\n", src, msg);
+ }
+ 
+-#ifndef CONFIG_PPC_ISERIES
+-/*
+- * This function can be used by platforms to "find" legacy serial ports.
+- * It works for "serial" nodes under an "isa" node, and will try to
+- * respect the "ibm,aix-loc" property if any. It works with up to 8
+- * ports.
+- */
+-
+-#define MAX_LEGACY_SERIAL_PORTS	8
+-static struct plat_serial8250_port serial_ports[MAX_LEGACY_SERIAL_PORTS+1];
+-static unsigned int old_serial_count;
+-
+-void __init generic_find_legacy_serial_ports(u64 *physport,
+-		unsigned int *default_speed)
+-{
+-	struct device_node *np;
+-	u32 *sizeprop;
+-
+-	struct isa_reg_property {
+-		u32 space;
+-		u32 address;
+-		u32 size;
+-	};
+-	struct pci_reg_property {
+-		struct pci_address addr;
+-		u32 size_hi;
+-		u32 size_lo;
+-	};                                                                        
+-
+-	DBG(" -> generic_find_legacy_serial_port()\n");
+-
+-	*physport = 0;
+-	if (default_speed)
+-		*default_speed = 0;
+-
+-	np = of_find_node_by_path("/");
+-	if (!np)
+-		return;
+-
+-	/* First fill our array */
+-	for (np = NULL; (np = of_find_node_by_type(np, "serial"));) {
+-		struct device_node *isa, *pci;
+-		struct isa_reg_property *reg;
+-		unsigned long phys_size, addr_size, io_base;
+-		u32 *rangesp;
+-		u32 *interrupts, *clk, *spd;
+-		char *typep;
+-		int index, rlen, rentsize;
+-
+-		/* Ok, first check if it's under an "isa" parent */
+-		isa = of_get_parent(np);
+-		if (!isa || strcmp(isa->name, "isa")) {
+-			DBG("%s: no isa parent found\n", np->full_name);
+-			continue;
+-		}
+-		
+-		/* Now look for an "ibm,aix-loc" property that gives us ordering
+-		 * if any...
+-		 */
+-	 	typep = (char *)get_property(np, "ibm,aix-loc", NULL);
+-
+-		/* Get the ISA port number */
+-		reg = (struct isa_reg_property *)get_property(np, "reg", NULL);	
+-		if (reg == NULL)
+-			goto next_port;
+-		/* We assume the interrupt number isn't translated ... */
+-		interrupts = (u32 *)get_property(np, "interrupts", NULL);
+-		/* get clock freq. if present */
+-		clk = (u32 *)get_property(np, "clock-frequency", NULL);
+-		/* get default speed if present */
+-		spd = (u32 *)get_property(np, "current-speed", NULL);
+-		/* Default to locate at end of array */
+-		index = old_serial_count; /* end of the array by default */
+-
+-		/* If we have a location index, then use it */
+-		if (typep && *typep == 'S') {
+-			index = simple_strtol(typep+1, NULL, 0) - 1;
+-			/* if index is out of range, use end of array instead */
+-			if (index >= MAX_LEGACY_SERIAL_PORTS)
+-				index = old_serial_count;
+-			/* if our index is still out of range, that mean that
+-			 * array is full, we could scan for a free slot but that
+-			 * make little sense to bother, just skip the port
+-			 */
+-			if (index >= MAX_LEGACY_SERIAL_PORTS)
+-				goto next_port;
+-			if (index >= old_serial_count)
+-				old_serial_count = index + 1;
+-			/* Check if there is a port who already claimed our slot */
+-			if (serial_ports[index].iobase != 0) {
+-				/* if we still have some room, move it, else override */
+-				if (old_serial_count < MAX_LEGACY_SERIAL_PORTS) {
+-					DBG("Moved legacy port %d -> %d\n", index,
+-					    old_serial_count);
+-					serial_ports[old_serial_count++] =
+-						serial_ports[index];
+-				} else {
+-					DBG("Replacing legacy port %d\n", index);
+-				}
+-			}
+-		}
+-		if (index >= MAX_LEGACY_SERIAL_PORTS)
+-			goto next_port;
+-		if (index >= old_serial_count)
+-			old_serial_count = index + 1;
+-
+-		/* Now fill the entry */
+-		memset(&serial_ports[index], 0, sizeof(struct plat_serial8250_port));
+-		serial_ports[index].uartclk = clk ? *clk : BASE_BAUD * 16;
+-		serial_ports[index].iobase = reg->address;
+-		serial_ports[index].irq = interrupts ? interrupts[0] : 0;
+-		serial_ports[index].flags = ASYNC_BOOT_AUTOCONF;
+-
+-		DBG("Added legacy port, index: %d, port: %x, irq: %d, clk: %d\n",
+-		    index,
+-		    serial_ports[index].iobase,
+-		    serial_ports[index].irq,
+-		    serial_ports[index].uartclk);
+-
+-		/* Get phys address of IO reg for port 1 */
+-		if (index != 0)
+-			goto next_port;
+-
+-		pci = of_get_parent(isa);
+-		if (!pci) {
+-			DBG("%s: no pci parent found\n", np->full_name);
+-			goto next_port;
+-		}
+-
+-		rangesp = (u32 *)get_property(pci, "ranges", &rlen);
+-		if (rangesp == NULL) {
+-			of_node_put(pci);
+-			goto next_port;
+-		}
+-		rlen /= 4;
+-
+-		/* we need the #size-cells of the PCI bridge node itself */
+-		phys_size = 1;
+-		sizeprop = (u32 *)get_property(pci, "#size-cells", NULL);
+-		if (sizeprop != NULL)
+-			phys_size = *sizeprop;
+-		/* we need the parent #addr-cells */
+-		addr_size = prom_n_addr_cells(pci);
+-		rentsize = 3 + addr_size + phys_size;
+-		io_base = 0;
+-		for (;rlen >= rentsize; rlen -= rentsize,rangesp += rentsize) {
+-			if (((rangesp[0] >> 24) & 0x3) != 1)
+-				continue; /* not IO space */
+-			io_base = rangesp[3];
+-			if (addr_size == 2)
+-				io_base = (io_base << 32) | rangesp[4];
+-		}
+-		if (io_base != 0) {
+-			*physport = io_base + reg->address;
+-			if (default_speed && spd)
+-				*default_speed = *spd;
+-		}
+-		of_node_put(pci);
+-	next_port:
+-		of_node_put(isa);
+-	}
+-
+-	DBG(" <- generic_find_legacy_serial_port()\n");
+-}
+-
+-static struct platform_device serial_device = {
+-	.name	= "serial8250",
+-	.id	= PLAT8250_DEV_PLATFORM,
+-	.dev	= {
+-		.platform_data = serial_ports,
+-	},
+-};
+-
+-static int __init serial_dev_init(void)
+-{
+-	return platform_device_register(&serial_device);
+-}
+-arch_initcall(serial_dev_init);
+-
+-#endif /* CONFIG_PPC_ISERIES */
+-
+ int check_legacy_ioport(unsigned long base_port)
+ {
+ 	if (ppc_md.check_legacy_ioport == NULL)
+Index: linux-serialfix/arch/powerpc/kernel/udbg_16550.c
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/kernel/udbg_16550.c	2005-11-22 15:12:17.000000000 +1100
++++ linux-serialfix/arch/powerpc/kernel/udbg_16550.c	2005-11-22 15:12:20.000000000 +1100
+@@ -43,6 +43,8 @@
+ #define LSR_TEMT 0x40  /* Xmitter empty */
+ #define LSR_ERR  0x80  /* Error */
+ 
++#define LCR_DLAB 0x80
++
+ static volatile struct NS16550 __iomem *udbg_comport;
+ 
+ static void udbg_550_putc(unsigned char c)
+@@ -77,29 +79,70 @@
+ 	return 0;
+ }
+ 
+-void udbg_init_uart(void __iomem *comport, unsigned int speed)
++void udbg_init_uart(void __iomem *comport, unsigned int speed,
++		    unsigned int clock)
+ {
+-	u16 dll = speed ? (115200 / speed) : 12;
++	unsigned int dll, base_bauds = clock / 16;
++
++	if (speed == 0)
++		speed = 9600;
++	dll = base_bauds / speed;
+ 
+ 	if (comport) {
+ 		udbg_comport = (struct NS16550 __iomem *)comport;
+ 		out_8(&udbg_comport->lcr, 0x00);
+ 		out_8(&udbg_comport->ier, 0xff);
+ 		out_8(&udbg_comport->ier, 0x00);
+-		out_8(&udbg_comport->lcr, 0x80);	/* Access baud rate */
+-		out_8(&udbg_comport->dll, dll & 0xff);	/* 1 = 115200,  2 = 57600,
+-							   3 = 38400, 12 = 9600 baud */
+-		out_8(&udbg_comport->dlm, dll >> 8);	/* dll >> 8 which should be zero
+-							   for fast rates; */
+-		out_8(&udbg_comport->lcr, 0x03);	/* 8 data, 1 stop, no parity */
+-		out_8(&udbg_comport->mcr, 0x03);	/* RTS/DTR */
+-		out_8(&udbg_comport->fcr ,0x07);	/* Clear & enable FIFOs */
++		out_8(&udbg_comport->lcr, LCR_DLAB);
++		out_8(&udbg_comport->dll, dll & 0xff);
++		out_8(&udbg_comport->dlm, dll >> 8);
++		/* 8 data, 1 stop, no parity */
++		out_8(&udbg_comport->lcr, 0x03);
++		/* RTS/DTR */
++		out_8(&udbg_comport->mcr, 0x03);
++		/* Clear & enable FIFOs */
++		out_8(&udbg_comport->fcr ,0x07);
+ 		udbg_putc = udbg_550_putc;
+ 		udbg_getc = udbg_550_getc;
+ 		udbg_getc_poll = udbg_550_getc_poll;
+ 	}
+ }
+ 
++unsigned int udbg_probe_uart_speed(void __iomem *comport, unsigned int clock)
 +{
-+	u32 *prop;
-+	unsigned int psize;
-+	struct device_node *parent;
-+	struct of_bus *bus;
-+	int onesize, i, na, ns;
++	unsigned int dll, dlm, divisor, prescaler, speed;
++	u8 old_lcr;
++	volatile struct NS16550 __iomem *port = comport;
 +
-+	/* Get "reg" property */
-+	prop = (u32 *)get_property(dev, "reg", &psize);
-+	if (prop == NULL)
-+		return NULL;
-+	psize /= 4;
++	old_lcr = in_8(&port->lcr);
 +
-+	/* Get parent & match bus type */
-+	parent = of_get_parent(dev);
-+	if (parent == NULL)
-+		return NULL;
-+	bus = of_match_bus(parent);
-+	bus->count_cells(dev, &na, &ns);
-+	of_node_put(parent);
-+	if (!OF_CHECK_COUNTS(na, ns))
-+		return NULL;
++	/* select divisor latch registers.  */
++	out_8(&port->lcr, LCR_DLAB);
 +
-+	onesize = na + ns;
-+	for (i = 0; psize >= onesize; psize -= onesize, prop += onesize, i++)
-+		if (i == index) {
-+			if (size)
-+				*size = of_read_addr(prop + na, ns);
-+			return prop;
-+		}
++	/* now, read the divisor */
++	dll = in_8(&port->dll);
++	dlm = in_8(&port->dlm);
++	divisor = dlm << 8 | dll;
++
++	/* check prescaling */
++	if (in_8(&port->mcr) & 0x80)
++		prescaler = 4;
++	else
++		prescaler = 1;
++
++	/* restore the LCR */
++	out_8(&port->lcr, old_lcr);
++
++	/* calculate speed */
++	speed = (clock / prescaler) / (divisor * 16);
++
++	/* sanity check */
++	if (speed < 9600 || speed > 115200)
++		speed = 9600;
++
++	return speed;
++}
++
+ #ifdef CONFIG_PPC_MAPLE
+ void udbg_maple_real_putc(unsigned char c)
+ {
+Index: linux-serialfix/arch/powerpc/platforms/maple/setup.c
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/platforms/maple/setup.c	2005-11-22 15:12:17.000000000 +1100
++++ linux-serialfix/arch/powerpc/platforms/maple/setup.c	2005-11-22 15:12:20.000000000 +1100
+@@ -191,20 +191,6 @@
+ 	 */
+ 	hpte_init_native();
+ 
+-	/* Find the serial port */
+-	generic_find_legacy_serial_ports(&physport, &default_speed);
+-
+-	DBG("phys port addr: %lx\n", (long)physport);
+-
+-	if (physport) {
+-		void *comport;
+-		/* Map the uart for udbg. */
+-		comport = (void *)ioremap(physport, 16);
+-		udbg_init_uart(comport, default_speed);
+-
+-		DBG("Hello World !\n");
+-	}
+-
+ 	/* Setup interrupt mapping options */
+ 	ppc64_interrupt_controller = IC_OPEN_PIC;
+ 
+Index: linux-serialfix/arch/powerpc/platforms/pseries/lpar.c
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/platforms/pseries/lpar.c	2005-11-22 15:12:17.000000000 +1100
++++ linux-serialfix/arch/powerpc/platforms/pseries/lpar.c	2005-11-22 15:12:20.000000000 +1100
+@@ -24,6 +24,7 @@
+ #include <linux/config.h>
+ #include <linux/kernel.h>
+ #include <linux/dma-mapping.h>
++#include <linux/console.h>
+ #include <asm/processor.h>
+ #include <asm/mmu.h>
+ #include <asm/page.h>
+@@ -191,7 +192,7 @@
+ /* call this from early_init() for a working debug console on
+  * vterm capable LPAR machines
+  */
+-void udbg_init_debug_lpar(void)
++void __init udbg_init_debug_lpar(void)
+ {
+ 	vtermno = 0;
+ 	udbg_putc = udbg_putcLP;
+@@ -200,63 +201,54 @@
+ }
+ 
+ /* returns 0 if couldn't find or use /chosen/stdout as console */
+-int find_udbg_vterm(void)
++void __init find_udbg_vterm(void)
+ {
+ 	struct device_node *stdout_node;
+ 	u32 *termno;
+ 	char *name;
+-	int found = 0;
++	int add_console;
+ 
+ 	/* find the boot console from /chosen/stdout */
+ 	if (!of_chosen)
+-		return 0;
++		return;
+ 	name = (char *)get_property(of_chosen, "linux,stdout-path", NULL);
+ 	if (name == NULL)
+-		return 0;
++		return;
+ 	stdout_node = of_find_node_by_path(name);
+ 	if (!stdout_node)
+-		return 0;
+-
+-	/* now we have the stdout node; figure out what type of device it is. */
++		return;
+ 	name = (char *)get_property(stdout_node, "name", NULL);
+ 	if (!name) {
+ 		printk(KERN_WARNING "stdout node missing 'name' property!\n");
+ 		goto out;
+ 	}
++	/* The user has requested a console so this is already set up. */
++	add_console = !strstr(saved_command_line, "console=");
+ 
+-	if (strncmp(name, "vty", 3) == 0) {
+-		if (device_is_compatible(stdout_node, "hvterm1")) {
+-			termno = (u32 *)get_property(stdout_node, "reg", NULL);
+-			if (termno) {
+-				vtermno = termno[0];
+-				udbg_putc = udbg_putcLP;
+-				udbg_getc = udbg_getcLP;
+-				udbg_getc_poll = udbg_getc_pollLP;
+-				found = 1;
+-			}
+-		} else if (device_is_compatible(stdout_node, "hvterm-protocol")) {
+-			termno = (u32 *)get_property(stdout_node, "reg", NULL);
+-			if (termno) {
+-				vtermno = termno[0];
+-				udbg_putc = udbg_hvsi_putc;
+-				udbg_getc = udbg_hvsi_getc;
+-				udbg_getc_poll = udbg_hvsi_getc_poll;
+-				found = 1;
+-			}
+-		}
+-	} else if (strncmp(name, "serial", 6)) {
+-		/* XXX fix ISA serial console */
+-		printk(KERN_WARNING "serial stdout on LPAR ('%s')! "
+-				"can't print udbg messages\n",
+-		       stdout_node->full_name);
+-	} else {
+-		printk(KERN_WARNING "don't know how to print to stdout '%s'\n",
+-		       stdout_node->full_name);
+-	}
++	/* Check if it's a virtual terminal */
++	if (strncmp(name, "vty", 3) != 0)
++		goto out;
++	termno = (u32 *)get_property(stdout_node, "reg", NULL);
++	if (termno == NULL)
++		goto out;
++	vtermno = termno[0];
+ 
++	if (device_is_compatible(stdout_node, "hvterm1")) {
++		udbg_putc = udbg_putcLP;
++		udbg_getc = udbg_getcLP;
++		udbg_getc_poll = udbg_getc_pollLP;
++		if (add_console)
++			add_preferred_console("hvc", termno[0] & 0xff, NULL);
++	} else if (device_is_compatible(stdout_node, "hvterm-protocol")) {
++		vtermno = termno[0];
++		udbg_putc = udbg_hvsi_putc;
++		udbg_getc = udbg_hvsi_getc;
++		udbg_getc_poll = udbg_hvsi_getc_poll;
++		if (add_console)
++			add_preferred_console("hvsi", termno[0] & 0xff, NULL);
++	}
+ out:
+ 	of_node_put(stdout_node);
+-	return found;
+ }
+ 
+ void vpa_init(int cpu)
+Index: linux-serialfix/arch/powerpc/platforms/pseries/setup.c
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/platforms/pseries/setup.c	2005-11-22 15:12:17.000000000 +1100
++++ linux-serialfix/arch/powerpc/platforms/pseries/setup.c	2005-11-22 15:12:20.000000000 +1100
+@@ -78,8 +78,6 @@
+ extern void find_udbg_vterm(void);
+ extern void system_reset_fwnmi(void);	/* from head.S */
+ extern void machine_check_fwnmi(void);	/* from head.S */
+-extern void generic_find_legacy_serial_ports(u64 *physport,
+-		unsigned int *default_speed);
+ 
+ int fwnmi_active;  /* TRUE if an FWNMI handler is present */
+ 
+@@ -365,10 +363,7 @@
+  */
+ static void __init pSeries_init_early(void)
+ {
+-	void *comport;
+ 	int iommu_off = 0;
+-	unsigned int default_speed;
+-	u64 physport;
+ 
+ 	DBG(" -> pSeries_init_early()\n");
+ 
+@@ -382,17 +377,8 @@
+ 			     get_property(of_chosen, "linux,iommu-off", NULL));
+ 	}
+ 
+-	generic_find_legacy_serial_ports(&physport, &default_speed);
+-
+ 	if (platform_is_lpar())
+ 		find_udbg_vterm();
+-	else if (physport) {
+-		/* Map the uart for udbg. */
+-		comport = (void *)ioremap(physport, 16);
+-		udbg_init_uart(comport, default_speed);
+-
+-		DBG("Hello World !\n");
+-	}
+ 
+ 	if (firmware_has_feature(FW_FEATURE_DABR))
+ 		ppc_md.set_dabr = pseries_set_dabr;
+Index: linux-serialfix/include/asm-powerpc/serial.h
+===================================================================
+--- linux-serialfix.orig/include/asm-powerpc/serial.h	2005-11-22 15:12:17.000000000 +1100
++++ linux-serialfix/include/asm-powerpc/serial.h	2005-11-22 15:12:20.000000000 +1100
+@@ -15,4 +15,6 @@
+ /* Default baud base if not found in device-tree */
+ #define BASE_BAUD ( 1843200 / 16 )
+ 
++extern void find_legacy_serial_ports(void);
++
+ #endif /* _PPC64_SERIAL_H */
+Index: linux-serialfix/include/asm-powerpc/udbg.h
+===================================================================
+--- linux-serialfix.orig/include/asm-powerpc/udbg.h	2005-11-22 15:12:17.000000000 +1100
++++ linux-serialfix/include/asm-powerpc/udbg.h	2005-11-22 15:12:20.000000000 +1100
+@@ -24,7 +24,10 @@
+ extern void register_early_udbg_console(void);
+ extern void udbg_printf(const char *fmt, ...);
+ 
+-extern void udbg_init_uart(void __iomem *comport, unsigned int speed);
++extern void udbg_init_uart(void __iomem *comport, unsigned int speed,
++			   unsigned int clock);
++extern unsigned int udbg_probe_uart_speed(void __iomem *comport,
++					  unsigned int clock);
+ 
+ struct device_node;
+ extern void udbg_init_scc(struct device_node *np);
+Index: linux-serialfix/arch/powerpc/kernel/setup_32.c
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/kernel/setup_32.c	2005-11-22 15:12:17.000000000 +1100
++++ linux-serialfix/arch/powerpc/kernel/setup_32.c	2005-11-22 15:12:20.000000000 +1100
+@@ -39,6 +39,7 @@
+ #include <asm/nvram.h>
+ #include <asm/xmon.h>
+ #include <asm/time.h>
++#include <asm/serial.h>
+ 
+ #include "setup.h"
+ 
+@@ -282,6 +283,13 @@
+ 
+ 	unflatten_device_tree();
+ 	check_for_initrd();
++
++	if (ppc_md.init_early)
++		ppc_md.init_early();
++
++#ifdef CONFIG_PPC_MULTIPLATFORM
++	find_legacy_serial_ports();
++#endif
+ 	finish_device_tree();
+ 
+ 	smp_setup_cpu_maps();
+Index: linux-serialfix/arch/powerpc/kernel/pci_64.c
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/kernel/pci_64.c	2005-11-21 11:53:14.000000000 +1100
++++ linux-serialfix/arch/powerpc/kernel/pci_64.c	2005-11-22 15:34:40.000000000 +1100
+@@ -1223,6 +1223,7 @@
+ }
+ EXPORT_SYMBOL(pcibios_fixup_device_resources);
+ 
++
+ static void __devinit do_bus_setup(struct pci_bus *bus)
+ {
+ 	struct pci_dev *dev;
+@@ -1306,6 +1307,20 @@
+ 	*end = rsrc->end + offset;
+ }
+ 
++struct pci_controller* pci_find_hose_for_OF_device(struct device_node* node)
++{
++	if (!have_of)
++		return NULL;
++	while(node) {
++		struct pci_controller *hose, *tmp;
++		list_for_each_entry_safe(hose, tmp, &hose_list, list_node)
++			if (hose->arch_data == node)
++				return hose;
++		node = node->parent;
++	}
 +	return NULL;
 +}
-+EXPORT_SYMBOL(of_get_address);
 +
-+u32 *of_get_pci_addr(struct device_node *pd, int bar, u64 *out_size)
-+{
-+	u32 *prop;
-+	unsigned int psize;
-+
-+	prop = (u32 *)get_property(pd, "assigned-addresses", &psize);
-+	if (prop == NULL)
-+		return NULL;
-+	psize /= 4;
-+	for (; psize >= 5; psize -= 5, prop += 5) {
-+		if (bar == (((prop[0] & 0xff) - PCI_BASE_ADDRESS_0) / 4)) {
-+			if (out_size)
-+				*out_size = of_read_addr(prop + 3, 2);
-+			return prop;
-+		}
-+	}
-+	return NULL;
-+}
-+EXPORT_SYMBOL(of_get_pci_addr);
-Index: linux-serialfix/include/asm-powerpc/mmu.h
+ #endif /* CONFIG_PPC_MULTIPLATFORM */
+ 
+ 
+Index: linux-serialfix/arch/ppc/kernel/pci.c
 ===================================================================
---- linux-serialfix.orig/include/asm-powerpc/mmu.h	2005-11-22 14:41:26.000000000 +1100
-+++ linux-serialfix/include/asm-powerpc/mmu.h	2005-11-22 14:41:49.000000000 +1100
-@@ -393,6 +393,10 @@
- #define VSID_SCRAMBLE(pvsid)	(((pvsid) * VSID_MULTIPLIER) % VSID_MODULUS)
- #define KERNEL_VSID(ea)		VSID_SCRAMBLE(GET_ESID(ea))
- 
-+/* Physical address used by some IO functions */
-+typedef unsigned long phys_addr_t;
-+
-+
- #endif /* __ASSEMBLY */
- 
- #endif /* CONFIG_PPC64 */
-Index: linux-serialfix/include/asm-powerpc/prom.h
+--- linux-serialfix.orig/arch/ppc/kernel/pci.c	2005-11-21 11:53:14.000000000 +1100
++++ linux-serialfix/arch/ppc/kernel/pci.c	2005-11-22 15:25:03.000000000 +1100
+@@ -815,8 +815,7 @@
+  * to set pci_assign_all_buses to 1 and still use RTAS for PCI
+  * config cycles.
+  */
+-struct pci_controller*
+-pci_find_hose_for_OF_device(struct device_node* node)
++struct pci_controller* pci_find_hose_for_OF_device(struct device_node* node)
+ {
+ 	if (!have_of)
+ 		return NULL;
+Index: linux-serialfix/include/asm-powerpc/pci-bridge.h
 ===================================================================
---- linux-serialfix.orig/include/asm-powerpc/prom.h	2005-11-22 14:41:26.000000000 +1100
-+++ linux-serialfix/include/asm-powerpc/prom.h	2005-11-22 14:41:49.000000000 +1100
-@@ -223,5 +223,14 @@
- 				int index, const char* name_postfix);
- extern int release_OF_resource(struct device_node* node, int index);
+--- linux-serialfix.orig/include/asm-powerpc/pci-bridge.h	2005-11-21 11:53:15.000000000 +1100
++++ linux-serialfix/include/asm-powerpc/pci-bridge.h	2005-11-22 15:28:24.000000000 +1100
+@@ -140,6 +140,9 @@
+ 	return PCI_DN(busdn)->phb;
+ }
  
-+/*
-+ * Address translation function(s)
-+ */
-+#define OF_BAD_ADDR	((u64)-1)
-+extern u64 of_translate_address(struct device_node *np, u32 *addr);
-+extern u32 *of_get_address(struct device_node *dev, int index, u64 *size);
-+extern u32 *of_get_pci_addr(struct device_node *pd, int bar, u64 *out_size);
++extern struct pci_controller*
++pci_find_hose_for_OF_device(struct device_node* node);
 +
-+
- #endif /* __KERNEL__ */
- #endif /* _POWERPC_PROM_H */
-Index: linux-serialfix/include/asm-ppc/prom.h
-===================================================================
---- linux-serialfix.orig/include/asm-ppc/prom.h	2005-11-22 14:41:26.000000000 +1100
-+++ linux-serialfix/include/asm-ppc/prom.h	2005-11-22 14:41:49.000000000 +1100
-@@ -136,5 +136,15 @@
- #define PTRRELOC(x)	((typeof(x))add_reloc_offset((unsigned long)(x)))
- #define PTRUNRELOC(x)	((typeof(x))sub_reloc_offset((unsigned long)(x)))
- 
-+
-+/*
-+ * Address translation function(s)
-+ */
-+#define OF_BAD_ADDR	((u64)-1)
-+extern u64 of_translate_address(struct device_node *np, u32 *addr);
-+extern u32 *of_get_address(struct device_node *dev, int index, u64 *size);
-+extern u32 *of_get_pci_addr(struct device_node *pd, int bar, u64 *out_size);
-+
-+
- #endif /* _PPC_PROM_H */
- #endif /* __KERNEL__ */
+ extern struct pci_controller *
+ pcibios_alloc_controller(struct device_node *dev);
+ extern void pcibios_free_controller(struct pci_controller *phb);
