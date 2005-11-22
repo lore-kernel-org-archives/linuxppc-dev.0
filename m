@@ -2,11 +2,11 @@ Return-Path: <benh@kernel.crashing.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc64-dev <linuxppc64-dev@ozlabs.org>
 Content-Type: text/plain
-Date: Tue, 22 Nov 2005 15:49:19 +1100
-Message-Id: <1132634960.26560.133.camel@gaston>
+Date: Tue, 22 Nov 2005 17:04:26 +1100
+Message-Id: <1132639467.26560.140.camel@gaston>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc: serial port discovery
+Subject: [PATCH] powerpc: Unify udbg
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,1265 +16,2355 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This moves the discovery of legacy serial ports to a separate file,
-makes it common to ppc32 and ppc64, and reworks it to use the new OF
-address translators to get to the ports early. This new version can also
-detect some PCI serial cards using legacy chips and will probably match
-those discovered port with the default console choice.
+This patch unifies udbg for both ppc32 and ppc64 when building the
+merged achitecture. xmon now has a single "back end". The powermac udbg
+stuff gets enriched with some ADB capabilities and btext output. In
+addition, the early_init callback is now called on ppc32 as well,
+approx. in the same order as ppc64 regarding device-tree manipulations.
+The init sequences of ppc32 and ppc64 are getting closer, I'll unify
+them in a later patch.
 
-Only ppc64 gets udbg still yet, unifying udbg isn't finished yet.
-
-It also adds some speed-probing code to udbg so that the default console
-can come up at the same speed it was set to by the firmware.
+For now, you can force udbg to the scc using "sccdbg" or to btext using
+"btextdbg" on powermacs. I'll implement a cleaner way of forcing udbg
+output to something else than the autodetected OF output device in a
+later patch.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
 
-Same comments as for the previous one, this isn't 1.6.15 material.
-
-Index: linux-serialfix/arch/powerpc/kernel/legacy_serial.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-serialfix/arch/powerpc/kernel/legacy_serial.c	2005-11-22 15:43:37.000000000 +1100
-@@ -0,0 +1,478 @@
-+#include <linux/config.h>
-+#include <linux/kernel.h>
-+#include <linux/serial.h>
-+#include <linux/serial_8250.h>
-+#include <linux/serial_core.h>
-+#include <linux/console.h>
-+#include <linux/pci.h>
-+#include <asm/io.h>
-+#include <asm/mmu.h>
-+#include <asm/prom.h>
-+#include <asm/serial.h>
-+#include <asm/udbg.h>
-+#include <asm/pci-bridge.h>
-+#include <asm/ppc-pci.h>
-+
-+#undef DEBUG
-+
-+#ifdef DEBUG
-+#define DBG(fmt...) do { printk(fmt); } while(0)
-+#else
-+#define DBG(fmt...) do { } while(0)
-+#endif
-+
-+#define MAX_LEGACY_SERIAL_PORTS	8
-+
-+static struct plat_serial8250_port
-+legacy_serial_ports[MAX_LEGACY_SERIAL_PORTS+1];
-+static struct legacy_serial_info {
-+	struct device_node		*np;
-+	unsigned int			speed;
-+	unsigned int			clock;
-+	phys_addr_t			taddr;
-+} legacy_serial_infos[MAX_LEGACY_SERIAL_PORTS];
-+static unsigned int legacy_serial_count;
-+static int legacy_serial_console = -1;
-+
-+static int __init add_legacy_port(struct device_node *np, int want_index,
-+				  int iotype, phys_addr_t base,
-+				  phys_addr_t taddr, unsigned long irq)
-+{
-+	u32 *clk, *spd, clock;
-+	int index;
-+
-+	/* get clock freq. if present */
-+	clk = (u32 *)get_property(np, "clock-frequency", NULL);
-+	clock = clk ? *clk : BASE_BAUD * 16;
-+
-+	/* get default speed if present */
-+	spd = (u32 *)get_property(np, "current-speed", NULL);
-+
-+	/* If we have a location index, then try to use it */
-+	if (want_index >= 0 && want_index < MAX_LEGACY_SERIAL_PORTS)
-+		index = want_index;
-+	else
-+		index = legacy_serial_count;
-+
-+	/* if our index is still out of range, that mean that
-+	 * array is full, we could scan for a free slot but that
-+	 * make little sense to bother, just skip the port
-+	 */
-+	if (index >= MAX_LEGACY_SERIAL_PORTS)
-+		return -1;
-+	if (index >= legacy_serial_count)
-+		legacy_serial_count = index + 1;
-+
-+	/* Check if there is a port who already claimed our slot */
-+	if (legacy_serial_infos[index].np != 0) {
-+		/* if we still have some room, move it, else override */
-+		if (legacy_serial_count < MAX_LEGACY_SERIAL_PORTS) {
-+			printk(KERN_INFO "Moved legacy port %d -> %d\n",
-+			       index, legacy_serial_count);
-+			legacy_serial_ports[legacy_serial_count] =
-+				legacy_serial_ports[index];
-+			legacy_serial_infos[legacy_serial_count] =
-+				legacy_serial_infos[index];
-+			legacy_serial_count++;
-+		} else {
-+			printk(KERN_INFO "Replacing legacy port %d\n", index);
-+		}
-+	}
-+
-+	/* Now fill the entry */
-+	memset(&legacy_serial_ports[index], 0,
-+	       sizeof(struct plat_serial8250_port));
-+	if (iotype == UPIO_PORT)
-+		legacy_serial_ports[index].iobase = base;
-+	else
-+		legacy_serial_ports[index].membase = (void __iomem *)base;
-+	legacy_serial_ports[index].iotype = iotype;
-+	legacy_serial_ports[index].uartclk = clock;
-+	legacy_serial_ports[index].irq = irq;
-+	legacy_serial_ports[index].flags = ASYNC_BOOT_AUTOCONF;
-+	legacy_serial_infos[index].taddr = taddr;
-+	legacy_serial_infos[index].np = of_node_get(np);
-+	legacy_serial_infos[index].clock = clock;
-+	legacy_serial_infos[index].speed = spd ? *spd : 0;
-+
-+	printk(KERN_INFO "Found legacy serial port %d for %s\n",
-+	       index, np->full_name);
-+	printk(KERN_INFO "  %s=%llx, taddr=%llx, irq=%lx, clk=%d, speed=%d\n",
-+	       (iotype == UPIO_PORT) ? "port" : "mem",
-+	       (unsigned long long)base, (unsigned long long)taddr, irq,
-+	       legacy_serial_ports[index].uartclk,
-+	       legacy_serial_infos[index].speed);
-+
-+	return index;
-+}
-+
-+static int __init add_legacy_isa_port(struct device_node *np,
-+				      struct device_node *isa_bridge)
-+{
-+	u32 *reg;
-+	char *typep;
-+	int index = -1;
-+	phys_addr_t taddr;
-+
-+	/* Get the ISA port number */
-+	reg = (u32 *)get_property(np, "reg", NULL);
-+	if (reg == NULL)
-+		return -1;
-+
-+	/* Verify it's an IO port, we don't support anything else */
-+	if (!(reg[0] & 0x00000001))
-+		return -1;
-+
-+	/* Now look for an "ibm,aix-loc" property that gives us ordering
-+	 * if any...
-+	 */
-+	typep = (char *)get_property(np, "ibm,aix-loc", NULL);
-+
-+	/* If we have a location index, then use it */
-+	if (typep && *typep == 'S')
-+		index = simple_strtol(typep+1, NULL, 0) - 1;
-+
-+	/* Translate ISA address */
-+	taddr = of_translate_address(np, reg);
-+
-+	/* Add port, irq will be dealt with later */
-+	return add_legacy_port(np, index, UPIO_PORT, reg[1], taddr, NO_IRQ);
-+
-+}
-+
-+static int __init add_legacy_pci_port(struct device_node *np,
-+				      struct device_node *pci_dev)
-+{
-+	phys_addr_t addr, base;
-+	u32 *addrp;
-+	int iotype, index = -1;
-+
-+#if 0
-+	/* We only support ports that have a clock frequency properly
-+	 * encoded in the device-tree (that is have an fcode). Anything
-+	 * else can't be used that early and will be normally probed by
-+	 * the generic 8250_pci driver later on.
-+	 */
-+	if (get_property(np, "clock-frequency", NULL) == NULL)
-+		return -1;
-+#endif
-+
-+	/* Get the PCI address. Assume BAR 0 */
-+	addrp = of_get_pci_addr(pci_dev, 0, NULL);
-+	if (addrp == NULL)
-+		return -1;
-+
-+	/* We only support BAR 0 for now */
-+	iotype = (addrp[0] & 0x02000000) ? UPIO_MEM : UPIO_PORT;
-+	addr = of_translate_address(pci_dev, addrp);
-+
-+	/* Set the IO base to the same as the translated address for MMIO,
-+	 * or to the domain local IO base for PIO (it will be fixed up later)
-+	 */
-+	if (iotype == UPIO_MEM)
-+		base = addr;
-+	else
-+		base = addrp[2];
-+
-+	/* Try to guess an index... If we have subdevices of the pci dev,
-+	 * we get to their "reg" property
-+	 */
-+	if (np != pci_dev) {
-+		u32 *reg = (u32 *)get_property(np, "reg", NULL);
-+		if (reg && (*reg < 4))
-+			index = legacy_serial_count + *reg;
-+	}
-+
-+	/* Add port, irq will be dealt with later. We passed a translated
-+	 * IO port value. It will be fixed up later along with the irq
-+	 */
-+	return add_legacy_port(np, index, iotype, base, addr, NO_IRQ);
-+}
-+
-+/*
-+ * This is called very early, as part of setup_system() or eventually
-+ * setup_arch(), basically before anything else in this file. This function
-+ * will try to build a list of all the available 8250-compatible serial ports
-+ * in the machine using the Open Firmware device-tree. It currently only deals
-+ * with ISA and PCI busses but could be extended. It allows a very early boot
-+ * console to be initialized, that list is also used later to provide 8250 with
-+ * the machine non-PCI ports and to properly pick the default console port
-+ */
-+void __init find_legacy_serial_ports(void)
-+{
-+	struct device_node *np, *stdout;
-+	char *path;
-+	int index;
-+
-+	DBG(" -> find_legacy_serial_port()\n");
-+
-+	/* Now find out if one of these is out firmware console */
-+	path = (char *)get_property(of_chosen, "linux,stdout-path", NULL);
-+	if (path == NULL) {
-+		DBG(" no linux,stdout-path !\n");
-+		return;
-+	}
-+	stdout = of_find_node_by_path(path);
-+	if (stdout) {
-+		DBG("stdout is %s\n", stdout->full_name);
-+	}
-+
-+	/* First fill our array with ISA ports */
-+	for (np = NULL; (np = of_find_node_by_type(np, "serial"));) {
-+		struct device_node *isa = of_get_parent(np);
-+		if (isa && !strcmp(isa->name, "isa")) {
-+			index = add_legacy_isa_port(np, isa);
-+			if (index >= 0 && np == stdout)
-+				legacy_serial_console = index;
-+		}
-+		of_node_put(isa);
-+	}
-+
-+	/* Next, try to locate PCI ports */
-+	for (np = NULL; (np = of_find_all_nodes(np));) {
-+		struct device_node *pci, *parent = of_get_parent(np);
-+		if (parent && !strcmp(parent->name, "isa")) {
-+			of_node_put(parent);
-+			continue;
-+		}
-+		if (strcmp(np->name, "serial") && strcmp(np->type, "serial")) {
-+			of_node_put(parent);
-+			continue;
-+		}
-+		/* Check for known pciclass, and also check wether we have
-+		 * a device with child nodes for ports or not
-+		 */
-+		if (device_is_compatible(np, "pciclass,0700") ||
-+		    device_is_compatible(np, "pciclass,070002"))
-+			pci = np;
-+		else if (device_is_compatible(parent, "pciclass,0700") ||
-+			 device_is_compatible(parent, "pciclass,070002"))
-+			pci = parent;
-+		else {
-+			of_node_put(parent);
-+			continue;
-+		}
-+		index = add_legacy_pci_port(np, pci);
-+		if (index >= 0 && np == stdout)
-+			legacy_serial_console = index;
-+		of_node_put(parent);
-+	}
-+
-+	DBG("legacy_serial_console = %d\n", legacy_serial_console);
-+
-+	/* udbg is 64 bits only for now, that will change soon though ... */
-+#ifdef CONFIG_PPC64
-+	while (legacy_serial_console >= 0) {
-+		struct legacy_serial_info *info =
-+			&legacy_serial_infos[legacy_serial_console];
-+		void __iomem *addr;
-+
-+		if (info->taddr == 0)
-+			break;
-+		addr = ioremap(info->taddr, 0x1000);
-+		if (addr == NULL)
-+			break;
-+		if (info->speed == 0)
-+			info->speed = udbg_probe_uart_speed(addr, info->clock);
-+		DBG("default console speed = %d\n", info->speed);
-+		udbg_init_uart(addr, info->speed, info->clock);
-+		break;
-+	}
-+#endif /* CONFIG_PPC64 */
-+
-+	DBG(" <- find_legacy_serial_port()\n");
-+}
-+
-+static struct platform_device serial_device = {
-+	.name	= "serial8250",
-+	.id	= PLAT8250_DEV_PLATFORM,
-+	.dev	= {
-+		.platform_data = legacy_serial_ports,
-+	},
-+};
-+
-+static void __init fixup_port_irq(int index,
-+				  struct device_node *np,
-+				  struct plat_serial8250_port *port)
-+{
-+	DBG("fixup_port_irq(%d)\n", index);
-+
-+	/* Check for interrupts in that node */
-+	if (np->n_intrs > 0) {
-+		port->irq = np->intrs[0].line;
-+		DBG(" port %d (%s), irq=%d\n",
-+		    index, np->full_name, port->irq);
-+		return;
-+	}
-+
-+	/* Check for interrupts in the parent */
-+	np = of_get_parent(np);
-+	if (np == NULL)
-+		return;
-+
-+	if (np->n_intrs > 0) {
-+		port->irq = np->intrs[0].line;
-+		DBG(" port %d (%s), irq=%d\n",
-+		    index, np->full_name, port->irq);
-+	}
-+	of_node_put(np);
-+}
-+
-+static void __init fixup_port_pio(int index,
-+				  struct device_node *np,
-+				  struct plat_serial8250_port *port)
-+{
-+	struct pci_controller *hose;
-+
-+	DBG("fixup_port_pio(%d)\n", index);
-+
-+	hose = pci_find_hose_for_OF_device(np);
-+	if (hose) {
-+		unsigned long offset = (unsigned long)hose->io_base_virt -
-+#ifdef CONFIG_PPC64
-+			pci_io_base;
-+#else
-+			isa_io_base;
-+#endif
-+		DBG("port %d, IO %lx -> %lx\n",
-+		    index, port->iobase, port->iobase + offset);
-+		port->iobase += offset;
-+	}
-+}
-+
-+/*
-+ * This is called as an arch initcall, hopefully before the PCI bus is
-+ * probed and/or the 8250 driver loaded since we need to register our
-+ * platform devices before 8250 PCI ones are detected as some of them
-+ * must properly "override" the platform ones.
-+ *
-+ * This function fixes up the interrupt value for platform ports as it
-+ * couldn't be done earlier before interrupt maps have been parsed. It
-+ * also "corrects" the IO address for PIO ports for the same reason,
-+ * since earlier, the PHBs virtual IO space wasn't assigned yet. It then
-+ * registers all those platform ports for use by the 8250 driver when it
-+ * finally loads.
-+ */
-+static int __init serial_dev_init(void)
-+{
-+	int i;
-+
-+	if (legacy_serial_count == 0)
-+		return -ENODEV;
-+
-+	/*
-+	 * Before we register the platfrom serial devices, we need
-+	 * to fixup their interrutps and their IO ports.
-+	 */
-+	DBG("Fixing serial ports interrupts and IO ports ...\n");
-+
-+	for (i = 0; i < legacy_serial_count; i++) {
-+		struct plat_serial8250_port *port = &legacy_serial_ports[i];
-+		struct device_node *np = legacy_serial_infos[i].np;
-+
-+		if (port->irq == NO_IRQ)
-+			fixup_port_irq(i, np, port);
-+		if (port->iotype == UPIO_PORT)
-+			fixup_port_pio(i, np, port);
-+	}
-+
-+	DBG("Registering platform serial ports\n");
-+
-+	return platform_device_register(&serial_device);
-+}
-+arch_initcall(serial_dev_init);
-+
-+
-+/*
-+ * This is called very early, as part of console_init() (typically just after
-+ * time_init()). This function is respondible for trying to find a good
-+ * default console on serial ports. It tries to match the open firmware
-+ * default output with one of the available serial console drivers, either
-+ * one of the platform serial ports that have been probed earlier by
-+ * find_legacy_serial_ports() or some more platform specific ones.
-+ */
-+static int __init check_legacy_serial_console(void)
-+{
-+	struct device_node *prom_stdout = NULL;
-+	int speed = 0, offset = 0;
-+	char *name;
-+	u32 *spd;
-+
-+	DBG(" -> check_legacy_serial_console()\n");
-+
-+	/* The user has requested a console so this is already set up. */
-+	if (strstr(saved_command_line, "console=")) {
-+		DBG(" console was specified !\n");
-+		return -EBUSY;
-+	}
-+
-+	if (!of_chosen) {
-+		DBG(" of_chosen is NULL !\n");
-+		return -ENODEV;
-+	}
-+	/* We are getting a weird phandle from OF ... */
-+	/* ... So use the full path instead */
-+	name = (char *)get_property(of_chosen, "linux,stdout-path", NULL);
-+	if (name == NULL) {
-+		DBG(" no linux,stdout-path !\n");
-+		return -ENODEV;
-+	}
-+	prom_stdout = of_find_node_by_path(name);
-+	if (!prom_stdout) {
-+		DBG(" can't find stdout package %s !\n", name);
-+		return -ENODEV;
-+	}
-+	DBG("stdout is %s\n", prom_stdout->full_name);
-+
-+	name = (char *)get_property(prom_stdout, "name", NULL);
-+	if (!name) {
-+		DBG(" stdout package has no name !\n");
-+		goto not_found;
-+	}
-+	spd = (u32 *)get_property(prom_stdout, "current-speed", NULL);
-+	if (spd)
-+		speed = *spd;
-+
-+	if (0)
-+		;
-+#ifdef CONFIG_SERIAL_8250_CONSOLE
-+	else if (strcmp(name, "serial") == 0) {
-+		int i;
-+		/* Look for it in probed array */
-+		for (i = 0; i < legacy_serial_count; i++) {
-+			if (prom_stdout != legacy_serial_infos[i].np)
-+				continue;
-+			offset = i;
-+			speed = legacy_serial_infos[i].speed;
-+			break;
-+		}
-+		if (i >= legacy_serial_count)
-+			goto not_found;
-+	}
-+#endif /* CONFIG_SERIAL_8250_CONSOLE */
-+#ifdef CONFIG_SERIAL_PMACZILOG_CONSOLE
-+	else if (strcmp(name, "ch-a") == 0)
-+		offset = 0;
-+	else if (strcmp(name, "ch-b") == 0)
-+		offset = 1;
-+#endif /* CONFIG_SERIAL_PMACZILOG_CONSOLE */
-+	else
-+		goto not_found;
-+	of_node_put(prom_stdout);
-+
-+	DBG("Found serial console at ttyS%d\n", offset);
-+
-+	if (speed) {
-+		static char __initdata opt[16];
-+		sprintf(opt, "%d", speed);
-+		return add_preferred_console("ttyS", offset, opt);
-+	} else
-+		return add_preferred_console("ttyS", offset, NULL);
-+
-+ not_found:
-+	DBG("No preferred console found !\n");
-+	of_node_put(prom_stdout);
-+	return -ENODEV;
-+}
-+console_initcall(check_legacy_serial_console);
-+
 Index: linux-serialfix/arch/powerpc/kernel/Makefile
 ===================================================================
---- linux-serialfix.orig/arch/powerpc/kernel/Makefile	2005-11-22 15:12:17.000000000 +1100
-+++ linux-serialfix/arch/powerpc/kernel/Makefile	2005-11-22 15:12:20.000000000 +1100
-@@ -32,10 +32,6 @@
- obj-$(CONFIG_LPARCFG)		+= lparcfg.o
- obj-$(CONFIG_IBMVIO)		+= vio.o
- obj-$(CONFIG_GENERIC_TBSYNC)	+= smp-tbsync.o
--obj-$(CONFIG_PPC_PSERIES)	+= udbg_16550.o
--obj-$(CONFIG_PPC_MAPLE)		+= udbg_16550.o
--udbgscc-$(CONFIG_PPC64)		:= udbg_scc.o
--obj-$(CONFIG_PPC_PMAC)		+= $(udbgscc-y)
- obj64-$(CONFIG_PPC_MULTIPLATFORM) += nvram_64.o
+--- linux-serialfix.orig/arch/powerpc/kernel/Makefile	2005-11-22 16:33:30.000000000 +1100
++++ linux-serialfix/arch/powerpc/kernel/Makefile	2005-11-22 16:33:30.000000000 +1100
+@@ -18,7 +18,7 @@
+ obj-$(CONFIG_PPC64)		+= setup_64.o binfmt_elf32.o sys_ppc32.o \
+ 				   signal_64.o ptrace32.o systbl.o \
+ 				   paca.o ioctl32.o cpu_setup_power4.o \
+-				   firmware.o sysfs.o udbg.o idle_64.o
++				   firmware.o sysfs.o idle_64.o
+ obj-$(CONFIG_PPC64)		+= vdso64/
+ obj-$(CONFIG_ALTIVEC)		+= vecemu.o vector.o
+ obj-$(CONFIG_POWER4)		+= idle_power4.o
+@@ -45,7 +45,7 @@
+ extra-y				+= vmlinux.lds
  
- ifeq ($(CONFIG_PPC_MERGE),y)
-@@ -58,14 +54,15 @@
- obj-$(CONFIG_6xx)		+= idle_6xx.o
+ obj-y				+= process.o init_task.o time.o \
+-				   prom.o traps.o setup-common.o
++				   prom.o traps.o setup-common.o udbg.o
+ obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o misc_32.o systbl.o
+ obj-$(CONFIG_PPC64)		+= misc_64.o dma_64.o iommu.o
+ obj-$(CONFIG_PPC_OF)		+= prom_init.o
+@@ -55,8 +55,7 @@
  obj-$(CONFIG_SMP)		+= smp.o
  obj-$(CONFIG_KPROBES)		+= kprobes.o
--
-+obj-$(CONFIG_PPC_MULTIPLATFORM) += legacy_serial.o
-+obj64-$(CONFIG_PPC_MULTIPLATFORM) += udbg_16550.o
-+obj64-$(CONFIG_PPC_PMAC)	+= udbg_scc.o
+ obj-$(CONFIG_PPC_MULTIPLATFORM) += legacy_serial.o
+-obj64-$(CONFIG_PPC_MULTIPLATFORM) += udbg_16550.o
+-obj64-$(CONFIG_PPC_PMAC)	+= udbg_scc.o
++obj-$(CONFIG_PPC_MULTIPLATFORM) += udbg_16550.o
  module-$(CONFIG_PPC64)		+= module_64.o
  obj-$(CONFIG_MODULES)		+= $(module-y)
  
- pci64-$(CONFIG_PPC64)		+= pci_64.o pci_dn.o pci_iommu.o \
- 				   pci_direct_iommu.o iomap.o
- obj-$(CONFIG_PCI)		+= $(pci64-y)
--
- kexec64-$(CONFIG_PPC64)		+= machine_kexec_64.o
- obj-$(CONFIG_KEXEC)		+= $(kexec64-y)
- 
-Index: linux-serialfix/arch/powerpc/kernel/setup-common.c
+Index: linux-serialfix/arch/powerpc/kernel/udbg.c
 ===================================================================
---- linux-serialfix.orig/arch/powerpc/kernel/setup-common.c	2005-11-22 15:12:17.000000000 +1100
-+++ linux-serialfix/arch/powerpc/kernel/setup-common.c	2005-11-22 15:12:20.000000000 +1100
-@@ -294,129 +294,6 @@
- 	.show =	show_cpuinfo,
- };
+--- linux-serialfix.orig/arch/powerpc/kernel/udbg.c	2005-11-14 10:41:58.000000000 +1100
++++ linux-serialfix/arch/powerpc/kernel/udbg.c	2005-11-22 16:33:30.000000000 +1100
+@@ -16,8 +16,8 @@
+ #include <linux/console.h>
+ #include <asm/processor.h>
  
--#ifdef CONFIG_PPC_MULTIPLATFORM
--static int __init set_preferred_console(void)
--{
--	struct device_node *prom_stdout = NULL;
--	char *name;
--	u32 *spd;
--	int offset = 0;
--
--	DBG(" -> set_preferred_console()\n");
--
--	/* The user has requested a console so this is already set up. */
--	if (strstr(saved_command_line, "console=")) {
--		DBG(" console was specified !\n");
--		return -EBUSY;
--	}
--
--	if (!of_chosen) {
--		DBG(" of_chosen is NULL !\n");
--		return -ENODEV;
--	}
--	/* We are getting a weird phandle from OF ... */
--	/* ... So use the full path instead */
--	name = (char *)get_property(of_chosen, "linux,stdout-path", NULL);
--	if (name == NULL) {
--		DBG(" no linux,stdout-path !\n");
--		return -ENODEV;
--	}
--	prom_stdout = of_find_node_by_path(name);
--	if (!prom_stdout) {
--		DBG(" can't find stdout package %s !\n", name);
--		return -ENODEV;
--	}	
--	DBG("stdout is %s\n", prom_stdout->full_name);
--
--	name = (char *)get_property(prom_stdout, "name", NULL);
--	if (!name) {
--		DBG(" stdout package has no name !\n");
--		goto not_found;
--	}
--	spd = (u32 *)get_property(prom_stdout, "current-speed", NULL);
--
--	if (0)
--		;
--#ifdef CONFIG_SERIAL_8250_CONSOLE
--	else if (strcmp(name, "serial") == 0) {
--		int i;
--		u32 *reg = (u32 *)get_property(prom_stdout, "reg", &i);
--		if (i > 8) {
--			switch (reg[1]) {
--				case 0x3f8:
--					offset = 0;
--					break;
--				case 0x2f8:
--					offset = 1;
--					break;
--				case 0x898:
--					offset = 2;
--					break;
--				case 0x890:
--					offset = 3;
--					break;
--				default:
--					/* We dont recognise the serial port */
--					goto not_found;
--			}
--		}
--	}
--#endif /* CONFIG_SERIAL_8250_CONSOLE */
--#ifdef CONFIG_PPC_PSERIES
--	else if (strcmp(name, "vty") == 0) {
-- 		u32 *reg = (u32 *)get_property(prom_stdout, "reg", NULL);
-- 		char *compat = (char *)get_property(prom_stdout, "compatible", NULL);
--
-- 		if (reg && compat && (strcmp(compat, "hvterm-protocol") == 0)) {
-- 			/* Host Virtual Serial Interface */
-- 			switch (reg[0]) {
-- 				case 0x30000000:
-- 					offset = 0;
-- 					break;
-- 				case 0x30000001:
-- 					offset = 1;
-- 					break;
-- 				default:
--					goto not_found;
-- 			}
--			of_node_put(prom_stdout);
--			DBG("Found hvsi console at offset %d\n", offset);
-- 			return add_preferred_console("hvsi", offset, NULL);
-- 		} else {
-- 			/* pSeries LPAR virtual console */
--			of_node_put(prom_stdout);
--			DBG("Found hvc console\n");
-- 			return add_preferred_console("hvc", 0, NULL);
-- 		}
--	}
--#endif /* CONFIG_PPC_PSERIES */
--#ifdef CONFIG_SERIAL_PMACZILOG_CONSOLE
--	else if (strcmp(name, "ch-a") == 0)
--		offset = 0;
--	else if (strcmp(name, "ch-b") == 0)
--		offset = 1;
--#endif /* CONFIG_SERIAL_PMACZILOG_CONSOLE */
--	else
--		goto not_found;
--	of_node_put(prom_stdout);
--
--	DBG("Found serial console at ttyS%d\n", offset);
--
--	if (spd) {
--		static char __initdata opt[16];
--		sprintf(opt, "%d", *spd);
--		return add_preferred_console("ttyS", offset, opt);
--	} else
--		return add_preferred_console("ttyS", offset, NULL);
--
-- not_found:
--	DBG("No preferred console found !\n");
--	of_node_put(prom_stdout);
--	return -ENODEV;
--}
--console_initcall(set_preferred_console);
--#endif /* CONFIG_PPC_MULTIPLATFORM */
--
- void __init check_for_initrd(void)
+-void (*udbg_putc)(unsigned char c);
+-unsigned char (*udbg_getc)(void);
++void (*udbg_putc)(char c);
++char (*udbg_getc)(void);
+ int (*udbg_getc_poll)(void);
+ 
+ /* udbg library, used by xmon et al */
+@@ -78,7 +78,7 @@
+ #define UDBG_BUFSIZE 256
+ void udbg_printf(const char *fmt, ...)
  {
- #ifdef CONFIG_BLK_DEV_INITRD
-Index: linux-serialfix/arch/powerpc/kernel/setup_64.c
-===================================================================
---- linux-serialfix.orig/arch/powerpc/kernel/setup_64.c	2005-11-22 15:12:17.000000000 +1100
-+++ linux-serialfix/arch/powerpc/kernel/setup_64.c	2005-11-22 15:12:20.000000000 +1100
-@@ -451,6 +451,15 @@
- 	 */
- 	ppc_md.init_early();
+-	unsigned char buf[UDBG_BUFSIZE];
++	char buf[UDBG_BUFSIZE];
+ 	va_list args;
  
-+ 	/*
-+	 * We can discover serial ports now since the above did setup the
-+	 * hash table management for us, thus ioremap works. We do that early
-+	 * so that further code can be debugged
-+	 */
-+#ifdef CONFIG_PPC_MULTIPLATFORM
-+	find_legacy_serial_ports();
-+#endif
-+
- 	/*
- 	 * "Finish" the device-tree, that is do the actual parsing of
- 	 * some of the properties like the interrupt map
-@@ -649,187 +658,6 @@
- 	printk("[terminate]%04x %s\n", src, msg);
+ 	va_start(args, fmt);
+@@ -116,6 +116,8 @@
+ /* called by setup_system */
+ void register_early_udbg_console(void)
+ {
++	if (early_console_initialized)
++		return;
+ 	early_console_initialized = 1;
+ 	register_console(&udbg_console);
  }
- 
--#ifndef CONFIG_PPC_ISERIES
+Index: linux-serialfix/arch/powerpc/kernel/udbg_scc.c
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/kernel/udbg_scc.c	2005-11-14 10:41:58.000000000 +1100
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,135 +0,0 @@
 -/*
-- * This function can be used by platforms to "find" legacy serial ports.
-- * It works for "serial" nodes under an "isa" node, and will try to
-- * respect the "ibm,aix-loc" property if any. It works with up to 8
-- * ports.
+- * udbg for for zilog scc ports as found on Apple PowerMacs
+- *
+- * Copyright (C) 2001-2005 PPC 64 Team, IBM Corp
+- *
+- *      This program is free software; you can redistribute it and/or
+- *      modify it under the terms of the GNU General Public License
+- *      as published by the Free Software Foundation; either version
+- *      2 of the License, or (at your option) any later version.
 - */
+-#include <linux/config.h>
+-#include <linux/types.h>
+-#include <asm/udbg.h>
+-#include <asm/processor.h>
+-#include <asm/io.h>
+-#include <asm/prom.h>
+-#include <asm/pmac_feature.h>
 -
--#define MAX_LEGACY_SERIAL_PORTS	8
--static struct plat_serial8250_port serial_ports[MAX_LEGACY_SERIAL_PORTS+1];
--static unsigned int old_serial_count;
+-extern u8 real_readb(volatile u8 __iomem  *addr);
+-extern void real_writeb(u8 data, volatile u8 __iomem *addr);
 -
--void __init generic_find_legacy_serial_ports(u64 *physport,
--		unsigned int *default_speed)
+-#define	SCC_TXRDY	4
+-#define SCC_RXRDY	1
+-
+-static volatile u8 __iomem *sccc;
+-static volatile u8 __iomem *sccd;
+-
+-static void udbg_scc_putc(unsigned char c)
 -{
--	struct device_node *np;
--	u32 *sizeprop;
--
--	struct isa_reg_property {
--		u32 space;
--		u32 address;
--		u32 size;
--	};
--	struct pci_reg_property {
--		struct pci_address addr;
--		u32 size_hi;
--		u32 size_lo;
--	};                                                                        
--
--	DBG(" -> generic_find_legacy_serial_port()\n");
--
--	*physport = 0;
--	if (default_speed)
--		*default_speed = 0;
--
--	np = of_find_node_by_path("/");
--	if (!np)
--		return;
--
--	/* First fill our array */
--	for (np = NULL; (np = of_find_node_by_type(np, "serial"));) {
--		struct device_node *isa, *pci;
--		struct isa_reg_property *reg;
--		unsigned long phys_size, addr_size, io_base;
--		u32 *rangesp;
--		u32 *interrupts, *clk, *spd;
--		char *typep;
--		int index, rlen, rentsize;
--
--		/* Ok, first check if it's under an "isa" parent */
--		isa = of_get_parent(np);
--		if (!isa || strcmp(isa->name, "isa")) {
--			DBG("%s: no isa parent found\n", np->full_name);
--			continue;
--		}
--		
--		/* Now look for an "ibm,aix-loc" property that gives us ordering
--		 * if any...
--		 */
--	 	typep = (char *)get_property(np, "ibm,aix-loc", NULL);
--
--		/* Get the ISA port number */
--		reg = (struct isa_reg_property *)get_property(np, "reg", NULL);	
--		if (reg == NULL)
--			goto next_port;
--		/* We assume the interrupt number isn't translated ... */
--		interrupts = (u32 *)get_property(np, "interrupts", NULL);
--		/* get clock freq. if present */
--		clk = (u32 *)get_property(np, "clock-frequency", NULL);
--		/* get default speed if present */
--		spd = (u32 *)get_property(np, "current-speed", NULL);
--		/* Default to locate at end of array */
--		index = old_serial_count; /* end of the array by default */
--
--		/* If we have a location index, then use it */
--		if (typep && *typep == 'S') {
--			index = simple_strtol(typep+1, NULL, 0) - 1;
--			/* if index is out of range, use end of array instead */
--			if (index >= MAX_LEGACY_SERIAL_PORTS)
--				index = old_serial_count;
--			/* if our index is still out of range, that mean that
--			 * array is full, we could scan for a free slot but that
--			 * make little sense to bother, just skip the port
--			 */
--			if (index >= MAX_LEGACY_SERIAL_PORTS)
--				goto next_port;
--			if (index >= old_serial_count)
--				old_serial_count = index + 1;
--			/* Check if there is a port who already claimed our slot */
--			if (serial_ports[index].iobase != 0) {
--				/* if we still have some room, move it, else override */
--				if (old_serial_count < MAX_LEGACY_SERIAL_PORTS) {
--					DBG("Moved legacy port %d -> %d\n", index,
--					    old_serial_count);
--					serial_ports[old_serial_count++] =
--						serial_ports[index];
--				} else {
--					DBG("Replacing legacy port %d\n", index);
--				}
--			}
--		}
--		if (index >= MAX_LEGACY_SERIAL_PORTS)
--			goto next_port;
--		if (index >= old_serial_count)
--			old_serial_count = index + 1;
--
--		/* Now fill the entry */
--		memset(&serial_ports[index], 0, sizeof(struct plat_serial8250_port));
--		serial_ports[index].uartclk = clk ? *clk : BASE_BAUD * 16;
--		serial_ports[index].iobase = reg->address;
--		serial_ports[index].irq = interrupts ? interrupts[0] : 0;
--		serial_ports[index].flags = ASYNC_BOOT_AUTOCONF;
--
--		DBG("Added legacy port, index: %d, port: %x, irq: %d, clk: %d\n",
--		    index,
--		    serial_ports[index].iobase,
--		    serial_ports[index].irq,
--		    serial_ports[index].uartclk);
--
--		/* Get phys address of IO reg for port 1 */
--		if (index != 0)
--			goto next_port;
--
--		pci = of_get_parent(isa);
--		if (!pci) {
--			DBG("%s: no pci parent found\n", np->full_name);
--			goto next_port;
--		}
--
--		rangesp = (u32 *)get_property(pci, "ranges", &rlen);
--		if (rangesp == NULL) {
--			of_node_put(pci);
--			goto next_port;
--		}
--		rlen /= 4;
--
--		/* we need the #size-cells of the PCI bridge node itself */
--		phys_size = 1;
--		sizeprop = (u32 *)get_property(pci, "#size-cells", NULL);
--		if (sizeprop != NULL)
--			phys_size = *sizeprop;
--		/* we need the parent #addr-cells */
--		addr_size = prom_n_addr_cells(pci);
--		rentsize = 3 + addr_size + phys_size;
--		io_base = 0;
--		for (;rlen >= rentsize; rlen -= rentsize,rangesp += rentsize) {
--			if (((rangesp[0] >> 24) & 0x3) != 1)
--				continue; /* not IO space */
--			io_base = rangesp[3];
--			if (addr_size == 2)
--				io_base = (io_base << 32) | rangesp[4];
--		}
--		if (io_base != 0) {
--			*physport = io_base + reg->address;
--			if (default_speed && spd)
--				*default_speed = *spd;
--		}
--		of_node_put(pci);
--	next_port:
--		of_node_put(isa);
+-	if (sccc) {
+-		while ((in_8(sccc) & SCC_TXRDY) == 0)
+-			;
+-		out_8(sccd,  c);
+-		if (c == '\n')
+-			udbg_scc_putc('\r');
 -	}
--
--	DBG(" <- generic_find_legacy_serial_port()\n");
 -}
 -
--static struct platform_device serial_device = {
--	.name	= "serial8250",
--	.id	= PLAT8250_DEV_PLATFORM,
--	.dev	= {
--		.platform_data = serial_ports,
--	},
+-static int udbg_scc_getc_poll(void)
+-{
+-	if (sccc) {
+-		if ((in_8(sccc) & SCC_RXRDY) != 0)
+-			return in_8(sccd);
+-		else
+-			return -1;
+-	}
+-	return -1;
+-}
+-
+-static unsigned char udbg_scc_getc(void)
+-{
+-	if (sccc) {
+-		while ((in_8(sccc) & SCC_RXRDY) == 0)
+-			;
+-		return in_8(sccd);
+-	}
+-	return 0;
+-}
+-
+-static unsigned char scc_inittab[] = {
+-    13, 0,		/* set baud rate divisor */
+-    12, 0,
+-    14, 1,		/* baud rate gen enable, src=rtxc */
+-    11, 0x50,		/* clocks = br gen */
+-    5,  0xea,		/* tx 8 bits, assert DTR & RTS */
+-    4,  0x46,		/* x16 clock, 1 stop */
+-    3,  0xc1,		/* rx enable, 8 bits */
 -};
 -
--static int __init serial_dev_init(void)
+-void udbg_init_scc(struct device_node *np)
 -{
--	return platform_device_register(&serial_device);
+-	u32 *reg;
+-	unsigned long addr;
+-	int i, x;
+-
+-	if (np == NULL)
+-		np = of_find_node_by_name(NULL, "escc");
+-	if (np == NULL || np->parent == NULL)
+-		return;
+-
+-	udbg_printf("found SCC...\n");
+-	/* Get address within mac-io ASIC */
+-	reg = (u32 *)get_property(np, "reg", NULL);
+-	if (reg == NULL)
+-		return;
+-	addr = reg[0];
+-	udbg_printf("local addr: %lx\n", addr);
+-	/* Get address of mac-io PCI itself */
+-	reg = (u32 *)get_property(np->parent, "assigned-addresses", NULL);
+-	if (reg == NULL)
+-		return;
+-	addr += reg[2];
+-	udbg_printf("final addr: %lx\n", addr);
+-
+-	/* Setup for 57600 8N1 */
+-	addr += 0x20;
+-	sccc = (volatile u8 * __iomem) ioremap(addr & PAGE_MASK, PAGE_SIZE) ;
+-	sccc += addr & ~PAGE_MASK;
+-	sccd = sccc + 0x10;
+-
+-	udbg_printf("ioremap result sccc: %p\n", sccc);
+-	mb();
+-
+-	for (i = 20000; i != 0; --i)
+-		x = in_8(sccc);
+-	out_8(sccc, 0x09);		/* reset A or B side */
+-	out_8(sccc, 0xc0);
+-	for (i = 0; i < sizeof(scc_inittab); ++i)
+-		out_8(sccc, scc_inittab[i]);
+-
+-	udbg_putc = udbg_scc_putc;
+-	udbg_getc = udbg_scc_getc;
+-	udbg_getc_poll = udbg_scc_getc_poll;
+-
+-	udbg_puts("Hello World !\n");
 -}
--arch_initcall(serial_dev_init);
 -
--#endif /* CONFIG_PPC_ISERIES */
+-static void udbg_real_scc_putc(unsigned char c)
+-{
+-	while ((real_readb(sccc) & SCC_TXRDY) == 0)
+-		;
+-	real_writeb(c, sccd);
+-	if (c == '\n')
+-		udbg_real_scc_putc('\r');
+-}
 -
- int check_legacy_ioport(unsigned long base_port)
- {
- 	if (ppc_md.check_legacy_ioport == NULL)
-Index: linux-serialfix/arch/powerpc/kernel/udbg_16550.c
+-void udbg_init_pmac_realmode(void)
+-{
+-	sccc = (volatile u8 __iomem *)0x80013020ul;
+-	sccd = (volatile u8 __iomem *)0x80013030ul;
+-
+-	udbg_putc = udbg_real_scc_putc;
+-	udbg_getc = NULL;
+-	udbg_getc_poll = NULL;
+-}
+Index: linux-serialfix/arch/powerpc/platforms/powermac/udbg_adb.c
 ===================================================================
---- linux-serialfix.orig/arch/powerpc/kernel/udbg_16550.c	2005-11-22 15:12:17.000000000 +1100
-+++ linux-serialfix/arch/powerpc/kernel/udbg_16550.c	2005-11-22 15:12:20.000000000 +1100
-@@ -43,6 +43,8 @@
- #define LSR_TEMT 0x40  /* Xmitter empty */
- #define LSR_ERR  0x80  /* Error */
- 
-+#define LCR_DLAB 0x80
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-serialfix/arch/powerpc/platforms/powermac/udbg_adb.c	2005-11-22 16:38:49.000000000 +1100
+@@ -0,0 +1,218 @@
++#include <linux/config.h>
++#include <linux/string.h>
++#include <linux/kernel.h>
++#include <linux/errno.h>
++#include <linux/bitops.h>
++#include <linux/ptrace.h>
++#include <linux/adb.h>
++#include <linux/pmu.h>
++#include <linux/cuda.h>
++#include <asm/machdep.h>
++#include <asm/io.h>
++#include <asm/page.h>
++#include <asm/xmon.h>
++#include <asm/prom.h>
++#include <asm/bootx.h>
++#include <asm/machdep.h>
++#include <asm/errno.h>
++#include <asm/pmac_feature.h>
++#include <asm/processor.h>
++#include <asm/delay.h>
++#include <asm/btext.h>
++#include <asm/time.h>
++#include <asm/udbg.h>
 +
- static volatile struct NS16550 __iomem *udbg_comport;
++/*
++ * This implementation is "special", it can "patch" the current
++ * udbg implementation and work on top of it. It must thus be
++ * initialized last
++ */
++
++static void (*udbg_adb_old_putc)(char c);
++static char (*udbg_adb_old_getc)(void);
++static int (*udbg_adb_old_getc_poll)(void);
++
++static enum {
++	input_adb_none,
++	input_adb_pmu,
++	input_adb_cuda,
++} input_type = input_adb_none;
++
++static int udbg_adb_use_btext;
++
++int xmon_wants_key, xmon_adb_keycode;
++
++static inline void udbg_adb_poll(void)
++{
++#ifdef CONFIG_ADB_PMU
++	if (input_type == input_adb_pmu)
++		pmu_poll_adb();
++#endif /* CONFIG_ADB_PMU */
++#ifdef CONFIG_ADB_CUDA
++	if (input_type == input_adb_cuda)
++		cuda_poll();
++#endif /* CONFIG_ADB_CUDA */
++}
++
++#ifdef CONFIG_BOOTX_TEXT
++static int xmon_adb_shiftstate;
++
++static unsigned char xmon_keytab[128] =
++	"asdfhgzxcv\000bqwer"				/* 0x00 - 0x0f */
++	"yt123465=97-80]o"				/* 0x10 - 0x1f */
++	"u[ip\rlj'k;\\,/nm."				/* 0x20 - 0x2f */
++	"\t `\177\0\033\0\0\0\0\0\0\0\0\0\0"		/* 0x30 - 0x3f */
++	"\0.\0*\0+\0\0\0\0\0/\r\0-\0"			/* 0x40 - 0x4f */
++	"\0\0000123456789\0\0\0";			/* 0x50 - 0x5f */
++
++static unsigned char xmon_shift_keytab[128] =
++	"ASDFHGZXCV\000BQWER"				/* 0x00 - 0x0f */
++	"YT!@#$^%+(&_*)}O"				/* 0x10 - 0x1f */
++	"U{IP\rLJ\"K:|<?NM>"				/* 0x20 - 0x2f */
++	"\t ~\177\0\033\0\0\0\0\0\0\0\0\0\0"		/* 0x30 - 0x3f */
++	"\0.\0*\0+\0\0\0\0\0/\r\0-\0"			/* 0x40 - 0x4f */
++	"\0\0000123456789\0\0\0";			/* 0x50 - 0x5f */
++
++static char udbg_adb_local_getc(void)
++{
++	int k, t, on;
++
++	xmon_wants_key = 1;
++	for (;;) {
++		xmon_adb_keycode = -1;
++		t = 0;
++		on = 0;
++		k = -1;
++		do {
++			if (--t < 0) {
++				on = 1 - on;
++				btext_drawchar(on? 0xdb: 0x20);
++				btext_drawchar('\b');
++				t = 200000;
++			}
++			udbg_adb_poll();
++			if (udbg_adb_old_getc_poll)
++				k = udbg_adb_old_getc_poll();
++		} while (k == -1 && xmon_adb_keycode == -1);
++		if (on)
++			btext_drawstring(" \b");
++		if (k != -1)
++			return k;
++		k = xmon_adb_keycode;
++
++		/* test for shift keys */
++		if ((k & 0x7f) == 0x38 || (k & 0x7f) == 0x7b) {
++			xmon_adb_shiftstate = (k & 0x80) == 0;
++			continue;
++		}
++		if (k >= 0x80)
++			continue;	/* ignore up transitions */
++		k = (xmon_adb_shiftstate? xmon_shift_keytab: xmon_keytab)[k];
++		if (k != 0)
++			break;
++	}
++	xmon_wants_key = 0;
++	return k;
++}
++#endif /* CONFIG_BOOTX_TEXT */
++
++static char udbg_adb_getc(void)
++{
++#ifdef CONFIG_BOOTX_TEXT
++	if (udbg_adb_use_btext && input_type != input_adb_none)
++		return udbg_adb_local_getc();
++#endif
++	if (udbg_adb_old_getc)
++		return udbg_adb_old_getc();
++	return -1;
++}
++
++/* getc_poll() is not really used, unless you have the xmon-over modem
++ * hack that doesn't quite concern us here, thus we just poll the low level
++ * ADB driver to prevent it from timing out and call back the original poll
++ * routine.
++ */
++static int udbg_adb_getc_poll(void)
++{
++	udbg_adb_poll();
++
++	if (udbg_adb_old_getc_poll)
++		return udbg_adb_old_getc_poll();
++	return -1;
++}
++
++static void udbg_adb_putc(char c)
++{
++#ifdef CONFIG_BOOTX_TEXT
++	if (udbg_adb_use_btext)
++		btext_drawchar(c);
++#endif
++	if (udbg_adb_old_putc)
++		return udbg_adb_old_putc(c);
++}
++
++void udbg_adb_init_early(void)
++{
++#ifdef CONFIG_BOOTX_TEXT
++	if (btext_find_display(1) == 0) {
++		udbg_adb_use_btext = 1;
++		udbg_putc = udbg_adb_putc;
++	}
++#endif
++}
++
++int udbg_adb_init(int force_btext)
++{
++	struct device_node *np;
++
++	/* Capture existing callbacks */
++	udbg_adb_old_putc = udbg_putc;
++	udbg_adb_old_getc = udbg_getc;
++	udbg_adb_old_getc_poll = udbg_getc_poll;
++
++	/* Check if our early init was already called */
++	if (udbg_adb_old_putc == udbg_adb_putc ||
++	    udbg_adb_old_putc == btext_drawchar)
++		udbg_adb_old_putc = NULL;
++
++	/* Set ours as output */
++	udbg_putc = udbg_adb_putc;
++	udbg_getc = udbg_adb_getc;
++	udbg_getc_poll = udbg_adb_getc_poll;
++
++#ifdef CONFIG_BOOTX_TEXT
++	/* Check if we should use btext output */
++	if (btext_find_display(force_btext) == 0)
++		udbg_adb_use_btext = 1;
++#endif
++
++	/* See if there is a keyboard in the device tree with a parent
++	 * of type "adb". If not, we return a failure, but we keep the
++	 * bext output set for now
++	 */
++	for (np = NULL; (np = of_find_node_by_name(np, "keyboard")) != NULL;) {
++		struct device_node *parent = of_get_parent(np);
++		int found = (parent && !strcmp(parent->type, "adb") == 0);
++		of_node_put(parent);
++		if (found)
++			break;
++	}
++	if (np == NULL)
++		return -ENODEV;
++	of_node_put(np);
++
++#ifdef CONFIG_ADB_PMU
++	if (find_via_pmu())
++		input_type = input_adb_pmu;
++#endif
++#ifdef CONFIG_ADB_CUDA
++	if (find_via_cuda())
++		input_type = input_adb_cuda;
++#endif
++
++	/* Same as above: nothing found, keep btext set for output */
++	if (input_type == input_adb_none)
++		return -ENODEV;
++
++	return 0;
++}
+Index: linux-serialfix/arch/powerpc/platforms/powermac/udbg_scc.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-serialfix/arch/powerpc/platforms/powermac/udbg_scc.c	2005-11-22 16:33:30.000000000 +1100
+@@ -0,0 +1,165 @@
++/*
++ * udbg for for zilog scc ports as found on Apple PowerMacs
++ *
++ * Copyright (C) 2001-2005 PPC 64 Team, IBM Corp
++ *
++ *      This program is free software; you can redistribute it and/or
++ *      modify it under the terms of the GNU General Public License
++ *      as published by the Free Software Foundation; either version
++ *      2 of the License, or (at your option) any later version.
++ */
++#include <linux/config.h>
++#include <linux/types.h>
++#include <asm/udbg.h>
++#include <asm/processor.h>
++#include <asm/io.h>
++#include <asm/prom.h>
++#include <asm/pmac_feature.h>
++
++extern u8 real_readb(volatile u8 __iomem  *addr);
++extern void real_writeb(u8 data, volatile u8 __iomem *addr);
++
++#define	SCC_TXRDY	4
++#define SCC_RXRDY	1
++
++static volatile u8 __iomem *sccc;
++static volatile u8 __iomem *sccd;
++
++static void udbg_scc_putc(char c)
++{
++	if (sccc) {
++		while ((in_8(sccc) & SCC_TXRDY) == 0)
++			;
++		out_8(sccd,  c);
++		if (c == '\n')
++			udbg_scc_putc('\r');
++	}
++}
++
++static int udbg_scc_getc_poll(void)
++{
++	if (sccc) {
++		if ((in_8(sccc) & SCC_RXRDY) != 0)
++			return in_8(sccd);
++		else
++			return -1;
++	}
++	return -1;
++}
++
++static char udbg_scc_getc(void)
++{
++	if (sccc) {
++		while ((in_8(sccc) & SCC_RXRDY) == 0)
++			;
++		return in_8(sccd);
++	}
++	return 0;
++}
++
++static unsigned char scc_inittab[] = {
++    13, 0,		/* set baud rate divisor */
++    12, 0,
++    14, 1,		/* baud rate gen enable, src=rtxc */
++    11, 0x50,		/* clocks = br gen */
++    5,  0xea,		/* tx 8 bits, assert DTR & RTS */
++    4,  0x46,		/* x16 clock, 1 stop */
++    3,  0xc1,		/* rx enable, 8 bits */
++};
++
++void udbg_scc_init(int force_scc)
++{
++	u32 *reg;
++	unsigned long addr;
++	struct device_node *stdout = NULL, *escc = NULL, *macio = NULL;
++	struct device_node *ch, *ch_def = NULL, *ch_a = NULL;
++	char *path;
++	int i, x;
++
++	escc = of_find_node_by_name(NULL, "escc");
++	if (escc == NULL)
++		goto bail;
++	macio = of_get_parent(escc);
++	if (macio == NULL)
++		goto bail;
++	path = (char *)get_property(of_chosen, "linux,stdout-path", NULL);
++	if (path != NULL)
++		stdout = of_find_node_by_path(path);
++	for (ch = NULL; (ch = of_get_next_child(escc, ch)) != NULL;) {
++		if (ch == stdout)
++			ch_def = of_node_get(ch);
++		if (strcmp(ch->name, "ch-a") == 0)
++			ch_a = of_node_get(ch);
++	}
++	if (ch_def == NULL && !force_scc)
++		goto bail;
++
++	ch = ch_def ? ch_def : ch_a;
++
++	/* Get address within mac-io ASIC */
++	reg = (u32 *)get_property(escc, "reg", NULL);
++	if (reg == NULL)
++		goto bail;
++	addr = reg[0];
++
++	/* Get address of mac-io PCI itself */
++	reg = (u32 *)get_property(macio, "assigned-addresses", NULL);
++	if (reg == NULL)
++		goto bail;
++	addr += reg[2];
++
++	/* Lock the serial port */
++	pmac_call_feature(PMAC_FTR_SCC_ENABLE, ch,
++			  PMAC_SCC_ASYNC | PMAC_SCC_FLAG_XMON, 1);
++
++
++	/* Setup for 57600 8N1 */
++	if (ch == ch_a)
++		addr += 0x20;
++	sccc = (volatile u8 * __iomem) ioremap(addr & PAGE_MASK, PAGE_SIZE) ;
++	sccc += addr & ~PAGE_MASK;
++	sccd = sccc + 0x10;
++
++	mb();
++
++	for (i = 20000; i != 0; --i)
++		x = in_8(sccc);
++	out_8(sccc, 0x09);		/* reset A or B side */
++	out_8(sccc, 0xc0);
++	for (i = 0; i < sizeof(scc_inittab); ++i)
++		out_8(sccc, scc_inittab[i]);
++
++	udbg_putc = udbg_scc_putc;
++	udbg_getc = udbg_scc_getc;
++	udbg_getc_poll = udbg_scc_getc_poll;
++
++	udbg_puts("Hello World !\n");
++
++ bail:
++	of_node_put(macio);
++	of_node_put(escc);
++	of_node_put(stdout);
++	of_node_put(ch_def);
++	of_node_put(ch_a);
++}
++
++#ifdef CONFIG_PPC64
++static void udbg_real_scc_putc(char c)
++{
++	while ((real_readb(sccc) & SCC_TXRDY) == 0)
++		;
++	real_writeb(c, sccd);
++	if (c == '\n')
++		udbg_real_scc_putc('\r');
++}
++
++void udbg_init_pmac_realmode(void)
++{
++	sccc = (volatile u8 __iomem *)0x80013020ul;
++	sccd = (volatile u8 __iomem *)0x80013030ul;
++
++	udbg_putc = udbg_real_scc_putc;
++	udbg_getc = NULL;
++	udbg_getc_poll = NULL;
++}
++#endif /* CONFIG_PPC64 */
+Index: linux-serialfix/arch/powerpc/Kconfig
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/Kconfig	2005-11-21 11:53:14.000000000 +1100
++++ linux-serialfix/arch/powerpc/Kconfig	2005-11-22 16:33:30.000000000 +1100
+@@ -50,7 +50,7 @@
  
- static void udbg_550_putc(unsigned char c)
-@@ -77,29 +79,70 @@
+ config EARLY_PRINTK
+ 	bool
+-	default y if PPC64
++	default y
+ 
+ config COMPAT
+ 	bool
+Index: linux-serialfix/arch/powerpc/kernel/btext.c
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/kernel/btext.c	2005-11-01 14:13:52.000000000 +1100
++++ linux-serialfix/arch/powerpc/kernel/btext.c	2005-11-22 16:36:53.000000000 +1100
+@@ -31,15 +31,18 @@
+ static void draw_byte_16(unsigned char *bits, unsigned int *base, int rb);
+ static void draw_byte_8(unsigned char *bits, unsigned int *base, int rb);
+ 
+-static int g_loc_X;
+-static int g_loc_Y;
+-static int g_max_loc_X;
+-static int g_max_loc_Y;
+-
+-static int dispDeviceRowBytes;
+-static int dispDeviceDepth;
+-static int dispDeviceRect[4];
+-static unsigned char *dispDeviceBase, *logicalDisplayBase;
++#define __force_data __attribute__((__section__(".data")))
++
++static int g_loc_X __force_data;
++static int g_loc_Y __force_data;
++static int g_max_loc_X __force_data;
++static int g_max_loc_Y __force_data;
++
++static int dispDeviceRowBytes __force_data;
++static int dispDeviceDepth  __force_data;
++static int dispDeviceRect[4] __force_data;
++static unsigned char *dispDeviceBase __force_data;
++static unsigned char *logicalDisplayBase __force_data;
+ 
+ unsigned long disp_BAT[2] __initdata = {0, 0};
+ 
+@@ -47,7 +50,7 @@
+ 
+ static unsigned char vga_font[cmapsz];
+ 
+-int boot_text_mapped;
++int boot_text_mapped __force_data = 0;
+ int force_printk_to_btext = 0;
+ 
+ #ifdef CONFIG_PPC32
+@@ -66,8 +69,7 @@
+  * is really badly aligned, but I didn't encounter this case
+  * yet.
+  */
+-void __init
+-btext_prepare_BAT(void)
++void __init btext_prepare_BAT(void)
+ {
+ 	unsigned long vaddr = KERNELBASE + 0x10000000;
+ 	unsigned long addr;
+@@ -95,12 +97,13 @@
+ }
+ #endif
+ 
+-/* This function will enable the early boot text when doing OF booting. This
+- * way, xmon output should work too
++
++/* This function can be used to enable the early boot text when doing
++ * OF booting or within bootx init. It must be followed by a btext_unmap()
++ * call before the logical address becomes unuseable
+  */
+-void __init
+-btext_setup_display(int width, int height, int depth, int pitch,
+-		    unsigned long address)
++void __init btext_setup_display(int width, int height, int depth, int pitch,
++				unsigned long address)
+ {
+ 	g_loc_X = 0;
+ 	g_loc_Y = 0;
+@@ -116,6 +119,11 @@
+ 	boot_text_mapped = 1;
+ }
+ 
++void __init btext_unmap(void)
++{
++	boot_text_mapped = 0;
++}
++
+ /* Here's a small text engine to use during early boot
+  * or for debugging purposes
+  *
+@@ -127,7 +135,7 @@
+  *    changes.
+  */
+ 
+-void map_boot_text(void)
++static void map_boot_text(void)
+ {
+ 	unsigned long base, offset, size;
+ 	unsigned char *vbase;
+@@ -175,8 +183,9 @@
+ 	if (prop)
+ 		address = *prop;
+ 
+-	/* FIXME: Add support for PCI reg properties */
+-
++	/* FIXME: Add support for PCI reg properties. Right now, only
++	 * reliable on macs
++	 */
+ 	if (address == 0)
+ 		return -EINVAL;
+ 
+@@ -184,7 +193,6 @@
+ 	g_loc_Y = 0;
+ 	g_max_loc_X = width / 8;
+ 	g_max_loc_Y = height / 16;
+-	logicalDisplayBase = (unsigned char *)address;
+ 	dispDeviceBase = (unsigned char *)address;
+ 	dispDeviceRowBytes = pitch;
+ 	dispDeviceDepth = depth;
+@@ -197,7 +205,7 @@
  	return 0;
  }
  
--void udbg_init_uart(void __iomem *comport, unsigned int speed)
-+void udbg_init_uart(void __iomem *comport, unsigned int speed,
-+		    unsigned int clock)
+-void __init init_boot_display(void)
++int __init btext_find_display(int allow_nonstdout)
  {
--	u16 dll = speed ? (115200 / speed) : 12;
-+	unsigned int dll, base_bauds = clock / 16;
-+
-+	if (speed == 0)
-+		speed = 9600;
-+	dll = base_bauds / speed;
- 
- 	if (comport) {
- 		udbg_comport = (struct NS16550 __iomem *)comport;
- 		out_8(&udbg_comport->lcr, 0x00);
- 		out_8(&udbg_comport->ier, 0xff);
- 		out_8(&udbg_comport->ier, 0x00);
--		out_8(&udbg_comport->lcr, 0x80);	/* Access baud rate */
--		out_8(&udbg_comport->dll, dll & 0xff);	/* 1 = 115200,  2 = 57600,
--							   3 = 38400, 12 = 9600 baud */
--		out_8(&udbg_comport->dlm, dll >> 8);	/* dll >> 8 which should be zero
--							   for fast rates; */
--		out_8(&udbg_comport->lcr, 0x03);	/* 8 data, 1 stop, no parity */
--		out_8(&udbg_comport->mcr, 0x03);	/* RTS/DTR */
--		out_8(&udbg_comport->fcr ,0x07);	/* Clear & enable FIFOs */
-+		out_8(&udbg_comport->lcr, LCR_DLAB);
-+		out_8(&udbg_comport->dll, dll & 0xff);
-+		out_8(&udbg_comport->dlm, dll >> 8);
-+		/* 8 data, 1 stop, no parity */
-+		out_8(&udbg_comport->lcr, 0x03);
-+		/* RTS/DTR */
-+		out_8(&udbg_comport->mcr, 0x03);
-+		/* Clear & enable FIFOs */
-+		out_8(&udbg_comport->fcr ,0x07);
- 		udbg_putc = udbg_550_putc;
- 		udbg_getc = udbg_550_getc;
- 		udbg_getc_poll = udbg_550_getc_poll;
+ 	char *name;
+ 	struct device_node *np = NULL; 
+@@ -218,8 +226,8 @@
  	}
+ 	if (np)
+ 		rc = btext_initialize(np);
+-	if (rc == 0)
+-		return;
++	if (rc == 0 || !allow_nonstdout)
++		return rc;
+ 
+ 	for (np = NULL; (np = of_find_node_by_type(np, "display"));) {
+ 		if (get_property(np, "linux,opened", NULL)) {
+@@ -228,8 +236,9 @@
+ 			printk("result: %d\n", rc);
+ 		}
+ 		if (rc == 0)
+-			return;
++			break;
+ 	}
++	return rc;
  }
  
-+unsigned int udbg_probe_uart_speed(void __iomem *comport, unsigned int clock)
-+{
-+	unsigned int dll, dlm, divisor, prescaler, speed;
-+	u8 old_lcr;
-+	volatile struct NS16550 __iomem *port = comport;
-+
-+	old_lcr = in_8(&port->lcr);
-+
-+	/* select divisor latch registers.  */
-+	out_8(&port->lcr, LCR_DLAB);
-+
-+	/* now, read the divisor */
-+	dll = in_8(&port->dll);
-+	dlm = in_8(&port->dlm);
-+	divisor = dlm << 8 | dll;
-+
-+	/* check prescaling */
-+	if (in_8(&port->mcr) & 0x80)
-+		prescaler = 4;
-+	else
-+		prescaler = 1;
-+
-+	/* restore the LCR */
-+	out_8(&port->lcr, old_lcr);
-+
-+	/* calculate speed */
-+	speed = (clock / prescaler) / (divisor * 16);
-+
-+	/* sanity check */
-+	if (speed < 9600 || speed > 115200)
-+		speed = 9600;
-+
-+	return speed;
+ /* Calc the base address of a given point (x,y) */
+@@ -277,44 +286,83 @@
+ 
+ void btext_clearscreen(void)
+ {
+-	unsigned long *base	= (unsigned long *)calc_base(0, 0);
++	unsigned int *base	= (unsigned int *)calc_base(0, 0);
+ 	unsigned long width 	= ((dispDeviceRect[2] - dispDeviceRect[0]) *
+-					(dispDeviceDepth >> 3)) >> 3;
++					(dispDeviceDepth >> 3)) >> 2;
+ 	int i,j;
+ 
+ 	for (i=0; i<(dispDeviceRect[3] - dispDeviceRect[1]); i++)
+ 	{
+-		unsigned long *ptr = base;
++		unsigned int *ptr = base;
+ 		for(j=width; j; --j)
+ 			*(ptr++) = 0;
+-		base += (dispDeviceRowBytes >> 3);
++		base += (dispDeviceRowBytes >> 2);
++	}
 +}
 +
- #ifdef CONFIG_PPC_MAPLE
- void udbg_maple_real_putc(unsigned char c)
- {
-Index: linux-serialfix/arch/powerpc/platforms/maple/setup.c
-===================================================================
---- linux-serialfix.orig/arch/powerpc/platforms/maple/setup.c	2005-11-22 15:12:17.000000000 +1100
-+++ linux-serialfix/arch/powerpc/platforms/maple/setup.c	2005-11-22 15:12:20.000000000 +1100
-@@ -191,20 +191,6 @@
- 	 */
- 	hpte_init_native();
- 
--	/* Find the serial port */
--	generic_find_legacy_serial_ports(&physport, &default_speed);
--
--	DBG("phys port addr: %lx\n", (long)physport);
--
--	if (physport) {
--		void *comport;
--		/* Map the uart for udbg. */
--		comport = (void *)ioremap(physport, 16);
--		udbg_init_uart(comport, default_speed);
--
--		DBG("Hello World !\n");
--	}
--
- 	/* Setup interrupt mapping options */
- 	ppc64_interrupt_controller = IC_OPEN_PIC;
- 
-Index: linux-serialfix/arch/powerpc/platforms/pseries/lpar.c
-===================================================================
---- linux-serialfix.orig/arch/powerpc/platforms/pseries/lpar.c	2005-11-22 15:12:17.000000000 +1100
-+++ linux-serialfix/arch/powerpc/platforms/pseries/lpar.c	2005-11-22 15:12:20.000000000 +1100
-@@ -24,6 +24,7 @@
- #include <linux/config.h>
- #include <linux/kernel.h>
- #include <linux/dma-mapping.h>
-+#include <linux/console.h>
- #include <asm/processor.h>
- #include <asm/mmu.h>
- #include <asm/page.h>
-@@ -191,7 +192,7 @@
- /* call this from early_init() for a working debug console on
-  * vterm capable LPAR machines
-  */
--void udbg_init_debug_lpar(void)
-+void __init udbg_init_debug_lpar(void)
- {
- 	vtermno = 0;
- 	udbg_putc = udbg_putcLP;
-@@ -200,63 +201,54 @@
- }
- 
- /* returns 0 if couldn't find or use /chosen/stdout as console */
--int find_udbg_vterm(void)
-+void __init find_udbg_vterm(void)
- {
- 	struct device_node *stdout_node;
- 	u32 *termno;
- 	char *name;
--	int found = 0;
-+	int add_console;
- 
- 	/* find the boot console from /chosen/stdout */
- 	if (!of_chosen)
--		return 0;
-+		return;
- 	name = (char *)get_property(of_chosen, "linux,stdout-path", NULL);
- 	if (name == NULL)
--		return 0;
-+		return;
- 	stdout_node = of_find_node_by_path(name);
- 	if (!stdout_node)
--		return 0;
--
--	/* now we have the stdout node; figure out what type of device it is. */
-+		return;
- 	name = (char *)get_property(stdout_node, "name", NULL);
- 	if (!name) {
- 		printk(KERN_WARNING "stdout node missing 'name' property!\n");
- 		goto out;
- 	}
-+	/* The user has requested a console so this is already set up. */
-+	add_console = !strstr(saved_command_line, "console=");
- 
--	if (strncmp(name, "vty", 3) == 0) {
--		if (device_is_compatible(stdout_node, "hvterm1")) {
--			termno = (u32 *)get_property(stdout_node, "reg", NULL);
--			if (termno) {
--				vtermno = termno[0];
--				udbg_putc = udbg_putcLP;
--				udbg_getc = udbg_getcLP;
--				udbg_getc_poll = udbg_getc_pollLP;
--				found = 1;
--			}
--		} else if (device_is_compatible(stdout_node, "hvterm-protocol")) {
--			termno = (u32 *)get_property(stdout_node, "reg", NULL);
--			if (termno) {
--				vtermno = termno[0];
--				udbg_putc = udbg_hvsi_putc;
--				udbg_getc = udbg_hvsi_getc;
--				udbg_getc_poll = udbg_hvsi_getc_poll;
--				found = 1;
--			}
--		}
--	} else if (strncmp(name, "serial", 6)) {
--		/* XXX fix ISA serial console */
--		printk(KERN_WARNING "serial stdout on LPAR ('%s')! "
--				"can't print udbg messages\n",
--		       stdout_node->full_name);
--	} else {
--		printk(KERN_WARNING "don't know how to print to stdout '%s'\n",
--		       stdout_node->full_name);
--	}
-+	/* Check if it's a virtual terminal */
-+	if (strncmp(name, "vty", 3) != 0)
-+		goto out;
-+	termno = (u32 *)get_property(stdout_node, "reg", NULL);
-+	if (termno == NULL)
-+		goto out;
-+	vtermno = termno[0];
- 
-+	if (device_is_compatible(stdout_node, "hvterm1")) {
-+		udbg_putc = udbg_putcLP;
-+		udbg_getc = udbg_getcLP;
-+		udbg_getc_poll = udbg_getc_pollLP;
-+		if (add_console)
-+			add_preferred_console("hvc", termno[0] & 0xff, NULL);
-+	} else if (device_is_compatible(stdout_node, "hvterm-protocol")) {
-+		vtermno = termno[0];
-+		udbg_putc = udbg_hvsi_putc;
-+		udbg_getc = udbg_hvsi_getc;
-+		udbg_getc_poll = udbg_hvsi_getc_poll;
-+		if (add_console)
-+			add_preferred_console("hvsi", termno[0] & 0xff, NULL);
-+	}
- out:
- 	of_node_put(stdout_node);
--	return found;
- }
- 
- void vpa_init(int cpu)
-Index: linux-serialfix/arch/powerpc/platforms/pseries/setup.c
-===================================================================
---- linux-serialfix.orig/arch/powerpc/platforms/pseries/setup.c	2005-11-22 15:12:17.000000000 +1100
-+++ linux-serialfix/arch/powerpc/platforms/pseries/setup.c	2005-11-22 15:12:20.000000000 +1100
-@@ -78,8 +78,6 @@
- extern void find_udbg_vterm(void);
- extern void system_reset_fwnmi(void);	/* from head.S */
- extern void machine_check_fwnmi(void);	/* from head.S */
--extern void generic_find_legacy_serial_ports(u64 *physport,
--		unsigned int *default_speed);
- 
- int fwnmi_active;  /* TRUE if an FWNMI handler is present */
- 
-@@ -365,10 +363,7 @@
-  */
- static void __init pSeries_init_early(void)
- {
--	void *comport;
- 	int iommu_off = 0;
--	unsigned int default_speed;
--	u64 physport;
- 
- 	DBG(" -> pSeries_init_early()\n");
- 
-@@ -382,17 +377,8 @@
- 			     get_property(of_chosen, "linux,iommu-off", NULL));
- 	}
- 
--	generic_find_legacy_serial_ports(&physport, &default_speed);
--
- 	if (platform_is_lpar())
- 		find_udbg_vterm();
--	else if (physport) {
--		/* Map the uart for udbg. */
--		comport = (void *)ioremap(physport, 16);
--		udbg_init_uart(comport, default_speed);
--
--		DBG("Hello World !\n");
--	}
- 
- 	if (firmware_has_feature(FW_FEATURE_DABR))
- 		ppc_md.set_dabr = pseries_set_dabr;
-Index: linux-serialfix/include/asm-powerpc/serial.h
-===================================================================
---- linux-serialfix.orig/include/asm-powerpc/serial.h	2005-11-22 15:12:17.000000000 +1100
-+++ linux-serialfix/include/asm-powerpc/serial.h	2005-11-22 15:12:20.000000000 +1100
-@@ -15,4 +15,6 @@
- /* Default baud base if not found in device-tree */
- #define BASE_BAUD ( 1843200 / 16 )
- 
-+extern void find_legacy_serial_ports(void);
++void btext_flushscreen(void)
++{
++	unsigned int *base	= (unsigned int *)calc_base(0, 0);
++	unsigned long width 	= ((dispDeviceRect[2] - dispDeviceRect[0]) *
++					(dispDeviceDepth >> 3)) >> 2;
++	int i,j;
 +
- #endif /* _PPC64_SERIAL_H */
-Index: linux-serialfix/include/asm-powerpc/udbg.h
-===================================================================
---- linux-serialfix.orig/include/asm-powerpc/udbg.h	2005-11-22 15:12:17.000000000 +1100
-+++ linux-serialfix/include/asm-powerpc/udbg.h	2005-11-22 15:12:20.000000000 +1100
-@@ -24,7 +24,10 @@
- extern void register_early_udbg_console(void);
- extern void udbg_printf(const char *fmt, ...);
++	for (i=0; i < (dispDeviceRect[3] - dispDeviceRect[1]); i++)
++	{
++		unsigned int *ptr = base;
++		for(j = width; j > 0; j -= 8) {
++			__asm__ __volatile__ ("dcbst 0,%0" :: "r" (ptr));
++			ptr += 8;
++		}
++		base += (dispDeviceRowBytes >> 2);
+ 	}
++	__asm__ __volatile__ ("sync" ::: "memory");
+ }
  
--extern void udbg_init_uart(void __iomem *comport, unsigned int speed);
-+extern void udbg_init_uart(void __iomem *comport, unsigned int speed,
-+			   unsigned int clock);
-+extern unsigned int udbg_probe_uart_speed(void __iomem *comport,
-+					  unsigned int clock);
++void btext_flushline(void)
++{
++	unsigned int *base	= (unsigned int *)calc_base(0, g_loc_Y << 4);
++	unsigned long width 	= ((dispDeviceRect[2] - dispDeviceRect[0]) *
++					(dispDeviceDepth >> 3)) >> 2;
++	int i,j;
++
++	for (i=0; i < 16; i++)
++	{
++		unsigned int *ptr = base;
++		for(j = width; j > 0; j -= 8) {
++			__asm__ __volatile__ ("dcbst 0,%0" :: "r" (ptr));
++			ptr += 8;
++		}
++		base += (dispDeviceRowBytes >> 2);
++	}
++	__asm__ __volatile__ ("sync" ::: "memory");
++}
++
++
+ #ifndef NO_SCROLL
+ static void scrollscreen(void)
+ {
+-	unsigned long *src     	= (unsigned long *)calc_base(0,16);
+-	unsigned long *dst     	= (unsigned long *)calc_base(0,0);
++	unsigned int *src     	= (unsigned int *)calc_base(0,16);
++	unsigned int *dst     	= (unsigned int *)calc_base(0,0);
+ 	unsigned long width    	= ((dispDeviceRect[2] - dispDeviceRect[0]) *
+-				   (dispDeviceDepth >> 3)) >> 3;
++				   (dispDeviceDepth >> 3)) >> 2;
+ 	int i,j;
  
- struct device_node;
- extern void udbg_init_scc(struct device_node *np);
+ 	for (i=0; i<(dispDeviceRect[3] - dispDeviceRect[1] - 16); i++)
+ 	{
+-		unsigned long *src_ptr = src;
+-		unsigned long *dst_ptr = dst;
++		unsigned int *src_ptr = src;
++		unsigned int *dst_ptr = dst;
+ 		for(j=width; j; --j)
+ 			*(dst_ptr++) = *(src_ptr++);
+-		src += (dispDeviceRowBytes >> 3);
+-		dst += (dispDeviceRowBytes >> 3);
++		src += (dispDeviceRowBytes >> 2);
++		dst += (dispDeviceRowBytes >> 2);
+ 	}
+ 	for (i=0; i<16; i++)
+ 	{
+-		unsigned long *dst_ptr = dst;
++		unsigned int *dst_ptr = dst;
+ 		for(j=width; j; --j)
+ 			*(dst_ptr++) = 0;
+-		dst += (dispDeviceRowBytes >> 3);
++		dst += (dispDeviceRowBytes >> 2);
+ 	}
+ }
+ #endif /* ndef NO_SCROLL */
+@@ -377,6 +425,14 @@
+ 		btext_drawchar(*c++);
+ }
+ 
++void btext_drawtext(const char *c, unsigned int len)
++{
++	if (!boot_text_mapped)
++		return;
++	while (len--)
++		btext_drawchar(*c++);
++}
++
+ void btext_drawhex(unsigned long v)
+ {
+ 	char *hex_table = "0123456789abcdef";
 Index: linux-serialfix/arch/powerpc/kernel/setup_32.c
 ===================================================================
---- linux-serialfix.orig/arch/powerpc/kernel/setup_32.c	2005-11-22 15:12:17.000000000 +1100
-+++ linux-serialfix/arch/powerpc/kernel/setup_32.c	2005-11-22 15:12:20.000000000 +1100
-@@ -39,6 +39,7 @@
- #include <asm/nvram.h>
+--- linux-serialfix.orig/arch/powerpc/kernel/setup_32.c	2005-11-22 16:33:30.000000000 +1100
++++ linux-serialfix/arch/powerpc/kernel/setup_32.c	2005-11-22 16:33:30.000000000 +1100
+@@ -40,6 +40,7 @@
  #include <asm/xmon.h>
  #include <asm/time.h>
-+#include <asm/serial.h>
+ #include <asm/serial.h>
++#include <asm/udbg.h>
  
  #include "setup.h"
  
-@@ -282,6 +283,13 @@
+@@ -294,21 +295,11 @@
  
- 	unflatten_device_tree();
- 	check_for_initrd();
+ 	smp_setup_cpu_maps();
+ 
+-#ifdef CONFIG_BOOTX_TEXT
+-	init_boot_display();
+-#endif
+-
+-#ifdef CONFIG_PPC_PMAC
+-	/* This could be called "early setup arch", it must be done
+-	 * now because xmon need it
+-	 */
+-	if (_machine == _MACH_Pmac)
+-		pmac_feature_init();	/* New cool way */
+-#endif
+-
+ #ifdef CONFIG_XMON_DEFAULT
+ 	xmon_init(1);
+ #endif
++	/* Register early console */
++	register_early_udbg_console();
+ 
+ #if defined(CONFIG_KGDB)
+ 	if (ppc_md.kgdb_map_scc)
+Index: linux-serialfix/arch/powerpc/kernel/udbg_16550.c
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/kernel/udbg_16550.c	2005-11-22 16:33:30.000000000 +1100
++++ linux-serialfix/arch/powerpc/kernel/udbg_16550.c	2005-11-22 16:33:30.000000000 +1100
+@@ -47,7 +47,7 @@
+ 
+ static volatile struct NS16550 __iomem *udbg_comport;
+ 
+-static void udbg_550_putc(unsigned char c)
++static void udbg_550_putc(char c)
+ {
+ 	if (udbg_comport) {
+ 		while ((in_8(&udbg_comport->lsr) & LSR_THRE) == 0)
+@@ -69,7 +69,7 @@
+ 	return -1;
+ }
+ 
+-static unsigned char udbg_550_getc(void)
++static char udbg_550_getc(void)
+ {
+ 	if (udbg_comport) {
+ 		while ((in_8(&udbg_comport->lsr) & LSR_DR) == 0)
+Index: linux-serialfix/arch/powerpc/platforms/powermac/Makefile
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/platforms/powermac/Makefile	2005-11-09 11:49:03.000000000 +1100
++++ linux-serialfix/arch/powerpc/platforms/powermac/Makefile	2005-11-22 16:33:30.000000000 +1100
+@@ -7,3 +7,4 @@
+ # ppc64 pmac doesn't define CONFIG_NVRAM but needs nvram stuff
+ obj-$(CONFIG_PPC64)		+= nvram.o
+ obj-$(CONFIG_SMP)		+= smp.o
++obj-$(CONFIG_PPC_MERGE)		+= udbg_scc.o udbg_adb.o
+Index: linux-serialfix/arch/powerpc/platforms/powermac/setup.c
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/platforms/powermac/setup.c	2005-11-09 11:49:03.000000000 +1100
++++ linux-serialfix/arch/powerpc/platforms/powermac/setup.c	2005-11-22 16:33:30.000000000 +1100
+@@ -76,6 +76,7 @@
+ #include <asm/pmc.h>
+ #include <asm/mpic.h>
+ #include <asm/lmb.h>
++#include <asm/udbg.h>
+ 
+ #include "pmac.h"
+ 
+@@ -321,16 +322,6 @@
+ 	l2cr_init();
+ #endif /* CONFIG_PPC32 */
+ 
+-#ifdef CONFIG_PPC64
+-	/* Probe motherboard chipset */
+-	/* this is done earlier in setup_arch for 32-bit */
+-	pmac_feature_init();
+-
+-	/* We can NAP */
+-	powersave_nap = 1;
+-	printk(KERN_INFO "Using native/NAP idle loop\n");
+-#endif
+-
+ #ifdef CONFIG_KGDB
+ 	zs_kgdb_hook(0);
+ #endif
+@@ -621,13 +612,26 @@
+ 	 * and call ioremap
+ 	 */
+ 	hpte_init_native();
++#endif
+ 
+-	/* Init SCC */
+-	if (strstr(cmd_line, "sccdbg")) {
+-		sccdbg = 1;
+-		udbg_init_scc(NULL);
++	/* Enable early btext debug if requested */
++	if (strstr(cmd_line, "btextdbg")) {
++		udbg_adb_init_early();
++		register_early_udbg_console();
+ 	}
+ 
++	/* Probe motherboard chipset */
++	pmac_feature_init();
 +
++	/* We can NAP */
++	powersave_nap = 1;
++	printk(KERN_INFO "Using native/NAP idle loop\n");
++
++	/* Initialize debug stuff */
++	udbg_scc_init(!!strstr(cmd_line, "sccdbg"));
++	udbg_adb_init(!!strstr(cmd_line, "btextdbg"));
++
++#ifdef CONFIG_PPC64
+ 	/* Setup interrupt mapping options */
+ 	ppc64_interrupt_controller = IC_OPEN_PIC;
+ 
+@@ -637,19 +641,8 @@
+ 
+ static void __init pmac_progress(char *s, unsigned short hex)
+ {
+-#ifdef CONFIG_PPC64
+-	if (sccdbg) {
+-		udbg_puts(s);
+-		udbg_puts("\n");
+-		return;
+-	}
+-#endif
+-#ifdef CONFIG_BOOTX_TEXT
+-	if (boot_text_mapped) {
+-		btext_drawstring(s);
+-		btext_drawchar('\n');
+-	}
+-#endif /* CONFIG_BOOTX_TEXT */
++	udbg_puts(s);
++	udbg_puts("\n");
+ }
+ 
+ /*
+@@ -734,7 +727,8 @@
+ }
+ 
+ #ifdef CONFIG_PPC64
+-static int pmac_probe_mode(struct pci_bus *bus)
++/* Move that to pci.c */
++static int pmac_pci_probe_mode(struct pci_bus *bus)
+ {
+ 	struct device_node *node = bus->sysdata;
+ 
+@@ -770,7 +764,7 @@
+ 	.check_legacy_ioport	= pmac_check_legacy_ioport,
+ 	.progress		= pmac_progress,
+ #ifdef CONFIG_PPC64
+-	.pci_probe_mode		= pmac_probe_mode,
++	.pci_probe_mode		= pmac_pci_probe_mode,
+ 	.idle_loop		= native_idle,
+ 	.enable_pmcs		= power4_enable_pmcs,
+ #endif
+Index: linux-serialfix/arch/powerpc/xmon/Makefile
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/xmon/Makefile	2005-11-11 10:14:48.000000000 +1100
++++ linux-serialfix/arch/powerpc/xmon/Makefile	2005-11-22 16:33:30.000000000 +1100
+@@ -3,9 +3,5 @@
+ ifdef CONFIG_PPC64
+ EXTRA_CFLAGS += -mno-minimal-toc
+ endif
+-
+-obj-$(CONFIG_8xx)	+= start_8xx.o
+-obj-$(CONFIG_6xx)	+= start_32.o
+-obj-$(CONFIG_4xx)	+= start_32.o
+-obj-$(CONFIG_PPC64)	+= start_64.o
+-obj-y			+= xmon.o ppc-dis.o ppc-opc.o setjmp.o nonstdio.o
++obj-y			+= xmon.o ppc-dis.o ppc-opc.o setjmp.o start.o \
++			   nonstdio.o
+Index: linux-serialfix/arch/powerpc/xmon/start.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-serialfix/arch/powerpc/xmon/start.c	2005-11-22 16:33:30.000000000 +1100
+@@ -0,0 +1,34 @@
++/*
++ * Copyright (C) 1996 Paul Mackerras.
++ *
++ *      This program is free software; you can redistribute it and/or
++ *      modify it under the terms of the GNU General Public License
++ *      as published by the Free Software Foundation; either version
++ *      2 of the License, or (at your option) any later version.
++ */
++#include <asm/machdep.h>
++#include <asm/udbg.h>
++#include "nonstdio.h"
++
++void xmon_map_scc(void)
++{
++}
++
++int xmon_write(void *ptr, int nb)
++{
++	return udbg_write(ptr, nb);
++}
++
++int xmon_readchar(void)
++{
++	if (udbg_getc)
++		return udbg_getc();
++	return -1;
++}
++
++int xmon_read_poll(void)
++{
++	if (udbg_getc_poll)
++		return udbg_getc_poll();
++	return -1;
++}
+Index: linux-serialfix/arch/powerpc/xmon/start_32.c
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/xmon/start_32.c	2005-11-11 10:14:48.000000000 +1100
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,441 +0,0 @@
+-/*
+- * Copyright (C) 1996 Paul Mackerras.
+- */
+-#include <linux/config.h>
+-#include <linux/string.h>
+-#include <asm/machdep.h>
+-#include <asm/io.h>
+-#include <asm/page.h>
+-#include <linux/adb.h>
+-#include <linux/pmu.h>
+-#include <linux/cuda.h>
+-#include <linux/kernel.h>
+-#include <linux/errno.h>
+-#include <linux/bitops.h>
+-#include <asm/xmon.h>
+-#include <asm/prom.h>
+-#include <asm/bootx.h>
+-#include <asm/machdep.h>
+-#include <asm/errno.h>
+-#include <asm/pmac_feature.h>
+-#include <asm/processor.h>
+-#include <asm/delay.h>
+-#include <asm/btext.h>
+-#include <asm/time.h>
+-#include "nonstdio.h"
+-
+-static volatile unsigned char __iomem *sccc, *sccd;
+-unsigned int TXRDY, RXRDY, DLAB;
+-
+-static int use_serial;
+-static int use_screen;
+-static int via_modem;
+-static int xmon_use_sccb;
+-static struct device_node *channel_node;
+-
+-void buf_access(void)
+-{
+-	if (DLAB)
+-		sccd[3] &= ~DLAB;	/* reset DLAB */
+-}
+-
+-extern int adb_init(void);
+-
+-#ifdef CONFIG_PPC_CHRP
+-/*
+- * This looks in the "ranges" property for the primary PCI host bridge
+- * to find the physical address of the start of PCI/ISA I/O space.
+- * It is basically a cut-down version of pci_process_bridge_OF_ranges.
+- */
+-static unsigned long chrp_find_phys_io_base(void)
+-{
+-	struct device_node *node;
+-	unsigned int *ranges;
+-	unsigned long base = CHRP_ISA_IO_BASE;
+-	int rlen = 0;
+-	int np;
+-
+-	node = find_devices("isa");
+-	if (node != NULL) {
+-		node = node->parent;
+-		if (node == NULL || node->type == NULL
+-		    || strcmp(node->type, "pci") != 0)
+-			node = NULL;
+-	}
+-	if (node == NULL)
+-		node = find_devices("pci");
+-	if (node == NULL)
+-		return base;
+-
+-	ranges = (unsigned int *) get_property(node, "ranges", &rlen);
+-	np = prom_n_addr_cells(node) + 5;
+-	while ((rlen -= np * sizeof(unsigned int)) >= 0) {
+-		if ((ranges[0] >> 24) == 1 && ranges[2] == 0) {
+-			/* I/O space starting at 0, grab the phys base */
+-			base = ranges[np - 3];
+-			break;
+-		}
+-		ranges += np;
+-	}
+-	return base;
+-}
+-#endif /* CONFIG_PPC_CHRP */
+-
+-void xmon_map_scc(void)
+-{
+-#ifdef CONFIG_PPC_MULTIPLATFORM
+-	volatile unsigned char __iomem *base;
+-
+-	if (_machine == _MACH_Pmac) {
+-		struct device_node *np;
+-		unsigned long addr;
+-#ifdef CONFIG_BOOTX_TEXT
+-		if (!use_screen && !use_serial
+-		    && !machine_is_compatible("iMac")) {
+-			/* see if there is a keyboard in the device tree
+-			   with a parent of type "adb" */
+-			for (np = find_devices("keyboard"); np; np = np->next)
+-				if (np->parent && np->parent->type
+-				    && strcmp(np->parent->type, "adb") == 0)
+-					break;
+-
+-			/* needs to be hacked if xmon_printk is to be used
+-			   from within find_via_pmu() */
+-#ifdef CONFIG_ADB_PMU
+-			if (np != NULL && boot_text_mapped && find_via_pmu())
+-				use_screen = 1;
+-#endif
+-#ifdef CONFIG_ADB_CUDA
+-			if (np != NULL && boot_text_mapped && find_via_cuda())
+-				use_screen = 1;
+-#endif
+-		}
+-		if (!use_screen && (np = find_devices("escc")) != NULL) {
+-			/*
+-			 * look for the device node for the serial port
+-			 * we're using and see if it says it has a modem
+-			 */
+-			char *name = xmon_use_sccb? "ch-b": "ch-a";
+-			char *slots;
+-			int l;
+-
+-			np = np->child;
+-			while (np != NULL && strcmp(np->name, name) != 0)
+-				np = np->sibling;
+-			if (np != NULL) {
+-				/* XXX should parse this properly */
+-				channel_node = np;
+-				slots = get_property(np, "slot-names", &l);
+-				if (slots != NULL && l >= 10
+-				    && strcmp(slots+4, "Modem") == 0)
+-					via_modem = 1;
+-			}
+-		}
+-		btext_drawstring("xmon uses ");
+-		if (use_screen)
+-			btext_drawstring("screen and keyboard\n");
+-		else {
+-			if (via_modem)
+-				btext_drawstring("modem on ");
+-			btext_drawstring(xmon_use_sccb? "printer": "modem");
+-			btext_drawstring(" port\n");
+-		}
+-
+-#endif /* CONFIG_BOOTX_TEXT */
+-
+-#ifdef CHRP_ESCC
+-		addr = 0xc1013020;
+-#else
+-		addr = 0xf3013020;
+-#endif
+-		TXRDY = 4;
+-		RXRDY = 1;
+-	
+-		np = find_devices("mac-io");
+-		if (np && np->n_addrs)
+-			addr = np->addrs[0].address + 0x13020;
+-		base = (volatile unsigned char *) ioremap(addr & PAGE_MASK, PAGE_SIZE);
+-		sccc = base + (addr & ~PAGE_MASK);
+-		sccd = sccc + 0x10;
+-
+-	} else {
+-		base = (volatile unsigned char *) isa_io_base;
+-
+-#ifdef CONFIG_PPC_CHRP
+-		if (_machine == _MACH_chrp)
+-			base = (volatile unsigned char __iomem *)
+-				ioremap(chrp_find_phys_io_base(), 0x1000);
+-#endif
+-
+-		sccc = base + 0x3fd;
+-		sccd = base + 0x3f8;
+-		if (xmon_use_sccb) {
+-			sccc -= 0x100;
+-			sccd -= 0x100;
+-		}
+-		TXRDY = 0x20;
+-		RXRDY = 1;
+-		DLAB = 0x80;
+-	}
+-#elif defined(CONFIG_GEMINI)
+-	/* should already be mapped by the kernel boot */
+-	sccc = (volatile unsigned char __iomem *) 0xffeffb0d;
+-	sccd = (volatile unsigned char __iomem *) 0xffeffb08;
+-	TXRDY = 0x20;
+-	RXRDY = 1;
+-	DLAB = 0x80;
+-#elif defined(CONFIG_405GP)
+-	sccc = (volatile unsigned char __iomem *)0xef600305;
+-	sccd = (volatile unsigned char __iomem *)0xef600300;
+-	TXRDY = 0x20;
+-	RXRDY = 1;
+-	DLAB = 0x80;
+-#endif /* platform */
+-}
+-
+-static int scc_initialized = 0;
+-
+-void xmon_init_scc(void);
+-extern void cuda_poll(void);
+-
+-static inline void do_poll_adb(void)
+-{
+-#ifdef CONFIG_ADB_PMU
+-	if (sys_ctrler == SYS_CTRLER_PMU)
+-		pmu_poll_adb();
+-#endif /* CONFIG_ADB_PMU */
+-#ifdef CONFIG_ADB_CUDA
+-	if (sys_ctrler == SYS_CTRLER_CUDA)
+-		cuda_poll();
+-#endif /* CONFIG_ADB_CUDA */
+-}
+-
+-int xmon_write(void *ptr, int nb)
+-{
+-	char *p = ptr;
+-	int i, c, ct;
+-
+-#ifdef CONFIG_SMP
+-	static unsigned long xmon_write_lock;
+-	int lock_wait = 1000000;
+-	int locked;
+-
+-	while ((locked = test_and_set_bit(0, &xmon_write_lock)) != 0)
+-		if (--lock_wait == 0)
+-			break;
+-#endif
+-
+-#ifdef CONFIG_BOOTX_TEXT
+-	if (use_screen) {
+-		/* write it on the screen */
+-		for (i = 0; i < nb; ++i)
+-			btext_drawchar(*p++);
+-		goto out;
+-	}
+-#endif
+-	if (!scc_initialized)
+-		xmon_init_scc();
+-	ct = 0;
+-	for (i = 0; i < nb; ++i) {
+-		while ((*sccc & TXRDY) == 0)
+-			do_poll_adb();
+-		c = p[i];
+-		if (c == '\n' && !ct) {
+-			c = '\r';
+-			ct = 1;
+-			--i;
+-		} else {
+-			ct = 0;
+-		}
+-		buf_access();
+-		*sccd = c;
+-		eieio();
+-	}
+-
+- out:
+-#ifdef CONFIG_SMP
+-	if (!locked)
+-		clear_bit(0, &xmon_write_lock);
+-#endif
+-	return nb;
+-}
+-
+-int xmon_wants_key;
+-int xmon_adb_keycode;
+-
+-#ifdef CONFIG_BOOTX_TEXT
+-static int xmon_adb_shiftstate;
+-
+-static unsigned char xmon_keytab[128] =
+-	"asdfhgzxcv\000bqwer"				/* 0x00 - 0x0f */
+-	"yt123465=97-80]o"				/* 0x10 - 0x1f */
+-	"u[ip\rlj'k;\\,/nm."				/* 0x20 - 0x2f */
+-	"\t `\177\0\033\0\0\0\0\0\0\0\0\0\0"		/* 0x30 - 0x3f */
+-	"\0.\0*\0+\0\0\0\0\0/\r\0-\0"			/* 0x40 - 0x4f */
+-	"\0\0000123456789\0\0\0";			/* 0x50 - 0x5f */
+-
+-static unsigned char xmon_shift_keytab[128] =
+-	"ASDFHGZXCV\000BQWER"				/* 0x00 - 0x0f */
+-	"YT!@#$^%+(&_*)}O"				/* 0x10 - 0x1f */
+-	"U{IP\rLJ\"K:|<?NM>"				/* 0x20 - 0x2f */
+-	"\t ~\177\0\033\0\0\0\0\0\0\0\0\0\0"		/* 0x30 - 0x3f */
+-	"\0.\0*\0+\0\0\0\0\0/\r\0-\0"			/* 0x40 - 0x4f */
+-	"\0\0000123456789\0\0\0";			/* 0x50 - 0x5f */
+-
+-static int xmon_get_adb_key(void)
+-{
+-	int k, t, on;
+-
+-	xmon_wants_key = 1;
+-	for (;;) {
+-		xmon_adb_keycode = -1;
+-		t = 0;
+-		on = 0;
+-		do {
+-			if (--t < 0) {
+-				on = 1 - on;
+-				btext_drawchar(on? 0xdb: 0x20);
+-				btext_drawchar('\b');
+-				t = 200000;
+-			}
+-			do_poll_adb();
+-		} while (xmon_adb_keycode == -1);
+-		k = xmon_adb_keycode;
+-		if (on)
+-			btext_drawstring(" \b");
+-
+-		/* test for shift keys */
+-		if ((k & 0x7f) == 0x38 || (k & 0x7f) == 0x7b) {
+-			xmon_adb_shiftstate = (k & 0x80) == 0;
+-			continue;
+-		}
+-		if (k >= 0x80)
+-			continue;	/* ignore up transitions */
+-		k = (xmon_adb_shiftstate? xmon_shift_keytab: xmon_keytab)[k];
+-		if (k != 0)
+-			break;
+-	}
+-	xmon_wants_key = 0;
+-	return k;
+-}
+-#endif /* CONFIG_BOOTX_TEXT */
+-
+-int xmon_readchar(void)
+-{
+-#ifdef CONFIG_BOOTX_TEXT
+-	if (use_screen)
+-		return xmon_get_adb_key();
+-#endif
+-	if (!scc_initialized)
+-		xmon_init_scc();
+-	while ((*sccc & RXRDY) == 0)
+-		do_poll_adb();
+-	buf_access();
+-	return *sccd;
+-}
+-
+-int xmon_read_poll(void)
+-{
+-	if ((*sccc & RXRDY) == 0) {
+-		do_poll_adb();
+-		return -1;
+-	}
+-	buf_access();
+-	return *sccd;
+-}
+-
+-static unsigned char scc_inittab[] = {
+-    13, 0,		/* set baud rate divisor */
+-    12, 1,
+-    14, 1,		/* baud rate gen enable, src=rtxc */
+-    11, 0x50,		/* clocks = br gen */
+-    5,  0xea,		/* tx 8 bits, assert DTR & RTS */
+-    4,  0x46,		/* x16 clock, 1 stop */
+-    3,  0xc1,		/* rx enable, 8 bits */
+-};
+-
+-void xmon_init_scc(void)
+-{
+-	if ( _machine == _MACH_chrp )
+-	{
+-		sccd[3] = 0x83; eieio();	/* LCR = 8N1 + DLAB */
+-		sccd[0] = 12; eieio();		/* DLL = 9600 baud */
+-		sccd[1] = 0; eieio();
+-		sccd[2] = 0; eieio();		/* FCR = 0 */
+-		sccd[3] = 3; eieio();		/* LCR = 8N1 */
+-		sccd[1] = 0; eieio();		/* IER = 0 */
+-	}
+-	else if ( _machine == _MACH_Pmac )
+-	{
+-		int i, x;
+-		unsigned long timeout;
+-
+-		if (channel_node != 0)
+-			pmac_call_feature(
+-				PMAC_FTR_SCC_ENABLE,
+-				channel_node,
+-				PMAC_SCC_ASYNC | PMAC_SCC_FLAG_XMON, 1);
+-			printk(KERN_INFO "Serial port locked ON by debugger !\n");
+-		if (via_modem && channel_node != 0) {
+-			unsigned int t0;
+-
+-			pmac_call_feature(
+-				PMAC_FTR_MODEM_ENABLE,
+-				channel_node, 0, 1);
+-			printk(KERN_INFO "Modem powered up by debugger !\n");
+-			t0 = get_tbl();
+-			timeout = 3 * tb_ticks_per_sec;
+-			if (timeout == 0)
+-				/* assume 25MHz if tb_ticks_per_sec not set */
+-				timeout = 75000000;
+-			while (get_tbl() - t0 < timeout)
+-				eieio();
+-		}
+-		/* use the B channel if requested */
+-		if (xmon_use_sccb) {
+-			sccc = (volatile unsigned char *)
+-				((unsigned long)sccc & ~0x20);
+-			sccd = sccc + 0x10;
+-		}
+-		for (i = 20000; i != 0; --i) {
+-			x = *sccc; eieio();
+-		}
+-		*sccc = 9; eieio();		/* reset A or B side */
+-		*sccc = ((unsigned long)sccc & 0x20)? 0x80: 0x40; eieio();
+-		for (i = 0; i < sizeof(scc_inittab); ++i) {
+-			*sccc = scc_inittab[i];
+-			eieio();
+-		}
+-	}
+-	scc_initialized = 1;
+-	if (via_modem) {
+-		for (;;) {
+-			xmon_write("ATE1V1\r", 7);
+-			if (xmon_expect("OK", 5)) {
+-				xmon_write("ATA\r", 4);
+-				if (xmon_expect("CONNECT", 40))
+-					break;
+-			}
+-			xmon_write("+++", 3);
+-			xmon_expect("OK", 3);
+-		}
+-	}
+-}
+-
+-void xmon_enter(void)
+-{
+-#ifdef CONFIG_ADB_PMU
+-	if (_machine == _MACH_Pmac) {
+-		pmu_suspend();
+-	}
+-#endif
+-}
+-
+-void xmon_leave(void)
+-{
+-#ifdef CONFIG_ADB_PMU
+-	if (_machine == _MACH_Pmac) {
+-		pmu_resume();
+-	}
+-#endif
+-}
+Index: linux-serialfix/arch/powerpc/xmon/start_64.c
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/xmon/start_64.c	2005-11-11 10:14:48.000000000 +1100
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,34 +0,0 @@
+-/*
+- * Copyright (C) 1996 Paul Mackerras.
+- *
+- *      This program is free software; you can redistribute it and/or
+- *      modify it under the terms of the GNU General Public License
+- *      as published by the Free Software Foundation; either version
+- *      2 of the License, or (at your option) any later version.
+- */
+-#include <asm/machdep.h>
+-#include <asm/udbg.h>
+-#include "nonstdio.h"
+-
+-void xmon_map_scc(void)
+-{
+-}
+-
+-int xmon_write(void *ptr, int nb)
+-{
+-	return udbg_write(ptr, nb);
+-}
+-
+-int xmon_readchar(void)
+-{
+-	if (udbg_getc)
+-		return udbg_getc();
+-	return -1;
+-}
+-
+-int xmon_read_poll(void)
+-{
+-	if (udbg_getc_poll)
+-		return udbg_getc_poll();
+-	return -1;
+-}
+Index: linux-serialfix/arch/powerpc/xmon/start_8xx.c
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/xmon/start_8xx.c	2005-11-11 10:14:48.000000000 +1100
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,44 +0,0 @@
+-/*
+- * Copyright (C) 1996 Paul Mackerras.
+- * Copyright (C) 2000 Dan Malek.
+- * Quick hack of Paul's code to make XMON work on 8xx processors.  Lots
+- * of assumptions, like the SMC1 is used, it has been initialized by the
+- * loader at some point, and we can just stuff and suck bytes.
+- * We rely upon the 8xx uart driver to support us, as the interface
+- * changes between boot up and operational phases of the kernel.
+- */
+-#include <linux/string.h>
+-#include <asm/machdep.h>
+-#include <asm/io.h>
+-#include <asm/page.h>
+-#include <linux/kernel.h>
+-#include <asm/8xx_immap.h>
+-#include <asm/mpc8xx.h>
+-#include <asm/commproc.h>
+-#include "nonstdio.h"
+-
+-extern int xmon_8xx_write(char *str, int nb);
+-extern int xmon_8xx_read_poll(void);
+-extern int xmon_8xx_read_char(void);
+-
+-void xmon_map_scc(void)
+-{
+-	cpmp = (cpm8xx_t *)&(((immap_t *)IMAP_ADDR)->im_cpm);
+-}
+-
+-void xmon_init_scc(void);
+-
+-int xmon_write(void *ptr, int nb)
+-{
+-	return(xmon_8xx_write(ptr, nb));
+-}
+-
+-int xmon_readchar(void)
+-{
+-	return xmon_8xx_read_char();
+-}
+-
+-int xmon_read_poll(void)
+-{
+-	return(xmon_8xx_read_poll());
+-}
+Index: linux-serialfix/include/asm-powerpc/btext.h
+===================================================================
+--- linux-serialfix.orig/include/asm-powerpc/btext.h	2005-11-15 13:31:58.000000000 +1100
++++ linux-serialfix/include/asm-powerpc/btext.h	2005-11-22 16:35:41.000000000 +1100
+@@ -7,21 +7,22 @@
+ #define __PPC_BTEXT_H
+ #ifdef __KERNEL__
+ 
+-extern void btext_clearscreen(void);
+-extern void btext_flushscreen(void);
+-
+-extern int boot_text_mapped;
+-
+-extern int btext_initialize(struct device_node *np);
+-
+-extern void map_boot_text(void);
+-extern void init_boot_display(void);
++extern int btext_find_display(int allow_nonstdout);
+ extern void btext_update_display(unsigned long phys, int width, int height,
+ 				 int depth, int pitch);
++extern void btext_setup_display(int width, int height, int depth, int pitch,
++				unsigned long address);
++extern void btext_prepare_BAT(void);
++extern void btext_unmap(void);
+ 
+ extern void btext_drawchar(char c);
+ extern void btext_drawstring(const char *str);
+ extern void btext_drawhex(unsigned long v);
++extern void btext_drawtext(const char *c, unsigned int len);
++
++extern void btext_clearscreen(void);
++extern void btext_flushscreen(void);
++extern void btext_flushline(void);
+ 
+ #endif /* __KERNEL__ */
+ #endif /* __PPC_BTEXT_H */
+Index: linux-serialfix/include/asm-powerpc/udbg.h
+===================================================================
+--- linux-serialfix.orig/include/asm-powerpc/udbg.h	2005-11-22 16:33:30.000000000 +1100
++++ linux-serialfix/include/asm-powerpc/udbg.h	2005-11-22 16:33:30.000000000 +1100
+@@ -13,8 +13,8 @@
+ #include <linux/compiler.h>
+ #include <linux/init.h>
+ 
+-extern void (*udbg_putc)(unsigned char c);
+-extern unsigned char (*udbg_getc)(void);
++extern void (*udbg_putc)(char c);
++extern char (*udbg_getc)(void);
+ extern int (*udbg_getc_poll)(void);
+ 
+ extern void udbg_puts(const char *s);
+@@ -30,5 +30,8 @@
+ 					  unsigned int clock);
+ 
+ struct device_node;
+-extern void udbg_init_scc(struct device_node *np);
++extern void udbg_scc_init(int force_scc);
++extern int udbg_adb_init(int force_btext);
++extern void udbg_adb_init_early(void);
++
+ #endif /* _ASM_POWERPC_UDBG_H */
+Index: linux-serialfix/arch/powerpc/kernel/setup_64.c
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/kernel/setup_64.c	2005-11-22 16:33:30.000000000 +1100
++++ linux-serialfix/arch/powerpc/kernel/setup_64.c	2005-11-22 16:33:30.000000000 +1100
+@@ -466,10 +466,6 @@
+ 	 */
+ 	finish_device_tree();
+ 
+-#ifdef CONFIG_BOOTX_TEXT
+-	init_boot_display();
+-#endif
+-
+ 	/*
+ 	 * Initialize xmon
+ 	 */
+Index: linux-serialfix/arch/powerpc/platforms/powermac/feature.c
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/platforms/powermac/feature.c	2005-11-17 14:06:25.000000000 +1100
++++ linux-serialfix/arch/powerpc/platforms/powermac/feature.c	2005-11-22 16:33:30.000000000 +1100
+@@ -2596,6 +2596,8 @@
+  */
+ static void __init probe_uninorth(void)
+ {
++	u32 *addrp;
++	phys_addr_t address;
+ 	unsigned long actrl;
+ 
+ 	/* Locate core99 Uni-N */
+@@ -2605,20 +2607,23 @@
+ 		uninorth_node = of_find_node_by_name(NULL, "u3");
+ 		uninorth_u3 = 1;
+ 	}
+-	if (uninorth_node && uninorth_node->n_addrs > 0) {
+-		unsigned long address = uninorth_node->addrs[0].address;
+-		uninorth_base = ioremap(address, 0x40000);
+-		uninorth_rev = in_be32(UN_REG(UNI_N_VERSION));
+-		if (uninorth_u3)
+-			u3_ht = ioremap(address + U3_HT_CONFIG_BASE, 0x1000);
+-	} else
+-		uninorth_node = NULL;
++	if (uninorth_node == NULL)
++		return;
+ 
+-	if (!uninorth_node)
++	addrp = (u32 *)get_property(uninorth_node, "reg", NULL);
++	if (addrp == NULL)
++		return;
++	address = of_translate_address(uninorth_node, addrp);
++	if (address == 0)
+ 		return;
++	uninorth_base = ioremap(address, 0x40000);
++	uninorth_rev = in_be32(UN_REG(UNI_N_VERSION));
++	if (uninorth_u3)
++		u3_ht = ioremap(address + U3_HT_CONFIG_BASE, 0x1000);
+ 
+-	printk(KERN_INFO "Found %s memory controller & host bridge, revision: %d\n",
+-	       uninorth_u3 ? "U3" : "UniNorth", uninorth_rev);
++	printk(KERN_INFO "Found %s memory controller & host bridge,"
++	       " revision: %d\n", uninorth_u3 ? "U3" : "UniNorth",
++	       uninorth_rev);
+ 	printk(KERN_INFO "Mapped at 0x%08lx\n", (unsigned long)uninorth_base);
+ 
+ 	/* Set the arbitrer QAck delay according to what Apple does
+@@ -2642,18 +2647,17 @@
+ {
+ 	struct device_node*	node;
+ 	int			i;
+-	volatile u32 __iomem *	base;
+-	u32*			revp;
++	volatile u32 __iomem	*base;
++	u32			*addrp, *revp;
++	phys_addr_t		addr;
++	u64			size;
+ 
+-	node = find_devices(name);
+-	if (!node || !node->n_addrs)
+-		return;
+-	if (compat)
+-		do {
+-			if (device_is_compatible(node, compat))
+-				break;
+-			node = node->next;
+-		} while (node);
++	for (node = NULL; (node = of_find_node_by_name(node, name)) != NULL;) {
++		if (!compat)
++			break;
++		if (device_is_compatible(node, compat))
++			break;
++	}
+ 	if (!node)
+ 		return;
+ 	for(i=0; i<MAX_MACIO_CHIPS; i++) {
+@@ -2662,14 +2666,28 @@
+ 		if (macio_chips[i].of_node == node)
+ 			return;
+ 	}
++
+ 	if (i >= MAX_MACIO_CHIPS) {
+ 		printk(KERN_ERR "pmac_feature: Please increase MAX_MACIO_CHIPS !\n");
+ 		printk(KERN_ERR "pmac_feature: %s skipped\n", node->full_name);
+ 		return;
+ 	}
+-	base = ioremap(node->addrs[0].address, node->addrs[0].size);
++	addrp = of_get_pci_addr(node, 0, &size);
++	if (addrp == NULL) {
++		printk(KERN_ERR "pmac_feature: %s: can't find base !\n",
++		       node->full_name);
++		return;
++	}
++	addr = of_translate_address(node, addrp);
++	if (addr == 0) {
++		printk(KERN_ERR "pmac_feature: %s, can't translate base !\n",
++		       node->full_name);
++		return;
++	}
++	base = ioremap(addr, (unsigned long)size);
+ 	if (!base) {
+-		printk(KERN_ERR "pmac_feature: Can't map mac-io chip !\n");
++		printk(KERN_ERR "pmac_feature: %s, can't map mac-io chip !\n",
++		       node->full_name);
+ 		return;
+ 	}
+ 	if (type == macio_keylargo) {
+Index: linux-serialfix/arch/powerpc/platforms/powermac/low_i2c.c
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/platforms/powermac/low_i2c.c	2005-11-01 14:13:53.000000000 +1100
++++ linux-serialfix/arch/powerpc/platforms/powermac/low_i2c.c	2005-11-22 16:33:30.000000000 +1100
+@@ -36,7 +36,7 @@
+ 
+ #ifdef DEBUG
+ #define DBG(x...) do {\
+-		printk(KERN_DEBUG "KW:" x);	\
++		printk(KERN_DEBUG "low_i2c:" x);	\
+ 	} while(0)
+ #else
+ #define DBG(x...)
+@@ -342,7 +342,7 @@
+ static void keywest_low_i2c_add(struct device_node *np)
+ {
+ 	struct low_i2c_host	*host = find_low_i2c_host(NULL);
+-	u32			*psteps, *prate, steps, aoffset = 0;
++	u32			*psteps, *prate, *addrp, steps;
+ 	struct device_node	*parent;
+ 
+ 	if (host == NULL) {
+@@ -352,6 +352,16 @@
+ 	}
+ 	memset(host, 0, sizeof(*host));
+ 
++	/* Apple is kind enough to provide a valid AAPL,address property
++	 * on all i2c keywest nodes so far ... we would have to fallback
++	 * to macio parsing if that wasn't the case
++	 */
++	addrp = (u32 *)get_property(np, "AAPL,address", NULL);
++	if (addrp == NULL) {
++		printk(KERN_ERR "low_i2c: Can't find address for %s\n",
++		       np->full_name);
++		return;
++	}
+ 	init_MUTEX(&host->mutex);
+ 	host->np = of_node_get(np);	
+ 	psteps = (u32 *)get_property(np, "AAPL,address-step", NULL);
+@@ -360,12 +370,10 @@
+ 		steps >>= 1;
+ 	parent = of_get_parent(np);
+ 	host->num_channels = 1;
+-	if (parent && parent->name[0] == 'u') {
++	if (parent && parent->name[0] == 'u')
+ 		host->num_channels = 2;
+-		aoffset = 3;
+-	}
+ 	/* Select interface rate */
+-	host->speed = KW_I2C_MODE_100KHZ;
++	host->speed = KW_I2C_MODE_25KHZ;
+ 	prate = (u32 *)get_property(np, "AAPL,i2c-rate", NULL);
+ 	if (prate) switch(*prate) {
+ 	case 100:
+@@ -379,9 +387,12 @@
+ 		break;
+ 	}	
+ 
++	printk(KERN_INFO "low_i2c: Bus %s found at 0x%08x, %d channels,"
++	       " speed = %d KHz\n",
++	       np->full_name, *addrp, host->num_channels, prate ? *prate : 25);
++
+ 	host->mode = pmac_low_i2c_mode_std;
+-	host->base = ioremap(np->addrs[0].address + aoffset,
+-						np->addrs[0].size);
++	host->base = ioremap((*addrp), 0x1000);
+ 	host->func = keywest_low_i2c_func;
+ }
+ 
+Index: linux-serialfix/arch/powerpc/platforms/powermac/pic.c
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/platforms/powermac/pic.c	2005-11-11 10:14:48.000000000 +1100
++++ linux-serialfix/arch/powerpc/platforms/powermac/pic.c	2005-11-22 16:33:30.000000000 +1100
+@@ -459,7 +459,7 @@
+ 			mpic_setup_cascade(irqctrler2->intrs[0].line,
+ 					   pmac_u3_cascade, mpic2);
+ 		}
+-#if defined(CONFIG_XMON) && defined(CONFIG_PPC32)
++#ifdef CONFIG_XMON
+ 		{
+ 			struct device_node* pswitch;
+ 			int nmi_irq;
+Index: linux-serialfix/arch/powerpc/platforms/pseries/lpar.c
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/platforms/pseries/lpar.c	2005-11-22 16:33:30.000000000 +1100
++++ linux-serialfix/arch/powerpc/platforms/pseries/lpar.c	2005-11-22 16:33:30.000000000 +1100
+@@ -61,7 +61,7 @@
+ int vtermno;	/* virtual terminal# for udbg  */
+ 
+ #define __ALIGNED__ __attribute__((__aligned__(sizeof(long))))
+-static void udbg_hvsi_putc(unsigned char c)
++static void udbg_hvsi_putc(char c)
+ {
+ 	/* packet's seqno isn't used anyways */
+ 	uint8_t packet[] __ALIGNED__ = { 0xff, 5, 0, 0, c };
+@@ -112,7 +112,7 @@
+ 	return ch;
+ }
+ 
+-static unsigned char udbg_hvsi_getc(void)
++static char udbg_hvsi_getc(void)
+ {
+ 	int ch;
+ 	for (;;) {
+@@ -128,7 +128,7 @@
+ 	}
+ }
+ 
+-static void udbg_putcLP(unsigned char c)
++static void udbg_putcLP(char c)
+ {
+ 	char buf[16];
+ 	unsigned long rc;
+@@ -173,7 +173,7 @@
+ 	return ch;
+ }
+ 
+-static unsigned char udbg_getcLP(void)
++static char udbg_getcLP(void)
+ {
+ 	int ch;
+ 	for (;;) {
+Index: linux-serialfix/arch/powerpc/kernel/head_32.S
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/kernel/head_32.S	2005-11-14 10:41:58.000000000 +1100
++++ linux-serialfix/arch/powerpc/kernel/head_32.S	2005-11-22 16:37:57.000000000 +1100
+@@ -153,6 +153,9 @@
+ 	bl	flush_tlbs
+ 
+ 	bl	initial_bats
++#if !defined(CONFIG_APUS) && defined(CONFIG_BOOTX_TEXT)
++	bl	setup_disp_bat
++#endif
+ 
+ /*
+  * Call setup_cpu for CPU 0 and initialize 6xx Idle
+@@ -1306,6 +1309,32 @@
+ 	blr
+ 
+ 
++#if !defined(CONFIG_APUS) && defined(CONFIG_BOOTX_TEXT)
++setup_disp_bat:
++	/*
++	 * setup the display bat prepared for us in prom.c
++	 */
++	mflr	r8
++	bl	reloc_offset
++	mtlr	r8
++	addis	r8,r3,disp_BAT@ha
++	addi	r8,r8,disp_BAT@l
++	cmpwi	cr0,r8,0
++	beqlr
++	lwz	r11,0(r8)
++	lwz	r8,4(r8)
++	mfspr	r9,SPRN_PVR
++	rlwinm	r9,r9,16,16,31		/* r9 = 1 for 601, 4 for 604 */
++	cmpwi	0,r9,1
++	beq	1f
++	mtspr	SPRN_DBAT3L,r8
++	mtspr	SPRN_DBAT3U,r11
++	blr
++1:	mtspr	SPRN_IBAT3L,r8
++	mtspr	SPRN_IBAT3U,r11
++	blr
++#endif /* !defined(CONFIG_APUS) && defined(CONFIG_BOOTX_TEXT) */
++
+ #ifdef CONFIG_8260
+ /* Jump into the system reset for the rom.
+  * We first disable the MMU, and then jump to the ROM reset address.
+Index: linux-serialfix/arch/powerpc/mm/init_32.c
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/mm/init_32.c	2005-11-11 10:14:48.000000000 +1100
++++ linux-serialfix/arch/powerpc/mm/init_32.c	2005-11-22 16:37:32.000000000 +1100
+@@ -188,6 +188,11 @@
+ 
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("MMU:exit", 0x211);
++
++	/* From now on, btext is no longer BAT mapped if it was at all */
++#ifdef CONFIG_BOOTX_TEXT
++	btext_unmap();
++#endif
+ }
+ 
+ /* This is only called until mem_init is done. */
+Index: linux-serialfix/drivers/i2c/busses/i2c-keywest.c
+===================================================================
+--- linux-serialfix.orig/drivers/i2c/busses/i2c-keywest.c	2005-11-01 14:13:54.000000000 +1100
++++ linux-serialfix/drivers/i2c/busses/i2c-keywest.c	2005-11-22 16:34:13.000000000 +1100
+@@ -505,16 +505,23 @@
+ create_iface(struct device_node *np, struct device *dev)
+ {
+ 	unsigned long steps;
+-	unsigned bsteps, tsize, i, nchan, addroffset;
++	unsigned bsteps, tsize, i, nchan;
+ 	struct keywest_iface* iface;
+-	u32 *psteps, *prate;
++	u32 *psteps, *prate, *addrp;
+ 	int rc;
+ 
+-	if (np->n_intrs < 1 || np->n_addrs < 1) {
+-		printk(KERN_ERR "%s: Missing interrupt or address !\n",
++	if (np->n_intrs < 1) {
++		printk(KERN_ERR "%s: Missing interrupt !\n",
+ 		       np->full_name);
+ 		return -ENODEV;
+ 	}
++	addrp = (u32 *)get_property(np, "AAPL,address", NULL);
++	if (addrp == NULL) {
++		printk(KERN_ERR "%s: Can't find address !\n",
++		       np->full_name);
++		return -ENODEV;
++	}
++
+ 	if (pmac_low_i2c_lock(np))
+ 		return -ENODEV;
+ 
+@@ -525,13 +532,10 @@
+ 	for (bsteps = 0; (steps & 0x01) == 0; bsteps++)
+ 		steps >>= 1;
+ 
+-	if (np->parent->name[0] == 'u') {
++	if (np->parent->name[0] == 'u')
+ 		nchan = 2;
+-		addroffset = 3;
+-	} else {
+-		addroffset = 0;
++	else
+ 		nchan = 1;
+-	}
+ 
+ 	tsize = sizeof(struct keywest_iface) +
+ 		(sizeof(struct keywest_chan) + 4) * nchan;
+@@ -550,8 +554,7 @@
+ 	iface->irq = np->intrs[0].line;
+ 	iface->channels = (struct keywest_chan *)
+ 		(((unsigned long)(iface + 1) + 3UL) & ~3UL);
+-	iface->base = ioremap(np->addrs[0].address + addroffset,
+-						np->addrs[0].size);
++	iface->base = ioremap(*addrp, 0x1000);
+ 	if (!iface->base) {
+ 		printk(KERN_ERR "i2c-keywest: can't map inteface !\n");
+ 		kfree(iface);
+Index: linux-serialfix/drivers/macintosh/via-cuda.c
+===================================================================
+--- linux-serialfix.orig/drivers/macintosh/via-cuda.c	2005-11-01 14:13:54.000000000 +1100
++++ linux-serialfix/drivers/macintosh/via-cuda.c	2005-11-22 16:44:29.000000000 +1100
+@@ -127,39 +127,34 @@
+ #endif /* CONFIG_ADB */
+ 
+ #ifdef CONFIG_PPC
+-int __init
+-find_via_cuda(void)
++int __init find_via_cuda(void)
+ {
+-    int err;
+     struct adb_request req;
++    phys_addr_t taddr;
++    u32 *reg;
++    int err;
+ 
+     if (vias != 0)
+ 	return 1;
+-    vias = find_devices("via-cuda");
++    vias = of_find_node_by_name(NULL, "via-cuda");
+     if (vias == 0)
+ 	return 0;
+-    if (vias->next != 0)
+-	printk(KERN_WARNING "Warning: only using 1st via-cuda\n");
+-
+-#if 0
+-    { int i;
+-
+-    printk("find_via_cuda: node = %p, addrs =", vias->node);
+-    for (i = 0; i < vias->n_addrs; ++i)
+-	printk(" %x(%x)", vias->addrs[i].address, vias->addrs[i].size);
+-    printk(", intrs =");
+-    for (i = 0; i < vias->n_intrs; ++i)
+-	printk(" %x", vias->intrs[i].line);
+-    printk("\n"); }
+-#endif
+ 
+-    if (vias->n_addrs != 1 || vias->n_intrs != 1) {
+-	printk(KERN_ERR "via-cuda: expecting 1 address (%d) and 1 interrupt (%d)\n",
+-	       vias->n_addrs, vias->n_intrs);
+-	if (vias->n_addrs < 1 || vias->n_intrs < 1)
+-	    return 0;
++    reg = (u32 *)get_property(vias, "reg", NULL);
++    if (reg == NULL) {
++	    printk(KERN_ERR "via-cuda: No \"reg\" property !\n");
++	    goto fail;
++    }
++    taddr = of_translate_address(vias, reg);
++    if (taddr == 0) {
++	    printk(KERN_ERR "via-cuda: Can't translate address !\n");
++	    goto fail;
++    }
++    via = ioremap(taddr, 0x2000);
++    if (via == NULL) {
++	    printk(KERN_ERR "via-cuda: Can't map address !\n");
++	    goto fail;
+     }
+-    via = ioremap(vias->addrs->address, 0x2000);
+ 
+     cuda_state = idle;
+     sys_ctrler = SYS_CTRLER_CUDA;
+@@ -185,6 +180,11 @@
+ 	cuda_poll();
+ 
+     return 1;
++
++ fail:
++    of_node_put(vias);
++    vias = NULL;
++    return 0;
+ }
+ #endif /* CONFIG_PPC */
+ 
+Index: linux-serialfix/drivers/macintosh/via-pmu.c
+===================================================================
+--- linux-serialfix.orig/drivers/macintosh/via-pmu.c	2005-11-09 11:49:03.000000000 +1100
++++ linux-serialfix/drivers/macintosh/via-pmu.c	2005-11-22 16:45:44.000000000 +1100
+@@ -147,6 +147,7 @@
+ static int pmu_kind = PMU_UNKNOWN;
+ static int pmu_fully_inited = 0;
+ static int pmu_has_adb;
++static struct device_node *gpio_node;
+ static unsigned char __iomem *gpio_reg = NULL;
+ static int gpio_irq = -1;
+ static int gpio_irq_enabled = -1;
+@@ -295,22 +296,26 @@
+ };
+ #endif /* CONFIG_PMAC_BACKLIGHT */
+ 
+-int
+-find_via_pmu(void)
++int __init find_via_pmu(void)
+ {
++	phys_addr_t taddr;
++	u32 *reg;
++
+ 	if (via != 0)
+ 		return 1;
+-	vias = find_devices("via-pmu");
+-	if (vias == 0)
++	vias = of_find_node_by_name(NULL, "via-pmu");
++	if (vias == NULL)
+ 		return 0;
+-	if (vias->next != 0)
+-		printk(KERN_WARNING "Warning: only using 1st via-pmu\n");
+ 
+-	if (vias->n_addrs < 1 || vias->n_intrs < 1) {
+-		printk(KERN_ERR "via-pmu: %d addresses, %d interrupts!\n",
+-		       vias->n_addrs, vias->n_intrs);
+-		if (vias->n_addrs < 1 || vias->n_intrs < 1)
+-			return 0;
++	reg = (u32 *)get_property(vias, "reg", NULL);
++	if (reg == NULL) {
++		printk(KERN_ERR "via-pmu: No \"reg\" property !\n");
++		goto fail;
++	}
++	taddr = of_translate_address(vias, reg);
++	if (taddr == 0) {
++		printk(KERN_ERR "via-pmu: Can't translate address !\n");
++		goto fail;
+ 	}
+ 
+ 	spin_lock_init(&pmu_lock);
+@@ -331,7 +336,8 @@
+ 		pmu_kind = PMU_HEATHROW_BASED;
+ 	else if (device_is_compatible(vias->parent, "Keylargo")
+ 		 || device_is_compatible(vias->parent, "K2-Keylargo")) {
+-		struct device_node *gpio, *gpiop;
++		struct device_node *gpiop;
++		phys_addr_t gaddr = 0;
+ 
+ 		pmu_kind = PMU_KEYLARGO_BASED;
+ 		pmu_has_adb = (find_type_devices("adb") != NULL);
+@@ -341,19 +347,24 @@
+ 				PMU_INT_TICK |
+ 				PMU_INT_ENVIRONMENT;
+ 		
+-		gpiop = find_devices("gpio");
+-		if (gpiop && gpiop->n_addrs) {
+-			gpio_reg = ioremap(gpiop->addrs->address, 0x10);
+-			gpio = find_devices("extint-gpio1");
+-			if (gpio == NULL)
+-				gpio = find_devices("pmu-interrupt");
+-			if (gpio && gpio->parent == gpiop && gpio->n_intrs)
+-				gpio_irq = gpio->intrs[0].line;
++		gpiop = of_find_node_by_name(NULL, "gpio");
++		if (gpiop) {
++			reg = (u32 *)get_property(gpiop, "reg", NULL);
++			if (reg)
++				gaddr = of_translate_address(gpiop, reg);
++			if (gaddr != 0)
++				gpio_reg = ioremap(gaddr, 0x10);
+ 		}
++		if (gpio_reg == NULL)
++			printk(KERN_ERR "via-pmu: Can't find GPIO reg !\n");
+ 	} else
+ 		pmu_kind = PMU_UNKNOWN;
+ 
+-	via = ioremap(vias->addrs->address, 0x2000);
++	via = ioremap(taddr, 0x2000);
++	if (via == NULL) {
++		printk(KERN_ERR "via-pmu: Can't map address !\n");
++		goto fail;
++	}
+ 	
+ 	out_8(&via[IER], IER_CLR | 0x7f);	/* disable all intrs */
+ 	out_8(&via[IFR], 0x7f);			/* clear IFR */
+@@ -371,17 +382,19 @@
+ 	sys_ctrler = SYS_CTRLER_PMU;
+ 	
+ 	return 1;
++ fail:
++	of_node_put(vias);
++	vias = NULL;
++	return 0;
+ }
+ 
+ #ifdef CONFIG_ADB
+-static int
+-pmu_probe(void)
++static int pmu_probe(void)
+ {
+ 	return vias == NULL? -ENODEV: 0;
+ }
+ 
+-static int __init
+-pmu_init(void)
++static int __init pmu_init(void)
+ {
+ 	if (vias == NULL)
+ 		return -ENODEV;
+@@ -405,7 +418,7 @@
+ 	bright_req_2.complete = 1;
+ 	batt_req.complete = 1;
+ 
+-#if defined(CONFIG_PPC32) && !defined(CONFIG_PPC_MERGE)
++#ifndef CONFIG_PPC_MERGE
+ 	if (pmu_kind == PMU_KEYLARGO_BASED)
+ 		openpic_set_irq_priority(vias->intrs[0].line,
+ 					 OPENPIC_PRIORITY_DEFAULT + 1);
+@@ -418,10 +431,22 @@
+ 		return -EAGAIN;
+ 	}
+ 
+-	if (pmu_kind == PMU_KEYLARGO_BASED && gpio_irq != -1) {
+-		if (request_irq(gpio_irq, gpio1_interrupt, 0, "GPIO1 ADB", (void *)0))
+-			printk(KERN_ERR "pmu: can't get irq %d (GPIO1)\n", gpio_irq);
+-		gpio_irq_enabled = 1;
++	if (pmu_kind == PMU_KEYLARGO_BASED) {
++		gpio_node = of_find_node_by_name(NULL, "extint-gpio1");
++		if (gpio_node == NULL)
++			gpio_node = of_find_node_by_name(NULL,
++							 "pmu-interrupt");
++		if (gpio_node && gpio_node->n_intrs > 0)
++			gpio_irq = gpio_node->intrs[0].line;
++
++		if (gpio_irq != -1) {
++			if (request_irq(gpio_irq, gpio1_interrupt, 0,
++					"GPIO1 ADB", (void *)0))
++				printk(KERN_ERR "pmu: can't get irq %d"
++				       " (GPIO1)\n", gpio_irq);
++			else
++				gpio_irq_enabled = 1;
++		}
+ 	}
+ 
+ 	/* Enable interrupts */
+@@ -1371,7 +1396,6 @@
+ 			}
+ 			pmu_done(req);
+ 		} else {
+-#if defined(CONFIG_XMON) && !defined(CONFIG_PPC64)
+ 			if (len == 4 && data[1] == 0x2c) {
+ 				extern int xmon_wants_key, xmon_adb_keycode;
+ 				if (xmon_wants_key) {
+@@ -1379,7 +1403,6 @@
+ 					return;
+ 				}
+ 			}
+-#endif /* defined(CONFIG_XMON) && !defined(CONFIG_PPC64) */
+ #ifdef CONFIG_ADB
+ 			/*
+ 			 * XXX On the [23]400 the PMU gives us an up
+Index: linux-serialfix/arch/ppc/kernel/setup.c
+===================================================================
+--- linux-serialfix.orig/arch/ppc/kernel/setup.c	2005-11-17 14:06:25.000000000 +1100
++++ linux-serialfix/arch/ppc/kernel/setup.c	2005-11-22 16:52:56.000000000 +1100
+@@ -744,6 +744,9 @@
+ 	/* so udelay does something sensible, assume <= 1000 bogomips */
+ 	loops_per_jiffy = 500000000 / HZ;
+ 
 +	if (ppc_md.init_early)
 +		ppc_md.init_early();
 +
-+#ifdef CONFIG_PPC_MULTIPLATFORM
-+	find_legacy_serial_ports();
-+#endif
- 	finish_device_tree();
- 
- 	smp_setup_cpu_maps();
-Index: linux-serialfix/arch/powerpc/kernel/pci_64.c
+ #ifdef CONFIG_PPC_MULTIPLATFORM
+ 	/* This could be called "early setup arch", it must be done
+ 	 * now because xmon need it
+Index: linux-serialfix/include/asm-ppc/btext.h
 ===================================================================
---- linux-serialfix.orig/arch/powerpc/kernel/pci_64.c	2005-11-21 11:53:14.000000000 +1100
-+++ linux-serialfix/arch/powerpc/kernel/pci_64.c	2005-11-22 15:34:40.000000000 +1100
-@@ -1223,6 +1223,7 @@
- }
- EXPORT_SYMBOL(pcibios_fixup_device_resources);
+--- linux-serialfix.orig/include/asm-ppc/btext.h	2005-11-09 11:49:03.000000000 +1100
++++ linux-serialfix/include/asm-ppc/btext.h	2005-11-22 16:55:27.000000000 +1100
+@@ -17,7 +17,7 @@
+ extern boot_infos_t disp_bi;
+ extern int boot_text_mapped;
  
-+
- static void __devinit do_bus_setup(struct pci_bus *bus)
- {
- 	struct pci_dev *dev;
-@@ -1306,6 +1307,20 @@
- 	*end = rsrc->end + offset;
- }
- 
-+struct pci_controller* pci_find_hose_for_OF_device(struct device_node* node)
-+{
-+	if (!have_of)
-+		return NULL;
-+	while(node) {
-+		struct pci_controller *hose, *tmp;
-+		list_for_each_entry_safe(hose, tmp, &hose_list, list_node)
-+			if (hose->arch_data == node)
-+				return hose;
-+		node = node->parent;
-+	}
-+	return NULL;
-+}
-+
- #endif /* CONFIG_PPC_MULTIPLATFORM */
- 
- 
-Index: linux-serialfix/arch/ppc/kernel/pci.c
+-extern void init_boot_display(void);
++extern void btext_init(boot_infos_t *bi);
+ extern void btext_welcome(void);
+ extern void btext_prepare_BAT(void);
+ extern void btext_setup_display(int width, int height, int depth, int pitch,
+Index: linux-serialfix/include/asm-ppc/machdep.h
 ===================================================================
---- linux-serialfix.orig/arch/ppc/kernel/pci.c	2005-11-21 11:53:14.000000000 +1100
-+++ linux-serialfix/arch/ppc/kernel/pci.c	2005-11-22 15:25:03.000000000 +1100
-@@ -815,8 +815,7 @@
-  * to set pci_assign_all_buses to 1 and still use RTAS for PCI
-  * config cycles.
-  */
--struct pci_controller*
--pci_find_hose_for_OF_device(struct device_node* node)
-+struct pci_controller* pci_find_hose_for_OF_device(struct device_node* node)
- {
- 	if (!have_of)
- 		return NULL;
-Index: linux-serialfix/include/asm-powerpc/pci-bridge.h
-===================================================================
---- linux-serialfix.orig/include/asm-powerpc/pci-bridge.h	2005-11-21 11:53:15.000000000 +1100
-+++ linux-serialfix/include/asm-powerpc/pci-bridge.h	2005-11-22 15:28:24.000000000 +1100
-@@ -140,6 +140,9 @@
- 	return PCI_DN(busdn)->phb;
- }
+--- linux-serialfix.orig/include/asm-ppc/machdep.h	2005-11-01 14:13:56.000000000 +1100
++++ linux-serialfix/include/asm-ppc/machdep.h	2005-11-22 16:56:40.000000000 +1100
+@@ -35,8 +35,10 @@
+ 	int		(*get_irq)(struct pt_regs *);
+ 	
+ 	/* A general init function, called by ppc_init in init/main.c.
+-	   May be NULL. */
++	   May be NULL. DEPRECATED ! */
+ 	void		(*init)(void);
++	/* For compatibility with merged platforms */
++	void		(*init_early)(void);
  
-+extern struct pci_controller*
-+pci_find_hose_for_OF_device(struct device_node* node);
-+
- extern struct pci_controller *
- pcibios_alloc_controller(struct device_node *dev);
- extern void pcibios_free_controller(struct pci_controller *phb);
+ 	void		(*restart)(char *cmd);
+ 	void		(*power_off)(void);
