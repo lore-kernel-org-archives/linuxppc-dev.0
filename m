@@ -1,29 +1,19 @@
-Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 80BD5687BA
+Return-Path: <gnathita@gmail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.193])
+	by ozlabs.org (Postfix) with ESMTP id F0CB7687A5
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 22 Nov 2005 14:23:47 +1100 (EST)
-Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1EeOiv-0003fO-OP
-	for linuxppc-embedded@ozlabs.org; Tue, 22 Nov 2005 04:21:38 +0100
-Received: from dsl-202-45-109-210.vic.netspace.net.au ([202.45.109.210])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Tue, 22 Nov 2005 04:21:37 +0100
-Received: from ronkbox-news by dsl-202-45-109-210.vic.netspace.net.au with
-	local (Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Tue, 22 Nov 2005 04:21:37 +0100
+	Tue, 22 Nov 2005 22:48:19 +1100 (EST)
+Received: by zproxy.gmail.com with SMTP id x3so1091217nzd
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 22 Nov 2005 03:48:18 -0800 (PST)
+Message-ID: <259581790511220341l2761f315ua7c10a4db9c51afa@mail.gmail.com>
+Date: Tue, 22 Nov 2005 12:41:16 +0100
+From: Paulinha <gnathita@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-From: Ron Kellam <ronkbox-news@yahoo.com>
-Date: Tue, 22 Nov 2005 14:19:49 +1100
-Message-ID: <0g35o11r5q9uphiqgoql39incpdfb9apri@4ax.com>
-References: <qpr2o1dhoelk8rt11jl3lbangfs0hj710a@4ax.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: news <news@sea.gmane.org>
-Subject: anyone used i2c-algo-8260 for the MPC8272 family?
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_53456_9996262.1132659676781"
+Subject: Anyone using Montavista mobilinux?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,18 +24,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I'm posting this just to capture the solution.  An actual patch may
-follow sometime down the track.
+------=_Part_53456_9996262.1132659676781
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-By looking over some code I got from Dave Bruce (thanks Dave!), I
-tried replacing the use of __pa() with iopa().  With just this change,
-the driver now "works for me".
+Hi all,
 
-I'm not sure of the details of the difference.  Anyone care to
-elaborate?
+I am starting a new design for a mobile device, with a virtex 4, and based
+on the ppc405 hard core it has inside.
 
-By the way, as stated in another thread, I'm working with a
-denx-2.4.25 kernel.
+Because of power issues, we are thinking about a OS which implies low
+disipation, and we have heared about mobilinux (Montavista distribution, I
+think).
 
-Regards,
-Ron Kellam.
+I would like to hear some oppinions or different possibilities.
+
+Thanks and have a nice day!
+Paula
+
+------=_Part_53456_9996262.1132659676781
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+Hi all,<br>
+<br>
+I am starting a new design for a mobile device, with a virtex 4, and based =
+on the ppc405 hard core it has inside.<br>
+<br>
+Because of power issues, we are thinking about a OS which implies low
+disipation, and we have heared about mobilinux (Montavista
+distribution, I think).<br>
+<br>
+I would like to hear some oppinions or different possibilities.<br>
+<br>
+Thanks and have a nice day!<br>
+Paula<br>
+
+------=_Part_53456_9996262.1132659676781--
