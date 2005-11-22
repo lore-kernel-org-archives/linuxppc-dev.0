@@ -1,14 +1,15 @@
 Return-Path: <kernel-stuff@comcast.net>
-Received: from sccrmhc12.comcast.net (unknown [63.240.77.82])
-	by ozlabs.org (Postfix) with ESMTP id 19EEF687C0
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Nov 2005 11:06:49 +1100 (EST)
-In-Reply-To: <111520052143.16540.437A5680000BE8A60000409C220076369200009A9B9CD3040A029D0A05@comcast.net>
+Received: from rwcrmhc12.comcast.net (rwcrmhc12.comcast.net [204.127.198.43])
+	by ozlabs.org (Postfix) with ESMTP id 93CB7687BE
+	for <linuxppc-dev@ozlabs.org>; Tue, 22 Nov 2005 11:17:24 +1100 (EST)
+In-Reply-To: <70210ED5-37CA-40BC-8293-FF1DAA3E8BD5@comcast.net>
 References: <111520052143.16540.437A5680000BE8A60000409C220076369200009A9B9CD3040A029D0A05@comcast.net>
+	<70210ED5-37CA-40BC-8293-FF1DAA3E8BD5@comcast.net>
 Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: multipart/mixed; boundary=Apple-Mail-4--308597128
-Message-Id: <70210ED5-37CA-40BC-8293-FF1DAA3E8BD5@comcast.net>
+Content-Type: multipart/mixed; boundary=Apple-Mail-7--307895554
+Message-Id: <A880E410-CF92-49E9-B043-DC9C352EC8C1@comcast.net>
 From: Parag Warudkar <kernel-stuff@comcast.net>
-Date: Mon, 21 Nov 2005 18:57:05 -0500
+Date: Mon, 21 Nov 2005 19:08:47 -0500
 To: Parag Warudkar <kernel-stuff@comcast.net>
 Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org,
 	linux-kernel <linux-kernel@vger.kernel.org>
@@ -23,7 +24,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---Apple-Mail-4--308597128
+--Apple-Mail-7--307895554
 Content-Transfer-Encoding: 7bit
 Content-Type: text/plain;
 	charset=US-ASCII;
@@ -31,56 +32,22 @@ Content-Type: text/plain;
 	format=flowed
 
 
-On Nov 15, 2005, at 4:43 PM, Parag Warudkar wrote:
+On Nov 21, 2005, at 6:57 PM, Parag Warudkar wrote:
 
-> Just a heads up - After some lame hacking I finally have got the  
-> trackpad on the PB5,8  (15" Late Oct 2005) to work.
->
-> Ok, here is the current definition of working - mouse moves but for  
-> that you have to roll over on the trackpad ;)!
->
-> Currently negotiating with it so that it's happy with the fingers!! :D
->
-> Will post the modified source once for appletouch once it starts  
-> working acceptably.
->
+> <appletouch.c>
 
-Ok, the format interpretation of the trackpad data is taking up more  
-of my time and brain than I was happy with! :)
+Oops  - originally attached file has wrong comment, this one has  
+fixed comments - other wise the code is same.
+Also, one more change required was to add ATP_DEVICE(0x0214) into the  
+usb_device_id table which I forgot
+to mention in the last mail.
 
-If someone wants to take this up, here is something small to begin  
-with -
-
-So far the three simple changes that are required for the original  
-appletouch.c in order to get it to produce _some_ wayward mouse  
-movements and reliable button clicks at the least are
-
-1) #define ATP_DATASIZE 81 - This needs to be made a module parameter  
-and if not specified should be detected and set in code - to 81 if  
-the machine_is_compatible() with the older powerbooks and 256 if the  
-machine_is_compatible() with newer (Oct 05) PowerBooks
-
-2) Convert the appletouch.c to use input_allocate_device()
-
-3) Change the code to lookup either the 80th or 255th byte for button  
-press depending upon it's old or new trackpad
-
-Attached is the code which takes care of above 3 - tested but it  
-should be considered half baked for obvious reasons and in addition I  
-added some relayfs write calls so the received data can be sampled by  
-writing a user space client for reading the relayfs file. The code  
-might break the existing (old) trackpads as the detection might not  
-be correct.
-
-Needless to say the complete logic of interpreting the data and  
-determining pressure and movement needs  to be changed such that it  
-works for old as well as new.
+Parag
 
 
---Apple-Mail-4--308597128
+--Apple-Mail-7--307895554
 Content-Transfer-Encoding: 7bit
-Content-Type: application/octet-stream; x-mac-type=3F3F3F3F; x-unix-mode=0644;
-	x-mac-creator=3F3F3F3F; name="appletouch.c"
+Content-Type: application/octet-stream; x-unix-mode=0644; name="appletouch.c"
 Content-Disposition: attachment;
 	filename=appletouch.c
 
@@ -96,9 +63,10 @@ Content-Disposition: attachment;
  *
  * Thanks to Alex Harper <basilisk@foobox.net> for his inputs.
  * Nov 2005 - Parag Warudkar 
- * 	o Added support for Oct 2005 Powerbooks
+ * 	o Add preliminary support for Oct 2005 Powerbooks 
+ * 	  (Doesn't work fully yet)
  * 	o Converted to use input_device_allocate()
- * 	o Added ability to export data via debugfs
+ * 	o Added ability to export data via relayfs
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -637,16 +605,4 @@ static void __exit atp_exit(void)
 module_init(atp_init);
 module_exit(atp_exit);
 
---Apple-Mail-4--308597128
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
-	charset=US-ASCII;
-	format=flowed
-
-
-Parag
-
-
-
-
---Apple-Mail-4--308597128--
+--Apple-Mail-7--307895554--
