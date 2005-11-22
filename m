@@ -1,19 +1,12 @@
-Return-Path: <kernel-stuff@comcast.net>
-Received: from rwcrmhc12.comcast.net (rwcrmhc12.comcast.net [204.127.198.43])
-	by ozlabs.org (Postfix) with ESMTP id 93CB7687BE
-	for <linuxppc-dev@ozlabs.org>; Tue, 22 Nov 2005 11:17:24 +1100 (EST)
-In-Reply-To: <70210ED5-37CA-40BC-8293-FF1DAA3E8BD5@comcast.net>
-References: <111520052143.16540.437A5680000BE8A60000409C220076369200009A9B9CD3040A029D0A05@comcast.net>
-	<70210ED5-37CA-40BC-8293-FF1DAA3E8BD5@comcast.net>
-Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: multipart/mixed; boundary=Apple-Mail-7--307895554
-Message-Id: <A880E410-CF92-49E9-B043-DC9C352EC8C1@comcast.net>
-From: Parag Warudkar <kernel-stuff@comcast.net>
-Date: Mon, 21 Nov 2005 19:08:47 -0500
-To: Parag Warudkar <kernel-stuff@comcast.net>
-Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org,
-	linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: PowerBook5,8 - TrackPad update
+Return-Path: <benh@kernel.crashing.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc64-dev <linuxppc64-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Tue, 22 Nov 2005 15:45:53 +1100
+Message-Id: <1132634753.26560.128.camel@gaston>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc: Add OF address parsing code
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,586 +16,499 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
---Apple-Mail-7--307895554
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
-	charset=US-ASCII;
-	delsp=yes;
-	format=flowed
-
-
-On Nov 21, 2005, at 6:57 PM, Parag Warudkar wrote:
-
-> <appletouch.c>
-
-Oops  - originally attached file has wrong comment, this one has  
-fixed comments - other wise the code is same.
-Also, one more change required was to add ATP_DEVICE(0x0214) into the  
-usb_device_id table which I forgot
-to mention in the last mail.
-
-Parag
-
-
---Apple-Mail-7--307895554
-Content-Transfer-Encoding: 7bit
-Content-Type: application/octet-stream; x-unix-mode=0644; name="appletouch.c"
-Content-Disposition: attachment;
-	filename=appletouch.c
-
-/*
- * Apple USB Touchpad (for post-February 2005 PowerBooks) driver
- *
- * Copyright (C) 2001-2004 Greg Kroah-Hartman (greg@kroah.com)
- * Copyright (C) 2005      Johannes Berg (johannes@sipsolutions.net)
- * Copyright (C) 2005      Stelian Pop (stelian@popies.net)
- * Copyright (C) 2005      Frank Arnold (frank@scirocco-5v-turbo.de)
- * Copyright (C) 2005      Peter Osterlund (petero2@telia.com)
- * Copyright (C) 2005      Parag Warudkar (parag.warudkar@gmail.com)
- *
- * Thanks to Alex Harper <basilisk@foobox.net> for his inputs.
- * Nov 2005 - Parag Warudkar 
- * 	o Add preliminary support for Oct 2005 Powerbooks 
- * 	  (Doesn't work fully yet)
- * 	o Converted to use input_device_allocate()
- * 	o Added ability to export data via relayfs
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
- */
-
-#include <linux/config.h>
-#include <linux/kernel.h>
-#include <linux/errno.h>
-#include <linux/init.h>
-#include <linux/slab.h>
-#include <linux/module.h>
-#include <linux/usb.h>
-#include <linux/input.h>
-#include <linux/usb_input.h>
-#include <linux/debugfs.h>
-#include <linux/relayfs_fs.h>
-
-#if !defined(PPC) && !defined(POWERPC)
-#error "Module intended for PowerPC based PowerBooks!"
-#endif
-
-/* Apple has powerbooks which have the keyboard with different Product IDs */
-#define APPLE_VENDOR_ID		0x05AC
-
-#define ATP_DEVICE(prod)					\
-	.match_flags = USB_DEVICE_ID_MATCH_DEVICE |   		\
-		       USB_DEVICE_ID_MATCH_INT_CLASS |		\
-		       USB_DEVICE_ID_MATCH_INT_PROTOCOL,	\
-	.idVendor = APPLE_VENDOR_ID,				\
-	.idProduct = (prod),					\
-	.bInterfaceClass = 0x03,				\
-	.bInterfaceProtocol = 0x02
-
-/* table of devices that work with this driver */
-static struct usb_device_id atp_table [] = {
-	{ ATP_DEVICE(0x020E) },
-	{ ATP_DEVICE(0x020F) },
-	{ ATP_DEVICE(0x030A) },
-	{ ATP_DEVICE(0x030B) },
-	{ ATP_DEVICE(0x0214) },			/* PowerBooks Late Oct 2005 */
-	{ }					/* Terminating entry */
-};
-MODULE_DEVICE_TABLE (usb, atp_table);
-
-struct rchan* rch=NULL;
-struct rchan_callbacks* rcb =NULL;
-/* Debugfs data */
-struct atp_dbg_data {
-
-};
-
-/*
- * number of sensors. Note that only 16 instead of 26 X (horizontal)
- * sensors exist on 12" and 15" PowerBooks. All models have 16 Y
- * (vertical) sensors.
- */
-#define ATP_MAX_XSENSORS	26
-#define ATP_MAX_YSENSORS	16
-
-/* amount of fuzz this touchpad generates */
-#define ATP_FUZZ	16
-
-/* maximum pressure this driver will report */
-#define ATP_PRESSURE	300
-/*
- * multiplication factor for the X and Y coordinates.
- * We try to keep the touchpad aspect ratio while still doing only simple
- * arithmetics.
- * The factors below give coordinates like:
- * 	0 <= x <  960 on 12" and 15" Powerbooks
- * 	0 <= x < 1600 on 17" Powerbooks
- * 	0 <= y <  646
- */
-#define ATP_XFACT	64
-#define ATP_YFACT	43
-
-/*
- * Threshold for the touchpad sensors. Any change less than ATP_THRESHOLD is
- * ignored.
- */
-#define ATP_THRESHOLD	 5
-
-typedef enum PB_MAC_TYPE {
-	PowerBook54,
-	PowerBook56,
-	PowerBook58,
-	PowerBook59,
-	Unknown
-}PB_MAC_TYPE;
-
-
-/* Structure to hold all of our device specific stuff */
-struct atp {
-	struct usb_device *	udev;		/* usb device */
-	struct urb *		urb;		/* usb request block */
-	signed char *		data;		/* transferred data */
-	int			open;		/* non-zero if opened */
-	struct input_dev	*input;		/* input dev */
-	int			valid;		/* are the sensors valid ? */
-	int			x_old;		/* last reported x/y, */
-	int			y_old;		/* used for smoothing */
-						/* current value of the sensors */
-	signed char		xy_cur[ATP_MAX_XSENSORS + ATP_MAX_YSENSORS];
-						/* last value of the sensors */
-	signed char		xy_old[ATP_MAX_XSENSORS + ATP_MAX_YSENSORS];
-						/* accumulated sensors */
-	int			xy_acc[ATP_MAX_XSENSORS + ATP_MAX_YSENSORS];
-	PB_MAC_TYPE		mtype;
-};
-
-#define dbg_dump(msg, tab) \
-	if (debug > 1) {						\
-		int i;							\
-		printk("appletouch: %s %lld", msg, (long long)jiffies); \
-		for (i = 0; i < ATP_MAX_XSENSORS + ATP_MAX_YSENSORS; i++)	\
-			printk(" %02x", tab[i]); 			\
-		printk("\n"); 						\
-	}
-
-#define dprintk(format, a...) 						\
-	do {								\
-		if (debug) printk(format, ##a);				\
-	} while (0)
-
-MODULE_AUTHOR("Johannes Berg, Stelian Pop, Frank Arnold, Parag Warudkar");
-MODULE_DESCRIPTION("Apple Al PowerBook USB touchpad driver");
-MODULE_LICENSE("GPL");
-
-static int debug = 1;
-module_param(debug, int, 0644);
-MODULE_PARM_DESC(debug, "Activate debugging output");
-
-/* USB URB buffer length - 81 works on Feb 05 models.
- * Oct 05 models fail with EOVERFLOW, detected and corrected 
- * separately.
- */
-static int data_len = 81;
-module_param(data_len, int, 0644);
-MODULE_PARM_DESC(data_len, "Specify USB URB buffer length (auto-detected normally)");
-
-PB_MAC_TYPE atp_machine_detect()
-{
-	if(machine_is_compatible("PowerBook5,9"))
-		return PowerBook59;
-	if(machine_is_compatible("PowerBook5,8"))
-		return PowerBook58;
-	if(machine_is_compatible("PowerBook5,6"))
-		return PowerBook56;
-	if (machine_is_compatible("PowerBook5,4"))
-		return PowerBook54;
-	return Unknown;
-}
-
-static int atp_calculate_abs(int *xy_sensors, int nb_sensors, int fact,
-			     int *z, int *fingers)
-{
-	int i;
-	/* values to calculate mean */
-	int pcum = 0, psum = 0;
-
-	*fingers = 0;
-
-	for (i = 0; i < nb_sensors; i++) {
-		if (xy_sensors[i] < ATP_THRESHOLD)
-			continue;
-		if ((i - 1 < 0) || (xy_sensors[i - 1] < ATP_THRESHOLD))
-			(*fingers)++;
-		pcum += xy_sensors[i] * i;
-		psum += xy_sensors[i];
-	}
-
-	if (psum > 0) {
-		*z = psum;
-		return pcum * fact / psum;
-	}
-
-	return 0;
-}
-
-static inline void atp_report_fingers(struct input_dev *input, int fingers)
-{
-	input_report_key(input, BTN_TOOL_FINGER, fingers == 1);
-	input_report_key(input, BTN_TOOL_DOUBLETAP, fingers == 2);
-	input_report_key(input, BTN_TOOL_TRIPLETAP, fingers > 2);
-}
-
-static void atp_complete(struct urb* urb, struct pt_regs* regs)
-{
-	int x, y, x_z, y_z, x_f, y_f;
-	int retval, i;
-	struct atp *dev = urb->context;
-	static int ctr=1;
-	switch (urb->status) {
-	case 0:
-		/* success */
-		break;
-	case -EOVERFLOW:
-		if(ctr){
-			printk("appletouch: OVERFLOW with data length %d\n", data_len);
-			ctr=0;
-		}
-	case -ECONNRESET:
-	case -ENOENT:
-	case -ESHUTDOWN:
-		/* This urb is terminated, clean up */
-		dbg("%s - urb shutting down with status: %d",
-		    __FUNCTION__, urb->status);
-		return;
-	default:
-		goto exit;
-	}
-
-	/* drop incomplete datasets */
-	if (dev->urb->actual_length != data_len) {
-		printk(KERN_WARNING "appletouch: incomplete data package length %d\n", dev->urb->actual_length);
-		goto exit;
-	}
-	if ( dev->data ) {
-		relay_write(rch, dev->data, dev->urb->actual_length);
-	}
-
-	/* reorder the sensors values */
-	for (i = 0; i < 8; i++) {
-		/* X values */
-		dev->xy_cur[i     ] = dev->data[5 * i +  2];
-		dev->xy_cur[i +  8] = dev->data[5 * i +  4];
-		dev->xy_cur[i + 16] = dev->data[5 * i + 42];
-		if (i < 2)
-			dev->xy_cur[i + 24] = dev->data[5 * i + 44];
-
-		/* Y values */
-		dev->xy_cur[i + 26] = dev->data[5 * i +  1];
-		dev->xy_cur[i + 34] = dev->data[5 * i +  3];
-	}
-
-	dbg_dump("sample", dev->xy_cur);
-
-	if (!dev->valid) {
-		/* first sample */
-		dev->valid = 1;
-		dev->x_old = dev->y_old = -1;
-		memcpy(dev->xy_old, dev->xy_cur, sizeof(dev->xy_old));
-
-		/* 17" Powerbooks have 10 extra X sensors */
-		for (i = 16; i < ATP_MAX_XSENSORS; i++)
-			if (dev->xy_cur[i]) {
-				printk("appletouch: 17\" model detected.\n");
-				input_set_abs_params(dev->input, ABS_X, 0,
-				     		     (ATP_MAX_XSENSORS - 1) *
-						     ATP_XFACT - 1,
-						     ATP_FUZZ, 0);
-				break;
-			}
-
-		goto exit;
-	}
-
-	for (i = 0; i < ATP_MAX_XSENSORS + ATP_MAX_YSENSORS; i++) {
-		/* accumulate the change */
-		signed char change = dev->xy_old[i] - dev->xy_cur[i];
-		dev->xy_acc[i] -= change;
-
-		/* prevent down drifting */
-		if (dev->xy_acc[i] < 0)
-			dev->xy_acc[i] = 0;
-	}
-
-	memcpy(dev->xy_old, dev->xy_cur, sizeof(dev->xy_old));
-
-	dbg_dump("accumulator", dev->xy_acc);
-
-	x = atp_calculate_abs(dev->xy_acc, ATP_MAX_XSENSORS,
-			      ATP_XFACT, &x_z, &x_f);
-	y = atp_calculate_abs(dev->xy_acc + ATP_MAX_XSENSORS, ATP_MAX_YSENSORS,
-			      ATP_YFACT, &y_z, &y_f);
-
-	if (x && y) {
-		if (dev->x_old != -1) {
-			x = (dev->x_old * 3 + x) >> 2;
-			y = (dev->y_old * 3 + y) >> 2;
-			dev->x_old = x;
-			dev->y_old = y;
-
-			if (debug > 1)
-				printk("appletouch: X: %3d Y: %3d "
-				       "Xz: %3d Yz: %3d\n",
-				       x, y, x_z, y_z);
-
-			input_report_key(dev->input, BTN_TOUCH, 1);
-			input_report_abs(dev->input, ABS_X, x);
-			input_report_abs(dev->input, ABS_Y, y);
-			input_report_abs(dev->input, ABS_PRESSURE,
-					 min(ATP_PRESSURE, x_z + y_z));
-			atp_report_fingers(dev->input, max(x_f, y_f));
-		}
-		dev->x_old = x;
-		dev->y_old = y;
-	}
-	else if (!x && !y) {
-
-		dev->x_old = dev->y_old = -1;
-		input_report_key(dev->input, BTN_TOUCH, 0);
-		input_report_abs(dev->input, ABS_PRESSURE, 0);
-		atp_report_fingers(dev->input, 0);
-
-		/* reset the accumulator on release */
-		memset(dev->xy_acc, 0, sizeof(dev->xy_acc));
-	}
-
-	input_report_key(dev->input, BTN_LEFT, !!dev->data[data_len-1]);
-
-	input_sync(dev->input);
-
-exit:
-	retval = usb_submit_urb(dev->urb, GFP_ATOMIC);
-	if (retval) {
-		err("%s - usb_submit_urb failed with result %d",
-		    __FUNCTION__, retval);
-	}
-}
-
-static int atp_open(struct input_dev *input)
-{
-	struct atp *dev = input->private;
-	if (usb_submit_urb(dev->urb, GFP_ATOMIC)) {
-		printk("atp: usb_submit_urb Error\n");
-		return -EIO;
-	}
-
-	dev->open = 1;
-	return 0;
-}
-
-static void atp_close(struct input_dev *input)
-{
-	struct atp *dev = input->private;
-	usb_kill_urb(dev->urb);
-	dev->open = 0;
-}
-
-static int atp_probe(struct usb_interface *iface, const struct usb_device_id *id)
-{
-	struct atp *dev = NULL;
-	struct usb_host_interface *iface_desc;
-	struct usb_endpoint_descriptor *endpoint;
-	int int_in_endpointAddr = 0;
-	int i, retval = -ENOMEM;
-	int regret=0;
-	printk(KERN_INFO "AppleTouch: Inside atp_probe\n");
-	
-	/* allocate memory for our device state and initialize it */
-	dev = kmalloc(sizeof(struct atp), GFP_KERNEL);
-	if (dev == NULL) {
-		err("Out of memory");
-		goto err_kmalloc;
-	}
-	
-	memset(dev, 0, sizeof(struct atp));
-	dev->mtype = atp_machine_detect();
-	if(dev->mtype == Unknown)
-	{
-		printk(KERN_INFO "appletouch: Unknown machine type!\n");
-		return -ENODEV;
-	}
-	if(dev->mtype > 1)
-	{
-		if(data_len < 256)
-		{
-			printk(KERN_INFO "appletouch: Setting URB buffer length to 256\n");
-			data_len=256;
-		}
-	}
-
-	dev->udev = interface_to_usbdev(iface);
-
-	printk("appletouch: Machine type is: %d\n", dev->mtype);
-	/* set up the endpoint information */
-	/* use only the first interrupt-in endpoint */
-	iface_desc = iface->cur_altsetting;
-	for (i = 0; i < iface_desc->desc.bNumEndpoints; i++) {
-		endpoint = &iface_desc->endpoint[i].desc;
-		if (!int_in_endpointAddr &&
-		    (endpoint->bEndpointAddress & USB_DIR_IN) &&
-		    ((endpoint->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK)
-					== USB_ENDPOINT_XFER_INT)) {
-			/* we found an interrupt in endpoint */
-			int_in_endpointAddr = endpoint->bEndpointAddress;
-			printk(KERN_INFO "AppleTouch:atp_probe Found interrupt in endpoint: %d\n", int_in_endpointAddr);
-			break;
-		}
-	}
-	if (!int_in_endpointAddr) {
-		retval = -EIO;
-		err("Could not find int-in endpoint");
-		goto err_endpoint;
-	}
-
-	/* save our data pointer in this interface device */
-	usb_set_intfdata(iface, dev);
-
-	dev->urb = usb_alloc_urb(0, GFP_KERNEL);
-	if (!dev->urb) {
-		retval = -ENOMEM;
-		goto err_usballoc;
-	}
-	dev->data = usb_buffer_alloc(dev->udev, data_len, GFP_KERNEL,
-				     &dev->urb->transfer_dma);
-	if (!dev->data) {
-		retval = -ENOMEM;
-		goto err_usbbufalloc;
-	}
-	usb_fill_int_urb(dev->urb, dev->udev,
-			 usb_rcvintpipe(dev->udev, int_in_endpointAddr),
-			 dev->data, data_len, atp_complete, dev, 1);
-
-	dev->input = input_allocate_device();
-	dev->input->name = "appletouch";
-	dev->input->dev = &iface->dev;
-	dev->input->private = dev;
-	dev->input->open = atp_open;
-	dev->input->close = atp_close;
-
-	usb_to_input_id(dev->udev, &dev->input->id);
-
-	set_bit(EV_ABS, dev->input->evbit);
-
-	/*
-	 * 12" and 15" Powerbooks only have 16 x sensors,
-	 * 17" models are detected later.
-	 */
-	input_set_abs_params(dev->input, ABS_X, 0,
-			     (16 - 1) * ATP_XFACT - 1, ATP_FUZZ, 0);
-	input_set_abs_params(dev->input, ABS_Y, 0,
-			     (ATP_MAX_YSENSORS - 1) * ATP_YFACT - 1, ATP_FUZZ, 0);
-	input_set_abs_params(dev->input, ABS_PRESSURE, 0, ATP_PRESSURE, 0, 0);
-
-	set_bit(EV_KEY, dev->input->evbit);
-	set_bit(BTN_TOUCH, dev->input->keybit);
-	set_bit(BTN_TOOL_FINGER, dev->input->keybit);
-	set_bit(BTN_TOOL_DOUBLETAP, dev->input->keybit);
-	set_bit(BTN_TOOL_TRIPLETAP, dev->input->keybit);
-	set_bit(BTN_LEFT, dev->input->keybit
-			
-			);
-
-	regret = input_register_device(dev->input);
-
-	printk(KERN_INFO "input: appletouch connected, Reg code :%d\n", regret);
-
-	return 0;
-
-err_usbbufalloc:
-	usb_free_urb(dev->urb);
-err_usballoc:
-	usb_set_intfdata(iface, NULL);
-err_endpoint:
-	kfree(dev);
-err_kmalloc:
-	return retval;
-}
-
-static void atp_disconnect(struct usb_interface *iface)
-{
-	struct atp *dev = usb_get_intfdata(iface);
-
-	usb_set_intfdata(iface, NULL);
-	if (dev) {
-		usb_kill_urb(dev->urb);
-		input_unregister_device(dev->input);
-		usb_free_urb(dev->urb);
-		usb_buffer_free(dev->udev, data_len,
-				dev->data, dev->urb->transfer_dma);
-		kfree(dev);
-	}
-	printk(KERN_INFO "input: appletouch disconnected\n");
-}
-
-static int atp_suspend(struct usb_interface *iface, pm_message_t message)
-{
-	struct atp *dev = usb_get_intfdata(iface);
-	usb_kill_urb(dev->urb);
-	dev->valid = 0;
-	return 0;
-}
-
-static int atp_resume(struct usb_interface *iface)
-{
-	struct atp *dev = usb_get_intfdata(iface);
-	if (dev->open && usb_submit_urb(dev->urb, GFP_ATOMIC))
-		return -EIO;
-
-	return 0;
-}
-
-static struct usb_driver atp_driver = {
-	.owner		= THIS_MODULE,
-	.name		= "appletouch",
-	.probe		= atp_probe,
-	.disconnect	= atp_disconnect,
-	.suspend	= atp_suspend,
-	.resume		= atp_resume,
-	.id_table	= atp_table,
-};
-
-
-static int __init atp_init(void)
-{
-	rcb  = kmalloc(sizeof(struct rchan_callbacks), GFP_KERNEL);
-	rcb->subbuf_start = NULL;
-	rcb->buf_mapped = NULL;
-	rcb->buf_unmapped = NULL;
-	rch = relay_open("atpdata", NULL, 256, 256, NULL);
-	if (!rch) return -ENOMEM;
-	return usb_register(&atp_driver);
-}
-
-static void __exit atp_exit(void)
-{
-	relay_close(rch);
-	kfree(rcb);
-	usb_deregister(&atp_driver);
-}
-
-module_init(atp_init);
-module_exit(atp_exit);
-
---Apple-Mail-7--307895554--
+Parsing addresses extracted from Open Firmware isn't a simple matter. We
+have various bits of code that try to do it in various place, including
+some heuristics in prom.c that pre-parse addresses at boot and fill
+device-nodes "addrs", but those are dodgy at best and I want to
+deprecate them. So this patch introduces a new set of routines that
+should be capable of parsing most types of addresses and translating
+them into CPU physical addresses. It currently works for things on PCI
+busses and ISA busses and should work on "standard" busses like the root
+bus or the MacIO bus that don't put funky flags in addresses. If you
+have other bus types that do use funky flags, you'll have to add new bus
+type translators, which is fairly easy.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+
+This is not for 2.6.15. It's part of a series of patch which, when complete,
+will unify serial port detection and udbg, and remove completely "addrs"
+and the crappy heuristics from prom.c
+
+Index: linux-serialfix/arch/powerpc/kernel/Makefile
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/kernel/Makefile	2005-11-22 14:41:26.000000000 +1100
++++ linux-serialfix/arch/powerpc/kernel/Makefile	2005-11-22 15:43:43.000000000 +1100
+@@ -12,7 +12,8 @@
+ endif
+ 
+ obj-y				:= semaphore.o cputable.o ptrace.o syscalls.o \
+-				   irq.o align.o signal_32.o pmc.o vdso.o
++				   irq.o align.o signal_32.o pmc.o vdso.o \
++				   prom_parse.o
+ obj-y				+= vdso32/
+ obj-$(CONFIG_PPC64)		+= setup_64.o binfmt_elf32.o sys_ppc32.o \
+ 				   signal_64.o ptrace32.o systbl.o \
+Index: linux-serialfix/arch/powerpc/kernel/prom_parse.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-serialfix/arch/powerpc/kernel/prom_parse.c	2005-11-22 15:11:59.000000000 +1100
+@@ -0,0 +1,404 @@
++#undef DEBUG
++
++#include <linux/kernel.h>
++#include <linux/string.h>
++#include <linux/pci_regs.h>
++#include <linux/module.h>
++#include <asm/prom.h>
++
++#ifdef DEBUG
++#define DBG(fmt...) do { printk(fmt); } while(0)
++#else
++#define DBG(fmt...) do { } while(0)
++#endif
++
++/* Max address size we deal with */
++#define OF_MAX_ADDR_CELLS	4
++#define OF_CHECK_COUNTS(na, ns)	((na) > 0 && (na) <= OF_MAX_ADDR_CELLS && \
++			(ns) > 0)
++
++/* Debug utility */
++#ifdef DEBUG
++static void of_dump_addr(const char *s, u32 *addr, int na)
++{
++	printk("%s", s);
++	while(na--)
++		printk(" %08x", *(addr++));
++	printk("\n");
++}
++#else
++static void of_dump_addr(const char *s, u32 *addr, int na) { }
++#endif
++
++/* Read a big address */
++static inline u64 of_read_addr(u32 *cell, int size)
++{
++	u64 r = 0;
++	while (size--)
++		r = (r << 32) | *(cell++);
++	return r;
++}
++
++/* Callbacks for bus specific translators */
++struct of_bus {
++	char		*name;
++	int		(*match)(struct device_node *parent);
++	void		(*count_cells)(struct device_node *child,
++				       int *addrc, int *sizec);
++	u64		(*map)(u32 *addr, u32 *range, int na, int ns, int pna);
++	int		(*translate)(u32 *addr, u64 offset, int na);
++};
++
++
++/*
++ * Default translator (generic bus)
++ */
++
++static void of_default_count_cells(struct device_node *dev,
++				   int *addrc, int *sizec)
++{
++	if (addrc)
++		*addrc = prom_n_addr_cells(dev);
++	if (sizec)
++		*sizec = prom_n_size_cells(dev);
++}
++
++static u64 of_default_map(u32 *addr, u32 *range, int na, int ns, int pna)
++{
++	u64 cp, s, da;
++
++	cp = of_read_addr(range, na);
++	s  = of_read_addr(range + na + pna, ns);
++	da = of_read_addr(addr, na);
++
++	DBG("OF: default map, cp=%lx, s=%lx, da=%lx\n", cp, s, da);
++
++	if (da < cp || da >= (cp + s))
++		return OF_BAD_ADDR;
++	return da - cp;
++}
++
++static int of_default_translate(u32 *addr, u64 offset, int na)
++{
++	u64 a = of_read_addr(addr, na);
++	memset(addr, 0, na * 4);
++	a += offset;
++	if (na > 1)
++		addr[na - 2] = a >> 32;
++	addr[na - 1] = a & 0xffffffffu;
++
++	return 0;
++}
++
++
++/*
++ * PCI bus specific translator
++ */
++
++static int of_bus_pci_match(struct device_node *np)
++{
++	return !strcmp(np->type, "pci");
++}
++
++static void of_bus_pci_count_cells(struct device_node *np,
++				   int *addrc, int *sizec)
++{
++	if (addrc)
++		*addrc = 3;
++	if (sizec)
++		*sizec = 2;
++}
++
++static u64 of_bus_pci_map(u32 *addr, u32 *range, int na, int ns, int pna)
++{
++	u64 cp, s, da;
++
++	/* Check address type match */
++	if ((addr[0] ^ range[0]) & 0x03000000)
++		return OF_BAD_ADDR;
++
++	/* Read address values, skipping high cell */
++	cp = of_read_addr(range + 1, na - 1);
++	s  = of_read_addr(range + na + pna, ns);
++	da = of_read_addr(addr + 1, na - 1);
++
++	DBG("OF: PCI map, cp=%lx, s=%lx, da=%lx\n", cp, s, da);
++
++	if (da < cp || da >= (cp + s))
++		return OF_BAD_ADDR;
++	return da - cp;
++}
++
++static int of_bus_pci_translate(u32 *addr, u64 offset, int na)
++{
++	return of_default_translate(addr + 1, offset, na - 1);
++}
++
++/*
++ * ISA bus specific translator
++ */
++
++static int of_bus_isa_match(struct device_node *np)
++{
++	return !strcmp(np->name, "isa");
++}
++
++static void of_bus_isa_count_cells(struct device_node *child,
++				   int *addrc, int *sizec)
++{
++	if (addrc)
++		*addrc = 2;
++	if (sizec)
++		*sizec = 1;
++}
++
++static u64 of_bus_isa_map(u32 *addr, u32 *range, int na, int ns, int pna)
++{
++	u64 cp, s, da;
++
++	/* Check address type match */
++	if ((addr[0] ^ range[0]) & 0x00000001)
++		return OF_BAD_ADDR;
++
++	/* Read address values, skipping high cell */
++	cp = of_read_addr(range + 1, na - 1);
++	s  = of_read_addr(range + na + pna, ns);
++	da = of_read_addr(addr + 1, na - 1);
++
++	DBG("OF: ISA map, cp=%lx, s=%lx, da=%lx\n", cp, s, da);
++
++	if (da < cp || da >= (cp + s))
++		return OF_BAD_ADDR;
++	return da - cp;
++}
++
++static int of_bus_isa_translate(u32 *addr, u64 offset, int na)
++{
++	return of_default_translate(addr + 1, offset, na - 1);
++}
++
++/*
++ * Array of bus specific translators
++ */
++
++static struct of_bus of_busses[] = {
++	/* PCI */
++	{
++		.name = "pci",
++		.match = of_bus_pci_match,
++		.count_cells = of_bus_pci_count_cells,
++		.map = of_bus_pci_map,
++		.translate = of_bus_pci_translate,
++	},
++	/* ISA */
++	{
++		.name = "isa",
++		.match = of_bus_isa_match,
++		.count_cells = of_bus_isa_count_cells,
++		.map = of_bus_isa_map,
++		.translate = of_bus_isa_translate,
++	},
++	/* Default */
++	{
++		.name = "default",
++		.match = NULL,
++		.count_cells = of_default_count_cells,
++		.map = of_default_map,
++		.translate = of_default_translate,
++	},
++};
++
++static struct of_bus *of_match_bus(struct device_node *np)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(of_busses); i ++)
++		if (!of_busses[i].match || of_busses[i].match(np))
++			return &of_busses[i];
++	BUG();
++	return NULL;
++}
++
++static int of_translate_one(struct device_node *parent, struct of_bus *bus,
++			    struct of_bus *pbus, u32 *addr,
++			    int na, int ns, int pna)
++{
++	u32 *ranges;
++	unsigned int rlen;
++	int rone;
++	u64 offset = OF_BAD_ADDR;
++
++	/* No "ranges" property is not an error */
++	ranges = (u32 *)get_property(parent, "ranges", &rlen);
++	if (ranges == NULL) {
++		offset = of_read_addr(addr, na);
++		memset(addr, 0, pna);
++		goto finish;
++	}
++
++	DBG("OF: walking ranges...\n");
++
++	/* Now walk through the ranges */
++	rlen /= 4;
++	rone = na + pna + ns;
++	for (; rlen >= rone; rlen -= rone, ranges += rone) {
++		offset = bus->map(addr, ranges, na, ns, pna);
++		if (offset != OF_BAD_ADDR)
++			break;
++	}
++	if (offset == OF_BAD_ADDR) {
++		DBG("OF: not found !\n");
++		return 1;
++	}
++	memcpy(addr, ranges + na, 4 * pna);
++
++ finish:
++	of_dump_addr("OF: parent translation for:", addr, pna);
++	DBG("OF: with offset: %lx\n", offset);
++
++	/* Translate it into parent bus space */
++	return pbus->translate(addr, offset, pna);
++}
++
++
++/*
++ * Translate an address from the device-tree into a CPU physical address,
++ * this walks up the tree and applies the various bus mappings on the
++ * way.
++ *
++ * Note: We consider that crossing any level with #size-cells == 0 to mean
++ * that translation is impossible (that is we are not dealing with a value
++ * that can be mapped to a cpu physical address). This is not really specified
++ * that way, but this is traditionally the way IBM at least do things
++ */
++u64 of_translate_address(struct device_node *dev, u32 *in_addr)
++{
++	struct device_node *parent = NULL;
++	struct of_bus *bus, *pbus;
++	u32 addr[OF_MAX_ADDR_CELLS];
++	int na, ns, pna, pns;
++	u64 result = OF_BAD_ADDR;
++
++	DBG("OF: ** translation for device %s **\n", dev->full_name);
++
++	/* Increase refcount at current level */
++	of_node_get(dev);
++
++	/* Get parent & match bus type */
++	parent = of_get_parent(dev);
++	if (parent == NULL)
++		goto bail;
++	bus = of_match_bus(parent);
++
++	/* Cound address cells & copy address locally */
++	bus->count_cells(dev, &na, &ns);
++	if (!OF_CHECK_COUNTS(na, ns)) {
++		printk(KERN_ERR "prom_parse: Bad cell count for %s\n",
++		       dev->full_name);
++		goto bail;
++	}
++	memcpy(addr, in_addr, na * 4);
++
++	DBG("OF: bus is %s (na=%d, ns=%d) on %s\n",
++	    bus->name, na, ns, parent->full_name);
++	of_dump_addr("OF: translating address:", addr, na);
++
++	/* Translate */
++	for (;;) {
++		/* Switch to parent bus */
++		of_node_put(dev);
++		dev = parent;
++		parent = of_get_parent(dev);
++
++		/* If root, we have finished */
++		if (parent == NULL) {
++			DBG("OF: reached root node\n");
++			result = of_read_addr(addr, na);
++			break;
++		}
++
++		/* Get new parent bus and counts */
++		pbus = of_match_bus(parent);
++		pbus->count_cells(dev, &pna, &pns);
++		if (!OF_CHECK_COUNTS(pna, pns)) {
++			printk(KERN_ERR "prom_parse: Bad cell count for %s\n",
++			       dev->full_name);
++			break;
++		}
++
++		DBG("OF: parent bus is %s (na=%d, ns=%d) on %s\n",
++		    pbus->name, pna, pns, parent->full_name);
++
++		/* Apply bus translation */
++		if (of_translate_one(dev, bus, pbus, addr, na, ns, pna))
++			break;
++
++		/* Complete the move up one level */
++		na = pna;
++		ns = pns;
++		bus = pbus;
++
++		of_dump_addr("OF: one level translation:", addr, na);
++	}
++ bail:
++	of_node_put(parent);
++	of_node_put(dev);
++
++	return result;
++}
++EXPORT_SYMBOL(of_translate_address);
++
++u32 *of_get_address(struct device_node *dev, int index, u64 *size)
++{
++	u32 *prop;
++	unsigned int psize;
++	struct device_node *parent;
++	struct of_bus *bus;
++	int onesize, i, na, ns;
++
++	/* Get "reg" property */
++	prop = (u32 *)get_property(dev, "reg", &psize);
++	if (prop == NULL)
++		return NULL;
++	psize /= 4;
++
++	/* Get parent & match bus type */
++	parent = of_get_parent(dev);
++	if (parent == NULL)
++		return NULL;
++	bus = of_match_bus(parent);
++	bus->count_cells(dev, &na, &ns);
++	of_node_put(parent);
++	if (!OF_CHECK_COUNTS(na, ns))
++		return NULL;
++
++	onesize = na + ns;
++	for (i = 0; psize >= onesize; psize -= onesize, prop += onesize, i++)
++		if (i == index) {
++			if (size)
++				*size = of_read_addr(prop + na, ns);
++			return prop;
++		}
++	return NULL;
++}
++EXPORT_SYMBOL(of_get_address);
++
++u32 *of_get_pci_addr(struct device_node *pd, int bar, u64 *out_size)
++{
++	u32 *prop;
++	unsigned int psize;
++
++	prop = (u32 *)get_property(pd, "assigned-addresses", &psize);
++	if (prop == NULL)
++		return NULL;
++	psize /= 4;
++	for (; psize >= 5; psize -= 5, prop += 5) {
++		if (bar == (((prop[0] & 0xff) - PCI_BASE_ADDRESS_0) / 4)) {
++			if (out_size)
++				*out_size = of_read_addr(prop + 3, 2);
++			return prop;
++		}
++	}
++	return NULL;
++}
++EXPORT_SYMBOL(of_get_pci_addr);
+Index: linux-serialfix/include/asm-powerpc/mmu.h
+===================================================================
+--- linux-serialfix.orig/include/asm-powerpc/mmu.h	2005-11-22 14:41:26.000000000 +1100
++++ linux-serialfix/include/asm-powerpc/mmu.h	2005-11-22 14:41:49.000000000 +1100
+@@ -393,6 +393,10 @@
+ #define VSID_SCRAMBLE(pvsid)	(((pvsid) * VSID_MULTIPLIER) % VSID_MODULUS)
+ #define KERNEL_VSID(ea)		VSID_SCRAMBLE(GET_ESID(ea))
+ 
++/* Physical address used by some IO functions */
++typedef unsigned long phys_addr_t;
++
++
+ #endif /* __ASSEMBLY */
+ 
+ #endif /* CONFIG_PPC64 */
+Index: linux-serialfix/include/asm-powerpc/prom.h
+===================================================================
+--- linux-serialfix.orig/include/asm-powerpc/prom.h	2005-11-22 14:41:26.000000000 +1100
++++ linux-serialfix/include/asm-powerpc/prom.h	2005-11-22 14:41:49.000000000 +1100
+@@ -223,5 +223,14 @@
+ 				int index, const char* name_postfix);
+ extern int release_OF_resource(struct device_node* node, int index);
+ 
++/*
++ * Address translation function(s)
++ */
++#define OF_BAD_ADDR	((u64)-1)
++extern u64 of_translate_address(struct device_node *np, u32 *addr);
++extern u32 *of_get_address(struct device_node *dev, int index, u64 *size);
++extern u32 *of_get_pci_addr(struct device_node *pd, int bar, u64 *out_size);
++
++
+ #endif /* __KERNEL__ */
+ #endif /* _POWERPC_PROM_H */
+Index: linux-serialfix/include/asm-ppc/prom.h
+===================================================================
+--- linux-serialfix.orig/include/asm-ppc/prom.h	2005-11-22 14:41:26.000000000 +1100
++++ linux-serialfix/include/asm-ppc/prom.h	2005-11-22 14:41:49.000000000 +1100
+@@ -136,5 +136,15 @@
+ #define PTRRELOC(x)	((typeof(x))add_reloc_offset((unsigned long)(x)))
+ #define PTRUNRELOC(x)	((typeof(x))sub_reloc_offset((unsigned long)(x)))
+ 
++
++/*
++ * Address translation function(s)
++ */
++#define OF_BAD_ADDR	((u64)-1)
++extern u64 of_translate_address(struct device_node *np, u32 *addr);
++extern u32 *of_get_address(struct device_node *dev, int index, u64 *size);
++extern u32 *of_get_pci_addr(struct device_node *pd, int bar, u64 *out_size);
++
++
+ #endif /* _PPC_PROM_H */
+ #endif /* __KERNEL__ */
