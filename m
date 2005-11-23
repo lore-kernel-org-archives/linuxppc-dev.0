@@ -1,19 +1,27 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id E35DC687E3
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D5DBF687F2
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Nov 2005 07:14:50 +1100 (EST)
-To: "Dan Wilson" <dwilson@dslextreme.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 23 Nov 2005 08:16:40 PST."
-	<200511230816400937.2B36A589@smtp.dslextreme.com>
-Date: Wed, 23 Nov 2005 21:14:48 +0100
-Sender: wd@denx.de
-Message-Id: <20051123201448.7D6DE353A43@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Freescale 8541 support 
+	Thu, 24 Nov 2005 07:18:21 +1100 (EST)
+In-Reply-To: <20051123120033.GA3551@logos.cnet>
+References: <437B2051.5030408@ru.mvista.com> <20051117135810.GB9753@logos.cnet>
+	<437DE07E.6080005@ru.mvista.com>
+	<20051118090845.GB12765@logos.cnet>
+	<17283.54950.681390.749679@cargo.ozlabs.ibm.com>
+	<20051123091107.GA3482@logos.cnet>
+	<ACB2F36A-0A37-4EA1-9E4A-F773AD4E0D86@kernel.crashing.org>
+	<20051123120033.GA3551@logos.cnet>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <ddea89e58026c4f55f1a05af602cba60@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Date: Wed, 23 Nov 2005 15:18:17 -0500
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] ppc32: 8xx board-specific platform stuff for fs_enet
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,31 +32,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <200511230816400937.2B36A589@smtp.dslextreme.com> you wrote:
-> 
-> Thanks for the reply!  Unfortunately, I am constrained to use the 2.4
->  kernel by another software package that I have to use, which doesn't yet
->  support 2.6.  It appears to me that the 8541/8555 support was put into 2.6
->  and never back-ported to 2.4.  I'll take a look at the manuals today and
 
-Yes. We will add specific board support for the 8541/8555  (in  terms
-of the TQM8541 and TQM8555 boards) to our 2.6 git repository in a few
-days, but we don't have any intentions to support these boards in our
-2.4 tree (unless you pay us for it, of course :-)
+On Nov 23, 2005, at 7:00 AM, Marcelo Tosatti wrote:
 
->  compare the 8540 to the 8541: perhaps I can live with the 8540 support
->  that does appear to be in the 2.4 kernel.  If not, hopefully the porting
->  job won't be very difficult.
+> The files in arch/ppc/8xx_io/ (which is what I think you refer to as
+> candidates for drivers/), are:
 
-It's just a routine job, but it takes time  and  resources,  and  you
-have  to  decide  if  it makes sense to invest these in a kernel tree
-that will not be developed any further.
+I don't particularly like these macros, but I'm tired of fighting
+about it.  If you follow the usage path, you will see it's only
+used in the CPM drivers, and I wish people would just use
+the data structure pointers to access these ports/bits with
+standard C code and then place any synchronization
+instructions properly.  There are some cases where you
+have to be quite careful about how you read and write
+some control registers, and I think this opens the possibility
+to just be sloppy and make mistakes since the read/write
+is hidden within the macro.
 
-Best regards,
 
-Wolfgang Denk
+> Does anyone have hardware to test it? Dan?
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Our business is run on trust.  We trust you will pay in advance.
+Yes, I have hardware to test it.  I will do that one of these days.
+
+Thanks.
+
+	-- Dan
