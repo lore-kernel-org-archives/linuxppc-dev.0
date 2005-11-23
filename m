@@ -1,19 +1,20 @@
-Return-Path: <zengshuai@sogou.com>
-Received: from sogoumx76.mail.sogou.com (unknown [61.135.132.136])
-	by ozlabs.org (Postfix) with ESMTP id B3FAA68734
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C303F687C7
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Nov 2005 00:52:52 +1100 (EST)
-Received: from mx3.mail.sohu.com (unknown [192.168.95.78])
-	by sogoumx76.mail.sogou.com (Postfix) with ESMTP id 2A6B727C2C32
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Nov 2005 21:24:33 +0800 (CST)
-Message-ID: <10059043.1132751565040.JavaMail.postfix@mx3.mail.sohu.com>
-Date: Wed, 23 Nov 2005 21:12:45 +0800 (CST)
-From: <zengshuai@sogou.com>
-To: <linuxppc-embedded@ozlabs.org>
+	Thu, 24 Nov 2005 01:05:23 +1100 (EST)
+Date: Wed, 23 Nov 2005 06:34:55 -0200
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+Message-ID: <20051123083455.GA3308@logos.cnet>
+References: <437DFEFA.4080203@ru.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="GB2312"
-Subject: about powerpc design,thanks very much
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <437DFEFA.4080203@ru.mvista.com>
+Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] ppc32: 8xx board-specific platform stuff for fs_enet
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,16 +25,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-first,i'm sorry my poor English.
-Our team is a new team.we want to design a production,which used to receive/transmit aal2 and aal5.
-So we choose the MPC8280 and PQ2FADS_ZU(a kind of MPC8280 Boards). Now we can run linux on this board.
-But there are so less example code about ATM,and they don't support linux,but bare-board.
-We are all student.We don't know how to go on our design.Use linux or not,use Codewarrior Development 
-Studio PowerPC ISA Edition for Comm Processors or Linux Application/Platform Edition,can get some code 
-we needed or not,and so on.
-Our freescale agent just sale us a PQ2FADS_ZU board,and say they didn't know any more.
-We need some help and some advise.What are you usually to do next to go on your design? thanks a lot.
+Hi Vitaly,
 
-------------------------------
-我现在使用Sogou.com的2G邮箱了，你也来试试吧! 
-http://mail.sogou.com/recommend/sogoumail_invite_reg1.jsp?from=sogouinvitation&s_EMAIL=zengshuai%40sogou.com&username=linuxppc-embedded&FullName=linuxppc-embedded&Email=linuxppc-embedded%40ozlabs.org&verify=755eff4e640bdcfc57d93cbd8b0a9cb7
+On Fri, Nov 18, 2005 at 07:19:06PM +0300, Vitaly Bordug wrote:
+> This adds board-specific files needed to utilize fs_enet Ethernet driver
+> for MPC885ADS and MPC866ADS.
+> 
+> Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+
+Looks nice.
+
+Just one thing: Would mind separating the setbits/clearbits patch, and
+while you're at it, convert the current read-and-modify operations to
+setbits/clearbits?
+
+They have been switched to use IO accessors with GIT commit
+e37b0c9670fed2264661ade1beb5c228dec29c96
+
+Thanks
