@@ -1,21 +1,16 @@
-Return-Path: <adrian@humboldt.co.uk>
-Received: from mail.humboldt.co.uk (mail.humboldt.co.uk [80.68.93.146])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8473D68820
+Return-Path: <gautran@mrv.com>
+Received: from mailman.xyplex.com (mailman.xyplex.com [140.179.176.116])
+	by ozlabs.org (Postfix) with ESMTP id CE094687E9
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Nov 2005 03:34:06 +1100 (EST)
-Received: from box.varisys.co.uk ([81.187.198.46] helo=[192.168.3.253])
-	by mail.humboldt.co.uk with esmtpsa (TLS-1.0:RSA_ARCFOUR_MD5:16)
-	(Exim 4.50) id 1Eex0h-0006y7-K2
-	for linuxppc-embedded@ozlabs.org; Wed, 23 Nov 2005 15:58:15 +0000
-From: Adrian Cox <adrian@humboldt.co.uk>
-To: linuxppc-embedded@ozlabs.org
+	Thu, 24 Nov 2005 03:43:33 +1100 (EST)
+Message-ID: <19EE6EC66973A5408FBE4CB7772F6F0A2105B2@ltnmail.xyplex.com>
+From: "Autran, Guillaume" <gautran@mrv.com>
+To: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>,
+	"'n_tbinh@yahoo.com'" <n_tbinh@yahoo.com>
+Date: Wed, 23 Nov 2005 11:39:05 -0500
+MIME-Version: 1.0
 Content-Type: text/plain
-Date: Wed, 23 Nov 2005 15:58:14 +0000
-Message-Id: <1132761494.2776.14.camel@localhost>
-Mime-Version: 1.0
-Subject: Tsi108
+Subject: RE: Booting hangs after "Calibrating delay loop..."
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,21 +21,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I've just received the evaluation board for the Tsi108 bridge:
+Hi,
 
-http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MCEVALHPC2-7448&nodeId=0162468rH3bTdGb9MM
+I remember there is some race condition before calling set_dec(..) in time.c
+Basically, what happens is that the external decrementer is set way before
+the interrupt gets enabled. When we get to enable the interrupt, the
+decrementer value already reached 0 and wrapped arround (at least in our
+case). 
+The fix was to comment the line in:
+arch/ppc/kernel/time.c:330: set_dec(tb_ticks_per_jiffy);
 
-The kernel supplied is 2.6.11.1, and it looks like it needs the
-following to bring it up to date:
+And move it to:
+arch/ppc/syslib/m8xx_setup.c
+inside m8xx_calibrate_decr() just before setting up the interrupt for the
+decrementer.
 
-1) Using platform_device for on-chip resources.
-2) Coding standards cleanup.
-3) Fix the ethernet driver
-3a) Fix bugs in stopping and starting interface
-3b) remove virt_to_phys
-3c) ethtool support?
+In time.c, you may also need to initialize stamp = get_native_tbl(); as this
+variable may not have been initialized since you are using an external
+decrementer.
 
-Has anybody started on this before I begin?
+Try that...
 
--- 
-Adrian Cox <adrian@humboldt.co.uk>
+Guillaume.
